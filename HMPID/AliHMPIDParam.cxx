@@ -42,6 +42,7 @@ Float_t AliHMPIDParam::fgAllX=0;
 Float_t AliHMPIDParam::fgAllY=0;
 
 Int_t AliHMPIDParam::fgSigmas=4;
+Bool_t AliHMPIDParam::fgInstanceType=kTRUE;  
 
 AliHMPIDParam* AliHMPIDParam::fgInstance=0x0;        //singleton pointer               
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -54,7 +55,10 @@ AliHMPIDParam::AliHMPIDParam(Bool_t noGeo=kFALSE):TNamed("HmpidParam","default v
   fRadNmean = MeanIdxRad(); //initialization of the running ref. index of freon
   
   Float_t dead=2.6;// cm of the dead zones between PCs-> See 2CRC2099P1
-  
+
+
+  if(noGeo==kTRUE) fgInstanceType=kFALSE;                                                   //instance from ideal geometry, no actual geom is present
+    
   if(noGeo==kFALSE && !gGeoManager)  
   {
     TGeoManager::Import("geometry.root");

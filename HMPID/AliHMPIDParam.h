@@ -55,6 +55,7 @@ public:
   static Bool_t  IsOverTh    (Float_t q                      )     {return q >= fgSigmas;                            }  //is digit over threshold?
   
   Double_t GetRefIdx         (                               )     {return fRadNmean;                                }  //refractive index of freon
+  Bool_t  GetInstType (                               )     {return fgInstanceType;                            }  //return if the instance is from geom or ideal                        
   
   inline static Bool_t IsInDead(Float_t x,Float_t y        );                                                           //is the point in dead area?
   static Bool_t  IsInside    (Float_t x,Float_t y,Float_t d=0)     {return  x>-d&&y>-d&&x<fgkMaxPcX[kMaxPc]+d&&y<fgkMaxPcY[kMaxPc]+d; } //is point inside chamber boundaries?
@@ -87,13 +88,14 @@ public:
   void     Point       (Int_t c,Double_t *p,Int_t plane                     )const{Lors2Mars(c,0,0,p,plane);}      //point of given chamber plane
 
   void     SetRefIdx   (Double_t refRadIdx                                  ) {fRadNmean = refRadIdx;}             //set refractive index of freon
-  
+    
   
   enum EPlaneId {kPc,kRad,kAnod};            //3 planes in chamber 
   enum ETrackingFlags {kMipDistCut=-9,kMipQdcCut=-5,kNoPhotAccept=-11};     //flags for Reconstruction
 
-  static Int_t fgSigmas;   //sigma Cut
-
+  static Int_t    fgSigmas;   //sigma Cut
+  static Bool_t   fgInstanceType;             //kTRUE if from geomatry kFALSE if from ideal geometry
+  
 protected:
   static /*const*/ Float_t fgkMinPcX[6];                                                           //limits PC
   static /*const*/ Float_t fgkMinPcY[6];                                                           //limits PC
