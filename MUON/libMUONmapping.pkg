@@ -75,6 +75,10 @@ SRCS +=  \
 	 mapping/AliMpTrigger.cxx  \
 	 mapping/AliMpTriggerReader.cxx  \
 	 mapping/AliMpTriggerSegmentation.cxx  \
+         mapping/AliMpGlobalCrate.cxx \
+         mapping/AliMpRegionalTrigger.cxx \
+         mapping/AliMpTriggerCrate.cxx \
+         mapping/AliMpLocalBoard.cxx \
 
 # Category management
 #
@@ -90,9 +94,6 @@ SRCS +=  \
 	 mapping/AliMpDEIterator.cxx  \
 	 mapping/AliMpDEManager.cxx  \
          mapping/AliMpBusPatch.cxx \
-         mapping/AliMpGlobalCrate.cxx \
-         mapping/AliMpTriggerCrate.cxx \
-         mapping/AliMpLocalBoard.cxx \
          mapping/AliMpDDL.cxx \
 	 mapping/AliMpDDLStore.cxx \
 	 mapping/AliMpCDB.cxx \

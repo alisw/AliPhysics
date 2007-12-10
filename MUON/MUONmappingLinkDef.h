@@ -94,6 +94,10 @@
 #pragma link C++ class  AliMpTrigger+;
 #pragma link C++ class  AliMpTriggerReader+;
 #pragma link C++ class  AliMpTriggerSegmentation+;
+#pragma link C++ class  AliMpGlobalCrate+;
+#pragma link C++ class  AliMpRegionalTrigger+;
+#pragma link C++ class  AliMpTriggerCrate+;
+#pragma link C++ class  AliMpLocalBoard+;
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -111,9 +115,6 @@
 #pragma link C++ class  AliMpDEIterator+;
 #pragma link C++ class  AliMpDEManager+;
 #pragma link C++ class  AliMpBusPatch+;
-#pragma link C++ class  AliMpGlobalCrate+;
-#pragma link C++ class  AliMpTriggerCrate+;
-#pragma link C++ class  AliMpLocalBoard+;
 #pragma link C++ class  AliMpDDL+;
 #pragma link C++ class  AliMpDDLStore+;
 #pragma link C++ class  AliMpCDB+;
