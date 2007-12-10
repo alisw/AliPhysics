@@ -62,7 +62,7 @@ AliTPCmapper::AliTPCmapper() :
   //
   // Constructor
   //
-  for ( Int_t i = 0; i < fNrcu; i++ )  fMapping[i]=0;
+  for ( Int_t i = 0; i < 6; i++ )  fMapping[i]=0;
 }
 
 //______________________________________________________________
