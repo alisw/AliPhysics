@@ -39,10 +39,18 @@
 // Author: Dmitri Peressounko
 
 // --- ROOT system ---
+#include "TList.h"
 #include "TMath.h"
 #include "TMinuit.h"
 
+#include "TCanvas.h"
+#include "TH1.h"
+#include "TH2.h"
+#include "TF1.h"
+#include "TROOT.h"
+
 // --- AliRoot header files ---
+//#include "AliLog.h"
 #include "AliPHOSRawDecoderv1.h"
 #include "AliPHOSPulseGenerator.h"
 
@@ -50,14 +58,16 @@
 ClassImp(AliPHOSRawDecoderv1)
 
 //-----------------------------------------------------------------------------
-  AliPHOSRawDecoderv1::AliPHOSRawDecoderv1():AliPHOSRawDecoder()
+  AliPHOSRawDecoderv1::AliPHOSRawDecoderv1():AliPHOSRawDecoder(),
+fSampleParamsLow(0x0),fSampleParamsHigh(0x0),fToFit(0x0)
 {
   //Default constructor.
 }
 
 //-----------------------------------------------------------------------------
 AliPHOSRawDecoderv1::AliPHOSRawDecoderv1(AliRawReader* rawReader,  AliAltroMapping **mapping):
-  AliPHOSRawDecoder(rawReader,mapping)
+  AliPHOSRawDecoder(rawReader,mapping),
+  fSampleParamsLow(0x0),fSampleParamsHigh(0x0),fToFit(0x0)
 {
   //Construct a decoder object.
   //Is is user responsibility to provide next raw event 
@@ -65,30 +75,64 @@ AliPHOSRawDecoderv1::AliPHOSRawDecoderv1(AliRawReader* rawReader,  AliAltroMappi
 
   if(!gMinuit) 
     gMinuit = new TMinuit(100);
-
+  fSampleParamsHigh =new TArrayD(5) ;
+  fSampleParamsHigh->AddAt(4.25,0) ;
+  fSampleParamsHigh->AddAt(0.094,1) ;
+  fSampleParamsHigh->AddAt(0.0151,2) ;
+  fSampleParamsHigh->AddAt(0.0384,3) ;
+  fSampleParamsLow=new TArrayD(5) ;
+  fSampleParamsLow->AddAt(5.14,0) ;
+  fSampleParamsLow->AddAt(0.0970,1) ;
+  fSampleParamsLow->AddAt(0.0088,2) ;
+  fSampleParamsLow->AddAt(0.0346,3) ;
+  fToFit = new TList() ;
 }
 
 //-----------------------------------------------------------------------------
 AliPHOSRawDecoderv1::~AliPHOSRawDecoderv1()
 {
   //Destructor.
+  if(fSampleParamsLow){
+    delete fSampleParamsLow ; 
+    fSampleParamsLow=0 ;
+  }
+  if(fSampleParamsHigh){
+    delete fSampleParamsHigh ;
+    fSampleParamsHigh=0;
+  }
+  if(fToFit){
+    delete fToFit ;
+    fToFit=0 ;
+  }
 }
 
 //-----------------------------------------------------------------------------
 AliPHOSRawDecoderv1::AliPHOSRawDecoderv1(const AliPHOSRawDecoderv1 &phosDecoder ):
-  AliPHOSRawDecoder(phosDecoder)
+  AliPHOSRawDecoder(phosDecoder), 
+  fSampleParamsLow(0x0),fSampleParamsHigh(0x0),fToFit(0x0)
 {
   //Copy constructor.
+  fToFit = new TList() ;
+  fSampleParamsLow =new TArrayD(*(phosDecoder.fSampleParamsLow)) ;
+  fSampleParamsHigh=new TArrayD(*(phosDecoder.fSampleParamsHigh)) ;
 }
 
 //-----------------------------------------------------------------------------
-AliPHOSRawDecoderv1& AliPHOSRawDecoderv1::operator = (const AliPHOSRawDecoderv1 &phosDecode)
+AliPHOSRawDecoderv1& AliPHOSRawDecoderv1::operator = (const AliPHOSRawDecoderv1 &phosDecoder)
 {
   //Assignment operator.
 
-  //  if(this != &phosDecode) {
+  //  if(this != &phosDecoder) {
   //  }
-
+  fToFit = new TList() ;
+  if(fSampleParamsLow){
+    fSampleParamsLow = phosDecoder.fSampleParamsLow ;
+    fSampleParamsHigh= phosDecoder.fSampleParamsHigh ;
+  }
+  else{
+    fSampleParamsLow =new TArrayD(*(phosDecoder.fSampleParamsLow)) ; 
+    fSampleParamsHigh=new TArrayD(*(phosDecoder.fSampleParamsHigh)) ;
+  }
   return *this;
 }
 
@@ -101,6 +145,10 @@ Bool_t AliPHOSRawDecoderv1::NextDigit()
   //First collects sample, then evaluates it and if it has
   //reasonable shape, fits it with Gamma2 function and extracts 
   //energy and time.
+
+//  TCanvas * c  = (TCanvas *)gROOT->FindObjectAny("canvMy") ;
+//  TH1S * h = new TH1S("s","",200,0.5,200.5) ;
+//  TF1 * fff = new TF1("fff","[0]+[1]*((x-[2])+[3]*(x-[2])*(x-[2]))*(exp(-(x-[2])*[4])+[5]*exp(-(x-[2])*[6]))",0.,1000.) ;
   
   AliCaloRawStream* in = fCaloStream;
   
@@ -161,10 +209,6 @@ Bool_t AliPHOSRawDecoderv1::NextDigit()
 	aRMS=aRMS/cnts-aMean*aMean;
       }
       
-      if(fPedSubtract){ 
-	fEnergy-=pedestal ;
-      }
-      
       //IF sample has reasonable mean and RMS, try to fit it with gamma2
       if(fEnergy>2.&& cnts >20 && aMean>0. && aRMS>2.){ //more or less reasonable sample
 	
@@ -172,39 +216,38 @@ Bool_t AliPHOSRawDecoderv1::NextDigit()
 	gMinuit->SetPrintLevel(-1) ;           // No Printout
 	gMinuit->SetFCN(AliPHOSRawDecoderv1::UnfoldingChiSquare) ;  
 	// To set the address of the minimization function 
-	
-	gMinuit->SetObjectFit((TObject*)fSamples) ;         // To tranfer pointer to UnfoldingChiSquare
+ 	
+       fToFit->Clear() ;
+       if(fLowGainFlag){
+         fSampleParamsLow->AddAt(pedestal,4) ;
+         fToFit->AddFirst((TObject*)fSampleParamsLow) ; 
+        }
+        else{
+         fSampleParamsHigh->AddAt(pedestal,4) ;
+         fToFit->AddFirst((TObject*)fSampleParamsHigh) ; 
+        }
+        fToFit->AddLast((TObject*)fSamples) ;
+
+	gMinuit->SetObjectFit((TObject*)fToFit) ;         // To tranfer pointer to UnfoldingChiSquare
 	Int_t ierflg ;
-	gMinuit->mnparm(0, "p",  pedestal, 0.1, 0, 0, ierflg) ;
-	if(ierflg != 0){ 
-	  //	  Warning("NextDigit", "Uunable to set initial value for fit procedure : ped = %f\n", pedestal ) ;
+	gMinuit->mnparm(0, "t0",  1.*tStart, 0.1, 0, 0, ierflg) ;
+	if(ierflg != 0){
+//	  AliWarning(Form("Unable to set initial value for fit procedure : t0=%e\n",1.*tStart) ) ;
 	  fEnergy=0. ;
 	  fTime=-999. ;
 	  return kTRUE ; //will scan further
 	}
-	gMinuit->mnparm(1, "t0",  1.*tStart, 0.1, 0, 0, ierflg) ;
+        Double_t amp0=(fEnergy-pedestal)*0.0032;
+
+	gMinuit->mnparm(1, "Energy", amp0 , 0.001*amp0, 0, 0, ierflg) ;
 	if(ierflg != 0){
-	  //	  Warning("NextDigit", "Unable to set initial value for fit procedure : t0\n" ) ;
-	  fEnergy=0. ;
-	  fTime=-999. ;
-	  return kTRUE ; //will scan further
-	}
-	gMinuit->mnparm(2, "Energy", fEnergy*0.018 , 0.001*fEnergy, 0, 0, ierflg) ;
-	if(ierflg != 0){
-	  //	  Warning("NextDigit", "Unable to set initial value for fit procedure : E=%f\n", fEnergy*0.018) ;
-	  fEnergy=0. ;
-	  fTime=-999. ;
-	  return kTRUE ; //will scan further
-	}
-	gMinuit->mnparm(3, "Slope", 0.09 , 0.001, 0.001, 1., ierflg) ;
-	if(ierflg != 0){
-	  //	  Warning("NextDigit", "Unable to set initial value for fit procedure : Slope\n") ;
+//	  AliWarning(Form("Unable to set initial value for fit procedure : E=%e\n", amp0)) ;
 	  fEnergy=0. ;
 	  fTime=-999. ;
 	  return kTRUE ; //will scan further
 	}
 	
-	Double_t p0 = 1. ; // "Tolerance" Evaluation stops when EDM = 0.0001*p0 ; The number of function call slightly
+	Double_t p0 = 0.0001 ; // "Tolerance" Evaluation stops when EDM = 0.0001*p0 ; The number of function call slightly
 	//  depends on it. 
 	Double_t p1 = 1.0 ;
 	Double_t p2 = 0.0 ;
@@ -215,21 +258,48 @@ Bool_t AliPHOSRawDecoderv1::NextDigit()
 	
 	gMinuit->mnexcm("MIGRAD", &p0, 0, ierflg) ;    // minimize 
 	
-	Double_t err ;
-	Double_t p,t0,efit,slope ;
-	gMinuit->GetParameter(0,p, err) ;    
-	gMinuit->GetParameter(1,t0, err) ;    
-	gMinuit->GetParameter(2,efit, err) ;    
-	gMinuit->GetParameter(3,slope, err) ;    
+	Double_t err,t0err ;
+	Double_t t0,efit ;
+	gMinuit->GetParameter(0,t0, t0err) ;    
+	gMinuit->GetParameter(1,efit, err) ;    
 	
-	efit=efit*4.*TMath::Exp(-2.)/slope/slope ; //slope can not be zero - par limits
-	
+        Double_t a,alpha ;
+        if(fLowGainFlag){
+          a=fSampleParamsLow->At(0) ;
+          alpha=fSampleParamsLow->At(1) ;
+        }
+        else{
+          a=fSampleParamsHigh->At(0) ;
+          alpha=fSampleParamsHigh->At(1) ;
+        }
+
+//    c->cd() ;
+//    h->Draw() ;
+//    if(fLowGainFlag){
+//      fff->SetParameters(pedestal,efit,t0,a,alpha,fSampleParamsLow->At(2),fSampleParamsLow->At(3)) ;
+//    }
+//    else{
+//      fff->SetParameters(pedestal,efit,t0,a,alpha,fSampleParamsHigh->At(2),fSampleParamsHigh->At(3)) ;
+//    }
+//    fff->Draw("same") ;
+//    c->Update();
+          
+        efit*=(2.*a+TMath::Sqrt(4.*a*a+alpha*alpha))/alpha/alpha*TMath::Exp(-1.+(alpha-TMath::Sqrt(4.*a*a+alpha*alpha))/2./a) ;
+//printf("efit=%f, t0=%e +- %e, ped=%f \n",efit,t0,t0err,pedestal) ;
 	Double_t fmin,fedm,errdef ;
 	Int_t npari,nparx,istat;
 	gMinuit->mnstat(fmin,fedm,errdef,npari,nparx,istat) ;
-	
-	if(fmin < cnts*(efit/10.) ){ //Chi^2 of a good sample
-	  if(efit<1050.&& efit>0.){
+  
+//if(fLowGainFlag)
+// printf("LowGain \n") ;
+//else
+// printf("highGain \n") ;
+
+//printf("fmin=%e \n",fmin) ;
+//getchar() ;	
+
+	if(1){ //fmin < 3.+0.3*efit ){ //Chi^2 of a good sample
+	  if(efit>0.){
 	    fEnergy=efit ;
 	    fTime=t0 ;
 	  }
@@ -241,6 +311,8 @@ Bool_t AliPHOSRawDecoderv1::NextDigit()
 	if(fLowGainFlag)
 	  fEnergy *= fPulseGenerator->GetRawFormatHighLowGainFactor(); // *16 
 	
+        fTime*=fPulseGenerator->GetRawFormatTimeTrigger() ; 
+
 	if (fEnergy < baseLine) fEnergy = 0;
       }
       else{ //bad sample
@@ -265,6 +337,7 @@ Bool_t AliPHOSRawDecoderv1::NextDigit()
       nPed++;
     }
     fSamples->AddAt(in->GetSignal(),tLength-iBin);
+//    h->SetBinContent(tLength-iBin+1,in->GetSignal()) ;
     
   } // in.Next()
   
@@ -276,60 +349,61 @@ void AliPHOSRawDecoderv1::UnfoldingChiSquare(Int_t & /*nPar*/, Double_t * Grad, 
   // Calculates the Chi square for the samples minimization
   // Number of parameters, Gradient, Chi squared, parameters, what to do
 
-  TArrayI * samples = (TArrayI*)gMinuit->GetObjectFit() ;
+  TList * toFit= (TList*)gMinuit->GetObjectFit() ;
+  TArrayD * params=(TArrayD*)toFit->At(0) ; 
+  TArrayI * samples = (TArrayI*)toFit->At(1) ;
 
   fret = 0. ;     
   if(iflag == 2)
-    for(Int_t iparam = 0 ; iparam < 4 ; iparam++)    
+    for(Int_t iparam = 0 ; iparam < 2 ; iparam++)    
       Grad[iparam] = 0 ; // Will evaluate gradient
   
-  Int_t nSamples=samples->GetSize() ;
-  Double_t p =x[0] ;
-  Double_t t0=x[1] ;
-  Double_t en=x[2] ;
-  Double_t a =x[3] ;
+  Int_t nSamples=samples->GetSize() ; //Math::Min(70,samples->GetSize()) ;
+  Double_t t0=x[0] ;
+  Double_t en=x[1] ;
+  Double_t a=params->At(0) ;
+  Double_t alpha=params->At(1) ;
+  Double_t b=params->At(2) ;
+  Double_t beta=params->At(3) ;
   
   for(Int_t i = 0 ; i < nSamples ; i++) {
-    if(samples->At(i)==0)
+    if(samples->At(i)==0 || samples->At(i)==1023) //zero or overflow
       continue ;
     Double_t dt=i*1.-t0 ;
-    Double_t diff=samples->At(i)-Gamma2(dt,p,en,a) ;
-    Double_t w=1. ; //TMath::Ceil(TMath::Abs(samples->At(i)-ped)/10.) ;
+    Double_t diff=float(samples->At(i))-Gamma2(dt,en,params) ;
+    Double_t w=0.1+0.005*i ; //Mean Pedestal RMS + rising modulation
     //    if(w==0)w=1. ;
     diff/=w ;
     if(iflag == 2){  // calculate gradient
-      Grad[0] += -2.*diff/w ; //derivative over pedestal
       if(dt>=0.){
-	Grad[1] += -2.*en*diff*(a*dt-2.*dt)*dt*TMath::Exp(-a*dt)/w ; //derivative over t0
-	Grad[2] += -2.*diff*dt*dt*TMath::Exp(-a*dt)/w ;
-	Grad[3] +=  2.*en*diff*dt*dt*dt*TMath::Exp(-a*dt)/w ;
+	Grad[0] += -2.*en*diff*((alpha*dt*(1.+a*dt)-1.-2.*a*dt)*TMath::Exp(-alpha*dt)+
+                              b*(beta*dt*(1.+a*dt)-1.-2.*a*dt)*TMath::Exp(-beta*dt)) /w ; //derivative over t0
+	Grad[1] += -2.*diff*(dt+a*dt*dt)*(TMath::Exp(-alpha*dt)+
+                     b*TMath::Exp(-dt*beta))/w ;
       }
     }
     fret += diff*diff ;
   }
-  /*
   if(nSamples){
     fret/=nSamples ;
     if(iflag == 2){
-      for(Int_t iparam = 0 ; iparam < 4 ; iparam++)    
+      for(Int_t iparam = 0 ; iparam < 2 ; iparam++)    
 	Grad[iparam] /= nSamples ;
     }
   }
-  */
-  
   
 }
 //-----------------------------------------------------------------------------
-Double_t AliPHOSRawDecoderv1::Gamma2(Double_t dt,Double_t p,Double_t en,Double_t a){
-  //Function for fitting samples
+Double_t AliPHOSRawDecoderv1::Gamma2(Double_t dt,Double_t en,TArrayD * params){  //Function for fitting samples
   //parameters:
-  //p-pedestal
+  //dt-time after start
   //en-amplutude
-  //a-decay time
-
+  //function parameters
+  
+  Double_t ped=params->At(4) ;
   if(dt<0.)
-    return p ; //pedestal
+    return ped ; //pedestal
   else
-    return p+en*dt*dt*TMath::Exp(-dt*a) ;
+    return ped+en*(dt+params->At(0)*dt*dt)*(TMath::Exp(-dt*params->At(1))+params->At(2)*TMath::Exp(-dt*params->At(3))) ;
 }
 
