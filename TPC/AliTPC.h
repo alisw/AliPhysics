@@ -93,7 +93,7 @@ public:
    Bool_t  IsSectorActive(Int_t sec) const;    // check if the sector is active
    void    SetActiveSectors(Int_t * sectors, Int_t n);  //set active sectors
    Int_t GetHitType() const {return fHitType;}
-   void    SetActiveSectors(Int_t flag=0); //loop over al hits and set active only hitted sectors
+   void    SetActiveSectors(Int_t flag=1); //loop over al hits and set active only hitted sectors
    Bool_t  TrackInVolume(Int_t id,Int_t track);  //return true if current track is in volume
    void    SetPrimaryIonisation(Bool_t flag = kTRUE) {fPrimaryIonisation = flag;}
 // static functions
