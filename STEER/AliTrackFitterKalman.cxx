@@ -181,6 +181,7 @@ Bool_t AliTrackFitterKalman::Update(const AliTrackPoint *p, Double_t chi2) {
   v(0,0)=cov[0]+c(0,0); v(0,1)=cov[1]+c(0,1); v(0,2)=cov[2]+c(0,2);
   v(1,0)=cov[1]+c(1,0); v(1,1)=cov[3]+c(1,1); v(1,2)=cov[4]+c(1,2);
   v(2,0)=cov[2]+c(2,0); v(2,1)=cov[4]+c(2,1); v(2,2)=cov[5]+c(2,2);
+  if (TMath::Abs(v.Determinant()) < 1.e-33) return kFALSE;
   v.Invert();
 
   TMatrixD ch(5,3);
@@ -269,6 +270,7 @@ Bool_t AliTrackFitterKalman::GetPCA(const AliTrackPoint &p, AliTrackPoint &i) co
 
   TMatrixDSym tmW(tC);
   tmW+=mC;
+  if (TMath::Abs(tmW.Determinant()) < 1.e-33) return kFALSE;
   tmW.Invert();
 
   TMatrixD mW(tC,TMatrixD::kMult,tmW);
