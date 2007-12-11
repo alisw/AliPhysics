@@ -208,7 +208,7 @@ private:
     TVectorF* GetPadRMSEvent(Int_t sector, Bool_t force=kFALSE);
     TVectorF* GetPadPedestalEvent(Int_t sector, Bool_t force=kFALSE);
 
-    ClassDef(AliTPCCalibCE,2)  //Implementation of the TPC Central Electrode calibration
+    ClassDef(AliTPCCalibCE,3)  //Implementation of the TPC Central Electrode calibration
 
 };
 

@@ -1,23 +1,33 @@
 /*
+TPC DA for online calibration
+
+Contact: Haavard.Helstrup@cern.ch
+Link:
+Run Type: PEDESTAL_RUN
+DA Type: LDC
+Number of events needed: 100
+Input Files: 
+Output Files: tpcPedestal.root, to be exported to the DAQ FXS
+Trigger types used: CALIBRATION_EVENT
+
+*/
+
+
+/*
 
 TPCda_pedestal.cxx - calibration algorithm for TPC pedestal runs
 
 10/06/2007  sylvain.chapeland@cern.ch :  first version - clean skeleton based on DAQ DA case1
-19/10/2007  christian.lippmann@cern.ch :  Possibility to write output to ASCII file
-24/10/2007  christian.lippmann@cern.ch :  Including pedestal calibration for time bins
-23/11/2007  christian.lippmann@cern.ch :  Fix in order to avoid streamer problems in case of
-                                          invalid ROOTSTYS. The famous magic line provided by Rene.
-28/11/2007  christian.lippmann@cern.ch :  TPC mapping file is read from DaqDetDB
 
 contact: marian.ivanov@cern.ch
+
 
 This process reads RAW data from the files provided as command line arguments
 and save results in a file (named from RESULT_FILE define - see below).
 
 */
 
-#define RESULT_FILE  "tpcPedestal.root"
-#define MAPPING_FILE "tpcMapping.root"
+#define RESULT_FILE "tpcPedestal.root"
 
 
 extern "C" {
@@ -25,18 +35,15 @@ extern "C" {
 }
 #include "event.h"
 #include "monitor.h"
-
-#include "stdio.h"
-#include "stdlib.h"
-#include <fstream>
+#include <stdio.h>
+#include <stdlib.h>
+#include <fstream.h>
 
 //
 //Root includes
 //
-#include "TFile.h"
-#include "TArrayF.h"
-#include "TROOT.h"
-#include "TPluginManager.h"
+#include <TFile.h>
+#include <TArrayF.h>
 
 //
 //AliRoot includes
@@ -65,21 +72,16 @@ int main(int argc, char **argv) {
   //
   // Main for TPC pedestal detector algorithm
   //
-
   Bool_t timeAnalysis = kTRUE;
+
+  int i,status;
+  AliTPCCalibPedestal calibPedestal;           // pedestal and noise calibration
+  calibPedestal.SetTimeAnalysis(timeAnalysis); // pedestal(t) calibration
 
   if (argc<2) {
     printf("Wrong number of arguments\n");
     return -1;
   }
-
-  /* magic line */
-  gROOT->GetPluginManager()->AddHandler("TVirtualStreamerInfo",
-					"*",
-					"TStreamerInfo",
-					"RIO",
-					"TStreamerInfo()"); 
-  int i, status;
 
   /* log start of process */
   printf("TPC DA started - %s\n",__FILE__);
@@ -91,30 +93,6 @@ int main(int argc, char **argv) {
     return -1;
   }
 
-  /* copy locally the mapping file from daq detector config db */
-  status = daqDA_DB_getFile(MAPPING_FILE,"./tpcMapping.root");
-  if (status) {
-    printf("Failed to get mapping file (%s) from DAQdetDB, status=%d\n", MAPPING_FILE, status);
-    printf("Continue anyway ... maybe it works?\n");              // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    //return -1;   // temporarily uncommented for testing on pcald47 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  }
-
-  /* open the mapping file and retrieve mapping object */
-  AliTPCmapper *mapping = 0;   // The TPC mapping
-  TFile *fileMapping = new TFile(MAPPING_FILE, "read");
-  mapping = (AliTPCmapper*) fileMapping->Get("tpcMapping");
-  if (mapping == 0) {
-    printf("Failed to get mapping object from %s. Exiting ...\n", MAPPING_FILE);
-    delete fileMapping;
-    return -1;
-  } else {
-    printf("Got mapping object from %s\n", MAPPING_FILE);
-  }
-
-  AliTPCCalibPedestal calibPedestal;                         // pedestal and noise calibration
-  calibPedestal.SetTimeAnalysis(timeAnalysis);               // pedestal(t) calibration
-  calibPedestal.SetAltroMapping(mapping->GetAltroMapping()); // Use altro mapping we got from daqDetDb
-
   /* loop over RAW data files */
   int nevents=0;
   for ( i=1; i<argc; i++ ) {
@@ -123,8 +101,7 @@ int main(int argc, char **argv) {
     printf("Processing file %s\n", argv[i]);
     status=monitorSetDataSource( argv[i] );
     if (status!=0) {
-      printf("monitorSetDataSource() failed. Error=%s. Exiting ...\n", monitorDecodeError(status));
-      delete fileMapping;
+      printf("monitorSetDataSource() failed : %s\n",monitorDecodeError(status));
       return -1;
     }
 
@@ -151,15 +128,15 @@ int main(int argc, char **argv) {
 	continue;
 
       /* retry if got no event */
-      if (event==NULL)
+      if (event==NULL) {
 	continue;
+      }
 
       nevents++;
 
       //  Pedestal calibration
       AliRawReader *rawReader = new AliRawReaderDate((void*)event);
-      //calibPedestal.ProcessEvent(rawReader);
-      calibPedestal.ProcessEventFast(rawReader);   // fast data reader
+      calibPedestal.ProcessEvent(rawReader);
       delete rawReader;
 
       /* free resources */
@@ -167,21 +144,17 @@ int main(int argc, char **argv) {
     }
   }
 
-  //
-  // Analyse pedestals and write them to rootfile
-  //
-
-  calibPedestal.Analyse();
-  calibPedestal.AnalyseTime(nevents);
-  printf ("%d physics/calibration events processed.\n",nevents);
+  calibPedestal.Analyse(); 
+  calibPedestal.AnalyseTime(nevents); 
+  printf ("%d physics/calibration events processed\n",nevents);
 
   TFile *fileTPC = new TFile(RESULT_FILE, "recreate");
   calibPedestal.Write("calibPedestal");
   delete fileTPC;
-  printf("Wrote %s.\n",RESULT_FILE);
+  printf("Wrote %s\n",RESULT_FILE);
 
   //
-  // Now prepare ASCII files for local ALTRO configuration through DDL.
+  // Now prepare ASCII files for local ALTRO configuration through DDL
   //
 
   ofstream pedfile;
@@ -195,47 +168,45 @@ int main(int argc, char **argv) {
   sprintf(filename,"tpcPedestalMem.data");
   pedmemfile.open(filename);
 
-  TArrayF **timePed = calibPedestal.GetTimePedestals();  // pedestal values for each time bin
+  TArrayF **timePed = calibPedestal.GetTimePedestals();
+  AliTPCmapper mapping;
 
   Int_t ctr_channel = 0;
   Int_t ctr_altro = 0;
   Int_t ctr_pattern = 0;
 
-  pedfile    << 10 << std::endl; // mark file to contain PEDESTALS per channel
-  noisefile  << 11 << std::endl; // mark file to contain NOISE per altro
-  pedmemfile << 12 << std::endl; // mark file to contain PEDESTALs per time bin
+  pedfile    << 10 << std::endl; // PEDESTALS per channel
+  noisefile  << 11 << std::endl; // NOISE per altro
+  pedmemfile << 12 << std::endl; // PEDESTALs per time bin
 
   for ( Int_t roc = 0; roc < 72; roc++ ) {
     if ( !calibPedestal.GetCalRocPedestal(roc) ) continue;
-    Int_t side   = mapping->GetSideFromRoc(roc);
-    Int_t sector = mapping->GetSectorFromRoc(roc);
+    Int_t side   = mapping.GetSideFromRoc(roc);
+    Int_t sector = mapping.GetSectorFromRoc(roc);
     //printf("Analysing ROC %d (side %d, sector %d) ...\n", roc, side, sector);
-    Int_t nru = mapping->IsIROC(roc) ? 2 : 4;
+    Int_t nru = mapping.IsIROC(roc) ? 2 : 4;
     for ( int rcu = 0; rcu < nru; rcu++ ) {
-      Int_t patch = mapping->IsIROC(roc) ? rcu : rcu+2;
+      Int_t patch = mapping.IsIROC(roc) ? rcu : rcu+2;
       for ( int branch = 0; branch < 2; branch++ ) {
-	for ( int fec = 0; fec < mapping->GetNfec(patch, branch); fec++ ) {
+	for ( int fec = 0; fec < mapping.GetNfec(patch, branch); fec++ ) {
 	  for ( int altro = 0; altro < 8; altro++ ) {
 	    Float_t rms = 0.;
 	    Float_t ctr = 0.;
 	    for ( int channel = 0; channel < 16; channel++ ) {
-	      Int_t hwadd     = mapping->CodeHWAddress(branch, fec, altro, channel);
-	      Int_t row       = mapping->GetPadRow(patch, hwadd);        // row in a ROC
-	      Int_t globalrow = mapping->GetGlobalPadRow(patch, hwadd);  // row in full sector
-	      Int_t pad       = mapping->GetPad(patch, hwadd);
-	      Float_t ped     = calibPedestal.GetCalRocPedestal(roc)->GetValue(row,pad);
+	      Int_t hwadd = mapping.CodeHWAddress(branch, fec, altro, channel);
+	      Int_t row   = mapping.GetPadRow(patch, hwadd);
+	      Int_t pad   = mapping.GetPad(patch, hwadd);
+	      Float_t ped = calibPedestal.GetCalRocPedestal(roc)->GetValue(row,pad);
 	      // fixed pedestal
 	      if ( ped > 1.e-10 ) {
-		pedfile << ctr_channel << "\t" << side << "\t" << sector << "\t" << patch << "\t"
-			<< hwadd << "\t" << ped << std::endl;
+		pedfile << ctr_channel << "\t" << side << "\t" << sector << "\t" << patch << "\t" << hwadd << "\t" << ped << std::endl;
 		ctr_channel++;
 	      }
 	      // pedestal(t)
-	      if ( timePed && fabs(timePed[globalrow][pad].GetSum()) > 1e-10 ) {
-		pedmemfile << ctr_pattern << "\t" << side << "\t" << sector << "\t" << patch
-			   << "\t" << hwadd;
+	      if ( timePed && fabs(timePed[row][pad].GetSum()) > 1e-10 ) {
+		pedmemfile << ctr_pattern << "\t" << side << "\t" << sector << "\t" << patch << "\t" << hwadd;
 		for ( Int_t timebin = 0; timebin < 1024; timebin++ )
-		  pedmemfile << "\t" << timePed[globalrow][pad].At(timebin);
+		  pedmemfile << "\t" << timePed[row][pad].At(timebin);
 		pedmemfile << std::endl;
 		ctr_pattern++;
 	      }
@@ -244,10 +215,9 @@ int main(int argc, char **argv) {
 	      if ( rms2 > 1.e-10 ) { rms += rms2; ctr += 1.; }
 	    } // end channel for loop
 	    // noise data (rms) averaged over all channels in this ALTRO.
-	    Int_t hwadd = mapping->CodeHWAddress(branch, fec, altro, 0);
+	    Int_t hwadd = mapping.CodeHWAddress(branch, fec, altro, 0);
 	    if ( ctr > 1.e-10 ) {
-	      noisefile << ctr_altro << "\t" << side << "\t" << sector << "\t" << patch << "\t"
-			<< hwadd << "\t" << rms/ctr << std::endl;
+	      noisefile << ctr_altro << "\t" << side << "\t" << sector << "\t" << patch << "\t" << hwadd << "\t" << rms/ctr << std::endl;
 	      ctr_altro++;
 	    }
 	  } // end altro for loop
@@ -259,9 +229,8 @@ int main(int argc, char **argv) {
   pedfile.close();
   noisefile.close();
   pedmemfile.close();
-  printf("Wrote ASCII files.\n");
 
-  delete fileMapping;
+  printf("Wrote ASCII files\n");
 
   return status;
 }

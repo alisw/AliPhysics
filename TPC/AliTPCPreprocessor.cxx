@@ -38,13 +38,13 @@ const Int_t kDiffCutTemp = 5;	             // discard temperature differences > 
 const TString kPedestalRunType = "PEDESTAL_RUN";  // pedestal run identifier
 const TString kPulserRunType = "PULSER_RUN";   // pulser run identifier
 const TString kPhysicsRunType = "PHYSICS";   // physics run identifier
+const TString kStandAloneRunType = "STANDALONE"; // standalone run identifier
+const TString kDaqRunType = "DAQ"; // DAQ run identifier
 const TString kAmandaTemp = "tpc_PT_%d.Temperature"; // Amanda string for temperature entries
 const Double_t kFitFraction = 0.7;                 // Fraction of DCS sensor fits required              
 
 //
 // This class is the SHUTTLE preprocessor for the TPC detector.
-// It contains several components, this far the part containing
-// temperatures is implemented
 //
 
 ClassImp(AliTPCPreprocessor)
@@ -204,7 +204,8 @@ UInt_t AliTPCPreprocessor::Process(TMap* dcsAliasMap)
 
   // Central Electrode processing
 
-  if( runType == kPhysicsRunType ) {    // CE input file not generated yet
+  if( runType == kPhysicsRunType || runType == kStandAloneRunType || 
+      runType == kDaqRunType ) {    
     Int_t ceSource = AliShuttleInterface::kDAQ;
     TString source = fConfEnv->GetValue("CE","DAQ");
     source.ToUpper();

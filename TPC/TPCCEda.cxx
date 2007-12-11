@@ -1,4 +1,18 @@
 /*
+TPC DA for online calibration
+
+Contact: Haavard.Helstrup@cern.ch
+Link: 
+Run Type: PHYSICS_RUN STANDALONE DAQ
+DA Type: MON
+Number of events needed: 500
+Input Files: 
+Output Files: tpcCE.root, to be exported to the DAQ FXS
+Trigger types used: PHYSICS_EVENT
+
+*/
+
+/*
 
 TPCCEda.cxx - calibration algorithm for TPC Central Electrode events
 
@@ -13,7 +27,7 @@ and save results in a file (named from RESULT_FILE define - see below).
 
 */
 
-#define RESULT_FILE "tpcPulser.root"
+#define RESULT_FILE "tpcCE.root"
 
 
 #include <daqDA.h>
