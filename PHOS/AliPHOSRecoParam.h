@@ -25,6 +25,7 @@ public:
   Float_t GetMinE() const { return fMinE; }
   Float_t GetLogWeight() const { return fW0; }
   Bool_t  SubtractPedestals() const { return fSubtractPedestals; }
+  Bool_t  ToUnfold() const { return fUnfold; }
   const char* DecoderVersion()const{ return fDecoderVersion.Data() ; }
 
   void SetClusteringThreshold(Float_t cluth) { fClusteringThreshold=cluth; }
@@ -33,6 +34,7 @@ public:
   void SetLogWeight(Float_t w) { fW0=w; }
   void SetSubtractPedestals(Bool_t subtract) { fSubtractPedestals=subtract; } 
   void SetDecoderVersion(const char* version="v1"){fDecoderVersion=version ;}
+  void SetUnfolding(Bool_t toUnfold=kFALSE){fUnfold=toUnfold ;}
 
 protected:
 
@@ -41,6 +43,7 @@ protected:
   Float_t fMinE;
   Float_t fW0;
   Bool_t  fSubtractPedestals;
+  Bool_t  fUnfold;
   TString fDecoderVersion ;
 
   ClassDef(AliPHOSRecoParam,1)

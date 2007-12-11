@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.117  2007/10/18 08:42:05  kharlov
+ * Bad channels cleaned before clusterization
+ *
  * Revision 1.116  2007/10/01 20:24:08  kharlov
  * Memory leaks fixed
  *
@@ -466,7 +469,7 @@ void AliPHOSClusterizerv1::InitParameters()
 
   fEmcTimeGate             = 1.e-6 ; 
   
-  fToUnfold                = kTRUE ;
+  fToUnfold                = parEmc->ToUnfold() ;
     
   fWrite                   = kTRUE ;
 
