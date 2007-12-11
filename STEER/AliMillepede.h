@@ -6,7 +6,6 @@
 
 /* $Id$ */
 
-/// \ingroup rec
 /// \class AliMillepede
 /// \brief Class for detector alignment - modified C++ implementation of original
 /// millepede package
