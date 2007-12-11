@@ -670,6 +670,10 @@ Double_t *p,Double_t *cov,Bool_t updated) const {
   if (TMath::Abs(det) < kAlmost0) return 0;
 
   Double_t tmp=r00; r00=r11/det; r11=tmp/det;
+
+  if (r00 < 0.) return 0;
+  if (r11 < 0.) return 0;
+
   Double_t dy = fP[0] - p[0];
   Double_t dz = fP[1] - p[1];
 
