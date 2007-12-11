@@ -57,6 +57,9 @@ public:
   /// Mark as invalid
   void Invalidate() { fIsValid = kFALSE; }
   
+  /// Whether we should do something or not
+  Bool_t IsApplicable() { return fIsApplicable; }
+  
 protected:
   AliMUONPreprocessor(const char* detName, AliShuttleInterface* shuttle);
   virtual ~AliMUONPreprocessor();
@@ -65,7 +68,8 @@ protected:
   void ClearSubprocessors();
   
   Bool_t fIsValid; //!< whether we were correctly initialized
-
+  Bool_t fIsApplicable; //!< whether we have something to do
+  
 private:
   /// Not implemented
   AliMUONPreprocessor(const AliMUONPreprocessor& rhs);
@@ -79,7 +83,7 @@ private:
   TObjArray* fSubprocessors; //!< sub processors to execute
   Bool_t fProcessDCS; //!< whether the current subprocessor(s) needs DCS or not
 
-  ClassDef(AliMUONPreprocessor,3) // MUON Shuttle preprocessor
+  ClassDef(AliMUONPreprocessor,4) // MUON Shuttle preprocessor
 };
 
 #endif

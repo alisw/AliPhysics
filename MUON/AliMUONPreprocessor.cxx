@@ -48,6 +48,7 @@ ClassImp(AliMUONPreprocessor)
 AliMUONPreprocessor::AliMUONPreprocessor(const char* detName, AliShuttleInterface* shuttle)
 : AliPreprocessor(detName, shuttle),
   fIsValid(kFALSE),
+  fIsApplicable(kTRUE),
   fSubprocessors(new TObjArray()),
   fProcessDCS(kFALSE)
 {
@@ -69,6 +70,7 @@ AliMUONPreprocessor::ClearSubprocessors()
   fSubprocessors->Clear();
   fProcessDCS = kFALSE;
   fIsValid = kFALSE;
+  fIsApplicable = kTRUE;
 }
 
 //_____________________________________________________________________________
@@ -115,6 +117,9 @@ AliMUONPreprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTime)
     }
   }
 
+  if (! IsApplicable() ) 
+    Log(Form("WARNING-RunType=%s is not one I should handle.",GetRunType()));
+
   Log(Form("Initialize was %s",( IsValid() ? "fine" : "NOT OK")));
 }
 
@@ -128,6 +133,12 @@ AliMUONPreprocessor::Process(TMap* dcsAliasMap)
   {
     Log("Will not run as not properly initialized");
     return 99;
+  }
+  
+  if (!IsApplicable())
+  {
+    Log("Nothing to do for me");
+    return 0;
   }
   
   UInt_t rv(0);
