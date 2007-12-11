@@ -39,9 +39,6 @@
 // --- Standard library ---
 
 // --- AliRoot header files ---
-#include "AliCDBManager.h"
-#include "AliCDBMetaData.h"
-#include "AliCDBEntry.h"
 #include "AliLog.h"
 #include "AliQA.h"
 #include "AliQAChecker.h"
@@ -146,21 +143,6 @@ AliQA::~AliQA()
   // dtor  
   delete[] fQA ;
 }
-
-//_______________________________________________________________
-const Bool_t AliQA::AddQAData2CDB(const char * defSto) const 
-{
-	// loads the QA data into the OCDB
-	Bool_t rv = kTRUE ; 
-	AliCDBManager* man = AliCDBManager::Instance() ;
-	man->SetDefaultStorage(defSto) ;
-	AliCDBMetaData md ; 
-	// loop over detectors	
-	AliCDBId id("QA/Ref/PHOS",0,999999999) ;
-
-	
-	return rv ; 
-}  
 
 //_______________________________________________________________
 void AliQA::Close() 

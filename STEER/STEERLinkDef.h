@@ -134,7 +134,6 @@
 #pragma link C++ class AliFstream+;
 #pragma link C++ class AliCTPRawData+;
 
-#pragma link C++ class AliQA+;
 #pragma link C++ class AliQADataMaker+;
 #pragma link C++ class AliGlobalQADataMaker+;
 #pragma link C++ class AliQADataMakerSteer+;

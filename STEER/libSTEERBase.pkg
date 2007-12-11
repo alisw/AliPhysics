@@ -13,7 +13,8 @@ SRCS = AliVParticle.cxx \
        AliStack.cxx AliMCEventHandler.cxx AliInputEventHandler.cxx \
        AliTrackReference.cxx AliSysInfo.cxx \
        AliMCEvent.cxx AliMCParticle.cxx \
-       AliMagF.cxx				   	
+       AliMagF.cxx \
+	   AliQA.cxx		   	
 
 HDRS:= $(SRCS:.cxx=.h) 
 

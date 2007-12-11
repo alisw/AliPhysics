@@ -48,7 +48,6 @@ AliSurveyObj.cxx AliSurveyPoint.cxx \
 AliCodeTimer.cxx \
 AliFstream.cxx \
 AliCTPRawData.cxx \
-AliQA.cxx \
 AliQADataMaker.cxx \
 AliGlobalQADataMaker.cxx \
 AliQADataMakerSteer.cxx \

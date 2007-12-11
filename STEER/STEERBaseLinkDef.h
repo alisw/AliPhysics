@@ -50,4 +50,6 @@
 
 #pragma link C++ class  AliMagF+;
 
+#pragma link C++ class AliQA+;
+
 #endif

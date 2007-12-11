@@ -39,7 +39,6 @@ public:
 	static  AliQA *   Instance() ;
 	static  AliQA *   Instance(const DETECTORINDEX det) ;
 	static  AliQA *   Instance(const ALITASK tsk) ;
-	const Bool_t           AddQAData2CDB(const char * defSto) const ;
 	const Bool_t           CheckFatal() const ;
 	static void            Close() ; 
 	static const char *    GetAliTaskName(ALITASK tsk) ;
