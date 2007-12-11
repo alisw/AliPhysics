@@ -1078,20 +1078,20 @@ Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t
       fAmplitudeHisto->AddAt(sectorArray, uid[0]);
     }
     Int_t position =  uid[2]+roc->GetRowIndexes(uid[0])[uid[1]];
-    TH1F * histo = (TH1F*)sectorArray->UncheckedAt(position);
-    if (!histo){
-      char hname[100];
-      sprintf(hname,"Amp_%d_%d_%d",uid[0],uid[1],uid[2]);
-      TFile * backup = gFile;
-      fDebugStreamer->GetFile()->cd();
-      histo = new TH1F(hname, hname, 100, 5,100);
-      //histo->SetDirectory(0);     // histogram not connected to directory -(File)
-      sectorArray->AddAt(histo, position);
-      if (backup) backup->cd();
-    }
-    for (Int_t i=0; i<nchannels; i++){
-      histo->Fill(signal[i]);
-    }
+    // TH1F * histo = (TH1F*)sectorArray->UncheckedAt(position);
+//     if (!histo){
+//       char hname[100];
+//       sprintf(hname,"Amp_%d_%d_%d",uid[0],uid[1],uid[2]);
+//       TFile * backup = gFile;
+//       fDebugStreamer->GetFile()->cd();
+//       histo = new TH1F(hname, hname, 100, 5,100);
+//       //histo->SetDirectory(0);     // histogram not connected to directory -(File)
+//       sectorArray->AddAt(histo, position);
+//       if (backup) backup->cd();
+//     }
+//     for (Int_t i=0; i<nchannels; i++){
+//       histo->Fill(signal[i]);
+//     }
   }
   //
   //
