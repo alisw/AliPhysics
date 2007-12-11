@@ -36,6 +36,7 @@ public:
   Int_t GetColumn() { return fColumn; }
   Int_t GetRow() { return fRow; }
   Bool_t IsLowGain() { return fLowGainFlag; }
+  Bool_t IsOverflow(){ return fOverflow ;}
 
   const AliRawReader* GetRawReader() const { return fRawReader; }
 
@@ -52,7 +53,10 @@ protected:
   Int_t fColumn;    // column in the module
   Int_t fRow;       // row
   Bool_t fLowGainFlag;
-  TArrayI* fSamples;// array of samples
+  Bool_t fOverflow ;   //Wether there was overflow
+  TArrayI* fSamples;   // array of samples
+  TArrayI* fTimes ;    // array of times corresponding to samples
+
   AliPHOSPulseGenerator* fPulseGenerator; // ALTRO pulse simulator
   
   ClassDef(AliPHOSRawDecoder,1)

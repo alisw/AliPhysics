@@ -48,14 +48,16 @@ ClassImp(AliPHOSRawDecoder)
 
 //-----------------------------------------------------------------------------
 AliPHOSRawDecoder::AliPHOSRawDecoder():
-  fRawReader(0),fCaloStream(0),fPedSubtract(kFALSE),fEnergy(-111),fTime(-111),fModule(-1),fColumn(-1),fRow(-1),fLowGainFlag(kFALSE),fSamples(0),fPulseGenerator(0)
+  fRawReader(0),fCaloStream(0),fPedSubtract(kFALSE),fEnergy(-111),fTime(-111),fModule(-1),fColumn(-1),fRow(-1),
+  fLowGainFlag(kFALSE),fOverflow(kFALSE),fSamples(0),fTimes(0),fPulseGenerator(0)
 {
   //Default constructor.
 }
 
 //-----------------------------------------------------------------------------
 AliPHOSRawDecoder::AliPHOSRawDecoder(AliRawReader* rawReader,  AliAltroMapping **mapping):
-  fRawReader(0),fCaloStream(0),fPedSubtract(kFALSE),fEnergy(-111),fTime(-111),fModule(-1),fColumn(-1),fRow(-1),fLowGainFlag(kFALSE),fSamples(0),fPulseGenerator(0)
+  fRawReader(0),fCaloStream(0),fPedSubtract(kFALSE),fEnergy(-111),fTime(-111),fModule(-1),fColumn(-1),fRow(-1),
+  fLowGainFlag(kFALSE),fOverflow(kFALSE),fSamples(0),fTimes(0),fPulseGenerator(0)
 {
   //Construct a decoder object.
   //Is is user responsibility to provide next raw event 
@@ -65,6 +67,7 @@ AliPHOSRawDecoder::AliPHOSRawDecoder(AliRawReader* rawReader,  AliAltroMapping *
   fCaloStream = new AliCaloRawStream(rawReader,"PHOS",mapping);
   fCaloStream->SetOldRCUFormat(kFALSE);
   fSamples = new TArrayI(100);
+  fTimes = new TArrayI(100);
   fPulseGenerator = new AliPHOSPulseGenerator();
 }
 
@@ -73,9 +76,10 @@ AliPHOSRawDecoder::~AliPHOSRawDecoder()
 {
   //Destructor.
 
-  if(fCaloStream) delete fCaloStream;
-  if(fSamples) delete fSamples;
-  if(fPulseGenerator) delete fPulseGenerator;
+  if(fCaloStream){ delete fCaloStream; fCaloStream=0;}
+  if(fSamples){ delete fSamples; fSamples=0 ;}
+  if(fTimes){ delete fTimes; fTimes=0 ;}
+  if(fPulseGenerator){ delete fPulseGenerator; fPulseGenerator=0 ;}
 }
 
 //-----------------------------------------------------------------------------
@@ -85,8 +89,8 @@ AliPHOSRawDecoder::AliPHOSRawDecoder(const AliPHOSRawDecoder &phosDecoder ):
   fEnergy(phosDecoder.fEnergy),fTime(phosDecoder.fTime),
   fModule(phosDecoder.fModule),fColumn(phosDecoder.fColumn),
   fRow(phosDecoder.fRow),fLowGainFlag(phosDecoder.fLowGainFlag),
-  fSamples(phosDecoder.fSamples),
-  fPulseGenerator(phosDecoder.fPulseGenerator)
+  fOverflow(phosDecoder.fOverflow),fSamples(phosDecoder.fSamples),
+  fTimes(phosDecoder.fTimes),fPulseGenerator(phosDecoder.fPulseGenerator)
 {
   //Copy constructor.
 }
@@ -108,9 +112,13 @@ AliPHOSRawDecoder& AliPHOSRawDecoder::operator = (const AliPHOSRawDecoder &phosD
     fColumn = phosDecode.fColumn;
     fRow = phosDecode.fRow;
     fLowGainFlag = phosDecode.fLowGainFlag;
+    fOverflow = phosDecode.fOverflow ;
     
     if(fSamples) delete fSamples;
     fSamples = phosDecode.fSamples;
+
+    if(fTimes) delete fTimes;
+    fTimes = phosDecode.fTimes;
 
     if(fPulseGenerator) delete fPulseGenerator;
     fPulseGenerator = phosDecode.fPulseGenerator;
@@ -136,10 +144,10 @@ Bool_t AliPHOSRawDecoder::NextDigit()
   Float_t pedMean = 0;
   Int_t   nPed = 0;
   Float_t baseLine = 1.0;
-  const Float_t nPreSamples = 10;
+  const Int_t nPreSamples = 10;
   
   fSamples->Reset();
-   while ( in->Next() ) { 
+  while ( in->Next() ) { 
 
      if(!tLength) {
        tLength = in->GetTimeLength();
@@ -179,14 +187,13 @@ Bool_t AliPHOSRawDecoder::NextDigit()
      fRow    = in->GetRow()   +1;
      fColumn = in->GetColumn()+1;
 
-     // Fill array with samples
-     iBin++;                                                             
-     if(tLength-iBin < nPreSamples) {
+     //Calculate pedestal if necessary
+     if(fPedSubtract && in->GetTime() < nPreSamples) {
        pedMean += in->GetSignal();
        nPed++;
      }
-     fSamples->AddAt(in->GetSignal(),tLength-iBin);
      if((Double_t)in->GetSignal() > fEnergy) fEnergy = (Double_t)in->GetSignal();
+     iBin++ ;
      
    } // in.Next()
    
