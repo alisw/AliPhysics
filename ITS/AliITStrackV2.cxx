@@ -446,8 +446,7 @@ GetPhiZat(Double_t r, Double_t &phi, Double_t &z) const {
   Double_t phicurr=GetAlpha()+TMath::ASin(GetSnp());
 
   phi=phicurr+TMath::ASin(d/r)-TMath::ASin(d/rcurr);
-  z=GetZ()+GetTgl()*(TMath::Sqrt(r*r-d*d) - TMath::Sqrt(rcurr*rcurr-d*d));
-
+  z=GetZ()+GetTgl()*(TMath::Sqrt((r-d)*(r+d))-TMath::Sqrt((rcurr-d)*(rcurr+d)));
   return kTRUE;
 }
 //____________________________________________________________________________
