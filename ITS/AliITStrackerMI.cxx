@@ -3435,8 +3435,13 @@ Int_t AliITStrackerMI::UpdateMI(AliITStrackMI* track, const AliITSRecPoint* cl,D
   Double_t x=track->GetX()+cl->GetX();
   if (!track->PropagateTo(x,0.,0.)) return 0;
   
-  return track->UpdateMI(cl->GetY(),cl->GetZ(),track->GetSigmaY(layer),track->GetSigmaZ(layer),chi2,index);
+  AliCluster c(*cl);
+  c.SetSigmaY2(track->GetSigmaY(layer)*track->GetSigmaY(layer));
+  c.SetSigmaZ2(track->GetSigmaZ(layer)*track->GetSigmaZ(layer));
+
+  return track->UpdateMI(&c,chi2,index);
 }
+
 //------------------------------------------------------------------------
 void AliITStrackerMI::GetDCASigma(AliITStrackMI* track, Float_t & sigmarfi, Float_t &sigmaz)
 {

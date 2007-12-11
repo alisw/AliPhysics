@@ -188,33 +188,18 @@ Int_t AliITStrackMI::CorrectForMaterial(Double_t d, Double_t x0) {
 }
 
 //____________________________________________________________________________
-Bool_t AliITStrackMI::UpdateMI(Double_t cy, Double_t cz, Double_t cerry, Double_t cerrz, Double_t chi2, Int_t index) {
+Bool_t AliITStrackMI::UpdateMI(const AliCluster *c, Double_t chi2, Int_t index) {
   //------------------------------------------------------------------
   //This function updates track parameters
   //------------------------------------------------------------------
-  Double_t dy=cy - GetY(), dz=cz - GetZ();
+  Double_t dy=c->GetY() - GetY(), dz=c->GetZ() - GetZ();
   Int_t layer = (index & 0xf0000000) >> 28;
   fDy[layer] = dy;
   fDz[layer] = dz;
-  fSigmaY[layer] = TMath::Sqrt(cerry*cerry+GetSigmaY2());
-  fSigmaZ[layer] = TMath::Sqrt(cerrz*cerrz+GetSigmaZ2());
+  fSigmaY[layer] = TMath::Sqrt(c->GetSigmaY2()+GetSigmaY2());
+  fSigmaZ[layer] = TMath::Sqrt(c->GetSigmaZ2()+GetSigmaZ2());
 
-  Double_t p[2]={cy, cz};
-  Double_t cov[3]={cerry*cerry, 0., cerrz*cerrz};
-  if (!AliExternalTrackParam::Update(p,cov)) return kFALSE;
-
-  if (!Invariant()) {
-     AliWarning("Wrong invariant !");
-     return kFALSE;
-  }
-
-  if (chi2<0) return 1;
-  Int_t n=GetNumberOfClusters();
-  fIndex[n]=index;
-  SetNumberOfClusters(n+1);
-  SetChi2(GetChi2()+chi2);
-
-  return kTRUE;
+  return Update(c,chi2,index);
 }
 
 Int_t AliITStrackMI::GetProlongationFast(Double_t alp, Double_t xk,Double_t &y, Double_t &z)
