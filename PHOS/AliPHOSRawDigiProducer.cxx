@@ -59,7 +59,11 @@ void AliPHOSRawDigiProducer::MakeDigits(TClonesArray *digits, AliPHOSRawDecoder*
 
   while (decoder->NextDigit()) {
 
-    if (decoder->GetEnergy() <= 0.) continue;
+    if (decoder->GetEnergy() <= 0.) 
+       continue;
+
+    if(decoder->IsOverflow())
+       continue ; 
 
     lowGainFlag = decoder->IsLowGain();
     time = decoder->GetTime();
@@ -72,13 +76,18 @@ void AliPHOSRawDigiProducer::MakeDigits(TClonesArray *digits, AliPHOSRawDecoder*
 
     // Add low gain digit only
     //if the high gain digit does not exist in the digits array
+    //or has negative energy (overflow)
 
     seen = kFALSE;
 
     if(lowGainFlag) {
       for (iOldDigit=iDigit-1; iOldDigit>=0; iOldDigit--) {
-        if ((dynamic_cast<AliPHOSDigit*>(digits->At(iOldDigit)))->GetId() == absId) {
+        AliPHOSDigit * dig = dynamic_cast<AliPHOSDigit*>(digits->At(iOldDigit)) ;
+        if (dig->GetId() == absId) {
           seen = kTRUE;
+//          //if High Gain overflowed - replace energy
+//          if(dig->GetEnergy()<0)
+//            dig->SetEnergy((Float_t)decoder->GetEnergy()) ;
           break;
         }
       }
@@ -87,16 +96,17 @@ void AliPHOSRawDigiProducer::MakeDigits(TClonesArray *digits, AliPHOSRawDecoder*
         iDigit++;
       }
     }
-
     // Add high gain digit only if it is not saturated;
     // replace low gain digit by a high gain one
     else {
-      if (decoder->GetEnergy() >= 1023) continue;
       for (iOldDigit=iDigit-1; iOldDigit>=0; iOldDigit--) {
 	AliPHOSDigit * dig = dynamic_cast<AliPHOSDigit*>(digits->At(iOldDigit)) ;
         if (dig->GetId() == absId) {
-	  dig->SetEnergy((Float_t)decoder->GetEnergy()) ;
-	  dig->SetTime(time) ;
+	  dig->SetTime(time) ; //Replace time in any case
+          dig->SetEnergy((Float_t)decoder->GetEnergy()) ;
+//          if (decoder->GetEnergy() > 0){ //replace Energy only if not saturated 
+//	    dig->SetEnergy((Float_t)decoder->GetEnergy()) ;
+//          }
           seen = kTRUE;
           break;
         }
