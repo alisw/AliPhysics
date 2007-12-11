@@ -16,6 +16,7 @@ SRCS          =  AliPHOS.cxx \
 		 AliPHOSPulseGenerator.cxx \
 		 AliPHOSRawDecoder.cxx \
 		 AliPHOSRawDecoderv1.cxx \
+		 AliPHOSRawDecoderv2.cxx \
 		 AliPHOSRawDigiProducer.cxx \
 		 AliPHOSEmcBadChannelsMap.cxx \
 		 AliPHOSSurvey.cxx \

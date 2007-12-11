@@ -48,6 +48,7 @@
 #include "AliPHOSRecParticle.h"
 #include "AliPHOSRawDecoder.h"
 #include "AliPHOSRawDecoderv1.h"
+#include "AliPHOSRawDecoderv2.h"
 #include "AliPHOSRawDigiProducer.h"
 #include "AliPHOSPulseGenerator.h"
 
@@ -232,8 +233,8 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   for (Int_t idig = 0 ; idig < nDigits ; idig++) {
     const AliPHOSDigit * dig = (const AliPHOSDigit*)digitsArray->At(idig);
     if(dig->GetId() <= knEMC && dig->GetEnergy() > 0 ){
-      // printf("i %d; id %d; amp %f; time %f\n",
-      // idignew,dig->GetId(),dig->GetEnergy(), dig->GetTime());
+      //printf("i %d; id %d; amp %f; time %e\n",
+      //idignew,dig->GetId(),dig->GetEnergy(), dig->GetTime());
       phsCells.SetCell(idignew,dig->GetId(), dig->GetEnergy(), dig->GetTime());   
       idignew++;
     }
@@ -354,8 +355,11 @@ void  AliPHOSReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
 
   if(strcmp(fgkRecoParamEmc->DecoderVersion(),"v1")==0) 
     dc=new AliPHOSRawDecoderv1(rawReader,mapping);
-  else
-    dc=new AliPHOSRawDecoder(rawReader,mapping);
+  else 
+    if(strcmp(fgkRecoParamEmc->DecoderVersion(),"v2")==0) 
+      dc=new AliPHOSRawDecoderv2(rawReader,mapping);
+    else
+      dc=new AliPHOSRawDecoder(rawReader,mapping);
 
   TString option = GetOption();
   if (option.Contains("OldRCUFormat"))
@@ -376,18 +380,9 @@ void  AliPHOSReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
   delete dc ;
 
   //ADC counts -> GeV
-  if(strcmp(fgkRecoParamEmc->DecoderVersion(),"v1")==0){ //"Energy" calculated as fit
-    for(Int_t i=0; i<digits->GetEntries(); i++) {
-      AliPHOSDigit* digit = (AliPHOSDigit*)digits->At(i);
-      digit->SetEnergy(digit->GetEnergy()*0.005); //We assume here 5 MeV/ADC channel
-      digit->SetTime(digit->GetTime()*1.e-7) ;    //Here we assume sample step==100 ns TO BE FIXED!!!!!!!!!!!!!
-    }
-  }
-  else{ //Digits energy calculated as maximal energy
-    for(Int_t i=0; i<digits->GetEntries(); i++) {
-      AliPHOSDigit* digit = (AliPHOSDigit*)digits->At(i);
-      digit->SetEnergy(digit->GetEnergy()/AliPHOSPulseGenerator::GeV2ADC());
-    }
+  for(Int_t i=0; i<digits->GetEntries(); i++) {
+    AliPHOSDigit* digit = (AliPHOSDigit*)digits->At(i);
+    digit->SetEnergy(digit->GetEnergy()/AliPHOSPulseGenerator::GeV2ADC());
   }
   
   // Clean up digits below the noise threshold
