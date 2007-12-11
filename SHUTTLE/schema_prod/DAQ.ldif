@@ -4,7 +4,7 @@ objectClass: top
 objectClass: fxsConfig
 system: DAQ
 dbHost: aldaqgw01-gpn.cern.ch
-dbPort: 1443
+dbPort: 1444
 dbPasswd: alice
 dbUser: shuttle
 dbName: FES
