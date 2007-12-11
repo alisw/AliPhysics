@@ -1,3 +1,14 @@
+/*
+- Contact: - prino@to.infn.it
+- Link: -
+- Run Type: -
+- DA Type: - LDC
+- Number of events needed: 100
+- Input Files: - SDDbase_step1_mod*_sid*.data
+- Output Files: - SDDbase_mod*_sid*.data
+- Trigger types used: 
+*/
+
 //////////////////////////////////////////////////////////////////////////////
 // Detector Algorithm for analysis of SDD test pulse runs.                  //
 //                                                                          //
@@ -31,6 +42,8 @@ extern "C" {
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TSystem.h>
+#include <TROOT.h>
+#include <TPluginManager.h>
 
 // AliRoot includes
 #include "AliRawReaderDate.h"
@@ -43,6 +56,12 @@ int main(int argc, char **argv) {
 
   int status = 0;
 
+  // line added to solve IO problems
+  gROOT->GetPluginManager()->AddHandler("TVirtualStreamerInfo",
+                                        "*",
+                                        "TStreamerInfo",
+                                        "RIO",
+                                        "TStreamerInfo()");
 
   /* log start of process */
   printf("ITS SDD TP algorithm program started\n");  
@@ -131,7 +150,6 @@ int main(int argc, char **argv) {
       case PHYSICS_EVENT: // uncomment this line for test raw data
 	printf(" event number = %i \n",iev);
 	AliRawReader *rawReader = new AliRawReaderDate((void*)event);
-	rawReader->RequireHeader(kFALSE);
 	rawReader->SelectEquipment(17,eqOffset+1,eqOffset+DDLrange);
 
 	Int_t evtyp=0;
