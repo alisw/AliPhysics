@@ -41,7 +41,8 @@ const TString kPhysicsRunType = "PHYSICS";   // physics run identifier
 const TString kStandAloneRunType = "STANDALONE"; // standalone run identifier
 const TString kDaqRunType = "DAQ"; // DAQ run identifier
 const TString kAmandaTemp = "tpc_PT_%d.Temperature"; // Amanda string for temperature entries
-const Double_t kFitFraction = 0.7;                 // Fraction of DCS sensor fits required              
+//const Double_t kFitFraction = 0.7;                 // Fraction of DCS sensor fits required              
+const Double_t kFitFraction = 0;          // Don't require minimum number of fits in commissioning run 
 
 //
 // This class is the SHUTTLE preprocessor for the TPC detector.
