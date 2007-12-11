@@ -12,13 +12,20 @@
 //  Author: Diego Stocco
 
 #include <TObject.h>
+#include <TMatrixD.h>
+#include <TArrayI.h>
+#include <TArrayF.h>
+#include <TH3.h>
 
 class AliMUONVTrackStore;
 class AliMUONVTriggerStore;
+class AliMUONVTriggerTrackStore;
 class AliMUONTrackParam;
 class AliMUONDigitMaker;
 class AliMUONGeometryTransformer;
 class AliMUONVDigitStore;
+class AliMUONTriggerTrack;
+class AliMUONTrack;
 
 class AliMUONTrackHitPattern : public TObject 
 {
@@ -27,33 +34,96 @@ public:
   AliMUONTrackHitPattern(const AliMUONGeometryTransformer& transformer,
                          const AliMUONDigitMaker& digitMaker);
   virtual ~AliMUONTrackHitPattern(); // Destructor
-    
-    void GetHitPattern(AliMUONVTrackStore& trackStore,
-                       const AliMUONVTriggerStore& triggerStore) const;
-    
-    void FindPadMatchingTrack(AliMUONVDigitStore& digitStore,
-                              const AliMUONTrackParam& trackParam,
-                              Bool_t isMatch[2], Int_t iChamber) const;
 
-    Float_t MinDistanceFromPad(Float_t xPad, Float_t yPad, Float_t zPad,
-                               Float_t dpx, Float_t dpy, 
-                               const AliMUONTrackParam& trackParam) const;
+  void ExecuteValidation(AliMUONVTrackStore& trackStore,
+			 const AliMUONVTriggerTrackStore& triggerTrackStore,
+			 const AliMUONVTriggerStore& triggerStore) const;
+  
+  AliMUONTriggerTrack* MatchTriggerTrack(AliMUONTrack* track,
+					 AliMUONTrackParam& trackParam,
+					 const AliMUONVTriggerTrackStore& triggerTrackStore,
+					 const AliMUONVTriggerStore& triggerStore) const;
     
-    void ApplyMCSCorrections(AliMUONTrackParam& trackParam) const;
+  UShort_t GetHitPattern(AliMUONTrackParam& trackParam,
+			 AliMUONTriggerTrack* matchedTriggerTrack,
+			 AliMUONVDigitStore& digitStore) const;
 
-    Bool_t TriggerDigits(const AliMUONVTriggerStore& triggerStore, 
-                         AliMUONVDigitStore& digitStore) const;
+  void UpdateQA() const;
+
+protected:
+  void ApplyMCSCorrections(AliMUONTrackParam& trackParam) const;
+  
+  Bool_t TriggerDigits(const AliMUONVTriggerStore& triggerStore, 
+		       AliMUONVDigitStore& digitStore) const;
+
+  void InitMembers();
+  
+  void SetBit(UShort_t& pattern, Int_t cathode, Int_t chamber) const;
+  
+  void AddEffInfo(UShort_t& pattern, Int_t slat, Int_t effType) const;
+  
+
+  // Methods for hit pattern from tracker track
+  void FindPadMatchingTrack(AliMUONVDigitStore& digitStore,
+			    const AliMUONTrackParam& trackParam,
+			    Bool_t isMatch[2], Int_t iChamber) const;
+
+  Float_t MinDistanceFromPad(Float_t xPad, Float_t yPad, Float_t zPad,
+			     Float_t dpx, Float_t dpy, 
+			     const AliMUONTrackParam& trackParam) const;
+
+  // Methods for hit pattern from matched trigger track
+  Bool_t PerformTrigTrackMatch(UShort_t &pattern,
+			       AliMUONTriggerTrack *matchedTrigTrack,
+			       AliMUONVDigitStore& digitStore) const;
+  
+  Int_t FindPadMatchingTrig(AliMUONVDigitStore& digitStore, Int_t &detElemId, Float_t coor[2],
+			    Bool_t isMatch[2], TArrayI nboard[2],
+			    TArrayF &zRealMatch, Float_t y11) const;
+  
+  Float_t PadMatchTrack(Float_t xPad, Float_t yPad, Float_t dpx, Float_t dpy,
+			Float_t xTrackAtPad, Float_t yTrackAtPad) const;
+  
+  Int_t DetElemIdFromPos(Float_t x, Float_t y, Int_t chamber, Int_t cathode) const;
+  
+  void LocalBoardFromPos(Float_t x, Float_t y, Int_t detElemId,
+			 Int_t cathode, Int_t localBoard[4]) const;
 
 private:
-    /// Not implemented
-    AliMUONTrackHitPattern(const AliMUONTrackHitPattern& rhs);
-    /// Not implemented
-    AliMUONTrackHitPattern& operator = (const AliMUONTrackHitPattern& rhs);
+  /// Not implemented
+  AliMUONTrackHitPattern(const AliMUONTrackHitPattern& rhs);
+  /// Not implemented
+  AliMUONTrackHitPattern& operator = (const AliMUONTrackHitPattern& rhs);
 
-    const AliMUONGeometryTransformer& fTransformer; //!< geometry transformer
-    const AliMUONDigitMaker& fDigitMaker; ///< pointer to digit maker
+  void CheckConstants() const;
+  /// Get max number of strips along x
+  Int_t GetMaxX(Int_t cath) const {return (cath==0) ? 7 : 112;}
+  /// Get max number of strips along x
+  Int_t GetMaxY(Int_t cath) const {return (cath==0) ? 64 : 1;}
 
-    ClassDef(AliMUONTrackHitPattern, 0) // MUON track hit pattern
+  const AliMUONGeometryTransformer& fTransformer; //!< geometry transformer
+  const AliMUONDigitMaker& fDigitMaker; //!< pointer to digit maker
+
+  Double_t fDeltaZ; //!< distance between stations
+
+  TMatrixD* fTrigCovariance; //!< Covariance matrix 3x3 (X,Y,slopeY) for trigger tracks
+
+  const Float_t fkMaxDistance; //!< Maximum distance for reference
+  static const Int_t fgkNcathodes=2; //!<Number of cathodes
+  static const Int_t fgkNchambers=4; //!<Number of chambers
+  static const Int_t fgkNplanes=8;   //!<Number of planes
+  static const Int_t fgkNlocations=4; //!<Number of locations
+
+  enum {
+    kNoEff,
+    kChEff,
+    kSlatEff,
+    kBoardEff
+  };
+
+  TH3F *fPadFired[fgkNcathodes]; ///< Histo counting the fired pads
+
+  ClassDef(AliMUONTrackHitPattern, 0) // MUON track hit pattern
 };
 
 #endif

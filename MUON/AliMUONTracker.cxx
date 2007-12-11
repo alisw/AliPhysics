@@ -44,7 +44,6 @@
 #include "AliMUONTrackReconstructor.h"
 #include "AliMUONTrackReconstructorK.h"
 #include "AliMUONTrackStoreV1.h"
-#include "AliMUONTriggerChamberEff.h"
 #include "AliMUONTriggerTrackStoreV1.h"
 #include "AliMUONClusterStoreV2.h"
 #include "AliMUONVTriggerStore.h"
@@ -68,13 +67,11 @@ ClassImp(AliMUONTracker)
 AliMUONTracker::AliMUONTracker(AliMUONVClusterServer& clusterServer,
                                const AliMUONDigitMaker* digitMaker,
                                const AliMUONGeometryTransformer* transformer,
-                               const AliMUONTriggerCircuit* triggerCircuit,
-                               AliMUONTriggerChamberEff* chamberEff)
+                               const AliMUONTriggerCircuit* triggerCircuit)
 : AliTracker(),
   fDigitMaker(digitMaker), // not owner
   fTransformer(transformer), // not owner
   fTriggerCircuit(triggerCircuit), // not owner
-  fTrigChamberEff(chamberEff), // not owner
   fTrackHitPatternMaker(0x0),
   fTrackReco(0x0),
   fClusterStore(0x0),
@@ -175,13 +172,6 @@ Int_t AliMUONTracker::Clusters2Tracks(AliESDEvent* esd)
   // Match tracker/trigger tracks
   if ( triggerTrackStore && fTrackHitPatternMaker ) {
     fTrackReco->ValidateTracksWithTrigger(*trackStore,*triggerTrackStore,*fTriggerStore,*fTrackHitPatternMaker);
-  }
-  
-  // Compute trigger chamber efficiency
-  if( triggerTrackStore && fTrigChamberEff){
-      AliCodeTimerStart("EventChamberEff");
-      fTrigChamberEff->EventChamberEff(*fTriggerStore,*triggerTrackStore,*trackStore);
-      AliCodeTimerStop("EventChamberEff");
   }
   
   // Fill ESD

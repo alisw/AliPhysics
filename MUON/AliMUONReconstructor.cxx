@@ -90,7 +90,6 @@
 #include "AliMUONRecoParam.h"
 #include "AliMUONSimpleClusterServer.h"
 #include "AliMUONTracker.h"
-#include "AliMUONTriggerChamberEff.h"
 #include "AliMUONTriggerCircuit.h"
 #include "AliMUONTriggerCrateStore.h"
 #include "AliMUONTriggerStoreV1.h"
@@ -132,8 +131,7 @@ fCalibrationData(0x0),
 fDigitCalibrator(0x0),
 fClusterServer(0x0),
 fTriggerStore(0x0),
-fTrackStore(0x0),
-fTrigChamberEff(0x0)
+fTrackStore(0x0)
 {
   /// normal ctor
 
@@ -161,7 +159,6 @@ AliMUONReconstructor::~AliMUONReconstructor()
   delete fClusterServer;
   delete fTriggerStore;
   delete fTrackStore;
-  delete fTrigChamberEff;
 }
 
 //_____________________________________________________________________________
@@ -295,19 +292,6 @@ AliMUONReconstructor::CreateTriggerCircuit() const
 }
 
 //_____________________________________________________________________________
-void
-AliMUONReconstructor::CreateTriggerChamberEff() const
-{
-  /// Create (and create if necessary) the trigger chamber efficiency class
-  if (fTrigChamberEff) return;
-
-  AliCodeTimerAuto("")
-
-  fTrigChamberEff = new AliMUONTriggerChamberEff(fTransformer,fDigitMaker,kTRUE);
-  //fTrigChamberEff->SetDebugLevel(1);
-}
-
-//_____________________________________________________________________________
 AliTracker* 
 AliMUONReconstructor::CreateTracker() const
 {
@@ -315,7 +299,6 @@ AliMUONReconstructor::CreateTracker() const
   
   CreateTriggerCircuit();
   CreateDigitMaker();
-  CreateTriggerChamberEff();
   CreateClusterServer();
   
   if (!fClusterServer) 
@@ -329,8 +312,7 @@ AliMUONReconstructor::CreateTracker() const
   AliMUONTracker* tracker = new AliMUONTracker(*fClusterServer,
                                                fDigitMaker,
                                                fTransformer,
-                                               fTriggerCircuit,
-                                               fTrigChamberEff);
+                                               fTriggerCircuit);
   
   return tracker;
 }

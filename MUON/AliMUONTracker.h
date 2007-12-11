@@ -17,7 +17,6 @@ class AliESDEvent;
 class AliMUONDigitMaker;
 class AliMUONGeometryTransformer;
 class AliMUONTrackHitPattern;
-class AliMUONTriggerChamberEff;
 class AliMUONTriggerCircuit;
 class AliMUONVClusterStore;
 class AliMUONVTrackReconstructor;
@@ -32,8 +31,7 @@ class AliMUONTracker : public AliTracker
   AliMUONTracker(AliMUONVClusterServer& clusterServer,
                  const AliMUONDigitMaker* digitMaker=0,
                  const AliMUONGeometryTransformer* transformer=0,
-                 const AliMUONTriggerCircuit* triggerCircuit=0,
-                 AliMUONTriggerChamberEff* chamberEff=0);
+                 const AliMUONTriggerCircuit* triggerCircuit=0);
   virtual ~AliMUONTracker();
   
   virtual Int_t Clusters2Tracks(AliESDEvent* esd);
@@ -65,7 +63,6 @@ private:
   const AliMUONDigitMaker* fDigitMaker; //!< digit maker (not owner)
   const AliMUONGeometryTransformer* fTransformer; //!< geometry transformer (not owner)
   const AliMUONTriggerCircuit* fTriggerCircuit; //!< trigger circuit (not owner)
-  AliMUONTriggerChamberEff* fTrigChamberEff; //!< trigger efficiency (not owner)
   AliMUONTrackHitPattern* fTrackHitPatternMaker; //!< trigger hit pattern maker
   AliMUONVTrackReconstructor* fTrackReco; //!< track reconstructor
   mutable AliMUONVClusterStore* fClusterStore; //!< cluster container

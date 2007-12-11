@@ -27,7 +27,6 @@ SRCS:= AliMUONReconstructor.cxx \
        AliMUONPadStatusMaker.cxx \
        AliMUONPadStatusMapMaker.cxx \
        AliMUONTrackHitPattern.cxx \
-       AliMUONTriggerChamberEff.cxx \
        AliMUONVClusterStore.cxx \
        AliMUONClusterStoreV1.cxx \
        AliMUONClusterStoreV2.cxx \

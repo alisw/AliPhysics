@@ -33,8 +33,6 @@ class AliMUONCalibrationData;
 class AliMUONTracker;
 class AliMUONVTrackStore;
 
-class AliMUONTriggerChamberEff;
-
 class AliMUONRecoParam;
 
 class AliMUONVClusterFinder;
@@ -75,7 +73,6 @@ private:
   void CreateDigitMaker() const;
   void CreateTriggerCircuit() const;
   void CreateClusterServer() const;
-  void CreateTriggerChamberEff() const;
   void FillTreeR(AliMUONVTriggerStore* triggerStore,
                  TTree& clustersTree) const;
   
@@ -93,11 +90,10 @@ private:
   mutable AliMUONVClusterServer* fClusterServer; //!<  Clusterizer
   mutable AliMUONVTriggerStore* fTriggerStore; //!< Trigger container
   mutable AliMUONVTrackStore* fTrackStore; //!< Track container
-  mutable AliMUONTriggerChamberEff* fTrigChamberEff; //!< pointer to trigger chamber efficiency class
   
   static AliMUONRecoParam* fgRecoParam; //!< parameters used to tune the MUON reconstruction
   
-  ClassDef(AliMUONReconstructor,4) // Implementation of AliReconstructor
+  ClassDef(AliMUONReconstructor,5) // Implementation of AliReconstructor
 };
 
 #endif
