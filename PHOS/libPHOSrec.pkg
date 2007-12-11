@@ -15,7 +15,8 @@ SRCS          =  \
 		 AliPHOSTracker.cxx \
 		 AliPHOSRecoParam.cxx \
 		 AliPHOSRecoParamEmc.cxx \
-		 AliPHOSRecoParamCpv.cxx
+		 AliPHOSRecoParamCpv.cxx \
+		 AliPHOSEsdCluster.cxx
                 
            
 HDRS:= $(SRCS:.cxx=.h) 
