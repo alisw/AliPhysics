@@ -86,6 +86,8 @@ int main(int argc, char **argv) {
   /* log start of process */
   printf("TPC Pulser DA started - %s\n",__FILE__);
 
+  /* set time bin range */
+  calibPulser.SetRangeTime(60,120);
 
   /* declare monitoring program */
   status=monitorDeclareMp( __FILE__ );

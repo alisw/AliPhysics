@@ -87,6 +87,10 @@ int main(int argc, char **argv) {
   printf("TPC CE DA started - %s\n",__FILE__);
 
 
+  /* set time bin range */
+  calibCE.SetRangeTime(800,940);
+
+
   /* declare monitoring program */
   status=monitorDeclareMp( __FILE__ );
   if (status!=0) {

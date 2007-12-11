@@ -76,6 +76,7 @@ int main(int argc, char **argv) {
 
   int i,status;
   AliTPCCalibPedestal calibPedestal;           // pedestal and noise calibration
+  calibPedestal.SetRangeTime(60,940);          // set time bin range
   calibPedestal.SetTimeAnalysis(timeAnalysis); // pedestal(t) calibration
 
   if (argc<2) {
