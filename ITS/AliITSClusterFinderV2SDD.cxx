@@ -279,28 +279,33 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(AliITSRawStream* input,
       AliWarning(Form("Invalid SDD module number %d\n", iModule));
       continue;
     }
+
     Int_t iCarlos =((AliITSRawStreamSDD*)input)->GetCarlosId();
     Int_t iSide = ((AliITSRawStreamSDD*)input)->GetChannel();
     Int_t iHybrid=iCarlos*2+iSide;
-    if(iHybrid<0 || iHybrid>=kHybridsPerDDL){ 
-      AliWarning(Form("Invalid SDD hybrid number %d\n", iHybrid));
-      continue;
-    }
     if (input->IsCompletedModule()) {
       // when all data from a module was read, search for clusters
-	clusters[iModule] = new TClonesArray("AliITSRecPoint");
-	fModule = iModule;
-	bins[0]=ddlbins[iCarlos*2];   // first hybrid of the completed module
-	bins[1]=ddlbins[iCarlos*2+1]; // second hybrid of the completed module
-	FindClustersSDD(bins, kMaxBin, nzBins, NULL, clusters[iModule]);
-	Int_t nClusters = clusters[iModule]->GetEntriesFast();
-	nClustersSDD += nClusters;
-	for(Int_t iBin=0;iBin<kMaxBin; iBin++){
-	  ddlbins[iCarlos*2][iBin].Reset();
-	  ddlbins[iCarlos*2+1][iBin].Reset();
-	}
+      if(iCarlos<0){
+	AliWarning(Form("Invalid SDD carlos number %d on module %d\n", iCarlos,iModule));
+	continue;
+      }
+      clusters[iModule] = new TClonesArray("AliITSRecPoint");
+      fModule = iModule;
+      bins[0]=ddlbins[iCarlos*2];   // first hybrid of the completed module
+      bins[1]=ddlbins[iCarlos*2+1]; // second hybrid of the completed module
+      FindClustersSDD(bins, kMaxBin, nzBins, NULL, clusters[iModule]);
+      Int_t nClusters = clusters[iModule]->GetEntriesFast();
+      nClustersSDD += nClusters;
+      for(Int_t iBin=0;iBin<kMaxBin; iBin++){
+	ddlbins[iCarlos*2][iBin].Reset();
+	ddlbins[iCarlos*2+1][iBin].Reset();
+      }
     }else{
     // fill the current digit into the bins array
+      if(iHybrid<0 || iHybrid>=kHybridsPerDDL){ 
+	AliWarning(Form("Invalid SDD hybrid number %d on module %d\n", iHybrid,iModule));
+	continue;
+      }
       AliITSCalibrationSDD* cal = (AliITSCalibrationSDD*)GetResp(iModule);    
       AliITSresponseSDD* res  = (AliITSresponseSDD*)cal->GetResponse();
       const char *option=res->ZeroSuppOption();
