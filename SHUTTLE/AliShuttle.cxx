@@ -15,6 +15,20 @@
 
 /*
 $Log$
+Revision 1.67  2007/12/07 19:14:36  acolla
+in AliShuttleTrigger:
+
+Added automatic collection of new runs on a regular time basis (settable from the configuration)
+
+in AliShuttleConfig: new members
+
+- triggerWait: time to wait for DIM trigger (s) before starting automatic collection of new runs
+- mode: run mode (test, prod) -> used to build log folder (logs or logs_PROD)
+
+in AliShuttle:
+
+- logs now stored in logs/#RUN/DET_#RUN.log
+
 Revision 1.66  2007/12/05 10:45:19  jgrosseo
 changed order of arguments to TMonaLisaWriter
 
@@ -1328,8 +1342,6 @@ Bool_t AliShuttle::ContinueProcessing()
 			Log("SHUTTLE", Form("ContinueProcessing - %s: all objects "
 				"successfully stored into main storage",
 				fCurrentDetector.Data()));
-			UpdateShuttleStatus(AliShuttleStatus::kDone);
-			UpdateShuttleLogbook(fCurrentDetector.Data(), "DONE");
 		} else {
 			Log("SHUTTLE",
 				Form("ContinueProcessing - %s: Grid storage failed again",
@@ -1702,7 +1714,8 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 	TObjArray checkEntryArray;
 	checkEntryArray.SetOwner(1);
 	TString whereClause = Form("where run=%d", GetCurrentRun());
-	if (!QueryShuttleLogbook(whereClause.Data(), checkEntryArray) || checkEntryArray.GetEntries() == 0) {
+	if (!QueryShuttleLogbook(whereClause.Data(), checkEntryArray) || 
+			checkEntryArray.GetEntries() == 0) {
 		Log("SHUTTLE", Form("Process - Warning: Cannot check status of run %d on Shuttle logbook!",
 						GetCurrentRun()));
 		return hasError == kFALSE;
@@ -2012,10 +2025,41 @@ AliShuttleLogbookEntry* AliShuttle::QueryRunParameters(Int_t run)
 	UInt_t startTime = entry->GetStartTime();
 	UInt_t endTime = entry->GetEndTime();
 
-	if (!startTime || !endTime || startTime > endTime) {
+	if (!startTime || !endTime || startTime > endTime) 
+	{
 		Log("SHUTTLE",
-			Form("QueryRunParameters - Invalid parameters for Run %d: startTime = %d, endTime = %d",
-				run, startTime, endTime));
+			Form("QueryRunParameters - Invalid parameters for Run %d: startTime = %d, endTime = %d. Skipping!",
+				run, startTime, endTime));		
+		
+		Log("SHUTTLE", Form("Marking SHUTTLE done for run %d", run));
+		fLogbookEntry = entry;	
+		if (!UpdateShuttleLogbook("shuttle_done"))
+		{
+			AliError(Form("Could not update logbook for run %d !", run));
+		}
+		fLogbookEntry = 0;
+				
+		delete entry;
+		delete aRow;
+		delete aResult;
+		return 0;
+	}
+	
+	TString totEventsStr = entry->GetRunParameter("totalEvents");  
+	Int_t totEvents = totEventsStr.Atoi();
+	if (totEvents < 1) 
+	{
+		Log("SHUTTLE",
+			Form("QueryRunParameters - Run %d has 0 events - Skipping!", run));		
+		
+		Log("SHUTTLE", Form("Marking SHUTTLE done for run %d", run));		
+		fLogbookEntry = entry;	
+		if (!UpdateShuttleLogbook("shuttle_done"))
+		{
+			AliError(Form("Could not update logbook for run %d !", run));
+		}
+		fLogbookEntry = 0;
+				
 		delete entry;
 		delete aRow;
 		delete aResult;
@@ -2663,13 +2707,16 @@ Bool_t AliShuttle::UpdateShuttleLogbook(const char* detector, const char* status
 	{
 		setClause = "set shuttle_done=1";
 
-		// Send the information to ML
-		TMonaLisaText  mlStatus("SHUTTLE_status", "Done");
+		if (fMonaLisa)
+		{
+			// Send the information to ML
+			TMonaLisaText  mlStatus("SHUTTLE_status", "Done");
 
-		TList mlList;
-		mlList.Add(&mlStatus);
-
-		fMonaLisa->SendParameters(&mlList);
+			TList mlList;
+			mlList.Add(&mlStatus);
+		
+			fMonaLisa->SendParameters(&mlList);
+		}
 	} else {
 		TString statusStr(status);
 		if(statusStr.Contains("done", TString::kIgnoreCase) ||
@@ -3087,7 +3134,13 @@ Bool_t AliShuttle::SendMail()
 			"failed processing run %d!!\n\n", GetCurrentRun());
 	body += Form("Please check %s status on the SHUTTLE monitoring page: \n\n", 
 				fCurrentDetector.Data());
-	body += Form("\thttp://pcalimonitor.cern.ch:8889/shuttle.jsp?time=168 \n\n");
+	if (fConfig->GetRunMode() == AliShuttleConfig::kTest)
+	{
+		body += Form("\thttp://pcalimonitor.cern.ch:8889/shuttle.jsp?time=168 \n\n");
+	} else {
+		body += Form("\thttp://pcalimonitor.cern.ch/shuttle.jsp?instance=PROD?time=168 \n\n");
+	}
+	
 	
 	TString logFolder = "logs";
 	if (fConfig->GetRunMode() == AliShuttleConfig::kProd) 
@@ -3194,7 +3247,12 @@ Bool_t AliShuttle::SendMailToDCS()
 			"in run %d!!\n\n", fCurrentDetector.Data(), GetCurrentRun());
 	body += Form("Please check %s status on the SHUTTLE monitoring page: \n\n", 
 				fCurrentDetector.Data());
-	body += Form("\thttp://pcalimonitor.cern.ch:8889/shuttle.jsp?time=168 \n\n");
+	if (fConfig->GetRunMode() == AliShuttleConfig::kTest)
+	{
+		body += Form("\thttp://pcalimonitor.cern.ch:8889/shuttle.jsp?time=168 \n\n");
+	} else {
+		body += Form("\thttp://pcalimonitor.cern.ch/shuttle.jsp?instance=PROD?time=168 \n\n");
+	}
 
 	TString logFolder = "logs";
 	if (fConfig->GetRunMode() == AliShuttleConfig::kProd) 
