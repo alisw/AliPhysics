@@ -33,7 +33,7 @@ extern "C" {
 //
 #include "AliRawReader.h"
 #include "AliRawReaderDate.h"
-#include "AliTRDRawStreamTB.h"
+#include "AliTRDrawStreamTB.h"
 #include "AliCDBManager.h"
 //
 // AliRoot TRD calib classes
@@ -87,7 +87,7 @@ int main(int argc, char **argv) {
   timer.Start();
   
   /* some warning less */
-  AliTRDRawStreamTB::SupressWarnings(kTRUE); 
+  AliTRDrawStreamTB::SupressWarnings(kTRUE); 
 
   /* read the data files */
   int n;
@@ -125,7 +125,7 @@ int main(int argc, char **argv) {
 
 	AliRawReader *rawReader = new AliRawReaderDate((void*)event);
 	rawReader->Select("TRD");
-	AliTRDRawStreamTB *trdRawStream = new AliTRDRawStreamTB((AliRawReader *)rawReader);
+	AliTRDrawStreamTB *trdRawStream = new AliTRDrawStreamTB((AliRawReader *)rawReader);
 	//trdRawStream->Init();
 	if(!calipad.ProcessEvent(trdRawStream,(Bool_t)nevents_total)) passpadstatus = kFALSE;
 	nevents++;

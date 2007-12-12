@@ -39,7 +39,7 @@ extern "C" {
 //
 #include "AliRawReader.h"
 #include "AliRawReaderDate.h"
-#include "AliTRDRawStreamTB.h"
+#include "AliTRDrawStreamTB.h"
 #include "AliCDBManager.h"
 
 //
@@ -105,7 +105,7 @@ int main(int argc, char **argv) {
 
 
   /* some warning less */
-  AliTRDRawStreamTB::SupressWarnings(kTRUE);
+  AliTRDrawStreamTB::SupressWarnings(kTRUE);
 
   
   /* main loop (infinite) */
@@ -146,7 +146,7 @@ int main(int argc, char **argv) {
     if ((eventT==PHYSICS_EVENT) && (passvdrift)) {
       //if (eventT==PHYSICS_EVENT) {
       AliRawReader *rawReader = new AliRawReaderDate((void*)event);
-      AliTRDRawStreamTB *trdRawStream = new AliTRDRawStreamTB((AliRawReader *) rawReader);
+      AliTRDrawStreamTB *trdRawStream = new AliTRDrawStreamTB((AliRawReader *) rawReader);
       Int_t result = calibra->ProcessEventDAQ(trdRawStream,(Bool_t)nevents_physics);
       if(!result) passvdrift = kFALSE;
       else nbvdrift += (Int_t) result/2;
