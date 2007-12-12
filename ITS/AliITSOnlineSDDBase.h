@@ -33,6 +33,7 @@ class AliITSOnlineSDDBase : public AliITSOnlineSDD {
     if(fNEvents>0) return fSumBaseline[iAnode]/fNEvents;
     else return 0;
   }
+  Float_t GetMinimumBaseline() const;
   Float_t GetAnodeRawNoise(Int_t iAnode) const{
     if(fNEvents>0) return TMath::Sqrt(fSumRawNoise[iAnode]/fNEvents-TMath::Power(GetAnodeBaseline(iAnode),2));
     

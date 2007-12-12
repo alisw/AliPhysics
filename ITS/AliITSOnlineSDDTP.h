@@ -28,6 +28,8 @@ class AliITSOnlineSDDTP : public AliITSOnlineSDD {
   Bool_t IsModuleGood()const;
   Bool_t IsAnodeGood(Int_t iAnode)const{ return fGoodAnode[iAnode];}
   Float_t GetAnodeBaseline(Int_t iAnode) const{ return fBaseline[iAnode];}
+  Int_t GetAnodeEqualizedBaseline(Int_t iAnode) const{ return fEqBaseline[iAnode];}
+  Int_t GetAnodeBaselineOffset(Int_t iAnode) const{ return fOffsetBaseline[iAnode];}
   Float_t GetAnodeRawNoise(Int_t iAnode) const{ return fRawNoise[iAnode];}
   Float_t GetAnodeCommonMode(Int_t iAnode) const{ return fCMN[iAnode];}
   Float_t GetAnodeCorrNoise(Int_t iAnode) const{return fCorrNoise[iAnode];}
@@ -51,6 +53,8 @@ class AliITSOnlineSDDTP : public AliITSOnlineSDD {
   Float_t fDAC;                    // Pascal Test Pulse amplitude (DAC units)
   Bool_t fGoodAnode[fgkNAnodes];   // array of anode quality (1 good, 0 bad) 
   Float_t fBaseline[fgkNAnodes];   // array of anode baselines
+  Int_t fEqBaseline[fgkNAnodes];   // array of anode baselines after equalization
+  Int_t fOffsetBaseline[fgkNAnodes]; // array of offsets for baseline equal.
   Float_t fRawNoise[fgkNAnodes];   // array of anode raw noise
   Float_t fCMN[fgkNAnodes];        // common mode noise coeff.
   Float_t fCorrNoise[fgkNAnodes];  // array of anode corrected noise
@@ -58,6 +62,6 @@ class AliITSOnlineSDDTP : public AliITSOnlineSDD {
   Float_t fTPPos[fgkNAnodes];      // test pulse position
   Float_t fNSigmaGain;             // Cut value for gain (n*sigma)
   Float_t fNSigmaNoise;            // Threshold for TP signal identification
-  ClassDef(AliITSOnlineSDDTP,3);
+  ClassDef(AliITSOnlineSDDTP,4);
 };
 #endif

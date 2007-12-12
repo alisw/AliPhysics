@@ -29,6 +29,8 @@ class AliITSOnlineSDDCMN : public AliITSOnlineSDD {
 
   Bool_t IsAnodeGood(Int_t iAnode)const{ return fGoodAnode[iAnode];}
   Float_t GetAnodeBaseline(Int_t iAnode) const{ return fBaseline[iAnode];}
+  Int_t GetAnodeEqualizedBaseline(Int_t iAnode) const{ return fEqBaseline[iAnode];}
+  Int_t GetAnodeBaselineOffset(Int_t iAnode) const{ return fOffsetBaseline[iAnode];}
   Float_t GetAnodeRawNoise(Int_t iAnode) const{ return fRawNoise[iAnode];}
   Float_t GetAnodeCommonMode(Int_t iAnode) const{ return fCMN[iAnode];}
   Float_t GetAnodeCorrNoise(Int_t iAnode) const{
@@ -55,6 +57,8 @@ class AliITSOnlineSDDCMN : public AliITSOnlineSDD {
   Int_t fNEvents;                    // number of events
   Bool_t fGoodAnode[fgkNAnodes];     // anode quality: good(1) - bad (0)
   Float_t fBaseline[fgkNAnodes];     // array of anode baselines
+  Int_t fEqBaseline[fgkNAnodes];     // array of anode baselines after equalization
+  Int_t fOffsetBaseline[fgkNAnodes]; // array of offsets for baseline equal.
   Float_t fRawNoise[fgkNAnodes];     // array of anode raw noise
   Float_t fSumCorrNoise[fgkNAnodes]; // corrected noise summed over events
   Float_t fCMN[fgkNAnodes];          // common mode noise coeff.
@@ -62,6 +66,6 @@ class AliITSOnlineSDDCMN : public AliITSOnlineSDD {
   Float_t fMaxCorrNoise;             // Cut value for maximum corrected noise
   Float_t fNSigmaNoise;              // Cut value for corrected noise (n*sigma)
 
-  ClassDef(AliITSOnlineSDDCMN,1);
+  ClassDef(AliITSOnlineSDDCMN,2);
 };
 #endif

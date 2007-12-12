@@ -74,16 +74,20 @@ void AliITSOnlineSDDCMN::ReadBaselines(){
     AliWarning("Baselinefile not present, Set all baselines to 50\n");
     for(Int_t ian=0;ian<fgkNAnodes;ian++){ 
       fBaseline[ian]=50.;
+      fEqBaseline[ian]=50;
+      fOffsetBaseline[ian]=0;
       fGoodAnode[ian]=1;
     }
     return;
   }
-  Int_t n,ok;
+  Int_t n,ok,eqbase,offbase;
   Float_t base,rms,cmn,corrnoi;
   for(Int_t ian=0;ian<fgkNAnodes;ian++){
-    fscanf(basf,"%d %d %f %f %f %f\n",&n,&ok,&base,&rms,&cmn,&corrnoi);
+    fscanf(basf,"%d %d %f %d %d %f %f %f\n",&n,&ok,&base,&eqbase,&offbase,&rms,&cmn,&corrnoi);
     fGoodAnode[ian]=ok;
     fBaseline[ian]=base;
+    fEqBaseline[ian]=eqbase;
+    fOffsetBaseline[ian]=offbase;
     fRawNoise[ian]=rms;
     fCMN[ian]=cmn;
   }
@@ -158,7 +162,7 @@ void AliITSOnlineSDDCMN::WriteToASCII(){
   sprintf(outfilnam,"SDDbase_step2_mod%03d_sid%d.data",fModuleId,fSide);
   FILE* outf=fopen(outfilnam,"w");
   for(Int_t ian=0;ian<fgkNAnodes;ian++){
-    fprintf(outf,"%d %d %8.3f %8.3f %8.3f %8.3f\n",ian,IsAnodeGood(ian),GetAnodeBaseline(ian),GetAnodeRawNoise(ian),GetAnodeCommonMode(ian),GetAnodeCorrNoise(ian));
+    fprintf(outf,"%d %d %8.3f %d %d %8.3f %8.3f %8.3f\n",ian,IsAnodeGood(ian),GetAnodeBaseline(ian),GetAnodeEqualizedBaseline(ian),GetAnodeBaselineOffset(ian),GetAnodeRawNoise(ian),GetAnodeCommonMode(ian),GetAnodeCorrNoise(ian));
   }
   fclose(outf);  
 }

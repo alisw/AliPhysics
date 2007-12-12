@@ -130,6 +130,15 @@ void AliITSOnlineSDDBase::AddEvent(TH2F* hrawd){
   delete [] cmnOdd;
 }
 //______________________________________________________________________
+Float_t AliITSOnlineSDDBase::GetMinimumBaseline() const {
+  Float_t basMin=1008.;
+  for(Int_t ian=0;ian<fgkNAnodes;ian++){
+    Float_t bas=GetAnodeBaseline(ian);
+    if(bas>0 && bas < basMin) basMin=bas;
+  }
+  return basMin;
+}
+//______________________________________________________________________
 Float_t AliITSOnlineSDDBase::CalcMeanRawNoise() const{
   //
   Float_t meanns=0.;
@@ -146,11 +155,15 @@ Float_t AliITSOnlineSDDBase::CalcMeanRawNoise() const{
 void AliITSOnlineSDDBase::WriteToASCII(){
   //
   Char_t outfilnam[100];
+  Float_t basMin=GetMinimumBaseline();
   sprintf(outfilnam,"SDDbase_step1_mod%03d_sid%d.data",fModuleId,fSide);
   FILE* outf=fopen(outfilnam,"w");
   Float_t corrnoise=2.;
   for(Int_t ian=0;ian<fgkNAnodes;ian++){
-    fprintf(outf,"%d %d %11.6f %11.6f %11.6f %11.6f\n",ian,IsAnodeGood(ian),GetAnodeBaseline(ian),GetAnodeRawNoise(ian),GetAnodeCommonMode(ian),corrnoise);
+    Float_t bas=GetAnodeBaseline(ian);
+    Int_t corr=(Int_t)(bas-basMin+0.5);
+    if(corr>63) corr=63; // only 6 bits in jtag for correction
+    fprintf(outf,"%d %d %11.6f %d %d %11.6f %11.6f %11.6f\n",ian,IsAnodeGood(ian),GetAnodeBaseline(ian),(Int_t)basMin,corr,GetAnodeRawNoise(ian),GetAnodeCommonMode(ian),corrnoise);
   }
   fclose(outf);  
 }
