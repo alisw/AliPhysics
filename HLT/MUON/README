@@ -7,6 +7,15 @@ This module is the implementation of the High Level Trigger for the muon
 spectrometer. Please refer to the top level HLT directory or AliRoot for build
 instructions.
 
+For bug reports or todo items please refer to the Savannah website:
+https://savannah.cern.ch/projects/alicehlt/
+
+Other dHLT or HLT information can be found on the following website:
+http://wiki.kip.uni-heidelberg.de/ti/HLT/index.php/Main_Page
+
+General dHLT or HLT discussions are found at:
+https://portal.kip.uni-heidelberg.de/alihlt-forum/
+
 Directories:
 ============
 
@@ -38,7 +47,7 @@ README
 	This file. Should add any general or important information to help get
 	people started with working with this module.
 
-TODO
-	This is a list describing things that need to be done. It can also
-	contain a wish list, i.e. things that would be nice to implement in the
-	future. Read the files header for more details.
+Makefile.am
+	This is the make file for building the dHLT analysis library within
+	the HLT automake build system.
+
