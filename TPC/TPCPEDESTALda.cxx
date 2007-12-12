@@ -154,6 +154,14 @@ int main(int argc, char **argv) {
   delete fileTPC;
   printf("Wrote %s\n",RESULT_FILE);
 
+  /* store the result file on FES */
+
+  status=daqDA_FES_storeFile(RESULT_FILE,RESULT_FILE);
+  if (status) {
+    status = -2;
+  }
+
+
   //
   // Now prepare ASCII files for local ALTRO configuration through DDL
   //
