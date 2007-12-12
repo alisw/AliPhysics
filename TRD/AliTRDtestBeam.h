@@ -20,7 +20,7 @@
 #include "TObject.h"
 
 class AliTRDrawStreamV2;
-class AliTRDRawStreamTB;
+class AliTRDrawStreamTB;
 
 using namespace std;
 
@@ -36,7 +36,7 @@ public:
 
   Int_t NextEvent();
   
-  AliTRDRawStreamTB *GetTRDrawStream(); // needs RawStreamTB
+  AliTRDrawStreamTB *GetTRDrawStream(); // needs RawStreamTB
 
   // silicon
   Short_t GetNSi1() const {return fNSi1;}
