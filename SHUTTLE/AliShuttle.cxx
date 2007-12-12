@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.70  2007/12/12 13:45:35  acolla
+Monalisa started in Collect() function. Alive message to monitor is sent at each Collect and every minute during preprocessor processing.
+
 Revision 1.69  2007/12/12 10:06:29  acolla
 in AliShuttle.cxx: SHUTTLE logbook is updated in case of invalid run times:
 
@@ -2130,7 +2133,7 @@ AliShuttleLogbookEntry* AliShuttle::QueryRunParameters(Int_t run)
 		
 		Log("SHUTTLE", Form("Marking SHUTTLE done for run %d", run));		
 		fLogbookEntry = entry;	
-		if (!UpdateShuttleLogbook("shuttle_done"))
+		if (!UpdateShuttleLogbook("shuttle_ignored"))
 		{
 			AliError(Form("Could not update logbook for run %d !", run));
 		}
