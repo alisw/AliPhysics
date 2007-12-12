@@ -5,6 +5,7 @@ SRCS= AliTRDarrayI.cxx \
       AliTRDdataArrayI.cxx \
       AliTRDdataArrayF.cxx \
       AliTRDsegmentArray.cxx \
+      AliTRDsegmentArrayBase.cxx \
       AliTRDSignalIndex.cxx \
       AliTRDgeometry.cxx \
       AliTRDdigit.cxx \

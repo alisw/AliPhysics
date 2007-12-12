@@ -14,6 +14,7 @@
 #pragma link C++ class  AliTRDarrayF+;
 #pragma link C++ class  AliTRDsegmentID+;
 #pragma link C++ class  AliTRDsegmentArray+;
+#pragma link C++ class  AliTRDsegmentArrayBase+;
 #pragma link C++ class  AliTRDdataArray+;
 #pragma link C++ class  AliTRDdataArrayI+;
 #pragma link C++ class  AliTRDdataArrayF+;
