@@ -135,7 +135,7 @@ Bool_t AliITSRawStreamSDD::Next()
       if(ddln < 0 || ddln > (kDDLsNumber-1)) ddln  = 0;
 
       fChannel = -1;
-      if((fData >> 16) == 0x7F00 ||(fData >> 4) == 0xFF00000){ // modif!!!!!
+      if((fData >> 16) == 0x7F00){ // jitter word
 	for(Int_t i=0;i<kDDLsNumber;i++){fSkip[i]=0;}
 	fResetSkip=0;
 	fEndWords=0;
@@ -148,6 +148,8 @@ Bool_t AliITSRawStreamSDD::Next()
 
       if (nData28== 0x02) {           // header
 	fEventId = (fData >> 3) & 0x07FF; 
+      } else if (nData28== 0x04) {
+	// JTAG word -- do nothing
       } else if (nData28== 0x03) {    // Carlos and FIFO words or Footers
 	if(fData>=fICarlosWord[0]&&fData<=fICarlosWord[11]) { // Carlos Word
 	  if(fEndWords==12) continue; // out of event
