@@ -15,6 +15,13 @@
 
 /*
 $Log$
+Revision 1.69  2007/12/12 10:06:29  acolla
+in AliShuttle.cxx: SHUTTLE logbook is updated in case of invalid run times:
+
+time_start==0 && time_end==0
+
+logbook is NOT updated if time_start != 0 && time_end == 0, because it may mean that the run is still ongoing.
+
 Revision 1.68  2007/12/11 10:15:17  acolla
 Added marking SHUTTLE=DONE for invalid runs
 (invalid start time or end time) and runs with totalEvents < 1
@@ -1264,7 +1271,9 @@ void AliShuttle::SendMLInfo()
 	mlList.Add(&mlStatus);
 	mlList.Add(&mlRetryCount);
 
-	fMonaLisa->SendParameters(&mlList);
+	TString mlID;
+	mlID.Form("%d", GetCurrentRun());
+	fMonaLisa->SendParameters(&mlList, mlID);
 }
 
 //______________________________________________________________________________________________
@@ -1414,9 +1423,6 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 	Log("SHUTTLE", Form("\t\t\t^*^*^*^*^*^*^*^*^*^*^*^* run %d: START ^*^*^*^*^*^*^*^*^*^*^*^*",
 					GetCurrentRun()));
 
-	// create ML instance that monitors this run
-	fMonaLisa = new TMonaLisaWriter(fConfig->GetMonitorHost(), fConfig->GetMonitorTable(), Form("%d", GetCurrentRun()));
-
 	// Send the information to ML
 	TMonaLisaText  mlStatus("SHUTTLE_status", "Processing");
 	TMonaLisaText  mlRunType("SHUTTLE_runtype", Form("%s (%s)", entry->GetRunType(), entry->GetRunParameter("log")));
@@ -1425,7 +1431,9 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 	mlList.Add(&mlStatus);
 	mlList.Add(&mlRunType);
 
-	fMonaLisa->SendParameters(&mlList);
+	TString mlID;
+	mlID.Form("%d", GetCurrentRun());
+	fMonaLisa->SendParameters(&mlList, mlID);
 
 	if (fLogbookEntry->IsDone())
 	{
@@ -1579,9 +1587,12 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 					}
 					
 					if (expiredTime % 60 == 0)
+					{
 						Log("SHUTTLE", Form("Process - %s: Checking process. "
 							"Run time: %d seconds - Memory consumption: %d KB",
 							fCurrentDetector.Data(), expiredTime, mem));
+						SendAlive();
+					}
 					
 					if (mem > fConfig->GetPPMaxMem())
 					{
@@ -1748,10 +1759,6 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 			}
 		}
 	}
-
-	// remove ML instance
-	delete fMonaLisa;
-	fMonaLisa = 0;
 
 	fLogbookEntry = 0;
 
@@ -2058,7 +2065,7 @@ AliShuttleLogbookEntry* AliShuttle::QueryRunParameters(Int_t run)
 		
 		Log("SHUTTLE", Form("Marking SHUTTLE done for run %d", run));
 		fLogbookEntry = entry;	
-		if (!UpdateShuttleLogbook("shuttle_done"))
+		if (!UpdateShuttleLogbook("shuttle_ignored"))
 		{
 			AliError(Form("Could not update logbook for run %d !", run));
 		}
@@ -2102,7 +2109,7 @@ AliShuttleLogbookEntry* AliShuttle::QueryRunParameters(Int_t run)
 		
 		Log("SHUTTLE", Form("Marking SHUTTLE done for run %d", run));
 		fLogbookEntry = entry;	
-		if (!UpdateShuttleLogbook("shuttle_done"))
+		if (!UpdateShuttleLogbook("shuttle_ignored"))
 		{
 			AliError(Form("Could not update logbook for run %d !", run));
 		}
@@ -2772,11 +2779,11 @@ Bool_t AliShuttle::UpdateShuttleLogbook(const char* detector, const char* status
 
 	TString detName(detector);
 	TString setClause;
-	if(detName == "shuttle_done")
+	if (detName == "shuttle_done" || detName == "shuttle_ignored")
 	{
 		setClause = "set shuttle_done=1";
 
-		if (fMonaLisa)
+		if (detName == "shuttle_done")
 		{
 			// Send the information to ML
 			TMonaLisaText  mlStatus("SHUTTLE_status", "Done");
@@ -2784,7 +2791,9 @@ Bool_t AliShuttle::UpdateShuttleLogbook(const char* detector, const char* status
 			TList mlList;
 			mlList.Add(&mlStatus);
 		
-			fMonaLisa->SendParameters(&mlList);
+			TString mlID;
+			mlID.Form("%d", GetCurrentRun());
+			fMonaLisa->SendParameters(&mlList, mlID);
 		}
 	} else {
 		TString statusStr(status);
@@ -2947,6 +2956,19 @@ TString AliShuttle::GetLogFileName(const char* detector) const
 }
 
 //______________________________________________________________________________________________
+void AliShuttle::SendAlive()
+{
+	// sends alive message to ML
+	
+	TMonaLisaText mlStatus("SHUTTLE_status", "Alive");
+
+	TList mlList;
+	mlList.Add(&mlStatus);
+
+	fMonaLisa->SendParameters(&mlList, "__PROCESSINGINFO__");
+}
+
+//______________________________________________________________________________________________
 Bool_t AliShuttle::Collect(Int_t run)
 {
 	//
@@ -2962,6 +2984,13 @@ Bool_t AliShuttle::Collect(Int_t run)
 		Log("SHUTTLE", Form("Collect - Shuttle called. Collecting conditions data for run %d", run));
 
 	SetLastAction("Starting");
+
+	// create ML instance
+	if (!fMonaLisa)
+		fMonaLisa = new TMonaLisaWriter(fConfig->GetMonitorHost(), fConfig->GetMonitorTable());
+		
+
+	SendAlive();
 
 	TString whereClause("where shuttle_done=0");
 	if (run != -1)

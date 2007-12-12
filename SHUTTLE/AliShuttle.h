@@ -127,6 +127,7 @@ private:
 
 	void SetLastAction(const char* action);
 	
+	void SendAlive();
 	void SendMLInfo();
 
 	const AliShuttleConfig* fConfig; 	// pointer to configuration object
