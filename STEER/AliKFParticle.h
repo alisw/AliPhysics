@@ -23,7 +23,6 @@
 
 class AliExternalTrackParam;
 
-
 class AliKFParticle :public AliKFParticleBase
 {
   
@@ -39,11 +38,11 @@ class AliKFParticle :public AliKFParticleBase
 
   //* Constructor (empty)
 
-  AliKFParticle():AliKFParticleBase(){} 
+  AliKFParticle():AliKFParticleBase(){ ; }
 
   //* Destructor (empty)
 
-  ~AliKFParticle(){}             
+  ~AliKFParticle(){ ; }
 
   //* Construction of mother particle by its 2-3-4 daughters
 
@@ -55,7 +54,12 @@ class AliKFParticle :public AliKFParticleBase
   AliKFParticle( const AliKFParticle &d1, const AliKFParticle &d2, 
 		 const AliKFParticle &d3, const AliKFParticle &d4 );
  
-  //* Initialisation from ALICE track, PID hypothesis can be provided 
+ //* Initialisation from "cartesian" coordinates ( X Y Z Px Py Pz )
+ //* Parameters, covariance matrix, charge and PID hypothesis should be provided 
+
+  AliKFParticle( const Double_t Param[], const Double_t Cov[], Int_t Charge, Int_t PID );
+
+ //* Initialisation from ALICE track, PID hypothesis shoould be provided 
 
   AliKFParticle( const AliExternalTrackParam &track, Int_t PID );
 
@@ -63,7 +67,7 @@ class AliKFParticle :public AliKFParticleBase
 
   AliKFParticle( const AliESDVertex &vertex );
 
-  //* Copy vertex part to ESD vertex 
+  //* Copy position part to ESD vertex 
 
   void CopyToESDVertex( AliESDVertex &Vtx ) const ;
 
@@ -97,6 +101,28 @@ class AliKFParticle :public AliKFParticleBase
   Double_t GetCovariance( int i ) const ;
   Double_t GetCovariance( int i, int j ) const ;
 
+  //* Accessors with calculations, value returned w/o error flag
+  
+  Double_t GetMomentum    () const;
+  Double_t GetMass        () const;
+  Double_t GetDecayLength () const;
+  Double_t GetLifeTime    () const;
+
+  //* Accessors to estimated errors
+
+  Double_t GetErrX           () const ; //* x of current position
+  Double_t GetErrY           () const ; //* y of current position
+  Double_t GetErrZ           () const ; //* z of current position
+  Double_t GetErrPx          () const ; //* x-compoment of 3-momentum
+  Double_t GetErrPy          () const ; //* y-compoment of 3-momentum
+  Double_t GetErrPz          () const ; //* z-compoment of 3-momentum
+  Double_t GetErrE           () const ; //* energy
+  Double_t GetErrS           () const ; //* decay length / momentum
+  Double_t GetErrMomentum    () const;
+  Double_t GetErrMass        () const;
+  Double_t GetErrDecayLength () const;
+  Double_t GetErrLifeTime    () const;
+
   //* Accessors with calculations( &value, &estimated sigma )
   //* error flag returned (0 means no error during calculations) 
 
@@ -104,6 +130,7 @@ class AliKFParticle :public AliKFParticleBase
   int GetMass        ( Double_t &M, Double_t &SigmaM ) const ;
   int GetDecayLength ( Double_t &L, Double_t &SigmaL ) const ;
   int GetLifeTime    ( Double_t &T, Double_t &SigmaT ) const ;
+
 
   //*
   //*  MODIFIERS
@@ -143,10 +170,14 @@ class AliKFParticle :public AliKFParticleBase
 
   void SetProductionVertex( const AliKFParticle &Vtx );
 
-  //* Set hard mass constraint 
+  //* Set mass constraint 
 
-  void SetMassConstraint( Double_t Mass );
+  void SetMassConstraint( Double_t Mass, Double_t SigmaMass = 0  );
   
+  //* Set no decay length for resonances
+
+  void SetNoDecayLength();
+
   //* Everything in one go  
 
   void Construct( const AliKFParticle *vDaughters[], int NDaughters, 
@@ -192,6 +223,11 @@ class AliKFParticle :public AliKFParticleBase
   void GetDStoParticle( const AliKFParticle &p, 
 			Double_t &DS, Double_t &DSp ) const ;
   
+  //* Get dS to other particle p in XY-plane
+
+  void GetDStoParticleXY( const AliKFParticleBase &p, 
+			  Double_t &DS, Double_t &DSp ) const ;
+  
   //* 
   //* OTHER UTILITIES
   //*
@@ -211,6 +247,27 @@ class AliKFParticle :public AliKFParticleBase
   Double_t GetDeviationFromVertex( const AliKFParticle &Vtx ) const ;
   Double_t GetDeviationFromVertex( const AliESDVertex &Vtx ) const ;
   Double_t GetDeviationFromParticle( const AliKFParticle &p ) const ;
+ 
+  //* Calculate distance from another object [cm] in XY-plane
+
+  Double_t GetDistanceFromVertexXY( const Double_t vtx[] ) const ;
+  Double_t GetDistanceFromVertexXY( const AliKFParticle &Vtx ) const ;
+  Double_t GetDistanceFromVertexXY( const AliESDVertex &Vtx ) const ;
+  Double_t GetDistanceFromParticleXY( const AliKFParticle &p ) const ;
+
+  //* Calculate sqrt(Chi2/ndf) deviation from another object in XY plane
+  //* ( v = [xyz]-vertex, Cv=[Cxx,Cxy,Cyy,Cxz,Cyz,Czz]-covariance matrix )
+
+  Double_t GetDeviationFromVertexXY( const Double_t v[], const Double_t Cv[]=0 ) const ;
+  Double_t GetDeviationFromVertexXY( const AliKFParticle &Vtx ) const ;
+  Double_t GetDeviationFromVertexXY( const AliESDVertex &Vtx ) const ;
+  Double_t GetDeviationFromParticleXY( const AliKFParticle &p ) const ;
+
+  //* Calculate opennig angle between two particles
+
+  Double_t GetAngle  ( const AliKFParticle &p ) const ;
+  Double_t GetAngleXY( const AliKFParticle &p ) const ;
+  Double_t GetAngleRZ( const AliKFParticle &p ) const ;
 
   //* Subtract the particle from the vertex  
 
@@ -233,7 +290,6 @@ class AliKFParticle :public AliKFParticleBase
   void GetDStoParticle( const AliKFParticleBase &p, Double_t &DS, Double_t &DSp )const ;
   void Transport( Double_t dS, Double_t P[], Double_t C[] ) const ;
   static void GetExternalTrackParam( const AliKFParticleBase &p, Double_t &X, Double_t &Alpha, Double_t P[5]  ) ;
-  void GetDStoParticleALICE( const AliKFParticleBase &p, Double_t &DS, Double_t &DS1 ) const;
 
  private:
 
@@ -372,6 +428,104 @@ inline Double_t AliKFParticle::GetCovariance( int i, int j ) const
   return AliKFParticleBase::GetCovariance(i,j);
 }
 
+
+inline Double_t AliKFParticle::GetMomentum    () const
+{
+  Double_t par, err;
+  if( AliKFParticleBase::GetMomentum( par, err ) ) return 0;
+  else return par;
+}
+
+inline Double_t AliKFParticle::GetMass        () const
+{
+  Double_t par, err;
+  if( AliKFParticleBase::GetMass( par, err ) ) return 0;
+  else return par;
+}
+
+inline Double_t AliKFParticle::GetDecayLength () const
+{
+  Double_t par, err;
+  if( AliKFParticleBase::GetDecayLength( par, err ) ) return 0;
+  else return par;
+}
+
+inline Double_t AliKFParticle::GetLifeTime    () const
+{
+  Double_t par, err;
+  if( AliKFParticleBase::GetLifeTime( par, err ) ) return 0;
+  else return par;
+}
+
+inline Double_t AliKFParticle::GetErrX           () const 
+{
+  return TMath::Sqrt(TMath::Abs( GetCovariance(0,0) ));
+}
+
+inline Double_t AliKFParticle::GetErrY           () const 
+{
+  return TMath::Sqrt(TMath::Abs( GetCovariance(1,1) ));
+}
+
+inline Double_t AliKFParticle::GetErrZ           () const 
+{
+  return TMath::Sqrt(TMath::Abs( GetCovariance(2,2) ));
+}
+
+inline Double_t AliKFParticle::GetErrPx          () const 
+{
+  return TMath::Sqrt(TMath::Abs( GetCovariance(3,3) ));
+}
+
+inline Double_t AliKFParticle::GetErrPy          () const 
+{
+  return TMath::Sqrt(TMath::Abs( GetCovariance(4,4) ));
+}
+
+inline Double_t AliKFParticle::GetErrPz          () const 
+{
+  return TMath::Sqrt(TMath::Abs( GetCovariance(5,5) ));
+}
+
+inline Double_t AliKFParticle::GetErrE           () const 
+{
+  return TMath::Sqrt(TMath::Abs( GetCovariance(6,6) ));
+}
+
+inline Double_t AliKFParticle::GetErrS           () const 
+{
+  return TMath::Sqrt(TMath::Abs( GetCovariance(7,7) ));
+}
+
+inline Double_t AliKFParticle::GetErrMomentum    () const
+{
+  Double_t par, err;
+  if( AliKFParticleBase::GetMomentum( par, err ) ) return 1.e10;
+  else return err;
+}
+
+inline Double_t AliKFParticle::GetErrMass        () const
+{
+  Double_t par, err;
+  if( AliKFParticleBase::GetMass( par, err ) ) return 1.e10;
+  else return err;
+}
+
+inline Double_t AliKFParticle::GetErrDecayLength () const
+{
+  Double_t par, err;
+  if( AliKFParticleBase::GetDecayLength( par, err ) ) return 1.e10;
+  else return err;
+}
+
+inline Double_t AliKFParticle::GetErrLifeTime    () const
+{
+  Double_t par, err;
+  if( AliKFParticleBase::GetLifeTime( par, err ) ) return 1.e10;
+  else return err;
+}
+
+
 inline int AliKFParticle::GetMomentum( Double_t &P, Double_t &SigmaP ) const 
 {
   return AliKFParticleBase::GetMomentum( P, SigmaP );
@@ -468,13 +622,6 @@ inline void AliKFParticle::operator +=( const AliKFParticle &Daughter )
   AliKFParticleBase::operator +=( Daughter );
 }
   
-//inline AliKFParticle AliKFParticle::operator +( const AliKFParticle &Daughter ) const 
-//{
-//AliKFParticle tmp;
-//tmp+= *this;
-//tmp+= Daughter;
-//return tmp;
-//}
 
 inline void AliKFParticle::AddDaughter( const AliKFParticle &Daughter )
 {
@@ -486,11 +633,16 @@ inline void AliKFParticle::SetProductionVertex( const AliKFParticle &Vtx )
   AliKFParticleBase::SetProductionVertex( Vtx );
 }
 
-inline void AliKFParticle::SetMassConstraint( Double_t Mass )
+inline void AliKFParticle::SetMassConstraint( Double_t Mass, Double_t SigmaMass )
 {
-  AliKFParticleBase::SetMassConstraint( Mass );
+  AliKFParticleBase::SetMassConstraint( Mass, SigmaMass );
 }
-  
+    
+inline void AliKFParticle::SetNoDecayLength()
+{
+  AliKFParticleBase::SetNoDecayLength();
+}
+
 inline void AliKFParticle::Construct( const AliKFParticle *vDaughters[], int NDaughters, 
 			       const AliKFParticle *ProdVtx,   Double_t Mass  )
 {    
@@ -539,8 +691,7 @@ inline Double_t AliKFParticle::GetDStoPoint( const Double_t xyz[] ) const
 inline void AliKFParticle::GetDStoParticle( const AliKFParticle &p, 
 					    Double_t &DS, Double_t &DSp ) const 
 {
-  GetDStoParticleALICE( p, DS, DSp );
-  //AliKFParticleBase::GetDStoParticleBz( GetFieldAlice(), p, DS,DSp);
+  GetDStoParticleXY( p, DS, DSp );
 }
 
 
@@ -617,8 +768,13 @@ inline void AliKFParticle::GetFieldValue( const Double_t * /*xyz*/, Double_t B[]
 inline void AliKFParticle::GetDStoParticle( const AliKFParticleBase &p, 
 					    Double_t &DS, Double_t &DSp )const
 {
-  GetDStoParticleALICE( p, DS, DSp );
-  //AliKFParticleBase::GetDStoParticleBz( GetFieldAlice(), p, DS,DSp);
+  GetDStoParticleXY( p, DS, DSp );
+}
+
+inline void AliKFParticle::GetDStoParticleXY( const AliKFParticleBase &p, 
+				       Double_t &DS, Double_t &DSp ) const
+{ 
+  AliKFParticleBase::GetDStoParticleBz( GetFieldAlice(), p, DS, DSp ) ;
 }
 
 inline void AliKFParticle::Transport( Double_t dS, Double_t P[], Double_t C[] ) const 

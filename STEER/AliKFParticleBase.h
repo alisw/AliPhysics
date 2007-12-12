@@ -64,7 +64,12 @@ class AliKFParticleBase :public TObject {
 
   //* Destructor 
 
-  virtual ~AliKFParticleBase(){};
+  virtual ~AliKFParticleBase() { ; }
+
+ //* Initialisation from "cartesian" coordinates ( X Y Z Px Py Pz )
+ //* Parameters, covariance matrix, charge, and mass hypothesis should be provided 
+
+  void Initialize( const Double_t Param[], const Double_t Cov[], Int_t Charge, Double_t Mass );
 
   //* Initialise covariance matrix and set current parameters to 0.0 
 
@@ -143,10 +148,15 @@ class AliKFParticleBase :public TObject {
 
   void SetProductionVertex( const AliKFParticleBase &Vtx );
 
-  //* Set hard mass constraint 
+  //* Set mass constraint 
 
-  void SetMassConstraint( Double_t Mass );
+  void SetMassConstraint( Double_t Mass, Double_t SigmaMass = 0 );
   
+  //* Set no decay length for resonances
+
+  void SetNoDecayLength();
+
+
   //* Everything in one go  
 
   void Construct( const AliKFParticleBase *vDaughters[], Int_t NDaughters, 
