@@ -86,7 +86,7 @@ typedef unsigned long homer_uint16;
 #endif // USHRT_MAX==65535
 
 // Then homer_uint64
-#if ULONG_MAX==18446744073709551615ULL
+#if ULONG_MAX==18446744073709551615UL
 typedef unsigned long homer_uint64;
 #else // ULONG_MAX==18446744073709551615UL
 
