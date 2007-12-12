@@ -15,6 +15,9 @@
 
 /*
  $Log$
+ Revision 1.15  2007/12/10 18:29:23  acolla
+ Some log added to the listen mode
+
  Revision 1.14  2007/12/07 19:14:36  acolla
  in AliShuttleTrigger:
 
@@ -246,10 +249,11 @@ void AliShuttleTrigger::Run() {
 			break;
 		}
 		
+		nTry++;
+		AliInfo(Form("Received %d triggers so far", nTry));
+		
 		if (fConfig->GetRunMode() == AliShuttleConfig::kTest)
 		{
-			nTry++;
-			AliInfo(Form("Received %d triggers so far", nTry));
 			if(nTry>=nMaxTry)
 			{
 				AliInfo(Form("Collect() ran more than %d times -> Exiting!", 

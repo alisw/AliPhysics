@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.68  2007/12/11 10:15:17  acolla
+Added marking SHUTTLE=DONE for invalid runs
+(invalid start time or end time) and runs with totalEvents < 1
+
 Revision 1.67  2007/12/07 19:14:36  acolla
 in AliShuttleTrigger:
 
@@ -2025,11 +2029,32 @@ AliShuttleLogbookEntry* AliShuttle::QueryRunParameters(Int_t run)
 	UInt_t startTime = entry->GetStartTime();
 	UInt_t endTime = entry->GetEndTime();
 
-	if (!startTime || !endTime || startTime > endTime) 
+// 	if (!startTime || !endTime || startTime > endTime) 
+// 	{
+// 		Log("SHUTTLE",
+// 			Form("QueryRunParameters - Invalid parameters for Run %d: startTime = %d, endTime = %d. Skipping!",
+// 				run, startTime, endTime));		
+// 		
+// 		Log("SHUTTLE", Form("Marking SHUTTLE done for run %d", run));
+// 		fLogbookEntry = entry;	
+// 		if (!UpdateShuttleLogbook("shuttle_done"))
+// 		{
+// 			AliError(Form("Could not update logbook for run %d !", run));
+// 		}
+// 		fLogbookEntry = 0;
+// 				
+// 		delete entry;
+// 		delete aRow;
+// 		delete aResult;
+// 		return 0;
+// 	}
+
+	if (!startTime) 
 	{
 		Log("SHUTTLE",
-			Form("QueryRunParameters - Invalid parameters for Run %d: startTime = %d, endTime = %d. Skipping!",
-				run, startTime, endTime));		
+			Form("QueryRunParameters - Invalid parameters for Run %d: " 
+				"startTime = %d, endTime = %d. Skipping!",
+					run, startTime, endTime));		
 		
 		Log("SHUTTLE", Form("Marking SHUTTLE done for run %d", run));
 		fLogbookEntry = entry;	
@@ -2045,6 +2070,50 @@ AliShuttleLogbookEntry* AliShuttle::QueryRunParameters(Int_t run)
 		return 0;
 	}
 	
+	if (startTime && !endTime) 
+	{
+		// TODO Here we don't mark SHUTTLE done, because this may mean 
+		//the run is still ongoing!!		
+		Log("SHUTTLE",
+			Form("QueryRunParameters - Invalid parameters for Run %d: "
+			     "startTime = %d, endTime = %d. Skipping (Shuttle won't be marked as DONE)!",
+					run, startTime, endTime));		
+		
+		//Log("SHUTTLE", Form("Marking SHUTTLE done for run %d", run));
+		//fLogbookEntry = entry;	
+		//if (!UpdateShuttleLogbook("shuttle_done"))
+		//{
+		//	AliError(Form("Could not update logbook for run %d !", run));
+		//}
+		//fLogbookEntry = 0;
+				
+		delete entry;
+		delete aRow;
+		delete aResult;
+		return 0;
+	}
+			
+	if (startTime && endTime && (startTime > endTime)) 
+	{
+		Log("SHUTTLE",
+			Form("QueryRunParameters - Invalid parameters for Run %d: "
+				"startTime = %d, endTime = %d. Skipping!",
+					run, startTime, endTime));		
+		
+		Log("SHUTTLE", Form("Marking SHUTTLE done for run %d", run));
+		fLogbookEntry = entry;	
+		if (!UpdateShuttleLogbook("shuttle_done"))
+		{
+			AliError(Form("Could not update logbook for run %d !", run));
+		}
+		fLogbookEntry = 0;
+				
+		delete entry;
+		delete aRow;
+		delete aResult;
+		return 0;
+	}
+			
 	TString totEventsStr = entry->GetRunParameter("totalEvents");  
 	Int_t totEvents = totEventsStr.Atoi();
 	if (totEvents < 1) 
