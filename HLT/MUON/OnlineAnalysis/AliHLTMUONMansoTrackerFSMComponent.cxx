@@ -151,7 +151,13 @@ int AliHLTMUONMansoTrackerFSMComponent::DoInit(int argc, const char** argv)
 	for (int i = 0; i < argc; i++)
 	{
 		if (strcmp(argv[i], "-warn_on_unexpected_block") == 0)
+		{
 			fWarnForUnexpecedBlock = true;
+			continue;
+		}
+
+		HLTError("Unknown option '%s'.", argv[i]);
+		return EINVAL;
 	}
 	
 	const int initArraySize = 10;
@@ -307,7 +313,7 @@ int AliHLTMUONMansoTrackerFSMComponent::DoEvent(
 					HLTError("Received a reconstructed hits data block with a record"
 						" width of %d bytes, but the expected value is %d bytes."
 						" The block might be corrupt.",
-						blocks[n].fSize, headerSize
+						inblock.CommonBlockHeader().fRecordWidth, expectedWidth
 					);
 					continue;
 				}
@@ -382,7 +388,7 @@ int AliHLTMUONMansoTrackerFSMComponent::DoEvent(
 				HLTError("Received a trigger records data block with a record"
 					" width of %d bytes, but the expected value is %d bytes."
 					" The block might be corrupt.",
-					blocks[n].fSize, headerSize
+					inblock.CommonBlockHeader().fRecordWidth, expectedWidth
 				);
 				continue;
 			}
