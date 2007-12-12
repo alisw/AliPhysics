@@ -41,7 +41,6 @@
 // --- AliRoot header files ---
 #include "AliLog.h"
 #include "AliQA.h"
-#include "AliQAChecker.h"
 
 
 ClassImp(AliQA)
