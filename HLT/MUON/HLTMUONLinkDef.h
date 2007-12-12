@@ -48,6 +48,7 @@
 #pragma link C++ class AliHLTMUONRootifierComponent+;
 #pragma link C++ class AliHLTMUONTriggerCalibratorComponent+;
 #pragma link C++ class AliHLTMUONTrackerCalibratorComponent+;
+#pragma link C++ class AliHLTMUONEmptyEventFilterComponent+;
 
 //TODO: The following is temporary.
 #pragma link C++ class AliHLTMUONEvent+;

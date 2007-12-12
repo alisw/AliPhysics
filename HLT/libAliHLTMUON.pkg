@@ -14,6 +14,7 @@ CLASS_HDRS := 	OfflineInterface/AliHLTMUONAgent.h \
 		OnlineAnalysis/AliHLTMUONMansoTrackerFSMComponent.h \
 		OnlineAnalysis/AliHLTMUONTriggerCalibratorComponent.h \
 		OnlineAnalysis/AliHLTMUONTrackerCalibratorComponent.h \
+		utils/AliHLTMUONEmptyEventFilterComponent.h \
 		AliHLTMUONRecHit.h \
 		AliHLTMUONTriggerRecord.h \
 		AliHLTMUONMansoTrack.h
@@ -61,6 +62,6 @@ PACKCXXFLAGS := ${HLTCXXFLAGS}
 PACKCFLAGS   := ${HLTCLFAGS}
 PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
 
-EINCLUDE := 	HLT/BASE HLT/MUON HLT/MUON/OnlineAnalysis \
+EINCLUDE := 	HLT/BASE HLT/MUON HLT/MUON/utils HLT/MUON/OnlineAnalysis \
 		HLT/MUON/OfflineInterface MUON MUON/mapping STEER RAW
 

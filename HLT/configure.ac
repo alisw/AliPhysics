@@ -630,8 +630,13 @@ AH_TEMPLATE([HLT_MUON],[hlt dimuon library])
 
 ALIMUON_LIBS=
 CHECK_HLTMODULE([dimuon],
+<<<<<<< configure.ac
+		[AliMUONTriggerIO.h AliMUONVCluster.h], 
+		[$ALIROOT_CPPFLAGS -I$ALICE_ROOT/MUON],
+=======
 		[AliMpExMap.h AliMUONTriggerIO.h], 
 		[$ALIROOT_CPPFLAGS -I$ALICE_ROOT/MUON -I$ALICE_ROOT/MUON/mapping],
+>>>>>>> 1.54
 		[], [-L$ROOTLIBDIR], [$ROOTLIBS $ADD_ROOTLIBS],
 		[], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS], 
 		[$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS])

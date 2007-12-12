@@ -211,6 +211,11 @@ public:
 	{
 		return fgkTrackerCalibratorId;
 	}
+	
+	static const char* EmptyEventFilterComponentId()
+	{
+		return fgkEmptyEventFilterComponentId;
+	}
 
 private:
 
@@ -257,6 +262,7 @@ private:
 	static const char* fgkDecisionComponentId; // dHLT decision component name.
 	static const char* fgkTriggerCalibratorId; // Trigger calibration component name.
 	static const char* fgkTrackerCalibratorId; // Tracking stations calibration component name.
+	static const char* fgkEmptyEventFilterComponentId; // The name of the event filter debugging component.
 };
 
 #endif // ALIHLTMUONCONSTANTS_H
