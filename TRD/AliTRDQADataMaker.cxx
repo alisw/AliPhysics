@@ -45,7 +45,7 @@
 #include "AliTRDdigitsManager.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDdataArrayI.h"
-#include "AliTRDRawStreamTB.h"
+#include "AliTRDrawStreamTB.h"
 
 #include "AliQAChecker.h"
 
@@ -663,7 +663,7 @@ void AliTRDQADataMaker::MakeRaws(AliRawReader* rawReader)
   const Int_t kMCM = 16;
   //  const Int_t kADC = 22;
 
-  AliTRDRawStreamTB *raw = new AliTRDRawStreamTB(rawReader);
+  AliTRDrawStreamTB *raw = new AliTRDrawStreamTB(rawReader);
 
   raw->SetRawVersion(3);
   raw->Init();

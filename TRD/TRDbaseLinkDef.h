@@ -13,14 +13,10 @@
 #pragma link C++ class  AliTRDarrayI+;
 #pragma link C++ class  AliTRDarrayF+;
 #pragma link C++ class  AliTRDsegmentID+;
-
+#pragma link C++ class  AliTRDsegmentArray+;
 #pragma link C++ class  AliTRDdataArray+;
 #pragma link C++ class  AliTRDdataArrayI+;
 #pragma link C++ class  AliTRDdataArrayF+;
-
-#pragma link C++ class  AliTRDsegmentArrayBase+;
-#pragma link C++ class  AliTRDsegmentArray+;
-
 #pragma link C++ class  AliTRDSignalIndex+;
 
 #pragma link C++ class  AliTRDgeometry+;
@@ -33,7 +29,7 @@
 #pragma link C++ class  AliTRDRawStream+;
 #pragma link C++ class  AliTRDRawStreamV2+;
 
-#pragma link C++ class  AliTRDRawStreamTB+;
+#pragma link C++ class  AliTRDrawStreamTB+;
 #pragma link C++ class  AliTRDtestBeam+;
 
 #pragma link C++ class  AliTRDCommonParam+;

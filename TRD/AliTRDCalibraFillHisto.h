@@ -39,7 +39,7 @@ class AliRawReader;
 class AliTRDCalibraMode;
 class AliTRDCalibraVector;
 class AliTRDCalibraVdriftLinearFit;
-class AliTRDRawStreamTB;
+class AliTRDrawStreamTB;
 class AliTRDcluster;
 class AliTRDtrack;
 class AliTRDmcmTracklet;
@@ -73,7 +73,7 @@ class AliTRDCalibraFillHisto : public TObject {
           Bool_t   UpdateHistogramcm(AliTRDmcmTracklet *trk);
  
   // Process events DAQ
-	  Int_t   ProcessEventDAQ(AliTRDRawStreamTB *rawStream, Bool_t nocheck = kFALSE);
+	  Int_t   ProcessEventDAQ(AliTRDrawStreamTB *rawStream, Bool_t nocheck = kFALSE);
 	  Int_t   ProcessEventDAQ(AliRawReader *rawReader, Bool_t nocheck = kFALSE);
 	  Int_t   ProcessEventDAQ(eventHeaderStruct *event, Bool_t nocheck = kFALSE);
 

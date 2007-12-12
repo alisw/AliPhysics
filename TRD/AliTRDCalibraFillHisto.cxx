@@ -61,7 +61,7 @@
 #include "AliTRDpadPlane.h"
 #include "AliTRDcluster.h"
 #include "AliTRDtrack.h"
-#include "AliTRDRawStreamTB.h"
+#include "AliTRDrawStreamTB.h"
 #include "AliRawReader.h"
 #include "AliRawReaderDate.h"
 #include "AliTRDgeometry.h"
@@ -1201,10 +1201,10 @@ void AliTRDCalibraFillHisto::StoreInfoCHPHtrack(AliTRDcluster *cl, AliTRDtrack *
   
 }
 //_____________________________________________________________________
-Int_t AliTRDCalibraFillHisto::ProcessEventDAQ(AliTRDRawStreamTB *rawStream, Bool_t nocheck)
+Int_t AliTRDCalibraFillHisto::ProcessEventDAQ(AliTRDrawStreamTB *rawStream, Bool_t nocheck)
 {
   //
-  // Event Processing loop - AliTRDRawStreamTB
+  // Event Processing loop - AliTRDrawStreamTB
   // 0 timebin problem
   // 1 no input
   // 2 input
@@ -1490,7 +1490,7 @@ Int_t AliTRDCalibraFillHisto::ProcessEventDAQ(AliRawReader *rawReader, Bool_t no
   //
 
 
-  AliTRDRawStreamTB rawStream(rawReader);
+  AliTRDrawStreamTB rawStream(rawReader);
 
   rawReader->Select("TRD");
 
