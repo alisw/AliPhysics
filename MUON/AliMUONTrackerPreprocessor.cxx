@@ -77,12 +77,13 @@ AliMUONTrackerPreprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTi
   fIsValid = kTRUE;
   fIsApplicable = kTRUE;
   
-  if ( runType == "PEDESTAL_RUN" ) // FIXME : check the name
+  if ( runType == "PEDESTAL" )
   {
     Add(fPedestalSubprocessor); // to be called only for pedestal runs
     Log("INFO-Will run Pedestal subprocessor");
   }
-  else if ( runType == "ELECTRONICS_CALIBRATION_RUN" ) // FIXME : check the name
+  else if ( runType == "ELECTRONICS_CALIBRATION" ||
+            runType == "CALIBRATION" ) // FIXME : check the name
   {
     Add(new AliMUONGainSubprocessor(this)); // to be called only for gain runs
     Log("INFO-Will run Gain subprocessor");

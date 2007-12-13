@@ -67,12 +67,12 @@
 #include "TRandom.h"
 #endif
 
-void TestMUONPreprocessor(Int_t runNumber=80, const char* runType="PEDESTAL_RUN")
+void TestMUONPreprocessor(Int_t runNumber=80, const char* runType="PEDESTAL")
 {
   // runType can be :
   //
-  // PEDESTAL_RUN -> pedestals
-  // ELECTRONICS_CALIBRATION_RUN -> gains
+  // PEDESTAL -> pedestals
+  // ELECTRONICS_CALIBRATION -> gains
   // PHYSICS -> HV
   // GMS
   
