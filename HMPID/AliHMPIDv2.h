@@ -26,6 +26,7 @@ static    void    IdealPosition(Int_t iCh,TGeoHMatrix *m);                      
   AliDigitizer*   CreateDigitizer  (AliRunDigitizer *m               )const{return new AliHMPIDDigitizer(m);}  //from AliModule invoked from AliSimulation::RunDigitization()
           void    Digits2Raw       (                                 );                                        //from AliModule invoked from AliSimulation::WriteRawFiles()
   virtual void    DefineOpticalProperties(                           );                                        //from AliModule invoked from AliMC::ConstructOpGeometry() to set Cerenkov properties
+          void    InitProperties   (                                 );                                        //define the phys processes on/off (dray,eloss...)                                                 
           void    Hits2SDigits     (                                 );                                        //from AliModule invoked from AliSimulation::RunSDigitization()
           void    Init             (                                 );                                        //from AliModule invoked from AliMC::InitGeometry()
           Int_t   IsVersion        (                                 )const{return 1;                      }   //from AliModule not used
@@ -42,7 +43,7 @@ static    void    IdealPosition(Int_t iCh,TGeoHMatrix *m);                      
   static  void    TestGeom         (                                 );                                        //tests the validity of geometry
   static  void    TestPoint        (Int_t ch,Float_t x,Float_t y     );                                        //tests the validity of geometry
 protected:
-  enum EMedia {kAir=1,kRoha=2,kSiO2=3,kC6F14=4,kCH4=5,kCsI=6,kAl=7,kCu=8,kW=9,kNeo=10,kAr=11};                               //media ids, used for geometry creation  
+  enum EMedia {kAir=1,kRoha=2,kSiO2=3,kC6F14=4,kCH4=5,kCsI=6,kAl=7,kCu=8,kW=9,kNeo=10,kAr=11};                       //media ids, used for geometry creation  
   enum Ecounters {kMipEnterRad=1,kCkovNew,kCkovNewRad,kCkovNewWin,kCkovNewProxGap,kCkovNewAmpGap,kCkovEnterPc,kPhotoEle};    //counters id's
   Int_t fIdPad,fIdCell;                                                                 //! volumes ID's used in StepManager() and Count()
   ClassDef(AliHMPIDv2,2)                                                                //HMPID full version for simulation

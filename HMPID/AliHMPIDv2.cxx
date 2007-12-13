@@ -88,39 +88,154 @@ void AliHMPIDv2::CreateMaterials()
   Float_t aC6F14[2]={ 12.01 , 18.99} , zC6F14[2]={ 6 , 9}   , wC6F14[2]={6 , 14} , dC6F14=1.68    ; Int_t nC6F14=-2;
   Float_t  aSiO2[2]={ 28.09 , 15.99} ,  zSiO2[2]={14 , 8}   ,  wSiO2[2]={1 ,  2} ,  dSiO2=2.64    ; Int_t  nSiO2=-2; 
   Float_t   aCH4[2]={ 12.01 ,  1.01} ,   zCH4[2]={ 6 , 1}   ,   wCH4[2]={1 ,  4} ,   dCH4=7.17e-4 ; Int_t   nCH4=-2; 
-  Float_t   aCsI[2]={132.90 ,126.90} ,   zCsI[2]={55 ,53}   ,   wCsI[2]={1 ,  1} ,   dCsI=0.1     ; Int_t   nCsI=-2; 
+// not necessary...PCB properties instead! Float_t   aCsI[2]={132.90 ,126.90} ,   zCsI[2]={55 ,53}   ,   wCsI[2]={1 ,  1} ,   dCsI=0.1     ; Int_t   nCsI=-2; 
   
-  Float_t     aRoha= 12.01 ,               zRoha=  6 ,                              dRoha=  0.10 ,   radRoha= 18.80 , absRoha=  86.3/dRoha; //special material- quasi quartz
-  Float_t       aCu= 63.55 ,                 zCu= 29 ,                                dCu=  8.96 ,     radCu=  1.43 ,   absCu= 134.9/dCu  ;
-  Float_t        aW=183.84 ,                  zW= 74 ,                                 dW= 19.30 ,      radW=  0.35 ,    absW= 185.0/dW   ;
-  Float_t       aAl= 26.98 ,                 zAl= 13 ,                                dAl=  2.70 ,     radAl=  8.90 ,   absAl= 106.4/dAl  ;
-  Float_t       aAr= 39.94 ,                 zAr= 18 ,                                dAr=  1.396e-3,  radAr=  14.0 ,   absAr= 117.2/dAr  ;   
-           
+  Float_t     aRoha = 12.01 ,   zRoha =  6 ,  dRoha =  0.10    ,   radRoha = 18.80 , absRoha =  86.3/dRoha; //special material- quasi quartz
+  Float_t       aCu = 63.55 ,   zCu   = 29 ,  dCu   =  8.96    ,   radCu   =  1.43 , absCu   = 134.9/dCu  ;
+  Float_t        aW =183.84 ,   zW    = 74 ,  dW    = 19.30    ,   radW    =  0.35 , absW    = 185.0/dW   ;
+  Float_t       aAl = 26.98 ,   zAl   = 13 ,  dAl   =  2.70    ,   radAl   =  8.90 , absAl   = 106.4/dAl  ;
+  Float_t       aAr = 39.94 ,   zAr   = 18 ,  dAr   =  1.396e-3,   radAr   =  14.0 , absAr   = 117.2/dAr  ;   
+
     Int_t   matId=0;                           //tmp material id number
     Int_t   unsens =  0, sens=1;               //sensitive or unsensitive medium
     Int_t   itgfld = gAlice->Field()->Integ(); //type of field intergration 0 no field -1 user in guswim 1 Runge Kutta 2 helix 3 const field along z
     Float_t maxfld = gAlice->Field()->Max();   //max field value
     Float_t tmaxfd = -10.0;                    //max deflection angle due to magnetic field in one step
     Float_t deemax = - 0.2;                    //max fractional energy loss in one step   
-    Float_t stemax = - 0.1;                    //mas step allowed [cm]
+    Float_t stemax = - 0.1;                    //max step allowed [cm]
     Float_t epsil  =   0.001;                  //abs tracking precision [cm]   
     Float_t stmin  = - 0.001;                  //min step size [cm] in continius process transport, negative value: choose it automatically
+
+    // PCB copmposed mainly by G10 (Si,C,H,O) -> CsI is negligible (<500nm thick)
+    // So what is called CsI has the optical properties of CsI, but the composition of G-10 (for delta elec, etc production...)
+    
+    Float_t aG10[4] = {28.09,12.01,1.01,16.00};
+    Float_t zG10[4] = {14.,  6.,  1.,  8.};
+    Float_t wG10[4] = {0.129060,0.515016,0.061873,0.294050};
+    Float_t dG10    = 1.7;
+    Int_t   nG10    = 4;
     
     AliMixture(++matId,"Air"  ,aAir  ,zAir  ,dAir  ,nAir  ,wAir  ); AliMedium(kAir  ,"Air"  ,matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);
     AliMixture(++matId,"C6F14",aC6F14,zC6F14,dC6F14,nC6F14,wC6F14); AliMedium(kC6F14,"C6F14",matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);      
     AliMixture(++matId,"SiO2" ,aSiO2 ,zSiO2 ,dSiO2 ,nSiO2 ,wSiO2 ); AliMedium(kSiO2 ,"SiO2" ,matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);    
     AliMixture(++matId,"CH4"  ,aCH4  ,zCH4  ,dCH4  ,nCH4  ,wCH4  ); AliMedium(kCH4  ,"CH4"  ,matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);  
-    AliMixture(++matId,"CsI"  ,aCsI  ,zCsI  ,dCsI  ,nCsI  ,wCsI  ); AliMedium(kCsI  ,"CsI"  ,matId,   sens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);//sensitive
-  
-    AliMixture(++matId ,"Neo" ,aSiO2 ,zSiO2 ,dSiO2 ,nSiO2 ,wSiO2 ); AliMedium(kNeo,"Neo" , matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin); //clm neoceram
-    AliMaterial(++matId,"Roha",aRoha,zRoha,dRoha,radRoha,absRoha);  AliMedium(kRoha,"Roha", matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin); //Roha->honeycomb
+//    AliMixture(++matId,"CsI"  ,aCsI  ,zCsI  ,dCsI  ,nCsI  ,wCsI  ); AliMedium(kCsI  ,"CsI"  ,matId,   sens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);//sensitive
+    AliMixture(++matId,"CsI+PCB",aG10  , zG10, dG10,nG10   ,wG10   ); AliMedium(kCsI  ,"CsI"  ,matId,   sens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);//sensitive
 
-    
+    AliMixture(++matId ,"Neo" ,aSiO2 ,zSiO2 ,dSiO2 ,nSiO2 ,wSiO2 ); AliMedium(kNeo  ,"Neo"  ,matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin); //clm neoceram
+    AliMaterial(++matId,"Roha",aRoha,zRoha,dRoha,radRoha,absRoha);  AliMedium(kRoha ,"Roha" ,matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin); //Roha->honeycomb
+
+
     AliMaterial(++matId,"Cu"  ,aCu  ,zCu  ,dCu  ,radCu  ,absCu  );  AliMedium(kCu  ,"Cu"  , matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);
     AliMaterial(++matId,"W"   ,aW   ,zW   ,dW   ,radW   ,absW   );  AliMedium(kW   ,"W"   , matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);
     AliMaterial(++matId,"Al"  ,aAl  ,zAl  ,dAl  ,radAl  ,absAl  );  AliMedium(kAl  ,"Al"  , matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);
     AliMaterial(++matId,"Ar"  ,aAr  ,zAr  ,dAr  ,radAr  ,absAr  );  AliMedium(kAr  ,"Ar"  , matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);
+
+    InitProperties();
+        
 }//void AliHMPID::CreateMaterials()
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void AliHMPIDv2::InitProperties()
+{
+/*
+* HMPID
+* ====
+*
+*       GAM   ELEC  NHAD   CHAD  MUON  EBREM MUHAB  EDEL  MUDEL MUPA ANNI BREM COMP DCAY DRAY HADR LOSS MULS PAIR PHOT RAYL
+* Quarz Window        (>1000 keV delta-electrons)
+HMPID  3  1.e-4 1.e-4 1.e-4  -1.   1.e-4 -1.   -1.    1.e-3 1.e-3 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1 
+* Freon Radiator      (>  500 keV delta-electrons)
+HMPID  4  1.e-4 1.e-4 1.e-4  -1.   1.e-4 -1.   -1.    5.e-4 5.e-4 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1 
+* Methane Gap         (>  100 keV delta-electrons)
+HMPID  5  5.e-5 1.e-5 1.e-4 -1.   1.e-4 -1.   -1.     1.e-4 1.e-4 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1 
+* Sensitive Volume    (>  50 keV delta-electrons)
+HMPID  9  1.e-5 1.e-5 1.e-4  -1.   1.e-4 -1.   -1.    5.e-5 5.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1 
+* CSI    (>  50 keV delta-electrons)
+HMPID  6  1.e-5 1.e-5 1.e-4  -1.   1.e-4 -1.   -1.    5.e-5 5.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1 
+* PCB backplane   (>  50 keV delta-electrons)
+HMPID 12  1.e-5 1.e-5 1.e-4  -1.   1.e-4 -1.   -1.    5.e-5 5.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1 
+*/
+    Int_t *idtmed = fIdtmed->GetArray();
+    Int_t imed;
+    
+    imed = kSiO2;   // * Quarz Window        (>1000 keV delta-electrons)
+    gMC->Gstpar(idtmed[imed], "CUTGAM",1.e-4);
+    gMC->Gstpar(idtmed[imed], "CUTELE",1.e-4);
+    gMC->Gstpar(idtmed[imed], "CUTNEU",1.e-4);
+    gMC->Gstpar(idtmed[imed], "CUTMUO",1.e-4);    
+    gMC->Gstpar(idtmed[imed], "DCUTE" ,1.e-3);    
+    gMC->Gstpar(idtmed[imed], "CUTHAD",1.e-3);    
+    
+    gMC->Gstpar(idtmed[imed], "DRAY",1);    
+    gMC->Gstpar(idtmed[imed], "LOSS",1);    
+
+    imed = kC6F14;  // * Freon Radiator      (>  500 keV delta-electrons)
+    gMC->Gstpar(idtmed[imed], "CUTGAM",1.e-4);
+    gMC->Gstpar(idtmed[imed], "CUTELE",1.e-4);
+    gMC->Gstpar(idtmed[imed], "CUTNEU",1.e-4);
+    gMC->Gstpar(idtmed[imed], "CUTMUO",1.e-4);    
+    gMC->Gstpar(idtmed[imed], "DCUTE" ,5.e-4);    
+    gMC->Gstpar(idtmed[imed], "CUTHAD",5.e-4);    
+    
+    gMC->Gstpar(idtmed[imed], "DRAY",1);    
+    gMC->Gstpar(idtmed[imed], "LOSS",1);    
+    
+    imed = kCH4;  // * Methane Gap         (>  100 keV delta-electrons)
+    gMC->Gstpar(idtmed[imed], "CUTGAM",5.e-5);
+    gMC->Gstpar(idtmed[imed], "CUTELE",5.e-5);
+    gMC->Gstpar(idtmed[imed], "CUTNEU",1.e-4);
+    gMC->Gstpar(idtmed[imed], "CUTMUO",1.e-4);    
+    gMC->Gstpar(idtmed[imed], "DCUTE" ,1.e-4);    
+    gMC->Gstpar(idtmed[imed], "CUTHAD",1.e-4);    
+    
+    gMC->Gstpar(idtmed[imed], "DRAY",1);    
+    gMC->Gstpar(idtmed[imed], "LOSS",1);    
+    
+    imed = kCsI;  // * CSI    (>  50 keV delta-electrons)
+    gMC->Gstpar(idtmed[imed], "CUTGAM",1.e-5);
+    gMC->Gstpar(idtmed[imed], "CUTELE",1.e-5);
+    gMC->Gstpar(idtmed[imed], "CUTNEU",1.e-4);
+    gMC->Gstpar(idtmed[imed], "CUTMUO",1.e-4);    
+    gMC->Gstpar(idtmed[imed], "DCUTE" ,5.e-5);    
+    gMC->Gstpar(idtmed[imed], "CUTHAD",5.e-5);    
+    
+    gMC->Gstpar(idtmed[imed], "DRAY",1);    
+    gMC->Gstpar(idtmed[imed], "LOSS",1);
+    
+    imed = kAl;  // * Alluminium    (>  50 keV delta-electrons)
+    gMC->Gstpar(idtmed[imed], "CUTGAM",1.e-5);
+    gMC->Gstpar(idtmed[imed], "CUTELE",1.e-5);
+    gMC->Gstpar(idtmed[imed], "CUTNEU",1.e-4);
+    gMC->Gstpar(idtmed[imed], "CUTMUO",1.e-4);    
+    gMC->Gstpar(idtmed[imed], "DCUTE" ,5.e-5);    
+    gMC->Gstpar(idtmed[imed], "CUTHAD",5.e-5);    
+    
+    gMC->Gstpar(idtmed[imed], "DRAY",1);    
+    gMC->Gstpar(idtmed[imed], "LOSS",1);    
+    
+    imed = kCu;  // * Copper       (>  50 keV delta-electrons)
+    gMC->Gstpar(idtmed[imed], "CUTGAM",1.e-5);
+    gMC->Gstpar(idtmed[imed], "CUTELE",1.e-5);
+    gMC->Gstpar(idtmed[imed], "CUTNEU",1.e-4);
+    gMC->Gstpar(idtmed[imed], "CUTMUO",1.e-4);    
+    gMC->Gstpar(idtmed[imed], "DCUTE" ,5.e-5);    
+    gMC->Gstpar(idtmed[imed], "CUTHAD",5.e-5);    
+    
+    gMC->Gstpar(idtmed[imed], "DRAY",1);    
+    gMC->Gstpar(idtmed[imed], "LOSS",1);    
+    
+    imed = kW;  // * Tungsten     (>  50 keV delta-electrons)
+    gMC->Gstpar(idtmed[imed], "CUTGAM",1.e-5);
+    gMC->Gstpar(idtmed[imed], "CUTELE",1.e-5);
+    gMC->Gstpar(idtmed[imed], "CUTNEU",1.e-4);
+    gMC->Gstpar(idtmed[imed], "CUTMUO",1.e-4);    
+    gMC->Gstpar(idtmed[imed], "DCUTE" ,5.e-5);    
+    gMC->Gstpar(idtmed[imed], "CUTHAD",5.e-5);    
+    
+    gMC->Gstpar(idtmed[imed], "DRAY",1);    
+    gMC->Gstpar(idtmed[imed], "LOSS",1);    
+    
+}
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDv2::CreateGeometry()
 {
@@ -176,7 +291,7 @@ void AliHMPIDv2::CreateGeometry()
   TGeoVolume *cel=        row->Divide  ("Hcel",1,nPadX,0,0);//along X->80 cells
   TGeoVolume *cat=gGeoManager->MakeTube("Hcat",cu   ,    0.00*mm   ,   50.00*um   ,    cellx/2); 
   TGeoVolume *ano=gGeoManager->MakeTube("Hano",w    ,    0.00*mm   ,   20.00*um   ,    cellx/2); 
-  TGeoVolume *pad=gGeoManager->MakeBox ("Hpad",csi  ,    7.54*mm/2 ,    7.90*mm/2 ,    1.7*mm/2); //2006P1     
+  TGeoVolume *pad=gGeoManager->MakeBox ("Hpad",csi  ,    7.54*mm/2 ,    7.90*mm/2 ,    1.7*mm/2); //2006P1 PCB material...     
   TGeoVolume *fr1=gGeoManager->MakeBox ("Hfr1",al   , 1463*mm/2 , 1422.00*mm/2 ,   58.3*mm/2);//2040P1
   TGeoVolume *fr1up=gGeoManager->MakeBox ("Hfr1up",ch4,(1426.00-37.00)*mm/2 , (1385.00-37.00)*mm/2 ,    20.0*mm/2);//2040P1
   TGeoVolume *fr1perUpBig=gGeoManager->MakeBox ("Hfr1perUpBig",ch4,1389*mm/2,35*mm/2,10*mm/2);    
@@ -320,7 +435,8 @@ hmp->AddNode(fr3,1,new TGeoTranslation(0.,0.,(80.-29.)*mm-34.*mm/2));
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDv2::Init()
 {
-// This methode defines ID for sensitive volumes, i.e. such geometry volumes for which there are if(gMC->CurrentVolID()==XXX) statements in StepManager()
+// This method defines ID for sensitive volumes, i.e. such geometry volumes for which there are if(gMC->CurrentVolID()==XXX) 
+// statements in StepManager()
 // Arguments: none
 //   Returns: none      
   AliDebug(1,"Start v2 HMPID.");    
