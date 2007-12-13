@@ -103,9 +103,16 @@ int main(int argc, char **argv) {
   Bool_t passvdrift  = kTRUE;    // if timebin okey
   Int_t  nbvdrift    = 0;     // number of events with entries for vdrift
 
-
-  /* some warning less */
-  AliTRDrawStreamTB::SupressWarnings(kTRUE);
+   // setting
+  // AliTRDrawStreamTB::SetNoDebug();
+  AliTRDrawStreamTB::SetNoErrorWarning();
+  AliTRDrawStreamTB::SetForceCleanDataOnly();
+  AliTRDrawStreamTB::AllowCorruptedData();
+  //AliTRDrawStreamTB::SetSkipCDH();
+  //AliTRDrawStreamTB::SetExtraWordsFix();
+  //AliTRDrawStreamTB::EnableDebugStream();
+  //AliTRDrawStreamTB::SetDumpHead(320);
+  //AliTRDrawStreamTB::SetDumpHead(80);
 
   
   /* main loop (infinite) */

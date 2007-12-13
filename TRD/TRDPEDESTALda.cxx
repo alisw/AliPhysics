@@ -74,9 +74,9 @@ int main(int argc, char **argv) {
   int nevents      =0;
  
   //Instance of AliCDBManager: needed by AliTRDRawStream
-  AliCDBManager *man = AliCDBManager::Instance();
-  man->SetDefaultStorage("local://$ALICE_ROOT");
-  man->SetRun(0);
+  //AliCDBManager *man = AliCDBManager::Instance();
+  //man->SetDefaultStorage("local://$ALICE_ROOT");
+  //man->SetRun(0);
   // AliTRDCalibPadStatus object
   AliTRDCalibPadStatus calipad = AliTRDCalibPadStatus();
   Bool_t passpadstatus = kTRUE;
@@ -86,8 +86,16 @@ int main(int argc, char **argv) {
   TStopwatch timer;
   timer.Start();
   
-  /* some warning less */
-  AliTRDrawStreamTB::SupressWarnings(kTRUE); 
+  // setting
+  // AliTRDrawStreamTB::SetNoDebug();
+  AliTRDrawStreamTB::SetNoErrorWarning();
+  AliTRDrawStreamTB::SetForceCleanDataOnly();
+  AliTRDrawStreamTB::AllowCorruptedData();
+  //AliTRDrawStreamTB::SetSkipCDH();
+  //AliTRDrawStreamTB::SetExtraWordsFix();
+  //AliTRDrawStreamTB::EnableDebugStream();
+  //AliTRDrawStreamTB::SetDumpHead(320);
+  //AliTRDrawStreamTB::SetDumpHead(80);
 
   /* read the data files */
   int n;

@@ -20,7 +20,7 @@ class AliTRDCalDet;
 class AliTRDCalPad;
 class AliTRDCalROC;
 class AliTRDCalPadStatus;
-class AliTRDRawStreamV2;
+class AliTRDrawStreamTB;
 class AliTRDgeometry;
 
 struct eventHeaderStruct;
@@ -35,7 +35,7 @@ public:
 
   AliTRDCalibPadStatus& operator = (const  AliTRDCalibPadStatus &source);
 
-  Int_t ProcessEvent(AliTRDRawStreamV2 *rawStream, Bool_t nocheck = kFALSE);
+  Int_t ProcessEvent(AliTRDrawStreamTB *rawStream, Bool_t nocheck = kFALSE);
   Int_t ProcessEvent(AliRawReader    *rawReader, Bool_t nocheck = kFALSE);
   Int_t ProcessEvent(eventHeaderStruct   *event, Bool_t nocheck = kFALSE);
 

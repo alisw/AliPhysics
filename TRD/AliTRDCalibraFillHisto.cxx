@@ -1243,7 +1243,7 @@ Int_t AliTRDCalibraFillHisto::ProcessEventDAQ(AliTRDrawStreamTB *rawStream, Bool
       if(((fMCMPrevious != imcm) || (fDetectorPreviousTrack != idetector) || (fROBPrevious != irob)) && (fDetectorPreviousTrack != -1)){
 	
 	// take the mean values and check the first time bin
-	for(Int_t j = 0; j < 21; j++){       
+	for(Int_t j = 0; j < 21; j++){      
 	  if(TMath::RMS(fTimeMax,phvalue[j]) != 0.0) mean[j] = TMath::Mean(fTimeMax,phvalue[j]);
 	  else mean[j] = 0.0;
 	  if(phvalue[j][0] > 200.0) first[j] = 1;
@@ -1277,8 +1277,11 @@ Int_t AliTRDCalibraFillHisto::ProcessEventDAQ(AliTRDrawStreamTB *rawStream, Bool
 	}
 
 	// reset
-	for(Int_t k = 0; k < 36; k++){
-	  for(Int_t j = 0; j < 21; j++){
+	for(Int_t j = 0; j < 21; j++){
+           mean[j] = 0.0;
+           first[j] = 0;
+           select[j] = 0;
+           for(Int_t k = 0; k < 36; k++){
 	    phvalue[j][k] = baseline;
 	  }
 	}
@@ -1293,19 +1296,21 @@ Int_t AliTRDCalibraFillHisto::ProcessEventDAQ(AliTRDrawStreamTB *rawStream, Bool
       if((fTimeMax != 0) && (nbtimebin != fTimeMax)) return 0;
       fTimeMax          = nbtimebin;
 
-      //baseline          = rawStream->GetCommonAdditive();                // common additive baseline
+      baseline          = rawStream->GetCommonAdditive();                // common additive baseline
      
       Int_t iTimeBin    = rawStream->GetTimeBin();                       //  current time bin
-      Int_t *signal     = rawStream->GetSignals();                       //  current ADC signal
+      Int_t *signal   = rawStream->GetSignals();                       //  current ADC signal
       Int_t col         = (rawStream->GetCol())%18;                      //  current COL MCM
-           
+      
+      //printf("detector %d, signal[0] %d, signal[1] %d, signal[2] %d, baseline %d\n",idetector,signal[0],signal[1],signal[2], baseline);
+     
       if((col < 0) || (col >= 21)) return 0;  
       if((imcm>=16) || (imcm < 0)) return 0;  
            
       Int_t fin     = TMath::Min(fTimeMax,(iTimeBin+3));
       Int_t n       = 0;
       for(Int_t itime = iTimeBin; itime < fin; itime++){
-	if(signal[n]> (baseline+3)) phvalue[col][itime] = signal[n];
+	phvalue[col][itime] = signal[n];
 	n++;
       }
     }
@@ -1348,8 +1353,11 @@ Int_t AliTRDCalibraFillHisto::ProcessEventDAQ(AliTRDrawStreamTB *rawStream, Bool
       }
       
       // reset
-      for(Int_t k = 0; k < 36; k++){
-	for(Int_t j = 0; j < 21; j++){
+      for(Int_t j = 0; j < 21; j++){
+        mean[j] = 0.0;
+        first[j] = 0;
+        select[j] = 0;
+        for(Int_t k = 0; k < 36; k++){
 	  phvalue[j][k] = baseline;
 	}
       }
@@ -1372,6 +1380,7 @@ Int_t AliTRDCalibraFillHisto::ProcessEventDAQ(AliTRDrawStreamTB *rawStream, Bool
 	  else mean[j] = 0.0;
 	  if(phvalue[j][0] > 200.0) first[j] = 1;
 	  else first[j] = 0;
+          //printf("meanvalue %f, first %d\n",mean[j],first[j]);
 	}
 	
 	// select
@@ -1384,14 +1393,17 @@ Int_t AliTRDCalibraFillHisto::ProcessEventDAQ(AliTRDrawStreamTB *rawStream, Bool
 	
       // fill
 	for(Int_t j = 1; j < 20; j++){
-	  if(select[j] == 1){
+	  //printf("select %d\n",select[j]);
+          if(select[j] == 1){
 	    withInput = 2;
 	    for(Int_t k = 0; k < fTimeMax; k++){
 	      if((phvalue[j][k] >= phvalue[j-1][k]) && (phvalue[j][k] >= phvalue[j+1][k])){
+                printf("fill\n");
 		UpdateDAQ(fDetectorPreviousTrack,0,0,k,(phvalue[j-1][k]+phvalue[j][k]+phvalue[j+1][k]),fTimeMax);
 	      }
 	      else{
 		if((j < 19) && (phvalue[j+1][k] >= phvalue[j][k]) && (phvalue[j+1][k] >= phvalue[j+2][k])){
+                  printf("fill\n");
 		  UpdateDAQ(fDetectorPreviousTrack,0,0,k,(phvalue[j][k]+phvalue[j+1][k]+phvalue[j+2][k]),fTimeMax);
 		}
 		else UpdateDAQ(fDetectorPreviousTrack,0,0,k,3*baseline,fTimeMax);
@@ -1401,8 +1413,11 @@ Int_t AliTRDCalibraFillHisto::ProcessEventDAQ(AliTRDrawStreamTB *rawStream, Bool
 	}
 	
 	// reset
-	for(Int_t k = 0; k < 36; k++){
-	  for(Int_t j = 0; j < 21; j++){
+	for(Int_t j = 0; j < 21; j++){
+          mean[j] = 0.0;
+          first[j] = 0;
+          select[j] = 0;
+          for(Int_t k = 0; k < 36; k++){
 	    phvalue[j][k] = baseline;
 	  }
 	}
@@ -1414,21 +1429,24 @@ Int_t AliTRDCalibraFillHisto::ProcessEventDAQ(AliTRDrawStreamTB *rawStream, Bool
       
 
 
-      //baseline          = rawStream->GetCommonAdditive();                //  common baseline
+      baseline          = rawStream->GetCommonAdditive();                //  common baseline
       
       nbtimebin         = rawStream->GetNumberOfTimeBins();              //  number of time bins read from data
       Int_t iTimeBin    = rawStream->GetTimeBin();                       //  current time bin
-      Int_t *signal     = rawStream->GetSignals();                       //  current ADC signal
+      Int_t *signal   = rawStream->GetSignals();                       //  current ADC signal
       Int_t col         = (rawStream->GetCol())%18;                      //  current COL MCM
 
       Int_t fin     = TMath::Min(nbtimebin,(iTimeBin+3));
       Int_t n       = 0;
-      
+    
+      //printf("detector %d, signal[0] %d, signal[1] %d, signal[2] %d, baseline %d\n",idetector,signal[0],signal[1],signal[2], baseline);
+
+  
       if((col < 0) || (col >= 21)) return 0;  
       if((imcm>=16) || (imcm < 0)) return 0;  
       
       for(Int_t itime = iTimeBin; itime < fin; itime++){
-	if(signal[n]>13) phvalue[col][itime] = signal[n];
+	phvalue[col][itime] = signal[n];
 	n++;
       }
     }
@@ -1471,8 +1489,11 @@ Int_t AliTRDCalibraFillHisto::ProcessEventDAQ(AliTRDrawStreamTB *rawStream, Bool
       }
       
       // reset
-      for(Int_t k = 0; k < 36; k++){
-	for(Int_t j = 0; j < 21; j++){
+      for(Int_t j = 0; j < 21; j++){
+          mean[j] = 0.0;
+          first[j] = 0;
+          select[j] = 0;
+          for(Int_t k = 0; k < 36; k++){
 	  phvalue[j][k] = baseline;
 	}
       }

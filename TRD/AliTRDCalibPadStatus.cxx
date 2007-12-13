@@ -75,7 +75,7 @@
 //header file
 #include "AliLog.h"
 #include "AliTRDCalibPadStatus.h"
-#include "AliTRDRawStreamV2.h"
+#include "AliTRDrawStreamTB.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDCommonParam.h"
 #include "./Cal/AliTRDCalROC.h"
@@ -210,7 +210,7 @@ Int_t AliTRDCalibPadStatus::UpdateHisto(const Int_t icdet, /*FOLD00*/
   return 0;
 }
 //_____________________________________________________________________
-Int_t AliTRDCalibPadStatus::ProcessEvent(AliTRDRawStreamV2 *rawStream, Bool_t nocheck)
+Int_t AliTRDCalibPadStatus::ProcessEvent(AliTRDrawStreamTB *rawStream, Bool_t nocheck)
 {
   //
   // Event Processing loop - AliTRDRawStreamCosmic
@@ -278,7 +278,7 @@ Int_t AliTRDCalibPadStatus::ProcessEvent(AliTRDRawStreamV2 *rawStream, Bool_t no
       Int_t iRow       = rawStream->GetRow();                            //  current row
       Int_t iRowMax    = rawStream->GetMaxRow();                         //  current rowmax
       Int_t iCol       = rawStream->GetCol();                            //  current col
-      
+     
 
       Int_t iADC       = 21-rawStream->GetADC();                            //  current ADC
       Int_t col        = 0;
@@ -297,9 +297,14 @@ Int_t AliTRDCalibPadStatus::ProcessEvent(AliTRDRawStreamV2 *rawStream, Bool_t no
       
       Int_t fin        = TMath::Min(nbtimebin,(iTimeBin+3));
       Int_t n          = 0;
-      
+     
+      //printf("det %d, row %d, signal[0] %d, signal[1] %d, signal [2] %d\n", idetector, iRow, signal[0], signal[1], signal[2]);
+ 
       for(Int_t k = iTimeBin; k < fin; k++){
-	if(signal[n]>0) UpdateHisto(idetector,iRow,iCol,signal[n],iRowMax,col,mcm);
+	if(signal[n]>0) {
+	  UpdateHisto(idetector,iRow,iCol,signal[n],iRowMax,col,mcm);
+	  //printf("Update with det %d, row %d, col %d, signal %d, rowmax %d, col %d, mcm %d\n",idetector,iRow,iCol,signal[n],iRowMax,col,mcm);
+	}
 	n++;
       }
       
@@ -318,7 +323,7 @@ Int_t AliTRDCalibPadStatus::ProcessEvent(AliRawReader *rawReader, Bool_t nocheck
   //
 
 
-  AliTRDRawStreamV2 rawStream(rawReader);
+  AliTRDrawStreamTB rawStream(rawReader);
 
   rawReader->Select("TRD");
 
