@@ -202,7 +202,9 @@ void AliHLTTPCClusterFinder::ProcessDigits()
   fActivePads.clear();
 
   // initialize block for reading packed data
-  fDigitReader->InitBlock(fPtr,fSize,fFirstRow,fLastRow,fCurrentPatch,fCurrentSlice);
+  iResult=fDigitReader->InitBlock(fPtr,fSize,fFirstRow,fLastRow,fCurrentPatch,fCurrentSlice);
+  if (iResult<0) return;
+
   readValue = fDigitReader->Next();
 
   // Matthias 08.11.2006 the following return would cause termination without writing the

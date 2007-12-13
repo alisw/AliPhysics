@@ -4,8 +4,8 @@
 #ifndef ALIHLTTPCDIGITREADERUNPACKED_H
 #define ALIHLTTPCDIGITREADERUNPACKED_H
 
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
+// Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+// See cxx source for full Copyright notice                               */
 
 /** @file   AliHLTTPCDigitReaderUnpacked.h
     @author Timm Steinbeck, Jochen Thaeder, Matthias Richter
@@ -78,6 +78,14 @@ private:
   AliHLTTPCDigitReaderUnpacked(const AliHLTTPCDigitReaderUnpacked&);
   /** assignment operator prohibited */
   AliHLTTPCDigitReaderUnpacked& operator=(const AliHLTTPCDigitReaderUnpacked&);
+
+  /**
+   * Increment to the next raw data pointer.
+   * @param pRow        [IN] the current row data pointer
+   *                    [OUT] the new pointer
+   * @return -EBADF in case of format error 
+   */
+  int GetNextRowData(AliHLTTPCDigitRowData*& pRow) const;
 
   /** intermediate row data structure (pointer in fPtr buffer) */
   AliHLTTPCDigitRowData *fDigitRowData; //!
