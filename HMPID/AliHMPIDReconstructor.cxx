@@ -198,13 +198,12 @@ void AliHMPIDReconstructor::FillESD(TTree */*digitsTree*/, TTree */*clustersTree
 // Probability vector from AliHMPIDPid
 //...
   AliHMPIDPid pID;
-  Double_t prob[5];
+  Double_t prob[AliPID::kSPECIES];
   
   for(Int_t iTrk=0;iTrk<pESD->GetNumberOfTracks();iTrk++){//ESD tracks loop
     AliESDtrack *pTrk = pESD->GetTrack(iTrk);// get next reconstructed track
-    pID.FindPid(pTrk,prob);
-    Printf("Theta Cherenkov %5.3f |  e %5.1f%% | u %5.1f%% | K %5.1f%% | pi %5.1f%% | p %5.1f%%",
-          pTrk->GetHMPIDsignal(),prob[0]*100,prob[1]*100,prob[2]*100,prob[3]*100,prob[4]*100);
+    pID.FindPid(pTrk,AliPID::kSPECIES,prob);
+    pTrk->SetHMPIDpid(prob);
   }//ESD tracks loop
   
 }//FillESD()

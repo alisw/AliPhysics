@@ -33,24 +33,22 @@ AliHMPIDPid::AliHMPIDPid():TTask("HMPIDrec","HMPIDPid")
 //..
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPIDPid::FindPid(AliESDtrack *pTrk,Double_t *prob)
+void AliHMPIDPid::FindPid(AliESDtrack *pTrk,Int_t nsp,Double_t *prob)
 {
 // Calculates probability to be a electron-muon-pion-kaon-proton
 // from the given Cerenkov angle and momentum assuming no initial particle composition
 // (i.e. apriory probability to be the particle of the given sort is the same for all sorts)
 
-  AliPID ppp; //needed
-  Double_t h[AliPID::kSPECIES];
-  
   if(pTrk->GetHMPIDsignal()<=0){//HMPID does not find anything reasonable for this track, assign 0.2 for all species
-    for(Int_t iPart=0;iPart<AliPID::kSPECIES;iPart++) prob[iPart]=1.0/AliPID::kSPECIES;
+    for(Int_t iPart=0;iPart<nsp;iPart++) prob[iPart]=1.0/(Float_t)nsp;
     return;
   } 
 
   Double_t pmod = pTrk->GetP();
   Double_t hTot=0;
+  Double_t *h = new Double_t [nsp];
 
-  for(Int_t iPart=0;iPart<AliPID::kSPECIES;iPart++){
+  for(Int_t iPart=0;iPart<nsp;iPart++){
     Double_t mass = AliPID::ParticleMass(iPart);
     Double_t cosThetaTh = TMath::Sqrt(mass*mass+pmod*pmod)/(AliHMPIDParam::Instance()->MeanIdxRad()*pmod);
     if(cosThetaTh<1) //calculate the height of theoretical theta ckov on the gaus of experimental one
@@ -62,9 +60,10 @@ void AliHMPIDPid::FindPid(AliESDtrack *pTrk,Double_t *prob)
 
   Double_t hMin=TMath::Gaus(pTrk->GetHMPIDsignal()-4*TMath::Sqrt(pTrk->GetHMPIDchi2()),pTrk->GetHMPIDsignal(),TMath::Sqrt(pTrk->GetHMPIDchi2()),kTRUE);//5 sigma protection
 
-  for(Int_t iPart=0;iPart<AliPID::kSPECIES;iPart++) {//species loop to assign probabilities
+  for(Int_t iPart=0;iPart<nsp;iPart++) {//species loop to assign probabilities
     if(hTot>hMin) prob[iPart]=h[iPart]/hTot;
-    else prob[iPart]=1.0/AliPID::kSPECIES;            //all theoretical values are far away from experemental one
+    else prob[iPart]=1.0/(Float_t)nsp;            //all theoretical values are far away from experemental one
   }
+  delete [] h;
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
