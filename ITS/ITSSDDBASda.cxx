@@ -1,11 +1,11 @@
 /*
 - Contact: - prino@to.infn.it
-- Link: -
-- Run Type: - 
+- Link: - http://www.to.infn.it/~prino/alice/RawData/run11161.date
+- Run Type: - PEDESTAL_RUN
 - DA Type: - LDC
 - Number of events needed: 100
 - Input Files: - 
-- Output Files: - SDDbase_step1_mod*_sid*.data
+- Output Files: - SDDbase_step1_mod*_sid*.data SDDbase_step2_mod*_sid*.data
 - Trigger types used: 
 */
 
@@ -77,8 +77,8 @@ int main(int argc, char **argv) {
 
   Int_t eqOffset = 256;
   Int_t DDLrange = 24;
-  Int_t maxNEvents=10; // maximum number of events to be analyzed
-  const Int_t nSDDmodules=12;  // temp for test raw data
+  Int_t maxNEvents=18; // maximum number of events to be analyzed
+  const Int_t nSDDmodules=260;  // temp for test raw data
   AliITSOnlineSDDBase **base=new AliITSOnlineSDDBase*[2*nSDDmodules];
   AliITSOnlineSDDCMN **corr=new AliITSOnlineSDDCMN*[2*nSDDmodules];
   TH2F **histo=new TH2F*[2*nSDDmodules];
@@ -185,12 +185,9 @@ int main(int argc, char **argv) {
 	  AliITSRawStreamSDD s(rawReader);
 
 	  while(s.Next()){
-	    Int_t iddl=rawReader->GetDDLID();
-	    iddl=0; // temporary for test raw data
-	    Int_t isddmod=s.GetModuleNumber(iddl,s.GetCarlosId()); 
+	    Int_t isddmod=s.GetModuleID();//Number(iddl,s.GetCarlosId()); 	    
 	    isddmod-=240;  // to have SDD modules from 0 to 259
-	    isddmod=s.GetCarlosId(); // temporary for test raw data
-	    if(isddmod<nSDDmodules&&s.IsCompletedModule()==kFALSE){ 
+	    if(isddmod>0 && isddmod<nSDDmodules && s.IsCompletedModule()==kFALSE){ 
 	      Int_t index=2*isddmod+s.GetChannel(); 
 	      histo[index]->Fill(s.GetCoord2(),s.GetCoord1(),s.GetSignal());
 	    }

@@ -70,8 +70,8 @@ void  AliITSOnlineSDDBase::ValidateAnodes(){
   for(Int_t ian=0;ian<fgkNAnodes;ian++){
     fGoodAnode[ian]=1;
     if(GetAnodeBaseline(ian)>fMaxBaseline || GetAnodeBaseline(ian)<fMinBaseline) fGoodAnode[ian]=0;
-    if(GetAnodeRawNoise(ian)>fMaxRawNoise || GetAnodeRawNoise(ian)<fMinRawNoise) fGoodAnode[ian]=0;
-    if(GetAnodeRawNoise(ian)>fNSigmaNoise*CalcMeanRawNoise()) fGoodAnode[ian]=0;
+    else if(GetAnodeRawNoise(ian)>fMaxRawNoise || GetAnodeRawNoise(ian)<fMinRawNoise) fGoodAnode[ian]=0;
+    else if(GetAnodeRawNoise(ian)>fNSigmaNoise*CalcMeanRawNoise()) fGoodAnode[ian]=0;
   }
 }
 
@@ -92,9 +92,9 @@ void AliITSOnlineSDDBase::AddEvent(TH2F* hrawd){
     sumQ/=(Float_t)kTimeBins;
     fSumBaseline[ian]+=sum[ian];
     fSumRawNoise[ian]+=sumQ;
-    if(fNEvents==1) ValidateAnodes();
   }
 
+  if(fNEvents==1) ValidateAnodes();
 
   Float_t *cmnEven = new Float_t[kTimeBins];
   Float_t *cmnOdd  = new Float_t[kTimeBins];
