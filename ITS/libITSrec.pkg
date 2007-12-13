@@ -54,6 +54,7 @@ SRCS = 	AliITSDetTypeRec.cxx \
 		AliITSBeamTestDigitizer.cxx \
 		AliITSMultReconstructor.cxx \
 		AliITSPreprocessorSPD.cxx \
+		AliITSPedestalSSD.cxx \
                 AliITSIntMap.cxx \
 		AliITSIntMapNode.cxx \
 		AliITSOnlineCalibrationSPD.cxx \

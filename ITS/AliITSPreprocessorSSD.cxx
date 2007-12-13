@@ -9,6 +9,8 @@
 
 #include "AliITSRawStreamSSD.h"
 #include "AliITSNoiseSSD.h"
+#include "AliITSPedestalSSD.h"
+#include "AliITSBadChannelsSSD.h"
 #include <Riostream.h>
 
 
@@ -19,6 +21,8 @@
 // SHUTTLE preprocessing class for SSD calibration files
 
 /* $Id$ */
+
+const Int_t AliITSPreprocessorSSD::fgkNumberOfSSD = 1698;
 
 ClassImp(AliITSPreprocessorSSD)
 
@@ -42,11 +46,13 @@ UInt_t AliITSPreprocessorSSD::Process(TMap* /*dcsAliasMap*/)
   // Note. To be modified: dcsAliasMap is not needed but I can not get rid
   // of it unless the base class AliPreprocessor is modified accordingly.
 
-  TObjArray calib_array(1698); 
+  TObjArray calib_array(fgkNumberOfSSD); 
+  TObjArray badch_array(fgkNumberOfSSD); 
+  TObjArray ped_array(fgkNumberOfSSD); 
   //Float_t noise=0, gain=0;
 
   TString runType = GetRunType();
-  if(runType == "ELECTRONICS_CALIBRATION_RUN") {
+ if(runType == "ELECTRONICS_CALIBRATION_RUN") {
 
   }
   else if(runType == "PEDESTAL_RUN") {
@@ -79,21 +85,45 @@ UInt_t AliITSPreprocessorSSD::Process(TMap* /*dcsAliasMap*/)
 	    }
 	    
 	    TObjArray *cal; 
-	    f->GetObject("TObjArray;1", cal); 
-	    f->Close(); delete f;
-	    
+	    f->GetObject("Noise;1", cal); 
 	    if(!cal) {
-	    	Log("File does not contain expected data!");
+	    	Log("File does not contain expected data for the noise!");
 		delete list;
-	    }
-	    
+	    }	    
 	    Int_t nmod = cal->GetEntries();
-
 	    for(Int_t mod=0; mod<nmod; mod++) {
-
 	      AliITSNoiseSSD *calib = (AliITSNoiseSSD*) cal->At(mod);
-	      calib_array.AddAt(calib,calib->GetMod());
+	      if((calib->GetMod()<500)||(calib->GetMod()>2198)) continue;
+	      calib_array.AddAt(calib,calib->GetMod()-500);
 	    }
+
+	    TObjArray *bad; 
+	    f->GetObject("BadChannels;1", bad); 
+	    if(!bad) {
+	    	Log("File does not contain expected data for bad channels  !");
+		delete list;
+	    }	    
+	    nmod = bad->GetEntries();
+	    for(Int_t mod=0; mod<nmod; mod++) {
+	      AliITSBadChannelsSSD *badch = (AliITSBadChannelsSSD*) bad->At(mod);
+	      if((badch->GetMod()<500)||(badch->GetMod()>2198)) continue;
+	      badch_array.AddAt(badch,badch->GetMod()-500);
+	    }
+
+	    TObjArray *ped; 
+	    f->GetObject("Pedestal;1", ped); 
+	    if(!ped) {
+	    	Log("File does not contain expected data for the pedestals!");
+		delete list;
+	    }	    
+	    nmod = ped->GetEntries();
+	    for(Int_t mod=0; mod<nmod; mod++) {
+	      AliITSPedestalSSD *pedel = (AliITSPedestalSSD*) ped->At(mod);
+	      if((pedel->GetMod()<500)||(pedel->GetMod()>2198)) continue;
+	      ped_array.AddAt(pedel,pedel->GetMod()-500);
+	    }
+
+	    f->Close(); delete f;	    
 		
 	  } else {
 	  	Log("GetFile error!");
@@ -113,13 +143,23 @@ UInt_t AliITSPreprocessorSSD::Process(TMap* /*dcsAliasMap*/)
       AliCDBMetaData metaData;
       metaData.SetBeamPeriod(0);
       metaData.SetResponsible("Enrico Fragiacomo");
-      metaData.SetComment("This preprocessor fills the TObjArray of AliITSNoiseSSD");
+      metaData.SetComment("Fills noise, pedestal and bad channels TObjArray");
   
-     if(!Store("Calib", "NoiseSSD", &calib_array, &metaData, 0, 1)) {
-          Log("no store");
+      if(!Store("Calib", "NoiseSSD", &calib_array, &metaData, 0, 1)) {
+	Log("no store");
         return 1;
-     }  
-
+      }  
+      
+      if(!Store("Calib", "BadChannelsSSD", &badch_array, &metaData, 0, 1)) {
+	Log("no store");
+        return 1;
+      }  
+      
+      if(!StoreReferenceData("Calib","PedestalSSD", &ped_array, &metaData)) {
+	Log("no store");
+	return 1;
+      }
+	 
   } // end if noise_run
   else {
     Log("Nothing to do");
