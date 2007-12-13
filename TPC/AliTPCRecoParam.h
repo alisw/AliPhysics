@@ -24,6 +24,7 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Double_t GetMaxSnpTrack() const  { return fMaxSnpTrack;}
   //
   Bool_t   DumpSignal()     const  { return fDumpSignal;}
+  void     SetTimeInterval(Int_t first, Int_t last) { fFirstBin=first, fLastBin =last;}
   Int_t    GetFirstBin() const     { return fFirstBin;}
   Int_t    GetLastBin() const      { return fLastBin;}
   void     SetTimeBinRange(Int_t first, Int_t last){ fFirstBin = first; fLastBin = last;}
