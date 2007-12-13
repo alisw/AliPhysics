@@ -1,17 +1,28 @@
 // @(#) $Id$
 // Original: AliHLTDisplay.cxx,v 1.26 2005/06/14 10:55:21 cvetan 
 
-/**
-<pre>
-//_____________________________________________________________
-// AliHLTTPCDisplay
-//
-// Display class for the HLT TPC events.
-</pre>
+//*************************************************************************
+// This file is property of and copyright by the ALICE HLT Project        * 
+// ALICE Experiment at CERN, All rights reserved.                         *
+//                                                                        *
+// Primary Authors: Jochen Thaeder <mailto:thaeder@kip.uni-heidelberg.de> *
+//                  Anders Vestbo                                         *
+//                  for The ALICE HLT Project.                            *
+//                                                                        *
+// Permission to use, copy, modify and distribute this software and its   *
+// documentation strictly for non-commercial purposes is hereby granted   *
+// without fee, provided that the above copyright notice appears in all   *
+// copies and that both the copyright notice and this permission notice   *
+// appear in the supporting documentation. The authors make no claims     *
+// about the suitability of this software for any purpose. It is          *
+// provided "as is" without express or implied warranty.                  *
+//*************************************************************************/
+
+/** @file   AliHLTTPCDisplay.cxx
+    @author Jochen Thaeder, Anders Vestbo
+    @date   
+    @brief  Display class for the HLT TPC events.
 */
-// Author: Jochen Thaeder <mailto:thaeder@kip.uni-heidelberg.de>
-//         Anders Vestbo <mailto:vestbo@fi.uib.no>      
-//*-- Copyright &copy ALICE HLT Group 
 
 #define TRACKHELIX 0
 #define TRACKPOLYMARKER 0
@@ -391,7 +402,6 @@ void AliHLTTPCDisplay::SetupHist(){
 
 // ####################################################################################################
 void AliHLTTPCDisplay::FillPadRow(Int_t patch, ULong_t dataBlock, ULong_t dataLen){
-#if defined(HAVE_ALIRAWDATA) && defined(HAVE_ALITPCRAWSTREAM_H)
     AliHLTTPCDigitReader* digitReader = new AliHLTTPCDigitReaderPacked();
     bool readValue = true;
     Int_t rowOffset = 0;
@@ -537,9 +547,6 @@ void AliHLTTPCDisplay::FillPadRow(Int_t patch, ULong_t dataBlock, ULong_t dataLe
 	    fHistrawcl->Fill(xyz[1],xyz[2]);
 	}
     }
-#else //! if defined(HAVE_ALIRAWDATA) && defined(HAVE_ALITPCRAWSTREAM_H)
-    HLTFatal("DigitReaderPacked not available - check your build");
-#endif //defined(HAVE_ALIRAWDATA) && defined(HAVE_ALITPCRAWSTREAM_H)
 }
 
 // #############################################################################

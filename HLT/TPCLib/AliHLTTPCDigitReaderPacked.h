@@ -4,8 +4,9 @@
 #ifndef ALIHLTTPCDIGITREADERPACKED_H
 #define ALIHLTTPCDIGITREADERPACKED_H
 
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
 
 /** @file   AliHLTTPCDigitReaderPacked.h
     @author Timm Steinbeck, Jochen Thaeder, Matthias Richter, Kenneth Aamodt
@@ -17,10 +18,7 @@
 
 #include "AliHLTTPCDigitReader.h"
 
-#if defined(HAVE_ALIRAWDATA) && defined(HAVE_ALITPCRAWSTREAM_H)
-
 class AliRawReaderMemory;
-
 class AliTPCRawStream;
 
 /**
@@ -28,7 +26,7 @@ class AliTPCRawStream;
  * A digit reader implementation for simulated, packed TPC 'raw' data.
  * Includes reordering of the pads by default, sorting (and time and
  * memory consuming intermediate storing of the data) can be disabled
- * by @ref SetUnsorted(kTRUE).
+ * by @ref SetUnsorted() with argument <b>kTRUE</b>.
  * @ingroup alihlt_tpc
  */
 class AliHLTTPCDigitReaderPacked : public AliHLTTPCDigitReader{
@@ -41,7 +39,7 @@ public:
   /**
    * Init the reader with a data block.
    * The function fetches the first and last row for the readout partition
-   * from @ref AliHLTTransform.
+   * from @ref AliHLTTPCTransform.
    * @param ptr     pointer to data buffer
    * @param size    size of the data buffer
    * @param patch   patch (readout partition) number within the slice
@@ -90,18 +88,5 @@ private:
   ClassDef(AliHLTTPCDigitReaderPacked, 1)
 	
 };
-
-#else
-// add a dummy class to make CINT happy
-class AliHLTTPCDigitReaderPacked : public AliHLTLogging{
-public:
-  AliHLTTPCDigitReaderPacked()
-  {
-    HLTFatal("AliHLTTPCDigitReaderPacked not build");
-  }
-
-  ClassDef(AliHLTTPCDigitReaderPacked, 0)
-};
-#endif //defined(HAVE_ALIRAWDATA) && defined(HAVE_ALITPCRAWSTREAM_H)
 
 #endif

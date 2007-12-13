@@ -97,8 +97,7 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
    * would have been prepared if there was enough space in the array<br>
    * The method is used by the consumer component.
    * @param pConsumer       the component which subscribes to the buffer
-   * @param arrayBlockDesc  pointer to block descriptor to be filled
-   * @param iArraySize      size of the block descriptor array
+   * @param blockDescList   block descriptor vector to be filled
    * @return: number of matching data blocks, neg. error code if failed<br>
    *          -EACCESS      the consumer state can't be changed (activated)
    *          -EBADF        unresolved data segments <br>

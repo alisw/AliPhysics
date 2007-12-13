@@ -172,12 +172,7 @@ Int_t AliHLTTPCCalibPulserComponent::InitCalibration() {
   if (fRawReader)
     return EINPROGRESS;
 
-#if defined(HAVE_ALIRAWDATA) && defined(HAVE_ALITPCRAWSTREAM_H) 
   fRawReader = new AliRawReaderMemory();
-#else
-  HLTFatal("AliRawReader  not available - check your build");
-  return -ENODEV;
-#endif
 
   return 0;
 #else // HAVE_NOT_ALITPCCALIBPULSER

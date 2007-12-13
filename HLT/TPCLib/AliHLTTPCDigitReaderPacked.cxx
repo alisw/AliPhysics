@@ -1,22 +1,22 @@
 // $Id$
 
-/**************************************************************************
- * This file is property of and copyright by the ALICE HLT Project        * 
- * ALICE Experiment at CERN, All rights reserved.                         *
- *                                                                        *
- * Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
- *                  Timm Steinbeck <timm@kip.uni-heidelberg.de>           *
- *                  Jochen Thaeder <thaeder@kip.uni-heidelberg.de>        *
- *                  for The ALICE HLT Project.                            *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+//*************************************************************************
+// This file is property of and copyright by the ALICE HLT Project        * 
+// ALICE Experiment at CERN, All rights reserved.                         *
+//                                                                        *
+// Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
+//                  Timm Steinbeck <timm@kip.uni-heidelberg.de>           *
+//                  Jochen Thaeder <thaeder@kip.uni-heidelberg.de>        *
+//                  for The ALICE HLT Project.                            *
+//                                                                        *
+// Permission to use, copy, modify and distribute this software and its   *
+// documentation strictly for non-commercial purposes is hereby granted   *
+// without fee, provided that the above copyright notice appears in all   *
+// copies and that both the copyright notice and this permission notice   *
+// appear in the supporting documentation. The authors make no claims     *
+// about the suitability of this software for any purpose. It is          *
+// provided "as is" without express or implied warranty.                  *
+//*************************************************************************/
 
 /** @file   AliHLTTPCDigitReaderPacked.cxx
     @author Timm Steinbeck, Jochen Thaeder, Matthias Richter, Kenneth Aamodt
@@ -41,7 +41,6 @@ using namespace std;
 
 ClassImp(AliHLTTPCDigitReaderPacked)
 
-#if defined(HAVE_ALIRAWDATA) && defined(HAVE_ALITPCRAWSTREAM_H)
 AliHLTTPCDigitReaderPacked::AliHLTTPCDigitReaderPacked()
   :
   //#if ENABLE_PAD_SORTING
@@ -100,7 +99,8 @@ AliHLTTPCDigitReaderPacked::~AliHLTTPCDigitReaderPacked(){
   //#endif // ENABLE_PAD_SORTING
 }
 
-Int_t AliHLTTPCDigitReaderPacked::InitBlock(void* ptr,unsigned long size, Int_t patch, Int_t slice){
+Int_t AliHLTTPCDigitReaderPacked::InitBlock(void* ptr,ULong_t size, Int_t patch, Int_t slice)
+{
 
   fRawMemoryReader->SetMemory( reinterpret_cast<UChar_t*>( ptr ), size );
 
@@ -269,4 +269,3 @@ Int_t AliHLTTPCDigitReaderPacked::GetTime(){
     return fTPCRawStream->GetTime();
   }
 }
-#endif //defined(HAVE_ALIRAWDATA) && defined(HAVE_ALITPCRAWSTREAM_H)

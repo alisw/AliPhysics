@@ -273,7 +273,6 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
 
   if (fPackedSwitch) { 
     if (rawreadermode == -2) {
-#if defined(HAVE_ALIRAWDATA) && defined(HAVE_ALITPCRAWSTREAM_H)
       HLTDebug("using AliHLTTPCDigitReaderPacked");
       fReader = new AliHLTTPCDigitReaderPacked();
       if(oldRCUFormat==1){
@@ -286,10 +285,6 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
 	fReader->SetUnsorted(kTRUE);
       }
       fClusterFinder->SetReader(fReader);
-#else // ! defined(HAVE_ALIRAWDATA) && defined(HAVE_ALITPCRAWSTREAM_H)
-      HLTFatal("DigitReaderPacked not available - check your build");
-      return -ENODEV;
-#endif //  defined(HAVE_ALIRAWDATA) && defined(HAVE_ALITPCRAWSTREAM_H)
     } else {
 #if defined(HAVE_TPC_MAPPING)
       HLTDebug("using AliHLTTPCDigitReaderRaw mode %d", rawreadermode);

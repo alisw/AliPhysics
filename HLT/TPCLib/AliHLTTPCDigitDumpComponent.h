@@ -37,7 +37,7 @@
  * Optional arguments: <br>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formating -->
  * \li -rawreadermode  <i> mode   </i> <br>
- *      data mode of the AliHLTTPCDigitReaderRaw</i> 
+ *      data mode of the <b>AliHLTTPCDigitReaderRaw</b> 
  * \li -digitreader    <i> reader   </i> <br>
  *      type of the digit reader: <i>unpacked, packed, raw</i> 
  *

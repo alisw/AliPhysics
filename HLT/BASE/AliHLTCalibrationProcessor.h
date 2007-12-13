@@ -60,8 +60,8 @@ class AliHLTCalibrationProcessor : public AliHLTProcessor {
    * @param pDetector   4 byte Detector identifier
    * @param pFileID     name of the file to which the data shall be stored
    * @param pDDLList    pointer to ReadoutList ( struct @ref AliHLTEventDDL) of
-   *                    participating DDLs. Have to be set with @ref EnableDLLBit(), 
-   *                    or unset with @ref DisableDLLBit. 
+   *                    participating DDLs. Have to be set or unset with @ref
+   *                    AliHLTComponent::EnableDDLBit() and @ref AliHLTComponent::DisableDDLBit(). 
    *			Will be filled automatically if not supplied by the component.
    * @return neg. error code if failed 
    */
@@ -74,8 +74,8 @@ class AliHLTCalibrationProcessor : public AliHLTProcessor {
    * @param pDetector   4 byte Detector identifier
    * @param pFileID     name of the file to which the data shall be stored
    * @param pDDLList    pointer to ReadoutList ( struct @ref AliHLTEventDDL) of
-   *                    participating DDLs. Have to be set with @ref EnableDLLBit(), 
-   *                    or unset with @ref DisableDLLBit. 
+   *                    participating DDLs. Have to be set or unset with @ref
+   *                    AliHLTComponent::EnableDDLBit() and @ref AliHLTComponent::DisableDDLBit().
    *			Will be filled automatically if not supplied by the component.
    * @return neg. error code if failed 
    */

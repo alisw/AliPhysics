@@ -46,16 +46,6 @@
 
 ClassImp(AliHLTPreprocessor)
 
-const Int_t AliHLTPreprocessor::fgkHuffmanTablesNum = 6;
-
-const char* AliHLTPreprocessor::fgkHLTPreproc = "HLT";
-
-const char* AliHLTPreprocessor::fgkHuffmanFileBase = "huffmanData_";
-
-const char* AliHLTPreprocessor::fgkHuffmanFileDetector = "TPC_";	// at the moment only one
-
-const char* AliHLTPreprocessor::fgkTempHistoFileName = "HLTTemperatureHistograms.root";
-
 AliHLTPreprocessor::AliHLTPreprocessor(AliShuttleInterface* shuttle) 
   :
   AliPreprocessor(fgkHLTPreproc, shuttle),
@@ -70,6 +60,15 @@ AliHLTPreprocessor::AliHLTPreprocessor(AliShuttleInterface* shuttle)
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 }
 
+const Int_t AliHLTPreprocessor::fgkHuffmanTablesNum = 6;
+
+const char* AliHLTPreprocessor::fgkHLTPreproc = "HLT";
+
+const char* AliHLTPreprocessor::fgkHuffmanFileBase = "huffmanData_";
+
+const char* AliHLTPreprocessor::fgkHuffmanFileDetector = "TPC_";	// at the moment only one
+
+const char* AliHLTPreprocessor::fgkTempHistoFileName = "HLTTemperatureHistograms.root";
 
 AliHLTPreprocessor::~AliHLTPreprocessor() {
 // see header file for function documentation

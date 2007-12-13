@@ -216,8 +216,8 @@ class AliHLTTPCEsdWriterComponent : public AliHLTLogging
    * @param pESD     ESD to be filled
    * @param blocks   data block descriptor array
    * @param nBlocks  size of the array
-   * @param pMinSize [OUT] receives the minimum slice no
-   * @param pMaxSize [OUT] receives the maximum slice no
+   * @param pMinSlice [OUT] receives the minimum slice no
+   * @param pMaxSlice [OUT] receives the maximum slice no
    * @return neg. error code if failed
    */
   int ProcessBlocks(TTree* pTree, AliESDEvent* pESD, const AliHLTComponentBlockData* blocks,

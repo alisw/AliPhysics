@@ -187,11 +187,7 @@ int AliHLTTPCDigitDumpComponent::DumpEvent( const AliHLTComponentEventData& evtD
 	  break;
 	case kDigitReaderPacked:
 	  HLTInfo("create DigitReaderPacked");
-#if defined(HAVE_ALIRAWDATA) && defined(HAVE_ALITPCRAWSTREAM_H)
 	  pReader=new AliHLTTPCDigitReaderPacked; 
-#else // ! defined(HAVE_ALIRAWDATA) && defined(HAVE_ALITPCRAWSTREAM_H)
-	  HLTFatal("DigitReaderPacked not available - check your build");
-#endif //  defined(HAVE_ALIRAWDATA) && defined(HAVE_ALITPCRAWSTREAM_H)
 	  break;
 	case kDigitReaderRaw:
 	  HLTInfo("create DigitReaderRaw");
@@ -203,7 +199,6 @@ int AliHLTTPCDigitDumpComponent::DumpEvent( const AliHLTComponentEventData& evtD
 	  iResult=-EFAULT;
 	  break;
 	}
-	pReader->SetUnsorted(kTRUE);
 	iResult=pReader->InitBlock(pDesc->fPtr,pDesc->fSize,firstRow,lastRow,part,slice);
 
 	int iPrintedRow=-1;

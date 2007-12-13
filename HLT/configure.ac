@@ -178,7 +178,6 @@ if test ! "x$have_aliroot" = "xno" ; then
 	 CHECKLIB=RAWDatarec
 	 AC_CHECK_LIB([$CHECKLIB],[_init],
                [ALIROOT_LIBS="$ALIROOT_LIBS -l$CHECKLIB"
-	        AC_DEFINE(HAVE_ALIRAWDATA)
 	        have_alirawdata=$CHECKLIB])],
 	[# second pass with -RAWData
 	 CHECKLIB="-lRAWData"
@@ -191,8 +190,7 @@ if test ! "x$have_aliroot" = "xno" ; then
  				       AliRawReaderFile freader;
  				       AliRawReaderDate dreader(NULL,0);
  				       AliRawReaderRoot rreader(NULL,0);])],
-                                     [AC_DEFINE(HAVE_ALIRAWDATA)
- 				       ALIROOT_LIBS="$ALIROOT_LIBS $CHECKLIB"
+                                     [ALIROOT_LIBS="$ALIROOT_LIBS $CHECKLIB"
  				       have_alirawdata=$CHECKLIB], 
  				      [have_alirawdata=no])
 	]) dnl AC_CHECK_LIB RAWDatabase
@@ -245,7 +243,7 @@ if test ! "x$have_aliroot" = "xno" ; then
     # the HLTTPCLib needs to link agains TPCbase and TPCrec
     # TPC library for AliTPCParam and AliSimDigits used in 
     # AliHLTTPCFileHandler.h and AliHLTTPCDisplay.cxx
-    # fram May 07 TPCbase depends on libGui.so
+    # from May 07 TPCbase depends on libGui.so
     CPPFLAGS="$save_CPPFLAGS $ALIROOT_CPPFLAGS -I${ALICE_ROOT}/TPC"
     have_alitpc=yes
     AC_MSG_CHECKING(for required classes in TPC libraries)
@@ -291,15 +289,6 @@ if test ! "x$have_aliroot" = "xno" ; then
   fi
   AC_MSG_CHECKING([for TPC mapping layout])
   AC_MSG_RESULT([$have_tpc_mapping])
-
-  if test ! "x$have_alirawdata" = "xno" ; then
-    # check for header files needed by the TPCLib/AliHLTTPCDigitReaderPacket
-    # the header file has been moved to the TPC module
-    CPPFLAGS="$save_CPPFLAGS $ALIROOT_CPPFLAGS  -I${ALICE_ROOT}/TPC"
-    # AliRawReaderMemory.h AliRawReaderFile.h already checked
-    #AC_CHECK_HEADERS([AliRawReaderMemory.h AliRawReaderFile.h AliTPCRawStream.h])
-    AC_CHECK_HEADERS([AliTPCRawStream.h])
-  fi
 
   dnl
   dnl Check for the interface of AliExternalTrackParam which has been changed
@@ -508,7 +497,8 @@ dnl ------------------------------------------------------------------
 AH_TEMPLATE([HLT_TPC],[hlt tpc library])
 
 CHECK_HLTMODULE([tpc],
-		[], [],
+		[AliTPCRawStream.h], 
+		[$ALIROOT_CPPFLAGS -I$ALICE_ROOT/TPC],
 		[], [-L$ROOTLIBDIR], [$ROOTLIBS $ADD_ROOTLIBS],
 		[], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS], 
 		[$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS])

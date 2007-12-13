@@ -19,7 +19,7 @@
 class AliHLTTPCDigitRowData;
 
 /**
- * @class AliHLTTPCDigitReaderPacked
+ * @class AliHLTTPCDigitReaderUnpacked
  * A digit reader implementation for unpacked TPC data.
  * @ingroup alihlt_tpc
  */

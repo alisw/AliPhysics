@@ -2,20 +2,18 @@
 // @(#) $Id$
 // Original: AliHLTDisplay.h,v 1.14 2004/06/30 08:30:14 loizides 
 
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
+
+/** @file   AliHLTTPCDisplay.h
+    @author Jochen Thaeder, Anders Vestbo
+    @date   
+    @brief  Display class for the HLT TPC events.
+*/
+
 #ifndef ALIHLTTPCDISPLAY_H
 #define ALIHLTTPCDISPLAY_H
-
-/** \class AliHLTTPCDisplay
-<pre>
-//_____________________________________________________________
-// AliHLTTPCDisplay
-//
-// Display class for the HLT TPC events.
-</pre>
-*/
-// Author: Jochen Thaeder <mailto:thaeder@kip.uni-heidelberg.de>
-//         Anders Vestbo <mailto:vestbo@fi.uib.no>
-//*-- Copyright &copy ALICE HLT Group 
 
 #include <TGeometry.h>
 #include <TObject.h>
