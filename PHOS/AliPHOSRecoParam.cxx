@@ -25,18 +25,31 @@
 ClassImp(AliPHOSRecoParam)
 
 //-----------------------------------------------------------------------------
-AliPHOSRecoParam::AliPHOSRecoParam() : TNamed(),
-  fClusteringThreshold(9999),fLocMaxCut(9999),fMinE(9999),fW0(9999),
-  fSubtractPedestals(kTRUE),fDecoderVersion("")
+AliPHOSRecoParam::AliPHOSRecoParam() :
+  TNamed(),
+  fClusteringThreshold(9999),
+  fLocMaxCut(9999),
+  fMinE(9999),
+  fW0(9999),
+  fSubtractPedestals(kTRUE),
+  fUnfold(kTRUE),
+  fOldRCUFormat(kFALSE),
+  fDecoderVersion("")
 {
   //Default constructor.
 }
 
 //-----------------------------------------------------------------------------
 AliPHOSRecoParam::AliPHOSRecoParam(const AliPHOSRecoParam& recoParam):
-  TNamed(recoParam),fClusteringThreshold(recoParam.fClusteringThreshold),
-  fLocMaxCut(recoParam.fLocMaxCut),fMinE(recoParam.fMinE),fW0(recoParam.fW0),
-  fSubtractPedestals(recoParam.fSubtractPedestals),fDecoderVersion(recoParam.fDecoderVersion)
+  TNamed(),
+  fClusteringThreshold(9999),
+  fLocMaxCut(9999),
+  fMinE(9999),
+  fW0(9999),
+  fSubtractPedestals(kTRUE),
+  fUnfold(kTRUE),
+  fOldRCUFormat(kFALSE),
+  fDecoderVersion("")
 {
   //Copy constructor.
 }
@@ -48,11 +61,13 @@ AliPHOSRecoParam& AliPHOSRecoParam::operator = (const AliPHOSRecoParam& recoPara
 
   if(this != &recoParam) {
     fClusteringThreshold = recoParam.fClusteringThreshold;
-    fLocMaxCut = recoParam.fLocMaxCut;
-    fMinE = recoParam.fMinE;
-    fW0 = recoParam.fW0;
-    fSubtractPedestals = recoParam.fSubtractPedestals;
-    fDecoderVersion=recoParam.fDecoderVersion ;
+    fLocMaxCut           = recoParam.fLocMaxCut;
+    fMinE                = recoParam.fMinE;
+    fW0                  = recoParam.fW0;
+    fSubtractPedestals   = recoParam.fSubtractPedestals;
+    fUnfold              = recoParam.fUnfold;
+    fOldRCUFormat        = recoParam.fOldRCUFormat;
+    fDecoderVersion      = recoParam.fDecoderVersion ;
   }
 
   return *this;
