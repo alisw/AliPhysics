@@ -665,8 +665,8 @@ void AliTRDQADataMaker::MakeRaws(AliRawReader* rawReader)
 
   AliTRDrawStreamTB *raw = new AliTRDrawStreamTB(rawReader);
 
-  raw->SetRawVersion(3);
-  raw->Init();
+  //raw->SetRawVersion(3);
+  //raw->Init();
 
   while (raw->Next()) {
 
@@ -691,6 +691,9 @@ void AliTRDQADataMaker::MakeRaws(AliRawReader* rawReader)
     GetRawsData(3)->Fill(sm);
     GetRawsData(4+sm)->Fill(index);
   }
+
+  delete raw;
+
 }
 
 //____________________________________________________________________________
