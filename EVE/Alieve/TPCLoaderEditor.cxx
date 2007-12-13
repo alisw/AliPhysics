@@ -166,8 +166,7 @@ void TPCLoaderEditor::SetModel(TObject* obj)
   fM = dynamic_cast<TPCLoader*>(obj);
 
   // !!!! order changed, need TGTextEntry::SetText NO BLOODY EMIT.
-  fFile->SetToolTipText(gSystem->DirName(fM->fFile));
-  fFile->SetText(gSystem->BaseName(fM->fFile));
+  fFile->SetText(fM->fFile);
   fEvent->SetValue(fM->fEvent);
   fEvent->SetEnabled(fM->fEvent >= 0);
   fDoubleSR->SetState(fM->fDoubleSR ? kButtonDown : kButtonUp);
@@ -206,14 +205,12 @@ void TPCLoaderEditor::FileSelect()
   if (!fi.fFilename)
     return;
 
-  fFile->SetToolTipText(gSystem->DirName (fi.fFilename));
-  fFile->SetText       (gSystem->BaseName(fi.fFilename));
+  fFile->SetText(fi.fFilename);
 }
 
 void TPCLoaderEditor::FileChanged()
 {
-  fM->fFile = Form("%s/%s", fFile->GetToolTip()->GetText()->Data(),
-		   fFile->GetText());
+  fM->fFile = fFile->GetText();
 }
 
 void TPCLoaderEditor::DoOpen()
