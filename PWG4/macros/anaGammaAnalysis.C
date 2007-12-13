@@ -1,22 +1,33 @@
 /* $Id$ */
-/* $Log$ */
+/* $Log$
+/* Revision 1.1  2007/12/07 14:13:02  gustavo
+/* Example macros for execution and configuration of the analysis
+/* */
 
 //---------------------------------------------------
 // Example macro to do analysis with the 
 // analysis classes in PWG4Gamma
 // Can be executed with Root and AliRoot
-// Different Analysis modes possible, local, 
-// CAF, local CAF and GRID
+//
+// Pay attention to the loading of libraries in LoadLibraries()
+// in the local mode.
 //
 //  Author : Gustavo Conesa Balbastre (INFN-LNF)
 //
 //-------------------------------------------------
-
 enum anaModes {mLocal, mLocalCAF,mPROOF,mGRID};
 //mLocal: Analyze locally files in your computer
 //mLocalCAF: Analyze locally CAF files
 //mPROOF: Analyze CAF files with PROOF
-//mGRID: Analyze files with alien.
+
+//Scale histograms from file. Change to kTRUE when xsection file exists
+//Put name of file containing xsection 
+//Put number of events per ESD file
+//This is an specific case for normalization of Pythia files.
+const Bool_t kGetXSectionFromFileAndScale = kFALSE ;
+const char * kXSFileName = "pyxsec.root";
+const Int_t kNumberOfEventsPerFile = 100; 
+
 
 void anaGammaAnalysis(Int_t mode=mLocal, TString configName = "ConfigKineGammaDirect")
 {
@@ -30,10 +41,20 @@ void anaGammaAnalysis(Int_t mode=mLocal, TString configName = "ConfigKineGammaDi
   LoadLibraries(mode) ;
   
   //
-  //Create chain, look below for options.
+  //Create chain, get cross sections, look below for options.
   // 
-  TChain* chain = CreateChain(mode);  
- 
+  Double_t xsection = 0;
+  Int_t ntrials = 0;
+  Int_t nfiles = 0;
+  TChain* chain = CreateChain(mode, xsection, ntrials, nfiles);  
+  if(kGetXSectionFromFileAndScale && nfiles > 0){
+    xsection /= nfiles ;
+    ntrials  /= nfiles ;
+    cout<<"//////////////////////////////////////////////////////////////"<<endl;
+    cout<<"Average cross section: "<<xsection<<" ntrials "<<ntrials<<" files "<<nfiles<<endl;
+    cout<<"//////////////////////////////////////////////////////////////"<<endl;
+  }
+
   if(chain){
   //
   // Make the analysis manager
@@ -53,11 +74,9 @@ void anaGammaAnalysis(Int_t mode=mLocal, TString configName = "ConfigKineGammaDi
   //mgr->SetDebugLevel(10);
 
   //Define task, put here any other task that you want to use.
-  //AliAnaGammaPhos * task = new AliAnaGammaPhos ("GammaPhos");
-  //AliAnaCaloTrigger * task = new AliAnaCaloTrigger("Trigger");
-  AliAnalysisTaskGamma * task = new AliAnalysisTaskGamma ("Gamma");
-  task->SetConfigFileName(configName); //Default name is ConfigGammaAnalysis, only for AliAnalysisTaskGamma
-  mgr->AddTask(task);
+  AliAnalysisTaskGamma * taskgamma = new AliAnalysisTaskGamma ("Gamma");
+  taskgamma->SetConfigFileName(configName); //Default name is ConfigGammaAnalysis
+  mgr->AddTask(taskgamma);
 
   // Create containers for input/output
   AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("cchain",TChain::Class(), 
@@ -67,10 +86,23 @@ void anaGammaAnalysis(Int_t mode=mLocal, TString configName = "ConfigKineGammaDi
   AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("gammahistos", TList::Class(),
                       AliAnalysisManager::kOutputContainer, "gammahistos.root");
 
-  mgr->ConnectInput  (task,     0, cinput1);
-  mgr->ConnectOutput (task,     0, coutput1 );
-  mgr->ConnectOutput (task,     1, coutput2 );
+  mgr->ConnectInput  (taskgamma,     0, cinput1);
+  mgr->ConnectOutput (taskgamma,     0, coutput1 );
+  mgr->ConnectOutput (taskgamma,     1, coutput2 );
 
+  //Scaling task
+  
+  if(kGetXSectionFromFileAndScale){
+    AliAnaScale * scale = new AliAnaScale("scale") ;
+    scale->Set(xsection/ntrials/kNumberOfEventsPerFile/nfiles) ;
+    mgr->AddTask(scale);
+    
+    AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("gammahistosscaled", TList::Class(),
+							      AliAnalysisManager::kOutputContainer, "gammahistosscaled.root");
+    mgr->ConnectInput  (scale,     0, coutput2);
+    mgr->ConnectOutput (scale,     0, coutput3 );
+  }
+  
   //
   // Run the analysis
   //    
@@ -93,7 +125,7 @@ void anaGammaAnalysis(Int_t mode=mLocal, TString configName = "ConfigKineGammaDi
 void  LoadLibraries(const anaModes mode) {
   
   //--------------------------------------
-  // Load the needed libraries
+  // Load the needed libraries most of them already loaded by aliroot
   //--------------------------------------
   gSystem->Load("libTree.so");
   gSystem->Load("libGeom.so");
@@ -102,19 +134,34 @@ void  LoadLibraries(const anaModes mode) {
   
   // >>>>>>>>>>> Local mode <<<<<<<<<<<<<< 
   if (mode==mLocal || mode == mLocalCAF || mode == mGRID) {
-    //If you want to use already compiled libraries:
-    gSystem->Load("libSTEERBase");
-    gSystem->Load("libESD");
-    gSystem->Load("libAOD");
-    gSystem->Load("libANALYSIS");
-    //    gSystem->Load("libPWG4Gamma");
-    
+    //--------------------------------------------------------
+    // If you want to use already compiled libraries 
+    // in the aliroot distribution
+    //--------------------------------------------------------
+    //gSystem->Load("libSTEERBase");
+    //gSystem->Load("libESD");
+    //gSystem->Load("libAOD");
+    //gSystem->Load("libANALYSIS");
+    //gSystem->Load("libPWG4Gamma");
+
+    //--------------------------------------------------------
     //If you want to use your own modified classes
-    //     SetupPar("STEERBase");
-    //     SetupPar("ESD");
-    //     SetupPar("AOD");
-    //     SetupPar("ANALYSIS");
-    SetupPar("PWG4Gamma",kFALSE);
+    //--------------------------------------------------------  
+    SetupPar("STEERBase");
+    SetupPar("ESD");
+    SetupPar("AOD");
+    SetupPar("ANALYSIS");
+    SetupPar("PWG4Gamma");
+    
+    //--------------------------------------------------------
+    // If the modified libraries have already been compiled and 
+    // you don't want to  decompress them and recompile
+    //--------------------------------------------------------
+    //SetupPar("STEERBase",kFALSE);
+    //SetupPar("ESD",kFALSE);
+    //SetupPar("AOD",kFALSE);
+    //SetupPar("ANALYSIS",kFALSE);
+    //SetupPar("PWG4Gamma",kFALSE);
   }
   
   // <<<<<<<<<< PROOF mode >>>>>>>>>>>>
@@ -193,7 +240,7 @@ void SetupPar(char* pararchivename, Bool_t decomp = kTRUE)
 }
 
 
-TChain * CreateChain(const anaModes mode){
+TChain * CreateChain(const anaModes mode, Double_t &xsection, Int_t &ntrials, Int_t &nfiles){
   //Creates data chain
   TChain *chain;
 
@@ -210,14 +257,16 @@ TChain * CreateChain(const anaModes mode){
   else if(mode == mLocal){
     chain = new TChain("esdTree") ;
     TString input = "AliESDs.root" ;
-
+    
     //If you want to add several ESD files sitting in a common directory OUTDIR
     //Specify as environmental variables the directory (OUTDIR), the number of files 
     //to analyze (NEVENT) and the pattern name of the directories with files (PATTERN)
     const char * kInDir = gSystem->Getenv("OUTDIR") ; 
     const char * kPattern = gSystem->Getenv("PATTERN") ;
-    const Int_t kEvent = atoi(gSystem->Getenv("NEVENT")) ; 
-
+    Int_t kEvent = 1; 
+    if(gSystem->Getenv("NEVENT"))
+      kEvent = atoi(gSystem->Getenv("NEVENT")) ;
+    
     //Check if env variables are set and are correct
     if ( kInDir  && kEvent) {
       printf("Get %d files from directory %s\n",kEvent,kInDir);
@@ -228,22 +277,34 @@ TChain * CreateChain(const anaModes mode){
       cout<<"OUTDIR : "<<kInDir<<endl;
       cout<<"NEVENT : "<<kEvent<<endl;
       cout<<"PATTERN: " <<kPattern<<endl;
-
+      
       //Loop on ESD files, add them to chain
-      Int_t event, skipped=0 ; 
+      Int_t event =0;
+      Int_t skipped=0 ; 
       char file[120] ;
+      Double_t * rv = new Double_t[2] ;
+      rv[0] = rv[1] = 0.0 ;
+
       for (event = 0 ; event < kEvent ; event++) {
         sprintf(file, "%s/%s%d/AliESDs.root", kInDir,kPattern,event) ; 
 	TFile * fESD = 0 ; 
 	//Check if file exists and add it, if not skip it
 	if ( fESD = TFile::Open(file)) 
+	  //Get cross section if file exists
+	  ReadXsection(kInDir, kPattern, event, rv) ;
 	  if ( fESD->Get("esdTree") ) { 
-            printf("++++ Adding %s\n", file) ;
-            chain->AddFile(file);
+	    printf("++++ Adding %s\n", file) ;
+	    chain->AddFile(file);
+	    nfiles++;
+	    if(rv) {
+	      cout << "xsection" << rv[0] << "; ntrials " <<rv[1]<< endl ;	      
+	      xsection += rv[0] ;
+	      ntrials += rv[1] ;
+	    }
 	  }
 	  else { 
-            printf("---- Skipping %s\n", file) ;
-            skipped++ ;
+	    printf("---- Skipping %s\n", file) ;
+	    skipped++ ;
 	  }
       }
       printf("number of entries # %lld, skipped %d\n", chain->GetEntries(), skipped*100) ; 	
@@ -252,6 +313,7 @@ TChain * CreateChain(const anaModes mode){
       cout<<">>>>>> No list added, take a single file <<<<<<<<< "<<input<<endl;
       chain->AddFile(input);
     }
+
   }// local files analysis
 
   //GRID xml files
@@ -293,4 +355,44 @@ TChain * CreateChain(const anaModes mode){
   gSystem->ChangeDirectory(ocwd.Data());
   
   return chain ;
+}
+
+//________________________________________________
+void ReadXsection(const char * inDir, const char * pattern, const Int_t event, Double_t * rv)
+{
+  // Read the PYTHIA statistics from the file pyxsec.root created by
+  // the function WriteXsection():
+  // integrated cross section (xsection) and
+  // the  number of Pyevent() calls (ntrials)
+  // and calculate the weight per one event xsection/ntrials
+  // The spectrum calculated by a user should be
+  // multiplied by this weight, something like this:
+  // TH1F *userSpectrum ... // book and fill the spectrum
+  // userSpectrum->Scale(weight)
+  //
+  // Yuri Kharlov 19 June 2007
+
+  Double_t xsection;
+  UInt_t    ntrials;
+
+  char cfile[100] ;
+  sprintf(cfile, "%s/%s%d/%s", inDir, pattern,event,kXSFileName) ;
+  TFile *file = new TFile(cfile,"readonly");
+
+  if ( ! file ) {
+    AliInfo(Form("Cross section file not found %s", cfile)) ;
+    rv=0x0 ;
+  }
+  else{
+    TTree *tree = file->Get("Xsection");
+    if (tree) {
+      tree->SetBranchAddress("xsection",&xsection);
+      tree->SetBranchAddress("ntrials",&ntrials);
+      tree->GetEntry(0);
+      rv[0] = xsection ;
+      rv[1] = ntrials ;
+    } 
+    else
+      rv = 0x0 ;
+  }
 }
