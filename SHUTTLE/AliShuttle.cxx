@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.71  2007/12/12 14:56:14  jgrosseo
+sending shuttle_ignore to ML also in case of 0 events
+
 Revision 1.70  2007/12/12 13:45:35  acolla
 Monalisa started in Collect() function. Alive message to monitor is sent at each Collect and every minute during preprocessor processing.
 
@@ -3226,13 +3229,14 @@ Bool_t AliShuttle::SendMail()
 
 	TString cc="alberto.colla@cern.ch";
 
-	TString subject = Form("%s Shuttle preprocessor FAILED in run %d !",
-				fCurrentDetector.Data(), GetCurrentRun());
+	TString subject = Form("%s Shuttle preprocessor FAILED in run %d (run type = %s)!",
+				fCurrentDetector.Data(), GetCurrentRun(), GetRunType());
 	AliDebug(2, Form("subject: %s", subject.Data()));
 
 	TString body = Form("Dear %s expert(s), \n\n", fCurrentDetector.Data());
 	body += Form("SHUTTLE just detected that your preprocessor "
-			"failed processing run %d!!\n\n", GetCurrentRun());
+			"failed processing run %d (run type = %s)!!\n\n", 
+					GetCurrentRun(), GetRunType());
 	body += Form("Please check %s status on the SHUTTLE monitoring page: \n\n", 
 				fCurrentDetector.Data());
 	if (fConfig->GetRunMode() == AliShuttleConfig::kTest)
