@@ -30,8 +30,13 @@
 #include <cassert>
 #include "AliHLTTPCDigitDumpComponent.h"
 #include "AliHLTTPCTransform.h"
+#include "AliHLTTPCDigitReader.h"
+#include "AliHLTTPCDigitReaderUnpacked.h"
+#include "AliHLTTPCDigitReaderPacked.h"
 #include "AliHLTTPCDigitReaderRaw.h"
 #include "AliHLTTPCDefinitions.h"
+
+#define DefaultRawreaderMode 0
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCDigitDumpComponent)
@@ -39,7 +44,8 @@ ClassImp(AliHLTTPCDigitDumpComponent)
 AliHLTTPCDigitDumpComponent::AliHLTTPCDigitDumpComponent()
   :
   AliHLTFileWriter(),
-  fRawreaderMode(0)
+  fRawreaderMode(DefaultRawreaderMode),
+  fDigitReaderType(kDigitReaderRaw)
 {
   // see header file for class documentation
   // or
@@ -98,7 +104,31 @@ int AliHLTTPCDigitDumpComponent::ScanArgument(int argc, const char** argv)
       } else {
 	fRawreaderMode=static_cast<unsigned>(mode);
       }
+      break;
     }
+
+    // -digitreader
+    if (argument.CompareTo("-digitreader")==0) {
+      if ((bMissingParam=(++i>=argc))) break;
+      TString param=argv[i];
+      if (param.CompareTo("unpacked", TString::kIgnoreCase)==0) {
+	fDigitReaderType=kDigitReaderUnpacked;
+      } else if (param.CompareTo("packed", TString::kIgnoreCase)==0) {
+	fDigitReaderType=kDigitReaderPacked;
+      } else if (param.CompareTo("raw", TString::kIgnoreCase)==0) {
+	fDigitReaderType=kDigitReaderRaw;
+      } else {
+	HLTError("unknown digit reader type %s", param.Data());
+	iResult=-EINVAL;
+      }
+
+      if (fDigitReaderType!=kDigitReaderRaw && fRawreaderMode!=DefaultRawreaderMode && iResult>=0) {
+	HLTWarning("the selected digit reader does not support the option \'-rawreadermode\'");
+      }
+
+      break;
+    }
+
   } while (0); // just use the do/while here to have the option of breaking
 
   if (bMissingParam) iResult=-EPROTO;
@@ -124,8 +154,12 @@ int AliHLTTPCDigitDumpComponent::DumpEvent( const AliHLTComponentEventData& evtD
   int blockno=0;
   const AliHLTComponentBlockData* pDesc=NULL;
 
-  for (pDesc=GetFirstInputBlock(kAliHLTDataTypeDDLRaw|kAliHLTDataOriginTPC); pDesc!=NULL; pDesc=GetNextInputBlock(), blockno++) {
+  for (pDesc=GetFirstInputBlock(kAliHLTAnyDataType); pDesc!=NULL; pDesc=GetNextInputBlock(), blockno++) {
     HLTDebug("event %Lu block %d: %s 0x%08x size %d", evtData.fEventID, blockno, DataType2Text(pDesc->fDataType).c_str(), pDesc->fSpecification, pDesc->fSize);
+
+    if (fDigitReaderType==kDigitReaderUnpacked && pDesc->fDataType!=AliHLTTPCDefinitions::fgkUnpackedRawDataType) continue;
+    else if (fDigitReaderType!=kDigitReaderUnpacked && pDesc->fDataType!=(kAliHLTDataTypeDDLRaw|kAliHLTDataOriginTPC)) continue;
+
     TString filename;
     iResult=BuildFileName(evtData.fEventID, blockno, pDesc->fDataType, pDesc->fSpecification, filename);
     ios::openmode filemode=(ios::openmode)0;
@@ -145,16 +179,36 @@ int AliHLTTPCDigitDumpComponent::DumpEvent( const AliHLTComponentEventData& evtD
 	assert(slice==AliHLTTPCDefinitions::GetMaxSliceNr(*pDesc));
 	int firstRow=AliHLTTPCTransform::GetFirstRow(part);
 	int lastRow=AliHLTTPCTransform::GetLastRow(part);
-	AliHLTTPCDigitReaderRaw reader(fRawreaderMode);
-	reader.InitBlock(pDesc->fPtr,pDesc->fSize,firstRow,lastRow,part,slice);
+	AliHLTTPCDigitReader* pReader=NULL;
+	switch (fDigitReaderType) {
+	case kDigitReaderUnpacked:
+	  HLTInfo("create DigitReaderUnpacked");
+	  pReader=new AliHLTTPCDigitReaderUnpacked; 
+	  break;
+	case kDigitReaderPacked:
+	  HLTInfo("create DigitReaderPacked");
+	  pReader=new AliHLTTPCDigitReaderPacked; 
+	  break;
+	case kDigitReaderRaw:
+	  HLTInfo("create DigitReaderRaw");
+	  pReader=new AliHLTTPCDigitReaderRaw(fRawreaderMode);
+	  break;
+	}
+	if (!pReader) {
+	  HLTError("can not create digit reader of type %d", fDigitReaderType);
+	  iResult=-EFAULT;
+	  break;
+	}
+	pReader->SetUnsorted(kTRUE);
+	iResult=pReader->InitBlock(pDesc->fPtr,pDesc->fSize,firstRow,lastRow,part,slice);
 
 	int iPrintedRow=-1;
 	int iPrintedPad=-1;
 	int iLastTime=-1;
-	while (reader.Next()) {
-	  if ((iPrintedSlice!=-1 && iLastTime!=reader.GetTime()+1 && iLastTime!=reader.GetTime()-1) ||
-	      (iPrintedPad!=-1 && iPrintedPad!=reader.GetPad()) ||
-	      (iPrintedRow!=-1 && iPrintedRow!=reader.GetRow())) {
+	while (pReader->Next()) {
+	  if ((iPrintedSlice!=-1 && iLastTime!=pReader->GetTime()+1 && iLastTime!=pReader->GetTime()-1) ||
+	      (iPrintedPad!=-1 && iPrintedPad!=pReader->GetPad()) ||
+	      (iPrintedRow!=-1 && iPrintedRow!=pReader->GetRow())) {
 	    dump << endl;
 	  }
 	  if (iPrintedSlice!=slice || iPrintedPart!=part) {
@@ -164,24 +218,26 @@ int AliHLTTPCDigitDumpComponent::DumpEvent( const AliHLTComponentEventData& evtD
 	    dump << "    Slice: " << iPrintedSlice << "   Partition: " << iPrintedPart << endl;
 	    iPrintedRow=-1;
 	  }
-	  if (iPrintedRow!=reader.GetRow()) {
-	    iPrintedRow=reader.GetRow();
+	  if (iPrintedRow!=pReader->GetRow()) {
+	    iPrintedRow=pReader->GetRow();
 	    dump << "--------------------------------------------------------------------" << endl;
 	    dump << "Row: " << iPrintedRow << endl;
 	    iPrintedPad=-1;
 	  }
-	  if (iPrintedPad!=reader.GetPad()) {
-	    iPrintedPad=reader.GetPad();
+	  if (iPrintedPad!=pReader->GetPad()) {
+	    iPrintedPad=pReader->GetPad();
 	    dump << "Row: " << iPrintedRow << "  Pad: " << iPrintedPad << endl;
 	    iLastTime=-1;
 	  }
-	  if (iLastTime!=reader.GetTime()+1 && iLastTime!=reader.GetTime()-1 ) {
-	    dump << "                     Time " << reader.GetTime() << ":  ";
+	  if (iLastTime!=pReader->GetTime()+1 && iLastTime!=pReader->GetTime()-1 ) {
+	    dump << "                     Time " << pReader->GetTime() << ":  ";
 	  }
-	  iLastTime=reader.GetTime();
-	  dump << "  " << reader.GetSignal();
+	  iLastTime=pReader->GetTime();
+	  dump << "  " << pReader->GetSignal();
 	}
 	dump << endl << endl;
+	delete pReader;
+	pReader=NULL;
       } else {
 	HLTError("can not open file %s for writing", filename.Data());
 	iResult=-EBADF;

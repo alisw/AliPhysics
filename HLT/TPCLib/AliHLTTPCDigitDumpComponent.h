@@ -36,6 +36,10 @@
  *
  * Optional arguments: <br>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formating -->
+ * \li -rawreadermode  <i> mode   </i> <br>
+ *      data mode of the AliHLTTPCDigitReaderRaw</i> 
+ * \li -digitreader    <i> reader   </i> <br>
+ *      type of the digit reader: <i>unpacked, packed, raw</i> 
  *
  */
 class AliHLTTPCDigitDumpComponent : public AliHLTFileWriter {
@@ -67,8 +71,18 @@ class AliHLTTPCDigitDumpComponent : public AliHLTFileWriter {
   /** assignment operator prohibited */
   AliHLTTPCDigitDumpComponent& operator=(const AliHLTTPCDigitDumpComponent&);
 
+  enum {
+    kDigitReaderInvalid,
+    kDigitReaderUnpacked,
+    kDigitReaderPacked,
+    kDigitReaderRaw
+  };
+
   /** the mode for the DigitReaderRaw */
   unsigned fRawreaderMode; //!transient
+
+  /** the digit reader to use */
+  short fDigitReaderType; //!transient
 
   ClassDef(AliHLTTPCDigitDumpComponent, 0);
 };
