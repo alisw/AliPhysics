@@ -43,7 +43,7 @@ UInt_t AliITSPreprocessorSDD::Process(TMap*/* dcsAliasMap*/){
     TObjArray calSDD(fgkNumberOfSDD);
     calSDD.SetOwner(kFALSE);
     Float_t baseline,rawnoise,cmn,corn,gain;
-    Int_t isgoodan,i,im,is,isgoodmod;
+    Int_t isgoodan,i,im,is,isgoodmod,basmin,basoff;
     Int_t numOfBadChannels[fgkNumberOfSDD];
   
     TList* sourceList = GetFileSources(kDAQ, "SDD_Calib");
@@ -80,7 +80,7 @@ UInt_t AliITSPreprocessorSDD::Process(TMap*/* dcsAliasMap*/){
        fscanf(basFil,"%d %d %d\n",&im,&is,&isgoodmod);
        if(!isgoodmod) cal->SetDead();
        for(Int_t ian=0;ian<(fgkNumberOfChannels/2);ian++){
-	 fscanf(basFil,"%d %d %f %f %f %f %f\n",&i,&isgoodan,&baseline,&rawnoise,&cmn,&corn,&gain);
+	 fscanf(basFil,"%d %d %f %d %d %f %f %f %f\n",&i,&isgoodan,&baseline,&basmin,&basoff,&rawnoise,&cmn,&corn,&gain);
 	 Int_t ich=ian;
 	 if(isid==1) ich+=256;
 	 if(!isgoodan){ 
