@@ -42,7 +42,7 @@ const TString kStandAloneRunType = "STANDALONE"; // standalone run identifier
 const TString kDaqRunType = "DAQ"; // DAQ run identifier
 const TString kAmandaTemp = "tpc_PT_%d.Temperature"; // Amanda string for temperature entries
 //const Double_t kFitFraction = 0.7;                 // Fraction of DCS sensor fits required              
-const Double_t kFitFraction = 0;          // Don't require minimum number of fits in commissioning run 
+const Double_t kFitFraction = -1.0;          // Don't require minimum number of fits in commissioning run 
 
 //
 // This class is the SHUTTLE preprocessor for the TPC detector.
@@ -180,39 +180,75 @@ UInt_t AliTPCPreprocessor::Process(TMap* dcsAliasMap)
   // pedestal entries
 
   if(runType == kPedestalRunType) {
-    Int_t pedestalSource = AliShuttleInterface::kDAQ;
+    Int_t numSources = 1;
+    Int_t pedestalSource[2] = {AliShuttleInterface::kDAQ,AliShuttleInterface::kHLT} ;
     TString source = fConfEnv->GetValue("Pedestal","DAQ");
     source.ToUpper();
-    if ( source == "HLT" ) pedestalSource = AliShuttleInterface::kHLT;
-    if (!GetHLTStatus()) pedestalSource = AliShuttleInterface::kDAQ;
-    UInt_t pedestalResult = ExtractPedestals(pedestalSource);
+    if ( source == "HLT") pedestalSource[0] = AliShuttleInterface::kHLT;
+    if (!GetHLTStatus()) pedestalSource[0] = AliShuttleInterface::kDAQ;
+    if (source == "HLTDAQ" ) {
+        numSources=2;
+	pedestalSource[0] = AliShuttleInterface::kHLT;
+	pedestalSource[1] = AliShuttleInterface::kDAQ;
+    }
+    if (source == "DAQHLT" ) numSources=2;
+    UInt_t pedestalResult=0;
+    for (Int_t i=0; i<numSources; i++ ) {	
+      UInt_t pedestalResult = ExtractPedestals(pedestalSource[i]);
+      if ( pedestalResult == 0 ) break;
+    }
     result += pedestalResult;
 
   }
 
   // pulser trigger processing
 
-  if( runType == kPulserRunType ) {
-    Int_t pulserSource = AliShuttleInterface::kDAQ;
+  if(runType == kPulserRunType) {
+    Int_t numSources = 1;
+    Int_t pulserSource[2] = {AliShuttleInterface::kDAQ,AliShuttleInterface::kHLT} ;
     TString source = fConfEnv->GetValue("Pulser","DAQ");
     source.ToUpper();
-    if ( source == "HLT" ) pulserSource = AliShuttleInterface::kHLT;
-    if (!GetHLTStatus()) pulserSource = AliShuttleInterface::kDAQ;
-    UInt_t pulserResult = ExtractPulser(pulserSource);
+    if ( source == "HLT") pulserSource[0] = AliShuttleInterface::kHLT;
+    if (!GetHLTStatus()) pulserSource[0] = AliShuttleInterface::kDAQ;
+    if (source == "HLTDAQ" ) {
+        numSources=2;
+	pulserSource[0] = AliShuttleInterface::kHLT;
+	pulserSource[1] = AliShuttleInterface::kDAQ;
+    }
+    if (source == "DAQHLT" ) numSources=2;
+    UInt_t pulserResult=0;
+    for (Int_t i=0; i<numSources; i++ ) {	
+      pulserResult = ExtractPulser(pulserSource[i]);
+      if ( pulserResult == 0 ) break;
+    }
     result += pulserResult;
 
   }
+
+
 
   // Central Electrode processing
 
   if( runType == kPhysicsRunType || runType == kStandAloneRunType || 
       runType == kDaqRunType ) {    
-    Int_t ceSource = AliShuttleInterface::kDAQ;
+
+    Int_t numSources = 1;
+    Int_t ceSource[2] = {AliShuttleInterface::kDAQ,AliShuttleInterface::kHLT} ;
     TString source = fConfEnv->GetValue("CE","DAQ");
     source.ToUpper();
-    if ( source == "HLT" ) ceSource = AliShuttleInterface::kHLT;
-    if (!GetHLTStatus()) ceSource = AliShuttleInterface::kDAQ;
-    UInt_t ceResult = ExtractCE(ceSource);
+    if ( source == "HLT") ceSource[0] = AliShuttleInterface::kHLT;
+    if (!GetHLTStatus()) ceSource[0] = AliShuttleInterface::kDAQ;
+    if (source == "HLTDAQ" ) {
+        numSources=2;
+	ceSource[0] = AliShuttleInterface::kHLT;
+	ceSource[1] = AliShuttleInterface::kDAQ;
+    }
+    if (source == "DAQHLT" ) numSources=2;
+    UInt_t ceResult=0;
+    for (Int_t i=0; i<numSources; i++ ) {	
+      ceResult = ExtractCE(ceSource[i]);
+      if ( ceResult == 0 ) break;
+    }
     result += ceResult;
 
   }
@@ -229,7 +265,7 @@ UInt_t AliTPCPreprocessor::MapTemperature(TMap* dcsAliasMap)
   TMap *map = fTemp->ExtractDCS(dcsAliasMap);
   if (map) {
     fTemp->MakeSplineFit(map);
-    Double_t fitFraction = fTemp->NumFits()/fTemp->NumSensors(); 
+    Double_t fitFraction = 1.0*fTemp->NumFits()/fTemp->NumSensors(); 
     if (fitFraction > kFitFraction ) {
       AliInfo(Form("Temperature values extracted, fits performed.\n"));
     } else { 
@@ -268,7 +304,7 @@ UInt_t AliTPCPreprocessor::MapHighVoltage(TMap* dcsAliasMap)
   TMap *map = fHighVoltage->ExtractDCS(dcsAliasMap);
   if (map) {
     fHighVoltage->MakeSplineFit(map);
-    Double_t fitFraction = fHighVoltage->NumFits()/fHighVoltage->NumSensors(); 
+    Double_t fitFraction = 1.0*fHighVoltage->NumFits()/fHighVoltage->NumSensors(); 
     if (fitFraction > kFitFraction ) {
       AliInfo(Form("High volatge recordings extracted, fits performed.\n"));
     } else { 
