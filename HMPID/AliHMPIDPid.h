@@ -15,7 +15,7 @@
 
 #include <TTask.h>        //base class
 
-class AliESDEvent;
+class AliESDtrack;
 
 class AliHMPIDPid : public TTask 
 {
@@ -23,7 +23,7 @@ public :
              AliHMPIDPid();    //ctor
     virtual ~AliHMPIDPid() {;} //dtor
     
-    void     FindPid(AliESDEvent *pESD);             //Find PID for tracks
+    void FindPid(AliESDtrack *pESD,Double_t *prob);  //Find PID for tracks
 
 //
 protected:
