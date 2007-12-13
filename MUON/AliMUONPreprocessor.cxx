@@ -92,8 +92,12 @@ AliMUONPreprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTime)
   delete AliMpSegmentation::Instance(false);
   delete AliMpDDLStore::Instance(false);
   
-  // Load mapping from CDB for this run
+  if ( ! IsApplicable() ) {
+    Log(Form("WARNING-RunType=%s is not one I should handle.",GetRunType()));
+    return;
+  }   
   
+  // Load mapping from CDB for this run
   AliCDBEntry* cdbEntry = GetFromOCDB("Calib", "Mapping");
   if (!cdbEntry)
   {
@@ -116,10 +120,6 @@ AliMUONPreprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTime)
       Subprocessor(i)->Initialize(run,startTime,endTime);
     }
   }
-
-  if (! IsApplicable() ) 
-    Log(Form("WARNING-RunType=%s is not one I should handle.",GetRunType()));
-
   Log(Form("Initialize was %s",( IsValid() ? "fine" : "NOT OK")));
 }
 
