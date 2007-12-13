@@ -53,10 +53,6 @@ public :
                                 {fPc.Set(xPc,yPc);}                                                //set track impact to PC 
   void     SetMip       (Double_t xmip,Double_t ymip                                        )
                                 {fMipPos.Set(xmip,ymip);}                                          //set track impact to PC
-  Double_t SigLoc       (Double_t ckovTh,Double_t ckovPh,Double_t beta                      )const;//error due to cathode segmetation
-  Double_t SigGeom      (Double_t ckovTh,Double_t ckovPh,Double_t beta                      )const;//error due to unknown photon origin
-  Double_t SigCrom      (Double_t ckovTh,Double_t ckovPh,Double_t beta                      )const;//error due to unknonw photon energy
-  Double_t Sigma2       (Double_t ckovTh,Double_t ckovPh                                    )const;//photon candidate sigma^2
   enum ETrackingFlags {kMipDistCut=-9,kMipQdcCut=-5,kNoPhotAccept=-11};
 //
 protected:

@@ -90,6 +90,11 @@ public:
 
   void     SetRefIdx   (Double_t refRadIdx                                  ) {fRadNmean = refRadIdx;}             //set refractive index of freon
     
+  //For PID
+  Double_t SigLoc      (Double_t trkTheta,Double_t trkPhi,Double_t ckovTh,Double_t ckovPh,Double_t beta);//error due to cathode segmetation
+  Double_t SigGeom     (Double_t trkTheta,Double_t trkPhi,Double_t ckovTh,Double_t ckovPh,Double_t beta);//error due to unknown photon origin
+  Double_t SigCrom     (Double_t trkTheta,Double_t trkPhi,Double_t ckovTh,Double_t ckovPh,Double_t beta);//error due to unknonw photon energy
+  Double_t Sigma2      (Double_t trkTheta,Double_t trkPhi,Double_t ckovTh,Double_t ckovPh              );//photon candidate sigma^2
   
   enum EPlaneId {kPc,kRad,kAnod};            //3 planes in chamber 
   enum ETrackingFlags {kMipDistCut=-9,kMipQdcCut=-5,kNoPhotAccept=-11};     //flags for Reconstruction
