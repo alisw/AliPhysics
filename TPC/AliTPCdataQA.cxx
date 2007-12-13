@@ -289,3 +289,10 @@ Int_t AliTPCdataQA::Update(const Int_t icsector, /*FOLD00*/
 
   return 0;
 }
+
+
+void AliTPCdataQA::Analyse(){
+  //
+  // analyze acumulated data
+  //
+}
