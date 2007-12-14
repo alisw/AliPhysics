@@ -262,7 +262,6 @@ class AliTRDrawStreamTB : public TObject
 
   void     SetRawVersion(Int_t fraw); // set the raw version - used for backward compat.
   
-  Int_t    GetCommonAdditive() const {return fCommonAdditive;}           // return the common additive
   Bool_t   IsCurrentPadShared() const {return fADC->fIsShared;}          // is current pad shared between mcms
   void     SetSharedPadReadout(Bool_t fv) {fSharedPadsOn = fv;}          //  set the flag on if the reader should return the shared pads
   Bool_t   IsDataZeroSuppressed() const {return (fHC->fRawVMajor > 2) ? kTRUE : kFALSE;} // check the version and tell if ZS is on
@@ -337,6 +336,11 @@ class AliTRDrawStreamTB : public TObject
   static void    EnableDebugStream() {fgDebugStreamFlag = kTRUE;} //global enable of the dbug stream
   static void    DeleteDebugStream(); // helper function to delete the debug streamer
   static void    SetDumpHead(UInt_t iv) {fgDumpHead = iv;}
+
+  // this is a temporary solution!
+  // baseline should come with the HC header word 2 (count from 0!)
+  static void    SetSubtractBaseline(Int_t baseline) {fgCommonAdditive = baseline;}
+  Int_t          GetCommonAdditive() const {return fgCommonAdditive;}           // return the common additive
 
   void    DumpErrorCount();
   void    ReSetStreamEventCounter(Int_t ival = 0) {fgStreamEventCounter = ival;} // reset the event counter for the debug streamer
@@ -420,7 +424,6 @@ class AliTRDrawStreamTB : public TObject
   UInt_t  fEventCounter; // stores the valid/current MCM event counter
   UInt_t  fLastEventCounter; // last known event counter of MCM
 
-  Int_t   fCommonAdditive; // common additive  - should be decoded! from HC word2
   Bool_t  fSharedPadsOn; // do we want to output shared pads - default is off
   Int_t   fMaxADCgeom; // maximum ADC channels per mcm
 
@@ -444,6 +447,10 @@ class AliTRDrawStreamTB : public TObject
   static UInt_t fgDumpHead; // number of words to dump (from the start of the buffer) on each Init
   static Int_t  fgEmptySignals[30]; // empty signals in case of ADC pointer = NULL
 
+
+  // this is a temporary solution!
+  // baseline should come with the HC header word 2 (count from 0!)
+  static Int_t   fgCommonAdditive; // common additive  - should be decoded! from HC word2
 
   // ----------------- DATA MEMBERS STOP
 

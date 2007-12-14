@@ -112,7 +112,7 @@ Bool_t AliTRDrawStreamTB::fgDebugStreamFlag = kFALSE;
 TTreeSRedirector *AliTRDrawStreamTB::fgDebugStreamer = 0;
 UInt_t AliTRDrawStreamTB::fgStreamEventCounter = 0;
 UInt_t AliTRDrawStreamTB::fgDumpHead = 0;
-
+Int_t  AliTRDrawStreamTB::fgCommonAdditive = 0;
 Int_t AliTRDrawStreamTB::fgEmptySignals[] = 
   {
     -1, -1, -1, -1, -1,  -1, -1, -1, -1, -1,  -1, -1, -1, -1, -1
@@ -141,7 +141,6 @@ AliTRDrawStreamTB::AliTRDrawStreamTB()
   , fDecodedADCs(-1)
   , fEventCounter(0)
   , fLastEventCounter(0)
-  , fCommonAdditive(0)
   , fSharedPadsOn(kFALSE)
   , fMaxADCgeom(0)
   , fGeometry(0)
@@ -182,7 +181,6 @@ AliTRDrawStreamTB::AliTRDrawStreamTB(AliRawReader *rawReader)
   , fDecodedADCs(-1)
   , fEventCounter(0)
   , fLastEventCounter(0)
-  , fCommonAdditive(0)
   , fSharedPadsOn(kFALSE)
   , fMaxADCgeom(0)
   , fGeometry(0)
@@ -230,7 +228,6 @@ AliTRDrawStreamTB::AliTRDrawStreamTB(const AliTRDrawStreamTB& /*st*/)
   , fDecodedADCs(-1)
   , fEventCounter(0)
   , fLastEventCounter(0)
-  , fCommonAdditive(0)
   , fSharedPadsOn(kFALSE)
   , fMaxADCgeom(0)
   , fGeometry(0)
@@ -747,7 +744,9 @@ AliTRDrawStreamTB::Init()
 
   fMaxADCgeom = (Int_t)fGeometry->ADCmax();
 
-  fCommonAdditive = 10;
+  // common additive is moved to be static for temp solution
+  // common additive should be delivered in the HC word 2 (3rd word)
+  //fCommonAdditive = 10;
 
   ResetCounters();
 
@@ -1042,7 +1041,11 @@ AliTRDrawStreamTB::DecodeSM(void *buffer, UInt_t length)
   
   if (fgCleanDataOnly && (fSM.fClean == kFALSE))
     {
-      if (fgWarnError) AliWarning("Buffer with errors. Returning FALSE.");
+      if (fgWarnError) 
+	{
+	  AliWarning("Buffer with errors. Returning FALSE.");
+	  AliWarning(Form("--- Failed SM : %s ---", DumpSMInfo(&fSM)));
+	}
       fSM.fActiveStacks = 0; // Next will not give data
       return kFALSE;
     }
@@ -1637,6 +1640,8 @@ AliTRDrawStreamTB::DecodeHC()
 		  if (fgDebugStreamer)
 		    {
 		      TTreeSRedirector &cstream = *fgDebugStreamer;
+		      // means no data read
+		      Int_t ierr = -99;
 		      cstream << "ADCDecodeError"
 			      << "Event=" << fgStreamEventCounter
 			      << ".hcSM=" << fHC->fSM
@@ -1645,6 +1650,8 @@ AliTRDrawStreamTB::DecodeHC()
 			      << ".mcmROB=" << fMCM->fROB
 			      << ".mcmMCM=" << fMCM->fMCM
 			      << ".mcmADCMaskWord=" << fMCM->fADCMaskWord
+			      << ".adcErr=" << ierr
+			      << ".adcNumber=" << ierr
 			      << "\n";			
 		    }
 		  
@@ -1669,6 +1676,23 @@ AliTRDrawStreamTB::DecodeHC()
 		    {
 		      if (fgWarnError) AliWarning(Form("ADC decode failed."));
 		      //fpPos = fMCM->fPpos + fMCMADCWords;
+
+		      if (fgDebugStreamer)
+			{
+			  TTreeSRedirector &cstream = *fgDebugStreamer;
+			  cstream << "ADCDecodeError"
+				  << "Event=" << fgStreamEventCounter
+				  << ".hcSM=" << fHC->fSM
+				  << ".hcStack=" << fHC->fStack
+				  << ".hcLayer=" << fHC->fLayer
+				  << ".mcmROB=" << fMCM->fROB
+				  << ".mcmMCM=" << fMCM->fMCM
+				  << ".mcmADCMaskWord=" << fMCM->fADCMaskWord
+				  << ".adcErr=" << fADC->fCorrupted
+				  << ".adcNumber=" << fADC->fADCnumber
+				  << "\n";			
+			}
+
 		      fpPos = fADC->fPos + fMCM->fSingleADCwords;
 		      return kFALSE;
 		    }
@@ -1715,15 +1739,17 @@ AliTRDrawStreamTB::DecodeADC()
 	{
 	  //this is corrupted data
 	  fADC->fCorrupted += 1;
-	  if (fgWarnError) AliWarning(Form("Mask Change in ADC data 0x%08x 0x%08x", *(fpPos-1), fMaskADCword, *fpPos, ADC_WORD_MASK(*fpPos)));
+	  if (fgWarnError) AliWarning(Form("Mask Change in ADC data Previous word (%d) : 0x%08x Previous mask : 0x%08x Current word(%d) : 0x%08x Current mask : 0x%08x", 
+					   iw - 1, *(fpPos-1), fMaskADCword, iw, *fpPos, ADC_WORD_MASK(*fpPos)));
 	  if (fRawReader) fRawReader->AddMajorErrorLog(kADCmaskMissmatch, "Mask change inside single channel"); 
 
 	  break;
 	}
-      
-      fADC->fSignals[fTbinADC + 0] = (*fpPos & 0x00000ffc) >> 2;
-      fADC->fSignals[fTbinADC + 1] = (*fpPos & 0x003ff000) >> 12;
-      fADC->fSignals[fTbinADC + 2] = (*fpPos & 0xffc00000) >> 22;
+
+      // here we subtract the baseline ( == common additive)
+      fADC->fSignals[fTbinADC + 0] = ((*fpPos & 0x00000ffc) >>  2) - fgCommonAdditive;
+      fADC->fSignals[fTbinADC + 1] = ((*fpPos & 0x003ff000) >> 12) - fgCommonAdditive;
+      fADC->fSignals[fTbinADC + 2] = ((*fpPos & 0xffc00000) >> 22) - fgCommonAdditive;
 
       fTbinADC += 3;
       fpPos++;
