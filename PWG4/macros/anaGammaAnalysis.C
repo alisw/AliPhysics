@@ -1,5 +1,8 @@
 /* $Id$ */
 /* $Log$
+/* Revision 1.2  2007/12/13 09:45:45  gustavo
+/* Scaling option and more comentaries added
+/*
 /* Revision 1.1  2007/12/07 14:13:02  gustavo
 /* Example macros for execution and configuration of the analysis
 /* */
@@ -20,6 +23,15 @@ enum anaModes {mLocal, mLocalCAF,mPROOF,mGRID};
 //mLocalCAF: Analyze locally CAF files
 //mPROOF: Analyze CAF files with PROOF
 
+//Settings to read locally several files
+//The differnt values are default, they can be set with environmental 
+//variables: OUTDIR, PATTERN, NEVENT, respectivelly
+char * kInDir = "/data/"; 
+char * kPattern = "Run"; // Data are in diles /data/Run0, 
+// /Data/Run1 ...
+Int_t kEvent = 3; // Number of files
+
+
 //Scale histograms from file. Change to kTRUE when xsection file exists
 //Put name of file containing xsection 
 //Put number of events per ESD file
@@ -29,7 +41,7 @@ const char * kXSFileName = "pyxsec.root";
 const Int_t kNumberOfEventsPerFile = 100; 
 
 
-void anaGammaAnalysis(Int_t mode=mLocal, TString configName = "ConfigKineGammaDirect")
+void anaGammaAnalysis(Int_t mode=mLocal, TString configName = "ConfigGammaAnalysis")
 {
   // Main
   
@@ -261,11 +273,17 @@ TChain * CreateChain(const anaModes mode, Double_t &xsection, Int_t &ntrials, In
     //If you want to add several ESD files sitting in a common directory OUTDIR
     //Specify as environmental variables the directory (OUTDIR), the number of files 
     //to analyze (NEVENT) and the pattern name of the directories with files (PATTERN)
-    const char * kInDir = gSystem->Getenv("OUTDIR") ; 
-    const char * kPattern = gSystem->Getenv("PATTERN") ;
-    Int_t kEvent = 1; 
+    if(gSystem->Getenv("OUTDIR"))  
+      kInDir = gSystem->Getenv("OUTDIR") ; 
+    else cout<<"OUTDIR not set, use default: "<<kInDir<<endl;	
+
+    if(gSystem->Getenv("PATTERN"))   
+      kPattern = gSystem->Getenv("PATTERN") ; 
+    else  cout<<"PATTERN not set, use default: "<<kPattern<<endl;
+
     if(gSystem->Getenv("NEVENT"))
       kEvent = atoi(gSystem->Getenv("NEVENT")) ;
+    else cout<<"NEVENT not set, use default: "<<kEvent<<endl;
     
     //Check if env variables are set and are correct
     if ( kInDir  && kEvent) {
@@ -289,7 +307,7 @@ TChain * CreateChain(const anaModes mode, Double_t &xsection, Int_t &ntrials, In
         sprintf(file, "%s/%s%d/AliESDs.root", kInDir,kPattern,event) ; 
 	TFile * fESD = 0 ; 
 	//Check if file exists and add it, if not skip it
-	if ( fESD = TFile::Open(file)) 
+	if ( fESD = TFile::Open(file)) {
 	  //Get cross section if file exists
 	  ReadXsection(kInDir, kPattern, event, rv) ;
 	  if ( fESD->Get("esdTree") ) { 
@@ -301,7 +319,8 @@ TChain * CreateChain(const anaModes mode, Double_t &xsection, Int_t &ntrials, In
 	      xsection += rv[0] ;
 	      ntrials += rv[1] ;
 	    }
-	  }
+	   }
+          }
 	  else { 
 	    printf("---- Skipping %s\n", file) ;
 	    skipped++ ;
