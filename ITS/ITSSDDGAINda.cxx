@@ -1,10 +1,10 @@
 /*
 - Contact: - prino@to.infn.it
-- Link: -
-- Run Type: -
+- Link: - http://www.to.infn.it/~prino/alice/RawData/run11173.date
+- Run Type: - PULSER_RUN
 - DA Type: - LDC
 - Number of events needed: 100
-- Input Files: - SDDbase_step1_mod*_sid*.data
+- Input Files: - SDDbase_step2_mod*_sid*.data
 - Output Files: - SDDbase_mod*_sid*.data
 - Trigger types used: 
 */
@@ -76,24 +76,25 @@ int main(int argc, char **argv) {
 
   Int_t eqOffset = 256;
   Int_t DDLrange = 24;
-  Int_t maxNEvents=10; // maximum number of events to be analyzed
-  const Int_t nSDDmodules=12;  // temp for test raw data
+  Int_t maxNEvents=15; // maximum number of events to be analyzed
+  const Int_t nSDDmodules=260;  // temp for test raw data
   AliITSOnlineSDDTP **tpan=new AliITSOnlineSDDTP*[2*nSDDmodules];
   TH2F **histo=new TH2F*[2*nSDDmodules];
-
+  Bool_t isFilled[2*nSDDmodules];
   Char_t hisnam[20];
   for(Int_t imod=0; imod<nSDDmodules;imod++){
     for(Int_t isid=0;isid<2;isid++){
       Int_t index=2*imod+isid;
-      tpan[index]=new AliITSOnlineSDDTP(imod,isid,411.);
+      tpan[index]=new AliITSOnlineSDDTP(imod,isid,100.);
       sprintf(hisnam,"his%03ds%d",imod,isid);
       histo[index]=new TH2F(hisnam,"",256,-0.5,255.5,256,-0.5,255.5);
+      isFilled[index]=0;
     }
   }
   
   /* report progress */
   daqDA_progressReport(10);
-  Int_t iev=0;
+  Int_t iev=0,iAnalyzedEv=0;
   /* read the data files */
   int n;
   for (n=1;n<argc;n++) {
@@ -127,8 +128,8 @@ int main(int argc, char **argv) {
 	break;
       }
 
+      if(iAnalyzedEv>=maxNEvents) break;
       iev++; 
-      if(iev>maxNEvents) break;
       
       /* use event - here, just write event id to result file */
       eventT=event->eventType;
@@ -168,25 +169,24 @@ int main(int argc, char **argv) {
 	AliITSRawStreamSDD s(rawReader);
 	
 	while(s.Next()){
-	  Int_t iddl=rawReader->GetDDLID();
-	  iddl=0; // temporary for test raw data
-	  Int_t isddmod=s.GetModuleNumber(iddl,s.GetCarlosId()); 
+	  Int_t isddmod=s.GetModuleID();//Number(iddl,s.GetCarlosId()); 
 	  isddmod-=240;  // to have SDD modules from 0 to 259
-	  isddmod=s.GetCarlosId(); // temporary for test raw data
-	  if(isddmod<nSDDmodules&&s.IsCompletedModule()==kFALSE){ 
+	  if(isddmod>0 && isddmod<nSDDmodules && s.IsCompletedModule()==kFALSE){ 
 	    Int_t index=2*isddmod+s.GetChannel(); 
 	    histo[index]->Fill(s.GetCoord2(),s.GetCoord1(),s.GetSignal());
+	    isFilled[index]=1;
 	  }
 	}
 	delete rawReader;
 	for(Int_t imod=0; imod<nSDDmodules;imod++){
 	  for(Int_t isid=0; isid<2;isid++){
 	    Int_t index=2*imod+isid;
-	    tpan[index]->AddEvent(histo[index]);    
+	    if(isFilled[index]) tpan[index]->AddEvent(histo[index]);    
 	  }
 	}
 	
 	/* free resources */
+	iAnalyzedEv++;
 	free(event);
       }
     }
@@ -198,18 +198,20 @@ int main(int argc, char **argv) {
   for(Int_t imod=0; imod<nSDDmodules;imod++){
     for(Int_t isid=0; isid<2;isid++){
       Int_t index=2*imod+isid;
-      tpan[index]->ValidateAnodes();
-      tpan[index]->WriteToASCII();
-      tpan[index]->WriteToROOT(fh);
-      sprintf(filnam,"SDDbase_mod%03d_sid%d.data",imod,isid);
-      sprintf(command,"tar -rf SDDbase_LDC1.tar %s",filnam);
-      gSystem->Exec(command);
+      if(isFilled[index]){
+	tpan[index]->ValidateAnodes();
+	tpan[index]->WriteToASCII();
+	tpan[index]->WriteToROOT(fh);
+	sprintf(filnam,"SDDbase_mod%03d_sid%d.data",imod,isid);
+	sprintf(command,"tar -rf SDDbase_LDC.tar %s",filnam);
+	gSystem->Exec(command);
+      }
     }  
   }
   fh->Close();
 
   /* write report */
-  printf("Run #%s, received %d calibration events\n",getenv("DATE_RUN_NUMBER"),iev);
+  printf("Run #%s, received %d calibration events\n",getenv("DATE_RUN_NUMBER"),iAnalyzedEv);
 
   /* report progress */
   daqDA_progressReport(90);
@@ -220,7 +222,7 @@ int main(int argc, char **argv) {
 
 
 
-  status=daqDA_FES_storeFile("./SDDbase_LDC1.tar","SDD_Calib");
+  status=daqDA_FES_storeFile("./SDDbase_LDC.tar","SDD_Calib");
 
   /* report progress */
   daqDA_progressReport(100);
