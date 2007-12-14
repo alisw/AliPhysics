@@ -665,12 +665,39 @@ AliTRDrawStreamTB::NextChamber(AliTRDdigitsManager *digitsManager)
 	    {
 	      return lastdet;
 	    }
-	  
+
+	  if (det < 0 || det >= AliTRDgeometry::kNdet)
+	    {
+	      if (fSM.fClean == kTRUE)
+		{
+		  AliError(Form("Strange Det Number %d BUT event buffer seems to be clean.", det));
+		}
+	      else
+		{
+		  AliError(Form("Strange Det Number %d. Event buffer marked NOT clean!", det));
+		}
+	      continue;
+	    }
+
 	  // Add a container for the digits of this detector
 	  digits = digitsManager->GetDigits(det);
 	  track0 = digitsManager->GetDictionary(det,0);
 	  track1 = digitsManager->GetDictionary(det,1);
 	  track2 = digitsManager->GetDictionary(det,2);
+
+	  if (!digits)
+	    {
+	      if (fSM.fClean == kTRUE)
+		{
+		  AliError(Form("Unable to get digits for det %d BUT event buffer seems to be clean.", det));
+		}
+	      else
+		{
+		  AliError(Form("Unable to get digits for det %d. Event buffer is NOT clean!", det));
+		}
+	      return -1;
+	      //continue;
+	    }
 
 	  Int_t rowMax = GetRowMax();
 	  Int_t colMax = GetColMax();
