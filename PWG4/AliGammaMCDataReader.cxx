@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.5  2007/12/14 10:54:15  gustavo
+ * Protection against cluster labels larger than kinematics entries
+ *
  * Revision 1.4  2007/10/29 13:48:42  gustavo
  * Corrected coding violations
  *
@@ -176,10 +179,10 @@ void AliGammaMCDataReader::CreateParticleList(TObject * data, TObject * kine,
 	    //###############
 	    TParticle * pmother = new TParticle();
 	    Int_t label = clus->GetLabel();
-	    if(label < stack->GetNprimary())
+	    if(label < stack->GetNtrack())
 	      pmother = GetMotherParticle(label,stack, "PHOS",momentum);
 	    else 
-	      AliInfo(Form("PHOS: Bad label %d, too large, NPrimaries %d",label,stack->GetNprimary()));
+	      AliInfo(Form("PHOS: Bad label %d, too large, NPrimaries %d",label,stack->GetNtrack()));
 	    new((*plPrimPHOS)[indexPH])   TParticle(*pmother) ;
 	    
 	    indexPH++;
@@ -242,10 +245,10 @@ void AliGammaMCDataReader::CreateParticleList(TObject * data, TObject * kine,
 	    //###############
 	    TParticle * pmother = new TParticle();
 	    Int_t label = clus->GetLabel();
-	    if(label < stack->GetNprimary())
+	    if(label < stack->GetNtrack())
 	      pmother = GetMotherParticle(label,stack, "EMCAL",momentum);
 	    else 
-	      AliInfo(Form("EMCAL: Bad label %d, too large, NPrimaries %d",label,stack->GetNprimary()));	    
+	      AliInfo(Form("EMCAL: Bad label %d, too large, NPrimaries %d",label,stack->GetNtrack()));	    
 	    new((*plPrimEMCAL)[indexEM])   TParticle(*pmother) ;
 
 	    indexEM++;
