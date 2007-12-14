@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.4  2007/10/29 13:48:42  gustavo
+ * Corrected coding violations
+ *
  * Revision 1.2  2007/08/17 12:40:04  schutz
  * New analysis classes by Gustavo Conesa
  *
@@ -163,21 +166,23 @@ void AliGammaMCDataReader::CreateParticleList(TObject * data, TObject * kine,
 	  }
 	  
 	  if(pdg != kElectron && pdg != kEleCon && pdg !=kChargedHadron && pdg !=kChargedUnknown ){//keep only neutral particles in the array
-	    
+
+	    TParticle * particle = new TParticle(pdg, 1, -1, -1, -1, -1, momentum.Px(), momentum.Py(), momentum.Pz(), momentum.E(), v[0], v[1], v[2], 0);	    
+	    new((*plPHOS)[indexPH])   TParticle(*particle) ;
+	    AliDebug(4,Form("PHOS added: pdg %d, pt %f, phi %f, eta %f", pdg, particle->Pt(),particle->Phi(),particle->Eta()));
+ 
 	    //###############
 	    //Check kinematics
 	    //###############
+	    TParticle * pmother = new TParticle();
 	    Int_t label = clus->GetLabel();
-	    TParticle * pmother = GetMotherParticle(label,stack, "PHOS",momentum);
-	    
-	    TParticle * particle = new TParticle(pdg, 1, -1, -1, -1, -1, 
-						 momentum.Px(), momentum.Py(), momentum.Pz(), momentum.E(), v[0], v[1], v[2], 0);
-	    
-	    AliDebug(4,Form("PHOS added: pdg %d, pt %f, phi %f, eta %f", pdg, particle->Pt(),particle->Phi(),particle->Eta()));
-	    new((*plPHOS)[indexPH])   TParticle(*particle) ;
+	    if(label < stack->GetNprimary())
+	      pmother = GetMotherParticle(label,stack, "PHOS",momentum);
+	    else 
+	      AliInfo(Form("PHOS: Bad label %d, too large, NPrimaries %d",label,stack->GetNprimary()));
 	    new((*plPrimPHOS)[indexPH])   TParticle(*pmother) ;
-	    indexPH++;
 	    
+	    indexPH++;
 	  }
 	  else AliDebug(4,Form("PHOS charged cluster NOT added: pdg %d, pt %f, phi %f, eta %f\n", 
 			       pdg, momentum.Pt(),momentum.Phi(),momentum.Eta()));	
@@ -227,19 +232,22 @@ void AliGammaMCDataReader::CreateParticleList(TObject * data, TObject * kine,
 	  }
 	  
 	  if(pdg != kElectron && pdg != kEleCon && pdg !=kChargedHadron && pdg !=kChargedUnknown){//keep only neutral particles in the array
+
+	    TParticle * particle = new TParticle(pdg, 1, -1, -1, -1, -1, momentum.Px(), momentum.Py(), momentum.Pz(), momentum.E(), v[0], v[1], v[2], 0);
+	    new((*plEMCAL)[indexEM])   TParticle(*particle) ;
+	    AliDebug(4,Form("EMCAL cluster added: pdg %f, pt %f, phi %f, eta %f", pdg, particle->Pt(),particle->Phi(),particle->Eta()));
 	    
 	    //###############
 	    //Check kinematics
 	    //###############
+	    TParticle * pmother = new TParticle();
 	    Int_t label = clus->GetLabel();
-	    TParticle * pmother = GetMotherParticle(label,stack, "EMCAL",momentum);
-	    
-	    TParticle * particle = new TParticle(pdg, 1, -1, -1, -1, -1, 
-						 momentum.Px(), momentum.Py(), momentum.Pz(), momentum.E(), v[0], v[1], v[2], 0);
-	    AliDebug(4,Form("EMCAL cluster added: pdg %f, pt %f, phi %f, eta %f", pdg, particle->Pt(),particle->Phi(),particle->Eta()));
-	    
-	    new((*plEMCAL)[indexEM])   TParticle(*particle) ;
+	    if(label < stack->GetNprimary())
+	      pmother = GetMotherParticle(label,stack, "EMCAL",momentum);
+	    else 
+	      AliInfo(Form("EMCAL: Bad label %d, too large, NPrimaries %d",label,stack->GetNprimary()));	    
 	    new((*plPrimEMCAL)[indexEM])   TParticle(*pmother) ;
+
 	    indexEM++;
 	  }
 	  else AliDebug(4,Form("EMCAL charged cluster NOT added: pdg %d, pt %f, phi %f, eta %f", 
