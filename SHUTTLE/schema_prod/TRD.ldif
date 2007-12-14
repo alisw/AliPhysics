@@ -10,25 +10,13 @@ objectClass: dcsConfig
 dcsHost: alidcsamanda.cern.ch
 dcsPort: 1337
 multiSplit: 4000
-dcsAlias: trd_chamberStatus[000..539]
-dcsAlias: trd_goofieHv
-dcsAlias: trd_goofiePeakPos00
-dcsAlias: trd_goofiePeakPos01
-dcsAlias: trd_goofiePeakArea[00..01]
-dcsAlias: trd_goofieTemp[00..01]
-dcsAlias: trd_goofiePressure
-dcsAlias: trd_goofieVelocity
-dcsAlias: trd_goofieGain[00..01]
-dcsAlias: trd_goofieCO2
-dcsAlias: trd_goofieN2
-dcsAlias: trd_gasO2
-dcsAlias: trd_gasH2O
-dcsAlias: trd_gasCO2
-dcsAlias: trd_gasOverpressure
-dcsAlias: trd_envTemp[000..539]
-dcsAlias: trd_hvAnodeImon[000..539]
-dcsAlias: trd_hvDriftImon[000..539]
-dcsAlias: trd_hvAnodeUmon[000..539]
-dcsAlias: trd_hvDriftUmon[000..539]
-dcsAlias: trd_adcClkPhase
+
+dcsAlias: trd_chamberStatus[000..029]
+dcsAlias: trd_chamberStatus[240..269]
+dcsAlias: trd_envTemp[000..029]
+dcsAlias: trd_envTemp[240..269]
+dcsAlias: trd_hvAnodeImon[000..127]
+dcsAlias: trd_hvDriftImon[000..127]
+dcsAlias: trd_hvAnodeUmon[000..127]
+dcsAlias: trd_hvDriftUmon[000..127]
 

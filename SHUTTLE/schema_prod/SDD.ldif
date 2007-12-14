@@ -7,7 +7,7 @@ strictRunOrder: 0
 responsible: francesco.prino@cern.ch
 responsible: elisabetta.crescio@to.infn.it
 
-dn: dcsHost=aldcs05alidcsamanda.cern.ch,det=SDD,o=shuttle_prod,dc=cern,dc=ch
+dn: dcsHost=alidcsamanda.cern.ch,det=SDD,o=shuttle_prod,dc=cern,dc=ch
 objectClass: dcsConfig
 dcsHost: alidcsamanda.cern.ch
 dcsPort: 1337
