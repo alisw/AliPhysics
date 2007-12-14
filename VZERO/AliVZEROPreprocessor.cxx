@@ -113,8 +113,7 @@ UInt_t AliVZEROPreprocessor::Process(TMap* dcsAliasMap)
 		calibData->SetPedestal(Pedestals);
 		calibData->SetSigma(Sigmas);			
 		calibData->SetGain(Gains); }				
-		
-	delete sourceList; 
+
 	delete source;      
   
   // Check that everything was properly transmitted
@@ -127,14 +126,19 @@ UInt_t AliVZEROPreprocessor::Process(TMap* dcsAliasMap)
   
   // Now we store the VZERO Calibration Object into CalibrationDB
   
-  AliCDBMetaData metaData;
-  metaData.SetBeamPeriod(0);
-  metaData.SetResponsible("Brigitte Cheynis");
-  metaData.SetComment("This preprocessor fills an AliVZEROCalibData object");
+  Bool_t result = kFALSE;
+  if(sourceList && sourceList->GetEntries()>0)
+  {
+  	AliCDBMetaData metaData;
+  	metaData.SetBeamPeriod(0);
+  	metaData.SetResponsible("Brigitte Cheynis");
+  	metaData.SetComment("This preprocessor fills an AliVZEROCalibData object");
 
-  Bool_t result = Store("Calib", "Data", calibData, &metaData, 0, kTRUE);
+  	result = Store("Calib", "Data", calibData, &metaData, 0, kTRUE);
+  }
 
   delete calibData;
+  delete sourceList; 
 
   if (!result) return 1;   
   return 0;
