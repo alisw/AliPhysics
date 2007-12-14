@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.72  2007/12/13 15:44:28  acolla
+Run type added in mail sent to detector expert (eases understanding)
+
 Revision 1.71  2007/12/12 14:56:14  jgrosseo
 sending shuttle_ignore to ML also in case of 0 events
 
@@ -1848,8 +1851,8 @@ Bool_t AliShuttle::ProcessCurrentDetector()
 							" Sending mail to DCS experts!", host.Data()));
 					UpdateShuttleStatus(AliShuttleStatus::kDCSError);
 					
-					if (!SendMailToDCS())
-						Log("SHUTTLE", Form("ProcessCurrentDetector - Could not send mail to DCS experts!"));
+					//if (!SendMailToDCS())
+					//	Log("SHUTTLE", Form("ProcessCurrentDetector - Could not send mail to DCS experts!"));
 
 					delete dcsMap;
 					return kFALSE;
@@ -1869,8 +1872,8 @@ Bool_t AliShuttle::ProcessCurrentDetector()
 							" Sending mail to DCS experts!", host.Data()));
 					UpdateShuttleStatus(AliShuttleStatus::kDCSError);
 					
-					if (!SendMailToDCS())
-						Log("SHUTTLE", Form("ProcessCurrentDetector - Could not send mail to DCS experts!"));
+					//if (!SendMailToDCS())
+					//	Log("SHUTTLE", Form("ProcessCurrentDetector - Could not send mail to DCS experts!"));
 					
 					if (aliasMap) delete aliasMap;
 					delete dcsMap;
