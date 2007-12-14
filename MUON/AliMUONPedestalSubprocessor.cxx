@@ -179,16 +179,18 @@ AliMUONPedestalSubprocessor::ReadFile(const char* filename)
   std::ifstream in(sFilename.Data());
   if (!in.good()) 
   {
+    Master()->Log(Form("Could not open %s",sFilename.Data()));
     return 0;
   }
-  char line[80];
+  char line[1024];
   Int_t busPatchID, manuID, manuChannel;
   Float_t pedMean, pedSigma;
   static const Int_t kNchannels(AliMpConstants::ManuNofChannels());
   Int_t n(0);
   
-  while ( in.getline(line,80) )
+  while ( in.getline(line,1024) )
   {
+    AliDebug(3,Form("line=%s",line));
     if ( line[0] == '/' && line[1] == '/' ) continue;
     std::istringstream sin(line);
     sin >> busPatchID >> manuID >> manuChannel >> pedMean >> pedSigma;
@@ -211,6 +213,9 @@ AliMUONPedestalSubprocessor::ReadFile(const char* filename)
     ++n;
   }
   in.close();
+  
+  Master()->Log("File closed");
+  
   return n;
 }
 

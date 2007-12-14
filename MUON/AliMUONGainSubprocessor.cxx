@@ -186,7 +186,7 @@ AliMUONGainSubprocessor::ReadFile(const char* filename)
   {
     return 0;
   }
-  char line[256];
+  char line[1024];
   Int_t busPatchID, manuID, manuChannel;
   Float_t a0, a1;
   Int_t thres;
@@ -196,7 +196,7 @@ AliMUONGainSubprocessor::ReadFile(const char* filename)
   static const Int_t kNchannels(AliMpConstants::ManuNofChannels());
   Int_t n(0);
   
-  while ( in.getline(line,256) )
+  while ( in.getline(line,1024) )
   {
     if ( strlen(line) < 10 ) continue;
     if ( line[0] == '/' && line[1] == '/' ) continue;
