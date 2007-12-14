@@ -427,7 +427,7 @@ void AliZDCDigitizer::SpectatorSignal(Int_t SpecType, Int_t numEvents,
                            volume[0], volume[1], lightQ, lightC));
 	  //printf("\n   Volume = (%d, %d), lightQ = %.0f, lightC = %.0f",
           //                 volume[0], volume[1], lightQ, lightC);
-	  if(volume[0] < 3) {  // ZN or ZP
+	  if(volume[0] != 3) {  // ZN or ZP
             pm[volume[0]-1][0] += lightC;
             pm[volume[0]-1][volume[1]] += lightQ;
 	    //printf("\n   pm[%d][0] = %.0f, pm[%d][%d] = %.0f\n",(volume[0]-1),pm[volume[0]-1][0],
@@ -435,7 +435,7 @@ void AliZDCDigitizer::SpectatorSignal(Int_t SpecType, Int_t numEvents,
 	  } 
 	  else { 
             if(volume[1] == 1) pm[2][1] += lightC; // ZEM 1
-            else                pm[2][2] += lightQ; // ZEM 2
+            else               pm[2][2] += lightQ; // ZEM 2
 	    //printf("\n   pm[2][1] = %.0f, pm[2][2] = %.0f\n",pm[2][1],pm[2][2]);
 	  }
   	}
