@@ -22,6 +22,7 @@
 #include "AliAnalysisManager.h"
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
+#include "AliESDInputHandler.h"
 #include "AliAODHandler.h"
 #include "AliAnalysisFilter.h"
 #include "AliESDtrack.h"
@@ -38,7 +39,7 @@ ClassImp(AliAnalysisTaskESDfilter)
 
 AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter():
     fDebug(0),
-    fChain(0x0),
+    fTree(0x0),
     fESD(0x0),
     fAOD(0x0),
     fTreeA(0x0),
@@ -52,7 +53,7 @@ AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter():
 AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter(const char* name):
     AliAnalysisTask(name, "AnalysisTaskESDfilter"),
     fDebug(0),
-    fChain(0x0),
+    fTree(0x0),
     fESD(0x0),
     fAOD(0x0),
     fTreeA(0x0),
@@ -88,24 +89,23 @@ void AliAnalysisTaskESDfilter::ConnectInputData(Option_t */*option*/)
 // Connect the input data
 //
     if (fDebug > 1) AliInfo("ConnectInputData() \n");
-    fChain = (TChain*)GetInputData(0);
-    fESD = new AliESDEvent();
-    fESD->ReadFromTree(fChain);
+    // Input 
+    AliESDInputHandler* esdH = (AliESDInputHandler*) 
+	((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
+    fESD = (AliESDEvent*) esdH->GetEvent();
+    fTree = esdH->GetTree();
 }
 
 void AliAnalysisTaskESDfilter::Exec(Option_t */*option*/)
 {
 // Execute analysis for current event
 //
-    AliESD* old = fESD->GetAliESDOld();
-    if (old) fESD->CopyFromOldESD();
-    
-    Long64_t ientry = fChain->GetReadEntry();
-    AliInfo(Form("ESD Filter: Analysing event # %5d\n", (Int_t) ientry));
-    
-    
     // ESD Filter analysis task executed for each event
+    AliESD* old = fESD->GetAliESDOld();
     
+    Long64_t ientry = fTree->GetReadEntry();
+    printf("Filter: Analysing event # %5d\n", (Int_t) ientry);
+
     // set arrays and pointers
     Double_t pos[3];
     Double_t p[3];
@@ -161,12 +161,16 @@ void AliAnalysisTaskESDfilter::Exec(Option_t */*option*/)
     Int_t nV0s      = fESD->GetNumberOfV0s();
     Int_t nCascades = fESD->GetNumberOfCascades();
     Int_t nKinks    = fESD->GetNumberOfKinks();
+    Int_t nVertices = nV0s + nCascades + nKinks + 1 /* = prim. vtx*/;
+    Int_t nJets     = 0;
+    Int_t nCaloClus = fESD->GetNumberOfCaloClusters();
+    Int_t nFmdClus  = 0;
+    Int_t nPmdClus  = fESD->GetNumberOfPmdTracks();
     
     printf("   NV0=%d  NCASCADES=%d  NKINKS=%d\n", nV0s, nCascades, nKinks);
 
-    Int_t nVertices = nV0s + nCascades + nKinks;
-    
-    fAOD->ResetStd(nTracks, nVertices);
+//    fAOD->ResetStd(nTracks, nVertices, nV0s+nCascades, nJets, nCaloClus, nFmdClus, nPmdClus);
+
     AliAODTrack *aodTrack;
     
     
