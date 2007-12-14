@@ -188,14 +188,14 @@ Bool_t AliGenMC::ChildSelected(Int_t ip) const
 Bool_t AliGenMC::KinematicSelection(TParticle *particle, Int_t flag) const
 {
 // Perform kinematic selection
-    Float_t pz    = particle->Pz();
-    Float_t  e    = particle->Energy();
-    Float_t pt    = particle->Pt();
-    Float_t p     = particle->P();
-    Float_t theta = particle->Theta();
-    Float_t mass  = particle->GetCalcMass();
-    Float_t mt2   = pt * pt + mass * mass;
-    Float_t phi   = particle->Phi();
+    Double_t pz    = particle->Pz();
+    Double_t  e    = particle->Energy();
+    Double_t pt    = particle->Pt();
+    Double_t p     = particle->P();
+    Double_t theta = particle->Theta();
+    Double_t mass  = particle->GetCalcMass();
+    Double_t mt2   = pt * pt + mass * mass;
+    Double_t phi   = particle->Phi();
     
     Double_t y, y0;
 
