@@ -197,7 +197,7 @@ void AliAnaGammaPhos::CreateOutputObjects()
 void AliAnaGammaPhos::Exec(Option_t *) 
 {
   // Processing of one event
-    
+  
   Long64_t entry = fChain->GetReadEntry() ;
   
   if (!fESD) {
@@ -205,13 +205,14 @@ void AliAnaGammaPhos::Exec(Option_t *)
     return ; 
   }
   
-  if ( !((entry-1)%100) ) 
-    AliInfo(Form("%s ----> Processing event # %lld",  (dynamic_cast<TChain *>(fChain))->GetFile()->GetName(), entry)) ; 
+  // if ( !((entry-1)%100) ) 
+  AliInfo(Form("%s ----> Processing event # %lld",  (dynamic_cast<TChain *>(fChain))->GetFile()->GetName(), entry)) ; 
   
   //************************  PHOS *************************************
-      
-  Int_t       firstPhosCluster       = fESD->GetFirstPHOSCluster() ;
-  const Int_t kNumberOfPhosClusters   = fESD->GetNumberOfPHOSClusters() ;
+  TRefArray * caloClustersArr  = new TRefArray();  
+  fESD->GetPHOSClusters(caloClustersArr);
+
+  const Int_t kNumberOfPhosClusters   = caloClustersArr->GetEntries() ;  
   
   TVector3 ** phosVector       = new TVector3*[kNumberOfPhosClusters] ;
   Float_t  * phosPhotonsEnergy = new Float_t[kNumberOfPhosClusters] ;
@@ -220,15 +221,16 @@ void AliAnaGammaPhos::Exec(Option_t *)
   
   fPhotonsInPhos  = 0 ;
   // loop over the PHOS Cluster
-  for(phosCluster = firstPhosCluster ; phosCluster < firstPhosCluster + kNumberOfPhosClusters ; phosCluster++) {
-    AliESDCaloCluster * caloCluster = fESD->GetCaloCluster(phosCluster) ;
+  for(phosCluster = 0 ; phosCluster < kNumberOfPhosClusters ; phosCluster++) {
+    AliESDCaloCluster * caloCluster = (AliESDCaloCluster *) caloClustersArr->At(phosCluster) ;
+    //AliESDCaloCluster * caloCluster = fESD->GetCaloCluster(phosCluster) ;
     if (caloCluster) {
       Float_t pos[3] ;
       caloCluster->GetPosition( pos ) ;
       fhPHOSEnergy->Fill( caloCluster->E() ) ;
       fhPHOSPos->Fill( pos[0], pos[1], pos[2] ) ;
-      fhPHOSDigits->Fill(entry, caloCluster->GetNumberOfDigits() ) ;
-      numberOfDigitsInPhos += caloCluster->GetNumberOfDigits() ;
+      fhPHOSDigits->Fill(entry, caloCluster->GetNCells() ) ;
+      numberOfDigitsInPhos += caloCluster->GetNCells() ;
       Double_t * pid = caloCluster->GetPid() ;
       if(pid[AliPID::kPhoton] > GetPhotonId() ) {
 	phosVector[fPhotonsInPhos] = new TVector3(pos[0],pos[1],pos[2]) ;
