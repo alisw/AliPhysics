@@ -108,7 +108,7 @@ public:
 
   // --- NEW ---
   void SetNCells(Int_t n) { fNCells = n;}
-  Double_t GetNCells() const   { return fNCells;}
+  Int_t GetNCells() const   { return fNCells;}
   
   void SetCellsAbsId(UShort_t *array) { fCellsAbsId = array; }
   UShort_t *GetCellsAbsId() {return  fCellsAbsId;}
