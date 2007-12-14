@@ -28,7 +28,7 @@
 //             2 - long pads
 //  Float_t z    - drift length
 // 
-//  Float_t angle -inclination angle at given dimension 
+//  Float_t angle - tangent of inclination angle at given dimension 
 //
 //  Implemented parameterization
 //
@@ -59,9 +59,20 @@
 //          Smaller precission as previous one
 //
 //
+//  Example how to retrieve the paramterization:
+/*    
+      AliCDBManager::Instance()->SetRun(1) 
+      AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+      AliTPCClusterParam * param = AliTPCcalibDB::Instance()->GetClusterParam();
+
+      //
+      //
+      AliTPCClusterParam::SetInstance(param);
+      TF1 f1("f1","AliTPCClusterParam::SGetError0Par(1,0,x,0)",0,250);
+
+*/      
 //
-                                                                 //
-//                                                                           //
+//                                                                     //
 ///////////////////////////////////////////////////////////////////////////////
 #include "AliTPCClusterParam.h"
 #include "TMath.h"
