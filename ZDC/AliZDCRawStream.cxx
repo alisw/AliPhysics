@@ -87,67 +87,75 @@ Bool_t AliZDCRawStream::Next()
   if(!fRawReader->ReadNextInt((UInt_t&) fRawADC)) return kFALSE;
   fIsADCDataWord = kFALSE;
   
-  if(fRawADC & 0x2000000){//ADC Header
-    fADCModule++;
-    //printf(" \t AliZDCRawStream -> Header ADC %d -> ADC datum contains %d data words \n",fADCModule,((fRawADC & 0x3f00) >> 8));
+  printf("fRawADC %x",fRawADC);
+  //
+  if((fRawADC == 0xe52b6300) || (fRawADC == 0xdeadface) || (fRawADC == 0xffffffff) || (fRawADC == 0xdeadbeef)){
+    printf("    This is a DARC header!!!\n");
   }
-  else if(fRawADC & 0x4000000){//ADC EOB
-    //printf(" \t AliZDCRawStream -> ADC %d End Of Block - event number %d\n\n",fADCModule, (fRawADC & 0xffffff));
-    fSector[0] = fSector[1] = 99;
-  } 
-  else if(fRawADC & 0x6000000){//Not valid datum
-    printf(" \t AliZDCRawStream -> Not valid datum in ADC module %d\n",fADCModule);
-  }
-  else{//ADC data word
-    fIsADCDataWord = kTRUE;
-    //printf(" \t \t ADC Data Word");
-    if(!(fRawADC & 0x1000) && !(fRawADC & 0x2000)){ // Valid ADC data
-      fADCGain = (fRawADC & 0x10000) >> 16;
-      fADCValue = (fRawADC & 0xfff);   
-      //
-      Int_t vADCChannel = (fRawADC & 0x1e0000) >> 17;
-      if(fADCModule==1 || fADCModule==3){  //1st & 3rd ADC modules
-        if(vADCChannel >= 0 && vADCChannel <= 4){ 
-          fSector[0] = 1; // ZN1
-          fSector[1] = vADCChannel;
-        } 
-        else if(vADCChannel >= 8 && vADCChannel <= 12){
-          fSector[0] = 2; // ZP1
-          fSector[1] = vADCChannel-8;
-        } 
-        else if(vADCChannel == 5 || vADCChannel == 13){
-          fSector[0] = 3; // ZEM 1,2
-          fSector[1] = ((vADCChannel-5)/8)+1;
-        }
-      }
-      else if(fADCModule==2 || fADCModule==4){  //2nd & 4rth ADC modules
-        if(vADCChannel >= 0 && vADCChannel <= 4){ 
-          fSector[0] = 4; // ZN2
-          fSector[1] = vADCChannel;
-        } 
-        else if(vADCChannel >= 8 && vADCChannel <= 12){
-          fSector[0] = 5; // ZP2
-          fSector[1] = vADCChannel-8;
-        } 
-        else if(vADCChannel == 5 || vADCChannel == 13){
-          fSector[0] = (vADCChannel-5)*3/8+1; // PM Ref 1,2
-          fSector[1] = 5;
-        }
-      }
-      else{
-        AliWarning(" \t AliZDCRawStream -> No valid ADC module!");
-        printf(" ADCmod = %d\n", fADCModule);
-        fRawReader->AddMajorErrorLog(kInvalidADCModule);
-      }
-      /*printf(" \t \tADC %d ch %d range %d -> det %d quad %d value %x\n",
-           fADCModule, vADCChannel, fADCGain, fSector[0], fSector[1], fADCValue);//Chiara debugging
-      */
+  else if(fRawADC == 0xcafefade) printf("    End of data!\n");
+  else{
+    if((fRawADC & 0x6000000) == 0x6000000){//Not valid datum
+      printf("    AliZDCRawStream -> Not valid datum in ADC module!!! %d\n",fADCModule);
     }
-    else if(fRawADC & 0x1000) 
-      printf(" \t \tADC %d ch %d range %d  overflow\n",fADCModule, (fRawADC & 0x1e0000) >> 17, fADCGain); // Overflow
-    else if(fRawADC & 0x2000) 
-      printf(" \t \tADC %d ch %d range %d  underflow\n",fADCModule, (fRawADC & 0x1e0000) >> 17, fADCGain); // Underflow
-  }
+    else if((fRawADC & 0x4000000) == 0x4000000){//ADC EOB
+      printf("    AliZDCRawStream -> ADC %d End Of Block - Event no. %d\n\n",fADCModule, (fRawADC & 0xffffff));
+      fSector[0] = fSector[1] = 99;
+    } 
+    else if((fRawADC & 0x2000000) == 0x2000000){//ADC Header
+      fADCModule++;
+      printf("    AliZDCRawStream -> Header ADC %d - ADC datum contains %d data words \n",fADCModule,((fRawADC & 0x3f00) >> 8));
+    }
+    else{//ADC data word
+      fIsADCDataWord = kTRUE;
+      printf(" \t \t ADC Data Word");
+      if(!(fRawADC & 0x1000) && !(fRawADC & 0x2000)){ // Valid ADC data
+        fADCGain = (fRawADC & 0x10000) >> 16;
+        fADCValue = (fRawADC & 0xfff);   
+        //
+        Int_t vADCChannel = (fRawADC & 0x1e0000) >> 17;
+        if(fADCModule==1 || fADCModule==3){  //1st & 3rd ADC modules
+          if(vADCChannel >= 0 && vADCChannel <= 4){ 
+            fSector[0] = 1; // ZN1
+            fSector[1] = vADCChannel;
+          } 
+          else if(vADCChannel >= 8 && vADCChannel <= 12){
+            fSector[0] = 2; // ZP1
+            fSector[1] = vADCChannel-8;
+          } 
+          else if(vADCChannel == 5 || vADCChannel == 13){
+            fSector[0] = 3; // ZEM 1,2
+            fSector[1] = ((vADCChannel-5)/8)+1;
+          }
+        }
+        else if(fADCModule==2 || fADCModule==4){  //2nd & 4rth ADC modules
+          if(vADCChannel >= 0 && vADCChannel <= 4){ 
+            fSector[0] = 4; // ZN2
+          fSector[1] = vADCChannel;
+          } 
+          else if(vADCChannel >= 8 && vADCChannel <= 12){
+            fSector[0] = 5; // ZP2
+            fSector[1] = vADCChannel-8;
+          } 
+          else if(vADCChannel == 5 || vADCChannel == 13){
+            fSector[0] = (vADCChannel-5)*3/8+1; // PM Ref 1,2
+            fSector[1] = 5;
+          }
+        }
+        else{
+          AliWarning("    AliZDCRawStream -> No valid ADC module!!!");
+          printf(" ADCmod = %d\n", fADCModule);
+          fRawReader->AddMajorErrorLog(kInvalidADCModule);
+        }
+        printf("  ADC %d ch %d range %d -> det %d quad %d value %x\n",
+           fADCModule, vADCChannel, fADCGain, fSector[0], fSector[1], fADCValue);//Chiara debugging
+      
+      }
+      else if(fRawADC & 0x1000) 
+        printf("  ADC %d ch %d range %d  overflow\n",fADCModule, (fRawADC & 0x1e0000) >> 17, fADCGain); // Overflow
+      else if(fRawADC & 0x2000) 
+        printf("  ADC %d ch %d range %d  underflow\n",fADCModule, (fRawADC & 0x1e0000) >> 17, fADCGain); // Underflow
+    }
+  }//Not DARC Header
 
   return kTRUE;
 }
