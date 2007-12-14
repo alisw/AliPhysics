@@ -35,7 +35,7 @@ class AliAnalysisTaskESDfilter : public AliAnalysisTask
     
  private:
     Int_t              fDebug;       //  Debug flag
-    TChain*            fChain;       //! chained files
+    TTree*             fTree;        //! chained files
     AliESDEvent*       fESD;         //! ESD
     AliAODEvent*       fAOD;         //! AOD event 
     TTree*             fTreeA;       //! AOD tree
