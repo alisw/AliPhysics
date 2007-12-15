@@ -20,6 +20,7 @@ class AliCDBEntry;
 class AliTPCParam;
 class AliTPCAltroMapping;
 class AliTPCClusterParam;
+class AliTPCRecoParam;
 //class AliCDBStorage;
 
 class AliTPCcalibDB : public TObject
@@ -41,6 +42,7 @@ class AliTPCcalibDB : public TObject
   AliTPCParam*  GetParameters(){return fParam;}
   AliTPCAltroMapping ** GetMapping(){ return fMapping;}
   AliTPCClusterParam *GetClusterParam(){ return fClusterParam;}
+  AliTPCRecoParam *   GetRecoParam(Int_t *eventtype);
   //
   static void     CreateObjectList(const Char_t *filename, TObjArray *calibObjects);
   static void MakeTree(const char * fileName, TObjArray * array, const char * mapFileName = 0, AliTPCCalPad* outlierPad = 0, Float_t ltmFraction = 0.9);
@@ -62,6 +64,7 @@ protected:
   AliTPCCalPad* fPedestals;       // Pedestal calibration entry
   AliTPCSensorTempArray* fTemperature; // Temperature calibration entry
   AliTPCAltroMapping **fMapping;   // Altro mapping   
+  TObjArray * fRecoParamArray;     // reconstruction parameters
   //
   //
   AliTPCParam * fParam;           // TPC parameters

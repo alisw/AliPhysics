@@ -47,9 +47,21 @@ fClusterer(NULL)
   //
   // default constructor
   //
+  //
+  //
   if (!fgkRecoParam) {
-    AliError("The Reconstruction parameters nonitialized - Used default one");
-    fgkRecoParam = AliTPCRecoParam::GetHighFluxParam();
+    //
+    // 1. try to get reco parameters from OCDB 
+    //
+    fgkRecoParam = AliTPCcalibDB::Instance()->GetRecoParam(0);
+    AliInfo("Reconstruction parameters from OCDB used");
+    //
+    // 2. If not initialized take default
+    //
+    if (!fgkRecoParam){
+      fgkRecoParam = AliTPCRecoParam::GetHighFluxParam();
+      AliError("Default reconstruction parameters  used");
+    }
   }
 
   AliTPCParam* param = GetTPCParam();

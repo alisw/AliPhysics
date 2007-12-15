@@ -18,7 +18,21 @@
 //                                                                           //
 // Class with TPC reconstruction parameters                                  //
 //                                                                           //  
-//                                                                           //
+//
+/*
+  The reconstruction parameters are used in the AliTPCclustererMI and AliTPCtrackerMI
+  
+  They are retrieved:
+  0. User speciefied it in reconstruction macro
+  1. if (not 0) from OCDB  - AliTPCcalibDB::GetRecoParam(eventtype)
+  2. if (not 0 or 1) default parameter - High flux enevironment used  
+
+  FIXME:
+  In the future  reconstruction parameters should be changed on event basis
+  But for the moment, event types are still not defined 
+
+*/
+                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
 
