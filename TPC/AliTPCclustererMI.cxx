@@ -612,7 +612,7 @@ void AliTPCclustererMI::Digits2Clusters()
   fInput->GetBranch("Segment")->SetAddress(&dummy);
   Stat_t nentries = fInput->GetEntries();
   
-  fMaxTime=fParam->GetMaxTBin()+6; // add 3 virtual time bins before and 3   after
+  fMaxTime=fRecoParam->GetLastBin()+6; // add 3 virtual time bins before and 3   after
     
   Int_t nclusters  = 0;
 
@@ -712,7 +712,7 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
 
   Int_t nclusters  = 0;
   
-  fMaxTime = fParam->GetMaxTBin() + 6; // add 3 virtual time bins before and 3 after
+  fMaxTime = fRecoParam->GetLastBin() + 6; // add 3 virtual time bins before and 3 after
   const Int_t kNIS = fParam->GetNInnerSector();
   const Int_t kNOS = fParam->GetNOuterSector();
   const Int_t kNS = kNIS + kNOS;
@@ -804,9 +804,11 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
       iPad+=3;
       //time
       Int_t iTimeBin = input.GetTime();
-      if ( iTimeBin < 0 || iTimeBin >= fParam->GetMaxTBin())
+      if ( iTimeBin < fRecoParam->GetFirstBin() || iTimeBin >= fRecoParam->GetLastBin()){
+	continue;
 	AliFatal(Form("Timebin index (%d) outside the range (%d -> %d) !",
 		      iTimeBin, 0, iTimeBin -1));
+      }
       iTimeBin+=3;
       //signal
       Float_t signal = input.GetSignal();
