@@ -189,6 +189,7 @@ void AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
 
   Int_t index[20];
   Char_t buf1[10], buf2[10], buf3[10], title[10], title2[10], titleLED[10], title2LED[10];
+  TSpectrum *s = new TSpectrum(2*npeaks,1.);
 
   for (Int_t d=0; d<2; d++)
   {
@@ -207,7 +208,6 @@ void AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
       TH2F *led_cfd = (TH2F*) gFile->Get(buf3);
       // cout<<buf1<<" "<<buf2<<endl;
       TH1F *cfd = (TH1F*) gFile->Get(buf1);
-      TSpectrum *s = new TSpectrum(2*npeaks,1.);
       Int_t nfound = s->Search(cfd,sigma,"goff",0.05);
       // cout<<"Found "<<nfound<<" peaks sigma "<<sigma<<endl;
       if(nfound!=0)
@@ -263,6 +263,7 @@ void AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
           fWalk.AddAtAndExpand(gr[i+12],i+12);
           delete [] xx;
           delete [] yy;
+	  delete pr_y;
 	}
 	else
 	{
@@ -310,8 +311,12 @@ void AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
           fAmpLEDRec.AddAtAndExpand(grLED[i+12],i+12);
           delete [] xxLED;
           delete [] yyLED;
+	  delete pr_yLED;
 	}
       }
+      delete cfd;
+      delete qtc_cfd;
+      delete led_cfd;			
     }
   }
 
