@@ -49,21 +49,7 @@ fClusterer(NULL)
   //
   //
   //
-  if (!fgkRecoParam) {
-    //
-    // 1. try to get reco parameters from OCDB 
-    //
-    fgkRecoParam = AliTPCcalibDB::Instance()->GetRecoParam(0);
-    AliInfo("Reconstruction parameters from OCDB used");
-    //
-    // 2. If not initialized take default
-    //
-    if (!fgkRecoParam){
-      fgkRecoParam = AliTPCRecoParam::GetHighFluxParam();
-      AliError("Default reconstruction parameters  used");
-    }
-  }
-
+ 
   AliTPCParam* param = GetTPCParam();
   if (!param) {
     AliWarning("Loading default TPC parameters !");
@@ -134,4 +120,30 @@ AliTPCParam* AliTPCReconstructor::GetTPCParam() const
   AliTPCParam* param = AliTPCcalibDB::Instance()->GetParameters();
 
   return param;
+}
+
+
+
+
+const AliTPCRecoParam* AliTPCReconstructor::GetRecoParam(){ 
+  //
+  // Get reconstruction parameters
+  //
+  
+   if (!fgkRecoParam) {
+    //
+    // 1. try to get reco parameters from OCDB 
+    //
+    fgkRecoParam = AliTPCcalibDB::Instance()->GetRecoParam(0);
+    //Info("","Reconstruction parameters from OCDB used");
+    //
+    // 2. If not initialized take default
+    //
+    if (!fgkRecoParam){
+      fgkRecoParam = AliTPCRecoParam::GetHighFluxParam();
+      //Error("","Default reconstruction parameters  used");
+    }
+  }
+
+  return fgkRecoParam;
 }

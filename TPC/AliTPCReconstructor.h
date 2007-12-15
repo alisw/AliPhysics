@@ -28,7 +28,7 @@ public:
   {FillESD((TTree*)NULL,(TTree*)NULL,esd);}
 
   void SetRecoParam(AliTPCRecoParam * param){ fgkRecoParam = param;}
-  static const AliTPCRecoParam* GetRecoParam(){ return fgkRecoParam;}
+  static const AliTPCRecoParam* GetRecoParam();
   //
   static Double_t GetCtgRange()     { return fgkRecoParam->GetCtgRange();}
   static Double_t GetMaxSnpTracker(){ return fgkRecoParam->GetMaxSnpTracker();}
