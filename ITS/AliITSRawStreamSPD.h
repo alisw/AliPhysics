@@ -22,7 +22,7 @@ class AliITSRawStreamSPD: public AliITSRawStream {
     virtual ~AliITSRawStreamSPD() {};
 
     virtual Bool_t   Next();
-    virtual Bool_t   ReadCalibHeader();
+    virtual Int_t   ReadCalibHeader();
 
     // the 2 methods below are equivalent to AliITSRawStream::GetCoord1 and GetCoord2
     // together with the AliITSRawStream::GetModuleID these are the "offline" coordinates

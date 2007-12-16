@@ -146,13 +146,13 @@ void AliITSRawStreamSPD::NewEvent() {
   fLastDDLID = -1;
 }
 //__________________________________________________________________________
-Bool_t AliITSRawStreamSPD::ReadCalibHeader() {
+Int_t AliITSRawStreamSPD::ReadCalibHeader() {
   // read the extra calibration header
-  // returns kTRUE if the header is present and there is no problem reading it
+  // returns the length of the header if it is present, -1 otherwise
 
   Int_t ddlID = fRawReader->GetDDLID();
   if (ddlID==-1) { // we may need to read one word to get the blockAttr
-    if (!ReadNextShort()) return kFALSE;
+    if (!ReadNextShort()) return -1;
     ddlID = fRawReader->GetDDLID();
   }
   // reset flags and counters
@@ -178,7 +178,7 @@ Bool_t AliITSRawStreamSPD::ReadCalibHeader() {
 	AliError(errMess.Data());
 	fRawReader->AddMajorErrorLog(kCalHeaderLengthErr,errMess.Data());
 	if (fAdvancedErrorLog) fAdvLogger->ProcessError(kCalHeaderLengthErr,ddlID,-1,-1,errMess.Data());
-	return kFALSE;
+	return -1;
       }
       else {
 	for (UInt_t iword=0; iword<calLen; iword++) {
@@ -190,15 +190,15 @@ Bool_t AliITSRawStreamSPD::ReadCalibHeader() {
 	    AliError(errMess.Data());
 	    fRawReader->AddMajorErrorLog(kCalHeaderLengthErr,errMess.Data());
 	    if (fAdvancedErrorLog) fAdvLogger->ProcessError(kCalHeaderLengthErr,ddlID,-1,-1,errMess.Data());
-	    return kFALSE;
+	    return -1;
 	  }
 	}
-	return kTRUE;
+	return calLen;
       }
     }
   }
 
-  return kFALSE;
+  return -1;
 }
 //__________________________________________________________________________
 Bool_t AliITSRawStreamSPD::Next() {
@@ -217,7 +217,7 @@ Bool_t AliITSRawStreamSPD::Next() {
 	  fEqPLBytesRead -= 2;
 	  CheckHeaderAndTrailerCount(fLastDDLID);
 	}
-	if (ReadCalibHeader()) continue;
+	if (ReadCalibHeader()>=0) continue;
       }
     }
     else {

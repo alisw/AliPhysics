@@ -20,9 +20,11 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
+#ifndef SPD_DA_OFF
 extern "C" {
 #include "daqDA.h"
 }
+#endif
 #include "event.h"
 #include "monitor.h"
 #include "AliRawReaderDate.h"

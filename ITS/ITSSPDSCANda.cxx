@@ -22,9 +22,11 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
+#ifndef SPD_DA_OFF
 extern "C" {
 #include "daqDA.h"
 }
+#endif
 #include "event.h"
 #include "monitor.h"
 #include "AliRawReaderDate.h"
@@ -252,7 +254,7 @@ int main(int argc, char **argv) {
 	    }
 	  }
 	  
-	  if (str->ReadCalibHeader()) {
+	  if (str->ReadCalibHeader()>0) {
 	    // first check the type:
 	    if (bScanInit[eqId] && type[eqId]!=str->GetHtype()) {
 	      printf("Calib header problem. Type changed (%d -> %d)!\n",type[eqId],str->GetHtype());

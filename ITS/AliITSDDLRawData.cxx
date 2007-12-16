@@ -32,6 +32,7 @@
 #include "AliITSRawStreamSPD.h"
 #include "AliITSRawStreamSDD.h"
 #include "AliITSRawStreamSSD.h"
+#include "AliITSIntMap.h"
 #include "AliBitPacking.h"
 #include "AliDAQ.h"
 #include "AliFstream.h"
@@ -378,19 +379,22 @@ void AliITSDDLRawData::GetDigitsSPD(TClonesArray *ITSdigits,Int_t mod,Int_t ddl,
   //Since data is zero suppressed,the coordinates for the chip having zero digits 
   //doesn't get listed in the galice.root file. However the SPD format requires 
   //the empty chip to be written with chip header and chip trailer.
-  //The index of the half stave is calculated as (mod/2).
-  Int_t ix;
-  Int_t iz;
-  Int_t chipNo=0;
+
+  Int_t chipLow  = AliITSRawStreamSPD::GetOnlineChipFromOffline(mod,0);
+  Int_t chipHigh = AliITSRawStreamSPD::GetOnlineChipFromOffline(mod,159);
+  if (chipLow>chipHigh) {chipLow  -= 4; chipHigh += 4;}
+  UInt_t hs = AliITSRawStreamSPD::GetOnlineHSFromOffline(mod);
+
+  // create int map to later hold all digits sorted
+  AliITSIntMap* digMap = new AliITSIntMap();
+
   UInt_t baseWord=0;
-  UInt_t hitRow=0;
   Int_t chipHitCount=0;  //Number of Hit in the current chip
   Int_t previousChip=-1; //Previuos chip respect to the actual aone
   Int_t ndigits = ITSdigits->GetEntries(); //number of digits in the current module
   //cout<<"      Number of digits in the current module:"<<ndigits<<" module:"<<mod<<endl;
+
   AliITSdigit *digs;
-  fHalfStaveModule++;    //It's a private variable used to distinguish between the firs  
-                         //and the second module of an Half Stave Module
   ofstream ftxt;
   if(ndigits){
     //loop over digits
@@ -400,77 +404,79 @@ void AliITSDDLRawData::GetDigitsSPD(TClonesArray *ITSdigits,Int_t mod,Int_t ddl,
       digs = (AliITSdigit*)ITSdigits->UncheckedAt(digit);
       /*---------------------------------------------------------------------------
        *     Each module contains 5 read out chips of 256 rows and 32 columns.
-       *     So, the cell number in Z direction varies from 0 to 159.  Therefore,
-       *     to get the chip address (0 to 4), we need to divide column number by 32.
+       *     So, the cell number in Z direction varies from 0 to 159.
        *     ---------------------------------------------------------------------*/
-      iz=digs->GetCoord1();  // Cell number in Z direction 
-      ix=digs->GetCoord2();  // Cell number in X direction
-      chipNo=iz/32;
+      Int_t iz=digs->GetCoord1();  // Cell number in Z direction 
+      Int_t ix=digs->GetCoord2();  // Cell number in X direction
+
       if(fVerbose==2)
 	ftxt<<"DDL:"<<ddl<<" Mod:"<<mod<<" Row:"<<ix<<" Col:"<<iz<<endl;
-      hitRow=iz-chipNo*32;
-      if(fHalfStaveModule){
-	chipNo+=5;
-	fHalfStaveModule=-1;
-      }//end if
-      if(previousChip==-1){
+      UInt_t dummyDDL,dummyHS,chip,col,row;
+      AliITSRawStreamSPD::OfflineToOnline(mod,iz,ix,dummyDDL,dummyHS,chip,col,row);
+
+      //  insert digit into map...
+      // (reverse order of cols and rows as in real raw data)
+      digMap->Insert(chip*256*32+(32-col)*256+(256-row),row);
+    }
+  }
+
+  UInt_t nrHits = digMap->GetNrEntries();
+  if (nrHits>0) {
+    Int_t chip = 0;
+    for (UInt_t nHit=0; nHit<nrHits; nHit++) {
+      Int_t key = digMap->GetKeyIndex(nHit);
+      chip = key/(256*32);
+      Int_t col = 32 - (key%(256*32))/256;
+      Int_t row = digMap->GetValIndex(nHit);
+
+      if(previousChip==-1) { // first hit
 	//loop over chip without digits 
 	//Even if there aren't digits for a given chip 
 	//the chip header and the chip trailer are stored
-	for(Int_t i=0;i<(iz/32);i++){
-	  if(chipNo>4)
-	    WriteChipHeader(i+5,(mod/2),baseWord);
-	  else
-	    WriteChipHeader(i,(mod/2),baseWord);
-	  WriteChipTrailer(buf,chipHitCount,baseWord);
-	  chipHitCount=0;
-	}//end for
-	WriteChipHeader(chipNo,(mod/2),baseWord);
+	for (Int_t i=chipLow; i<chip; i++) {
+	  WriteChipHeader(i,hs,baseWord);
+	  WriteChipTrailer(buf,0,baseWord);
+	}
+	WriteChipHeader(chip,hs,baseWord);
+	WriteHit(buf,row,col,baseWord);
 	chipHitCount++;
-	WriteHit(buf,ix,hitRow,baseWord);
-	previousChip=chipNo;
+	previousChip=chip;
       }//end if
       else{
-	if(previousChip!=chipNo){
+	if(previousChip!=(Int_t)chip) {
 	  WriteChipTrailer(buf,chipHitCount,baseWord);
 	  chipHitCount=0;
-	  for(Int_t i=previousChip+1;i<chipNo;i++){
-	    WriteChipHeader(i,(mod/2),baseWord);
+	  for(Int_t i=previousChip+1; i<chip; i++) {
+	    WriteChipHeader(i,hs,baseWord);
 	    WriteChipTrailer(buf,0,baseWord);
-	    chipHitCount=0;
 	  }//end for
-	  WriteChipHeader(chipNo,(mod/2),baseWord);
-	  previousChip=chipNo;
+	  WriteChipHeader(chip,hs,baseWord);
+	  previousChip=chip;
 	}//end if
 	chipHitCount++;
-	WriteHit(buf,ix,hitRow,baseWord);
+	WriteHit(buf,row,col,baseWord);
       }//end else
     }//end for
     //Even if there aren't digits for a given chip 
     //the chip header and the chip trailer are stored
-    Int_t end=4;
-    if(chipNo>4)end+=5;
     WriteChipTrailer(buf,chipHitCount,baseWord);
     chipHitCount=0;
-    for(Int_t i=chipNo+1;i<=end;i++){
-      WriteChipHeader(i,(mod/2),baseWord);
+    for(Int_t i=chip+1;i<=chipHigh;i++){
+      WriteChipHeader(i,hs,baseWord);
       WriteChipTrailer(buf,0,baseWord);
-      chipHitCount=0;
     }//end for
   }//end if
   else{
     //In this module there aren't digits but
-    //the chip header and chip trailer are store anyway
-    if(fHalfStaveModule){
-      chipNo=5;
-      fHalfStaveModule=-1;
-    }//end if
-    for(Int_t i=0;i<5;i++){
-      WriteChipHeader(chipNo+i,(mod/2),baseWord);
-      WriteChipTrailer(buf,chipHitCount,baseWord);
-      chipHitCount=0;
+    //the chip header and chip trailer are stored anyway
+    for(Int_t i=chipLow; i<=chipHigh; i++){
+      WriteChipHeader(i,hs,baseWord);
+      WriteChipTrailer(buf,0,baseWord);
     }//end for
   }//end else 
+
+  delete digMap;
+
   if(fVerbose==2)
     ftxt.close();
   return;
