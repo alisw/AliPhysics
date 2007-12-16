@@ -11,18 +11,10 @@ objectClass: dcsConfig
 dcsHost: alidcsamanda.cern.ch
 dcsPort: 1337
 multiSplit: 4000
-dcsAlias: tof_hv_vp_[00..89]
-dcsAlias: tof_hv_vn_[00..89]
-dcsAlias: tof_hv_ip_[00..89]
-dcsAlias: tof_hv_in_[00..89]
-dcsAlias: tof_lv_vfea_[000..575]
-dcsAlias: tof_lv_v33_[00..71]
-dcsAlias: tof_lv_v50_[00..71]
-dcsAlias: tof_lv_v48_[00..71]
-dcsAlias: tof_lv_ifea_[000..575]
-dcsAlias: tof_lv_i33_[00..71]
-dcsAlias: tof_lv_i50_[00..71]
-dcsAlias: tof_lv_i48_[00..71]
-dcsAlias: tof_fee_th_[0000..1151]
-dcsAlias: tof_fee_tfeac_[000..575]
-dcsAlias: tof_fee_ttrm_[0000..6839]
+dcsAlias: tof_lv_i48_02
+dcsAlias: tof_lv_v48_02
+dcsAlias: tof_lv_i33_02
+dcsAlias: tof_lv_v33_02
+
+
+
