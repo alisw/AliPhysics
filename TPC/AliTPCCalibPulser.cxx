@@ -660,10 +660,10 @@ Bool_t AliTPCCalibPulser::ProcessEventFast(AliTPCRawStreamFast *rawStreamFast)
 	  Int_t isector  = rawStreamFast->GetSector();                       //  current sector
 	  Int_t iRow     = rawStreamFast->GetRow();                          //  current row
 	  Int_t iPad     = rawStreamFast->GetPad();                          //  current pad
-	  Int_t startTbin = (Int_t)rawStreamFast->GetStartTimeBin();
-          Int_t endTbin = (Int_t)rawStreamFast->GetEndTimeBin();
 
 	  while ( rawStreamFast->NextBunch() ){
+  	      Int_t startTbin = (Int_t)rawStreamFast->GetStartTimeBin();
+              Int_t endTbin = (Int_t)rawStreamFast->GetEndTimeBin();
 	      for (Int_t iTimeBin = startTbin; iTimeBin < endTbin; iTimeBin++){
 		  Float_t signal=(Float_t)rawStreamFast->GetSignals()[iTimeBin-startTbin];
 		  Update(isector,iRow,iPad,iTimeBin+1,signal);
