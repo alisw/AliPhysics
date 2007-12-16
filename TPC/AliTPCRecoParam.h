@@ -33,14 +33,22 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   void     SetDoUnfold(Bool_t unfold)     { fBDoUnfold = unfold;}
   Float_t  GetDumpAmplitudeMin()   const  { return fDumpAmplitudeMin;}
   Float_t  GetMaxNoise()           const  { return fMaxNoise;}  
+  //
   Float_t  GetMinMaxCutAbs()       const  { return fMinMaxCutAbs; }
   Float_t  GetMinLeftRightCutAbs() const  { return fMinLeftRightCutAbs;}  // minimal amplitude left right - PRF
   Float_t  GetMinUpDownCutAbs()    const  { return fMinUpDownCutAbs;}  // minimal amplitude up-down - TRF 
   Float_t  GetMinMaxCutSigma()       const  { return fMinMaxCutSigma; }
   Float_t  GetMinLeftRightCutSigma() const  { return fMinLeftRightCutSigma;}  // minimal amplitude left right - PRF
   Float_t  GetMinUpDownCutSigma()    const  { return fMinUpDownCutSigma;}  // minimal amplitude up-down - TRF 
-  Int_t    GetLastSeedRowSec()       const  { return fLastSeedRowSec;} 
   //
+  void SetMinMaxCutAbs(Float_t th)         {   fMinMaxCutAbs=th; }
+  void SetMinLeftRightCutAbs(Float_t th)   {   fMinLeftRightCutAbs=th;}  // minimal amplitude left right - PRF
+  void SetMinUpDownCutAbs(Float_t th)      {   fMinUpDownCutAbs=th;}  // minimal amplitude up-down - TRF 
+  void SetMinMaxCutSigma(Float_t th)       {   fMinMaxCutSigma=th; }
+  void SetMinLeftRightCutSigma(Float_t th) {   fMinLeftRightCutSigma=th;}  // minimal amplitude left right - PRF
+  void SetMinUpDownCutSigma(Float_t th)    {   fMinUpDownCutSigma=th;}  // minimal amplitude up-down - TRF 
+  //
+  Int_t    GetLastSeedRowSec()       const  { return fLastSeedRowSec;} 
   void     SetDoKinks(Bool_t on)   { fBKinkFinder=on; }
   Bool_t   GetDoKinks() const      { return fBKinkFinder;}
   Float_t  GetMaxC()    const      { return fMaxC;}

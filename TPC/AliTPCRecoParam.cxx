@@ -105,7 +105,7 @@ AliTPCRecoParam *AliTPCRecoParam::GetHighFluxParam(){
   AliTPCRecoParam *param = new AliTPCRecoParam;
   param->fCtgRange = 1.05;
   param->fFirstBin = 0;
-  param->fLastBin  = 1000;
+  param->fLastBin  = 1000;  
   return param;
 }
 
@@ -126,6 +126,8 @@ AliTPCRecoParam *AliTPCRecoParam::GetLaserTestParam(Bool_t bPedestal){
   param->fMaxC          = 0.02;
   param->fBSpecialSeeding = kTRUE;
   param->fBYMirror      = kFALSE;
+  //
+  //
   return param;
 }
 
