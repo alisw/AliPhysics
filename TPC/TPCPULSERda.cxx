@@ -87,7 +87,7 @@ int main(int argc, char **argv) {
   printf("TPC Pulser DA started - %s\n",__FILE__);
 
   /* set time bin range */
-  calibPulser.SetRangeTime(60,120);
+  calibPulser.SetRangeTime(400,500);
 
   /* declare monitoring program */
   status=monitorDeclareMp( __FILE__ );
@@ -137,7 +137,8 @@ int main(int argc, char **argv) {
       //  Pulser calibration
 
       AliRawReader *rawReader = new AliRawReaderDate((void*)event);
-      calibPulser.ProcessEvent(rawReader);
+//      calibPulser.ProcessEvent(rawReader);
+      calibPulser.ProcessEventFast(rawReader);
       delete rawReader;
 
       /* free resources */
