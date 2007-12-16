@@ -111,7 +111,11 @@ void AliTPCPreprocessor::Initialize(Int_t run, UInt_t startTime,
 
   // Temperature sensors
 
-        TTree *confTree = 0;
+       TTree *confTree = 0;
+
+       TString tempConf = fConfEnv->GetValue("Temperature","ON");
+       tempConf.ToUpper();
+       if (tempConf != "OFF" ) {
 	entry = GetFromOCDB("Config", "Temperature");
         if (entry) confTree = (TTree*) entry->GetObject();
         if ( confTree==0 ) {
@@ -122,11 +126,13 @@ void AliTPCPreprocessor::Initialize(Int_t run, UInt_t startTime,
         fTemp = new AliTPCSensorTempArray(fStartTime, fEndTime, confTree, kAmandaTemp);
 	fTemp->SetValCut(kValCutTemp);
 	fTemp->SetDiffCut(kDiffCutTemp);
-
+       }
 
   // High voltage measurements
 
-      if (false) {    // high voltage maps not yet implemented...
+      TString hvConf = fConfEnv->GetValue("HighVoltage","ON");
+      hvConf.ToUpper();
+      if (hvConf != "OFF" ) { 
         confTree=0;
         entry=0;
         entry = GetFromOCDB("Config", "HighVoltage");
@@ -150,23 +156,27 @@ UInt_t AliTPCPreprocessor::Process(TMap* dcsAliasMap)
   if (!dcsAliasMap) return 9;
   if (dcsAliasMap->GetEntries() == 0 ) return 9;
   if (!fConfigOK) return 9;
+  UInt_t result = 0;
 
   TString runType = GetRunType();
 
   // Temperature sensors are processed by AliTPCCalTemp
 
-
-  UInt_t tempResult = MapTemperature(dcsAliasMap);
-  UInt_t result=tempResult;
+  TString tempConf = fConfEnv->GetValue("Temperature","ON");
+  tempConf.ToUpper();
+  if (tempConf != "OFF" ) {
+    UInt_t tempResult = MapTemperature(dcsAliasMap);
+    result=tempResult;
+  }
 
   // High Voltage recordings
 
 
- if (false) {   // High Voltage maps not yet implemented..
- 
-  UInt_t hvResult = MapHighVoltage(dcsAliasMap);
-  result+=hvResult;
-
+  TString hvConf = fConfEnv->GetValue("HighVoltage","ON");
+  hvConf.ToUpper();
+  if (hvConf != "OFF" ) { 
+   UInt_t hvResult = MapHighVoltage(dcsAliasMap);
+   result+=hvResult;
  }
 
   // Other calibration information will be retrieved through FXS files
@@ -184,21 +194,22 @@ UInt_t AliTPCPreprocessor::Process(TMap* dcsAliasMap)
     Int_t pedestalSource[2] = {AliShuttleInterface::kDAQ,AliShuttleInterface::kHLT} ;
     TString source = fConfEnv->GetValue("Pedestal","DAQ");
     source.ToUpper();
-    if ( source == "HLT") pedestalSource[0] = AliShuttleInterface::kHLT;
-    if (!GetHLTStatus()) pedestalSource[0] = AliShuttleInterface::kDAQ;
-    if (source == "HLTDAQ" ) {
-        numSources=2;
-	pedestalSource[0] = AliShuttleInterface::kHLT;
-	pedestalSource[1] = AliShuttleInterface::kDAQ;
+    if (source != "OFF" ) { 
+     if ( source == "HLT") pedestalSource[0] = AliShuttleInterface::kHLT;
+     if (!GetHLTStatus()) pedestalSource[0] = AliShuttleInterface::kDAQ;
+     if (source == "HLTDAQ" ) {
+         numSources=2;
+   	 pedestalSource[0] = AliShuttleInterface::kHLT;
+	 pedestalSource[1] = AliShuttleInterface::kDAQ;
+     }
+     if (source == "DAQHLT" ) numSources=2;
+     UInt_t pedestalResult=0;
+     for (Int_t i=0; i<numSources; i++ ) {	
+       UInt_t pedestalResult = ExtractPedestals(pedestalSource[i]);
+       if ( pedestalResult == 0 ) break;
+     }
+     result += pedestalResult;
     }
-    if (source == "DAQHLT" ) numSources=2;
-    UInt_t pedestalResult=0;
-    for (Int_t i=0; i<numSources; i++ ) {	
-      UInt_t pedestalResult = ExtractPedestals(pedestalSource[i]);
-      if ( pedestalResult == 0 ) break;
-    }
-    result += pedestalResult;
-
   }
 
   // pulser trigger processing
@@ -208,21 +219,22 @@ UInt_t AliTPCPreprocessor::Process(TMap* dcsAliasMap)
     Int_t pulserSource[2] = {AliShuttleInterface::kDAQ,AliShuttleInterface::kHLT} ;
     TString source = fConfEnv->GetValue("Pulser","DAQ");
     source.ToUpper();
-    if ( source == "HLT") pulserSource[0] = AliShuttleInterface::kHLT;
-    if (!GetHLTStatus()) pulserSource[0] = AliShuttleInterface::kDAQ;
-    if (source == "HLTDAQ" ) {
-        numSources=2;
-	pulserSource[0] = AliShuttleInterface::kHLT;
-	pulserSource[1] = AliShuttleInterface::kDAQ;
+    if ( source != "OFF") { 
+     if ( source == "HLT") pulserSource[0] = AliShuttleInterface::kHLT;
+     if (!GetHLTStatus()) pulserSource[0] = AliShuttleInterface::kDAQ;
+     if (source == "HLTDAQ" ) {
+         numSources=2;
+	 pulserSource[0] = AliShuttleInterface::kHLT;
+ 	 pulserSource[1] = AliShuttleInterface::kDAQ;
+     }
+     if (source == "DAQHLT" ) numSources=2;
+     UInt_t pulserResult=0;
+     for (Int_t i=0; i<numSources; i++ ) {	
+       pulserResult = ExtractPulser(pulserSource[i]);
+       if ( pulserResult == 0 ) break;
+     }
+     result += pulserResult;
     }
-    if (source == "DAQHLT" ) numSources=2;
-    UInt_t pulserResult=0;
-    for (Int_t i=0; i<numSources; i++ ) {	
-      pulserResult = ExtractPulser(pulserSource[i]);
-      if ( pulserResult == 0 ) break;
-    }
-    result += pulserResult;
-
   }
 
 
@@ -236,25 +248,31 @@ UInt_t AliTPCPreprocessor::Process(TMap* dcsAliasMap)
     Int_t ceSource[2] = {AliShuttleInterface::kDAQ,AliShuttleInterface::kHLT} ;
     TString source = fConfEnv->GetValue("CE","DAQ");
     source.ToUpper();
-    if ( source == "HLT") ceSource[0] = AliShuttleInterface::kHLT;
-    if (!GetHLTStatus()) ceSource[0] = AliShuttleInterface::kDAQ;
-    if (source == "HLTDAQ" ) {
+    if ( source != "OFF" ) { 
+     if ( source == "HLT") ceSource[0] = AliShuttleInterface::kHLT;
+     if (!GetHLTStatus()) ceSource[0] = AliShuttleInterface::kDAQ;
+     if (source == "HLTDAQ" ) {
         numSources=2;
 	ceSource[0] = AliShuttleInterface::kHLT;
 	ceSource[1] = AliShuttleInterface::kDAQ;
+     }
+     if (source == "DAQHLT" ) numSources=2;
+     UInt_t ceResult=0;
+     for (Int_t i=0; i<numSources; i++ ) {	
+       ceResult = ExtractCE(ceSource[i]);
+       if ( ceResult == 0 ) break;
+     }
+     result += ceResult;
     }
-    if (source == "DAQHLT" ) numSources=2;
-    UInt_t ceResult=0;
-    for (Int_t i=0; i<numSources; i++ ) {	
-      ceResult = ExtractCE(ceSource[i]);
-      if ( ceResult == 0 ) break;
-    }
-    result += ceResult;
-
   }
-
-//  return result;
-  return 0;      //  Don't produce error codes during December tests
+  
+  TString errorHandling = fConfEnv->GetValue("ErrorHandling","ON");
+  errorHandling.ToUpper();
+  if (errorHandling == "OFF" ) {
+   return 0;
+  } else { 
+   return result;
+  }
 }
 //______________________________________________________________________________________________
 UInt_t AliTPCPreprocessor::MapTemperature(TMap* dcsAliasMap)
@@ -307,7 +325,7 @@ UInt_t AliTPCPreprocessor::MapHighVoltage(TMap* dcsAliasMap)
     fHighVoltage->MakeSplineFit(map);
     Double_t fitFraction = 1.0*fHighVoltage->NumFits()/fHighVoltage->NumSensors(); 
     if (fitFraction > kFitFraction ) {
-      AliInfo(Form("High volatge recordings extracted, fits performed.\n"));
+      AliInfo(Form("High voltage recordings extracted, fits performed.\n"));
     } else { 
       Log ("Too few high voltage recordings fitted. \n");
       result = 9;
