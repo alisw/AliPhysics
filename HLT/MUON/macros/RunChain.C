@@ -204,16 +204,16 @@ void RunChain(
 	// directory structure.
 	if (buildDDLFilePubs)
 	{
-		string cmd13 = "-datatype 'DDLTRACK' 'MUON' -dataspec 0x001000";
-		string cmd14 = "-datatype 'DDLTRACK' 'MUON' -dataspec 0x002000";
-		string cmd15 = "-datatype 'DDLTRACK' 'MUON' -dataspec 0x004000";
-		string cmd16 = "-datatype 'DDLTRACK' 'MUON' -dataspec 0x008000";
-		string cmd17 = "-datatype 'DDLTRACK' 'MUON' -dataspec 0x010000";
-		string cmd18 = "-datatype 'DDLTRACK' 'MUON' -dataspec 0x020000";
-		string cmd19 = "-datatype 'DDLTRACK' 'MUON' -dataspec 0x040000";
-		string cmd20 = "-datatype 'DDLTRACK' 'MUON' -dataspec 0x080000";
-		string cmd21 = "-datatype 'DDLTRIGR' 'MUON' -dataspec 0x100000";
-		string cmd22 = "-datatype 'DDLTRIGR' 'MUON' -dataspec 0x200000";
+		string cmd13 = "-datatype 'DDL_RAW ' 'MUON' -dataspec 0x001000";
+		string cmd14 = "-datatype 'DDL_RAW ' 'MUON' -dataspec 0x002000";
+		string cmd15 = "-datatype 'DDL_RAW ' 'MUON' -dataspec 0x004000";
+		string cmd16 = "-datatype 'DDL_RAW ' 'MUON' -dataspec 0x008000";
+		string cmd17 = "-datatype 'DDL_RAW ' 'MUON' -dataspec 0x010000";
+		string cmd18 = "-datatype 'DDL_RAW ' 'MUON' -dataspec 0x020000";
+		string cmd19 = "-datatype 'DDL_RAW ' 'MUON' -dataspec 0x040000";
+		string cmd20 = "-datatype 'DDL_RAW ' 'MUON' -dataspec 0x080000";
+		string cmd21 = "-datatype 'DDL_RAW ' 'MUON' -dataspec 0x100000";
+		string cmd22 = "-datatype 'DDL_RAW ' 'MUON' -dataspec 0x200000";
 		for (int i = firstEvent; i < lastEvent+1; i++)
 		{
 			if (i != 0)

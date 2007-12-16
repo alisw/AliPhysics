@@ -99,18 +99,7 @@ AliHLTMUONConstants::fgkNilPairDecisionStruct = {0, 0, 0, 0};
 
 
 const AliHLTComponentDataType
-AliHLTMUONConstants::fgkTriggerDDLRawDataType = (AliHLTComponentDataType){
-	sizeof(AliHLTComponentDataType),
-	{'D','D','L','T','R','I','G','R'},
-	kAliHLTDataOriginAny
-} | kAliHLTDataOriginMUON;
-
-const AliHLTComponentDataType
-AliHLTMUONConstants::fgkTrackingDDLRawDataType = (AliHLTComponentDataType){
-	sizeof(AliHLTComponentDataType),
-	{'D','D','L','T','R','A','C','K'},
-	kAliHLTDataOriginAny
-} | kAliHLTDataOriginMUON;
+AliHLTMUONConstants::fgkDDLRawDataType = kAliHLTDataTypeDDLRaw | kAliHLTDataOriginMUON;
 
 const AliHLTComponentDataType
 AliHLTMUONConstants::fgkTriggerRecordsBlockDataType = (AliHLTComponentDataType){

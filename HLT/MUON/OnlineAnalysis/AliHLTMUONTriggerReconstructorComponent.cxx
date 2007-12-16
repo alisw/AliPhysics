@@ -76,7 +76,7 @@ void AliHLTMUONTriggerReconstructorComponent::GetInputDataTypes( std::vector<Ali
 	///
 	
 	list.clear();
-	list.push_back( AliHLTMUONConstants::TriggerDDLRawDataType() );
+	list.push_back( AliHLTMUONConstants::DDLRawDataType() );
 }
 
 
@@ -269,7 +269,9 @@ int AliHLTMUONTriggerReconstructorComponent::DoEvent(
 			blocks[n].fPtr, blocks[n].fSize
 		);
 
-		if (blocks[n].fDataType != AliHLTMUONConstants::TriggerDDLRawDataType())
+		if (blocks[n].fDataType != AliHLTMUONConstants::DDLRawDataType()
+		    or not AliHLTMUONUtils::IsTriggerDDL(blocks[n].fSpecification)
+		   )
 		{
 			// Log a message indicating that we got a data block that we
 			// do not know how to handle.
@@ -283,12 +285,12 @@ int AliHLTMUONTriggerReconstructorComponent::DoEvent(
 			origin[kAliHLTComponentDataTypefOriginSize] = '\0';
 			
 			if (fWarnForUnexpecedBlock)
-				HLTWarning("Received a data block of a type we can not handle: %s origin %s",
-					static_cast<char*>(id), static_cast<char*>(origin)
+				HLTWarning("Received a data block of a type we cannot handle: '%s' origin: '%s' spec: 0x%X",
+					static_cast<char*>(id), static_cast<char*>(origin), blocks[n].fSpecification
 				);
 			else
-				HLTDebug("Received a data block of a type we can not handle: %s origin %s",
-					static_cast<char*>(id), static_cast<char*>(origin)
+				HLTDebug("Received a data block of a type we cannot handle: '%s' origin: '%s' spec: 0x%X",
+					static_cast<char*>(id), static_cast<char*>(origin), blocks[n].fSpecification
 				);
 			
 			continue;

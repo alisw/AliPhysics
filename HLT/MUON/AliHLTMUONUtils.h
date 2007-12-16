@@ -251,6 +251,24 @@ public:
 	static AliHLTUInt32_t DDLNumberToSpec(AliHLTInt32_t ddlNo);
 
 	/**
+	 * Returns true if the given specification was for a single trigger DDL.
+	 */
+	static bool IsTriggerDDL(AliHLTUInt32_t spec)
+	{
+		AliHLTInt32_t ddl = SpecToDDLNumber(spec);
+		return (20 <= ddl and ddl <= 21);
+	}
+
+	/**
+	 * Returns true if the given specification was for a single tracker DDL.
+	 */
+	static bool IsTrackerDDL(AliHLTUInt32_t spec)
+	{
+		AliHLTInt32_t ddl = SpecToDDLNumber(spec);
+		return (0 <= ddl and ddl <= 19);
+	}
+
+	/**
 	 * These codes indicate the reason why a data block failed its
 	 * validity check.
 	 */
