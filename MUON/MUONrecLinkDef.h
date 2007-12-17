@@ -28,6 +28,8 @@
 #pragma link C++ class AliMUONPreClusterFinderV3+;
 #pragma link C++ class AliMUONClusterFinderSimpleFit+;
 #pragma link C++ class AliMUONClusterFinderCOG+;
+#pragma link C++ class AliMUONClusterFinderPeakCOG+;
+#pragma link C++ class AliMUONClusterFinderPeakFit+;
 #pragma link C++ class AliMUONClusterFinderMLEM+;
 #pragma link C++ class AliMUONClusterSplitterMLEM+;
 #pragma link C++ class AliMUONTrackHitPattern+;
