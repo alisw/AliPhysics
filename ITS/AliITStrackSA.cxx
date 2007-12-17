@@ -88,28 +88,18 @@ fNSA(0)
 
   // get the azimuthal angle of the detector containing the innermost
   // cluster of this track (data member fAlpha)
-  Double_t rotmatr[9];
-  AliITSgeomTGeo::GetRotation(layer,ladder,detector,rotmatr);
-  Double_t sAlpha=TMath::ATan2(rotmatr[1],rotmatr[0])+TMath::Pi();
-  sAlpha+=TMath::Pi()/2.;
-  if(layer==1) sAlpha+=TMath::Pi();
 
+  TGeoHMatrix m; AliITSgeomTGeo::GetOrigMatrix(layer,ladder,detector,m);
+  const TGeoHMatrix *tm=AliITSgeomTGeo::GetTracking2LocalMatrix(layer,ladder,detector);
+  m.Multiply(tm);
+  Double_t txyz[3]={0.}, xyz[3]={0.};
+  m.LocalToMaster(txyz,xyz);
+  Double_t sAlpha=TMath::ATan2(xyz[1],xyz[0]);
 
-  // get the radius of this detector. Procedure taken from the 
-  // AliITStrackerV2 constructor
-  Float_t x=0,y=0,z=0;
-  Double_t xyz[3];
-  AliITSgeomTGeo::GetTranslation(layer,ladder,detector,xyz);
-  x=xyz[0];
-  y=xyz[1];
-  z=xyz[2];
+  if (sAlpha<0) sAlpha+=TMath::TwoPi();
+  else if (sAlpha>=TMath::TwoPi()) sAlpha-=TMath::TwoPi();
 
-  Double_t fi=TMath::ATan2(rotmatr[1],rotmatr[0])+TMath::Pi();
-  fi+=TMath::Pi()/2;
-  if (layer==1) fi+=TMath::Pi();
-  Double_t cp=TMath::Cos(fi), sp=TMath::Sin(fi);
-  Double_t sX=x*cp+y*sp;
-
+  Double_t sX=TMath::Sqrt(xyz[0]*xyz[0] + xyz[1]*xyz[1]);
 
   fdEdx = 0;
 
