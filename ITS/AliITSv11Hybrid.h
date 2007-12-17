@@ -18,6 +18,9 @@
 // $Id$
 
 // $Log$
+// Revision 1.6  2007/10/21 19:22:53  masera
+// Coding conventions
+//
 // Revision 1.5  2007/08/24 14:32:57  hristov
 // Introduction of SPD half-stave volumes, cleaning and new code (in relation to new SPD geometry) in AliITSv11Hybrid (Ludovic)
 //
@@ -126,6 +129,20 @@ class AliITSv11Hybrid : public AliITS {
     void CreateOldGeometry();
     void SetT2Lmatrix(const char *name, Double_t yShift,
 		      Bool_t yFlip, Bool_t yRot180=kFALSE) const; // Set T2L matrix in TGeoPNEntries
+    void CreateSPDThermalShield(TGeoVolume *moth);
+    TGeoVolumeAssembly *CreateSPDThermalShieldAssembly(const char *name,
+		   Double_t innerA, Double_t innerB, Double_t innerRadius,
+		   Double_t outerA, Double_t outerB, Double_t outerRadius,
+		   Double_t halflength, Double_t thickness,
+	           Double_t thicknessOmega, Double_t theta);
+    void SPDThermalShape(Double_t a, Double_t b, Double_t r, Double_t d,
+			 Double_t t, Double_t *x, Double_t *y);
+    void SPDOmegaShape(Double_t ina, Double_t inb, Double_t inr,
+		       Double_t oua, Double_t oub, Double_t our,
+		       Double_t dou, Double_t d  , Double_t t  ,
+		       Double_t *x, Double_t *y);
+    void FillSPDXtruShape(Double_t a, Double_t  b, Double_t  r,
+			  Double_t t, Double_t *x, Double_t *y);
 
  private:
     AliITSv11Hybrid(const AliITSv11Hybrid &source); // copy constructor
