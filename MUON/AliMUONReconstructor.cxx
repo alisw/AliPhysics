@@ -44,6 +44,9 @@
 /// option either, as center-of-gravity is generally not a good estimate
 /// of the cluster position...
 ///
+/// PEAKCOG : COG cluster finder around local maxima
+/// PEAKFIT : fit around local maxima with up to 3 peaks, COG otherwise
+///
 /// NOCLUSTERING : bypass completely the clustering stage
 ///
 /// ------
@@ -78,6 +81,8 @@
 #include "AliMUONClusterFinderCOG.h"
 #include "AliMUONClusterFinderMLEM.h"
 #include "AliMUONClusterFinderSimpleFit.h"
+#include "AliMUONClusterFinderPeakCOG.h"
+#include "AliMUONClusterFinderPeakFit.h"
 #include "AliMUONConstants.h"
 #include "AliMUONDigitCalibrator.h"
 #include "AliMUONDigitMaker.h"
@@ -342,6 +347,14 @@ AliMUONReconstructor::CreateClusterFinder(const char* clusterFinderType) const
   {
     clusterFinder = new AliMUONPreClusterFinder;
   }  
+  else if ( strstr(opt,"PEAKCOG") )
+  {
+    clusterFinder = new AliMUONClusterFinderPeakCOG(kFALSE,new AliMUONPreClusterFinder);
+  }
+  else if ( strstr(opt,"PEAKFIT") )
+  {
+    clusterFinder = new AliMUONClusterFinderPeakFit(kFALSE,new AliMUONPreClusterFinder);
+  }
   else if ( strstr(opt,"COG") )
   {
     clusterFinder = new AliMUONClusterFinderCOG(new AliMUONPreClusterFinder);
