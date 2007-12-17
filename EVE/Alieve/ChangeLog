@@ -1,3 +1,12 @@
+2007-12-17  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	* LinkDef.h:
+	* TrackFitter.cxx:
+	* TrackFitter.h:
+	* TrackFitterEditor.cxx:
+	* TrackFitterEditor.h:
+	New class TrackFitter: interface to AliRieman helix fit.
+
 2007-12-17  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* TPCLoader.cxx:
@@ -67,7 +76,7 @@
 	EVE-dev
 
 	* EventAlieve.cxx:
-	* ITSModuleStepper.cxx:
+	* ITSModuleSytepper.cxx:
 	* ITSModuleStepperEditor.cxx:
 	* PMDModuleEditor.cxx:
 	* T0Module.cxx:

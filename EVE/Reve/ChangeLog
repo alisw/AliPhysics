@@ -1,3 +1,14 @@
+2007-12-17  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	* PointSet.cxx:
+	* PointSet.h:
+	Inherits from TQObject and emits signal PointCtrlClicked().
+
+	* Track.cxx:
+	* Track.h:
+	Move inheritance of TQObject to PointSet. Add to pop-up menu
+	ability to print track parameters.
+
 2007-11-20  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
 
 	* NLTBases.cxx:
