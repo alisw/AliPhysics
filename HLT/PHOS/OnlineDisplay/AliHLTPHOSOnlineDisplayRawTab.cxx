@@ -4,6 +4,7 @@
 #include "AliHLTPHOSGetEventButton.h"
 //#include "AliHLTPHOSRcuChannelDataStruct.h"
 #include "AliHLTPHOSRcuCellEnergyDataStruct.h"
+#include "AliHLTHOMERReader.h"
 
 using namespace std;
 
@@ -12,7 +13,7 @@ AliHLTPHOSOnlineDisplayRawTab::AliHLTPHOSOnlineDisplayRawTab()
   cout << "AliHLTPHOSOnlineDisplayRawTab:ERROR: You cannot create a onlinedisplay Tab without arguments" << endl;
 }
 
-AliHLTPHOSOnlineDisplayRawTab::AliHLTPHOSOnlineDisplayRawTab(TGTab  *tabPtr, HOMERReader *homerSyncPtr, HOMERReader *homerPtrs[MAX_HOSTS], int nHosts)
+AliHLTPHOSOnlineDisplayRawTab::AliHLTPHOSOnlineDisplayRawTab(TGTab  *tabPtr, AliHLTHOMERReader *homerSyncPtr, AliHLTHOMERReader *homerPtrs[MAX_HOSTS], int nHosts)
 {
   for(int i=0; i<MAX_HOSTS; i++)
     {
@@ -39,7 +40,7 @@ AliHLTPHOSOnlineDisplayRawTab::~AliHLTPHOSOnlineDisplayRawTab()
 
 
 void
-AliHLTPHOSOnlineDisplayRawTab::ReadBlockData(HOMERReader *homerReaderPtr)
+AliHLTPHOSOnlineDisplayRawTab::ReadBlockData(AliHLTHOMERReader *homerReaderPtr)
 {
   unsigned long blk = homerReaderPtr->FindBlockNdx("ATADNAHC","SOHP", 0xeFFFFFFF );
   

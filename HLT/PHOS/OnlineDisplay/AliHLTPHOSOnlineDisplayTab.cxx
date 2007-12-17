@@ -1,5 +1,5 @@
 #include "AliHLTPHOSOnlineDisplayTab.h"
-#include "HOMERReader.h"
+#include "AliHLTHOMERReader.h"
 #include <iostream>
 #include "AliHLTDataTypes.h"
 
@@ -20,7 +20,7 @@ AliHLTPHOSOnlineDisplayTab::~AliHLTPHOSOnlineDisplayTab()
 
 
 void 
-AliHLTPHOSOnlineDisplayTab::PrintBlockInfo(HOMERReader *homeReaderPtr, int i)
+AliHLTPHOSOnlineDisplayTab::PrintBlockInfo(AliHLTHOMERReader *homeReaderPtr, int i)
 {
   char tmp1[9], tmp2[5];
   memset( tmp1, 0, 9 );
@@ -36,7 +36,7 @@ AliHLTPHOSOnlineDisplayTab::PrintBlockInfo(HOMERReader *homeReaderPtr, int i)
 
 
 int 
-AliHLTPHOSOnlineDisplayTab::GetEventInfo(HOMERReader *homeReaderPtr, int i)
+AliHLTPHOSOnlineDisplayTab::GetEventInfo(AliHLTHOMERReader *homeReaderPtr, int i)
 {
   int ret = 0;
   ret =homeReaderPtr->ReadNextEvent();  

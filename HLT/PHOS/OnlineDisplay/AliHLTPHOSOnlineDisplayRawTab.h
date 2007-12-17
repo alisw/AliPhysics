@@ -18,13 +18,13 @@ class AliHLTPHOSOnlineDisplayRawTab : public AliHLTPHOSOnlineDisplayTab
 {
  public:
   AliHLTPHOSOnlineDisplayRawTab();
-  AliHLTPHOSOnlineDisplayRawTab(TGTab  *tabPtr, HOMERReader *homerSyncPtr, HOMERReader *homerPtrs[MAX_HOSTS], int nHosts);
+  AliHLTPHOSOnlineDisplayRawTab(TGTab  *tabPtr, AliHLTHOMERReader *homerSyncPtr, AliHLTHOMERReader *homerPtrs[MAX_HOSTS], int nHosts);
   virtual ~AliHLTPHOSOnlineDisplayRawTab();
 
   void InitDisplay(TGTab *tabPtr);
   void UpdateDisplay();
   int GetNextEvent();
-  virtual void ReadBlockData(HOMERReader *homeReaderPtr);
+  virtual void ReadBlockData(AliHLTHOMERReader *homeReaderPtr);
   void ResetDisplay();
 
   TH2D *fgRawHistPtr[N_GAINS];
