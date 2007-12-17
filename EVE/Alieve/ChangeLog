@@ -1,3 +1,15 @@
+2007-12-17  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* TPCLoader.cxx:
+	* TPCLoader.h:
+	Add support for external AliRawReaderRoot (needed for reading of
+	raw-data from HLT).
+	Add member for initial maximum signal-value assigned to new
+	sector-vizes.
+	
+	* TPCSectorViz.cxx:
+	Increase the default of fMaxVal to 128.
+
 2007-11-23  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* AliEVEHOMERManager.cxx:
