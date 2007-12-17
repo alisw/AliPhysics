@@ -24,9 +24,11 @@
 //-----------------------------------------------------------------------------
 
 #include "AliESDMuonCluster.h"
+#include "AliESDMuonPad.h"
 
 #include "AliLog.h"
 
+#include <TClonesArray.h>
 #include <Riostream.h>
 
 /// \cond CLASSIMP
@@ -35,7 +37,10 @@ ClassImp(AliESDMuonCluster)
 
 //_____________________________________________________________________________
 AliESDMuonCluster::AliESDMuonCluster()
-: TObject()
+: TObject(),
+  fCharge(0.),
+  fChi2(0.),
+  fPads(0x0)
 {
   /// default constructor
   fXYZ[0] = fXYZ[1] = fXYZ[2] = 0.;
@@ -44,7 +49,10 @@ AliESDMuonCluster::AliESDMuonCluster()
 
 //_____________________________________________________________________________
 AliESDMuonCluster::AliESDMuonCluster (const AliESDMuonCluster& cluster)
-: TObject(cluster)
+: TObject(cluster),
+  fCharge(cluster.fCharge),
+  fChi2(cluster.fChi2),
+  fPads(0x0)
 {
   /// Copy constructor
   fXYZ[0] = cluster.fXYZ[0];
@@ -52,6 +60,15 @@ AliESDMuonCluster::AliESDMuonCluster (const AliESDMuonCluster& cluster)
   fXYZ[2] = cluster.fXYZ[2];
   fErrXY[0] = cluster.fErrXY[0];
   fErrXY[1] = cluster.fErrXY[1];
+  
+  if (cluster.fPads) {
+    fPads = new TClonesArray("AliESDMuonPad",cluster.fPads->GetEntriesFast());
+    AliESDMuonPad *pad = (AliESDMuonPad*) cluster.fPads->First();
+    while (pad) {
+      new ((*fPads)[fPads->GetEntriesFast()]) AliESDMuonPad(*pad);
+      pad = (AliESDMuonPad*) cluster.fPads->After(pad);
+    }
+  }
 }
 
 //_____________________________________________________________________________
@@ -68,7 +85,70 @@ AliESDMuonCluster& AliESDMuonCluster::operator=(const AliESDMuonCluster& cluster
   fErrXY[0] = cluster.fErrXY[0];
   fErrXY[1] = cluster.fErrXY[1];
   
+  fCharge = cluster.fCharge;
+  fChi2 = cluster.fChi2;
+  
+  delete fPads;
+  if (cluster.fPads) {
+    fPads = new TClonesArray("AliESDMuonPad",cluster.fPads->GetEntriesFast());
+    AliESDMuonPad *pad = (AliESDMuonPad*) cluster.fPads->First();
+    while (pad) {
+      new ((*fPads)[fPads->GetEntriesFast()]) AliESDMuonPad(*pad);
+      pad = (AliESDMuonPad*) cluster.fPads->After(pad);
+    }
+  } else fPads = 0x0;
+  
   return *this;
+}
+
+//__________________________________________________________________________
+AliESDMuonCluster::~AliESDMuonCluster()
+{
+  /// Destructor
+  delete fPads;
+}
+
+//__________________________________________________________________________
+void AliESDMuonCluster::Clear(Option_t* opt)
+{
+  /// Clear arrays
+  if (fPads) fPads->Clear(opt);
+}
+
+//_____________________________________________________________________________
+Int_t AliESDMuonCluster::GetNPads() const
+{
+  // return the number of pads associated to the cluster
+  if (!fPads) return 0;
+  
+  return fPads->GetEntriesFast();
+}
+
+//_____________________________________________________________________________
+TClonesArray& AliESDMuonCluster::GetPads() const
+{
+  // return the array of pads associated to the cluster
+  if (!fPads) fPads = new TClonesArray("AliESDMuonPad",10);
+  
+  return *fPads;
+}
+
+//_____________________________________________________________________________
+void AliESDMuonCluster::AddPad(const AliESDMuonPad &pad)
+{
+  // add a pad to the TClonesArray of pads associated to the cluster
+  if (!fPads) fPads = new TClonesArray("AliESDMuonPad",10);
+  
+  new ((*fPads)[fPads->GetEntriesFast()]) AliESDMuonPad(pad);
+}
+
+//_____________________________________________________________________________
+Bool_t AliESDMuonCluster::PadsStored() const
+{
+  // return kTRUE if the pads associated to the cluster are registered
+  if (GetNPads() == 0) return kFALSE;
+  
+  return kTRUE;
 }
 
 //_____________________________________________________________________________
@@ -80,7 +160,17 @@ void AliESDMuonCluster::Print(Option_t */*option*/) const
   cout<<Form("clusterID=%u (ch=%d, det=%d, index=%d)",
 	     cId,GetChamberId(),GetDetElemId(),GetClusterIndex())<<endl;
   
-  cout<<Form("position=(%5.2f, %5.2f, %5.2f), sigma=(%5.2f, %5.2f, 0.0)",
+  cout<<Form("  position=(%5.2f, %5.2f, %5.2f), sigma=(%5.2f, %5.2f, 0.0)",
 	     GetX(),GetY(),GetZ(),GetErrX(),GetErrY())<<endl;
+  
+  cout<<Form("  charge=%5.2f, chi2=%5.2f", GetCharge(), GetChi2())<<endl;
+  
+  if (PadsStored()) {
+    cout<<"  pad infos:"<<endl;
+    for (Int_t iPad=0; iPad<GetNPads(); iPad++) {
+      cout<<"  ";
+      ( (AliESDMuonPad*) fPads->UncheckedAt(iPad) )->Print();
+    }
+  }
 }
 

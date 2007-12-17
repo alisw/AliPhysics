@@ -13,15 +13,17 @@
 
 #include <TObject.h>
 
+class AliESDMuonPad;
+class TClonesArray;
+
 class AliESDMuonCluster : public TObject {
 public:
   AliESDMuonCluster(); // Constructor
-  virtual ~AliESDMuonCluster() {} ///< Destructor
+  virtual ~AliESDMuonCluster(); //< Destructor
   AliESDMuonCluster(const AliESDMuonCluster& cluster);
   AliESDMuonCluster& operator=(const AliESDMuonCluster& cluster);
   
-  /// Clear method (used by TClonesArray)
-  void Clear(Option_t*) {}
+  virtual void Clear(Option_t* opt = "");
   
   /// Set coordinates (cm)
   void     SetXYZ(Double_t x, Double_t y, Double_t z) {fXYZ[0] = x; fXYZ[1] = y; fXYZ[2] = z;}
@@ -43,12 +45,28 @@ public:
   /// Return Y-resolution**2 (cm**2)
   Double_t GetErrY2() const {return fErrXY[1]*fErrXY[1];}
   
+  /// Set the total charge
+  void     SetCharge(Double_t charge) {fCharge = charge;}
+  /// Return the total charge
+  Double_t GetCharge() const {return fCharge;}
+  
+  /// Set the chi2 value
+  void     SetChi2(Double_t chi2) {fChi2 = chi2;}
+  /// Return the chi2 value
+  Double_t GetChi2() const {return fChi2;}
+  
   /// Return chamber id (0..), part of the uniqueID
   Int_t    GetChamberId() const    {return (GetUniqueID() & 0xF0000000) >> 28;}
   /// Return detection element id, part of the uniqueID
   Int_t    GetDetElemId() const    {return (GetUniqueID() & 0x0FFE0000) >> 17;}
-  /// Returnt the index of this cluster (0..), part of the uniqueID
+  /// Return the index of this cluster (0..), part of the uniqueID
   Int_t    GetClusterIndex() const {return (GetUniqueID() & 0x0001FFFF);}
+  
+  // Methods to get, fill and check the array of associated pads
+  Int_t         GetNPads() const;
+  TClonesArray& GetPads() const;
+  void          AddPad(const AliESDMuonPad &pad);
+  Bool_t        PadsStored() const;
   
   void     Print(Option_t */*option*/ = "") const;
   
@@ -56,9 +74,13 @@ public:
 protected:
   Double32_t fXYZ[3];   ///< cluster position
   Double32_t fErrXY[2]; ///< transverse position errors
+  Double32_t fCharge;   ///< cluster charge
+  Double32_t fChi2;     ///< cluster chi2
+  
+  mutable TClonesArray* fPads; ///< Array of pads attached to the cluster
   
   
-  ClassDef(AliESDMuonCluster, 1) // MUON ESD cluster class
+  ClassDef(AliESDMuonCluster, 2) // MUON ESD cluster class
 };
 
 #endif
