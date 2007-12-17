@@ -1,3 +1,11 @@
+2007-12-17  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* hlt-macros/command_queue.C:
+	* hlt-macros/hlt_structs.C:
+	* hlt-macros/homer_display.C:
+	* hlt-macros/rootlogon.C:
+	New files: macros needed to startup and steer the HLT display.
+
 2007-11-23  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* binalieve.pkg:
