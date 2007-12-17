@@ -33,6 +33,9 @@
 #pragma link C++ class Alieve::V0List+;
 #pragma link C++ class Alieve::V0ListEditor+;
 
+// Fit
+#pragma link C++ class Alieve::TrackFitter+;
+#pragma link C++ class Alieve::TrackFitterEditor+;
 
 //================================
 // detectors/
