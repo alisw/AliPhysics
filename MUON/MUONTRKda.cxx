@@ -1,4 +1,4 @@
-/**************************************************************************
+﻿/**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
@@ -15,7 +15,9 @@
 
 /* $Id$ */
 
-/* 21/11/07
+/*-------------------------------------------------------------------------------
+/* 14/12/07 New version: MUONTRKda.cxx,v 1.10
+/*-------------------------------------------------------------------------------
 
 Version for MUONTRKda MUON tracking
 (A. Baldisseri, J.-L. Charvet & Ch. Finck)
@@ -78,11 +80,8 @@ Int_t  gNManu       = 0;
 Int_t  gNChannel    = 0;
 UInt_t gRunNumber   = 0;
 Int_t  gNEvents     = 0;
-Int_t  gGlitchErrors= 0;
-Int_t  gParityErrors= 0;
-Int_t  gPaddingErrors= 0;
 Int_t  gNDateEvents = 0;
-Int_t  gPrintLevel  = 1;  // global printout variable
+Int_t  gPrintLevel  = 1;  // global printout variable (others: 2 and 3)
 Int_t  gPlotLevel  = 0;  // global plot variable
 
 TH1F*  gPedMeanHisto  = 0x0;
@@ -95,10 +94,6 @@ Char_t gRootFileName[256];
 Char_t gOutFolder[256]=".";
 Char_t filename[256];
 Char_t filenam[256]="MUONTRKda_gain"; 
-// Char_t filenam[256]="MUONTRKda_gain.param"; // if gPrintLevel  = 2
-// Char_t filenam_bad[256]="MUONTRKda_gain.bad"; // if gPrintLevel  = 2
-// Char_t filenam_peak[256]="MUONTRKda_gain.peak"; // if gPrintLevel  = 3
-// Char_t filenam_out[256]="MUONTRKda_gain.out"; 
 Char_t flatFile[256];
 
 ofstream filcout;
@@ -179,34 +174,31 @@ void MakePedStore(TString flatOutputFile = "")
     {
       sprintf(gHistoFileName,"%s/MUONTRKda_ped_%d.root",gOutFolder,gRunNumber);
       histoFile = new TFile(gHistoFileName,"RECREATE","MUON Tracking pedestals");
-//     }
 
-  Char_t name[255];
-  Char_t title[255];
-  sprintf(name,"pedmean_allch");
-  sprintf(title,"Pedestal mean all channels");
-  Int_t nx = 4096;
-  Int_t xmin = 0;
-  Int_t xmax = 4095; 
-  gPedMeanHisto = new TH1F(name,title,nx,xmin,xmax);
-  gPedMeanHisto->SetDirectory(histoFile);
+      Char_t name[255];
+      Char_t title[255];
+      sprintf(name,"pedmean_allch");
+      sprintf(title,"Pedestal mean all channels");
+      Int_t nx = 4096;
+      Int_t xmin = 0;
+      Int_t xmax = 4095; 
+      gPedMeanHisto = new TH1F(name,title,nx,xmin,xmax);
+      gPedMeanHisto->SetDirectory(histoFile);
 
-  sprintf(name,"pedsigma_allch");
-  sprintf(title,"Pedestal sigma all channels");
-  nx = 201;
-  xmin = 0;
-  xmax = 200; 
-  gPedSigmaHisto = new TH1F(name,title,nx,xmin,xmax);
-  gPedSigmaHisto->SetDirectory(histoFile);
+      sprintf(name,"pedsigma_allch");
+      sprintf(title,"Pedestal sigma all channels");
+      nx = 201;
+      xmin = 0;
+      xmax = 200; 
+      gPedSigmaHisto = new TH1F(name,title,nx,xmin,xmax);
+      gPedSigmaHisto->SetDirectory(histoFile);
     
-//   TTree* tree = new TTree("t","Pedestal tree");
-  tree = new TTree("t","Pedestal tree");
-  tree->Branch("bp",&busPatchId,"bp/I");
-  tree->Branch("manu",&manuId,",manu/I");
-  tree->Branch("channel",&channelId,",channel/I");
-  tree->Branch("pedMean",&pedMean,",pedMean/D");
-  tree->Branch("pedSigma",&pedSigma,",pedSigma/D");
-
+      tree = new TTree("t","Pedestal tree");
+      tree->Branch("bp",&busPatchId,"bp/I");
+      tree->Branch("manu",&manuId,",manu/I");
+      tree->Branch("channel",&channelId,",channel/I");
+      tree->Branch("pedMean",&pedMean,",pedMean/D");
+      tree->Branch("pedSigma",&pedSigma,",pedSigma/D");
     }
 
   if (!flatOutputFile.IsNull()) {
@@ -259,20 +251,19 @@ void MakePedStore(TString flatOutputFile = "")
 		  << pedMean <<"\t"<< pedSigma << endl;
 	}
 
-  if (gCommand.CompareTo("ped") == 0)
-    {
-	gPedMeanHisto->Fill(pedMean);
-	gPedSigmaHisto->Fill(pedSigma);
+	if (gCommand.CompareTo("ped") == 0)
+	  {
+	    gPedMeanHisto->Fill(pedMean);
+	    gPedSigmaHisto->Fill(pedSigma);
 
-	tree->Fill();
-      }
+	    tree->Fill();
+	  }
       }
     }
   }
 
   // file outputs
-  if (!flatOutputFile.IsNull()) 
-      fileout.close();
+  if (!flatOutputFile.IsNull())  fileout.close();
 
   if (gCommand.CompareTo("ped") == 0)
     {
@@ -295,7 +286,7 @@ void MakePedStoreForGain(Int_t injCharge)
 
     // compute and store pedestals
     sprintf(flatFile,"%s/%s_%d_DAC_%d.ped",gOutFolder,filenam,gRunNumber,injCharge);
-    cout << "MUONTRKda : Flat file  generated   = " << flatFile << "\n";
+    cout << "\nMUONTRKda : Flat file  generated             : " << flatFile << "\n";
     MakePedStore(flatFile);
     
     TString mode("UPDATE");
@@ -394,8 +385,6 @@ void MakeGainStore()
     filcout<<"//====================================================" << endl;
     filcout<<"//   * Date          : " << date.AsString("l") << "\n" << endl;
 
-//     cout<<"\n ********  MUONTRKda for Gain computing (Run = " << gRunNumber << ")\n" << endl;
-//     cout<<" * Date          : " << date.AsString("l") << "\n" << endl;
 
 
 
@@ -565,10 +554,6 @@ void MakeGainStore()
 	  injChargeErr[i] = 0.01*injCharge[i];
 	  if(injChargeErr[i] <= 1.) injChargeErr[i]=1.;
 
-// 	  if(n<2)cout << nEntries << " " << i << " " << injCharge[i] << endl;
-
-// 	  cout << busPatchId << "\t" << manuId <<"\t"<< channelId << "\t" << n << " " << pedMean[i] << " " << pedSigma[i] << " " << injCharge[i] << " " << injChargeErr[i] << endl;
-
 	  if (pedMean[i] < 0) continue; // not connected
 
 	  if (pedSigma[i] <= 0) pedSigma[i] = 1.; // should not happen.
@@ -632,7 +617,6 @@ void MakeGainStore()
 
 	// 2. - Translation : new origin (xLim, yLim) + parabolic fit over nbf2 points
 
-// 	par[0] = 0;
 	Int_t nbpf2 = nEntries - (nInit + nbpf1) + 1;
 
 	if(nbpf2 > 1)
@@ -807,7 +791,6 @@ void MakeGainStore()
     }
 
     // file outputs for gain
-//     if (!flatOutputFile.IsNull())  fileout.close();   
     if (!flatOutputFile.IsNull())  fclose(pfilew);
     if(gPrintLevel==2){ fclose(pfilen); fclose(pfilef);}
     if(gPrintLevel==3)  fclose(pfilep); 
@@ -878,7 +861,10 @@ int main(Int_t argc, Char_t **argv)
     Int_t threshold = -1;
     Char_t inputFile[256];
 
-//     TString flatOutputFile;
+    Int_t gGlitchErrors= 0;
+    Int_t gParityErrors= 0;
+    Int_t gPaddingErrors= 0;
+
     TString fesOutputFile;
     TString crocusOutputFile;
     TString crocusConfigFile;
@@ -914,10 +900,6 @@ int main(Int_t argc, Char_t **argv)
 	  i++;
 	  crocusConfigFile = argv[i];
 	  break;
-// 	case 'v' : 
-// 	  i++;
-// 	  logOutputFile = argv[i];
-// 	  break;
 	case 'e' : 
 	  i++;
 	  gCommand = argv[i];
@@ -971,7 +953,6 @@ int main(Int_t argc, Char_t **argv)
 	  printf("\n Output");
 	  printf("\n-a <Flat ASCII file>      (default = %s)",flatOutputFile.Data()); 
 	  printf("\n-o <CROCUS cmd file>      (default = %s)",crocusOutputFile.Data()); 
-// 	  printf("\n-v <log output file>      (default = %s)",logOutputFile.Data()); 
 	  printf("\n");
 	  printf("\n Options");
 	  printf("\n-b <output directory>     (default = %s)",gOutFolder);
@@ -1046,6 +1027,9 @@ int main(Int_t argc, Char_t **argv)
   UChar_t channelId;
   UShort_t charge;
   TString key("MUONTRKda :");
+
+  AliMUONRawStreamTracker* rawStream  = 0;
+
   
   if (gCommand.CompareTo("comp") != 0)
     {
@@ -1056,7 +1040,7 @@ int main(Int_t argc, Char_t **argv)
 	  if (gNDateEvents >= MaxDateEvents) break;
 	  if (gNEvents >= maxEvents) break;
 	  if (gNEvents && gNEvents % 100 == 0) 	
-	    cout<<"Cumulated events " << gNEvents << endl;
+	    cout<<"Cumulated:  DATE events = " << gNDateEvents << "   Used events = " << gNEvents << endl;
 
 	  // check shutdown condition 
 	  if (daqDA_checkShutdown()) 
@@ -1074,8 +1058,6 @@ int main(Int_t argc, Char_t **argv)
 	    cout<<"EOF found"<<endl;
 	    break;
 	  }
-
-// 	  gNDateEvents++;
 
 	  // decoding rawdata headers
 	  AliRawReader *rawReader = new AliRawReaderDate(event);
@@ -1121,27 +1103,46 @@ int main(Int_t argc, Char_t **argv)
 	    continue; // for the moment
 
 	  // decoding MUON payload
-	  AliMUONRawStreamTracker* rawStream  = new AliMUONRawStreamTracker(rawReader);
+// 	  AliMUONRawStreamTracker* rawStream  = new AliMUONRawStreamTracker(rawReader);
+	  rawStream  = new AliMUONRawStreamTracker(rawReader);
           rawStream->DisableWarnings();
 
-	  // loops over DDL 
+// 	  // loops over DDL 
+// 	  rawStream->First();  // if GlitchError ? what we are doing ?
+// 	  while( (status = rawStream->Next(busPatchId, manuId, channelId, charge)) ) 
+// 	    {
+  
+// 	      if (gNEvents == 0) gNChannel++;
+            
+// 	      MakePed(busPatchId, (Int_t)manuId, (Int_t)channelId, (Int_t)charge);
+		  
+// 	    } // Next digit
+
+//           if (!rawStream->IsErrorMessage()) {
+//             gNEvents++;
+//           }
+          
+	  // loops over DDL to find good events  (Alberto 11/12/07)
 	  rawStream->First();  // if GlitchError ? what we are doing ?
 	  while( (status = rawStream->Next(busPatchId, manuId, channelId, charge)) ) {
-  
-	    if (gNEvents == 0)
-	      gNChannel++;
-      
-	    //       if (gPrintLevel) printf("manuId: %d, channelId: %d charge: %d\n", manuId, 
-	    // 			     channelId, charge);
-      
-	    MakePed(busPatchId, (Int_t)manuId, (Int_t)channelId, (Int_t)charge);
-		  
 	  } // Next digit
 
           if (!rawStream->IsErrorMessage()) {
-            gNEvents++;
-          }
-          
+	    // loops over DDL to find good events
+	    rawStream->First();  // if GlitchError ? what we are doing ?
+	    while( (status = rawStream->Next(busPatchId, manuId, channelId, charge)) ) {
+	      
+	      if (gNEvents == 0)
+		gNChannel++;
+	      	      
+	      MakePed(busPatchId, (Int_t)manuId, (Int_t)channelId, (Int_t)charge);
+	    } // Next digit
+	    gNEvents++;
+	  }
+	  else
+	    {
+	      filcout<<"Event # "<<*(rawReader->GetEventId())<<" rejected"<<endl;
+	    }
           if (rawStream->GetPayLoad()->GetGlitchErrors())  gGlitchErrors++;
           if (rawStream->GetPayLoad()->GetParityErrors())  gParityErrors++;
           if (rawStream->GetPayLoad()->GetPaddingErrors()) gPaddingErrors++;
@@ -1191,40 +1192,41 @@ int main(Int_t argc, Char_t **argv)
 
   if (gCommand.CompareTo("comp") != 0)
     {
-      cout << "MUONTRKda : Nb of DATE events     = "         << gNDateEvents    << endl;
-      cout << "MUONTRKda : Nb of Glitch errors   = "         << gGlitchErrors   << endl;
-      cout << "MUONTRKda : Nb of Parity errors   = "         << gParityErrors   << endl;
-      cout << "MUONTRKda : Nb of Padding errors  = "         << gPaddingErrors  << endl;
+      cout << "\nMUONTRKda : Nb of DATE events     = "         << gNDateEvents    << endl;
+      cout << "MUONTRKda : Nb of Glitch errors   = "         << gGlitchErrors  << endl;
+      cout << "MUONTRKda : Nb of Parity errors   = "         << gParityErrors  << endl;
+      cout << "MUONTRKda : Nb of Padding errors  = "         << gPaddingErrors << endl;
       cout << "MUONTRKda : Nb of events used     = "         << gNEvents        << endl;
 
-      filcout << "MUONTRKda : Nb of DATE events     = "         << gNDateEvents    << endl;
-      filcout << "MUONTRKda : Nb of Glitch errors   = "         << gGlitchErrors   << endl;
-      filcout << "MUONTRKda : Nb of Parity errors   = "         << gParityErrors   << endl;
-      filcout << "MUONTRKda : Nb of Padding errors  = "         << gPaddingErrors  << endl;
+      filcout << "\nMUONTRKda : Nb of DATE events     = "         << gNDateEvents    << endl;
+      filcout << "MUONTRKda : Nb of Glitch errors   = "         << gGlitchErrors << endl;
+      filcout << "MUONTRKda : Nb of Parity errors   = "         << gParityErrors << endl;
+      filcout << "MUONTRKda : Nb of Padding errors  = "         << gPaddingErrors << endl;
       filcout << "MUONTRKda : Nb of events used     = "         << gNEvents        << endl;
 
     }
 
 
-  cout << "\nMUONTRKda : Output file generated   : " << logOutputFile  << endl;
+  cout << "\nMUONTRKda : Output logfile generated         : " << logOutputFile  << endl;
 
   if (gCommand.CompareTo("ped") == 0)
     {
       if (!(crocusConfigFile.IsNull()))
-	cout << "MUONTRKda : CROCUS command file generated : " << crocusOutputFile.Data() << endl;
+	cout << "MUONTRKda : CROCUS command file generated    : " << crocusOutputFile.Data() << endl;
       else
 	cout << "MUONTRKda : WARNING no CROCUS command file generated" << endl;
-      cout << "\nMUONTRKda : Histo file generated for pedestal : " << gHistoFileName  << endl;
+      cout << "MUONTRKda : Pedestal Histo file              : " << gHistoFileName  << endl;
+      cout << "MUONTRKda : Flat pedestal file  (to SHUTTLE) : " << flatOutputFile << endl;   
     }
   else
     {
-      cout << "\nMUONTRKda : Root data file for gain calculation    : " << gHistoFileName_gain  << endl;
+      cout << "MUONTRKda : Data file for gain calculation   : " << gHistoFileName_gain  << endl;
     }
 
   if (gCommand.CompareTo("comp") == 0)
     {
-      cout << "MUONTRKda : Root Histo. file generated             : " << gRootFileName  << endl;
-      cout << "MUONTRKda : Flat ASCII file generated (to SHUTTLE) : " << flatOutputFile << endl;   
+      cout << "MUONTRKda : Root Histo. file generated       : " << gRootFileName  << endl;
+      cout << "MUONTRKda : Flat gain file (to SHUTTLE)      : " << flatOutputFile << endl;   
     }
 
   
@@ -1236,15 +1238,18 @@ int main(Int_t argc, Char_t **argv)
       printf("\n *****  STORE FILE in FES ****** \n");
 
       // to be sure that env variable is set
-      gSystem->Setenv("DAQDALIB_PATH", "$DATE_SITE/infoLogger");
+//       gSystem->Setenv("DAQDALIB_PATH", "$DATE_SITE/infoLogger");
 
       if (!flatOutputFile.IsNull()) 
 	{
 
 	  //       flatOutputFile.Prepend("./");
-
-	  status = daqDA_FES_storeFile(flatOutputFile.Data(),flatOutputFile.Data());
-	  if (status) 
+	if (gCommand.CompareTo("ped") == 0)
+	  status = daqDA_FES_storeFile(flatOutputFile.Data(),"PEDESTALS");
+        else 
+          status = daqDA_FES_storeFile(flatOutputFile.Data(),"GAINS");
+	  
+	if (status) 
 	    {
 	      printf(" Failed to export file : %d\n",status);
 	    }
