@@ -32,7 +32,7 @@ TPCSectorViz::TPCSectorViz(const Text_t* n, const Text_t* t) :
   fMinTime   (0),
   fMaxTime   (450),
   fThreshold (5),
-  fMaxVal    (80),
+  fMaxVal    (128),
 
   fRnrInn   (kTRUE),
   fRnrOut1  (kTRUE),
