@@ -36,8 +36,10 @@ TPCLoader::TPCLoader(const Text_t* n, const Text_t* t) :
   fSec3Ds(36),
 
   fSetInitSectorParams(kFALSE),
-  fInitMinTime(0), fInitMaxTime(460), fInitThreshold(5)
-{}
+  fInitMinTime(0), fInitMaxTime(460), fInitThreshold(5), fInitMaxVal(128)
+{
+  fData = new TPCData;
+}
 
 TPCLoader::~TPCLoader()
 {
@@ -80,10 +82,7 @@ void TPCLoader::OpenFile()
   if(gSystem->AccessPathName(fFile, kReadPermission))
       throw(eH + "can not read '" + fFile + "'.");
 
-  if(fData == 0)
-    fData = new TPCData;
-  else
-    fData->DeleteAllSectors();
+  fData->DeleteAllSectors();
 
   delete fReader;
   fReader =  0;
@@ -208,6 +207,7 @@ void TPCLoader::UpdateSectors(Bool_t dropNonPresent)
           s->SetMinTime(fInitMinTime);
           s->SetMaxTime(fInitMaxTime);
           s->SetThreshold(fInitThreshold);
+	  s->SetMaxVal(fInitMaxVal);
         }
 
 	s->SetAutoTrans(kTRUE);
@@ -229,7 +229,7 @@ void TPCLoader::UpdateSectors(Bool_t dropNonPresent)
       }
     }
   }
-  gReve->Redraw3D(kFALSE, kTRUE);
+  gReve->Redraw3D(kTRUE, kFALSE);
   gReve->EnableRedraw();
 }
 
@@ -280,10 +280,11 @@ void TPCLoader::DeleteSectors3D()
 
 /**************************************************************************/
 
-void TPCLoader::SetInitParams(Int_t mint, Int_t maxt, Int_t thr)
+void TPCLoader::SetInitParams(Int_t mint, Int_t maxt, Int_t thr, Int_t maxval)
 {
   fSetInitSectorParams = kTRUE;
   fInitMinTime   = mint;
   fInitMaxTime   = maxt;
   fInitThreshold = thr;
+  fInitMaxVal    = maxval;
 }

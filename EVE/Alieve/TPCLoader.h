@@ -37,6 +37,7 @@ protected:
   Int_t    fInitMinTime;
   Int_t    fInitMaxTime;
   Int_t    fInitThreshold;
+  Int_t    fInitMaxVal;
 
 public:
   TPCLoader(const Text_t* n="TPCLoader", const Text_t* t=0);
@@ -50,6 +51,8 @@ public:
 
   const Text_t* GetTPCEquipementMap() const  { return fTPCEquipementMap; }
   void SetTPCEquipementMap(const Text_t* em) { fTPCEquipementMap = em; }
+  AliRawReaderRoot* GetReader()        const { return fReader; }
+  void SetReader(AliRawReaderRoot* reader)   { fReader = reader; }
   TPCData* GetData() const { return fData; }
   void     SetData(TPCData* d);
 
@@ -64,7 +67,7 @@ public:
   void CreateSectors3D();
   void DeleteSectors3D();
 
-  void SetInitParams(Int_t mint, Int_t maxt, Int_t thr);
+  void SetInitParams(Int_t mint, Int_t maxt, Int_t thr, Int_t maxval=128);
 
   ClassDef(TPCLoader, 1);
 }; // endclass TPCLoader
