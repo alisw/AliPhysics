@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.73  2007/12/14 19:31:36  acolla
+Sending email to DCS experts is temporarily commented
+
 Revision 1.72  2007/12/13 15:44:28  acolla
 Run type added in mail sent to detector expert (eases understanding)
 
@@ -654,6 +657,7 @@ Bool_t AliShuttle::StoreOCDB(const TString& gridURI)
 			Log("SHUTTLE", Form("StoreOCDB - %s: object %s has validity infinite but "
 						"there are previous unprocessed runs!",
 						fCurrentDetector.Data(), aLocId.GetPath().Data()));
+			result = kFALSE;
 			continue;
 		}
 
@@ -1506,20 +1510,27 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 		fgkMainRefStorage = Form("alien://folder=/alice/data/%d/%s/Reference?user=alidaq?cacheFold=/tmp/OCDBCache", 
 					GetCurrentYear(), lhcPeriod.Data());
 	
-	AliCDBStorage *mainCDBSto = AliCDBManager::Instance()->GetStorage(fgkMainCDB);
-	if(mainCDBSto) mainCDBSto->QueryCDB(GetCurrentRun());
-	AliCDBStorage *mainRefSto = AliCDBManager::Instance()->GetStorage(fgkMainRefStorage);
-	if(mainRefSto) mainRefSto->QueryCDB(GetCurrentRun());
-
 	// Loop on detectors in the configuration
 	TIter iter(fConfig->GetDetectors());
 	TObjString* aDetector = 0;
+
+	Bool_t first = kTRUE;
 
 	while ((aDetector = (TObjString*) iter.Next()))
 	{
 		fCurrentDetector = aDetector->String();
 
 		if (ContinueProcessing() == kFALSE) continue;
+		
+		if (first)
+		{
+		  // only read QueryCDB when needed and only once
+		  AliCDBStorage *mainCDBSto = AliCDBManager::Instance()->GetStorage(fgkMainCDB);
+		  if(mainCDBSto) mainCDBSto->QueryCDB(GetCurrentRun());
+		  AliCDBStorage *mainRefSto = AliCDBManager::Instance()->GetStorage(fgkMainRefStorage);
+		  if(mainRefSto) mainRefSto->QueryCDB(GetCurrentRun());
+		  first = kFALSE;
+		}
 
 		Log("SHUTTLE", Form("\t\t\t****** run %d - %s: START  ******",
 						GetCurrentRun(), aDetector->GetName()));
@@ -1905,11 +1916,11 @@ Bool_t AliShuttle::ProcessCurrentDetector()
 	}
 	
 	// save map into file, to help debugging in case of preprocessor error
-	TFile* f = TFile::Open("DCSMap.root","recreate");
+	/*TFile* f = TFile::Open("DCSMap.root","recreate");
 	f->cd();
 	dcsMap->Write("DCSMap", TObject::kSingleKey);
 	f->Close();
-	delete f;
+	delete f;*/
 	
 	// DCS Archive DB processing successful. Call Preprocessor!
 	UpdateShuttleStatus(AliShuttleStatus::kPPStarted);
@@ -3202,6 +3213,22 @@ Bool_t AliShuttle::SendMail()
 		gSystem->FreeDirectory(dir);
 	}
 
+	TString to="";
+	TIter iterExperts(fConfig->GetResponsibles(fCurrentDetector));
+	TObjString *anExpert=0;
+	while ((anExpert = (TObjString*) iterExperts.Next()))
+	{
+		to += Form("%s,", anExpert->GetName());
+	}
+	if (to.Length() > 0)
+	  to.Remove(to.Length()-1);
+	AliDebug(2, Form("to: %s",to.Data()));
+
+	if (to.IsNull()) {
+		Log("SHUTTLE", "List of detector responsibles not yet set!");
+		return kFALSE;
+	}
+
   	TString bodyFileName;
   	bodyFileName.Form("%s/mail.body", GetShuttleLogDir());
   	gSystem->ExpandPathName(bodyFileName);
@@ -3214,21 +3241,6 @@ Bool_t AliShuttle::SendMail()
     		Log("SHUTTLE", Form("Could not open mail body file %s", bodyFileName.Data()));
     		return kFALSE;
   	}
-
-	TString to="";
-	TIter iterExperts(fConfig->GetResponsibles(fCurrentDetector));
-	TObjString *anExpert=0;
-	while ((anExpert = (TObjString*) iterExperts.Next()))
-	{
-		to += Form("%s,", anExpert->GetName());
-	}
-	to.Remove(to.Length()-1);
-	AliDebug(2, Form("to: %s",to.Data()));
-
-	if (to.IsNull()) {
-		Log("SHUTTLE", "List of detector responsibles not yet set!");
-		return kFALSE;
-	}
 
 	TString cc="alberto.colla@cern.ch";
 
@@ -3246,7 +3258,7 @@ Bool_t AliShuttle::SendMail()
 	{
 		body += Form("\thttp://pcalimonitor.cern.ch:8889/shuttle.jsp?time=168 \n\n");
 	} else {
-		body += Form("\thttp://pcalimonitor.cern.ch/shuttle.jsp?instance=PROD?time=168 \n\n");
+		body += Form("\thttp://pcalimonitor.cern.ch/shuttle.jsp?instance=PROD&time=168 \n\n");
 	}
 	
 	

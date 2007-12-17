@@ -15,6 +15,20 @@
 
 /*
 $Log$
+Revision 1.26  2007/12/07 19:14:36  acolla
+in AliShuttleTrigger:
+
+Added automatic collection of new runs on a regular time basis (settable from the configuration)
+
+in AliShuttleConfig: new members
+
+- triggerWait: time to wait for DIM trigger (s) before starting automatic collection of new runs
+- mode: run mode (test, prod) -> used to build log folder (logs or logs_PROD)
+
+in AliShuttle:
+
+- logs now stored in logs/#RUN/DET_#RUN.log
+
 Revision 1.25  2007/11/26 16:58:37  acolla
 Monalisa configuration added: host and table name
 
@@ -978,21 +992,20 @@ UInt_t AliShuttleConfig::SetGlobalConfig(TList* list)
 	anAttribute = anEntry->GetAttribute("mode");
 	if (!anAttribute) {
 		AliWarning("Run mode not set! Running in test mode.");
-	}
-	tmpStr = anAttribute->GetValue();
-	if (tmpStr == "test")
-	{
-		fRunMode = kTest;
-	} else if (tmpStr == "prod") {
-		fRunMode = kProd;
 	} else {
-		AliWarning(Form("Not a valid run mode: %s", tmpStr.Data()));		
-		AliWarning("Valid run modes are \"test\" and \"prod\". Running in test mode.");
+	  tmpStr = anAttribute->GetValue();
+	  if (tmpStr == "test")
+	  {
+	    fRunMode = kTest;
+	  } else if (tmpStr == "prod") {
+	    fRunMode = kProd;
+	  } else {
+	    AliWarning(Form("Not a valid run mode: %s", tmpStr.Data()));		
+	    AliWarning("Valid run modes are \"test\" and \"prod\". Running in test mode.");
+	  }
 	}
 		
 	return 0;
-	
-	
 }
 
 //______________________________________________________________________________________________

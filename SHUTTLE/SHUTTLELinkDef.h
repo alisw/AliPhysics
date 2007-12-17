@@ -24,5 +24,6 @@
 #pragma link C++ class  TerminateSignalHandler;
 #pragma link C++ class  AliShuttleStatus;
 #pragma link C++ class  AliShuttleLogbookEntry;
+#pragma link C++ class  AliEmptyPreprocessor;
 
 #endif
