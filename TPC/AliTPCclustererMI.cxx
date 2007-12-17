@@ -783,20 +783,23 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
     Float_t gain =1;
     Int_t lastPad=-1;
     while (input.Next()) {
-      digCounter++;
       if (input.GetSector() != fSector)
 	AliFatal(Form("Sector index mismatch ! Expected (%d), but got (%d) !",fSector,input.GetSector()));
 
       
       Int_t iRow = input.GetRow();
-      if (iRow < 0 || iRow >= nRows)
-	AliFatal(Form("Pad-row index (%d) outside the range (%d -> %d) !",
+      if (iRow < 0 || iRow >= nRows){
+	AliError(Form("Pad-row index (%d) outside the range (%d -> %d) !",
 		      iRow, 0, nRows -1));
+	continue;
+      }
       //pad
       Int_t iPad = input.GetPad();
-      if (iPad < 0 || iPad >= nPadsMax)
-	AliFatal(Form("Pad index (%d) outside the range (%d -> %d) !",
+      if (iPad < 0 || iPad >= nPadsMax) {
+	AliError(Form("Pad index (%d) outside the range (%d -> %d) !",
 		      iPad, 0, nPadsMax-1));
+	continue;
+      }
       if (iPad!=lastPad){
 	gain    = gainROC->GetValue(iRow,iPad);
 	lastPad = iPad;
@@ -810,6 +813,7 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
 		      iTimeBin, 0, iTimeBin -1));
       }
       iTimeBin+=3;
+
       //signal
       Float_t signal = input.GetSignal();
       if (!calcPedestal && signal <= zeroSup) continue;      
@@ -821,6 +825,9 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
 	allBins[iRow][iPad*fMaxTime+iTimeBin] = signal;
       }
       allBins[iRow][iPad*fMaxTime+0]=1.;  // pad with signal
+
+      // Temporary
+      digCounter++;
     } // End of the loop over altro data
     //
     //
@@ -1028,12 +1035,18 @@ Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t
       rms  +=histo[median+idelta]*(median+idelta)*(median+idelta);
     }
   }
-  mean  /=count10;
-  mean06/=count06;
-  mean09/=count09;
-  rms    = TMath::Sqrt(TMath::Abs(rms/count10-mean*mean));
-  rms06    = TMath::Sqrt(TMath::Abs(rms06/count06-mean06*mean06));
- rms09    = TMath::Sqrt(TMath::Abs(rms09/count09-mean09*mean09));
+  if (count10) {
+    mean  /=count10;
+    rms    = TMath::Sqrt(TMath::Abs(rms/count10-mean*mean));
+  }
+  if (count06) {
+    mean06/=count06;
+    rms06    = TMath::Sqrt(TMath::Abs(rms06/count06-mean06*mean06));
+  }
+  if (count09) {
+    mean09/=count09;
+    rms09    = TMath::Sqrt(TMath::Abs(rms09/count09-mean09*mean09));
+  }
   rmsEvent = rms09;
   //
   pedestalEvent = median;
