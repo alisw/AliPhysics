@@ -859,6 +859,11 @@ void AliCDBGrid::QueryValidFiles()
 
 	TGridResult *res = gGrid->Query(fDBFolder, pattern, filter, "");
 
+	if (!res) {
+		AliError("Grid query failed");
+		return;
+	}
+
 	AliCDBId validFileId;
 	for(int i=0; i<res->GetEntries(); i++){
 		TString filename = res->GetKey(i, "lfn");
