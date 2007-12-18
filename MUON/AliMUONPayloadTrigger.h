@@ -73,13 +73,15 @@ class AliMUONPayloadTrigger: public TObject {
     AliMUONRegHeader*        fRegHeader;    //!< pointer for regional structure
     AliMUONLocalStruct*      fLocalStruct;  //!< pointer to local structure
 
-    AliMUONLogger* fLog;                      //!< Map of errors msg;
+    AliMUONLogger* fLog;                    //!< Map of errors msg;
     Int_t   fDarcEoWErrors;                 //!< number of end of DARC word errors;
     Int_t   fGlobalEoWErrors;               //!< number of end of global word errors;
     Int_t   fRegEoWErrors;                  //!< number of end of regional word errors;
     Int_t   fLocalEoWErrors;                //!< number of end of local word errors;
-    Bool_t  fWarnings;                        //!< flag to enable/disable warnings
-    ClassDef(AliMUONPayloadTrigger, 2)    // base class for reading MUON trigger rawdata
+    Bool_t  fWarnings;                      //!< flag to enable/disable warnings
+    Bool_t  fNofRegSet;                     //!< true if number of regional boards is set from outside
+
+    ClassDef(AliMUONPayloadTrigger, 3)    // base class for reading MUON trigger rawdata
 };
 
 #endif

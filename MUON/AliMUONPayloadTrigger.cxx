@@ -52,7 +52,8 @@ AliMUONPayloadTrigger::AliMUONPayloadTrigger()
     fGlobalEoWErrors(0),
     fRegEoWErrors(0),
     fLocalEoWErrors(0),
-    fWarnings(kTRUE)
+    fWarnings(kTRUE),
+    fNofRegSet(kFALSE)
 {
   ///
   /// create an object to read MUON raw digits
@@ -95,11 +96,22 @@ Bool_t AliMUONPayloadTrigger::Decode(UInt_t *buffer)
   memcpy(darcHeader->GetHeader(), &buffer[index], (kDarcHeaderSize)*4); 
   index += kDarcHeaderSize;
 
-  if(darcHeader->GetEventType() == 0) {
-    scalerEvent = kTRUE;
-  } else
-    scalerEvent = kFALSE;
-
+  if (!fNofRegSet) // if regional board number not set, set it with darc type
+  { 
+    // darc type vardorh
+    if (darcHeader->GetDarcType() == 4)
+      fMaxReg = 1;
+    
+    // darc type def.
+    if (darcHeader->GetDarcType() == 6)
+      fMaxReg = 8;
+      
+    if(darcHeader->GetEventType() == 0) {
+      scalerEvent = kTRUE;
+    } else
+      scalerEvent = kFALSE;
+  }
+  
   if(scalerEvent) {
     // 6 DARC scaler words
     memcpy(darcHeader->GetDarcScalers(), &buffer[index], darcHeader->GetDarcScalerLength()*4);
@@ -210,7 +222,9 @@ void AliMUONPayloadTrigger::SetMaxReg(Int_t reg)
 {
   /// set regional card number
   if (reg > 8) reg = 8;
-  fMaxReg = reg;
+   fMaxReg = reg;
+   
+  fNofRegSet = kTRUE;
 }
 
 //______________________________________________________
