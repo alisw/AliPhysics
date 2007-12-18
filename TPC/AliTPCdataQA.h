@@ -41,7 +41,12 @@ public:
   void   Analyse();
   //
   //
+  void SetPedestal(AliTPCCalPad *pedestalCal){ fPedestal = pedestalCal;}
+  void SetNoise(AliTPCCalPad *noiseCal){ fNoise = noiseCal;}
+
   AliTPCCalPad *GetMaxCharge(){ return fMaxCharge;}
+  AliTPCCalPad *GetMeanCharge(){ return fMeanCharge;}
+  AliTPCCalPad *GetNoThreshold(){ return fNoThreshold;}
   AliTPCCalPad *GetOverThreshold0(){ return fOverThreshold0;}
   AliTPCCalPad *GetOverThreshold5(){ return fOverThreshold5;}
   AliTPCCalPad *GetOverThreshold10(){ return fOverThreshold10;}
@@ -61,27 +66,41 @@ public:
   void  SetRangeAdc (Int_t aMin, Int_t aMax){ fAdcMin=aMin; fAdcMax=aMax; }  // Set adc range for the pedestal calibration
 
   void  SetOldRCUformat(Bool_t format=kTRUE) { fOldRCUformat = format; }
-  
 
 private:
-
+  void UpdateSignalHistograms(const Int_t icsector, const Int_t icRow,
+			      const Int_t icPad, const Int_t icTimeBin,
+			      const Float_t signal);  
+  
   Int_t fFirstTimeBin;              //  First Time bin needed for analysis
   Int_t fLastTimeBin;               //  Last Time bin needed for analysis
   Int_t fAdcMin;                    //  min adc channel of pedestal value
   Int_t fAdcMax;                    //  max adc channel of pedestal value
   Bool_t  fOldRCUformat;            //! Should we use the old RCU format for data reading
+  
 
   AliTPCROC *fROC;                  //! ROC information
   AliTPCAltroMapping **fMapping;    //! Altro Mapping object
   //
   //
-  AliTPCCalPad * fMaxCharge;       // max charge
+  AliTPCCalPad * fPedestal;         // option to set pedestal cal object
+  AliTPCCalPad * fNoise;            // option to set noise cal object
+  AliTPCCalPad * fMaxCharge;        // max charge
+  AliTPCCalPad * fMeanCharge;       // mean charge
+  AliTPCCalPad * fNoThreshold;      // number of digits
   AliTPCCalPad * fOverThreshold0;   // number of digits over threshold
   AliTPCCalPad * fOverThreshold5;   // number of digits over threshold
-  AliTPCCalPad * fOverThreshold10;   // number of digits over threshold
-  AliTPCCalPad * fOverThreshold20;   // number of digits over threshold
-  AliTPCCalPad * fOverThreshold30;   // number of digits over threshold
-  Int_t          fEventCounter;      // event Counter
+  AliTPCCalPad * fOverThreshold10;  // number of digits over threshold
+  AliTPCCalPad * fOverThreshold20;  // number of digits over threshold
+  AliTPCCalPad * fOverThreshold30;  // number of digits over threshold
+
+  Int_t   fEventCounter;            // event Counter
+  Int_t   fSectorLast;              //! last sector with signal
+  Int_t   fRowLast;                 //! last row with signal
+  Int_t   fPadLast;                 //! last pad with signal
+  Int_t   fTimeBinLast;             //! last time bin with signal
+  Float_t fSignalLast;              //! last signal value
+  Int_t   fNAboveThreshold;         //! number of signals above threshold
 
 public:
   ClassDef(AliTPCdataQA, 1)  // Implementation of the TPC pedestal and noise calibration

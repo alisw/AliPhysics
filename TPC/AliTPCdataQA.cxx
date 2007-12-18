@@ -17,6 +17,11 @@
 /* $Id$ */
 
 
+// stl includes
+#include <iostream>
+
+using namespace std;
+
 //Root includes
 #include <TH1F.h>
 #include <TH2F.h>
@@ -44,8 +49,6 @@
 //header file
 #include "AliTPCdataQA.h"
 
-
-
 ClassImp(AliTPCdataQA)
 
 AliTPCdataQA::AliTPCdataQA() : /*FOLD00*/
@@ -57,7 +60,11 @@ AliTPCdataQA::AliTPCdataQA() : /*FOLD00*/
   fOldRCUformat(kTRUE),
   fROC(AliTPCROC::Instance()),
   fMapping(NULL),
+  fPedestal(0),
+  fNoise(0),
   fMaxCharge(0),
+  fMeanCharge(0),
+  fNoThreshold(0),
   fOverThreshold0(0),
   fOverThreshold5(0),
   fOverThreshold10(0),
@@ -68,6 +75,13 @@ AliTPCdataQA::AliTPCdataQA() : /*FOLD00*/
   //
   // default constructor
   //
+
+  fSectorLast  = -1;
+  fRowLast     =  0;
+  fPadLast     =  0;
+  fTimeBinLast =  0;
+  fSignalLast  =  0;
+  fNAboveThreshold = 0;
 }
 
 
@@ -129,10 +143,11 @@ Bool_t AliTPCdataQA::ProcessEventFast(AliTPCRawStreamFast *rawStreamFast)
 	  Int_t isector  = rawStreamFast->GetSector();                       //  current sector
 	  Int_t iRow     = rawStreamFast->GetRow();                          //  current row
 	  Int_t iPad     = rawStreamFast->GetPad();                          //  current pad
-	  Int_t startTbin = (Int_t)rawStreamFast->GetStartTimeBin();
-          Int_t endTbin = (Int_t)rawStreamFast->GetEndTimeBin();
 
 	  while ( rawStreamFast->NextBunch() ){
+	    Int_t startTbin = (Int_t)rawStreamFast->GetStartTimeBin();
+	    Int_t endTbin = (Int_t)rawStreamFast->GetEndTimeBin();
+
 	      for (Int_t iTimeBin = startTbin; iTimeBin < endTbin; iTimeBin++){
 		  Float_t signal=(Float_t)rawStreamFast->GetSignals()[iTimeBin-startTbin];
 		  Update(isector,iRow,iPad,iTimeBin+1,signal);
@@ -150,6 +165,8 @@ Bool_t AliTPCdataQA::ProcessEventFast(AliRawReader *rawReader)
   //
   //  Event processing loop - AliRawReader
   //
+  fEventCounter++;
+  fSectorLast  = -1;
   AliTPCRawStreamFast *rawStreamFast = new AliTPCRawStreamFast(rawReader, (AliAltroMapping**)fMapping);
   Bool_t res=ProcessEventFast(rawStreamFast);
   delete rawStreamFast;
@@ -191,6 +208,8 @@ Bool_t AliTPCdataQA::ProcessEvent(AliRawReader *rawReader)
   //
 
   // if fMapping is NULL the rawstream will crate its own mapping
+  fEventCounter++;
+  fSectorLast  = -1;
   AliTPCRawStream rawStream(rawReader, (AliAltroMapping**)fMapping);
   rawReader->Select("TPC");
   return ProcessEvent(&rawStream);
@@ -253,46 +272,154 @@ Int_t AliTPCdataQA::Update(const Int_t icsector, /*FOLD00*/
   //
   if (icTimeBin<fFirstTimeBin) return 0;
   if (icTimeBin>fLastTimeBin) return 0;
+
   if (!fMaxCharge) fMaxCharge = new AliTPCCalPad("MaxCharge","MaxCharge");
+  if (!fMeanCharge) fMeanCharge = new AliTPCCalPad("MeanCharge","MeanCharge");
+  if (!fNoThreshold) fNoThreshold = new AliTPCCalPad("NoThreshold","NoThreshold");
   if (!fOverThreshold0) fOverThreshold0 = new AliTPCCalPad("OverThreshold0","OverThreshold0");
   if (!fOverThreshold5) fOverThreshold5 = new AliTPCCalPad("OverThreshold5","OverThreshold5");
   if (!fOverThreshold10) fOverThreshold10 = new AliTPCCalPad("OverThreshold10","OverThreshold10");
   if (!fOverThreshold20) fOverThreshold20 = new AliTPCCalPad("OverThreshold20","OverThreshold20");
   if (!fOverThreshold30) fOverThreshold30 = new AliTPCCalPad("OverThreshold30","OverThreshold30");
   //
-  if (csignal>fMaxCharge->GetCalROC(icsector)->GetValue(icRow, icPad)){
-    fMaxCharge->GetCalROC(icsector)->SetValue(icRow, icPad,csignal);
+
+  Int_t signal = Int_t(csignal);
+
+  // if pedestal calibrations are loaded subtract pedestals
+  if(fPedestal) {
+
+    Int_t pedestal = Int_t(fPedestal->GetCalROC(icsector)->GetValue(icRow, icPad));
+    if(pedestal<10 || pedestal>90)
+      return 0;
+    signal -= pedestal;
+  }
+
+
+  if (signal >= 0) {
+    
+    Float_t count = fNoThreshold->GetCalROC(icsector)->GetValue(icRow, icPad);
+    fNoThreshold->GetCalROC(icsector)->SetValue(icRow, icPad,count+1);
+  }
+
+  // Require at least 3 ADC channels
+  if (signal < 3)
+    return 0;
+
+  // if noise calibrations are loaded require at least 3*sigmaNoise
+  if(fNoise) {
+  
+    Float_t noise = fNoise->GetCalROC(icsector)->GetValue(icRow, icPad);
+
+    if(signal<noise*3)
+      return 0;
+  }
+  //
+  // this signal is ok - now see if the previous signal was connected
+  // this is a bit ugly since the standard decoder goes down in time bins
+  // (10, 9, 8..) while the fast HLT decoder goes up in time bins (1, 2, 3..) 
+  //
+  if(fSectorLast==icsector && fRowLast==icRow && fPadLast==icPad &&
+     fTimeBinLast==icTimeBin+1 || fTimeBinLast==icTimeBin-1)
+    fNAboveThreshold++;
+  else
+    fNAboveThreshold = 1;
+    
+  if(fNAboveThreshold==2) {
+    
+    //
+    // This is the only special case, because before we did not know if we
+    // should store the information
+    //
+    UpdateSignalHistograms(fSectorLast, fRowLast, fPadLast, fTimeBinLast,
+			 fSignalLast);
   }
   
+  // keep the information for the next signal
+  fSectorLast  = icsector;
+  fRowLast     = icRow;
+  fPadLast     = icPad;
+  fTimeBinLast = icTimeBin;
+  fSignalLast  = signal;
+  
+  if(fNAboveThreshold==1) // we don't know if this information should be stored
+    return 1;
+  
+  UpdateSignalHistograms(fSectorLast, fRowLast, fPadLast, fTimeBinLast,
+		       fSignalLast);
+
+  return 1;
+}
+//_____________________________________________________________________
+void AliTPCdataQA::UpdateSignalHistograms(const Int_t icsector, /*FOLD00*/
+					const Int_t icRow,
+					const Int_t icPad,
+					const Int_t icTimeBin,
+					const Float_t signal)
+{
   //
-  if (csignal>0){
-    Int_t count = fOverThreshold0->GetCalROC(icsector)->GetValue(icRow, icPad);
+  // Signal filling method
+  //
+  
+  {
+    Float_t charge = fMeanCharge->GetCalROC(icsector)->GetValue(icRow, icPad);
+    fMeanCharge->GetCalROC(icsector)->SetValue(icRow, icPad, charge + signal);
+  }
+  
+  if (signal>fMaxCharge->GetCalROC(icsector)->GetValue(icRow, icPad)){
+    fMaxCharge->GetCalROC(icsector)->SetValue(icRow, icPad,signal);
+  }
+  
+  if (signal>0){
+    Float_t count = fOverThreshold0->GetCalROC(icsector)->GetValue(icRow, icPad);
     fOverThreshold0->GetCalROC(icsector)->SetValue(icRow, icPad,count+1);
   };
   //
-  if (csignal>5){
-    Int_t count = fOverThreshold5->GetCalROC(icsector)->GetValue(icRow, icPad);
+  if (signal>5){
+    Float_t count = fOverThreshold5->GetCalROC(icsector)->GetValue(icRow, icPad);
     fOverThreshold5->GetCalROC(icsector)->SetValue(icRow, icPad,count+1);
   };
-  if (csignal>10){
-    Int_t count = fOverThreshold10->GetCalROC(icsector)->GetValue(icRow, icPad);
+  if (signal>10){
+    Float_t count = fOverThreshold10->GetCalROC(icsector)->GetValue(icRow, icPad);
     fOverThreshold10->GetCalROC(icsector)->SetValue(icRow, icPad,count+1);
   };
-  if (csignal>20){
-    Int_t count = fOverThreshold20->GetCalROC(icsector)->GetValue(icRow, icPad);
+  if (signal>20){
+    Float_t count = fOverThreshold20->GetCalROC(icsector)->GetValue(icRow, icPad);
     fOverThreshold20->GetCalROC(icsector)->SetValue(icRow, icPad,count+1);
   };
-  if (csignal>30){
-    Int_t count = fOverThreshold30->GetCalROC(icsector)->GetValue(icRow, icPad);
+  if (signal>30){
+    Float_t count = fOverThreshold30->GetCalROC(icsector)->GetValue(icRow, icPad);
     fOverThreshold30->GetCalROC(icsector)->SetValue(icRow, icPad,count+1);
-  };
-
-  return 0;
+  };  
 }
 
+//_____________________________________________________________________
+void AliTPCdataQA::Analyse()
+{
+  //
+  //  Calculate calibration constants
+  //
+  
+  cout << "Analyse called" << endl;
 
-void AliTPCdataQA::Analyse(){
-  //
-  // analyze acumulated data
-  //
+  if(fEventCounter==0) {
+
+    cout << "EventCounter == 0, Cannot analyse" << endl;
+    return;
+  }
+
+  Int_t nTimeBins = fLastTimeBin - fFirstTimeBin +1;
+  
+  cout << "Analyse called" << endl
+       << "EventCounter: " << fEventCounter << endl
+       << "TimeBins: " << nTimeBins << endl;
+
+  fMeanCharge->Divide(fNoThreshold);
+
+  Float_t normalization = 1.0 / Float_t(fEventCounter * nTimeBins);
+  fNoThreshold->Multiply(normalization);  
+  fOverThreshold0->Multiply(normalization);  
+  fOverThreshold5->Multiply(normalization);  
+  fOverThreshold10->Multiply(normalization);  
+  fOverThreshold20->Multiply(normalization);  
+  fOverThreshold30->Multiply(normalization);  
 }
