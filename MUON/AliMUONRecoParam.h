@@ -36,6 +36,14 @@ class AliMUONRecoParam : public AliDetectorRecoParam
   /// return kTRUE/kFALSE if the combined cluster/track reconstruction is on/off
   Bool_t    CombineClusterTrackReco() const {return fCombinedClusterTrackReco;}
   
+  /// save all cluster info (including pads) in ESD, for the given percentage of events
+  void      SaveFullClusterInESD(Bool_t flag, Double_t percentOfEvent = 100.) {fSaveFullClusterInESD = flag;
+                                 fPercentOfFullClusterInESD = (fSaveFullClusterInESD) ? percentOfEvent : 0.;}
+  /// return kTRUE/kFALSE depending on whether we save all cluster info in ESD or not
+  Bool_t    SaveFullClusterInESD() const {return fSaveFullClusterInESD;}
+  /// return the percentage of events for which all cluster info are stored in ESD
+  Double_t  GetPercentOfFullClusterInESD() const {return fPercentOfFullClusterInESD;}
+  
   /// set the minimum value (GeV/c) of momentum in bending plane
   void     SetMinBendingMomentum(Double_t val) {fMinBendingMomentum = val;}
   /// return the minimum value (GeV/c) of momentum in bending plane
@@ -141,6 +149,8 @@ class AliMUONRecoParam : public AliDetectorRecoParam
   
   Double32_t fMaxNormChi2MatchTrigger; ///< maximum normalized chi2 of tracking/trigger track matching
   
+  Double32_t fPercentOfFullClusterInESD; ///< percentage of events for which all cluster info are stored in ESD
+  
   Bool_t     fCombinedClusterTrackReco; ///< switch on/off the combined cluster/track reconstruction
   
   Bool_t     fTrackAllTracks; ///< kTRUE to track all the possible candidates; kFALSE to track only the best ones
@@ -155,6 +165,7 @@ class AliMUONRecoParam : public AliDetectorRecoParam
   
   Bool_t     fUseSmoother; ///< kTRUE to use the smoother to compute track parameters/covariances and local chi2 at each cluster (used for Kalman tracking only)
   
+  Bool_t     fSaveFullClusterInESD; ///< kTRUE to save all cluster info (including pads) in ESD
   
   // functions
   void SetLowFluxParam();

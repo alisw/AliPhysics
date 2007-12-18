@@ -48,13 +48,15 @@ AliMUONRecoParam::AliMUONRecoParam()
   fSigmaCutForImprovement(0.),
   fSigmaCutForTrigger(0.),
   fMaxNormChi2MatchTrigger(0.),
+  fPercentOfFullClusterInESD(10.),
   fCombinedClusterTrackReco(kFALSE),
   fTrackAllTracks(kFALSE),
   fRecoverTracks(kFALSE),
   fMakeTrackCandidatesFast(kFALSE),
   fComplementTracks(kFALSE),
   fImproveTracks(kFALSE),
-  fUseSmoother(kFALSE)
+  fUseSmoother(kFALSE),
+  fSaveFullClusterInESD(kTRUE)
 {
   /// Constructor
   SetNameTitle("MUON","MUON");
@@ -153,6 +155,9 @@ void AliMUONRecoParam::Print(Option_t *option) const
   
   if (fCombinedClusterTrackReco) cout<<"Combined cluster/track reconstruction: ON"<<endl;
   else cout<<"Combined cluster/track reconstruction: OFF"<<endl;
+  
+  if (fSaveFullClusterInESD) cout<<Form("Save all cluster info in ESD for %5.2f %% of events",fPercentOfFullClusterInESD)<<endl;
+  else cout<<"Save partial cluster info in ESD"<<endl;
   
   cout<<Form("Bending momentum range = [%5.2f,%5.2f]",fMinBendingMomentum,fMaxBendingMomentum)<<endl;
   
