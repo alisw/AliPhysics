@@ -26,5 +26,6 @@
 #pragma link C++ class AliPHOSRecoParamEmc+;
 #pragma link C++ class AliPHOSRecoParamCpv+;
 #pragma link C++ class  AliPHOSEsdCluster+;
+#pragma link C++ class  AliPHOSQADataMakerRec+;
 
 #endif

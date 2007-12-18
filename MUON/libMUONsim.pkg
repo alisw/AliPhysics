@@ -26,7 +26,9 @@ SRCS:= AliMUON.cxx \
        AliMUONHitStoreV1.cxx \
        AliMUONMCDataInterface.cxx \
        AliMUONPedestalEventGenerator.cxx \
-       AliMUONGainEventGenerator.cxx
+       AliMUONGainEventGenerator.cxx \
+	   AliMUONQADataMakerSim.cxx 
+
                            
 HDRS:= $(SRCS:.cxx=.h)
 

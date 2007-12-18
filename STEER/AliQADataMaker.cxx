@@ -47,12 +47,6 @@ AliQADataMaker::AliQADataMaker(const char * name, const char * title) :
   fOutput(0x0),
   fDetectorDir(0x0),
   fDetectorDirName(""), 
-  fDigitsQAList(0x0), 
-  fESDsQAList(0x0), 
-  fHitsQAList(0x0),
-  fRawsQAList(0x0), 
-  fRecPointsQAList(0x0), 
-  fSDigitsQAList(0x0), 
   fCurrentCycle(-1), 
   fCycle(9999999), 
   fCycleCounter(0), 
@@ -68,12 +62,6 @@ AliQADataMaker::AliQADataMaker(const AliQADataMaker& qadm) :
   fOutput(qadm.fOutput),
   fDetectorDir(qadm.fDetectorDir),
   fDetectorDirName(qadm.fDetectorDirName),
-  fDigitsQAList(qadm.fDigitsQAList),
-  fESDsQAList(qadm.fESDsQAList),
-  fHitsQAList(qadm.fHitsQAList),
-  fRawsQAList(qadm.fRawsQAList),
-  fRecPointsQAList(qadm.fRecPointsQAList),
-  fSDigitsQAList(qadm.fSDigitsQAList), 
   fCurrentCycle(qadm.fCurrentCycle), 
   fCycle(qadm.fCycle), 
   fCycleCounter(qadm.fCycleCounter), 
@@ -83,171 +71,19 @@ AliQADataMaker::AliQADataMaker(const AliQADataMaker& qadm) :
   fDetectorDirName = GetName() ; 
 }
 
-//__________________________________________________________________
-AliQADataMaker& AliQADataMaker::operator = (const AliQADataMaker& qadm )
-{
-  // Assignment operator.
-  this->~AliQADataMaker();
-  new(this) AliQADataMaker(qadm);
-  return *this;
-}
-
 //____________________________________________________________________________
 Int_t AliQADataMaker::Add2List(TH1 * hist, const Int_t index, TObjArray * list) 
 { 
-	// Set histograms memory resident and add to the list 
-	hist->SetDirectory(0) ; 
-	list->AddAtAndExpand(hist, index) ; 
-	return list->GetLast() ; 
-}
-
-//____________________________________________________________________________
-void AliQADataMaker::EndOfCycle(AliQA::TASKINDEX task) 
-{ 
-  // Finishes a cycle of QA data acquistion
-  
- TObjArray * list = 0x0 ; 
-  
- switch (task) { 
-  
-  case AliQA::kRAWS:    
-	list = fRawsQAList ; 
-  break ; 
-
-  case AliQA::kHITS:
-	list = fHitsQAList ; 
-  break ; 
-
-  case AliQA::kSDIGITS:
- 	list = fSDigitsQAList ; 
-  break ; 
-    
-  case AliQA::kDIGITS:
- 	list = fDigitsQAList ; 
-  break ;  
- 
-   case AliQA::kRECPOINTS:
-	list = fRecPointsQAList ; 
-   break ;  
-
-   case AliQA::kTRACKSEGMENTS:
-   break ;  
-  
-   case AliQA::kRECPARTICLES:
-   break ;  
-    
-   case AliQA::kESDS:
-	list = fESDsQAList ; 
-   break ;  
-
-   case AliQA::kNTASKINDEX:
-   break ;  
-  }	
-  
- EndOfDetectorCycle(task, list) ; 
- TDirectory * subDir = fDetectorDir->GetDirectory(AliQA::GetTaskName(task)) ; 
- subDir->cd() ; 
- list->Write() ; 
-}
- 
-//____________________________________________________________________________
-void AliQADataMaker::Exec(AliQA::TASKINDEX task, TObject * data) 
-{ 
-  // creates the quality assurance data for the various tasks (Hits, SDigits, Digits, ESDs)
-    
-	switch (task) { 
-  
-		case AliQA::kRAWS:
-		{
-			AliDebug(1, "Processing Raws QA") ; 
-			AliRawReader * rawReader = dynamic_cast<AliRawReader *>(data) ; 
-			if (rawReader) 
-				MakeRaws(rawReader) ;
-			else
-			AliError("Wrong data type") ;     
-			break ; 
-		}
-		case AliQA::kHITS:
-		{  
-			AliDebug(1, "Processing Hits QA") ; 
-			TClonesArray * arr = dynamic_cast<TClonesArray *>(data) ; 
-			if (arr) { 
-				MakeHits(arr) ;
-			} else {
-				TTree * tree = dynamic_cast<TTree *>(data) ; 
-				if (tree) {
-					MakeHits(tree) ; 
-				} else {
-					AliWarning("data are neither a TClonesArray nor a TTree") ; 
-				}
-			}
-			break ; 
-		}
-		case AliQA::kSDIGITS:
-		{
-			AliDebug(1, "Processing SDigits QA") ; 
-			TClonesArray * arr = dynamic_cast<TClonesArray *>(data) ; 
-			if (arr) { 
-				MakeSDigits(arr) ;
-			} else {
-				TTree * tree = dynamic_cast<TTree *>(data) ; 
-				if (tree) {
-					MakeSDigits(tree) ; 
-				} else {
-					AliWarning("data are neither a TClonesArray nor a TTree") ; 
-				}
-			}
-			break ; 
-		}  
-		case AliQA::kDIGITS:
-		{
-			AliDebug(1, "Processing Digits QA") ; 
-			TClonesArray * arr = dynamic_cast<TClonesArray *>(data) ; 
-			if (arr) { 
-				MakeDigits(arr) ;
-			} else {
-				TTree * tree = dynamic_cast<TTree *>(data) ; 
-				if (tree) {
-					MakeDigits(tree) ; 
-				} else {
-					AliWarning("data are neither a TClonesArray nor a TTree") ; 
-				}
-			}
-			break ;  
-		}
-		case AliQA::kRECPOINTS:
-		{
-			AliDebug(1, "Processing RecPoints QA") ; 
-			TTree * tree = dynamic_cast<TTree *>(data) ; 
-			if (tree) {
-				MakeRecPoints(tree) ; 
-			} else {
-				AliWarning("data are not a TTree") ; 
-			}
-			break ;  
-		}
-		case AliQA::kTRACKSEGMENTS:
-			AliInfo("Processing Track Segments QA: not existing anymore") ; 
-		//       MakeTrackSegments(ts) ;
-		break ;  
-  
-		case AliQA::kRECPARTICLES:
-			AliInfo("Processing RecParticles QA: not existing anymore") ; 
-			//       MakeRecParticles(recpar) ;
-			break ;  
-		case AliQA::kESDS:
-		{
-			AliDebug(1, "Processing ESDs QA") ; 
-			AliESDEvent * esd = dynamic_cast<AliESDEvent *>(data) ; 
-			if (esd) 
-				MakeESDs(esd) ;
-			else 
-				AliError("Wrong type of esd container") ; 
-			break ;
-		}  
-		case AliQA::kNTASKINDEX:
-		break ;  
-	}	  
+	// Set histograms memory resident and add to the list
+	// Maximm allowed is 100
+	if ( index > 100 ) {
+		AliError("Max number of authorized QA objects is 100") ; 
+		return -1 ; 
+	} else {
+		hist->SetDirectory(0) ; 
+		list->AddAtAndExpand(hist, index) ; 
+		return list->GetLast() ;
+	}
 }
 
 //____________________________________________________________________________ 
@@ -258,121 +94,16 @@ void AliQADataMaker::Finish() const
 } 
 
 //____________________________________________________________________________ 
-TObjArray *  AliQADataMaker::Init(AliQA::TASKINDEX task, Int_t run, Int_t cycles)
-{
-  // general intialisation
-  
-  fRun = run ;
-  if (cycles > 0)
-    SetCycle(cycles) ;  
-	
-  switch (task) {
-  case AliQA::kRAWS: 
-   {
-	fRawsQAList = new TObjArray(100) ;	 
-    InitRaws() ;
-	return fRawsQAList ;
-    break ; 
-   }
-  case AliQA::kHITS: 
-   {
-	fHitsQAList = new TObjArray(100) ;	 
-    InitHits() ;
-	return fHitsQAList ;
-    break ; 
-   }
-  case AliQA::kSDIGITS: 
-   {
-	fSDigitsQAList = new TObjArray(100) ; 
-    InitSDigits() ;
-	return fSDigitsQAList ;
-    break ; 
-   }
-  case AliQA::kDIGITS: 
-   {
-	fDigitsQAList = new TObjArray(100); 
-	InitDigits() ;
-	return fDigitsQAList ;
-	break ; 
-   }	  
-  case AliQA::kRECPOINTS: 
-   {
-	fRecPointsQAList = new TObjArray(100) ; 
-    InitRecPoints() ;
-	return fRecPointsQAList ;
-    break ; 
-  }
-  case AliQA::kTRACKSEGMENTS: 
-//  InitTrackSegments() ;
-    break ; 
-    
-  case AliQA::kRECPARTICLES: 
-//    InitRecParticles() ;
-    break ; 
-    
-  case AliQA::kESDS: 
-   {
-	fESDsQAList = new TObjArray(100) ; 
-	InitESDs() ;
-	return fESDsQAList ;
-    break ; 
-   }
-  case AliQA::kNTASKINDEX: 
-  break ; 
-  }  
-  return 0x0 ; 
-}
-
-//____________________________________________________________________________ 
-void AliQADataMaker::Init(AliQA::TASKINDEX task, TObjArray * list, Int_t run, Int_t cycles)
-{
-  // Intialisation by passing the list of QA data booked elsewhere
-  
-  fRun = run ;
-  if (cycles > 0)
-    SetCycle(cycles) ;  
-	
-  switch (task) {
-  case AliQA::kRAWS: 
-   {
-	fRawsQAList = list ;	 
-    break ; 
-   }
-  case AliQA::kHITS: 
-   {
-	fHitsQAList = list ;	 
-    break ; 
-   }
-  case AliQA::kSDIGITS: 
-   {
-	fSDigitsQAList = list ; 
-    break ; 
-   }
-  case AliQA::kDIGITS: 
-   {
-	fDigitsQAList = list ; 
-	break ; 
-   }	  
-  case AliQA::kRECPOINTS: 
-   {
-	fRecPointsQAList = list ; 
-    break ; 
-  }
-  case AliQA::kTRACKSEGMENTS: 
-    break ; 
-    
-  case AliQA::kRECPARTICLES: 
-    break ; 
-    
-  case AliQA::kESDS: 
-   {
-	fESDsQAList = list ; 
-    break ; 
-   }
-  case AliQA::kNTASKINDEX: 
-  break ; 
-  }  
-}
+TObject * AliQADataMaker::GetData(TObjArray * list, const Int_t index)  
+{ 
+	// Returns the QA object at index. Limit is 100. 
+	if ( index > 100 ) {
+		AliError("Max number of authorized QA objects is 100") ; 
+		return NULL; 
+	} else {
+		return list->At(index) ; 
+	}
+} 
 
 //____________________________________________________________________________
 void AliQADataMaker::Reset() 
@@ -380,73 +111,4 @@ void AliQADataMaker::Reset()
   // Resets defaut value of data members 
   fCurrentCycle = -1 ;  
   fCycleCounter = 0 ; 
-}
-
-//____________________________________________________________________________
-void AliQADataMaker::StartOfCycle(AliQA::TASKINDEX task, const Bool_t sameCycle) 
-{ 
-  // Finishes a cycle of QA data acquistion
- 
- if ( !sameCycle || fCurrentCycle == -1) {
-	ResetCycle() ;
-	if (fOutput) 
-		fOutput->Close() ; 
-	fOutput = AliQA::GetQADataFile(GetName(), fRun, fCurrentCycle) ; 	
-}	
- AliInfo(Form(" Run %d Cycle %d task %s file %s", 
-	fRun, fCurrentCycle, AliQA::GetTaskName(task).Data(), fOutput->GetName() )) ;
-
- fDetectorDir = fOutput->GetDirectory(GetDetectorDirName()) ; 
- if (!fDetectorDir)
-   fDetectorDir = fOutput->mkdir(GetDetectorDirName()) ; 
-
- TDirectory * subDir = fDetectorDir->GetDirectory(AliQA::GetTaskName(task)) ; 
- if (!subDir)
-   subDir = fDetectorDir->mkdir(AliQA::GetTaskName(task)) ;  
- subDir->cd() ; 
-
-  TObjArray * list = 0x0 ; 
-  
-  switch (task) { 
-  case AliQA::kRAWS: 
-	list = fRawsQAList ; 
-    break ; 
-
-  case AliQA::kHITS: 
-	list = fHitsQAList ; 
-    break ; 
-  
-  case AliQA::kSDIGITS: 
-	list = fSDigitsQAList ;
-    break ; 
-
-  case AliQA::kDIGITS: 
-	list = fDigitsQAList ;
-	break ; 
-	  
-  case AliQA::kRECPOINTS: 
-	list = fRecPointsQAList ;
-	break ; 
-
-  case AliQA::kTRACKSEGMENTS: 
-    break ; 
-    
-  case AliQA::kRECPARTICLES: 
-    break ; 
-    
-  case AliQA::kESDS: 
-  	list = fESDsQAList ;
-    break ; 
-
-  case AliQA::kNTASKINDEX: 
-	break ; 
-}  
-
- TIter next(list) ;
- TH1 * h ; 
- while ( (h = dynamic_cast<TH1 *>(next())) )
-    h->Reset() ;  
-
- StartOfDetectorCycle() ; 
-
 }

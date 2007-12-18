@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.93  2007/10/10 09:05:10  schutz
+ * Changing name QualAss to QA
+ *
  * Revision 1.92  2007/08/28 12:55:08  policheh
  * Loaders removed from the reconstruction code (C.Cheshkov)
  *
@@ -121,7 +124,6 @@
 #include "AliPHOSLink.h"
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
-#include "AliPHOSQADataMaker.h"
 #include "AliPHOSEmcRecPoint.h"
 #include "AliPHOSCpvRecPoint.h"
 

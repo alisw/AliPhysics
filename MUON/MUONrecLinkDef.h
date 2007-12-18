@@ -54,6 +54,6 @@
 #pragma link C++ class AliMUONPadStatusMapMaker+;
 
 // QA
-#pragma link C++ class AliMUONQADataMaker+;
+#pragma link C++ class AliMUONQADataMakerRec+;
 #pragma link C++ class AliMUONQAChecker+;
 #endif

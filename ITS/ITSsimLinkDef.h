@@ -58,6 +58,8 @@
 // Raw data
 
 #pragma link C++ class AliITSTrigger+;
+#pragma link C++ class AliITSQADataMakerSim+;
+
 
 
 

@@ -47,6 +47,8 @@
 #pragma link C++ class AliMUONPedestalEventGenerator+;
 #pragma link C++ class AliMUONGainEventGenerator+;
 
+#pragma link C++ class AliMUONQADataMakerSim+;
+
 #endif
 
 

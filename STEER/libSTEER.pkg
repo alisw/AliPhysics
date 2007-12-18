@@ -50,6 +50,8 @@ AliFstream.cxx \
 AliCTPRawData.cxx \
 AliQADataMaker.cxx \
 AliGlobalQADataMaker.cxx \
+AliQADataMakerSim.cxx \
+AliQADataMakerRec.cxx \
 AliQADataMakerSteer.cxx \
 AliQAChecker.cxx \
 AliQACheckerBase.cxx \

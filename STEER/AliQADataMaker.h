@@ -34,76 +34,70 @@ class AliRawReader;
 class AliQADataMaker: public TNamed {
   
 public:
+	
+	AliQADataMaker(const char * name="", const char * title="") ;          // ctor
+	AliQADataMaker(const AliQADataMaker& qadm) ;   
+//	AliQADataMaker& operator = (const AliQADataMaker& /*qadm*/) {;}
+	virtual ~AliQADataMaker() {;} // dtor
   
-  AliQADataMaker(const char * name="", const char * title="") ;          // ctor
-  AliQADataMaker(const AliQADataMaker& qadm) ;   
-  AliQADataMaker& operator = (const AliQADataMaker& qadm) ;
-  virtual ~AliQADataMaker() {;} // dtor
-  
-  const Int_t         Add2DigitsList(TH1 * hist, const Int_t index)    { return Add2List(hist, index, fDigitsQAList) ; }
-  const Int_t         Add2ESDsList(TH1 * hist, const Int_t index)      { return Add2List(hist, index, fESDsQAList) ; }
-  const Int_t         Add2HitsList(TH1 * hist, const Int_t index)      { return Add2List(hist, index, fHitsQAList) ; }
-  const Int_t         Add2RecPointsList(TH1 * hist, const Int_t index) { return Add2List(hist, index, fRecPointsQAList) ; }
-  const Int_t         Add2RawsList(TH1 * hist, const Int_t index)      { return Add2List(hist, index, fRawsQAList) ; }
-  const Int_t         Add2SDigitsList(TH1 * hist, const Int_t index)   { return Add2List(hist, index, fSDigitsQAList) ; }
-  virtual void        Exec(AliQA::TASKINDEX, TObject * data) ;
-  void                EndOfCycle(AliQA::TASKINDEX) ;
-  void                Finish() const ; 
-  TH1 *               GetDigitsData(const Int_t index)    { return dynamic_cast<TH1 *>(GetData(fDigitsQAList, index)) ; }
-  TH1 *               GetESDsData(const Int_t index)      { return dynamic_cast<TH1 *>(GetData(fESDsQAList, index)) ; }
-  TH1 *               GetHitsData(const Int_t index)      { return dynamic_cast<TH1 *>(GetData(fHitsQAList, index)) ; }
-  TH1 *               GetRecPointsData(const Int_t index) { return dynamic_cast<TH1 *>(GetData(fRecPointsQAList, index)) ; }
-  TH1 *               GetRawsData(const Int_t index)      { return dynamic_cast<TH1 *>(GetData(fRawsQAList, index)) ; }
-  TH1 *               GetSDigitsData(const Int_t index)   { return dynamic_cast<TH1 *>(GetData(fSDigitsQAList, index)) ; }
-  const char *        GetDetectorDirName() { return fDetectorDirName.Data() ; }
-  const Int_t         Increment() { return ++fCycleCounter ; } 
-  TObjArray *         Init(AliQA::TASKINDEX, Int_t run, Int_t cycles = -1) ;
-  void                Init(AliQA::TASKINDEX, TObjArray * list, Int_t run, Int_t cycles = -1) ;
-  const Bool_t        IsCycleDone() const { return fCycleCounter > fCycle ? kTRUE : kFALSE ; }
-  void                Reset() ; 	
-  void                SetCycle(Int_t nevts) { fCycle = nevts ; } 
-  void                StartOfCycle(AliQA::TASKINDEX, const Bool_t sameCycle = kFALSE) ;
+	virtual const Int_t Add2DigitsList(TH1 * hist, const Int_t index)    = 0 ; 
+	virtual const Int_t Add2ESDsList(TH1 * hist, const Int_t index)      = 0 ; 
+	virtual const Int_t Add2HitsList(TH1 * hist, const Int_t index)      = 0 ; 
+	virtual const Int_t Add2RecPointsList(TH1 * hist, const Int_t index) = 0 ; 
+	virtual const Int_t Add2RawsList(TH1 * hist, const Int_t index)      = 0 ; 
+	virtual const Int_t Add2SDigitsList(TH1 * hist, const Int_t index)   = 0 ; 
+	virtual void        Exec(AliQA::TASKINDEX, TObject * data)           = 0 ;
+	virtual void        EndOfCycle(AliQA::TASKINDEX)                     = 0 ;
+	void                Finish() const ; 
+    virtual TH1 *       GetDigitsData(const Int_t index)                 = 0 ; 
+	virtual TH1 *       GetESDsData(const Int_t index)                   = 0 ; 
+	virtual TH1 *       GetHitsData(const Int_t index)                   = 0 ; 
+	virtual TH1 *       GetRecPointsData(const Int_t index)              = 0 ; 
+	virtual TH1 *       GetRawsData(const Int_t index)                   = 0 ; 
+	virtual TH1 *       GetSDigitsData(const Int_t index)                = 0 ; 
+	const char *        GetDetectorDirName() { return fDetectorDirName.Data() ; }
+	const Int_t         Increment() { return ++fCycleCounter ; } 
+	virtual TObjArray * Init(AliQA::TASKINDEX, Int_t run, Int_t cycles = -1)                   = 0 ;
+	virtual void        Init(AliQA::TASKINDEX, TObjArray * list, Int_t run, Int_t cycles = -1) = 0 ;
+	const Bool_t        IsCycleDone() const { return fCycleCounter > fCycle ? kTRUE : kFALSE ; }
+	void                Reset() ; 	
+    void                SetCycle(Int_t nevts) { fCycle = nevts ; } 
+	virtual void        StartOfCycle(AliQA::TASKINDEX, const Bool_t sameCycle = kFALSE) = 0 ;
 
 protected: 
 
-  Int_t          Add2List(TH1 * hist, const Int_t index, TObjArray * list) ;
-  virtual void   EndOfDetectorCycle(AliQA::TASKINDEX, TObjArray * ) {AliInfo("To be implemented by detectors");} 
-  TObject *      GetData(TObjArray * list, const Int_t index)  { return list->At(index) ; } 
-  virtual void   InitDigits()        {AliInfo("To be implemented by detectors");}
-  virtual void   InitESDs()          {AliInfo("To be implemented by detectors");}
-  virtual void   InitHits()          {AliInfo("To be implemented by detectors");}
-  //virtual void   InitRecParticles()  {AliInfo("To be implemented by detectors");}
-  virtual void   InitRecPoints()     {AliInfo("To be implemented by detectors");}
-  virtual void   InitRaws()          {AliInfo("To be implemented by detectors");}
-  virtual void   InitSDigits()       {AliInfo("To be implemented by detectors");}
-  //virtual void   InitTrackSegments() {AliInfo("To ne implemented by detectors");}
-  virtual void   MakeESDs(AliESDEvent * )          {AliInfo("To be implemented by detectors");} 
-  virtual void   MakeHits(TClonesArray * )         {AliInfo("To be implemented by detectors");} 
-  virtual void   MakeHits(TTree * )                {AliInfo("To be implemented by detectors");} 
-  virtual void   MakeDigits(TClonesArray * )       {AliInfo("To be implemented by detectors");} 
-  virtual void   MakeDigits(TTree * )              {AliInfo("To be implemented by detectors");} 
-  //  virtual void   MakeRecParticles(TClonesArray * ) {AliInfo("To be implemented by detectors");} 
-  virtual void   MakeRaws(AliRawReader *)          {AliInfo("To be implemented by detectors");} 
-  virtual void   MakeRecPoints(TTree * )           {AliInfo("To be implemented by detectors");} 
-  virtual void   MakeSDigits(TClonesArray * )      {AliInfo("To be implemented by detectors");} 
-  virtual void   MakeSDigits(TTree * )             {AliInfo("To be implemented by detectors");} 
-  //virtual void   MakeTrackSegments(TTree * )       {AliInfo("To be implemented by detectors");} 
-  void           ResetCycle() { fCurrentCycle++ ; fCycleCounter = 0 ; } 
-  virtual void   StartOfDetectorCycle() {AliInfo("To be implemented by detectors");} 
-
-  TFile *        fOutput ;          //! output root file
-  TDirectory *   fDetectorDir ;     //! directory for the given detector in the file
-  TString        fDetectorDirName ; //! detector directory name in the quality assurance data file
-  TObjArray *    fDigitsQAList ;    //! list of the digits QA data objects
-  TObjArray *    fESDsQAList ;      //! list of the ESDs QA data objects
-  TObjArray *    fHitsQAList ;      //! list of the hits QA data objects
-  TObjArray *    fRawsQAList ;      //! list of the raws QA data objects
-  TObjArray *    fRecPointsQAList ; //! list of the recpoints QA data objects
-  TObjArray *    fSDigitsQAList ;   //! list of the sdigits QA data objects
-  Int_t          fCurrentCycle ;    //! current cycle number
-  Int_t          fCycle ;           //! length (# events) of the QA data acquisition cycle  
-  Int_t          fCycleCounter ;    //! cycle counter
-  Int_t          fRun ;             //! run number
+	Int_t          Add2List(TH1 * hist, const Int_t index, TObjArray * list) ;
+	virtual void   EndOfDetectorCycle(AliQA::TASKINDEX, TObjArray * ) = 0 ; 
+	TObject *      GetData(TObjArray * list, const Int_t index) ;
+	virtual void   InitDigits()        = 0 ; 
+	virtual void   InitESDs()          = 0 ; 
+	virtual void   InitHits()          = 0 ; 
+  //virtual void   InitRecParticles()  = 0 ; 
+	virtual void   InitRecPoints()     = 0 ; 
+	virtual void   InitRaws()          = 0 ; 
+	virtual void   InitSDigits()       = 0 ; 
+  //virtual void   InitTrackSegments()  = 0 ; 
+	virtual void   MakeESDs(AliESDEvent * )          = 0 ; 
+	virtual void   MakeHits(TClonesArray * )         = 0 ; 
+	virtual void   MakeHits(TTree * )                = 0 ;  
+	virtual void   MakeDigits(TClonesArray * )       = 0 ;  
+	virtual void   MakeDigits(TTree * )              = 0 ; 
+  //virtual void   MakeRecParticles(TClonesArray * ) = 0 ; 
+	virtual void   MakeRaws(AliRawReader *)          = 0 ; 
+	virtual void   MakeRecPoints(TTree * )           = 0 ; 
+	virtual void   MakeSDigits(TClonesArray * )      = 0 ;  
+	virtual void   MakeSDigits(TTree * )             = 0 ;  
+  //virtual void   MakeTrackSegments(TTree * )		 = 0 ;  
+	void           ResetCycle() { fCurrentCycle++ ; fCycleCounter = 0 ; } 
+	virtual void   StartOfDetectorCycle()            = 0 ;
+	
+	TFile *        fOutput ;          //! output root file
+	TDirectory *   fDetectorDir ;     //! directory for the given detector in the file
+	TString        fDetectorDirName ; //! detector directory name in the quality assurance data file
+	Int_t          fCurrentCycle ;    //! current cycle number
+	Int_t          fCycle ;           //! length (# events) of the QA data acquisition cycle  
+	Int_t          fCycleCounter ;    //! cycle counter
+	Int_t          fRun ;             //! run number
   
  ClassDef(AliQADataMaker,1)  // description 
 

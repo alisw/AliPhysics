@@ -35,7 +35,6 @@
 #pragma link C++ class AliPHOSSurvey+;
 #pragma link C++ class AliPHOSSurvey1+;
 
-#pragma link C++ class AliPHOSQADataMaker+;
 #pragma link C++ class AliPHOSQAChecker+;
 #pragma link C++ class AliPHOSRecParticle+;
 #pragma link C++ class AliPHOSRecPoint+;

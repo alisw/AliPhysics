@@ -31,10 +31,12 @@ SRCS = 	AliITS.cxx \
 		AliITSv11GeomCableFlat.cxx \
 		AliITSv11GeomCableRound.cxx \
 		AliITSv11GeometrySDD.cxx \
-        	AliITSv11GeometrySSD.cxx \
-                AliITSv11GeometrySPD.cxx \
-                AliITSv11Hybrid.cxx \
-                AliITSv11GeometrySupport.cxx 
+		AliITSv11GeometrySSD.cxx \
+		AliITSv11GeometrySPD.cxx \
+		AliITSv11Hybrid.cxx \
+		AliITSv11GeometrySupport.cxx \
+		AliITSQADataMakerSim.cxx 
+
 
 HDRS:=  $(SRCS:.cxx=.h)
 

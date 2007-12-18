@@ -9,7 +9,6 @@
 #pragma link C++ class  AliHMPIDCluster+;
 #pragma link C++ class  AliHMPIDParam+;
 #pragma link C++ class  AliHMPIDPreprocessor+;
-#pragma link C++ class  AliHMPIDQADataMaker+;
 #pragma link C++ class  AliHMPIDQAChecker+;
 #pragma link C++ class  AliHMPIDCalib+;
 #pragma link C++ class  AliHMPIDRawStream+;

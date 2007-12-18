@@ -9,7 +9,7 @@ SRCS  = AliTOF.cxx  AliTOFv6T0.cxx  AliTOFv5T0.cxx  \
 	AliTOFDigitMap.cxx  \
 	AliTOFDDLRawData.cxx  \
         AliTOFT0.cxx AliTOFTrigger.cxx \
-        AliTOFQADataMaker.cxx \
+        AliTOFQADataMakerSim.cxx \
         AliTOFQAChecker.cxx
 
 HDRS:= $(SRCS:.cxx=.h)

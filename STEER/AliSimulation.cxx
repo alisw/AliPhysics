@@ -698,13 +698,13 @@ Bool_t AliSimulation::Run(Int_t nEvents)
     }
   }
   
- // //QA
-//	if (fRunQA) {
-//		Bool_t rv = RunQA() ; 
-//		if (!rv)
-//			if (fStopOnError) 
-//				return kFALSE ;   	
-//	}
+  //QA
+	if (fRunQA) {
+		Bool_t rv = RunQA() ; 
+		if (!rv)
+			if (fStopOnError) 
+				return kFALSE ;   	
+	}
 
   // Cleanup of CDB manager: cache and active storages!
   AliCDBManager::Instance()->ClearCache();

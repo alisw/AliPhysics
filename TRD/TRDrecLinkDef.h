@@ -35,6 +35,7 @@
 #pragma link C++ class AliTRDtrackerV1+;
 #pragma link C++ class AliTRDstackLayer+;
 #pragma link C++ class AliTRDtrackerFitter+;
+#pragma link C++ class AliTRDQADataMakerRec+;
 
 
 #endif

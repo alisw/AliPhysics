@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.103  2007/11/07 11:25:06  schutz
+ * Comment out the QA checking before starting digitization
+ *
  * Revision 1.102  2007/10/19 18:04:29  schutz
  * The standalone QA data maker is called from AliSimulation and AliReconstruction outside the event loop; i.e. re-reading the data. The QA data making in the event loop has been commented out.
  *
@@ -130,7 +133,6 @@
 #include "AliPHOSSDigitizer.h"
 #include "AliPHOSGeometry.h"
 #include "AliPHOSTick.h"
-#include "AliPHOSQADataMaker.h" 
 
 ClassImp(AliPHOSDigitizer)
 

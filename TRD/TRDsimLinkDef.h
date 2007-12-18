@@ -15,5 +15,6 @@
 #pragma link C++ class  AliTRDmcTrack+;
 #pragma link C++ class  AliTRDdigitizer+;
 #pragma link C++ class  AliTRDSimParam+;
+#pragma link C++ class  AliTRDQADataMakerSim+;
 
 #endif

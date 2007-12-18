@@ -4,7 +4,8 @@ SRCS= AliTRDpoints.cxx \
       AliTRDv1.cxx \
       AliTRDmcTrack.cxx \
       AliTRDSimParam.cxx \
-      AliTRDdigitizer.cxx
+      AliTRDdigitizer.cxx \
+      AliTRDQADataMakerSim.cxx
 
 HDRS= $(SRCS:.cxx=.h)                
 

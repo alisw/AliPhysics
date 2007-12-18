@@ -41,19 +41,20 @@ public:
     void    Reset() ;  
 	Bool_t  Run(const char * detectors, const AliQA::TASKINDEX taskIndex, const char * fileName = NULL) ; 
 	Bool_t  Run(const char * detectors, AliRawReader * rawReader) ; 
+	Bool_t  Run(const char * detectors, const char * filename) ;
     Bool_t  Save2OCDB(const Int_t runNumber, const Int_t cycleNumber, const char * detectors = "ALL") const ; 
 	void    SetCycleLength(const AliQA::DETECTORINDEX det, const Int_t cycle) { fQACycles[det] = cycle ; }
     void    SetRunLoader(AliRunLoader * rl) { fRunLoader = rl ; }
 
 private: 
-	Bool_t			 DoIt(const AliQA::TASKINDEX taskIndex) ;
+	Bool_t			 DoIt(const AliQA::TASKINDEX taskIndex, const char * mode) ;
 	AliLoader      * GetLoader(Int_t iDet) ; 
 	const Int_t      GetQACycles(const Int_t iDet) { return fQACycles[iDet] ; }
-	AliQADataMaker * GetQADataMaker(Int_t iDet) ; 
-	Bool_t			 Init(const AliQA::TASKINDEX taskIndex, const  char * fileName = NULL) ;
+	AliQADataMaker * GetQADataMaker(const Int_t iDet, const char * mode) ; 
+	Bool_t			 Init(const AliQA::TASKINDEX taskIndex, const char * mode, const  char * fileName = NULL) ;
 	Bool_t           InitRunLoader() ; 
 	Bool_t           IsSelected(const char * detName)  ;
-	Bool_t           Finish(const AliQA::TASKINDEX taskIndex) ;
+	Bool_t           Finish(const AliQA::TASKINDEX taskIndex, const char * mode) ;
 	Bool_t           SaveIt2OCDB(const Int_t runNumber, TFile * inputFile) const ;  
 
  

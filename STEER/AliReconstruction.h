@@ -32,7 +32,7 @@ class AliESDEvent;
 class TFile;
 class TTree;
 class TList;
-class AliQADataMaker;
+class AliQADataMakerRec;
 
 class AliReconstruction: public TNamed {
 public:
@@ -151,7 +151,7 @@ private:
 
   //Quality Assurance
   Int_t                GetDetIndex(const char * detector);
-  AliQADataMaker*      GetQADataMaker(Int_t iDet);
+  AliQADataMakerRec*   GetQADataMaker(Int_t iDet);
   const Int_t          GetQACycles(const char * detector) { return fQACycles[GetDetIndex(detector)] ; }
   void                 CheckQA() ;
 
@@ -214,11 +214,11 @@ private:
   Bool_t 	 fSetRunNumberFromDataCalled;  //! flag to check if run number is already loaded from run loader
 
   //Quality Assurance
-  AliQADataMaker *fQADataMaker[fgkNDetectors+1];  //! array of QA data makers
-  Int_t fQACycles[fgkNDetectors];// # events over which QA data are accumulated
-  Bool_t         fRunQA ;        // Run QA flag
-  Bool_t         fRunGlobalQA;   // Run global QA flag
-  Bool_t         fInLoopQA;      // In-loop QA flag
+  AliQADataMakerRec *fQADataMaker[fgkNDetectors+1];  //! array of QA data makers
+  Int_t fQACycles[   fgkNDetectors];// # events over which QA data are accumulated
+  Bool_t             fRunQA ;        // Run QA flag
+  Bool_t             fRunGlobalQA;   // Run global QA flag
+  Bool_t             fInLoopQA;      // In-loop QA flag
 
   ClassDef(AliReconstruction, 19)      // class for running the reconstruction
 };

@@ -2,7 +2,7 @@
 # $Id$
 
 SRCS  = AliTOFcluster.cxx  AliTOFClusterFinder.cxx  AliTOFtrack.cxx  AliTOFtracker.cxx AliTOFtrackerMI.cxx AliTOFtrackerV1.cxx  \
-	AliTOFpidESD.cxx  AliTOFReconstructor.cxx AliTOFRecoParam.cxx
+	AliTOFpidESD.cxx  AliTOFReconstructor.cxx AliTOFRecoParam.cxx AliTOFQADataMakerRec.cxx 
 
 HDRS:= $(SRCS:.cxx=.h)
 

@@ -1,7 +1,7 @@
 #-*- Mode: Makefile -*-
 # $Id$
 
-SRCS= AliT0v0.cxx AliT0v1.cxx AliT0hit.cxx AliT0Digitizer.cxx  AliT0RawData.cxx
+SRCS= AliT0v0.cxx AliT0v1.cxx AliT0hit.cxx AliT0Digitizer.cxx  AliT0RawData.cxx AliT0QADataMakerSim.cxx 
 
 HDRS= $(SRCS:.cxx=.h)
 

@@ -8,17 +8,17 @@
     AliQADataMaker::fESDsQAList      (for keeping global ESD QA data)
 */
 
-#include "AliQADataMaker.h"
+#include "AliQADataMakerRec.h"
 
 class AliESDEvent;
 
-class AliGlobalQADataMaker: public AliQADataMaker {
+class AliGlobalQADataMaker: public AliQADataMakerRec {
 public:
   AliGlobalQADataMaker(const Char_t *name="Global", 
                        const Char_t *title="Global QA data maker"):
-    AliQADataMaker(name,title) {;}
-  AliGlobalQADataMaker(const AliQADataMaker& qadm):
-    AliQADataMaker(qadm) {;}
+    AliQADataMakerRec(name,title) {;}
+  AliGlobalQADataMaker(const AliQADataMakerRec& qadm):
+    AliQADataMakerRec(qadm) {;}
 
   void InitRecPoints();
 

@@ -1,6 +1,7 @@
 SRCS:=  AliHMPIDReconstructor.cxx AliHMPIDTracker.cxx \
         AliHMPIDRecon.cxx AliHMPIDRecoParam.cxx       \
-        AliHMPIDReconHTA.cxx AliHMPIDPid.cxx
+        AliHMPIDReconHTA.cxx AliHMPIDPid.cxx \
+		AliHMPIDQADataMakerRec.cxx
 
 HDRS:= $(SRCS:.cxx=.h)
 DHDR:= HMPIDrecLinkDef.h

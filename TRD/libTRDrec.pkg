@@ -16,7 +16,8 @@ SRCS= AliTRDcluster.cxx \
       AliTRDtrackerV1.cxx \
       AliTRDpropagationLayer.cxx \
       AliTRDstackLayer.cxx \
-      AliTRDtrackerFitter.cxx
+      AliTRDtrackerFitter.cxx \
+      AliTRDQADataMakerRec.cxx
 
 HDRS= $(SRCS:.cxx=.h)
 

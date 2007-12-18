@@ -121,6 +121,6 @@
 #pragma link C++ class AliITSAlignMille+;
 // Classes for QA
 #pragma link C++ class AliITSQAChecker+;
-#pragma link C++ class AliITSQADataMaker+;
+#pragma link C++ class AliITSQADataMakerRec+;
 
 #endif

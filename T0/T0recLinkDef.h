@@ -17,6 +17,7 @@
 #pragma link C++ class  AliT0RawReader+;
 #pragma link C++ class  AliT0Calibrator+;
 #pragma link C++ class  AliT0CalibLaserData+;
+#pragma link C++ class  AliT0QADataMakerRec+;
 
 
 #endif

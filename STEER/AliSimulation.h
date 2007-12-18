@@ -154,7 +154,7 @@ private:
   static const Int_t   fgkNDetectors = 15 ;             // number of detectors
   static const char *  fgkDetectorName[fgkNDetectors] ; // names of detectors
   Int_t                fQACycles[fgkNDetectors] ;       // cycle length (# events) over which QA data are accumulated
-  Bool_t              fRunQA ;                         // Runs the QA at the end of simulation
+  Bool_t               fRunQA ;                         // Runs the QA at the end of simulation
 
   //HLT
   TString        fRunHLT;             // HLT options, HLT is disabled if empty, default='default'
