@@ -276,7 +276,13 @@ Bool_t AliAltroRawStream::ReadTrailer()
   }
   fCount |= ((temp & 0x3FF) >> 6);
   if (fCount == 0) return kFALSE;
-
+  if (fCount >= fPosition) {
+    fRawReader->AddMajorErrorLog(kAltroTrailerErr,"invalid size");
+    //    PrintDebug();
+    AliWarning(Form("Incorrect trailer found ! The altro payload size is invalid (%d >= %d) !",fCount,fPosition));
+    fCount = 0;
+    return kFALSE;
+  }
   temp = GetNextWord();
   fHWAddress |= temp;
 
@@ -310,21 +316,24 @@ void AliAltroRawStream::ReadBunch()
 {
   // Read altro payload in 
   // backward direction
-  if (fPosition <= 0) {
+  if (fCount <= 2) {
     fRawReader->AddMinorErrorLog(kBunchLengthReadErr,"");
     //    PrintDebug();
-    AliWarning("Could not read bunch length !");
+    AliWarning(Form("Could not read bunch length and time bin ! Only %d 10-bit words are left !",fCount));
+    fBunchLength = fTimeBunch = fCount = 0;
+    return;
   }
 
   fBunchLength = GetNextWord() - 2;
+  if (fBunchLength > fCount) {
+    fRawReader->AddMinorErrorLog(kBunchLengthReadErr,Form("bl=%d",fBunchLength));
+    //    PrintDebug();
+    AliWarning(Form("Could not read bunch length ! Bunch length = %d (>%d)",fBunchLength,fCount));
+    fBunchLength = fTimeBunch = fCount = 0;
+    return;
+  }
   fTimeBunch = fBunchLength;
   fCount--;
-
-  if (fPosition <= 0) {
-    fRawReader->AddMinorErrorLog(kTimeBinReadErr,"");
-    //    PrintDebug();
-    AliWarning("Could not read time bin !");
-  }
 
   fTime = GetNextWord();
   fCount--;
@@ -336,13 +345,16 @@ void AliAltroRawStream::ReadBunch()
 void AliAltroRawStream::ReadAmplitude()
 {
   // Read next time bin amplitude
-  if (fPosition <= 0) {
+  if (fCount <= 0) {
     fRawReader->AddMinorErrorLog(kAmplitudeReadErr,"");
     //    PrintDebug();
     AliWarning("Could not read sample amplitude !");
+    fCount = fSignal = fBunchLength = 0;
+    return;
   }
 
   fSignal = GetNextWord();
+
   fCount--;
   fBunchLength--;
 
