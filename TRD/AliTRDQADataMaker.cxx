@@ -34,6 +34,7 @@
 #include <TProfile.h>
 #include <TF1.h>
 #include <TCanvas.h>
+#include <TStopwatch.h>
 
 // --- AliRoot header files ---
 #include "AliESDEvent.h"
@@ -45,6 +46,7 @@
 #include "AliTRDdigitsManager.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDdataArrayI.h"
+#include "AliTRDrawStreamTB.h"
 #include "AliTRDRawStreamV2.h"
 
 #include "AliQAChecker.h"
@@ -91,61 +93,80 @@ void AliTRDQADataMaker::EndOfDetectorCycle(AliQA::TASKINDEX task, TObjArray * li
   //
   // Detector specific actions at end of cycle
   //
+  //TStopwatch watch;
+  //watch.Start();
 
-  //AliInfo(Form("EndOfCycle", "Fitting RecPoints %d", task));
-
+  //AliInfo(Form("EndOfCycle", "Fitting RecPoints %d", task))
+  TH1D *hist = new TH1D("fitHist", "", 200, -0.5, 199.5);
  
   if (task == AliQA::kRECPOINTS) {
 
     //list->Print();
     
     // Rec points full chambers
-    if (((TH2D*)list->At(1))->GetEntries() > 1e4) {
-      for (Int_t i=0; i<540; i++) {
+    for (Int_t i=0; i<540; i++) {
 	
-	TH1D *h = ((TH2D*)list->At(1))->ProjectionY(Form("qaTRD_recPoints_amp_%d",i), i+1, i+1);
-	if (h->GetSum() < 100) continue; // chamber not present
-	
-	h->Fit("landau", "q0", "goff", 10, 180);
-	TF1 *fit = h->GetFunction("landau");
-	((TH1D*)list->At(12))->Fill(fit->GetParameter(1));
-	((TH1D*)list->At(13))->Fill(fit->GetParameter(2));
-	delete h;      
+      //TH1D *h = ((TH2D*)list->At(1))->ProjectionY(Form("qaTRD_recPoints_amp_%d",i), i+1, i+1);
+      hist->Reset();
+      for(Int_t b=1; b<hist->GetXaxis()->GetNbins()-1; b++) {
+	Double_t xvalue = hist->GetBinCenter(b);
+	Int_t bin = ((TH2D*)list->At(1))->FindBin(i,xvalue);
+	Double_t value =  ((TH2D*)list->At(1))->GetBinContent(bin);
+	hist->SetBinContent(b, value);
       }
+      
+      //printf("Sum = %d %f\n", i, hist->GetSum());
+      if (hist->GetSum() < 100) continue; // chamber not present
+      
+      hist->Fit("landau", "q0", "goff", 10, 180);
+      TF1 *fit = hist->GetFunction("landau");
+      ((TH1D*)list->At(12))->Fill(fit->GetParameter(1));
+      ((TH1D*)list->At(13))->Fill(fit->GetParameter(2));
     }
-    
-    
-    if (((TH2D*)list->At(10))->GetEntries() > 1e5) {
-      for (Int_t i=0; i<540; i++) {
+ 
+    // time-bin by time-bin
+    for (Int_t i=0; i<540; i++) {
 	
-	TH1D *test = ((TH3D*)list->At(10))->ProjectionZ(Form("ampTime_%d",i), i+1, i+1, 0, 35);     
-	if (test->GetSum() < 100) continue;
+      //TH1D *test = ((TH3D*)list->At(10))->ProjectionZ(Form("ampTime_%d",i), i+1, i+1, 0, 35);     
+      //if (test->GetSum() < 100) continue;
+      
+      //AliInfo(Form("fitting det = %d", i));
+      
+      for(Int_t j=0; j<35; j++) {
 	
-	//AliInfo(Form("fitting det = %d", i));
-	
-	for(Int_t j=0; j<35; j++) {
-	  
-	  TH1D *h =  ((TH3D*)list->At(10))->ProjectionZ(Form("ampTime_%d",i), i+1, i+1, j+1, j+1);     
-	  if (h->GetSum() < 50) continue;
-	  
-	  h->Fit("landau", "q0", "goff", 10, 180);
-	  TF1 *fit = h->GetFunction("landau");
-	  
-	  Int_t sm = i/18;
-	  Int_t det = i%18;
-	  TH2D *h2 = (TH2D*)list->At(14+sm);
-	  Int_t bin = h2->FindBin(det,j);
-	  // printf("%d %d %d\n", det, j, bin);
-	  h2->SetBinContent(bin, fit->GetParameter(1));
+	//TH1D *h =  ((TH3D*)list->At(10))->ProjectionZ(Form("ampTime_%d",i), i+1, i+1, j+1, j+1);     
+	hist->Reset();
+	for(Int_t b=1; b<hist->GetXaxis()->GetNbins()-1; b++) {
+	  Double_t xvalue = hist->GetBinCenter(b);
+	  Int_t bin = ((TH3D*)list->At(10))->FindBin(i,j,xvalue);
+	  Double_t value =  ((TH3D*)list->At(10))->GetBinContent(bin);
+	  //printf("v = %f\n", value);
+	  hist->SetBinContent(b, value);
 	}
+	
+	if (hist->GetSum() < 100) continue;
+	//printf("fitting %d %d %f\n", i, j, hist->GetSum());
+
+	hist->Fit("landau", "q0", "goff", 10, 180);
+	TF1 *fit = hist->GetFunction("landau");
+	
+	Int_t sm = i/18;
+	Int_t det = i%18;
+	TH2D *h2 = (TH2D*)list->At(14+sm);
+	Int_t bin = h2->FindBin(det,j);
+	// printf("%d %d %d\n", det, j, bin);
+	h2->SetBinContent(bin, fit->GetParameter(1));
       }
     }
   }
   
+  delete hist;
+  
   // call the checker
   AliQAChecker::Instance()->Run(AliQA::kTRD, task, list) ;    
 
-
+  //watch.Stop();
+  //watch.Print();
 }
 
 //____________________________________________________________________________ 
@@ -226,7 +247,6 @@ void AliTRDQADataMaker::InitDigits()
     hist[i]->Sumw2();
     Add2DigitsList(hist[i], i);
   }
-
 }
 
 //____________________________________________________________________________ 
@@ -253,7 +273,7 @@ void AliTRDQADataMaker::InitRecPoints()
   hist[9] = new TH1D("qaTRD_recPoints_nCls", ";number of clusters", 500, -0.5, 499.5);
 
   hist[10] = new TH3D("qaTRD_recPoints_sigTime", ";chamber;time bin;signal", 
-		      540, -0.5, 539.5, 35, -0.5, 34.5, 100, 0, 200);
+		      540, -0.5, 539.5, 35, -0.5, 34.5, 200, 0.5, 199.5);
   hist[11] = new TProfile("qaTRD_recPoints_prf", ";distance;center of gravity"
                          , 120, -0.6, 0.6, -1.2, 1.2, "");
 
@@ -663,10 +683,15 @@ void AliTRDQADataMaker::MakeRaws(AliRawReader* rawReader)
   const Int_t kMCM = 16;
   //  const Int_t kADC = 22;
 
-  AliTRDRawStreamV2 *raw = new AliTRDRawStreamV2(rawReader);
-
+  //<<<<<<< AliTRDQADataMaker.cxx
+  //AliTRDrawStreamTB *raw = new AliTRDrawStreamTB(rawReader);
   //raw->SetRawVersion(3);
+  //raw->Init();
+  //=======
+  AliTRDRawStreamV2 *raw = new AliTRDRawStreamV2(rawReader);
+  raw->SetRawVersion(3);
   raw->Init();
+  //>>>>>>> 1.12
 
   while (raw->Next()) {
 
