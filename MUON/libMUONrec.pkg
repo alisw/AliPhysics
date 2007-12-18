@@ -36,7 +36,7 @@ SRCS:= AliMUONReconstructor.cxx \
        AliMUONRecoParam.cxx \
        AliMUONVClusterServer.cxx \
        AliMUONSimpleClusterServer.cxx \
-       AliMUONQADataMaker.cxx \
+       AliMUONQADataMakerRec.cxx \
        AliMUONQAChecker.cxx \
        AliMUONClusterFinderPeakCOG.cxx \
        AliMUONClusterFinderPeakFit.cxx
