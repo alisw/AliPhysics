@@ -51,6 +51,10 @@ ClassImp(AliRawDB)
 
 const char *AliRawDB::fgkAliRootTag = "$Name$";
 
+// Split TPC into 9 branches in order to avoid problems with big memory
+// consumption in case of TPC events w/o zero-suppression
+Int_t AliRawDB::fgkDetBranches[AliDAQ::kNDetectors+1] = {1,1,1,18,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
+
 //______________________________________________________________________________
 AliRawDB::AliRawDB(AliRawEvent *event,
 		   AliESDEvent *esd, 
@@ -70,10 +74,16 @@ AliRawDB::AliRawDB(AliRawEvent *event,
 {
    // Create a new raw DB
 
-  for (Int_t iDet = 0; iDet < AliDAQ::kNDetectors; iDet++)
-    fDetRawData[iDet] = new AliRawDataArray(AliDAQ::NumberOfDdls(iDet));
+  for (Int_t iDet = 0; iDet < AliDAQ::kNDetectors; iDet++) {
+    fDetRawData[iDet] = new AliRawDataArray*[fgkDetBranches[iDet]];
+    Int_t nDDLsPerBranch = AliDAQ::NumberOfDdls(iDet)/fgkDetBranches[iDet];
+    for (Int_t iBranch = 0; iBranch < fgkDetBranches[iDet]; iBranch++)
+      fDetRawData[iDet][iBranch] = new AliRawDataArray(nDDLsPerBranch);
+  }
 
-  fDetRawData[AliDAQ::kNDetectors] = new AliRawDataArray(100);
+  fDetRawData[AliDAQ::kNDetectors] = new AliRawDataArray*[fgkDetBranches[AliDAQ::kNDetectors]];
+  for (Int_t iBranch = 0; iBranch < fgkDetBranches[AliDAQ::kNDetectors]; iBranch++)
+    fDetRawData[AliDAQ::kNDetectors][iBranch] = new AliRawDataArray(100);
 
    if (fileName) {
       if (!Create(fileName))
@@ -88,8 +98,11 @@ AliRawDB::~AliRawDB() {
 
   if(Close()==-1) Error("~AliRawDB", "cannot close output file!");
 
-  for (Int_t iDet = 0; iDet < (AliDAQ::kNDetectors + 1); iDet++)
-    delete fDetRawData[iDet];
+  for (Int_t iDet = 0; iDet < (AliDAQ::kNDetectors + 1); iDet++) {
+    for (Int_t iBranch = 0; iBranch < fgkDetBranches[iDet]; iBranch++)
+      delete fDetRawData[iDet][iBranch];
+    delete [] fDetRawData[iDet];
+  }
 }
 
 //______________________________________________________________________________
@@ -266,12 +279,14 @@ void AliRawDB::MakeTree()
 
    // Make brach for each sub-detector
    for (Int_t iDet = 0; iDet < AliDAQ::kNDetectors; iDet++) {
-     fTree->Branch(AliDAQ::DetectorName(iDet),"AliRawDataArray",
-		   &fDetRawData[iDet],bufsize,split);
+     for (Int_t iBranch = 0; iBranch < fgkDetBranches[iDet]; iBranch++)
+       fTree->Branch(Form("%s%d",AliDAQ::DetectorName(iDet),iBranch),"AliRawDataArray",
+		     &fDetRawData[iDet][iBranch],bufsize,split);
    }
    // Make special branch for unrecognized raw-data payloads
-   fTree->Branch("Common","AliRawDataArray",
-		   &fDetRawData[AliDAQ::kNDetectors],bufsize,split);
+   for (Int_t iBranch = 0; iBranch < fgkDetBranches[AliDAQ::kNDetectors]; iBranch++)
+     fTree->Branch(Form("Common%d",iBranch),"AliRawDataArray",
+		   &fDetRawData[AliDAQ::kNDetectors][iBranch],bufsize,split);
 
    // Create tree which will contain the HLT ESD information
 
@@ -331,7 +346,8 @@ Int_t AliRawDB::Fill()
    // Fill the trees and return the number of written bytes
 
   for (Int_t iDet = 0; iDet < (AliDAQ::kNDetectors + 1); iDet++)
-    fDetRawData[iDet]->ClearData();
+    for (Int_t iBranch = 0; iBranch < fgkDetBranches[iDet]; iBranch++)
+      fDetRawData[iDet][iBranch]->ClearData();
 
    // Move the raw-data payloads to the corresponding branches
   for(Int_t iSubEvent = 0; iSubEvent < fEvent->GetNSubEvents(); iSubEvent++) {
@@ -341,9 +357,15 @@ Int_t AliRawDB::Fill()
       UInt_t eqId = equipment->GetEquipmentHeader()->GetId();
       Int_t ddlIndex;
       Int_t iDet = AliDAQ::DetectorIDFromDdlID(eqId,ddlIndex);
-      if (iDet < 0 || iDet > AliDAQ::kNDetectors)
+      Int_t iBranch;
+      if (iDet < 0 || iDet > AliDAQ::kNDetectors) {
 	iDet = AliDAQ::kNDetectors;
-      equipment->SetRawDataRef(fDetRawData[iDet]);
+	iBranch = 0; // can we split somehow the unrecognized data??? For the moment - no
+      }
+      else {
+	iBranch = (ddlIndex * fgkDetBranches[iDet])/AliDAQ::NumberOfDdls(iDet);
+      }
+      equipment->SetRawDataRef(fDetRawData[iDet][iBranch]);
     }
   }
 

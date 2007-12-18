@@ -76,7 +76,7 @@ protected:
    TFile         *fRawDB;         // DB to store raw data
    TTree         *fTree;          // tree used to store raw data
    AliRawEvent   *fEvent;         // AliRawEvent via which data is stored
-   AliRawDataArray  *fDetRawData[AliDAQ::kNDetectors+1]; // Detectors raw-data payload
+   AliRawDataArray  **fDetRawData[AliDAQ::kNDetectors+1]; // Detectors raw-data payload
    TTree         *fESDTree;       // tree for storing HLT ESD information
    AliESDEvent        *fESD;           // pointer to HLT ESD object
    Int_t          fCompress;      // compression mode (1 default)
@@ -87,6 +87,8 @@ protected:
    Bool_t         fStop;          // stop execution (triggered by SIGUSR1)
    static const char  *fgkAliRootTag; // string with the aliroot tag id
 
+   static Int_t   fgkDetBranches[AliDAQ::kNDetectors+1]; // Number of branches in each detector
+
    virtual const char *GetFileName() const;
    virtual Bool_t      FSHasSpace(const char *fs) const;
    virtual void        MakeTree();
@@ -95,7 +97,7 @@ private:
    AliRawDB(const AliRawDB& rawDB);
    AliRawDB& operator = (const AliRawDB& rawDB);
 
-   ClassDef(AliRawDB,2)  // Raw DB
+   ClassDef(AliRawDB,3)  // Raw DB
 };
 
 #endif
