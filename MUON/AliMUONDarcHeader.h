@@ -41,11 +41,11 @@ public:
             /// Return event type
    Bool_t  GetEventType()  const {return (fWord &  0x40000000);}
             /// Return Darc type
-   UChar_t GetDarcType()   const {return (UChar_t)(fWord >> 27) &  0x7;}
+   UChar_t GetDarcType()   const {return (UChar_t)(fWord >> 24) &  0x7;}
             /// Return serial number
-   UChar_t GetSerialNb()   const {return (UChar_t)(fWord >> 23) &  0xF;}
+   UChar_t GetSerialNb()   const {return (UChar_t)(fWord >> 20) &  0xF;}
             /// Return version
-   UChar_t GetVersion()    const {return (UChar_t)(fWord >> 15) &  0xFF;}
+   UChar_t GetVersion()    const {return (UChar_t)(fWord >> 13) &  0xFF;}
             /// Return VME trig
    Bool_t  GetVMETrig()    const {return (fWord &  0x800);}
             /// Return global flag
