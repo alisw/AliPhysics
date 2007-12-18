@@ -520,6 +520,15 @@ void AliMUONTrackParam::SetSmoothCovariances(const TMatrixD& smoothCovariances)
   else fSmoothCovariances = new TMatrixD(smoothCovariances);
 }
 
+//__________________________________________________________________________
+void AliMUONTrackParam::SetClusterPtr(AliMUONVCluster* cluster, Bool_t owner)
+{
+  /// set pointeur to associated cluster
+  if (fOwnCluster) delete fClusterPtr;
+  fClusterPtr = cluster;
+  fOwnCluster = owner;
+}
+
   //__________________________________________________________________________
 Int_t AliMUONTrackParam::Compare(const TObject* trackParam) const
 {

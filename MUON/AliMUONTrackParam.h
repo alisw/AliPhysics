@@ -108,8 +108,7 @@ class AliMUONTrackParam : public TObject
   
         /// get pointeur to associated cluster
   AliMUONVCluster* GetClusterPtr() const {return fClusterPtr;}
-	/// set pointeur to associated cluster
-  void             SetClusterPtr(AliMUONVCluster* cluster, Bool_t owner = kFALSE) {fClusterPtr = cluster; fOwnCluster = owner;}
+  void             SetClusterPtr(AliMUONVCluster* cluster, Bool_t owner = kFALSE);
   
   	/// return kTRUE if the associated cluster can be removed from the track it belongs to
   Bool_t IsRemovable() const {return fRemovable;}
