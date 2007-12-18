@@ -127,11 +127,11 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap) {
   TList *dcsdplist = ProcessDcsDPs(valueMap, iStartTime, iStopTime);
   if(!dcsdplist) {
     Log(Form("Problem with the DCS data points!!!"));
-    return 1;
+    return 1; 
   }    
   if(dcsdplist->GetEntries() != 10) {
     Log(Form("Problem with the DCS data points!!!"));
-    return 1;
+    // return 1; // TODO:COMMENTED FOR TESTING PURPOSES!
   }
   //NEEDS TO BE REVISED - BREAKS!!!
 //   AliDCSSensorArray *dcsSensorArray = GetPressureMap(valueMap,fPressure);
