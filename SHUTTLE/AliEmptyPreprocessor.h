@@ -14,7 +14,7 @@ class AliEmptyPreprocessor : public AliPreprocessor
     virtual ~AliEmptyPreprocessor();
 
   protected:
-    virtual UInt_t Process(TMap* dcsAliasMap) { return 1; }
+    virtual UInt_t Process(TMap*) { Printf("Dummy preprocessor. FAILING..."); return 1; }
     virtual Bool_t ProcessDCS() { return kFALSE; }
 
   private:

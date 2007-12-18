@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.74  2007/12/17 03:23:32  jgrosseo
+several bugfixes
+added "empty preprocessor" as placeholder for Acorde in FDR
+
 Revision 1.73  2007/12/14 19:31:36  acolla
 Sending email to DCS experts is temporarily commented
 
@@ -1697,7 +1701,8 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 			if (success) // Preprocessor finished successfully!
 			{ 
 				// remove temporary folder
-				gSystem->Exec(Form("rm -rf %s",tmpDir.Data()));
+                                // temporary commented (JF)
+				//gSystem->Exec(Form("rm -rf %s",tmpDir.Data()));
 				
 				// Update time_processed field in FXS DB
 				if (UpdateTable() == kFALSE)
@@ -1916,11 +1921,11 @@ Bool_t AliShuttle::ProcessCurrentDetector()
 	}
 	
 	// save map into file, to help debugging in case of preprocessor error
-	/*TFile* f = TFile::Open("DCSMap.root","recreate");
+	TFile* f = TFile::Open("DCSMap.root","recreate");
 	f->cd();
 	dcsMap->Write("DCSMap", TObject::kSingleKey);
 	f->Close();
-	delete f;*/
+	delete f;
 	
 	// DCS Archive DB processing successful. Call Preprocessor!
 	UpdateShuttleStatus(AliShuttleStatus::kPPStarted);
@@ -1949,6 +1954,58 @@ Bool_t AliShuttle::ProcessCurrentDetector()
 }
 
 //______________________________________________________________________________________________
+void AliShuttle::CountOpenRuns()
+{
+	// Query DAQ's Shuttle logbook and sends the number of open runs to ML
+	
+	// check connection, in case connect
+	if (!Connect(3)) 
+		return;
+
+	TString sqlQuery;
+	sqlQuery = Form("select count(*) from %s where shuttle_done=0", fConfig->GetShuttlelbTable());
+	
+	TSQLResult* aResult = fServer[3]->Query(sqlQuery);
+	if (!aResult) {
+		AliError(Form("Can't execute query <%s>!", sqlQuery.Data()));
+		return;
+	}
+
+	AliDebug(2,Form("Query = %s", sqlQuery.Data()));
+	
+	if (aResult->GetRowCount() == 0) {
+		AliError(Form("No result for query %s received", sqlQuery.Data()));
+		return;
+	}
+
+	if (aResult->GetFieldCount() != 1) {
+		AliError(Form("Invalid field count for query %s received", sqlQuery.Data()));
+		return;
+	}
+
+	TSQLRow* aRow = aResult->Next();
+	if (!aRow) {
+		AliError(Form("Could not receive result of query %s", sqlQuery.Data()));
+		return;
+	}
+	
+	TString result(aRow->GetField(0), aRow->GetFieldLength(0));
+	Int_t count = result.Atoi();
+	
+	Log("SHUTTLE", Form("%d unprocessed runs", count));
+	
+	delete aRow;
+	delete aResult;
+
+	TMonaLisaValue mlStatus("SHUTTLE_openruns", count);
+
+	TList mlList;
+	mlList.Add(&mlStatus);
+
+	fMonaLisa->SendParameters(&mlList, "__PROCESSINGINFO__");
+}
+
+//______________________________________________________________________________________________
 Bool_t AliShuttle::QueryShuttleLogbook(const char* whereClause,
 		TObjArray& entries)
 {
@@ -1959,7 +2016,7 @@ Bool_t AliShuttle::QueryShuttleLogbook(const char* whereClause,
 	entries.SetOwner(1);
 
 	// check connection, in case connect
-	if(!Connect(3)) return kFALSE;
+	if (!Connect(3)) return kFALSE;
 
 	TString sqlQuery;
 	sqlQuery = Form("select * from %s %s order by run", fConfig->GetShuttlelbTable(), whereClause);
@@ -3009,8 +3066,8 @@ Bool_t AliShuttle::Collect(Int_t run)
 	if (!fMonaLisa)
 		fMonaLisa = new TMonaLisaWriter(fConfig->GetMonitorHost(), fConfig->GetMonitorTable());
 		
-
 	SendAlive();
+	CountOpenRuns();
 
 	TString whereClause("where shuttle_done=0");
 	if (run != -1)
@@ -3200,19 +3257,6 @@ Bool_t AliShuttle::SendMail()
 	if (fTestMode != kNone)
 		return kTRUE;
 
-	void* dir = gSystem->OpenDirectory(GetShuttleLogDir());
-	if (dir == NULL)
-	{
-		if (gSystem->mkdir(GetShuttleLogDir(), kTRUE))
-		{
-			Log("SHUTTLE", Form("SendMail - Can't open directory <%s>", GetShuttleLogDir()));
-			return kFALSE;
-		}
-
-	} else {
-		gSystem->FreeDirectory(dir);
-	}
-
 	TString to="";
 	TIter iterExperts(fConfig->GetResponsibles(fCurrentDetector));
 	TObjString *anExpert=0;
@@ -3227,6 +3271,19 @@ Bool_t AliShuttle::SendMail()
 	if (to.IsNull()) {
 		Log("SHUTTLE", "List of detector responsibles not yet set!");
 		return kFALSE;
+	}
+
+	void* dir = gSystem->OpenDirectory(GetShuttleLogDir());
+	if (dir == NULL)
+	{
+		if (gSystem->mkdir(GetShuttleLogDir(), kTRUE))
+		{
+			Log("SHUTTLE", Form("SendMail - Can't open directory <%s>", GetShuttleLogDir()));
+			return kFALSE;
+		}
+
+	} else {
+		gSystem->FreeDirectory(dir);
 	}
 
   	TString bodyFileName;

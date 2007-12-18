@@ -93,6 +93,7 @@ private:
 
 	AliShuttleLogbookEntry* QueryRunParameters(Int_t run);
 	Bool_t QueryShuttleLogbook(const char* whereClause, TObjArray& entries);
+	void CountOpenRuns();
 	Bool_t RetrieveConditionsData(const TObjArray& shuttleLogbookEntries);
 
 	TMap* GetValueSet(const char* host, Int_t port, const TSeqCollection* entries,
