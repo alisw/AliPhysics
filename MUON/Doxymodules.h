@@ -8,6 +8,13 @@
  *  @{
  */
 
+/** @defgroup core core
+ *  Category of classes for core, 
+ *  @ingroup MUON
+ *  @{
+ */
+/** @} */
+
 /** @defgroup mapping mapping
  *  Category of mapping classes
  * \image html mapping_libs.jpg
@@ -66,17 +73,9 @@
 
 /** @} */
 
-/** @defgroup core core
- *  Category of classes for core, 
- *  see more in \ref README_core
- *  @ingroup MUON
- *  @{
- */
-/** @} */
-
 /** @defgroup raw raw
- *  Category of classes for raw data, 
- *  see more in \ref README_raw
+ *  Category of classes for raw data; 
+ *  see more on the \ref README_raw page.
  *  @ingroup MUON
  *  @{
  */
@@ -84,7 +83,7 @@
 
 /** @defgroup calib calib
  *  Category of basic classes for calibration, 
- *  see more in \ref README_calib
+ *  see more on the \ref README_calib page.
  *  @ingroup MUON
  *  @{
  */
@@ -92,7 +91,7 @@
 
 /** @defgroup geometry geometry
  *  Category of geometry framework classes
- *  see more in \ref README_geometry
+ *  see more on the \ref README_geometry page.
  *  @ingroup MUON
  *  @{
  */
@@ -100,7 +99,7 @@
 
 /** @defgroup trigger trigger
  *  Category of classes for trigger
- *  see more in \ref README_trigger
+ *  see more on the \ref README_trigger page.
  *  @ingroup MUON
  *  @{
  */
@@ -108,7 +107,7 @@
 
 /** @defgroup base base
  *  Category of basic classes
- *  see more in \ref README_main
+ *  see more on the \ref README_base page.
  *  @ingroup MUON
  *  @{
  */
@@ -116,7 +115,7 @@
 
 /** @defgroup shuttle shuttle
  *  Category of classes for shuttle
- *  see more in \ref README_shuttle
+ *  see more on the \ref README_shuttle page.
  *  @ingroup MUON
  *  @{
  */
@@ -124,7 +123,7 @@
 
 /** @defgroup sim sim
  *  Category of classes for simulation
- *  see more in \ref README_main
+ *  see more on the \ref README_sim page.
  *  @ingroup MUON
  *  @{
  */
@@ -132,7 +131,7 @@
 
 /** @defgroup rec rec
  *  Category of classes for reconstruction
- *  see more in \ref README_main
+ *  see more on the \ref README_rec page.
  *  @ingroup MUON
  *  @{
  */
@@ -140,7 +139,7 @@
 
 /** @defgroup evaluation evaluation
  *  Category of classes for evaluation
- *  see more in \ref README_evaluation
+ *  see more on the \ref README_evaluation page.
  *  @ingroup MUON
  *  @{
  */
