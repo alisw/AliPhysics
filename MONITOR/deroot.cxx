@@ -13,7 +13,7 @@ int deroot(const char *rootFileName, const char *dateFileName);
 
 int deroot(const char *rootFileName, const char *dateFileName) {
 
- unsigned char *dateEvent=new unsigned char [100000000];
+ unsigned char *dateEvent=new unsigned char [1000000000];
 
  FILE *dateFile;
  size_t gdcCounter, gdcSize;
