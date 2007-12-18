@@ -41,6 +41,8 @@
 #include "AliHLTHOMERSourceDesc.h"
 #include "AliHLTHOMERBlockDesc.h"
 
+#include "AliEVEHOMERSource.h"
+
 #include "AliLog.h"
 
 #include "TString.h"
@@ -52,6 +54,13 @@
 #include "TObjString.h"
 #include "TObjArray.h"
 
+// ------------
+#include "AliTPCCalibPedestal.h"
+#include "AliTPCCalibPulser.h"
+#include "AliTPCCalibCE.h"
+#include "AliTPCPreprocessorOnline.h"
+#include "AliTPCCalROC.h"
+// ------------
 ClassImp(AliEVEHOMERManager)
 
 /*
@@ -75,7 +84,8 @@ AliEVEHOMERManager::AliEVEHOMERManager( TString xmlFile ) :
   fEventID(0),
   fCurrentBlk(0),
   fConnected(kFALSE),
-  fStateHasChanged(kTRUE) {
+  fStateHasChanged(kTRUE),
+  fTPCPre(NULL) {
   // see header file for class documentation
   // or
   // refer to README to build package
@@ -123,6 +133,10 @@ AliEVEHOMERManager::~AliEVEHOMERManager() {
   if ( fBlockList != NULL )
     delete fBlockList;
   fBlockList = NULL;
+
+  if ( fTPCPre != NULL )
+    delete fTPCPre;
+  fTPCPre = NULL;
 }
 
 /*
@@ -185,15 +199,18 @@ Int_t AliEVEHOMERManager::CreateHOMERSourcesList() {
 	continue;
       
       TString nodeId( attr->GetValue() );
-	  
-      // -- Find only TDS processes
-      if ( nodeId.BeginsWith( "TDS_" ) ) {
-	iResult = GetTDSAttributes( node->GetChildren() );
-	if ( iResult ) {
-	  AliError( Form("Error processing TDS process : %s", nodeId.Data()) );
+
+      // -- Find only TDS processes      
+      TObjArray * nodeIdTok = nodeId.Tokenize("_");
+
+      for ( Int_t ii=0 ; ii < nodeIdTok->GetEntries() ; ii++ ) {
+	if ( ! ( (TObjString*) nodeIdTok->At(ii) )->GetString().CompareTo("TDS") ) {
+	  iResult = GetTDSAttributes( node->GetChildren() );
+	  if ( iResult ) {
+	    AliError( Form("Error processing TDS process : %s", nodeId.Data()) );
+	  }
 	}
-      } 
-    
+      }
     } // while ( ( attr = (TXMLAttr*)next() ) ) {
 
   } // while ( ( node = prevNode->GetNextNode() ) ) {
@@ -204,11 +221,11 @@ Int_t AliEVEHOMERManager::CreateHOMERSourcesList() {
   TIter next(fSourceList);
   AliHLTHOMERSourceDesc* src = 0;
   while ((src = (AliHLTHOMERSourceDesc*) next())) {
-    Reve::RenderElementObjPtr* re = new Reve::RenderElementObjPtr(src, kFALSE);
-    re->SetRnrElNameTitle
-      (Form("%s-%s-%s %s", src->GetDetector().Data(), src->GetSubDetector().Data(),
+    AliEVEHOMERSource* re = new AliEVEHOMERSource
+      (src,
+       Form("%s-%s-%s %s", src->GetDetector().Data(), src->GetSubDetector().Data(),
 	    src->GetSubSubDetector().Data(), src->GetDataType().Data()),
-       "Title");
+       "Title?\nNot.");
     AddElement(re);
   }
 
@@ -318,7 +335,7 @@ Int_t AliEVEHOMERManager::ResolveHostPortInformation ( TString xmlHostname, TStr
 
   TXMLNode * node = NULL;
   TXMLNode * prevNode = fRootNode->GetChildren();
-
+  TString nodeName = 0;
   while ( ( node = prevNode->GetNextNode() ) && iResult == 1 ) {
     prevNode = node;
     
@@ -332,7 +349,7 @@ Int_t AliEVEHOMERManager::ResolveHostPortInformation ( TString xmlHostname, TStr
     TIter next(attrList);
     
     TString nodeId = 0;
-    TString nodeName = 0;
+    //    TString nodeName = 0;
     
     // Get "nodeID" and "nodeName" of this "Node" node
     while ( ( attr = (TXMLAttr*)next() ) ) {
@@ -347,7 +364,11 @@ Int_t AliEVEHOMERManager::ResolveHostPortInformation ( TString xmlHostname, TStr
       continue;
 
     // -- Set hostname
-    hostname = nodeName;
+
+    // TEMP FIX
+    //    hostname = nodeName;
+    hostname = "alihlt-dcs0";
+
     iResult = 0;
 
     break;
@@ -362,7 +383,28 @@ Int_t AliEVEHOMERManager::ResolveHostPortInformation ( TString xmlHostname, TStr
   // *** Resolve port
 
   if ( xmlPort.IsDigit() ) {
-    port = xmlPort.Atoi();
+    
+    if ( nodeName.CompareTo("feptriggerdet") ==0 ){
+      if ( xmlPort.CompareTo("49152") == 0 ){
+	port = 58140;
+      } else if ( xmlPort.CompareTo("49153") == 0 ){
+	port = 58141;
+      } 
+    } else if ( nodeName.CompareTo("fepfmdaccorde") == 0 ){
+      if ( xmlPort.CompareTo("49152") == 0 ){
+	port = 58144;
+      } else if ( xmlPort.CompareTo("49153") == 0 ){
+	port = 58145;
+      } 
+    } else if ( nodeName.CompareTo("feptpcao15") == 0 ){
+      if ( xmlPort.CompareTo("49152") == 0 ){
+	port = 50340;
+      } else if ( xmlPort.CompareTo("49153") == 0 ){
+	port = 50341;
+      }
+    } else if ( nodeName.CompareTo("alihlt-dcs0") == 0 ){
+      port = xmlPort.Atoi();
+    }
   }
   else {
     AliError ( Form("Error resolving port : %s", xmlPort.Data()) );
@@ -431,7 +473,7 @@ Int_t AliEVEHOMERManager::ResolveSourceInformation( TString xmlParent, AliHLTHOM
   // -- Set Object Names
 
   // **** General ****
-  if ( name == "RP" || name == "FP" ) {
+  if ( name == "RP" || name == "FP" || name == "Relay" ) {
     objName = "";
     dataType = "DDL_RAW";
     specification = 0;
@@ -450,6 +492,17 @@ Int_t AliEVEHOMERManager::ResolveSourceInformation( TString xmlParent, AliHLTHOM
       dataType = "HIS_CAL";
       specification = 0;
     }
+    else if ( name == "CF" || name == "RelayCF" ) {
+      objName = "AliHLTTPCClusterDataFormat"; 
+      dataType = "CLUSTERS";
+      specification = 0;
+    }
+    else if ( name == "ESDConv" ) {
+      objName = "AliESDEvent"; 
+      dataType = "ESD_TREE";
+      specification = 0;
+    }
+
   } // if ( detector == "TPC" ) {
 
   // **** TRD ****
@@ -479,6 +532,8 @@ Int_t AliEVEHOMERManager::ResolveSourceInformation( TString xmlParent, AliHLTHOM
 
 
   AliInfo( Form("Set Source %s , Type %s, ClassName %s .", name.Data(), dataType.Data(), objName.Data()) );
+  AliInfo( Form("    Detector %s , SubDetector : %s, SubSubDetector %s .", 
+		detector.Data(), subDetector.Data(), subSubDetector.Data()) );
 
   return iResult;
 }
@@ -657,7 +712,7 @@ Int_t AliEVEHOMERManager::NextEvent(){
   
   // -- Read next event data and error handling for HOMER (error codes and empty blocks)
   while( 1 ) {
-    iResult = fReader->ReadNextEvent( 5000000 /*timeout in us*/);
+    iResult = fReader->ReadNextEvent( 20000000 /*timeout in us*/);
     
     if ( iResult == 111 || iResult == 32 || iResult == 6 ) {
       Int_t ndx = fReader->GetErrorConnectionNdx();
@@ -696,8 +751,8 @@ Int_t AliEVEHOMERManager::NextEvent(){
 
   AliInfo( Form("Event 0x%016LX (%Lu) with %lu blocks", fEventID, fEventID, fNBlks) );
 
-#if 0
-  /*
+#if 1
+
   // Loop for Debug only
   for ( ULong_t i = 0; i < fNBlks; i++ ) {
     Char_t tmp1[9], tmp2[5];
@@ -711,7 +766,7 @@ Int_t AliEVEHOMERManager::NextEvent(){
     *tmp22 = fReader->GetBlockDataOrigin( i );
     AliInfo( Form("Block %lu length: %lu - type: %s - origin: %s",i, fReader->GetBlockDataLength( i ), tmp1, tmp2) );
   } // end for ( ULong_t i = 0; i < fNBlks; i++ ) {
-  */
+
 #endif
 
   // -- Create BlockList
@@ -911,14 +966,14 @@ Bool_t AliEVEHOMERManager::CheckIfRequested( AliHLTHOMERBlockDesc * block ) {
       continue;
 
     if ( ! block->HasSubDetectorRange() ) {
-      
-      if ( source->GetSubDetector().CompareTo( block->GetSubDetector() ) )
+
+      if ( source->GetSubDetector().Atoi() != block->GetSubDetector().Atoi() )
 	continue;
       
       if ( ! block->HasSubSubDetectorRange() ) {
 	
-	if ( source->GetSubSubDetector().CompareTo( block->GetSubSubDetector() ) )
-	   continue;
+	//	if ( source->GetSubSubDetector().Atoi() != block->GetSubSubDetector().Atoi() )
+	//   continue;
 	 
       } // if ( ! block->HasSubSubDetectorRange ) {
     } //  if ( ! block->HasSubDetectorRange ) {
@@ -931,6 +986,8 @@ Bool_t AliEVEHOMERManager::CheckIfRequested( AliHLTHOMERBlockDesc * block ) {
     AliInfo( Form("Block requested : %s - %s : %s/%s -> %s ", block->GetDetector().Data(), block->GetDataType().Data(), 
 		  block->GetSubDetector().Data(), block->GetSubSubDetector().Data(), block->GetClassName().Data() ) );
   }
+  else
+    AliInfo( Form("Block NOT requested : %s - %s : %s/%s -> %s ", block->GetDetector().Data(), block->GetDataType().Data(), 		  block->GetSubDetector().Data(), block->GetSubSubDetector().Data(), block->GetClassName().Data() ) );
 
   return requested;
 }
@@ -945,4 +1002,204 @@ void AliEVEHOMERManager::TestSelect() {
   }
 }
 
+//##################################################################################
+void AliEVEHOMERManager::TestSelectClass( TString objectName ) {
+  // see header file for class documentation
 
+  TList* srcList = GetSourceList();
+ 
+  AliHLTHOMERSourceDesc *desc = 0;
+
+  TIter next(srcList);
+    
+  while ( ( desc = (AliHLTHOMERSourceDesc*)next() ) ) {
+    if ( ! desc->GetClassName().CompareTo( objectName ) ) 
+      desc->Select();
+  }
+}
+
+//##################################################################################
+void AliEVEHOMERManager::SelectRawTPC() {
+  // see header file for class documentation
+
+  TList* srcList = GetSourceList();
+ 
+  AliHLTHOMERSourceDesc *desc = 0;
+
+  TIter next(srcList);
+    
+  while ( ( desc = (AliHLTHOMERSourceDesc*)next() ) ) {
+    if ( ! desc->GetDataType().CompareTo( "DDL_RAW" ) ) {
+      desc->Select();
+    }
+  }
+}
+
+//##################################################################################
+void AliEVEHOMERManager::SelectClusterTPC() {
+  // see header file for class documentation
+
+  TList* srcList = GetSourceList();
+ 
+  AliHLTHOMERSourceDesc *desc = 0;
+
+  TIter next(srcList);
+    
+  while ( ( desc = (AliHLTHOMERSourceDesc*)next() ) ) {
+    if ( ! desc->GetDataType().CompareTo( "CLUSTERS" ) ) {
+      desc->Select();
+    }
+  }
+}
+
+//##################################################################################
+void AliEVEHOMERManager::SelectESDTPC() {
+  // see header file for class documentation
+
+  TList* srcList = GetSourceList();
+ 
+  AliHLTHOMERSourceDesc *desc = 0;
+
+  TIter next(srcList);
+    
+  while ( ( desc = (AliHLTHOMERSourceDesc*)next() ) ) {
+    if ( ! desc->GetDataType().CompareTo( "ESD_TREE" ) ) {
+      desc->Select();
+    }
+  }
+}
+//##################################################################################
+void AliEVEHOMERManager::DumpTPCCalib(TString objectName, Bool_t dumpToFile) {
+  // see header file for class documentation
+
+  if ( fTPCPre != NULL )
+    delete fTPCPre;
+
+  fTPCPre = new AliTPCPreprocessorOnline();
+
+  TList* blockList = GetBlockList();
+
+  AliHLTHOMERBlockDesc *desc = 0;
+
+  TIter next(blockList);
+    
+  while ( ( desc = (AliHLTHOMERBlockDesc*)next() ) ) {
+    if ( ! desc->IsTObject() )
+      continue;
+    
+    Int_t sectorTPC = 0;
+
+    if ( desc->GetSubSubDetector().Atoi() <= 1 ) {
+      sectorTPC = desc->GetSubDetector().Atoi();
+    }
+    else {
+      sectorTPC = 36 + desc->GetSubDetector().Atoi();
+    }
+    
+    if ( ! objectName.CompareTo( desc->GetClassName() ) ){
+
+      //
+      // AliTPCCalibPedestal
+      //
+
+      if ( ! objectName.CompareTo( "AliTPCCalibPedestal" ) ) {
+	AliTPCCalROC* calROC = NULL;
+	
+	AliTPCCalibPedestal * cal = (AliTPCCalibPedestal*) desc->GetTObject();
+	if ( cal == NULL ) {
+	  cout << "error 1" << endl;
+	  continue;
+	}
+	
+	cal->Analyse();
+
+	calROC = cal->GetCalRocRMS(sectorTPC);
+	if ( calROC == NULL ) {
+	  cout << "error 2" << endl;
+	  continue;
+	}
+	
+	calROC->SetName(Form("RMS_ROC%d", sectorTPC));
+	fTPCPre->AddComponent((TObject*) calROC );
+
+	calROC = cal->GetCalRocPedestal(sectorTPC);
+	if ( calROC == NULL ) {
+	  cout << "error 3" << endl;
+	  continue;
+	}
+	
+
+	calROC->SetName(Form("Pedestal_ROC%d", sectorTPC));
+	cout << "added" << endl;
+	fTPCPre->AddComponent((TObject*) calROC );
+      }
+
+      //
+      // AliTPCCalibPulser
+      //
+      /*
+      else if ( ! objectName.CompareTo( "AliTPCCalibPulser" ) ) {
+	AliTPCCalROC* calROC = NULL;
+
+	AliTPCCalibPulser * cal = (AliTPCCalibPulser*) desc->GetTObject();
+
+	cal->Analyse();
+	
+	calROC = cal->GetCalRocT0(sectorTPC);
+	calROC->SetName(Form("T0_ROC%d", sectorTPC));
+	fTPCPre->AddComponent((TObject*) calROC );
+
+	calROC = cal->GetCalRocQ(sectorTPC);
+	calROC->SetName(Form("Q_ROC%d", sectorTPC));
+	fTPCPre->AddComponent((TObject*) calROC );
+
+	calROC = cal->GetCalRocRMS(sectorTPC);
+	calROC->SetName(Form("RMS_ROC%d", sectorTPC));
+	fTPCPre->AddComponent((TObject*) calROC );
+
+	calROC = cal->GetCalRocOutliers(sectorTPC);
+	calROC->SetName(Form("Outliers_ROC%d", sectorTPC));
+	fTPCPre->AddComponent((TObject*) calROC );
+      }
+	  
+*/
+      //
+      // AliTPCCalibCE
+      //
+      /*
+      else if ( ! objectName.CompareTo( "AliTPCCalibCE" ) ) {
+	AliTPCCalROC* calROC = NULL;
+
+	AliTPCCalibPulser * cal = (AliTPCCalibPulser*) desc->GetTObject();
+
+	cal->Analyse();
+	
+	calROC = cal->GetCalRocT0(sectorTPC);
+	calROC->SetName(Form("T0_ROC%d", sectorTPC));
+	fTPCPre->AddComponent((TObject*) calROC );
+
+	calROC = cal->GetCalRocQ(sectorTPC);
+	calROC->SetName(Form("Q_ROC%d", sectorTPC));
+	fTPCPre->AddComponent((TObject*) calROC );
+
+	calROC = cal->GetCalRocRMS(sectorTPC);
+	calROC->SetName(Form("RMS_ROC%d", sectorTPC));
+	fTPCPre->AddComponent((TObject*) calROC );
+
+	calROC = cal->GetCalRocOutliers(sectorTPC);
+	calROC->SetName(Form("Outliers_ROC%d", sectorTPC));
+	fTPCPre->AddComponent((TObject*) calROC );
+      }
+      */
+    } // if ( ! objectName.CompareTo( desc->GetClassName() ) ) {
+ 
+  } // while ( ( desc = (AliHLTHOMERBlockDesc*)next() ) ) {
+
+  if ( dumpToFile ) {
+
+    fTPCPre->DumpToFile("pedestals.root");
+    cout << "DUMP" << endl;
+  }
+
+
+}

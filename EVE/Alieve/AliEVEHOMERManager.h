@@ -21,6 +21,10 @@
 #include "AliHLTHOMERSourceDesc.h"
 #include "AliHLTHOMERBlockDesc.h"
 #include "AliHLTHOMERReader.h"
+
+#include "AliTPCPreprocessorOnline.h"
+
+
 class AliHLTHOMERLibManager;
 
 /**
@@ -117,7 +121,14 @@ public:
 
   ///////////////////////////////////////////////////////////////////////////////////
 
+  void SelectRawTPC();
+  void SelectClusterTPC();
+  void SelectESDTPC();
+
   void TestSelect();
+  void TestSelectClass( TString objectName );
+
+  void DumpTPCCalib(TString objectName, Bool_t dumpToFile);
 
   ///////////////////////////////////////////////////////////////////////////////////
 
@@ -177,7 +188,7 @@ private:
   Bool_t IsConnected() { return fConnected; }
 
   /* ---------------------------------------------------------------------------------
-   *                            Event Handling - private
+   *                            Eve AliEVEHOMERManager::foo(nt Handling - private
    * --------------------------------------------------------------------------------- 
    */
   
@@ -323,6 +334,11 @@ private:
    *  so that one has to reconnect .
    */
   Bool_t fStateHasChanged;                        // see above
+
+
+  //----
+
+  AliTPCPreprocessorOnline* fTPCPre;
 
   ClassDef( AliEVEHOMERManager, 0 )
 };
