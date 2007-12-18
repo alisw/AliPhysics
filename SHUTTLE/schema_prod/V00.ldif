@@ -13,5 +13,3 @@ objectClass: dcsConfig
 dcsHost: alidcsamanda.cern.ch
 dcsPort: 1337
 multiSplit: 4000
-dcsAlias: V00/HV/V0A/SECTOR[0..7]/RING[0..3]
-dcsAlias: V00/HV/V0C/SECTOR[0..7]/RING[0..3]
