@@ -170,6 +170,8 @@ private:
 	UInt_t fMaxBusPatches; ///< Maximum number of bus patch structures allowed in a DDL stream.
 	EventHandler fHandler; ///< The event handler which deals with parsing events.
 
+	void DecodeBuffer(const UChar_t* start, const UChar_t* end);
+	
 	bool DecodeBlockData(
 			const AliMUONBlockHeaderStruct* blockHeader,
 			const UChar_t* start, const UChar_t* end
@@ -380,12 +382,34 @@ bool AliMUONTrackerDDLDecoder<EventHandler>::Decode(const void* buffer, UInt_t b
 	fHadError = false;
 	
 	// We are basically implementing something like a recursive decent parser.
-	// So start by marking the current buffer position and end of buffer.
-	const UChar_t* current = reinterpret_cast<const UChar_t*>(buffer);
-	const UChar_t* end = current + bufferSize;
+	// So start by marking the start of buffer position and end of buffer.
+	const UChar_t* start = reinterpret_cast<const UChar_t*>(buffer);
+	const UChar_t* end = start + bufferSize;
 	
-	// Signal a new buffer event.
 	fHandler.OnNewBuffer(buffer, bufferSize);
+	DecodeBuffer(start, end);
+	fHandler.OnEndOfBuffer(buffer, bufferSize);
+	return not fHadError;
+}
+
+
+template <class EventHandler>
+void AliMUONTrackerDDLDecoder<EventHandler>::DecodeBuffer(
+		const UChar_t* start, const UChar_t* end
+	)
+{
+	/// This method decodes the buffer's payload data. It unpacks the block
+	/// structures contained inside and then for each block it calls the
+	/// OnNewBlock method for the event handler to signal the start of each new
+	/// block structure. OnEndOfBlock is called once each block is processed.
+	/// \param start  This is the pointer to the start of the buffer.
+	/// \param end  This is the pointer to the first byte just past the
+	///             end of the buffer.
+	/// \return If the blocks in the buffer were decoded without errors
+	///      or we could recover from the errors, then true is returned.
+	///      False is returned otherwise.
+	
+	const UChar_t* current = start;
 
 	UInt_t blockCount = 0; // Indicates the number of blocks decoded.
 	while (current < end)
@@ -408,7 +432,8 @@ bool AliMUONTrackerDDLDecoder<EventHandler>::Decode(const void* buffer, UInt_t b
 				fHandler.OnError(EventHandler::kBufferTooBig, blockHeader);
 			else
 				fHandler.OnError(EventHandler::kNoBlockHeader, blockHeader);
-			return false;
+			fHadError = true;
+			return;
 		}
 		
 		// The header fits the buffer so we can mark the data start and
@@ -436,7 +461,8 @@ bool AliMUONTrackerDDLDecoder<EventHandler>::Decode(const void* buffer, UInt_t b
 				// expected, so the remaining data must be rubbish.
 				// Don't even bother trying to recover the data.
 				fHandler.OnError(EventHandler::kBufferTooBig, blockHeader);
-				return false;
+				fHadError = true;
+				return;
 			}
 			if (blockHeader->fDataKey != fgkBlockDataKey)
 				fHandler.OnError(EventHandler::kBadBlockKey, &blockHeader->fDataKey);
@@ -448,12 +474,10 @@ bool AliMUONTrackerDDLDecoder<EventHandler>::Decode(const void* buffer, UInt_t b
 				fHandler.OnError(EventHandler::kBlockLengthMismatch, blockHeader);
 			
 			// Stop the decoding if so requested by the user, otherwise
-			// remember about the error so that we return false from this
-			// routine and continue decoding.
-			if (fExitOnError)
-				return false;
-			else
-				fHadError = true;
+			// remember about the error so that we return false from the
+			// Decode() method and continue decoding.
+			fHadError = true;
+			if (fExitOnError) return;
 			
 			// Try to recover from the corrupt header.
 			RecoverResult result = TryRecoverStruct(
@@ -463,7 +487,7 @@ bool AliMUONTrackerDDLDecoder<EventHandler>::Decode(const void* buffer, UInt_t b
 				);
 			if (result == kContinueToNextStruct)
 				continue; // Try the next block at 'current'.
-			if (result == kRecoverFailed) return false;
+			if (result == kRecoverFailed) return;
 		}
 		
 		// At this point we certainly have a valid block header, so we
@@ -476,20 +500,25 @@ bool AliMUONTrackerDDLDecoder<EventHandler>::Decode(const void* buffer, UInt_t b
 			// In this case we stop the decoding because clearly
 			// something is seriously wrong with the data if we are
 			// getting more blocks than expected.
-			return false;
+			fHadError = true;
+			return;
 		}
 		
 		fHandler.OnNewBlock(blockHeader, dataStart);
-		if (DecodeBlockData(blockHeader, dataStart, dataEnd)) continue;
-		
-		// At this point we had a problem decoding the block structure's
-		// data. Thus we should stop further decoding if so requested by
-		// the user. Note the fHadError flag is already marked inside
-		// DecodeBlockData.
-		if (fExitOnError) return false;
+		if (not DecodeBlockData(blockHeader, dataStart, dataEnd))
+		{
+			// At this point we had a problem decoding the block structure's
+			// data. Thus we should stop further decoding if so requested by
+			// the user. Note the fHadError flag is already marked inside
+			// DecodeBlockData.
+			if (fExitOnError)
+			{
+				fHandler.OnEndOfBlock(blockHeader, dataStart);
+				return;
+			}
+		}
+		fHandler.OnEndOfBlock(blockHeader, dataStart);
 	}
-	
-	return not fHadError;
 }
 
 
@@ -607,7 +636,11 @@ bool AliMUONTrackerDDLDecoder<EventHandler>::DecodeBlockData(
 			// the next event.
 			fHandler.OnError(EventHandler::kGlitchFound, &dspHeader->fErrorWord);
 			fHadError = true;
-			if (fExitOnError) return false;
+			if (fExitOnError)
+			{
+				fHandler.OnEndOfDSP(dspHeader, dataStart);
+				return false;
+			}
 			
 			// Try recover by finding the very next DSP and continue
 			// decoding from there. Note: to achieve all we have to do
@@ -629,17 +662,27 @@ bool AliMUONTrackerDDLDecoder<EventHandler>::DecodeBlockData(
 			{
 				fHandler.OnError(EventHandler::kBadPaddingWord, padWord);
 				fHadError = true;
-				if (fExitOnError) return false;
+				if (fExitOnError)
+				{
+					fHandler.OnEndOfDSP(dspHeader, dataStart);
+					return false;
+				}
 			}
 		}
 		
-		if (DecodeDSPData(dataStart, dataEnd)) continue;
-		
-		// At this point we had a problem decoding the DSP structure's
-		// data, thus we should stop further decoding if so requested by
-		// the user. Note the fHadError flag is already marked inside
-		// DecodeDSPData.
-		if (fExitOnError) return false;
+		if (not DecodeDSPData(dataStart, dataEnd))
+		{
+			// At this point we had a problem decoding the DSP structure's
+			// data, thus we should stop further decoding if so requested by
+			// the user. Note the fHadError flag is already marked inside
+			// DecodeDSPData.
+			if (fExitOnError)
+			{
+				fHandler.OnEndOfDSP(dspHeader, dataStart);
+				return false;
+			}
+		}
+		fHandler.OnEndOfDSP(dspHeader, dataStart);
 	}
 	
 	return true;
@@ -749,13 +792,19 @@ bool AliMUONTrackerDDLDecoder<EventHandler>::DecodeDSPData(
 		}
 		
 		fHandler.OnNewBusPatch(busPatchHeader, dataStart);
-		if (DecodeBusPatchData(dataStart, dataEnd)) continue;
-		
-		// At this point we had a problem decoding the bus patch data,
-		// thus we should stop further decoding if so requested by the
-		// user. Note the fHadError flag is already marked inside
-		// DecodeBusPatchData.
-		if (fExitOnError) return false;
+		if (not DecodeBusPatchData(dataStart, dataEnd))
+		{
+			// At this point we had a problem decoding the bus patch data,
+			// thus we should stop further decoding if so requested by the
+			// user. Note the fHadError flag is already marked inside
+			// DecodeBusPatchData.
+			if (fExitOnError)
+			{
+				fHandler.OnEndOfBusPatch(busPatchHeader, dataStart);
+				return false;
+			}
+		}
+		fHandler.OnEndOfBusPatch(busPatchHeader, dataStart);
 	}
 	
 	return true;
@@ -793,7 +842,7 @@ bool AliMUONTrackerDDLDecoder<EventHandler>::DecodeBusPatchData(
 	{
 		if (ParityIsOk(*data))
 		{
-			fHandler.OnData(*data);
+			fHandler.OnData(*data, false);
 		}
 		else
 		{
@@ -804,7 +853,7 @@ bool AliMUONTrackerDDLDecoder<EventHandler>::DecodeBusPatchData(
 			if (fExitOnError) return false;
 			
 			if (fSendDataOnParityError)
-				fHandler.OnData(*data);
+				fHandler.OnData(*data, true);
 		}
 	}
 	

@@ -33,39 +33,6 @@ public:
 				UShort_t& manuId, UChar_t& manuChannel,
 				UShort_t& adc) = 0;
 	
-	/// Class used in the following Next() method to return blocks of decoded
-	/// channel data. This is better because we generate a lot fewer method calls.
-	class AliChannelInfo
-	{
-	public:
-		/// Default constructor.
-		AliChannelInfo(Int_t busPatchId = 0, UShort_t manuId = 0, UChar_t channelId = 0, UShort_t adc = 0) :
-			fBusPatchId(busPatchId), fManuId(manuId), fChannelId(channelId), fADC(adc)
-		{}
-		
-		/// Returns the bus patch ID.
-		Int_t BusPatchId() const { return fBusPatchId; }
-		/// Returns the MANU ID.
-		UShort_t ManuId() const { return fManuId; }
-		/// Returns the channel ID.
-		UShort_t ChannelId() const { return fChannelId; }
-		/// ADC signal.
-		UShort_t ADC() const { return fADC; }
-	
-	private:
-		Int_t fBusPatchId;  //!< The bus patch ID for this channel.
-		UShort_t fManuId;   //!< MANU ID.
-		UChar_t fChannelId; //!< MANU channel ID.
-		UShort_t fADC;      //!< ADC signal.
-	};
-	
-	/// Returns the next batch of decoded channel data.
-	/// [out] \param channels  This is filled with the pointer to the array
-	///                        containing the channel information.
-	/// \return The number of elements in the 'channels' array is returned.
-	///     Zero is returned if there are no more digits to be fetched.
-	virtual UInt_t Next(const AliChannelInfo*& channels) = 0;
-	
 	/// Return maximum number of DDLs
 	static Int_t GetMaxDDL() { return fgkMaxDDL; };
 	

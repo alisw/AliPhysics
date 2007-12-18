@@ -66,8 +66,7 @@ AliMUONRawStreamTracker::AliMUONRawStreamTracker()
    fCurrentBusStruct(0),
    fCurrentBusStructIndex(0),
    fCurrentDataIndex(0),
-   fDDL(0),
-   fChannelBuffer()
+   fDDL(0)
 {
   ///
   /// create an object to read MUON raw digits
@@ -90,8 +89,7 @@ AliMUONRawStreamTracker::AliMUONRawStreamTracker(AliRawReader* rawReader)
   fCurrentBusStruct(0),
   fCurrentBusStructIndex(0),
   fCurrentDataIndex(0),
-  fDDL(0),
-  fChannelBuffer()
+  fDDL(0)
 {
   ///
   /// ctor with AliRawReader as argument
@@ -142,26 +140,6 @@ AliMUONRawStreamTracker::Next(Int_t& busPatchId,
   adc = fCurrentBusStruct->GetCharge(fCurrentDataIndex);
 
   return kTRUE;
-}
-
-//______________________________________________________
-UInt_t AliMUONRawStreamTracker::Next(const AliChannelInfo*& channels)
-{
-  /// This method actually just wraps around the single step Next() method
-  /// for now and returns channels one at a time.
-
-  Int_t busPatchId; UShort_t manuId; UChar_t manuChannel; UShort_t adc;
-  Bool_t ok = Next(busPatchId, manuId, manuChannel, adc);
-  if (ok)
-  {
-        fChannelBuffer = AliChannelInfo(busPatchId, manuId, manuChannel, adc);
-        channels = &fChannelBuffer;
-  	return 1;
-  }
-  else
-  {
-  	return 0;
-  }
 }
 
 //______________________________________________________

@@ -33,8 +33,12 @@
 /// To gain the most out of the decoder, the Next() method which returns batches
 /// of decoded digit / channel information should be used. That is:
 /// \code
-///   UInt_t Next(const AliChannelInfo*& channels);
+///   const AliBusPatch* Next();
 /// \endcode
+///
+/// This decoder tries to implement as similar an interface as possible to
+/// AliMUONRawStreamTracker where possible. However certain constructs which
+/// would slow us down too much are avoided.
 ///
 /// \author Artur Szostak <artursz@iafrica.com>
 //-----------------------------------------------------------------------------
@@ -43,6 +47,12 @@
 #include "AliRawReader.h"
 #include "AliLog.h"
 #include <cassert>
+#include <iostream>
+#include <iomanip>
+using std::cout;
+using std::endl;
+using std::hex;
+using std::dec;
 
 /// \cond CLASSIMP
 ClassImp(AliMUONRawStreamTrackerHP)
@@ -53,14 +63,30 @@ AliMUONRawStreamTrackerHP::AliMUONRawStreamTrackerHP() :
 	AliMUONVRawStreamTracker(),
 	fDecoder(),
 	fDDL(0),
-	fCurrentChannel(0),
 	fBufferSize(8192),
 	fBuffer(new UChar_t[8192]),
-	fHadError(kFALSE)
+	fCurrentBusPatch(NULL),
+	fCurrentData(NULL),
+	fEndOfData(NULL),
+	fHadError(kFALSE),
+	fDone(kFALSE)
 {
 	///
 	/// Default constructor.
 	///
+	
+	// Must set this flag to get all information about parity errors though
+	// the OnData method. OnError gets them either way.
+	fDecoder.ExitOnError(false);
+	fDecoder.SendDataOnParityError(true);
+
+	fDecoder.GetHandler().SetMaxStructs(
+			fDecoder.MaxBlocks(),
+			fDecoder.MaxDSPs(),
+			fDecoder.MaxBusPatches()
+		);
+
+	fDecoder.GetHandler().SetRawStream(this);
 }
 
 
@@ -68,14 +94,28 @@ AliMUONRawStreamTrackerHP::AliMUONRawStreamTrackerHP(AliRawReader* rawReader) :
 	AliMUONVRawStreamTracker(rawReader),
 	fDecoder(),
 	fDDL(0),
-	fCurrentChannel(0),
 	fBufferSize(8192),
 	fBuffer(new UChar_t[8192]),
-	fHadError(kFALSE)
+	fCurrentBusPatch(NULL),
+	fCurrentData(NULL),
+	fEndOfData(NULL),
+	fHadError(kFALSE),
+	fDone(kFALSE)
 {
 	///
 	/// Constructor with AliRawReader as argument.
 	///
+	
+	// Must set this flag to get all information about parity errors though
+	// the OnData method. OnError gets them either way.
+	fDecoder.ExitOnError(false);
+	fDecoder.SendDataOnParityError(true);
+
+	fDecoder.GetHandler().SetMaxStructs(
+			fDecoder.MaxBlocks(),
+			fDecoder.MaxDSPs(),
+			fDecoder.MaxBusPatches()
+		);
 	
 	fDecoder.GetHandler().SetRawStream(this);
 }
@@ -102,6 +142,7 @@ void AliMUONRawStreamTrackerHP::First()
 	assert( GetReader() != NULL );
 	
 	fDDL = 0;
+	fDone = kFALSE;
 	NextDDL();
 }
 
@@ -114,9 +155,7 @@ Bool_t AliMUONRawStreamTrackerHP::NextDDL()
 
 	assert( GetReader() != NULL );
 	
-	if (IsDone()) return kFALSE;
-	
-	do
+	while (fDDL < GetMaxDDL())
 	{
 		GetReader()->Reset();
 		GetReader()->Select("MUONTRK", fDDL, fDDL);  // Select the DDL file to be read.
@@ -124,8 +163,20 @@ Bool_t AliMUONRawStreamTrackerHP::NextDDL()
 		AliDebug(3, Form("Skipping DDL %d which does not seem to be there", fDDL+1));
 		fDDL++;
 	}
-	while (fDDL < GetMaxDDL());
-	
+
+	// If we reach the end of the DDL list for this event then reset the
+	// DDL counter, mark the iteration as done and 
+	if (fDDL >= GetMaxDDL())
+	{
+		fDDL = 0;
+		fDone = kTRUE;
+		return kFALSE;
+	}
+	else
+	{
+		fDone = kFALSE;
+	}
+
 	AliDebug(3, Form("DDL Number %d\n", fDDL));
 	
 	Int_t dataSize = GetReader()->GetDataSize(); // in bytes
@@ -166,14 +217,29 @@ Bool_t AliMUONRawStreamTrackerHP::NextDDL()
 		// Since we might allocate memory inside OnNewBuffer in the event
 		// handler we need to trap any memory allocation exception to be robust.
 		result = fDecoder.Decode(fBuffer, dataSize);
+		fHadError = (result == true ? kFALSE : kTRUE);
 	}
 	catch (const std::bad_alloc&)
 	{
 		AliError("Could not allocate more buffer space. Cannot decode DDL.");
 		return kFALSE;
 	}
-	
-	fCurrentChannel = 0;
+
+	// Update the current bus patch pointers.
+	fCurrentBusPatch = fDecoder.GetHandler().FirstBusPatch();
+	if (fCurrentBusPatch != fDecoder.GetHandler().EndOfBusPatch())
+	{
+		fCurrentData = fCurrentBusPatch->GetData();
+		fEndOfData = fCurrentData + fCurrentBusPatch->GetDataCount();
+	}
+	else
+	{
+		// If the DDL did not have any bus patches then mark both fCurrentData
+		// and fEndOfData as NULL so that in Next() we are forced to find the
+		// first non empty DDL.
+		fCurrentData = fEndOfData = NULL;
+	}
+
 	fDDL++; // Remember to increment index to next DDL.
 	return result;
 }
@@ -184,7 +250,7 @@ Bool_t AliMUONRawStreamTrackerHP::IsDone() const
 	/// Indicates whether the iteration is finished or not.
 	/// \return kTRUE if we already read all the digits and kFALSE if not.
 	
-	return fDDL == GetMaxDDL();
+	return fDone;
 }
 
 
@@ -201,73 +267,169 @@ Bool_t AliMUONRawStreamTrackerHP::Next(
 	/// \return kTRUE if we read another digit and kFALSE if we have read all the
 	///    digits already, i.e. at the end of the iteration.
 	
-	if (fCurrentChannel < fDecoder.GetHandler().ChannelCount())
+retry:
+	// Check if we still have data to be returned for the current bus patch.
+	if (fCurrentData != fEndOfData)
 	{
-		const AliChannelInfo& channel = fDecoder.GetHandler().Channels()[fCurrentChannel];
-		busPatchId = channel.BusPatchId();
-		manuId = channel.ManuId();
-		manuChannel = channel.ChannelId();
-		adc = channel.ADC();
-		fCurrentChannel++;
+		busPatchId = fCurrentBusPatch->GetBusPatchId();
+		AliMUONTrackerDDLDecoderEventHandler::UnpackADC(*fCurrentData, manuId, manuChannel, adc);
+		fCurrentData++;
 		return kTRUE;
 	}
 	else
 	{
-		if (NextDDL())
+		// We hit the end of the current bus patch so check if we have any more
+		// bus patches to process for the current DDL. If we do, then increment
+		// the current bus patch, make sure it is not the last one and then try
+		// reading the first element again.
+		if (fCurrentBusPatch != fDecoder.GetHandler().EndOfBusPatch())
 		{
-			if (fCurrentChannel < fDecoder.GetHandler().ChannelCount())
+			fCurrentBusPatch++;
+			if (fCurrentBusPatch != fDecoder.GetHandler().EndOfBusPatch())
 			{
-				const AliChannelInfo& channel = fDecoder.GetHandler().Channels()[fCurrentChannel];
-				busPatchId = channel.BusPatchId();
-				manuId = channel.ManuId();
-				manuChannel = channel.ChannelId();
-				adc = channel.ADC();
-				fCurrentChannel++;
-				return kTRUE;
+				fCurrentData = fCurrentBusPatch->GetData();
+				fEndOfData = fCurrentData + fCurrentBusPatch->GetDataCount();
+				goto retry;
 			}
 		}
+
+		// This was the last bus patch in the DDL so read in the next one and
+		// try reading the first data element again.
+		// Note: fCurrentBusPatch is set inside NextDDL().
+		if (NextDDL()) goto retry;
 	}
 	return kFALSE;
 }
 
 
-UInt_t AliMUONRawStreamTrackerHP::Next(const AliChannelInfo*& channels)
+void AliMUONRawStreamTrackerHP::SetMaxBlock(Int_t blk)
 {
-	/// Returns the next batch of decoded channel data.
-	/// [out] \param channels This is filled with a pointer to an array of
-	///          channels / digits that were decoded. This method does not
-	///          modify 'channels' if zero is returned.
-	/// \return The number of elements in the array pointed to by 'channels'
-	///    is returned. If zero is returned then there are no more channels to read.
+	/// Set maximum number of blocks per DDL allowed.
+	fDecoder.MaxBlocks( (UInt_t) blk );
 	
-	// Check if we are already at the end of the channels array. If so then we
-	// need to fetch the next non empty DDL.
-	if (fCurrentChannel >= fDecoder.GetHandler().ChannelCount())
+	fDecoder.GetHandler().SetMaxStructs(
+			fDecoder.MaxBlocks(),
+			fDecoder.MaxDSPs(),
+			fDecoder.MaxBusPatches()
+		);
+}
+
+
+void AliMUONRawStreamTrackerHP::SetMaxDsp(Int_t dsp)
+{
+	/// Set maximum number of Dsp per block allowed.
+	fDecoder.MaxDSPs( (UInt_t) dsp );
+	
+	fDecoder.GetHandler().SetMaxStructs(
+			fDecoder.MaxBlocks(),
+			fDecoder.MaxDSPs(),
+			fDecoder.MaxBusPatches()
+		);
+}
+
+
+void AliMUONRawStreamTrackerHP::SetMaxBus(Int_t bus)
+{
+	/// Set maximum number of Buspatch per Dsp allowed.
+	fDecoder.MaxBusPatches( (UInt_t) bus );
+	
+	fDecoder.GetHandler().SetMaxStructs(
+			fDecoder.MaxBlocks(),
+			fDecoder.MaxDSPs(),
+			fDecoder.MaxBusPatches()
+		);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+void AliMUONRawStreamTrackerHP::AliBlockHeader::Print() const
+{
+	/// Print header to screen.
+	
+	cout << "CRT info"        << endl;
+	if (fHeader == NULL)
 	{
-		do
-		{
-			if (not NextDDL()) return 0;
-		}
-		// Make sure to keep going even for empty DDL payloads:
-		while (fDecoder.GetHandler().ChannelCount() == 0);
+		cout << "Header is NULL" << endl;
+		return;
 	}
-	channels = fDecoder.GetHandler().Channels() + fCurrentChannel;
-	return fDecoder.GetHandler().ChannelCount() - fCurrentChannel;
+	cout << "DataKey: 0x"     << hex << fHeader->fDataKey << dec << endl;
+	cout << "TotalLength: "   << fHeader->fTotalLength << endl;
+	cout << "Length: "        << fHeader->fLength << endl;
+	cout << "DspId: "         << fHeader->fDSPId << endl;
+	cout << "L0Trigger: "     << fHeader->fL0Trigger << endl;
+	cout << "MiniEventId: "   << fHeader->fMiniEventId<< endl; 
+	cout << "EventId1: "      << fHeader->fEventId1 << endl;
+	cout << "EventId2: "      << fHeader->fEventId2 << endl;
+}
+
+
+void AliMUONRawStreamTrackerHP::AliDspHeader::Print() const
+{
+	/// Print header to screen.
+	
+	cout << "FRT info"        << endl;
+	if (fHeader == NULL)
+	{
+		cout << "Header is NULL" << endl;
+		return;
+	}
+	cout << "DataKey: 0x"     << hex << fHeader->fDataKey << dec << endl;
+	cout << "TotalLength: "   << fHeader->fTotalLength << endl;
+	cout << "Length : "       << fHeader->fLength << endl;
+	cout << "DspId: "         << fHeader->fDSPId << endl;
+	cout << "BlkL1ATrigger: " << fHeader->fBlkL1ATrigger << endl;
+	cout << "MiniEventId: "   << fHeader->fMiniEventId << endl;
+	cout << "L1ATrigger: "    << fHeader->fL1ATrigger << endl;
+	cout << "L1RTrigger: "    << fHeader->fL1RTrigger << endl;
+	cout << "PaddingWord: "   << fHeader->fPaddingWord << endl;
+	cout << "ErrorWord: "     << fHeader->fErrorWord << endl;
+}
+
+
+void AliMUONRawStreamTrackerHP::AliBusPatch::Print(const Option_t* opt) const
+{
+	/// Print header to screen.
+	cout << "Bus patch info" << endl;
+	if (fHeader == NULL)
+	{
+		cout << "Header is NULL" << endl;
+		return;
+	}
+	cout << "DataKey: 0x"    << hex << fHeader->fDataKey << dec << endl;
+	cout << "fTotalLength: " << fHeader->fTotalLength << endl;
+	cout << "fLength: "      << fHeader->fLength << endl;
+	cout << "fBusPatchId: "  << fHeader->fBusPatchId << endl;
+
+	if (TString(opt).Contains("all"))
+	{
+		for (UInt_t i = 0; i < fHeader->fLength; ++i)
+			cout << "Data["<< i << "] = " << fData[i] << endl;
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
 AliMUONRawStreamTrackerHP::AliDecoderEventHandler::AliDecoderEventHandler() :
-	fBusPatchId(0),
-	fChannelCount(0),
-	fMaxChannels(8192),
-	fChannelBuffer(new AliChannelInfo[8192]),
 	fRawStream(NULL),
-	fBufferStart(NULL)
+	fBufferStart(NULL),
+	fBlockCount(0),
+	fBlocks(NULL),
+	fDSPs(NULL),
+	fBusPatches(NULL),
+	fEndOfBusPatches(NULL),
+	fMaxChannels(8192),
+	fParityOk(new Bool_t[8192]),
+	fCurrentBlock(NULL),
+	fCurrentDSP(NULL),
+	fCurrentBusPatch(NULL),
+	fCurrentParityOkFlag(NULL),
+	fParityErrors(0),
+	fGlitchErrors(0),
+	fPaddingErrors(0),
+	fWarnings(kTRUE)
 {
-	/// Default constructor initialises the internal buffer to store decoded
-	/// channel / digit data to 8192 elements.
-	/// This array will grow dynamically if needed.
+	/// Default constructor initialises the internal parity flags buffer to
+	/// store 8192 elements. This array will grow dynamically if needed.
 }
 
 
@@ -275,11 +437,46 @@ AliMUONRawStreamTrackerHP::AliDecoderEventHandler::~AliDecoderEventHandler()
 {
 	/// Default destructor cleans up the allocated memory.
 	
-	if (fChannelBuffer != NULL)
-	{
-		delete [] fChannelBuffer;
-	}
+	if (fParityOk != NULL) delete [] fParityOk;
+	if (fBlocks != NULL) delete [] fBlocks;
+	if (fDSPs != NULL) delete [] fDSPs;
+	if (fBusPatches != NULL) delete [] fBusPatches;
 }
+
+
+void AliMUONRawStreamTrackerHP::AliDecoderEventHandler::SetMaxStructs(
+		UInt_t maxBlocks, UInt_t maxDsps, UInt_t maxBusPatches
+	)
+{
+	/// Sets the maximum number of structures allowed.
+	
+	// Start by clearing the current arrays.
+	if (fBlocks != NULL)
+	{
+		delete [] fBlocks;
+		fBlocks = NULL;
+	}
+	if (fDSPs != NULL)
+	{
+		delete [] fDSPs;
+		fDSPs = NULL;
+	}
+	if (fBusPatches != NULL)
+	{
+		delete [] fBusPatches;
+		fBusPatches = NULL;
+	}
+	fCurrentBlock = NULL;
+	fCurrentDSP = NULL;
+	fCurrentBusPatch = NULL;
+	
+	// Allocate new memory.
+	fBlocks = new AliBlockHeader[maxBlocks];
+	fDSPs = new AliDspHeader[maxBlocks*maxDsps];
+	fBusPatches = new AliBusPatch[maxBlocks*maxDsps*maxBusPatches];
+	fEndOfBusPatches = fEndOfBusPatches;
+}
+
 
 void AliMUONRawStreamTrackerHP::AliDecoderEventHandler::OnNewBuffer(
 		const void* buffer, UInt_t bufferSize
@@ -290,56 +487,42 @@ void AliMUONRawStreamTrackerHP::AliDecoderEventHandler::OnNewBuffer(
 	/// \param buffer  The pointer to the buffer storing the DDL payload.
 	/// \param bufferSize  The size of the buffer in bytes.
 
+	assert( fRawStream != NULL );
+	
 	// remember the start of the buffer to be used in OnError.
 	fBufferStart = buffer;
-	
-	// Reset the number of channels found.
-	fChannelCount = 0;
-	
-	// Check if we will have enough space in the fChannelBuffer array.
+
+	// Reset error counters.
+	fParityErrors = 0;
+	fGlitchErrors = 0;
+	fPaddingErrors = 0;
+
+	// Check if we will have enough space in the fParityOk array.
 	// If we do not then we need to resize the array.
 	// bufferSize / sizeof(UInt_t) will be a safe over estimate of the
 	// number of channels that we will find.
-	UInt_t maxPossibleChannels = bufferSize / sizeof(UInt_t);
-	if (maxPossibleChannels > fMaxChannels)
+	UInt_t maxChannelsPossible = bufferSize / sizeof(UInt_t);
+	if (maxChannelsPossible > fMaxChannels)
 	{
-		if (fChannelBuffer != NULL)
+		if (fParityOk != NULL)
 		{
-			delete [] fChannelBuffer;
-			fChannelBuffer = NULL;
+			delete [] fParityOk;
+			fParityOk = NULL;
 			fMaxChannels = 0;
 		}
-		fChannelBuffer = new AliChannelInfo[maxPossibleChannels];
-		fMaxChannels = maxPossibleChannels;
+		fParityOk = new Bool_t[maxChannelsPossible];
+		fMaxChannels = maxChannelsPossible;
 	}
-}
-
-
-void AliMUONRawStreamTrackerHP::AliDecoderEventHandler::OnNewBusPatch(
-		const AliMUONBusPatchHeaderStruct* header, const void* /*data*/
-	)
-{
-	/// This is called by the high performance decoder when a new bus patch
-	/// is found within the DDL payload. All we do is remember the bus patch ID.
-	/// \param header  The bus patch header structure.
-	/// \param data  The bus patch data (not used in this method).
 	
-	fBusPatchId = header->fBusPatchId;
-}
-
-
-void AliMUONRawStreamTrackerHP::AliDecoderEventHandler::OnData(UInt_t data)
-{
-	/// This is called by the high performance decoder when a new bus patch
-	/// is found within the DDL payload. All we do is remember the bus patch ID.
-	/// \param data  The bus patch data (not used in this method).
-	
-	assert( fChannelCount < fMaxChannels );
-	
-	UShort_t manuId; UChar_t channelId; UShort_t adc;
-	UnpackADC(data, manuId, channelId, adc);
-	fChannelBuffer[fChannelCount] = AliChannelInfo(fBusPatchId, manuId, channelId, adc);
-	fChannelCount++;
+	// Reset the current pointers which will be used to track where we need to
+	// fill fBlocks, fDSPs, fBusPatches and the parity flag. We have to subtract
+	// one space because we will increment the pointer the first time in the
+	// OnNewXZY methods.
+	fCurrentBlock = fBlocks-1;
+	fCurrentDSP = fDSPs-1;
+	fCurrentBusPatch = fBusPatches-1;
+	fCurrentParityOkFlag = fParityOk-1;
+	fBlockCount = 0;
 }
 
 
@@ -358,18 +541,64 @@ void AliMUONRawStreamTrackerHP::AliDecoderEventHandler::OnError(
 	assert( fRawStream != NULL );
 	assert( fRawStream->GetReader() != NULL );
 	
-	const char* msg = ErrorCodeToMessage(error);
-	unsigned long pos = (unsigned long)location - (unsigned long)fBufferStart;
-	
+	Char_t* message = NULL;
+	UInt_t word = 0;
+
 	switch (error)
 	{
+	case kGlitchFound:
+		message = Form(
+			"Glitch error detected in DSP %d, skipping event ",
+			fCurrentBlock->GetDspId()
+		);
+		fRawStream->GetReader()->AddMajorErrorLog(error, message);
+		break;
+
 	case kBadPaddingWord:
+		// We subtract 1 from the current numbers of blocks, DSPs
+		// and bus patches to get the indices.
+		message = Form(
+			"Padding word error for iBlock %d, iDsp %d, iBus %d\n", 
+			fBlockCount-1,
+			fCurrentBlock->GetDspCount()-1,
+			fCurrentDSP->GetBusPatchCount()-1
+		);
+		fRawStream->GetReader()->AddMinorErrorLog(error, message);
+		break;
+
 	case kParityError:
-		fRawStream->GetReader()->AddMinorErrorLog(error, Form("%s [At byte: %d]", msg, pos));
+		// location points to the incorrect data word and
+		// fCurrentBusPatch->GetData() returns a pointer to the start of
+		// bus patches data, so the difference divided by 4 gives the 32
+		// bit word number.
+		word = ((unsigned long)location - (unsigned long)fCurrentBusPatch->GetData())
+				/ sizeof(UInt_t);
+		message = Form(
+			"Parity error in word %d for manuId %d and channel %d in buspatch %d\n", 
+			word,
+			fCurrentBusPatch->GetManuId(word),
+			fCurrentBusPatch->GetChannelId(word),
+			fCurrentBusPatch->GetBusPatchId()
+		);
+		fRawStream->GetReader()->AddMinorErrorLog(error, message);
 		break;
+
 	default:
-		fRawStream->GetReader()->AddMajorErrorLog(error, Form("%s [At byte: %d]", msg, pos));
+		message = Form(
+			"%s (At byte %d in DDL.)",
+			ErrorCodeToMessage(error),
+			(unsigned long)location - (unsigned long)fBufferStart
+		);
+		fRawStream->GetReader()->AddMajorErrorLog(error, message);
 		break;
+	}
+
+	if (fWarnings)
+	{
+		AliWarningGeneral(
+				"AliMUONRawStreamTrackerHP::AliDecoderEventHandler",
+				message
+			);
 	}
 }
 

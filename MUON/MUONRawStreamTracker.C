@@ -17,6 +17,10 @@
 // Macro for reading tracker raw data
 // Ch. Finck, Subatech Febuary
 //
+// Added example routines to show how to use the interface of the high
+// performance decoder AliMUONRawStreamTrackerHP.
+//   Artur Szostak <artursz@iafrica.com>
+//
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 
@@ -27,6 +31,7 @@
 
 // MUON includes
 #include "AliMUONRawStreamTracker.h"
+#include "AliMUONRawStreamTrackerHP.h"
 #include "AliMUONDspHeader.h"
 #include "AliMUONBlockHeader.h"
 #include "AliMUONBusStruct.h"
@@ -160,7 +165,285 @@ void MUONRawStreamTrackerExpert(TString fileName = "./", Int_t maxEvent = 1000,
   timer.Print();
 }
 
-void MUONRawStreamTrackerSimple(TString fileName, Int_t maxEvent)
+
+void MUONRawStreamTrackerHPExpert(TString fileName = "./", Int_t maxEvent = 1000,  
+                                Int_t minDDL = 0, Int_t maxDDL = 19)
+{
+  /// This routine shows how to use the high performance decoder's expert interface.
+  
+  TStopwatch timer;
+  timer.Start(kTRUE);
+  
+  AliRawReader* rawReader = 0x0;
+  
+  // check extention to choose the rawdata file format
+  if (fileName.EndsWith("/")) {
+    rawReader = new AliRawReaderFile(fileName); // DDL files
+  } else if (fileName.EndsWith(".root")) {
+    rawReader = new AliRawReaderRoot(fileName);
+  } else if (!fileName.IsNull()) {
+    rawReader = new AliRawReaderDate(fileName); // DATE file
+  }
+  
+  // raw stream
+  AliMUONRawStreamTrackerHP* rawStream  = new AliMUONRawStreamTrackerHP(rawReader);
+  
+  // light weight interfaces to headers
+  const AliMUONRawStreamTrackerHP::AliBlockHeader*      blkHeader  = 0x0;
+  const AliMUONRawStreamTrackerHP::AliDspHeader*        dspHeader  = 0x0;
+  const AliMUONRawStreamTrackerHP::AliBusPatch*         busStruct  = 0x0;
+  
+  //   Loop over events  
+  Int_t iEvent = 0;
+  Int_t dataSize;
+  
+  while (rawReader->NextEvent()) {
+    
+    if (iEvent == maxEvent)
+      break;
+    
+    printf("Event %d\n",iEvent++);
+    
+    // read DDL while < 20 DDL
+    while(rawStream->NextDDL()) {
+      
+      if (rawStream->GetDDL() < minDDL || rawStream->GetDDL() > maxDDL)
+        continue;
+      
+      printf("\niDDL %d\n", rawStream->GetDDL());
+      
+      // loop over block structure
+      Int_t nBlock = rawStream->GetBlockCount();
+      for(Int_t iBlock = 0; iBlock < nBlock ;iBlock++){
+        
+        blkHeader = rawStream->GetBlockHeader(iBlock);
+        printf("Block %d Total length %d\n",iBlock,blkHeader->GetTotalLength());
+       
+        // loop over DSP structure
+        Int_t nDsp = rawStream->GetDspCount(iBlock);
+        for(Int_t iDsp = 0; iDsp < nDsp ;iDsp++){   //DSP loop
+          
+          dspHeader =  blkHeader->GetDspHeader(iDsp);
+          printf("Dsp %d length %d error word %d\n",iDsp,dspHeader->GetTotalLength(), dspHeader->GetErrorWord());
+          
+          // loop over BusPatch structure
+          Int_t nBusPatch = rawStream->GetBusPatchCount(iBlock, iDsp);
+          for(Int_t iBusPatch = 0; iBusPatch < nBusPatch; iBusPatch++) {  
+            
+            busStruct = dspHeader->GetBusPatch(iBusPatch);
+            
+            // loop over data
+            dataSize = busStruct->GetLength();
+            for (Int_t iData = 0; iData < dataSize; iData++) {
+              
+              Int_t  manuId    = busStruct->GetManuId(iData);
+              Int_t  channelId = busStruct->GetChannelId(iData);
+              Int_t  charge    = busStruct->GetCharge(iData);
+              printf("buspatch %5d manuI %4d channel %3d charge %4d\n", 
+                     busStruct->GetBusPatchId(),
+                     manuId, 
+                     channelId, charge);
+            } // iData
+          } // iBusPatch
+        } // iDsp
+      } // iBlock
+    } // NextDDL
+  }// NextEvent
+  
+  delete rawReader;
+  delete rawStream;
+  timer.Print();
+}
+
+
+void MUONRawStreamTrackerHPExpert2(TString fileName = "./", Int_t maxEvent = 1000,  
+                                Int_t minDDL = 0, Int_t maxDDL = 19)
+{
+  /// This routine shows an alternate way to iterate over the DDL structures
+  /// compared to MUONRawStreamTrackerHPExpert().
+  
+  TStopwatch timer;
+  timer.Start(kTRUE);
+  
+  AliRawReader* rawReader = 0x0;
+  
+  // check extention to choose the rawdata file format
+  if (fileName.EndsWith("/")) {
+    rawReader = new AliRawReaderFile(fileName); // DDL files
+  } else if (fileName.EndsWith(".root")) {
+    rawReader = new AliRawReaderRoot(fileName);
+  } else if (!fileName.IsNull()) {
+    rawReader = new AliRawReaderDate(fileName); // DATE file
+  }
+  
+  // raw stream
+  AliMUONRawStreamTrackerHP* rawStream  = new AliMUONRawStreamTrackerHP(rawReader);
+  
+  // light weight interfaces to headers
+  const AliMUONRawStreamTrackerHP::AliBlockHeader*      blkHeader  = 0x0;
+  const AliMUONRawStreamTrackerHP::AliDspHeader*        dspHeader  = 0x0;
+  const AliMUONRawStreamTrackerHP::AliBusPatch*         busStruct  = 0x0;
+  
+  //   Loop over events  
+  Int_t iEvent = 0;
+  Int_t dataSize;
+  
+  while (rawReader->NextEvent()) {
+    
+    if (iEvent == maxEvent)
+      break;
+    
+    printf("Event %d\n",iEvent++);
+    
+    // read DDL while < 20 DDL
+    while(rawStream->NextDDL()) {
+      
+      if (rawStream->GetDDL() < minDDL || rawStream->GetDDL() > maxDDL)
+        continue;
+      
+      printf("\niDDL %d\n", rawStream->GetDDL());
+      
+      // loop over block structure
+      Int_t nBlock = rawStream->GetBlockCount();
+      for(Int_t iBlock = 0; iBlock < nBlock ;iBlock++){
+        
+        blkHeader = rawStream->GetBlockHeader(iBlock);
+        printf("Block %d Total length %d\n",iBlock,blkHeader->GetTotalLength());
+       
+        // loop over DSP structure
+        Int_t nDsp = rawStream->GetDspCount(iBlock);
+        for(Int_t iDsp = 0; iDsp < nDsp ;iDsp++){   //DSP loop
+          
+          dspHeader =  rawStream->GetDspHeader(iBlock, iDsp);
+          printf("Dsp %d length %d error word %d\n",iDsp,dspHeader->GetTotalLength(), dspHeader->GetErrorWord());
+          
+          // loop over BusPatch structure
+          Int_t nBusPatch = rawStream->GetBusPatchCount(iBlock, iDsp);
+          for(Int_t iBusPatch = 0; iBusPatch < nBusPatch; iBusPatch++) {  
+            
+            busStruct = rawStream->GetBusPatch(iBlock, iDsp, iBusPatch);
+            
+            // loop over data
+            dataSize = busStruct->GetLength();
+            for (Int_t iData = 0; iData < dataSize; iData++) {
+              
+              Int_t  manuId    = busStruct->GetManuId(iData);
+              Int_t  channelId = busStruct->GetChannelId(iData);
+              Int_t  charge    = busStruct->GetCharge(iData);
+              printf("buspatch %5d manuI %4d channel %3d charge %4d\n", 
+                     busStruct->GetBusPatchId(),
+                     manuId, 
+                     channelId, charge);
+            } // iData
+          } // iBusPatch
+        } // iDsp
+      } // iBlock
+    } // NextDDL
+  }// NextEvent
+  
+  delete rawReader;
+  delete rawStream;
+  timer.Print();
+}
+
+
+void MUONRawStreamTrackerHPExpert3(TString fileName = "./", Int_t maxEvent = 1000,  
+                                Int_t minDDL = 0, Int_t maxDDL = 19)
+{
+  /// This routine shows yet another alternate way to iterate over the DDL
+  /// structures compared to MUONRawStreamTrackerHPExpert().
+  
+  TStopwatch timer;
+  timer.Start(kTRUE);
+  
+  AliRawReader* rawReader = 0x0;
+  
+  // check extention to choose the rawdata file format
+  if (fileName.EndsWith("/")) {
+    rawReader = new AliRawReaderFile(fileName); // DDL files
+  } else if (fileName.EndsWith(".root")) {
+    rawReader = new AliRawReaderRoot(fileName);
+  } else if (!fileName.IsNull()) {
+    rawReader = new AliRawReaderDate(fileName); // DATE file
+  }
+  
+  // raw stream
+  AliMUONRawStreamTrackerHP* rawStream  = new AliMUONRawStreamTrackerHP(rawReader);
+  
+  // light weight interfaces to headers
+  const AliMUONRawStreamTrackerHP::AliBlockHeader*      blkHeader  = 0x0;
+  const AliMUONRawStreamTrackerHP::AliDspHeader*        dspHeader  = 0x0;
+  const AliMUONRawStreamTrackerHP::AliBusPatch*         busStruct  = 0x0;
+  
+  //   Loop over events  
+  Int_t iEvent = 0;
+  Int_t dataSize;
+  
+  while (rawReader->NextEvent()) {
+    
+    if (iEvent == maxEvent)
+      break;
+    
+    printf("Event %d\n",iEvent++);
+    
+    // read DDL while < 20 DDL
+    while(rawStream->NextDDL()) {
+      
+      if (rawStream->GetDDL() < minDDL || rawStream->GetDDL() > maxDDL)
+        continue;
+      
+      printf("\niDDL %d\n", rawStream->GetDDL());
+      
+      // loop over block structure
+      Int_t iBlock = 0;
+      blkHeader = rawStream->GetFirstBlockHeader();
+      while (blkHeader != NULL)
+      {
+        printf("Block %d Total length %d\n",iBlock,blkHeader->GetTotalLength());
+       
+        // loop over DSP structure
+        Int_t iDsp = 0;
+        dspHeader = blkHeader->GetFirstDspHeader();
+        while (dspHeader != NULL)
+        {
+          printf("Dsp %d length %d error word %d\n",iDsp,dspHeader->GetTotalLength(), dspHeader->GetErrorWord());
+          
+          // loop over BusPatch structure
+          Int_t iBusPatch = 0;
+          busStruct = dspHeader->GetFirstBusPatch();
+          while (busStruct != NULL)
+          {
+            // loop over data
+            dataSize = busStruct->GetLength();
+            for (Int_t iData = 0; iData < dataSize; iData++) {
+              
+              Int_t  manuId    = busStruct->GetManuId(iData);
+              Int_t  channelId = busStruct->GetChannelId(iData);
+              Int_t  charge    = busStruct->GetCharge(iData);
+              printf("buspatch %5d manuI %4d channel %3d charge %4d\n", 
+                     busStruct->GetBusPatchId(),
+                     manuId, 
+                     channelId, charge);
+            } // iData
+            busStruct = busStruct->Next();
+            iBusPatch++;
+          } // iBusPatch
+          dspHeader = dspHeader->Next();
+          iDsp++;
+        } // iDsp
+        blkHeader = blkHeader->Next();
+        iBlock++;
+      } // iBlock
+    } // NextDDL
+  }// NextEvent
+  
+  delete rawReader;
+  delete rawStream;
+  timer.Print();
+}
+
+
+void MUONRawStreamTrackerSimple(TString fileName = "./", Int_t maxEvent = 1000)
 {
   /// Reads the raw data in fileName, using a simplified interface (iterator
   /// over pads).
@@ -201,6 +484,109 @@ void MUONRawStreamTrackerSimple(TString fileName, Int_t maxEvent)
     {      
       printf("buspatch %5d manuI %4d channel %3d charge %4d\n", 
              busPatch,manuId,manuChannel, adc);
+    }
+  }
+  
+  delete rawReader;
+  delete rawStream;
+  timer.Print();
+}
+
+
+void MUONRawStreamTrackerHPSimple(TString fileName = "./", Int_t maxEvent = 1000)
+{
+  /// This routine shows how to use the high performance decoder's simple interface.
+
+  TStopwatch timer;
+  timer.Start(kTRUE);
+  
+  AliRawReader* rawReader = 0x0;
+  
+  // check extention to choose the rawdata file format
+  if (fileName.EndsWith("/")) {
+    rawReader = new AliRawReaderFile(fileName); // DDL files
+  } else if (fileName.EndsWith(".root")) {
+    rawReader = new AliRawReaderRoot(fileName);
+  } else if (!fileName.IsNull()) {
+    rawReader = new AliRawReaderDate(fileName); // DATE file
+  }
+  
+  // raw stream
+  AliMUONRawStreamTrackerHP* rawStream  = new AliMUONRawStreamTrackerHP(rawReader);    
+  
+  //   Loop over events  
+  Int_t iEvent = 0;
+  
+  while (rawReader->NextEvent()) {
+    
+    if (iEvent == maxEvent)
+      break;
+    
+    printf("Event %d\n",iEvent++);
+    
+    Int_t busPatch;
+    UShort_t manuId, adc;
+    UChar_t manuChannel;
+    
+    rawStream->First();
+    
+    while ( rawStream->Next(busPatch,manuId,manuChannel,adc) )
+    {      
+      printf("buspatch %5d manuI %4d channel %3d charge %4d\n", 
+             busPatch,manuId,manuChannel, adc);
+    }
+  }
+  
+  delete rawReader;
+  delete rawStream;
+  timer.Print();
+}
+
+
+void MUONRawStreamTrackerHPSimple2(TString fileName = "./", Int_t maxEvent = 1000)
+{
+  /// This routine is an alternative to MUONRawStreamTrackerHPSimple() which is even faster.
+
+  TStopwatch timer;
+  timer.Start(kTRUE);
+  
+  AliRawReader* rawReader = 0x0;
+  
+  // check extention to choose the rawdata file format
+  if (fileName.EndsWith("/")) {
+    rawReader = new AliRawReaderFile(fileName); // DDL files
+  } else if (fileName.EndsWith(".root")) {
+    rawReader = new AliRawReaderRoot(fileName);
+  } else if (!fileName.IsNull()) {
+    rawReader = new AliRawReaderDate(fileName); // DATE file
+  }
+  
+  // raw stream
+  AliMUONRawStreamTrackerHP* rawStream  = new AliMUONRawStreamTrackerHP(rawReader);    
+  
+  //   Loop over events  
+  Int_t iEvent = 0;
+  
+  while (rawReader->NextEvent()) {
+    
+    if (iEvent == maxEvent)
+      break;
+    
+    printf("Event %d\n",iEvent++);
+    
+    UShort_t manuId, adc;
+    UChar_t manuChannel;
+    
+    rawStream->First();
+    const AliMUONRawStreamTrackerHP::AliBusPatch* buspatch = NULL;
+    while ((buspatch = rawStream->Next()) != NULL)
+    {
+      for (UInt_t i = 0; i < buspatch->GetDataCount(); i++)
+      {
+        buspatch->GetData(i, manuId, manuChannel, adc);
+        printf("buspatch %5d manuI %4d channel %3d charge %4d\n", 
+               buspatch->GetBusPatchId(), manuId, manuChannel, adc);
+      }
     }
   }
   

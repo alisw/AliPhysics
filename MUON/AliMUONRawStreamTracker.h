@@ -46,9 +46,6 @@ class AliMUONRawStreamTracker: public AliMUONVRawStreamTracker {
     virtual Bool_t Next(Int_t& busPatchId, 
                         UShort_t& manuId, UChar_t& manuChannel, 
                         UShort_t& adc);
-
-    /// Returns the next batch of decoded channel data.
-    virtual UInt_t Next(const AliChannelInfo*& channels);
     
     virtual Bool_t NextDDL();
 
@@ -123,8 +120,7 @@ class AliMUONRawStreamTracker: public AliMUONVRawStreamTracker {
     AliMUONBusStruct* fCurrentBusStruct;     //!< for iterator: current bus ptr
     Int_t fCurrentBusStructIndex;            //!< for iterator: current bus index    
     Int_t fCurrentDataIndex;                 //!< for iterator: current data index
-    Int_t  fDDL;                             //!< number of DDL    
-    AliChannelInfo fChannelBuffer;           //!< Single channel buffer for Next() method.
+    Int_t  fDDL;                             //!< number of DDL
     static const Int_t  fgkMaxDDL;           //!< maximum number of DDLs
 
     ClassDef(AliMUONRawStreamTracker, 4)    // base class for reading MUON raw digits

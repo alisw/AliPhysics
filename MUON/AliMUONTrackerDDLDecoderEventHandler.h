@@ -97,7 +97,7 @@ class AliMUONTrackerDDLDecoderEventHandler
 public:
 
 	/// The only reason for a virtual destructor is to make -Weffc++ shutup.
-	/// This should not really be here.
+	/// This should not really be here since we do not need or use virtual methods.
 	virtual ~AliMUONTrackerDDLDecoderEventHandler() {}
 
 	/// All the possible error codes for the parsing.
@@ -141,6 +141,8 @@ public:
 	/// - param UInt_t The size in bytes of the memory buffer.
 	void OnNewBuffer(const void* /*buffer*/, UInt_t /*bufferSize*/) {}
 	
+	void OnEndOfBuffer(const void* /*buffer*/, UInt_t /*bufferSize*/) {}
+	
 	/// OnNewBlock is called whenever a new block header is found in the payload.
 	/// The default behaviour of this method is to do nothing.
 	/// - param const AliMUONBlockHeaderStruct* This is a pointer to the block header as found in the
@@ -150,6 +152,8 @@ public:
 	/// contents must not be modified. On the other hand this is very efficient
 	/// because no memory copying is required.
 	void OnNewBlock(const AliMUONBlockHeaderStruct* /*header*/, const void* /*data*/) {}
+	
+	void OnEndOfBlock(const AliMUONBlockHeaderStruct* /*header*/, const void* /*data*/) {}
 	
 	/// OnNewDSP is called whenever a new DSP header is found in the payload.
 	/// Every DSP header recevied by a call to OnNewDSP is associated to the
@@ -162,6 +166,8 @@ public:
 	/// contents must not be modified. On the other hand this is very efficient
 	/// because no memory copying is required.
 	void OnNewDSP(const AliMUONDSPHeaderStruct* /*header*/, const void* /*data*/) {}
+	
+	void OnEndOfDSP(const AliMUONDSPHeaderStruct* /*header*/, const void* /*data*/) {}
 	
 	/// OnNewBusPatch is called whenever a new bus patch header is found in
 	/// the payload. Every bus patch recevied by a call to OnNewBusPatch is
@@ -176,12 +182,17 @@ public:
 	/// because no memory copying is required.
 	void OnNewBusPatch(const AliMUONBusPatchHeaderStruct* /*header*/, const void* /*data*/) {}
 	
+	void OnEndOfBusPatch(const AliMUONBusPatchHeaderStruct* /*header*/, const void* /*data*/) {}
+	
 	/// OnData is called for every raw data word found within a bus patch.
 	/// Every data ward recevied by a call to OnData is associated to the bus patch
 	/// header received in the most recent call to OnNewBusPatch.
 	/// The default behaviour of this method is to do nothing.
 	/// - param UInt_t  This is the raw data word as found within the bus patch payload.
-	void OnData(UInt_t /*data*/) {}
+	/// - param bool  Flag indicating if the raw data word had a parity error.
+	///       This will always be set to false if fSendDataOnParityError in the
+	///       AliMUONTrackerDDLDecoder class was set to true.
+	void OnData(UInt_t /*data*/, bool /*parityError*/) {}
 	
 	/// Whenever a parsing error of the DDL payload is encountered because of
 	/// corruption of the raw data (eg. bit flips) the OnError method is called
