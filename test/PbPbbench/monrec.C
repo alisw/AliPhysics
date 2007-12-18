@@ -3,12 +3,12 @@ void monrec() {
   gSystem->Load("libNet.so");
   gSystem->Load("libMonaLisa.so");
 
-  new TMonaLisaWriter(gSystem->Getenv("TEST_PLATFORMID"),"Reconstruction PbPb","aliendb3.cern.ch");
+  new TMonaLisaWriter("aliendb3.cern.ch", "Reconstruction PbPb", gSystem->Getenv("TEST_PLATFORMID"), gSystem->Getenv("TEST_PLATFORMID"));
 
 
   gROOT->LoadMacro("rec.C");
   rec();
-  gMonitoringWriter->SendProcessingProgress(1,1,kTRUE);  
+  if (gMonitoringWriter) gMonitoringWriter->SendProcessingProgress(1,1,kTRUE);  
 
   // Send the size of the AliESDs.root file
 
@@ -21,7 +21,7 @@ void monrec() {
   TMonaLisaValue* valdouble = new TMonaLisaValue("AliESDs.root size",buf.fSize);
   valuelist->Add(valdouble);
 
-  gMonitoringWriter->SendParameters(valuelist);
+  if (gMonitoringWriter) gMonitoringWriter->SendParameters(valuelist);
   delete valuelist;
 
   printf("#Test finished successfully#\n");
