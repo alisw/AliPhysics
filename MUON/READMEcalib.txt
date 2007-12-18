@@ -2,7 +2,7 @@
 
 /*! 
 
-\page README_calib README calib
+\page README_calib Calibration
  
 The Offline Condition DataBase is described extensively on ALICE Offline pages.
 
@@ -105,5 +105,6 @@ A special kind of object is the status map. It would deserve a full documentatio
  at the MUONStatusMap.C macro which can let you play with it. For more information,
  have a look at the AliMUONPadStatusMaker and AliMUONPadStatusMapMaker.
 
+This chapter is defined in the READMEcalib.txt file.
 */
 

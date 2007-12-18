@@ -2,7 +2,7 @@
 
 /*! 
 
-\page README_shuttle README shuttle 
+\page README_shuttle Shuttle 
 
 How to test the Shuttle preprocessor(s) for MUON.
 
@@ -199,6 +199,8 @@ the macro MUONGenerateTestGMS.C:
 The matrices of TGeoHMatrix type, with TObject::fUniqueID equal to the geometry
 module Id, are put in a TClonesArray and saved in the Root file with a 
 key "GMSarray".
+
+This chapter is defined in the READMEshuttle.txt file.
 
 */
  

@@ -2,10 +2,44 @@
 
 /*! 
 
-\page README_evaluation README evaluation
+\page README_evaluation Evaluation
  
 
-\section evaluation_s1 How to run MUONRecoCheck macro
+\section  evaluation_s1 How to process invariant mass spectra for J/psi or Upsilon
+
+The macro MUONmassPlot_ESD.C reads back the MUON ESD informations and compute 
+the invariant mass spectra and corresponding uncorelated background. 
+Moreover gives the number of event in the resonance peak and the number of triggers.
+<pre>
+Usage:
+root [0] .L $ALICE_ROOT/MUON/MUONmassPlot_ESD.C+
+root [1] MUONmassPlot_ESD(ExtrapToVertex, 
+			geoFilenam, filename
+                        FirstEvent, LastEvent, 
+	                esdFileName,
+			ResType, Chi2Cut,
+			PtCutMin, PtCutMax,
+        		massMin, massMax)
+
+with:
+ExtrapToVertex (default -1)
+      <0: no extrapolation;
+      =0: extrapolation to (0,0,0);
+      >0: extrapolation to ESDVertex if available, else to (0,0,0)
+geoFilename (default "geometry.root") geometry file name needed to extrap to vertex
+filename    (default "galice.root") galice root file name
+FirstEvent  (default 0)
+LastEvent   (default 10000)
+esdFileName (default "AliESDs.root") esd root file name
+ResType     (default 553):   553 for Upsilon, anything else for J/Psi
+Chi2Cut     (default 100):   keep only tracks with chi2 per d.o.f. < Chi2Cut
+PtCutMin    (default 1):     keep only tracks with transverse momentum > PtCutMin
+PtCutMax    (default 10000): keep only tracks with transverse momentum < PtCutMax
+massMin     (default 9.17 for Upsilon) keep only invariant masses with 
+massMax     (default 9.77 for Upsilon) massMin < mass < massMax
+</pre>
+
+\section evaluation_s2 How to run MUONRecoCheck macro
 
 To check the muon reconstruction by comparing the reconstructed tracks
 with the reference tracks made of "AliTrackReference" for the hits in chamber (0..9)
@@ -27,7 +61,7 @@ MUONRecoCheck(nEvent,"geometry.root", "galice.root"); // nEvent = nb of events
 </pre>
 
 
-\section evaluation_s2 Macros for MC studies
+\section evaluation_s3 Macros for MC studies
 
 For MC studies the classes AliMUONTrackLight and AliMUONPairLight can be 
 used in order to fill not only the single muon / dimuon's kinematics (charge, 
@@ -74,18 +108,6 @@ ReadRecoCocktail();
 .q
 </pre>
 
-\section evaluation_s3 Macro MUONCheckDI.C
-
-MUONCheckDI.C performs a consistency check on the methods of the 
-AliMUONMCDataInterface and AliMUONDataInterface classes. There are several 
-helper methods in these classes which make it easier to fetch data, which 
-means there are at least two ways of fetching the data within the same class 
-interface. The macro checks to see that the results given by these different 
-methods are identical, as they should be.
-
-The macro also inherently exercises the AliMUONMCDataInterface and 
-AliMUONDataInterface classes and should be run after any modifications to 
-these classes to see if things still work. Putting it another way: 
-MUONCheckDI.C is a testing facility for developers of these two classes.
+This chapter is defined in the READMEevaluation.txt file.
 
 */

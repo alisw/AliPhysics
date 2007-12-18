@@ -2,37 +2,35 @@
 
 /*! 
 
-\page README_geometry README geometry
+\page README_geometry Geometry
 
 
 \section geometry_s1 General Information about MUON Geometry
 
 Our geometry is described in the geometry builder classes.
-Main geometrical constants are set in the class AliMUONConstants.
-The code can then generate the geometry data files
-transform.dat and svmap.dat (see description below) via the macro  
-MUONGenerateGeometryData.C (more info below).
+The main geometrical constants are set in the class AliMUONConstants.
+The geometry is built from the code during running simulation
+and it is automatically exported in a geometry.root file
+via the framework. Then  aliroot takes this geometry.root file as 
+a unique geometrical info of our apparatus during the generation 
+and the reconstruction and analysis (if needed)
 
-The geometry data files have to be recreated each time the code 
-of the geometry is modified. The info (well updated) in this files 
-(svmap) is need during the simulation.
+The code can also generate the special geometry 
+data files, transform.dat and svmap.dat, via the macro  
+MUONGenerateGeometryData.C (see more in \ref geometry_s4 below).
+The svmap.dat data file have to be recreated each time the code 
+of the geometry is modified. The info (well updated) in this file 
+is needed during the simulation.
 We can also decide to use the transform.dat file as input of our 
 geometry. This allows for changing the position of our detection elements
 and/or half-planes (half-chambers in code jargon) without modifying 
 and recompiling the code. 
 
-First step in the official aliroot simulation process is to create 
-the geometry.root file from the builders to build the MUON geometry 
-within the geometrical modeler framework of root. 
-Then  aliroot takes the geometry.root file as a unique geometrical 
-info of our apparatus during the generation and the reconstruction
-and analysis (if needed)
-
 Misalignments are in the official AliRoot code applied to the geometry.root
 file.
 
 
-\section geometry_s2 How to check the Geometry with the new Geometrical modeler
+\section geometry_s2 How to check the geometry with the Root geometrical modeler
 
 \see ftp://root.cern.ch/root/doc/chapter16.pdf
 \see http://agenda.cern.ch/fullAgenda.php?ida=a05212
@@ -43,7 +41,7 @@ gGeoManager->GetMasterVolume()->Draw();
 </pre>
 
 
-\section geometry_s3  How to check the overlap with the new Geometrical modeler
+\section geometry_s3  How to check the overlaps with the Root geometrical modeler
 
 \see  ftp://root.cern.ch/root/doc/chapter16.pdf
 \see  http://agenda.cern.ch/fullAgenda.php?ida=a05212
@@ -57,12 +55,7 @@ gGeoManager->PrintOverlaps();
 
 \section geometry_s4 Macro  MUONGenerateGeometryData.C
 						
-Macro for generating the geometry data files
-
-Geometry data files:
-- MUON/data/transform.dat file contains the transformations
-data (translation and rotation) for all alignable objects
-(modules & detection elements)
+Macro for generating the geometry data files:
 - MUON/data/svmap.dat file contains all the information to link 
 each geant volume (it can be extended to other virtual MC) with
 a detection element. The point here is that a given detection
@@ -71,6 +64,9 @@ the correspondence is then defined in an input file.
 Each time there is a change in the definition of MC geometry, these
 input files must be re-generated via the macro  
 MUONGenerateGeometryData.C
+- MUON/data/transform.dat file contains the transformations
+data (translation and rotation) for all alignable objects
+(modules & detection elements)
 
 To be run from aliroot:
 <pre>
@@ -91,12 +87,14 @@ Macros for generating the geometry mis-alignment data:
 
 To be run from aliroot:
 <pre>
-.x MakeMUONFullMisAlignment.C etc.
+.x MakeMUONFullMisAlignment.C
 </pre>
+
+etc.
 
 If the environment variable TOCDB is not set to "kTRUE",
 the misalignment data are generated in a local file:
-(MUONFullMisalignment.root, etc.)
+MUONFullMisalignment.root, etc.
 
 If the data are stored in CDB, the storage can be specified in 
 the environment variable STORAGE. The misalignment data are then
@@ -141,10 +139,10 @@ The macro MUONCheckMisAligner.C performs the misalignment on an existing muon
 arm geometry based on the standard definition of the detector elements.
 
 It uses AliMUONGeometryAligner : 
-- creates a new AliMUONGeometryTransformer and AliMUONGeometryAligner
-- reads the transformations in from the transform.dat file (make sure that
+- Creates a new AliMUONGeometryTransformer and AliMUONGeometryAligner
+- Reads the transformations in from the transform.dat file (make sure that
 this file is the _standard_ one by comparing it to the one in CVS)
-- creates a second AliMUONGeometryTransformer by misaligning the existing 
+- Creates a second AliMUONGeometryTransformer by misaligning the existing 
 one using AliMUONAligner::MisAlign
 
 User has to specify the magnitude of the alignments, in the Cartesian 
@@ -172,7 +170,7 @@ x,y,theta_xy, but in principle z and the other two angles are alignable
 as well.  
 
 
-\section geometry_s8 Geometry data files description
+\section geometry_s8 Geometry data files format
  
 \subsection geometry_s8_sub1 transform.dat
  
@@ -200,5 +198,7 @@ as well.
         detElemId = detection element Id
  </pre>
 
+
+This chapter is defined in the READMEgeometry.txt file.
 
 */

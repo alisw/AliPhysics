@@ -2,7 +2,7 @@
 
 /*! 
 
-\page README_raw README raw
+\page README_raw Raw data
  
 \section raw_s1 How to read & decode raw data 
 
@@ -53,6 +53,8 @@ where the raw0...n subdirectories are located:
 <pre>
 MUONRawStreamTracker(..)(maxEvent, firstDDL, lastDDL, "$YOUR_WORKING_DIRECTORY/"); //Do not forget the slash at the end!
 </pre>
+
+This chapter is defined in the READMEraw.txt file.
 
 */
 

@@ -2,7 +2,7 @@
 
 /*! 
 
-\page README_trigger README trigger
+\page README_trigger Trigger
 
 
 \section trigger_s1  How to reprocess trigger decision from already produced digits
@@ -50,7 +50,7 @@ By menus:
 \subsection trigger_s2_sub1 File
 
 - Run     - open a file and start with a given event number
-          takes the full path <path>/galice.root
+            takes the full path your_path/galice.root
 - Control - navigate in the tree with events
 - Exit    - exit the main application
 
@@ -178,6 +178,8 @@ by adding in Config.C:
 <pre>
 MUON->SetTriggerEffCells(1);
 </pre>
+
+This chapter is defined in the READMEtrigger.txt file.
 
 */
 

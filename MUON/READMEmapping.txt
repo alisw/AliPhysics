@@ -2,11 +2,14 @@
 
 /*! 
 
-\page README_mapping README mapping
+\page README_mapping Mapping
  
 
-See detailed description in ALICE-INT-2003-025.
-
+See the detailed description of the mapping package in ALICE-INT-2003-025.
+Since that time the mapping has been extended for slat and trigger
+chamber segmentations an later on also to hold the description of the
+top level connections of detection elements, including information
+about DDLs, bus patches and also trigger configuration.
 
 \section mapping_s1  Graphical User Interface
   
@@ -40,46 +43,19 @@ The GUI allows:
 
 \section mapping_s2 Test macros
 
+A set of tests macros have been written during the development
+of the mapping classes. To run these macros:
+
 <pre>
    cd ../mapping/macro
    root
    root [0] .x testMacroName.C    
-                      see available macros below   
 </pre>
                    
-A set of test macros be run at once by test_suite.pl scripts:
--  test_suite.pl      - run all test macros and compare results with
-                        the reference output
--  test_suite_ref.pl  - generates reference output
-                       !! this script will overwrite the refence output
-                          provided with the source;
-                          it should be used only by developers 
-
-Macros included in the test suite:
--  testReadSector.C
--  testReadMotifType.C
--  testGraphics.C        
--  testSectorFind.C
--  testPlaneFind.C
--  testPrintLimits.C         
--  testExistingPads.C    
--  testPadDimensions.C    
--  testSectorPadIterators.C
--  testMotifTypeIterators.C     
--  testNeighboursPadIterator.C  
--  testAnyPadIterators.C  
--  testPadsUp.C
--  testPlaneAreaIterator.C
-  
-Other macros (not included in the test suite):
--  testAllIndices.C
--  testUpdateGlobalIndices.C
-   
 
 \section mapping_s3  Data files format
 
-
-\subsection mapping_s3_sub1  zones.dat:
+\subsection mapping_s3_sub1  zones.dat
 
 Describes layout of zones, rows, row segments, subzones, motifs
 
@@ -110,7 +86,7 @@ Describes layout of zones, rows, row segments, subzones, motifs
 </pre>
   
 
-\subsection mapping_s3_sub2  zones_special.dat:
+\subsection mapping_s3_sub2  zones_special.dat
 
 Describes layout of special row segments (with irregular motifs)
 
@@ -171,7 +147,7 @@ the local pad indices (i,j)
 </pre>
   
 
-\subsection mapping_s3_sub4  *.pcb files
+\subsection mapping_s3_sub5  *.pcb files
 
 Lines starting with # are comments.
 
@@ -196,7 +172,7 @@ computed from the motif alone (but that serves as a cross-check that the motif
 pattern given is ok). That's not the case for short or rounded PCB though.
 
 
-\subsection mapping_s3_sub5  *.slat files
+\subsection mapping_s3_sub6  *.slat files
 
 A slat is defined by the list of its PCB, described starting 
 from the beam and going outward.
@@ -225,7 +201,7 @@ Note that the definition of the PCBs have to be in files with extension
 .pcb (X.pcb, Y.pcb, Z.pcb)
 
   
-\subsection mapping_s3_sub6  DetElemIdToBusPatch.dat
+\subsection mapping_s3_sub7  DetElemIdToBusPatch.dat
 
 Lines starting with # are comments.
 
@@ -238,7 +214,7 @@ The DDL id is needed for the rawdata generation only.
 To generate this file, the macro MUONGenerateBusPatch.C could be used.
 
 
-\subsection mapping_s3_sub7  crate.dat
+\subsection mapping_s3_sub8  crate.dat
   
 Muon trigger electronics configuration file (decoded in class 
 AliMUONTriggerCrateStore) directly copy/paste from the ALICE PRR 
@@ -251,5 +227,7 @@ crate name it belongs to, slot number, and internal switches
  
 Lengths are in centimeters.
  
+This chapter is defined in the READMEmapping.txt file.
+
 */
   

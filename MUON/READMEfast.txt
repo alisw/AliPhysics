@@ -2,10 +2,8 @@
 
 /*! 
 
-\page README_fast README fast
+\page README_fast Fast simulation
 
-
-\section fast_s1 How to test the fast simulation for MUON.
 
 The macro fastMUONGen.C allows to generate events using the 
 AliGenMUONCocktailpp generator. In the current implementation, the 
@@ -28,6 +26,8 @@ TClonesArrays holding AliMUONTrackLight and AliMUONPairLight objects
 that are built on the basis of the surviving muons.
 
 Both macros can be run from fastSim.sh test script.
+
+This chapter is defined in the READMEfast.txt file.
 
 */
 
