@@ -18,6 +18,8 @@
 
 #pragma link C++ class AliEVEHOMERManager+;
 #pragma link C++ class AliEVEHOMERManagerEditor+;
+#pragma link C++ class AliEVEHOMERSource+;
+#pragma link C++ class AliEVEHOMERSourceList+;
 
 //================================
 // compound classes
