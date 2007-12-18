@@ -425,8 +425,9 @@ INPUT                  = .
 # *.c *.cc *.cxx *.cpp *.c++ *.java *.ii *.ixx *.ipp *.i++ *.inl *.h *.hh *.hxx *.hpp 
 # *.h++ *.idl *.odl *.cs *.php *.php3 *.inc *.m *.mm
 
-#FILE_PATTERNS          = *.h *.cxx *.icc *.C README*.txt *.sh
-FILE_PATTERNS          = *.h *.cxx *.icc README*.txt
+#FILE_PATTERNS          = *.h *.cxx *.icc *.C *.txt *.sh
+#FILE_PATTERNS          = *.h *.cxx *.icc 
+FILE_PATTERNS          = Doxymain.h README*.txt
 
 # The RECURSIVE tag can be used to turn specify whether or not subdirectories 
 # should be searched for input files as well. Possible values are YES and NO. 
@@ -438,7 +439,8 @@ RECURSIVE              = YES
 # excluded from the INPUT source files. This way you can easily exclude a 
 # subdirectory from a directory tree whose root is specified with the INPUT tag.
 
-EXCLUDE                = check muon_html test_out.100 tgt_linux Doxymodules_STEER.h Doxymodules_EVGEN.h
+#EXCLUDE                = tgt_linux  
+EXCLUDE                = Doxymodules_STEER.h Doxymodules_EVGEN.h
 
 # The EXCLUDE_SYMLINKS tag can be used select whether or not files or directories 
 # that are symbolic links (a Unix filesystem feature) are excluded from the input.
@@ -684,7 +686,7 @@ TREEVIEW_WIDTH         = 250
 # If the GENERATE_LATEX tag is set to YES (the default) Doxygen will 
 # generate Latex output.
 
-GENERATE_LATEX         = NO
+GENERATE_LATEX         = YES
 
 # The LATEX_OUTPUT tag is used to specify where the LaTeX docs will be put. 
 # If a relative path is entered the value of OUTPUT_DIRECTORY will be 
