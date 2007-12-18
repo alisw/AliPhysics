@@ -1,3 +1,17 @@
+2007-12-18  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* AliEVEHOMERSource.cxx:
+	* AliEVEHOMERSource.h:
+	* AliEVEHOMERSourceList.cxx:
+	* AliEVEHOMERSourceList.h:
+	* LinkDef.h:
+	New classes for representation of HOMER sources.
+
+	* AliEVEHOMERManager.cxx:
+	* AliEVEHOMERManager.h:
+	Reading of TPC calibration data.
+	Cluster port-forwarding.
+
 2007-12-17  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
 
 	* LinkDef.h:
