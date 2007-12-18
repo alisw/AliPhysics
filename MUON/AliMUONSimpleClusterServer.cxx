@@ -229,11 +229,16 @@ AliMUONSimpleClusterServer::Clusterize(Int_t chamberId,
           for (Int_t iPad=0; iPad<nPad; iPad++) 
           {
             AliMUONPad *pad = cluster->Pad(iPad);
-            rawCluster->AddDigitId(pad->GetUniqueID());
+	    
+	    // skip virtual pads
+	    if (!pad->IsReal()) continue;
+            
+	    rawCluster->AddDigitId(pad->GetUniqueID());
           }
           
           // fill charge and other cluster informations
           rawCluster->SetCharge(cluster->Charge());
+          rawCluster->SetChi2(cluster->Chi2());
           
           Double_t xg, yg, zg;
           fTransformer.Local2Global(detElemId, 
@@ -242,7 +247,7 @@ AliMUONSimpleClusterServer::Clusterize(Int_t chamberId,
           rawCluster->SetXYZ(xg, yg, zg);
           
           AliDebug(1,Form("Adding RawCluster detElemId %4d mult %2d charge %e (xl,yl,zl)=(%e,%e,%e) (xg,yg,zg)=(%e,%e,%e)",
-                          detElemId,nPad,cluster->Charge(),
+                          detElemId,rawCluster->GetNDigits(),rawCluster->GetCharge(),
                           cluster->Position().X(),cluster->Position().Y(),0.0,
                           xg,yg,zg));
         }

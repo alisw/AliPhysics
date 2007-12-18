@@ -23,12 +23,14 @@ class AliMUONVTrackReconstructor;
 class AliMUONVTrackStore;
 class AliMUONVTriggerStore;
 class AliMUONVClusterServer;
+class AliMUONVDigitStore;
 
 class AliMUONTracker : public AliTracker
 {
  public:
 
   AliMUONTracker(AliMUONVClusterServer& clusterServer,
+		 const AliMUONVDigitStore& digitStore,
                  const AliMUONDigitMaker* digitMaker=0,
                  const AliMUONGeometryTransformer* transformer=0,
                  const AliMUONTriggerCircuit* triggerCircuit=0);
@@ -68,6 +70,7 @@ private:
   mutable AliMUONVClusterStore* fClusterStore; //!< cluster container
   AliMUONVTriggerStore* fTriggerStore; //!< trigger information
   AliMUONVClusterServer& fClusterServer; //!< to get clusters
+  const AliMUONVDigitStore& fDigitStore; //!< digit info to fill in ESD
   
   ClassDef(AliMUONTracker,0)  //tracker base class for MUON
 };

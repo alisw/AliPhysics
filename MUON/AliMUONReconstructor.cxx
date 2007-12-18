@@ -312,9 +312,8 @@ AliMUONReconstructor::CreateTracker() const
     return 0x0;
   }
   
-  fClusterServer->UseDigitStore(*(DigitStore()));
-  
   AliMUONTracker* tracker = new AliMUONTracker(*fClusterServer,
+					       *DigitStore(),
                                                fDigitMaker,
                                                fTransformer,
                                                fTriggerCircuit);
