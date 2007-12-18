@@ -259,10 +259,10 @@ aliroot: alilibs $(BINPATH) $(ALLEXECS)
 
 ROOTALIBDIR=$(shell root-config --libdir)
 
-alimdc-static: $(LIBPATH) $(BINPATH) $(RAWDatabaseALIB) $(MDCALIB) $(ESDALIB) $(alimdcCXXO)
+alimdc-static: $(LIBPATH) $(BINPATH) $(RAWDatabaseALIB) $(MDCALIB) $(ESDALIB) $(STEERBaseALIB) $(alimdcCXXO)
 	 $(MUTE)rm -rf $(LIBPATH)/libAliMDC.a
 	 $(MUTE)rm -rf junk
-	 mkdir junk && cd junk && ar x ../$(RAWDatabaseALIB) && ar x ../$(MDCALIB) && ar x ../$(ESDALIB) && ar r ../$(LIBPATH)/libAliMDC.a *.o && cd .. && rm -rf junk
+	 mkdir junk && cd junk && ar x ../$(RAWDatabaseALIB) && ar x ../$(MDCALIB) && ar x ../$(ESDALIB) && ar x ../$(STEERBaseALIB) && ar r ../$(LIBPATH)/libAliMDC.a *.o && cd .. && rm -rf junk
 	 $(LD) $(LDFLAGS) -o $(BINPATH)/alimdca $(alimdcCXXO) \
 	 $(LIBPATH)/libAliMDC.a \
 	 $(ROOTALIBDIR)/libRoot.a \
