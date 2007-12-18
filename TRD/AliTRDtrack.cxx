@@ -876,6 +876,8 @@ Int_t AliTRDtrack::UpdateMI(AliTRDcluster *c, Double_t chisq, Int_t index
     return kFALSE;
   }
 
+  AliTracker::FillResiduals(this,p,cov,c->GetVolumeId());
+
   // Register cluster to track
   Int_t n      = GetNumberOfClusters();
   fIndex[n]    = index;
