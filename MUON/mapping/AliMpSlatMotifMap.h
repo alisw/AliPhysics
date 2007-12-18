@@ -41,6 +41,11 @@ public:
   void Reset();
   
 private:
+  /// Not implemented
+  AliMpSlatMotifMap(const AliMpSlatMotifMap& rhs);
+  /// Not implemented
+  AliMpSlatMotifMap& operator=(const AliMpSlatMotifMap& rhs);
+
   static AliMpSlatMotifMap* fgInstance; ///< Singleton instance
 
   TMap fMotifs; ///< collection of motifs
