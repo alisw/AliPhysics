@@ -16,11 +16,14 @@
 #include "AliMUONVCluster.h"
 #include <TMath.h>
 
+class AliESDMuonCluster;
+
 class AliMUONRawClusterV2 : public AliMUONVCluster {
 
  public:
   AliMUONRawClusterV2();
   AliMUONRawClusterV2(Int_t chamberId, Int_t detElemId, Int_t clusterIndex);
+  AliMUONRawClusterV2(const AliESDMuonCluster& cluster);
   virtual ~AliMUONRawClusterV2();
   AliMUONRawClusterV2(const AliMUONRawClusterV2& cluster);
   AliMUONRawClusterV2 & operator=(const AliMUONRawClusterV2& cluster);

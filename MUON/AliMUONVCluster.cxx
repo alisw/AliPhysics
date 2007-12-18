@@ -25,6 +25,7 @@
 
 #include "AliMUONVCluster.h"
 
+#include "AliESDMuonCluster.h"
 #include "AliLog.h"
 
 #include <Riostream.h>
@@ -45,6 +46,14 @@ AliMUONVCluster::AliMUONVCluster(Int_t chamberId, Int_t detElemId, Int_t cluster
 {
   /// constructor
   SetUniqueID(BuildUniqueID(chamberId, detElemId, clusterIndex));
+}
+
+//_____________________________________________________________________________
+AliMUONVCluster::AliMUONVCluster(const AliESDMuonCluster& cluster)
+: TObject() 
+{
+  /// constructor
+  SetUniqueID(cluster.GetUniqueID());
 }
 
 //_____________________________________________________________________________

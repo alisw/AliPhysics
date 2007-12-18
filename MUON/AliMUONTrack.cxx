@@ -236,16 +236,12 @@ AliMUONTrack::AliMUONTrack(AliESDMuonTrack &esdTrack)
   // fill fTrackParamAtCluster with track parameters at each cluster if available
   if(esdTrack.ClustersStored()) {
     
-    AliMUONRawClusterV2 cluster;
-    
     // loop over ESD clusters
     AliESDMuonCluster *esdCluster = (AliESDMuonCluster*) esdTrack.GetClusters().First();
     while (esdCluster) {
       
       // copy cluster information
-      cluster.SetUniqueID(esdCluster->GetUniqueID());
-      cluster.SetXYZ(esdCluster->GetX(), esdCluster->GetY(), esdCluster->GetZ());
-      cluster.SetErrXY(esdCluster->GetErrX(), esdCluster->GetErrY());
+      AliMUONRawClusterV2 cluster(*esdCluster);
       
       // only set the Z parameter to avoid error in the AddTrackParamAtCluster(...) method
       param.SetZ(cluster.GetZ());
