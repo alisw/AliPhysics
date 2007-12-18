@@ -19,6 +19,9 @@
 
 class AliRawReaderMemory;
 
+class AliEVEHOMERManager;
+class AliHLTHOMERBlockDesc;
+
 namespace Reve {
 class PointSet;
 class TrackList;
@@ -30,9 +33,6 @@ class TPCLoader;
 class TPCData;
 class TPCSector2D;
 class TPCSector3D;
-
-class AliEVEHOMERManager;
-class AliHLTHOMERBlockDesc;
 }
 
 using namespace Reve;
