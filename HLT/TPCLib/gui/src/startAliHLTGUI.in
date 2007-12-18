@@ -2,7 +2,9 @@
 # start script for the AliHLTGUI
 # the LD_LIBRARY_PATH variable is set according to the package configuration
 # before the GUI is started
-dir=`dirname $0`
+file=$0
+[ -h $file ] && file=`readlink $file`
+dir=`dirname $file`
 
 export ROOTSYS=@ROOTSYS@ 
 ADD_LIBDIR=`echo '@QT_LIBS@' | sed -e "s| |\n|g" | sed -e "/^-L/!d" | sed -e "s|^-L||"`
