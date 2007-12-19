@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.78  2007/12/19 11:50:41  acolla
+
+Raw data tag merged files is written in /alice/data/.../lhcPeriod_DET/runNb/raw if partition is made of DET only
+
 Revision 1.77  2007/12/19 11:16:16  acolla
 More meaningful log message added in GetFileSources
 
@@ -880,7 +884,7 @@ Bool_t AliShuttle::StoreRunMetadataFile(const char* localFile, const char* gridF
 	}
 	
 	// TODO partitions with one detector only write data into LHCperiod_DET
-	TString partition = GetRunParameter("partition");
+	TString partition = GetRunParameter("detector");
 	
 	if (partition.Length() > 0 && partition != "ALICE")
 	{
@@ -1002,7 +1006,7 @@ Bool_t AliShuttle::CopyFilesToGrid(const char* type)
 		}
 		
 		// TODO partitions with one detector only write data into LHCperiod_DET
-		TString partition = GetRunParameter("partition");
+		TString partition = GetRunParameter("detector");
 	
 		if (partition.Length() > 0 && partition != "ALICE")
 		{
