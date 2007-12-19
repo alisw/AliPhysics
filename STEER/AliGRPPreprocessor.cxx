@@ -113,8 +113,8 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap) {
   // DAQ FXS         //
   //=================//
   UInt_t iDaqFxs = ProcessDaqFxs();
-  if(iDaqFxs == 1) {
-  	Log(Form("Raw data tags merged successfully!"));
+  if(iDaqFxs == 0) {
+  	Log(Form("ProcessDaqFxs successful!"));
   } else {
   	Log(Form("Could not store run raw tag file!"));
 	return 1;
@@ -312,12 +312,21 @@ UInt_t AliGRPPreprocessor::ProcessDaqFxs() {
   if (!result)
   {
   	Log("Problem storing raw data tags in local file!!");
+  } else {
+  	Log("Raw data tags merged successfully!!");  
   }
   
   delete iter;
   delete list;
   delete fRawTagChain; fRawTagChain=0;
-  return (UInt_t) result;
+  
+  if (result == kFALSE)
+  {
+  	return 3;
+  }
+  
+  return 3;
+  
 }
 
 //_______________________________________________________________
