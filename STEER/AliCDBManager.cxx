@@ -297,6 +297,8 @@ void AliCDBManager::SetDefaultStorage(const char* dbString) {
 	AliCDBStorage* bckStorage = fDefaultStorage;
 
 	fDefaultStorage = GetStorage(dbString);
+	
+	if(!fDefaultStorage) return;
 
 	if(bckStorage && (fDefaultStorage != bckStorage)){
 		AliWarning("Existing default storage replaced: clearing cache!");
@@ -316,6 +318,8 @@ void AliCDBManager::SetDefaultStorage(const AliCDBParam* param) {
 	AliCDBStorage* bckStorage = fDefaultStorage;
 
 	fDefaultStorage = GetStorage(param);
+
+	if(!fDefaultStorage) return;
 
 	if(bckStorage && (fDefaultStorage != bckStorage)){
 		AliWarning("Existing default storage replaced: clearing cache!");
@@ -417,7 +421,8 @@ void AliCDBManager::SetSpecificStorage(const char* calibType, AliCDBParam* param
 		if(checkPar) delete checkPar;
 		delete fSpecificStorages.Remove(objCalibType);
 	}
-	GetStorage(param);
+	AliCDBStorage *aStorage = GetStorage(param);
+	if(!aStorage) return;
 
  	fSpecificStorages.Add(objCalibType, param->CloneParam());
 
