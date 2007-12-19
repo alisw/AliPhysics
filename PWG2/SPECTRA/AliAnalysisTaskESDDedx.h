@@ -19,9 +19,10 @@ class AliESDEvent;
 class AliAnalysisTaskESDDedx : public AliAnalysisTask {
  public:
   AliAnalysisTaskESDDedx(const char    *rName = "AliAnalysisTaskESDDedx",
-			 const Bool_t   rAllConstrainedFlag = kFALSE,
-			 const Bool_t   rMidPseudoRapidityFlag = kFALSE,
-			 const Bool_t   rSelTrackRemoveKink = kTRUE,
+			 const Bool_t   rAllConstrainedFlag     = kFALSE,
+			 const Bool_t   rMidPseudoRapidityFlag  = kFALSE,
+			 const Bool_t   rSelTrackRemoveKink     = kTRUE,
+			 const Bool_t   rSelTrackWithOnTheFlyV0 = kFALSE,
 			 const Int_t    rSelTrackMinClustersTPC = 50,
 			 const Int_t    rSelTrackMinClustersITS =  0,
 			 const Float_t  rSelTrackMaxChi2PerClusterTPC = 3.5,
@@ -30,7 +31,10 @@ class AliAnalysisTaskESDDedx : public AliAnalysisTask {
 			 const Double_t rSelTrackMaxCov22 = 2.0,
 			 const Double_t rSelTrackMaxCov33 = 0.5,
 			 const Double_t rSelTrackMaxCov44 = 0.5,
-			 const Double_t rSelTrackMaxCov55 = 2.0);
+			 const Double_t rSelTrackMaxCov55 = 2.0,
+			 const Double_t rSelV0MaxDcaDaughters = 0.5,
+			 const Double_t rSelV0MinDecayLength  = 0.0);
+
   virtual ~AliAnalysisTaskESDDedx() {}
   
   virtual void   ConnectInputData(Option_t *);
@@ -55,6 +59,10 @@ class AliAnalysisTaskESDDedx : public AliAnalysisTask {
   TH1F        *fHistMassAntiLambda;                 //! Invariant Mass of Anti-Lambda
   TH2F        *fHistTPCDedxVsMomPosK0;              //! TPC dE/dx vs momemtum for K0 positive daughter
   TH2F        *fHistTPCDedxVsMomNegK0;              //! TPC dE/dx vs momemtum for K0 negative daughter
+  TH2F        *fHistTPCDedxVsMomPosLambda;          //! TPC dE/dx vs momemtum for Lambda positive daughter
+  TH2F        *fHistTPCDedxVsMomNegLambda;          //! TPC dE/dx vs momemtum for Lambda negative daughter
+  TH2F        *fHistTPCDedxVsMomPosAntiLambda;      //! TPC dE/dx vs momemtum for Anti-Lambda positive daughter
+  TH2F        *fHistTPCDedxVsMomNegAntiLambda;      //! TPC dE/dx vs momemtum for Anti-Lambda negative daughter
   TH1F        *fHistDiffInOutMomentum;              //! Difference between inner and outer TPC momenta
   TH1F        *fHistDiffPrimOutMomentum;            //! Difference between primary and outer TPC momenta
   TH1F        *fHistDiffPrimMeanMomentum;           //! Difference between primary and (inner+outer)/2 TPC momenta
@@ -71,6 +79,10 @@ class AliAnalysisTaskESDDedx : public AliAnalysisTask {
   TH1F        *fHistMassAntiLambdaCuts;             //!
   TH2F        *fHistTPCDedxVsMomPosK0Cuts;          //!
   TH2F        *fHistTPCDedxVsMomNegK0Cuts;          //!
+  TH2F        *fHistTPCDedxVsMomPosLambdaCuts;      //!
+  TH2F        *fHistTPCDedxVsMomNegLambdaCuts;      //!
+  TH2F        *fHistTPCDedxVsMomPosAntiLambdaCuts;  //!
+  TH2F        *fHistTPCDedxVsMomNegAntiLambdaCuts;  //!
   TH1F        *fHistDiffInOutMomentumCuts;          //!
   TH1F        *fHistDiffPrimOutMomentumCuts;        //!
   TH1F        *fHistDiffPrimMeanMomentumCuts;       //!
@@ -83,7 +95,8 @@ class AliAnalysisTaskESDDedx : public AliAnalysisTask {
   Bool_t       fMidPseudoRapidityFlag;              // Mid-eta requirement
 
                                                     // Track selections: streaming allowed and needed !
-  Int_t        fSelTrackRemoveKink;                 // Remove kink candidates
+  Bool_t       fSelTrackRemoveKink;                 // Remove kink candidates
+  Bool_t       fSelTrackWithOnTheFlyV0;             // Select daughter tracks from on-the-fly V0s
   Int_t        fSelTrackMinClustersTPC;             // Minimum number of cluster in the TPC
   Int_t        fSelTrackMinClustersITS;             // Minimum number of cluster in the ITS
   Float_t      fSelTrackMaxChi2PerClusterTPC;       // Maximum chisq per cluster in the TPC
@@ -93,7 +106,8 @@ class AliAnalysisTaskESDDedx : public AliAnalysisTask {
   Double_t     fSelTrackMaxCov33;                   // Maximum value for cov.mat. diag. element
   Double_t     fSelTrackMaxCov44;                   // Maximum value for cov.mat. diag. element
   Double_t     fSelTrackMaxCov55;                   // Maximum value for cov.mat. diag. element
-   
+  Double_t     fSelV0MaxDcaDaughters;               // Maximum value for DCA between V0 daughter tracks
+  Double_t     fSelV0MinDecayLength;                // Minimum value for V0 decay length
 
   AliAnalysisTaskESDDedx(const AliAnalysisTaskESDDedx&);            // not implemented
   AliAnalysisTaskESDDedx& operator=(const AliAnalysisTaskESDDedx&); // not implemented

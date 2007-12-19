@@ -38,6 +38,7 @@
 #include "AliESDEvent.h"
 #include "AliESDInputHandler.h"
 
+#include "AliESDVertex.h"
 #include "AliESDv0.h"
 
 #include "AliAnalysisTaskESDDedx.h"
@@ -49,6 +50,7 @@ ClassImp(AliAnalysisTaskESDDedx)
 						 const Bool_t   rAllConstrainedFlag,
 						 const Bool_t   rMidPseudoRapidityFlag,
 						 const Bool_t   rSelTrackRemoveKink,
+						 const Bool_t   rSelTrackWithOnTheFlyV0,
 						 const Int_t    rSelTrackMinClustersTPC,
 						 const Int_t    rSelTrackMinClustersITS,
 						 const Float_t  rSelTrackMaxChi2PerClusterTPC,
@@ -57,12 +59,17 @@ ClassImp(AliAnalysisTaskESDDedx)
 						 const Double_t rSelTrackMaxCov22,
 						 const Double_t rSelTrackMaxCov33,
 						 const Double_t rSelTrackMaxCov44,
-						 const Double_t rSelTrackMaxCov55) 
+						 const Double_t rSelTrackMaxCov55,
+						 const Double_t rSelV0MaxDcaDaughters,
+						 const Double_t rSelV0MinDecayLength)
+
     : AliAnalysisTask(rName, ""), fESD(0), fListHist(), fHistPtot(0),
 
     fHistMultiplicity(0), fHistTPCDedxVsMomentum(0), fHistITSDedxVsMomentum(0),
     fHistMassK0(0), fHistMassLambda(0), fHistMassAntiLambda(0),
     fHistTPCDedxVsMomPosK0(0), fHistTPCDedxVsMomNegK0(0),
+    fHistTPCDedxVsMomPosLambda(0), fHistTPCDedxVsMomNegLambda(0),
+    fHistTPCDedxVsMomPosAntiLambda(0), fHistTPCDedxVsMomNegAntiLambda(0),
     fHistDiffInOutMomentum(0), fHistDiffPrimOutMomentum(0),
     fHistDiffPrimMeanMomentum(0), fHistPercPrimMeanMomentum(0), fHistPrimEta(0),
     fHistPercPrimMeanMomentumVsEta(0), fHistPercPrimMeanMomentumVsPrim(0),
@@ -70,17 +77,20 @@ ClassImp(AliAnalysisTaskESDDedx)
     fHistMultiplicityCuts(0), fHistTPCDedxVsMomentumCuts(0), fHistITSDedxVsMomentumCuts(0),
     fHistMassK0Cuts(0), fHistMassLambdaCuts(0), fHistMassAntiLambdaCuts(0), 
     fHistTPCDedxVsMomPosK0Cuts(0), fHistTPCDedxVsMomNegK0Cuts(0), 
+    fHistTPCDedxVsMomPosLambdaCuts(0), fHistTPCDedxVsMomNegLambdaCuts(0),
+    fHistTPCDedxVsMomPosAntiLambdaCuts(0), fHistTPCDedxVsMomNegAntiLambdaCuts(0),
     fHistDiffInOutMomentumCuts(0), fHistDiffPrimOutMomentumCuts(0),
     fHistDiffPrimMeanMomentumCuts(0), fHistPercPrimMeanMomentumCuts(0), fHistPrimEtaCuts(0),
     fHistPercPrimMeanMomentumVsEtaCuts(0), fHistPercPrimMeanMomentumVsPrimCuts(0),
 
     fAllConstrainedFlag(rAllConstrainedFlag), fMidPseudoRapidityFlag(rMidPseudoRapidityFlag),
 
-    fSelTrackRemoveKink(rSelTrackRemoveKink),
+    fSelTrackRemoveKink(rSelTrackRemoveKink), fSelTrackWithOnTheFlyV0(rSelTrackWithOnTheFlyV0),
     fSelTrackMinClustersTPC(rSelTrackMinClustersTPC), fSelTrackMinClustersITS(rSelTrackMinClustersITS),
     fSelTrackMaxChi2PerClusterTPC(rSelTrackMaxChi2PerClusterTPC), fSelTrackMaxChi2PerClusterITS(rSelTrackMaxChi2PerClusterITS),
     fSelTrackMaxCov11(rSelTrackMaxCov11), fSelTrackMaxCov22(rSelTrackMaxCov22), fSelTrackMaxCov33(rSelTrackMaxCov33),
-    fSelTrackMaxCov44(rSelTrackMaxCov44), fSelTrackMaxCov55(rSelTrackMaxCov55)
+    fSelTrackMaxCov44(rSelTrackMaxCov44), fSelTrackMaxCov55(rSelTrackMaxCov55),
+    fSelV0MaxDcaDaughters(rSelV0MaxDcaDaughters), fSelV0MinDecayLength(rSelV0MinDecayLength)
 {
   // Constructor
 
@@ -162,6 +172,22 @@ void AliAnalysisTaskESDDedx::CreateOutputObjects()
     fHistTPCDedxVsMomNegK0 = new TH2F("h2TPCDedxVsMomNegK0","Bethe-Bloch Distribution for TPC;Momentum (GeV/c);dE/dx (A.U.)",1500,0,15,100,0,100);
     fListHist->Add(fHistTPCDedxVsMomNegK0);
   }
+  if (!fHistTPCDedxVsMomPosLambda) {
+    fHistTPCDedxVsMomPosLambda = new TH2F("h2TPCDedxVsMomPosLambda","Bethe-Bloch Distribution for TPC;Momentum (GeV/c);dE/dx (A.U.)",1500,0,15,100,0,100);
+    fListHist->Add(fHistTPCDedxVsMomPosLambda);
+  }
+  if (!fHistTPCDedxVsMomNegLambda) {
+    fHistTPCDedxVsMomNegLambda = new TH2F("h2TPCDedxVsMomNegLambda","Bethe-Bloch Distribution for TPC;Momentum (GeV/c);dE/dx (A.U.)",1500,0,15,100,0,100);
+    fListHist->Add(fHistTPCDedxVsMomNegLambda);
+  }
+  if (!fHistTPCDedxVsMomPosAntiLambda) {
+    fHistTPCDedxVsMomPosAntiLambda = new TH2F("h2TPCDedxVsMomPosAntiLambda","Bethe-Bloch Distribution for TPC;Momentum (GeV/c);dE/dx (A.U.)",1500,0,15,100,0,100);
+    fListHist->Add(fHistTPCDedxVsMomPosAntiLambda);
+  }
+  if (!fHistTPCDedxVsMomNegAntiLambda) {
+    fHistTPCDedxVsMomNegAntiLambda = new TH2F("h2TPCDedxVsMomNegAntiLambda","Bethe-Bloch Distribution for TPC;Momentum (GeV/c);dE/dx (A.U.)",1500,0,15,100,0,100);
+    fListHist->Add(fHistTPCDedxVsMomNegAntiLambda);
+  }
   if (!fHistDiffInOutMomentum) {
     fHistDiffInOutMomentum = new TH1F("h1DiffInOutMomentum","Momentum Difference In-Out;Momentum (GeV/c);Counts",200,-0.1,0.1); 
     fListHist->Add(fHistDiffInOutMomentum);
@@ -222,6 +248,22 @@ void AliAnalysisTaskESDDedx::CreateOutputObjects()
   if (!fHistTPCDedxVsMomNegK0Cuts) {
     fHistTPCDedxVsMomNegK0Cuts = new TH2F("h2TPCDedxVsMomNegK0Cuts","Bethe-Bloch Distribution for TPC;Momentum (GeV/c);dE/dx (A.U.)",1500,0,15,100,0,100);
     fListHist->Add(fHistTPCDedxVsMomNegK0Cuts);
+  }
+  if (!fHistTPCDedxVsMomPosLambdaCuts) {
+    fHistTPCDedxVsMomPosLambdaCuts = new TH2F("h2TPCDedxVsMomPosLambdaCuts","Bethe-Bloch Distribution for TPC;Momentum (GeV/c);dE/dx (A.U.)",1500,0,15,100,0,100);
+    fListHist->Add(fHistTPCDedxVsMomPosLambdaCuts);
+  }
+  if (!fHistTPCDedxVsMomNegLambdaCuts) {
+    fHistTPCDedxVsMomNegLambdaCuts = new TH2F("h2TPCDedxVsMomNegLambdaCuts","Bethe-Bloch Distribution for TPC;Momentum (GeV/c);dE/dx (A.U.)",1500,0,15,100,0,100);
+    fListHist->Add(fHistTPCDedxVsMomNegLambdaCuts);
+  }
+  if (!fHistTPCDedxVsMomPosAntiLambdaCuts) {
+    fHistTPCDedxVsMomPosAntiLambdaCuts = new TH2F("h2TPCDedxVsMomPosAntiLambdaCuts","Bethe-Bloch Distribution for TPC;Momentum (GeV/c);dE/dx (A.U.)",1500,0,15,100,0,100);
+    fListHist->Add(fHistTPCDedxVsMomPosAntiLambdaCuts);
+  }
+  if (!fHistTPCDedxVsMomNegAntiLambdaCuts) {
+    fHistTPCDedxVsMomNegAntiLambdaCuts = new TH2F("h2TPCDedxVsMomNegAntiLambdaCuts","Bethe-Bloch Distribution for TPC;Momentum (GeV/c);dE/dx (A.U.)",1500,0,15,100,0,100);
+    fListHist->Add(fHistTPCDedxVsMomNegAntiLambdaCuts);
   }
   if (!fHistDiffInOutMomentumCuts) {
     fHistDiffInOutMomentumCuts = new TH1F("h1DiffInOutMomentumCuts","Momentum Difference In-Out;Momentum (GeV/c);Counts",200,-0.1,0.1); 
@@ -359,6 +401,18 @@ void AliAnalysisTaskESDDedx::Exec(Option_t *)
     {// This is the V0 loop
       AliESDv0 *v0 = fESD->GetV0(iV0);
       if (!v0) continue;
+      if (v0->GetOnFlyStatus() != fSelTrackWithOnTheFlyV0) continue;
+
+      const AliESDVertex *lPrimaryVertex = fESD->GetVertex();
+      Double_t tPositionPrimaryVertex[3]; lPrimaryVertex->GetXYZ(tPositionPrimaryVertex);
+      Double_t v0PositionX = 0, v0PositionY = 0, v0PositionZ = 0; v0->GetXYZ(v0PositionX,v0PositionY,v0PositionZ);
+      Double_t v0DecayLength = TMath::Sqrt(
+					   (v0PositionX-tPositionPrimaryVertex[0])*(v0PositionX-tPositionPrimaryVertex[0])+
+					   (v0PositionY-tPositionPrimaryVertex[1])*(v0PositionY-tPositionPrimaryVertex[1])+
+					   (v0PositionZ-tPositionPrimaryVertex[2])*(v0PositionZ-tPositionPrimaryVertex[2])
+					   );
+      if (v0->GetDcaV0Daughters() > fSelV0MaxDcaDaughters) continue;
+      if (v0DecayLength < fSelV0MinDecayLength) continue;
 
       // Getting invariant mass infos directly from ESD
       v0->ChangeMassHypothesis(310);
@@ -423,9 +477,33 @@ void AliAnalysisTaskESDDedx::Exec(Option_t *)
       }
       if (TMath::Abs(lInvMassLambda-1.115)<0.01) {
 	fHistMassLambdaCuts->Fill(lInvMassLambda);
+	fHistTPCDedxVsMomPosLambda->Fill(lInnerMomPos,lTPCDedxPos);
+	fHistTPCDedxVsMomNegLambda->Fill(lInnerMomNeg,lTPCDedxNeg);
+	if (
+	    (!fMidPseudoRapidityFlag) || ( TMath::Abs(lPrimPseudoRapPos) < 0.5) &&
+	    (IsAccepted(trackPos))
+	    )
+	  fHistTPCDedxVsMomPosLambdaCuts->Fill(lInnerMomPos,lTPCDedxPos);
+	if (
+	    (!fMidPseudoRapidityFlag) || ( TMath::Abs(lPrimPseudoRapNeg) < 0.5) &&
+	    (IsAccepted(trackNeg))
+	    )
+	  fHistTPCDedxVsMomNegLambdaCuts->Fill(lInnerMomNeg,lTPCDedxNeg);
       }
       if (TMath::Abs(lInvMassAntiLambda-1.115)<0.01) {
 	fHistMassAntiLambdaCuts->Fill(lInvMassAntiLambda);
+	fHistTPCDedxVsMomPosAntiLambda->Fill(lInnerMomPos,lTPCDedxPos);
+	fHistTPCDedxVsMomNegAntiLambda->Fill(lInnerMomNeg,lTPCDedxNeg);
+	if (
+	    (!fMidPseudoRapidityFlag) || ( TMath::Abs(lPrimPseudoRapPos) < 0.5) &&
+	    (IsAccepted(trackPos))
+	    )
+	  fHistTPCDedxVsMomPosAntiLambdaCuts->Fill(lInnerMomPos,lTPCDedxPos);
+	if (
+	    (!fMidPseudoRapidityFlag) || ( TMath::Abs(lPrimPseudoRapNeg) < 0.5) &&
+	    (IsAccepted(trackNeg))
+	    )
+	  fHistTPCDedxVsMomNegAntiLambdaCuts->Fill(lInnerMomNeg,lTPCDedxNeg);
       }
     }//V0 loop 
   
@@ -439,6 +517,14 @@ void AliAnalysisTaskESDDedx::Terminate(Option_t *)
 {
   // Draw result to the screen
   // Called once at the end of the query
+
+  Printf("Reminder for options and selections: fAllConstrainedFlag = %d fMidPseudoRapidityFlag = %d fSelTrackRemoveKink = %d fSelTrackWithOnTheFlyV0 = %d fSelTrackMinClustersTPC = %d fSelTrackMinClustersITS = %d fSelTrackMaxChi2PerClusterTPC = %.2f fSelTrackMaxChi2PerClusterITS = %.2f fSelTrackMaxCov11 = %.2f fSelTrackMaxCov22 = %.2f fSelTrackMaxCov33 = %.2f fSelTrackMaxCov44 = %.2f fSelTrackMaxCov55 = %.2f fSelV0MaxDcaDaughters = %.2f fSelV0MinDecayLength= %.2f",
+	 fAllConstrainedFlag,
+	 fMidPseudoRapidityFlag,fSelTrackRemoveKink,fSelTrackWithOnTheFlyV0,
+	 fSelTrackMinClustersTPC,fSelTrackMinClustersITS,
+	 fSelTrackMaxChi2PerClusterTPC,fSelTrackMaxChi2PerClusterITS,
+	 fSelTrackMaxCov11,fSelTrackMaxCov22,fSelTrackMaxCov33,fSelTrackMaxCov44,fSelTrackMaxCov55,
+	 fSelV0MaxDcaDaughters,fSelV0MinDecayLength);
 
   fHistPtot = dynamic_cast<TH1F*> (GetOutputData(0));
   if (!fHistPtot) {
