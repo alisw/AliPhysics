@@ -36,7 +36,7 @@ class AliHMPIDRawStream: public TObject {
 	    Int_t    Ch( Int_t ddl,Int_t row,Int_t dil,Int_t pad    ) {return AliHMPIDParam::A2C(fPad[ddl][row][dil][pad]); }            //chamber number
 	    
 	    Int_t GetDDLNumber()  const { return fDDLNumber; }                                                                            // Provide current DDL number
-    inline Int_t GetCharge(Int_t ddl,Int_t row, Int_t dilogic, Int_t pad);                                                                         // Provide the charge observed in certain row,dilogic,pad channel
+    inline  Int_t GetCharge(Int_t ddl,Int_t row, Int_t dilogic, Int_t pad);                                                                         // Provide the charge observed in certain row,dilogic,pad channel
 	    inline Int_t GetPad(Int_t ddl,Int_t row,Int_t dil,Int_t pad);                                                                        //
 	    
 	    Int_t   Pc          ( Int_t ddl,Int_t row,Int_t dil,Int_t pad                            ) {return AliHMPIDParam::A2P(fPad[ddl][row][dil][pad]);}                                                 //PC position number
@@ -46,7 +46,21 @@ class AliHMPIDRawStream: public TObject {
 	    inline  Bool_t SetZeroSup (Bool_t isSup);
     inline  Bool_t GetZeroSup(); 
     inline  Int_t GetErrors(Int_t eType);                                                                                          //Get errors and occurance
-                     
+    
+    Bool_t ReadHMPIDRawData();                           // Read HMPID Raw data
+    Bool_t ReadSegment(UInt_t word32,Int_t &cntSegment); // Read Segment
+    Bool_t ReadRow(UInt_t word32,Int_t &cntRow);         // Read Row
+    Bool_t ReadDilogic(UInt_t word32,Int_t &cntDilogic); // Read Dilogic
+
+    Bool_t CheckRow(UInt_t row);                   // Check Row
+    Bool_t CheckDilogic(UInt_t dilogic);           // Check Dilogic
+    Bool_t CheckPad(UInt_t pad);                   // Check pad
+    Bool_t CheckEoE(UInt_t word,Int_t &nDil);       // Check EoE
+    Bool_t CheckRowMarker(UInt_t word);            // Check RowMarker
+    Bool_t CheckSegment(UInt_t word);              // Check Segment
+    void   DumpData(Int_t nw);                     // Dump Data
+    void   StorePosition();                        //
+    
     inline void    Raw            (UInt_t &w32,Int_t &ddl,Int_t &r,Int_t &d,Int_t &a);                                              //digit->(w32,ddl,r,d,a)
     inline void    Raw            (Int_t ddl,Int_t r,Int_t d,Int_t a);                                                              //raw->abs pad number
     inline Bool_t  Raw            (UInt_t  w32,Int_t  ddl,AliRawReader *pRR);                                                       //(w32,ddl)->digit
@@ -57,6 +71,12 @@ class AliHMPIDRawStream: public TObject {
     inline void   WriteSegMarker  (AliFstream *ddl,UInt_t row);   
     
 //    inline TClonesArray  ReMap(TClonesArray *pDigIn);
+enum EDirection {kFwd,kBwd};
+
+enum Ebits {kbit0,kbit1 , kbit2, kbit3, kbit4, kbit5, kbit6, kbit7, kbit8,
+                  kbit9 ,kbit10,kbit11,kbit12,kbit13,kbit14,kbit15,kbit16,
+                  kbit17,kbit18,kbit19,kbit20,kbit21,kbit22,kbit23,kbit24,
+                  kbit25,kbit26,kbit27,kbit28,kbit29,kbit30,kbit31,kbit32};
     
     enum EHMPIDRawStreamError {
       kRawDataSizeErr = 1,
@@ -91,27 +111,19 @@ class AliHMPIDRawStream: public TObject {
     AliHMPIDRawStream& operator = (const AliHMPIDRawStream& stream);
     AliHMPIDRawStream(const AliHMPIDRawStream& stream);
 
-    UInt_t           GetNextWord();
-
+    UInt_t           GetWord(Int_t n=1,EDirection dir=kFwd);             // Get n-th word
+    UInt_t           GetNextWord();                                      // Get next word
     Int_t            fCharge[kNDDL][kNRows+1][kNDILOGICAdd+1][kNPadAdd]; // Array for charge values for all channels in one DDL
-    
-    Int_t            fPad[kNDDL][kNRows+1][kNDILOGICAdd+1][kNPadAdd]; // Array for abs pad values for all channels in one DDL
-
-    UInt_t           fRawWord[kNDDL][kNRows+1][kNDILOGICAdd+1][kNPadAdd];
-    
-    Int_t            fNumOfErr[kSumErr];    // Store the numner of errors for a given error type
-        
-    Int_t            fDDLNumber;    // index of current DDL number
-
-    AliRawReader*    fRawReader;    // object for reading the raw data
-
-    UChar_t*         fData;         // raw data
-
-    Int_t            fPosition;     // current position in fData
-    
+    Int_t            fPad[kNDDL][kNRows+1][kNDILOGICAdd+1][kNPadAdd];    // Array for abs pad values for all channels in one DDL
+    UInt_t           fRawWord[kNDDL][kNRows+1][kNDILOGICAdd+1][kNPadAdd];// Array of raw words
+    Int_t            fNumOfErr[kSumErr];                                 // Store the numner of errors for a given error type
+    Int_t            fDDLNumber;                                         // index of current DDL number
+    AliRawReader*    fRawReader;                                         // object for reading the raw data
+    UChar_t*         fData;                                              // raw data
+    Int_t            fPosition;                                          // current position in fData
     Bool_t           fZeroSup;
 
-    ClassDef(AliHMPIDRawStream, 1)  // base class for reading HMPID raw digits
+    ClassDef(AliHMPIDRawStream, 1)                                       // base class for reading HMPID raw digits
 };
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDRawStream::Raw(UInt_t &w32,Int_t &ddl,Int_t &r,Int_t &d,Int_t &a)
