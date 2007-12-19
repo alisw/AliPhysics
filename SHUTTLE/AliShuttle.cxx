@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.75  2007/12/18 15:42:14  jgrosseo
+adding number of open runs to monitoring
+
 Revision 1.74  2007/12/17 03:23:32  jgrosseo
 several bugfixes
 added "empty preprocessor" as placeholder for Acorde in FDR
@@ -860,7 +863,7 @@ Bool_t AliShuttle::StoreRunMetadataFile(const char* localFile, const char* gridF
 	TString localBaseFolder = sto->GetBaseFolder();
 	
 	// Build Run level folder
-	// folder = /alice/data/year/lhcPeriod/runNb/Raw
+	// folder = /alice/data/year/lhcPeriod/runNb/raw
 	
 		
 	TString lhcPeriod = GetLHCPeriod();	
@@ -870,7 +873,7 @@ Bool_t AliShuttle::StoreRunMetadataFile(const char* localFile, const char* gridF
 		return 0;
 	}
 	
-	TString target = Form("%s/GRP/RunMetadata/alice/data/%d/%s/%09d/Raw/%s", 
+	TString target = Form("%s/GRP/RunMetadata/alice/data/%d/%s/%09d/raw/%s", 
 				localBaseFolder.Data(), GetCurrentYear(), 
 				lhcPeriod.Data(), GetCurrentRun(), gridFileName);
 					
@@ -982,7 +985,7 @@ Bool_t AliShuttle::CopyFilesToGrid(const char* type)
 			return 0;
 		}
 		
-		dir = Form("%s/GRP/RunMetadata/alice/data/%d/%s/%09d/Raw", 
+		dir = Form("%s/GRP/RunMetadata/alice/data/%d/%s/%09d/raw", 
 				localBaseFolder.Data(), GetCurrentYear(), 
 				lhcPeriod.Data(), GetCurrentRun());
 		alienDir = dir(dir.Index("/alice/data/"), dir.Length());
