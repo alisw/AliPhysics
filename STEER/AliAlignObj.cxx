@@ -155,7 +155,7 @@ Int_t AliAlignObj::GetLevel() const
   // slashes in the corresponding volume path
   //
   if(!gGeoManager){
-    AliWarning("gGeoManager doesn't exist or it is still opened: unable to return meaningful level value.");
+    AliWarning("gGeoManager doesn't exist or it is still open: unable to return meaningful level value.");
     return (-1);
   }
   const char* symname = GetSymName();
@@ -514,7 +514,7 @@ Bool_t AliAlignObj::SetLocalMatrix(const TGeoMatrix& m)
   // returns false and the object parameters are not set.
   //
   if (!gGeoManager || !gGeoManager->IsClosed()) {
-    AliError("Can't set the alignment object parameters! gGeoManager doesn't exist or it is still opened!");
+    AliError("Can't set the local alignment object parameters! gGeoManager doesn't exist or it is still open!");
     return kFALSE;
   }
 
@@ -522,7 +522,11 @@ Bool_t AliAlignObj::SetLocalMatrix(const TGeoMatrix& m)
   TGeoPhysicalNode* node;
   TGeoPNEntry* pne = gGeoManager->GetAlignableEntry(symname);
   if(pne){
-    node = gGeoManager->MakeAlignablePN(pne);
+    if(!pne->GetPhysicalNode()){
+      node = gGeoManager->MakeAlignablePN(pne);
+    }else{
+      node = pne->GetPhysicalNode();
+    }
   }else{
     AliWarning(Form("The symbolic volume name %s does not correspond to a physical entry. Using it as volume path!",symname));
     node = (TGeoPhysicalNode*) gGeoManager->MakePhysicalNode(symname);
@@ -612,7 +616,7 @@ Bool_t AliAlignObj::GetLocalMatrix(TGeoHMatrix& m) const
   // returns false and the object parameters are not set.
   //
   if (!gGeoManager || !gGeoManager->IsClosed()) {
-    AliError("Can't set the alignment object parameters! gGeoManager doesn't exist or it is still opened!");
+    AliError("Can't get the local alignment object parameters! gGeoManager doesn't exist or it is still open!");
     return kFALSE;
   }
 
@@ -620,7 +624,11 @@ Bool_t AliAlignObj::GetLocalMatrix(TGeoHMatrix& m) const
   TGeoPhysicalNode* node;
   TGeoPNEntry* pne = gGeoManager->GetAlignableEntry(symname);
   if(pne){
-    node = gGeoManager->MakeAlignablePN(pne);
+    if(!pne->GetPhysicalNode()){
+      node = gGeoManager->MakeAlignablePN(pne);
+    }else{
+      node = pne->GetPhysicalNode();
+    }
   }else{
     AliWarning(Form("The symbolic volume name %s does not correspond to a physical entry. Using it as volume path!",symname));
     node = (TGeoPhysicalNode*) gGeoManager->MakePhysicalNode(symname);
@@ -651,10 +659,15 @@ Bool_t AliAlignObj::ApplyToGeometry(Bool_t ovlpcheck)
   // valid neither to get a TGeoPEntry nor as a volume path
   //
   if (!gGeoManager || !gGeoManager->IsClosed()) {
-    AliError("Can't apply the alignment object! gGeoManager doesn't exist or it is still opened!");
+    AliError("Can't apply the alignment object! gGeoManager doesn't exist or it is still open!");
     return kFALSE;
   }
   
+  if (gGeoManager->IsLocked()){
+    AliError("Can't apply the alignment object! Geometry is locked!");
+    return kFALSE;
+  }
+
   const char* symname = GetSymName();
   const char* path;
   TGeoPhysicalNode* node;
