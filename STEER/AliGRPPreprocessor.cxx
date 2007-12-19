@@ -325,7 +325,7 @@ UInt_t AliGRPPreprocessor::ProcessDaqFxs() {
   	return 3;
   }
   
-  return 3;
+  return 0;
   
 }
 
