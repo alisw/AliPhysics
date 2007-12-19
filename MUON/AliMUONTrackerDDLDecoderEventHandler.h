@@ -141,47 +141,87 @@ public:
 	/// - param UInt_t The size in bytes of the memory buffer.
 	void OnNewBuffer(const void* /*buffer*/, UInt_t /*bufferSize*/) {}
 	
+	/// The OnEndOfBuffer method will be called whenever the buffer containing
+	/// a DDL payload has been processed. For each OnNewBuffer method call a
+	/// symmetric call to OnEndOfBuffer is made at the end of processing (after
+	/// the last call to OnData)
+	/// The default behaviour of this method is to do nothing.
+	/// - param const void*  The pointer to the start of the memory buffer storing
+	///                the DDL payload.
+	/// - param UInt_t The size in bytes of the memory buffer.
 	void OnEndOfBuffer(const void* /*buffer*/, UInt_t /*bufferSize*/) {}
 	
 	/// OnNewBlock is called whenever a new block header is found in the payload.
 	/// The default behaviour of this method is to do nothing.
-	/// - param const AliMUONBlockHeaderStruct* This is a pointer to the block header as found in the
-	///                DDL payload.
+	/// - param const AliMUONBlockHeaderStruct* This is a pointer to the block header
+	///                as found in the DDL payload.
 	/// - param const void* This is a pointer to the start of the block's contents.
-	/// Note: both pointers point into the memory buffer being parsed so the
+	/// Note: both pointers point into the memory buffer being parsed, so the
 	/// contents must not be modified. On the other hand this is very efficient
 	/// because no memory copying is required.
 	void OnNewBlock(const AliMUONBlockHeaderStruct* /*header*/, const void* /*data*/) {}
 	
+	/// OnEndOfBlock is called whenever a block has been processed. Symmetric
+	/// calls are made to OnEndOfBlock after each call to OnNewBlock. This happens
+	/// once all DSP structures contained inside the current block have been
+	/// processed.
+	/// The default behaviour of this method is to do nothing.
+	/// - param const AliMUONBlockHeaderStruct* This is a pointer to the processed
+	///                block header as found in the DDL payload.
+	/// - param const void* This is a pointer to the start of the block's contents.
+	/// Note: both pointers point into the memory buffer being parsed, so the
+	/// contents must not be modified. On the other hand this is very efficient
+	/// because no memory copying is required.
 	void OnEndOfBlock(const AliMUONBlockHeaderStruct* /*header*/, const void* /*data*/) {}
 	
 	/// OnNewDSP is called whenever a new DSP header is found in the payload.
 	/// Every DSP header recevied by a call to OnNewDSP is associated to the
 	/// block header received in the most recent call to OnNewBlock.
 	/// The default behaviour of this method is to do nothing.
-	/// - param const AliMUONDSPHeaderStruct*  This is a pointer to the DSP header as found in the
-	///                DDL payload.
+	/// - param const AliMUONDSPHeaderStruct*  This is a pointer to the DSP header
+	///                as found in the DDL payload.
 	/// - param const void*  This is a pointer to the start of the DSP's contents.
-	/// Note: both pointers point into the memory buffer being parsed so the
+	/// Note: both pointers point into the memory buffer being parsed, so the
 	/// contents must not be modified. On the other hand this is very efficient
 	/// because no memory copying is required.
 	void OnNewDSP(const AliMUONDSPHeaderStruct* /*header*/, const void* /*data*/) {}
 	
+	/// OnEndOfDSP is called whenever a DSP header has already been processed.
+	/// For every call to OnNewDSP a symmetric call to OnEndOfDSP is made once
+	/// all the bus patch structured contained in the DSP are processed.
+	/// The default behaviour of this method is to do nothing.
+	/// - param const AliMUONDSPHeaderStruct*  This is a pointer to the already
+	///                processed DSP header as found in the DDL payload.
+	/// - param const void*  This is a pointer to the start of the DSP's contents.
+	/// Note: both pointers point into the memory buffer being parsed, so the
+	/// contents must not be modified. On the other hand this is very efficient
+	/// because no memory copying is required.
 	void OnEndOfDSP(const AliMUONDSPHeaderStruct* /*header*/, const void* /*data*/) {}
 	
 	/// OnNewBusPatch is called whenever a new bus patch header is found in
-	/// the payload. Every bus patch recevied by a call to OnNewBusPatch is
+	/// the payload. Every bus patch received by a call to OnNewBusPatch is
 	/// associated to the DSP header received in the most recent call to OnNewDSP.
 	/// The default behaviour of this method is to do nothing.
-	/// - param const AliMUONBusPatchHeaderStruct*  This is a pointer to the bus patch header as found
-	///                 in the DDL payload.
+	/// - param const AliMUONBusPatchHeaderStruct*  This is a pointer to the bus patch
+	///                header as found in the DDL payload.
+	/// - param const void*  This is a pointer to the start of the bus patch's contents,
+	///              specifically the raw data words.
+	/// Note: both pointers point into the memory buffer being parsed, so the
+	/// contents must not be modified. On the other hand this is very efficient
+	/// because no memory copying is required.
+	void OnNewBusPatch(const AliMUONBusPatchHeaderStruct* /*header*/, const void* /*data*/) {}
+	
+	/// OnEndOfBusPatch is called whenever a bus patch has been processed.
+	/// For every call to OnNewBusPatch a symmetric call to OnEndOfBusPatch is
+	/// made once the bus patch is completely processed (no more OnData calls).
+	/// The default behaviour of this method is to do nothing.
+	/// - param const AliMUONBusPatchHeaderStruct*  This is a pointer to the already
+	///                processed bus patch header, as found in the DDL payload.
 	/// - param const void*  This is a pointer to the start of the bus patch's contents,
 	///              specifically the raw data words.
 	/// Note: both pointers point into the memory buffer being parsed so the
 	/// contents must not be modified. On the other hand this is very efficient
 	/// because no memory copying is required.
-	void OnNewBusPatch(const AliMUONBusPatchHeaderStruct* /*header*/, const void* /*data*/) {}
-	
 	void OnEndOfBusPatch(const AliMUONBusPatchHeaderStruct* /*header*/, const void* /*data*/) {}
 	
 	/// OnData is called for every raw data word found within a bus patch.
@@ -239,4 +279,125 @@ public:
 	static const char* ErrorCodeToMessage(ErrorCode code);
 };
 
+//_____________________________________________________________________________
+
+inline const char* AliMUONTrackerDDLDecoderEventHandler::ErrorCodeToString(ErrorCode code)
+{
+	/// This is a utility method which converts an error code to a string
+	/// representation for printing purposes.
+	/// \param code  The error code as received in OnError for example.
+	/// \return  An ANSI string containing the name of the error code symbol.
+	
+	switch (code)
+	{
+	case kNoError: return "kNoError";
+	case kBufferTooBig: return "kBufferTooBig";
+	case kTooManyBlocks: return "kTooManyBlocks";
+	case kTooManyDSPs: return "kTooManyDSPs";
+	case kTooManyBusPatches: return "kTooManyBusPatches";
+	case kNoBlockHeader: return "kNoBlockHeader";
+	case kBadBlockKey: return "kBadBlockKey";
+	case kBadBlockLength: return "kBadBlockLength";
+	case kBadBlockTotalLength: return "kBadBlockTotalLength";
+	case kBlockLengthMismatch: return "kBlockLengthMismatch";
+	case kNoDSPHeader: return "kNoDSPHeader";
+	case kBadDSPKey: return "kBadDSPKey";
+	case kBadDSPLength: return "kBadDSPLength";
+	case kBadDSPTotalLength: return "kBadDSPTotalLength";
+	case kDSPLengthMismatch: return "kDSPLengthMismatch";
+	case kNoBusPatchHeader: return "kNoBusPatchHeader";
+	case kBadBusPatchKey: return "kBadBusPatchKey";
+	case kBadBusPatchLength: return "kBadBusPatchLength";
+	case kBadBusPatchTotalLength: return "kBadBusPatchTotalLength";
+	case kBusPatchLengthMismatch: return "kBusPatchLengthMismatch";
+	case kGlitchFound: return "kGlitchFound";
+	case kBadPaddingWord: return "kBadPaddingWord";
+	case kParityError: return "kParityError";
+	default: return "INVALID";
+	}
+}
+
+
+inline const char* AliMUONTrackerDDLDecoderEventHandler::ErrorCodeToMessage(ErrorCode code)
+{
+	/// This is a utility method which converts an error code to user friendly
+	/// descriptive message useful for printing to the screen.
+	/// \param code  The error code as received in OnError for example.
+	/// \return  An ANSI string containing a descriptive message of the error.
+	
+	switch (code)
+	{
+	case kNoError:
+		return "Decoding was successful.";
+	case kBufferTooBig:
+		return "The DDL raw data is larger than indicated by the headers;"
+		       " extra bytes are probably just garbage.";
+	case kTooManyBlocks:
+		return "Too many block structures found.";
+	case kTooManyDSPs:
+		return "Too many DSP structures found in the block.";
+	case kTooManyBusPatches:
+		return "Too many bus patch structures found in the DSP structure.";
+	case kNoBlockHeader:
+		return "Missing a block header.";
+	case kBadBlockKey:
+		return "The block header key word does not contain the correct value.";
+	case kBadBlockLength:
+		return "The block length field points past the end of the raw data size.";
+	case kBadBlockTotalLength:
+		return "The total block length field points past the end of the"
+		       " raw data size.";
+	case kBlockLengthMismatch:
+		return "The block length and total length fields do not correspond."
+		       " One or both of these values is incorrect.";
+	case kNoDSPHeader:
+		return "Missing a DSP header.";
+	case kBadDSPKey:
+		return "The DSP header key word does not contain the correct value.";
+	case kBadDSPLength:
+		return "The DSP structure length field points past the end of the"
+		       " block structure.";
+	case kBadDSPTotalLength:
+		return "The total DSP structure length field points past the end of"
+		       " the block structure.";
+	case kDSPLengthMismatch:
+		return "The DSP structure length and total length fields do not"
+		       " correspond. One or both of these values is incorrect.";
+	case kNoBusPatchHeader:
+		return "Missing a bus patch header.";
+	case kBadBusPatchKey:
+		return "The bus patch header key word does not contain the correct value.";
+	case kBadBusPatchLength:
+		return "The bus patch length field points past the end of the"
+		       " DSP structure.";
+	case kBadBusPatchTotalLength:
+		return "The total bus patch length field points past the end of"
+		       " the DSP structure.";
+	case kBusPatchLengthMismatch:
+		return "The bus patch length and total length fields do not correspond."
+		       " One or both of these values is incorrect.";
+	case kGlitchFound:
+		return "Found a glitch. This means a 1 byte word has been randomly"
+		       " inserted into the raw data by mistake.";
+	case kBadPaddingWord:
+		return "The padding word does not contain the correct value.";
+	case kParityError:
+		return "Found a parity error in the data word.";
+	default:
+		return "Unknown error code!";
+	}
+}
+
+
+inline std::ostream& operator << (std::ostream& os, AliMUONTrackerDDLDecoderEventHandler::ErrorCode code)
+{
+	/// This is the stream operator for std::ostream classes to be able to
+	/// easily write the error messages associated with the error codes generated
+	/// by the decoder to 'cout' or 'cerr' for example.
+	
+	os << AliMUONTrackerDDLDecoderEventHandler::ErrorCodeToMessage(code);
+	return os;
+}
+
 #endif // ALIMUONTRACKERDDLDECODEREVENTHANDLER_H
+
