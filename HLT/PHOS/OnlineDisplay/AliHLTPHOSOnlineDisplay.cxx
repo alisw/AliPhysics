@@ -132,6 +132,7 @@ AliHLTPHOSOnlineDisplay::GetRawData(TH1D *histogramPtr, int x, int z, int gain)
 void
 AliHLTPHOSOnlineDisplay::ShowRawData()
 {
+
   int tmpStartZ =  fgRawMenuPtr->GetStartZ();
   int tmpEndZ =    fgRawMenuPtr->GetEndZ();  
   int tmpStartX =  fgRawMenuPtr->GetStartX();
@@ -266,7 +267,7 @@ AliHLTPHOSOnlineDisplay::ScanArguments(int argc, char** argv)
 	      i++;
 	      sprintf(fgHosts[fgNHosts],"%s", argv[i]);
 	      fgNHosts ++; 
-	      cout <<"fgNHosts set to"<< fgNHosts <<endl;
+	      cout <<"fgNHosts set to "<< fgNHosts <<endl;
 	      hostIsSet = kTRUE; 
 	      if(i+1 <= argc)
 		{

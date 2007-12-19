@@ -18,13 +18,13 @@ class AliHLTPHOSOnlineDisplayCalibTab : public AliHLTPHOSOnlineDisplayTab
 {
  public:
   AliHLTPHOSOnlineDisplayCalibTab();
-  AliHLTPHOSOnlineDisplayCalibTab(TGTab  *tabPtr, AliHLTHOMERReader *homerSyncPtr, AliHLTHOMERReader *homerPtrs[MAX_HOSTS], int nHosts);
+  AliHLTPHOSOnlineDisplayCalibTab(TGTab  *tabPtr, HOMERReader *homerSyncPtr, HOMERReader *homerPtrs[MAX_HOSTS], int nHosts);
   virtual ~AliHLTPHOSOnlineDisplayCalibTab();
 
   void InitDisplay(TGTab *tabPtr);
   void UpdateDisplay();
   int GetNextEvent();
-  virtual void ReadBlockData(AliHLTHOMERReader *homeReaderPtr);
+  virtual void ReadBlockData(HOMERReader *homeReaderPtr);
   void ResetDisplay();
 
   TH2D *fgCalibHistPtr[N_GAINS];

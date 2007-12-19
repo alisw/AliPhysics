@@ -5,9 +5,9 @@
  * See cxx source for full Copyright notice */
 
 
-#include "AliHLTHOMERData.h"
-#include "AliHLTHOMERReader.h"
-#include "AliHLTHOMERWriter.h"
+#include "HOMERData.h"
+#include "HOMERReader.h"
+#include "HOMERWriter.h"
 #include "Rtypes.h"
 #include <TGFrame.h>
 #include "TH2.h"
@@ -72,8 +72,8 @@ class AliHLTPHOSOnlineDisplay : public  TGMainFrame, public AliHLTPHOSBase
   static AliHLTPHOSOnlineDisplay* fgInstancePtr;
   static unsigned int fgNHosts;
   static unsigned int fgNPorts;
-  static AliHLTHOMERReader* fgHomerReaderPtr;
-  static AliHLTHOMERReader* fgHomerReadersPtr[MAX_HOSTS];
+  static HOMERReader* fgHomerReaderPtr;
+  static HOMERReader* fgHomerReadersPtr[MAX_HOSTS];
   static char  *fgHosts[MAX_HOSTS];
   static short unsigned    *fgPorts;
   static Bool_t fgAccumulate;

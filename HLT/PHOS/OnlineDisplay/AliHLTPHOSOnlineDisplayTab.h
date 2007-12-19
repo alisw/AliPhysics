@@ -2,7 +2,7 @@
 #define ALIHLTPHOSONLINEDISPLAYTAB_H
 
 #include "TGTab.h"
-//#include "AliHLTHOMERReader.h"
+#include "HOMERReader.h"
 #include "AliHLTPHOSCommonDefs.h"
 #include "AliHLTPHOSConstants.h"
 #include "AliHLTPHOSBase.h"
@@ -18,7 +18,7 @@
 
 using namespace PhosHLTConst;
 
-class AliHLTHOMERReader;
+class HOMERReader;
 
 
 class AliHLTPHOSOnlineDisplayTab : public TGTab, public AliHLTPHOSBase
@@ -27,15 +27,15 @@ class AliHLTPHOSOnlineDisplayTab : public TGTab, public AliHLTPHOSBase
   virtual ~AliHLTPHOSOnlineDisplayTab();
   AliHLTPHOSOnlineDisplayTab();
   virtual void InitDisplay(TGTab *tabPtr) = 0;
-  void PrintBlockInfo(AliHLTHOMERReader *homeReaderPtr, int i);
-  int GetEventInfo(AliHLTHOMERReader *homeReaderPtr, int i);
-  virtual void ReadBlockData(AliHLTHOMERReader *homeReaderPtr) = 0;
+  void PrintBlockInfo(HOMERReader *homeReaderPtr, int i);
+  int GetEventInfo(HOMERReader *homeReaderPtr, int i);
+  virtual void ReadBlockData(HOMERReader *homeReaderPtr) = 0;
 
  protected:
   Bool_t fgAccumulate;
   Bool_t fgSyncronize;
-  AliHLTHOMERReader* fgHomerReaderPtr;
-  AliHLTHOMERReader* fgHomerReadersPtr[MAX_HOSTS];
+  HOMERReader* fgHomerReaderPtr;
+  HOMERReader* fgHomerReadersPtr[MAX_HOSTS];
   int DoGetNextEvent();
   int fgEvntCnt;
   int fgNHosts;

@@ -23,7 +23,7 @@ using namespace PhosHLTConst;
 
  
 class AliHLTPHOSGetEventButton;
-class AliHLTHOMERReader;
+class HOMERReader;
 //class AliHLTPHOSRcuCellEnergyDataStruct;
 class AliHLTPHOSRcuCellEnergyDataStruct;
 class AliHLTPHOSOnlineDisplay;
@@ -34,7 +34,7 @@ class AliHLTPHOSOnlineDisplayEventTab : public AliHLTPHOSOnlineDisplayTab
 {
  public:
   virtual ~AliHLTPHOSOnlineDisplayEventTab();
-  AliHLTPHOSOnlineDisplayEventTab(AliHLTPHOSOnlineDisplay *onlineDisplayPtr, TGTab *tabPtr, AliHLTHOMERReader *fgHomerReaderPtr, AliHLTHOMERReader *fgHomerReadersPtr[MAX_HOSTS], int nHosts);
+  AliHLTPHOSOnlineDisplayEventTab(AliHLTPHOSOnlineDisplay *onlineDisplayPtr, TGTab *tabPtr, HOMERReader *fgHomerReaderPtr, HOMERReader *fgHomerReadersPtr[MAX_HOSTS], int nHosts);
   //  void GetRawData(TH1D *histPtr);
   //AliHLTPHOSOnlineDisplayEventTab::GetRawData(TH1D *histPtr, int mod, int rcuX, int rcuZ, int x, int z, int gain)
   void GetRawData(TH1D *histPtr, int mod, int rcuX, int rcuZ, int x, int z, int gain);
@@ -42,7 +42,7 @@ class AliHLTPHOSOnlineDisplayEventTab : public AliHLTPHOSOnlineDisplayTab
 
   void UpdateDisplay();
   int GetNextEvent();
-  virtual void ReadBlockData(AliHLTHOMERReader *homeReaderPtr);
+  virtual void ReadBlockData(HOMERReader *homeReaderPtr);
   void ResetDisplay();
   TGTab               *fTab;
   TGTab               *fSubTab1;

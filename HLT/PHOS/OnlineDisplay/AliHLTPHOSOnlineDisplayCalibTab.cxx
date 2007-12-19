@@ -1,8 +1,7 @@
 #include  "AliHLTPHOSOnlineDisplayCalibTab.h"
-#include  <iostream>
-#include  "AliHLTPHOSRcuCellAccumulatedEnergyDataStruct.h"
-#include  "AliHLTPHOSGetEventButton.h"
-#include  "AliHLTHOMERReader.h"
+#include <iostream>
+#include "AliHLTPHOSRcuCellAccumulatedEnergyDataStruct.h"
+#include "AliHLTPHOSGetEventButton.h"
 
 using namespace std;
 
@@ -13,7 +12,7 @@ AliHLTPHOSOnlineDisplayCalibTab::AliHLTPHOSOnlineDisplayCalibTab()
   cout << "AliHLTPHOSOnlineDisplayCalibTab:ERROR: You cannot create a onlinedisplay Tab without arguments" << endl;
 }
 
-AliHLTPHOSOnlineDisplayCalibTab::AliHLTPHOSOnlineDisplayCalibTab(TGTab  *tabPtr, AliHLTHOMERReader *homerSyncPtr, AliHLTHOMERReader *homerPtrs[MAX_HOSTS], int nHosts)
+AliHLTPHOSOnlineDisplayCalibTab::AliHLTPHOSOnlineDisplayCalibTab(TGTab  *tabPtr, HOMERReader *homerSyncPtr, HOMERReader *homerPtrs[MAX_HOSTS], int nHosts)
 {
   for(int i=0; i<MAX_HOSTS; i++)
     {
@@ -39,7 +38,7 @@ AliHLTPHOSOnlineDisplayCalibTab::~AliHLTPHOSOnlineDisplayCalibTab()
 }
 
 void
-AliHLTPHOSOnlineDisplayCalibTab::ReadBlockData(AliHLTHOMERReader *homerReaderPtr)
+AliHLTPHOSOnlineDisplayCalibTab::ReadBlockData(HOMERReader *homerReaderPtr)
 {
   unsigned long blk = homerReaderPtr->FindBlockNdx("UCCARENE","SOHP", 0xFFFFFFFF );
 

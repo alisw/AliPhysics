@@ -4,7 +4,6 @@
 #include "AliHLTPHOSGetEventButton.h"
 //#include "AliHLTPHOSRcuChannelDataStruct.h"
 #include "AliHLTPHOSRcuCellEnergyDataStruct.h"
-#include "AliHLTHOMERReader.h"
 
 using namespace std;
 
@@ -13,7 +12,7 @@ AliHLTPHOSOnlineDisplayRawTab::AliHLTPHOSOnlineDisplayRawTab()
   cout << "AliHLTPHOSOnlineDisplayRawTab:ERROR: You cannot create a onlinedisplay Tab without arguments" << endl;
 }
 
-AliHLTPHOSOnlineDisplayRawTab::AliHLTPHOSOnlineDisplayRawTab(TGTab  *tabPtr, AliHLTHOMERReader *homerSyncPtr, AliHLTHOMERReader *homerPtrs[MAX_HOSTS], int nHosts)
+AliHLTPHOSOnlineDisplayRawTab::AliHLTPHOSOnlineDisplayRawTab(TGTab  *tabPtr, HOMERReader *homerSyncPtr, HOMERReader *homerPtrs[MAX_HOSTS], int nHosts)
 {
   for(int i=0; i<MAX_HOSTS; i++)
     {
@@ -40,7 +39,7 @@ AliHLTPHOSOnlineDisplayRawTab::~AliHLTPHOSOnlineDisplayRawTab()
 
 
 void
-AliHLTPHOSOnlineDisplayRawTab::ReadBlockData(AliHLTHOMERReader *homerReaderPtr)
+AliHLTPHOSOnlineDisplayRawTab::ReadBlockData(HOMERReader *homerReaderPtr)
 {
   unsigned long blk = homerReaderPtr->FindBlockNdx("ATADNAHC","SOHP", 0xeFFFFFFF );
   
@@ -65,7 +64,7 @@ AliHLTPHOSOnlineDisplayRawTab::ReadBlockData(AliHLTHOMERReader *homerReaderPtr)
       tmpChCnt = rcuChannelDataPtr->fCnt;
  
       cout << "tmpChCnt = " << tmpChCnt << endl; 
-      
+      /*
       for( AliHLTUInt32_t ch =0; ch < tmpChCnt; ch ++)
 	{
 	  {
@@ -89,7 +88,7 @@ AliHLTPHOSOnlineDisplayRawTab::ReadBlockData(AliHLTHOMERReader *homerReaderPtr)
 	      }
 	  }
 	}
-
+      */
       blk =  homerReaderPtr->FindBlockNdx("ATADNAHC","SOHP", 0xeFFFFFFF, blk+1);
 
     }
