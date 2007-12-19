@@ -118,8 +118,9 @@ AliHLTPHOSDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtData, 
   outBPtr = outputPtr;
   const AliHLTComponentBlockData* iter = 0; 
   unsigned long ndx; 
-  fDigitContainerPtr = (AliHLTPHOSDigitContainerDataStruct*)outBPtr;
-  //fDigitMakerPtr->SetDigitContainerStruct(fDigitContainerPtr);
+
+  UInt_t specification = 0;
+  
   fDigitMakerPtr->SetDigitContainerStruct((AliHLTPHOSDigitContainerDataStruct*)outBPtr);
 
   for( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
@@ -128,10 +129,11 @@ AliHLTPHOSDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtData, 
       
       if(iter->fDataType != AliHLTPHOSDefinitions::fgkCellEnergyDataType)
 	{
-	  //	  cout << "Warning: data type is not fgkCellEnergyDataType " << endl;
+	  //cout << "Warning: data type is not fgkCellEnergyDataType " << endl;
 	  continue;
 
 	}
+      specification = specification|iter->fSpecification;
       digitCount = fDigitMakerPtr->MakeDigits(reinterpret_cast<AliHLTPHOSRcuCellEnergyDataStruct*>(iter->fPtr));
     }
 
@@ -147,12 +149,12 @@ AliHLTPHOSDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtData, 
   bd.fOffset = offset;
   bd.fSize = mysize;
   bd.fDataType = AliHLTPHOSDefinitions::fgkAliHLTDigitDataType;
-  bd.fSpecification = 0xFFFFFFFF;
+  bd.fSpecification = specification;
   outputBlocks.push_back( bd );
        
   tSize += mysize;
   outBPtr += mysize;
-      
+  //cout << "Size of digit container: " << mysize << endl;
   if( tSize > size )
     {
       Logging( kHLTLogFatal, "HLT::AliHLTPHOSDigitMakerComponent::DoEvent", "Too much data",
@@ -166,7 +168,7 @@ AliHLTPHOSDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtData, 
   
 
 
-  if(fPhosEventCount % 10 == 0)
+  if(fPhosEventCount % 500 == 0)
     {
       cout << "Event #: " << fPhosEventCount << endl;
       cout << "  - Number of digits found: " << digitCount << endl;
@@ -185,10 +187,20 @@ AliHLTPHOSDigitMakerComponent::DoInit(int argc, const char** argv )
   
   for(int i = 0; i < argc; i++)
     {
-      if(!strcmp("-threshold", argv[i]))
-	fDigitMakerPtr->SetDigitThreshold(atoi(argv[i+1]));
-      if(!strcmp("-presamples", argv[i]))
-	fDigitMakerPtr->SetNrPresamples(atoi(argv[i+1]));
+      if(!strcmp("-rmsfilepath", argv[i]))
+	{
+	  fDigitMakerPtr->SetDigitThresholds(argv[i+1], 3);
+	}
+      if(!strcmp("-lowgainfactor", argv[i]))
+	{
+	  fDigitMakerPtr->SetGlobalLowGainFactor(atof(argv[i+1]));
+	  cout << atof(argv[i+1]) << endl;
+	}
+      if(!strcmp("-highgainfactor", argv[i]))
+	{
+	  fDigitMakerPtr->SetGlobalHighGainFactor(atof(argv[i+1]));
+	  cout << atof(argv[i+1]) << endl;
+	}
     }
  
   //fDigitMakerPtr->SetDigitThreshold(2);

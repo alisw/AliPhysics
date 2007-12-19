@@ -41,6 +41,11 @@ AliHLTPHOSRawAnalyzerPeakFinderComponent::AliHLTPHOSRawAnalyzerPeakFinderCompone
 AliHLTPHOSRawAnalyzerPeakFinderComponent::~AliHLTPHOSRawAnalyzerPeakFinderComponent()
 {
 
+  if(fAnalyzerPtr)
+    {
+      delete fAnalyzerPtr;
+      fAnalyzerPtr = 0;
+    }
 }
 
 
@@ -50,6 +55,19 @@ AliHLTPHOSRawAnalyzerPeakFinderComponent::AliHLTPHOSRawAnalyzerPeakFinderCompone
 
 }
 
+//-----------------------------------------------------------------------------------------------------------
+int
+AliHLTPHOSRawAnalyzerPeakFinderComponent::Deinit()
+{
+  
+  if(fAnalyzerPtr)
+    {
+      delete fAnalyzerPtr;
+      fAnalyzerPtr = 0;
+    }
+  Logging(kHLTLogInfo, "HLT", "PHOS", ",AliHLTPHOSRawAnalyzerCrudeComponent Deinit");
+  return 0;
+}
 
 //___________________________________________________________________________________________________________
 const char* 

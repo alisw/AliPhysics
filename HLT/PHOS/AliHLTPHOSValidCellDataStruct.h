@@ -24,9 +24,10 @@
 
 struct AliHLTPHOSValidCellDataStruct
 {
-  AliHLTUInt8_t fZ;
-  AliHLTUInt8_t fX;
-  AliHLTUInt8_t fGain;
+  Int_t fX;
+  Int_t fZ;
+  Int_t fID;
+  Int_t fGain;
   Float_t fEnergy;
   Float_t fTime;
   Int_t fCrazyness;
@@ -34,7 +35,6 @@ struct AliHLTPHOSValidCellDataStruct
   Int_t *fData;
   //  Int_t fData[N_DATA_SAMPLES];
 };
-
 
 #endif
 

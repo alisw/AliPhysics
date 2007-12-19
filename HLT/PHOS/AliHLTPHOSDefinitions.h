@@ -34,6 +34,7 @@ public:
   static const AliHLTComponentDataType fgkAliHLTNoiseMapDataType; //Noise map data type
   static const AliHLTComponentDataType fgkAliHLTSandboxDataType; //General data type
   static const AliHLTComponentDataType fgkEmcCalibDataType; //Calibration data type
+  static const AliHLTComponentDataType fgkCaloClusterDataType; //Calo cluster data type
 };
 
 #endif

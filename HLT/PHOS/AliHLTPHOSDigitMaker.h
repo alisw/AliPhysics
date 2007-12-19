@@ -81,16 +81,31 @@ public:
   void SetDigitArray(TClonesArray *array) { fDigitArrayPtr = array; }
 
   /** 
-   * Sets the digit threshold 
-   * @param threshold the threshold
+   * Sets the digit thresholds
+   * @param filepath is the path to a file containing RMS
+   *                 histograms for both gains
+   * @param nSigmas is the number of sigmas to put the threshold
    */
-  void SetDigitThreshold(Int_t threshold) { fDigitThreshold = threshold; }
+  void SetDigitThresholds(const char* filepath, Int_t nSigmas);
+  
 
   /**
    * Sets the number of pre samples
    * @param n the number of pre samples
    */
-  void SetNrPresamples(Int_t n) { fNrPresamples = n; }
+  //void SetNrPresamples(Int_t n) { fNrPresamples = n; }
+
+  /**
+   * Set the global high gain conversion factory 
+   * @param factor is the conversion factor
+   */
+  void SetGlobalHighGainFactor(Float_t factor);
+
+  /**
+   * Set the global low gain conversion factory 
+   * @param factor is the conversion factor
+   */
+  void SetGlobalLowGainFactor(Float_t factor);
 
   /**
    * Make the digits for one event.
@@ -120,14 +135,17 @@ private:
   AliHLTPHOSDigitDataStruct *fDigitStructPtr;                    //! transient
 
   /** Digit count */
-  Int_t fDigitCount; 
+  Int_t fDigitCount;                                             //COMMENT
 
-  /** Number of presamples */
-  Int_t fNrPresamples; 
+  /** High gain energy conversion factors */
+  Float_t fHighGainFactors[N_XCOLUMNS_MOD][N_ZROWS_MOD];         //COMMENT
 
-  /** Threshold for making digit ( zero suppression threshold) */
-  Float_t fDigitThreshold; 
-  AliHLTPHOSSharedMemoryInterface *fShmPtr; //added by PTH
+  /** Low gain energy conversion factors */
+  Float_t fLowGainFactors[N_XCOLUMNS_MOD][N_ZROWS_MOD];          //COMMENT
+
+   /** Threshold for making digit ( zero suppression threshold) */
+  Float_t fDigitThresholds[N_XCOLUMNS_MOD][N_ZROWS_MOD][N_GAINS]; //COMMENT
+
   ClassDef(AliHLTPHOSDigitMaker, 1); 
 };
 

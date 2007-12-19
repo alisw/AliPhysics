@@ -50,7 +50,7 @@ AliHLTPHOSSharedMemoryInterface::NextChannel()
 {
   // Returns the next channel of the current AliHLTPHOSRcuCellEnergyDataStruct
   // Returns zero when all cannels are read
-
+  /*
   if(fCurrentCnt < fMaxCnt)
     {
      fCurrentChannel = &fCellEnergiesPtr->fValidData[fCurrentCnt];
@@ -58,6 +58,32 @@ AliHLTPHOSSharedMemoryInterface::NextChannel()
      fIntPtr +=  fCurrentChannel->fNSamples;
      fCurrentCnt ++;
      return fCurrentChannel;
+    }
+  */
+  // Added by OD
+
+  if(fCurrentCnt < fMaxCnt)
+    {
+      for(Int_t x = 0; x < N_XCOLUMNS_MOD; x++)
+	{
+	  for(Int_t z = 0; z < N_ZROWS_MOD; z++)
+	    {
+	      for(Int_t gain = 0; gain < N_GAINS; gain++)
+		{
+		  fCurrentChannel =  &(fCellEnergiesPtr->fValidData[x][z][gain]);
+		  if(fCurrentChannel->fEnergy > 0)
+		    {
+		      if(fCurrentChannel->fID == fCurrentCnt)
+			{
+			  fCurrentChannel->fData = fIntPtr; 
+			  fIntPtr +=  fCurrentChannel->fNSamples;
+			  fCurrentCnt ++;
+			  return fCurrentChannel;
+			}
+		    }
+     		}
+	    }
+	}
     }
   else
     {
@@ -84,6 +110,9 @@ AliHLTPHOSSharedMemoryInterface::Reset()
   //Shutting up rule checker
   fMaxCnt =0;
   fCurrentCnt = 0;
+  fCurrentX = 0;
+  fCurrentZ = 0;
+  fCurrentGain = 0;
   fIsSetMemory = false;
 }
 

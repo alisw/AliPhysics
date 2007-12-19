@@ -39,7 +39,10 @@ class  AliHLTPHOSSharedMemoryInterface
   AliHLTPHOSRcuCellEnergyDataStruct *fCellEnergiesPtr ;
   bool fIsSetMemory;
   int fMaxCnt;
-  int fCurrentCnt;
+  int fCurrentCnt; 
+  int fCurrentX;   //added by OD
+  int fCurrentZ;  //added by OD
+  int fCurrentGain;//added by OD
   Int_t fCharDataOffset;
   char  *fCharPtr;
   Int_t *fIntPtr;

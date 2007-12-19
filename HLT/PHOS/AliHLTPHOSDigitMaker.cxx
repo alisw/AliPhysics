@@ -16,7 +16,7 @@
  * @file   AliHLTPHOSClusterizer.cxx
  * @author Oystein Djuvsland
  * @date 
- * @brief  Clusterizer for PHOS HLT  
+ * @brief  Digit maker for PHOS HLT  
  */
       
 
@@ -34,6 +34,7 @@
 #include "TBranch.h"
 #include "TClonesArray.h"
 #include "TFile.h"
+#include "TH2F.h"
 
 #include "AliHLTPHOSValidCellDataStruct.h"
 #include "AliHLTPHOSRcuCellEnergyDataStruct.h"
@@ -48,17 +49,14 @@ using namespace PhosHLTConst;
 AliHLTPHOSDigitMaker::AliHLTPHOSDigitMaker() :
   AliHLTPHOSBase(),
   fCellDataPtr(0),
-  // fDigitContainerStructPtr(0),
+  fDigitContainerStructPtr(0),
   fDigitArrayPtr(0),
   fDigitPtr(0),
-  // fDigitStructPtr(0),
-  fDigitCount(0), 
-  fNrPresamples(10),
-  fDigitThreshold(0),
-  fShmPtr(0)
+  fDigitStructPtr(0),
+  fDigitCount(0)
 {
-  fShmPtr = new AliHLTPHOSSharedMemoryInterface();
   // See header file for documentation
+
 }
   
 AliHLTPHOSDigitMaker::~AliHLTPHOSDigitMaker() 
@@ -66,107 +64,113 @@ AliHLTPHOSDigitMaker::~AliHLTPHOSDigitMaker()
   //See header file for documentation
 }
 
-
-/*
- *modified by PTH to use new interface too shared memory
- */
 Int_t
 AliHLTPHOSDigitMaker::MakeDigits(AliHLTPHOSRcuCellEnergyDataStruct* rcuData)
 {
   //See header file for documentation
   Int_t i = 0;
   Int_t j = 0;
-  Int_t x = -1;
-  Int_t z = -1;
+  Int_t xMod = -1;
+  Int_t zMod = -1;
+  Int_t gain = -1;
   Float_t amplitude = 0;
-
-  fShmPtr->SetMemory(rcuData);
-  // for ( i = 0; i < rcuData->fCnt; i++ )
-    //  {
-  fCellDataPtr = fShmPtr->NextChannel();
-
-  while(fCellDataPtr != 0)
+ 
+  for(Int_t x = 0; x < N_XCOLUMNS_RCU; x++)
     {
-  
-      fCellDataPtr = & ( rcuData->fValidData[i] );
-      x = fCellDataPtr->fX + rcuData->fRcuX * N_XCOLUMNS_RCU;
-      z = fCellDataPtr->fZ + rcuData->fRcuZ * N_ZROWS_RCU;
-      amplitude = fCellDataPtr->fEnergy;
-  
-      if ( amplitude > fDigitThreshold )
+      for(Int_t z = 0; z < N_ZROWS_RCU; z++) 
 	{
-	  fDigitStructPtr = & ( fDigitContainerStructPtr->fDigitDataStruct[j + fDigitCount] );
-	  fDigitStructPtr->fX = ( fCellDataPtr->fX + rcuData->fRcuX * N_XCOLUMNS_RCU );
-	  fDigitStructPtr->fZ = ( fCellDataPtr->fZ + rcuData->fRcuZ * N_ZROWS_RCU );
-	  fDigitStructPtr->fAmplitude = ( amplitude );
-	  fDigitStructPtr->fTime = ( fCellDataPtr->fTime );
-	  fDigitStructPtr->fGain = ( fCellDataPtr->fGain );
-	  fDigitStructPtr->SetRawData ( fCellDataPtr->fData );
-	  fDigitStructPtr->fCrazyness = ( fCellDataPtr->fCrazyness );
-	  fDigitStructPtr->fBaseline = -1;
-	  j++;
+	  fCellDataPtr = &(rcuData->fValidData[x][z][HIGH_GAIN]);
+	  xMod = x + rcuData->fRcuX * N_XCOLUMNS_RCU;
+	  zMod = z + rcuData->fRcuZ * N_ZROWS_RCU;
+	  amplitude = fCellDataPtr->fEnergy;
+	  if(amplitude > fDigitThresholds[xMod][zMod][HIGH_GAIN] && amplitude < MAX_BIN_VALUE)
+	    {
+	      fDigitStructPtr = &(fDigitContainerStructPtr->fDigitDataStruct[j+fDigitCount]);
+	      fDigitStructPtr->fX = xMod;
+	      fDigitStructPtr->fZ = zMod;
+	      fDigitStructPtr->fAmplitude = amplitude;
+	      fDigitStructPtr->fEnergy = amplitude * fHighGainFactors[xMod][zMod];
+	      //	      cout << "Amplitude in GeVs: " << fDigitStructPtr->fEnergy << endl;
+	      //TODO: fix time
+	      fDigitStructPtr->fTime = fCellDataPtr->fTime * 0.0000001;
+	      fDigitStructPtr->fCrazyness = fCellDataPtr->fCrazyness;
+	      j++;
+	    }
+	  else if(amplitude >= MAX_BIN_VALUE)
+	    {
+	      fCellDataPtr = & (rcuData->fValidData[x][z][LOW_GAIN]);
+	      amplitude = fCellDataPtr->fEnergy;
+	      if(amplitude > fDigitThresholds[xMod][zMod][LOW_GAIN])
+		{	      
+		  fDigitStructPtr = &(fDigitContainerStructPtr->fDigitDataStruct[j+fDigitCount]);
+		  fDigitStructPtr->fX = xMod;
+		  fDigitStructPtr->fZ = zMod;
+		  fDigitStructPtr->fAmplitude = amplitude;
+		  fDigitStructPtr->fEnergy = amplitude * fLowGainFactors[xMod][zMod];
+		  //TODO: fix time
+		  fDigitStructPtr->fTime = fCellDataPtr->fTime  * 0.0000001;;
+		  fDigitStructPtr->fCrazyness = fCellDataPtr->fCrazyness;
+		  j++;
+		}
+	    }
 	}
-      
-      fCellDataPtr = fShmPtr->NextChannel();
     }
-  //  }
+  
   fDigitCount += j;
+  fDigitContainerStructPtr->fNDigits = fDigitCount;
   return fDigitCount; 
 }
 
-
-/*
-Int_t
-AliHLTPHOSDigitMaker::MakeDigits(AliHLTPHOSRcuCellEnergyDataStruct* rcuData)
-{
-
-  //See header file for documentation
-  Int_t i = 0;
-  Int_t j = 0;
-  Int_t x = -1;
-  Int_t z = -1;
-  Float_t amplitude = 0;
-  for ( i = 0; i < rcuData->fCnt; i++ )
-  {
-    fCellDataPtr = & ( rcuData->fValidData[i] );
-    x = fCellDataPtr->fX + rcuData->fRcuX * N_XCOLUMNS_RCU;
-    z = fCellDataPtr->fZ + rcuData->fRcuZ * N_ZROWS_RCU;
-    amplitude = fCellDataPtr->fEnergy;
-    if ( amplitude > fDigitThreshold )
-      {
-        fDigitStructPtr = & ( fDigitContainerStructPtr->fDigitDataStruct[j + fDigitCount] );
-        fDigitStructPtr->fX = ( fCellDataPtr->fX + rcuData->fRcuX * N_XCOLUMNS_RCU );
-        fDigitStructPtr->fZ = ( fCellDataPtr->fZ + rcuData->fRcuZ * N_ZROWS_RCU );
-        fDigitStructPtr->fAmplitude = ( amplitude );
-        fDigitStructPtr->fTime = ( fCellDataPtr->fTime );
-        fDigitStructPtr->fGain = ( fCellDataPtr->fGain );
-        fDigitStructPtr->SetRawData ( fCellDataPtr->fData );
-        fDigitStructPtr->fCrazyness = ( fCellDataPtr->fCrazyness );
-        fDigitStructPtr->fBaseline = -1;
-        j++;
-      }
-  }
-  fDigitCount += j;
-  return fDigitCount; 
-}
-*/
-
-/*
-Int_t
-AliHLTPHOSDigitMaker::SetDigitsTree(TTree *tree)
-{
-  TBranch * digBranch = tree->Branch("digits","TClonesArray",fDebugDigitArrayPtr); 
-}
-*/
 
 void
 AliHLTPHOSDigitMaker::Reset()
 { 
-  //fDigitArrayPtr->Clear();
+  //See header file for documentation
   fDigitCount = 0;
 }
 
-  
+void 
+AliHLTPHOSDigitMaker::SetGlobalHighGainFactor(Float_t factor)
+{
+  //See header file for documentation
+  for(Int_t x = 0; x < N_XCOLUMNS_MOD; x++)
+    {
+      for(Int_t z = 0; z < N_ZROWS_MOD; z++)
+	{
+	  fHighGainFactors[x][z] = factor;
+	}
+    }
+}
 
- 
- 
+void
+AliHLTPHOSDigitMaker::SetGlobalLowGainFactor(Float_t factor)
+{
+  //See header file for documentation
+  for(Int_t x = 0; x < N_XCOLUMNS_MOD; x++)
+    {
+      for(Int_t z = 0; z < N_ZROWS_MOD; z++)
+	{
+	  fLowGainFactors[x][z] = factor;
+	}
+    }
+}
+
+void 
+AliHLTPHOSDigitMaker::SetDigitThresholds(const char* filepath, Int_t nSigmas)
+{
+  //See header file for documentation
+
+  TFile *histFile = new TFile(filepath);
+  
+  TH2F *lgHist = (TH2F*)histFile->Get("RMSLGMapHist");
+  TH2F *hgHist = (TH2F*)histFile->Get("RMSHGMapHist");
+
+  for(Int_t x = 0; x < N_XCOLUMNS_MOD; x++)
+    {
+      for(Int_t z = 0; z < N_ZROWS_MOD; z++)
+	{
+	  fDigitThresholds[x][z][LOW_GAIN] = lgHist->GetBinContent(x, z) * nSigmas;
+	  fDigitThresholds[x][z][HIGH_GAIN] = hgHist->GetBinContent(x, z) * nSigmas;
+	}
+    }
+}

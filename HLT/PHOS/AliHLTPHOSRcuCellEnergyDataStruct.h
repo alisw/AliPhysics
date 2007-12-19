@@ -32,7 +32,7 @@ struct AliHLTPHOSRcuCellEnergyDataStruct
   Int_t fCnt;
   Int_t fAlgorithm;
   Int_t fInfo;
-  AliHLTPHOSValidCellDataStruct fValidData[N_ZROWS_RCU*N_XCOLUMNS_RCU*N_GAINS];
+  AliHLTPHOSValidCellDataStruct fValidData[N_XCOLUMNS_RCU][N_ZROWS_RCU][N_GAINS];
 };
 
 #endif

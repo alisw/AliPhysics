@@ -60,7 +60,7 @@ AliHLTPHOSClusterizer::AliHLTPHOSClusterizer():
   fPHOSGeometry = AliPHOSGeometry::GetInstance("noCPV");
   fEmcClusteringThreshold = 0.2;
   fEmcMinEnergyThreshold = 0.03;
-  fEmcTimeGate = 1.e-8 ;
+  fEmcTimeGate = 1.e-6 ;
   fLogWeight = 4.5;
   
 
@@ -135,20 +135,23 @@ AliHLTPHOSClusterizer::ClusterizeEvent()
   Int_t nRecPoints = 0;
   UInt_t i = 0;
 
+  //printf("Starting clusterisation of event.\n");
 
   AliHLTPHOSRecPointDataStruct *recPoint = 0;
-  
+
+  //printf("Number of digits in event: %d\n", fDigitContainerPtr->fNDigits);
+
   //Clusterization starts
   for(i = 0; i < fDigitContainerPtr->fNDigits; i++)
     { 
-   
-      fDigitsInCluster = 0;
       
+      fDigitsInCluster = 0;
+      //printf("Digit energy: %f\n", fDigitContainerPtr->fDigitDataStruct[i].fEnergy);
       if(fDigitContainerPtr->fDigitDataStruct[i].fEnergy < fEmcClusteringThreshold)
 	{
 	  continue;
 	}
-
+      //printf("Got rec point above clustering threshold!\n");
       recPoint = &(fRecPointContainerPtr->fRecPointArray[nRecPoints]);
       recPoint->fAmp = 0;
       //recPoint->
@@ -160,6 +163,7 @@ AliHLTPHOSClusterizer::ClusterizeEvent()
       ScanForNeighbourDigits(i, recPoint);
 
       recPoint->fMultiplicity = fDigitsInCluster;
+      
     }//end of clusterization
   fRecPointContainerPtr->fNRecPoints = nRecPoints;
   
@@ -208,12 +212,23 @@ AliHLTPHOSClusterizer::AreNeighbours(AliHLTPHOSDigitDataStruct* digit1,
 
       Int_t rowdiff = TMath::Abs( digit1->fZ - digit2->fZ );  
       Int_t coldiff = TMath::Abs( digit1->fX - digit2->fX ); 
+
+      //cout << "x1: " << digit1->fX << " x2: " << digit2->fX << " z1: " << digit1->fZ << " z2: " << digit2->fZ << 
+      //" t1: " << digit1->fTime << " t2: " << digit1->fTime << " --> ";
           
       if (( coldiff <= 1 )  && ( rowdiff <= 1 ))
 	{
 	  if(TMath::Abs(digit1->fTime - digit2->fTime ) < fEmcTimeGate)
-	    return 1; 
+	    {
+	      //cout << "OK\n";
+	      return 1; 
+	    }
+	  //  cout << "Time difference\n";
 	}
+      //else 
+      //{
+      //  cout << "Space difference\n";
+      //}
     }
   return 0;
 }

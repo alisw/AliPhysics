@@ -96,6 +96,8 @@ AliHLTPHOSBaselineAnalyzer::CalculateRcuBaselines(AliHLTPHOSRcuCellEnergyDataStr
   Int_t zOff = rcuData->fRcuZ * N_ZROWS_RCU;
   Float_t baseline = 0;
 
+  //TODO: fix this to comply with new format
+  /*
   AliHLTPHOSValidCellDataStruct *data = rcuData->fValidData;
 
   for(Int_t i = 0; i < rcuData->fCnt; i++)
@@ -105,7 +107,7 @@ AliHLTPHOSBaselineAnalyzer::CalculateRcuBaselines(AliHLTPHOSRcuCellEnergyDataStr
       {
 	CalculateAccumulatedChannelBaseline(data[i].fX + xOff, data[i].fZ + zOff, data[i].fGain, baseline);
       }
-    }
+      }*/
 }
   
 

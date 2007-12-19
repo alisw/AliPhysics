@@ -12,6 +12,8 @@ class AliHLTPHOSRawAnalyzerPeakFinderComponent: public AliHLTPHOSRawAnalyzerComp
  public:
   AliHLTPHOSRawAnalyzerPeakFinderComponent();
   virtual ~AliHLTPHOSRawAnalyzerPeakFinderComponent();
+
+  virtual int Deinit();
   virtual const char* GetComponentID();
   virtual AliHLTComponent* Spawn();
  private:

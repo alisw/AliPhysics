@@ -29,13 +29,30 @@ AliHLTPHOSRawAnalyzerCrudeComponent::AliHLTPHOSRawAnalyzerCrudeComponent()
 //___________________________________________________________________________
 AliHLTPHOSRawAnalyzerCrudeComponent::~AliHLTPHOSRawAnalyzerCrudeComponent()
 {
-
+  if(fAnalyzerPtr)
+    {
+      delete fAnalyzerPtr;
+      fAnalyzerPtr = 0;
+    }
 }
 
 //___________________________________________________________________________
 AliHLTPHOSRawAnalyzerCrudeComponent::AliHLTPHOSRawAnalyzerCrudeComponent(const AliHLTPHOSRawAnalyzerCrudeComponent & ):AliHLTPHOSRawAnalyzerComponent()
 {
 
+}
+
+int
+AliHLTPHOSRawAnalyzerCrudeComponent::Deinit()
+{
+  
+  if(fAnalyzerPtr)
+    {
+      delete fAnalyzerPtr;
+      fAnalyzerPtr = 0;
+    }
+  Logging(kHLTLogInfo, "HLT", "PHOS", ",AliHLTPHOSRawAnalyzerCrudeComponent Deinit");
+  return 0;
 }
 
 //___________________________________________________________________________

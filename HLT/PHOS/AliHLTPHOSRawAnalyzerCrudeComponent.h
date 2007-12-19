@@ -19,6 +19,7 @@ class AliHLTPHOSRawAnalyzerCrudeComponent: public AliHLTPHOSRawAnalyzerComponent
     return *this;
   };
 
+  virtual int Deinit();
   virtual const char* GetComponentID();
   virtual AliHLTComponent* Spawn();
 };

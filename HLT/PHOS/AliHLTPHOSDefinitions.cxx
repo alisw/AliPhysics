@@ -50,4 +50,5 @@ const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkAliHLTNoiseMapDataType  
 const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkAliHLTMIPDataType             = { sizeof(AliHLTComponentDataType),       {'M','I','P','D','T','Y','P','E'},{'P','H','O','S'}};;
 const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkAliHLTSandboxDataType         = { sizeof(AliHLTComponentDataType),       {'S','A','B','X','T','Y','P','E'},{'P','H','O','S'}};;
 const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkEmcCalibDataType              = { sizeof(AliHLTComponentDataType),       {'C','A','L','I','T','Y','P','E'},{'P','H','O','S'}};;
+const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkCaloClusterDataType           = { sizeof(AliHLTComponentDataType),       {'C','A','L','C','L','U','S','T'},{'P','H','O','S'}};;
 

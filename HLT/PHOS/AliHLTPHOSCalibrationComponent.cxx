@@ -30,7 +30,7 @@ AliHLTPHOSCalibrationComponent& AliHLTPHOSCalibrationComponent::operator=(const 
 
 const char* AliHLTPHOSCalibrationComponent::GetComponentID()
 {
-  return "AliHLTPHOSCalibrationComponent";
+  return "PhosCalibrationComponent";
 }
 
 void AliHLTPHOSCalibrationComponent::GetInputDataTypes(vector<AliHLTComponentDataType>& list)

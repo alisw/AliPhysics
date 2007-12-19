@@ -35,7 +35,7 @@ class AliHLTPHOSRawAnalyzerComponent: public AliHLTPHOSRcuProcessor
 		     AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks ); 
 
  private:
-  void Reset();
+  void Reset(AliHLTPHOSRcuCellEnergyDataStruct* cellDataPtr);
   void ResetDataPtr(int startindex = 0, int sampleCnt = 0);
   void SetBaselines(const char* baselineFile);
   Bool_t fSendChannelData;       /**<wether or not to send raw data from the component into shared memory*/
