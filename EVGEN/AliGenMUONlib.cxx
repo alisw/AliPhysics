@@ -954,6 +954,18 @@ GenFunc AliGenMUONlib::GetPt(Int_t param,  const char* tname) const
     case kKaon:
 	func=PtKaon;
 	break;
+    case kChi_c0:
+	func=PtChi_c0;
+	break;
+    case kChi_c1:
+	func=PtChi_c1;
+	break;
+    case kChi_c2:
+	func=PtChi_c2;
+	break;
+    case kChi_c:
+	func=PtChi_c;
+	break;
     default:
         func=0;
         printf("<AliGenMUONlib::GetPt> unknown parametrisation\n");
@@ -1029,12 +1041,171 @@ GenFunc AliGenMUONlib::GetY(Int_t param, const char* tname) const
     case kKaon:
 	func=YKaon;
 	break;
+    case kChi_c0:
+	func=YChi_c0;
+	break;
+    case kChi_c1:
+	func=YChi_c1;
+	break;
+    case kChi_c2:
+	func=YChi_c2;
+	break;
+    case kChi_c:
+	func=YChi_c;
+	break;
     default:
         func=0;
         printf("<AliGenMUONlib::GetY> unknown parametrisation\n");
     }
     return func;
 }
+
+//
+//                    Chi
+//
+//
+//                pt-distribution
+//____________________________________________________________
+Double_t AliGenMUONlib::PtChi_c0( Double_t *px, Double_t */*dummy*/)
+{
+// Chi_c1 pT
+  const Double_t kpt0 = 4.;
+  const Double_t kxn  = 3.6;
+  Double_t x=*px;
+  //
+  Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
+  return x/TMath::Power(pass1,kxn);
+}
+Double_t AliGenMUONlib::PtChi_c1( Double_t *px, Double_t */*dummy*/)
+{
+// Chi_c1 pT
+  const Double_t kpt0 = 4.;
+  const Double_t kxn  = 3.6;
+  Double_t x=*px;
+  //
+  Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
+  return x/TMath::Power(pass1,kxn);
+}
+Double_t AliGenMUONlib::PtChi_c2( Double_t *px, Double_t */*dummy*/)
+{
+// Chi_c2 pT
+  const Double_t kpt0 = 4.;
+  const Double_t kxn  = 3.6;
+  Double_t x=*px;
+  //
+  Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
+  return x/TMath::Power(pass1,kxn);
+}
+Double_t AliGenMUONlib::PtChi_c( Double_t *px, Double_t */*dummy*/)
+{
+// Chi_c family pT
+  const Double_t kpt0 = 4.;
+  const Double_t kxn  = 3.6;
+  Double_t x=*px;
+  //
+  Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
+  return x/TMath::Power(pass1,kxn);
+}
+
+//
+//               y-distribution
+//____________________________________________________________
+Double_t AliGenMUONlib::YChi_c0(Double_t *py, Double_t */*dummy*/)
+{
+// Chi-1c y
+  const Double_t ky0 = 4.;
+ const Double_t kb=1.;
+  Double_t yj;
+  Double_t y=TMath::Abs(*py);
+  //
+  if (y < ky0)
+    yj=kb;
+  else
+    yj=kb*TMath::Exp(-(y-ky0)*(y-ky0)/2);
+  return yj;
+}
+
+Double_t AliGenMUONlib::YChi_c1(Double_t *py, Double_t */*dummy*/)
+{
+// Chi-1c y
+  const Double_t ky0 = 4.;
+  const Double_t kb=1.;
+  Double_t yj;
+  Double_t y=TMath::Abs(*py);
+  //
+  if (y < ky0)
+    yj=kb;
+  else
+    yj=kb*TMath::Exp(-(y-ky0)*(y-ky0)/2);
+  return yj;
+}
+
+Double_t AliGenMUONlib::YChi_c2(Double_t *py, Double_t */*dummy*/)
+{
+// Chi-2c y
+  const Double_t ky0 = 4.;
+  const Double_t kb=1.;
+  Double_t yj;
+  Double_t y=TMath::Abs(*py);
+  //
+  if (y < ky0)
+    yj=kb;
+  else
+    yj=kb*TMath::Exp(-(y-ky0)*(y-ky0)/2);
+  return yj;
+}
+
+Double_t AliGenMUONlib::YChi_c(Double_t *py, Double_t */*dummy*/)
+{
+// Chi_c family y
+  const Double_t ky0 = 4.;
+  const Double_t kb=1.;
+  Double_t yj;
+  Double_t y=TMath::Abs(*py);
+  //
+  if (y < ky0)
+    yj=kb;
+  else
+    yj=kb*TMath::Exp(-(y-ky0)*(y-ky0)/2);
+  return yj;
+}
+
+//                 particle composition
+//
+Int_t AliGenMUONlib::IpChi_c0(TRandom *)
+{
+// Chi composition
+    return 10441;
+}
+//
+Int_t AliGenMUONlib::IpChi_c1(TRandom *)
+{
+// Chi composition
+    return 20443;
+}
+Int_t AliGenMUONlib::IpChi_c2(TRandom *)
+{
+// Chi_c2 prime composition
+    return 445;
+}
+Int_t AliGenMUONlib::IpChi_c(TRandom *)
+{
+// Chi composition
+  Int_t ip;
+  Float_t r = gRandom->Rndm();
+  if (r < 0.001) {
+    ip = 10441;
+  } else if( r < 0.377 ) {
+    ip = 20443;
+  } else {
+    ip = 445;
+  }
+  return ip;
+}
+
+
+//_____________________________________________________________
+
 typedef Int_t (*GenFuncIp) (TRandom *);
 GenFuncIp AliGenMUONlib::GetIp(Int_t param,  const char* /*tname*/) const
 {
@@ -1085,6 +1256,18 @@ GenFuncIp AliGenMUONlib::GetIp(Int_t param,  const char* /*tname*/) const
     case kKaon:
 	func=IpKaon;
 	break;
+    case kChi_c0:
+	func=IpChi_c0;
+	break;
+    case kChi_c1:
+	func=IpChi_c1;
+	break;
+    case kChi_c2:
+	func=IpChi_c2;
+	break;
+    case kChi_c:
+        func=IpChi_c;
+        break;
     default:
         func=0;
         printf("<AliGenMUONlib::GetIp> unknown parametrisation\n");
