@@ -3,7 +3,7 @@ void monrec() {
   gSystem->Load("libNet.so");
   gSystem->Load("libMonaLisa.so");
 
-  new TMonaLisaWriter("aliendb3.cern.ch", "Reconstruction pp", gSystem->Getenv("TEST_PLATFORMID"), gSystem->Getenv("TEST_PLATFORMID"));
+  new TMonaLisaWriter("aliendb3.cern.ch", "Reconstruction pp", gSystem->Getenv("TEST_PLATFORMID"), gSystem->Getenv("TEST_PLATFORMID"), "global");
 
 
   gROOT->LoadMacro("rec.C");

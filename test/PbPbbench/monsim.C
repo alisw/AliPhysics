@@ -3,7 +3,7 @@ void monsim(Int_t nev=1){
   gSystem->Load("libNet.so");
   gSystem->Load("libMonaLisa.so");
 
-  new TMonaLisaWriter("aliendb3.cern.ch", "Simulation PbPb", gSystem->Getenv("TEST_PLATFORMID"), gSystem->Getenv("TEST_PLATFORMID"));
+  new TMonaLisaWriter("aliendb3.cern.ch", "Simulation PbPb", gSystem->Getenv("TEST_PLATFORMID"), gSystem->Getenv("TEST_PLATFORMID"), "global");
 
   gROOT->LoadMacro("sim.C");
   sim(nev);
