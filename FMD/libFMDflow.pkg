@@ -11,7 +11,8 @@ SRCS		=  flow/AliFMDFlowAxis.cxx		\
 		   flow/AliFMDFlowEventPlane.cxx	\
 		   flow/AliFMDFlowHarmonic.cxx		\
 		   flow/AliFMDFlowResolution.cxx	\
-		   flow/AliFMDFlowTrue.cxx		
+		   flow/AliFMDFlowTrue.cxx		\
+		   flow/AliFMDFlowSplitter.cxx		
 
 #		   AliFMDAltroIO.cxx		
 

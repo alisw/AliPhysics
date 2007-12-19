@@ -39,6 +39,8 @@
 class AliFMDFlowAxis : public TObject
 {
 public:
+  /** Default constructor - do not use */ 
+  AliFMDFlowAxis() : fN(0), fBins(0) {}
   /** Constructor 
       @param n    Number of bins 
       @param bins Bin limits (@a n+1 entries) */
@@ -79,14 +81,14 @@ public:
       @return pointer to the bins */ 
   Double_t* Bins() const { return fBins; }
   /** Get the number of bins */ 
-  UShort_t N() const { return fN; }
+  UShort_t N() const { return fN-1; }
   /** Print the axis */ 
   void Print(Option_t* option="") const; //*MENU*
 protected:
   /** Number of bins */ 
-  UShort_t fN; // Number of bins
+  Int_t fN; // Number of bins
   /** Borders of the bins */  
-  Double_t* fBins; //[fN+1] Bin boundaries
+  Double_t* fBins; //[fN] Bin boundaries
   /** Define for ROOT I/O */
   ClassDef(AliFMDFlowAxis,1);
 };  

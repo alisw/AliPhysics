@@ -78,6 +78,7 @@ AliFMDReconstructor::AliFMDReconstructor()
   // Make a new FMD reconstructor object - default CTOR.  
   SetNoiseFactor();
   SetAngleCorrect();
+  if (AliDebugLevel() > 0) fDiagnostics = kTRUE;
 }
   
 
@@ -160,6 +161,7 @@ AliFMDReconstructor::Init()
   
   // Check if we need diagnostics histograms 
   if (!fDiagnostics) return;
+  AliInfo("Making diagnostics histograms");
   fDiagStep1   = new TH2I("diagStep1", "Read ADC vs. Noise surpressed ADC",
 			1024, -.5, 1023.5, 1024, -.5, 1023.5);
   fDiagStep1->SetDirectory(0);

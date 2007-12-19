@@ -29,10 +29,16 @@
 #ifndef ALIFMDFLOWBINNED1D_H
 #define ALIFMDFLOWBINNED1D_H
 #include <flow/AliFMDFlowAxis.h>
+#include <TNamed.h>
+#include <TAttLine.h>
+#include <TAttFill.h>
+#include <TAttMarker.h>
 
 // Forward declaration 
 class AliFMDFlowBin;
+class AliFMDFlowSplitter;
 class TBrowser;
+class TH1;
 
 //______________________________________________________
 /** @class AliFMDFlowBinned1D flow/AliFMDFlowBinned1D.h <flow/AliFMDFlowBinned1D.h>
@@ -41,25 +47,40 @@ class TBrowser;
     @example test_flow.cxx 
     @example ana_flow.cxx 
 */
-class AliFMDFlowBinned1D : public TObject
+class AliFMDFlowBinned1D : public TNamed, 
+			   public TAttLine, 
+			   public TAttFill, 
+			   public TAttMarker
 {
 public:
+  /** Default constructor */
+  AliFMDFlowBinned1D();
   /** Constructor 
       @param order    Order of the harmonic
       @param nxbins   Number of X bins.
-      @param xbins    Borders of X bins (@a nxbins+1 entries) */
-  AliFMDFlowBinned1D(UShort_t order, UShort_t nxbins, Double_t* xbins);
+      @param xbins    Borders of X bins (@a nxbins+1 entries) 
+      @param splitter Event splitter (is adopted by this object) */
+  AliFMDFlowBinned1D(const char* name, const char* title, 
+		     UShort_t order,  UShort_t  k, 
+		     UShort_t nxbins, Double_t* xbins, 
+		     AliFMDFlowSplitter* splitter=0);
   /** Constructor 
       @param order    Order of the harmonic
-      @param xaxis Axis object  */
-  AliFMDFlowBinned1D(UShort_t order, const AliFMDFlowAxis& xaxis);
+      @param xaxis    Axis object  
+      @param splitter Event splitter (is adopted by this object) */
+  AliFMDFlowBinned1D(const char* name, const char* title, 
+		     UShort_t order,  UShort_t  k, 
+		     const AliFMDFlowAxis& xaxis, 
+		     AliFMDFlowSplitter* splitter=0);
   /** Copy constructor */
   AliFMDFlowBinned1D(const AliFMDFlowBinned1D& other);
   /** Copy constructor */
   AliFMDFlowBinned1D& operator=(const AliFMDFlowBinned1D& other);
   /** Destructor */
   virtual ~AliFMDFlowBinned1D();
-  
+
+  /** @{ 
+      @name Processing */
   /** Called at the beginning of an event */
   virtual void Begin();
   /** Called at the end of an event */ 
@@ -73,17 +94,25 @@ public:
 				 Double_t w, Bool_t a);
   /** Called to add a contribution to the harmonic
       @param x   Bin to fill into 
-      @param phi The angle @f$ \varphi@f$ in radians */
-  virtual Bool_t AddToHarmonic(Double_t x, Double_t phi);
+      @param phi The angle @f$ \varphi@f$ in radians 
+      @param wp  optional weight of event plane 
+      @param wh  optional weight of harmonic */
+  virtual Bool_t AddToHarmonic(Double_t x,  Double_t phi, 
+			       Double_t wp=1, Double_t wh=1);
   /** Process a full event. 
       @param phis List of @a n @f$ \varphi=[0,2\pi]@f$ angles 
       @param xs   List of @a n @f$ x@f$ values. 
-      @param ws   Weights
+      @param wp   Weights of event plane (0 or @a n long)
+      @param wh   Weights of harmonic (0 or @a n long)
       @param n    Size of @a phis and @a xs */
-  virtual void Event(Double_t* phis, Double_t* xs, Double_t* ws, 
-		     ULong_t n);
+  virtual void Event(ULong_t n, Double_t* phis, Double_t* xs, 
+		     Double_t* ws=0, Double_t* wh=0);
   /** Called at the end of a run */
   virtual void Finish();
+  /** @} */
+
+  /** @{ 
+      @name Bins */
   /** Get the bin at @a x 
       @param x The bin value to find a flow object for. 
       @return The flow object at @a x or 0 if out of range */ 
@@ -92,8 +121,24 @@ public:
       @param i The bin number to get
       @return The flow object in bin @a i or 0 if out of range */ 
   virtual AliFMDFlowBin* GetBin(UShort_t i) const;
+  /** @} */
+
+  /** @{ 
+      @name Orders */
+  /** Get the harmonic order 
+      @return The harmonic order */ 
+  virtual UShort_t Order() const;
+  /** Get the harmonic order 
+      @return The harmonic order */ 
+  virtual UShort_t PsiOrder() const;
+  /** @} */
+
+  /** @{ 
+      @name Information */
   /** Print to standard out */ 
   virtual void Print(Option_t* option="s") const;  //*MENU*
+  /** Make a histogram */
+  virtual TH1* MakeHistogram(UInt_t which, UInt_t what);
   /** Draw as a histogram
       @param option Option string. 
       - s  Draw STAR method. 
@@ -107,11 +152,16 @@ public:
   Bool_t IsFolder() const { return kTRUE; }
   /** Browse this object */ 
   void Browse(TBrowser* b);
+  /** @} */
 protected:
   /** X axis */ 
   AliFMDFlowAxis fXAxis; // Axis 
+  /** Number of bins */ 
+  Int_t fN;
   /** Array of the flow objects */ 
-  AliFMDFlowBin** fBins; // Bins 
+  AliFMDFlowBin** fBins; //[fN] Bins 
+  /** The event splitter used. */
+  AliFMDFlowSplitter* fSplitter;
   /** Define for ROOT I/O */
   ClassDef(AliFMDFlowBinned1D,1);
 };

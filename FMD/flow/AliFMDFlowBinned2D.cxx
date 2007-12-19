@@ -27,18 +27,24 @@
 // TestFlow.C 
 #include "flow/AliFMDFlowBinned2D.h"
 #include "flow/AliFMDFlowBin.h"
+#include "flow/AliFMDFlowSplitter.h"
 #include <cmath>
 #include <cstdlib>
 #include <TString.h>
 #include <TBrowser.h>
 
 //====================================================================
-AliFMDFlowBinned2D::AliFMDFlowBinned2D(UShort_t order, 
-			 UShort_t nxbins, Double_t* xbins,
-			 UShort_t nybins, Double_t* ybins) 
-  : fXAxis(nxbins, xbins),
+AliFMDFlowBinned2D::AliFMDFlowBinned2D(const char* name, 
+				       const char* title,
+				       UShort_t order, 
+				       UShort_t nxbins, Double_t* xbins,
+				       UShort_t nybins, Double_t* ybins,
+				       AliFMDFlowSplitter* splitter) 
+  : TNamed(name, title), 
+    fXAxis(nxbins, xbins),
     fYAxis(nybins, ybins),
-    fBins(0)
+    fBins(0), 
+    fSplitter(splitter)
 {
   // Constructor 
   // Parameters: 
@@ -50,13 +56,19 @@ AliFMDFlowBinned2D::AliFMDFlowBinned2D(UShort_t order,
   UInt_t n = fXAxis.N() * fYAxis.N();
   fBins   = new AliFMDFlowBin*[n];
   for (UInt_t i = 0; i < n; i++) fBins[i]= new AliFMDFlowBin(order);
+  if (!fSplitter) fSplitter = new AliFMDFlowShuffle;
 }
 //____________________________________________________________________
-AliFMDFlowBinned2D::AliFMDFlowBinned2D(UShort_t order, 
-				       const AliFMDFlowAxis&    xaxis, 
-				       const AliFMDFlowAxis&    yaxis)
-  : fXAxis(xaxis), 
-    fYAxis(yaxis)
+AliFMDFlowBinned2D::AliFMDFlowBinned2D(const char*           name, 
+				       const char*           title,
+				       UShort_t              order, 
+				       const AliFMDFlowAxis& xaxis, 
+				       const AliFMDFlowAxis& yaxis,
+				       AliFMDFlowSplitter*   splitter)
+  : TNamed(name, title),
+    fXAxis(xaxis), 
+    fYAxis(yaxis),
+    fSplitter(splitter)
 {
   // Constructor 
   // Parameters: 
@@ -66,18 +78,24 @@ AliFMDFlowBinned2D::AliFMDFlowBinned2D(UShort_t order,
   UShort_t n = fXAxis.N() * fYAxis.N();
   fBins   = new AliFMDFlowBin*[n];
   for (UInt_t i = 0; i < n; i++) fBins[i]= new AliFMDFlowBin(order);
+  if (!fSplitter) fSplitter = new AliFMDFlowShuffle;
 }
 //____________________________________________________________________
 AliFMDFlowBinned2D::AliFMDFlowBinned2D(const AliFMDFlowBinned2D& o)
-  : TObject(o), 
+  : TNamed(o), 
+    TAttLine(o),
+    TAttFill(o),
+    TAttMarker(o),
     fXAxis(o.fXAxis), 
-    fYAxis(o.fYAxis)
+    fYAxis(o.fYAxis),
+    fSplitter(0)
 {
   // Copy constructor 
   // Parameters: 
   //   o   Object to copy from 
   UShort_t n = fXAxis.N() * fYAxis.N();
-  fBins   = new AliFMDFlowBin*[n];
+  fSplitter  = new AliFMDFlowShuffle;
+  fBins      = new AliFMDFlowBin*[n];
   for (UInt_t i = 0; i < n; i++) fBins[i]= new AliFMDFlowBin(*(o.fBins[i]));
 }
 //____________________________________________________________________
@@ -89,6 +107,14 @@ AliFMDFlowBinned2D::operator=(const AliFMDFlowBinned2D& o)
   //   o Object to assign from 
   // 
   // Returns reference to this object 
+  SetLineColor(o.GetLineColor());
+  SetLineStyle(o.GetLineStyle());
+  SetLineWidth(o.GetLineWidth());
+  SetFillColor(o.GetFillColor());
+  SetFillStyle(o.GetFillStyle());
+  SetMarkerColor(o.GetMarkerColor());
+  SetMarkerStyle(o.GetMarkerStyle());
+  SetMarkerSize(o.GetMarkerSize());
   if (fBins) { 
     UInt_t n = fXAxis.N() * fYAxis.N();
     for (UInt_t i = 0; i < n; i++) delete fBins[i];
@@ -96,7 +122,8 @@ AliFMDFlowBinned2D::operator=(const AliFMDFlowBinned2D& o)
   }
   fXAxis     = o.fXAxis;
   UShort_t n = fXAxis.N() * fYAxis.N();
-  fBins   = new AliFMDFlowBin*[n];
+  fSplitter  = new AliFMDFlowShuffle;
+  fBins      = new AliFMDFlowBin*[n];
   for (UInt_t i = 0; i < n; i++) fBins[i]= new AliFMDFlowBin(*(o.fBins[i]));
   return *this;
 }
@@ -112,6 +139,7 @@ AliFMDFlowBinned2D::~AliFMDFlowBinned2D()
     for (UInt_t i = 0; i < n; i++) delete fBins[i];
     delete [] fBins;
   }
+  if (fSplitter) delete fSplitter;
 }
 //____________________________________________________________________
 AliFMDFlowBin* 
@@ -177,7 +205,7 @@ AliFMDFlowBinned2D::Finish()
 //____________________________________________________________________
 Bool_t 
 AliFMDFlowBinned2D::AddToEventPlane(Double_t x, Double_t y, Double_t phi, 
-				Double_t w, Bool_t a)
+				    Double_t w, Bool_t a)
 {
   // Called to add a contribution to the event plane 
   // Parameters:
@@ -196,7 +224,8 @@ AliFMDFlowBinned2D::AddToEventPlane(Double_t x, Double_t y, Double_t phi,
 
 //____________________________________________________________________
 Bool_t 
-AliFMDFlowBinned2D::AddToHarmonic(Double_t x, Double_t y, Double_t phi)
+AliFMDFlowBinned2D::AddToHarmonic(Double_t x, Double_t y, Double_t phi,
+				  Double_t wp, Double_t wh)
 {
   // Called to add a contribution to the harmonic
   // Parameters: 
@@ -207,28 +236,31 @@ AliFMDFlowBinned2D::AddToHarmonic(Double_t x, Double_t y, Double_t phi)
   // Return false if (x,y) falls outside the defined range, true otherwise
   AliFMDFlowBin* bin = GetBin(x, y);
   if (!bin) return kFALSE;
-  bin->AddToHarmonic(phi);
+  bin->AddToHarmonic(phi, wp, wh);
   return kTRUE;
 }
 
 //____________________________________________________________________
 void 
-AliFMDFlowBinned2D::Event(Double_t* phis, Double_t* xs, Double_t* ys, 
-			  Double_t* ws, ULong_t n)
+AliFMDFlowBinned2D::Event(ULong_t   n,  Double_t* phis, 
+			  Double_t* xs, Double_t* ys, 
+			  Double_t* wp, Double_t* wh)
 {
   // Process a full event. 
   // Parameters: 
   //   phis   List of n phi=[0,2pi] angles 
   //   xs     List of n x values. 
   //   ys     List of n y values. 
-  //   ws     Weights
+  //   wp     Weights for event plane
+  //   wh     Weights for harmonic
   //   n      Size of phis and xs
   Begin();
+  fSplitter->Event(phis, xs, n);
   for (UInt_t i = 0; i < n; i++) 
-    AddToEventPlane(xs[i], ys[i], phis[i], (ws ? ws[i] : 1), 
-		    Float_t(rand()) / RAND_MAX > 0.5);
+    AddToEventPlane(xs[i], ys[i], phis[i], (wp ? wp[i] : 1), 
+		    fSplitter->Select(i));
   for (UInt_t i = 0; i < n; i++) 
-    AddToHarmonic(xs[i], ys[i], phis[i]);
+    AddToHarmonic(xs[i], ys[i], phis[i], (wp ? wh[i] : 1), (wp ? wh[i] : 1));
   End();
 }
 

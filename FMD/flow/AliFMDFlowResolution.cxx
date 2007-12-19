@@ -32,16 +32,29 @@
 #include <TH1.h>
 #include <TH2.h>
 #include <iostream>
+#include <TBrowser.h>
 //#include <cmath>
 
 //====================================================================
+AliFMDFlowResolution::AliFMDFlowResolution(UShort_t n) 
+  : fOrder(n), 
+    fContrib("contrib", Form("cos(%d(#Psi_{A} - #Psi_{B}))", fOrder), 100,-1,1)
+{
+  fContrib.SetDirectory(0);
+  fContrib.SetXTitle(Form("cos(%d(#Psi_{A} - #Psi_{B}))", fOrder));
+}
+
+//____________________________________________________________________
 AliFMDFlowResolution::AliFMDFlowResolution(const AliFMDFlowResolution& o)
   : AliFMDFlowStat(o), 
-    fOrder(o.fOrder)
+    fOrder(o.fOrder),
+    fContrib(o.fContrib)
 {
   // Copy constructor 
   // Parameters: 
   //   o   Object to copy from. 
+  fContrib.SetDirectory(0);
+  fContrib.SetXTitle(Form("cos(%d(#Psi_{A} - #Psi_{B}", fOrder));
 }
 //____________________________________________________________________
 AliFMDFlowResolution&
@@ -53,6 +66,10 @@ AliFMDFlowResolution::operator=(const AliFMDFlowResolution& o)
   // 
   AliFMDFlowStat::operator=(o);
   fOrder = o.fOrder;
+
+  fContrib.Reset();
+  fContrib.Add(&o.fContrib);
+
   return *this;
 }
 //____________________________________________________________________
@@ -66,6 +83,7 @@ AliFMDFlowResolution::Add(Double_t psiA, Double_t psiB)
   Double_t diff    = NormalizeAngle(fOrder * (psiA - psiB));
   Double_t contrib = cos(diff);
   AliFMDFlowStat::Add(contrib);
+  fContrib.Fill(contrib);
 }
 
 //____________________________________________________________________
@@ -113,6 +131,12 @@ AliFMDFlowResolution::Draw(Option_t* option)
   g->Draw(Form("lh %s", option));
 }
 
+//____________________________________________________________________
+void
+AliFMDFlowResolution::Browse(TBrowser* b)
+{
+  b->Add(&fContrib);
+}
 
 //====================================================================
 Double_t 
@@ -267,11 +291,29 @@ AliFMDFlowResolutionStar::Draw(Option_t* option)
 }
 
 //====================================================================
+AliFMDFlowResolutionTDR::AliFMDFlowResolutionTDR(UShort_t n) 
+    : AliFMDFlowResolution(n), 
+      fLarge(0),
+      fNK("nk", "Number of events with (#Psi_{}A-#Psi_{B})>90^{o}", 2, 0, 2)
+{
+  fNK.SetDirectory(0);
+  fNK.SetYTitle("# events");
+  fNK.GetXaxis()->SetBinLabel(1, "k");
+  fNK.GetXaxis()->SetBinLabel(2, "N");
+}
+
+//____________________________________________________________________
 AliFMDFlowResolutionTDR::AliFMDFlowResolutionTDR(const 
 						 AliFMDFlowResolutionTDR& o)
   : AliFMDFlowResolution(o), 
-    fLarge(o.fLarge)
-{}
+    fLarge(o.fLarge),
+    fNK(o.fNK)
+{
+  fNK.SetDirectory(0);
+  fNK.SetYTitle("# events");
+  fNK.GetXaxis()->SetBinLabel(1, "k");
+  fNK.GetXaxis()->SetBinLabel(2, "N");
+}
 //____________________________________________________________________
 AliFMDFlowResolutionTDR&
 AliFMDFlowResolutionTDR::operator=(const AliFMDFlowResolutionTDR& o)
@@ -282,6 +324,8 @@ AliFMDFlowResolutionTDR::operator=(const AliFMDFlowResolutionTDR& o)
   // 
   AliFMDFlowResolution::operator=(o);
   fLarge = o.fLarge;
+  fNK.Reset();
+  fNK.Add(&fNK);
   return *this;
 }
 //____________________________________________________________________
@@ -303,8 +347,13 @@ AliFMDFlowResolutionTDR::Add(Double_t psiA, Double_t psiB)
   // Parameters: 
   //  psiA   A sub-event plane angle Psi_A in [0,2pi]
   //  psiB   B sub-event plane angle Psi_B in [0,2pi]
+  AliFMDFlowResolution::Add(psiA, psiB);
   Double_t a = fabs(psiA - psiB);
-  if (a >= .5 * M_PI) fLarge++;
+  if (a >= .5 * M_PI) { 
+    fNK.Fill(.5);
+    fLarge++;
+  }
+  fNK.Fill(1.5);
   fN++;
 }
 //____________________________________________________________________
@@ -323,11 +372,11 @@ AliFMDFlowResolutionTDR::Correction(UShort_t k, Double_t& e2) const
   // where z = chi^2 / 2
   //
   if (fLarge == 0) { 
-    std::cerr << "TDR: K = 0" << std::endl;
+    // std::cerr << "TDR: K = 0" << std::endl;
     return -1;
   }
   if (fN == 0) { 
-    std::cerr << "TDR: N = 0" << std::endl;
+    // std::cerr << "TDR: N = 0" << std::endl;
     return -1;
   }
   Double_t r     = Double_t(fLarge) / fN;
@@ -544,6 +593,14 @@ AliFMDFlowResolutionTDR::Draw(Option_t* option)
     g->Draw(Form("l %s %s", (k == 0 ? "h" : "same"), option));
     if (chi) break;
   }
+}
+
+//____________________________________________________________________
+void
+AliFMDFlowResolutionTDR::Browse(TBrowser* b)
+{
+  AliFMDFlowResolution::Browse(b);
+  b->Add(&fNK);
 }
 
 //____________________________________________________________________

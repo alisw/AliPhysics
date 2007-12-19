@@ -45,6 +45,7 @@ class AliFMDSDigit;
 class AliFMDRecPoint;
 class AliESDEvent;
 class AliESDFMD;
+class AliHeader;
 class TString;
 class TClonesArray;
 class TTree;
@@ -289,6 +290,7 @@ protected:
   TClonesArray* fArrayS;     // SDigit info array
   TClonesArray* fArrayR;     // Rec points info array
   TClonesArray* fArrayA;     // Raw data (digits) info array
+  AliHeader*    fHeader;     // Header 
   TGeoManager*  fGeoManager; // Geometry manager
   Int_t         fTreeMask;   // Which tree's to load
   Bool_t        fIsInit;     // Have we been initialized 

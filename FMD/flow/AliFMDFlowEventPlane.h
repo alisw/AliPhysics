@@ -32,6 +32,9 @@
 #ifndef ALIFMDFLOWEVENTPLANE_H
 #define ALIFMDFLOWEVENTPLANE_H
 #include <TObject.h>
+#include <TH2D.h>
+#include <TH1D.h>
+class TBrowser;
 
 //______________________________________________________
 /** @class AliFMDFlowEventPlane flow/AliFMDFlowEventPlane.h <flow/AliFMDFlowEventPlane.h>
@@ -53,12 +56,7 @@ class AliFMDFlowEventPlane : public TObject
 public:
   /** Constructor 
       @param m Harmonic number */
-  AliFMDFlowEventPlane(UShort_t m=0) 
-    : fSumSinMPhi(0), 
-      fSumCosMPhi(0),
-      fOrder(m),
-      fCache(0)
-  { Clear(); }
+  AliFMDFlowEventPlane(UShort_t m=0);
   /** Copy constructor. 
       @param o Object to copy from */ 
   AliFMDFlowEventPlane(const AliFMDFlowEventPlane& o);
@@ -68,12 +66,9 @@ public:
   AliFMDFlowEventPlane& operator=(const AliFMDFlowEventPlane& o);
   /** Destructor */
   ~AliFMDFlowEventPlane() {} 
-  /** Clear it */
-  void Clear(Option_t* option="");
-  /** Add a data point 
-      @param phi The angle @f$\varphi\in[0,2\pi]@f$
-      @param weight The weight */
-  void Add(Double_t phi, Double_t weight=1);
+
+  /** @{ 
+      @name Information */
   /** Get the event plane 
       @return @f$ \Psi_k@f$ */
   Double_t Psi() const;
@@ -88,6 +83,35 @@ public:
   /** Get the harmnic order 
       @return @f$ k@f$  */
   UShort_t Order() const { return fOrder; }
+  /** @} */
+
+  /** @{ 
+      @name Processing */
+  /** Clear it */
+  void Clear(Option_t* option="");
+  /** Add a data point 
+      @param phi The angle @f$\varphi\in[0,2\pi]@f$
+      @param weight The weight */
+  void Add(Double_t phi, Double_t weight=1);
+  /** Called at end of event to fill histograms */
+  void End();
+  /** @} */
+  
+  /** @{ 
+      @name Utilities */
+  /** this is a folder */ 
+  Bool_t IsFolder() const { return kTRUE; }
+  /** Browse this object */
+  void Browse(TBrowser* b);
+  /** @} */
+
+  /** @{ 
+      @name histograms */ 
+  /** @return Sum histogram */
+  const TH2& SumHistogram() const { return fSum; }
+  /** @return Psi histogram */
+  const TH1& PsiHistogram() const { return fPsi; }
+  /** @} */
 protected:
   /** Utility function to calculate @f$ \Psi@f$ from the sum of
       sines and cosines. 
@@ -103,6 +127,12 @@ protected:
   UShort_t fOrder; // Order 
   /** Cache of Psi */
   mutable Double_t fCache; // Cache of calculated value 
+  /** Histogram of summed sin(m*phi) vs cos(m*phi) */
+  TH2D fSum;
+  /** Histogram of event plane angles */ 
+  TH1D fPsi;
+  /** Counter */ 
+  Double_t fScale;
   /** Define for ROOT I/O */
   ClassDef(AliFMDFlowEventPlane,1); 
 };

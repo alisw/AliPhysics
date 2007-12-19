@@ -45,6 +45,7 @@
 #include <TMath.h>
 #include <TH2.h>
 #include <TStyle.h>
+#include <TFile.h>
 
 //____________________________________________________________________
 /** Generate events */
@@ -95,19 +96,26 @@ struct Generator
 
 /** Run test program */
 void
-TestFlow(UInt_t n_events=100, Int_t seg=-1, UInt_t n_max=20000)
+TestFlow(UInt_t n_events=100, Int_t seg=-1, UInt_t n_max=20000,
+	 Float_t v2=0.05)
 {
-  Generator           generator(-1, 0.00, 0.05, n_max, n_max);
+  Generator           generator(-1, 0.00, v2, n_max, n_max);
   AliFMDFlowAxis      a(10, -5, 5);
-  AliFMDFlowBinned1D* flow = new AliFMDFlowBinned1D(2, a);
-  AliFMDFlowTrue1D*   real = new AliFMDFlowTrue1D(2, a);
-  TH2D*               hist = new TH2D("hist","hist",a.N(),a.Bins(),
-				      (seg>0?seg:90),0, 2* TMath::Pi());
+  AliFMDFlowBinned1D  flow("test","Test",2, 1, a);
+  AliFMDFlowTrue1D    real("true","true", 2, a);
+  TH2D                hist("hist","hist",a.N(),a.Bins(),
+			   (seg>0?seg:90),0, 2* TMath::Pi());
+  TH1D                rela("rela","real",
+			   (seg>0?seg:90),0, 2* TMath::Pi());
   Double_t            dphi = (seg <= 0 ? 0 : 2 * TMath::Pi() / seg);
-  TArrayD             phis;
-  TArrayD             tphis;
-  TArrayD             xs;
-  
+  TArrayD             phis(n_max);
+  TArrayD             tphis(n_max);
+  TArrayD             xs(n_max);
+  flow.SetLineColor(kRed+2);
+  real.SetLineColor(kBlue+2);
+  rela.SetXTitle("#Psi_{R}");
+  rela.SetYTitle("#Psi_{2}");
+
   std::cout << std::endl;
   for (UInt_t i = 0; i < n_events; i++) {
     std::cout << "\rEvent # " << i << std::flush;
@@ -115,14 +123,8 @@ TestFlow(UInt_t n_events=100, Int_t seg=-1, UInt_t n_max=20000)
     // event plane, shuffle the phis around randomly. 
     UInt_t   n_obs  = generator.Prepare();
     Double_t rpsi_r = NormalizeAngle(generator.Psi());
-    phis.Set(n_obs);
-    phis.Reset(0);
-    tphis.Set(n_obs);
-    tphis.Reset(0);
-    xs.Set(n_obs);
-    xs.Reset(0);
     
-    real->SetPsi(rpsi_r);
+    real.SetPsi(rpsi_r);
     std::cout << " (" << n_obs << " observations)" << std::flush;
     for (UInt_t j = 0; j < n_obs; j++) {
       if (j % 2000 == 0) std::cout << "." << std::flush;
@@ -133,34 +135,49 @@ TestFlow(UInt_t n_events=100, Int_t seg=-1, UInt_t n_max=20000)
 	Int_t iseg = Int_t(phi / dphi);
 	phi        = dphi * (iseg + .5);
       }
-      hist->Fill(x, phi);
       phis[j]      = phi;
       xs[j]        = x;
+      hist.Fill(x, NormalizeAngle(phi-rpsi_r));
+      rela.Fill(NormalizeAngle(phi-rpsi_r));
     }
-    flow->Event(phis.fArray,  xs.fArray, 0, phis.fN);
-    real->Event(tphis.fArray, xs.fArray, 0, tphis.fN);
+    flow.Event(n_obs, phis.fArray,  xs.fArray);
+    real.Event(n_obs, tphis.fArray, xs.fArray);
   }
   std::cout << std::endl;
-  flow->Print("s");
-  real->Print("s");
+  flow.Print("s");
+  real.Print("s");
 
   gStyle->SetPalette(1);
   
   TCanvas* c = new TCanvas("C");
   c->SetFillColor(0);
-  c->Divide(2,1);
+  c->Divide(2,2);
   TVirtualPad* p = c->cd(1);
-  p->Divide(1,2);
-  p = p->cd(1);
+  // p->Divide(1,2);
+  // p = p->cd(1);
   p->SetFillColor(0);
-  flow->Draw("bnst colz");
-  p = c->cd(1);
-  p = p->cd(2);
+  flow.Draw("th:");
+  real.Draw("th:same");
+  // p = c->cd(1);
+  p = c->cd(2);
+  rela.Scale(1. / n_events);
+  rela.Draw("");
+  p = c->cd(3);
   p->SetFillColor(0);
-  flow->Draw("bnstr colz");
-  c->cd(2);
-  hist->Draw("colz");
-  new TBrowser("b", flow);
+  flow.Draw("tr:");
+  real.Draw("tr:same");
+  c->cd(4);
+  hist.Scale(1. / n_events);
+  hist.Draw("lego2");
+  TBrowser* b = new TBrowser("b");
+  b->Add(&flow);
+  b->Add(&real);
+
+  TFile* file = TFile::Open("flow_test.root", "RECREATE");
+  flow.Write();
+  real.Write();
+  file->Close();
+  delete file;
 }
 
 #ifndef __CINT__

@@ -32,6 +32,8 @@
 #include <flow/AliFMDFlowEventPlane.h>
 #include <flow/AliFMDFlowHarmonic.h>
 #include <flow/AliFMDFlowResolution.h>
+#include <TH2D.h>
+#include <TH1D.h>
 #include <TObject.h>
 
 //Forward declaration 
@@ -68,26 +70,29 @@ public:
   /** Correction type */
   enum CorType {
     /** No correction */
-    kNone, 
+    kNone = 1, 
     /** Naive, using the formulas in Voloshins paper */
-    kNaive,
+    kNaive = 2,
     /** STARs way */
-    kStar, 
+    kStar = 4, 
     /** The way used in the TDR */
-    kTdr
+    kTdr = 8
   };
+  /** Types of things to draw */
+  enum DrawVar { 
+    /** The harmonic */
+    kHarmonic, 
+    /** The resolution */
+    kResolution, 
+    /** The statistics */ 
+    kCounts
+  };
+  /** Default Ctor - do not use */ 
+  AliFMDFlowBin() {}
   /** Constructor 
       @param order Order of harmonic. 
       @param k     Factor of event plane order=k * m */
-  AliFMDFlowBin(UShort_t order=0, UShort_t k=1) 
-    : fPsi(order / k), 
-      fPsiA(order / k), 
-      fPsiB(order / k), 
-      fRes(order / k), 
-      fResStar(order / k), 
-      fResTdr(order / k),
-      fHarmonic(order) 
-  {}
+  AliFMDFlowBin(UShort_t order, UShort_t k=1); 
   /** Copy constructor 
       @param o Object top copy from */ 
   AliFMDFlowBin(const AliFMDFlowBin& o);
@@ -98,6 +103,9 @@ public:
   
   /** Destructor */
   virtual ~AliFMDFlowBin() {} 
+  
+  /** @{ 
+      @name Processing */
   /** Should be called at the start of an event */ 
   virtual void Begin();
   /** Called to add a contribution to the event plane 
@@ -109,17 +117,33 @@ public:
   /** Called to add a contribution to the harmonic. 
       @param phi The angle @f$ \varphi \in[0,2\pi]@f$
       @param w   Weight of @a phi (only used in the calculation of
-      the event plane). */
-  virtual void AddToHarmonic(Double_t phi, Double_t w=1);
+                 the event plane). 
+      @param wh  Weight if the @f$ \varphi@f$ observation */
+  virtual void AddToHarmonic(Double_t phi, Double_t wp=1, Double_t wh=1);
   /** Should be called at the end of an event */ 
   virtual void End();
   /** Analyse events 
+      @param n    Size of @a phis and possibly @a ws
       @param phis @f$ (\varphi_i, \ldots, \varphi_n)@f$ 
-      @param ws   Weights (optional)
-      @param n    Size of @a phis and possibly @a ws */
-  virtual void Event(Double_t* phis, Double_t* ws, UInt_t n);
+      @param wp   Weights for event plane (optional)
+      @param wh   Weights for harmonic (optional - can be the same as @a ws) */
+  virtual void Event(UInt_t n, Double_t* phis, Double_t* wp=0, Double_t* wh=0);
   /** Finish run */
   virtual void Finish();
+  /** @} */
+
+  /** @{ 
+      @name Orders */
+  /** Get the harmonic order 
+      @return The harmonic order */ 
+  virtual UShort_t Order() const { return fHarmonic.Order(); }
+  /** Get the harmonic order 
+      @return The harmonic order */ 
+  virtual UShort_t PsiOrder() const { return fPsi.Order(); }
+  /** @} */
+
+  /** @{
+      @name Values */
   /** Get the value in this bin 
       @param t  Which type of correction
       @return the value of the harmonic */
@@ -138,6 +162,13 @@ public:
       @param t  Which type  of correction
       @return the value of the event plane correction */
   virtual Double_t Correction(Double_t& e2, CorType t=kTdr) const;
+  /** Get the number of counts used in this. 
+      @return The number of counts used in this bin */
+  virtual ULong_t  Counts() const;
+  /** @} */
+
+  /** @{ 
+      @name Utility */
   /** Print summary to standard output */ 
   virtual void Print(Option_t* option="") const; //*MENU*
   /** Return true */ 
@@ -150,7 +181,15 @@ public:
   virtual Double_t PsiA() const { return fPsiA.Psi(); } 
   /** Get the sub-event B plane angle */
   virtual Double_t PsiB() const { return fPsiB.Psi(); } 
+  /** @} */
 
+  /** @{ 
+      @name histograms */ 
+  /** @return Split histogram */
+  const TH2& SplitHistogram() const { return fSplit; }
+  /** @return Phi histogram */
+  const TH1& PhiHistogram() const { return fPhi; }
+  /** @} */
 protected:
   /** Major event plane */
   AliFMDFlowEventPlane fPsi; // Major event plane
@@ -166,6 +205,19 @@ protected:
   AliFMDFlowResolutionTDR fResTdr; // Resolution
   /** The harmonic */
   AliFMDFlowHarmonic fHarmonic; // Harmonic
+  /** Histogram of the relative split between A and B */ 
+  TH2D fSplit;
+  /** Histogram of relative phi's */ 
+  TH1D fPhi;
+  /** Counter of number of observations in sub-A */
+  ULong_t fNA;
+  /** Counter of number of observations in sub-B */
+  ULong_t fNB;
+  /** Counter of number of observations */
+  ULong_t fN;
+  /** Psi from A vs from B */
+  TH2D    fAB;
+
   /** Define for ROOT I/O */
   ClassDef(AliFMDFlowBin,1); // A flow analysis 
 };

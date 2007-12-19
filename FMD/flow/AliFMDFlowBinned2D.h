@@ -28,18 +28,26 @@
 // TestFlow.C 
 #ifndef ALIFMDFLOWBINNED2D_H
 #define ALIFMDFLOWBINNED2D_H
+#include <TNamed.h>
+#include <TAttLine.h>
+#include <TAttFill.h>
+#include <TAttMarker.h>
 #include <flow/AliFMDFlowAxis.h>
-#include <TObject.h>
 
 // Forward declaration 
 class AliFMDFlowBin;
+class AliFMDFlowSplitter;
 class TBrowser;
+class TH1;
 
 //______________________________________________________
 /** @class AliFMDFlowBinned2D flow/AliFMDFlowBinned2D.h <flow/AliFMDFlowBinned2D.h>
     @brief A 2 dimensional "histogram" of objects of class AliFMDFlowBin. 
     @ingroup c_binned */
-class AliFMDFlowBinned2D : public TObject
+class AliFMDFlowBinned2D : public TNamed, 
+			   public TAttLine, 
+			   public TAttFill, 
+			   public TAttMarker
 {
 public:
   /** Constructor 
@@ -48,15 +56,17 @@ public:
       @param xbins    Borders of X bins (@a nxbins+1 entries) 
       @param nybins   Number of Y bins.
       @param ybins    Borders of Y bins (@a nybins+1 entries) */
-  AliFMDFlowBinned2D(UShort_t order, 
+  AliFMDFlowBinned2D(const char* name, const char* title, UShort_t order,  
 		     UShort_t nxbins, Double_t* xbins,
-		     UShort_t nybins, Double_t* ybins);
+		     UShort_t nybins, Double_t* ybins,
+		     AliFMDFlowSplitter* splitter=0);
   /** Constructor 
       @param order Order of the harmonic 
       @param xaxis Axis object 
       @param yaxis Axis object */
-  AliFMDFlowBinned2D(UShort_t order, const AliFMDFlowAxis& xaxis, 
-		     const AliFMDFlowAxis& yaxis);
+  AliFMDFlowBinned2D(const char* name, const char* title, UShort_t order, 
+		     const AliFMDFlowAxis& xaxis, const AliFMDFlowAxis& yaxis,
+		     AliFMDFlowSplitter* splitter=0);
       
   /** Copy constructor */
   AliFMDFlowBinned2D(const AliFMDFlowBinned2D& other);
@@ -80,16 +90,20 @@ public:
   /** Called to add a contribution to the harmonic
       @param x   Bin to fill into 
       @param y   Bin to fill into 
-      @param phi The angle @f$ \varphi@f$ in radians */
-  virtual Bool_t AddToHarmonic(Double_t x, Double_t y, Double_t phi);
+      @param phi The angle @f$ \varphi@f$ in radians 
+      @param wp  The event plane angle weight
+      @param wh  The harmonic weight */
+  virtual Bool_t AddToHarmonic(Double_t x, Double_t y, Double_t phi, 
+			       Double_t wp, Double_t wh);
   /** Process a full event. 
       @param phis List of @a n @f$ \varphi=[0,2\pi]@f$ angles 
       @param xs   List of @a n @f$ x@f$ values. 
       @param ys   List of @a n @f$ y@f$ values. 
-      @param ws   Weights
+      @param wp   Weights for event plane
+      @param wh   Weights for harmonic
       @param n    Size of @a phis and @a xs */
-  virtual void Event(Double_t* phis, Double_t* xs, Double_t* ys, 
-		     Double_t* ws, ULong_t n);
+  virtual void Event(ULong_t n, Double_t* phis, Double_t* xs, Double_t* ys, 
+		     Double_t* wp=0, Double_t* wh=0);
   /** Called at the end of a run */
   virtual void Finish();
   /** Get the bin at @a x 
@@ -113,6 +127,8 @@ protected:
   AliFMDFlowAxis fYAxis; // Y axis
   /** Array of the flow objects */ 
   AliFMDFlowBin** fBins;  // Bins 
+  /** The event splitter used. */
+  AliFMDFlowSplitter* fSplitter;
   /** Define for ROOT I/O */
   ClassDef(AliFMDFlowBinned2D,1);
 };

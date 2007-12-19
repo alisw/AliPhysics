@@ -291,6 +291,13 @@ AliFMDInput::Begin(Int_t event)
     if (!fArrayH) fArrayH = fFMD->Hits(); 
   }
 
+  // Possibly load heaedr information 
+  if (TESTBIT(fTreeMask, kHeader)) {
+    // AliInfo("Getting FMD hits");
+    if (!fLoader /* || fLoader->LoadHeader()*/) return kFALSE;
+    fHeader = fLoader->GetHeader();
+  }
+
   // Possibly load FMD Digit information 
   if (TESTBIT(fTreeMask, kDigits)) {
     // AliInfo("Getting FMD digits");

@@ -41,6 +41,8 @@
 #pragma link C++ class AliFMDFlowStat+;
 #pragma link C++ class AliFMDFlowTrueBin+;
 #pragma link C++ class AliFMDFlowTrue1D+;
+#pragma link C++ class AliFMDFlowSplitter+;
+#pragma link C++ class AliFMDFlowShuffle+;
 #pragma link C++ function  NormalizeAngle(Double_t);
   
 

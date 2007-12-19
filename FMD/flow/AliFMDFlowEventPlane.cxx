@@ -31,8 +31,11 @@
 #include "flow/AliFMDFlowEventPlane.h"
 #include "flow/AliFMDFlowUtil.h"
 #include <TMath.h>
+#include <TBrowser.h>
+// #include <iostream>
 // #include <cmath>
 #ifndef _GNU_SOURCE
+#warning Using private implementation of sincos
 extern "C" 
 {
   /** Function to caculate @f$ \sin(a), \cos(a)@f$ in one go.  Note,
@@ -47,16 +50,43 @@ extern "C"
 #endif
 
 //====================================================================
+AliFMDFlowEventPlane::AliFMDFlowEventPlane(UShort_t m) 
+  : fSumSinMPhi(0), 
+    fSumCosMPhi(0),
+    fOrder(m),
+    fCache(0), 
+    fSum("sum", Form("#sumw#cos(%d#varphi) vs #sum#sin(%d#varphi)", m, m), 
+	 100, -1.1, 1.1, 100, -1.1, 1.1), 
+    fPsi("psi", Form("#Psi_{%d}", m), 80, 0, 2*TMath::Pi())
+{ 
+  Clear(); 
+  fSum.SetDirectory(0);
+  fSum.SetXTitle(Form("#sum_{i}w_{i}cos(%d#varphi_{i})", fOrder));
+  fSum.SetYTitle(Form("#sum_{i}w_{i}sin(%d#varphi_{i})", fOrder));
+  fSum.SetMarkerStyle(20);
+  fPsi.SetDirectory(0);
+  fPsi.SetXTitle(Form("#Psi_{%d}", fOrder));
+}
+
+//____________________________________________________________________
 AliFMDFlowEventPlane::AliFMDFlowEventPlane(const AliFMDFlowEventPlane& o)
   : TObject(o), 
     fSumSinMPhi(o.fSumSinMPhi),
     fSumCosMPhi(o.fSumCosMPhi),
     fOrder(o.fOrder),
-    fCache(-1)
+    fCache(-1), 
+    fSum(o.fSum),
+    fPsi(o.fPsi)
 {
   // copy cosntructor 
   // Parameters 
   //   o  Object to copy from. 
+  fSum.SetDirectory(0);
+  fSum.SetXTitle(Form("#sum_{i}w_{i}cos(%d#varphi_{i})", fOrder));
+  fSum.SetYTitle(Form("#sum_{i}w_{i}sin(%d#varphi_{i})", fOrder));
+  fSum.SetMarkerStyle(20);
+  fPsi.SetDirectory(0);
+  fPsi.SetXTitle(Form("#Psi_{%d}", fOrder));
 }
 //____________________________________________________________________
 AliFMDFlowEventPlane&
@@ -69,6 +99,12 @@ AliFMDFlowEventPlane::operator=(const AliFMDFlowEventPlane& o)
   fSumCosMPhi = o.fSumCosMPhi;
   fOrder      = o.fOrder;
   fCache      = -1;
+
+  fSum.Reset();
+  fSum.Add(&o.fSum);
+  fPsi.Reset();
+  fPsi.Add(&o.fPsi);
+
   return *this;
 }
 
@@ -80,6 +116,7 @@ AliFMDFlowEventPlane::Clear(Option_t*)
   fSumSinMPhi = 0;
   fSumCosMPhi = 0;
   fCache      = -1;
+  fScale      = 0;
 }
 //____________________________________________________________________
 void 
@@ -94,9 +131,30 @@ AliFMDFlowEventPlane::Add(Double_t phi, Double_t weight)
   sincos(a, &s, &c);
   if (TMath::IsNaN(s) || !TMath::Finite(s) || 
       TMath::IsNaN(c) || !TMath::Finite(s)) return;
+  if (weight == 0) return;
+  fScale += 1./weight;
   fSumSinMPhi += weight * s;
   fSumCosMPhi += weight * c;
 }
+
+//____________________________________________________________________
+void
+AliFMDFlowEventPlane::End() 
+{
+  Double_t r2 = fSumCosMPhi*fSumCosMPhi + fSumSinMPhi*fSumSinMPhi;
+  Double_t r  = (r2 < 0 ? 1 : TMath::Sqrt(r2));
+  fSum.Fill(fSumCosMPhi/(r!=0?r:1),fSumSinMPhi/(r!=0?r:1));
+  fPsi.Fill(Psi());
+}
+
+//____________________________________________________________________
+void
+AliFMDFlowEventPlane::Browse(TBrowser* b)
+{
+  b->Add(&fSum);
+  b->Add(&fPsi);
+}
+
 //____________________________________________________________________
 Double_t 
 AliFMDFlowEventPlane::Psi() const  
@@ -104,7 +162,9 @@ AliFMDFlowEventPlane::Psi() const
   // Get the event plane 
   // Parameters: 
   //   none
-  if (fCache < 0) fCache = DoPsi(fSumSinMPhi, fSumCosMPhi);
+  if (fCache < 0) { 
+    fCache = DoPsi(fSumSinMPhi, fSumCosMPhi);
+  }
   return fCache;
 }
 //____________________________________________________________________

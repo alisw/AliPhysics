@@ -27,12 +27,39 @@
 // resolution. 
 //
 #include "flow/AliFMDFlowBin.h"
+#include "flow/AliFMDFlowUtil.h"
 #include <cmath>
 #include <iostream>
 #include <iomanip>
 #include <TBrowser.h>
 
 //====================================================================
+AliFMDFlowBin::AliFMDFlowBin(UShort_t order, UShort_t k) 
+  : fPsi(order / k), 
+    fPsiA(order / k), 
+    fPsiB(order / k), 
+    fRes(order / k), 
+    fResStar(order / k), 
+    fResTdr(order / k),
+    fHarmonic(order), 
+    fSplit("ab_split", "Relative split in A,B sub-event", 2, 0, 2, 100, 0, 1),
+    fPhi("phi", "Distribution of #varphi-#Psi", 40, 0, 2*TMath::Pi()), 
+    fAB("psiAB", "Distribution of #Psi_{A} vs. #Psi_{B}", 
+	40, 0, 2*TMath::Pi()/fPsiA.Order(), 40, 0, 2*TMath::Pi()/fPsiA.Order())
+{
+  fSplit.SetDirectory(0);
+  fSplit.GetXaxis()->SetBinLabel(1, "A");
+  fSplit.GetXaxis()->SetBinLabel(2, "B");
+  fSplit.SetXTitle("Sub-event");
+  fSplit.SetYTitle("Fraction");
+  fPhi.SetDirectory(0);
+  fPhi.SetXTitle("#varphi");
+  fAB.SetDirectory(0);
+  fAB.SetXTitle("#Psi_{A}");
+  fAB.SetYTitle("#Psi_{B}");
+}
+
+//____________________________________________________________________
 AliFMDFlowBin::AliFMDFlowBin(const AliFMDFlowBin& o) 
   : TObject(o), 
     fPsi(o.fPsi), 
@@ -41,11 +68,26 @@ AliFMDFlowBin::AliFMDFlowBin(const AliFMDFlowBin& o)
     fRes(o.fRes), 
     fResStar(o.fResStar), 
     fResTdr(o.fResTdr), 
-    fHarmonic(o.fHarmonic)
+    fHarmonic(o.fHarmonic),
+    fSplit(o.fSplit), 
+    fPhi(o.fPhi), 
+    fAB(o.fAB)
 {
   // Copy constructor 
   // Parameters: 
   //    o Object to copy from 
+  fSplit.SetDirectory(0);
+  fSplit.GetXaxis()->SetBinLabel(1, "A");
+  fSplit.GetXaxis()->SetBinLabel(2, "B");
+  fSplit.SetXTitle("Sub-event");
+  fSplit.SetYTitle("Fraction");
+
+  fPhi.SetDirectory(0);
+  fPhi.SetXTitle("#varphi");
+
+  fAB.SetDirectory(0);
+  fAB.SetXTitle("#Psi_{A}");
+  fAB.SetYTitle("#Psi_{B}");
 }
 
 //____________________________________________________________________
@@ -62,6 +104,16 @@ AliFMDFlowBin::operator=(const AliFMDFlowBin& o)
   fResStar  = o.fResStar;
   fResTdr   = o.fResTdr;
   fHarmonic = o.fHarmonic;
+
+  fSplit.Reset();
+  fSplit.Add(&(o.fSplit));
+
+  fPhi.Reset();
+  fPhi.Add(&(o.fPhi));
+
+  fAB.Reset();
+  fAB.Add(&(o.fAB));
+
   return *this;
 }
 
@@ -73,6 +125,7 @@ AliFMDFlowBin::Begin()
   fPsi.Clear();
   fPsiA.Clear();
   fPsiB.Clear();
+  fNA = fNB = fN = 0;
 }
 
 //____________________________________________________________________
@@ -87,21 +140,25 @@ AliFMDFlowBin::AddToEventPlane(Double_t phi, Double_t w, Bool_t a)
   fPsi.Add(phi, w);
   if (a) fPsiA.Add(phi, w);
   else   fPsiB.Add(phi, w);
+  if (a) fNA++; else fNB++;
+  fN++;
 }
 
 //____________________________________________________________________
 void 
-AliFMDFlowBin::AddToHarmonic(Double_t phi, Double_t w)
+AliFMDFlowBin::AddToHarmonic(Double_t phi, Double_t wp, Double_t wh)
 {
   // Called to add a contribution to the harmonic. 
   // Parameters: 
   //   phi   The angle phi in [0,2pi]
-  //   w     Weight of phi (only used in the calculation of  
+  //   wp    Weight of phi (only used in the calculation of  
   //         the event plane).
-  // 
+  //   wh    Weight of observation.
+  
   // Disregard the obervation of phi from the event plane angle. 
-  Double_t psi   = fPsi.Psi(phi, w);
-  fHarmonic.Add(phi, psi);
+  Double_t psi   = fPsi.Psi(phi, wp);
+  fHarmonic.Add(phi, psi, wh);
+  fPhi.Fill(NormalizeAngle(phi-psi));
 }
 
 //____________________________________________________________________
@@ -109,6 +166,9 @@ void
 AliFMDFlowBin::End()
 {
   // Should be called at the end of an event
+  fPsi.End();
+  fPsiA.End();
+  fPsiB.End();
   Double_t psiA = fPsiA.Psi();
   Double_t psiB = fPsiB.Psi();
 
@@ -116,30 +176,36 @@ AliFMDFlowBin::End()
   fRes.Add(psiA, psiB);
   fResStar.Add(psiA, psiB);
   fResTdr.Add(psiA, psiB);
+  if (fN != 0) { 
+    fSplit.Fill(.5,  float(fNA)/fN);
+    fSplit.Fill(1.5, float(fNB)/fN);
+  }
+  fAB.Fill(psiA, psiB);
 }
 
 //____________________________________________________________________
 void 
-AliFMDFlowBin::Event(Double_t* phis, Double_t* ws, UInt_t n) 
+AliFMDFlowBin::Event(UInt_t n, Double_t* phis, Double_t* wp, Double_t* wh) 
 { 
   // Analyse events 
   // Parameters 
-  //  phis   Array of phi, (phi_1, ..., phi_n)
-  //  ws     Weights (optional)
   //  n      Size of phis and possibly ws
+  //  phis   Array of phi, (phi_1, ..., phi_n)
+  //  wp     Weights of event plane (optional)
+  //  wh     Weights of harmonic (optional)
   Begin();
   
   // Calculate split. 
   UInt_t split = n / 2;
   // First sub-event. 
   for (UInt_t i = 0; i < split; i++) 
-    AddToEventPlane(phis[i], (ws ? ws[i] : 1), kTRUE);
+    AddToEventPlane(phis[i], (wp ? wp[i] : 1), kTRUE);
   // Second sub-event. 
   for (UInt_t i = split; i < n; i++) 
-    AddToEventPlane(phis[i], (ws ? ws[i] : 1), kFALSE);
+    AddToEventPlane(phis[i], (wp ? wp[i] : 1), kFALSE);
   // Add contributions to the harmonic. 
   for (UInt_t i = 0; i < n; i++)     
-    AddToHarmonic(phis[i], (ws ? ws[i] : 1));
+    AddToHarmonic(phis[i], (wp ? wp[i] : 1), (wh ? wh[i] : 1));
 
   End();
 }
@@ -208,6 +274,16 @@ AliFMDFlowBin::Correction(Double_t& er2, CorType t) const
 }
 
 //____________________________________________________________________
+ULong_t 
+AliFMDFlowBin::Counts() const
+{
+  // Return the number of counts used in this bin.
+  // Return:
+  //  Number of counts that is used in this bin.
+  return fHarmonic.N();
+}
+
+//____________________________________________________________________
 void 
 AliFMDFlowBin::Finish() 
 {
@@ -221,11 +297,14 @@ AliFMDFlowBin::Browse(TBrowser* b)
   // Browse this item
   b->Add(&fPsi,      "Full event plane");
   b->Add(&fPsiA,     "Sub-event A event plane");
-  b->Add(&fPsiB,     "Sub-event A event plane");
+  b->Add(&fPsiB,     "Sub-event B event plane");
   b->Add(&fRes,      "Naive resolution");
   b->Add(&fResStar,  "STAR resolution");
   b->Add(&fResTdr,   "TDR resolution");
   b->Add(&fHarmonic, "Harmonic");
+  b->Add(&fSplit,    "Split");
+  b->Add(&fPhi,      "Phi");
+  b->Add(&fAB,       "AB");
 }
 
 //____________________________________________________________________

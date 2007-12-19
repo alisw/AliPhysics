@@ -25,6 +25,8 @@
 #pragma link C++ class  AliFMDFancy;
 #pragma link C++ class  AliFMDCalibFaker;
 #pragma link C++ class  AliFMDAlignFaker;
+#pragma link C++ class  AliFMDAnaRing;
+#pragma link C++ class  AliFMDAnaESD;
 
 #else
 # error Not for compilation 

@@ -26,16 +26,60 @@
 // and the square variance of the harmonic. 
 #include "flow/AliFMDFlowHarmonic.h"
 #include "flow/AliFMDFlowUtil.h"
+#include <TBrowser.h>
+#include <iostream>
 // #include <cmath>
 
 //====================================================================
+AliFMDFlowHarmonic::AliFMDFlowHarmonic(UShort_t n) 
+  : fOrder(n),
+    fPhi("phi", "#varphi-#Psi", 40, 0, 2*TMath::Pi()),
+    fNPhi("nphi",Form("%d(#varphi-#Psi)",n),40,0,2*TMath::Pi()), 
+    fWeight("weight", Form("cos(%d(#varphi-#Psi))", n), 100, -1, 1),
+    fContrib("contrib", Form("(#varphi-#psi) vs cos(%d(#varphi-#Psi))", n), 
+	     40, 0, 2 * TMath::Pi(), 100, -1, 1)
+{
+  fContrib.SetDirectory(0);
+  fContrib.Sumw2();
+  fContrib.SetXTitle("#varphi-#Psi");
+  fContrib.SetYTitle(Form("cos(%d(#varphi-#Psi))", n));
+  fPhi.SetDirectory(0);
+  fPhi.Sumw2();
+  fPhi.SetXTitle("#varphi-#Psi");
+  fNPhi.SetDirectory(0);
+  fNPhi.Sumw2();
+  fNPhi.SetXTitle(Form("%d(#varphi-#Psi)", n));
+  fWeight.SetDirectory(0);
+  fWeight.Sumw2();
+  fWeight.SetXTitle(Form("cos(%d(#varphi-#Psi))", n));
+  fWeight.SetYTitle("#sum_iw_i");
+} 
+
+//____________________________________________________________________
 AliFMDFlowHarmonic::AliFMDFlowHarmonic(const AliFMDFlowHarmonic& o)
   : AliFMDFlowStat(o), 
-    fOrder(o.fOrder)
+    fOrder(o.fOrder), 
+    fPhi(o.fPhi),
+    fNPhi(o.fNPhi),
+    fWeight(o.fWeight),
+    fContrib(o.fContrib)
 {
   // Copy constructor 
   // Parameters: 
   //   o   Object to copy from 
+  fContrib.SetDirectory(0);
+  fContrib.Sumw2();
+  fContrib.SetXTitle(Form("w_{i}cos(%d(#varphi-#Psi))", fOrder));
+  fPhi.SetDirectory(0);
+  fPhi.SetXTitle("#varphi-#Psi");
+  fPhi.Sumw2();
+  fNPhi.SetDirectory(0);
+  fNPhi.SetXTitle(Form("%d(#varphi-#Psi)", fOrder));
+  fNPhi.Sumw2();
+  fWeight.SetDirectory(0);
+  fWeight.Sumw2();
+  fWeight.SetXTitle(Form("cos(%d(#varphi-#Psi))", fOrder));
+  fWeight.SetYTitle("#sum_iw_i");
 }
 
 //____________________________________________________________________
@@ -48,20 +92,50 @@ AliFMDFlowHarmonic::operator=(const AliFMDFlowHarmonic& o)
   // Return reference to this object. 
   AliFMDFlowStat::operator=(o);
   fOrder = o.fOrder;
+
+  fContrib.Reset();
+  fContrib.Add(&o.fContrib);
+  fPhi.Reset();
+  fPhi.Add(&o.fPhi);
+  fNPhi.Reset();
+  fNPhi.Add(&o.fNPhi);
+  fWeight.Reset();
+  fWeight.Add(&o.fWeight);
   return *this;
 }
 
 //____________________________________________________________________
 void 
-AliFMDFlowHarmonic::Add(Double_t phi, Double_t psi) 
+AliFMDFlowHarmonic::Browse(TBrowser* b)
+{
+  // Browse this object 
+  // Parameters 
+  //   b	Browser to use 
+  // Return 
+  //   nothing
+  b->Add(&fContrib);
+  b->Add(&fPhi);
+  b->Add(&fNPhi);
+  b->Add(&fWeight);
+}
+
+//____________________________________________________________________
+void 
+AliFMDFlowHarmonic::Add(Double_t phi, Double_t psi, Double_t weight) 
 { 
   // Add a data point. 
   // Parameters: 
-  //    phi  Angle. 
-  //    psi  Event plane 
+  //    phi    Angle of this observation. 
+  //    psi    Event plane of this observation
+  //    weight The weight of this observation
   Double_t a       = NormalizeAngle(fOrder * (phi - psi));
-  Double_t contrib = cos(a);
+  Double_t cosa    = TMath::Cos(a);
+  Double_t contrib = cosa; // weight * cosa;
   AliFMDFlowStat::Add(contrib);
+  fPhi.Fill(NormalizeAngle(phi-psi));
+  fNPhi.Fill(a); 
+  fWeight.Fill(cosa, weight);
+  fContrib.Fill(a/*NormalizeAngle(phi-psi)*/,contrib);
 }
 //____________________________________________________________________
 Double_t 
@@ -93,10 +167,23 @@ AliFMDFlowHarmonic::Value(Double_t r, Double_t er2, Double_t& e2) const
   // 
   Double_t a = fAverage;
   Double_t v = a / r;
-  Double_t s = fSqVar / fN;
-  e2       = (s * r * r + er2 * a * a) / pow(r, 4);
+  if (fN != 0) { 
+    Double_t s = fSqVar / fN;
+    e2         = (s * r * r + er2 * a * a) / pow(r, 4);
+  }
+  else e2      = 0;
   return v;
 }
+//____________________________________________________________________
+void
+AliFMDFlowHarmonic::Print(Option_t* option) const 
+{
+  Double_t e2, er2 = 1, r = 1;
+  Double_t v = Value(r, er2, e2);
+  std::cout << v << " +/- " << e2 << std::endl;
+  
+} 
+
 //____________________________________________________________________
 //
 // EOF

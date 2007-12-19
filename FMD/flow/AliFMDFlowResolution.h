@@ -26,6 +26,9 @@
 #ifndef ALIFMDFLOWRESOLUTION_H
 #define ALIFMDFLOWRESOLUTION_H
 #include <flow/AliFMDFlowStat.h>
+#include <TH1D.h>
+#include <TH2D.h>
+class TBrowser;
 
 //______________________________________________________
 /** @class AliFMDFlowResolution flow/AliFMDFlowResolution.h <flow/AliFMDFlowResolution.h>
@@ -73,7 +76,7 @@ class AliFMDFlowResolution : public AliFMDFlowStat
 public:
   /** Constructor
       @param n Harmonic order */
-  AliFMDFlowResolution(UShort_t n=0) : fOrder(n) {}
+  AliFMDFlowResolution(UShort_t n=0);
   /** Destructor */
   virtual ~AliFMDFlowResolution() {}
   /** Copy constructor 
@@ -82,10 +85,17 @@ public:
   /** Assignment operator
       @param o Object to copy from */ 
   AliFMDFlowResolution& operator=(const AliFMDFlowResolution& o);
+
+  /** @{ 
+      @name Processing */
   /** add data point 
       @param psiA A sub-event plane angle @f$ \Psi_A \in[0,2\pi]@f$
       @param psiB B sub-event plane angle @f$ \Psi_B \in[0,2\pi]@f$ */
   virtual void Add(Double_t psiA, Double_t psiB);
+  /** @} */
+
+  /** @{ 
+      @name Information */
   /** Get the correction for harmonic strength of order @a k 
       @param k  The harminic strenght order to get the correction for
       @param e2 The square error on the correction 
@@ -97,12 +107,29 @@ public:
   virtual Double_t Correction(UShort_t k) const;
   /** Get the harmnic order */
   UShort_t Order() const { return fOrder; }
+  /** @} */
+  
+  /** @{ 
+      @name Utility */
   /** Draw this corrrection function 
       @param option Options passed to drawing */
   virtual void Draw(Option_t* option=""); //*MENU*
+  /** This is a folder */ 
+  Bool_t IsFolder() const { return kTRUE; }
+  /** Look through this object */ 
+  virtual void Browse(TBrowser* b); 
+  /** @} */
+
+  /** @{ 
+      @name histograms */ 
+  /** @return Contrib histogram */
+  const TH1& ContribHistogram() const { return fContrib; }
+  /** @} */
 protected:
   /** Order */
   UShort_t fOrder; // Order 
+  /** Contributions */
+  TH1D fContrib;
   /** Define for ROOT I/O */
   ClassDef(AliFMDFlowResolution,1);
 };
@@ -159,11 +186,13 @@ public:
   AliFMDFlowResolutionStar(UShort_t n=0) : AliFMDFlowResolution(n) {}
   /** Destructor */
   virtual ~AliFMDFlowResolutionStar() {}
+
+  /** @{ 
+      @name Information */
   /** Get the correction for harmonic strength of order @a k 
       @param k The harminic strenght order to get the correction for
       @return @f$ \langle\cos(n(\psi_n - \psi_R))\rangle@f$ */ 
   virtual Double_t Correction(UShort_t k) const;
-
   /** Get the correction for harmonic strength of order @a k 
       @param k  The harminic strenght order to get the correction for
       @param e2 The square error on the correction 
@@ -176,9 +205,14 @@ public:
       which is taken to be @f$ \delta\chi@f$  
       @return @f$\chi@f$ */
   virtual Double_t Chi(Double_t res, UShort_t k, Double_t& delta) const;
+  /** @} */
+
+  /** @{ 
+      @name Utilities */
   /** Draw this corrrection function 
       @param option Options passed to drawing */
   virtual void Draw(Option_t* option=""); //*MENU*
+  /** @} */
 protected:
   /** Calculate resolution 
       @param chi @f$ \chi@f$
@@ -237,8 +271,7 @@ class AliFMDFlowResolutionTDR : public AliFMDFlowResolution
 public:
   /** Constructor
       @param n Harmonic order */
-  AliFMDFlowResolutionTDR(UShort_t n) 
-    : AliFMDFlowResolution(n), fLarge(0) {}
+  AliFMDFlowResolutionTDR(UShort_t n=0); 
   /** DTOR */
   ~AliFMDFlowResolutionTDR() {}
   /** Copy constructor 
@@ -248,9 +281,16 @@ public:
       @param o  Object to assign from 
       @return reference to this */ 
   AliFMDFlowResolutionTDR& operator=(const AliFMDFlowResolutionTDR& o);
+
+  /** @{ 
+      @name Processing */
   virtual void Clear(Option_t* option="");
   /** add a data  point */
   virtual void Add(Double_t psiA, Double_t psiB);
+  /** @} */
+
+  /** @{ 
+      @name Information */
   /** Get the correction for harmonic strength of order @a k 
       @param k The harminic strenght order to get the correction for
       @return @f$ \langle\cos(n(\psi_n - \psi_R))\rangle@f$ */ 
@@ -264,9 +304,22 @@ public:
       @param e2 The square error on the correction 
       @return @f$ \chi^2/2@f$ */
   virtual Double_t Chi2Over2(Double_t r, Double_t& e2) const;
+  /** @} */
+
+  /** @{ 
+      @name Utilities */
   /** Draw this corrrection function 
       @param option Options passed to drawing */
   virtual void Draw(Option_t* option=""); //*MENU*
+  /** Look through this object */ 
+  virtual void Browse(TBrowser* b); 
+  /** @} */
+
+  /** @{ 
+      @name histograms */ 
+  /** @return NK histogram */
+  const TH1& NKHistogram() const { return fNK; }
+  /** @} */
 protected:
   /** Calculate resolution 
       @param k    Order factor 
@@ -281,6 +334,8 @@ protected:
   Double_t Res(UShort_t k, Double_t y, Double_t echi2, Double_t& e2) const;
   /** Number of events with large diviation */
   ULong_t fLarge; // Number of events with large angle 
+  /** Histogram of large and all angles */ 
+  TH1D fNK;
   /** Define for ROOT I/O */
   ClassDef(AliFMDFlowResolutionTDR,1);
 };

@@ -44,6 +44,8 @@
 class AliFMDFlowTrueBin : public AliFMDFlowBin
 {
 public:
+  /** Default constructor - do not use */
+  AliFMDFlowTrueBin() {}
   /** Constructor */ 
   AliFMDFlowTrueBin(UShort_t order) : 
     AliFMDFlowBin(order, 1), 
@@ -59,8 +61,9 @@ public:
   /** Add a contribution @f$ \cos(n(\varphi-\Psi_R))@f$ where   
       @f$ \Psi_R@f$ is the previously set, well-known event plane
       angle. 
+      @param w   Weight
       @param phi @f$ \varphi@f$ */ 
-  void AddToHarmonic(Double_t phi, Double_t) { fHarmonic.Add(phi, fPsiR); }
+  void AddToHarmonic(Double_t phi, Double_t w);
   /** Get the value in this bin 
       @param t  Which type of correction
       @return the value of the harmonic */
@@ -77,6 +80,8 @@ public:
   Double_t Correction(Double_t& e2, CorType t=kNone) const;
   /** Print to standard out. */ 
   void Print(Option_t* option="s") const;
+  /** get the event plane */ 
+  Double_t Psi() const { return fPsiR; }
 protected:
   /** The well-known event plane */ 
   Double_t fPsiR;  // The well-known event plane 
@@ -92,8 +97,11 @@ protected:
 struct AliFMDFlowTrue1D : public AliFMDFlowBinned1D
 {
 public:
+  /** Default constructor - do not use */
+  AliFMDFlowTrue1D() {}
   /** Constructor */ 
-  AliFMDFlowTrue1D(UShort_t order, const AliFMDFlowAxis& xaxis);
+  AliFMDFlowTrue1D(const char* name, const char* title, 
+		   UShort_t order, const AliFMDFlowAxis& xaxis);
   /** Set the well-known event plane angle @f$ \Psi_R@f$ for this
       event. 
       @param psi @f$ \Psi_R@f$ */ 

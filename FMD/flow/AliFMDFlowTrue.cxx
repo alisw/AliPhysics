@@ -31,6 +31,21 @@
 #include <TString.h>
 
 //====================================================================
+void 
+AliFMDFlowTrueBin::AddToHarmonic(Double_t phi, Double_t)
+{
+  // Called to add a contribution to the harmonic. 
+  // Parameters: 
+  //   phi   The angle phi in [0,2pi]
+  //   w     Weight of phi (only used in the calculation of  
+  //         the event plane).
+  // 
+  // Disregard the obervation of phi from the event plane angle. 
+  fHarmonic.Add(phi, fPsiR);
+  fPhi.Fill(NormalizeAngle(phi-fPsiR));
+}
+
+//____________________________________________________________________
 void
 AliFMDFlowTrueBin::End()
 {
@@ -40,6 +55,10 @@ AliFMDFlowTrueBin::End()
   Double_t psi  = fPsi.Psi();
   Double_t dpsi = NormalizeAngle(fPsi.Order() * (psi-fPsiR));
   fResReal.Add(cos(dpsi));
+  if (fN != 0) { 
+    fSplit.Fill(.5,  float(fNA)/fN);
+    fSplit.Fill(1.5, float(fNB)/fN);
+  }
 }
 
 //____________________________________________________________________
@@ -86,7 +105,8 @@ AliFMDFlowTrueBin::Print(Option_t*) const
   std::streamsize         oldP  = std::cout.precision(3);
   std::ios_base::fmtflags oldF = std::cout.setf(std::ios_base::fixed, 
 						     std::ios_base::floatfield);
-  std::cout << "  v" << std::setw(1) << fHarmonic.Order() << ":   True: "
+  std::cout << GetName() << " - " << GetTitle() << "\n"
+	    << "  v" << std::setw(1) << fHarmonic.Order() << ":   True: "
 	    << std::setw(6) << v << " +/- " 
 	    << std::setw(6) << 100*sqrt(e2v) << " ["
 	    << std::setw(7) << r << " +/- " 
@@ -97,8 +117,9 @@ AliFMDFlowTrueBin::Print(Option_t*) const
 }
 
 //====================================================================
-AliFMDFlowTrue1D::AliFMDFlowTrue1D(UShort_t order, const AliFMDFlowAxis& xaxis)
-  : AliFMDFlowBinned1D(order, xaxis)
+AliFMDFlowTrue1D::AliFMDFlowTrue1D(const char* name, const char* title, 
+				   UShort_t order, const AliFMDFlowAxis& xaxis)
+  : AliFMDFlowBinned1D(name, title, order, 1, xaxis)
 {
   // Constructor. 
   // Parameters: 

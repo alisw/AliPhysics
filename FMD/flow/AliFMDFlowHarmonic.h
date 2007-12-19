@@ -28,6 +28,8 @@
 #ifndef ALIFMDFLOWHARMONIC_H
 #define ALIFMDFLOWHARMONIC_H
 #include <flow/AliFMDFlowStat.h>
+#include <TH2D.h>
+class TBrowser;
 
 /** @defgroup a_basic Basic classes for doing Flow analysis. 
     @brief This group of class handles the low-level stuff to do
@@ -59,7 +61,7 @@ class AliFMDFlowHarmonic : public AliFMDFlowStat
 public:
   /** Constructor 
       @param n Order of the harmonic */
-  AliFMDFlowHarmonic(UShort_t n=0) : fOrder(n) {} 
+  AliFMDFlowHarmonic(UShort_t n=0);
   /** Destructor */ 
   virtual ~AliFMDFlowHarmonic() {}
   /** Copy constructor 
@@ -70,10 +72,17 @@ public:
       @return Reference to this object. */
   AliFMDFlowHarmonic& operator=(const AliFMDFlowHarmonic& o);
   
+  /** @{ 
+      @name Processing */
   /** Add a data point 
-      @param phi The absolute angle @f$ \varphi \in[0,2\pi]@f$ 
-      @param psi The event plane angle @f$ \Psi \in[0,2\pi] @f$ */
-  void Add(Double_t phi, Double_t psi);
+      @param phi    The absolute angle @f$ \varphi \in[0,2\pi]@f$ 
+      @param psi    The event plane angle @f$ \Psi \in[0,2\pi] @f$
+      @param weight The weight of the observation */
+  void Add(Double_t phi, Double_t psi, Double_t weight=1);
+  /** @} */
+
+  /** @{ 
+      @name Information */
   /** Get the harmonic. 
       @param r   Event plane resolution 
       @param er2 Square error on event plane resolution 
@@ -82,9 +91,40 @@ public:
   Double_t Value(Double_t r, Double_t er2, Double_t& e2) const;
   /** Get the order of the harmonic */
   UShort_t Order() const { return fOrder; }
+  /** @} */
+
+  /** @{ 
+      @name Utility */
+  /** This is a folder */ 
+  Bool_t IsFolder() const { return kTRUE; }
+  /** Browse this object */ 
+  void Browse(TBrowser* b);
+  /** Print content */
+  void Print(Option_t* option="") const;
+  /** @} */
+
+  /** @{ 
+      @name histograms */ 
+  /** @return Contrib histogram */
+  const TH1& ContribHistogram() const { return fContrib; }
+  /** @return Phi histogram */
+  const TH1& PhiHistogram() const { return fPhi; }
+  /** @return Nphi histogram */
+  const TH1& NPhiHistogram() const { return fNPhi; }
+  /** @return Weight histogram */
+  const TH1& WeightHistogram() const { return fWeight; }
+  /** @} */
 protected:
   /** the order */ 
   UShort_t fOrder; // Order 
+  /** Histogram of angles */ 
+  TH1D fPhi;
+  /** Histogram of angles */ 
+  TH1D fNPhi;
+  /** Histogram of weights */ 
+  TH1D fWeight;
+  /** cos(n(phi-psi)) vs (phi-psi) */
+  TH2D fContrib;
   /** Define for ROOT I/O */ 
   ClassDef(AliFMDFlowHarmonic,1);
 };
