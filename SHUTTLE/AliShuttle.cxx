@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.76  2007/12/19 07:45:20  acolla
+bug fix in the name of the raw tag files (Raw instead of raw)
+
 Revision 1.75  2007/12/18 15:42:14  jgrosseo
 adding number of open runs to monitoring
 
@@ -872,7 +875,7 @@ Bool_t AliShuttle::StoreRunMetadataFile(const char* localFile, const char* gridF
 		Log("SHUTTLE","StoreRunMetaDataFile - LHCPeriod not found in logbook!");
 		return 0;
 	}
-	
+		
 	TString target = Form("%s/GRP/RunMetadata/alice/data/%d/%s/%09d/raw/%s", 
 				localBaseFolder.Data(), GetCurrentYear(), 
 				lhcPeriod.Data(), GetCurrentRun(), gridFileName);
@@ -2493,7 +2496,12 @@ TList* AliShuttle::GetFileSources(Int_t system, const char* detector, const char
 	// if id is NULL all sources are returned (distinct)
 	//
 
-	Log(detector, Form("GetFileSources - Retrieving sources with id %s from %s", id, GetSystemName(system)));
+	if (id)
+	{
+		Log(detector, Form("GetFileSources - Querying %s FXS for files with id %s produced by %s", GetSystemName(system), id, detector));
+	} else {
+		Log(detector, Form("GetFileSources - Querying %s FXS for files produced by %s", GetSystemName(system), detector));
+	}
 	
 	// check if test mode should simulate a FXS error
 	if (fTestMode & kErrorFXSSources)
