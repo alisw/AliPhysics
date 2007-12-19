@@ -272,7 +272,7 @@ void AliHMPIDQADataMaker::MakeRaws(AliRawReader *rawReader)
           for(Int_t pad = 0; pad < AliHMPIDRawStream::kNPadAdd; pad++){
             if(stream.GetCharge(ddl,row,dil,pad) < 1) continue;
               GetRawsData(ddl)->Fill(stream.GetCharge(ddl,row,dil,pad));
-              Printf("charge %i",stream.GetCharge(ddl,row,dil,pad));
+//              Printf("charge %i",stream.GetCharge(ddl,row,dil,pad));
             }//pad
           }//dil
         }//row
@@ -384,6 +384,6 @@ void AliHMPIDQADataMaker::EndOfDetectorCycle(AliQA::TASKINDEX task, TObjArray * 
 {
   //Detector specific actions at end of cycle
   // do the QA checking
-  AliQAChecker::Instance()->Run(AliQA::kHMPID, task, obj) ;  
+//  AliQAChecker::Instance()->Run(AliQA::kHMPID, task, obj) ;  
 }
 
