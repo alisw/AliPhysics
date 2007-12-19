@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.77  2007/12/19 11:16:16  acolla
+More meaningful log message added in GetFileSources
+
 Revision 1.76  2007/12/19 07:45:20  acolla
 bug fix in the name of the raw tag files (Raw instead of raw)
 
@@ -875,6 +878,16 @@ Bool_t AliShuttle::StoreRunMetadataFile(const char* localFile, const char* gridF
 		Log("SHUTTLE","StoreRunMetaDataFile - LHCPeriod not found in logbook!");
 		return 0;
 	}
+	
+	// TODO partitions with one detector only write data into LHCperiod_DET
+	TString partition = GetRunParameter("partition");
+	
+	if (partition.Length() > 0 && partition != "ALICE")
+	{
+		lhcPeriod.Append(Form("_%s", partition.Data()));
+		Log(fCurrentDetector, Form("Run data tags merged file will be written in %s", 
+				lhcPeriod.Data()));
+	}
 		
 	TString target = Form("%s/GRP/RunMetadata/alice/data/%d/%s/%09d/raw/%s", 
 				localBaseFolder.Data(), GetCurrentYear(), 
@@ -899,7 +912,7 @@ Bool_t AliShuttle::CopyFileLocally(const char* localFile, const TString& target)
 	void* dir = gSystem->OpenDirectory(targetDir.Data());
 	if (dir == NULL) {
 		if (gSystem->mkdir(targetDir.Data(), kTRUE)) {
-			Log("SHUTTLE", Form("StoreFileLocally - Can't open directory <%s>", targetDir.Data()));
+			Log("SHUTTLE", Form("CopyFileLocally - Can't open directory <%s>", targetDir.Data()));
 			return kFALSE;
 		}
 
@@ -912,17 +925,17 @@ Bool_t AliShuttle::CopyFileLocally(const char* localFile, const TString& target)
 	result = gSystem->GetPathInfo(localFile, 0, (Long64_t*) 0, 0, 0);
 	if (result)
 	{
-		Log("SHUTTLE", Form("StoreFileLocally - %s does not exist", localFile));
+		Log("SHUTTLE", Form("CopyFileLocally - %s does not exist", localFile));
 		return kFALSE;
 	}
 
 	result = gSystem->GetPathInfo(target, 0, (Long64_t*) 0, 0, 0);
 	if (!result)
 	{
-		Log("SHUTTLE", Form("StoreFileLocally - target file %s already exist, removing...", target.Data()));
+		Log("SHUTTLE", Form("CopyFileLocally - target file %s already exist, removing...", target.Data()));
 		if (gSystem->Unlink(target.Data()))
 		{
-			Log("SHUTTLE", Form("StoreFileLocally - Could not remove existing target file %s!", target.Data()));
+			Log("SHUTTLE", Form("CopyFileLocally - Could not remove existing target file %s!", target.Data()));
 			return kFALSE;
 		}
 	}	
@@ -931,12 +944,12 @@ Bool_t AliShuttle::CopyFileLocally(const char* localFile, const TString& target)
 
 	if (result == 0)
 	{
-		Log("SHUTTLE", Form("StoreFileLocally - File %s stored locally to %s", localFile, target.Data()));
+		Log("SHUTTLE", Form("CopyFileLocally - File %s stored locally to %s", localFile, target.Data()));
 		return kTRUE;
 	}
 	else
 	{
-		Log("SHUTTLE", Form("StoreFileLocally - Could not store file %s to %s! Error code = %d", 
+		Log("SHUTTLE", Form("CopyFileLocally - Could not store file %s to %s! Error code = %d", 
 				localFile, target.Data(), result));
 		return kFALSE;
 	}	
@@ -986,6 +999,14 @@ Bool_t AliShuttle::CopyFilesToGrid(const char* type)
 		{
 			Log("SHUTTLE","CopyFilesToGrid - LHCPeriod not found in logbook!");
 			return 0;
+		}
+		
+		// TODO partitions with one detector only write data into LHCperiod_DET
+		TString partition = GetRunParameter("partition");
+	
+		if (partition.Length() > 0 && partition != "ALICE")
+		{
+			lhcPeriod.Append(Form("_%s", partition.Data()));
 		}
 		
 		dir = Form("%s/GRP/RunMetadata/alice/data/%d/%s/%09d/raw", 
