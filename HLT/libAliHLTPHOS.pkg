@@ -43,7 +43,14 @@ CLASS_HDRS:=	\
 		  AliHLTPHOSBaseline.h \
 		  AliHLTPHOSConfig.h \
 		  AliHLTPHOSAltroConfig.h \
-		  AliHLTPHOSSharedMemoryInterface.h
+		  AliHLTPHOSSharedMemoryInterface.h \
+		  AliHLTPHOSClusterAnalyser.h \
+		  AliHLTPHOSClusterAnalyserComponent.h \
+		  AliHLTPHOSESDMaker.h \
+		  AliHLTPHOSESDMakerComponent.h \
+		  AliHLTPHOSRcuCalibrationProcessorComponent.h \
+		  AliHLTPHOSRcuCalibrationProcessor.h
+#		  AliHLTPHOSEmcCalibrationHistogramProducer.h 
 #				  AliHLTPHOSNoiseMapper.h \
 #				  AliHLTPHOSNoiseMapperComponent.h
 
@@ -67,7 +74,9 @@ MODULE_HDRS:=	  $(CLASS_HDRS) \
 		  AliHLTPHOSRecPointContainerStruct.h \
 		  AliHLTPHOSDigitContainerDataStruct.h \
 		  AliHLTPHOSRcuDigitContainerDataStruct.h \
-		  AliHLTPHOSDigitDataStruct.h 
+		  AliHLTPHOSDigitDataStruct.h \
+		  AliHLTPHOSCaloClusterDataStruct.h \
+		  AliHLTPHOSCaloClusterContainerStruct.h
 
 
 MODULE_DHDR:=	  HLTPHOSLinkDef.h
