@@ -251,13 +251,22 @@ TList *AliGRPPreprocessor::ProcessDaqLB() {
 //_______________________________________________________________
 UInt_t AliGRPPreprocessor::ProcessDaqFxs() {
   //======DAQ FXS======//
-  TChain *fRawTagChain = new TChain("T");
 
   TList* list = GetFileSources(kDAQ);  
   if (!list) {
-    Log("No raw data tag list found!!!");
-    return 0;
+    Log("No raw data tag list: connection problems with DAQ FXS logbook!");
+    return 1;
   }
+  
+  if (list->GetEntries() == 0)
+  {
+  	Log("no raw data tags in this run: nothing to merge!");
+	delete  list; list=0;
+	return 0;
+  }
+
+  TChain *fRawTagChain = new TChain("T");
+  Int_t nFiles=0;
   TIterator* iter = list->MakeIterator();
   TObject* obj = 0;
   while ((obj = iter->Next())) {
@@ -266,30 +275,48 @@ UInt_t AliGRPPreprocessor::ProcessDaqFxs() {
       Log(Form("Found source %s", objStr->String().Data()));
       TList* list2 = GetFileIDs(kDAQ, objStr->String());
       if (!list2) {
-	Log("No list with ids from DAQ was found!!!");
-	return 0;
+	Log("No list with ids from DAQ was found: connection problems with DAQ FXS logbook!");
+	delete fRawTagChain; fRawTagChain=0;
+	return 1;
       }
       Log(Form("Number of ids: %d",list2->GetEntries()));
       for(Int_t i = 0; i < list2->GetEntries(); i++) {
 	TObjString *idStr = (TObjString *)list2->At(i);
-	//Log(Form("Filename1: %s",idStr->String().Data()));
-	TString fileName = GetFile(kDAQ,idStr->String().Data(),objStr->String().Data());      
-	Log(Form("Adding file in the chain: %s",fileName.Data()));
-	fRawTagChain->Add(fileName.Data());
-	//fRawDataFileName = fileName(0,fileName.First("_"));
+	TString fileName = GetFile(kDAQ,idStr->String().Data(),objStr->String().Data());
+	if (fileName.Length() > 0) 
+	{      
+		Log(Form("Adding file in the chain: %s",fileName.Data()));
+		fRawTagChain->Add(fileName.Data());
+		nFiles++;
+	} else {
+		Log(Form("Could not retrieve file with id %s from source %s: "
+			"connection problems with DAQ FXS!",
+				idStr->String().Data(),objStr->String().Data()));
+		delete list; list=0;
+		delete list2; list2=0;
+		delete fRawTagChain; fRawTagChain=0;
+		return 2;
+	}
       }
       delete list2;
     }
   }
-  delete iter;
-  delete list;
+  
   TString fRawDataFileName = "GRP_Merged.tag.root";
-  Log(Form("Merging raw data tags into file: %s",fRawDataFileName.Data()));
+  Log(Form("Merging %d raw data tags into file: %s", nFiles, fRawDataFileName.Data()));
   fRawTagChain->Merge(fRawDataFileName);
   
   TString outputfile = Form("Run%d.Merged.RAW.tag.root", fRun);
   Bool_t result = StoreRunMetadataFile(fRawDataFileName.Data(),outputfile.Data());
-
+  
+  if (!result)
+  {
+  	Log("Problem storing raw data tags in local file!!");
+  }
+  
+  delete iter;
+  delete list;
+  delete fRawTagChain; fRawTagChain=0;
   return (UInt_t) result;
 }
 
