@@ -4,9 +4,9 @@
 #include "AliHLTPHOSGetEventButton.h"
 #include "AliHLTPHOSCommonDefs.h"
 #include "AliHLTDataTypes.h"
-#include "HOMERData.h"
-#include "HOMERReader.h"
-#include "HOMERWriter.h"
+#include "AliHLTHOMERData.h"
+#include "AliHLTHOMERReader.h"
+#include "AliHLTHOMERWriter.h"
 #include "AliHLTPHOSRcuCellEnergyDataStruct.h"
 //#include "AliHLTPHOSRcuCellEnergyDataStruct.h"
 #include "AliHLTPHOSRcuCellEnergyDataStruct.h" 
@@ -23,7 +23,7 @@ AliHLTPHOSOnlineDisplayEventTab::AliHLTPHOSOnlineDisplayEventTab()
 
 
 AliHLTPHOSOnlineDisplayEventTab::AliHLTPHOSOnlineDisplayEventTab(AliHLTPHOSOnlineDisplay *onlineDisplayPtr, TGTab  *tabPtr, 
-								 HOMERReader *homerSyncPtr, HOMERReader *homerPtrs[MAX_HOSTS], int nHosts) :  AliHLTPHOSOnlineDisplayTab()
+								 AliHLTHOMERReader *homerSyncPtr, AliHLTHOMERReader *homerPtrs[MAX_HOSTS], int nHosts) :  AliHLTPHOSOnlineDisplayTab()
 {
   fShmPtr = new AliHLTPHOSSharedMemoryInterface();
 
@@ -119,7 +119,7 @@ AliHLTPHOSOnlineDisplayEventTab::GetNextEvent()
 
 
 void 
-AliHLTPHOSOnlineDisplayEventTab::ReadBlockData(HOMERReader *homeReaderPtr)
+AliHLTPHOSOnlineDisplayEventTab::ReadBlockData(AliHLTHOMERReader *homeReaderPtr)
 {  
   AliHLTPHOSValidCellDataStruct *currentChannel =0;
   
