@@ -49,7 +49,7 @@ struct AliRawDataHeader {
   UInt_t    GetStatus() const
     {return (fStatusMiniEventID >> 12) & 0xFFFF;};
   UInt_t    GetMiniEventID() const
-    {return fStatusMiniEventID & 0x7FF;};
+    {return fStatusMiniEventID & 0xFFF;};
 
   ULong64_t GetTriggerClasses() const
     {return ((ULong64_t) (fROILowTriggerClassHigh & 0x1FFFF)) << 32 + fTriggerClassLow;}
