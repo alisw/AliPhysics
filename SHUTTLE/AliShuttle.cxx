@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.79  2007/12/19 14:03:01  acolla
+
+detector name to build the lhcPeriod_DET is to be looked in "detector" column, not "partition"
+
 Revision 1.78  2007/12/19 11:50:41  acolla
 
 Raw data tag merged files is written in /alice/data/.../lhcPeriod_DET/runNb/raw if partition is made of DET only
@@ -1403,6 +1407,8 @@ Bool_t AliShuttle::ContinueProcessing()
 			Log("SHUTTLE", Form("ContinueProcessing - %s: all objects "
 				"successfully stored into main storage",
 				fCurrentDetector.Data()));
+			UpdateShuttleStatus(AliShuttleStatus::kDone);
+			UpdateShuttleLogbook(fCurrentDetector, "DONE");
 		} else {
 			Log("SHUTTLE",
 				Form("ContinueProcessing - %s: Grid storage failed again",
