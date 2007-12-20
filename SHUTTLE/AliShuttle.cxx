@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.80  2007/12/20 13:31:28  acolla
+Bug fix (Jan Fiete): recovering from StoreError, if the store to OCDB is successful,
+the Shuttle sets current detector's status=done
+
 Revision 1.79  2007/12/19 14:03:01  acolla
 
 detector name to build the lhcPeriod_DET is to be looked in "detector" column, not "partition"
@@ -1397,7 +1401,7 @@ Bool_t AliShuttle::ContinueProcessing()
 		return kFALSE;
 	}
 
-	if (status->GetStatus() == AliShuttleStatus::kStoreError) {
+	if (status->GetStatus() == AliShuttleStatus::kStoreStarted || status->GetStatus() == AliShuttleStatus::kStoreError) {
 		Log("SHUTTLE",
 			Form("ContinueProcessing - %s: Grid storage of one or more "
 				"objects failed. Trying again now",
