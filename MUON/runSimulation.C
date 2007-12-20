@@ -15,8 +15,13 @@
 
 /* $Id$ */
 
-// Macro extracted from MUON test script
-// By Laurent Aphecetche
+/// \ingroup macros
+/// \file runSimulation.C
+/// \brief Macro for running simulation
+///
+/// Macro extracted from the MUON test script
+///
+/// \author Laurent Aphecetche
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include "AliCDBManager.h"

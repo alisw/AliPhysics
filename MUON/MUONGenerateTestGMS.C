@@ -15,12 +15,15 @@
 
 /* $Id: */
 
-// Macro to generate ad hoc GMS alignment matrices in the agreed format:
-// TClonesArray saved in the Root file with a key "GMSarray"
-// containing TGeoHMatrix with TObject::fUniqueID equal to the geometry
-// module Id
-//
-// By I. Hrivnacova, IPN Orsay
+/// \ingroup macros
+/// \file MUONGenerateTestGMS.C
+/// \brief Macro to generate ad hoc GMS alignment matrices in the agreed format
+///
+/// TClonesArray is saved in the Root file with a key "GMSarray"
+/// containing TGeoHMatrix objects with TObject::fUniqueID equal to the geometry
+/// module Ids
+///
+/// \author I. Hrivnacova, IPN Orsay
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 
@@ -34,6 +37,8 @@
 
 void MUONGenerateTestGMS(Bool_t print = kFALSE)
 {
+/// \param print option to switch on printing the processed matrices
+
   TFile f("data/GMS.root", "RECREATE");
   TClonesArray* array = new TClonesArray("TGeoHMatrix",100);
   

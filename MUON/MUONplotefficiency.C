@@ -15,14 +15,17 @@
 
 /* $Id$ */
 
-// Macro to compare/plot the Ntuple stored in MUONefficiency.root
-// comparison is done between the generated and reconstructed resonance
-// Default is Upsilon but Jpsi can be studied if the ResType argument is changed
-// This allows to determine several important quantities 
-// reconstruction efficiency (vs pt,y), invariant mass peak variations (vs pt,y)
-// reconstructed tracks and trigger tracks  matching efficiency
-
-// Christophe Suire, IPN Orsay
+/// \ingroup macros
+/// \file MUONplotefficiency.C
+/// \brief Macro to compare/plot the Ntuple stored in MUONefficiency.root
+///
+/// Comparison is done between the generated and reconstructed resonance.
+/// Default is Upsilon but Jpsi can be studied if the ResType argument is changed.
+/// This allows to determine several important quantities: 
+/// - reconstruction efficiency (vs pt,y), invariant mass peak variations (vs pt,y)
+/// - reconstructed tracks and trigger tracks  matching efficiency
+///
+/// \author Christophe Suire, IPN Orsay
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 // ROOT includes

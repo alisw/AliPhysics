@@ -15,10 +15,14 @@
 
 /* $Id$ */
 
-// Macro which loads the libraries needed for simulation and reconstruction
-// with MUON configuration macros
-// Christian Finck
-// New libraries list by Laurent Aphecetche
+/// \ingroup macros
+/// \file loadlibs.C
+/// \brief Macro which loads the libraries needed for simulation and reconstruction
+/// with MUON configuration macros
+///
+/// \author Christian Finck
+///
+/// New libraries list by Laurent Aphecetche
 
 void loadlibs () 
 {

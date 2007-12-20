@@ -15,57 +15,53 @@
 
 /* $Id$ */
 
-// Macro which loads and compiles the MUON macros:
-//
-// runSimulation.C               - ok, comp,  x;      Laurent
-// runReconstruction.C           - ok, comp,  x;      Laurent
-// fastMuonGen.C                 - ok, comp,  x;      Hermine, Alessandro
-// fastMuonSim.C                 - ok, comp,  x;      Hermine, Alessandro
-// DecodeRecoCocktail.C          - ok, comp,  README; Hermine, Alessandro
-// ReadRecoCocktail.C            - ok, comp,  README; Hermine, Alessandro
-// MergeMuonLight.C              - x,  comp,  README; Hermine, Alessandro
-// MakeMUONFullMisAlignment.C    - ok, comp,  README; Javier, Ivana
-// MakeMUONResMisAlignment.C     - ok, comp,  README; Javier, Ivana
-// MakeMUONZeroMisAlignment.C    - ok, comp,  README; Javier, Ivana
-// MUONAlignment.C               - ok, comp,  README; Javier
-// MUONCheck.C                   - ok, comp,  x,      Frederic, in test
-// MUONCheckDI.C                 - x,  comp,  x       Artur     
-// MUONCheckMisAligner.C         - ok, comp,  x,      Javier
-// MUONdisplay.C                 - ok, comp,  deprecated
-// MUONefficiency.C              - ok, comp,  README; Christophe, in test
-// MUONGenerateBusPatch.C        - ok, comp,  x,      Christian
-// MUONGenerateGeometryData.C    - ok, comp,  README; Ivana
-// MUONGenerateTestGMS.C         - ok, comp,  READMEshuttle;  Ivana
-// MUONmassPlot_ESD.C            - ok, comp,  README, Christian
-// MUONplotefficiency.C          - ok, comp,  README; Christophe
-// MUONRawStreamTracker.C        - x,  comp,  README; Christian
-// MUONRawStreamTrigger.C        - x,  comp,  README; Christian
-// MUONRecoCheck.C               - ok, comp,  README; Hermine, Alessandro
-// MUONResoEffChamber.C          - ok, comp,  x,      Nicolas
-// MUONStatusMap.C               - ok, comp,  x,      Laurent
-// MUONTrigger.C                 - ok, comp,  README, Philippe C.
-// MUONTriggerEfficiency.C       - ok, comp,  x,      Philippe C., in test
-// MUONTriggerEfficiencyPt.C     - x,  comp,  README, Philippe C.
-// MUONTriggerChamberEfficiency.C- x,  comp,  README, Diego
-// TestMUONPreprocessor.C        - ok, comp,  READMEshuttle; Laurent
-// 
-// 1st item:
-// ok/fails/x - if the macro runs; x means that it was not tried either for lack
-//              of documentation, or expertise
-//              
-// 2nd item:
-// comp/x     - if the macro can be compiled
-//              
-// 3rd item:
-// README*/x  - if it is documented in README, x means no doxumentation outside the 
-//              macro itself
-//              
-// 4th item:  - author(s), responsible for macro maintenance 
-//
-// eventually 
-// 5th item:  - if the macro is run within test scripts                         
-//
-// I. Hrivnacova
+/// \ingroup macros
+/// \file loadmacros.C
+/// \brief Macro which loads and compiles the MUON macros:
+///
+/// \author I. Hrivnacova, IPN Orsay
+///
+/// <pre>
+/// runSimulation.C               - ok, comp,  x;      Laurent
+/// runReconstruction.C           - ok, comp,  x;      Laurent
+/// fastMUONGen.C                 - ok, comp,  x;      Hermine, Alessandro
+/// fastMUONSim.C                 - ok, comp,  x;      Hermine, Alessandro
+/// DecodeRecoCocktail.C          - ok, comp,  README; Hermine, Alessandro
+/// ReadRecoCocktail.C            - ok, comp,  README; Hermine, Alessandro
+/// MergeMuonLight.C              - x,  comp,  README; Hermine, Alessandro
+/// MakeMUONFullMisAlignment.C    - ok, comp,  README; Javier, Ivana
+/// MakeMUONResMisAlignment.C     - ok, comp,  README; Javier, Ivana
+/// MakeMUONZeroMisAlignment.C    - ok, comp,  README; Javier, Ivana
+/// MUONAlignment.C               - ok, comp,  README; Javier
+/// MUONCheck.C                   - ok, comp,  x,      Frederic, in test
+/// MUONCheckDI.C                 - x,  comp,  x       Artur     
+/// MUONCheckMisAligner.C         - ok, comp,  x,      Javier
+/// MUONefficiency.C              - ok, comp,  README; Christophe, in test
+/// MUONGenerateBusPatch.C        - ok, comp,  x,      Christian
+/// MUONGenerateGeometryData.C    - ok, comp,  README; Ivana
+/// MUONGenerateTestGMS.C         - ok, comp,  READMEshuttle;  Ivana
+/// MUONmassPlot_ESD.C            - ok, comp,  README, Christian
+/// MUONplotefficiency.C          - ok, comp,  README; Christophe
+/// MUONRawStreamTracker.C        - x,  comp,  README; Christian
+/// MUONRawStreamTrigger.C        - x,  comp,  README; Christian
+/// MUONRecoCheck.C               - ok, comp,  README; Hermine, Alessandro
+/// MUONResoEffChamber.C          - ok, comp,  x,      Nicolas
+/// MUONStatusMap.C               - ok, comp,  x,      Laurent
+/// MUONTimeRawStreamTracker.C    - ok, comp,  README, Artur
+/// MUONTrigger.C                 - ok, comp,  README, Philippe C.
+/// MUONTriggerEfficiency.C       - ok, comp,  x,      Philippe C., in test
+/// MUONTriggerEfficiencyPt.C     - x,  comp,  README, Philippe C.
+/// MUONTriggerChamberEfficiency.C- x,  comp,  README, Diego
+/// TestMUONPreprocessor.C        - ok, comp,  READMEshuttle; Laurent
+/// </pre>
+/// 
+/// - 1st item: ok/fails/x - if the macro runs; x means that it was not tried either for lack
+///             of documentation, or expertise
+/// - 2nd item: comp/x     - if the macro can be compiled
+/// - 3rd item: README/x  - if it is documented in README, x means no doxumentation outside the 
+///                         macro itself
+/// - 4th item: author(s) - responsible for macro maintenance 
+/// - eventually 5th item: - if the macro is run within test scripts                         
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 

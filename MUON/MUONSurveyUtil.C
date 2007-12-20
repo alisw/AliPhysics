@@ -15,16 +15,16 @@
 
 /* $Id$ */
 
-// ---
-// Utility macro for survey data to alignment transformation.
-// 
-// Macro contains various functions to calculate misalignement parameters
-// from survey data and designed positions of survey targets.
-// Macro also includes a method to get the new AliMUONGeometryTranformer.
-// It is intended to be loaded by chamber specific macros.
-//
-// Author: Javier Castillo
-// ---
+/// \ingroup macros
+/// \file MUONSurveyUtil.C
+/// \brief Utility macro for survey data to alignment transformation.
+///  
+/// Macro contains various functions to calculate misalignement parameters
+/// from survey data and designed positions of survey targets.
+/// Macro also includes a method to get the new AliMUONGeometryTransformer.
+/// It is intended to be loaded by chamber specific macros.
+/// 
+/// \author Javier Castillo
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 

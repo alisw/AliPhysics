@@ -13,6 +13,18 @@
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
 
+// $Id$
+
+/// \ingroup macros
+/// \file MUONRecoCheck.C
+/// \brief Utility macro to check the muon reconstruction. 
+///
+/// Reconstructed tracks are compared to reference tracks. The reference tracks 
+/// are built from AliTrackReference for the hit in chamber (0..9) and from 
+/// kinematics (TreeK) for the vertex parameters.  
+///
+/// \author Jean-Pierre Cussonneau, Subatech  
+
 // ROOT includes
 #include "TClonesArray.h"
 #include "TH1.h"
@@ -38,11 +50,8 @@
 Int_t TrackCheck( Bool_t *compTrack);
 
 void MUONRecoCheck (Int_t nEvent = 1, char* geoFilename = "geometry.root", 
-                    char * pathSim="./generated/", char * esdFileName="AliESDs.root"){
-  
-  // Utility macro to check the muon reconstruction. Reconstructed tracks are compared
-  // to reference tracks. The reference tracks are built from AliTrackReference for the
-  // hit in chamber (0..9) and from kinematics (TreeK) for the vertex parameters.     
+                    char * pathSim="./generated/", char * esdFileName="AliESDs.root")
+{
   
   Bool_t *compTrack;
   Bool_t compTrackOK[10];

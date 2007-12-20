@@ -15,8 +15,11 @@
 
 /* $Id$ */
 
-// Macro for loading libraries needed for reading & decoding rawdata
-// Christian Finck
+/// \ingroup macros
+/// \file loadlibraw.C
+/// \brief Macro for loading libraries needed for reading & decoding rawdata
+///
+/// \author Christian Finck
 
 void loadlibraw () 
 {

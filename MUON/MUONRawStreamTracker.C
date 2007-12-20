@@ -13,14 +13,33 @@
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
 
-//
-// Macro for reading tracker raw data
-// Ch. Finck, Subatech Febuary
-//
-// Added example routines to show how to use the interface of the high
-// performance decoder AliMUONRawStreamTrackerHP.
-//   Artur Szostak <artursz@iafrica.com>
-//
+// $Id$
+
+/// \ingroup macros
+/// \file MUONRawStreamTracker.C
+/// \brief Macro for reading tracker raw data
+///
+/// \author Ch. Finck, Subatech Febuary
+///
+/// Added example routines to show how to use the interface of the high
+/// performance decoder AliMUONRawStreamTrackerHP.
+/// by  Artur Szostak <artursz@iafrica.com>
+///
+/// This macro is interfaced with AliRawReader for RAW
+///
+/// There are 2 ways of reading the data: 
+/// - one where each intermediate structure (block, dsp, buspatch) is looped over
+/// - and one, using an iterator, where we're directly accessing the pad informations 
+/// (charge).
+///
+/// The different stucture of the payload are readout and stored in TClonesArray
+/// with AliMUONRawStreamTracker class.
+/// The macro just simply reads again the TClonesArray contents.
+/// The parameters of each structure could be seen in the container classes
+/// AliMUONBlockHeader, AliMUONBlockHeader, AliMUONBusStruct.
+/// The class AliMUONDDLTracker manages the structure containers.
+/// The number of structures in the rawdata file could be set.
+
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 
@@ -40,25 +59,6 @@
 #include "TStopwatch.h"
 
 #endif
-
-// Macro to read rawdata for tracker
-// Ch. Finck, Subatech, April. 2006
-//
-// This macro is interfaced with AliRawReader for RAW
-//
-// There are 2 ways of reading the data : one where each intermediate structure
-// (block, dsp, buspatch) is looped over, and one, using an iterator, where
-// we're directly accessing the pad informations (charge).
-//
-// The different stucture of the payload are readout and stored in TClonesArray
-// with AliMUONRawStreamTracker classe.
-// The macro just simpy read again the TClonesArray contents.
-// The parameter of each structure could be seen in the container classes
-// AliMUONBlockHeader, AliMUONBlockHeader, AliMUONBusStruct.
-// The class AliMUONDDLTracker manages the structure containers.
-// The number of structures in the rawdata file could be set.
-//
-// 
 
 void MUONRawStreamTrackerExpert(TString fileName = "./", Int_t maxEvent = 1000,  
                                 Int_t minDDL = 0, Int_t maxDDL = 19)

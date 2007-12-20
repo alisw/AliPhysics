@@ -13,16 +13,20 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id: */
+/* $Id$ */
 
-//H. Woehri,  A. De Falco, INFN Cagliari, April 2007
-//an example how to use the AliGenMUONCocktailpp generator
-//without GEANT simulation of the detector
-//The macro switches on all decay modes for the resonances,
-//while for the minimum bias Pythia event we additionally
-//switch on the muonic decays of pions and Kaons
-//Its outcome can be further processed by the macro
-//"fastMUONSim.C
+/// \ingroup macros
+/// \file fastMUONGen.C
+/// \brief An example how to use the AliGenMUONCocktailpp generator
+/// without GEANT simulation of the detector
+///
+/// \author H. Woehri,  A. De Falco, INFN Cagliari, April 2007
+///
+/// The macro switches on all decay modes for the resonances,
+/// while for the minimum bias Pythia event we additionally
+/// switch on the muonic decays of pions and Kaons
+/// Its outcome can be further processed by the macro
+/// fastMUONSim.C
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include "AliGenerator.h"
@@ -41,13 +45,13 @@
 AliGenerator*  CreateGeneratorMC(Int_t mult);
 Int_t SetupOutputDirectory();
 
-//the third argument "mult" allows to select at a "pre-trigger" level
-//events with "mult" muons in the MUON detector's phase space
-//window, which is defined in the method "CreateGeneratorMC(Int_t mult)"
-//note that in this routine also a cut on the muon's origin
-//should be placed in order not to trigger on muons from pi/K decays
-//that were decayed by Pythia way inside the absorber or in the muon
-//spectrometer itself
+/// The third argument \em mult allows to select at a "pre-trigger" level
+/// events with "mult" muons in the MUON detector's phase space
+/// window, which is defined in the method "CreateGeneratorMC(Int_t mult)".
+/// Note that in this routine also a cut on the muon's origin
+/// should be placed in order not to trigger on muons from pi/K decays
+/// that were decayed by Pythia way inside the absorber or in the muon
+/// spectrometer itself
 void fastMUONGen(Int_t nev = 1, char* filename = "galice.root", Int_t mult = 2)
 {
   Int_t runNumber = SetupOutputDirectory();

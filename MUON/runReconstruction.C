@@ -15,8 +15,13 @@
 
 /* $Id$ */
 
-// Macro extracted from MUON test script
-// By Laurent Aphecetche
+/// \ingroup macros
+/// \file runReconstruction.C
+/// \brief Macro for running reconstruction
+///
+/// Macro extracted from the MUON test script
+///
+/// \author Laurent Aphecetche
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include "AliMUONReconstructor.h"
@@ -54,6 +59,8 @@ void runReconstruction(int seed, const char* input, const char* recoptions)
   
   AliMUONRecoParam *muonRecoParam = AliMUONRecoParam::GetLowFluxParam();
   muonRecoParam->CombineClusterTrackReco(kTRUE);
+  //muonRecoParam->SetClusteringMode("PEAKFIT");
+  //muonRecoParam->SetClusteringMode("PEAKCOG");
   muonRecoParam->Print("FULL");
   AliRecoParam::Instance()->RegisterRecoParam(muonRecoParam);
   

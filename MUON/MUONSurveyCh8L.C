@@ -15,21 +15,23 @@
 
 /* $Id$ */
 
-// ---
-// Macro to process survey and photogrammetry data of chamber 8L
-// 
-// Macro loads the survey data from .txt file using AliSurveyObj.
-// Macro MUONSurveyUtil.C is then loaded.
-// The transformations of the slats are obatained in 2 steps:
-//   1. Fit a plane to the sticker targets -> psi, theta
-//   2. Using above psi in theta obtain xc, yc, zc and phi by solving 
-//      the equations from a local to global transformation of the
-//      fixed button targets
-// Various histograms are filled and printed for monitoring.
-// MisAlignment object is then created.
-//
-// Author: Javier Castillo
-// ---
+/// \ingroup macros
+/// \file MUONSurveyCh8L.C
+/// \brief Macro to process survey and photogrammetry data of chamber 8L
+///  
+///  Macro loads the survey data from .txt file using AliSurveyObj.
+///  Macro MUONSurveyUtil.C is then loaded.
+///
+///  The transformations of the slats are obatained in 2 steps:
+///  -  1. Fit a plane to the sticker targets -> psi, theta
+///  -  2. Using above psi in theta obtain xc, yc, zc and phi by solving 
+///        the equations from a local to global transformation of the
+///        fixed button targets
+///
+///  Various histograms are filled and printed for monitoring.
+///  MisAlignment object is then created.
+/// 
+/// \author Javier Castillo
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 

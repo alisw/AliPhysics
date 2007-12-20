@@ -15,13 +15,12 @@
 
 /* $Id$ */
 
-// A. De Falco, H. Woehri, INFN Cagliari, July 2006 
-// This macro merges several files built with DecodeRecoCocktail.C into 
-// a single one. 
-// Arguments:     foutname = name of the output file
-//                flistname = name of a text file containing the list of files
-//                            to be merged 
-//                saveAll = boolian that allows/forbids saving of events with no muons
+/// \ingroup macros
+/// \file MergeMuonLight.C
+/// \brief This macro merges several files built with DecodeRecoCocktail.C into 
+/// a single one
+///
+/// \author A. De Falco, H. Woehri, INFN Cagliari, July 2006 
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include "TFile.h"
@@ -32,7 +31,13 @@
 #endif
 
 
-void MergeMuonLight(char *foutname="MuonLightMerged.root",char *flistname="lista.lis", Bool_t saveAll = kTRUE){ 
+void MergeMuonLight(char *foutname="MuonLightMerged.root",char *flistname="lista.lis", Bool_t saveAll = kTRUE)
+{ 
+/// \param foutname   name of the output file
+/// \param flistname  name of a text file containing the list of files
+///                   to be merged 
+/// \param  saveAll    boolian that allows/forbids saving of events with no muons
+
   // up to 2000 input files 
 
   TFile *file[2000];

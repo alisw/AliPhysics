@@ -15,13 +15,17 @@
 
 /* $Id$ */
 
-//Macro to calculate the resolution and the efficiency of chamber(s) chosen in function
-//of Phi (angle on the chamber between the X axis and the straight line created by the
-//center of the chamber and the impact of particles on this chamber, the azimuthal angle)
-//and Theta (the polar angle), or in function of ThetaI (angle of incidence of particles
-//on the chamber)
-
-
+/// \ingroup macros
+/// \file MUONResoEffChamber.C
+/// \brief Macro to calculate the resolution and the efficiency of chamber(s)
+///
+/// Macro to calculate the resolution and the efficiency of chamber(s) chosen in function
+/// of Phi (angle on the chamber between the X axis and the straight line created by the
+/// center of the chamber and the impact of particles on this chamber, the azimuthal angle)
+/// and Theta (the polar angle), or in function of ThetaI (angle of incidence of particles
+/// on the chamber)
+///
+/// \author Nicolas Le Bris, Subatech
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 

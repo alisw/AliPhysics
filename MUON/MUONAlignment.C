@@ -15,24 +15,26 @@
 
 /* $Id$ */
 
-// ---
-// Macro for MUON alignment using physics tracks. The macro uses AliMUONAlignment
-// class to calculate the alignment parameters.
-// An array for the alignment parameters is created and can be filled with
-// initial values that will be used as starting values by the alignment
-// algorithm.
-// Ny default the macro run over galice.root in the working directory. If a file list
-// of galice.root is provided as third argument the macro will run over all files.
-// The macro loop over the files, events and tracks. For each track
-// AliMUONAlignment::ProcessTrack(AliMUONTrack * track) and then
-// AliMUONAlignment::LocalFit(Int_t iTrack, Double_t *lTrackParam, Int_t
-// lSingleFit) are called. After all tracks have been procesed and fitted
-// AliMUONAlignment::GlobalFit(Double_t *parameters,Double_t *errors,Double_t *pulls)
-// is called. The array parameters contains the obatained misalignement parameters.
-// A realigned geometry is generated in a local CDB.
-//
-// Authors: B. Becker and J. Castillo
-// ---
+/// \ingroup macros
+/// \file MUONAlignment.C
+/// \brief Macro for MUON alignment using physics tracks. 
+///
+/// The macro uses the AliMUONAlignment class to calculate the alignment parameters.
+/// An array for the alignment parameters is created and can be filled with
+/// initial values that will be used as starting values by the alignment
+/// algorithm.
+///
+/// By default the macro run over galice.root in the working directory. If a file list
+/// of galice.root is provided as third argument the macro will run over all files.
+/// The macro loop over the files, events and tracks. For each track
+/// AliMUONAlignment::ProcessTrack(AliMUONTrack * track) and then
+/// AliMUONAlignment::LocalFit(Int_t iTrack, Double_t *lTrackParam, Int_t
+/// lSingleFit) are called. After all tracks have been procesed and fitted
+/// AliMUONAlignment::GlobalFit(Double_t *parameters,Double_t *errors,Double_t *pulls)
+/// is called. The array parameters contains the obatained misalignement parameters.
+/// A realigned geometry is generated in a local CDB.
+///
+/// \author: B. Becker and J. Castillo
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 

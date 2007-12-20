@@ -15,9 +15,11 @@
 
 /* $Id$ */
 
-/// Macro to check/test pad status and pad status map makers
+/// \ingroup macros
+/// \file MUONStatusMap.C
+/// \brief Macro to check/test pad status and pad status map makers
 ///
-// Laurent Aphecetche
+/// \author Laurent Aphecetche
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include "AliCDBManager.h"

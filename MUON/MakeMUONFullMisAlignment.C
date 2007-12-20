@@ -15,10 +15,13 @@
 
 // $Id$
 
-// Macro for generating the full misalignment data.
-// The macro is trigger from AliRoot/macros/MakeAllDETsFullMisAlignment.C
-//
-// Author: I. Hrivnacova, IPN Orsay
+/// \ingroup macros
+/// \file MakeMUONFullMisAlignment.C
+/// \brief Macro for generating the full misalignment data.
+///
+/// The macro is triggered from AliRoot/macros/MakeAllDETsFullMisAlignment.C
+///
+/// \author: I. Hrivnacova, IPN Orsay
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 

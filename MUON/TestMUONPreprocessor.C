@@ -17,6 +17,10 @@
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 
+/// \ingroup macros
+/// \file TestMUONPreprocessor.C
+/// \brief The macro for testing the shuttle preprocessors 
+///
 /// This macro runs the test preprocessor for MUON.
 /// It uses AliTestShuttle to simulate a full Shuttle process
 ///
@@ -24,20 +28,20 @@
 /// here by CreateDCSAliasMap() for tracker HV).
 ///
 /// To play with it, you'll have to set/modify several lines, to
-/// a) select input files, using shuttle->AddInputFile()
-/// b) select run type, using shuttle->AddInputRunParameter() (the run type
-///    dictates which task is really performed by the MUONPreprocessor
+/// - a) select input files, using shuttle->AddInputFile()
+/// - b) select run type, using shuttle->AddInputRunParameter() (the run type
+///      dictates which task is really performed by the MUONPreprocessor
 ///
 /// You must load relevant libraries (besides normal MUON ones) before
 /// compiling this macro :
-///
+/// <pre>
 /// gSystem->Load("$ALICE_ROOT/SHUTTLE/TestShuttle/libTestShuttle");
 /// gSystem->Load("libMUONshuttle.so");
+/// </pre>
 ///
+/// For more information on usage, please see the \ref README_shuttle page.
 ///
-/// For more information on usage, please see READMEshuttle.
-///
-// By Laurent Aphecetche, SUBATECH Nantes
+/// \author Laurent Aphecetche, SUBATECH Nantes
 
 #include "TestMUONPreprocessor.h"
 

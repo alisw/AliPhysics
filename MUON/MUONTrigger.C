@@ -15,10 +15,14 @@
 
 /* $Id$ */
 
-// This macro is to be used to check the trigger algorithm w/o having to
-// (re-)perform simulation and digitalization. 
-// see full description in the REDAME file
-// Author: P.Crochet (LPC)
+/// \ingroup macros
+/// \file MUONTrigger.C
+/// \brief This macro is to be used to check the trigger algorithm w/o having to
+/// (re-)perform simulation and digitalization. 
+///
+/// See full description on the \ref README_trigger page.
+///
+/// \author P.Crochet (LPC)
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include "AliRun.h"

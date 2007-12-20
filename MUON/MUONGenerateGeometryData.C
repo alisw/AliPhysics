@@ -15,15 +15,19 @@
 
 // $Id$
 //
-// Macro for generating the geometry data files:
-// volpath.dat, transform.dat, svmap.dat.
-// To be run from aliroot:
-// .x MUONGenerateGeometryData.C
-//
-// The generated files do not replace the existing ones
-// but have different names (with extension ".out").
-//
-//  Author: I. Hrivnacova, IPN Orsay
+/// \ingroup macros
+/// \file MUONGenerateGeometryData.C
+/// \brief Macro for generating the geometry data files:
+///  transform.dat, svmap.dat.
+///
+/// To be run from aliroot:
+///
+/// .x MUONGenerateGeometryData.C
+///
+/// The generated files do not replace the existing ones
+/// but have different names (with extension ".out").
+///
+/// \author: I. Hrivnacova, IPN Orsay
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 
@@ -41,6 +45,11 @@ void MUONGenerateGeometryData(Bool_t transforms = true,
                               Bool_t svmaps = true,
                               Bool_t writeEnvelopes = true)
 {
+/// \param transforms      option to generete transform.dat
+/// \param svmaps          option to generete svmap.dat
+/// \param writeEnvelope   option to include virtual envelopes
+///                        in the volume paths
+
   // Initialize
   gAlice->Init("$ALICE_ROOT/MUON/Config.C");
   cout << "Init done " << endl;

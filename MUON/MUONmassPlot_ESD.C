@@ -30,45 +30,43 @@
 #include "AliMUONTrackExtrap.h"
 #include "AliESDMuonTrack.h"
 #endif
-//
-// Macro MUONmassPlot.C for ESD
-// Ch. Finck, Subatech, April. 2004
-//
 
-// macro to make invariant mass plots
-// for combinations of 2 muons with opposite charges,
-// from root file "MUON.tracks.root" containing the result of track reconstruction.
-// Histograms are stored on the "MUONmassPlot.root" file.
-// introducing TLorentzVector for parameter calculations (Pt, P,rap,etc...)
-// using Invariant Mass for rapidity.
-
-// Arguments:
-//   ExtrapToVertex (default -1)
-//	<0: no extrapolation;
-//	=0: extrapolation to (0,0,0);
-//	>0: extrapolation to ESDVertex if available, else to (0,0,0)
-//   FirstEvent (default 0)
-//   LastEvent (default 0)
-//   ResType (default 553)
-//      553 for Upsilon, anything else for J/Psi
-//   Chi2Cut (default 100)
-//      to keep only tracks with chi2 per d.o.f. < Chi2Cut
-//   PtCutMin (default 1)
-//      to keep only tracks with transverse momentum > PtCutMin
-//   PtCutMax (default 10000)
-//      to keep only tracks with transverse momentum < PtCutMax
-//   massMin (default 9.17 for Upsilon) 
-//      &  massMax (default 9.77 for Upsilon) 
-//         to calculate the reconstruction efficiency for resonances with invariant mass
-//         massMin < mass < massMax.
-
-// Add parameters and histograms for analysis 
+/// \ingroup macros
+/// \file MUONmassPlot_ESD.C
+/// \brief Macro MUONefficiency.C for ESD
+///
+/// \author Ch. Finck, Subatech, April. 2004
+///
+///
+/// Macro to make invariant mass plots
+/// for combinations of 2 muons with opposite charges,
+/// from root file "MUON.tracks.root" containing the result of track reconstruction.
+/// Histograms are stored on the "MUONmassPlot.root" file.
+/// introducing TLorentzVector for parameter calculations (Pt, P,rap,etc...)
+/// using Invariant Mass for rapidity.
+///
+/// Add parameters and histograms for analysis 
 
 Bool_t MUONmassPlot(char* filename = "generated/galice.root", Int_t ExtrapToVertex = -1, char* geoFilename = "geometry.root", 
 		  Int_t FirstEvent = 0, Int_t LastEvent = 10000, char* esdFileName = "AliESDs.root", Int_t ResType = 553, 
                   Float_t Chi2Cut = 100., Float_t PtCutMin = 1., Float_t PtCutMax = 10000.,
                   Float_t massMin = 9.17,Float_t massMax = 9.77)
 {
+/// \param ExtrapToVertex (default -1)
+///   -	<0: no extrapolation;
+///   -	=0: extrapolation to (0,0,0);
+///   -	>0: extrapolation to ESDVertex if available, else to (0,0,0)
+/// \param FirstEvent (default 0)
+/// \param LastEvent (default 0)
+/// \param ResType    553 for Upsilon, anything else for J/Psi (default 553)
+/// \param Chi2Cut    to keep only tracks with chi2 per d.o.f. < Chi2Cut (default 100)
+/// \param PtCutMin   to keep only tracks with transverse momentum > PtCutMin (default 1)
+/// \param PtCutMax   to keep only tracks with transverse momentum < PtCutMax (default 10000)
+/// \param massMin   (default 9.17 for Upsilon) 
+/// \param massMax   (default 9.77 for Upsilon);  
+///         to calculate the reconstruction efficiency for resonances with invariant mass
+///         massMin < mass < massMax.
+
   cout << "MUONmassPlot " << endl;
   cout << "FirstEvent " << FirstEvent << endl;
   cout << "LastEvent " << LastEvent << endl;

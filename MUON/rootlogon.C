@@ -3,7 +3,14 @@
 
 /* $Id$ */
 
-/// By Laurent Aphecetche
+/// \ingroup macros
+/// \file rootlogon.C
+/// \brief Macro which is run when starting Root in MUON
+///
+/// It loads the MUON libraries needed for simulation and reconstruction
+/// and sets the include path. 
+///
+/// \author Laurent Aphecetche
 
 {
   cout << "Loading MUON libraries ..." << endl;

@@ -15,9 +15,11 @@
 
 // $Id$
 
-// Macro for generating the zero misalignment data.
-//
-// Author: I. Hrivnacova, IPN Orsay
+/// \ingroup macros
+/// \file MakeMUONZeroMisAlignment.C
+/// \brief Macro for generating the zero misalignment data.
+///
+/// \author: I. Hrivnacova, IPN Orsay
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 

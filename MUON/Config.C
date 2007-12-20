@@ -1,6 +1,27 @@
-// Config file test for MUON spectormeter
-// Remember to define the directory and option
-// gAlice->SetConfigFunction("Config('$HOME','box');");
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/* $Id$ */
+
+/// \ingroup macros
+/// \file Config.C
+/// \brief Configuration macro for MUON spectormeter simulation
+///
+/// Remember to define the directory and event generator option:
+///
+/// gAlice->SetConfigFunction("Config('$HOME','box');");
 
 void Config(char directory[100]="", char option[6]="param", const char* digitstore="AliMUONDigitStoreV2S")
 {

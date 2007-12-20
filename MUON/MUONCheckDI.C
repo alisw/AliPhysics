@@ -15,13 +15,14 @@
 
 /* $Id$ */
 
-//
-// Macro for checking AliMUONDataInterface and AliMUONMCDataInterface.
-// By Bruce Becker, DAPNIA/SPhN/CEA Saclay
-//
-// Modified to updated versions of data interfaces.
-//  Artur Szostak <artursz@iafrica.com> (University of Cape Town)
-//
+/// \ingroup macros
+/// \file MUONCheckDI.C
+/// \brief Macro for checking AliMUONDataInterface and AliMUONMCDataInterface.
+///
+/// \author Bruce Becker, DAPNIA/SPhN/CEA Saclay
+///
+/// Modified to updated versions of data interfaces
+/// by Artur Szostak <artursz@iafrica.com> (University of Cape Town)
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include "AliMUONHit.h"

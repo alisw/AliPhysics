@@ -13,10 +13,25 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//
-// Macro for reading tracker raw data
-// Ch. Finck, Subatech Febuary
-//
+// $Id$
+
+/// \ingroup macros
+/// \file MUONRawStreamTrigger.C
+/// \brief Macro for reading trigger raw data
+///
+/// \author Ch. Finck, Subatech, April 2006
+///
+/// Implement "digits" iterator.
+/// This macro is interface with AliRawReader for RAW.
+/// The different stucture of the patload are readout and stored in TClonesArray
+/// with AliMUONRawStreamTrigger class.
+/// The macro just simply reads again the TClonesArray contents.
+/// The parameter of each structure could be seen in the container classes
+/// AliMUONDarcHeader, AliMUONRegHeader, AliMUONLocalStruct.
+/// The class AliMUONDDLTrigger manages the structure containers.
+/// The number of structures in the rawdata file could be set.
+/// The DATE format reading is no more supported please use the MUONTRGda code.
+
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 
@@ -39,19 +54,6 @@
 
 
 #endif
-
-// Macro to read rawdata for trigger
-// Ch. Finck, Subatech, April. 2006
-// Implement "digits" iterator
-// This macro is interface with AliRawReader for RAW
-// The different stucture of the patload are readout and stored in TClonesArray
-// with AliMUONRawStreamTrigger classe.
-// The macro just simpy read again the TClonesArray contents.
-// The parameter of each structure could be seen in the container classes
-// AliMUONDarcHeader, AliMUONRegHeader, AliMUONLocalStruct.
-// The class AliMUONDDLTrigger manages the structure containers.
-// The number of structures in the rawdata file could be set.
-// The DATE format reading is no more supported please use the MUONTRGda code
 
 void MUONRawStreamTrigger(Int_t maxEvent = 1, Int_t minDDL = 0, Int_t maxDDL = 1, TString fileName = "./")
 {

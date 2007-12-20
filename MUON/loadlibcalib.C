@@ -13,10 +13,14 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id */
+/* $Id$ */
 
-// Macro for loading libraries needed for dealing with calibration data containers
-// Laurent Aphecetche
+/// \ingroup macros
+/// \file loadlibcalib.C
+/// \brief Macro for loading libraries needed for dealing with calibration 
+/// data containers
+///
+/// \author Laurent Aphecetche
 
 void loadlibcalib () 
 {

@@ -15,10 +15,13 @@
 
 // $Id$
 
-// Macro for generating the residual misalignment data.
-// The macro is triggered from AliRoot/macros/MakeAllDETsResMisAlignment.C
-//
-//  Author: I. Hrivnacova, IPN Orsay
+/// \ingroup macros
+/// \file MakeMUONResMisAlignment.C
+/// \brief Macro for generating the residual misalignment data.
+///
+/// The macro is triggered from AliRoot/macros/MakeAllDETsResMisAlignment.C
+///
+/// \author: I. Hrivnacova, IPN Orsay
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 

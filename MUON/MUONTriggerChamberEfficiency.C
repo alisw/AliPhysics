@@ -28,22 +28,24 @@
 
 #endif
 
-// Macro to view and save the trigger chamber efficiency map 
-// calculated during reconstruction.
-// Efficiency map can be made available for next simulation.
-
-// Arguments:
-//
-// addMapInSimulation (default kFALSE):
-//    kTRUE: creates file MUON/Calib/TriggerEfficiency/Run0_99999999_v0_s?.root
-//           with calculated chamber efficiency which can be used in the next simulation
-//
-// inputDir (default "."):
-//    path to AliESDs.root
+/// \ingroup macros
+/// \file MUONTriggerChamberEfficiency.C
+/// \brief Macro to view and save the trigger chamber efficiency map 
+/// calculated during reconstruction.
+///
+/// Efficiency map can be made available for next simulation.
+///
+/// \author Diego Stocco, INFN Torino
 
 void MUONTriggerChamberEfficiency(Bool_t addMapInSimulation=kFALSE,
 				  const char *inputDir=".")
 {
+/// \param addMapInSimulation (default kFALSE);
+///     kTRUE: creates file MUON/Calib/TriggerEfficiency/Run0_99999999_v0_s?.root
+///            with calculated chamber efficiency which can be used in the next simulation
+/// \param inputDir 
+///     path to AliESDs.root (default ".")
+
     Char_t filename[150], *className = "AliMUONTriggerEfficiencyCells";
     sprintf(filename,"%s/AliESDs.root",inputDir);
 

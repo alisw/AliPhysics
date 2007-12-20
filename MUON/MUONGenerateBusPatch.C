@@ -27,16 +27,23 @@
 
 #endif
 
-// Generates buspatch id and DDL id for given detection element id
-// station 1 & 2 assuming 24 buspatches per quadrant
-// station345, reading from DetElemIdToSlatType.dat file and calculates
-// the number of bus patches per slat (and also number of Translator and Bridge Boards).
-// Generates an output file DetElemIdToBusPatch.dat.out, preserve from overwriting
-// (Ch. Finck, July 05)
-// (Nov. 05, added DDL)
-// (June 06, correction for St123)
-// (Feb. 07, add 1st manu list for St12 (starting on NB !) and new ddl sharing for station 3)
-// (June. 07, new numbering of station 345, and buspatch starts at 1)
+/// \ingroup macros
+/// \file MUONGenerateBusPatch.C
+/// \brief Generates buspatch id and DDL id for given detection element id
+///
+/// - station 1 & 2 assuming 24 buspatches per quadrant         
+/// - station345, reading from DetElemIdToSlatType.dat file and calculates
+///   the number of bus patches per slat (and also number of Translator and Bridge Boards).
+/// Generates an output file DetElemIdToBusPatch.dat.out, preserve from overwriting
+///
+/// List of changes:
+/// - July 05, first version
+/// - Nov. 05, added DDL
+/// - June 06, correction for St123
+/// - Feb. 07, add 1st manu list for St12 (starting on NB !) and new ddl sharing for station 3)
+/// - June. 07, new numbering of station 345, and buspatch starts at 1)
+///
+/// \author Ch. Finck, July 05
 
 
 void MUONGenerateBusPatch()

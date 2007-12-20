@@ -13,13 +13,15 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*  */
+// $Id$
 
-//
-// Macro for checking trigger integrated efficiency for dimuons.
-// The efficiency is calculated with respect to the 3/4 coincidence.
-// Author: Fabien Guerin, LPC Clermont-Ferrand, Jan. 2006
-//
+/// \ingroup macros
+/// \file MUONTriggerEfficiency.C
+/// \brief Macro for checking trigger integrated efficiency for dimuons.
+///
+/// The efficiency is calculated with respect to the 3/4 coincidence.
+///
+/// \author Fabien Guerin, LPC Clermont-Ferrand, Jan. 2006
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 // ROOT includes

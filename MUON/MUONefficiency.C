@@ -15,24 +15,18 @@
 
 /* $Id$ */
 
-// Macro (upgraded version of MUONmassPlot_ESD.C, better handling of Jpsi) to make : 
-// 1) Ntuple (Ktuple) containing Upsilon kinematics variables (from kinematics.root files) 
-// 2) Ntuple (ESDtuple) containing Upsilon kinematics variables from reconstruction and 
-// combinations of 2 muons with opposite charges (ESDtupleBck will be used later)
-// 3) Some QA histograms
-// Ntuple are stored in the file MUONefficiency.root and  ESD tree and QA histograms in AliESDs.root
-
-// Christophe Suire, IPN Orsay
-
-
-
-// Arguments:
-//   FirstEvent (default 0)
-//   LastEvent (default 1.e6)
-//   ResType (default 553)
-//      553 for Upsilon, 443 for J/Psi
-//   Chi2Cut (default 100)
-//      to keep only tracks with chi2 per d.o.f. < Chi2Cut
+/// \ingroup macros
+/// \file MUONefficiency.C
+/// \brief add brief description
+///
+/// Macro (upgraded version of MUONmassPlot_ESD.C, better handling of Jpsi) to make : 
+/// - Ntuple (Ktuple) containing Upsilon kinematics variables (from kinematics.root files) 
+/// - Ntuple (ESDtuple) containing Upsilon kinematics variables from reconstruction and 
+///   combinations of 2 muons with opposite charges (ESDtupleBck will be used later)
+/// - Some QA histograms
+/// Ntuple are stored in the file MUONefficiency.root and  ESD tree and QA histograms in AliESDs.root
+///
+/// \author Christophe Suire, IPN Orsay
 
 
 
@@ -73,17 +67,20 @@
 
 #endif
 
-// Arguments:
-//   ExtrapToVertex (default -1)
-//	<0: no extrapolation;
-//	=0: extrapolation to (0,0,0);
-//	>0: extrapolation to ESDVertex if available, else to (0,0,0)
-//   ResType (default 553)
-//      553 for Upsilon, anything else for J/Psi
-
 Bool_t MUONefficiency( char* filename = "galice.root", char* geoFilename = "geometry.root", char* esdFileName = "AliESDs.root",
                        Int_t ExtrapToVertex = -1, Int_t ResType = 553, Int_t FirstEvent = 0, Int_t LastEvent = 1000000 )
-{ // MUONefficiency starts
+{ 
+/// \param ExtrapToVertex (default -1) 
+///  -	<0: no extrapolation;
+///  -	=0: extrapolation to (0,0,0);
+///  -	>0: extrapolation to ESDVertex if available, else to (0,0,0)
+/// \param ResType    553 for Upsilon, 443 for J/Psi (default 553)  
+/// \param FirstEvent (default 0)
+/// \param LastEvent  (default 1.e6)
+/// \param Chi2Cut    to keep only tracks with chi2 per d.o.f. < Chi2Cut (default 100)  
+
+
+  // MUONefficiency starts
 
   // Set default CDB storage
   AliCDBManager* man = AliCDBManager::Instance();

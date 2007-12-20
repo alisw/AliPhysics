@@ -16,10 +16,14 @@
 /* $Id$ */
 
 
-// Macro to produce trigger single muon efficiency versus pt plots for the 
-// 2 pt cuts. 
-// see full description in the README file
-// Author: Fabien Guerin (LPC)
+/// \ingroup macros
+/// \file MUONTriggerEfficiencyPt.C
+/// \brief Macro to produce trigger single muon efficiency versus pt plots for the 
+/// 2 pt cuts.
+/// 
+/// See full description on the \ref README_trigger page.
+///
+/// \author Fabien Guerin (LPC)
 
 // ROOT includes
 #include "TBranch.h"

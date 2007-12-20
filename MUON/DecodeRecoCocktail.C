@@ -15,21 +15,26 @@
 
 /* $Id$ */
 
-// A. De Falco, H. Woehri, INFN Cagliari, July 2006
-// This macro reads the generation/reconstruction files in the 
-// input directories (recodir and simdir), 
-// builds a tree that contains, for each event, an array of muons and dimuons
-// (TClonesArrays of AliMUONTrackLight and AliMUONPairLight objects) 
-// and writes the tree in an output file (outFileName) 
-// Note that if the path for the output file is not explicitly specified, 
-// it will be written in the directory containing the generation/reconstruction
-// 27-Nov-2006: modified by in order to loop on files
-
-// 13 Nov 2007:
-// Updated this macro to work with new version of AliMUONRecoCheck. Also, we are
-// now fetching reconstructed track data from ESD and not the track tree, because
-// the AliMUONTrack objects for reconstructed tracks are no longer stored on disk.
-//  - Artur Szostak <artursz@iafrica.com>
+/// \ingroup macros
+/// \file DecodeRecoCocktail.C
+/// \brief add brief description
+///
+/// \author A. De Falco, H. Woehri, INFN Cagliari, July 2006
+///
+/// This macro reads the generation/reconstruction files in the 
+/// input directories (recodir and simdir), 
+/// builds a tree that contains, for each event, an array of muons and dimuons
+/// (TClonesArrays of AliMUONTrackLight and AliMUONPairLight objects) 
+/// and writes the tree in an output file (outFileName) 
+/// Note that if the path for the output file is not explicitly specified, 
+/// it will be written in the directory containing the generation/reconstruction
+/// 27-Nov-2006: modified by in order to loop on files
+///
+/// 13 Nov 2007:
+/// Updated this macro to work with new version of AliMUONRecoCheck. Also, we are
+/// now fetching reconstructed track data from ESD and not the track tree, because
+/// the AliMUONTrack objects for reconstructed tracks are no longer stored on disk.
+///  - Artur Szostak <artursz@iafrica.com>
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <Riostream.h>
@@ -68,6 +73,11 @@ void DecodeRecoCocktail(
     char* geoFilename = "geometry.root"  // The filename containing the geometry.
   )
 {
+/// \param recodir      The directory containing galice.root for reconstructed data.
+/// \param simdir       The directory containing galice.root for simulated data.
+/// \param outFileName  The output filename containing AliMUONTrackLight and AliMUONPairLight objects.
+/// \param geoFilename  The filename containing the geometry.
+
   char startingDir[200]; 
   sprintf (startingDir,"%s",gSystem->pwd()); 
   gSystem->cd(recodir); 

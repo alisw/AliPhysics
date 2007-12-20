@@ -15,9 +15,11 @@
 
 /* $Id$ */
 
-//  Macro for data quality control
-//  
-//  Author: Frederic Yermia, INFN Torino
+/// \ingroup macros
+/// \file MUONCheck.C
+/// \brief Macro for data quality control
+///  
+/// \author: Frederic Yermia, INFN Torino
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 

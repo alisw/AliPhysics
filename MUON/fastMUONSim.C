@@ -13,14 +13,20 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id: */
+/* $Id$ */
 
-//A. De Falco, H. Woehri, INFN Cagliari, April 2007
-//an example how to do the fast simulation and storing
-//the muons that survive the reconstruction in 
-//AliMUONTrackLight and AliMUONPairLight objects for
-//further analysis. Should be used together with the
-//macro "fastMUONGen.C
+/// \ingroup macros
+/// \file fastMUONSim.C
+/// \brief An example how to do the fast simulation and storing
+/// the muons that survive the reconstruction
+///
+/// \author A. De Falco, H. Woehri, INFN Cagliari, April 2007
+///
+/// An example how to do the fast simulation and storing
+/// the muons that survive the reconstruction in 
+/// AliMUONTrackLight and AliMUONPairLight objects for
+/// further analysis. Should be used together with the
+/// macro fastMUONGen.C
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 //STEER includes

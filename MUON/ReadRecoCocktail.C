@@ -15,9 +15,11 @@
 
 /* $Id$ */
 
-// A. De Falco, H. Woehri, INFN Cagliari, July 2006 
-// base macro to read the trees generated with DecodeRecoCocktail.C 
-// 
+/// \ingroup macros
+/// \file ReadRecoCocktail.C
+/// \brief Base macro to read the trees generated with DecodeRecoCocktail.C 
+///
+/// \author A. De Falco, H. Woehri, INFN Cagliari, July 2006 
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include "TFile.h"
