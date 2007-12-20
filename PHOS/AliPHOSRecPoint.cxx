@@ -78,15 +78,17 @@ AliPHOSRecPoint::~AliPHOSRecPoint()
 AliPHOSRecPoint::AliPHOSRecPoint(const AliPHOSRecPoint &rp) : 
   AliCluster(rp),
   fPHOSMod(rp.fPHOSMod),fMulTrack(rp.fMulTrack),fMaxDigit(rp.fMaxDigit),
-  fMulDigit(rp.fMulDigit),fMaxTrack(rp.fMaxTrack),fDigitsList(new Int_t[rp.fMaxDigit]),
-  fTracksList(new Int_t[rp.fMaxTrack]),fAmp(rp.fAmp),fIndexInList(rp.fIndexInList), 
+  fMulDigit(rp.fMulDigit),fMaxTrack(rp.fMaxTrack),fDigitsList(0x0),
+  fTracksList(0x0),fAmp(rp.fAmp),fIndexInList(rp.fIndexInList), 
   fLocPos(rp.fLocPos),fLocPosM(rp.fLocPosM)
 {
   //copy ctor
 
+  if (rp.fMulDigit>0) fDigitsList = new Int_t[rp.fMulDigit];
   for(Int_t i=0; i<fMulDigit; i++)
     fDigitsList[i] = rp.fDigitsList[i];
 
+  if (rp.fMulTrack>0) fTracksList = new Int_t[rp.fMulTrack];
   for(Int_t i=0; i<fMulTrack; i++)
     fTracksList[i] = rp.fTracksList[i];
   

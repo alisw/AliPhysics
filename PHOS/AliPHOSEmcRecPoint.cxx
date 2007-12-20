@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.59  2007/10/18 15:12:22  kharlov
+ * Moved MakePrimary to EMCRecPoint to rpduce correct order of primaries
+ *
  * Revision 1.58  2007/04/16 09:03:37  kharlov
  * Incedent angle correction fixed
  *
@@ -105,9 +108,8 @@ AliPHOSEmcRecPoint::AliPHOSEmcRecPoint(const AliPHOSEmcRecPoint & rp) :
   // cpy ctor
   fMulDigit   = rp.fMulDigit ;  
   fAmp        = rp.fAmp ;   
-  fEnergyList = new Float_t[rp.fMulDigit] ;
-  Int_t index ; 
-  for(index = 0 ; index < fMulDigit ; index++) 
+  if (rp.fMulDigit>0) fEnergyList = new Float_t[rp.fMulDigit] ;
+  for(Int_t index = 0 ; index < fMulDigit ; index++) 
     fEnergyList[index] = rp.fEnergyList[index] ; 
 }
 
