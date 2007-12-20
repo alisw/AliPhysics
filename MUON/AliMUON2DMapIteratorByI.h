@@ -7,7 +7,7 @@
 // $Id$
 
 /// \ingroup core
-/// \class AliMUON2DMapIteratorByIByI
+/// \class AliMUON2DMapIteratorByI
 /// \brief Implementation of TIterator for 2D maps
 /// 
 //  Author Laurent Aphecetche

@@ -16,8 +16,8 @@
 /* $Id$ */
 
 //-----------------------------------------------------------------------------
-/// \class AliMUONAlignmentV5
-/// Alignment class fro the ALICE DiMuon spectrometer 
+/// \class AliMUONAlignment
+/// Alignment class for the ALICE DiMuon spectrometer 
 ///
 /// MUON specific alignment class which interface to AliMillepede.   
 /// For each track ProcessTrack calculates the local and global derivatives

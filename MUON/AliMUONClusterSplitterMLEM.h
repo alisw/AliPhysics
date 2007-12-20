@@ -8,7 +8,7 @@
 
 /// \ingroup rec
 /// \class AliMUONClusterSplitterMLEM
-/// \brief
+/// \brief Splitter class for the MLEM algorithm
 /// 
 //  Author Alexander Zinchenko, JINR Dubna; Laurent Aphecetche, SUBATECH
 //

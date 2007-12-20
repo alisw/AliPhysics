@@ -7,7 +7,7 @@
 // $Id$
 
 /// \ingroup rec
-/// \class AliMUONClusterFinder
+/// \class AliMUONVClusterFinder
 /// \brief Interface of a cluster finder.
 /// 
 //  Author Laurent Aphecetche

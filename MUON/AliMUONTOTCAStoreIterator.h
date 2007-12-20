@@ -7,7 +7,7 @@
 // $Id$
 
 /// \ingroup base
-/// \class AliMUONTOTCAStoreIteratorV1
+/// \class AliMUONTOTCAStoreIterator
 /// \brief Iterator on a store composed of a TObjArray of TClonesArrays
 /// 
 //  Author: Laurent Aphecetche
