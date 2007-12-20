@@ -1,13 +1,12 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-// $Id $
+// $Id$
+
+/// \file MUONgeometryLinkDef.h
+/// \brief The CINT link definitions for \ref geometry 
 
 #ifdef __CINT__
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
-
-/* $Id$ */
 
 #pragma link C++ class  AliMUONGeometryConstituent+;
 #pragma link C++ class  AliMUONGeometryEnvelope+;

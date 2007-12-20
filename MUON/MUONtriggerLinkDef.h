@@ -3,6 +3,9 @@
 
 // $Id$
 
+/// \file MUONtriggerLinkDef.h
+/// \brief The CINT link definitions for \ref trigger 
+
 #ifdef __CINT__
 
 #pragma link C++ class AliMUONLocalTrigger+;

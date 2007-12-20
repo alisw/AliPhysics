@@ -4,6 +4,9 @@
 // $Id $
 // $MpId: basicLinkDefIn.h,v 1.8 2006/01/11 10:09:18 ivana Exp $ 
 
+/// \file MUONmappingLinkDef.h
+/// \brief The CINT link definitions for \ref mapping 
+
 #pragma link C++ nestedclasses;
 #pragma link C++ nestedtypedef;
 

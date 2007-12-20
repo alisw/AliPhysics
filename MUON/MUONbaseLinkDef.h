@@ -1,7 +1,10 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-// $Id $
+// $Id$
+
+/// \file MUONbaseLinkDef.h
+/// \brief The CINT link definitions for \ref base
 
 #ifdef __CINT__
 #pragma link off all globals;
