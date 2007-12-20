@@ -145,16 +145,17 @@ UInt_t AliFMDPreprocessor::Process(TMap* /* dcsAliasMap */)
   // extract these parameters.   The same code could work if we get
   // the information from DCS via the FXS 
   TList* files = 0;
-  // GetAndCheckFileSources(files, kDAQ,"info");
-  // if (!files) return 1;
   AliFMDCalibSampleRate*      calibRate  = 0;
   AliFMDCalibStripRange*      calibRange = 0;
   AliFMDCalibZeroSuppression* calibZero  = 0;
-  GetInfoCalibration(files, calibRate, calibRange, calibZero);
   // Disabled for now. 
-  // resultRate  = (!calibRate  ? kFALSE : kTRUE);
-  // resultRange = (!calibRange ? kFALSE : kTRUE);
-  // resultZero  = (!calibZero  ? kFALSE : kTRUE);
+#if 0
+  if (GetAndCheckFileSources(files, kDAQ,"info"))
+    GetInfoCalibration(files, calibRate, calibRange, calibZero);
+  resultRate  = (!calibRate  ? kFALSE : kTRUE);
+  resultRange = (!calibRange ? kFALSE : kTRUE);
+  resultZero  = (!calibZero  ? kFALSE : kTRUE);
+#endif
 
   // Gt the run type 
   TString runType(GetRunType()); 
@@ -162,12 +163,20 @@ UInt_t AliFMDPreprocessor::Process(TMap* /* dcsAliasMap */)
   //Creating calibration objects
   AliFMDCalibPedestal* calibPed  = 0;
   AliFMDCalibGain*     calibGain = 0;
-  if (runType.Contains("PEDESTAL", TString::kIgnoreCase) && 
-      GetAndCheckFileSources(files, kDAQ, "pedestal"))  
-    resultPed = (!(calibPed = GetPedestalCalibration(files)) ? kFALSE : kTRUE);
-  if (runType.Contains("PULSER", TString::kIgnoreCase) && 
-      GetAndCheckFileSources(files, kDAQ, "gain"))
-    resultGain = (!(calibGain = GetGainCalibration(files)) ? kFALSE : kTRUE);
+  if (runType.Contains("PEDESTAL", TString::kIgnoreCase)) { 
+    if (GetAndCheckFileSources(files, kDAQ, "pedestals")) {
+      if(files->GetSize())
+	calibPed = GetPedestalCalibration(files);
+    }
+    resultPed = (calibPed ? kTRUE : kFALSE);
+  }
+  if (runType.Contains("PULSER", TString::kIgnoreCase)) {
+    if (GetAndCheckFileSources(files, kDAQ, "gains")) {
+      if(files->GetSize())
+	calibGain = GetGainCalibration(files);
+    }
+    resultGain = (calibGain ? kTRUE : kFALSE);
+  }
   
   //Storing Calibration objects  
   AliCDBMetaData metaData;
@@ -192,7 +201,7 @@ UInt_t AliFMDPreprocessor::Process(TMap* /* dcsAliasMap */)
     delete calibRate;
   }
   if(calibZero) { 
-    resultZero = Store("Calib","ZeroSuppression", calibZero, &metaData,0,kTRUE);
+    resultZero = Store("Calib","ZeroSuppression", calibZero,&metaData,0,kTRUE);
     delete calibZero;
   }
 
@@ -263,7 +272,7 @@ AliFMDPreprocessor::GetPedestalCalibration(TList* pedFiles)
   TObjString*          fileSource;
   
   while((fileSource = dynamic_cast<TObjString*>(iter.Next()))) {
-    const Char_t* filename = GetFile(kDAQ, "pedestal", fileSource->GetName());
+    const Char_t* filename = GetFile(kDAQ, "pedestals", fileSource->GetName());
     std::ifstream in(filename);
     if(!in) {
       Log(Form("File %s not found!", filename));
@@ -285,37 +294,44 @@ AliFMDPreprocessor::GetPedestalCalibration(TList* pedFiles)
     header.ReadLine(in);
     
     // Loop until EOF
-    while(!in.eof()) {
+    while(in.peek()!=EOF) {
       if(in.bad()) { 
 	Log(Form("Bad read at line %d in %s", lineno, filename));
 	break;
       }
-      UInt_t ddl=2, board, chip, channel, strip, tb;
+      UInt_t ddl=2, board, chip, channel, strip, sample, tb;
       Float_t ped, noise, mu, sigma, chi2ndf;
-      Char_t c[10];
+      Char_t c[11];
 	  
-      in // >> ddl      >> c[0] 
+      in >> ddl      >> c[0] 
 	 >> board    >> c[1]
 	 >> chip     >> c[2]
 	 >> channel  >> c[3]
 	 >> strip    >> c[4]
-	 >> tb       >> c[5]
-	 >> ped      >> c[6]
-	 >> noise    >> c[7]
-	 >> mu       >> c[8]
-	 >> sigma    >> c[9]
+	 >> sample   >> c[5]
+	 >> tb       >> c[6]
+	 >> ped      >> c[7]
+	 >> noise    >> c[8]
+	 >> mu       >> c[9]
+	 >> sigma    >> c[10]
 	 >> chi2ndf;
       lineno++;
+      
       // Ignore trailing garbage 
       if (strip > 127) continue;
       
+      //Setting DDL to comply with the FMD in DAQ
+      UInt_t FmdDDLBase = 3072; 
+      ddl = ddl - FmdDDLBase;
       //Setting the pedestals via the hardware address
       UShort_t det, sec, str;
       Char_t ring;
-	  
+      
       pars->Hardware2Detector(ddl,board,chip,channel,det,ring,sec,str);
       strip += str;
+     
       calibPed->Set(det,ring,sec,strip,ped,noise);
+     
     }
   }
   return calibPed;
@@ -339,7 +355,7 @@ AliFMDPreprocessor::GetGainCalibration(TList* gainFiles)
   TIter             iter(gainFiles);
   TObjString*       fileSource;
   while((fileSource = dynamic_cast<TObjString *>(iter.Next()))) {
-    const Char_t* filename = GetFile(kDAQ, "gain", fileSource->GetName());
+    const Char_t* filename = GetFile(kDAQ, "gains", fileSource->GetName());
     std::ifstream in(filename);
     if(!in) {
       Log(Form("File %s not found!", filename));
@@ -361,7 +377,7 @@ AliFMDPreprocessor::GetGainCalibration(TList* gainFiles)
 
     int lineno  = 2;
     // Read until EOF 
-    while(!in.eof()) {
+    while(in.peek()!=EOF) {
       if(in.bad()) { 
 	Log(Form("Bad read at line %d in %s", lineno, filename));
 	break;
@@ -370,7 +386,7 @@ AliFMDPreprocessor::GetGainCalibration(TList* gainFiles)
       Float_t gain,error,  chi2ndf;
       Char_t c[7];
 	      
-      in // >> ddl      >> c[0] 
+      in >> ddl      >> c[0] 
 	 >> board    >> c[1]
 	 >> chip     >> c[2]
 	 >> channel  >> c[3]
@@ -382,6 +398,9 @@ AliFMDPreprocessor::GetGainCalibration(TList* gainFiles)
       // Ignore trailing garbage
       if(strip > 127) continue;
       
+      //Setting DDL to comply with the FMD in DAQ
+      UInt_t FmdDDLBase = 3072; 
+      ddl = ddl - FmdDDLBase;
       //Setting the pedestals via the hardware address
       UShort_t det, sec, str;
       Char_t ring;

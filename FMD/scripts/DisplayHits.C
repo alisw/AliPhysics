@@ -11,7 +11,7 @@ void
 DisplayHits()
 {
   AliCDBManager* cdb = AliCDBManager::Instance();
-  cdb->SetDefaultStorage("local://cdb");
+  cdb->SetDefaultStorage("local://$ALICE_ROOT");
   gSystem->Load("libFMDutil.so");
   AliFMDDisplay* d = new AliFMDDisplay;
   d->AddLoad(AliFMDInput::kHits);
