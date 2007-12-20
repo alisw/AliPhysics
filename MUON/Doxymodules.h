@@ -1,5 +1,10 @@
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
 // $Id$
-// The class categories definitions for Doxygen
+
+/// \file Doxymodules.h
+/// \brief The definitions of class categories for Doxygen
 
 /** @defgroup MUON MUON
  *  \brief See library hierarchy too
@@ -20,6 +25,8 @@
  * \image html mapping_libs.jpg
  *  @ingroup MUON
  *  @{
+ *  \namespace AliMp
+ *  \brief The namespace for mapping enums and related functions 
  */
 
 /** @defgroup basic mp_basic
@@ -145,6 +152,13 @@
  */
 /** @} */
 
+/** @} */
+
+/** @defgroup macros MUON macros
+ *  \brief The macros for running & testing MUON code
+ *  @{
+ */
+ 
 /** @} */
 
 
