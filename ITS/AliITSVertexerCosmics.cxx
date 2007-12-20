@@ -107,17 +107,17 @@ AliESDVertex* AliITSVertexerCosmics::FindVertexForCurrentEvent(Int_t evnumber)
   }
   printf("Building tracklets on layer %d\n",ilayer);
 
-
-  Float_t xclInnLay[100],yclInnLay[100],zclInnLay[100],modclInnLay[100];
-  Float_t e2xclInnLay[100],e2yclInnLay[100],e2zclInnLay[100];
+  const Int_t arrSize = 1000;
+  Float_t xclInnLay[arrSize],yclInnLay[arrSize],zclInnLay[arrSize],modclInnLay[arrSize];
+  Float_t e2xclInnLay[arrSize],e2yclInnLay[arrSize],e2zclInnLay[arrSize];
   Int_t nclInnLayStored=0;
-  Float_t xclOutLay[100],yclOutLay[100],zclOutLay[100],modclOutLay[100];
+  Float_t xclOutLay[arrSize],yclOutLay[arrSize],zclOutLay[arrSize],modclOutLay[arrSize];
   Int_t nclOutLayStored=0;
   Int_t nRecPoints,nRecPointsInnLay=0;
 
   Float_t gc[3],gcov[5];
 
-  Float_t x[100],y[100],z[100],e2x[100],e2y[100],e2z[100];
+  Float_t x[arrSize],y[arrSize],z[arrSize],e2x[arrSize],e2y[arrSize],e2z[arrSize];
   Double_t p1[3],p2[3],p3[3];
   Int_t nvtxs;
   Bool_t good,matchtoOutLay;
@@ -153,8 +153,8 @@ AliESDVertex* AliITSVertexerCosmics::FindVertexForCurrentEvent(Int_t evnumber)
 	modclOutLay[nclOutLayStored]=imodule;
 	nclOutLayStored++;
       }
-      if(nclInnLayStored>100 || nclOutLayStored>100) 
-	AliFatal("More than 100 clusters per layer");
+      if(nclInnLayStored>arrSize || nclOutLayStored>arrSize) 
+	AliFatal("More than arrSize clusters per layer");
     }// end clusters in a module
   }// end modules
 
