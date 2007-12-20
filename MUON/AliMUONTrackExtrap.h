@@ -102,9 +102,9 @@ class AliMUONTrackExtrap : public TObject
                                          Double_t errXVtx, Double_t errYVtx,
                                          Double_t absZBeg, Double_t pathLength, Double_t f0, Double_t f1, Double_t f2);
   static void CorrectELossEffectInAbsorber(AliMUONTrackParam* param, Double_t eLoss, Double_t sigmaELoss2);
-  static void GetAbsorberCorrectionParam(Double_t trackXYZIn[3], Double_t trackXYZOut[3], Double_t pTotal,
-                                         Double_t &pathLength, Double_t &f0, Double_t &f1, Double_t &f2,
-                                         Double_t &meanRho, Double_t &totalELoss, Double_t &sigmaELoss2);
+  static Bool_t GetAbsorberCorrectionParam(Double_t trackXYZIn[3], Double_t trackXYZOut[3], Double_t pTotal,
+                                           Double_t &pathLength, Double_t &f0, Double_t &f1, Double_t &f2,
+                                           Double_t &meanRho, Double_t &totalELoss, Double_t &sigmaELoss2);
   
   static Double_t BetheBloch(Double_t pTotal, Double_t pathLength, Double_t rho, Double_t atomicA, Double_t atomicZ);
   static Double_t EnergyLossFluctuation2(Double_t pTotal, Double_t pathLength, Double_t rho, Double_t atomicA, Double_t atomicZ);

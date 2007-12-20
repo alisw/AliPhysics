@@ -291,7 +291,7 @@ void AliMUONTrackExtrap::ExtrapToZCov(AliMUONTrackParam* trackParam, Double_t zE
   TMatrixD dParam(5,1);
   for (Int_t i=0; i<5; i++) {
     // Skip jacobian calculation for parameters with no associated error
-    if (kParamCov(i,i) == 0.) continue;
+    if (kParamCov(i,i) <= 0.) continue;
     
     // Small variation of parameter i only
     for (Int_t j=0; j<5; j++) {
@@ -462,9 +462,9 @@ void AliMUONTrackExtrap::CorrectELossEffectInAbsorber(AliMUONTrackParam* param, 
 }
 
 //__________________________________________________________________________
-void AliMUONTrackExtrap::GetAbsorberCorrectionParam(Double_t trackXYZIn[3], Double_t trackXYZOut[3], Double_t pTotal,
-						    Double_t &pathLength, Double_t &f0, Double_t &f1, Double_t &f2,
-						    Double_t &meanRho, Double_t &totalELoss, Double_t &sigmaELoss2)
+Bool_t AliMUONTrackExtrap::GetAbsorberCorrectionParam(Double_t trackXYZIn[3], Double_t trackXYZOut[3], Double_t pTotal,
+						      Double_t &pathLength, Double_t &f0, Double_t &f1, Double_t &f2,
+						      Double_t &meanRho, Double_t &totalELoss, Double_t &sigmaELoss2)
 {
   /// Parameters used to correct for Multiple Coulomb Scattering and energy loss in absorber
   /// Calculated assuming a linear propagation from trackXYZIn to trackXYZOut (order is important)
@@ -487,14 +487,14 @@ void AliMUONTrackExtrap::GetAbsorberCorrectionParam(Double_t trackXYZIn[3], Doub
   // Check whether the geometry is available
   if (!gGeoManager) {
     cout<<"E-AliMUONTrackExtrap::GetAbsorberCorrectionParam: no TGeo"<<endl;
-    return;
+    return kFALSE;
   }
   
   // Initialize starting point and direction
   pathLength = TMath::Sqrt((trackXYZOut[0] - trackXYZIn[0])*(trackXYZOut[0] - trackXYZIn[0])+
 			   (trackXYZOut[1] - trackXYZIn[1])*(trackXYZOut[1] - trackXYZIn[1])+
 			   (trackXYZOut[2] - trackXYZIn[2])*(trackXYZOut[2] - trackXYZIn[2]));
-  if (pathLength < TGeoShape::Tolerance()) return;
+  if (pathLength < TGeoShape::Tolerance()) return kFALSE;
   Double_t b[3];
   b[0] = (trackXYZOut[0] - trackXYZIn[0]) / pathLength;
   b[1] = (trackXYZOut[1] - trackXYZIn[1]) / pathLength;
@@ -502,7 +502,7 @@ void AliMUONTrackExtrap::GetAbsorberCorrectionParam(Double_t trackXYZIn[3], Doub
   TGeoNode *currentnode = gGeoManager->InitTrack(trackXYZIn, b);
   if (!currentnode) {
     cout<<"E-AliMUONTrackExtrap::GetAbsorberCorrectionParam: start point out of geometry"<<endl;
-    return;
+    return kFALSE;
   }
   
   // loop over absorber slices and calculate absorber's parameters
@@ -532,8 +532,8 @@ void AliMUONTrackExtrap::GetAbsorberCorrectionParam(Double_t trackXYZIn[3], Doub
       currentnode = gGeoManager->Step();
       if (!currentnode) {
         cout<<"E-AliMUONTrackExtrap::GetAbsorberCorrectionParam: navigation failed"<<endl;
-	f0 = f1 = f2 = meanRho = 0.;
-	return;
+	f0 = f1 = f2 = meanRho = totalELoss = sigmaELoss2 = 0.;
+	return kFALSE;
       }
       if (!gGeoManager->IsEntering()) {
         // make another small step to try to enter in new absorber slice
@@ -541,8 +541,8 @@ void AliMUONTrackExtrap::GetAbsorberCorrectionParam(Double_t trackXYZIn[3], Doub
 	currentnode = gGeoManager->Step();
 	if (!gGeoManager->IsEntering() || !currentnode) {
           cout<<"E-AliMUONTrackExtrap::GetAbsorberCorrectionParam: navigation failed"<<endl;
-	  f0 = f1 = f2 = meanRho = 0.;
-	  return;
+	  f0 = f1 = f2 = meanRho = totalELoss = sigmaELoss2 = 0.;
+	  return kFALSE;
 	}
         localPathLength += 0.001;
       }
@@ -565,6 +565,8 @@ void AliMUONTrackExtrap::GetAbsorberCorrectionParam(Double_t trackXYZIn[3], Doub
   } while (remainingPathLength > TGeoShape::Tolerance());
   
   meanRho /= pathLength;
+  
+  return kTRUE;
 }
 
 //__________________________________________________________________________
@@ -706,14 +708,13 @@ void AliMUONTrackExtrap::ExtrapToVertex(AliMUONTrackParam* trackParam,
     trackXYZIn[2] = trackParamIn.GetZ();
   }
   Double_t pTot = trackParam->P();
-  Double_t pathLength = 0.;
-  Double_t f0 = 0.;
-  Double_t f1 = 0.;
-  Double_t f2 = 0.;
-  Double_t meanRho = 0.;
-  Double_t deltaP = 0.;
-  Double_t sigmaDeltaP2 = 0.;
-  GetAbsorberCorrectionParam(trackXYZIn,trackXYZOut,pTot,pathLength,f0,f1,f2,meanRho,deltaP,sigmaDeltaP2);
+  Double_t pathLength, f0, f1, f2, meanRho, deltaP, sigmaDeltaP2;
+  if (!GetAbsorberCorrectionParam(trackXYZIn,trackXYZOut,pTot,pathLength,f0,f1,f2,meanRho,deltaP,sigmaDeltaP2)) {
+    cout<<"E-AliMUONTrackExtrap::ExtrapToVertex: Unable to take into account the absorber effects"<<endl;
+    if (trackParam->CovariancesExist()) ExtrapToZCov(trackParam,zVtx);
+    else ExtrapToZ(trackParam,zVtx);
+    return;
+  }
   
   // Compute track parameters and covariances at vertex according to correctForMCS and correctForEnergyLoss flags
   if (correctForMCS) {
@@ -737,7 +738,7 @@ void AliMUONTrackExtrap::ExtrapToVertex(AliMUONTrackParam* trackParam,
     
     if (correctForEnergyLoss) {
       
-      // Correct for energy loss
+      // Correct for energy loss add multiple scattering dispersion in covariance matrix
       CorrectELossEffectInAbsorber(trackParam, 0.5*deltaP, 0.5*sigmaDeltaP2);
       AddMCSEffectInAbsorber(trackParam, pathLength, f0, f1, f2);
       ExtrapToZCov(trackParam, trackXYZIn[2]);
@@ -746,7 +747,7 @@ void AliMUONTrackExtrap::ExtrapToVertex(AliMUONTrackParam* trackParam,
       
     } else {
       
-      // Correct for multiple scattering and energy loss
+      // add multiple scattering dispersion in covariance matrix
       AddMCSEffectInAbsorber(trackParam, pathLength, f0, f1, f2);
       ExtrapToZCov(trackParam, zVtx);
       
@@ -815,13 +816,7 @@ Double_t AliMUONTrackExtrap::TotalMomentumEnergyLoss(AliMUONTrackParam* trackPar
   trackXYZIn[1] = yVtx;
   trackXYZIn[2] = zVtx;
   Double_t pTot = trackParam->P();
-  Double_t pathLength = 0.;
-  Double_t f0 = 0.;
-  Double_t f1 = 0.;
-  Double_t f2 = 0.;
-  Double_t meanRho = 0.;
-  Double_t totalELoss = 0.;
-  Double_t sigmaELoss2 = 0.;
+  Double_t pathLength, f0, f1, f2, meanRho, totalELoss, sigmaELoss2;
   GetAbsorberCorrectionParam(trackXYZIn,trackXYZOut,pTot,pathLength,f0,f1,f2,meanRho,totalELoss,sigmaELoss2);
   
   return totalELoss;
