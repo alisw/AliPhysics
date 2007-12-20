@@ -278,6 +278,8 @@ void AliMUONTrackReconstructor::FollowTracks(AliMUONVClusterStore& clusterStore)
     if (track->GetNormalizedChi2() > sigmaCut2) {
       fRecTracksPtr->Remove(track);
       fNRecTracks--;
+      track = nextTrack;
+      continue;
     }
     
     // save parameters from fit into smoothed parameters to complete track afterward
