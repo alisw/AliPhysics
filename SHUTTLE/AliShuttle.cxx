@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.81  2007/12/20 14:24:59  jgrosseo
+Do not increase count in case of StoreError
+
 Revision 1.80  2007/12/20 13:31:28  acolla
 Bug fix (Jan Fiete): recovering from StoreError, if the store to OCDB is successful,
 the Shuttle sets current detector's status=done
@@ -3172,10 +3175,12 @@ Bool_t AliShuttle::Collect(Int_t run)
 	if (!RetrieveConditionsData(shuttleLogbookEntries))
 	{
 		Log("SHUTTLE", "Collect - Process of at least one run failed");
+		CountOpenRuns();
 		return kFALSE;
 	}
 
 	Log("SHUTTLE", "Collect - Requested run(s) successfully processed");
+	CountOpenRuns();
 	return kTRUE;
 }
 
