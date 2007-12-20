@@ -40,6 +40,6 @@ tracking algorithms (hard coded for the moment in AliMUONVTrackReconstructor.cxx
 - *fgkSigmaToCutForImprovement* : quality cut used when we try to improve the
   quality of the tracks.
 
-This chapter is defined in the READMEraw.txt file.
+This chapter is defined in the READMErec.txt file.
 
 */
