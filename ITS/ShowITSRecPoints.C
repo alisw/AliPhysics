@@ -27,13 +27,6 @@ Int_t ShowITSRecPoints(){
   if (gClassTable->GetID("AliRun") < 0) {
     gInterpreter->ExecuteMacro("loadlibs.C");
   }
-  else { 
-    if(gAlice){
-      delete gAlice->GetRunLoader();
-      delete gAlice;
-      gAlice=0;
-    }
-  }
   // Set OCDB if needed
   AliCDBManager* man = AliCDBManager::Instance();
   if (!man->IsDefaultStorageSet()) {
@@ -55,14 +48,7 @@ Int_t ShowITSRecPoints(){
     cerr<<"Can not open session RL=NULL"<< endl;
     return -1;
   }
-  Int_t retval = rl->LoadgAlice();
-  if (retval){
-    cerr<<"LoadgAlice returned error"<<endl;
-    return -1;
-  }
-  gAlice=rl->GetAliRun();
-
-  retval = rl->LoadHeader();
+  Int_t retval = rl->LoadHeader();
   if (retval){
     cerr<<"LoadHeader returned error"<<endl;
     return -1;
@@ -75,13 +61,11 @@ Int_t ShowITSRecPoints(){
     return -1;
   }
   ITSloader->LoadRecPoints("read");
+  AliITSgeom *geom = ITSloader->GetITSgeom();
 
   Float_t cluglo[3]={0.,0.,0.}; 
-  AliITS *ITS  = (AliITS*)gAlice->GetModule("ITS");
-  ITS->SetTreeAddress();
-  AliITSgeom *geom = ITS->GetITSgeom();
   AliITSDetTypeRec* detTypeRec = new AliITSDetTypeRec();
-  detTypeRec->SetITSgeom(ITSloader->GetITSgeom());
+  detTypeRec->SetITSgeom(geom);
   detTypeRec->SetDefaults();
 
   Int_t modmin=geom->GetStartDet(0);
