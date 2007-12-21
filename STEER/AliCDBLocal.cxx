@@ -593,13 +593,24 @@ void AliCDBLocal::GetEntriesForLevel0(const char* level0,
 	}
 
 	const char* level1;
+	Long_t flag=0;
 	while ((level1 = gSystem->GetDirEntry(level0DirPtr))) {
 
 		TString level1Str(level1);
 		if (level1Str == "." || level1Str == "..") {
 			continue;
 		}
+		
+		TString fullPath = Form("%s/%s",level0Dir.Data(), level1); 
 
+		Int_t res=gSystem->GetPathInfo(fullPath.Data(), 0, (Long64_t*) 0, &flag, 0);
+		
+		if(res){
+			AliDebug(2, Form("Error reading entry %s !",level1Str.Data()));
+			continue;
+		}
+		if(!(flag&2)) continue; // bit 1 of flag = directory!
+		
                 if (queryId.GetAliCDBPath().Level1Comprises(level1)) {
 			GetEntriesForLevel1(level0, level1, queryId, result);
         	}
@@ -623,6 +634,7 @@ void AliCDBLocal::GetEntriesForLevel1(const char* level0, const char* level1,
 	}
 
 	const char* level2;
+	Long_t flag=0;
 	while ((level2 = gSystem->GetDirEntry(level1DirPtr))) {
 
 		TString level2Str(level2);
@@ -630,6 +642,16 @@ void AliCDBLocal::GetEntriesForLevel1(const char* level0, const char* level1,
 			continue;
 		}
 
+		TString fullPath = Form("%s/%s",level1Dir.Data(), level2); 
+
+		Int_t res=gSystem->GetPathInfo(fullPath.Data(), 0, (Long64_t*) 0, &flag, 0);
+		
+		if(res){
+			AliDebug(2, Form("Error reading entry %s !",level2Str.Data()));
+			continue;
+		}
+		if(!(flag&2)) continue; // bit 1 of flag = directory!
+		
 		if (queryId.GetAliCDBPath().Level2Comprises(level2)) {
 
 			AliCDBPath entryPath(level0, level1, level2);
@@ -649,7 +671,7 @@ void AliCDBLocal::GetEntriesForLevel1(const char* level0, const char* level1,
 //_____________________________________________________________________________
 TList* AliCDBLocal::GetEntries(const AliCDBId& queryId) {
 // multiple request (AliCDBStorage::GetAll)
-
+	
 	void* storageDirPtr = gSystem->OpenDirectory(fBaseDirectory);
 	if (!storageDirPtr) {
 		AliDebug(2,Form("Can't open storage directory <%s>",
@@ -661,12 +683,24 @@ TList* AliCDBLocal::GetEntries(const AliCDBId& queryId) {
 	result->SetOwner();
 
 	const char* level0;
+	Long_t flag=0;
 	while ((level0 = gSystem->GetDirEntry(storageDirPtr))) {
 
 		TString level0Str(level0);
 		if (level0Str == "." || level0Str == "..") {
 			continue;
 		}
+		
+		TString fullPath = Form("%s/%s",fBaseDirectory.Data(), level0); 
+
+		Int_t res=gSystem->GetPathInfo(fullPath.Data(), 0, (Long64_t*) 0, &flag, 0);
+		
+		if(res){
+			AliDebug(2, Form("Error reading entry %s !",level0Str.Data()));
+			continue;
+		}
+		
+		if(!(flag&2)) continue; // bit 1 of flag = directory!				
 
 		if (queryId.GetAliCDBPath().Level0Comprises(level0)) {
 			GetEntriesForLevel0(level0, queryId, result);
