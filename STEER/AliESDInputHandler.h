@@ -26,11 +26,14 @@ class AliESDInputHandler : public AliInputEventHandler {
     AliESDEvent         *GetEvent() const {return fEvent;}
     //
     void SetInactiveBranches(const char* branches) {fBranches = branches;}
+    void SetActiveBranches  (const char* branches) {fBranches = branches;}
  private:
     void SwitchOffBranches() const;
+    void SwitchOnBranches()  const;
  private:
     AliESDEvent    *fEvent;      //! Pointer to the event
     TString         fBranches;   //List of branches to be switched off (separated by space
+    TString         fBranchesOn; //List of branches to be switched on  (separated by space
     ClassDef(AliESDInputHandler, 2);
 };
 

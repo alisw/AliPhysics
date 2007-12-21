@@ -61,6 +61,7 @@ Bool_t AliESDInputHandler::Init(TTree* tree,  Option_t* /*opt*/)
     if (!fTree) return kFALSE;
     // Get pointer to ESD event
     SwitchOffBranches();
+    SwitchOnBranches();
     
     if (fEvent) {
       delete fEvent;
@@ -91,13 +92,28 @@ Bool_t  AliESDInputHandler::FinishEvent(){
 void AliESDInputHandler::SwitchOffBranches() const {
   //
   // Switch of branches on user request
-  TObjArray * tokens = fBranches.Tokenize(" ");
+    TObjArray * tokens = fBranches.Tokenize(" ");
+    Int_t ntok = tokens->GetEntries();
+    for (Int_t i = 0; i < ntok; i++)  {
+	TString str = ((TObjString*) tokens->At(i))->GetString();
+	if (str.Length() == 0)
+	    continue;
+	fTree->SetBranchStatus(Form("%s%s%s","*", str.Data(), "*"), 0);
+	AliInfo(Form("Branch %s switched off \n", str.Data()));
+    }
+}
+
+void AliESDInputHandler::SwitchOnBranches() const {
+  //
+  // Switch of branches on user request
+  TObjArray * tokens = fBranchesOn.Tokenize(" ");
   Int_t ntok = tokens->GetEntries();
+
   for (Int_t i = 0; i < ntok; i++)  {
-    TString str = ((TObjString*) tokens->At(i))->GetString();
-    if (str.Length() == 0)
-    	continue;
-    fTree->SetBranchStatus(Form("%s%s%s","*", str.Data(), "*"), 0);
-    AliInfo(Form("Branch %s switched off \n", str.Data()));
+      TString str = ((TObjString*) tokens->At(i))->GetString();
+      if (str.Length() == 0)
+	  continue;
+      fTree->SetBranchStatus(Form("%s%s%s","*", str.Data(), "*"), 1);
+      AliInfo(Form("Branch %s switched on \n", str.Data()));
   }
 }
