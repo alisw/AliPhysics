@@ -33,6 +33,7 @@
 
 #include "AliTRDseedV1.h"
 #include "AliTRDcluster.h"
+#include "AliTRDtrack.h"
 #include "AliTRDcalibDB.h"
 #include "AliTRDstackLayer.h"
 #include "AliTRDrecoParam.h"
@@ -44,26 +45,19 @@ ClassImp(AliTRDseedV1)
 //____________________________________________________________________
 AliTRDseedV1::AliTRDseedV1(Int_t layer, AliTRDrecoParam *p) 
   :AliTRDseed()
-  ,fLayer(layer)
-  ,fTimeBins(0)
+  ,fPlane(layer)
   ,fOwner(kFALSE)
   ,fRecoParam(p)
 {
   //
   // Constructor
   //
-
-	//AliInfo("");
-	AliTRDcalibDB *cal = AliTRDcalibDB::Instance();
-	fTimeBins = cal->GetNumberOfTimeBins();
-
 }
 
 //____________________________________________________________________
-AliTRDseedV1::AliTRDseedV1(const AliTRDseedV1 &ref, Bool_t owner)
+AliTRDseedV1::AliTRDseedV1(const AliTRDseedV1 &ref)
   :AliTRDseed((AliTRDseed&)ref)
-  ,fLayer(ref.fLayer)
-  ,fTimeBins(ref.fTimeBins)
+  ,fPlane(ref.fPlane)
   ,fOwner(kFALSE)
   ,fRecoParam(ref.fRecoParam)
 {
@@ -72,16 +66,9 @@ AliTRDseedV1::AliTRDseedV1(const AliTRDseedV1 &ref, Bool_t owner)
   //
 
 	//AliInfo("");
-
-	if(owner){
-		for(int ic=0; ic<fTimeBins; ic++){
-			if(!fClusters[ic]) continue;
-			fClusters[ic] = new AliTRDcluster(*fClusters[ic]);
-		}
-		fOwner = kTRUE;
-	}
-
+	if(ref.fOwner) SetOwner();
 }
+
 
 //____________________________________________________________________
 AliTRDseedV1& AliTRDseedV1::operator=(const AliTRDseedV1 &ref)
@@ -120,10 +107,39 @@ void AliTRDseedV1::Copy(TObject &ref) const
 	//AliInfo("");
 	AliTRDseedV1 &target = (AliTRDseedV1 &)ref; 
 	
-	target.fLayer     = fLayer;
-	target.fTimeBins  = fTimeBins;
-	target.fRecoParam = fRecoParam;
+	target.fPlane         = fPlane;
+	target.fRecoParam     = fRecoParam;
 	AliTRDseed::Copy(target);
+}
+
+
+//____________________________________________________________
+void AliTRDseedV1::Init(AliTRDtrack *track)
+{
+// Initialize this tracklet using the track information
+//
+// Parameters:
+//   track - the TRD track used to initialize the tracklet
+// 
+// Detailed description
+// The function sets the starting point and direction of the
+// tracklet according to the information from the TRD track.
+// 
+// Caution
+// The TRD track has to be propagated to the beginning of the
+// chamber where the tracklet will be constructed
+//
+
+	Double_t y, z; 
+	track->GetProlongation(fX0, y, z);
+	fYref[0] = y;
+	fYref[1] = track->GetSnp() < 0. ? track->GetTgl() : -track->GetTgl();
+	fZref[0] = z;
+	// TO DO 
+	// tilting pad correction !!
+	fZref[1] = 0.; // TMath::Tan(track->Theta());
+
+	//printf("Tracklet ref x[%7.3f] y[%7.3f] z[%7.3f], snp[%f] tgl[%f]\n", fX0, fYref[0], fZref[0], track->GetSnp(), track->GetTgl());
 }
 
 //____________________________________________________________________
@@ -138,6 +154,47 @@ Float_t AliTRDseedV1::GetQuality(Bool_t kZcorr) const
 		+ 10.* TMath::Abs(fYfit[1] - fYref[1])
 		+ 5.* TMath::Abs(fYfit[0] - fYref[0] + zcorr)
 		+ 2. * TMath::Abs(fMeanz - fZref[0]) / fPadLength;
+}
+
+//____________________________________________________________________
+void AliTRDseedV1::GetCovAt(Double_t /*x*/, Double_t *cov) const
+{
+// Computes covariance in the y-z plane at radial point x
+
+	const Float_t k0= .2; // to be checked in FindClusters
+	Double_t sy20   = k0*TMath::Tan(fYfit[1]); sy20 *= sy20;
+	
+	Double_t sy2    = fSigmaY2*fSigmaY2 + sy20;
+	Double_t sz2    = fPadLength/12.;
+
+	//printf("Yfit[1] %f sy20 %f SigmaY2 %f\n", fYfit[1], sy20, fSigmaY2);
+
+	cov[0] = sy2;
+	cov[1] = fTilt*(sy2-sz2);
+	cov[2] = sz2;
+}
+
+//____________________________________________________________________
+void AliTRDseedV1::SetOwner(Bool_t own)
+{
+  //
+  // Handles the ownership of the clusters
+  //
+	if(own){
+		for(int ic=0; ic<fgTimeBins; ic++){
+			if(!fClusters[ic]) continue;
+			fClusters[ic] = new AliTRDcluster(*fClusters[ic]);
+		}
+		fOwner = kTRUE;
+	} else {
+		if(fOwner){
+			for(int ic=0; ic<fgTimeBins; ic++){
+				if(!fClusters[ic]) continue;
+				delete fClusters[ic];
+			}
+		}
+		fOwner = kFALSE;
+	}
 }
 
 //____________________________________________________________________
@@ -156,7 +213,9 @@ Bool_t	AliTRDseedV1::AttachClustersIter(AliTRDstackLayer *layer
 		AliError("Seed can not be used without a valid RecoParam.");
 		return kFALSE;
 	}
-	
+
+	//AliInfo(Form("TimeBins = %d TimeBinsRange = %d", fgTimeBins, fTimeBinsRange));
+
 	Float_t  tquality;
 	Double_t kroady = fRecoParam->GetRoad1y();
 	Double_t kroadz = fPadLength * .5 + 1.;
@@ -171,7 +230,7 @@ Bool_t	AliTRDseedV1::AttachClustersIter(AliTRDstackLayer *layer
 	for (Int_t iter = 0; iter < niter; iter++) {
   	//AliInfo(Form("iter = %i", iter));
 		ncl = 0;
-		for (Int_t iTime = 0; iTime < fTimeBins; iTime++) {
+		for (Int_t iTime = 0; iTime < fgTimeBins; iTime++) {
 			// define searching configuration
 			Double_t dxlayer = layer[iTime].GetX() - fX0;
 			if(c){
@@ -188,11 +247,14 @@ Bool_t	AliTRDseedV1::AttachClustersIter(AliTRDstackLayer *layer
 // 			printf("xexp = %3.3f ,yexp = %3.3f, zexp = %3.3f\n",layer[iTime].GetX(),yexp,zexp);
 // 			printf("layer[%i].GetNClusters() = %i\n", iTime, layer[iTime].GetNClusters());
 			Int_t    index = layer[iTime].SearchNearestCluster(yexp, zexp, kroady, kroadz);
+
+// 			printf("%d[%d] x[%7.3f | %7.3f] y[%7.3f] z[%7.3f]\n", iTime, layer[iTime].GetNClusters(), dxlayer, layer[iTime].GetX(), yexp, zexp);
 // 			for(Int_t iclk = 0; iclk < layer[iTime].GetNClusters(); iclk++){
 // 				AliTRDcluster *testcl = layer[iTime].GetCluster(iclk);
-// 				printf("Cluster %i: x = %3.3f, y = %3.3f, z = %3.3f\n",iclk,testcl->GetX(), testcl->GetY(), testcl->GetZ());
+// 				printf("Cluster %i: %d x = %7.3f, y = %7.3f, z = %7.3f\n", iclk, testcl->GetLocalTimeBin(), testcl->GetX(), testcl->GetY(), testcl->GetZ());
 // 			}
 // 			printf("Index = %i\n",index);
+
 			if (index < 0) continue;
 			
 			// Register cluster
@@ -214,10 +276,10 @@ Bool_t	AliTRDseedV1::AttachClustersIter(AliTRDstackLayer *layer
 #ifdef SEED_DEBUG
 // 		Int_t nclusters = 0;
 // 		Float_t fD[iter] = 0.;
-// 		for(int ic=0; ic<fTimeBins+1; ic++){
+// 		for(int ic=0; ic<fgTimeBins+1; ic++){
 // 			AliTRDcluster *ci = fClusters[ic];
 // 			if(!ci) continue;
-// 			for(int jc=ic+1; jc<fTimeBins+1; jc++){
+// 			for(int jc=ic+1; jc<fgTimeBins+1; jc++){
 // 				AliTRDcluster *cj = fClusters[jc];
 // 				if(!cj) continue;
 // 				fD[iter] += TMath::Sqrt((ci->GetY()-cj->GetY())*(ci->GetY()-cj->GetY())+
@@ -245,10 +307,8 @@ Bool_t	AliTRDseedV1::AttachClustersIter(AliTRDstackLayer *layer
 }
 
 //____________________________________________________________________
-Bool_t	AliTRDseedV1::AttachClustersProj(AliTRDstackLayer *layer
-                                       , Float_t /*quality*/
-                                       , Bool_t kZcorr
-                                       , AliTRDcluster *c)
+Bool_t	AliTRDseedV1::AttachClusters(AliTRDstackLayer *layer
+                                       ,Bool_t kZcorr)
 {
   //
   // Projective algorithm to attach clusters to seeding tracklets
@@ -271,8 +331,7 @@ Bool_t	AliTRDseedV1::AttachClustersProj(AliTRDstackLayer *layer
 		return kFALSE;
 	}
 
-	const Int_t knTimeBins = 35;
-	const Int_t kClusterCandidates = 2 * knTimeBins;
+	const Int_t kClusterCandidates = 2 * knTimebins;
 	
 	//define roads
 	Double_t kroady = fRecoParam->GetRoad1y();
@@ -282,13 +341,13 @@ Bool_t	AliTRDseedV1::AttachClustersProj(AliTRDstackLayer *layer
 
 	// working variables
 	AliTRDcluster *clusters[kClusterCandidates];
-	Double_t cond[4], yexp[knTimeBins], zexp[knTimeBins],
+	Double_t cond[4], yexp[knTimebins], zexp[knTimebins],
 		yres[kClusterCandidates], zres[kClusterCandidates];
-	Int_t ncl, *index = 0x0, tboundary[knTimeBins];
+	Int_t ncl, *index = 0x0, tboundary[knTimebins];
 	
 	// Do cluster projection
 	Int_t nYclusters = 0; Bool_t kEXIT = kFALSE;
-	for (Int_t iTime = 0; iTime < fTimeBins; iTime++) {
+	for (Int_t iTime = 0; iTime < fgTimeBins; iTime++) {
 		fX[iTime] = layer[iTime].GetX() - fX0;
 		zexp[iTime] = fZref[0] + fZref[1] * fX[iTime];
 		yexp[iTime] = fYref[0] + fYref[1] * fX[iTime] - zcorr;
@@ -298,7 +357,7 @@ Bool_t	AliTRDseedV1::AttachClustersProj(AliTRDstackLayer *layer
 		cond[2] = zexp[iTime] - kroadz; cond[3] = zexp[iTime] + kroadz;
 		layer[iTime].GetClusters(cond, index, ncl);
 		for(Int_t ic = 0; ic<ncl; ic++){
-			c = layer[iTime].GetCluster(index[ic]);
+			AliTRDcluster *c = layer[iTime].GetCluster(index[ic]);
 			clusters[nYclusters] = c;
 			yres[nYclusters++] = c->GetY() - yexp[iTime];
 			if(nYclusters >= kClusterCandidates) {
@@ -338,9 +397,10 @@ Bool_t	AliTRDseedV1::AttachClustersProj(AliTRDstackLayer *layer
 	// Select only one cluster/TimeBin
 	Int_t lastCluster = 0;
 	fN2 = 0;
-	for (Int_t iTime = 0; iTime < fTimeBins; iTime++) {
+	for (Int_t iTime = 0; iTime < fgTimeBins; iTime++) {
 		ncl = tboundary[iTime] - lastCluster;
 		if(!ncl) continue;
+		AliTRDcluster *c = 0x0;
 		if(ncl == 1){
 			c = clusters[lastCluster];
 		} else if(ncl > 1){
@@ -356,8 +416,8 @@ Bool_t	AliTRDseedV1::AttachClustersProj(AliTRDstackLayer *layer
 			}
 			c = clusters[iptr];
 		}
-		//Int_t globalIndex = layer[iTime].GetGlobalIndex(index);
-		//fIndexes[iTime]  = globalIndex;
+		//Int_t GlobalIndex = layer[iTime].GetGlobalIndex(index);
+		//fIndexes[iTime]  = GlobalIndex;
 		fClusters[iTime] = c;
 		fY[iTime]        = c->GetY();
 		fZ[iTime]        = c->GetZ();
@@ -366,22 +426,31 @@ Bool_t	AliTRDseedV1::AttachClustersProj(AliTRDstackLayer *layer
 	}
 	
 	// number of minimum numbers of clusters expected for the tracklet
-	Int_t kClmin = Int_t(fRecoParam->GetFindableClusters()*fTimeBins);
+	Int_t kClmin = Int_t(fRecoParam->GetFindableClusters()*fgTimeBins);
   if (fN2 < kClmin){
 		AliWarning(Form("Not enough clusters to fit the tracklet %d [%d].", fN2, kClmin));
     fN2 = 0;
     return kFALSE;
   }
-	AliTRDseed::Update();
+
+	// update used clusters
+	fNUsed = 0;
+	for (Int_t iTime = 0; iTime < fgTimeBins; iTime++) {
+		if(!fClusters[iTime]) continue;
+		if((fClusters[iTime]->IsUsed())) fNUsed++;
+	}
+
+  if (fN2-fNUsed < kClmin){
+		AliWarning(Form("Too many clusters already in use %d (from %d).", fNUsed, fN2));
+    fN2 = 0;
+    return kFALSE;
+  }
 	
-// 	// fit tracklet and update clusters
-// 	if(!FitTracklet()) return kFALSE;
-// 	UpdateUsed();
 	return kTRUE;
 }
 
 //____________________________________________________________________
-Bool_t AliTRDseedV1::FitTracklet()
+Bool_t AliTRDseedV1::Fit()
 {
   //
   // Linear fit of the tracklet
@@ -402,20 +471,20 @@ Bool_t AliTRDseedV1::FitTracklet()
   Float_t  anglecor = fTilt * fZref[1];  // Correction to the angle
 
 	// calculate residuals
-	const Int_t knTimeBins = 35;
-	Float_t yres[knTimeBins]; // y (r-phi) residuals
-	Int_t zint[knTimeBins],   // Histograming of the z coordinate 
-	      zout[2*knTimeBins];//
+	Float_t yres[knTimebins]; // y (r-phi) residuals
+	Int_t zint[knTimebins],   // Histograming of the z coordinate
+	      zout[2*knTimebins];//
 	
 	fN = 0;
-	for (Int_t iTime = 0; iTime < fTimeBins; iTime++) {
+	for (Int_t iTime = 0; iTime < fTimeBinsRange; iTime++) {
     if (!fClusters[iTime]) continue;
     yres[iTime] = fY[iTime] - fYref[0] - (fYref[1] + anglecor) * fX[iTime];
-		zint[fN++] = Int_t(fZ[iTime]);
+		zint[fN] = Int_t(fZ[iTime]);
+		fN++;
 	}
 
 	// calculate pad row boundary crosses
-	Int_t kClmin = Int_t(fRecoParam->GetFindableClusters()*fTimeBins);
+	Int_t kClmin = Int_t(fRecoParam->GetFindableClusters()*fTimeBinsRange);
 	Int_t nz = AliMathBase::Freq(fN, zint, zout, kFALSE);
   fZProb   = zout[0];
   if(nz <= 1) zout[3] = 0;
@@ -437,7 +506,8 @@ Bool_t AliTRDseedV1::FitTracklet()
 	Int_t npads;
   fMPads = 0;
 	fMeanz = 0.;
-	for(int iTime=0; iTime<fTimeBins; iTime++){
+	// we will use only the clusters which are in the detector range
+	for(int iTime=0; iTime<fTimeBinsRange; iTime++){
     fUsable[iTime] = kFALSE;
     if (!fClusters[iTime]) continue;
 		npads = fClusters[iTime]->GetNPads();
@@ -476,7 +546,7 @@ Bool_t AliTRDseedV1::FitTracklet()
   fYfitR[1]    = (sumw   * sumwxy - sumwx * sumwy)  / det;
   
   fSigmaY2 = 0;
-  for (Int_t i = 0; i < fTimeBins+1; i++) {
+  for (Int_t i = 0; i < fTimeBinsRange+1; i++) {
     if (!fUsable[i]) continue;
     Float_t delta = yres[i] - fYfitR[0] - fYfitR[1] * fX[i];
     fSigmaY2 += delta*delta;
@@ -647,13 +717,13 @@ void AliTRDseedV1::Print()
 	printf("  fX0        = %f\n", fX0);
 	for(int ic=0; ic<nTimeBins; ic++) {
           const Char_t *isUsable = fUsable[ic]?"Yes":"No";
-	  printf("  %d X[%f] Y[%f] Z[%f] Indexes[%d] clusters[%#x] usable[%s]\n"
+	  printf("  %d X[%f] Y[%f] Z[%f] Indexes[%d] clusters[%p] usable[%s]\n"
                 , ic
                 , fX[ic]
                 , fY[ic]
                 , fZ[ic]
                 , fIndexes[ic]
-                , ((void *) fClusters[ic])
+                , ((void*) fClusters[ic])
                 , isUsable);
         }
 

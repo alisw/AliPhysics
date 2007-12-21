@@ -26,35 +26,38 @@ class AliRieman;
 class AliTRDstackLayer;
 class AliTRDcluster;
 class AliTRDrecoParam;
-
+class AliTRDtrack;
 class AliTRDseedV1 : public AliTRDseed
 {
-
- public:
-
+public:
 	AliTRDseedV1(Int_t layer = -1, AliTRDrecoParam *p=0x0);
 	~AliTRDseedV1();
-	AliTRDseedV1(const AliTRDseedV1 &ref, Bool_t owner=kFALSE);
+	AliTRDseedV1(const AliTRDseedV1 &ref);
 	AliTRDseedV1& operator=(const AliTRDseedV1 &ref);
 
 	Bool_t	AttachClustersIter(AliTRDstackLayer *layer, Float_t quality, Bool_t kZcorr = kFALSE, AliTRDcluster *c=0x0);
-	Bool_t	AttachClustersProj(AliTRDstackLayer *layer, Float_t quality, Bool_t kZcorr = kFALSE, AliTRDcluster *c=0x0);
+	Bool_t	AttachClusters(AliTRDstackLayer *layer, Bool_t kZcorr = kFALSE);
+	void    CookdEdx(Float_t */*dedx*/){};
 	static	Float_t FitRiemanTilt(AliTRDseedV1 * cseed, Bool_t terror);
-	Bool_t  FitTracklet();
+	Bool_t  Fit();
+
+	void    Init(AliTRDtrack *track);
+	inline void    Init(const AliRieman *fit);
 	
-//	        Bool_t  AttachClusters(Double_t *dx, Float_t quality, Bool_t kZcorr=kFALSE, AliTRDcluster *c=0x0);
 	inline Float_t GetChi2Z(const Float_t z = 0.) const;
 	inline Float_t GetChi2Y(const Float_t y = 0.) const;
-	       Float_t GetQuality(Bool_t kZcorr) const;
-	       Int_t   GetLayer() const                       { return fLayer;    }
-
-	inline void    Update(const AliRieman *rieman);
-               void    Print(Option_t * /*o*/) const          { }
-	       void    Print();
-
-	       void    SetLayer(Int_t l)                      { fLayer     = l;   }
-	       void    SetNTimeBins(Int_t nTB)                { fTimeBins  = nTB; }
-	       void    SetRecoParam(AliTRDrecoParam *p)       { fRecoParam = p;   }
+	       Float_t  GetQuality(Bool_t kZcorr) const;
+	       Int_t    GetPlane() const                       { return fPlane;    }
+				 Int_t    GetN() const {return fN2;}
+	       Double_t GetYat(Double_t x) const {return fYfitR[0] + fYfitR[1] * (x - fX0);}
+	       Double_t GetZat(Double_t x) const {return fZfitR[0] + fZfitR[1] * (x - fX0);}
+	       void     GetCovAt(Double_t x, Double_t *cov) const;
+				 
+         void     Print(Option_t * /*o*/) const          { }
+	       void     Print();
+	       void     SetOwner(Bool_t own = kTRUE);
+	       void     SetPlane(Int_t p)                      { fPlane     = p;   }
+	       void     SetRecoParam(AliTRDrecoParam *p)       { fRecoParam = p;   }
 
  protected:
 
@@ -62,8 +65,7 @@ class AliTRDseedV1 : public AliTRDseed
 
  private:
 
-	Int_t            fLayer;     //  layer for this seed
-	Int_t            fTimeBins;  //  local copy of the DB info
+	Int_t            fPlane;     //  layer for this seed
 	Bool_t           fOwner;     //  owner of the clusters
 	AliTRDrecoParam *fRecoParam; //! local copy of the reco params 
 
@@ -88,7 +90,7 @@ inline Float_t AliTRDseedV1::GetChi2Y(const Float_t y) const
 }
 
 //____________________________________________________________
-inline void AliTRDseedV1::Update(const AliRieman *rieman)
+inline void AliTRDseedV1::Init(const AliRieman *rieman)
 {
 	fZref[0] = rieman->GetZat(fX0);
 	fZref[1] = rieman->GetDZat(fX0);

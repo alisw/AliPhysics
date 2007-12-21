@@ -60,6 +60,7 @@ class AliTRDgeometry : public AliGeometry {
   static  Int_t    GetDetector(Int_t p, Int_t c, Int_t s);
   static  Int_t    GetPlane(Int_t d);
   virtual Int_t    GetChamber(Int_t d) const;
+  virtual Int_t    GetChamber(Double_t z, Int_t plane);
   virtual Int_t    GetSector(Int_t d) const;
 
           void     CreatePadPlaneArray();

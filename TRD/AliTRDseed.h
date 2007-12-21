@@ -64,7 +64,10 @@ class AliTRDseed : public TObject {
           Float_t  GetCC() const                            { return fCC;            }
           Float_t  GetChi2() const                          { return fChi2;          }
           Float_t  GetChi2Z() const                         { return fChi2Z;         }
+          Int_t    GetNTimeBins() const                   { return fgTimeBins; }
+          Int_t    GetNTimeBinsRange() const              { return fTimeBinsRange; }
 
+				
           void     SetTilt(Float_t tilt)                    { fTilt        = tilt;   }
           void     SetPadLength(Float_t len)                { fPadLength   = len;    }
           void     SetX0(Float_t x0)                        { fX0          = x0;     }
@@ -92,11 +95,15 @@ class AliTRDseed : public TObject {
           void     SetCC(Float_t cc)                        { fCC          = cc;     }
           void     SetChi2(Float_t chi2)                    { fChi2        = chi2;   }
           void     SetChi2Z(Float_t chi2z)                  { fChi2Z       = chi2z;  }
+  static  void     SetNTimeBins(Int_t nTB)                { fgTimeBins  = nTB; }
+          void     SetNTimeBinsRange(Int_t nTB)           { fTimeBinsRange  = nTB; }
 
  protected:
 
           void     Copy(TObject &o) const;
           
+  static  Int_t    fgTimeBins;  //  local copy of the total number of TB
+          Int_t    fTimeBinsRange;// number of time bins in the geometrical range of the detector
           Float_t  fTilt;               //  Tilting angle
           Float_t  fPadLength;          //  Pad length
           Float_t  fX0;                 //  X0 position
@@ -105,7 +112,7 @@ class AliTRDseed : public TObject {
           Float_t  fZ[knTimebins];      //! Z position
           Int_t    fIndexes[knTimebins];//! Indexes
           AliTRDcluster *fClusters[knTimebins]; // Clusters
-          Bool_t   fUsable[knTimebins]; //! Indication  - usable cluster
+          Bool_t   fUsable[knTimebins]; // Indication  - usable cluster
           Float_t  fYref[2];            //  Reference y
           Float_t  fZref[2];            //  Reference z
           Float_t  fYfit[2];            //  Y fit position +derivation
