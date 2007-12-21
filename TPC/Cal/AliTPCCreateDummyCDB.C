@@ -208,4 +208,17 @@ void AliTPCCreateDummyCDB()
   // generate random missalignemnt - TO BE MODIFIED ACCCRDING NEW ALIROOT
   //
   //  GenerateRndTPC(gSigmaDx,gSigmaDy,gSigmaDz,gSigmaAngle);
+  //
+  // ExB
+  //
+  //
+  // Put there your mag field
+  //     to simulate distortion the scaling factor in magf can be used
+  //     currently scaling factor 0 used - no magnetic field
+  //
+  metaData = CreateMetaObject("AliTPCExB");
+  AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 0., 10., 1);
+  AliTPCExBFirst *exbfirst = new  AliTPCExBFirst(field,2.83000000000000000e+04,50,50,50);
+  StoreObject("TPC/Calib/ExB", exbfirst, metaData); 
+
 }
