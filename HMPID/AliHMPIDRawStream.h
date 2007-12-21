@@ -68,7 +68,7 @@ class AliHMPIDRawStream: public TObject {
     inline void    WriteRaw       (TObjArray *pDigLst                             );                                                      //write as raw stream     
     inline void   WriteRowMarker  (AliFstream *ddl,UInt_t size);
     inline void   WriteEoE        (AliFstream *ddl,UInt_t row,UInt_t dil,UInt_t wordCnt);  
-    inline void   WriteSegMarker  (AliFstream *ddl,UInt_t row);   
+    inline void   WriteSegMarker  (AliFstream *ddl,UInt_t row, Int_t nwInSeg);   
     
 //    inline TClonesArray  ReMap(TClonesArray *pDigIn);
 enum EDirection {kFwd,kBwd};
@@ -247,9 +247,9 @@ void AliHMPIDRawStream::WriteRowMarker(AliFstream *ddl,UInt_t size)
   //Arguments: ddl stream and the size of the block of the given row, the siye is at least the 10 EoE words!
   //Returns:   nothing
   UInt_t w32=0;
-  UInt_t marker=12968;                                    //ror marker: 32a8 in hexa; 12968 in decimal
+  UInt_t marker=13992;                                   //for pedestal=12968  ==  32a8 for zero suppressed 36a8
   AliBitPacking::PackWord(size,  w32, 16,31);            //number of roaw written after row marker (digits and EoE)
-  AliBitPacking::PackWord(marker,w32,0,15);              //32a8=12968
+  AliBitPacking::PackWord(marker,w32,0,15);              //the marker word
   ddl->WriteBuffer((char*)&w32,sizeof(w32));              
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -268,15 +268,20 @@ void AliHMPIDRawStream::WriteEoE(AliFstream *ddl,UInt_t row,UInt_t dil,UInt_t wo
   ddl->WriteBuffer((char*)&w32,sizeof(w32));      
 } 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++     
-void AliHMPIDRawStream::WriteSegMarker(AliFstream *ddl,UInt_t row)
+void AliHMPIDRawStream::WriteSegMarker(AliFstream *ddl,UInt_t row, Int_t nwInSeg)
 {
   //Writes the segment marker (after 8 rows) into the ddl stream
-  //Arguments: ddl stream and the segment: row 8 -> 0x5900, row 16 -> 5901, row 24 -> 5902
+  //Arguments: ddl stream and the segment: row 8 -> 0x5800, row 16 -> 5801, row 24 -> 5802 for pedestal
   //Retruns:   nothing
     UInt_t w32=0;
-                                AliBitPacking::PackWord((UInt_t)43791,        w32,16,31);       //43791==AB0F
-                                AliBitPacking::PackWord((UInt_t)(22784+row/8),w32, 0,15);       //22784==5900    
-    ddl->WriteBuffer((char*)&w32,sizeof(w32)); 
+    Printf("============ Number of words in segment: %d in row: %d ",nwInSeg,row);
+      //Segment marker: 2736 == ab0
+//      AliBitPacking::PackWord((UInt_t)0   ,w32,27,31);          //zero out the rest of the bits, since they are not needed
+      AliBitPacking::PackWord((UInt_t)2736   ,w32,20,31);       //ab0 the segment marker word
+      AliBitPacking::PackWord((UInt_t)nwInSeg,w32, 8,19);       //number of words in the segment
+      AliBitPacking::PackWord((UInt_t)(row/8),w32, 0, 7);       //segment 0,1,2    
+      ddl->WriteBuffer((char*)&w32,sizeof(w32)); 
+      Printf("Segment word created is: %x",w32);
 }      
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++     
 Bool_t AliHMPIDRawStream::SetZeroSup (Bool_t isSup)
@@ -306,6 +311,7 @@ void AliHMPIDRawStream::WriteRaw(TObjArray *pDigAll)
   Int_t  cntLeoe,cntReoe;
   UInt_t posL,posR;
   UInt_t cntLseg,cntRseg;
+  UInt_t cntwInLseg=0,cntwInRseg=0;
   Int_t  cntRdig=0,cntLdig=0;
   
   UInt_t posLmarker,posRmarker;
@@ -340,7 +346,7 @@ void AliHMPIDRawStream::WriteRaw(TObjArray *pDigAll)
     digcnt=0;
     
     TClonesArray *pDigCh=(TClonesArray *)pDigAll->At(iCh); //list of digits for current chamber 
-    //Printf("::::::::::::::::::; Number of Digits to write: %d == %d",pDigCh->GetEntriesFast(),pDigCh->GetEntries());
+   
     for(Int_t iDig=0;iDig<pDigCh->GetEntriesFast();iDig++){//digits loop
       AliHMPIDDigit *pDig1=(AliHMPIDDigit*)pDigCh->At(iDig);
       pDig1->Raw(w32,ddl,r,d,a);
@@ -350,8 +356,8 @@ void AliHMPIDRawStream::WriteRaw(TObjArray *pDigAll)
     for(Int_t row = 1; row <= AliHMPIDRawStream::kNRows; row++){ //AliHMPIDRawStream::kNRows=25!
       cntRrow=0;cntLrow=0;cntLseg=0;cntRseg=0;// 
       cntLeoe=0;cntReoe=0;
-      posLmarker=ddlL->Tellp(); WriteRowMarker(ddlL,(UInt_t)1);   cntL++; cntRrow++; 
-      posRmarker=ddlR->Tellp(); WriteRowMarker(ddlR,(UInt_t)1);   cntR++; cntLrow++; 
+      posLmarker=ddlL->Tellp(); WriteRowMarker(ddlL,(UInt_t)1);   cntL++; cntRrow++; cntwInRseg++;
+      posRmarker=ddlR->Tellp(); WriteRowMarker(ddlR,(UInt_t)1);   cntR++; cntLrow++; cntwInLseg++;
       for(Int_t dil = 1; dil <= AliHMPIDRawStream::kNDILOGICAdd; dil++){ //AliHMPIDRawStream::kNDILOGICAdd = 11!
 	cntLpad=0;cntRpad=0;
         for(Int_t pad = 0; pad < AliHMPIDRawStream::kNPadAdd; pad++){   //AliHMPIDRawStream::kNPadAdd     = 48
@@ -362,19 +368,19 @@ void AliHMPIDRawStream::WriteRaw(TObjArray *pDigAll)
 	      if(pDig->Q() < 0 ) continue;                                                 //We can turn of the zero sup for pedestal simulation
               //Printf("::::::::::::::: ddl from Digit : %d",ddl);
 	      if(ddl%2){                                                                               //write raw digit selecting on DDL
-		ddlL->WriteBuffer((char*)&w32,sizeof(w32));   cntL++; cntLpad++; cntLrow++;  cntLdig++;//Printf(" WL: %x isDig: %d",w32,isDigThere[iddl][row][dil][pad]);
+		ddlL->WriteBuffer((char*)&w32,sizeof(w32));   cntL++; cntLpad++; cntLrow++;  cntLdig++; cntwInLseg++;//Printf(" WL: %x isDig: %d",w32,isDigThere[iddl][row][dil][pad]);
               }else{
-		ddlR->WriteBuffer((char*)&w32,sizeof(w32));   cntR++; cntRpad++; cntRrow++;   cntRdig++;//Printf(" WR: %x isDig: %d",w32,isDigThere[iddl][row][dil][pad]);
+		ddlR->WriteBuffer((char*)&w32,sizeof(w32));   cntR++; cntRpad++; cntRrow++;   cntRdig++;cntwInRseg++;//Printf(" WR: %x isDig: %d",w32,isDigThere[iddl][row][dil][pad]);
 	      }
             }//ddl 
           }//isDig
 	}//pad
-        WriteEoE(ddlL,row,dil,cntLpad); cntL++;  cntLrow++;    cntLeoe++;                                 //molnarl: write EoE markers
-        WriteEoE(ddlR,row,dil,cntRpad); cntR++;  cntRrow++;    cntReoe++;
+        WriteEoE(ddlL,row,dil,cntLpad); cntL++;  cntLrow++;    cntLeoe++;   cntwInLseg++;                              //molnarl: write EoE markers
+        WriteEoE(ddlR,row,dil,cntRpad); cntR++;  cntRrow++;    cntReoe++;   cntwInRseg++;
       }//dil
       if(row%8==0){                                               
-        WriteSegMarker(ddlL,row); cntL++;  cntLseg++;
-        WriteSegMarker(ddlR,row); cntR++;  cntRseg++;
+        WriteSegMarker(ddlL,row,cntwInLseg); cntL++;  cntLseg++; cntwInLseg=0;
+        WriteSegMarker(ddlR,row,cntwInRseg); cntR++;  cntRseg++;  cntwInRseg=0; 
       }
       posL=ddlL->Tellp();   ddlL->Seekp(posLmarker);    WriteRowMarker(ddlL,(UInt_t)(cntLrow-1)); ddlL->Seekp(posL);      //find the marker position write and  go back to the actual position to continue writing                    
       posR=ddlR->Tellp();   ddlR->Seekp(posRmarker);    WriteRowMarker(ddlR,(UInt_t)(cntRrow-1)); ddlR->Seekp(posR);                           
