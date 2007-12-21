@@ -32,11 +32,10 @@
 #include "AliTRDtracker.h"
 
 ClassImp(AliTRDseed)
-Int_t AliTRDseed::fgTimeBins = 0;
+
 //_____________________________________________________________________________
 AliTRDseed::AliTRDseed() 
   :TObject()
-  ,fTimeBinsRange(0)
   ,fTilt(0)
   ,fPadLength(0)
   ,fX0(0)
@@ -83,7 +82,6 @@ AliTRDseed::AliTRDseed()
 //_____________________________________________________________________________
 AliTRDseed::AliTRDseed(const AliTRDseed &s)
   :TObject(s)
-  ,fTimeBinsRange(s.fTimeBinsRange)
   ,fTilt(s.fTilt)
   ,fPadLength(s.fPadLength)
   ,fX0(s.fX0)
@@ -128,14 +126,14 @@ AliTRDseed::AliTRDseed(const AliTRDseed &s)
 }
 
 //_____________________________________________________________________________
-void AliTRDseed::Copy(TObject &o) const
+void AliTRDseed::Copy(TObject &o) const 
 {
-	//printf("AliTRDseed::Copy()\n");
+  //
+  // Copy function
+  //
 
-	AliTRDseed &seed = (AliTRDseed &)o;
-  
-	seed.fTimeBinsRange = fTimeBinsRange;
-	seed.fTilt = fTilt;
+  AliTRDseed &seed = (AliTRDseed &)o;
+  seed.fTilt = fTilt;
   seed.fPadLength = fPadLength;
   seed.fX0 = fX0;
   seed.fSigmaY = fSigmaY;
@@ -152,7 +150,8 @@ void AliTRDseed::Copy(TObject &o) const
   seed.fCC = fCC;
   seed.fChi2 = fChi2;
   seed.fChi2Z = fChi2Z;
-	for (Int_t i = 0; i < knTimebins; i++) {
+
+  for (Int_t i = 0; i < knTimebins; i++) {
     seed.fX[i]        = fX[i];
     seed.fY[i]        = fY[i]; 
     seed.fZ[i]        = fZ[i]; 
@@ -219,11 +218,14 @@ void AliTRDseed::CookLabels()
   // Cook 2 labels for seed
   //
 
+  AliTRDcalibDB *cal = AliTRDcalibDB::Instance();
+  Int_t nTimeBins = cal->GetNumberOfTimeBins();
+
   Int_t labels[200];
   Int_t out[200];
   Int_t nlab = 0;
 
-  for (Int_t i = 0; i < fgTimeBins+1; i++) {
+  for (Int_t i = 0; i < nTimeBins+1; i++) {
     if (!fClusters[i]) continue;
     for (Int_t ilab = 0; ilab < 3; ilab++) {
       if (fClusters[i]->GetLabel(ilab) >= 0) {
@@ -249,7 +251,10 @@ void AliTRDseed::UseClusters()
   // Use clusters
   //
 
-  for (Int_t i = 0; i < fgTimeBins+1; i++) {
+  AliTRDcalibDB *cal = AliTRDcalibDB::Instance();
+  Int_t nTimeBins = cal->GetNumberOfTimeBins();
+
+  for (Int_t i = 0; i < nTimeBins+1; i++) {
     if (!fClusters[i]) continue;
     if (!(fClusters[i]->IsUsed())) fClusters[i]->Use();
   }
@@ -263,15 +268,12 @@ void AliTRDseed::Update()
   // Update the seed.
   //
 
-
-	// linear fit on the y direction
-	// dy|x = (yc|x - dz|x*tg(tilt)) - (y0 + dy/dx|x * x )
-	// dz|x = zc|x - (z0 + dz/dx|x) 
-
   const Float_t kRatio  = 0.8;
   const Int_t   kClmin  = 5;
   const Float_t kmaxtan = 2;
 
+  AliTRDcalibDB *cal = AliTRDcalibDB::Instance();
+  Int_t nTimeBins = cal->GetNumberOfTimeBins();
 
   if (TMath::Abs(fYref[1]) > kmaxtan){
 		//printf("Exit: Abs(fYref[1]) = %3.3f, kmaxtan = %3.3f\n", TMath::Abs(fYref[1]), kmaxtan);
@@ -301,7 +303,7 @@ void AliTRDseed::Update()
   
   fN  = 0; 
   fN2 = 0;
-  for (Int_t i = 0; i < fTimeBinsRange; i++) {
+  for (Int_t i = 0; i < nTimeBins; i++) {
     yres[i] = 10000.0;
     if (!fClusters[i]) continue;
     yres[i] = fY[i] - fYref[0] - (fYref[1] + anglecor) * fX[i];   // Residual y
@@ -338,22 +340,22 @@ void AliTRDseed::Update()
     // with maximal numebr of accepted clusters
     //
     fNChange = 1;
-    for (Int_t i = 0; i < fTimeBinsRange; i++) {
+    for (Int_t i = 0; i < nTimeBins; i++) {
       cumul[i][0] = counts[0];
       cumul[i][1] = counts[1];
       if (TMath::Abs(fZ[i]-zouts[0]) < 2) counts[0]++;
       if (TMath::Abs(fZ[i]-zouts[2]) < 2) counts[1]++;
     }
     Int_t  maxcount = 0;
-    for (Int_t i = 0; i < fTimeBinsRange; i++) {
-      Int_t after  = cumul[fTimeBinsRange][0] - cumul[i][0];
+    for (Int_t i = 0; i < nTimeBins; i++) {
+      Int_t after  = cumul[nTimeBins][0] - cumul[i][0];
       Int_t before = cumul[i][1];
       if (after + before > maxcount) { 
 	maxcount  = after + before; 
 	breaktime = i;
 	mbefore   = kFALSE;
       }
-      after  = cumul[fTimeBinsRange-1][1] - cumul[i][1];
+      after  = cumul[nTimeBins-1][1] - cumul[i][1];
       before = cumul[i][0];
       if (after + before > maxcount) { 
 	maxcount  = after + before; 
@@ -366,18 +368,18 @@ void AliTRDseed::Update()
 
   }
 
-  for (Int_t i = 0; i < fTimeBinsRange+1; i++) {
+  for (Int_t i = 0; i < nTimeBins+1; i++) {
     if (i >  breaktime) allowedz[i] =   mbefore  ? zouts[2] : zouts[0];
     if (i <= breaktime) allowedz[i] = (!mbefore) ? zouts[2] : zouts[0];
   }  
 
-  if (((allowedz[0] > allowedz[fTimeBinsRange]) && (fZref[1] < 0)) ||
-      ((allowedz[0] < allowedz[fTimeBinsRange]) && (fZref[1] > 0))) {
+  if (((allowedz[0] > allowedz[nTimeBins]) && (fZref[1] < 0)) || 
+      ((allowedz[0] < allowedz[nTimeBins]) && (fZref[1] > 0))) {
     //
     // Tracklet z-direction not in correspondance with track z direction 
     //
     fNChange = 0;
-    for (Int_t i = 0; i < fTimeBinsRange+1; i++) {
+    for (Int_t i = 0; i < nTimeBins+1; i++) {
       allowedz[i] = zouts[0];  // Only longest taken
     } 
   }
@@ -386,7 +388,7 @@ void AliTRDseed::Update()
     //
     // Cross pad -row tracklet  - take the step change into account
     //
-    for (Int_t i = 0; i < fTimeBinsRange+1; i++) {
+    for (Int_t i = 0; i < nTimeBins+1; i++) {
       if (!fClusters[i]) continue; 
       if (TMath::Abs(fZ[i] - allowedz[i]) > 2) continue;
       yres[i] = fY[i] - fYref[0] - (fYref[1] + anglecor) * fX[i];   // Residual y
@@ -400,7 +402,7 @@ void AliTRDseed::Update()
   Double_t yres2[knTimebins];
   Double_t mean;
   Double_t sigma;
-  for (Int_t i = 0; i < fTimeBinsRange+1; i++) {
+  for (Int_t i = 0; i < nTimeBins+1; i++) {
     if (!fClusters[i]) continue;
     if (TMath::Abs(fZ[i] - allowedz[i]) > 2) continue;
     yres2[fN2] = yres[i];
@@ -430,12 +432,12 @@ void AliTRDseed::Update()
   fMeanz = 0;
   fMPads = 0;
 
-  for (Int_t i = 0; i < fTimeBinsRange+1; i++) {
+  for (Int_t i = 0; i < nTimeBins+1; i++) {
 
     fUsable[i] = kFALSE;
     if (!fClusters[i]) continue;
-    if (TMath::Abs(fZ[i] - allowedz[i]) > 2){fClusters[i] = 0x0; continue;}
-    if (TMath::Abs(yres[i] - mean) > 4.0 * sigma){fClusters[i] = 0x0;  continue;}
+    if (TMath::Abs(fZ[i] - allowedz[i]) > 2)  continue;
+    if (TMath::Abs(yres[i] - mean) > 4.0 * sigma) continue;
     fUsable[i] = kTRUE;
     fN2++;
     fMPads += fClusters[i]->GetNPads();
@@ -443,10 +445,7 @@ void AliTRDseed::Update()
     if (fClusters[i]->GetNPads() > 4) weight = 0.5;
     if (fClusters[i]->GetNPads() > 5) weight = 0.2;
    
-   	
     Double_t x = fX[i];
-    //printf("x = %7.3f dy = %7.3f fit %7.3f\n", x, yres[i], fY[i]-yres[i]);
-    
     sumw   += weight; 
     sumwx  += x * weight; 
     sumwx2 += x*x * weight;
@@ -475,14 +474,12 @@ void AliTRDseed::Update()
   fYfitR[1]    = (sumw   * sumwxy - sumwx * sumwy)  / det;
   
   fSigmaY2 = 0;
-  for (Int_t i = 0; i < fTimeBinsRange+1; i++) {
+  for (Int_t i = 0; i < nTimeBins+1; i++) {    
     if (!fUsable[i]) continue;
     Float_t delta = yres[i] - fYfitR[0] - fYfitR[1] * fX[i];
     fSigmaY2 += delta*delta;
   }
   fSigmaY2 = TMath::Sqrt(fSigmaY2 / Float_t(fN2-2));
-	// TEMPORARY UNTIL covariance properly calculated
-	fSigmaY2 = TMath::Max(fSigmaY2, Float_t(.1));
   
   fZfitR[0]  = (sumwx2 * sumwz  - sumwx * sumwxz) / det;
   fZfitR[1]  = (sumw   * sumwxz - sumwx * sumwz)  / det;
@@ -492,9 +489,7 @@ void AliTRDseed::Update()
   fYfitR[1] += fYref[1];
   fYfit[0]   = fYfitR[0];
   fYfit[1]   = fYfitR[1];
-
-	//printf("y0 = %7.3f tgy = %7.3f z0 = %7.3f tgz = %7.3f \n", fYfitR[0], fYfitR[1], fZfitR[0], fZfitR[1]);
-
+    
   UpdateUsed();
 
 }
@@ -506,11 +501,17 @@ void AliTRDseed::UpdateUsed()
   // Update used seed
   //
 
+  AliTRDcalibDB *cal = AliTRDcalibDB::Instance();
+  Int_t nTimeBins = cal->GetNumberOfTimeBins();
+
   fNUsed = 0;
-  for (Int_t i = 0; i < fgTimeBins; i++) {
-    if (!fClusters[i]) continue;
-		if(!fUsable[i]) continue;   
-    if ((fClusters[i]->IsUsed())) fNUsed++;
+  for (Int_t i = 0; i < nTimeBins; i++) {
+    if (!fClusters[i]) {
+      continue;
+    }
+    if ((fClusters[i]->IsUsed())) {
+      fNUsed++;
+    }
   }
 
 }
@@ -526,6 +527,9 @@ Float_t AliTRDseed::FitRiemanTilt(AliTRDseed * cseed, Bool_t terror)
   TLinearFitter fitterT2(4,"hyp4");  
   fitterT2.StoreData(kTRUE);
 	
+  AliTRDcalibDB *cal = AliTRDcalibDB::Instance();
+  Int_t nTimeBins = cal->GetNumberOfTimeBins();
+
   Float_t xref2 = (cseed[2].fX0 + cseed[3].fX0) * 0.5; // Reference x0 for z
   
   Int_t npointsT = 0;
@@ -536,7 +540,7 @@ Float_t AliTRDseed::FitRiemanTilt(AliTRDseed * cseed, Bool_t terror)
     if (!cseed[iLayer].IsOK()) continue;
     Double_t tilt = cseed[iLayer].fTilt;
 
-    for (Int_t itime = 0; itime < fgTimeBins+1; itime++) {
+    for (Int_t itime = 0; itime < nTimeBins+1; itime++) {
 
       if (!cseed[iLayer].fUsable[itime]) continue;
       // x relative to the midle chamber
