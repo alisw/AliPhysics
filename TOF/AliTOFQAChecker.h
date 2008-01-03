@@ -26,8 +26,8 @@ public:
 
 private:
 
-  const Double_t Check(TList * list) ;
-  const Double_t Check(){return 0.;} ;
+  const Double_t  Check(TList * list) ;
+  Double_t Check() const {return 0.;} ;
   
   ClassDef(AliTOFQAChecker,2)  // description 
 
