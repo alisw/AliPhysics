@@ -15,6 +15,9 @@
 
 /* 
 $Log$
+Revision 1.4  2007/12/05 13:55:18  zampolli
+Initialization bug fixed.
+
 Revision 1.3  2007/11/27 13:12:30  zampolli
 CDB object run range upper limit extended to AliCDBRunRange::Infinity()
 
@@ -124,15 +127,15 @@ UInt_t AliTOFPreprocessorFDR::ProcessDCSDataPoints(TMap* aliasMap)
     TObjArray *array = new TObjArray(4);
     array->SetOwner();
 
-    AliTOFFormatDCS *lv_i48_02 = new AliTOFFormatDCS();
-    AliTOFFormatDCS *lv_v48_02 = new AliTOFFormatDCS();
-    AliTOFFormatDCS *lv_i33_02 = new AliTOFFormatDCS();
-    AliTOFFormatDCS *lv_v33_02 = new AliTOFFormatDCS();
+    AliTOFFormatDCS *lvI4802 = new AliTOFFormatDCS();
+    AliTOFFormatDCS *lvV4802 = new AliTOFFormatDCS();
+    AliTOFFormatDCS *lvI3302 = new AliTOFFormatDCS();
+    AliTOFFormatDCS *lvV3302 = new AliTOFFormatDCS();
     
-    array->AddAt(lv_i48_02,0);
-    array->AddAt(lv_v48_02,1);
-    array->AddAt(lv_i33_02,2);
-    array->AddAt(lv_v33_02,3);
+    array->AddAt(lvI4802,0);
+    array->AddAt(lvV4802,1);
+    array->AddAt(lvI3302,2);
+    array->AddAt(lvV3302,3);
 
     // processing DCS
     
@@ -178,23 +181,23 @@ UInt_t AliTOFPreprocessorFDR::ProcessDCSDataPoints(TMap* aliasMap)
 	time = (Float_t) (aValue->GetTimeStamp());
 	if (i==0){
 	  AliDebug(1,Form("tof_lv_i48_02: setting value %i to %f at %f",k,val,time));
-	  lv_i48_02->SetFloat(k,val);
-	  lv_i48_02->SetTimeStampFloat(k,time);
+	  lvI4802->SetFloat(k,val);
+	  lvI4802->SetTimeStampFloat(k,time);
 	}
 	else if (i==1){
 	  AliDebug(1,Form("tof_lv_v48_02: setting value %i to %f at %f",k,val,time));
-	  lv_v48_02->SetFloat(k,val);
-	  lv_v48_02->SetTimeStampFloat(k,time);
+	  lvV4802->SetFloat(k,val);
+	  lvV4802->SetTimeStampFloat(k,time);
 	}
 	else if (i==2){
 	  AliDebug(1,Form("tof_lv_i33_02: setting value %i to %f at %f",k,val,time));
-	  lv_i33_02->SetFloat(k,val);
-	  lv_i33_02->SetTimeStampFloat(k,time);
+	  lvI3302->SetFloat(k,val);
+	  lvI3302->SetTimeStampFloat(k,time);
 	}
 	else if (i==3){
 	  AliDebug(1,Form("tof_lv_v33_02: setting value %i to %f at %f",k,val,time));
-	  lv_v33_02->SetFloat(k,val);
-	  lv_v33_02->SetTimeStampFloat(k,time);
+	  lvV3302->SetFloat(k,val);
+	  lvV3302->SetTimeStampFloat(k,time);
 	}
       }
   
@@ -225,23 +228,23 @@ UInt_t AliTOFPreprocessorFDR::ProcessDCSDataPoints(TMap* aliasMap)
       for (Int_t kk=0;kk<2;kk++){
 	if (i==0){
 	  AliDebug(1,Form("tof_lv_i48: setting variation %i to %f at %f",kk,delta[kk],timedelta[kk]));
-	  lv_i48_02->SetDelta(kk,delta[kk]);
-	  lv_i48_02->SetTimeStampDelta(kk,(Float_t)timedelta[kk]);
+	  lvI4802->SetDelta(kk,delta[kk]);
+	  lvI4802->SetTimeStampDelta(kk,(Float_t)timedelta[kk]);
 	}
 	else if (i==1){
 	  AliDebug(1,Form("tof_lv_v48: setting variation %i to %f at %f",kk,delta[kk],timedelta[kk]));
-	  lv_v48_02->SetDelta(kk,delta[kk]);
-	  lv_v48_02->SetTimeStampDelta(kk,(Float_t)timedelta[kk]);
+	  lvV4802->SetDelta(kk,delta[kk]);
+	  lvV4802->SetTimeStampDelta(kk,(Float_t)timedelta[kk]);
 	}
 	else if (i==2){
 	  AliDebug(1,Form("tof_lv_i33: setting variation %i to %f at %f",kk,delta[kk],timedelta[kk]));
-	  lv_i33_02->SetDelta(kk,delta[kk]);
-	  lv_i33_02->SetTimeStampDelta(kk,(Float_t)timedelta[kk]);
+	  lvI3302->SetDelta(kk,delta[kk]);
+	  lvI3302->SetTimeStampDelta(kk,(Float_t)timedelta[kk]);
 	}
 	else if (i==3){
 	  AliDebug(1,Form("tof_lv_v33: setting variation %i to %f at %f",kk,delta[kk],timedelta[kk]));
-	  lv_v33_02->SetDelta(kk,delta[kk]);
-	  lv_v33_02->SetTimeStampDelta(kk,(Float_t)timedelta[kk]);
+	  lvV3302->SetDelta(kk,delta[kk]);
+	  lvV3302->SetTimeStampDelta(kk,(Float_t)timedelta[kk]);
 	}
       }
     }
