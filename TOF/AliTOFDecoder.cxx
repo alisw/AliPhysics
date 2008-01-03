@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2007/11/24 14:58:34  zampolli
+New Method implemented (#DDL <-> TOF channels)
+
 Revision 1.4  2007/05/18 13:08:57  decaro
 Coding convention: RS1 violation -> suppression
 
@@ -796,8 +799,8 @@ void AliTOFDecoder::GetArrayDDL(Int_t* array, Int_t ddl){
   if (fVerbose){
     AliInfo(Form(" Sector = %i, DDL within sector = %i",iSector, indexDDL));
   }
-  Int_t Volume[5];
-  Volume[0]=iSector;
+  Int_t volume[5];
+  volume[0]=iSector;
   Int_t minPlate=0, maxPlate=0, minStrip2=0, maxStrip2=0, minPadz=0, maxPadz=0, minPadx=0, maxPadx=0;
 
   if (indexDDL==0){
@@ -860,21 +863,21 @@ void AliTOFDecoder::GetArrayDDL(Int_t* array, Int_t ddl){
     for (Int_t iStrip=minStrip;iStrip<=maxStrip;iStrip++){
       for (Int_t iPadz=minPadz;iPadz<=maxPadz;iPadz++){
 	for (Int_t iPadx=minPadx;iPadx<=maxPadx;iPadx++){
-	  Volume[1]=iPlate;
-	  Volume[2]=iStrip;
-	  Volume[3]=iPadz;
-	  Volume[4]=iPadx;
+	  volume[1]=iPlate;
+	  volume[2]=iStrip;
+	  volume[3]=iPadz;
+	  volume[4]=iPadx;
 	  if (fVerbose){
-	    AliInfo(Form(" Volume[0] = %i, Volume[1] = %i, Volume[2] = %i, Volume[3] = %i, Volume[4] = %i",Volume[0],Volume[1],Volume[2],Volume[3],Volume[4]));
+	    AliInfo(Form(" volume[0] = %i, volume[1] = %i, volume[2] = %i, volume[3] = %i, volume[4] = %i",volume[0],volume[1],volume[2],volume[3],volume[4]));
 	  }
 	  if (indexDDL==0 || indexDDL==2){
-	    array[ichTOF]=geom->GetIndex(Volume);
+	    array[ichTOF]=geom->GetIndex(volume);
 	    if (fVerbose){
 	      AliInfo(Form(" ichTOF = %i, TOFChannel = %i",ichTOF,array[ichTOF]));
 	    }
 	  }
 	  else {
-	    array[ichTOF]=geom->GetIndex(Volume);
+	    array[ichTOF]=geom->GetIndex(volume);
 	    if (fVerbose){
 	      AliInfo(Form(" ichTOF = %i, TOFChannel = %i",ichTOF,array[ichTOF]));
 	    }
