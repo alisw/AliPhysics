@@ -2223,8 +2223,11 @@ void AliZDCv3::StepManager()
   Float_t x[3], xdet[3], destep, hits[10], m, ekin, um[3], ud[3], be, out;
   //Float_t radius;
   Float_t xalic[3], z, guiEff;
-  // Parametrization for light guide uniformity -> OBSOLETE!!!!
-  Float_t guiPar[4]={0.31,-0.0004,0.0197,0.7958};
+  // Parametrization for light guide uniformity
+  // -> OBSOLETE!!!! For guide tilted @ 46 degrees
+  //Float_t guiPar[4]={0.31,-0.0004,0.0197,0.7958};
+  // NEW!!! Light guide tilted @ 51 degrees
+  Float_t guiPar[4]={0.31,-0.0006305,0.01337,0.8895};
   Double_t s[3], p[3];
   const char *knamed;
   //
@@ -2294,7 +2297,7 @@ void AliZDCv3::StepManager()
   
   // Determine in which quadrant the particle is
     if(vol[0]==1){	//Quadrant in ZNC
-      // Calculating particle coordinates inside ZN
+      // Calculating particle coordinates inside ZNC
       xdet[0] = x[0]-fPosZNC[0];
       xdet[1] = x[1]-fPosZNC[1];
       // Calculating quadrant in ZN
@@ -2312,7 +2315,7 @@ void AliZDCv3::StepManager()
     }
     
     else if(vol[0]==2){	//Quadrant in ZPC
-      // Calculating particle coordinates inside ZP
+      // Calculating particle coordinates inside ZPC
       xdet[0] = x[0]-fPosZPA[0];
       xdet[1] = x[1]-fPosZPA[1];
       if(xdet[0]>=fDimZP[0])  xdet[0]=fDimZP[0]-0.01;
