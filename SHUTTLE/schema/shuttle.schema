@@ -41,13 +41,14 @@ attributetype ( FXS_CONFIG:8  NAME 'fxsHost'	 DESC 'FXS host' 		     EQUALITY ca
 attributetype ( FXS_CONFIG:9  NAME 'fxsPort'	 DESC 'FXS port' 					       SUP ipServicePort SINGLE-VALUE )
 attributetype ( FXS_CONFIG:10 NAME 'fxsUser'	 DESC 'FXS user'	             EQUALITY caseIgnoreMatch  SUP name SINGLE-VALUE )
 attributetype ( FXS_CONFIG:11 NAME 'fxsPasswd'   DESC 'FXS Password'	             EQUALITY caseIgnoreMatch  SUP name SINGLE-VALUE )
+attributetype ( FXS_CONFIG:12 NAME 'fxsAdmin'    DESC 'FXS admin(s) email address' EQUALITY caseIgnoreIA5Match SUP mail )
 
 objectclass ( FXS_CONFIG
         NAME 'fxsConfig'
         DESC 'ALICE: Configuration of the Shuttle for access to the File Exchange Servers'
         SUP top
         MUST (system $ dbHost $ dbUser $ dbPasswd $ dbName $ dbTable $ fxsHost $ fxsUser )
-        MAY ( dbPort $ fxsPasswd $ fxsPort) )
+        MAY ( dbPort $ fxsPasswd $ fxsPort $ fxsAdmin) )
 
 
 objectidentifier GLOBAL_CONFIG SHUTTLE_BASE:4
@@ -68,13 +69,19 @@ attributetype ( GLOBAL_CONFIG:13 NAME 'monitorTable'   DESC 'monitoring table na
 attributetype ( GLOBAL_CONFIG:14 NAME 'triggerWait'    DESC 'max time waiting for next trigger before starting a new collection'   
 											   EQUALITY integerMatch       SUP uidNumber SINGLE-VALUE )
 attributetype ( GLOBAL_CONFIG:15 NAME 'mode'           DESC 'production mode (test, prod)' EQUALITY caseIgnoreMatch    SUP name SINGLE-VALUE )
+attributetype ( GLOBAL_CONFIG:16 NAME 'shuttleAdmin'    DESC 'SHUTTLE administrator(s) email address' EQUALITY caseIgnoreIA5Match SUP mail )
+attributetype ( GLOBAL_CONFIG:17 NAME 'amandaAdmin'    DESC 'Amanda admin(s) email address' EQUALITY caseIgnoreIA5Match SUP mail )
+
+attributetype ( GLOBAL_CONFIG:18 NAME 'sendMail' 	DESC 'Send email flag (1/0)'  EQUALITY integerMatch       SUP uidNumber SINGLE-VALUE )
+attributetype ( GLOBAL_CONFIG:19 NAME 'keepDCSMap' 	DESC 'keep DCS map flag (1/0)'  EQUALITY integerMatch       SUP uidNumber SINGLE-VALUE )
+attributetype ( GLOBAL_CONFIG:20 NAME 'keepTempFolder' 	DESC 'keep temp folder flag (1/0)'  EQUALITY integerMatch       SUP uidNumber SINGLE-VALUE )
 
 objectclass ( GLOBAL_CONFIG
         NAME 'globalConfig'
         DESC 'ALICE: settings for DAQ logbook access'
         SUP top
         MUST (name $ daqLbHost $ daqLbUser $ daqLbPasswd $ daqLbDB $ daqLbTable $ shuttleLbTable $ runTypeLbTable $ ppMaxRetries $ ppTimeOut $ ppMaxMem $ monitorHost $ monitorTable)
-        MAY ( daqLbPort $ triggerWait $ mode) )
+        MAY ( daqLbPort $ triggerWait $ mode $ keepDCSMap $ keepTempFolder $ shuttleAdmin $ amandaAdmin $ sendMail) )
 
 
 objectidentifier INSTANCE_CONFIG SHUTTLE_BASE:5

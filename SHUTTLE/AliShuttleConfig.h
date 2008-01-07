@@ -21,6 +21,7 @@
 class AliShuttleConfig: public TObject {
 public:
 	enum RunMode {kTest=0, kProd};
+        enum SystemCode { kDAQ = 0, kDCS, kHLT, kGlobal, kAmanda };
 	
 	AliShuttleConfig(const char* host, Int_t port = LDAP_PORT,
 			const char* binddn = 0, const char* password = 0,
@@ -40,23 +41,31 @@ public:
 	const char* GetShuttlelbTable() const {return fShuttlelbTable.Data();}
 	const char* GetRunTypelbTable() const {return fRunTypelbTable.Data();}
 
-	const char* GetFXSHost(Int_t system) const {return fFXSHost[system].Data();}
-	UInt_t 	    GetFXSPort(Int_t system) const {return fFXSPort[system];}
-	const char* GetFXSUser(Int_t system) const {return fFXSUser[system].Data();}
-	const char* GetFXSPass(Int_t system) const {return fFXSPass[system].Data();}
+	const char* GetFXSHost(Int_t sys) const {return fFXSHost[sys].Data();}
+	UInt_t 	    GetFXSPort(Int_t sys) const {return fFXSPort[sys];}
+	const char* GetFXSUser(Int_t sys) const {return fFXSUser[sys].Data();}
+	const char* GetFXSPass(Int_t sys) const {return fFXSPass[sys].Data();}
 
-	const char* GetFXSdbHost(Int_t system) const {return fFXSdbHost[system].Data();}
-	UInt_t 	    GetFXSdbPort(Int_t system) const {return fFXSdbPort[system];}
-	const char* GetFXSdbUser(Int_t system) const {return fFXSdbUser[system].Data();}
-	const char* GetFXSdbPass(Int_t system) const {return fFXSdbPass[system].Data();}
-	const char* GetFXSdbName(Int_t system) const {return fFXSdbName[system].Data();}
-	const char* GetFXSdbTable(Int_t system) const {return fFXSdbTable[system].Data();}
+	const char* GetFXSdbHost(Int_t sys) const {return fFXSdbHost[sys].Data();}
+	UInt_t 	    GetFXSdbPort(Int_t sys) const {return fFXSdbPort[sys];}
+	const char* GetFXSdbUser(Int_t sys) const {return fFXSdbUser[sys].Data();}
+	const char* GetFXSdbPass(Int_t sys) const {return fFXSdbPass[sys].Data();}
+	const char* GetFXSdbName(Int_t sys) const {return fFXSdbName[sys].Data();}
+	const char* GetFXSdbTable(Int_t sys) const {return fFXSdbTable[sys].Data();}
 
+	const TObjArray* GetAdmins(Int_t sys) const;
+	
+	Bool_t SendMail() const { return fSendMail; }
+	
 	Int_t GetMaxRetries() const { return fMaxRetries; }
 
 	Int_t GetPPTimeOut() const { return fPPTimeOut; }
 	Int_t GetPPMaxMem() const { return fPPMaxMem; }
+
+	Bool_t KeepDCSMap() const { return fKeepDCSMap; }
+	Bool_t KeepTempFolder() const { return fKeepTempFolder; }
 	
+		
 	const char* GetMonitorHost() const {return fMonitorHost.Data();}
 	const char* GetMonitorTable() const {return fMonitorTable.Data();}
 
@@ -206,9 +215,17 @@ private:
 
 	TMap fDetectorMap; 		// Map of the detector-by-detector configuration
 	TObjArray fDetectorList; 	// List of detectors with valid configuration
+	
+	TObjArray *fAdmin[4]; 		// Array of system administrators' email addresses (DAQ, DCS, HLT, Global, Amanda)
 
 	TString fShuttleInstanceHost; 	// Instance of the SHUTTLE
 	TObjArray fProcessedDetectors; 	// list of the detector to be processed by this machine
+	
+	Bool_t fKeepDCSMap;		// Flag to keep DCS map also in case of success 
+	Bool_t fKeepTempFolder; 	// Flag to keep temp folder also in case of success
+
+	Bool_t fSendMail; 		// Send mail flag
+	
 	Bool_t fProcessAll; 		// flag indicating that all detectors will be processed
 	Bool_t fIsValid;  		// flag for the validity of the configuration
 

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.82  2007/12/20 16:29:43  jgrosseo
+sending number of open runs also at the end of processing
+
 Revision 1.81  2007/12/20 14:24:59  jgrosseo
 Do not increase count in case of StoreError
 
@@ -1744,9 +1747,14 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 						
 			if (success) // Preprocessor finished successfully!
 			{ 
-				// remove temporary folder
-                                // temporary commented (JF)
-				//gSystem->Exec(Form("rm -rf %s",tmpDir.Data()));
+				// remove temporary folder or DCS map
+   				if (!fConfig->KeepTempFolder())
+				{
+					gSystem->Exec(Form("rm -rf %s",tmpDir.Data()));
+				} else if (!fConfig->KeepDCSMap())
+				{
+					gSystem->Exec(Form("rm -f %s/DCSMap.root",tmpDir.Data()));
+				}
 				
 				// Update time_processed field in FXS DB
 				if (UpdateTable() == kFALSE)
@@ -1911,8 +1919,9 @@ Bool_t AliShuttle::ProcessCurrentDetector()
 							" Sending mail to DCS experts!", host.Data()));
 					UpdateShuttleStatus(AliShuttleStatus::kDCSError);
 					
-					//if (!SendMailToDCS())
-					//	Log("SHUTTLE", Form("ProcessCurrentDetector - Could not send mail to DCS experts!"));
+					if (!SendMailToDCS())
+						Log("SHUTTLE", Form("ProcessCurrentDetector - "
+							"Could not send mail to DCS experts!"));
 
 					delete dcsMap;
 					return kFALSE;
@@ -1932,8 +1941,9 @@ Bool_t AliShuttle::ProcessCurrentDetector()
 							" Sending mail to DCS experts!", host.Data()));
 					UpdateShuttleStatus(AliShuttleStatus::kDCSError);
 					
-					//if (!SendMailToDCS())
-					//	Log("SHUTTLE", Form("ProcessCurrentDetector - Could not send mail to DCS experts!"));
+					if (!SendMailToDCS())
+						Log("SHUTTLE", Form("ProcessCurrentDetector - "
+							"Could not send mail to DCS experts!"));
 					
 					if (aliasMap) delete aliasMap;
 					delete dcsMap;
@@ -3307,6 +3317,8 @@ Bool_t AliShuttle::SendMail()
 	
 	if (fTestMode != kNone)
 		return kTRUE;
+		
+	if (!fConfig->SendMail()) return kTRUE;
 
 	TString to="";
 	TIter iterExperts(fConfig->GetResponsibles(fCurrentDetector));
@@ -3320,7 +3332,7 @@ Bool_t AliShuttle::SendMail()
 	AliDebug(2, Form("to: %s",to.Data()));
 
 	if (to.IsNull()) {
-		Log("SHUTTLE", "List of detector responsibles not yet set!");
+		Log("SHUTTLE", "List of detector responsibles not set!");
 		return kFALSE;
 	}
 
@@ -3350,7 +3362,16 @@ Bool_t AliShuttle::SendMail()
     		return kFALSE;
   	}
 
-	TString cc="alberto.colla@cern.ch";
+	TString cc="";
+	TIter iterAdmins(fConfig->GetAdmins(AliShuttleConfig::kGlobal));
+	TObjString *anAdmin=0;
+	while ((anAdmin = (TObjString*) iterAdmins.Next()))
+	{
+		cc += Form("%s,", anAdmin->GetName());
+	}
+	if (cc.Length() > 0)
+	  cc.Remove(to.Length()-1);
+	AliDebug(2, Form("cc: %s",to.Data()));
 
 	TString subject = Form("%s Shuttle preprocessor FAILED in run %d (run type = %s)!",
 				fCurrentDetector.Data(), GetCurrentRun(), GetRunType());
@@ -3423,11 +3444,13 @@ Bool_t AliShuttle::SendMail()
 Bool_t AliShuttle::SendMailToDCS()
 {
 	//
-	// sends a mail to the DCS experts in case of DCS error
+	// sends a mail to the DCS Amanda experts in case of DCS data point retrieval error
 	//
 	
 	if (fTestMode != kNone)
 		return kTRUE;
+
+	if (!fConfig->SendMail()) return kTRUE;
 
 	void* dir = gSystem->OpenDirectory(GetShuttleLogDir());
 	if (dir == NULL)
@@ -3455,16 +3478,32 @@ Bool_t AliShuttle::SendMailToDCS()
     		return kFALSE;
   	}
 
-	TString to="Vladimir.Fekete@cern.ch, Svetozar.Kapusta@cern.ch";
-	//TString to="alberto.colla@cern.ch";
+	TString to="";
+	TIter iterExperts(fConfig->GetAdmins(AliShuttleConfig::kAmanda));
+	TObjString *anExpert=0;
+	while ((anExpert = (TObjString*) iterExperts.Next()))
+	{
+		to += Form("%s,", anExpert->GetName());
+	}
+	if (to.Length() > 0)
+	  to.Remove(to.Length()-1);
 	AliDebug(2, Form("to: %s",to.Data()));
 
 	if (to.IsNull()) {
-		Log("SHUTTLE", "List of detector responsibles not yet set!");
+		Log("SHUTTLE", "List of Amanda server administrators not set!");
 		return kFALSE;
 	}
 
-	TString cc="alberto.colla@cern.ch";
+	TString cc="";
+	TIter iterAdmins(fConfig->GetAdmins(AliShuttleConfig::kGlobal));
+	TObjString *anAdmin=0;
+	while ((anAdmin = (TObjString*) iterAdmins.Next()))
+	{
+		cc += Form("%s,", anAdmin->GetName());
+	}
+	if (cc.Length() > 0)
+	  cc.Remove(to.Length()-1);
+	AliDebug(2, Form("cc: %s",to.Data()));
 
 	TString subject = Form("Retrieval of data points for %s FAILED in run %d !",
 				fCurrentDetector.Data(), GetCurrentRun());

@@ -12,4 +12,4 @@ dbTable: daqFES_files
 fxsHost: aldaqgw01-gpn.cern.ch
 fxsPort: 1443
 fxsUser: shuttle_test_rw
-
+fxsAdmin: sylvain.chapeland@cern.ch

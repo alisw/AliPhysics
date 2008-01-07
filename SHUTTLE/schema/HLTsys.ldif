@@ -10,4 +10,4 @@ dbTable: calib_data
 dbHost: alihlt-shuttle1.cern.ch
 fxsHost: alihlt-shuttle1.cern.ch
 fxsUser: hlt-fxs
-
+fxsAdmin: sebastian.bablok@cern.ch

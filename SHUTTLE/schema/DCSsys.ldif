@@ -10,4 +10,4 @@ dbName: dcsfileserver
 dbTable: dcsfes
 fxsHost: aldcs030.cern.ch
 fxsUser: sshd
-
+fxsAdmin: peter.chochula@cern.ch

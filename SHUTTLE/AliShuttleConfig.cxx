@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.27  2007/12/17 03:23:32  jgrosseo
+several bugfixes
+added "empty preprocessor" as placeholder for Acorde in FDR
+
 Revision 1.26  2007/12/07 19:14:36  acolla
 in AliShuttleTrigger:
 
@@ -258,7 +262,7 @@ fIsValid(kFALSE)
 		ExpandAndAdd(fDCSDataPoints, aDataPoint);
 		}
 	}
-
+	
 	fIsValid = kTRUE;
 }
 
@@ -540,10 +544,15 @@ AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 	fRunMode(kTest),
 	fDetectorMap(), 
 	fDetectorList(),
+	fAdmin(),
 	fShuttleInstanceHost(""), 
 	fProcessedDetectors(), 
+	fKeepDCSMap(kFALSE),
+	fKeepTempFolder(kFALSE),
+	fSendMail(kFALSE),
 	fProcessAll(kFALSE), 
 	fIsValid(kFALSE)
+
 {
 	//
 	// host: ldap server host
@@ -556,6 +565,12 @@ AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 	fDetectorMap.SetOwner(1);
 	fDetectorList.SetOwner(0); //fDetectorList and fDetectorMap share the same object!
 	fProcessedDetectors.SetOwner();
+	
+	for (int i=0; i<5; i++)
+	{
+		fAdmin[i] = new TObjArray(); 
+		fAdmin[i]->SetOwner();
+	}
 
 	TLDAPServer aServer(host, port, binddn, password, 3);
 
@@ -646,6 +661,9 @@ AliShuttleConfig::~AliShuttleConfig()
 	fDetectorMap.DeleteAll();
 	fDetectorList.Clear();
 	fProcessedDetectors.Delete();
+	
+	delete[] fAdmin;
+	
 }
 
 //______________________________________________________________________________________________
@@ -830,6 +848,18 @@ const TObjArray* AliShuttleConfig::GetResponsibles(const char* detector) const
 }
 
 //______________________________________________________________________________________________
+const TObjArray* AliShuttleConfig::GetAdmins(Int_t sys) const
+{
+	//
+	// returns collection of TObjString which represents the list of mail addresses
+	// of the system's administrator(s) (DAQ, DCS, HLT, Global, Amanda)
+	//
+
+	if (sys < 0 || sys > 4) return 0;
+	return fAdmin[sys];
+}
+
+//______________________________________________________________________________________________
 Bool_t AliShuttleConfig::HostProcessDetector(const char* detector) const
 {
 	// return TRUE if detector is handled by host or if fProcessAll is TRUE
@@ -1004,7 +1034,78 @@ UInt_t AliShuttleConfig::SetGlobalConfig(TList* list)
 	    AliWarning("Valid run modes are \"test\" and \"prod\". Running in test mode.");
 	  }
 	}
-		
+
+	anAttribute = anEntry->GetAttribute("keepDCSMap"); // MAY
+        if (!anAttribute)
+	{
+		AliWarning("keepDCSMap flag not set - default is FALSE");
+        } else {
+		TString keepDCSMapStr = anAttribute->GetValue();
+		if (!(keepDCSMapStr == "0" || keepDCSMapStr == "1"))
+		{
+			AliError("keepDCSMap flag must be 0 or 1!");
+			return 4;
+		}
+		fKeepDCSMap = (Bool_t) keepDCSMapStr.Atoi();
+	}
+	
+	anAttribute = anEntry->GetAttribute("keepTempFolder"); // MAY
+        if (!anAttribute)
+	{
+		AliWarning("keepTempFolder flag not set - default is FALSE");
+        } else {
+		TString keepTempFolderStr = anAttribute->GetValue();
+		if (!(keepTempFolderStr == "0" || keepTempFolderStr == "1"))
+		{
+			AliError("keepTempFolder flag must be 0 or 1!");
+			return 4;
+		}
+		fKeepTempFolder = (Bool_t) keepTempFolderStr.Atoi();
+	}
+	
+
+	anAttribute = anEntry->GetAttribute("shuttleAdmin"); // MAY
+        if (!anAttribute)
+	{
+		AliDebug(2, "Warning! No \"shuttleAdmin\" attribute!");
+        }
+	else
+	{
+		const char* anAdmin;
+		while ((anAdmin = anAttribute->GetValue()))
+		{
+			fAdmin[kGlobal]->AddLast(new TObjString(anAdmin));
+		}
+	}
+
+	anAttribute = anEntry->GetAttribute("amandaAdmin"); // MAY
+        if (!anAttribute)
+	{
+		AliDebug(2, "Warning! No \"amandaAdmin\" attribute!");
+        }
+	else
+	{
+		const char* anAdmin;
+		while ((anAdmin = anAttribute->GetValue()))
+		{
+			fAdmin[kAmanda]->AddLast(new TObjString(anAdmin));
+		}
+	}
+	
+	anAttribute = anEntry->GetAttribute("sendMail"); // MAY
+        if (!anAttribute)
+	{
+		AliWarning("sendMail flag not set - default is FALSE");
+        } else {
+		TString sendMailStr = anAttribute->GetValue();
+		if (!(sendMailStr == "0" || sendMailStr == "1"))
+		{
+			AliError("sendMail flag must be 0 or 1!");
+			return 4;
+		}
+		fSendMail = (Bool_t) sendMailStr.Atoi();
+	}
+						
 	return 0;
 }
 
@@ -1023,7 +1124,9 @@ UInt_t AliShuttleConfig::SetSysConfig(TList* list)
 	} 
 
 	TIter iter(list);
-	Int_t iSys=0, count = 0;
+	Int_t count = 0;
+	SystemCode iSys=kDAQ;
+	
 	while ((anEntry = dynamic_cast<TLDAPEntry*> (iter.Next())))
 	{
 		anAttribute = anEntry->GetAttribute("system");
@@ -1031,17 +1134,17 @@ UInt_t AliShuttleConfig::SetSysConfig(TList* list)
 		
 		if (sysName == "DAQ") 
 		{
-			iSys = 0;
+			iSys = kDAQ;
 			count += 1;
 		}
 		else if (sysName == "DCS")
 		{
-			iSys = 1;
+			iSys = kDCS;
 			count += 10;
 		}
 		else if (sysName == "HLT")
 		{
-			iSys = 2;
+			iSys = kHLT;
 			count += 100;
 		}
 		
@@ -1119,6 +1222,21 @@ UInt_t AliShuttleConfig::SetSysConfig(TList* list)
 
 		anAttribute = anEntry->GetAttribute("fxsPasswd");
 		if (anAttribute) fFXSPass[iSys] = anAttribute->GetValue();
+	
+		anAttribute = anEntry->GetAttribute("fxsAdmin"); // MAY
+        	if (!anAttribute)
+		{
+			AliDebug(2, "Warning! No \"fxsAdmin\" attribute!");
+        	}
+		else
+		{
+			const char* anAdmin;
+			while ((anAdmin = anAttribute->GetValue()))
+			{
+				fAdmin[iSys]->AddLast(new TObjString(anAdmin));
+			}
+		}
+	
 	}
 	
 	if(count != 111) {
@@ -1243,8 +1361,34 @@ void AliShuttleConfig::Print(Option_t* option) const
 	}
 
 	result += Form("PP time out = %d - max PP mem size = %d KB - max retries = %d "
-		       "- DIM trigger waiting timeout = %d\n\n", 
+		       "- DIM trigger waiting timeout = %d\n", 
 				fPPTimeOut, fPPMaxMem, fMaxRetries, fTriggerWait);
+	result += Form("FLAGS: keepDCSMap = %d - keepTempFolder = %d - SendMail = %d \n", 
+				fKeepDCSMap, fKeepTempFolder, fSendMail);
+	const TObjArray* shuttleAdmins = GetAdmins(kGlobal);
+	if (shuttleAdmins->GetEntries() != 0)
+	{
+		result += "SHUTTLE administrator(s): ";
+		TIter it(shuttleAdmins);
+		TObjString* anAdmin;
+		while ((anAdmin = (TObjString*) it.Next()))
+		{
+			result += Form("%s ", anAdmin->String().Data());
+		}
+		result += "\n";
+	}
+	const TObjArray* amandaAdmins = GetAdmins(kAmanda);
+	if (amandaAdmins->GetEntries() != 0)
+	{
+		result += "Amanda server administrator(s): ";
+		TIter it(amandaAdmins);
+		TObjString* anAdmin;
+		while ((anAdmin = (TObjString*) it.Next()))
+		{
+			result += Form("%s ", anAdmin->String().Data());
+		}
+		result += "\n\n";
+	}
 	result += "------------------------------------------------------\n";
 
 	result += Form("Logbook Configuration \n\n \tHost: %s:%d; \tUser: %s; ",
@@ -1256,7 +1400,7 @@ void AliShuttleConfig::Print(Option_t* option) const
 		fDAQlbDB.Data(), fDAQlbTable.Data(), fShuttlelbTable.Data(), fRunTypelbTable.Data());
 
 	result += "\n\n";
-
+	
 	result += "------------------------------------------------------\n";
 	result += "FXS configuration\n\n";
 
@@ -1266,9 +1410,21 @@ void AliShuttleConfig::Print(Option_t* option) const
 						fFXSdbHost[iSys].Data(), fFXSdbPort[iSys], fFXSdbUser[iSys].Data(),
 						fFXSdbName[iSys].Data(), fFXSdbTable[iSys].Data());
 		// result += Form("DB Password:",fFXSdbPass[iSys].Data());
-		result += Form("\tFXS host: %s:%d; \tUser: %s\n\n", fFXSHost[iSys].Data(), fFXSPort[iSys],
+		result += Form("\tFXS host: %s:%d; \tUser: %s\n", fFXSHost[iSys].Data(), fFXSPort[iSys],
 						fFXSUser[iSys].Data());
 		// result += Form("FXS Password:",fFXSPass[iSys].Data());
+		const TObjArray* fxsAdmins = GetAdmins(iSys);
+		if (fxsAdmins->GetEntries() != 0)
+		{
+			result += "\tAdministrator(s): ";
+			TIter it(fxsAdmins);
+			TObjString* anAdmin;
+			while ((anAdmin = (TObjString*) it.Next()))
+			{
+				result += Form("%s ", anAdmin->String().Data());
+			}
+			result += "\n\n";
+		}
 	}
 
 	result += "------------------------------------------------------\n";
@@ -1278,7 +1434,7 @@ void AliShuttleConfig::Print(Option_t* option) const
 		fMonitorHost.Data(), fMonitorTable.Data());
 		
 	result += "\n\n";
-	
+		
 	TString optStr(option);
 
 	result += "------------------------------------------------------\n";
