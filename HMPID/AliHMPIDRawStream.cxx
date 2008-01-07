@@ -247,7 +247,7 @@ Bool_t AliHMPIDRawStream::ReadDilogic(UInt_t word32,Int_t &cntDilogic)
     dilogic = (word32 >> kbit18) & 0xf;                                              //dilogic info in raw word is between bits: 18...21
     if(!CheckDilogic(dilogic)) continue;
 //check pad number
-    UInt_t pad = (word32 >> kbit12) & 0x2f;                                          //pad info in raw word is between bits: 12...17
+    UInt_t pad = (word32 >> kbit12) & 0x3f;                                          //pad info in raw word is between bits: 12...17
     if(!CheckPad(pad)) continue;
     fCharge[fDDLNumber][row][dilogic][pad] = word32 & 0xfff;
 //            Printf(" (word %08X) DDL %i row %i dil %i pad %i ",word32,fDDLNumber,row,dilogic,pad);
