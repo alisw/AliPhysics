@@ -1,0 +1,21 @@
+SRCS= AliGenTherminator.cxx \
+      TTherminator.cxx \
+      Therminator/DecayChannel.cxx \
+      Therminator/DecayTable.cxx \
+      Therminator/Event.cxx \
+      Therminator/Hypersurface.cxx \
+      Therminator/Integrator.cxx \
+      Therminator/Parser.cxx \
+      Therminator/Particle.cxx \
+      Therminator/ParticleDB.cxx \
+      Therminator/ParticleDecayer.cxx \
+      Therminator/ParticleType.cxx \
+      Therminator/ReadPar.cxx
+
+HDRS= $(SRCS:.cxx=.h) Therminator/THGlobal.h
+
+DHDR:=TTherminatorLinkDef.h
+
+EXPORT:=AliGenTherminator.h TTherminator.h
+
+EINCLUDE:= TTherminator/Therminator TTherminator
