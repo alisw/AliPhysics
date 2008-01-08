@@ -316,7 +316,7 @@ public:
   void ReadFromTree(TTree *tree);
   TObject* FindListObject(const char *name);
   AliESD *GetAliESDOld(){return fESDOld;}
-  const void WriteToTree(TTree* tree) const {tree->Branch(fESDObjects);}
+  const void WriteToTree(TTree* tree) const;
   void GetStdContent();
   void ResetStdContent();
   void CreateStdContent();
@@ -370,7 +370,7 @@ protected:
   Int_t        fPHOSClusters;     // Number of PHOS clusters (subset of caloclusters)
   Int_t        fFirstPHOSCluster; // First PHOS cluster in the fCaloClusters list 
 
-  ClassDef(AliESDEvent,5)  //ESDEvent class 
+  ClassDef(AliESDEvent,6)  //ESDEvent class 
 };
 #endif 
 

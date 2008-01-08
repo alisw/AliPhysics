@@ -395,8 +395,10 @@ void AliESDEvent::Print(Option_t *) const
   printf("                 v0        %d\n", GetNumberOfV0s());
   printf("                 cascades  %d\n", GetNumberOfCascades());
   printf("                 kinks     %d\n", GetNumberOfKinks());
-  printf("                 PHOSCells %d\n", fPHOSCells->GetNumberOfCells());
-  printf("                 EMCALCells %d\n", fEMCALCells->GetNumberOfCells());
+  if(fPHOSCells)printf("                 PHOSCells %d\n", fPHOSCells->GetNumberOfCells());
+  else printf("                 PHOSCells not in the Event\n");
+  if(fEMCALCells)printf("                 EMCALCells %d\n", fEMCALCells->GetNumberOfCells());
+  else printf("                 EMCALCells not in the Event\n");
   printf("                 CaloClusters %d\n", GetNumberOfCaloClusters());
   printf("                 phos      %d\n", GetNumberOfPHOSClusters());
   printf("                 emcal     %d\n", GetNumberOfEMCALClusters());
@@ -644,9 +646,9 @@ Bool_t AliESDEvent::Clean(Float_t *cleanPars) {
     Float_t dca=v0->GetDcaV0Daughters();
     Float_t csp=v0->GetV0CosineOfPointingAngle();
     Float_t cspcut=cspMin + dca/dcaMax*(1.-cspMin);
-    if (csp > cspcut) continue;
-
-    if (RemoveV0(i)) rc=kTRUE;
+    if (csp > cspcut){
+      if (RemoveV0(i)) rc=kTRUE;
+    }
   }
 
 
@@ -933,6 +935,29 @@ Int_t AliESDEvent::GetEMCALClusters(TRefArray *clusters) const
   return clusters->GetEntriesFast();
 }
 
+const void AliESDEvent::WriteToTree(TTree* tree) const {
+  // Book the branches as in TTree::Branch(TCollection*)
+  // but add a "." at the end of top level branches which are
+  // not a TClonesArray
+
+
+  TString branchname;
+  TIter next(fESDObjects);
+  const Int_t splitlevel = 99; // default value in TTree::Branch()
+  const Int_t bufsize = 32000; // default value in TTree::Branch()
+  TObject *obj = 0;
+
+  while ((obj = next())) {
+    branchname.Form("%s", obj->GetName());
+    if ((splitlevel > 1) &&  !obj->InheritsFrom(TClonesArray::Class())) {
+      branchname += ".";
+    }
+    tree->Bronch(branchname, obj->ClassName(), fESDObjects->GetObjectRef(obj),
+		 bufsize, splitlevel - 1);
+  }
+
+}
+
 
 void AliESDEvent::ReadFromTree(TTree *tree){
 
@@ -1050,7 +1075,22 @@ void AliESDEvent::ReadFromTree(TTree *tree){
 	  tree->SetBranchAddress("ESDfriend.",fESDObjects->GetObjectRef(el));
 	}
       else{
-	tree->SetBranchAddress(bname.Data(),fESDObjects->GetObjectRef(el));
+	// check if branch exists under this Name
+        TBranch *br = tree->GetBranch(bname.Data());
+        if(br){
+          tree->SetBranchAddress(bname.Data(),fESDObjects->GetObjectRef(el));
+        }
+        else{
+          br = tree->GetBranch(Form("%s.",bname.Data()));
+          if(br){
+            tree->SetBranchAddress(Form("%s.",bname.Data()),fESDObjects->GetObjectRef(el));
+          }
+          else{
+            printf("%s %d AliESDEvent::ReadFromTree() No Branch found with Name %s or %s. \n",
+		   (char*)__FILE__,__LINE__,bname.Data(),bname.Data());
+          }
+
+	}
       }
     }
     GetStdContent();
