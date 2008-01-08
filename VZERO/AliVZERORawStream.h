@@ -25,14 +25,16 @@ class AliVZERORawStream: public TObject {
 
     UShort_t                 GetADC(Int_t channel) const
       { return fADC[channel][kNEvOfInt/2]; }
+    UShort_t                 GetPedestal(Int_t channel, Int_t event) const
+      { return fADC[channel][event]; }
     UInt_t                   GetTime(Int_t channel) const
       { return fTime[channel]; }
 
     enum EVZERORawDataParams {
       kNChannels = 64,
-      kNEvOfInt = 21, // Number of events of interest
-      kNScalers = 16,
-      kNBunches = 10
+      kNEvOfInt  = 21, // Number of events of interest
+      kNScalers  = 16,
+      kNBunches  = 10
     };
 
     enum EVZERORawStreamError {
@@ -52,16 +54,16 @@ class AliVZERORawStream: public TObject {
     UInt_t          fScalers[kNScalers];          // Trigger scalers
     UInt_t          fBunchNumbers[kNBunches];     // Bunch numbers for the previous 10 MB events
     UShort_t        fChargeMB[kNChannels][kNBunches]; // ADC counts for all channels for the previous 10 MB events
-    Bool_t          fIsIntMB[kNChannels][kNBunches];  // 'Interaction' flag for all channels for the previous 10 MB events
+    Bool_t          fIsIntMB[kNChannels][kNBunches];  // 'Integrator' flag for all channels for the previous 10 MB events
     Bool_t          fIsBBMB[kNChannels][kNBunches];   // 'Beam-Beam' flag for all channels for the previous 10 MB events
     Bool_t          fIsBGMB[kNChannels][kNBunches];   // 'Beam-Gas' for all channels for the previous 10 MB events
 
     UShort_t        fADC[kNChannels][kNEvOfInt];   // ADC counts for all channels and all events of interest
-    Bool_t          fIsInt[kNChannels][kNEvOfInt]; // 'Interaction' flag for all channels
+    Bool_t          fIsInt[kNChannels][kNEvOfInt]; // 'Integrator' flag for all channels
     Bool_t          fIsBB[kNChannels][kNEvOfInt];  // 'Beam-Beam' flag for all channels
     Bool_t          fIsBG[kNChannels][kNEvOfInt];  // 'Beam-Gas' flag for all channels
-    Int_t           fTime[kNChannels];            // leading time for all channels
-    Int_t           fWidth[kNChannels];           // signal width for all channels
+    Int_t           fTime[kNChannels];             // leading time for all channels
+    Int_t           fWidth[kNChannels];            // signal width for all channels
 
     UShort_t        fTrigger;      // VZERO trigger inputs
     UShort_t        fTriggerMask;  // VZERO trigger inputs mask
