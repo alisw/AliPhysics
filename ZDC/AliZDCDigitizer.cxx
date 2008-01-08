@@ -371,7 +371,7 @@ void AliZDCDigitizer::Fragmentation(Float_t impPar, Int_t specN, Int_t specP,
   freeSpecN = specN-ntot-2*nAlpha;
   freeSpecP = specP-ztot-2*nAlpha;
   // Removing deuterons
-  Int_t ndeu = (Int_t) (frag.DeuteronNumber());
+  Int_t ndeu = (Int_t) (freeSpecN*frag.DeuteronNumber());
   freeSpecN -= ndeu;
   //
   if(freeSpecN<0) freeSpecN=0;
