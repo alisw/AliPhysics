@@ -690,9 +690,11 @@ Bool_t AliESDtrack::UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags){
   case kTRDout: case kTRDin: case kTRDrefit:
     index=fFriendTrack->GetTRDindices();
     fTRDLabel = t->GetLabel(); 
-    fTRDncls=t->GetNumberOfClusters();
     fTRDchi2=t->GetChi2();
-    for (Int_t i=0;i<fTRDncls;i++) index[i]=t->GetClusterIndex(i);
+    fTRDncls=6;//t->GetNumberOfTracklets(); //t->GetNumberOfClusters();
+    //for (Int_t i=0;i<fTRDncls;i++) index[i]=t->GetClusterIndex(i);
+    for (Int_t i=0;i<6;i++) index[i]=t->GetTrackletIndex(i);
+    
     fTRDsignal=t->GetPIDsignal();
     break;
   case kTRDbackup:
@@ -1005,6 +1007,18 @@ UChar_t AliESDtrack::GetTRDclusters(Int_t *idx) const {
   if (idx!=0) {
      Int_t *index=fFriendTrack->GetTRDindices();
      for (Int_t i=0; i<AliESDfriendTrack::kMaxTRDcluster; i++) idx[i]=index[i];
+  }
+  return fTRDncls;
+}
+
+//_______________________________________________________________________
+UChar_t AliESDtrack::GetTRDtracklets(Int_t *idx) const {
+  //---------------------------------------------------------------------
+  // This function returns indices of the assigned TRD tracklets 
+  //---------------------------------------------------------------------
+  if (idx!=0) {
+     Int_t *index=fFriendTrack->GetTRDindices();
+     for (Int_t i=0; i<6/*AliESDfriendTrack::kMaxTRDcluster*/; i++) idx[i]=index[i];
   }
   return fTRDncls;
 }
