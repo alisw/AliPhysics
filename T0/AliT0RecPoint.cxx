@@ -29,12 +29,16 @@
 
  
 #include "AliT0RecPoint.h"
-#include <Riostream.h>
+
 
 ClassImp(AliT0RecPoint)
 
 //------------------------------------
-  AliT0RecPoint::AliT0RecPoint() : TObject(), fTimeAverage(0),fVertexPosition(0),fTimeBestA(0),fTimeBestC(0),fMultC(0),fMultA(0)
+  AliT0RecPoint::AliT0RecPoint() : TObject(),
+				   fTimeAverage(0),
+				   fVertexPosition(0),
+				   fTimeBestA(0),fTimeBestC(0),
+				   fMultC(0),fMultA(0)
 {
   //ctor
   fTimeAverage=99999;
@@ -44,4 +48,20 @@ ClassImp(AliT0RecPoint)
   fMultA=0;
   fMultC=0;
   for (Int_t i=0; i<24; i++) { fTime[i]=0; fADC[i]=0; fADCLED[i]=0;}
+}
+//_____________________________________________________________________________
+
+AliT0RecPoint::AliT0RecPoint(const AliT0RecPoint &r):TObject(),
+
+				   fTimeAverage(0),
+				   fVertexPosition(0),
+				   fTimeBestA(0),fTimeBestC(0),
+				   fMultC(0),fMultA(0)
+{
+  //
+  // AliT0RecPoint copy constructor
+  //
+
+  ((AliT0RecPoint &) r).Copy(*this);
+
 }
