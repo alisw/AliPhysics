@@ -22,23 +22,18 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliT0CalibWalk.h"
-#include "AliT0LookUpValue.h"
 #include "AliLog.h"
-#include "AliRun.h"
 
 #include <TObjArray.h>
 #include <TGraph.h>
 #include <TFile.h>
-#include <TAxis.h>
 #include <TH2F.h> 
 #include <TMath.h>
 #include <TSystem.h>
 #include <Riostream.h>
 #include <TSpectrum.h>
-#include <TVirtualFitter.h>
 #include <TProfile.h>
 
-#include <string>
 
 ClassImp(AliT0CalibWalk)
 
@@ -94,6 +89,7 @@ AliT0CalibWalk::~AliT0CalibWalk()
 //________________________________________________________________
 void AliT0CalibWalk::SetWalk(Int_t ipmt)
 {
+  //read QTC walk graph from external file
 
   Int_t mv, ps; 
   Int_t x[70000], y[70000], index[70000];
@@ -150,6 +146,7 @@ void AliT0CalibWalk::SetWalk(Int_t ipmt)
 
 void AliT0CalibWalk::SetAmpLEDRec(Int_t ipmt)
 {
+  // read LED walk from external file
   Float_t mv, ps; 
   Float_t x[100], y[100];
   string buffer;
@@ -179,6 +176,8 @@ void AliT0CalibWalk::SetAmpLEDRec(Int_t ipmt)
 
 void AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
 {
+  //make walk corerction for preprocessor
+
   TFile *gFile = TFile::Open(laserFile);
   //gSystem->Load("libSpectrum");
   TGraph *gr[24];
@@ -204,8 +203,8 @@ void AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
       {
 	sprintf(buf3,"CFD_LED%i",i+1);
       }
-      TH2F *qtc_cfd = (TH2F*) gFile->Get(buf2);
-      TH2F *led_cfd = (TH2F*) gFile->Get(buf3);
+      TH2F *qtccfd = (TH2F*) gFile->Get(buf2);
+      TH2F *ledcfd = (TH2F*) gFile->Get(buf3);
       // cout<<buf1<<" "<<buf2<<endl;
       TH1F *cfd = (TH1F*) gFile->Get(buf1);
       Int_t nfound = s->Search(cfd,sigma,"goff",0.05);
@@ -219,10 +218,10 @@ void AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
         Float_t hmin = xp-10*sigma;
 	if (d==0)
 	{
-          Int_t nbins= qtc_cfd->GetXaxis()->GetNbins();
-          TProfile *pr_y = qtc_cfd->ProfileX();
-          pr_y->SetMaximum(hmax);
-          pr_y->SetMinimum(hmin);
+          Int_t nbins= qtccfd->GetXaxis()->GetNbins();
+          TProfile *prY = qtccfd->ProfileX();
+          prY->SetMaximum(hmax);
+          prY->SetMinimum(hmin);
           Int_t np=nbins/20;
           Double_t *xx = new Double_t[np];
           Double_t *yy = new Double_t[np];
@@ -232,15 +231,15 @@ void AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
           {
             if(ip%20 != 0 )
             {
-              if (pr_y->GetBinContent(ip) !=0)
+              if (prY->GetBinContent(ip) !=0)
               {
-                yg +=pr_y->GetBinContent(ip);
+                yg +=prY->GetBinContent(ip);
               }
               ng++;
             }
             else
             {
-              xx[ip/20] = Float_t (pr_y->GetBinCenter(ip));
+              xx[ip/20] = Float_t (prY->GetBinCenter(ip));
               yy[ip/20] = yg/ng;
               yg=0;
               ng=0;
@@ -263,14 +262,14 @@ void AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
           fWalk.AddAtAndExpand(gr[i+12],i+12);
           delete [] xx;
           delete [] yy;
-	  delete pr_y;
+	  delete prY;
 	}
 	else
 	{
-	  Int_t nbinsLED= led_cfd->GetXaxis()->GetNbins();
-          TProfile *pr_yLED = led_cfd->ProfileX();
-          pr_yLED->SetMaximum(hmax);
-          pr_yLED->SetMinimum(hmin);
+	  Int_t nbinsLED= ledcfd->GetXaxis()->GetNbins();
+          TProfile *prYLED = ledcfd->ProfileX();
+          prYLED->SetMaximum(hmax);
+          prYLED->SetMinimum(hmin);
           Int_t npLED=nbinsLED/20;
           Double_t *xxLED = new Double_t[npLED];
           Double_t *yyLED = new Double_t[npLED];
@@ -280,15 +279,15 @@ void AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
           {
             if(ip%20 != 0 )
             {
-              if (pr_yLED->GetBinContent(ip) !=0)
+              if (prYLED->GetBinContent(ip) !=0)
               {
-                ygLED +=pr_yLED->GetBinContent(ip);
+                ygLED +=prYLED->GetBinContent(ip);
               }
               ngLED++;
             }
             else
             {
-              xxLED[ip/20] = Float_t (pr_yLED->GetBinCenter(ip));
+              xxLED[ip/20] = Float_t (prYLED->GetBinCenter(ip));
               yyLED[ip/20] = ygLED/ngLED;
               ygLED=0;
               ngLED=0;
@@ -311,12 +310,12 @@ void AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
           fAmpLEDRec.AddAtAndExpand(grLED[i+12],i+12);
           delete [] xxLED;
           delete [] yyLED;
-	  delete pr_yLED;
+	  delete prYLED;
 	}
       }
       delete cfd;
-      delete qtc_cfd;
-      delete led_cfd;			
+      delete qtccfd;
+      delete ledcfd;			
     }
   }
 

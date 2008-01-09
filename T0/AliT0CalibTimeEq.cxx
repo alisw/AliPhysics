@@ -28,7 +28,6 @@
 #include <TMath.h>
 #include <TF1.h>
 #include <TSpectrum.h>
-#include <TVirtualFitter.h>
 #include <TProfile.h>
 
 ClassImp(AliT0CalibTimeEq)
