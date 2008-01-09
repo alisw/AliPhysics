@@ -30,6 +30,7 @@
 #include "Parser.h"
 #include "DecayChannel.h"
 #include <sstream>
+#include <cstring>
 
 extern ReadPar *sRPInstance;
 
@@ -299,7 +300,6 @@ void Parser::ReadInput()
 	{
 	  // Reading in the decay channels
 	  char *tLBrackert, *tFirstComma, *tSecondComma, *tThirdComma, *tRBracket;
-	  char *tFather, *tDaughter1, *tDaughter2, *tBRatio;
 	  
 	  tLBrackert = strchr(str,'[');
 	  tFirstComma = strchr(str,',');
@@ -310,10 +310,14 @@ void Parser::ReadInput()
 	  if (!(tLBrackert && tFirstComma && tSecondComma && tThirdComma && tRBracket))
 	    PRINT_DEBUG_1("Malformed line!: " << str);
 	  
-	  tFather    = strndup(tLBrackert+1,   tFirstComma-tLBrackert-1);
-	  tDaughter1 = strndup(tFirstComma+1,  tSecondComma-tFirstComma-1);
-	  tDaughter2 = strndup(tSecondComma+1, tThirdComma-tSecondComma-1);
-	  tBRatio    = strndup(tThirdComma+1,  tRBracket-tThirdComma-1);
+	  char *tFather = new char[tFirstComma-tLBrackert];
+	  strncpy(tFather, tLBrackert+1,   tFirstComma-tLBrackert-1);
+	  char *tDaughter1 = new char[tSecondComma-tFirstComma];
+	  strncpy(tDaughter1, tFirstComma+1,  tSecondComma-tFirstComma-1);
+	  char *tDaughter2 = new char[tThirdComma-tSecondComma];
+	  strncpy(tDaughter2, tSecondComma+1, tThirdComma-tSecondComma-1);
+	  char *tBRatio = new char[tRBracket-tThirdComma];
+	  strncpy(tBRatio, tThirdComma+1,  tRBracket-tThirdComma-1);
 	  
 	  // Getting the ratio
 	  char *tMiddle, *tRatComponent;
@@ -323,7 +327,8 @@ void Parser::ReadInput()
 	  if (!tMiddle) tMiddle = strchr(tBRatio,' ');
 	  while(tMiddle)
 	    {
-	      tRatComponent = strndup(tBRatio, tMiddle-tBRatio);
+	      tRatComponent = new char[tMiddle-tBRatio+1];
+	      strncpy(tRatComponent, tBRatio, tMiddle-tBRatio);
 	      if (strchr(tRatComponent,'/'))
 		tRatio *= atof(tRatComponent)/atof(tRatComponent+2);
 	      else
@@ -331,6 +336,7 @@ void Parser::ReadInput()
 	      tBRatio = tMiddle+1;		
 	      tMiddle = strchr(tBRatio,'_');
 	      if (!tMiddle) tMiddle = strchr(tBRatio,' ');
+	      delete [] tRatComponent;
 	    }
 	  if (strchr(tBRatio,'/'))
 	    tRatio *= atof(tBRatio)/atof(tBRatio+2);
@@ -394,7 +400,6 @@ void Parser::ReadInput()
 	{
 	  // Reading in the decay channels
 	  char *tLBrackert, *tFirstComma, *tSecondComma, *tThirdComma, *tRBracket;
-	  char *tFather, *tDaughter1, *tDaughter2, *tBRatio;
 	  
 	  tLBrackert = strchr(str,'[');
 	  tFirstComma = strchr(str,',');
@@ -404,10 +409,14 @@ void Parser::ReadInput()
 	  if (!(tLBrackert && tFirstComma && tSecondComma && tThirdComma && tRBracket))
 	    PRINT_DEBUG_1("Malformed line!: " << str);
 	  
-	  tFather    = strndup(tLBrackert+1,   tFirstComma-tLBrackert-1);
-	  tDaughter1 = strndup(tFirstComma+1,  tSecondComma-tFirstComma-1);
-	  tDaughter2 = strndup(tSecondComma+1, tThirdComma-tSecondComma-1);
-	  tBRatio    = strndup(tThirdComma+1,  tRBracket-tThirdComma-1);
+	  char *tFather = new char[tFirstComma-tLBrackert];
+	  strncpy(tFather, tLBrackert+1,   tFirstComma-tLBrackert-1);
+	  char *tDaughter1 = new char[tSecondComma-tFirstComma];
+	  strncpy(tDaughter1, tFirstComma+1,  tSecondComma-tFirstComma-1);
+	  char *tDaughter2 = new char[tThirdComma-tSecondComma];
+	  strncpy(tDaughter2, tSecondComma+1, tThirdComma-tSecondComma-1);
+	  char *tBRatio = new char[tRBracket-tThirdComma];
+	  strncpy(tBRatio, tThirdComma+1,  tRBracket-tThirdComma-1);
 	  
 	  // Getting the ratio
 	  char *tMiddle, *tRatComponent;
@@ -417,7 +426,8 @@ void Parser::ReadInput()
 	  if (!tMiddle) tMiddle = strchr(tBRatio,' ');
 	  while(tMiddle)
 	    {
-	      tRatComponent = strndup(tBRatio, tMiddle-tBRatio);
+	      tRatComponent = new char[tMiddle-tBRatio];
+	      strncpy(tRatComponent, tBRatio, tMiddle-tBRatio);
 	      if (strchr(tRatComponent,'/'))
 		tRatio *= atof(tRatComponent)/atof(tRatComponent+2);
 	      else
@@ -425,6 +435,7 @@ void Parser::ReadInput()
 	      tBRatio = tMiddle+1;		
 	      tMiddle = strchr(tBRatio,'_');
 	      if (!tMiddle) tMiddle = strchr(tBRatio,' ');
+	      delete [] tRatComponent;
 	    }
 	  if (strchr(tBRatio,'/'))
 	    tRatio *= atof(tBRatio)/atof(tBRatio+2);
@@ -444,7 +455,6 @@ void Parser::ReadInput()
 	{
 	  // Reading in the decay channels
 	  char *tLBrackert, *tFirstComma, *tSecondComma, *tThirdComma, *tFourthComma, *tRBracket;
-	  char *tFather, *tDaughter1, *tDaughter2, *tDaughter3, *tBRatio;
 	  
 	  tLBrackert = strchr(str,'[');
 	  tFirstComma = strchr(str,',');
@@ -456,11 +466,16 @@ void Parser::ReadInput()
 	  if (!(tLBrackert && tFirstComma && tSecondComma && tThirdComma && tFourthComma && tRBracket))
 	    PRINT_DEBUG_1("Malformed line!: " << str);
 	  
-	  tFather    = strndup(tLBrackert+1,   tFirstComma-tLBrackert-1);
-	  tDaughter1 = strndup(tFirstComma+1,  tSecondComma-tFirstComma-1);
-	  tDaughter2 = strndup(tSecondComma+1, tThirdComma-tSecondComma-1);
-	  tDaughter3 = strndup(tThirdComma+1,  tFourthComma-tThirdComma-1);
-	  tBRatio    = strndup(tFourthComma+1, tRBracket-tFourthComma-1);
+	  char *tFather = new char[tFirstComma-tLBrackert];
+	  strncpy(tFather, tLBrackert+1,   tFirstComma-tLBrackert-1);
+	  char *tDaughter1 = new char[tSecondComma-tFirstComma];
+	  strncpy(tDaughter1, tFirstComma+1,  tSecondComma-tFirstComma-1);
+	  char *tDaughter2 = new char[tThirdComma-tSecondComma];
+	  strncpy(tDaughter2, tSecondComma+1, tThirdComma-tSecondComma-1);
+	  char *tDaughter3 = new char[tFourthComma-tThirdComma];
+	  strncpy(tDaughter3, tThirdComma+1,  tFourthComma-tThirdComma-1);
+	  char *tBRatio = new char[tRBracket-tFourthComma];
+	  strncpy(tBRatio, tFourthComma+1, tRBracket-tFourthComma-1);
 	  
 	  // Getting the ratio
 	  char *tMiddle, *tRatComponent;
@@ -470,7 +485,8 @@ void Parser::ReadInput()
 	  if (!tMiddle) tMiddle = strchr(tBRatio,' ');
 	  while(tMiddle)
 	    {
-	      tRatComponent = strndup(tBRatio, tMiddle-tBRatio);
+	      tRatComponent = new char[tMiddle-tBRatio+1];
+	      strncpy(tRatComponent, tBRatio, tMiddle-tBRatio);
 	      if (strchr(tRatComponent,'/'))
 		tRatio *= atof(tRatComponent)/atof(tRatComponent+2);
 	      else
@@ -478,6 +494,7 @@ void Parser::ReadInput()
 	      tBRatio = tMiddle+1;		
 	      tMiddle = strchr(tBRatio,'_');
 	      if (!tMiddle) tMiddle = strchr(tBRatio,' ');
+	      delete [] tRatComponent;
 	    }
 	  if (strchr(tBRatio,'/'))
 	    tRatio *= atof(tBRatio)/atof(tBRatio+2);
