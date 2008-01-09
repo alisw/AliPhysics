@@ -182,10 +182,10 @@ Bool_t AliHMPIDRawStream::ReadSegment(UInt_t word32,Int_t &cntSegment)
   Int_t nwRow;
 
   word32 = GetWord(cnt,kBwd);
-  cntRow  = (word32 >> kbit16) & 0xfff;
   
   while (cnt>0) {
 
+    cntRow  = (word32 >> kbit16) & 0xfff;
     if(!CheckRowMarker(word32)) return kFALSE;
     if(!ReadRow(word32,nwRow)) return kFALSE;
 
