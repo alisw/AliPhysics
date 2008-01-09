@@ -18,8 +18,9 @@
 
 //---
 //  Produces the data needed to calculate the quality assurance. 
-//  All data must be mergeable objects.
-//  A. Mastroserio
+//  T0 QA for Hits, Digits, RAW and RecPoints
+//  Alla.Maevskaya@cern.ch
+//  
 //---
 
 // --- ROOT system ---
@@ -206,14 +207,14 @@ void AliT0QADataMaker::InitRecPoints()
 {
   // create cluster histograms in RecPoint subdir
   /* 
- TH2F * fhRecCFD = new TH2F("fhRecCFD", " CFD reconstructed",25,-0.5,24.5,100,12,13);
-  Add2DigitsList( fhRecCFD,0);
-  TH2F *fhRecLEDamp = new TH2F("fhRecLEDamp", " amplitude LED reconstructed",25,-0.5,24.5,100,1000,1000);
-  Add2DigitsList( fhRecLEDamp,1);
- TH2F * fhRecQTC = new TH2F("fhRecQTC", " amplitude QTC reconstructed",25,-0.5,24.5,100,1000,1000);
-  Add2DigitsList( fhRecQTC,2);
- TH1F * fhRecMean = new TH1F("hRecMean"," reconstructed mean signal",100,500,600);
-  Add2DigitsList( fhRecMean,3);
+     TH2F * fhRecCFD = new TH2F("fhRecCFD", " CFD reconstructed",25,-0.5,24.5,100,12,13);
+     Add2DigitsList( fhRecCFD,0);
+     TH2F *fhRecLEDamp = new TH2F("fhRecLEDamp", " amplitude LED reconstructed",25,-0.5,24.5,100,1000,1000);
+     Add2DigitsList( fhRecLEDamp,1);
+     TH2F * fhRecQTC = new TH2F("fhRecQTC", " amplitude QTC reconstructed",25,-0.5,24.5,100,1000,1000);
+     Add2DigitsList( fhRecQTC,2);
+     TH1F * fhRecMean = new TH1F("hRecMean"," reconstructed mean signal",100,500,600);
+     Add2DigitsList( fhRecMean,3);
   */ 
   
   TString timename,ampname, qtcname;
@@ -233,11 +234,11 @@ void AliT0QADataMaker::InitRecPoints()
       fhRecQTC[i] = new TH1F(qtcname.Data(), qtcname.Data(),100,0,200);
     Add2RecPointsList ( fhRecQTC[i],i+48);
      }
-   
+  
   TH1F *fhRecEff = new TH1F("hRecEff","Efficiency rec.points",25,-0.5,24.5);
- Add2RecPointsList ( fhRecEff,72);
+  Add2RecPointsList ( fhRecEff,72);
   TH1F * fhRecMean = new TH1F("hRecMean"," reconstructed mean signal",100,500,600);
- Add2RecPointsList( fhRecMean,73);
+  Add2RecPointsList( fhRecMean,73);
   
 }
 //____________________________________________________________________________
@@ -246,9 +247,9 @@ void AliT0QADataMaker::InitESDs()
   //create ESDs histograms in ESDs subdir
   TH1F *fhESDMean = new TH1F("hESDmean"," ESD mean",100,0,100);
   Add2ESDsList(fhESDMean, 0) ;
- TH1F * fhESDVertex = new TH1F("hESDvertex","EAD vertex",100,-50,50);
+  TH1F * fhESDVertex = new TH1F("hESDvertex","EAD vertex",100,-50,50);
   Add2ESDsList(fhESDVertex, 1) ;
-
+  
 
 }
 //____________________________________________________________________________
@@ -345,18 +346,18 @@ void AliT0QADataMaker::MakeRaws( AliRawReader* rawReader)
       for (Int_t j0=0; j0<5; j0++) allData[i0][j0]=0;
     }
   //fills QA histos for RAW
-AliT0RawReader *start = new AliT0RawReader(rawReader);
- 
- while (rawReader->NextEvent()) {
-   start->Next();
-   for (Int_t i=0; i<105; i++) 
-     for (Int_t iHit=0; iHit<5; iHit++)
-       allData[i][iHit]= start->GetData(i,iHit);
+  AliT0RawReader *start = new AliT0RawReader(rawReader);
+  
+  while (rawReader->NextEvent()) {
+    start->Next();
+    for (Int_t i=0; i<105; i++) 
+      for (Int_t iHit=0; iHit<5; iHit++)
+	allData[i][iHit]= start->GetData(i,iHit);
+    
    
-   
-   for (Int_t ik = 0; ik<24; ik+=2){
-     for (Int_t iHt=0; iHt<5; iHt++){
-       Int_t cc = ik/2;
+    for (Int_t ik = 0; ik<24; ik+=2){
+      for (Int_t iHt=0; iHt<5; iHt++){
+	Int_t cc = ik/2;
        if(allData[cc+1][iHt]!=0){
 	 GetRawsData(cc) -> Fill(allData[cc+1][iHt]-allData[0][0]);
 	if(allData[ik+25][iHt]!=0 && allData[ik+26][iHt]!=0)
@@ -364,24 +365,24 @@ AliT0RawReader *start = new AliT0RawReader(rawReader);
 	if(allData[cc+13][iHt]!=0 )
 	  GetRawsData(cc+24)->Fill(allData[cc+13][iHt]-allData[cc+1][iHt]);
 	}
-     }
-   }
+      }
+    }
     
-   for (Int_t ik = 24; ik<48; ik+=2) {
-     for (Int_t iHt=0; iHt<5; iHt++) {
-       Int_t cc = ik/2;
-       if(allData[cc+45][iHt]!=0) {
-	 GetRawsData(cc)->Fill(allData[cc+1][iHt]-allData[0][0]);
-	if(allData[ik+57][iHt]!=0 && allData[ik+58][iHt]!=0)
-	  GetRawsData(cc+48)->Fill(allData[ik+57][iHt]-allData[ik+58][iHt]);
-	if(allData[cc+57][iHt]!=0 )
-	  GetRawsData(cc+48)->Fill(allData[cc+57][iHt]-allData[cc+45][iHt]);
+    for (Int_t ik = 24; ik<48; ik+=2) {
+      for (Int_t iHt=0; iHt<5; iHt++) {
+	Int_t cc = ik/2;
+	if(allData[cc+45][iHt]!=0) {
+	  GetRawsData(cc)->Fill(allData[cc+1][iHt]-allData[0][0]);
+	  if(allData[ik+57][iHt]!=0 && allData[ik+58][iHt]!=0)
+	    GetRawsData(cc+48)->Fill(allData[ik+57][iHt]-allData[ik+58][iHt]);
+	  if(allData[cc+57][iHt]!=0 )
+	    GetRawsData(cc+48)->Fill(allData[cc+57][iHt]-allData[cc+45][iHt]);
 	}
-     }
-   }
-   
- }
-
+      }
+    }
+    
+  }
+  
 }
 
 //____________________________________________________________________________

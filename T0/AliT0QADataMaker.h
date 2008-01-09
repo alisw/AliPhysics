@@ -6,11 +6,10 @@
 
 /* $Id$ */
 
-//
 //  Produces the data needed to calculate the quality assurance. 
-//  All data must be mergeable objects.
-//  A. Mastroserio
-
+//  T0 QA for Hits, Digits, RAW and RecPoints
+//  Alla.Maevskaya@cern.ch
+//  
 
 
 // --- ROOT system ---
