@@ -14,15 +14,22 @@
  **************************************************************************/
 
 /* $Id$ */
+/***************************************************************
+ * T0 trigger class for T0 trigger signals:
+ *  - T0A
+ *  - T0C
+ *  - T0vertex
+ *  - T0 semi central event for ions
+ *  - T0 central            for ions
+ ****************************************************************/
 
-#include <Riostream.h>
+
 #include "AliLog.h"
 #include "AliRun.h"
 #include "AliRunLoader.h"
 #include "AliTriggerInput.h"
 
 #include "AliT0.h"
-#include "AliT0Loader.h"
 #include "AliT0digit.h"
 #include "AliT0Trigger.h"
 
@@ -57,6 +64,8 @@ void AliT0Trigger::CreateInputs()
 //----------------------------------------------------------------------
 void AliT0Trigger::Trigger()
 {
+  // trigger input
+
    AliRunLoader* runLoader = gAlice->GetRunLoader();
    AliLoader * fT0Loader = runLoader->GetLoader("T0Loader");
    //   AliT0digit *fDigits; 

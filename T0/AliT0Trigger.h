@@ -6,7 +6,8 @@
 /// \brief T0 trigger class
 ///
 /////////////////////////////////////////////////
-///  T0 Trigger Detector Class               //
+///  T0 Trigger Detector Class                 //
+//   Alla.Maevskaya@cern.ch                    //
 /////////////////////////////////////////////////
 
 #include "AliTriggerDetector.h"
