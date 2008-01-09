@@ -12,46 +12,64 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-#include "AliT0LookUpValue.h"
-//#include "iostream.h"
+/*************************************************************************
+ * class for logical adress of chanells:
+ * can be call by nubmer or by name
+ *
+ *  Alla.Maevskaya@cern.ch
+ ************************************************************************/ 
 
-ClassImp(AliT0LookUpValue)
+#include "AliT0LookUpKey.h"
 
-  AliT0LookUpValue:: AliT0LookUpValue(): TObject(),
-				     fTRM(-1),
-				     fTDC(-1),
-				     fChain(-1),
-				     fChannel(-1)
+ClassImp(AliT0LookUpKey)
 
-
-{
-
-  ///
-}
-//--------------------------------------------------------------------------------------
- AliT0LookUpValue:: AliT0LookUpValue(Int_t trm, Int_t tdc, Int_t chain, Int_t channel) : TObject(),
-  fTRM(trm),
-  fTDC(tdc),
-  fChain(chain),
-  fChannel(channel)
-{
-
-//--------------------------------------------------------------------------------------
+ AliT0LookUpKey::AliT0LookUpKey():
+   TObject(),
+   fKey(0),
+   fName("")
+ {
  
-}
- Bool_t AliT0LookUpValue:: IsEqual(const TObject* obj) const
-{
-     AliT0LookUpValue *b = ( AliT0LookUpValue*)obj;
-     if ( b->GetTRM() == fTRM && 
-	  b->GetTDC() == fTDC && 
-	  b->GetChain() == fChain &&
-	  b->GetChannel() == fChannel  ) return kTRUE;
-     else return kFALSE;
-}
+ }
 
-//------------------------------------------------------------------------------------ 
-void AliT0LookUpValue::Print(Option_t *) const
+//--------------------------------------------------------------------------------------
+ AliT0LookUpKey::AliT0LookUpKey(Int_t key):
+   TObject(),
+   fKey(key),
+   fName("")
+ {
+ 
+ }
+
+//--------------------------------------------------------------------------------------
+ AliT0LookUpKey::AliT0LookUpKey(TString name):
+   TObject(),
+   fKey(),
+   fName(name)
+ {
+ 
+ }
+//________________________________________________________________
+AliT0LookUpKey::AliT0LookUpKey(const AliT0LookUpKey& o) :		
+   TObject(),
+   fKey(),
+   fName("")
+
 {
-  printf("AliT0LookUpValue TRM %i, TDC %i, chain %i channel %i\n",fTRM,fTDC,fChain,fChannel);
+// copy constructor
+ ((AliT0LookUpKey&) o).Copy(*this);
 }
 //--------------------------------------------------------------------------------------
+
+Bool_t AliT0LookUpKey:: IsEqual(const TObject* obj) const
+{
+  Int_t k;
+//  printf("IsEqual\n");
+    k=((AliT0LookUpKey*)obj)->GetKey();
+    if (k==fKey) return kTRUE; else return kFALSE;
+}
+//--------------------------------------------------------------------------------------
+void AliT0LookUpKey::Print(Option_t *) const
+{
+  printf(" AliT0LookUpKey key %i name %s\n",fKey,fName.Data());
+
+}

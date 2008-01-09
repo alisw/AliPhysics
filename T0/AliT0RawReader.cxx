@@ -19,16 +19,16 @@
 //                                                                          
 // T0 
 // Class for reading T0 RAW data in TOF data format
+// Alla.Maevskaya@cern.ch
 //
+//____________________________________________________________________
+
 #include "AliT0RawReader.h"
 #include "AliT0Parameters.h"
 #include "AliBitPacking.h"
 #include "TBits.h"
 
-#include <Riostream.h>
-#include "TMath.h"
-#include "TH1F.h"
-#include "TArrayI.h"
+//#include <Riostream.h>
 #include "AliLog.h"
  
 ClassImp(AliT0RawReader)
@@ -58,15 +58,6 @@ ClassImp(AliT0RawReader)
 {
   // 
 }
-/*
-AliT0RawReader::AliT0RawReader(const AliT0RawReader& o): TTask(o),
-     fRawReader(rawReader),
-       fData(NULL),
-       fPosition(0)
-{
-  //
-}
-*/
 
 
 Bool_t  AliT0RawReader::Next()
@@ -103,8 +94,8 @@ Bool_t  AliT0RawReader::Next()
   Int_t numberOfWordsInTRM=0, iTRM=0;
   Int_t tdcTime, koef,hit=0;
   Int_t koefhits[110];
-  Int_t trm_chain_header =  0x00000000;
-  Int_t  trm_chain_trailer =  0x10000000;
+  Int_t trmChainHeader =  0x00000000;
+  Int_t  trmChainTrailer =  0x10000000;
   
   Int_t  filler =  0x70000000;
   Bool_t correct=kTRUE;
@@ -122,7 +113,7 @@ Bool_t  AliT0RawReader::Next()
     } while (fRawReader->GetDataSize() == 0);
     
     fPosition = 0;
-     cout.setf( ios_base::hex, ios_base::basefield );
+    //     cout.setf( ios_base::hex, ios_base::basefield );
     
     //DRM header
     for (Int_t i=0; i<6; i++) {
@@ -136,8 +127,7 @@ Bool_t  AliT0RawReader::Next()
 	  break;
 	}
     }
-    //    cout<<"   fNTRM "<<fNTRM<<endl;
-    for (Int_t ntrm=0; ntrm< fNTRM; ntrm++)
+      for (Int_t ntrm=0; ntrm< fNTRM; ntrm++)
       {
 	//TRMheader  
 	word = GetNextWord();
@@ -157,8 +147,8 @@ Bool_t  AliT0RawReader::Next()
 	    //chain header
 	    word = GetNextWord();
 	    //	    cout<<" chain header "<<word<<endl;
-	    uu = word & trm_chain_header;
-	    if(uu != trm_chain_header) 
+	    uu = word & trmChainHeader;
+	    if(uu != trmChainHeader) 
 	      {
 		AliWarning(Form(" !!!! wrong CHAIN  0  header %x!!!!", word));
 		fRawReader->AddMajorErrorLog(kWrongChain0Header,Form("w=%x",word));
@@ -167,7 +157,6 @@ Bool_t  AliT0RawReader::Next()
 	    word = GetNextWord();
 //	    cout<<" next "<<word<<endl;
 	    tdcTime =  AliBitPacking::UnpackWord(word,31,31);   
-	    //	    for (; tdcTime==1; tdcTime) 
 	    while(tdcTime==1)
 	      {
 		//			cout<<" packed "<<word<<endl;
@@ -201,8 +190,8 @@ Bool_t  AliT0RawReader::Next()
 	      }
 	    
 	    //	    cout<<" chain trailer "<<word<<endl;
-	    uu = word&trm_chain_trailer;
-	    if(uu != trm_chain_trailer )
+	    uu = word&trmChainTrailer;
+	    if(uu != trmChainTrailer )
 	      {
 		AliWarning(Form(" !!!! wrong CHAIN 0 trailer %x !!!!", word));
 		fRawReader->AddMajorErrorLog(kWrongChain0Trailer,Form("w=%x",word));
@@ -229,8 +218,8 @@ Bool_t  AliT0RawReader::Next()
 	 AliWarning(Form(" !!!! wrong DRM GLOBAL trailer  %x!!!!", word));
 	 fRawReader->AddFatalErrorLog(kWrongDRMTrailer,Form("w=%x",word));
       }
-     cout.setf( ios_base::dec, ios_base::basefield );
-    
+     // cout.setf( ios_base::dec, ios_base::basefield );
+         
      return kTRUE;
 }
 //_____________________________________________________________________________

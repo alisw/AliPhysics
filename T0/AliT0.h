@@ -9,7 +9,6 @@
  
 #include <AliDetector.h>
 #include <TTree.h>
-#include <TClonesArray.h>
 #include "AliT0RecPoint.h"
 #include "AliT0digit.h"
 #include "AliT0Trigger.h"
@@ -18,6 +17,8 @@
 class TDirectory;
 class TFile;
 class AliESD;
+
+
 R__EXTERN TDirectory *  gDirectory;
  
  
@@ -61,9 +62,9 @@ public:
    virtual void  Raw2Digits() {}
 
 protected:
-   Int_t fIdSens;    // Sensetive Cherenkov photocathode
-   AliT0digit *fDigits;
-   AliT0RecPoint *fRecPoints;
+   Int_t           fIdSens;    // Sensetive Cherenkov photocathode
+   AliT0digit     *fDigits;    // pointer to T0digits
+   AliT0RecPoint  *fRecPoints; // pointer to T0 RecPoints
 
  private:
    AliT0(const AliT0&);

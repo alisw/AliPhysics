@@ -21,8 +21,8 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <Riostream.h>
-#include <TTree.h>
+//#include <Riostream.h>
+//#include <TTree.h>
 #include <TMap.h>
 #include "AliT0.h"
 #include "AliT0RawData.h"
@@ -35,6 +35,7 @@
 #include "AliRunLoader.h"
 #include "AliDAQ.h"
 #include "AliT0LookUpValue.h"
+#include "AliT0LookUpKey.h"
 
 ClassImp(AliT0RawData)
 
@@ -493,6 +494,7 @@ void  AliT0RawData::WriteDataHeader(Bool_t dummy, Bool_t compressed)
 
 void  AliT0RawData::WriteTrailer(UInt_t slot, Int_t word1, UInt_t word2, UInt_t word3)
 {
+//Write a (dummy or real) DDL Chain  data trailer 
 
   UInt_t word;
   UInt_t baseWord=0;
@@ -516,6 +518,8 @@ void  AliT0RawData::WriteTrailer(UInt_t slot, Int_t word1, UInt_t word2, UInt_t 
 //---------------------------------------------------------------------------------------
 void  AliT0RawData::FillTime(Int_t ch, Int_t iTDC, Int_t time)
 {
+  //  put all time fields thother in 1 word
+
   UInt_t word;
   UInt_t baseWord=0;
 

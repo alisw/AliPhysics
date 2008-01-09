@@ -16,9 +16,19 @@
 
 /* $Id$ */
 
+/******************************************************************
+ *    Produde digits from hits
+ *       digits is TObject and includes
+ *	We are writing array if C & A  TDC
+ *	C & A  ADC (will need for slow simulation)
+ *	TOF first particle C & A
+ *	mean time and time difference (vertex position)
+ *
+ *      Alla.Maevskaya@cern.ch 
+ ****************************************************************/
+
+
 #include <TArrayI.h>
-#include <TDirectory.h>
-#include <TError.h>
 #include <TFile.h>
 #include <TGraph.h>
 #include <TH1F.h>
@@ -32,18 +42,11 @@
 #include "AliT0hit.h"
 #include "AliT0digit.h"
 #include "AliRunDigitizer.h"
-#include <AliDetector.h>
 #include "AliRun.h"
 #include <AliLoader.h>
 #include <AliRunLoader.h>
 #include <stdlib.h>
-#include <Riostream.h>
-#include <Riostream.h>
 #include "AliT0Parameters.h"
-#include "AliCDBLocal.h"
-#include "AliCDBStorage.h"
-#include "AliCDBManager.h"
-#include "AliCDBEntry.h"
 
 ClassImp(AliT0Digitizer)
 

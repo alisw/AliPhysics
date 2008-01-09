@@ -60,21 +60,21 @@ class AliT0RawData : public TObject {
   
  protected:
 
-  Int_t fVerbose;            //Verbose level (0:no msg, 1:msg, 2:digits in txt files)
-  UInt_t fBuffer[512];       // buffer for writing rawdata
-  Int_t fIndex;              //number of 32 words to be stored into the output file
-  Int_t fEventNumber;        // current event number
-  TArrayI * fTimeCFD;        //TDC on the each PMT
-  TArrayI *  fADC1;           //QTC (ADC) on the each PMT
-  TArrayI * fTimeLED;    // TDC with amplified signal
-  TArrayI *  fADC0;        //QTC amplified
-  AliFstream* fFile;    //logical name of the I/O file
-  UInt_t fDataHeaderPos;//Data header position
-  UInt_t fDRMDataHeaderPos;//Data DRM header position
-  UInt_t fTRMDataHeaderPos;//Data TRM header position
-  AliT0digit *fDigits;  //! The T0 digits manager
+  Int_t fVerbose;           //Verbose level (0:no msg, 1:msg, 2:digits in txt files)
+  UInt_t fBuffer[512];      // buffer for writing rawdata
+  Int_t fIndex;             //number of 32 words to be stored into the output file
+  Int_t fEventNumber;       // current event number
+  TArrayI * fTimeCFD;       //TDC on the each PMT
+  TArrayI *  fADC1;         //QTC (ADC) on the each PMT
+  TArrayI * fTimeLED;       // TDC with amplified signal
+  TArrayI *  fADC0;         //QTC amplified
+  AliFstream* fFile;        //logical name of the I/O file
+  UInt_t fDataHeaderPos;    //Data header position
+  UInt_t fDRMDataHeaderPos; //Data DRM header position
+  UInt_t fTRMDataHeaderPos; //Data TRM header position
+  AliT0digit *fDigits;      //! The T0 digits manager
   AliT0Parameters *fParam;  // pointer to T0parameters
-  TMap fLookUp;
+  TMap fLookUp;             // LookUp Table
   
   ClassDef(AliT0RawData,2)             //  T0 raw data class
 

@@ -14,13 +14,22 @@
  **************************************************************************/
 
 /* $Id$ */
-
-#include <Riostream.h>
+/***********************************************************************
+ *      this class doing calibration during reconstruction 
+ *      2 steps:
+ *      - equalizing channels
+ *      - applying walk corrections
+ *
+ * Alla.Maevskaya@cern.ch
+ *
+ **********************************************************************/      
+ 
+//#include <Riostream.h>
 
 #include "AliLog.h"
 #include "AliT0Parameters.h"
 #include "AliT0Calibrator.h"
-#include <TArrayI.h>
+//#include <TArrayI.h>
 #include <TGraph.h>
 #include <TH1F.h>
 
@@ -31,6 +40,8 @@ ClassImp(AliT0Calibrator)
   fChannelWidth(0),  
   fWalk(0)
 {
+  //constructor
+
   AliT0Parameters* param = AliT0Parameters::Instance();
   param->Init();
   

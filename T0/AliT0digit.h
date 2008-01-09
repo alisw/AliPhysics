@@ -4,6 +4,9 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
+/***********************************************************************
+class for T0 Digits object
+***********************************************************************/
 #include <TObject.h>
 class TClonesArray;
 class TArrayI;

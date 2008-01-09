@@ -37,16 +37,16 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <Riostream.h>
+//#include <Riostream.h>
 
-#include <TFile.h>
+//#include <TFile.h>
 #include <TGeometry.h>
-#include <TMath.h>
+//#include <TMath.h>
 #include <TNode.h>
-#include <TParticle.h>
-#include <TRandom.h>
+//#include <TParticle.h>
+//#include <TRandom.h>
 #include <TTUBE.h>
-#include <TVirtualMC.h>
+//#include <TVirtualMC.h>
 
 #include "AliLog.h"
 #include "AliMC.h"
@@ -54,13 +54,13 @@
 #include "AliRun.h"
 #include "TClonesArray.h"
 #include "AliT0.h"
-#include "AliT0Loader.h"
+//#include "AliT0Loader.h"
 #include "AliT0digit.h"
 #include "AliT0hit.h"
 #include "AliT0Digitizer.h"
 #include "AliT0RawData.h"
 #include "AliT0RecPoint.h"
-#include "AliT0Parameters.h"
+//#include "AliT0Parameters.h"
 #include "AliLog.h"
 
 ClassImp(AliT0)
@@ -103,6 +103,7 @@ AliT0::AliT0(const char *name, const char *title)
 //_____________________________________________________________________________
 AliT0::~AliT0() {
   
+  //destructor
   if (fHits) {
     fHits->Delete();
     delete fHits;
@@ -262,6 +263,9 @@ void AliT0::MakeBranch(Option_t* option)
 //_____________________________________________________________________________
 void AliT0::ResetHits()
 {
+  //
+  //reset hits
+  //
   AliDetector::ResetHits();
   
 }

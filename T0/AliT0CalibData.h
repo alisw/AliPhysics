@@ -9,14 +9,7 @@
 ////////////////////////////////////////////////
 
 #include "TNamed.h"
-#include "TF1.h"
-#include "AliT0CalibData.h"
 #include "TMap.h"
-#include "TGraph.h"
-#include "TString.h"
-#include "TObjArray.h"
-#include "AliT0.h"
-#include "AliT0LookUpValue.h"
 
 class AliT0CalibData: public TNamed {
 

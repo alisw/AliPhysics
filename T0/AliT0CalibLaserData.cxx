@@ -30,14 +30,15 @@
 #include "TBranch.h"
 #include "AliT0RawReader.h"
 #include "TGLabel.h"
-#include <iostream.h>
+//#include <iostream.h>
 
 #include "AliT0CalibLaserData.h"
 
 #include "AliCDBManager.h"
 #include "AliRawReader.h"
-#include "AliRawReaderDate.h"
+#include "AliRawReaderRoot.h"
 #include "AliT0LookUpValue.h"
+#include "AliT0LookUpKey.h"
 #include "AliT0Parameters.h"
 #include "AliT0RawReader.h"
 
@@ -213,7 +214,6 @@ void AliT0CalibLaserData::ReadData()
 	  if(lookkey){
 	    Int_t key=lookkey->GetKey();
 	    names[key]=lookkey->GetChannelName();
-	    //	cout<<lookkey->GetKey()<<" "<<lookkey->GetChannelName()<<" trm "<<lookvalue->GetTRM()<<" tdc "<<lookvalue->GetTDC()<<" chain  "<<lookvalue->GetChain()<<" channel "<<lookvalue->GetChannel()<<endl;
 	    hChannel[key] = new TH1F(names[key].Data(),names[key].Data(),30000,0,30000);
 	    //	hitsname="xHits" + names[key];
 	    //	hNumHits[key] = new TH1F(hitsname.Data(),hitsname.Data(),50,-0.25,24.25);
@@ -257,9 +257,10 @@ void AliT0CalibLaserData::ReadData()
       
       Char_t filename[13];
       sprintf(filename,"t0%i.raw",fRunNumber);
-       AliRawReader *reader = new AliRawReaderDate(filename);
+       AliRawReader *reader = new AliRawReaderRoot(filename);
+       //    // AliRawReader *reader = new AliRawReaderFile();
      // AliRawReader *reader = new AliRawReaderFile();
-       reader->LoadEquipmentIdsMap("T0map.txt");
+      reader->LoadEquipmentIdsMap("T0map.txt");
       //    reader->RequireHeader(kFALSE);
        reader->RequireHeader(kTRUE);
        AliT0RawReader *start = new AliT0RawReader(reader);

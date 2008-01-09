@@ -3,7 +3,6 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 #include "TObject.h"
-#include "TMap.h"
 
 class AliT0LookUpValue: public TObject
 {
@@ -11,6 +10,15 @@ class AliT0LookUpValue: public TObject
  
   AliT0LookUpValue(); 
   AliT0LookUpValue(Int_t trm, Int_t tdc, Int_t chain, Int_t channel );
+ AliT0LookUpValue(const AliT0LookUpValue &o): TObject(),
+    fTRM(-1),
+    fTDC(-1),
+    fChain(-1),
+    fChannel(-1)
+    { ((AliT0LookUpValue&) o).Copy(*this);} 
+  AliT0LookUpValue& operator= (const AliT0LookUpValue & ) { return *this;};
+  virtual ~AliT0LookUpValue() {};
+ 
   virtual Bool_t IsEqual(const TObject* obj) const ;
   virtual ULong_t Hash() const {return (ULong_t) 1000000*fTRM+100000*fTDC+1000*fChannel;}
   //   virtual ULong_t Hash(void) const {return TString::Hash(this, sizeof(*this));};
@@ -34,28 +42,6 @@ class AliT0LookUpValue: public TObject
    Int_t fChannel;   //#channel
 
    ClassDef(AliT0LookUpValue,1)  //Hits for detector T0
-};
-
-class AliT0LookUpKey: public TObject
-{
- public:
-  AliT0LookUpKey();
-  AliT0LookUpKey(Int_t key); 
-  AliT0LookUpKey(TString name); 
-  Int_t GetKey() const {return fKey;};
-  void SetKey(Int_t n)  {fKey=n;};
-  TString GetChannelName() {return fName;};
-  void SetChannelName(TString name) {fName = name;};
-  virtual Bool_t IsEqual(const TObject *obj) const;
-  void Print(Option_t* opt= "") const;
-    virtual ULong_t Hash() const {return 10000*fKey;}
-  //    virtual ULong_t Hash(void) const {return TString::Hash(this, sizeof(*this));};
-  //   virtual void Clear(void) {fKey=0;}
- protected:
-  Int_t fKey;   //logical channel number
-  TString fName; //logical channel name
-  
-   ClassDef(AliT0LookUpKey,1)  //Hits for detector T0
 };
 
 #endif

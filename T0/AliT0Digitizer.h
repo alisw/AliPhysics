@@ -2,10 +2,12 @@
 #define ALIT0DIGITIZER_H
 /* Copyright(c) 1998-2000, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
+/******************************************************************
+ *    Produde digits from hits
+ * Alla.Maevskaya@cern.ch 
+ ********************************************************************/
 
 #include <AliDigitizer.h>
-#include <AliLoader.h>
-#include <AliRunLoader.h>
 #include "AliT0Parameters.h"
 
 #include <AliRunDigitizer.h>
@@ -21,10 +23,10 @@ class AliT0Digitizer : public AliDigitizer {
   virtual ~AliT0Digitizer();
   virtual Bool_t Init();
   TClonesArray *Hits() const {return fHits;}
-  TArrayI *timeCFD() {return ftimeCFD;}
-  TArrayI *timeLED() {return ftimeLED;}
+  TArrayI *TimeCFD() {return ftimeCFD;}
+  TArrayI *TimeLED() {return ftimeLED;}
   TArrayI * ADC() {return fADC;} 
-   TArrayI * ADC0() {return fADC0;} 
+  TArrayI * ADC0() {return fADC0;} 
 
   // Do the main work
   void Exec (Option_t* /*option=0*/) ;
@@ -33,17 +35,17 @@ class AliT0Digitizer : public AliDigitizer {
  
 private:
 
-  AliT0 *fT0;          //!
-  TClonesArray *fHits      ; //! List of hits
-  AliT0digit *fdigits   ; //! digits
-  TArrayI *ftimeCFD    ; //! array of CFD signal 
-  TArrayI *ftimeLED    ; //! array of (LED-GFD) time (amplitude)
-  TArrayI *fADC     ;//! array of QTC signals (main amplitude)
-  TArrayI *fADC0     ;//! array of QTC signals (main amplitude)
-  Int_t fSumMult; // multiplicity
-  TObjArray fAmpLED; //pmt registration effeicincy
+  AliT0 *fT0;            //!
+  TClonesArray *fHits;   //! List of hits
+  AliT0digit *fdigits;   //! digits
+  TArrayI *ftimeCFD;     //! array of CFD signal 
+  TArrayI *ftimeLED;     //! array of (LED-GFD) time (amplitude)
+  TArrayI *fADC;         //! array of QTC signals (main amplitude)
+  TArrayI *fADC0;        //! array of QTC signals (main amplitude)
+  Int_t fSumMult;        // multiplicity
+  TObjArray fAmpLED;     //pmt registration effeicincy
 
-  AliT0Parameters     *fParam;           //pointer to T0 parameters class     
+  AliT0Parameters  *fParam;           //pointer to T0 parameters class     
 
 
   AliT0Digitizer(const AliT0Digitizer&);
