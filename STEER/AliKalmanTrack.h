@@ -39,6 +39,14 @@ public:
     AliWarning("Method must be overloaded !\n");
     return 0;
   } 
+  virtual Int_t GetNumberOfTracklets() const {
+    AliWarning("Method must be overloaded !");
+    return 0;
+  }
+  virtual Int_t GetTrackletIndex(Int_t) const { //reserved for AliTracker
+    AliWarning("Method must be overloaded !");
+    return -1;
+  } 
   virtual Double_t GetPIDsignal() const {
     AliWarning("Method must be overloaded !\n");
     return 0.;
