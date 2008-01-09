@@ -41,6 +41,7 @@ AliTRDtrack::AliTRDtrack()
   ,fSeedLab(-1)
   ,fdEdx(0)
   ,fDE(0)
+  ,fPIDquality(0)
   ,fClusterOwner(kFALSE)
   ,fPIDmethod(kLQ)
   ,fStopped(kFALSE)
@@ -90,6 +91,7 @@ AliTRDtrack::AliTRDtrack(AliTRDcluster *c, Int_t index
   ,fSeedLab(-1)
   ,fdEdx(0)
   ,fDE(0)
+  ,fPIDquality(0)
   ,fClusterOwner(kFALSE)
   ,fPIDmethod(kLQ)
   ,fStopped(kFALSE)
@@ -170,6 +172,7 @@ AliTRDtrack::AliTRDtrack(const AliTRDtrack &t/*, const Bool_t owner*/)
   ,fSeedLab(t.GetSeedLabel())
   ,fdEdx(t.fdEdx)
   ,fDE(t.fDE)
+  ,fPIDquality(t.fPIDquality)
   ,fClusterOwner(kTRUE)
   ,fPIDmethod(t.fPIDmethod)
   ,fStopped(t.fStopped)
@@ -225,7 +228,8 @@ AliTRDtrack::AliTRDtrack(const AliTRDtrack &t/*, const Bool_t owner*/)
     fBudget[i]      = t.fBudget[i];
   }
 
-}                                
+	for(Int_t ispec = 0; ispec<AliPID::kSPECIES; ispec++) fPID[ispec] = t.fPID[ispec];
+}
 
 //_____________________________________________________________________________
 AliTRDtrack::AliTRDtrack(const AliKalmanTrack &t, Double_t /*alpha*/) 
@@ -233,6 +237,7 @@ AliTRDtrack::AliTRDtrack(const AliKalmanTrack &t, Double_t /*alpha*/)
   ,fSeedLab(-1)
   ,fdEdx(t.GetPIDsignal())
   ,fDE(0)
+  ,fPIDquality(0)
   ,fClusterOwner(kFALSE)
   ,fPIDmethod(kLQ)
   ,fStopped(kFALSE)
@@ -277,7 +282,7 @@ AliTRDtrack::AliTRDtrack(const AliKalmanTrack &t, Double_t /*alpha*/)
     fBudget[i]      = 0;
   }
 
-}              
+}
 
 //_____________________________________________________________________________
 AliTRDtrack::AliTRDtrack(const AliESDtrack &t)
@@ -285,6 +290,7 @@ AliTRDtrack::AliTRDtrack(const AliESDtrack &t)
   ,fSeedLab(-1)
   ,fdEdx(t.GetTRDsignal())
   ,fDE(0)
+  ,fPIDquality(0)
   ,fClusterOwner(kFALSE)
   ,fPIDmethod(kLQ)
   ,fStopped(kFALSE)
@@ -875,8 +881,6 @@ Int_t AliTRDtrack::UpdateMI(AliTRDcluster *c, Double_t chisq, Int_t index
   if (!AliExternalTrackParam::Update(p,cov)) {
     return kFALSE;
   }
-
-  AliTracker::FillResiduals(this,p,cov,c->GetVolumeId());
 
   // Register cluster to track
   Int_t n      = GetNumberOfClusters();

@@ -5,15 +5,11 @@
 
 /* $Id$ */
 
-////////////////////////////////////////////////////////////////////////////
-//                                                                        //
-//  The TRD track                                                         //
-//                                                                        //
-//  Authors:                                                              //
-//    Alex Bercuci <A.Bercuci@gsi.de>                                     //
-//    Markus Fasel <M.Fasel@gsi.de>                                       //
-//                                                                        //
-////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+//                                                                           //
+//  Represents a reconstructed TRD track                                     //
+//                                                                           //
+///////////////////////////////////////////////////////////////////////////////
 
 #ifndef ALITRDTRACK_H
 #include "AliTRDtrack.h"
@@ -21,31 +17,40 @@
 
 class AliTRDseedV1;
 class AliESDtrack;
-class AliCluster;
 
 class AliTRDtrackV1 : public AliTRDtrack
 {
-public:
+
+ public:
 	AliTRDtrackV1();
 	AliTRDtrackV1(AliTRDseedV1 *trklts, const Double_t p[5], const Double_t cov[15], Double_t x, Double_t alpha);
 	AliTRDtrackV1(const AliESDtrack &ref);
-	AliTRDtrackV1(const AliTRDtrackV1 & /*ref*/);
-	AliTRDtrackV1& operator=(const AliTRDtrackV1 &/*ref*/){ return *this; }
+	AliTRDtrackV1(const AliTRDtrackV1 &ref);
+	AliTRDtrackV1 &operator=(const AliTRDtrackV1 &ref) { *(new(this) AliTRDtrackV1(ref));
+                                                             return *this; }
 
-	Bool_t        CookPID();
-	inline Int_t  GetNumberOfClusters() const;
-	Double_t      GetPredictedChi2(const AliTRDseedV1 *tracklet) const;
-        Double_t      GetPredictedChi2(const AliCluster* /*c*/) const                   { return 0.0; }
+	Bool_t         CookPID();
+	Float_t        GetMomentum(Int_t plane) const;
+	inline Int_t   GetNumberOfClusters() const;
+	Double_t       GetPredictedChi2(const AliTRDseedV1 *tracklet) const;
+        Double_t       GetPredictedChi2(const AliCluster* /*c*/) const                   { return 0.0; }
 	const AliTRDseedV1* GetTracklet(Int_t plane) const {return plane >=0 && plane <6 ? &fTracklet[plane] : 0x0;}
-	Int_t*        GetTrackletIndexes() {return &fTrackletIndex[0];}
-	void          SetTracklet(AliTRDseedV1 *trklt, Int_t plane, Int_t index);
-	Bool_t        Update(const  AliTRDseedV1 *tracklet, Double_t chi2);
-virtual Bool_t        Update(const AliCluster*, Double_t, Int_t) { return kTRUE; }
-	void          UpdateESDdEdx(AliESDtrack *t);
+	Int_t*         GetTrackletIndexes() {return &fTrackletIndex[0];}
+	
+	Bool_t         IsOwner() const;
+	
+	void           SetOwner(Bool_t own = kTRUE);
+	void           SetTracklet(AliTRDseedV1 *trklt, Int_t plane, Int_t index);
+	Bool_t         Update(AliTRDseedV1 *tracklet, Double_t chi2);
+        Bool_t         Update(const AliTRDcluster*, Double_t, Int_t, Double_t) { return kFALSE; };
+        Bool_t         Update(const AliCluster *, Double_t, Int_t)             { return kFALSE; };
+	void           UpdateESDtrack(AliESDtrack *t);
 
-protected:
+ protected:
 	AliTRDrecoParam *fRecoParam;       // reconstruction parameters
+
 	ClassDef(AliTRDtrackV1, 1)         // development TRD track
+
 };
 
 //___________________________________________________________

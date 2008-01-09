@@ -15,16 +15,6 @@
 
 /* $Id$ */
 
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-//  TRD track                                                                //
-//                                                                           //
-//  Authors:                                                                 //
-//    Alex Bercuci <A.Bercuci@gsi.de>                                        //
-//    Markus Fasel <M.Fasel@gsi.de>                                          //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
-
 #include "AliTRDtrackV1.h"
 #include "AliTRDcluster.h"
 #include "AliTRDcalibDB.h"
@@ -34,16 +24,26 @@
 
 ClassImp(AliTRDtrackV1)
 
+///////////////////////////////////////////////////////////////////////////////
+//                                                                           //
+//  Represents a reconstructed TRD track                                     //
+//  Local TRD Kalman track                                                   //
+//                                                                           //
+//  Authors:                                                                 //
+//    Alex Bercuci <A.Bercuci@gsi.de>                                        //
+//    Markus Fasel <M.Fasel@gsi.de>                                          //
+//                                                                           //
+///////////////////////////////////////////////////////////////////////////////
 
 //_______________________________________________________________
-AliTRDtrackV1::AliTRDtrackV1() :
-	AliTRDtrack()
-	,fRecoParam(0x0)
-{	
+AliTRDtrackV1::AliTRDtrackV1() 
+  :AliTRDtrack()
+  ,fRecoParam(0x0)
+{
   //
   // Default constructor
   //
-
+	
 	for(int ip=0; ip<6; ip++){
 		fTrackletIndex[ip] = -1;
 		fTracklet[ip].Reset();
@@ -51,12 +51,12 @@ AliTRDtrackV1::AliTRDtrackV1() :
 }
 
 //_______________________________________________________________
-AliTRDtrackV1::AliTRDtrackV1(const AliESDtrack &t) :
-	AliTRDtrack(t)
-	,fRecoParam(0x0)
+AliTRDtrackV1::AliTRDtrackV1(const AliESDtrack &t) 
+  :AliTRDtrack(t)
+  ,fRecoParam(0x0)
 {
   //
-  // Standard constructor
+  // Constructor from AliESDtrack
   //
 
 	//AliInfo(Form("alpha %f", GetAlpha()));
@@ -65,14 +65,18 @@ AliTRDtrackV1::AliTRDtrackV1(const AliESDtrack &t) :
 }
 
 //_______________________________________________________________
-AliTRDtrackV1::AliTRDtrackV1(const AliTRDtrackV1 &t) :
-	AliTRDtrack(t)
-	,fRecoParam(0x0)
+AliTRDtrackV1::AliTRDtrackV1(const AliTRDtrackV1 &ref) 
+  :AliTRDtrack(ref)
+  ,fRecoParam(ref.fRecoParam)
 {
   //
   // Copy constructor
   //
 
+	for(int ip=0; ip<6; ip++){ 
+		fTrackletIndex[ip] = ref.fTrackletIndex[ip];
+		fTracklet[ip]      = ref.fTracklet[ip];
+	}
 }
 
 //_______________________________________________________________
@@ -80,21 +84,23 @@ AliTRDtrackV1::AliTRDtrackV1(const AliTRDtrackV1 &t) :
 // {
 // 	
 // }
-
 	
 //_______________________________________________________________
-AliTRDtrackV1::AliTRDtrackV1(AliTRDseedV1 *trklts, const Double_t p[5], const Double_t cov[15], Double_t x, Double_t alpha) :
-	AliTRDtrack()
-	,fRecoParam(0x0)
+AliTRDtrackV1::AliTRDtrackV1(AliTRDseedV1 *trklts, const Double_t p[5]
+                           , const Double_t cov[15]
+                           , Double_t x, Double_t alpha)
+  :AliTRDtrack()
+  ,fRecoParam(0x0)
 {
-// The stand alone tracking constructor
-// TEMPORARY !!!!!!!!!!!
-// to check :
-// 1. covariance matrix
-// 2. dQdl calculation
+  //
+  // The stand alone tracking constructor
+  // TEMPORARY !!!!!!!!!!!
+  // to check :
+  // 1. covariance matrix
+  // 2. dQdl calculation
+  //
 
-
-	Double_t cnv   = 1.0 / (GetBz() * kB2C);
+  Double_t cnv   = 1.0 / (GetBz() * kB2C);
 
   Double_t pp[5] = { p[0]    
                    , p[1]
@@ -145,41 +151,75 @@ AliTRDtrackV1::AliTRDtrackV1(AliTRDseedV1 *trklts, const Double_t p[5], const Do
 //_______________________________________________________________
 Bool_t AliTRDtrackV1::CookPID()
 {
+  //
+  // Cook the PID information
+  //
+
 // CookdEdx();  // truncated mean ... do we still need it ?
 
 // CookdEdxTimBin(seed->GetID());
-	for(int itrklt=0; itrklt<6; itrklt++){
-    for (Int_t iSlice = 0; iSlice < AliESDtrack::kNSlice; iSlice++) fdEdxPlane[itrklt][iSlice] = -1.;
+	
+  // Sets the a priori probabilities
+  for(int ispec=0; ispec<AliPID::kSPECIES; ispec++) {
+    fPID[ispec] = 1.0 / AliPID::kSPECIES;	
+  }
+	
+	// steer PID calculation @ tracklet level
+	Double_t *prob = 0x0;
+	fPIDquality = 0;
+	for(int itrklt=0; itrklt<AliESDtrack::kNPlane; itrklt++){
+    //for (Int_t iSlice = 0; iSlice < AliESDtrack::kNSlice; iSlice++) fdEdxPlane[itrklt][iSlice] = -1.;
 
 		if(fTrackletIndex[itrklt]<0) continue;
-		fTracklet[itrklt].CookdEdx(fdEdxPlane[itrklt]);
+		if(!(prob = fTracklet[itrklt].GetProbability())) return kFALSE;
+		
+		Int_t nspec = 0; // quality check of tracklet dEdx
+		for(int ispec=0; ispec<AliPID::kSPECIES; ispec++){
+			if(prob[ispec] < 0.) continue;
+			fPID[ispec] *= prob[ispec];
+			nspec++;
+		}
+		if(!nspec) continue;
+		
+		fPIDquality++;
 	}
+  
+  // no tracklet found for PID calculations
+  if(!fPIDquality) return kTRUE;
 
-	// retrive calibration db
-  AliTRDcalibDB *calibration = AliTRDcalibDB::Instance();
-  if (!calibration) {
-    AliError("No access to calibration data");
+	// slot for PID calculation @ track level
+	
+
+  // normalize probabilities
+  Double_t probTotal = 0.0;
+  for (Int_t is = 0; is < AliPID::kSPECIES; is++) probTotal += fPID[is];
+
+
+  if (probTotal <= 0.0) {
+    AliWarning("The total probability over all species <= 0. This may be caused by some error in the reference data.");
     return kFALSE;
   }
 
-  // Retrieve the CDB container class with the parametric detector response
-  const AliTRDCalPID *pd = calibration->GetPIDObject(0/*fRecoParam->GetPIDMethod()*/);
-  if (!pd) {
-    AliError("No access to AliTRDCalPID object");
-    return kFALSE;
-  }
+  for (Int_t iSpecies = 0; iSpecies < AliPID::kSPECIES; iSpecies++) fPID[iSpecies] /= probTotal;
 
-// CookPID(pidQ);
-
-
+  return kTRUE;
 }
 
+//_______________________________________________________________
+Float_t AliTRDtrackV1::GetMomentum(Int_t plane) const
+{
+  //
+  // Get the momentum at a given plane
+  //
+
+	return plane >=0 && plane < 6 && fTrackletIndex[plane] >= 0 ? fTracklet[plane].GetMomentum() : -1.;
+}
 
 //_______________________________________________________________
 Double_t AliTRDtrackV1::GetPredictedChi2(const AliTRDseedV1 *trklt) const
 {
   //
-  // Returns the predicted chi2
+  // Get the predicted chi2
   //
 
   Double_t x      = trklt->GetX0();
@@ -193,10 +233,38 @@ Double_t AliTRDtrackV1::GetPredictedChi2(const AliTRDseedV1 *trklt) const
 }
 
 //_______________________________________________________________
+Bool_t AliTRDtrackV1::IsOwner() const
+{
+  //
+  // Check whether track owns the tracklets
+  //
+
+	for (Int_t ip = 0; ip < AliESDtrack::kNPlane; ip++) {
+		if(fTrackletIndex[ip] < 0) continue;
+		if(!fTracklet[ip].IsOwner()) return kFALSE;
+	}
+	return kTRUE;
+}
+	
+//_______________________________________________________________
+void AliTRDtrackV1::SetOwner(Bool_t own)
+{
+  //
+  // Toggle ownership of tracklets
+  //
+
+	for (Int_t ip = 0; ip < AliESDtrack::kNPlane; ip++) {
+		if(fTrackletIndex[ip] < 0) continue;
+		//AliInfo(Form("p[%d] index[%d]", ip, fTrackletIndex[ip]));
+		fTracklet[ip].SetOwner(own);
+	}
+}
+
+//_______________________________________________________________
 void AliTRDtrackV1::SetTracklet(AliTRDseedV1 *trklt, Int_t plane, Int_t index)
 {
   //
-  // Sets the tracklets
+  // Set the tracklets
   //
 
 	if(plane < 0 || plane >=6) return;
@@ -205,13 +273,13 @@ void AliTRDtrackV1::SetTracklet(AliTRDseedV1 *trklt, Int_t plane, Int_t index)
 }
 
 //_______________________________________________________________
-Bool_t  AliTRDtrackV1::Update(const  AliTRDseedV1 *trklt, Double_t chisq)
+Bool_t  AliTRDtrackV1::Update(AliTRDseedV1 *trklt, Double_t chisq)
 {
   //
-  // Update the track
+  // Update track parameters
   //
 
-	Double_t x      = trklt->GetX0();
+  Double_t x      = trklt->GetX0();
   Double_t p[2]   = { trklt->GetYat(x)
                     , trklt->GetZat(x) };
   Double_t cov[3];
@@ -229,21 +297,32 @@ Bool_t  AliTRDtrackV1::Update(const  AliTRDseedV1 *trklt, Double_t chisq)
 //   fClusters[n] = c;
   SetNumberOfClusters(GetNumberOfClusters()+trklt->GetN());
   SetChi2(GetChi2() + chisq);
-
+	
+	// update tracklet
+	trklt->SetMomentum(GetP());
+  Double_t s = GetSnp(), t = GetTgl();
+	trklt->SetdQdl(TMath::Sqrt((1.0 - s*s) / (1.0 + t*t)));
 	return kTRUE;
 }
 
 //_______________________________________________________________
-void AliTRDtrackV1::UpdateESDdEdx(AliESDtrack *track)
+void AliTRDtrackV1::UpdateESDtrack(AliESDtrack *track)
 {
   //
-  // Update the dedx info
+  // Update the ESD track
   //
-
-	for (Int_t i = 0; i < AliESDtrack::kNPlane; i++) {
-		for (Int_t j = 0; j < AliESDtrack::kNSlice; j++) {
-			track->SetTRDsignals(fdEdxPlane[i][j], i, j);
-		}
-		track->SetTRDTimBin(fTimBinPlane[i], i);
+	
+	// copy dEdx to ESD
+	Float_t *dedx = 0x0;
+	for (Int_t ip = 0; ip < AliESDtrack::kNPlane; ip++) {
+		if(fTrackletIndex[ip] < 0) continue;
+		fTracklet[ip].CookdEdx(AliESDtrack::kNSlice);
+		dedx = fTracklet[ip].GetdEdx();
+		for (Int_t js = 0; js < AliESDtrack::kNSlice; js++) track->SetTRDsignals(dedx[js], ip, js);
+		//track->SetTRDTimBin(fTimBinPlane[i], i);
 	}
+
+	// copy PID to ESD
+	track->SetTRDpid(fPID);
+	track->SetTRDpidQuality(fPIDquality);
 }

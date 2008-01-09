@@ -73,7 +73,7 @@ class AliTRDtracker : public AliTracker {
   Float_t          GetMinClustersInTrack() const  { return fgkMinClustersInTrack; }
   Int_t            GetLastPlane(AliTRDtrack *track);
   Double_t         GetTiltFactor(const AliTRDcluster *c);
-  Bool_t           GetTrackPoint(Int_t index, AliTrackPoint& p) const;
+  virtual Bool_t   GetTrackPoint(Int_t index, AliTrackPoint& p) const;
   Double_t         GetX(Int_t sec, Int_t plane, Int_t localTB) const;
   Double_t         GetX(Int_t sec, Int_t pl) const
                                                   { return fTrSec[sec]->GetLayer(pl)->GetX();            }
@@ -183,14 +183,13 @@ class AliTRDtracker : public AliTracker {
   TH1D                    *fHDeltaX;                       // QA histogram
   TH1D                    *fHXCl;                          // QA histogram
 
- private:
+ protected:
 
   Int_t            FollowProlongation(AliTRDtrack &t);
   Int_t            PropagateToX(AliTRDtrack &t, Double_t xToGo, Double_t maxStep);
   Double_t         ExpectedSigmaY2(Double_t r, Double_t tgl, Double_t pt) const;
   Double_t         ExpectedSigmaZ2(Double_t r, Double_t tgl) const;
 
- private:  
  
   TTreeSRedirector        *fDebugStreamer;                 //!Debug streamer
   

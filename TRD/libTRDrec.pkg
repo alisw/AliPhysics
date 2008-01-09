@@ -13,6 +13,7 @@ SRCS= AliTRDcluster.cxx \
       AliTRDtrackingAnalysis.cxx \
       AliTRDrecoParam.cxx \
       AliTRDseedV1.cxx \
+      AliTRDtrackV1.cxx \
       AliTRDtrackerV1.cxx \
       AliTRDpropagationLayer.cxx \
       AliTRDstackLayer.cxx \

@@ -16,10 +16,13 @@
 
 #include "AliTRDtracklet.h"
 
+#ifndef ALITRDSEEDV1_H
+#include "AliTRDseedV1.h"
+#endif
+
 class AliESDtrack;
 class AliTrackReference;
 class AliTRDcluster;
-
 class AliTRDtrack : public AliKalmanTrack {
 
  public:
@@ -44,7 +47,7 @@ class AliTRDtrack : public AliKalmanTrack {
                    , Double_t xr, Double_t alpha);
          AliTRDtrack(const AliTRDtrack &t/*, const Bool_t owner = kTRUE*/);    
          AliTRDtrack(const AliESDtrack &t);
-        ~AliTRDtrack();
+ virtual ~AliTRDtrack();
          AliTRDtrack(const AliKalmanTrack &t, Double_t alpha); 
 
          void            ResetClusters()                              { SetChi2(0.0); 
@@ -87,6 +90,13 @@ class AliTRDtrack : public AliKalmanTrack {
          Float_t         GetBudget(Int_t i) const                     { return fBudget[i];                   }
          Float_t         GetChi2Last() const                          { return fChi2Last;                    }
          AliTRDtrack    *GetBackupTrack()                             { return fBackupTrack;                 }
+         // dummy to bridge the function in AliTRDtrackV1
+	 //Int_t          GetNumberOfClusters() const                   { printf("AliTRDtrack::GetNumberOfClusters()\n"); 
+         //                                                               return AliKalmanTrack::GetNumberOfClusters();   }
+ inline virtual Int_t    GetNumberOfTracklets() const;
+ virtual Int_t           GetTrackletIndex(Int_t plane) const          { return plane>=0 && plane<6 
+                                                                             ? fTrackletIndex[plane] : -1;   } 
+
 
          void            SetdEdx(Double_t dedx)                       { fdEdx                      = dedx;   }
          void            SetStop(Bool_t stop)                         { fStopped                   = stop;   }
@@ -163,8 +173,8 @@ class AliTRDtrack : public AliKalmanTrack {
          Float_t  fDE;                                //  Integrated delta energy
          Float_t  fdEdxPlane[kNplane][kNslice];       //  dE/dx from all 6 planes in 3 slices each
          Int_t    fTimBinPlane[kNplane];              //  Time bin of Max cluster from all 6 planes
+         UChar_t  fPIDquality;                        //  No of planes used for PID calculation	
          Double_t fPID[AliPID::kSPECIES];             //  PID probabilities
-
 	 Float_t  fMom[kNplane];                      //  Track momentum at chamber entrance
 	 Float_t  fSnp[kNplane];                      //  Track direction
 	 Float_t  fTgl[kNplane];                      //  Track direction
@@ -188,9 +198,21 @@ class AliTRDtrack : public AliKalmanTrack {
   AliTRDtracklet  fTracklets[6];                      //  Tracklets
          Float_t  fBudget[3];                         //  Integrated material budget
   AliTRDtrack    *fBackupTrack;                       //! Backup track
+	
+	 Int_t    fTrackletIndex[6];                  //  Tracklets index in the tracker list
+  AliTRDseedV1    fTracklet[6];                       //  Tracklets array defining the track
 
   ClassDef(AliTRDtrack,9)                             //  TRD reconstructed tracks
 
 };                     
+
+//___________________________________________________________
+inline Int_t AliTRDtrack::GetNumberOfTracklets() const
+{
+	Int_t ntrklt = 0;
+	for(int ip=0; ip<6; ip++) if(fTrackletIndex[ip] >= 0) ntrklt++;
+	return ntrklt;
+}
+
 
 #endif   

@@ -2420,32 +2420,27 @@ Int_t AliTRDgeometry::GetChamber(Double_t z, Int_t plane)
   //
   // Reconstruct the chamber number from the z position and plane number
   //
-  // The return function has to be protected for positiveness !!
-  //
+  // The return function has to be protected for pozitiveness !!
 
-  if ((plane <         0) || 
-      (plane >= fgkNplan)) {
-    return -1;
-  }
+	if(plane<0 || plane>=fgkNplan) return -1;
 	
-  Int_t    ichmb = fgkNcham;
-  Double_t zmin;
-  Double_t zmax;
-
-  do {
-    ichmb--;
-    if (ichmb < 0) break;
-    AliTRDpadPlane *pp = GetPadPlane(plane,ichmb);
-    zmax = pp->GetRow0();
-    Int_t nrows = pp->GetNrows();
-    zmin = zmax - 2*pp->GetLengthOPad() 
-                - (nrows-2)*pp->GetLengthIPad() 
-                - (nrows-1)*pp->GetRowSpacing(); 
-  } while((z < zmin) || (z > zmax));
+	Int_t ichmb = fgkNcham;
+	Double_t zmin, zmax;
+  //printf("Looking for z[%7.3f] in plane %d\n", z, plane);
+  do{
+  	ichmb--;
+  	if(ichmb<0) break;
+  	AliTRDpadPlane *pp = GetPadPlane(plane, ichmb);
+    zmax  = pp->GetRow0();
+    // why don't we have the function AliTRDpadPlane::GetLength() ???
+		Int_t nrows = pp->GetNrows();
+		zmin = zmax - 2*pp->GetLengthOPad() - (nrows-2)*pp->GetLengthIPad() - (nrows-1)*pp->GetRowSpacing(); // pp->GetLength();
+  	//printf("%d %7.3f %7.3f\n", ichmb, zmin, zmax);
+  } while(z < zmin || z > zmax);
   
   return ichmb;
-
 }
+
 
 //_____________________________________________________________________________
 Int_t AliTRDgeometry::GetSector(Int_t d) const

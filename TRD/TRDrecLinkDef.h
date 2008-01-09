@@ -10,11 +10,8 @@
 
 #pragma link C++ class  AliTRDcluster+;
 #pragma link C++ class  AliTRDclusterMI+;
-
 #pragma link C++ class  AliTRDclusterizer+;
-
 #pragma link C++ class  AliTRDclusterCorrection+;
-
 #pragma link C++ class  AliTRDtransform+;
 
 #pragma link C++ class  AliTRDtrack+;
@@ -28,14 +25,14 @@
 #pragma link C++ class  AliTRDReconstructor+;
 #pragma link C++ class  AliTRDRecParam+;
 
+#pragma link C++ class  AliTRDrecoParam+;
+#pragma link C++ class  AliTRDseedV1+;
+#pragma link C++ class  AliTRDtrackV1+;
+#pragma link C++ class  AliTRDtrackerV1+;
+#pragma link C++ class  AliTRDstackLayer+;
+#pragma link C++ class  AliTRDtrackerFitter+;
+
+#pragma link C++ class  AliTRDQADataMakerRec+;
 #pragma link C++ class  AliTRDtrackingAnalysis+;
-
-#pragma link C++ class AliTRDrecoParam+;
-#pragma link C++ class AliTRDseedV1+;
-#pragma link C++ class AliTRDtrackerV1+;
-#pragma link C++ class AliTRDstackLayer+;
-#pragma link C++ class AliTRDtrackerFitter+;
-#pragma link C++ class AliTRDQADataMakerRec+;
-
 
 #endif

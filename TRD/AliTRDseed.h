@@ -1,6 +1,5 @@
 #ifndef ALITRDSEED_H
-#define ALITRDSEED_H   
-
+#define ALITRDSEED_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */ 
 
@@ -23,7 +22,7 @@ class AliTRDseed : public TObject {
 
   AliTRDseed(); 
   AliTRDseed(const AliTRDseed &s);
-  ~AliTRDseed() {};                 
+  ~AliTRDseed() {};
 
   AliTRDseed      &operator=(const AliTRDseed &s)           { *(new(this) AliTRDseed(s)); 
                                                               return *this;          }
@@ -64,7 +63,10 @@ class AliTRDseed : public TObject {
           Float_t  GetCC() const                            { return fCC;            }
           Float_t  GetChi2() const                          { return fChi2;          }
           Float_t  GetChi2Z() const                         { return fChi2Z;         }
+          Int_t    GetNTimeBins() const                   { return fgTimeBins; }
+          Int_t    GetNTimeBinsRange() const              { return fTimeBinsRange; }
 
+				
           void     SetTilt(Float_t tilt)                    { fTilt        = tilt;   }
           void     SetPadLength(Float_t len)                { fPadLength   = len;    }
           void     SetX0(Float_t x0)                        { fX0          = x0;     }
@@ -92,44 +94,49 @@ class AliTRDseed : public TObject {
           void     SetCC(Float_t cc)                        { fCC          = cc;     }
           void     SetChi2(Float_t chi2)                    { fChi2        = chi2;   }
           void     SetChi2Z(Float_t chi2z)                  { fChi2Z       = chi2z;  }
+  static  void     SetNTimeBins(Int_t nTB)                { fgTimeBins  = nTB; }
+          void     SetNTimeBinsRange(Int_t nTB)           { fTimeBinsRange  = nTB; }
 
  protected:
 
           void     Copy(TObject &o) const;
           
-          Float_t  fTilt;               //  Tilting angle
-          Float_t  fPadLength;          //  Pad length
-          Float_t  fX0;                 //  X0 position
-          Float_t  fX[knTimebins];      //! X position
-          Float_t  fY[knTimebins];      //! Y position
-          Float_t  fZ[knTimebins];      //! Z position
-          Int_t    fIndexes[knTimebins];//! Indexes
-          AliTRDcluster *fClusters[knTimebins]; // Clusters
-          Bool_t   fUsable[knTimebins]; //! Indication  - usable cluster
-          Float_t  fYref[2];            //  Reference y
-          Float_t  fZref[2];            //  Reference z
-          Float_t  fYfit[2];            //  Y fit position +derivation
-          Float_t  fYfitR[2];           //  Y fit position +derivation
-          Float_t  fZfit[2];            //  Z fit position
-          Float_t  fZfitR[2];           //  Z fit position
-          Float_t  fSigmaY;             //  "Robust" sigma in Y - constant fit
-          Float_t  fSigmaY2;            //  "Robust" sigma in Y - line fit
-          Float_t  fMeanz;              //  Mean vaue of z
-          Float_t  fZProb;              //  Max probbable z
-          Int_t    fLabels[2];          //  Labels
-          Int_t    fN;                  //  Number of associated clusters
-          Int_t    fN2;                 //  Number of not crossed
-          Int_t    fNUsed;              //  Number of used clusters
-          Int_t    fFreq;               //  Frequency
-          Int_t    fNChange;            //  Change z counter
-          Float_t  fMPads;              //  Mean number of pads per cluster
+  static  Int_t          fgTimeBins;            //  Local copy of the total number of TB
+          Int_t          fTimeBinsRange;        //  Number of time bins in the geometrical range of the detector
+          Int_t          fTimeBin0;             //  Time bin corresponding to t0
+          Float_t        fTilt;                 //  Tilting angle
+          Float_t        fPadLength;            //  Pad length
+          Float_t        fX0;                   //  X0 position
+          Float_t        fX[knTimebins];        //! X position
+          Float_t        fY[knTimebins];        //! Y position
+          Float_t        fZ[knTimebins];        //! Z position
+          Int_t          fIndexes[knTimebins];  //! Indexes
+          AliTRDcluster *fClusters[knTimebins]; //  Clusters
+          Bool_t         fUsable[knTimebins];   //  Indication  - usable cluster
+          Float_t        fYref[2];              //  Reference y
+          Float_t        fZref[2];              //  Reference z
+          Float_t        fYfit[2];              //  Y fit position +derivation
+          Float_t        fYfitR[2];             //  Y fit position +derivation
+          Float_t        fZfit[2];              //  Z fit position
+          Float_t        fZfitR[2];             //  Z fit position
+          Float_t        fSigmaY;               //  "Robust" sigma in Y - constant fit
+          Float_t        fSigmaY2;              //  "Robust" sigma in Y - line fit
+          Float_t        fMeanz;                //  Mean vaue of z
+          Float_t        fZProb;                //  Max probbable z
+          Int_t          fLabels[2];            //  Labels
+          Int_t          fN;                    //  Number of associated clusters
+          Int_t          fN2;                   //  Number of not crossed
+          Int_t          fNUsed;                //  Number of used clusters
+          Int_t          fFreq;                 //  Frequency
+          Int_t          fNChange;              //  Change z counter
+          Float_t        fMPads;                //  Mean number of pads per cluster
 
-          Float_t  fC;                  //  Curvature
-          Float_t  fCC;                 //  Curvature with constrain
-          Float_t  fChi2;               //  Global chi2
-          Float_t  fChi2Z;              //  Global chi2
+          Float_t        fC;                    //  Curvature
+          Float_t        fCC;                   //  Curvature with constrain
+          Float_t        fChi2;                 //  Global chi2
+          Float_t        fChi2Z;                //  Global chi2
 
-  ClassDef(AliTRDseed,1)                //  Seed for a local TRD track
+  ClassDef(AliTRDseed,1)                        //  Seed for a local TRD track
 
 };
 
