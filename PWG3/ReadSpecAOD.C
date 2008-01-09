@@ -23,14 +23,14 @@
 
 void ReadSpecAOD(const char *fileName = "AliMuonAOD.root") {
 
-  gSystem->Load("libTree.so");
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libPhysics.so");
-  gSystem->Load("STEERBase/libSTEERBase");
-  gSystem->Load("AOD/libAOD");
-  gROOT->LoadMacro("AliAODEventInfo.cxx++");
-  gROOT->LoadMacro("AliAODDimuon.cxx++");
-   
+    gSystem->Load("libTree");
+    gSystem->Load("libGeom");
+    gSystem->Load("libSTEERBase");
+    gSystem->Load("libAOD");
+    gSystem->Load("libANALYSIS");			
+    gSystem->Load("libPWG3base.so");
+
+
 
   gStyle->SetOptStat(111111);
   gStyle->SetFrameFillColor(10);
