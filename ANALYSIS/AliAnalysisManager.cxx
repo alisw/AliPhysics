@@ -764,7 +764,7 @@ void AliAnalysisManager::StartAnalysis(const char *type, TTree *tree, Long64_t n
       Warning("StartAnalysis", "GRID analysis mode not implemented. Running local.");
       fMode = kLocalAnalysis;
    }
-   char line[128];
+   char line[256];
    SetEventLoop(kFALSE);
    // Disable all branches if requested and set event loop mode
    if (tree) {
@@ -830,6 +830,55 @@ void AliAnalysisManager::StartAnalysis(const char *type, TTree *tree, Long64_t n
       case kGridAnalysis:
          Warning("StartAnalysis", "GRID analysis mode not implemented. Running local.");
    }   
+}   
+
+//______________________________________________________________________________
+void AliAnalysisManager::StartAnalysis(const char *type, const char *dataset, Long64_t nentries, Long64_t firstentry)
+{
+// Start analysis for this manager on a given dataset. Analysis task can be: 
+// LOCAL, PROOF or GRID. Process nentries starting from firstentry.
+   if (!fInitOK) {
+      Error("StartAnalysis","Analysis manager was not initialized !");
+      return;
+   }
+   if (fDebug>1) {
+      cout << "StartAnalysis: " << GetName() << endl;   
+   }   
+   TString anaType = type;
+   anaType.ToLower();
+   if (!anaType.Contains("proof")) {
+      Error("Cannot process datasets in %s mode. Try PROOF.", type);
+      return;
+   }   
+   fMode = kProofAnalysis;
+   char line[256];
+   SetEventLoop(kTRUE);
+   // Set the dataset flag
+   TObject::SetBit(kUseDataSet);
+   fTree = 0;
+
+   // Initialize locally all tasks
+   TIter next(fTasks);
+   AliAnalysisTask *task;
+   while ((task=(AliAnalysisTask*)next())) {
+      task->LocalInit();
+   }
+   
+   if (!gROOT->GetListOfProofs() || !gROOT->GetListOfProofs()->GetEntries()) {
+      printf("StartAnalysis: no PROOF!!!\n");
+      return;
+   }   
+   sprintf(line, "gProof->AddInput((TObject*)0x%lx);", (ULong_t)this);
+   gROOT->ProcessLine(line);
+   sprintf(line, "gProof->GetDataSet(\"%s\");", dataset);
+   if (!gROOT->ProcessLine(line)) {
+      Error("StartAnalysis", "Dataset %s not found", dataset);
+      return;
+   }   
+   sprintf(line, "gProof->Process(\"%s\", \"AliAnalysisSelector\", \"\", %lld, %lld);",
+           dataset, nentries, firstentry);
+   cout << "===== RUNNING PROOF ANALYSIS " << GetName() << " ON DATASET " << dataset << endl;
+   gROOT->ProcessLine(line);
 }   
 
 //______________________________________________________________________________

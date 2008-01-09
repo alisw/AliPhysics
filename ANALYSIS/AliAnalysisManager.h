@@ -42,7 +42,8 @@ enum EAliAnalysisExecMode {
 
 enum EAliAnalysisFlags {
    kEventLoop        = BIT(14),
-   kDisableBranches  = BIT(15)
+   kDisableBranches  = BIT(15),
+   kUseDataSet       = BIT(16)
 };   
 
    AliAnalysisManager(const char *name = "mgr", const char *title="");
@@ -53,6 +54,7 @@ enum EAliAnalysisFlags {
    
    // Management
    void                StartAnalysis(const char *type="local", TTree *tree=0, Long64_t nentries=1234567890, Long64_t firstentry=0);
+   void                StartAnalysis(const char *type, const char *dataset, Long64_t nentries=1234567890, Long64_t firstentry=0);
 
    virtual void        Init(TTree *tree);   
    virtual Bool_t      Notify();
@@ -77,6 +79,7 @@ enum EAliAnalysisFlags {
    Long64_t            GetCurrentEntry() const {return fCurrentEntry;}
    EAliAnalysisExecMode 
                        GetAnalysisType() const {return fMode;}
+   Bool_t              IsUsingDataSet() const  {return TObject::TestBit(kUseDataSet);}
 
    void                SetAnalysisType(EAliAnalysisExecMode mode) {fMode = mode;}
    void                SetCurrentEntry(Long64_t entry) {fCurrentEntry = entry;}
