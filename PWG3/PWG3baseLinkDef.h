@@ -19,6 +19,11 @@
 #pragma link C++ class AliAnalysisVertexingHF+;
 #pragma link C++ class AliAnalysisTaskVertexingHF+;
 
+#pragma link C++ class AliAODDimuon+;
+#pragma link C++ class AliAODEventInfo+;
+#pragma link C++ class AliAnalysisTaskMuonAODfromGeneral+;
+#pragma link C++ class AliAnalysisTaskSingleMu+;
+
 #endif
 
 
