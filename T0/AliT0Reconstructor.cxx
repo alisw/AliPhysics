@@ -14,15 +14,15 @@
  **************************************************************************/
 
 /* $Id$ */
+/*********************************************************************
+ *  T0 reconstruction and filling ESD
+ *  - reconstruct mean time (interation time) 
+ *  - vertex position
+ *  -  multiplicity
+ ********************************************************************/
 
-#include <Riostream.h>
-
-#include <TDirectory.h>
-
-#include "AliRunLoader.h"
 #include <AliESDEvent.h>
 #include "AliLog.h"
-#include "AliT0Loader.h"
 #include "AliT0RecPoint.h"
 #include "AliRawReader.h"
 #include "AliT0RawReader.h"
@@ -30,10 +30,6 @@
 #include "AliT0Reconstructor.h"
 #include "AliT0Parameters.h"
 #include "AliT0Calibrator.h"
-#include "AliCDBLocal.h"
-#include "AliCDBStorage.h"
-#include "AliCDBManager.h"
-#include "AliCDBEntry.h"
 
 #include <TArrayI.h>
 #include <TGraph.h>
@@ -48,6 +44,8 @@ ClassImp(AliT0Reconstructor)
 					     fParam(NULL),
 					     fAmpLEDrec()
 {
+  //constructor
+
  AliDebug(1,"Start reconstructor ");
   
   fParam = AliT0Parameters::Instance();
@@ -131,7 +129,6 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
   fDigits->GetQT0(*chargeQT0);
   fDigits->GetQT1(*chargeQT1);
 
-  cout<<"!!!! AliT0Reconstructor::Reconstruct RefPoint "<<fDigits->RefPoint()<<endl;
   
   Float_t besttimeA=999999;
   Float_t besttimeC=999999;

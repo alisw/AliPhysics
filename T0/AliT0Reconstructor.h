@@ -2,13 +2,16 @@
 #define ALIT0RECONSTRUCTOR_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
-/*  Alla Maevskaya INR RAS alla@inr.ru */
-/* $Id$ */
 
+/* $Id$ */
+/******************************************************************** 
+ * header class T0 reconstruction 
+ * Alla Maevskaya INR RAS alla@inr.ru      *
+ * Alla.Maevskaya@cern.ch
+ *******************************************************************/
 
 #include "AliReconstructor.h"
 #include "AliT0Parameters.h"
-#include "AliT0.h"
 
 class AliT0Reconstructor: public AliReconstructor {
  public:
