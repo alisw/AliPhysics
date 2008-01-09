@@ -136,14 +136,12 @@ void AliGeomManager::LoadGeometry(const char *geomFileName)
   // or from the corresponding CDB entry
 
   fgGeometry = NULL;
-  if (geomFileName && (!gSystem->AccessPathName(geomFileName))) { // gemotry.root exists
+  if (geomFileName && (!gSystem->AccessPathName(geomFileName))) {
     fgGeometry = TGeoManager::Import(geomFileName);
-    AliInfoClass("Using custom geometry.root file");
+    AliInfoClass(Form("From now on using geometry from custom geometry file %s",geomFileName));
   }
 
   if (!fgGeometry) {
-    AliInfoClass("Using geometry from CDB");
-
     AliCDBPath path("GRP","Geometry","Data");
 	
     AliCDBEntry *entry=AliCDBManager::Instance()->Get(path.GetPath());
@@ -152,6 +150,9 @@ void AliGeomManager::LoadGeometry(const char *geomFileName)
     entry->SetOwner(0);
     fgGeometry = (TGeoManager*) entry->GetObject();
     if (!fgGeometry) AliFatalClass("Couldn't find TGeoManager in the specified CDB entry!");
+    
+    AliInfoClass(Form("From now on using geometry from CDB base folder %s",
+		      AliCDBManager::Instance()->GetURI("Geometry/Align/Data")));
   }
 
   InitSymNamesLUT();
