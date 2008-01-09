@@ -56,6 +56,12 @@ void Config()
     new     TGeant3TGeo("C++ Interface to Geant3");
   }
   
+  if(!AliCDBManager::Instance()->IsDefaultStorageSet()){
+      AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+      AliCDBManager::Instance()->SetRun(0);
+  }
+
+  
   AliRunLoader* rl=0x0;
                                                                                 
   cout<<"Config.C: Creating Run Loader ..."<<endl;
