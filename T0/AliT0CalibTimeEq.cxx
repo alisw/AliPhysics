@@ -17,24 +17,19 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-// class for T0 calibration                       TM-AC-AM_6-02-2006         //
+// class for T0 calibration                       TM-AC-AM_6-02-2006  
+// equalize time shift for each time CFD channel
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliT0CalibTimeEq.h"
-#include "AliT0LookUpValue.h"
-#include "AliLog.h"
-#include "AliRun.h"
 
 #include <TFile.h>
 #include <TMath.h>
 #include <TF1.h>
-#include <TSystem.h>
-#include <Riostream.h>
 #include <TSpectrum.h>
 #include <TVirtualFitter.h>
 #include <TProfile.h>
-#include <string>
 
 ClassImp(AliT0CalibTimeEq)
 
@@ -47,6 +42,8 @@ ClassImp(AliT0CalibTimeEq)
 //________________________________________________________________
 AliT0CalibTimeEq::AliT0CalibTimeEq(const char* name):TNamed()
 {
+  //constructor
+
   TString namst = "Calib_";
   namst += name;
   SetName(namst.Data());
@@ -77,10 +74,13 @@ AliT0CalibTimeEq &AliT0CalibTimeEq::operator =(const AliT0CalibTimeEq& calibda)
 AliT0CalibTimeEq::~AliT0CalibTimeEq()
 {
   //
+  // destrictor
 }
 //________________________________________________________________
 void AliT0CalibTimeEq::Reset()
 {
+  //reset values
+
   memset(fCFDvalue,0,120*sizeof(Float_t));
   memset(fTimeEq,1,24*sizeof(Float_t));
 }
@@ -89,6 +89,7 @@ void AliT0CalibTimeEq::Reset()
 //________________________________________________________________
 void  AliT0CalibTimeEq::Print(Option_t*) const
 {
+  // print time values
 
   printf("\n	----	PM Arrays	----\n\n");
   printf(" Time delay CFD \n");
@@ -99,6 +100,8 @@ void  AliT0CalibTimeEq::Print(Option_t*) const
 //________________________________________________________________
 void AliT0CalibTimeEq::ComputeOnlineParams(char* name1, Int_t npeaks, Double_t sigma, const char* filePhys)
 {
+  // compute online equalized time
+
   TFile *gFile = TFile::Open(filePhys);
   Bool_t down=false;
   Int_t index[20];
