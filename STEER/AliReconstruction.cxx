@@ -2808,7 +2808,7 @@ void AliReconstruction::WriteAlignmentData(AliESDEvent* esd)
 	  AliTrackPoint p;
 	  Int_t isp = 0;
 	  Int_t isp2 = 0;
-	  while (isp < nspdet) {
+	  while (isp2 < nspdet) {
 	    Bool_t isvalid;
             TString dets = fgkDetectorName[iDet];
             if ((fUseTrackingErrorsForAlignment.CompareTo(dets) == 0) ||
