@@ -1489,6 +1489,11 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd)
       AliError(Form("%s inward refit failed", fgkDetectorName[iDet]));
       //      return kFALSE;
     }
+    // run postprocessing
+    if (fTracker[iDet]->PostProcess(esd) != 0) {
+      AliError(Form("%s postprocessing failed", fgkDetectorName[iDet]));
+      //      return kFALSE;
+    }
     if (fCheckPointLevel > 1) {
       WriteESD(esd, Form("%s.refit", fgkDetectorName[iDet]));
     }
