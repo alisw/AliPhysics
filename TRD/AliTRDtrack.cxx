@@ -881,6 +881,8 @@ Int_t AliTRDtrack::UpdateMI(AliTRDcluster *c, Double_t chisq, Int_t index
   if (!AliExternalTrackParam::Update(p,cov)) {
     return kFALSE;
   }
+	
+	AliTracker::FillResiduals(this,p,cov,c->GetVolumeId());
 
   // Register cluster to track
   Int_t n      = GetNumberOfClusters();
