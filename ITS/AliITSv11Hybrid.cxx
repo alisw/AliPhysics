@@ -33,6 +33,9 @@
 
 
 // $Log$
+// Revision 1.13  2007/12/20 16:58:46  masera
+// bug fixes for SPD1 and SDD1 (A. Dainese)
+//
 // Revision 1.12  2007/12/17 14:48:23  masera
 // Thermal shield between SPD and SDD (M. Sitta)
 //
@@ -99,6 +102,7 @@
 #include "AliITSv11GeometrySPD.h"
 #include "AliITSv11GeometrySDD.h"
 #include "AliITSv11GeometrySSD.h"
+#include "AliITSv11GeometrySupport.h"
 
 
 ClassImp(AliITSv11Hybrid)
@@ -121,7 +125,8 @@ AliITSv11Hybrid::AliITSv11Hybrid():
   fInitGeom((AliITSVersion_t)fMajorVersion,fMinorVersion),
   fSPDgeom(0),
   fSDDgeom(0),
-  fSSDgeom(0)
+  fSSDgeom(0),
+  fSupgeom(0)
  {
     //    Standard default constructor
     // Inputs:
@@ -150,7 +155,9 @@ AliITSv11Hybrid::AliITSv11Hybrid(const char *title)
     fInitGeom((AliITSVersion_t)fMajorVersion,fMinorVersion),
     fSPDgeom(0),
     fSDDgeom(0),
-    fSSDgeom(0) {
+    fSSDgeom(0),
+    fSupgeom(0)
+{
     //    Standard constructor for the v11Hybrid geometry.
     // Inputs:
     //   const char * title  Arbitrary title
@@ -163,6 +170,7 @@ AliITSv11Hybrid::AliITSv11Hybrid(const char *title)
   fSPDgeom = new AliITSv11GeometrySPD();
   fSDDgeom = new AliITSv11GeometrySDD(0);
   fSSDgeom = new AliITSv11GeometrySSD();
+  fSupgeom = new AliITSv11GeometrySupport();
 
   fIdN = 6;
   fIdName = new TString[fIdN];
@@ -224,7 +232,9 @@ AliITSv11Hybrid::AliITSv11Hybrid(const char *name, const char *title)
     fInitGeom((AliITSVersion_t)fMajorVersion,fMinorVersion),
     fSPDgeom(0),
     fSDDgeom(0),
-    fSSDgeom(0) {
+    fSSDgeom(0),
+    fSupgeom(0)
+{
     //    Standard constructor for the v11Hybrid geometry.
     // Inputs:
     //   const char * name   Ignored, set to "ITS"
@@ -238,6 +248,7 @@ AliITSv11Hybrid::AliITSv11Hybrid(const char *name, const char *title)
   fSPDgeom = new AliITSv11GeometrySPD();
   fSDDgeom = new AliITSv11GeometrySDD(0);
   fSSDgeom = new AliITSv11GeometrySSD();
+  fSupgeom = new AliITSv11GeometrySupport();
 
   fIdN = 6;
   fIdName = new TString[fIdN];
@@ -295,6 +306,7 @@ AliITSv11Hybrid::~AliITSv11Hybrid() {
   delete fSPDgeom;
   delete fSDDgeom;
   delete fSSDgeom;
+  delete fSupgeom;
 }
 
 //______________________________________________________________________
@@ -978,7 +990,6 @@ void AliITSv11Hybrid::CreateGeometry() {
 
   TGeoVolume *vITS  = geoManager->GetVolume("ITSV");
   TGeoVolume *vIS02 = geoManager->GetVolume("IS02");
-  TGeoVolume *vITSD = geoManager->GetVolume("ITSD");
 
 
   const Char_t *cvsDate="$Date$";
@@ -1009,7 +1020,7 @@ void AliITSv11Hybrid::CreateGeometry() {
   }
 
   if (AliITSInitGeometry::SPDshieldIsTGeoNative())
-    CreateSPDThermalShield(vITSD);
+    fSupgeom->SPDCone(vITS);
 }
 
 //______________________________________________________________________
@@ -5510,440 +5521,6 @@ void AliITSv11Hybrid::CreateMaterials(){
     */
     AliMaterial(96, "SSD cone$",63.546, 29., 1.15, 1.265, 999);
     AliMedium(96,"SSD cone$",96,0,ifield,fieldm,tmaxfdServ,stemaxServ,deemaxServ,epsilServ,stminServ);
-}
-
-//______________________________________________________________________
-void AliITSv11Hybrid::CreateSPDThermalShield(TGeoVolume *moth)
-{
-//
-// Creates the SPD thermal shield as a volume assembly
-// and adds it to the mother volume
-//
-// Input:
-//         moth : the TGeoVolume owing the volume structure
-// Output:
-//
-// Created:      11 Dec 2007  Mario Sitta
-//
-
-  // Dimensions (cm) of the Central shield
-  Double_t innerRadiusCen = 8.1475, outerRadiusCen = 9.9255;
-  Double_t innerACen = 3.1674, innerBCen = 2.023;
-  Double_t outerACen = 2.4374, outerBCen = 3.8162;
-  Double_t thicknessCen = 0.04;
-  Double_t halflengthCen = 40.;
-  // Dimensions (cm) of each EndCap shield
-  Double_t innerRadiusEC = 8.0775, outerRadiusEC = 9.9955;
-  Double_t innerAEC = 3.1453, innerBEC = 2.0009;
-  Double_t outerAEC = 2.4596, outerBEC = 3.8384;
-  Double_t thicknessEC = 0.2;
-  Double_t halflengthEC = 2.5;
-  // Common dimensions (cm)
-  Double_t theta = 36.0*TMath::DegToRad();
-  Double_t thicknessOmega = 0.03;
-
-  // The entire shield is made up of two half central shields
-  // symmetric with respect to the XZ plane, and four half
-  // end cap shields, again symmetric with respect to the XZ plane
-
-  // Create the central half shield
-  TGeoVolumeAssembly *spdshieldcentral = CreateSPDThermalShieldAssembly("SPDshieldCentral",
-                     innerACen, innerBCen, innerRadiusCen,
-                     outerACen, outerBCen, outerRadiusCen,
-		     halflengthCen, thicknessCen, thicknessOmega, theta);
-
-  // Create the endcap half shield
-  TGeoVolumeAssembly *spdshieldendcap = CreateSPDThermalShieldAssembly("SPDshieldEndCap",
-                     innerAEC, innerBEC, innerRadiusEC,
-                     outerAEC, outerBEC, outerRadiusEC,
-		     halflengthEC, thicknessEC, thicknessOmega, theta);
-
-
-  // Put in place the volumes
-  // The central shield is centered wrt the mother volume
-  moth->AddNode(spdshieldcentral,1,0);
-  moth->AddNode(spdshieldcentral,2,new TGeoRotation("",180,0,0));
-
-  // The endcaps are placed at the end of the central shield
-  moth->AddNode(spdshieldendcap,1,
-                new TGeoTranslation(0,0, halflengthCen+halflengthEC)   );
-  moth->AddNode(spdshieldendcap,2,new TGeoCombiTrans(
-	        0, 0,  halflengthCen+halflengthEC,
-                new TGeoRotation("",180,0,0)                        ));
-
-  moth->AddNode(spdshieldendcap,3,
-                new TGeoTranslation(0,0,-halflengthCen-halflengthEC)   );
-  moth->AddNode(spdshieldendcap,4,new TGeoCombiTrans(
-	        0, 0, -halflengthCen-halflengthEC,
-                new TGeoRotation("",180,0,0)                        ));
-
-  return;
-}
-
-//______________________________________________________________________
-TGeoVolumeAssembly *AliITSv11Hybrid::CreateSPDThermalShieldAssembly(const char *name,
-		   Double_t innerA, Double_t innerB, Double_t innerRadius,
-		   Double_t outerA, Double_t outerB, Double_t outerRadius,
-		   Double_t halflength, Double_t thickness,
-                   Double_t thicknessOmega, Double_t theta)
-{
-//
-// Creates one segment of the thermal shield
-// (either the Central one or one of the End Caps)
-//
-// Input:
-//         name:                        the name of the assembly
-//         innerA, innerB, innerRadius: parameters of the inner shape
-//         outerA, outerB, outerRadius: parameters of the outer shape
-//         halflength:                  shield half length
-//         thickness:                   shield thickness
-//         thicknessOmega:              thickness of the Omega shape
-//         theta:                       theta angle
-//         
-// Output:
-//         spdshield:                   the half shield as an assembly
-//
-// Created:      14 Nov 2007  Mario Sitta
-// Created:      11 Dec 2007  Mario Sitta  Rewritten
-//
-  TGeoVolumeAssembly *spdshield = new TGeoVolumeAssembly(name);
-
-  // The entire shield is made up of two half shields
-  // symmetric with respect to the XZ plane.
-
-  // Each half shield is made up of
-  // - an internal XTru volume
-  // - an external XTru volume
-  // - two connecting Boxes
-  // and it contains an Omega-shaped insert made up of
-  // - two copies of an Xtru volume
-
-  Double_t xshape[24], yshape[24];
-
-  // Create the inner shape
-  SPDThermalShape(innerA,innerB,innerRadius,thickness,theta,xshape,yshape);
-
-  TGeoXtru *innershape = new TGeoXtru(2);
-
-  innershape->DefinePolygon(24,xshape,yshape);
-  innershape->DefineSection(0,-halflength);
-  innershape->DefineSection(1, halflength);
-
-  Double_t boxSideA = xshape[6];
-
-  // Create the outer shape
-  SPDThermalShape(outerA,outerB,outerRadius,-thickness,theta,xshape,yshape);
-
-  TGeoXtru *outershape = new TGeoXtru(2);
-
-  outershape->DefinePolygon(24,xshape,yshape);
-  outershape->DefineSection(0,-halflength);
-  outershape->DefineSection(1, halflength);
-
-  Double_t boxSideB = xshape[6];
-
-  // Create the box shape
-  TGeoBBox *boxpart = new TGeoBBox((boxSideB-boxSideA)/2,
-				   thickness/2,halflength);
-
-  // Create the Omega insert shape
-  Double_t xOshape[26], yOshape[26];
-
-  SPDOmegaShape(innerA,innerB,innerRadius,
-		outerA,outerB,outerRadius,
-		thickness,thicknessOmega,theta,
-		xOshape,yOshape);
-
-  xOshape[11] = boxSideA; yOshape[11] = thickness;               // These
-  xOshape[12] = boxSideB; yOshape[12] = thickness;               // need
-  xOshape[13] = boxSideB; yOshape[13] = thickness+thicknessOmega;// to be
-  xOshape[14] = boxSideA+thicknessOmega;                         // fixed
-  yOshape[14] = thickness+thicknessOmega;                        // explicitly
-
-  TGeoXtru *omegashape = new TGeoXtru(2);
-
-  omegashape->DefinePolygon(26,xOshape,yOshape);
-  omegashape->DefineSection(0,-halflength);
-  omegashape->DefineSection(1, halflength);
-
-  // Create the volumes
-  TGeoMedium* spdShieldMat =  gGeoManager->GetMedium("ITS_SPD shield$");
-
-  TGeoVolume *inshield = new TGeoVolume("inshield",innershape,spdShieldMat);
-
-  TGeoVolume *outshield = new TGeoVolume("outshield",outershape,spdShieldMat);
-
-  TGeoVolume *boxshield = new TGeoVolume("boxshield",boxpart,spdShieldMat);
-
-  TGeoVolume *omegashield = new TGeoVolume("omegashield",omegashape,
-					   spdShieldMat);
-
-  // Add all volumes in the assembly
-  spdshield->AddNode( inshield,1,0);
-  spdshield->AddNode(outshield,1,0);
-
-  Double_t boxXpos = (boxSideA+boxSideB)/2.;
-  Double_t boxYpos = thickness/2;
-  Double_t boxZpos = 0;
-  spdshield->AddNode(boxshield,1,new TGeoTranslation( boxXpos,boxYpos,boxZpos));
-  spdshield->AddNode(boxshield,2,new TGeoTranslation(-boxXpos,boxYpos,boxZpos));
-  spdshield->AddNode(omegashield,1,0);
-  spdshield->AddNode(omegashield,2,new TGeoRotation("",0,180,180));
-
-  // Return what we have created
-  //spdshield->CheckOverlaps(0.001);
-
-  return spdshield;
-}
-
-//______________________________________________________________________
-void AliITSv11Hybrid::SPDThermalShape(Double_t  a, Double_t  b, Double_t r,
-				      Double_t  d, Double_t  t,
-				      Double_t *x, Double_t *y)
-{
-//
-// Creates the proper sequence of X and Y coordinates to determine
-// the base XTru polygon for the inner and outer thermal shapes
-//
-// Input:
-//        a, b : shape sides
-//        r    : inner radius
-//        d    : shape thickness (if < 0 outer shape)
-//        t    : theta angle
-//
-// Output:
-//        x, y : coordinate vectors [24]
-//
-// Created:      14 Nov 2007  Mario Sitta
-//
-  Double_t xlocal[6],ylocal[6];
-
-  //Create the first quadrant (X > 0)
-  FillSPDXtruShape(a,b,r,t,xlocal,ylocal);
-  for (Int_t i=0; i<6; i++) {
-    x[i] = xlocal[i];
-    y[i] = ylocal[i];
-  }
-
-  // Then reflex on the second quadrant (X < 0)
-  for (Int_t i=0; i<6; i++) {
-    x[23-i] = -x[i];
-    y[23-i] =  y[i];
-  }
-
-  // Determine the outer/inner side dimensions
-  Double_t u = TMath::Abs(d)*a/(2*r);
-
-  Double_t alpha = TMath::ATan(a/(2*r));
-  Double_t beta = t/2 - alpha;
-
-  Double_t v = TMath::Abs(d)*TMath::Tan(beta);
-
-  Double_t rprime = r + d;
-
-  Double_t aprime,bprime;
-  if (d > 0) {
-    aprime = a + 2*u;
-    bprime = b + 2*v;
-  } else {
-    aprime = a - 2*u;
-    bprime = b - 2*v;
-  }
-
-  // Now create the other base quadrant (X > 0)
-  FillSPDXtruShape(aprime,bprime,rprime,t,xlocal,ylocal);
-  for (Int_t i=0; i<6; i++) {
-    x[11-i] = xlocal[i];
-    y[11-i] = ylocal[i];
-  }
-
-  // Finally reflex on the second quadrant (X < 0)
-  for (Int_t i=0; i<6; i++) {
-    x[12+i] = -x[11-i];
-    y[12+i] =  y[11-i];
-  }
-
-  // Wow ! We've finished
-  return;
-}
-
-//______________________________________________________________________
-void AliITSv11Hybrid::SPDOmegaShape(Double_t ina, Double_t inb, Double_t inr,
-				    Double_t oua, Double_t oub, Double_t our,
-				    Double_t dou, Double_t  d , Double_t  t ,
-				    Double_t *x , Double_t *y )
-{
-//
-// Creates the proper sequence of X and Y coordinates to determine
-// the SPD Omega XTru polygon
-//
-// Input:
-//        ina, inb : inner shape sides
-//        inr      : inner radius
-//        oua, oub : outer shape sides
-//        our      : outer radius
-//        dou      : external shape thickness
-//        d        : Omega shape thickness
-//        t        : theta angle
-//
-// Output:
-//        x, y     : coordinate vectors [26]
-//
-// Created:      17 Nov 2007  Mario Sitta
-//
-  Double_t xlocal[6],ylocal[6];
-
-  // First determine various parameters
-  Double_t inu = dou*ina/(2*inr);
-  Double_t inaprime = ina + 2*inu;
-
-  Double_t inalpha = TMath::ATan(ina/(2*inr));
-  Double_t inbeta = t/2 - inalpha;
-
-  Double_t inv = dou*TMath::Tan(inbeta);
-  Double_t inbprime = inb + 2*inv;
-
-  Double_t inrprime = inr + dou;
-
-  Double_t ouu = dou*oua/(2*our);
-  Double_t ouaprime = oua - 2*ouu;
-
-  Double_t oualpha = TMath::ATan(oua/(2*our));
-  Double_t oubeta = t/2 - oualpha;
-
-  Double_t ouv = dou*TMath::Tan(oubeta);
-  Double_t oubprime = oub - 2*ouv;
-
-  Double_t ourprime = our - dou;
-
-  //Create the first inner pseudo-quadrant
-  FillSPDXtruShape(inaprime,inbprime,inrprime,t,xlocal,ylocal);
-  x[ 2] = xlocal[0];
-  y[ 2] = ylocal[0];
-
-  x[ 3] = xlocal[1];
-  y[ 3] = ylocal[1];
-
-  x[ 6] = xlocal[2];
-  y[ 6] = ylocal[2];
-
-  x[ 7] = xlocal[3];
-  y[ 7] = ylocal[3];
-
-  x[10] = xlocal[4];
-  y[10] = ylocal[4];
-
-  x[11] = xlocal[5];
-  y[11] = ylocal[5];
-
-  //Create the first outer pseudo-quadrant
-  FillSPDXtruShape(ouaprime,oubprime,ourprime,t,xlocal,ylocal);
-  x[24] = xlocal[0];
-  y[24] = ylocal[0];
-
-  x[21] = xlocal[1];
-  y[21] = ylocal[1];
-
-  x[20] = xlocal[2];
-  y[20] = ylocal[2];
-
-  x[17] = xlocal[3];
-  y[17] = ylocal[3];
-
-  x[16] = xlocal[4];
-  y[16] = ylocal[4];
-
-  x[13] = xlocal[5];
-  y[13] = ylocal[5];
-
-  //Create the second inner pseudo-quadrant
-  FillSPDXtruShape(inaprime+2*d,inbprime-2*d,inrprime+d,t,xlocal,ylocal);
-  x[23] = xlocal[0];
-  y[23] = ylocal[0];
-
-  x[22] = xlocal[1];
-  y[22] = ylocal[1];
-
-  x[19] = xlocal[2];
-  y[19] = ylocal[2];
-
-  x[18] = xlocal[3];
-  y[18] = ylocal[3];
-
-  x[15] = xlocal[4];
-  y[15] = ylocal[4];
-
-  x[14] = xlocal[5];
-  y[14] = ylocal[5];
-
-  //Create the second outer pseudo-quadrant
-  FillSPDXtruShape(ouaprime-2*d,oubprime+2*d,ourprime-d,t,xlocal,ylocal);
-  x[ 1] = xlocal[0];
-  y[ 1] = ylocal[0];
-
-  x[ 4] = xlocal[1];
-  y[ 4] = ylocal[1];
-
-  x[ 5] = xlocal[2];
-  y[ 5] = ylocal[2];
-
-  x[ 8] = xlocal[3];
-  y[ 8] = ylocal[3];
-
-  x[ 9] = xlocal[4];
-  y[ 9] = ylocal[4];
-
-  x[12] = xlocal[5];
-  y[12] = ylocal[5];
-
-  //Finally the last fixed points
-  x[ 0] = 0;
-  y[ 0] = ourprime - d;
-
-  x[25] = 0;
-  y[25] = ourprime;
-
-  // We did really make it !
-  return;
-}
-
-//______________________________________________________________________
-void AliITSv11Hybrid::FillSPDXtruShape(Double_t a, Double_t  b, Double_t  r,
-				       Double_t t, Double_t *x, Double_t *y)
-{
-//
-// Creates the partial sequence of X and Y coordinates to determine
-// the lateral part of the SPD thermal shield
-//
-// Input:
-//        a, b : shape sides
-//        r    : radius
-//        t    : theta angle
-//
-// Output:
-//        x, y : coordinate vectors [6]
-//
-// Created:      14 Nov 2007  Mario Sitta
-//
-  x[0] = a/2;
-  y[0] = r;
-
-  x[1] = x[0] + b * TMath::Cos(t/2);
-  y[1] = y[0] - b * TMath::Sin(t/2);
-
-  x[2] = x[1] + a * TMath::Cos(t);
-  y[2] = y[1] - a * TMath::Sin(t);
-
-  x[3] = x[2] + b * TMath::Cos(3*t/2);
-  y[3] = y[2] - b * TMath::Sin(3*t/2);
-
-  x[4] = x[3] + a * TMath::Cos(2*t);
-  y[4] = y[3] - a * TMath::Sin(2*t);
-
-  x[5] = x[4];
-  y[5] = 0.;
-
-  return;
 }
 
 //______________________________________________________________________

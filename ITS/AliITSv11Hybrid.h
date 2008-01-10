@@ -18,6 +18,9 @@
 // $Id$
 
 // $Log$
+// Revision 1.7  2007/12/17 14:48:24  masera
+// Thermal shield between SPD and SDD (M. Sitta)
+//
 // Revision 1.6  2007/10/21 19:22:53  masera
 // Coding conventions
 //
@@ -38,6 +41,7 @@
 class  AliITSv11GeometrySPD;
 class  AliITSv11GeometrySDD;
 class  AliITSv11GeometrySSD;
+class  AliITSv11GeometrySupport;
 
 class AliITSv11Hybrid : public AliITS {
 
@@ -170,6 +174,7 @@ class AliITSv11Hybrid : public AliITS {
     AliITSv11GeometrySPD *fSPDgeom; //! SPD Geometry
     AliITSv11GeometrySDD *fSDDgeom; //! SDD Geometry
     AliITSv11GeometrySSD *fSSDgeom; //! SSD Geometry
+    AliITSv11GeometrySupport *fSupgeom; //! Support Geometry
 
     ClassDef(AliITSv11Hybrid,0)                          
 };

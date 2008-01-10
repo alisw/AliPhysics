@@ -42,652 +42,689 @@ ClassImp(AliITSv11GeometrySupport)
 #define SQ(A) (A)*(A)
 
 //______________________________________________________________________
-void AliITSv11GeometrySupport::SPDCone(TGeoVolume *moth,TGeoManager *mgr){
-    // Define the detail SPD support cone geometry.
-    // Inputs:
-    //   TGeoVolume  *moth  The mother volume to place this object.
-    //   TGeoManager *mgr   A pointer to the Geo-Manager default gGeoManager
-    // Outputs:
-    //  none.
-    // Return:
-    //  none.
+void AliITSv11GeometrySupport::SPDCone(TGeoVolume *moth,TGeoManager *mgr)
+{
+//
+// Creates the SPD thermal shield as a volume assembly
+// and adds it to the mother volume
+// (this is actually a merge of the previous SPDThermalSheald method
+// of AliITSv11GeometrySupport.cxx,v 1.9 2007/06/06 and the
+// CreateSPDThermalShield method of AliITSv11Hybrid)
+//
+// Input:
+//         moth : the TGeoVolume owing the volume structure
+//         mgr  : the GeoManager (default gGeoManager)
+// Output:
+//
+// Created:         ???          ???
+// Updated:      11 Dec 2007  Mario Sitta
+//
+// Technical data are taken from:  ALICE-Thermal Screen "Cone transition"
+// (thermal-screen1_a3.ps), "Cylinder" (thermal-screen2_a3.ps), "Half
+// assembly" (thermal-screen3_a3.ps), "Flange" (thermal-screen4_a3.ps)
 
-    SPDThermalSheald(moth,mgr);
+
+  // Dimensions of the Central shield
+  const Double_t kHalfLengthCentral  = 400.*fgkmm;
+  const Double_t kThicknessCentral   = 0.4*fgkmm;
+  const Double_t kInnerRadiusCentral = 8.1475*fgkcm;
+  const Double_t kOuterRadiusCentral = 9.9255*fgkcm;
+  const Double_t kInnerACentral = 3.1674*fgkcm;
+  const Double_t kInnerBCentral = 2.023 *fgkcm;
+  const Double_t kOuterACentral = 2.4374*fgkcm;
+  const Double_t kOuterBCentral = 3.8162*fgkcm;
+  // Dimensions of the EndCap shield
+  const Double_t kHalfLengthEndCap  = 25.*fgkmm;
+  const Double_t kThicknessEndCap   = 2.0*fgkmm;
+  const Double_t kInnerRadiusEndCap = 8.0775*fgkcm;
+  const Double_t kOuterRadiusEndCap = 9.9955*fgkcm;
+  const Double_t kInnerAEndCap = 3.1453*fgkcm;
+  const Double_t kInnerBEndCap = 2.0009*fgkcm;
+  const Double_t kOuterAEndCap = 2.4596*fgkcm;
+  const Double_t kOuterBEndCap = 3.8384*fgkcm;
+  // Dimensions of the Cone shield
+  const Double_t kHalfLengthCone  = 145.*fgkmm;
+  const Double_t kThicknessCone   = 0.3*fgkmm;
+  const Double_t kInnerRadialCone = 37.3*fgkcm;
+  const Double_t kOuterRadialCone = 39.0*fgkcm;
+  const Double_t kInnerACone = 14.2344*fgkcm;
+  //  const Double_t kInnerBCone =  9.0915*fgkcm;
+  const Double_t kOuterACone =  9.5058*fgkcm;
+  //  const Double_t kOuterBCone = 14.8831*fgkcm;
+  // Dimensions of the Flange's Ring and Wing
+  const Double_t kHalfLengthRing  = 7.5*fgkmm;
+  const Double_t kThicknessRing   = 0.3*fgkmm;
+  const Double_t kInnerRadiusRing = 37.3*fgkcm;
+  const Double_t kOuterRadiusRing = 42.0*fgkcm;
+  const Double_t kOuterRadiusWing = 49.25*fgkcm;
+  const Double_t kWideWing  = 6.0*fgkcm;
+  const Double_t kThetaWing = 45.0;
+  // Common data
+  const Double_t kTheta = 36.0*TMath::DegToRad();
+  const Double_t kThicknessOmega = 0.3*fgkmm;
+
+  // Local variables
+  Double_t x, y;
+  Double_t xshld[24], yshld[24];
+  Double_t xair[24] , yair[24];
+  Double_t xomega[48], yomega[48];
+  //  Double_t *xyarb8;
+
+  // The entire shield is made up of two half central shields
+  // symmetric with respect to the XZ plane, four half end cap
+  // shields, again symmetric with respect to the XZ plane, and four
+  // half cones, symmetric with respect to the XZ plane too.
+
+  TGeoVolumeAssembly *vM = new TGeoVolumeAssembly("ITSspdThermalShield");
+
+  // The central half shield: a half tube of carbon fiber,
+  // a similar but proportionally smaller half tube of air inside it,
+  // and a Omega-shaped carbon fiber insert inside the air.
+  // They are all XTru shapes
+
+  TGeoXtru *centralshape = new TGeoXtru(2);
+
+  CreateSPDThermalShape(kInnerACentral,kInnerBCentral,kInnerRadiusCentral,
+			kOuterACentral,kOuterBCentral,kOuterRadiusCentral,
+			kTheta,xshld,yshld);
+
+  centralshape->DefinePolygon(24,xshld,yshld);
+  centralshape->DefineSection(0,-kHalfLengthCentral);
+  centralshape->DefineSection(1, kHalfLengthCentral);
+
+  // Now rescale to get the air volume dimensions
+    InsidePoint(xshld[23], yshld[23],
+		xshld[ 0], yshld[ 0],
+		xshld[ 1], yshld[ 1], kThicknessCentral,
+		xair[0], yair[0]);
+  for (Int_t i=1; i<23; i++) {
+    InsidePoint(xshld[i-1], yshld[i-1],
+		xshld[ i ], yshld[ i ],
+		xshld[i+1], yshld[i+1], kThicknessCentral,
+		xair[i], yair[i]);
+  }
+    InsidePoint(xshld[22], yshld[22],
+		xshld[23], yshld[23],
+		xshld[ 0], yshld[ 0], kThicknessCentral,
+		xair[23], yair[23]);
+
+  // Create the air shape
+  TGeoXtru *centralairshape = new TGeoXtru(2);
+
+  centralairshape->DefinePolygon(24,xair,yair);
+  centralairshape->DefineSection(0,-kHalfLengthCentral);
+  centralairshape->DefineSection(1, kHalfLengthCentral);
+
+  // Create the Omega insert
+  TGeoXtru *centralomegashape = new TGeoXtru(2);
+
+  CreateSPDOmegaShape(xair,yair,kTheta,kThicknessOmega,xomega,yomega);
+
+  centralomegashape->DefinePolygon(48,xomega,yomega);
+  centralomegashape->DefineSection(0,-kHalfLengthCentral);
+  centralomegashape->DefineSection(1, kHalfLengthCentral);
+
+  // The end cap half shield: a half tube of carbon fiber,
+  // a similar but proportionally smaller half tube of air inside it,
+  // and a Omega-shaped carbon fiber insert inside the air.
+  // They are all XTru shapes
+
+  TGeoXtru *endcapshape = new TGeoXtru(2);
+
+  CreateSPDThermalShape(kInnerAEndCap,kInnerBEndCap,kInnerRadiusEndCap,
+			kOuterAEndCap,kOuterBEndCap,kOuterRadiusEndCap,
+			kTheta,xshld,yshld);
+
+  endcapshape->DefinePolygon(24,xshld,yshld);
+  endcapshape->DefineSection(0,-kHalfLengthEndCap);
+  endcapshape->DefineSection(1, kHalfLengthEndCap);
+
+  // Now rescale to get the air volume dimensions
+    InsidePoint(xshld[23], yshld[23],
+		xshld[ 0], yshld[ 0],
+		xshld[ 1], yshld[ 1], kThicknessEndCap,
+		xair[0], yair[0]);
+  for (Int_t i=1; i<23; i++) {
+    InsidePoint(xshld[i-1], yshld[i-1],
+		xshld[ i ], yshld[ i ],
+		xshld[i+1], yshld[i+1], kThicknessEndCap,
+		xair[i], yair[i]);
+  }
+    InsidePoint(xshld[22], yshld[22],
+		xshld[23], yshld[23],
+		xshld[ 0], yshld[ 0], kThicknessEndCap,
+		xair[23], yair[23]);
+
+  // Create the air shape
+  TGeoXtru *endcapairshape = new TGeoXtru(2);
+
+  endcapairshape->DefinePolygon(24,xair,yair);
+  endcapairshape->DefineSection(0,-kHalfLengthEndCap);
+  endcapairshape->DefineSection(1, kHalfLengthEndCap);
+
+  // Create the Omega insert
+  TGeoXtru *endcapomegashape = new TGeoXtru(2);
+
+  CreateSPDOmegaShape(xair,yair,kTheta,kThicknessOmega,xomega,yomega);
+
+  endcapomegashape->DefinePolygon(48,xomega,yomega);
+  endcapomegashape->DefineSection(0,-kHalfLengthEndCap);
+  endcapomegashape->DefineSection(1, kHalfLengthEndCap);
+
+  // The cone half shield is more complex since there is no basic
+  // TGeo shape to describe it correctly. So it is made of a series
+  // of TGeoArb8 shapes filled with air, which all together make up the
+  // the cone AND its internal insert. Part of the following code is
+  // adapted from SPDThermalSheald method.
+
+  // Filled portions
+  TGeoArb8 *sC1 = new TGeoArb8(kHalfLengthCone);
+  TGeoArb8 *sC2 = new TGeoArb8(kHalfLengthCone);
+
+  CreateSPDThermalShape(kInnerACentral,kInnerBCentral,kInnerRadiusCentral,
+			kOuterACentral,kOuterBCentral,kOuterRadiusCentral,
+			kTheta,xshld,yshld);
+
+  sC1->SetVertex(0,xshld[12],yshld[12]);
+  sC1->SetVertex(1,xshld[11],yshld[11]);
+  sC1->SetVertex(2,xshld[ 0],yshld[ 0]);
+  sC1->SetVertex(3,xshld[23],yshld[23]);
+
+  sC2->SetVertex(0,xshld[11],yshld[11]);
+  sC2->SetVertex(1,xshld[10],yshld[10]);
+  sC2->SetVertex(2,xshld[ 1],yshld[ 1]);
+  sC2->SetVertex(3,xshld[ 0],yshld[ 0]);
+
+  // Drawings give only the radius, convert it to the apothegm
+  Double_t kInnerRadiusCone = TMath::Sqrt(kInnerRadialCone*kInnerRadialCone
+					  - 0.25*kInnerACone*kInnerACone);
+  Double_t kOuterRadiusCone = TMath::Sqrt(kOuterRadialCone*kOuterRadialCone
+					  - 0.25*kOuterACone*kOuterACone);
+
+  Double_t xco[4], yco[4], xci[4], yci[4];
+
+  for (Int_t i=0; i<2; i++) {
+    Double_t th = i*kTheta*TMath::RadToDeg();
+    xco[2*i  ] = kOuterRadiusCone*SinD(th) - 0.5*kOuterACone*CosD(th);
+    yco[2*i  ] = kOuterRadiusCone*CosD(th) + 0.5*kOuterACone*SinD(th);
+    xci[2*i  ] = kInnerRadiusCone*SinD(th) - 0.5*kInnerACone*CosD(th);
+    yci[2*i  ] = kInnerRadiusCone*CosD(th) + 0.5*kInnerACone*SinD(th);
+    xco[2*i+1] = kOuterRadiusCone*SinD(th) + 0.5*kOuterACone*CosD(th);
+    yco[2*i+1] = kOuterRadiusCone*CosD(th) - 0.5*kOuterACone*SinD(th);
+    xci[2*i+1] = kInnerRadiusCone*SinD(th) + 0.5*kInnerACone*CosD(th);
+    yci[2*i+1] = kInnerRadiusCone*CosD(th) - 0.5*kInnerACone*SinD(th);
+  }
+
+  sC1->SetVertex(4,xco[0],yco[0]);
+  sC1->SetVertex(5,xco[1],yco[1]);
+  sC1->SetVertex(6,xci[1],yci[1]);
+  sC1->SetVertex(7,xci[0],yci[0]);
+
+  sC2->SetVertex(4,xco[1],yco[1]);
+  sC2->SetVertex(5,xco[2],yco[2]);
+  sC2->SetVertex(6,xci[2],yci[2]);
+  sC2->SetVertex(7,xci[1],yci[1]);
+
+  // Air holes
+  TGeoArb8 *sCh1 = new TGeoArb8(kHalfLengthCone);
+  TGeoArb8 *sCh2 = new TGeoArb8(kHalfLengthCone);
+
+  for(Int_t i=0; i<4; i++){
+    InsidePoint(sC1->GetVertices()[((i+3)%4)*2+0],
+		sC1->GetVertices()[((i+3)%4)*2+1],
+		sC1->GetVertices()[i*2+0],
+		sC1->GetVertices()[i*2+1],
+		sC1->GetVertices()[((i+1)%4)*2+0],
+		sC1->GetVertices()[((i+1)%4)*2+1],-kThicknessCone,x,y);
+    sCh1->SetVertex(i,x,y);
+
+    InsidePoint(sC1->GetVertices()[((i+3)%4 +4)*2+0],
+		sC1->GetVertices()[((i+3)%4 +4)*2+1],
+		sC1->GetVertices()[(i+4)*2+0],
+		sC1->GetVertices()[(i+4)*2+1],
+		sC1->GetVertices()[((i+1)%4 +4)*2+0],
+		sC1->GetVertices()[((i+1)%4 +4)*2+1],-kThicknessCone,x,y);
+    sCh1->SetVertex(i+4,x,y);
+
+    InsidePoint(sC2->GetVertices()[((i+3)%4)*2+0],
+		sC2->GetVertices()[((i+3)%4)*2+1],
+		sC2->GetVertices()[i*2+0],
+		sC2->GetVertices()[i*2+1],
+		sC2->GetVertices()[((i+1)%4)*2+0],
+		sC2->GetVertices()[((i+1)%4)*2+1],-kThicknessCone,x,y);
+    sCh2->SetVertex(i,x,y);
+
+    InsidePoint(sC2->GetVertices()[((i+3)%4 +4)*2+0],
+		sC2->GetVertices()[((i+3)%4 +4)*2+1],
+		sC2->GetVertices()[(i+4)*2+0],
+		sC2->GetVertices()[(i+4)*2+1],
+		sC2->GetVertices()[((i+1)%4 +4)*2+0],
+		sC2->GetVertices()[((i+1)%4 +4)*2+1],-kThicknessCone,x,y);
+    sCh2->SetVertex(i+4,x,y);
+  }
+
+  // Finally the carbon fiber Ring with its Wings and their
+  // stesalite inserts. They are Tube and TubeSeg shapes
+
+  TGeoTube *ringshape = new TGeoTube(kInnerRadiusRing,kOuterRadiusRing,
+				     kHalfLengthRing);
+
+  TGeoTube *ringinsertshape = new TGeoTube(kInnerRadiusRing+kThicknessRing,
+					   kOuterRadiusRing-kThicknessRing,
+					   kHalfLengthRing-kThicknessRing);
+
+  Double_t angleWideWing, angleWideWingThickness;
+  angleWideWing = (kWideWing/kOuterRadiusWing)*TMath::RadToDeg();
+  angleWideWingThickness = (kThicknessRing/kOuterRadiusWing)*TMath::RadToDeg();
+
+  TGeoTubeSeg *wingshape = new TGeoTubeSeg(kOuterRadiusRing,kOuterRadiusWing,
+					   kHalfLengthRing, 0, angleWideWing);
+
+  TGeoTubeSeg *winginsertshape = new TGeoTubeSeg(kOuterRadiusRing,
+             kOuterRadiusWing-kThicknessRing, kHalfLengthRing-kThicknessRing,
+             angleWideWingThickness, angleWideWing-angleWideWingThickness);
+
+
+  // We have the shapes: now create the real volumes
+
+  TGeoMedium *medSPDcf  = mgr->GetMedium("ITS_SPD shield$");
+  TGeoMedium *medSPDair = mgr->GetMedium("ITS_SPD AIR$");
+  TGeoMedium *medSPDste = mgr->GetMedium("ITS_G10FR4$"); // stesalite
+
+  TGeoVolume *centralshield = new TGeoVolume("SPDcentralshield",
+					     centralshape,medSPDcf);
+  centralshield->SetVisibility(kTRUE);
+  centralshield->SetLineColor(7);
+  centralshield->SetLineWidth(1);
+
+  TGeoVolume *centralairshield = new TGeoVolume("SPDcentralairshield",
+						centralairshape,medSPDair);
+  centralairshield->SetVisibility(kTRUE);
+  centralairshield->SetLineColor(5); // Yellow
+  centralairshield->SetLineWidth(1);
+  centralairshield->SetFillColor(centralairshield->GetLineColor());
+  centralairshield->SetFillStyle(4090); // 90% transparent
+
+  TGeoVolume *centralomega = new TGeoVolume("SPDcentralomega",
+					     centralomegashape,medSPDcf);
+  centralomega->SetVisibility(kTRUE);
+  centralomega->SetLineColor(7);
+  centralomega->SetLineWidth(1);
+
+  centralairshield->AddNode(centralomega,1,0);
+  centralshield->AddNode(centralairshield,1,0);
+
+  TGeoVolume *endcapshield = new TGeoVolume("SPDendcapshield",
+					     endcapshape,medSPDcf);
+  endcapshield->SetVisibility(kTRUE);
+  endcapshield->SetLineColor(7);
+  endcapshield->SetLineWidth(1);
+
+  TGeoVolume *endcapairshield = new TGeoVolume("SPDendcapairshield",
+						endcapairshape,medSPDair);
+  endcapairshield->SetVisibility(kTRUE);
+  endcapairshield->SetLineColor(5); // Yellow
+  endcapairshield->SetLineWidth(1);
+  endcapairshield->SetFillColor(endcapairshield->GetLineColor());
+  endcapairshield->SetFillStyle(4090); // 90% transparent
+
+  TGeoVolume *endcapomega = new TGeoVolume("SPDendcapomega",
+					   endcapomegashape,medSPDcf);
+  endcapomega->SetVisibility(kTRUE);
+  endcapomega->SetLineColor(7);
+  endcapomega->SetLineWidth(1);
+
+  endcapairshield->AddNode(endcapomega,1,0);
+  endcapshield->AddNode(endcapairshield,1,0);
+
+  TGeoVolume *vC1 = new TGeoVolume("SPDconeshieldV1",sC1,medSPDcf);
+  vC1->SetVisibility(kTRUE);
+  vC1->SetLineColor(7);
+  vC1->SetLineWidth(1);
+
+  TGeoVolume *vCh1 = new TGeoVolume("SPDconeshieldH1",sCh1,medSPDair);
+
+  vCh1->SetVisibility(kTRUE);
+  vCh1->SetLineColor(5); // Yellow
+  vCh1->SetLineWidth(1);
+  vCh1->SetFillColor(vCh1->GetLineColor());
+  vCh1->SetFillStyle(4090); // 90% transparent
+
+  vC1->AddNode(vCh1,1,0);
+
+  TGeoVolume *vC2 = new TGeoVolume("SPDconeshieldV2",sC2,medSPDcf);
+
+  vC2->SetVisibility(kTRUE);
+  vC2->SetLineColor(7);
+  vC2->SetLineWidth(1);
+
+  TGeoVolume *vCh2 = new TGeoVolume("SPDconeshieldH2",sCh2,medSPDair);
+
+  vCh2->SetVisibility(kTRUE);
+  vCh2->SetLineColor(5); // Yellow
+  vCh2->SetLineWidth(1);
+  vCh2->SetFillColor(vCh2->GetLineColor());
+  vCh2->SetFillStyle(4090); // 90% transparent
+
+  vC2->AddNode(vCh2,1,0);
+
+  TGeoVolume *ring = new TGeoVolume("SPDshieldring",ringshape,medSPDcf);
+  ring->SetVisibility(kTRUE);
+  ring->SetLineColor(7);
+  ring->SetLineWidth(1);
+
+  TGeoVolume *ringinsert = new TGeoVolume("SPDshieldringinsert",
+					  ringinsertshape,medSPDste);
+  ringinsert->SetVisibility(kTRUE);
+  ringinsert->SetLineColor(3); // Green
+//  ringinsert->SetLineWidth(1);
+  ringinsert->SetFillColor(ringinsert->GetLineColor());
+  ringinsert->SetFillStyle(4010); // 10% transparent
+
+  ring->AddNode(ringinsert,1,0);
+
+  TGeoVolume *wing = new TGeoVolume("SPDshieldringwing",wingshape,medSPDcf);
+  wing->SetVisibility(kTRUE);
+  wing->SetLineColor(7);
+  wing->SetLineWidth(1);
+
+  TGeoVolume *winginsert = new TGeoVolume("SPDshieldringinsert",
+					  winginsertshape,medSPDste);
+  winginsert->SetVisibility(kTRUE);
+  winginsert->SetLineColor(3); // Green
+//  winginsert->SetLineWidth(1);
+  winginsert->SetFillColor(winginsert->GetLineColor());
+  winginsert->SetFillStyle(4010); // 10% transparent
+
+  wing->AddNode(winginsert,1,0);
+
+
+  // Add all volumes in the assembly
+  vM->AddNode(centralshield,1,0);
+  vM->AddNode(centralshield,2,new TGeoRotation("",180,0,0));
+
+  vM->AddNode(endcapshield,1,
+	      new TGeoTranslation(0,0, kHalfLengthCentral+kHalfLengthEndCap));
+  vM->AddNode(endcapshield,2,
+	      new TGeoTranslation(0,0,-kHalfLengthCentral-kHalfLengthEndCap));
+  vM->AddNode(endcapshield,3,new TGeoCombiTrans(
+              0, 0, kHalfLengthCentral+kHalfLengthEndCap,
+	      new TGeoRotation("",180,0,0)     ) );
+  vM->AddNode(endcapshield,4,new TGeoCombiTrans(
+              0, 0,-kHalfLengthCentral-kHalfLengthEndCap,
+	      new TGeoRotation("",180,0,0)     ) );
+
+  for (Int_t i=0; i<10; i++) {
+    Double_t thetaC12 = kTheta*TMath::RadToDeg();
+    vM->AddNode(vC1,2*i+1, new TGeoCombiTrans(
+               0, 0,  kHalfLengthCentral+2*kHalfLengthEndCap+kHalfLengthCone,
+	       new TGeoRotation("",0,  0,i*thetaC12)   ) );
+    vM->AddNode(vC1,2*i+2, new TGeoCombiTrans(
+               0, 0, -kHalfLengthCentral-2*kHalfLengthEndCap-kHalfLengthCone,
+	       new TGeoRotation("",0,180,i*thetaC12)   ) );
+    vM->AddNode(vC2,2*i+1, new TGeoCombiTrans(
+               0, 0,  kHalfLengthCentral+2*kHalfLengthEndCap+kHalfLengthCone,
+	       new TGeoRotation("",0,  0,i*thetaC12)   ) );
+    vM->AddNode(vC2,2*i+2, new TGeoCombiTrans(
+               0, 0, -kHalfLengthCentral-2*kHalfLengthEndCap-kHalfLengthCone,
+	       new TGeoRotation("",0,180,i*thetaC12)   ) );
+  }
+
+  vM->AddNode(ring,1,new TGeoTranslation(0, 0,
+	      kHalfLengthCentral+2*kHalfLengthEndCap+2*kHalfLengthCone
+             +kHalfLengthRing));
+  vM->AddNode(ring,2,new TGeoTranslation(0, 0,
+	     -kHalfLengthCentral-2*kHalfLengthEndCap-2*kHalfLengthCone
+             -kHalfLengthRing));
+
+  for (Int_t i=0; i<4; i++) {
+    Double_t thetaW = kThetaWing*(2*i+1);
+    vM->AddNode(wing,2*i+1,new TGeoCombiTrans(0, 0,
+	      kHalfLengthCentral+2*kHalfLengthEndCap+2*kHalfLengthCone
+             +kHalfLengthRing, new TGeoRotation("",thetaW,0,0)  ));
+    vM->AddNode(wing,2*i+2,new TGeoCombiTrans(0, 0,
+	     -kHalfLengthCentral-2*kHalfLengthEndCap-2*kHalfLengthCone
+             -kHalfLengthRing, new TGeoRotation("",thetaW,0,0)  ));
+  }
+
+  // Some debugging if requested
+  if(GetDebug(1)){
+    vM->PrintNodes();
+    vM->InspectShape();
+  }
+
+  // Finally put the entire shield in the mother volume
+  moth->AddNode(vM,1,0);
+
+  return;
 }
+
 //______________________________________________________________________
-void AliITSv11GeometrySupport::SPDThermalSheald(TGeoVolume *moth,
-                                                TGeoManager *mgr){
-    // Define the detail SPD Thermal Sheld geometry.
-    // Inputs:
-    //   TGeoVolume  *moth  The mother volume to place this object.
-    //   TGeoManager *mgr   A pointer to the Geo-Manager default gGeoManager
-    // Outputs:
-    //  none.
-    // Return:
-    //  none.
-    // From ALICE-Thermal Screen (SPD) "Cylinder" file thermal-screen2_a3.ps
-    // Volumes sA1,sA2,sA3,sAh1,sAh2,sAh3, and b1,b2,b3,bh1,bh2,bh3;
-    // "CONE TRANSITION" file thermal-screen1_a3.ps Volumes sC1,sC2,sC3,
-    // sCh1,sCh2, sCh3; "FLANGE" file thermal-screen4_a3.ps Volumes D,sDs,
-    // sDw,sDws; and "HALF ASSEMBLY" file thermal-screen3_a3.ps. This object,
-    // both halfs, are incased inside of a single minimum sized mother 
-    // volume called M, which is a union of two parts sM1 and 4 copies of sM2.
-    const Double_t ktscarbonFiberThA = 0.03*fgkmm; // 
-    const Double_t ktscarbonFiberThB = 0.10*fgkmm; //
-    const Double_t ktscLengthB  = 50.0*fgkmm; //
-    const Double_t ktscLengthA  = 900.0*fgkmm-2.0*ktscLengthB; //
-    const Double_t ktscLengthC  = 290.0*fgkmm; //
-    const Double_t ktscLengthD  = 15.0*fgkmm; //
-    const Double_t ktscAngle    = 36.0*fgkDegree;//Rep. angle of cent. accordin
-    const Double_t ktscRoutA    = 99.255*fgkmm; // Outer radii
-    const Double_t ktscRinA     = 81.475*fgkmm; // Iner radii
-    const Double_t ktscRoutB    = 99.955*fgkmm; // Outer radii
-    const Double_t ktscRinB     = 80.775*fgkmm; // Iner radii
-    const Double_t ktscRoutCp   = 390.0*fgkmm;  // Outer radii
-    const Double_t ktscRinCp    = 373.0*fgkmm;  // Iner radii
-    Double_t ktscRoutC,ktscRinC; // values need to be calculated
-    const Double_t ktscRwingD   = 492.5*fgkmm;  // Outer radii
-    const Double_t ktscRoutD    = 0.5*840.*fgkmm;// Outer radii
-    const Double_t ktscRinD     = 373.0*fgkmm;  // Iner radii
-    // angular wing
-    const Double_t ktscAngleDD  = (60.*fgkmm/ktscRwingD)*fgkRadian;
-                                  // carbon fiber in angle
-    const Double_t ktscAngleDDs = (ktscarbonFiberThA/ktscRwingD)*fgkRadian;
-    const Double_t ktscAngleD0  = 45.*fgkDegree;//Strting angle of wing
-    const Double_t ktscoutSA    = 24.372*fgkmm; // The other one Calculated
-    const Double_t ktscinLA     = 31.674*fgkmm; // The ohter one Calculated
-    const Double_t ktscoutSB    = 24.596*fgkmm; // The other one Calculated
-    const Double_t ktscinLB     = 31.453*fgkmm; // The ohter one Calculated
-    const Double_t ktscoutSC    = 148.831*fgkmm;// The other one Calculated
-    const Double_t ktscinLC     = 90.915*fgkmm; // The ohter one Calculated
-    Int_t i,k;
-    Double_t th,x,y;
-    Double_t xo[7],yo[7],xi[7],yi[7];
-    Double_t xbo[7],ybo[7],xbi[7],ybi[7];
-    Double_t xco[7],yco[7],xci[7],yci[7];
-    TGeoArb8 *sA1,*sA2,*sA3,*sAh1,*sAh2,*sAh3,*sB1,*sB2,*sB3,*sBh1,*sBh2,*sBh3;
-    TGeoArb8 *sC1,*sC2,*sC3,*sCh1,*sCh2,*sCh3;
-    //TGeoPcon *sM1;
-    TGeoTube  *sD,*sDs;
-    TGeoTubeSeg *sDw,*sDws;//,*sM2;
-    //TGeoCompositeShape *sM;
-    TGeoRotation *rot,*rot2;
-    TGeoTranslation *tranb,*tranbm,*tranc,*trancm;
-    //TGeoTranslation *tranITSspdShealdVVt0;
-    TGeoCombiTrans *rotITSspdShealdVVt1,*rotITSspdShealdVVt2;
-    TGeoCombiTrans *rotITSspdShealdVVt3;
-    TGeoMedium *medSPDcf  = 0; // SPD support cone Carbon Fiber materal number.
-    TGeoMedium *medSPDfs  = 0; // SPD support cone inserto stesalite 4411w.
-    TGeoMedium *medSPDfo  = 0; // SPD support cone foam, Rohacell 50A.
-    TGeoMedium *medSPDss  = 0; // SPD support cone screw material,Stainless
-    TGeoMedium *medSPDair = 0; // SPD support cone Air
-    //TGeoMedium *medSPDal  = 0; // SPD support cone SDD mounting bracket Al
+void AliITSv11GeometrySupport::CreateSPDThermalShape(
+     Double_t ina, Double_t inb, Double_t inr,
+     Double_t oua, Double_t oub, Double_t our,
+     Double_t   t, Double_t *x , Double_t *y )
+{
+//
+// Creates the proper sequence of X and Y coordinates to determine
+// the base XTru polygon for the SPD thermal shapes
+//
+// Input:
+//        ina, inb : inner shape sides
+//        inr      : inner radius
+//        oua, oub : outer shape sides
+//        our      : outer radius
+//        t        : theta angle
+//
+// Output:
+//        x, y : coordinate vectors [24]
+//
+// Created:      14 Nov 2007  Mario Sitta
+// Updated:      11 Dec 2007  Mario Sitta
+//
+  Double_t xlocal[6],ylocal[6];
 
-    ktscRoutC = TMath::Sqrt(ktscRoutCp*ktscRoutCp-0.25*ktscoutSC*ktscoutSC);
-    ktscRinC  = TMath::Sqrt(ktscRinCp *ktscRinCp -0.25*ktscinLC *ktscinLC );
-    sA1  = new TGeoArb8("ITS SPD Therm Screen Clyinder A1",0.5*ktscLengthA);
-    sA2  = new TGeoArb8("ITS SPD Therm Screen Clyinder A2",0.5*ktscLengthA);
-    sA3  = new TGeoArb8("ITS SPD Therm Screen Clyinder A3",0.5*ktscLengthA);
-    sAh1 = new TGeoArb8("ITS SPD Therm Screen Cylinder Ah1",0.5*ktscLengthA);
-    sAh2 = new TGeoArb8("ITS SPD Therm Screen Cylinder Ah2",0.5*ktscLengthA);
-    sAh3 = new TGeoArb8("ITS SPD Therm Screen Cylinder Ah3",0.5*ktscLengthA);
-    sB1  = new TGeoArb8("ITS SPD Therm Screen Clyinder B1",0.5*ktscLengthB);
-    sB2  = new TGeoArb8("ITS SPD Therm Screen Clyinder B2",0.5*ktscLengthB);
-    sB3  = new TGeoArb8("ITS SPD Therm Screen Clyinder B3",0.5*ktscLengthB);
-    sBh1 = new TGeoArb8("ITS SPD Therm Screen Cylinder Bh1",0.5*ktscLengthB);
-    sBh2 = new TGeoArb8("ITS SPD Therm Screen Cylinder Bh2",0.5*ktscLengthB);
-    sBh3 = new TGeoArb8("ITS SPD Therm Screen Cylinder Bh3",0.5*ktscLengthB);
-    sC1  = new TGeoArb8("ITS SPD Therm Screen Clyinder C1",0.5*ktscLengthC);
-    sC2  = new TGeoArb8("ITS SPD Therm Screen Clyinder C2",0.5*ktscLengthC);
-    sC3  = new TGeoArb8("ITS SPD Therm Screen Clyinder C3",0.5*ktscLengthC);
-    sCh1 = new TGeoArb8("ITS SPD Therm Screen Cylinder Ch1",0.5*ktscLengthC);
-    sCh2 = new TGeoArb8("ITS SPD Therm Screen Cylinder Ch2",0.5*ktscLengthC);
-    sCh3 = new TGeoArb8("ITS SPD Therm Screen Cylinder Ch3",0.5*ktscLengthC);
-    sD = new TGeoTube("ITS SPD Therm Screen Flange D",ktscRinD,ktscRoutD,
-                      0.5*ktscLengthD);
-    sDs = new TGeoTube("ITS SPD Therm Screen Flange fill Ds",
-                       sD->GetRmin()+ktscarbonFiberThA,
-                       sD->GetRmax()-ktscarbonFiberThA,
-                       sD->GetDz()-ktscarbonFiberThA);
-    sDw = new TGeoTubeSeg("ITS SPD Therm Screen Flange Wing Dw",
-                          ktscRoutD,ktscRwingD-0.05/*fuge*/,0.5*ktscLengthD,
-                          ktscAngleD0-0.5*ktscAngleDD,
-                          ktscAngleD0+0.5*ktscAngleDD);
-    sDws = new TGeoTubeSeg("ITS SPD Therm Screen Flange Wing Fill Ds",
-                           sDw->GetRmin(),sDw->GetRmax()-ktscarbonFiberThA,
-                           sDw->GetDz()-ktscarbonFiberThA,
-                           sDw->GetPhi1()+ktscAngleDDs,
-                           sDw->GetPhi2()-ktscAngleDDs);
-    k = 0;
-    for(i=-1;i<2;i++){
-        th = ((Double_t)(i+1))*ktscAngle*fgkDegree;
-        xo[k]  = ktscRoutA*SinD(th) - 0.5*ktscoutSA*CosD(th);
-        yo[k]  = ktscRoutA*CosD(th) + 0.5*ktscoutSA*SinD(th);
-        xi[k]  = ktscRinA *SinD(th) - 0.5*ktscinLA *CosD(th);
-        yi[k]  = ktscRinA *CosD(th) + 0.5*ktscinLA *SinD(th);
-        xbo[k] = ktscRoutB*SinD(th) - 0.5*ktscoutSB*CosD(th);
-        ybo[k] = ktscRoutB*CosD(th) + 0.5*ktscoutSB*SinD(th);
-        xbi[k] = ktscRinB *SinD(th) - 0.5*ktscinLB *CosD(th);
-        ybi[k] = ktscRinB *CosD(th) + 0.5*ktscinLB *SinD(th);
-        xco[k] = ktscRoutC*SinD(th) - 0.5*ktscoutSC*CosD(th);
-        yco[k] = ktscRoutC*CosD(th) + 0.5*ktscoutSC*SinD(th);
-        xci[k] = ktscRinC *SinD(th) - 0.5*ktscinLC *CosD(th);
-        yci[k] = ktscRinC *CosD(th) + 0.5*ktscinLC *SinD(th);
-        k++;
-        xo[k]  = ktscRoutA*SinD(th) + 0.5*ktscoutSA*CosD(th);
-        yo[k]  = ktscRoutA*CosD(th) - 0.5*ktscoutSA*SinD(th);
-        xi[k]  = ktscRinA *SinD(th) + 0.5*ktscinLA *CosD(th);
-        yi[k]  = ktscRinA *CosD(th) - 0.5*ktscinLA *SinD(th);
-        xbo[k] = ktscRoutB*SinD(th) + 0.5*ktscoutSB*CosD(th);
-        ybo[k] = ktscRoutB*CosD(th) - 0.5*ktscoutSB*SinD(th);
-        xbi[k] = ktscRinB *SinD(th) + 0.5*ktscinLB *CosD(th);
-        ybi[k] = ktscRinB *CosD(th) - 0.5*ktscinLB *SinD(th);
-        xco[k] = ktscRoutC*SinD(th) + 0.5*ktscoutSC*CosD(th);
-        yco[k] = ktscRoutC*CosD(th) - 0.5*ktscoutSC*SinD(th);
-        xci[k] = ktscRinC *SinD(th) + 0.5*ktscinLC *CosD(th);
-        yci[k] = ktscRinC *CosD(th) - 0.5*ktscinLC *SinD(th);
-        k++;
-    } // end for i
-    xo[6] = xo[5];
-    yo[6] = 0.0;
-    xi[6] = xi[5];
-    yi[6] = 0.0;
-    xbo[6] = xbo[5];
-    ybo[6] = 0.0;
-    xbi[6] = xbi[5];
-    ybi[6] = 0.0;
-    xco[6] = xco[5];
-    yco[6] = 0.0;
-    xci[6] = xci[5];
-    yci[6] = 0.0;
-    if(GetDebug(1)){
-        Info("SPDThermalSheald","i     \t  xo  yo    \t  xi yi     \t  xbo "
-             "ybo   \t   xbi ybi  \t   xco yco   \t   xci yci");
-        for(i=0;i<7;i++){
-            Info("SPDThermalSheald","%7d\t%7.4f,%7.4f\t%7.4f,%7.4f\t"
-                 "%7.4f,%7.4f\t%7.4f,%7.4f\t%7.4f,%7.4f\t%7.4f,%7.4f",i,
-                 xo[i],yo[i],xi[i],yi[i],
-                 xbo[i],ybo[i],xbi[i],ybi[i],
-                 xco[i],yco[i],xci[i],yci[i]);
-        } // end for i
-    } // end if GetDebug(1)
-    //+++++++++++++++++++++++++
-    sA1->SetVertex(0,xo[0],yo[0]);
-    sA1->SetVertex(1,xo[1],yo[1]);
-    sA1->SetVertex(2,xi[1],yi[1]);
-    sA1->SetVertex(3,xi[0],yi[0]);
-    //
-    sA2->SetVertex(0,xo[1],yo[1]);
-    sA2->SetVertex(1,xo[2],yo[2]);
-    sA2->SetVertex(2,xi[2],yi[2]);
-    sA2->SetVertex(3,xi[1],yi[1]);
-    //
-    sA3->SetVertex(0,xo[5],yo[5]);
-    sA3->SetVertex(1,xo[6],yo[6]);
-    sA3->SetVertex(2,xi[6],yi[6]);
-    sA3->SetVertex(3,xi[5],yi[5]);
-    //--------------------------
-    sB1->SetVertex(0,xbo[0],ybo[0]);
-    sB1->SetVertex(1,xbo[1],ybo[1]);
-    sB1->SetVertex(2,xbi[1],ybi[1]);
-    sB1->SetVertex(3,xbi[0],ybi[0]);
-    //
-    sB2->SetVertex(0,xbo[1],ybo[1]);
-    sB2->SetVertex(1,xbo[2],ybo[2]);
-    sB2->SetVertex(2,xbi[2],ybi[2]);
-    sB2->SetVertex(3,xbi[1],ybi[1]);
-    //
-    sB3->SetVertex(0,xbo[5],ybo[5]);
-    sB3->SetVertex(1,xbo[6],ybo[6]);
-    sB3->SetVertex(2,xbi[6],ybi[6]);
-    sB3->SetVertex(3,xbi[5],ybi[5]);
-    //--------------------------
-    sC1->SetVertex(0,xco[0],yco[0]);
-    sC1->SetVertex(1,xco[1],yco[1]);
-    sC1->SetVertex(2,xci[1],yci[1]);
-    sC1->SetVertex(3,xci[0],yci[0]);
-    //
-    sC2->SetVertex(0,xco[1],yco[1]);
-    sC2->SetVertex(1,xco[2],yco[2]);
-    sC2->SetVertex(2,xci[2],yci[2]);
-    sC2->SetVertex(3,xci[1],yci[1]);
-    //
-    sC3->SetVertex(0,xco[5],yco[5]);
-    sC3->SetVertex(1,xco[6],yco[6]);
-    sC3->SetVertex(2,xci[6],yci[6]);
-    sC3->SetVertex(3,xci[5],yci[5]);
-    // Defining the hole, filled with air
-    for(i=0;i<4;i++){ // define points at +dz
-        sA1->SetVertex(i+4,(sA1->GetVertices())[2*i],
-                       (sA1->GetVertices())[1+2*i]);
-        sA2->SetVertex(i+4,(sA2->GetVertices())[2*i],
-                       (sA2->GetVertices())[1+2*i]);
-        sA3->SetVertex(i+4,(sA3->GetVertices())[2*i],
-                       (sA3->GetVertices())[1+2*i]);
-        //
-        sB1->SetVertex(i+4,(sB1->GetVertices())[2*i],
-                       (sB1->GetVertices())[1+2*i]);
-        sB2->SetVertex(i+4,(sB2->GetVertices())[2*i],
-                       (sB2->GetVertices())[1+2*i]);
-        sB3->SetVertex(i+4,(sB3->GetVertices())[2*i],
-                       (sB3->GetVertices())[1+2*i]);
-        // C's are a cone which must match up with B's.
-        sC1->SetVertex(i+4,(sB1->GetVertices())[2*i],
-                       (sB1->GetVertices())[1+2*i]);
-        sC2->SetVertex(i+4,(sB2->GetVertices())[2*i],
-                       (sB2->GetVertices())[1+2*i]);
-        sC3->SetVertex(i+4,(sB3->GetVertices())[2*i],
-                       (sB3->GetVertices())[1+2*i]);
-    } // end for i
-    //
-    for(i=0;i<4;i++){
-        //printf("A1#%d ",i);
-        InsidePoint(sA1->GetVertices()[((i+3)%4)*2+0],
-                    sA1->GetVertices()[((i+3)%4)*2+1],
-                    sA1->GetVertices()[i*2+0],
-                    sA1->GetVertices()[i*2+1],
-                    sA1->GetVertices()[((i+1)%4)*2+0],
-                    sA1->GetVertices()[((i+1)%4)*2+1],-ktscarbonFiberThA,x,y);
-        sAh1->SetVertex(i,x,y);
-        //printf("A1#%d ",i+4);
-        InsidePoint(sA1->GetVertices()[((i+3)%4 +4)*2+0],
-                    sA1->GetVertices()[((i+3)%4 +4)*2+1],
-                    sA1->GetVertices()[(i+4)*2+0],
-                    sA1->GetVertices()[(i+4)*2+1],
-                    sA1->GetVertices()[((i+1)%4 +4)*2+0],
-                    sA1->GetVertices()[((i+1)%4 +4)*2+1],-ktscarbonFiberThA,x,y);
-        sAh1->SetVertex(i+4,x,y); // 7th point done last
-        //printf("A2#%d ",i);
-        InsidePoint(sA2->GetVertices()[((i+3)%4)*2+0],
-                    sA2->GetVertices()[((i+3)%4)*2+1],
-                    sA2->GetVertices()[i*2+0],
-                    sA2->GetVertices()[i*2+1],
-                    sA2->GetVertices()[((i+1)%4)*2+0],
-                    sA2->GetVertices()[((i+1)%4)*2+1],-ktscarbonFiberThA,x,y);
-        sAh2->SetVertex(i,x,y);
-        //printf("A2#%d ",i+4);
-        InsidePoint(sA2->GetVertices()[((i+3)%4 +4)*2+0],
-                    sA2->GetVertices()[((i+3)%4 +4)*2+1],
-                    sA2->GetVertices()[(i+4)*2+0],
-                    sA2->GetVertices()[(i+4)*2+1],
-                    sA2->GetVertices()[((i+1)%4 +4)*2+0],
-                    sA2->GetVertices()[((i+1)%4 +4)*2+1],-ktscarbonFiberThA,x,y);
-        sAh2->SetVertex(i+4,x,y); // 7th point done last
-        //printf("A3#%d ",i);
-        InsidePoint(sA3->GetVertices()[((i+3)%4)*2+0],
-                    sA3->GetVertices()[((i+3)%4)*2+1],
-                    sA3->GetVertices()[i*2+0],
-                    sA3->GetVertices()[i*2+1],
-                    sA3->GetVertices()[((i+1)%4)*2+0],
-                    sA3->GetVertices()[((i+1)%4)*2+1],-ktscarbonFiberThA,x,y);
-        sAh3->SetVertex(i,x,y);
-        //printf("A3#%d ",i+4);
-        InsidePoint(sA3->GetVertices()[((i+3)%4 +4)*2+0],
-                    sA3->GetVertices()[((i+3)%4 +4)*2+1],
-                    sA3->GetVertices()[(i+4)*2+0],
-                    sA3->GetVertices()[(i+4)*2+1],
-                    sA3->GetVertices()[((i+1)%4 +4)*2+0],
-                    sA3->GetVertices()[((i+1)%4 +4)*2+1],-ktscarbonFiberThA,x,y);
-        sAh3->SetVertex(i+4,x,y); // 7th point done last
-        //printf("B1#%d ",i);
-        InsidePoint(sB1->GetVertices()[((i+3)%4)*2+0],
-                    sB1->GetVertices()[((i+3)%4)*2+1],
-                    sB1->GetVertices()[i*2+0],
-                    sB1->GetVertices()[i*2+1],
-                    sB1->GetVertices()[((i+1)%4)*2+0],
-                    sB1->GetVertices()[((i+1)%4)*2+1],-ktscarbonFiberThB,x,y);
-        sBh1->SetVertex(i,x,y);
-        //printf("B1#%d ",i+4);
-        InsidePoint(sB1->GetVertices()[((i+3)%4 +4)*2+0],
-                    sB1->GetVertices()[((i+3)%4 +4)*2+1],
-                    sB1->GetVertices()[(i+4)*2+0],
-                    sB1->GetVertices()[(i+4)*2+1],
-                    sB1->GetVertices()[((i+1)%4 +4)*2+0],
-                    sB1->GetVertices()[((i+1)%4 +4)*2+1],-ktscarbonFiberThB,x,y);
-        sBh1->SetVertex(i+4,x,y); // 7th point done last
-        //printf("B2#%d ",i);
-        InsidePoint(sB2->GetVertices()[((i+3)%4)*2+0],
-                    sB2->GetVertices()[((i+3)%4)*2+1],
-                    sB2->GetVertices()[i*2+0],
-                    sB2->GetVertices()[i*2+1],
-                    sB2->GetVertices()[((i+1)%4)*2+0],
-                    sB2->GetVertices()[((i+1)%4)*2+1],-ktscarbonFiberThB,x,y);
-        sBh2->SetVertex(i,x,y);
-        //printf("B2#%d ",i+4);
-        InsidePoint(sB2->GetVertices()[((i+3)%4 +4)*2+0],
-                    sB2->GetVertices()[((i+3)%4 +4)*2+1],
-                    sB2->GetVertices()[(i+4)*2+0],
-                    sB2->GetVertices()[(i+4)*2+1],
-                    sB2->GetVertices()[((i+1)%4 +4)*2+0],
-                    sB2->GetVertices()[((i+1)%4 +4)*2+1],-ktscarbonFiberThB,x,y);
-        sBh2->SetVertex(i+4,x,y); // 7th point done last
-        //printf("B3#%d ",i);
-        InsidePoint(sB3->GetVertices()[((i+3)%4)*2+0],
-                    sB3->GetVertices()[((i+3)%4)*2+1],
-                    sB3->GetVertices()[i*2+0],
-                    sB3->GetVertices()[i*2+1],
-                    sB3->GetVertices()[((i+1)%4)*2+0],
-                    sB3->GetVertices()[((i+1)%4)*2+1],-ktscarbonFiberThB,x,y);
-        sBh3->SetVertex(i,x,y);
-        //printf("B3#%d ",i+4);
-        InsidePoint(sB3->GetVertices()[((i+3)%4 +4)*2+0],
-                    sB3->GetVertices()[((i+3)%4 +4)*2+1],
-                    sB3->GetVertices()[(i+4)*2+0],
-                    sB3->GetVertices()[(i+4)*2+1],
-                    sB3->GetVertices()[((i+1)%4 +4)*2+0],
-                    sB3->GetVertices()[((i+1)%4 +4)*2+1],-ktscarbonFiberThB,x,y);
-        sBh3->SetVertex(i+4,x,y); // 7th point done last
-        //printf("C1#%d ",i);
-        InsidePoint(sC1->GetVertices()[((i+3)%4)*2+0],
-                    sC1->GetVertices()[((i+3)%4)*2+1],
-                    sC1->GetVertices()[i*2+0],
-                    sC1->GetVertices()[i*2+1],
-                    sC1->GetVertices()[((i+1)%4)*2+0],
-                    sC1->GetVertices()[((i+1)%4)*2+1],-ktscarbonFiberThB,x,y);
-        sCh1->SetVertex(i,x,y);
-        //printf("C1#%d ",i+4);
-        InsidePoint(sC1->GetVertices()[((i+3)%4 +4)*2+0],
-                    sC1->GetVertices()[((i+3)%4 +4)*2+1],
-                    sC1->GetVertices()[(i+4)*2+0],
-                    sC1->GetVertices()[(i+4)*2+1],
-                    sC1->GetVertices()[((i+1)%4 +4)*2+0],
-                    sC1->GetVertices()[((i+1)%4 +4)*2+1],-ktscarbonFiberThA,x,y);
-        sCh1->SetVertex(i+4,x,y); // 7th point done last
-        //printf("C2#%d ",i);
-        InsidePoint(sC2->GetVertices()[((i+3)%4)*2+0],
-                    sC2->GetVertices()[((i+3)%4)*2+1],
-                    sC2->GetVertices()[i*2+0],
-                    sC2->GetVertices()[i*2+1],
-                    sC2->GetVertices()[((i+1)%4)*2+0],
-                    sC2->GetVertices()[((i+1)%4)*2+1],-ktscarbonFiberThA,x,y);
-        sCh2->SetVertex(i,x,y);
-        //printf("C2#%d ",i+4);
-        InsidePoint(sC2->GetVertices()[((i+3)%4 +4)*2+0],
-                    sC2->GetVertices()[((i+3)%4 +4)*2+1],
-                    sC2->GetVertices()[(i+4)*2+0],
-                    sC2->GetVertices()[(i+4)*2+1],
-                    sC2->GetVertices()[((i+1)%4 +4)*2+0],
-                  sC2->GetVertices()[((i+1)%4 +4)*2+1],-ktscarbonFiberThA,x,y);
-        sCh2->SetVertex(i+4,x,y); // 7th point done last
-        //printf("C3#%d ",i);
-        InsidePoint(sC3->GetVertices()[((i+3)%4)*2+0],
-                    sC3->GetVertices()[((i+3)%4)*2+1],
-                    sC3->GetVertices()[i*2+0],
-                    sC3->GetVertices()[i*2+1],
-                    sC3->GetVertices()[((i+1)%4)*2+0],
-                    sC3->GetVertices()[((i+1)%4)*2+1],-ktscarbonFiberThA,x,y);
-        sCh3->SetVertex(i,x,y);
-        //printf("C3#%d ",i+4);
-        InsidePoint(sC3->GetVertices()[((i+3)%4 +4)*2+0],
-                    sC3->GetVertices()[((i+3)%4 +4)*2+1],
-                    sC3->GetVertices()[(i+4)*2+0],
-                    sC3->GetVertices()[(i+4)*2+1],
-                    sC3->GetVertices()[((i+1)%4 +4)*2+0],
-                  sC3->GetVertices()[((i+1)%4 +4)*2+1],-ktscarbonFiberThA,x,y);
-        sCh3->SetVertex(i+4,x,y); // 7th point done last
-    } // end for i
-    //
-    // Define Minimal volume to inclose this SPD Thermal Sheald.
-    //
-    if(GetDebug(1)){
-        sD->InspectShape();
-        sDs->InspectShape();
-        sDw->InspectShape();
-        sDws->InspectShape();
-        sA1->InspectShape();
-        sAh1->InspectShape();
-        sA2->InspectShape();
-        sAh2->InspectShape();
-        sA3->InspectShape();
-        sAh3->InspectShape();
-        sB1->InspectShape();
-        sBh1->InspectShape();
-        sB2->InspectShape();
-        sBh2->InspectShape();
-        sB3->InspectShape();
-        sBh3->InspectShape();
-        sC1->InspectShape();
-        sCh1->InspectShape();
-        sC2->InspectShape();
-        sCh2->InspectShape();
-        sC3->InspectShape();
-        sCh3->InspectShape();
-        //sM1->InspectShape();
-        //sM2->InspectShape();
-        //sM->InspectShape();
-    } // end if GetDebug(1)
-    //
-    medSPDcf = mgr->GetMedium("ITSspdCarbonFiber");
-    medSPDfs = mgr->GetMedium("ITSspdStaselite4411w");
-    medSPDfo = mgr->GetMedium("ITSspdRohacell50A");
-    medSPDss = mgr->GetMedium("ITSspdStainlessSteal");
-    medSPDair= mgr->GetMedium("ITSspdAir");
-    TGeoVolume *vA1,*vA2,*vA3,*vAh1,*vAh2,*vAh3;
-    TGeoVolume *vB1,*vB2,*vB3,*vBh1,*vBh2,*vBh3;
-    TGeoVolume *vC1,*vC2,*vC3,*vCh1,*vCh2,*vCh3;
-    TGeoVolume *vD,*vDs,*vDw,*vDws;
-    TGeoVolumeAssembly *vM;
-    //vM = new TGeoVolume("ITSspdThermalShealdMother",sM,medSPDair);
-    vM = new TGeoVolumeAssembly("ITSspdThermalShealdMother");
-    //vM->SetVisibility(kTRUE);
-    //vM->SetLineColor(7); // light Blue
-    //vM->SetLineWidth(1);
-    //vM->SetFillColor(vM->GetLineColor());
-    //vM->SetFillStyle(4090); // 90% transparent
-    moth->AddNode(vM,1,0); ///////////////////// Virtual Volume ////////
-    vA1 = new TGeoVolume("ITSspdCentCylA1CF",sA1,medSPDcf);
-    vA1->SetVisibility(kTRUE);
-    vA1->SetLineColor(7);
-    vA1->SetLineWidth(1);
-    vA2 = new TGeoVolume("ITSspdCentCylA2CF",sA2,medSPDcf);
-    vA2->SetVisibility(kTRUE);
-    vA2->SetLineColor(7);
-    vA2->SetLineWidth(1);
-    vA3 = new TGeoVolume("ITSspdCentCylA3CF",sA3,medSPDcf);
-    vA3->SetVisibility(kTRUE);
-    vA3->SetLineColor(7);
-    vA3->SetLineWidth(1);
-    vB1 = new TGeoVolume("ITSspdCentCylB1CF",sB1,medSPDcf);
-    vB1->SetVisibility(kTRUE);
-    vB1->SetLineColor(7);
-    vB1->SetLineWidth(1);
-    vB2 = new TGeoVolume("ITSspdCentCylB2CF",sB2,medSPDcf);
-    vB2->SetVisibility(kTRUE);
-    vB2->SetLineColor(7);
-    vB2->SetLineWidth(1);
-    vB3 = new TGeoVolume("ITSspdCentCylB3CF",sB3,medSPDcf);
-    vB3->SetVisibility(kTRUE);
-    vB3->SetLineColor(7);
-    vB3->SetLineWidth(1);
-    vC1 = new TGeoVolume("ITSspdCentCylC1CF",sC1,medSPDcf);
-    vC1->SetVisibility(kTRUE);
-    vC1->SetLineColor(7);
-    vC1->SetLineWidth(1);
-    vC2 = new TGeoVolume("ITSspdCentCylC2CF",sC2,medSPDcf);
-    vC2->SetVisibility(kTRUE);
-    vC2->SetLineColor(7);
-    vC2->SetLineWidth(1);
-    vC3 = new TGeoVolume("ITSspdCentCylC3CF",sC3,medSPDcf);
-    vC3->SetVisibility(kTRUE);
-    vC3->SetLineColor(7);
-    vC3->SetLineWidth(1);
-    vAh1 = new TGeoVolume("ITSspdCentCylA1AirA",sAh1,medSPDair);
-    vAh1->SetVisibility(kTRUE);
-    vAh1->SetLineColor(5); // Yellow
-    vAh1->SetFillColor(vAh1->GetLineColor());
-    vAh1->SetFillStyle(4090); // 90% transparent
-    vAh2 = new TGeoVolume("ITSspdCentCylA2AirA",sAh2,medSPDair);
-    vAh2->SetVisibility(kTRUE);
-    vAh2->SetLineColor(5); // Yellow
-    vAh2->SetFillColor(vAh2->GetLineColor());
-    vAh2->SetFillStyle(4090); // 90% transparent
-    vAh3 = new TGeoVolume("ITSspdCentCylA3AirA",sAh3,medSPDair);
-    vAh3->SetVisibility(kTRUE);
-    vAh3->SetLineColor(5); // Yellow
-    vAh3->SetFillColor(vAh3->GetLineColor());
-    vAh3->SetFillStyle(4090); // 90% transparent
-    vBh1 = new TGeoVolume("ITSspdCentCylA1AirB",sBh1,medSPDair);
-    vBh1->SetVisibility(kTRUE);
-    vBh1->SetLineColor(5); // Yellow
-    vBh1->SetFillColor(vBh1->GetLineColor());
-    vBh1->SetFillStyle(4090); // 90% transparent
-    vBh2 = new TGeoVolume("ITSspdCentCylA2AirB",sBh2,medSPDair);
-    vBh2->SetVisibility(kTRUE);
-    vBh2->SetLineColor(5); // Yellow
-    vBh2->SetFillColor(vBh2->GetLineColor());
-    vBh2->SetFillStyle(4090); // 90% transparent
-    vBh3 = new TGeoVolume("ITSspdCentCylA3AirB",sBh3,medSPDair);
-    vBh3->SetVisibility(kTRUE);
-    vBh3->SetLineColor(5); // Yellow
-    vBh3->SetFillColor(vBh3->GetLineColor());
-    vBh3->SetFillStyle(4090); // 90% transparent
-    vCh1 = new TGeoVolume("ITSspdCentCylA1AirC",sCh1,medSPDair);
-    vCh1->SetVisibility(kTRUE);
-    vCh1->SetLineColor(5); // Yellow
-    vCh1->SetFillColor(vCh1->GetLineColor());
-    vCh1->SetFillStyle(4090); // 90% transparent
-    vCh2 = new TGeoVolume("ITSspdCentCylA2AirC",sCh2,medSPDair);
-    vCh2->SetVisibility(kTRUE);
-    vCh2->SetLineColor(5); // Yellow
-    vCh2->SetFillColor(vCh2->GetLineColor());
-    vCh2->SetFillStyle(4090); // 90% transparent
-    vCh3 = new TGeoVolume("ITSspdCentCylA3AirC",sCh3,medSPDair);
-    vCh3->SetVisibility(kTRUE);
-    vCh3->SetLineColor(5); // Yellow
-    vCh3->SetFillColor(vCh3->GetLineColor());
-    vCh3->SetFillStyle(4090); // 90% transparent
-    vD = new TGeoVolume("ITSspdCentCylA1CD",sD,medSPDcf);
-    vD->SetVisibility(kTRUE);
-    vD->SetLineColor(7);
-    vD->SetLineWidth(1);
-    vDw = new TGeoVolume("ITSspdCentCylA1CDw",sDw,medSPDcf);
-    vDw->SetVisibility(kTRUE);
-    vDw->SetLineColor(7);
-    vDw->SetLineWidth(1);
-    vDs = new TGeoVolume("ITSspdCentCylA1Dfill",sDs,medSPDfs);
-    vDs->SetVisibility(kTRUE);
-    vDs->SetLineColor(3); // Green
-    vDs->SetFillColor(vDs->GetLineColor());
-    vDs->SetFillStyle(4010); // 10% transparent
-    vDws = new TGeoVolume("ITSspdCentCylA1DwingFill",sDws,medSPDfs);
-    vDws->SetVisibility(kTRUE);
-    vDws->SetLineColor(3); // Green
-    vDws->SetFillColor(vDws->GetLineColor());
-    vDws->SetFillStyle(4010); // 10% transparent
-    //
-    vA1->AddNode(vAh1,1,0);
-    vA2->AddNode(vAh2,1,0);
-    vA3->AddNode(vAh3,1,0);
-    vB1->AddNode(vBh1,1,0);
-    vB2->AddNode(vBh2,1,0);
-    vB3->AddNode(vBh3,1,0);
-    vC1->AddNode(vCh1,1,0);
-    vC2->AddNode(vCh2,1,0);
-    vC3->AddNode(vCh3,1,0);
-    vD ->AddNode(vDs ,1,0);
-    vDw->AddNode(vDws,1,0);
-    //
-    vM->AddNode(vA1,1,0);
-    vM->AddNode(vA2,1,0);
-    vM->AddNode(vA3,1,0);
-    tranb  = new TGeoTranslation("",0.0,0.0,+sA1->GetDz()+sB1->GetDz());
-    tranbm = new TGeoTranslation("",0.0,0.0,-sA1->GetDz()-sB1->GetDz());
-    vM->AddNode(vB1,1,tranb);
-    vM->AddNode(vB2,1,tranb);
-    vM->AddNode(vB3,1,tranb);
-    vM->AddNode(vB1,2,tranbm);
-    vM->AddNode(vB2,2,tranbm);
-    vM->AddNode(vB3,2,tranbm);
-    // Muon side (rsB26) is at -.Z
-    TGeoRotation *roty180 = new TGeoRotation("",0.0,180.0,0.0);//Rotate about Y
-    tranc = new TGeoTranslation("",0.0,0.0,-sA1->GetDz()
-                                -2.*sB1->GetDz()-sC1->GetDz());
-    trancm = new TGeoTranslation("",0.0,0.0,sA1->GetDz()
-                                +2.*sB1->GetDz()+sC1->GetDz());
-    TGeoCombiTrans *trancmr = new TGeoCombiTrans(*trancm,*roty180);
-    vM->AddNode(vC1,1,tranc);
-    vM->AddNode(vC2,1,tranc);
-    vM->AddNode(vC3,1,tranc);
-    vM->AddNode(vC1,2,trancmr);
-    vM->AddNode(vC2,2,trancmr);
-    vM->AddNode(vC3,2,trancmr);
-    // added fudge factor of 0.075 to remove overlap with SSD cone.
-    x = sA1->GetDz()+2.*sB1->GetDz()+2.*sC1->GetDz()+sD->GetDz()+0.075;
-    TGeoTranslation *tranITSspdShealdVVt0m = 
-        new TGeoTranslation("ITSspdShealdVVt0m",0.0,0.0,-x);
-    TGeoTranslation *tranITSspdShealdVVt0 = 
-        new TGeoTranslation("ITSspdShealdVVt0",0.0,0.0,x);
-    TGeoRotation rotz90("",0.0,0.0,90.0); // never registered.
-    rotITSspdShealdVVt1 = new TGeoCombiTrans(*tranITSspdShealdVVt0,rotz90);
-    rotITSspdShealdVVt1->SetName("ITSspdShealdVVt1");
-    TGeoRotation rotz180("",0.0,0.0,180.0); // never registered
-    rotITSspdShealdVVt2 = new TGeoCombiTrans(*tranITSspdShealdVVt0,rotz180);
-    rotITSspdShealdVVt2->SetName("ITSspdShealdVVt2");
-    TGeoRotation rotz270("",0.0,0.0,270.0); // never registered
-    rotITSspdShealdVVt3 = new TGeoCombiTrans(*tranITSspdShealdVVt0,rotz270);
-    rotITSspdShealdVVt3->SetName("ITSspdShealdVVt3");
-    vM->AddNode(vD,1,tranITSspdShealdVVt0);
-    TGeoCombiTrans *roty180ITSspdShealdVVt0 = 
-        new TGeoCombiTrans(*tranITSspdShealdVVt0m,*roty180);
-    vM->AddNode(vD,2,roty180ITSspdShealdVVt0);
-    vM->AddNode(vDw,1,tranITSspdShealdVVt0);
-    vM->AddNode(vDw,2,rotITSspdShealdVVt1);
-    vM->AddNode(vDw,3,rotITSspdShealdVVt2);
-    vM->AddNode(vDw,4,rotITSspdShealdVVt3);
-    vM->AddNode(vDw,5,roty180ITSspdShealdVVt0);
-    //Rotate about Y then about new z 90
-    TGeoRotation *roty180z90 = new TGeoRotation("",0.0,180.0,90.0);
-    //Rotate about Y then about new z 180
-    TGeoRotation *roty180z180 = new TGeoRotation("",0.0,180.0,180.0);
-    //Rotate about Y then about new z 270
-    TGeoRotation *roty180z270 = new TGeoRotation("",0.0,180.0,270.0);
-    vM->AddNode(vDw,6,new TGeoCombiTrans(*tranITSspdShealdVVt0m,*roty180z90));
-    vM->AddNode(vDw,7,new TGeoCombiTrans(*tranITSspdShealdVVt0m,*roty180z180));
-    vM->AddNode(vDw,8,new TGeoCombiTrans(*tranITSspdShealdVVt0m,*roty180z270));
-    k=2;
-    for(i=1;i<10;i++) {
-        th = ((Double_t)i)*ktscAngle*fgkDegree;
-        rot = new TGeoRotation("",0.0,0.0,th);
-        rot2 = new TGeoRotation("",0.0,180.0,th);
-        vM->AddNode(vA1,i+1,rot);
-        vM->AddNode(vB1,i+2,new TGeoCombiTrans(*tranb,*rot));
-        vM->AddNode(vB1,i+12,new TGeoCombiTrans(*tranbm,*rot));
-        vM->AddNode(vC1,i+2,new TGeoCombiTrans(*tranc,*rot));
-        vM->AddNode(vC1,i+13,new TGeoCombiTrans(*trancm,*rot2));
-        if(i!=0||i!=2||i!=7){
-            vM->AddNode(vA2,k++,rot);
-            vM->AddNode(vB2,k++,new TGeoCombiTrans(*tranb,*rot));
-            vM->AddNode(vB2,k++,new TGeoCombiTrans(*tranbm,*rot));
-            vM->AddNode(vC2,k++,new TGeoCombiTrans(*tranc,*rot));
-            vM->AddNode(vC2,k++,new TGeoCombiTrans(*trancm,*rot2));
-        } // end if
-        if(i==5) {
-            vM->AddNode(vA3,2,rot);
-            vM->AddNode(vB3,3,new TGeoCombiTrans(*tranb,*rot));
-            vM->AddNode(vB3,4,new TGeoCombiTrans(*tranbm,*rot));
-            vM->AddNode(vC3,3,new TGeoCombiTrans(*tranc,*rot));
-            vM->AddNode(vC3,4,new TGeoCombiTrans(*trancm,*rot2));
-        } // end if
-    } // end for i
-    rot = new TGeoRotation("",180.,0.0,0.0);
-    rot2 = new TGeoRotation("",180.,180.,0.0);
-    vM->AddNode(vA3,3,rot);
-    vM->AddNode(vB3,5,new TGeoCombiTrans(*tranb,*rot));
-    vM->AddNode(vB3,6,new TGeoCombiTrans(*tranbm,*rot));
-    vM->AddNode(vC3,5,new TGeoCombiTrans(*tranc,*rot));
-    vM->AddNode(vC3,6,new TGeoCombiTrans(*trancm,*rot2));
-    rot = new TGeoRotation("",180.,0.0,180.0);
-    rot2 = new TGeoRotation("",180.,180.0,180.0);
-    vM->AddNode(vA3,4,rot);
-    vM->AddNode(vB3,7,new TGeoCombiTrans(*tranb,*rot));
-    vM->AddNode(vB3,8,new TGeoCombiTrans(*tranbm,*rot));
-    vM->AddNode(vC3,7,new TGeoCombiTrans(*tranc,*rot));
-    vM->AddNode(vC3,8,new TGeoCombiTrans(*trancm,*rot2));
-    if(GetDebug(1)){
-        vM->PrintNodes();
-        vM->InspectShape();
-    } // end if
+  //Create the first inner quadrant (X > 0)
+  FillSPDXtruShape(ina,inb,inr,t,xlocal,ylocal);
+  for (Int_t i=0; i<6; i++) {
+    x[i] = xlocal[i];
+    y[i] = ylocal[i];
+  }
+
+  // Then reflex on the second quadrant (X < 0)
+  for (Int_t i=0; i<6; i++) {
+    x[23-i] = -x[i];
+    y[23-i] =  y[i];
+  }
+
+  // Now create the first outer quadrant (X > 0)
+  FillSPDXtruShape(oua,oub,our,t,xlocal,ylocal);
+  for (Int_t i=0; i<6; i++) {
+    x[11-i] = xlocal[i];
+    y[11-i] = ylocal[i];
+  }
+
+  // Finally reflex on the second quadrant (X < 0)
+  for (Int_t i=0; i<6; i++) {
+    x[12+i] = -x[11-i];
+    y[12+i] =  y[11-i];
+  }
+
+  return;
 }
+
+//______________________________________________________________________
+void AliITSv11GeometrySupport::CreateSPDOmegaShape(
+                             Double_t *xin, Double_t *yin, Double_t  t,
+			     Double_t    d, Double_t   *x, Double_t *y)
+{
+//
+// Creates the proper sequence of X and Y coordinates to determine
+// the SPD Omega XTru polygon
+//
+// Input:
+//        xin, yin : coordinates of the air volume
+//        d        : Omega shape thickness
+//        t        : theta angle
+//
+// Output:
+//        x, y     : coordinate vectors [48]
+//
+// Created:      17 Nov 2007  Mario Sitta
+// Updated:      11 Dec 2007  Mario Sitta
+//
+  Double_t xlocal[6],ylocal[6];
+
+  // First determine various parameters
+  Double_t ina = TMath::Sqrt( (xin[23]-xin[0])*(xin[23]-xin[0]) +
+			      (yin[23]-yin[0])*(yin[23]-yin[0]) );
+  Double_t inb = TMath::Sqrt( (xin[ 1]-xin[0])*(xin[ 1]-xin[0]) +
+			      (yin[ 1]-yin[0])*(yin[ 1]-yin[0]) );
+  Double_t inr = yin[0];
+  Double_t oua = TMath::Sqrt( (xin[12]-xin[11])*(xin[12]-xin[11]) +
+			      (yin[12]-yin[11])*(yin[12]-yin[11]) );
+  Double_t oub = TMath::Sqrt( (xin[10]-xin[11])*(xin[10]-xin[11]) +
+			      (yin[10]-yin[11])*(yin[10]-yin[11]) );
+  Double_t our = yin[11];
+
+  //Create the first inner pseudo-quadrant
+  FillSPDXtruShape(ina,inb,inr,t,xlocal,ylocal);
+  x[ 1] = xlocal[0];
+  y[ 1] = ylocal[0];
+
+  x[ 2] = xlocal[1];
+  y[ 2] = ylocal[1];
+
+  x[ 5] = xlocal[2];
+  y[ 5] = ylocal[2];
+
+  x[ 6] = xlocal[3];
+  y[ 6] = ylocal[3];
+
+  x[ 9] = xlocal[4];
+  y[ 9] = ylocal[4];
+
+  x[10] = xlocal[5];
+  y[10] = ylocal[5];
+
+  //Create the first outer pseudo-quadrant
+  FillSPDXtruShape(oua,oub,our,t,xlocal,ylocal);
+  x[23] = xlocal[0];
+  y[23] = ylocal[0];
+
+  x[20] = xlocal[1];
+  y[20] = ylocal[1];
+
+  x[19] = xlocal[2];
+  y[19] = ylocal[2];
+
+  x[16] = xlocal[3];
+  y[16] = ylocal[3];
+
+  x[15] = xlocal[4];
+  y[15] = ylocal[4];
+
+  x[11] = xlocal[5];
+  y[11] = ylocal[5];
+
+  //Create the second inner pseudo-quadrant
+  FillSPDXtruShape(ina+2*d,inb-2*d,inr+d,t,xlocal,ylocal);
+  x[22] = xlocal[0];
+  y[22] = ylocal[0];
+
+  x[21] = xlocal[1];
+  y[21] = ylocal[1];
+
+  x[18] = xlocal[2];
+  y[18] = ylocal[2];
+
+  x[17] = xlocal[3];
+  y[17] = ylocal[3];
+
+  x[14] = xlocal[4];
+  y[14] = ylocal[4];
+
+  x[13] = xlocal[5];
+  y[13] = ylocal[5];
+
+  //Create the second outer pseudo-quadrant
+  FillSPDXtruShape(oua-2*d,oub+2*d,our-d,t,xlocal,ylocal);
+  x[ 0] = xlocal[0];
+  y[ 0] = ylocal[0];
+
+  x[ 3] = xlocal[1];
+  y[ 3] = ylocal[1];
+
+  x[ 4] = xlocal[2];
+  y[ 4] = ylocal[2];
+
+  x[ 7] = xlocal[3];
+  y[ 7] = ylocal[3];
+
+  x[ 8] = xlocal[4];
+  y[ 8] = ylocal[4];
+
+  x[12] = xlocal[5];
+  y[12] = ylocal[5];
+
+  // These need to be fixed explicitly
+  y[10] = yin[5];
+  y[11] = yin[6];
+  x[12] = x[11];
+  y[12] = y[11] + d;
+  x[13] = x[10] + d;
+  y[13] = y[12];
+
+  // Finally reflex on the negative side
+  for (Int_t i=0; i<24; i++) {
+    x[24+i] = -x[23-i];
+    y[24+i] =  y[23-i];
+  }
+
+  // Wow ! We've finished
+  return;
+}
+
+//______________________________________________________________________
+void AliITSv11GeometrySupport::FillSPDXtruShape(Double_t a, Double_t b,
+						Double_t r, Double_t t,
+						Double_t *x, Double_t *y)
+{
+//
+// Creates the partial sequence of X and Y coordinates to determine
+// the lateral part of the SPD thermal shield
+//
+// Input:
+//        a, b : shape sides
+//        r    : radius
+//        t    : theta angle
+//
+// Output:
+//        x, y : coordinate vectors [6]
+//
+// Created:      14 Nov 2007  Mario Sitta
+//
+  x[0] = a/2;
+  y[0] = r;
+
+  x[1] = x[0] + b * TMath::Cos(t/2);
+  y[1] = y[0] - b * TMath::Sin(t/2);
+
+  x[2] = x[1] + a * TMath::Cos(t);
+  y[2] = y[1] - a * TMath::Sin(t);
+
+  x[3] = x[2] + b * TMath::Cos(3*t/2);
+  y[3] = y[2] - b * TMath::Sin(3*t/2);
+
+  x[4] = x[3] + a * TMath::Cos(2*t);
+  y[4] = y[3] - a * TMath::Sin(2*t);
+
+  x[5] = x[4];
+  y[5] = 0.;
+
+  return;
+}
+
 //______________________________________________________________________
 void AliITSv11GeometrySupport::SDDCone(TGeoVolume *moth,TGeoManager *mgr){
     // Define the detail SDD support cone geometry.
