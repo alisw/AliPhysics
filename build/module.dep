@@ -63,3 +63,4 @@ TDPMjet/module.mk:	TDPMjet/libTDPMjet.pkg
 ISAJET/module.mk:	ISAJET/libisajet.pkg
 TIsajet/module.mk:	TIsajet/libTIsajet.pkg
 TTherminator/module.mk:	TTherminator/libTTherminator.pkg
+CORRFW/module.mk:       CORRFW/libCORRFW.pkg
