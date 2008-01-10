@@ -553,9 +553,11 @@ Int_t AliTRDtrackerV1::FollowProlongation(AliTRDtrackV1 &t)
     Int_t   index   = 0;
 		//AliInfo(Form("sector %d", sector));
     AliTRDseedV1 *tracklet = GetTracklet(&t, iplane, index);
-	  //AliInfo(Form("tracklet 0x%x @ %d", tracklet, index));
+	  //AliInfo(Form("tracklet %p @ %d", tracklet, index));
 		if(!tracklet) continue;
-
+		//AliInfo(Form("reco %p", tracklet->GetRecoParam()));
+		t.SetTracklet(tracklet, iplane, index);
+		
 		t.PropagateTo(tracklet->GetX0(), xx0, xrho); // not correct
 	  if (!AdjustSector(&t)) break;
 	  
@@ -861,7 +863,7 @@ AliTRDseedV1* AliTRDtrackerV1::GetTracklet(AliTRDtrackV1 *track, Int_t p, Int_t 
 }
 
 //____________________________________________________________________
-Int_t AliTRDtrackerV1::SetTracklet(AliTRDseedV1 */*tracklet*/)
+Int_t AliTRDtrackerV1::SetTracklet(AliTRDseedV1 *tracklet)
 {
 // Add this tracklet to the list of tracklets stored in the tracker
 //
@@ -880,7 +882,7 @@ Int_t AliTRDtrackerV1::SetTracklet(AliTRDseedV1 */*tracklet*/)
 		fTracklets->SetOwner(kTRUE);
 	}
 	Int_t nentries = fTracklets->GetEntriesFast();
-	//AliTRDseedV1 *t = new ((*fTracklets)[nentries]) AliTRDseedV1(*tracklet);
+	AliTRDseedV1 *t = new ((*fTracklets)[nentries]) AliTRDseedV1(*tracklet);
 	//AliInfo(Form("0x%x @ %d", t, nentries));
 	return nentries;
 }
@@ -1878,9 +1880,9 @@ Double_t  AliTRDtrackerV1::MakeSeedingPlanes(AliTRDstackLayer *layers)
 	Float_t nclMed = float(ncl-nused)/nTimeBins;
 	Int_t ncli = Int_t(nclMed);
 	Float_t nclDev = TMath::Abs(nclMed - TMath::Max(ncli, 1));
-	nclDev -= (nclDev>.5) && ncli ? .5 : 0.; 
-	/*Double_t quality = */ return TMath::Exp(-2.*nclDev);
-	
+	nclDev -= (nclDev>.5) && ncli ? 0. : 1.; 
+	/*Double_t quality = */ return TMath::Exp(2.*nclDev);
+
 // 	// get slope of the derivative
 // 	if(!fitter.Eval()) return quality;
 // 	fitter.PrintResults(3);
