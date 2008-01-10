@@ -1,0 +1,36 @@
+SRCS = AliCFFrame.cxx \
+       AliCFGrid.cxx \
+       AliCFEffGrid.cxx \
+       AliCFDataGrid.cxx \
+       AliCFContainer.cxx \
+       AliCFManager.cxx \
+       AliCFCutBase.cxx \
+       AliCFEventClassCuts.cxx \
+       AliCFEventGenCuts.cxx \
+       AliCFEventRecCuts.cxx \
+       AliCFParticleGenCuts.cxx \
+       AliCFAcceptanceCuts.cxx \
+       AliCFTrackKineCuts.cxx \
+       AliCFTrackQualityCuts.cxx \
+       AliCFTrackIsPrimaryCuts.cxx \
+       AliCFTrackCutPid.cxx \
+
+CHECKALIEN = $(shell root-config --has-alien)
+ifeq (yes,$(CHECKALIEN))
+PACKCXXFLAGS := $(CXXFLAGS) -DWITHALIEN
+endif
+
+CHECKXML = $(shell root-config --has-xml)
+ifeq (yes,$(CHECKXML))
+PACKCXXFLAGS += $(CXXFLAGS) -DWITHXML
+CINTFLAGS += -DWITHXML
+endif
+
+HDRS:= $(SRCS:.cxx=.h) 
+
+DHDR= CORRFWLinkDef.h
+
+EXPORT:=$(SRCS:.cxx=.h)
+
+
+

@@ -1,0 +1,314 @@
+/* $Id$ */
+
+//--------------------------------------------------------------------//
+//                                                                    //
+// AliCFEffGrid Class                                              //
+// Class to handle efficiency grids                                   // 
+//                                                                    //
+// -- Author : S.Arcelli                                              //
+//                                                                    //
+//                                                                    //
+//                                                                    //
+//--------------------------------------------------------------------//
+//
+//
+#include <TROOT.h>
+#include <TMath.h>
+#include <TFile.h>
+#include <AliLog.h>
+#include "AliCFEffGrid.h"
+
+//____________________________________________________________________
+ClassImp(AliCFEffGrid)
+
+//____________________________________________________________________
+AliCFEffGrid::AliCFEffGrid() : 
+  AliCFGrid(),
+  fContainer(0x0),
+  fSelNum(-1),
+  fSelDen(-1)
+{
+  //
+  // default constructor
+  //
+}
+
+//____________________________________________________________________
+AliCFEffGrid::AliCFEffGrid(const Char_t* name, const Char_t* title, const Int_t nVarIn, const Int_t * nBinIn, const Float_t *binLimitsIn) :  
+  AliCFGrid(name,title,nVarIn,nBinIn,binLimitsIn),
+  fContainer(0x0),
+  fSelNum(-1),
+  fSelDen(-1)
+{
+  //
+  // ctor
+  //
+  SumW2();
+}
+//____________________________________________________________________
+AliCFEffGrid::AliCFEffGrid(const Char_t* name, const Char_t* title, const AliCFContainer &c) :  
+  AliCFGrid(name,title,c.GetNVar(),c.GetNBins(),c.GetBinLimits()),
+  fContainer(0x0),
+  fSelNum(-1),
+  fSelDen(-1)
+{
+  //
+  // main constructor
+  //
+  SumW2();
+  //assign the container;
+  fContainer=&c;
+}
+//____________________________________________________________________
+AliCFEffGrid::AliCFEffGrid(const AliCFEffGrid& eff) :   AliCFGrid(),
+  fContainer(0x0),
+  fSelNum(-1),
+  fSelDen(-1)
+{
+  //
+  // copy constructor
+  //
+  ((AliCFEffGrid &)eff).Copy(*this);
+}
+
+//____________________________________________________________________
+AliCFEffGrid::~AliCFEffGrid()
+{
+  //
+  // destructor
+  //
+}
+
+//____________________________________________________________________
+AliCFEffGrid &AliCFEffGrid::operator=(const AliCFEffGrid &eff)
+{
+  //
+  // assigment operator
+  //
+  if (this != &eff)
+    ((AliCFEffGrid &) eff).Copy(*this);
+  return *this;
+} 
+//____________________________________________________________________
+
+void AliCFEffGrid::CalculateEfficiency(Int_t istep1,Int_t istep2)
+{
+  //
+  // Calculate the efficiency matrix and its error between selection
+  // Steps istep1 and istep2
+  //
+
+  fSelNum=istep1;
+  fSelDen=istep2;
+  AliCFGrid *num=fContainer->GetGrid(fSelNum);
+  AliCFGrid *den=fContainer->GetGrid(fSelDen);
+  num->SumW2();
+  den->SumW2();
+  this->Divide(num,den,1.,1.,"B");
+
+  Int_t nEmptyBinsNum=0;
+  Int_t nEmptyBinsNumAndDen=0;
+  for(Int_t iel=0;iel<fNDim;iel++){
+    if(den->GetElement(iel)>0){
+      if(num->GetElement(iel)==0)nEmptyBinsNum++; //num==0,den!=0
+      }
+    else{
+      nEmptyBinsNumAndDen++;
+    }
+  }    
+  // Some monitoring printout:
+  AliInfo(Form("Efficiency calculated for steps %i and %i: %i empty bins in the numerator && !denominator and %i empty bins in numerator && denominator were found.",fSelNum,fSelDen,nEmptyBinsNumAndDen,nEmptyBinsNum));
+  AliInfo(Form("The correction map contains %i empty bins ",nEmptyBinsNum+nEmptyBinsNumAndDen));
+} 
+//_____________________________________________________________________
+Float_t AliCFEffGrid::GetAverage() const 
+{
+  //
+  // Get the average efficiency 
+  //
+
+  Float_t val=0;
+  Float_t valnum=0;
+  Float_t valden=0;
+  for(Int_t i=0;i<fNDim;i++){
+    valnum+=fContainer->GetGrid(fSelNum)->GetElement(i);
+    valden+=fContainer->GetGrid(fSelDen)->GetElement(i);
+  }
+  if(valden>0)val=valnum/valden;
+  AliInfo(Form(" The Average Efficiency = %f ",val)); 
+
+  return val;
+} 
+//_____________________________________________________________________
+Float_t AliCFEffGrid::GetAverage(Float_t *varMin, Float_t* varMax ) const 
+{
+  //
+  // Get ave efficiency in a range
+  //
+
+
+  Float_t val=0;
+  Int_t *indexMin = new Int_t[fNVar];
+  Int_t *indexMax = new Int_t[fNVar];
+  Int_t *index    = new Int_t[fNVar];
+  
+  //Find out the min and max bins
+  
+  for(Int_t i=0;i<fNVar;i++){
+    Float_t xmin=varMin[i]; // the min values  
+    Float_t xmax=varMax[i]; // the max values  
+    Int_t nbins=fNVarBins[i]+1;
+    Float_t *bins=new Float_t[nbins];
+    for(Int_t ibin =0;ibin<nbins;ibin++){
+      bins[ibin] = fVarBinLimits[ibin+fOffset[i]];
+    }
+    indexMin[i] = TMath::BinarySearch(nbins,bins,xmin);
+    indexMax[i] = TMath::BinarySearch(nbins,bins,xmax);
+    if(xmax>=bins[nbins-1]){
+      indexMax[i]=indexMax[i]-1;
+    }  
+    delete [] bins;
+  }
+  
+  Float_t valnum=0;
+  Float_t valden=0;
+  for(Int_t i=0;i<fNDim;i++){
+    for (Int_t j=0;j<fNVar;j++)index[j]=GetBinIndex(j,i);
+    Bool_t isIn=kTRUE;
+    for (Int_t j=0;j<fNVar;j++){
+      if(!(index[j]>=indexMin[j] && index[j]<=indexMax[j]))isIn=kFALSE;   
+    }
+    if(isIn){
+      valnum+=fContainer->GetGrid(fSelNum)->GetElement(i);
+      valden+=fContainer->GetGrid(fSelDen)->GetElement(i);
+    }
+  } 
+  delete [] index;
+  delete [] indexMin;
+  delete [] indexMax;
+  if(valden>0)val=valnum/valden;
+  AliInfo(Form(" the Average Efficiency = %f ",val)); 
+  return val;
+} 
+//____________________________________________________________________
+void AliCFEffGrid::Copy(TObject& eff) const
+{
+  //
+  // copy function
+  //
+  Copy(eff);
+  AliCFEffGrid& target = (AliCFEffGrid &) eff;
+  
+  target.fSelNum=fSelNum; 
+  target.fSelDen=fSelDen; 
+  if(fContainer)
+    target.fContainer=fContainer;
+}
+//___________________________________________________________________
+TH1F *AliCFEffGrid::Project(Int_t ivar) const
+{
+  //
+  // Make a 1D projection along variable ivar 
+  //
+ 
+  TH1F *proj1D=0;
+  Int_t nbins =fNVarBins[ivar];
+  Float_t *bins = new Float_t[nbins+1];    
+  for(Int_t ibin =0;ibin<nbins+1;ibin++){
+    bins[ibin] = fVarBinLimits[ibin+fOffset[ivar]];
+  }
+  
+  char pname[30];
+  sprintf(pname,"%s%s%i%i%s%i",GetName(),"_SelStep",fSelNum,fSelDen,"_proj1D_var", ivar);
+  char htitle[30];
+  sprintf(htitle,"%s%s%i%i%s%i",GetName(),"_SelStep",fSelNum,fSelDen,"_proj1D_var", ivar);
+  
+  if(!proj1D){
+    proj1D =new TH1F(pname,htitle, nbins, bins);
+  }  
+  
+  proj1D->Divide(fContainer->GetGrid(fSelNum)->Project(ivar),fContainer->GetGrid(fSelDen)->Project(ivar),1.,1.,"B");
+  
+  delete [] bins; 
+  return proj1D;
+} 
+//___________________________________________________________________
+TH2F *AliCFEffGrid::Project(Int_t ivar1,Int_t ivar2) const
+{
+  //
+  // Make a 2D projection along variable ivar1,ivar2 
+  //
+ 
+  TH2F *proj2D=0;
+
+  Int_t nbins1 =fNVarBins[ivar1];
+  Float_t *bins1 = new Float_t[nbins1+1];    
+  Int_t nbins2 =fNVarBins[ivar2];
+  Float_t *bins2 = new Float_t[nbins2+1];    
+  for(Int_t ibin1 =0;ibin1<nbins1+1;ibin1++){
+    bins1[ibin1] = fVarBinLimits[ibin1+fOffset[ivar1]];
+  }
+  for(Int_t ibin2 =0;ibin2<nbins2+1;ibin2++){
+    bins2[ibin2] = fVarBinLimits[ibin2+fOffset[ivar2]];
+  }
+  
+  char pname[30];
+  sprintf(pname,"%s%s%i%i%s%i%i",GetName(),"_SelStep",fSelNum,fSelDen,"_proj2D_var", ivar1,ivar2);
+  char htitle[30];
+  sprintf(htitle,"%s%s%i%i%s%i%i",GetName(),"_SelStep",fSelNum,fSelDen,"_proj2D_var",ivar1,ivar2);
+  
+  if(!proj2D){
+    proj2D =new TH2F(pname,htitle, nbins1,bins1,nbins2,bins2);
+  }  
+  
+  proj2D->Divide(fContainer->GetGrid(fSelNum)->Project(ivar1,ivar2),fContainer->GetGrid(fSelDen)->Project(ivar1,ivar2),1.,1.,"B");
+  
+  delete [] bins1;
+  delete [] bins2; 
+  return proj2D;
+} 
+//___________________________________________________________________
+TH3F *AliCFEffGrid::Project(Int_t ivar1, Int_t ivar2, Int_t ivar3) const
+{
+  //
+  // Make a 3D projection along variable ivar1,ivar2,ivar3 
+  //
+
+  TH3F *proj3D=0;
+
+  Int_t nbins1 =fNVarBins[ivar1];
+  Int_t nbins2 =fNVarBins[ivar2];
+  Int_t nbins3 =fNVarBins[ivar3];
+  
+  Float_t *bins1 = new Float_t[nbins1+1];         
+  Float_t *bins2 = new Float_t[nbins2+1];     
+  Float_t *bins3 = new Float_t[nbins3+1];     
+  
+  for(Int_t ibin =0;ibin<nbins1+1;ibin++){
+    bins1[ibin] = fVarBinLimits[ibin+fOffset[ivar1]];
+  }
+  for(Int_t ibin =0;ibin<nbins2+1;ibin++){
+    bins2[ibin] = fVarBinLimits[ibin+fOffset[ivar2]];
+  }
+  for(Int_t ibin =0;ibin<nbins3+1;ibin++){
+    bins3[ibin] = fVarBinLimits[ibin+fOffset[ivar3]];
+  }
+  
+  char pname[30];
+  sprintf(pname,"%s%s%i%i%s%i%i%i",GetName(),"_SelStep",fSelNum,fSelDen,"_proj3D_var",ivar1,ivar2,ivar3);
+  char htitle[30];
+  sprintf(htitle,"%s%s%i%i%s%i%i%i",GetName(),"_SelStep",fSelNum,fSelDen,"_proj3D_var",ivar1,ivar2,ivar3);
+   
+  
+  if(!proj3D){
+    proj3D =new TH3F(pname,htitle, nbins1, bins1,nbins2,bins2,nbins3,bins3);
+  }  
+  
+  proj3D->Divide(fContainer->GetGrid(fSelNum)->Project(ivar1,ivar2,ivar3),fContainer->GetGrid(fSelDen)->Project(ivar1,ivar2,ivar3),1.,1.,"B");
+  
+  delete [] bins1;
+  delete [] bins2;
+  delete [] bins3; 
+  
+  return proj3D;
+} 

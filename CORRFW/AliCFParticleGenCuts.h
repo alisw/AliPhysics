@@ -1,0 +1,91 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+//////////////////////////////////////////////////////////////////////
+// AliCFParticleGenCut implementation
+// This class is designed to handle 
+// particle selection at generated level.
+//
+// author : R. Vernet (renaud.vernet@cern.ch)
+//////////////////////////////////////////////////////////////////////
+
+
+#ifndef ALICFPARTICLEGENCUTS_H
+#define ALICFPARTICLEGENCUTS_H
+
+#include "AliCFCutBase.h"
+
+class AliMCEventHandler;
+class TObject;
+class AliMCParticle;
+class AliStack;
+
+class AliCFParticleGenCuts : public AliCFCutBase
+{
+ public :
+  AliCFParticleGenCuts() ;
+  AliCFParticleGenCuts           (const Char_t* name, const Char_t* title) ;
+  AliCFParticleGenCuts           (const AliCFParticleGenCuts& c) ;
+  AliCFParticleGenCuts& operator=(const AliCFParticleGenCuts& c) ;
+  virtual ~AliCFParticleGenCuts() { };
+  virtual Bool_t IsSelected(TObject* obj) ;
+  virtual void   SetEvtInfo(TObject* mcInfo) ;
+  //static checkers
+  static Bool_t IsPrimaryCharged(AliMCParticle *mcPart,AliStack*stack);
+  static Bool_t IsPrimary(AliMCParticle *mcPart,AliStack*stack);
+  static Bool_t IsCharged(AliMCParticle *mcPart);
+  static Bool_t IsA(AliMCParticle *mcPart, Int_t pdg, Bool_t abs=kFALSE);
+
+  void SetRequireIsCharged   (Bool_t b=kTRUE)       {fRequireIsCharged=b;}
+  void SetRequireIsPrimary   (Bool_t b=kTRUE)       {fRequireIsPrimary=b;}
+  void SetRequireIsSecondary (Bool_t b=kTRUE)       {fRequireIsSecondary=b;}
+  void SetRequirePdgCode     (Int_t pdg)            {fRequirePdgCode=kTRUE; fPdgCode=pdg;}
+  void SetProdVtxRangeX    (Double32_t xmin, Double32_t xmax) {fProdVtxXMin   =xmin; fProdVtxXMax   =xmax;}
+  void SetProdVtxRangeY    (Double32_t ymin, Double32_t ymax) {fProdVtxYMin   =ymin; fProdVtxYMax   =ymax;}
+  void SetProdVtxRangeZ    (Double32_t zmin, Double32_t zmax) {fProdVtxZMin   =zmin; fProdVtxZMax   =zmax;}
+  void SetDecayVtxRangeX   (Double32_t xmin, Double32_t xmax) {fDecayVtxXMin  =xmin; fDecayVtxXMax  =xmax;}
+  void SetDecayVtxRangeY   (Double32_t ymin, Double32_t ymax) {fDecayVtxYMin  =ymin; fDecayVtxYMax  =ymax;}
+  void SetDecayVtxRangeZ   (Double32_t zmin, Double32_t zmax) {fDecayVtxZMin  =zmin; fDecayVtxZMax  =zmax;}
+  void SetDecayLengthRange (Double32_t rmin, Double32_t rmax) {fDecayLengthMin=rmin; fDecayLengthMax=rmax;}
+  void SetDecayRxyRange    (Double32_t rmin, Double32_t rmax) {fDecayRxyMin   =rmin; fDecayRxyMax   =rmax;}
+
+ protected:
+  AliMCEventHandler* fMCInfo ;    // pointer to the MC event information
+  Bool_t     fRequireIsCharged;   // require charged particle
+  Bool_t     fRequireIsPrimary;   // require primary particle
+  Bool_t     fRequireIsSecondary; // require secondary particle
+  Bool_t     fRequirePdgCode;     // require check of the PDG code
+  Int_t      fPdgCode ;           // particle PDG code
+  Double32_t fProdVtxXMin;        // min X of particle production vertex
+  Double32_t fProdVtxYMin;        // min Y of particle production vertex
+  Double32_t fProdVtxZMin;        // min Z of particle production vertex
+  Double32_t fProdVtxXMax;        // max X of particle production vertex
+  Double32_t fProdVtxYMax;        // max Y of particle production vertex
+  Double32_t fProdVtxZMax;        // max Z of particle production vertex
+  Double32_t fDecayVtxXMin;       // min X of particle decay vertex
+  Double32_t fDecayVtxYMin;       // min Y of particle decay vertex
+  Double32_t fDecayVtxZMin;       // min Z of particle decay vertex
+  Double32_t fDecayVtxXMax;       // max X of particle decay vertex
+  Double32_t fDecayVtxYMax;       // max Y of particle decay vertex
+  Double32_t fDecayVtxZMax;       // max Z of particle decay vertex
+  Double32_t fDecayLengthMin;     // min decay length (absolute)
+  Double32_t fDecayLengthMax;     // max decay length (absolute)
+  Double32_t fDecayRxyMin;        // min decay length in transverse plane wrt (0,0,0)
+  Double32_t fDecayRxyMax;        // max decay length in transverse plane wrt (0,0,0)
+
+  ClassDef(AliCFParticleGenCuts,1);
+};
+
+#endif

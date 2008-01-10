@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<alien>
+  <collection name="coll">
+    <event name="1">
+      <file name="Run6000.Event0_100.ESD.tag.root" aclId="" ctime="2007-07-07 15:46:59" dir="346816" entryId="346824" expiretime="" gowner="aliprod" guid="6F4B2468-2C90-11DC-9E62-000423B5AB42" lfn="/alice/sim/2007/LHC07c/pp_minbias/6000/001/Run6000.Event0_100.ESD.tag.root" md5="" owner="aliprod" perm="755" replicated="0" size="24386" turl="alien:///alice/sim/2007/LHC07c/pp_minbias/6000/001/Run6000.Event0_100.ESD.tag.root" type="f" />
+    </event>
+    <event name="10">
+      <file name="Run6000.Event0_100.ESD.tag.root" aclId="" ctime="2007-07-07 15:34:31" dir="346784" entryId="346792" expiretime="" gowner="aliprod" guid="A95FF8E2-2C8E-11DC-9C7D-000423B5AB42" lfn="/alice/sim/2007/LHC07c/pp_minbias/6000/010/Run6000.Event0_100.ESD.tag.root" md5="" owner="aliprod" perm="755" replicated="0" size="24254" turl="alien:///alice/sim/2007/LHC07c/pp_minbias/6000/010/Run6000.Event0_100.ESD.tag.root" type="f" />
+    </event>
+    <info command="[/alice/cern.ch/user/r/rvernet/]: find -z -x coll -l 10 /alice/sim/2007/LHC07c/pp_minbias/ tag.root" creator="admin" date="Mon Dec  3 10:15:59 CET 2007" timestamp="1196673359" />
+  </collection>
+</alien>

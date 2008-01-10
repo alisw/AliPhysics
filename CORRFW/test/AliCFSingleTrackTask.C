@@ -1,0 +1,225 @@
+//DEFINITION OF A FEW CONSTANTS
+const Double_t ymin  = -1.0 ;
+const Double_t ymax  =  1.0 ;
+const Double_t ptmin =  0.0 ;
+const Double_t ptmax =  8.0 ;
+const Int_t    mintrackrefsTPC = 2 ;
+const Int_t    mintrackrefsITS = 3 ;
+const Int_t    charge  = 1 ;
+const Int_t    PDG = 2212; 
+const Int_t    minclustersTPC = 50 ;
+//----------------------------------------------------
+
+Bool_t AliCFSingleTrackTask(
+			    const Bool_t useGrid = 1,
+			    const char * kTagXMLFile="wn.xml", // XML file containing tags
+			    Long64_t     nentries=TChain::kBigNumber
+			    )
+{
+  
+  TBenchmark benchmark;
+  benchmark.Start("AliSingleTrackTask");
+
+  AliLog::SetGlobalDebugLevel(0);
+
+  Load() ; //load the required libraries
+
+  TChain * analysisChain ;
+
+  if (useGrid) { //data located on AliEn
+    TGrid::Connect("alien://") ;    //  Create an AliRunTagCuts and an AliEventTagCuts Object and impose some selection criteria
+    AliRunTagCuts      *runCuts   = new AliRunTagCuts(); 
+    AliEventTagCuts    *eventCuts = new AliEventTagCuts(); 
+    AliLHCTagCuts      *lhcCuts   = new AliLHCTagCuts(); 
+    AliDetectorTagCuts *detCuts   = new AliDetectorTagCuts(); 
+    eventCuts->SetMultiplicityRange(0,20000);
+    //  Create an AliTagAnalysis Object and chain the tags
+    AliTagAnalysis   *tagAna = new AliTagAnalysis(); 
+    tagAna->SetType("ESD");  //for aliroot > v4-05
+    TAlienCollection *coll   = TAlienCollection::Open(kTagXMLFile); 
+    TGridResult      *tagResult = coll->GetGridResult("",0,0);
+    tagResult->Print();
+    tagAna->ChainGridTags(tagResult);
+    //  Create a new esd chain and assign the chain that is returned by querying the tags
+    analysisChain = tagAna->QueryTags(runCuts,lhcCuts,detCuts,eventCuts); 
+  }
+  else {// local data
+    analysisChain = new TChain("esdTree");
+    //here put your input data path
+    analysisChain->Add("AliESDs.root");
+  }
+  
+  
+  Info("AliCFSingleTrackTask",Form("CHAIN HAS %d ENTRIES",(Int_t)analysisChain->GetEntries()));
+
+  //CONTAINER DEFINITION
+  Info("AliCFSingleTrackTask","SETUP CONTAINER");
+  //the sensitive variables, their indices
+  Int_t ipt = 0;
+  Int_t iy  = 1;
+  //Setting up the container grid... 
+  Int_t nstep = 4 ; //number of selection steps MC 
+  const Int_t nvar   = 2 ; //number of variables on the grid:pt,y,phi,vtx
+  const Int_t nbin1  = 8 ; //bins in pt
+  const Int_t nbin2  = 8 ; //bins in y 
+  //arrays for the number of bins in each dimension
+  const Int_t iBin[nvar] ={nbin1,nbin2};
+  //arrays for lower bounds :
+  Float_t binLim1[nbin1+1];
+  Float_t binLim2[nbin2+1];
+  //values for bin lower bounds
+  for(Int_t i=0; i<=nbin1; i++) binLim1[i]=(Float_t)ptmin + (ptmax-ptmin)/nbin1*(Float_t)i ; 
+  for(Int_t i=0; i<=nbin2; i++) binLim2[i]=(Float_t)ymin  + (ymax-ymin)  /nbin2*(Float_t)i ;
+  //one "container" for MC
+  AliCFContainer* container = new AliCFContainer("container","container for tracks",nstep,nvar,iBin);
+  //setting the bin limits
+  container -> SetBinLimits(ipt,binLim1);
+  container -> SetBinLimits(iy,binLim2);
+
+
+  //CREATE THE  CUTS -----------------------------------------------
+  //Particle-Level cuts:  
+
+  // Gen-Level kinematic cuts
+  AliCFTrackKineCuts *mcKineCuts = new AliCFTrackKineCuts("mcKineCuts","MC-level kinematic cuts");
+  mcKineCuts->SetPtRange(ptmin,ptmax);
+  mcKineCuts->SetRapidityRange(ymin,ymax);
+  mcKineCuts->SetChargeMC(charge);
+
+  AliCFParticleGenCuts* mcGenCuts = new AliCFParticleGenCuts("mcGenCuts","MC particle generation cuts");
+  mcGenCuts->SetRequireIsPrimary();
+  mcGenCuts->SetRequirePdgCode(PDG);
+
+  //Acceptance Cuts
+  AliCFAcceptanceCuts *mcAccCuts = new AliCFAcceptanceCuts("mcAccCuts","MC acceptance cuts");
+  mcAccCuts->SetMinNHitITS(mintrackrefsITS);
+  mcAccCuts->SetMinNHitTPC(mintrackrefsTPC);
+
+  // Rec-Level kinematic cuts
+  AliCFTrackKineCuts *recKineCuts = new AliCFTrackKineCuts("recKineCuts","rec-level kine cuts");
+  recKineCuts->SetPtRange(ptmin,ptmax);
+  recKineCuts->SetRapidityRange(ymin,ymax);
+  recKineCuts->SetChargeRec(charge);
+  // QA histograms for rec-level kinematic cuts
+  recKineCuts->SetQAOn(kTRUE);
+
+  AliCFTrackQualityCuts *recQualityCuts = new AliCFTrackQualityCuts("recQualityCuts","rec-level quality cuts");
+  recQualityCuts->SetMinNClusterTPC(minclustersTPC);
+  recQualityCuts->SetRequireITSRefit(kTRUE);
+  // QA histograms for rec-level quality cuts
+  recQualityCuts->SetQAOn(kTRUE);
+
+  AliCFTrackIsPrimaryCuts *recIsPrimaryCuts = new AliCFTrackIsPrimaryCuts("recIsPrimaryCuts","rec-level isPrimary cuts");
+  recIsPrimaryCuts->SetMaxNSigmaToVertex(3);
+  // QA histograms for rec-level primary-check cuts
+  recIsPrimaryCuts->SetQAOn(kTRUE);
+
+  AliCFTrackCutPid* cutPID = new AliCFTrackCutPid("cutPID","ESD_PID") ;
+  Double_t prior[AliPID::kSPECIES] = {0.0244519,
+				      0.0143988,
+				      0.805747 ,
+				      0.0928785,
+				      0.0625243 };
+  cutPID->SetPriors(prior);
+  cutPID->SetProbabilityCut(0.0);
+  cutPID->SetDetectors("TPC TOF");
+  switch(TMath::Abs(PDG)) {
+  case 11   : cutPID->SetParticleType(AliPID::kElectron, kTRUE); break;
+  case 13   : cutPID->SetParticleType(AliPID::kMuon    , kTRUE); break;
+  case 211  : cutPID->SetParticleType(AliPID::kPion    , kTRUE); break;
+  case 321  : cutPID->SetParticleType(AliPID::kKaon    , kTRUE); break;
+  case 2212 : cutPID->SetParticleType(AliPID::kProton  , kTRUE); break;
+  default   : printf("UNDEFINED PID\n"); break;
+  }
+  cutPID->SetQAOn(kTRUE);
+
+  printf("CREATE MC KINE CUTS\n");
+  TObjArray* mcList = new TObjArray(0) ;
+  mcList->AddLast(mcKineCuts);
+  mcList->AddLast(mcGenCuts);
+
+  printf("CREATE ACCEPTANCE CUTS\n");
+  TObjArray* accList = new TObjArray(0) ;
+  accList->AddLast(mcAccCuts);
+
+  printf("CREATE RECONSTRUCTION CUTS\n");
+  TObjArray* recList = new TObjArray(0) ;
+  recList->AddLast(recKineCuts);
+  recList->AddLast(recQualityCuts);
+  recList->AddLast(recIsPrimaryCuts);
+
+  printf("CREATE PID CUTS\n");
+  TObjArray* fPIDCutList = new TObjArray(0) ;
+  fPIDCutList->AddLast(cutPID);
+
+
+  //CREATE THE INTERFACE TO CORRECTION FRAMEWORK USED IN THE TASK
+  printf("CREATE INTERFACE AND CUTS\n");
+  AliCFManager* man = new AliCFManager() ;
+  man->SetParticleContainer     (container);
+  man->SetParticleCutsList(AliCFManager::kPartGenCuts,mcList);
+  man->SetParticleCutsList(AliCFManager::kPartAccCuts,accList);
+  man->SetParticleCutsList(AliCFManager::kPartRecCuts,recList);
+  man->SetParticleCutsList(AliCFManager::kPartSelCuts,fPIDCutList);
+
+
+  //CREATE THE TASK
+  printf("CREATE TASK\n");
+  // create the task
+  AliCFSingleTrackTask *task = new AliCFSingleTrackTask("AliSingleTrackTask");
+  task->SetCFManager(man); //here is set the CF manager
+
+
+  //SETUP THE ANALYSIS MANAGER TO READ INPUT CHAIN AND WRITE DESIRED OUTPUTS
+  printf("CREATE ANALYSIS MANAGER\n");
+  // Make the analysis manager
+  AliAnalysisManager *mgr = new AliAnalysisManager("TestManager");
+
+  // Create and connect containers for input/output
+
+  //input data
+  AliAnalysisDataContainer *cinput0  = mgr->CreateContainer("cchain0",TChain::Class(),AliAnalysisManager::kInputContainer);
+  // output histo (number of events processed)
+  AliAnalysisDataContainer *coutput0 = mgr->CreateContainer("chist0", TH1I::Class(),AliAnalysisManager::kOutputContainer,"output.root");
+  // output Correction Framework Container (for acceptance & efficiency calculations)
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("ccontainer0", AliCFContainer::Class(),AliAnalysisManager::kOutputContainer,"output.root");
+  // output QA histograms 
+  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("clist0", TList::Class(),AliAnalysisManager::kOutputContainer,"output.root");
+
+  mgr->AddTask(task);
+  mgr->ConnectInput(task,0,cinput0);
+  mgr->ConnectOutput(task,0,coutput0);
+  mgr->ConnectOutput(task,1,coutput1);
+  mgr->ConnectOutput(task,2,coutput2);
+  cinput0->SetData(analysisChain);
+ 
+  //NEW INTERFACE TO MC INFORMATION
+  AliMCEventHandler* mcHandler = new AliMCEventHandler();
+  mgr->SetMCtruthEventHandler(mcHandler);
+
+  printf("READY TO RUN\n");
+  //RUN !!!
+  if (mgr->InitAnalysis()) {
+    mgr->PrintStatus();
+    mgr->StartAnalysis("local",analysisChain);
+  }
+
+  benchmark.Stop("AliSingleTrackTask");
+  benchmark.Show("AliSingleTrackTask");
+  
+  return kTRUE ;
+}
+
+void Load() {
+  //remove this file which can cause problems
+  gSystem->Exec("rm $ALICE_ROOT/ANALYSIS/AliAnalysisSelector_cxx.so");
+
+  //load the required aliroot libraries
+  gSystem->Load("libANALYSIS") ;
+  gSystem->Load("libANALYSISRL") ;
+  gSystem->Load("$ALICE_ROOT/CORRFW/libCORRFW.so") ;
+
+  //compile online the task class
+  gSystem->SetIncludePath("-I. -I$ALICE_ROOT/include -I$ROOTSYS/include");
+  gROOT->LoadMacro("./AliCFSingleTrackTask.cxx+");
+}
