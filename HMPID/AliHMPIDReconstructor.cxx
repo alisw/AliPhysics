@@ -43,8 +43,8 @@ AliHMPIDReconstructor::AliHMPIDReconstructor():AliReconstructor(),fUserCut(0),fD
   fDig=new TObjArray(AliHMPIDParam::kMaxCh+1); fDig->SetOwner(kTRUE);
   
   for(int i=AliHMPIDParam::kMinCh;i<=AliHMPIDParam::kMaxCh;i++){ 
-    fDig->AddAt(new TClonesArray("AliHMPIDDigit"),i);
-    TClonesArray *pClus = new TClonesArray("AliHMPIDCluster");
+    fDig->AddAt(new TClonesArray("AliHMPIDDigit",24000),i);
+    TClonesArray *pClus = new TClonesArray("AliHMPIDCluster",24000);
     pClus->SetUniqueID(i);
     fClu->AddAt(pClus,i);
   }
@@ -136,7 +136,7 @@ void AliHMPIDReconstructor::Reconstruct(TTree *pDigTree,TTree *pCluTree)const
 //  Returns: none    
   AliDebug(1,"Start.");
   for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++) {
-    pCluTree->Branch(Form("HMPID%d",iCh),&((*fClu)[iCh]),4000,0);
+    pCluTree->Branch(Form("HMPID%d",iCh),&((*fClu)[iCh]),7);
     pDigTree->SetBranchAddress(Form("HMPID%d",iCh),&((*fDig)[iCh]));
   }   
   pDigTree->GetEntry(0);
@@ -160,31 +160,25 @@ void AliHMPIDReconstructor::ConvertDigits(AliRawReader *pRR,TTree *pDigTree)cons
   AliDebug(1,"Start.");
 //  Int_t digcnt=0;
   
+  Int_t iDigCnt[7]={0,0,0,0,0,0,0};
 
-  for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++) {
-    pDigTree->Branch(Form("HMPID%d",iCh),&((*fDig)[iCh]),4000,0); 
-    
-    Int_t iDigCnt=0;
-    AliHMPIDRawStream stream(pRR);    
-    while(stream.Next())
-    {
-      
-      UInt_t ddl=stream.GetDDLNumber(); //returns 0,1,2 ... 13
-      if((UInt_t)(2*iCh)==ddl || (UInt_t)(2*iCh+1)==ddl) {
-       for(Int_t row = 1; row <= AliHMPIDRawStream::kNRows; row++){
-        for(Int_t dil = 1; dil <= AliHMPIDRawStream::kNDILOGICAdd; dil++){
-          for(Int_t pad = 0; pad < AliHMPIDRawStream::kNPadAdd; pad++){
-            if(stream.GetCharge(ddl,row,dil,pad) < 1) continue; 
-              AliHMPIDDigit dig(stream.GetPad(ddl,row,dil,pad),stream.GetCharge(ddl,row,dil,pad));
-              if(!IsDigSurvive(&dig)) continue; 
-              new((*((TClonesArray*)fDig->At(iCh)))[iDigCnt++]) AliHMPIDDigit(dig); //add this digit to the tmp list 
-            }//pad
-          }//dil
-        }//row
-      }//while
-    }
-    stream.Delete();
+  for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++){
+    pDigTree->Branch(Form("HMPID%d",iCh),&((*fDig)[iCh]));
   }
+    
+  AliHMPIDRawStream stream(pRR);    
+  
+  while(stream.Next())
+  {
+    Int_t ch = AliHMPIDParam::DDL2C(stream.GetDDLNumber());
+    for(Int_t iPad=0;iPad<stream.GetNPads();iPad++) {
+      AliHMPIDDigit dig(stream.GetPadArray()[iPad],stream.GetChargeArray()[iPad]);
+      if(!IsDigSurvive(&dig)) continue; 
+      new((*((TClonesArray*)fDig->At(ch)))[iDigCnt[ch]++]) AliHMPIDDigit(dig); //add this digit to the tmp list 
+    }
+  }
+  
+  stream.Delete();
   pDigTree->Fill();
   
   for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++)fDig->At(iCh)->Clear();

@@ -31,40 +31,39 @@ class AliHMPIDRawStream: public TObject {
 
     virtual void     Reset();
     virtual Bool_t   Next();
-            void     Init();
+            void     InitVars(Int_t n);
+            void     DelVars();
     
-	    Int_t    Ch( Int_t ddl,Int_t row,Int_t dil,Int_t pad    ) {return AliHMPIDParam::A2C(fPad[ddl][row][dil][pad]); }            //chamber number
-	    
 	    Int_t GetDDLNumber()  const { return fDDLNumber; }                                                                            // Provide current DDL number
-    inline  Int_t GetCharge(Int_t ddl,Int_t row, Int_t dilogic, Int_t pad);                                                                         // Provide the charge observed in certain row,dilogic,pad channel
-	    inline Int_t GetPad(Int_t ddl,Int_t row,Int_t dil,Int_t pad);                                                                        //
-	    
-	    Int_t   Pc          ( Int_t ddl,Int_t row,Int_t dil,Int_t pad                            ) {return AliHMPIDParam::A2P(fPad[ddl][row][dil][pad]);}                                                 //PC position number
-	    Int_t   PadPcX      ( Int_t ddl,Int_t row,Int_t dil,Int_t pad                            ) {return AliHMPIDParam::A2X(fPad[ddl][row][dil][pad]);}                                                 //pad pc x # 0..79
-	    Int_t   PadPcY      ( Int_t ddl,Int_t row,Int_t dil,Int_t pad                            ) {return AliHMPIDParam::A2Y(fPad[ddl][row][dil][pad]);}                                                 //pad pc y # 0..47
+	    inline Int_t GetPad(Int_t ddl,Int_t row,Int_t dil,Int_t pad);                                                                 //
+	    Int_t   GetNPads()       const { return fNPads;}
+            Int_t*  GetPadArray()    const { return fPad;}
+            Int_t*  GetChargeArray() const { return fCharge;}
+	    Int_t   Pc          ( Int_t ddl,Int_t row,Int_t dil,Int_t pad                            ) {return AliHMPIDParam::A2P(GetPad(ddl,row,dil,pad));}                                                 //PC position number
+	    Int_t   PadPcX      ( Int_t ddl,Int_t row,Int_t dil,Int_t pad                            ) {return AliHMPIDParam::A2X(GetPad(ddl,row,dil,pad));}                                                 //pad pc x # 0..79
+	    Int_t   PadPcY      ( Int_t ddl,Int_t row,Int_t dil,Int_t pad                            ) {return AliHMPIDParam::A2Y(GetPad(ddl,row,dil,pad));}                                                 //pad pc y # 0..47
    
 	    inline  Bool_t SetZeroSup (Bool_t isSup);
     inline  Bool_t GetZeroSup(); 
     inline  Int_t GetErrors(Int_t eType);                                                                                          //Get errors and occurance
     
     Bool_t ReadHMPIDRawData();                           // Read HMPID Raw data
-    Bool_t ReadSegment(UInt_t word32,Int_t &cntSegment); // Read Segment
-    Bool_t ReadRow(UInt_t word32,Int_t &cntRow);         // Read Row
-    Bool_t ReadDilogic(UInt_t word32,Int_t &cntDilogic); // Read Dilogic
+    Bool_t ReadSegment(Int_t &cntSegment);               // Read Segment
+    Bool_t ReadRow(Int_t &cntRow);                       // Read Row
+    Bool_t ReadDilogic(Int_t &cntDilogic);               // Read Dilogic
 
-    Bool_t CheckRow(UInt_t row);                   // Check Row
-    Bool_t CheckDilogic(UInt_t dilogic);           // Check Dilogic
-    Bool_t CheckPad(UInt_t pad);                   // Check pad
-    Bool_t CheckEoE(UInt_t word,Int_t &nDil);       // Check EoE
-    Bool_t CheckRowMarker(UInt_t word);            // Check RowMarker
-    Bool_t CheckSegment(UInt_t word);              // Check Segment
-    void   DumpData(Int_t nw);                     // Dump Data
-    void   StorePosition();                        //
+    Bool_t CheckRow(UInt_t row);                         // Check Row
+    Bool_t CheckDilogic(UInt_t dilogic);                 // Check Dilogic
+    Bool_t CheckPad(UInt_t pad);                         // Check pad
+    Bool_t CheckEoE(Int_t &nDil);                        // Check EoE
+    Bool_t CheckRowMarker();                             // Check RowMarker
+    Bool_t CheckSegment();                               // Check Segment
+    void   DumpData(Int_t nw);                           // Dump Data
+    void   StorePosition();                              //Debug purpose
     
-    inline void    Raw            (UInt_t &w32,Int_t &ddl,Int_t &r,Int_t &d,Int_t &a);                                              //digit->(w32,ddl,r,d,a)
-    inline void    Raw            (Int_t ddl,Int_t r,Int_t d,Int_t a);                                                              //raw->abs pad number
-    inline Bool_t  Raw            (UInt_t  w32,Int_t  ddl,AliRawReader *pRR);                                                       //(w32,ddl)->digit
-    inline void   SetCharge      (Int_t ddl,Int_t row,Int_t dil,Int_t pad,Int_t q);
+//    inline void    Raw            (UInt_t &w32,Int_t &ddl,Int_t &r,Int_t &d,Int_t &a);                                              //digit->(w32,ddl,r,d,a)
+//    inline void    Raw            (Int_t ddl,Int_t r,Int_t d,Int_t a);                                                              //raw->abs pad number
+//    inline Bool_t  Raw            (UInt_t  w32,Int_t  ddl,AliRawReader *pRR);                                                       //(w32,ddl)->digit
     inline void    WriteRaw       (TObjArray *pDigLst                             );                                                      //write as raw stream     
     inline void   WriteRowMarker  (AliFstream *ddl,UInt_t size);
     inline void   WriteEoE        (AliFstream *ddl,UInt_t row,UInt_t dil,UInt_t wordCnt);  
@@ -113,19 +112,21 @@ enum Ebits {kbit0,kbit1 , kbit2, kbit3, kbit4, kbit5, kbit6, kbit7, kbit8,
 
     UInt_t           GetWord(Int_t n=1,EDirection dir=kFwd);             // Get n-th word
     UInt_t           GetNextWord();                                      // Get next word
-    Int_t            fCharge[kNDDL][kNRows+1][kNDILOGICAdd+1][kNPadAdd]; // Array for charge values for all channels in one DDL
-    Int_t            fPad[kNDDL][kNRows+1][kNDILOGICAdd+1][kNPadAdd];    // Array for abs pad values for all channels in one DDL
-    UInt_t           fRawWord[kNDDL][kNRows+1][kNDILOGICAdd+1][kNPadAdd];// Array of raw words
+    Int_t            fNPads;                                             // counter of pads in one DDL
+    Int_t            *fCharge;                                           // Array for charge values for all channels in one DDL
+    Int_t            *fPad;                                              // Array for abs pad values for all channels in one DDL
     Int_t            fNumOfErr[kSumErr];                                 // Store the numner of errors for a given error type
     Int_t            fDDLNumber;                                         // index of current DDL number
     AliRawReader*    fRawReader;                                         // object for reading the raw data
     UChar_t*         fData;                                              // raw data
-    Int_t            fPosition;                                          // current position in fData
+    Int_t            fPosition;                                          // current word
+    UInt_t           fWord;                                              // current position in fData
     Bool_t           fZeroSup;
 
     ClassDef(AliHMPIDRawStream, 1)                                       // base class for reading HMPID raw digits
 };
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    /*
 void AliHMPIDRawStream::Raw(UInt_t &w32,Int_t &ddl,Int_t &r,Int_t &d,Int_t &a)
 {
 // Convert raw stream word to raw word format
@@ -139,14 +140,16 @@ void AliHMPIDRawStream::Raw(UInt_t &w32,Int_t &ddl,Int_t &r,Int_t &d,Int_t &a)
   a=y2a[PadPcY(ddl,r,d,a)%6]+6*(PadPcX(ddl,r,d,a)%8);                                           //ADDRESS 0..47        
   
   w32=0;    
-  AliBitPacking::PackWord((fCharge[ddl][r][d][a]>4095)?4095:(UInt_t)fCharge[ddl][r][d][a],w32, 0,11);       // 0000 0rrr rrdd ddaa aaaa qqqq qqqq qqqq        Qdc               bits (00..11) counts (0..4095)
+  AliBitPacking::PackWord((fCharge[fNPads]>4095)?4095:(UInt_t)fCharge[fNPads],w32, 0,11);       // 0000 0rrr rrdd ddaa aaaa qqqq qqqq qqqq        Qdc               bits (00..11) counts (0..4095)
   //molnarl: Since in simulation the the charge can be > than 4095 but not in real life we need to protect. If fQ>4095 after packing we will get 0 for the charge! 
   assert(0<=a&&a<=47);AliBitPacking::PackWord(        a ,w32,12,17);  // 3322 2222 2222 1111 1111 1000 0000 0000        DILOGIC address   bits (12..17) counts (0..47)
   assert(1<=d&&d<=10);AliBitPacking::PackWord(        d ,w32,18,21);  // 1098 7654 3210 9876 5432 1098 7654 3210        DILOGIC number    bits (18..21) counts (1..10)
   assert(1<=r&&r<=24);AliBitPacking::PackWord(        r ,w32,22,26);  //                                                Row number        bits (22..26) counts (1..24)  
 }
+*/
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPIDRawStream::Raw(Int_t ddl,Int_t r,Int_t d,Int_t a)
+    /*
+Int_t AliHMPIDRawStream::Raw(Int_t ddl,Int_t r,Int_t d,Int_t a)
 {
   //Assign absolute pad ID based on ddl,row,dil,pad
   //Arguments: DDL, row number, dilogic number, dilogic address(pad)
@@ -158,7 +161,7 @@ void AliHMPIDRawStream::Raw(Int_t ddl,Int_t r,Int_t d,Int_t a)
   Int_t tmp=(r-1)/8;              Int_t pc=(ddl%2)? 5-2*tmp:2*tmp; 
                                   Int_t px=(d-1)*8+a/6;
         tmp=(ddl%2)?(24-r):r-1;   Int_t py=6*(tmp%8)+a2y[a%6];
-  fPad[ddl][r][d][a]=AliHMPIDParam::Abs(ch,pc,px,py);
+  return AliHMPIDParam::Abs(ch,pc,px,py);
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Bool_t AliHMPIDRawStream::Raw(UInt_t w32,Int_t ddl, AliRawReader *pRR)
@@ -180,16 +183,7 @@ Bool_t AliHMPIDRawStream::Raw(UInt_t w32,Int_t ddl, AliRawReader *pRR)
   fCharge[ddl][r][d][a]=q;
   return kTRUE;
 }
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPIDRawStream::SetCharge(Int_t ddl,Int_t row,Int_t dil,Int_t pad,Int_t q)
-{ 
-  //Setter for the charger in the raw stream
-  //Arguments: DDL, row number, dilogic number, dilogic address(pad), charge
-  //Returns:   Charge from the raw stream
-     fCharge[ddl][row][dil][pad]=q;
-     //  return fCharge[ddl][row][dil][pad];
-      
-}
+*/
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Int_t AliHMPIDRawStream::GetPad(Int_t ddl,Int_t row,Int_t dil,Int_t pad)
 {
@@ -209,37 +203,8 @@ Int_t AliHMPIDRawStream::GetPad(Int_t ddl,Int_t row,Int_t dil,Int_t pad)
         tmp=(ddl%2)?(24-row):row-1;   
                                   Int_t py=6*(tmp%8)+a2y[pad%6];
                                   
-  return fPad[ddl][row][dil][pad]=AliHMPIDParam::Abs(ch,pc,px,py);
+  return AliHMPIDParam::Abs(ch,pc,px,py);
 }//GetPad()
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Int_t AliHMPIDRawStream::GetCharge(Int_t ddl,Int_t row, Int_t dilogic, Int_t pad)
-{
-  // The method returns the charge collected
-  // in a particular channel
-  // Return -1 in case the charge from the channels
-  // has not been read or invalid arguments
-  if (ddl < 0 || ddl > kNDDL) {
-    AliError(Form("Wrong DDL index %d!",ddl));
-    return 0;
-  }  
-  if (row < 1 || row > kNRows) {
-    AliError(Form("Wrong row index %d!",row));
-    return 0;
-  }
-
-  if (dilogic < 1 || dilogic > kNDILOGICAdd) {
-    AliError(Form("Wrong DILOGIC address %d!",dilogic));
-    return 0;
-  }
-  
-  if (pad >= kNPadAdd) {
-    AliError(Form("Wrong pad index %d!",pad));
-    return 0;
-  }
-
-  return fCharge[ddl][row][dilogic][pad];
-  
-}
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDRawStream::WriteRowMarker(AliFstream *ddl,UInt_t size)
 {

@@ -48,6 +48,7 @@ public:
   inline static void   Lors2Pad(Float_t x,Float_t y,Int_t &pc,Int_t &px,Int_t &py);                                     //(x,y)->(pc,px,py) 
 
   static Int_t   Abs         (Int_t ch,Int_t pc,Int_t x,Int_t y)   {return ch*100000000+pc*1000000+x*1000+y;         }  //(ch,pc,padx,pady)-> abs pad
+  static Int_t   DDL2C       (Int_t ddl                      )     {return ddl/2;                                    }  //ddl -> chamber
   static Int_t   A2C         (Int_t pad                      )     {return pad/100000000;                            }  //abs pad -> chamber
   static Int_t   A2P         (Int_t pad                      )     {return pad%100000000/1000000;                    }  //abs pad -> pc 
   static Int_t   A2X         (Int_t pad                      )     {return pad%1000000/1000;                         }  //abs pad -> pad X 

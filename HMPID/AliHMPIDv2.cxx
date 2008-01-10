@@ -719,25 +719,19 @@ Bool_t AliHMPIDv2::Raw2SDigits(AliRawReader *pRR)
 // Interface methode ivoked from AliSimulation to create a list of sdigits from raw digits. Events loop is done in AliSimulation
 // Arguments: pRR- raw reader 
 //   Returns: kTRUE on success (currently ignored in AliSimulation::ConvertRaw2SDigits())      
- 
-  AliHMPIDDigit sdi; //tmp sdigit, raw digit will be converted to it
+  //AliHMPIDDigit sdi; //tmp sdigit, raw digit will be converted to it
+  
   if(!GetLoader()->TreeS()) {MakeTree("S");  MakeBranch("S");}
     
   TClonesArray *pSdiLst=SdiLst(); Int_t iSdiCnt=0; //tmp list of sdigits for all chambers
   AliHMPIDRawStream stream(pRR);
   while(stream.Next())
   {
-   UInt_t ddl=stream.GetDDLNumber(); //returns 0,1,2 ... 13 
-    for(Int_t row = 1; row <=AliHMPIDRawStream::kNRows; row++){
-     for(Int_t dil = 1; dil <=AliHMPIDRawStream::kNDILOGICAdd; dil++){
-      for(Int_t pad = 0; pad < AliHMPIDRawStream::kNPadAdd; pad++){
-          if(stream.GetCharge(ddl,row,dil,pad)<1) continue;
-          AliHMPIDDigit sdi(stream.GetPad(ddl,row,dil,pad),stream.GetCharge(ddl,row,dil,pad));
-          new((*pSdiLst)[iSdiCnt++]) AliHMPIDDigit(sdi); //add this digit to the tmp list
-        }//pad
-      }//dil
-    }//row
-  }    
+    for(Int_t iPad=0;iPad<stream.GetNPads();iPad++) {
+      AliHMPIDDigit sdi(stream.GetPadArray()[iPad],stream.GetChargeArray()[iPad]);
+      new((*pSdiLst)[iSdiCnt++]) AliHMPIDDigit(sdi); //add this digit to the tmp list
+    }
+  }
   
   GetLoader()->TreeS()->Fill(); GetLoader()->WriteSDigits("OVERWRITE");//write out sdigits
   SdiReset();
