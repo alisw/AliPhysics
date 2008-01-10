@@ -34,7 +34,6 @@
 #include <TVirtualMC.h>
 #include <TGeoManager.h>
 
-
 // --- AliRoot classes
 #include "AliConst.h"
 #include "AliMagF.h"
@@ -1689,13 +1688,13 @@ void AliZDCv3::CreateZDC()
   
 
   // --- Position the proton calorimeter in ZDCC
-  gMC->Gspos("ZPRO", 1, "ZDCC", fPosZPA[0], fPosZPA[1], fPosZPA[2]-fDimZP[2], irotzdc, "ONLY");
+  gMC->Gspos("ZPRO", 1, "ZDCC", fPosZPC[0], fPosZPC[1], fPosZPC[2]-fDimZP[2], irotzdc, "ONLY");
   //Ch debug
   //printf("\n ZP -> %f < z < %f cm\n",fPosZP[2],fPosZP[2]-2*fDimZP[2]);
   
   // --- Position the proton calorimeter in ZDCA
   // --- No rotation 
-  gMC->Gspos("ZPRO", 2, "ZDCA", fPosZPC[0], fPosZPC[1], fPosZPC[2]+fDimZP[2], 0, "ONLY");
+  gMC->Gspos("ZPRO", 2, "ZDCA", fPosZPA[0], fPosZPA[1], fPosZPA[2]+fDimZP[2], 0, "ONLY");
   //Ch debug
   //printf("\n ZP left -> %f < z < %f cm\n",fPosZPl[2],fPosZPl[2]+2*fDimZP[2]);  
     
@@ -2286,14 +2285,14 @@ void AliZDCv3::StepManager()
   // Determine in which ZDC the particle is
     knamed = gMC->CurrentVolName();
     if(!strncmp(knamed,"ZN",2)){
-          if(x[2]<0.) vol[0]=1;
-	  else if(x[2]>=0.) vol[0]=4;
+          if(x[2]<0.) vol[0]=1; // ZNC (dimuon side)
+	  else if(x[2]>0.) vol[0]=4; //ZNA
     }
     else if(!strncmp(knamed,"ZP",2)){ 
-          if(x[2]<0.) vol[0]=2;
-	  else if(x[2]>=0.) vol[0]=5;   
+          if(x[2]<0.) vol[0]=2; //ZPC (dimuon side)
+	  else if(x[2]>0.) vol[0]=5; //ZPA  
     }
-    else if(!strncmp(knamed,"ZE",2)) vol[0]=3;
+    else if(!strncmp(knamed,"ZE",2)) vol[0]=3; //ZEM
   
   // Determine in which quadrant the particle is
     if(vol[0]==1){	//Quadrant in ZNC
@@ -2404,15 +2403,25 @@ void AliZDCv3::StepManager()
 	AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(), vol, hits);
 	
 	if(fNoShower==1){
-	  if(vol[0]==1) fnDetectedC += 1;
-	  else if(vol[0]==2) fpDetectedC += 1;
-	  else if(vol[0]==4) fnDetectedA += 1;
-	  else if(vol[0]==5) fpDetectedA += 1;
+	  //printf("\t VolName %s -> det %d quad %d - x = %f, y = %f, z = %f\n", 
+	    //knamed, vol[0], vol[1], x[0], x[1], x[2]);
+	  if(vol[0]==1){
+	    fnDetectedC += 1;
+	    printf("\n	  # of detected neutrons in ZNC = %d\n\n",fnDetectedC);
+	  }
+	  else if(vol[0]==2){
+	    fpDetectedC += 1;
+	    printf("\n	  # of detected protons in ZPC = %d\n\n",fpDetectedC);
+	  }
+	  else if(vol[0]==4){
+	    fnDetectedA += 1;
+	    printf("\n	  # of detected neutrons in ZNA = %d\n\n",fnDetectedA);     
+	  }
+	  else if(vol[0]==5){
+	    fpDetectedA += 1;
+	    printf("\n	  # of detected protons in ZPA = %d\n\n",fpDetectedA);      
+	  }
 	  gMC->StopTrack();
-	  if(vol[0]==1) printf("\n	# of detected neutrons in ZNC = %d\n\n",fpDetectedC);
-	  if(vol[0]==2) printf("\n	# of detected protons in ZNPC = %d\n\n",fnDetectedC);
-	  if(vol[0]==4) printf("\n	# of detected neutrons in ZNA = %d\n\n",fpDetectedA);	  
-	  if(vol[0]==5) printf("\n	# of detected protons in ZPA = %d\n\n",fnDetectedA);	  
 	  return;
 	}
       }
