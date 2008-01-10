@@ -103,8 +103,6 @@ void AliMultiplicityTask::ConnectInputData(Option_t *)
       tree->SetBranchStatus("fTracks.fLabel", 1);
     }
 
-    tree->SetCacheSize(0);
-
     AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
 
     if (!esdH) {
