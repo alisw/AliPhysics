@@ -493,7 +493,7 @@ void AliTRDstackLayer::GetClusters(Double_t *cond, Int_t *index, Int_t& ncl, Int
 
 	//Preordering in Direction z saves a lot of loops (boundary checked)
 	for(UChar_t z = zlo; z <= zhi; z++){
-		UInt_t upper = (z != fNRows-1) ? fPositions[z+1] : fN;
+		UInt_t upper = (z < fNRows-1) ? fPositions[z+1] : fN;
 		for(Int_t y = fPositions[z]; y < (Int_t)upper; y++){
 			if(ncl == BufferSize){
 				AliWarning("Buffer size riched. Some clusters may be lost.");
