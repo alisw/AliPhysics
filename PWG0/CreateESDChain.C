@@ -172,8 +172,6 @@ void ChainToTextFile(TChain* chain, const char* target)
   while ((obj = iter->Next())) {
     TString fileName(obj->GetTitle());
     
-    fileName.Remove(fileName.Length()-13);
-
     outfile << fileName.Data() << endl;
   }
 
