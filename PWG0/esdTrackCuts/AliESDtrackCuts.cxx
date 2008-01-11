@@ -201,6 +201,10 @@ AliESDtrackCuts::~AliESDtrackCuts()
       delete fhDXYvsDZNormalized[i];       
     if (fhNSigmaToVertex[i])
       delete fhNSigmaToVertex[i];
+    if (fhPt[i])
+      delete fhPt[i];
+    if (fhEta[i])
+      delete fhEta[i];
   }
 
   if (ffDTheoretical)
@@ -276,6 +280,9 @@ void AliESDtrackCuts::Init()
     fhDZNormalized[i] = 0;
     fhDXYvsDZNormalized[i] = 0;
     fhNSigmaToVertex[i] = 0;
+    
+    fhPt[i] = 0;
+    fhEta[i] = 0;
   }
   ffDTheoretical = 0;
 
@@ -363,6 +370,9 @@ void AliESDtrackCuts::Copy(TObject &c) const
     if (fhDZNormalized[i]) target.fhDZNormalized[i] = (TH1F*) fhDZNormalized[i]->Clone();
     if (fhDXYvsDZNormalized[i]) target.fhDXYvsDZNormalized[i] = (TH2F*) fhDXYvsDZNormalized[i]->Clone();
     if (fhNSigmaToVertex[i]) target.fhNSigmaToVertex[i] = (TH1F*) fhNSigmaToVertex[i]->Clone();
+    
+    if (fhPt[i]) target.fhPt[i] = (TH1F*) fhPt[i]->Clone();
+    if (fhEta[i]) target.fhEta[i] = (TH1F*) fhEta[i]->Clone();
   }
   if (ffDTheoretical) target.ffDTheoretical = (TF1*) ffDTheoretical->Clone();
 
@@ -424,6 +434,8 @@ Long64_t AliESDtrackCuts::Merge(TCollection* list) {
       fhDXYvsDZNormalized[i] ->Add(entry->fhDXYvsDZNormalized[i]); 
       fhNSigmaToVertex[i]    ->Add(entry->fhNSigmaToVertex[i]); 
 
+      fhPt[i]                ->Add(entry->fhPt[i]); 
+      fhEta[i]               ->Add(entry->fhEta[i]); 
     }      
 
     fhCutStatistics  ->Add(entry->fhCutStatistics);        
@@ -643,7 +655,6 @@ AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack) {
       }
     }
     
-
     fhNClustersITS[0]->Fill(nClustersITS);
     fhNClustersTPC[0]->Fill(nClustersTPC);
     fhChi2PerClusterITS[0]->Fill(chi2PerClusterITS);
@@ -654,6 +665,9 @@ AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack) {
     fhC33[0]->Fill(extCov[5]);
     fhC44[0]->Fill(extCov[9]);
     fhC55[0]->Fill(extCov[14]);
+    
+    fhPt[0]->Fill(pt);
+    fhEta[0]->Fill(eta);
 
     Float_t b[2];
     Float_t bRes[2];
@@ -696,6 +710,9 @@ AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack) {
     fhC44[1]->Fill(extCov[9]);
     fhC55[1]->Fill(extCov[14]);
 
+    fhPt[1]->Fill(pt);
+    fhEta[1]->Fill(eta);
+    
     Float_t b[2];
     Float_t bRes[2];
     Float_t bCov[3];
@@ -859,8 +876,11 @@ Int_t AliESDtrackCuts::CountAcceptedTracks(AliESDEvent* esd)
     fhDZNormalized[i]        = new  TH1F(Form("dZNormalized%s",str)     ,"",500,-10,10);
     fhDXYvsDZNormalized[i]   = new  TH2F(Form("dXYvsDZNormalized%s",str),"",200,-10,10,200,-10,10);
 
-    fhNSigmaToVertex[i]         = new  TH1F(Form("nSigmaToVertex%s",str),"",500,0,50);
+    fhNSigmaToVertex[i]      = new  TH1F(Form("nSigmaToVertex%s",str),"",500,0,50);
 
+    fhPt[i]                  = new TH1F(Form("pt%s",str)     ,"p_{T} distribution;p_{T} (GeV/c)",500,0.0,100.0);
+    fhEta[i]                 = new TH1F(Form("eta%s",str)     ,"#eta distribution;#eta",40,-2.0,2.0);
+    
     fhNClustersITS[i]->SetTitle("n ITS clusters");
     fhNClustersTPC[i]->SetTitle("n TPC clusters");
     fhChi2PerClusterITS[i]->SetTitle("#Chi^{2} per ITS cluster");
@@ -959,31 +979,10 @@ Bool_t AliESDtrackCuts::LoadHistograms(const Char_t* dir)
     fhDXYNormalized[i] =     dynamic_cast<TH1F*> (gDirectory->Get(Form("dXYNormalized%s",str)    ));
     fhDZNormalized[i] =      dynamic_cast<TH1F*> (gDirectory->Get(Form("dZNormalized%s",str)     ));
     fhDXYvsDZNormalized[i] = dynamic_cast<TH2F*> (gDirectory->Get(Form("dXYvsDZNormalized%s",str)));
-
     fhNSigmaToVertex[i] = dynamic_cast<TH1F*> (gDirectory->Get(Form("nSigmaToVertex%s",str)));
 
-    // TODO only temporary
-    /*fhNClustersITS[i]->SetTitle("n ITS clusters");
-    fhNClustersTPC[i]->SetTitle("n TPC clusters");
-    fhChi2PerClusterITS[i]->SetTitle("#Chi^{2} per ITS cluster");
-    fhChi2PerClusterTPC[i]->SetTitle("#Chi^{2} per TPC cluster");
-
-    fhC11[i]->SetTitle("cov 11 : #sigma_{y}^{2} [cm^{2}]");
-    fhC22[i]->SetTitle("cov 22 : #sigma_{z}^{2} [cm^{2}]");
-    fhC33[i]->SetTitle("cov 33 : #sigma_{sin(#phi)}^{2}");
-    fhC44[i]->SetTitle("cov 44 : #sigma_{tan(#theta_{dip})}^{2}");
-    fhC55[i]->SetTitle("cov 55 : #sigma_{1/p_{T}}^{2} [(c/GeV)^2]");
-
-    fhDXY[i]->SetTitle("transverse impact parameter");
-    fhDZ[i]->SetTitle("longitudinal impact parameter");
-    fhDXYvsDZ[i]->SetTitle("longitudinal impact parameter");
-    fhDXYvsDZ[i]->SetYTitle("transverse impact parameter");
-
-    fhDXYNormalized[i]->SetTitle("normalized trans impact par");
-    fhDZNormalized[i]->SetTitle("normalized long impact par");
-    fhDXYvsDZNormalized[i]->SetTitle("normalized long impact par");
-    fhDXYvsDZNormalized[i]->SetYTitle("normalized trans impact par");
-    fhNSigmaToVertex[i]->SetTitle("n #sigma to vertex");*/
+    fhPt[i] = dynamic_cast<TH1F*> (gDirectory->Get(Form("pt%s",str)));
+    fhEta[i] = dynamic_cast<TH1F*> (gDirectory->Get(Form("eta%s",str)));
 
     gDirectory->cd("../");
   }
@@ -1046,6 +1045,9 @@ void AliESDtrackCuts::SaveHistograms(const Char_t* dir) {
     fhDXYvsDZNormalized[i]   ->Write();
     fhNSigmaToVertex[i]      ->Write();
 
+    fhPt[i]                  ->Write();
+    fhEta[i]                 ->Write();
+    
     gDirectory->cd("../");
   }
 
