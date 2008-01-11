@@ -106,8 +106,6 @@ void AlidNdEtaTask::ConnectInputData(Option_t *)
       tree->SetBranchStatus("fTracks.fLabel", 1);
     }
 
-    tree->SetCacheSize(0);
-
     AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
 
     if (!esdH) {
@@ -262,6 +260,8 @@ void AlidNdEtaTask::Exec(Option_t*)
       labelArr[inputCount] = TMath::Abs(esdTrack->GetLabel());
       ptArr[inputCount] = esdTrack->Pt();
       ++inputCount;
+
+      Printf("%f", esdTrack->Pt());
     }
   }
   else

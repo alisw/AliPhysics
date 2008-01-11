@@ -283,6 +283,9 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
     return;
   }
 
+  //new TCanvas; vtxVsEta->DrawCopy();
+  //vtxVsEta->Rebin2D(1, 4);
+
   const Float_t vertexRange = 9.99;
 
   for (Int_t iEta=1; iEta<=vtxVsEta->GetNbinsY(); iEta++)
@@ -317,12 +320,12 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
       Float_t sumError2 = 0;
       for (Int_t iVtx = vertexBinBegin; iVtx < vertexBinEnd; iVtx++)
       {      
-	if (vtxVsEta->GetBinContent(iVtx, iEta) != 0)
+        if (vtxVsEta->GetBinContent(iVtx, iEta) != 0)
         {
           sum = sum + vtxVsEta->GetBinContent(iVtx, iEta);
 
-	  if (sumError2 > 10e30)
-	    printf("WARNING: sum of error2 is dangerously large - be prepared for crash... ");
+        if (sumError2 > 10e30)
+          printf("WARNING: sum of error2 is dangerously large - be prepared for crash... ");
 
           sumError2 = sumError2 + TMath::Power(vtxVsEta->GetBinError(iVtx, iEta),2);
         }
@@ -340,23 +343,30 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
 
       //printf("Eta: %d Vertex Range: %d %d, Event Count %f, Track Sum: %f, Track Sum corrected: %f\n", iEta, vertexBinBegin, vertexBinEnd, totalEvents, sum, sum / ptCutOffCorrection);
 
-      Float_t dndeta = sum / totalEvents;
-      Float_t error  = TMath::Sqrt(sumError2) / totalEvents;
+      Int_t bin = fdNdEta[vertexPos]->FindBin(vtxVsEta->GetYaxis()->GetBinCenter(iEta));
+      if (bin > 0 && bin < fdNdEta[vertexPos]->GetNbinsX())
+      {
+        Float_t dndeta = sum / totalEvents;
+        Float_t error  = TMath::Sqrt(sumError2) / totalEvents;
 
-      dndeta = dndeta/fdNdEta[vertexPos]->GetBinWidth(iEta);
-      error  = error/fdNdEta[vertexPos]->GetBinWidth(iEta);
+        dndeta = dndeta / fdNdEta[vertexPos]->GetBinWidth(bin);
+        error  = error / fdNdEta[vertexPos]->GetBinWidth(bin);
 
-      fdNdEta[vertexPos]->SetBinContent(iEta, dndeta);
-      fdNdEta[vertexPos]->SetBinError(iEta, error);
+        fdNdEta[vertexPos]->SetBinContent(bin, dndeta);
+        fdNdEta[vertexPos]->SetBinError(bin, error);
 
-      dndeta /= ptCutOffCorrection;
-      error  /= ptCutOffCorrection;
+        dndeta /= ptCutOffCorrection;
+        error  /= ptCutOffCorrection;
 
-      fdNdEtaPtCutOffCorrected[vertexPos]->SetBinContent(iEta, dndeta);
-      fdNdEtaPtCutOffCorrected[vertexPos]->SetBinError(iEta, error);
+        fdNdEtaPtCutOffCorrected[vertexPos]->SetBinContent(bin, dndeta);
+        fdNdEtaPtCutOffCorrected[vertexPos]->SetBinError(bin, error);
 
+        Printf("Bin %d has dN/deta = %f", bin, dndeta);
+      }
     }
   }
+
+  new TCanvas; fdNdEta[0]->DrawCopy();
 }
 
 //____________________________________________________________________
@@ -432,17 +442,17 @@ void dNdEtaAnalysis::DrawHistograms(Bool_t simple)
 
     canvas->cd(1);
     if (fdNdEtaPtCutOffCorrected[0])
-      fdNdEtaPtCutOffCorrected[0]->Draw();
+      fdNdEtaPtCutOffCorrected[0]->DrawCopy();
 
     if (fdNdEta[0])
     {
       fdNdEta[0]->SetLineColor(kRed);
-      fdNdEta[0]->Draw("SAME");
+      fdNdEta[0]->DrawCopy("SAME");
     }
 
     canvas->cd(2);
     if (fPtDist)
-      fPtDist->Draw();
+      fPtDist->DrawCopy();
   }
 
     // histograms for different vertices?
@@ -467,7 +477,7 @@ void dNdEtaAnalysis::DrawHistograms(Bool_t simple)
         canvas2->cd();
 
         fdNdEtaPtCutOffCorrected[i]->SetLineColor(i+1);
-        fdNdEtaPtCutOffCorrected[i]->Draw((i == 0) ? "" : "SAME");
+        fdNdEtaPtCutOffCorrected[i]->DrawCopy((i == 0) ? "" : "SAME");
         legend->AddEntry(fdNdEtaPtCutOffCorrected[i], (i == 0) ? "Vtx All" : Form("Vtx Bin %d", i-1));
       }
       if (canvas3 && fdNdEta[i])
@@ -475,7 +485,7 @@ void dNdEtaAnalysis::DrawHistograms(Bool_t simple)
         canvas3->cd();
 
         fdNdEta[i]->SetLineColor(i+1);
-        fdNdEta[i]->Draw((i == 0) ? "" : "SAME");
+        fdNdEta[i]->DrawCopy((i == 0) ? "" : "SAME");
       }
     }
 
@@ -501,10 +511,10 @@ void dNdEtaAnalysis::DrawHistograms(Bool_t simple)
     
         clone->Divide(fdNdEtaPtCutOffCorrected[0]);
         clone->GetYaxis()->SetRangeUser(0.95, 1.05);
-        clone->Draw();
+        clone->DrawCopy();
         
         clone2->Divide(fdNdEtaPtCutOffCorrected[0]);
-        clone2->Draw("SAME");
+        clone2->DrawCopy("SAME");
 
         TLine* line = new TLine(-1, 1, 1, 1);
         line->Draw();

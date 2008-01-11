@@ -314,7 +314,28 @@ Bool_t AliMultiplicityCorrection::LoadHistograms(const Char_t* dir)
   if (!gDirectory->cd(dir))
     return kFALSE;
 
-  // TODO memory leak. old histograms needs to be deleted.
+  // store old hists to delete them later
+  TList oldObjects;
+  oldObjects.SetOwner(1);
+  for (Int_t i = 0; i < kESDHists; ++i)
+    if (fMultiplicityESD[i])
+      oldObjects.Add(fMultiplicityESD[i]);
+
+  for (Int_t i = 0; i < kMCHists; ++i)
+  {
+    if (fMultiplicityVtx[i])
+      oldObjects.Add(fMultiplicityVtx[i]);
+    if (fMultiplicityMB[i])
+      oldObjects.Add(fMultiplicityMB[i]);
+    if (fMultiplicityINEL[i])
+      oldObjects.Add(fMultiplicityINEL[i]);
+  }
+
+  for (Int_t i = 0; i < kCorrHists; ++i)
+    if (fCorrelation[i])
+      oldObjects.Add(fCorrelation[i]);
+
+  // load histograms
 
   Bool_t success = kTRUE;
 
@@ -346,18 +367,24 @@ Bool_t AliMultiplicityCorrection::LoadHistograms(const Char_t* dir)
 
   gDirectory->cd("..");
 
+  // delete old hists
+  oldObjects.Delete();
+
   return success;
 }
 
 //____________________________________________________________________
-void AliMultiplicityCorrection::SaveHistograms()
+void AliMultiplicityCorrection::SaveHistograms(const char* dir)
 {
   //
   // saves the histograms
   //
 
-  gDirectory->mkdir(GetName());
-  gDirectory->cd(GetName());
+  if (!dir)
+    dir = GetName();
+
+  gDirectory->mkdir(dir);
+  gDirectory->cd(dir);
 
   for (Int_t i = 0; i < kESDHists; ++i)
     if (fMultiplicityESD[i])
@@ -1325,7 +1352,8 @@ void AliMultiplicityCorrection::DrawComparison(const char* name, Int_t inputRang
 
   // scale to 1
   mcHist->Sumw2();
-  mcHist->Scale(1.0 / mcHist->Integral());
+  if (mcHist->Integral() > 0)
+    mcHist->Scale(1.0 / mcHist->Integral());
 
   // calculate residual
 
@@ -1706,7 +1734,7 @@ void AliMultiplicityCorrection::DrawComparison(const char* name, Int_t inputRang
     else
       fLastChi2MC = -1;
 
-    Printf("Chi2 (full range) from (MC - Unfolded) / e(MC) is: %.2f ndf is %d --> chi2 / ndf = %.2f", newChi2, ndf, newChi2 / ndf);
+    Printf("Chi2 (full range) from (MC - Unfolded) / e(MC) is: %.2f ndf is %d --> chi2 / ndf = %.2f", newChi2, ndf, ((ndf > 0) ? newChi2 / ndf : -1));
 
     diffMCUnfolded2->SetTitle("#chi^{2};Npart;(MC - Unfolded) / e(MC)");
     //diffMCUnfolded->GetYaxis()->SetRangeUser(-20, 20);

@@ -1037,6 +1037,11 @@ void StartingConditions()
 
   //Int_t marker[] = {24, 25, 26, 27, 28, 2, 3, 4, 5};
 
+  TLegend* legend = new TLegend(0.6, 0.7, 0.95, 0.95);
+  legend->SetFillColor(0);
+
+  const char* names[] = { "True", "Measured 1", "Measured 2", "Measured 3", "NBD", "Flat" };
+
   for (Int_t i=0; i<6; ++i)
   {
     Int_t id = i;
@@ -1055,6 +1060,7 @@ void StartingConditions()
     chi2Result->GetYaxis()->SetTitleOffset(1.5);
     //chi2Result->SetMarkerStyle(marker[i]);
     chi2Result->SetLineColor(i+1);
+    chi2Result->SetMarkerColor(i+1);
     chi2Result->SetStats(kFALSE);
 
     bayesResult->SetTitle("b) Bayesian method;true multiplicity;unfolded / MC");
@@ -1062,7 +1068,7 @@ void StartingConditions()
     bayesResult->GetYaxis()->SetRangeUser(0.8, 1.2);
     bayesResult->GetYaxis()->SetTitleOffset(1.5);
     bayesResult->SetStats(kFALSE);
-    bayesResult->SetLineColor(2);
+    //bayesResult->SetLineColor(2);
     bayesResult->SetLineColor(i+1);
 
     canvas->cd(1);
@@ -1075,8 +1081,12 @@ void StartingConditions()
 
     //TLine* line = new TLine(0, 1, 150, 1);
     //line->Draw();
+
+    legend->AddEntry(chi2Result, names[i]);
   }
 
+  canvas->cd(1);
+  legend->Draw();
   canvas->SaveAs(Form("%s.eps", canvas->GetName()));
 }
 

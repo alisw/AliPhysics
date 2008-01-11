@@ -198,7 +198,6 @@ Bool_t AlidNdEtaCorrectionSelector::Process(Long64_t entry)
 
   AliDebug(AliLog::kDebug+1,"Processing event ...\n");
 
-
   if (AliSelectorRL::Process(entry) == kFALSE)
     return kFALSE;
 
