@@ -137,9 +137,9 @@ AliHLTHOMERWriter* AliHLTHOMERLibManager::OpenWriter()
   }
   
   AliHLTHOMERWriter* pWriter=NULL;
-//   if (fFctCreateWriter!=NULL && (pWriter=(((AliHLTHOMERWriterCreate_t)fFctCreateWriter)()))==NULL) {
+  if (fFctCreateWriter!=NULL && (pWriter=(((AliHLTHOMERWriterCreate_t)fFctCreateWriter)()))==NULL) {
 //     HLTError("can not create instance of HOMER writer (function %p)", fFctCreateWriter);
-//   }
+  }
   
   return pWriter;
 }
