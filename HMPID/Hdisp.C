@@ -719,11 +719,12 @@ void Hdisp()
    }
   
   if(gSystem->IsFileInIncludePath("AliESDs.root")){     
-    fEsdFile=TFile::Open("AliESDs.root"); 
-    fEsdTree=(TTree*)fEsdFile->Get("esdTree"); 
-    fEsd->ReadFromTree(fEsdTree); fEsd->GetStdContent();                       //clm: new ESD schema: see Task Force meeting 20th June, 2007
-    if(fEsdTree) fNevt=fEsdTree->GetEntries(); fType=1;  title+=Form(" ESD-%i ",fNevt); else {delete fEsdFile;fEsdFile=0x0;}
-    
+    fEsdFile=TFile::Open("AliESDs.root");
+    if(fEsdFile) { 
+      fEsdTree=(TTree*)fEsdFile->Get("esdTree"); 
+      fEsd->ReadFromTree(fEsdTree); fEsd->GetStdContent();                       //clm: new ESD schema: see Task Force meeting 20th June, 2007
+      if(fEsdTree) fNevt=fEsdTree->GetEntries(); fType=1;  title+=Form(" ESD-%i ",fNevt); else {delete fEsdFile;fEsdFile=0x0;}
+    } else {delete fEsdFile; delete fEsdTree;}
     //clm: we need to set the magnetic field  
     if(gSystem->IsFileInIncludePath("galice.root")){
     if(gAlice) delete gAlice;                       
