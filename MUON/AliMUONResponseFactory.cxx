@@ -40,10 +40,12 @@ ClassImp(AliMUONResponseFactory)
 /// \endcond
 
 //__________________________________________________________________________
-  AliMUONResponseFactory::AliMUONResponseFactory(const char* name)
+  AliMUONResponseFactory::AliMUONResponseFactory(const char* name,
+                                                 Bool_t isTailEffect)
     : TNamed(name, ""),
       fMUON(0),
-      fResponse0(0)
+      fResponse0(0),
+      fIsTailEffect(isTailEffect)
 {
 /// Standard constructor
   
@@ -54,7 +56,8 @@ ClassImp(AliMUONResponseFactory)
   AliMUONResponseFactory::AliMUONResponseFactory()
     : TNamed(),
       fMUON(0),
-      fResponse0(0)
+      fResponse0(0),
+      fIsTailEffect(kTRUE)
 {
 /// Default constructor
 
@@ -86,6 +89,7 @@ void AliMUONResponseFactory::BuildCommon()
   fResponse0->SetMaxAdc(4096);
   fResponse0->SetSaturation(3000);
   fResponse0->SetZeroSuppression(6);
+  fResponse0->SetTailEffect(fIsTailEffect);
 }       
         
 //__________________________________________________________________________
@@ -188,6 +192,8 @@ void AliMUONResponseFactory::BuildStation6()
 void AliMUONResponseFactory::Build(AliMUON* where) 
 {
 /// Construct MUON responses
+
+  AliDebugStream(1) << "Tail effect: " << fIsTailEffect << endl;
 
   fMUON = where;
 

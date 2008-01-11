@@ -21,7 +21,7 @@ class AliMUONResponseV0;
 class AliMUONResponseFactory : public  TNamed {
 
   public:
-    AliMUONResponseFactory(const char* name);
+    AliMUONResponseFactory(const char* name, Bool_t isTailEffect);
     AliMUONResponseFactory();
     virtual ~AliMUONResponseFactory();
     
@@ -43,8 +43,9 @@ class AliMUONResponseFactory : public  TNamed {
     void BuildStation6();
     
     // data members	
-    AliMUON*             fMUON;           ///< MUON detector 
-    AliMUONResponseV0*   fResponse0;      ///< default response 
+    AliMUON*           fMUON;        ///< MUON detector 
+    AliMUONResponseV0* fResponse0;   ///< default response 
+    Bool_t             fIsTailEffect;///< switch to turn on/off the tail effect
 
   ClassDef(AliMUONResponseFactory,0)  // MUON Factory for Chambers and Segmentation
 };
