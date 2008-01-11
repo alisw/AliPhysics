@@ -87,27 +87,36 @@ Bool_t AliZDCRawStream::Next()
   if(!fRawReader->ReadNextInt((UInt_t&) fRawADC)) return kFALSE;
   fIsADCDataWord = kFALSE;
   
-  printf("fRawADC %x",fRawADC);
   //
-  if((fRawADC == 0xe52b6300) || (fRawADC == 0xdeadface) || (fRawADC == 0xffffffff) || (fRawADC == 0xdeadbeef)){
-    printf("    This is a DARC header!!!\n");
+  // --- DARC header
+  if((fRawADC == 0xe52b6300) || (fRawADC == 0xe52c0300) ||  (fRawADC == 0xffffffff) ||
+     (fRawADC == 0xdeadface) || (fRawADC == 0xdeadbeef)){
+    //printf("    This is a DARC header!!!\n");
   }
-  else if(fRawADC == 0xcafefade) printf("    End of data!\n");
+  // --- End of data
+  else if(fRawADC == 0xcafefade){
+    //printf("    End of data!\n");
+  } 
+  // --- ADC buffer
   else{
-    if((fRawADC & 0x6000000) == 0x6000000){//Not valid datum
-      printf("    AliZDCRawStream -> Not valid datum in ADC module!!! %d\n",fADCModule);
+    if((fRawADC & 0x6000000) == 0x6000000){ // Not valid datum
+      //printf("    AliZDCRawStream -> Not valid datum in ADC module!!! %d\n",fADCModule);
     }
-    else if((fRawADC & 0x4000000) == 0x4000000){//ADC EOB
-      printf("    AliZDCRawStream -> ADC %d End Of Block - Event no. %d\n\n",fADCModule, (fRawADC & 0xffffff));
+    else if((fRawADC & 0x4000000) == 0x4000000){ // ADC EOB
+      //printf("    AliZDCRawStream -> ADC %d End Of Block - Event no. %d\n\n",fADCModule, (fRawADC & 0xffffff));
       fSector[0] = fSector[1] = 99;
     } 
-    else if((fRawADC & 0x2000000) == 0x2000000){//ADC Header
-      fADCModule++;
-      printf("    AliZDCRawStream -> Header ADC %d - ADC datum contains %d data words \n",fADCModule,((fRawADC & 0x3f00) >> 8));
+    else if((fRawADC & 0x2000000) == 0x2000000){ // ADC Header
+      printf("  fRawADC %x\n",fRawADC);
+      // Reading the GEO address to determine ADC module
+      fADCModule = (fRawADC & 0xf8000000) >> 27;
+      fADCModule ++;
+      //printf("    AliZDCRawStream -> HEADER: ADC mod. %d contains %d data words \n",fADCModule,((fRawADC & 0x3f00) >> 8));
     }
-    else{//ADC data word
+    else{ // ADC data word
       fIsADCDataWord = kTRUE;
-      printf(" \t \t ADC Data Word");
+      //printf(" \t \t ADC Data Word");
+      //
       if(!(fRawADC & 0x1000) && !(fRawADC & 0x2000)){ // Valid ADC data
         fADCGain = (fRawADC & 0x10000) >> 16;
         fADCValue = (fRawADC & 0xfff);   
@@ -142,19 +151,20 @@ Bool_t AliZDCRawStream::Next()
           }
         }
         else{
-          AliWarning("    AliZDCRawStream -> No valid ADC module!!!");
-          printf(" ADCmod = %d\n", fADCModule);
+          AliWarning("    AliZDCRawStream -> No valid ADC module\n");
           fRawReader->AddMajorErrorLog(kInvalidADCModule);
         }
-        printf("  ADC %d ch %d range %d -> det %d quad %d value %x\n",
-           fADCModule, vADCChannel, fADCGain, fSector[0], fSector[1], fADCValue);//Chiara debugging
+        //printf("  ADC %d ch %d range %d -> det %d quad %d value %x\n",
+        //   fADCModule, vADCChannel, fADCGain, fSector[0], fSector[1], fADCValue);//Chiara debugging
       
+      }// Valid ADC data
+      else if(fRawADC & 0x1000){ 
+        //printf("  ADC %d ch %d range %d  overflow\n",fADCModule, (fRawADC & 0x1e0000) >> 17, fADCGain); // Overflow
       }
-      else if(fRawADC & 0x1000) 
-        printf("  ADC %d ch %d range %d  overflow\n",fADCModule, (fRawADC & 0x1e0000) >> 17, fADCGain); // Overflow
-      else if(fRawADC & 0x2000) 
-        printf("  ADC %d ch %d range %d  underflow\n",fADCModule, (fRawADC & 0x1e0000) >> 17, fADCGain); // Underflow
-    }
+      else if(fRawADC & 0x2000){ 
+        //printf("  ADC %d ch %d range %d  underflow\n",fADCModule, (fRawADC & 0x1e0000) >> 17, fADCGain); // Underflow
+      }
+    }// ADC word
   }//Not DARC Header
 
   return kTRUE;
