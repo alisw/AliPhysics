@@ -158,13 +158,16 @@ protected:
   TH1F* fhDZNormalized[2];            //->
   TH2F* fhDXYvsDZNormalized[2];       //->
   TH1F* fhNSigmaToVertex[2];          //->
+  
+  TH1F* fhPt[2];                      //-> pt of esd tracks
+  TH1F* fhEta[2];                     //-> eta of esd tracks
 
   TF1*  ffDTheoretical;               //-> theoretical distance to vertex normalized (2d gauss)
 
   TH1F*  fhCutStatistics;             //-> statistics of what cuts the tracks did not survive
   TH2F*  fhCutCorrelation;            //-> 2d statistics plot
 
-  ClassDef(AliESDtrackCuts, 1)
+  ClassDef(AliESDtrackCuts, 2)
 };
 
 
