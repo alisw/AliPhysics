@@ -198,7 +198,7 @@ Int_t AliGeomManager::LayerSize(Int_t layerId)
   }
   else {
     return fgLayerSize[layerId - kFirstLayer];
- }
+  }
 }
 
 //_____________________________________________________________________________
@@ -213,7 +213,7 @@ const char* AliGeomManager::LayerName(Int_t layerId)
   }
   else {
     return fgLayerName[layerId - kFirstLayer];
- }
+  }
 }
 
 //_____________________________________________________________________________
@@ -415,12 +415,12 @@ Bool_t AliGeomManager::GetFromGeometry(const char *symname, AliAlignObj &alobj)
 //_____________________________________________________________________________
 void  AliGeomManager::InitAlignObjFromGeometry()
 {
- // Loop over all alignable volumes and extract
- // the corresponding alignment objects from
- // the TGeo geometry
+  // Loop over all alignable volumes and extract
+  // the corresponding alignment objects from
+  // the TGeo geometry
 
   if(fgAlignObjs[0]) return;
-  
+
   for (Int_t iLayer = kFirstLayer; iLayer < AliGeomManager::kLastLayer; iLayer++) {
     fgAlignObjs[iLayer-kFirstLayer] = new AliAlignObj*[LayerSize(iLayer)];
     for (Int_t iModule = 0; iModule < LayerSize(iLayer); iModule++) {
@@ -431,11 +431,12 @@ void  AliGeomManager::InitAlignObjFromGeometry()
 	AliErrorClass(Form("Failed to extract the alignment object for the volume (ID=%d and path=%s) !",volid,symname));
     }
   }
-  
+
 }
 
 //_____________________________________________________________________________
-AliAlignObj* AliGeomManager::GetAlignObj(UShort_t voluid) {
+AliAlignObj* AliGeomManager::GetAlignObj(UShort_t voluid)
+{
   // Returns the alignment object for given volume ID
   //
   Int_t modId;
@@ -458,7 +459,8 @@ AliAlignObj* AliGeomManager::GetAlignObj(ELayerID layerId, Int_t modId)
 }
 
 //_____________________________________________________________________________
-const char* AliGeomManager::SymName(UShort_t voluid) {
+const char* AliGeomManager::SymName(UShort_t voluid)
+{
   // Returns the symbolic volume name for given volume ID
   //
   Int_t modId;
@@ -917,14 +919,14 @@ void AliGeomManager::InitOrigMatricesLUT()
 //______________________________________________________________________
 TGeoHMatrix* AliGeomManager::GetMatrix(TGeoPNEntry* pne) 
 {
-  // Get the transformation matrix for a given PNEntry
+  // Get the global transformation matrix for a given PNEntry
   // by quering the TGeoManager
 
   if (!fgGeometry || !fgGeometry->IsClosed()) {
     AliErrorClass("Can't get the global matrix! gGeoManager doesn't exist or it is still opened!");
     return NULL;
   }
-  
+
   TGeoPhysicalNode *pnode = pne->GetPhysicalNode();
   if (pnode) return pnode->GetMatrix();
 
@@ -1002,13 +1004,11 @@ Bool_t AliGeomManager::GetDeltaForBranch(Int_t index, TGeoHMatrix &inclusiveD)
   // (for the volume referred by the unique index) including the displacements
   // of all parent volumes in the branch.
   //
-  const char* symname = SymName(index);
-  if(!symname) return kFALSE;
 
   TGeoHMatrix go,invgo;
   go = *GetOrigGlobalMatrix(index);
   invgo = go.Inverse();
-  inclusiveD = *GetMatrix(symname);
+  inclusiveD = *GetMatrix(index);
   inclusiveD.Multiply(&invgo);
 
   return kTRUE;
@@ -1033,7 +1033,7 @@ Bool_t AliGeomManager::GetDeltaForBranch(AliAlignObj& aao, TGeoHMatrix &inclusiv
 Bool_t AliGeomManager::GetOrigGlobalMatrix(const char* symname, TGeoHMatrix &m) 
 {
   // Get the global transformation matrix (ideal geometry) for a given alignable volume
-  //  identified by its symbolic name 'symname' by quering the TGeoManager
+  // identified by its symbolic name 'symname' by quering the TGeoManager
   m.Clear();
 
   if (!fgGeometry || !fgGeometry->IsClosed()) {
@@ -1067,11 +1067,11 @@ Bool_t AliGeomManager::GetOrigGlobalMatrix(const char* symname, TGeoHMatrix &m)
 //_____________________________________________________________________________
 Bool_t AliGeomManager::GetOrigGlobalMatrixFromPath(const char *path, TGeoHMatrix &m)
 {
-  // The method returns global matrix for the ideal detector geometry
-  // Symname identifies either the corresponding TGeoPNEntry or directly
-  // the volume path. The output global matrix is stored in 'm'.
-  // Returns kFALSE in case TGeo has not been initialized or the symname
-  // is invalid.
+  // The method returns the global matrix for the volume identified by 
+  // 'path' in the ideal detector geometry.
+  // The output global matrix is stored in 'm'.
+  // Returns kFALSE in case TGeo has not been initialized or the volume
+  // path is not valid.
   //
   m.Clear();
 
@@ -1098,8 +1098,8 @@ Bool_t AliGeomManager::GetOrigGlobalMatrixFromPath(const char *path, TGeoHMatrix
 
     TGeoMatrix *lm = NULL;
     if (physNode) {
-        lm = physNode->GetOriginalMatrix();
-	if (!lm) lm = node->GetMatrix();
+      lm = physNode->GetOriginalMatrix();
+      if (!lm) lm = node->GetMatrix();
     } else
       lm = node->GetMatrix();
 
@@ -1116,10 +1116,10 @@ TGeoHMatrix* AliGeomManager::GetOrigGlobalMatrix(TGeoPNEntry* pne)
 {
   // The method returns global matrix for the ideal detector geometry
   // using the corresponding TGeoPNEntry as an input.
-  // The method creates a new matrix, so it has to be used carefully in order
-  // to avoid memory leaks.
-  // In case of missing TGeoManager the method return NULL.
-
+  // The returned pointer should be copied by the user, since its content could
+  // be overwritten by a following call to the method.
+  // In case of missing TGeoManager the method returns NULL.
+  //
   if (!fgGeometry || !fgGeometry->IsClosed()) {
     AliErrorClass("Can't get the global matrix! gGeoManager doesn't exist or it is still opened!");
     return NULL;
@@ -1136,11 +1136,15 @@ TGeoHMatrix* AliGeomManager::GetOrigGlobalMatrix(TGeoPNEntry* pne)
 //______________________________________________________________________
 TGeoHMatrix* AliGeomManager::GetOrigGlobalMatrix(Int_t index)
 {
-  // Get the original (ideal geometry) TGeo matrix for
-  // a given module identified by 'index'.
-  // In general the method is slow, so we use
-  // LUT for fast access. The LUT is reset in case of
+  // The method returns global matrix from the ideal detector geometry
+  // for the volume identified by its index.
+  // The returned pointer should be copied by the user, since its content could
+  // be overwritten by a following call to the method.
+  // In case of missing TGeoManager the method returns NULL.
+  // If possible, the method uses the LUT of original ideal matrices
+  // for fast access. The LUT is reset in case a
   // new geometry is loaded.
+  //
   Int_t modId;
   ELayerID layerId = VolUIDToLayer(index,modId);
 
@@ -1194,7 +1198,7 @@ const TGeoHMatrix* AliGeomManager::GetTracking2LocalMatrix(Int_t index)
 
   const TGeoHMatrix *m = pne->GetMatrix();
   if (!m)
-    AliErrorClass(Form("TGeoPNEntry (%s) contains no matrix !",pne->GetName()));
+    AliErrorClass(Form("TGeoPNEntry (%s) contains no tracking-to-local matrix !",pne->GetName()));
 
   return m;
 }
