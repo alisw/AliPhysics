@@ -24,6 +24,7 @@
 */
 
 #include "AliHLTModuleAgent.h"
+#include "AliHLTOUTHandler.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTModuleAgent)
@@ -100,27 +101,36 @@ const char* AliHLTModuleAgent::GetRequiredComponentLibraries() const
 
 int AliHLTModuleAgent::GetHandlerDescription(AliHLTComponentDataType /*dt*/,
 					     AliHLTUInt32_t /*spec*/,
-					     AliHLTOUTHandlerDesc& /*desc*/) const
+					     AliHLTOUTHandlerDesc* /*pDesc*/) const
 {
   // default method, nothing to be done, child classes can overload
   return 0;
 }
 
 AliHLTOUTHandler* AliHLTModuleAgent::GetOutputHandler(AliHLTComponentDataType /*dt*/,
-						      AliHLTUInt32_t /*spec*/) const
+						      AliHLTUInt32_t /*spec*/)
 {
   // default method, nothing to be done, child classes can overload
   return NULL;
 }
 
-
-AliRawStream* AliHLTModuleAgent::GetRawStream(AliHLTComponentDataType /*dt*/,
-					      AliHLTUInt32_t /*spec*/,
-					      const AliHLTOUT* /*pData*/) const
+int AliHLTModuleAgent::DeleteOutputHandler(AliHLTOUTHandler* pInstance)
 {
-  // default method, nothing to be done, child classes can overload
-  return NULL;
+  // default method, simply deletes object
+  if (pInstance) return -EINVAL;
+  delete pInstance;
+  return 0;
 }
+
+
+// likely to be moved to AliHLTOUTHandler
+// AliRawStream* AliHLTModuleAgent::GetRawStream(AliHLTComponentDataType /*dt*/,
+// 					      AliHLTUInt32_t /*spec*/,
+// 					      const AliHLTOUT* /*pData*/) const
+// {
+//   // default method, nothing to be done, child classes can overload
+//   return NULL;
+// }
 
 int AliHLTModuleAgent::ActivateComponentHandler(AliHLTComponentHandler* pHandler)
 {

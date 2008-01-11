@@ -22,6 +22,7 @@
 
 #include <TObject.h>
 #include <TList.h>
+#include <TString.h>
 #include "AliHLTLogging.h"
 #include "AliHLTConfiguration.h"
 #include "AliHLTConfigurationHandler.h"
@@ -210,12 +211,32 @@ class AliHLTModuleAgent : public TObject, public AliHLTLogging {
    */
   enum AliHLTOUTHandlerType {
     kUnknownOutput =0,
+
     /** output is in ESD format */
     kEsd,
-    /** agent can create a raw stream */
-    kRawstream,
-    /** agent provides a chain */
+
+    /** agent provides data for a RawReader
+     * From the data block one or more output blocks can be
+     * created idenditcal to the ddl format. The blocks are
+     * provided to subsequent analysis by a RawReader instance.
+     * The data block can be processed in order to provide the
+     * raw data, e.g. in case of lossless compression.
+     */
+    kRawReader,
+
+    /** agent can create a raw stream
+     * The agent directly generates a detector specific RawStream
+     * object. This is used for pre-analyzed data which will not
+     * be converted back to the raw format.
+     */
+    kRawStream,
+
+    /** agent provides a chain
+     * The data bock is fed into an analysis chain, the treatment
+     * depends on the components in the chain.
+     */
     kChain,
+
     /** agent provides detector specific handler */
     kProprietary,
     kLastOutputHandler
@@ -224,36 +245,65 @@ class AliHLTModuleAgent : public TObject, public AliHLTLogging {
   /**
    * Output handler description.
    * \em fModule: module name specific for the handler type
-   *              - kRawStream: class name of the Rawstream class
+   *              - kRawReader: DDL no printed in ascii format
+   *              - kRawStream: class name of the RawStream class
    *              - kChain:     blank separated list of chains
    *              - kProprietary: name of the handler class
    */
-  struct AliHLTOUTHandlerDesc {
+  class AliHLTOUTHandlerDesc {
+  public:
+    AliHLTOUTHandlerDesc() : fHType(kUnknownOutput), fDt(kAliHLTVoidDataType), fModule() {}
+
+    AliHLTOUTHandlerDesc(AliHLTOUTHandlerType handlerType, AliHLTComponentDataType dt, const char* module) 
+      : fHType(handlerType), fDt(dt), fModule(module) {}
+
+    ~AliHLTOUTHandlerDesc();
+
+  private:
     /** type of the handler */
     AliHLTOUTHandlerType    fHType;
     /** data type treated by the handler */
     AliHLTComponentDataType fDt;
     /** class or chain name */
-    const char*             fModule;
+    TString                 fModule;
   };
 
   /**
    * Get handler description for a data block.
    * @param dt        [in] data type of the block
    * @param spec      [in] specification of the block
-   * @param desc      [out] handler description
+   * @param pDesc     [out] handler description
    * @return 1 if the agent can provide a handler, 0 if not
    */
   virtual int GetHandlerDescription(AliHLTComponentDataType dt,
 				    AliHLTUInt32_t spec,
-				    AliHLTOUTHandlerDesc& desc) const;
+				    AliHLTOUTHandlerDesc* pDesc) const;
+
   /**
    * Get handler for a data block of the HLTOUT data.
+   * The agent can also provide an overloaded @ref DeleteOutputHandler
+   * function to implement customized clean up. It is also possible to
+   * return the same instance of a handler for different data blocks.<br>
+   *
+   * The framework first collects the handlers for all data blocks, and
+   * calls the @ref AliHLTOUTHandler::ProcessData method afterwords for
+   * each handler.
    * @param dt        [in] data type of the block
    * @param spec      [in] specification of the block
+   * @return pointer to handler
    */
   virtual AliHLTOUTHandler* GetOutputHandler(AliHLTComponentDataType dt,
-					     AliHLTUInt32_t spec) const;
+					     AliHLTUInt32_t spec);
+
+  /**
+   * Delete an HLTOUT handler.
+   * Even if the agent returned the handler several times, this is the
+   * final cleanup. The framwork makes sure that the handler is not
+   * used any further outside the agent. The default implementation just
+   * deltetes the object.
+   * @param pInstance      pointer to handler
+   */
+  virtual int DeleteOutputHandler(AliHLTOUTHandler* pInstance);
 
   /**
    * Get raw stream for a data block.
@@ -262,9 +312,11 @@ class AliHLTModuleAgent : public TObject, public AliHLTLogging {
    * @param pData     [in] data control object
    * @return Rawstream object, NULL if no Rawstream available for data type/spec
    */
-  virtual AliRawStream* GetRawStream(AliHLTComponentDataType dt,
-				     AliHLTUInt32_t spec,
-				     const AliHLTOUT* pData) const;
+  // this method is likely to be moved to a specific implementation
+  // of AliHLTOUTHandler
+//   virtual AliRawStream* GetRawStream(AliHLTComponentDataType dt,
+// 				     AliHLTUInt32_t spec,
+// 				     const AliHLTOUT* pData);
 
   /**
    * Old method kept for backward compatibility, redirected to @ref
