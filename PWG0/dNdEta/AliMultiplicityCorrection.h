@@ -46,7 +46,7 @@ class AliMultiplicityCorrection : public TNamed {
     void FillCorrection(Float_t vtx, Int_t generated05, Int_t generated10, Int_t generated15, Int_t generated20, Int_t generatedAll, Int_t measured05, Int_t measured10, Int_t measured15, Int_t measured20);
 
     Bool_t LoadHistograms(const Char_t* dir = 0);
-    void SaveHistograms();
+    void SaveHistograms(const char* dir = 0);
     void DrawHistograms();
     void DrawComparison(const char* name, Int_t inputRange, Bool_t fullPhaseSpace, Bool_t normalizeESD, TH1* mcHist, Bool_t simple = kFALSE);
 

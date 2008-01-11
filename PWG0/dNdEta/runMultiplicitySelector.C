@@ -190,6 +190,10 @@ void fitOther(const char* fileNameMC = "multiplicityMC_3M.root", const char* fol
   //mult->ApplyMinuitFit(histID, kFALSE);
   //mult->DrawComparison("MinuitChi2", histID, kFALSE, kTRUE, hist2->ProjectionY());
 
+  TFile* file = TFile::Open("out.root", "RECREATE");
+  mult->SaveHistograms();
+  file->Write();
+  file->Close();
 }
 
 void* fit2Step(const char* fileNameMC = "multiplicityMC_2M.root", const char* fileNameESD = "multiplicityMC_1M_3.root", Int_t histID = 3, Bool_t fullPhaseSpace = kFALSE)

@@ -1103,11 +1103,11 @@ void AliHighMultiplicitySelector::Contamination()
             triggerRate2 += ((mult2 > mult) ? 2. : 1.) * xSection[mult] * xSection[mult2] * triggerEff[mult+mult2];
 
       triggerRate2 *= TMath::Poisson(2, collPerWindow) * windowsPerSecond;
-      //triggerRate2 *= collPerWindow * rate;
 
       Printf("Rate for 2 collisions is %f Hz --> %.1f%%", triggerRate2, triggerRate2 / triggerRate * 100);
 
       Double_t triggerRate3 = 0;
+
       for (Int_t mult = 0; mult < max; mult++)
         for (Int_t mult2 = mult; mult2 < max-mult; mult2++)
           for (Int_t mult3 = 0; mult3 < max-mult-mult2; mult3++)
@@ -1179,6 +1179,101 @@ void AliHighMultiplicitySelector::Contamination()
     }
 
     new TCanvas; graph->Draw("AP*");
+  }
+}
+
+void AliHighMultiplicitySelector::Contamination2()
+{
+  //
+  // produces a spectrum created with N triggers
+  // number of triggers and thresholds for the moment fixed
+  //
+
+  /*
+
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libPWG0base");
+  .L AliHighMultiplicitySelector.cxx+g
+  x = new AliHighMultiplicitySelector();
+  x->ReadHistograms("highmult_hijing100k.root");
+  x->Contamination2();
+
+  */
+
+  // get x-sections
+  TFile* file = TFile::Open("crosssectionEx.root");
+  if (!file)
+    return;
+
+  TH1* xSections[2];
+  xSections[0] = dynamic_cast<TH1*> (gFile->Get("xSection2Ex"));
+  xSections[1] = dynamic_cast<TH1*> (gFile->Get("xSection15Ex"));
+
+  Int_t nCuts = 4;
+  Int_t cuts[] = { 104, 134, 154, 170 };
+
+  new TCanvas;
+
+  Int_t colors[] = { 2, 3, 4, 6, 7, 8 };
+  Int_t markers[] = { 7, 2, 4, 5, 6, 27 };
+
+  // put to 2 for second layer
+  for (Int_t i=0; i<1; ++i)
+  {
+    if (!xSections[i])
+      continue;
+
+    // relative x-section, once we have a collision
+    xSections[i]->Scale(1.0 / xSections[i]->Integral());
+
+    Int_t max = xSections[i]->GetNbinsX();
+    max = 500;
+
+    Float_t* xSection = new Float_t[max];
+    for (Int_t mult = 0; mult < max; mult++)
+      xSection[mult] = xSections[i]->GetBinContent(mult+1);
+
+    TH2* fMvsL = (i == 0) ? fMvsL1: fMvsL2;
+
+    for (Int_t currentCut = 0; currentCut<nCuts; ++currentCut)
+    {
+      TGraph* graph = new TGraph;
+      graph->SetMarkerColor(colors[currentCut]);
+      graph->SetMarkerStyle(markers[currentCut]);
+
+      Int_t cut = cuts[currentCut];
+
+      TH1* triggerEffHist = (TH1*) GetTriggerEfficiency(fMvsL, cut)->Clone("triggerEff");
+      Float_t* triggerEff = new Float_t[max];
+      for (Int_t mult = 0; mult < max; mult++)
+        triggerEff[mult] = triggerEffHist->GetBinContent(mult+1);
+
+      Double_t triggerRate = 0;
+      for (Int_t mult = 0; mult < max; mult++)
+        triggerRate += xSection[mult] * triggerEff[mult];
+
+      Printf("Raw value for 1 collision is %e", triggerRate);
+
+      Double_t triggerRate2 = 0;
+      for (Int_t mult = 0; mult < max; mult++)
+        for (Int_t mult2 = mult; mult2 < max; mult2++)
+          if (mult+mult2 < max)
+            triggerRate2 += ((mult2 > mult) ? 2. : 1.) * xSection[mult] * xSection[mult2] * triggerEff[mult+mult2];
+
+      Printf("Raw value for 2 collisions is %e", triggerRate2);
+
+      for (Double_t doubleRate = 0; doubleRate <= 0.2; doubleRate += 0.005)
+      {
+        Float_t totalContamination = (triggerRate2 * doubleRate) / (triggerRate + triggerRate2 * doubleRate);
+
+        //Printf("Total contamination is %.1f%%", totalContamination * 100);
+
+        graph->SetPoint(graph->GetN(), doubleRate, totalContamination);
+      }
+
+      graph->Draw((currentCut == 0) ? "A*" : "* SAME");
+      graph->GetXaxis()->SetRangeUser(0, 1);
+    }
   }
 }
 
@@ -1569,6 +1664,8 @@ void AliHighMultiplicitySelector::MBComparison()
             triggerLimit = (Int_t) triggerEff->GetXaxis()->GetBinCenter(bin);
 
         Printf("   Efficiency limit (50%%) is at multiplicity %d", triggerLimit);
+        Float_t fractionGood = proj->Integral(triggerLimit, proj->GetNbinsX()) / proj->Integral();
+        Printf("   %.2f %% of the events are above the trigger limit", fractionGood * 100);
 
         if (triggerLimit > limit)
           Printf("   WARNING: interesting events also counted inside the trigger limit");

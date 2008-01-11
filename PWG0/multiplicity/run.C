@@ -9,6 +9,8 @@ void run(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFALSE, B
     gProof->EnablePackage("STEERBase");
     gProof->UploadPackage("ESD");
     gProof->EnablePackage("ESD");
+    gProof->UploadPackage("AOD");
+    gProof->EnablePackage("AOD");
     gProof->UploadPackage("ANALYSIS");
     gProof->EnablePackage("ANALYSIS");
     gProof->UploadPackage("PWG0base");
@@ -52,7 +54,7 @@ void run(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFALSE, B
 
   task = new AliMultiplicityTask(option);
   task->SetTrackCuts(esdTrackCuts);
-  task->SetAnalysisMode(AliMultiplicityTask::kTPC);
+  task->SetAnalysisMode(AliMultiplicityTask::kSPD);
 
   if (mc)
     task->SetReadMC();

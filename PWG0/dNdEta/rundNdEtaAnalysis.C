@@ -128,7 +128,7 @@ void FinishAnalysisAll(const char* dataInput = "analysis_esd_raw.root", const ch
   fdNdEtaAnalysis->SaveHistograms();
 }
 
-void FinishAnalysis(const char* analysisFile = "analysis_esd.root", const char* analysisDir = "dndeta", const char* correctionMapFile = "correction_map.root", const char* correctionMapFolder = "dndeta_correction", Bool_t useUncorrected = kFALSE, Bool_t simple = kFALSE)
+void* FinishAnalysis(const char* analysisFile = "analysis_esd.root", const char* analysisDir = "dndeta", const char* correctionMapFile = "correction_map.root", const char* correctionMapFolder = "dndeta_correction", Bool_t useUncorrected = kFALSE, Bool_t simple = kFALSE)
 {
   loadlibs();
 
@@ -147,6 +147,8 @@ void FinishAnalysis(const char* analysisFile = "analysis_esd.root", const char* 
     fdNdEtaAnalysis->Finish(dNdEtaCorrection, 0, AlidNdEtaCorrection::kINEL);
     //fdNdEtaAnalysis->Finish(dNdEtaCorrection, 0, AlidNdEtaCorrection::kTrack2Particle);
   }
+  else
+    fdNdEtaAnalysis->Finish(0, 0, AlidNdEtaCorrection::kNone);
 
   fdNdEtaAnalysis->DrawHistograms(simple);
 
@@ -158,5 +160,8 @@ void FinishAnalysis(const char* analysisFile = "analysis_esd.root", const char* 
   hist = fdNdEtaAnalysis->GetdNdEtaHistogram(2);
   Float_t value2 = hist->Integral(binLeft, binRight);
 
-  printf("Ratio is %f, values are %f %f\n", value1 / value2, value1, value2);
+  if (value2 > 0)
+    printf("Ratio is %f, values are %f %f\n", value1 / value2, value1, value2);
+
+  return fdNdEtaAnalysis;
 }
