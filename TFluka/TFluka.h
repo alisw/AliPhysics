@@ -184,8 +184,8 @@ class TFluka : public TVirtualMC {
   virtual void       SetModelParameter(const char* parName, Double_t parValue, Int_t imed);
   virtual TObjArray* GetListOfUserConfigs() {return fUserConfig;}
   virtual Double_t   Xsec(char*, Double_t, Int_t, Int_t);
-
-  
+  virtual void       SetLowEnergyNeutronTransport(Bool_t flag) {fLowEnergyNeutronTransport = flag;}
+  virtual Bool_t     LowEnergyNeutronTransport() {return fLowEnergyNeutronTransport;}
   // Particle table usage         
   virtual Int_t    IdFromPDG(Int_t id) const;
   virtual Int_t    PDGFromId(Int_t pdg) const;
@@ -442,6 +442,7 @@ class TFluka : public TVirtualMC {
   Bool_t   fStopEvent;            // Flag for stopped event
   Bool_t   fStopRun;              // Flag for stopped run 
   Int_t    fPrimaryElectronIndex; // Primary electron Index
+  Bool_t   fLowEnergyNeutronTransport; // Flag to force low energy neutron transport
   
   //
   //Geometry through TGeo

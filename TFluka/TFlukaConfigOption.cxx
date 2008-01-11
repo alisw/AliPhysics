@@ -682,7 +682,7 @@ void TFlukaConfigOption::ProcessCUTNEU()
   // Find the FLUKA neutron group corresponding to the cut
   //
   Float_t neutronCut = cut;
-  Int_t groupCut = 1; // if cut is > 19.6 MeV not low energy neutron transport is done
+  Int_t groupCut = 1; // if cut is > 19.6 MeV no low energy neutron transport is performed
   if (neutronCut < 0.0196) {
     neutronCut = 0.0196;
     // Search the group cutoff for the energy cut
@@ -729,19 +729,24 @@ void TFlukaConfigOption::ProcessCUTNEU()
        // 62.0 = AntiOmega_c zero
        fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cut, 61.0, 62.0);
     } else {
-        Int_t nreg, *reglist;
-        Float_t ireg;
-        reglist = fgGeom->GetMaterialList(fMedium, nreg);
-        // Loop over regions of a given material
-        for (Int_t k = 0; k < nreg; k++) {
-         ireg = reglist[k];
-         fprintf(fgFile,"LOW-BIAS  %10.4g%10.4g%10.1f%10.1f%10.1f%10.1f\n",
-                Float_t(groupCut), 73.0, 0.95, ireg, ireg, 1.);
-       }
-
-       Warning("ProcessCUTNEU",
-              "Material #%4d %s: Cut on neutral hadrons (Ekin > %9.3e) material by material only implemented for low-energy neutrons !\n",
-              fMedium, fCMaterial->GetName(), cut);
+	TFluka* fluka = (TFluka*) gMC;
+	printf("Low energy neutron transport %5d\n", fluka->LowEnergyNeutronTransport());
+	
+	if (!(fluka->LowEnergyNeutronTransport())) {
+	    Int_t nreg, *reglist;
+	    Float_t ireg;
+	    reglist = fgGeom->GetMaterialList(fMedium, nreg);
+	    
+	    // Loop over regions of a given material
+	    for (Int_t k = 0; k < nreg; k++) {
+		ireg = reglist[k];
+		fprintf(fgFile,"LOW-BIAS  %10.4g%10.4g%10.1f%10.1f%10.1f%10.1f\n",
+			Float_t(groupCut), 73.0, 0.95, ireg, ireg, 1.);
+	    }
+	}
+	Warning("ProcessCUTNEU",
+		"Material #%4d %s: Cut on neutral hadrons (Ekin > %9.3e) material by material only implemented for low-energy neutrons !\n",
+		fMedium, fCMaterial->GetName(), cut);
     }
 }
 
