@@ -1,4 +1,4 @@
-void run(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFALSE, Bool_t aProof = kFALSE, const char* option = "")
+void run(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFALSE, Bool_t aProof = kFALSE, Bool_t mc = kFALSE, const char* option = "")
 {
   if (aProof)
   {
@@ -57,6 +57,14 @@ void run(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFALSE, B
   // Add ESD handler
   AliESDInputHandler* esdH = new AliESDInputHandler;
   mgr->SetInputEventHandler(esdH);
+  
+  if (mc) {
+    task->EnableSecondaryStudy();
+    // Enable MC event handler
+    AliMCEventHandler* handler = new AliMCEventHandler;
+    handler->SetReadTR(kFALSE);
+    mgr->SetMCtruthEventHandler(handler);
+  }
 
   // Attach input
   cInput  = mgr->CreateContainer("cInput", TChain::Class(), AliAnalysisManager::kInputContainer);

@@ -21,10 +21,14 @@ class AliCutTask : public AliAnalysisTask {
   virtual void   Terminate(Option_t *);
 
   void SetTrackCuts(AliESDtrackCuts* cuts) { fTrackCuts = cuts; }
+  void EnableSecondaryStudy();
   
  private:
   AliESDEvent *fESD;           //! ESD object
   AliESDtrackCuts* fTrackCuts; // track cuts
+  
+  AliESDtrackCuts* fTrackCutsPrimaries; // cuts for tracks from primary particles
+  AliESDtrackCuts* fTrackCutsSecondaries; // cuts for tracks from secondary particles
 
   TH1F* fVertex;   //! event z vertex distribution
   TH1F* fTriggerStats;  //! triggers
