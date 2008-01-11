@@ -63,7 +63,30 @@ TRACKING must be 1 for RKUTA and 2 for HELIX (the default value for aliroot is 2
 FACTOR allows you to set the magnetic field to 0, just putting FACTOR=0. Default value is 1.
 MAXB is the maximum magnetic field which is 10.T
 
-\section sim_s4 MUON cocktail generator
+\section sim_s4 Tailing effect
+
+The control to turn on/off the parametrized tailing effect: 
+<pre>
+AliMUON::SetTailEffect(Bool_t),
+</pre>
+
+The parameter to tune increase/decrease the tailing effect is kept inside,
+AliMUONResponseV0::DisIntegrate(). This parameter is an integer number 
+(excluding zero and four), the higher the value is the less is the tailing 
+effect:
+<pre>
+Int_t para = 5; 
+</pre>
+Zero is excluded because it gives straight line transformation, and four
+is excluded because the AliRoot simulation chain spends VERY VERY long
+time in AliMUONResponseV0::DisIntegrate method, which reason was not yet
+understood. The parameter for 1, 2, 3, 5, 6, 7, 8, 9, 10 were checked with 
+no slowing down problem, however parameters greater than 6 give almost no 
+tailing effect since they basically correspond to higher order polynomial 
+transform.
+
+
+\section sim_s5 MUON cocktail generator
 
 There is a MUON cocktail generator of the muon sources in the
 EVGEN directory. This class derives from AliGenCocktail.
@@ -99,7 +122,7 @@ gener->SetSigma(0,0,0.0);       // Sigma in (X,Y,Z) (cm) on IP position
 gener->Init();
 </pre>
  
-\section sim_s5 How to simulate events with misaligned geometry in local CDB
+\section sim_s6 How to simulate events with misaligned geometry in local CDB
 
 If you want to use a misaligned geometry to simulate some
 events you can use a local CDB. For this need to follow
@@ -131,7 +154,7 @@ MuonSim.Run(10);
 EOF
 </pre>
 
-\section sim_s6 How to Merge events
+\section sim_s7 How to Merge events
 
 You can merge 2 types of simulated events. For example, 
 you can simulate Hijing events, and then simulate muons
@@ -185,7 +208,7 @@ MuonRec.Run()
 EOF
 </pre>
 
-\section sim_s7 On track numbering 
+\section sim_s8 On track numbering 
 
 All generated particles, including primary and secondary
 particles are put on the stack. The secondary particles are kept
