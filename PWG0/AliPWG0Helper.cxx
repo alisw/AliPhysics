@@ -7,6 +7,9 @@
 #include <TH1.h>
 #include <TH3.h>
 #include <TList.h>
+#include <TTree.h>
+#include <TBranch.h>
+#include <TLeaf.h>
 
 #include <AliHeader.h>
 #include <AliStack.h>
@@ -353,4 +356,43 @@ Int_t AliPWG0Helper::FindPrimaryMotherLabel(AliStack* stack, Int_t label)
   }
 
   return label;
+}
+
+void AliPWG0Helper::SetBranchStatusRecursive(TTree* tree, char *bname, Bool_t status, Bool_t debug)
+{
+  // Function  to switch on/off all data members of a top level branch
+  // this is needed for branches without a trailing dot ".", for those
+  // the root functionality with regular expressions does not work.
+  // Usage e.g.
+  // chain->SetBranchStatus("*", 0); 
+  // SetBranchStatusRecursive(chain,"SPDVertex",1);
+  // You need to give the full name of the top level branch zou want to access
+  //==========================================================================
+  // Author Christian.Klein-Boesing@cern.ch
+
+  if (!tree)
+    return;
+
+  TBranch *br = tree->GetBranch(bname);
+  if(!br) {
+    Printf("AliPWG0Helper::SetBranchStatusRecursive: Branch %s not found", bname);
+  }
+
+  TObjArray *leaves = tree->GetListOfLeaves();
+  Int_t nleaves = leaves->GetEntries();
+  TLeaf *leaf = 0;
+  TBranch *branch = 0;
+  TBranch *mother = 0;
+  for (Int_t i=0;i<nleaves;i++)  {
+    // the matched entry e.g. SPDVertex is its own Mother
+    leaf = (TLeaf*)leaves->UncheckedAt(i);
+    branch = (TBranch*)leaf->GetBranch();
+    mother = branch->GetMother();
+    if (mother==br){
+      if (debug)
+        Printf(">>>> AliPWG0Helper::SetBranchStatusRecursive: Setting status %s %s to %d", mother->GetName(), leaf->GetName(), status);
+      if (status) branch->ResetBit(kDoNotProcess);
+      else        branch->SetBit(kDoNotProcess);
+    }
+  }
 }

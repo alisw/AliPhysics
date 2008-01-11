@@ -50,21 +50,18 @@ void AliCutTask::ConnectInputData(Option_t *)
     Printf("ERROR: Could not read chain from input slot 0");
   } else {
     // Disable all branches and enable only the needed ones
-    //tree->SetBranchStatus("*", kFALSE);
-    //tree->SetBranchStatus("*Calo*", kFALSE);
+    tree->SetBranchStatus("*", kFALSE);
 
-    tree->SetBranchStatus("fTracks.*", kTRUE);
-    tree->SetBranchStatus("Tracks.*", kTRUE);
-
+    // old esd
     tree->SetBranchStatus("fTriggerMask", kTRUE);
-    tree->SetBranchStatus("AliESDHeader", kTRUE);
-
+    tree->SetBranchStatus("fTracks.*", kTRUE);
     tree->SetBranchStatus("fSPDVertex*", kTRUE);
 
-    // unclear how to enable vertex branch with new ESD format
-    tree->SetBranchStatus("SPDVertex.*", kTRUE);
-    tree->SetBranchStatus("*fPosition*", kTRUE);
-    tree->SetBranchStatus("*fPosition[3]", kTRUE);
+    // new esd
+    tree->SetBranchStatus("TriggerMask", kTRUE);
+    tree->SetBranchStatus("AliESDHeader", kTRUE);
+    AliPWG0Helper::SetBranchStatusRecursive(tree, "Tracks", kTRUE);
+    AliPWG0Helper::SetBranchStatusRecursive(tree, "SPDVertex", kTRUE);
 
     AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
 
@@ -266,9 +263,7 @@ void AliCutTask::Terminate(Option_t *)
   
   Printf("Writting results to trackCuts.root.");
   
-  return;
-
-	fTrackCuts->DrawHistograms();
+  fTrackCuts->DrawHistograms();
 
   new TCanvas;
   fVertex->Draw();
