@@ -125,7 +125,8 @@ int AliHLTOUTComponent::DoInit( int argc, const char** argv )
       if (pWriter) {
 	fWriters.push_back(pWriter);
       } else {
-	iResult=-ENOMEM;
+	HLTError("can nor open HOMER writer");
+	iResult=-ENODEV;
 	break;
       }
     }
@@ -178,6 +179,7 @@ int AliHLTOUTComponent::DumpEvent( const AliHLTComponentEventData& evtData,
     }
   }
 
+  HLTInfo("added blocks to HOMER writer");
   return iResult;
 }
 
@@ -186,6 +188,7 @@ int AliHLTOUTComponent::FillESD(int eventNo, AliRunLoader* runLoader, AliESDEven
   // see header file for class documentation
   int iResult=0;
   if (fWriters.size()==0) return 0;
+  HLTInfo("writing files");
   
   // search for the writer with the biggest data volume in order to allocate the
   // output buffer of sufficient size

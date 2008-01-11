@@ -3,24 +3,26 @@
 
 #ifndef ALIHLTOUT_H
 #define ALIHLTOUT_H
-/* This file is property of and copyright by the ALICE HLT Project        * 
- * ALICE Experiment at CERN, All rights reserved.                         *
- * See cxx source for full Copyright notice                               */
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
 
 /** @file   AliHLTOUT.h
     @author Matthias Richter
     @date   
     @brief  The control class for HLTOUT data.
+*/
 
-// see below for class documentation
-// or
-// refer to README to build package
-// or
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
-
-                                                                          */
 #include <vector>
 #include "AliHLTLogging.h"
+#include "AliHLTModuleAgent.h"
+
+class AliHLTOUTHandler;
+class AliHLTOUTHandlerDesc;
+
+#define AliHLTOUTInvalidIndex (~(AliHLTUInt32_t)0)
+
+typedef vector<AliHLTUInt32_t> AliHLTOUTIndexList;
 
 /**
  * @class AliHLTOUT
@@ -39,6 +41,14 @@ class AliHLTOUT : public AliHLTLogging {
   virtual ~AliHLTOUT();
 
   /**
+   * Init for processing.
+   * The HLTOUT is scanned for all available data blocks and the
+   * AliHLTOUTHandler objects for the data blocks are created according
+   * to the module agents (see AliHLTModuleAgent).
+   */
+  int Init();
+
+  /**
    * Get number of data blocks in the HLTOUT data
    */
   int GetNofDataBlocks();
@@ -47,19 +57,23 @@ class AliHLTOUT : public AliHLTLogging {
    * Select the first data block of a certain data type and specification.
    * The selection criteria can be of kAliHLTAnyDataType and/or
    * kAliHLTVoidDataSpec in order to be ignored and just match any data block.
+   *
+   * The search criteria can be combined with a handler type (e.g. kRawReader)
    * @param dt    [in]  data type to match                                <br>
    * @param spec  [in]  data specification to match                       <br>
-   * @return identifier >=0 if success, neg. error code if failed         <br>
-   *                        -ENOENT if no block found                     <br>
+   * @param handlerType [in]  type of the handler
+   * @return identifier >0 if success, 0 if no block found                <br>
+   *         neg. error code if failed                                    <br>
    *                        -EPERM if access denied (object locked)
    */
-  int SelectFirstDataBlock(AliHLTComponentDataType dt, AliHLTUInt32_t spec);
+  int SelectFirstDataBlock(AliHLTComponentDataType dt, AliHLTUInt32_t spec,
+			   AliHLTModuleAgent::AliHLTOUTHandlerType handlerType=AliHLTModuleAgent::kUnknownOutput);
 
   /**
    * Select the next data block of data type and specification of the previous
    * call to @ref SelectFirstDataBlock.
-   * @return identifier >=0 if success, neg. error code if failed         <br>
-   *                        -ENOENT if no block found                     <br>
+   * @return identifier >0 if success, 0 if no block found                <br>
+   *         neg. error code if failed                                    <br>
    *                        -EPERM if access denied (object locked)
    */
   int SelectNextDataBlock();
@@ -70,6 +84,12 @@ class AliHLTOUT : public AliHLTLogging {
    * @param spec  [out] data specification of the selected block
    */
   int GetDataBlockDescription(AliHLTComponentDataType& dt, AliHLTUInt32_t& spec);
+
+  /**
+   * Get the index of the current data block.
+   * @return index, AliHLTOUTInvalidIndex if no block selected
+   */
+  AliHLTUInt32_t GetDataBlockIndex();
 
   /**
    * Get buffer of the selected data block.
@@ -218,11 +238,60 @@ class AliHLTOUT : public AliHLTLogging {
     kAlignmentWarning = 0x20
   };
 
+  class AliHLTOUTHandlerListEntry {
+  public:
+    AliHLTOUTHandlerListEntry(AliHLTOUTHandler* pHandler, 
+			      AliHLTModuleAgent::AliHLTOUTHandlerDesc& handlerDesc,
+			      AliHLTModuleAgent* pAgent,
+			      AliHLTUInt32_t index);
+
+    /** copy constructor for vector handling */
+    AliHLTOUTHandlerListEntry(const AliHLTOUTHandlerListEntry& src);
+
+    /** assignment operator for vector handling */
+    AliHLTOUTHandlerListEntry& operator=(const AliHLTOUTHandlerListEntry& src);
+
+    ~AliHLTOUTHandlerListEntry();
+
+    operator AliHLTOUTHandler*() const {return fpHandler;}
+    operator AliHLTModuleAgent::AliHLTOUTHandlerDesc&() {return fHandlerDesc;}
+    operator AliHLTModuleAgent*() const {return fpAgent;}
+
+    bool operator==(const AliHLTOUTHandlerListEntry& entry) const;
+
+    AliHLTUInt32_t operator[](int i) const;
+
+    void AddIndex(AliHLTUInt32_t index);
+
+  private:
+    /** standard constructor prohibited */
+    AliHLTOUTHandlerListEntry();
+
+    /** pointer to the handler */
+    AliHLTOUTHandler* fpHandler; //! transient
+
+    /** pointer to handler description */
+    AliHLTModuleAgent::AliHLTOUTHandlerDesc fHandlerDesc; //! transient
+
+    /** pointer to module agent */
+    AliHLTModuleAgent* fpAgent; //! transient
+
+    /** list of block indexes */
+    AliHLTOUTIndexList fBlocks; //!transient
+  };
+
   /**
    * Generate the index of the HLTOUT data.
    * Must be implemented by the child classes.
    */
   virtual int GenerateIndex()=0;
+
+  /**
+   * Find AliHLTOUTHandler objects for the data blocks.
+   * The available AliHLTModuleAgents are probed whether they provide
+   * handlers for data processing.
+   */
+  int InitHandlers();
 
   /**
    * Get the data buffer
@@ -275,6 +344,17 @@ class AliHLTOUT : public AliHLTLogging {
    */
   int CheckStatusFlag(unsigned int flag) const {return (fFlags&flag)==flag;}
 
+  /**
+   * Insert a handler item.
+   * The current list entries are checked if the handler is already in
+   * the list. It is added if not in the list, otherwise the block index
+   * is added to the existing entry.
+   * @param entry    handler list entry
+   * @return 0 if added, EEXIST (non negative!) if merged with existing entry <br>
+   *         neg. error code if failed
+   */
+  int InsertHandler(const AliHLTOUTHandlerListEntry &entry);
+
   /** data type for the current block search, set from @ref SelectFirstDataBlock */
   AliHLTComponentDataType fSearchDataType; //!transient
 
@@ -293,6 +373,9 @@ class AliHLTOUT : public AliHLTLogging {
   /** data buffer under processing */
   const AliHLTUInt8_t* fpBuffer; //!transient
 
-  ClassDef(AliHLTOUT, 0)
+  /** list of AliHLTOUTHandlers */
+  vector<AliHLTOUTHandlerListEntry> fDataHandlers; // !transient
+
+  ClassDef(AliHLTOUT, 1)
 };
 #endif
