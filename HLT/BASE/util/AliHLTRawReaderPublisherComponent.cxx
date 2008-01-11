@@ -46,7 +46,8 @@ AliHLTRawReaderPublisherComponent::AliHLTRawReaderPublisherComponent()
   fMaxEquId(-1),
   fVerbose(kFALSE),
   fDataType(kAliHLTVoidDataType),
-  fSpecification(kAliHLTVoidDataSpec)
+  fSpecification(kAliHLTVoidDataSpec),
+  fSkipEmpty(kFALSE)
 {
   // see header file for class documentation
   // or
@@ -131,6 +132,10 @@ int AliHLTRawReaderPublisherComponent::DoInit( int argc, const char** argv )
     } else if (argument.CompareTo("-verbose")==0) {
       fVerbose=kTRUE;
 
+      // -skipempty
+    } else if (argument.CompareTo("-skipempty")==0) {
+      fSkipEmpty=kTRUE;
+
       // -datatype
     } else if (argument.CompareTo("-datatype")==0) {
       if ((bMissingParam=(++i>=argc))) break;
@@ -213,7 +218,11 @@ int AliHLTRawReaderPublisherComponent::GetEvent(const AliHLTComponentEventData& 
   if (pRawReader) {
     pRawReader->Reset();
     pRawReader->SelectEquipment(-1, fMinEquId, fMaxEquId);
-    AliInfo(Form("get event from RawReader %p equipment id range [%d,%d]", pRawReader, fMinEquId, fMaxEquId));
+    if (fVerbose) {
+      AliInfo(Form("get event from RawReader %p equipment id range [%d,%d]", pRawReader, fMinEquId, fMaxEquId));
+    } else {
+      AliDebug(0, Form("get event from RawReader %p equipment id range [%d,%d]", pRawReader, fMinEquId, fMaxEquId));
+    }
     list<int> processedIds;
     while (pRawReader->ReadHeader() && (iResult>=0 || iResult==-ENOSPC)) {
       const AliRawDataHeader* pHeader=pRawReader->GetDataHeader();
@@ -254,7 +263,7 @@ int AliHLTRawReaderPublisherComponent::GetEvent(const AliHLTComponentEventData& 
       }
       offset+=readSize;
     }
-    if (processedIds.size()!=size_t(fMaxEquId-fMinEquId+1)) {
+    if (!fSkipEmpty && processedIds.size()!=size_t(fMaxEquId-fMinEquId+1)) {
       // add further empty data blocks
       AliRawDataHeader header;
       header.fSize=sizeof(AliRawDataHeader);

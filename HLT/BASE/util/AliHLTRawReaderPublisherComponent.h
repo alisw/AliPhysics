@@ -49,6 +49,9 @@
  *      the maximum equipmentid including detector offset (default = minid)
  * \li -verbose<br>
  *      print out some more info messages, mainly for the sake of tutorials
+ * \li -skipempty
+ *      skip all empty ddls in the specified range; by default, the component
+ *      generates and inserts empty data blocks
  * \li -datatype     <i> datatype   dataorigin </i> <br>
  *      data type ID and origin, e.g. <tt>-datatype DIGITS TPC </tt>
  * \li -dataspec     <i> specification </i> <br>
@@ -159,7 +162,10 @@ class AliHLTRawReaderPublisherComponent : public AliHLTOfflineDataSource {
   /** data specification */
   AliHLTUInt32_t          fSpecification;                          //!transient
 
-  ClassDef(AliHLTRawReaderPublisherComponent, 0);
+  /** skip the generation of empty data blocks */
+  Bool_t                  fSkipEmpty;                              //!transient
+
+  ClassDef(AliHLTRawReaderPublisherComponent, 1);
 };
 
 #endif
