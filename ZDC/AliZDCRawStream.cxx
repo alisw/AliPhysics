@@ -107,7 +107,7 @@ Bool_t AliZDCRawStream::Next()
       fSector[0] = fSector[1] = 99;
     } 
     else if((fRawADC & 0x2000000) == 0x2000000){ // ADC Header
-      printf("  fRawADC %x\n",fRawADC);
+      //printf("  fRawADC %x\n",fRawADC);
       // Reading the GEO address to determine ADC module
       fADCModule = (fRawADC & 0xf8000000) >> 27;
       fADCModule ++;
