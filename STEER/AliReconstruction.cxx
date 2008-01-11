@@ -1078,7 +1078,7 @@ Bool_t AliReconstruction::Run(const char* input)
 
 
 //_____________________________________________________________________________
-Bool_t AliReconstruction::RunLocalReconstruction(const TString& detectors)
+Bool_t AliReconstruction::RunLocalReconstruction(const TString& /*detectors*/)
 {
 // run the local reconstruction
   static Int_t eventNr=0;
