@@ -65,7 +65,7 @@ public:
 
 private:
   
-  void DeCompAddress(UChar_t &ypos, UChar_t &ytri, UChar_t &xdev, UChar_t &xpos, 
+  Bool_t DeCompAddress(UChar_t &ypos, UChar_t &ytri, UChar_t &xdev, UChar_t &xpos, 
                      UShort_t address) const;
     
   void FillLut(AliMUONTriggerLut& lut,

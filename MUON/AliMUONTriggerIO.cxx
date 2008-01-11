@@ -72,7 +72,7 @@ AliMUONTriggerIO::~AliMUONTriggerIO()
 }
 
 //_____________________________________________________________________________
-void 
+Bool_t 
 AliMUONTriggerIO::DeCompAddress(UChar_t &ypos, UChar_t &ytri, UChar_t &xdev, UChar_t &xpos, 
                                 UShort_t address) const
 {  
@@ -92,6 +92,49 @@ AliMUONTriggerIO::DeCompAddress(UChar_t &ypos, UChar_t &ytri, UChar_t &xdev, UCh
   ytri = (address >>  bitsYpos)                    & maskYtri;
   xdev = (address >> (bitsYpos+bitsYtri))          & maskXdev;
   xpos = (address >> (bitsYpos+bitsYtri+bitsXdev)) & maskXpos;
+
+  // convert deviation format
+  // online: sign 1bit , dev 4bit
+  // sign    dev    trigger
+  // 0       1-15   mu-
+  // 1       1-15   mu+
+  // 0       0      mu+, mu- infinite momentum (unde)
+  // 1       0      no x-trigger
+  // offline: dev 5bit
+  // sign    dev    trigger
+  // -        0-14  mu-
+  // -       16-31  mu+
+  // -       15     mu+, mu- infinite momentum (unde)
+
+  Int_t iXdevOff, iXdevOn, iXdev, sign;
+  Bool_t trigx;
+
+  iXdev = xdev;
+
+  iXdevOn = sign = 0;
+  iXdevOn +=  iXdev & 0x0F;
+  sign    += (iXdev >> 4) & 0x01;
+  if (iXdevOn == 0) {
+    if (sign == 0) {
+      iXdevOff = 15;
+      trigx = kTRUE;
+    } else {
+      iXdevOff = 15;
+      trigx = kFALSE;
+    }
+  } else {
+    trigx = kTRUE;
+    if (sign == 0) {
+      iXdevOff = - iXdevOn + 15;  // gives range  0-14
+    } else {
+      iXdevOff = + iXdevOn + 15;  // gives range 16-30 !
+    }
+  }
+
+  xdev = iXdevOff;
+
+  return trigx;
+
 }
 
 //_____________________________________________________________________________
@@ -136,9 +179,9 @@ AliMUONTriggerIO::FillLut(AliMUONTriggerLut& lut,
   lut.SetContent("LptUnde",icirc,istripX,idev,iLptUnde);
   lut.SetContent("LptPlus",icirc,istripX,idev,iLptPlus);
 
-  lut.SetContent("HptMinu",icirc,istripX,idev,iLptMinu);
-  lut.SetContent("HptUnde",icirc,istripX,idev,iLptUnde);
-  lut.SetContent("HptPlus",icirc,istripX,idev,iLptPlus);
+  lut.SetContent("HptMinu",icirc,istripX,idev,iHptMinu);
+  lut.SetContent("HptUnde",icirc,istripX,idev,iHptUnde);
+  lut.SetContent("HptPlus",icirc,istripX,idev,iHptPlus);
 }
 
 //_____________________________________________________________________________
@@ -216,8 +259,8 @@ AliMUONTriggerIO::ReadLocalLUT(AliMUONTriggerLut& lut,
   UChar_t buffer;
   UChar_t mask1 = 0xF0;
   UChar_t mask2 = 0x0F;
-  UChar_t maskLpt = 0x0C;
-  UChar_t maskHpt = 0x03;
+  UChar_t maskHpt = 0x0C;
+  UChar_t maskLpt = 0x03;
   UChar_t lh, lpt, hpt;
   
   UChar_t xpos, xdev, ypos, ytri;
@@ -229,6 +272,7 @@ AliMUONTriggerIO::ReadLocalLUT(AliMUONTriggerLut& lut,
   AliDebug(1,Form("Reading LUT values for local board %d",boardnr));
   
   Int_t ny = 0;
+  Bool_t trigx = kFALSE;
   
   // create the 32767 addresses for the 4-bits lpt and hpt half-bytes
   for (UShort_t ilut = 0; ilut < 0x7FFF; ilut += 2) 
@@ -241,14 +285,14 @@ AliMUONTriggerIO::ReadLocalLUT(AliMUONTriggerLut& lut,
     lh = (buffer & mask1) >> 4;
     
     // Lpt and Hpt response
-    lpt = (lh & maskLpt) >> 2;
-    hpt =  lh & maskHpt;
+    hpt = (lh & maskHpt) >> 2;
+    lpt =  lh & maskLpt;
     
     // decompose the 15-bits address
-    DeCompAddress(ypos,ytri,xdev,xpos,address);
+    trigx = DeCompAddress(ypos,ytri,xdev,xpos,address);
     
     // calculate group of y-strips
-    if (ny < 16) 
+    if (trigx && (ny < 16)) 
     {
       lutLpt[ny][0] =  lpt & 1;
       lutLpt[ny][1] = (lpt & 2) >> 1;
@@ -271,14 +315,14 @@ AliMUONTriggerIO::ReadLocalLUT(AliMUONTriggerLut& lut,
     lh = (buffer & mask2);
     
     // Lpt and Hpt response
-    lpt = (lh & maskLpt) >> 2;
-    hpt =  lh & maskHpt;
+    hpt = (lh & maskHpt) >> 2;
+    lpt =  lh & maskLpt;
     
     // decompose the 15-bits address
-    DeCompAddress(ypos,ytri,xdev,xpos,address);
+    trigx = DeCompAddress(ypos,ytri,xdev,xpos,address);
     
     // calculate group of y-strips
-    if (ny < 16) 
+    if (trigx && (ny < 16)) 
     {
       lutLpt[ny][0] =  lpt & 1;
       lutLpt[ny][1] = (lpt & 2) >> 1;
@@ -698,8 +742,44 @@ AliMUONTriggerIO::WriteLocalLUT(const AliMUONTriggerLut& lut,
     Int_t iXdev = ( i >> ( 4 + 1 )     ) & kMaskXdev;
     Int_t iXpos = ( i >> ( 4 + 1 + 5 ) ) & kMaskXpos;
     
+    // convert deviation format
+    // online: sign 1bit , dev 4bit
+    // sign    dev    trigger
+    // 0       1-15   mu-
+    // 1       1-15   mu+
+    // 0       0      mu+, mu- infinite momentum (unde)
+    // 1       0      no x-trigger
+    // offline: dev 5bit
+    // sign    dev    trigger
+    // -        0-14  mu-
+    // -       16-31  mu+
+    // -       15     mu+, mu- infinite momentum (unde)
+    Int_t iXdevOn  = 0;
+    Int_t iXdevOff = 0;
+    Int_t sign     = 0;
+    Bool_t trigx = kFALSE;
+    iXdevOn +=  iXdev & 0x0F;
+    sign    += (iXdev >> 4) & 0x01;
+    if (iXdevOn == 0) {
+      if (sign == 0) {
+	iXdevOff = 15;
+	trigx = kTRUE;
+      } else {
+	iXdevOff = 15;
+	trigx = kFALSE;
+      }
+    } else {
+      trigx = kTRUE;
+      if (sign == 0) {
+	iXdevOff = - iXdevOn + 15;  // gives range  0-14
+      } else {
+	iXdevOff = + iXdevOn + 15;  // gives range 16-30 !
+      }
+    }
+    iXdev = iXdevOff;
+
     // iYtri == 1 means no trigger in y-direction
-    if (iYtri == 0) 
+    if (iYtri == 0 && trigx) 
     {
       lut.GetLutOutput(localBoardId,iXpos,iXdev,iYpos,lutLpt,lutHpt);
     }
@@ -711,16 +791,16 @@ AliMUONTriggerIO::WriteLocalLUT(const AliMUONTriggerLut& lut,
     {
       // upper half-byte
       buffer = 0;	    
-      buffer += lutLpt[1] << 7;
-      buffer += lutLpt[0] << 6;
-      buffer += lutHpt[1] << 5;
-      buffer += lutHpt[0] << 4;
+      buffer += lutHpt[1] << 7;
+      buffer += lutHpt[0] << 6;
+      buffer += lutLpt[1] << 5;
+      buffer += lutLpt[0] << 4;
     } else {
       // lower half-byte
-      buffer += lutLpt[1] << 3;
-      buffer += lutLpt[0] << 2;
-      buffer += lutHpt[1] << 1;
-      buffer += lutHpt[0] << 0;
+      buffer += lutHpt[1] << 3;
+      buffer += lutHpt[0] << 2;
+      buffer += lutLpt[1] << 1;
+      buffer += lutLpt[0] << 0;
       fwrite(&buffer,1,1,flut);
     }
   }
