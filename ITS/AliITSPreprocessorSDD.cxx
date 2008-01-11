@@ -10,6 +10,7 @@
 #include "AliITSCalibrationSDD.h"
 #include "AliITSDriftSpeedSDD.h"
 #include "AliITSDriftSpeedArraySDD.h"
+#include "AliITSDCSAnalyzerSDD.h"
 #include "AliShuttleInterface.h"
 #include "AliCDBMetaData.h"
 #include "TObjArray.h"
@@ -25,7 +26,7 @@ const TString AliITSPreprocessorSDD::fgkNameHistoNoise = "hnoise";
 ClassImp(AliITSPreprocessorSDD)
 
 
-UInt_t AliITSPreprocessorSDD::Process(TMap*/* dcsAliasMap*/){
+UInt_t AliITSPreprocessorSDD::Process(TMap* dcsAliasMap){
 
   //preprocessing. 
 
@@ -157,6 +158,26 @@ UInt_t AliITSPreprocessorSDD::Process(TMap*/* dcsAliasMap*/){
     // do nothing for other run types
     retcode=1;
   }
-  if(retcode) return 0;
-  else return 1;
+  if(retcode){
+    // process DCS data
+    AliITSDCSAnalyzerSDD *dcs=new AliITSDCSAnalyzerSDD();
+    dcs->AnalyzeData(dcsAliasMap);
+    TObjArray refDCS(fgkNumberOfSDD);
+    refDCS.SetOwner(kFALSE);
+    for(Int_t imod=0;imod<fgkNumberOfSDD;imod++){
+      AliITSDCSDataSDD *dcsdata=dcs->GetDCSData(imod);
+      refDCS.Add(dcsdata);
+    }
+    
+    AliCDBMetaData *mddcs= new AliCDBMetaData();
+    mddcs->SetResponsible("Francesco Prino");
+    mddcs->SetBeamPeriod(0);
+    mddcs->SetAliRootVersion("head 18 December 2007"); //root version
+    mddcs->SetComment("This is a test");
+    mddcs->SetObjectClassName("AliITSDCSDataSDD");
+    Int_t retcodedcs = StoreReferenceData("DCS","DataSDD",&refDCS,mddcs);
+    
+    if(retcodedcs) return 0;
+  }
+  return 1;
 }

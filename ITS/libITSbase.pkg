@@ -52,7 +52,9 @@ SRCS = 	AliITSgeom.cxx \
 		AliITSgeomTGeo.cxx \
 		AliITSPlaneEff.cxx \
 		AliITSPlaneEffSPD.cxx \
-		AliITSRawStreamSPDErrorLog.cxx
+		AliITSRawStreamSPDErrorLog.cxx \
+		AliITSDCSAnalyzerSDD.cxx \
+		AliITSDCSDataSDD.cxx
 
 HDRS:=  $(SRCS:.cxx=.h)
 
