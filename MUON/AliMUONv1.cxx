@@ -182,7 +182,7 @@ void AliMUONv1::Init()
   //
   // Build response
   //
-  AliMUONResponseFactory respFactory("default");
+  AliMUONResponseFactory respFactory("default", fIsTailEffect);
   respFactory.Build(this);
   
 }

@@ -122,6 +122,9 @@ class AliMUON : public  AliDetector
         { fDigitizerWithNoise = digitizerWithNoise; }
     virtual Int_t GetDigitizerWithNoise() const; 
     
+                 /// Parametrised tail effect in resolution histogram
+    virtual void SetTailEffect(Bool_t isTailEffect) { fIsTailEffect=isTailEffect; }
+    
     // Set fast raw data decoder
     virtual void SetFastDecoder(Bool_t useFastDecoder); 
                 
@@ -154,9 +157,9 @@ class AliMUON : public  AliDetector
     AliMUONGeometryBuilder*  fGeometryBuilder; ///< Geometry builder 
    
     //
-    Bool_t   fAccCut;         ///<Transport acceptance cut
-    Float_t  fAccMin;         ///<Minimum acceptance cut used during transport
-    Float_t  fAccMax;         ///<Minimum acceptance cut used during transport
+    Bool_t   fAccCut;         ///< Transport acceptance cut
+    Float_t  fAccMin;         ///< Minimum acceptance cut used during transport
+    Float_t  fAccMax;         ///< Minimum acceptance cut used during transport
     //  
     //  Stepping Parameters
     Float_t fMaxStepGas;      ///< Maximum step size inside the chamber gas
@@ -173,7 +176,8 @@ class AliMUON : public  AliDetector
     Bool_t fTriggerResponseV1;  ///< Flag to select TriggerResponseV1
     Int_t  fTriggerCoinc44;     ///< Flag to select TriggerCoinc44 
     Bool_t fTriggerEffCells;    ///< Flag to select TriggerEffCells
-    Int_t fDigitizerWithNoise; ///< Flag to switch on/off generation of noisy digits
+    Int_t  fDigitizerWithNoise; ///< Flag to switch on/off generation of noisy digits
+    Bool_t fIsTailEffect;       ///< Switch to turn on/off the tail effect
     
     AliMUONRawWriter* fRawWriter; //!< Raw data writer
     
