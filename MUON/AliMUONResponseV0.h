@@ -86,6 +86,9 @@ class AliMUONResponseV0 : public AliMUONResponse
     // Pulse height from scored quantity (eloss)
     virtual Float_t  IntPH(Float_t eloss) const;
 
+    /// Parametrised tail effect in resolution histogram
+    virtual void    SetTailEffect(Bool_t isTail) {fIsTailEffect=isTail;}
+    
     virtual Float_t GetAnod(Float_t x) const;
     
     virtual void DisIntegrate(const AliMUONHit& hit, TList& digits);
@@ -108,6 +111,8 @@ private:
                                        ///  is RMS of ln(q1/q2)
     AliMUONMathieson* fMathieson;      ///< pointer to mathieson fct
     Float_t fChargeThreshold;          ///< Charges below this threshold are = 0  
+    Bool_t   fIsTailEffect;            ///< switch to turn on/off the tail effect
+      
 
     ClassDef(AliMUONResponseV0,2) // Implementation of detector response
 };

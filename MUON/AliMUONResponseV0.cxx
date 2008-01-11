@@ -78,7 +78,8 @@ AliMUONResponseV0::AliMUONResponseV0()
   fZeroSuppression(0),
   fChargeCorrel(0.0),
   fMathieson(new AliMUONMathieson),
-  fChargeThreshold(1e-4)
+  fChargeThreshold(1e-4),
+  fIsTailEffect(kFALSE)
 {
     /// Normal constructor
     AliDebug(1,Form("Default ctor"));
@@ -96,7 +97,8 @@ fSaturation(0),
 fZeroSuppression(0),
 fChargeCorrel(0.0),
 fMathieson(0),
-fChargeThreshold(1e-4)
+fChargeThreshold(1e-4),
+fIsTailEffect(kFALSE)
 {
   /// copy ctor
   other.CopyTo(*this);
@@ -209,15 +211,54 @@ AliMUONResponseV0::DisIntegrate(const AliMUONHit& hit, TList& digits)
   digits.Clear();
   
   Int_t detElemId = hit.DetElemId();
-  
+  Double_t hitX = hit.X() ;
+  Double_t hitY = hit.Y() ;
+  Double_t hitZ = hit.Z() ;
+
   // Width of the integration area
   Double_t dx = SigmaIntegration()*ChargeSpreadX();
   Double_t dy = SigmaIntegration()*ChargeSpreadY();
   
+  //Modify to take the tailing effect.
+  if(fIsTailEffect){
+    Double_t locX,locY,locZ,globXCenter,globYCenter,globZ;
+    Int_t para = 5; // This parameter is a natural number(excluding zero and four), higher the value less is the tailing effect 
+    Double_t termA = 1.0;
+    Double_t termB = 1.0;
+    if(para>0){
+      for ( Int_t cath = AliMp::kCath0; cath <= AliMp::kCath1; ++cath )
+	{
+	  // Get an iterator to loop over pads, within the given area.
+	  const AliMpVSegmentation* seg = 
+	    AliMpSegmentation::Instance()
+	    ->GetMpSegmentation(detElemId,AliMp::GetCathodType(cath));
+	  AliMp::PlaneType plane = seg->PlaneType();
+	  
+	  if(plane == AliMp::kBendingPlane) {
+	    Global2Local(detElemId,hitX,hitY,hitZ,locX,locY,locZ);
+	    TVector2 hitPoint(locX,locY);
+	    AliMpPad pad = seg->PadByPosition(hitPoint,kFALSE);
+	    Double_t locYCenter = pad.Position().Y();
+	    Double_t locXCenter = pad.Position().X();
+	    const AliMUONGeometryTransformer* transformer = muon()->GetGeometryTransformer();
+	    transformer->Local2Global(detElemId,locXCenter,locYCenter,locZ,globXCenter,globYCenter,globZ);
+	    for(Int_t itime = 0; itime<para; itime++)
+	      termA *= 10.0;
+	    
+	    for(Int_t itime = 0; itime<Int_t((2*para) + 1); itime++)
+	      termB *= (hitY - globYCenter) ; 
+
+	    hitY = hitY + termA*termB;
+	    
+	  }// if bending plane
+	}// cathode loop
+    }// if para > 0 condn
+  }// if tail effect
+
   // Use that (dx,dy) to specify the area upon which
   // we will iterate to spread charge into.
   Double_t x,y,z;
-  Global2Local(detElemId,hit.X(),hit.Y(),hit.Z(),x,y,z);
+  Global2Local(detElemId,hitX,hitY,hitZ,x,y,z);
   x = GetAnod(x);
   TVector2 hitPosition(x,y);
   AliMpArea area(hitPosition,TVector2(dx,dy));
