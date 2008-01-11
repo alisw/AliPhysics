@@ -14,6 +14,7 @@ class AliITSgeom;
 ////////////////////////////////////////////////////
 //                                                //
 // ITS virtual base class for Plane Efficiency    //
+// Origin: Giuseppe.Bruno@ba.infn.it              //
 //                                                //
 ////////////////////////////////////////////////////
 
@@ -42,7 +43,8 @@ class AliITSPlaneEff : public TObject {
         {eff=PlaneEff(nfound,ntried); err=ErrPlaneEff(nfound,ntried); return;};
     // Plane efficiency for active  detector (excluding dead/noisy channels)
     virtual Double_t LivePlaneEff(UInt_t) const
-       {AliError("This method must be implemented in a derived class"); return -1.;};
+       {AliWarning("This method gives just a rough estimate of the live-Det Efficiency!"); 
+        return -1.;};
     virtual Double_t ErrLivePlaneEff(UInt_t) const
        {AliError("This method must be implemented in a derived class"); return -1.;};
     // Compute the fraction of Live detector

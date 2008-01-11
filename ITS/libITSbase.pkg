@@ -52,6 +52,8 @@ SRCS = 	AliITSgeom.cxx \
 		AliITSgeomTGeo.cxx \
 		AliITSPlaneEff.cxx \
 		AliITSPlaneEffSPD.cxx \
+		AliITSPlaneEffSDD.cxx \
+		AliITSPlaneEffSSD.cxx \
 		AliITSRawStreamSPDErrorLog.cxx \
 		AliITSDCSAnalyzerSDD.cxx \
 		AliITSDCSDataSDD.cxx

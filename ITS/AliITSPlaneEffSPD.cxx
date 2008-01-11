@@ -24,6 +24,7 @@
 
 /* $Id$ */
 
+#include <TMath.h>
 #include "AliITSPlaneEffSPD.h"
 #include "AliLog.h"
 #include "AliCDBStorage.h"
@@ -143,7 +144,7 @@ Int_t AliITSPlaneEffSPD::GetMissingTracksForGivenEff(Double_t eff, Double_t RelE
   //         eff    -> Expected efficiency (e.g. those from actual estimate)
   //         RelErr -> tollerance [0,1] 
   //         im     -> module number [0,249]
-  //         ic     -> chip number [0,5]
+  //         ic     -> chip number [0,4]
   //   Outputs: none
   //   Return: the estimated n. of tracks 
   //
@@ -156,8 +157,8 @@ else return GetNTracksForGivenEff(eff,RelErr)-fTried[GetKey(im,ic)];
 Double_t  AliITSPlaneEffSPD::PlaneEff(const UInt_t im,const UInt_t ic) const {
 // Compute the efficiency for a basic block, 
 // Inputs:
-//        number of associated cluslters (nf) 
-//        number of used tracks (nt)
+//        im     -> module number [0,249]
+//        ic     -> chip number [0,4] 
 if (im>=kNModule || ic>=kNChip) 
  {Error("AliITSPlaneEffSPD","you asked for a non existing chip"); return -1.;}
  Int_t nf=fFound[GetKey(im,ic)];
@@ -169,8 +170,8 @@ Double_t  AliITSPlaneEffSPD::ErrPlaneEff(const UInt_t im,const UInt_t ic) const 
     // Compute the statistical error on efficiency for a basic block,
     // using binomial statistics 
     // Inputs:
-    //        number of associated cluslters (nf)
-    //        number of used tracks (nt)
+    //        im     -> module number [0,249]
+    //        ic     -> chip number [0,4] 
 if (im>=kNModule || ic>=kNChip) 
  {Error("AliITSPlaneEffSPD","you asked for a non existing chip"); return -1.;}
 Int_t nf=fFound[GetKey(im,ic)];
@@ -188,7 +189,7 @@ if (im>=kNModule || ic>=kNChip)
  return kTRUE;
 }
 //_________________________________________________________________________
-UInt_t AliITSPlaneEffSPD::GetChip(const UInt_t col) const {
+UInt_t AliITSPlaneEffSPD::GetChipFromCol(const UInt_t col) const {
   // get chip given the column
 if(col>=kNCol*kNChip) 
  {Error("AliITSPlaneEffSPD","you asked for a non existing column"); return 10;}
@@ -229,25 +230,30 @@ return;
 }
 //____________________________________________________________________________
 Double_t AliITSPlaneEffSPD::LivePlaneEff(UInt_t key) const {
-  // returns plane efficieny multiplied by the fraction of sensor which is OK
+  // returns plane efficieny after adding the fraction of sensor which is bad
 if(key>=kNModule*kNChip)
   {Error("AliITSPlaneEffSPD::LivePlaneEff","you asked for a non existing key");
    return -1.;}
-return PlaneEff(key)*GetFracLive(key);
+Double_t leff=AliITSPlaneEff::LivePlaneEff(0); // this just for the Warning
+leff=PlaneEff(key)+GetFracBad(key);
+return leff>1?1:leff;
 }
 //____________________________________________________________________________
 Double_t AliITSPlaneEffSPD::ErrLivePlaneEff(UInt_t key) const {
   // returns error on live plane efficiency
 if(key>=kNModule*kNChip)
-  {Error("AliITSPlaneEffSPD::LivePlaneEff","you asked for a non existing key");
+  {Error("AliITSPlaneEffSPD::ErrLivePlaneEff","you asked for a non existing key");
    return -1.;}
-return ErrPlaneEff(key); // for the time being: to be checked
+Int_t nf=fFound[key];
+Double_t triedInLive=GetFracLive(key)*fTried[key];
+Int_t nt=TMath::Max(nf,TMath::Nint(triedInLive));
+return AliITSPlaneEff::ErrPlaneEff(nf,nt); // for the time being: to be checked
 }
 //_____________________________________________________________________________
 Double_t AliITSPlaneEffSPD::GetFracLive(const UInt_t key) const {
   // returns the fraction of the sensor which is OK
 if(key>=kNModule*kNChip)
-  {Error("AliITSPlaneEffSPD::GetRelLiveDetector","you asked for a non existing key");
+  {Error("AliITSPlaneEffSPD::GetFracLive","you asked for a non existing key");
    return -1.;}
     // Compute the fraction of bad (dead+noisy) detector 
 UInt_t dead=0,noisy=0;
@@ -263,12 +269,12 @@ void AliITSPlaneEffSPD::GetDeadAndNoisyInChip(const UInt_t key,
 nrDeadInChip=0;
 nrNoisyInChip=0;
 if(key>=kNModule*kNChip)
-  {Error("AliITSPlaneEffSPD::GetRelLiveDetector","you asked for a non existing key");
+  {Error("AliITSPlaneEffSPD::GetDeadAndNoisyInChip","you asked for a non existing key");
    return;}
     // Compute the number of bad (dead+noisy) pixel in a chip
 //
 if(!fInitCDBCalled) 
-  {Error("AliITSPlaneEffSPD::GetRelLiveDetector","CDB not inizialized: call InitCDB first");
+  {Error("AliITSPlaneEffSPD::GetDeadAndNoisyInChip","CDB not inizialized: call InitCDB first");
    return;};
 AliCDBManager* man = AliCDBManager::Instance();
 // retrieve map of dead Pixel 
@@ -277,10 +283,10 @@ TObjArray* spdDead;
 if(cdbSPDDead) {
   spdDead = (TObjArray*)cdbSPDDead->GetObject();
   if(!spdDead) 
-  {Error("AliITSPlaneEffSPD::GetRelLiveDetector"," SPDDead not found in CDB");
+  {Error("AliITSPlaneEffSPD::GetDeadAndNoisyInChip"," SPDDead not found in CDB");
    return;}
 } else {
-  Error("AliITSPlaneEffSPD::GetRelLiveDetector","Did not find Calib/SPDDead.");
+  Error("AliITSPlaneEffSPD::GetDeadAndNoisyInChip","Did not find Calib/SPDDead.");
   return;
 }
 // retrieve map of noisy Pixel 
@@ -289,10 +295,10 @@ TObjArray* spdNoisy;
 if(cdbSPDNoisy) {
   spdNoisy = (TObjArray*)cdbSPDNoisy->GetObject();
   if(!spdNoisy) 
-  {Error("AliITSPlaneEffSPD::GetRelLiveDetector"," SPDNoisy not found in CDB");
+  {Error("AliITSPlaneEffSPD::GetDeadAndNoisyInChip"," SPDNoisy not found in CDB");
    return;}
 } else {
-  Error("AliITSPlaneEffSPD::GetRelLiveDetector","Did not find Calib/SPDNoisy.");
+  Error("AliITSPlaneEffSPD::GetDeadAndNoisyInChip","Did not find Calib/SPDNoisy.");
   return;
 }
 //
@@ -302,12 +308,12 @@ UInt_t chip=GetChipFromKey(key);
 AliITSCalibrationSPD* calibSPD=(AliITSCalibrationSPD*) spdDead->At(mod);
 UInt_t nrDead = calibSPD->GetNrBad();
 for (UInt_t index=0; index<nrDead; index++) {
-  if(GetChip(calibSPD->GetBadColAt(index))==chip) nrDeadInChip++;
+  if(GetChipFromCol(calibSPD->GetBadColAt(index))==chip) nrDeadInChip++;
 }
 calibSPD=(AliITSCalibrationSPD*) spdNoisy->At(mod);
 UInt_t nrNoisy = calibSPD->GetNrBad();
 for (UInt_t index=0; index<nrNoisy; index++) {
-  if(GetChip(calibSPD->GetBadColAt(index))==chip) nrNoisyInChip++;
+  if(GetChipFromCol(calibSPD->GetBadColAt(index))==chip) nrNoisyInChip++;
 }
 return;
 }
@@ -315,7 +321,7 @@ return;
 Double_t AliITSPlaneEffSPD::GetFracBad(const UInt_t key) const {
   // returns 1-fractional live
 if(key>=kNModule*kNChip)
-  {Error("AliITSPlaneEffSPD::GetRelDeadDetector","you asked for a non existing key");
+  {Error("AliITSPlaneEffSPD::GetFracBad","you asked for a non existing key");
    return -1.;}
 return 1.-GetFracLive(key);
 }

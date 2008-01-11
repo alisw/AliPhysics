@@ -10,6 +10,7 @@
 //                                       //
 // ITS Plane Efficiency class            //
 //       for SPD                         //
+// Origin: Giuseppe.Bruno@ba.infn.it     //
 ///////////////////////////////////////////
 
 /* $Id$ */
@@ -42,7 +43,7 @@ class AliITSPlaneEffSPD :  public AliITSPlaneEff {
     enum {kNCol = 32}; // The number of columns per chip
     enum {kNRow = 256}; // The number of rows per chip (and per module)
 //
-    UInt_t GetChip(const UInt_t col) const; // get the chip number (from 0 to kNChip)
+//  UInt_t GetChip(const UInt_t col) const; // get the chip number (from 0 to kNChip)
 //  Plane efficiency for active  detector (excluding dead/noisy channels)
 //  access to DB is needed
     virtual Double_t LivePlaneEff(UInt_t key) const;
@@ -72,7 +73,7 @@ class AliITSPlaneEffSPD :  public AliITSPlaneEff {
                                                               // block of the SPD 
     UInt_t GetModFromKey(const UInt_t key) const;
     UInt_t GetChipFromKey(const UInt_t key) const;
-    UInt_t GetChipFromCol(const UInt_t col) const;
+    UInt_t GetChipFromCol(const UInt_t col) const;  // get the chip number (from 0 to kNChip)
     void GetModAndChipFromKey(const UInt_t key, UInt_t& mod, UInt_t& chip) const;
     void GetDeadAndNoisyInChip(const UInt_t key, UInt_t& dead, UInt_t& noisy) const;
 

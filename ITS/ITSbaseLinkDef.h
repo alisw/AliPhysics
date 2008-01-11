@@ -66,6 +66,8 @@
 #pragma link C++ class  AliITSpListItem+;
 #pragma link C++ class  AliITSPlaneEff+;
 #pragma link C++ class  AliITSPlaneEffSPD+;
+#pragma link C++ class  AliITSPlaneEffSDD+;
+#pragma link C++ class  AliITSPlaneEffSSD+;
 #pragma link C++ class  AliITSDCSAnalyzerSDD+;
 #pragma link C++ class  AliITSDCSDataSDD+;
 
