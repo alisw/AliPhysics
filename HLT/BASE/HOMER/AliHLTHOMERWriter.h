@@ -223,7 +223,7 @@ typedef AliHLTHOMERWriter HOMERWriter;
 extern "C" {
 #endif
 
-  typedef AliHLTHOMERWriter* (*AliHLTHOMERWriterCreate_t)(const void* pBuffer, int size);
+  typedef AliHLTHOMERWriter* (*AliHLTHOMERWriterCreate_t)();
   typedef void (*AliHLTHOMERWriterDelete_t)(AliHLTHOMERWriter* pInstance);
   /**
    * Create instance of HOMER writer.
