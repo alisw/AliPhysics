@@ -1,6 +1,6 @@
 #ifndef ALITAGDB_H
 #define ALITAGDB_H
-// @(#)alimdc:$Name$:$Id$
+// @(#) $Id$
 // Author: Fons Rademakers  26/11/99
 
 /* Copyright(c) 1998-2003, ALICE Experiment at CERN, All rights reserved. *

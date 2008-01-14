@@ -1,4 +1,4 @@
-// @(#)alimdc:$Name$:$Id$
+// @(#) $Id$
 // Author: Fons Rademakers  26/11/99
 // Updated: Dario Favretto  15/04/2003
 

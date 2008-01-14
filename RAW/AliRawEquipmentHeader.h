@@ -1,6 +1,6 @@
 #ifndef ALIRAWEQUIPMENTHEADER_H
 #define ALIRAWEQUIPMENTHEADER_H
-// @(#)alimdc:$Name$:$Id$
+// @(#) $Id$
 // Author: Fons Rademakers  26/11/99
 
 /* Copyright(c) 1998-2003, ALICE Experiment at CERN, All rights reserved. *
