@@ -293,6 +293,11 @@ AliHLTOUT::AliHLTOUTHandlerListEntry::AliHLTOUTHandlerListEntry(const AliHLTOUTH
   fBlocks.assign(src.fBlocks.begin(), src.fBlocks.end());
 }
 
+AliHLTOUT::AliHLTOUTHandlerListEntry::~AliHLTOUTHandlerListEntry()
+{
+  // see header file for class documentation
+}
+
 AliHLTOUT::AliHLTOUTHandlerListEntry& AliHLTOUT::AliHLTOUTHandlerListEntry::operator=(const AliHLTOUTHandlerListEntry& src)
 {
   // see header file for class documentation
@@ -305,6 +310,11 @@ AliHLTOUT::AliHLTOUTHandlerListEntry& AliHLTOUT::AliHLTOUTHandlerListEntry::oper
 
 AliHLTUInt32_t AliHLTOUT::AliHLTOUTHandlerListEntry::operator[](int i) const {
   return fBlocks.size()>i?fBlocks[i]:AliHLTOUTInvalidIndex;
+}
+
+bool AliHLTOUT::AliHLTOUTHandlerListEntry::operator==(const AliHLTOUTHandlerListEntry& entry) const
+{
+  return false;
 }
 
 void AliHLTOUT::AliHLTOUTHandlerListEntry::AddIndex(AliHLTUInt32_t index) {
