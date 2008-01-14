@@ -1,5 +1,0 @@
-*.sh 
-lib*.so
-lib*.dylib
-*~ 
-smell
