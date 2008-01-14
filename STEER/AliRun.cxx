@@ -403,7 +403,7 @@ void AliRun::Announce() const
   printf("    You are running AliRoot version NewIO\n");
 
   printf("%6s","*");
-  printf("    The cvs tag for the current program is $Name$\n");
+  printf("    The SVN version for the current program is $Id:$\n");
 
   printf("%6s","*");printf("%64s","*\n");
   printf("%70s",
