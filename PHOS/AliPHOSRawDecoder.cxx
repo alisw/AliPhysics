@@ -172,9 +172,6 @@ Bool_t AliPHOSRawDecoder::NextDigit()
 	 else
 	   return kFALSE;
        
-       if(fLowGainFlag)
-	 fEnergy *= fPulseGenerator->GetRawFormatHighLowGainFactor(); // *16 
-
        if (fEnergy < baseLine) fEnergy = 0;
 
        pedMean = 0;

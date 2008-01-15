@@ -374,31 +374,13 @@ void  AliPHOSReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
   Int_t bufsize = 32000;
   digitsTree->Branch("PHOS", &digits, bufsize);
 
-  AliPHOSRawDigiProducer pr;
+  AliPHOSRawDigiProducer pr(fgkRecoParamEmc,fgkRecoParamCpv);
   pr.MakeDigits(digits,dc);
 
   delete dc ;
 
-  //ADC counts -> GeV
-  for(Int_t i=0; i<digits->GetEntries(); i++) {
-    AliPHOSDigit* digit = (AliPHOSDigit*)digits->At(i);
-    digit->SetEnergy(digit->GetEnergy()/AliPHOSPulseGenerator::GeV2ADC());
-  }
-  
-  // Clean up digits below the noise threshold
-  // Assuming the digit noise to be 4 MeV, we suppress digits within
-  // 3-sigma of the noise.
-  // This parameter should be passed via AliPHOSRecoParamEmc later
-
-  const Double_t emcDigitThreshold = 0.012;
-  for(Int_t i=0; i<digits->GetEntries(); i++) {
-    AliPHOSDigit* digit = (AliPHOSDigit*)digits->At(i);
-    if(digit->GetEnergy() < emcDigitThreshold)
-      digits->RemoveAt(i) ;
-  }
-  digits->Compress() ;  
-
   //!!!!for debug!!!
+/*
   Int_t modMax=-111;
   Int_t colMax=-111;
   Int_t rowMax=-111;
@@ -419,7 +401,7 @@ void  AliPHOSReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
 
   AliDebug(1,Form("Digit with max. energy:  modMax %d colMax %d rowMax %d  eMax %f\n\n",
 		  modMax,colMax,rowMax,eMax));
-
+*/
   digitsTree->Fill();
   digits->Delete();
   delete digits;

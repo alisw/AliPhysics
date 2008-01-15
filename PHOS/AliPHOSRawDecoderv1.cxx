@@ -308,8 +308,6 @@ Bool_t AliPHOSRawDecoderv1::NextDigit()
 	  fEnergy=0 ; //bad sample
 	  fTime=-999.;
 	}
-	if(fLowGainFlag)
-	  fEnergy *= fPulseGenerator->GetRawFormatHighLowGainFactor(); // *16 
 	
         fTime*=fPulseGenerator->GetRawFormatTimeTrigger() ; 
 

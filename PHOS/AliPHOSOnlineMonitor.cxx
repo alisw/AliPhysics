@@ -628,7 +628,7 @@ void  AliPHOSOnlineMonitor::Go(){
   if(fReconstruct){ //We will need calibation parameters
     clu = new AliPHOSClusterizerv1(gime->PHOSGeometry()) ;
     clu->SetWriting(0) ; //Do not write to file
-    clu->SetEmcMinE(0.05) ;  //Minimal energy of the digit
+//    clu->SetEmcMinE(0.05) ;  //Minimal energy of the digit
     clu->SetEmcLocalMaxCut(0.05) ; //Height of local maximum over environment
     clu->SetEmcClusteringThreshold(0.2) ; //Minimal energy to start cluster
 //    clu->SetUnfolding(kFALSE) ; //Do not unfold

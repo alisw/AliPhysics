@@ -17,7 +17,10 @@
 
 /* History of cvs commits:
  *
- * $Log$
+ * $Log: AliPHOSDigitizer.cxx,v $
+ * Revision 1.104  2007/12/18 09:08:18  hristov
+ * Splitting of the QA maker into simulation and reconstruction dependent parts (Yves)
+ *
  * Revision 1.103  2007/11/07 11:25:06  schutz
  * Comment out the QA checking before starting digitization
  *
@@ -515,7 +518,9 @@ void AliPHOSDigitizer::Digitize(Int_t event)
   //remove digits below thresholds
   for(i = 0 ; i < nEMC ; i++){
     digit = dynamic_cast<AliPHOSDigit*>( digits->At(i) ) ;
-    DecalibrateEMC(digit);
+//By default no decalibration should be applyed
+//    DecalibrateEMC(digit);
+
     if(digit->GetEnergy() < fEMCDigitThreshold)
       digits->RemoveAt(i) ;
     else

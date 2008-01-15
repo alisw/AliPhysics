@@ -182,16 +182,16 @@ Bool_t AliPHOSRawDecoderv2::NextDigit()
          fOverflow = kTRUE ;
       }
 
-      if(fOverflow)
-        return kTRUE ; //do not calculate energy and time for overflowed channels
-
+//    if(fEnergy>1020.){
 //    printf("fE=%f \n",fEnergy) ;
-//    if(fEnergy>20.){
 //    cs->cd() ;
 //    h->Draw() ;
 //    cs->Update() ;
 //    getchar() ;
 //    }
+
+      if(fOverflow)
+        return kTRUE ; //do not calculate energy and time for overflowed channels
 
       if(fEnergy<baseLine){ //do not evaluate time, drop this sample
         fEnergy=0. ;
@@ -252,8 +252,6 @@ Bool_t AliPHOSRawDecoderv2::NextDigit()
       else{
         fTime=-999. ;
       }
-      if(fLowGainFlag)
-        fEnergy *= fPulseGenerator->GetRawFormatHighLowGainFactor(); // *16 
 
       fTime*=fPulseGenerator->GetRawFormatTimeTrigger() ;
 

@@ -7,7 +7,10 @@
 
 /* History of cvs commits:
  *
- * $Log$
+ * $Log: AliPHOSClusterizerv1.h,v $
+ * Revision 1.54  2007/10/01 20:24:08  kharlov
+ * Memory leaks fixed
+ *
  * Revision 1.53  2007/08/28 12:55:07  policheh
  * Loaders removed from the reconstruction code (C.Cheshkov)
  *
@@ -76,9 +79,6 @@ public:
   virtual Int_t   AreNeighbours(AliPHOSDigit * d1, AliPHOSDigit * d2)const ; 
                                // Checks if digits are in neighbour cells 
 
-  virtual Float_t CalibrateCPV(Int_t   amp, Int_t absId) ;  // Tranforms CPV Amp to energy 
-  virtual Float_t CalibrateEMC(Float_t amp, Int_t absId) ;  // Tranforms EMC Amp to energy 
-
   virtual void    GetNumberOfClustersFound(int * numb )const{  numb[0] = fNumberOfEmcClusters ; 
                                                                numb[1] = fNumberOfCpvClusters ; }
 
@@ -95,8 +95,6 @@ public:
 
   void Print(const Option_t * = "")const ;
 
-  void SetEmcMinE(Float_t e){fEmcMinE = e ;}
-  void SetCpvMinE(Float_t e){fCpvMinE = e ;}
   virtual void SetEmcClusteringThreshold(Float_t cluth)  { fEmcClusteringThreshold = cluth ; }
   virtual void SetEmcLocalMaxCut(Float_t cut)            { fEmcLocMaxCut = cut ; }
   virtual void SetEmcLogWeight(Float_t w)                { fW0 = w ; }
@@ -114,9 +112,6 @@ public:
   //  void Unload() ; 
   virtual const char * Version() const { return "clu-v1"; }  
 
-  virtual void SetOldRCUFormat(Bool_t rcuFormat = kFALSE)
-    { fIsOldRCUFormat = rcuFormat; };
-
 protected:
 
   void           WriteRecPoints() ;
@@ -124,7 +119,6 @@ protected:
   virtual Bool_t IsInEmc (AliPHOSDigit * digit)const ;     // Tells if id digit is in EMC
   virtual Bool_t IsInCpv (AliPHOSDigit * digit)const ;     // Tells if id digit is in CPV
   void           CleanDigits(TClonesArray * digits) ;
-  void           GetCalibrationParameters(void);
   void           SetDistancesToBadChannels();
 
 private:
@@ -152,16 +146,8 @@ private:
   Int_t   fNumberOfEmcClusters ;     // number of EMC clusters found
   Int_t   fNumberOfCpvClusters ;     // number of CPV clusters found
  
-  //Calibration parameters
-  Float_t fADCchanelEmc ;           // width of one ADC channel in GeV
-  Float_t fADCpedestalEmc ;         //
-  Float_t fADCchanelCpv ;           // width of one ADC channel in CPV 'popugais'
-  Float_t fADCpedestalCpv ;         // 
-
   Float_t fEmcClusteringThreshold ;  // minimum energy to start EMC cluster
   Float_t fCpvClusteringThreshold ;  // minimum energy to start CPV cluster
-  Float_t fEmcMinE ;                 // minimum energy of digit to be included into cluster
-  Float_t fCpvMinE ;                 // minimum energy of digit to be included into cluster
   Float_t fEmcLocMaxCut ;            // minimum energy difference to distinguish local maxima in a cluster
   Float_t fW0 ;                      // logarithmic weight for the cluster center of gravity calculation
   Float_t fCpvLocMaxCut ;            // minimum energy difference to distinguish local maxima in a CPV cluster
@@ -169,9 +155,8 @@ private:
   //  Int_t fRecPointsInRun ;            //! Total number of recpoints in one run
   Float_t fEmcTimeGate ;             // Maximum time difference between the digits in ont EMC cluster
 
-  Bool_t  fIsOldRCUFormat;           // assume old RCU raw data format
 
-  ClassDef(AliPHOSClusterizerv1,5)   // Clusterizer implementation version 1
+  ClassDef(AliPHOSClusterizerv1,6)   // Clusterizer implementation version 1
 
 };
 
