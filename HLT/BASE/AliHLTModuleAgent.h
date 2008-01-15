@@ -257,7 +257,7 @@ class AliHLTModuleAgent : public TObject, public AliHLTLogging {
     AliHLTOUTHandlerDesc(AliHLTOUTHandlerType handlerType, AliHLTComponentDataType dt, const char* module) 
       : fHType(handlerType), fDt(dt), fModule(module) {}
 
-    ~AliHLTOUTHandlerDesc();
+    ~AliHLTOUTHandlerDesc() {}
 
   private:
     /** type of the handler */
