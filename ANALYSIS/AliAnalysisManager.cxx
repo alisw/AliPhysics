@@ -779,6 +779,10 @@ void AliAnalysisManager::StartAnalysis(const char *type, TTree *tree, Long64_t n
    TString ttype = "TTree";
    if (tree->IsA() == TChain::Class()) {
       chain = (TChain*)tree;
+      if (!chain || !chain->GetListOfFiles()->First()) {
+         Error("StartAnalysis", "Cannot process null or empty chain...");
+         return;
+      }   
       ttype = "TChain";
    }   
 
