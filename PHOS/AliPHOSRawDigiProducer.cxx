@@ -37,9 +37,56 @@
 #include "AliPHOSRawDecoder.h"
 #include "AliPHOSGeometry.h"
 #include "AliPHOSDigit.h"
+#include "AliPHOSRecoParam.h"
+#include "AliPHOSCalibData.h"
+#include "AliLog.h"
 
 ClassImp(AliPHOSRawDigiProducer)
 
+AliPHOSCalibData * AliPHOSRawDigiProducer::fgCalibData  = 0 ; 
+
+//--------------------------------------------------------------------------------------
+AliPHOSRawDigiProducer::AliPHOSRawDigiProducer():TObject(),
+  fEmcMinE(0.),fCpvMinE(0.),fEmcCrystals(0),fGeom(0){
+
+}
+//--------------------------------------------------------------------------------------
+AliPHOSRawDigiProducer::AliPHOSRawDigiProducer(const AliPHOSRecoParam* parEmc, const AliPHOSRecoParam* parCpv):TObject(),
+  fEmcMinE(0.),fCpvMinE(0.),fEmcCrystals(0),fGeom(0){
+
+  if(!parEmc) AliFatal("Reconstruction parameters for EMC not set!");
+  if(!parCpv) AliFatal("Reconstruction parameters for CPV not set!");
+
+  fEmcMinE = parEmc->GetMinE();
+  fCpvMinE = parCpv->GetMinE();
+
+  fGeom=AliPHOSGeometry::GetInstance() ;
+  if(!fGeom) fGeom = AliPHOSGeometry::GetInstance("IHEP");
+
+  fEmcCrystals=fGeom->GetNCristalsInModule()*fGeom->GetNModules() ;
+
+  GetCalibrationParameters() ; 
+}
+//--------------------------------------------------------------------------------------                       
+AliPHOSRawDigiProducer::AliPHOSRawDigiProducer(const AliPHOSRawDigiProducer &dp):TObject(),
+  fEmcMinE(0.),fCpvMinE(0.),fEmcCrystals(0),fGeom(0){                                                          
+
+  fEmcMinE = dp.fEmcMinE ;
+  fCpvMinE = dp.fCpvMinE ;
+  fEmcCrystals = dp.fEmcCrystals ;
+  fGeom = dp.fGeom ;
+}
+//--------------------------------------------------------------------------------------
+AliPHOSRawDigiProducer& AliPHOSRawDigiProducer::operator= (const AliPHOSRawDigiProducer &dp){
+  if(&dp == this) return *this;
+
+  fEmcMinE = dp.fEmcMinE ;
+  fCpvMinE = dp.fCpvMinE ;
+  fEmcCrystals = dp.fEmcCrystals ;
+  fGeom = dp.fGeom ;
+  return  *this;
+} 
+ 
 //--------------------------------------------------------------------------------------
 void AliPHOSRawDigiProducer::MakeDigits(TClonesArray *digits, AliPHOSRawDecoder* decoder) 
 {
@@ -48,77 +95,196 @@ void AliPHOSRawDigiProducer::MakeDigits(TClonesArray *digits, AliPHOSRawDecoder*
 
   digits->Clear();
  
-  AliPHOSGeometry* geo = AliPHOSGeometry::GetInstance();
-  if(!geo) geo = AliPHOSGeometry::GetInstance("IHEP");
-
   Int_t    iDigit   = 0 ;
-  Double_t time     = 0. ;
-  Int_t    iOldDigit;
-  Bool_t   seen,lowGainFlag;
   Int_t relId[4], absId =0;
 
+  const Double_t baseLine=1. ; //Minimal energy of digit in ADC ch. 
+  const Double_t highLowDiff=2. ; //Maximal difference between High and Low channels in LG adc channels 
+
+  //Temporary array for LowGain digits
+  TClonesArray tmpLG("AliPHOSDigit",10000) ;
+  Int_t ilgDigit=0 ;
+  
   while (decoder->NextDigit()) {
 
-    if (decoder->GetEnergy() <= 0.) 
-       continue;
+    Double_t energy=decoder->GetEnergy() ; 
+    if(energy<=baseLine) //in ADC channels
+      continue ;
 
-    if(decoder->IsOverflow())
-       continue ; 
-
-    lowGainFlag = decoder->IsLowGain();
-    time = decoder->GetTime();
+    Bool_t lowGainFlag = decoder->IsLowGain();
 
     relId[0] = decoder->GetModule();
     relId[1] = 0;
     relId[2] = decoder->GetRow();
     relId[3] = decoder->GetColumn();
-    geo->RelToAbsNumbering(relId, absId);
+    fGeom->RelToAbsNumbering(relId, absId);
 
-    // Add low gain digit only
-    //if the high gain digit does not exist in the digits array
-    //or has negative energy (overflow)
+    Double_t time = decoder->GetTime() ;
+    time = CalibrateT(time,relId,lowGainFlag) ;
 
-    seen = kFALSE;
+    energy = CalibrateE(energy,relId,lowGainFlag) ;
 
-    if(lowGainFlag) {
-      for (iOldDigit=iDigit-1; iOldDigit>=0; iOldDigit--) {
-        AliPHOSDigit * dig = dynamic_cast<AliPHOSDigit*>(digits->At(iOldDigit)) ;
-        if (dig->GetId() == absId) {
-          seen = kTRUE;
-//          //if High Gain overflowed - replace energy
-//          if(dig->GetEnergy()<0)
-//            dig->SetEnergy((Float_t)decoder->GetEnergy()) ;
-          break;
-        }
-      }
-      if (!seen) {
-        new((*digits)[iDigit]) AliPHOSDigit(-1,absId,(Float_t)decoder->GetEnergy(),time);
-        iDigit++;
-      }
+    if(energy <= 0.) 
+       continue;
+
+    if(lowGainFlag){
+      new(tmpLG[ilgDigit]) AliPHOSDigit(-1,absId,(Float_t)energy,(Float_t)time);                                                        
+      ilgDigit++ ; 
     }
-    // Add high gain digit only if it is not saturated;
-    // replace low gain digit by a high gain one
-    else {
-      for (iOldDigit=iDigit-1; iOldDigit>=0; iOldDigit--) {
-	AliPHOSDigit * dig = dynamic_cast<AliPHOSDigit*>(digits->At(iOldDigit)) ;
-        if (dig->GetId() == absId) {
-	  dig->SetTime(time) ; //Replace time in any case
-          dig->SetEnergy((Float_t)decoder->GetEnergy()) ;
-//          if (decoder->GetEnergy() > 0){ //replace Energy only if not saturated 
-//	    dig->SetEnergy((Float_t)decoder->GetEnergy()) ;
-//          }
-          seen = kTRUE;
-          break;
-        }
-      }
-      if (!seen) {
-        new((*digits)[iDigit]) AliPHOSDigit(-1,absId,(Float_t)decoder->GetEnergy(),time);
-        iDigit++;
-      }
+    else{ 
+      if(decoder->IsOverflow()) //Keep this digit to replace it by Low Gain later.
+                                //If there is no LogGain it wil be removed by cut on Min E
+        new((*digits)[iDigit]) AliPHOSDigit(-1,absId,-1.f,(Float_t)time);                                                       
+      else
+        new((*digits)[iDigit]) AliPHOSDigit(-1,absId,(Float_t)energy,(Float_t)time);                                                       
+      iDigit++;                                                                                                                          
     }
-    
   }
 
-  digits->Compress();
-  digits->Sort();
+  //Now scan created LG and HG digits and keep only those which appeared in both lists 
+  //replace energy of HighGain digits only if there is overflow
+  //negative energy (overflow)
+  digits->Sort() ;
+  tmpLG.Sort() ;
+  Int_t iLG = 0;
+  Int_t nLG1 = tmpLG.GetEntriesFast()-1 ;
+  for(Int_t iDig=0 ; iDig < digits->GetEntriesFast() ; iDig++) { 
+    AliPHOSDigit * digHG = dynamic_cast<AliPHOSDigit*>(digits->At(iDig)) ;
+    AliPHOSDigit * digLG = dynamic_cast<AliPHOSDigit*>(tmpLG.At(iLG)) ;
+    while(iLG<nLG1 && digHG->GetId()> digLG->GetId()){
+      iLG++ ;
+      digLG = dynamic_cast<AliPHOSDigit*>(tmpLG.At(iLG)) ;
+    }
+    if(digHG->GetId() == digLG->GetId()){ //we found pair
+      if(digHG->GetEnergy()<0.){ //This is overflow in HG
+        digHG->SetTime(digLG->GetTime()) ;                                                                                                  
+        digHG->SetEnergy(digLG->GetEnergy()) ;                                                                                              
+      } 
+      else{ //Make approximate comparison of HG and LG energies
+        Double_t de = (digHG->GetEnergy()-digLG->GetEnergy())/16./0.005 ; //aproximate difference in LG ADC ch. 
+        if(TMath::Abs(de)>highLowDiff){ //too strong difference, remove digit
+          digits->RemoveAt(iDig) ;
+        }
+      }
+    }
+    else{ //no pair - remove
+      // temporary fix for dead LG channels
+      Int_t absId=digHG->GetId() ;
+      Int_t relId[4] ;
+      fGeom->AbsToRelNumbering(absId,relId) ;
+      if(relId[2]%2==1 && relId[3]%16==4) 
+        continue ;
+      digits->RemoveAt(iDig) ;                                                                                                            
+    }
+  }
+
+  CleanDigits(digits) ;
+
+}
+//____________________________________________________________________________
+Double_t AliPHOSRawDigiProducer::CalibrateE(Double_t amp, Int_t* relId, Bool_t isLowGain)
+{
+  // Convert EMC measured amplitude into real energy.
+  // Calibration parameters are taken from calibration data base for raw data,
+  // or from digitizer parameters for simulated data.                        
+  if(fgCalibData){ 
+    Int_t   module = relId[0];  
+    Int_t   column = relId[3];
+    Int_t   row    = relId[2];
+    if(relId[1]==0) { // this is EMC 
+      if(isLowGain){
+        amp*= fgCalibData->GetHighLowRatioEmc(module,column,row);
+      }
+      amp *= fgCalibData->GetADCchannelEmc(module,column,row);                                                          
+      return amp ;         
+    }         
+  }          
+  return 0;        
+}
+//____________________________________________________________________________
+Double_t AliPHOSRawDigiProducer::CalibrateT(Double_t time, Int_t * relId, Bool_t /* isLowGain */)
+{
+  //Calibrate time
+  if(fgCalibData){
+    Int_t   module = relId[0];
+    Int_t   column = relId[3];
+    Int_t   row    = relId[2];
+    if(relId[1]==0) { // this is EMC
+      time += fgCalibData->GetTimeShiftEmc(module,column,row);                   
+      return time ;             
+    }
+  }
+ 
+  return -999.;
+}
+//____________________________________________________________________________
+void AliPHOSRawDigiProducer::CleanDigits(TClonesArray * digits)
+{
+  // remove digits with amplitudes below threshold.
+  // remove digits in bad channels
+  // sort digits with icreasing AbsId
+  
+  //remove digits in bad map and below threshold
+  Bool_t isBadMap = 0 ;
+  if(fgCalibData->GetNumOfEmcBadChannels()){
+    isBadMap=1 ;
+  }
+  
+  for(Int_t i=0; i<digits->GetEntriesFast(); i++){
+    AliPHOSDigit * digit = static_cast<AliPHOSDigit*>(digits->At(i)) ;
+    if(!digit)
+      continue  ;
+    if ( (IsInEMC(digit) && digit->GetEnergy() < fEmcMinE) ||
+	 (IsInCPV(digit) && digit->GetEnergy() < fCpvMinE) ){
+      digits->RemoveAt(i) ;
+      continue ;
+    }
+    if(isBadMap){ //check bad map now
+      Int_t relid[4] ;
+      fGeom->AbsToRelNumbering(digit->GetId(), relid) ; 
+      if(fgCalibData->IsBadChannelEmc(relid[0],relid[2],relid[3])){
+	digits->RemoveAt(i) ;
+      }
+    }
+  }
+
+  //Compress, sort and set indexes
+  digits->Compress() ;
+//  digits->Sort(); already sorted earlier
+  for (Int_t i = 0 ; i < digits->GetEntriesFast() ; i++) { 
+    AliPHOSDigit *digit = static_cast<AliPHOSDigit*>( digits->At(i) ) ; 
+    digit->SetIndexInList(i) ;     
+  }
+}
+//____________________________________________________________________________
+Bool_t AliPHOSRawDigiProducer::IsInEMC(AliPHOSDigit * digit) const
+{
+  // Tells if (true) or not (false) the digit is in a PHOS-EMC module
+  return digit->GetId() <= fEmcCrystals ;
+
+}
+
+//____________________________________________________________________________
+Bool_t AliPHOSRawDigiProducer::IsInCPV(AliPHOSDigit * digit) const
+{
+  // Tells if (true) or not (false) the digit is in a PHOS-CPV module
+  return digit->GetId() > fEmcCrystals ;
+}
+//____________________________________________________________________________
+void AliPHOSRawDigiProducer::GetCalibrationParameters() 
+{
+  // Set calibration parameters:
+  // if calibration database exists, they are read from database,
+  // otherwise, reconstruction stops in the constructor of AliPHOSCalibData
+  //
+  // It is a user responsilibity to open CDB before reconstruction, for example: 
+  // AliCDBStorage* storage = AliCDBManager::Instance()->GetStorage("local://CalibDB");
+
+  if (!fgCalibData){
+    fgCalibData = new AliPHOSCalibData(-1); //use AliCDBManager's run number
+  }
+  if (fgCalibData->GetCalibDataEmc() == 0)
+    AliFatal("Calibration parameters for PHOS EMC not found. Stop reconstruction.\n");
+  if (fgCalibData->GetCalibDataCpv() == 0)
+    AliFatal("Calibration parameters for PHOS CPV not found. Stop reconstruction.\n");
 }
