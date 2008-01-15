@@ -16,8 +16,8 @@
 #include <TObject.h>
 #include <TRandom.h>
 #include <TObjString.h>
-#include <TGeoManager.h>
 #include <AliGeomManager.h>
+class AliSurveyObj;
 
 class AliTRDalignment : public TObject {
   
@@ -66,7 +66,9 @@ class AliTRDalignment : public TObject {
   void ReadRoot(char *filename);                     // read from root file
   void ReadDB(char *filename);                       // read from DB file
   void ReadDB(char *db, char *path, int run, int version=-1, int subversion=-1);
+  Bool_t DecodeSurveyPointName(TString pna, Int_t &sm, Int_t &iz,Int_t &ir, Int_t &iphi);
   void ReadSurveyReport(char *filename);             // read from survey report
+  void ReadSurveyReport(AliSurveyObj *so);           // read from survey object 
   void ReadAny(char *filename);                      // read from any kind of file
 
   // writing on file
@@ -134,7 +136,9 @@ class AliTRDalignment : public TObject {
   double fSurveyX[18][2][2][2];                      // supermodule survey point X
   double fSurveyY[18][2][2][2];                      // supermodule survey point Y
   double fSurveyZ[18][2][2][2];                      // supermodule survey point Z
-  double fSurveyE[18][2][2][2];                      // supermodule survey point error
+  double fSurveyEX[18][2][2][2];                     // supermodule survey point X error
+  double fSurveyEY[18][2][2][2];                     // supermodule survey point Y error
+  double fSurveyEZ[18][2][2][2];                     // supermodule survey point Z error
   double fSurveyX0[2][2][2];                         // ideal X position of the survey marks
   double fSurveyY0[2][2][2];                         // ideal Y position of the survey marks
   double fSurveyZ0[2][2][2];                         // ideal Z position of the survey marks

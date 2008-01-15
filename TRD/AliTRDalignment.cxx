@@ -67,7 +67,7 @@
 
 #include <iostream>
 #include <fstream>
-#include <string>
+//#include <string>
 
 #include "TMath.h"
 #include "TFile.h"
@@ -86,6 +86,8 @@
 #include "AliCDBMetaData.h"
 #include "AliCDBEntry.h"
 #include "AliCDBId.h"
+#include "AliSurveyObj.h"
+#include "AliSurveyPoint.h"
 
 #include "AliTRDalignment.h"
 
@@ -109,7 +111,9 @@ AliTRDalignment::AliTRDalignment()
     fSurveyX[i][j][k][l] = 0.0;
     fSurveyY[i][j][k][l] = 0.0;
     fSurveyZ[i][j][k][l] = 0.0;
-    fSurveyE[i][j][k][l] = 0.0;
+    fSurveyEX[i][j][k][l] = 0.0;
+    fSurveyEY[i][j][k][l] = 0.0;
+    fSurveyEZ[i][j][k][l] = 0.0;
   }
 
   // Initialize the nominal positions of the survey points 
@@ -162,7 +166,9 @@ AliTRDalignment::AliTRDalignment(const AliTRDalignment& source)
     fSurveyX[i][j][k][l] = source.fSurveyX[i][j][k][l];
     fSurveyY[i][j][k][l] = source.fSurveyY[i][j][k][l];
     fSurveyZ[i][j][k][l] = source.fSurveyZ[i][j][k][l];
-    fSurveyE[i][j][k][l] = source.fSurveyE[i][j][k][l];
+    fSurveyEX[i][j][k][l] = source.fSurveyEX[i][j][k][l];
+    fSurveyEY[i][j][k][l] = source.fSurveyEY[i][j][k][l];
+    fSurveyEZ[i][j][k][l] = source.fSurveyEZ[i][j][k][l];
   }
   for (int j=0; j<2; j++) for (int k=0; k<2; k++) for (int l=0; l<2; l++) {
     fSurveyX0[j][k][l] = source.fSurveyX0[j][k][l];
@@ -186,7 +192,9 @@ AliTRDalignment& AliTRDalignment::operator=(const AliTRDalignment &source)
       fSurveyX[i][j][k][l] = source.fSurveyX[i][j][k][l];
       fSurveyY[i][j][k][l] = source.fSurveyY[i][j][k][l];
       fSurveyZ[i][j][k][l] = source.fSurveyZ[i][j][k][l];
-      fSurveyE[i][j][k][l] = source.fSurveyE[i][j][k][l];
+      fSurveyEX[i][j][k][l] = source.fSurveyEX[i][j][k][l];
+      fSurveyEY[i][j][k][l] = source.fSurveyEY[i][j][k][l];
+      fSurveyEZ[i][j][k][l] = source.fSurveyEZ[i][j][k][l];
     }
     for (int j=0; j<2; j++) for (int k=0; k<2; k++) for (int l=0; l<2; l++) {
       fSurveyX0[j][k][l] = source.fSurveyX0[j][k][l];
@@ -622,6 +630,27 @@ void AliTRDalignment::ReadDB(char *db, char *path, int run
 }
 
 //_____________________________________________________________________________
+Bool_t AliTRDalignment::DecodeSurveyPointName(TString pna, Int_t &sm, Int_t &iz, 
+					      Int_t &ir, Int_t &iphi) {
+  // decode the survey point name and extract the sm, z, r and phi indices
+  
+  if (pna(0,6)!="TRD_sm") {
+    AliError(Form("unexpected point name: %s",pna.Data()));
+    return kFALSE;
+  }
+  sm = atoi(pna(6,2).Data()); // supermodule number
+  iz = -1;
+  if (pna(8) == 'a') iz=0; // anticlockwise, positive z
+  if (pna(8) == 'c') iz=1; // clockwise, negative z
+  ir = -1;
+  if (pna(9) == 'l') ir=0; // low radius
+  if (pna(9) == 'h') ir=1; // high radius
+  iphi = atoi(pna(10,0).Data()); // phi within supermodule
+  if (sm>=0 && sm<18 && iz>=0 && iz<2 && ir>=0 && ir<2 && iphi>=0 && iphi<2) return kTRUE;
+  AliError(Form("cannot decode point name: %s",pna.Data()));
+  return kFALSE;
+}
+//_____________________________________________________________________________
 void AliTRDalignment::ReadSurveyReport(char *filename) 
 {
   //
@@ -703,32 +732,28 @@ void AliTRDalignment::ReadSurveyReport(char *filename)
 
   while (1) {
     TString pna; // point name
-    char type;
+    char type, target;
     double x,y,z,precision;
-    in >> pna >> x >> y >> z >> type >> precision;  
+    
+    in >> pna >> x >> y >> z >> type >> target >> precision;  
     if (in.fail()) break;
-    if (pna(0,6)!="TRD_sm") {
-      AliError(Form("unexpected point name: %s",pna.Data()));
-      break;
-    }
-    int i = atoi(pna(6,0).Data()); // supermodule number
-    int j = -1;
-    if (pna(8) == 'a') j=0; // anticlockwise, positive z
-    if (pna(8) == 'c') j=1; // clockwise, negative z
-    int k = -1;
-    if (pna(9) == 'l') k=0; // low radius
-    if (pna(9) == 'h') k=1; // high radius
-    int l = atoi(pna(10,0).Data()); // phi within supermodule
-    if (i>=0 && i<18 && j>=0 && j<2 && k>=0 && k<2 && l>=0 && l<2) {
+    Int_t i,j,k,l;
+    if (DecodeSurveyPointName(pna,i,j,k,l)) {
       fSurveyX[i][j][k][l] = tocm*x;
       fSurveyY[i][j][k][l] = tocm*y;
       fSurveyZ[i][j][k][l] = tocm*z;
-      fSurveyE[i][j][k][l] = precision/10; // "precision" is supposed to be in mm
+      fSurveyEX[i][j][k][l] = precision/10; // "precision" is supposed to be in mm
+      fSurveyEY[i][j][k][l] = precision/10; // "precision" is supposed to be in mm
+      fSurveyEZ[i][j][k][l] = precision/10; // "precision" is supposed to be in mm
+      // if, at some point, separate precision numbers for x,y,z show up in the 
+      // survey reports the function will fail here
       std::cout << "decoded "<<pna<<" "
 		<<fSurveyX[i][j][k][l]<<" "
 		<<fSurveyY[i][j][k][l]<<" "
 		<<fSurveyZ[i][j][k][l]<<" "
-		<<fSurveyE[i][j][k][l]<<std::endl;	
+		<<fSurveyEX[i][j][k][l]<<" "
+		<<fSurveyEY[i][j][k][l]<<" "
+		<<fSurveyEZ[i][j][k][l]<<" "<<std::endl;	
     } else AliError(Form("cannot decode point name: %s",pna.Data()));
   }
   in.close();
@@ -736,6 +761,100 @@ void AliTRDalignment::ReadSurveyReport(char *filename)
   info.ReplaceAll("\r","");
   fComment.SetString(info.Data());
 			 
+}
+
+//_____________________________________________________________________________
+void AliTRDalignment::ReadSurveyReport(AliSurveyObj *so) 
+{
+  //
+  // Read survey report and store the numbers in fSurveyX, fSurveyY, fSurveyZ, 
+  // and fSurveyE.  Store the survey info in the fComment.
+  // Each supermodule has 8 survey points. The point names look like 
+  // TRD_sm08ah0 and have the following meaning. 
+  //
+  // sm00..17 mean supermodule 0 through 17, following the phi.
+  // Supermodule 00 is between phi=0 and phi=20 degrees.
+  //
+  // a or c denotes the anticlockwise and clockwise end of the supermodule
+  // in z. Clockwise end is where z is negative and where the muon arm sits.
+  //
+  // l or h denote low radius and high radius holes
+  //
+  // 0 or 1 denote the hole at smaller and at larger phi, respectively.
+  //
+
+  // read and process the data from the survey object
+
+  Int_t size = so->GetEntries();
+  printf("-> %d\n", size);
+
+  TString title        = so->GetReportTitle();
+  TString date         = so->GetReportDate();
+  TString subdetector  = so->GetDetector();
+  TString url          = so->GetURL();
+  TString report       = so->GetReportNumber();
+  TString version      = so->GetReportVersion();
+  TString observations = so->GetObservations();
+  TString system       = so->GetCoordSys();
+  TString units        = so->GetUnits();
+
+  // check what we found so far (watch out, they have \r at the end)
+
+  std::cout<<"title .........."<<title<<std::endl;
+  std::cout<<"date ..........."<<date<<std::endl;
+  std::cout<<"subdetector ...."<<subdetector<<std::endl;
+  std::cout<<"url ............"<<url<<std::endl;
+  std::cout<<"version ........"<<version<<std::endl;
+  std::cout<<"observations ..."<<observations<<std::endl;
+  std::cout<<"system ........."<<system<<std::endl;
+  std::cout<<"units .........."<<units<<std::endl;
+
+  if (!subdetector.Contains("TRD")) {
+    AliWarning(Form("Not a TRD survey file, subdetector = %s",subdetector.Data()));
+    return;
+  }
+  double tocm = 0; // we want to have it in cm
+  if (units.Contains("mm"))      tocm = 0.1;
+  else if (units.Contains("cm")) tocm = 1.0;
+  else if (units.Contains("m"))  tocm = 100.0;
+  else if (units.Contains("pc")) tocm = 3.24078e-15;
+  else {
+    AliError(Form("unexpected units: %s",units.Data()));
+    return;
+  }
+  if (!system.Contains("ALICEPH")) {
+    AliError(Form("wrong system: %s, should be ALICEPH",system.Data()));
+    return;
+  }
+
+  // for every survey point, decode the point name and store the numbers in 
+  // the right place in the arrays fSurveyX etc.
+
+  TObjArray *points = so->GetData();
+  for (int i = 0; i<points->GetEntries(); i++) {
+    AliSurveyPoint *po = (AliSurveyPoint *) points->At(i);
+    TString pna = po->GetPointName();
+    Int_t i,j,k,l;
+    if (DecodeSurveyPointName(pna,i,j,k,l)) {
+      fSurveyX[i][j][k][l] = tocm*po->GetX();
+      fSurveyY[i][j][k][l] = tocm*po->GetY();
+      fSurveyZ[i][j][k][l] = tocm*po->GetZ();
+      fSurveyEX[i][j][k][l] = po->GetPrecisionX()/10; // "precision" is supposed to be in mm
+      fSurveyEY[i][j][k][l] = po->GetPrecisionY()/10;
+      fSurveyEZ[i][j][k][l] = po->GetPrecisionZ()/10;
+      std::cout << "decoded "<<pna<<" "
+		<<fSurveyX[i][j][k][l]<<" "
+		<<fSurveyY[i][j][k][l]<<" "
+		<<fSurveyZ[i][j][k][l]<<" "
+		<<fSurveyEX[i][j][k][l]<<" "
+		<<fSurveyEY[i][j][k][l]<<" "
+		<<fSurveyEZ[i][j][k][l]<<" "<<std::endl;	
+    } else AliError(Form("cannot decode point name: %s",pna.Data()));
+  }
+
+  TString info = "Survey "+title+" "+date+" "+url+" "+report+" "+version+" "+observations;
+  info.ReplaceAll("\r","");
+  fComment.SetString(info.Data());			 
 }
 
 //_____________________________________________________________________________
@@ -768,14 +887,18 @@ double AliTRDalignment::SurveyChi2(int i, double *a) {
   double chi2=0;
   printf("              sm   z   r  phi    x (lab phi)  y (lab z)   z (lab r)   all in cm\n");
   for (int j=0; j<2; j++) for (int k=0; k<2; k++) for (int l=0; l<2; l++) {
-    if (fSurveyE[i][j][k][l] == 0.0) continue; // no data for this survey point
+    if (fSurveyEX[i][j][k][l] == 0.0 
+	&& fSurveyEY[i][j][k][l] == 0.0 
+	&& fSurveyEZ[i][j][k][l] == 0.0) continue; // no data for this survey point
     double master[3] = {fSurveyX[i][j][k][l],fSurveyY[i][j][k][l],fSurveyZ[i][j][k][l]};
     double local[3];
     ma->MasterToLocal(master,local);
     double dx = local[0]-fSurveyX0[j][k][l];
     double dy = local[1]-fSurveyY0[j][k][l];
     double dz = local[2]-fSurveyZ0[j][k][l];
-    chi2 += (dx*dx+dy*dy+dz*dz)/fSurveyE[i][j][k][l]/fSurveyE[i][j][k][l];
+    chi2 += dx*dx/fSurveyEX[i][j][k][l]/fSurveyEX[i][j][k][l];
+    chi2 += dy*dy/fSurveyEY[i][j][k][l]/fSurveyEY[i][j][k][l];
+    chi2 += dz*dz/fSurveyEZ[i][j][k][l]/fSurveyEZ[i][j][k][l];
     printf("local survey %3d %3d %3d %3d %12.3f %12.3f %12.3f\n",i,j,k,l,local[0],local[1],local[2]);
     printf("local ideal                  %12.3f %12.3f %12.3f\n",fSurveyX0[j][k][l],
 	   fSurveyY0[j][k][l],fSurveyZ0[j][k][l]);
