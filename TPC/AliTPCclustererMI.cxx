@@ -321,7 +321,7 @@ AliTPCclusterMI &c)
     //set cluster parameters
     c.SetQ(sumw);
     c.SetPad(meani-2.5);
-    c.SetTimeBin(meanj-2.5);
+    c.SetTimeBin(meanj-3);
     c.SetSigmaY2(mi2);
     c.SetSigmaZ2(mj2);
     c.SetType(0);
