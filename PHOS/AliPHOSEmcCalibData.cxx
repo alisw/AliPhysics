@@ -54,6 +54,8 @@ AliPHOSEmcCalibData::AliPHOSEmcCalibData(const AliPHOSEmcCalibData& calibda) :
       for(Int_t row=0; row<64; row++) {
 	fADCchannelEmc[module][column][row] = calibda.fADCchannelEmc[module][column][row];
 	fADCpedestalEmc[module][column][row] = calibda.fADCpedestalEmc[module][column][row];
+	fHighLowRatioEmc[module][column][row] = calibda.fHighLowRatioEmc[module][column][row];
+	fTimeShiftEmc[module][column][row] = calibda.fTimeShiftEmc[module][column][row];
       }
     }
   }
@@ -74,6 +76,8 @@ AliPHOSEmcCalibData &AliPHOSEmcCalibData::operator =(const AliPHOSEmcCalibData& 
 	for(Int_t row=0; row<64; row++) {
 	  fADCchannelEmc[module][column][row] = calibda.fADCchannelEmc[module][column][row];
 	  fADCpedestalEmc[module][column][row] = calibda.fADCpedestalEmc[module][column][row];
+	  fHighLowRatioEmc[module][column][row] = calibda.fHighLowRatioEmc[module][column][row];
+	  fTimeShiftEmc[module][column][row] = calibda.fTimeShiftEmc[module][column][row];
 	}
       }
     }
@@ -91,13 +95,15 @@ AliPHOSEmcCalibData::~AliPHOSEmcCalibData()
 //________________________________________________________________
 void AliPHOSEmcCalibData::Reset()
 {
-  // Set all pedestals and all ADC channels to its ideal values = 1.
+  // Set all pedestals and all ADC channels to its ideal values = 5. (MeV/ADC)
 
   for (Int_t module=0; module<5; module++){
     for (Int_t column=0; column<56; column++){
       for (Int_t row=0; row<64; row++){
 	fADCpedestalEmc[module][column][row] = 0.;
-	fADCchannelEmc[module][column][row]  = 1.;
+	fADCchannelEmc[module][column][row]  = 0.005;
+	fHighLowRatioEmc[module][column][row] = 16. ;
+	fTimeShiftEmc[module][column][row] = 0. ;
       }
     }
   }
@@ -134,6 +140,31 @@ void  AliPHOSEmcCalibData::Print(Option_t *option) const
       }
     }
   }
+
+  if (strstr(option,"hilo")) {
+    printf("\n	----	EMC High/Low ratio	----\n\n");
+    for (Int_t module=0; module<5; module++){
+      printf("============== Module %d\n",module+1);
+      for (Int_t column=0; column<56; column++){
+	for (Int_t row=0; row<64; row++){
+	  printf("%4.1f",fHighLowRatioEmc[module][column][row]);
+	}
+	printf("\n");
+      }
+    }
+  }
+  if (strstr(option,"time")) {
+    printf("\n	----	EMC t0 shifts	----\n\n");
+    for (Int_t module=0; module<5; module++){
+      printf("============== Module %d\n",module+1);
+      for (Int_t column=0; column<56; column++){
+	for (Int_t row=0; row<64; row++){
+	  printf("%6.3e",fTimeShiftEmc[module][column][row]);
+	}
+	printf("\n");
+      }
+    }
+  }
 }
 
 //________________________________________________________________
@@ -157,6 +188,26 @@ Float_t AliPHOSEmcCalibData::GetADCpedestalEmc(Int_t module, Int_t column, Int_t
 }
 
 //________________________________________________________________
+Float_t AliPHOSEmcCalibData::GetHighLowRatioEmc(Int_t module, Int_t column, Int_t row) const
+{
+  //Return EMC pedestal
+  //module, column,raw should follow the internal PHOS convention:
+  //module 1:5, column 1:56, row 1:64
+
+  return fHighLowRatioEmc[module-1][column-1][row-1];
+}
+
+//________________________________________________________________
+Float_t AliPHOSEmcCalibData::GetTimeShiftEmc(Int_t module, Int_t column, Int_t row) const
+{
+  //Return EMC pedestal
+  //module, column,raw should follow the internal PHOS convention:
+  //module 1:5, column 1:56, row 1:64
+
+  return fTimeShiftEmc[module-1][column-1][row-1];
+}
+
+//________________________________________________________________
 void AliPHOSEmcCalibData::SetADCchannelEmc(Int_t module, Int_t column, Int_t row, Float_t value)
 {
   //Set EMC calibration coefficient
@@ -173,4 +224,21 @@ void AliPHOSEmcCalibData::SetADCpedestalEmc(Int_t module, Int_t column, Int_t ro
   //module, column,raw should follow the internal PHOS convention:
   //module 1:5, column 1:56, row 1:64
   fADCpedestalEmc[module-1][column-1][row-1] = value;
+}
+
+//________________________________________________________________
+void AliPHOSEmcCalibData::SetHighLowRatioEmc(Int_t module, Int_t column, Int_t row, Float_t value)
+{
+  //Set EMC pedestal
+  //module, column,raw should follow the internal PHOS convention:
+  //module 1:5, column 1:56, row 1:64
+  fHighLowRatioEmc[module-1][column-1][row-1] = value;
+}
+//________________________________________________________________
+void AliPHOSEmcCalibData::SetTimeShiftEmc(Int_t module, Int_t column, Int_t row, Float_t value)
+{
+  //Set EMC pedestal
+  //module, column,raw should follow the internal PHOS convention:
+  //module 1:5, column 1:56, row 1:64
+  fTimeShiftEmc[module-1][column-1][row-1] = value;
 }

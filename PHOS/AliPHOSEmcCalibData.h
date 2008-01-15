@@ -23,15 +23,21 @@ class AliPHOSEmcCalibData: public TNamed {
   //
   Float_t GetADCchannelEmc(Int_t module, Int_t column, Int_t row) const;
   Float_t GetADCpedestalEmc(Int_t module, Int_t column, Int_t row) const;
+  Float_t GetHighLowRatioEmc(Int_t module, Int_t column, Int_t row) const;
+  Float_t GetTimeShiftEmc(Int_t module, Int_t column, Int_t row) const;
   //
   void SetADCchannelEmc(Int_t module, Int_t column, Int_t row, Float_t value);
   void SetADCpedestalEmc(Int_t module, Int_t column, Int_t row, Float_t value);
+  void SetHighLowRatioEmc(Int_t module, Int_t column, Int_t row, Float_t value);
+  void SetTimeShiftEmc(Int_t module, Int_t column, Int_t row, Float_t value);
 
  protected:
   Float_t  fADCchannelEmc[5][56][64] ;  // width of one EMC ADC channel in GeV ([mod][col][row])
   Float_t  fADCpedestalEmc[5][56][64] ; // value of the EMC ADC pedestal ([mod][col][row])
+  Float_t  fHighLowRatioEmc[5][56][64]; // ratio of High/Low gain ([mod][col][row])
+  Float_t  fTimeShiftEmc[5][56][64] ;   // channel-by-channel t0 shift ([mod][col][row])
   //
-  ClassDef(AliPHOSEmcCalibData,1)    // PHOS EMC calibration data
+  ClassDef(AliPHOSEmcCalibData,2)    // PHOS EMC calibration data
 };
 
 #endif

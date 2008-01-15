@@ -254,6 +254,17 @@ Float_t AliPHOSCalibData::GetADCchannelEmc(Int_t module, Int_t column, Int_t row
 }
 
 //________________________________________________________________
+void AliPHOSCalibData::SetADCchannelEmc(Int_t module, Int_t column, Int_t row, Float_t value)
+{
+  // Set EMC calibration coefficient for (module,column,row)
+
+  if(!fCalibDataEmc)
+    fCalibDataEmc = new AliPHOSEmcCalibData("PHOS-EMC");
+
+  fCalibDataEmc->SetADCchannelEmc(module,column,row,value);
+}
+
+//________________________________________________________________
 Float_t AliPHOSCalibData::GetADCpedestalEmc(Int_t module, Int_t column, Int_t row) const
 {
   // Return EMC pedestal for channel defined by (module,column,row)
@@ -269,17 +280,6 @@ Float_t AliPHOSCalibData::GetADCpedestalEmc(Int_t module, Int_t column, Int_t ro
 }
 
 //________________________________________________________________
-void AliPHOSCalibData::SetADCchannelEmc(Int_t module, Int_t column, Int_t row, Float_t value)
-{
-  // Set EMC calibration coefficient for (module,column,row)
-
-  if(!fCalibDataEmc)
-    fCalibDataEmc = new AliPHOSEmcCalibData("PHOS-EMC");
-
-  fCalibDataEmc->SetADCchannelEmc(module,column,row,value);
-}
-
-//________________________________________________________________
 void AliPHOSCalibData::SetADCpedestalEmc(Int_t module, Int_t column, Int_t row, Float_t value)
 {
   // Set EMC pedestal for (module,column,row)
@@ -290,6 +290,60 @@ void AliPHOSCalibData::SetADCpedestalEmc(Int_t module, Int_t column, Int_t row, 
   fCalibDataEmc->SetADCpedestalEmc(module,column,row,value);
 }
 
+//________________________________________________________________
+Float_t AliPHOSCalibData::GetHighLowRatioEmc(Int_t module, Int_t column, Int_t row) const
+{
+  // Return EMC calibration coefficient
+  // for channel defined by (module,column,row)
+  // module, column,raw should follow the internal PHOS convention:
+  // module 1:5, column 1:56, row 1:64
+  // if CBD instance exists, the value is taken from CDB.
+  // Otherwise it is an ideal one
+ 
+  if(fCalibDataEmc)
+    return fCalibDataEmc->GetHighLowRatioEmc(module,column,row);
+  else
+    return 1.0; // default width of one EMC ADC channel in GeV
+}
+ 
+//________________________________________________________________
+void AliPHOSCalibData::SetHighLowRatioEmc(Int_t module, Int_t column, Int_t row, Float_t value)
+{
+  // Set EMC calibration coefficient for (module,column,row)
+ 
+  if(!fCalibDataEmc)
+    fCalibDataEmc = new AliPHOSEmcCalibData("PHOS-EMC");
+ 
+  fCalibDataEmc->SetHighLowRatioEmc(module,column,row,value);
+}
+ 
+//________________________________________________________________
+Float_t AliPHOSCalibData::GetTimeShiftEmc(Int_t module, Int_t column, Int_t row) const
+{ 
+  // Return EMC calibration coefficient 
+  // for channel defined by (module,column,row)                                
+  // module, column,raw should follow the internal PHOS convention:            
+  // module 1:5, column 1:56, row 1:64 
+  // if CBD instance exists, the value is taken from CDB. 
+  // Otherwise it is an ideal one  
+  
+  if(fCalibDataEmc)
+    return fCalibDataEmc->GetTimeShiftEmc(module,column,row);
+  else
+    return 1.0; // default width of one EMC ADC channel in GeV
+}
+ 
+//________________________________________________________________
+void AliPHOSCalibData::SetTimeShiftEmc(Int_t module, Int_t column, Int_t row, Float_t value)
+{
+  // Set EMC calibration coefficient for (module,column,row)
+ 
+  if(!fCalibDataEmc)
+    fCalibDataEmc = new AliPHOSEmcCalibData("PHOS-EMC");
+ 
+  fCalibDataEmc->SetTimeShiftEmc(module,column,row,value);
+}
+ 
 //________________________________________________________________
 Float_t AliPHOSCalibData::GetADCchannelCpv(Int_t module, Int_t column, Int_t row) const
 {
