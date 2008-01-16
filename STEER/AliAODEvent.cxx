@@ -241,17 +241,84 @@ void AliAODEvent::ReadFromTree(TTree *tree)
 {
   // connects aod event to tree
   
-  // load the TTree
-  tree->LoadTree(0);
-
-  fAODObjects = (TList*)((AliAODEvent*)tree->GetTree()->GetUserInfo()->FindObject("AliAODEvent"))->GetList(); 
-  TIter next(fAODObjects);
-  TNamed *el;
-  while((el=(TNamed*)next())){
-    TString bname(el->GetName());
-    tree->SetBranchAddress(bname.Data(),fAODObjects->GetObjectRef(el));
+  if(!tree){
+    Printf("%s %d AliAODEvent::ReadFromTree() Zero Pointer to Tree \n",(char*)__FILE__,__LINE__);
+    return;
   }
-  GetStdContent();
+  // load the TTree
+  if(!tree->GetTree())tree->LoadTree(0);
+
+  // Try to find AliAODEvent
+  AliAODEvent *aodEvent = 0;
+  aodEvent = (AliAODEvent*)tree->GetTree()->GetUserInfo()->FindObject("AliAODEvent");
+  if(aodEvent){
+    // Check if already connected to tree
+    TList* connectedList = (TList*) (tree->GetUserInfo()->FindObject("AODObjectsConnectedToTree"));
+    if (connectedList) {
+      // If connected use the connected list if objects
+      fAODObjects->Delete();
+      fAODObjects = connectedList;
+      GetStdContent(); 
+      return;
+    }
+    // Connect to tree
+    // prevent a memory leak when reading back the TList
+    delete fAODObjects;
+    fAODObjects = 0;
+    // create a new TList from the UserInfo TList... 
+    // copy constructor does not work...
+    fAODObjects = (TList*)(aodEvent->GetList()->Clone());
+    fAODObjects->SetOwner(kFALSE);
+    if(fAODObjects->GetEntries()<kAODListN){
+      printf("%s %d AliAODEvent::ReadFromTree() TList contains less than the standard contents %d < %d \n",
+	     (char*)__FILE__,__LINE__,fAODObjects->GetEntries(),kAODListN);
+    }
+    // set the branch addresses
+    TIter next(fAODObjects);
+    TNamed *el;
+    while((el=(TNamed*)next())){
+      TString bname(el->GetName());
+      // check if branch exists under this Name
+      TBranch *br = tree->GetBranch(bname.Data());
+      if(br){
+	tree->SetBranchAddress(bname.Data(),fAODObjects->GetObjectRef(el));
+      }
+      else{
+	br = tree->GetBranch(Form("%s.",bname.Data()));
+	if(br){
+	  tree->SetBranchAddress(Form("%s.",bname.Data()),fAODObjects->GetObjectRef(el));
+	}
+	else{
+	  printf("%s %d AliAODEvent::ReadFromTree() No Branch found with Name %s or %s. \n",
+		 (char*)__FILE__,__LINE__,bname.Data(),bname.Data());
+	}	
+      }
+    }
+    
+    GetStdContent();
+    // when reading back we are not owner of the list 
+    // must not delete it
+    fAODObjects->SetOwner(kFALSE);
+    fAODObjects->SetName("AODObjectsConnectedToTree");
+    // we are not owner of the list objects 
+    // must not delete it
+    tree->GetUserInfo()->Add(fAODObjects);
+  }// no aodEvent
+  else {
+    // we can't get the list from the user data, create standard content
+    // and set it by hand
+    CreateStdContent();
+    TIter next(fAODObjects);
+    TNamed *el;
+    while((el=(TNamed*)next())){
+      TString bname(el->GetName());    
+      tree->SetBranchAddress(bname.Data(),fAODObjects->GetObjectRef(el));
+    }
+    GetStdContent();
+    // when reading back we are not owner of the list 
+    // must not delete it
+    fAODObjects->SetOwner(kFALSE);
+  }
 }
 
 //______________________________________________________________________________
