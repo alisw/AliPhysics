@@ -1,4 +1,4 @@
-// @(#) $Id$
+// @(#)alimdc:$Name:  $:$Id$
 // Author: Fons Rademakers  26/11/99
 // Updated: Dario Favretto  15/04/2003
 
@@ -119,6 +119,10 @@ AliMDC::AliMDC(Int_t compress, Bool_t deleteFiles, EFilterMode filterMode,
   // Optional 'guidFileFolder' specifies the folder in which *.guid files
   // will be stored. In case this option is not given, the *.guid files
   // will be written to the same folder as the raw-data files.
+
+  // Set the maximum tree size to 19GB
+  // in order to allow big raw data files
+  TTree::SetMaxTreeSize(20000000000LL);
  
   // This line is needed in case of a stand-alone application w/o
   // $ROOTSYS/etc/system.rootrc file
@@ -234,11 +238,11 @@ Int_t AliMDC::ProcessEvent(void* event, Bool_t isIovecArray)
 // or, if isIovecArray is kTRUE, a pointer to an array of iovecs with one
 // iovec per subevent (used by the event builder).
 // The return value is the number of written bytes or an error code
-  const UInt_t kFileSizeErrorLevel   = 1900000000;
+  const Long64_t kFileSizeErrorLevel   = 19000000000LL;
 
-  UInt_t currentFileSize = GetTotalSize();
+  Long64_t currentFileSize = GetTotalSize();
   if(currentFileSize > kFileSizeErrorLevel) {
-    Error("ProcessEvent", "file size (%u) exceeds the limit "
+    Error("ProcessEvent", "file size (%lu) exceeds the limit "
 	  , currentFileSize);
     return kErrFileSize;
   }
@@ -415,7 +419,7 @@ Int_t AliMDC::ProcessEvent(void* event, Bool_t isIovecArray)
 }
 
 //______________________________________________________________________________
-Int_t AliMDC::GetTotalSize()
+Long64_t AliMDC::GetTotalSize()
 {
 // return the total current raw DB file size
 

@@ -20,7 +20,7 @@ void* alimdcCreate(int compress, int filterMode,
 		   const char* guidFileFolder);
 int   alimdcOpen(void* alimdc, int mode, const char* fileName);
 int   alimdcProcessEvent(void* alimdc, void* event, int isIovecArray);
-int   alimdcGetTotalFileSize(void* alimdc);
+long long  alimdcGetTotalFileSize(void* alimdc);
 int   alimdcClose(void* alimdc);
 void  alimdcDelete(void* alimdc);
 void  alimdcEnableDebug();

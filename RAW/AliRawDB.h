@@ -1,6 +1,6 @@
 #ifndef ALIRAWDB_H
 #define ALIRAWDB_H
-// @(#) $Id$
+// @(#)alimdc:$Name:  $:$Id$
 // Author: Fons Rademakers  26/11/99
 
 /* Copyright(c) 1998-2003, ALICE Experiment at CERN, All rights reserved. *
@@ -51,7 +51,7 @@ public:
    virtual Bool_t      Create(const char* fileName = NULL);
    virtual Int_t       Close();
    Int_t               Fill();
-   Int_t               GetTotalSize();
+   Long64_t            GetTotalSize();
 
    void         WriteStats(AliStats* stats);
 

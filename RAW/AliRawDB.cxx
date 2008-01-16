@@ -1,4 +1,4 @@
-// @(#) $Id$
+// @(#)alimdc:$Name:  $:$Id$
 // Author: Fons Rademakers  26/11/99
 
 /**************************************************************************
@@ -49,7 +49,7 @@
 
 ClassImp(AliRawDB)
 
-const char *AliRawDB::fgkAliRootTag = "$Name$";
+const char *AliRawDB::fgkAliRootTag = "$Rev$";
 
 // Split TPC into 9 branches in order to avoid problems with big memory
 // consumption in case of TPC events w/o zero-suppression
@@ -267,7 +267,7 @@ void AliRawDB::MakeTree()
    // Create ROOT Tree object container.
 
    fTree = new TTree("RAW", Form("ALICE raw-data tree (%s)", GetAliRootTag()));
-   fTree->SetAutoSave(2000000000);  // autosave when 2 Gbyte written
+   fTree->SetAutoSave(21000000000LL);  // autosave when 21 Gbyte written
 
    fTree->BranchRef();
 
@@ -292,7 +292,7 @@ void AliRawDB::MakeTree()
 
    if (fESD) {
      fESDTree = new TTree("esdTree", Form("ALICE HLT ESD tree (%s)", GetAliRootTag()));
-     fESDTree->SetAutoSave(2000000000);  // autosave when 2 Gbyte written
+     fESDTree->SetAutoSave(21000000000LL);  // autosave when 21 Gbyte written
      split   = 0;
      fESDTree->Branch("ESD", "AliESDEvent", &fESD, bufsize, split);
    }
@@ -383,10 +383,10 @@ Int_t AliRawDB::Fill()
 }
 
 //______________________________________________________________________________
-Int_t AliRawDB::GetTotalSize()
+Long64_t AliRawDB::GetTotalSize()
 {
    // Return the total size of the trees
-  Int_t total = 0;
+  Long64_t total = 0;
 
   {
     Int_t skey = 0;
@@ -395,7 +395,7 @@ Int_t AliRawDB::GetTotalSize()
       TKey *key = dir->GetKey(fTree->GetName());
       if (key) skey = key->GetKeylen();
     }
-    total += skey + fTree->GetZipBytes();
+    total += (Long64_t)skey + fTree->GetZipBytes();
   }
 
   if(fESDTree)
@@ -406,7 +406,7 @@ Int_t AliRawDB::GetTotalSize()
 	TKey *key = dir->GetKey(fESDTree->GetName());
 	if (key) skey = key->GetKeylen();
       }
-      total += skey + fESDTree->GetZipBytes();
+      total += (Long64_t)skey + fESDTree->GetZipBytes();
     }
 
   return total;
@@ -463,7 +463,7 @@ const char *AliRawDB::GetAliRootTag()
 
   TString version = fgkAliRootTag;
   version.Remove(TString::kBoth,'$');
-  version.ReplaceAll("Name","AliRoot version");
+  version.ReplaceAll("LastChangedRevision","AliRoot version");
 
   return version.Data();
 }

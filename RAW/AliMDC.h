@@ -1,6 +1,6 @@
 #ifndef ALIMDC_H
 #define ALIMDC_H
-// @(#) $Id$
+// @(#)alimdc:$Name:  $:$Id$
 // Author: Fons Rademakers  26/11/99
 
 /* Copyright(c) 1998-2003, ALICE Experiment at CERN, All rights reserved. *
@@ -71,7 +71,7 @@ public:
 		   Double_t maxFileSize = 0,
 		   const char* fs1 = NULL, const char* fs2 = NULL);
    Int_t      ProcessEvent(void* event, Bool_t isIovecArray = kFALSE);
-   Int_t      GetTotalSize();
+   Long64_t   GetTotalSize();
    Int_t      Close();
 
    Int_t      Run(const char* inputFile, Bool_t loop,

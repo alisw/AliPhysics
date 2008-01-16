@@ -1,4 +1,4 @@
-// @(#) $Id$
+// @(#)alimdc:$Name:  $:$Id$
 // Author: Fons Rademakers  26/11/99
 
 //////////////////////////////////////////////////////////////////////////
@@ -210,17 +210,17 @@ int main(int argc, char **argv)
    // no special arg checking so don't make errors
    if (argv[iarg][0] == '-') {
       delFiles = kTRUE;
-      maxFileSize = atoi(argv[iarg]+1);
+      maxFileSize = atoll(argv[iarg]+1);
    } else
-      maxFileSize = atoi(argv[iarg]);
-   if (maxFileSize < 1000 || maxFileSize > 2.e9) {
+      maxFileSize = atoll(argv[iarg]);
+   if (maxFileSize < 1000 || maxFileSize > 20.e9) {
       Error(argv[0], "unreasonable file size %f\n", maxFileSize);
       return 1;
    }
    iarg++;
 
    maxTagSize = atoi(argv[iarg]);
-   if (maxTagSize > 0 && (maxTagSize < 1000 || maxTagSize > 2.e9)) {
+   if (maxTagSize > 0 && (maxTagSize < 1000 || maxTagSize > 20.e9)) {
       Error(argv[0], "unreasonable tag file size %f\n", maxTagSize);
       return 1;
    }
