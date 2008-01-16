@@ -9,17 +9,45 @@
 //using AliPHOSRawDecoder. See cxx source for use case.
 
 class AliPHOSRawDecoder;
+class AliPHOSCalibData ;
+class AliPHOSDigit ;
+class AliPHOSRecoParam ;
+class AliPHOSGeometry ;
+#include "TObject.h"
 
-class AliPHOSRawDigiProducer {
+class AliPHOSRawDigiProducer: public TObject {
 
 public:
 
-  AliPHOSRawDigiProducer() {}
+  AliPHOSRawDigiProducer() ;
+  AliPHOSRawDigiProducer(const AliPHOSRecoParam* parEmc, const AliPHOSRecoParam* parCpv) ;
+  AliPHOSRawDigiProducer(const AliPHOSRawDigiProducer &dp);
+  AliPHOSRawDigiProducer& operator= (const AliPHOSRawDigiProducer &dp);
+ 
   virtual ~AliPHOSRawDigiProducer() {}
 
   void MakeDigits(TClonesArray *digits, AliPHOSRawDecoder* decoder);
 
-  ClassDef(AliPHOSRawDigiProducer,1)
+protected:
+
+  void GetCalibrationParameters() ; //Extract calibration parameters from DB
+  void CleanDigits(TClonesArray* digits) ; //remove digits below threshold and bad ones
+  
+  Bool_t IsInEMC(AliPHOSDigit* digit) const ; //tests if digit belongs to EMC
+  Bool_t IsInCPV(AliPHOSDigit* digit) const ;
+
+  Double_t CalibrateE(Double_t amp, Int_t* relId, Bool_t isLowGain) ; //calibrate energy 
+  Double_t CalibrateT(Double_t amp, Int_t* relId, Bool_t isLowGain) ; //calibrate time
+
+private:
+  Float_t fEmcMinE ;                 // minimum energy of digit to be included into cluster
+  Float_t fCpvMinE ;                 // minimum energy of digit to be included into cluster
+
+  Int_t fEmcCrystals ;               //  number of EMC crystalls
+  AliPHOSGeometry * fGeom ;          //! PHOS geometry
+  static AliPHOSCalibData * fgCalibData ;   //! Calibration database if aval.
+
+  ClassDef(AliPHOSRawDigiProducer,2)
 };
 
 #endif
