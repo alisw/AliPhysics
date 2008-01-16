@@ -259,6 +259,23 @@ aliroot: alilibs $(BINPATH) $(ALLEXECS)
 
 ROOTALIBDIR=$(shell root-config --libdir)
 
+alimdc-rpm: alimdc-static RAW/alimdc.spec
+	$(MUTE)rm -rf alimdc-root
+	$(MUTE)mkdir -p alimdc-root/opt/alimdc/lib
+	$(MUTE)mkdir -p alimdc-root/opt/alimdc/include
+	$(MUTE)cp RAW/mdc.h alimdc-root/opt/alimdc/include
+	$(MUTE)cp $(LIBPATH)/libAliMDC.a \
+	$(ROOTALIBDIR)/libRoot.a \
+	$(ROOTALIBDIR)/libfreetype.a $(ROOTALIBDIR)/libpcre.a \
+	alimdc-root/opt/alimdc/lib
+	$(MUTE)rm -rf RPMS
+	$(MUTE)mkdir -p RPMS/i386
+	$(MUTE)rpmbuild --verbose --define "_topdir $(ALICE_ROOT)" --define "_tmppath $(ALICE_ROOT)" -bb RAW/alimdc.spec
+	$(MUTE)cp -p RPMS/i386/alimdc-*.rpm .
+	$(MUTE)rm -rf alimdc-root
+	$(MUTE)rm -rf RPMS
+	@echo "***** alimdc RPM created and put $(ALICE_ROOT) folder *****"
+
 alimdc-static: $(LIBPATH) $(BINPATH) $(RAWDatabaseALIB) $(MDCALIB) $(ESDALIB) $(STEERBaseALIB) $(alimdcCXXO)
 	 $(MUTE)rm -rf $(LIBPATH)/libAliMDC.a
 	 $(MUTE)rm -rf junk
