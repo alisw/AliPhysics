@@ -463,7 +463,7 @@ const char *AliRawDB::GetAliRootTag()
 
   TString version = fgkAliRootTag;
   version.Remove(TString::kBoth,'$');
-  version.ReplaceAll("LastChangedRevision","AliRoot version");
+  version.ReplaceAll("Rev","AliRoot version");
 
   return version.Data();
 }
