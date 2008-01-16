@@ -13,6 +13,17 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+// $Id$
+
+#include "AliMUONQADataMakerSim.h"
+#include "AliMUONHit.h"  
+#include "AliMUONDigit.h"  
+#include "AliMUONVHitStore.h"
+#include "AliMUONVDigitStore.h"
+
+// --- AliRoot header files ---
+#include "AliLog.h"
+#include "AliQAChecker.h"
 
 // --- ROOT system ---
 #include <TClonesArray.h>
@@ -20,13 +31,7 @@
 #include <TH1F.h> 
 #include <TH1I.h> 
 #include <TH2F.h> 
-#include <TLorentzVector.h>
-
-// --- AliRoot header files ---
-#include "AliLog.h"
-#include "AliQAChecker.h"
-
-#include "AliMUONQADataMakerSim.h"
+#include <TTree.h>
 
 //-----------------------------------------------------------------------------
 /// \class AliMUONQADataMakerSim
@@ -41,7 +46,9 @@ ClassImp(AliMUONQADataMakerSim)
            
 //____________________________________________________________________________ 
 AliMUONQADataMakerSim::AliMUONQADataMakerSim() : 
-    AliQADataMakerSim(AliQA::GetDetName(AliQA::kMUON), "MUON Quality Assurance Data Maker")
+    AliQADataMakerSim(AliQA::GetDetName(AliQA::kMUON), "MUON Quality Assurance Data Maker"),
+    fHitStore(0x0),
+    fDigitStore(0x0)   
 {
     /// ctor
 }
@@ -68,8 +75,108 @@ AliMUONQADataMakerSim& AliMUONQADataMakerSim::operator = (const AliMUONQADataMak
 AliMUONQADataMakerSim::~AliMUONQADataMakerSim()
 {
     /// dtor
+  delete fHitStore;
+  delete fDigitStore;
 }
 
+//__________________________________________________________________
+void AliMUONQADataMakerSim::InitHits() 
+{
+  /// Initialized hit spectra
+  TH1F* h0 = new TH1F("hHitDetElem", "DetElemId distribution in Hits", 1400, 100., 1500.); 
+  Add2HitsList(h0, 0);
+
+  TH1F* h1 = new TH1F("hHitPtot", "P distribution in Hits ", 300, 0., 300.); 
+  Add2HitsList(h1, 1);
+  return;
+} 
+
+//__________________________________________________________________
+void AliMUONQADataMakerSim::InitSDigits() 
+{
+  /// Initialized SDigits spectra
+  TH1I* h0 = new TH1I("hSDigitsDetElem", "Detection element distribution in SDigits",  1400, 100, 1500); 
+  Add2SDigitsList(h0, 0);
+
+  TH1F* h1 = new TH1F("hSDigitsCharge", "Charge distribution in SDigits", 4096, 0, 4095); 
+  Add2SDigitsList(h1, 1);
+
+}  
+
+//__________________________________________________________________
+void AliMUONQADataMakerSim::InitDigits() 
+{
+  /// Initialized Digits spectra 
+  TH1I* h0 = new TH1I("hDigitsDetElem", "Detection element distribution in Digits",  1400, 100, 1500); 
+  Add2DigitsList(h0, 0);
+
+  TH1I* h1 = new TH1I("hDigitsADC", "ADC distribution in Digits", 4096, 0, 4095); 
+  Add2DigitsList(h1, 1);  
+
+} 
+
+//__________________________________________________________________
+void AliMUONQADataMakerSim::MakeHits(TTree* hitsTree)        
+{
+  /// makes data from Hits
+  if (!fHitStore)
+    fHitStore = AliMUONVHitStore::Create(*hitsTree);
+  fHitStore->Connect(*hitsTree, false);
+  hitsTree->GetEvent(0);
+    
+  TIter next(fHitStore->CreateIterator());
+
+  AliMUONHit* hit = 0x0;
+
+  while ( ( hit = static_cast<AliMUONHit*>(next()) ) )
+  {
+    GetHitsData(0)->Fill(hit->DetElemId());
+    GetHitsData(1)->Fill(hit->Momentum());
+  }
+
+  
+}
+
+//__________________________________________________________________
+void AliMUONQADataMakerSim::MakeSDigits(TTree* sdigitsTree)        
+{
+  /// makes data from SDigits
+  if (!fDigitStore)
+    fDigitStore = AliMUONVDigitStore::Create(*sdigitsTree);
+  fDigitStore->Connect(*sdigitsTree, false);
+  sdigitsTree->GetEvent(0);
+    
+  TIter next(fDigitStore->CreateIterator());
+
+  AliMUONVDigit* dig = 0x0;
+
+  while ( ( dig = static_cast<AliMUONVDigit*>(next()) ) )
+  {
+    GetSDigitsData(0)->Fill(dig->DetElemId());
+    GetSDigitsData(1)->Fill(dig->Charge());
+  }
+} 
+
+//__________________________________________________________________
+void AliMUONQADataMakerSim::MakeDigits(TTree* digitsTree)         
+{
+   /// makes data from Digits
+  if (!fDigitStore)
+    fDigitStore = AliMUONVDigitStore::Create(*digitsTree);
+  fDigitStore->Connect(*digitsTree, false);
+  digitsTree->GetEvent(0);
+    
+  TIter next(fDigitStore->CreateIterator());
+
+  AliMUONVDigit* dig = 0x0;
+
+  while ( ( dig = static_cast<AliMUONVDigit*>(next()) ) )
+  {
+    GetDigitsData(0)->Fill(dig->DetElemId());
+    GetDigitsData(1)->Fill(dig->ADC());
+  }
+}
+      
 //____________________________________________________________________________ 
 void AliMUONQADataMakerSim::EndOfDetectorCycle(AliQA::TASKINDEX task, TObjArray* list)
 {
