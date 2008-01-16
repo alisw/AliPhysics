@@ -12,7 +12,7 @@
 Summary: AliMDC static libraries
 Name: alimdc
 Version: 4.09.Release
-Release: 1
+Release: 1.SLC4
 # Copyright: CERN Alice Off-line
 License: CERN Alice Off-line
 Vendor: ALICE Core Off-line Group
