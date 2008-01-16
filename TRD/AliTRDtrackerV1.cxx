@@ -882,8 +882,7 @@ Int_t AliTRDtrackerV1::SetTracklet(AliTRDseedV1 *tracklet)
 		fTracklets->SetOwner(kTRUE);
 	}
 	Int_t nentries = fTracklets->GetEntriesFast();
-	AliTRDseedV1 *t = new ((*fTracklets)[nentries]) AliTRDseedV1(*tracklet);
-	//AliInfo(Form("0x%x @ %d", t, nentries));
+	new ((*fTracklets)[nentries]) AliTRDseedV1(*tracklet);
 	return nentries;
 }
 
