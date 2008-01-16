@@ -583,23 +583,32 @@ void AliReconstruction::SetOption(const char* detector, const char* option)
 
 
 //_____________________________________________________________________________
-Bool_t AliReconstruction::Run(const char* input)
+Bool_t AliReconstruction::Run(const char* input, Bool_t IsOnline)
 {
 // run the reconstruction
 
   AliCodeTimerAuto("")
   
   // set the input
-  if (!input) input = fInput.Data();
-  TString fileName(input);
-  if (fileName.EndsWith("/")) {
-    fRawReader = new AliRawReaderFile(fileName);
-  } else if (fileName.EndsWith(".root")) {
-    fRawReader = new AliRawReaderRoot(fileName);
-  } else if (!fileName.IsNull()) {
-    fRawReader = new AliRawReaderDate(fileName);
-    fRawReader->SelectEvents(7);
+  if (!IsOnline) {
+    if (!input) input = fInput.Data();
+    TString fileName(input);
+    if (fileName.EndsWith("/")) {
+      fRawReader = new AliRawReaderFile(fileName);
+    } else if (fileName.EndsWith(".root")) {
+      fRawReader = new AliRawReaderRoot(fileName);
+    } else if (!fileName.IsNull()) {
+      fRawReader = new AliRawReaderDate(fileName);
+    }
   }
+  else {
+    if (!input) {
+      AliError("Null pointer to the event structure!");
+      return kFALSE;
+    }
+    fRawReader = new AliRawReaderDate((void *)input);
+  }
+
   if (!fEquipIdMap.IsNull() && fRawReader)
     fRawReader->LoadEquipmentIdsMap(fEquipIdMap);
 

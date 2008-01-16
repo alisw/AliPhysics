@@ -107,7 +107,7 @@ public:
                    {fAlignObjArray = array;
 		   fLoadAlignFromCDB = kFALSE;}
 
-  virtual Bool_t Run(const char* input = NULL);
+  virtual Bool_t Run(const char* input = NULL,Bool_t IsOnline = kFALSE);
 
   // AOD creation
   void ESDFile2AODFile(TFile* esdFile, TFile* aodFile);
