@@ -44,7 +44,7 @@
 
 #include "AliCFCutBase.h"
 
-class TH2;
+class TH2 ;
 class TBits;
 class AliESDtrack ;
 
@@ -120,38 +120,38 @@ class AliCFTrackQualityCuts : public AliCFCutBase
   Double_t fCovariance44Max ;		// max covariance matrix element 44
   Double_t fCovariance55Max ;		// max covariance matrix element 55
 
-  TH1F* fhCutStatistics;              // Histogram: statistics of what cuts the tracks did not survive
-  TH2F* fhCutCorrelation;             // Histogram: 2d statistics plot
+  TH1F* fhCutStatistics;		// Histogram: statistics of what cuts the tracks did not survive
+  TH2F* fhCutCorrelation;		// Histogram: 2d statistics plot
 
   TH1F* fhQA[kNHist][kNStepQA];		// QA Histograms
-  TBits *fBitmap ; 				// stores single selection decisions
+  TBits *fBitmap ; 			// stores single selection decisions
 
   // QA histogram setters
   Int_t fhNBinsClusterTPC;		// number of bins: cluster TPC
   Int_t fhNBinsClusterITS;		// number of bins: cluster ITS
   Int_t fhNBinsChi2TPC;			// number of bins: chi2 per cluster TPC
   Int_t fhNBinsChi2ITS;			// number of bins: chi2 per cluster ITS
-  Int_t fhNBinsRefitTPC;			// number of bins: require refit TPC
-  Int_t fhNBinsRefitITS;			// number of bins: require refit ITS  
+  Int_t fhNBinsRefitTPC;		// number of bins: require refit TPC
+  Int_t fhNBinsRefitITS;		// number of bins: require refit ITS  
   Int_t fhNBinsCovariance11;		// number of bins: covariance matrix element 11
   Int_t fhNBinsCovariance22;		// number of bins: covariance matrix element 22
   Int_t fhNBinsCovariance33;		// number of bins: covariance matrix element 33
   Int_t fhNBinsCovariance44;		// number of bins: covariance matrix element 44
   Int_t fhNBinsCovariance55;		// number of bins: covariance matrix element 55
-  
-  Double_t *fhBinLimClusterTPC;	// bin limits: cluster TPC
-  Double_t *fhBinLimClusterITS;	// bin limits: cluster ITS
-  Double_t *fhBinLimChi2TPC;	// bin limits: chi2 per cluster TPC
-  Double_t *fhBinLimChi2ITS;	// bin limits: chi2 per cluster ITS
-  Double_t *fhBinLimRefitTPC;	// bin limits: require refit TPC
-  Double_t *fhBinLimRefitITS;	// bin limits: require refit ITS
-  Double_t *fhBinLimCovariance11;	// bin limits: covariance matrix element 11
-  Double_t *fhBinLimCovariance22;	// bin limits: covariance matrix element 22
-  Double_t *fhBinLimCovariance33;	// bin limits: covariance matrix element 33
-  Double_t *fhBinLimCovariance44;	// bin limits: covariance matrix element 44
-  Double_t *fhBinLimCovariance55;	// bin limits: covariance matrix element 55
-  
-  ClassDef(AliCFTrackQualityCuts,1);
+
+  Double_t *fhBinLimClusterTPC;	//[fhNBinsClusterTPC] bin limits: cluster TPC
+  Double_t *fhBinLimClusterITS;	//[fhNBinsClusterITS] bin limits: cluster ITS
+  Double_t *fhBinLimChi2TPC;	//[fhNBinsChi2TPC] bin limits: chi2 per cluster TPC
+  Double_t *fhBinLimChi2ITS;	//[fhNBinsChi2ITS] bin limits: chi2 per cluster ITS
+  Double_t *fhBinLimRefitTPC;	//[fhNBinsRefitTPC] bin limits: require refit TPC
+  Double_t *fhBinLimRefitITS;	//[fhNBinsRefitITS] bin limits: require refit ITS
+  Double_t *fhBinLimCovariance11;//[fhNBinsCovariance11] bin limits: covariance matrix element 11
+  Double_t *fhBinLimCovariance22;//[fhNBinsCovariance22] bin limits: covariance matrix element 22
+  Double_t *fhBinLimCovariance33;//[fhNBinsCovariance33] bin limits: covariance matrix element 33
+  Double_t *fhBinLimCovariance44;//[fhNBinsCovariance44] bin limits: covariance matrix element 44
+  Double_t *fhBinLimCovariance55;//[fhNBinsCovariance55] bin limits: covariance matrix element 55
+
+  ClassDef(AliCFTrackQualityCuts,2);
 };
 
 #endif
