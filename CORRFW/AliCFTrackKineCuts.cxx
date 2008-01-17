@@ -46,8 +46,8 @@
 
 #include <TCanvas.h>
 #include <TDirectory.h>
-#include <TBits.h>
 #include <TH2.h>
+#include <TBits.h>
 
 #include <AliVParticle.h>
 #include <AliLog.h>
@@ -97,12 +97,10 @@ AliCFTrackKineCuts::AliCFTrackKineCuts() :
   fhBinLimRapidity(0x0),
   fhBinLimPhi(0x0),
   fhBinLimCharge(0x0)
-
 {
   //
   // Default constructor
   //
-  fBitmap=new TBits(0);
   Initialise();
 }
 //__________________________________________________________________________________
@@ -147,12 +145,10 @@ AliCFTrackKineCuts::AliCFTrackKineCuts(Char_t* name, Char_t* title) :
   fhBinLimRapidity(0x0),
   fhBinLimPhi(0x0),
   fhBinLimCharge(0x0)
-
 {
   //
   // Constructor
   //
-  fBitmap=new TBits(0);
   Initialise();
 }
 //__________________________________________________________________________________
@@ -197,7 +193,6 @@ AliCFTrackKineCuts::AliCFTrackKineCuts(const AliCFTrackKineCuts& c) :
   fhBinLimRapidity(c.fhBinLimRapidity),
   fhBinLimPhi(c.fhBinLimPhi),
   fhBinLimCharge(c.fhBinLimCharge)
-
 {
   //
   // copy constructor
@@ -251,13 +246,12 @@ AliCFTrackKineCuts& AliCFTrackKineCuts::operator=(const AliCFTrackKineCuts& c)
     fhBinLimRapidity = c.fhBinLimRapidity;
     fhBinLimPhi = c.fhBinLimPhi;
     fhBinLimCharge = c.fhBinLimCharge;
-    
+
     for (Int_t i=0; i<c.kNHist; i++){
       for (Int_t j=0; j<c.kNStepQA; j++){
 	if(c.fhQA[i][j]) fhQA[i][j] = (TH1F*)c.fhQA[i][j]->Clone();
       }
     }
-
     ((AliCFTrackKineCuts &) c).Copy(*this);
   }
   return *this ;
@@ -276,9 +270,7 @@ AliCFTrackKineCuts::~AliCFTrackKineCuts()
       if(fhQA[i][j]) delete fhQA[i][j];
     }
   }
-
-  if(fBitmap)	delete   fBitmap;
-
+  if(fBitmap) delete fBitmap;
   if(fhBinLimMomentum) delete fhBinLimMomentum;
   if(fhBinLimPt) delete fhBinLimPt;
   if(fhBinLimPx) delete fhBinLimPx;
@@ -334,8 +326,9 @@ void AliCFTrackKineCuts::Initialise()
 
   fhCutStatistics = 0;
   fhCutCorrelation = 0;
-    
-    //set default bining for QA histograms
+  fBitmap=new TBits(0);
+
+  //set default bining for QA histograms
   SetHistogramBins(kCutP,200,0.,20.);
   SetHistogramBins(kCutPt,200,0.,20.);
   SetHistogramBins(kCutPx,400,-20.,20.);
@@ -345,7 +338,6 @@ void AliCFTrackKineCuts::Initialise()
   SetHistogramBins(kCutEta,200,-10.,10.);
   SetHistogramBins(kCutPhi,38,-0.6,7.);
   SetHistogramBins(kCutCharge,21,-10.5,10.5);
-
 }
 //__________________________________________________________________________________
 void AliCFTrackKineCuts::Copy(TObject &c) const
@@ -365,7 +357,6 @@ void AliCFTrackKineCuts::Copy(TObject &c) const
       if(fhQA[i][j]) target.fhQA[i][j] = (TH1F*)fhQA[i][j]->Clone();
     }
   }
-
   TNamed::Copy(c);
 }
 //__________________________________________________________________________________
@@ -373,7 +364,8 @@ void AliCFTrackKineCuts::GetBitMap(TObject* obj, TBits *bitmap)  {
   //
   // retrieve the pointer to the bitmap
   //
-  bitmap = SelectionBitMap(obj);
+  TBits *bm = SelectionBitMap(obj);
+  *bitmap = *bm;
 }
 //__________________________________________________________________________________
 TBits* AliCFTrackKineCuts::SelectionBitMap(TObject* obj) {
@@ -384,10 +376,10 @@ TBits* AliCFTrackKineCuts::SelectionBitMap(TObject* obj) {
 
   // bitmap stores the decision of each single cut
   for(Int_t i=0; i<kNCuts; i++)fBitmap->SetBitNumber(i,kFALSE);
+
   // cast TObject into VParticle
   AliVParticle* particle = dynamic_cast<AliVParticle *>(obj);
   if ( !particle ) return fBitmap ;
-
 
   for(Int_t i=0; i<kNCuts; i++)fBitmap->SetBitNumber(i,kTRUE);
 
@@ -460,13 +452,13 @@ void AliCFTrackKineCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_t *bi
     fhBinLimMomentum=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimMomentum[i]=bins[i];
     break;
-    
+
   case kCutPt:
     fhNBinsPt=nbins;
     fhBinLimPt=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimPt[i]=bins[i];
     break;
-    
+
   case kCutPx:
     fhNBinsPx=nbins;
     fhBinLimPx=new Double_t[nbins+1];
@@ -478,31 +470,31 @@ void AliCFTrackKineCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_t *bi
     fhBinLimPy=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimPy[i]=bins[i];
     break;
-        
+
   case kCutPz:
     fhNBinsPz=nbins;
     fhBinLimPz=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimPz[i]=bins[i];
     break;
-    
+
   case kCutRapidity:
     fhNBinsRapidity=nbins;
     fhBinLimRapidity=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimRapidity[i]=bins[i];
     break;
-    
+
   case kCutEta:
     fhNBinsEta=nbins;
     fhBinLimEta=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimEta[i]=bins[i];
     break;
-    
+
   case kCutPhi:
     fhNBinsPhi=nbins;
     fhBinLimPhi=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimPhi[i]=bins[i];
     break;
-    
+
   case kCutCharge:
     fhNBinsCharge=nbins;
     fhBinLimCharge=new Double_t[nbins+1];
@@ -516,21 +508,19 @@ void AliCFTrackKineCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_t xmi
   //
   // fixed bin size
   //
-  if(!fIsQAOn) return;
-
   switch(index){
   case kCutP:
     fhNBinsMomentum=nbins;
     fhBinLimMomentum=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimMomentum[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
     break;
-    
+
   case kCutPt:
     fhNBinsPt=nbins;
     fhBinLimPt=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimPt[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
     break;
-    
+
   case kCutPx:
     fhNBinsPx=nbins;
     fhBinLimPx=new Double_t[nbins+1];
@@ -542,31 +532,31 @@ void AliCFTrackKineCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_t xmi
     fhBinLimPy=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimPy[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
     break;
-        
+
   case kCutPz:
     fhNBinsPz=nbins;
     fhBinLimPz=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimPz[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
     break;
-    
+
   case kCutRapidity:
     fhNBinsRapidity=nbins;
     fhBinLimRapidity=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimRapidity[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
     break;
-    
+
   case kCutEta:
     fhNBinsEta=nbins;
     fhBinLimEta=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimEta[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
     break;
-    
+
   case kCutPhi:
     fhNBinsPhi=nbins;
     fhBinLimPhi=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimPhi[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
     break;
-    
+
   case kCutCharge:
     fhNBinsCharge=nbins;
     fhBinLimCharge=new Double_t[nbins+1];
@@ -579,7 +569,6 @@ void AliCFTrackKineCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_t xmi
   //
   // histograms for cut variables, cut statistics and cut correlations
   //
-
   Int_t color = 2;
 
   // book cut statistics and cut correlation histograms
@@ -647,9 +636,7 @@ void AliCFTrackKineCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_t xmi
     fhQA[kCutPhi][i]	->SetXTitle("azimuth #phi (rad)");
     fhQA[kCutCharge][i]	->SetXTitle("charge");
   }
-
   for(Int_t i=0; i<kNHist; i++) fhQA[i][1]->SetLineColor(color);
-
 }
 //__________________________________________________________________________________
 void AliCFTrackKineCuts::FillHistograms(TObject* obj, Bool_t b)
@@ -725,7 +712,6 @@ void AliCFTrackKineCuts::SaveHistograms(const Char_t* dir) {
 
     gDirectory->cd("../");
   }
-
   gDirectory->cd("../");
 }
 //__________________________________________________________________________________
