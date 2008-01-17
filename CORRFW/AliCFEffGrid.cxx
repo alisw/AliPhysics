@@ -1,5 +1,18 @@
 /* $Id$ */
-
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
 //--------------------------------------------------------------------//
 //                                                                    //
 // AliCFEffGrid Class                                              //
@@ -17,6 +30,9 @@
 #include <TFile.h>
 #include <AliLog.h>
 #include "AliCFEffGrid.h"
+#include <TH1D.h>
+#include <TH2D.h>
+#include <TH3D.h>
 
 //____________________________________________________________________
 ClassImp(AliCFEffGrid)
@@ -34,7 +50,7 @@ AliCFEffGrid::AliCFEffGrid() :
 }
 
 //____________________________________________________________________
-AliCFEffGrid::AliCFEffGrid(const Char_t* name, const Char_t* title, const Int_t nVarIn, const Int_t * nBinIn, const Float_t *binLimitsIn) :  
+AliCFEffGrid::AliCFEffGrid(const Char_t* name, const Char_t* title, const Int_t nVarIn, const Int_t * nBinIn, const Double_t *binLimitsIn) :  
   AliCFGrid(name,title,nVarIn,nBinIn,binLimitsIn),
   fContainer(0x0),
   fSelNum(-1),
@@ -100,10 +116,11 @@ void AliCFEffGrid::CalculateEfficiency(Int_t istep1,Int_t istep2)
 
   fSelNum=istep1;
   fSelDen=istep2;
-  AliCFGrid *num=fContainer->GetGrid(fSelNum);
-  AliCFGrid *den=fContainer->GetGrid(fSelDen);
+  AliCFVGrid *num=fContainer->GetGrid(fSelNum);
+  AliCFVGrid *den=fContainer->GetGrid(fSelDen);
   num->SumW2();
   den->SumW2();
+  this->SumW2();
   this->Divide(num,den,1.,1.,"B");
 
   Int_t nEmptyBinsNum=0;
@@ -111,7 +128,7 @@ void AliCFEffGrid::CalculateEfficiency(Int_t istep1,Int_t istep2)
   for(Int_t iel=0;iel<fNDim;iel++){
     if(den->GetElement(iel)>0){
       if(num->GetElement(iel)==0)nEmptyBinsNum++; //num==0,den!=0
-      }
+    }
     else{
       nEmptyBinsNumAndDen++;
     }
@@ -121,15 +138,15 @@ void AliCFEffGrid::CalculateEfficiency(Int_t istep1,Int_t istep2)
   AliInfo(Form("The correction map contains %i empty bins ",nEmptyBinsNum+nEmptyBinsNumAndDen));
 } 
 //_____________________________________________________________________
-Float_t AliCFEffGrid::GetAverage() const 
+Double_t AliCFEffGrid::GetAverage() const 
 {
   //
   // Get the average efficiency 
   //
 
-  Float_t val=0;
-  Float_t valnum=0;
-  Float_t valden=0;
+  Double_t val=0;
+  Double_t valnum=0;
+  Double_t valden=0;
   for(Int_t i=0;i<fNDim;i++){
     valnum+=fContainer->GetGrid(fSelNum)->GetElement(i);
     valden+=fContainer->GetGrid(fSelDen)->GetElement(i);
@@ -140,14 +157,14 @@ Float_t AliCFEffGrid::GetAverage() const
   return val;
 } 
 //_____________________________________________________________________
-Float_t AliCFEffGrid::GetAverage(Float_t *varMin, Float_t* varMax ) const 
+Double_t AliCFEffGrid::GetAverage(Double_t *varMin, Double_t* varMax ) const 
 {
   //
   // Get ave efficiency in a range
   //
 
 
-  Float_t val=0;
+  Double_t val=0;
   Int_t *indexMin = new Int_t[fNVar];
   Int_t *indexMax = new Int_t[fNVar];
   Int_t *index    = new Int_t[fNVar];
@@ -155,8 +172,8 @@ Float_t AliCFEffGrid::GetAverage(Float_t *varMin, Float_t* varMax ) const
   //Find out the min and max bins
   
   for(Int_t i=0;i<fNVar;i++){
-    Float_t xmin=varMin[i]; // the min values  
-    Float_t xmax=varMax[i]; // the max values  
+    Double_t xmin=varMin[i]; // the min values  
+    Double_t xmax=varMax[i]; // the max values  
     Int_t nbins=fNVarBins[i]+1;
     Float_t *bins=new Float_t[nbins];
     for(Int_t ibin =0;ibin<nbins;ibin++){
@@ -170,8 +187,8 @@ Float_t AliCFEffGrid::GetAverage(Float_t *varMin, Float_t* varMax ) const
     delete [] bins;
   }
   
-  Float_t valnum=0;
-  Float_t valden=0;
+  Double_t valnum=0;
+  Double_t valden=0;
   for(Int_t i=0;i<fNDim;i++){
     for (Int_t j=0;j<fNVar;j++)index[j]=GetBinIndex(j,i);
     Bool_t isIn=kTRUE;
@@ -205,13 +222,13 @@ void AliCFEffGrid::Copy(TObject& eff) const
     target.fContainer=fContainer;
 }
 //___________________________________________________________________
-TH1F *AliCFEffGrid::Project(Int_t ivar) const
+TH1D *AliCFEffGrid::Project(Int_t ivar) const
 {
   //
   // Make a 1D projection along variable ivar 
   //
  
-  TH1F *proj1D=0;
+  TH1D *proj1D=0;
   Int_t nbins =fNVarBins[ivar];
   Float_t *bins = new Float_t[nbins+1];    
   for(Int_t ibin =0;ibin<nbins+1;ibin++){
@@ -224,22 +241,23 @@ TH1F *AliCFEffGrid::Project(Int_t ivar) const
   sprintf(htitle,"%s%s%i%i%s%i",GetName(),"_SelStep",fSelNum,fSelDen,"_proj1D_var", ivar);
   
   if(!proj1D){
-    proj1D =new TH1F(pname,htitle, nbins, bins);
+    proj1D =new TH1D(pname,htitle, nbins, bins);
   }  
   
+  proj1D->Sumw2();
   proj1D->Divide(fContainer->GetGrid(fSelNum)->Project(ivar),fContainer->GetGrid(fSelDen)->Project(ivar),1.,1.,"B");
   
   delete [] bins; 
   return proj1D;
 } 
 //___________________________________________________________________
-TH2F *AliCFEffGrid::Project(Int_t ivar1,Int_t ivar2) const
+TH2D *AliCFEffGrid::Project(Int_t ivar1,Int_t ivar2) const
 {
   //
   // Make a 2D projection along variable ivar1,ivar2 
   //
  
-  TH2F *proj2D=0;
+  TH2D *proj2D=0;
 
   Int_t nbins1 =fNVarBins[ivar1];
   Float_t *bins1 = new Float_t[nbins1+1];    
@@ -258,9 +276,10 @@ TH2F *AliCFEffGrid::Project(Int_t ivar1,Int_t ivar2) const
   sprintf(htitle,"%s%s%i%i%s%i%i",GetName(),"_SelStep",fSelNum,fSelDen,"_proj2D_var",ivar1,ivar2);
   
   if(!proj2D){
-    proj2D =new TH2F(pname,htitle, nbins1,bins1,nbins2,bins2);
+    proj2D =new TH2D(pname,htitle, nbins1,bins1,nbins2,bins2);
   }  
   
+  proj2D->Sumw2();
   proj2D->Divide(fContainer->GetGrid(fSelNum)->Project(ivar1,ivar2),fContainer->GetGrid(fSelDen)->Project(ivar1,ivar2),1.,1.,"B");
   
   delete [] bins1;
@@ -268,13 +287,13 @@ TH2F *AliCFEffGrid::Project(Int_t ivar1,Int_t ivar2) const
   return proj2D;
 } 
 //___________________________________________________________________
-TH3F *AliCFEffGrid::Project(Int_t ivar1, Int_t ivar2, Int_t ivar3) const
+TH3D *AliCFEffGrid::Project(Int_t ivar1, Int_t ivar2, Int_t ivar3) const
 {
   //
   // Make a 3D projection along variable ivar1,ivar2,ivar3 
   //
 
-  TH3F *proj3D=0;
+  TH3D *proj3D=0;
 
   Int_t nbins1 =fNVarBins[ivar1];
   Int_t nbins2 =fNVarBins[ivar2];
@@ -301,9 +320,10 @@ TH3F *AliCFEffGrid::Project(Int_t ivar1, Int_t ivar2, Int_t ivar3) const
    
   
   if(!proj3D){
-    proj3D =new TH3F(pname,htitle, nbins1, bins1,nbins2,bins2,nbins3,bins3);
+    proj3D =new TH3D(pname,htitle, nbins1, bins1,nbins2,bins2,nbins3,bins3);
   }  
   
+  proj3D->Sumw2();
   proj3D->Divide(fContainer->GetGrid(fSelNum)->Project(ivar1,ivar2,ivar3),fContainer->GetGrid(fSelDen)->Project(ivar1,ivar2,ivar3),1.,1.,"B");
   
   delete [] bins1;

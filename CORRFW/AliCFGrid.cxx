@@ -1,33 +1,46 @@
 /* $Id$ */
-
-//--------------------------------------------------------------------//
-//                                                                    //
-// AliCFGrid Class                                                 //
-// Class to accumulate data on an N-dimensional grid, to be used      //
-// as input to get corrections for Reconstruction & Trigger efficiency// 
-//                                                                    //
-// -- Author : S.Arcelli                                              //
-// Still to be done:                                                  //
-// --Implement methods to merge cells                                 //
-// --Interpolate among bins in a range                                // 
-//--------------------------------------------------------------------//
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+//---------------------------------------------------------------------//
+//                                                                     //
+// AliCFGrid Class                                                     //
+// Class to accumulate data on an N-dimensional grid, to be used       //
+// as input to get corrections for Reconstruction & Trigger efficiency // 
+// The class uses a one-dimensional array of floats to store the grid  //     
+// --Author : S.Arcelli                                                //
+//   Still to be done:                                                 //
+// --Implement methods to merge cells                                  //
+// --Interpolate among bins in a range                                 // 
+// This implementation will be aventually replaced  byAliCFGridSparse  //
+//---------------------------------------------------------------------//
 //
 //
 #include <AliLog.h>
 #include "AliCFGrid.h"
 #include "TMath.h"
 #include "TROOT.h"
-#include "TH1F.h"
-#include "TH2F.h"
-#include "TH3F.h"
+#include "TH1D.h"
+#include "TH2D.h"
+#include "TH3D.h"
 
 //____________________________________________________________________
 ClassImp(AliCFGrid)
 
 //____________________________________________________________________
 AliCFGrid::AliCFGrid() : 
-  AliCFFrame(),
-  fSumW2(kFALSE),
+  AliCFVGrid(),
   fNunflTot(0),
   fNovflTot(0),
   fNentriesTot(0),
@@ -40,8 +53,7 @@ AliCFGrid::AliCFGrid() :
 }
 //____________________________________________________________________
 AliCFGrid::AliCFGrid(const Char_t* name, const Char_t* title) : 
-  AliCFFrame(name,title),
-  fSumW2(kFALSE),
+  AliCFVGrid(name,title),
   fNunflTot(0),
   fNovflTot(0),
   fNentriesTot(0),
@@ -54,9 +66,8 @@ AliCFGrid::AliCFGrid(const Char_t* name, const Char_t* title) :
 }
 
 //____________________________________________________________________
-AliCFGrid::AliCFGrid(const Char_t* name, const Char_t* title, const Int_t nVarIn, const Int_t * nBinIn, const Float_t *binLimitsIn) :  
-  AliCFFrame(name,title,nVarIn,nBinIn,binLimitsIn),
-  fSumW2(kFALSE),
+AliCFGrid::AliCFGrid(const Char_t* name, const Char_t* title, const Int_t nVarIn, const Int_t * nBinIn, const Double_t *binLimitsIn) :  
+  AliCFVGrid(name,title,nVarIn,nBinIn,binLimitsIn),
   fNunflTot(0),
   fNovflTot(0),
   fNentriesTot(0),
@@ -68,11 +79,20 @@ AliCFGrid::AliCFGrid(const Char_t* name, const Char_t* title, const Int_t nVarIn
   //
   // main constructor
   //
-
-
-  //The underflows
+ 
+  //The over/underflows
   fNunfl=new Float_t[fNVar];
   fNovfl= new Float_t[fNVar];
+
+
+  //Initialization
+  fNunflTot =0;
+  fNovflTot =0;
+  fNentriesTot =0;
+  for(Int_t j=0;j<fNVar;j++){
+    fNunfl[j] =0;
+    fNovfl[j] =0;
+  }
 
 
   // the grid
@@ -81,21 +101,11 @@ AliCFGrid::AliCFGrid(const Char_t* name, const Char_t* title, const Int_t nVarIn
 
   //Initialization
  
-  for(Int_t i = 0;i<fNDim;i++)fData[i]=0;
-
-  fNunflTot =0;
-  fNovflTot =0;
-  fNentriesTot =0;
-  for(Int_t j=0;j<fNVar;j++){
-    fNunfl[j] =0;
-    fNovfl[j] =0;
-  }
 }
 
 //____________________________________________________________________
 AliCFGrid::AliCFGrid(const AliCFGrid& c) : 
-  AliCFFrame(),
-  fSumW2(kFALSE),
+  AliCFVGrid(c),
   fNunflTot(0),
   fNovflTot(0),
   fNentriesTot(0),
@@ -116,13 +126,12 @@ AliCFGrid::~AliCFGrid()
   //
   // destructor
   //
-  delete fData;
+  if(fNunfl)delete fNunfl;
+  if(fNovfl)delete fNovfl;
+  if(fData)delete fData;
   if(fSumW2)delete fErr2;
-  delete fNunfl;
-  delete fNovfl;
 
 }
-
 //____________________________________________________________________
 AliCFGrid &AliCFGrid::operator=(const AliCFGrid &c)
 {
@@ -151,11 +160,13 @@ Float_t AliCFGrid::GetElement(Int_t *bin) const
  //
   // Get the content in a bin corresponding to a set of bin indexes
   //
-    Int_t ind =GetBinIndex(bin);
-    return GetElement(ind);
+  //-1 is to move from TH/ThnSparse N-dim bin convention to one in AliCFFrame
+  for(Int_t i=0;i<fNVar; i++)fIndex[i]=bin[i]-1;
+  Int_t ind =GetBinIndex(fIndex);
+  return GetElement(ind);
 }  
 //____________________________________________________________________
-Float_t AliCFGrid::GetElement(Float_t *var) const
+Float_t AliCFGrid::GetElement(Double_t *var) const
 {
   //
   // Get the content in a bin corresponding to a set of input variables
@@ -185,6 +196,10 @@ Float_t AliCFGrid::GetElement(Float_t *var) const
     delete [] bins;
   }
 
+
+  //move to the TH/THnSparse convention in N-dim bin numbering 
+  for(Int_t i=0;i<fNVar; i++)fIndex[i]+=1;
+
   if(!(ovfl==1 || unfl==1)){
     return GetElement(fIndex);
   }
@@ -197,30 +212,32 @@ Float_t AliCFGrid::GetElement(Float_t *var) const
 Float_t AliCFGrid::GetElementError(Int_t iel) const
 {
   //
-  // Return the squared error on grid element iel
+  // Return the error on grid element iel
   //
   if(iel>=fNDim){
     AliInfo(Form(" element index outside the grid, return -1"));
     return -1.;
   }
-  if(fSumW2)return fErr2[iel];
-  return fData[iel];
+  if(fSumW2)return TMath::Sqrt(fErr2[iel]);
+  return TMath::Sqrt(fData[iel]);
 }
 //____________________________________________________________________
 Float_t AliCFGrid::GetElementError(Int_t *bin) const
 {
   //
-  // Get the squared error in a bin corresponding to a set of bin indeces
+  // Get the error in a bin corresponding to a set of bin indeces
   //
-    Int_t ind =GetBinIndex(bin);
-    return GetElementError(ind);
+  //-1 is to move from TH/ThnSparse N-dim bin convention to one in AliCFFrame
+  for(Int_t i=0;i<fNVar; i++)fIndex[i]=bin[i]-1;
+  Int_t ind =GetBinIndex(fIndex);
+  return GetElementError(ind);
 
 }
 //____________________________________________________________________
-Float_t AliCFGrid::GetElementError(Float_t *var) const
+Float_t AliCFGrid::GetElementError(Double_t *var) const
 {
   //
-  // Get the squared error in a bin corresponding to a set of input variables
+  // Get the error in a bin corresponding to a set of input variables
   //
   Int_t unfl=0;  
   Int_t ovfl=0;  
@@ -246,6 +263,8 @@ Float_t AliCFGrid::GetElementError(Float_t *var) const
     delete [] bins;
   }
 
+  //move to the TH/THnSparse convention in N-dim bin numbering 
+  for(Int_t i=0;i<fNVar; i++)fIndex[i]+=1;
   if(!(ovfl==1 || unfl==1)){
     return GetElementError(fIndex);
   }
@@ -272,11 +291,13 @@ void AliCFGrid::SetElement(Int_t *bin, Float_t val)
   //
   // Sets grid element of bin indeces bin to val
   //
-    Int_t ind =GetBinIndex(bin);
-    SetElement(ind,val);
+  //-1 is to move from TH/ThnSparse N-dim bin convention to one in AliCFFrame
+  for(Int_t i=0;i<fNVar; i++)fIndex[i]=bin[i]-1;
+  Int_t ind =GetBinIndex(fIndex);
+  SetElement(ind,val);
 }
 //____________________________________________________________________
-void AliCFGrid::SetElement(Float_t *var, Float_t val) 
+void AliCFGrid::SetElement(Double_t *var, Float_t val) 
 {
   //
   // Set the content in a bin to value val corresponding to a set of input variables
@@ -305,6 +326,8 @@ void AliCFGrid::SetElement(Float_t *var, Float_t val)
     delete [] bins;
   }
 
+  //move to the TH/THnSparse convention in N-dim bin numbering 
+  for(Int_t i=0;i<fNVar; i++)fIndex[i]+=1;
   if(!(ovfl==1 || unfl==1)){
     SetElement(fIndex,val);
   }
@@ -316,14 +339,14 @@ void AliCFGrid::SetElement(Float_t *var, Float_t val)
 void AliCFGrid::SetElementError(Int_t iel, Float_t val) 
 {
   //
-  // Set squared error to val on grid element iel
+  // Set squared error on grid element iel to val*val
   //
   if(iel>=fNDim){
     AliInfo(Form(" element index outside the grid, no value set"));
     return;
   }
   if(!fErr2)SumW2();
-  fErr2[iel]=val;   
+  fErr2[iel]=val*val;   
 }
 //____________________________________________________________________
 void AliCFGrid::SetElementError(Int_t *bin, Float_t val) 
@@ -331,11 +354,13 @@ void AliCFGrid::SetElementError(Int_t *bin, Float_t val)
   //
   // Set squared error to val on grid element of bin indeces bin
   //
-    Int_t ind =GetBinIndex(bin);
-    SetElementError(ind,val);
+  //-1 is to move from TH/ThnSparse N-dim bin convention to one in AliCFFrame
+  for(Int_t i=0;i<fNVar; i++)fIndex[i]=bin[i]-1;
+  Int_t ind =GetBinIndex(fIndex);
+  SetElementError(ind,val);
 }
 //____________________________________________________________________
-void AliCFGrid::SetElementError(Float_t *var, Float_t val)
+void AliCFGrid::SetElementError(Double_t *var, Float_t val)
 {
   //
   // Set squared error to val in a bin corresponding to a set of input variables
@@ -364,6 +389,9 @@ void AliCFGrid::SetElementError(Float_t *var, Float_t val)
     delete [] bins;
   }
 
+  //move to the TH/THnSparse convention in N-dim bin numbering 
+  for(Int_t i=0;i<fNVar; i++)fIndex[i]+=1;
+
   if(!(ovfl==1 || unfl==1)){
     SetElementError(fIndex,val);
   }
@@ -372,86 +400,7 @@ void AliCFGrid::SetElementError(Float_t *var, Float_t val)
   }
 } 
 //____________________________________________________________________
-void AliCFGrid::Scale(Int_t iel, Float_t *fact)
-{
-  //
-  //scale content of a certain cell by (positive) fact (with error)
-  //
-  if(iel>=fNDim){
-    AliInfo(Form(" element index outside the grid, no scaling"));
-    return;
-  }
-  Float_t el,del,elsc,delsc;  
-  if(GetElement(iel)>0 && fact[0]>0){
-    el=GetElement(iel);
-    del=TMath::Sqrt(GetElementError(iel));
-    elsc=el*fact[0];
-    delsc=TMath::Sqrt(del*del/el/el
-		    +fact[1]*fact[1]/fact[0]/fact[0])
-      *elsc;
-    SetElement(iel,elsc);
-    if(fSumW2)SetElementError(iel,delsc*elsc);
-  }
-}
-//____________________________________________________________________
-void AliCFGrid::Scale(Int_t *bin, Float_t *fact)
-{
-  //
-  //scale content of a certain cell by (positive) fact (with error)
-  //
-  Int_t iel=GetBinIndex(bin);
-  Scale(iel,fact);
-}
-//____________________________________________________________________
-void AliCFGrid::Scale(Float_t *var, Float_t *fact) 
-{
-  //
-  //scale content of a certain cell by (positive) fact (with error)
-  //
-  Int_t unfl=0;  
-  Int_t ovfl=0;  
-  for(Int_t i=0;i<fNVar;i++){
-    Int_t nbins=fNVarBins[i]+1;
-    Float_t *bins=new Float_t[nbins];
-    for(Int_t ibin =0;ibin<nbins;ibin++){
-     bins[ibin] = fVarBinLimits[ibin+fOffset[i]];
-    }
-
-    fIndex[i] = TMath::BinarySearch(nbins,bins,var[i]);
-    //underflows
-
-    if(var[i] < bins[0]){
-      unfl=1;
-    }
-
-    //overflows
-
-    if(var[i] > bins[nbins-1]){
-      ovfl=1;
-    }
-    delete [] bins;
-  }
-
-  if(!(ovfl==1 || unfl==1)){
-    Int_t iel=GetBinIndex(fIndex);
-    Scale(iel,fact);
-  }
-  else{
-    AliInfo(Form(" input variables outside the grid, no scaling done"));
-  }
-}
-//____________________________________________________________________
-void AliCFGrid::Scale( Float_t *fact) 
-{
-  //
-  //scale contents of the whole grid by fact
-  //
-  for(Int_t iel=0;iel<fNDim;iel++){
-    Scale(iel,fact);
-  }
-}
-//____________________________________________________________________
-void AliCFGrid::Fill(Float_t *var, Float_t weight)
+void AliCFGrid::Fill(Double_t *var, Double_t weight)
 {
 
   //
@@ -460,8 +409,17 @@ void AliCFGrid::Fill(Float_t *var, Float_t weight)
   // with weight (by default w=1)
   //
 
-  Int_t unfl=0;  
-  Int_t ovfl=0;  
+
+  Int_t isunfl=0;  
+  Int_t isovfl=0;  
+  Int_t *unfl=new Int_t[fNVar];  
+  Int_t *ovfl=new Int_t[fNVar];  
+
+  for(Int_t i=0;i<fNVar;i++){
+    unfl[i]=0;
+    ovfl[i]=0;
+  }
+
   for(Int_t i=0;i<fNVar;i++){
     Int_t nbins=fNVarBins[i]+1;
     Float_t *bins=new Float_t[nbins];
@@ -473,27 +431,43 @@ void AliCFGrid::Fill(Float_t *var, Float_t weight)
     //underflows
 
     if(var[i] < bins[0]){
-      unfl=1;
-      fNunfl[i]++;
+      unfl[i]=1;  
+      isunfl=1;
     }
 
     //overflows
 
     if(var[i] > bins[nbins-1]){
-      ovfl=1;
-      fNovfl[i]++;
+      ovfl[i]=1;  
+      isovfl=1;
     }
     delete [] bins;
   }
 
+  //exclusive under/overflows
+
+  for(Int_t i=0;i<fNVar;i++){
+    Bool_t add=kTRUE;
+    for(Int_t j=0;j<fNVar;j++){
+      if(i==j)continue;
+      if(!(unfl[j]==0 && ovfl[j]==0))add=kFALSE;
+    }
+    if(add && unfl[i]==1)fNunfl[i]++;
+    if(add && ovfl[i]==1)fNovfl[i]++;
+  }
+
+  delete [] unfl;
+  delete [] ovfl;
+
   // Total number of entries, overflows and underflows
 
   fNentriesTot++;
-  if(unfl)fNunflTot++;
-  if(ovfl)fNovflTot++;
+  if(isunfl)fNunflTot++;
+  if(isovfl)fNovflTot++;
 
   //if not ovfl/unfl, fill the element  
-  if(!(ovfl==1 || unfl==1)){
+
+  if(!(isovfl==1 || isunfl==1)){
     Int_t ind =GetBinIndex(fIndex);
     fData[ind]+=weight;
     if(fSumW2)fErr2[ind]+=(weight*weight);
@@ -534,138 +508,8 @@ Float_t AliCFGrid::GetEntries( ) const {
   //
   return fNentriesTot;
 } 
-//____________________________________________________________________
-Int_t AliCFGrid::GetEmptyBins() const {
-  //
-  // Get empty bins 
-  //
-  Int_t val=0;
-  for(Int_t i=0;i<fNDim;i++){
-    if(fData[i]<=0)val++;     
-  }
-  return val;
-} 
-//_____________________________________________________________________
-Int_t AliCFGrid::GetEmptyBins( Float_t *varMin, Float_t* varMax ) const 
-{
-  //
-  // Get empty bins in a range
-  //
-
-  Int_t *indexMin=new Int_t[fNVar];
-  Int_t *indexMax=new Int_t[fNVar];
-
-  //Find out the min and max bins
-
-  for(Int_t i=0;i<fNVar;i++){
-    Float_t xmin=varMin[i]; // the min values  
-    Float_t xmax=varMax[i]; // the min values  
-    Int_t nbins=fNVarBins[i]+1;
-    Float_t *bins=new Float_t[nbins];
-    for(Int_t ibin =0;ibin<nbins;ibin++){
-     bins[ibin] = fVarBinLimits[ibin+fOffset[i]];
-    }
-    indexMin[i] = TMath::BinarySearch(nbins,bins,xmin);
-    indexMax[i] = TMath::BinarySearch(nbins,bins,xmax);
-    if(xmax>=bins[nbins-1]){
-      indexMax[i]=indexMax[i]-1;
-    }  
-    delete [] bins;
-  }
-
-  Int_t val=0;
-  for(Int_t i=0;i<fNDim;i++){
-    for (Int_t j=0;j<fNVar;j++)fIndex[j]=GetBinIndex(j,i);
-    Bool_t isIn=kTRUE;
-    for (Int_t j=0;j<fNVar;j++){
-      if(!(fIndex[j]>=indexMin[j] && fIndex[j]<=indexMax[j]))isIn=kFALSE;   
-    }
-    if(isIn && fData[i]<=0)val++;     
-  }
-  AliInfo(Form(" the empty bins = %i ",val)); 
-
-  delete [] indexMin;
-  delete [] indexMax;
-  return val;
-} 
-//____________________________________________________________________
-Int_t AliCFGrid::CheckEfficiencyStats(Float_t thr) const
-{
-  //
-  // Count the cells below a certain threshold
-  //
-  Int_t ncellsLow=0;
-  for(Int_t i=0;i<fNDim;i++){
-    if(GetElement(i)<thr)ncellsLow++;
-  }
-  return ncellsLow;
-}
-//_____________________________________________________________________
-Float_t AliCFGrid::GetIntegral() const 
-{
-  //
-  // Get full Integral
-  //
-  Float_t val=0;
-  for(Int_t i=0;i<fNDim;i++){
-    val+=fData[i];     
-  }
-  return val;  
-} 
-//_____________________________________________________________________
-Float_t AliCFGrid::GetIntegral(Int_t *binMin, Int_t* binMax ) const 
-{
-  //
-  // Get Integral in a range of bin indeces (extremes included)
-  //
-
-  Float_t val=0;
-  for(Int_t i=0;i<fNVar;i++){
-    if((binMin[i]<0) || (binMax[i]>=fNVarBins[i]) || (binMin[i]>binMax[i])){
-      AliInfo(Form(" Bin indeces in variable %i outside allowed range or in reverse order, please check!", i));
-      return val;
-    }
-  }
-  val=GetSum(0,binMin,binMax);
-  return val;
-} 
-//_____________________________________________________________________
-Float_t AliCFGrid::GetIntegral(Float_t *varMin, Float_t* varMax ) const 
-{
-  //
-  // Get Integral in a range (extremes included)
-  //
-
-  Int_t *indexMin=new Int_t[fNVar];
-  Int_t *indexMax=new Int_t[fNVar];
-
-  //Find out the min and max bins
-
-  for(Int_t i=0;i<fNVar;i++){
-    Float_t xmin=varMin[i]; // the min values  
-    Float_t xmax=varMax[i]; // the min values  
-    Int_t nbins=fNVarBins[i]+1;
-    Float_t *bins=new Float_t[nbins];
-    for(Int_t ibin =0;ibin<nbins;ibin++){
-     bins[ibin] = fVarBinLimits[ibin+fOffset[i]];
-    }
-    indexMin[i] = TMath::BinarySearch(nbins,bins,xmin);
-    indexMax[i] = TMath::BinarySearch(nbins,bins,xmax);
-    if(xmax>=bins[nbins-1]){
-      indexMax[i]=indexMax[i]-1;
-    }  
-    delete [] bins;
-  }
-
-  Float_t val=GetIntegral(indexMin,indexMax);
-
-  delete [] indexMin;
-  delete [] indexMax;
-
-  return val;
-} 
 //___________________________________________________________________
-TH1F *AliCFGrid::Project(Int_t ivar) const
+TH1D *AliCFGrid::Project(Int_t ivar) const
 {
   //
   // Make a 1D projection along variable ivar 
@@ -684,17 +528,17 @@ TH1F *AliCFGrid::Project(Int_t ivar) const
   char htitle[40];
   sprintf(htitle,"%s%s_%i",GetName(),"_proj1D_var", ivar);
 
-  TH1F *proj1D=0;
+  TH1D *proj1D=0;
 
   //check if a projection with identical name exist
   TObject *obj = gROOT->FindObject(pname);
-  if (obj && obj->InheritsFrom("TH1F")) {
-    proj1D = (TH1F*)obj;
+  if (obj && obj->InheritsFrom("TH1D")) {
+    proj1D = (TH1D*)obj;
     proj1D->Reset();
   }
 
   if(!proj1D){
-    proj1D =new TH1F(pname,htitle, nbins, bins);
+    proj1D =new TH1D(pname,htitle, nbins, bins);
   }  
 
   delete [] bins;
@@ -720,12 +564,12 @@ TH1F *AliCFGrid::Project(Int_t ivar) const
   delete [] err;
   proj1D->SetBinContent(nbins+1,GetOverFlows(ivar));
   proj1D->SetBinContent(0,GetUnderFlows(ivar));
-  proj1D->SetEntries(GetEntries());
+  proj1D->SetEntries(sum+GetUnderFlows(ivar)+GetOverFlows(ivar));
   return proj1D;
 } 
 
 //___________________________________________________________________
-TH2F *AliCFGrid::Project(Int_t ivar1, Int_t ivar2) const
+TH2D *AliCFGrid::Project(Int_t ivar1, Int_t ivar2) const
 {
   //
   // Make a 2D projection along variable ivar 
@@ -748,17 +592,17 @@ TH2F *AliCFGrid::Project(Int_t ivar1, Int_t ivar2) const
   char htitle[40];
   sprintf(htitle,"%s%s_%i_%i",GetName(),"_proj2D_var",ivar1,ivar2);
 
-  TH2F *proj2D=0;
+  TH2D *proj2D=0;
 
   //check if a projection with identical name exist
   TObject *obj = gROOT->FindObject(pname);
-  if (obj && obj->InheritsFrom("TH2F")) {
-    proj2D = (TH2F*)obj;
+  if (obj && obj->InheritsFrom("TH2D")) {
+    proj2D = (TH2D*)obj;
     proj2D->Reset();
   }
 
   if(!proj2D){
-    proj2D =new TH2F(pname,htitle, nbins1, bins1,nbins2,bins2);
+    proj2D =new TH2D(pname,htitle, nbins1, bins1,nbins2,bins2);
   }  
 
   delete [] bins1;
@@ -802,11 +646,11 @@ TH2F *AliCFGrid::Project(Int_t ivar1, Int_t ivar2) const
   proj2D->SetBinContent(nbins1+1,nbins2/2,GetOverFlows(ivar1));
   proj2D->SetBinContent(nbins1/2,0,GetUnderFlows(ivar2));
   proj2D->SetBinContent(nbins1/2,nbins2+1,GetOverFlows(ivar2));
-  proj2D->SetEntries(GetEntries());
+  proj2D->SetEntries(sum+GetUnderFlows(ivar1)+GetOverFlows(ivar1)+GetUnderFlows(ivar2)+GetOverFlows(ivar2));
   return proj2D;
 } 
 //___________________________________________________________________
-TH3F *AliCFGrid::Project(Int_t ivar1, Int_t ivar2, Int_t ivar3) const
+TH3D *AliCFGrid::Project(Int_t ivar1, Int_t ivar2, Int_t ivar3) const
 {
   //
   // Make a 3D projection along variable ivar 
@@ -834,17 +678,17 @@ TH3F *AliCFGrid::Project(Int_t ivar1, Int_t ivar2, Int_t ivar3) const
   char htitle[40];
   sprintf(htitle,"%s%s_%i_%i_%i",GetName(),"_proj3D_var",ivar1,ivar2,ivar3);
 
-  TH3F *proj3D=0;
+  TH3D *proj3D=0;
 
   //check if a projection with identical name exist
   TObject *obj = gROOT->FindObject(pname);
-  if (obj && obj->InheritsFrom("TH3F")) {
-    proj3D = (TH3F*)obj;
+  if (obj && obj->InheritsFrom("TH3D")) {
+    proj3D = (TH3D*)obj;
     proj3D->Reset();
   }
 
   if(!proj3D){
-    proj3D =new TH3F(pname,htitle, nbins1,bins1,nbins2,bins2,nbins3,bins3);
+    proj3D =new TH3D(pname,htitle, nbins1,bins1,nbins2,bins2,nbins3,bins3);
   }  
 
   delete [] bins1;
@@ -898,12 +742,12 @@ TH3F *AliCFGrid::Project(Int_t ivar1, Int_t ivar2, Int_t ivar3) const
   delete err;
   delete err2;
   delete err3;
-  proj3D->SetEntries(GetEntries());
+  proj3D->SetEntries(sum+GetUnderFlows(ivar1)+GetOverFlows(ivar1)+GetUnderFlows(ivar2)+GetOverFlows(ivar2)+GetUnderFlows(ivar3)+GetOverFlows(ivar3));
   return proj3D;
 } 
 
 //___________________________________________________________________
-TH1F *AliCFGrid::Slice(Int_t ivar, Float_t *varMin, Float_t* varMax) const
+TH1D *AliCFGrid::Slice(Int_t ivar, Double_t *varMin, Double_t* varMax) const
 {
   //
   // Make a slice along variable ivar in range [varMin,varMax]
@@ -922,17 +766,17 @@ TH1F *AliCFGrid::Slice(Int_t ivar, Float_t *varMin, Float_t* varMax) const
   char htitle[40];
   sprintf(htitle,"%s%s_%i",GetName(),"_proj1D_var", ivar);
 
-  TH1F *proj1D=0;
+  TH1D *proj1D=0;
 
   //check if a projection with identical name exist
   TObject *obj = gROOT->FindObject(pname);
-  if (obj && obj->InheritsFrom("TH1F")) {
-    proj1D = (TH1F*)obj;
+  if (obj && obj->InheritsFrom("TH1D")) {
+    proj1D = (TH1D*)obj;
     proj1D->Reset();
   }
 
   if(!proj1D){
-    proj1D =new TH1F(pname,htitle, nbins, bins);
+    proj1D =new TH1D(pname,htitle, nbins, bins);
   }  
 
   delete [] bins;
@@ -954,9 +798,6 @@ TH1F *AliCFGrid::Slice(Int_t ivar, Float_t *varMin, Float_t* varMax) const
     }
     indexMin[i] = TMath::BinarySearch(nbins,bins,xmin);
     indexMax[i] = TMath::BinarySearch(nbins,bins,xmax);
-    if(xmax>=bins[nbins-1]){
-      indexMax[i]=indexMax[i]-1;
-    }  
     delete [] bins;
   }
 
@@ -992,36 +833,9 @@ TH1F *AliCFGrid::Slice(Int_t ivar, Float_t *varMin, Float_t* varMax) const
   return proj1D;
 } 
 
-//____________________________________________________________________
-Long64_t AliCFGrid::Merge(TCollection* list)
-{
-  // Merge a list of AliCorrection objects with this (needed for
-  // PROOF). 
-  // Returns the number of merged objects (including this).
-
-  if (!list)
-    return 0;
-  
-  if (list->IsEmpty())
-    return 1;
-
-  TIterator* iter = list->MakeIterator();
-  TObject* obj;
-  
-  Int_t count = 0;
-  while ((obj = iter->Next())) {
-    AliCFGrid* entry = dynamic_cast<AliCFGrid*> (obj);
-    if (entry == 0) 
-      continue;
-    this->Add(entry);
-    count++;
-  }
-
-  return count+1;
-}
 
 //____________________________________________________________________
-void AliCFGrid::Add(AliCFGrid* aGrid, Float_t c)
+void AliCFGrid::Add(AliCFVGrid* aGrid, Double_t c)
 {
   //
   //add aGrid to the current one
@@ -1041,7 +855,7 @@ void AliCFGrid::Add(AliCFGrid* aGrid, Float_t c)
   for(Int_t iel=0;iel<fNDim;iel++){
     fData[iel]+=(c*aGrid->GetElement(iel));
     if(fSumW2){
-      Float_t err=TMath::Sqrt(aGrid->GetElementError(iel));  
+      Float_t err=aGrid->GetElementError(iel);  
       fErr2[iel]+=c*c*err*err;
     }
   }
@@ -1057,7 +871,7 @@ void AliCFGrid::Add(AliCFGrid* aGrid, Float_t c)
   }
 }
 //____________________________________________________________________
-void AliCFGrid::Add(AliCFGrid* aGrid1, AliCFGrid* aGrid2, Float_t c1,Float_t c2)
+void AliCFGrid::Add(AliCFVGrid* aGrid1, AliCFVGrid* aGrid2, Double_t c1,Double_t c2)
 {
   //
   //add aGrid1 and aGrid2
@@ -1081,9 +895,9 @@ void AliCFGrid::Add(AliCFGrid* aGrid1, AliCFGrid* aGrid2, Float_t c1,Float_t c2)
     cont2=aGrid2->GetElement(iel);
     SetElement(iel,c1*cont1+c2*cont2);
     if(fSumW2){
-      err1=TMath::Sqrt(aGrid1->GetElementError(iel));
-      err2=TMath::Sqrt(aGrid2->GetElementError(iel));
-      SetElementError(iel,c1*c1*err1*err1+c2*c2*err2*err2);
+      err1=aGrid1->GetElementError(iel);
+      err2=aGrid2->GetElementError(iel);
+      SetElementError(iel,TMath::Sqrt(c1*c1*err1*err1+c2*c2*err2*err2));
     }
   }
 
@@ -1098,7 +912,7 @@ void AliCFGrid::Add(AliCFGrid* aGrid1, AliCFGrid* aGrid2, Float_t c1,Float_t c2)
   }
 }
 //____________________________________________________________________
-void AliCFGrid::Multiply(AliCFGrid* aGrid, Float_t c)
+void AliCFGrid::Multiply(AliCFVGrid* aGrid, Double_t c)
 {
   //
   //multiply grid aGrid by the current one
@@ -1122,9 +936,9 @@ void AliCFGrid::Multiply(AliCFGrid* aGrid, Float_t c)
     cont2=c*aGrid->GetElement(iel);  
     SetElement(iel,cont1*cont2);
     if(fSumW2){
-      err1=TMath::Sqrt(GetElementError(iel));  
-      err2=TMath::Sqrt(aGrid->GetElementError(iel));  
-      SetElementError(iel,c*c*(cont2*cont2*err1*err1+cont1*cont1*err2*err2));
+      err1=GetElementError(iel);  
+      err2=aGrid->GetElementError(iel);  
+      SetElementError(iel,TMath::Sqrt(c*c*(cont2*cont2*err1*err1+cont1*cont1*err2*err2)));
     }
   }
 
@@ -1139,7 +953,7 @@ void AliCFGrid::Multiply(AliCFGrid* aGrid, Float_t c)
   }
 }
 //____________________________________________________________________
-void AliCFGrid::Multiply(AliCFGrid* aGrid1,AliCFGrid* aGrid2, Float_t c1,Float_t c2)
+void AliCFGrid::Multiply(AliCFVGrid* aGrid1, AliCFVGrid* aGrid2, Double_t c1, Double_t c2)
 {
   //
   //multiply grids aGrid1 and aGrid2
@@ -1162,9 +976,9 @@ void AliCFGrid::Multiply(AliCFGrid* aGrid1,AliCFGrid* aGrid2, Float_t c1,Float_t
     cont2=c2*aGrid2->GetElement(iel);  
     SetElement(iel,cont1*cont2);
     if(fSumW2){
-      err1=TMath::Sqrt(aGrid1->GetElementError(iel));  
-      err2=TMath::Sqrt(aGrid2->GetElementError(iel));  
-      SetElementError(iel,c1*c1*c2*c2*(cont2*cont2*err1*err1+cont1*cont1*err2*err2));
+      err1=aGrid1->GetElementError(iel);  
+      err2=aGrid2->GetElementError(iel);  
+      SetElementError(iel,TMath::Sqrt(c1*c1*c2*c2*(cont2*cont2*err1*err1+cont1*cont1*err2*err2)));
     }
   }
 
@@ -1179,14 +993,11 @@ void AliCFGrid::Multiply(AliCFGrid* aGrid1,AliCFGrid* aGrid2, Float_t c1,Float_t
   }
 }
 //____________________________________________________________________
-void AliCFGrid::Divide(AliCFGrid* aGrid, Float_t c, Option_t *option)
+void AliCFGrid::Divide(AliCFVGrid* aGrid, Double_t c)
 {
   //
   //divide current grid by grid aGrid
   //
-
-  TString opt = option;
-  opt.ToUpper();
 
   if(aGrid->GetNVar()!=fNVar){
     AliInfo("Different number of variables, cannot divide the grids");
@@ -1200,30 +1011,21 @@ void AliCFGrid::Divide(AliCFGrid* aGrid, Float_t c, Option_t *option)
   
   if(!fSumW2  && aGrid->GetSumW2())SumW2();
 
-  Float_t cont1,cont2,err1,err2,r,den;
+  Float_t cont1,cont2,err1,err2,den;
   for(Int_t iel=0;iel<fNDim;iel++){
     cont1=GetElement(iel);  
     cont2=aGrid->GetElement(iel);
     if(cont2)SetElement(iel,cont1/(c*cont2));
     else SetElement(iel,0);
     if(fSumW2){
-      err1=TMath::Sqrt(GetElementError(iel));  
-      err2=TMath::Sqrt(aGrid->GetElementError(iel));  
+      err1=GetElementError(iel);  
+      err2=aGrid->GetElementError(iel);  
       if(!cont2){SetElementError(iel,0.); continue;}
-      if (opt.Contains("B")){
-	if(cont1!=cont2){
-	  r=cont1/cont2;	    
-	  SetElementError(iel,TMath::Abs(((1-2.*r)*err1*err1+r*r*err2*err2)/(cont2*cont2)));
-	}else{
-	  SetElementError(iel,0.);
-	}
-      }else{
-        den=cont2*cont2*cont2*c*c;
-	SetElementError(iel,(cont2*cont2*err1*err1+cont1*cont1*err2*err2)/den);
-      }
+      den=cont2*cont2*cont2*c*c;
+      SetElementError(iel,TMath::Sqrt((cont2*cont2*err1*err1+cont1*cont1*err2*err2)/den));
     }
   }
-
+  
   //Set entries to the number of bins, preserve original overflows and underflows
 
   fNentriesTot=fNDim;
@@ -1235,7 +1037,7 @@ void AliCFGrid::Divide(AliCFGrid* aGrid, Float_t c, Option_t *option)
   }
 }
 //____________________________________________________________________
-void AliCFGrid::Divide(AliCFGrid* aGrid1, AliCFGrid* aGrid2, Float_t c1,Float_t c2, Option_t *option)
+void AliCFGrid::Divide(AliCFVGrid* aGrid1, AliCFVGrid* aGrid2, Double_t c1,Double_t c2, Option_t *option)
 {
   //
   //divide grids aGrid1,aGrid2
@@ -1264,19 +1066,19 @@ void AliCFGrid::Divide(AliCFGrid* aGrid1, AliCFGrid* aGrid2, Float_t c1,Float_t 
     if(cont2)SetElement(iel,c1*cont1/(c2*cont2));
     else SetElement(iel,0);
      if(fSumW2){
-      err1=TMath::Sqrt(aGrid1->GetElementError(iel));  
-      err2=TMath::Sqrt(aGrid2->GetElementError(iel));  
+      err1=aGrid1->GetElementError(iel);  
+      err2=aGrid2->GetElementError(iel);  
       if(!cont2){SetElementError(iel,0.); continue;}
       if (opt.Contains("B")){
 	if(cont1!=cont2){
 	  r=cont1/cont2;	    
-	  SetElementError(iel,TMath::Abs(((1.-2.*r)*err1*err1+r*r*err2*err2)/(cont2*cont2)));
+	  SetElementError(iel,TMath::Sqrt(TMath::Abs(((1.-2.*r)*err1*err1+r*r*err2*err2)/(cont2*cont2))));
 	}else{
 	  SetElementError(iel,0.);
 	}
       }else{
         den=cont2*cont2*cont2*cont2*c2*c2;
-	SetElementError(iel,c1*c1*(cont2*cont2*err1*err1+cont1*cont1*err2*err2)/den);
+	SetElementError(iel,TMath::Sqrt(c1*c1*(cont2*cont2*err1*err1+cont1*cont1*err2*err2)/den));
       }
     }
   }
@@ -1307,27 +1109,6 @@ void AliCFGrid::SumW2()
 
   fSumW2=kTRUE;
 }
-//_____________________________________________________________________
-Float_t AliCFGrid::GetSum(Int_t ivar, Int_t *binMin, Int_t* binMax) const 
-{
-  //
-  // recursively add over nested loops.... 
-  //
-  static Float_t val;
-  if(ivar==0)val=0.;
-  for(Int_t ibin=binMin[ivar];ibin<=binMax[ivar];ibin++){
-    fIndex[ivar]=ibin;
-    if(ivar<fNVar-1) {
-      val=GetSum(ivar+1,binMin,binMax);
-    }
-    else {
-      Int_t iel=GetBinIndex(fIndex);
-      val+=fData[iel];
-    }
-  }
-
-  return val;
-}
 //____________________________________________________________________
 void AliCFGrid::Copy(TObject& c) const
 {
@@ -1336,27 +1117,13 @@ void AliCFGrid::Copy(TObject& c) const
   //
   AliCFGrid& target = (AliCFGrid &) c;
 
-  target.fNVar=fNVar;
-  target.fNDim=fNDim;
-  target.fSumW2=fSumW2;
-  target.fNVarBinLimits=fNVarBinLimits;
   target.fNunflTot = fNunflTot;
   target.fNovflTot = fNovflTot;
   target.fNentriesTot = fNentriesTot;
-  if (fNVarBins)
-    target.fNVarBins = fNVarBins;
-  if (fVarBinLimits)
-    target.fVarBinLimits = fVarBinLimits;
-  if (fNunfl)
-    target.fNunfl = fNunfl;
   if (fNunfl)
     target.fNunfl = fNunfl;
   if (fNovfl)
     target.fNovfl = fNovfl;
-  if (fProduct)
-    target.fProduct = fProduct;
-  if (fOffset)
-    target.fOffset = fOffset;
   if (fData)
     target.fData = fData;
   if (fErr2)

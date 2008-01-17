@@ -54,22 +54,22 @@ Bool_t AliCFSingleTrackTask(
 
   //CONTAINER DEFINITION
   Info("AliCFSingleTrackTask","SETUP CONTAINER");
-  //the sensitive variables, their indices
+  //the sensitive variables (2 in this example), their indices
   Int_t ipt = 0;
   Int_t iy  = 1;
   //Setting up the container grid... 
   Int_t nstep = 4 ; //number of selection steps MC 
-  const Int_t nvar   = 2 ; //number of variables on the grid:pt,y,phi,vtx
+  const Int_t nvar   = 2 ; //number of variables on the grid:pt,y
   const Int_t nbin1  = 8 ; //bins in pt
   const Int_t nbin2  = 8 ; //bins in y 
   //arrays for the number of bins in each dimension
   const Int_t iBin[nvar] ={nbin1,nbin2};
   //arrays for lower bounds :
-  Float_t binLim1[nbin1+1];
-  Float_t binLim2[nbin2+1];
+  Double_t binLim1[nbin1+1];
+  Double_t binLim2[nbin2+1];
   //values for bin lower bounds
-  for(Int_t i=0; i<=nbin1; i++) binLim1[i]=(Float_t)ptmin + (ptmax-ptmin)/nbin1*(Float_t)i ; 
-  for(Int_t i=0; i<=nbin2; i++) binLim2[i]=(Float_t)ymin  + (ymax-ymin)  /nbin2*(Float_t)i ;
+  for(Int_t i=0; i<=nbin1; i++) binLim1[i]=(Double_t)ptmin + (ptmax-ptmin)/nbin1*(Double_t)i ; 
+  for(Int_t i=0; i<=nbin2; i++) binLim2[i]=(Double_t)ymin  + (ymax-ymin)  /nbin2*(Double_t)i ;
   //one "container" for MC
   AliCFContainer* container = new AliCFContainer("container","container for tracks",nstep,nvar,iBin);
   //setting the bin limits

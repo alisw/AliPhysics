@@ -1,5 +1,18 @@
 /* $Id$ */
-
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
 //--------------------------------------------------------------------//
 //                                                                    //
 // AliCFContainer Class                                           //
@@ -13,6 +26,7 @@
 //
 #include <AliLog.h>
 #include "AliCFGrid.h"
+//#include "AliCFGridSparse.h"
 #include "AliCFContainer.h"
 
 //____________________________________________________________________
@@ -38,7 +52,7 @@ AliCFContainer::AliCFContainer(const Char_t* name, const Char_t* title) :
 }
 
 //____________________________________________________________________
-AliCFContainer::AliCFContainer(const Char_t* name, const Char_t* title,const Int_t nSelSteps, const Int_t nVarIn, const Int_t * nBinIn, const Float_t *binLimitsIn) :  
+AliCFContainer::AliCFContainer(const Char_t* name, const Char_t* title,const Int_t nSelSteps, const Int_t nVarIn, const Int_t * nBinIn, const Double_t *binLimitsIn) :  
   AliCFFrame(name,title,nVarIn,nBinIn,binLimitsIn),
   fNStep(0),
   fGrid(0x0)
@@ -51,11 +65,13 @@ AliCFContainer::AliCFContainer(const Char_t* name, const Char_t* title,const Int
   fNStep=nSelSteps;
 
   // The grids 
-  fGrid = new AliCFGrid*[fNStep]; //the grids at the various selection steps
+  fGrid = new AliCFVGrid*[fNStep]; //the grids at the various selection steps
   char gname[30];
   for(Int_t istep=0;istep<fNStep;istep++){
     sprintf(gname,"%s%s%i",GetName(),"_SelStep", istep);
     fGrid[istep] = new AliCFGrid(gname,title,nVarIn,nBinIn,binLimitsIn); 
+    //fGrid[istep] = new AliCFGridSparse(gname,title,nVarIn,nBinIn,binLimitsIn); 
+    fGrid[istep]->SumW2(); 
   }
 }
 //____________________________________________________________________
@@ -89,7 +105,7 @@ AliCFContainer &AliCFContainer::operator=(const AliCFContainer &c)
   return *this;
 } 
 //____________________________________________________________________
-void AliCFContainer::SetBinLimits(Int_t varindex, Float_t *array)
+void AliCFContainer::SetBinLimits(Int_t varindex, Double_t *array)
 {
   //
   // setting the arrays containing the bin limits 
@@ -126,7 +142,7 @@ void AliCFContainer::Copy(TObject& c) const
     }  
 }
 //____________________________________________________________________
-void AliCFContainer::Fill(Float_t *var, Int_t istep, Float_t weight)
+void AliCFContainer::Fill(Double_t *var, Int_t istep, Double_t weight)
 {
   //
   // Fills the grid at selection step istep for a set of values of the 
@@ -135,7 +151,7 @@ void AliCFContainer::Fill(Float_t *var, Int_t istep, Float_t weight)
   fGrid[istep]->Fill(var,weight);
 }
 //___________________________________________________________________
-TH1F *AliCFContainer::ShowProjection(Int_t ivar, Int_t istep) const
+TH1D *AliCFContainer::ShowProjection(Int_t ivar, Int_t istep) const
 {
   //
   // returns 1-D projection along variable ivar at selection step istep
@@ -143,7 +159,7 @@ TH1F *AliCFContainer::ShowProjection(Int_t ivar, Int_t istep) const
   return fGrid[istep]->Project(ivar);
 }
 //___________________________________________________________________
-TH2F *AliCFContainer::ShowProjection(Int_t ivar1, Int_t ivar2, Int_t istep) const
+TH2D *AliCFContainer::ShowProjection(Int_t ivar1, Int_t ivar2, Int_t istep) const
 {
   //
   // returns 2-D projection along variables ivar1,ivar2 at selection step istep
@@ -151,7 +167,7 @@ TH2F *AliCFContainer::ShowProjection(Int_t ivar1, Int_t ivar2, Int_t istep) cons
   return fGrid[istep]->Project(ivar1,ivar2);
 }
 //___________________________________________________________________
-TH3F *AliCFContainer::ShowProjection(Int_t ivar1, Int_t ivar2, Int_t ivar3, Int_t istep) const
+TH3D *AliCFContainer::ShowProjection(Int_t ivar1, Int_t ivar2, Int_t ivar3, Int_t istep) const
 {
   //
   // returns 3-D projection along variables ivar1,ivar2,ivar3 
@@ -160,12 +176,12 @@ TH3F *AliCFContainer::ShowProjection(Int_t ivar1, Int_t ivar2, Int_t ivar3, Int_
   return fGrid[istep]->Project(ivar1,ivar2,ivar3);
 }
 //___________________________________________________________________
-TH1F *AliCFContainer::ShowSlice(Int_t ivar, Float_t *varMin, Float_t* varMax, Int_t istep) const
+TH1D *AliCFContainer::ShowSlice(Int_t ivar, Double_t *varMin, Double_t* varMax, Int_t istep) const
 {
   //
   // Make a slice along variable ivar at selection level istep in range [varMin,varMax]
   //
-  return (TH1F*)fGrid[istep]->Slice(ivar,varMin,varMax);
+  return (TH1D*)fGrid[istep]->Slice(ivar,varMin,varMax);
 }
 //____________________________________________________________________
 Long64_t AliCFContainer::Merge(TCollection* list)
@@ -196,7 +212,7 @@ Long64_t AliCFContainer::Merge(TCollection* list)
 }
 
 //____________________________________________________________________
-void AliCFContainer::Add(AliCFContainer* aContainerToAdd, Float_t c)
+void AliCFContainer::Add(AliCFContainer* aContainerToAdd, Double_t c)
 {
   //
   //add the content of container aContainerToAdd to the current one
@@ -253,14 +269,14 @@ Int_t AliCFContainer::GetEmptyBins( Int_t istep) const {
   return fGrid[istep]->GetEmptyBins();
 } 
 //____________________________________________________________________
-Int_t AliCFContainer::GetEmptyBins( Int_t istep, Float_t *varMin, Float_t* varMax) const {
+Int_t AliCFContainer::GetEmptyBins( Int_t istep, Double_t *varMin, Double_t* varMax) const {
   //
   // Get overflows in variable var at selection level istep
   //
   return fGrid[istep]->GetEmptyBins(varMin,varMax);
 } 
 //_____________________________________________________________________
-Float_t AliCFContainer::GetIntegral( Int_t istep) const 
+Double_t AliCFContainer::GetIntegral( Int_t istep) const 
 {
   //
   // Get Integral at selection level istep
@@ -268,7 +284,7 @@ Float_t AliCFContainer::GetIntegral( Int_t istep) const
   return fGrid[istep]->GetIntegral();
 }
 //_____________________________________________________________________
-Float_t AliCFContainer::GetIntegral( Int_t istep, Float_t *varMin, Float_t* varMax ) const 
+Double_t AliCFContainer::GetIntegral( Int_t istep, Double_t *varMin, Double_t* varMax ) const 
 {
   //
   // Get Integral at selection level istep

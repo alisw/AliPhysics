@@ -1,5 +1,18 @@
 /* $Id$ */
-
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
 //--------------------------------------------------------------------//
 //                                                                    //
 // AliCFFrame Class                                                 //
@@ -51,7 +64,7 @@ AliCFFrame::AliCFFrame(const Char_t* name, const Char_t* title) :
   // named constructor
 }
 //____________________________________________________________________
-AliCFFrame::AliCFFrame(const Char_t* name, const Char_t* title, const Int_t nVarIn, const Int_t * nBinIn, const Float_t *binLimitsIn) :  
+AliCFFrame::AliCFFrame(const Char_t* name, const Char_t* title, const Int_t nVarIn, const Int_t * nBinIn, const Double_t *binLimitsIn) :  
   TNamed(name,title),
   fNVar(0),
   fNDim(0),
@@ -106,7 +119,7 @@ AliCFFrame::AliCFFrame(const Char_t* name, const Char_t* title, const Int_t nVar
   //The bin limits
 
   fNVarBinLimits=nbinTot;
-  fVarBinLimits=new Float_t[fNVarBinLimits];
+  fVarBinLimits=new Double_t[fNVarBinLimits];
   if(binLimitsIn){
     for(Int_t i=0;i<fNVarBinLimits;i++){
       fVarBinLimits[i] =binLimitsIn[i];
@@ -154,7 +167,7 @@ AliCFFrame &AliCFFrame::operator=(const AliCFFrame &c)
   return *this;
 } 
 //____________________________________________________________________
-void AliCFFrame::SetBinLimits(Int_t ivar, Float_t *array)
+void AliCFFrame::SetBinLimits(Int_t ivar, Double_t *array)
 {
   //
   // setting the arrays containing the bin limits 
@@ -165,7 +178,7 @@ void AliCFFrame::SetBinLimits(Int_t ivar, Float_t *array)
   } 
 } 
 //____________________________________________________________________
-void AliCFFrame::GetBinLimits(Int_t ivar, Float_t *array) const
+void AliCFFrame::GetBinLimits(Int_t ivar, Double_t *array) const
 {
   //
   // getting the arrays containing the bin limits 
@@ -218,19 +231,19 @@ void AliCFFrame::GetBinIndex(Int_t ind, Int_t *bins ) const
   return;
 }
 //____________________________________________________________________
-Float_t AliCFFrame::GetBinCenter(Int_t ivar, Int_t ibin) const
+Double_t AliCFFrame::GetBinCenter(Int_t ivar, Int_t ibin) const
 {
   //
-  // getting the bin center of a given bin ibin on the dim. (axis) ivar
+  // getting the bin center of a given bin ibin along variable ivar
   //
  
-  Float_t binMin=fVarBinLimits[fOffset[ivar]+ibin];
-  Float_t binMax=fVarBinLimits[fOffset[ivar]+ibin+1];
-  Float_t val=0.5*(binMin+binMax);
+  Double_t binMin=fVarBinLimits[fOffset[ivar]+ibin];
+  Double_t binMax=fVarBinLimits[fOffset[ivar]+ibin+1];
+  Double_t val=0.5*(binMin+binMax);
   return val;
 }
 //____________________________________________________________________
-void AliCFFrame::GetBinCenter(Int_t *ibin, Float_t *binCenter) const
+void AliCFFrame::GetBinCenters(Int_t *ibin, Double_t *binCenter) const
 {
   //
   // gives the centers of the N-dim bin identified by a set of bin indeces 
@@ -239,7 +252,35 @@ void AliCFFrame::GetBinCenter(Int_t *ibin, Float_t *binCenter) const
   for(Int_t i=0;i<fNVar;i++){
     binCenter[i]=GetBinCenter(i,ibin[i]);
   }
+} //____________________________________________________________________
+Double_t AliCFFrame::GetBinSize(Int_t ivar, Int_t ibin) const
+{
+  //
+  // getting the bin size on axis ivar of a given bin ibin 
+  //
+
+  if(ibin>=fNVarBins[ivar]){
+    AliWarning(Form("bin index out of range, number of bins in variable %i is %i", ivar,fNVarBins[ivar]));
+    return -1;
+  } 
+
+  Double_t binMin=fVarBinLimits[fOffset[ivar]+ibin];
+  Double_t binMax=fVarBinLimits[fOffset[ivar]+ibin+1];
+  Double_t val=binMax-binMin;
+  return val;
+}
+//____________________________________________________________________
+void AliCFFrame::GetBinSizes(Int_t *ibin, Double_t *binSizes) const
+{
+  //
+  // gives the sizes of the N-dim bin identified by a set of bin indeces 
+  // ibin
+  //
+  for(Int_t i=0;i<fNVar;i++){
+    binSizes[i]=GetBinSize(i,ibin[i]);
+  }
 } 
+
 //____________________________________________________________________
 void AliCFFrame::Copy(TObject& c) const
 {

@@ -149,7 +149,7 @@ void AliCFSingleTrackTask::Exec(Option_t *)
   AliMCEvent* mcEvent = mcTruth->MCEvent();
 
   // MC-event selection
-  Float_t containerInput[2] ;
+  Double_t containerInput[2] ;
         
   //loop on the MC event
   for (Int_t ipart=0; ipart<mcEvent->GetNumberOfTracks(); ipart++) { 

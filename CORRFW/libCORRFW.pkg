@@ -1,4 +1,5 @@
 SRCS = AliCFFrame.cxx \
+       AliCFVGrid.cxx \
        AliCFGrid.cxx \
        AliCFEffGrid.cxx \
        AliCFDataGrid.cxx \

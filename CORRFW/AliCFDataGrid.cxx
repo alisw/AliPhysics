@@ -1,5 +1,18 @@
 /* $Id$ */
-
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
 //--------------------------------------------------------------------//
 //                                                                    //
 // AliCFDataGrid Class                                        //
@@ -46,7 +59,7 @@ AliCFDataGrid::AliCFDataGrid(const Char_t* name,const Char_t* title) :
 }
 
 //____________________________________________________________________
-AliCFDataGrid::AliCFDataGrid(const Char_t* name, const Char_t* title, const Int_t nVarIn, const Int_t * nBinIn, const Float_t *binLimitsIn) :  
+AliCFDataGrid::AliCFDataGrid(const Char_t* name, const Char_t* title, const Int_t nVarIn, const Int_t * nBinIn, const Double_t *binLimitsIn) :  
   AliCFGrid(name,title,nVarIn,nBinIn,binLimitsIn),
   fSelData(-1),
   fContainer(0x0)
@@ -141,16 +154,15 @@ void AliCFDataGrid::ApplyEffCorrection(const AliCFEffGrid &c)
   //Apply the correction
   for(Int_t i=0;i<fNDim;i++){
     eff =c.GetElement(i);    
-    deff =TMath::Sqrt(c.GetElementError(i));    
+    deff =c.GetElementError(i);    
     unc =GetElement(i);    
-    dunc =TMath::Sqrt(GetElementError(i));    
+    dunc =GetElementError(i);    
     if(eff>0 && unc>0){      
       ncorr++;
       corr=unc/eff;
       dcorr=TMath::Sqrt(dunc*dunc/unc/unc+deff*deff/eff/eff)*corr;
       SetElement(i,corr);
-      SetElementError(i,dcorr*dcorr);
-      
+      SetElementError(i,dcorr);
     } else{
       if(unc>0)nnocorr++;
       SetElement(i,0);
@@ -183,13 +195,13 @@ void AliCFDataGrid::ApplyBGCorrection(const AliCFDataGrid &c)
 
   for(Int_t i=0;i<fNDim;i++){
     bkg =c.GetElement(i);    
-    dbkg =TMath::Sqrt(c.GetElementError(i));    
+    dbkg =c.GetElementError(i);    
     unc =GetElement(i);    
-    dunc =TMath::Sqrt(GetElementError(i));    
+    dunc =GetElementError(i);    
     corr=unc-bkg;
-    dcorr=TMath::Sqrt(unc+bkg); //stats only, check this
+    dcorr=TMath::Sqrt(unc+bkg); //stat err only...
     SetElement(i,corr);
-    SetElementError(i,dcorr*dcorr);
+    SetElementError(i,dcorr);
       
   }
 }
