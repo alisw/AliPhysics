@@ -41,8 +41,9 @@
 
 #include "AliCFCutBase.h"
 
+#include <TH2.h>
+// class TH2 ;
 class TBits;
-class TH2;
 class AliESDtrack ;
 
 class AliCFTrackIsPrimaryCuts : public AliCFCutBase
@@ -103,30 +104,30 @@ class AliCFTrackIsPrimaryCuts : public AliCFCutBase
   TH2F* fhDcaXYvsDcaZnorm[2];		// Histogram: (dca xy / sigma xy) vs. (dca z / simga z)
   Bool_t  fAcceptKinkDaughters;		// accepting kink daughters
 
-  TH1F* fhCutStatistics;              // Histogram: statistics of what cuts the tracks did not survive
-  TH2F* fhCutCorrelation;             // Histogram: 2d statistics plot
+  TH1F* fhCutStatistics;		// Histogram: statistics of what cuts the tracks did not survive
+  TH2F* fhCutCorrelation;		// Histogram: 2d statistics plot
 
   TH1F* fhQA[kNHist][kNStepQA];		// QA Histograms
-  TBits *fBitmap ; 				// stores single selection decisions
+  TBits *fBitmap ; 			// stores single selection decisions
 
   // QA histogram setters
   Int_t fhNBinsNSigma;			// number of bins: dca in units of sigma
-  Int_t fhNBinsRequireSigma;	// number of bins: require successful calcuation
+  Int_t fhNBinsRequireSigma;		// number of bins: require successful calcuation
   Int_t fhNBinsAcceptKink;		// number of bins: acceptkink daughters
   Int_t fhNBinsDcaXY;			// number of bins: dca in transverse plane
   Int_t fhNBinsDcaZ;			// number of bins: dca along beam axis
   Int_t fhNBinsDcaXYnorm;		// number of bins: normalised dca in transverse plane
   Int_t fhNBinsDcaZnorm;		// number of bins: normalised dca along beam axis
-  
-  Double_t *fhBinLimNSigma;		// bin limits: dca in units of sigma
-  Double_t *fhBinLimRequireSigma;	// bin limits: require successful calcuation
-  Double_t *fhBinLimAcceptKink;		// bin limits: acceptkink daughters
-  Double_t *fhBinLimDcaXY;		// bin limits: dca in transverse plane
-  Double_t *fhBinLimDcaZ;			// bin limits: dca along beam axis
-  Double_t *fhBinLimDcaXYnorm;	// bin limits: normalised dca in transverse plane
-  Double_t *fhBinLimDcaZnorm;		// bin limits: normalised dca along beam axis
-  
-  ClassDef(AliCFTrackIsPrimaryCuts,1);
+
+  Double_t *fhBinLimNSigma; //[fhNBinsNSigma] bin limits: dca in units of sigma
+  Double_t *fhBinLimRequireSigma;//[fhNBinsRequireSigma] bin limits: require successful calcuation
+  Double_t *fhBinLimAcceptKink;//[fhNBinsAcceptKink] bin limits: acceptkink daughters
+  Double_t *fhBinLimDcaXY;//[fhNBinsDcaXY] bin limits: dca in transverse plane
+  Double_t *fhBinLimDcaZ; //[fhNBinsDcaZ] bin limits: dca along beam axis
+  Double_t *fhBinLimDcaXYnorm; //[fhNBinsDcaXYnorm] bin limits: normalised dca in transverse plane
+  Double_t *fhBinLimDcaZnorm;//[fhNBinsDcaZnorm] bin limits: normalised dca along beam axis
+
+  ClassDef(AliCFTrackIsPrimaryCuts,2);
 };
 
 #endif
