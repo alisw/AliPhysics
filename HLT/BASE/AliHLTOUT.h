@@ -18,7 +18,7 @@
 #include "AliHLTModuleAgent.h"
 
 class AliHLTOUTHandler;
-class AliHLTOUTHandlerDesc;
+class AliHLTOUTHandlerDesc; // AliHLTModuleAgent.h
 
 #define AliHLTOUTInvalidIndex (~(AliHLTUInt32_t)0)
 
@@ -271,7 +271,7 @@ class AliHLTOUT : public AliHLTLogging {
     AliHLTOUTHandler* fpHandler; //! transient
 
     /** pointer to handler description */
-    AliHLTModuleAgent::AliHLTOUTHandlerDesc fHandlerDesc; //! transient
+    AliHLTModuleAgent::AliHLTOUTHandlerDesc& fHandlerDesc; //! transient
 
     /** pointer to module agent */
     AliHLTModuleAgent* fpAgent; //! transient

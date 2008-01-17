@@ -97,12 +97,6 @@ class AliHLTOUT;
  *       Return AliHLTOUTHandler for a given data type and specification.
  *       This is mainly intended to treat detector proprietary data.
  *
- * - @ref GetRawStream                                                      <br>
- *       Return an AliRawStream object which is capable of treating the
- *       specified data type and specification. Rawstream must be provided
- *       for data blocks intended to be the input for AliRoot detector
- *       reconstruction by replacing the normal input stream.
- *
  * @section alihltmoduleagent_references References
  * @see @ref AliHLTReconstructor interface to the AliRoot reconstruction
  * @see @ref AliHLTAgentSample agent for the libAliHLTSample library
