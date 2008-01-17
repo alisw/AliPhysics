@@ -14,7 +14,10 @@
  **************************************************************************/
 
 /*
-$Log$
+$Log: AliT0Preprocessor.cxx,v $
+Revision 1.8  2007/12/07 15:22:51  alla
+bug fixed by Alberto
+
 Revision 1.7  2007/12/06 16:35:24  alla
 new bugs fixed by Tomek
 
@@ -27,10 +30,12 @@ Preprocessor storing data to OCDB (T.Malkiewicz)
 Version 1.1  2006/10   
 Preliminary test version (T.Malkiewicz)
 */   
-
 // T0 preprocessor:
-// 1) takes data from DCS and passes it to the class AliTOFDataDCS for processing and writes the result to the Reference DB.
-// 2) takes data form DAQ (both from Laser Calibration and Physics runs), processes it, and stores either to OCDB or to Reference DB.
+// 1) takes data from DCS and passes it to the class AliTOFDataDCS 
+// for processing and writes the result to the Reference DB.
+// 2) takes data form DAQ (both from Laser Calibration and Physics runs), 
+// processes it, and stores either to OCDB or to Reference DB.
+
 
 #include "AliT0Preprocessor.h"
 #include "AliT0DataDCS.h"
@@ -51,7 +56,9 @@ Preliminary test version (T.Malkiewicz)
 ClassImp(AliT0Preprocessor)
 
 //____________________________________________________
-AliT0Preprocessor::AliT0Preprocessor(AliShuttleInterface* shuttle) : AliPreprocessor("T00", shuttle), fData(0)
+AliT0Preprocessor::AliT0Preprocessor(AliShuttleInterface* shuttle) : 
+  AliPreprocessor("T00", shuttle), 
+  fData(0)
 {
   //constructor
 }
@@ -59,6 +66,7 @@ AliT0Preprocessor::AliT0Preprocessor(AliShuttleInterface* shuttle) : AliPreproce
 
 AliT0Preprocessor::~AliT0Preprocessor()
 {
+  //destructor
   delete fData;
   fData = 0;
 }
@@ -66,6 +74,7 @@ AliT0Preprocessor::~AliT0Preprocessor()
 
 void AliT0Preprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTime)
 {
+  // Creates AliT0DataDCS object
   AliPreprocessor::Initialize(run, startTime, endTime);
   AliInfo(Form("\n\tRun %d \n\tStartTime %s \n\tEndTime %s", run, TTimeStamp(startTime).AsString(), TTimeStamp(endTime).AsString()));
   fData = new AliT0DataDCS(fRun, fStartTime, fEndTime);
@@ -207,4 +216,3 @@ UInt_t AliT0Preprocessor::Process(TMap* dcsAliasMap )
 
   return 0;
 }
-

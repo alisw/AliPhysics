@@ -6,6 +6,11 @@
 
 /* $Id$ */
 
+
+// T0 preprocessor. 
+// Takes data from DCS and passes it to the class AliTOFDataDCS for processing and writes the result to the Reference DB.
+// Takes data form DAQ (both from Laser Calibration and Physics runs), processes it, and stores either to OCDB or to Reference DB.
+
 #include "AliPreprocessor.h"
 
 class AliT0DataDCS;
@@ -13,7 +18,9 @@ class AliT0DataDCS;
 class AliT0Preprocessor: public AliPreprocessor 
 {
   public:
-        AliT0Preprocessor(): AliPreprocessor("T00",0) { }
+        AliT0Preprocessor(): AliPreprocessor("T00",0),  
+	  fData(0)
+ { }
         AliT0Preprocessor(AliShuttleInterface* shuttle);
 	virtual ~AliT0Preprocessor();
   
@@ -22,8 +29,12 @@ class AliT0Preprocessor: public AliPreprocessor
 	virtual UInt_t Process(TMap* dcsAliasMap);
 
   private:
-	AliT0DataDCS *fData;			// CDB class that stores the data	
-	ClassDef(AliT0Preprocessor, 1)
+	AliT0Preprocessor(const AliT0Preprocessor & proc); // copy constructor	
+	AliT0Preprocessor& operator=(const AliT0Preprocessor&); //operator
+ 	AliT0DataDCS *fData;			// Data member to process DCS data	
+ 
+ 
+	ClassDef(AliT0Preprocessor, 2)
 };
 
 typedef AliT0Preprocessor AliSTARTPreprocessor; // for backward compatibility
