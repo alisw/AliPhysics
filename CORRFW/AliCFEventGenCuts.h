@@ -26,9 +26,9 @@
 
 
 #include "AliCFCutBase.h"
-#include "AliGenEventHeader.h"
 class TBits;
 class AliEventGenHeader;
+class AliMCEvent;
 //____________________________________________________________________________
 class AliCFEventGenCuts: public AliCFCutBase 
 {
@@ -41,7 +41,6 @@ class AliCFEventGenCuts: public AliCFCutBase
   void GetBitMap(TObject *obj, TBits *bitmap);
   Bool_t IsSelected(TObject* obj);
   void Init(){;};
-  static Bool_t IsMBProcessType(Int_t isel, TObject *obj);
 
   //number of embedded cuts
   enum{kNCuts=5};
@@ -51,8 +50,13 @@ class AliCFEventGenCuts: public AliCFCutBase
    kND, kSD, kDD 
   }; 
 
-  void   SetMBProcessType(PrType process = kND) {fMBProcessType=process;} // cut values setter
-  Int_t  GetMBProcessType()const {return fMBProcessType;} // cut values getter
+
+  static Int_t ProcType(AliGenEventHeader *genHeader); 
+  static Bool_t IsMBProcType(AliMCEvent *ev, PrType iproc);
+
+
+  void   SetMBSelProcType(PrType iproc = kND) {fMBProcType=iproc;} // cut values setter
+  Int_t  GetMBSelProcType()const {return fMBProcType;} // cut values getter
 
 
 
@@ -75,10 +79,10 @@ class AliCFEventGenCuts: public AliCFCutBase
   
 
  private:
+
   TBits * SelectionBitMap(TObject* obj);
-  static Int_t MBProcessType(AliGenEventHeader *genHeader); 
   
-  Int_t fMBProcessType ; //the type of selected MB process 
+  Int_t fMBProcType ; //the type of selected MB process 
   Int_t fNTracksMin; //minimum number of particles in the event
   Int_t fNTracksMax; //maximum number of particles in the event
   Bool_t fRequireVtxCuts ; //The type of trigger to be checked
