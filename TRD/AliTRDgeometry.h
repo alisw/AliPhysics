@@ -66,7 +66,9 @@ class AliTRDgeometry : public AliGeometry {
           void     CreatePadPlaneArray();
   AliTRDpadPlane  *CreatePadPlane(Int_t p, Int_t c);
   AliTRDpadPlane  *GetPadPlane(Int_t p, Int_t c);
-          Int_t    GetRowMax(Int_t p, Int_t c, Int_t /*s*/);
+  AliTRDpadPlane  *GetPadPlane(Int_t det)                              { return GetPadPlane(GetPlane(det)
+                                                                                           ,GetChamber(det)); }
+         Int_t    GetRowMax(Int_t p, Int_t c, Int_t /*s*/);
           Int_t    GetColMax(Int_t p);
           Double_t GetRow0(Int_t p, Int_t c, Int_t /*s*/);
           Double_t GetCol0(Int_t p);

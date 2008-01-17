@@ -45,7 +45,7 @@
 #include "AliTRDQADataMaker.h"
 #include "AliTRDdigitsManager.h"
 #include "AliTRDgeometry.h"
-#include "AliTRDdataArrayI.h"
+#include "AliTRDdataArrayS.h"
 #include "AliTRDrawStreamTB.h"
 #include "AliTRDRawStreamV2.h"
 
@@ -572,7 +572,7 @@ void AliTRDQADataMaker::MakeDigits(TTree * digits)
 
   for (Int_t i = 0; i < AliTRDgeometry::kNdet; i++) {
 
-    AliTRDdataArrayI *digitsIn = digitsManager->GetDigits(i);      
+    AliTRDdataArrayS *digitsIn = (AliTRDdataArrayS *) digitsManager->GetDigits(i);      
 
     // This is to take care of switched off super modules
     if (digitsIn->GetNtime() == 0) continue;
@@ -633,7 +633,7 @@ void AliTRDQADataMaker::MakeSDigits(TTree * digits)
 
   for (Int_t i = 0; i < AliTRDgeometry::kNdet; i++) {
 
-    AliTRDdataArrayI *digitsIn = digitsManager->GetDigits(i);      
+    AliTRDdataArrayS *digitsIn = (AliTRDdataArrayS *) digitsManager->GetDigits(i);      
 
     // This is to take care of switched off super modules
     if (digitsIn->GetNtime() == 0) continue;

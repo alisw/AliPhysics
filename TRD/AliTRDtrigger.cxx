@@ -33,8 +33,9 @@
 #include "AliLoader.h"
 
 #include "AliTRDdigitsManager.h"
-#include "AliTRDgeometry.h"
 #include "AliTRDdataArrayI.h"
+#include "AliTRDdataArrayS.h"
+#include "AliTRDgeometry.h"
 #include "AliTRDcalibDB.h"
 #include "AliTRDrawData.h"
 #include "AliTRDtrigger.h"
@@ -430,20 +431,20 @@ Bool_t AliTRDtrigger::MakeTracklets(Bool_t makeTracks)
         Int_t nTimeTotal = AliTRDcalibDB::Instance()->GetNumberOfTimeBins();
 
         // Get the digits
-        fDigits = fDigitsManager->GetDigits(idet);
+        fDigits = (AliTRDdataArrayS *) fDigitsManager->GetDigits(idet);
 	if (!fDigits) return kFALSE;
 	// This is to take care of switched off super modules
         if (fDigits->GetNtime() == 0) {
           continue;
 	}
         fDigits->Expand();
-        fTrack0 = fDigitsManager->GetDictionary(idet,0);
+        fTrack0 = (AliTRDdataArrayI *) fDigitsManager->GetDictionary(idet,0);
 	if (!fTrack0) return kFALSE;
         fTrack0->Expand();
-        fTrack1 = fDigitsManager->GetDictionary(idet,1);
+        fTrack1 = (AliTRDdataArrayI *) fDigitsManager->GetDictionary(idet,1);
 	if (!fTrack1) return kFALSE;
         fTrack1->Expand();
-        fTrack2 = fDigitsManager->GetDictionary(idet,2); 
+        fTrack2 = (AliTRDdataArrayI *) fDigitsManager->GetDictionary(idet,2); 
 	if (!fTrack2) return kFALSE;
         fTrack2->Expand();
 

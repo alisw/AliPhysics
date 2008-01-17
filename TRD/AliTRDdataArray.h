@@ -29,14 +29,17 @@ class AliTRDdataArray : public AliTRDsegmentID {
   virtual void   Allocate(Int_t nrow, Int_t ncol,Int_t ntime);
   virtual void   Reset();
 
-  virtual Int_t  GetNrow() const               { return fNrow;       };
-  virtual Int_t  GetNcol() const               { return fNcol;       };
-  virtual Int_t  GetNtime() const              { return fNtime;      };
+  virtual Int_t  GetNrow() const               { return fNrow;          };
+  virtual Int_t  GetNcol() const               { return fNcol;          };
+  virtual Int_t  GetNtime() const              { return fNtime;         };
           Int_t  GetIndex(Int_t row, Int_t col, Int_t time) const;
           Int_t  GetIndexUnchecked(Int_t row, Int_t col, Int_t time) const
-	    { return time * fNrow*fNcol + GetIdx1Unchecked(row,col); };
-          Int_t  GetBufType() const            { return fBufType;    };
-  virtual Int_t  GetNelems() const             { return fNelems;     };
+	                                       { return time * fNrow*fNcol 
+                                                      + GetIdx1Unchecked(row,col); };
+          Int_t  GetBufType() const            { return fBufType;       };
+  virtual Int_t  GetNelems() const             { return fNelems;        };
+
+  virtual Bool_t HasData() const               { return fNtime ? 1 : 0; };
 
  protected:
 

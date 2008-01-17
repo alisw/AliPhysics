@@ -1,11 +1,12 @@
 SRCS= AliTRDarrayI.cxx \
+      AliTRDarrayS.cxx \
       AliTRDarrayF.cxx \
       AliTRDsegmentID.cxx \
       AliTRDdataArray.cxx \
       AliTRDdataArrayI.cxx \
+      AliTRDdataArrayS.cxx \
       AliTRDdataArrayF.cxx \
       AliTRDsegmentArray.cxx \
-      AliTRDsegmentArrayBase.cxx \
       AliTRDSignalIndex.cxx \
       AliTRDgeometry.cxx \
       AliTRDdigit.cxx \

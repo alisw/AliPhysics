@@ -33,7 +33,9 @@
 
 #include "AliTRDdigitsManager.h"
 #include "AliTRDsegmentArray.h"
+#include "AliTRDdataArray.h"
 #include "AliTRDdataArrayI.h"
+#include "AliTRDdataArrayS.h"
 #include "AliTRDdigit.h"
 #include "AliTRDgeometry.h"
 
@@ -52,8 +54,7 @@ AliTRDdigitsManager::AliTRDdigitsManager()
   ,fEvent(0)
   ,fTree(0)
   ,fDigits(0)
-  ,fIsRaw(0)
-  ,fSDigits(0)
+  ,fHasSDigits(0)
   ,fSignalIndexes(NULL)
   ,fUseDictionaries(kTRUE)
 {
@@ -65,7 +66,6 @@ AliTRDdigitsManager::AliTRDdigitsManager()
     fDictionary[iDict] = NULL;
   }
   
-  //fSignalIndexes = new TList();
   fSignalIndexes = new TObjArray(AliTRDgeometry::Ndet());
   
 }
@@ -76,8 +76,7 @@ AliTRDdigitsManager::AliTRDdigitsManager(const AliTRDdigitsManager &m)
   ,fEvent(m.fEvent)
   ,fTree(0)
   ,fDigits(0)
-  ,fIsRaw(m.fIsRaw)
-  ,fSDigits(m.fSDigits)
+  ,fHasSDigits(m.fHasSDigits)
   ,fSignalIndexes(NULL)
   ,fUseDictionaries(kTRUE)
 {
@@ -97,7 +96,7 @@ AliTRDdigitsManager::~AliTRDdigitsManager()
   if (fDigits) {
     fDigits->Delete();
     delete fDigits;
-    fDigits = NULL;
+    fDigits            = NULL;
   }
 
   for (Int_t iDict = 0; iDict < kNDict; iDict++) {
@@ -109,8 +108,8 @@ AliTRDdigitsManager::~AliTRDdigitsManager()
   if (fSignalIndexes) {
     fSignalIndexes->Delete();
     delete fSignalIndexes;
+    fSignalIndexes     = NULL;
   }
-  fSignalIndexes = NULL;
 
 }
 
@@ -121,7 +120,10 @@ AliTRDdigitsManager &AliTRDdigitsManager::operator=(const AliTRDdigitsManager &m
   // Assignment operator
   //
 
-  if (this != &m) ((AliTRDdigitsManager &) m).Copy(*this);
+  if (this != &m) {
+    ((AliTRDdigitsManager &) m).Copy(*this);
+  }
+
   return *this;
 
 }
@@ -133,11 +135,10 @@ void AliTRDdigitsManager::Copy(TObject &m) const
   // Copy function
   //
 
-  ((AliTRDdigitsManager &) m).fIsRaw   = fIsRaw;
-  ((AliTRDdigitsManager &) m).fEvent   = fEvent;
-  ((AliTRDdigitsManager &) m).fSDigits = fSDigits;
+  ((AliTRDdigitsManager &) m).fEvent           = fEvent;
+  ((AliTRDdigitsManager &) m).fHasSDigits      = fHasSDigits;
   
-  ((AliTRDdigitsManager &) m).fSignalIndexes = fSignalIndexes;
+  ((AliTRDdigitsManager &) m).fSignalIndexes   = fSignalIndexes;
   ((AliTRDdigitsManager &) m).fUseDictionaries = fUseDictionaries;
 
   TObject::Copy(m);
@@ -151,21 +152,26 @@ void AliTRDdigitsManager::CreateArrays()
   // Create the data arrays
   //
 
-  fDigits = new AliTRDsegmentArray("AliTRDdataArrayI",AliTRDgeometry::Ndet());
+  if (fHasSDigits) {
+    fDigits = new AliTRDsegmentArray("AliTRDdataArrayF",AliTRDgeometry::Ndet());
+  }
+  else {
+    fDigits = new AliTRDsegmentArray("AliTRDdataArrayS",AliTRDgeometry::Ndet());
+  }
 
-  if (fUseDictionaries)
-    {
-      for (Int_t iDict = 0; iDict < kNDict; iDict++) {
-	fDictionary[iDict] = new AliTRDsegmentArray("AliTRDdataArrayI"
-						    ,AliTRDgeometry::Ndet());
-      }
+  if (fUseDictionaries) {
+    for (Int_t iDict = 0; iDict < kNDict; iDict++) {
+      fDictionary[iDict] = new AliTRDsegmentArray("AliTRDdataArrayI"
+                                                 ,AliTRDgeometry::Ndet());
     }
+  }
 
-  for (Int_t i = 0; i < AliTRDgeometry::Ndet(); i++)
-    {
-      fSignalIndexes->AddLast(new AliTRDSignalIndex());
-    }
+  for (Int_t i = 0; i < AliTRDgeometry::Ndet(); i++) {
+    fSignalIndexes->AddLast(new AliTRDSignalIndex());
+  }
+
 }
+
 //_____________________________________________________________________________
 void AliTRDdigitsManager::ResetArrays()
 {
@@ -177,38 +183,29 @@ void AliTRDdigitsManager::ResetArrays()
     fDigits->Delete();
     delete fDigits;
   }
-  fDigits = new AliTRDsegmentArray("AliTRDdataArrayI",AliTRDgeometry::Ndet());
+  if (fHasSDigits) {
+    fDigits = new AliTRDsegmentArray("AliTRDdataArrayF",AliTRDgeometry::Ndet());
+  }
+  else {
+    fDigits = new AliTRDsegmentArray("AliTRDdataArrayS",AliTRDgeometry::Ndet());
+  }
 
-  if (fUseDictionaries)
-    {
-      for (Int_t iDict = 0; iDict < kNDict; iDict++) {
-	if (fDictionary[iDict]) { 
-	  fDictionary[iDict]->Delete();
-	  delete fDictionary[iDict];
-	}
-	fDictionary[iDict] = new AliTRDsegmentArray("AliTRDdataArrayI"
-						    ,AliTRDgeometry::Ndet());
+  if (fUseDictionaries) {
+    for (Int_t iDict = 0; iDict < kNDict; iDict++) {
+      if (fDictionary[iDict]) { 
+	fDictionary[iDict]->Delete();
+        delete fDictionary[iDict];
       }
+      fDictionary[iDict] = new AliTRDsegmentArray("AliTRDdataArrayI"
+						 ,AliTRDgeometry::Ndet());
     }
+  }
 
-  for (Int_t i = 0; i < AliTRDgeometry::Ndet(); i++)
-    {
-      AliTRDSignalIndex *idx = (AliTRDSignalIndex *)fSignalIndexes->At(i);
-      if (idx) idx->Reset();
-    }
-}
+  for (Int_t i = 0; i < AliTRDgeometry::Ndet(); i++) {
+    AliTRDSignalIndex *idx = (AliTRDSignalIndex *)fSignalIndexes->At(i);
+    if (idx) idx->Reset();
+  }
 
-//_____________________________________________________________________________
-void AliTRDdigitsManager::SetRaw()
-{
-  //
-  // Switch on the raw digits flag
-  //
-
-  fIsRaw = kTRUE;
-  if (fDigits)
-    fDigits->SetBit(AliTRDdigit::RawDigit());
-  
 }
 
 //_____________________________________________________________________________
@@ -219,8 +216,11 @@ Short_t AliTRDdigitsManager::GetDigitAmp(Int_t row, Int_t col,Int_t time
   // Returns the amplitude of a digit
   //
 
-  if (!GetDigits(det)) return 0;
-  return ((Short_t) GetDigits(det)->GetData(row,col,time));
+  if (!GetDigits(det)) {
+    return 0;
+  }
+
+  return ((Short_t) ((AliTRDdataArrayS *) GetDigits(det))->GetData(row,col,time));
 
 }
  
@@ -245,8 +245,8 @@ Bool_t AliTRDdigitsManager::MakeBranch(TTree *tree)
     if (kDigits) {
       if (!fTree) return kFALSE;
       TBranch* branch = fTree->GetBranch("TRDdigits");
-      if (!branch) fTree->Branch("TRDdigits",kDigits->IsA()->GetName(),
-                                 &kDigits,buffersize,99);
+      if (!branch) fTree->Branch("TRDdigits",kDigits->IsA()->GetName()
+                                ,&kDigits,buffersize,99);
       AliDebug(1,"Making branch TRDdigits\n");
     }
     else {
@@ -257,31 +257,30 @@ Bool_t AliTRDdigitsManager::MakeBranch(TTree *tree)
     status = kFALSE;
   }
 
-  if (fUseDictionaries)
-    {
-      // Make the branches for the dictionaries
-      for (Int_t iDict = 0; iDict < kNDict; iDict++) {
-	Char_t branchname[15];
-	sprintf(branchname,"TRDdictionary%d",iDict);
-	if (fDictionary[iDict]) {
-	  const AliTRDdataArray *kDictionary = 
-	    (AliTRDdataArray *) fDictionary[iDict]->At(0);
-	  if (kDictionary) {
-	    if (!fTree) return kFALSE;
-	    TBranch* branch = fTree->GetBranch(branchname);
-	    if (!branch) fTree->Branch(branchname,kDictionary->IsA()->GetName(),
-				   &kDictionary,buffersize,99);
-	    AliDebug(1,Form("Making branch %s\n",branchname));
-	  }
-	  else {
-	    status = kFALSE;
-	  }
+  if (fUseDictionaries) {
+    // Make the branches for the dictionaries
+    for (Int_t iDict = 0; iDict < kNDict; iDict++) {
+      Char_t branchname[15];
+      sprintf(branchname,"TRDdictionary%d",iDict);
+      if (fDictionary[iDict]) {
+	const AliTRDdataArray *kDictionary = 
+	                       (AliTRDdataArray *) fDictionary[iDict]->At(0);
+	if (kDictionary) {
+	  if (!fTree) return kFALSE;
+	  TBranch* branch = fTree->GetBranch(branchname);
+	  if (!branch) fTree->Branch(branchname,kDictionary->IsA()->GetName()
+				    ,&kDictionary,buffersize,99);
+	  AliDebug(1,Form("Making branch %s\n",branchname));
 	}
 	else {
 	  status = kFALSE;
 	}
       }
+      else {
+	status = kFALSE;
+      }
     }
+  }
 
   return status;
 
@@ -297,9 +296,7 @@ Bool_t AliTRDdigitsManager::ReadDigits(TTree *tree)
   Bool_t status = kTRUE;
 
   if (tree) {
-
     fTree = tree;
-
   }
 
   if (!fDigits) {
@@ -309,26 +306,17 @@ Bool_t AliTRDdigitsManager::ReadDigits(TTree *tree)
 
   status = fDigits->LoadArray("TRDdigits",fTree);
 
-  if (fUseDictionaries)
-    {
-      for (Int_t iDict = 0; iDict < kNDict; iDict++) {
-	Char_t branchname[15];
-	sprintf(branchname,"TRDdictionary%d",iDict);
-	status = fDictionary[iDict]->LoadArray(branchname,fTree);
-	if (status == kFALSE)
-	  {
-	    fUseDictionaries = kFALSE;
-	    AliWarning("Unable to load dict arrays. Will not use them.\n");
-	    break;
-	  }
-      }  
-    }
-
-  if (fDigits->TestBit(AliTRDdigit::RawDigit())) {
-    fIsRaw = kTRUE;
-  }
-  else {
-    fIsRaw = kFALSE;
+  if (fUseDictionaries) {
+    for (Int_t iDict = 0; iDict < kNDict; iDict++) {
+      Char_t branchname[15];
+      sprintf(branchname,"TRDdictionary%d",iDict);
+      status = fDictionary[iDict]->LoadArray(branchname,fTree);
+      if (status == kFALSE) {
+	fUseDictionaries = kFALSE;
+	AliWarning("Unable to load dict arrays. Will not use them.\n");
+        break;
+      }
+    }  
   }
 
   return kTRUE;
@@ -348,17 +336,16 @@ Bool_t AliTRDdigitsManager::WriteDigits()
     return kFALSE;
   }
 
-  if (fUseDictionaries)
-    {
-      for (Int_t iDict = 0; iDict < kNDict; iDict++) {
-	Char_t branchname[15];
-	sprintf(branchname,"TRDdictionary%d",iDict);
-	if (!fDictionary[iDict]->StoreArray(branchname,fTree)) {
-	  AliError(Form("Error while storing dictionary in branch %s\n",branchname));
-	  return kFALSE;
-	}
+  if (fUseDictionaries) {
+    for (Int_t iDict = 0; iDict < kNDict; iDict++) {
+      Char_t branchname[15];
+      sprintf(branchname,"TRDdictionary%d",iDict);
+      if (!fDictionary[iDict]->StoreArray(branchname,fTree)) {
+	AliError(Form("Error while storing dictionary in branch %s\n",branchname));
+        return kFALSE;
       }
     }
+  }
 
   // Write the new tree to the output file
   fTree->AutoSave();  // Modification by Jiri
@@ -383,9 +370,9 @@ AliTRDdigit *AliTRDdigitsManager::GetDigit(Int_t row, Int_t col
   digits[2] = col;
   digits[3] = time;
 
-  amp[0]    = GetDigits(det)->GetData(row,col,time);
+  amp[0]    = ((AliTRDdataArrayS *) GetDigits(det))->GetData(row,col,time);
   
-  return (new AliTRDdigit(fIsRaw,digits,amp));
+  return (new AliTRDdigit(digits,amp));
 
 }
 
@@ -404,39 +391,42 @@ Int_t AliTRDdigitsManager::GetTrack(Int_t track
     return -1;
   }
 
-  if (fUseDictionaries == kFALSE)
-    {
-      return -1;
-    }
+  if (fUseDictionaries == kFALSE) {
+    return -1;
+  }
+
   // Array contains index+1 to allow data compression
-  return (GetDictionary(det,track)->GetData(row,col,time) - 1);
+  return (((AliTRDdataArrayI *) GetDictionary(det,track))->GetData(row,col,time) - 1);
 
 }
 
 //_____________________________________________________________________________
-AliTRDdataArrayI *AliTRDdigitsManager::GetDigits(Int_t det) const
+AliTRDdataArray *AliTRDdigitsManager::GetDigits(Int_t det) const
 {
   //
   // Returns the digits array for one detector
   //
 
-  if (!fDigits) return 0x0;
-  return (AliTRDdataArrayI *) fDigits->At(det);
+  if (!fDigits) {
+    return 0x0;
+  }
+
+  return (AliTRDdataArray *) fDigits->At(det);
 
 }
 
 //_____________________________________________________________________________
-AliTRDdataArrayI *AliTRDdigitsManager::GetDictionary(Int_t det, Int_t i) const
+AliTRDdataArray *AliTRDdigitsManager::GetDictionary(Int_t det, Int_t i) const
 {
   //
   // Returns the dictionary for one detector
   //
-  if (fUseDictionaries == kFALSE)
-    {
-      return NULL;
-    }
 
-  return (AliTRDdataArrayI *) fDictionary[i]->At(det);
+  if (fUseDictionaries == kFALSE) {
+    return 0x0;
+  }
+
+  return (AliTRDdataArray *) fDictionary[i]->At(det);
 
 }
 
@@ -463,7 +453,7 @@ AliTRDSignalIndex *AliTRDdigitsManager::GetIndexes(Int_t det)
   // Returns indexes of active pads
   //
 
-  return (AliTRDSignalIndex*)fSignalIndexes->At(det);
+  return (AliTRDSignalIndex *) fSignalIndexes->At(det);
 
 }
 
@@ -484,10 +474,10 @@ void AliTRDdigitsManager::RemoveDictionaries(Int_t det)
   // 
   // Clear memory
   //
-  if (fUseDictionaries == kFALSE)
-    {
-      return;
-    }
+
+  if (fUseDictionaries == kFALSE) {
+    return;
+  }
 
   for (Int_t i = 0; i < kNDict; i++) {
     fDictionary[i]->ClearSegment(det);
@@ -501,9 +491,10 @@ void AliTRDdigitsManager::ClearIndexes(Int_t det)
   // 
   // Clear memory
   //
-  fSignalIndexes->At(det)->Clear();  
-}
 
+  fSignalIndexes->At(det)->Clear();  
+
+}
 
 //_____________________________________________________________________________
 Bool_t AliTRDdigitsManager::BuildIndexes(Int_t det)
@@ -517,49 +508,50 @@ Bool_t AliTRDdigitsManager::BuildIndexes(Int_t det)
   Int_t nTbins = 0;
 
   AliTRDgeometry    geom;
-  AliTRDdataArrayI *digits = GetDigits(det);
+  AliTRDdataArrayS *digits = 0x0;
+
+  if (fHasSDigits) {
+    return kFALSE;
+  }
+  else {
+    digits = (AliTRDdataArrayS *) GetDigits(det);
+  }
+
   //digits should be expanded by now!!!
-  if (digits->GetNtime() > 0) 
-    {
-      digits->Expand();
-      nRows = digits->GetNrow();
-      nCols = digits->GetNcol();
-      nTbins = digits->GetNtime();
+  if (digits->GetNtime() > 0) {
 
-      //AliInfo(Form("rows %d cols %d tbins %d", nRows, nCols, nTbins));
+    digits->Expand();
+    nRows  = digits->GetNrow();
+    nCols  = digits->GetNcol();
+    nTbins = digits->GetNtime();
 
-      AliTRDSignalIndex* indexes = GetIndexes(det);
-      indexes->SetSM(geom.GetSector(det));
-      indexes->SetChamber(geom.GetChamber(det));
-      indexes->SetPlane(geom.GetPlane(det));
-      indexes->SetDetNumber(det);
-      if (indexes->IsAllocated() == kFALSE)
-	{
-	  indexes->Allocate(nRows, nCols, nTbins);
-	  //AliInfo(Form("Allocating 0x%x %d", indexes->GetArray(), indexes->GetArray()->GetSize()));
-	}
-      for (Int_t ir = 0; ir < nRows; ir++)
-	{
-	  for (Int_t ic = 0; ic < nCols; ic++)
-	    {
-	      for (Int_t it = 0; it < nTbins; it++)
-		{	  
-		  //AliInfo(Form("row %d col %d tbin %d", ir, ic, it));
-		  
-		  Int_t isig = digits->GetDataUnchecked(ir, ic, it);
-  		  if (isig > 0)
-		    {
-		      //AliInfo(Form("row %d col %d tbin %d", ir, ic, it));
-		      indexes->AddIndexTBin(ir, ic, it);	    
-		    }
-		} //tbins
-	    } //cols
-	} // rows
-    } // if GetNtime
-  else
-    {
-      return kFALSE;
+    AliTRDSignalIndex *indexes = GetIndexes(det);
+    indexes->SetSM(geom.GetSector(det));
+    indexes->SetChamber(geom.GetChamber(det));
+    indexes->SetPlane(geom.GetPlane(det));
+    indexes->SetDetNumber(det);
+
+    if (indexes->IsAllocated() == kFALSE) {
+      indexes->Allocate(nRows,nCols,nTbins);
     }
+
+    for (Int_t ir = 0; ir < nRows; ir++) {
+      for (Int_t ic = 0; ic < nCols; ic++) {
+	for (Int_t it = 0; it < nTbins; it++) {	  
+  
+	  Int_t isig = digits->GetDataUnchecked(ir,ic,it);
+  	  if (isig > 0) {
+	    indexes->AddIndexTBin(ir,ic,it);	    
+	  }
+	} // tbins
+      } // cols
+    } // rows
+
+  } // if GetNtime
+  else {
+    return kFALSE;
+  }
+
   return kTRUE;
 
 }

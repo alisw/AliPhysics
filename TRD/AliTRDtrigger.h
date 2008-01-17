@@ -26,6 +26,7 @@ class AliTRDmcm;
 class AliTRDmodule;
 class AliTRDdigitsManager;
 class AliTRDdataArrayI;
+class AliTRDdataArrayS;
 class AliTRDgeometry;
 
 class AliTRDtrigger : public TNamed {
@@ -85,7 +86,7 @@ class AliTRDtrigger : public TNamed {
 
           Int_t                  fNtracklets;                  //! Tracklets counter
 
-          AliTRDdataArrayI      *fDigits;                      //! Array with digits
+          AliTRDdataArrayS      *fDigits;                      //! Array with digits
           AliTRDdataArrayI      *fTrack0;                      //! Track dictionary 0
           AliTRDdataArrayI      *fTrack1;                      //! Track dictionary 1
           AliTRDdataArrayI      *fTrack2;                      //! Track dictionary 2
@@ -94,7 +95,7 @@ class AliTRDtrigger : public TNamed {
 
           TClonesArray          *fTracks;                      //! Array of GTU tracks
 
-  ClassDef(AliTRDtrigger,4)                                    //  TRD trigger class
+  ClassDef(AliTRDtrigger,6)                                    //  TRD trigger class
 
 };
 

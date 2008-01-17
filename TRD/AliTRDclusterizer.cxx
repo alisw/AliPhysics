@@ -39,6 +39,7 @@
 #include "AliTRDgeometry.h"
 #include "AliTRDdataArrayF.h"
 #include "AliTRDdataArrayI.h"
+#include "AliTRDdataArrayS.h"
 #include "AliTRDdigitsManager.h"
 #include "AliTRDrawData.h"
 #include "AliTRDcalibDB.h"
@@ -455,9 +456,9 @@ Bool_t AliTRDclusterizer::MakeClusters()
   for (Int_t i = 0; i < AliTRDgeometry::kNdet; i++)
     {
 
-      AliTRDdataArrayI *digitsIn = fDigitsManager->GetDigits(i);      
+      AliTRDdataArrayS *digitsIn = (AliTRDdataArrayS *) fDigitsManager->GetDigits(i);      
       // This is to take care of switched off super modules
-      if (digitsIn->GetNtime() == 0) 
+      if (!digitsIn->HasData()) 
         {
 	  continue;
         }
@@ -476,7 +477,7 @@ Bool_t AliTRDclusterizer::MakeClusters()
 	      for (Int_t iDict = 0; iDict < AliTRDdigitsManager::kNDict; iDict++) 
 		{
 		  AliTRDdataArrayI *tracksIn = 0;
-		  tracksIn = fDigitsManager->GetDictionary(i,iDict);
+		  tracksIn = (AliTRDdataArrayI *) fDigitsManager->GetDictionary(i,iDict);
 		  tracksIn->Expand();
 		}
 	    }
@@ -508,7 +509,7 @@ Bool_t AliTRDclusterizer::Raw2Clusters(AliRawReader *rawReader)
   // Creates clusters from raw data
   //
 
-  AliTRDdataArrayI *digits = 0;
+  AliTRDdataArrayS *digits = 0;
   AliTRDdataArrayI *track0 = 0;
   AliTRDdataArrayI *track1 = 0;
   AliTRDdataArrayI *track2 = 0; 
@@ -542,7 +543,7 @@ Bool_t AliTRDclusterizer::Raw2Clusters(AliRawReader *rawReader)
 	
 	  if (lastdet != -1)
 	    {
-	      digits = fDigitsManager->GetDigits(lastdet);
+	      digits = (AliTRDdataArrayS *) fDigitsManager->GetDigits(lastdet);
 	      Bool_t iclusterBranch = kFALSE;
 	      if (indexes->HasEntry())
 		iclusterBranch = MakeClusters(lastdet);
@@ -563,13 +564,13 @@ Bool_t AliTRDclusterizer::Raw2Clusters(AliRawReader *rawReader)
 	  lastdet = det;
 
 	  // Add a container for the digits of this detector
-	  digits = fDigitsManager->GetDigits(det);
-	  track0 = fDigitsManager->GetDictionary(det,0);
-	  track1 = fDigitsManager->GetDictionary(det,1);
-	  track2 = fDigitsManager->GetDictionary(det,2);
+	  digits = (AliTRDdataArrayS *) fDigitsManager->GetDigits(det);
+	  track0 = (AliTRDdataArrayI *) fDigitsManager->GetDictionary(det,0);
+	  track1 = (AliTRDdataArrayI *) fDigitsManager->GetDictionary(det,1);
+	  track2 = (AliTRDdataArrayI *) fDigitsManager->GetDictionary(det,2);
 
 	  // Allocate memory space for the digits buffer
-	  if (digits->GetNtime() == 0) 
+	  if (!digits->HasData()) 
 	    {
 	      //AliDebug(5, Form("Alloc digits for det %d", det));
 	      digits->Allocate(input.GetMaxRow(),input.GetMaxCol(), input.GetNumberOfTimeBins());
@@ -696,10 +697,10 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
   // Get the digits
   //   digits should be expanded beforehand!
   //   digitsIn->Expand();
-  AliTRDdataArrayI *digitsIn = fDigitsManager->GetDigits(det);      
+  AliTRDdataArrayS *digitsIn = (AliTRDdataArrayS *) fDigitsManager->GetDigits(det);      
 
   // This is to take care of switched off super modules
-  if (digitsIn->GetNtime() == 0) 
+  if (!digitsIn->HasData()) 
     {
       return kFALSE;
     }
@@ -1076,7 +1077,7 @@ Bool_t AliTRDclusterizer::AddLabels(Int_t idet, Int_t firstClusterROC, Int_t nCl
   for (Int_t iDict = 0; iDict < kNdict; iDict++) {
 
     // tracksIn should be expanded beforehand!
-    tracksIn = fDigitsManager->GetDictionary(idet,iDict);
+    tracksIn = (AliTRDdataArrayI *) fDigitsManager->GetDictionary(idet,iDict);
 
     // Loop though the clusters found in this ROC
     for (iClusterROC = 0; iClusterROC < nClusterROC; iClusterROC++) {
@@ -1197,7 +1198,7 @@ Double_t AliTRDclusterizer::Unfold(Double_t eps, Int_t plane, Double_t *padSigna
 }
 
 //_____________________________________________________________________________
-void AliTRDclusterizer::TailCancelation(AliTRDdataArrayI *digitsIn
+void AliTRDclusterizer::TailCancelation(AliTRDdataArrayS *digitsIn
 	       		              , AliTRDdataArrayF *digitsOut
 				      , AliTRDSignalIndex *indexesIn
 				      , AliTRDSignalIndex *indexesOut

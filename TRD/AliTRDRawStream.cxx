@@ -37,6 +37,7 @@
 #include "AliTRDcalibDB.h"
 #include "AliTRDdigitsManager.h"
 #include "AliTRDdataArrayI.h"
+#include "AliTRDdataArrayS.h"
 #include "AliTRDSignalIndex.h"
 #include "AliTRDfeeParam.h"
 
@@ -627,7 +628,7 @@ Int_t AliTRDRawStream::NextChamber(AliTRDdigitsManager *man)
   // Updates the next data word pointer
   //
 
-  AliTRDdataArrayI *digits = 0;
+  AliTRDdataArrayS *digits = 0;
   AliTRDdataArrayI *track0 = 0;
   AliTRDdataArrayI *track1 = 0;
   AliTRDdataArrayI *track2 = 0; 
@@ -809,10 +810,10 @@ Int_t AliTRDRawStream::NextChamber(AliTRDdigitsManager *man)
 		  AliDebug(4, "New DET!");	      
 		  // allocate stuff for the new det
 		  //man->ResetArrays();
-		  digits = man->GetDigits(fDET);
-		  track0 = man->GetDictionary(fDET,0);
-		  track1 = man->GetDictionary(fDET,1);
-		  track2 = man->GetDictionary(fDET,2);
+		  digits = (AliTRDdataArrayS *) man->GetDigits(fDET);
+		  track0 = (AliTRDdataArrayI *) man->GetDictionary(fDET,0);
+		  track1 = (AliTRDdataArrayI *) man->GetDictionary(fDET,1);
+		  track2 = (AliTRDdataArrayI *) man->GetDictionary(fDET,2);
 		  
 		  // Allocate memory space for the digits buffer
 		  if (digits->GetNtime() == 0) 

@@ -20,7 +20,7 @@ class AliRawReader;
 class AliTRDdigitsManager;
 class AliTRDgeometry;
 class AliTRDfeeParam;
-class AliTRDdataArrayI;
+class AliTRDdataArrayS;
 
 class AliTRDrawData : public TObject {
 
@@ -34,13 +34,13 @@ class AliTRDrawData : public TObject {
 
   virtual Bool_t       Digits2Raw(TTree *digits, TTree *tracks = NULL);
 
-  virtual AliTRDdigitsManager* Raw2Digits(AliRawReader *rawReader);
+  virtual AliTRDdigitsManager *Raw2Digits(AliRawReader *rawReader);
 
  protected:
 
   virtual Bool_t       Digits2Raw(AliTRDdigitsManager* digitsManager); // for fRawVersion > 0
-  virtual Int_t        ProduceHcDataV1andV2(AliTRDdataArrayI *digits, Int_t side, Int_t det, UInt_t *buf, Int_t maxSize);
-  virtual Int_t        ProduceHcDataV3(AliTRDdataArrayI *digits, Int_t side, Int_t det, UInt_t *buf, Int_t maxSize);
+  virtual Int_t        ProduceHcDataV1andV2(AliTRDdataArrayS *digits, Int_t side, Int_t det, UInt_t *buf, Int_t maxSize);
+  virtual Int_t        ProduceHcDataV3(AliTRDdataArrayS *digits, Int_t side, Int_t det, UInt_t *buf, Int_t maxSize);
   
   AliTRDgeometry      *fGeo;            //! Geometry
   AliTRDfeeParam      *fFee;            //! Fee Parameters

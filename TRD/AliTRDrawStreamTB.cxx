@@ -37,6 +37,7 @@
 #include "AliTRDfeeParam.h"
 #include "AliTRDdigitsManager.h"
 #include "AliTRDdataArrayI.h"
+#include "AliTRDdataArrayS.h"
 #include "AliTRDSignalIndex.h"
 
 #include "AliLog.h"
@@ -639,7 +640,7 @@ AliTRDrawStreamTB::NextChamber(AliTRDdigitsManager *digitsManager)
   // Return value is the detector number
   //
 
-  AliTRDdataArrayI *digits = 0;
+  AliTRDdataArrayS *digits = 0;
   AliTRDdataArrayI *track0 = 0;
   AliTRDdataArrayI *track1 = 0;
   AliTRDdataArrayI *track2 = 0; 
@@ -680,10 +681,10 @@ AliTRDrawStreamTB::NextChamber(AliTRDdigitsManager *digitsManager)
 	    }
 
 	  // Add a container for the digits of this detector
-	  digits = digitsManager->GetDigits(det);
-	  track0 = digitsManager->GetDictionary(det,0);
-	  track1 = digitsManager->GetDictionary(det,1);
-	  track2 = digitsManager->GetDictionary(det,2);
+	  digits = (AliTRDdataArrayS *) digitsManager->GetDigits(det);
+	  track0 = (AliTRDdataArrayI *) digitsManager->GetDictionary(det,0);
+	  track1 = (AliTRDdataArrayI *) digitsManager->GetDictionary(det,1);
+	  track2 = (AliTRDdataArrayI *) digitsManager->GetDictionary(det,2);
 
 	  if (!digits)
 	    {

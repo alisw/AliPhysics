@@ -28,11 +28,6 @@
 ClassImp(AliTRDdigit)
 
 //_____________________________________________________________________________
-  
-  // Marks a raw digit
-  const UInt_t AliTRDdigit::fgkRawDigit = 0x00000001; 
-
-//_____________________________________________________________________________
 AliTRDdigit::AliTRDdigit()
   :AliDigitNew()
   ,fRow(0)
@@ -46,7 +41,7 @@ AliTRDdigit::AliTRDdigit()
 }
 
 //_____________________________________________________________________________
-AliTRDdigit::AliTRDdigit(Bool_t isRaw, Int_t *digits, Int_t *amp)
+AliTRDdigit::AliTRDdigit(Int_t *digits, Int_t *amp)
   :AliDigitNew()
   ,fRow(0)
   ,fCol(0)
@@ -67,8 +62,6 @@ AliTRDdigit::AliTRDdigit(Bool_t isRaw, Int_t *digits, Int_t *amp)
   // Store the signal amplitude
   fAmp  = amp[0];
 
-  if (isRaw) SetBit(fgkRawDigit);
-
 }
 
 //_____________________________________________________________________________
@@ -77,16 +70,5 @@ AliTRDdigit::~AliTRDdigit()
   //
   // AliTRDdigit destructor
   //
-
-}
-
-//_____________________________________________________________________________
-Int_t AliTRDdigit::DecodeAmp() const
-{
-  //
-  // Decodes the digit amplitude
-  //
-
-  return 0;
 
 }
