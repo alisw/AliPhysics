@@ -84,9 +84,10 @@ void AliHLTTPCDigitReader::SetOldRCUFormat(Bool_t /*oldrcuformat*/)
 void AliHLTTPCDigitReader::SetUnsorted(Bool_t /*unsorted*/)
 {
   // default method of the base class
+  HLTWarning("common sorting functionality has not yet been implemented");
 }
 
-bool AliHLTTPCDigitReader::Next()
+bool AliHLTTPCDigitReader::Next(int type)
 {
   // see header file for class documentation
   if (!CheckFlag(kLocked)) return NextSignal();
@@ -101,6 +102,27 @@ bool AliHLTTPCDigitReader::Next()
   }
 
   return haveData;
+}
+
+bool AliHLTTPCDigitReader::NextChannel()
+{
+  // see header file for class documentation
+  PrintMissingFastAccessWarning();
+  return false;
+}
+
+int AliHLTTPCDigitReader::NextBunch()
+{
+  // see header file for class documentation
+  PrintMissingFastAccessWarning();
+  return false;
+}
+
+AliHLTUInt32_t* AliHLTTPCDigitReader::GetSignals()
+{
+  // see header file for class documentation
+  PrintMissingFastAccessWarning();
+  return 0;
 }
 
 void AliHLTTPCDigitReader::EnableCaching(bool bCache)
@@ -149,4 +171,12 @@ int AliHLTTPCDigitReader::RewindToPrevChannel()
   SetFlag(kNoRewind);
   if (!CheckFlag(kChannelCaching)) return -ENODATA;
   return -ENOSYS;
+}
+
+void AliHLTTPCDigitReader::PrintMissingFastAccessWarning()
+{
+  // see header file for class documentation
+  if (CheckFlag(kWarnMissFastAccess)) return;
+  SetFlag(kWarnMissFastAccess);
+  HLTWarning("This digit reader does not implement the metghods for fast data access on channel/bunch basis. Data is discarded");
 }

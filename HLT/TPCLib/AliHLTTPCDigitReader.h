@@ -73,20 +73,51 @@ public:
    */
   virtual int InitBlock(void* ptr,unsigned long size,Int_t firstrow,Int_t lastrow, Int_t patch, Int_t slice);
 
+  enum {
+    kNextSignal = 1,
+    kNextChannel,
+    kNextBunch,
+    kLastValidModifier
+  };
+
   /**
    * Set the reader position to the next value.
    * If the reader was not yet initialized, initialization is carried out and
    * the position set to the beginning of the stream (which is in essence the
    * end of the data block due to the back-linked list).
    *
+   * The modifiers determine the unit of the positioning:
+   * - @ref kNextSignal    set to the next signal value
+   * - @ref kNextChannel   set at the beginning of the next channel
+   * - @ref kNextBunch     set at the beginning of the next bunch within the
+   *                       current channel.
+   *
    * If the reader is locked for a pad/channel, Next operates only on the data
    * belonging to the current channel and returns false at the end of the
    * channel.
    * 
-   * The function does some basic stuff and forwards to @ref NextSignal.
+   * The function does some basic stuff and forwards to @ref NextSignal, @ref
+   * NextBunch or @ref NextChannel depending on the modifer. This function is
+   * also necessary if the common sorting is going to be used (not yet implemented)
    * @return true if data is available, false if not
    */
-  bool Next();
+  bool Next(int type=kNextSignal);
+
+  /**
+   * Set stream position to the next Pad (ALTRO channel).
+   * This is the direct entry to data access on a channel/bunch basis suited
+   * for fast data access.
+   * @return true if data is available, false if not
+   */
+  virtual bool NextChannel();
+
+  /**
+   * Set stream to the next ALTRO bunch within the current pad.
+   * This is the direct entry to data access on a channel/bunch basis suited
+   * for fast data access.
+   * @return bunch length, 0 if no data bunch available in the current pad
+   */
+  virtual int NextBunch();
 
   /**
    * Get the row number of the current value.
@@ -104,7 +135,14 @@ public:
   virtual int GetSignal()=0;
 
   /**
+   * Get pointer to the the current ADC value.
+   */
+  virtual AliHLTUInt32_t* GetSignals();
+
+  /**
    * Get the time bin of the current value.
+   * If @ref NextBunch has been used the function returns the
+   * first time bin of the bunch.
    */
   virtual int GetTime()=0;
 
@@ -164,6 +202,8 @@ public:
     kChannelOverwrap = 0x2,
     /** reader doe not allow channel rewind */
     kNoRewind = 0x4,
+    /** warning missing fast access methods */
+    kWarnMissFastAccess = 0x8,
     /** channel caching enabled */
     kChannelCaching = 0x100
   };
@@ -171,6 +211,7 @@ protected:
   /**
    * Set the reader position to the next value.
    * This is the reader specific method called by @ref Next.
+   * @return true if data is available, false if not
    */
   virtual bool NextSignal()=0;
 
@@ -202,6 +243,12 @@ protected:
   virtual int RewindToPrevChannel();
 
 private:
+  /**
+   * Print a warning on the missing fast access methods.
+   * Set corresponding flag to avoid repetitive warnings.
+   */
+  void PrintMissingFastAccessWarning();
+
   /** pad/channel is locked */
   unsigned int fFlags;                                    //!transient
 
