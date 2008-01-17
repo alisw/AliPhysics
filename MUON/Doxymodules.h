@@ -71,7 +71,7 @@
  */
 /** @} */
 
-/** @defgroup graphics mp_graphics
+/** @defgroup mpgraphics mp_graphics
  *  @ingroup mapping
  *  Category of classes for visualization in mapping
  *  @{
@@ -147,6 +147,14 @@
 /** @defgroup evaluation evaluation
  *  Category of classes for evaluation
  *  see more on the \ref README_evaluation page.
+ *  @ingroup MUON
+ *  @{
+ */
+/** @} */
+
+/** @defgroup graphics graphics
+ *  Category of classes for tracker visualization
+ *  see more on the \ref README_mchview page.
  *  @ingroup MUON
  *  @{
  */

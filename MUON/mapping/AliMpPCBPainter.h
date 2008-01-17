@@ -4,7 +4,7 @@
 // $Id$
 // $MpId: AliMpPCBPainter.h,v 1.7 2006/05/24 13:58:13 ivana Exp $
 
-/// \ingroup graphics
+/// \ingroup mpgraphics
 /// \class AliMpPCBPainter
 /// \brief Class for drawing a PCB into canvas
 ///

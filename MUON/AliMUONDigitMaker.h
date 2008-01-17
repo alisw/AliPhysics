@@ -12,7 +12,6 @@
 //  Author: Ch, Finck
 
 #include <TObject.h>
-#include "TStopwatch.h"
 
 class TArrayS;
 
@@ -24,6 +23,8 @@ class AliMUONRawStreamTrigger;
 
 class AliMUONVDigitStore;
 class AliMUONVTriggerStore;
+
+class AliMUONLogger;
 
 class AliMUONDigitMaker : public TObject 
 {
@@ -66,14 +67,12 @@ private:
   AliMUONVRawStreamTracker* fRawStreamTracker; //!< pointer of raw stream for tracker
   AliMUONRawStreamTrigger* fRawStreamTrigger;  //!< pointer of raw stream for trigger
 
-  TStopwatch fTrackerTimer;                    //!< time watcher for tracker part
-  TStopwatch fTriggerTimer;                    //!< time watcher for trigger part
-  TStopwatch fMappingTimer;                    //!< time watcher for mapping-tracker part
-
   AliMUONVDigitStore* fDigitStore; //!< not owner
   AliMUONVTriggerStore* fTriggerStore; //!< not owner
 
-  ClassDef(AliMUONDigitMaker,5) // MUON digit maker from rawdata
+  AliMUONLogger* fLogger; //!< to log messages
+  
+  ClassDef(AliMUONDigitMaker,6) // MUON digit maker from rawdata
 };
 	
 #endif

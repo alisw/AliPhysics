@@ -4,7 +4,7 @@
 // $Id$
 // $MpId: AliMpSubZonePainter.h,v 1.8 2006/05/24 13:58:13 ivana Exp $
 
-/// \ingroup graphics
+/// \ingroup mpgraphics
 /// \class AliMpSubZonePainter
 /// \brief Class for drawing a subzone into canvas
 ///

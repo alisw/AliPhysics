@@ -44,6 +44,7 @@
 
 #include "AliMUONDigitMaker.h"
 
+#include "AliCodeTimer.h"
 #include "AliLog.h"
 #include "AliMUONDDLTrigger.h"
 #include "AliMUONDarcHeader.h"
@@ -52,6 +53,7 @@
 #include "AliMUONGlobalTrigger.h"
 #include "AliMUONLocalStruct.h"
 #include "AliMUONLocalTrigger.h"
+#include "AliMUONLogger.h"
 #include "AliMUONRawStreamTracker.h"
 #include "AliMUONRawStreamTrackerHP.h"
 #include "AliMUONRawStreamTrigger.h"
@@ -80,11 +82,9 @@ AliMUONDigitMaker::AliMUONDigitMaker(Bool_t enableErrorLogger, Bool_t useFastDec
     fMakeTriggerDigits(kFALSE),
     fRawStreamTracker(NULL),
     fRawStreamTrigger(new AliMUONRawStreamTrigger()),    
-    fTrackerTimer(),
-    fTriggerTimer(),
-    fMappingTimer(),
     fDigitStore(0x0),
-    fTriggerStore(0x0)
+    fTriggerStore(0x0),
+  fLogger(new AliMUONLogger(10000))
 {
   /// ctor 
 
@@ -98,10 +98,6 @@ AliMUONDigitMaker::AliMUONDigitMaker(Bool_t enableErrorLogger, Bool_t useFastDec
     fRawStreamTrigger->EnabbleErrorLogger();
   }
 
-  fTrackerTimer.Start(kTRUE); fTrackerTimer.Stop();
-  fTriggerTimer.Start(kTRUE); fTriggerTimer.Stop();
-  fMappingTimer.Start(kTRUE); fMappingTimer.Stop();
-  
   SetMakeTriggerDigits();
 
 }
@@ -115,14 +111,7 @@ AliMUONDigitMaker::~AliMUONDigitMaker()
   delete fRawStreamTracker;
   delete fRawStreamTrigger;
 
-  AliDebug(1, Form("Execution time for MUON tracker : R:%.2fs C:%.2fs",
-               fTrackerTimer.RealTime(),fTrackerTimer.CpuTime()));
-  AliDebug(1, Form("   Execution time for MUON tracker (mapping calls part) "
-               ": R:%.2fs C:%.2fs",
-               fMappingTimer.RealTime(),fMappingTimer.CpuTime()));
-  AliDebug(1, Form("Execution time for MUON trigger : R:%.2fs C:%.2fs",
-               fTriggerTimer.RealTime(),fTriggerTimer.CpuTime()));
-
+  delete fLogger;
 }
 
 //__________________________________________________________________________
@@ -156,7 +145,7 @@ Int_t AliMUONDigitMaker::Raw2Digits(AliRawReader* rawReader,
   
   if (!fDigitStore && !fTriggerStore)
   {
-    AliError("No digit or trigger store given. Nothing to do...");
+    fLogger->Log("No digit or trigger store given. Nothing to do...");
     return kFALSE;
   }
   
@@ -171,7 +160,7 @@ Int_t AliMUONDigitMaker::Raw2Digits(AliRawReader* rawReader,
     if ( fTriggerStore ) fTriggerStore->Clear();
     if ( fMakeTriggerDigits && !fDigitStore ) 
     {
-      AliError("Asking for trigger digits but digitStore is null");
+      fLogger->Log("Asking for trigger digits but digitStore is null");
     }
     else
     {
@@ -190,7 +179,7 @@ Int_t AliMUONDigitMaker::ReadTrackerDDL(AliRawReader* rawReader)
 
   AliDebug(1,"");
   
-  fTrackerTimer.Start(kFALSE);
+  AliCodeTimerAuto("");
 
   // elex info
   Int_t    buspatchId;
@@ -210,6 +199,12 @@ Int_t AliMUONDigitMaker::ReadTrackerDDL(AliRawReader* rawReader)
       = AliMpSegmentation::Instance()->GetMpSegmentationByElectronics(detElemId, 
                                                                       manuId);  
 
+    if (!seg)
+    {
+      fLogger->Log(Form("(DE,MANUID)=(%04d,%04d) is not valid",detElemId,manuId));
+      continue;
+    }
+    
     AliMp::CathodType cathodeType = AliMpDEManager::GetCathod(detElemId, 
                                                               seg->PlaneType());
 
@@ -217,7 +212,7 @@ Int_t AliMUONDigitMaker::ReadTrackerDDL(AliRawReader* rawReader)
     
     if (!pad.IsValid())
     {
-      AliError(Form("No pad for detElemId: %d, manuId: %d, channelId: %d",
+      fLogger->Log(Form("No pad for detElemId: %d, manuId: %d, channelId: %d",
                     detElemId, manuId, channelId));
       continue;
     } 
@@ -226,7 +221,7 @@ Int_t AliMUONDigitMaker::ReadTrackerDDL(AliRawReader* rawReader)
                                             AliMUONVDigitStore::kDeny);
     if (!digit)
     {
-      AliError(Form("Digit DE %04d Manu %04d Channel %02d could not be added",
+      fLogger->Log(Form("Digit DE %04d Manu %04d Channel %02d could not be added",
                     detElemId, manuId, channelId));
       continue;
     }
@@ -238,8 +233,6 @@ Int_t AliMUONDigitMaker::ReadTrackerDDL(AliRawReader* rawReader)
 
   }
   
-  fTrackerTimer.Stop();
-
   return kTRUE;
 }
 
@@ -258,7 +251,7 @@ Int_t AliMUONDigitMaker::ReadTriggerDDL(AliRawReader* rawReader)
 
   Int_t loCircuit;
 
-  fTriggerTimer.Start(kFALSE);
+  AliCodeTimerAuto("");
 
   fRawStreamTrigger->SetReader(rawReader);
 
@@ -289,7 +282,7 @@ Int_t AliMUONDigitMaker::ReadTriggerDDL(AliRawReader* rawReader)
                                 GetTriggerCrate(fRawStreamTrigger->GetDDL(), iReg);
       
       if (!crate) 
-        AliWarning(Form("Missing crate number %d in DDL %d\n", iReg, fRawStreamTrigger->GetDDL()));
+        fLogger->Log(Form("Missing crate number %d in DDL %d\n", iReg, fRawStreamTrigger->GetDDL()));
      
       
       regHeader =  darcHeader->GetRegHeaderEntry(iReg);
@@ -336,8 +329,6 @@ Int_t AliMUONDigitMaker::ReadTriggerDDL(AliRawReader* rawReader)
     } // iReg
   } // NextDDL
   
-  fTriggerTimer.Stop();
-
   return kTRUE;
 
 }
@@ -349,6 +340,8 @@ Int_t AliMUONDigitMaker::TriggerDigits(Int_t nBoard,
 {
   /// make digits for trigger from pattern, and add them to digitStore
 
+  AliCodeTimerAuto("");
+  
   Int_t detElemId;
 
   AliMpLocalBoard* localBoard = AliMpDDLStore::Instance()->GetLocalBoard(nBoard);
@@ -383,7 +376,7 @@ Int_t AliMUONDigitMaker::TriggerDigits(Int_t nBoard,
                         
             if (!pad.IsValid()) 
             {
-              AliWarning(Form("No pad for detElemId: %d, nboard %d, ibitxy: %d\n",
+              fLogger->Log(Form("No pad for detElemId: %d, nboard %d, ibitxy: %d\n",
                               detElemId, nBoard, ibitxy));
               continue;
             }

@@ -1,0 +1,35 @@
+# $Id$
+
+SRCS:=  AliMUONVPainter.cxx \
+  AliMUONPCBPainter.cxx \
+  AliMUONDEPainter.cxx \
+  AliMUONPainterHelper.cxx \
+  AliMUONChamberPainter.cxx \
+  AliMUONManuPainter.cxx \
+  AliMUONPainterPadStore.cxx \
+  AliMUONPainterContourMaker.cxx \
+  AliMUONPainterContour.cxx \
+  AliMUONPainterMasterFrame.cxx \
+  AliMUONPainterMatrixFrame.cxx \
+  AliMUONManuPadPainter.cxx \
+  AliMUONPainterGroup.cxx \
+  AliMUONPainterMatrix.cxx \
+  AliMUONAttPainter.cxx \
+  AliMUONPainterRegistry.cxx \
+  AliMUONPainterHighlighter.cxx \
+  AliMUONPainterPlotSelector.cxx \
+  AliMUONPainterInterfaceHelper.cxx \
+  AliMUONBusPatchPainter.cxx \
+  AliMUONPainterColorSlider.cxx \
+  AliMUONAttPainterSelectorFrame.cxx \
+  AliMUONPainterDataSourceFrame.cxx \
+  AliMUONPainterDataSourceItem.cxx \
+  AliMUONTrackerOCDBDataMaker.cxx \
+  AliMUONPainterEnv.cxx
+    
+HDRS:= $(SRCS:.cxx=.h) 
+
+DHDR:= MUONgraphicsLinkDef.h
+
+EINCLUDE:= RAW MUON/mapping
+

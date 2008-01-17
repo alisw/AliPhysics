@@ -1,0 +1,35 @@
+SRCS:=mchview.cxx
+
+EINCLUDE+=MUON/mapping
+
+ELIBS:= \
+VMC \
+Minuit \
+Tree \
+STEERBase \
+ESD \
+AOD \
+RAWDatarec \
+STEER \
+CDB \
+Physics \
+MUONmapping \
+MUONcalib \
+MUONgeometry \
+MUONtrigger \
+RAWDatabase \
+RAWDatasim \
+MUONraw \
+MUONbase \
+MUONshuttle \
+MUONrec \
+MUONgraphics \
+MUONcore
+
+ifneq (macosx,$(ALICE_TARGET))
+ELIBS+=\
+lhapdf \
+pythia6 \
+microcern
+endif
+

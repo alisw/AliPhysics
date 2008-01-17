@@ -6,7 +6,7 @@
 
 // $Id$
 
-/// \ingroup graphics
+/// \ingroup mpgraphics
 /// \class AliMpIteratorPainter
 /// \brief Painter for a group of pads defined by an iterator
 /// 

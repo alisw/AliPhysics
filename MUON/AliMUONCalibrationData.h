@@ -110,16 +110,14 @@ public:
   AliMUONTriggerEfficiencyCells* TriggerEfficiency() const;
   
   void Reset();
+
+  static TObject* CreateObject(Int_t runNumber, const char* path);
   
 protected:
   /// Not implemented
   AliMUONCalibrationData(const AliMUONCalibrationData& other);
   /// Not implemented
   AliMUONCalibrationData& operator=(const AliMUONCalibrationData& other);
-  
-private:  
-    
-  static TObject* CreateObject(Int_t runNumber, const char* path);
   
 private:
   mutable Bool_t fIsValid; ///<  Whether we were able to correctly initialize

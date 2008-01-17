@@ -58,4 +58,6 @@ void loadlibs ()
   gSystem->Load("libMUONsim");
   
   gSystem->Load("libMUONevaluation");
+  
+  gSystem->Load("libMUONgraphics");
 }

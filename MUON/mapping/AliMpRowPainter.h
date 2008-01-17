@@ -4,7 +4,7 @@
 // $Id$
 // $MpId: AliMpRowPainter.h,v 1.8 2006/05/24 13:58:13 ivana Exp $
 
-/// \ingroup graphics
+/// \ingroup mpgraphics
 /// \class AliMpRowPainter
 /// \brief Class for drawing a row into canvas
 ///

@@ -4,7 +4,7 @@
 // $Id$
 // $MpId: AliMpSlatPainter.h,v 1.10 2006/05/24 13:58:13 ivana Exp $
 
-/// \ingroup graphics
+/// \ingroup mpgraphics
 /// \class AliMpSlatPainter
 /// \brief Class for drawing a slat into canvas
 ///

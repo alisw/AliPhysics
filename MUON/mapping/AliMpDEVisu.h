@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 
-/// \ingroup graphics
+/// \ingroup mpgraphics
 /// \class  AliMpDEVisu
 /// \brief GUI for drawing detection element segmentation
 ///

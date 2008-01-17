@@ -165,7 +165,7 @@ AliMUONCDB::AliMUONCDB(const char* cdbpath)
 {
   /// ctor
     // Load mapping
-    if ( ! AliMpCDB::LoadMpSegmentation() ) {
+    if ( ! AliMpCDB::LoadDDLStore() ) {
       AliFatal("Could not access mapping from OCDB !");
     }
 }
@@ -675,7 +675,7 @@ AliMUONCDB::MakeLocalTriggerMaskStore(AliMUONVStore& localBoardMasks) const
   Int_t ngenerated(0);
   // Generate fake mask values for 234 localboards and put that into
   // one single container (localBoardMasks)
-  for ( Int_t i = 1; i <= 234; ++i )
+  for ( Int_t i = 1; i <= AliMpConstants::TotalNofLocalBoards(); ++i )
   {
     AliMUONVCalibParam* localBoard = new AliMUONCalibParamNI(1,8,i,0,0);
     for ( Int_t x = 0; x < 2; ++x )

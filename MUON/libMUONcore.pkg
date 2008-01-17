@@ -2,10 +2,10 @@
 
 SRCS:=  mapping/AliMpIntPair.cxx  \
         mapping/AliMpExMap.cxx  \
-	mapping/AliMpArrayI.cxx  \
-	mapping/AliMpStringObjMap.cxx  \
+        mapping/AliMpArrayI.cxx  \
+        mapping/AliMpStringObjMap.cxx  \
         AliMUONObjectPair.cxx \
-	AliMUONStringIntMap.cxx \
+        AliMUONStringIntMap.cxx \
         AliMUON2DMap.cxx \
         AliMUON2DMapIterator.cxx \
         AliMUON2DMapIteratorByI.cxx \
@@ -17,9 +17,13 @@ SRCS:=  mapping/AliMpIntPair.cxx  \
         AliMUONVStore.cxx \
         AliMUONTreeManager.cxx \
         AliMUONLogger.cxx \
-
+        AliMUONVTrackerData.cxx \
+        AliMUONTrackerData.cxx \
+        AliMUONVTrackerDataMaker.cxx \
+        AliMUONTrackerRawDataMaker.cxx
+        
 HDRS:= $(SRCS:.cxx=.h)
 
 DHDR:= MUONcoreLinkDef.h
 
-EINCLUDE:= MUON/mapping
+EINCLUDE:= RAW MUON/mapping

@@ -4,7 +4,7 @@
 // $Id$
 // $MpId: AliMpGraphContext.h,v 1.11 2006/05/24 13:58:13 ivana Exp $
 
-/// \ingroup graphics
+/// \ingroup mpgraphics
 /// \class AliMpGraphContext
 /// \brief Class describing the correspondance between a given area
 /// in pad, and a zone of real (cm) position
