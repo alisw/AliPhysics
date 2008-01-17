@@ -769,6 +769,7 @@ AC_CONFIG_FILES([Makefile
 		 BASE/HOMER/Makefile
 		 BASE/util/Makefile
 		 BASE/interface/Makefile
+		 BASE/test/Makefile
 		 sim/Makefile
 		 rec/Makefile
 		 SampleLib/Makefile

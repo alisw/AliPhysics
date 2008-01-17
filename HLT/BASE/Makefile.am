@@ -12,7 +12,7 @@ if EN_HLT_UTIL
 UTIL_DIR=util
 endif
 
-SUBDIRS 			= . $(UTIL_DIR) interface HOMER
+SUBDIRS 			= . $(UTIL_DIR) interface HOMER test
 
 EXTRA_DIST			= 
 

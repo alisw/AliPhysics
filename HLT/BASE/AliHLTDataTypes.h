@@ -26,8 +26,9 @@
  *           2007-11-23 origin defines have become variables in conjunction
  *           to be used with the operator| (AliHLTComponentDataType)
  *           2007-11-24 added trigger structs and ESD tree data type
+ *   4       Component configuration event added
  */
-#define ALIHLT_DATA_TYPES_VERSION 3
+#define ALIHLT_DATA_TYPES_VERSION 4
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -118,8 +119,14 @@ const int kAliHLTComponentDataTypefIDsize=8;
  */
 # define kAliHLTEventDataTypeID    {'E','V','E','N','T','T','Y','P'}
 
+/** ComponentConfiguration event
+ * - payload contains the ID of the component in the analysis chain
+ */
+# define kAliHLTComConfDataTypeID  {'C','O','M','_','C','O','N','F'}
+
 /** ESD data block
  * an AliESD object of varying origin
+ * The 'V0' at the end allows a versioning
  */
 # define kAliHLTESDObjectDataTypeID    {'A','L','I','E','S','D','V','0'}
 
@@ -410,6 +417,9 @@ extern "C" {
   /** Event type specification */
   extern const AliHLTComponentDataType kAliHLTDataTypeEvent;
 
+  /** Configuration event data type */
+  extern const AliHLTComponentDataType kAliHLTDataTypeComConf;
+
   /** RAW DDL data specification, origin is 'any', data publisher origin correctly */
   extern const AliHLTComponentDataType kAliHLTDataTypeDDLRaw;
 
@@ -483,33 +493,42 @@ extern "C" {
 //////////////////////////////////////////////////////////////////////////
 
 inline bool operator==( const AliHLTComponentDataType& dt1, const AliHLTComponentDataType& dt2 )
-    {
-    for ( int i = 0; i < kAliHLTComponentDataTypefIDsize; i++ )
-	if ( dt1.fID[i] != dt2.fID[i] )
-	    return false;
-    for ( int i = 0; i < kAliHLTComponentDataTypefOriginSize; i++ )
-	if ( dt1.fOrigin[i] != dt2.fOrigin[i] )
-	    return false;
-    return true;
-    }
+{
+  bool any1=true, any2=true, void1=true, void2=true, match=true;
+  for ( int i = 0; i < kAliHLTComponentDataTypefOriginSize; i++ ) {
+    any1&=(dt1.fOrigin[i]==kAliHLTDataOriginAny[i]);
+    any2&=(dt2.fOrigin[i]==kAliHLTDataOriginAny[i]);
+    void1&=(dt1.fOrigin[i]==kAliHLTDataOriginVoid[i]);
+    void2&=(dt2.fOrigin[i]==kAliHLTDataOriginVoid[i]);
+    match&=dt1.fOrigin[i]==dt2.fOrigin[i];
+    if (!(match || (any2 && !void1) || (any1 && !void2)))
+      return false;
+  }
+
+  any1=true, any2=true, match=true;
+  for ( int i = 0; i < kAliHLTComponentDataTypefIDsize; i++ ) {
+    any1&=(dt1.fID[i]==kAliHLTAnyDataTypeID[i]);
+    any2&=(dt2.fID[i]==kAliHLTAnyDataTypeID[i]);
+    void1&=(dt1.fID[i]==kAliHLTVoidDataTypeID[i]);
+    void2&=(dt2.fID[i]==kAliHLTVoidDataTypeID[i]);
+    match&=dt1.fID[i]==dt2.fID[i];
+    if (!(match || (any2 && !void1) || (any1 && !void2)))
+      return false;
+  }
+  return true;
+}
 
 inline bool operator!=( const AliHLTComponentDataType& dt1, const AliHLTComponentDataType& dt2 )
-    {
-    for ( int i = 0; i < kAliHLTComponentDataTypefIDsize; i++ )
-	if ( dt1.fID[i] != dt2.fID[i] )
-	    return true;
-    for ( int i = 0; i < kAliHLTComponentDataTypefOriginSize; i++ )
-	if ( dt1.fOrigin[i] != dt2.fOrigin[i] )
-	    return true;
-    return false;
-    }
+{
+  return !(dt1==dt2);
+}
 
 inline AliHLTComponentDataType operator|(const AliHLTComponentDataType srcdt, const char origin[kAliHLTComponentDataTypefOriginSize])
-    {
-    AliHLTComponentDataType dt=srcdt;
-    for ( int i = 0; i < kAliHLTComponentDataTypefOriginSize; i++ )
-      dt.fOrigin[i]=origin[i];
-    return dt;
-    }
+{
+  AliHLTComponentDataType dt=srcdt;
+  for ( int i = 0; i < kAliHLTComponentDataTypefOriginSize; i++ )
+    dt.fOrigin[i]=origin[i];
+  return dt;
+}
 
 #endif 
