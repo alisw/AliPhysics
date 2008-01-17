@@ -3,7 +3,7 @@
 #ifndef ALIEVE_Event_H
 #define ALIEVE_Event_H
 
-#include <Reve/EventBase.h>
+#include <TEveEventManager.h>
 
 class AliRunLoader;
 class AliESDEvent;
@@ -17,7 +17,7 @@ class TGeoManager;
 
 namespace Alieve {
 
-class Event : public Reve::EventBase
+class Event : public TEveEventManager
 {
 private:
   Event(const Event&);            // Not implemented

@@ -1,19 +1,17 @@
 #include "TOFStrip.h"
 
-#include <Reve/ReveManager.h>
+#include <TEveManager.h>
 
 #include <AliTOFdigit.h>
 #include <AliTOFGeometry.h>
 
 #include <TStyle.h>
-
-using namespace Reve;
 using namespace Alieve;
 using namespace std;
 
 Bool_t       TOFStrip::fgStaticInitDone = kFALSE;
-FrameBox*    TOFStrip::fgTOFstripFrameBox = 0;
-RGBAPalette* TOFStrip::fgTOFstripPalette  = 0;
+TEveFrameBox*    TOFStrip::fgTOFstripFrameBox = 0;
+TEveRGBAPalette* TOFStrip::fgTOFstripPalette  = 0;
 
 //_______________________________________________________
 ClassImp(TOFStrip)
@@ -21,14 +19,14 @@ ClassImp(TOFStrip)
 /* ************************************************************************ */
 
 TOFStrip::TOFStrip(const Text_t* n, const Text_t* t) :
-  QuadSet(n, t),
+  TEveQuadSet(n, t),
   fTOFgeometry(new AliTOFGeometry()),
   fTOFarray(0),
   fSector(-1), fPlate(-1), fStrip(-1),
   fDx(0), fDz(0)
 {
 
-  fGeoManager = (TGeoManager*)gReve->GetGeometry("$REVESYS/alice-data/alice_fullgeo.root");
+  fGeoManager = (TGeoManager*)gEve->GetGeometry("$REVESYS/alice-data/alice_fullgeo.root");
   if (!fGeoManager) printf("ERROR: no TGeo\n");
 
 }
@@ -37,7 +35,7 @@ TOFStrip::TOFStrip(const Text_t* n, const Text_t* t) :
 TOFStrip::TOFStrip(TGeoManager *localGeoManager,
 		   Int_t nSector, Int_t nPlate, Int_t nStrip)
   :
-  QuadSet(Form("Strip%i",nStrip)),
+  TEveQuadSet(Form("Strip%i",nStrip)),
   fTOFgeometry(new AliTOFGeometry()),
   fTOFarray(0),
   fSector(nSector), fPlate(nPlate), fStrip(nStrip),
@@ -56,7 +54,7 @@ TOFStrip::TOFStrip(TGeoManager *localGeoManager,
 		   Int_t nSector, Int_t nPlate, Int_t nStrip,
 		   TClonesArray *tofArray)
   :
-  QuadSet(Form("Strip%i",nStrip)),
+  TEveQuadSet(Form("Strip%i",nStrip)),
   fTOFgeometry(new AliTOFGeometry()),
   fTOFarray(tofArray),
   fSector(nSector), fPlate(nPlate), fStrip(nStrip),
@@ -97,13 +95,13 @@ void TOFStrip::InitStatics()
 
   Float_t dx = 2.5*48;
   Float_t dz = 3.5*2;
-  fgTOFstripFrameBox = new FrameBox();
+  fgTOFstripFrameBox = new TEveFrameBox();
 
   fgTOFstripFrameBox->SetAAQuadXZ(-dx*0.5, 0, -dz*0.5, dx, dz);
   fgTOFstripFrameBox->SetFrameColor((Color_t) 32);//31);
 
-  //fgTOFstripPalette  = new RGBAPalette(0, 2048); // TOT
-  fgTOFstripPalette  = new RGBAPalette(0, 8192); // TDC
+  //fgTOFstripPalette  = new TEveRGBAPalette(0, 2048); // TOT
+  fgTOFstripPalette  = new TEveRGBAPalette(0, 8192); // TDC
 
   fgStaticInitDone = kTRUE;
 }
@@ -141,7 +139,7 @@ void TOFStrip::LoadQuads()
   Float_t x = -1;
   Float_t z = -1;
 
-  Reset(QT_RectangleXZFixedY, kFALSE, 32);
+  Reset(kQT_RectangleXZFixedY, kFALSE, 32);
 
   AliTOFdigit *tofDigit;
 

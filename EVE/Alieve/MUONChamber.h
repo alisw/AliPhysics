@@ -1,9 +1,9 @@
 #ifndef ALIEVE_MUONChamber_H
 #define ALIEVE_MUONChamber_H
 
-#include <Reve/RenderElement.h>
-#include <Reve/QuadSet.h>
-#include <Reve/PointSet.h>
+#include <TEveElement.h>
+#include <TEveQuadSet.h>
+#include <TEvePointSet.h>
 
 #include <TNamed.h>
 #include <TAtt3D.h>
@@ -16,7 +16,7 @@ class MUONChamberData;
 class MUONChamberEditor;
 class MUONChamberGL;
 
-class MUONChamber : public Reve::RenderElement,
+class MUONChamber : public TEveElement,
                     public TNamed,
                     public TAtt3D,
                     public TAttBBox
@@ -37,10 +37,10 @@ class MUONChamber : public Reve::RenderElement,
   Color_t           fFrameColor;    // main coloring
   UInt_t            fRTS;           //! Rendering Time Stamp
   Int_t             fChamberID;     // number of the chamber, 0 to 13
-  Reve::OldQuadSet  fQuadSet1;      // 1st cathode plane digits
-  Reve::OldQuadSet  fQuadSet2;      // 2nd cathode plane digits
-  Reve::PointSet    fPointSet1;     // reconstructed points (1st cathode)
-  Reve::PointSet    fPointSet2;     // simulation hits
+  TEveQuadSet       fQuadSet1;      // 1st cathode plane digits
+  TEveQuadSet       fQuadSet2;      // 2nd cathode plane digits
+  TEvePointSet      fPointSet1;     // reconstructed points (1st cathode)
+  TEvePointSet      fPointSet2;     // simulation hits
   Short_t           fThreshold;     // digit amplitude threshold
   Int_t             fMaxVal;        // digit amplitude maximum value
   Int_t             fClusterSize;   // cluster point size

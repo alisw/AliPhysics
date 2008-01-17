@@ -11,7 +11,7 @@
     @brief  Manager for HOMER in offline
 */
 
-#include <Reve/RenderElement.h>
+#include <TEveElement.h>
 
 #include "TString.h"
 #include "TDOMParser.h"
@@ -36,7 +36,7 @@ class AliHLTHOMERLibManager;
  * @ingroup alihlt_homer
  */
 
-class AliEVEHOMERManager : public Reve::RenderElementList
+class AliEVEHOMERManager : public TEveElementList
 {
 public:
 

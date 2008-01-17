@@ -1,11 +1,11 @@
 #ifndef ALIEVE_TOFStrip_H
 #define ALIEVE_TOFStrip_H
 
-#include <Reve/QuadSet.h>
-#include <Reve/RenderElement.h>
+#include <TEveQuadSet.h>
+#include <TEveElement.h>
 
-#include <Reve/RGBAPalette.h>
-#include <Reve/FrameBox.h>
+#include <TEveRGBAPalette.h>
+#include <TEveFrameBox.h>
 
 #include <TGeoManager.h>
 #include <TClonesArray.h>
@@ -14,7 +14,7 @@
 
 namespace Alieve {
 
-class TOFStrip : public Reve::QuadSet
+class TOFStrip : public TEveQuadSet
 {
   TOFStrip(const TOFStrip&);            // Not implemented
   TOFStrip& operator=(const TOFStrip&); // Not implemented
@@ -52,9 +52,9 @@ public:
   static Bool_t    fgStaticInitDone;
   static void      InitStatics();
 
-  static Reve::FrameBox* fgTOFstripFrameBox;
+  static TEveFrameBox* fgTOFstripFrameBox;
 
-  static Reve::RGBAPalette* fgTOFstripPalette;
+  static TEveRGBAPalette* fgTOFstripPalette;
 
   ClassDef(TOFStrip, 1);
 }; 

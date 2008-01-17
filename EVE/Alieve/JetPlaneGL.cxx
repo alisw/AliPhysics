@@ -2,7 +2,6 @@
 
 #include "JetPlaneGL.h"
 #include <Alieve/JetPlane.h>
-#include <Reve/GLUtilNS.h>
 
 #include <TGLRnrCtx.h>
 #include <TGLSelectRecord.h>
@@ -14,8 +13,6 @@
 #include <TColor.h>
 #include <TStyle.h>
 #include <TROOT.h>
-
-using namespace Reve;
 using namespace Alieve;
 
 //______________________________________________________________________
@@ -96,7 +93,7 @@ void JetPlaneGL::DirectDraw(TGLRnrCtx & /*rnrCtx*/) const
   // Show axis tick marks and labels
 
   {
-    GLUtilNS::GL_Capability_Switch lights_off(GL_LIGHTING, false);
+    TGLCapabilitySwitch lights_off(GL_LIGHTING, false);
 
     TGLAxis ap;
     ap.SetLineColor(fM->fGridColor);
@@ -265,7 +262,7 @@ void JetPlaneGL::ProcessSelection(TGLRnrCtx & /*rnrCtx*/, TGLSelectRecord & rec)
     if (rec.GetN() == 3)
     {
       AliAODTrack v = fM->fTracks[rec.GetItem(2)];
-      printf("Track 4-momentum: %f, %f, %f, %f \n", v.Px(),v.Py(),v.Pz(),v.Pt() );
+      printf("TEveTrack 4-momentum: %f, %f, %f, %f \n", v.Px(),v.Py(),v.Pz(),v.Pt() );
       printf("Eta-Phi values: %f, %f\n", v.Eta(), v.Phi());
     }
   }
@@ -311,8 +308,8 @@ void JetPlaneGL::ProcessSelection(TGLRnrCtx & /*rnrCtx*/, TGLSelectRecord & rec)
 	track2State = 1;
       }
 
-      printf("Jet: %i, Track: %i \n", jet1State, track1State);
-      printf("Jet: %i, Track: %i \n\n", jet2State, track2State);
+      printf("Jet: %i, TEveTrack: %i \n", jet1State, track1State);
+      printf("Jet: %i, TEveTrack: %i \n\n", jet2State, track2State);
 
       if(jet1State && jet2State)
       {

@@ -9,7 +9,7 @@
 #include <TStyle.h>
 #include <TMath.h>
 #include <TRandom.h>
-#include <Reve/ReveManager.h>
+#include <TEveManager.h>
 #include <AliT0digit.h>
 #include "TArrayI.h"
 #include <AliRawReader.h>
@@ -19,9 +19,6 @@
 #include "AliT0RawReader.h"
 #include <AliCDBManager.h>
 #include <AliCDBStorage.h> 
-
-
-using namespace Reve;
 using namespace Alieve;
 
 
@@ -29,7 +26,7 @@ ClassImp(T0Module)
 
 /**************************************************************************/
 T0Module::T0Module(const Text_t* n, Int_t sigType, AliT0digit *digits, AliT0RawReader *start)
-  : QuadSet(n), fSigType(sigType), fDigits(digits), fStart(start)
+  : TEveQuadSet(n), fSigType(sigType), fDigits(digits), fStart(start)
 {
   //
   // Default constructor
@@ -53,12 +50,12 @@ void T0Module::LoadRaw(TString fileName, Int_t ievt)
   Int_t allData[110][5];
   TRandom r(0); 
   //  cout<<ievt<<endl;
-  Reve::RGBAPalette* rawPalette  = new RGBAPalette(0, 3000);
+  TEveRGBAPalette* rawPalette  = new TEveRGBAPalette(0, 3000);
   rawPalette->SetLimits(1, 3000); // Set proper raw time range.
-  Reve::QuadSet* raw_a = new T0Module("T0_RAW_A", 2,digits, start); raw_a->SetPalette(rawPalette);
-  raw_a->Reset(Reve::QuadSet::QT_HexagonXY, kFALSE, 32);
-  Reve::QuadSet* raw_c = new T0Module("T0_RAW_C", 3,digits, start); raw_c->SetPalette(rawPalette);
-  raw_c->Reset(Reve::QuadSet::QT_HexagonXY, kFALSE, 32);
+  TEveQuadSet* raw_a = new T0Module("T0_RAW_A", 2,digits, start); raw_a->SetPalette(rawPalette);
+  raw_a->Reset(TEveQuadSet::kQT_HexagonXY, kFALSE, 32);
+  TEveQuadSet* raw_c = new T0Module("T0_RAW_C", 3,digits, start); raw_c->SetPalette(rawPalette);
+  raw_c->Reset(TEveQuadSet::kQT_HexagonXY, kFALSE, 32);
   Float_t angle  = 2 * TMath::Pi() / 12; 
   start->Next();
   for (Int_t i=0; i<110; i++)
@@ -83,14 +80,14 @@ void T0Module::LoadRaw(TString fileName, Int_t ievt)
   raw_a->RefitPlex();
   raw_c->RefitPlex();
   
-  Reve::ZTrans& ta_a = raw_a->RefHMTrans();
+  TEveTrans& ta_a = raw_a->RefHMTrans();
   ta_a.SetPos(0, 0, 373);
-  Reve::ZTrans& tc_c = raw_c->RefHMTrans();
+  TEveTrans& tc_c = raw_c->RefHMTrans();
   tc_c.SetPos(0, 0, -69.7);
 
-  gReve->AddRenderElement(raw_a);
-  gReve->AddRenderElement(raw_c);
-  gReve->Redraw3D();
+  gEve->AddElement(raw_a);
+  gEve->AddElement(raw_c);
+  gEve->Redraw3D();
 }
 
 /**************************************************************************/
@@ -107,22 +104,22 @@ void T0Module::MakeModules(AliT0digit *digits)
     printf("%3d %3d\n  ",ADC[i], TDC[i]);
   }
 
-  Reve::RGBAPalette* adcPalette  = new RGBAPalette(5, 1024);
+  TEveRGBAPalette* adcPalette  = new TEveRGBAPalette(5, 1024);
   adcPalette->SetLimits(1, 1024); // Set proper ADC range.
-  Reve::RGBAPalette* tdcPalette  = new RGBAPalette(0, 9999);
+  TEveRGBAPalette* tdcPalette  = new TEveRGBAPalette(0, 9999);
   tdcPalette->SetLimits(1, 9999); // Set proper TDC range.
 
-  Reve::QuadSet* qa = new T0Module("T0A_ADC", 0, digits); qa->SetPalette(adcPalette);
-  Reve::QuadSet* qc = new T0Module("T0C_ADC", 0, digits); qc->SetPalette(adcPalette);
-  Reve::QuadSet* qat = new T0Module("T0A_TDC", 1, digits); qat->SetPalette(tdcPalette);
-  Reve::QuadSet* qct = new T0Module("T0C_TDC", 1, digits); qct->SetPalette(tdcPalette);
+  TEveQuadSet* qa = new T0Module("T0A_ADC", 0, digits); qa->SetPalette(adcPalette);
+  TEveQuadSet* qc = new T0Module("T0C_ADC", 0, digits); qc->SetPalette(adcPalette);
+  TEveQuadSet* qat = new T0Module("T0A_TDC", 1, digits); qat->SetPalette(tdcPalette);
+  TEveQuadSet* qct = new T0Module("T0C_TDC", 1, digits); qct->SetPalette(tdcPalette);
 
   Float_t angle  = 2 * TMath::Pi() / 12;
 
-  qa->Reset(Reve::QuadSet::QT_HexagonXY, kFALSE, 32);
-  qc->Reset(Reve::QuadSet::QT_HexagonXY, kFALSE, 32);
-  qat->Reset(Reve::QuadSet::QT_HexagonXY, kFALSE, 32);
-  qct->Reset(Reve::QuadSet::QT_HexagonXY, kFALSE, 32);
+  qa->Reset(TEveQuadSet::kQT_HexagonXY, kFALSE, 32);
+  qc->Reset(TEveQuadSet::kQT_HexagonXY, kFALSE, 32);
+  qat->Reset(TEveQuadSet::kQT_HexagonXY, kFALSE, 32);
+  qct->Reset(TEveQuadSet::kQT_HexagonXY, kFALSE, 32);
 
 
 
@@ -152,31 +149,31 @@ void T0Module::MakeModules(AliT0digit *digits)
   qat->RefitPlex();
   qct->RefitPlex();
 
-  Reve::ZTrans& ta = qa->RefHMTrans();
+  TEveTrans& ta = qa->RefHMTrans();
   ta.SetPos(0, 0, 373);
-  Reve::ZTrans& tc = qc->RefHMTrans();
+  TEveTrans& tc = qc->RefHMTrans();
   tc.SetPos(0, 0, -69.7);
  
-  Reve::ZTrans& tat = qat->RefHMTrans();
+  TEveTrans& tat = qat->RefHMTrans();
   tat.SetPos(0, 0, 373);
-  Reve::ZTrans& tct = qct->RefHMTrans();
+  TEveTrans& tct = qct->RefHMTrans();
   tct.SetPos(0, 0, -69.7);
  
-  gReve->AddRenderElement(qa);
-  gReve->AddRenderElement(qc);
-  gReve->AddRenderElement(qat);
-  gReve->AddRenderElement(qct);
+  gEve->AddElement(qa);
+  gEve->AddElement(qc);
+  gEve->AddElement(qat);
+  gEve->AddElement(qct);
 
-  gReve->Redraw3D();
+  gEve->Redraw3D();
 }
 
 /**************************************************************************/
 
 void T0Module::DigitSelected(Int_t idx)
 {
-  // Override control-click from QuadSet
+  // Override control-click from TEveQuadSet
 
-  DigitBase* qb   = GetDigit(idx);
+  DigitBase_t* qb   = GetDigit(idx);
   if (fSigType == 0) { //ADC
     printf("adc====================\n");
     Int_t   besttimeright = fDigits->BestTimeA();

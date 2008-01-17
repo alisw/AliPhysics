@@ -30,11 +30,11 @@ void vzero_digits()
 
   Float_t v[12];
 
-  Reve::QuadSet* modR = new Reve::QuadSet("V0R");
-  modR->Reset(Reve::QuadSet::QT_FreeQuad, kFALSE, 32);
+  TEveQuadSet* modR = new TEveQuadSet("V0R");
+  modR->Reset(TEveQuadSet::kQT_FreeQuad, kFALSE, 32);
 
-  Reve::QuadSet* modL = new Reve::QuadSet("V0L");
-  modL->Reset(Reve::QuadSet::QT_FreeQuad, kFALSE, 32);
+  TEveQuadSet* modL = new TEveQuadSet("V0L");
+  modL->Reset(TEveQuadSet::kQT_FreeQuad, kFALSE, 32);
  
   Int_t numEntr = dca->GetEntriesFast();
   for (Int_t entr=0; entr<numEntr; ++entr)
@@ -44,7 +44,7 @@ void vzero_digits()
 
     if (i < 32)   // V0 Right
     {
-      Reve::QuadSet* module = modR;
+      TEveQuadSet* module = modR;
       Int_t ri = i / 8;
       Int_t pi = i % 8;
       Float_t minR = RadC[ri]  + RadEps, maxR = RadC[ri+1] - RadEps;
@@ -61,7 +61,7 @@ void vzero_digits()
     }
     else          // V0 Left
     {
-      Reve::QuadSet* module = modL;
+      TEveQuadSet* module = modL;
       Int_t ri = (i-32) / 8;
       Int_t pi = i % 8;
       Float_t minR = RadA[ri]  + RadEps, maxR = RadA[ri+1] - RadEps;
@@ -81,8 +81,8 @@ void vzero_digits()
   modL->RefHMTrans().SetPos(0, 0, 324);
   modR->RefHMTrans().SetPos(0, 0, -84);
 
-  gReve->AddRenderElement(modL);
-  gReve->AddRenderElement(modR);
+  gEve->AddElement(modL);
+  gEve->AddElement(modR);
 
-  gReve->Redraw3D();
+  gEve->Redraw3D();
 }

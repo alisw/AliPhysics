@@ -2,14 +2,12 @@
 // TOFDigitsInfo
 //
 
-#include <Reve/TTreeTools.h>
+#include <TEveTreeTools.h>
 
 #include "TOFDigitsInfo.h"
 #include <AliTOFdigit.h>
 #include <AliTOFGeometry.h>
 //#include <AliTOFDigitMap.h>
-
-using namespace Reve;
 using namespace Alieve;
 using namespace std;
 
@@ -19,7 +17,7 @@ ClassImp(TOFDigitsInfo)
 
   TOFDigitsInfo::TOFDigitsInfo(): 
     TObject(),
-    ReferenceCount(),
+    TEveRefCnt(),
     fTree (0),
     fNewTree (0),
     fGeom (0),
@@ -40,7 +38,7 @@ TOFDigitsInfo:: ~TOFDigitsInfo()
 
 void TOFDigitsInfo::SetTree(TTree* tree)
 {
-  static const Exc_t eH("TOFDigitsInfo::SetTree ");
+  static const TEveException eH("TOFDigitsInfo::SetTree ");
   
   if(fGeom == 0) {
     fGeom = new AliTOFGeometry();
@@ -74,8 +72,8 @@ void TOFDigitsInfo::LoadDigits()
     vol[0] = digs->GetSector(); // Sector Number (0-17)
     vol[1] = digs->GetPlate();  // Plate Number (0-4)
     vol[2] = digs->GetStrip();  // Strip Number (0-14/18)
-    vol[3] = digs->GetPadx();   // Pad Number in x direction (0-47)
-    vol[4] = digs->GetPadz();   // Pad Number in z direction (0-1)
+    vol[3] = digs->GetPadx();   // TEvePad Number in x direction (0-47)
+    vol[4] = digs->GetPadz();   // TEvePad Number in z direction (0-1)
 
     fTOFdigitMap->AddDigit(vol, digitNumber);
     //if (digitNumber==digitsTOF->GetEntries()-1) printf(" I am inside LoadDigits %3i \n", digitNumber);

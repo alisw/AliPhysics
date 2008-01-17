@@ -21,8 +21,6 @@
 /// MUONChamberData: geometry and digits
 ///
 ///////////////////////////////////////////////////////////////////////////////
-
-using namespace Reve;
 using namespace Alieve;
 
 ClassImp(MUONChamberData)

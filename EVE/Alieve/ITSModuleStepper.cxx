@@ -4,11 +4,11 @@
 #include "ITSDigitsInfo.h"
 #include "ITSScaledModule.h"
 
-#include "Reve/ReveManager.h"
-#include "Reve/RGEditor.h"
-#include "Reve/GridStepper.h"
-#include "Reve/GLTextNS.h"
-#include "Reve/ZTrans.h"
+#include <TEveManager.h>
+#include <TEveGedEditor.h>
+#include <TEveGridStepper.h>
+#include <TEveGLText.h>
+#include <TEveTrans.h>
 
 #include <TObject.h>
 
@@ -23,8 +23,6 @@
 // #include <FTFont.h>
 #include <TGLAxis.h>
 #include <TGLViewer.h>
-
-using namespace Reve;
 using namespace Alieve;
 
 //______________________________________________________________________
@@ -34,7 +32,7 @@ using namespace Alieve;
 ClassImp(ITSModuleStepper)
 
 ITSModuleStepper::ITSModuleStepper(ITSDigitsInfo* di) :
-  RenderElementList("ITS 2DStore", "ITSModuleStepper", kTRUE),
+  TEveElementList("ITS 2DStore", "ITSModuleStepper", kTRUE),
 
   fPosition(0), 
     
@@ -64,14 +62,14 @@ ITSModuleStepper::ITSModuleStepper(ITSDigitsInfo* di) :
   fWActiveCol(45),
   fFontCol(8)
 {
-  // override member from base RenderElementList
+  // override member from base TEveElementList
   fChildClass = ITSScaledModule::Class();
 
   SetMainColorPtr(&fWCol);
 
   fDigitsInfo->IncRefCount();
 
-  fStepper = new GridStepper();
+  fStepper = new TEveGridStepper();
   fStepper->SetNs(5, 4);
 
   fScaleInfo = new DigitScaleInfo();
@@ -87,12 +85,12 @@ ITSModuleStepper::ITSModuleStepper(ITSDigitsInfo* di) :
   fText->SetGLTextAngles(0, 0, 0);
   fText->SetTextSize(fTextSize);
 
-  gReve->GetGLViewer()->AddOverlayElement(this);
+  gEve->GetGLViewer()->AddOverlayElement(this);
 }
 
 ITSModuleStepper::~ITSModuleStepper()
 {
-  gReve->GetGLViewer()->RemoveOverlayElement(this);
+  gEve->GetGLViewer()->RemoveOverlayElement(this);
 
    fScaleInfo->DecRefCount();
   fDigitsInfo->DecRefCount();
@@ -107,11 +105,11 @@ ITSModuleStepper::~ITSModuleStepper()
 
 void ITSModuleStepper::Capacity()
 {
-  Int_t N = fStepper->Nx*fStepper->Ny;
-  if(N != GetNChildren())
+  Int_t N = fStepper->GetNx()*fStepper->GetNy();
+  if (N != GetNChildren())
   {
     DestroyElements();
-    for(Int_t m=0; m<N; m++) 
+    for (Int_t m=0; m<N; m++) 
     {
       AddElement(new ITSScaledModule(m, fDigitsInfo, fScaleInfo));
     }
@@ -208,7 +206,7 @@ Int_t ITSModuleStepper::GetPages()
 void  ITSModuleStepper::Apply()
 {
   // printf("ITSModuleStepper::Apply fPosition %d \n", fPosition);
-  gReve->DisableRedraw();
+  gEve->DisableRedraw();
   Capacity();
 
   UInt_t idx = fPosition;
@@ -218,7 +216,7 @@ void  ITSModuleStepper::Apply()
     {
       ITSScaledModule* mod = dynamic_cast<ITSScaledModule*>(*childit);
       mod->SetID(fIDs[idx], kFALSE); 
-      ZTrans& tr = mod->RefHMTrans();
+      TEveTrans& tr = mod->RefHMTrans();
       tr.UnitTrans();
       tr.RotateLF(3,2,TMath::PiOver2());
       tr.RotateLF(1,3,TMath::PiOver2());   
@@ -231,20 +229,20 @@ void  ITSModuleStepper::Apply()
       mz = -2*fp[2];
 
       // fit width first
-      Double_t sx = fStepper->Dx;
-      Double_t sy = (mx*fStepper->Dx)/mz;
-      if(sy > fStepper->Dy)
+      Double_t sx = fStepper->GetDx();
+      Double_t sy = (mx*fStepper->GetDx())/mz;
+      if(sy > fStepper->GetDy())
       {
         //	printf("fit width \n");
-	sy =  fStepper->Dy;
-	sx =  (mz*fStepper->Dx)/mx;
+	sy =  fStepper->GetDy();
+	sx =  (mz*fStepper->GetDx())/mx;
       }
       Float_t scale = (fExpandCell*sx)/mz;
       tr.Scale(scale, scale, scale);
 
       Float_t  p[3];
       fStepper->GetPosition(p);
-      tr.SetPos(p[0]+0.5*fStepper->Dx, p[1]+0.5*fStepper->Dy, p[2]+0.5*fStepper->Dz);
+      tr.SetPos(p[0]+0.5*fStepper->GetDx(), p[1]+0.5*fStepper->GetDy(), p[2]+0.5*fStepper->GetDz());
   
       if(mod->GetSubDetID() == 2)
 	mod->SetName(Form("SSD %d", idx));
@@ -265,7 +263,7 @@ void  ITSModuleStepper::Apply()
 
   fStepper->Reset();
   ElementChanged();
-  gReve->EnableRedraw();
+  gEve->EnableRedraw();
 }
 
 /**************************************************************************/
@@ -370,10 +368,10 @@ void ITSModuleStepper::RenderFrame(Float_t dx, Float_t dy, Int_t id)
   glPushAttrib(GL_ENABLE_BIT | GL_POLYGON_BIT);
   glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
   UChar_t color[4];
-  if(fWActive == id)
-    ColorFromIdx(fWActiveCol, color);
+  if (fWActive == id)
+    TEveUtil::ColorFromIdx(fWActiveCol, color);
   else  
-    ColorFromIdx(fWCol, color);
+    TEveUtil:: ColorFromIdx(fWCol, color);
   glColor4ubv(color);
 
   glBegin(GL_QUADS);
@@ -389,10 +387,10 @@ void ITSModuleStepper::RenderSymbol(Float_t dx, Float_t dy, Int_t id)
   glLoadName(id);
 
   UChar_t color[4];
-  if(fWActive == id)
-    ColorFromIdx(fWActiveCol, color);
+  if (fWActive == id)
+    TEveUtil::ColorFromIdx(fWActiveCol, color);
   else  
-    ColorFromIdx(fWCol, color);
+    TEveUtil::ColorFromIdx(fWCol, color);
   glColor4ubv(color);
 
   Float_t xs = dx/4, ys = dy/4;
@@ -461,7 +459,7 @@ void ITSModuleStepper::RenderPalette(Float_t dx, Float_t x, Float_t y)
   glLoadIdentity();
   glTranslatef(1 -x- dx, -1+y*4, 0);
   ITSModule* qs = dynamic_cast<ITSModule*>(*BeginChildren());
-  RGBAPalette* p = qs->GetPalette();
+  TEveRGBAPalette* p = qs->GetPalette();
   glBegin(GL_QUAD_STRIP);
   glColor4ubv(p->ColorFromValue(p->GetMinVal()));
   glVertex2f(0, 0);
@@ -592,7 +590,7 @@ void ITSModuleStepper::RenderMenu()
 //______________________________________________________________________
 void ITSModuleStepper::RenderCellIDs()
 {
-  fText->SetTextSize(fStepper->Dy*0.1);
+  fText->SetTextSize(fStepper->GetDy()*0.1);
   fText->SetTextColor(fFontCol);
   Double_t x, y, z;
   Double_t sx, sy, sz;
@@ -602,11 +600,11 @@ void ITSModuleStepper::RenderCellIDs()
     if(idx < fIDs.size()) 
     { 
       ITSScaledModule* mod = dynamic_cast<ITSScaledModule*>(*childit);
-      ZTrans& tr = mod->RefHMTrans();
+      TEveTrans& tr = mod->RefHMTrans();
       TString name = Form("%d",mod->GetID());
       tr.GetPos(x,y,z);
-      x += fStepper->Dx*0.5;
-      y -= fStepper->Dy*0.5;
+      x += fStepper->GetDx()*0.5;
+      y -= fStepper->GetDy()*0.5;
       z += 0.4; // !!! MT hack - cross check with overlay rendering.
       Float_t llx, lly, llz, urx, ury, urz;
       fText->BBox(name, llx, lly, llz, urx, ury, urz);
@@ -683,7 +681,7 @@ Bool_t ITSModuleStepper::Handle(TGLRnrCtx          & /*rnrCtx*/,
           break;
         }
         case 7:
-          gReve->GetEditor()->DisplayRenderElement(*BeginChildren());
+          gEve->GetEditor()->DisplayElement(*BeginChildren());
           break;
 
         case 8:

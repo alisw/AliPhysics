@@ -1,5 +1,5 @@
 
-Reve::PointSet* phos_clusters(Reve::RenderElement* cont=0)
+TEvePointSet* phos_clusters(TEveElement* cont=0)
 {
   Alieve::Event::AssertGeometry();
 
@@ -8,7 +8,7 @@ Reve::PointSet* phos_clusters(Reve::RenderElement* cont=0)
 
   TTree *cTree = rl->GetTreeR("PHOS", false);
 
-  Reve::PointSet* clusters = new Reve::PointSet(10000);
+  TEvePointSet* clusters = new TEvePointSet(10000);
   clusters->SetOwnIds(kTRUE);
 
   TObjArray *arr=NULL;
@@ -32,9 +32,9 @@ Reve::PointSet* phos_clusters(Reve::RenderElement* cont=0)
     }
   }
 
-  Warning("phos_clusters"," %d",clusters->Size());
+  Warning("phos_clusters"," %d", clusters->Size());
 
-  if(clusters->Size() == 0 && gReve->GetKeepEmptyCont() == kFALSE) {
+  if(clusters->Size() == 0 && gEve->GetKeepEmptyCont() == kFALSE) {
     Warning("phos_clusters", "No PHOS clusters");
     delete clusters;
     return 0;
@@ -51,10 +51,8 @@ Reve::PointSet* phos_clusters(Reve::RenderElement* cont=0)
   char tip[1000];
   sprintf(tip,"N=%d", clusters->Size());
   clusters->SetTitle(tip);
-
-  using namespace Reve;
-  gReve->AddRenderElement(clusters);
-  gReve->Redraw3D();
+  gEve->AddElement(clusters);
+  gEve->Redraw3D();
 
   return clusters;
 }

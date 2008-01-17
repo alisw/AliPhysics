@@ -1,7 +1,7 @@
 #ifndef ALIEVE_MUONData_H
 #define ALIEVE_MUONData_H
 
-#include <Reve/Reve.h>
+#include <TEveUtil.h>
 
 #include <TObject.h>
 
@@ -16,7 +16,7 @@ namespace Alieve {
 
 class MUONChamberData;
 
-class MUONData : public TObject, public Reve::ReferenceCount
+class MUONData : public TObject, public TEveRefCnt
 {
 
  protected:

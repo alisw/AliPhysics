@@ -1,6 +1,6 @@
 void tpc_calib_viewer(const char* file="CalibTree.root")
 {
-   Reve::RGBrowser* b = gReve->GetBrowser();
+   TEveBrowser* b = gEve->GetBrowser();
    b->StartEmbedding(1);
 
    TGMainFrame* frmMain = new TGMainFrame(gClient->GetRoot(), 1000, 600);

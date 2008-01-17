@@ -24,7 +24,7 @@ Bool_t JetPlane::fgOneChgMass = kFALSE;
 ClassImp(JetPlane)
 
 JetPlane::JetPlane(Int_t iev) :
-  RenderElementList(Form("JetPlane %i",iev), Form("%i",iev)),
+  TEveElementList(Form("JetPlane %i",iev), Form("%i",iev)),
 
   fMinEta (-1.5 ),
   fMaxEta ( 1.5 ),

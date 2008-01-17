@@ -1,8 +1,8 @@
 // $Header$
 
 #include "EventAlieve.h"
-#include <Reve/Reve.h>
-#include <Reve/ReveManager.h>
+#include <TEveUtil.h>
+#include <TEveManager.h>
 
 #include <AliRunLoader.h>
 #include <AliRun.h>
@@ -19,8 +19,6 @@
 
 #include <TROOT.h>
 #include <TSystem.h>
-
-using namespace Reve;
 using namespace Alieve;
 
 //______________________________________________________________________
@@ -46,7 +44,7 @@ AliMagF* Alieve::Event::fgMagField = 0;
 
 
 Event::Event() :
-  EventBase(),
+  TEveEventManager(),
 
   fPath (), fEventId   (0),
   fRunLoader (0),
@@ -55,7 +53,7 @@ Event::Event() :
 {}
 
 Event::Event(TString path, Int_t ev) :
-  EventBase("AliEVE Event"),
+  TEveEventManager("AliEVE Event"),
 
   fPath (path), fEventId(-1),
   fRunLoader (0),
@@ -70,16 +68,16 @@ Event::Event(TString path, Int_t ev) :
 
 void Event::Open()
 {
-  static const Exc_t eH("Event::Open ");
+  static const TEveException eH("Event::Open ");
 
   gSystem->ExpandPathName(fPath);
-  if(fPath[0] != '/')
+  if (fPath[0] != '/')
     fPath = Form("%s/%s", gSystem->WorkingDirectory(), fPath.Data());
 
   Int_t runNo = -1;
 
   TString ga_path(Form("%s/galice.root", fPath.Data()));
-  if(gSystem->AccessPathName(ga_path, kReadPermission) == kFALSE)
+  if (gSystem->AccessPathName(ga_path, kReadPermission) == kFALSE)
   {
     fRunLoader = AliRunLoader::Open(ga_path);
     if (fRunLoader)
@@ -112,7 +110,7 @@ void Event::Open()
   }
   if (fRunLoader == 0)
   {
-    if(fgAssertRunLoader)
+    if (fgAssertRunLoader)
       throw(eH + "Bootstraping of run-loader failed. Its precence was requested.");
     else
       Warning(eH, "Bootstraping of run-loader failed.");
@@ -120,10 +118,10 @@ void Event::Open()
   
 
   TString esd_path(Form("%s/AliESDs.root", fPath.Data()));
-  if(gSystem->AccessPathName(esd_path, kReadPermission) == kFALSE)
+  if (gSystem->AccessPathName(esd_path, kReadPermission) == kFALSE)
   {
     fESDFile = new TFile(esd_path);
-    if(fESDFile->IsZombie() == kFALSE)
+    if (fESDFile->IsZombie() == kFALSE)
     {
       fESD = new AliESDEvent();
       fESDTree = (TTree*) fESDFile->Get("esdTree");
@@ -134,7 +132,7 @@ void Event::Open()
 
 	// Check if ESDfriends exists and attach the branch
 	TString p = Form("%s/AliESDfriends.root", fPath.Data());
-	if(gSystem->AccessPathName(p, kReadPermission) == kFALSE)
+	if (gSystem->AccessPathName(p, kReadPermission) == kFALSE)
 	{
 	  fESDfriendExists = kTRUE;
 	  fESDTree->SetBranchStatus ("ESDfriend*", 1);
@@ -184,22 +182,22 @@ void Event::Open()
 
 void Event::GotoEvent(Int_t event)
 {
-  static const Exc_t eH("Event::GotoEvent ");
+  static const TEveException eH("Event::GotoEvent ");
 
   Int_t maxEvent = 0;
-  if(fRunLoader)
+  if (fRunLoader)
     maxEvent = fRunLoader->GetNumberOfEvents() - 1;
-  else if(fESDTree)
+  else if (fESDTree)
     maxEvent = fESDTree->GetEntries() - 1;
   else
     throw(eH + "neither RunLoader nor ESD loaded.");
 
-  if(event < 0 || event > maxEvent)
+  if (event < 0 || event > maxEvent)
     throw(eH + Form("event %d not present, available range [%d, %d].",
 		    event, 0, maxEvent));
 
-  ReveManager::RedrawDisabler rd(gReve);
-  gReve->Redraw3D(kFALSE, kTRUE); // Enforce drop of all logicals.
+  TEveManager::TRedrawDisabler rd(gEve);
+  gEve->Redraw3D(kFALSE, kTRUE); // Enforce drop of all logicals.
 
   // !!! MT this is somewhat brutal; at least optionally, one could be
   // a bit gentler, checking for objs owning their external refs and having
@@ -209,13 +207,13 @@ void Event::GotoEvent(Int_t event)
   SetName(Form("Event %d", fEventId));
   UpdateItems();
 
-  if(fRunLoader) {
-    if(fRunLoader->GetEvent(fEventId) != 0)
+  if (fRunLoader) {
+    if (fRunLoader->GetEvent(fEventId) != 0)
       throw(eH + "failed getting required event.");
   }
 
-  if(fESDTree) {
-    if(fESDTree->GetEntry(fEventId) <= 0)
+  if (fESDTree) {
+    if (fESDTree->GetEntry(fEventId) <= 0)
       throw(eH + "failed getting required event from ESD.");
 
     if (fESDfriendExists)
@@ -244,33 +242,33 @@ void Event::Close()
 
 AliRunLoader* Event::AssertRunLoader()
 {
-  static const Exc_t eH("Event::AssertRunLoader ");
+  static const TEveException eH("Event::AssertRunLoader ");
 
-  if(gEvent == 0)
+  if (gEvent == 0)
     throw(eH + "ALICE event not ready.");
-  if(gEvent->fRunLoader == 0)
+  if (gEvent->fRunLoader == 0)
     throw(eH + "AliRunLoader not initialised.");
   return gEvent->fRunLoader;
 }
 
 AliESDEvent* Event::AssertESD()
 {
-  static const Exc_t eH("Event::AssertESD ");
+  static const TEveException eH("Event::AssertESD ");
 
-  if(gEvent == 0)
+  if (gEvent == 0)
     throw(eH + "ALICE event not ready.");
-  if(gEvent->fESD == 0)
+  if (gEvent->fESD == 0)
     throw(eH + "AliESD not initialised.");
   return gEvent->fESD;
 }
 
 AliESDfriend* Event::AssertESDfriend()
 {
-  static const Exc_t eH("Event::AssertESDfriend ");
+  static const TEveException eH("Event::AssertESDfriend ");
 
-  if(gEvent == 0)
+  if (gEvent == 0)
     throw(eH + "ALICE event not ready.");
-  if(gEvent->fESDfriend == 0)
+  if (gEvent->fESDfriend == 0)
     throw(eH + "AliESDfriend not initialised.");
   return gEvent->fESDfriend;
 }
@@ -289,7 +287,7 @@ AliMagF* Event::AssertMagField()
 
 TGeoManager* Event::AssertGeometry()
 {
-  static const Exc_t eH("Event::AssertGeometry ");
+  static const TEveException eH("Event::AssertGeometry ");
 
   if (AliGeomManager::GetGeometry() == 0)
   {

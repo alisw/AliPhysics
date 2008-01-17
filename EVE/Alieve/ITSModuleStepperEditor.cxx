@@ -2,8 +2,8 @@
 
 #include "ITSModuleStepperEditor.h"
 #include <Alieve/ITSModuleStepper.h>
-#include <Reve/GridStepperEditor.h>
-#include <Reve/ReveManager.h>
+#include <TEveGridStepperEditor.h>
+#include <TEveManager.h>
 
 #include <TVirtualPad.h>
 #include <TColor.h>
@@ -13,8 +13,6 @@
 #include <TGNumberEntry.h>
 #include <TGColorSelect.h>
 #include <TGDoubleSlider.h>
-
-using namespace Reve;
 using namespace Alieve;
 
 //______________________________________________________________________
@@ -32,7 +30,7 @@ ITSModuleStepperEditor::ITSModuleStepperEditor(const TGWindow *p, Int_t width, I
 {
   MakeTitle("ITSModuleStepper");
 
-  fStepper =  new GridStepperSubEditor(this);
+  fStepper =  new TEveGridStepperSubEditor(this);
   fStepper->Connect("Changed()", "Alieve::ITSModuleStepperEditor", this, "UpdateStore()");
   AddFrame(fStepper, new TGLayoutHints(kLHintsTop | kLHintsExpandX, 2, 0, 0, 0));
 }
@@ -54,5 +52,5 @@ void ITSModuleStepperEditor::UpdateStore()
 {
   fM->Apply();
   Update();
-  gReve->Redraw3D(kTRUE);
+  gEve->Redraw3D(kTRUE);
 }

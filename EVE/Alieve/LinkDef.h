@@ -25,15 +25,19 @@
 // compound classes
 //================================
 
+// Removed. Messy code, tons of violations and incompatible with TEve
+// classes. Author Ludovic Gaudichet left ALICE.
+// Should be thoroughly revised.
+
 // Cascade
-#pragma link C++ class Alieve::Cascade+;
-#pragma link C++ class Alieve::CascadeList+;
-#pragma link C++ class Alieve::CascadeListEditor+;
+//#pragma link C++ class Alieve::Cascade+;
+//#pragma link C++ class Alieve::CascadeList+;
+//#pragma link C++ class Alieve::CascadeListEditor+;
 
 // V0
-#pragma link C++ class Alieve::V0+;
-#pragma link C++ class Alieve::V0List+;
-#pragma link C++ class Alieve::V0ListEditor+;
+//#pragma link C++ class Alieve::V0+;
+//#pragma link C++ class Alieve::V0List+;
+//#pragma link C++ class Alieve::V0ListEditor+;
 
 // Fit
 #pragma link C++ class Alieve::TrackFitter+;

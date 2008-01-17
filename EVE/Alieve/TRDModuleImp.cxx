@@ -4,8 +4,8 @@
 #include "TMath.h"
 #include <TGListTree.h>
 
-#include "Reve/ReveManager.h"
-#include "Reve/Track.h"
+#include "TEveManager.h"
+#include "TEveTrack.h"
 
 #include "AliLog.h"
 #include "AliRun.h"
@@ -20,9 +20,6 @@
 #include "AliTRDdataArrayI.h"
 #include "AliTRDmcmTracklet.h"
 
-
-
-using namespace Reve;
 using namespace Alieve;
 using namespace std;
 
@@ -31,7 +28,7 @@ ClassImp(TRDNode)
 
 //________________________________________________________
 TRDNode::TRDNode(const char *typ, Int_t det) :
-  Reve::RenderElement(), TRDModule(typ, det)
+  TEveElement(), TRDModule(typ, det)
 {
 }
 
@@ -58,7 +55,7 @@ void	TRDNode::Reset()
 //________________________________________________________
 void TRDNode::Collapse()
 {
-	TGListTree *list = gReve->GetListTree();
+	TGListTree *list = gEve->GetListTree();
 	TRDNode *node = 0x0;
 	List_i iter = fChildren.begin();
 	while(iter != fChildren.end()){
@@ -71,7 +68,7 @@ void TRDNode::Collapse()
 //________________________________________________________
 void TRDNode::Expand()
 {
-	TGListTree *list = gReve->GetListTree();
+	TGListTree *list = gEve->GetListTree();
 	TRDNode *node = 0x0;
 	List_i iter = fChildren.begin();
 	while(iter != fChildren.end()){
@@ -96,7 +93,7 @@ void TRDNode::EnableListElements()
 		if((chmb = dynamic_cast<TRDChamber*>(*iter))) chmb->SetRnrSelf(kTRUE);
 		iter++;
 	}
-	gReve->Redraw3D();
+	gEve->Redraw3D();
 }
 
 //________________________________________________________
@@ -114,7 +111,7 @@ void TRDNode::DisableListElements()
 		if((chmb = dynamic_cast<TRDChamber*>(*iter))) chmb->SetRnrSelf(kFALSE);
 		iter++;
 	}
-	gReve->Redraw3D();
+	gEve->Redraw3D();
 }
 
 //________________________________________________________
@@ -205,7 +202,7 @@ void TRDNode::UpdateNode()
 
 //________________________________________________________
 TRDChamber::TRDChamber(Int_t det) :
-  Reve::RenderElement(), TRDModule("Chmb", det), rowMax(-1), colMax(-1), timeMax(22), fX0(0.), fPla(-1)
+  TEveElement(), TRDModule("Chmb", det), rowMax(-1), colMax(-1), timeMax(22), fX0(0.), fPla(-1)
 {
   //
   // Constructor
@@ -225,7 +222,7 @@ TRDChamber::TRDChamber(Int_t det) :
 
 //________________________________________________________
 TRDChamber::TRDChamber(const TRDChamber &mod):
-  Reve::RenderElement(), TRDModule("Chmb", mod.fDet)
+  TEveElement(), TRDModule("Chmb", mod.fDet)
 {
   //
   // Copy constructor
@@ -362,7 +359,7 @@ void TRDChamber::LoadTracklets(TObjArray *tracks)
 //	Info("LoadTracklets()", Form("tracks = 0x%x", tracks));
 	
 	if(!fTracklets){
-		fTracklets = new std::vector<Reve::Track*>;
+		fTracklets = new std::vector<TEveTrack*>;
 	} else fTracklets->clear();
 	
 	
@@ -371,7 +368,7 @@ void TRDChamber::LoadTracklets(TObjArray *tracks)
 	for(int itrk=0; itrk<tracks->GetEntries();itrk++){
 		trk = (AliTRDmcmTracklet*)tracks->At(itrk);
 		trk->MakeTrackletGraph(fGeo,.5);
-		fTracklets->push_back(new Reve::Track());
+		fTracklets->push_back(new TEveTrack());
 		fTracklets->back()->SetLineColor(4);
 		
 		cloc[0] = trk->GetTime0(); // x0
@@ -403,7 +400,7 @@ void	TRDChamber::Paint(Option_t* option)
 	if(fRecPoints && fRnrRecPoints) fRecPoints->GetObject()->Paint(option);
 	if(fHits && fRnrHits) fHits->GetObject()->Paint(option);
 	if(fTracklets && fRnrTracklets){
-		for(vector<Reve::Track*>::iterator i=fTracklets->begin(); i != fTracklets->end(); ++i) (*i)->Paint(option);
+		for(vector<TEveTrack*>::iterator i=fTracklets->begin(); i != fTracklets->end(); ++i) (*i)->Paint(option);
 	}
 }
 

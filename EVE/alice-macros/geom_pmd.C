@@ -2,9 +2,7 @@
 
 void geom_pmd()
 {
-  using namespace std;
-
-  gGeoManager = gReve->GetGeometry("$REVESYS/alice-data/alice_fullgeo.root");
+  gGeoManager = gEve->GetGeometry("$REVESYS/alice-data/alice_fullgeo.root");
 
   for(Int_t i=1; i<=4; ++i) {
     //PH The line below is replaced waiting for a fix in Root
@@ -15,10 +13,10 @@ void geom_pmd()
     sprintf(form,"EPM%d_1", i);
     TGeoNode* node = gGeoManager->GetTopVolume()->FindNode(form);
 
-    Reve::GeoTopNodeRnrEl* re = new Reve::GeoTopNodeRnrEl(gGeoManager, node);
+    TEveGeoTopNode* re = new TEveGeoTopNode(gGeoManager, node);
     re->UseNodeTrans();
-    gReve->AddGlobalRenderElement(re);
+    gEve->AddGlobalElement(re);
   }
 
-  gReve->Redraw3D();
+  gEve->Redraw3D();
 }

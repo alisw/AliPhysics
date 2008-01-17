@@ -1,16 +1,16 @@
 #ifdef __CINT__
 
-namespace Reve
+namespace TEveUtil
 {
-class RenderElement;
-class PointSet;
+class TEveElement;
+class TEvePointSet;
 }
 
 #else
 
-#include <Reve/Reve.h>
-#include <Reve/ReveManager.h>
-#include <Reve/PointSet.h>
+#include <TEve.h>
+#include <TEveManager.h>
+#include <TEvePointSet.h>
 #include <Alieve/EventAlieve.h>
 
 #include <AliRunLoader.h>
@@ -20,7 +20,7 @@ class PointSet;
 
 #endif
 
-Reve::PointSet* hmpid_clusters(Reve::RenderElement* cont=0, Float_t maxR=1000)
+TEvePointSet* hmpid_clusters(TEveElement* cont=0, Float_t maxR=1000)
 {
   const Int_t nCh=7;
   TClonesArray *cl[nCh] = {0,0,0,0,0,0,0};
@@ -35,7 +35,7 @@ Reve::PointSet* hmpid_clusters(Reve::RenderElement* cont=0, Float_t maxR=1000)
   };
 
 
-  Reve::PointSet* clusters = new Reve::PointSet(10000);
+  TEvePointSet* clusters = new TEvePointSet(10000);
   clusters->SetOwnIds(kTRUE);
 
   Alieve::Event::AssertGeometry();
@@ -73,7 +73,7 @@ Reve::PointSet* hmpid_clusters(Reve::RenderElement* cont=0, Float_t maxR=1000)
     }
   }
 
-  if(clusters->Size() == 0 && gReve->GetKeepEmptyCont() == kFALSE) {
+  if (clusters->Size() == 0 && gEve->GetKeepEmptyCont() == kFALSE) {
     Warning("hmpid_clusters", "No HMPID clusters");
     delete clusters;
     return 0;
@@ -90,10 +90,8 @@ Reve::PointSet* hmpid_clusters(Reve::RenderElement* cont=0, Float_t maxR=1000)
   char tip[1000];
   sprintf(tip,"N=%d", clusters->Size());
   clusters->SetTitle(tip);
-
-  using namespace Reve;
-  gReve->AddRenderElement(clusters, cont);
-  gReve->Redraw3D();
+  gEve->AddElement(clusters, cont);
+  gEve->Redraw3D();
 
   return clusters;
 }

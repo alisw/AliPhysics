@@ -3,7 +3,7 @@
 #ifndef ALIEVE_ITSDigitsInfo_H
 #define ALIEVE_ITSDigitsInfo_H
 
-#include <Reve/Reve.h>
+#include <TEveUtil.h>
 
 #include <map>
 #include <vector>
@@ -43,7 +43,7 @@ public:
 /**************************************************************************/
 // ITSDigitsInfo
 /**************************************************************************/
-class ITSDigitsInfo : public TObject, public Reve::ReferenceCount
+class ITSDigitsInfo : public TObject, public TEveRefCnt
 {
   ITSDigitsInfo(const ITSDigitsInfo&);            // Not implemented
   ITSDigitsInfo& operator=(const ITSDigitsInfo&); // Not implemented

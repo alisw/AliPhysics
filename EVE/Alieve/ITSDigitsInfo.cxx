@@ -7,8 +7,8 @@
 #include <TMath.h>
 #include <TVector3.h>
 
-#include <Reve/TTreeTools.h>
-#include <Reve/ZTrans.h>
+#include <TEveTreeTools.h>
+#include <TEveTrans.h>
 
 #include "ITSDigitsInfo.h"
 #include <AliITSCalibrationSDD.h>
@@ -19,8 +19,6 @@
 #include <AliITSRawStreamSPD.h>
 #include <AliITSRawStreamSDD.h>
 #include <AliITSRawStreamSSD.h>
-
-using namespace Reve;
 using namespace Alieve;
 using namespace std;
 
@@ -43,7 +41,7 @@ ClassImp(ITSDigitsInfo)
 
 ITSDigitsInfo::ITSDigitsInfo() :
   TObject(),
-  ReferenceCount(),
+  TEveRefCnt(),
   fSPDmap(), fSDDmap(), fSSDmap(),
   fTree (0),
   fGeom (0),
@@ -54,7 +52,7 @@ ITSDigitsInfo::ITSDigitsInfo() :
 
 void ITSDigitsInfo::InitInternals()
 {
-  static const Exc_t eH("ITSDigitsInfo::InitInternals ");
+  static const TEveException eH("ITSDigitsInfo::InitInternals ");
 
   fGeom = new AliITSgeom();
   fGeom->ReadNewFile("$REVESYS/alice-data/ITSgeometry.det");
@@ -357,7 +355,7 @@ void ITSDigitsInfo::GetModuleIDs(ITSModuleSelection* sel, std::vector<UInt_t>& i
   TVector3 v;
   Double_t x[9];
   Int_t lay, lad, det;
-  ZTrans mx;
+  TEveTrans mx;
   for(Int_t id = idx0; id<idx1; id++){
     fGeom->GetModuleId(id, lay, lad, det);
     if(sel->fLayer==lay || sel->fLayer==-1)

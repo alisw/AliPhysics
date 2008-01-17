@@ -3,8 +3,8 @@
 #ifndef ALIEVE_PMDModule_H
 #define ALIEVE_PMDModule_H
 
-#include <Reve/Reve.h>
-#include <Reve/QuadSet.h>
+#include <TEveUtil.h>
+#include <TEveQuadSet.h>
 
 #include <TObject.h>
 #include <TObjArray.h>
@@ -13,7 +13,7 @@
 
 namespace Alieve {
 
-class PMDModule : public Reve::QuadSet
+class PMDModule : public TEveQuadSet
 {
 private:
   PMDModule(const PMDModule&);            // Not implemented

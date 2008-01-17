@@ -6,8 +6,8 @@
 #include <Alieve/TPCSectorViz.h>
 #include <Alieve/TPCSectorData.h>
 
-#include <Reve/BoxSet.h>
-#include <Reve/PointSet.h>
+#include <TEveBoxSet.h>
+#include <TEvePointSet.h>
 
 
 namespace Alieve {
@@ -23,8 +23,8 @@ protected:
   void UpdateBoxes();
   void SetupPointSetArray();
 
-  Reve::BoxSet        fBoxSet;
-  Reve::PointSetArray fPointSetArray;
+  TEveBoxSet        fBoxSet;
+  TEvePointSetArray fPointSetArray;
   Float_t             fPointFrac;
   Float_t             fPointSize;
   Bool_t              fPointSetOn;

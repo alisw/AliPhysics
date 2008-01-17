@@ -1,16 +1,16 @@
 #ifdef __CINT__
 
-namespace Reve
+namespace TEveUtil
 {
-class RenderElement;
-class PointSet;
+class TEveElement;
+class TEvePointSet;
 }
 
 #else
 
-#include <Reve/Reve.h>
-#include <Reve/ReveManager.h>
-#include <Reve/PointSet.h>
+#include <TEve.h>
+#include <TEveManager.h>
+#include <TEvePointSet.h>
 #include <Alieve/EventAlieve.h>
 
 #include <AliRunLoader.h>
@@ -19,13 +19,13 @@ class PointSet;
 
 #endif
 
-Reve::PointSet* tpc_clusters(Reve::RenderElement* cont=0, Float_t maxR=270)
+TEvePointSet* tpc_clusters(TEveElement* cont=0, Float_t maxR=270)
 {
   const Int_t kMaxCl=100*160;
 
   Alieve::Event::AssertGeometry();
 
-  Reve::PointSet* clusters = new Reve::PointSet(kMaxCl);
+  TEvePointSet* clusters = new TEvePointSet(kMaxCl);
   clusters->SetOwnIds(kTRUE);
 
   AliRunLoader* rl = Alieve::Event::AssertRunLoader();
@@ -62,7 +62,7 @@ Reve::PointSet* tpc_clusters(Reve::RenderElement* cont=0, Float_t maxR=270)
 
   delete clrow;
 
-  if(clusters->Size() == 0 && gReve->GetKeepEmptyCont() == kFALSE) {
+  if(clusters->Size() == 0 && gEve->GetKeepEmptyCont() == kFALSE) {
     Warning("tpc_clusters", "No TPC clusters");
     delete clusters;
     return 0;
@@ -79,10 +79,8 @@ Reve::PointSet* tpc_clusters(Reve::RenderElement* cont=0, Float_t maxR=270)
   char tip[1000];
   sprintf(tip,"N=%d", clusters->Size());
   clusters->SetTitle(tip);
-
-  using namespace Reve;
-  gReve->AddRenderElement(clusters, cont);
-  gReve->Redraw3D();
+  gEve->AddElement(clusters, cont);
+  gEve->Redraw3D();
 
   return clusters;
 }

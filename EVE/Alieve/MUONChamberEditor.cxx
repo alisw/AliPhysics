@@ -2,7 +2,7 @@
 
 #include <Alieve/MUONChamber.h>
 
-#include <Reve/RGValuators.h>
+#include <TEveGValuators.h>
 
 #include <TVirtualPad.h>
 #include <TColor.h>
@@ -13,8 +13,6 @@
 #include <TGColorSelect.h>
 #include <TGSlider.h>
 #include <TGDoubleSlider.h>
-
-using namespace Reve;
 using namespace Alieve;
 
 //______________________________________________________________________
@@ -41,7 +39,7 @@ MUONChamberEditor::MUONChamberEditor(const TGWindow *p,
 
   Int_t labelW = 60;
 
-  fThreshold = new RGValuator(this, "ADC min", 200, 0);
+  fThreshold = new TEveGValuator(this, "ADC min", 200, 0);
   fThreshold->SetNELength(4);
   fThreshold->SetLabelWidth(labelW);
   fThreshold->Build();
@@ -51,7 +49,7 @@ MUONChamberEditor::MUONChamberEditor(const TGWindow *p,
                       "Alieve::MUONChamberEditor", this, "DoThreshold()");
   AddFrame(fThreshold, new TGLayoutHints(kLHintsTop, 1, 1, 2, 1));
 
-  fMaxVal = new RGValuator(this,"ADC max", 200, 0);
+  fMaxVal = new TEveGValuator(this,"ADC max", 200, 0);
   fMaxVal->SetNELength(4);
   fMaxVal->SetLabelWidth(labelW);
   fMaxVal->Build();
@@ -61,7 +59,7 @@ MUONChamberEditor::MUONChamberEditor(const TGWindow *p,
                    "Alieve::MUONChamberEditor", this, "DoMaxVal()");
   AddFrame(fMaxVal, new TGLayoutHints(kLHintsTop, 1, 1, 2, 1));
 
-  fClusterSize = new RGValuator(this,"Cls size", 200, 0);
+  fClusterSize = new TEveGValuator(this,"Cls size", 200, 0);
   fClusterSize->SetLabelWidth(labelW);
   fClusterSize->SetShowSlider(kFALSE);
   fClusterSize->SetNELength(4);
@@ -72,7 +70,7 @@ MUONChamberEditor::MUONChamberEditor(const TGWindow *p,
                       "Alieve::MUONChamberEditor", this, "DoClusterSize()");
   AddFrame(fClusterSize, new TGLayoutHints(kLHintsTop, 1, 1, 2, 1));
 
-  fHitSize = new RGValuator(this,"Hit size", 200, 0);
+  fHitSize = new TEveGValuator(this,"TEveHit size", 200, 0);
   fHitSize->SetLabelWidth(labelW);
   fHitSize->SetShowSlider(kFALSE);
   fHitSize->SetNELength(4);

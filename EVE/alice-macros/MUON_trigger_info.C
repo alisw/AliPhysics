@@ -27,7 +27,7 @@ void MUON_trigger_info(Int_t label) {
   cout << endl;
   cout << ">>>>>#########################################################################################################################" << endl;
   cout << endl;
-  cout << "                   Track number " << label << endl;
+  cout << "                   TEveTrack number " << label << endl;
   cout << endl;
   AliMUONTrackParam *mtp = (AliMUONTrackParam*)mt->GetTrackParamAtVertex();
   Float_t pt = TMath::Sqrt(mtp->Px()*mtp->Px()+mtp->Py()*mtp->Py());

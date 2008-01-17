@@ -3,8 +3,8 @@
 #include "TPCSectorVizEditor.h"
 #include <Alieve/TPCSectorViz.h>
 
-#include <Reve/RGValuators.h>
-#include <Reve/ZTransEditor.h>
+#include <TEveGValuators.h>
+#include <TEveTransEditor.h>
 
 #include <TVirtualPad.h>
 #include <TColor.h>
@@ -15,8 +15,6 @@
 #include <TGColorSelect.h>
 #include <TGSlider.h>
 #include <TGDoubleSlider.h>
-
-using namespace Reve;
 using namespace Alieve;
 
 //______________________________________________________________________
@@ -42,14 +40,14 @@ TPCSectorVizEditor::TPCSectorVizEditor(const TGWindow *p,
 
   MakeTitle("Transformation matrix");
 
-  fHMTrans = new ZTransSubEditor(this);
+  fHMTrans = new TEveTransSubEditor(this);
   fHMTrans->Connect("UseTrans()",     "Alieve::TPCSectorVizEditor", this, "Update()");
   fHMTrans->Connect("TransChanged()", "Alieve::TPCSectorVizEditor", this, "Update()");
   AddFrame(fHMTrans, new TGLayoutHints(kLHintsTop | kLHintsExpandX, 2, 0, 0, 0));
 
   MakeTitle("TPCSectorViz");
 
-  fSectorID = new RGValuator(this, "SectorID", 110, 0);
+  fSectorID = new TEveGValuator(this, "SectorID", 110, 0);
   fSectorID->SetLabelWidth(labelW);
   fSectorID->SetShowSlider(kFALSE);
   fSectorID->SetNELength(4);
@@ -83,7 +81,7 @@ TPCSectorVizEditor::TPCSectorVizEditor(const TGWindow *p,
     AddFrame(f, new TGLayoutHints(kLHintsTop, 1, 1, 1, 1));
   }
 
-  fThreshold = new RGValuator(this, "Threshold", 200, 0);
+  fThreshold = new TEveGValuator(this, "Threshold", 200, 0);
   fThreshold->SetNELength(4);
   fThreshold->SetLabelWidth(labelW);
   fThreshold->Build();
@@ -93,7 +91,7 @@ TPCSectorVizEditor::TPCSectorVizEditor(const TGWindow *p,
 		      "Alieve::TPCSectorVizEditor", this, "DoThreshold()");
   AddFrame(fThreshold, new TGLayoutHints(kLHintsTop, 1, 1, 2, 1));
 
-  fMaxVal = new RGValuator(this,"MaxVal", 200, 0);
+  fMaxVal = new TEveGValuator(this,"MaxVal", 200, 0);
   fMaxVal->SetNELength(4);
   fMaxVal->SetLabelWidth(labelW);
   fMaxVal->Build();
@@ -103,7 +101,7 @@ TPCSectorVizEditor::TPCSectorVizEditor(const TGWindow *p,
 		   "Alieve::TPCSectorVizEditor", this, "DoMaxVal()");
   AddFrame(fMaxVal, new TGLayoutHints(kLHintsTop, 1, 1, 2, 1));
 
-  fTime = new RGDoubleValuator(this,"Time", 200, 0);
+  fTime = new TEveGDoubleValuator(this,"Time", 200, 0);
   fTime->SetNELength(4);
   fTime->SetLabelWidth(labelW);
   fTime->Build();
@@ -123,7 +121,7 @@ void TPCSectorVizEditor::SetModel(TObject* obj)
 {
   fM = dynamic_cast<TPCSectorViz*>(obj);
 
-  fHMTrans->SetDataFromTrans(&fM->fHMTrans);
+  fHMTrans->SetModel(&fM->fHMTrans);
 
   fSectorID->SetValue(fM->fSectorID);
   fAutoTrans->SetState(fM->fAutoTrans  ? kButtonDown : kButtonUp);

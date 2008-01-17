@@ -3,7 +3,7 @@
 #ifndef ALIEVE_TPCLoader_H
 #define ALIEVE_TPCLoader_H
 
-#include <Reve/RenderElement.h>
+#include <TEveElement.h>
 #include <vector>
 
 class AliRawReaderRoot;
@@ -14,7 +14,7 @@ class TPCData;
 class TPCSector2D;
 class TPCSector3D;
 
-class TPCLoader : public Reve::RenderElementList
+class TPCLoader : public TEveElementList
 {
   friend class TPCLoaderEditor;
 
@@ -43,7 +43,7 @@ public:
   TPCLoader(const Text_t* n="TPCLoader", const Text_t* t=0);
   virtual ~TPCLoader();
 
-  virtual void RemoveElementLocal(Reve::RenderElement* el);
+  virtual void RemoveElementLocal(TEveElement* el);
   virtual void RemoveElementsLocal();
 
   void SetFile(const Text_t* f) { fFile = f; }

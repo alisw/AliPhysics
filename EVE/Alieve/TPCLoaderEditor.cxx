@@ -3,8 +3,8 @@
 #include "TPCLoaderEditor.h"
 #include <Alieve/TPCLoader.h>
 #include <Alieve/TPCData.h>
-#include <Reve/ReveManager.h>
-#include <Reve/RGValuators.h>
+#include <TEveManager.h>
+#include <TEveGValuators.h>
 
 #include <TSystem.h>
 #include <TVirtualPad.h>
@@ -16,8 +16,6 @@
 #include <TGNumberEntry.h>
 #include <TGFileDialog.h>
 #include <TGToolTip.h>
-
-using namespace Reve;
 using namespace Alieve;
 
 //______________________________________________________________________
@@ -75,7 +73,7 @@ ClassImp(TPCLoaderEditor)
     AddFrame(f);
   }
 
-  fEvent = new RGValuator(this, "Event:", 110, 0);
+  fEvent = new TEveGValuator(this, "Event:", 110, 0);
   fEvent->SetShowSlider(kFALSE);
   fEvent->SetLabelWidth(labelW);
   fEvent->SetNELength(6);
@@ -97,7 +95,7 @@ ClassImp(TPCLoaderEditor)
 
   labelW = 90;
 
-  fDataLoadThreshold = new RGValuator(this, "Load threshold:", 110, 0);
+  fDataLoadThreshold = new TEveGValuator(this, "Load threshold:", 110, 0);
   fDataLoadThreshold->SetShowSlider(kFALSE);
   fDataLoadThreshold->SetLabelWidth(labelW);
   fDataLoadThreshold->SetNELength(6);
@@ -109,7 +107,7 @@ ClassImp(TPCLoaderEditor)
      "Alieve::TPCLoaderEditor", this, "DoDataLoadThreshold()");
   AddFrame(fDataLoadThreshold, new TGLayoutHints(kLHintsLeft, 0, 0, 6, 0));
 
-  fDataLoadPedestal = new RGValuator(this, "Load pedestal:", 110, 0);
+  fDataLoadPedestal = new TEveGValuator(this, "Load pedestal:", 110, 0);
   fDataLoadPedestal->SetShowSlider(kFALSE);
   fDataLoadPedestal->SetLabelWidth(labelW);
   fDataLoadPedestal->SetNELength(6);
@@ -201,7 +199,7 @@ void TPCLoaderEditor::FileSelect()
   fi.fFilename  = StrDup(gSystem->BaseName(fM->fFile));
   fi.fFileTypes = tpcfiletypes;
 
-  new TGFileDialog(fClient->GetRoot(), gReve->GetMainWindow(), kFDOpen, &fi);
+  new TGFileDialog(fClient->GetRoot(), gEve->GetMainWindow(), kFDOpen, &fi);
   if (!fi.fFilename)
     return;
 

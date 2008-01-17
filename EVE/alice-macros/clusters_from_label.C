@@ -1,9 +1,9 @@
 // $Id$
 
-Reve::PointSet* clusters_from_label(Int_t label=0, Reve::RenderElement* cont=0)
+TEvePointSet* clusters_from_label(Int_t label=0, TEveElement* cont=0)
 {
   AliESDEvent* esd = Alieve::Event::AssertESD();
-  Reve::PointSet* clusters = new Reve::PointSet(64);
+  TEvePointSet* clusters = new TEvePointSet(64);
   clusters->SetOwnIds(kTRUE);
 
   for (Int_t n=0; n<esd->GetNumberOfTracks(); n++)
@@ -28,7 +28,7 @@ Reve::PointSet* clusters_from_label(Int_t label=0, Reve::RenderElement* cont=0)
     }
   }
 
-  if(clusters->Size() == 0 && gReve->GetKeepEmptyCont() == kFALSE) {
+  if(clusters->Size() == 0 && gEve->GetKeepEmptyCont() == kFALSE) {
     Warning("clusters_from_label", Form("No clusters match label '%d'", label));
     delete clusters;
     return 0;
@@ -48,10 +48,8 @@ Reve::PointSet* clusters_from_label(Int_t label=0, Reve::RenderElement* cont=0)
   char tip[1000];
   sprintf(tip,"N=%d", clusters->Size());
   clusters->SetTitle(tip);
-
-  using namespace Reve;
-  gReve->AddRenderElement(clusters, cont);
-  gReve->Redraw3D();
+  gEve->AddElement(clusters, cont);
+  gEve->Redraw3D();
 
   return clusters;
 }

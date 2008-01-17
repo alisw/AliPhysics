@@ -1,6 +1,6 @@
 // $Id$
 
-Reve::PointSet*
+TEvePointSet*
 vzero_hits(const char *varexp    = "fX:fY:fZ",
 	   const char *selection = "")
 {
@@ -12,12 +12,12 @@ vzero_hits(const char *varexp    = "fX:fY:fZ",
   //PH The line below is replaced waiting for a fix in Root
   //PH which permits to use variable siza arguments in CINT
   //PH on some platforms (alphalinuxgcc, solariscc5, etc.)
-  //PH  Reve::PointSet* points = new Reve::PointSet(Form("VZERO Hits '%s'", selection));
+  //PH  TEvePointSet* points = new TEvePointSet(Form("VZERO Hits '%s'", selection));
   char form[1000];
   sprintf(form,"VZERO Hits '%s'", selection);
-  Reve::PointSet* points = new Reve::PointSet(form);
+  TEvePointSet* points = new TEvePointSet(form);
 
-  TPointSelector ps(ht, points, varexp, selection);
+  TEvePointSelector ps(ht, points, varexp, selection);
   ps.Select();
 
   //PH  points->SetTitle(Form("N=%d", points->Size()));
@@ -26,8 +26,8 @@ vzero_hits(const char *varexp    = "fX:fY:fZ",
   points->SetMarkerSize(.5);
   points->SetMarkerColor((Color_t)2);
 
-  gReve->AddRenderElement(points);
-  gReve->Redraw3D();
+  gEve->AddElement(points);
+  gEve->Redraw3D();
 
   return points;
 }

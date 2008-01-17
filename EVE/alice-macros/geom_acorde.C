@@ -2,22 +2,20 @@
 
 void geom_acorde()
 {
-  using namespace std;
+  gGeoManager = gEve->GetGeometry("geometry.root");
 
-  gGeoManager = gReve->GetGeometry("geometry.root");
+  TEveElementList* list = new TEveElementList("ACORDE");
+  gEve->AddGlobalElement(list);
 
-  Reve::RenderElementList* list = new Reve::RenderElementList("ACORDE");
-  gReve->AddGlobalRenderElement(list);
-
-  for(Int_t i=1; i<61; ++i) {
-    char form[10000];
+  for (Int_t i=1; i<61; ++i)
+  {
+    char form[1000];
     sprintf(form, "ACORDE1_%d", i);
-    TGeoNode* node = gGeoManager->GetTopVolume()->FindNode(form);       
-    Reve::GeoTopNodeRnrEl* re =  new Reve::GeoTopNodeRnrEl(gGeoManager, node);
+    TGeoNode* node = gGeoManager->GetTopVolume()->FindNode(form);
+    TEveGeoTopNode* re = new TEveGeoTopNode(gGeoManager, node);
     re->UseNodeTrans();
-    gReve->AddGlobalRenderElement(list, re);
-    // gReve->AddGlobalRenderElement(re, list); // For EVE-dev
+    gEve->AddGlobalElement(re, list);
   }
-  
-  gReve->Redraw3D();  
+
+  gEve->Redraw3D();
 }

@@ -3,12 +3,11 @@
 #ifndef ALIEVE_AliEVEHOMERSourceList_H
 #define ALIEVE_AliEVEHOMERSourceList_H
 
-#include <Reve/Reve.h>
-#include <Reve/RenderElement.h>
+#include <TEveElement.h>
 
 #include <TObject.h>
 
-class AliEVEHOMERSourceList : public Reve::RenderElementList
+class AliEVEHOMERSourceList : public TEveElementList
 {
 private:
   AliEVEHOMERSourceList(const AliEVEHOMERSourceList&);            // Not implemented

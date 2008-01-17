@@ -9,7 +9,7 @@ void emcal_digits()
   rl->LoadDigits("EMCAL");
   TTree* dt = rl->GetTreeD("EMCAL", kFALSE);
 
-  gGeoManager = gReve->GetGeometry("$REVESYS/alice-data/alice_fullgeo.root");
+  gGeoManager = gEve->GetGeometry("$REVESYS/alice-data/alice_fullgeo.root");
   TGeoNode* node = gGeoManager->GetTopVolume()->FindNode("XEN1_1");
 
   TGeoBBox* bbbox = (TGeoBBox*) node->GetDaughter(0) ->GetVolume()->GetShape();
@@ -17,27 +17,27 @@ void emcal_digits()
   TGeoBBox* sbbox = (TGeoBBox*) node->GetDaughter(10)->GetVolume()->GetShape();
   sbbox->Dump();
 
-  Reve::RenderElementList* l = new Reve::RenderElementList("EMCAL");
+  TEveElementList* l = new TEveElementList("EMCAL");
   l->SetTitle("Tooltip");
-  gReve->AddRenderElement(l);
+  gEve->AddElement(l);
 
-  Reve::FrameBox* frame_big = new Reve::FrameBox();
+  TEveFrameBox* frame_big = new TEveFrameBox();
   frame_big->SetAABoxCenterHalfSize(0, 0, 0, bbbox->GetDX(), bbbox->GetDY(), bbbox->GetDZ());
 
-  Reve::FrameBox* frame_sml = new Reve::FrameBox();
+  TEveFrameBox* frame_sml = new TEveFrameBox();
   frame_sml->SetAABoxCenterHalfSize(0, 0, 0, sbbox->GetDX(), sbbox->GetDY(), sbbox->GetDZ());
 
   gStyle->SetPalette(1, 0);
-  Reve::RGBAPalette* pal = new Reve::RGBAPalette(0, 512);
+  TEveRGBAPalette* pal = new TEveRGBAPalette(0, 512);
   pal->SetLimits(0, 1024);
 
-  Reve::QuadSet* smodules[12];
+  TEveQuadSet* smodules[12];
 
   for (Int_t sm=0; sm<12; ++sm)
   {
-    Reve::QuadSet* q = new Reve::QuadSet(Form("SM %d", sm+1));
+    TEveQuadSet* q = new TEveQuadSet(Form("SM %d", sm+1));
     q->SetOwnIds(kTRUE);
-    q->Reset(Reve::QuadSet::QT_RectangleYZFixedDimX, kFALSE, 32);
+    q->Reset(TEveQuadSet::kQT_RectangleYZFixedDimX, kFALSE, 32);
     q->SetDefWidth (geom->GetPhiTileSize());
     q->SetDefHeight(geom->GetEtaTileSize());
 
@@ -46,7 +46,7 @@ void emcal_digits()
     q->SetFrame(sm < 10 ? frame_big : frame_sml);
     q->SetPalette(pal);
 
-    gReve->AddRenderElement(q, l);
+    gEve->AddElement(q, l);
     smodules[sm] = q;
   }
 
@@ -68,7 +68,7 @@ void emcal_digits()
   Int_t ieta    =  0 ;
   Double_t x, y, z;
 
-  for(Int_t idig = 0; idig<nEnt; idig++)
+  for (Int_t idig = 0; idig < nEnt; ++idig)
   {
     dig = static_cast<AliEMCALDigit *>(digits->At(idig));
 
@@ -93,7 +93,7 @@ void emcal_digits()
       geom->RelPosCellInSModule(id, x, y, z);
       cout << x <<" "<< y <<" "<< z <<endl;
 
-      Reve::QuadSet* q = smodules[iSupMod];
+      TEveQuadSet* q = smodules[iSupMod];
       q->AddQuad(y, z);
       q->QuadValue(amp);
       q->QuadId(dig);
@@ -102,10 +102,10 @@ void emcal_digits()
     }
   }
 
-  for (Int_t sm=0; sm<12; ++sm)
+  for (Int_t sm = 0; sm < 12; ++sm)
   {
     smodules[iSupMod]->RefitPlex();
   }
 
-  gReve->Redraw3D();
+  gEve->Redraw3D();
 }

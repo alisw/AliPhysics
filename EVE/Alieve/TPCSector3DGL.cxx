@@ -3,13 +3,11 @@
 #include "TPCSector3DGL.h"
 #include <Alieve/TPCSector3D.h>
 
-#include <Reve/BoxSetGL.h>
+#include <TEveBoxSetGL.h>
 
 #include <TGLIncludes.h>
 #include <TGLRnrCtx.h>
 #include <TGLSelectRecord.h>
-
-using namespace Reve;
 using namespace Alieve;
 
 //______________________________________________________________________
@@ -53,7 +51,7 @@ Bool_t TPCSector3DGL::SetModel(TObject* obj, const Option_t* /*opt*/)
   if(SetModelCheckClass(obj, Alieve::TPCSector3D::Class())) {
     fSector = (TPCSector3D*) fExternalObj;
     if(fBoxRnr == 0) {
-      fBoxRnr = new BoxSetGL;
+      fBoxRnr = new TEveBoxSetGL;
       fBoxRnr->SetModel(&fSector->fBoxSet);
     }
     return kTRUE;
@@ -100,13 +98,13 @@ void TPCSector3DGL::DirectDraw(TGLRnrCtx & rnrCtx) const
     glPushClientAttrib(GL_CLIENT_VERTEX_ARRAY_BIT);
     glEnableClientState(GL_VERTEX_ARRAY);
 
-    const Reve::PointSetArray& psa = fSector->fPointSetArray;
+    const TEvePointSetArray& psa = fSector->fPointSetArray;
     for(Int_t b=0; b<psa.GetNBins(); ++b)
     {
-      Reve::PointSet* ps = psa.GetBin(b);
+      TEvePointSet* ps = psa.GetBin(b);
       if(ps->Size() > 0)
       {
-	ColorFromIdx(ps->GetMarkerColor(), col);
+	TEveUtil::ColorFromIdx(ps->GetMarkerColor(), col);
 	glColor4ubv(col);
 
         if (rnrCtx.SecSelection()) glLoadName(b + 1);
@@ -120,7 +118,7 @@ void TPCSector3DGL::DirectDraw(TGLRnrCtx & rnrCtx) const
 
   if(fSector->fRnrFrame && ! rnrCtx.SecSelection())
   {
-    ColorFromIdx(fSector->fFrameColor, col);
+    TEveUtil::ColorFromIdx(fSector->fFrameColor, col);
     glColor4ubv(col);
 
     if(fSector->fRnrInn)
@@ -179,11 +177,11 @@ void TPCSector3DGL::ProcessSelection(TGLRnrCtx & /*rnrCtx*/, TGLSelectRecord & r
     return;
   }
 
-  const Reve::PointSetArray& psa = fSector->fPointSetArray;
+  const TEvePointSetArray& psa = fSector->fPointSetArray;
 
   if (rec.GetItem(1) > 0 && rec.GetItem(1) <= (UInt_t) psa.GetNBins())
   {
-    // Reve::PointSet& ps = * psa.GetBin(rec.GetItem(1) - 1);
+    // TEvePointSet& ps = * psa.GetBin(rec.GetItem(1) - 1);
     printf("TPC3D Point selected, bin=%u, idx=%u\n", rec.GetItem(1) - 1, rec.GetItem(2));
     return;
   }

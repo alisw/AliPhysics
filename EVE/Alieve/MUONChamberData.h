@@ -1,7 +1,7 @@
 #ifndef ALIEVE_MUONChamberData_H
 #define ALIEVE_MUONChamberData_H
 
-#include <Reve/Reve.h>
+#include <TEveUtil.h>
 
 #include <TObject.h>
 

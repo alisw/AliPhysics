@@ -4,18 +4,15 @@
 #define ALIEVE_ITSScaledModuleEditor_H
 
 #include <TGedFrame.h>
-#include <Reve/RGBAPaletteEditor.h>
+#include <TEveRGBAPaletteEditor.h>
 
 class TGNumberEntry;
 class TGColorSelect;
 class TGComboBox;
 
-namespace Reve 
-{
-class RGValuator;
-class RGDoubleValuator;
-class RGBAPalette;
-}
+class TEveGValuator;
+class TEveGDoubleValuator;
+class TEveRGBAPalette;
 
 namespace Alieve {
 

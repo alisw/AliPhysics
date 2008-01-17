@@ -5,20 +5,18 @@
 #include <AliITSdigitSSD.h>
 
 #include <TStyle.h>
-
-using namespace Reve;
 using namespace Alieve;
 
 
 Bool_t       ITSModule::fgStaticInitDone = kFALSE;
 
-FrameBox*    ITSModule::fgSPDFrameBox = 0;
-FrameBox*    ITSModule::fgSDDFrameBox = 0;
-FrameBox*    ITSModule::fgSSDFrameBox = 0;
+TEveFrameBox*    ITSModule::fgSPDFrameBox = 0;
+TEveFrameBox*    ITSModule::fgSDDFrameBox = 0;
+TEveFrameBox*    ITSModule::fgSSDFrameBox = 0;
 
-RGBAPalette* ITSModule::fgSPDPalette  = 0;
-RGBAPalette* ITSModule::fgSDDPalette  = 0;
-RGBAPalette* ITSModule::fgSSDPalette  = 0;
+TEveRGBAPalette* ITSModule::fgSPDPalette  = 0;
+TEveRGBAPalette* ITSModule::fgSDDPalette  = 0;
+TEveRGBAPalette* ITSModule::fgSSDPalette  = 0;
 
 //__________________________________________________________________________
 // ITSModule
@@ -30,7 +28,7 @@ ClassImp(ITSModule)
 /**************************************************************************/
 
 ITSModule::ITSModule(const Text_t* n, const Text_t* t) :
-  QuadSet(n, t),
+  TEveQuadSet(n, t),
   fInfo(0),
   fID(-1), fDetID(-1),
   fLayer(-1), fLadder(-1), fDet(-1),
@@ -38,7 +36,7 @@ ITSModule::ITSModule(const Text_t* n, const Text_t* t) :
 {}
 
 ITSModule::ITSModule(Int_t gid, ITSDigitsInfo* info) :
-  QuadSet(Form("ITS module %d", gid)),
+  TEveQuadSet(Form("ITS module %d", gid)),
   fInfo  (0),
   fID(-1), fDetID(-1),
   fLayer(-1), fLadder(-1), fDet(-1),
@@ -64,12 +62,12 @@ void ITSModule::InitStatics(ITSDigitsInfo* info)
     Float_t dx = info->fSegSPD->Dx()*0.00005;
     Float_t dz = 3.50; 
 
-    fgSPDFrameBox = new FrameBox();
+    fgSPDFrameBox = new TEveFrameBox();
     fgSPDFrameBox->SetAAQuadXZ(-dx, 0, -dz, 2*dx, 2*dz);
     fgSPDFrameBox->SetFrameColor((Color_t) 31);
     fgSPDFrameBox->SetFrameFill(kTRUE);
     fgSPDFrameBox->IncRefCount();
-    fgSPDPalette  = new RGBAPalette(info->fSPDMinVal,info->fSPDMaxVal);
+    fgSPDPalette  = new TEveRGBAPalette(info->fSPDMinVal,info->fSPDMaxVal);
     fgSPDPalette->IncRefCount();
   }
 
@@ -77,12 +75,12 @@ void ITSModule::InitStatics(ITSDigitsInfo* info)
     Float_t dx = info->fSegSDD->Dx()*0.0001;
     Float_t dz = info->fSegSDD->Dz()*0.00005;
 
-    fgSDDFrameBox = new FrameBox();
+    fgSDDFrameBox = new TEveFrameBox();
     fgSDDFrameBox->SetAAQuadXZ(-dx, 0, -dz, 2*dx, 2*dz);
     fgSDDFrameBox->SetFrameColor((Color_t) 32);
     fgSDDFrameBox->SetFrameFill(kTRUE);
     fgSDDFrameBox->IncRefCount();
-    fgSDDPalette  = new RGBAPalette(info->fSDDMinVal,info->fSDDMaxVal);
+    fgSDDPalette  = new TEveRGBAPalette(info->fSDDMinVal,info->fSDDMaxVal);
     fgSDDPalette->SetLimits(0, info->fSDDHighLim); // Set proper ADC range.
     fgSDDPalette->IncRefCount();
   }
@@ -91,12 +89,12 @@ void ITSModule::InitStatics(ITSDigitsInfo* info)
     Float_t dx = info->fSegSSD->Dx()*0.00005;
     Float_t dz = info->fSegSSD->Dz()*0.00005;
 
-    fgSSDFrameBox = new FrameBox();
+    fgSSDFrameBox = new TEveFrameBox();
     fgSSDFrameBox->SetAAQuadXZ(-dx, 0, -dz, 2*dx, 2*dz);
     fgSSDFrameBox->SetFrameColor((Color_t) 33);
     fgSSDFrameBox->SetFrameFill(kTRUE);
     fgSSDFrameBox->IncRefCount();
-    fgSSDPalette  = new RGBAPalette(info->fSSDMinVal,info->fSSDMaxVal);
+    fgSSDPalette  = new TEveRGBAPalette(info->fSSDMinVal,info->fSSDMaxVal);
     fgSSDPalette->SetLimits(0, info->fSSDHighLim); // Set proper ADC range.
     fgSSDPalette->IncRefCount();
   }
@@ -117,7 +115,7 @@ void ITSModule::SetDigitsInfo(ITSDigitsInfo* info)
 
 void ITSModule::SetID(Int_t gid, Bool_t trans)
 {
-  static const Exc_t eH("ITSModule::SetID ");
+  static const TEveException eH("ITSModule::SetID ");
 
   if(fInfo == 0)
     throw(eH + "ITSDigitsInfo not set.");
@@ -246,7 +244,7 @@ void ITSModule::LoadQuads()
 {
   // Here we still use 'z' for the name of axial coordinates.
   // The transforamtion matrix aplied rotates y -> z.
-  // We need this as QuadSet offers optimized treatment for
+  // We need this as TEveQuadSet offers optimized treatment for
   // quads in the x-y plane.
 
   // printf("its module load quads \n");
@@ -263,7 +261,7 @@ void ITSModule::LoadQuads()
     case 0: { // SPD
       AliITSsegmentationSPD* seg =  fInfo->fSegSPD; 
 
-      Reset(QT_RectangleXZFixedY, kFALSE, 32);
+      Reset(kQT_RectangleXZFixedY, kFALSE, 32);
 
       for (Int_t k=0; k<ndigits; ++k)
       {
@@ -286,7 +284,7 @@ void ITSModule::LoadQuads()
     case 1: { // SDD
       AliITSsegmentationSDD *seg =  fInfo->fSegSDD; 
 
-      Reset(QT_RectangleXZFixedY, kFALSE, 32);
+      Reset(kQT_RectangleXZFixedY, kFALSE, 32);
 
       for (Int_t k=0; k<ndigits; ++k)
       {
@@ -311,7 +309,7 @@ void ITSModule::LoadQuads()
     case 2: { // SSD
       AliITSsegmentationSSD* seg = fInfo->fSegSSD; 
 
-      Reset(QT_LineXZFixedY, kFALSE, 32);
+      Reset(kQT_LineXZFixedY, kFALSE, 32);
 
       Float_t ap, an; // positive/negative angles -> offsets
       seg->Angles(ap, an);
@@ -370,9 +368,9 @@ void ITSModule::SetTrans()
 
 void ITSModule::DigitSelected(Int_t idx)
 {
-  // Override control-click from QuadSet
+  // Override control-click from TEveQuadSet
 
-  DigitBase* qb   = GetDigit(idx);
+  DigitBase_t* qb   = GetDigit(idx);
   TObject* obj   = qb->fId.GetObject();
   AliITSdigit* d = dynamic_cast<AliITSdigit*>(obj);
   printf("ITSModule::QuadSelected "); Print();

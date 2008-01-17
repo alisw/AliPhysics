@@ -5,7 +5,7 @@
 
 #include <TVirtualPad.h>
 #include <TColor.h>
-#include <Reve/RGValuators.h>
+#include <TEveGValuators.h>
 
 #include <TGLabel.h>
 #include <TGButton.h>
@@ -13,8 +13,6 @@
 #include <TGColorSelect.h>
 #include <TGSlider.h>
 #include <TGDoubleSlider.h>
-
-using namespace Reve;
 using namespace Alieve;
 
 //______________________________________________________________________
@@ -36,7 +34,7 @@ ClassImp(TOFSectorEditor)
     //{
     
     /*
-      fHMTrans = new ZTransSubEditor(this);
+      fHMTrans = new TEveTransSubEditor(this);
       fHMTrans->Connect("UseTrans()",     "Alieve::TPCSectorVizEditor", this, "Update()");
       fHMTrans->Connect("TransChanged()", "Alieve::TPCSectorVizEditor", this, "Update()");
       AddFrame(fHMTrans, new TGLayoutHints(kLHintsTop | kLHintsExpandX, 2, 0, 0, 0));
@@ -50,7 +48,7 @@ ClassImp(TOFSectorEditor)
   //fPriority = 40;
   MakeTitle("TOFSector");  
 
-  fSectorID = new RGValuator(this, "SectorID", 110, 0);
+  fSectorID = new TEveGValuator(this, "SectorID", 110, 0);
   fSectorID->SetLabelWidth(60);
   fSectorID->SetShowSlider(kFALSE);
   fSectorID->SetNELength(4);
@@ -111,7 +109,7 @@ ClassImp(TOFSectorEditor)
 
     AddFrame(f, new TGLayoutHints(kLHintsTop, 1, 1, 1, 1));
 
-    fThreshold = new RGValuator(this, "Threshold", 200, 0);
+    fThreshold = new TEveGValuator(this, "Threshold", 200, 0);
     fThreshold->SetNELength(4);
     fThreshold->SetLabelWidth(60);
     fThreshold->Build();
@@ -121,7 +119,7 @@ ClassImp(TOFSectorEditor)
 			"Alieve::TOFSectorEditor", this, "DoThreshold()");
     AddFrame(fThreshold, new TGLayoutHints(kLHintsTop, 1, 1, 2, 1));
     
-    fMaxVal = new RGValuator(this,"MaxVal", 200, 0);
+    fMaxVal = new TEveGValuator(this,"MaxVal", 200, 0);
     fMaxVal->SetNELength(4);
     fMaxVal->SetLabelWidth(60);
     fMaxVal->Build();

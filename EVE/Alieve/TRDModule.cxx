@@ -8,13 +8,10 @@
 //#include "TColor.h"
 //#include "TMath.h"
 
-#include "Reve/ReveManager.h"
-#include "Reve/Track.h"
+#include "TEveManager.h"
+#include "TEveTrack.h"
 
-
-using namespace Reve;
 using namespace Alieve;
-//using namespace std;
 
 ClassImp(TRDModule)
 ClassImp(TRDModuleEditor)
@@ -230,7 +227,7 @@ void TRDModuleEditor::UpdateChamber()
 
 	if(dynamic_cast<TRDNode*>(fM)) (dynamic_cast<TRDNode*>(fM))->UpdateLeaves();
 
-	gReve->Redraw3D();
+	gEve->Redraw3D();
 }
 
 //_________________________________________________________
@@ -240,7 +237,7 @@ void TRDModuleEditor::UpdateClusters(Pixel_t /*col*/)
 /*	
 	if(fM->fRecPoints){
 		fM->fRecPoints->SetMarkerColor(col ? fHitsColor->GetColor() : col);
-		gReve->Redraw3D();
+		gEve->Redraw3D();
 	}
 */
 }
@@ -252,7 +249,7 @@ void TRDModuleEditor::UpdateHits(Pixel_t /*col*/)
 /*	
 	if(fM->fHits){
 		fM->fHits->SetMarkerColor(col ? fClustersColor->GetColor() : col);
-		gReve->Redraw3D();
+		gEve->Redraw3D();
 	}
 */
 }

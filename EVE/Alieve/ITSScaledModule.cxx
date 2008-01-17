@@ -5,8 +5,6 @@
 #include <AliITSdigitSPD.h>
 #include <AliITSdigitSDD.h>
 #include <AliITSdigitSSD.h>
-
-using namespace Reve;
 using namespace Alieve;
 
 //______________________________________________________________________
@@ -26,7 +24,7 @@ void DigitScaleInfo::ScaleChanged(Int_t s)
   fScale = s;
   
   ITSScaledModule* sm;
-  std::list<RenderElement*>::iterator i = fBackRefs.begin();
+  std::list<TEveElement*>::iterator i = fBackRefs.begin();
   while (i != fBackRefs.end())
   {
     sm = dynamic_cast<ITSScaledModule*>(*i);
@@ -41,7 +39,7 @@ void DigitScaleInfo::StatTypeChanged(Int_t t)
   fSyncPalette = kTRUE;
     
   ITSScaledModule* sm;
-  std::list<RenderElement*>::iterator i = fBackRefs.begin();
+  std::list<TEveElement*>::iterator i = fBackRefs.begin();
   while (i != fBackRefs.end())
   {
     sm = dynamic_cast<ITSScaledModule*>(*i);
@@ -106,7 +104,7 @@ void ITSScaledModule::LoadQuads()
 {
   // Here we still use 'z' for the name of axial coordinates.
   // The transforamtion matrix aplied rotates y -> z.
-  // We need this as QuadSet offers optimized treatment for
+  // We need this as TEveQuadSet offers optimized treatment for
   // quads in the x-y plane.
 
   TClonesArray *digits;
@@ -127,7 +125,7 @@ void ITSScaledModule::LoadQuads()
     case 0: 
     { 
       // SPD
-      Reset(QT_RectangleXZFixedY, kFALSE, 32);
+      Reset(kQT_RectangleXZFixedY, kFALSE, 32);
 
       fNCz = fInfo->fSPDScaleZ[scale];
       fNCx = fInfo->fSPDScaleX[scale];
@@ -181,7 +179,7 @@ void ITSScaledModule::LoadQuads()
     case 1: 
     { 
       // SDD
-      Reset(QT_RectangleXZFixedY, kFALSE, 32);
+      Reset(kQT_RectangleXZFixedY, kFALSE, 32);
 
       fNCz = fInfo->fSDDScaleZ[scale];
       fNCx = fInfo->fSDDScaleX[scale];   
@@ -236,7 +234,7 @@ void ITSScaledModule::LoadQuads()
     case 2: 
     { 
       // SSD  
-      Reset(QT_LineXZFixedY, kFALSE, 32);
+      Reset(kQT_LineXZFixedY, kFALSE, 32);
 
       AliITSsegmentationSSD* seg = fInfo->fSegSSD; 
       Float_t ap, an; // positive/negative angles -> offsets
@@ -325,7 +323,7 @@ void ITSScaledModule::SetQuadValues()
 	v = Nint(Sqrt(sd->sqr_sum) / sd->N);
 	break;
     }
-    DigitBase* qb = GetDigit(i);
+    DigitBase_t* qb = GetDigit(i);
     qb->fValue = v;
   }
 }
@@ -381,10 +379,10 @@ void ITSScaledModule::GetScaleData(Int_t& cnx, Int_t& cnz, Int_t& total)
 
 void  ITSScaledModule::DigitSelected(Int_t idx)
 {
-  // Override control-click from QuadSet
+  // Override control-click from TEveQuadSet
   printf("ITSScaledModule::DigitSelected "); Print();
 
-  DigitBase* qb  = GetDigit(idx);
+  DigitBase_t* qb  = GetDigit(idx);
   TObject* obj  = qb->fId.GetObject();
   ScaledDigit* sd = dynamic_cast<ScaledDigit*>(obj);
   TClonesArray *digits = fInfo->GetDigits(fID, fDetID);

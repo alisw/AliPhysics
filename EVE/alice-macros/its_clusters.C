@@ -1,16 +1,16 @@
 #ifdef __CINT__
 
-namespace Reve
+namespace TEveUtil
 {
-class RenderElement;
-class PointSet;
+class TEveElement;
+class TEvePointSet;
 }
 
 #else
 
-#include <Reve/Reve.h>
-#include <Reve/ReveManager.h>
-#include <Reve/PointSet.h>
+#include <TEve.h>
+#include <TEveManager.h>
+#include <TEvePointSet.h>
 #include <Alieve/EventAlieve.h>
 
 #include <AliRunLoader.h>
@@ -20,7 +20,7 @@ class PointSet;
 
 #endif
 
-Reve::PointSet* its_clusters(Reve::RenderElement* cont=0, Float_t maxR=50)
+TEvePointSet* its_clusters(TEveElement* cont=0, Float_t maxR=50)
 {
   Alieve::Event::AssertGeometry();
 
@@ -29,7 +29,7 @@ Reve::PointSet* its_clusters(Reve::RenderElement* cont=0, Float_t maxR=50)
 
   TTree *cTree = rl->GetTreeR("ITS", false);
 
-  Reve::PointSet* clusters = new Reve::PointSet(10000);
+  TEvePointSet* clusters = new TEvePointSet(10000);
   clusters->SetOwnIds(kTRUE);
 
   TClonesArray *cl = NULL;
@@ -56,7 +56,7 @@ Reve::PointSet* its_clusters(Reve::RenderElement* cont=0, Float_t maxR=50)
     }
   }
 
-  if(clusters->Size() == 0 && gReve->GetKeepEmptyCont() == kFALSE) {
+  if (clusters->Size() == 0 && gEve->GetKeepEmptyCont() == kFALSE) {
     Warning("its_clusters", "No ITS clusters");
     delete clusters;
     return 0;
@@ -73,10 +73,8 @@ Reve::PointSet* its_clusters(Reve::RenderElement* cont=0, Float_t maxR=50)
   char tip[1000];
   sprintf(tip,"N=%d", clusters->Size());
   clusters->SetTitle(tip);
-
-  using namespace Reve;
-  gReve->AddRenderElement(clusters, cont);
-  gReve->Redraw3D();
+  gEve->AddElement(clusters, cont);
+  gEve->Redraw3D();
 
   return clusters;
 }

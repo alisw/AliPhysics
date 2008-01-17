@@ -8,13 +8,13 @@
 //////////////////////////////////////////////////////////////////////////
 
 
-#include <Reve/QuadSet.h>
+#include <TEveQuadSet.h>
 #include <AliT0digit.h>
 #include <AliT0RawReader.h>
 
 namespace Alieve {
  
-class T0Module : public Reve::QuadSet
+class T0Module : public TEveQuadSet
 {
  
   T0Module(const T0Module&);

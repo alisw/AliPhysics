@@ -2,7 +2,7 @@
 #include "TRDLoader.h"
 #include "TRDLoaderImp.h"
 
-#include <Reve/ReveManager.h>
+#include <TEveManager.h>
 
 #include <TGLabel.h>
 #include <TGButton.h>
@@ -14,8 +14,6 @@
 #include <TClonesArray.h>
 
 #include "AliLog.h"
-
-using namespace Reve;
 using namespace Alieve;
 using namespace std;
 
@@ -29,7 +27,7 @@ ClassImp(Alieve::TRDLoaderManagerEditor)
 
 
 //________________________________________________________
-TRDLoaderManager::TRDLoaderManager(const Text_t* n, const Text_t* t) : Reve::RenderElementList(n, t)
+TRDLoaderManager::TRDLoaderManager(const Text_t* n, const Text_t* t) : TEveElementList(n, t)
 {
 
 }
@@ -48,27 +46,27 @@ void	TRDLoaderManager::Add(Int_t type, const Text_t *name, const Text_t *title)
 	switch(type){
 	case 0:
 		//fChildren.push_back(new TRDLoaderSim(name, title));
-		gReve->AddRenderElement(trdl = new TRDLoaderSim(name, title), this);
-		((TRDLoaderSim*)trdl)->FindListTreeItem(gReve->GetListTree())->SetTipText(title);
+		gEve->AddElement(trdl = new TRDLoaderSim(name, title), this);
+		((TRDLoaderSim*)trdl)->FindListTreeItem(gEve->GetListTree())->SetTipText(title);
 		break;	
 	case 1:
 	case 2:
 	case 3:
 		//fChildren.push_back(new TRDLoader(name, title));
-	  gReve->AddRenderElement(trdl = new TRDLoader(name, title), this);
-		trdl->FindListTreeItem(gReve->GetListTree())->SetTipText(title);
+	  gEve->AddElement(trdl = new TRDLoader(name, title), this);
+		trdl->FindListTreeItem(gEve->GetListTree())->SetTipText(title);
 		trdl->SetDataType((Alieve::TRDDataTypes)type);
 		break;
 	case 4:
 	case 5:
 		//fChildren.push_back(new TRDLoaderRaw(name, title));
-	  gReve->AddRenderElement(trdl = new TRDLoaderRaw(name, title), this);
-		((TRDLoaderRaw*)trdl)->FindListTreeItem(gReve->GetListTree())->SetTipText(title);
+	  gEve->AddElement(trdl = new TRDLoaderRaw(name, title), this);
+		((TRDLoaderRaw*)trdl)->FindListTreeItem(gEve->GetListTree())->SetTipText(title);
 		trdl->SetDataType((Alieve::TRDDataTypes)type);
 		break;
 	}
 	
-	gReve->Redraw3D();
+	gEve->Redraw3D();
 }
 
 
@@ -89,7 +87,7 @@ void	TRDLoaderManager::Remove(Int_t entry)
 	//printf("TRDLoaderManager::Remove(%d)\n", entry);
 	List_i it = fChildren.begin();
 	for(int i=0; i<entry; i++) it++;
-	gReve->RemoveRenderElement((*it), this);
+	gEve->RemoveElement((*it), this);
 	fChildren.erase(it);
 }
 

@@ -3,7 +3,7 @@
 #include "TPCSector3DEditor.h"
 #include <Alieve/TPCSector3D.h>
 
-#include <Reve/RGValuators.h>
+#include <TEveGValuators.h>
 
 #include <TVirtualPad.h>
 #include <TColor.h>
@@ -14,8 +14,6 @@
 #include <TGColorSelect.h>
 #include <TGSlider.h>
 #include <TGDoubleSlider.h>
-
-using namespace Reve;
 using namespace Alieve;
 
 //______________________________________________________________________
@@ -40,7 +38,7 @@ TPCSector3DEditor::TPCSector3DEditor(const TGWindow *p,
   fRnrFrame->Connect
     ("Toggled(Bool_t)","Alieve::TPCSector3DEditor", this, "DoRnrFrame()");
 
-  fDriftVel = new RGValuator(this, "Vdrift fac", 110, 0);
+  fDriftVel = new TEveGValuator(this, "Vdrift fac", 110, 0);
   fDriftVel->SetLabelWidth(labelW);
   fDriftVel->SetShowSlider(kFALSE);
   fDriftVel->SetNELength(6);
@@ -51,7 +49,7 @@ TPCSector3DEditor::TPCSector3DEditor(const TGWindow *p,
 		     "Alieve::TPCSector3DEditor", this, "DoDriftVel()");
   AddFrame(fDriftVel, new TGLayoutHints(kLHintsTop, 1, 1, 2, 1));
 
-  fPointFrac = new RGValuator(this,"Point frac", 200, 0);
+  fPointFrac = new TEveGValuator(this,"Point frac", 200, 0);
   fPointFrac->SetLabelWidth(labelW);
   fPointFrac->SetNELength(4);
   fPointFrac->Build();
@@ -62,7 +60,7 @@ TPCSector3DEditor::TPCSector3DEditor(const TGWindow *p,
 		      "Alieve::TPCSector3DEditor", this, "DoPointFrac()");
   AddFrame(fPointFrac, new TGLayoutHints(kLHintsTop, 1, 1, 2, 1));
 
-  fPointSize = new RGValuator(this,"Point size", 200, 0);
+  fPointSize = new TEveGValuator(this,"Point size", 200, 0);
   fPointSize->SetLabelWidth(labelW);
   fPointSize->SetShowSlider(kFALSE);
   fPointSize->SetNELength(4);

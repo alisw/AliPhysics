@@ -12,15 +12,15 @@
 #define ALIEVE_TRDData_H
 
 #ifndef REVE_QuadSet_H
-#include <Reve/QuadSet.h>
+#include <TEveQuadSet.h>
 #endif
 
 #ifndef REVE_BoxSet_H
-#include <Reve/BoxSet.h>
+#include <TEveBoxSet.h>
 #endif
 
 #ifndef REVE_PointSet_H
-#include <Reve/PointSet.h>
+#include <TEvePointSet.h>
 #endif
 
 #ifndef ROOT_TGedFrame
@@ -32,7 +32,7 @@
 class AliTRDdigitsManager;
 namespace Alieve {
 	class TRDChamber;
-	class TRDHits : public Reve::PointSet
+	class TRDHits : public TEvePointSet
 	{
 	public:
 		TRDHits(TRDChamber *p);
@@ -60,7 +60,7 @@ namespace Alieve {
 	};	
 
 
-	class TRDDigits : public Reve::OldQuadSet, public Reve::RenderElement
+	class TRDDigits : public TEveQuadSet
 	{
 	friend class TRDDigitsEditor;
 	public:
@@ -75,7 +75,7 @@ namespace Alieve {
 		TRDChamber *fParent;
 	
 	private:
-		Reve::BoxSet			fBoxes;
+		TEveBoxSet			fBoxes;
 		AliTRDdataArrayI	fData;
 		
 		ClassDef(TRDDigits,1) // Digits visualisation for TRD

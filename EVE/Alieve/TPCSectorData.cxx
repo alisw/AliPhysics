@@ -19,8 +19,6 @@
 // For accessing data, see for example TPCSector2DGL::CreateTexture()
 // and LoadPadrow().
 //
-
-using namespace Reve;
 using namespace Alieve;
 
 ClassImp(TPCSectorData)
@@ -435,7 +433,7 @@ void TPCSectorData::RowIterator::ResetRow(const PadData* first, Short_t npads)
 void TPCSectorData::RowIterator::Test()
 {
   while(NextPad()) {
-    printf("Pad %d\n", fPad);
+    printf("TEvePad %d\n", fPad);
     PadIterator::Test();
   }
 }

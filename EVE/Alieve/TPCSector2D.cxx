@@ -6,7 +6,7 @@
 #include <Alieve/TPCData.h>
 #include <Alieve/TPCSectorData.h>
 
-#include <Reve/ReveManager.h>
+#include <TEveManager.h>
 
 #include <AliTPCParam.h>
 
@@ -18,8 +18,6 @@
 #include <TH1S.h>
 #include <TH2S.h>
 #include <TVirtualPad.h>
-
-using namespace Reve;
 using namespace Alieve;
 using namespace std;
 
@@ -62,8 +60,8 @@ void TPCSector2D::MakeSector3D()
   s->SetDataSource(fTPCData);
   s->SetSectorID(fSectorID);
   s->SetAutoTrans(fAutoTrans);
-  gReve->AddRenderElement(s, this);
-  gReve->Redraw3D();
+  gEve->AddElement(s, this);
+  gEve->Redraw3D();
 }
 
 /**************************************************************************/
@@ -107,8 +105,8 @@ void TPCSector2D::PadSelected(Int_t row, Int_t pad)
       if (sectorData == 0) return;
       Int_t mint = fMinTime;
       Int_t maxt = fMaxTime;
-      TH1S* h = new TH1S(Form("Seg%d_Row%d_Pad%d", sseg, srow, pad),
-			 Form("Segment %d, Row %d, Pad %d", sseg, srow, pad),
+      TH1S* h = new TH1S(Form("Seg%d_Row%d_TEvePad%d", sseg, srow, pad),
+			 Form("Segment %d, Row %d, TEvePad %d", sseg, srow, pad),
 			 maxt - mint +1 , mint, maxt);
       h->SetXTitle("Time");
       h->SetYTitle("ADC");
@@ -131,12 +129,12 @@ void TPCSector2D::PadSelected(Int_t row, Int_t pad)
 			 maxt - mint +1 , mint, maxt,
 			 npad, 0, npad - 1);
       h->SetXTitle("Time");
-      h->SetYTitle("Pad");
+      h->SetYTitle("TEvePad");
       h->SetZTitle("ADC");
       TPCSectorData::RowIterator i = sectorData->MakeRowIterator(row);
       while (i.NextPad())
 	while (i.Next())
-	  h->Fill(i.Time(), i.Pad(), i.Signal());
+	  h->Fill(i.Time(), i.TEvePad(), i.Signal());
       h->Draw();
       gPad->Modified();
       gPad->Update();

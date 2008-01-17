@@ -3,7 +3,7 @@
 #ifndef ALIEVE_ITSScaledModule_H
 #define ALIEVE_ITSScaledModule_H
 
-#include <Reve/Reve.h>
+#include <TEveUtil.h>
 #include <Alieve/ITSModule.h>
 
 #include <TQObject.h>
@@ -14,7 +14,7 @@ namespace Alieve {
 // DigitScaleInfo
 /**************************************************************************/
 
-class DigitScaleInfo : public TQObject, public Reve::ReferenceBackPtr
+class DigitScaleInfo : public TQObject, public TEveRefBackPtr
 {
 public:
   enum StatType_e { ST_Occup, ST_Average, ST_Rms };

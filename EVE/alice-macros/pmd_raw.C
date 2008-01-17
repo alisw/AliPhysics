@@ -15,16 +15,16 @@ void pmd_raw(Int_t mode = 0)
   AliRawReaderRoot reader("raw.root",ievt);
   AliPMDRawStream stream(&reader);
 
-  gReve->DisableRedraw();
+  gEve->DisableRedraw();
 
-  Reve::RenderElementList* l = new Reve::RenderElementList("PMD");
+  TEveElementList* l = new TEveElementList("PMD");
   //  l->SetTitle("PMD");
   //  l->SetMainColor((Color_t)3);
-  gReve->AddRenderElement(l);
+  gEve->AddElement(l);
   
   Int_t NSM       = 0;
   Int_t istartDDL = 0;
-  Int_t iendDDL    = 0;
+  Int_t iendDDL   = 0;
   Int_t modnumber = 0;
   Int_t istartPlane = 0;
   Int_t iendPlane   = 0;
@@ -72,18 +72,18 @@ void pmd_raw(Int_t mode = 0)
 	  zpos      = 360.;
 	}
       
-      Reve::RenderElementList* lplane = new Reve::RenderElementList(spl.Data());
+      TEveElementList* lplane = new TEveElementList(spl.Data());
       //  l->SetMainColor((Color_t)3);
-      gReve->AddRenderElement(lplane, l);
+      gEve->AddElement(lplane, l);
       
       for (Int_t iddl = istartDDL; iddl < iendDDL; iddl++)
       //for (Int_t iddl = 0; iddl < 1; iddl++)
 	{
 	  sddl = bsddl;
 	  sddl += iddl;
-	  Reve::RenderElementList* lddl = new Reve::RenderElementList(sddl.Data());
+	  TEveElementList* lddl = new TEveElementList(sddl.Data());
 	  //  l->SetMainColor((Color_t)3);
-	  gReve->AddRenderElement(ddl, lplane);
+	  gEve->AddElement(ddl, lplane);
 
 	  modnumber = iddl*6;
 
@@ -104,7 +104,7 @@ void pmd_raw(Int_t mode = 0)
 	      Alieve::PMDModule *lmodule = new Alieve::PMDModule();
 	      lmodule->SetPosition(0.,0.,zpos);
 	      lmodule->DisplayRawData(modnumber,pmdddlcont);
-	      gReve->AddRenderElement(lmodule, lddl);
+	      gEve->AddElement(lmodule, lddl);
 	      modnumber++;
 	      if (iddl == 4 && modnumber == 30) modnumber = 42;
 	    }
@@ -113,10 +113,7 @@ void pmd_raw(Int_t mode = 0)
 	}
     }
 
-
-  gReve->EnableRedraw();
-  
-  gReve->Redraw3D();
+  gEve->EnableRedraw();
 }
 
 // ---------------------------------------------------------------------- //

@@ -6,8 +6,8 @@
 #include <TNamed.h>
 #include <TGLOverlay.h>
 
-#include <Reve/RenderElement.h>
-#include <Reve/GridStepper.h>
+#include <TEveElement.h>
+#include <TEveGridStepper.h>
 
 #include <vector>
 
@@ -19,7 +19,7 @@ namespace Alieve {
 class ITSDigitsInfo;
 class DigitScaleInfo;
 
-class ITSModuleStepper : public Reve::RenderElementList,
+class ITSModuleStepper : public TEveElementList,
                          public TGLOverlayElement
 {
   friend class ITSModuleStepperGL;
@@ -40,7 +40,7 @@ protected:
   DigitScaleInfo*         fScaleInfo;
   Int_t                   fSubDet;
 
-  Reve::GridStepper*      fStepper;
+  TEveGridStepper*      fStepper;
   TGLAxis*                fAxis;
   TGLText*                fText;
   Float_t                 fTextSize;
@@ -74,9 +74,9 @@ protected:
   void    RenderCellIDs();
 
   // module ID navigation
-  Int_t  Nxy(){ return fStepper->Nx*fStepper->Ny; }
-  void   AddToList( Int_t modID ){ fIDs.push_back(modID);}
-  void   ResetList(){ fIDs.clear();}
+  Int_t  Nxy()            const { return fStepper->GetNx()*fStepper->GetNy(); }
+  void   AddToList(Int_t modID) { fIDs.push_back(modID);}
+  void   ResetList()            { fIDs.clear();}
   void   SetFirst(Int_t first);
 
 public:
@@ -95,8 +95,8 @@ public:
   virtual void   Render(TGLRnrCtx& rnrCtx);
 
   // stepper
-  Reve::GridStepper*  GetStepper(){return fStepper;}
-  void                SetStepper(Reve::GridStepper* s){ fStepper = s; Apply();}
+  TEveGridStepper*  GetStepper()                   { return fStepper; }
+  void              SetStepper(TEveGridStepper* s) { fStepper = s; Apply(); }
 
   Int_t    GetCurrentPage();
   Int_t    GetPages();
@@ -107,12 +107,11 @@ public:
   void     Apply();
   void     Capacity();
 
-
   // getters/setters
-  Color_t  GetWColor(){ return fWCol; };
-  void     SetWColor(Color_t c){ fWCol = c; }
-  TGLText* GetFont(){ return fText; }
-  void     SetGLText(TGLText* t) {fText = t;}
+  Color_t  GetWColor()           { return fWCol; }
+  void     SetWColor(Color_t c)  { fWCol = c;    }
+  TGLText* GetFont()             { return fText; }
+  void     SetGLText(TGLText* t) { fText = t;    }
 
   ClassDef(ITSModuleStepper, 0);
 };

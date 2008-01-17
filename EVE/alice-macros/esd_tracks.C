@@ -1,37 +1,37 @@
 // $Id$
 
-Reve::Track* esd_make_track(Reve::TrackRnrStyle*   rnrStyle,
+TEveTrack* esd_make_track(TEveTrackPropagator*   rnrStyle,
 			    Int_t                  index,
 			    AliESDtrack*           at,
 			    AliExternalTrackParam* tp=0)
 {
   // Helper function
-  Double_t        pbuf[3], vbuf[3];
-  Reve::RecTrack  rt;
+  Double_t      pbuf[3], vbuf[3];
+  TEveRecTrack  rt;
 
   if(tp == 0) tp = at;
 
-  rt.label  = at->GetLabel();
-  rt.index  = index;
-  rt.status = (Int_t) at->GetStatus();
-  rt.sign   = tp->GetSign();
+  rt.fLabel  = at->GetLabel();
+  rt.fIndex  = index;
+  rt.fStatus = (Int_t) at->GetStatus();
+  rt.fSign   = tp->GetSign();
   tp->GetXYZ(vbuf);
-  rt.V.Set(vbuf);
+  rt.fV.Set(vbuf);
   tp->GetPxPyPz(pbuf);
-  rt.P.Set(pbuf);
+  rt.fP.Set(pbuf);
   Double_t ep = at->GetP(), mc = at->GetMass();
-  rt.beta = ep/TMath::Sqrt(ep*ep + mc*mc);
+  rt.fBeta = ep/TMath::Sqrt(ep*ep + mc*mc);
  
-  Reve::Track* track = new Reve::Track(&rt, rnrStyle);
+  TEveTrack* track = new TEveTrack(&rt, rnrStyle);
   //PH The line below is replaced waiting for a fix in Root
   //PH which permits to use variable siza arguments in CINT
   //PH on some platforms (alphalinuxgcc, solariscc5, etc.)
-  //PH  track->SetName(Form("ESDTrack %d", rt.label));
+  //PH  track->SetName(Form("ESDTrack %d", rt.fLabel));
   //PH  track->SetTitle(Form("pT=%.3f, pZ=%.3f; V=(%.3f, %.3f, %.3f)",
-  //PH		       rt.sign*TMath::Hypot(rt.P.x, rt.P.y), rt.P.z,
-  //PH		       rt.V.x, rt.V.y, rt.V.z));
+  //PH		       rt.fSign*TMath::Hypot(rt.fP.fX, rt.fP.fY), rt.fP.fZ,
+  //PH		       rt.fV.fX, rt.fV.fY, rt.fV.fZ));
   char form[1000];
-  sprintf(form,"Track %d", rt.index);
+  sprintf(form,"TEveTrack %d", rt.fIndex);
   track->SetName(form);
   track->SetStdTitle();
   return track;
@@ -39,7 +39,7 @@ Reve::Track* esd_make_track(Reve::TrackRnrStyle*   rnrStyle,
 
 Bool_t gkFixFailedITSExtr = kFALSE;
 
-Reve::TrackList* esd_tracks(Double_t min_pt=0.1, Double_t max_pt=100)
+TEveTrackList* esd_tracks(Double_t min_pt=0.1, Double_t max_pt=100)
 {
   AliESDEvent* esd = Alieve::Event::AssertESD();
 
@@ -47,12 +47,12 @@ Reve::TrackList* esd_tracks(Double_t min_pt=0.1, Double_t max_pt=100)
   Double_t maxptsq = max_pt*max_pt;
   Double_t ptsq;
 
-  Reve::TrackList* cont = new Reve::TrackList("ESD Tracks"); 
+  TEveTrackList* cont = new TEveTrackList("ESD Tracks"); 
   cont->SetMainColor(Color_t(6));
-  Reve::TrackRnrStyle* rnrStyle = cont->GetRnrStyle();
+  TEveTrackPropagator* rnrStyle = cont->GetPropagator();
   rnrStyle->SetMagField( esd->GetMagneticField() );
 
-  gReve->AddRenderElement(cont);
+  gEve->AddElement(cont);
 
   Int_t    count = 0;
   Double_t pbuf[3];
@@ -75,9 +75,9 @@ Reve::TrackList* esd_tracks(Double_t min_pt=0.1, Double_t max_pt=100)
        tp = at->GetInnerParam();
     }
 
-    Reve::Track* track = esd_make_track(rnrStyle, n, at, tp);
+    TEveTrack* track = esd_make_track(rnrStyle, n, at, tp);
     track->SetAttLineAttMarker(cont);
-    gReve->AddRenderElement(track, cont);
+    gEve->AddElement(track, cont);
   }
 
   //PH The line below is replaced waiting for a fix in Root
@@ -91,7 +91,7 @@ Reve::TrackList* esd_tracks(Double_t min_pt=0.1, Double_t max_pt=100)
 
   cont->MakeTracks();
 
-  gReve->Redraw3D();
+  gEve->Redraw3D();
 
   return cont;
 }
@@ -100,26 +100,26 @@ Reve::TrackList* esd_tracks(Double_t min_pt=0.1, Double_t max_pt=100)
 // esd_tracks_from_array()
 /**************************************************************************/
 
-Reve::TrackList* esd_tracks_from_array(TCollection* col, AliESDEvent* esd=0)
+TEveTrackList* esd_tracks_from_array(TCollection* col, AliESDEvent* esd=0)
 {
   // Retrieves AliESDTrack's from collection.
   // See example usage with AliAnalysisTrackCuts in the next function.
 
-  if(esd == 0) esd = Alieve::Event::AssertESD();
+  if (esd == 0) esd = Alieve::Event::AssertESD();
 
-  Reve::TrackList* cont = new Reve::TrackList("ESD Tracks"); 
+  TEveTrackList* cont = new TEveTrackList("ESD Tracks"); 
   cont->SetMainColor(Color_t(6));
-  Reve::TrackRnrStyle* rnrStyle = cont->GetRnrStyle();
+  TEveTrackPropagator* rnrStyle = cont->GetPropagator();
   rnrStyle->SetMagField( esd->GetMagneticField() );
 
-  gReve->AddRenderElement(cont);
+  gEve->AddElement(cont);
 
   Int_t    count = 0;
   TIter    next(col);
   TObject *obj;
-  while((obj = next()) != 0)
+  while ((obj = next()) != 0)
   {
-    if(obj->IsA()->InheritsFrom("AliESDtrack") == kFALSE) {
+    if (obj->IsA()->InheritsFrom("AliESDtrack") == kFALSE) {
       Warning("Object '%s', '%s' is not an AliESDtrack.",
 	      obj->GetName(), obj->GetTitle());
       continue;
@@ -128,9 +128,9 @@ Reve::TrackList* esd_tracks_from_array(TCollection* col, AliESDEvent* esd=0)
     ++count;
     AliESDtrack* at = (AliESDtrack*) obj;
 
-    Reve::Track* track = esd_make_track(rnrStyle, count, at);
+    TEveTrack* track = esd_make_track(rnrStyle, count, at);
     track->SetAttLineAttMarker(cont);
-    gReve->AddRenderElement(track, cont);
+    gEve->AddElement(track, cont);
   }
 
   //PH The line below is replaced waiting for a fix in Root
@@ -144,7 +144,7 @@ Reve::TrackList* esd_tracks_from_array(TCollection* col, AliESDEvent* esd=0)
 
   cont->MakeTracks();
 
-  gReve->Redraw3D();
+  gEve->Redraw3D();
 
   return cont;
 }
@@ -206,48 +206,48 @@ Float_t get_sigma_to_vertex(AliESDtrack* esdTrack)
   return d;
 }
 
-Reve::RenderElementList* esd_tracks_vertex_cut()
+TEveElementList* esd_tracks_vertex_cut()
 {
   // Import ESD tracks, separate them into five containers according to
   // primary-vertex cut and ITS refit status.
 
   AliESDEvent* esd = Alieve::Event::AssertESD();
 
-  Reve::RenderElementList* cont = new Reve::RenderElementList("ESD Tracks", 0, kTRUE);
-  gReve->AddRenderElement(cont);
-  Reve::TrackList *tl[5];
+  TEveElementList* cont = new TEveElementList("ESD Tracks", 0, kTRUE);
+  gEve->AddElement(cont);
+  TEveTrackList *tl[5];
   Int_t            tc[5];
   Int_t            count = 0;
 
-  tl[0] = new Reve::TrackList("Sigma < 3");
+  tl[0] = new TEveTrackList("Sigma < 3");
   tc[0] = 0;
-  tl[0]->GetRnrStyle()->SetMagField( esd->GetMagneticField() );
+  tl[0]->GetPropagator()->SetMagField( esd->GetMagneticField() );
   tl[0]->SetMainColor(Color_t(3));
-  gReve->AddRenderElement(tl[0], cont);
+  gEve->AddElement(tl[0], cont);
 
-  tl[1] = new Reve::TrackList("3 < Sigma < 5");
+  tl[1] = new TEveTrackList("3 < Sigma < 5");
   tc[1] = 0;
-  tl[1]->GetRnrStyle()->SetMagField( esd->GetMagneticField() );
+  tl[1]->GetPropagator()->SetMagField( esd->GetMagneticField() );
   tl[1]->SetMainColor(Color_t(7));
-  gReve->AddRenderElement(tl[1], cont);
+  gEve->AddElement(tl[1], cont);
 
-  tl[2] = new Reve::TrackList("5 < Sigma");
+  tl[2] = new TEveTrackList("5 < Sigma");
   tc[2] = 0;
-  tl[2]->GetRnrStyle()->SetMagField( esd->GetMagneticField() );
+  tl[2]->GetPropagator()->SetMagField( esd->GetMagneticField() );
   tl[2]->SetMainColor(Color_t(46));
-  gReve->AddRenderElement(tl[2], cont);
+  gEve->AddElement(tl[2], cont);
 
-  tl[3] = new Reve::TrackList("no ITS refit; Sigma < 5");
+  tl[3] = new TEveTrackList("no ITS refit; Sigma < 5");
   tc[3] = 0;
-  tl[3]->GetRnrStyle()->SetMagField( esd->GetMagneticField() );
+  tl[3]->GetPropagator()->SetMagField( esd->GetMagneticField() );
   tl[3]->SetMainColor(Color_t(41));
-  gReve->AddRenderElement(tl[3], cont);
+  gEve->AddElement(tl[3], cont);
 
-  tl[4] = new Reve::TrackList("no ITS refit; Sigma > 5");
+  tl[4] = new TEveTrackList("no ITS refit; Sigma > 5");
   tc[4] = 0;
-  tl[4]->GetRnrStyle()->SetMagField( esd->GetMagneticField() );
+  tl[4]->GetPropagator()->SetMagField( esd->GetMagneticField() );
   tl[4]->SetMainColor(Color_t(48));
-  gReve->AddRenderElement(tl[4], cont);
+  gEve->AddElement(tl[4], cont);
 
   for (Int_t n=0; n<esd->GetNumberOfTracks(); n++)
   {
@@ -269,11 +269,11 @@ Reve::RenderElementList* esd_tracks_vertex_cut()
       ti = (ti == 2) ? 4 : 3;
     }
 
-    Reve::TrackList* tlist = tl[ti];
+    TEveTrackList* tlist = tl[ti];
     ++tc[ti];
     ++count;
 
-    Reve::Track* track = esd_make_track(tlist->GetRnrStyle(), n, at, tp);
+    TEveTrack* track = esd_make_track(tlist->GetPropagator(), n, at, tp);
     track->SetAttLineAttMarker(tlist);    
 
     //PH The line below is replaced waiting for a fix in Root
@@ -281,13 +281,13 @@ Reve::RenderElementList* esd_tracks_vertex_cut()
     //PH on some platforms (alphalinuxgcc, solariscc5, etc.)
     //PH    track->SetName(Form("track %d, sigma=%5.3f", at->GetLabel(), s));
     char form[1000];
-    sprintf(form,"Track idx=%d, sigma=%5.3f", at->GetID(), s);
+    sprintf(form,"TEveTrack idx=%d, sigma=%5.3f", at->GetID(), s);
     track->SetName(form);
-    gReve->AddRenderElement(track, tlist);
+    gEve->AddElement(track, tlist);
   }
 
   for (Int_t ti=0; ti<5; ++ti) {
-    Reve::TrackList* tlist = tl[ti];
+    TEveTrackList* tlist = tl[ti];
     //PH The line below is replaced waiting for a fix in Root
     //PH which permits to use variable siza arguments in CINT
     //PH on some platforms (alphalinuxgcc, solariscc5, etc.)
@@ -310,7 +310,7 @@ Reve::RenderElementList* esd_tracks_vertex_cut()
   sprintf(form,"N all tracks = %d", count);
   cont->SetTitle(form);
   cont->UpdateItems();
-  gReve->Redraw3D();
+  gEve->Redraw3D();
 
   return cont;
 }

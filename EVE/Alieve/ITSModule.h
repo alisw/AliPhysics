@@ -1,13 +1,13 @@
 #ifndef ALIEVE_ITSModule_H
 #define ALIEVE_ITSModule_H
 
-#include <Reve/QuadSet.h>
+#include <TEveQuadSet.h>
 
 #include <Alieve/ITSDigitsInfo.h>
 
 namespace Alieve {
 
-class ITSModule : public Reve::QuadSet
+class ITSModule : public TEveQuadSet
 {
   ITSModule(const ITSModule&);            // Not implemented
   ITSModule& operator=(const ITSModule&); // Not implemented
@@ -50,13 +50,13 @@ public:
 
   virtual void Print(Option_t* opt="") const;
 
-  static Reve::FrameBox* fgSPDFrameBox;
-  static Reve::FrameBox* fgSDDFrameBox;
-  static Reve::FrameBox* fgSSDFrameBox;
+  static TEveFrameBox* fgSPDFrameBox;
+  static TEveFrameBox* fgSDDFrameBox;
+  static TEveFrameBox* fgSSDFrameBox;
 
-  static Reve::RGBAPalette* fgSPDPalette;
-  static Reve::RGBAPalette* fgSDDPalette;
-  static Reve::RGBAPalette* fgSSDPalette;
+  static TEveRGBAPalette* fgSPDPalette;
+  static TEveRGBAPalette* fgSDDPalette;
+  static TEveRGBAPalette* fgSSDPalette;
 
   ClassDef(ITSModule, 1);
 };

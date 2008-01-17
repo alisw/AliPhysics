@@ -6,17 +6,16 @@
 #ifndef ALIEVE_KineTools_H
 #define ALIEVE_KineTools_H
 
-#include <Reve/Reve.h>
+#include <TEveUtil.h>
 #include <TObject.h>
 
 class TTree;
 class AliStack;
 
-namespace Reve {
-  class TrackList;
-}
+class TEveTrackList;
 
 namespace Alieve {
+
 class KineTools
 {
 private:
@@ -30,9 +29,9 @@ public:
   virtual ~KineTools(){}
  
   // data from TreeTR
-  void SetDaughterPathMarks(Reve::RenderElement* cont, AliStack* stack, Bool_t recurse=kFALSE);
-  void SetTrackReferences  (Reve::RenderElement* cont, TTree* treeTR=0, Bool_t recurse=kFALSE);
-  void SortPathMarks       (Reve::RenderElement* cont, Bool_t recurse=kFALSE);
+  void SetDaughterPathMarks(TEveElement* cont, AliStack* stack, Bool_t recurse=kFALSE);
+  void SetTrackReferences  (TEveElement* cont, TTree* treeTR=0, Bool_t recurse=kFALSE);
+  void SortPathMarks       (TEveElement* cont, Bool_t recurse=kFALSE);
 
   ClassDef(KineTools, 1);
 }; // endclass KineTools

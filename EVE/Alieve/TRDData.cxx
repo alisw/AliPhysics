@@ -9,10 +9,8 @@
 #include "AliTRDgeometry.h"
 #include "AliTRDdigitsManager.h"
 
-using namespace Reve;
 using namespace Alieve;
 using namespace std;
-
 
 ClassImp(TRDHits)
 ClassImp(TRDDigits)
@@ -23,7 +21,7 @@ ClassImp(TRDClusters)
 ///////////////////////////////////////////////////////////
 
 //________________________________________________________
-TRDDigits::TRDDigits(TRDChamber *p): OldQuadSet("digits", ""), RenderElement(), fParent(p)
+TRDDigits::TRDDigits(TRDChamber *p): TEveQuadSet("digits", ""), fParent(p)
 {}
 
 //________________________________________________________
@@ -41,102 +39,102 @@ void	TRDDigits::SetData(AliTRDdigitsManager *digits)
 }
 
 //________________________________________________________
-void	TRDDigits::ComputeRepresentation()
+void TRDDigits::ComputeRepresentation()
 {
-// Calculate digits representation according to user settings. The
-// user can set the following parameters:
-// - digits scale (log/lin)
-// - digits threshold
-// - digits apparence (quads/boxes)
+  // Calculate digits representation according to user settings. The
+  // user can set the following parameters:
+  // - digits scale (log/lin)
+  // - digits threshold
+  // - digits apparence (quads/boxes)
 
-	fQuads.clear();
-	// MT fBoxes.fBoxes.clear();
+  TEveQuadSet::Reset(TEveQuadSet::kQT_FreeQuad, kTRUE, 64);
+  // MT fBoxes.fBoxes.clear();
 		
-	Double_t colSize, rowSize, scale;
-	Double_t x, y, z;
+  Double_t colSize, rowSize, scale;
+  Double_t x, y, z;
 
-	Int_t charge;
-	Float_t t0;
-	Float_t timeBinSize;
+  Int_t charge;
+  Float_t t0;
+  Float_t timeBinSize;
 	
-	AliTRDcalibDB* calibration = AliTRDcalibDB::Instance();
+  AliTRDcalibDB* calibration = AliTRDcalibDB::Instance();
   Double_t cloc[4][3], cglo[3];
-	Int_t color, dimension;
-	fData.Expand();
-	for (Int_t  row = 0;  row <  fParent->rowMax;  row++) {
-		rowSize = .5 * fParent->fPadPlane->GetRowSize(row);
-		z = fParent->fPadPlane->GetRowPos(row) - rowSize;
+  Int_t color, dimension;
+  fData.Expand();
+  for (Int_t  row = 0;  row <  fParent->rowMax;  row++) {
+    rowSize = .5 * fParent->fPadPlane->GetRowSize(row);
+    z = fParent->fPadPlane->GetRowPos(row) - rowSize;
 		
-		for (Int_t  col = 0;  col <  fParent->colMax;  col++) {
-			colSize = .5 * fParent->fPadPlane->GetColSize(col);
-			y = fParent->fPadPlane->GetColPos(col) - colSize;
-			t0 = calibration->GetT0(fParent->fDet, col, row);
-			timeBinSize = calibration->GetVdrift(fParent->fDet, col, row)/fParent->samplingFrequency;
+    for (Int_t  col = 0;  col <  fParent->colMax;  col++) {
+      colSize = .5 * fParent->fPadPlane->GetColSize(col);
+      y = fParent->fPadPlane->GetColPos(col) - colSize;
+      t0 = calibration->GetT0(fParent->fDet, col, row);
+      timeBinSize = calibration->GetVdrift(fParent->fDet, col, row)/fParent->samplingFrequency;
 			
-			for (Int_t time = 0; time < fParent->timeMax; time++) {
-				charge = fData.GetDataUnchecked(row, col, time);
-	  		if (charge < fParent->GetDigitsThreshold()) continue;
+      for (Int_t time = 0; time < fParent->timeMax; time++) {
+	charge = fData.GetDataUnchecked(row, col, time);
+	if (charge < fParent->GetDigitsThreshold()) continue;
 				
-				x = fParent->fX0 - (time+0.5-t0)*timeBinSize;
-				scale = fParent->GetDigitsLog() ? TMath::Log(float(charge))/TMath::Log(1024.) : charge/1024.;
-				color  = 50+int(scale*50.);
+	x = fParent->fX0 - (time+0.5-t0)*timeBinSize;
+	scale = fParent->GetDigitsLog() ? TMath::Log(float(charge))/TMath::Log(1024.) : charge/1024.;
+	color  = 50+int(scale*50.);
 				
-				cloc[0][2] = z - rowSize * scale;
-				cloc[0][1] = y - colSize * scale;
-				cloc[0][0] = x;
+	cloc[0][2] = z - rowSize * scale;
+	cloc[0][1] = y - colSize * scale;
+	cloc[0][0] = x;
  			
-				cloc[1][2] = z - rowSize * scale;
-				cloc[1][1] = y + colSize * scale;
-				cloc[1][0] = x;
+	cloc[1][2] = z - rowSize * scale;
+	cloc[1][1] = y + colSize * scale;
+	cloc[1][0] = x;
  			
-				cloc[2][2] = z + rowSize * scale;
-				cloc[2][1] = y + colSize * scale;
-				cloc[2][0] = x;
+	cloc[2][2] = z + rowSize * scale;
+	cloc[2][1] = y + colSize * scale;
+	cloc[2][0] = x;
  			
-				cloc[3][2] = z + rowSize * scale;
-				cloc[3][1] = y - colSize * scale;
-				cloc[3][0] = x;
+	cloc[3][2] = z + rowSize * scale;
+	cloc[3][1] = y - colSize * scale;
+	cloc[3][0] = x;
 	
-				Float_t* p = 0;
-				if( fParent->GetDigitsBox()){
-					// MT fBoxes.fBoxes.push_back(Reve::Box());
-					// MT fBoxes.fBoxes.back().color[0] = (UChar_t)color;
-					// MT fBoxes.fBoxes.back().color[1] = (UChar_t)color;
-					// MT fBoxes.fBoxes.back().color[2] = (UChar_t)color;
-					// MT fBoxes.fBoxes.back().color[3] = (UChar_t)color;
-					// MT p = fBoxes.fBoxes.back().vertices;
-					dimension = 2;
-				} else {
-					fQuads.push_back(Reve::Quad());
-					fQuads.back().ColorFromIdx(color);
-					p = fQuads.back().vertices;
-					dimension = 1;
-				}
+	Float_t* p = 0;
+	if( fParent->GetDigitsBox()){
+	  // MT fBoxes.fBoxes.push_back(Box());
+	  // MT fBoxes.fBoxes.back().color[0] = (UChar_t)color;
+	  // MT fBoxes.fBoxes.back().color[1] = (UChar_t)color;
+	  // MT fBoxes.fBoxes.back().color[2] = (UChar_t)color;
+	  // MT fBoxes.fBoxes.back().color[3] = (UChar_t)color;
+	  // MT p = fBoxes.fBoxes.back().vertices;
+	  dimension = 2;
+	} else {
+	  AddQuad((Float_t*)0);
+	  QuadColor(color);
+	  p = ((QFreeQuad_t*) fLastDigit)->fVertices;
+	  dimension = 1;
+	}
 
-				for(int id=0; id<dimension; id++)
-				for (Int_t ic = 0; ic < 4; ic++) {
-					cloc[ic][0] -= .5 * id * timeBinSize;
-					fParent->fGeo->RotateBack(fParent->fDet,cloc[ic],cglo);
-	      	p[0] = cglo[0]; p[1] = cglo[1]; p[2] = cglo[2];
-					p+=3;
-				}
-			}  // end time loop
-		}  // end col loop
-	}  // end row loop
-	fData.Compress(1);
+	for(int id=0; id<dimension; id++)
+	  for (Int_t ic = 0; ic < 4; ic++) {
+	    cloc[ic][0] -= .5 * id * timeBinSize;
+	    fParent->fGeo->RotateBack(fParent->fDet,cloc[ic],cglo);
+	    p[0] = cglo[0]; p[1] = cglo[1]; p[2] = cglo[2];
+	    p+=3;
+	  }
+      }  // end time loop
+    }  // end col loop
+  }  // end row loop
+  fData.Compress(1);
 }
 
 //________________________________________________________
 void TRDDigits::Paint(Option_t *option)
 {
 	if(fParent->GetDigitsBox()) fBoxes.Paint(option);
-	else OldQuadSet::Paint(option);
+	else TEveQuadSet::Paint(option);
 }
 
 //________________________________________________________
 void TRDDigits::Reset()
 {
-	fQuads.clear();
+	TEveQuadSet::Reset(TEveQuadSet::kQT_FreeQuad, kTRUE, 64);
 	// MT fBoxes.fBoxes.clear();
 	fData.Reset();
 }
@@ -146,7 +144,7 @@ void TRDDigits::Reset()
 ///////////////////////////////////////////////////////////
 
 //________________________________________________________
-TRDHits::TRDHits(TRDChamber *p):PointSet("hits", 20), fParent(p)
+TRDHits::TRDHits(TRDChamber *p):TEvePointSet("hits", 20), fParent(p)
 {}
 
 //________________________________________________________

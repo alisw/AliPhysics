@@ -98,12 +98,12 @@ void command_queue()
 }
 
 // ============================================================================
-// Reve side
+// TEveUtil side
 // ============================================================================
 
-#include <Reve/Reve.h>
-#include <Reve/ReveManager.h>
-#include <Reve/PointSet.h>
+#include <TEve.h>
+#include <TEveManager.h>
+#include <TEvePointSet.h>
 
 #include <TRandom.h>
 
@@ -112,24 +112,24 @@ void make_crap(void* arg)
   Int_t num = 1024;
   TRandom rnd(0);
 
-  Reve::PointSet* ps = new Reve::PointSet("Testus", num);
+  TEvePointSet* ps = new TEvePointSet("Testus", num);
   for (Int_t i=0; i<num; ++i) {
     ps->SetNextPoint(rnd.Uniform(-100, 100),
 		     rnd.Uniform(-100, 100),
 		     rnd.Uniform(-100, 100));
   }
   ps->SetMainColor((Color_t)kRed);
-  printf("make_crap() -> produced Reve::PointSet* %p)\n", ps);
+  printf("make_crap() -> produced TEvePointSet* %p)\n", ps);
 
   ((CommandQueue*)arg)->RegisterCommand
-    (Form("register_crap((Reve::RenderElement*)0x%lx)", ps));
+    (Form("register_crap((TEveElement*)0x%lx)", ps));
 }
 
-void register_crap(Reve::RenderElement* el)
+void register_crap(TEveElement* el)
 {
-  printf("register_crap(Reve::RenderElement* %p)\n", el);
-  gReve->AddRenderElement(el);
-  gReve->Redraw3D();
+  printf("register_crap(TEveElement* %p)\n", el);
+  gEve->AddElement(el);
+  gEve->Redraw3D();
 }
 
 void test()

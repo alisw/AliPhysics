@@ -6,8 +6,6 @@
 #include "AliPMDddldata.h"
 
 #include <TClonesArray.h>
-
-using namespace Reve;
 using namespace Alieve;
 
 const Float_t PMDModule::fgkRad        = 0.25;
@@ -47,7 +45,7 @@ void PMDModule::DisplayInit(Int_t ism)
 
   GenerateBox(ism,xism,yism,dxism,dyism);
 
-  Reve::FrameBox *pmdModBox = new FrameBox();
+  TEveFrameBox *pmdModBox = new TEveFrameBox();
   pmdModBox->SetAAQuadXY(xism, yism, 0, dxism, dyism);
   pmdModBox->SetFrameColor((Color_t) 31);
   pmdModBox->SetFrameFill(kTRUE);
@@ -55,7 +53,7 @@ void PMDModule::DisplayInit(Int_t ism)
 
   SetName(smodule.Data());
   SetOwnIds(kTRUE);
-  Reset(Reve::QuadSet::QT_HexagonXY, kFALSE, 32);
+  Reset(TEveQuadSet::kQT_HexagonXY, kFALSE, 32);
 
   fH1 = new TH1F("fH1", smodule.Data(), 100, 0., 1000.);
   fH1->SetDirectory(0);

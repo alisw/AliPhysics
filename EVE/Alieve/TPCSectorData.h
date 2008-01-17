@@ -3,7 +3,7 @@
 #ifndef ALIEVE_TPCSectorData_H
 #define ALIEVE_TPCSectorData_H
 
-#include <Reve/Reve.h>
+#include <TEveUtil.h>
 
 #include <TObject.h>
 
@@ -106,7 +106,7 @@ public:
     void   ResetRow();
     void   ResetRow(const PadData* first, Short_t npads);
     
-    Short_t Pad() const { return fPad; }
+    Short_t TEvePad() const { return fPad; }
 
     void Test();
   };

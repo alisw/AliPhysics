@@ -2,7 +2,7 @@
 
 #include "JetPlaneEditor.h"
 #include <Alieve/JetPlane.h>
-#include <Reve/RGValuators.h>
+#include <TEveGValuators.h>
 
 #include <TVirtualPad.h>
 #include <TColor.h>
@@ -14,8 +14,6 @@
 #include <TGDoubleSlider.h>
 #include <TGFrame.h>
 #include <TGTab.h>
-
-using namespace Reve;
 using namespace Alieve;
 
 //______________________________________________________________________
@@ -55,7 +53,7 @@ JetPlaneEditor::JetPlaneEditor(const TGWindow *p, Int_t width, Int_t height,
   AddFrame(fRnrTracks, new TGLayoutHints(kLHintsTop, 1, 1, 1, 1));
   fRnrTracks->Connect("Clicked()", "Alieve::JetPlaneEditor", this, "DoRnrTracks()");
 
-  fEnergyScale = new RGValuator(this, "Length scale:", 110, 0);
+  fEnergyScale = new TEveGValuator(this, "Length scale:", 110, 0);
   fEnergyScale->SetLabelWidth(labelW);
   fEnergyScale->SetNELength(6);
   fEnergyScale->Build();
@@ -64,7 +62,7 @@ JetPlaneEditor::JetPlaneEditor(const TGWindow *p, Int_t width, Int_t height,
   fEnergyScale->Connect("ValueSet(Double_t)", "Alieve::JetPlaneEditor", this, "DoEnergyScale()");
   AddFrame(fEnergyScale, new TGLayoutHints(kLHintsTop, 1, 1, 1, 1));
 
-  fEnergyColorScale = new RGValuator(this, "Color scale:", 110, 0);
+  fEnergyColorScale = new TEveGValuator(this, "Color scale:", 110, 0);
   fEnergyColorScale->SetLabelWidth(labelW);
   fEnergyColorScale->SetNELength(6);
   fEnergyColorScale->Build();
@@ -73,14 +71,14 @@ JetPlaneEditor::JetPlaneEditor(const TGWindow *p, Int_t width, Int_t height,
   fEnergyColorScale->Connect("ValueSet(Double_t)", "Alieve::JetPlaneEditor", this, "DoEnergyColorScale()");
   AddFrame(fEnergyColorScale, new TGLayoutHints(kLHintsTop, 1, 1, 1, 1));
 
-  fOneSelection = new TGRadioButton(this, "&One Track/Jet");
-  fTwoSelection = new TGRadioButton(this, "&Two Track/Jet");
+  fOneSelection = new TGRadioButton(this, "&One TEveTrack/Jet");
+  fTwoSelection = new TGRadioButton(this, "&Two TEveTrack/Jet");
   AddFrame(fOneSelection, new TGLayoutHints(kLHintsTop, 1, 1, 1, 1));
   AddFrame(fTwoSelection, new TGLayoutHints(kLHintsTop, 1, 1, 1, 1));
   fOneSelection->Connect("Clicked()", "Alieve::JetPlaneEditor", this, "DoOneSelection()");
   fTwoSelection->Connect("Clicked()", "Alieve::JetPlaneEditor", this, "DoTwoSelection()");
 
-  // fInformationSetup = new TGTextButton(this, "Track/Jet Print");
+  // fInformationSetup = new TGTextButton(this, "TEveTrack/Jet Print");
   // AddFrame(fInformationSetup, new TGLayoutHints(kLHintsTop | kLHintsLeft, 2, 0, 2, 2));
   // fInformationSetup->Connect("Clicked()", "Alieve::JetPlaneEditor", this, "DoStaticDataWindow()");
 }
@@ -217,7 +215,7 @@ JetPlaneEditor::StaticDataWindow::StaticDataWindow(const TGWindow *p, const TGWi
 
   fL3 = new TGLayoutHints(kLHintsTop | kLHintsLeft, 5, 5, 5, 5);
 
-  TGCompositeFrame *tf = fTab->AddTab("One Track/Jet");
+  TGCompositeFrame *tf = fTab->AddTab("One TEveTrack/Jet");
 
   //    fF1 = new TGCompositeFrame(tf, 60, 20, kVerticalFrame);
   //    fF1->AddFrame(new TGTextButton(fF1, "&Test button", 0), fL3);
@@ -253,7 +251,7 @@ JetPlaneEditor::StaticDataWindow::StaticDataWindow(const TGWindow *p, const TGWi
   MapSubwindows();
   Resize();
 
-  SetWindowName("Track/Jet Common Setup");
+  SetWindowName("TEveTrack/Jet Common Setup");
 }
 
 JetPlaneEditor::StaticDataWindow::~StaticDataWindow()

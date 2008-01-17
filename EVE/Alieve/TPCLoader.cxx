@@ -4,15 +4,13 @@
 #include "TPCData.h"
 #include <Alieve/TPCSector2D.h>
 #include <Alieve/TPCSector3D.h>
-#include <Reve/ReveManager.h>
-#include <Reve/RGEditor.h>
+#include <TEveManager.h>
+#include <TEveGedEditor.h>
 
 #include <AliRawReaderRoot.h>
 #include <AliTPCRawStream.h>
 
 #include <TSystem.h>
-
-using namespace Reve;
 using namespace Alieve;
 
 //______________________________________________________________________
@@ -22,7 +20,7 @@ using namespace Alieve;
 ClassImp(TPCLoader)
 
 TPCLoader::TPCLoader(const Text_t* n, const Text_t* t) :
-  RenderElementList(n, t),
+  TEveElementList(n, t),
 
   fFile(),
   fEvent(-1),
@@ -49,7 +47,7 @@ TPCLoader::~TPCLoader()
 
 /**************************************************************************/
 
-void TPCLoader::RemoveElementLocal(RenderElement* el)
+void TPCLoader::RemoveElementLocal(TEveElement* el)
 {
   for(Int_t i=0; i<36; ++i) {
     if(fSec2Ds[i] == el) fSec2Ds[i] = 0;
@@ -77,7 +75,7 @@ void TPCLoader::SetData(TPCData* d)
 
 void TPCLoader::OpenFile()
 {
-  static const Exc_t eH("TPCLoader::OpenFile ");
+  static const TEveException eH("TPCLoader::OpenFile ");
 
   if(gSystem->AccessPathName(fFile, kReadPermission))
       throw(eH + "can not read '" + fFile + "'.");
@@ -100,7 +98,7 @@ void TPCLoader::OpenFile()
 
 void TPCLoader::LoadEvent()
 {
-  static const Exc_t eH("TPCLoader::LoadEvent ");
+  static const TEveException eH("TPCLoader::LoadEvent ");
 
   if(fReader == 0)
     throw(eH + "data file not opened.");
@@ -117,7 +115,7 @@ void TPCLoader::LoadEvent()
 
 void TPCLoader::NextEvent(Bool_t rewindOnEnd)
 {
-  static const Exc_t eH("TPCLoader::NextEvent ");
+  static const TEveException eH("TPCLoader::NextEvent ");
 
   if(fReader == 0)
     throw(eH + "data file not opened.");
@@ -140,7 +138,7 @@ void TPCLoader::NextEvent(Bool_t rewindOnEnd)
 
 void TPCLoader::GotoEvent(Int_t event)
 {
-  static const Exc_t eH("TPCLoader::GotoEvent ");
+  static const TEveException eH("TPCLoader::GotoEvent ");
 
   if(fReader == 0)
     throw(eH + "data file not opened.");
@@ -167,8 +165,8 @@ void* TPCLoader::LoopEvent(TPCLoader* loader)
   loader->NextEvent();
   loader->LoadEvent();
   loader->UpdateSectors();
-  if (gReve->GetEditor()->GetModel() == loader)
-    gReve->EditRenderElement(loader);
+  if (gEve->GetEditor()->GetModel() == loader)
+    gEve->EditElement(loader);
   return 0;
 }
 
@@ -176,7 +174,7 @@ void* TPCLoader::LoopEvent(TPCLoader* loader)
 
 void TPCLoader::UpdateSectors(Bool_t dropNonPresent)
 {
-  gReve->DisableRedraw();
+  gEve->DisableRedraw();
   for(Int_t i=0; i<=35; ++i)
   {
     TPCSectorData* sd = fData->GetSectorData(i);
@@ -185,7 +183,7 @@ void TPCLoader::UpdateSectors(Bool_t dropNonPresent)
     if(fSec2Ds[i] != 0)
     {
       if (dropNonPresent && sd == 0) {
-	gReve->RemoveRenderElement(fSec2Ds[i], this);
+	gEve->RemoveElement(fSec2Ds[i], this);
 	fSec2Ds[i] = 0;
       } else {
 	fSec2Ds[i]->IncRTS();
@@ -213,7 +211,7 @@ void TPCLoader::UpdateSectors(Bool_t dropNonPresent)
 	s->SetAutoTrans(kTRUE);
 	s->SetFrameColor(36);
 
-	gReve->AddRenderElement(s, this);
+	gEve->AddElement(s, this);
       }
     }
 
@@ -221,7 +219,7 @@ void TPCLoader::UpdateSectors(Bool_t dropNonPresent)
     if(fSec3Ds[i] != 0)
     {
       if (dropNonPresent && sd == 0) {
-	gReve->RemoveRenderElement(fSec3Ds[i], this);
+	gEve->RemoveElement(fSec3Ds[i], this);
 	fSec3Ds[i] = 0;
       } else {
 	fSec3Ds[i]->IncRTS();
@@ -229,8 +227,8 @@ void TPCLoader::UpdateSectors(Bool_t dropNonPresent)
       }
     }
   }
-  gReve->Redraw3D(kTRUE, kFALSE);
-  gReve->EnableRedraw();
+  gEve->Redraw3D(kTRUE, kFALSE);
+  gEve->EnableRedraw();
 }
 
 void TPCLoader::ReloadSectors()
@@ -241,7 +239,7 @@ void TPCLoader::ReloadSectors()
 
 void TPCLoader::CreateSectors3D()
 {
-  gReve->DisableRedraw();
+  gEve->DisableRedraw();
   for(Int_t i=0; i<=35; ++i) {
     TPCSectorData* sd = fData->GetSectorData(i);
     if(sd != 0 && fSec3Ds[i] == 0) {
@@ -258,24 +256,24 @@ void TPCLoader::CreateSectors3D()
       s->SetAutoTrans(kTRUE);
       s->SetFrameColor(36);
 
-      gReve->AddRenderElement(s, this);
+      gEve->AddElement(s, this);
     }
   }
-  gReve->EnableRedraw();
+  gEve->EnableRedraw();
 }
 
 void TPCLoader::DeleteSectors3D()
 {
-  gReve->DisableRedraw();
+  gEve->DisableRedraw();
   for(Int_t i=0; i<=35; ++i) {
-    RenderElement* re = fSec3Ds[i];
+    TEveElement* re = fSec3Ds[i];
     if(re != 0) {
-      gReve->RemoveRenderElement(re, this);
+      gEve->RemoveElement(re, this);
       // delete re; // Done automatically.
       fSec3Ds[i] = 0;
     }
   }
-  gReve->EnableRedraw();
+  gEve->EnableRedraw();
 }
 
 /**************************************************************************/

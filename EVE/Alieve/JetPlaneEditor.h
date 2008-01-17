@@ -11,14 +11,11 @@ class TGCheckButton;
 class TGNumberEntry;
 class TGColorSelect;
 
-namespace Reve
-{
-  class RGValuator;
-}
+class TEveGValuator;
 
 namespace Alieve {
 
-// class RGValuator;
+// class TEveGValuator;
 
 class JetPlane;
 
@@ -35,8 +32,8 @@ protected:
   // TGSomeWidget*   fXYZZ;
   TGCheckButton*     fRnrJets;
   TGCheckButton*     fRnrTracks;
-  Reve::RGValuator*  fEnergyScale;
-  Reve::RGValuator*  fEnergyColorScale;
+  TEveGValuator*  fEnergyScale;
+  TEveGValuator*  fEnergyColorScale;
   TGButton          *fOneSelection, *fTwoSelection;
   TGButton          *fInformationSetup;
 

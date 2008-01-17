@@ -71,7 +71,7 @@ ClassImp(AliEVEHOMERManager)
 
 //##################################################################################
 AliEVEHOMERManager::AliEVEHOMERManager( TString xmlFile ) :
-  Reve::RenderElementList("AliEVEHOMERManager"),
+  TEveElementList("AliEVEHOMERManager"),
 
   fLibManager(new AliHLTHOMERLibManager),
   fXMLFile(xmlFile),
@@ -95,7 +95,7 @@ AliEVEHOMERManager::AliEVEHOMERManager( TString xmlFile ) :
 
 //##################################################################################
 AliEVEHOMERManager::AliEVEHOMERManager( const AliEVEHOMERManager& m) :
-  Reve::RenderElementList(m.GetName(), m.GetTitle())
+  TEveElementList(m.GetName(), m.GetTitle())
 {
   // see header file for class documentation
 

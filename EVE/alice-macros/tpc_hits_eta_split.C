@@ -13,19 +13,19 @@ void tpc_hits_eta_split(const char *varexp    =
 
   TTree* ht = rl->GetTreeH("TPC", false);
 
-  Reve::PointSetArray* l = new Reve::PointSetArray("TPC hits - Eta Slices", "");
-  l->SetSourceCS(TPointSelectorConsumer::TVT_RPhiZ);
+  TEvePointSetArray* l = new TEvePointSetArray("TPC hits - Eta Slices", "");
+  l->SetSourceCS(TEvePointSelectorConsumer::kTVT_RPhiZ);
   l->SetMarkerColor((Color_t)3);
   l->SetMarkerStyle(20); // full circle
   l->SetMarkerSize(.5);
   
-  gReve->AddRenderElement(l);
+  gEve->AddElement(l);
   l->InitBins("Eta", 20, -2, 2);
 
-  TPointSelector ps(ht, l, varexp, selection);
+  TEvePointSelector ps(ht, l, varexp, selection);
   ps.Select();
 
   l->CloseBins();
 
-  gReve->Redraw3D();
+  gEve->Redraw3D();
 }

@@ -2,7 +2,6 @@
 
 #include "TrackFitter.h"
 
-//#include "TClass.h"
 #include "TCanvas.h"
 #include "TGraph.h"
 #include "TGraphErrors.h"
@@ -11,25 +10,26 @@
 #include "AliRieman.h"
 #include "AliExternalTrackParam.h"
 
-#include <Reve/Track.h>
-#include <Reve/PODs.h>
-#include <Reve/ReveManager.h>
+#include <TEveTrack.h>
+#include <TEveTrackPropagator.h>
+#include <TEveVSDStructs.h>
+#include <TEveManager.h>
 
-using namespace Reve;
 using namespace Alieve;
 
 //______________________________________________________________________
 // TrackFitter
 //
-//  TrackFitter is an interface to helix fit. It creates a set of points, listening to signal 
-//  PointCtrlClicked() of any Reve::PointSet. Via editor it fits selected points and creates a 
-//  reconstructed track.
+// TrackFitter is an interface to helix fit. It creates a set of
+// points, listening to signal PointCtrlClicked() of any
+// TEvePointSet. Via editor it fits selected points and creates a
+// reconstructed track.
 // 
 
 ClassImp(TrackFitter)
 
-TrackFitter::TrackFitter(const Text_t* name, Int_t n_points, TreeVarType_e tv_type) :
-    Reve::PointSet(name, n_points, tv_type),
+TrackFitter::TrackFitter(const Text_t* name, Int_t n_points, ETreeVarType_e tv_type) :
+    TEvePointSet(name, n_points, tv_type),
 
     fGraphSelected(0),
     fGraphFitted(0),
@@ -53,12 +53,12 @@ TrackFitter::TrackFitter(const Text_t* name, Int_t n_points, TreeVarType_e tv_ty
   fGraphFitted->SetName("Fitted points");
   fGraphFitted->SetMarkerColor(2);
 
-  fTrackList = new TrackList("Tracks");
+  fTrackList = new TEveTrackList("Tracks");
   fTrackList->SetLineWidth(2);
   fTrackList->SetLineColor(8);
   fTrackList->IncDenyDestroy();
-  fTrackList->GetRnrStyle()->SetEditPathMarks(kTRUE);
-  gReve->AddRenderElement(fTrackList, this);
+  fTrackList->GetPropagator()->SetEditPathMarks(kTRUE);
+  gEve->AddElement(fTrackList, this);
   UpdateItems();
 }
 
@@ -74,11 +74,11 @@ TrackFitter::~TrackFitter()
 /**************************************************************************/
 void TrackFitter::DestroyElements()
 {
-  // Virtual method of base class Reve::RenderElement.
+  // Virtual method of base class TEveElement.
   // It preserves track list to have coomon track propagator attributes.
 
-  RenderElement::DestroyElements();
-  gReve->AddRenderElement(fTrackList, this);
+  TEveElement::DestroyElements();
+  gEve->AddElement(fTrackList, this);
   fTrackList->DestroyElements();
   UpdateItems();
 }
@@ -91,8 +91,8 @@ void TrackFitter::Start()
   Reset();
   if(fConnected == kFALSE)
   {
-    TQObject::Connect("Reve::PointSet", "PointCtrlClicked(Reve::PointSet*,Int_t)",
-		      "Alieve::TrackFitter", this, "AddFitPoint(Reve::PointSet*,Int_t)");
+    TQObject::Connect("TEvePointSet", "PointCtrlClicked(TEvePointSet*,Int_t)",
+		      "Alieve::TrackFitter", this, "AddFitPoint(TEvePointSet*,Int_t)");
 
     fConnected = kTRUE;
   }
@@ -104,14 +104,14 @@ void TrackFitter::Stop()
 
   if(fConnected)
   {
-    TQObject::Disconnect("Reve::PointSet", "AddFitPoint(Reve::PointSet*,Int_t)");
+    TQObject::Disconnect("TEvePointSet", "AddFitPoint(TEvePointSet*,Int_t)");
     fConnected = kFALSE;
   }
 }
 
 /**************************************************************************/
 
-void TrackFitter::AddFitPoint(Reve::PointSet* ps, Int_t n)
+void TrackFitter::AddFitPoint(TEvePointSet* ps, Int_t n)
 { 
   // Add/remove given point depending if exists in the fMapPS.
  
@@ -180,7 +180,7 @@ void TrackFitter::FitTrack()
   Double_t cov[15];
   fRieman->GetExternalParameters(r, param, cov);
   // curvature to pt
-  param[4] /= TrackRnrStyle::fgDefMagField*TrackRnrStyle::fgkB2C;
+  param[4] /= TEveTrackPropagator::fgDefMagField*TEveTrackPropagator::fgkB2C;
   // sign in tang
   if(param[4] < 0) param[3] *= -1;
   AliExternalTrackParam trackParam(r, fAlpha, param, cov);
@@ -188,27 +188,27 @@ void TrackFitter::FitTrack()
 
   // make track
   Double_t V0[3];
-  trackParam.GetXYZAt(r, TrackRnrStyle::fgDefMagField, V0);
+  trackParam.GetXYZAt(r, TEveTrackPropagator::fgDefMagField, V0);
   Double_t P0[3];
-  trackParam.GetPxPyPzAt(r, TrackRnrStyle::fgDefMagField, P0);
-  RecTrack rc;
-  rc.V.Set(V0); 
-  rc.P.Set(P0);
-  rc.sign = trackParam.Charge();
+  trackParam.GetPxPyPzAt(r, TEveTrackPropagator::fgDefMagField, P0);
+  TEveRecTrack rc;
+  rc.fV.Set(V0); 
+  rc.fP.Set(P0);
+  rc.fSign = trackParam.Charge();
 
-  Track* track = new Track(&rc, fTrackList->GetRnrStyle());
+  TEveTrack* track = new TEveTrack(&rc, fTrackList->GetPropagator());
   track->SetName(Form("track %f", fAlpha));
-  PathMark* pm = new PathMark(PathMark::Daughter);
+  TEvePathMark* pm = new TEvePathMark(TEvePathMark::kDaughter);
   for(Int_t i=0; i==fLastPoint; i++)
   {
     GetPoint(i, x, y, z);
-    pm->V.Set(x, y, z);
-    pm->P.Set(P0); 
+    pm->fV.Set(x, y, z);
+    pm->fP.Set(P0); 
     track->AddPathMark(pm);
   }
   track->MakeTrack();
   track->SetAttLineAttMarker(fTrackList); 
-  gReve->AddRenderElement(track, fTrackList);
+  gEve->AddElement(track, fTrackList);
 }
 
 
@@ -217,7 +217,7 @@ void TrackFitter::Reset(Int_t n, Int_t ids)
   // Reset selection.
 
   if(fRieman) fRieman->Reset();
-  PointSet::Reset(n, ids);
+  TEvePointSet::Reset(n, ids);
   fMapPS.clear();
 }
 
@@ -226,7 +226,7 @@ void TrackFitter::DrawRiemanGraph()
 {
   // Draw graph of rieman fit.
 
-   static const Exc_t eH("TrackFitter::DrawRiemanGraph ");
+   static const TEveException eH("TrackFitter::DrawRiemanGraph ");
 
   if(fRieman == 0)
     throw(eH + "fitter not set.");

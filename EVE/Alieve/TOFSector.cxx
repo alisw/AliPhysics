@@ -1,19 +1,17 @@
 #include "TOFSector.h"
 
-#include <Reve/ReveManager.h>
+#include <TEveManager.h>
 
 #include <AliTOFdigit.h>
 #include <AliTOFGeometry.h>
 
 #include <TStyle.h>
-
-using namespace Reve;
 using namespace Alieve;
 using namespace std;
 
 Bool_t       TOFSector::fgStaticInitDone = kFALSE;
-FrameBox*    TOFSector::fgTOFsectorFrameBox = 0;
-RGBAPalette* TOFSector::fgTOFsectorPalette  = 0;
+TEveFrameBox*    TOFSector::fgTOFsectorFrameBox = 0;
+TEveRGBAPalette* TOFSector::fgTOFsectorPalette  = 0;
 
 //_______________________________________________________
 ClassImp(TOFSector)
@@ -21,7 +19,7 @@ ClassImp(TOFSector)
 /* ************************************************************************ */
 
 TOFSector::TOFSector(const Text_t* n, const Text_t* t) :
-  QuadSet(n, t),
+  TEveQuadSet(n, t),
   fTOFgeometry(new AliTOFGeometry()),
   fTOFarray(0x0),
   fTOFtree(0x0),
@@ -38,7 +36,7 @@ TOFSector::TOFSector(const Text_t* n, const Text_t* t) :
   for (Int_t ii=0; ii<5; ii++) fPlateFlag[ii]=kTRUE;
 
 
-  fGeoManager = (TGeoManager*)gReve->GetGeometry("$REVESYS/alice-data/alice_fullgeo.root");
+  fGeoManager = (TGeoManager*)gEve->GetGeometry("$REVESYS/alice-data/alice_fullgeo.root");
   if (!fGeoManager) {
     printf("ERROR: no TGeo\n");
   }
@@ -49,7 +47,7 @@ TOFSector::TOFSector(const Text_t* n, const Text_t* t) :
 TOFSector::TOFSector(TGeoManager *localGeoManager,
 		     Int_t nSector)
   :
-  QuadSet(Form("Sector%i",nSector)),
+  TEveQuadSet(Form("Sector%i",nSector)),
   fTOFgeometry(new AliTOFGeometry()),
   fTOFarray(0x0),
   fTOFtree(0x0),
@@ -80,7 +78,7 @@ TOFSector::TOFSector(TGeoManager *localGeoManager,
 		     Int_t nSector,
 		     TClonesArray *tofArray)
   :
-  QuadSet(Form("Sector%i",nSector)),
+  TEveQuadSet(Form("Sector%i",nSector)),
   fTOFgeometry(new AliTOFGeometry()),
   fTOFarray(tofArray),
   fTOFtree(0x0),
@@ -105,7 +103,7 @@ TOFSector::TOFSector(TGeoManager *localGeoManager,
 		     Int_t nSector,
 		     TTree *tofTree)
   :
-  QuadSet(Form("Sector%i",nSector)),
+  TEveQuadSet(Form("Sector%i",nSector)),
   fTOFgeometry(new AliTOFGeometry()),
   fTOFarray(0x0),
   fTOFtree(tofTree),
@@ -157,13 +155,13 @@ void TOFSector::InitStatics()
   Float_t dx = 124.5;
   Float_t dz =  29.;
   Float_t dy = 370.6*2.;
-  fgTOFsectorFrameBox = new FrameBox();
+  fgTOFsectorFrameBox = new TEveFrameBox();
 
   fgTOFsectorFrameBox->SetAABox(-dx*0.5, -dy*0.5, -dz*0.5, dx, dy, dz);
   fgTOFsectorFrameBox->SetFrameColor((Color_t) 32);//31);
 
-  //fgTOFsectorPalette  = new RGBAPalette(0, 2048); // TOT
-  fgTOFsectorPalette  = new RGBAPalette(0, 8192/*1024*/); // TDC
+  //fgTOFsectorPalette  = new TEveRGBAPalette(0, 2048); // TOT
+  fgTOFsectorPalette  = new TEveRGBAPalette(0, 8192/*1024*/); // TDC
   fgTOFsectorPalette->SetLimits(0, 8192); 
 
   fgStaticInitDone = kTRUE;
@@ -194,7 +192,7 @@ void TOFSector::InitModule()
 void TOFSector::LoadQuads()
 {
 
-  Reset(QT_FreeQuad, kFALSE, 32);
+  Reset(kQT_FreeQuad, kFALSE, 32);
 
   //Int_t n_col = gStyle->GetNumberOfColors();
 
@@ -231,8 +229,8 @@ void TOFSector::LoadQuads()
 
       vol[1] = digs->GetPlate();  // Plate Number (0-4)
       vol[2] = digs->GetStrip();  // Strip Number (0-14/18)
-      vol[3] = digs->GetPadx();   // Pad Number in x direction (0-47)
-      vol[4] = digs->GetPadz();   // Pad Number in z direction (0-1)
+      vol[3] = digs->GetPadx();   // TEvePad Number in x direction (0-47)
+      vol[4] = digs->GetPadz();   // TEvePad Number in z direction (0-1)
 
       informations[0] = digs->GetTdc();
       informations[1] = digs->GetAdc();
@@ -365,9 +363,9 @@ void TOFSector::SetMaxVal(Int_t mv)
 
 void TOFSector::DigitSelected(Int_t idx)
 {
-  // Override control-click from QuadSet
+  // Override control-click from TEveQuadSet
 
-  DigitBase* qb   = GetDigit(idx);
+  DigitBase_t* qb   = GetDigit(idx);
   TObject* obj   = qb->fId.GetObject();
   AliTOFdigit* digs = dynamic_cast<AliTOFdigit*>(obj);
   // printf("TOFSector::QuadSelected "); Print();

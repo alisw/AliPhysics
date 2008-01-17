@@ -8,8 +8,6 @@
 #include <AliTPCParam.h>
 #include <AliTPCRawStream.h>
 #include <TTree.h>
-
-using namespace Reve;
 using namespace Alieve;
 
 //______________________________________________________________________
@@ -151,7 +149,7 @@ void TPCData::LoadRaw(AliTPCRawStream& input, Bool_t spawnSectors, Bool_t warn)
   // via CreateSector() are loaded.
   // If spawnSectors is true sectors are created if data for them is encountered.
 
-  static const Exc_t eH("TPCData::LoadRaw ");
+  static const TEveException eH("TPCData::LoadRaw ");
 
   Int_t   sector = -1, row = -1, pad = -1, rowOffset = 0;
   Short_t time,  signal;

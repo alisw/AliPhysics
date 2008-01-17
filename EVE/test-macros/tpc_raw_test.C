@@ -28,8 +28,8 @@ void tpc_raw_test()
   Alieve::TPCSector2D* s = new Alieve::TPCSector2D();
   s->SetDataSource(x);
   s->SetMainColor(36);
-  gReve->AddRenderElement(s);
-  gReve->DrawRenderElement(s);
+  gEve->AddElement(s);
+  gEve->DrawElement(s);
 
 }
 

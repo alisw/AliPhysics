@@ -2,7 +2,7 @@
 
 #include "VSDCreator.h"
 
-#include <Reve/TTreeTools.h>
+#include <TEveTreeTools.h>
 
 #include <AliStack.h>
 #include <AliITSLoader.h>
@@ -26,8 +26,8 @@
 
 #include <TSystem.h>
 #include <TFile.h>
+#include <TError.h>
 
-using namespace Reve;
 using namespace Alieve;
 
 using namespace std;
@@ -39,7 +39,7 @@ using namespace std;
 ClassImp(VSDCreator)
 
 VSDCreator::VSDCreator(const Text_t* name, const Text_t* title) :
-  VSD(name, title),
+  TEveVSD(name, title),
 
   mKineType (KT_Standard),
   mDataDir  ("."),
@@ -84,7 +84,7 @@ VSDCreator::VSDCreator(const Text_t* name, const Text_t* title) :
 void VSDCreator::CreateVSD(const Text_t* data_dir, Int_t event,
 			   const Text_t* vsd_file)
 {
-  static const Exc_t eH("VSDCreator::CreateVSD ");
+  static const TEveException eH("VSDCreator::CreateVSD ");
 
   mDataDir = data_dir;
   mEvent   = event;
@@ -117,10 +117,10 @@ void VSDCreator::CreateVSD(const Text_t* data_dir, Int_t event,
   // GledNS::PushFD();
 
   if(mDebugLevel > 0)
-    printf("%s opening output VSD.\n", eH.Data());
+    printf("%s opening output TEveVSD.\n", eH.Data());
 
   TFile* file = TFile::Open(vsd_file, "RECREATE", "ALICE VisualizationDataSummary");
-  mDirectory = new TDirectoryFile("Event0", "");
+  fDirectory = new TDirectoryFile("Event0", "");
 
   if(mDebugLevel > 0)
     printf("%s creating trees now ...\n", eH.Data());
@@ -133,19 +133,19 @@ void VSDCreator::CreateVSD(const Text_t* data_dir, Int_t event,
   file->Write();
   file->Close();
   delete file; 
-  mDirectory =0;
+  fDirectory =0;
 
   //GledNS::PopFD();
 
-  // clean after the VSD data was sucessfuly written
-  mTreeK      = 0;
-  mTreeH      = 0;
-  //mTreeTR     = 0;
-  mTreeC      = 0;
-  mTreeV0     = 0;
-  mTreeKK     = 0;
-  mTreeR      = 0;
-  mTreeGI     = 0;
+  // clean after the TEveVSD data was sucessfuly written
+  fTreeK      = 0;
+  fTreeH      = 0;
+  //fTreeTR     = 0;
+  fTreeC      = 0;
+  fTreeV0     = 0;
+  fTreeKK     = 0;
+  fTreeR      = 0;
+  fTreeGI     = 0;
 
   pRunLoader->UnloadAll();
   delete pRunLoader;
@@ -160,35 +160,35 @@ void VSDCreator::CreateVSD(const Text_t* data_dir, Int_t event,
 
 void VSDCreator::CreateTrees()
 {
-  static const Exc_t eH("VSDCreator::CreateTrees ");
+  static const TEveException eH("VSDCreator::CreateTrees ");
 
-  if(mDirectory == 0)
+  if(fDirectory == 0)
     throw(eH + "output directory not set.");
 
   try {
     if(mDebugLevel > 1)
       printf("%sConvertKinematics.\n", eH.Data());
     ConvertKinematics();
-  } catch(Exc_t& exc) { WarnCaller(exc); }
+  } catch(TEveException& exc) { Warning(eH, exc); }
 
   try {
     if(mDebugLevel > 1)
       printf("%sConvertHits.\n", eH.Data());
     ConvertHits();
-  } catch(Exc_t& exc) { WarnCaller(exc); }
+  } catch(TEveException& exc) { Warning(eH, exc); }
 
   try {
     if(mDebugLevel > 1)
       printf("%sConvertClusters.\n", eH.Data());
     ConvertClusters();
-  } catch(Exc_t& exc) { WarnCaller(exc); }
+  } catch(TEveException& exc) { Warning(eH, exc); }
 
   try {
     if(mDebugLevel > 1)
       printf("%sConvertRecTracks.\n", eH.Data());
     ConvertRecTracks();
-  } catch(Exc_t& exc) {
-    WarnCaller(exc + " Skipping V0 extraction.");
+  } catch(TEveException& exc) {
+    Warning(exc, "skipping V0 extraction.");
     goto end_esd_processing;
   }
 
@@ -196,13 +196,13 @@ void VSDCreator::CreateTrees()
     if(mDebugLevel > 1)
       printf("%sConvertV0.\n", eH.Data());
     ConvertV0();
-  } catch(Exc_t& exc) { WarnCaller(exc); }
+  } catch(TEveException& exc) { Warning(eH, exc); }
 
   try {
     if(mDebugLevel > 1)
       printf("%sConvertKinks.\n", eH.Data());
     ConvertKinks();
-  } catch(Exc_t& exc) { WarnCaller(exc); }
+  } catch(TEveException& exc) { Warning(eH, exc); }
 
 end_esd_processing:
 
@@ -210,7 +210,7 @@ end_esd_processing:
     if(mDebugLevel > 1)
       printf("%sConvertGenInfo.\n", eH.Data());
     ConvertGenInfo();
-  } catch(Exc_t& exc) { WarnCaller(exc); }
+  } catch(TEveException& exc) { Warning(eH, exc); }
 
   return;
 }
@@ -221,46 +221,48 @@ end_esd_processing:
 
 void VSDCreator::ConvertKinematics()
 {
-  static const Exc_t eH("VSDCreator::ConvertKinematics ");
+  static const TEveException eH("VSDCreator::ConvertKinematics ");
 
-  if(mTreeK != 0) 
+  if(fTreeK != 0) 
     throw (eH + "kinematics already converted");
 
   AliStack* stack = pRunLoader->Stack();
   if(stack == 0)
     throw(eH + "stack is null.");
 
-  mDirectory->cd();
-  mTreeK = new TTree("Kinematics", "TParticles sorted by Label");
+  fDirectory->cd();
+  fTreeK = new TTree("Kinematics", "TParticles sorted by Label");
  
   Int_t nentries = stack->GetNtrack();
-  vector<MCTrack>  vmc(nentries);
+  vector<TEveMCTrack>  vmc(nentries);
   for (Int_t idx=0; idx<nentries; idx++) {
     TParticle* tp = stack->Particle(idx);
-    vmc[idx]       = *tp;
-    vmc[idx].label = idx;
+    vmc[idx]        = *tp;
+    vmc[idx].fLabel = idx;
   }
 
-  // read track refrences 
-  TTree* mTreeTR =  pRunLoader->TreeTR();
+  // read track refrences
+  // functionality now in KineTools.
+  /*
+  TTree* fTreeTR =  pRunLoader->TreeTR();
 
-  if(mTreeTR == 0) {
-    WarnCaller(eH + "no TrackRefs; some data will not be available.");
+  if(fTreeTR == 0) {
+    Warning(eH, "no TrackRefs; some data will not be available.");
   } else {
     TClonesArray* RunArrayTR = 0;
-    mTreeTR->SetBranchAddress("AliRun", &RunArrayTR);
+    fTreeTR->SetBranchAddress("AliRun", &RunArrayTR);
 
-    Int_t nPrimaries = (Int_t) mTreeTR->GetEntries();
+    Int_t nPrimaries = (Int_t) fTreeTR->GetEntries();
     for (Int_t iPrimPart = 0; iPrimPart<nPrimaries; iPrimPart++) {
-      // printf("T0 mTreeTR->GetEntry(%d) \n",iPrimPart);
-      mTreeTR->GetEntry(iPrimPart);
-      // printf("END mTreeTR->GetEntry(%d) \n",iPrimPart);
+      // printf("T0 fTreeTR->GetEntry(%d) \n",iPrimPart);
+      fTreeTR->GetEntry(iPrimPart);
+      // printf("END fTreeTR->GetEntry(%d) \n",iPrimPart);
     
       for (Int_t iTrackRef = 0; iTrackRef < RunArrayTR->GetEntriesFast(); iTrackRef++) {
 	AliTrackReference *trackRef = (AliTrackReference*)RunArrayTR->At(iTrackRef); 
 	Int_t track = trackRef->GetTrack();
 	if(track < nentries && track > 0){ 
-	  MCTrack& mct = vmc[track];	
+	  TEveMCTrack& mct = vmc[track];	
 	  if(trackRef->TestBit(kNotDeleted)) {
 	    mct.decayed   = true;
 	    mct.t_decay   = trackRef->GetTime();
@@ -277,16 +279,17 @@ void VSDCreator::ConvertKinematics()
       }
     }
   }
+  */
 
-  mTreeK->Branch("K", "Reve::MCTrack",  &mpK, fBuffSize);
+  fTreeK->Branch("K", "TEveMCTrack",  &fpK, fBuffSize);
 
   printf("sizeofvmc = %d\n", vmc.size());
-  for(vector<MCTrack>::iterator k=vmc.begin(); k!=vmc.end(); ++k) {
-    MCTrack& mct = *k;
-    mK = mct;
+  for(vector<TEveMCTrack>::iterator k=vmc.begin(); k!=vmc.end(); ++k) {
+    TEveMCTrack& mct = *k;
+    fK = mct;
 
     TParticle* m  = &mct;
-    Int_t      mi = mct.label;
+    Int_t      mi = mct.fLabel;
     int cnt = 0;
     while(m->GetMother(0) != -1) {
       if(cnt > 100) {
@@ -296,12 +299,12 @@ void VSDCreator::ConvertKinematics()
       m = &vmc[mi];
       ++cnt;
     }
-    mK.eva_label = mi;
+    fK.fEvaLabel = mi;
 
-    mTreeK->Fill();
+    fTreeK->Fill();
   }
 
-  mTreeK->BuildIndex("label");
+  fTreeK->BuildIndex("label");
 }
 
 /**************************************************************************/
@@ -331,14 +334,14 @@ namespace {
 
 void VSDCreator::ConvertHits()
 {
-  static const Exc_t eH("VSDCreator::ConvertHits ");
+  static const TEveException eH("VSDCreator::ConvertHits ");
 
-  if(mTreeH != 0)
+  if(fTreeH != 0)
     throw(eH + "hits already converted.");
 
-  mDirectory->cd();
-  mTreeH =  new TTree("Hits", "Combined detector hits.");
-  mTreeH->Branch("H", "Reve::Hit", &mpH, fBuffSize);
+  fDirectory->cd();
+  fTreeH =  new TTree("Hits", "Combined detector hits.");
+  fTreeH->Branch("H", "TEveHit", &fpH, fBuffSize);
  
   map<Int_t, Int_t> hmap;
   // parameters for ITS, TPC hits filtering
@@ -356,7 +359,7 @@ void VSDCreator::ConvertHits()
       Int_t count = 0;
       TTree* treeh = pRunLoader->GetTreeH(det.name, false);
       if(treeh == 0) {
-	WarnCaller(eH + "no hits for "+ det.name +".");
+	Warning(eH, Form("no hits for %s.", det.name));
 	continue;
       }
       AliTPCTrackHitsV2 hv2, *_hv2=&hv2; 
@@ -369,15 +372,16 @@ void VSDCreator::ConvertHits()
         x = y = z = 0;
 	do {
 	  AliHit* ah = hv2.GetHit();
-	  x1=ah->X();y1=ah->Y();z1=ah->Z();
-	  if((x-x1)*(x-x1)+(y-y1)*(y-y1)+(z-z1)*(z-z1) > tpc_sqr_res) {
-	    mH.det_id    = det.detidx;
-	    mH.subdet_id = 0;
-	    mH.label     = ah->Track();
-	    mH.eva_label = eva_idx;
-	    mH.V.x = x1; mH.V.y = y1; mH.V.z = z1;
-	    mTreeH->Fill();
-	    hmap[mH.label]++;
+	  x1 = ah->X(); y1 = ah->Y(); z1 = ah->Z();
+	  if ((x-x1)*(x-x1) + (y-y1)*(y-y1) + (z-z1)*(z-z1) > tpc_sqr_res)
+	  {
+	    fH.fDetId    = det.detidx;
+	    fH.fSubdetId = 0;
+	    fH.fLabel    = ah->Track();
+	    fH.fEvaLabel = eva_idx;
+	    fH.fV.fX = x1; fH.fV.fY = y1; fH.fV.fZ = z1;
+	    fTreeH->Fill();
+	    hmap[fH.fLabel]++;
 	    x = x1; y = y1; z = z1;
 	    count++;
 	  }
@@ -389,7 +393,7 @@ void VSDCreator::ConvertHits()
     default: {
       TTree* treeh = pRunLoader->GetTreeH(det.name, false);
       if(treeh == 0) {
-	WarnCaller(eH + "no hits for "+ det.name +".");
+	Warning(eH, Form("no hits for %s.", det.name));
 	continue;
       }
       TClonesArray *arr = new TClonesArray(det.hitbranch);
@@ -405,18 +409,18 @@ void VSDCreator::ConvertHits()
 	// printf("%d entry %d hits for primary %d \n", i, nh, eva_idx);
 	for (Int_t j=0; j<nh; j++) {
 	  AliHit* ali_hit = (AliHit*)arr->UncheckedAt(j);
-	  mH.det_id    = det.detidx;
-	  mH.subdet_id = 0;
-	  mH.label     = ali_hit->GetTrack();
-	  mH.eva_label = eva_idx;
-	  mH.V.Set(ali_hit->X(), ali_hit->Y(), ali_hit->Z());
+	  fH.fDetId    = det.detidx;
+	  fH.fSubdetId = 0;
+	  fH.fLabel     = ali_hit->GetTrack();
+	  fH.fEvaLabel = eva_idx;
+	  fH.fV.Set(ali_hit->X(), ali_hit->Y(), ali_hit->Z());
 	  if(det.detidx == 2) {
 	    x1=ali_hit->X();y1=ali_hit->Y();z1=ali_hit->Z();
 	    if((x-x1)*(x-x1)+(y-y1)*(y-y1)+(z-z1)*(z-z1) < trd_sqr_res) continue;
 	    x=x1; y=y1; z=z1;
 	  } 
-	  hmap[mH.label]++;
-	  mTreeH->Fill(); 
+	  hmap[fH.fLabel]++;
+	  fTreeH->Fill(); 
 	}
       }
       delete arr;
@@ -428,7 +432,7 @@ void VSDCreator::ConvertHits()
 
   //set geninfo
   for(map<Int_t, Int_t>::iterator j=hmap.begin(); j!=hmap.end(); ++j) {
-    GetGeninfo(j->first)->n_hits += j->second;
+    GetGeninfo(j->first)->fNHits += j->second;
   }
 }
 
@@ -438,29 +442,29 @@ void VSDCreator::ConvertHits()
 
 void VSDCreator::ConvertClusters()
 {
-  static const Exc_t eH("VSDCreator::ConvertClusters ");
+  static const TEveException eH("VSDCreator::ConvertClusters ");
 
-  if(mTreeC != 0)
+  if(fTreeC != 0)
     throw(eH + "clusters already converted.");
 
-  mDirectory->cd();
-  mTreeC =  new TTree("Clusters", "rec clusters");
-  mTreeC->Branch("C", "Reve::Cluster", &mpC, fBuffSize);
+  fDirectory->cd();
+  fTreeC =  new TTree("Clusters", "rec clusters");
+  fTreeC->Branch("C", "TEveCluster", &fpC, fBuffSize);
 
   try {
     ConvertITSClusters();
-  } catch(Exc_t& exc) { WarnCaller(exc); }
+  } catch(TEveException& exc) { Warning(eH, exc); }
 
   try {
     ConvertTPCClusters();
-  } catch(Exc_t& exc) { WarnCaller(exc); }
+  } catch(TEveException& exc) { Warning(eH, exc); }
 }
 
 /**************************************************************************/
 
 void VSDCreator::ConvertTPCClusters()
 {
-  static const Exc_t eH("VSDCreator::ConvertTPCClusters ");
+  static const TEveException eH("VSDCreator::ConvertTPCClusters ");
 
   auto_ptr<TFile> f 
     ( TFile::Open(Form("%s/TPC.RecPoints.root", mDataDir.Data())) );
@@ -506,22 +510,24 @@ void VSDCreator::ConvertTPCClusters()
 	if(_clrow->GetArray()) {
 	  // cl = new AliTPCclusterMI(*(AliTPCclusterMI*)_clrow->GetArray()->UncheckedAt(ncl));
 	  cl = (AliTPCclusterMI*)_clrow->GetArray()->UncheckedAt(ncl);
-          if(cl->GetLabel(0) >= 0){
+          if(cl->GetLabel(0) >= 0)
+	  {
 	    x = par->GetPadRowRadii(sec,row); y = cl->GetY(); z = cl->GetZ();
 	    par->AdjustCosSin(sec,cs,sn);
 	    tmp = x*cs-y*sn; y= x*sn+y*cs; x=tmp; 
 
-	    mC.det_id    = 1;
-	    mC.subdet_id = 0;
-	    mC.label[0]  = cl->GetLabel(0);
-	    mC.label[1]  = cl->GetLabel(1);
-	    mC.label[2]  = cl->GetLabel(2);
-	    mC.V.Set(x, y, z);
+	    fC.fDetId    = 1;
+	    fC.fSubdetId = 0;
+	    fC.fLabel[0] = cl->GetLabel(0);
+	    fC.fLabel[1] = cl->GetLabel(1);
+	    fC.fLabel[2] = cl->GetLabel(2);
+	    fC.fV.Set(x, y, z);
 
-	    mTreeC->Fill();
-	    { int i = 0;
-	      while(i < 3 && mC.label[i])
-		cmap[mC.label[i++]]++;
+	    fTreeC->Fill();
+	    {
+	      int i = 0;
+	      while(i < 3 && fC.fLabel[i])
+		cmap[fC.fLabel[i++]]++;
 	    }
 	  }
 	}
@@ -530,7 +536,7 @@ void VSDCreator::ConvertTPCClusters()
   }
   //set geninfo
   for(map<Int_t, Int_t>::iterator j=cmap.begin(); j!=cmap.end(); ++j) {
-    GetGeninfo(j->first)->n_clus += j->second;
+    GetGeninfo(j->first)->fNClus += j->second;
   }
 }
 
@@ -538,7 +544,7 @@ void VSDCreator::ConvertTPCClusters()
 
 void VSDCreator::ConvertITSClusters()
 {
-  static const Exc_t eH("VSDCreator::ConvertITSClusters ");
+  static const TEveException eH("VSDCreator::ConvertITSClusters ");
 
   auto_ptr<TFile> f 
     ( TFile::Open(Form("%s/ITS.RecPoints.root", mDataDir.Data())) );
@@ -590,27 +596,27 @@ void VSDCreator::ConvertITSClusters()
 
       Float_t cp=TMath::Cos(phi1), sp=TMath::Sin(phi1);
       Float_t  r=tx*cp+ty*sp;
-      gc[0]= r*cp - recp->GetY()*sp;
-      gc[1]= r*sp + recp->GetY()*cp;
-      gc[2]= recp->GetZ();
+      gc[0] = r*cp - recp->GetY()*sp;
+      gc[1] = r*sp + recp->GetY()*cp;
+      gc[2] = recp->GetZ();
 
-      mC.det_id    = 0;
-      mC.subdet_id = 0;
-      mC.label[0]  = recp->GetLabel(0);
-      mC.label[1]  = recp->GetLabel(1);
-      mC.label[2]  = recp->GetLabel(2);
-      mC.V.x       = r*cp - recp->GetY()*sp;
-      mC.V.y       = r*sp + recp->GetY()*cp;
-      mC.V.z       = recp->GetZ();
-      mTreeC->Fill();
+      fC.fDetId    = 0;
+      fC.fSubdetId = 0;
+      fC.fLabel[0] = recp->GetLabel(0);
+      fC.fLabel[1] = recp->GetLabel(1);
+      fC.fLabel[2] = recp->GetLabel(2);
+      fC.fV.fX     = r*cp - recp->GetY()*sp;
+      fC.fV.fY     = r*sp + recp->GetY()*cp;
+      fC.fV.fZ     = recp->GetZ();
+      fTreeC->Fill();
       { int i = 0;
-	while(i < 3 && mC.label[i])
-	  cmap[mC.label[i++]]++;
+	while(i < 3 && fC.fLabel[i])
+	  cmap[fC.fLabel[i++]]++;
       }
     } 
 
     for(map<Int_t, Int_t>::iterator j=cmap.begin(); j!=cmap.end(); ++j) {
-      GetGeninfo(j->first)->n_clus += j->second;
+      GetGeninfo(j->first)->fNClus += j->second;
     }
   }
   delete arr;
@@ -622,15 +628,15 @@ void VSDCreator::ConvertITSClusters()
 
 void VSDCreator::ConvertRecTracks()
 {
-  static const Exc_t eH("VSDCreator::ConvertRecTracks ");
+  static const TEveException eH("VSDCreator::ConvertRecTracks ");
 
-  if(mTreeR != 0)
+  if(fTreeR != 0)
     throw(eH + "tracks already converted.");
 
-  mDirectory->cd();
-  mTreeR =  new TTree("RecTracks", "rec tracks");
+  fDirectory->cd();
+  fTreeR =  new TTree("RecTracks", "rec tracks");
 
-  mTreeR->Branch("R", "Reve::RecTrack", &mpR, 512*1024,1);
+  fTreeR->Branch("R", "TEveRecTrack", &fpR, 512*1024,1);
  
   TFile f(Form("%s/AliESDs.root", mDataDir.Data()));
   if(!f.IsOpen())
@@ -653,16 +659,16 @@ void VSDCreator::ConvertRecTracks()
   for (Int_t n=0; n<fEvent->GetNumberOfTracks(); n++) {
     esd_t = fEvent->GetTrack(n);
 
-    mR.label  = esd_t->GetLabel();
-    mR.status = (Int_t) esd_t->GetStatus();
-    mR.sign   = (Int_t) esd_t->GetSign();
-    esd_t->GetXYZ(dbuf);    mR.V.Set(dbuf);
-    esd_t->GetPxPyPz(dbuf); mR.P.Set(dbuf);
+    fR.fLabel  = esd_t->GetLabel();
+    fR.fStatus = (Int_t) esd_t->GetStatus();
+    fR.fSign   = (Int_t) esd_t->GetSign();
+    esd_t->GetXYZ(dbuf);    fR.fV.Set(dbuf);
+    esd_t->GetPxPyPz(dbuf); fR.fP.Set(dbuf);
     Double_t ep = esd_t->GetP();
-    mR.beta = ep/TMath::Sqrt(ep*ep + TMath::C()*TMath::C()*esd_t->GetMass()*esd_t->GetMass());
-    mTreeR->Fill();
+    fR.fBeta = ep/TMath::Sqrt(ep*ep + TMath::C()*TMath::C()*esd_t->GetMass()*esd_t->GetMass());
+    fTreeR->Fill();
   }
-  mTreeR->BuildIndex("label");
+  fTreeR->BuildIndex("label");
   delete fEvent;
 }
 
@@ -670,15 +676,15 @@ void VSDCreator::ConvertRecTracks()
 
 void VSDCreator::ConvertV0()
 {
-  static const Exc_t eH("VSDCreator::ConvertV0 ");
+  static const TEveException eH("VSDCreator::ConvertV0 ");
 
-  if(mTreeV0 != 0)
+  if(fTreeV0 != 0)
     throw(eH + "V0 already converted.");
 
-  mDirectory->cd();
-  mTreeV0 =  new TTree("V0", "V0 points");
+  fDirectory->cd();
+  fTreeV0 =  new TTree("V0", "V0 points");
 
-  mTreeV0->Branch("V0", "Reve::RecV0", &mpV0, 512*1024,1);
+  fTreeV0->Branch("V0", "TEveRecV0", &fpV0, 512*1024,1);
 
   TFile f(Form("%s/AliESDs.root", mDataDir.Data()));
   if(!f.IsOpen()){
@@ -702,42 +708,42 @@ void VSDCreator::ConvertV0()
 
     Double_t pos[3];
 
-    mV0.status = av->GetStatus();
+    fV0.fStatus = av->GetStatus();
     // Point of closest approach
     av->GetXYZ(pos[0],pos[1],pos[2]);
-    mV0.V_ca.x = pos[0]; 
-    mV0.V_ca.y = pos[1];
-    mV0.V_ca.z = pos[2];
+    fV0.fVCa.fX = pos[0]; 
+    fV0.fVCa.fY = pos[1];
+    fV0.fVCa.fZ = pos[2];
     // set birth vertex of neutral particle     
     av->GetXYZ(pos[0], pos[1], pos[2]);
-    mV0.V0_birth.Set(pos);
+    fV0.fV0Birth.Set(pos);
 
     // momentum and position of negative particle
     av->GetParamN()->GetPxPyPz(pos);
-    mV0.P_neg.Set(pos);
+    fV0.fPNeg.Set(pos);
     av->GetParamN()->GetXYZ(pos);
-    mV0.V_neg.Set(pos);
+    fV0.fVNeg.Set(pos);
 
     // momentum and position of positive particle
     av->GetParamP()->GetPxPyPz(pos);
-    mV0.P_pos.Set(pos);
+    fV0.fPPos.Set(pos);
     av->GetParamP()->GetXYZ(pos);
-    mV0.V_pos.Set(pos);
+    fV0.fVPos.Set(pos);
 
-    mV0.label = 0; // !!!! mother label unknown
-    mV0.pdg   = av->GetPdgCode();
+    fV0.fLabel = 0; // !!!! mother label unknown
+    fV0.fPdg   = av->GetPdgCode();
 
     // daughter indices
-    mV0.d_label[0] = TMath::Abs(trackN->GetLabel());
-    mV0.d_label[1] = TMath::Abs(trackP->GetLabel());
+    fV0.fDLabel[0] = TMath::Abs(trackN->GetLabel());
+    fV0.fDLabel[1] = TMath::Abs(trackP->GetLabel());
 
     // printf("V0 convert labels(%d,%d) index(%d,%d)\n", 
-    //	   mV0.d_label[0],  mV0.d_label[1],
+    //	   fV0.d_label[0],  fV0.d_label[1],
     //	   av->GetNIndex(), av->GetPIndex());
 
-    mTreeV0->Fill();
+    fTreeV0->Fill();
   }
-  // if(fEvent->GetNumberOfV0s()) mTreeV0->BuildIndex("label");
+  // if(fEvent->GetNumberOfV0s()) fTreeV0->BuildIndex("label");
   delete fEvent;
 }
 
@@ -745,15 +751,15 @@ void VSDCreator::ConvertV0()
 
 void VSDCreator::ConvertKinks()
 {
-  static const Exc_t eH("VSDCreator::ConvertKinks ");
+  static const TEveException eH("VSDCreator::ConvertKinks ");
 
-  if(mTreeKK != 0)
+  if(fTreeKK != 0)
     throw(eH + "Kinks already converted.");
 
-  mDirectory->cd();
-  mTreeKK =  new TTree("Kinks", "ESD Kinks");
+  fDirectory->cd();
+  fTreeKK =  new TTree("Kinks", "ESD Kinks");
 
-  mTreeKK->Branch("KK", "Reve::RecKink", &mpKK, fBuffSize);
+  fTreeKK->Branch("KK", "TEveRecKink", &fpKK, fBuffSize);
 
   TFile f(Form("%s/AliESDs.root", mDataDir.Data()));
   if(!f.IsOpen()){
@@ -777,74 +783,73 @@ void VSDCreator::ConvertKinks()
 
     Double_t pos[3];
 
-
-    mKK.label  = kk->GetLabel(0);
-    mKK.status = Int_t(kk->GetStatus(1) << 8 + kk->GetStatus(2));
+    fKK.fLabel  = kk->GetLabel(0);
+    fKK.fStatus = Int_t(kk->GetStatus(1) << 8 + kk->GetStatus(2));
 
     // reconstructed kink position
-    mKK.label_sec = kk->GetLabel(1);
-    mKK.V_kink.Set(kk->GetPosition());
+    fKK.fLabelSec = kk->GetLabel(1);
+    fKK.fVKink.Set(kk->GetPosition());
 
     const AliExternalTrackParam& tp_mother = kk->RefParamMother();
     // momentum and position of mother 
     tp_mother.GetPxPyPz(pos);
-    mKK.P.Set(pos);
+    fKK.fP.Set(pos);
     tp_mother.GetXYZ(pos);
-    mKK.V.Set(pos);
+    fKK.fV.Set(pos);
     const Double_t* par =  tp_mother.GetParameter();
     // printf("KINK Pt %f, %f \n",1/tp_mother.Pt(),par[4] );
-    mKK.sign = (par[4] < 0) ? -1 : 1;
+    fKK.fSign = (par[4] < 0) ? -1 : 1;
    
     const AliExternalTrackParam& tp_daughter = kk->RefParamDaughter();
     // momentum and position of daughter 
     tp_daughter.GetPxPyPz(pos);
-    mKK.P_sec.Set(pos);
+    fKK.fPSec.Set(pos);
     tp_daughter.GetXYZ(pos);
-    mKK.V_end.Set(pos);
+    fKK.fVEnd.Set(pos);
 
-    mTreeKK->Fill();
+    fTreeKK->Fill();
   }
-  if(fEvent->GetNumberOfKinks()) mTreeKK->BuildIndex("label");
+  if(fEvent->GetNumberOfKinks()) fTreeKK->BuildIndex("label");
   delete fEvent;
 }
 /**************************************************************************/
-// GenInfo
+// TEveMCRecCrossRef
 /**************************************************************************/
 
 void VSDCreator::ConvertGenInfo()
 {
-  static const Exc_t eH("VSDCreator::ConvertGenInfo ");
+  static const TEveException eH("VSDCreator::ConvertGenInfo ");
 
-  if(mTreeGI != 0)
+  if(fTreeGI != 0)
     throw(eH + "GI already converted.");
 
-  mDirectory->cd();
-  mTreeGI = new TTree("GenInfo", "Objects prepared for cross querry");
+  fDirectory->cd();
+  fTreeGI = new TTree("TEveMCRecCrossRef", "Objects prepared for cross querry");
 
-  GenInfo::Class()->IgnoreTObjectStreamer(true);
-  mTreeGI->Branch("GI", "Reve::GenInfo",  &mpGI, fBuffSize);
-  mTreeGI->Branch("K.", "Reve::MCTrack",  &mpK);
-  mTreeGI->Branch("R.", "Reve::RecTrack", &mpR);
+  TEveMCRecCrossRef::Class()->IgnoreTObjectStreamer(true);
+  fTreeGI->Branch("GI", "TEveMCRecCrossRef",  &fpGI, fBuffSize);
+  fTreeGI->Branch("K.", "TEveMCTrack",  &fpK);
+  fTreeGI->Branch("R.", "TEveRecTrack", &fpR);
 
-  for(map<Int_t, GenInfo*>::iterator j=mGenInfoMap.begin(); j!=mGenInfoMap.end(); ++j) {
-    mGI = *(j->second);
-    mGI.label = j->first;
-    mTreeK->GetEntry(j->first);
+  for (map<Int_t, TEveMCRecCrossRef*>::iterator j=mGenInfoMap.begin(); j!=mGenInfoMap.end(); ++j) {
+    fGI        = *(j->second);
+    fGI.fLabel = j->first;
+    fTreeK->GetEntry(j->first);
 
-    if(mTreeR) {
-      Int_t re = mTreeR->GetEntryNumberWithIndex(j->first);
+    if (fTreeR) {
+      Int_t re = fTreeR->GetEntryNumberWithIndex(j->first);
       if(re != -1) 
-	mGI.is_rec = true;
+	fGI.fIsRec = true;
     }
-    //    Int_t has_v0 =  mTreeV0->GetEntryNumberWithIndex(j->first);
+    //    Int_t has_v0 =  fTreeV0->GetEntryNumberWithIndex(j->first);
     //if (has_v0 != -1)
-    //  mGI.has_V0 = true;
-    if (mTreeKK) {
-      Int_t has_kk =  mTreeKK->GetEntryNumberWithIndex(j->first);
+    //  fGI.has_V0 = true;
+    if (fTreeKK) {
+      Int_t has_kk =  fTreeKK->GetEntryNumberWithIndex(j->first);
       if (has_kk != -1)
-	mGI.has_kink = true;
+	fGI.fHasKink = true;
     }
-    mTreeGI->Fill();
+    fTreeGI->Fill();
   }
   mGenInfoMap.clear();
 }
@@ -855,7 +860,7 @@ void VSDCreator::ConvertGenInfo()
 /**************************************************************************/
 /**************************************************************************/
 
-AliTPCParam* VSDCreator::GetTpcParam(const Exc_t& eh)
+AliTPCParam* VSDCreator::GetTpcParam(const TEveException& eh)
 {
   auto_ptr<TFile> fp( TFile::Open(Form("%s/galice.root", mDataDir.Data())) );
   if(!fp.get())
@@ -868,13 +873,13 @@ AliTPCParam* VSDCreator::GetTpcParam(const Exc_t& eh)
 
 
 
-GenInfo* VSDCreator::GetGeninfo(Int_t label)
+TEveMCRecCrossRef* VSDCreator::GetGeninfo(Int_t label)
 {
   // printf("get_geninfo %d\n", label);
-  GenInfo* gi;
-  map<Int_t, GenInfo*>::iterator i = mGenInfoMap.find(label);
+  TEveMCRecCrossRef* gi;
+  map<Int_t, TEveMCRecCrossRef*>::iterator i = mGenInfoMap.find(label);
   if(i == mGenInfoMap.end()) {
-    gi =  new GenInfo();
+    gi =  new TEveMCRecCrossRef();
     mGenInfoMap[label] = gi;
   } else {
     gi = i->second;

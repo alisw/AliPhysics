@@ -2,9 +2,6 @@
 
 #include "AliEVEHOMERSourceList.h"
 
-using namespace Reve;
-//using namespace Alieve;
-
 //______________________________________________________________________
 // AliEVEHOMERSourceList
 //
@@ -12,7 +9,7 @@ using namespace Reve;
 ClassImp(AliEVEHOMERSourceList)
 
 AliEVEHOMERSourceList::AliEVEHOMERSourceList(const Text_t* n, const Text_t* t) :
-  Reve::RenderElementList(n, t)
+  TEveElementList(n, t)
 {
 
 }

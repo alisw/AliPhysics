@@ -4,7 +4,7 @@ void tof_digits()
 
   Int_t nDigitsInVolume[3] = {-1, -1, -1};
   Int_t nStrips=19;
-  TGeoManager *localGeoManager = (TGeoManager*)gReve->GetGeometry("./geometry.root");//"$REVESYS/alice-data/alice_fullgeo.root");
+  TGeoManager *localGeoManager = (TGeoManager*)gEve->GetGeometry("./geometry.root");//"$REVESYS/alice-data/alice_fullgeo.root");
   if (!localGeoManager) {
     printf("ERROR: no TGeo\n");
   }
@@ -21,12 +21,12 @@ void tof_digits()
   AliTOFGeometry* g = di->fGeom;
  
   gStyle->SetPalette(1, 0);
-  gReve->DisableRedraw();
+  gEve->DisableRedraw();
 
-  Reve::RenderElementList* ll = new Reve::RenderElementList("TOF");
+  TEveElementList* ll = new TEveElementList("TOF");
   ll->SetTitle("TOF detector");
   ll->SetMainColor((Color_t)2);
-  gReve->AddRenderElement(ll);
+  gEve->AddElement(ll);
 
   for(Int_t iSector=0; iSector<g->NSectors(); iSector++) {
     
@@ -34,9 +34,9 @@ void tof_digits()
    
     Alieve::TOFSector* m = new Alieve::TOFSector(localGeoManager,iSector,array);
 
-    gReve->AddRenderElement(m, ll);
+    gEve->AddElement(m, ll);
 
   }
 
-  gReve->EnableRedraw();
+  gEve->EnableRedraw();
 }

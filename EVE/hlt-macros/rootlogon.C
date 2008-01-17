@@ -5,7 +5,7 @@
   TString includePath = "-I${ALICE_ROOT}/include ";
   includePath        += "-I${ALICE_ROOT}/EVE ";
   includePath        += "-I${ALICE_ROOT}/EVE/Alieve ";
-  includePath        += "-I${ALICE_ROOT}/EVE/Reve ";
+  includePath        += "-I${ALICE_ROOT}/EVE/TEveUtil ";
   includePath        += "-I${ALICE_ROOT}/HLT/BASE ";
   includePath        += "-I${ALICE_ROOT}/HLT/TPCLib ";
   includePath        += "-I${ALICE_ROOT}/HLT/BASE/HOMER ";

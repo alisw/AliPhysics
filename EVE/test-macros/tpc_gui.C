@@ -1,4 +1,4 @@
-// $Header$
+// $Header: /soft/cvsroot/AliRoot/EVE/test-macros/tpc_gui.C,v 1.8 2007/10/22 14:49:12 mtadel Exp $
 
 // Function to spawn a gui for reading rootified raw-data from TPC sector test.
 //
@@ -21,8 +21,8 @@ class TPCSector3D;
 
 #else
 
-#include <Reve/Reve.h>
-#include <Reve/ReveManager.h>
+#include <TEve.h>
+#include <TEveManager.h>
 #include <Alieve/TPCData.h>
 #include <Alieve/TPCSector2D.h>
 #include <Alieve/TPCSector3D.h>
@@ -54,7 +54,7 @@ void tpc_gui(const char *file=0, Int_t ievent=0)
   l->SetInitParams(40, 980, 10); // min-time, max-time, threshold
   // l->SetTPCEquipementMap("EquipmentIdMap.data");
 
-  gReve->AddRenderElement(l);
+  gEve->AddElement(l);
 
   if(file != 0) {
     l->SetFile(file);

@@ -3,8 +3,8 @@
 #ifndef ALIEVE_TPCSectorViz_H
 #define ALIEVE_TPCSectorViz_H
 
-#include <Reve/RenderElement.h>
-#include <Reve/ZTrans.h>
+#include <TEveElement.h>
+#include <TEveTrans.h>
 
 #include <TNamed.h> 
 #include <TAtt3D.h>
@@ -19,7 +19,7 @@ class TPCSectorVizEditor;
 class TPCSector2D;  class TPCSector2DEditor;  class TPCSector2DGL;
 class TPCSector3D;  class TPCSector3DEditor;  class TPCSector3DGL;
 
-class TPCSectorViz : public Reve::RenderElement,
+class TPCSectorViz : public TEveElement,
                      public TNamed,
                      public TAtt3D,
                      public TAttBBox
@@ -50,7 +50,7 @@ protected:
 
   Color_t      fFrameColor;
   Bool_t       fRnrFrame;
-  Reve::ZTrans fHMTrans;
+  TEveTrans fHMTrans;
   Bool_t       fAutoTrans;
   UInt_t       fRTS;       //! Rendering TimeStamp
 
@@ -93,7 +93,7 @@ public:
   virtual void SetRnrFrame(Bool_t rf) { fRnrFrame = rf;  IncRTS(); }
   void SetAutoTrans(Bool_t t);
 
-  Reve::ZTrans& RefHMTrans() { return fHMTrans; }
+  TEveTrans& RefHMTrans() { return fHMTrans; }
   void SetUseTrans(Bool_t t) { fHMTrans.SetUseTrans(t); }
 
   ClassDef(TPCSectorViz, 1); // Base-class for TPC raw-data visualization

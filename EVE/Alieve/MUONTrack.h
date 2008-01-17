@@ -1,7 +1,7 @@
 #ifndef ALIEVE_MUONTrack_H
 #define ALIEVE_MUONTrack_H
 
-#include <Reve/Track.h>
+#include <TEveTrack.h>
 
 class AliMUONTrack;
 class AliMUONTriggerTrack;
@@ -11,16 +11,12 @@ class AliTrackReference;
 
 class TParticle;
 
-namespace Reve {
-
-  class TrackRnrStyle;
-  class RecTrack;
-
-}
+class TEveTrackPropagator;
+class TEveRecTrack;
 
 namespace Alieve {
 
-class MUONTrack: public Reve::Track
+class MUONTrack: public TEveTrack
 {
 
   MUONTrack(const MUONTrack&);            // Not implemented
@@ -28,7 +24,7 @@ class MUONTrack: public Reve::Track
 
  public:
 
-  MUONTrack(Reve::RecTrack* t, Reve::TrackRnrStyle* rs);
+  MUONTrack(TEveRecTrack* t, TEveTrackPropagator* rs);
   virtual ~MUONTrack();
 
   virtual void MakeTrack(Bool_t /*recurse*/=kFALSE) {}
@@ -71,7 +67,7 @@ class MUONTrack: public Reve::Track
 
   static AliMagF      *fFieldMap;    // pointer to the magnetic field map
 
-  ClassDef(MUONTrack, 1);    // Produce Reve:Track from AliMUONTrack
+  ClassDef(MUONTrack, 1);    // Produce TEveUtil:TEveTrack from AliMUONTrack
 
 };
 

@@ -2,8 +2,8 @@
 
 #include "ITSScaledModuleEditor.h"
 #include <Alieve/ITSScaledModule.h>
-#include <Reve/ZTransEditor.h>
-#include <Reve/RGValuators.h>
+#include <TEveTransEditor.h>
+#include <TEveGValuators.h>
 
 #include <TVirtualPad.h>
 #include <TColor.h>
@@ -16,8 +16,6 @@
 #include <TGNumberEntry.h>
 #include <TGColorSelect.h>
 #include <TGComboBox.h>
-
-using namespace Reve;
 using namespace Alieve;
 
 //______________________________________________________________________

@@ -1,4 +1,4 @@
-// $Header$
+// $Header: /soft/cvsroot/AliRoot/EVE/test-macros/tpc_sector_raw_test.C,v 1.10 2006/10/18 17:00:14 mtadel Exp $
 
 // Functions to read rootified raw-data from TPC sector test.
 //
@@ -51,8 +51,8 @@ void tpc_sector_raw_test(const char *file = "", Int_t ievent = 0)
   s->SetAutoTrans(kTRUE); // place on proper 3D coordinates
   s->SetDataSource(x);
   s->SetFrameColor(36);
-  gReve->AddRenderElement(s);
-  gReve->DrawRenderElement(s);
+  gEve->AddElement(s);
+  gEve->DrawElement(s);
 
   t = new TPCSector3D();
   t->SetSectorID(default_sector);
@@ -60,8 +60,8 @@ void tpc_sector_raw_test(const char *file = "", Int_t ievent = 0)
   t->SetDataSource(x);
   t->SetMaxTime(1023);
   t->SetDriftVel(2.273);
-  gReve->AddRenderElement(t);
-  gReve->DrawRenderElement(t);
+  gEve->AddElement(t);
+  gEve->DrawElement(t);
 
   next_event();
 }
@@ -89,7 +89,7 @@ void next_event()
   printf("Updating scene\n");
   s->IncRTS();
   t->IncRTS();
-  gReve->Redraw3D();
+  gEve->Redraw3D();
 }
 
 void tpc_raw_pad_dump(Int_t s, Int_t r, Int_t p)

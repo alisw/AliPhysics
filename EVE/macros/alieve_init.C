@@ -1,4 +1,4 @@
-// $Header$
+// $Id$
 
 #ifndef __CINT_
 #include <list>
@@ -9,16 +9,12 @@ void alieve_init(const Text_t* path   = ".", Int_t event=0,
 		 const Text_t* cdburi = 0,
 		 Bool_t assert_runloader=kFALSE, Bool_t assert_esd=kFALSE)
 {
-  using namespace std;
-
-  // Set-up environment, load libraries.
-  Reve::SetupEnvironment();
-
-
   Info("alieve_init", "Adding standard macros.");
+  TString  hack = gSystem->pwd(); // Problem with TGFileBrowser cding
   alieve_init_import_macros();
+  gSystem->cd(hack);
 
-  // Reve::AssertMacro("region_marker.C");
+  // AssertMacro("region_marker.C");
   
   gSystem->ProcessEvents();
 
@@ -29,7 +25,7 @@ void alieve_init(const Text_t* path   = ".", Int_t event=0,
     printf("Opening event %d from '%s' ...", event, path); fflush(stdout);
     Alieve::gEvent = new Alieve::Event(path, event);
     printf(" done.\n");
-    gReve->AddEvent(Alieve::gEvent);
+    gEve->AddEvent(Alieve::gEvent);
   }
 }
 
@@ -41,12 +37,12 @@ void alieve_init_import_macros()
   TString macdir("$(REVESYS)/alice-macros");
   gSystem->ExpandPathName(macdir);
 
-  TFolder* f = gReve->GetMacroFolder();
+  TFolder* f = gEve->GetMacroFolder();
   void* dirhandle = gSystem->OpenDirectory(macdir.Data());
   if(dirhandle != 0) {
     char* filename;
     TPRegexp re("\.C$");
-    list<string> names;
+    std::list<string> names;
     while((filename = gSystem->GetDirEntry(dirhandle)) != 0) {
       if(re.Match(filename)) {
 	names.push_back(filename);
@@ -56,12 +52,12 @@ void alieve_init_import_macros()
     //PH The line below is replaced waiting for a fix in Root
     //PH which permits to use variable siza arguments in CINT
     //PH on some platforms (alphalinuxgcc, solariscc5, etc.)
-    // f->Add(new Reve::RMacro(Form("%s/%s", macdir.Data(), filename)));
+    // f->Add(new TEveMacro(Form("%s/%s", macdir.Data(), filename)));
     char fullName[1000];
-    for (list<string>::iterator si=names.begin(); si!=names.end(); ++si)
+    for (std::list<string>::iterator si=names.begin(); si!=names.end(); ++si)
     {
       sprintf(fullName,"%s/%s", macdir.Data(), si->c_str());
-      f->Add(new Reve::RMacro(fullName));
+      f->Add(new TEveMacro(fullName));
     }
   }
   gSystem->FreeDirectory(dirhandle);
@@ -71,8 +67,8 @@ void alieve_init_import_macros()
     (new TSystemDirectory(macdir.Data(), macdir.Data()));
 
   {
-    Reve::RGBrowser *br = gReve->GetBrowser();
-    TGFileBrowser   *fb = 0;
+    TEveBrowser   *br = gEve->GetBrowser();
+    TGFileBrowser *fb = 0;
     fb = br->GetFileBrowser();
     fb->GotoDir(macdir);
     {
@@ -84,5 +80,5 @@ void alieve_init_import_macros()
       br->SetTabTitle("Macros", 0);
       br->SetTab(0, 0);
     }
-  }  
+  }
 }

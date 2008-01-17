@@ -11,9 +11,7 @@ class TGNumberEntry;
 class TGColorSelect;
 class TGTextEntry;
 
-namespace Reve {
-class RGValuator;
-}
+class TEveGValuator;
 
 namespace Alieve {
 
@@ -30,12 +28,12 @@ protected:
   TGTextEntry*  fFile;
   TGTextButton* fOpenFile;
 
-  Reve::RGValuator* fEvent;
+  TEveGValuator* fEvent;
   TGCheckButton*    fDoubleSR;
 
   // TPCData loading settings
-  Reve::RGValuator* fDataLoadThreshold;
-  Reve::RGValuator* fDataLoadPedestal;
+  TEveGValuator* fDataLoadThreshold;
+  TEveGValuator* fDataLoadPedestal;
   TGCheckButton*    fDataAutoPedestal;
 
   TGTextButton* fUpdateSectors;

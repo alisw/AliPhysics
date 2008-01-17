@@ -1,11 +1,11 @@
 #ifndef ALIEVE_TOFSector_H
 #define ALIEVE_TOFSector_H
 
-#include <Reve/QuadSet.h>
-#include <Reve/RenderElement.h>
+#include <TEveQuadSet.h>
+#include <TEveElement.h>
 
-#include <Reve/RGBAPalette.h>
-#include <Reve/FrameBox.h>
+#include <TEveRGBAPalette.h>
+#include <TEveFrameBox.h>
 
 #include <TGeoManager.h>
 #include <TClonesArray.h>
@@ -15,7 +15,7 @@
 
 namespace Alieve {
   
-  class TOFSector : public Reve::QuadSet
+  class TOFSector : public TEveQuadSet
                    
   {
     TOFSector(const TOFSector&);            // Not implemented
@@ -92,8 +92,8 @@ namespace Alieve {
    
     void SetPlate(Int_t nPlate, Bool_t r);
 
-    static Reve::FrameBox    *fgTOFsectorFrameBox;
-    static Reve::RGBAPalette *fgTOFsectorPalette;
+    static TEveFrameBox    *fgTOFsectorFrameBox;
+    static TEveRGBAPalette *fgTOFsectorPalette;
 
   ClassDef(TOFSector, 1);
   }; 

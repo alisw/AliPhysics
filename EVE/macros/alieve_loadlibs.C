@@ -1,4 +1,4 @@
-// $Header$
+// $Id$
 
 void alieve_loadlibs () 
 {

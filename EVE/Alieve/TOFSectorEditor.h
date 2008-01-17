@@ -12,11 +12,9 @@ class TGDoubleHSlider;
 
 class TGHSlider;
 
-namespace Reve {
-  class RGValuator;
-  class RGDoubleValuator;
-  class ZTransSubEditor;
-}
+class TEveGValuator;
+class TEveGDoubleValuator;
+class TEveTransSubEditor;
 
 namespace Alieve {
   
@@ -31,7 +29,7 @@ namespace Alieve {
   protected:
     TOFSector* fM; // fModel dynamic-casted to TOFSectorEditor
     
-    Reve::RGValuator* fSectorID;
+    TEveGValuator* fSectorID;
     
     TGCheckButton*    fAutoTrans;
 
@@ -43,8 +41,8 @@ namespace Alieve {
     TGCheckButton*    fPlate3;
     TGCheckButton*    fPlate4;
 
-    Reve::RGValuator* fThreshold;
-    Reve::RGValuator* fMaxVal;   
+    TEveGValuator* fThreshold;
+    TEveGValuator* fMaxVal;   
 
 
     // Declare widgets

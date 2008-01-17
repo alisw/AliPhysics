@@ -12,9 +12,7 @@
 
 #include <vector>
 
-#ifndef REVE_RenderElement_H
-#include <Reve/RenderElement.h>
-#endif
+#include <TEveElement.h>
 
 #ifndef ALIEVE_TRDModule_H
 #include "TRDModule.h"
@@ -27,14 +25,13 @@ class AliTRDdataArrayI;
 class AliTRDdigitsManager;
 class TObjArray;
 
-namespace Reve {
-	class Track;
-}
+class TEveTrack;
+
 namespace Alieve {
 	class TRDHits;
 	class TRDDigits;
 
-	class TRDChamber : public Reve::RenderElement, public TRDModule
+	class TRDChamber : public TEveElement, public TRDModule
 	{
 	friend class TRDDigits;
 	public:
@@ -63,7 +60,7 @@ namespace Alieve {
 		TRDDigits	*fDigits;   // digits representation
 		TRDHits		*fHits;     // hits representation
 		TRDHits		*fRecPoints;// cluster representation
-		std::vector<Reve::Track*> *fTracklets; // mcm tracklets
+		std::vector<TEveTrack*> *fTracklets; // mcm tracklets
 
 		// data representation section
 		Int_t		rowMax; // number of rows for this pad plane
@@ -79,7 +76,7 @@ namespace Alieve {
 	};
 
 	
-	class TRDNode : public Reve::RenderElement, public TRDModule
+	class TRDNode : public TEveElement, public TRDModule
 	{
 	public:
 		TRDNode(const char *typ, Int_t det=0);

@@ -9,11 +9,7 @@ class TGColorSelect;
 class TGDoubleHSlider;
 class TGHSlider;
 
-namespace Reve {
-
-class RGValuator;
-
-}
+class TEveGValuator;
 
 namespace Alieve {
 
@@ -29,10 +25,10 @@ class MUONChamberEditor : public TGedFrame
 
   MUONChamber* fM; // fModel dynamic-casted to MUONChamberEditor
 
-  Reve::RGValuator *fThreshold;   // digit ADC min
-  Reve::RGValuator *fMaxVal;      // digit ADC max
-  Reve::RGValuator *fClusterSize; // cluster point size
-  Reve::RGValuator *fHitSize;     // hit point size
+  TEveGValuator *fThreshold;   // digit ADC min
+  TEveGValuator *fMaxVal;      // digit ADC max
+  TEveGValuator *fClusterSize; // cluster point size
+  TEveGValuator *fHitSize;     // hit point size
 
  public:
 

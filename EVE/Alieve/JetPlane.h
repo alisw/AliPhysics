@@ -3,9 +3,9 @@
 #ifndef ALIEVE_JetPlane_H
 #define ALIEVE_JetPlane_H
 
-#include <Reve/Reve.h>
-#include <Reve/RenderElement.h>
-#include <Reve/ZTrans.h>
+#include <TEveUtil.h>
+#include <TEveElement.h>
+#include <TEveTrans.h>
 
 #include <TAtt3D.h>
 #include <TAttBBox.h>
@@ -17,7 +17,7 @@
 
 namespace Alieve {
 
-class JetPlane : public Reve::RenderElementList,
+class JetPlane : public TEveElementList,
 			      public TAtt3D,
 			      public TAttBBox
 {
@@ -42,7 +42,7 @@ protected:
 
   Color_t fGridColor;
 
-  Reve::ZTrans  fHMTrans;
+  TEveTrans  fHMTrans;
 
   std::vector<AliAODJet>   fJets;
   std::vector<AliAODTrack> fTracks;
@@ -109,12 +109,12 @@ public:
   virtual Bool_t  CanEditMainColor()   { return kTRUE; }
 
   virtual Bool_t  CanEditMainHMTrans() { return kTRUE; }
-  virtual Reve::ZTrans* PtrMainHMTrans()     { return &fHMTrans; }
+  virtual TEveTrans* PtrMainHMTrans()     { return &fHMTrans; }
 
   virtual void ComputeBBox();
   virtual void Paint(Option_t* option = "");
 
-  Reve::ZTrans& RefHMTrans() { return fHMTrans; }
+  TEveTrans& RefHMTrans() { return fHMTrans; }
   void SetTransMatrix(Double_t* carr)        { fHMTrans.SetFrom(carr); }
   void SetTransMatrix(const TGeoMatrix& mat) { fHMTrans.SetFrom(mat);  }
 

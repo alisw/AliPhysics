@@ -2,10 +2,9 @@
 #define ALIEVE_MUONChamberGL_H
 
 #include <TGLObject.h>
+#include <TEveQuadSetGL.h>
 
-namespace Reve {
-class QuadSetGL;
-}
+class TEveQuadSetGL;
 
 namespace Alieve {
 
@@ -21,10 +20,13 @@ class MUONChamberGL : public TGLObject
 
   virtual void DirectDraw(TGLRnrCtx & rnrCtx) const;
   void DrawChamberFrame() const;
-  void DrawQuads() const;
+  void DrawQuads(TGLRnrCtx& rnrCtx) const;
   void DrawPoints() const;
 
   MUONChamber*             fChamber; // fModel dynamic-casted to MUONChamberGL
+  TEveQuadSetGL            fQS1;
+  TEveQuadSetGL            fQS2;
+
   mutable UInt_t           fRTS;     // render time stamp
 
  public:

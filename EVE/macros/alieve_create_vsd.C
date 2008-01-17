@@ -11,7 +11,7 @@ void alieve_create_vsd()
   gSystem->Load("libReve");
   gSystem->Load("libAlieve");
 
-  Reve::DisablePODTObjectStreamers();
+  DisablePODTObjectStreamers();
 
   TGeoManager::Import("geometry.root");
 

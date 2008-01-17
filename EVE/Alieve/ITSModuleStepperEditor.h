@@ -9,10 +9,7 @@ class TGCheckButton;
 class TGNumberEntry;
 class TGColorSelect;
 
-namespace Reve
-{
-class GridStepperSubEditor;
-}
+class TEveGridStepperSubEditor;
 
 namespace Alieve {
 
@@ -27,7 +24,7 @@ private:
 protected:
   ITSModuleStepper*     fM; // fModel dynamic-casted to ITSModuleStepperEditor
 
-  Reve::GridStepperSubEditor* fStepper;
+  TEveGridStepperSubEditor* fStepper;
    
 public:
   ITSModuleStepperEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30, UInt_t options = kChildFrame, Pixel_t back=GetDefaultFrameBackground());

@@ -8,8 +8,6 @@
 
 #include <TStyle.h>
 #include <TColor.h>
-
-using namespace Reve;
 using namespace Alieve;
 
 //______________________________________________________________________
@@ -23,7 +21,7 @@ ClassImp(TPCSectorViz)
 /**************************************************************************/
 
 TPCSectorViz::TPCSectorViz(const Text_t* n, const Text_t* t) :
-  Reve::RenderElement(fFrameColor),
+  TEveElement(fFrameColor),
   TNamed(n, t),
 
   fTPCData  (0),
@@ -144,7 +142,7 @@ void TPCSectorViz::SetupColor(Int_t val, UChar_t* pixel) const
   Int_t   nCol = gStyle->GetNumberOfColors();
   Int_t   cBin = (Int_t) Nint(nCol*(val - fThreshold)/div);
 
-  ColorFromIdx(gStyle->GetColorPalette(Min(nCol - 1, cBin)), pixel);
+  TEveUtil::ColorFromIdx(gStyle->GetColorPalette(Min(nCol - 1, cBin)), pixel);
 }
 
 void TPCSectorViz::ClearColorArray()

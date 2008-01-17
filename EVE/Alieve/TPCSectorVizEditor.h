@@ -11,11 +11,9 @@ class TGColorSelect;
 class TGDoubleHSlider;
 class TGHSlider;
 
-namespace Reve {
-class RGValuator;
-class RGDoubleValuator;
-class ZTransSubEditor;
-}
+class TEveGValuator;
+class TEveGDoubleValuator;
+class TEveTransSubEditor;
 
 namespace Alieve {
 
@@ -29,19 +27,19 @@ class TPCSectorVizEditor : public TGedFrame
 protected:
   TPCSectorViz* fM; // fModel dynamic-casted to TPCSectorVizEditor
 
-  Reve::ZTransSubEditor* fHMTrans;
+  TEveTransSubEditor* fHMTrans;
 
-  Reve::RGValuator* fSectorID;
+  TEveGValuator* fSectorID;
   TGCheckButton*    fAutoTrans;
 
   TGCheckButton*    fRnrInn;
   TGCheckButton*    fRnrOut1;
   TGCheckButton*    fRnrOut2;
 
-  Reve::RGValuator* fThreshold;
-  Reve::RGValuator* fMaxVal;   
+  TEveGValuator* fThreshold;
+  TEveGValuator* fMaxVal;   
 
-  Reve::RGDoubleValuator* fTime;
+  TEveGDoubleValuator* fTime;
 
 public:
   TPCSectorVizEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30,

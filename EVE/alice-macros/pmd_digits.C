@@ -18,14 +18,14 @@ void pmd_digits(Int_t mode = 0)
 
   //  cout << pmdt->GetEntries() << endl;
 
-  gReve->DisableRedraw();
+  gEve->DisableRedraw();
 
-  Reve::RenderElementList* l = new Reve::RenderElementList("PMD");
+  TEveElementList* l = new TEveElementList("PMD");
   // l->SetTitle("tooltip");
   // l->SetMainColor((Color_t)3);
-  gReve->AddRenderElement(l);
+  gEve->AddElement(l);
 
-  Reve::RGBAPalette* pal = new Reve::RGBAPalette(20, 1000);
+  TEveRGBAPalette* pal = new TEveRGBAPalette(20, 1000);
   pal->SetLimits(0, 1024);
 
   Int_t NSM         = 0;
@@ -78,17 +78,17 @@ void pmd_digits(Int_t mode = 0)
 	  zpos      = 360.;
 	}
       
-      Reve::RenderElementList* lplane = new Reve::RenderElementList(spl.Data());
+      TEveElementList* lplane = new TEveElementList(spl.Data());
       //  l->SetMainColor((Color_t)3);
-      gReve->AddRenderElement(lplane, l);
+      gEve->AddElement(lplane, l);
       
       for (Int_t iddl = istartDDL; iddl < iendDDL; iddl++)
 	{
 	  sddl = bsddl;
 	  sddl += iddl;
-	  Reve::RenderElementList* lddl = new Reve::RenderElementList(sddl.Data());
+	  TEveElementList* lddl = new TEveElementList(sddl.Data());
 	  //  l->SetMainColor((Color_t)3);
-	  gReve->AddRenderElement(lddl, lplane);
+	  gEve->AddElement(lddl, lplane);
 
 	  modnumber = iddl*6;
 
@@ -110,14 +110,14 @@ void pmd_digits(Int_t mode = 0)
               lmodule->SetPalette(pal);
               if (drawBackPolygons)
               {
-                Reve::FrameBox* b = lmodule->GetFrame();
+                TEveFrameBox* b = lmodule->GetFrame();
                 b->SetFrameWidth(1.5);
                 b->SetFrameColor((Color_t) 1);
                 b->SetBackColor ((Color_t) (kTeal - 9));
                 b->SetFrameFill (kFALSE);
                 b->SetDrawBack  (kTRUE);
               }
-	      gReve->AddRenderElement(lmodule, lddl);
+	      gEve->AddElement(lmodule, lddl);
 	      modnumber++;
 	      if (iddl == 4 && modnumber == 30) modnumber = 42;
 	    }
@@ -126,10 +126,7 @@ void pmd_digits(Int_t mode = 0)
 
     }
 
-
-  gReve->EnableRedraw();
-  
-  gReve->Redraw3D();
+  gEve->EnableRedraw();
 }
 
 // ---------------------------------------------------------------------- //

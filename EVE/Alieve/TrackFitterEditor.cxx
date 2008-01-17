@@ -4,8 +4,6 @@
 #include <Alieve/TrackFitter.h>
 
 #include <TGButton.h>
-
-using namespace Reve;
 using namespace Alieve;
 
 //______________________________________________________________________

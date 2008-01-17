@@ -3,7 +3,7 @@
 #ifndef ALIEVE_VSDCreator_H
 #define ALIEVE_VSDCreator_H
 
-#include <Reve/VSD.h>
+#include <TEveVSD.h>
 
 class AliTPCParam;
 class AliRunLoader;
@@ -12,7 +12,7 @@ class AliRunLoader;
 
 namespace Alieve {
 
-class VSDCreator : public Reve::VSD
+class VSDCreator : public TEveVSD
 {
   VSDCreator(const VSDCreator&);            // Not implemented
   VSDCreator& operator=(const VSDCreator&); // Not implemented
@@ -22,8 +22,8 @@ public:
 
 protected:
   void          MakeItsDigitsInfo();
-  Reve::GenInfo* GetGeninfo(Int_t label);
-  AliTPCParam*   GetTpcParam(const Reve::Exc_t& eh);
+  TEveMCRecCrossRef* GetGeninfo(Int_t label);
+  AliTPCParam*   GetTpcParam(const TEveException& eh);
 
   KineType_e    mKineType;  // X{GS} 7 PhonyEnum()
   TString       mDataDir;   // X{G}
@@ -34,7 +34,7 @@ protected:
 
   Int_t         mDebugLevel;
 
-  std::map<Int_t, Reve::GenInfo*> mGenInfoMap; //!
+  std::map<Int_t, TEveMCRecCrossRef*> mGenInfoMap; //!
 
 public:
   VSDCreator(const Text_t* name="Alieve::VSDCreator", const Text_t* title="");

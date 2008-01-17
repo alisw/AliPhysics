@@ -12,7 +12,6 @@
 #include <TColor.h>
 #include <TMath.h>
 
-using namespace Reve;
 using namespace Alieve;
 
 //______________________________________________________________________
@@ -23,7 +22,7 @@ ClassImp(MUONChamber)
 
 //______________________________________________________________________
 MUONChamber::MUONChamber(Int_t id, const Text_t* n, const Text_t* t) :
-Reve::RenderElement(fFrameColor),
+TEveElement(fFrameColor),
 TNamed(n,t),
 fMUONData(0),
 fFrameColor((Color_t)2),
@@ -186,7 +185,7 @@ void MUONChamber::SetupColor(Int_t val, UChar_t* pixel) const
   Int_t   nCol = gStyle->GetNumberOfColors();
   Int_t   cBin = (Int_t) TMath::Nint(nCol*(val - fThreshold)/div);
 
-  ColorFromIdx(gStyle->GetColorPalette(TMath::Min(nCol - 1, cBin)), pixel);
+  TEveUtil::ColorFromIdx(gStyle->GetColorPalette(TMath::Min(nCol - 1, cBin)), pixel);
 
 }
 
@@ -262,15 +261,15 @@ MUONChamberData* MUONChamber::GetChamberData() const
 void MUONChamber::UpdateQuads()
 {
 
-  fQuadSet1.Quads().clear();
-  fQuadSet2.Quads().clear();
+  fQuadSet1.Reset(TEveQuadSet::kQT_RectangleXY, kTRUE, 32);
+  fQuadSet2.Reset(TEveQuadSet::kQT_RectangleXY, kTRUE, 32);
   fPointSet1.Reset();
   fPointSet2.Reset();
 
   MUONChamberData* data = GetChamberData();
   
   Float_t *buffer;
-  Float_t x0, y0, x1, y1, z, clsq;
+  Float_t x0, y0, z, w, h, clsq;
   Int_t charge, cathode, nDigits, nClusters, nHits, oldSize, ic1, ic2;
   Double_t clsX, clsY, clsZ;
   Float_t hitX, hitY, hitZ;
@@ -289,8 +288,8 @@ void MUONChamber::UpdateQuads()
 
       x0 = buffer[0]-buffer[2];
       y0 = buffer[1]-buffer[3];
-      x1 = buffer[0]+buffer[2];
-      y1 = buffer[1]+buffer[3];
+      w  = 2*buffer[2];
+      h  = 2*buffer[3];
       z  = buffer[4];
       charge = (Int_t)buffer[5];
       cathode = (Int_t)buffer[6];
@@ -299,39 +298,15 @@ void MUONChamber::UpdateQuads()
 
       if (cathode == 0) {
 
-	fQuadSet1.Quads().push_back(Reve::Quad());
-	
-	fQuadSet1.Quads().back().ColorFromIdx(ColorIndex(charge));
-	//ColorFromArray(charge,(UChar_t*)&fQuadSet1.fQuads.back().color);
-	
-	//UChar_t* c = (UChar_t*)&fQuadSet1.fQuads.back().color; 
-	//printf("%d %d %d %d \n",c[0],c[1],c[2],c[3]);
-	
-	Float_t* p = fQuadSet1.Quads().back().vertices;
-	
-	p[0] = x0;  p[1] = y0;  p[2] = z;  p += 3;
-	p[0] = x1;  p[1] = y0;  p[2] = z;  p += 3;
-	p[0] = x1;  p[1] = y1;  p[2] = z;  p += 3;
-	p[0] = x0;  p[1] = y1;  p[2] = z;  p += 3;
+	fQuadSet1.AddQuad(x0, y0, z, w, h);
+	fQuadSet1.QuadColor(ColorIndex(charge));
 	
       }
 
       if (cathode == 1) {
 
-	fQuadSet2.Quads().push_back(Reve::Quad());
-	
-	fQuadSet2.Quads().back().ColorFromIdx(ColorIndex(charge));
-	//ColorFromArray(charge,(UChar_t*)&fQuadSet2.fQuads.back().color);
-	
-	//UChar_t* c = (UChar_t*)&fQuadSet2.fQuads.back().color; 
-	//printf("%d %d %d %d \n",c[0],c[1],c[2],c[3]);
-	
-	Float_t* p = fQuadSet2.Quads().back().vertices;
-	
-	p[0] = x0;  p[1] = y0;  p[2] = z;  p += 3;
-	p[0] = x1;  p[1] = y0;  p[2] = z;  p += 3;
-	p[0] = x1;  p[1] = y1;  p[2] = z;  p += 3;
-	p[0] = x0;  p[1] = y1;  p[2] = z;  p += 3;
+	fQuadSet2.AddQuad(x0, y0, z, w, h);
+	fQuadSet2.QuadColor(ColorIndex(charge));
 	
       }
 

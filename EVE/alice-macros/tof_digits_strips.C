@@ -4,7 +4,7 @@ void tof_digits_strips()
 
   Int_t nDigitsInVolume[3] = {-1, -1, -1};
   Int_t nStrips=19;
-  TGeoManager *localGeoManager = (TGeoManager*)gReve->GetGeometry("./geometry.root");//"$REVESYS/alice-data/alice_fullgeo.root");
+  TGeoManager *localGeoManager = (TGeoManager*)gEve->GetGeometry("./geometry.root");//"$REVESYS/alice-data/alice_fullgeo.root");
   if (!localGeoManager) {
     printf("ERROR: no TGeo\n");
   }
@@ -21,7 +21,7 @@ void tof_digits_strips()
   AliTOFGeometry* g = di->fGeom;
 
   gStyle->SetPalette(1, 0);
-  gReve->DisableRedraw();
+  gEve->DisableRedraw();
 
   TString sPlate;
   TString bsPlate="Plate";
@@ -35,18 +35,18 @@ void tof_digits_strips()
   Char_t sectorName[100];
   Char_t sectorTitle[200];
 
-  Reve::RenderElementList* ll = new Reve::RenderElementList("TOF");
+  TEveElementList* ll = new TEveElementList("TOF");
   ll->SetTitle("TOF detector");
   ll->SetMainColor((Color_t)2);
-  gReve->AddRenderElement(ll);
+  gEve->AddElement(ll);
 
   for(Int_t iSector=0; iSector<g->NSectors(); iSector++) {
 
     sprintf(sectorName,"Sector%2i",iSector);
-    Reve::RenderElementList* l = new Reve::RenderElementList(sectorName);
+    TEveElementList* l = new TEveElementList(sectorName);
     l->SetTitle(sectorTitle);
     l->SetMainColor((Color_t)2);
-    gReve->AddRenderElement(l, ll);
+    gEve->AddElement(l, ll);
 
 
     for(Int_t iPlate=0; iPlate<g->NPlates(); iPlate++) {
@@ -55,9 +55,9 @@ void tof_digits_strips()
 
       sPlate=bsPlate;
       sPlate+=iPlate;
-      Reve::RenderElementList* relPlate = new Reve::RenderElementList(sPlate.Data());
+      TEveElementList* relPlate = new TEveElementList(sPlate.Data());
       relPlate->SetMainColor((Color_t)2);
-      gReve->AddRenderElement(relPlaete, l);
+      gEve->AddElement(relPlaete, l);
 
 
       for(Int_t iStrip=0; iStrip<nStrips; iStrip++) {
@@ -65,13 +65,13 @@ void tof_digits_strips()
 	array = di->GetDigits(iSector,iPlate, iStrip);
 
 	Alieve::TOFStrip* m = new Alieve::TOFStrip(localGeoManager,iSector,iPlate,iStrip,array);
-	gReve->AddRenderElement(m, relPlate);
+	gEve->AddElement(m, relPlate);
 
       }
     }
   }
 
-  gReve->EnableRedraw();
+  gEve->EnableRedraw();
 
 
 }

@@ -4,15 +4,15 @@ void geom_vzero()
 {
   using namespace std;
 
-  static const Reve::Exc_t eH("geom_vzero() ");
+  static const TEveException eH("geom_vzero() ");
 
-  gGeoManager = gReve->GetGeometry("$REVESYS/alice-data/alice_fullgeo.root");
+  gGeoManager = gEve->GetGeometry("$REVESYS/alice-data/alice_fullgeo.root");
 
-  Reve::RenderElementList* list = new Reve::RenderElementList("VZero");
-  gReve->AddGlobalRenderElement(list);
+  TEveElementList* list = new TEveElementList("VZero");
+  gEve->AddGlobalElement(list);
 
   TGeoNode* node = 0;
-  Reve::GeoTopNodeRnrEl* re;
+  TEveGeoTopNode* re;
 
   TGeoNode* mnode = gGeoManager->GetTopVolume()->FindNode("VZERO_1");
   if (!mnode) {
@@ -26,18 +26,18 @@ void geom_vzero()
     Error(eH, "V0R not found.");
     return;
   }
-  re = new Reve::GeoTopNodeRnrEl(gGeoManager, node);
+  re = new TEveGeoTopNode(gGeoManager, node);
   re->UseNodeTrans();
-  gReve->AddGlobalRenderElement(re, list);
+  gEve->AddGlobalElement(re, list);
 
   node = mnode->GetVolume()->FindNode("V0LE_1");
   if (!node) {
     Error(eH, "V0L not found.");
     return;
   }
-  re = new Reve::GeoTopNodeRnrEl(gGeoManager, node);
+  re = new TEveGeoTopNode(gGeoManager, node);
   re->UseNodeTrans();
-  gReve->AddGlobalRenderElement(re, list);
+  gEve->AddGlobalElement(re, list);
 
-  gReve->Redraw3D();
+  gEve->Redraw3D();
 }

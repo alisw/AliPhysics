@@ -26,21 +26,19 @@
 #include <TParticlePDG.h>
 
 #include <Riostream.h>
-
-using namespace Reve;
 using namespace Alieve;
 
 //______________________________________________________________________
 // MUONTrack
-// Produce Reve:Track from AliMUONTrack with dipole field model
+// Produce TEveUtil:TEveTrack from AliMUONTrack with dipole field model
 
 ClassImp(MUONTrack)
 
 AliMagF* MUONTrack::fFieldMap = 0;
 
 //______________________________________________________________________
-MUONTrack::MUONTrack(Reve::RecTrack* t, TrackRnrStyle* rs) :
-  Reve::Track(t,rs),
+MUONTrack::MUONTrack(TEveRecTrack* t, TEveTrackPropagator* rs) :
+  TEveTrack(t,rs),
   fTrack(0),
   fPart(0),
   fCount(0),
@@ -142,7 +140,7 @@ void MUONTrack::PrintMUONTrackInfo()
 
   if (fIsMUONTrack) {
     cout << endl;
-    cout << "   Track number " << fLabel << endl;
+    cout << "   TEveTrack number " << fLabel << endl;
     cout << "   ---------------------------------------------------------------------------------------------------------------------------------" << endl;
     cout << endl;
     cout << "   Number of clusters       " << fTrack->GetNClusters() << endl;
@@ -155,7 +153,7 @@ void MUONTrack::PrintMUONTrackInfo()
 
   if (fIsRefTrack) {
     cout << endl;
-    cout << "   Track reference number " << fLabel << endl;
+    cout << "   TEveTrack reference number " << fLabel << endl;
     cout << "   ---------------------------------------------------------------------------------------------------------------------------------" << endl;
     cout << endl;
     cout << "   Number of clusters       " << fTrack->GetNClusters() << endl;
@@ -212,7 +210,7 @@ void MUONTrack::PrintMUONTrackInfo()
   }
 
   cout << endl;
-  cout << "   Track parameters at vertex" << endl;
+  cout << "   TEveTrack parameters at vertex" << endl;
   cout << "   --------------------------------------------------------------------------------------------------------------------" << endl;
   cout << "   InvBendMom   BendSlope   NonBendSlope   BendCoord   NonBendCoord           Z        Px        Py        Pz         P" << endl;
 
@@ -422,7 +420,7 @@ void MUONTrack::MUONTriggerInfo()
   //
 
   if (fIsMUONTrack) {
-    Reve::LoadMacro("MUON_trigger_info.C");
+    TEveUtil::LoadMacro("MUON_trigger_info.C");
     gROOT->ProcessLine(Form("MUON_trigger_info(%d);", fLabel));
   }
   if (fIsRefTrack) {
@@ -673,7 +671,7 @@ void MUONTrack::MakeMUONTrack(AliMUONTrack *mtrack)
     
     for (Int_t i = 0; i < nTrackHits; i++) {
       if (TMath::Abs(zr[i]) > 1000.0) {
-	//printf("Hit %d x %f y %f z %f \n",iHit,xr[i],yr[i],zr[i]);
+	//printf("TEveHit %d x %f y %f z %f \n",iHit,xr[i],yr[i],zr[i]);
 	xrc[nrc] = xr[i];
 	yrc[nrc] = yr[i];
 	zrc[nrc] = zr[i];
@@ -838,7 +836,7 @@ void MUONTrack::MakeMCTrack(TParticle *part)
   fPart     = new TParticle(*part);
 
   char form[1000];
-  sprintf(form,"MCTrack %2d ", fLabel);
+  sprintf(form,"TEveMCTrack %2d ", fLabel);
   SetName(form);
   SetLineStyle(2);
   SetLineColor(8);

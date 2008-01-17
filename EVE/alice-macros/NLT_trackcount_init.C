@@ -1,49 +1,49 @@
-namespace Reve
+namespace TEveUtil
 {
-class NLTProjector;
-class GeoShapeRnrEl;
+class TEveProjectionManager;
+class TEveGeoShape;
 class RnrElement*;
 }
 
-Reve::NLTProjector  * proj = 0;
-Reve::GeoShapeRnrEl * geom = 0;
+TEveProjectionManager  * proj = 0;
+TEveGeoShape * geom = 0;
 
 void NLT_trackcount_init()
 {
-  Reve::LoadMacro("alieve_init.C");
+  TEveUtil::LoadMacro("alieve_init.C");
   alieve_init(".", -1);
 
-  Reve::LoadMacro("geom_gentle.C");
+  TEveUtil::LoadMacro("geom_gentle.C");
 
-  Reve::LoadMacro("primary_vertex.C");
-  Reve::LoadMacro("esd_tracks.C");
-  Reve::LoadMacro("its_clusters.C+");
-  Reve::LoadMacro("tpc_clusters.C+");
+  TEveUtil::LoadMacro("primary_vertex.C");
+  TEveUtil::LoadMacro("esd_tracks.C");
+  TEveUtil::LoadMacro("its_clusters.C+");
+  TEveUtil::LoadMacro("tpc_clusters.C+");
 
-  Reve::Viewer* nv = gReve->SpawnNewViewer("NLT Projected");
-  Reve::Scene*  ns = gReve->SpawnNewScene("NLT"); 
+  TEveViewer* nv = gEve->SpawnNewViewer("NLT Projected");
+  TEveScene*  ns = gEve->SpawnNewScene("NLT"); 
   nv->AddScene(ns);
   TGLViewer* v = nv->GetGLViewer();
   v->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
   TGLCameraMarkupStyle* mup = v->GetCameraMarkup();
   if(mup) mup->SetShow(kFALSE);
 
-  Reve::TrackCounter* g_trkcnt = new Reve::TrackCounter("Primary Counter");
-  gReve->AddToListTree(g_trkcnt, kFALSE);
+  TEveTrackCounter* g_trkcnt = new TEveTrackCounter("Primary Counter");
+  gEve->AddToListTree(g_trkcnt, kFALSE);
 
-  Reve::NLTProjector* p = new Reve::NLTProjector; proj = p;
-  gReve->AddToListTree(p, kTRUE);
-  gReve->AddRenderElement(proj, ns);
+  TEveProjectionManager* p = new TEveProjectionManager; proj = p;
+  gEve->AddToListTree(p, kTRUE);
+  gEve->AddElement(proj, ns);
 
   // geometry
-  Reve::GeoShapeRnrEl* gg = geom_gentle();
+  TEveGeoShape* gg = geom_gentle();
   geom = gg;
 
   // event
   Alieve::gEvent->AddNewEventCommand("on_new_event();");
   Alieve::gEvent->GotoEvent(0);
 
-  gReve->Redraw3D(kTRUE);
+  gEve->Redraw3D(kTRUE);
 }
 
 /**************************************************************************/
@@ -51,30 +51,30 @@ void NLT_trackcount_init()
 void on_new_event()
 {
   try {
-    Reve::PointSet* itsc = its_clusters();
+    TEvePointSet* itsc = its_clusters();
     itsc->SetMarkerColor(5);
 
-    Reve::PointSet* tpcc = tpc_clusters();
+    TEvePointSet* tpcc = tpc_clusters();
     tpcc->SetMarkerColor(4);
   }
-  catch(Reve::Exc_t& exc) {
+  catch(TEveException& exc) {
     printf("Exception loading ITS/TPC clusters: %s\n", exc.Data());
   }
 
   primary_vertex(1, 1);
 
-  Reve::RenderElementList* cont = esd_tracks_vertex_cut();
+  TEveElementList* cont = esd_tracks_vertex_cut();
 
-  // Here we expect five TrackList containers.
+  // Here we expect five TEveTrackList containers.
   // First two have reasonable primaries (sigma-to-prim-vertex < 5).
   // Other three are almost certainly secondaries.
   Int_t count = 1;
-  Reve::TrackCounter* g_trkcnt = Reve::TrackCounter::fgInstance;
+  TEveTrackCounter* g_trkcnt = TEveTrackCounter::fgInstance;
   g_trkcnt->Reset();
   g_trkcnt->SetEventId(Alieve::gEvent->GetEventId());
-  Reve::RenderElement::List_i i = cont->BeginChildren();
+  TEveElement::List_i i = cont->BeginChildren();
   while (i != cont->EndChildren()) {
-    Reve::TrackList* l = dynamic_cast<Reve::TrackList*>(*i);
+    TEveTrackList* l = dynamic_cast<TEveTrackList*>(*i);
     if (l != 0) {
       l->SetLineWidth(2);
       g_trkcnt->RegisterTracks(l, (count <= 2));
@@ -82,7 +82,7 @@ void on_new_event()
     }
     ++i;
   }
-  Reve::RenderElement* top = gReve->GetCurrentEvent();
+  TEveElement* top = gEve->GetCurrentEvent();
   proj->DestroyElements();
   AliESDEvent* esd = Alieve::Event::AssertESD();
   Double_t x[3];
@@ -112,10 +112,10 @@ TParticle* id(Int_t label=0, Bool_t showParents=kTRUE)
   }
 
   TParticle* part = stack->Particle(label);
-  if(part != 0) {
+  if (part != 0) {
     part->Print();
-    if(showParents) {
-      while(part->GetMother(0) >= 0) {
+    if (showParents) {
+      while (part->GetMother(0) >= 0) {
 	part = stack->Particle(part->GetMother(0));
 	part->Print();
       }

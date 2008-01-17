@@ -3,7 +3,7 @@ CSRCS :=
 
 EINCLUDE :=
 ELIBSDIR :=
-ELIBS    := Reve Alieve \
+ELIBS    := Alieve \
   MUONevaluation MUONgeometry MUONrec MUONsim MUONbase MUONtrigger MUONraw MUONcalib MUONmapping MUONcore \
   TPCbase TPCsim TPCrec TPCfast \
   ITSbase ITSsim ITSrec PMDbase PMDsim PMDrec TRDbase \
@@ -20,7 +20,7 @@ ELIBS    := Reve Alieve \
   RAWDatabase RAWDatarec RAWDatasim \
   HLTbase XMLParser
 
-PACKBLIBS := $(ROOTCLIBS) $(ROOTPLIBS) -lTreePlayer -lGeomPainter -lGed -lFTGL -lRGL $(SYSLIBS)
+PACKBLIBS := $(ROOTCLIBS) $(ROOTPLIBS) -lTreePlayer -lGeomPainter -lGed -lFTGL -lRGL -lEve $(SYSLIBS)
 
 
 ifeq (macosx,$(ALICE_TARGET))

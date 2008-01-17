@@ -1,26 +1,26 @@
 
 
 // #include "EVE/Alieve/EventAlieve.h"
-// #include "Reve/ReveManager.h"
-// #include "Reve/V0.h"
+// #include "TEveManager.h"
+// #include "V0.h"
 
 // #include "AliESD.h"
 // #include "AliESDtrack.h"
 // #include "AliESDv0.h"
 // #include "AliESDVertex.h"
 
-// using namespace Reve;
+// using namespace TEveUtil;
 // using namespace Alieve;
 
 
-Alieve::V0* esd_make_v0(Reve::TrackRnrStyle* rnrStyle, AliESDVertex* primVtx,
+Alieve::V0* esd_make_v0(TEveTrackPropagator* rnrStyle, AliESDVertex* primVtx,
 		      AliESDtrack* neg, AliESDtrack* pos, AliESDv0* v0, Int_t i)
 {
   if (! v0->GetOnFlyStatus())
   { // v0 on fly do not have the momentum vector filled...
-    Reve::RecTrack  rcPos;
-    Reve::RecTrack  rcNeg;
-    Reve::RecV0     rcV0;
+    TEveRecTrack  rcPos;
+    TEveRecTrack  rcNeg;
+    TEveRecV0     rcV0;
 
     Double_t p[3];
     v0->GetNPxPyPz(p[0], p[1], p[2]);
@@ -74,16 +74,20 @@ Alieve::V0* esd_make_v0(Reve::TrackRnrStyle* rnrStyle, AliESDVertex* primVtx,
 
 Alieve::V0List* esd_V0(Double_t min_pt=0.1, Double_t max_pt=100)
 {
+  printf("THIS SCRIPT DOES NOT WORK.\n"
+	 "Alieve::V0 classes have been temporarily removed.\n"
+	 "They need to be cleaned up.\n");
+  return;
 
   AliESDEvent* esd = Alieve::Event::AssertESD();
   AliESDVertex* primVertex =(AliESDVertex*) esd->GetVertex();
 
   Alieve::V0List* cont = new Alieve::V0List("ESD v0"); 
   cont->SetMainColor(Color_t(3)); // green
-  Reve::TrackRnrStyle* rnrStyle = cont->GetRnrStyle();
+  TEveTrackPropagator* rnrStyle = cont->GetPropagator();
   rnrStyle->SetMagField( esd->GetMagneticField() );
 
-  gReve->AddRenderElement(cont);
+  gEve->AddElement(cont);
 
   Int_t count = 0;
   //for (Int_t n=0; count<3; n++) {
@@ -99,7 +103,7 @@ Alieve::V0List* esd_V0(Double_t min_pt=0.1, Double_t max_pt=100)
     
     Alieve::V0* myV0 = esd_make_v0(rnrStyle, primVertex, negTr,posTr, v0, n);
     if (myV0) {
-      gReve->AddRenderElement(myV0, cont);
+      gEve->AddElement(myV0, cont);
       count++;
     }
   }
@@ -108,7 +112,7 @@ Alieve::V0List* esd_V0(Double_t min_pt=0.1, Double_t max_pt=100)
   cont->UpdateItems();
 
   cont->MakeV0s();
-  gReve->Redraw3D();
+  gEve->Redraw3D();
 
   return cont;
 }

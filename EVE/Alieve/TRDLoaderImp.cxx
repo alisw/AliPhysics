@@ -3,7 +3,7 @@
 
 //#include "AliTRDv1.h"
 
-#include <Reve/ReveManager.h>
+#include <TEveManager.h>
 
 #include "TFile.h"
 #include "TTree.h"
@@ -21,8 +21,6 @@
 #include "AliTRDv1.h"
 #include "AliTRDhit.h"
 #include "AliTRDdigitsManager.h"
-
-using namespace Reve;
 using namespace Alieve;
 using namespace std;
 
@@ -96,7 +94,7 @@ Bool_t	TRDLoaderSim::GoToEvent(int ev)
 		if(!LoadTracklets(t)) return kFALSE;
 	}
 
-	gReve->Redraw3D();
+	gEve->Redraw3D();
 	return kTRUE;
 }
 
@@ -224,7 +222,7 @@ Bool_t	TRDLoaderRaw::GoToEvent(int ev)
 		return kFALSE;
 	}
 
-	static const Exc_t eH("TRDLoader::GotoEvent ");
+	static const TEveException eH("TRDLoader::GotoEvent ");
 	if(fRawRootReader == 0x0) throw(eH + "data file not opened.");
 
 
@@ -238,8 +236,8 @@ Bool_t	TRDLoaderRaw::GoToEvent(int ev)
 	
 	do NextEvent(); while(fEventOld != ev && !(checkEnd == kTRUE && fEventOld == 0));
 	LoadEvent();
-	gReve->Redraw3D();
-	//gReve->EnableRedraw();
+	gEve->Redraw3D();
+	//gEve->EnableRedraw();
 	return kTRUE;
 }
 
@@ -248,7 +246,7 @@ Bool_t TRDLoaderRaw::LoadEvent()
 {
 	Info("LoadEvent()", "Loading ...");
 	
-	static const Exc_t eH("TRDLoader::LoadEvent ");
+	static const TEveException eH("TRDLoader::LoadEvent ");
 	if(fRawRootReader == 0x0) throw(eH + "data file not opened.");
 
 
@@ -268,7 +266,7 @@ Bool_t TRDLoaderRaw::LoadEvent()
 //________________________________________________________
 void TRDLoaderRaw::NextEvent(Bool_t rewindOnEnd)
 {
-	static const Exc_t eH("TRDLoader::NextEvent ");
+	static const TEveException eH("TRDLoader::NextEvent ");
 	if(fRawRootReader == 0x0) throw(eH + "data file not opened.");
 
 

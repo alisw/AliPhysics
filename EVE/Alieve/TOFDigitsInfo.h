@@ -1,7 +1,7 @@
 #ifndef ALIEVE_TOFDigitsInfo_H
 #define ALIEVE_TOFDigitsInfo_H
 
-#include <Reve/VSD.h>
+#include <TEveVSD.h>
 
 //#include <map>
 
@@ -15,7 +15,7 @@
 
 namespace Alieve {
   
-class TOFDigitsInfo : public TObject, public Reve::ReferenceCount
+class TOFDigitsInfo : public TObject, public TEveRefCnt
   {
     TOFDigitsInfo(const TOFDigitsInfo&);            // Not implemented
     TOFDigitsInfo& operator=(const TOFDigitsInfo&); // Not implemented

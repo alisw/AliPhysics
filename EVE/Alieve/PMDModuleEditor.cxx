@@ -2,7 +2,7 @@
 
 #include "PMDModuleEditor.h"
 #include <Alieve/PMDModule.h>
-#include <Reve/RGEditor.h>
+#include <TEveGedEditor.h>
 
 #include <TVirtualPad.h>
 #include <TColor.h>
@@ -16,12 +16,10 @@
 
 #include <TCanvas.h>
 #include <TGLViewer.h>
-#include <Reve/ReveManager.h>
+#include <TEveManager.h>
 
 
 #include <TH1F.h>
-
-using namespace Reve;
 using namespace Alieve;
 
 //______________________________________________________________________

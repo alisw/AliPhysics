@@ -7,8 +7,6 @@
 #include <TGLRnrCtx.h>
 #include <TGLSelectRecord.h>
 #include <TGLIncludes.h>
-
-using namespace Reve;
 using namespace Alieve;
 using namespace std;
 
@@ -364,7 +362,7 @@ void TPCSector2DGL::TraceStepsDown(const TPCSectorData::SegmentInfo& s)
 void TPCSector2DGL::DisplayFrame() const
 {
   UChar_t col[4];
-  ColorFromIdx(fSector->fFrameColor, col);
+  TEveUtil::ColorFromIdx(fSector->fFrameColor, col);
   glColor4ubv(col);
 
   if(fSector->fRnrInn) {

@@ -10,8 +10,8 @@
 #include <AliStack.h>
 #include <AliTrackReference.h>
 
-#include "Reve/Track.h"
-#include "Reve/RenderElement.h"
+#include <TEveTrack.h>
+#include <TEveElement.h>
 
 #include <algorithm>
 #include <map>
@@ -19,8 +19,6 @@
 //______________________________________________________________________
 // KineTools
 //
-
-using namespace Reve;
 using namespace Alieve;
 using namespace std;
 
@@ -31,25 +29,25 @@ KineTools::KineTools()
 
 /**************************************************************************/
 
-void KineTools::SetDaughterPathMarks(RenderElement* cont, AliStack* stack, Bool_t recurse)
+void KineTools::SetDaughterPathMarks(TEveElement* cont, AliStack* stack, Bool_t recurse)
 {
   // Import daughters birth points.
 
-  RenderElement::List_i  iter = cont->BeginChildren();
+  TEveElement::List_i  iter = cont->BeginChildren();
 
   while(iter != cont->EndChildren())
   {
-    Track* track = dynamic_cast<Track*>(*iter); 
+    TEveTrack* track = dynamic_cast<TEveTrack*>(*iter); 
     TParticle* p = stack->Particle(track->GetLabel());
     if(p->GetNDaughters()) {
       Int_t d0 = p->GetDaughter(0), d1 = p->GetDaughter(1);
       for(int d=d0; d>0 && d<=d1; ++d) 
       {	
 	TParticle* dp = stack->Particle(d);
-	Reve::PathMark* pm = new PathMark(PathMark::Daughter);
-        pm->V.Set(dp->Vx(), dp->Vy(), dp->Vz());
-	pm->P.Set(dp->Px(), dp->Py(), dp->Pz()); 
-        pm->time = dp->T();
+	TEvePathMark* pm = new TEvePathMark(TEvePathMark::kDaughter);
+        pm->fV.Set(dp->Vx(), dp->Vy(), dp->Vz());
+	pm->fP.Set(dp->Px(), dp->Py(), dp->Pz()); 
+        pm->fTime = dp->T();
         track->AddPathMark(pm);
       }
       if (recurse)
@@ -64,16 +62,16 @@ void KineTools::SetDaughterPathMarks(RenderElement* cont, AliStack* stack, Bool_
 namespace {
 struct cmp_pathmark
 {
-  bool operator()(PathMark* const & a, PathMark* const & b)
-  { return a->time < b->time; }
+  bool operator()(TEvePathMark* const & a, TEvePathMark* const & b)
+  { return a->fTime < b->fTime; }
 };
 
-void slurp_tracks(map<Int_t, Track*>& tracks, RenderElement* cont, Bool_t recurse)
+void slurp_tracks(map<Int_t, TEveTrack*>& tracks, TEveElement* cont, Bool_t recurse)
 {
-  RenderElement::List_i citer = cont->BeginChildren();
+  TEveElement::List_i citer = cont->BeginChildren();
   while(citer != cont->EndChildren())
   { 
-    Track* track = dynamic_cast<Track*>(*citer); 
+    TEveTrack* track = dynamic_cast<TEveTrack*>(*citer); 
     tracks[track->GetLabel()] = track;
     if (recurse)
       slurp_tracks(tracks, track, recurse);
@@ -83,14 +81,14 @@ void slurp_tracks(map<Int_t, Track*>& tracks, RenderElement* cont, Bool_t recurs
 
 }
 
-void KineTools::SetTrackReferences(RenderElement* cont, TTree* treeTR, Bool_t recurse)
+void KineTools::SetTrackReferences(TEveElement* cont, TTree* treeTR, Bool_t recurse)
 {
   // set decay and reference points
 
-  static const Exc_t eH("KineTools::ImportPathMarks");
+  static const TEveException eH("KineTools::ImportPathMarks");
 
   // Fill map
-  map<Int_t, Track*> tracks;
+  map<Int_t, TEveTrack*> tracks;
   slurp_tracks(tracks, cont, recurse);
  
   Int_t nPrimaries = (Int_t) treeTR->GetEntries();
@@ -110,7 +108,7 @@ void KineTools::SetTrackReferences(RenderElement* cont, TTree* treeTR, Bool_t re
       el->GetEntry(iPrimPart);
 
       Int_t last_label = -1;
-      map<Int_t, Track*>::iterator iter = tracks.end(); 
+      map<Int_t, TEveTrack*>::iterator iter = tracks.end(); 
       Int_t Nent =  arr->GetEntriesFast();
       for (Int_t iTrackRef = 0; iTrackRef < Nent; iTrackRef++) 
       {
@@ -127,11 +125,11 @@ void KineTools::SetTrackReferences(RenderElement* cont, TTree* treeTR, Bool_t re
 	}
 
 	if (iter != tracks.end()) {
-	  PathMark* pm = new PathMark(isRef ? PathMark::Reference : PathMark::Decay);
-	  pm->V.Set(atr->X(),atr->Y(), atr->Z());
-	  pm->P.Set(atr->Px(),atr->Py(), atr->Pz());  
-	  pm->time = atr->GetTime();
-          Track* track  = iter->second;
+	  TEvePathMark* pm = new TEvePathMark(isRef ? TEvePathMark::kReference : TEvePathMark::kDecay);
+	  pm->fV.Set(atr->X(),atr->Y(), atr->Z());
+	  pm->fP.Set(atr->Px(),atr->Py(), atr->Pz());  
+	  pm->fTime = atr->GetTime();
+          TEveTrack* track  = iter->second;
           track->AddPathMark(pm);
 	}
       } // loop track refs 
@@ -140,16 +138,16 @@ void KineTools::SetTrackReferences(RenderElement* cont, TTree* treeTR, Bool_t re
   } // end loop through top branches
 }
 
-void KineTools::SortPathMarks(RenderElement* cont, Bool_t recurse)
+void KineTools::SortPathMarks(TEveElement* cont, Bool_t recurse)
 {
   // Sort path-marks for all tracks by time.
 
   // Fill map
-  map<Int_t, Track*> tracks;
+  map<Int_t, TEveTrack*> tracks;
   slurp_tracks(tracks, cont, recurse);
 
   // sort 
-  for(map<Int_t, Track*>::iterator j=tracks.begin(); j!=tracks.end(); ++j)
+  for(map<Int_t, TEveTrack*>::iterator j=tracks.begin(); j!=tracks.end(); ++j)
   {
     j->second->SortPathMarksByTime();
   }

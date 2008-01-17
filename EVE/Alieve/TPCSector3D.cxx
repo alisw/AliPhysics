@@ -10,8 +10,6 @@
 
 #include <TStyle.h>
 #include <TColor.h>
-
-using namespace Reve;
 using namespace Alieve;
 
 //______________________________________________________________________
@@ -107,7 +105,7 @@ void TPCSector3D::LoadPadrow(TPCSectorData::RowIterator& iter,
 
   while (iter.NextPad())
   {
-    pad = iter.Pad();
+    pad = iter.TEvePad();
     while (iter.Next())
     {
       time = iter.Time();
@@ -133,11 +131,11 @@ void TPCSector3D::LoadPadrow(TPCSectorData::RowIterator& iter,
 
 void TPCSector3D::UpdateBoxes()
 {
-  // Populate parent class Reve::BoxSet with digit information.
+  // Populate parent class TEveBoxSet with digit information.
 
   // printf("TPCSector3D update boxes\n");
 
-  fBoxSet.Reset(BoxSet::BT_AABox, kTRUE, 16384);
+  fBoxSet.Reset(TEveBoxSet::kBT_AABox, kTRUE, 16384);
   fPointSetArray.RemoveElements();
 
   TPCSectorData* data = GetSectorData();

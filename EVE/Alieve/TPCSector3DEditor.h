@@ -9,10 +9,8 @@ class TGCheckButton;
 class TGNumberEntry;
 class TGColorSelect;
 
-namespace Reve {
-class RGValuator;
-class RGDoubleValuator;
-}
+class TEveGValuator;
+class TEveGDoubleValuator;
 
 namespace Alieve {
 
@@ -27,10 +25,10 @@ protected:
   TPCSector3D*      fM; // fModel dynamic-casted to TPCSector3DEditor
 
   TGCheckButton*    fRnrFrame;
-  Reve::RGValuator* fDriftVel;
+  TEveGValuator* fDriftVel;
 
-  Reve::RGValuator* fPointFrac;
-  Reve::RGValuator* fPointSize;
+  TEveGValuator* fPointFrac;
+  TEveGValuator* fPointSize;
 
 public:
   TPCSector3DEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30,

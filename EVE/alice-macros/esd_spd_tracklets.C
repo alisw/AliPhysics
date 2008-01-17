@@ -6,7 +6,7 @@ public:
   // virtual void Print(const Option_t* opt="") {}
 };
 
-Reve::StraightLineSet* esd_spd_tracklets(Float_t rad=8)
+TEveStraightLineSet* esd_spd_tracklets(Float_t rad=8)
 {
   AliESDEvent         * esd = Alieve::Event::AssertESD();
   AliESDVertex   * pv  = esd->GetPrimaryVertex();
@@ -16,7 +16,7 @@ Reve::StraightLineSet* esd_spd_tracklets(Float_t rad=8)
   pv->GetXYZ(pvx);
   pv->GetSigmaXYZ(pve);
 
-  Reve::StraightLineSet* ls = new Reve::StraightLineSet();
+  TEveStraightLineSet* ls = new TEveStraightLineSet();
 
   for (Int_t i=0; i<mul->GetNumberOfTracklets(); ++i)
   {
@@ -30,8 +30,8 @@ Reve::StraightLineSet* esd_spd_tracklets(Float_t rad=8)
 		pvx[0]+dr[0], pvx[1]+dr[1], pvx[2]+dr[2]);
   }
 
-  gReve->AddRenderElement(ls);
-  gReve->Redraw3D();
+  gEve->AddElement(ls);
+  gEve->Redraw3D();
 
   return ls;
 }

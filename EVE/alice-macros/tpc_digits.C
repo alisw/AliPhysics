@@ -42,10 +42,10 @@ void tpc_digits(Int_t mode=1)
     Alieve::TPCSector2D* s = new Alieve::TPCSector2D();
     s->SetFrameColor(col);
     s->SetDataSource(g_tpc_data);
-    gReve->AddRenderElement(s);
-    gReve->Redraw3D();
+    gEve->AddElement(s);
+    gEve->Redraw3D();
 
-    //TGLViewer* cam = gReve->GetGLViewer();
+    //TGLViewer* cam = gEve->GetGLViewer();
     //cam->SetCurrentCamera(TGLViewer::kCameraOrthoXOY) ;
     //cam->SetOrthoCamera(TGLViewer::kCameraOrthoXOY, 2*left, 2*right, 2*top, bottom); 
     //printf("%f %f %f %f\n", left, right, top, bottom);
@@ -54,12 +54,12 @@ void tpc_digits(Int_t mode=1)
   }
 
   case 1: { // Display all sectors
-    gReve->DisableRedraw();
+    gEve->DisableRedraw();
     {
-      Reve::RenderElementList* l = new Reve::RenderElementList("TPC plate 1");
+      TEveElementList* l = new TEveElementList("TPC plate 1");
       l->SetTitle("TPC Plate");
       l->SetMainColor(Color_t(col));
-      gReve->AddRenderElement(l);
+      gEve->AddElement(l);
       
       for(Int_t i = 0; i<18; i++) {
 	Alieve::TPCSector2D* s = new Alieve::TPCSector2D(Form("TPCSector2D %d", i));
@@ -67,25 +67,25 @@ void tpc_digits(Int_t mode=1)
 	s->SetDataSource(g_tpc_data);
 	s->SetFrameColor(col);
 	s->SetAutoTrans(kTRUE);
-	gReve->AddRenderElement(s, l);
+	gEve->AddElement(s, l);
       }
     }
     {
-      Reve::RenderElementList* l = new Reve::RenderElementList("TPC plate 2");
+      TEveElementList* l = new TEveElementList("TPC plate 2");
       l->SetTitle("TPC Plate");
       l->SetMainColor(Color_t(col));
 
-      gReve->AddRenderElement(l);
+      gEve->AddElement(l);
       for(Int_t i = 18; i<36; i++) {
 	Alieve::TPCSector2D* s = new Alieve::TPCSector2D(Form("TPCSector2D %d", i));
 	s->SetSectorID(i);
 	s->SetDataSource(g_tpc_data);
 	s->SetFrameColor(col);
 	s->SetAutoTrans(kTRUE);
-	gReve->AddRenderElement(s, l);
+	gEve->AddElement(s, l);
       }
     }
-    gReve->EnableRedraw();
+    gEve->EnableRedraw();
 
     break;
   }
@@ -94,18 +94,18 @@ void tpc_digits(Int_t mode=1)
     Alieve::TPCSector3D* s = new Alieve::TPCSector3D();
     s->SetFrameColor(col);
     s->SetDataSource(g_tpc_data);
-    gReve->AddRenderElement(s);
-    gReve->Redraw3D();
+    gEve->AddElement(s);
+    gEve->Redraw3D();
     break;
   }
 
   case 3: { // Display all sectors in 3D
-    gReve->DisableRedraw();
+    gEve->DisableRedraw();
     {
-      Reve::RenderElementList* l = new Reve::RenderElementList("TPC plate 1");
+      TEveElementList* l = new TEveElementList("TPC plate 1");
       l->SetTitle("TPC Plate");
       l->SetMainColor(Color_t(col));
-      gReve->AddRenderElement(l);
+      gEve->AddElement(l);
       
       for(Int_t i = 0; i<18; i++) {
 	Alieve::TPCSector3D* s = new Alieve::TPCSector3D(Form("TPCSector3D %d", i));
@@ -113,25 +113,25 @@ void tpc_digits(Int_t mode=1)
 	s->SetDataSource(g_tpc_data);
 	s->SetFrameColor(col);
 	s->SetAutoTrans(kTRUE);
-	gReve->AddRenderElement(s, l);
+	gEve->AddElement(s, l);
       }
     }
     {
-      Reve::RenderElementList* l = new Reve::RenderElementList("TPC plate 2");
+      TEveElementList* l = new TEveElementList("TPC plate 2");
       l->SetTitle("TPC Plate");
       l->SetMainColor(Color_t(col));
 
-      gReve->AddRenderElement(l);
+      gEve->AddElement(l);
       for(Int_t i = 18; i<36; i++) {
 	Alieve::TPCSector3D* s = new Alieve::TPCSector3D(Form("TPCSector3D %d", i));
 	s->SetSectorID(i);
 	s->SetDataSource(g_tpc_data);
 	s->SetFrameColor(col);
 	s->SetAutoTrans(kTRUE);
-	gReve->AddRenderElement(s, l);
+	gEve->AddElement(s, l);
       }
     }
-    gReve->EnableRedraw();
+    gEve->EnableRedraw();
 
     break;
   }
@@ -159,11 +159,11 @@ void tpc_digits_2drange(Int_t start, Int_t end)
   gStyle->SetPalette(1, 0);
   Color_t col = 36;
 
-  gReve->DisableRedraw();
+  gEve->DisableRedraw();
   {
-    Reve::RenderElementList* l = new Reve::RenderElementList("TPC sectors");
+    TEveElementList* l = new TEveElementList("TPC sectors");
     l->SetMainColor(Color_t(col));
-    gReve->AddRenderElement(l);
+    gEve->AddElement(l);
       
     for(Int_t i=start; i<=end; i++) {
       Alieve::TPCSector2D* s = new Alieve::TPCSector2D();
@@ -171,8 +171,8 @@ void tpc_digits_2drange(Int_t start, Int_t end)
       s->SetDataSource(g_tpc_data);
       s->SetFrameColor(col);
       s->SetAutoTrans(kTRUE);
-      gReve->AddRenderElement(s, l);
+      gEve->AddElement(s, l);
     }
   }
-  gReve->EnableRedraw();
+  gEve->EnableRedraw();
 }

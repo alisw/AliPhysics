@@ -10,17 +10,9 @@
 // by A.Bercuci (A.Bercuci@gsi.de)   Fri Oct 27 2006
 ////////////////////////////////////////////////////////////////////////
 
-#ifndef REVE_RenderElement_H
-#include <Reve/RenderElement.h>
-#endif
-
-#ifndef ROOT_TString
-#include <TString.h>
-#endif
-
-#ifndef ROOT_TGedFrame
+#include <TEveElement.h>
 #include <TGedFrame.h>
-#endif
+#include <TString.h>
 
 class AliTRDv1;
 class AliTRDgeometry;
@@ -29,9 +21,9 @@ class TGNumberEntry;
 class TGColorSelect;
 class TGTextEntry;
 class TTree;
-namespace Reve {
-	class RGValuator;
-}
+
+class TEveGValuator;
+
 namespace Alieve {
 	class TRDChamber;
 	class TRDLoaderManager;
@@ -43,7 +35,7 @@ namespace Alieve {
 		kRawRoot = 4,
 		kRawData = 5
 	};
-	class TRDLoader : public Reve::RenderElementList
+	class TRDLoader : public TEveElementList
 	{
 	friend class TRDLoaderEditor;
 	public:
@@ -90,10 +82,10 @@ namespace Alieve {
 		virtual void	SetModel(TObject* obj);
 		
 	protected:
-		TRDLoader					*fM;
-  	TGTextEntry				*fFile;
-		Reve::RGValuator	*fEvent;
-		Reve::RGValuator	*fSMNumber, *fStackNumber, *fPlaneNumber;
+		TRDLoader		*fM;
+		TGTextEntry		*fFile;
+		TEveGValuator		*fEvent;
+		TEveGValuator		*fSMNumber, *fStackNumber, *fPlaneNumber;
 		
 		ClassDef(TRDLoaderEditor,1) // Editor for TRDLoader
 	};

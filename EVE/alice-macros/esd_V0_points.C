@@ -1,14 +1,15 @@
 // $Id$
 
-Reve::PointSet*
+TEvePointSet*
 esd_V0_points()
 {
   AliESDEvent* esd = Alieve::Event::AssertESD();
 
   Int_t NV0s = esd->GetNumberOfV0s();
-  Reve::PointSet* points = new Reve::PointSet("V0 CA points", NV0s);
+  TEvePointSet* points = new TEvePointSet("V0 CA points", NV0s);
 
-  for (Int_t n =0; n<NV0s; n++) {
+  for (Int_t n =0; n<NV0s; n++)
+  {
     AliESDv0* av = esd->GetV0(n);
     points->SetNextPoint(av->GetXr(0), av->GetXr(1), av->GetXr(2));
     points->SetPointId(av);
@@ -25,8 +26,8 @@ esd_V0_points()
   points->SetMarkerSize(1);
   points->SetMarkerColor((Color_t)30);
 
-  gReve->AddRenderElement(points);
-  gReve->Redraw3D();
+  gEve->AddElement(points);
+  gEve->Redraw3D();
 
   return points;
 }

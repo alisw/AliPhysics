@@ -1,8 +1,8 @@
 // $Id$
 
-Reve::PointSet*
+TEvePointSet*
 t0_hits(const char *varexp    = "T0.fX:T0.fY:T0.fZ",
-	 const char *selection = "")
+	const char *selection = "")
 {
   // Extracts  T0 hits.
 
@@ -20,22 +20,22 @@ t0_hits(const char *varexp    = "T0.fX:T0.fY:T0.fZ",
     ht->SetBranchAddress("T0",&hits);
  
     ht->GetEvent(it);
- Int_t nHits = hits->GetEntriesFast();
- //  printf("Found %d hits in track %d. \n",nHits,it);
+    // Int_t nHits = hits->GetEntriesFast();
+    // printf("Found %d hits in track %d.\n", nHits, it);
 
   }
-  Reve::PointSet* points = new Reve::PointSet(Form("T0 Hits '%s'", selection));
-   points->SetSourceCS(TPointSelectorConsumer::TVT_XYZ);
+  TEvePointSet* points = new TEvePointSet(Form("T0 Hits '%s'", selection));
+  points->SetSourceCS(TEvePointSelectorConsumer::kTVT_XYZ);
 
-  TPointSelector ps(ht, points, varexp, selection);
+  TEvePointSelector ps(ht, points, varexp, selection);
   ps.Select();
 
   points->SetTitle(Form("N=%d", points->Size()));
   points->SetMarkerSize(.5);
   points->SetMarkerColor((Color_t)3);
 
-  gReve->AddRenderElement(points);
-  gReve->Redraw3D();
+  gEve->AddElement(points);
+  gEve->Redraw3D();
 
   return points;
 }

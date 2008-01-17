@@ -24,11 +24,9 @@
 #include <Alieve/MUONChamber.h>
 #include <Alieve/MUONChamberData.h>
 
-#include <Reve/QuadSetGL.h>
+#include <TEveQuadSetGL.h>
 #include <TGLRnrCtx.h>
 #include <TGLIncludes.h>
-
-using namespace Reve;
 using namespace Alieve;
 
 //______________________________________________________________________
@@ -68,7 +66,8 @@ Bool_t MUONChamberGL::SetModel(TObject* obj, const Option_t* /*opt*/)
   if(SetModelCheckClass(obj, Alieve::MUONChamber::Class())) {
     
     fChamber = (MUONChamber*) fExternalObj;
-    
+    fQS1.SetModel(&fChamber->fQuadSet1);
+    fQS2.SetModel(&fChamber->fQuadSet2);
     return kTRUE;
 
   }
@@ -89,7 +88,7 @@ void MUONChamberGL::SetBBox()
 }
 
 //______________________________________________________________________
-void MUONChamberGL::DirectDraw(TGLRnrCtx& /*rnrCtx*/) const
+void MUONChamberGL::DirectDraw(TGLRnrCtx& rnrCtx) const
 {
   //
   // Actual GL drawing.
@@ -109,7 +108,7 @@ void MUONChamberGL::DirectDraw(TGLRnrCtx& /*rnrCtx*/) const
   
   if(hasData) {
 
-    DrawQuads();
+    DrawQuads(rnrCtx);
     DrawPoints();
   
   }
@@ -119,7 +118,7 @@ void MUONChamberGL::DirectDraw(TGLRnrCtx& /*rnrCtx*/) const
 }
 
 //______________________________________________________________________
-void MUONChamberGL::DrawQuads() const
+void MUONChamberGL::DrawQuads(TGLRnrCtx& rnrCtx) const
 {
   //
   // draw the digits as GL_QUADS
@@ -137,30 +136,12 @@ void MUONChamberGL::DrawQuads() const
   glPolygonMode(GL_FRONT, GL_FILL);
   glPolygonMode(GL_BACK,  GL_LINE);
 
-  glBegin(GL_QUADS);
-  for(std::vector<Quad>::iterator q=fChamber->fQuadSet1.Quads().begin(); q!=fChamber->fQuadSet1.Quads().end(); ++q) {
-    UChar_t* c = (UChar_t*) &q->color;
-    glColor4ubv(c);
-    glVertex3fv(q->vertices);
-    glVertex3fv(q->vertices + 3);
-    glVertex3fv(q->vertices + 6);
-    glVertex3fv(q->vertices + 9);
-  }
-  glEnd();
+  fQS1.DirectDraw(rnrCtx);
 
   glPolygonMode(GL_FRONT, GL_LINE);
   glPolygonMode(GL_BACK,  GL_FILL);
 
-  glBegin(GL_QUADS);
-  for(std::vector<Quad>::iterator q=fChamber->fQuadSet2.Quads().begin(); q!=fChamber->fQuadSet2.Quads().end(); ++q) {
-    UChar_t* c = (UChar_t*) &q->color;
-    glColor4ubv(c);
-    glVertex3fv(q->vertices);
-    glVertex3fv(q->vertices + 3);
-    glVertex3fv(q->vertices + 6);
-    glVertex3fv(q->vertices + 9);
-  }
-  glEnd();
+  fQS2.DirectDraw(rnrCtx);
 
   glPopAttrib();
 

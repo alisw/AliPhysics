@@ -22,11 +22,9 @@ class AliRawReaderMemory;
 class AliEVEHOMERManager;
 class AliHLTHOMERBlockDesc;
 
-namespace Reve {
-class PointSet;
-class TrackList;
-class Track;
-}
+class TEvePointSet;
+class TEveTrackList;
+class TEveTrack;
 
 namespace Alieve {
 class TPCLoader;
@@ -34,14 +32,12 @@ class TPCData;
 class TPCSector2D;
 class TPCSector3D;
 }
-
-using namespace Reve;
 using namespace Alieve;
 
 TPCLoader*  loader  = 0;
 TPCData*    tpcdata = 0;
-PointSet*   tpc_cls = 0;
-TrackList*  tpc_trk = 0;
+TEvePointSet*   tpc_cls = 0;
+TEveTrackList*  tpc_trk = 0;
 
 AliRawReaderMemory* memreader = 0;
 AliEVEHOMERManager* homerM = 0;
@@ -70,7 +66,7 @@ void homer_display()
   homerM = new AliEVEHOMERManager("/local/home/hlt/TPC-SCC1-Generate.xml");
   //  homerM = new AliEVEHOMERManager("/local/home/hlt/sampleConfig2.xml");
 
-  gReve->AddToListTree(homerM, kTRUE);
+  gEve->AddToListTree(homerM, kTRUE);
 
   homerM->CreateHOMERSourcesList();
   //  homerM->SelectRawTPC();
@@ -90,16 +86,16 @@ void homer_display()
   tpcdata->SetLoadThreshold(0);
   // tpcdata->SetAutoPedestal(kTRUE); // For non-zero suppressed data.
   tpcdata->SetAutoPedestal(kFALSE);
-  gReve->AddRenderElement(loader);
+  gEve->AddElement(loader);
 
-  tpc_cls = new Reve::PointSet("TPC Clusters");
+  tpc_cls = new TEvePointSet("TPC Clusters");
   tpc_cls->SetMainColor((Color_t)kRed);
-  gReve->AddRenderElement(tpc_cls);
+  gEve->AddElement(tpc_cls);
 
-  tpc_trk = new TrackList("TPC Tracks");
-  gReve->AddRenderElement(tpc_trk);
+  tpc_trk = new TEveTrackList("TPC Tracks");
+  gEve->AddElement(tpc_trk);
   tpc_trk->SetMainColor(Color_t(6));
-  Reve::TrackRnrStyle* rnrStyle = tpc_trk->GetRnrStyle();
+  TEveTrackPropagator* rnrStyle = tpc_trk->GetPropagator();
   rnrStyle->SetMagField( 5 );
 
   nextEvent();
@@ -152,7 +148,7 @@ void nextEvent()
   tpc_cls->ResetBBox();
   tpc_trk->MakeTracks();
 
-  gReve->Redraw3D(1, 1);
+  gEve->Redraw3D(1, 1);
 }
 
 //****************************************************************************
@@ -180,14 +176,14 @@ void process_tpc_clusters(AliHLTHOMERBlockDesc* b)
 }
 
 //****************************************************************************
-Reve::Track* esd_make_track(Reve::TrackRnrStyle*   rnrStyle,
+TEveTrack* esd_make_track(TEveTrackPropagator*   rnrStyle,
 			    Int_t                  index,
 			    AliESDtrack*           at,
 			    AliExternalTrackParam* tp=0)
 {
   // Helper function
   Double_t        pbuf[3], vbuf[3];
-  Reve::RecTrack  rt;
+  TEveRecTrack  rt;
 
   if(tp == 0) tp = at;
 
@@ -202,7 +198,7 @@ Reve::Track* esd_make_track(Reve::TrackRnrStyle*   rnrStyle,
   Double_t ep = at->GetP(), mc = at->GetMass();
   rt.beta = ep/TMath::Sqrt(ep*ep + mc*mc);
  
-  Reve::Track* track = new Reve::Track(&rt, rnrStyle);
+  TEveTrack* track = new TEveTrack(&rt, rnrStyle);
   //PH The line below is replaced waiting for a fix in Root
   //PH which permits to use variable siza arguments in CINT
   //PH on some platforms (alphalinuxgcc, solariscc5, etc.)
@@ -211,7 +207,7 @@ Reve::Track* esd_make_track(Reve::TrackRnrStyle*   rnrStyle,
   //PH		       rt.sign*TMath::Hypot(rt.P.x, rt.P.y), rt.P.z,
   //PH		       rt.V.x, rt.V.y, rt.V.z));
   char form[1000];
-  sprintf(form,"Track %d", rt.index);
+  sprintf(form,"TEveTrack %d", rt.index);
   track->SetName(form);
   track->SetStdTitle();
   return track;
@@ -222,16 +218,16 @@ void process_tpc_tracks(AliHLTHOMERBlockDesc* b)
 {
   AliESDEvent* esd = (AliESDEvent*) b->GetTObject();
 
-  Reve::TrackRnrStyle* rnrStyle = tpc_trk->GetRnrStyle();
+  TEveTrackPropagator* rnrStyle = tpc_trk->GetPropagator();
 
   for (Int_t n=0; n<esd->GetNumberOfTracks(); n++)
   {
     AliESDtrack           *at = esd->GetTrack(n);
     AliExternalTrackParam *tp = at;
 
-    Reve::Track* track = esd_make_track(rnrStyle, n, at, tp);
+    TEveTrack* track = esd_make_track(rnrStyle, n, at, tp);
     track->SetAttLineAttMarker(tpc_trk);
-    gReve->AddRenderElement(track, tpc_trk);
+    gEve->AddElement(track, tpc_trk);
   }
 
 }
@@ -239,16 +235,16 @@ void process_tpc_tracks(AliHLTHOMERBlockDesc* b)
 //****************************************************************************
 void process_tpc_xxxx(AliESDEvent* esd)
 {
-  Reve::TrackRnrStyle* rnrStyle = tpc_trk->GetRnrStyle();
+  TEveTrackPropagator* rnrStyle = tpc_trk->GetPropagator();
 
   for (Int_t n=0; n<esd->GetNumberOfTracks(); n++)
   {
     AliESDtrack           *at = esd->GetTrack(n);
     AliExternalTrackParam *tp = at;
 
-    Reve::Track* track = esd_make_track(rnrStyle, n, at, tp);
+    TEveTrack* track = esd_make_track(rnrStyle, n, at, tp);
     track->SetAttLineAttMarker(tpc_trk);
-    gReve->AddRenderElement(track, tpc_trk);
+    gEve->AddElement(track, tpc_trk);
   }
 
 }
@@ -274,9 +270,9 @@ root [5] esdTree->GetEntry(0)
 root [6] esd->GetNumberOfTracks()
 (const Int_t)(275)
 root [7] process_tpc_xxxx(esd)
-root [8] gReve->Redraw3D(
+root [8] gEve->Redraw3D(
 void Redraw3D(Bool_t resetCameras = kFALSE, Bool_t dropLogicals = kFALSE)
-root [8] gReve->Redraw3D(1,1)
+root [8] gEve->Redraw3D(1,1)
 root [9] trk_cnt->Elem
 variable "trk_cnt" not defined.
 
@@ -295,7 +291,7 @@ SelectByP
 SelectByP
 root [10] tpc_trk->SelectByPt(
 void SelectByPt(Float_t min_pt, Float_t max_pt)
-void SelectByPt(Float_t min_pt, Float_t max_pt, Reve::RenderElement* el)
+void SelectByPt(Float_t min_pt, Float_t max_pt, TEveElement* el)
 root [10] tpc_trk->SelectByPt(0,1000000000000)
 root [11] tpc_trk->MakeTracks(
 void MakeTracks(Bool_t recurse = kTRUE)

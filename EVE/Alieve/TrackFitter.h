@@ -3,7 +3,7 @@
 #ifndef ALIEVE_TrackFitter_H
 #define ALIEVE_TrackFitter_H
 
-#include <Reve/PointSet.h>
+#include <TEvePointSet.h>
 #include <TQObject.h>
 #include <map>
 
@@ -11,14 +11,11 @@ class TGraphErrors;
 class TGraph;
 class AliRieman;
 
-namespace Reve 
-{
-class TrackList;
-}
+class TEveTrackList;
 
 namespace Alieve {
 
-class TrackFitter : public Reve::PointSet
+class TrackFitter : public TEvePointSet
 {
 private:
   TrackFitter(const TrackFitter&);            // Not implemented
@@ -31,9 +28,9 @@ protected:
   struct Point_t
   {
     // inner structure to check duplicates
-    Reve::PointSet* fPS;   // selected pointset
+    TEvePointSet* fPS;   // selected pointset
     Int_t           fIdx;  // location in the point set array
-    Point_t(Reve::PointSet* ps, Int_t i): fPS(ps), fIdx(i){} 
+    Point_t(TEvePointSet* ps, Int_t i): fPS(ps), fIdx(i){} 
     bool operator<(const Point_t& o) const
     { if (fPS != o.fPS) return fPS < o.fPS; return fIdx < o.fIdx; }
   };
@@ -43,14 +40,14 @@ protected:
 
   Bool_t     fConnected;      // object connected to pointset Ctrl-shift signal 
   
-  Reve::TrackList* fTrackList; // track list created with rieman fit 
+  TEveTrackList* fTrackList; // track list created with rieman fit 
 
-  std::map<Point_t, Int_t> fMapPS; // map of selected points from different PointSet
+  std::map<Point_t, Int_t> fMapPS; // map of selected points from different TEvePointSet
 public:
-  TrackFitter(const Text_t* name, Int_t n_points=0, TreeVarType_e tv_type=TVT_XYZ);
+  TrackFitter(const Text_t* name, Int_t n_points=0, ETreeVarType_e tv_type=kTVT_XYZ);
   virtual ~TrackFitter();
   
-  void AddFitPoint(Reve::PointSet*,Int_t);  // slot for PointCtrlClicked() signal
+  void AddFitPoint(TEvePointSet*,Int_t);  // slot for PointCtrlClicked() signal
 
   virtual void  DestroyElements(); // *MENU*
 

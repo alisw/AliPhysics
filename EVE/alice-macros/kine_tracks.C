@@ -3,7 +3,7 @@
 
 #include "TParticlePDG.h"
 
-Reve::TrackList*
+TEveTrackList*
 kine_tracks(Double_t min_pt  = 0.1,   Double_t min_p   = 0.2,
 	    Bool_t   pdg_col = kTRUE, Bool_t   recurse = kTRUE,
 	    Bool_t   use_track_refs = kTRUE)
@@ -16,15 +16,15 @@ kine_tracks(Double_t min_pt  = 0.1,   Double_t min_p   = 0.2,
     return 0;
   }
 
-  gReve->DisableRedraw();
+  gEve->DisableRedraw();
  
-  Reve::TrackList* cont = new Reve::TrackList("Kine Tracks"); 
+  TEveTrackList* cont = new TEveTrackList("Kine Tracks"); 
   cont->SetMainColor(Color_t(3));
-  Reve::TrackRnrStyle* rnrStyle = cont->GetRnrStyle();
+  TEveTrackPropagator* rnrStyle = cont->GetPropagator();
   // !!! Watch the '-', apparently different sign convention then for ESD.
   rnrStyle->SetMagField( - gAlice->Field()->SolenoidField() );
 
-  gReve->AddRenderElement(cont);
+  gEve->AddElement(cont);
   Int_t count = 0;
   Int_t N = stack->GetNtrack();
   for (Int_t i=0; i<N; ++i) 
@@ -35,7 +35,7 @@ kine_tracks(Double_t min_pt  = 0.1,   Double_t min_p   = 0.2,
       if (p->Pt() < min_pt && p->P() < min_p) continue;
 
       ++count;
-      Reve::Track* track = new Reve::Track(p, i, rnrStyle);
+      TEveTrack* track = new TEveTrack(p, i, rnrStyle);
   
       //PH The line below is replaced waiting for a fix in Root
       //PH which permits to use variable siza arguments in CINT
@@ -47,7 +47,7 @@ kine_tracks(Double_t min_pt  = 0.1,   Double_t min_p   = 0.2,
       track->SetStdTitle();
       set_track_color(track, pdg_col);
 
-      gReve->AddRenderElement(track, cont);
+      gEve->AddElement(track, cont);
 
       if (recurse)
 	kine_daughters(track, stack, min_pt, min_p, pdg_col, recurse);
@@ -71,33 +71,33 @@ kine_tracks(Double_t min_pt  = 0.1,   Double_t min_p   = 0.2,
   cont->UpdateItems();
 
   cont->MakeTracks(recurse);
-  gReve->EnableRedraw();
-  gReve->Redraw3D();
+  gEve->EnableRedraw();
+  gEve->Redraw3D();
 
   return cont;
 }
 
-void kine_daughters(Reve::Track* parent,  AliStack* stack,
+void kine_daughters(TEveTrack* parent,  AliStack* stack,
 		    Double_t     min_pt,  Double_t  min_p,
 		    Bool_t       pdg_col, Bool_t    recurse)
 {
   TParticle *p = stack->Particle(parent->GetLabel());
   if (p->GetNDaughters() > 0) 
   {
-    Reve::TrackRnrStyle* rs = parent->GetRnrStyle();
+    TEveTrackPropagator* rs = parent->GetPropagator();
     for (int d=p->GetFirstDaughter(); d>0 && d<=p->GetLastDaughter(); ++d) 
     {	
       TParticle* dp = stack->Particle(d);
       if (dp->Pt() < min_pt && dp->P() < min_p) continue;
 
-      Reve::Track* dtrack = new Reve::Track(dp, d, rs);  
+      TEveTrack* dtrack = new TEveTrack(dp, d, rs);  
       char form[1000];
       sprintf(form,"%s [%d]", dp->GetName(), d);
       dtrack->SetName(form);
       dtrack->SetStdTitle();
       set_track_color(dtrack, pdg_col);
 
-      gReve->AddRenderElement(dtrack, parent);
+      gEve->AddElement(dtrack, parent);
 
       if (recurse)
 	kine_daughters(dtrack, stack, min_pt, min_p, pdg_col, recurse);
@@ -105,7 +105,7 @@ void kine_daughters(Reve::Track* parent,  AliStack* stack,
   }
 }
 
-Color_t set_track_color(Reve::Track* t, Bool_t pdg_col)
+Color_t set_track_color(TEveTrack* t, Bool_t pdg_col)
 {
   if (pdg_col)
     t->SetMainColor(get_pdg_color(t->GetPdg()));
@@ -163,11 +163,11 @@ Color_t get_pdg_color(Int_t pdg)
 
 /******************************************************************************/
 
-Reve::RenderElement*
+TEveElement*
 kine_track(Int_t  label,
 	   Bool_t import_mother    = kTRUE, Bool_t import_daughters = kTRUE,
 	   Bool_t pdg_col          = kTRUE, Bool_t recurse          = kTRUE,
-           Reve::RenderElement* cont = 0)
+           TEveElement* cont = 0)
 
 {
   // Create mother and daughters tracks with given label.
@@ -192,17 +192,17 @@ kine_track(Int_t  label,
 
   if (import_mother || (import_daughters && p->GetNDaughters()))
   {
-    Reve::Track* toptrack = 0;
-    Reve::TrackList* tracklist = 0;  
-    Reve::TrackRnrStyle* rs = 0;
+    TEveTrack* toptrack = 0;
+    TEveTrackList* tracklist = 0;  
+    TEveTrackPropagator* rs = 0;
 
     if (cont == 0)
     {
-      Reve::TrackList* tlist = new Reve::TrackList
+      TEveTrackList* tlist = new TEveTrackList
 	(Form("Kinematics of %d", label, p->GetNDaughters()));
       cont = tlist;
 
-      Reve::TrackRnrStyle* rnrStyle = tlist->GetRnrStyle();
+      TEveTrackPropagator* rnrStyle = tlist->GetPropagator();
       // !!! Watch the '-', apparently different sign convention then for ESD.
       rnrStyle->SetMagField( - gAlice->Field()->SolenoidField() );
       char tooltip[1000];
@@ -211,19 +211,19 @@ kine_track(Int_t  label,
       rnrStyle->fMaxOrbs = 2;
       rnrStyle->SetEditPathMarks(kTRUE);
 
-      gReve->AddRenderElement(cont);
-      rs = tlist->GetRnrStyle();
+      gEve->AddElement(cont);
+      rs = tlist->GetPropagator();
     }
     else
     {
-      // check if container is TrackList or Track (has rnr-style)
-      Reve::Track* t = dynamic_cast<Reve::Track*>(cont);
+      // check if container is TEveTrackList or TEveTrack (has rnr-style)
+      TEveTrack* t = dynamic_cast<TEveTrack*>(cont);
       if (t) {
-	rs = t->GetRnrStyle();
+	rs = t->GetPropagator();
       } else {
-        Reve::TrackList* l = dynamic_cast<Reve::TrackList*>(cont);
+        TEveTrackList* l = dynamic_cast<TEveTrackList*>(cont);
         if (l)
-	  rs = l->GetRnrStyle();
+	  rs = l->GetPropagator();
         else
 	  Error("kine_tracks.C", "TrackRenderStyle not set.");
       }
@@ -231,7 +231,7 @@ kine_track(Int_t  label,
 
     if (import_mother)
     {
-      Reve::Track* track = new Reve::Track(p, label, rs);  
+      TEveTrack* track = new TEveTrack(p, label, rs);  
       char form[1000];
       sprintf(form,"%s [%d]", p->GetName(), label);
       track->SetName(form);
@@ -239,7 +239,7 @@ kine_track(Int_t  label,
       set_track_color(track, pdg_col);
 
       track->MakeTrack();
-      gReve->AddRenderElement(track, cont);
+      gEve->AddElement(track, cont);
       cont = track;
     }
 
@@ -248,7 +248,7 @@ kine_track(Int_t  label,
       for (int d=p->GetFirstDaughter(); d>0 && d<=p->GetLastDaughter(); ++d) 
       {	
 	TParticle* dp = stack->Particle(d);
-	Reve::Track* track = new Reve::Track(dp, d, rs);  
+	TEveTrack* track = new TEveTrack(dp, d, rs);  
 	char form[1000];
 	sprintf(form,"%s [%d]", dp->GetName(), d);
 	track->SetName(form);
@@ -256,7 +256,7 @@ kine_track(Int_t  label,
 	set_track_color(track, pdg_col);
 
         track->MakeTrack();
-	gReve->AddRenderElement(track, cont);
+	gEve->AddElement(track, cont);
 
 	if (recurse)
 	  kine_daughters(track, stack, 0, 0, pdg_col, recurse);
@@ -265,7 +265,7 @@ kine_track(Int_t  label,
   }
 
   cont->UpdateItems();
-  gReve->Redraw3D();
+  gEve->Redraw3D();
   return cont;
 }
 

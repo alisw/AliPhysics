@@ -10,9 +10,7 @@
 // by A.Bercuci (A.Bercuci@gsi.de)   Mon Feb 26 2007
 ////////////////////////////////////////////////////////////////////////
 
-#ifndef REVE_RenderElement_H
-#include <Reve/RenderElement.h>
-#endif
+#include <TEveElement.h>
 
 #ifndef ROOT_TNamed
 #include <TNamed.h>
@@ -25,8 +23,10 @@
 class TGComboBox;
 class TGTextButton;
 class TClonesArray;
+
 namespace Alieve {
-	class TRDLoaderManager : public Reve::RenderElementList
+
+	class TRDLoaderManager : public TEveElementList
 	{
 	friend class TRDLoaderManagerEditor;
 	public:

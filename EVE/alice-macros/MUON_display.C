@@ -81,12 +81,12 @@ void MUON_display(Bool_t fromRaw = kFALSE, Bool_t showTracks = kTRUE)
   
   gStyle->SetPalette(1, 0);
 
-  gReve->DisableRedraw();
+  gEve->DisableRedraw();
   
-  Reve::RenderElementList* l = new Reve::RenderElementList("MUONChambers");
+  TEveElementList* l = new TEveElementList("MUONChambers");
   l->SetTitle("MUON chambers");
   l->SetMainColor(Color_t(2));
-  gReve->AddRenderElement(l);
+  gEve->AddElement(l);
   
   for (Int_t ic = 0; ic < 14; ic++) {
 
@@ -97,7 +97,7 @@ void MUON_display(Bool_t fromRaw = kFALSE, Bool_t showTracks = kTRUE)
     
     mucha->SetDataSource(g_muon_data);
 
-    gReve->AddRenderElement(mucha, l);
+    gEve->AddElement(mucha, l);
 
   }
 
@@ -109,14 +109,14 @@ void MUON_display(Bool_t fromRaw = kFALSE, Bool_t showTracks = kTRUE)
     MUON_MC_tracks();
   }
 
-  gReve->EnableRedraw();
-  gReve->Redraw3D(kTRUE);
+  gEve->EnableRedraw();
+  gEve->Redraw3D(kTRUE);
 
   /*
-  TGLViewer* view = dynamic_cast<TGLViewer*>(gReve->GetGLCanvas()->GetViewer3D());
+  TGLViewer* view = dynamic_cast<TGLViewer*>(gEve->GetGLCanvas()->GetViewer3D());
   view->ResetCamerasAfterNextUpdate();
-  gReve->GetGLCanvas()->Modified();
-  gReve->GetGLCanvas()->Update();
+  gEve->GetGLCanvas()->Modified();
+  gEve->GetGLCanvas()->Update();
   */
 }
 
@@ -134,11 +134,11 @@ void MUON_tracks() {
   Int_t ntracks = tracks->GetEntriesFast();
   //printf("Found %d tracks. \n",ntracks);
 
-  Reve::TrackList* lt = new Reve::TrackList("M-Tracks"); 
+  TEveTrackList* lt = new TEveTrackList("M-Tracks"); 
   lt->SetMainColor(Color_t(6));
   //lt->SetMUON();  
 
-  gReve->AddRenderElement(lt);
+  gEve->AddElement(lt);
 
   TMatrixD smatrix(2,2);
   TMatrixD sums(2,1);
@@ -151,7 +151,7 @@ void MUON_tracks() {
   Float_t zg[4] = { -1603.5, -1620.5, -1703.5, -1720.5 };
 
   AliMUONTrack *mt;  
-  Reve::RecTrack  rt;
+  TEveRecTrack  rt;
   Int_t count;
   for (Int_t n = 0; n < ntracks; n++) {
     
@@ -161,11 +161,11 @@ void MUON_tracks() {
 
     rt.label = n;
 
-    Alieve::MUONTrack* track = new Alieve::MUONTrack(&rt, lt->GetRnrStyle());
+    Alieve::MUONTrack* track = new Alieve::MUONTrack(&rt, lt->GetPropagator());
 
     track->MakeMUONTrack(mt);
 
-    gReve->AddRenderElement(track, lt);
+    gEve->AddElement(track, lt);
 
   }
 
@@ -187,11 +187,11 @@ void MUON_trigger_tracks() {
   Int_t ntracks = tracks->GetEntriesFast();
   //printf("Found %d tracks. \n",ntracks);
 
-  Reve::TrackList* lt = new Reve::TrackList("MT-Tracks"); 
+  TEveTrackList* lt = new TEveTrackList("MT-Tracks"); 
   lt->SetMainColor(Color_t(4));
   //lt->SetMUON();  
 
-  gReve->AddRenderElement(lt);
+  gEve->AddElement(lt);
 
   TMatrixD smatrix(2,2);
   TMatrixD sums(2,1);
@@ -204,7 +204,7 @@ void MUON_trigger_tracks() {
   Float_t zg[4] = { -1603.5, -1620.5, -1703.5, -1720.5 };
 
   AliMUONTriggerTrack *mt;  
-  Reve::RecTrack  rt;
+  TEveRecTrack  rt;
   Int_t count;
   for (Int_t n = 0; n < ntracks; n++) {
     
@@ -214,11 +214,11 @@ void MUON_trigger_tracks() {
 
     rt.label = n;
 
-    Alieve::MUONTrack* track = new Alieve::MUONTrack(&rt, lt->GetRnrStyle());
+    Alieve::MUONTrack* track = new Alieve::MUONTrack(&rt, lt->GetPropagator());
 
     track->MakeMUONTriggerTrack(mt);
 
-    gReve->AddRenderElement(track, lt);
+    gEve->AddElement(track, lt);
 
   }
 
@@ -231,14 +231,14 @@ void MUON_ESD_tracks() {
 
   AliESDEvent* esd = Alieve::Event::AssertESD();
 
-  Reve::TrackList* lt = new Reve::TrackList("ESD-Tracks"); 
+  TEveTrackList* lt = new TEveTrackList("ESD-Tracks"); 
   lt->SetMainColor(Color_t(6));
   //lt->SetMUON();
 
-  gReve->AddRenderElement(lt);
+  gEve->AddElement(lt);
 
   AliESDMuonTrack *mt;
-  Reve::RecTrack rt;
+  TEveRecTrack rt;
   Int_t nMuonTracks = esd->GetNumberOfMuonTracks();
   for (Int_t n = 0; n < nMuonTracks; n++) {
 
@@ -246,11 +246,11 @@ void MUON_ESD_tracks() {
 
     rt.label = n;
 
-    Alieve::MUONTrack* track = new Alieve::MUONTrack(&rt, lt->GetRnrStyle());
+    Alieve::MUONTrack* track = new Alieve::MUONTrack(&rt, lt->GetPropagator());
 
     track->MakeESDTrack(mt);
 
-    gReve->AddRenderElement(track, lt);
+    gEve->AddElement(track, lt);
 
   }
 
@@ -267,22 +267,22 @@ void MUON_Ref_tracks() {
   TIter next(trackRefStore->CreateIterator());
   AliMUONTrack* trackRef;
   
-  Reve::TrackList* lt = new Reve::TrackList("Ref-Tracks"); 
+  TEveTrackList* lt = new TEveTrackList("Ref-Tracks"); 
   lt->SetMainColor(Color_t(6));
 
-  gReve->AddRenderElement(lt);
+  gEve->AddElement(lt);
 
-  Reve::RecTrack rt;
+  TEveRecTrack rt;
   Int_t i = 0;  
   while ( ( trackRef = static_cast<AliMUONTrack*>(next()) ) ) {
 
     rt.label = i++;
 
-    Alieve::MUONTrack* track = new Alieve::MUONTrack(&rt, lt->GetRnrStyle());
+    Alieve::MUONTrack* track = new Alieve::MUONTrack(&rt, lt->GetPropagator());
 
     track->MakeRefTrack(trackRef);
 
-    gReve->AddRenderElement(track, lt);
+    gEve->AddElement(track, lt);
 
   }
 
@@ -300,15 +300,15 @@ void MUON_MC_tracks() {
   Int_t nPrimary = stack->GetNprimary();
   Int_t nTracks  = stack->GetNtrack();
 
-  Reve::TrackList* lt = new Reve::TrackList("MC-Tracks"); 
+  TEveTrackList* lt = new TEveTrackList("MC-Tracks"); 
   lt->SetMainColor(Color_t(6));
   //lt->SetMUON();
 
-  gReve->AddRenderElement(lt);
+  gEve->AddElement(lt);
 
   Int_t pdgCode;
   TParticle *part;
-  Reve::RecTrack rt;
+  TEveRecTrack rt;
 
   Int_t nHitTracks = g_muon_data->GetNTrackList();
   Int_t index;
@@ -316,7 +316,7 @@ void MUON_MC_tracks() {
 
     index = g_muon_data->GetTrack(i);
     if (index >= nTracks) {
-      cout << "Hit track index larger than number in stack!" << endl;
+      cout << "TEveHit track index larger than number in stack!" << endl;
       continue;
     }
 
@@ -324,11 +324,11 @@ void MUON_MC_tracks() {
     if (part->P() < 0.001) continue;  // skip momenta < 1.0 MeV/c
     rt.label = i;
 
-    Alieve::MUONTrack* track = new Alieve::MUONTrack(&rt, lt->GetRnrStyle());
+    Alieve::MUONTrack* track = new Alieve::MUONTrack(&rt, lt->GetPropagator());
 
     track->MakeMCTrack(part);
 
-    gReve->AddRenderElement(track, lt);
+    gEve->AddElement(track, lt);
 
   }
 

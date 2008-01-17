@@ -1,47 +1,47 @@
 void trackcount_init()
 {
-  Reve::LoadMacro("alieve_init.C");
+  LoadMacro("alieve_init.C");
   alieve_init(".", -1);
 
-  Reve::LoadMacro("primary_vertex.C");
-  Reve::LoadMacro("esd_tracks.C");
-  Reve::LoadMacro("its_clusters.C+");
-  Reve::LoadMacro("tpc_clusters.C+");
+  LoadMacro("primary_vertex.C");
+  LoadMacro("esd_tracks.C");
+  LoadMacro("its_clusters.C+");
+  LoadMacro("tpc_clusters.C+");
 
-  Reve::TrackCounter* g_trkcnt = new Reve::TrackCounter("Primary Counter");
-  gReve->AddGlobalRenderElement(g_trkcnt);
+  TEveTrackCounter* g_trkcnt = new TEveTrackCounter("Primary Counter");
+  gEve->AddGlobalElement(g_trkcnt);
 
   Alieve::gEvent->AddNewEventCommand("on_new_event();");
   Alieve::gEvent->GotoEvent(0);
 
-  gReve->Redraw3D(kTRUE);
+  gEve->Redraw3D(kTRUE);
 }
 
 void on_new_event()
 {
-  Reve::PointSet* itsc = its_clusters();
+  TEvePointSet* itsc = its_clusters();
   itsc->SetMarkerColor(5);
 
-  Reve::PointSet* tpcc = tpc_clusters();
+  TEvePointSet* tpcc = tpc_clusters();
   tpcc->SetMarkerColor(4);
 
   primary_vertex(1, 1);
 
-  Reve::RenderElementList* cont = esd_tracks_vertex_cut();
-  TGListTree* lt = gReve->GetListTree();
+  TEveElementList* cont = esd_tracks_vertex_cut();
+  TGListTree* lt = gEve->GetListTree();
   TGListTreeItem* ti = cont->FindListTreeItem(lt);
   lt->OpenItem(ti);
 
-  // Here we expect five TrackList containers.
+  // Here we expect five TEveTrackList containers.
   // First two have reasonable primaries (sigma-to-prim-vertex < 5).
   // Other three are almost certainly secondaries.
   Int_t count = 1;
-  Reve::TrackCounter* g_trkcnt = Reve::TrackCounter::fgInstance;
+  TEveTrackCounter* g_trkcnt = TEveTrackCounter::fgInstance;
   g_trkcnt->Reset();
   g_trkcnt->SetEventId(Alieve::gEvent->GetEventId());
-  Reve::RenderElement::List_i i = cont->BeginChildren();
+  TEveElement::List_i i = cont->BeginChildren();
   while (i != cont->EndChildren()) {
-    Reve::TrackList* l = dynamic_cast<Reve::TrackList*>(*i);
+    TEveTrackList* l = dynamic_cast<TEveTrackList*>(*i);
     if (l != 0) {
       l->SetLineWidth(2);
       g_trkcnt->RegisterTracks(l, (count <= 2));

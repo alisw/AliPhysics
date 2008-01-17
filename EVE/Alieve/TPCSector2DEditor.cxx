@@ -6,8 +6,6 @@
 #include <TGButton.h>
 #include <TGComboBox.h>
 #include <TGLabel.h>
-
-using namespace Reve;
 using namespace Alieve;
 
 //______________________________________________________________________

@@ -1,8 +1,8 @@
 #include "TRDLoader.h"
 #include "TRDModuleImp.h"
 
-#include <Reve/ReveManager.h>
-#include <Reve/RGValuators.h>
+#include <TEveManager.h>
+#include <TEveGValuators.h>
 
 #include "TSystem.h"
 #include "TFile.h"
@@ -31,8 +31,6 @@
 
 
 #include <algorithm>
-
-using namespace Reve;
 using namespace Alieve;
 using namespace std;
 class AliTRDdataArrayI;
@@ -46,7 +44,7 @@ ClassImp(Alieve::TRDLoaderEditor)
 
 
 //________________________________________________________
-TRDLoader::TRDLoader(const Text_t* n, const Text_t* t) : Reve::RenderElementList(n, t), fSM(-1), fStack(-1), fLy(-1), fEvent(0)
+TRDLoader::TRDLoader(const Text_t* n, const Text_t* t) : TEveElementList(n, t), fSM(-1), fStack(-1), fLy(-1), fEvent(0)
 {	
 	kLoadHits = kFALSE;
 	kLoadDigits = kFALSE;
@@ -102,36 +100,36 @@ void	TRDLoader::AddChambers(int sm, int stk, int ly)
 	TRDChamber *CHMB = 0x0;
 	int det;
 	for(int ism=ism_start; ism<ism_stop; ism++){
-		ichmb = find_if(fChildren.begin(), fChildren.end(), ID<RenderElement*>(ism));
+		ichmb = find_if(fChildren.begin(), fChildren.end(), ID<TEveElement*>(ism));
 		if(ichmb != fChildren.end()){
 			SM = (TRDNode*)(*ichmb);
 			SM->SetRnrSelf(kTRUE);
 		}else{
-		  gReve->AddRenderElement(SM = new TRDNode("SM", ism), this);
-			SM->FindListTreeItem(gReve->GetListTree())->SetTipText(Form("Supermodule %2d", ism));
+		  gEve->AddElement(SM = new TRDNode("SM", ism), this);
+			SM->FindListTreeItem(gEve->GetListTree())->SetTipText(Form("Supermodule %2d", ism));
 		}
 		for(int istk=istk_start; istk<istk_stop; istk++){
-			ichmb = find_if(SM->begin(), SM->end(), ID<RenderElement*>(istk));
+			ichmb = find_if(SM->begin(), SM->end(), ID<TEveElement*>(istk));
 			if(ichmb != SM->end()){
 				STK = (TRDNode*)(*ichmb);
 				STK->SetRnrSelf(kTRUE);
 			}else{
-			  gReve->AddRenderElement(STK = new TRDNode("Stack", istk), SM);
-				STK->FindListTreeItem(gReve->GetListTree())->SetTipText(Form("SM %2d Stack %1d", ism, istk));
+			  gEve->AddElement(STK = new TRDNode("Stack", istk), SM);
+				STK->FindListTreeItem(gEve->GetListTree())->SetTipText(Form("SM %2d Stack %1d", ism, istk));
 			}
 			for(int ily=ily_start; ily<ily_stop; ily++){
 				det = fGeo->GetDetector(ily, istk, ism);
-				ichmb = find_if(STK->begin(), STK->end(), ID<RenderElement*>(det));
+				ichmb = find_if(STK->begin(), STK->end(), ID<TEveElement*>(det));
 				if(ichmb != STK->end()) (*ichmb)->SetRnrSelf(kTRUE);
 				else{
-				  gReve->AddRenderElement(CHMB = new TRDChamber(det), STK);
+				  gEve->AddElement(CHMB = new TRDChamber(det), STK);
 					CHMB->SetGeometry(fGeo);
-					CHMB->FindListTreeItem(gReve->GetListTree())->SetTipText(Form("SM %2d Stack %1d Layer %1d", ism, istk, ily));
+					CHMB->FindListTreeItem(gEve->GetListTree())->SetTipText(Form("SM %2d Stack %1d Layer %1d", ism, istk, ily));
 				}
 			}
 		}
 	}
-	gReve->Redraw3D();
+	gEve->Redraw3D();
 }
 
 //________________________________________________________
@@ -139,11 +137,11 @@ TRDChamber*	TRDLoader::GetChamber(int d)
 {
 	List_i ism, istack, ichmb;
 	
-	ism = find_if(fChildren.begin(), fChildren.end(), ID<RenderElement*>(fGeo->GetSector(d)));
+	ism = find_if(fChildren.begin(), fChildren.end(), ID<TEveElement*>(fGeo->GetSector(d)));
 	if(ism == fChildren.end()) return 0x0;
-	istack = find_if(((TRDNode*)(*ism))->begin(), ((TRDNode*)(*ism))->end(), ID<RenderElement*>(fGeo->GetChamber(d)));
+	istack = find_if(((TRDNode*)(*ism))->begin(), ((TRDNode*)(*ism))->end(), ID<TEveElement*>(fGeo->GetChamber(d)));
 	if(istack == ((TRDNode*)(*ism))->end()) return 0x0;
-	ichmb = find_if(((TRDNode*)(*istack))->begin(), ((TRDNode*)(*istack))->end(), ID<RenderElement*>(d));
+	ichmb = find_if(((TRDNode*)(*istack))->begin(), ((TRDNode*)(*istack))->end(), ID<TEveElement*>(d));
 	if(ichmb == ((TRDNode*)(*istack))->end()) return 0x0;
 	return dynamic_cast<TRDChamber*>(*ichmb);
 }
@@ -184,7 +182,7 @@ Bool_t	TRDLoader::GoToEvent(int ev)
 
 	f->Close(); delete f;
 	
-	gReve->Redraw3D();
+	gEve->Redraw3D();
 	
 	return kTRUE;
 }
@@ -364,7 +362,7 @@ TRDLoaderEditor::TRDLoaderEditor(const TGWindow* p, Int_t width, Int_t height, U
 	AddFrame(f);
 
 		
-  fEvent = new RGValuator(this, "Event:", 110, 0);
+  fEvent = new TEveGValuator(this, "Event:", 110, 0);
   fEvent->SetShowSlider(kFALSE);
   fEvent->SetLabelWidth(labelW);
   fEvent->SetNELength(6);
@@ -380,7 +378,7 @@ TRDLoaderEditor::TRDLoaderEditor(const TGWindow* p, Int_t width, Int_t height, U
 	TGGroupFrame *fGroupFrame1974 = new TGGroupFrame(this,"Chamber(s) selector");
 	TGVerticalFrame *fVerticalFrame1974 = new TGVerticalFrame(fGroupFrame1974, 150, 50,kVerticalFrame);
   
-	fSMNumber = new RGValuator(fVerticalFrame1974, "SM:", 0, 0);
+	fSMNumber = new TEveGValuator(fVerticalFrame1974, "SM:", 0, 0);
   fSMNumber->SetShowSlider(kFALSE);
   fSMNumber->SetLabelWidth(labelW);
   fSMNumber->SetNELength(6);
@@ -389,7 +387,7 @@ TRDLoaderEditor::TRDLoaderEditor(const TGWindow* p, Int_t width, Int_t height, U
   fSMNumber->SetToolTip("Supermodule id [-1 for all]");
 	fVerticalFrame1974->AddFrame(fSMNumber, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsCenterX | kLHintsExpandY,2,2,2,2));
 
-	fStackNumber = new RGValuator(fVerticalFrame1974, "Stack:", 0, 0);
+	fStackNumber = new TEveGValuator(fVerticalFrame1974, "Stack:", 0, 0);
   fStackNumber->SetShowSlider(kFALSE);
   fStackNumber->SetLabelWidth(labelW);
   fStackNumber->SetNELength(6);
@@ -398,7 +396,7 @@ TRDLoaderEditor::TRDLoaderEditor(const TGWindow* p, Int_t width, Int_t height, U
   fStackNumber->SetToolTip("Stack id [-1 for all in this SM]");
 	fVerticalFrame1974->AddFrame(fStackNumber, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsCenterX | kLHintsExpandY,2,2,2,2));
 
-	fPlaneNumber = new RGValuator(fVerticalFrame1974, "Plane:", 0, 0);
+	fPlaneNumber = new TEveGValuator(fVerticalFrame1974, "Plane:", 0, 0);
   fPlaneNumber->SetShowSlider(kFALSE);
   fPlaneNumber->SetLabelWidth(labelW);
   fPlaneNumber->SetNELength(6);
@@ -476,7 +474,7 @@ void TRDLoaderEditor::FileOpen()
   fi.fFilename  = StrDup(gSystem->BaseName(fM->fFilename.Data()));
 //  fi.fFileTypes = tpcfiletypes;
 
-  new TGFileDialog(fClient->GetRoot(), gReve->GetMainWindow(), kFDOpen, &fi);
+  new TGFileDialog(fClient->GetRoot(), gEve->GetMainWindow(), kFDOpen, &fi);
   if (!fi.fFilename) return;
 
   fFile->SetToolTipText(gSystem->DirName (fi.fFilename));

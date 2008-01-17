@@ -1,4 +1,4 @@
-// $Header$
+// $Id$
 
 void region_marker(Float_t a=10, Float_t b=10, Float_t c=20,
 		   Float_t x=0, Float_t y=0, Float_t z=0)
@@ -16,10 +16,8 @@ void region_marker(Float_t a=10, Float_t b=10, Float_t c=20,
   mark->SetPoint(5, x+a, y-b, z-c);
   mark->SetPoint(6, x-a, y+b, z-c);
   mark->SetPoint(7, x-a, y-b, z-c);
-
-  using namespace Reve;
   Color_t* colp = FindColorVar(mark, "fMarkerColor");
-  RenderElementObjPtr* rnrEl = new RenderElementObjPtr(mark, *colp);
-  gReve->AddGlobalRenderElement(rnrEl);
-  gReve->Redraw3D();
+  TEveElementObjectPtr* rnrEl = new TEveElementObjectPtr(mark, *colp);
+  gEve->AddGlobalElement(rnrEl);
+  gEve->Redraw3D();
 }

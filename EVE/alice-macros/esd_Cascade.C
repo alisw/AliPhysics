@@ -1,18 +1,18 @@
 // #include "EVE/Alieve/EventAlieve.h"
-// #include "Reve/ReveManager.h"
-// #include "Reve/Cascade.h"
+// #include "TEveManager.h"
+// #include "Cascade.h"
 
 // #include "AliESD.h"
 // #include "AliESDtrack.h"
 // #include "AliESDcascade.h"
 // #include "AliESDVertex.h"
 
-// using namespace Reve;
+// using namespace TEveUtil;
 // using namespace Alieve;
 
 
 
-Alieve::Cascade* esd_make_cas(Reve::TrackRnrStyle* rnrStyle, AliESDVertex* primVtx, 
+Alieve::Cascade* esd_make_cas(TEveTrackPropagator* rnrStyle, AliESDVertex* primVtx, 
 			    AliESDcascade* cas, AliESDtrack* neg, AliESDtrack* pos,
 			    AliESDtrack* bach,Int_t i) {
 
@@ -58,16 +58,20 @@ Alieve::Cascade* esd_make_cas(Reve::TrackRnrStyle* rnrStyle, AliESDVertex* primV
 
 Alieve::CascadeList* esd_Cascade(Double_t min_pt=0.1, Double_t max_pt=100)
 {
+  printf("THIS SCRIPT DOES NOT WORK.\n"
+	 "Alieve::Cascade classes have been temporarily removed.\n"
+	 "They need to be cleaned up.\n");
+  return;
 
   AliESDEvent* esd = Alieve::Event::AssertESD();
   AliESDVertex* primVertex =(AliESDVertex*) esd->GetVertex();
 
   Alieve::CascadeList* cont = new Alieve::CascadeList("ESD cascade"); 
   cont->SetMainColor(Color_t(3)); // green
-  Reve::TrackRnrStyle* rnrStyle = cont->GetRnrStyle();
+  TEveTrackPropagator* rnrStyle = cont->GetPropagator();
   rnrStyle->SetMagField( esd->GetMagneticField() );
 
-  gReve->AddRenderElement(cont);
+  gEve->AddElement(cont);
 
   Int_t count = 0;
   //for (Int_t n=0; count<3; n++) {
@@ -85,7 +89,7 @@ Alieve::CascadeList* esd_Cascade(Double_t min_pt=0.1, Double_t max_pt=100)
       Alieve::Cascade* myCas = esd_make_cas(rnrStyle, primVertex, cas,
 					  negTr, posTr, bachTr, n);
       if (myCas) {
-	gReve->AddRenderElement(myCas, cont);
+	gEve->AddElement(myCas, cont);
 	count++;
       }
     }
@@ -95,7 +99,7 @@ Alieve::CascadeList* esd_Cascade(Double_t min_pt=0.1, Double_t max_pt=100)
   cont->UpdateItems();
 
   cont->MakeCascades();
-  gReve->Redraw3D();
+  gEve->Redraw3D();
 
   return cont;
 }

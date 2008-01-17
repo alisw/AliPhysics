@@ -31,8 +31,6 @@
 #include "TString.h"
 #include "TClonesArray.h"
 #include "TList.h"
-
-using namespace Reve;
 using namespace Alieve;
 
 //______________________________________________________________________
@@ -90,7 +88,7 @@ void MUONData::Reset()
 //______________________________________________________________________
 MUONData::MUONData(const MUONData &mdata) :
   TObject(mdata),
-  Reve::ReferenceCount(),
+  TEveRefCnt(),
   fChambers(14),
   fNTrackList(0)
 {

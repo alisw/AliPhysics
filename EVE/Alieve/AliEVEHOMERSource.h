@@ -3,14 +3,13 @@
 #ifndef ALIEVE_AliEVEHOMERSource_H
 #define ALIEVE_AliEVEHOMERSource_H
 
-#include <Reve/Reve.h>
-#include <Reve/RenderElement.h>
+#include <TEveElement.h>
 
 #include <TNamed.h>
 
 class AliHLTHOMERSourceDesc;
 
-class AliEVEHOMERSource : public Reve::RenderElement,
+class AliEVEHOMERSource : public TEveElement,
   public TNamed
 {
 private:

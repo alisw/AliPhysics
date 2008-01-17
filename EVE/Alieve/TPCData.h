@@ -3,7 +3,7 @@
 #ifndef ALIEVE_TPCData_H
 #define ALIEVE_TPCData_H
 
-#include <Reve/Reve.h>
+#include <TEveUtil.h>
 
 #include <TObject.h>
 
@@ -17,7 +17,7 @@ namespace Alieve {
 
 class TPCSectorData;
 
-class TPCData : public TObject, public Reve::ReferenceCount
+class TPCData : public TObject, public TEveRefCnt
 {
 protected:
   std::vector<TPCSectorData*>  fSectors;

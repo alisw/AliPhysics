@@ -7,9 +7,7 @@
 
 #include <Alieve/TPCSectorData.h>
 
-namespace Reve {
-class BoxSetGL;
-}
+class TEveBoxSetGL;
 
 namespace Alieve {
 
@@ -22,7 +20,7 @@ class TPCSector3DGL : public TGLObject
 
 protected:
   TPCSector3D*    fSector; // fModel dynamic-casted to TPCSector3DGL
-  Reve::BoxSetGL* fBoxRnr;
+  TEveBoxSetGL* fBoxRnr;
 
   mutable UInt_t  fRTS;
 
