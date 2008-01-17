@@ -38,8 +38,9 @@
 
 #include <TCanvas.h>
 #include <TDirectory.h>
-#include <TBits.h>
 #include <TH2.h>
+#include <TBits.h>
+
 #include <AliESDtrack.h>
 #include <AliLog.h>
 #include "AliCFTrackIsPrimaryCuts.h"
@@ -73,7 +74,6 @@ AliCFTrackIsPrimaryCuts::AliCFTrackIsPrimaryCuts() :
   //
   // Default constructor
   //
-  fBitmap=new TBits(0);
   Initialise();
 }
 //__________________________________________________________________________________
@@ -103,7 +103,6 @@ AliCFTrackIsPrimaryCuts::AliCFTrackIsPrimaryCuts(Char_t* name, Char_t* title) :
   //
   // Constructor
   //
-  fBitmap=new TBits(0);
   Initialise();
 }
 //__________________________________________________________________________________
@@ -163,7 +162,7 @@ AliCFTrackIsPrimaryCuts& AliCFTrackIsPrimaryCuts::operator=(const AliCFTrackIsPr
     fhBinLimDcaZ = c.fhBinLimDcaZ;
     fhBinLimDcaXYnorm = c.fhBinLimDcaXYnorm;
     fhBinLimDcaZnorm = c.fhBinLimDcaZnorm;
-    
+
     for (Int_t i=0; i<c.kNHist; i++){
       for (Int_t j=0; j<c.kNStepQA; j++){
 	if(c.fhQA[i][j]) fhQA[i][j] = (TH1F*)c.fhQA[i][j]->Clone();
@@ -171,7 +170,6 @@ AliCFTrackIsPrimaryCuts& AliCFTrackIsPrimaryCuts::operator=(const AliCFTrackIsPr
 	if(c.fhDcaXYvsDcaZnorm[j]) fhDcaXYvsDcaZnorm[j] = (TH2F*)c.fhDcaXYvsDcaZnorm[j]->Clone();
       }
     }
-
     ((AliCFTrackIsPrimaryCuts &) c).Copy(*this);
  }
   return *this;
@@ -186,22 +184,19 @@ AliCFTrackIsPrimaryCuts::~AliCFTrackIsPrimaryCuts()
   if (fhCutCorrelation)			delete fhCutCorrelation;
 
   for (Int_t j=0; j<kNStepQA; j++){
-    for (Int_t i=0; i<kNHist; i++){
-      if(fhQA[i][j]) delete fhQA[i][j];
-    }
-    if(fhDcaXYvsDcaZ[j]) delete fhDcaXYvsDcaZ[j];
-    if(fhDcaXYvsDcaZnorm[j]) delete fhDcaXYvsDcaZnorm[j];
+    if(fhDcaXYvsDcaZ[j])	delete fhDcaXYvsDcaZ[j];
+    if(fhDcaXYvsDcaZnorm[j])	delete fhDcaXYvsDcaZnorm[j];
+    for (Int_t i=0; i<kNHist; i++)
+      if(fhQA[i][j]) 		delete fhQA[i][j];
   }
-
-  if (fBitmap)	delete fBitmap;
-  
-  if(fhBinLimNSigma) delete fhBinLimNSigma;
-  if(fhBinLimRequireSigma) delete fhBinLimRequireSigma;
-  if(fhBinLimAcceptKink) delete fhBinLimAcceptKink;
-  if(fhBinLimDcaXY) delete fhBinLimDcaXY;
-  if(fhBinLimDcaZ) delete fhBinLimDcaZ;
-  if(fhBinLimDcaXYnorm) delete fhBinLimDcaXYnorm;
-  if(fhBinLimDcaZnorm) delete fhBinLimDcaZnorm;
+  if(fBitmap) 			delete fBitmap;
+  if(fhBinLimNSigma) 		delete fhBinLimNSigma;
+  if(fhBinLimRequireSigma) 	delete fhBinLimRequireSigma;
+  if(fhBinLimAcceptKink) 	delete fhBinLimAcceptKink;
+  if(fhBinLimDcaXY) 		delete fhBinLimDcaXY;
+  if(fhBinLimDcaZ) 		delete fhBinLimDcaZ;
+  if(fhBinLimDcaXYnorm) 	delete fhBinLimDcaXYnorm;
+  if(fhBinLimDcaZnorm) 		delete fhBinLimDcaZnorm;
 }
 //__________________________________________________________________________________
 void AliCFTrackIsPrimaryCuts::Initialise()
@@ -217,23 +212,23 @@ void AliCFTrackIsPrimaryCuts::Initialise()
   SetRequireSigmaToVertex();
 
   for (Int_t j=0; j<kNStepQA; j++)  {
-    for (Int_t i=0; i<kNHist; i++){
-      fhQA[i][j] = 0x0;
-    }
     fhDcaXYvsDcaZ[j] = 0x0;
     fhDcaXYvsDcaZnorm[j] = 0x0;
+    for (Int_t i=0; i<kNHist; i++)
+      fhQA[i][j] = 0x0;
   }
   fhCutStatistics = 0;
   fhCutCorrelation = 0;
-  
+  fBitmap=new TBits(0);
+
   //set default bining for QA histograms
-  SetHistogramBins(kCutNSigmaToVertex,500,0,50);
-  SetHistogramBins(kCutRequireSigmaToVertex,2,-0.5,1.5);
-  SetHistogramBins(kCutAcceptKinkDaughters,2,-0.5,1.5);
-  SetHistogramBins(kDcaXY,500,-10,10);
-  SetHistogramBins(kDcaZ,500,-10,10);
-  SetHistogramBins(kDcaXYnorm,500,-10,10);
-  SetHistogramBins(kDcaZnorm,500,-10,10);
+  SetHistogramBins(kCutNSigmaToVertex,500,0.,50.);
+  SetHistogramBins(kCutRequireSigmaToVertex,5,-0.75,1.75);
+  SetHistogramBins(kCutAcceptKinkDaughters,5,-0.75,1.75);
+  SetHistogramBins(kDcaXY,500,-10.,10.);
+  SetHistogramBins(kDcaZ,500,-10.,10.);
+  SetHistogramBins(kDcaXYnorm,500,-10.,10.);
+  SetHistogramBins(kDcaZnorm,500,-10.,10.);
 }
 //__________________________________________________________________________________
 void AliCFTrackIsPrimaryCuts::Copy(TObject &c) const
@@ -249,14 +244,11 @@ void AliCFTrackIsPrimaryCuts::Copy(TObject &c) const
   if (fhCutCorrelation) target.fhCutCorrelation = (TH2F*) fhCutCorrelation->Clone();
 
   for (Int_t j=0; j<kNStepQA; j++){
-    for (Int_t i=0; i<kNHist; i++){
-      if(fhQA[i][j]) target.fhQA[i][j] = (TH1F*)fhQA[i][j]->Clone();
-      
-    }
     if(fhDcaXYvsDcaZ[j]) target.fhDcaXYvsDcaZ[j] = (TH2F*)fhDcaXYvsDcaZ[j]->Clone();
     if(fhDcaXYvsDcaZnorm[j]) target.fhDcaXYvsDcaZnorm[j] = (TH2F*)fhDcaXYvsDcaZnorm[j]->Clone();
+    for (Int_t i=0; i<kNHist; i++)
+      if(fhQA[i][j]) target.fhQA[i][j] = (TH1F*)fhQA[i][j]->Clone();
   }
-  
   TNamed::Copy(c);
 }
 //____________________________________________________________________
@@ -305,7 +297,8 @@ void AliCFTrackIsPrimaryCuts::GetBitMap(TObject* obj, TBits *bitmap)  {
   //
   // retrieve the pointer to the bitmap
   //
-  bitmap = SelectionBitMap(obj);
+  TBits *bm = SelectionBitMap(obj);
+  *bitmap = *bm;
 }
 //__________________________________________________________________________________
 TBits* AliCFTrackIsPrimaryCuts::SelectionBitMap(TObject* obj)
@@ -321,7 +314,6 @@ TBits* AliCFTrackIsPrimaryCuts::SelectionBitMap(TObject* obj)
   // cast TObject into ESDtrack
   AliESDtrack* esdTrack = dynamic_cast<AliESDtrack *>(obj);
   if ( !esdTrack ) return fBitmap ;
-
 
   for(Int_t i=0; i<kNCuts; i++)fBitmap->SetBitNumber(i,kTRUE);
 
@@ -395,19 +387,19 @@ void AliCFTrackIsPrimaryCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_
     fhBinLimDcaXY=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimDcaXY[i]=bins[i];
     break;
-    
+
   case kDcaZ:
     fhNBinsDcaZ=nbins;
     fhBinLimDcaZ=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimDcaZ[i]=bins[i];
     break;
-    
+
   case kDcaXYnorm:
     fhNBinsDcaXYnorm=nbins;
     fhBinLimDcaXYnorm=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimDcaXYnorm[i]=bins[i];
     break;
-    
+
   case kDcaZnorm:
     fhNBinsDcaZnorm=nbins;
     fhBinLimDcaZnorm=new Double_t[nbins+1];
@@ -421,8 +413,6 @@ void AliCFTrackIsPrimaryCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_
   //
   // fixed bin size
   //
-  if(!fIsQAOn) return;
-
   switch(index){
   case kCutNSigmaToVertex:
     fhNBinsNSigma=nbins;
@@ -447,19 +437,19 @@ void AliCFTrackIsPrimaryCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_
     fhBinLimDcaXY=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimDcaXY[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
     break;
-    
+
   case kDcaZ:
     fhNBinsDcaZ=nbins;
     fhBinLimDcaZ=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimDcaZ[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
     break;
-    
+
   case kDcaXYnorm:
     fhNBinsDcaXYnorm=nbins;
     fhBinLimDcaXYnorm=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimDcaXYnorm[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
     break;
-    
+
   case kDcaZnorm:
     fhNBinsDcaZnorm=nbins;
     fhBinLimDcaZnorm=new Double_t[nbins+1];
@@ -472,7 +462,6 @@ void AliCFTrackIsPrimaryCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_
   //
   // histograms for cut variables, cut statistics and cut correlations
   //
-
   Int_t color = 2;
 
   // book cut statistics and cut correlation histograms
@@ -497,10 +486,9 @@ void AliCFTrackIsPrimaryCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_
   for (Int_t i=0; i<kNStepQA; i++) {
     if (i==0) sprintf(str," ");
     else sprintf(str,"_cut");
-  
+
     fhDcaXYvsDcaZ[i]            = new  TH2F(Form("%s_dcaXYvsDcaZ%s",GetName(),str),"",200,-10,10,200,-10,10);
     fhDcaXYvsDcaZnorm[i]        = new  TH2F(Form("%s_dcaXYvsDcaZnorm%s",GetName(),str),"",200,-10,10,200,-10,10);
-
     fhQA[kCutNSigmaToVertex][i]	= new TH1F(Form("%s_nSigmaToVertex%s",GetName(),str),"",fhNBinsNSigma,fhBinLimNSigma);
     fhQA[kCutRequireSigmaToVertex][i] = new TH1F(Form("%s_requireSigmaToVertex%s",GetName(),str),"",fhNBinsRequireSigma,fhBinLimRequireSigma);
     fhQA[kCutAcceptKinkDaughters][i] = new TH1F(Form("%s_acceptKinkDaughters%s",GetName(),str),"",fhNBinsAcceptKink,fhBinLimAcceptKink);
@@ -522,9 +510,7 @@ void AliCFTrackIsPrimaryCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_
     fhQA[kDcaXYnorm][i]->SetXTitle("norm. impact par. d_{xy} / #sigma_{xy}");
     fhQA[kDcaZnorm][i]->SetXTitle("norm. impact par. d_{z} / #sigma_{z}");
   }
-
   for(Int_t i=0; i<kNHist; i++) fhQA[i][1]->SetLineColor(color);
-
 }
 //__________________________________________________________________________________
 void AliCFTrackIsPrimaryCuts::FillHistograms(TObject* obj, Bool_t f)
@@ -801,8 +787,8 @@ void AliCFTrackIsPrimaryCuts::AddQAHistograms(TList *qaList) const {
 
   for (Int_t j=0; j<kNStepQA; j++) {
     qaList->Add(fhDcaXYvsDcaZ[j]);
-    qaList->Add(fhDcaXYvsDcaZnorm[j]);    
+    qaList->Add(fhDcaXYvsDcaZnorm[j]);
     for(Int_t i=0; i<kNHist; i++)
-      qaList->Add(fhQA[i][j]);
+	qaList->Add(fhQA[i][j]);
   }
 }
