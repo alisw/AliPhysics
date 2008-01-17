@@ -49,7 +49,7 @@
 
 #include "AliCFCutBase.h"
 
-class TH2;
+class TH2 ;
 class TBits;
 class AliVParticle;
 
@@ -107,7 +107,6 @@ class AliCFTrackKineCuts : public AliCFCutBase
     kNHist=9	// number of QA histograms
   };
 
-
  private:
   TBits* SelectionBitMap(TObject* obj);
   void DefineHistograms(); 		// books histograms and TList
@@ -133,34 +132,34 @@ class AliCFTrackKineCuts : public AliCFCutBase
   Double_t fCharge ;			// electric charge
   Bool_t  fRequireIsCharged;		// accept charged particles only
 
-  TH1F* fhCutStatistics;              // Histogram: statistics of what cuts the tracks did not survive
-  TH2F* fhCutCorrelation;             // Histogram: 2d statistics plot
+  TH1F* fhCutStatistics;		// Histogram: statistics of what cuts the tracks did not survive
+  TH2F* fhCutCorrelation;		// Histogram: 2d statistics plot
 
   TH1F* fhQA[kNHist][kNStepQA];		// QA Histograms
-  TBits *fBitmap ; 				// stores single selection decisions
+  TBits *fBitmap ; 			// stores single selection decisions
 
   // QA histogram setters
   Int_t fhNBinsMomentum;		// number of bins: momentum
-  Int_t fhNBinsPt;				// number of bins: pt
-  Int_t fhNBinsPx;				// number of bins: px
-  Int_t fhNBinsPy;				// number of bins: py
-  Int_t fhNBinsPz;				// number of bins: pz
-  Int_t fhNBinsEta;				// number of bins: eta
-  Int_t fhNBinsRapidity;			// number of bins: rapidity
-  Int_t fhNBinsPhi;				// number of bins: phi
+  Int_t fhNBinsPt;			// number of bins: pt
+  Int_t fhNBinsPx;			// number of bins: px
+  Int_t fhNBinsPy;			// number of bins: py
+  Int_t fhNBinsPz;			// number of bins: pz
+  Int_t fhNBinsEta;			// number of bins: eta
+  Int_t fhNBinsRapidity;		// number of bins: rapidity
+  Int_t fhNBinsPhi;			// number of bins: phi
   Int_t fhNBinsCharge;			// number of bins: charge
   
-  Double_t *fhBinLimMomentum;	// bin limits: momentum
-  Double_t *fhBinLimPt;			// bin limits: pt
-  Double_t *fhBinLimPx;		// bin limits: px
-  Double_t *fhBinLimPy;		// bin limits: py
-  Double_t *fhBinLimPz;		// bin limits: pz
-  Double_t *fhBinLimEta;		// bin limits: eta
-  Double_t *fhBinLimRapidity;	// bin limits: rapidity
-  Double_t *fhBinLimPhi;		// bin limits: phi
-  Double_t *fhBinLimCharge;	// bin limits: charge
+  Double_t *fhBinLimMomentum;	//[fhNBinsMomentum] bin limits: momentum
+  Double_t *fhBinLimPt;		//[fhNBinsPt] bin limits: pt
+  Double_t *fhBinLimPx;		//[fhNBinsPx] bin limits: px
+  Double_t *fhBinLimPy;		//[fhNBinsPy] bin limits: py
+  Double_t *fhBinLimPz;		//[fhNBinsPz] bin limits: pz
+  Double_t *fhBinLimEta;	//[fhNBinsEta] bin limits: eta
+  Double_t *fhBinLimRapidity;	//[fhNBinsRapidity] bin limits: rapidity
+  Double_t *fhBinLimPhi;	//[fhNBinsPhi] bin limits: phi
+  Double_t *fhBinLimCharge;	//[fhNBinsCharge] bin limits: charge
 
-  ClassDef(AliCFTrackKineCuts,1);
+  ClassDef(AliCFTrackKineCuts,2);
 };
 
 #endif
