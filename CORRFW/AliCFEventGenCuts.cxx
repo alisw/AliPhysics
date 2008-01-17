@@ -34,7 +34,7 @@ ClassImp(AliCFEventGenCuts)
 //____________________________________________________________________
 AliCFEventGenCuts::AliCFEventGenCuts() : 
   AliCFCutBase(),
-  fMBProcessType(-1),
+  fMBProcType(-1),
   fNTracksMin(-1),
   fNTracksMax(100000),
   fRequireVtxCuts(kFALSE),
@@ -54,7 +54,7 @@ AliCFEventGenCuts::AliCFEventGenCuts() :
 //____________________________________________________________________
 AliCFEventGenCuts::AliCFEventGenCuts(Char_t* name, Char_t* title) : 
   AliCFCutBase(name,title),
-  fMBProcessType(-1),
+  fMBProcType(-1),
   fNTracksMin(-1),
   fNTracksMax(100000),
   fRequireVtxCuts(kFALSE),
@@ -74,7 +74,7 @@ AliCFEventGenCuts::AliCFEventGenCuts(Char_t* name, Char_t* title) :
 //____________________________________________________________________
 AliCFEventGenCuts::AliCFEventGenCuts(const AliCFEventGenCuts& c) : 
   AliCFCutBase(c),
-  fMBProcessType(c.fMBProcessType),
+  fMBProcType(c.fMBProcType),
   fNTracksMin(c.fNTracksMin),
   fNTracksMax(c.fNTracksMax),
   fRequireVtxCuts(c.fRequireVtxCuts),
@@ -107,7 +107,7 @@ AliCFEventGenCuts& AliCFEventGenCuts::operator=(const AliCFEventGenCuts& c)
   //
   if (this != &c) {
     AliCFCutBase::operator=(c) ;
-    fMBProcessType=c.fMBProcessType;
+    fMBProcType=c.fMBProcType;
     fNTracksMin=c.fNTracksMin;
     fNTracksMax=c.fNTracksMax;
     fRequireVtxCuts=c.fRequireVtxCuts;
@@ -153,13 +153,13 @@ TBits * AliCFEventGenCuts::SelectionBitMap(TObject* obj){
 
 
   fBitMap->SetBitNumber(0,kTRUE);
-  if(fMBProcessType>-1){
-    Int_t process=MBProcessType(genHeader);
+  if(fMBProcType>-1){
+    Int_t process=ProcType(genHeader);
     if(process==-1){
       AliInfo(Form(" not a pythia event, not checking on the process type"));
     }else{
 
-      switch (fMBProcessType)  {
+      switch (fMBProcType)  {
       case kND:
 	{
 	  if (!( process!=92 && process!=93 && process!=94))
@@ -208,20 +208,19 @@ TBits * AliCFEventGenCuts::SelectionBitMap(TObject* obj){
 }
 
  //______________________________________________________________________
-Bool_t AliCFEventGenCuts::IsMBProcessType(Int_t isel, TObject *obj){
+Bool_t AliCFEventGenCuts::IsMBProcType(AliMCEvent *ev, PrType iproc){
   //
   //returns the type of MB process (if pythia events)
   //
 
-  AliMCEvent* ev = dynamic_cast<AliMCEvent *>(obj);
   if ( !ev ) return kFALSE ;
 
   AliGenEventHeader*genHeader = ev->GenEventHeader();  
 
-  Int_t process=MBProcessType(genHeader);
+  Int_t process=ProcType(genHeader);
 
-  switch (isel)  {
-  case kND: //Non Diffractive: Actually what is checked is ALL -SD -DD
+  switch (iproc)  {
+  case kND: //Non Diffractive: Actually what is checked is ALL - SD - DD
     {
       if ( process!=92 && process!=93 && process!=94)
 	return kTRUE;
@@ -240,10 +239,10 @@ Bool_t AliCFEventGenCuts::IsMBProcessType(Int_t isel, TObject *obj){
 
   return kFALSE;     
 }
- //_____________________________________________________________________________
-Int_t AliCFEventGenCuts::MBProcessType(AliGenEventHeader *genHeader) {
+ //____________________________________________________________________________
+Int_t AliCFEventGenCuts::ProcType(AliGenEventHeader *genHeader) {
 
-  //get the MB process type: if we are not dealing with pythia stuff, 
+  //get the Pythia process type: if we are not dealing with pythia stuff, 
   //return -1 and we do not apply the cut
   //
 
@@ -276,6 +275,7 @@ Int_t AliCFEventGenCuts::MBProcessType(AliGenEventHeader *genHeader) {
   Int_t process=pythiaGenHeader->ProcessType();
   return process;
 }
+
 //_____________________________________________________________________________
 void  AliCFEventGenCuts::GetBitMap(TObject* obj, TBits *bitmap){
   //
