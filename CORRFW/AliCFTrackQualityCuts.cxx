@@ -42,8 +42,8 @@
 
 #include <TCanvas.h>
 #include <TDirectory.h>
-#include <TBits.h>
 #include <TH2.h>
+#include <TBits.h>
 
 #include <AliESDtrack.h>
 #include <AliLog.h>
@@ -90,11 +90,10 @@ AliCFTrackQualityCuts::AliCFTrackQualityCuts() :
   fhBinLimCovariance33(0x0),
   fhBinLimCovariance44(0x0),
   fhBinLimCovariance55(0x0)
-  {
+{
   //
   // Default constructor
   //
-  fBitmap=new TBits(0);
   Initialise();
 }
 //__________________________________________________________________________________
@@ -136,12 +135,10 @@ AliCFTrackQualityCuts::AliCFTrackQualityCuts(Char_t* name, Char_t* title) :
   fhBinLimCovariance33(0x0),
   fhBinLimCovariance44(0x0),
   fhBinLimCovariance55(0x0)
-
 {
   //
   // Constructor
   //
-  fBitmap=new TBits(0);
   Initialise();
 }
 //__________________________________________________________________________________
@@ -211,7 +208,6 @@ AliCFTrackQualityCuts& AliCFTrackQualityCuts::operator=(const AliCFTrackQualityC
     fhCutStatistics = c.fhCutStatistics ;
     fhCutCorrelation = c.fhCutCorrelation ;
     fBitmap =  c.fBitmap ;
-    
     fhNBinsClusterTPC = c.fhNBinsClusterTPC ;
     fhNBinsClusterITS = c.fhNBinsClusterITS ;
     fhNBinsChi2TPC = c.fhNBinsChi2TPC ;
@@ -234,15 +230,14 @@ AliCFTrackQualityCuts& AliCFTrackQualityCuts::operator=(const AliCFTrackQualityC
     fhBinLimCovariance33 = c.fhBinLimCovariance33 ;
     fhBinLimCovariance44 = c.fhBinLimCovariance44 ;
     fhBinLimCovariance55 = c.fhBinLimCovariance55 ;
-    
+
     for (Int_t i=0; i<c.kNHist; i++){
       for (Int_t j=0; j<c.kNStepQA; j++){
 	if(c.fhQA[i][j]) fhQA[i][j] = (TH1F*)c.fhQA[i][j]->Clone();
       }
     }
-
     ((AliCFTrackQualityCuts &) c).Copy(*this);
- }
+  }
   return *this;
 }
 //__________________________________________________________________________________
@@ -259,9 +254,7 @@ AliCFTrackQualityCuts::~AliCFTrackQualityCuts()
       if(fhQA[i][j]) delete fhQA[i][j];
     }
   }
-
-  if(fBitmap)	delete   fBitmap;
-
+  if(fBitmap) delete fBitmap;
   if(fhBinLimClusterTPC) delete fhBinLimClusterTPC;
   if(fhBinLimClusterITS) delete fhBinLimClusterITS;
   if(fhBinLimChi2TPC) delete fhBinLimChi2TPC;
@@ -273,9 +266,6 @@ AliCFTrackQualityCuts::~AliCFTrackQualityCuts()
   if(fhBinLimCovariance33) delete fhBinLimCovariance33;
   if(fhBinLimCovariance44) delete fhBinLimCovariance44;
   if(fhBinLimCovariance55) delete fhBinLimCovariance55;
-  
-  
-  
 }
 //__________________________________________________________________________________
 void AliCFTrackQualityCuts::Initialise()
@@ -304,27 +294,25 @@ void AliCFTrackQualityCuts::Initialise()
   SetMaxCovDiagonalElements();
 
   for (Int_t i=0; i<kNHist; i++){
-    for (Int_t j=0; j<kNStepQA; j++)  {
+    for (Int_t j=0; j<kNStepQA; j++)
       fhQA[i][j] = 0x0;
-    }
   }
   fhCutStatistics = 0;
   fhCutCorrelation = 0;
+  fBitmap=new TBits(0);
 
-  
-    //set default bining for QA histograms
+  //set default bining for QA histograms
   SetHistogramBins(kCutClusterTPC,165,-0.5,164.5);
   SetHistogramBins(kCutClusterITS,8,-0.5,7.5);
-  SetHistogramBins(kCutChi2TPC,500,0,10);
-  SetHistogramBins(kCutChi2ITS,500,0,10);
-  SetHistogramBins(kCutRefitTPC,2,-0.5,1.5);
-  SetHistogramBins(kCutRefitITS,2,-0.5,1.5);
-  SetHistogramBins(kCutCovElement11,200,0,20);
-  SetHistogramBins(kCutCovElement22,200,0,20);
-  SetHistogramBins(kCutCovElement33,100,0,1);
-  SetHistogramBins(kCutCovElement44,100,0,5);
-  SetHistogramBins(kCutCovElement55,100,0,5);
-  
+  SetHistogramBins(kCutChi2TPC,500,0.,10.);
+  SetHistogramBins(kCutChi2ITS,500,0.,10.);
+  SetHistogramBins(kCutRefitTPC,5,-0.75,1.75);
+  SetHistogramBins(kCutRefitITS,5,-0.75,1.75);
+  SetHistogramBins(kCutCovElement11,200,0.,20.);
+  SetHistogramBins(kCutCovElement22,200,0.,20.);
+  SetHistogramBins(kCutCovElement33,100,0.,1.);
+  SetHistogramBins(kCutCovElement44,100,0.,5.);
+  SetHistogramBins(kCutCovElement55,100,0.,5.);
 }
 //__________________________________________________________________________________
 void AliCFTrackQualityCuts::Copy(TObject &c) const
@@ -344,7 +332,6 @@ void AliCFTrackQualityCuts::Copy(TObject &c) const
       if(fhQA[i][j]) target.fhQA[i][j] = (TH1F*)fhQA[i][j]->Clone();
     }
   }
-
   TNamed::Copy(c);
 }
 //__________________________________________________________________________________
@@ -352,7 +339,8 @@ void AliCFTrackQualityCuts::GetBitMap(TObject* obj, TBits *bitmap) {
   //
   // retrieve the pointer to the bitmap
   //
-  bitmap = SelectionBitMap(obj);
+  TBits *bm = SelectionBitMap(obj);
+  *bitmap = *bm;
 }
 //__________________________________________________________________________________
 TBits* AliCFTrackQualityCuts::SelectionBitMap(TObject* obj)
@@ -386,7 +374,6 @@ TBits* AliCFTrackQualityCuts::SelectionBitMap(TObject* obj)
 
   Double_t extCov[15];
   esdTrack->GetExternalCovariance(extCov);
-
 
   // fill the bitmap
   Int_t iCutBit = 0;
@@ -462,61 +449,61 @@ void AliCFTrackQualityCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_t 
     fhBinLimClusterTPC=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimClusterTPC[i]=bins[i];
     break;
-    
+
   case kCutClusterITS:
     fhNBinsClusterITS=nbins;
     fhBinLimClusterITS=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimClusterITS[i]=bins[i];
     break;
-    
+
   case kCutChi2TPC:
     fhNBinsChi2TPC=nbins;
     fhBinLimChi2TPC=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimChi2TPC[i]=bins[i];
     break;
-    
+
   case kCutChi2ITS:
     fhNBinsChi2ITS=nbins;
     fhBinLimChi2ITS=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimChi2ITS[i]=bins[i];
     break;
-    
+
   case kCutRefitTPC:
     fhNBinsRefitTPC=nbins;
     fhBinLimRefitTPC=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimRefitTPC[i]=bins[i];
     break;
-    
+
   case kCutRefitITS:
     fhNBinsRefitITS=nbins;
     fhBinLimRefitITS=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimRefitITS[i]=bins[i];
     break;
-    
+
   case kCutCovElement11:
     fhNBinsCovariance11=nbins;
     fhBinLimCovariance11=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimCovariance11[i]=bins[i];
     break;
-    
+
   case kCutCovElement22:
     fhNBinsCovariance22=nbins;
     fhBinLimCovariance22=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimCovariance22[i]=bins[i];
     break;
-    
+
   case kCutCovElement33:
     fhNBinsCovariance33=nbins;
     fhBinLimCovariance33=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimCovariance33[i]=bins[i];
     break;
-    
+
   case kCutCovElement44:
     fhNBinsCovariance44=nbins;
     fhBinLimCovariance44=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimCovariance44[i]=bins[i];
     break;
-  
+
   case kCutCovElement55:
     fhNBinsCovariance55=nbins;
     fhBinLimCovariance55=new Double_t[nbins+1];
@@ -530,69 +517,67 @@ void AliCFTrackQualityCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_t 
   //
   // fixed bin size
   //
-  if(!fIsQAOn) return;
-
   switch(index){
   case kCutClusterTPC:
     fhNBinsClusterTPC=nbins;
     fhBinLimClusterTPC=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimClusterTPC[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
     break;
-    
+
   case kCutClusterITS:
     fhNBinsClusterITS=nbins;
     fhBinLimClusterITS=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimClusterITS[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
     break;
-    
+
   case kCutChi2TPC:
     fhNBinsChi2TPC=nbins;
     fhBinLimChi2TPC=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimChi2TPC[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
     break;
-    
+
   case kCutChi2ITS:
     fhNBinsChi2ITS=nbins;
     fhBinLimChi2ITS=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimChi2ITS[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
     break;
-    
+
   case kCutRefitTPC:
     fhNBinsRefitTPC=nbins;
     fhBinLimRefitTPC=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimRefitTPC[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
     break;
-    
+
   case kCutRefitITS:
     fhNBinsRefitITS=nbins;
     fhBinLimRefitITS=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimRefitITS[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
     break;
-    
+
   case kCutCovElement11:
     fhNBinsCovariance11=nbins;
     fhBinLimCovariance11=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimCovariance11[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
     break;
-    
+
   case kCutCovElement22:
     fhNBinsCovariance22=nbins;
     fhBinLimCovariance22=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimCovariance22[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
     break;
-    
+
   case kCutCovElement33:
     fhNBinsCovariance33=nbins;
     fhBinLimCovariance33=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimCovariance33[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
     break;
-    
+
   case kCutCovElement44:
     fhNBinsCovariance44=nbins;
     fhBinLimCovariance44=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimCovariance44[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
     break;
-  
+
   case kCutCovElement55:
     fhNBinsCovariance55=nbins;
     fhBinLimCovariance55=new Double_t[nbins+1];
@@ -605,7 +590,6 @@ void AliCFTrackQualityCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_t 
   //
   // histograms for cut variables, cut statistics and cut correlations
   //
-
   Int_t color = 2;
 
   // book cut statistics and cut correlation histograms
@@ -655,7 +639,7 @@ void AliCFTrackQualityCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_t 
   for (Int_t i=0; i<kNStepQA; i++) {
     if (i==0) sprintf(str," ");
     else sprintf(str,"_cut");
-        
+
     fhQA[kCutClusterTPC][i]	= new TH1F(Form("%s_nClustersTPC%s",GetName(),str)     ,"",fhNBinsClusterTPC,fhBinLimClusterTPC);
     fhQA[kCutClusterITS][i]	= new TH1F(Form("%s_nClustersITS%s",GetName(),str)     ,"",fhNBinsClusterITS,fhBinLimClusterITS);
     fhQA[kCutChi2TPC][i]	= new TH1F(Form("%s_chi2PerClusterTPC%s",GetName(),str),"",fhNBinsChi2TPC,fhBinLimChi2TPC);
@@ -678,11 +662,10 @@ void AliCFTrackQualityCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_t 
     fhQA[kCutCovElement22][i]	->SetXTitle("cov 22 : #sigma_{z}^{2} (cm^{2})");
     fhQA[kCutCovElement33][i]	->SetXTitle("cov 33 : #sigma_{sin(#phi)}^{2}");
     fhQA[kCutCovElement44][i]	->SetXTitle("cov 44 : #sigma_{tan(#theta_{dip})}^{2}");
-    fhQA[kCutCovElement55][i]	->SetXTitle("cov 55 : #sigma_{1/p_{T}}^{2} ((c/GeV)^2)");
+    fhQA[kCutCovElement55][i]	->SetXTitle("cov 55 : #sigma_{1/p_{T}}^{2} ((c/GeV)^{2})");
   }
 
   for(Int_t i=0; i<kNHist; i++) fhQA[i][1]->SetLineColor(color);
-
 }
 //__________________________________________________________________________________
 void AliCFTrackQualityCuts::FillHistograms(TObject* obj, Bool_t b)
@@ -708,35 +691,33 @@ void AliCFTrackQualityCuts::FillHistograms(TObject* obj, Bool_t b)
   if (nClustersTPC!=0)
     chi2PerClusterTPC = esdTrack->GetTPCchi2()/((float)nClustersTPC);
   fhQA[kCutChi2TPC][index]->Fill(chi2PerClusterTPC);
-  
+
   Int_t nClustersITS = esdTrack->GetITSclusters(fIdxInt);
   fhQA[kCutClusterITS][index]->Fill((float)nClustersITS);
   Float_t chi2PerClusterITS = -1.;
   if (nClustersITS!=0)
     chi2PerClusterITS = esdTrack->GetITSchi2()/((float)nClustersITS);
   fhQA[kCutChi2ITS][index]->Fill(chi2PerClusterITS);
-  
-  
+
   if ((esdTrack->GetStatus()&AliESDtrack::kTPCrefit)==0)
     fhQA[kCutRefitTPC][index]->Fill(0.);
   if (!((esdTrack->GetStatus()&AliESDtrack::kTPCrefit)==0))
     fhQA[kCutRefitTPC][index]->Fill(1.);
-  
+
   if ((esdTrack->GetStatus()&AliESDtrack::kITSrefit)==0)
     fhQA[kCutRefitITS][index]->Fill(0.);
   if (!((esdTrack->GetStatus()&AliESDtrack::kITSrefit)==0))
     fhQA[kCutRefitITS][index]->Fill(1.);
-  
-  
+
   Double_t extCov[15];
   esdTrack->GetExternalCovariance(extCov);
-  
+
   fhQA[kCutCovElement11][index]->Fill(extCov[0]);
   fhQA[kCutCovElement22][index]->Fill(extCov[2]);
   fhQA[kCutCovElement33][index]->Fill(extCov[5]);
   fhQA[kCutCovElement44][index]->Fill(extCov[9]);
   fhQA[kCutCovElement55][index]->Fill(extCov[14]);
-  
+
   // fill cut statistics and cut correlation histograms with information from the bitmap
   if (b) return;
 
@@ -853,7 +834,7 @@ void AliCFTrackQualityCuts::DrawHistograms(Bool_t drawLogScale)
   gPad->SetLeftMargin(left);
   gPad->SetTopMargin(top);
   gPad->SetBottomMargin(bottom);
-//   fhQA[kCutRefitTPC][0]->SetStats(kFALSE);
+  fhQA[kCutRefitTPC][0]->SetStats(kFALSE);
   fhQA[kCutRefitTPC][0]->Draw();
   fhQA[kCutRefitTPC][1]->Draw("same");
 
@@ -880,7 +861,7 @@ void AliCFTrackQualityCuts::DrawHistograms(Bool_t drawLogScale)
   gPad->SetLeftMargin(left);
   gPad->SetTopMargin(top);
   gPad->SetBottomMargin(bottom);
-//   fhQA[kCutRefitITS][0]->SetStats(kFALSE);
+  fhQA[kCutRefitITS][0]->SetStats(kFALSE);
   fhQA[kCutRefitITS][0]->Draw();
   fhQA[kCutRefitITS][1]->Draw("same");
 
