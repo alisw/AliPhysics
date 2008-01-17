@@ -15,7 +15,7 @@
 // To select on the Event Class: look at the Trigger mask and the ZDC info.
 // Only pp-running trigger types implemented so far
 // handles all masks for the trigger description
-// and some general combinations like MB1,MB2,MB3
+// and some general combinations like MB1,MB2,MB3,MB4 and MB5.
 // The argument of IsSelected member function (passed object) is cast into 
 // an AliVEvent, but cuts have a true meaning only for AliESD(AOD)Event 
 // type objects.
@@ -70,6 +70,7 @@ AliCFEventClassCuts::AliCFEventClassCuts() :
   fBitMap=new TBits(0);
   Initialise();
 }
+
 //____________________________________________________________________
 AliCFEventClassCuts::AliCFEventClassCuts(Char_t* name, Char_t* title) : 
   AliCFCutBase(name,title),
@@ -109,7 +110,8 @@ AliCFEventClassCuts::AliCFEventClassCuts(Char_t* name, Char_t* title) :
   fBitMap=new TBits(0);
   Initialise();
  }
-//____________________________________________________________________
+
+//_____________________________________________________________________________
 AliCFEventClassCuts::AliCFEventClassCuts(const AliCFEventClassCuts& c) : 
   AliCFCutBase(c),
   fTriggerType(c.fTriggerType),
@@ -147,7 +149,8 @@ AliCFEventClassCuts::AliCFEventClassCuts(const AliCFEventClassCuts& c) :
   //copy constructor
   //
 }
-//____________________________________________________________________
+
+//_____________________________________________________________________________
 AliCFEventClassCuts& AliCFEventClassCuts::operator=(const AliCFEventClassCuts& c){
   //
   // Assignment operator
@@ -195,7 +198,7 @@ AliCFEventClassCuts& AliCFEventClassCuts::operator=(const AliCFEventClassCuts& c
   return *this ;
 }
 
-//____________________________________________________________________
+//_____________________________________________________________________________
 AliCFEventClassCuts::~AliCFEventClassCuts()
 {
   //
@@ -217,21 +220,23 @@ AliCFEventClassCuts::~AliCFEventClassCuts()
   if(fhBinLimZDCEnEM2)delete fhBinLimZDCEnEM2;
 
 }
-//__________________________________________________________________________________
+
+//_____________________________________________________________________________
 void AliCFEventClassCuts::Init() {
   //
-  // initialises all histograms and the TList which holds the histograms
+  // initialises all QA histograms 
   //
   if(fIsQAOn)
     DefineHistograms();
 }
-//__________________________________________________________________________________
-//__________________________________________________________________________________
+
+//_____________________________________________________________________________
 void AliCFEventClassCuts::Initialise()
 {
   //
   //initialization
   //
+
 
   //
   // sets pointers to histos to zero
@@ -254,6 +259,7 @@ void AliCFEventClassCuts::Initialise()
   SetHistogramBins(kZDCEnergyEM2,800,-500,7500);
 
 }
+
 //____________________________________________________________________
 Bool_t AliCFEventClassCuts::IsSelected(TObject* obj) {
   //
@@ -324,6 +330,7 @@ TBits *AliCFEventClassCuts::SelectionBitMap(TObject* obj) {
   return fBitMap;
 
 }
+
 //_____________________________________________________________________________
 Bool_t AliCFEventClassCuts::IsTriggered(AliVEvent* ev, TriggerType trigger) {
   //
@@ -336,6 +343,7 @@ Bool_t AliCFEventClassCuts::IsTriggered(AliVEvent* ev, TriggerType trigger) {
   return isTriggered;
 
 }
+
 //_____________________________________________________________________________
 void AliCFEventClassCuts::TriggerBitMap(AliVEvent* ev, TBits *bitmapT ) {
   //
@@ -371,7 +379,8 @@ void AliCFEventClassCuts::TriggerBitMap(AliVEvent* ev, TBits *bitmapT ) {
 
   return;
 } 
-//__________________________________________________________________________________
+
+//_____________________________________________________________________________
 void AliCFEventClassCuts::GetBitMap(TObject* obj, TBits* bitmap){
   //
   // retrieve the pointer to the bitmap
@@ -380,7 +389,8 @@ void AliCFEventClassCuts::GetBitMap(TObject* obj, TBits* bitmap){
   bitmap = SelectionBitMap(obj);
 
 }
-//__________________________________________________________________________________
+
+//_____________________________________________________________________________
 void AliCFEventClassCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_t *bins)
 {
   //
@@ -434,7 +444,8 @@ void AliCFEventClassCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_t *b
   }
 
 }
-//__________________________________________________________________________________
+
+//_____________________________________________________________________________
 void AliCFEventClassCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_t xmin, Double_t xmax)
 {
   //
@@ -485,7 +496,8 @@ void AliCFEventClassCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_t xm
     break;
   }
 }
-//__________________________________________________________________________________
+
+//_____________________________________________________________________________
  void AliCFEventClassCuts::DefineHistograms() {
   //
   // histograms for cut variables
@@ -526,7 +538,8 @@ void AliCFEventClassCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_t xm
   for(Int_t i=0; i<kNCuts; i++) fhQA[i][1]->SetLineColor(color);
 
 }
-//__________________________________________________________________________________
+
+//_____________________________________________________________________________
 void AliCFEventClassCuts::FillHistograms(TObject* obj, Bool_t b)
 {
   //
@@ -566,7 +579,8 @@ void AliCFEventClassCuts::FillHistograms(TObject* obj, Bool_t b)
   fhQA[kZDCEnergyEM2][index]->Fill(esd->GetZDCEMEnergy(1));
 
 }
-//__________________________________________________________________________________
+
+//_____________________________________________________________________________
 void AliCFEventClassCuts::AddQAHistograms(TList *list) const {
   //
   // saves the histograms in a TList
