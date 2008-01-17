@@ -15,6 +15,7 @@ CLASS_HDRS:=  	AliHLTTPCTransform.h \
 		AliHLTTPCDigitReaderPacked.h \
 		AliHLTTPCDigitReaderUnpacked.h \
 		AliHLTTPCDigitReaderRaw.h \
+		AliHLTTPCDigitReaderDecoder.h \
 		AliHLTTPCDigitDumpComponent.h \
 		AliHLTAltroChannelSelectorComponent.h \
 		AliHLTTPCVertex.h \
