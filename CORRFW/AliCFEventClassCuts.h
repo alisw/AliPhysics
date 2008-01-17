@@ -54,22 +54,7 @@ class AliCFEventClassCuts: public AliCFCutBase
     kMB1,kMB2,kMB3,kMB4,kMB5
   }; 
 
-  
-  enum{kTrigger=0,
-	 kZDCEnergyN1,
-	 kZDCEnergyP1,
-	 kZDCEnergyN2,
-	 kZDCEnergyP2,
-	 kZDCEnergyEM1,
-	 kZDCEnergyEM2,
-	 kNTriggers=17,
-	 kNTriggersMB=5,
-	 kNCuts=7,
-         kNStepQA=2
-	 };
-
-  
-//static checker for trigger bits
+  //static checker for trigger bits
   static Bool_t IsTriggered(AliVEvent *ev, TriggerType trigger=kMB1); 
 
   void   SetTriggerType(TriggerType trigger=kMB1) { fTriggerType.SetBitNumber(trigger,kTRUE);} // Set requested trigger bits
@@ -105,7 +90,18 @@ class AliCFEventClassCuts: public AliCFCutBase
   // please use indices from the enumeration below
   void SetHistogramBins(Int_t index, Int_t nbins, Double_t *bins);
   void SetHistogramBins(Int_t index, Int_t nbins, Double_t xmin, Double_t xmax);
-
+  enum{kTrigger=0,
+	 kZDCEnergyN1,
+	 kZDCEnergyP1,
+	 kZDCEnergyN2,
+	 kZDCEnergyP2,
+	 kZDCEnergyEM1,
+	 kZDCEnergyEM2,
+	 kNTriggers=17,
+	 kNTriggersMB=5,
+	 kNCuts=7,
+         kNStepQA=2
+	 };
  private:
   TBits* SelectionBitMap(TObject* obj);
   static void TriggerBitMap(AliVEvent* ev,TBits *bitmapT);
@@ -129,27 +125,21 @@ class AliCFEventClassCuts: public AliCFCutBase
   Double_t fZDCEM2EnergyMax; //Max Energy in ZDCEM2
 
   TBits *fBitMap ; //cut mask
+
   TH1F* fhQA[kNCuts][kNStepQA];		// QA Histograms
   //QA Histogram parameters
-
   Int_t fhNBinsTrigger;//size of array of bin limits, Trigger Mask
   Double_t *fhBinLimTrigger;//[fhNBinsTrigger] bin limits, Trigger Mask
-
   Int_t fhNBinsZDCEnN1;//size of array of bin limits, Energy in ZDC N1
   Double_t *fhBinLimZDCEnN1;//[fhNBinsZDCEnN1] bin limits, Energy in ZDC N1
-
   Int_t fhNBinsZDCEnP1;//size of array of bin limits, Energy in ZDC P1
   Double_t *fhBinLimZDCEnP1;//[fhNBinsZDCEnP1] bin limits, Energy in ZDC P1
-
   Int_t fhNBinsZDCEnN2;//size of array of bin limits, Energy in ZDC N2
   Double_t *fhBinLimZDCEnN2;//[fhNBinsZDCEnN2] bin limits, Energy in ZDC N2
-
   Int_t fhNBinsZDCEnP2;//size of array of bin limits, Energy in ZDC P2
   Double_t *fhBinLimZDCEnP2;//[fhNBinsZDCEnP2] bin limits, Energy in ZDC P2
-
   Int_t fhNBinsZDCEnEM1;//size of array of bin limits, Energy in ZDC EM1
   Double_t *fhBinLimZDCEnEM1;//[fhNBinsZDCEnEM1] bin limits, Energy in ZDC EM1
-
   Int_t fhNBinsZDCEnEM2;//size of array of bin limits, Energy in ZDC EM2
   Double_t *fhBinLimZDCEnEM2;//[fhNBinsZDCEnEM1] bin limits, Energy in ZDC EM2
  
