@@ -503,7 +503,7 @@ AliTRDrawStreamTB *AliTRDtestBeam::GetTRDrawStream()
   //AliTRDrawStreamTB::SupressWarnings(kTRUE);
  
   AliTRDrawStreamTB *tb = new AliTRDrawStreamTB(reader); 
-  tb->Init();
+  //tb->Init();
   return tb;
   /*
     return 
