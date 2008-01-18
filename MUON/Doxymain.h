@@ -19,6 +19,7 @@ Currently there are the documentation pages on
 - \ref README_sim
 - \ref README_rec
 - \ref README_base
+- \ref README_mchview 
 - \ref README_evaluation 
 - \ref README_fast
 - \ref README_raw 
@@ -27,7 +28,6 @@ Currently there are the documentation pages on
 - \ref README_geometry 
 - \ref README_trigger 
 - \ref README_shuttle 
-- \ref README_mchview 
 
 On this page you will find the first how to run the 
 simulation, reconstructin and evaluation chain. More details
