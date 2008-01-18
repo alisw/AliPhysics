@@ -7,10 +7,6 @@
  * full copyright notice.                                                 * 
  **************************************************************************/
 
-//__________________________________________________________________________
-// AliEveITSDigitsInfo
-//
-//
 #include <TMath.h>
 #include <TVector3.h>
 
@@ -27,8 +23,10 @@
 #include <AliITSRawStreamSDD.h>
 #include <AliITSRawStreamSSD.h>
 
-using namespace std;
-
+//______________________________________________________________________________
+//
+// Helper for selecting a range of ITS modules by type, layer, phi and
+// theta. Taken as an argument to AliEveITSDigitsInfo::GetModuleIDs().
 
 ClassImp(AliEveITSModuleSelection)
 
@@ -39,8 +37,15 @@ AliEveITSModuleSelection::AliEveITSModuleSelection():
   fMaxPhi(TMath::Pi()),
   fMinTheta(-TMath::Pi()),
   fMaxTheta(TMath::Pi())
-{}
+{
+  // Constructor.
+}
 
+
+//______________________________________________________________________________
+//
+// Stores ITS geometry information and event-data in format suitable
+// for visualization.
 
 ClassImp(AliEveITSDigitsInfo)
 
@@ -54,16 +59,22 @@ AliEveITSDigitsInfo::AliEveITSDigitsInfo() :
   fGeom (0),
   fSegSPD(0), fSegSDD(0), fSegSSD(0)
 {
+  // Default constructor.
+
   InitInternals();
 }
 
 void AliEveITSDigitsInfo::InitInternals()
 {
+  // Initialize internal geometry structures, in particular the
+  // module-id to transformation-matrix mapping and segmentation
+  // classes and data-structures.
+
   static const TEveException eH("AliEveITSDigitsInfo::InitInternals ");
 
   fGeom = new AliITSgeom();
   fGeom->ReadNewFile("$REVESYS/alice-data/ITSgeometry.det");
-  if(fGeom == 0)
+  if (fGeom == 0)
     throw(eH + "can not load ITS geometry \n");
 
   SetITSSegmentation();
@@ -119,6 +130,9 @@ void AliEveITSDigitsInfo::InitInternals()
 
 AliEveITSDigitsInfo:: ~AliEveITSDigitsInfo() 
 {
+  // Destructor.
+  // Deletes the data-maps and the tree.
+
   map<Int_t, TClonesArray*>::iterator j;
   for(j = fSPDmap.begin(); j != fSPDmap.end(); ++j)
     delete j->second;
@@ -232,9 +246,12 @@ void AliEveITSDigitsInfo::ReadRaw(AliRawReader* raw, Int_t mode)
 
 void AliEveITSDigitsInfo::SetITSSegmentation()
 {
+  // Create the segmentation objects and fill internal
+  // data-structures.
+
   // SPD
   fSegSPD = new AliITSsegmentationSPD(fGeom);
-  //SPD geometry  
+
   Int_t m;
   Float_t fNzSPD=160;
   Float_t fZ1pitchSPD=0.0425; Float_t fZ2pitchSPD=0.0625;
@@ -254,9 +271,7 @@ void AliEveITSDigitsInfo::SetITSSegmentation()
 	m==127 || m==128) dz=1.*fZ2pitchSPD; 
     fSPDZCoord[m]-=dz;
   }
-  
-  // end of SPD geometry
-  
+    
   // SDD
   fSegSDD = new AliITSsegmentationSDD(fGeom);
 
@@ -264,20 +279,19 @@ void AliEveITSDigitsInfo::SetITSSegmentation()
   fSegSSD = new AliITSsegmentationSSD(fGeom);
 }
 
-void AliEveITSDigitsInfo::GetSPDLocalZ(Int_t j, Float_t& z)
-{
-  z = fSPDZCoord[j];
-}
-
 /**************************************************************************/
 
 TClonesArray* AliEveITSDigitsInfo::GetDigits(Int_t mod, Int_t subdet)
 {
-  switch(subdet) {
-    case 0: {
+  // Return TClonesArray of digits for specified module and sub-detector-id.
+
+  switch(subdet)
+  {
+    case 0:
+    {
       TClonesArray* digitsSPD = 0;
       map<Int_t, TClonesArray*>::iterator i = fSPDmap.find(mod);
-      if(i == fSPDmap.end()) {
+      if (i == fSPDmap.end()) {
 	if (fTree) {
 	  TBranch* br =  fTree->GetBranch("ITSDigitsSPD");
 	  br->SetAddress(&digitsSPD);
@@ -292,10 +306,11 @@ TClonesArray* AliEveITSDigitsInfo::GetDigits(Int_t mod, Int_t subdet)
       }
       break;
     }
-    case 1: {
+    case 1:
+    {
       TClonesArray* digitsSDD = 0;
       map<Int_t, TClonesArray*>::iterator i = fSDDmap.find(mod);
-      if(i == fSDDmap.end()) {
+      if (i == fSDDmap.end()) {
 	if (fTree) {
 	  TBranch* br =  fTree->GetBranch("ITSDigitsSDD");
 	  br->SetAddress(&digitsSDD);
@@ -310,10 +325,11 @@ TClonesArray* AliEveITSDigitsInfo::GetDigits(Int_t mod, Int_t subdet)
       }
       break;
     }
-    case 2: {
+    case 2:
+    {
       TClonesArray* digitsSSD = 0;
       map<Int_t, TClonesArray*>::iterator i = fSSDmap.find(mod);
-      if(i == fSSDmap.end()) {
+      if (i == fSSDmap.end()) {
 	if (fTree) {
 	  TBranch* br =  fTree->GetBranch("ITSDigitsSSD");
 	  br->SetAddress(&digitsSSD);
@@ -331,14 +347,18 @@ TClonesArray* AliEveITSDigitsInfo::GetDigits(Int_t mod, Int_t subdet)
     }
     default:
       return 0;
-  } //end switch
+  }
   return 0;
 }
 
 /**************************************************************************/
-void AliEveITSDigitsInfo::GetModuleIDs(AliEveITSModuleSelection* sel, std::vector<UInt_t>& ids)
+
+void AliEveITSDigitsInfo::GetModuleIDs(AliEveITSModuleSelection* sel,
+				       std::vector<UInt_t>& ids)
 {
-  // loop SPD
+  // Fill the id-vector with ids of modules that satisfy conditions
+  // given by the AliEveITSModuleSelection object.
+
   Int_t idx0 = 0, idx1 = 0;
   switch(sel->fType)
   {
@@ -357,15 +377,17 @@ void AliEveITSDigitsInfo::GetModuleIDs(AliEveITSModuleSelection* sel, std::vecto
     default:
       idx1 = 0;
       idx1 = fGeom->GetLastSSD();
+      break;
   }
 
   TVector3 v;
   Double_t x[9];
   Int_t lay, lad, det;
   TEveTrans mx;
-  for(Int_t id = idx0; id<idx1; id++){
+  for (Int_t id = idx0; id<idx1; ++id)
+  {
     fGeom->GetModuleId(id, lay, lad, det);
-    if(sel->fLayer==lay || sel->fLayer==-1)
+    if (sel->fLayer == lay || sel->fLayer == -1)
     {
       // check data from matrix
       mx.UnitTrans();
@@ -376,9 +398,11 @@ void AliEveITSDigitsInfo::GetModuleIDs(AliEveITSModuleSelection* sel, std::vecto
       fGeom->GetTrans(id, x);  
       mx.SetBaseVec(4, x);
       mx.GetPos(v);
-      if(v.Phi()<=sel->fMaxPhi && v.Phi()>=sel->fMinPhi &&
-         v.Theta()<=sel->fMaxTheta && v.Theta()>=sel->fMinTheta )
+      if (v.Phi()   <= sel->fMaxPhi   && v.Phi()   >= sel->fMinPhi   &&
+	  v.Theta() <= sel->fMaxTheta && v.Theta() >= sel->fMinTheta)
+      {
 	ids.push_back(id);
+      }
     }
   }
 }
@@ -387,29 +411,33 @@ void AliEveITSDigitsInfo::GetModuleIDs(AliEveITSModuleSelection* sel, std::vecto
 
 void AliEveITSDigitsInfo::Print(Option_t* ) const
 {
+  // Print information about stored geometry and segmentation.
+
   printf("*********************************************************\n");
-  printf("SPD module dimension (%f,%f) \n",fSegSPD->Dx()*0.0001, fSegSPD->Dz()*0.0001);
-  printf("SPD first,last module:: %d,%d \n", fGeom->GetStartSPD(),fGeom->GetLastSPD() );
-  printf("SPD num cells per module (x::%d,z::%d)\n",fSegSPD->Npx(), fSegSPD->Npz());
-  Int_t iz=0,ix = 0;
-  printf("SPD dimesion of (%d,%d) in pixel(%f,%f) \n", ix,iz, fSegSPD->Dpx(ix), fSegSPD->Dpz(iz));
+  printf("SPD module dimension (%f,%f)\n",           fSegSPD->Dx()*0.0001, fSegSPD->Dz()*0.0001);
+  printf("SPD first,last module:: %d,%d\n",          fGeom->GetStartSPD(), fGeom->GetLastSPD() );
+  printf("SPD num cells per module (x::%d,z::%d)\n", fSegSPD->Npx(), fSegSPD->Npz());
+  Int_t iz = 0, ix = 0;
+  printf("SPD dimesion of (%d,%d) in pixel(%f,%f)\n",   ix, iz, fSegSPD->Dpx(ix), fSegSPD->Dpz(iz));
   iz = 32;
-  printf("SPD dimesion of pixel (%d,%d) are (%f,%f) \n", ix,iz, fSegSPD->Dpx(ix)*0.001, fSegSPD->Dpz(iz)*0.001);
+  printf("SPD dimesion of pixel (%d,%d) are (%f,%f)\n", ix, iz, fSegSPD->Dpx(ix)*0.001, fSegSPD->Dpz(iz)*0.001);
  
   printf("*********************************************************\n");
-  printf("SDD module dimension (%f,%f) \n",fSegSDD->Dx()*0.0001, fSegSDD->Dz()*0.0001);
-  printf("SDD first,last module:: %d,%d \n", fGeom->GetStartSDD(),fGeom->GetLastSDD() );
-  printf("SDD num cells per module (x::%d,z::%d)\n",fSegSDD->Npx(), fSegSDD->Npz());
-  printf("SDD dimesion of pixel are (%f,%f) \n", fSegSDD->Dpx(1)*0.001,fSegSDD->Dpz(1)*0.001);
+  printf("SDD module dimension (%f,%f)\n",           fSegSDD->Dx()*0.0001, fSegSDD->Dz()*0.0001);
+  printf("SDD first,last module:: %d,%d\n",          fGeom->GetStartSDD(), fGeom->GetLastSDD());
+  printf("SDD num cells per module (x::%d,z::%d)\n", fSegSDD->Npx(), fSegSDD->Npz());
+  printf("SDD dimesion of pixel are (%f,%f)\n",      fSegSDD->Dpx(1)*0.001, fSegSDD->Dpz(1)*0.001);
+
+  Float_t ap, an;
   printf("*********************************************************\n");
-  printf("SSD module dimension (%f,%f) \n",fSegSSD->Dx()*0.0001, fSegSSD->Dz()*0.0001);
-  printf("SSD first,last module:: %d,%d \n", fGeom->GetStartSSD(),fGeom->GetLastSSD() );
-  printf("SSD strips in module %d \n",fSegSSD->Npx());
-  printf("SSD strip sizes are (%f,%f) \n", fSegSSD->Dpx(1),fSegSSD->Dpz(1));
-  fSegSSD->SetLayer(5); Float_t ap,an;  fSegSSD->Angles(ap,an);
-  printf("SSD layer 5 stereoP %f stereoN %f angle \n",ap,an); 
+  printf("SSD module dimension (%f,%f)\n",  fSegSSD->Dx()*0.0001, fSegSSD->Dz()*0.0001);
+  printf("SSD first,last module:: %d,%d\n", fGeom->GetStartSSD(), fGeom->GetLastSSD() );
+  printf("SSD strips in module %d\n",       fSegSSD->Npx());
+  printf("SSD strip sizes are (%f,%f)\n",   fSegSSD->Dpx(1), fSegSSD->Dpz(1));
+  fSegSSD->SetLayer(5);  fSegSSD->Angles(ap,an);
+  printf("SSD layer 5 stereoP %f stereoN %f angle\n", ap, an); 
   fSegSSD->SetLayer(6);  fSegSSD->Angles(ap,an);
-  printf("SSD layer 6 stereoP %f stereoN %f angle \n",ap,an); 
+  printf("SSD layer 6 stereoP %f stereoN %f angle\n", ap, an); 
 }
 
 
