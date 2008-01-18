@@ -62,15 +62,6 @@ AliZDCRecParam::AliZDCRecParam(const AliZDCRecParam& calibda) :
   SetName(calibda.GetName());
   SetTitle(calibda.GetName());
   Reset();
-  for(int t=0; t<48; t++){
-     fMeanPedestal[t] = calibda.GetMeanPed(t);
-     fMeanPedWidth[t] = calibda.GetMeanPedWidth(t);
-     fOOTPedestal[t]  = calibda.GetOOTPed(t);
-     fOOTPedWidth[t]  = calibda.GetOOTPedWidth(t);
-     fPedCorrCoeff[0][t] = calibda.GetPedCorrCoeff0(t);
-     fPedCorrCoeff[1][t] = calibda.GetPedCorrCoeff1(t);
-  }
-  for(int t=0; t<6; t++)  fEnCalibration[t] = calibda.GetEnCalib(t);
   //
   fZEMEndValue    = calibda.GetZEMEndValue();   
   fZEMCutFraction = calibda.GetZEMCutFraction();
@@ -85,15 +76,6 @@ AliZDCRecParam &AliZDCRecParam::operator =(const AliZDCRecParam& calibda)
   SetName(calibda.GetName());
   SetTitle(calibda.GetName());
   Reset();
-  for(int t=0; t<48; t++){
-     fMeanPedestal[t] = calibda.GetMeanPed(t);
-     fMeanPedWidth[t] = calibda.GetMeanPedWidth(t);
-     fOOTPedestal[t]  = calibda.GetOOTPed(t);
-     fOOTPedWidth[t]  = calibda.GetOOTPedWidth(t);
-     fPedCorrCoeff[0][t] = calibda.GetPedCorrCoeff0(t);
-     fPedCorrCoeff[1][t] = calibda.GetPedCorrCoeff1(t);
-  }
-  for(int t=0; t<6; t++) fEnCalibration[t] = calibda.GetEnCalib(t);
   fZEMEndValue    = calibda.GetZEMEndValue();
   fZEMCutFraction = calibda.GetZEMCutFraction();
 
@@ -109,15 +91,6 @@ AliZDCRecParam::~AliZDCRecParam()
 void AliZDCRecParam::Reset()
 {
   // Reset
-  memset(fMeanPedestal,0,48*sizeof(Float_t));
-  memset(fMeanPedWidth,0,48*sizeof(Float_t));
-  memset(fOOTPedestal,0,48*sizeof(Float_t));
-  memset(fOOTPedWidth,0,48*sizeof(Float_t));
-  memset(fEnCalibration,0,6*sizeof(Float_t));
-  memset(fZN1EqualCoeff,0,5*sizeof(Float_t));
-  memset(fZP1EqualCoeff,0,5*sizeof(Float_t));
-  memset(fZN2EqualCoeff,0,5*sizeof(Float_t));
-  memset(fZP2EqualCoeff,0,5*sizeof(Float_t));
 }                                                                                       
 
 
@@ -138,107 +111,3 @@ void  AliZDCRecParam::Print(Option_t *) const
 
 } 
 
-//________________________________________________________________
-void AliZDCRecParam::SetMeanPed(Float_t* MeanPed)
-{
-  if(MeanPed) for(int t=0; t<48; t++) fMeanPedestal[t] = MeanPed[t];
-  else for(int t=0; t<48; t++) fMeanPedestal[t] = 0.;
-}
-//________________________________________________________________
-void AliZDCRecParam::SetMeanPedWidth(Float_t* MeanPedWidth)
-{
-  if(MeanPedWidth) for(int t=0; t<48; t++) fMeanPedWidth[t] = MeanPedWidth[t];
-  else for(int t=0; t<48; t++) fMeanPedWidth[t] = 0.;
-}
-
-//________________________________________________________________
-void AliZDCRecParam::SetOOTPed(Float_t* OOTPed)
-{
-  if(OOTPed) for(int t=0; t<48; t++) fOOTPedestal[t] = OOTPed[t];
-  else for(int t=0; t<48; t++) fOOTPedestal[t] = 0.;
-}
-
-//________________________________________________________________
-void AliZDCRecParam::SetOOTPedWidth(Float_t* OOTPedWidth)
-{
-  if(OOTPedWidth) for(int t=0; t<48; t++) fOOTPedWidth[t] = OOTPedWidth[t];
-  else for(int t=0; t<48; t++) fOOTPedWidth[t] = 0.;
-}
-
-//________________________________________________________________
-void AliZDCRecParam:: SetPedCorrCoeff(Float_t* PedCorrCoeff)
-{
-  // Set coefficients for pedestal correlations
-  if(PedCorrCoeff){
-    for(Int_t j=0; j<2; j++){
-     for(int t=0; t<48; t++)
-       fPedCorrCoeff[j][t] = PedCorrCoeff[t];
-    }
-  }
-  else{
-    for(Int_t j=0; j<2; j++){
-     for(int t=0; t<48; t++)
-       fPedCorrCoeff[j][t] = 0.;
-    }
-  }
- 
-}
-
-//________________________________________________________________
-void AliZDCRecParam:: SetPedCorrCoeff(Float_t* PedCorrCoeff0, Float_t* PedCorrCoeff1)
-{
-  // Set coefficients for pedestal correlations
-  if(PedCorrCoeff0 && PedCorrCoeff1){
-    for(int t=0; t<48; t++){
-       fPedCorrCoeff[0][t] = PedCorrCoeff0[t];
-       fPedCorrCoeff[0][t] = PedCorrCoeff1[t];
-    }
-  }
-  else{
-     for(int t=0; t<48; t++){
-       fPedCorrCoeff[0][t] = 0.;
-       fPedCorrCoeff[1][t] = 0.;
-    }
-  }
- 
-}
-
-//________________________________________________________________
-void AliZDCRecParam::SetEnCalib(Float_t* EnCalib) 
-{
-  // Set energy calibration coefficients
-  if(EnCalib) for(int t=0; t<6; t++) fEnCalibration[t] = EnCalib[t];
-  else for(int t=0; t<6; t++) fEnCalibration[t] = 0.;
-}
-
-//________________________________________________________________
-void AliZDCRecParam::SetZN1EqualCoeff(Float_t* EqualCoeff)
-{
-  // Set ZN1 equalization coefficients
-  if(EqualCoeff) for(int t=0; t<5; t++) fZN1EqualCoeff[t] = EqualCoeff[t];
-  else for(int t=0; t<5; t++) fZN1EqualCoeff[t] = 1.;
-}
- 
-//________________________________________________________________
-void AliZDCRecParam::SetZP1EqualCoeff(Float_t* EqualCoeff)
-{
-  // Set ZP1 equalization coefficients
-  if(EqualCoeff) for(int t=0; t<5; t++) fZP1EqualCoeff[t] = EqualCoeff[t];
-  else for(int t=0; t<5; t++) fZP1EqualCoeff[t] = 1.;
-}
-//________________________________________________________________
-void AliZDCRecParam::SetZN2EqualCoeff(Float_t* EqualCoeff)
-{
-  // Set ZN2 equalization coefficients
-  if(EqualCoeff) for(int t=0; t<5; t++) fZN2EqualCoeff[t] = EqualCoeff[t];
-  else for(int t=0; t<5; t++) fZN2EqualCoeff[t] = 1.;
-}
- 
-//________________________________________________________________
-void AliZDCRecParam::SetZP2EqualCoeff(Float_t* EqualCoeff)
-{
-  // Set ZN1 equalization coefficients
-  if(EqualCoeff) for(int t=0; t<5; t++) fZP2EqualCoeff[t] = EqualCoeff[t];
-  else for(int t=0; t<5; t++) fZP2EqualCoeff[t] = 1.;
-}
- 
