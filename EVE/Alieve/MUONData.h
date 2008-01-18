@@ -1,3 +1,11 @@
+// $Id$
+// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
+
+/**************************************************************************
+ * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
+ * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
+ * full copyright notice.                                                 * 
+ **************************************************************************/
 #ifndef ALIEVE_MUONData_H
 #define ALIEVE_MUONData_H
 
@@ -12,16 +20,15 @@ class TString;
 
 class AliRawReader;
 
-namespace Alieve {
 
-class MUONChamberData;
+class AliEveMUONChamberData;
 
-class MUONData : public TObject, public TEveRefCnt
+class AliEveMUONData : public TObject, public TEveRefCnt
 {
 
  protected:
 
-  std::vector<MUONChamberData*>   fChambers;           // vector of 14 chambers
+  std::vector<AliEveMUONChamberData*>   fChambers;           // vector of 14 chambers
 
   static AliRawReader*            fgRawReader;         // raw reader
 
@@ -30,11 +37,11 @@ class MUONData : public TObject, public TEveRefCnt
 
  public:
 
-  MUONData();
-  virtual ~MUONData();
+  AliEveMUONData();
+  virtual ~AliEveMUONData();
 
-  MUONData(const MUONData&);
-  MUONData& operator=(const MUONData&);
+  AliEveMUONData(const AliEveMUONData&);
+  AliEveMUONData& operator=(const AliEveMUONData&);
 
   void Reset();
 
@@ -52,12 +59,10 @@ class MUONData : public TObject, public TEveRefCnt
   Int_t GetNTrackList() { return fNTrackList; }
   Int_t GetTrack(Int_t index);
 
-  MUONChamberData* GetChamberData(Int_t chamber);
+  AliEveMUONChamberData* GetChamberData(Int_t chamber);
 
-  ClassDef(MUONData,1);           // Manages MUON data for one event
+  ClassDef(AliEveMUONData,1);           // Manages MUON data for one event
 
 };
-
-}
 
 #endif

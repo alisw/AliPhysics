@@ -1,12 +1,19 @@
 // $Id$
+// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
+
+/**************************************************************************
+ * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
+ * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
+ * full copyright notice.                                                 * 
+ **************************************************************************/
 
 namespace Alieve {
-class Event;
+class AliEveEventManager;
 }
 
 void t0_digits()
 {
-  AliRunLoader* rl =  Alieve::Event::AssertRunLoader();
+  AliRunLoader* rl =  AliEveEventManager::AssertRunLoader();
 
   rl->LoadDigits("T0");
   TTree* dt = rl->GetTreeD("T0", false);
@@ -17,6 +24,6 @@ void t0_digits()
 
   gStyle->SetPalette(1, 0);
 
-  Alieve::T0Module::MakeModules(digits);
+  AliEveT0Module::MakeModules(digits);
 }
 

@@ -1,8 +1,16 @@
+// $Id$
+// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
+
+/**************************************************************************
+ * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
+ * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
+ * full copyright notice.                                                 * 
+ **************************************************************************/
 
 
 // #include "EVE/Alieve/EventAlieve.h"
 // #include "TEveManager.h"
-// #include "V0.h"
+// #include "AliEveV0.h"
 
 // #include "AliESD.h"
 // #include "AliESDtrack.h"
@@ -13,7 +21,7 @@
 // using namespace Alieve;
 
 
-Alieve::V0* esd_make_v0(TEveTrackPropagator* rnrStyle, AliESDVertex* primVtx,
+AliEveV0* esd_make_v0(TEveTrackPropagator* rnrStyle, AliESDVertex* primVtx,
 		      AliESDtrack* neg, AliESDtrack* pos, AliESDv0* v0, Int_t i)
 {
   if (! v0->GetOnFlyStatus())
@@ -49,7 +57,7 @@ Alieve::V0* esd_make_v0(TEveTrackPropagator* rnrStyle, AliESDVertex* primVtx,
     rcPos.beta = ep/TMath::Sqrt(ep*ep + mc*mc);
 
 
-    Alieve::V0* myV0 = new Alieve::V0(&rcNeg, &rcPos, &rcV0, rnrStyle);
+    AliEveV0* myV0 = new AliEveV0(&rcNeg, &rcPos, &rcV0, rnrStyle);
     char ch[50];
     //   sprintf(ch,"ESDv0%i",i); 
     //   myV0->SetName(ch);
@@ -72,17 +80,17 @@ Alieve::V0* esd_make_v0(TEveTrackPropagator* rnrStyle, AliESDVertex* primVtx,
 }
 
 
-Alieve::V0List* esd_V0(Double_t min_pt=0.1, Double_t max_pt=100)
+V0List* esd_AliEveV0(Double_t min_pt=0.1, Double_t max_pt=100)
 {
   printf("THIS SCRIPT DOES NOT WORK.\n"
-	 "Alieve::V0 classes have been temporarily removed.\n"
+	 "AliEveV0 classes have been temporarily removed.\n"
 	 "They need to be cleaned up.\n");
   return;
 
-  AliESDEvent* esd = Alieve::Event::AssertESD();
+  AliESDEvent* esd = AliEveEventManager::AssertESD();
   AliESDVertex* primVertex =(AliESDVertex*) esd->GetVertex();
 
-  Alieve::V0List* cont = new Alieve::V0List("ESD v0"); 
+  V0List* cont = new V0List("ESD v0"); 
   cont->SetMainColor(Color_t(3)); // green
   TEveTrackPropagator* rnrStyle = cont->GetPropagator();
   rnrStyle->SetMagField( esd->GetMagneticField() );
@@ -101,7 +109,7 @@ Alieve::V0List* esd_V0(Double_t min_pt=0.1, Double_t max_pt=100)
     AliESDtrack* negTr = esd->GetTrack(negInd);
     AliESDtrack* posTr = esd->GetTrack(posInd);
     
-    Alieve::V0* myV0 = esd_make_v0(rnrStyle, primVertex, negTr,posTr, v0, n);
+    AliEveV0* myV0 = esd_make_v0(rnrStyle, primVertex, negTr,posTr, v0, n);
     if (myV0) {
       gEve->AddElement(myV0, cont);
       count++;

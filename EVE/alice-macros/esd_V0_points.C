@@ -1,12 +1,19 @@
 // $Id$
+// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
+
+/**************************************************************************
+ * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
+ * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
+ * full copyright notice.                                                 * 
+ **************************************************************************/
 
 TEvePointSet*
 esd_V0_points()
 {
-  AliESDEvent* esd = Alieve::Event::AssertESD();
+  AliESDEvent* esd = AliEveEventManager::AssertESD();
 
   Int_t NV0s = esd->GetNumberOfV0s();
-  TEvePointSet* points = new TEvePointSet("V0 CA points", NV0s);
+  TEvePointSet* points = new TEvePointSet("AliEveV0 CA points", NV0s);
 
   for (Int_t n =0; n<NV0s; n++)
   {

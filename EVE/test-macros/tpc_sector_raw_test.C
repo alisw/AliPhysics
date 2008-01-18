@@ -1,4 +1,11 @@
-// $Header: /soft/cvsroot/AliRoot/EVE/test-macros/tpc_sector_raw_test.C,v 1.10 2006/10/18 17:00:14 mtadel Exp $
+// $Id$
+// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
+
+/**************************************************************************
+ * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
+ * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
+ * full copyright notice.                                                 * 
+ **************************************************************************/
 
 // Functions to read rootified raw-data from TPC sector test.
 //
@@ -9,16 +16,15 @@
 class AliRawReaderRoot;
 
 namespace Alieve {
-class TPCData;
-class TPCSector2D;
-class TPCSector3D;
+class AliEveTPCData;
+class AliEveTPCSector2D;
+class AliEveTPCSector3D;
 }
 
-using namespace Alieve;
 
-TPCData*     x = 0;
-TPCSector2D* s = 0;
-TPCSector3D* t = 0;
+AliEveTPCData*     x = 0;
+AliEveTPCSector2D* s = 0;
+AliEveTPCSector3D* t = 0;
 
 AliRawReaderRoot* reader =  0;
 Int_t             event  = -1;
@@ -41,12 +47,12 @@ void tpc_sector_raw_test(const char *file = "", Int_t ievent = 0)
     }
   }
 
-  x = new TPCData;
+  x = new AliEveTPCData;
   // x->SetLoadPedestal(5);
   x->SetLoadThreshold(5);
   x->SetAutoPedestal(kTRUE);
 
-  s = new TPCSector2D();
+  s = new AliEveTPCSector2D();
   s->SetSectorID(default_sector);
   s->SetAutoTrans(kTRUE); // place on proper 3D coordinates
   s->SetDataSource(x);
@@ -54,7 +60,7 @@ void tpc_sector_raw_test(const char *file = "", Int_t ievent = 0)
   gEve->AddElement(s);
   gEve->DrawElement(s);
 
-  t = new TPCSector3D();
+  t = new AliEveTPCSector3D();
   t->SetSectorID(default_sector);
   t->SetAutoTrans(kTRUE);
   t->SetDataSource(x);
@@ -94,8 +100,8 @@ void next_event()
 
 void tpc_raw_pad_dump(Int_t s, Int_t r, Int_t p)
 {
-  if(r >= TPCSectorData::GetInnSeg().GetNRows()) {
-    r -=  TPCSectorData::GetInnSeg().GetNRows();
+  if(r >= AliEveTPCSectorData::GetInnSeg().GetNRows()) {
+    r -=  AliEveTPCSectorData::GetInnSeg().GetNRows();
     s += 36;
   }
 

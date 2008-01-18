@@ -1,7 +1,15 @@
+// $Id$
+// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
+
+/**************************************************************************
+ * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
+ * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
+ * full copyright notice.                                                 * 
+ **************************************************************************/
 TEveTrackList* primary_vertex_tracks()
 {
   TEveUtil::LoadMacro("esd_tracks.C");
-  AliESDEvent   *esd = Alieve::Event::AssertESD();
+  AliESDEvent   *esd = AliEveEventManager::AssertESD();
   AliESDVertex *pv  = esd->GetPrimaryVertex();
 
   TEveTrackList* cont = new TEveTrackList("Tracks for Primary Vertex"); 

@@ -1,130 +1,139 @@
+// $Id$
+// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
+
+/**************************************************************************
+ * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
+ * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
+ * full copyright notice.                                                 * 
+ **************************************************************************/
 #pragma link off all functions;
 #pragma link off all globals;
 #pragma link off all classes;
 
-#pragma link C++ namespace Alieve;
 
 //================================
 // base/
 //================================
 
-// Event
-#pragma link C++ class  Alieve::Event+;
-#pragma link C++ global Alieve::gEvent;
+// AliEveEventManager
+#pragma link C++ class  AliEveEventManager+;
+#pragma link C++ global gEvent;
 
-#pragma link C++ class Alieve::KineTools+;
+#pragma link C++ class AliEveKineTools+;
 
-#pragma link C++ class Alieve::VSDCreator+;
+#pragma link C++ class AliEveVSDCreator+;
 
-#pragma link C++ class AliEVEHOMERManager+;
-#pragma link C++ class AliEVEHOMERManagerEditor+;
-#pragma link C++ class AliEVEHOMERSource+;
-#pragma link C++ class AliEVEHOMERSourceList+;
+// Fit
+#pragma link C++ class AliEveTrackFitter+;
+#pragma link C++ class AliEveTrackFitterEditor+;
 
-//================================
-// compound classes
-//================================
+// AliEveJetPlane
+#pragma link C++ class AliEveJetPlane+;
+#pragma link C++ class AliEveJetPlaneGL+;
+#pragma link C++ class AliEveJetPlaneEditor+;
+#pragma link C++ class AliEveJetPlaneEditor::StaticDataWindow+;
 
 // Removed. Messy code, tons of violations and incompatible with TEve
 // classes. Author Ludovic Gaudichet left ALICE.
 // Should be thoroughly revised.
+//
+// AliEveCascade
+//#pragma link C++ class AliEveCascade+;
+//#pragma link C++ class CascadeList+;
+//#pragma link C++ class CascadeListEditor+;
+//
+// AliEveV0
+//#pragma link C++ class AliEveV0+;
+//#pragma link C++ class V0List+;
+//#pragma link C++ class V0ListEditor+;
 
-// Cascade
-//#pragma link C++ class Alieve::Cascade+;
-//#pragma link C++ class Alieve::CascadeList+;
-//#pragma link C++ class Alieve::CascadeListEditor+;
-
-// V0
-//#pragma link C++ class Alieve::V0+;
-//#pragma link C++ class Alieve::V0List+;
-//#pragma link C++ class Alieve::V0ListEditor+;
-
-// Fit
-#pragma link C++ class Alieve::TrackFitter+;
-#pragma link C++ class Alieve::TrackFitterEditor+;
 
 //================================
 // detectors/
 //================================
 
 // ITS
-#pragma link C++ class Alieve::ITSModuleSelection+;
-#pragma link C++ class Alieve::ITSDigitsInfo+;
-#pragma link C++ class Alieve::ITSModule+;
-#pragma link C++ class Alieve::DigitScaleInfo+;
-#pragma link C++ class Alieve::ITSScaledModule+;
-#pragma link C++ class Alieve::ITSScaledModuleEditor+;
-#pragma link C++ class Alieve::ITSModuleStepper+;
-#pragma link C++ class Alieve::ITSModuleStepperEditor;
+#pragma link C++ class AliEveITSModuleSelection+;
+#pragma link C++ class AliEveITSDigitsInfo+;
+#pragma link C++ class AliEveITSModule+;
+#pragma link C++ class AliEveDigitScaleInfo+;
+#pragma link C++ class AliEveITSScaledModule+;
+#pragma link C++ class AliEveITSScaledModuleEditor+;
+#pragma link C++ class AliEveITSModuleStepper+;
+#pragma link C++ class AliEveITSModuleStepperEditor;
 
 // MUON
-#pragma link C++ class Alieve::MUONData+;
-#pragma link C++ class Alieve::MUONChamber+;
-#pragma link C++ class Alieve::MUONChamberData+;
-#pragma link C++ class Alieve::MUONChamberEditor+;
-#pragma link C++ class Alieve::MUONChamberGL+;
-#pragma link C++ class Alieve::MUONTrack+;
+#pragma link C++ class AliEveMUONData+;
+#pragma link C++ class AliEveMUONChamber+;
+#pragma link C++ class AliEveMUONChamberData+;
+#pragma link C++ class AliEveMUONChamberEditor+;
+#pragma link C++ class AliEveMUONChamberGL+;
+#pragma link C++ class AliEveMUONTrack+;
 
 // PMD
-#pragma link C++ class Alieve::PMDModule+;
-#pragma link C++ class Alieve::PMDModuleEditor+;
+#pragma link C++ class AliEvePMDModule+;
+#pragma link C++ class AliEvePMDModuleEditor+;
 
 // T0
-#pragma link C++ class Alieve::T0Module+;
+#pragma link C++ class AliEveT0Module+;
 
 // TPC
-#pragma link C++ class Alieve::TPCData+;
+#pragma link C++ class AliEveTPCData+;
 
-#pragma link C++ class Alieve::TPCSectorData+;
-#pragma link C++ class Alieve::TPCSectorData::PadData;
-#pragma link C++ class Alieve::TPCSectorData::PadIterator;
-#pragma link C++ class Alieve::TPCSectorData::RowIterator;
-#pragma link C++ class Alieve::TPCSectorData::SegmentInfo;
+#pragma link C++ class AliEveTPCSectorData+;
+#pragma link C++ class AliEveTPCSectorData::PadData;
+#pragma link C++ class AliEveTPCSectorData::PadIterator;
+#pragma link C++ class AliEveTPCSectorData::RowIterator;
+#pragma link C++ class AliEveTPCSectorData::SegmentInfo;
 
-#pragma link C++ class Alieve::TPCSectorData::PadRowHack;
+#pragma link C++ class AliEveTPCSectorData::PadRowHack;
 
-#pragma link C++ class Alieve::TPCSectorViz+;
-#pragma link C++ class Alieve::TPCSectorVizEditor+;
-#pragma link C++ class Alieve::TPCSector2D+;
-#pragma link C++ class Alieve::TPCSector2DEditor+;
-#pragma link C++ class Alieve::TPCSector2DGL+;
-#pragma link C++ class Alieve::TPCSector3D+;
-#pragma link C++ class Alieve::TPCSector3DEditor+;
-#pragma link C++ class Alieve::TPCSector3DGL+;
+#pragma link C++ class AliEveTPCSectorViz+;
+#pragma link C++ class AliEveTPCSectorVizEditor+;
+#pragma link C++ class AliEveTPCSector2D+;
+#pragma link C++ class AliEveTPCSector2DEditor+;
+#pragma link C++ class AliEveTPCSector2DGL+;
+#pragma link C++ class AliEveTPCSector3D+;
+#pragma link C++ class AliEveTPCSector3DEditor+;
+#pragma link C++ class AliEveTPCSector3DGL+;
 
-#pragma link C++ class Alieve::TPCLoader+;
-#pragma link C++ class Alieve::TPCLoaderEditor+;
+#pragma link C++ class AliEveTPCLoader+;
+#pragma link C++ class AliEveTPCLoaderEditor+;
 
 // TRD
-#pragma link C++ class Alieve::TRDLoaderManager+;
-#pragma link C++ class Alieve::TRDLoaderManagerEditor+;
-#pragma link C++ class Alieve::TRDLoader+;
-#pragma link C++ class Alieve::TRDLoaderEditor+;
-#pragma link C++ class Alieve::TRDLoaderSim+;
-#pragma link C++ class Alieve::TRDLoaderSimEditor+;
-#pragma link C++ class Alieve::TRDLoaderRaw+;
-//#pragma link C++ class Alieve::TRDLoaderRawEditor+;
-#pragma link C++ class Alieve::TRDModule+;
-#pragma link C++ class Alieve::TRDChamber+;
-#pragma link C++ class Alieve::TRDNode+;
-#pragma link C++ class Alieve::TRDModuleEditor+;
-#pragma link C++ class Alieve::TRDDigits+;
-#pragma link C++ class Alieve::TRDDigitsEditor+;
-#pragma link C++ class Alieve::TRDHits+;
-#pragma link C++ class Alieve::TRDHitsEditor+;
-#pragma link C++ class Alieve::TRDClusters+;
+#pragma link C++ class AliEveTRDLoaderManager+;
+#pragma link C++ class AliEveTRDLoaderManagerEditor+;
+#pragma link C++ class AliEveTRDLoader+;
+#pragma link C++ class AliEveTRDLoaderEditor+;
+#pragma link C++ class AliEveTRDLoaderSim+;
+#pragma link C++ class AliEveTRDLoaderSimEditor+;
+#pragma link C++ class AliEveTRDLoaderRaw+;
+//#pragma link C++ class TRDLoaderRawEditor+;
+#pragma link C++ class AliEveTRDModule+;
+#pragma link C++ class AliEveTRDChamber+;
+#pragma link C++ class AliEveTRDNode+;
+#pragma link C++ class AliEveTRDModuleEditor+;
+#pragma link C++ class AliEveTRDDigits+;
+#pragma link C++ class AliEveTRDDigitsEditor+;
+#pragma link C++ class AliEveTRDHits+;
+#pragma link C++ class AliEveTRDHitsEditor+;
+#pragma link C++ class AliEveTRDClusters+;
 
 // TOF
-#pragma link C++ class Alieve::TOFDigitsInfo+;
-#pragma link C++ class Alieve::TOFSector+;
-#pragma link C++ class Alieve::TOFStrip+;
+#pragma link C++ class AliEveTOFDigitsInfo+;
+#pragma link C++ class AliEveTOFSector+;
+#pragma link C++ class AliEveTOFStrip+;
 
-#pragma link C++ class Alieve::TOFDigitsInfoEditor+;
-#pragma link C++ class Alieve::TOFSectorEditor+;
-#pragma link C++ class Alieve::TOFStripEditor+;
+#pragma link C++ class AliEveTOFDigitsInfoEditor+;
+#pragma link C++ class AliEveTOFSectorEditor+;
+#pragma link C++ class AliEveTOFStripEditor+;
 
-// JetPlane
-#pragma link C++ class Alieve::JetPlane+;
-#pragma link C++ class Alieve::JetPlaneGL+;
-#pragma link C++ class Alieve::JetPlaneEditor+;
-#pragma link C++ class Alieve::JetPlaneEditor::StaticDataWindow+;
+
+//================================
+// HLT/
+//================================
+
+#pragma link C++ class AliEveHOMERManager+;
+#pragma link C++ class AliEveHOMERManagerEditor+;
+#pragma link C++ class AliEveHOMERSource+;
+#pragma link C++ class AliEveHOMERSourceList+;

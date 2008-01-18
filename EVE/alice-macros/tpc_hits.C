@@ -1,4 +1,11 @@
 // $Id$
+// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
+
+/**************************************************************************
+ * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
+ * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
+ * full copyright notice.                                                 * 
+ **************************************************************************/
 
 TEvePointSet*
 tpc_hits(const char *varexp    = "TPC2.fArray.fR:TPC2.fArray.fFi:TPC2.fArray.fZ",
@@ -8,7 +15,7 @@ tpc_hits(const char *varexp    = "TPC2.fArray.fR:TPC2.fArray.fFi:TPC2.fArray.fZ"
   // Extracts 'major' TPC hits (not the compressed ones).
   // This gives ~2.5% of all hits.
 
-  AliRunLoader* rl =  Alieve::Event::AssertRunLoader();
+  AliRunLoader* rl =  AliEveEventManager::AssertRunLoader();
   rl->LoadHits("TPC");
 
   TTree* ht = rl->GetTreeH("TPC", false);

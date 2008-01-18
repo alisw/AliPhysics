@@ -1,4 +1,11 @@
 // $Id$
+// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
+
+/**************************************************************************
+ * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
+ * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
+ * full copyright notice.                                                 * 
+ **************************************************************************/
 
 #ifndef __CINT_
 #include <list>
@@ -14,18 +21,18 @@ void alieve_init(const Text_t* path   = ".", Int_t event=0,
   alieve_init_import_macros();
   gSystem->cd(hack);
 
-  // AssertMacro("region_marker.C");
+  // TEveUtil::AssertMacro("region_marker.C");
   
   gSystem->ProcessEvents();
 
   // Open event
   if(path != 0) {
-    Alieve::Event::SetCdbUri(cdburi);
-    Alieve::Event::SetAssertElements(assert_runloader, assert_esd);
+    AliEveEventManager::SetCdbUri(cdburi);
+    AliEveEventManager::SetAssertElements(assert_runloader, assert_esd);
     printf("Opening event %d from '%s' ...", event, path); fflush(stdout);
-    Alieve::gEvent = new Alieve::Event(path, event);
+    gEvent = new AliEveEventManager(path, event);
     printf(" done.\n");
-    gEve->AddEvent(Alieve::gEvent);
+    gEve->AddEvent(gEvent);
   }
 }
 

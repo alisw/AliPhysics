@@ -1,4 +1,11 @@
-// $Header$
+// $Id$
+// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
+
+/**************************************************************************
+ * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
+ * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
+ * full copyright notice.                                                 * 
+ **************************************************************************/
 
 // Functions to read data from HOMER.
 //
@@ -15,11 +22,11 @@
 #include "TTimer.h"
 #include "TRandom.h"
 #include "TVirtualPad.h"
-//#include "AliEVEHOMERManager.h"
+//#include "AliEveHOMERManager.h"
 
 class AliRawReaderMemory;
 
-class AliEVEHOMERManager;
+class AliEveHOMERManager;
 class AliHLTHOMERBlockDesc;
 
 class TEvePointSet;
@@ -27,20 +34,20 @@ class TEveTrackList;
 class TEveTrack;
 
 namespace Alieve {
-class TPCLoader;
-class TPCData;
-class TPCSector2D;
-class TPCSector3D;
+class AliEveTPCLoader;
+class AliEveTPCData;
+class AliEveTPCSector2D;
+class AliEveTPCSector3D;
 }
-using namespace Alieve;
 
-TPCLoader*  loader  = 0;
-TPCData*    tpcdata = 0;
+
+AliEveTPCLoader*  loader  = 0;
+AliEveTPCData*    tpcdata = 0;
 TEvePointSet*   tpc_cls = 0;
 TEveTrackList*  tpc_trk = 0;
 
 AliRawReaderMemory* memreader = 0;
-AliEVEHOMERManager* homerM = 0;
+AliEveHOMERManager* homerM = 0;
 
 Int_t    event  = -1;
 
@@ -63,8 +70,8 @@ void process_tpc_clusters(AliHLTHOMERBlockDesc* b);
 //****************************************************************************
 void homer_display()
 {
-  homerM = new AliEVEHOMERManager("/local/home/hlt/TPC-SCC1-Generate.xml");
-  //  homerM = new AliEVEHOMERManager("/local/home/hlt/sampleConfig2.xml");
+  homerM = new AliEveHOMERManager("/local/home/hlt/TPC-SCC1-Generate.xml");
+  //  homerM = new AliEveHOMERManager("/local/home/hlt/sampleConfig2.xml");
 
   gEve->AddToListTree(homerM, kTRUE);
 
@@ -77,7 +84,7 @@ void homer_display()
   memreader = new AliRawReaderMemory(0, 0); 
   gStyle->SetPalette(1, 0);
 
-  loader = new TPCLoader;
+  loader = new AliEveTPCLoader;
   loader->SetDoubleSR(kTRUE);
   loader->SetInitParams(40, 900, 10, 100); // Sector params (mint, maxt, thr, maxval)
   //loader->SetInitParams(40, 1023, 10); // Sector params (mint, maxt, thr)

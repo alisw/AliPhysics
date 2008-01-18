@@ -1,3 +1,11 @@
+// $Id$
+// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
+
+/**************************************************************************
+ * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
+ * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
+ * full copyright notice.                                                 * 
+ **************************************************************************/
 void its_raw(const char *input = "rawdata.root",
 	     Int_t  mode       = 63,
 	     Int_t  event      = 0,
@@ -20,12 +28,12 @@ void its_raw(const char *input = "rawdata.root",
     rawReader->SelectEvents(7);
   }
 
-  Alieve::ITSDigitsInfo* di = new Alieve::ITSDigitsInfo();
+  AliEveITSDigitsInfo* di = new AliEveITSDigitsInfo();
 
   if (accumulate) AliLog::SetGlobalLogLevel(AliLog::kError);
   Int_t ev = 0;
   do {
-    if (ev % 100 == 0) printf("Event: %d\n", ev);
+    if (ev % 100 == 0) printf("AliEveEventManager: %d\n", ev);
     if (rawReader->NextEvent() == kFALSE)
     {
       Error("its_raw", "Reading event %d failed (requested event %d).", ev, event);
@@ -42,7 +50,7 @@ void its_raw(const char *input = "rawdata.root",
   di->Dump();
 
   delete rawReader;
-  // Could initialize ITSModule statics (?)
+  // Could initialize AliEveITSModule statics (?)
 
   AliITSgeom* g = di->fGeom;
 
@@ -82,7 +90,7 @@ void its_raw(const char *input = "rawdata.root",
 	{
 	  if (di->GetDigits(i, 0) && di->GetDigits(i, 0)->GetEntriesFast() > 0)
 	  {
-	    Alieve::ITSModule* m = new Alieve::ITSModule(i, di);
+	    AliEveITSModule* m = new AliEveITSModule(i, di);
 	    gEve->AddElement(m, relStave);
 	  }
 	  ++i;
@@ -115,7 +123,7 @@ void its_raw(const char *input = "rawdata.root",
 	{
 	  if (di->GetDigits(i, 0) && di->GetDigits(i, 0)->GetEntriesFast() > 0)
 	  {
-	    Alieve::ITSModule* m = new Alieve::ITSModule(i, di);
+	    AliEveITSModule* m = new AliEveITSModule(i, di);
 	    gEve->AddElement(m, relStave);
 	  }
 	  ++i;
@@ -139,7 +147,7 @@ void its_raw(const char *input = "rawdata.root",
       relLadder->SetMainColor((Color_t)3);
       gEve->AddElement(relLadder, l);
       for (nMod=0; nMod<6; nMod++) {
-	Alieve::ITSModule* m = new Alieve::ITSModule(i++, di);
+	AliEveITSModule* m = new AliEveITSModule(i++, di);
 	gEve->AddElement(m, relLadder);
       }
     }
@@ -159,7 +167,7 @@ void its_raw(const char *input = "rawdata.root",
       relLadder->SetMainColor((Color_t)3);
       gEve->AddElement(relLadder, l);
       for (nMod=0; nMod<8; nMod++) {
-	Alieve::ITSModule* m = new Alieve::ITSModule(i++, di);
+	AliEveITSModule* m = new AliEveITSModule(i++, di);
 	gEve->AddElement(m, relLadder);
       }
     }
@@ -179,7 +187,7 @@ void its_raw(const char *input = "rawdata.root",
       relLadder->SetMainColor((Color_t)4);
       gEve->AddElement(relLadder, l);
       for (nMod=0; nMod<22; nMod++) {
-	Alieve::ITSModule* m = new Alieve::ITSModule(i++, di);
+	AliEveITSModule* m = new AliEveITSModule(i++, di);
 	gEve->AddElement(m, relLadder);
       }
     }
@@ -199,7 +207,7 @@ void its_raw(const char *input = "rawdata.root",
       relLadder->SetMainColor((Color_t)4);
       gEve->AddElement(relLadder, l);
       for (nMod=0; nMod<25; nMod++) {
-	Alieve::ITSModule* m = new Alieve::ITSModule(i++, di);
+	AliEveITSModule* m = new AliEveITSModule(i++, di);
 	gEve->AddElement(m, relLadder);
       }
     }

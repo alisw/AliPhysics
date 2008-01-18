@@ -1,4 +1,11 @@
 // $Id$
+// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
+
+/**************************************************************************
+ * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
+ * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
+ * full copyright notice.                                                 * 
+ **************************************************************************/
 
 TPolyMarker3D* make_vertex_marker(AliESDVertex* v, const Text_t* name )
 {
@@ -41,7 +48,7 @@ TEveBoxSet* make_vertex_boxes(AliESDVertex* v)
 
 void register_vertex_marker(TPolyMarker3D* m)
 {
-  Color_t* colp = FindColorVar(m, "fMarkerColor");
+  Color_t* colp = TEveUtil::FindColorVar(m, "fMarkerColor");
   TEveElementObjectPtr* rnrEl = new TEveElementObjectPtr(m, *colp);
   gEve->AddElement(rnrEl);
   gEve->Redraw3D();
@@ -49,7 +56,7 @@ void register_vertex_marker(TPolyMarker3D* m)
 
 void primary_vertex_primitive(Bool_t showSPD=kTRUE, Bool_t showBoxes=kFALSE)
 {
-  AliESDEvent* esd = Alieve::Event::AssertESD();
+  AliESDEvent* esd = AliEveEventManager::AssertESD();
 
   AliESDVertex*  pv  = esd->GetPrimaryVertex();
   TPolyMarker3D* pvm = make_vertex_marker(pv, "Primary Vertex");
@@ -141,7 +148,7 @@ void make_vertex_ellipses(TEveStraightLineSet* ls, AliESDVertex* v, Bool_t ellip
 
 void primary_vertex(Bool_t showSPD=kTRUE, Bool_t rnrEllipse=kTRUE)
 { 
-  AliESDEvent* esd = Alieve::Event::AssertESD();
+  AliESDEvent* esd = AliEveEventManager::AssertESD();
   TEveStraightLineSet* ls;
 
   AliESDVertex* PV  =  esd->GetPrimaryVertex();

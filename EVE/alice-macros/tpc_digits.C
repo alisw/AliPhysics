@@ -1,26 +1,33 @@
 // $Id$
+// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
+
+/**************************************************************************
+ * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
+ * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
+ * full copyright notice.                                                 * 
+ **************************************************************************/
 
 #include "TGLViewer.h"
 
 namespace Alieve {
-class TPCData;
-class Event;
+class AliEveTPCData;
+class AliEveEventManager;
 }
 
-Alieve::TPCData* g_tpc_data = 0;
-Alieve::Event*   g_tpc_last_event = 0;
+AliEveTPCData* g_tpc_data = 0;
+AliEveEventManager*   g_tpc_last_event = 0;
 
 void tpc_digits(Int_t mode=1)
 {
-  if (g_tpc_data == 0 || g_tpc_last_event != Alieve::gEvent) {
-    AliRunLoader* rl =  Alieve::Event::AssertRunLoader();
+  if (g_tpc_data == 0 || g_tpc_last_event != gEvent) {
+    AliRunLoader* rl =  AliEveEventManager::AssertRunLoader();
     rl->LoadDigits("TPC");
     TTree* dt = rl->GetTreeD("TPC", false);
 
-    g_tpc_data = new Alieve::TPCData;
+    g_tpc_data = new AliEveTPCData;
     g_tpc_data->LoadDigits(dt, kTRUE); // Create all present sectors.
 
-    g_tpc_last_event = Alieve::gEvent;
+    g_tpc_last_event = gEvent;
   }
 
   // Viewport limits.
@@ -39,7 +46,7 @@ void tpc_digits(Int_t mode=1)
   switch(mode) {
 
   case 0: { // Display a single sector
-    Alieve::TPCSector2D* s = new Alieve::TPCSector2D();
+    AliEveTPCSector2D* s = new AliEveTPCSector2D();
     s->SetFrameColor(col);
     s->SetDataSource(g_tpc_data);
     gEve->AddElement(s);
@@ -62,7 +69,7 @@ void tpc_digits(Int_t mode=1)
       gEve->AddElement(l);
       
       for(Int_t i = 0; i<18; i++) {
-	Alieve::TPCSector2D* s = new Alieve::TPCSector2D(Form("TPCSector2D %d", i));
+	AliEveTPCSector2D* s = new AliEveTPCSector2D(Form("AliEveTPCSector2D %d", i));
 	s->SetSectorID(i);
 	s->SetDataSource(g_tpc_data);
 	s->SetFrameColor(col);
@@ -77,7 +84,7 @@ void tpc_digits(Int_t mode=1)
 
       gEve->AddElement(l);
       for(Int_t i = 18; i<36; i++) {
-	Alieve::TPCSector2D* s = new Alieve::TPCSector2D(Form("TPCSector2D %d", i));
+	AliEveTPCSector2D* s = new AliEveTPCSector2D(Form("AliEveTPCSector2D %d", i));
 	s->SetSectorID(i);
 	s->SetDataSource(g_tpc_data);
 	s->SetFrameColor(col);
@@ -91,7 +98,7 @@ void tpc_digits(Int_t mode=1)
   }
 
   case 2 : { // Display a single sector in 3D
-    Alieve::TPCSector3D* s = new Alieve::TPCSector3D();
+    AliEveTPCSector3D* s = new AliEveTPCSector3D();
     s->SetFrameColor(col);
     s->SetDataSource(g_tpc_data);
     gEve->AddElement(s);
@@ -108,7 +115,7 @@ void tpc_digits(Int_t mode=1)
       gEve->AddElement(l);
       
       for(Int_t i = 0; i<18; i++) {
-	Alieve::TPCSector3D* s = new Alieve::TPCSector3D(Form("TPCSector3D %d", i));
+	AliEveTPCSector3D* s = new AliEveTPCSector3D(Form("AliEveTPCSector3D %d", i));
 	s->SetSectorID(i);
 	s->SetDataSource(g_tpc_data);
 	s->SetFrameColor(col);
@@ -123,7 +130,7 @@ void tpc_digits(Int_t mode=1)
 
       gEve->AddElement(l);
       for(Int_t i = 18; i<36; i++) {
-	Alieve::TPCSector3D* s = new Alieve::TPCSector3D(Form("TPCSector3D %d", i));
+	AliEveTPCSector3D* s = new AliEveTPCSector3D(Form("AliEveTPCSector3D %d", i));
 	s->SetSectorID(i);
 	s->SetDataSource(g_tpc_data);
 	s->SetFrameColor(col);
@@ -145,15 +152,15 @@ void tpc_digits_2drange(Int_t start, Int_t end)
   if (start <  0)  start = 0;
   if (end   > 35)  end   = 35;
 
-  if (g_tpc_data == 0 || g_tpc_last_event != Alieve::gEvent) {
-    AliRunLoader* rl =  Alieve::Event::AssertRunLoader();
+  if (g_tpc_data == 0 || g_tpc_last_event != gEvent) {
+    AliRunLoader* rl =  AliEveEventManager::AssertRunLoader();
     rl->LoadDigits("TPC");
     TTree* dt = rl->GetTreeD("TPC", false);
 
-    g_tpc_data = new Alieve::TPCData;
+    g_tpc_data = new AliEveTPCData;
     g_tpc_data->LoadDigits(dt, kTRUE); // Create all present sectors.
 
-    g_tpc_last_event = Alieve::gEvent;
+    g_tpc_last_event = gEvent;
   }
 
   gStyle->SetPalette(1, 0);
@@ -166,7 +173,7 @@ void tpc_digits_2drange(Int_t start, Int_t end)
     gEve->AddElement(l);
       
     for(Int_t i=start; i<=end; i++) {
-      Alieve::TPCSector2D* s = new Alieve::TPCSector2D();
+      AliEveTPCSector2D* s = new AliEveTPCSector2D();
       s->SetSectorID(i);
       s->SetDataSource(g_tpc_data);
       s->SetFrameColor(col);

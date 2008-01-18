@@ -1,4 +1,11 @@
-// $Header: /soft/cvsroot/AliRoot/EVE/test-macros/tpc_gui_hack.C,v 1.5 2007/10/22 14:49:12 mtadel Exp $
+// $Id$
+// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
+
+/**************************************************************************
+ * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
+ * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
+ * full copyright notice.                                                 * 
+ **************************************************************************/
 
 // Function to spawn a gui for reading rootified raw-data from TPC sector test.
 
@@ -7,18 +14,18 @@
 class AliRawReaderRoot;
 
 namespace Alieve {
-class TPCData;
-class TPCSector2D;
-class TPCSector3D;
+class AliEveTPCData;
+class AliEveTPCSector2D;
+class AliEveTPCSector3D;
 }
 
 #else
 
 #include <TEve.h>
 #include <TEveManager.h>
-#include <Alieve/TPCData.h>
-#include <Alieve/TPCSector2D.h>
-#include <Alieve/TPCSector3D.h>
+#include <Alieve/AliEveTPCData.h>
+#include <Alieve/AliEveTPCSector2D.h>
+#include <Alieve/AliEveTPCSector3D.h>
 
 #include <RAW/AliRawReaderRoot.h>
 #include <TPC/AliTPCRawStream.h>
@@ -29,19 +36,17 @@ class TPCSector3D;
 #endif
 
 
-using namespace Alieve;
+AliEveTPCSectorData* su = 0;
+AliEveTPCSectorData* sl = 0;
 
-TPCSectorData* su = 0;
-TPCSectorData* sl = 0;
-
-TPCLoader* loader = 0;
+AliEveTPCLoader* loader = 0;
 
 void tpc_gui_hack(const char *file=0, Int_t ievent=0)
 {
   gStyle->SetPalette(1, 0);
 
-  TPCLoader* l = new TPCLoader; loader = l;
-  TPCData*   d = new TPCData;
+  AliEveTPCLoader* l = new AliEveTPCLoader; loader = l;
+  AliEveTPCData*   d = new AliEveTPCData;
   // d->SetLoadPedestal(5);
   d->SetLoadThreshold(5);
   d->SetAutoPedestal(kTRUE);
@@ -64,13 +69,13 @@ void tpc_gui_hack(const char *file=0, Int_t ievent=0)
   }
 }
 
-void disable_pad(Int_t row, Int_t pad, TPCSectorData* sd,
+void disable_pad(Int_t row, Int_t pad, AliEveTPCSectorData* sd,
                  Int_t thrExt=10, Float_t thrFac=2)
 {
-  if(row < 0 || row >= TPCSectorData::GetNAllRows())
+  if(row < 0 || row >= AliEveTPCSectorData::GetNAllRows())
     { printf("row off, %d\n", row); return; }
 
-  Int_t npads = TPCSectorData::GetNPadsInRow(row);
+  Int_t npads = AliEveTPCSectorData::GetNPadsInRow(row);
   if(pad < 0) pad = npads + pad;
   if(pad < 0 || pad >= npads) { printf("pad off\n"); return; }
 
@@ -98,7 +103,7 @@ void disable_std()
   }
 
   { // Top 12, 4 pads on the negative side.
-    TPCSectorData::SegmentInfo& o1si = TPCSectorData::GetOut1Seg();
+    AliEveTPCSectorData::SegmentInfo& o1si = AliEveTPCSectorData::GetOut1Seg();
     Int_t last = o1si.GetLastRow();
     for(Int_t r=last - 11; r<=last; ++r) {
       disable_pad(r, -1, su, 20, 4);
@@ -129,7 +134,7 @@ void disable_std()
   }
 
   {
-    TPCSectorData::SegmentInfo& o2si = TPCSectorData::GetOut2Seg();
+    AliEveTPCSectorData::SegmentInfo& o2si = AliEveTPCSectorData::GetOut2Seg();
     Int_t first = o2si.GetFirstRow();
     Int_t last  = o2si.GetLastRow();
 

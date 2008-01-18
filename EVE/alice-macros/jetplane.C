@@ -1,4 +1,12 @@
-Alieve::JetPlane* jetplane(Int_t iev)
+// $Id$
+// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
+
+/**************************************************************************
+ * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
+ * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
+ * full copyright notice.                                                 * 
+ **************************************************************************/
+AliEveJetPlane* jetplane(Int_t iev)
 {	
   TFile* f       = new TFile("aod.root");
   TTree* treeAOD = (TTree*) f->Get("AOD");
@@ -6,14 +14,13 @@ Alieve::JetPlane* jetplane(Int_t iev)
   aod->ReadFromTree(treeAOD);
   treeAOD->GetEntry(iev);
 
-  using namespace Alieve;
-  JetPlane* jp = new JetPlane(iev);
+  AliEveJetPlane* jp = new AliEveJetPlane(iev);
 
   // Read Jets in current event
 
   TClonesArray* jets = aod->GetJets();
   Int_t njets = jets->GetEntries();
-  printf("Event: %5d Number of jets: %5d \n", iev, njets);
+  printf("AliEveEventManager: %5d Number of jets: %5d \n", iev, njets);
 
   for (Int_t ij = 0; ij < njets; ij++)
   {
@@ -25,7 +32,7 @@ Alieve::JetPlane* jetplane(Int_t iev)
 
   TClonesArray* tracks = aod->GetTracks();
   Int_t ntracks = tracks->GetEntries();
-  printf("Event: %5d Number of tracks: %5d \n", iev, ntracks);
+  printf("AliEveEventManager: %5d Number of tracks: %5d \n", iev, ntracks);
 
   for (Int_t ij = 0; ij < ntracks; ij++)
   {

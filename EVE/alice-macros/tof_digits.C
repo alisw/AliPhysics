@@ -1,3 +1,11 @@
+// $Id$
+// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
+
+/**************************************************************************
+ * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
+ * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
+ * full copyright notice.                                                 * 
+ **************************************************************************/
 void tof_digits()
 {  
   TClonesArray *array = 0x0;
@@ -9,11 +17,11 @@ void tof_digits()
     printf("ERROR: no TGeo\n");
   }
 
-  AliRunLoader* rl =  Alieve::Event::AssertRunLoader();
+  AliRunLoader* rl =  AliEveEventManager::AssertRunLoader();
   rl->LoadDigits("TOF");
   TTree* dt = rl->GetTreeD("TOF", false);
 
-  Alieve::TOFDigitsInfo* di = new Alieve::TOFDigitsInfo();
+  AliEveTOFDigitsInfo* di = new AliEveTOFDigitsInfo();
   di->SetTree(dt);
   di->LoadDigits();
   di->Dump();
@@ -32,7 +40,7 @@ void tof_digits()
     
     array = di->GetDigits(iSector);
    
-    Alieve::TOFSector* m = new Alieve::TOFSector(localGeoManager,iSector,array);
+    AliEveTOFSector* m = new AliEveTOFSector(localGeoManager,iSector,array);
 
     gEve->AddElement(m, ll);
 

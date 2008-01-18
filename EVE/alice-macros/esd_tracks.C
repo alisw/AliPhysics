@@ -1,4 +1,11 @@
 // $Id$
+// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
+
+/**************************************************************************
+ * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
+ * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
+ * full copyright notice.                                                 * 
+ **************************************************************************/
 
 TEveTrack* esd_make_track(TEveTrackPropagator*   rnrStyle,
 			    Int_t                  index,
@@ -41,7 +48,7 @@ Bool_t gkFixFailedITSExtr = kFALSE;
 
 TEveTrackList* esd_tracks(Double_t min_pt=0.1, Double_t max_pt=100)
 {
-  AliESDEvent* esd = Alieve::Event::AssertESD();
+  AliESDEvent* esd = AliEveEventManager::AssertESD();
 
   Double_t minptsq = min_pt*min_pt;
   Double_t maxptsq = max_pt*max_pt;
@@ -105,7 +112,7 @@ TEveTrackList* esd_tracks_from_array(TCollection* col, AliESDEvent* esd=0)
   // Retrieves AliESDTrack's from collection.
   // See example usage with AliAnalysisTrackCuts in the next function.
 
-  if (esd == 0) esd = Alieve::Event::AssertESD();
+  if (esd == 0) esd = AliEveEventManager::AssertESD();
 
   TEveTrackList* cont = new TEveTrackList("ESD Tracks"); 
   cont->SetMainColor(Color_t(6));
@@ -151,7 +158,7 @@ TEveTrackList* esd_tracks_from_array(TCollection* col, AliESDEvent* esd=0)
 
 void esd_tracks_alianalcuts_demo()
 {
-  AliESDEvent* esd = Alieve::Event::AssertESD();
+  AliESDEvent* esd = AliEveEventManager::AssertESD();
   gSystem->Load("libANALYSIS");
 
   AliAnalysisTrackCuts atc;
@@ -211,7 +218,7 @@ TEveElementList* esd_tracks_vertex_cut()
   // Import ESD tracks, separate them into five containers according to
   // primary-vertex cut and ITS refit status.
 
-  AliESDEvent* esd = Alieve::Event::AssertESD();
+  AliESDEvent* esd = AliEveEventManager::AssertESD();
 
   TEveElementList* cont = new TEveElementList("ESD Tracks", 0, kTRUE);
   gEve->AddElement(cont);

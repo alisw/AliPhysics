@@ -1,12 +1,20 @@
+// $Id$
+// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
+
+/**************************************************************************
+ * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
+ * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
+ * full copyright notice.                                                 * 
+ **************************************************************************/
 #include "TGLViewer.h"
 
 namespace Alieve {
-class MUONData;
-class Event;
+class AliEveMUONData;
+class AliEveEventManager;
 }
 
-Alieve::MUONData* g_muon_data = 0;
-Alieve::Event*    g_muon_last_event = 0;
+AliEveMUONData* g_muon_data = 0;
+AliEveEventManager*    g_muon_last_event = 0;
 
 Int_t g_currentEvent = -1;
 Bool_t g_fromRaw = kFALSE;
@@ -21,33 +29,33 @@ void MUON_display(Bool_t fromRaw = kFALSE, Bool_t showTracks = kTRUE)
   TTree* ct = 0;
   TTree* ht = 0;
 
-  if (Alieve::gEvent == 0) {
+  if (gEvent == 0) {
     printf("No alieve event: use alieve_init(...) \n");
     return;
   }
 
-  if (g_currentEvent == Alieve::gEvent->GetEventId()) {
+  if (g_currentEvent == gEvent->GetEventId()) {
     if (g_fromRaw == fromRaw) {
       printf("Same event... \n");
       return;
     } else {
       if (g_fromRaw) {
 	printf("Same event with digits.\n");
-	Alieve::gEvent->GotoEvent(g_currentEvent);
+	gEvent->GotoEvent(g_currentEvent);
       } else {
 	printf("Same event with raw.\n");
-	Alieve::gEvent->GotoEvent(g_currentEvent);
+	gEvent->GotoEvent(g_currentEvent);
       }
     }
   }
 
   g_fromRaw = fromRaw;
 
-  TString dataPath = TString(Alieve::gEvent->GetTitle());
+  TString dataPath = TString(gEvent->GetTitle());
   dataPath.Append("/rawmuon.root");
 
-  AliRunLoader* rl =  Alieve::Event::AssertRunLoader();
-  g_muon_data = new Alieve::MUONData;
+  AliRunLoader* rl =  AliEveEventManager::AssertRunLoader();
+  g_muon_data = new AliEveMUONData;
   
   if (!fromRaw) {
     rl->LoadDigits("MUON");
@@ -75,7 +83,7 @@ void MUON_display(Bool_t fromRaw = kFALSE, Bool_t showTracks = kTRUE)
   ht = rl->GetTreeH("MUON", false);
   g_muon_data->LoadHits(ht);
   
-  g_muon_last_event = Alieve::gEvent;
+  g_muon_last_event = gEvent;
   
   g_currentEvent = g_muon_last_event->GetEventId();
   
@@ -90,7 +98,7 @@ void MUON_display(Bool_t fromRaw = kFALSE, Bool_t showTracks = kTRUE)
   
   for (Int_t ic = 0; ic < 14; ic++) {
 
-    Alieve::MUONChamber* mucha = new Alieve::MUONChamber(ic);
+    AliEveMUONChamber* mucha = new AliEveMUONChamber(ic);
     
     mucha->SetFrameColor(2);
     mucha->SetChamberID(ic);
@@ -123,12 +131,12 @@ void MUON_display(Bool_t fromRaw = kFALSE, Bool_t showTracks = kTRUE)
 //_____________________________________________________________________________
 void MUON_tracks() {
 
-  AliRunLoader* rl =  Alieve::Event::AssertRunLoader();
+  AliRunLoader* rl =  AliEveEventManager::AssertRunLoader();
   rl->LoadTracks("MUON");
   TTree* tt = rl->GetTreeT("MUON", false);
 
   TClonesArray *tracks = 0;
-  tt->SetBranchAddress("MUONTrack",&tracks);
+  tt->SetBranchAddress("AliEveMUONTrack",&tracks);
   tt->GetEntry(0);
 
   Int_t ntracks = tracks->GetEntriesFast();
@@ -161,7 +169,7 @@ void MUON_tracks() {
 
     rt.label = n;
 
-    Alieve::MUONTrack* track = new Alieve::MUONTrack(&rt, lt->GetPropagator());
+    AliEveMUONTrack* track = new AliEveMUONTrack(&rt, lt->GetPropagator());
 
     track->MakeMUONTrack(mt);
 
@@ -176,7 +184,7 @@ void MUON_tracks() {
 //_____________________________________________________________________________
 void MUON_trigger_tracks() {
 
-  AliRunLoader* rl =  Alieve::Event::AssertRunLoader();
+  AliRunLoader* rl =  AliEveEventManager::AssertRunLoader();
   rl->LoadTracks("MUON");
   TTree* tt = rl->GetTreeT("MUON", false);
 
@@ -214,7 +222,7 @@ void MUON_trigger_tracks() {
 
     rt.label = n;
 
-    Alieve::MUONTrack* track = new Alieve::MUONTrack(&rt, lt->GetPropagator());
+    AliEveMUONTrack* track = new AliEveMUONTrack(&rt, lt->GetPropagator());
 
     track->MakeMUONTriggerTrack(mt);
 
@@ -229,7 +237,7 @@ void MUON_trigger_tracks() {
 //_____________________________________________________________________________
 void MUON_ESD_tracks() {
 
-  AliESDEvent* esd = Alieve::Event::AssertESD();
+  AliESDEvent* esd = AliEveEventManager::AssertESD();
 
   TEveTrackList* lt = new TEveTrackList("ESD-Tracks"); 
   lt->SetMainColor(Color_t(6));
@@ -246,7 +254,7 @@ void MUON_ESD_tracks() {
 
     rt.label = n;
 
-    Alieve::MUONTrack* track = new Alieve::MUONTrack(&rt, lt->GetPropagator());
+    AliEveMUONTrack* track = new AliEveMUONTrack(&rt, lt->GetPropagator());
 
     track->MakeESDTrack(mt);
 
@@ -259,11 +267,11 @@ void MUON_ESD_tracks() {
 //_____________________________________________________________________________
 void MUON_Ref_tracks() {
 
-  TString dataPath = TString(Alieve::gEvent->GetTitle());
+  TString dataPath = TString(gEvent->GetTitle());
   dataPath.Append("/");
 
   AliMUONRecoCheck recoCheck(dataPath.Data(),dataPath.Data());
-  AliMUONVTrackStore* trackRefStore = recoCheck.ReconstructibleTracks(Alieve::gEvent->GetEventId());
+  AliMUONVTrackStore* trackRefStore = recoCheck.ReconstructibleTracks(gEvent->GetEventId());
   TIter next(trackRefStore->CreateIterator());
   AliMUONTrack* trackRef;
   
@@ -278,7 +286,7 @@ void MUON_Ref_tracks() {
 
     rt.label = i++;
 
-    Alieve::MUONTrack* track = new Alieve::MUONTrack(&rt, lt->GetPropagator());
+    AliEveMUONTrack* track = new AliEveMUONTrack(&rt, lt->GetPropagator());
 
     track->MakeRefTrack(trackRef);
 
@@ -293,7 +301,7 @@ void MUON_MC_tracks() {
 
   Double_t RADDEG = 180.0/TMath::Pi();
 
-  AliRunLoader* rl =  Alieve::Event::AssertRunLoader();
+  AliRunLoader* rl =  AliEveEventManager::AssertRunLoader();
   rl->LoadKinematics();
   AliStack* stack = rl->Stack();
 
@@ -324,7 +332,7 @@ void MUON_MC_tracks() {
     if (part->P() < 0.001) continue;  // skip momenta < 1.0 MeV/c
     rt.label = i;
 
-    Alieve::MUONTrack* track = new Alieve::MUONTrack(&rt, lt->GetPropagator());
+    AliEveMUONTrack* track = new AliEveMUONTrack(&rt, lt->GetPropagator());
 
     track->MakeMCTrack(part);
 

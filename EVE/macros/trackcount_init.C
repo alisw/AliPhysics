@@ -1,18 +1,27 @@
+// $Id$
+// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
+
+/**************************************************************************
+ * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
+ * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
+ * full copyright notice.                                                 * 
+ **************************************************************************/
+
 void trackcount_init()
 {
-  LoadMacro("alieve_init.C");
+  TEveUtil::LoadMacro("alieve_init.C");
   alieve_init(".", -1);
 
-  LoadMacro("primary_vertex.C");
-  LoadMacro("esd_tracks.C");
-  LoadMacro("its_clusters.C+");
-  LoadMacro("tpc_clusters.C+");
+  TEveUtil::LoadMacro("primary_vertex.C");
+  TEveUtil::LoadMacro("esd_tracks.C");
+  TEveUtil::LoadMacro("its_clusters.C+");
+  TEveUtil::LoadMacro("tpc_clusters.C+");
 
   TEveTrackCounter* g_trkcnt = new TEveTrackCounter("Primary Counter");
   gEve->AddGlobalElement(g_trkcnt);
 
-  Alieve::gEvent->AddNewEventCommand("on_new_event();");
-  Alieve::gEvent->GotoEvent(0);
+  gEvent->AddNewEventCommand("on_new_event();");
+  gEvent->GotoEvent(0);
 
   gEve->Redraw3D(kTRUE);
 }
@@ -38,7 +47,7 @@ void on_new_event()
   Int_t count = 1;
   TEveTrackCounter* g_trkcnt = TEveTrackCounter::fgInstance;
   g_trkcnt->Reset();
-  g_trkcnt->SetEventId(Alieve::gEvent->GetEventId());
+  g_trkcnt->SetEventId(gEvent->GetEventId());
   TEveElement::List_i i = cont->BeginChildren();
   while (i != cont->EndChildren()) {
     TEveTrackList* l = dynamic_cast<TEveTrackList*>(*i);
@@ -53,7 +62,7 @@ void on_new_event()
 
 TParticle* id(Int_t label=0, Bool_t showParents=kTRUE)
 {
-  AliRunLoader* rl = Alieve::Event::AssertRunLoader();
+  AliRunLoader* rl = AliEveEventManager::AssertRunLoader();
   rl->LoadKinematics();
   AliStack* stack = rl->Stack();
 

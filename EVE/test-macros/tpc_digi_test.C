@@ -1,10 +1,18 @@
+// $Id$
+// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
+
+/**************************************************************************
+ * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
+ * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
+ * full copyright notice.                                                 * 
+ **************************************************************************/
 class TTree;
 
 namespace Alieve {
-class TPCData;
+class AliEveTPCData;
 }
 
-Alieve::TPCData*  x = 0;
+AliEveTPCData*  x = 0;
 TTree*            tree = 0;
 
 void tpc_digi_test()
@@ -15,14 +23,14 @@ void tpc_digi_test()
   TFile* f = new TFile("coctail_1k/TPC.Digits.root");
   tree = (TTree*) gDirectory->Get("Event0/TreeD");
 
-  x = new Alieve::TPCData;
+  x = new AliEveTPCData;
   // x->SetSectorBlockSize(8192);
   // x->SetLoadThreshold(5);
   x->CreateAllSectors();
   x->LoadDigits(tree, kFALSE);
   gStyle->SetPalette(1, 0);
 
-  Alieve::TPCSector2D* s = new Alieve::TPCSector2D();
+  AliEveTPCSector2D* s = new AliEveTPCSector2D();
   s->SetDataSource(x);
   s->SetMainColor(36);
   gEve->AddElement(s);
@@ -32,8 +40,8 @@ void tpc_digi_test()
 
 void tpc_digi_pad_dump(Int_t s, Int_t r, Int_t p)
 {
-  if(r >= Alieve::TPCSectorData::GetInnSeg().fNRows) {
-    r -= Alieve::TPCSectorData::GetInnSeg().fNRows;
+  if(r >= AliEveTPCSectorData::GetInnSeg().fNRows) {
+    r -= AliEveTPCSectorData::GetInnSeg().fNRows;
     s += 36;
   }
 
@@ -44,7 +52,7 @@ void tpc_digi_pad_dump(Int_t s, Int_t r, Int_t p)
   for (Int_t ent=0; ent<sbr; ent++) {
     tree->GetEntry(ent);
     Int_t sector, row;
-    Alieve::TPCSectorData::GetParam().AdjustSectorRow(digit->GetID(), sector, row);
+    AliEveTPCSectorData::GetParam().AdjustSectorRow(digit->GetID(), sector, row);
 
     if(sector != s || row != r)
       continue;

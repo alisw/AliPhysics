@@ -1,3 +1,11 @@
+// $Id$
+// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
+
+/**************************************************************************
+ * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
+ * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
+ * full copyright notice.                                                 * 
+ **************************************************************************/
 #ifdef __CINT__
 
 namespace TEveUtil
@@ -8,10 +16,9 @@ class TEvePointSet;
 
 #else
 
-#include <TEve.h>
 #include <TEveManager.h>
 #include <TEvePointSet.h>
-#include <Alieve/EventAlieve.h>
+#include <Alieve/AliEveEventManager.h>
 
 #include <AliRunLoader.h>
 #include <AliCluster.h>
@@ -22,9 +29,9 @@ class TEvePointSet;
 
 TEvePointSet* its_clusters(TEveElement* cont=0, Float_t maxR=50)
 {
-  Alieve::Event::AssertGeometry();
+  AliEveEventManager::AssertGeometry();
 
-  AliRunLoader* rl = Alieve::Event::AssertRunLoader();
+  AliRunLoader* rl = AliEveEventManager::AssertRunLoader();
   rl->LoadRecPoints("ITS");
 
   TTree *cTree = rl->GetTreeR("ITS", false);

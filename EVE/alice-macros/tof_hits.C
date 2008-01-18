@@ -1,11 +1,18 @@
 // $Id$
+// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
+
+/**************************************************************************
+ * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
+ * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
+ * full copyright notice.                                                 * 
+ **************************************************************************/
 
 TEvePointSet*
 tof_hits(const char *varexp    = "fX:fY:fZ",
 	 const char *selection = "",
 	 TEveElement* cont)
 {
-  AliRunLoader* rl =  Alieve::Event::AssertRunLoader();
+  AliRunLoader* rl =  AliEveEventManager::AssertRunLoader();
   rl->LoadHits("TOF");
 
   TTree* ht = rl->GetTreeH("TOF", false);

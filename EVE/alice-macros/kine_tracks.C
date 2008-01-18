@@ -1,3 +1,11 @@
+// $Id$
+// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
+
+/**************************************************************************
+ * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
+ * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
+ * full copyright notice.                                                 * 
+ **************************************************************************/
 // Import tracks from kinematics-tree / particle-stack.
 // Preliminary/minimal solution.
 
@@ -8,7 +16,7 @@ kine_tracks(Double_t min_pt  = 0.1,   Double_t min_p   = 0.2,
 	    Bool_t   pdg_col = kTRUE, Bool_t   recurse = kTRUE,
 	    Bool_t   use_track_refs = kTRUE)
 {
-  AliRunLoader* rl =  Alieve::Event::AssertRunLoader();
+  AliRunLoader* rl =  AliEveEventManager::AssertRunLoader();
   rl->LoadKinematics();
   AliStack* stack = rl->Stack();
   if (!stack) {
@@ -55,7 +63,7 @@ kine_tracks(Double_t min_pt  = 0.1,   Double_t min_p   = 0.2,
   }
 
   // set path marks
-  Alieve::KineTools kt; 
+  AliEveKineTools kt; 
   kt.SetDaughterPathMarks(cont, stack, recurse);
   if (use_track_refs && rl->LoadTrackRefs() == 0)
   {
@@ -179,7 +187,7 @@ kine_track(Int_t  label,
     return 0;
   }
  
-  AliRunLoader* rl =  Alieve::Event::AssertRunLoader();
+  AliRunLoader* rl =  AliEveEventManager::AssertRunLoader();
   rl->LoadKinematics();
   AliStack* stack = rl->Stack();
   if (label >= stack->GetNtrack())

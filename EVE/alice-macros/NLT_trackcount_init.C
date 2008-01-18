@@ -1,9 +1,15 @@
-namespace TEveUtil
-{
+// $Id$
+// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
+
+/**************************************************************************
+ * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
+ * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
+ * full copyright notice.                                                 * 
+ **************************************************************************/
+
 class TEveProjectionManager;
 class TEveGeoShape;
-class RnrElement*;
-}
+class TEveUtil;
 
 TEveProjectionManager  * proj = 0;
 TEveGeoShape * geom = 0;
@@ -40,8 +46,8 @@ void NLT_trackcount_init()
   geom = gg;
 
   // event
-  Alieve::gEvent->AddNewEventCommand("on_new_event();");
-  Alieve::gEvent->GotoEvent(0);
+  gEvent->AddNewEventCommand("on_new_event();");
+  gEvent->GotoEvent(0);
 
   gEve->Redraw3D(kTRUE);
 }
@@ -71,7 +77,7 @@ void on_new_event()
   Int_t count = 1;
   TEveTrackCounter* g_trkcnt = TEveTrackCounter::fgInstance;
   g_trkcnt->Reset();
-  g_trkcnt->SetEventId(Alieve::gEvent->GetEventId());
+  g_trkcnt->SetEventId(gEvent->GetEventId());
   TEveElement::List_i i = cont->BeginChildren();
   while (i != cont->EndChildren()) {
     TEveTrackList* l = dynamic_cast<TEveTrackList*>(*i);
@@ -84,7 +90,7 @@ void on_new_event()
   }
   TEveElement* top = gEve->GetCurrentEvent();
   proj->DestroyElements();
-  AliESDEvent* esd = Alieve::Event::AssertESD();
+  AliESDEvent* esd = AliEveEventManager::AssertESD();
   Double_t x[3];
   esd->GetPrimaryVertex()->GetXYZ(x);
   proj->SetCenter(x[0], x[1], x[2]);
@@ -100,7 +106,7 @@ void on_new_event()
 
 TParticle* id(Int_t label=0, Bool_t showParents=kTRUE)
 {
-  AliRunLoader* rl = Alieve::Event::AssertRunLoader();
+  AliRunLoader* rl = AliEveEventManager::AssertRunLoader();
   rl->LoadKinematics();
   AliStack* stack = rl->Stack();
 

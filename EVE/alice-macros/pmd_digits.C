@@ -1,3 +1,11 @@
+// $Id$
+// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
+
+/**************************************************************************
+ * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
+ * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
+ * full copyright notice.                                                 * 
+ **************************************************************************/
 // ---------------------------------------------------------------------- //
 void pmd_digits(Int_t mode = 0)
 {
@@ -12,7 +20,7 @@ void pmd_digits(Int_t mode = 0)
   TString bsddl="DDL";
 
 
-  AliRunLoader* rl =  Alieve::Event::AssertRunLoader();
+  AliRunLoader* rl =  AliEveEventManager::AssertRunLoader();
   rl->LoadDigits("PMD");
   TTree* pmdt = rl->GetTreeD("PMD", false);
 
@@ -104,7 +112,7 @@ void pmd_digits(Int_t mode = 0)
 	  for (Int_t ism = 0; ism < NSM; ism++)
 	    {
 	      
-	      Alieve::PMDModule *lmodule = new Alieve::PMDModule();
+	      AliEvePMDModule *lmodule = new AliEvePMDModule();
 	      lmodule->SetPosition(0.,0.,zpos);
 	      lmodule->DisplayDigitsData(modnumber, pmdt);
               lmodule->SetPalette(pal);

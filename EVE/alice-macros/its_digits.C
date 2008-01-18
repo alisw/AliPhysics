@@ -1,4 +1,11 @@
 // $Id$
+// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
+
+/**************************************************************************
+ * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
+ * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
+ * full copyright notice.                                                 * 
+ **************************************************************************/
 
 // Load ITS digits.
 // Argument mode is a bitwise or determining which layers to import:
@@ -9,14 +16,14 @@
 
 void its_digits(Int_t mode=63)
 {
-  AliRunLoader* rl =  Alieve::Event::AssertRunLoader();
+  AliRunLoader* rl =  AliEveEventManager::AssertRunLoader();
   rl->LoadDigits("ITS");
   TTree* dt = rl->GetTreeD("ITS", false);
 
-  Alieve::ITSDigitsInfo* di = new Alieve::ITSDigitsInfo();
+  AliEveITSDigitsInfo* di = new AliEveITSDigitsInfo();
   di->SetTree(dt);
   di->Dump();
-  // Could initialize ITSModule statics (?)
+  // Could initialize AliEveITSModule statics (?)
 
   AliITSgeom* g = di->fGeom;
 
@@ -53,7 +60,7 @@ void its_digits(Int_t mode=63)
 	relStave->SetMainColor((Color_t)2);
 	gEve->AddElement(relStave, relSector);
 	for (nMod=0; nMod<4; nMod++) {
-	  Alieve::ITSModule* m = new Alieve::ITSModule(i++, di);
+	  AliEveITSModule* m = new AliEveITSModule(i++, di);
 	  gEve->AddElement(m, relStave);
 	}
       }
@@ -81,7 +88,7 @@ void its_digits(Int_t mode=63)
 	relStave->SetMainColor((Color_t)2);
 	gEve->AddElement(relStave, relSector);
 	for (nMod=0; nMod<4; nMod++) {
-	  Alieve::ITSModule* m = new Alieve::ITSModule(i++, di);
+	  AliEveITSModule* m = new AliEveITSModule(i++, di);
 	  gEve->AddElement(m, relStave);
 	}
       }
@@ -103,7 +110,7 @@ void its_digits(Int_t mode=63)
       relLadder->SetMainColor((Color_t)3);
       gEve->AddElement(relLadder, l);
       for (nMod=0; nMod<6; nMod++) {
-	Alieve::ITSModule* m = new Alieve::ITSModule(i++, di);
+	AliEveITSModule* m = new AliEveITSModule(i++, di);
 	gEve->AddElement(m, relLadder);
       }
     }
@@ -123,7 +130,7 @@ void its_digits(Int_t mode=63)
       relLadder->SetMainColor((Color_t)3);
       gEve->AddElement(relLadder, l);
       for (nMod=0; nMod<8; nMod++) {
-	Alieve::ITSModule* m = new Alieve::ITSModule(i++, di);
+	AliEveITSModule* m = new AliEveITSModule(i++, di);
 	gEve->AddElement(m, relLadder);
       }
     }
@@ -143,7 +150,7 @@ void its_digits(Int_t mode=63)
       relLadder->SetMainColor((Color_t)4);
       gEve->AddElement(relLadder, l);
       for (nMod=0; nMod<22; nMod++) {
-	Alieve::ITSModule* m = new Alieve::ITSModule(i++, di);
+	AliEveITSModule* m = new AliEveITSModule(i++, di);
 	gEve->AddElement(m, relLadder);
       }
     }
@@ -163,7 +170,7 @@ void its_digits(Int_t mode=63)
       relLadder->SetMainColor((Color_t)4);
       gEve->AddElement(relLadder, l);
       for (nMod=0; nMod<25; nMod++) {
-	Alieve::ITSModule* m = new Alieve::ITSModule(i++, di);
+	AliEveITSModule* m = new AliEveITSModule(i++, di);
 	gEve->AddElement(m, relLadder);
       }
     }

@@ -1,10 +1,18 @@
+// $Id$
+// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
+
+/**************************************************************************
+ * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
+ * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
+ * full copyright notice.                                                 * 
+ **************************************************************************/
 class AliRawReaderFile;
 
 namespace Alieve {
-class TPCData;
+class AliEveTPCData;
 }
 
-Alieve::TPCData*  x = 0;
+AliEveTPCData*  x = 0;
 AliRawReaderFile* reader = 0;
 
 void tpc_raw_test()
@@ -17,7 +25,7 @@ void tpc_raw_test()
   reader->NextEvent();
   AliTPCRawStream input(reader);
 
-  x = new Alieve::TPCData;
+  x = new AliEveTPCData;
   //x->SetSectorBlockSize(8192);
   //x->SetLoadThreshold(5);
   x->CreateAllSectors();
@@ -25,7 +33,7 @@ void tpc_raw_test()
 
   gStyle->SetPalette(1, 0);
 
-  Alieve::TPCSector2D* s = new Alieve::TPCSector2D();
+  AliEveTPCSector2D* s = new AliEveTPCSector2D();
   s->SetDataSource(x);
   s->SetMainColor(36);
   gEve->AddElement(s);
@@ -38,8 +46,8 @@ void tpc_raw_pad_dump(Int_t s, Int_t r, Int_t p)
   reader->Reset();
   reader->NextEvent();
 
-  if(r >= Alieve::TPCSectorData::GetInnSeg().fNRows) {
-    r -= Alieve::TPCSectorData::GetInnSeg().fNRows;
+  if(r >= AliEveTPCSectorData::GetInnSeg().fNRows) {
+    r -= AliEveTPCSectorData::GetInnSeg().fNRows;
     s += 36;
   }
 

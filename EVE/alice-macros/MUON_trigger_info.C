@@ -1,13 +1,21 @@
+// $Id$
+// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
+
+/**************************************************************************
+ * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
+ * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
+ * full copyright notice.                                                 * 
+ **************************************************************************/
 #include <iomanip.h>
 
 void MUON_trigger_info(Int_t label) {
 
-  AliRunLoader* rl = Alieve::Event::AssertRunLoader();
+  AliRunLoader* rl = AliEveEventManager::AssertRunLoader();
 
   TTree* tt = rl->GetTreeT("MUON", false);
   
   TClonesArray *tracks = 0;
-  tt->SetBranchAddress("MUONTrack",&tracks);
+  tt->SetBranchAddress("AliEveMUONTrack",&tracks);
   tt->GetEntry(0);
 
   Int_t ntracks = tracks->GetEntriesFast();

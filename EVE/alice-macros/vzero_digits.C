@@ -1,3 +1,11 @@
+// $Id$
+// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
+
+/**************************************************************************
+ * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
+ * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
+ * full copyright notice.                                                 * 
+ **************************************************************************/
 //   fV0CHeight1         =    2.5; // height of cell 1
 //   fV0CHeight2         =    4.4; // height of cell 2
 //   fV0CHeight3         =    7.4; // height of cell 3
@@ -20,7 +28,7 @@ void vzero_digits()
 
   gStyle->SetPalette(1, 0);
 
-  AliRunLoader* rl =  Alieve::Event::AssertRunLoader();
+  AliRunLoader* rl =  AliEveEventManager::AssertRunLoader();
   rl->LoadDigits("VZERO");
 
   TTree* dt = rl->GetTreeD("VZERO", false);
@@ -42,7 +50,7 @@ void vzero_digits()
     AliVZEROdigit* d = (AliVZEROdigit*) dca->UncheckedAt(entr);
     Int_t i = d->PMNumber();
 
-    if (i < 32)   // V0 Right
+    if (i < 32)   // AliEveV0 Right
     {
       TEveQuadSet* module = modR;
       Int_t ri = i / 8;
@@ -59,7 +67,7 @@ void vzero_digits()
       module->QuadValue(d->ADC());
       module->QuadId(d);
     }
-    else          // V0 Left
+    else          // AliEveV0 Left
     {
       TEveQuadSet* module = modL;
       Int_t ri = (i-32) / 8;

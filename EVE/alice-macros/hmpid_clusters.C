@@ -1,3 +1,11 @@
+// $Id$
+// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
+
+/**************************************************************************
+ * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
+ * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
+ * full copyright notice.                                                 * 
+ **************************************************************************/
 #ifdef __CINT__
 
 namespace TEveUtil
@@ -38,9 +46,9 @@ TEvePointSet* hmpid_clusters(TEveElement* cont=0, Float_t maxR=1000)
   TEvePointSet* clusters = new TEvePointSet(10000);
   clusters->SetOwnIds(kTRUE);
 
-  Alieve::Event::AssertGeometry();
+  AliEveEventManager::AssertGeometry();
   
-  AliRunLoader* rl = Alieve::Event::AssertRunLoader();
+  AliRunLoader* rl = AliEveEventManager::AssertRunLoader();
   rl->LoadRecPoints("HMPID");
 
   TTree *cTree = rl->GetTreeR("HMPID", false);
