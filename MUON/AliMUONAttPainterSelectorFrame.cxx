@@ -91,7 +91,7 @@ AliMUONAttPainterSelectorFrame::CathodeClicked(Int_t buttonId)
 
   TGButton* button = fCathode->GetButton(buttonId);
   
-  Int_t i = (Int_t)(button->GetUserData());
+  Long_t i = reinterpret_cast<Long_t>(button->GetUserData());
   
   if ( i == 10 ) 
   {
@@ -119,7 +119,7 @@ AliMUONAttPainterSelectorFrame::PlaneClicked(Int_t buttonId)
   
   TGButton* button = fPlane->GetButton(buttonId);
   
-  Int_t i = (Int_t)(button->GetUserData());
+  Long_t i = reinterpret_cast<Long_t> (button->GetUserData());
   
   if ( i == 10 ) 
   {
@@ -146,7 +146,7 @@ AliMUONAttPainterSelectorFrame::ViewClicked(Int_t buttonId)
 
   TGButton* button = fViewPoint->GetButton(buttonId);
   
-  Int_t i = (Int_t)(button->GetUserData());
+  Long_t i = reinterpret_cast<Long_t> (button->GetUserData());
   
   if ( i == 10 ) 
   {

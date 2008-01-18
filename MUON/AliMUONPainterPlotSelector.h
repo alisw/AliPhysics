@@ -74,7 +74,7 @@ private:
   
   void SetCurrentData(AliMUONVTrackerData* data);
   
-  void SetCurrentDimension(Int_t i);
+  void SetCurrentDimension(Long_t i);
   
   void SetCurrentType(const char* type);
   
@@ -92,7 +92,7 @@ private:
   TMap* fDimensionButtonMap; ///< cache for button group  
   TString fCurrentType; ///< current type
   AliMUONVTrackerData* fCurrentData; ///< current data
-  Int_t fCurrentDimension; ///< current data index
+  Long_t fCurrentDimension; ///< current data index
   static const char* fgkDefaultSourceName; ///< default source name
   
   ClassDef(AliMUONPainterPlotSelector,1) // Widget to select what to plot for painters
