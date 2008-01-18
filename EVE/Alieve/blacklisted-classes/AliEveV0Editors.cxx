@@ -1,3 +1,11 @@
+// $Id$
+// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
+
+/**************************************************************************
+ * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
+ * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
+ * full copyright notice.                                                 * 
+ **************************************************************************/
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -15,17 +23,17 @@
 
 
 /***********************************************************************
-  This editor appears in the Reve window when v0 are visualize.
+  This editor appears in the TEveUtil window when v0 are visualize.
 It allows to select the v0 as a function of some useful parameters.
 
 Ludovic Gaudichet (gaudichet@to.infn.it)
 ************************************************************************/
 
 
-#include "V0Editors.h"
-#include <Alieve/V0.h>
+#include "AliEveV0Editors.h"
+#include <Alieve/AliEveV0.h>
 
-#include <Reve/RGValuators.h>
+#include <TEveGValuators.h>
 
 #include <TVirtualPad.h>
 #include <TColor.h>
@@ -44,14 +52,11 @@ Ludovic Gaudichet (gaudichet@to.infn.it)
 #include <TH2F.h>
 
 
-using namespace Reve;
-using namespace Alieve;
-
 //______________________________________________________________________
 // V0ListEditor
 //
 
-ClassImp(Alieve::V0ListEditor)
+ClassImp(V0ListEditor)
 
 V0ListEditor::V0ListEditor(const TGWindow *p,
                                  Int_t width, Int_t height,
@@ -73,17 +78,17 @@ V0ListEditor::V0ListEditor(const TGWindow *p,
   fRnrV0path = new TGCheckButton(this, "Render v0 path");
   AddFrame(fRnrV0path, new TGLayoutHints(kLHintsTop, 3, 1, 1, 0));
   fRnrV0path->Connect("Toggled(Bool_t)",
-		     "Alieve::V0ListEditor", this, "DoRnrV0path()");  
+		     "V0ListEditor", this, "DoRnrV0path()");  
 
   fRnrV0vtx = new TGCheckButton(this, "Render v0 vertices");
   AddFrame(fRnrV0vtx, new TGLayoutHints(kLHintsTop, 3, 1, 1, 0));
   fRnrV0vtx->Connect("Toggled(Bool_t)",
-		     "Alieve::V0ListEditor", this, "DoRnrV0vtx()");
+		     "V0ListEditor", this, "DoRnrV0vtx()");
 
   fRnrV0sDaugh = new TGCheckButton(this, "Render v0 daughters");
   AddFrame(fRnrV0sDaugh, new TGLayoutHints(kLHintsTop, 3, 1, 1, 0));
   fRnrV0sDaugh->Connect("Toggled(Bool_t)",
-			"Alieve::V0ListEditor", this, "DoRnrDaughters()");
+			"V0ListEditor", this, "DoRnrDaughters()");
     
   for (Int_t i=0; i<fgkNRange; i++) fRange[i]=0;
   for (Int_t i=0; i<fgkNCanvas; i++) fCanvasA[i]=0;
@@ -92,7 +97,7 @@ V0ListEditor::V0ListEditor(const TGWindow *p,
   AddSeeTab();
 
   TGTextButton* resetCutsButton = new TGTextButton(this, "Reset all cuts", 40);
-  resetCutsButton->Connect("Clicked()", "Alieve::V0ListEditor", this, "ResetCuts()");
+  resetCutsButton->Connect("Clicked()", "V0ListEditor", this, "ResetCuts()");
   AddFrame(resetCutsButton, new TGLayoutHints(kLHintsTop, 3, 1, 1, 0));
 }
 
@@ -147,7 +152,7 @@ TGCompositeFrame** V0ListEditor::CreateTab(TGTab **pMainTab, TGTab **ptab, Int_t
   //------
   // tab widget
   pMainTab[0] = new TGTab(this,0,0);
-  pMainTab[0]->Connect("Selected(Int_t)", "Alieve::V0ListEditor", this, "UpdateSelectedTab()");
+  pMainTab[0]->Connect("Selected(Int_t)", "V0ListEditor", this, "UpdateSelectedTab()");
   this->AddFrame(pMainTab[0], new TGLayoutHints( kLHintsTop | kLHintsExpandX,2,2,2,2));
 
   
@@ -162,7 +167,7 @@ TGCompositeFrame** V0ListEditor::CreateTab(TGTab **pMainTab, TGTab **ptab, Int_t
   ptab[0]->Resize(ptab[0]->GetDefaultSize());
   // The following is for updating the canvas of a tab if this one is selected
   // (it updates every canvas)
-  ptab[0]->Connect("Selected(Int_t)", "Alieve::V0ListEditor", this, "UpdateSelectedTab()");
+  ptab[0]->Connect("Selected(Int_t)", "V0ListEditor", this, "UpdateSelectedTab()");
   frameTab1->AddFrame(ptab[0], new TGLayoutHints(kLHintsLeft| kLHintsExpandX,0,0,0,0));
   
   //------
@@ -173,7 +178,7 @@ TGCompositeFrame** V0ListEditor::CreateTab(TGTab **pMainTab, TGTab **ptab, Int_t
   // tab widget
   ptab[1] = new TGTab(frameTab2,440,299);
   ptab[1]->Resize(ptab[1]->GetDefaultSize());
-  ptab[1]->Connect("Selected(Int_t)", "Alieve::V0ListEditor", this, "UpdateSelectedTab()");
+  ptab[1]->Connect("Selected(Int_t)", "V0ListEditor", this, "UpdateSelectedTab()");
   frameTab2->AddFrame(ptab[1], new TGLayoutHints(kLHintsLeft| kLHintsExpandX ,0,0,0,0));
   
   //------
@@ -184,7 +189,7 @@ TGCompositeFrame** V0ListEditor::CreateTab(TGTab **pMainTab, TGTab **ptab, Int_t
   // tab widget
   ptab[2] = new TGTab(frameTab3,440,299);
   ptab[2]->Resize(ptab[2]->GetDefaultSize());
-  ptab[2]->Connect("Selected(Int_t)", "Alieve::V0ListEditor", this, "UpdateSelectedTab()");
+  ptab[2]->Connect("Selected(Int_t)", "V0ListEditor", this, "UpdateSelectedTab()");
   frameTab3->AddFrame(ptab[2], new TGLayoutHints(kLHintsLeft| kLHintsExpandX ,0,0,0,0));
 
   //------
@@ -229,7 +234,7 @@ void V0ListEditor::AddValuator(TGCompositeFrame* frame, char *name,
 				    60, 60, kHorizontalFrame);
 
    // --- Selectors
-  fRange[iHist] = new RGDoubleValuator(downFrame, name, 200, 0);
+  fRange[iHist] = new TEveGDoubleValuator(downFrame, name, 200, 0);
   fRange[iHist]->SetNELength(6);
   fRange[iHist]->Build();
   fRange[iHist]->GetSlider()->SetWidth(200);
@@ -245,7 +250,7 @@ void V0ListEditor::AddValuator(TGCompositeFrame* frame, char *name,
     fRange[iHist]->SetLimits(min, max, TGNumberFormat::kNESReal);
 
   fRange[iHist]->Connect("ValueSet()",
-			 "Alieve::V0ListEditor", this, func);
+			 "V0ListEditor", this, func);
   downFrame->AddFrame(fRange[iHist], new TGLayoutHints(kLHintsLeft,
 						      0, 0, 0, 0));
 
@@ -253,7 +258,7 @@ void V0ListEditor::AddValuator(TGCompositeFrame* frame, char *name,
 
   char ch[40];
   sprintf(ch,"AdjustHist(=%i)",iHist);
-  adjustButton->Connect("Clicked()", "Alieve::V0ListEditor", this, ch);
+  adjustButton->Connect("Clicked()", "V0ListEditor", this, ch);
   downFrame->AddFrame(adjustButton, new TGLayoutHints(kLHintsTop, 0, 0, 0, 0));
 
   frame->AddFrame(downFrame, new TGLayoutHints(kLHintsTop| kLHintsExpandY,

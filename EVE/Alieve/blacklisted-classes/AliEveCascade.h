@@ -1,5 +1,13 @@
-#ifndef ALIEVE_CASCADE_H
-#define ALIEVE_CASCADE_H
+// $Id$
+// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
+
+/**************************************************************************
+ * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
+ * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
+ * full copyright notice.                                                 * 
+ **************************************************************************/
+#ifndef ALIEVE_Cascade_H
+#define ALIEVE_Cascade_H
 
 /***********************************************************************
 *  This code defines the reconstructed cascades visualized with EVE
@@ -7,9 +15,9 @@
 * Ludovic Gaudichet (gaudichet@to.infn.it)
 ************************************************************************/
 
-#include <Reve/PODs.h>
-#include <Reve/RenderElement.h>
-#include <Reve/Track.h>
+#include <TEveVSDStructs.h>
+#include <TEveElement.h>
+#include <TEveTrack.h>
 
 #include <TPolyMarker3D.h>
 #include <TPolyLine3D.h>
@@ -18,44 +26,42 @@ class TH1F;
 class TH2F;
 
 
-namespace Alieve {
-
 class CascadeList;
 
-class Cascade : public Reve::RenderElement,
+class AliEveCascade : public TEveElement,
                 public TPolyMarker3D
 {
 public:
-  typedef std::vector<Reve::PathMark*>           vpPathMark_t;
+  typedef std::vector<TEvePathMark*>           vpPathMark_t;
 
 private:
   friend class CascadeList;
 
-  Cascade(const Cascade&);            // Not implemented
-  Cascade& operator=(const Cascade&); // Not implemented
+  AliEveCascade(const AliEveCascade&);            // Not implemented
+  AliEveCascade& operator=(const AliEveCascade&); // Not implemented
 
 protected:
-  typedef std::vector<Reve::PathMark*>::iterator vpPathMark_i;
+  typedef std::vector<TEvePathMark*>::iterator vpPathMark_i;
 
-  Reve::Vector fV_neg;       // Vertex of negative track
-  Reve::Vector fP_neg;       // Momentum of negative track
-  Reve::Vector fV_pos;       // Vertex of positive track
-  Reve::Vector fP_pos;       // Momentum of positive track
-  Reve::Vector fV_bach;      // Vertex of positive track
-  Reve::Vector fP_bach;      // Momentum of positive track
+  TEveVector fV_neg;       // Vertex of negative track
+  TEveVector fP_neg;       // Momentum of negative track
+  TEveVector fV_pos;       // Vertex of positive track
+  TEveVector fP_pos;       // Momentum of positive track
+  TEveVector fV_bach;      // Vertex of positive track
+  TEveVector fP_bach;      // Momentum of positive track
 
-  Reve::Vector fV_decay;     //decay point of the cascade
-  Reve::Vector fV_birth;    // Reconstructed birth point of neutral particle
+  TEveVector fV_decay;     //decay point of the cascade
+  TEveVector fV_birth;    // Reconstructed birth point of neutral particle
 
   vpPathMark_t         fPathMarksNeg;
   vpPathMark_t         fPathMarksPos;
   vpPathMark_t         fPathMarksBach;
-  Reve::TrackRnrStyle *fRnrStyle;
+  TEveTrackPropagator *fRnrStyle;
 
   TPolyLine3D       fPolyLineNeg;
   TPolyLine3D       fPolyLinePos;
   TPolyLine3D       fPolyLineBach;
-  TPolyLine3D       fPolyLineV0;   // line of V0 travel
+  TPolyLine3D       fPolyLineV0;   // line of AliEveV0 travel
   TPolyLine3D       fPolyLineCas;  // line of cascade travel
 
   Float_t           fBeta_neg;
@@ -74,9 +80,9 @@ protected:
   static const Float_t fgkMassLambda2;
 
 public: 
-  Cascade();
-  Cascade(Reve::TrackRnrStyle* rs);
-  virtual ~Cascade();
+  AliEveCascade();
+  AliEveCascade(TEveTrackPropagator* rs);
+  virtual ~AliEveCascade();
 
   virtual void  SetESDIndex(Int_t ind) { fESDIndex = ind;}
   virtual void  SetMainColor(Color_t col)
@@ -89,11 +95,11 @@ public:
     fPolyLineNeg.SetLineColor(cNeg); fPolyLinePos.SetLineColor(cPos);
     fPolyLineBach.SetLineColor(cBach);
   }
-  void        SetRnrStyle(Reve::TrackRnrStyle* rs) { fRnrStyle = rs; }
+  void        SetRnrStyle(TEveTrackPropagator* rs) { fRnrStyle = rs; }
 
-  void  AddPathMarkPos(Reve::PathMark* pm) { fPathMarksPos.push_back(pm); }
-  void  AddPathMarkNeg(Reve::PathMark* pm) { fPathMarksNeg.push_back(pm); }
-  void  AddPathMarkBach(Reve::PathMark* pm) { fPathMarksBach.push_back(pm); }
+  void  AddPathMarkPos(TEvePathMark* pm) { fPathMarksPos.push_back(pm); }
+  void  AddPathMarkNeg(TEvePathMark* pm) { fPathMarksNeg.push_back(pm); }
+  void  AddPathMarkBach(TEvePathMark* pm) { fPathMarksBach.push_back(pm); }
 
   virtual void PaintV0Daughters(Option_t* option="") {
     if(fRnrSelf) {fPolyLineNeg.Paint(option);fPolyLinePos.Paint(option); } }
@@ -107,7 +113,7 @@ public:
     if(fRnrSelf) fPolyLineCas.Paint(option);}
 
   void Reset(TPolyLine3D* polyLine);
-  void MakeTrack(vpPathMark_t& pathMark, Reve::Vector& vtx,  Reve::Vector& p,
+  void MakeTrack(vpPathMark_t& pathMark, TEveVector& vtx,  TEveVector& p,
 		 Int_t charge, Float_t beta, TPolyLine3D& polyLine);
   void MakeV0path();
   void MakeCasPath();
@@ -168,14 +174,14 @@ public:
   Float_t GetOmegaMass() const;
   Float_t GetAntiOmegaMass() const;
 
-  ClassDef(Cascade, 1); // Visual representation of a cascade.
-}; // endclass Cascade
+  ClassDef(AliEveCascade, 1); // Visual representation of a cascade.
+}; // endclass AliEveCascade
 
 
 
 //______________________________________________________________________
 
-inline void Cascade::SetBeta(Float_t betaNeg, Float_t betaPos, Float_t betaBach) {
+inline void AliEveCascade::SetBeta(Float_t betaNeg, Float_t betaPos, Float_t betaBach) {
    fBeta_neg = betaNeg;
    fBeta_pos = betaPos;
    fBeta_bach = betaBach;
@@ -184,154 +190,154 @@ inline void Cascade::SetBeta(Float_t betaNeg, Float_t betaPos, Float_t betaBach)
 
 //______________________________________________________________________
 
-inline Float_t Cascade::GetV0P2() const {
+inline Float_t AliEveCascade::GetV0P2() const {
   Float_t px = fP_neg.x + fP_pos.x, py = fP_neg.y + fP_pos.y,
     pz = fP_neg.z+fP_pos.z;
   return px*px + py*py + pz*pz;
 }
 
 
-inline Float_t Cascade::GetLambdaE() const {
+inline Float_t AliEveCascade::GetLambdaE() const {
   return sqrt(fgkMassLambda2+GetV0P2());
 }
 
-inline Float_t Cascade::GetXiE() const {
+inline Float_t AliEveCascade::GetXiE() const {
   Float_t e = GetLambdaE() +
     sqrt(fgkMassPion2 + fP_bach.x*fP_bach.x + fP_bach.y*fP_bach.y +
 	 fP_bach.z*fP_bach.z);
   return e;
 }
 
-inline Float_t Cascade::GetOmegaE() const {
+inline Float_t AliEveCascade::GetOmegaE() const {
   Float_t e = GetLambdaE() +
     sqrt(fgkMassKaon2 + fP_bach.x*fP_bach.x + fP_bach.y*fP_bach.y +
 	 fP_bach.z*fP_bach.z);
   return e;
 }
 
-inline Float_t Cascade::GetXiMass() const {
+inline Float_t AliEveCascade::GetXiMass() const {
   Float_t e = GetXiE();
   return sqrt(e*e - GetP2());
 }
 
-inline Float_t Cascade::GetAntiXiMass() const { return GetXiMass();}
+inline Float_t AliEveCascade::GetAntiXiMass() const { return GetXiMass();}
 
-inline Float_t Cascade::GetOmegaMass() const {
+inline Float_t AliEveCascade::GetOmegaMass() const {
   Float_t e = GetOmegaE();
   return sqrt(e*e - GetP2());
 }
 
-inline Float_t Cascade::GetAntiOmegaMass() const { return GetOmegaMass();}
+inline Float_t AliEveCascade::GetAntiOmegaMass() const { return GetOmegaMass();}
 
 
 //______________________________________________________________________
 
-inline Float_t Cascade::GetDCA_v0_Bach() const {
+inline Float_t AliEveCascade::GetDCA_v0_Bach() const {
   return fDCA_v0_Bach;
 }
 
-inline Float_t Cascade::GetCasCosPointingAngle() const {
+inline Float_t AliEveCascade::GetCasCosPointingAngle() const {
 return fCasCosPointingAngle;
 }
 
-inline Float_t Cascade::GetRadius() const {
+inline Float_t AliEveCascade::GetRadius() const {
   return sqrt(fV_birth.x*fV_birth.x + fV_birth.y*fV_birth.y);
 }
 
-//inline Float_t Cascade::GetDecayLength() const {
+//inline Float_t AliEveCascade::GetDecayLength() const {
 //return fDecayLength;
 //}
 
-inline Float_t Cascade::GetPseudoRapidity() const {
+inline Float_t AliEveCascade::GetPseudoRapidity() const {
   Float_t theta = acos( GetPz()/GetMomentum() );
   return ( -log(tan(theta/2.)) );
 }
 
 
 //______________________________________________________________________
-inline Float_t Cascade::GetPt2() const {
+inline Float_t AliEveCascade::GetPt2() const {
   Float_t px = GetPx(), py = GetPy();
   return (px*px+py*py);
 }
 
-inline Float_t Cascade::GetP2() const {
+inline Float_t AliEveCascade::GetP2() const {
 
   Float_t px = GetPx(), py = GetPy(), pz = GetPz();
   return (px*px+py*py+pz*pz);
 }
 
-inline Float_t Cascade::GetPt() const {
+inline Float_t AliEveCascade::GetPt() const {
   return sqrt(GetPt2());
 }
 
-inline Float_t Cascade::GetMomentum() const {
+inline Float_t AliEveCascade::GetMomentum() const {
   return sqrt(GetP2());
 }
 
-inline Float_t Cascade::GetPx() const {
+inline Float_t AliEveCascade::GetPx() const {
   return (fP_neg.x + fP_pos.x + fP_bach.x);
 }
 
-inline Float_t Cascade::GetPy() const {
+inline Float_t AliEveCascade::GetPy() const {
   return (fP_neg.y + fP_pos.y + fP_bach.y);
 }
 
-inline Float_t Cascade::GetPz() const {
+inline Float_t AliEveCascade::GetPz() const {
   return (fP_neg.z + fP_pos.z + fP_bach.z);
 }
 
 //______________________________________________________________________
 
-inline Float_t Cascade::GetPosP2() const {
+inline Float_t AliEveCascade::GetPosP2() const {
   return (fP_pos.x*fP_pos.x + fP_pos.y*fP_pos.y + fP_pos.z*fP_pos.z);
 }
 
-inline Float_t Cascade::GetPosP() const {
+inline Float_t AliEveCascade::GetPosP() const {
   return sqrt(GetPosP2());
 }
 
-inline Float_t Cascade::GetPosPt() const {
+inline Float_t AliEveCascade::GetPosPt() const {
   return sqrt(fP_pos.x*fP_pos.x + fP_pos.y*fP_pos.y);
 }
 
-inline Float_t Cascade::GetPosPseudoRapidity() const {
+inline Float_t AliEveCascade::GetPosPseudoRapidity() const {
   Float_t theta = acos( fP_pos.z/GetPosP() );
   return ( -log(tan(theta/2.)) );
 }
 
 //______________________________________________________________________
-inline Float_t Cascade::GetNegP2() const {
+inline Float_t AliEveCascade::GetNegP2() const {
   return (fP_neg.x*fP_neg.x + fP_neg.y*fP_neg.y + fP_neg.z*fP_neg.z);
 }
 
-inline Float_t Cascade::GetNegP() const {
+inline Float_t AliEveCascade::GetNegP() const {
   return sqrt(GetNegP2());
 }
 
-inline Float_t Cascade::GetNegPt() const {
+inline Float_t AliEveCascade::GetNegPt() const {
   return sqrt(fP_neg.x*fP_neg.x + fP_neg.y*fP_neg.y);
 }
 
-inline Float_t Cascade::GetNegPseudoRapidity() const {
+inline Float_t AliEveCascade::GetNegPseudoRapidity() const {
   Float_t theta = acos( fP_neg.z/GetNegP() );
   return ( -log(tan(theta/2.)) );
 }
 
 
 //______________________________________________________________________
-inline Float_t Cascade::GetBachP2() const {
+inline Float_t AliEveCascade::GetBachP2() const {
   return (fP_bach.x*fP_bach.x + fP_bach.y*fP_bach.y + fP_bach.z*fP_bach.z);
 }
 
-inline Float_t Cascade::GetBachP() const {
+inline Float_t AliEveCascade::GetBachP() const {
   return sqrt(GetBachP2());
 }
 
-inline Float_t Cascade::GetBachPt() const {
+inline Float_t AliEveCascade::GetBachPt() const {
   return sqrt(fP_bach.x*fP_bach.x + fP_bach.y*fP_bach.y);
 }
 
-inline Float_t Cascade::GetBachPseudoRapidity() const {
+inline Float_t AliEveCascade::GetBachPseudoRapidity() const {
   Float_t theta = acos( fP_bach.z/GetBachP() );
   return ( -log(tan(theta/2.)) );
 }
@@ -343,7 +349,7 @@ inline Float_t Cascade::GetBachPseudoRapidity() const {
 *
 ************************************************************************/
 
-class CascadeList : public Reve::RenderElementList
+class CascadeList : public TEveElementList
 {
   CascadeList(const CascadeList&);            // Not implemented
   CascadeList& operator=(const CascadeList&); // Not implemented
@@ -354,7 +360,7 @@ private:
 protected:
   TString              fTitle;
 
-  Reve::TrackRnrStyle *fRnrStyle;
+  TEveTrackPropagator *fRnrStyle;
 
   Bool_t               fRnrBach;
   Bool_t               fRnrV0Daughters;
@@ -380,8 +386,8 @@ protected:
   Float_t fMaxY[fgkNcutVar2D];
 
 public:
-  CascadeList(Reve::TrackRnrStyle* rs=0);
-  CascadeList(const Text_t* name, Reve::TrackRnrStyle* rs=0);
+  CascadeList(TEveTrackPropagator* rs=0);
+  CascadeList(const Text_t* name, TEveTrackPropagator* rs=0);
 
   virtual const Text_t* GetTitle() const { return fTitle; }
   virtual void SetTitle(const Text_t* t) { fTitle = t; }
@@ -392,8 +398,8 @@ public:
 
   virtual void Paint(Option_t* option="");
 
-  void  SetRnrStyle(Reve::TrackRnrStyle* rst) { fRnrStyle= rst; }
-  Reve::TrackRnrStyle* GetRnrStyle()          { return fRnrStyle; } 
+  void  SetRnrStyle(TEveTrackPropagator* rst) { fRnrStyle= rst; }
+  TEveTrackPropagator* GetPropagator()          { return fRnrStyle; } 
 
   Bool_t GetRnrCasVtx() const { return fRnrCasVtx; }
   Bool_t GetRnrCasPath() const { return fRnrCasPath; }
@@ -426,8 +432,8 @@ public:
   void GetCasIndexRange(Int_t &imin, Int_t &imax);
 
   void AdjustHist(Int_t iHist);
-  void UnFill(Cascade* cas);
-  void Filter(Cascade* cas);
+  void UnFill(AliEveCascade* cas);
+  void Filter(AliEveCascade* cas);
   void FilterAll();
 
   void XiMassFilter(Float_t min, Float_t max);
@@ -447,9 +453,7 @@ public:
 
   //--------------------------------
 
-  ClassDef(CascadeList, 1); // A list of Cascade objects.
+  ClassDef(CascadeList, 1); // A list of AliEveCascade objects.
 };
-
-} // namespace Alieve
 
 #endif

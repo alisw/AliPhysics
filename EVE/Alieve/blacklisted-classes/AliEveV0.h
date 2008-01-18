@@ -1,3 +1,11 @@
+// $Id$
+// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
+
+/**************************************************************************
+ * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
+ * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
+ * full copyright notice.                                                 * 
+ **************************************************************************/
 #ifndef ALIEVE_V0_H
 #define ALIEVE_V0_H
 
@@ -11,9 +19,9 @@
 * Ludovic Gaudichet (gaudichet@to.infn.it)
 ************************************************************************/
 
-#include <Reve/PODs.h>
-#include <Reve/RenderElement.h>
-#include <Reve/Track.h>
+#include <TEveVSDStructs.h>
+#include <TEveElement.h>
+#include <TEveTrack.h>
 
 #include <TPolyMarker3D.h>
 #include <TPolyLine3D.h>
@@ -22,32 +30,30 @@ class TH1F;
 class TH2F;
 
 
-namespace Alieve {
-
 class V0List;
 
-class V0 : public Reve::RenderElement,
+class AliEveV0 : public TEveElement,
            public TPolyMarker3D
 {
   friend class V0List;
 
-  V0(const V0&);            // Not implemented
-  V0& operator=(const V0&); // Not implemented
+  AliEveV0(const AliEveV0&);            // Not implemented
+  AliEveV0& operator=(const AliEveV0&); // Not implemented
 
 public: 
-  V0();
-  V0(Reve::RecTrack* tNeg, Reve::RecTrack* tPos, Reve::RecV0* v0,
-     Reve::TrackRnrStyle* rs);
-  virtual ~V0();
+  AliEveV0();
+  AliEveV0(TEveRecTrack* tNeg, TEveRecTrack* tPos, TEveRecV0* v0,
+     TEveTrackPropagator* rs);
+  virtual ~AliEveV0();
 
-  typedef std::vector<Reve::PathMark*>           vpPathMark_t;
-  typedef std::vector<Reve::PathMark*>::iterator vpPathMark_i;
-  void  AddPathMarkPos(Reve::PathMark* pm) { fPathMarksPos.push_back(pm); }
-  void  AddPathMarkNeg(Reve::PathMark* pm) { fPathMarksNeg.push_back(pm); }
+  typedef std::vector<TEvePathMark*>           vpPathMark_t;
+  typedef std::vector<TEvePathMark*>::iterator vpPathMark_i;
+  void  AddPathMarkPos(TEvePathMark* pm) { fPathMarksPos.push_back(pm); }
+  void  AddPathMarkNeg(TEvePathMark* pm) { fPathMarksNeg.push_back(pm); }
 
   void Reset(TPolyLine3D* polyLine);
 
-  void MakeTrack(vpPathMark_t& pathMark, Reve::Vector& vtx,  Reve::Vector& p,
+  void MakeTrack(vpPathMark_t& pathMark, TEveVector& vtx,  TEveVector& p,
 		 Int_t charge, Float_t beta, TPolyLine3D& polyLine);
 
   void MakeV0path();
@@ -65,7 +71,7 @@ public:
     fPolyLineV0.SetLineColor(fMarkerColor);}
   virtual void  SetTracksColor(Color_t cNeg, Color_t cPos) {
     fPolyLineNeg.SetLineColor(cNeg); fPolyLinePos.SetLineColor(cPos); }
-  void          SetRnrStyle(Reve::TrackRnrStyle* rs) { fRnrStyle = rs; }
+  void          SetRnrStyle(TEveTrackPropagator* rs) { fRnrStyle = rs; }
   void          SetESDIndex(Int_t ind) { fESDIndex = ind;}
   void          SetDaughterDCA(Float_t dca);
   void          SetCosPointingAngle(Float_t cos);
@@ -117,20 +123,20 @@ public:
   virtual const Text_t* GetTitle() const   { return Form("ESDv0_%i",fESDIndex); }
   Int_t          GetLabelPos() const { return fLabel_pos; }
   Int_t          GetLabelNeg() const { return fLabel_neg; }
-  Reve::TrackRnrStyle* GetRnrStyle() const  { return fRnrStyle; }
+  TEveTrackPropagator* GetPropagator() const  { return fRnrStyle; }
   TPolyLine3D*   GetPolyLineNeg() {return &fPolyLineNeg;}
   TPolyLine3D*   GetPolyLinePos() {return &fPolyLinePos;}
   TPolyLine3D*   GetPolyLineV0() {return &fPolyLineV0;}
 
 protected:
 
-  Reve::Vector fV_neg;       // Vertex of negative track
-  Reve::Vector fP_neg;       // Momentum of negative track
-  Reve::Vector fV_pos;       // Vertex of positive track
-  Reve::Vector fP_pos;       // Momentum of positive track
+  TEveVector fV_neg;       // Vertex of negative track
+  TEveVector fP_neg;       // Momentum of negative track
+  TEveVector fV_pos;       // Vertex of positive track
+  TEveVector fP_pos;       // Momentum of positive track
 
-  Reve::Vector fV_v0;        // Point of closest approach
-  Reve::Vector fV0_birth;    // Reconstucted birth point of neutral particle
+  TEveVector fV_v0;        // Point of closest approach
+  TEveVector fV0_birth;    // Reconstucted birth point of neutral particle
 
   Float_t           fBeta_neg;
   Float_t           fBeta_pos;
@@ -140,7 +146,7 @@ protected:
 
   vpPathMark_t         fPathMarksNeg;
   vpPathMark_t         fPathMarksPos;
-  Reve::TrackRnrStyle *fRnrStyle;
+  TEveTrackPropagator *fRnrStyle;
 
   TPolyLine3D       fPolyLineNeg;
   TPolyLine3D       fPolyLinePos;
@@ -154,154 +160,154 @@ protected:
   static const Float_t fgkMassPion2;
   static const Float_t fgkMassProton2;
 
-  ClassDef(V0, 1); // Visual representation of a V0.
-}; // endclass V0
+  ClassDef(AliEveV0, 1); // Visual representation of a AliEveV0.
+}; // endclass AliEveV0
 
 
 //______________________________________________________________________
-inline void V0::SetDaughterDCA(Float_t dca) { 
+inline void AliEveV0::SetDaughterDCA(Float_t dca) { 
   fDaughterDCA = dca; 
 }
 
-inline void V0::SetCosPointingAngle(Float_t cos) { 
+inline void AliEveV0::SetCosPointingAngle(Float_t cos) { 
   fCosPointingAngle = cos; 
 }
 
-inline void V0::SetDecayLength(Float_t len) {
+inline void AliEveV0::SetDecayLength(Float_t len) {
   fDecayLength = len;
 }
 
 
 //______________________________________________________________________
-inline Float_t V0::GetPt2() const {
+inline Float_t AliEveV0::GetPt2() const {
   Float_t px = fP_neg.x+fP_pos.x, py = fP_neg.y+fP_pos.y;
   return (px*px+py*py);
 }
 
-inline Float_t V0::GetP2() const {
+inline Float_t AliEveV0::GetP2() const {
 
   Float_t px = fP_neg.x+fP_pos.x, py = fP_neg.y+fP_pos.y, pz = fP_neg.z+fP_pos.z;
   return (px*px+py*py+pz*pz);
 }
 
-inline Float_t V0::GetPt() const {
+inline Float_t AliEveV0::GetPt() const {
   return sqrt(GetPt2());
 }
 
-inline Float_t V0::GetMomentum() const {
+inline Float_t AliEveV0::GetMomentum() const {
   return sqrt(GetP2());
 }
 
-inline Float_t V0::GetPx() const {
+inline Float_t AliEveV0::GetPx() const {
   return (fP_neg.x+fP_pos.x);
 }
 
-inline Float_t V0::GetPy() const {
+inline Float_t AliEveV0::GetPy() const {
   return (fP_neg.y+fP_pos.y);
 }
 
-inline Float_t V0::GetPz() const {
+inline Float_t AliEveV0::GetPz() const {
   return (fP_neg.z+fP_pos.z);
 }
 
 //______________________________________________________________________
 
-inline Float_t V0::GetDaughterDCA() const {
+inline Float_t AliEveV0::GetDaughterDCA() const {
   return fDaughterDCA;
 }
 
-inline Float_t V0::GetCosPointingAngle() const {
+inline Float_t AliEveV0::GetCosPointingAngle() const {
 return fCosPointingAngle;
 }
 
-inline Float_t V0::GetRadius() const {
+inline Float_t AliEveV0::GetRadius() const {
   return sqrt(fV_v0.x*fV_v0.x + fV_v0.y*fV_v0.y);
 }
 
-inline Float_t V0::GetDecayLength() const {
+inline Float_t AliEveV0::GetDecayLength() const {
 return fDecayLength;
 }
 
-inline Float_t V0::GetPseudoRapidity() const {
+inline Float_t AliEveV0::GetPseudoRapidity() const {
   Float_t theta = acos( GetPz()/GetMomentum() );
   return ( -log(tan(theta/2.)) );
 }
 
 //______________________________________________________________________
 
-inline Float_t V0::GetPionMinusE() const {
+inline Float_t AliEveV0::GetPionMinusE() const {
   return sqrt(fgkMassPion2+GetNegP2());
 }
 
-inline Float_t V0::GetPionPlusE() const {
+inline Float_t AliEveV0::GetPionPlusE() const {
   return sqrt(fgkMassPion2+GetPosP2());
 }
-inline Float_t V0::GetProtonE() const {
+inline Float_t AliEveV0::GetProtonE() const {
   return sqrt(fgkMassProton2+GetPosP2());
 
 }
-inline Float_t V0::GetPBarE() const {
+inline Float_t AliEveV0::GetPBarE() const {
   return sqrt(fgkMassProton2+GetNegP2());
 }
 
 //______________________________________________________________________
 
-inline Float_t V0::GetPosP2() const {
+inline Float_t AliEveV0::GetPosP2() const {
   return (fP_pos.x*fP_pos.x + fP_pos.y*fP_pos.y + fP_pos.z*fP_pos.z);
 }
 
-inline Float_t V0::GetPosP() const {
+inline Float_t AliEveV0::GetPosP() const {
   return sqrt(GetPosP2());
 }
 
-inline Float_t V0::GetPosPt() const {
+inline Float_t AliEveV0::GetPosPt() const {
   return sqrt(fP_pos.x*fP_pos.x + fP_pos.y*fP_pos.y);
 }
 
-inline Float_t V0::GetPosPseudoRapidity() const {
+inline Float_t AliEveV0::GetPosPseudoRapidity() const {
   Float_t theta = acos( fP_pos.z/GetPosP() );
   return ( -log(tan(theta/2.)) );
 }
 
-inline Float_t V0::GetPosDCAtoPrim() const {
+inline Float_t AliEveV0::GetPosDCAtoPrim() const {
   return 0;
 }
 
 //______________________________________________________________________
-inline Float_t V0::GetNegP2() const {
+inline Float_t AliEveV0::GetNegP2() const {
   return (fP_neg.x*fP_neg.x + fP_neg.y*fP_neg.y + fP_neg.z*fP_neg.z);
 }
 
-inline Float_t V0::GetNegP() const {
+inline Float_t AliEveV0::GetNegP() const {
   return sqrt(GetNegP2());
 }
 
-inline Float_t V0::GetNegPt() const {
+inline Float_t AliEveV0::GetNegPt() const {
   return sqrt(fP_neg.x*fP_neg.x + fP_neg.y*fP_neg.y);
 }
 
-inline Float_t V0::GetNegPseudoRapidity() const {
+inline Float_t AliEveV0::GetNegPseudoRapidity() const {
   Float_t theta = acos( fP_neg.z/GetNegP() );
   return ( -log(tan(theta/2.)) );
 }
 
-inline Float_t V0::GetNegDCAtoPrim() const {
+inline Float_t AliEveV0::GetNegDCAtoPrim() const {
   return 0;
 }
 
 //______________________________________________________________________
 
-inline Float_t V0::GetK0mass() const {
+inline Float_t AliEveV0::GetK0mass() const {
   Float_t energy = GetPionMinusE() + GetPionPlusE();
   return sqrt( energy*energy - GetP2() );
 }
 
-inline Float_t V0::GetLamMass() const {
+inline Float_t AliEveV0::GetLamMass() const {
   Float_t energy = GetPionMinusE() + GetProtonE();
   return sqrt( energy*energy - GetP2() );
 }
 
-inline Float_t V0::GetAntiLamMass() const {
+inline Float_t AliEveV0::GetAntiLamMass() const {
   Float_t energy = GetPionPlusE() + GetPBarE();
   return sqrt( energy*energy - GetP2() );
 }
@@ -312,15 +318,15 @@ inline Float_t V0::GetAntiLamMass() const {
 // V0List
 /**************************************************************************/
 
-class V0List : public Reve::RenderElementList
+class V0List : public TEveElementList
 {
   V0List(const V0List&);            // Not implemented
   V0List& operator=(const V0List&); // Not implemented
 
 public:
   V0List();
-  V0List(Reve::TrackRnrStyle* rs);
-  V0List(const Text_t* name, Reve::TrackRnrStyle* rs=0);
+  V0List(TEveTrackPropagator* rs);
+  V0List(const Text_t* name, TEveTrackPropagator* rs=0);
   virtual ~V0List();
 
   virtual const Text_t* GetTitle() const { return fTitle; }
@@ -332,8 +338,8 @@ public:
 
   virtual void Paint(Option_t* option="");
 
-  void  SetRnrStyle(Reve::TrackRnrStyle* rst) { fRnrStyle= rst; }
-  Reve::TrackRnrStyle* GetRnrStyle()          { return fRnrStyle; } 
+  void  SetRnrStyle(TEveTrackPropagator* rst) { fRnrStyle= rst; }
+  TEveTrackPropagator* GetPropagator()          { return fRnrStyle; } 
 
   Bool_t GetRnrV0vtx() const { return fRnrV0vtx; }
   Bool_t GetRnrV0path() const { return fRnrV0path; }
@@ -369,8 +375,8 @@ public:
   Bool_t  GetFitDecay()     const { return fRnrStyle->fFitDecay; }
 
   void AdjustHist(Int_t iHist);
-  void UnFill(V0* v0);
-  void Filter(V0* v0);
+  void UnFill(AliEveV0* v0);
+  void Filter(AliEveV0* v0);
   void FilterAll();
   void PtFilter(Float_t min, Float_t max);
 
@@ -394,7 +400,7 @@ private:
 protected:
   TString              fTitle;
 
-  Reve::TrackRnrStyle *fRnrStyle;
+  TEveTrackPropagator *fRnrStyle;
 
   Bool_t               fRnrDaughters;
   Bool_t               fRnrV0vtx;
@@ -415,10 +421,8 @@ protected:
   Float_t fMaxX[fgkNcutVar2D];
   Float_t fMaxY[fgkNcutVar2D];
 
-  ClassDef(V0List, 1); // A list of V0 objecs.
+  ClassDef(V0List, 1); // A list of AliEveV0 objecs.
 };
 
-
-} // namespace Alieve
 
 #endif

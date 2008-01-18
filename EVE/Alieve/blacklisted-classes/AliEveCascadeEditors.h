@@ -1,5 +1,13 @@
+// $Id$
+// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
+
+/**************************************************************************
+ * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
+ * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
+ * full copyright notice.                                                 * 
+ **************************************************************************/
 /***********************************************************************
-  This editor appears in the Reve window when cascades are visualize.
+  This editor appears in the TEveUtil window when cascades are visualize.
 It allows to select the cascades as a function of some useful parameters.
 
 Ludovic Gaudichet (gaudichet@to.infn.it)
@@ -19,14 +27,12 @@ class TH1F;
 class TGCompositeFrame;
 class TGTab;
 
-namespace Reve
+namespace TEveUtil
 {
-class RGValuator;
-class RGDoubleValuator;
+class TEveGValuator;
+class TEveGDoubleValuator;
 }
 
-namespace Alieve
-{
 class CascadeList;
 
 class CascadeListEditor : public TGedFrame
@@ -48,7 +54,7 @@ protected:
   TGTab *fTabA[3];
   TGTab *fTabB[3];
   static const Int_t fgkNRange = 14;
-  Reve::RGDoubleValuator *fRange[fgkNRange];
+  TEveGDoubleValuator *fRange[fgkNRange];
 
   static const Int_t fgkNCanvas = 15;
   TRootEmbeddedCanvas *fCanvasA[fgkNCanvas];
@@ -99,7 +105,5 @@ public:
 
   ClassDef(CascadeListEditor, 1); // Editor for CascadeList
 }; // endclass CascadeListEditor
-
-} // namespace Alieve
 
 #endif

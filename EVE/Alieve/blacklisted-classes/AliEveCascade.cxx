@@ -1,3 +1,11 @@
+// $Id$
+// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
+
+/**************************************************************************
+ * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
+ * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
+ * full copyright notice.                                                 * 
+ **************************************************************************/
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -22,17 +30,17 @@
 * Ludovic Gaudichet (gaudichet@to.infn.it)
 ************************************************************************/
 
-#include "Cascade.h"
+#include "AliEveCascade.h"
 
-#include <Reve/Track.h>
-#include <Reve/MCHelixLine.hi>
+#include <TEveTrack.h>
+#include <MCHelixLine.hi>
 
 #include <TPolyLine3D.h>
 #include <TPolyMarker3D.h>
 #include <TColor.h>
 
 // Updates
-#include <Reve/ReveManager.h>
+#include <TEveManager.h>
 #include <TCanvas.h>
 #include <TH1F.h>
 #include <TH2F.h>
@@ -40,26 +48,23 @@
 #include <vector>
 
 
-using namespace Reve;
-using namespace Alieve;
-
 
 /***********************************************************************
 *
-*  Cascade class
+*  AliEveCascade class
 *
 ************************************************************************/
 
-const Float_t Cascade::fgkMassPion2 = 0.13956995*0.13956995;
-const Float_t Cascade::fgkMassKaon2 = 0.493677*0.493677;
-const Float_t Cascade::fgkMassProton2 = 0.93827231*0.93827231;
-const Float_t Cascade::fgkMassLambda2 = 1.115683*1.115683;
+const Float_t AliEveCascade::fgkMassPion2 = 0.13956995*0.13956995;
+const Float_t AliEveCascade::fgkMassKaon2 = 0.493677*0.493677;
+const Float_t AliEveCascade::fgkMassProton2 = 0.93827231*0.93827231;
+const Float_t AliEveCascade::fgkMassLambda2 = 1.115683*1.115683;
 
-ClassImp(Alieve::Cascade)
+ClassImp(AliEveCascade)
 
 
-Cascade::Cascade() :
-  RenderElement(),
+AliEveCascade::AliEveCascade() :
+  TEveElement(),
   TPolyMarker3D(1),
   fV_neg(),
   fP_neg(),
@@ -97,8 +102,8 @@ Cascade::Cascade() :
 
 
 
-Cascade::Cascade(TrackRnrStyle* rs) :
-  RenderElement(),
+AliEveCascade::AliEveCascade(TEveTrackPropagator* rs) :
+  TEveElement(),
   TPolyMarker3D(1),
   fV_neg(),
   fP_neg(),
@@ -138,7 +143,7 @@ Cascade::Cascade(TrackRnrStyle* rs) :
 }
 
 
-Cascade::~Cascade()
+AliEveCascade::~AliEveCascade()
 {
   for (vpPathMark_i i=fPathMarksNeg.begin(); i!=fPathMarksNeg.end(); ++i)
     delete *i;
@@ -147,14 +152,14 @@ Cascade::~Cascade()
   for (vpPathMark_i i=fPathMarksBach.begin(); i!=fPathMarksBach.end(); ++i)
     delete *i;
 }
-void Cascade::Reset(TPolyLine3D* polyLine) {
+void AliEveCascade::Reset(TPolyLine3D* polyLine) {
   //polyLine->SetPolyLine(n_points);
   polyLine->SetPolyLine(0);
 }
 
 
 //______________________________________________________________________
-void Cascade::SetDecayLength(Float_t primx, Float_t primy, Float_t primz) {
+void AliEveCascade::SetDecayLength(Float_t primx, Float_t primy, Float_t primz) {
 
 
   Float_t dx = fV_decay.x-primx;
@@ -175,10 +180,10 @@ void Cascade::SetDecayLength(Float_t primx, Float_t primy, Float_t primz) {
 
 
 //______________________________________________________________________
-void Cascade::MakeTrack(vpPathMark_t& pathMark, Reve::Vector& vtx,  Reve::Vector& p,
+void AliEveCascade::MakeTrack(vpPathMark_t& pathMark, TEveVector& vtx,  TEveVector& p,
 		   Int_t charge, Float_t beta, TPolyLine3D& polyLine) {
 
-  TrackRnrStyle& RS((fRnrStyle != 0) ? *fRnrStyle : TrackRnrStyle::fgDefStyle);
+  TEveTrackPropagator& RS((fRnrStyle != 0) ? *fRnrStyle : TEveTrackPropagator::fgDefStyle);
 
   Float_t px = p.x, py = p.y, pz = p.z;  
 
@@ -204,12 +209,12 @@ void Cascade::MakeTrack(vpPathMark_t& pathMark, Reve::Vector& vtx,  Reve::Vector
     helix.Init(TMath::Sqrt(px*px+py*py), pz);
    
     if(!pathMark.empty()){
-      for(std::vector<Reve::PathMark*>::iterator i=pathMark.begin();
+      for(std::vector<TEvePathMark*>::iterator i=pathMark.begin();
 	  i!=pathMark.end(); ++i) {
 
-	Reve::PathMark* pm = *i;
+	TEvePathMark* pm = *i;
         
-	if(RS.fFitDaughters &&  pm->type == Reve::PathMark::Daughter){
+	if(RS.fFitDaughters &&  pm->type == TEvePathMark::Daughter){
 	  if(TMath::Abs(pm->V.z) > RS.fMaxZ 
 	     || TMath::Sqrt(pm->V.x*pm->V.x + pm->V.y*pm->V.y) > RS.fMaxR )
 	    goto helix_bounds;
@@ -220,7 +225,7 @@ void Cascade::MakeTrack(vpPathMark_t& pathMark, Reve::Vector& vtx,  Reve::Vector
 	  p.y -=  pm->P.y;
 	  p.z -=  pm->P.z;
 	}
-	if(RS.fFitDecay &&  pm->type == Reve::PathMark::Decay){
+	if(RS.fFitDecay &&  pm->type == TEvePathMark::Decay){
 	  
 	  if(TMath::Abs(pm->V.z) > RS.fMaxZ 
 	     || TMath::Sqrt(pm->V.x*pm->V.x + pm->V.y*pm->V.y) > RS.fMaxR )
@@ -245,11 +250,11 @@ void Cascade::MakeTrack(vpPathMark_t& pathMark, Reve::Vector& vtx,  Reve::Vector
     MCLine line(fRnrStyle, &mc_v0, TMath::C()*beta, &track_points);
    
     if(!pathMark.empty()) {
-      for(std::vector<Reve::PathMark*>::iterator i=pathMark.begin();
+      for(std::vector<TEvePathMark*>::iterator i=pathMark.begin();
 	  i!=pathMark.end(); ++i) {
-	Reve::PathMark* pm = *i;
+	TEvePathMark* pm = *i;
 
-	if(RS.fFitDaughters &&  pm->type == Reve::PathMark::Daughter){
+	if(RS.fFitDaughters &&  pm->type == TEvePathMark::Daughter){
           if(TMath::Abs(pm->V.z) > RS.fMaxZ 
 	     || TMath::Sqrt(pm->V.x*pm->V.x + pm->V.y*pm->V.y) > RS.fMaxR )
 	    goto line_bounds;
@@ -259,7 +264,7 @@ void Cascade::MakeTrack(vpPathMark_t& pathMark, Reve::Vector& vtx,  Reve::Vector
 	  p.z -=  pm->P.z;
 	}
 
-	if(RS.fFitDecay &&  pm->type == Reve::PathMark::Decay){
+	if(RS.fFitDecay &&  pm->type == TEvePathMark::Decay){
 	  if(TMath::Abs(pm->V.z) > RS.fMaxZ 
 	     || TMath::Sqrt(pm->V.x*pm->V.x + pm->V.y*pm->V.y) > RS.fMaxR )
 	    goto line_bounds;
@@ -285,7 +290,7 @@ make_polyline:
 }
 
 //______________________________________________________________________
-void Cascade::MakeV0path() {
+void AliEveCascade::MakeV0path() {
   
   MCVertex  mc_v0;
   mc_v0.x = (fV_neg.x+fV_pos.x)/2;
@@ -307,7 +312,7 @@ void Cascade::MakeV0path() {
 }
 
 //______________________________________________________________________
-void Cascade::MakeCasPath() {
+void AliEveCascade::MakeCasPath() {
   
   MCVertex  mc_v0;
   mc_v0.x = fV_birth.x;
@@ -329,7 +334,7 @@ void Cascade::MakeCasPath() {
 
 
 //______________________________________________________________________
-void Cascade::MakeCascade()
+void AliEveCascade::MakeCascade()
 {
   SetNextPoint(fV_neg.x, fV_neg.y, fV_neg.z);
   SetNextPoint(fV_decay.x, fV_decay.y, fV_decay.z);
@@ -348,7 +353,7 @@ void Cascade::MakeCascade()
 
 
 //______________________________________________________________________
-Float_t Cascade::GetCasAlphaArmenteros() const
+Float_t AliEveCascade::GetCasAlphaArmenteros() const
 {
   Float_t px = GetPx(), py = GetPy(), pz = GetPz();
   Float_t posXcas, negXcas;
@@ -368,7 +373,7 @@ Float_t Cascade::GetCasAlphaArmenteros() const
 
 
 //______________________________________________________________________
-Float_t Cascade::GetCasPtArmenteros() const
+Float_t AliEveCascade::GetCasPtArmenteros() const
 {
   Float_t px = GetPx(), py = GetPy(), pz = GetPz();
   Float_t p2 = px*px + py*py + pz*pz;
@@ -394,12 +399,12 @@ Float_t Cascade::GetCasPtArmenteros() const
 *
 ************************************************************************/
 
-ClassImp(Alieve::CascadeList)
+ClassImp(CascadeList)
 
 
 //______________________________________________________________________
-CascadeList::CascadeList(TrackRnrStyle* rs) :
-  RenderElementList(),
+CascadeList::CascadeList(TEveTrackPropagator* rs) :
+  TEveElementList(),
   fTitle(),
   fRnrStyle(rs),
   fRnrBach(kTRUE),
@@ -412,15 +417,15 @@ CascadeList::CascadeList(TrackRnrStyle* rs) :
   fPosColor(0),
   fBachColor(0)
 {
-  fChildClass = Cascade::Class(); // override member from base RenderElementList
+  fChildClass = AliEveCascade::Class(); // override member from base TEveElementList
 
   Init();
 }
 
 
 //______________________________________________________________________
-CascadeList::CascadeList(const Text_t* name, TrackRnrStyle* rs) :
-  RenderElementList(),
+CascadeList::CascadeList(const Text_t* name, TEveTrackPropagator* rs) :
+  TEveElementList(),
   fTitle(),
   fRnrStyle(rs),
   fRnrBach(kTRUE),
@@ -433,7 +438,7 @@ CascadeList::CascadeList(const Text_t* name, TrackRnrStyle* rs) :
   fPosColor(0),
   fBachColor(0)
 {
-  fChildClass = Cascade::Class(); // override member from base RenderElementList
+  fChildClass = AliEveCascade::Class(); // override member from base TEveElementList
 
   Init();
   SetName(name);
@@ -443,7 +448,7 @@ CascadeList::CascadeList(const Text_t* name, TrackRnrStyle* rs) :
 //______________________________________________________________________
 void CascadeList::Init()
 {
-  if (fRnrStyle== 0) fRnrStyle = new TrackRnrStyle;
+  if (fRnrStyle== 0) fRnrStyle = new TEveTrackPropagator;
 
   fMin[0]  =  0;     fMax[0]  = 5; // Xi mass
   fMin[1]  =  0;     fMax[1]  = 5; // Omega mass
@@ -519,7 +524,7 @@ void CascadeList::Paint(Option_t* option) {
     if(fRnrBach) {
       for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
 	if((*i)->GetRnrSelf()) {
-	  ((Cascade*)(*i))->PaintBachelor(option);
+	  ((AliEveCascade*)(*i))->PaintBachelor(option);
 	}
       }
     }
@@ -527,7 +532,7 @@ void CascadeList::Paint(Option_t* option) {
     if(fRnrV0Daughters) {
       for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
 	if((*i)->GetRnrSelf()) {
-	  ((Cascade*)(*i))->PaintV0Daughters(option);
+	  ((AliEveCascade*)(*i))->PaintV0Daughters(option);
 	}
       }
     }
@@ -535,7 +540,7 @@ void CascadeList::Paint(Option_t* option) {
     if(fRnrV0path) {
       for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
 	if((*i)->GetRnrSelf()) {
-	  ((Cascade*)(*i))->PaintV0Path(option);
+	  ((AliEveCascade*)(*i))->PaintV0Path(option);
 	}
       }
     }
@@ -543,7 +548,7 @@ void CascadeList::Paint(Option_t* option) {
     if(fRnrCasVtx) {
       for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
 	if((*i)->GetRnrSelf()) {
-	  ((Cascade*)(*i))->Paint(option);
+	  ((AliEveCascade*)(*i))->Paint(option);
 	}
       }
     }
@@ -551,7 +556,7 @@ void CascadeList::Paint(Option_t* option) {
     if(fRnrCasPath) {
       for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
 	if((*i)->GetRnrSelf()) {
-	  ((Cascade*)(*i))->PaintCasPath(option);
+	  ((AliEveCascade*)(*i))->PaintCasPath(option);
 	}
       }
     }
@@ -564,38 +569,38 @@ void CascadeList::Paint(Option_t* option) {
 void CascadeList::SetRnrV0vtx(Bool_t rnr)
 {
   fRnrV0vtx = rnr;
-  gReve->Redraw3D();
+  gEve->Redraw3D();
 }
 
 void CascadeList::SetRnrV0path(Bool_t rnr)
 {
   fRnrV0path = rnr;
-  gReve->Redraw3D();
+  gEve->Redraw3D();
 }
 
 void CascadeList::SetRnrV0Daughters(Bool_t rnr)
 {
   fRnrV0Daughters = rnr;
-  gReve->Redraw3D();
+  gEve->Redraw3D();
 }
 
 
 void CascadeList::SetRnrCasPath(Bool_t rnr)
 {
   fRnrCasPath = rnr;
-  gReve->Redraw3D();
+  gEve->Redraw3D();
 }
 
 void CascadeList::SetRnrCasVtx(Bool_t rnr)
 {
   fRnrCasVtx = rnr;
-  gReve->Redraw3D();
+  gEve->Redraw3D();
 }
 
 void CascadeList::SetRnrBachelor(Bool_t rnr)
 {
   fRnrBach = rnr;
-  gReve->Redraw3D();
+  gEve->Redraw3D();
 }
 
 
@@ -604,9 +609,9 @@ void CascadeList::SetRnrBachelor(Bool_t rnr)
 void CascadeList::MakeCascades()
 {
   for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
-    ((Cascade*)(*i))->MakeCascade();
+    ((AliEveCascade*)(*i))->MakeCascade();
   }
-  gReve->Redraw3D();
+  gEve->Redraw3D();
 }
 
 //_________________________________________________________________________
@@ -627,7 +632,7 @@ void CascadeList::AdjustHist(Int_t iHist) {
 }
 
 //______________________________________________________________________
-void CascadeList::UnFill(Cascade* cas) {
+void CascadeList::UnFill(AliEveCascade* cas) {
 
 
     Int_t bin = fHist[0]->GetXaxis()->FindBin(cas->GetXiMass());
@@ -682,7 +687,7 @@ void CascadeList::UnFill(Cascade* cas) {
 
 
 //______________________________________________________________________
-void CascadeList::Filter(Cascade* cas) {
+void CascadeList::Filter(AliEveCascade* cas) {
 
   Float_t xiMass = cas->GetXiMass();
   if ((xiMass<fMin[0])||(xiMass>fMax[0])) return;
@@ -755,10 +760,10 @@ void CascadeList::FilterAll() {
   for (Int_t i=0; i<fgkNcutVar2D; i++)
     fHist2D[i]->Reset();
   
-  Cascade* myCas;
+  AliEveCascade* myCas;
   for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
 
-    myCas = (Cascade*)(*i);
+    myCas = (AliEveCascade*)(*i);
     Filter(myCas);
   }
 }
@@ -768,16 +773,16 @@ void CascadeList::FilterAll() {
 void CascadeList::GetCasIndexRange(Int_t &imin, Int_t &imax) {
 
   Int_t index;
-  Cascade* myCas;
+  AliEveCascade* myCas;
   List_i i = fChildren.begin();
-  myCas = (Cascade*)(*i);
+  myCas = (AliEveCascade*)(*i);
   index = myCas->GetESDIndex();
   imin = index;
   imax = index;
 
   for(; i!=fChildren.end(); ++i) {
 
-    myCas = (Cascade*)(*i);
+    myCas = (AliEveCascade*)(*i);
     index = myCas->GetESDIndex();
     if (index<imin) imin = index;
     if (index>imax) imax = index;
@@ -793,11 +798,11 @@ void CascadeList::XiMassFilter(Float_t min, Float_t max) {
   Float_t val;
   Bool_t wasSelected;
   Bool_t isSelected;
-  Cascade* myCas;
+  AliEveCascade* myCas;
 
   for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
 
-    myCas = (Cascade*)(*i);
+    myCas = (AliEveCascade*)(*i);
     val = myCas->GetXiMass();
     wasSelected = myCas->GetRnrSelf();
     isSelected = ( (val>=min) && (val<=max) );
@@ -822,11 +827,11 @@ void CascadeList::OmegaMassFilter(Float_t min, Float_t max) {
   Float_t val;
   Bool_t wasSelected;
   Bool_t isSelected;
-  Cascade* myCas;
+  AliEveCascade* myCas;
 
   for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
 
-    myCas = (Cascade*)(*i);
+    myCas = (AliEveCascade*)(*i);
     val = myCas->GetOmegaMass();
     wasSelected = myCas->GetRnrSelf();
     isSelected = ( (val>=min) && (val<=max) );
@@ -851,11 +856,11 @@ void CascadeList::IndexFilter(Float_t min, Float_t max) {
   Float_t val;
   Bool_t wasSelected;
   Bool_t isSelected;
-  Cascade* myCas;
+  AliEveCascade* myCas;
 
   for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
 
-    myCas = (Cascade*)(*i);
+    myCas = (AliEveCascade*)(*i);
     val = myCas->GetESDIndex();
     wasSelected = myCas->GetRnrSelf();
     isSelected = ( (val>=min) && (val<=max) );
@@ -880,11 +885,11 @@ void CascadeList::CosPointingFilter(Float_t min, Float_t max) {
   Float_t val;
   Bool_t wasSelected;
   Bool_t isSelected;
-  Cascade* myCas;
+  AliEveCascade* myCas;
 
   for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
 
-    myCas = (Cascade*)(*i);
+    myCas = (AliEveCascade*)(*i);
     val = myCas->GetCasCosPointingAngle();
     wasSelected = myCas->GetRnrSelf();
     isSelected = ( (val>=min) && (val<=max) );
@@ -910,11 +915,11 @@ void CascadeList::BachV0DCAFilter(Float_t min, Float_t max) {
   Float_t val;
   Bool_t wasSelected;
   Bool_t isSelected;
-  Cascade* myCas;
+  AliEveCascade* myCas;
 
   for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
 
-    myCas = (Cascade*)(*i);
+    myCas = (AliEveCascade*)(*i);
     val = myCas->GetDCA_v0_Bach();
     wasSelected = myCas->GetRnrSelf();
     isSelected = ( (val>=min) && (val<=max) );
@@ -940,11 +945,11 @@ void CascadeList::RadiusFilter(Float_t min, Float_t max) {
   Float_t val;
   Bool_t wasSelected;
   Bool_t isSelected;
-  Cascade* myCas;
+  AliEveCascade* myCas;
 
   for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
 
-    myCas = (Cascade*)(*i);
+    myCas = (AliEveCascade*)(*i);
     val = myCas->GetRadius();
     wasSelected = myCas->GetRnrSelf();
     isSelected = ( (val>=min) && (val<=max) );
@@ -970,11 +975,11 @@ void CascadeList::PtFilter(Float_t min, Float_t max) {
   Float_t val;
   Bool_t wasSelected;
   Bool_t isSelected;
-  Cascade* myCas;
+  AliEveCascade* myCas;
 
   for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
 
-    myCas = (Cascade*)(*i);
+    myCas = (AliEveCascade*)(*i);
     val = myCas->GetPt();
     wasSelected = myCas->GetRnrSelf();
     isSelected = ( (val>=min) && (val<=max) );
@@ -1000,11 +1005,11 @@ void CascadeList::PseudoRapFilter(Float_t min, Float_t max) {
   Float_t val;
   Bool_t wasSelected;
   Bool_t isSelected;
-  Cascade* myCas;
+  AliEveCascade* myCas;
 
   for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
 
-    myCas = (Cascade*)(*i);
+    myCas = (AliEveCascade*)(*i);
     val = myCas->GetPseudoRapidity();
     wasSelected = myCas->GetRnrSelf();
     isSelected = ( (val>=min) && (val<=max) );
@@ -1030,11 +1035,11 @@ void CascadeList::NegPtFilter(Float_t min, Float_t max) {
   Float_t val;
   Bool_t wasSelected;
   Bool_t isSelected;
-  Cascade* myCas;
+  AliEveCascade* myCas;
 
   for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
 
-    myCas = (Cascade*)(*i);
+    myCas = (AliEveCascade*)(*i);
     val = myCas->GetNegPt();
     wasSelected = myCas->GetRnrSelf();
     isSelected = ( (val>=min) && (val<=max) );
@@ -1060,11 +1065,11 @@ void CascadeList::NegEtaFilter(Float_t min, Float_t max) {
   Float_t val;
   Bool_t wasSelected;
   Bool_t isSelected;
-  Cascade* myCas;
+  AliEveCascade* myCas;
 
   for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
 
-    myCas = (Cascade*)(*i);
+    myCas = (AliEveCascade*)(*i);
     val = myCas->GetNegPseudoRapidity();
     wasSelected = myCas->GetRnrSelf();
     isSelected = ( (val>=min) && (val<=max) );
@@ -1090,11 +1095,11 @@ void CascadeList::PosPtFilter(Float_t min, Float_t max) {
   Float_t val;
   Bool_t wasSelected;
   Bool_t isSelected;
-  Cascade* myCas;
+  AliEveCascade* myCas;
 
   for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
 
-    myCas = (Cascade*)(*i);
+    myCas = (AliEveCascade*)(*i);
     val = myCas->GetPosPt();
     wasSelected = myCas->GetRnrSelf();
     isSelected = ( (val>=min) && (val<=max) );
@@ -1119,11 +1124,11 @@ void CascadeList::PosEtaFilter(Float_t min, Float_t max) {
   Float_t val;
   Bool_t wasSelected;
   Bool_t isSelected;
-  Cascade* myCas;
+  AliEveCascade* myCas;
 
   for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
 
-    myCas = (Cascade*)(*i);
+    myCas = (AliEveCascade*)(*i);
     val = myCas->GetPosPseudoRapidity();
     wasSelected = myCas->GetRnrSelf();
     isSelected = ( (val>=min) && (val<=max) );
@@ -1149,11 +1154,11 @@ void CascadeList::BachPtFilter(Float_t min, Float_t max) {
   Float_t val;
   Bool_t wasSelected;
   Bool_t isSelected;
-  Cascade* myCas;
+  AliEveCascade* myCas;
 
   for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
 
-    myCas = (Cascade*)(*i);
+    myCas = (AliEveCascade*)(*i);
     val = myCas->GetBachPt();
     wasSelected = myCas->GetRnrSelf();
     isSelected = ( (val>=min) && (val<=max) );
@@ -1178,11 +1183,11 @@ void CascadeList::BachEtaFilter(Float_t min, Float_t max) {
   Float_t val;
   Bool_t wasSelected;
   Bool_t isSelected;
-  Cascade* myCas;
+  AliEveCascade* myCas;
 
   for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
 
-    myCas = (Cascade*)(*i);
+    myCas = (AliEveCascade*)(*i);
     val = myCas->GetBachPseudoRapidity();
     wasSelected = myCas->GetRnrSelf();
     isSelected = ( (val>=min) && (val<=max) );

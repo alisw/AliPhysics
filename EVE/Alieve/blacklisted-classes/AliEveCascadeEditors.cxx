@@ -1,15 +1,23 @@
+// $Id$
+// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
+
+/**************************************************************************
+ * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
+ * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
+ * full copyright notice.                                                 * 
+ **************************************************************************/
 
 /***********************************************************************
-  This editor appears in the Reve window when v0 are visualize.
+  This editor appears in the TEveUtil window when v0 are visualize.
 It allows to select the v0 as a function of some useful parameters.
 
 Ludovic Gaudichet (gaudichet@to.infn.it)
 ************************************************************************/
 
-#include "CascadeEditors.h"
-#include <Alieve/Cascade.h>
+#include "AliEveCascadeEditors.h"
+#include <Alieve/AliEveCascade.h>
 
-#include <Reve/RGValuators.h>
+#include <TEveGValuators.h>
 
 #include <TVirtualPad.h>
 #include <TColor.h>
@@ -28,14 +36,11 @@ Ludovic Gaudichet (gaudichet@to.infn.it)
 #include <TH2F.h>
 
 
-using namespace Reve;
-using namespace Alieve;
-
 //______________________________________________________________________
 // CascadeListEditor
 //
 
-ClassImp(Alieve::CascadeListEditor)
+ClassImp(CascadeListEditor)
 
 CascadeListEditor::CascadeListEditor(const TGWindow *p,
                                  Int_t width, Int_t height,
@@ -59,27 +64,27 @@ CascadeListEditor::CascadeListEditor(const TGWindow *p,
   fRnrVtx = new TGCheckButton(this, "Render v0 and cascade vertices");
   AddFrame(fRnrVtx, new TGLayoutHints(kLHintsTop, 3, 1, 1, 0));
   fRnrVtx->Connect("Toggled(Bool_t)",
-		     "Alieve::CascadeListEditor", this, "DoRnrVtx()");
+		     "CascadeListEditor", this, "DoRnrVtx()");
 
   fRnrV0path = new TGCheckButton(this, "Render v0 path");
   AddFrame(fRnrV0path, new TGLayoutHints(kLHintsTop, 3, 1, 1, 0));
   fRnrV0path->Connect("Toggled(Bool_t)",
-		     "Alieve::CascadeListEditor", this, "DoRnrV0path()");  
+		     "CascadeListEditor", this, "DoRnrV0path()");  
 
   fRnrCasPath = new TGCheckButton(this, "Render cascade path");
   AddFrame(fRnrCasPath, new TGLayoutHints(kLHintsTop, 3, 1, 1, 0));
   fRnrCasPath->Connect("Toggled(Bool_t)",
-		       "Alieve::CascadeListEditor", this, "DoRnrCasPath()");  
+		       "CascadeListEditor", this, "DoRnrCasPath()");  
 
   fRnrV0Daughters = new TGCheckButton(this, "Render v0 daughter tracks");
   AddFrame(fRnrV0Daughters, new TGLayoutHints(kLHintsTop, 3, 1, 1, 0));
   fRnrV0Daughters->Connect("Toggled(Bool_t)",
-			"Alieve::CascadeListEditor", this, "DoRnrV0Daughters()");
+			"CascadeListEditor", this, "DoRnrV0Daughters()");
 
   fRnrBach = new TGCheckButton(this, "Render bachelor track");
   AddFrame(fRnrBach, new TGLayoutHints(kLHintsTop, 3, 1, 1, 0));
   fRnrBach->Connect("Toggled(Bool_t)",
-			"Alieve::CascadeListEditor", this, "DoRnrBach()");
+			"CascadeListEditor", this, "DoRnrBach()");
     
   for (Int_t i=0; i<fgkNRange; i++) fRange[i]=0;
   for (Int_t i=0; i<fgkNCanvas; i++) fCanvasA[i]=0;
@@ -89,7 +94,7 @@ CascadeListEditor::CascadeListEditor(const TGWindow *p,
   AddSeeTab();
 
   TGTextButton* resetCutsButton = new TGTextButton(this, "Reset all cuts", 40);
-  resetCutsButton->Connect("Clicked()", "Alieve::CascadeListEditor", this, "ResetCuts()");
+  resetCutsButton->Connect("Clicked()", "CascadeListEditor", this, "ResetCuts()");
   AddFrame(resetCutsButton, new TGLayoutHints(kLHintsTop, 3, 1, 1, 0));
 }
 
@@ -147,7 +152,7 @@ TGCompositeFrame** CascadeListEditor::CreateTab(TGTab **pMainTab, TGTab **ptab, 
   //------
   // tab widget
   pMainTab[0] = new TGTab(this,0,0);
-  pMainTab[0]->Connect("Selected(Int_t)", "Alieve::CascadeListEditor", this, "UpdateSelectedTab()");
+  pMainTab[0]->Connect("Selected(Int_t)", "CascadeListEditor", this, "UpdateSelectedTab()");
   this->AddFrame(pMainTab[0], new TGLayoutHints( kLHintsTop | kLHintsExpandX,2,2,2,2));
 
   //------
@@ -160,7 +165,7 @@ TGCompositeFrame** CascadeListEditor::CreateTab(TGTab **pMainTab, TGTab **ptab, 
   ptab[0]->Resize(ptab[0]->GetDefaultSize());
   // The following is for updating the canvas of a tab if this one is selected
   // (it updates every canvas)
-  ptab[0]->Connect("Selected(Int_t)", "Alieve::CascadeListEditor", this, "UpdateSelectedTab()");
+  ptab[0]->Connect("Selected(Int_t)", "CascadeListEditor", this, "UpdateSelectedTab()");
   frameTab1->AddFrame(ptab[0], new TGLayoutHints(kLHintsLeft| kLHintsExpandX,0,0,0,0));
   
   //------
@@ -171,7 +176,7 @@ TGCompositeFrame** CascadeListEditor::CreateTab(TGTab **pMainTab, TGTab **ptab, 
   // tab widget
   ptab[1] = new TGTab(frameTab2,440,299);
   ptab[1]->Resize(ptab[1]->GetDefaultSize());
-  ptab[1]->Connect("Selected(Int_t)", "Alieve::CascadeListEditor", this, "UpdateSelectedTab()");
+  ptab[1]->Connect("Selected(Int_t)", "CascadeListEditor", this, "UpdateSelectedTab()");
   frameTab2->AddFrame(ptab[1], new TGLayoutHints(kLHintsLeft| kLHintsExpandX ,0,0,0,0));
   
   //------
@@ -182,7 +187,7 @@ TGCompositeFrame** CascadeListEditor::CreateTab(TGTab **pMainTab, TGTab **ptab, 
   // tab widget
   ptab[2] = new TGTab(frameTab3,440,299);
   ptab[2]->Resize(ptab[2]->GetDefaultSize());
-  ptab[2]->Connect("Selected(Int_t)", "Alieve::CascadeListEditor", this, "UpdateSelectedTab()");
+  ptab[2]->Connect("Selected(Int_t)", "CascadeListEditor", this, "UpdateSelectedTab()");
   frameTab3->AddFrame(ptab[2], new TGLayoutHints(kLHintsLeft| kLHintsExpandX ,0,0,0,0));
 
   //------
@@ -230,7 +235,7 @@ void CascadeListEditor::AddValuator(TGCompositeFrame* frame, char *name,
 				    60, 60, kHorizontalFrame);
 
    // --- Selectors
-  fRange[iHist] = new RGDoubleValuator(downFrame, name, 200, 0);
+  fRange[iHist] = new TEveGDoubleValuator(downFrame, name, 200, 0);
   fRange[iHist]->SetNELength(6);
   fRange[iHist]->Build();
   fRange[iHist]->GetSlider()->SetWidth(200);
@@ -246,7 +251,7 @@ void CascadeListEditor::AddValuator(TGCompositeFrame* frame, char *name,
     fRange[iHist]->SetLimits(min, max, TGNumberFormat::kNESReal);
 
   fRange[iHist]->Connect("ValueSet()",
-			 "Alieve::CascadeListEditor", this, func);
+			 "CascadeListEditor", this, func);
   downFrame->AddFrame(fRange[iHist], new TGLayoutHints(kLHintsLeft,
 						      0, 0, 0, 0));
 
@@ -254,7 +259,7 @@ void CascadeListEditor::AddValuator(TGCompositeFrame* frame, char *name,
 
   char ch[40];
   sprintf(ch,"AdjustHist(=%i)",iHist);
-  adjustButton->Connect("Clicked()", "Alieve::CascadeListEditor", this, ch);
+  adjustButton->Connect("Clicked()", "CascadeListEditor", this, ch);
   downFrame->AddFrame(adjustButton, new TGLayoutHints(kLHintsTop, 0, 0, 0, 0));
 
   frame->AddFrame(downFrame, new TGLayoutHints(kLHintsTop| kLHintsExpandY,
@@ -272,7 +277,7 @@ void CascadeListEditor::AddSelectTab() {
 
   AddValuator(tab[3],  "Index",                  0,   1e5, 0, "IndexRange()",       2);
   AddValuator(tab[4],  "cos pointing angle",     0.8,   1, 5, "CosPointingRange()", 3);
-  AddValuator(tab[5],  "bach-V0 DCA",            0,     5, 3, "BachV0DCARange()",   4);
+  AddValuator(tab[5],  "bach-AliEveV0 DCA",            0,     5, 3, "BachV0DCARange()",   4);
   AddValuator(tab[6],  "radius",                 0,   100, 2, "RadiusRange()",      5);
   AddValuator(tab[7],  "Pt",                     0,    10, 2, "PtRange()",          6);
   AddValuator(tab[8],  "Pseudo-rapidity",       -2,     2, 2, "PseudoRapRange()",   7);

@@ -1,10 +1,18 @@
+// $Id$
+// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
+
+/**************************************************************************
+ * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
+ * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
+ * full copyright notice.                                                 * 
+ **************************************************************************/
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
 
 /***********************************************************************
-  This editor appears in the Reve window when v0 are visualize.
+  This editor appears in the TEveUtil window when v0 are visualize.
 It allows to select the v0 as a function of some useful parameters.
 
 Ludovic Gaudichet (gaudichet@to.infn.it)
@@ -23,14 +31,12 @@ class TH1F;
 class TGCompositeFrame;
 class TGTab;
 
-namespace Reve
+namespace TEveUtil
 {
-class RGValuator;
-class RGDoubleValuator;
+class TEveGValuator;
+class TEveGDoubleValuator;
 }
 
-namespace Alieve
-{
 class V0List;
 
 class V0ListEditor : public TGedFrame
@@ -50,7 +56,7 @@ protected:
   TGTab *fTabA[3];
   TGTab *fTabB[3];
   static const Int_t fgkNRange = 13;
-  Reve::RGDoubleValuator    *fRange[fgkNRange];
+  TEveGDoubleValuator    *fRange[fgkNRange];
 
   static const Int_t fgkNCanvas = 14;
   TRootEmbeddedCanvas *fCanvasA[fgkNCanvas];
@@ -97,7 +103,5 @@ public:
 
   ClassDef(V0ListEditor, 1); // Editor for V0List
 }; // endclass V0ListEditor
-
-} // end namespace Alieve
 
 #endif
