@@ -25,7 +25,11 @@ SRCS:=  AliMUONVPainter.cxx \
   AliMUONPainterDataSourceFrame.cxx \
   AliMUONPainterDataSourceItem.cxx \
   AliMUONTrackerOCDBDataMaker.cxx \
-  AliMUONPainterEnv.cxx
+  AliMUONPainterEnv.cxx \
+  AliMUONVTrackerData.cxx \
+  AliMUONVTrackerDataMaker.cxx \
+  AliMUONTrackerData.cxx \
+  AliMUONTrackerRawDataMaker.cxx \
     
 HDRS:= $(SRCS:.cxx=.h) 
 

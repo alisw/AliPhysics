@@ -30,11 +30,6 @@
 #pragma link C++ class AliMUONTreeManager+;
 #pragma link C++ class AliMUONLogger+;
 
-#pragma link C++ class AliMUONVTrackerData+;
-#pragma link C++ class AliMUONVTrackerDataMaker+;
-#pragma link C++ class AliMUONTrackerRawDataMaker+;
-#pragma link C++ class AliMUONTrackerData+;
-
 #endif
 
 

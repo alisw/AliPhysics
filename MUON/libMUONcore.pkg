@@ -17,10 +17,6 @@ SRCS:=  mapping/AliMpIntPair.cxx  \
         AliMUONVStore.cxx \
         AliMUONTreeManager.cxx \
         AliMUONLogger.cxx \
-        AliMUONVTrackerData.cxx \
-        AliMUONTrackerData.cxx \
-        AliMUONVTrackerDataMaker.cxx \
-        AliMUONTrackerRawDataMaker.cxx
         
 HDRS:= $(SRCS:.cxx=.h)
 

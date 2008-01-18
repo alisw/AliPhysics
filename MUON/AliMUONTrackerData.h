@@ -6,7 +6,7 @@
 
 // $Id$
 
-/// \ingroup core
+/// \ingroup graphics
 /// \class AliMUONTrackerData
 /// \brief Implementation of AliMUONVTrackerData
 /// 

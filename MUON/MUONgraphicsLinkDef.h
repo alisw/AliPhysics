@@ -35,5 +35,9 @@
 #pragma link C++ class AliMUONPainterDataSourceItem+;
 #pragma link C++ class AliMUONTrackerOCDBDataMaker+;
 #pragma link C++ class AliMUONPainterEnv+;
+#pragma link C++ class AliMUONVTrackerData+;
+#pragma link C++ class AliMUONVTrackerDataMaker+;
+#pragma link C++ class AliMUONTrackerData+;
+#pragma link C++ class AliMUONTrackerRawDataMaker+;
 
 #endif
