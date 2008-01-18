@@ -685,6 +685,43 @@ AliHLTUInt32_t AliHLTComponent::GetSpecification(const TObject* pObject)
   return iSpec;
 }
 
+int AliHLTComponent::Forward(const TObject* pObject)
+{
+  // see header file for function documentation
+  int iResult=0;
+  int idx=fCurrentInputBlock;
+  if (pObject) {
+    if (fpInputObjects==NULL || (idx=fpInputObjects->IndexOf(pObject))>=0) {
+    } else {
+      HLTError("unknown object %p", pObject);
+      iResult=-ENOENT;
+    }
+  }
+  if (idx>=0) {
+    fOutputBlocks.push_back(fpInputBlocks[idx]);
+  }
+  return iResult;
+}
+
+int AliHLTComponent::Forward(const AliHLTComponentBlockData* pBlock)
+{
+  // see header file for function documentation
+  int iResult=0;
+  int idx=fCurrentInputBlock;
+  if (pBlock) {
+    if (fpInputObjects==NULL || (idx=FindInputBlock(pBlock))>=0) {
+    } else {
+      HLTError("unknown Block %p", pBlock);
+      iResult=-ENOENT;      
+    }
+  }
+  if (idx>=0) {
+    // check for fpInputBlocks pointer done in FindInputBlock
+    fOutputBlocks.push_back(fpInputBlocks[idx]);
+  }
+  return iResult;
+}
+
 const AliHLTComponentBlockData* AliHLTComponent::GetFirstInputBlock(const AliHLTComponentDataType& dt)
 {
   // see header file for function documentation

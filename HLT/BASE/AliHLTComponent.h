@@ -747,6 +747,29 @@ class AliHLTComponent : public AliHLTLogging {
   AliHLTUInt32_t GetSpecification(const AliHLTComponentBlockData* pBlock=NULL);
 
   /**
+   * Forward an input object to the output.
+   * Forward the input block of an object previously fetched via
+   * GetFirstInputObject/NextInputObject or the last one if no object
+   * specified.
+   * The block descriptor of the input block is forwarded to the
+   * output block list.
+   * @param pObject     pointer to TObject
+   * @return neg. error code if failed
+   */
+  int Forward(const TObject* pObject);
+
+  /**
+   * Forward an input block to the output.
+   * Forward the input block fetched via GetFirstInputObject/
+   * NextInputBlock or the last one if no block specified.
+   * The block descriptor of the input block is forwarded to the
+   * output block list.
+   * @param pBlock     pointer to input block
+   * @return neg. error code if failed
+   */
+  int Forward(const AliHLTComponentBlockData* pBlock=NULL);
+
+  /**
    * Insert an object into the output.
    * If header is specified, it will be inserted before the root object,
    * default is no header.

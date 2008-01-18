@@ -164,16 +164,28 @@ int AliHLTBlockFilterComponent::DoEvent( const AliHLTComponentEventData& evtData
 {
   // see header file for class documentation
   int iResult=0;
-  for (int n=0; n<(int)evtData.fBlockCnt; n++ ) {
-    if (IsSelected(blocks[n])) {
-      HLTDebug("block %d type %s %#x (ptr=%p offset=%d size=%d) selected by filter rules", 
-	       n, DataType2Text(blocks[n].fDataType).c_str(), blocks[n].fSpecification, 
-	       blocks[n].fPtr, blocks[n].fOffset, blocks[n].fSize);
-      outputBlocks.push_back(blocks[n]);
+  for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock();
+       pBlock!=NULL; 
+       pBlock=GetNextInputBlock()) {
+    if (IsSelected(*pBlock)) {
+      HLTDebug("block type %s %#x (ptr=%p offset=%d size=%d) selected by filter rules", 
+	       DataType2Text(pBlock->fDataType).c_str(), pBlock->fSpecification, 
+	       pBlock->fPtr, pBlock->fOffset, pBlock->fSize);
+      Forward();
     } else {
-      HLTDebug("block %d type %s %#x discarded by filter rules", n, DataType2Text(blocks[n].fDataType).c_str(), blocks[n].fSpecification);
+      HLTDebug("block type %s %#x discarded by filter rules", DataType2Text(pBlock->fDataType).c_str(), pBlock->fSpecification);
     }
   }
+//   for (int n=0; n<(int)evtData.fBlockCnt; n++ ) {
+//     if (IsSelected(blocks[n])) {
+//       HLTDebug("block %d type %s %#x (ptr=%p offset=%d size=%d) selected by filter rules", 
+// 	       n, DataType2Text(blocks[n].fDataType).c_str(), blocks[n].fSpecification, 
+// 	       blocks[n].fPtr, blocks[n].fOffset, blocks[n].fSize);
+//       outputBlocks.push_back(blocks[n]);
+//     } else {
+//       HLTDebug("block %d type %s %#x discarded by filter rules", n, DataType2Text(blocks[n].fDataType).c_str(), blocks[n].fSpecification);
+//     }
+//   }
   size=0;
   return iResult;
 }
