@@ -38,6 +38,7 @@ extern "C" {
 #include <Riostream.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h> 
 
 //AliRoot
 #include "AliMUONLogger.h"
