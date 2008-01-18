@@ -179,7 +179,7 @@ public:
 
 
 
-//______________________________________________________________________
+//______________________________________________________________________________
 
 inline void AliEveCascade::SetBeta(Float_t betaNeg, Float_t betaPos, Float_t betaBach) {
    fBeta_neg = betaNeg;
@@ -188,7 +188,7 @@ inline void AliEveCascade::SetBeta(Float_t betaNeg, Float_t betaPos, Float_t bet
  }
 
 
-//______________________________________________________________________
+//______________________________________________________________________________
 
 inline Float_t AliEveCascade::GetV0P2() const {
   Float_t px = fP_neg.x + fP_pos.x, py = fP_neg.y + fP_pos.y,
@@ -230,7 +230,7 @@ inline Float_t AliEveCascade::GetOmegaMass() const {
 inline Float_t AliEveCascade::GetAntiOmegaMass() const { return GetOmegaMass();}
 
 
-//______________________________________________________________________
+//______________________________________________________________________________
 
 inline Float_t AliEveCascade::GetDCA_v0_Bach() const {
   return fDCA_v0_Bach;
@@ -254,7 +254,7 @@ inline Float_t AliEveCascade::GetPseudoRapidity() const {
 }
 
 
-//______________________________________________________________________
+//______________________________________________________________________________
 inline Float_t AliEveCascade::GetPt2() const {
   Float_t px = GetPx(), py = GetPy();
   return (px*px+py*py);
@@ -286,7 +286,7 @@ inline Float_t AliEveCascade::GetPz() const {
   return (fP_neg.z + fP_pos.z + fP_bach.z);
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 
 inline Float_t AliEveCascade::GetPosP2() const {
   return (fP_pos.x*fP_pos.x + fP_pos.y*fP_pos.y + fP_pos.z*fP_pos.z);
@@ -305,7 +305,7 @@ inline Float_t AliEveCascade::GetPosPseudoRapidity() const {
   return ( -log(tan(theta/2.)) );
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 inline Float_t AliEveCascade::GetNegP2() const {
   return (fP_neg.x*fP_neg.x + fP_neg.y*fP_neg.y + fP_neg.z*fP_neg.z);
 }
@@ -324,7 +324,7 @@ inline Float_t AliEveCascade::GetNegPseudoRapidity() const {
 }
 
 
-//______________________________________________________________________
+//______________________________________________________________________________
 inline Float_t AliEveCascade::GetBachP2() const {
   return (fP_bach.x*fP_bach.x + fP_bach.y*fP_bach.y + fP_bach.z*fP_bach.z);
 }

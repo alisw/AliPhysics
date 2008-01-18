@@ -28,7 +28,7 @@
 
 using namespace std;
 
-//______________________________________________________________________
+//______________________________________________________________________________
 // AliEveTPCSector2D
 //
 // Displays TPC raw-data in 2D.
@@ -43,7 +43,7 @@ using namespace std;
 
 ClassImp(AliEveTPCSector2D)
 
-/**************************************************************************/
+/******************************************************************************/
 
 AliEveTPCSector2D::AliEveTPCSector2D(const Text_t* n, const Text_t* t) :
   AliEveTPCSectorViz(n,t),
@@ -59,7 +59,7 @@ AliEveTPCSector2D::AliEveTPCSector2D(const Text_t* n, const Text_t* t) :
 AliEveTPCSector2D::~AliEveTPCSector2D()
 {}
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveTPCSector2D::MakeSector3D()
 {
@@ -71,7 +71,7 @@ void AliEveTPCSector2D::MakeSector3D()
   gEve->Redraw3D();
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveTPCSector2D::ComputeBBox()
 {
@@ -88,7 +88,7 @@ void AliEveTPCSector2D::ComputeBBox()
   fBBox[5] =  0.5;
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveTPCSector2D::PadSelected(Int_t row, Int_t pad)
 {
@@ -150,7 +150,7 @@ void AliEveTPCSector2D::PadSelected(Int_t row, Int_t pad)
     } // switch
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveTPCSector2D::Paint(Option_t* )
 {

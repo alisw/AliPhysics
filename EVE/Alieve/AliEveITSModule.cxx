@@ -26,14 +26,14 @@ TEveRGBAPalette* AliEveITSModule::fgSPDPalette  = 0;
 TEveRGBAPalette* AliEveITSModule::fgSDDPalette  = 0;
 TEveRGBAPalette* AliEveITSModule::fgSSDPalette  = 0;
 
-//__________________________________________________________________________
+//______________________________________________________________________________
 // AliEveITSModule
 //
 //
 
 ClassImp(AliEveITSModule)
 
-/**************************************************************************/
+/******************************************************************************/
 
 AliEveITSModule::AliEveITSModule(const Text_t* n, const Text_t* t) :
   TEveQuadSet(n, t),
@@ -59,7 +59,7 @@ AliEveITSModule::~AliEveITSModule()
   if(fInfo) fInfo->DecRefCount();
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveITSModule::InitStatics(AliEveITSDigitsInfo* info)
 {
@@ -109,7 +109,7 @@ void AliEveITSModule::InitStatics(AliEveITSDigitsInfo* info)
 
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveITSModule::SetDigitsInfo(AliEveITSDigitsInfo* info)
 {
@@ -119,7 +119,7 @@ void AliEveITSModule::SetDigitsInfo(AliEveITSDigitsInfo* info)
   if (fInfo) fInfo->IncRefCount();
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveITSModule::SetID(Int_t gid, Bool_t trans)
 {
@@ -349,7 +349,7 @@ void AliEveITSModule::LoadQuads()
   RefitPlex();
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveITSModule::SetTrans()
 {
@@ -372,7 +372,7 @@ void AliEveITSModule::SetTrans()
   fHMTrans.SetBaseVec(4, x);
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveITSModule::DigitSelected(Int_t idx)
 {
@@ -390,7 +390,7 @@ void AliEveITSModule::DigitSelected(Int_t idx)
 
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveITSModule::Print(Option_t* ) const
 {

@@ -17,7 +17,7 @@
 #include <TGLSelectRecord.h>
 
 
-//______________________________________________________________________
+//______________________________________________________________________________
 // AliEveTPCSector3DGL
 //
 
@@ -36,7 +36,7 @@ AliEveTPCSector3DGL::~AliEveTPCSector3DGL()
   delete fBoxRnr;
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 //______________________________________________________________________________
 Short_t AliEveTPCSector3DGL::QuantizeShapeLOD(Short_t shapeLOD, Short_t combiLOD) const
@@ -51,7 +51,7 @@ Short_t AliEveTPCSector3DGL::QuantizeShapeLOD(Short_t shapeLOD, Short_t combiLOD
      return (Short_t)(10 * TMath::Nint(0.1*lod));
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 Bool_t AliEveTPCSector3DGL::SetModel(TObject* obj, const Option_t* /*opt*/)
 {
@@ -71,7 +71,7 @@ void AliEveTPCSector3DGL::SetBBox()
   SetAxisAlignedBBox(((AliEveTPCSector3D*)fExternalObj)->AssertBBox());
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveTPCSector3DGL::DirectDraw(TGLRnrCtx & rnrCtx) const
 {
@@ -166,8 +166,8 @@ void AliEveTPCSector3DGL::DrawSegmentFrame(const AliEveTPCSectorData::SegmentInf
   glEnd();
 }
 
-/**************************************************************************/
-/**************************************************************************/
+/******************************************************************************/
+/******************************************************************************/
 
 //______________________________________________________________________________
 void AliEveTPCSector3DGL::ProcessSelection(TGLRnrCtx & /*rnrCtx*/, TGLSelectRecord & rec)

@@ -36,7 +36,7 @@ Ludovic Gaudichet (gaudichet@to.infn.it)
 #include <TH2F.h>
 
 
-//______________________________________________________________________
+//______________________________________________________________________________
 // CascadeListEditor
 //
 
@@ -102,7 +102,7 @@ CascadeListEditor::~CascadeListEditor()
 {}
 
 
-//_________________________________________________________________________
+//______________________________________________________________________________
 void CascadeListEditor::SetModel(TObject* obj)
 {
   fMList = dynamic_cast<CascadeList*>(obj);
@@ -121,7 +121,7 @@ void CascadeListEditor::SetModel(TObject* obj)
 }
 
 
-//_________________________________________________________________________
+//______________________________________________________________________________
 TGCompositeFrame* CascadeListEditor::AddTab(TGTab* tab, Int_t i, Int_t can,
 				       char *name) {
 
@@ -146,7 +146,7 @@ TGCompositeFrame* CascadeListEditor::AddTab(TGTab* tab, Int_t i, Int_t can,
 }
 
 
-//_________________________________________________________________________
+//______________________________________________________________________________
 TGCompositeFrame** CascadeListEditor::CreateTab(TGTab **pMainTab, TGTab **ptab, Int_t can) {
 
   //------
@@ -226,7 +226,7 @@ TGCompositeFrame** CascadeListEditor::CreateTab(TGTab **pMainTab, TGTab **ptab, 
 }
 
 
-//_________________________________________________________________________
+//______________________________________________________________________________
 void CascadeListEditor::AddValuator(TGCompositeFrame* frame, char *name,
 			       Float_t min, Float_t max, Int_t pres,
 			       char *func, Int_t iHist) {
@@ -267,7 +267,7 @@ void CascadeListEditor::AddValuator(TGCompositeFrame* frame, char *name,
 }
 
 
-//_________________________________________________________________________
+//______________________________________________________________________________
 void CascadeListEditor::AddSelectTab() {
 
   TGCompositeFrame** tab = CreateTab(&fMainTabA, fTabA, 1);
@@ -293,7 +293,7 @@ void CascadeListEditor::AddSelectTab() {
 }
 
 
-//_________________________________________________________________________
+//______________________________________________________________________________
 void CascadeListEditor::AddSeeTab() {
 
   TGCompositeFrame** tab = CreateTab(&fMainTabB, fTabB, 2);
@@ -301,7 +301,7 @@ void CascadeListEditor::AddSeeTab() {
 }
 
 
-//_________________________________________________________________________
+//______________________________________________________________________________
 void CascadeListEditor::AdjustHist(Int_t iHist) {
 
   if (! fMList) return;
@@ -310,7 +310,7 @@ void CascadeListEditor::AdjustHist(Int_t iHist) {
   FillCanvas();
 }
 
-//_________________________________________________________________________
+//______________________________________________________________________________
 void CascadeListEditor::ResetCuts() {
 
   if (! fMList) return;
@@ -346,7 +346,7 @@ void CascadeListEditor::ResetCuts() {
 }
 
 
-//_________________________________________________________________________
+//______________________________________________________________________________
 void CascadeListEditor::FillCanvas() {
 
   fMList->FilterAll();
@@ -380,7 +380,7 @@ void CascadeListEditor::FillCanvas() {
   }
   UpdateSelectedTab();
 }
-//_________________________________________________________________________
+//______________________________________________________________________________
 void CascadeListEditor::UpdateSelectedTab() {
 
   Int_t i,j;
@@ -455,7 +455,7 @@ void CascadeListEditor::UpdateSelectedTab() {
 }
 
 
-//_________________________________________________________________________
+//______________________________________________________________________________
 void CascadeListEditor::UpdateAll(Int_t iCanA) {
 
   TCanvas *c1 = fCanvasA[iCanA]->GetCanvas();
@@ -478,7 +478,7 @@ void CascadeListEditor::UpdateAll(Int_t iCanA) {
 }
 
 
-//_________________________________________________________________________
+//______________________________________________________________________________
 
 void CascadeListEditor::DoRnrVtx()
 {
@@ -511,85 +511,85 @@ void CascadeListEditor::DoRnrCasPath()
 }
 
 
-//_________________________________________________________________________
+//______________________________________________________________________________
 void CascadeListEditor::MassXiRange() {
 
   fMList->XiMassFilter(fRange[0]->GetMin(), fRange[0]->GetMax());
   UpdateAll(0);
 }
 
-//_________________________________________________________________________
+//______________________________________________________________________________
   void CascadeListEditor::MassOmegaRange() {
   fMList->OmegaMassFilter(fRange[1]->GetMin(), fRange[1]->GetMax());
   UpdateAll(1);
 }
 
-//_________________________________________________________________________
+//______________________________________________________________________________
   void CascadeListEditor::IndexRange() {
   fMList->IndexFilter(fRange[2]->GetMin(), fRange[2]->GetMax());
   UpdateAll(3);
 }
-//_________________________________________________________________________
+//______________________________________________________________________________
   void CascadeListEditor::CosPointingRange() {
   fMList->CosPointingFilter(fRange[3]->GetMin(), fRange[3]->GetMax());
   UpdateAll(4);
 }
 
-//_________________________________________________________________________
+//______________________________________________________________________________
   void CascadeListEditor::BachV0DCARange() {
   fMList->BachV0DCAFilter(fRange[4]->GetMin(), fRange[4]->GetMax());
   UpdateAll(5);
 }
 
-//_________________________________________________________________________
+//______________________________________________________________________________
   void CascadeListEditor::RadiusRange() {
   fMList->RadiusFilter(fRange[5]->GetMin(), fRange[5]->GetMax());
   UpdateAll(6);
 }
 
-//_________________________________________________________________________
+//______________________________________________________________________________
   void CascadeListEditor::PtRange() {
   fMList->PtFilter(fRange[6]->GetMin(), fRange[6]->GetMax());
   UpdateAll(7);
 }
 
-//_________________________________________________________________________
+//______________________________________________________________________________
   void CascadeListEditor::PseudoRapRange() {
   fMList->PseudoRapFilter(fRange[7]->GetMin(), fRange[7]->GetMax());
   UpdateAll(8);
 }
 
-//_________________________________________________________________________
+//______________________________________________________________________________
   void CascadeListEditor::NegPtRange() {
   fMList->NegPtFilter(fRange[8]->GetMin(), fRange[8]->GetMax());
   UpdateAll(9);
 }
 
-//_________________________________________________________________________
+//______________________________________________________________________________
   void CascadeListEditor::NegEtaRange() {
   fMList->NegEtaFilter(fRange[9]->GetMin(), fRange[9]->GetMax());
   UpdateAll(10);
 }
 
-//_________________________________________________________________________
+//______________________________________________________________________________
   void CascadeListEditor::PosPtRange() {
   fMList->PosPtFilter(fRange[10]->GetMin(), fRange[10]->GetMax());
   UpdateAll(11);
 }
 
-//_________________________________________________________________________
+//______________________________________________________________________________
   void CascadeListEditor::PosEtaRange() {
   fMList->PosEtaFilter(fRange[11]->GetMin(), fRange[11]->GetMax());
   UpdateAll(12);
 }
 
-//_________________________________________________________________________
+//______________________________________________________________________________
   void CascadeListEditor::BachPtRange() {
   fMList->BachPtFilter(fRange[12]->GetMin(), fRange[12]->GetMax());
   UpdateAll(13);
 }
 
-//_________________________________________________________________________
+//______________________________________________________________________________
   void CascadeListEditor::BachEtaRange() {
   fMList->BachEtaFilter(fRange[13]->GetMin(), fRange[13]->GetMax());
   UpdateAll(14);

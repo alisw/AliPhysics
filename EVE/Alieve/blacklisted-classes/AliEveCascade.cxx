@@ -158,7 +158,7 @@ void AliEveCascade::Reset(TPolyLine3D* polyLine) {
 }
 
 
-//______________________________________________________________________
+//______________________________________________________________________________
 void AliEveCascade::SetDecayLength(Float_t primx, Float_t primy, Float_t primz) {
 
 
@@ -179,7 +179,7 @@ void AliEveCascade::SetDecayLength(Float_t primx, Float_t primy, Float_t primz) 
 }
 
 
-//______________________________________________________________________
+//______________________________________________________________________________
 void AliEveCascade::MakeTrack(vpPathMark_t& pathMark, TEveVector& vtx,  TEveVector& p,
 		   Int_t charge, Float_t beta, TPolyLine3D& polyLine) {
 
@@ -289,7 +289,7 @@ make_polyline:
 
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 void AliEveCascade::MakeV0path() {
 
   MCVertex  mc_v0;
@@ -311,7 +311,7 @@ void AliEveCascade::MakeV0path() {
 
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 void AliEveCascade::MakeCasPath() {
 
   MCVertex  mc_v0;
@@ -333,7 +333,7 @@ void AliEveCascade::MakeCasPath() {
 }
 
 
-//______________________________________________________________________
+//______________________________________________________________________________
 void AliEveCascade::MakeCascade()
 {
   SetNextPoint(fV_neg.x, fV_neg.y, fV_neg.z);
@@ -352,7 +352,7 @@ void AliEveCascade::MakeCascade()
 
 
 
-//______________________________________________________________________
+//______________________________________________________________________________
 Float_t AliEveCascade::GetCasAlphaArmenteros() const
 {
   Float_t px = GetPx(), py = GetPy(), pz = GetPz();
@@ -372,7 +372,7 @@ Float_t AliEveCascade::GetCasAlphaArmenteros() const
 }
 
 
-//______________________________________________________________________
+//______________________________________________________________________________
 Float_t AliEveCascade::GetCasPtArmenteros() const
 {
   Float_t px = GetPx(), py = GetPy(), pz = GetPz();
@@ -402,7 +402,7 @@ Float_t AliEveCascade::GetCasPtArmenteros() const
 ClassImp(CascadeList)
 
 
-//______________________________________________________________________
+//______________________________________________________________________________
 CascadeList::CascadeList(TEveTrackPropagator* rs) :
   TEveElementList(),
   fTitle(),
@@ -423,7 +423,7 @@ CascadeList::CascadeList(TEveTrackPropagator* rs) :
 }
 
 
-//______________________________________________________________________
+//______________________________________________________________________________
 CascadeList::CascadeList(const Text_t* name, TEveTrackPropagator* rs) :
   TEveElementList(),
   fTitle(),
@@ -445,7 +445,7 @@ CascadeList::CascadeList(const Text_t* name, TEveTrackPropagator* rs) :
 }
 
 
-//______________________________________________________________________
+//______________________________________________________________________________
 void CascadeList::Init()
 {
   if (fRnrStyle== 0) fRnrStyle = new TEveTrackPropagator;
@@ -517,7 +517,7 @@ void CascadeList::Init()
 }
 
 
-//______________________________________________________________________
+//______________________________________________________________________________
 void CascadeList::Paint(Option_t* option) {
   if(fRnrSelf) {
 
@@ -565,7 +565,7 @@ void CascadeList::Paint(Option_t* option) {
 }
 
 
-//______________________________________________________________________
+//______________________________________________________________________________
 void CascadeList::SetRnrV0vtx(Bool_t rnr)
 {
   fRnrV0vtx = rnr;
@@ -604,7 +604,7 @@ void CascadeList::SetRnrBachelor(Bool_t rnr)
 }
 
 
-//______________________________________________________________________
+//______________________________________________________________________________
 
 void CascadeList::MakeCascades()
 {
@@ -614,7 +614,7 @@ void CascadeList::MakeCascades()
   gEve->Redraw3D();
 }
 
-//_________________________________________________________________________
+//______________________________________________________________________________
 void CascadeList::AdjustHist(Int_t iHist) {
 
   if ((iHist<0)||(iHist>=fgkNcutVar)) return;
@@ -631,7 +631,7 @@ void CascadeList::AdjustHist(Int_t iHist) {
 
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 void CascadeList::UnFill(AliEveCascade* cas) {
 
 
@@ -686,7 +686,7 @@ void CascadeList::UnFill(AliEveCascade* cas) {
 }
 
 
-//______________________________________________________________________
+//______________________________________________________________________________
 void CascadeList::Filter(AliEveCascade* cas) {
 
   Float_t xiMass = cas->GetXiMass();
@@ -751,7 +751,7 @@ void CascadeList::Filter(AliEveCascade* cas) {
   fHist2D[0]->Fill(cas->GetCasAlphaArmenteros(), cas->GetCasPtArmenteros() );
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 void CascadeList::FilterAll() {
 
   for (Int_t i=0; i<fgkNcutVar; i++)
@@ -769,7 +769,7 @@ void CascadeList::FilterAll() {
 }
 
 
-//______________________________________________________________________
+//______________________________________________________________________________
 void CascadeList::GetCasIndexRange(Int_t &imin, Int_t &imax) {
 
   Int_t index;
@@ -789,7 +789,7 @@ void CascadeList::GetCasIndexRange(Int_t &imin, Int_t &imax) {
   }
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 void CascadeList::XiMassFilter(Float_t min, Float_t max) {
 
   fMin[0] = min;
@@ -818,7 +818,7 @@ void CascadeList::XiMassFilter(Float_t min, Float_t max) {
   }
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 void CascadeList::OmegaMassFilter(Float_t min, Float_t max) {
 
   fMin[1] = min;
@@ -847,7 +847,7 @@ void CascadeList::OmegaMassFilter(Float_t min, Float_t max) {
   }
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 void CascadeList::IndexFilter(Float_t min, Float_t max) {
 
   fMin[2] = min;
@@ -876,7 +876,7 @@ void CascadeList::IndexFilter(Float_t min, Float_t max) {
   }
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 void CascadeList::CosPointingFilter(Float_t min, Float_t max) {
 
   fMin[3] = min;
@@ -906,7 +906,7 @@ void CascadeList::CosPointingFilter(Float_t min, Float_t max) {
 }
 
 
-//______________________________________________________________________
+//______________________________________________________________________________
 void CascadeList::BachV0DCAFilter(Float_t min, Float_t max) {
 
   fMin[4] = min;
@@ -936,7 +936,7 @@ void CascadeList::BachV0DCAFilter(Float_t min, Float_t max) {
 }
 
 
-//______________________________________________________________________
+//______________________________________________________________________________
 void CascadeList::RadiusFilter(Float_t min, Float_t max) {
 
   fMin[5] = min;
@@ -966,7 +966,7 @@ void CascadeList::RadiusFilter(Float_t min, Float_t max) {
 }
 
 
-//______________________________________________________________________
+//______________________________________________________________________________
 void CascadeList::PtFilter(Float_t min, Float_t max) {
 
   fMin[6] = min;
@@ -996,7 +996,7 @@ void CascadeList::PtFilter(Float_t min, Float_t max) {
 }
 
 
-//______________________________________________________________________
+//______________________________________________________________________________
 void CascadeList::PseudoRapFilter(Float_t min, Float_t max) {
 
   fMin[7] = min;
@@ -1026,7 +1026,7 @@ void CascadeList::PseudoRapFilter(Float_t min, Float_t max) {
 }
 
 
-//______________________________________________________________________
+//______________________________________________________________________________
 void CascadeList::NegPtFilter(Float_t min, Float_t max) {
 
   fMin[8] = min;
@@ -1056,7 +1056,7 @@ void CascadeList::NegPtFilter(Float_t min, Float_t max) {
 }
 
 
-//______________________________________________________________________
+//______________________________________________________________________________
 void CascadeList::NegEtaFilter(Float_t min, Float_t max) {
 
   fMin[9] = min;
@@ -1086,7 +1086,7 @@ void CascadeList::NegEtaFilter(Float_t min, Float_t max) {
 }
 
 
-//______________________________________________________________________
+//______________________________________________________________________________
 void CascadeList::PosPtFilter(Float_t min, Float_t max) {
 
   fMin[10] = min;
@@ -1115,7 +1115,7 @@ void CascadeList::PosPtFilter(Float_t min, Float_t max) {
   }
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 void CascadeList::PosEtaFilter(Float_t min, Float_t max) {
 
   fMin[11] = min;
@@ -1145,7 +1145,7 @@ void CascadeList::PosEtaFilter(Float_t min, Float_t max) {
 }
 
 
-//______________________________________________________________________
+//______________________________________________________________________________
 void CascadeList::BachPtFilter(Float_t min, Float_t max) {
 
   fMin[12] = min;
@@ -1174,7 +1174,7 @@ void CascadeList::BachPtFilter(Float_t min, Float_t max) {
   }
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 void CascadeList::BachEtaFilter(Float_t min, Float_t max) {
 
   fMin[13] = min;

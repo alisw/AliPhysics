@@ -21,13 +21,13 @@
 #include <TMath.h>
 
 
-//______________________________________________________________________
+//______________________________________________________________________________
 // AliEveMUONChamber
 //
 
 ClassImp(AliEveMUONChamber)
 
-//______________________________________________________________________
+//______________________________________________________________________________
 AliEveMUONChamber::AliEveMUONChamber(Int_t id, const Text_t* n, const Text_t* t) :
 TEveElement(fFrameColor),
 TNamed(n,t),
@@ -60,7 +60,7 @@ fHitSize(5)
 
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 AliEveMUONChamber::~AliEveMUONChamber()
 {
   //
@@ -71,7 +71,7 @@ AliEveMUONChamber::~AliEveMUONChamber()
 
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 void AliEveMUONChamber::ComputeBBox()
 {
   //
@@ -102,7 +102,7 @@ void AliEveMUONChamber::ComputeBBox()
 
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 void AliEveMUONChamber::Paint(Option_t*)
 {
   //
@@ -131,7 +131,7 @@ void AliEveMUONChamber::Paint(Option_t*)
 
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 void AliEveMUONChamber::SetThreshold(Short_t t)
 {
   //
@@ -144,7 +144,7 @@ void AliEveMUONChamber::SetThreshold(Short_t t)
 
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 void AliEveMUONChamber::SetMaxVal(Int_t mv)
 {
   //
@@ -157,7 +157,7 @@ void AliEveMUONChamber::SetMaxVal(Int_t mv)
 
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 void AliEveMUONChamber::SetClusterSize(Int_t size)
 {
   //
@@ -169,7 +169,7 @@ void AliEveMUONChamber::SetClusterSize(Int_t size)
 
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 void AliEveMUONChamber::SetHitSize(Int_t size)
 {
   //
@@ -181,7 +181,7 @@ void AliEveMUONChamber::SetHitSize(Int_t size)
 
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 void AliEveMUONChamber::SetupColor(Int_t val, UChar_t* pixel) const
 {
   //
@@ -196,7 +196,7 @@ void AliEveMUONChamber::SetupColor(Int_t val, UChar_t* pixel) const
 
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 Int_t AliEveMUONChamber::ColorIndex(Int_t val) const
 {
   //
@@ -214,7 +214,7 @@ Int_t AliEveMUONChamber::ColorIndex(Int_t val) const
 
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 void AliEveMUONChamber::SetupColorArray() const
 {
   //
@@ -231,7 +231,7 @@ void AliEveMUONChamber::SetupColorArray() const
 
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 void AliEveMUONChamber::ClearColorArray()
 {
   //
@@ -244,7 +244,7 @@ void AliEveMUONChamber::ClearColorArray()
   }
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 void AliEveMUONChamber::SetDataSource(AliEveMUONData* data)
 {
 
@@ -256,7 +256,7 @@ void AliEveMUONChamber::SetDataSource(AliEveMUONData* data)
 
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 AliEveMUONChamberData* AliEveMUONChamber::GetChamberData() const
 {
 
@@ -264,7 +264,7 @@ AliEveMUONChamberData* AliEveMUONChamber::GetChamberData() const
 
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 void AliEveMUONChamber::UpdateQuads()
 {
 
@@ -357,7 +357,7 @@ void AliEveMUONChamber::UpdateQuads()
 
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 void AliEveMUONChamber::SetChamberID(Int_t id)
 {
 

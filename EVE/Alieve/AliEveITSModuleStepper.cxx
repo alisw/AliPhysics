@@ -32,7 +32,7 @@
 #include <TGLViewer.h>
 
 
-//______________________________________________________________________
+//______________________________________________________________________________
 // AliEveITSModuleStepper
 //
 
@@ -108,7 +108,7 @@ AliEveITSModuleStepper::~AliEveITSModuleStepper()
   delete fText;
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveITSModuleStepper::Capacity()
 {
@@ -123,7 +123,7 @@ void AliEveITSModuleStepper::Capacity()
   }
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveITSModuleStepper::SetFirst(Int_t first)
 {
@@ -164,7 +164,7 @@ void AliEveITSModuleStepper::End()
   Apply();
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveITSModuleStepper::DisplayDet(Int_t det, Int_t layer)
 {
@@ -179,7 +179,7 @@ void AliEveITSModuleStepper::DisplayDet(Int_t det, Int_t layer)
   Start();
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveITSModuleStepper::DisplayTheta(Float_t min, Float_t max)
 {
@@ -190,7 +190,7 @@ void AliEveITSModuleStepper::DisplayTheta(Float_t min, Float_t max)
   Start();
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 Int_t AliEveITSModuleStepper::GetCurrentPage()
 {
@@ -200,7 +200,7 @@ Int_t AliEveITSModuleStepper::GetCurrentPage()
   return n;
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 Int_t AliEveITSModuleStepper::GetPages()
 {
@@ -209,7 +209,7 @@ Int_t AliEveITSModuleStepper::GetPages()
   return n;
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void  AliEveITSModuleStepper::Apply()
 {
@@ -274,7 +274,7 @@ void  AliEveITSModuleStepper::Apply()
   gEve->EnableRedraw();
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveITSModuleStepper::Render(TGLRnrCtx& rnrCtx)
 {
@@ -320,11 +320,11 @@ void AliEveITSModuleStepper::Render(TGLRnrCtx& rnrCtx)
 }
 
 
-/**************************************************************************/
+/******************************************************************************/
 // Protected sub-renderers
-/**************************************************************************/
+/******************************************************************************/
 
-//______________________________________________________________________
+//______________________________________________________________________________
 Float_t AliEveITSModuleStepper::TextLength(const char* txt)
 {
   Float_t llx, lly, llz, urx, ury, urz;
@@ -332,7 +332,7 @@ Float_t AliEveITSModuleStepper::TextLength(const char* txt)
   return (urx-llx)*fTextSize;
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 void AliEveITSModuleStepper::RenderString(TString string, Int_t id)
 {
   Float_t txtY = fWHeight*0.5;
@@ -368,7 +368,7 @@ void AliEveITSModuleStepper::RenderString(TString string, Int_t id)
   }
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 void AliEveITSModuleStepper::RenderFrame(Float_t dx, Float_t dy, Int_t id)
 {
   if(fRnrFrame == kFALSE)return;
@@ -389,7 +389,7 @@ void AliEveITSModuleStepper::RenderFrame(Float_t dx, Float_t dy, Int_t id)
   glPopAttrib();
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 void AliEveITSModuleStepper::RenderSymbol(Float_t dx, Float_t dy, Int_t id)
 {
   glLoadName(id);
@@ -460,7 +460,7 @@ void AliEveITSModuleStepper::RenderSymbol(Float_t dx, Float_t dy, Int_t id)
   glLoadName(0);
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 void AliEveITSModuleStepper::RenderPalette(Float_t dx, Float_t x, Float_t y)
 {
   glPushMatrix();
@@ -500,7 +500,7 @@ void AliEveITSModuleStepper::RenderPalette(Float_t dx, Float_t x, Float_t y)
   glPopMatrix();
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 void AliEveITSModuleStepper::RenderMenu()
 {
   Float_t ww = 2*fWWidth;
@@ -595,7 +595,7 @@ void AliEveITSModuleStepper::RenderMenu()
   glPopName();
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 void AliEveITSModuleStepper::RenderCellIDs()
 {
   fText->SetTextSize(fStepper->GetDy()*0.1);
@@ -624,11 +624,11 @@ void AliEveITSModuleStepper::RenderCellIDs()
 }
 
 
-/**************************************************************************/
+/******************************************************************************/
 // Virtual event handlers from TGLOverlayElement
-/**************************************************************************/
+/******************************************************************************/
 
-//______________________________________________________________________
+//______________________________________________________________________________
 Bool_t AliEveITSModuleStepper::Handle(TGLRnrCtx          & /*rnrCtx*/,
                                 TGLOvlSelectRecord & rec,
                                 Event_t            * event)
@@ -713,13 +713,13 @@ Bool_t AliEveITSModuleStepper::Handle(TGLRnrCtx          & /*rnrCtx*/,
   return kFALSE;
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 Bool_t AliEveITSModuleStepper::MouseEnter(TGLOvlSelectRecord& /*rec*/)
 {
   return kTRUE;
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 void AliEveITSModuleStepper::MouseLeave()
 {
   // Mouse has left the element.

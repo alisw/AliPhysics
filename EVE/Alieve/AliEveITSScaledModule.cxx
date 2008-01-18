@@ -14,7 +14,7 @@
 #include <AliITSdigitSSD.h>
 
 
-//______________________________________________________________________
+//______________________________________________________________________________
 // AliEveDigitScaleInfo
 //
 ClassImp(AliEveDigitScaleInfo)
@@ -55,7 +55,7 @@ void AliEveDigitScaleInfo::StatTypeChanged(Int_t t)
   }
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 // ScaledDigit
 //
 ScaledDigit::ScaledDigit():
@@ -79,7 +79,7 @@ void ScaledDigit::Dump() const
   printf("N %d, sum %f, sqr_sum %f",N, sum, sqr_sum);
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 // AliEveITSScaledModule
 //
 
@@ -105,7 +105,7 @@ AliEveITSScaledModule::~AliEveITSScaledModule()
   fScaleInfo->DecRefCount(this);
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveITSScaledModule::LoadQuads()
 {
@@ -305,7 +305,7 @@ void AliEveITSScaledModule::LoadQuads()
   RefitPlex();
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveITSScaledModule::SetQuadValues()
 {
@@ -335,7 +335,7 @@ void AliEveITSScaledModule::SetQuadValues()
   }
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveITSScaledModule::SyncPalette()
 {
@@ -373,7 +373,7 @@ void AliEveITSScaledModule::SyncPalette()
   fScaleInfo->SetSyncPalette(kFALSE);
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveITSScaledModule::GetScaleData(Int_t& cnx, Int_t& cnz, Int_t& total)
 {
@@ -382,7 +382,7 @@ void AliEveITSScaledModule::GetScaleData(Int_t& cnx, Int_t& cnz, Int_t& total)
   total = cnx*cnz;
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void  AliEveITSScaledModule::DigitSelected(Int_t idx)
 {

@@ -22,7 +22,7 @@
 #include <TROOT.h>
 
 
-//______________________________________________________________________
+//______________________________________________________________________________
 // AliEveJetPlaneGL
 //
 
@@ -36,7 +36,7 @@ AliEveJetPlaneGL::AliEveJetPlaneGL() : TGLObject(), fM(0)
 AliEveJetPlaneGL::~AliEveJetPlaneGL()
 {}
 
-/**************************************************************************/
+/******************************************************************************/
 
 Bool_t AliEveJetPlaneGL::SetModel(TObject* obj, const Option_t* /*opt*/)
 {
@@ -53,7 +53,7 @@ void AliEveJetPlaneGL::SetBBox()
   SetAxisAlignedBBox(((AliEveJetPlane*)fExternalObj)->AssertBBox());
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveJetPlaneGL::DirectDraw(TGLRnrCtx & /*rnrCtx*/) const
 {
@@ -244,7 +244,7 @@ void AliEveJetPlaneGL::DirectDraw(TGLRnrCtx & /*rnrCtx*/) const
 
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveJetPlaneGL::ProcessSelection(TGLRnrCtx & /*rnrCtx*/, TGLSelectRecord & rec)
 {

@@ -17,7 +17,7 @@
 #include <TTree.h>
 
 
-//______________________________________________________________________
+//______________________________________________________________________________
 // AliEveTPCData
 //
 // A central manager for TPC data of an event.  Can read digits (from
@@ -49,7 +49,7 @@ AliEveTPCData::~AliEveTPCData()
   DeleteAllSectors();
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveTPCData::CreateSector(Int_t sector)
 {
@@ -79,7 +79,7 @@ void AliEveTPCData::DeleteAllSectors()
   }
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 AliEveTPCSectorData* AliEveTPCData::GetSectorData(Int_t sector, Bool_t spawnSectors)
 {
@@ -89,7 +89,7 @@ AliEveTPCSectorData* AliEveTPCData::GetSectorData(Int_t sector, Bool_t spawnSect
   return fSectors[sector];
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveTPCData::LoadDigits(TTree* tree, Bool_t spawnSectors)
 {

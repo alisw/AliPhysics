@@ -20,7 +20,7 @@
 #include <TGDoubleSlider.h>
 
 
-//______________________________________________________________________
+//______________________________________________________________________________
 // AliEveTOFDigitsInfoEditor
 //
 
@@ -43,7 +43,7 @@ AliEveTOFDigitsInfoEditor::AliEveTOFDigitsInfoEditor(const TGWindow *p, Int_t wi
 AliEveTOFDigitsInfoEditor::~AliEveTOFDigitsInfoEditor()
 {}
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveTOFDigitsInfoEditor::SetModel(TObject* obj)
 {
@@ -53,7 +53,7 @@ void AliEveTOFDigitsInfoEditor::SetModel(TObject* obj)
   // fXYZZ->SetValue(fM->GetXYZZ());
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 // Implements callback/slot methods
 

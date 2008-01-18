@@ -32,7 +32,7 @@
 
 ClassImp(AliEveT0Module)
 
-/**************************************************************************/
+/******************************************************************************/
 AliEveT0Module::AliEveT0Module(const Text_t* n, Int_t sigType, AliT0digit *digits, AliT0RawReader *start)
   : TEveQuadSet(n), fSigType(sigType), fDigits(digits), fStart(start)
 {
@@ -42,7 +42,7 @@ AliEveT0Module::AliEveT0Module(const Text_t* n, Int_t sigType, AliT0digit *digit
 
 }
 
-/**************************************************************************/
+/******************************************************************************/
 AliEveT0Module::~AliEveT0Module()
 {
 
@@ -98,7 +98,7 @@ void AliEveT0Module::LoadRaw(TString fileName, Int_t ievt)
   gEve->Redraw3D();
 }
 
-/**************************************************************************/
+/******************************************************************************/
 void AliEveT0Module::MakeModules(AliT0digit *digits)
 {
   TRandom r(0);
@@ -175,7 +175,7 @@ void AliEveT0Module::MakeModules(AliT0digit *digits)
   gEve->Redraw3D();
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveT0Module::DigitSelected(Int_t idx)
 {

@@ -49,7 +49,7 @@ AliEveITSModuleSelection::AliEveITSModuleSelection():
 
 ClassImp(AliEveITSDigitsInfo)
 
-/**************************************************************************/
+/******************************************************************************/
 
 AliEveITSDigitsInfo::AliEveITSDigitsInfo() :
   TObject(),
@@ -126,7 +126,7 @@ void AliEveITSDigitsInfo::InitInternals()
   fSSDScale[4] = 30;
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 AliEveITSDigitsInfo:: ~AliEveITSDigitsInfo()
 {
@@ -146,7 +146,7 @@ AliEveITSDigitsInfo:: ~AliEveITSDigitsInfo()
   delete fTree;
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveITSDigitsInfo::SetTree(TTree* tree)
 {
@@ -242,7 +242,7 @@ void AliEveITSDigitsInfo::ReadRaw(AliRawReader* raw, Int_t mode)
   }
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveITSDigitsInfo::SetITSSegmentation()
 {
@@ -279,7 +279,7 @@ void AliEveITSDigitsInfo::SetITSSegmentation()
   fSegSSD = new AliITSsegmentationSSD(fGeom);
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 TClonesArray* AliEveITSDigitsInfo::GetDigits(Int_t mod, Int_t subdet)
 {
@@ -351,7 +351,7 @@ TClonesArray* AliEveITSDigitsInfo::GetDigits(Int_t mod, Int_t subdet)
   return 0;
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveITSDigitsInfo::GetModuleIDs(AliEveITSModuleSelection* sel,
 				       std::vector<UInt_t>& ids)
@@ -407,7 +407,7 @@ void AliEveITSDigitsInfo::GetModuleIDs(AliEveITSModuleSelection* sel,
   }
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveITSDigitsInfo::Print(Option_t* ) const
 {

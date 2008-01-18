@@ -35,7 +35,7 @@ ClassImp(AliEveMUONChamberData)
 
 AliMUONGeometryTransformer* AliEveMUONChamberData::fgTransformer = 0;
 
-//______________________________________________________________________
+//______________________________________________________________________________
 AliEveMUONChamberData::AliEveMUONChamberData(Int_t chamber)
 {
   //
@@ -82,7 +82,7 @@ AliEveMUONChamberData::AliEveMUONChamberData(Int_t chamber)
 
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 AliEveMUONChamberData::~AliEveMUONChamberData()
 {
   //
@@ -91,7 +91,7 @@ AliEveMUONChamberData::~AliEveMUONChamberData()
 
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 void AliEveMUONChamberData::DropData()
 {
   //
@@ -106,7 +106,7 @@ void AliEveMUONChamberData::DropData()
 
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 void AliEveMUONChamberData::Init(Int_t chamber)
 {
   //
@@ -221,7 +221,7 @@ void AliEveMUONChamberData::Init(Int_t chamber)
 
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 void AliEveMUONChamberData::RegisterDigit(Int_t detElemId, Int_t cathode, Int_t ix, Int_t iy, Int_t charge)
 {
   //
@@ -268,7 +268,7 @@ void AliEveMUONChamberData::RegisterDigit(Int_t detElemId, Int_t cathode, Int_t 
 
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 void AliEveMUONChamberData::RegisterCluster(Int_t /*detElemId*/, Int_t cathode, Float_t clsX, Float_t clsY, Float_t clsZ, Float_t charge)
 {
   //
@@ -289,7 +289,7 @@ void AliEveMUONChamberData::RegisterCluster(Int_t /*detElemId*/, Int_t cathode, 
 
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 void AliEveMUONChamberData::RegisterHit(Int_t /*detElemId*/, Float_t hitX, Float_t hitY, Float_t hitZ)
 {
   //

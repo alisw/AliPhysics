@@ -25,7 +25,7 @@
 #include <TGComboBox.h>
 
 
-//______________________________________________________________________
+//______________________________________________________________________________
 // AliEveITSScaledModuleEditor
 //
 
@@ -75,11 +75,11 @@ ClassImp(AliEveITSScaledModuleEditor)
   CreateInfoFrame();
 }
 
-/*************************************************************************/
+/******************************************************************************/
 AliEveITSScaledModuleEditor::~AliEveITSScaledModuleEditor()
 {}
 
-/*************************************************************************/
+/******************************************************************************/
 void AliEveITSScaledModuleEditor::CreateInfoFrame()
 {
   fInfoFrame = CreateEditorTabSubFrame("Info");
@@ -109,7 +109,7 @@ void AliEveITSScaledModuleEditor::CreateInfoFrame()
 
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveITSScaledModuleEditor::SetModel(TObject* obj)
 {
@@ -127,7 +127,7 @@ void AliEveITSScaledModuleEditor::SetModel(TObject* obj)
 }
 
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveITSScaledModuleEditor::DoScale()
 {
@@ -140,7 +140,7 @@ void AliEveITSScaledModuleEditor::DoScale()
   fGedEditor->SetModel(fGedEditor->GetPad(), fGedEditor->GetModel(), kButton1Down);
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveITSScaledModuleEditor::DoStatType(Int_t v)
 {

@@ -351,7 +351,7 @@ void AliEveTOFSector::SetPlate(Int_t nPlate, Bool_t r)
   //printf("   HELLO World ! %i %i %i \n", nPlate, r, fPlateFlag[nPlate]);
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveTOFSector::SetThreshold(Short_t t)
 {
@@ -359,7 +359,7 @@ void AliEveTOFSector::SetThreshold(Short_t t)
   // ClearColorArray();
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveTOFSector::SetMaxVal(Int_t mv)
 {
@@ -367,7 +367,7 @@ void AliEveTOFSector::SetMaxVal(Int_t mv)
   //ClearColorArray();
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveTOFSector::DigitSelected(Int_t idx)
 {
@@ -386,4 +386,4 @@ void AliEveTOFSector::DigitSelected(Int_t idx)
 
 }
 
-/**************************************************************************/
+/******************************************************************************/

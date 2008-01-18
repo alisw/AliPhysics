@@ -13,7 +13,7 @@
 #include <TGButton.h>
 
 
-//______________________________________________________________________
+//______________________________________________________________________________
 // AliEveTrackFitterEditor
 //
 
@@ -59,7 +59,7 @@ AliEveTrackFitterEditor::AliEveTrackFitterEditor(const TGWindow *p, Int_t width,
                  "AliEveTrackFitterEditor", this, "DoGraph()");
  }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveTrackFitterEditor::SetModel(TObject* obj)
 {
@@ -114,7 +114,7 @@ void AliEveTrackFitterEditor::DoStop()
   fStart->SetState(kButtonUp);
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveTrackFitterEditor::DoGraph()
 {

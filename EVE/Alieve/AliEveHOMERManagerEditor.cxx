@@ -18,7 +18,7 @@
 #include <TGNumberEntry.h>
 #include <TGColorSelect.h>
 #include <TGDoubleSlider.h>
-//______________________________________________________________________
+//______________________________________________________________________________
 // AliEveHOMERManagerEditor
 //
 
@@ -46,7 +46,7 @@ AliEveHOMERManagerEditor::AliEveHOMERManagerEditor(const TGWindow *p, Int_t widt
 AliEveHOMERManagerEditor::~AliEveHOMERManagerEditor()
 {}
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveHOMERManagerEditor::SetModel(TObject* obj)
 {
@@ -56,7 +56,7 @@ void AliEveHOMERManagerEditor::SetModel(TObject* obj)
   // fXYZZ->SetValue(fM->GetXYZZ());
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 // Implements callback/slot methods
 

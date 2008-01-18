@@ -24,7 +24,7 @@
 #include <TGDoubleSlider.h>
 
 
-//______________________________________________________________________
+//______________________________________________________________________________
 // AliEveTPCSectorVizEditor
 //
 
@@ -122,7 +122,7 @@ AliEveTPCSectorVizEditor::AliEveTPCSectorVizEditor(const TGWindow *p,
 AliEveTPCSectorVizEditor::~AliEveTPCSectorVizEditor()
 {}
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveTPCSectorVizEditor::SetModel(TObject* obj)
 {
@@ -143,7 +143,7 @@ void AliEveTPCSectorVizEditor::SetModel(TObject* obj)
   fTime->SetValues(fM->fMinTime, fM->fMaxTime);
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveTPCSectorVizEditor::DoSectorID()
 {
@@ -157,7 +157,7 @@ void AliEveTPCSectorVizEditor::DoAutoTrans()
   Update();
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveTPCSectorVizEditor::DoRnrInn()
 {
@@ -177,7 +177,7 @@ void AliEveTPCSectorVizEditor::DoRnrOut2()
   Update();
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveTPCSectorVizEditor::DoThreshold()
 {
@@ -193,7 +193,7 @@ void AliEveTPCSectorVizEditor::DoMaxVal()
   Update();
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveTPCSectorVizEditor::DoTime()
 {

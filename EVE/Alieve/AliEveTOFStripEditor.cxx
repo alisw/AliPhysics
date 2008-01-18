@@ -20,7 +20,7 @@
 #include <TGDoubleSlider.h>
 
 
-//______________________________________________________________________
+//______________________________________________________________________________
 // AliEveTOFStripEditor
 //
 
@@ -43,7 +43,7 @@ AliEveTOFStripEditor::AliEveTOFStripEditor(const TGWindow *p, Int_t width, Int_t
 AliEveTOFStripEditor::~AliEveTOFStripEditor()
 {}
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveTOFStripEditor::SetModel(TObject* obj)
 {
@@ -53,7 +53,7 @@ void AliEveTOFStripEditor::SetModel(TObject* obj)
   // fXYZZ->SetValue(fM->GetXYZZ());
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 // Implements callback/slot methods
 

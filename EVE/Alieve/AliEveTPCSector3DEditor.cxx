@@ -23,7 +23,7 @@
 #include <TGDoubleSlider.h>
 
 
-//______________________________________________________________________
+//______________________________________________________________________________
 // AliEveTPCSector3DEditor
 //
 
@@ -83,7 +83,7 @@ AliEveTPCSector3DEditor::AliEveTPCSector3DEditor(const TGWindow *p,
 AliEveTPCSector3DEditor::~AliEveTPCSector3DEditor()
 {}
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveTPCSector3DEditor::SetModel(TObject* obj)
 {
@@ -96,7 +96,7 @@ void AliEveTPCSector3DEditor::SetModel(TObject* obj)
   fPointSize->SetValue(fM->fPointSize);
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveTPCSector3DEditor::DoRnrFrame()
 {

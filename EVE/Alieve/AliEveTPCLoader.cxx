@@ -20,7 +20,7 @@
 #include <TSystem.h>
 
 
-//______________________________________________________________________
+//______________________________________________________________________________
 // AliEveTPCLoader
 //
 
@@ -52,7 +52,7 @@ AliEveTPCLoader::~AliEveTPCLoader()
   delete fData;
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveTPCLoader::RemoveElementLocal(TEveElement* el)
 {
@@ -70,7 +70,7 @@ void AliEveTPCLoader::RemoveElementsLocal()
   }
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveTPCLoader::SetData(AliEveTPCData* d)
 {
@@ -78,7 +78,7 @@ void AliEveTPCLoader::SetData(AliEveTPCData* d)
   fData = d;
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveTPCLoader::OpenFile()
 {
@@ -177,7 +177,7 @@ void* AliEveTPCLoader::LoopEvent(AliEveTPCLoader* loader)
   return 0;
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveTPCLoader::UpdateSectors(Bool_t dropNonPresent)
 {
@@ -283,7 +283,7 @@ void AliEveTPCLoader::DeleteSectors3D()
   gEve->EnableRedraw();
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveTPCLoader::SetInitParams(Int_t mint, Int_t maxt, Int_t thr, Int_t maxval)
 {

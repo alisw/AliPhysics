@@ -17,7 +17,7 @@
 
 using namespace std;
 
-//______________________________________________________________________
+//______________________________________________________________________________
 // AliEveTPCSector2DGL
 //
 
@@ -29,7 +29,7 @@ const Int_t AliEveTPCSector2DGL::fgkTextureWidth    = 256;
 const Int_t AliEveTPCSector2DGL::fgkTextureHeight   = 128;
 const Int_t AliEveTPCSector2DGL::fgkTextureByteSize = 4*256*128;
 
-/**************************************************************************/
+/******************************************************************************/
 
 AliEveTPCSector2DGL::AliEveTPCSector2DGL() :
   TGLObject(),
@@ -48,7 +48,7 @@ AliEveTPCSector2DGL::~AliEveTPCSector2DGL()
   if(fTexture) glDeleteTextures(1, &fTexture);
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 Bool_t AliEveTPCSector2DGL::SetModel(TObject* obj, const Option_t* /*opt*/)
 {
@@ -64,7 +64,7 @@ void AliEveTPCSector2DGL::SetBBox()
   SetAxisAlignedBBox(((AliEveTPCSector2D*)fExternalObj)->AssertBBox());
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveTPCSector2DGL::ProcessSelection(TGLRnrCtx       & /*rnrCtx*/,
 				     TGLSelectRecord & rec)
@@ -77,7 +77,7 @@ void AliEveTPCSector2DGL::ProcessSelection(TGLRnrCtx       & /*rnrCtx*/,
   fSector->PadSelected(row, pad);
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveTPCSector2DGL::DirectDraw(TGLRnrCtx& rnrCtx) const
 {
@@ -147,9 +147,9 @@ void AliEveTPCSector2DGL::DirectDraw(TGLRnrCtx& rnrCtx) const
   glPopAttrib();
 }
 
-/**************************************************************************/
+/******************************************************************************/
 // Data import
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveTPCSector2DGL::LoadPadrow(AliEveTPCSectorData::RowIterator& iter,
 			       Int_t row, Int_t col_off) const
@@ -194,7 +194,7 @@ void AliEveTPCSector2DGL::LoadPadrow(AliEveTPCSectorData::RowIterator& iter,
   }
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveTPCSector2DGL::CreateTexture() const
 {
@@ -239,9 +239,9 @@ void AliEveTPCSector2DGL::CreateTexture() const
 
 }
 
-/**************************************************************************/
+/******************************************************************************/
 // Data display
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveTPCSector2DGL::DisplayTexture(const AliEveTPCSectorData::SegmentInfo& seg,
                                    Int_t startCol, Int_t startRow) const
@@ -263,7 +263,7 @@ void AliEveTPCSector2DGL::DisplayTexture(const AliEveTPCSectorData::SegmentInfo&
   glEnd();
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveTPCSector2DGL::DisplayQuads(const AliEveTPCSectorData::SegmentInfo& seg,
                                  Int_t startCol, Int_t startRow) const
@@ -332,9 +332,9 @@ void AliEveTPCSector2DGL::DisplayNamedQuads(const AliEveTPCSectorData::SegmentIn
   glPopName();
 }
 
-/**************************************************************************/
+/******************************************************************************/
 // Frame drawing
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveTPCSector2DGL::TraceStepsUp(const AliEveTPCSectorData::SegmentInfo& s)
 {

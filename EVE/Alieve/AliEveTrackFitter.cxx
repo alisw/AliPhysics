@@ -23,7 +23,7 @@
 #include <TEveManager.h>
 
 
-//______________________________________________________________________
+//______________________________________________________________________________
 // AliEveTrackFitter
 //
 // AliEveTrackFitter is an interface to helix fit. It creates a set of
@@ -77,7 +77,7 @@ AliEveTrackFitter::~AliEveTrackFitter()
   delete fTrackList;
 }
 
-/**************************************************************************/
+/******************************************************************************/
 void AliEveTrackFitter::DestroyElements()
 {
   // Virtual method of base class TEveElement.
@@ -89,7 +89,7 @@ void AliEveTrackFitter::DestroyElements()
   UpdateItems();
 }
 
-/**************************************************************************/
+/******************************************************************************/
 void AliEveTrackFitter::Start()
 {
   // Start selection of points.
@@ -115,7 +115,7 @@ void AliEveTrackFitter::Stop()
   }
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveTrackFitter::AddFitPoint(TEvePointSet* ps, Int_t n)
 {
@@ -146,7 +146,7 @@ void AliEveTrackFitter::AddFitPoint(TEvePointSet* ps, Int_t n)
   ElementChanged(kTRUE, kTRUE);
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveTrackFitter::FitTrack()
 {
@@ -227,7 +227,7 @@ void AliEveTrackFitter::Reset(Int_t n, Int_t ids)
   fMapPS.clear();
 }
 
-/**************************************************************************/
+/******************************************************************************/
 void AliEveTrackFitter::DrawRiemanGraph()
 {
   // Draw graph of rieman fit.

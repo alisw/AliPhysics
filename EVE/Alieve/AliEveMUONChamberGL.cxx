@@ -37,13 +37,13 @@
 #include <TGLIncludes.h>
 
 
-//______________________________________________________________________
+//______________________________________________________________________________
 // AliEveMUONChamberGL
 //
 
 ClassImp(AliEveMUONChamberGL)
 
-//______________________________________________________________________
+//______________________________________________________________________________
 AliEveMUONChamberGL::AliEveMUONChamberGL() :
   TGLObject(),
   fChamber(0),
@@ -55,7 +55,7 @@ AliEveMUONChamberGL::AliEveMUONChamberGL() :
 
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 AliEveMUONChamberGL::~AliEveMUONChamberGL()
 {
   //
@@ -64,7 +64,7 @@ AliEveMUONChamberGL::~AliEveMUONChamberGL()
 
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 Bool_t AliEveMUONChamberGL::SetModel(TObject* obj, const Option_t* /*opt*/)
 {
   //
@@ -84,7 +84,7 @@ Bool_t AliEveMUONChamberGL::SetModel(TObject* obj, const Option_t* /*opt*/)
 
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 void AliEveMUONChamberGL::SetBBox()
 {
   //
@@ -95,7 +95,7 @@ void AliEveMUONChamberGL::SetBBox()
 
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 void AliEveMUONChamberGL::DirectDraw(TGLRnrCtx& rnrCtx) const
 {
   //
@@ -125,7 +125,7 @@ void AliEveMUONChamberGL::DirectDraw(TGLRnrCtx& rnrCtx) const
 
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 void AliEveMUONChamberGL::DrawQuads(TGLRnrCtx& rnrCtx) const
 {
   //
@@ -155,7 +155,7 @@ void AliEveMUONChamberGL::DrawQuads(TGLRnrCtx& rnrCtx) const
 
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 void AliEveMUONChamberGL::DrawPoints() const
 {
   //
@@ -215,7 +215,7 @@ void AliEveMUONChamberGL::DrawPoints() const
 
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 void AliEveMUONChamberGL::DrawChamberFrame() const
 {
   //

@@ -23,7 +23,7 @@
 #include <TGTab.h>
 
 
-//______________________________________________________________________
+//______________________________________________________________________________
 // AliEveJetPlaneEditor
 //
 
@@ -93,7 +93,7 @@ AliEveJetPlaneEditor::AliEveJetPlaneEditor(const TGWindow *p, Int_t width, Int_t
 AliEveJetPlaneEditor::~AliEveJetPlaneEditor()
 {}
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveJetPlaneEditor::SetModel(TObject* obj)
 {
@@ -109,7 +109,7 @@ void AliEveJetPlaneEditor::SetModel(TObject* obj)
   fTwoSelection->SetState(fM->GetTwoSelection() ? kButtonDown : kButtonUp);
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 // Implements callback/slot methods
 
@@ -173,7 +173,7 @@ void AliEveJetPlaneEditor::DoStaticDataWindow()
   fgStaticWindow->CenterOnParent();
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 ClassImp(AliEveJetPlaneEditor::StaticDataWindow)
 

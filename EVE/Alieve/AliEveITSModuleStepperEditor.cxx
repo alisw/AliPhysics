@@ -22,7 +22,7 @@
 #include <TGDoubleSlider.h>
 
 
-//______________________________________________________________________
+//______________________________________________________________________________
 // AliEveITSModuleStepperEditor
 //
 
@@ -45,7 +45,7 @@ AliEveITSModuleStepperEditor::AliEveITSModuleStepperEditor(const TGWindow *p, In
 AliEveITSModuleStepperEditor::~AliEveITSModuleStepperEditor()
 {}
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveITSModuleStepperEditor::SetModel(TObject* obj)
 {
@@ -53,7 +53,7 @@ void AliEveITSModuleStepperEditor::SetModel(TObject* obj)
   fStepper->SetModel(fM->GetStepper());
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveITSModuleStepperEditor::UpdateStore()
 {

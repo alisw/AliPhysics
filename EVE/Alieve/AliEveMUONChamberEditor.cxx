@@ -23,13 +23,13 @@
 #include <TGDoubleSlider.h>
 
 
-//______________________________________________________________________
+//______________________________________________________________________________
 // AliEveMUONChamberEditor
 //
 
 ClassImp(AliEveMUONChamberEditor)
 
-//______________________________________________________________________
+//______________________________________________________________________________
 AliEveMUONChamberEditor::AliEveMUONChamberEditor(const TGWindow *p,
                                      Int_t width, Int_t height,
                                      UInt_t options, Pixel_t back) :
@@ -91,7 +91,7 @@ AliEveMUONChamberEditor::AliEveMUONChamberEditor(const TGWindow *p,
 
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 AliEveMUONChamberEditor::~AliEveMUONChamberEditor()
 {
   //
@@ -100,7 +100,7 @@ AliEveMUONChamberEditor::~AliEveMUONChamberEditor()
 
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 void AliEveMUONChamberEditor::SetModel(TObject* obj)
 {
   //
@@ -116,7 +116,7 @@ void AliEveMUONChamberEditor::SetModel(TObject* obj)
 
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 void AliEveMUONChamberEditor::DoThreshold()
 {
   //
@@ -129,7 +129,7 @@ void AliEveMUONChamberEditor::DoThreshold()
 
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 void AliEveMUONChamberEditor::DoMaxVal()
 {
   //
@@ -142,7 +142,7 @@ void AliEveMUONChamberEditor::DoMaxVal()
 
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 void AliEveMUONChamberEditor::DoClusterSize()
 {
   //
@@ -155,7 +155,7 @@ void AliEveMUONChamberEditor::DoClusterSize()
 
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 void AliEveMUONChamberEditor::DoHitSize()
 {
   //

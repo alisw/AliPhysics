@@ -77,7 +77,7 @@ void primary_vertex_primitive(Bool_t showSPD=kTRUE, Bool_t showBoxes=kFALSE)
     make_vertex_boxes(pv);
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 TEveStraightLineSet* ESDvertex_lineset(AliESDVertex* v, const Text_t* name)
 {

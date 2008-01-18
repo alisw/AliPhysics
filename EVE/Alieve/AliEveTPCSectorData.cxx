@@ -12,7 +12,7 @@
 
 #include <string.h>
 
-//______________________________________________________________________
+//______________________________________________________________________________
 // AliEveTPCSectorData
 //
 // Stores data from a fiven TPC sector.
@@ -42,7 +42,7 @@ AliEveTPCSectorData::SegmentInfo AliEveTPCSectorData::fgOut2Seg;
 
 AliEveTPCSectorData::SegmentInfo* AliEveTPCSectorData::fgSegInfoPtrs[3] = {0};
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveTPCSectorData::InitStatics()
 {
@@ -146,9 +146,9 @@ const AliEveTPCSectorData::SegmentInfo& AliEveTPCSectorData::GetSeg(Int_t seg)
     return *fgSegInfoPtrs[seg];
 }
 
-/**************************************************************************/
+/******************************************************************************/
 // True member functions start here.
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveTPCSectorData::NewBlock()
 {
@@ -156,7 +156,7 @@ void AliEveTPCSectorData::NewBlock()
   fBlockPos = 0;
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 AliEveTPCSectorData::AliEveTPCSectorData(Int_t sector, Int_t bsize) :
   fSectorID(sector), fNPadsFilled(0), fPads(),
@@ -188,7 +188,7 @@ void AliEveTPCSectorData::DropData()
   fBlockPos = fBlockSize; // Enforce creation of a new block.
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveTPCSectorData::Print(Option_t* /*opt*/) const
 {
@@ -196,7 +196,7 @@ void AliEveTPCSectorData::Print(Option_t* /*opt*/) const
 	 fSectorID, fNPadsFilled, fBlocks.size(), fBlockPos);
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveTPCSectorData::BeginPad(Int_t row, Int_t pad, Bool_t reverseTime)
 {
@@ -304,7 +304,7 @@ void AliEveTPCSectorData::EndPad(Bool_t autoPedestal, Short_t threshold)
   ++fNPadsFilled;
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 const AliEveTPCSectorData::PadData& AliEveTPCSectorData::GetPadData(Int_t padAddr)
 {
@@ -342,9 +342,9 @@ AliEveTPCSectorData::RowIterator AliEveTPCSectorData::MakeRowIterator(Int_t row,
     return RowIterator(0, 0);
 }
 
-/**************************************************************************/
+/******************************************************************************/
 // AliEveTPCSectorData::PadData
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveTPCSectorData::PadData::Print(Option_t* /*opt*/)
 {
@@ -353,9 +353,9 @@ void AliEveTPCSectorData::PadData::Print(Option_t* /*opt*/)
     printf("  %3d %hd\n", i, fData[i]);
 }
 
-/**************************************************************************/
+/******************************************************************************/
 // AliEveTPCSectorData::PadIterator
-/**************************************************************************/
+/******************************************************************************/
 
 Bool_t AliEveTPCSectorData::PadIterator::Next()
 {
@@ -407,9 +407,9 @@ void AliEveTPCSectorData::PadIterator::Test()
     printf("  %3d %d\n", fTime, fSignal);
 }
 
-/**************************************************************************/
+/******************************************************************************/
 // AliEveTPCSectorData::RowIterator
-/**************************************************************************/
+/******************************************************************************/
 
 Bool_t AliEveTPCSectorData::RowIterator::NextPad()
 {
@@ -445,9 +445,9 @@ void AliEveTPCSectorData::RowIterator::Test()
   }
 }
 
-/**************************************************************************/
+/******************************************************************************/
 // AliEveTPCSectorData::SegmentInfo
-/**************************************************************************/
+/******************************************************************************/
 
 ClassImp(AliEveTPCSectorData::SegmentInfo)
 
@@ -462,9 +462,9 @@ AliEveTPCSectorData::SegmentInfo::SegmentInfo() :
   memset(fYStep, sizeof(fYStep), 0);
 }
 
-/**************************************************************************/
+/******************************************************************************/
 // AliEveTPCSectorData::PadRowHack
-/**************************************************************************/
+/******************************************************************************/
 
 AliEveTPCSectorData::PadRowHack* AliEveTPCSectorData::GetPadRowHack(Int_t r, Int_t p)
 {

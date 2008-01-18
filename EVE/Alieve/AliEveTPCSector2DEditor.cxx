@@ -15,7 +15,7 @@
 #include <TGLabel.h>
 
 
-//______________________________________________________________________
+//______________________________________________________________________________
 // AliEveTPCSector2DEditor
 //
 
@@ -70,7 +70,7 @@ AliEveTPCSector2DEditor::AliEveTPCSector2DEditor(const TGWindow *p,
 AliEveTPCSector2DEditor::~AliEveTPCSector2DEditor()
 {}
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveTPCSector2DEditor::SetModel(TObject* obj)
 {
@@ -84,7 +84,7 @@ void AliEveTPCSector2DEditor::SetModel(TObject* obj)
   fPickMode->Select(fM->fPickMode, kFALSE);
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveTPCSector2DEditor::DoShowMax()
 {
@@ -109,7 +109,7 @@ void AliEveTPCSector2DEditor::SetupAverage()
   }
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveTPCSector2DEditor::DoUseTexture()
 {

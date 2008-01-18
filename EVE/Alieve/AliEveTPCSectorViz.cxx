@@ -17,7 +17,7 @@
 #include <TColor.h>
 
 
-//______________________________________________________________________
+//______________________________________________________________________________
 // AliEveTPCSectorViz
 //
 // Base class for TPC raw-data visualization.
@@ -25,7 +25,7 @@
 
 ClassImp(AliEveTPCSectorViz)
 
-/**************************************************************************/
+/******************************************************************************/
 
 AliEveTPCSectorViz::AliEveTPCSectorViz(const Text_t* n, const Text_t* t) :
   TEveElement(fFrameColor),
@@ -69,7 +69,7 @@ void AliEveTPCSectorViz::CopyVizParams(const AliEveTPCSectorViz& v)
   fRnrOut2   = v.fRnrOut2;
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveTPCSectorViz::SetDataSource(AliEveTPCData* data)
 {
@@ -95,7 +95,7 @@ AliEveTPCSectorData* AliEveTPCSectorViz::GetSectorData() const
   return fTPCData ? fTPCData->GetSectorData(fSectorID) : 0;
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveTPCSectorViz::SetThreshold(Short_t t)
 {
@@ -111,7 +111,7 @@ void AliEveTPCSectorViz::SetMaxVal(Int_t mv)
   IncRTS();
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveTPCSectorViz::SetAutoTrans(Bool_t trans)
 {
@@ -140,7 +140,7 @@ void AliEveTPCSectorViz::SetAutoTrans(Bool_t trans)
   }
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveTPCSectorViz::SetupColor(Int_t val, UChar_t* pixel) const
 {

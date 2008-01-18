@@ -23,7 +23,7 @@
 #include <algorithm>
 #include <map>
 
-//______________________________________________________________________
+//______________________________________________________________________________
 // AliEveKineTools
 //
 
@@ -34,7 +34,7 @@ ClassImp(AliEveKineTools)
 AliEveKineTools::AliEveKineTools()
 {}
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveKineTools::SetDaughterPathMarks(TEveElement* cont, AliStack* stack, Bool_t recurse)
 {
@@ -64,7 +64,7 @@ void AliEveKineTools::SetDaughterPathMarks(TEveElement* cont, AliStack* stack, B
   }
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 namespace {
 struct cmp_pathmark

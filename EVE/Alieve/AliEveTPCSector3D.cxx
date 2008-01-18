@@ -19,7 +19,7 @@
 #include <TColor.h>
 
 
-//______________________________________________________________________
+//______________________________________________________________________________
 // AliEveTPCSector3D
 //
 
@@ -46,7 +46,7 @@ AliEveTPCSector3D::AliEveTPCSector3D(const Text_t* n, const Text_t* t) :
 AliEveTPCSector3D::~AliEveTPCSector3D()
 {}
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveTPCSector3D::SetRnrFrame(Bool_t rf)
 {
@@ -56,7 +56,7 @@ void AliEveTPCSector3D::SetRnrFrame(Bool_t rf)
   }
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveTPCSector3D::ComputeBBox()
 {
@@ -100,7 +100,7 @@ void AliEveTPCSector3D::Paint(Option_t* /*option*/)
   return;
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 void AliEveTPCSector3D::LoadPadrow(AliEveTPCSectorData::RowIterator& iter,
                              Float_t xs, Float_t ys, Float_t pw, Float_t ph)

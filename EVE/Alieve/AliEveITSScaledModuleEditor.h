@@ -26,7 +26,7 @@ class AliEveDigitScaleInfo;
 class AliEveITSScaledModule;
 class AliITSsegmentation;
 
-/**************************************************************************/
+/******************************************************************************/
 
 class AliEveITSScaledModuleEditor : public TGedFrame
 {

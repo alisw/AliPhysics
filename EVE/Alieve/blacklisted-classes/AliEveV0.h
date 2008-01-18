@@ -164,7 +164,7 @@ protected:
 }; // endclass AliEveV0
 
 
-//______________________________________________________________________
+//______________________________________________________________________________
 inline void AliEveV0::SetDaughterDCA(Float_t dca) {
   fDaughterDCA = dca;
 }
@@ -178,7 +178,7 @@ inline void AliEveV0::SetDecayLength(Float_t len) {
 }
 
 
-//______________________________________________________________________
+//______________________________________________________________________________
 inline Float_t AliEveV0::GetPt2() const {
   Float_t px = fP_neg.x+fP_pos.x, py = fP_neg.y+fP_pos.y;
   return (px*px+py*py);
@@ -210,7 +210,7 @@ inline Float_t AliEveV0::GetPz() const {
   return (fP_neg.z+fP_pos.z);
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 
 inline Float_t AliEveV0::GetDaughterDCA() const {
   return fDaughterDCA;
@@ -233,7 +233,7 @@ inline Float_t AliEveV0::GetPseudoRapidity() const {
   return ( -log(tan(theta/2.)) );
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 
 inline Float_t AliEveV0::GetPionMinusE() const {
   return sqrt(fgkMassPion2+GetNegP2());
@@ -250,7 +250,7 @@ inline Float_t AliEveV0::GetPBarE() const {
   return sqrt(fgkMassProton2+GetNegP2());
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 
 inline Float_t AliEveV0::GetPosP2() const {
   return (fP_pos.x*fP_pos.x + fP_pos.y*fP_pos.y + fP_pos.z*fP_pos.z);
@@ -273,7 +273,7 @@ inline Float_t AliEveV0::GetPosDCAtoPrim() const {
   return 0;
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 inline Float_t AliEveV0::GetNegP2() const {
   return (fP_neg.x*fP_neg.x + fP_neg.y*fP_neg.y + fP_neg.z*fP_neg.z);
 }
@@ -295,7 +295,7 @@ inline Float_t AliEveV0::GetNegDCAtoPrim() const {
   return 0;
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 
 inline Float_t AliEveV0::GetK0mass() const {
   Float_t energy = GetPionMinusE() + GetPionPlusE();
@@ -314,9 +314,9 @@ inline Float_t AliEveV0::GetAntiLamMass() const {
 
 
 
-/**************************************************************************/
+/******************************************************************************/
 // V0List
-/**************************************************************************/
+/******************************************************************************/
 
 class V0List : public TEveElementList
 {

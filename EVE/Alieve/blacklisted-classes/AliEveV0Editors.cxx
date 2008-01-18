@@ -52,7 +52,7 @@ Ludovic Gaudichet (gaudichet@to.infn.it)
 #include <TH2F.h>
 
 
-//______________________________________________________________________
+//______________________________________________________________________________
 // V0ListEditor
 //
 
@@ -104,7 +104,7 @@ V0ListEditor::V0ListEditor(const TGWindow *p,
 V0ListEditor::~V0ListEditor() {}
 
 
-//_________________________________________________________________________
+//______________________________________________________________________________
 void V0ListEditor::SetModel(TObject* obj)
 {
   fMList = dynamic_cast<V0List*>(obj);
@@ -121,7 +121,7 @@ void V0ListEditor::SetModel(TObject* obj)
 }
 
 
-//_________________________________________________________________________
+//______________________________________________________________________________
 TGCompositeFrame* V0ListEditor::AddTab(TGTab* tab, Int_t i, Int_t can,
 				       char *name) {
 
@@ -146,7 +146,7 @@ TGCompositeFrame* V0ListEditor::AddTab(TGTab* tab, Int_t i, Int_t can,
 }
 
 
-//_________________________________________________________________________
+//______________________________________________________________________________
 TGCompositeFrame** V0ListEditor::CreateTab(TGTab **pMainTab, TGTab **ptab, Int_t can) {
 
   //------
@@ -225,7 +225,7 @@ TGCompositeFrame** V0ListEditor::CreateTab(TGTab **pMainTab, TGTab **ptab, Int_t
 }
 
 
-//_________________________________________________________________________
+//______________________________________________________________________________
 void V0ListEditor::AddValuator(TGCompositeFrame* frame, char *name,
 			       Float_t min, Float_t max, Int_t pres,
 			       char *func, Int_t iHist) {
@@ -266,7 +266,7 @@ void V0ListEditor::AddValuator(TGCompositeFrame* frame, char *name,
 }
 
 
-//_________________________________________________________________________
+//______________________________________________________________________________
 void V0ListEditor::AddSelectTab() {
 
   TGCompositeFrame** tab = CreateTab(&fMainTabA, fTabA, 1);
@@ -289,7 +289,7 @@ void V0ListEditor::AddSelectTab() {
 }
 
 
-//_________________________________________________________________________
+//______________________________________________________________________________
 void V0ListEditor::AddSeeTab() {
 
   TGCompositeFrame** tab = CreateTab(&fMainTabB, fTabB, 2);
@@ -297,7 +297,7 @@ void V0ListEditor::AddSeeTab() {
 }
 
 
-//_________________________________________________________________________
+//______________________________________________________________________________
 void V0ListEditor::AdjustHist(Int_t iHist) {
 
   if (! fMList) return;
@@ -306,7 +306,7 @@ void V0ListEditor::AdjustHist(Int_t iHist) {
   FillCanvas();
 }
 
-//_________________________________________________________________________
+//______________________________________________________________________________
 void V0ListEditor::ResetCuts() {
 
   if (! fMList) return;
@@ -343,7 +343,7 @@ void V0ListEditor::ResetCuts() {
 
 
 
-//_________________________________________________________________________
+//______________________________________________________________________________
 void V0ListEditor::FillCanvas() {
 
   fMList->FilterAll();
@@ -379,7 +379,7 @@ void V0ListEditor::FillCanvas() {
 }
 
 
-//_________________________________________________________________________
+//______________________________________________________________________________
 void V0ListEditor::UpdateSelectedTab() {
 
   Int_t i, j;
@@ -454,7 +454,7 @@ void V0ListEditor::UpdateSelectedTab() {
 }
 
 
-//_________________________________________________________________________
+//______________________________________________________________________________
 void V0ListEditor::UpdateAll(Int_t iCanA) {
 
   TCanvas *c1 = fCanvasA[iCanA]->GetCanvas();
@@ -477,7 +477,7 @@ void V0ListEditor::UpdateAll(Int_t iCanA) {
 }
 
 
-//_________________________________________________________________________
+//______________________________________________________________________________
 
 void V0ListEditor::DoRnrV0vtx()
 {
@@ -498,81 +498,81 @@ void V0ListEditor::DoRnrDaughters()
 }
 
 
-//_________________________________________________________________________
+//______________________________________________________________________________
 void V0ListEditor::MassK0sRange() {
 
   fMList->K0sMFilter(fRange[1]->GetMin(), fRange[1]->GetMax());
   UpdateAll(0);
 }
 
-//_________________________________________________________________________
+//______________________________________________________________________________
   void V0ListEditor::MassLamRange() {
   fMList->LamMFilter(fRange[2]->GetMin(), fRange[2]->GetMax());
   UpdateAll(1);
 }
 
-//_________________________________________________________________________
+//______________________________________________________________________________
   void V0ListEditor::MassAntiLamRange() {
   fMList->ALamMFilter(fRange[3]->GetMin(), fRange[3]->GetMax());
   UpdateAll(2);
 }
 
-//_________________________________________________________________________
+//______________________________________________________________________________
 void V0ListEditor::ESDv0IndexRange() {
   fMList->IndexFilter(fRange[12]->GetMin(), fRange[12]->GetMax());
   UpdateAll(4);
 }
 
-//_________________________________________________________________________
+//______________________________________________________________________________
   void V0ListEditor::CosPointingRange() {
   fMList->CosPointingFilter(fRange[5]->GetMin(), fRange[5]->GetMax());
   UpdateAll(5);
 }
 
-//_________________________________________________________________________
+//______________________________________________________________________________
   void V0ListEditor::DaughterDcaRange() {
   fMList->DaughterDCAFilter(fRange[4]->GetMin(), fRange[4]->GetMax());
   UpdateAll(6);
 }
 
-//_________________________________________________________________________
+//______________________________________________________________________________
   void V0ListEditor::RadiusRange() {
   fMList->RadiusFilter(fRange[6]->GetMin(), fRange[6]->GetMax());
   UpdateAll(7);
 }
 
-//_________________________________________________________________________
+//______________________________________________________________________________
 void V0ListEditor::PtRange()
 {
   fMList->PtFilter(fRange[0]->GetMin(), fRange[0]->GetMax());
   UpdateAll(8);
 }
 
-//_________________________________________________________________________
+//______________________________________________________________________________
   void V0ListEditor::EtaRange() {
   fMList->EtaFilter(fRange[7]->GetMin(), fRange[7]->GetMax());
   UpdateAll(9);
 }
 
-//_________________________________________________________________________
+//______________________________________________________________________________
   void V0ListEditor::NegPtRange() {
   fMList->NegPtFilter(fRange[8]->GetMin(), fRange[8]->GetMax());
   UpdateAll(10);
 }
 
-//_________________________________________________________________________
+//______________________________________________________________________________
   void V0ListEditor::NegEtaRange() {
   fMList->NegEtaFilter(fRange[9]->GetMin(), fRange[9]->GetMax());
   UpdateAll(11);
 }
 
-//_________________________________________________________________________
+//______________________________________________________________________________
   void V0ListEditor::PosPtRange() {
   fMList->PosPtFilter(fRange[10]->GetMin(), fRange[10]->GetMax());
   UpdateAll(12);
 }
 
-//_________________________________________________________________________
+//______________________________________________________________________________
   void V0ListEditor::PosEtaRange() {
   fMList->PosEtaFilter(fRange[11]->GetMin(), fRange[11]->GetMax());
   UpdateAll(13);
