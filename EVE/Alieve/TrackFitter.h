@@ -44,24 +44,25 @@ protected:
 
   std::map<Point_t, Int_t> fMapPS; // map of selected points from different TEvePointSet
 public:
-  TrackFitter(const Text_t* name, Int_t n_points=0, ETreeVarType_e tv_type=kTVT_XYZ);
+  TrackFitter(const Text_t* name, Int_t n_points=0);
   virtual ~TrackFitter();
   
-  void AddFitPoint(TEvePointSet*,Int_t);  // slot for PointCtrlClicked() signal
+  virtual void AddFitPoint(TEvePointSet*,Int_t);  // slot for PointCtrlClicked() signal
 
-  virtual void  DestroyElements(); // *MENU*
+  virtual void DestroyElements(); // *MENU*
 
-  void       Start();
-  void       Stop();
-  void       FitTrack();
-  virtual    void  Reset(Int_t n_points=0, Int_t n_int_ids=0);
+  virtual void Start();
+  virtual void Stop();
+  virtual void FitTrack();
+  virtual void Reset(Int_t n_points=0, Int_t n_int_ids=0);
 
-  Bool_t     GetConnected(){ return fConnected; }
-  AliRieman* GetRieman(){ return fRieman; }
+  Bool_t        GetConnected(){ return fConnected; }
+  AliRieman*    GetRieman(){ return fRieman; }
 
-  void       DrawRiemanGraph();
-  TGraph*    GetGraphSelected(){ return fGraphSelected; }
-  TGraphErrors* GetGraphFitted(){ return fGraphFitted; }
+  void          DrawRiemanGraph();
+
+  TGraph*       GetGraphSelected() { return fGraphSelected; }
+  TGraphErrors* GetGraphFitted()   { return fGraphFitted; }
 
   ClassDef(TrackFitter, 0); // Interface to AliRieman fit.
 }; // endclass TrackFitter

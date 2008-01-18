@@ -28,8 +28,8 @@ using namespace Alieve;
 
 ClassImp(TrackFitter)
 
-TrackFitter::TrackFitter(const Text_t* name, Int_t n_points, ETreeVarType_e tv_type) :
-    TEvePointSet(name, n_points, tv_type),
+TrackFitter::TrackFitter(const Text_t* name, Int_t n_points) :
+    TEvePointSet(name, n_points),
 
     fGraphSelected(0),
     fGraphFitted(0),
