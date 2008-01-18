@@ -39,7 +39,7 @@ private:
   virtual void   MakeRaws(AliRawReader* rawReader); 
   virtual void   MakeRecPoints(TTree* recpo); 
   virtual void   MakeESDs(AliESDEvent* esd) ;
-  virtual void   EndOfDetectorCycle(AliQA::TASKINDEX, TObjArray* list);
+  virtual void   EndOfDetectorCycle(AliQA::TASKINDEX task, TObjArray* list);
 
   AliMUONVClusterStore* fClusterStore; //!< pointer to cluster store
 
