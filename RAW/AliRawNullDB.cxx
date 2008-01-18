@@ -48,7 +48,7 @@ const char *AliRawNullDB::GetFileName() const
 }
 
 //______________________________________________________________________________
-Int_t AliRawNullDB::Close()
+Long64_t AliRawNullDB::Close()
 {
    // Close raw RFIO DB.
 
@@ -69,7 +69,7 @@ Int_t AliRawNullDB::Close()
    // Close DB, this also deletes the fTree
    fRawDB->Close();
 
-   Int_t filesize = fRawDB->GetEND();
+   Long64_t filesize = fRawDB->GetEND();
 
    delete fRawDB;
    fRawDB = 0;

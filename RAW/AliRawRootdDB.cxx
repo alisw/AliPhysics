@@ -87,7 +87,7 @@ const char *AliRawRootdDB::GetFileName() const
 }
 
 //______________________________________________________________________________
-Int_t AliRawRootdDB::Close()
+Long64_t AliRawRootdDB::Close()
 {
    // Close raw rootd DB.
 
@@ -108,7 +108,7 @@ Int_t AliRawRootdDB::Close()
    // Close DB, this also deletes the fTree
    fRawDB->Close();
 
-   Int_t filesize = fRawDB->GetEND();
+   Long64_t filesize = fRawDB->GetEND();
 
 #if 0
    // can use services of TFTP

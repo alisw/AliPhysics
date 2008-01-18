@@ -49,7 +49,7 @@ public:
    virtual const char *GetOpenOption() const { return "RECREATE"; }
    virtual Int_t       GetNetopt() const { return 0; }
    virtual Bool_t      Create(const char* fileName = NULL);
-   virtual Int_t       Close();
+   virtual Long64_t    Close();
    Int_t               Fill();
    Long64_t            GetTotalSize();
 

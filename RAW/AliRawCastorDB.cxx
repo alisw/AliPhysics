@@ -103,7 +103,7 @@ const char *AliRawCastorDB::GetFileName() const
 }
 
 //______________________________________________________________________________
-Int_t AliRawCastorDB::Close()
+Long64_t AliRawCastorDB::Close()
 {
    // Close raw CASTOR/rootd DB.
 
@@ -124,7 +124,7 @@ Int_t AliRawCastorDB::Close()
    // Close DB, this also deletes the fTree
    fRawDB->Close();
 
-   Int_t filesize = fRawDB->GetEND();
+   Long64_t filesize = fRawDB->GetEND();
 
    if (fDeleteFiles) {
       TUrl u(fRawDB->GetName());

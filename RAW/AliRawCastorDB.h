@@ -26,7 +26,7 @@ public:
 
    const char *GetOpenOption() const { return "-RECREATE"; }
    Int_t       GetNetopt() const { return 0; }
-   Int_t       Close();
+   Long64_t    Close();
 
 private:
    const char *GetFileName() const;

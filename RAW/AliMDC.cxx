@@ -429,14 +429,14 @@ Long64_t AliMDC::GetTotalSize()
 }
 
 //______________________________________________________________________________
-Int_t AliMDC::Close()
+Long64_t AliMDC::Close()
 {
 // close the current raw DB file
 
   if (!fRawDB) return -1;
 
   fRawDB->WriteStats(fStats);
-  Int_t filesize = fRawDB->Close();
+  Long64_t filesize = fRawDB->Close();
   delete fRawDB;
   fRawDB = NULL;
   delete fStats;

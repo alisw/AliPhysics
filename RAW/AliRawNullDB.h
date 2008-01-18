@@ -24,7 +24,7 @@ public:
 		const char* fileName);
    ~AliRawNullDB() { Close(); }
 
-   Int_t Close();
+   Long64_t Close();
 
 private:
    const char *GetFileName() const;

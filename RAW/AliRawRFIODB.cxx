@@ -103,7 +103,7 @@ const char *AliRawRFIODB::GetFileName() const
 }
 
 //______________________________________________________________________________
-Int_t AliRawRFIODB::Close()
+Long64_t AliRawRFIODB::Close()
 {
    // Close raw RFIO DB.
 
@@ -124,7 +124,7 @@ Int_t AliRawRFIODB::Close()
    // Close DB, this also deletes the fTree
    fRawDB->Close();
 
-   Int_t filesize = fRawDB->GetEND();
+   Long64_t filesize = fRawDB->GetEND();
 
    if (fDeleteFiles) {
       TUrl u(fRawDB->GetName());

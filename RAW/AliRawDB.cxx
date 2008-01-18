@@ -300,7 +300,7 @@ void AliRawDB::MakeTree()
 }
 
 //______________________________________________________________________________
-Int_t AliRawDB::Close()
+Long64_t AliRawDB::Close()
 {
    // Close raw DB.
    if (!fRawDB) return 0;
@@ -320,7 +320,7 @@ Int_t AliRawDB::Close()
    // Close DB, this also deletes the fTree
    fRawDB->Close();
 
-   Int_t filesize = fRawDB->GetEND();
+   Long64_t filesize = fRawDB->GetEND();
 
    if (fDeleteFiles) {
       gSystem->Unlink(fRawDB->GetName());

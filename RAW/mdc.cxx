@@ -58,7 +58,7 @@ long long alimdcGetTotalFileSize(void* alimdc)
   return ((AliMDC*)alimdc)->GetTotalSize();
 }
 
-int alimdcClose(void* alimdc)
+long long alimdcClose(void* alimdc)
 {
 // close the raw DB
 

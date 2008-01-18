@@ -72,7 +72,7 @@ public:
 		   const char* fs1 = NULL, const char* fs2 = NULL);
    Int_t      ProcessEvent(void* event, Bool_t isIovecArray = kFALSE);
    Long64_t   GetTotalSize();
-   Int_t      Close();
+   Long64_t   Close();
 
    Int_t      Run(const char* inputFile, Bool_t loop,
 	          EWriteMode mode, Double_t maxFileSize, 
