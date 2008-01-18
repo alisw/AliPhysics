@@ -42,8 +42,6 @@ public:
   void Connect(const char* sourceMethod, const char* destClassName, 
                void* destObject, const char* destMethod);
     
-//  void ChangeAttributes(const AliMUONAttPainter& attributes);
-  
   /// Get our attributes
   const AliMUONAttPainter& Attributes() const { return fAttributes; }
   

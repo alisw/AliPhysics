@@ -37,43 +37,62 @@ public:
   /// Add values for one full store
   virtual Bool_t Add(const AliMUONVStore& store) = 0;
 
+  /// Get the value for a given buspatch and given dimension
   virtual Double_t BusPatch(Int_t busPatchId, Int_t dim=0) const = 0;
   
+  /// Get the value for a given chamber and given dimension
   virtual Double_t Chamber(Int_t chamberId, Int_t dim=0) const = 0;
   
+  /// Get the value for a given channel and given dimension
   virtual Double_t Channel(Int_t detElemId, Int_t manuId, Int_t manuChannel,
                            Int_t dim=0) const = 0;
   
+  /// Reset the data
   virtual void Clear(Option_t* opt="") = 0;
   
+  /// Get the number of times a given channel was hit
   virtual Double_t Count(Int_t detElemId, Int_t manuId, Int_t manuChannel) const = 0;
 
+  /// Get the value for a given DE and given dimension
   virtual Double_t DetectionElement(Int_t detElemId, Int_t dim=0) const = 0;
   
+  /// Get the name of a given dimension
   virtual TString DimensionName(Int_t dim) const = 0;
 
+  /// Whether we have data for a given buspath
   virtual Bool_t HasBusPatch(Int_t busPatchId) const = 0;
 
+  /// Whether we have data for a given chamber
   virtual Bool_t HasChamber(Int_t chamberId) const = 0;
   
+  /// Whether we have data for a given detection element
   virtual Bool_t HasDetectionElement(Int_t detElemId) const = 0;
   
+  /// Whether we have data for a given manu
   virtual Bool_t HasManu(Int_t detElemId, Int_t manuId) const = 0;
 
+  /// Whether we have data for a given PCB
   virtual Bool_t HasPCB(Int_t detElemId, Int_t pcbIndex) const = 0;
   
+  /// Whether we are runnable (e.g. can handle several events)
   virtual Bool_t IsRunnable() const = 0;
   
+  /// Get the value for a given manu and given dimension
   virtual Double_t Manu(Int_t detElemId, Int_t manuId, Int_t dim=0) const = 0;
   
+  /// The number of dimensions we are handling
   virtual Int_t NumberOfDimensions() const = 0;
 
+  /// The number of events we've seen so far
   virtual Int_t NumberOfEvents() const = 0;
 
+  /// Signal to indicate that the number of events changed
   virtual void NumberOfEventsChanged(); // *SIGNAL*
   
+  /// Get our name
   const char* Name() const { return GetName(); }
   
+  /// Get the value for a given PCDB and given dimension
   virtual Double_t PCB(Int_t detElemId, Int_t pcbIndex, Int_t dim=0) const = 0;
   
   /// Print all objects whose name matches wildcard
@@ -82,6 +101,7 @@ public:
   /// Print, with option, all objects whose name matches wildcard
   virtual void Print(Option_t* wildcard, Option_t* opt) const = 0;
 
+  /// Set the name of a given dimension
   virtual void SetDimensionName(Int_t index, const char* value) = 0;
   
 private:

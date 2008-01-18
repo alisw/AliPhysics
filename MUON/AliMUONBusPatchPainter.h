@@ -40,7 +40,7 @@ public:
   void PaintArea(const AliMUONVTrackerData& data, Int_t dataIndex,
                  Double_t min, Double_t max);
     
-  TString Describe(const AliMUONVTrackerData& data, Int_t, 
+  TString Describe(const AliMUONVTrackerData& data, Int_t dataIndex, 
                    Double_t x = FLT_MAX, Double_t y = FLT_MAX);
 
   virtual AliMUONAttPainter Validate(const AliMUONAttPainter& attributes) const;

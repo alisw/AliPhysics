@@ -44,7 +44,7 @@ AliMUONPainterColorSlider::AliMUONPainterColorSlider(const TGWindow* p,
     /// ctor
     Int_t ndivisions(20);
   
-  Int_t hsize = 20;
+    Int_t hsize = (h-100)/(ndivisions+2);
   Int_t topBorder(5);
   
   Double_t min(0.0);

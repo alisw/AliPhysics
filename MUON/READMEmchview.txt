@@ -2,23 +2,23 @@
 
 /*! \page README_mchview Tracker visualisation program
 
-A visualisation program, mchview, is now available to display, in two dimensions
+A visualisation program, \link mchview.cxx mchview \endlink, is now available to display, in two dimensions
  (3D visu being done within the EVE framework), the tracker chambers. 
  
 \section mchview_install Installing the program
 
-mchview should be installed together with the rest of AliRoot. Two points should be noted though.
- mchview is using two external files to run properly. One is a resource file $HOME/.mchviewrc, used
+\em mchview should be installed together with the rest of AliRoot. Two points should be noted though.
+ \em mchview is using two external files to run properly. One is a resource file $HOME/.mchviewrc, used
  to "configure" the program and keep some history of the user interaction with it (e.g. the list of recent
  data sources used). The other one is a Root file, padstore.root (default name, can be changed with the resource file), 
  which contains lots of precomputed information (like the contours that are being displayed, the geometry transformations,
- etc...). By default, mchview will look for this file in the current directory. If it's not there, it will
+ etc...). By default, \em mchview will look for this file in the current directory. If it's not there, it will
  ask if it's OK to create it. Be warned that this will take a while (but is only done once). 
- If you install a new version of mchview, it is recommended to delete this file first, before lauching mchview again.
+ If you install a new version of \em mchview, it is recommended to delete this file first, before lauching \em mchview again.
  
 \section mchview_navigation Navigating the display
 
-When starting mchview (and after the padstore.root file has been created for the first time), 
+When starting \em mchview (and after the padstore.root file has been created for the first time), 
 you'll be presented with two tabs. The first one allow to navigate within the detector, and the 
 second one to select data sources to be displayed.
 The first tab offers a global view of the 10 tracking chambers. On the right you'll see
@@ -27,7 +27,7 @@ The first tab offers a global view of the 10 tracking chambers. On the right you
  view things for a given cathode or for a given plane. Note that in some instances those buttons maybe inactive.
 On the bottom are three groups of radio buttons, labelled "responder", "outline" and "plot", followed by data source buttons (see later) :
  Each group will contain a number of buttons corresponding to different view levels of the detector (e.g. detection element, manu, buspatch, etc...).
- In mchview jargon, what is displayed on screen is called a "painter". The meaning of responder, outline and plot is as follow :
+ In \em mchview jargon, what is displayed on screen is called a "painter". The meaning of responder, outline and plot is as follow :
  
  - responder (only one selected at a time) is the type of painter that responds to mouse events. When you mouse over responder painters, they'll
  be highlighted (bold yellow line around them), and some information about them will be displayed in the top right corner.
@@ -44,13 +44,13 @@ On the bottom left is a group button used to select which data source should be 
 Next to it will be a list of buttons to select exactly what to plot from a data source (once you've selected a data source only).
 
 Note that whenever you click on a painter and get a new view, you get use the navigation buttons (top left) to go forward and backward, as in 
-a web browser for instance. Note also that the mchview menu bar contains a "History" menu where you can see (and pick a view) all the views that were opened.
+a web browser for instance. Note also that the \em mchview menu bar contains a "History" menu where you can see (and pick a view) all the views that were opened.
 
 Even before selecting something to plot, at this stage you could use the program to familiarize yourself with the detector structure (aka mapping).
 
 \section mchview_datasource Specifying the data source
 
-The second tab of the mchview allows to select one or several data sources. 
+The second tab of the \em mchview allows to select one or several data sources. 
 Each data source, in turn, will provide one or more "things" to be plotted.
 The number of "things" actually depends on the data source.
 For instance, a raw data source will allow to plot the mean and the sigma of the pad charges.
@@ -71,17 +71,16 @@ and a new data source line will appear in the bottom of that tab (and in also in
 be selectable for plotting). Each data source line indicates the short name of the data source, the full path, and a list of buttons to run, stop, rewind and
 remove. Run/Stop/Rewind is only selectable for data sources where the notion of event means something (e.g. for pedestals it won't).
 
-Note that all the file paths can be local ones or alien ones, if you have a correctly installed alien, and you use a short wrapped to call the mchview program.
+Note that all the file paths can be local ones or alien ones, if you have a correctly installed alien, and you use a short wrapped to call the \em mchview program.
 For instance :
-
+<pre>
 alias mchl $HOME/mchview.alien
+</pre>
 
 where mchview.alien is a little script :
-
+<pre>
 #!/bin/sh
-
 test=`alien-token-info | grep -c expired`
-
 if [ $test -gt 0 ]; then
   echo "Token expired. Getting a new token"
   alien-token-destroy
@@ -90,17 +89,14 @@ elif [ ! -e /tmp/gclient_env_$UID ]; then
   echo "Getting a token"
   alien-token-init
 fi
-
 if [ ! -e /tmp/gclient_env_$UID ]; then
   echo "No token. Exiting"
   exit
 fi
-
 source /tmp/gclient_env_$UID
-
 export alien_API_USER=youralienuserid # only needed if different from your local username
-
 mchview $*
+</pre>
 
 ---------
 
@@ -112,5 +108,7 @@ In principle, you could have several raw data sources running at the same time. 
  at the same time, but not running at the same time. (this has to do with AliRawReader not being thread-safe for the moment).
  
 Once you have one or more data sources added, you can go back to first tab and start looking at the data ;-)
+
+This chapter is defined in the READMEmchview.txt file.
 
 */

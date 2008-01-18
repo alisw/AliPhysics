@@ -25,7 +25,7 @@
   includePath        += "-I${ALICE_ROOT}/SHUTTLE/TestShuttle ";
   includePath        += "-I${ALICE_ROOT}/ITS ";
   includePath        += "-I${ALICE_ROOT}/MUON ";
-  includePath        += "-I${ALICE_ROOT}/MUON/mapping";
+  includePath        += "-I${ALICE_ROOT}/MUON/mapping ";
   includePath        += "-I${ALICE_ROOT}/RAW";
   gSystem->SetIncludePath(includePath.Data());
 }

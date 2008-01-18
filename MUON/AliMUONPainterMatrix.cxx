@@ -261,6 +261,7 @@ AliMUONPainterMatrix::Painter(Int_t index) const
 AliMUONVTrackerData* 
 AliMUONPainterMatrix::Data() const
 {
+  /// Return our data
   AliMUONPainterGroup* group = Painter(0)->PlotterGroup();
   return ( group ? group->Data() : 0x0 );
 }
@@ -269,6 +270,7 @@ AliMUONPainterMatrix::Data() const
 TString 
 AliMUONPainterMatrix::DataPattern() const
 {
+  /// Return our data pattern
   AliMUONPainterGroup* group = Painter(0)->PlotterGroup();
   return ( group ? group->Type() : "" );
 }
@@ -277,6 +279,7 @@ AliMUONPainterMatrix::DataPattern() const
 Int_t 
 AliMUONPainterMatrix::DataIndex() const
 {
+  /// Return our data index
   AliMUONPainterGroup* group = Painter(0)->PlotterGroup();
   return ( group ? group->DataIndex() : -1 );
 }

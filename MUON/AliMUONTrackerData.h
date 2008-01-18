@@ -54,6 +54,7 @@ public:
 
   virtual Bool_t HasPCB(Int_t detElemId, Int_t pcbIndex) const;
   
+  /// Whether we can be run
   virtual Bool_t IsRunnable() const { return fIsRunnable; }
   
   virtual Double_t Manu(Int_t detElemId, Int_t manuId, Int_t dim=0) const;
@@ -87,8 +88,10 @@ public:
 
   virtual AliMUONVCalibParam* PCBParam(Int_t detElemId, Int_t pcbIndex) const;
   
+  /// Index of the dimension containing the number of time an item was hit
   virtual Int_t IndexOfNumberDimension() const { return fDimension - 1; }
 
+  /// Index of the dimension containing the occupancy number
   virtual Int_t IndexOfOccupancyDimension() const { return fDimension - 2; }
 
 private:

@@ -27,25 +27,34 @@ public:
                                const char* type="");
   virtual ~AliMUONTrackerOCDBDataMaker();
   
+  /// Whether we've been properly initialized or not
   Bool_t IsValid() const { return fIsValid; }
   
+  /// Return our data
   virtual AliMUONVTrackerData* Data() const { return fData; }
   
+  /// We are not runnable (i.e. # of event is fixed = 1)
   virtual Bool_t IsRunnable() const { return kFALSE; }
   
+  /// We cannot be running as we are not runnable...
   virtual Bool_t IsRunning() const { return kFALSE; }
   
+  /// N/A
   virtual void SetRunning(Bool_t /*flag*/) {}
   
+  /// N/A
   virtual Bool_t NextEvent() { return kTRUE; }
   
+  /// N/A
   virtual void Rewind() { }
   
   /// Whether we're owner of our data
   virtual void SetOwner(Bool_t flag) { fIsOwner = flag; }
   
+  /// Set our source URI
   virtual void SetSource(const char* source) { fSource = source; }
   
+  /// Get our source URI
   virtual TString Source() const { return fSource; }
   
 private:

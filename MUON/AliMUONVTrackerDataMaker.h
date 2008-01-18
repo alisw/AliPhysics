@@ -24,25 +24,34 @@ public:
   AliMUONVTrackerDataMaker();
   virtual ~AliMUONVTrackerDataMaker();
   
+  /// Whether we are valid or not
   virtual Bool_t IsValid() const = 0;
   
+  /// Our data
   virtual AliMUONVTrackerData* Data() const = 0;
 
+  /// Whether we can be run
   virtual Bool_t IsRunnable() const = 0;
 
+  /// Whether we are running (must be false if IsRunnable is false)
   virtual Bool_t IsRunning() const = 0;
   
+  /// Set the running state (no effect if not runnable)
   virtual void SetRunning(Bool_t flag) = 0;
   
+  /// Advance to next event (no effect if not runnable)
   virtual Bool_t NextEvent() = 0;
   
+  /// Rewind events (no effect if not runnable)
   virtual void Rewind() = 0;
   
   /// Whether we're owner of our data
   virtual void SetOwner(Bool_t flag) = 0; 
   
+  /// Set our source URI
   virtual void SetSource(const char* source) = 0;
   
+  /// Get our source URI
   virtual TString Source() const = 0;
   
   ClassDef(AliMUONVTrackerDataMaker,1) // Producer of AliMUONVTrackerData

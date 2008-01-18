@@ -607,6 +607,8 @@ AliMUONTrackerData::InternalAdd(const AliMUONVStore& store)
 Double_t 
 AliMUONTrackerData::Manu(Int_t detElemId, Int_t manuId, Int_t dim) const
 {
+  /// Return the value for a given manu and a given dimension
+  
   AliMUONVCalibParam* param = ManuParam(detElemId,manuId);
   return param ? Value(*param,0,dim) : 0.0;
 }
@@ -615,6 +617,7 @@ AliMUONTrackerData::Manu(Int_t detElemId, Int_t manuId, Int_t dim) const
 AliMUONVCalibParam* 
 AliMUONTrackerData::ManuParam(Int_t detElemId, Int_t manuId) const
 {
+  /// Get the VCalibParam for a given manu
   return fManuValues ? static_cast<AliMUONVCalibParam*>
   (fManuValues->FindObject(detElemId,manuId)) : 0x0 ;
 }

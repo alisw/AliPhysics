@@ -82,14 +82,14 @@ AliMUONPainterMatrixFrame::AliMUONPainterMatrixFrame(const TGWindow* window,
     
     const Int_t kColorWidth = 100;
     
-    fColorSlider = new AliMUONPainterColorSlider(fMainFrame,kColorWidth,hi);
+    fColorSlider = new AliMUONPainterColorSlider(fMainFrame,kColorWidth,fCanvasHeight);
     
     fView = new TRootEmbeddedCanvas("ec",fMainFrame,fCanvasWidth-kColorWidth,fCanvasHeight,kChildFrame);
     
     fInterface = new TGHorizontalFrame(this,fCanvasWidth);
     
     fMainFrame->AddFrame(fView, new TGLayoutHints(kLHintsLeft));
-    fMainFrame->AddFrame(fColorSlider,new TGLayoutHints(kLHintsRight|kLHintsExpandX|kLHintsCenterY,kBorderSize/2));
+    fMainFrame->AddFrame(fColorSlider,new TGLayoutHints(kLHintsTop|kLHintsRight|kLHintsExpandX|kLHintsCenterY,kBorderSize/2));
 
     AliMUONPainterInterfaceHelper::SetBackgroundColor("MatrixFrame.ColorSlider",*fColorSlider);
     

@@ -126,7 +126,8 @@ AliMUONPainterMasterFrame::AliMUONPainterMasterFrame(const TGWindow* p,
   
                                                                    
   UInt_t w1 = wi;
-  UInt_t h1 = hi - fNavigationFrame->GetHeight() - 3*fgkBorderSize;
+  //  UInt_t h1 = hi - fNavigationFrame->GetHeight() - 3*fgkBorderSize;
+  UInt_t h1 = hi - 7*12;
   
   MakeTopPainterMatrix(w1,h1);
 
@@ -171,8 +172,8 @@ AliMUONPainterMasterFrame::AddPainterMatrix(AliMUONPainterMatrix* painterMatrix)
 void
 AliMUONPainterMasterFrame::PainterMatrixWantToShow(AliMUONPainterMatrix* group)
 {
-  // FIXME: should check whether we are the active window before
-  // responding to this message
+  /// FIXME: should check whether we are the active window before
+  /// responding to this message ?
 
   AliDebug(1,Form("group=%x %s",group,group->GetName()));
   

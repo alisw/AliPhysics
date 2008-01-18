@@ -59,7 +59,6 @@ private:
   AliMUONPainterMasterFrame& operator=(const AliMUONPainterMasterFrame& rhs);
   
   void AddPainterMatrix(AliMUONPainterMatrix* group);
-  void AddPainter(AliMUONVPainter* painter);
   void MakeTopPainterMatrix(UInt_t w, UInt_t h);
   void SetNavigation(Int_t i);
   void ShowPainterMatrix(AliMUONPainterMatrix* group);  

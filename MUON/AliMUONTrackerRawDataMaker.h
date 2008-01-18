@@ -33,14 +33,19 @@ public:
   AliMUONTrackerRawDataMaker(AliRawReader* reader = 0x0, const char* cdbpath=0x0);
   virtual ~AliMUONTrackerRawDataMaker();
   
+  /// Whether we have a valid raw reader
   Bool_t IsValid() const { return fRawReader != 0x0; }
   
+  /// Our data
   AliMUONVTrackerData* Data() const { return fAccumulatedData; }
   
+  /// We can be run
   virtual Bool_t IsRunnable() const { return kTRUE; }
   
+  /// Whether we are running or not
   virtual Bool_t IsRunning() const { return fIsRunning; }
   
+  /// Set the running status
   virtual void SetRunning(Bool_t flag) { fIsRunning = flag; }
   
   Bool_t NextEvent();
@@ -49,12 +54,16 @@ public:
   
   void Rewind();
   
+  /// Tell if we are owner of our data or not
   void SetOwner(Bool_t flag) { fIsOwner = flag; }
   
+  /// Get our source URI
   virtual TString Source() const { return fSource.Data(); }
   
+  /// Set our source URI
   void SetSource(const char* source) { fSource = source; }
   
+  /// Get our digit store
   AliMUONVDigitStore* DigitStore() const { return fDigitStore; }
   
 private:

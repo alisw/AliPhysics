@@ -92,6 +92,7 @@ public:
 
   AliMUONPainterContour* GetContour(const char* contourName) const;
 
+  /// Return a contour by name
   AliMUONPainterContour* GetContour(const TString& contourName) const { return GetContour(contourName.Data()); }
 
   AliMUONPainterContour* GetLocalManuContour(Int_t detElemId, Int_t manuId) const;
@@ -148,10 +149,12 @@ public:
 
   void Save();
   
+  /// Return the pad store
   const AliMUONPainterPadStore& PadStore() const { return *fPadStore; }
   
   TString FormatValue(const char* name, Double_t value) const;
   
+  /// Return the environment
   AliMUONPainterEnv* Env() { return fEnv; }
   
 private:

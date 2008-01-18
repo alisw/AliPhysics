@@ -63,14 +63,19 @@ public:
   
 public:
     
+  /// \ingroup graphics
+  /// \brief Store information about one pad's neighbours.
+  /// \authorLaurent Aphecetche, Subatech
   class AliMUONNeighbour : public TObject
   {
 public:
+    /// default ctor
     AliMUONNeighbour()
     : fID(-1), fPosition(), fDimensions(), 
     fLeft(kFALSE), fRight(kFALSE), 
     fTop(kFALSE), fBottom(kFALSE) {}
     
+    /// normal ctor
     AliMUONNeighbour(Int_t absID, 
               const TVector2& position, 
               const TVector2& dimensions,
@@ -80,26 +85,39 @@ public:
     fLeft(hasLeftNeighbour), fRight(hasRightNeighbour), 
       fTop(hasTopNeighbour), fBottom(hasBottomNeighbour) {}
 
+    /// dtor
     virtual ~AliMUONNeighbour() {}
     
+    /// we are sortable
     virtual Bool_t IsSortable() const { return kTRUE; }
     
     virtual Int_t Compare(const TObject* object) const;
     
+    /// our id
     Int_t ID() const { return fID; }
+    
+    /// Whether we have a neighbour on our left
     Bool_t HasLeftNeighbour() const { return fLeft; }
+    /// Whether we have a neighbour on our right
     Bool_t HasRightNeighbour() const { return fRight; }
+    /// Whether we have a neighbour above
     Bool_t HasTopNeighbour() const { return fTop; }
+    /// Whether we have a neighbour below
     Bool_t HasBottomNeighbour() const { return fBottom; }
     
+    /// Our position
     TVector2 Position() const { return fPosition; }
+    /// Our (half-)dimensions
     TVector2 Dimensions() const { return fDimensions; }
     
+    /// Lower left corner
     TVector2 LowerLeft() const { return fPosition - fDimensions; }
+    /// Upper right corner
     TVector2 UpperRight() const { return fPosition + fDimensions; }
     
     void Print(Option_t* opt="") const;
     
+    /// Set our position
     void SetPosition(Double_t x, Double_t y) { fPosition.Set(x,y); }
     
 private:
@@ -114,11 +132,6 @@ private:
     ClassDef(AliMUONNeighbour,1) // Neighbour internal class
   };
     
-private:
-    /// not implemented
-    AliMUONPainterContourMaker(const AliMUONPainterContourMaker& rhs);
-  /// not implemented
-  AliMUONPainterContourMaker& operator=(const AliMUONPainterContourMaker& rhs);
 
 public:
     
@@ -205,6 +218,11 @@ public:
   Bool_t ShouldBeRemoved(const TObjArray& contours, Double_t x, Double_t y) const;
     
 private:
+  /// not implemented
+  AliMUONPainterContourMaker(const AliMUONPainterContourMaker& rhs);
+  /// not implemented
+  AliMUONPainterContourMaker& operator=(const AliMUONPainterContourMaker& rhs);
+
   AliMpExMap* fGlobalTransformations; ///< store of global transformations for DEs
   TMap* fLocalManuContours; ///< store for local contours of all manus
   TMap* fContours; ///< store for all our contours

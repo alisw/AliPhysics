@@ -42,7 +42,7 @@
 //_____________________________________________________________________________
 void CreateMenuBar(TRint* app, TGMainFrame* mainFrame, UInt_t w)
 {
-/// 
+  /// Create the menu bar of the program
 
   TGPopupMenu* file = new TGPopupMenu(gClient->GetRoot());
   
@@ -62,7 +62,7 @@ void CreateMenuBar(TRint* app, TGMainFrame* mainFrame, UInt_t w)
 
 int main(int argc, char** argv)
 {
-///
+  /// Main function for the program
 
   AliWarningGeneral("main","Remove default storage and run number from here...");
   
@@ -99,7 +99,7 @@ int main(int argc, char** argv)
     
   TGMainFrame* mainFrame = new TGMainFrame(gClient->GetRoot(),w,h);
   
-  const Int_t bs = 2;
+  const Int_t kbs = 2;
   
   CreateMenuBar(theApp,mainFrame,w);
 
@@ -110,16 +110,16 @@ int main(int argc, char** argv)
   TGCompositeFrame* t = tabs->AddTab("Painter Master Frame");
 
   AliMUONPainterMasterFrame* pf = 
-    new AliMUONPainterMasterFrame(t,t->GetWidth()-bs*2,t->GetHeight()-bs*2);
+    new AliMUONPainterMasterFrame(t,t->GetWidth()-kbs*2,t->GetHeight()-kbs*2);
   
-  t->AddFrame(pf, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY,bs,bs,bs,bs));
+  t->AddFrame(pf, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY,kbs,kbs,kbs,kbs));
 
   t = tabs->AddTab("Data Sources");
   
   AliMUONPainterDataSourceFrame* dsf = 
-    new AliMUONPainterDataSourceFrame(t,t->GetWidth()-bs*2,t->GetHeight()-bs*2);
+    new AliMUONPainterDataSourceFrame(t,t->GetWidth()-kbs*2,t->GetHeight()-kbs*2);
   
-  t->AddFrame(dsf,new TGLayoutHints(kLHintsExpandX | kLHintsExpandY,bs,bs,bs,bs));
+  t->AddFrame(dsf,new TGLayoutHints(kLHintsExpandX | kLHintsExpandY,kbs,kbs,kbs,kbs));
   
   mainFrame->AddFrame(tabs,new TGLayoutHints(kLHintsExpandX | kLHintsExpandY,0,0,0,0));
 

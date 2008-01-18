@@ -35,7 +35,7 @@
 #include "AliMpSlat.h"
 #include "AliLog.h"
 
-/// \cond(CLASSIMP)
+/// \cond CLASSIMP
 ClassImp(AliMUONPCBPainter)
 /// \endcond
 

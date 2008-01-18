@@ -197,8 +197,8 @@ AliMUONVPainter::Children() const
 void
 AliMUONVPainter::Clicked(AliMUONVPainter* painter, Double_t* values)
 {
-  // let our mother emit the signal as clients are probably connected to
-  // our (grand)mother, not to us
+  /// Let our mother emit the signal as clients are probably connected to
+  /// our (grand)mother, not to us
 
   if ( Mother() ) 
   {
@@ -216,8 +216,8 @@ AliMUONVPainter::Clicked(AliMUONVPainter* painter, Double_t* values)
 void
 AliMUONVPainter::ShiftClicked(AliMUONVPainter* painter, Double_t* values)
 {
-  // let our mother emit the signal as clients are probably connected to
-  // our (grand)mother, not to us
+  /// Let our mother emit the signal as clients are probably connected to
+  /// our (grand)mother, not to us
   
   if ( Mother() ) 
   {

@@ -62,6 +62,7 @@ public:
   /// Convert attributes so they are valid ones for us.
   virtual AliMUONAttPainter Validate(const AliMUONAttPainter& attributes) const { return attributes; }
   
+  /// Get our attributes
   const AliMUONAttPainter& Attributes() const { return fAttributes; }
   
   virtual void ComputeDataRange(const AliMUONVTrackerData& data, Int_t dataIndex, 
@@ -71,8 +72,10 @@ public:
   
   AliMUONVPainter* Detach() const;
   
+  /// Whether we are valid or not
   virtual Bool_t IsValid() const { return fIsValid; }
   
+  /// Mark us as not valid
   void Invalidate() { fIsValid = kFALSE; }
   
   Int_t Depth() const;
@@ -86,10 +89,13 @@ public:
   /// Return the contour representing the outline of this object
   AliMUONPainterContour* Contour() const { return fContour; }
 
+  /// Get our name
   virtual const char* GetName() const { return Name().Data(); }
   
+  /// Get our name
   virtual TString Name() const { return fName; }
   
+  /// Get our path name (aka fullname)
   virtual TString PathName() const { return fPathName; }
   
   virtual TString ContourName() const;
@@ -108,6 +114,7 @@ public:
   
   AliMUONPainterGroup* Group(Int_t depth) const;
   
+  /// Whether we handle mouse motion or not
   virtual Bool_t HandleMouseMotion() const { return kFALSE; }
   
   Bool_t IsResponder() const;
@@ -165,27 +172,37 @@ public:
   virtual void PaintArea(const AliMUONVTrackerData& data, Int_t dataIndex,
                          Double_t min, Double_t max);
     
+  /// Get the pad in which we are plotted
   TVirtualPad* Pad() const { return fPad; }
   
+  /// Get our line color
   Int_t GetLineColor() const { return fLineColor; }
   
+  /// Get our line width
   Int_t GetLineWidth() const { return fLineWidth; }
   
+  /// Set our line color
   void SetLineColor(Int_t lineColor) { fLineColor = lineColor; }
   
+  /// Set our line width
   void SetLineWidth(Int_t lineWidth) { fLineWidth = lineWidth; }
   
+  /// Set our name
   void SetName(const char* name) { fName = name; }
   
+  /// Set our path name (aka fullname)
   void SetPathName(const char* pathName) { fPathName = pathName; }
   
   static AliMUONVPainter* CreatePainter(const char* className, 
                                         const AliMUONAttPainter& att,
                                         Int_t id1, Int_t id2);
     
+  /// Get our first ID
   Int_t ID0() const { return fID[0]; }
+  /// Get our second ID
   Int_t ID1() const { return fID[1]; }
   
+  /// Set our IDs
   void SetID(Int_t id0, Int_t id1) { fID[0] = id0; fID[1] = id1; }
   
   virtual TString Describe(const AliMUONVTrackerData& data, Int_t dataIndex,

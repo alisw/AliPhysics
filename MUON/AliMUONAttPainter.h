@@ -23,6 +23,7 @@ class AliMUONAttPainter : public TObject
 {
 public:
   
+  /// Internal status bits
   enum EBits {
     kIsCathode0         = BIT(14),
     kIsCathode1         = BIT(15),

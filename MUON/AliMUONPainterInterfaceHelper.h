@@ -37,6 +37,7 @@ public:
                              void* userData=0x0,
                              Bool_t select=kFALSE);
   
+  /// Id of first button in a group
   static Int_t ButtonStartingId() { return 1; }
 
   static void ClearButtons(TGButtonGroup& bg);
