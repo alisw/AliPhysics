@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 #ifdef __CINT__
 
@@ -47,7 +47,7 @@ TEvePointSet* hmpid_clusters(TEveElement* cont=0, Float_t maxR=1000)
   clusters->SetOwnIds(kTRUE);
 
   AliEveEventManager::AssertGeometry();
-  
+
   AliRunLoader* rl = AliEveEventManager::AssertRunLoader();
   rl->LoadRecPoints("HMPID");
 
@@ -58,7 +58,7 @@ TEvePointSet* hmpid_clusters(TEveElement* cont=0, Float_t maxR=1000)
      TBranch *br=cTree->GetBranch(name[k]);
      if (!br) return 0;
      br->SetAddress(&(cl[k]));
-  } 
+  }
 
   if (!cTree->GetEvent(0)) return 0;
 

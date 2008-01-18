@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 
 #include "AliEveEventManager.h"
@@ -36,7 +36,7 @@
 //
 // Missing support for raw-data. For now this is handled individually
 // by each sub-detector.
-// 
+//
 
 ClassImp(AliEveEventManager)
 
@@ -122,7 +122,7 @@ void AliEveEventManager::Open()
     else
       Warning(eH, "Bootstraping of run-loader failed.");
   }
-  
+
 
   TString esd_path(Form("%s/AliESDs.root", fPath.Data()));
   if (gSystem->AccessPathName(esd_path, kReadPermission) == kFALSE)
@@ -167,7 +167,7 @@ void AliEveEventManager::Open()
     if (fgAssertESDTree)
     {
       throw(eH + "ESD not initialized. Its precence was requested.");
-    } else { 
+    } else {
       Warning(eH, "ESD not initialized.");
     }
   }

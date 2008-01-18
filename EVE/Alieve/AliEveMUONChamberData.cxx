@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 #include "AliEveMUONChamberData.h"
 
@@ -131,30 +131,30 @@ void AliEveMUONChamberData::Init(Int_t chamber)
       sseg = (AliMpSectorSegmentation*)
              AliMpSegmentation::Instance()->GetMpSegmentation(detElemId,AliMp::kCath0);
       sector = sseg->GetSector();
-      
-      position  = sector->Position(); 
+
+      position  = sector->Position();
       dimension = sector->Dimensions(); // half length
-      
+
       locP[0] =  position.Px();
       locP[1] =  position.Py();
       locD[0] =  dimension.Px() * 2.;
       locD[1] =  dimension.Py() * 2.;
-      
+
       locP[2] = 0.0;
       locD[2] = 0.0;
 
-      fgTransformer->Local2Global(detElemId, 
-				  locP[0], locP[1], locP[2], 
-				  gloP[0], gloP[1], gloP[2]);
-      
       fgTransformer->Local2Global(detElemId,
-				  locD[0], locD[1], locD[2], 
+				  locP[0], locP[1], locP[2],
+				  gloP[0], gloP[1], gloP[2]);
+
+      fgTransformer->Local2Global(detElemId,
+				  locD[0], locD[1], locD[2],
 				  gloD[0], gloD[1], gloD[2]);
-      
-      fFrameCoord[fNDetElem][0] = gloP[0]; 
-      fFrameCoord[fNDetElem][1] = gloP[1]; 
-      fFrameCoord[fNDetElem][2] = gloD[0]; 
-      fFrameCoord[fNDetElem][3] = gloD[1]; 
+
+      fFrameCoord[fNDetElem][0] = gloP[0];
+      fFrameCoord[fNDetElem][1] = gloP[1];
+      fFrameCoord[fNDetElem][2] = gloD[0];
+      fFrameCoord[fNDetElem][3] = gloD[1];
       fFrameCoord[fNDetElem][4] = gloP[2]; // Z position
 
       fChamberBox[0] = TMath::Min(fChamberBox[0],gloP[0]-gloD[0]);
@@ -163,7 +163,7 @@ void AliEveMUONChamberData::Init(Int_t chamber)
       fChamberBox[3] = TMath::Max(fChamberBox[3],gloP[1]+gloD[1]);
       fChamberBox[4] = TMath::Min(fChamberBox[4],gloP[2]);
       fChamberBox[5] = TMath::Max(fChamberBox[5],gloP[2]);
-    
+
     } else {
 
 //      if (!fgSegmentation->HasDE(detElemId)) {
@@ -188,18 +188,18 @@ void AliEveMUONChamberData::Init(Int_t chamber)
       locP[2] = 0.0;
       locD[2] = 0.0;
 
-      fgTransformer->Local2Global(detElemId, 
-				  locP[0], locP[1], locP[2], 
-				  gloP[0], gloP[1], gloP[2]);
-      
       fgTransformer->Local2Global(detElemId,
-				  locD[0], locD[1], locD[2], 
+				  locP[0], locP[1], locP[2],
+				  gloP[0], gloP[1], gloP[2]);
+
+      fgTransformer->Local2Global(detElemId,
+				  locD[0], locD[1], locD[2],
 				  gloD[0], gloD[1], gloD[2]);
-      
-      fFrameCoord[fNDetElem][0] = gloP[0]; 
-      fFrameCoord[fNDetElem][1] = gloP[1]; 
-      fFrameCoord[fNDetElem][2] = gloD[0]; 
-      fFrameCoord[fNDetElem][3] = gloD[1]; 
+
+      fFrameCoord[fNDetElem][0] = gloP[0];
+      fFrameCoord[fNDetElem][1] = gloP[1];
+      fFrameCoord[fNDetElem][2] = gloD[0];
+      fFrameCoord[fNDetElem][3] = gloD[1];
       fFrameCoord[fNDetElem][4] = gloP[2]; // Z position
 
       fChamberBox[0] = TMath::Min(fChamberBox[0],gloP[0]);
@@ -212,7 +212,7 @@ void AliEveMUONChamberData::Init(Int_t chamber)
       fChamberBox[3] = TMath::Max(fChamberBox[1],gloD[1]);
       fChamberBox[4] = TMath::Min(fChamberBox[4],gloP[2]);
       fChamberBox[5] = TMath::Max(fChamberBox[5],gloP[2]);
-    
+
     }
 
     fNDetElem++;
@@ -236,19 +236,19 @@ void AliEveMUONChamberData::RegisterDigit(Int_t detElemId, Int_t cathode, Int_t 
     ->GetMpSegmentation(detElemId,AliMp::GetCathodType(cathode));
 
   AliMpPad pad = vseg->PadByIndices(AliMpIntPair(ix,iy),kTRUE);
-  
+
   locP[0] = pad.Position().X();
   locP[1] = pad.Position().Y();
   locD[0] = pad.Dimensions().X();
   locD[1] = pad.Dimensions().Y();
-  
+
   locP[2] = 0.0;
   locD[2] = 0.0;
 
-  fgTransformer->Local2Global(detElemId, 
-			      locP[0], locP[1], locP[2], 
+  fgTransformer->Local2Global(detElemId,
+			      locP[0], locP[1], locP[2],
 			      gloP[0], gloP[1], gloP[2]);
-  
+
   gloD[0] = locD[0];
   gloD[1] = locD[1];
   gloD[2] = gloP[2];

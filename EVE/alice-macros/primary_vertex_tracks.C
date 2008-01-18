@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 TEveTrackList* primary_vertex_tracks()
 {
@@ -12,7 +12,7 @@ TEveTrackList* primary_vertex_tracks()
   AliESDEvent   *esd = AliEveEventManager::AssertESD();
   AliESDVertex *pv  = esd->GetPrimaryVertex();
 
-  TEveTrackList* cont = new TEveTrackList("Tracks for Primary Vertex"); 
+  TEveTrackList* cont = new TEveTrackList("Tracks for Primary Vertex");
   cont->SetMainColor(Color_t(7));
   TEveTrackPropagator* rnrStyle = cont->GetPropagator();
   rnrStyle->SetMagField( esd->GetMagneticField() );

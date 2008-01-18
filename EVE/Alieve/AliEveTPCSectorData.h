@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 
 #ifndef ALIEVE_TPCSectorData_H
@@ -111,7 +111,7 @@ public:
     Bool_t NextPad();
     void   ResetRow();
     void   ResetRow(const PadData* first, Short_t npads);
-    
+
     Short_t TEvePad() const { return fPad; }
 
     void Test();
@@ -213,7 +213,7 @@ public:
   static const SegmentInfo& GetOut2Seg() { return fgOut2Seg; }
 
   static const SegmentInfo& GetSeg(Int_t seg);
-  
+
   static void InitStatics();
 
 
@@ -241,7 +241,7 @@ public:
 
 protected:
   void* fPadRowHackSet;
-  
+
 
   ClassDef(AliEveTPCSectorData, 0);
 }; // endclass AliEveTPCSectorData

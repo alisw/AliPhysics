@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 // #include "EVE/Alieve/EventAlieve.h"
 // #include "TEveManager.h"
@@ -20,7 +20,7 @@
 
 
 
-AliEveCascade* esd_make_cas(TEveTrackPropagator* rnrStyle, AliESDVertex* primVtx, 
+AliEveCascade* esd_make_cas(TEveTrackPropagator* rnrStyle, AliESDVertex* primVtx,
 			    AliESDcascade* cas, AliESDtrack* neg, AliESDtrack* pos,
 			    AliESDtrack* bach,Int_t i) {
 
@@ -74,7 +74,7 @@ CascadeList* esd_AliEveCascade(Double_t min_pt=0.1, Double_t max_pt=100)
   AliESDEvent* esd = AliEveEventManager::AssertESD();
   AliESDVertex* primVertex =(AliESDVertex*) esd->GetVertex();
 
-  CascadeList* cont = new CascadeList("ESD cascade"); 
+  CascadeList* cont = new CascadeList("ESD cascade");
   cont->SetMainColor(Color_t(3)); // green
   TEveTrackPropagator* rnrStyle = cont->GetPropagator();
   rnrStyle->SetMagField( esd->GetMagneticField() );

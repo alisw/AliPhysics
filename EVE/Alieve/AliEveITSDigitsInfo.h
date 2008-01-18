@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 
 #ifndef ALIEVE_ITSDigitsInfo_H
@@ -39,7 +39,7 @@ protected:
   Float_t  fMaxPhi;    // Max phi.
   Float_t  fMinTheta;  // Min theta.
   Float_t  fMaxTheta;  // Max theta.
-  
+
 public:
   AliEveITSModuleSelection();
   virtual ~AliEveITSModuleSelection() {}

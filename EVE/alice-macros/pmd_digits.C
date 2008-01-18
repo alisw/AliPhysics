@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 // ---------------------------------------------------------------------- //
 void pmd_digits(Int_t mode = 0)
@@ -85,11 +85,11 @@ void pmd_digits(Int_t mode = 0)
 	  iendDDL   = 6;
 	  zpos      = 360.;
 	}
-      
+
       TEveElementList* lplane = new TEveElementList(spl.Data());
       //  l->SetMainColor((Color_t)3);
       gEve->AddElement(lplane, l);
-      
+
       for (Int_t iddl = istartDDL; iddl < iendDDL; iddl++)
 	{
 	  sddl = bsddl;
@@ -111,7 +111,7 @@ void pmd_digits(Int_t mode = 0)
 
 	  for (Int_t ism = 0; ism < NSM; ism++)
 	    {
-	      
+
 	      AliEvePMDModule *lmodule = new AliEvePMDModule();
 	      lmodule->SetPosition(0.,0.,zpos);
 	      lmodule->DisplayDigitsData(modnumber, pmdt);

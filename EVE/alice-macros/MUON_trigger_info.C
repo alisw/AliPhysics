@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 #include <iomanip.h>
 
@@ -13,19 +13,19 @@ void MUON_trigger_info(Int_t label) {
   AliRunLoader* rl = AliEveEventManager::AssertRunLoader();
 
   TTree* tt = rl->GetTreeT("MUON", false);
-  
+
   TClonesArray *tracks = 0;
   tt->SetBranchAddress("AliEveMUONTrack",&tracks);
   tt->GetEntry(0);
 
   Int_t ntracks = tracks->GetEntriesFast();
-  
+
   if (ntracks <= label) return;
 
-  AliMUONTrack *mt = tracks->At(label);  
+  AliMUONTrack *mt = tracks->At(label);
 
   TTree* tr = rl->GetTreeR("MUON", false);
-  
+
   TClonesArray *lotrig = 0;
   tr->SetBranchAddress("MUONLocalTrigger",&lotrig);
   tr->GetEntry(0);
@@ -40,10 +40,10 @@ void MUON_trigger_info(Int_t label) {
   AliMUONTrackParam *mtp = (AliMUONTrackParam*)mt->GetTrackParamAtVertex();
   Float_t pt = TMath::Sqrt(mtp->Px()*mtp->Px()+mtp->Py()*mtp->Py());
 
-  cout << "   Pt = " << 
+  cout << "   Pt = " <<
     setw(8) << setprecision(3) <<
     pt << "  GeV/c" << endl;
-  
+
   cout << endl;
 
   if (mt->GetLoTrgNum() >= 0) {
@@ -73,6 +73,6 @@ void MUON_trigger_info(Int_t label) {
   }
   cout << endl;
   cout << "#########################################################################################################################<<<<<" << endl;
-  
+
 }
 

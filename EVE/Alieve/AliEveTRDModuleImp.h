@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 #ifndef ALIEVE_TRDModuleImp_H
 #define ALIEVE_TRDModuleImp_H
@@ -13,7 +13,7 @@
 //
 // Implementation of AliEveTRDModule:
 //    - AliEveTRDChamber - Data holder
-//    - AliEveTRDNode    - Node structure 
+//    - AliEveTRDNode    - Node structure
 //
 // by A.Bercuci (A.Bercuci@gsi.de)   Fri Oct 27 2006
 /////////////////////////////////////////////////////////////////////////
@@ -42,13 +42,13 @@ class TEveTrack;
 	{
 	friend class AliEveTRDDigits;
 	public:
-	
+
 		AliEveTRDChamber(Int_t det=0);
 		virtual ~AliEveTRDChamber() {}
-	
+
 		AliEveTRDChamber(const AliEveTRDChamber&);
 		AliEveTRDChamber& operator=(const AliEveTRDChamber&);
-		
+
 		void	AddHit(AliTRDhit *hit);
 		Int_t	GetRowMax() const {return rowMax;}
 		Int_t	GetColMax() const {return colMax;}
@@ -62,7 +62,7 @@ class TEveTrack;
 		void	Paint(Option_t* option="");
 		void	Reset();
 		void	SetGeometry(AliTRDgeometry *geo);
-		
+
 	protected:
 		AliEveTRDDigits	*fDigits;   // digits representation
 		AliEveTRDHits		*fHits;     // hits representation
@@ -78,11 +78,11 @@ class TEveTrack;
 		Int_t		fPla; // detector plane
 		AliTRDpadPlane *fPadPlane; // pad plane object
 		AliTRDgeometry *fGeo; // TRD geometry
-	
+
 	ClassDef(AliEveTRDChamber,1) // Holder for TRD chamber data
 	};
 
-	
+
 	class AliEveTRDNode : public TEveElement, public AliEveTRDModule
 	{
 	public:
@@ -96,10 +96,10 @@ class TEveTrack;
 		void	DisableListElements(); // *MENU*
 		void	UpdateLeaves();
 		void	UpdateNode();
-		
+
 		List_i begin(){return fChildren.begin();}
 		List_i end(){return fChildren.end();}
-	
+
 	ClassDef(AliEveTRDNode, 1)
 	};
 #endif

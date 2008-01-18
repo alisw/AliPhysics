@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 
 #include "AliEveTrackFitterEditor.h"
@@ -62,7 +62,7 @@ AliEveTrackFitterEditor::AliEveTrackFitterEditor(const TGWindow *p, Int_t width,
 /**************************************************************************/
 
 void AliEveTrackFitterEditor::SetModel(TObject* obj)
-{ 
+{
   // Set model object.
 
   fM = dynamic_cast<AliEveTrackFitter*>(obj);
@@ -73,7 +73,7 @@ void AliEveTrackFitterEditor::SetModel(TObject* obj)
     fStop->SetState(kButtonUp);
   }
   else
-  { 
+  {
     fStop->SetState(kButtonDisabled);
     fStart->SetState(kButtonEngaged);
     fStart->SetState(kButtonUp);

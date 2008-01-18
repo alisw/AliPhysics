@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 #ifndef ALIEVE_TOFSector_H
 #define ALIEVE_TOFSector_H
@@ -21,40 +21,40 @@
 
 #include <AliTOFGeometry.h>
 
-  
+
   class AliEveTOFSector : public TEveQuadSet
-                   
+
   {
     AliEveTOFSector(const AliEveTOFSector&);            // Not implemented
     AliEveTOFSector& operator=(const AliEveTOFSector&); // Not implemented
- 
+
     //Int_t       fSectorID;
   private:
 
     void LoadQuads();
-    
+
   protected:
-    
+
     AliTOFGeometry *fTOFgeometry;
-    
+
     TClonesArray   *fTOFarray;
     TTree          *fTOFtree;
-    
+
     Int_t fSector;
     //Int_t fPlate;
     //Int_t fStrip;
-    
+
     Float_t  fDx;
     Float_t  fDy;
     Float_t  fDz;
     ///////////////////////////////
 
-    Bool_t      fAutoTrans; 
-    Int_t       fMinTime;     
+    Bool_t      fAutoTrans;
+    Int_t       fMinTime;
     Int_t       fMaxTime;
     Short_t     fThreshold;
     Int_t       fMaxVal;
-    Int_t       fSectorID; 
+    Int_t       fSectorID;
     Bool_t      *fPlateFlag;
 
     Bool_t      fPlateFlag0;
@@ -62,26 +62,26 @@
     Bool_t      fPlateFlag2;
     Bool_t      fPlateFlag3;
     Bool_t      fPlateFlag4;
-    
+
     Color_t     fFrameColor;
     Bool_t      fRnrFrame;
-    
+
     TGeoManager *fGeoManager;
-    
-  public: 
+
+  public:
     // Bool_t       fAutoTrans;
-    
+
     virtual void InitModule();
-    virtual void SetTrans(); 
+    virtual void SetTrans();
     AliEveTOFSector(const Text_t* n="AliEveTOFSector", const Text_t* t=0);
     AliEveTOFSector(TGeoManager *localGeoManager, Int_t nSector);
-    
+
     AliEveTOFSector(TGeoManager *localGeoManager, Int_t nSector,
 	      TClonesArray *tofArray);
     AliEveTOFSector(TGeoManager *localGeoManager,
 	      Int_t nSector, TTree *tofTree);
     virtual ~AliEveTOFSector();
-        
+
     static Bool_t    fgStaticInitDone;
     static void      InitStatics();
 
@@ -96,12 +96,12 @@
     Int_t GetSectorID() const {return fSectorID;};
     virtual void DigitSelected(Int_t idx);
     ///////////////////////////////////////////
-   
+
     void SetPlate(Int_t nPlate, Bool_t r);
 
     static TEveFrameBox    *fgTOFsectorFrameBox;
     static TEveRGBAPalette *fgTOFsectorPalette;
 
   ClassDef(AliEveTOFSector, 1);
-  }; 
+  };
 #endif

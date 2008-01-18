@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 #ifndef ALIEVE_MUONTrack_H
 #define ALIEVE_MUONTrack_H
@@ -43,7 +43,7 @@ class AliEveMUONTrack: public TEveTrack
   void  MakeRefTrack(AliMUONTrack *mtrack);
   void  GetField(Double_t *position, Double_t *field);
   void  Propagate(Float_t *xr, Float_t *yr, Float_t *zr, Int_t i1, Int_t i2);
-  void  OneStepRungekutta(Double_t charge, Double_t step, 
+  void  OneStepRungekutta(Double_t charge, Double_t step,
 			  Double_t* vect, Double_t* vout);
   Int_t ColorIndex(Float_t val);
 

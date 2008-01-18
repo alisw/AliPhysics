@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 
 #include "AliEveTPCSectorData.h"
@@ -86,7 +86,7 @@ void AliEveTPCSectorData::InitStatics()
   fgOut1Seg.fLastRow   = fgOut1Seg.fFirstRow + fgOut1Seg.fNRows - 1;
   fgOut1Seg.fNMaxPads  = fgParam->GetNPadsUp(fgOut1Seg.fNRows - 1);
   fgSegInfoPtrs[1]     = &fgOut1Seg;
- 
+
   fgOut2Seg.fPadWidth  = fgParam->GetOuterPadPitchWidth();
   fgOut2Seg.fPadHeight = fgParam->GetOuter2PadPitchLength();
   fgOut2Seg.fRLow      = fgParam->GetPadRowRadiiUp(fgOut1Seg.fNRows);
@@ -108,7 +108,7 @@ void AliEveTPCSectorData::InitStatics()
     }
   }
   fgInnSeg.fNYSteps = k;
-  // Out1 seg 
+  // Out1 seg
   k=0; npads = fgParam->GetNPadsUp(0);
   for (int row = 0; row < fgOut1Seg.fNRows; ++row) {
     if (fgParam->GetNPadsUp(row) > npads) {
@@ -234,11 +234,11 @@ void AliEveTPCSectorData::EndPad(Bool_t autoPedestal, Short_t threshold)
   if(autoPedestal) {
     Short_t array[1024];
     Short_t* val;
-    val = beg + 1;    
+    val = beg + 1;
     while(val <= end) {
       array[(val-beg)/2] = *val;
       val += 2;
-    }    
+    }
     Short_t pedestal = TMath::Nint(TMath::Median((end-beg)/2, array));
     val = beg + 1;
     while(val <= end) {

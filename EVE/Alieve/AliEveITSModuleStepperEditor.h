@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 
 #ifndef ALIEVE_ITSModuleStepperEditor_H
@@ -31,7 +31,7 @@ protected:
   AliEveITSModuleStepper*     fM; // fModel dynamic-casted to AliEveITSModuleStepperEditor
 
   TEveGridStepperSubEditor* fStepper;
-   
+
 public:
   AliEveITSModuleStepperEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30, UInt_t options = kChildFrame, Pixel_t back=GetDefaultFrameBackground());
   virtual ~AliEveITSModuleStepperEditor();

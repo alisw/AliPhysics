@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 #ifdef __CINT__
 
@@ -46,7 +46,7 @@ TEvePointSet* tpc_clusters(TEveElement* cont=0, Float_t maxR=270)
   cTree->SetBranchAddress("Segment", &clrow);
 
   Float_t maxRsqr = maxR*maxR;
-  TClonesArray *cl=clrow->GetArray(); 
+  TClonesArray *cl=clrow->GetArray();
   Int_t nentr=(Int_t)cTree->GetEntries();
   for (Int_t i=0; i<nentr; i++) {
     if (!cTree->GetEvent(i)) continue;

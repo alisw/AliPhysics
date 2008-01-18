@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 #ifndef ALIEVE_TRDLoaderManager_H
 #define ALIEVE_TRDLoaderManager_H
@@ -44,7 +44,7 @@ class TClonesArray;
 	protected:
 		void	Add(Int_t type, const Text_t *name, const Text_t *title=0x0);
 		void	Remove(Int_t entry);
-		
+
 		ClassDef(AliEveTRDLoaderManager, 1) // Alieve loaders manager for TRD
 	};
 
@@ -56,10 +56,10 @@ class TClonesArray;
 		virtual void	Add();
 		virtual void	Remove(Int_t entry);
 		virtual void	SetModel(TObject* obj);
-		
+
 	protected:
 		AliEveTRDLoaderManager* fM;
-	
+
 	private:
 		ULong_t bg;        // background color
 		TGComboBox		*fSelector;

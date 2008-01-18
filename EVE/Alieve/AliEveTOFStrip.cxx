@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 #include "AliEveTOFStrip.h"
 
@@ -50,7 +50,7 @@ AliEveTOFStrip::AliEveTOFStrip(TGeoManager *localGeoManager,
   fDx(0), fDz(0),
   fGeoManager(localGeoManager)
 {
-  
+
   //if (!fGeoManager) printf("ERROR: no TGeo\n");
 
   InitModule();
@@ -128,7 +128,7 @@ void AliEveTOFStrip::InitModule()
   //fFrame   = fgTOFstripFrameBox;
   //fPalette = fgTOFstripPalette;
 
-  LoadQuads();  
+  LoadQuads();
   ComputeBBox();
   SetTrans();
 
@@ -181,7 +181,7 @@ void AliEveTOFStrip::LoadQuads()
   }
 
   RefitPlex();
- 
+
 }
 
 /* ************************************************************ */
@@ -198,7 +198,7 @@ void AliEveTOFStrip::SetTrans()
   fGeoManager->cd(path);
   TGeoHMatrix global = *fGeoManager->GetCurrentMatrix();
   Double_t *rotMat = global.GetRotationMatrix();
-  
+
   /*
   // ok till 19 April 2007
   fHMTrans.SetBaseVec(1, rotMat[0], rotMat[1], rotMat[2]);

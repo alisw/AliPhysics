@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 #include "AliEveITSModule.h"
 
@@ -68,7 +68,7 @@ void AliEveITSModule::InitStatics(AliEveITSDigitsInfo* info)
 
   {
     Float_t dx = info->fSegSPD->Dx()*0.00005;
-    Float_t dz = 3.50; 
+    Float_t dz = 3.50;
 
     fgSPDFrameBox = new TEveFrameBox();
     fgSPDFrameBox->SetAAQuadXZ(-dx, 0, -dz, 2*dx, 2*dz);
@@ -136,10 +136,10 @@ void AliEveITSModule::SetID(Int_t gid, Bool_t trans)
 
   if (!fgStaticInitDone) {
     InitStatics(fInfo);
-    
+
     fgSPDFrameBox->IncRefCount(this);
     fgSPDPalette->IncRefCount();
-  
+
     fgSDDFrameBox->IncRefCount(this);
     fgSDDPalette->IncRefCount();
 
@@ -152,14 +152,14 @@ void AliEveITSModule::SetID(Int_t gid, Bool_t trans)
   TString strSensor = "Sensor";
   TString symname;
   Int_t   id, nsector, nstave, nladder, rest;
-  
+
   if (fID <= fInfo->fGeom->GetLastSPD())
   {
     // SPD
 
     SetFrame(fgSPDFrameBox);
     SetPalette(fgSPDPalette);
- 
+
     symname += strLadder;
     if (fID < 80)
     {
@@ -180,7 +180,7 @@ void AliEveITSModule::SetID(Int_t gid, Bool_t trans)
     SetName(symname);
     fDetID = 0;
     fDx = fInfo->fSegSPD->Dx()*0.00005;
-    fDz = 3.50; 
+    fDz = 3.50;
     fDy = fInfo->fSegSPD->Dy()*0.00005;
 
   }
@@ -190,7 +190,7 @@ void AliEveITSModule::SetID(Int_t gid, Bool_t trans)
 
     SetFrame(fgSDDFrameBox);
     SetPalette(fgSDDPalette);
- 
+
     symname += strSensor;
     if (fID < 324)
     {
@@ -235,14 +235,14 @@ void AliEveITSModule::SetID(Int_t gid, Bool_t trans)
     symname += rest;
     SetName(symname);
     fDetID = 2;
-    fInfo->fSegSSD->SetLayer(fLayer);  
+    fInfo->fSegSSD->SetLayer(fLayer);
     fDx = fInfo->fSegSSD->Dx()*0.00005;
     fDz = fInfo->fSegSSD->Dz()*0.00005;
     fDy = fInfo->fSegSSD->Dy()*0.00005;
 
   }
 
-  LoadQuads();  
+  LoadQuads();
   ComputeBBox();
   if (trans)
     SetTrans();
@@ -260,14 +260,14 @@ void AliEveITSModule::LoadQuads()
   TClonesArray *digits  = fInfo->GetDigits(fID, fDetID);
   Int_t         ndigits = digits ? digits->GetEntriesFast() : 0;
 
-  Float_t       x, z, dpx, dpz; 
+  Float_t       x, z, dpx, dpz;
   Int_t         i, j;
 
   switch(fDetID)
   {
 
     case 0: { // SPD
-      AliITSsegmentationSPD* seg =  fInfo->fSegSPD; 
+      AliITSsegmentationSPD* seg =  fInfo->fSegSPD;
 
       Reset(kQT_RectangleXZFixedY, kFALSE, 32);
 
@@ -290,7 +290,7 @@ void AliEveITSModule::LoadQuads()
     }
 
     case 1: { // SDD
-      AliITSsegmentationSDD *seg =  fInfo->fSegSDD; 
+      AliITSsegmentationSDD *seg =  fInfo->fSegSDD;
 
       Reset(kQT_RectangleXZFixedY, kFALSE, 32);
 
@@ -315,7 +315,7 @@ void AliEveITSModule::LoadQuads()
     }
 
     case 2: { // SSD
-      AliITSsegmentationSSD* seg = fInfo->fSegSSD; 
+      AliITSsegmentationSSD* seg = fInfo->fSegSSD;
 
       Reset(kQT_LineXZFixedY, kFALSE, 32);
 
@@ -368,7 +368,7 @@ void AliEveITSModule::SetTrans()
   fHMTrans.SetBaseVec(2, x[1], x[4], x[7]);
   fHMTrans.SetBaseVec(3, x[2], x[5], x[8]);
   // translation
-  fInfo->fGeom->GetTrans(fID, x);  
+  fInfo->fGeom->GetTrans(fID, x);
   fHMTrans.SetBaseVec(4, x);
 }
 

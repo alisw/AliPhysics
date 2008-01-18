@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 #ifndef ALIEVE_TRDLoaderImp_H
 #define ALIEVE_TRDLoaderImp_H
@@ -36,40 +36,40 @@ class TGCheckButton;
 	public:
 		AliEveTRDLoaderSim(const Text_t* n="AliEveTRDLoaderSim", const Text_t* t=0);
 		~AliEveTRDLoaderSim();
-		
+
 		Bool_t			GoToEvent(int ev);
 		Bool_t			LoadHits(TTree *tH);
 		Bool_t			Open(const char *file, const char *dir=".");
-			
+
 	private:
 		AliRunLoader			*fRunLoader; // Run Loader
-	
+
 		ClassDef(AliEveTRDLoaderSim, 1) // Alieve loader for the TRD detector (gAlice)
 	};
-	
+
 
 	class AliEveTRDLoaderRaw : public AliEveTRDLoader
 	{
 	public:
 		AliEveTRDLoaderRaw(const Text_t* n="AliEveTRDLoaderRaw", const Text_t* t=0);
 		~AliEveTRDLoaderRaw();
-		
+
 		Bool_t			GoToEvent(int ev);
 		Bool_t 			LoadEvent();
 		Bool_t			Open(const char *file, const char *dir=".");
 		void				SetDataType(TRDDataTypes type);
 
-		
+
 	private:
 		void NextEvent(Bool_t rewindOnEnd=kTRUE);
-	
+
 	private:
 		AliRawReaderDate	*fRawDateReader;
 		AliRawReaderRoot	*fRawRootReader;
 		AliTRDrawData			*fRaw;
 		Bool_t						fDataRoot;
 		Int_t							fEventOld;
-		
+
 		ClassDef(AliEveTRDLoaderRaw, 1) // Alieve loader for the TRD detector (raw)
 	};
 
@@ -81,11 +81,11 @@ class TGCheckButton;
 
 		virtual void	SetModel(TObject* obj);
 		virtual void	Toggle(Int_t id);
-	
+
 	protected:
 		AliEveTRDLoaderSim* fM;
 		TGCheckButton *fLoadHits, *fLoadDigits, *fLoadClusters, *fLoadTracks;
-		
+
 		ClassDef(AliEveTRDLoaderSimEditor,1) // Editor for AliEveTRDLoaderSim
 	};
 #endif

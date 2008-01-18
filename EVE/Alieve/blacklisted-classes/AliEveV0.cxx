@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
@@ -157,49 +157,49 @@ void AliEveV0::MakeTrack(vpPathMark_t& pathMark, TEveVector& vtx,  TEveVector& p
 
   TEveTrackPropagator& RS((fRnrStyle != 0) ? *fRnrStyle : TEveTrackPropagator::fgDefStyle);
 
-  Float_t px = p.x, py = p.y, pz = p.z;  
+  Float_t px = p.x, py = p.y, pz = p.z;
 
   MCVertex  mc_v0;
   mc_v0.x = vtx.x;
-  mc_v0.y = vtx.y; 
-  mc_v0.z = vtx.z; 
+  mc_v0.y = vtx.y;
+  mc_v0.z = vtx.z;
   mc_v0.t = 0;
 
   std::vector<MCVertex> track_points;
   Bool_t decay = kFALSE;
 
-  if ((TMath::Abs(vtx.z) > RS.fMaxZ) || (vtx.x*vtx.x + vtx.y*vtx.y > RS.fMaxR*RS.fMaxR)) 
+  if ((TMath::Abs(vtx.z) > RS.fMaxZ) || (vtx.x*vtx.x + vtx.y*vtx.y > RS.fMaxR*RS.fMaxR))
     goto make_polyline;
-  
+
   if (TMath::Abs(RS.fMagField) > 1e-5) {
 
     // Charged particle in magnetic field
 
     Float_t a = RS.fgkB2C * RS.fMagField * charge;
-   
+
     MCHelix helix(fRnrStyle, &mc_v0, TMath::C()*beta, &track_points, a); //m->cm
     helix.Init(TMath::Sqrt(px*px+py*py), pz);
-   
+
     if(!pathMark.empty()){
       for(std::vector<TEvePathMark*>::iterator i=pathMark.begin();
 	  i!=pathMark.end(); ++i) {
 
 	TEvePathMark* pm = *i;
-        
+
 	if(RS.fFitDaughters &&  pm->type == TEvePathMark::Daughter){
-	  if(TMath::Abs(pm->V.z) > RS.fMaxZ 
+	  if(TMath::Abs(pm->V.z) > RS.fMaxZ
 	     || TMath::Sqrt(pm->V.x*pm->V.x + pm->V.y*pm->V.y) > RS.fMaxR )
 	    goto helix_bounds;
 
-          //printf("%s fit daughter  \n", fName.Data()); 
+          //printf("%s fit daughter  \n", fName.Data());
 	  helix.LoopToVertex(p.x, p.y, p.z, pm->V.x, pm->V.y, pm->V.z);
 	  p.x -=  pm->P.x;
 	  p.y -=  pm->P.y;
 	  p.z -=  pm->P.z;
 	}
 	if(RS.fFitDecay &&  pm->type == TEvePathMark::Decay){
-	  
-	  if(TMath::Abs(pm->V.z) > RS.fMaxZ 
+
+	  if(TMath::Abs(pm->V.z) > RS.fMaxZ
 	     || TMath::Sqrt(pm->V.x*pm->V.x + pm->V.y*pm->V.y) > RS.fMaxR )
 	    goto helix_bounds;
 	  helix.LoopToVertex(p.x, p.y, p.z, pm->V.x, pm->V.y, pm->V.z);
@@ -220,14 +220,14 @@ void AliEveV0::MakeTrack(vpPathMark_t& pathMark, TEveVector& vtx,  TEveVector& p
     // Neutral particle or no field
 
     MCLine line(fRnrStyle, &mc_v0, TMath::C()*beta, &track_points);
-   
+
     if(!pathMark.empty()) {
       for(std::vector<TEvePathMark*>::iterator i=pathMark.begin();
 	  i!=pathMark.end(); ++i) {
 	TEvePathMark* pm = *i;
 
 	if(RS.fFitDaughters &&  pm->type == TEvePathMark::Daughter){
-          if(TMath::Abs(pm->V.z) > RS.fMaxZ 
+          if(TMath::Abs(pm->V.z) > RS.fMaxZ
 	     || TMath::Sqrt(pm->V.x*pm->V.x + pm->V.y*pm->V.y) > RS.fMaxR )
 	    goto line_bounds;
 	  line.GotoVertex(pm->V.x, pm->V.y, pm->V.z);
@@ -237,7 +237,7 @@ void AliEveV0::MakeTrack(vpPathMark_t& pathMark, TEveVector& vtx,  TEveVector& p
 	}
 
 	if(RS.fFitDecay &&  pm->type == TEvePathMark::Decay){
-	  if(TMath::Abs(pm->V.z) > RS.fMaxZ 
+	  if(TMath::Abs(pm->V.z) > RS.fMaxZ
 	     || TMath::Sqrt(pm->V.x*pm->V.x + pm->V.y*pm->V.y) > RS.fMaxR )
 	    goto line_bounds;
 	  line.GotoVertex(pm->V.x, pm->V.y, pm->V.z);
@@ -264,11 +264,11 @@ make_polyline:
 
 //______________________________________________________________________
 void AliEveV0::MakeV0path() {
-  
+
   MCVertex  mc_v0;
   mc_v0.x = fV_v0.x;
-  mc_v0.y = fV_v0.y; 
-  mc_v0.z = fV_v0.z; 
+  mc_v0.y = fV_v0.y;
+  mc_v0.z = fV_v0.z;
   mc_v0.t = 0;
 
   std::vector<MCVertex> track_points;
@@ -527,7 +527,7 @@ void V0List::AdjustHist(Int_t iHist) {
 
   if ((iHist<0)||(iHist>=fgkNcutVar)) return;
   if (! fHist[iHist]) return;
-  
+
   TString name = fHist[iHist]->GetName();
   Int_t nBin = fHist[iHist]->GetXaxis()->GetNbins();
   delete fHist[iHist];
@@ -664,7 +664,7 @@ void V0List::FilterAll() {
 
   for (Int_t i=0; i<fgkNcutVar2D; i++)
     fHist2D[i]->Reset();
-  
+
   AliEveV0* myV0;
   for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
 

@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 
 #ifndef ALIEVE_TPCSector2DGL_H
@@ -46,12 +46,12 @@ protected:
   mutable UChar_t*             fImage;
   mutable UInt_t               fTexture;
   mutable UInt_t               fRTS;
- 
+
 public:
   AliEveTPCSector2DGL();
   virtual ~AliEveTPCSector2DGL();
 
-  virtual Bool_t SetModel(TObject* obj, const Option_t* opt=0); 
+  virtual Bool_t SetModel(TObject* obj, const Option_t* opt=0);
   virtual void   SetBBox();
   virtual Bool_t SupportsSecondarySelect() const { return kTRUE; }
 
@@ -65,7 +65,7 @@ public:
   static const Int_t fgkTextureByteSize;
 
 }; // endclass TPCSector2D_GL_Rnr
-  
+
 
 inline UChar_t* AliEveTPCSector2DGL::GetRowCol(Int_t row, Int_t col) const
 {

@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
@@ -70,15 +70,15 @@ V0ListEditor::V0ListEditor(const TGWindow *p,
   fMainTabB(0)
 {
   MakeTitle("V0List");
- 
+
   //TGHorizontalFrame* frame = new TGHorizontalFrame(this);
- 
+
   // --- Rendering control
 
   fRnrV0path = new TGCheckButton(this, "Render v0 path");
   AddFrame(fRnrV0path, new TGLayoutHints(kLHintsTop, 3, 1, 1, 0));
   fRnrV0path->Connect("Toggled(Bool_t)",
-		     "V0ListEditor", this, "DoRnrV0path()");  
+		     "V0ListEditor", this, "DoRnrV0path()");
 
   fRnrV0vtx = new TGCheckButton(this, "Render v0 vertices");
   AddFrame(fRnrV0vtx, new TGLayoutHints(kLHintsTop, 3, 1, 1, 0));
@@ -89,7 +89,7 @@ V0ListEditor::V0ListEditor(const TGWindow *p,
   AddFrame(fRnrV0sDaugh, new TGLayoutHints(kLHintsTop, 3, 1, 1, 0));
   fRnrV0sDaugh->Connect("Toggled(Bool_t)",
 			"V0ListEditor", this, "DoRnrDaughters()");
-    
+
   for (Int_t i=0; i<fgkNRange; i++) fRange[i]=0;
   for (Int_t i=0; i<fgkNCanvas; i++) fCanvasA[i]=0;
 
@@ -139,7 +139,7 @@ TGCompositeFrame* V0ListEditor::AddTab(TGTab* tab, Int_t i, Int_t can,
   c1->SetTicks(1,0);
   c1->SetGrid();
   c1->SetBorderMode(0);
- 
+
   frameTab->AddFrame(*embeddedCanvas, new TGLayoutHints(kLHintsTop|kLHintsExpandX,
 						       0, 0, 0, 0));
   return frameTab;
@@ -155,12 +155,12 @@ TGCompositeFrame** V0ListEditor::CreateTab(TGTab **pMainTab, TGTab **ptab, Int_t
   pMainTab[0]->Connect("Selected(Int_t)", "V0ListEditor", this, "UpdateSelectedTab()");
   this->AddFrame(pMainTab[0], new TGLayoutHints( kLHintsTop | kLHintsExpandX,2,2,2,2));
 
-  
+
   //------
   // container of "Tab1"
   TGCompositeFrame *frameTab1 = pMainTab[0]->AddTab("ident.");
   frameTab1->SetLayoutManager(new TGVerticalLayout(frameTab1));
-  
+
   // tab widget
 
   ptab[0] = new TGTab(frameTab1,2,2);
@@ -169,23 +169,23 @@ TGCompositeFrame** V0ListEditor::CreateTab(TGTab **pMainTab, TGTab **ptab, Int_t
   // (it updates every canvas)
   ptab[0]->Connect("Selected(Int_t)", "V0ListEditor", this, "UpdateSelectedTab()");
   frameTab1->AddFrame(ptab[0], new TGLayoutHints(kLHintsLeft| kLHintsExpandX,0,0,0,0));
-  
+
   //------
   // container of "Tab2"
   TGCompositeFrame *frameTab2 = pMainTab[0]->AddTab("v0");
   frameTab2->SetLayoutManager(new TGVerticalLayout(frameTab2));
-  
+
   // tab widget
   ptab[1] = new TGTab(frameTab2,440,299);
   ptab[1]->Resize(ptab[1]->GetDefaultSize());
   ptab[1]->Connect("Selected(Int_t)", "V0ListEditor", this, "UpdateSelectedTab()");
   frameTab2->AddFrame(ptab[1], new TGLayoutHints(kLHintsLeft| kLHintsExpandX ,0,0,0,0));
-  
+
   //------
   // container of "Tab3"
   TGCompositeFrame *frameTab3 = pMainTab[0]->AddTab("daughters");
   frameTab3->SetLayoutManager(new TGVerticalLayout(frameTab3));
-  
+
   // tab widget
   ptab[2] = new TGTab(frameTab3,440,299);
   ptab[2]->Resize(ptab[2]->GetDefaultSize());
@@ -194,7 +194,7 @@ TGCompositeFrame** V0ListEditor::CreateTab(TGTab **pMainTab, TGTab **ptab, Int_t
 
   //------
   TGCompositeFrame **frameTab = new TGCompositeFrame*[fgkNCanvas];
-  
+
   frameTab[0] = AddTab(ptab[0], 0, can, "K0s");
   frameTab[1] = AddTab(ptab[0], 1, can, "Lambda");
   frameTab[2] = AddTab(ptab[0], 2, can, "Anti-Lambda");
@@ -268,7 +268,7 @@ void V0ListEditor::AddValuator(TGCompositeFrame* frame, char *name,
 
 //_________________________________________________________________________
 void V0ListEditor::AddSelectTab() {
- 
+
   TGCompositeFrame** tab = CreateTab(&fMainTabA, fTabA, 1);
 
   AddValuator(tab[0],  "mass K0s",           0,  5, 3, "MassK0sRange()",     1);
@@ -314,7 +314,7 @@ void V0ListEditor::ResetCuts() {
   Float_t min,max;
 
   for (Int_t i=0; i<fgkNRange;i++) {
-    
+
     if (i==12) continue;
     min = fRange[i]->GetLimitMin();
     max = fRange[i]->GetLimitMax();
@@ -368,7 +368,7 @@ void V0ListEditor::FillCanvas() {
       if (is2D) hist2D->Draw("colz"); else hist->Draw();
       c1->Modified();
       c1->Update();
-      
+
       c1b = fCanvasB[i]->GetCanvas();
       c1b->cd();
       if (is2D) hist2D->Draw("colz"); else hist->Draw();
@@ -388,7 +388,7 @@ void V0ListEditor::UpdateSelectedTab() {
   gClient->GetColorByName("yellow", yellow);
   gClient->GetColorByName("grey", grey);
 
-  TGTabElement *tabElem; 
+  TGTabElement *tabElem;
   for (i=0; i<fMainTabA->GetNumberOfTabs(); i++) {
 
     tabElem = fMainTabA->GetTabTab(i);

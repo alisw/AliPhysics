@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 #include "AliEveTRDData.h"
 #include "AliEveTRDModuleImp.h"
@@ -34,7 +34,7 @@ AliEveTRDDigits::AliEveTRDDigits(AliEveTRDChamber *p): TEveQuadSet("digits", "")
 //________________________________________________________
 void	AliEveTRDDigits::SetData(AliTRDdigitsManager *digits)
 {
-	
+
 	fData.Allocate(fParent->rowMax, fParent->colMax, fParent->timeMax);
 //	digits->Expand();
 	for (Int_t  row = 0;  row <  fParent->rowMax;  row++)
@@ -56,14 +56,14 @@ void AliEveTRDDigits::ComputeRepresentation()
 
   TEveQuadSet::Reset(TEveQuadSet::kQT_FreeQuad, kTRUE, 64);
   // MT fBoxes.fBoxes.clear();
-		
+
   Double_t colSize, rowSize, scale;
   Double_t x, y, z;
 
   Int_t charge;
   Float_t t0;
   Float_t timeBinSize;
-	
+
   AliTRDcalibDB* calibration = AliTRDcalibDB::Instance();
   Double_t cloc[4][3], cglo[3];
   Int_t color, dimension;
@@ -71,37 +71,37 @@ void AliEveTRDDigits::ComputeRepresentation()
   for (Int_t  row = 0;  row <  fParent->rowMax;  row++) {
     rowSize = .5 * fParent->fPadPlane->GetRowSize(row);
     z = fParent->fPadPlane->GetRowPos(row) - rowSize;
-		
+
     for (Int_t  col = 0;  col <  fParent->colMax;  col++) {
       colSize = .5 * fParent->fPadPlane->GetColSize(col);
       y = fParent->fPadPlane->GetColPos(col) - colSize;
       t0 = calibration->GetT0(fParent->fDet, col, row);
       timeBinSize = calibration->GetVdrift(fParent->fDet, col, row)/fParent->samplingFrequency;
-			
+
       for (Int_t time = 0; time < fParent->timeMax; time++) {
 	charge = fData.GetDataUnchecked(row, col, time);
 	if (charge < fParent->GetDigitsThreshold()) continue;
-				
+
 	x = fParent->fX0 - (time+0.5-t0)*timeBinSize;
 	scale = fParent->GetDigitsLog() ? TMath::Log(float(charge))/TMath::Log(1024.) : charge/1024.;
 	color  = 50+int(scale*50.);
-				
+
 	cloc[0][2] = z - rowSize * scale;
 	cloc[0][1] = y - colSize * scale;
 	cloc[0][0] = x;
- 			
+
 	cloc[1][2] = z - rowSize * scale;
 	cloc[1][1] = y + colSize * scale;
 	cloc[1][0] = x;
- 			
+
 	cloc[2][2] = z + rowSize * scale;
 	cloc[2][1] = y + colSize * scale;
 	cloc[2][0] = x;
- 			
+
 	cloc[3][2] = z + rowSize * scale;
 	cloc[3][1] = y - colSize * scale;
 	cloc[3][0] = x;
-	
+
 	Float_t* p = 0;
 	if( fParent->GetDigitsBox()){
 	  // MT fBoxes.fBoxes.push_back(Box());
@@ -237,7 +237,7 @@ void AliEveTRDDigitsEditor::SetModel(TObject* obj)
 {
 	fM = dynamic_cast<AliEveTRDDigits*>(obj);
 	fM->fParent->SpawnEditor();
-	
+
 // 	printf("Chamber %d", fM->fParent->GetID());
 // 	for (Int_t  row = 0;  row <  fM->fParent->GetRowMax();  row++)
 // 		for (Int_t  col = 0;  col <  fM->fParent->GetColMax();  col++)

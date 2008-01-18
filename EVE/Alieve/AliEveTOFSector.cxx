@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 #include "AliEveTOFSector.h"
 
@@ -170,7 +170,7 @@ void AliEveTOFSector::InitStatics()
 
   //fgTOFsectorPalette  = new TEveRGBAPalette(0, 2048); // TOT
   fgTOFsectorPalette  = new TEveRGBAPalette(0, 8192/*1024*/); // TDC
-  fgTOFsectorPalette->SetLimits(0, 8192); 
+  fgTOFsectorPalette->SetLimits(0, 8192);
 
   fgStaticInitDone = kTRUE;
 }
@@ -190,7 +190,7 @@ void AliEveTOFSector::InitModule()
   //fFrame   = fgTOFsectorFrameBox;
   //fPalette = fgTOFsectorPalette;
 
-  LoadQuads();  
+  LoadQuads();
   ComputeBBox();
   SetTrans();
 
@@ -230,7 +230,7 @@ void AliEveTOFSector::LoadQuads()
     for (Int_t digitNumber=0; digitNumber<digitsTOFnew->GetEntries(); digitNumber++) {
 
       //if (digitNumber==digitsTOF->GetEntries()-1) printf(" Hello  4 -> %3i digit of %i \n", digitNumber+1, digitsTOF->GetEntries());
-  
+
       digs = (AliTOFdigit*)digitsTOFnew->UncheckedAt(digitNumber);
 
       if (digs->GetSector()!=fSectorID) continue;
@@ -253,7 +253,7 @@ void AliEveTOFSector::LoadQuads()
   for (Int_t ii=0; ii<fTOFarray->GetEntries(); ii++) {
 
     tofDigit = (AliTOFdigit*)fTOFarray->UncheckedAt(ii);
-   
+
     if (fPlateFlag[tofDigit->GetPlate()]) {
 
       vol[1] = tofDigit->GetPlate();
@@ -282,7 +282,7 @@ void AliEveTOFSector::LoadQuads()
 			    (Float_t)coord[1][0], (Float_t)coord[1][1], (Float_t)coord[1][2],
 			    (Float_t)coord[2][0], (Float_t)coord[2][1], (Float_t)coord[2][2],
 			    (Float_t)coord[3][0], (Float_t)coord[3][1], (Float_t)coord[3][2]};
-      
+
       AddQuad(vertices);
       //AddQuad((Float_t*)coord);
       //AddQuad(coord[0], coord[1], coord[2], 2.5, 3.5);
@@ -293,7 +293,7 @@ void AliEveTOFSector::LoadQuads()
       //QuadValue((Int_t)tot);
       QuadValue((Int_t)tdc);
       QuadId(tofDigit);
-      
+
     //}
     } // closed if control on plates switched on
   } // closed loop on TOF sector digits
@@ -301,7 +301,7 @@ void AliEveTOFSector::LoadQuads()
   RefitPlex();
 
   fTOFarray = 0x0;
- 
+
 }
 
 /* ************************************************************ */

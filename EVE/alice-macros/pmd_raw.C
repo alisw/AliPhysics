@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 // ---------------------------------------------------------------------- //
 void pmd_raw(Int_t mode = 0)
@@ -29,7 +29,7 @@ void pmd_raw(Int_t mode = 0)
   //  l->SetTitle("PMD");
   //  l->SetMainColor((Color_t)3);
   gEve->AddElement(l);
-  
+
   Int_t NSM       = 0;
   Int_t istartDDL = 0;
   Int_t iendDDL   = 0;
@@ -45,7 +45,7 @@ void pmd_raw(Int_t mode = 0)
       iendPlane   = 1;
       printf("--- Visualization is set for PREshower Plane ---\n");
       break;
-      
+
     case 1:
       istartPlane = 1;
       iendPlane   = 2;
@@ -57,7 +57,7 @@ void pmd_raw(Int_t mode = 0)
       iendPlane   = 2;
       printf("--- Visualization is set for both the Plane ---\n");
       break;
-      
+
     default:
       printf("--- Not set for any Plane ---\n");
     }
@@ -79,11 +79,11 @@ void pmd_raw(Int_t mode = 0)
 	  iendDDL   = 6;
 	  zpos      = 360.;
 	}
-      
+
       TEveElementList* lplane = new TEveElementList(spl.Data());
       //  l->SetMainColor((Color_t)3);
       gEve->AddElement(lplane, l);
-      
+
       for (Int_t iddl = istartDDL; iddl < iendDDL; iddl++)
       //for (Int_t iddl = 0; iddl < 1; iddl++)
 	{

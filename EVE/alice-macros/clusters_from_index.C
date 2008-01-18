@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 
 TEvePointSet* clusters_from_index(Int_t index=0, TEveElement* cont=0)
@@ -40,7 +40,7 @@ TEvePointSet* clusters_from_index(Int_t index=0, TEveElement* cont=0)
     pArr->GetPoint(*atp, i);
     clusters->SetPointId(atp);    }
 
-  
+
   if(clusters->Size() == 0 && gEve->GetKeepEmptyCont() == kFALSE) {
     Warning("clusters_from_index", Form("No clusters for index '%d'", index));
     delete clusters;

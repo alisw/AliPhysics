@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 #ifndef ALIEVE_T0Module_H
 #define ALIEVE_T0Module_H
@@ -20,15 +20,15 @@
 #include <AliT0digit.h>
 #include <AliT0RawReader.h>
 
- 
+
 class AliEveT0Module : public TEveQuadSet
 {
- 
+
   AliEveT0Module(const AliEveT0Module&);
   AliEveT0Module& operator=(const AliEveT0Module&);
 
 public:
- 
+
   AliEveT0Module(const Text_t* n="AliEveT0Module", Int_t sigType=0, AliT0digit *digits=0,AliT0RawReader *start=0);
   virtual ~AliEveT0Module();
 
@@ -43,7 +43,7 @@ protected:
   AliT0digit     *fDigits;
   AliT0RawReader *fStart;
 
-   ClassDef(AliEveT0Module,1); 
+   ClassDef(AliEveT0Module,1);
 };
 
 /*

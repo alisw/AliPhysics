@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 
 #include "AliEveTPCSector3D.h"
@@ -90,7 +90,7 @@ void AliEveTPCSector3D::Paint(Option_t* /*option*/)
   buffer.fTransparency = 0;
   fHMTrans.SetBuffer3D(buffer);
   buffer.SetSectionsValid(TBuffer3D::kCore);
-   
+
   Int_t reqSections = gPad->GetViewer3D()->AddObject(buffer);
   if (reqSections == TBuffer3D::kNone) {
     return;
@@ -103,7 +103,7 @@ void AliEveTPCSector3D::Paint(Option_t* /*option*/)
 /**************************************************************************/
 
 void AliEveTPCSector3D::LoadPadrow(AliEveTPCSectorData::RowIterator& iter,
-                             Float_t xs, Float_t ys, Float_t pw, Float_t ph) 
+                             Float_t xs, Float_t ys, Float_t pw, Float_t ph)
 {
   Short_t pad, time, val;
   Float_t x0, z0;

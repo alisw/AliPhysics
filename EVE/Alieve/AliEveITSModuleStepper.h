@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 
 #ifndef ALIEVE_ITSModuleStepper_H
@@ -59,14 +59,14 @@ protected:
 
   // palette configuratiom
   Float_t                 fPaletteOffset;
-  Float_t                 fPaletteLength;  
+  Float_t                 fPaletteLength;
 
-  // symbol configuration 
-  Int_t                   fWActive; 
+  // symbol configuration
+  Int_t                   fWActive;
   Float_t                 fWWidth;
   Float_t                 fWHeight;
   Float_t                 fWOff; ///offset relative to widget size
-  Color_t                 fWCol;  
+  Color_t                 fWCol;
   Int_t                   fWActiveCol;
   Color_t                 fFontCol;
 

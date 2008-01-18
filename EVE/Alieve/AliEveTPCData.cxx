@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 
 #include "AliEveTPCData.h"
@@ -31,7 +31,7 @@
 // load time: use SetLoadThreshold(thresh) and SetLoadPedestal(ped).
 //
 // For raw-data (loaded using LoadRaw) pedestals can be calculated
-// automatically per pad. Use SetAutoPedestal(kTRUE) to activate it. 
+// automatically per pad. Use SetAutoPedestal(kTRUE) to activate it.
 // You might still want to set load threshold (default iz zero).
 //
 
@@ -100,7 +100,7 @@ void AliEveTPCData::LoadDigits(TTree* tree, Bool_t spawnSectors)
 
   AliSimDigits digit, *digitPtr = &digit;
   tree->GetBranch("Segment")->SetAddress(&digitPtr);
-  
+
   Int_t sector, row, pad, curPad;
   Short_t time, signal;
   Bool_t  inFill = kFALSE;

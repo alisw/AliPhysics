@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 
 #include "AliEveTPCSector3DGL.h"
@@ -80,7 +80,7 @@ void AliEveTPCSector3DGL::DirectDraw(TGLRnrCtx & rnrCtx) const
   if(fRTS < fSector->fRTS) {
     fSector->UpdateBoxes();
     fRTS = fSector->fRTS;
-  }  
+  }
 
   if (rnrCtx.SecSelection()) glPushName(0);
 

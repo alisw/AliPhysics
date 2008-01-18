@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 #include "AliEveTRDLoader.h"
 #include "AliEveTRDModuleImp.h"
@@ -53,7 +53,7 @@ ClassImp(AliEveTRDLoaderEditor)
 
 //________________________________________________________
 AliEveTRDLoader::AliEveTRDLoader(const Text_t* n, const Text_t* t) : TEveElementList(n, t), fSM(-1), fStack(-1), fLy(-1), fEvent(0)
-{	
+{
 	kLoadHits = kFALSE;
 	kLoadDigits = kFALSE;
 	kLoadClusters = kFALSE;
@@ -62,9 +62,9 @@ AliEveTRDLoader::AliEveTRDLoader(const Text_t* n, const Text_t* t) : TEveElement
 	fDir = ".";
 	fEvent  = -1;
 
-	fTRD           = 0x0;	
+	fTRD           = 0x0;
 	fGeo = new AliTRDgeometry();
-	
+
 	AliCDBManager *fCDBManager=AliCDBManager::Instance();
 	fCDBManager->SetDefaultStorage("local://$ALICE_ROOT");
 	fCDBManager->SetRun(0);
@@ -144,7 +144,7 @@ void	AliEveTRDLoader::AddChambers(int sm, int stk, int ly)
 AliEveTRDChamber*	AliEveTRDLoader::GetChamber(int d)
 {
 	List_i ism, istack, ichmb;
-	
+
 	ism = find_if(fChildren.begin(), fChildren.end(), ID<TEveElement*>(fGeo->GetSector(d)));
 	if(ism == fChildren.end()) return 0x0;
 	istack = find_if(((AliEveTRDNode*)(*ism))->begin(), ((AliEveTRDNode*)(*ism))->end(), ID<TEveElement*>(fGeo->GetChamber(d)));
@@ -165,7 +165,7 @@ Bool_t	AliEveTRDLoader::GoToEvent(int ev)
 	fEvent = ev;
 
 	Unload();
-	
+
 	TTree *t = 0x0;
 	TFile *f = new TFile(Form("%s/%s", fDir.Data(), fFilename.Data()));
 	if(! f->cd(Form("AliEveEventManager%d", ev))){
@@ -173,7 +173,7 @@ Bool_t	AliEveTRDLoader::GoToEvent(int ev)
 		f->Close(); delete f;
 		return kFALSE;
 	}
-	
+
 	if(kLoadDigits){
 		t = (TTree*)gDirectory->Get("TreeD");
 		if(!t) return kFALSE;
@@ -189,9 +189,9 @@ Bool_t	AliEveTRDLoader::GoToEvent(int ev)
 	} else AliWarning("Please select first the type of data that you want to monitor and then hit the \"Load\" button.");
 
 	f->Close(); delete f;
-	
+
 	gEve->Redraw3D();
-	
+
 	return kTRUE;
 }
 
@@ -205,7 +205,7 @@ Bool_t	AliEveTRDLoader::LoadClusters(TTree *tC)
 	TObjArray *clusters = new TObjArray();
 	tC->SetBranchAddress("TRDcluster", &clusters);
 
-	AliEveTRDChamber *chmb = 0x0;	
+	AliEveTRDChamber *chmb = 0x0;
 	AliTRDcluster *c=0x0;
 	for(int idet=0; idet<540; idet++){
 		tC->GetEntry(idet);
@@ -222,9 +222,9 @@ Bool_t	AliEveTRDLoader::LoadClusters(TTree *tC)
 Bool_t	AliEveTRDLoader::LoadDigits(TTree *tD)
 {
 	AliInfo("Loading ...");
-	
+
 	if(!fChildren.size()) return kTRUE;
-	
+
 	AliEveTRDChamber *chmb;
 	AliTRDdigitsManager dm;
 	dm.ReadDigits(tD);
@@ -247,7 +247,7 @@ Bool_t	AliEveTRDLoader::LoadTracklets(TTree *tT)
 
 	TObjArray *tracks = new TObjArray();
 	tT->SetBranchAddress("TRDmcmTracklet",&tracks);
-	
+
 	AliEveTRDChamber *chmb = 0x0;
 	AliTRDmcmTracklet *trk=0x0;
 	for(int idet=0; idet<540; idet++){
@@ -255,10 +255,10 @@ Bool_t	AliEveTRDLoader::LoadTracklets(TTree *tT)
 		if(tracks->GetEntriesFast()) trk = (AliTRDmcmTracklet*)tracks->UncheckedAt(0);
 		if((chmb = GetChamber(trk->GetDetector()))) chmb->LoadTracklets(tracks);
 	}
-	
+
 	return kTRUE;
 }
-	
+
 
 //________________________________________________________
 Bool_t	AliEveTRDLoader::Open(const char *filename, const char *dir)
@@ -269,7 +269,7 @@ Bool_t	AliEveTRDLoader::Open(const char *filename, const char *dir)
 	count += kLoadDigits ? 1 : 0;
 	count += kLoadClusters ? 1 : 0;
 	count += kLoadTracks ? 1 : 0;
-	
+
 	TObjArray *so = fFilename.Tokenize(".");
 
 	if(((TObjString*)(*so)[0])->GetString().CompareTo("TRD") != 0){
@@ -297,7 +297,7 @@ Bool_t	AliEveTRDLoader::Open(const char *filename, const char *dir)
 		AliError("Filename didn't fulfill naming conventions. No data will be loaded.");
 		return kFALSE;
 	}
-	
+
 	return kTRUE;
 }
 
@@ -348,11 +348,11 @@ void AliEveTRDLoader::Unload()
 AliEveTRDLoaderEditor::AliEveTRDLoaderEditor(const TGWindow* p, Int_t width, Int_t height, UInt_t options, Pixel_t back) : TGedFrame(p, width, height, options | kVerticalFrame, back)
 {
 	MakeTitle("AliEveTRDLoader");
-	
+
   fFile = 0x0;
 	TGTextButton *fOpenFile = 0x0;
 	Int_t labelW = 42;
- 
+
 	TGHorizontalFrame* f = new TGHorizontalFrame(this);
 	TGHorizontalFrame* g = new TGHorizontalFrame(f, labelW, 0, kFixedWidth);
 	TGLabel* l = new TGLabel(g, "File: ");
@@ -363,13 +363,13 @@ AliEveTRDLoaderEditor::AliEveTRDLoaderEditor(const TGWindow* p, Int_t width, Int
 	fFile->SetWidth(140);
 	fFile->Connect("DoubleClicked()", "AliEveTRDLoaderEditor", this, "FileOpen()");
 	f->AddFrame(fFile);
-	
+
 	fOpenFile = new TGTextButton(f, "Browse");
 	f->AddFrame(fOpenFile);
 	fOpenFile->Connect("Clicked()", "AliEveTRDLoaderEditor", this, "FileOpen()");
 	AddFrame(f);
 
-		
+
   fEvent = new TEveGValuator(this, "AliEveEventManager:", 110, 0);
   fEvent->SetShowSlider(kFALSE);
   fEvent->SetLabelWidth(labelW);
@@ -385,7 +385,7 @@ AliEveTRDLoaderEditor::AliEveTRDLoaderEditor(const TGWindow* p, Int_t width, Int
 	// "Chamber(s) selector" group frame
 	TGGroupFrame *fGroupFrame1974 = new TGGroupFrame(this,"Chamber(s) selector");
 	TGVerticalFrame *fVerticalFrame1974 = new TGVerticalFrame(fGroupFrame1974, 150, 50,kVerticalFrame);
-  
+
 	fSMNumber = new TEveGValuator(fVerticalFrame1974, "SM:", 0, 0);
   fSMNumber->SetShowSlider(kFALSE);
   fSMNumber->SetLabelWidth(labelW);
@@ -413,7 +413,7 @@ AliEveTRDLoaderEditor::AliEveTRDLoaderEditor(const TGWindow* p, Int_t width, Int
   fPlaneNumber->SetToolTip("Plane id [-1 for all in this stack]");
 
 	fVerticalFrame1974->AddFrame(fPlaneNumber, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsCenterX | kLHintsExpandY,2,2,2,2));
-	
+
 	fGroupFrame1974->AddFrame(fVerticalFrame1974, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsExpandY | kLHintsCenterX,2,2,2,2));
 
 	TGTextButton *fTextButton2037 = new TGTextButton(fGroupFrame1974,"Select");
@@ -452,7 +452,7 @@ void AliEveTRDLoaderEditor::SetModel(TObject* obj)
 
 	fEvent->SetEnabled(kFile);
 	fEvent->GetEntry()->SetIntNumber(fM->fEvent);
-	
+
 	fSMNumber->SetEnabled(kFile);
 	fSMNumber->GetEntry()->SetIntNumber(fM->fSM);
 

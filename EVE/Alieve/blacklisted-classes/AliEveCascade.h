@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 #ifndef ALIEVE_Cascade_H
 #define ALIEVE_Cascade_H
@@ -79,7 +79,7 @@ protected:
   static const Float_t fgkMassProton2;
   static const Float_t fgkMassLambda2;
 
-public: 
+public:
   AliEveCascade();
   AliEveCascade(TEveTrackPropagator* rs);
   virtual ~AliEveCascade();
@@ -127,8 +127,8 @@ public:
   void SetBachP(Float_t px, Float_t py, Float_t pz) {fP_bach.x = px; fP_bach.y = py; fP_bach.z = pz;}
 
   void SetV0vtx(Float_t vx, Float_t vy, Float_t vz)  {
-    fV_neg.x = vx; fV_neg.y = vy; fV_neg.z = vz; 
-    fV_pos.x = vx; fV_pos.y = vy; fV_pos.z = vz; 
+    fV_neg.x = vx; fV_neg.y = vy; fV_neg.z = vz;
+    fV_pos.x = vx; fV_pos.y = vy; fV_pos.z = vz;
   }
   void SetCascadeVtx(Float_t vx, Float_t vy, Float_t vz) {
     fV_decay.x = vx; fV_decay.y = vy; fV_decay.z = vz; }
@@ -399,7 +399,7 @@ public:
   virtual void Paint(Option_t* option="");
 
   void  SetRnrStyle(TEveTrackPropagator* rst) { fRnrStyle= rst; }
-  TEveTrackPropagator* GetPropagator()          { return fRnrStyle; } 
+  TEveTrackPropagator* GetPropagator()          { return fRnrStyle; }
 
   Bool_t GetRnrCasVtx() const { return fRnrCasVtx; }
   Bool_t GetRnrCasPath() const { return fRnrCasPath; }

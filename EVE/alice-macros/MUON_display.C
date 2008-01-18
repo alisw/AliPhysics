@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 #include "TGLViewer.h"
 
@@ -21,8 +21,8 @@ Bool_t g_fromRaw = kFALSE;
 
 void MUON_display(Bool_t fromRaw = kFALSE, Bool_t showTracks = kTRUE)
 {
- 
-  if (!AliMpSegmentation::Instance()) AliMpCDB::LoadMpSegmentation();  
+
+  if (!AliMpSegmentation::Instance()) AliMpCDB::LoadMpSegmentation();
   if (!AliMpDDLStore::Instance())     AliMpCDB::LoadDDLStore();
 
   TTree* dt = 0;
@@ -56,7 +56,7 @@ void MUON_display(Bool_t fromRaw = kFALSE, Bool_t showTracks = kTRUE)
 
   AliRunLoader* rl =  AliEveEventManager::AssertRunLoader();
   g_muon_data = new AliEveMUONData;
-  
+
   if (!fromRaw) {
     rl->LoadDigits("MUON");
     dt = rl->GetTreeD("MUON", false);
@@ -74,35 +74,35 @@ void MUON_display(Bool_t fromRaw = kFALSE, Bool_t showTracks = kTRUE)
       g_muon_data->LoadRaw(dataPath.Data());
     }
   }
-  
+
   rl->LoadRecPoints("MUON");
   ct = rl->GetTreeR("MUON", false);
   g_muon_data->LoadRecPoints(ct);
-  
+
   rl->LoadHits("MUON");
   ht = rl->GetTreeH("MUON", false);
   g_muon_data->LoadHits(ht);
-  
+
   g_muon_last_event = gEvent;
-  
+
   g_currentEvent = g_muon_last_event->GetEventId();
-  
+
   gStyle->SetPalette(1, 0);
 
   gEve->DisableRedraw();
-  
+
   TEveElementList* l = new TEveElementList("MUONChambers");
   l->SetTitle("MUON chambers");
   l->SetMainColor(Color_t(2));
   gEve->AddElement(l);
-  
+
   for (Int_t ic = 0; ic < 14; ic++) {
 
     AliEveMUONChamber* mucha = new AliEveMUONChamber(ic);
-    
+
     mucha->SetFrameColor(2);
     mucha->SetChamberID(ic);
-    
+
     mucha->SetDataSource(g_muon_data);
 
     gEve->AddElement(mucha, l);
@@ -142,9 +142,9 @@ void MUON_tracks() {
   Int_t ntracks = tracks->GetEntriesFast();
   //printf("Found %d tracks. \n",ntracks);
 
-  TEveTrackList* lt = new TEveTrackList("M-Tracks"); 
+  TEveTrackList* lt = new TEveTrackList("M-Tracks");
   lt->SetMainColor(Color_t(6));
-  //lt->SetMUON();  
+  //lt->SetMUON();
 
   gEve->AddElement(lt);
 
@@ -155,14 +155,14 @@ void MUON_tracks() {
   Float_t xRec, xRec0;
   Float_t yRec, yRec0;
   Float_t zRec, zRec0;
-  
+
   Float_t zg[4] = { -1603.5, -1620.5, -1703.5, -1720.5 };
 
-  AliMUONTrack *mt;  
+  AliMUONTrack *mt;
   TEveRecTrack  rt;
   Int_t count;
   for (Int_t n = 0; n < ntracks; n++) {
-    
+
     count = 0;
 
     mt = (AliMUONTrack*) tracks->At(n);
@@ -195,9 +195,9 @@ void MUON_trigger_tracks() {
   Int_t ntracks = tracks->GetEntriesFast();
   //printf("Found %d tracks. \n",ntracks);
 
-  TEveTrackList* lt = new TEveTrackList("MT-Tracks"); 
+  TEveTrackList* lt = new TEveTrackList("MT-Tracks");
   lt->SetMainColor(Color_t(4));
-  //lt->SetMUON();  
+  //lt->SetMUON();
 
   gEve->AddElement(lt);
 
@@ -208,14 +208,14 @@ void MUON_trigger_tracks() {
   Float_t xRec, xRec0;
   Float_t yRec, yRec0;
   Float_t zRec, zRec0;
-  
+
   Float_t zg[4] = { -1603.5, -1620.5, -1703.5, -1720.5 };
 
-  AliMUONTriggerTrack *mt;  
+  AliMUONTriggerTrack *mt;
   TEveRecTrack  rt;
   Int_t count;
   for (Int_t n = 0; n < ntracks; n++) {
-    
+
     count = 0;
 
     mt = (AliMUONTriggerTrack*) tracks->At(n);
@@ -239,7 +239,7 @@ void MUON_ESD_tracks() {
 
   AliESDEvent* esd = AliEveEventManager::AssertESD();
 
-  TEveTrackList* lt = new TEveTrackList("ESD-Tracks"); 
+  TEveTrackList* lt = new TEveTrackList("ESD-Tracks");
   lt->SetMainColor(Color_t(6));
   //lt->SetMUON();
 
@@ -274,14 +274,14 @@ void MUON_Ref_tracks() {
   AliMUONVTrackStore* trackRefStore = recoCheck.ReconstructibleTracks(gEvent->GetEventId());
   TIter next(trackRefStore->CreateIterator());
   AliMUONTrack* trackRef;
-  
-  TEveTrackList* lt = new TEveTrackList("Ref-Tracks"); 
+
+  TEveTrackList* lt = new TEveTrackList("Ref-Tracks");
   lt->SetMainColor(Color_t(6));
 
   gEve->AddElement(lt);
 
   TEveRecTrack rt;
-  Int_t i = 0;  
+  Int_t i = 0;
   while ( ( trackRef = static_cast<AliMUONTrack*>(next()) ) ) {
 
     rt.label = i++;
@@ -308,7 +308,7 @@ void MUON_MC_tracks() {
   Int_t nPrimary = stack->GetNprimary();
   Int_t nTracks  = stack->GetNtrack();
 
-  TEveTrackList* lt = new TEveTrackList("MC-Tracks"); 
+  TEveTrackList* lt = new TEveTrackList("MC-Tracks");
   lt->SetMainColor(Color_t(6));
   //lt->SetMUON();
 

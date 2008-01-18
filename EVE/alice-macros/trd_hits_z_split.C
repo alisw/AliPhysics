@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 
 void trd_hits_z_split(const char *varexp    = "fX:fY:fZ:fZ",
@@ -19,7 +19,7 @@ void trd_hits_z_split(const char *varexp    = "fX:fY:fZ:fZ",
   l->SetMarkerColor((Color_t)7);
   l->SetMarkerStyle(20); // full circle
   l->SetMarkerSize(.5);
-  
+
   gEve->AddElement(l);
   l->InitBins("Z", 20, -360, 360);
 

@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 
 TEveTrack* esd_make_track(TEveTrackPropagator*   rnrStyle,
@@ -28,7 +28,7 @@ TEveTrack* esd_make_track(TEveTrackPropagator*   rnrStyle,
   rt.fP.Set(pbuf);
   Double_t ep = at->GetP(), mc = at->GetMass();
   rt.fBeta = ep/TMath::Sqrt(ep*ep + mc*mc);
- 
+
   TEveTrack* track = new TEveTrack(&rt, rnrStyle);
   //PH The line below is replaced waiting for a fix in Root
   //PH which permits to use variable siza arguments in CINT
@@ -54,7 +54,7 @@ TEveTrackList* esd_tracks(Double_t min_pt=0.1, Double_t max_pt=100)
   Double_t maxptsq = max_pt*max_pt;
   Double_t ptsq;
 
-  TEveTrackList* cont = new TEveTrackList("ESD Tracks"); 
+  TEveTrackList* cont = new TEveTrackList("ESD Tracks");
   cont->SetMainColor(Color_t(6));
   TEveTrackPropagator* rnrStyle = cont->GetPropagator();
   rnrStyle->SetMagField( esd->GetMagneticField() );
@@ -114,7 +114,7 @@ TEveTrackList* esd_tracks_from_array(TCollection* col, AliESDEvent* esd=0)
 
   if (esd == 0) esd = AliEveEventManager::AssertESD();
 
-  TEveTrackList* cont = new TEveTrackList("ESD Tracks"); 
+  TEveTrackList* cont = new TEveTrackList("ESD Tracks");
   cont->SetMainColor(Color_t(6));
   TEveTrackPropagator* rnrStyle = cont->GetPropagator();
   rnrStyle->SetMagField( esd->GetMagneticField() );
@@ -281,7 +281,7 @@ TEveElementList* esd_tracks_vertex_cut()
     ++count;
 
     TEveTrack* track = esd_make_track(tlist->GetPropagator(), n, at, tp);
-    track->SetAttLineAttMarker(tlist);    
+    track->SetAttLineAttMarker(tlist);
 
     //PH The line below is replaced waiting for a fix in Root
     //PH which permits to use variable siza arguments in CINT

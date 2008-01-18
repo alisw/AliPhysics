@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 
 void MUON_geomAll()
@@ -18,9 +18,9 @@ void MUON_geomAll()
 
   TEveGeoTopNode* topn_re = new TEveGeoTopNode
     (gGeoManager, gGeoManager->GetTopNode());
-  
+
   gEve->AddGlobalElement(topn_re);
 
   gEve->Redraw3D(kTRUE);
-  
+
 }

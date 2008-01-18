@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 //-*- Mode: C++ -*-
 #ifndef ALIEVEHOMERMANGER_H
@@ -15,7 +15,7 @@
 
 /** @file   AliEveHOMERManager.h
     @author Jochen Thaeder
-    @date   
+    @date
     @brief  Manager for HOMER in offline
 */
 
@@ -37,7 +37,7 @@ class AliHLTHOMERLibManager;
 
 /**
  * @class AliEveHOMERManager
- * 
+ *
  * This class is the main class of the AliEveHOMERManager
  * ... more to come
  *
@@ -50,28 +50,28 @@ public:
 
   /*
    * ---------------------------------------------------------------------------------
-   *                            Constructor / Destructor 
-   * --------------------------------------------------------------------------------- 
+   *                            Constructor / Destructor
+   * ---------------------------------------------------------------------------------
    */
 
-  /** constructor 
+  /** constructor
    * @param argc    Number of command line arguments.
    * @param argv    Array of command line arguments.
    */
-  AliEveHOMERManager(TString xmlFile="" );       
+  AliEveHOMERManager(TString xmlFile="" );
   /** not a valid copy constructor, defined according to effective C++ style */
-  AliEveHOMERManager( const AliEveHOMERManager& );       
+  AliEveHOMERManager( const AliEveHOMERManager& );
   /** not a valid assignment op, but defined according to effective C++ style */
-  AliEveHOMERManager& operator=( const AliEveHOMERManager& );       
+  AliEveHOMERManager& operator=( const AliEveHOMERManager& );
   /** destructor */
   virtual ~AliEveHOMERManager();
 
   /*
    * ---------------------------------------------------------------------------------
    *                            Source Handling - public
-   * --------------------------------------------------------------------------------- 
+   * ---------------------------------------------------------------------------------
    */
-  
+
   /** Create Sources List from HOMER-Proxy */
   Int_t CreateHOMERSourcesList();
 
@@ -79,7 +79,7 @@ public:
    * @param source      Pointer to AliHLTHOMERSourceDesc object.
    * @param state       New (selected/not selected) state.
    */
-  void SetSourceState( AliHLTHOMERSourceDesc* source, Bool_t state); 
+  void SetSourceState( AliHLTHOMERSourceDesc* source, Bool_t state);
 
   /** Get pointer to source List
    * @return            returns pointer to TList of sources
@@ -89,11 +89,11 @@ public:
   /*
    * ---------------------------------------------------------------------------------
    *                            Connection Handling - public
-   * --------------------------------------------------------------------------------- 
+   * ---------------------------------------------------------------------------------
    */
-  
+
   /** Connect to HOMER sources, out of Readout List, which gets created when state has changed
-   * @return            0 on sucess, "HOMER" errors on error      
+   * @return            0 on sucess, "HOMER" errors on error
    */
   Int_t ConnectHOMER();
 
@@ -108,14 +108,14 @@ public:
   /*
    * ---------------------------------------------------------------------------------
    *                            AliEveEventManager Handling - public
-   * --------------------------------------------------------------------------------- 
+   * ---------------------------------------------------------------------------------
    */
 
-  /** Loads the next AliEveEventManager, after being connected 
-   * @return            0 on sucess, "HOMER" errors on error   
+  /** Loads the next AliEveEventManager, after being connected
+   * @return            0 on sucess, "HOMER" errors on error
    */
   Int_t NextEvent();
-  
+
   /** Get event ID
    * @return            Returns eventID
    */
@@ -144,19 +144,19 @@ protected:
 
   /** Dynamic loader manager for the HOMER library */
   AliHLTHOMERLibManager* fLibManager;             //! transient
-  
+
 
 private:
 
   /*
    * ---------------------------------------------------------------------------------
    *                            Source Handling - private
-   * --------------------------------------------------------------------------------- 
+   * ---------------------------------------------------------------------------------
    */
-  
+
   /** Get Information out of a TDS process in XML file
    * @param xmlNode   Pointer to childs of TDS node
-   * @return          0 on sucess, > 0 on error 
+   * @return          0 on sucess, > 0 on error
    */
   Int_t GetTDSAttributes( TXMLNode * xmlNode );
 
@@ -166,11 +166,11 @@ private:
    * @param xmlPort      Port out of the XML
    * @param hostname     Return of the hostname
    * @param port         Return of the port
-   * @return             0 on sucess, 1 if hostname couldn't be resolved, 2 if port couldn't be resolved, 
+   * @return             0 on sucess, 1 if hostname couldn't be resolved, 2 if port couldn't be resolved,
    */
   Int_t ResolveHostPortInformation( TString xmlHostname, TString xmlPort, TString &hostname, Int_t &port );
 
-  /** Resolve information of source 
+  /** Resolve information of source
    * @param xmlParent   ParentString out of the XML
    * @param source      Return the filled AliHLTHOMERSourceDesc object
    * @return            0 on sucess, 1 on error
@@ -180,10 +180,10 @@ private:
   /*
    * ---------------------------------------------------------------------------------
    *                            Connection Handling - private
-   * --------------------------------------------------------------------------------- 
+   * ---------------------------------------------------------------------------------
    */
-  
-  /** Create a readout list for Hostname and ports   
+
+  /** Create a readout list for Hostname and ports
    * @param socurceHostnames   Array of selected hostnames
    * @param socurcePorts       Array of selected ports
    * @param socurceCount       Number of selected hostname:port
@@ -197,16 +197,16 @@ private:
 
   /* ---------------------------------------------------------------------------------
    *                            Eve AliEveHOMERManager::foo(nt Handling - private
-   * --------------------------------------------------------------------------------- 
+   * ---------------------------------------------------------------------------------
    */
-  
+
   /** Create a TList of blocks, which have been readout */
   Int_t CreateBlockList();
 
   /*
    * ---------------------------------------------------------------------------------
    *                            Block Handling - private
-   * --------------------------------------------------------------------------------- 
+   * ---------------------------------------------------------------------------------
    */
 
   /** Get Number of blocks in current event
@@ -247,13 +247,13 @@ private:
    * @return           returns pointer to blk, 0 if no block present
    */
   ULong_t GetBlkSize() { return GetBlkSize( fCurrentBlk ); }
-  
+
   /** Get origin of block ndx
    * @param ndx        Block index
    * @return           origin of block
    */
-  TString GetBlkOrigin( Int_t ndx );  
-  
+  TString GetBlkOrigin( Int_t ndx );
+
   /** Get origin of current block
    * @param ndx        Block index
    * @return           origin of block
@@ -281,7 +281,7 @@ private:
   /** Get specification of current block
    * @param ndx        Block index
    * @return           specification of block
-   */ 
+   */
   ULong_t GetBlkSpecification(){ return GetBlkSpecification( fCurrentBlk ); }
 
   /** Checks if current Block should was requested
@@ -292,7 +292,7 @@ private:
   /*
    * ---------------------------------------------------------------------------------
    *                            Members - private
-   * --------------------------------------------------------------------------------- 
+   * ---------------------------------------------------------------------------------
    */
 
   // == XML parser ==
@@ -301,29 +301,29 @@ private:
   TString fXMLFile;                               // see above
 
   /** XML parser into DOM model */
-  TDOMParser* fXMLParser;                         //! transient  
-  
+  TDOMParser* fXMLParser;                         //! transient
+
   /** Root node of parsed config file */
-  TXMLNode * fRootNode;                           //! transient  
+  TXMLNode * fRootNode;                           //! transient
 
   // == sources ==
 
   /** List to HOMER sources */
-  TList * fSourceList;                            //! transient  
+  TList * fSourceList;                            //! transient
 
   // == connection ==
-  
+
 
   /** Pointer to HOMER reader */
-  AliHLTHOMERReader* fReader;                     //! transient  
+  AliHLTHOMERReader* fReader;                     //! transient
 
   // == blocks ==
 
   /** List to HOMER blocks */
-  TList * fBlockList;                             //! transient  
+  TList * fBlockList;                             //! transient
 
   // == events ==
-  
+
   /** Number of blockes in current event */
   ULong_t fNBlks;                                 // see above
 
@@ -332,13 +332,13 @@ private:
 
   /** Current block in current event */
   ULong_t fCurrentBlk;                            // see above
-  
+
   // == states ==
 
   /** Shows connection status */
   Bool_t fConnected;                              // see above
 
-  /** Indicates, if a sources have changes, 
+  /** Indicates, if a sources have changes,
    *  so that one has to reconnect .
    */
   Bool_t fStateHasChanged;                        // see above

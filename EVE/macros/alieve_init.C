@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 
 #ifndef __CINT_
@@ -22,7 +22,7 @@ void alieve_init(const Text_t* path   = ".", Int_t event=0,
   gSystem->cd(hack);
 
   // TEveUtil::AssertMacro("region_marker.C");
-  
+
   gSystem->ProcessEvents();
 
   // Open event

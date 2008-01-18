@@ -4,14 +4,14 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 //////////////////////////////////////////////////////////////////////////
 //                                                                      //
 // The main AliEVE drawing module for the T0 detector                   //
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
- 
+
 #include "AliEveEventManager.h"
 #include "AliEveT0Module.h"
 #include <TStyle.h>
@@ -26,7 +26,7 @@
 #include <AliRawReaderRoot.h>
 #include "AliT0RawReader.h"
 #include <AliCDBManager.h>
-#include <AliCDBStorage.h> 
+#include <AliCDBStorage.h>
 
 
 
@@ -39,7 +39,7 @@ AliEveT0Module::AliEveT0Module(const Text_t* n, Int_t sigType, AliT0digit *digit
   //
   // Default constructor
   //
- 
+
 }
 
 /**************************************************************************/
@@ -56,7 +56,7 @@ void AliEveT0Module::LoadRaw(TString fileName, Int_t ievt)
   reader->RequireHeader(kTRUE);
   AliT0RawReader *start = new AliT0RawReader(reader);
   Int_t allData[110][5];
-  TRandom r(0); 
+  TRandom r(0);
   //  cout<<ievt<<endl;
   TEveRGBAPalette* rawPalette  = new TEveRGBAPalette(0, 3000);
   rawPalette->SetLimits(1, 3000); // Set proper raw time range.
@@ -64,11 +64,11 @@ void AliEveT0Module::LoadRaw(TString fileName, Int_t ievt)
   raw_a->Reset(TEveQuadSet::kQT_HexagonXY, kFALSE, 32);
   TEveQuadSet* raw_c = new AliEveT0Module("T0_RAW_C", 3,digits, start); raw_c->SetPalette(rawPalette);
   raw_c->Reset(TEveQuadSet::kQT_HexagonXY, kFALSE, 32);
-  Float_t angle  = 2 * TMath::Pi() / 12; 
+  Float_t angle  = 2 * TMath::Pi() / 12;
   start->Next();
   for (Int_t i=0; i<110; i++)
   {
-    for (Int_t iHit=0; iHit<5; iHit++) 
+    for (Int_t iHit=0; iHit<5; iHit++)
     {
       allData[i][iHit]= start->GetData(i,iHit);
       if (allData[i][iHit] != 0)  cout<<"event"<<ievt<<" i "<< i<<" "<<allData[i][iHit] - allData[0][0]<<endl;
@@ -87,7 +87,7 @@ void AliEveT0Module::LoadRaw(TString fileName, Int_t ievt)
 
   raw_a->RefitPlex();
   raw_c->RefitPlex();
-  
+
   TEveTrans& ta_a = raw_a->RefHMTrans();
   ta_a.SetPos(0, 0, 373);
   TEveTrans& tc_c = raw_c->RefHMTrans();
@@ -101,10 +101,10 @@ void AliEveT0Module::LoadRaw(TString fileName, Int_t ievt)
 /**************************************************************************/
 void AliEveT0Module::MakeModules(AliT0digit *digits)
 {
-  TRandom r(0); 
+  TRandom r(0);
   TArrayI ADC(24);
   TArrayI TDC(24);
-  
+
   digits->GetQT1(ADC);
   digits->GetTimeCFD(TDC);
   //    printf("%3d\n",besttimeright);
@@ -142,7 +142,7 @@ void AliEveT0Module::MakeModules(AliT0digit *digits)
     qat->AddHexagon(x, y, r.Uniform(-0.1, 0.1), 1.0);
     qat->QuadValue(TDC[i+12]);
     //    qat->QuadId(new TNamed(Form("Quad with idx=%d", i), "PMT's time in side A."));
- 
+
     qc->AddHexagon(x, y, r.Uniform(-0.1, 0.1), 1.0);
     qc->QuadValue(ADC[i]);
     // qc->QuadId(new TNamed(Form("Quad with idx=%d", i), "PMT's amplitude in side C."));
@@ -161,12 +161,12 @@ void AliEveT0Module::MakeModules(AliT0digit *digits)
   ta.SetPos(0, 0, 373);
   TEveTrans& tc = qc->RefHMTrans();
   tc.SetPos(0, 0, -69.7);
- 
+
   TEveTrans& tat = qat->RefHMTrans();
   tat.SetPos(0, 0, 373);
   TEveTrans& tct = qct->RefHMTrans();
   tct.SetPos(0, 0, -69.7);
- 
+
   gEve->AddElement(qa);
   gEve->AddElement(qc);
   gEve->AddElement(qat);
@@ -198,10 +198,10 @@ void AliEveT0Module::DigitSelected(Int_t idx)
 
     printf("  idx=%d, amplitude=%d\n",  idx, qb->fValue);
 
-  } 
+  }
   if (fSigType == 1) {
     printf("tdc====================\n");
- 
+
     Int_t   besttimeright = fDigits->BestTimeA();
     Int_t   besttimeleft = fDigits->BestTimeC();
     Int_t   meantime = fDigits->MeanTime();
@@ -222,7 +222,7 @@ void AliEveT0Module::DigitSelected(Int_t idx)
     printf("besttimeC=%3d\n",fStart->GetData(52,0)-fStart->GetData(0,0));
     printf("meantime=%3d\n",fStart->GetData(49,0)-fStart->GetData(0,0));
     printf("amplitude= %3d\n",fStart->GetData(idx+1,0));
-  
+
     printf("  idx=%d, time %d\n",  idx, qb->fValue);
   }
   if (fSigType == 3) {
@@ -231,7 +231,7 @@ void AliEveT0Module::DigitSelected(Int_t idx)
     printf("besttimeC=%3d\n",fStart->GetData(52,0)-fStart->GetData(0,0));
     printf("meantime=%3d\n",fStart->GetData(49,0)-fStart->GetData(0,0));
     printf("amplitude= %3d\n",fStart->GetData(idx+13,0));
-   
+
     printf("  idx=%d, time %d\n",  idx, qb->fValue);
   }
 

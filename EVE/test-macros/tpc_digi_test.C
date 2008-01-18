@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 class TTree;
 
@@ -47,7 +47,7 @@ void tpc_digi_pad_dump(Int_t s, Int_t r, Int_t p)
 
   AliSimDigits *digit = 0;
   tree->GetBranch("Segment")->SetAddress(&digit);
-  
+
   Int_t sbr = (Int_t) tree->GetEntries();
   for (Int_t ent=0; ent<sbr; ent++) {
     tree->GetEntry(ent);

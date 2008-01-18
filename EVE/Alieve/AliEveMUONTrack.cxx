@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 #include "AliEveMUONTrack.h"
 
@@ -94,37 +94,37 @@ void AliEveMUONTrack::PrintMCTrackInfo()
   cout << "   MC track parameters at vertex" << endl;
   cout << "   -------------------------------------------------------------------------------------" << endl;
   cout << "   PDG code          Vx           Vy           Vz           Px           Py           Pz   " << endl;
-    
+
   cout << "   " <<
-    setw(8) << setprecision(0) << 
-    fPart->GetPdgCode() << "    " << 
-    setw(8) << setprecision(3) << 
-    fPart->Vx() << "     " << 
-    setw(8) << setprecision(3) << 
-    fPart->Vy() << "     " << 
-    setw(8) << setprecision(3) << 
-    fPart->Vz() << "     " << 
-    setw(8) << setprecision(3) << 
-    fPart->Px() << "     " << 
-    setw(8) << setprecision(3) << 
-    fPart->Py() << "     " << 
-    setw(8) << setprecision(4) << 
-    fPart->Pz() << "     " << 
-    
+    setw(8) << setprecision(0) <<
+    fPart->GetPdgCode() << "    " <<
+    setw(8) << setprecision(3) <<
+    fPart->Vx() << "     " <<
+    setw(8) << setprecision(3) <<
+    fPart->Vy() << "     " <<
+    setw(8) << setprecision(3) <<
+    fPart->Vz() << "     " <<
+    setw(8) << setprecision(3) <<
+    fPart->Px() << "     " <<
+    setw(8) << setprecision(3) <<
+    fPart->Py() << "     " <<
+    setw(8) << setprecision(4) <<
+    fPart->Pz() << "     " <<
+
     endl;
-  
+
   pt = TMath::Sqrt(fPart->Px()*fPart->Px()+fPart->Py()*fPart->Py());
   p  = TMath::Sqrt(fPart->Px()*fPart->Px()+fPart->Py()*fPart->Py()+fPart->Pz()*fPart->Pz());
-  
+
   cout << endl;
-  cout << "   Pt = " << 
+  cout << "   Pt = " <<
     setw(8) << setprecision(3) <<
     pt << "  GeV/c" << endl;
-  
-  cout << "   P  = " << 
+
+  cout << "   P  = " <<
     setw(8) << setprecision(4) <<
     p  << "  GeV/c" << endl;
-    
+
 }
 
 //______________________________________________________________________
@@ -166,7 +166,7 @@ void AliEveMUONTrack::PrintMUONTrackInfo()
     cout << endl;
     cout << "   Number of clusters       " << fTrack->GetNClusters() << endl;
   }
- 
+
   trackParamAtCluster = fTrack->GetTrackParamAtCluster();
   nparam = trackParamAtCluster->GetEntries();
 
@@ -179,39 +179,39 @@ void AliEveMUONTrack::PrintMUONTrackInfo()
 
     mtp = (AliMUONTrackParam*)trackParamAtCluster->At(i);
 
-    cout << 
-      setw(9)<< setprecision(3) << 
-      i << "     " << 
-
-      setw(8) << setprecision(3) << 
-      mtp->GetInverseBendingMomentum() << "    " << 
+    cout <<
+      setw(9)<< setprecision(3) <<
+      i << "     " <<
 
       setw(8) << setprecision(3) <<
-      mtp->GetBendingSlope()*RADDEG << "       " << 
+      mtp->GetInverseBendingMomentum() << "    " <<
 
       setw(8) << setprecision(3) <<
-      mtp->GetNonBendingSlope()*RADDEG << "    " << 
+      mtp->GetBendingSlope()*RADDEG << "       " <<
+
+      setw(8) << setprecision(3) <<
+      mtp->GetNonBendingSlope()*RADDEG << "    " <<
 
       setw(8) << setprecision(4) <<
-      mtp->GetBendingCoor() << "       " <<  
+      mtp->GetBendingCoor() << "       " <<
 
       setw(8) << setprecision(4) <<
-      mtp->GetNonBendingCoor() << "      " <<  
+      mtp->GetNonBendingCoor() << "      " <<
 
       setw(10) << setprecision(6) <<
-      mtp->GetZ() << "  " <<  
+      mtp->GetZ() << "  " <<
 
       setw(8) << setprecision(4) <<
-      mtp->Px() << "  " <<  
+      mtp->Px() << "  " <<
 
       setw(8) << setprecision(4) <<
-      mtp->Py() << "  " <<  
+      mtp->Py() << "  " <<
 
       setw(8) << setprecision(4) <<
-      mtp->Pz() << "  " <<  
+      mtp->Pz() << "  " <<
 
       setw(8) << setprecision(4) <<
-      mtp->P() << "  " <<  
+      mtp->P() << "  " <<
 
       endl;
 
@@ -232,42 +232,42 @@ void AliEveMUONTrack::PrintMUONTrackInfo()
   if (zc  < 0.001) zc  = 0.0;
 
   cout << "     " <<
-    setw(8) << setprecision(3) << 
-    mtp->GetInverseBendingMomentum() << "    " << 
-    
     setw(8) << setprecision(3) <<
-    mtp->GetBendingSlope()*RADDEG << "       " << 
-    
+    mtp->GetInverseBendingMomentum() << "    " <<
+
     setw(8) << setprecision(3) <<
-    mtp->GetNonBendingSlope()*RADDEG << "    " << 
-    
+    mtp->GetBendingSlope()*RADDEG << "       " <<
+
+    setw(8) << setprecision(3) <<
+    mtp->GetNonBendingSlope()*RADDEG << "    " <<
+
     setw(8) << setprecision(4) <<
-    bc << "       " <<  
-    
+    bc << "       " <<
+
     setw(8) << setprecision(4) <<
-    nbc << "  " <<  
-    
+    nbc << "  " <<
+
     setw(10) << setprecision(6) <<
-    zc << "  " <<  
-    
+    zc << "  " <<
+
     setw(8) << setprecision(4) <<
-    mtp->Px() << "  " <<  
-    
+    mtp->Px() << "  " <<
+
     setw(8) << setprecision(4) <<
-    mtp->Py() << "  " <<  
-    
+    mtp->Py() << "  " <<
+
     setw(8) << setprecision(4) <<
-    mtp->Pz() << "  " <<  
-    
+    mtp->Pz() << "  " <<
+
     setw(8) << setprecision(4) <<
-    mtp->P() << "  " <<  
-    
+    mtp->P() << "  " <<
+
     endl;
-  
+
   pt = TMath::Sqrt(mtp->Px()*mtp->Px()+mtp->Py()*mtp->Py());
 
   cout << endl;
-  cout << "   Pt = " << 
+  cout << "   Pt = " <<
     setw(8) << setprecision(3) <<
     pt << "  GeV/c" << endl;
 
@@ -300,51 +300,51 @@ void AliEveMUONTrack::PrintESDTrackInfo()
   cout << "   ESD muon track " << endl;
   cout << "   -----------------------------------------------------------------------------------------------------------" << endl;
   cout << "   InvBendMom   BendSlope   NonBendSlope    BendCoord   NonBendCoord           Z        Px        Py        Pz" << endl;
-  
-  cout << "     " << 
-    
-    setw(8) << setprecision(4) << 
-    mtp->GetInverseBendingMomentum() << "    " << 
-    
-    setw(8) << setprecision(3) <<
-    mtp->GetBendingSlope()*RADDEG << "       " << 
-    
-    setw(8) << setprecision(3) <<
-    mtp->GetNonBendingSlope()*RADDEG << "     " << 
-    
+
+  cout << "     " <<
+
     setw(8) << setprecision(4) <<
-    mtp->GetBendingCoor() << "       " <<  
-    
+    mtp->GetInverseBendingMomentum() << "    " <<
+
+    setw(8) << setprecision(3) <<
+    mtp->GetBendingSlope()*RADDEG << "       " <<
+
+    setw(8) << setprecision(3) <<
+    mtp->GetNonBendingSlope()*RADDEG << "     " <<
+
     setw(8) << setprecision(4) <<
-    mtp->GetNonBendingCoor() << "  " <<  
-    
+    mtp->GetBendingCoor() << "       " <<
+
+    setw(8) << setprecision(4) <<
+    mtp->GetNonBendingCoor() << "  " <<
+
     setw(10) << setprecision(6) <<
-    mtp->GetZ() << "  " <<  
-    
+    mtp->GetZ() << "  " <<
+
     setw(8) << setprecision(3) <<
-    mtp->Px() << "  " <<  
-    
+    mtp->Px() << "  " <<
+
     setw(8) << setprecision(3) <<
-    mtp->Py() << "  " <<  
-    
+    mtp->Py() << "  " <<
+
     setw(8) << setprecision(3) <<
-    mtp->Pz() << "  " <<  
-    
+    mtp->Pz() << "  " <<
+
     endl;
-  
+
   pt = TMath::Sqrt(mtp->Px()*mtp->Px()+mtp->Py()*mtp->Py());
-  
+
   cout << endl;
-  cout << "   Pt = " << 
+  cout << "   Pt = " <<
     setw(8) << setprecision(3) <<
     pt << "  GeV/c" << endl;
-  
-  cout << "   P  = " << 
+
+  cout << "   P  = " <<
     setw(8) << setprecision(4) <<
     mtp->P()  << "  GeV/c" << endl;
-  
+
   AliESDEvent* esd = AliEveEventManager::AssertESD();
-  
+
   Double_t spdVertexX = 0;
   Double_t spdVertexY = 0;
   Double_t spdVertexZ = 0;
@@ -358,36 +358,36 @@ void AliEveMUONTrack::PrintESDTrackInfo()
     spdVertexY = spdVertex->GetYv();
     spdVertexX = spdVertex->GetXv();
   }
-  
+
   AliESDVertex* esdVertex = (AliESDVertex*) esd->GetPrimaryVertex();
   if (esdVertex->GetNContributors()) {
     esdVertexZ = esdVertex->GetZv();
     esdVertexY = esdVertex->GetYv();
     esdVertexX = esdVertex->GetXv();
   }
-  
+
   Float_t t0v = esd->GetT0zVertex();
-  
+
   cout << endl;
   cout << endl;
-  cout << "External vertex SPD: " << 
+  cout << "External vertex SPD: " <<
     setw(3) <<
     spdVertex->GetNContributors() << "   " <<
     setw(8) << setprecision(3) <<
     spdVertexX << "   " <<
     spdVertexY << "   " <<
     spdVertexZ << "   " << endl;
-  cout << "External vertex ESD: " << 
+  cout << "External vertex ESD: " <<
     setw(3) <<
     esdVertex->GetNContributors() << "   " <<
     setw(8) << setprecision(3) <<
     esdVertexX << "   " <<
     esdVertexY << "   " <<
     esdVertexZ << "   " << endl;
-  cout << "External vertex T0: " << 
+  cout << "External vertex T0: " <<
     setw(8) << setprecision(3) <<
     t0v << "   " << endl;
-  
+
 }
 
 //______________________________________________________________________
@@ -400,11 +400,11 @@ void AliEveMUONTrack::MUONTrackInfo()
   if (fIsMCTrack) {
     PrintMCTrackInfo();
   }
-    
+
   if (fIsMUONTrack || fIsRefTrack) {
     PrintMUONTrackInfo();
   }
-    
+
   if (fIsESDTrack) {
     PrintESDTrackInfo();
   }
@@ -412,7 +412,7 @@ void AliEveMUONTrack::MUONTrackInfo()
   if (fIsMUONTriggerTrack) {
     PrintMUONTriggerTrackInfo();
   }
-    
+
   cout << endl;
   cout << endl;
   cout << endl;
@@ -457,7 +457,7 @@ void AliEveMUONTrack::MUONTriggerInfo()
     cout << endl;
     cout << "#########################################################################################################################<<<<<" << endl;
     cout << endl;
-    
+
   }
 
 }
@@ -483,7 +483,7 @@ void AliEveMUONTrack::MakeMUONTrack(AliMUONTrack *mtrack)
   Float_t xr[28], yr[28], zr[28];
   Float_t xrc[28], yrc[28], zrc[28];
   char form[1000];
-    
+
   TMatrixD smatrix(2,2);
   TMatrixD sums(2,1);
   TMatrixD res(2,1);
@@ -491,7 +491,7 @@ void AliEveMUONTrack::MakeMUONTrack(AliMUONTrack *mtrack)
   Float_t xRec, xRec0;
   Float_t yRec, yRec0;
   Float_t zRec, zRec0;
-  
+
   // middle z between the two detector planes of the trigger chambers
   Float_t zg[4] = { -1603.5, -1620.5, -1703.5, -1720.5 };
 
@@ -507,29 +507,29 @@ void AliEveMUONTrack::MakeMUONTrack(AliMUONTrack *mtrack)
     SetName(form);
     SetLineStyle(1);
   }
-  
-  AliMUONTrackParam *trackParam = mtrack->GetTrackParamAtVertex(); 
+
+  AliMUONTrackParam *trackParam = mtrack->GetTrackParamAtVertex();
   xRec0  = trackParam->GetNonBendingCoor();
   yRec0  = trackParam->GetBendingCoor();
   zRec0  = trackParam->GetZ();
-  
+
   if (fIsMUONTrack) {
     SetPoint(fCount,xRec0,yRec0,zRec0);
     fCount++;
   }
 
   for (Int_t i = 0; i < 28; i++) xr[i]=yr[i]=zr[i]=0.0;
-  
+
   Int_t nTrackHits = mtrack->GetNClusters();
-  
+
   Bool_t hitChamber[14] = {kFALSE};
   Int_t iCha;
   TClonesArray* trackParamAtCluster = mtrack->GetTrackParamAtCluster();
 
   for (Int_t iHit = 0; iHit < nTrackHits; iHit++){
 
-    trackParam = (AliMUONTrackParam*) trackParamAtCluster->At(iHit); 
-    
+    trackParam = (AliMUONTrackParam*) trackParamAtCluster->At(iHit);
+
     if (iHit == 0) {
       if (IsMUONTrack()) {
 	pt = TMath::Sqrt(trackParam->Px()*trackParam->Px()+trackParam->Py()*trackParam->Py());
@@ -544,9 +544,9 @@ void AliEveMUONTrack::MakeMUONTrack(AliMUONTrack *mtrack)
     xRec  = trackParam->GetNonBendingCoor();
     yRec  = trackParam->GetBendingCoor();
     zRec  = trackParam->GetZ();
-    
+
     iCha = AliMUONConstants::ChamberNumber(zRec);
-    
+
     xr[iHit] = xRec;
     yr[iHit] = yRec;
     zr[iHit] = zRec;
@@ -671,12 +671,12 @@ void AliEveMUONTrack::MakeMUONTrack(AliMUONTrack *mtrack)
       fCount++;
     }
   }
-  
+
   if (!fIsMUONTrack) return;
 
   Int_t nrc = 0;
   if (mtrack->GetMatchTrigger() && 1) {
-    
+
     for (Int_t i = 0; i < nTrackHits; i++) {
       if (TMath::Abs(zr[i]) > 1000.0) {
 	//printf("TEveHit %d x %f y %f z %f \n",iHit,xr[i],yr[i],zr[i]);
@@ -686,9 +686,9 @@ void AliEveMUONTrack::MakeMUONTrack(AliMUONTrack *mtrack)
 	nrc++;
       }
     }
-    
+
     if (nrc < 2) return;
-    
+
     // fit x-z
     smatrix.Zero();
     sums.Zero();
@@ -706,7 +706,7 @@ void AliEveMUONTrack::MakeMUONTrack(AliMUONTrack *mtrack)
     res = smatrix.Invert() * sums;
     ax = res(0,0);
     bx = res(1,0);
-    
+
     // fit y-z
     smatrix.Zero();
     sums.Zero();
@@ -724,21 +724,21 @@ void AliEveMUONTrack::MakeMUONTrack(AliMUONTrack *mtrack)
     res = smatrix.Invert() * sums;
     ay = res(0,0);
     by = res(1,0);
-    
+
     Float_t xtc, ytc, ztc;
     for (Int_t ii = 0; ii < 4; ii++) {
-      
+
       ztc = zg[ii];
       ytc = ay+by*zg[ii];
       xtc = ax+bx*zg[ii];
-      
+
       //printf("tc: x %f y %f z %f \n",xtc,ytc,ztc);
-      
+
       SetPoint(fCount,xtc,ytc,ztc);
       fCount++;
-      
+
     }
-    
+
   }  // end match trigger
 
 }
@@ -803,7 +803,7 @@ void AliEveMUONTrack::MakeESDTrack(AliESDMuonTrack *mtrack)
   pv[1] = trackParam.Py();
   pv[2] = trackParam.Pz();
   fP.Set(pv);
-  
+
   vect[0] = trackParam.GetNonBendingCoor();
   vect[1] = trackParam.GetBendingCoor();
   vect[2] = trackParam.GetZ();
@@ -868,7 +868,7 @@ void AliEveMUONTrack::MakeMCTrack(TParticle *part)
 
   TParticlePDG *ppdg = fPart->GetPDG(1);
   Int_t charge = (Int_t)(ppdg->Charge()/3.0);
-  
+
   Double_t zMax = -1750.0;
   Double_t rMax =   350.0;
   Double_t r    =     0.0;
@@ -929,15 +929,15 @@ void AliEveMUONTrack::Propagate(Float_t *xr, Float_t *yr, Float_t *zr, Int_t i1,
   trackParamAtCluster = fTrack->GetTrackParamAtCluster();
 
   if (IsMUONTrack()) {
-    trackParam = (AliMUONTrackParam*)trackParamAtCluster->At(i1); 
+    trackParam = (AliMUONTrackParam*)trackParamAtCluster->At(i1);
     charge = (Int_t)TMath::Sign(1.0,trackParam->GetInverseBendingMomentum());
   }
   if (IsRefTrack()) {
     trackParam = fTrack->GetTrackParamAtVertex();
     charge = (Int_t)TMath::Sign(1.0,trackParam->GetInverseBendingMomentum());
-    trackParam = (AliMUONTrackParam*)trackParamAtCluster->At(i1); 
+    trackParam = (AliMUONTrackParam*)trackParamAtCluster->At(i1);
   }
-  
+
   vect[0] = xr[i1];
   vect[1] = yr[i1];
   vect[2] = zr[i1];
@@ -956,13 +956,13 @@ void AliEveMUONTrack::Propagate(Float_t *xr, Float_t *yr, Float_t *zr, Int_t i1,
       vect[i] = vout[i];
     }
   }
-  
+
 }
 
 //______________________________________________________________________
 void AliEveMUONTrack::GetField(Double_t *position, Double_t *field)
 {
-  // 
+  //
   // returns field components at position, for a give field map
   //
 
@@ -979,7 +979,7 @@ void AliEveMUONTrack::GetField(Double_t *position, Double_t *field)
     field[0] = field[1] = field[2] = 0.0;
     return;
   }
-  
+
   // force components
   //b[1] = 0.0;
   //b[2] = 0.0;
@@ -991,7 +991,7 @@ void AliEveMUONTrack::GetField(Double_t *position, Double_t *field)
 }
 
 //______________________________________________________________________
-void AliEveMUONTrack::OneStepRungekutta(Double_t charge, Double_t step, 
+void AliEveMUONTrack::OneStepRungekutta(Double_t charge, Double_t step,
 				  Double_t* vect, Double_t* vout)
 {
 ///	******************************************************************
@@ -1022,11 +1022,11 @@ void AliEveMUONTrack::OneStepRungekutta(Double_t charge, Double_t step,
     Double_t g1, g2, g3, g4, g5, g6, ang2, dxt, dyt, dzt;
     Double_t est, at, bt, ct, cba;
     Double_t f1, f2, f3, f4, rho, tet, hnorm, hp, rho1, sint, cost;
-    
+
     Double_t x;
     Double_t y;
     Double_t z;
-    
+
     Double_t xt;
     Double_t yt;
     Double_t zt;
@@ -1047,7 +1047,7 @@ void AliEveMUONTrack::OneStepRungekutta(Double_t charge, Double_t step,
     const Int_t kipx = 3;
     const Int_t kipy = 4;
     const Int_t kipz = 5;
-  
+
     // *.
     // *.    ------------------------------------------------------------------
     // *.
@@ -1063,7 +1063,7 @@ void AliEveMUONTrack::OneStepRungekutta(Double_t charge, Double_t step,
     Double_t h = step;
     Double_t rest;
 
- 
+
     do {
       rest  = step - tl;
       if (TMath::Abs(h) > TMath::Abs(rest)) h = rest;
@@ -1107,7 +1107,7 @@ void AliEveMUONTrack::OneStepRungekutta(Double_t charge, Double_t step,
 	h *= khalf;
 	continue;
       }
- 
+
       xyzt[0] = xt;
       xyzt[1] = yt;
       xyzt[2] = zt;
@@ -1144,7 +1144,7 @@ void AliEveMUONTrack::OneStepRungekutta(Double_t charge, Double_t step,
 	h *= khalf;
 	continue;
       }
- 
+
       xyzt[0] = xt;
       xyzt[1] = yt;
       xyzt[2] = zt;
@@ -1178,7 +1178,7 @@ void AliEveMUONTrack::OneStepRungekutta(Double_t charge, Double_t step,
       if (iter++ > maxit) break;
 
       tl += h;
-      if (est < kdlt32) 
+      if (est < kdlt32)
 	h *= 2.;
       cba    = 1./ TMath::Sqrt(a*a + b*b + c*c);
       vout[0] = x;
@@ -1201,7 +1201,7 @@ void AliEveMUONTrack::OneStepRungekutta(Double_t charge, Double_t step,
     f4  = TMath::Sqrt(f1*f1+f2*f2+f3*f3);
     rho = -f4*pinv;
     tet = rho * step;
- 
+
     hnorm = 1./f4;
     f1 = f1*hnorm;
     f2 = f2*hnorm;
@@ -1210,7 +1210,7 @@ void AliEveMUONTrack::OneStepRungekutta(Double_t charge, Double_t step,
     hxp[0] = f2*vect[kipz] - f3*vect[kipy];
     hxp[1] = f3*vect[kipx] - f1*vect[kipz];
     hxp[2] = f1*vect[kipy] - f2*vect[kipx];
- 
+
     hp = f1*vect[kipx] + f2*vect[kipy] + f3*vect[kipz];
 
     rho1 = 1./rho;
@@ -1223,11 +1223,11 @@ void AliEveMUONTrack::OneStepRungekutta(Double_t charge, Double_t step,
     g4 = -cost;
     g5 = sint;
     g6 = cost * hp;
- 
+
     vout[kix] = vect[kix] + g1*vect[kipx] + g2*hxp[0] + g3*f1;
     vout[kiy] = vect[kiy] + g1*vect[kipy] + g2*hxp[1] + g3*f2;
     vout[kiz] = vect[kiz] + g1*vect[kipz] + g2*hxp[2] + g3*f3;
- 
+
     vout[kipx] = vect[kipx] + g4*vect[kipx] + g5*hxp[0] + g6*f1;
     vout[kipy] = vect[kipy] + g4*vect[kipy] + g5*hxp[1] + g6*f2;
     vout[kipz] = vect[kipz] + g4*vect[kipz] + g5*hxp[2] + g6*f3;

@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 
 #include "AliEveITSScaledModule.h"
@@ -29,7 +29,7 @@ AliEveDigitScaleInfo::AliEveDigitScaleInfo():
 void AliEveDigitScaleInfo::ScaleChanged(Int_t s)
 {
   fScale = s;
-  
+
   AliEveITSScaledModule* sm;
   std::list<TEveElement*>::iterator i = fBackRefs.begin();
   while (i != fBackRefs.end())
@@ -44,7 +44,7 @@ void AliEveDigitScaleInfo::StatTypeChanged(Int_t t)
 {
   fStatType = t;
   fSyncPalette = kTRUE;
-    
+
   AliEveITSScaledModule* sm;
   std::list<TEveElement*>::iterator i = fBackRefs.begin();
   while (i != fBackRefs.end())
@@ -96,7 +96,7 @@ AliEveITSScaledModule::AliEveITSScaledModule(Int_t gid, AliEveITSDigitsInfo* inf
   SetOwnIds(kTRUE);
 
   SetDigitsInfo(info);
-  SetID(gid); 
+  SetID(gid);
   fScaleInfo->IncRefCount(this);
 }
 
@@ -129,8 +129,8 @@ void AliEveITSScaledModule::LoadQuads()
   Int_t scale = fScaleInfo->GetScale() -1;
   switch(fDetID)
   {
-    case 0: 
-    { 
+    case 0:
+    {
       // SPD
       Reset(kQT_RectangleXZFixedY, kFALSE, 32);
 
@@ -138,7 +138,7 @@ void AliEveITSScaledModule::LoadQuads()
       fNCx = fInfo->fSPDScaleX[scale];
       fNz  = Int_t(fInfo->fSegSPD->Npz()/fNCz);
       fNx  = Int_t(fInfo->fSegSPD->Npx()/fNCx);
-      dpz = 2*fDz/fNz;  
+      dpz = 2*fDz/fNz;
       dpx = 2*fDx/fNx;
       //printf("SPD orig cells (%d, %d) (%d, %d)\n", fInfo->fSegSPD->Npx(), fInfo->fSegSPD->Npz(), Nx, Nz);
 
@@ -152,10 +152,10 @@ void AliEveITSScaledModule::LoadQuads()
 	i = Int_t((zo+fDz)/dpz);
 	j = Int_t((od->GetCoord2()*fNx)/fInfo->fSegSPD->Npx());
 	id = j*fNx + i;
- 
+
         miter = dmap.find(id);
 	if(miter == dmap.end())
-	{	
+	{
           dmap[id] = fPlex.Size();
           z = dpz*(i) - fDz;
           x = dpx*(j) - fDx;
@@ -163,33 +163,33 @@ void AliEveITSScaledModule::LoadQuads()
           sd = new ScaledDigit(c1, c2);
 	  QuadId(sd);
 	}
-        else 
+        else
 	{
 	  sd = dynamic_cast<ScaledDigit*>(GetId(miter->second));
-          if(c1 < sd->min_i) 
+          if(c1 < sd->min_i)
 	    sd->min_i = c1;
 	  else if( c1 > sd->max_i)
             sd->max_i = c1;
-	
-          if(c2 < sd->min_j) 
+
+          if(c2 < sd->min_j)
 	    sd->min_j = c2;
 	  else if( c2 > sd->max_j)
 	    sd->max_j = c2;
 	}
-	  
+
 	sd->N++;
 	sd->sum  += od->GetSignal();
 	sd->sqr_sum += od->GetSignal()*od->GetSignal();
       }
       break;
     }
-    case 1: 
-    { 
+    case 1:
+    {
       // SDD
       Reset(kQT_RectangleXZFixedY, kFALSE, 32);
 
       fNCz = fInfo->fSDDScaleZ[scale];
-      fNCx = fInfo->fSDDScaleX[scale];   
+      fNCx = fInfo->fSDDScaleX[scale];
       fNz  = Int_t(fInfo->fSegSDD->Npz()/fNCz);
       fNx  = Int_t(fInfo->fSegSDD->Npx()/fNCx);
       dpz = 2*fDz/fNz;
@@ -208,10 +208,10 @@ void AliEveITSScaledModule::LoadQuads()
 
 	id = j*fNx + i;
 	c1 = od->GetCoord1(); c2 = od->GetCoord2();
- 
+
 	miter = dmap.find(id);
 	if(miter == dmap.end())
-	{	
+	{
 	  dmap[id] = fPlex.Size();
 	  z = dpz*(i) - fDz;
 	  x = dpx*(j) - fDx;
@@ -219,15 +219,15 @@ void AliEveITSScaledModule::LoadQuads()
 	  sd = new ScaledDigit(od->GetCoord1(),od->GetCoord2());
 	  QuadId(sd);
 	}
-	else 
+	else
 	{
 	  sd = dynamic_cast<ScaledDigit*>(GetId(miter->second));
-	  if(c1 < sd->min_i) 
+	  if(c1 < sd->min_i)
 	    sd->min_i = c1;
 	  else if( c1 > sd->max_i)
 	    sd->max_i = c1;
-	
-	  if(c2 < sd->min_j) 
+
+	  if(c2 < sd->min_j)
 	    sd->min_j = c2;
 	  else if( c2 > sd->max_j)
 	    sd->max_j = c2;
@@ -237,19 +237,19 @@ void AliEveITSScaledModule::LoadQuads()
 	sd->sqr_sum += od->GetSignal()*od->GetSignal();
       }
       break;
-    }  
-    case 2: 
-    { 
-      // SSD  
+    }
+    case 2:
+    {
+      // SSD
       Reset(kQT_LineXZFixedY, kFALSE, 32);
 
-      AliITSsegmentationSSD* seg = fInfo->fSegSSD; 
+      AliITSsegmentationSSD* seg = fInfo->fSegSSD;
       Float_t ap, an; // positive/negative angles -> offsets
       seg->Angles(ap, an);
       ap =   TMath::Tan(ap) * fDz;
       an = - TMath::Tan(an) * fDz;
 
-      fNCx  = fInfo->fSSDScale[scale];   
+      fNCx  = fInfo->fSSDScale[scale];
       fNz  = 1;
       fNx  = Int_t(fInfo->fSegSSD->Npx()/fNCx);
       dpz = 2*fDz/fNz;
@@ -258,18 +258,18 @@ void AliEveITSScaledModule::LoadQuads()
       AliITSdigitSSD *od=0;
       for (Int_t k=0; k<ndigits; k++) {
 	od=(AliITSdigitSSD*)digits->UncheckedAt(k);
-	if(od->GetCoord1() == 1) 
+	if(od->GetCoord1() == 1)
 	  i = 1; // p side
-	else 
+	else
 	  i= -1; // n side
 	j = Int_t(od->GetCoord2()/fNCx);
 	c1 = od->GetCoord1(); c2 = od->GetCoord2();
-	id = j*i; 
+	id = j*i;
 
 	miter = dmap.find(id);
 	ScaledDigit* sd;
 	if(miter == dmap.end())
-	{	
+	{
 	  // printf("orig digit %d,%d scaled %d,%d \n",od->GetCoord1(),od->GetCoord2(),i,j);
 	  dmap[id] = fPlex.Size();
 	  z = dpz*(i) - fDz;
@@ -280,15 +280,15 @@ void AliEveITSScaledModule::LoadQuads()
 	  sd = new ScaledDigit(c1, c2);
 	  QuadId(sd);
 	}
-	else 
+	else
 	{
-	  sd = dynamic_cast<ScaledDigit*>(GetId(miter->second)); 
-	  if(c1 < sd->min_i) 
+	  sd = dynamic_cast<ScaledDigit*>(GetId(miter->second));
+	  if(c1 < sd->min_i)
 	    sd->min_i = c1;
 	  else if( c1 > sd->max_i)
 	    sd->max_i = c1;
-	
-	  if(c2 < sd->min_j) 
+
+	  if(c2 < sd->min_j)
 	    sd->min_j = c2;
 	  else if( c2 > sd->max_j)
 	    sd->max_j = c2;
@@ -311,7 +311,7 @@ void AliEveITSScaledModule::SetQuadValues()
 {
   if(fScaleInfo->GetSyncPalette()) SyncPalette();
 
-  Int_t N = fPlex.Size(); 
+  Int_t N = fPlex.Size();
   for (Int_t i = 0 ; i< N; i++)
   {
     ScaledDigit* sd = dynamic_cast<ScaledDigit*>(GetId(i));
@@ -338,14 +338,14 @@ void AliEveITSScaledModule::SetQuadValues()
 /**************************************************************************/
 
 void AliEveITSScaledModule::SyncPalette()
-{  
+{
   // printf("AliEveITSScaledModule::SyncPalette()\n");
-  if(fScaleInfo->GetStatType() == AliEveDigitScaleInfo::ST_Occup) 
+  if(fScaleInfo->GetStatType() == AliEveDigitScaleInfo::ST_Occup)
   {
     // SPD
     AliEveITSModule::fgSPDPalette->SetLimits(0, 100);
     AliEveITSModule::fgSPDPalette->SetMinMax(0, 100);
-    
+
     // SDD
     AliEveITSModule::fgSDDPalette->SetLimits(0, 100);
     AliEveITSModule::fgSDDPalette->SetMinMax(0, 100);
@@ -360,7 +360,7 @@ void AliEveITSScaledModule::SyncPalette()
     // SPD
     AliEveITSModule::fgSPDPalette->SetLimits(0, DI.fSPDHighLim);
     AliEveITSModule::fgSPDPalette->SetMinMax(DI.fSPDMinVal, DI.fSPDMaxVal);
-    
+
     // SDD
     AliEveITSModule::fgSDDPalette->SetLimits(0, DI.fSDDHighLim);
     AliEveITSModule::fgSDDPalette->SetMinMax(DI.fSDDMinVal, DI.fSDDMaxVal);
@@ -398,12 +398,12 @@ void  AliEveITSScaledModule::DigitSelected(Int_t idx)
   printf("%d digits in cell scaleX = %d,  scaleZ = %d \n", sd->N, fNCx, fNCz);
 
   Int_t il = 0;
-  for(Int_t k=0; k<ndigits; k++) 
+  for(Int_t k=0; k<ndigits; k++)
   {
     AliITSdigit *d = (AliITSdigit*) digits->UncheckedAt(k);
 
-    if(d->GetCoord1()>=sd->min_i && d->GetCoord1()<=sd->max_i && 
-       d->GetCoord2()>=sd->min_j && d->GetCoord2()<=sd->max_j) 
+    if(d->GetCoord1()>=sd->min_i && d->GetCoord1()<=sd->max_i &&
+       d->GetCoord2()>=sd->min_j && d->GetCoord2()<=sd->max_j)
     {
       printf("%3d, %3d: %3d", d->GetCoord1(), d->GetCoord2(), d->GetSignal());
       printf(" | ");

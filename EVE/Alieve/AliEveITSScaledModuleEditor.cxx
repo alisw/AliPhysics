@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 
 #include "AliEveITSScaledModuleEditor.h"
@@ -26,7 +26,7 @@
 
 
 //______________________________________________________________________
-// AliEveITSScaledModuleEditor 
+// AliEveITSScaledModuleEditor
 //
 
 ClassImp(AliEveITSScaledModuleEditor)
@@ -37,7 +37,7 @@ ClassImp(AliEveITSScaledModuleEditor)
 
     fInfoFrame(0),
 
-    fModule(0), 
+    fModule(0),
 
     fScale(0),
     fStatistic(0),
@@ -57,7 +57,7 @@ ClassImp(AliEveITSScaledModuleEditor)
     f->AddFrame(fScale, new TGLayoutHints(kLHintsLeft, 1, 7, 1, 1));
     fScale->Associate(f);
     fScale->Connect("ValueSet(Long_t)", "AliEveITSScaledModuleEditor", this, "DoScale()");
-    
+
     TGLabel* lab = new TGLabel(f, "Statistic:");
     f->AddFrame(lab, new TGLayoutHints(kLHintsLeft|kLHintsBottom, 1, 2, 1, 2));
     fStatistic = new TGComboBox(f);
@@ -83,13 +83,13 @@ AliEveITSScaledModuleEditor::~AliEveITSScaledModuleEditor()
 void AliEveITSScaledModuleEditor::CreateInfoFrame()
 {
   fInfoFrame = CreateEditorTabSubFrame("Info");
-  TGCompositeFrame *title1 = new TGCompositeFrame(fInfoFrame, 145, 10, 
-						  kHorizontalFrame | 
-						  kLHintsExpandX   | 
-						  kFixedWidth      | 
+  TGCompositeFrame *title1 = new TGCompositeFrame(fInfoFrame, 145, 10,
+						  kHorizontalFrame |
+						  kLHintsExpandX   |
+						  kFixedWidth      |
 						  kOwnBackground);
 
-  title1->AddFrame(new TGLabel(title1, "ScaledDigits Info"), 
+  title1->AddFrame(new TGLabel(title1, "ScaledDigits Info"),
 		   new TGLayoutHints(kLHintsLeft, 1, 1, 0, 0));
   title1->AddFrame(new TGHorizontal3DLine(title1),
 		   new TGLayoutHints(kLHintsExpandX, 5, 5, 7, 7));
@@ -113,13 +113,13 @@ void AliEveITSScaledModuleEditor::CreateInfoFrame()
 
 void AliEveITSScaledModuleEditor::SetModel(TObject* obj)
 {
-  fModule = dynamic_cast<AliEveITSScaledModule*>(obj); 
+  fModule = dynamic_cast<AliEveITSScaledModule*>(obj);
 
   // widgets
   fScale->SetIntNumber(fModule->GetScaleInfo()->GetScale());
   fStatistic->Select(fModule->GetScaleInfo()->GetStatType(), kFALSE);
 
-  // text info  
+  // text info
   Int_t cnx, cnz, total;
   fModule->GetScaleData(cnx, cnz, total);
   fInfoLabel0->SetText(Form("Cell size:  Nx=%d Nz=%d", cnx, cnz));

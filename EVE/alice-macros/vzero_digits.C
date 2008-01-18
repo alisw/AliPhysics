@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 //   fV0CHeight1         =    2.5; // height of cell 1
 //   fV0CHeight2         =    4.4; // height of cell 2
@@ -43,7 +43,7 @@ void vzero_digits()
 
   TEveQuadSet* modL = new TEveQuadSet("V0L");
   modL->Reset(TEveQuadSet::kQT_FreeQuad, kFALSE, 32);
- 
+
   Int_t numEntr = dca->GetEntriesFast();
   for (Int_t entr=0; entr<numEntr; ++entr)
   {

@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 
 #ifndef ALIEVE_ITSScaledModule_H
@@ -31,15 +31,15 @@ private:
   AliEveDigitScaleInfo& operator=(const AliEveDigitScaleInfo&); // Not implemented
 
 protected:
-  Int_t            fScale;    
+  Int_t            fScale;
   Int_t            fStatType;
-  
+
   Bool_t           fSyncPalette;
 
 public:
   AliEveDigitScaleInfo();
   virtual ~AliEveDigitScaleInfo(){}
-    
+
   Int_t            GetScale() { return fScale; }
   void             ScaleChanged(Int_t s);
 
@@ -67,9 +67,9 @@ public:
 
   ScaledDigit();
   ScaledDigit(Int_t di, Int_t dj);
-  
+
   virtual void Dump() const;
-}; 
+};
 
 /**************************************************************************/
 // AliEveITSScaledModule
@@ -79,13 +79,13 @@ class AliEveITSScaledModule : public AliEveITSModule
 {
   friend class ITSSDSubEditor;
 private:
-  map<Int_t, ScaledDigit> fDigitsMap;  
-  
+  map<Int_t, ScaledDigit> fDigitsMap;
+
   AliEveITSScaledModule(const AliEveITSScaledModule&);            // Not implemented
   AliEveITSScaledModule& operator=(const AliEveITSScaledModule&); // Not implemented
 
 protected:
-  Int_t       fNx;  //  per module 
+  Int_t       fNx;  //  per module
   Int_t       fNz;
 
   Int_t       fNCx;  // per cell

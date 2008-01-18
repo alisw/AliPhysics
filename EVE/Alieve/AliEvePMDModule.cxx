@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 
 #include "AliEvePMDModule.h"
@@ -46,7 +46,7 @@ void AliEvePMDModule::DisplayInit(Int_t ism)
 {
   TString smodule = "Module";
   smodule+= ism;
-  
+
   Float_t xism =0, yism = 0;
   Float_t dxism =0, dyism = 0;
 
@@ -77,21 +77,21 @@ void AliEvePMDModule::DisplayDigitsData(Int_t ism, TTree *pmdt)
   Int_t xpad = 0, ypad = 0;
   Float_t xpos, ypos;
 
-  TClonesArray *digits = new TClonesArray("AliPMDdigit", 0); 
+  TClonesArray *digits = new TClonesArray("AliPMDdigit", 0);
 
   TBranch *branch = pmdt->GetBranch("PMDDigit");
   branch->SetAddress(&digits);
 
   AliPMDdigit  *pmddigit;
 
-  branch->GetEntry(ism); 
+  branch->GetEntry(ism);
   Int_t nentries = digits->GetLast();
   //printf("%d\n", nentries);
 
   for (Int_t ient = 0; ient < nentries+1; ient++)
     {
       pmddigit = (AliPMDdigit*)digits->UncheckedAt(ient);
-      
+
       det    = pmddigit->GetDetector();
       smn    = pmddigit->GetSMNumber();
       irow   = pmddigit->GetRow();
@@ -108,13 +108,13 @@ void AliEvePMDModule::DisplayDigitsData(Int_t ism, TTree *pmdt)
 	  xpad = irow;
 	  ypad = icol;
 	}
-	      
+
       RectGeomCellPos(smn, xpad, ypad, xpos, ypos);
 
       AddHexagon(xpos, ypos, fgkZpos, fgkRad);
-      
+
       QuadValue(adc);
-	  
+
       QuadId(new AliPMDdigit(*pmddigit));
       // new TNamed(Form("Quad with idx=%d", ient),
       //  "This title is not confusing."));
@@ -161,7 +161,7 @@ void AliEvePMDModule::DisplayRawData(Int_t ism, TObjArray *ddlcont)
   for (Int_t ient = 0; ient < nentries; ient++)
     {
       AliPMDddldata *pmdddl = (AliPMDddldata*)ddlcont->UncheckedAt(ient);
-      
+
       det    = pmdddl->GetDetector();
       smn    = pmdddl->GetSMN();
       if (smn != ism) continue;
@@ -179,13 +179,13 @@ void AliEvePMDModule::DisplayRawData(Int_t ism, TObjArray *ddlcont)
 	  xpad = irow;
 	  ypad = icol;
 	}
-	      
+
       RectGeomCellPos(smn, xpad, ypad, xpos, ypos);
 
       AddHexagon(xpos, ypos, fgkZpos, fgkRad);
-      
+
       QuadValue(adc);
-	  
+
       QuadId(new AliPMDddldata(*pmdddl));
       //new TNamed(Form("Quad with idx=%d", ient),
       //  "This title is not confusing."));
@@ -210,7 +210,7 @@ void AliEvePMDModule::DisplayRawData(Int_t ism, TObjArray *ddlcont)
   RefitPlex();
 
   fHMTrans.SetPos(fX, fY, fZ);
-  
+
 }
 
 // -------------------------------------------------------------------- //
@@ -218,7 +218,7 @@ void AliEvePMDModule::DisplayRawData(Int_t ism, TObjArray *ddlcont)
 void AliEvePMDModule::RectGeomCellPos(Int_t ism, Int_t xpad, Int_t ypad,
 				Float_t &xpos, Float_t &ypos)
 {
-  // This routine finds the cell eta,phi for the new PMD rectangular 
+  // This routine finds the cell eta,phi for the new PMD rectangular
   // geometry in ALICE
   // Authors : Bedanga Mohanty and Dipak Mishra - 29.4.2003
   // modified by B. K. Nandi for change of coordinate sys
@@ -230,7 +230,7 @@ void AliEvePMDModule::RectGeomCellPos(Int_t ism, Int_t xpad, Int_t ypad,
   //
   // ism   : Serial module number from 0 to 23 for each plane
 
- 
+
   // Corner positions (x,y) of the 24 unit moudles in ALICE PMD
 
   const Double_t kXcorner[24] =
@@ -247,7 +247,7 @@ void AliEvePMDModule::RectGeomCellPos(Int_t ism, Int_t xpad, Int_t ypad,
       -8.9165, 33.7471,            //Type-BR
     };
 
-  
+
   const Double_t kYcorner[24] =
     {
       86.225,  86.225,  86.225,      //Type-A
@@ -262,10 +262,10 @@ void AliEvePMDModule::RectGeomCellPos(Int_t ism, Int_t xpad, Int_t ypad,
       -35.925, -35.925               //Type-BR
     };
 
-  
+
   //  const Float_t kSqroot3      = 1.732050808;  // sqrt(3.);
   //  const Float_t kCellRadius   = 0.25;
-  
+
   //
   //Every even row of cells is shifted and placed
   //in geant so this condition
@@ -325,7 +325,7 @@ void AliEvePMDModule::GenerateBox(Int_t ism, Float_t &xism, Float_t &yism,
       -8.9165, 33.7471,            //Type-BR
     };
 
-  
+
   const Double_t kYcorner[24] =
     {
       86.225,  86.225,  86.225,      //Type-A
@@ -372,7 +372,7 @@ void AliEvePMDModule::GenerateBox(Int_t ism, Float_t &xism, Float_t &yism,
       dxism = fgkRad*fgkSqRoot3*96.;
       dyism = kDia*48. + fgkRad;
   }
-  
+
 }
 
 // -------------------------------------------------------------------- //

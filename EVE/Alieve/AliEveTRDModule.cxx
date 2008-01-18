@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 #include "AliEveTRDModule.h"
 #include "AliEveTRDModuleImp.h"
@@ -29,7 +29,7 @@ AliEveTRDModule::AliEveTRDModule(const char *typ, Int_t det) :
 {
 	fLoadHits = kFALSE;
 	fRnrHits = kTRUE;
-	
+
 	fLoadDigits = kFALSE;
 	fRnrDigits = kTRUE;
 	fDigitsLog = kFALSE;
@@ -56,7 +56,7 @@ AliEveTRDModule::AliEveTRDModule(const char *typ, Int_t det) :
 AliEveTRDModuleEditor::AliEveTRDModuleEditor(const TGWindow* p, Int_t width, Int_t height, UInt_t options, Pixel_t back) : TGedFrame(p, width, height, options | kVerticalFrame, back)
 {
 	MakeTitle("TRD Detector");
-	
+
 	// "Hits" group frame
 	TGGroupFrame *fGroupFrame615 = new TGGroupFrame(this,"Hits");
 	fDisplayHits = new TGCheckButton(fGroupFrame615,"Display");
@@ -74,7 +74,7 @@ AliEveTRDModuleEditor::AliEveTRDModuleEditor(const TGWindow* p, Int_t width, Int
 	fGroupFrame615->AddFrame(fHitsColor, new TGLayoutHints(kLHintsLeft | kLHintsCenterX | kLHintsTop | kLHintsCenterY,2,2,2,2));
 	fHitsColor->Connect("ColorSelected(Pixel_t)",
 					"AliEveTRDModuleEditor", this, "UpdateHits(Pixel_t)");
-	
+
 	fGroupFrame615->SetLayoutManager(new TGVerticalLayout(fGroupFrame615));
 	AddFrame(fGroupFrame615, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsCenterY | kLHintsExpandX,2,2,2,2));
 
@@ -101,10 +101,10 @@ AliEveTRDModuleEditor::AliEveTRDModuleEditor(const TGWindow* p, Int_t width, Int
 	fToggleBox->Connect("Clicked()",
 					"AliEveTRDModuleEditor", this, "ModifyDigitsView()");
 	fGroupFrame636->AddFrame(fVerticalFrame538, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
-   
+
    TGVertical3DLine *fVertical3DLine773 = new TGVertical3DLine(fGroupFrame636,8,63);
    fGroupFrame636->AddFrame(fVertical3DLine773, new TGLayoutHints(kLHintsLeft | kLHintsCenterX | kLHintsTop | kLHintsExpandY,2,2,2,2));
-	 
+
 	 // vertical frame
 	TGVerticalFrame *fVerticalFrame543 = new TGVerticalFrame(fGroupFrame636,81,47,kVerticalFrame);
 	fThreshold = new TGCheckButton(fVerticalFrame543, "Threshold");
@@ -165,10 +165,10 @@ void AliEveTRDModuleEditor::SetModel(TObject* obj)
 
 	fM = dynamic_cast<AliEveTRDModule*>(obj);
 	if(AliEveTRDNode *node = dynamic_cast<AliEveTRDNode*>(fM)) node->UpdateNode();
-	
+
 	fDisplayHits->SetEnabled(fM->fLoadHits);
 	if(fM->fLoadHits) fDisplayHits->SetState( fM->fRnrHits ? kButtonDown : kButtonUp);
-		
+
 	fDisplayDigits->SetEnabled(fM->fLoadDigits);
 	fToggleLog->SetEnabled(fM->fLoadDigits);
 	fToggleBox->SetEnabled(fM->fLoadDigits);
@@ -183,10 +183,10 @@ void AliEveTRDModuleEditor::SetModel(TObject* obj)
 		fToggleBox->SetState(fM->fDigitsBox ? kButtonDown : kButtonUp);
 		fThreshold->SetState(fM->kDigitsNeedRecompute ? kButtonDown : kButtonUp);
 	}
-	
+
 	if(fM->fLoadRecPoints) fDisplayClusters->SetState(fM->fRnrRecPoints ? kButtonDown : kButtonUp);
 	else fDisplayClusters->SetEnabled(kFALSE);
-	
+
 	if(fM->fLoadTracklets) fDisplayTracks->SetState(fM->fRnrTracklets ? kButtonDown : kButtonUp);
 	else fDisplayTracks->SetEnabled(kFALSE);
 }
@@ -202,7 +202,7 @@ void AliEveTRDModuleEditor::ModifyDigitsView()
 void AliEveTRDModuleEditor::SetThreshold(Long_t tres)
 {
 	if(!fM->fLoadDigits) return;
-	
+
 	fM->fDigitsThreshold = (tres == 0) ? (int)fThresValue->GetNumber():tres;
 	fM->kDigitsNeedRecompute = fThreshold->IsDown();
 	UpdateChamber();
@@ -216,7 +216,7 @@ void AliEveTRDModuleEditor::UpdateChamber()
 
 	fM->fRnrHits = kFALSE;
 	if(fDisplayHits->IsDown()) fM->fRnrHits = kTRUE;
-	
+
 	fM->fRnrDigits = kFALSE;
 	if(fDisplayDigits->IsDown()){
 		fM->fRnrDigits = kTRUE;
@@ -225,10 +225,10 @@ void AliEveTRDModuleEditor::UpdateChamber()
 		if(fToggleBox->IsDown()) fM->fDigitsBox = kTRUE;
 		else  fM->fDigitsBox = kFALSE;
 	}
-	
+
 	fM->fRnrRecPoints = kFALSE;
 	if(fDisplayClusters->IsDown()) fM->fRnrRecPoints = kTRUE;
-	
+
 	fM->fRnrTracklets = kFALSE;
 	if(fDisplayTracks->IsDown()) fM->fRnrTracklets = kTRUE;
 
@@ -241,7 +241,7 @@ void AliEveTRDModuleEditor::UpdateChamber()
 void AliEveTRDModuleEditor::UpdateClusters(Pixel_t /*col*/)
 {
 //	Info("UpdateClusters()","");
-/*	
+/*
 	if(fM->fRecPoints){
 		fM->fRecPoints->SetMarkerColor(col ? fHitsColor->GetColor() : col);
 		gEve->Redraw3D();
@@ -253,7 +253,7 @@ void AliEveTRDModuleEditor::UpdateClusters(Pixel_t /*col*/)
 void AliEveTRDModuleEditor::UpdateHits(Pixel_t /*col*/)
 {
 //	Info("UpdateHits()","");
-/*	
+/*
 	if(fM->fHits){
 		fM->fHits->SetMarkerColor(col ? fClustersColor->GetColor() : col);
 		gEve->Redraw3D();

@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 
 #include "AliEveTPCLoader.h"
@@ -117,7 +117,7 @@ void AliEveTPCLoader::LoadEvent()
   fReader->Select("TPC");
 
   fData->DropAllSectors();
-  fData->LoadRaw(input, kTRUE, kTRUE);  
+  fData->LoadRaw(input, kTRUE, kTRUE);
 }
 
 void AliEveTPCLoader::NextEvent(Bool_t rewindOnEnd)

@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 #ifndef ALIEVE_ITSModule_H
 #define ALIEVE_ITSModule_H
@@ -20,7 +20,7 @@ class AliEveITSModule : public TEveQuadSet
   AliEveITSModule& operator=(const AliEveITSModule&); // Not implemented
 
 protected:
-  AliEveITSDigitsInfo* fInfo; 
+  AliEveITSDigitsInfo* fInfo;
 
   Int_t       fID;    // Module   id
   Int_t       fDetID; // Detector id (0~SPD, 1~SDD, 2~SSD)
@@ -28,7 +28,7 @@ protected:
   Int_t       fLayer;
   Int_t       fLadder;
   Int_t       fDet;
-  
+
   Float_t     fDx;
   Float_t     fDz;
   Float_t     fDy;
@@ -44,7 +44,7 @@ public:
 
   AliEveITSDigitsInfo* GetDigitsInfo() const { return fInfo; }
   void SetDigitsInfo(AliEveITSDigitsInfo* info);
-  
+
   Int_t GetSubDetID() const { return fDetID; }
 
   Int_t GetID() const { return fID; }

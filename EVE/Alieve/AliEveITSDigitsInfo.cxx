@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 
 #include <TMath.h>
@@ -102,14 +102,14 @@ void AliEveITSDigitsInfo::InitInternals()
   // spd lowest resolution
   Int_t nx = 8; // fSegSPD->Npx()/8; // 32
   Int_t nz = 6; // fSegSPD->Npz()/2; // 128
-  fSPDScaleX[1] = Int_t(nx); 
-  fSPDScaleZ[1] = Int_t(nz); 
-  fSPDScaleX[2] = Int_t(nx*2); 
-  fSPDScaleZ[2] = Int_t(nz*2); 
-  fSPDScaleX[3] = Int_t(nx*3); 
-  fSPDScaleZ[3] = Int_t(nz*3); 
-  fSPDScaleX[4] = Int_t(nx*4); 
-  fSPDScaleZ[4] = Int_t(nz*4); 
+  fSPDScaleX[1] = Int_t(nx);
+  fSPDScaleZ[1] = Int_t(nz);
+  fSPDScaleX[2] = Int_t(nx*2);
+  fSPDScaleZ[2] = Int_t(nz*2);
+  fSPDScaleX[3] = Int_t(nx*3);
+  fSPDScaleZ[3] = Int_t(nz*3);
+  fSPDScaleX[4] = Int_t(nx*4);
+  fSPDScaleZ[4] = Int_t(nz*4);
 
   fSDDScaleX[1] = 2;
   fSDDScaleZ[1] = 2;
@@ -128,7 +128,7 @@ void AliEveITSDigitsInfo::InitInternals()
 
 /**************************************************************************/
 
-AliEveITSDigitsInfo:: ~AliEveITSDigitsInfo() 
+AliEveITSDigitsInfo:: ~AliEveITSDigitsInfo()
 {
   // Destructor.
   // Deletes the data-maps and the tree.
@@ -141,7 +141,7 @@ AliEveITSDigitsInfo:: ~AliEveITSDigitsInfo()
   for(j = fSSDmap.begin(); j != fSSDmap.end(); ++j)
     delete j->second;
 
-  delete fSegSPD; delete fSegSDD; delete fSegSSD; 
+  delete fSegSPD; delete fSegSDD; delete fSegSSD;
   delete fGeom;
   delete fTree;
 }
@@ -169,7 +169,7 @@ void AliEveITSDigitsInfo::ReadRaw(AliRawReader* raw, Int_t mode)
       Int_t module = inputSPD.GetModuleID();
       Int_t column = inputSPD.GetColumn();
       Int_t row    = inputSPD.GetRow();
-    
+
       if (inputSPD.IsNewModule())
       {
 	digits = fSPDmap[module];
@@ -260,18 +260,18 @@ void AliEveITSDigitsInfo::SetITSSegmentation()
   fSPDZCoord[0]=fZ1pitchSPD -fHlSPD;
   for (m=1; m<fNzSPD; m++) {
     Double_t dz=fZ1pitchSPD;
-    if (m==31 || m==32 || m==63  || m==64  || m==95 || m==96 || 
-        m==127 || m==128) dz=fZ2pitchSPD; 
+    if (m==31 || m==32 || m==63  || m==64  || m==95 || m==96 ||
+        m==127 || m==128) dz=fZ2pitchSPD;
     fSPDZCoord[m]=fSPDZCoord[m-1]+dz;
   }
-  
+
   for (m=0; m<fNzSPD; m++) {
     Double_t dz=1.*fZ1pitchSPD;
-    if (m==31 || m==32 || m==63  || m==64  || m==95 || m==96 || 
-	m==127 || m==128) dz=1.*fZ2pitchSPD; 
+    if (m==31 || m==32 || m==63  || m==64  || m==95 || m==96 ||
+	m==127 || m==128) dz=1.*fZ2pitchSPD;
     fSPDZCoord[m]-=dz;
   }
-    
+
   // SDD
   fSegSDD = new AliITSsegmentationSDD(fGeom);
 
@@ -360,7 +360,7 @@ void AliEveITSDigitsInfo::GetModuleIDs(AliEveITSModuleSelection* sel,
   // given by the AliEveITSModuleSelection object.
 
   Int_t idx0 = 0, idx1 = 0;
-  switch(sel->fType)
+  switch(sel->GetType())
   {
     case 0:
       idx0 = 0;
@@ -387,7 +387,7 @@ void AliEveITSDigitsInfo::GetModuleIDs(AliEveITSModuleSelection* sel,
   for (Int_t id = idx0; id<idx1; ++id)
   {
     fGeom->GetModuleId(id, lay, lad, det);
-    if (sel->fLayer == lay || sel->fLayer == -1)
+    if (sel->GetLayer() == lay || sel->GetLayer() == -1)
     {
       // check data from matrix
       mx.UnitTrans();
@@ -395,11 +395,11 @@ void AliEveITSDigitsInfo::GetModuleIDs(AliEveITSModuleSelection* sel,
       mx.SetBaseVec(1, x[0], x[3], x[6]);
       mx.SetBaseVec(2, x[1], x[4], x[7]);
       mx.SetBaseVec(3, x[2], x[5], x[8]);
-      fGeom->GetTrans(id, x);  
+      fGeom->GetTrans(id, x);
       mx.SetBaseVec(4, x);
       mx.GetPos(v);
-      if (v.Phi()   <= sel->fMaxPhi   && v.Phi()   >= sel->fMinPhi   &&
-	  v.Theta() <= sel->fMaxTheta && v.Theta() >= sel->fMinTheta)
+      if (v.Phi()   <= sel->GetMaxPhi()   && v.Phi()   >= sel->GetMinPhi()   &&
+	  v.Theta() <= sel->GetMaxTheta() && v.Theta() >= sel->GetMinTheta())
       {
 	ids.push_back(id);
       }
@@ -421,7 +421,7 @@ void AliEveITSDigitsInfo::Print(Option_t* ) const
   printf("SPD dimesion of (%d,%d) in pixel(%f,%f)\n",   ix, iz, fSegSPD->Dpx(ix), fSegSPD->Dpz(iz));
   iz = 32;
   printf("SPD dimesion of pixel (%d,%d) are (%f,%f)\n", ix, iz, fSegSPD->Dpx(ix)*0.001, fSegSPD->Dpz(iz)*0.001);
- 
+
   printf("*********************************************************\n");
   printf("SDD module dimension (%f,%f)\n",           fSegSDD->Dx()*0.0001, fSegSDD->Dz()*0.0001);
   printf("SDD first,last module:: %d,%d\n",          fGeom->GetStartSDD(), fGeom->GetLastSDD());
@@ -435,9 +435,9 @@ void AliEveITSDigitsInfo::Print(Option_t* ) const
   printf("SSD strips in module %d\n",       fSegSSD->Npx());
   printf("SSD strip sizes are (%f,%f)\n",   fSegSSD->Dpx(1), fSegSSD->Dpz(1));
   fSegSSD->SetLayer(5);  fSegSSD->Angles(ap,an);
-  printf("SSD layer 5 stereoP %f stereoN %f angle\n", ap, an); 
+  printf("SSD layer 5 stereoP %f stereoN %f angle\n", ap, an);
   fSegSSD->SetLayer(6);  fSegSSD->Angles(ap,an);
-  printf("SSD layer 6 stereoP %f stereoN %f angle\n", ap, an); 
+  printf("SSD layer 6 stereoP %f stereoN %f angle\n", ap, an);
 }
 
 
@@ -452,4 +452,4 @@ void AliEveITSDigitsInfo::Print(Option_t* ) const
   printf("Z::original (%3f) scaled (%3f, %3f) \n", zo, zn-dpz/2, zn+dpz/2);
   printf("X::original (%3f) scaled (%3f, %3f) \n", xo, xn-dpx/2, xn+dpx/2);
   printf("%d,%d maped to %d,%d \n", od->GetCoord1(), od->GetCoord2(), i,j );
-*/        
+*/

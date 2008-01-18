@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 // Import tracks from kinematics-tree / particle-stack.
 // Preliminary/minimal solution.
@@ -25,8 +25,8 @@ kine_tracks(Double_t min_pt  = 0.1,   Double_t min_p   = 0.2,
   }
 
   gEve->DisableRedraw();
- 
-  TEveTrackList* cont = new TEveTrackList("Kine Tracks"); 
+
+  TEveTrackList* cont = new TEveTrackList("Kine Tracks");
   cont->SetMainColor(Color_t(3));
   TEveTrackPropagator* rnrStyle = cont->GetPropagator();
   // !!! Watch the '-', apparently different sign convention then for ESD.
@@ -35,16 +35,16 @@ kine_tracks(Double_t min_pt  = 0.1,   Double_t min_p   = 0.2,
   gEve->AddElement(cont);
   Int_t count = 0;
   Int_t N = stack->GetNtrack();
-  for (Int_t i=0; i<N; ++i) 
+  for (Int_t i=0; i<N; ++i)
   {
-    if(stack->IsPhysicalPrimary(i)) 
+    if(stack->IsPhysicalPrimary(i))
     {
       TParticle* p = stack->Particle(i);
       if (p->Pt() < min_pt && p->P() < min_p) continue;
 
       ++count;
       TEveTrack* track = new TEveTrack(p, i, rnrStyle);
-  
+
       //PH The line below is replaced waiting for a fix in Root
       //PH which permits to use variable siza arguments in CINT
       //PH on some platforms (alphalinuxgcc, solariscc5, etc.)
@@ -63,7 +63,7 @@ kine_tracks(Double_t min_pt  = 0.1,   Double_t min_p   = 0.2,
   }
 
   // set path marks
-  AliEveKineTools kt; 
+  AliEveKineTools kt;
   kt.SetDaughterPathMarks(cont, stack, recurse);
   if (use_track_refs && rl->LoadTrackRefs() == 0)
   {
@@ -90,15 +90,15 @@ void kine_daughters(TEveTrack* parent,  AliStack* stack,
 		    Bool_t       pdg_col, Bool_t    recurse)
 {
   TParticle *p = stack->Particle(parent->GetLabel());
-  if (p->GetNDaughters() > 0) 
+  if (p->GetNDaughters() > 0)
   {
     TEveTrackPropagator* rs = parent->GetPropagator();
-    for (int d=p->GetFirstDaughter(); d>0 && d<=p->GetLastDaughter(); ++d) 
-    {	
+    for (int d=p->GetFirstDaughter(); d>0 && d<=p->GetLastDaughter(); ++d)
+    {
       TParticle* dp = stack->Particle(d);
       if (dp->Pt() < min_pt && dp->P() < min_p) continue;
 
-      TEveTrack* dtrack = new TEveTrack(dp, d, rs);  
+      TEveTrack* dtrack = new TEveTrack(dp, d, rs);
       char form[1000];
       sprintf(form,"%s [%d]", dp->GetName(), d);
       dtrack->SetName(form);
@@ -127,7 +127,7 @@ Color_t get_pdg_color(Int_t pdg)
   static const Color_t DefCol   = 30;
   static const Color_t ECol     = 5;
   static const Color_t MuCol    = 6;
-  static const Color_t GammaCol = 7; 
+  static const Color_t GammaCol = 7;
   static const Color_t MesCol1  = 3;
   static const Color_t MesCol2  = 38;
   static const Color_t BarCol   = 10;
@@ -138,8 +138,8 @@ Color_t get_pdg_color(Int_t pdg)
   // elementary  particles
   if (pdga < 100) {
     switch (pdga) {
-      case 11:  
-	col = ECol; break; 
+      case 11:
+	col = ECol; break;
       case 12:
 	col = MuCol; break;
       case 22:
@@ -150,9 +150,9 @@ Color_t get_pdg_color(Int_t pdg)
   else if (pdga < 100000) {
     Int_t i  = pdga;
     Int_t i0 = i%10; i /= 10;
-    Int_t i1 = i%10; i /= 10; 
-    Int_t i2 = i%10; i /= 10; 
-    Int_t i3 = i%10; i /= 10; 
+    Int_t i1 = i%10; i /= 10;
+    Int_t i2 = i%10; i /= 10;
+    Int_t i3 = i%10; i /= 10;
     Int_t i4 = i%10;
     //printf("pdg(%d) quark indices (%d,%d,%d,%d,%d) \n",pdg, i4,i3,i2, i1, i0);
     // meson
@@ -186,7 +186,7 @@ kine_track(Int_t  label,
     Warning("kine_track", "label not set.");
     return 0;
   }
- 
+
   AliRunLoader* rl =  AliEveEventManager::AssertRunLoader();
   rl->LoadKinematics();
   AliStack* stack = rl->Stack();
@@ -201,7 +201,7 @@ kine_track(Int_t  label,
   if (import_mother || (import_daughters && p->GetNDaughters()))
   {
     TEveTrack* toptrack = 0;
-    TEveTrackList* tracklist = 0;  
+    TEveTrackList* tracklist = 0;
     TEveTrackPropagator* rs = 0;
 
     if (cont == 0)
@@ -239,7 +239,7 @@ kine_track(Int_t  label,
 
     if (import_mother)
     {
-      TEveTrack* track = new TEveTrack(p, label, rs);  
+      TEveTrack* track = new TEveTrack(p, label, rs);
       char form[1000];
       sprintf(form,"%s [%d]", p->GetName(), label);
       track->SetName(form);
@@ -251,12 +251,12 @@ kine_track(Int_t  label,
       cont = track;
     }
 
-    if (import_daughters && p->GetNDaughters()) 
+    if (import_daughters && p->GetNDaughters())
     {
-      for (int d=p->GetFirstDaughter(); d>0 && d<=p->GetLastDaughter(); ++d) 
-      {	
+      for (int d=p->GetFirstDaughter(); d>0 && d<=p->GetLastDaughter(); ++d)
+      {
 	TParticle* dp = stack->Particle(d);
-	TEveTrack* track = new TEveTrack(dp, d, rs);  
+	TEveTrack* track = new TEveTrack(dp, d, rs);
 	char form[1000];
 	sprintf(form,"%s [%d]", dp->GetName(), d);
 	track->SetName(form);

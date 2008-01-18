@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
@@ -185,49 +185,49 @@ void AliEveCascade::MakeTrack(vpPathMark_t& pathMark, TEveVector& vtx,  TEveVect
 
   TEveTrackPropagator& RS((fRnrStyle != 0) ? *fRnrStyle : TEveTrackPropagator::fgDefStyle);
 
-  Float_t px = p.x, py = p.y, pz = p.z;  
+  Float_t px = p.x, py = p.y, pz = p.z;
 
   MCVertex  mc_v0;
   mc_v0.x = vtx.x;
-  mc_v0.y = vtx.y; 
-  mc_v0.z = vtx.z; 
+  mc_v0.y = vtx.y;
+  mc_v0.z = vtx.z;
   mc_v0.t = 0;
 
   std::vector<MCVertex> track_points;
   Bool_t decay = kFALSE;
 
-  if ((TMath::Abs(vtx.z) > RS.fMaxZ) || (vtx.x*vtx.x + vtx.y*vtx.y > RS.fMaxR*RS.fMaxR)) 
+  if ((TMath::Abs(vtx.z) > RS.fMaxZ) || (vtx.x*vtx.x + vtx.y*vtx.y > RS.fMaxR*RS.fMaxR))
     goto make_polyline;
-  
+
   if (TMath::Abs(RS.fMagField) > 1e-5) {
 
     // Charged particle in magnetic field
 
     Float_t a = RS.fgkB2C * RS.fMagField * charge;
-   
+
     MCHelix helix(fRnrStyle, &mc_v0, TMath::C()*beta, &track_points, a); //m->cm
     helix.Init(TMath::Sqrt(px*px+py*py), pz);
-   
+
     if(!pathMark.empty()){
       for(std::vector<TEvePathMark*>::iterator i=pathMark.begin();
 	  i!=pathMark.end(); ++i) {
 
 	TEvePathMark* pm = *i;
-        
+
 	if(RS.fFitDaughters &&  pm->type == TEvePathMark::Daughter){
-	  if(TMath::Abs(pm->V.z) > RS.fMaxZ 
+	  if(TMath::Abs(pm->V.z) > RS.fMaxZ
 	     || TMath::Sqrt(pm->V.x*pm->V.x + pm->V.y*pm->V.y) > RS.fMaxR )
 	    goto helix_bounds;
 
-          //printf("%s fit daughter  \n", fName.Data()); 
+          //printf("%s fit daughter  \n", fName.Data());
 	  helix.LoopToVertex(p.x, p.y, p.z, pm->V.x, pm->V.y, pm->V.z);
 	  p.x -=  pm->P.x;
 	  p.y -=  pm->P.y;
 	  p.z -=  pm->P.z;
 	}
 	if(RS.fFitDecay &&  pm->type == TEvePathMark::Decay){
-	  
-	  if(TMath::Abs(pm->V.z) > RS.fMaxZ 
+
+	  if(TMath::Abs(pm->V.z) > RS.fMaxZ
 	     || TMath::Sqrt(pm->V.x*pm->V.x + pm->V.y*pm->V.y) > RS.fMaxR )
 	    goto helix_bounds;
 	  helix.LoopToVertex(p.x, p.y, p.z, pm->V.x, pm->V.y, pm->V.z);
@@ -248,14 +248,14 @@ void AliEveCascade::MakeTrack(vpPathMark_t& pathMark, TEveVector& vtx,  TEveVect
     // Neutral particle or no field
 
     MCLine line(fRnrStyle, &mc_v0, TMath::C()*beta, &track_points);
-   
+
     if(!pathMark.empty()) {
       for(std::vector<TEvePathMark*>::iterator i=pathMark.begin();
 	  i!=pathMark.end(); ++i) {
 	TEvePathMark* pm = *i;
 
 	if(RS.fFitDaughters &&  pm->type == TEvePathMark::Daughter){
-          if(TMath::Abs(pm->V.z) > RS.fMaxZ 
+          if(TMath::Abs(pm->V.z) > RS.fMaxZ
 	     || TMath::Sqrt(pm->V.x*pm->V.x + pm->V.y*pm->V.y) > RS.fMaxR )
 	    goto line_bounds;
 	  line.GotoVertex(pm->V.x, pm->V.y, pm->V.z);
@@ -265,7 +265,7 @@ void AliEveCascade::MakeTrack(vpPathMark_t& pathMark, TEveVector& vtx,  TEveVect
 	}
 
 	if(RS.fFitDecay &&  pm->type == TEvePathMark::Decay){
-	  if(TMath::Abs(pm->V.z) > RS.fMaxZ 
+	  if(TMath::Abs(pm->V.z) > RS.fMaxZ
 	     || TMath::Sqrt(pm->V.x*pm->V.x + pm->V.y*pm->V.y) > RS.fMaxR )
 	    goto line_bounds;
 	  line.GotoVertex(pm->V.x, pm->V.y, pm->V.z);
@@ -291,7 +291,7 @@ make_polyline:
 
 //______________________________________________________________________
 void AliEveCascade::MakeV0path() {
-  
+
   MCVertex  mc_v0;
   mc_v0.x = (fV_neg.x+fV_pos.x)/2;
   mc_v0.y = (fV_neg.y+fV_pos.y)/2;
@@ -313,7 +313,7 @@ void AliEveCascade::MakeV0path() {
 
 //______________________________________________________________________
 void AliEveCascade::MakeCasPath() {
-  
+
   MCVertex  mc_v0;
   mc_v0.x = fV_birth.x;
   mc_v0.y = fV_birth.y;
@@ -343,7 +343,7 @@ void AliEveCascade::MakeCascade()
   MakeTrack(fPathMarksPos, fV_pos, fP_pos,  1, fBeta_pos, fPolyLinePos);
   if (fBeta_bach>0)
     MakeTrack(fPathMarksBach, fV_bach, fP_bach,  1, fBeta_bach, fPolyLineBach);
-  else 
+  else
     MakeTrack(fPathMarksBach, fV_bach, fP_bach, -1, -fBeta_bach, fPolyLineBach);
   MakeV0path();
   MakeCasPath();
@@ -378,9 +378,9 @@ Float_t AliEveCascade::GetCasPtArmenteros() const
   Float_t px = GetPx(), py = GetPy(), pz = GetPz();
   Float_t p2 = px*px + py*py + pz*pz;
   if (p2 < 1.e-39) return  -999;
-  
+
   Float_t posXcas, posP2;
-  
+
   if (fBeta_bach>0) {
     posXcas = fP_bach.x*px + fP_bach.y*py + fP_bach.z*pz;
     posP2 = GetBachP2();
@@ -619,7 +619,7 @@ void CascadeList::AdjustHist(Int_t iHist) {
 
   if ((iHist<0)||(iHist>=fgkNcutVar)) return;
   if (! fHist[iHist]) return;
-  
+
   TString name = fHist[iHist]->GetName();
   Int_t nBin = fHist[iHist]->GetXaxis()->GetNbins();
   delete fHist[iHist];
@@ -759,7 +759,7 @@ void CascadeList::FilterAll() {
 
   for (Int_t i=0; i<fgkNcutVar2D; i++)
     fHist2D[i]->Reset();
-  
+
   AliEveCascade* myCas;
   for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
 

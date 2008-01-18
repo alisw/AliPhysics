@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 
 /***********************************************************************
@@ -56,9 +56,9 @@ CascadeListEditor::CascadeListEditor(const TGWindow *p,
   fMainTabB(0)
 {
   MakeTitle("CascadeList");
- 
+
   //TGHorizontalFrame* frame = new TGHorizontalFrame(this);
- 
+
   // --- Rendering control
 
   fRnrVtx = new TGCheckButton(this, "Render v0 and cascade vertices");
@@ -69,12 +69,12 @@ CascadeListEditor::CascadeListEditor(const TGWindow *p,
   fRnrV0path = new TGCheckButton(this, "Render v0 path");
   AddFrame(fRnrV0path, new TGLayoutHints(kLHintsTop, 3, 1, 1, 0));
   fRnrV0path->Connect("Toggled(Bool_t)",
-		     "CascadeListEditor", this, "DoRnrV0path()");  
+		     "CascadeListEditor", this, "DoRnrV0path()");
 
   fRnrCasPath = new TGCheckButton(this, "Render cascade path");
   AddFrame(fRnrCasPath, new TGLayoutHints(kLHintsTop, 3, 1, 1, 0));
   fRnrCasPath->Connect("Toggled(Bool_t)",
-		       "CascadeListEditor", this, "DoRnrCasPath()");  
+		       "CascadeListEditor", this, "DoRnrCasPath()");
 
   fRnrV0Daughters = new TGCheckButton(this, "Render v0 daughter tracks");
   AddFrame(fRnrV0Daughters, new TGLayoutHints(kLHintsTop, 3, 1, 1, 0));
@@ -85,7 +85,7 @@ CascadeListEditor::CascadeListEditor(const TGWindow *p,
   AddFrame(fRnrBach, new TGLayoutHints(kLHintsTop, 3, 1, 1, 0));
   fRnrBach->Connect("Toggled(Bool_t)",
 			"CascadeListEditor", this, "DoRnrBach()");
-    
+
   for (Int_t i=0; i<fgkNRange; i++) fRange[i]=0;
   for (Int_t i=0; i<fgkNCanvas; i++) fCanvasA[i]=0;
   for (Int_t i=0; i<fgkNCanvas; i++) fCanvasB[i]=0;
@@ -139,7 +139,7 @@ TGCompositeFrame* CascadeListEditor::AddTab(TGTab* tab, Int_t i, Int_t can,
   c1->SetTicks(1,0);
   c1->SetGrid();
   c1->SetBorderMode(0);
- 
+
   frameTab->AddFrame(*embeddedCanvas, new TGLayoutHints(kLHintsTop|kLHintsExpandX,
 						       0, 0, 0, 0));
   return frameTab;
@@ -159,7 +159,7 @@ TGCompositeFrame** CascadeListEditor::CreateTab(TGTab **pMainTab, TGTab **ptab, 
   // container of "Tab1"
   TGCompositeFrame *frameTab1 = pMainTab[0]->AddTab("ident.");
   frameTab1->SetLayoutManager(new TGVerticalLayout(frameTab1));
-  
+
   // tab widget
   ptab[0] = new TGTab(frameTab1,2,2);
   ptab[0]->Resize(ptab[0]->GetDefaultSize());
@@ -167,23 +167,23 @@ TGCompositeFrame** CascadeListEditor::CreateTab(TGTab **pMainTab, TGTab **ptab, 
   // (it updates every canvas)
   ptab[0]->Connect("Selected(Int_t)", "CascadeListEditor", this, "UpdateSelectedTab()");
   frameTab1->AddFrame(ptab[0], new TGLayoutHints(kLHintsLeft| kLHintsExpandX,0,0,0,0));
-  
+
   //------
   // container of "Tab2"
   TGCompositeFrame *frameTab2 = pMainTab[0]->AddTab("cascade");
   frameTab2->SetLayoutManager(new TGVerticalLayout(frameTab2));
-  
+
   // tab widget
   ptab[1] = new TGTab(frameTab2,440,299);
   ptab[1]->Resize(ptab[1]->GetDefaultSize());
   ptab[1]->Connect("Selected(Int_t)", "CascadeListEditor", this, "UpdateSelectedTab()");
   frameTab2->AddFrame(ptab[1], new TGLayoutHints(kLHintsLeft| kLHintsExpandX ,0,0,0,0));
-  
+
   //------
   // container of "Tab3"
   TGCompositeFrame *frameTab3 = pMainTab[0]->AddTab("V0daugh/bach.");
   frameTab3->SetLayoutManager(new TGVerticalLayout(frameTab3));
-  
+
   // tab widget
   ptab[2] = new TGTab(frameTab3,440,299);
   ptab[2]->Resize(ptab[2]->GetDefaultSize());
@@ -192,7 +192,7 @@ TGCompositeFrame** CascadeListEditor::CreateTab(TGTab **pMainTab, TGTab **ptab, 
 
   //------
   TGCompositeFrame **frameTab = new TGCompositeFrame*[fgkNCanvas];
-  
+
   frameTab[0] = AddTab(ptab[0], 0, can, "Xi");
   frameTab[1] = AddTab(ptab[0], 1, can, "Omega");
   frameTab[2] = AddTab(ptab[0], 2, can, "Arm.Podo.");
@@ -269,7 +269,7 @@ void CascadeListEditor::AddValuator(TGCompositeFrame* frame, char *name,
 
 //_________________________________________________________________________
 void CascadeListEditor::AddSelectTab() {
- 
+
   TGCompositeFrame** tab = CreateTab(&fMainTabA, fTabA, 1);
 
   AddValuator(tab[0],  "mass Xi",       0,  5, 3, "MassXiRange()",     0);
@@ -318,7 +318,7 @@ void CascadeListEditor::ResetCuts() {
   Float_t min,max;
 
   for (Int_t i=0; i<fgkNRange;i++) {
-    
+
     if (i==2) continue;
     min = fRange[i]->GetLimitMin();
     max = fRange[i]->GetLimitMax();
@@ -371,7 +371,7 @@ void CascadeListEditor::FillCanvas() {
       if (is2D) hist2D->Draw("colz"); else hist->Draw();
       c1->Modified();
       c1->Update();
-      
+
       c1b = fCanvasB[i]->GetCanvas();
       c1b->cd();
       if (is2D) hist2D->Draw("colz"); else hist->Draw();
@@ -389,7 +389,7 @@ void CascadeListEditor::UpdateSelectedTab() {
   gClient->GetColorByName("yellow", yellow);
   gClient->GetColorByName("grey", grey);
 
-  TGTabElement *tabElem; 
+  TGTabElement *tabElem;
   for (i=0; i<fMainTabA->GetNumberOfTabs(); i++) {
 
     tabElem = fMainTabA->GetTabTab(i);

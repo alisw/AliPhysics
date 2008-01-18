@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 
 TEvePointSet*
@@ -16,7 +16,7 @@ its_hits(const char *varexp    = "fX:fY:fZ",
   rl->LoadHits("ITS");
 
   TTree* ht = rl->GetTreeH("ITS", false);
-  
+
   //PH The line below is replaced waiting for a fix in Root
   //PH which permits to use variable siza arguments in CINT
   //PH on some platforms (alphalinuxgcc, solariscc5, etc.)

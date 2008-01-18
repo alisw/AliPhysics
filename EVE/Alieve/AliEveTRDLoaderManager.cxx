@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 #include "AliEveTRDLoaderManager.h"
 #include "AliEveTRDLoader.h"
@@ -56,7 +56,7 @@ void	AliEveTRDLoaderManager::Add(Int_t type, const Text_t *name, const Text_t *t
 		//fChildren.push_back(new AliEveTRDLoaderSim(name, title));
 		gEve->AddElement(trdl = new AliEveTRDLoaderSim(name, title), this);
 		((AliEveTRDLoaderSim*)trdl)->FindListTreeItem(gEve->GetListTree())->SetTipText(title);
-		break;	
+		break;
 	case 1:
 	case 2:
 	case 3:
@@ -73,7 +73,7 @@ void	AliEveTRDLoaderManager::Add(Int_t type, const Text_t *name, const Text_t *t
 		trdl->SetDataType((TRDDataTypes)type);
 		break;
 	}
-	
+
 	gEve->Redraw3D();
 }
 
@@ -144,7 +144,7 @@ AliEveTRDLoaderManagerEditor::AliEveTRDLoaderManagerEditor(const TGWindow* p, In
 //________________________________________________________
 AliEveTRDLoaderManagerEditor::~AliEveTRDLoaderManagerEditor()
 {
-	
+
 }
 
 
@@ -176,7 +176,7 @@ void AliEveTRDLoaderManagerEditor::Add()
 	case 3:
 		type = 1;
 		break;
-	case 4:	
+	case 4:
 	case 5:
 		type = 2;
 		break;
@@ -185,7 +185,7 @@ void AliEveTRDLoaderManagerEditor::Add()
 		break;
 	}
 
-	
+
 	// horizontal frame
 	TGHorizontalFrame *fHorizontalFrame = new TGHorizontalFrame(fGroupFrame, 264, 26, kHorizontalFrame);//, bg);
 
@@ -200,12 +200,12 @@ void AliEveTRDLoaderManagerEditor::Add()
 // 	vall717.fFont = ufont->GetFontHandle();
 // 	vall717.fGraphicsExposures = kFALSE;
 // 	uGC = gClient->GetGC(&vall717, kTRUE);
-	
+
 	TGLabel *fLabel717 = new TGLabel(fHorizontalFrame, entry->GetText()->GetString()/*, uGC->GetGC(), ufont->GetFontStruct(), kChildFrame*/);//, bg);
 	fLabel717->SetTextJustify(36);
 	fHorizontalFrame->AddFrame(fLabel717, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsCenterY | kLHintsExpandX,2,2,2,2));
 
-	
+
 	Int_t nbutton = fM->fChildren.size();
 	fRemoveButton = new((*fRemove)[nbutton]) TGTextButton(fHorizontalFrame, "Remove", nbutton);
 	fRemoveButton->SetTextJustify(36);

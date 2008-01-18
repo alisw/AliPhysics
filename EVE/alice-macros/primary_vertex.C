@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 
 TPolyMarker3D* make_vertex_marker(AliESDVertex* v, const Text_t* name )
@@ -80,7 +80,7 @@ void primary_vertex_primitive(Bool_t showSPD=kTRUE, Bool_t showBoxes=kFALSE)
 /**************************************************************************/
 
 TEveStraightLineSet* ESDvertex_lineset(AliESDVertex* v, const Text_t* name)
-{ 
+{
   Double_t x[3], e[3];
   v->GetXYZ(x); v->GetSigmaXYZ(e);
   printf("%16s: %f %f %f   -   %f %f %f\n", name,
@@ -89,7 +89,7 @@ TEveStraightLineSet* ESDvertex_lineset(AliESDVertex* v, const Text_t* name)
   // dimensions
   TEveStraightLineSet* ls = new TEveStraightLineSet();
   ls->SetName(name);
-  ls->AddLine(e[0], 0, 0, -e[0], 0, 0); 
+  ls->AddLine(e[0], 0, 0, -e[0], 0, 0);
   ls->AddLine(0, e[1], 0, 0, -e[1], 0);
   ls->AddLine(0, 0, e[2], 0, 0, -e[2]);
   for(Int_t i =0; i < 3; i++)
@@ -101,7 +101,7 @@ TEveStraightLineSet* ESDvertex_lineset(AliESDVertex* v, const Text_t* name)
   // centre marker
   ls->AddMarker(0, 0.5);
   ls->RefHMTrans().SetPos(x);
-  return ls;  
+  return ls;
 }
 
 void make_vertex_ellipses(TEveStraightLineSet* ls, AliESDVertex* v, Bool_t ellipseUseSigma)
@@ -132,22 +132,22 @@ void make_vertex_ellipses(TEveStraightLineSet* ls, AliESDVertex* v, Bool_t ellip
 
   a = e[0]; b = e[1];
   for (Int_t i = 0; i<N; i++)
-    ls->AddLine(a*TMath::Cos(i*S)  , b*TMath::Sin(i*S)  , 0, 
+    ls->AddLine(a*TMath::Cos(i*S)  , b*TMath::Sin(i*S)  , 0,
 		a*TMath::Cos(i*S+S), b*TMath::Sin(i*S+S), 0);
 
   a = e[0]; b = e[2];
   for (Int_t i = 0; i<N; i++)
-    ls->AddLine(a*TMath::Cos(i*S)  , 0, b*TMath::Sin(i*S), 
+    ls->AddLine(a*TMath::Cos(i*S)  , 0, b*TMath::Sin(i*S),
 		a*TMath::Cos(i*S+S), 0, b*TMath::Sin(i*S+S));
 
   a = e[1]; b = e[2];
   for (Int_t i = 0; i<N; i++)
-    ls->AddLine(0, a*TMath::Cos(i*S)  ,  b*TMath::Sin(i*S), 
+    ls->AddLine(0, a*TMath::Cos(i*S)  ,  b*TMath::Sin(i*S),
 		0, a*TMath::Cos(i*S+S),  b*TMath::Sin(i*S+S));
 }
 
 void primary_vertex(Bool_t showSPD=kTRUE, Bool_t rnrEllipse=kTRUE)
-{ 
+{
   AliESDEvent* esd = AliEveEventManager::AssertESD();
   TEveStraightLineSet* ls;
 
@@ -156,7 +156,7 @@ void primary_vertex(Bool_t showSPD=kTRUE, Bool_t rnrEllipse=kTRUE)
   if (rnrEllipse) make_vertex_ellipses(ls, PV, kTRUE);
   gEve->AddElement(ls);
 
-  if (showSPD) 
+  if (showSPD)
   {
     AliESDVertex*  SPDV  = esd->GetVertex();
     ls = ESDvertex_lineset(SPDV, "SPD Vertex");

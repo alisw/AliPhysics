@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 
 TEvePointSet*
@@ -22,10 +22,10 @@ t0_hits(const char *varexp    = "T0.fX:T0.fY:T0.fZ",
   Int_t nTracks = ht->GetEntries();
   // printf("Found %d tracks. \n",nTracks);
   for (Int_t it = 0; it < nTracks; it++) {
- 
+
     TClonesArray *hits = 0;
     ht->SetBranchAddress("T0",&hits);
- 
+
     ht->GetEvent(it);
     // Int_t nHits = hits->GetEntriesFast();
     // printf("Found %d hits in track %d.\n", nHits, it);

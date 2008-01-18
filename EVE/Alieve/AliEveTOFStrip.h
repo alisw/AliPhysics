@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 #ifndef ALIEVE_TOFStrip_H
 #define ALIEVE_TOFStrip_H
@@ -28,7 +28,7 @@ class AliEveTOFStrip : public TEveQuadSet
 
 private:
   void LoadQuads();
-  
+
 protected:
   virtual void InitModule();
   virtual void SetTrans();
@@ -64,5 +64,5 @@ public:
   static TEveRGBAPalette* fgTOFstripPalette;
 
   ClassDef(AliEveTOFStrip, 1);
-}; 
+};
 #endif

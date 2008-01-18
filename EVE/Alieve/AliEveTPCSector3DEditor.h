@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 
 #ifndef ALIEVE_TPCSector3DEditor_H
@@ -38,7 +38,7 @@ protected:
 
 public:
   AliEveTPCSector3DEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30,
-		    UInt_t options=kChildFrame, Pixel_t back=GetDefaultFrameBackground());  
+		    UInt_t options=kChildFrame, Pixel_t back=GetDefaultFrameBackground());
   virtual ~AliEveTPCSector3DEditor();
 
   virtual void SetModel(TObject* obj);

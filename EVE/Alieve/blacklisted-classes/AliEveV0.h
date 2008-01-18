@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 #ifndef ALIEVE_V0_H
 #define ALIEVE_V0_H
@@ -40,7 +40,7 @@ class AliEveV0 : public TEveElement,
   AliEveV0(const AliEveV0&);            // Not implemented
   AliEveV0& operator=(const AliEveV0&); // Not implemented
 
-public: 
+public:
   AliEveV0();
   AliEveV0(TEveRecTrack* tNeg, TEveRecTrack* tPos, TEveRecV0* v0,
      TEveTrackPropagator* rs);
@@ -165,12 +165,12 @@ protected:
 
 
 //______________________________________________________________________
-inline void AliEveV0::SetDaughterDCA(Float_t dca) { 
-  fDaughterDCA = dca; 
+inline void AliEveV0::SetDaughterDCA(Float_t dca) {
+  fDaughterDCA = dca;
 }
 
-inline void AliEveV0::SetCosPointingAngle(Float_t cos) { 
-  fCosPointingAngle = cos; 
+inline void AliEveV0::SetCosPointingAngle(Float_t cos) {
+  fCosPointingAngle = cos;
 }
 
 inline void AliEveV0::SetDecayLength(Float_t len) {
@@ -339,7 +339,7 @@ public:
   virtual void Paint(Option_t* option="");
 
   void  SetRnrStyle(TEveTrackPropagator* rst) { fRnrStyle= rst; }
-  TEveTrackPropagator* GetPropagator()          { return fRnrStyle; } 
+  TEveTrackPropagator* GetPropagator()          { return fRnrStyle; }
 
   Bool_t GetRnrV0vtx() const { return fRnrV0vtx; }
   Bool_t GetRnrV0path() const { return fRnrV0path; }

@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 
 
@@ -44,7 +44,7 @@ AliEveV0* esd_make_v0(TEveTrackPropagator* rnrStyle, AliESDVertex* primVtx,
     //   printf(" %f %f %f / %f %f %f    %i\n",p[0], p[1], p[2],
     // 	 v[0], v[1], v[2], v0->GetOnFlyStatus());
 
-    rcV0.V_neg.Set(v); //original track vertices at dca not stored 
+    rcV0.V_neg.Set(v); //original track vertices at dca not stored
     rcV0.V_pos.Set(v);
     rcV0.V_ca.Set(v);
 
@@ -59,7 +59,7 @@ AliEveV0* esd_make_v0(TEveTrackPropagator* rnrStyle, AliESDVertex* primVtx,
 
     AliEveV0* myV0 = new AliEveV0(&rcNeg, &rcPos, &rcV0, rnrStyle);
     char ch[50];
-    //   sprintf(ch,"ESDv0%i",i); 
+    //   sprintf(ch,"ESDv0%i",i);
     //   myV0->SetName(ch);
     //   myV0->SetTitle(ch);
     myV0->SetESDIndex(i);
@@ -90,7 +90,7 @@ V0List* esd_AliEveV0(Double_t min_pt=0.1, Double_t max_pt=100)
   AliESDEvent* esd = AliEveEventManager::AssertESD();
   AliESDVertex* primVertex =(AliESDVertex*) esd->GetVertex();
 
-  V0List* cont = new V0List("ESD v0"); 
+  V0List* cont = new V0List("ESD v0");
   cont->SetMainColor(Color_t(3)); // green
   TEveTrackPropagator* rnrStyle = cont->GetPropagator();
   rnrStyle->SetMagField( esd->GetMagneticField() );
@@ -108,7 +108,7 @@ V0List* esd_AliEveV0(Double_t min_pt=0.1, Double_t max_pt=100)
     Int_t posInd = v0->GetPindex();
     AliESDtrack* negTr = esd->GetTrack(negInd);
     AliESDtrack* posTr = esd->GetTrack(posInd);
-    
+
     AliEveV0* myV0 = esd_make_v0(rnrStyle, primVertex, negTr,posTr, v0, n);
     if (myV0) {
       gEve->AddElement(myV0, cont);

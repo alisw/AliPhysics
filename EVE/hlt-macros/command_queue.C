@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 #include <TObject.h>
 #include <TList.h>
@@ -115,7 +115,7 @@ void command_queue()
 
 #include <TRandom.h>
 
-void make_crap(void* arg) 
+void make_crap(void* arg)
 {
   Int_t num = 1024;
   TRandom rnd(0);

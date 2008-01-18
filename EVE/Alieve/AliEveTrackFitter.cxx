@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 
 #include "AliEveTrackFitter.h"
@@ -30,7 +30,7 @@
 // points, listening to signal PointCtrlClicked() of any
 // TEvePointSet. Via editor it fits selected points and creates a
 // reconstructed track.
-// 
+//
 
 ClassImp(AliEveTrackFitter)
 
@@ -52,7 +52,7 @@ AliEveTrackFitter::AliEveTrackFitter(const Text_t* name, Int_t n_points) :
   fGraphSelected = new TGraph();
   fGraphSelected->SetName("Selected points");
   fGraphSelected->SetMarkerColor(4);
-  fGraphSelected->SetMarkerStyle(4);  
+  fGraphSelected->SetMarkerStyle(4);
   fGraphSelected->SetMarkerSize(2);
 
   fGraphFitted = new TGraphErrors();
@@ -118,9 +118,9 @@ void AliEveTrackFitter::Stop()
 /**************************************************************************/
 
 void AliEveTrackFitter::AddFitPoint(TEvePointSet* ps, Int_t n)
-{ 
+{
   // Add/remove given point depending if exists in the fMapPS.
- 
+
   Float_t x, y, z;
 
   std::map<Point_t, Int_t>::iterator g = fMapPS.find(Point_t(ps, n));
@@ -135,11 +135,11 @@ void AliEveTrackFitter::AddFitPoint(TEvePointSet* ps, Int_t n)
     fMapPS.erase(g);
     fLastPoint--;
   }
-  else 
+  else
   {
     fMapPS[Point_t(ps, n)] = Size();
     ps->GetPoint(n, x, y, z);
-    SetNextPoint(x, y, z); 
+    SetNextPoint(x, y, z);
     SetPointId(ps->GetPointId(n));
   }
   ResetBBox();
@@ -174,8 +174,8 @@ void AliEveTrackFitter::FitTrack()
   GetPoint(alphaIdx, x, y, z);
   fAlpha = ATan2(y, x);
   Float_t sin = Sin(-fAlpha);
-  Float_t cos = Cos(-fAlpha);  
-  for (Int_t i=0; i<=fLastPoint; i++) { 
+  Float_t cos = Cos(-fAlpha);
+  for (Int_t i=0; i<=fLastPoint; i++) {
     GetPoint(i, x, y, z);
     fRieman->AddPoint(cos*x - sin*y, cos*y + sin*x, z, 1, 1);
   }
@@ -198,7 +198,7 @@ void AliEveTrackFitter::FitTrack()
   Double_t P0[3];
   trackParam.GetPxPyPzAt(r, TEveTrackPropagator::fgDefMagField, P0);
   TEveRecTrack rc;
-  rc.fV.Set(AliEveV0); 
+  rc.fV.Set(AliEveV0);
   rc.fP.Set(P0);
   rc.fSign = trackParam.Charge();
 
@@ -209,11 +209,11 @@ void AliEveTrackFitter::FitTrack()
   {
     GetPoint(i, x, y, z);
     pm->fV.Set(x, y, z);
-    pm->fP.Set(P0); 
+    pm->fP.Set(P0);
     track->AddPathMark(pm);
   }
   track->MakeTrack();
-  track->SetAttLineAttMarker(fTrackList); 
+  track->SetAttLineAttMarker(fTrackList);
   gEve->AddElement(track, fTrackList);
 }
 
@@ -241,7 +241,7 @@ void AliEveTrackFitter::DrawRiemanGraph()
   fGraphSelected->Set(nR);
   fGraphFitted->Set(nR);
 
-  Double_t* x =  fRieman->GetX();  
+  Double_t* x =  fRieman->GetX();
   Double_t* y =  fRieman->GetY();
   Double_t* sy =  fRieman->GetSy();
   for (Int_t i=0; i<nR; i++)
@@ -250,7 +250,7 @@ void AliEveTrackFitter::DrawRiemanGraph()
     fGraphFitted->SetPoint(i, x[i], fRieman->GetYat(x[i]));
     fGraphFitted->SetPointError(i, 0.1, sy[i]);
   }
-  
+
   if (gPad) gPad->Clear();
   fGraphSelected->Draw("AP");
   fGraphFitted->Draw("SAME P");

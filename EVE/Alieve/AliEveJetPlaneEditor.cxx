@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 
 #include "AliEveJetPlaneEditor.h"
@@ -160,7 +160,7 @@ void AliEveJetPlaneEditor::DoTwoSelection()
 }
 
 void AliEveJetPlaneEditor::DoStaticDataWindow()
-{	
+{
   printf("\n Soon available ... \n");
   if (fgStaticWindow == 0)
     fgStaticWindow = new StaticDataWindow(gClient->GetRoot(), this, 400, 200);

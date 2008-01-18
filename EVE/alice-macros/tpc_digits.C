@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 
 #include "TGLViewer.h"
@@ -54,7 +54,7 @@ void tpc_digits(Int_t mode=1)
 
     //TGLViewer* cam = gEve->GetGLViewer();
     //cam->SetCurrentCamera(TGLViewer::kCameraOrthoXOY) ;
-    //cam->SetOrthoCamera(TGLViewer::kCameraOrthoXOY, 2*left, 2*right, 2*top, bottom); 
+    //cam->SetOrthoCamera(TGLViewer::kCameraOrthoXOY, 2*left, 2*right, 2*top, bottom);
     //printf("%f %f %f %f\n", left, right, top, bottom);
 
     break;
@@ -67,7 +67,7 @@ void tpc_digits(Int_t mode=1)
       l->SetTitle("TPC Plate");
       l->SetMainColor(Color_t(col));
       gEve->AddElement(l);
-      
+
       for(Int_t i = 0; i<18; i++) {
 	AliEveTPCSector2D* s = new AliEveTPCSector2D(Form("AliEveTPCSector2D %d", i));
 	s->SetSectorID(i);
@@ -113,7 +113,7 @@ void tpc_digits(Int_t mode=1)
       l->SetTitle("TPC Plate");
       l->SetMainColor(Color_t(col));
       gEve->AddElement(l);
-      
+
       for(Int_t i = 0; i<18; i++) {
 	AliEveTPCSector3D* s = new AliEveTPCSector3D(Form("AliEveTPCSector3D %d", i));
 	s->SetSectorID(i);
@@ -171,7 +171,7 @@ void tpc_digits_2drange(Int_t start, Int_t end)
     TEveElementList* l = new TEveElementList("TPC sectors");
     l->SetMainColor(Color_t(col));
     gEve->AddElement(l);
-      
+
     for(Int_t i=start; i<=end; i++) {
       AliEveTPCSector2D* s = new AliEveTPCSector2D();
       s->SetSectorID(i);

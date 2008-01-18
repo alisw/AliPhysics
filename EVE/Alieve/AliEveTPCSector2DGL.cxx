@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 
 #include "AliEveTPCSector2DGL.h"
@@ -33,7 +33,7 @@ const Int_t AliEveTPCSector2DGL::fgkTextureByteSize = 4*256*128;
 
 AliEveTPCSector2DGL::AliEveTPCSector2DGL() :
   TGLObject(),
-  
+
   fSector     (0),
   fSectorData (0),
 
@@ -155,7 +155,7 @@ void AliEveTPCSector2DGL::LoadPadrow(AliEveTPCSectorData::RowIterator& iter,
 			       Int_t row, Int_t col_off) const
 {
   Int_t    padVal;
-  Int_t    time, val;   
+  Int_t    time, val;
 
   Int_t    minTime = fSector->fMinTime;
   Int_t    maxTime = fSector->fMaxTime;
@@ -163,7 +163,7 @@ void AliEveTPCSector2DGL::LoadPadrow(AliEveTPCSectorData::RowIterator& iter,
 
   UChar_t* img_pos = GetRowCol(row, col_off);
   while (iter.NextPad()) {
-    padVal = 0; 
+    padVal = 0;
 
     while (iter.Next()) {
       time = iter.Time();
@@ -255,7 +255,7 @@ void AliEveTPCSector2DGL::DisplayTexture(const AliEveTPCSectorData::SegmentInfo&
   Float_t u2 = u1 + (Float_t) seg.GetNMaxPads() / fgkTextureWidth;
   Float_t v2 = v1 + (Float_t) seg.GetNRows()    / fgkTextureHeight;
 
-  glBegin(GL_QUADS);  
+  glBegin(GL_QUADS);
   glTexCoord2f(u1, v1);  glVertex2f(-w, y1);
   glTexCoord2f(u1, v2);  glVertex2f(-w, y2);
   glTexCoord2f(u2, v2);  glVertex2f( w, y2);
@@ -351,7 +351,7 @@ void AliEveTPCSector2DGL::TraceStepsUp(const AliEveTPCSectorData::SegmentInfo& s
   glVertex2f(-s.GetNMaxPads()*s.GetPadWidth()/2, y);
 }
 
-void AliEveTPCSector2DGL::TraceStepsDown(const AliEveTPCSectorData::SegmentInfo& s) 
+void AliEveTPCSector2DGL::TraceStepsDown(const AliEveTPCSectorData::SegmentInfo& s)
 {
   Float_t x = s.GetNMaxPads()*s.GetPadWidth()/2;
   Float_t y = s.GetRLow() + s.GetNRows()*s.GetPadHeight();

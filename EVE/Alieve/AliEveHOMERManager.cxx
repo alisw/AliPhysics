@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
@@ -23,7 +23,7 @@
 
 /** @file   AliEveHOMERManager.cxx
     @author Jochen Thaeder
-    @date   
+    @date
     @brief  Manger for HOMER in offline
 */
 
@@ -73,8 +73,8 @@ ClassImp(AliEveHOMERManager)
 
 /*
  * ---------------------------------------------------------------------------------
- *                            Constructor / Destructor 
- * --------------------------------------------------------------------------------- 
+ *                            Constructor / Destructor
+ * ---------------------------------------------------------------------------------
  */
 
 //##################################################################################
@@ -83,7 +83,7 @@ AliEveHOMERManager::AliEveHOMERManager( TString xmlFile ) :
 
   fLibManager(new AliHLTHOMERLibManager),
   fXMLFile(xmlFile),
-  fXMLParser(NULL), 
+  fXMLParser(NULL),
   fRootNode(NULL),
   fSourceList(NULL),
   fReader(NULL),
@@ -130,7 +130,7 @@ AliEveHOMERManager::~AliEveHOMERManager() {
     fReader = NULL;
   }
 
-  if ( fXMLParser ) 
+  if ( fXMLParser )
     delete fXMLParser;
   fXMLParser = NULL;
 
@@ -150,7 +150,7 @@ AliEveHOMERManager::~AliEveHOMERManager() {
 /*
  * ---------------------------------------------------------------------------------
  *                            Source Handling
- * --------------------------------------------------------------------------------- 
+ * ---------------------------------------------------------------------------------
  */
 
 //##################################################################################
@@ -164,7 +164,7 @@ Int_t AliEveHOMERManager::CreateHOMERSourcesList() {
 
   fXMLParser = new TDOMParser();
   fXMLParser->SetValidate( kFALSE );
-  
+
   Int_t iResult = fXMLParser->ParseFile( fXMLFile );
   if ( iResult < 0 ) {
     iResult = 1;
@@ -177,13 +177,13 @@ Int_t AliEveHOMERManager::CreateHOMERSourcesList() {
   if ( fSourceList != NULL )
     delete fSourceList;
   fSourceList = NULL;
-  
+
   fSourceList = new TList();
   fSourceList->SetOwner( kTRUE );
 
   // -- Set ROOT node
   fRootNode = fXMLParser->GetXMLDocument()->GetRootNode();
-  
+
   TXMLNode * node = NULL;
   TXMLNode * prevNode = fRootNode->GetChildren();
 
@@ -194,21 +194,21 @@ Int_t AliEveHOMERManager::CreateHOMERSourcesList() {
     // -- Find only "Process" nodes, otherwise continue to next node
     if ( strcmp( node->GetNodeName(), "Proc" ) != 0 )
       continue;
-    
+
     // -- Get Attributes of current node
     TList *attrList = node->GetAttributes();
     TXMLAttr *attr = 0;
     TIter next(attrList);
-    
+
     while ( ( attr = (TXMLAttr*)next() ) ) {
-      
+
       // -- Find "ID" attribute, otherwise continue to next attribute
-      if ( strcmp( attr->GetName(), "ID" ) != 0 ) 
+      if ( strcmp( attr->GetName(), "ID" ) != 0 )
 	continue;
-      
+
       TString nodeId( attr->GetValue() );
 
-      // -- Find only TDS processes      
+      // -- Find only TDS processes
       TObjArray * nodeIdTok = nodeId.Tokenize("_");
 
       for ( Int_t ii=0 ; ii < nodeIdTok->GetEntries() ; ii++ ) {
@@ -262,7 +262,7 @@ void AliEveHOMERManager::SetSourceState( AliHLTHOMERSourceDesc * source, Bool_t 
 //##################################################################################
 Int_t AliEveHOMERManager::GetTDSAttributes( TXMLNode * xmlNode ) {
   // see header file for class documentation
-  
+
   Int_t iResult = 0;
 
   TXMLNode * attrNode = NULL;
@@ -271,26 +271,26 @@ Int_t AliEveHOMERManager::GetTDSAttributes( TXMLNode * xmlNode ) {
   TString xmlHostname = 0;
   TString xmlPort = 0;
 
-  TString hostname = 0; 
+  TString hostname = 0;
   Int_t port = 0;
 
   // -- Get hostname and port from TDS node out of XML
   while ( ( attrNode = prevNode->GetNextNode() ) ) {
     prevNode = attrNode;
-    
+
     // -- Get port out of the commandline
     if ( strcmp( attrNode->GetNodeName(), "Cmd" ) == 0 ) {
       TString cmd( attrNode->GetText() );
-      
+
       TObjArray * cmdTok = cmd.Tokenize(" ");
       xmlPort = ((TObjString*) cmdTok->At(2))->GetString();
-    } 
+    }
     // -- Get hostname
-    else if ( strcmp( attrNode->GetNodeName(), "Node" ) == 0 ) 
+    else if ( strcmp( attrNode->GetNodeName(), "Node" ) == 0 )
       xmlHostname = attrNode->GetText();
 
   } // while ( ( attrNode = prevNode->GetNextNode() ) ) {
-  
+
   // -- Resolve hostname and port information
   iResult = ResolveHostPortInformation ( xmlHostname, xmlPort, hostname, port );
   if ( iResult == 1 ) {
@@ -303,33 +303,33 @@ Int_t AliEveHOMERManager::GetTDSAttributes( TXMLNode * xmlNode ) {
   }
 
   // -- Reset loop to TDS node
-  prevNode = xmlNode;  
+  prevNode = xmlNode;
 
   // -- Get Sources out of XML, resolve sources, add to sources ListxmlHostname.Data()
   while ( ( attrNode = prevNode->GetNextNode() ) ) {
     prevNode = attrNode;
-    
+
     // Find only "Parent" tags, otherwise continue to next tag
-    if ( strcmp( attrNode->GetNodeName(), "Parent" ) != 0 ) 
+    if ( strcmp( attrNode->GetNodeName(), "Parent" ) != 0 )
       continue;
 
     TString xmlParent = attrNode->GetText();
-      
+
     AliHLTHOMERSourceDesc * source = new AliHLTHOMERSourceDesc( hostname, port );
-      
+
     if ( ResolveSourceInformation( xmlParent, source ) ) {
       iResult = 3;
       AliError( Form("Error resolving source : %s", xmlParent.Data()) );
-      
+
       delete source;
     }
     else {
       fSourceList->Add( source );
       AliInfo( Form("New Source added : %s", xmlParent.Data()) );
     }
-    
+
   } // while ( ( attrNode = prevNode->GetNextNode() ) ) {
-  
+
   return iResult;
 }
 
@@ -346,7 +346,7 @@ Int_t AliEveHOMERManager::ResolveHostPortInformation ( TString xmlHostname, TStr
   TString nodeName = 0;
   while ( ( node = prevNode->GetNextNode() ) && iResult == 1 ) {
     prevNode = node;
-    
+
     // -- Find only "Node" nodes, otherwise continue
     if ( strcmp( node->GetNodeName(), "Node" ) != 0 )
       continue;
@@ -355,17 +355,17 @@ Int_t AliEveHOMERManager::ResolveHostPortInformation ( TString xmlHostname, TStr
     TList *attrList = node->GetAttributes();
     TXMLAttr *attr = 0;
     TIter next(attrList);
-    
+
     TString nodeId = 0;
     //    TString nodeName = 0;
-    
+
     // Get "nodeID" and "nodeName" of this "Node" node
     while ( ( attr = (TXMLAttr*)next() ) ) {
       if ( strcmp( attr->GetName(), "ID" ) == 0 )
 	nodeId = attr->GetValue();
       else if ( strcmp( attr->GetName(), "hostname" ) == 0 )
 	nodeName = attr->GetValue();
-    } 
+    }
 
     // -- if this is not the correct nodeID continue
     if ( nodeId != xmlHostname )
@@ -391,19 +391,19 @@ Int_t AliEveHOMERManager::ResolveHostPortInformation ( TString xmlHostname, TStr
   // *** Resolve port
 
   if ( xmlPort.IsDigit() ) {
-    
+
     if ( nodeName.CompareTo("feptriggerdet") ==0 ){
       if ( xmlPort.CompareTo("49152") == 0 ){
 	port = 58140;
       } else if ( xmlPort.CompareTo("49153") == 0 ){
 	port = 58141;
-      } 
+      }
     } else if ( nodeName.CompareTo("fepfmdaccorde") == 0 ){
       if ( xmlPort.CompareTo("49152") == 0 ){
 	port = 58144;
       } else if ( xmlPort.CompareTo("49153") == 0 ){
 	port = 58145;
-      } 
+      }
     } else if ( nodeName.CompareTo("feptpcao15") == 0 ){
       if ( xmlPort.CompareTo("49152") == 0 ){
 	port = 50340;
@@ -422,7 +422,7 @@ Int_t AliEveHOMERManager::ResolveHostPortInformation ( TString xmlHostname, TStr
   // *** Summary
 
   if ( !iResult ) {
-    AliInfo( Form("%s:%i resolved out of %s:%s", hostname.Data(), port, xmlHostname.Data(), xmlPort.Data()) );    
+    AliInfo( Form("%s:%i resolved out of %s:%s", hostname.Data(), port, xmlHostname.Data(), xmlPort.Data()) );
   }
 
   return iResult;
@@ -440,11 +440,11 @@ Int_t AliEveHOMERManager::ResolveSourceInformation( TString xmlParent, AliHLTHOM
 
     return iResult;
   }
-    
+
   TObjArray * parentTokens = xmlParent.Tokenize("_");
-    
+
   Int_t nEntries = parentTokens->GetEntries();
-  
+
   TString detector = ((TObjString*) parentTokens->At(0) )->GetString();
   TString subDetector = "";
   TString subSubDetector = "";
@@ -453,14 +453,14 @@ Int_t AliEveHOMERManager::ResolveSourceInformation( TString xmlParent, AliHLTHOM
 
   TString name = ((TObjString*) parentTokens->At(1) )->GetString();
   TString objName = "";
-  
-  if ( nEntries == 3 ) 
-    subDetector = ((TObjString*) parentTokens->At(2) )->GetString(); 
+
+  if ( nEntries == 3 )
+    subDetector = ((TObjString*) parentTokens->At(2) )->GetString();
   else if ( nEntries == 4 ) {
-    subDetector = ((TObjString*) parentTokens->At(2) )->GetString(); 
-    subSubDetector = ((TObjString*) parentTokens->At(3) )->GetString(); 
+    subDetector = ((TObjString*) parentTokens->At(2) )->GetString();
+    subSubDetector = ((TObjString*) parentTokens->At(3) )->GetString();
   }
-  
+
   // -- Corecct TPC subdetector, because in we have somtimes "A","C"
   if ( ! detector.CompareTo("TPC") ) {
     if ( subDetector.BeginsWith('A') ) {
@@ -485,28 +485,28 @@ Int_t AliEveHOMERManager::ResolveSourceInformation( TString xmlParent, AliHLTHOM
     objName = "";
     dataType = "DDL_RAW";
     specification = 0;
-  } 
+  }
 
   // **** TPC ****
   else if ( detector == "TPC" ) {
-    
+
     if ( name == "CalibPedestal" ) {
       objName = "AliTPCCalibPedestal";
       dataType = "HIS_CAL";
       specification = 0;
     }
     else if ( name == "CalibPulser" ) {
-      objName = "AliTPCCalibPulser"; 
+      objName = "AliTPCCalibPulser";
       dataType = "HIS_CAL";
       specification = 0;
     }
     else if ( name == "CF" || name == "RelayCF" ) {
-      objName = "AliHLTTPCClusterDataFormat"; 
+      objName = "AliHLTTPCClusterDataFormat";
       dataType = "CLUSTERS";
       specification = 0;
     }
     else if ( name == "ESDConv" ) {
-      objName = "AliESDEvent"; 
+      objName = "AliESDEvent";
       dataType = "ESD_TREE";
       specification = 0;
     }
@@ -532,7 +532,7 @@ Int_t AliEveHOMERManager::ResolveSourceInformation( TString xmlParent, AliHLTHOM
   else if ( detector == "MUON" ) {
 
   } // else if ( detector == "MUON" ) {
-  
+
   // -- Fill object
   source->SetSourceName( name, objName );
   source->SetSourceType( specification, dataType );
@@ -540,7 +540,7 @@ Int_t AliEveHOMERManager::ResolveSourceInformation( TString xmlParent, AliHLTHOM
 
 
   AliInfo( Form("Set Source %s , Type %s, ClassName %s .", name.Data(), dataType.Data(), objName.Data()) );
-  AliInfo( Form("    Detector %s , SubDetector : %s, SubSubDetector %s .", 
+  AliInfo( Form("    Detector %s , SubDetector : %s, SubSubDetector %s .",
 		detector.Data(), subDetector.Data(), subSubDetector.Data()) );
 
   return iResult;
@@ -549,23 +549,23 @@ Int_t AliEveHOMERManager::ResolveSourceInformation( TString xmlParent, AliHLTHOM
 /*
  * ---------------------------------------------------------------------------------
  *                            Connection Handling
- * --------------------------------------------------------------------------------- 
+ * ---------------------------------------------------------------------------------
  */
 
 //##################################################################################
 Int_t AliEveHOMERManager::ConnectHOMER(){
   // see header file for class documentation
 
-  Int_t iResult = 0;    
+  Int_t iResult = 0;
 
   // -- Check if already connected and state has not changed
   if ( fStateHasChanged == kFALSE && IsConnected() ) {
     AliInfo( Form("No need for reconnection.") );
     return iResult;
   }
-    
+
   // -- If already connected, disconnect before connect
-  if ( IsConnected() ) 
+  if ( IsConnected() )
     DisconnectHOMER();
 
   // *** Create the Readoutlist
@@ -575,28 +575,28 @@ Int_t AliEveHOMERManager::ConnectHOMER(){
   UInt_t sourceCount = 0;
 
   CreateReadoutList( sourceHostnames, sourcePorts, sourceCount );
-  
+
   if ( sourceCount == 0 ) {
     AliError(Form("No sources selected, aborting.") );
     return iResult;
   }
 
   // *** Connect to data sources
-  
+
   if ( !fReader ) {
-    if ( fLibManager ) 
+    if ( fLibManager )
       fReader = fLibManager->OpenReader( sourceCount, sourceHostnames, sourcePorts );
   }
-  
+
   iResult = fReader->GetConnectionStatus();
-  
-  if ( iResult ) {	
-    // -- Connection failed 
-      
+
+  if ( iResult ) {
+    // -- Connection failed
+
     UInt_t ndx = fReader->GetErrorConnectionNdx();
-      
+
     if ( ndx < sourceCount ) {
-      AliError( Form("Error : Error establishing connection to TCP source %s:%hu: %s (%d)", 
+      AliError( Form("Error : Error establishing connection to TCP source %s:%hu: %s (%d)",
 		     sourceHostnames[ndx], sourcePorts[ndx], strerror(iResult), iResult) );
     }
     else {
@@ -608,22 +608,22 @@ Int_t AliEveHOMERManager::ConnectHOMER(){
       fLibManager->DeleteReader( fReader );
     fReader = NULL;
 
-  } 
+  }
   else {
     // -- Connection ok - set reader
-    fConnected = kTRUE; 
-    
+    fConnected = kTRUE;
+
     AliInfo( Form("Connection established") );
   }
-  
+
   delete[] sourceHostnames;
   delete[] sourcePorts;
-  
+
 
   // -- Get next event
   if ( ! iResult )
     NextEvent();
-  
+
   return iResult;
 }
 
@@ -640,7 +640,7 @@ void AliEveHOMERManager::DisconnectHOMER(){
 
   fStateHasChanged = kTRUE;
   fConnected = kFALSE;
-  
+
   AliInfo( Form("Connection closed") );
 
   return;
@@ -674,9 +674,9 @@ void AliEveHOMERManager::CreateReadoutList( const char** sourceHostnames, UShort
   TIter next( fSourceList );
   while ( ( source = (AliHLTHOMERSourceDesc*)next() ) ) {
 
-    if ( ! source->IsSelected() ) 
+    if ( ! source->IsSelected() )
       continue;
-    
+
     Bool_t exists = kFALSE;
 
     // -- Loop over existing entries and check if entry is already in readout list
@@ -686,7 +686,7 @@ void AliEveHOMERManager::CreateReadoutList( const char** sourceHostnames, UShort
 	break;
       }
     }
-    
+
     // -- Add new entires to readout list
     if ( ! exists ) {
       sourcePorts[sourceCount] = source->GetPort();
@@ -704,39 +704,39 @@ void AliEveHOMERManager::CreateReadoutList( const char** sourceHostnames, UShort
 /*
  * ---------------------------------------------------------------------------------
  *                            AliEveEventManager Handling
- * --------------------------------------------------------------------------------- 
+ * ---------------------------------------------------------------------------------
  */
 
 //##################################################################################
 Int_t AliEveHOMERManager::NextEvent(){
   // see header file for class documentation
-  
+
   Int_t iResult = 0;
-  
+
   if ( !fReader || ! IsConnected() ) {
     AliWarning( Form( "Not connected yet." ) );
     return 1;
   }
-  
+
   // -- Read next event data and error handling for HOMER (error codes and empty blocks)
   while( 1 ) {
     iResult = fReader->ReadNextEvent( 20000000 /*timeout in us*/);
-    
+
     if ( iResult == 111 || iResult == 32 || iResult == 6 ) {
       Int_t ndx = fReader->GetErrorConnectionNdx();
       AliError( Form("Error, No Connection to source %d: %s (%d)", ndx, strerror(iResult), iResult) );
- 
+
      return 2;
     }
     else if ( iResult == 110 ) {
       Int_t ndx = fReader->GetErrorConnectionNdx();
       AliError( Form("Timout occured, reading event from source %d: %s (%d)", ndx, strerror(iResult), iResult) );
-      return 3; 
+      return 3;
     }
     else if ( iResult == 56) {
       Int_t ndx = fReader->GetErrorConnectionNdx();
       AliError( Form("Error reading event from source %d: %s (%d) -- IRESULTRY", ndx, strerror(iResult), iResult) );
-      continue; 
+      continue;
     }
     else if ( iResult ) {
       Int_t ndx = fReader->GetErrorConnectionNdx();
@@ -748,7 +748,7 @@ Int_t AliEveHOMERManager::NextEvent(){
     }
   } // while( 1 ) {
 
-  if ( iResult ) 
+  if ( iResult )
     return iResult;
 
 
@@ -801,28 +801,28 @@ Int_t AliEveHOMERManager::CreateBlockList() {
 
   // -- Fill block list
   while ( iter != NULL ){
-    
+
     // -- Create new block
-    AliHLTHOMERBlockDesc * block = new AliHLTHOMERBlockDesc( GetBlk(), GetBlkSize(), GetBlkOrigin(), 
+    AliHLTHOMERBlockDesc * block = new AliHLTHOMERBlockDesc( GetBlk(), GetBlkSize(), GetBlkOrigin(),
 							     GetBlkType(), GetBlkSpecification() );
-    
+
     // -- Check sources list if block is requested
     if ( CheckIfRequested( block ) )
-      fBlockList->Add( block );      
-    else 
+      fBlockList->Add( block );
+    else
       delete block;
-    
+
     iter = GetNextBlk();
-    
+
   } // while ( iter != NULL ){
-  
+
   return iResult;
 }
 
 /*
  * ---------------------------------------------------------------------------------
  *                            BlockHandling
- * --------------------------------------------------------------------------------- 
+ * ---------------------------------------------------------------------------------
  */
 
 //##################################################################################
@@ -830,12 +830,12 @@ void* AliEveHOMERManager::GetBlk( Int_t ndx ) {
   // see header file for class documentation
 
   void* data = NULL;
-  
+
   if ( !fReader || ! IsConnected() ) {
-    AliError( Form("Not connected yet.") ); 
+    AliError( Form("Not connected yet.") );
   }
   else {
-    if ( ( ndx ) < (Int_t) fNBlks ) 
+    if ( ( ndx ) < (Int_t) fNBlks )
       data = (void*) fReader->GetBlockData( ndx );
   }
 
@@ -849,10 +849,10 @@ ULong_t AliEveHOMERManager::GetBlkSize( Int_t ndx ) {
   ULong_t length = 0;
 
   if ( !fReader || ! IsConnected() ) {
-    AliError( Form("Not connected yet.") ); 
+    AliError( Form("Not connected yet.") );
   }
   else {
-    if ( ( ndx ) < (Int_t) fNBlks ) 
+    if ( ( ndx ) < (Int_t) fNBlks )
       length = (ULong_t) fReader->GetBlockDataLength( ndx );
   }
 
@@ -867,14 +867,14 @@ TString AliEveHOMERManager::GetBlkOrigin( Int_t ndx ) {
 
   // -- Check for Connection
   if ( !fReader || ! IsConnected() ) {
-    AliError( Form("Not connected yet.") ); 
+    AliError( Form("Not connected yet.") );
     return origin;
   }
 
   // -- Check block index
   if ( ( ndx ) >= (Int_t) fNBlks ) {
-    AliError( Form("Block index %d out of range.", ndx ) ); 
-    return origin;  
+    AliError( Form("Block index %d out of range.", ndx ) );
+    return origin;
   }
 
   // -- Get origin
@@ -901,14 +901,14 @@ TString AliEveHOMERManager:: GetBlkType( Int_t ndx ) {
 
   // -- Check for Connection
   if ( !fReader || ! IsConnected() ) {
-    AliError( Form("Not connected yet.") ); 
+    AliError( Form("Not connected yet.") );
     return type;
   }
 
   // -- Check blockk index
   if ( ( ndx ) >= (Int_t) fNBlks ) {
-    AliError( Form("Block index %d out of range.", ndx ) ); 
-    return type;  
+    AliError( Form("Block index %d out of range.", ndx ) );
+    return type;
   }
 
   // -- Get type
@@ -937,16 +937,16 @@ ULong_t AliEveHOMERManager:: GetBlkSpecification( Int_t ndx ) {
 
   // -- Check for Connection
   if ( !fReader || ! IsConnected() ) {
-    AliError( Form("Not connected yet.") ); 
+    AliError( Form("Not connected yet.") );
     return spec;
   }
 
   // -- Check blockk index
   if ( ( ndx ) >= (Int_t) fNBlks ) {
-    AliError( Form("Block index %d out of range.", ndx ) ); 
-    return spec;  
+    AliError( Form("Block index %d out of range.", ndx ) );
+    return spec;
   }
-  
+
   spec = (ULong_t) fReader->GetBlockDataSpec( ndx );
 
   return spec;
@@ -957,14 +957,14 @@ Bool_t AliEveHOMERManager::CheckIfRequested( AliHLTHOMERBlockDesc * block ) {
   // see header file for class documentation
 
   Bool_t requested = kFALSE;
-  
+
   AliHLTHOMERSourceDesc * source= NULL;
-  
+
   // -- Read all sources and check if they should be read out
   TIter next( fSourceList );
   while ( ( source = (AliHLTHOMERSourceDesc*)next() ) ) {
 
-    if ( ! source->IsSelected() ) 
+    if ( ! source->IsSelected() )
       continue;
 
     if ( source->GetDetector().CompareTo( block->GetDetector() ) )
@@ -977,21 +977,21 @@ Bool_t AliEveHOMERManager::CheckIfRequested( AliHLTHOMERBlockDesc * block ) {
 
       if ( source->GetSubDetector().Atoi() != block->GetSubDetector().Atoi() )
 	continue;
-      
+
       if ( ! block->HasSubSubDetectorRange() ) {
-	
+
 	//	if ( source->GetSubSubDetector().Atoi() != block->GetSubSubDetector().Atoi() )
 	//   continue;
-	 
+
       } // if ( ! block->HasSubSubDetectorRange ) {
     } //  if ( ! block->HasSubDetectorRange ) {
-    
+
     requested = kTRUE;
-   
+
   } // while ( ( source = (AliHLTHOMERSourceDesc*)next() ) ) {
-  
+
   if ( requested) {
-    AliInfo( Form("Block requested : %s - %s : %s/%s -> %s ", block->GetDetector().Data(), block->GetDataType().Data(), 
+    AliInfo( Form("Block requested : %s - %s : %s/%s -> %s ", block->GetDetector().Data(), block->GetDataType().Data(),
 		  block->GetSubDetector().Data(), block->GetSubSubDetector().Data(), block->GetClassName().Data() ) );
   }
   else
@@ -1015,13 +1015,13 @@ void AliEveHOMERManager::TestSelectClass( TString objectName ) {
   // see header file for class documentation
 
   TList* srcList = GetSourceList();
- 
+
   AliHLTHOMERSourceDesc *desc = 0;
 
   TIter next(srcList);
-    
+
   while ( ( desc = (AliHLTHOMERSourceDesc*)next() ) ) {
-    if ( ! desc->GetClassName().CompareTo( objectName ) ) 
+    if ( ! desc->GetClassName().CompareTo( objectName ) )
       desc->Select();
   }
 }
@@ -1031,11 +1031,11 @@ void AliEveHOMERManager::SelectRawTPC() {
   // see header file for class documentation
 
   TList* srcList = GetSourceList();
- 
+
   AliHLTHOMERSourceDesc *desc = 0;
 
   TIter next(srcList);
-    
+
   while ( ( desc = (AliHLTHOMERSourceDesc*)next() ) ) {
     if ( ! desc->GetDataType().CompareTo( "DDL_RAW" ) ) {
       desc->Select();
@@ -1048,11 +1048,11 @@ void AliEveHOMERManager::SelectClusterTPC() {
   // see header file for class documentation
 
   TList* srcList = GetSourceList();
- 
+
   AliHLTHOMERSourceDesc *desc = 0;
 
   TIter next(srcList);
-    
+
   while ( ( desc = (AliHLTHOMERSourceDesc*)next() ) ) {
     if ( ! desc->GetDataType().CompareTo( "CLUSTERS" ) ) {
       desc->Select();
@@ -1065,11 +1065,11 @@ void AliEveHOMERManager::SelectESDTPC() {
   // see header file for class documentation
 
   TList* srcList = GetSourceList();
- 
+
   AliHLTHOMERSourceDesc *desc = 0;
 
   TIter next(srcList);
-    
+
   while ( ( desc = (AliHLTHOMERSourceDesc*)next() ) ) {
     if ( ! desc->GetDataType().CompareTo( "ESD_TREE" ) ) {
       desc->Select();
@@ -1090,11 +1090,11 @@ void AliEveHOMERManager::DumpTPCCalib(TString objectName, Bool_t dumpToFile) {
   AliHLTHOMERBlockDesc *desc = 0;
 
   TIter next(blockList);
-    
+
   while ( ( desc = (AliHLTHOMERBlockDesc*)next() ) ) {
     if ( ! desc->IsTObject() )
       continue;
-    
+
     Int_t sectorTPC = 0;
 
     if ( desc->GetSubSubDetector().Atoi() <= 1 ) {
@@ -1103,7 +1103,7 @@ void AliEveHOMERManager::DumpTPCCalib(TString objectName, Bool_t dumpToFile) {
     else {
       sectorTPC = 36 + desc->GetSubDetector().Atoi();
     }
-    
+
     if ( ! objectName.CompareTo( desc->GetClassName() ) ){
 
       //
@@ -1112,13 +1112,13 @@ void AliEveHOMERManager::DumpTPCCalib(TString objectName, Bool_t dumpToFile) {
 
       if ( ! objectName.CompareTo( "AliTPCCalibPedestal" ) ) {
 	AliTPCCalROC* calROC = NULL;
-	
+
 	AliTPCCalibPedestal * cal = (AliTPCCalibPedestal*) desc->GetTObject();
 	if ( cal == NULL ) {
 	  cout << "error 1" << endl;
 	  continue;
 	}
-	
+
 	cal->Analyse();
 
 	calROC = cal->GetCalRocRMS(sectorTPC);
@@ -1126,7 +1126,7 @@ void AliEveHOMERManager::DumpTPCCalib(TString objectName, Bool_t dumpToFile) {
 	  cout << "error 2" << endl;
 	  continue;
 	}
-	
+
 	calROC->SetName(Form("RMS_ROC%d", sectorTPC));
 	fTPCPre->AddComponent((TObject*) calROC );
 
@@ -1135,7 +1135,7 @@ void AliEveHOMERManager::DumpTPCCalib(TString objectName, Bool_t dumpToFile) {
 	  cout << "error 3" << endl;
 	  continue;
 	}
-	
+
 
 	calROC->SetName(Form("Pedestal_ROC%d", sectorTPC));
 	cout << "added" << endl;
@@ -1152,7 +1152,7 @@ void AliEveHOMERManager::DumpTPCCalib(TString objectName, Bool_t dumpToFile) {
 	AliTPCCalibPulser * cal = (AliTPCCalibPulser*) desc->GetTObject();
 
 	cal->Analyse();
-	
+
 	calROC = cal->GetCalRocT0(sectorTPC);
 	calROC->SetName(Form("T0_ROC%d", sectorTPC));
 	fTPCPre->AddComponent((TObject*) calROC );
@@ -1169,7 +1169,7 @@ void AliEveHOMERManager::DumpTPCCalib(TString objectName, Bool_t dumpToFile) {
 	calROC->SetName(Form("Outliers_ROC%d", sectorTPC));
 	fTPCPre->AddComponent((TObject*) calROC );
       }
-	  
+
 */
       //
       // AliTPCCalibCE
@@ -1181,7 +1181,7 @@ void AliEveHOMERManager::DumpTPCCalib(TString objectName, Bool_t dumpToFile) {
 	AliTPCCalibPulser * cal = (AliTPCCalibPulser*) desc->GetTObject();
 
 	cal->Analyse();
-	
+
 	calROC = cal->GetCalRocT0(sectorTPC);
 	calROC->SetName(Form("T0_ROC%d", sectorTPC));
 	fTPCPre->AddComponent((TObject*) calROC );
@@ -1200,7 +1200,7 @@ void AliEveHOMERManager::DumpTPCCalib(TString objectName, Bool_t dumpToFile) {
       }
       */
     } // if ( ! objectName.CompareTo( desc->GetClassName() ) ) {
- 
+
   } // while ( ( desc = (AliHLTHOMERBlockDesc*)next() ) ) {
 
   if ( dumpToFile ) {

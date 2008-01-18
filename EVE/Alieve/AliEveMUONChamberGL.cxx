@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
@@ -72,7 +72,7 @@ Bool_t AliEveMUONChamberGL::SetModel(TObject* obj, const Option_t* /*opt*/)
   //
 
   if(SetModelCheckClass(obj, AliEveMUONChamber::Class())) {
-    
+
     fChamber = (AliEveMUONChamber*) fExternalObj;
     fQS1.SetModel(&fChamber->fQuadSet1);
     fQS2.SetModel(&fChamber->fQuadSet2);
@@ -111,14 +111,14 @@ void AliEveMUONChamberGL::DirectDraw(TGLRnrCtx& rnrCtx) const
     fChamber->UpdateQuads();
     fRTS = fChamber->fRTS;
   }
-  
+
   Bool_t hasData = (fChamber->GetChamberData() != 0);
-  
+
   if(hasData) {
 
     DrawQuads(rnrCtx);
     DrawPoints();
-  
+
   }
 
   DrawChamberFrame();
@@ -168,9 +168,9 @@ void AliEveMUONChamberGL::DrawPoints() const
   glLineWidth(1.0);
 
   glColor3f(1.0,1.0,1.0);
-    
+
   glBegin(GL_LINES);
-    
+
   // clusters
 
   Int_t clsSize = fChamber->fClusterSize;
@@ -178,17 +178,17 @@ void AliEveMUONChamberGL::DrawPoints() const
   if (clsSize > 1) {
 
     for (Int_t i = 0; i < fChamber->fPointSet1.GetN(); i++) {
-      
+
       fChamber->fPointSet1.GetPoint(i,x,y,z);
 
       glVertex3f(x-clsSize,y+clsSize,z);
       glVertex3f(x+clsSize,y-clsSize,z);
-      
+
       glVertex3f(x-clsSize,y-clsSize,z);
       glVertex3f(x+clsSize,y+clsSize,z);
-      
+
     }
-    
+
   }
 
   // hits
@@ -198,21 +198,21 @@ void AliEveMUONChamberGL::DrawPoints() const
   if (hitSize > 1) {
 
     for (Int_t i = 0; i < fChamber->fPointSet2.GetN(); i++) {
-      
+
       fChamber->fPointSet2.GetPoint(i,x,y,z);
-      
+
       glVertex3f(x-hitSize,y,z);
       glVertex3f(x+hitSize,y,z);
-      
+
       glVertex3f(x,y-hitSize,z);
       glVertex3f(x,y+hitSize,z);
-      
+
     }
-    
+
   }
 
   glEnd();
-    
+
 }
 
 //______________________________________________________________________
@@ -220,7 +220,7 @@ void AliEveMUONChamberGL::DrawChamberFrame() const
 {
   //
   // draw the chamber frame as GL_LINE_LOOP
-  // 
+  //
 
   AliEveMUONChamberData* chamberData = fChamber->GetChamberData();
   Int_t nDetElem = chamberData->GetNDetElem();
@@ -234,7 +234,7 @@ void AliEveMUONChamberGL::DrawChamberFrame() const
   pix[3] = 255;
 
   glColor4ubv(pix);
-  
+
   for (Int_t id = 0; id < nDetElem; id++) {
 
     frameCoord = chamberData->GetFrameCoord(id);
@@ -246,14 +246,14 @@ void AliEveMUONChamberGL::DrawChamberFrame() const
       xRad  = frameCoord[2];
       yRad  = frameCoord[3];
       z     = frameCoord[4];
-      
+
       xRad += 0.0;
       yRad += 0.0;
 
       glBegin(GL_LINE_LOOP);
 
       glVertex3f(xOrig,yOrig,z);
-      
+
       Int_t nstep = 100;
       Float_t dstep = TMath::Pi()/2.0 / (Float_t)nstep;
       Float_t d;
@@ -266,7 +266,7 @@ void AliEveMUONChamberGL::DrawChamberFrame() const
 	glVertex3f(x,y,z);
 
       }
-      
+
       glVertex3f(xOrig,yOrig,z);
 
       glEnd();

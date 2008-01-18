@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 
 #ifndef ALIEVE_TOFSectorEditor_H
@@ -23,9 +23,9 @@ class TEveGValuator;
 class TEveGDoubleValuator;
 class TEveTransSubEditor;
 
-  
+
   class AliEveTOFSector;
-  
+
   class AliEveTOFSectorEditor : public TGedFrame
   {
     //private:
@@ -34,9 +34,9 @@ class TEveTransSubEditor;
 
   protected:
     AliEveTOFSector* fM; // fModel dynamic-casted to AliEveTOFSectorEditor
-    
+
     TEveGValuator* fSectorID;
-    
+
     TGCheckButton*    fAutoTrans;
 
     TGCheckButton**    fPlate;
@@ -48,19 +48,19 @@ class TEveTransSubEditor;
     TGCheckButton*    fPlate4;
 
     TEveGValuator* fThreshold;
-    TEveGValuator* fMaxVal;   
+    TEveGValuator* fMaxVal;
 
 
     // Declare widgets
     // TGSomeWidget*   fXYZZ;
-    
+
   public:
     AliEveTOFSectorEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30, UInt_t options = kChildFrame, Pixel_t back=GetDefaultFrameBackground());
     virtual ~AliEveTOFSectorEditor();
-    
+
     virtual void SetModel(TObject* obj);
     void DoSectorID();
-    void DoAutoTrans(); 
+    void DoAutoTrans();
     void DoPlate0();
     void DoPlate1();
     void DoPlate2();
@@ -74,8 +74,8 @@ class TEveTransSubEditor;
 
     // Declare callback/slot methods
     // void DoXYZZ();
-    
+
     ClassDef(AliEveTOFSectorEditor, 0); // Editor for AliEveTOFSector
   }; // endclass AliEveTOFSectorEditor
-  
+
 #endif

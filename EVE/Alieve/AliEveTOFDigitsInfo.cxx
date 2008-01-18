@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 //
 // AliEveTOFDigitsInfo
@@ -23,7 +23,7 @@ using namespace std;
 
 ClassImp(AliEveTOFDigitsInfo)
 
-  AliEveTOFDigitsInfo::AliEveTOFDigitsInfo(): 
+  AliEveTOFDigitsInfo::AliEveTOFDigitsInfo():
     TObject(),
     TEveRefCnt(),
     fTree (0),
@@ -33,7 +33,7 @@ ClassImp(AliEveTOFDigitsInfo)
 {}
 /* ******************************************************* */
 
-AliEveTOFDigitsInfo:: ~AliEveTOFDigitsInfo() 
+AliEveTOFDigitsInfo:: ~AliEveTOFDigitsInfo()
 {
 
   delete fGeom;
@@ -47,11 +47,11 @@ AliEveTOFDigitsInfo:: ~AliEveTOFDigitsInfo()
 void AliEveTOFDigitsInfo::SetTree(TTree* tree)
 {
   static const TEveException eH("AliEveTOFDigitsInfo::SetTree ");
-  
+
   if(fGeom == 0) {
     fGeom = new AliTOFGeometry();
   }
-  
+
   fTree = tree;
   /*
   DecRefCount();
@@ -74,7 +74,7 @@ void AliEveTOFDigitsInfo::LoadDigits()
   for (Int_t digitNumber=0; digitNumber<digitsTOF->GetEntries(); digitNumber++) {
 
     //if (digitNumber==digitsTOF->GetEntries()-1) printf(" Hello  4 -> %3i digit of %i \n", digitNumber+1, digitsTOF->GetEntries());
-  
+
     digs = (AliTOFdigit*)digitsTOF->UncheckedAt(digitNumber);
 
     vol[0] = digs->GetSector(); // Sector Number (0-17)
@@ -186,15 +186,15 @@ TClonesArray* AliEveTOFDigitsInfo::GetDigits(Int_t nSector)
 
   //Int_t nSector = 1;
   Int_t vol[5] = {nSector,-1,-1,-1,-1};
- 
+
   for(Int_t iPlate=0; iPlate<fGeom->NPlates(); iPlate++){
     vol[1] = iPlate;
     if(iPlate==2) nStrips=15;
     else nStrips=19;
-      
+
     for(Int_t iStrip=0; iStrip<nStrips; iStrip++){
       vol[2] = iStrip;
-	
+
       for(Int_t iPadZ=0; iPadZ<fGeom->NpadZ(); iPadZ++){
 	vol[4] = iPadZ;
 
@@ -222,7 +222,7 @@ TClonesArray* AliEveTOFDigitsInfo::GetDigits(Int_t nSector)
 	  for (Int_t ii=0; ii<4; ii++) informations[ii]=-1;
 	  for (Int_t ii=0; ii<3; ii++) dummy[ii]=-1;
 	  for (Int_t ii=0; ii<3; ii++) nDigitsInVolume[ii]=-1;
-	    
+
 	}
       }
     }

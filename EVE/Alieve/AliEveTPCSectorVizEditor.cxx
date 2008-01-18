@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 
 #include "AliEveTPCSectorVizEditor.h"
@@ -196,7 +196,7 @@ void AliEveTPCSectorVizEditor::DoMaxVal()
 /**************************************************************************/
 
 void AliEveTPCSectorVizEditor::DoTime()
-{ 
+{
   fM->SetMinTime((Int_t) fTime->GetMin());
   fM->SetMaxTime((Int_t) fTime->GetMax());
   Update();

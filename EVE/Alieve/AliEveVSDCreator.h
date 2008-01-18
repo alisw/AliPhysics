@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 
 #ifndef ALIEVE_VSDCreator_H
@@ -35,8 +35,8 @@ protected:
   TString       mDataDir;   // X{G}
   Int_t         mEvent;     // X{G}
 
-  Float_t       mTPCHitRes;  // X{gs} 
-  Float_t       mTRDHitRes;  // X{gs} 
+  Float_t       mTPCHitRes;  // X{gs}
+  Float_t       mTRDHitRes;  // X{gs}
 
   Int_t         mDebugLevel;
 
@@ -47,7 +47,7 @@ public:
   virtual ~AliEveVSDCreator() {}
 
   void CreateVSD(const Text_t* data_dir, Int_t event,
-                 const Text_t* vsd_file);  // X{Ed} 
+                 const Text_t* vsd_file);  // X{Ed}
 
   void CreateTrees();
 

@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 
 #ifndef ALIEVE_ITSScaledModuleEditor_H
@@ -42,7 +42,7 @@ protected:
   AliEveITSScaledModule*  fModule; // fModel dynamic-casted to AliEveITSScaledModuleEditor
 
   TGNumberEntry*    fScale;
-  TGComboBox*       fStatistic;  
+  TGComboBox*       fStatistic;
 
   TGLabel*          fInfoLabel0;
   TGLabel*          fInfoLabel1;

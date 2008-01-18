@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 
 #include "AliEveITSModuleStepper.h"
@@ -41,8 +41,8 @@ ClassImp(AliEveITSModuleStepper)
 AliEveITSModuleStepper::AliEveITSModuleStepper(AliEveITSDigitsInfo* di) :
   TEveElementList("ITS 2DStore", "AliEveITSModuleStepper", kTRUE),
 
-  fPosition(0), 
-    
+  fPosition(0),
+
   fDigitsInfo(di),
   fScaleInfo(0),
 
@@ -116,7 +116,7 @@ void AliEveITSModuleStepper::Capacity()
   if (N != GetNChildren())
   {
     DestroyElements();
-    for (Int_t m=0; m<N; m++) 
+    for (Int_t m=0; m<N; m++)
     {
       AddElement(new AliEveITSScaledModule(m, fDigitsInfo, fScaleInfo));
     }
@@ -128,8 +128,8 @@ void AliEveITSModuleStepper::Capacity()
 void AliEveITSModuleStepper::SetFirst(Int_t first)
 {
   Int_t lastpage = fIDs.size()/Nxy();
-  if(fIDs.size() % Nxy() ) lastpage++;  
-        
+  if(fIDs.size() % Nxy() ) lastpage++;
+
   Int_t first_lastpage = (lastpage -1)*Nxy();
   if(first > first_lastpage) first = first_lastpage;
   if(first < 0) first = 0;
@@ -155,12 +155,12 @@ void AliEveITSModuleStepper::Previous()
 }
 
 void AliEveITSModuleStepper::End()
-{ 
+{
   Int_t lastpage = fIDs.size()/Nxy();
-  if(fIDs.size() % Nxy() ) lastpage++;  
+  if(fIDs.size() % Nxy() ) lastpage++;
   fPosition = (lastpage -1)*Nxy();
 
-  fStepper->Reset(); 
+  fStepper->Reset();
   Apply();
 }
 
@@ -171,7 +171,8 @@ void AliEveITSModuleStepper::DisplayDet(Int_t det, Int_t layer)
   fSubDet = det;
   fIDs.clear();
   AliEveITSModuleSelection sel = AliEveITSModuleSelection();
-  sel.fType = det; sel.fLayer=layer;
+  sel.SetType (det);
+  sel.SetLayer(layer);
   fDigitsInfo->GetModuleIDs(&sel, fIDs);
   //in reder menu define a space between left and right pager
   fPagerGap = 1.2*TextLength(Form("%d/%d",GetPages(), GetPages()));
@@ -184,7 +185,7 @@ void AliEveITSModuleStepper::DisplayTheta(Float_t min, Float_t max)
 {
   fIDs.clear();
   AliEveITSModuleSelection sel = AliEveITSModuleSelection();
-  sel.fMaxTheta = max; sel.fMinTheta=min; 
+  sel.SetThetaRange(min, max);
   fDigitsInfo->GetModuleIDs(&sel, fIDs);
   Start();
 }
@@ -193,7 +194,7 @@ void AliEveITSModuleStepper::DisplayTheta(Float_t min, Float_t max)
 
 Int_t AliEveITSModuleStepper::GetCurrentPage()
 {
-  Int_t idx = fPosition +1; 
+  Int_t idx = fPosition +1;
   Int_t n = idx/Nxy();
   if(idx % Nxy()) n++;
   return n;
@@ -203,11 +204,11 @@ Int_t AliEveITSModuleStepper::GetCurrentPage()
 
 Int_t AliEveITSModuleStepper::GetPages()
 {
-  Int_t n = fIDs.size()/Nxy(); 
-  if(fIDs.size() % Nxy()) n++; 
+  Int_t n = fIDs.size()/Nxy();
+  if(fIDs.size() % Nxy()) n++;
   return n;
 }
-  
+
 /**************************************************************************/
 
 void  AliEveITSModuleStepper::Apply()
@@ -219,16 +220,16 @@ void  AliEveITSModuleStepper::Apply()
   UInt_t idx = fPosition;
   for(List_i childit=fChildren.begin(); childit!=fChildren.end(); ++childit)
   {
-    if(idx < fIDs.size()) 
+    if(idx < fIDs.size())
     {
       AliEveITSScaledModule* mod = dynamic_cast<AliEveITSScaledModule*>(*childit);
-      mod->SetID(fIDs[idx], kFALSE); 
+      mod->SetID(fIDs[idx], kFALSE);
       TEveTrans& tr = mod->RefHMTrans();
       tr.UnitTrans();
       tr.RotateLF(3,2,TMath::PiOver2());
-      tr.RotateLF(1,3,TMath::PiOver2());   
+      tr.RotateLF(1,3,TMath::PiOver2());
 
-      // scaling 
+      // scaling
       Float_t mz, mx;
       Float_t* fp = mod->GetFrame()->GetFramePoints();
       // switch x,z it will be rotated afterwards
@@ -250,7 +251,7 @@ void  AliEveITSModuleStepper::Apply()
       Float_t  p[3];
       fStepper->GetPosition(p);
       tr.SetPos(p[0]+0.5*fStepper->GetDx(), p[1]+0.5*fStepper->GetDy(), p[2]+0.5*fStepper->GetDz());
-  
+
       if(mod->GetSubDetID() == 2)
 	mod->SetName(Form("SSD %d", idx));
       else if(mod->GetSubDetID() == 1)
@@ -290,7 +291,7 @@ void AliEveITSModuleStepper::Render(TGLRnrCtx& rnrCtx)
     gluPickMatrix(rect.X(), rect.Y(), rect.Width(), rect.Height(),
                   (Int_t*) rnrCtx.GetCamera()->RefViewport().CArr());
   }
-   
+
   glMatrixMode(GL_MODELVIEW);
   glPushMatrix();
   glLoadIdentity();
@@ -303,12 +304,12 @@ void AliEveITSModuleStepper::Render(TGLRnrCtx& rnrCtx)
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
   glDisable(GL_CULL_FACE);
   glEnable(GL_BLEND);
-  glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA); 
+  glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
   RenderMenu();
   RenderPalette(fPaletteLength, 1.6*fWWidth, fWHeight*0.6);
   glPopMatrix();
   glPopAttrib();
-  
+
   if (lightp) glEnable(GL_LIGHTING);
 
   glMatrixMode(GL_PROJECTION);
@@ -340,13 +341,13 @@ void AliEveITSModuleStepper::RenderString(TString string, Int_t id)
   if(id > 0) glLoadName(id);
   if(id>0 && fWActive == id)
     fText->SetTextColor(fWActiveCol);
-  else  
+  else
     fText->SetTextColor(fFontCol);
 
-  
+
   if(id>0)
-  { 
-    if(fWActive == id) 
+  {
+    if(fWActive == id)
       fText->SetTextColor(fWActiveCol);
     else
       fText->SetTextColor(fFontCol);
@@ -359,7 +360,7 @@ void AliEveITSModuleStepper::RenderString(TString string, Int_t id)
     RenderFrame(bw,fWHeight*2,id);
     glTranslatef( bw, 0, 0);
   }
-  else 
+  else
   {
     fText->SetTextColor(fFontCol);
     fText->PaintGLText(0, txtY, -0.8, string.Data());
@@ -377,7 +378,7 @@ void AliEveITSModuleStepper::RenderFrame(Float_t dx, Float_t dy, Int_t id)
   UChar_t color[4];
   if (fWActive == id)
     TEveUtil::TEveUtil::ColorFromIdx(fWActiveCol, color);
-  else  
+  else
     TEveUtil:: TEveUtil::ColorFromIdx(fWCol, color);
   glColor4ubv(color);
 
@@ -396,14 +397,14 @@ void AliEveITSModuleStepper::RenderSymbol(Float_t dx, Float_t dy, Int_t id)
   UChar_t color[4];
   if (fWActive == id)
     TEveUtil::TEveUtil::ColorFromIdx(fWActiveCol, color);
-  else  
+  else
     TEveUtil::TEveUtil::ColorFromIdx(fWCol, color);
   glColor4ubv(color);
 
   Float_t xs = dx/4, ys = dy/4;
   if(id == 0) {
     glBegin(GL_QUADS);
-    glVertex2f(0,ys); glVertex2f(0, ys*3); 
+    glVertex2f(0,ys); glVertex2f(0, ys*3);
     glVertex2f(dx, ys*3); glVertex2f(dx, ys);
     glEnd();
     return;
@@ -451,7 +452,7 @@ void AliEveITSModuleStepper::RenderSymbol(Float_t dx, Float_t dy, Int_t id)
       glVertex2f(xs, ys*1.5);  glVertex2f(xs*2, ys*0.5); glVertex2f(xs*3, ys*1.5);
       break;
     }
-   
+
     default:
       break;
   }
@@ -475,7 +476,7 @@ void AliEveITSModuleStepper::RenderPalette(Float_t dx, Float_t x, Float_t y)
   {
     Float_t xs = dx/(p->GetMaxVal() - p->GetMinVal());
     Float_t x0 = xs;
-    for(Int_t i=p->GetMinVal() + 1; i<p->GetMaxVal(); i++) 
+    for(Int_t i=p->GetMinVal() + 1; i<p->GetMaxVal(); i++)
     {
       glColor4ubv(p->ColorFromValue(i));
       glVertex2f(x0, 0);
@@ -511,7 +512,7 @@ void AliEveITSModuleStepper::RenderMenu()
   Float_t H = 1.9*wh*(1+ 2*fWOff);
   if(1) {
     glBegin(GL_QUADS);
-    glVertex3f(-1, -1,   0.1); glVertex3f(-1, -1+H, 0.1); 
+    glVertex3f(-1, -1,   0.1); glVertex3f(-1, -1+H, 0.1);
     glVertex3f(1 , -1+H, 0.1); glVertex3f( 1, -1  , 0.1);
     glEnd();
   }
@@ -532,7 +533,7 @@ void AliEveITSModuleStepper::RenderMenu()
   RenderFrame(ww,wh,1);
   glTranslatef(soff, 0, 0);
   // text info
-  { 
+  {
     const char* txt =  Form("%d/%d ", GetCurrentPage(), GetPages());
     Float_t dx = (fPagerGap - TextLength(txt))*0.5;
     fText->SetTextColor(fFontCol);
@@ -546,7 +547,7 @@ void AliEveITSModuleStepper::RenderMenu()
   RenderSymbol(ww, wh, 4);
   RenderFrame(ww,wh,4);
   glTranslatef(2*ww, 0, 0);
-  glPopMatrix();  
+  glPopMatrix();
 
   // scale info
   glPushMatrix();
@@ -556,10 +557,10 @@ void AliEveITSModuleStepper::RenderMenu()
   Int_t cnx = 0, cnz = 0;
   switch(sm->GetSubDetID())
   {
-    case 0: 
+    case 0:
       cnx = di->fSPDScaleX[scale], cnz = di->fSPDScaleZ[scale];
       break;
-    case 1: 
+    case 1:
       cnx = di->fSDDScaleX[scale], cnz = di->fSDDScaleZ[scale];
       break;
     case 2:
@@ -584,9 +585,9 @@ void AliEveITSModuleStepper::RenderMenu()
   glPushMatrix();
   glTranslatef(18*ww, 0, 0);
   Float_t bs = ww*0.2;
-  RenderString("SPD", 8);  
+  RenderString("SPD", 8);
   glTranslatef(bs, 0, 0);
-  RenderString("SDD", 9); 
+  RenderString("SDD", 9);
   glTranslatef(bs, 0, 0);
   RenderString("SSD", 10);
   glPopMatrix();
@@ -604,8 +605,8 @@ void AliEveITSModuleStepper::RenderCellIDs()
   UInt_t idx = fPosition;
   for (List_i childit=fChildren.begin(); childit!=fChildren.end(); ++childit)
   {
-    if(idx < fIDs.size()) 
-    { 
+    if(idx < fIDs.size())
+    {
       AliEveITSScaledModule* mod = dynamic_cast<AliEveITSScaledModule*>(*childit);
       TEveTrans& tr = mod->RefHMTrans();
       TString name = Form("%d",mod->GetID());
@@ -636,7 +637,7 @@ Bool_t AliEveITSModuleStepper::Handle(TGLRnrCtx          & /*rnrCtx*/,
   // Return TRUE if event was handled.
 
   switch (event->fType)
-  { 
+  {
     case kMotionNotify:
     {
       Int_t item = rec.GetN() < 2 ? -1 : (Int_t)rec.GetItem(1);
@@ -670,9 +671,9 @@ Bool_t AliEveITSModuleStepper::Handle(TGLRnrCtx          & /*rnrCtx*/,
         case 5:
         {
           AliEveDigitScaleInfo* si = fScaleInfo;
-          if(si->GetScale() < 5) 
+          if(si->GetScale() < 5)
           {
-            si->ScaleChanged(si->GetScale() + 1);	
+            si->ScaleChanged(si->GetScale() + 1);
             ElementChanged(kTRUE, kTRUE);
           }
           break;
@@ -680,9 +681,9 @@ Bool_t AliEveITSModuleStepper::Handle(TGLRnrCtx          & /*rnrCtx*/,
         case 6:
         {
           AliEveDigitScaleInfo* si = fScaleInfo;
-          if(si->GetScale() > 1) 
+          if(si->GetScale() > 1)
           {
-            si->ScaleChanged(si->GetScale() - 1);	
+            si->ScaleChanged(si->GetScale() - 1);
             ElementChanged(kTRUE, kTRUE);
           }
           break;
@@ -694,10 +695,10 @@ Bool_t AliEveITSModuleStepper::Handle(TGLRnrCtx          & /*rnrCtx*/,
         case 8:
             DisplayDet(0, -1);
           break;
-        case 9: 
+        case 9:
             DisplayDet(1, -1);
           break;
-        case 10: 
+        case 10:
             DisplayDet(2, -1);
           break;
         default:
@@ -724,4 +725,4 @@ void AliEveITSModuleStepper::MouseLeave()
   // Mouse has left the element.
 
   fWActive = -1;
-} 
+}

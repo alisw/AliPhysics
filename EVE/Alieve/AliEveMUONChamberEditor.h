@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 #ifndef ALIEVE_MUONChamberEditor_H
 #define ALIEVE_MUONChamberEditor_H
@@ -27,7 +27,7 @@ class AliEveMUONChamberEditor : public TGedFrame
 
   AliEveMUONChamberEditor(const AliEveMUONChamberEditor&);            // Not implemented
   AliEveMUONChamberEditor& operator=(const AliEveMUONChamberEditor&); // Not implemented
-  
+
  protected:
 
   AliEveMUONChamber* fM; // fModel dynamic-casted to AliEveMUONChamberEditor
@@ -40,10 +40,10 @@ class AliEveMUONChamberEditor : public TGedFrame
  public:
 
   AliEveMUONChamberEditor(const TGWindow* p = 0,
-		    Int_t width = 170, Int_t height = 30, 
-		    UInt_t options = kChildFrame, 
+		    Int_t width = 170, Int_t height = 30,
+		    UInt_t options = kChildFrame,
 		    Pixel_t back = GetDefaultFrameBackground());
-  
+
   virtual ~AliEveMUONChamberEditor();
 
   virtual void SetModel(TObject* obj);

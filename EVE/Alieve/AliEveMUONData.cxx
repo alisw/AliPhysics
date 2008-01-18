@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 //
 // Sources:
@@ -57,7 +57,7 @@ AliEveMUONData::AliEveMUONData() :
   //
   // Constructor
   //
-  
+
   for (Int_t i = 0; i < 256; i++) {
     fTrackList[i] = -1;
   }
@@ -124,7 +124,7 @@ AliEveMUONData& AliEveMUONData::operator=(const AliEveMUONData &mdata)
 //______________________________________________________________________
 void AliEveMUONData::CreateChamber(Int_t chamber)
 {
-  // 
+  //
   // create data for the chamber with id=chamber (0 to 13)
   //
 
@@ -148,8 +148,8 @@ void AliEveMUONData::CreateAllChambers()
 //______________________________________________________________________
 void AliEveMUONData::DropAllChambers()
 {
-  // 
-  // release data from all chambers 
+  //
+  // release data from all chambers
   //
 
   for (Int_t c = 0; c < 14; ++c) {
@@ -214,9 +214,9 @@ void AliEveMUONData::LoadRecPoints(TTree* tree)
   AliMUONVClusterStore *clusterStore = AliMUONVClusterStore::Create(*tree);
   clusterStore->Clear();
   clusterStore->Connect(*tree,kFALSE);
-  
+
   tree->GetEvent(0);
-  
+
   AliMUONVCluster *cluster;
   Int_t detElemId;
   Double_t clsX, clsY, clsZ, charge;
@@ -224,13 +224,13 @@ void AliEveMUONData::LoadRecPoints(TTree* tree)
   for (Int_t ch = 0; ch < 10; ++ch) {
 
     if (fChambers[ch] == 0) continue;
-    
+
     TIter next(clusterStore->CreateChamberIterator(ch,ch));
-    
+
     while ( ( cluster = static_cast<AliMUONVCluster*>(next()) ) ) {
 
       detElemId = cluster->GetDetElemId();
-      
+
       clsX   = cluster->GetX();
       clsY   = cluster->GetY();
       clsZ   = cluster->GetZ();
@@ -244,7 +244,7 @@ void AliEveMUONData::LoadRecPoints(TTree* tree)
   }
 
   delete clusterStore;
-  
+
 }
 
 //______________________________________________________________________
@@ -288,7 +288,7 @@ void AliEveMUONData::LoadHits(TTree* tree)
 //______________________________________________________________________
 void AliEveMUONData::LoadDigits(TTree* tree)
 {
-  // 
+  //
   // load digits from the TreeD
   //
 
@@ -300,15 +300,15 @@ void AliEveMUONData::LoadDigits(TTree* tree)
 
   AliMUONVDigit* digit;
   TIter next(digitStore->CreateIterator());
-  
+
   Int_t cathode, detElemId, ix, iy, charge, chamber, adc;
-  
+
   while ( ( digit = static_cast<AliMUONVDigit*>(next() ) ) )
     {
       cathode   = digit->Cathode();
       ix        = digit->PadX();
       iy        = digit->PadY();
-      detElemId = digit->DetElemId();      
+      detElemId = digit->DetElemId();
       charge    = (Int_t)digit->Charge();
       adc       = digit->ADC();
       chamber   = detElemId/100 - 1;
@@ -318,7 +318,7 @@ void AliEveMUONData::LoadDigits(TTree* tree)
 	fChambers[chamber]->RegisterDigit(detElemId,cathode,ix,iy,adc);
       }
     }
-    
+
   delete digitStore;
 
 }
@@ -340,14 +340,14 @@ void AliEveMUONData::LoadRaw(TString fileName)
       fgRawReader = new AliRawReaderDate(fileName); // DATE file
     }
   }
-  
+
   fgRawReader->RewindEvents();
   fgRawReader->Reset();
 
   Int_t iEvent = 0;
-  while (fgRawReader->NextEvent()) 
+  while (fgRawReader->NextEvent())
   {
-    if (iEvent != gEvent->GetEventId()) 
+    if (iEvent != gEvent->GetEventId())
     {
       iEvent++;
       continue;
@@ -360,20 +360,20 @@ void AliEveMUONData::LoadRaw(TString fileName)
   digitMaker.SetMakeTriggerDigits(kTRUE);
 
   AliMUONDigitStoreV1 digitStore;
-  
+
   digitMaker.Raw2Digits(fgRawReader,&digitStore);
 
   AliMUONVDigit* digit;
   TIter next(digitStore.CreateIterator());
-  
+
   Int_t cathode, detElemId, ix, iy, charge, chamber, adc;
-  
+
   while ( ( digit = static_cast<AliMUONVDigit*>(next() ) ) )
   {
       cathode   = digit->Cathode();
       ix        = digit->PadX();
       iy        = digit->PadY();
-      detElemId = digit->DetElemId();      
+      detElemId = digit->DetElemId();
       charge    = (Int_t)digit->Charge();
       adc       = digit->ADC();
       chamber   = detElemId/100 - 1;

@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 
 void tpc_hits_charge_split(const char *varexp    =
@@ -25,7 +25,7 @@ void tpc_hits_charge_split(const char *varexp    =
   l->SetMarkerColor((Color_t)3);
   l->SetMarkerStyle(20); // full circle
   l->SetMarkerSize(.5);
-  
+
   gEve->AddElement(l);
   l->InitBins("Log Charge", 20, 0, 5);
 

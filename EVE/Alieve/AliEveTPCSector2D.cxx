@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 
 #include "AliEveTPCSector2D.h"
@@ -165,7 +165,7 @@ void AliEveTPCSector2D::Paint(Option_t* )
   buffer.fTransparency = 0;
   fHMTrans.SetBuffer3D(buffer);
   buffer.SetSectionsValid(TBuffer3D::kCore);
-   
+
   Int_t reqSections = gPad->GetViewer3D()->AddObject(buffer);
   if (reqSections == TBuffer3D::kNone) {
     return;

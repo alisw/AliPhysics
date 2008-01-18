@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 #include "AliEveTRDModuleImp.h"
 #include "AliEveTRDData.h"
@@ -90,7 +90,7 @@ void AliEveTRDNode::EnableListElements()
 {
 	SetRnrSelf(kTRUE);
 	AliEveTRDNode *node = 0x0;
-	AliEveTRDChamber *chmb = 0x0;	
+	AliEveTRDChamber *chmb = 0x0;
 	List_i iter = fChildren.begin();
 	while(iter != fChildren.end()){
 		if((node = dynamic_cast<AliEveTRDNode*>(*iter))){
@@ -108,7 +108,7 @@ void AliEveTRDNode::DisableListElements()
 {
 	SetRnrSelf(kFALSE);
 	AliEveTRDNode *node = 0x0;
-	AliEveTRDChamber *chmb = 0x0;	
+	AliEveTRDChamber *chmb = 0x0;
 	List_i iter = fChildren.begin();
 	while(iter != fChildren.end()){
 		if((node = dynamic_cast<AliEveTRDNode*>(*iter))){
@@ -129,7 +129,7 @@ void AliEveTRDNode::UpdateLeaves()
 	while(iter != fChildren.end()){
 		module = dynamic_cast<AliEveTRDModule*>(*iter);
 		if(!module) continue;
-		
+
 		module->fRnrHits = fRnrHits;
 		module->fRnrDigits = fRnrDigits;
 		module->fDigitsLog = fDigitsLog;
@@ -170,7 +170,7 @@ void AliEveTRDNode::UpdateNode()
 		if(!module) continue;
 		score[0] += (module->fLoadHits) ? 1 : 0;
 		score[1] += (module->fRnrHits) ? 1 : 0;
-		
+
 		score[2] += (module->fLoadDigits) ? 1 : 0;
 		score[3] += (module->fRnrDigits) ? 1 : 0;
 		score[4] += (module->fDigitsLog) ? 1 : 0;
@@ -185,7 +185,7 @@ void AliEveTRDNode::UpdateNode()
 		iter++;
 	}
 
-	Int_t size = fChildren.size(); 
+	Int_t size = fChildren.size();
 	fLoadHits      = (score[0] > 0) ? kTRUE : kFALSE;
 	fRnrHits       = (score[1] == size) ? kTRUE : kFALSE;
 
@@ -214,15 +214,15 @@ AliEveTRDChamber::AliEveTRDChamber(Int_t det) :
   //
   // Constructor
   //
-	
+
 	fDigits    = 0x0;
 	fHits      = 0x0;
 	fRecPoints = 0x0;
 	fTracklets = 0x0;
-	
+
 	AliTRDCommonParam* parCom = AliTRDCommonParam::Instance();
 	samplingFrequency = parCom->GetSamplingFrequency();
-	
+
 	fGeo      = 0x0;
 	fPadPlane = 0x0;
 }
@@ -238,7 +238,7 @@ AliEveTRDChamber::AliEveTRDChamber(const AliEveTRDChamber &mod):
 
 	if(mod.fDigits) {}
 	if(mod.fHits) {}
-	if(mod.fRecPoints){} 
+	if(mod.fRecPoints){}
 }
 
 //________________________________________________________
@@ -252,7 +252,7 @@ AliEveTRDChamber& AliEveTRDChamber::operator=(const AliEveTRDChamber &mod)
     fDet    = mod.fDet;
 		if(mod.fDigits) {}
 		if(mod.fHits) {}
-		if(mod.fRecPoints){} 
+		if(mod.fRecPoints){}
   }
   return *this;
 }
@@ -283,12 +283,12 @@ void AliEveTRDChamber::LoadClusters(TObjArray *clusters)
   //
   // Draw clusters
   //
-	
+
 	if(!fGeo){
 		AliError(Form("Geometry not set for chamber %d. Please call first AliEveTRDChamber::SetGeometry().", fDet));
 		return;
 	}
-	
+
 	if(!fRecPoints){
 		fRecPoints = new AliEveTRDClusters(this);
 		fRecPoints->SetMarkerSize(1.);
@@ -299,7 +299,7 @@ void AliEveTRDChamber::LoadClusters(TObjArray *clusters)
 
 	Float_t q;
         Double_t cloc[3], cglo[3];
-	
+
 	AliTRDcluster *c=0x0;
 	for(int iclus=0; iclus<clusters->GetEntriesFast(); iclus++){
 		c = (AliTRDcluster*)clusters->UncheckedAt(iclus);
@@ -325,10 +325,10 @@ void AliEveTRDChamber::LoadDigits(AliTRDdigitsManager *digits)
 		return;
 	}
 //	Info("LoadDigits()", Form("digits =0x%x", digits));
-	
+
 	if(!fDigits) fDigits = new AliEveTRDDigits(this);
 	else fDigits->Reset();
-	
+
 	fDigits->SetData(digits);
 	fLoadDigits = kTRUE;
 }
@@ -347,7 +347,7 @@ void AliEveTRDChamber::AddHit(AliTRDhit *hit)
 		fHits->SetMarkerColor(2);
 		fHits->SetOwnIds(kTRUE);
 	}
-	
+
 	fHits->SetNextPoint(hit->X(), hit->Y(), hit->Z());
 	fHits->SetPointId(hit);
 	fLoadHits = kTRUE;
@@ -364,12 +364,12 @@ void AliEveTRDChamber::LoadTracklets(TObjArray *tracks)
 		return;
 	}
 //	Info("LoadTracklets()", Form("tracks = 0x%x", tracks));
-	
+
 	if(!fTracklets){
 		fTracklets = new std::vector<TEveTrack*>;
 	} else fTracklets->clear();
-	
-	
+
+
 	AliTRDmcmTracklet *trk = 0x0;
 	Double_t cloc[3], cglo[3];
 	for(int itrk=0; itrk<tracks->GetEntries();itrk++){
@@ -377,13 +377,13 @@ void AliEveTRDChamber::LoadTracklets(TObjArray *tracks)
 		trk->MakeTrackletGraph(fGeo,.5);
 		fTracklets->push_back(new TEveTrack());
 		fTracklets->back()->SetLineColor(4);
-		
+
 		cloc[0] = trk->GetTime0(); // x0
 		cloc[1] = trk->GetOffset(); // y0
 		cloc[2] = trk->GetRowz(); // z
 	  fGeo->RotateBack(fDet,cloc,cglo);
 		fTracklets->back()->SetNextPoint(cglo[0], cglo[1], cglo[2]);
-		
+
 		cloc[0] += 3.7; // x1
 		cloc[1] += TMath::Tan(trk->GetSlope()*TMath::Pi()/180.) * 3.7; // y1
 	  fGeo->RotateBack(fDet,cloc,cglo);
@@ -436,10 +436,10 @@ void	AliEveTRDChamber::Reset()
 void AliEveTRDChamber::SetGeometry(AliTRDgeometry *geo)
 {
 	fGeo = geo;
-		
+
 	fPla = fGeo->GetPlane(fDet);
 	fX0 = fGeo->GetTime0(fPla);
-	
+
 	fPadPlane = fGeo->GetPadPlane(fPla,fGeo->GetChamber(fDet));
 	rowMax = fPadPlane->GetNrows();
 	colMax = fPadPlane->GetNcols();

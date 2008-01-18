@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 
 // Functions to read data from HOMER.
@@ -81,7 +81,7 @@ void homer_display()
   homerM->SelectESDTPC();
   homerM->ConnectHOMER();
 
-  memreader = new AliRawReaderMemory(0, 0); 
+  memreader = new AliRawReaderMemory(0, 0);
   gStyle->SetPalette(1, 0);
 
   loader = new AliEveTPCLoader;
@@ -204,7 +204,7 @@ TEveTrack* esd_make_track(TEveTrackPropagator*   rnrStyle,
   rt.P.Set(pbuf);
   Double_t ep = at->GetP(), mc = at->GetMass();
   rt.beta = ep/TMath::Sqrt(ep*ep + mc*mc);
- 
+
   TEveTrack* track = new TEveTrack(&rt, rnrStyle);
   //PH The line below is replaced waiting for a fix in Root
   //PH which permits to use variable siza arguments in CINT
@@ -303,7 +303,7 @@ root [10] tpc_trk->SelectByPt(0,1000000000000)
 root [11] tpc_trk->MakeTracks(
 void MakeTracks(Bool_t recurse = kTRUE)
 root [11] tpc_trk->MakeTracks()
-root [12]                
+root [12]
 
 
 

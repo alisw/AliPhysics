@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 #include "AliEveTRDLoaderImp.h"
 #include "AliEveTRDModuleImp.h"
@@ -63,7 +63,7 @@ Bool_t	AliEveTRDLoaderSim::GoToEvent(int ev)
 		AliWarning("Please select first the type of data that you want to monitor and then hit the \"Load\" button.");
 		return kFALSE;
 	}
-	
+
 	fEvent = ev;
 
 	if(!fRunLoader){
@@ -72,7 +72,7 @@ Bool_t	AliEveTRDLoaderSim::GoToEvent(int ev)
 	}
 	fRunLoader->UnloadAll("TRD");
 	Unload();
-	
+
 	if(fRunLoader->GetEvent(ev)) return kFALSE;
 	TTree *t = 0x0;
 	if(kLoadHits){
@@ -112,7 +112,7 @@ Bool_t	AliEveTRDLoaderSim::LoadHits(TTree *tH)
 {
 	Info("LoadHits()", "Loading ...");
 	if(!fChildren.size()) return kTRUE;
-	
+
 	AliEveTRDChamber *chmb = 0x0;
 	AliTRDhit *hit = 0x0;
 	Int_t d;
@@ -140,11 +140,11 @@ Bool_t	AliEveTRDLoaderSim::Open(const char *filename, const char *dir)
 {
 	//Info("Open()", "");
 
-	
+
 	fFilename = filename;
 	fDir = dir;
 	fDir += "/";
-	
+
 	fRunLoader = AliRunLoader::GetRunLoader();
 	if(!fRunLoader) fRunLoader = AliRunLoader::Open(filename,
 				AliConfig::GetDefaultEventFolderName(),"read");
@@ -153,7 +153,7 @@ Bool_t	AliEveTRDLoaderSim::Open(const char *filename, const char *dir)
 		return kFALSE;
 	}
 	fRunLoader->SetDirName(fDir);
-	
+
 	gAlice = fRunLoader->GetAliRun();
   if(!gAlice) fRunLoader->LoadgAlice();
 	if(!gAlice){
@@ -165,11 +165,11 @@ Bool_t	AliEveTRDLoaderSim::Open(const char *filename, const char *dir)
 		AliError("Couldn't find TRD");
 		return kFALSE;
 	}
-	
+
 	return kTRUE;
 }
 
-	
+
 
 ///////////////////////////////////////////////////////////
 /////////////     AliEveTRDLoaderRaw        /////////////////////
@@ -204,7 +204,7 @@ Bool_t  AliEveTRDLoaderRaw::Open(const char *filename, const char *dir)
 
 	if(fRaw) delete fRaw;
 	fRaw = new AliTRDrawData();
-	
+
 	if(fDataRoot){
 		if(fRawRootReader) delete fRawRootReader;
 		fRawRootReader = new AliRawReaderRoot(filename);
@@ -241,7 +241,7 @@ Bool_t	AliEveTRDLoaderRaw::GoToEvent(int ev)
 		fEventOld = -1;
 		checkEnd = kFALSE;
 	} else checkEnd = kTRUE;
-	
+
 	do NextEvent(); while(fEventOld != ev && !(checkEnd == kTRUE && fEventOld == 0));
 	LoadEvent();
 	gEve->Redraw3D();
@@ -253,7 +253,7 @@ Bool_t	AliEveTRDLoaderRaw::GoToEvent(int ev)
 Bool_t AliEveTRDLoaderRaw::LoadEvent()
 {
 	Info("LoadEvent()", "Loading ...");
-	
+
 	static const TEveException eH("AliEveTRDLoader::LoadEvent ");
 	if(fRawRootReader == 0x0) throw(eH + "data file not opened.");
 
@@ -300,13 +300,13 @@ void AliEveTRDLoaderRaw::NextEvent(Bool_t rewindOnEnd)
 AliEveTRDLoaderSimEditor::AliEveTRDLoaderSimEditor(const TGWindow* p, Int_t width, Int_t height, UInt_t options, Pixel_t back) : TGedFrame(p, width, height, options | kVerticalFrame, back)
 {
 	MakeTitle("AliEveTRDLoaderSim");
-	
+
 	// "Data selector" group frame
 	TGGroupFrame *fGroupFrame = new TGGroupFrame(this,"Data selector");
 	fLoadHits = new TGCheckButton(fGroupFrame,"  Hits");
 	fLoadHits->Connect("Clicked()", "AliEveTRDLoaderSimEditor", this, "Toggle(=0)");
 	fGroupFrame->AddFrame(fLoadHits, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsCenterY | kLHintsExpandX,2,2,2,2));
-	
+
 	fLoadDigits = new TGCheckButton(fGroupFrame,"  Digits");
 	fLoadDigits->Connect("Clicked()", "AliEveTRDLoaderSimEditor", this, "Toggle(=1)");
 	fGroupFrame->AddFrame(fLoadDigits, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsCenterY | kLHintsExpandX,2,2,2,2));
@@ -378,7 +378,7 @@ void AliEveTRDLoaderSimEditor::Toggle(Int_t id)
 // {
 // 	MakeTitle("AliEveTRDLoaderRaw");
 // }
-// 	
+//
 // void	TRDLoaderRawEditor::SetModel(TObject* obj)
 // {
 // 	Info("SetModel()", "");

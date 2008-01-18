@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 
 #ifndef ALIEVE_TPCSectorViz_H
@@ -13,7 +13,7 @@
 #include <TEveElement.h>
 #include <TEveTrans.h>
 
-#include <TNamed.h> 
+#include <TNamed.h>
 #include <TAtt3D.h>
 #include <TAttBBox.h>
 
@@ -41,10 +41,10 @@ class AliEveTPCSectorViz : public TEveElement,
   AliEveTPCSectorViz& operator=(const AliEveTPCSectorViz&); // Not implemented
 
 protected:
-  AliEveTPCData*    fTPCData; 
+  AliEveTPCData*    fTPCData;
   Int_t       fSectorID;
 
-  Int_t       fMinTime;     
+  Int_t       fMinTime;
   Int_t       fMaxTime;
   Short_t     fThreshold;
   Int_t       fMaxVal;

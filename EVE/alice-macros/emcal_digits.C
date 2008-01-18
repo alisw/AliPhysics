@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 void emcal_digits()
 {
@@ -87,8 +87,8 @@ void emcal_digits()
 
       cout<<"Cell ID "<<id<<" Amp "<<amp<<endl;//" time "<<time<<endl;
 
-      //Geometry methods  
-      geom->GetCellIndex(id,iSupMod,iTower,iIphi,iIeta); 
+      //Geometry methods
+      geom->GetCellIndex(id,iSupMod,iTower,iIphi,iIeta);
       //Gives SuperModule and Tower numbers
       geom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,
 					iIphi, iIeta,iphi,ieta);

@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 
 #include "AliEvePMDModuleEditor.h"
@@ -57,13 +57,13 @@ void AliEvePMDModuleEditor::CreateInfoFrame()
 {
   fInfoFrame = CreateEditorTabSubFrame("Info");
 
-  TGCompositeFrame *title1 = new TGCompositeFrame(fInfoFrame, 145, 10, 
-						  kHorizontalFrame | 
-						  kLHintsExpandX   | 
-						  kFixedWidth      | 
+  TGCompositeFrame *title1 = new TGCompositeFrame(fInfoFrame, 145, 10,
+						  kHorizontalFrame |
+						  kLHintsExpandX   |
+						  kFixedWidth      |
 						  kOwnBackground);
 
-  title1->AddFrame(new TGLabel(title1, "AliEvePMDModule Info"), 
+  title1->AddFrame(new TGLabel(title1, "AliEvePMDModule Info"),
 		   new TGLayoutHints(kLHintsLeft, 1, 1, 0, 0));
   title1->AddFrame(new TGHorizontal3DLine(title1),
 		   new TGLayoutHints(kLHintsExpandX, 5, 5, 7, 7));

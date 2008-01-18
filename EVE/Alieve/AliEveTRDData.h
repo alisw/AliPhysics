@@ -4,12 +4,12 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 /////////////////////////////////////////////////////////////////////////
 //
 // - AliEVE implementation -
-// Containers for visualisation of TRD data structures 
+// Containers for visualisation of TRD data structures
 //    - AliEveTRDHits - visualisation of MC Hits, Clusters (RecPoints)
 //    - AliEveTRDDigits - visualisation of TRD digits
 //
@@ -49,7 +49,7 @@ class AliTRDdigitsManager;
 
 	protected:
 		AliEveTRDChamber *fParent;
-	
+
 	ClassDef(AliEveTRDHits,1) // Base class for TRD hits visualisation
 	};
 
@@ -65,7 +65,7 @@ class AliTRDdigitsManager;
 		AliEveTRDHits* fM;
 
 	ClassDef(AliEveTRDHitsEditor,1) // Editor for AliEveTRDHits
-	};	
+	};
 
 
 	class AliEveTRDDigits : public TEveQuadSet
@@ -81,14 +81,14 @@ class AliTRDdigitsManager;
 
 	protected:
 		AliEveTRDChamber *fParent;
-	
+
 	private:
 		TEveBoxSet			fBoxes;
 		AliTRDdataArrayI	fData;
-		
+
 		ClassDef(AliEveTRDDigits,1) // Digits visualisation for TRD
 	};
-	
+
 	class AliEveTRDDigitsEditor : public TGedFrame
 	{
 	public:
@@ -110,7 +110,7 @@ class AliTRDdigitsManager;
 		AliEveTRDClusters(AliEveTRDChamber *p);
 
 		void PointSelected(Int_t n);
-	
+
 	ClassDef(AliEveTRDClusters,1) // Base class for TRD clusters visualisation
 	};
 

@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 
 class TEveProjectionManager;
@@ -27,7 +27,7 @@ void NLT_trackcount_init()
   TEveUtil::LoadMacro("tpc_clusters.C+");
 
   TEveViewer* nv = gEve->SpawnNewViewer("NLT Projected");
-  TEveScene*  ns = gEve->SpawnNewScene("NLT"); 
+  TEveScene*  ns = gEve->SpawnNewScene("NLT");
   nv->AddScene(ns);
   TGLViewer* v = nv->GetGLViewer();
   v->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);

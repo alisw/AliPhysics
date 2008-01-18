@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 #include "AliEveMUONChamber.h"
 
@@ -83,7 +83,7 @@ void AliEveMUONChamber::ComputeBBox()
 #else
   BBoxInit();
 #endif
-  
+
   fBBox[0] = - 400.0;
   fBBox[1] = + 400.0;
   fBBox[2] = - 400.0;
@@ -99,7 +99,7 @@ void AliEveMUONChamber::ComputeBBox()
   for(Int_t i=0; i<6; ++i) { b3[i] = fBBox[i]; }
   Float_t* b4 = fPointSet2.AssertBBox();
   for(Int_t i=0; i<6; ++i) { b4[i] = fBBox[i]; }
-  
+
 }
 
 //______________________________________________________________________
@@ -200,7 +200,7 @@ void AliEveMUONChamber::SetupColor(Int_t val, UChar_t* pixel) const
 Int_t AliEveMUONChamber::ColorIndex(Int_t val) const
 {
   //
-  // index color 
+  // index color
   //
 
   if(val < fThreshold) val = fThreshold;
@@ -259,7 +259,7 @@ void AliEveMUONChamber::SetDataSource(AliEveMUONData* data)
 //______________________________________________________________________
 AliEveMUONChamberData* AliEveMUONChamber::GetChamberData() const
 {
-  
+
   return fMUONData ? fMUONData->GetChamberData(fChamberID) : 0;
 
 }
@@ -274,13 +274,13 @@ void AliEveMUONChamber::UpdateQuads()
   fPointSet2.Reset();
 
   AliEveMUONChamberData* data = GetChamberData();
-  
+
   Float_t *buffer;
   Float_t x0, y0, z, w, h, clsq;
   Int_t charge, cathode, nDigits, nClusters, nHits, oldSize, ic1, ic2;
   Double_t clsX, clsY, clsZ;
   Float_t hitX, hitY, hitZ;
-    
+
   if (data != 0) {
 
     SetupColorArray();
@@ -288,7 +288,7 @@ void AliEveMUONChamber::UpdateQuads()
     // digits
 
     nDigits = data->GetNDigits();
-    
+
     for (Int_t id = 0; id < nDigits; id++) {
 
       buffer = data->GetDigitBuffer(id);
@@ -300,27 +300,27 @@ void AliEveMUONChamber::UpdateQuads()
       z  = buffer[4];
       charge = (Int_t)buffer[5];
       cathode = (Int_t)buffer[6];
-      
+
       if (charge <= fThreshold) continue;
 
       if (cathode == 0) {
 
 	fQuadSet1.AddQuad(x0, y0, z, w, h);
 	fQuadSet1.QuadColor(ColorIndex(charge));
-	
+
       }
 
       if (cathode == 1) {
 
 	fQuadSet2.AddQuad(x0, y0, z, w, h);
 	fQuadSet2.QuadColor(ColorIndex(charge));
-	
+
       }
 
     } // end digits loop
 
     // clusters
-    
+
     nClusters = data->GetNClusters()/2;  // only one cathode plane
     oldSize = fPointSet1.GrowFor(nClusters);
     ic1 = ic2 = 0;
@@ -331,7 +331,7 @@ void AliEveMUONChamber::UpdateQuads()
       clsX    = (Double_t)buffer[0];
       clsY    = (Double_t)buffer[1];
       clsZ    = (Double_t)buffer[2];
-      clsq    = buffer[3];      
+      clsq    = buffer[3];
       cathode = (Int_t)buffer[4];
 
       if (cathode == 0) {

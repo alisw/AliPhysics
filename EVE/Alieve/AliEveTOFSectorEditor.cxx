@@ -4,7 +4,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 * 
+ * full copyright notice.                                                 *
  **************************************************************************/
 
 #include "AliEveTOFSectorEditor.h"
@@ -27,7 +27,7 @@
 //
 
 ClassImp(AliEveTOFSectorEditor)
-  
+
   AliEveTOFSectorEditor::AliEveTOFSectorEditor(const TGWindow *p, Int_t width, Int_t height,
 				   UInt_t options, Pixel_t back) :
     TGedFrame(p, width, height, options | kVerticalFrame, back),
@@ -39,21 +39,21 @@ ClassImp(AliEveTOFSectorEditor)
     // fTime      (0)
     // Initialize widget pointers to 0
     //{
-    
+
     /*
       fHMTrans = new TEveTransSubEditor(this);
       fHMTrans->Connect("UseTrans()",     "AliEveTPCSectorVizEditor", this, "Update()");
       fHMTrans->Connect("TransChanged()", "AliEveTPCSectorVizEditor", this, "Update()");
       AddFrame(fHMTrans, new TGLayoutHints(kLHintsTop | kLHintsExpandX, 2, 0, 0, 0));
-      
+
       MakeTitle("AliEveTPCSectorViz");*/
 {
-  
+
   fPlate = new TGCheckButton*[5];
   for (Int_t ii=0; ii<5; ii++) fPlate[ii] = new TGCheckButton;
-  
+
   //fPriority = 40;
-  MakeTitle("AliEveTOFSector");  
+  MakeTitle("AliEveTOFSector");
 
   fSectorID = new TEveGValuator(this, "SectorID", 110, 0);
   fSectorID->SetLabelWidth(60);
@@ -70,7 +70,7 @@ ClassImp(AliEveTOFSectorEditor)
   fSectorID->AddFrame(fAutoTrans, new TGLayoutHints(kLHintsLeft, 12, 0, 1, 0));
   fAutoTrans->Connect("Toggled(Bool_t)","AliEveTOFSectorEditor", this, "DoAutoTrans()");
   AddFrame(fSectorID, new TGLayoutHints(kLHintsTop, 1, 1, 1, 1));
-  
+
   // Create widgets
   // fXYZZ = new TGSomeWidget(this, ...);
   // AddFrame(fXYZZ, new TGLayoutHints(...));
@@ -125,7 +125,7 @@ ClassImp(AliEveTOFSectorEditor)
     fThreshold->Connect("ValueSet(Double_t)",
 			"AliEveTOFSectorEditor", this, "DoThreshold()");
     AddFrame(fThreshold, new TGLayoutHints(kLHintsTop, 1, 1, 2, 1));
-    
+
     fMaxVal = new TEveGValuator(this,"MaxVal", 200, 0);
     fMaxVal->SetNELength(4);
     fMaxVal->SetLabelWidth(60);
@@ -135,7 +135,7 @@ ClassImp(AliEveTOFSectorEditor)
     fMaxVal->Connect("ValueSet(Double_t)",
 		     "AliEveTOFSectorEditor", this, "DoMaxVal()");
     AddFrame(fMaxVal, new TGLayoutHints(kLHintsTop, 1, 1, 2, 1));
-    
+
 }
 
 
@@ -231,7 +231,7 @@ void AliEveTOFSectorEditor::DoMaxVal()
 /**************************************************************************/
 /*
 void AliEveTOFSectorEditor::DoTime()
-{ 
+{
   fM->SetMinTime((Int_t) fTime->GetMin());
   fM->SetMaxTime((Int_t) fTime->GetMax());
   Update();
