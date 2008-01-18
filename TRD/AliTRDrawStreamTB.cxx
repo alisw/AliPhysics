@@ -36,8 +36,8 @@
 #include "AliTRDgeometry.h"
 #include "AliTRDfeeParam.h"
 #include "AliTRDdigitsManager.h"
-#include "AliTRDdataArrayI.h"
 #include "AliTRDdataArrayS.h"
+#include "AliTRDdataArrayI.h"
 #include "AliTRDSignalIndex.h"
 
 #include "AliLog.h"
@@ -110,6 +110,7 @@ Bool_t AliTRDrawStreamTB::fgWarnError = kTRUE;
 Bool_t AliTRDrawStreamTB::fgCleanDataOnly = kTRUE;
 Bool_t AliTRDrawStreamTB::fgDebugFlag = kTRUE;
 Bool_t AliTRDrawStreamTB::fgDebugStreamFlag = kFALSE;
+Bool_t AliTRDrawStreamTB::fgStackNumberChecker = kTRUE;
 TTreeSRedirector *AliTRDrawStreamTB::fgDebugStreamer = 0;
 UInt_t AliTRDrawStreamTB::fgStreamEventCounter = 0;
 UInt_t AliTRDrawStreamTB::fgDumpHead = 0;
@@ -1031,7 +1032,8 @@ AliTRDrawStreamTB::DecodeSM(void *buffer, UInt_t length)
 // 					    ilink + 1, fStack->fActiveLinks));
 	      fSM.fClean = kFALSE;
 	      fHC->fCorrupted += 100;
-	      SeekEndOfData();	
+              if (fHC->fCorrupted < 1111)  SeekEndOfData(); // In case that we met END_OF_TRACKLET_MARKERNEW during DecodeADC() & DecodeMCMheader()
+                                                            // we don't seek ENDOFRAWDATAMARKER
 
 	      if (fgWarnError) 
 		{
@@ -1041,11 +1043,13 @@ AliTRDrawStreamTB::DecodeSM(void *buffer, UInt_t length)
 		}
 	      // let us assume that we have the HC data although link mask says different
 	      // recovery
+              /* //we don't need to do
 	      if (fStackLinkNumber == -1)
 		{
 		  if (fgWarnError) AliWarning("Trying to recover to the right Link Mask.");
 		  ilink -= 1;
 		}
+              */
 	      	      
 	      continue;
 	      //return kFALSE;
@@ -1368,6 +1372,11 @@ AliTRDrawStreamTB::DecodeMCMheader()
 
   if (IsMCMheaderOK() == kFALSE)
     {
+      if (fMCM->fCorrupted >= 1111)
+        {
+         fpPos--; // to prevent DecodeTracklets() fault due to previous fpPos++
+         fHC->fCorrupted += 1111;
+        }
       return kFALSE;
     }
 
@@ -1420,15 +1429,18 @@ AliTRDrawStreamTB::IsHCheaderOK()
       return kFALSE;
     }
 
-  if (fHC->fStack != fStackNumber) 
+  if (fgStackNumberChecker)
     {
-      if (fgWarnError) AliWarning(Form("Missmatch: Stack in HC header %d HW-stack %d", 
+     if (fHC->fStack != fStackNumber) 
+       {
+        if (fgWarnError) AliWarning(Form("Missmatch: Stack in HC header %d HW-stack %d", 
 				       fHC->fStack, fStackNumber));
-      if (fRawReader) fRawReader->AddMajorErrorLog(kHCHeaderWrongStack, "Stack-HWstack");       
-      // Try this for recovery in DecodeSM(void*,UInt_t) after DecodeHC failed
-      // buffer will still will be marked as NOT clean
-      fStackNumber = -1;
-      return kFALSE;
+        if (fRawReader) fRawReader->AddMajorErrorLog(kHCHeaderWrongStack, "Stack-HWstack");       
+        // Try this for recovery in DecodeSM(void*,UInt_t) after DecodeHC failed
+        // buffer will still will be marked as NOT clean
+        fStackNumber = -1;
+        return kFALSE;
+     }
     }
 
   if (fHC->fLayer < 0 || fHC->fLayer >= AliTRDgeometry::kNplan)
@@ -1700,6 +1712,11 @@ AliTRDrawStreamTB::DecodeHC()
 		      fADC->fCOL = -1;
 		      fpPos = fADC->fPos + fMCM->fSingleADCwords;
 		    }
+                  else if(fADC->fCorrupted >= 1111)
+                    {
+                      fHC->fCorrupted += 1111;
+                      return kFALSE;
+                    }
 		  else
 		    {
 		      if (fgWarnError) AliWarning(Form("ADC decode failed."));
@@ -1755,6 +1772,13 @@ AliTRDrawStreamTB::DecodeADC()
   fADC->fCorrupted = 0;
   fMaskADCword = ADC_WORD_MASK(*fpPos);
   fADC->fPos = fpPos;
+
+  if (*fpPos == END_OF_TRACKLET_MARKERNEW) // To read properly ZS data corrupted in this way
+    {
+      if (fgWarnError) AliError(Form("There should be ADC data. We met END_OF_TRACKLET_MARKER 0x%08x",*fpPos));
+      fADC->fCorrupted += 1111;
+      return kFALSE;
+    }
 
   fTbinADC = 0;
 
@@ -2021,7 +2045,12 @@ void AliTRDrawStreamTB::DecodeMCMheader(const UInt_t *word, struct AliTRDrawMCM 
   UInt_t vword = *word;
 
   mcm->fCorrupted = MCM_HEADER_MASK_ERR(vword);
-  //printf("0x%08x %d\n", word, MCM_HEADER_MASK_ERR(word));
+  //printf("0x%08x %d\n", word, MCM_HEADER_MASK_ERR(vword));
+  if (vword == END_OF_TRACKLET_MARKERNEW) // To read properly ZS data corrupted in this way
+    {
+      if (fgWarnError) AliError(Form("There should be MCM header. We met END_OF_TRACKLET_MARKER 0x%08x",vword));
+      mcm->fCorrupted += 1111;
+    }
   if (mcm->fCorrupted)
     mcm->fErrorCounter++;
   mcm->fROB = MCM_ROB_NUMBER(vword);

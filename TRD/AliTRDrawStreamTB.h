@@ -58,6 +58,26 @@ class AliTRDrawStreamTB : public TObject
       ;
     }
 
+    AliTRDrawADC(const AliTRDrawADC& p): 
+        fPos(p.fPos)
+      , fADCnumber(p.fADCnumber)
+      , fCOL(p.fCOL)
+      , fSignals()
+      , fIsShared(p.fIsShared)
+      , fCorrupted(p.fCorrupted)
+    {
+      // copy constructor
+      ; 
+    }
+
+    AliTRDrawADC &operator=(const AliTRDrawADC &) 
+    {
+      // assignment operator
+      // not implemented
+      return *this;
+    }
+
+
   };
   
   //--------------------------------------------------------
@@ -113,6 +133,38 @@ class AliTRDrawStreamTB : public TObject
       /* the following violates coding conventions */
       //for (Int_t i = 0; i < 30; i++) fADCchannel[i] = 0;
     }
+
+    AliTRDrawMCM(const AliTRDrawMCM & p):
+        fROB(p.fROB)
+      , fMCM(p.fMCM)
+      , fROW(p.fROW)
+      , fEvCounter(p.fEvCounter)
+      , fADCMask(p.fADCMask)
+      , fADCMaskWord(p.fADCMaskWord)
+      , fADCchannel()      
+      , fADCindex(p.fADCindex)
+      , fADCmax(p.fADCmax)
+      , fMCMADCWords(p.fMCMADCWords)      
+      , fSingleADCwords(p.fSingleADCwords)
+      , fCorrupted(p.fCorrupted)      
+      , fErrorCounter(p.fErrorCounter)
+      , fMaskErrorCounter(p.fMaskErrorCounter)
+      , fPos(p.fPos)
+      , fAdcDataPos(p.fAdcDataPos)
+      , fADCcounter(p.fADCcounter)
+      , fADCs()
+    {
+      // copy constructor
+      ;
+    }
+
+    AliTRDrawMCM &operator=(const AliTRDrawMCM &)
+    {
+      // assignment operator
+      // not implemented
+      return *this;
+    }
+
   };
 
   //--------------------------------------------------------
@@ -182,6 +234,43 @@ class AliTRDrawStreamTB : public TObject
       /* the following violates coding conventions */
       //fPos[0] = fPos[0] = 0;
     }
+
+    AliTRDrawHC(const AliTRDrawHC & p):
+        fCorrupted(p.fCorrupted)
+      , fH0ErrorCounter(p.fH0ErrorCounter)
+      , fH1ErrorCounter(p.fH1ErrorCounter)
+      , fSpecialRawV(p.fSpecialRawV)
+      , fRawVMajor(p.fRawVMajor)
+      , fRawVMinor(p.fRawVMinor)
+      , fNExtraWords(p.fNExtraWords)
+      , fDCSboard(p.fDCSboard)
+      , fSM(p.fSM)
+      , fStack(p.fStack)
+      , fLayer(p.fLayer)
+      , fSide(p.fSide)
+      , fTimeBins(p.fTimeBins)
+      , fBunchCrossCounter(p.fBunchCrossCounter)
+      , fPreTriggerCounter(p.fPreTriggerCounter)
+      , fPreTriggerPhase(p.fPreTriggerPhase)
+      , fPos()
+      , fDET(p.fDET)
+      , fROC(p.fROC)
+      , fRowMax(p.fRowMax)
+      , fColMax(p.fColMax)
+      , fMCMmax(p.fMCMmax)
+      , fMCMs()
+    {
+      // copy constructor
+      ;
+    }
+
+    AliTRDrawHC &operator=(const AliTRDrawHC &)
+    {
+      // assignment operator
+      // not implemented
+      return *this;
+    }
+
   };
 
   //--------------------------------------------------------
@@ -208,6 +297,27 @@ class AliTRDrawStreamTB : public TObject
     {
       // default constructor
     }      
+
+    AliTRDrawStack(const AliTRDrawStack & p):
+        fHeaderSize(p.fHeaderSize)
+      , fLinksActive()
+      , fTrackletDecode() //book keeping while decoding - set false after decoding
+      , fHCDecode() //book keeping while decoding - set false after HC header decoding
+      , fActiveLinks(p.fActiveLinks)
+      , fPos(p.fPos)
+      , fHalfChambers()
+    {
+      // copy constructor
+      ;
+    }
+
+    AliTRDrawStack &operator=(const AliTRDrawStack &)
+    {
+      // assignment operator
+      // not implemented
+      return *this;
+    }
+
   };
 
   /* the following violates coding conventions */
@@ -246,6 +356,29 @@ class AliTRDrawStreamTB : public TObject
 	// coding rule violation in the next line
 	//for (Int_t i = 0; i < 5; i++) fStackActive[i] = kFALSE;
       };      
+
+    AliTRDrawSM(const AliTRDrawSM & p):
+        fHeaderSize(p.fHeaderSize)
+      , fTrackletEnable(p.fTrackletEnable)
+      , fStackActive()
+      , fActiveStacks(p.fActiveStacks)
+      , fCorrupted(p.fCorrupted)
+      , fNexpectedHalfChambers(p.fNexpectedHalfChambers)
+      , fClean(p.fClean)
+      , fPos(p.fPos)
+      , fStacks()
+    {
+      // copy constructor
+      ;
+    }
+
+    AliTRDrawSM &operator=(const AliTRDrawSM &)
+    {
+      // assignment operator
+      // not implemented
+      return *this;
+    }
+
   };
   
   //--------------------------------------------------------
@@ -336,6 +469,7 @@ class AliTRDrawStreamTB : public TObject
   static void    EnableDebugStream() {fgDebugStreamFlag = kTRUE;} //global enable of the dbug stream
   static void    DeleteDebugStream(); // helper function to delete the debug streamer
   static void    SetDumpHead(UInt_t iv) {fgDumpHead = iv;}
+  static void    DisableStackNumberChecker() {fgStackNumberChecker = kFALSE;}  // set false to cleanroom data 
 
   // this is a temporary solution!
   // baseline should come with the HC header word 2 (count from 0!)
@@ -442,6 +576,7 @@ class AliTRDrawStreamTB : public TObject
   static Bool_t fgCleanDataOnly; // release only clean events = no errors
   static Bool_t fgDebugFlag; // allow debugging info
   static Bool_t fgDebugStreamFlag; // set on debug streamer
+  static Bool_t fgStackNumberChecker; // decide if we check stack number insanity - set false to cleanroom data
   static TTreeSRedirector *fgDebugStreamer; //!Debug streamer
   static UInt_t fgStreamEventCounter; // event counter for debug streamer
   static UInt_t fgDumpHead; // number of words to dump (from the start of the buffer) on each Init
