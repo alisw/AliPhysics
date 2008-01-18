@@ -164,11 +164,9 @@ void AliTRDseedV1::Init(AliTRDtrack *track)
 	Double_t y, z; 
 	track->GetProlongation(fX0, y, z);
 	fYref[0] = y;
-	fYref[1] = track->GetSnp() < 0. ? track->GetTgl() : -track->GetTgl();
+	fYref[1] = track->GetSnp()/(1. - track->GetSnp()*track->GetSnp());
 	fZref[0] = z;
-	// TO DO 
-	// tilting pad correction !!
-	fZref[1] = 0.; // TMath::Tan(track->Theta());
+	fZref[1] = track->GetTgl();
 
 	//printf("Tracklet ref x[%7.3f] y[%7.3f] z[%7.3f], snp[%f] tgl[%f]\n", fX0, fYref[0], fZref[0], track->GetSnp(), track->GetTgl());
 }
