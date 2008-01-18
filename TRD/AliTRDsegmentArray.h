@@ -5,8 +5,6 @@
 
 /* $Id$ */
 
-#include "AliTRDsegmentArrayBase.h"
-
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //
 //  Array for TRD detector segments containing digits                     //
