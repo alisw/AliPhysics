@@ -53,7 +53,10 @@ CXXFLAGSNO    = $(CXXNOOPT) $(CXXSTF)
 
 CFLAGS	      = $(COPT) -Wall -W -fno-common -pipe -I$(FINK_ROOT)/include
 
-FFLAGS        = $(CLIBFOPT) $(FOPT) -ftrace=full
+FFLAGS        = $(CLIBFOPT) $(FOPT)
+ifeq (g95,$(findstring g95,$(ROOTBUILD)))
+FFLAGS        += -ftrace=full
+endif
 # rmkdepend flags for building dependencies of FORTRAN files
 DEPENDFFLAGS  = $(FFLAGS)
 
