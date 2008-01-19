@@ -36,6 +36,11 @@ ELIBSCPP:=$(filter-out HBTP,$(ELIBSCPP))
 ELIBSCPP:=$(filter-out herwig,$(ELIBSCPP))
 ELIBSCPP:=$(filter-out EPEMGEN,$(ELIBSCPP))
 PACKLDFLAGS:=$(LDFLAGS) $(ELIBSCPP:%=-Wl,-u,_G__cpp_setupG__%)
+ifeq (5,$(MACOSX_MINOR))
+# This is a bug in OS 10.5
+# see http://wiki.finkproject.org/index.php/Fink:Packaging:Preparing_for_10.5#OpenGL_Bug
+PACKLDFLAGS+=-Wl,-dylib_file,/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib
+endif
 # On Mac OS X gcc we need f2c and GLU
 ELIBS+=f2c GLU
 ELIBSDIR+=$(FINK_ROOT)/lib
