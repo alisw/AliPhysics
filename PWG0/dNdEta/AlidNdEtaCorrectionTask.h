@@ -49,6 +49,15 @@ class AlidNdEtaCorrectionTask : public AliAnalysisTask {
     TH1F* fPIDParticles;                         //! pid of primary particles
     TH1F* fPIDTracks;                            //! pid of reconstructed tracks
 
+    // histograms for systematic studies (must be enabled with option)
+
+    TH1F* fSigmaVertexTracks;                    //! (accepted tracks) vs (n of sigma to vertex cut)
+    TH1F* fSigmaVertexPrim;                      //! (accepted primaries) vs (n of sigma to vertex cut)
+                                                 // enable with option: sigma-vertex
+
+    AlidNdEtaCorrection* fdNdEtaCorrectionProcessType[3]; //! correction for specific process type (ND, SD, DD)
+                                                          // enable with option: process-types
+
  private:
     AlidNdEtaCorrectionTask(const AlidNdEtaCorrectionTask&);
     AlidNdEtaCorrectionTask& operator=(const AlidNdEtaCorrectionTask&);

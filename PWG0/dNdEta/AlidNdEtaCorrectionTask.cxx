@@ -41,7 +41,9 @@ AlidNdEtaCorrectionTask::AlidNdEtaCorrectionTask(const char* opt) :
   fdNdEtaAnalysisMC(0),
   fdNdEtaAnalysisESD(0),
   fPIDParticles(0),
-  fPIDTracks(0)
+  fPIDTracks(0),
+  fSigmaVertexTracks(0),
+  fSigmaVertexPrim(0)
 {
   //
   // Constructor. Initialization of pointers
@@ -50,6 +52,9 @@ AlidNdEtaCorrectionTask::AlidNdEtaCorrectionTask(const char* opt) :
   // Define input and output slots here
   DefineInput(0, TChain::Class());
   DefineOutput(0, TList::Class());
+
+  for (Int_t i=0; i<2; i++)
+    fdNdEtaCorrectionProcessType[i] = 0;
 }
 
 AlidNdEtaCorrectionTask::~AlidNdEtaCorrectionTask()
@@ -80,7 +85,7 @@ void AlidNdEtaCorrectionTask::ConnectInputData(Option_t *)
     Printf("ERROR: Could not read tree from input slot 0");
   } else {
     // Disable all branches and enable only the needed ones
-    tree->SetBranchStatus("*", 0);
+    //tree->SetBranchStatus("*", 0);
 
     tree->SetBranchStatus("fTriggerMask", 1);
     tree->SetBranchStatus("fSPDVertex*", 1);
@@ -100,6 +105,9 @@ void AlidNdEtaCorrectionTask::ConnectInputData(Option_t *)
     } else
       fESD = esdH->GetEvent();
   }
+
+  // disable info messages of AliMCEvent (per event)
+  AliLog::SetClassDebugLevel("AliMCEvent", AliLog::kWarning - AliLog::kDebug + 1);
 }
 
 void AlidNdEtaCorrectionTask::CreateOutputObjects()
@@ -142,6 +150,25 @@ void AlidNdEtaCorrectionTask::CreateOutputObjects()
 
   fdNdEtaAnalysisESD = new dNdEtaAnalysis("dndetaESD", "dndetaESD", detector);
   fOutput->Add(fdNdEtaAnalysisESD);
+
+  if (fOption.Contains("process-types")) {
+    fdNdEtaCorrectionProcessType[0] = new AlidNdEtaCorrection("dndeta_correction_ND", "dndeta_correction_ND");
+    fdNdEtaCorrectionProcessType[1] = new AlidNdEtaCorrection("dndeta_correction_SD", "dndeta_correction_SD");
+    fdNdEtaCorrectionProcessType[2] = new AlidNdEtaCorrection("dndeta_correction_DD", "dndeta_correction_DD");
+
+    fOutput->Add(fdNdEtaCorrectionProcessType[0]);
+    fOutput->Add(fdNdEtaCorrectionProcessType[1]);
+    fOutput->Add(fdNdEtaCorrectionProcessType[2]);
+  }
+
+  if (fOption.Contains("sigma-vertex"))
+  {
+    fSigmaVertexTracks = new TH1F("fSigmaVertexTracks", "fSigmaVertexTracks;Nsigma2vertex;NacceptedTracks", 60, 0.05, 6.05);
+    fSigmaVertexPrim = new TH1F("fSigmaVertexPrim", "fSigmaVertexPrim;Nsigma2vertex;NacceptedPrimaries", 60, 0.05, 6.05);
+    fOutput->Add(fSigmaVertexTracks);
+    fOutput->Add(fSigmaVertexPrim);
+    Printf("WARNING: sigma-vertex analysis enabled. This will produce weird results in the AliESDtrackCuts histograms");
+  }
 }
 
 void AlidNdEtaCorrectionTask::Exec(Option_t*)
@@ -156,7 +183,7 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
   }
 
   // trigger definition
-  Bool_t eventTriggered = AliPWG0Helper::IsEventTriggered(fESD->GetTriggerMask(), AliPWG0Helper::kMB2);
+  Bool_t eventTriggered = AliPWG0Helper::IsEventTriggered(fESD->GetTriggerMask(), AliPWG0Helper::kMB1);
 
   Bool_t eventVertex = AliPWG0Helper::IsVertexReconstructed(fESD->GetVertex());
 
@@ -258,9 +285,9 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
     return;
   }
 
-  // get process type
+  // get process type; NB: this only works for Pythia
   Int_t processType = AliPWG0Helper::GetPythiaEventProcessType(header);
-  AliDebug(AliLog::kDebug+1, Form("Found pythia procces type %d", processType));
+  AliDebug(AliLog::kDebug+1, Form("Found pythia process type %d", processType));
 
   if (processType<0)
     AliDebug(AliLog::kError, Form("Unknown Pythia process type %d.", processType));
@@ -291,6 +318,21 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
     Float_t pt = particle->Pt();
 
     fdNdEtaCorrection->FillMCParticle(vtxMC[2], eta, pt, eventTriggered, eventVertex, processType);
+
+    if (fdNdEtaCorrectionProcessType[0])
+    {
+      // non diffractive
+      if (processType!=92 && processType!=93 && processType!=94)
+        fdNdEtaCorrectionProcessType[0]->FillMCParticle(vtxMC[2], eta, pt, eventTriggered, eventVertex, processType);
+
+      // single diffractive
+      if (processType==92 || processType==93)
+        fdNdEtaCorrectionProcessType[1]->FillMCParticle(vtxMC[2], eta, pt, eventTriggered, eventVertex, processType);
+
+      // double diffractive
+      if (processType==94)
+        fdNdEtaCorrectionProcessType[2]->FillMCParticle(vtxMC[2], eta, pt, eventTriggered, eventVertex, processType);
+    }
 
     if (eventTriggered)
       if (eventVertex)
@@ -325,24 +367,99 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
       {
         fPIDTracks->Fill(particle->GetPdgCode());
       }
+
+      if (fdNdEtaCorrectionProcessType[0])
+      {
+        // non diffractive
+        if (processType!=92 && processType!=93 && processType!=94)
+          fdNdEtaCorrectionProcessType[0]->FillTrackedParticle(vtxMC[2], particle->Eta(), particle->Pt());
+
+        // single diffractive
+        if (processType==92 || processType==93)
+          fdNdEtaCorrectionProcessType[1]->FillTrackedParticle(vtxMC[2], particle->Eta(), particle->Pt());
+
+        // double diffractive
+        if (processType==94)
+          fdNdEtaCorrectionProcessType[2]->FillTrackedParticle(vtxMC[2], particle->Eta(), particle->Pt());
+      }
     }
   }
 
   if (eventTriggered && eventVertex)
+  {
     fdNdEtaAnalysisMC->FillEvent(vtxMC[2], inputCount);
+    fdNdEtaAnalysisESD->FillEvent(vtxMC[2], inputCount);
+  }
 
-  // stuff regarding the vertex reco correction and trigger bias correction
+   // stuff regarding the vertex reco correction and trigger bias correction
   fdNdEtaCorrection->FillEvent(vtxMC[2], inputCount, eventTriggered, eventVertex, processType);
-  if (eventTriggered) {
-    if (eventVertex)
-    {
-      fdNdEtaAnalysisESD->FillEvent(vtxMC[2], inputCount);
-    }
+
+  if (fdNdEtaCorrectionProcessType[0])
+  {
+    // non diffractive
+    if (processType!=92 && processType!=93 && processType!=94)
+      fdNdEtaCorrectionProcessType[0]->FillEvent(vtxMC[2], inputCount, eventTriggered, eventVertex, processType);
+
+    // single diffractive
+    if (processType==92 || processType==93)
+      fdNdEtaCorrectionProcessType[1]->FillEvent(vtxMC[2], inputCount, eventTriggered, eventVertex, processType);
+
+    // double diffractive
+    if (processType==94)
+      fdNdEtaCorrectionProcessType[2]->FillEvent(vtxMC[2], inputCount, eventTriggered, eventVertex, processType);
   }
 
   delete[] etaArr;
   delete[] labelArr;
   delete[] ptArr;
+
+  // fills the fSigmaVertex histogram (systematic study)
+  if (fSigmaVertexTracks)
+  {
+    // save the old value
+    Float_t oldSigmaVertex = fEsdTrackCuts->GetMinNsigmaToVertex();
+
+    // set to maximum
+    fEsdTrackCuts->SetMinNsigmaToVertex(6);
+
+    TObjArray* list = fEsdTrackCuts->GetAcceptedTracks(fESD);
+    Int_t nGoodTracks = list->GetEntries();
+
+    // loop over esd tracks
+    for (Int_t i=0; i<nGoodTracks; i++)
+    {
+      AliESDtrack* esdTrack = dynamic_cast<AliESDtrack*> (list->At(i));
+      if (!esdTrack)
+      {
+        AliError(Form("ERROR: Could not retrieve track %d.", i));
+        continue;
+      }
+
+      Float_t sigma2Vertex = fEsdTrackCuts->GetSigmaToVertex(esdTrack);
+
+      for (Double_t nSigma = 0.1; nSigma < 6.05; nSigma += 0.1)
+      {
+        if (sigma2Vertex < nSigma)
+        {
+          fSigmaVertexTracks->Fill(nSigma);
+
+          Int_t label = TMath::Abs(esdTrack->GetLabel());
+          TParticle* particle = stack->Particle(label);
+          if (!particle || label >= nPrim)
+            continue;
+
+          if (AliPWG0Helper::IsPrimaryCharged(particle, nPrim))
+            fSigmaVertexPrim->Fill(nSigma);
+        }
+      }
+    }
+
+    delete list;
+    list = 0;
+
+    // set back the old value
+    fEsdTrackCuts->SetMinNsigmaToVertex(oldSigmaVertex);
+  }
 }
 
 void AlidNdEtaCorrectionTask::Terminate(Option_t *)
@@ -378,10 +495,26 @@ void AlidNdEtaCorrectionTask::Terminate(Option_t *)
   fdNdEtaAnalysisMC->SaveHistograms();
   fdNdEtaAnalysisESD->SaveHistograms();
 
+  fdNdEtaCorrectionProcessType[0] = dynamic_cast<AlidNdEtaCorrection*> (fOutput->FindObject("dndeta_correction_ND"));
+  fdNdEtaCorrectionProcessType[1] = dynamic_cast<AlidNdEtaCorrection*> (fOutput->FindObject("dndeta_correction_SD"));
+  fdNdEtaCorrectionProcessType[2] = dynamic_cast<AlidNdEtaCorrection*> (fOutput->FindObject("dndeta_correction_DD"));
+  for (Int_t i=0; i<3; ++i)
+    if (fdNdEtaCorrectionProcessType[i])
+      fdNdEtaCorrectionProcessType[i]->SaveHistograms();
+
+  fSigmaVertexTracks = dynamic_cast<TH1F*> (fOutput->FindObject("fSigmaVertexTracks"));
+  if (fSigmaVertexTracks)
+    fSigmaVertexTracks->Write();
+  fSigmaVertexPrim = dynamic_cast<TH1F*> (fOutput->FindObject("fSigmaVertexPrim"));
+  if (fSigmaVertexPrim)
+    fSigmaVertexPrim->Write();
+
   fout->Write();
   fout->Close();
 
   fdNdEtaCorrection->DrawHistograms();
+
+  Printf("Writting result to %s", fileName.Data());
 
   if (fPIDParticles && fPIDTracks)
   {
@@ -400,8 +533,6 @@ void AlidNdEtaCorrectionTask::Terminate(Option_t *)
     delete pdgDB;
     pdgDB = 0;
   }
-
-  Printf("Writting result to %s", fileName.Data());
 }
 
 Bool_t AlidNdEtaCorrectionTask::SignOK(TParticlePDG* particle)
@@ -432,3 +563,4 @@ Bool_t AlidNdEtaCorrectionTask::SignOK(TParticlePDG* particle)
 
   return kTRUE;
 }
+
