@@ -2428,9 +2428,25 @@ Bool_t AliITSInitGeometry::WriteVersionString(Char_t *str,Int_t length,
     //                        and will be set to zero
     // Return:
     //   kTRUE if no errors
+    Char_t cvslikedate[30];
     Int_t i,n,cvsDateLength,cvsRevisionLength;
 
     cvsDateLength = (Int_t)strlen(cvsDate);
+   if(cvsDateLength>30){ // svn string, make a cvs like string
+        i=0;n=0;
+        do{
+            cvslikedate[i] = cvsDate[i];
+            if(cvsDate[i++]=='-'){
+                n++; // count number of -
+                cvslikedate[i-1] = '/'; // replace -'s by /'s.
+            } // end if
+        } while(n<3&&i<30); // once additonal - of time zone reach exit
+        cvslikedate[i-1] = '$'; // put $ at end then zero.
+        for(;i<30;i++) cvslikedate[i]=0;// i starts wher do loop left off.
+    }else{
+        for(i=0;i<cvsDateLength&&i<30;i++) cvslikedate[i]=cvsDate[i];
+    }// end if
+    cvsDateLength = (Int_t)strlen(cvslikedate);
     cvsRevisionLength = (Int_t)strlen(cvsRevision);
     i = (Int_t)maj;
     n = 50+(Int_t)(TMath::Log10(TMath::Abs((Double_t)i)))+1+
@@ -2438,7 +2454,7 @@ Bool_t AliITSInitGeometry::WriteVersionString(Char_t *str,Int_t length,
         +cvsDateLength-6+cvsRevisionLength-10;
     if(GetDebug()>1) printf("AliITSInitGeometry::WriteVersionString:"
                         "length=%d major=%d minor=%d cvsDate=%s[%d] "
-                        "cvsRevision=%s[%d] n=%d\n",length,i,min,cvsDate,
+                        "cvsRevision=%s[%d] n=%d\n",length,i,min,cvslikedate,
                         cvsDateLength,cvsRevision,cvsRevisionLength,n);
     if(i<0) n++;
     if(min<0) n++;
@@ -2453,7 +2469,7 @@ Bool_t AliITSInitGeometry::WriteVersionString(Char_t *str,Int_t length,
         if(10+i<cvsRevisionLength-1)
             cvsrevision[i] = cvsRevision[10+i]; else cvsrevision[i] = 0;
     for(i=0;i<cvsDateLength-6;i++) if(6+i<cvsDateLength-1)
-        cvsdate[i] = cvsDate[6+i]; else cvsdate[i] = 0;
+        cvsdate[i] = cvslikedate[6+i]; else cvsdate[i] = 0;
     for(i=0;i<length;i++) str[i] = 0; // zero it out for now.
     i = (Int_t)maj;
     sprintf(str,"Major Version= %d Minor Version= %d Revision: %s Date: %s",
@@ -2502,8 +2518,8 @@ Bool_t AliITSInitGeometry::ReadVersionString(const Char_t *str,Int_t length,
     ok = m==3;
     if(!ok) return !ok;
     dt.Set(year,month,day,hours,minuits,seconds);
-    if(GetDebug()>1)printf("AliITSInitGeometry::ReadVersionString: i=%d min=%d "
-                       "cvsRevision=%s cvsDate=%s cvsTime=%s m=%d\n",
+    if(GetDebug()>1)printf("AliITSInitGeometry::ReadVersionString: i=%d "
+                     "min=%d cvsRevision=%s cvsDate=%s cvsTime=%s m=%d\n",
                        i,min,cvsRevision,cvsDate,cvsTime,m);
     if(GetDebug()>1)printf("AliITSInitGeometry::ReadVersionString: year=%d"
                        " month=%d day=%d hours=%d minuits=%d seconds=%d\n",
