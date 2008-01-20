@@ -123,6 +123,10 @@ AliESDVertex* AliITSVertexerCosmics::FindVertexForCurrentEvent(Int_t evnumber)
   Bool_t good,matchtoOutLay;
   Float_t xvtx,yvtx,zvtx,rvtx;
 
+  Double_t pos[3]={0.,0.,0.};
+  Double_t err[3]={100.,100.,100.};
+  Int_t ncontributors = -1;
+
   // Collect clusters in the selected layer and the outer one
   for(Int_t imodule=fFirst[ilayer]; imodule<=fLast[ilayer+1]; imodule++) {
     rpTree->GetEvent(imodule);
@@ -153,8 +157,16 @@ AliESDVertex* AliITSVertexerCosmics::FindVertexForCurrentEvent(Int_t evnumber)
 	modclOutLay[nclOutLayStored]=imodule;
 	nclOutLayStored++;
       }
-      if(nclInnLayStored>arrSize || nclOutLayStored>arrSize) 
-	AliFatal("More than arrSize clusters per layer");
+      if(nclInnLayStored>arrSize || nclOutLayStored>arrSize) {
+	//AliFatal("More than arrSize clusters per layer");
+	AliWarning("Too many clusters per layer");
+	delete recpoints;
+	itsLoader->UnloadRecPoints();
+	fCurrentVertex = new AliESDVertex(pos,err,"cosmics");
+	fCurrentVertex->SetTitle("cosmics fake vertex (failed)");
+	fCurrentVertex->SetNContributors(ncontributors);
+	return fCurrentVertex;
+      }
     }// end clusters in a module
   }// end modules
 
@@ -207,10 +219,8 @@ AliESDVertex* AliITSVertexerCosmics::FindVertexForCurrentEvent(Int_t evnumber)
     } // InnLay - second cluster
   } // InnLay - first cluster
 
-
-  Double_t pos[3]={0.,0.,0.};
-  Double_t err[3]={100.,100.,100.};
   if(nvtxs) { 
+    ncontributors = ilayer;
     pos[0]=x[0]; 
     pos[1]=y[0]; 
     pos[2]=z[0];
@@ -218,15 +228,11 @@ AliESDVertex* AliITSVertexerCosmics::FindVertexForCurrentEvent(Int_t evnumber)
     err[1]=TMath::Sqrt(e2y[0]); 
     err[2]=TMath::Sqrt(e2z[0]);
   }
-  fCurrentVertex = new AliESDVertex(pos,err,"cosmics");
-  if(nvtxs) {
-    fCurrentVertex->SetNContributors(ilayer);
-  } else {
-    fCurrentVertex->SetNContributors(-1);
-  }
-  fCurrentVertex->SetTitle("cosmics fake vertex");
 
-  if(nvtxs>=0) fCurrentVertex->Print();
+  fCurrentVertex = new AliESDVertex(pos,err,"cosmics");
+  fCurrentVertex->SetTitle("cosmics fake vertex");
+  fCurrentVertex->SetNContributors(ncontributors);
+  //fCurrentVertex->Print();
 
   delete recpoints;
   itsLoader->UnloadRecPoints();
