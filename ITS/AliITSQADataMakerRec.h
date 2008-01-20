@@ -33,7 +33,7 @@ public:
   AliITSQADataMakerRec& operator = (const AliITSQADataMakerRec& qac);
   virtual void StartOfDetectorCycle() const;
   virtual void EndOfDetectorCycle(AliQA::TASKINDEX task, TObjArray * list);
-  virtual void EndOfDetectorCycle(const char * fgDataName);
+  virtual void EndOfDetectorCycle(const char * /* fgDataName */);
   virtual void InitRaws();
   virtual void InitRecPoints();
   virtual void MakeRaws(AliRawReader *rawReader);

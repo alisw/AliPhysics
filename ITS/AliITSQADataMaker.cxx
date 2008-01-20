@@ -243,6 +243,7 @@ void AliITSQADataMaker::InitRaws()
 void AliITSQADataMaker::MakeRaws(AliRawReader* rawReader)
 { 
   //Fills Raw QA list of histos
+  if(rawReader->GetType() != 7) return;  // skips non physical triggers
     Int_t index=0;
     if(fkOnline) {
         for(Int_t moduleSDD =0; moduleSDD<fgknSDDmodules; moduleSDD++){
@@ -255,7 +256,7 @@ void AliITSQADataMaker::MakeRaws(AliRawReader* rawReader)
 	}
     }
   AliDebug(1,"entering MakeRaws\n");
-  rawReader->SelectEvents(7);                    
+  //  rawReader->SelectEvents(7);                    
   rawReader->SelectEquipment(17,fgkeqOffset+1,fgkeqOffset + fgkDDLidRange); 
   rawReader->Reset();                         
   AliITSRawStreamSDD s(rawReader); 

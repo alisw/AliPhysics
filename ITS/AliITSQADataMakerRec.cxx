@@ -47,26 +47,30 @@ ClassImp(AliITSQADataMakerRec)
 
 //____________________________________________________________________________ 
 AliITSQADataMakerRec::AliITSQADataMakerRec() : 
-  AliQADataMakerRec(AliQA::GetDetName(AliQA::kITS), "SDD Quality Assurance Data Maker")
+AliQADataMakerRec(AliQA::GetDetName(AliQA::kITS), "SDD Quality Assurance Data Maker"),
+fkOnline(kFALSE),
+fLDC(0),
+fnSDDHistos(0)
 { 
-  fkOnline = kFALSE;
-  fnSDDHistos = 0;
-  // ctor 
+  // Default constructor 
 }
 
 //____________________________________________________________________________ 
 AliITSQADataMakerRec::AliITSQADataMakerRec(Int_t ldc, Bool_t kMode) :
-  AliQADataMakerRec(AliQA::GetDetName(AliQA::kITS), "SDD Quality Assurance Data Maker")
+  AliQADataMakerRec(AliQA::GetDetName(AliQA::kITS), "SDD Quality Assurance Data Maker"),
+fkOnline(kMode),
+fLDC(ldc),
+fnSDDHistos(0)
 {
   //ctor used to discriminate OnLine-Offline analysis
-  fkOnline = kMode;
-  fLDC = ldc; 
-  fnSDDHistos = 0;
 }
 
 //____________________________________________________________________________ 
 AliITSQADataMakerRec::AliITSQADataMakerRec(const AliITSQADataMakerRec& qadm) :
-  AliQADataMakerRec()
+AliQADataMakerRec(qadm),
+fkOnline(qadm.fkOnline),
+fLDC(qadm.fLDC),
+fnSDDHistos(qadm.fnSDDHistos)
 {
   //copy ctor 
   SetName((const char*)qadm.GetName()) ; 
@@ -99,9 +103,9 @@ void AliITSQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX task, TObjArray *
 }
 
 //____________________________________________________________________________ 
-void AliITSQADataMakerRec::EndOfDetectorCycle(const char * fgDataName)
+void AliITSQADataMakerRec::EndOfDetectorCycle(const char * /* fgDataName */)
 {
-  //eventually used for different  AliQAChecker::Instance()->Run
+  //possibly used for different  AliQAChecker::Instance()->Run
 }
 
 //____________________________________________________________________________ 
@@ -243,6 +247,7 @@ void AliITSQADataMakerRec::InitRaws()
 void AliITSQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 { 
   //Fills Raw QA list of histos
+  if(rawReader->GetType() != 7) return;  // skips non physical triggers
     Int_t index=0;
     if(fkOnline) {
         for(Int_t moduleSDD =0; moduleSDD<fgknSDDmodules; moduleSDD++){
@@ -255,7 +260,7 @@ void AliITSQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	}
     }
   AliDebug(1,"entering MakeRaws\n");
-  rawReader->SelectEvents(7);                    
+  //  rawReader->SelectEvents(7);                    
   rawReader->SelectEquipment(17,fgkeqOffset+1,fgkeqOffset + fgkDDLidRange); 
   rawReader->Reset();                         
   AliITSRawStreamSDD s(rawReader); 
