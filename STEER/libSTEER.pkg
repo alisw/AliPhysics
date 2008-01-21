@@ -45,7 +45,6 @@ AliHelix.cxx AliV0.cxx AliKink.cxx \
 AliSelectorRL.cxx \
 AliMagFMapsV1.cxx \
 AliSurveyObj.cxx AliSurveyPoint.cxx \
-AliCodeTimer.cxx \
 AliFstream.cxx \
 AliCTPRawData.cxx \
 AliQADataMaker.cxx \

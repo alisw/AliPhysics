@@ -50,6 +50,9 @@
 
 #pragma link C++ class  AliMagF+;
 
+#pragma link C++ class AliCodeTimer+;
+#pragma link C++ class AliCodeTimer::AliPair+;
+
 #pragma link C++ class AliQA+;
 
 #endif
