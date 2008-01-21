@@ -64,13 +64,13 @@ TCut cchi2("cchi2","fESDtrack.fITSchi2MIP[0]<7.&&fESDtrack.fITSchi2MIP[1]<5.&&fE
 
 //
 //example
-comp.fTree->SetAlias("radius","TMath::Sqrt(MC.fVDist[0]**2+MC.fVDist[1]**2)");
-comp.fTree->SetAlias("direction","MC.fParticle.fVx*MC.fParticle.fPx+MC.fParticle.fVy*MC.fParticle.fPy");
-comp.fTree->SetAlias("decaydir","MC.fTRdecay.fX*MC.fTRdecay.fPx+MC.fTRdecay.fY*MC.fTRdecay.fPy");
-comp.fTree->SetAlias("theta","MC.fTrackRef.Theta()");
-comp.fTree->SetAlias("primdca","sqrt(RC.fITStrack.fD[0]**2+RC.fITStrack.fD[1]**2)");
-comp.fTree->SetAlias("trdchi2","fTRDtrack.fChi2/fTRDtrack.fN");
-comp.fTree->SetAlias("trdchi2","fTRDtrack.fChi2/fTRDtrack.fN");
+comp.T()->SetAlias("radius","TMath::Sqrt(MC.fVDist[0]**2+MC.fVDist[1]**2)");
+comp.T()->SetAlias("direction","MC.fParticle.fVx*MC.fParticle.fPx+MC.fParticle.fVy*MC.fParticle.fPy");
+comp.T()->SetAlias("decaydir","MC.fTRdecay.fX*MC.fTRdecay.fPx+MC.fTRdecay.fY*MC.fTRdecay.fPy");
+comp.T()->SetAlias("theta","MC.fTrackRef.Theta()");
+comp.T()->SetAlias("primdca","sqrt(RC.fITStrack.fD[0]**2+RC.fITStrack.fD[1]**2)");
+comp.T()->SetAlias("trdchi2","fTRDtrack.fChi2/fTRDtrack.fN");
+comp.T()->SetAlias("trdchi2","fTRDtrack.fChi2/fTRDtrack.fN");
 
 
 TH1F his("his","his",100,0,20);
@@ -93,7 +93,7 @@ comp.fRes->Draw();
 comp.Eff("fTPCinP0[3]","fRowsWithDigits>120"+cteta1+cpos1+cprim,"fTPCOn&&fITSOn&&fESDtrack.fITSFakeRatio>0.1",10,0.2,1.5)
 comp.fRes->Draw();
 
-comp.fTree->Draw("fESDtrack.fITSsignal/fESDtrack.fTPCsignal","fITSOn&&fTPCOn&&fESDtrack.fITSFakeRatio==0") 
+comp.T()->Draw("fESDtrack.fITSsignal/fESDtrack.fTPCsignal","fITSOn&&fTPCOn&&fESDtrack.fITSFakeRatio==0") 
 
 TH1F his("his","his",100,0,20);
 TH1F hpools("hpools","hpools",100,-7,7);
@@ -103,21 +103,21 @@ TH2F * hdedx1 = new TH2F("dEdx1","dEdx1",100, 0,2,200,0,550); hdedx1->SetMarkerC
 TH2F * hdedx2 = new TH2F("dEdx2","dEdx2",100, 0,2,200,0,550); hdedx2->SetMarkerColor(3);
 TH2F * hdedx3 = new TH2F("dEdx3","dEdx3",100, 0,2,200,0,550); hdedx3->SetMarkerColor(2);
 
-comp.fTree->Draw("fESDtrack.fITSsignal:MC.fParticle.P()>>dEdx0","fITSOn&&abs(fPdg)==211&&fITStrack.fN==6"+cprim) 
-comp.fTree->Draw("fESDtrack.fITSsignal:MC.fParticle.P()>>dEdx1","fITSOn&&abs(fPdg)==2212&&fITStrack.fN==6"+cprim) 
-comp.fTree->Draw("fESDtrack.fITSsignal:MC.fParticle.P()>>dEdx2","fITSOn&&abs(fPdg)==321&&fITStrack.fN==6"+cprim) 
-comp.fTree->Draw("fESDtrack.fITSsignal:MC.fParticle.P()>>dEdx3","fITSOn&&abs(fPdg)==11&&fITStrack.fN==6"+cprim) 
+comp.T()->Draw("fESDtrack.fITSsignal:MC.fParticle.P()>>dEdx0","fITSOn&&abs(fPdg)==211&&fITStrack.fN==6"+cprim) 
+comp.T()->Draw("fESDtrack.fITSsignal:MC.fParticle.P()>>dEdx1","fITSOn&&abs(fPdg)==2212&&fITStrack.fN==6"+cprim) 
+comp.T()->Draw("fESDtrack.fITSsignal:MC.fParticle.P()>>dEdx2","fITSOn&&abs(fPdg)==321&&fITStrack.fN==6"+cprim) 
+comp.T()->Draw("fESDtrack.fITSsignal:MC.fParticle.P()>>dEdx3","fITSOn&&abs(fPdg)==11&&fITStrack.fN==6"+cprim) 
 
 
-comp.fTree->Draw("fESDtrack.fTRDsignal:MC.fParticle.P()>>dEdx0","fTRDOn&&abs(fPdg)==211&&fTRDtrack.fN>40&&fStatus[2]>1") 
-comp.fTree->Draw("fESDtrack.fTRDsignal:MC.fParticle.P()>>dEdx1","fTRDOn&&abs(fPdg)==2212&&fTRDtrack.fN>40&&fStatus[2]>1") 
-comp.fTree->Draw("fESDtrack.fTRDsignal:MC.fParticle.P()>>dEdx2","fTRDOn&&abs(fPdg)==321&&fTRDtrack.fN>40&&fStatus[2]>1") 
-comp.fTree->Draw("fESDtrack.fTRDsignal:MC.fParticle.P()>>dEdx3","fTRDOn&&abs(fPdg)==11&&fTRDtrack.fN>40&&fStatus[2]>1") 
+comp.T()->Draw("fESDtrack.fTRDsignal:MC.fParticle.P()>>dEdx0","fTRDOn&&abs(fPdg)==211&&fTRDtrack.fN>40&&fStatus[2]>1") 
+comp.T()->Draw("fESDtrack.fTRDsignal:MC.fParticle.P()>>dEdx1","fTRDOn&&abs(fPdg)==2212&&fTRDtrack.fN>40&&fStatus[2]>1") 
+comp.T()->Draw("fESDtrack.fTRDsignal:MC.fParticle.P()>>dEdx2","fTRDOn&&abs(fPdg)==321&&fTRDtrack.fN>40&&fStatus[2]>1") 
+comp.T()->Draw("fESDtrack.fTRDsignal:MC.fParticle.P()>>dEdx3","fTRDOn&&abs(fPdg)==11&&fTRDtrack.fN>40&&fStatus[2]>1") 
 
-comp.fTree->Draw("fESDtrack.fTPCsignal:fTPCinP0[4]>>dEdx0","fTPCOn&&abs(fPdg)==211&&fESDtrack.fTPCncls>180&&fESDtrack.fTPCsignal>10"+cteta1); 
-comp.fTree->Draw("fESDtrack.fTPCsignal:fTPCinP0[4]>>dEdx1","fTPCOn&&abs(fPdg)==2212&&fESDtrack.fTPCncls>180&&fESDtrack.fTPCsignal>10"+cteta1); 
-comp.fTree->Draw("fESDtrack.fTPCsignal:fTPCinP0[4]>>dEdx2","fTPCOn&&abs(fPdg)==321&&fESDtrack.fTPCncls>180&&fESDtrack.fTPCsignal>10"+cteta1); 
-comp.fTree->Draw("fESDtrack.fTPCsignal:fTPCinP0[4]>>dEdx3","fTPCOn&&abs(fPdg)==11&&fESDtrack.fTPCncls>180&&fESDtrack.fTPCsignal>10"+cteta1); 
+comp.T()->Draw("fESDtrack.fTPCsignal:fTPCinP0[4]>>dEdx0","fTPCOn&&abs(fPdg)==211&&fESDtrack.fTPCncls>180&&fESDtrack.fTPCsignal>10"+cteta1); 
+comp.T()->Draw("fESDtrack.fTPCsignal:fTPCinP0[4]>>dEdx1","fTPCOn&&abs(fPdg)==2212&&fESDtrack.fTPCncls>180&&fESDtrack.fTPCsignal>10"+cteta1); 
+comp.T()->Draw("fESDtrack.fTPCsignal:fTPCinP0[4]>>dEdx2","fTPCOn&&abs(fPdg)==321&&fESDtrack.fTPCncls>180&&fESDtrack.fTPCsignal>10"+cteta1); 
+comp.T()->Draw("fESDtrack.fTPCsignal:fTPCinP0[4]>>dEdx3","fTPCOn&&abs(fPdg)==11&&fESDtrack.fTPCncls>180&&fESDtrack.fTPCsignal>10"+cteta1); 
 
 hdedx3->SetXTitle("P(GeV/c)");
 hdedx3->SetYTitle("dEdx(unit)");
