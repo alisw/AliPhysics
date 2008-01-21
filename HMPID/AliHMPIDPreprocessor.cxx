@@ -148,9 +148,12 @@ Bool_t AliHMPIDPreprocessor::ProcDcs(TMap* pMap)
   metaData.SetResponsible("AliHMPIDPreprocessor"); 
   metaData.SetComment("SIMULATED");
 
-  stDcsStore =   Store("Calib","Qthre",&arQthre,&metaData,0,kTRUE) &&    // from DCS 
-                 Store("Calib","Nmean",&arNmean,&metaData,0,kTRUE) &&    // from DCS
-                 Store("Calib","UserCut",&arUserCut,&metaData,0,kTRUE);  //really not from DCS...a method ProcManual maybe needed
+//  stDcsStore =   Store("Calib","Qthre",&arQthre,&metaData,0,kTRUE) &&    // from DCS 
+//                 Store("Calib","Nmean",&arNmean,&metaData,0,kTRUE) &&    // from DCS
+//                 Store("Calib","UserCut",&arUserCut,&metaData,0,kTRUE);  //really not from DCS...a method ProcManual maybe needed
+  stDcsStore =   Store("Calib","Qthre",&arQthre,&metaData) &&    // from DCS 
+                 Store("Calib","Nmean",&arNmean,&metaData) &&    // from DCS
+                 Store("Calib","UserCut",&arUserCut,&metaData);  //really not from DCS...a method ProcManual maybe needed
   if(!stDcsStore) {
     Log("HMPID - failure to store DCS data results in OCDB");    
   }
