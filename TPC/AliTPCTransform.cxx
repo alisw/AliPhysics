@@ -28,6 +28,10 @@
 //    Drift velocity - Currently common drift velocity - functionality of AliTPCParam
 //    ExB effect     - 
 //
+//    Time of flight correction -
+//                   - Depends on the vertex position
+//                   - by default 
+//                           
 //    Usage:
 //          AliTPCclustererMI::AddCluster
 //          AliTPCtrackerMI::Transform
@@ -61,7 +65,9 @@
 ClassImp(AliTPCTransform)
 
 
-AliTPCTransform::AliTPCTransform() {
+  AliTPCTransform::AliTPCTransform():
+    AliTransform()
+{
   //
   // Speed it up a bit!
   //
@@ -70,6 +76,9 @@ AliTPCTransform::AliTPCTransform() {
     fSins[i]=TMath::Sin(alpha);
     fCoss[i]=TMath::Cos(alpha);
   }
+  fPrimVtx[0]=0;
+  fPrimVtx[1]=0;
+  fPrimVtx[2]=0;
 }
 
 AliTPCTransform::~AliTPCTransform() {
@@ -78,8 +87,18 @@ AliTPCTransform::~AliTPCTransform() {
   //
 }
 
+void AliTPCTransform::SetPrimVertex(Double_t *vtx){
+  //
+  //
+  //
+  fPrimVtx[0]=vtx[0];
+  fPrimVtx[1]=vtx[1];
+  fPrimVtx[2]=vtx[2];
+}
+
+
 void AliTPCTransform::Transform(Double_t *x,Int_t *i,UInt_t /*time*/,
-				Int_t /*coordinateType*/, Float_t *primvtx) {
+				Int_t /*coordinateType*/) {
   // input: x[0] - pad row
   //        x[1] - pad 
   //        x[2] - time in us
@@ -131,22 +150,27 @@ void AliTPCTransform::Transform(Double_t *x,Int_t *i,UInt_t /*time*/,
   calib->GetExB()->Correct(x,xx);
   //
   // Time of flight correction
-  //
-  Float_t deltaDr =0
-  if (primvtx){
-    Float_t dist=0;
-    dist+=(primvtx[0]-x[0])*(primvtx[0]-x[0]);
-    dist+=(primvtx[1]-x[1])*(primvtx[1]-x[1]);
-    dist+=(primvtx[0]-x[2])*(primvtx[0]-x[2]);
-    dist = TMath::Sqrt(dist);
-    // drift length correction because of TOF
-    // the drift velocity is in cm/s therefore multiplication by 0.01
-    deltaDr = (dist*(0.01*param->GetDriftV()))/TMath::C();
+  // 
+  const Int_t kNIS=param->GetNInnerSector(), kNOS=param->GetNOuterSector(); 
+  Float_t sign=1;
+  if (sector < kNIS) {
+    sign = (sector < kNIS/2) ? 1 : -1;
+  } else {
+    sign = ((sector-kNIS) < kNOS/2) ? 1 : -1;
   }
-  xx[2]-=deltaDr;
+  Float_t deltaDr =0;
+  Float_t dist=0;
+  dist+=(fPrimVtx[0]-x[0])*(fPrimVtx[0]-x[0]);
+  dist+=(fPrimVtx[1]-x[1])*(fPrimVtx[1]-x[1]);
+  dist+=(fPrimVtx[0]-x[2])*(fPrimVtx[0]-x[2]);
+  dist = TMath::Sqrt(dist);
+  // drift length correction because of TOF
+  // the drift velocity is in cm/s therefore multiplication by 0.01
+  deltaDr = (dist*(0.01*param->GetDriftV()))/TMath::C(); 
+  xx[2]+=sign*deltaDr;
   //
   Global2RotatedGlobal(sector,xx);
-
+  //
   x[0]=xx[0];x[1]=xx[1];x[2]=xx[2];
 }
 

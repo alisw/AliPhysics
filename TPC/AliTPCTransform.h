@@ -20,7 +20,8 @@ public:
   AliTPCTransform();
   virtual ~AliTPCTransform();
   virtual void Transform(Double_t *x,Int_t *i,UInt_t time,
-			 Int_t coordinateType, Float_t * primvtx =0);
+			 Int_t coordinateType);
+  void SetPrimVertex(Double_t *vtx);
 protected:
   void Local2RotatedGlobal(Int_t sec,  Double_t *x) const;
   void RotatedGlobal2Global(Int_t sector,Double_t *x) const;
@@ -29,7 +30,7 @@ protected:
 private:
   Double_t fCoss[18];  // cache the transformation
   Double_t fSins[18];  // cache the transformation
-
+  Double_t fPrimVtx[3];// position of the primary vertex - needed for TOF correction
   ClassDef(AliTPCTransform,1)
 };
 
