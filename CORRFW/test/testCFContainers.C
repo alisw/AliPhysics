@@ -75,8 +75,7 @@ void testCFContainers(){
   
   
   //the nstep grids "container" 
-  //   AliCFContainer *cont = new AliCFContainer("cont","example of  container",nstep,nvar,iBin);
-  AliCFContainer *cont = new AliCFContainer("cont","example of  container",nstep,nvar,iBin, 0x0,kTRUE);
+  AliCFContainer *cont = new AliCFContainer("cont","example of  container",nstep,nvar,iBin);
 
   //setting the bin limits
   cont->SetBinLimits(ipt,binLim1);
