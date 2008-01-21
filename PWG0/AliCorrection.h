@@ -14,6 +14,7 @@
 // ------------------------------------------------------
 
 #include <TNamed.h>
+#include "AliPWG0Helper.h"
 
 class AliCorrectionMatrix2D;
 class AliCorrectionMatrix3D;
@@ -22,7 +23,7 @@ class AliCorrection : public TNamed
 {
 public:
   AliCorrection();
-  AliCorrection(const Char_t* name, const Char_t* title, const char* analysis = "tpc");
+  AliCorrection(const Char_t* name, const Char_t* title, AliPWG0Helper::AnalysisMode analysisMode = AliPWG0Helper::kTPC);
   AliCorrection(const AliCorrection& c);
 
   virtual ~AliCorrection();

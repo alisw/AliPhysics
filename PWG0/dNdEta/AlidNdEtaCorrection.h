@@ -20,6 +20,7 @@
 
 #include <TCollection.h>
 #include <TNamed.h>
+#include "AliPWG0Helper.h"
 
 class AliCorrection;
 
@@ -36,7 +37,7 @@ public:
   };
 
   AlidNdEtaCorrection();
-  AlidNdEtaCorrection(const Char_t* name, const Char_t* title, const char* analysis = "TPC");
+  AlidNdEtaCorrection(const Char_t* name, const Char_t* title, AliPWG0Helper::AnalysisMode analysis = AliPWG0Helper::kTPC);
 
   virtual Long64_t Merge(TCollection* list);
 

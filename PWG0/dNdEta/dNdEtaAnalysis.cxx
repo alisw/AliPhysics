@@ -39,7 +39,7 @@ dNdEtaAnalysis::dNdEtaAnalysis() :
 }
 
 //____________________________________________________________________
-dNdEtaAnalysis::dNdEtaAnalysis(Char_t* name, Char_t* title, const char* analysis) :
+dNdEtaAnalysis::dNdEtaAnalysis(Char_t* name, Char_t* title, AliPWG0Helper::AnalysisMode analysisMode) :
   TNamed(name, title),
   fData(0),
   fPtDist(0)
@@ -49,7 +49,7 @@ dNdEtaAnalysis::dNdEtaAnalysis(Char_t* name, Char_t* title, const char* analysis
   // TODO this binning has to be the same than in AliCorrection, somehow passed?!
   Float_t binLimitsPt[] = {0.0, 0.05, 0.1, 0.125, 0.15, 0.175, 0.2, 0.225, 0.25, 0.275, 0.3, 0.325, 0.35, 0.375, 0.4, 0.425, 0.45, 0.475, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.5, 2.0, 5.0, 10.0, 100.0};
 
-  fData = new AliCorrection("Analysis", Form("%s Analysis", title), analysis);
+  fData = new AliCorrection("Analysis", Form("%s Analysis", title), analysisMode);
 
   // do not add this hists to the directory
   Bool_t oldStatus = TH1::AddDirectoryStatus();

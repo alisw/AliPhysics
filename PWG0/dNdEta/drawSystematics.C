@@ -1010,6 +1010,8 @@ mergeCorrectionsWithDifferentCrosssections(Char_t* correctionFileName="correctio
       TString name;
       name.Form("dndeta_correction_syst_%s_%s", typeName[j], changes[i]);
       AlidNdEtaCorrection* current = new AlidNdEtaCorrection(name, name);
+      current->LoadHistograms("dndeta_correction");
+      current->Reset();
 
       name.Form("dndeta_correction_ND");
       AlidNdEtaCorrection* dNdEtaCorrectionND = new AlidNdEtaCorrection(name,name);

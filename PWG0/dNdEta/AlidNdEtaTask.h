@@ -4,6 +4,7 @@
 #define AlidNdEtaTask_H
 
 #include "AliAnalysisTask.h"
+#include "AliPWG0Helper.h"
 #include <TString.h>
 
 class AliESDtrackCuts;
@@ -14,8 +15,6 @@ class AliESDEvent;
 
 class AlidNdEtaTask : public AliAnalysisTask {
   public:
-    enum AnalysisMethod { kSPD = 0, kTPC };
-
     AlidNdEtaTask(const char* opt = "");
     virtual ~AlidNdEtaTask();
 
@@ -25,7 +24,7 @@ class AlidNdEtaTask : public AliAnalysisTask {
     virtual void   Terminate(Option_t*);
 
     void SetTrackCuts(AliESDtrackCuts* cuts) { fEsdTrackCuts = cuts; }
-    void SetAnalysisMode(AnalysisMethod mode) { fAnalysisMode = mode; }
+    void SetAnalysisMode(AliPWG0Helper::AnalysisMode mode) { fAnalysisMode = mode; }
     void SetReadMC(Bool_t flag = kTRUE) { fReadMC = flag; }
 
  protected:
@@ -33,7 +32,7 @@ class AlidNdEtaTask : public AliAnalysisTask {
     TList* fOutput;                  //! list send on output slot 0
 
     TString fOption;      // option string
-    AnalysisMethod fAnalysisMode; // detector that is used for analysis
+    AliPWG0Helper::AnalysisMode fAnalysisMode; // detector that is used for analysis
 
     Bool_t  fReadMC;       // if true reads MC data (to build correlation maps)
 

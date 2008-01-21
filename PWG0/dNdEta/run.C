@@ -33,15 +33,6 @@ void run(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFALSE, B
   // Create the analysis manager
   mgr = new AliAnalysisManager;
 
-  // selection of esd tracks
-  gROOT->ProcessLine(".L CreateCuts.C");
-  AliESDtrackCuts* esdTrackCuts = CreateTrackCuts();
-  if (!esdTrackCuts)
-  {
-    printf("ERROR: esdTrackCuts could not be created\n");
-    return;
-  }
-
   TString taskName("AlidNdEtaTask.cxx+");
   if (aDebug)
     taskName += "+g";
@@ -53,8 +44,23 @@ void run(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFALSE, B
     gROOT->Macro(taskName);
 
   task = new AlidNdEtaTask(option);
-  task->SetTrackCuts(esdTrackCuts);
-  task->SetAnalysisMode(AlidNdEtaTask::kSPD);
+
+  AliPWG0Helper::AnalysisMode analysisMode = AliPWG0Helper::kTPC;
+  task->SetAnalysisMode(analysisMode);
+
+  if (analysisMode != AliPWG0Helper::kSPD)
+  {
+    // selection of esd tracks
+    gROOT->ProcessLine(".L ../CreateStandardCuts.C");
+    AliESDtrackCuts* esdTrackCuts = CreateTrackCuts(analysisMode);
+    if (!esdTrackCuts)
+    {
+      printf("ERROR: esdTrackCuts could not be created\n");
+      return;
+    }
+
+    task->SetTrackCuts(esdTrackCuts);
+  }
 
   if (mc)
     task->SetReadMC();
@@ -120,7 +126,7 @@ void FinishAnalysisAll(const char* dataInput = "analysis_esd_raw.root", const ch
   dNdEtaAnalysis* fdNdEtaAnalysis = new dNdEtaAnalysis("dndeta", "dndeta");
   fdNdEtaAnalysis->LoadHistograms("fdNdEtaAnalysisESD");
   fdNdEtaAnalysis->Finish(dNdEtaCorrection, 0.3, AlidNdEtaCorrection::kINEL);
-  fdNdEtaAnalysis->DrawHistograms(kTRUE);
+  //fdNdEtaAnalysis->DrawHistograms(kTRUE);
   TFile* file2 = TFile::Open(dataOutput, "RECREATE");
   fdNdEtaAnalysis->SaveHistograms();
 
@@ -128,7 +134,7 @@ void FinishAnalysisAll(const char* dataInput = "analysis_esd_raw.root", const ch
   fdNdEtaAnalysis = new dNdEtaAnalysis("dndetaTr", "dndetaTr");
   fdNdEtaAnalysis->LoadHistograms("fdNdEtaAnalysisESD");
   fdNdEtaAnalysis->Finish(dNdEtaCorrection, 0.3, AlidNdEtaCorrection::kVertexReco);
-  fdNdEtaAnalysis->DrawHistograms(kTRUE);
+  //fdNdEtaAnalysis->DrawHistograms(kTRUE);
   file2->cd();
   fdNdEtaAnalysis->SaveHistograms();
 
@@ -136,7 +142,7 @@ void FinishAnalysisAll(const char* dataInput = "analysis_esd_raw.root", const ch
   fdNdEtaAnalysis = new dNdEtaAnalysis("dndetaTrVtx", "dndetaTrVtx");
   fdNdEtaAnalysis->LoadHistograms("fdNdEtaAnalysisESD");
   fdNdEtaAnalysis->Finish(dNdEtaCorrection, 0.3, AlidNdEtaCorrection::kTrack2Particle);
-  fdNdEtaAnalysis->DrawHistograms(kTRUE);
+  //fdNdEtaAnalysis->DrawHistograms(kTRUE);
   file2->cd();
   fdNdEtaAnalysis->SaveHistograms();
 
@@ -144,7 +150,7 @@ void FinishAnalysisAll(const char* dataInput = "analysis_esd_raw.root", const ch
   fdNdEtaAnalysis = new dNdEtaAnalysis("dndetaTracks", "dndetaTracks");
   fdNdEtaAnalysis->LoadHistograms("fdNdEtaAnalysisESD");
   fdNdEtaAnalysis->Finish(0, 0.3, AlidNdEtaCorrection::kNone);
-  fdNdEtaAnalysis->DrawHistograms(kTRUE);
+  //fdNdEtaAnalysis->DrawHistograms(kTRUE);
   file2->cd();
   fdNdEtaAnalysis->SaveHistograms();
 }

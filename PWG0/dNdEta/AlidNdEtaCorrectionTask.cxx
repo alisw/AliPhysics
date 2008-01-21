@@ -34,7 +34,7 @@ AlidNdEtaCorrectionTask::AlidNdEtaCorrectionTask(const char* opt) :
   fESD(0),
   fOutput(0),
   fOption(opt),
-  fAnalysisMode(kTPC),
+  fAnalysisMode(AliPWG0Helper::kTPC),
   fSignMode(0),
   fEsdTrackCuts(0),
   fdNdEtaCorrection(0),
@@ -89,11 +89,12 @@ void AlidNdEtaCorrectionTask::ConnectInputData(Option_t *)
 
     tree->SetBranchStatus("fTriggerMask", 1);
     tree->SetBranchStatus("fSPDVertex*", 1);
+    // PrimaryVertex
 
-    if (fAnalysisMode == kSPD)
+    if (fAnalysisMode == AliPWG0Helper::kSPD)
       tree->SetBranchStatus("fSPDMult*", 1);
 
-    if (fAnalysisMode == kTPC) {
+    if (fAnalysisMode == AliPWG0Helper::kTPC || fAnalysisMode == AliPWG0Helper::kTPCITS) {
       AliESDtrackCuts::EnableNeededBranches(tree);
       tree->SetBranchStatus("fTracks.fLabel", 1);
     }
@@ -125,18 +126,10 @@ void AlidNdEtaCorrectionTask::CreateOutputObjects()
     fSignMode = -1;
   }
 
-  TString detector;
-  if (fAnalysisMode == kTPC)
-  {
-    detector = "TPC";
-  }
-  else if (fAnalysisMode == kSPD)
-    detector = "SPD";
-
   fOutput = new TList;
   fOutput->SetOwner();
 
-  fdNdEtaCorrection = new AlidNdEtaCorrection("dndeta_correction", "dndeta_correction", detector);
+  fdNdEtaCorrection = new AlidNdEtaCorrection("dndeta_correction", "dndeta_correction", fAnalysisMode);
   fOutput->Add(fdNdEtaCorrection);
 
   fPIDParticles = new TH1F("pid_particles", "PID of generated primary particles", 10001, -5000.5, 5000.5);
@@ -145,10 +138,10 @@ void AlidNdEtaCorrectionTask::CreateOutputObjects()
   fPIDTracks = new TH1F("pid_tracks", "MC PID of reconstructed tracks", 10001, -5000.5, 5000.5);
   fOutput->Add(fPIDTracks);
 
-  fdNdEtaAnalysisMC = new dNdEtaAnalysis("dndetaMC", "dndetaMC", detector);
+  fdNdEtaAnalysisMC = new dNdEtaAnalysis("dndetaMC", "dndetaMC", fAnalysisMode);
   fOutput->Add(fdNdEtaAnalysisMC);
 
-  fdNdEtaAnalysisESD = new dNdEtaAnalysis("dndetaESD", "dndetaESD", detector);
+  fdNdEtaAnalysisESD = new dNdEtaAnalysis("dndetaESD", "dndetaESD", fAnalysisMode);
   fOutput->Add(fdNdEtaAnalysisESD);
 
   if (fOption.Contains("process-types")) {
@@ -185,7 +178,9 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
   // trigger definition
   Bool_t eventTriggered = AliPWG0Helper::IsEventTriggered(fESD->GetTriggerMask(), AliPWG0Helper::kMB1);
 
-  Bool_t eventVertex = AliPWG0Helper::IsVertexReconstructed(fESD->GetVertex());
+  Bool_t eventVertex = kFALSE;
+  if (AliPWG0Helper::GetVertex(fESD, fAnalysisMode))
+    eventVertex = kTRUE;
 
   // post the data already here
   PostData(0, fOutput);
@@ -195,7 +190,7 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
   Int_t* labelArr = 0;
   Float_t* etaArr = 0;
   Float_t* ptArr = 0;
-  if (fAnalysisMode == kSPD)
+  if (fAnalysisMode == AliPWG0Helper::kSPD)
   {
     // get tracklets
     const AliMultiplicity* mult = fESD->GetMultiplicity();
@@ -224,7 +219,7 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
       ++inputCount;
     }
   }
-  else if (fAnalysisMode == kTPC)
+  else if (fAnalysisMode == AliPWG0Helper::kTPC || fAnalysisMode == AliPWG0Helper::kTPCITS)
   {
     if (!fEsdTrackCuts)
     {

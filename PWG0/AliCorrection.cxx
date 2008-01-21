@@ -30,7 +30,7 @@ AliCorrection::AliCorrection() : TNamed(),
 }
 
 //____________________________________________________________________
-AliCorrection::AliCorrection(const Char_t* name, const Char_t* title, const char* analysis) : TNamed(name, title),
+AliCorrection::AliCorrection(const Char_t* name, const Char_t* title, AliPWG0Helper::AnalysisMode analysisMode) : TNamed(name, title),
   fEventCorr(0),
   fTrackCorr(0)
 {
@@ -40,12 +40,13 @@ AliCorrection::AliCorrection(const Char_t* name, const Char_t* title, const char
   Int_t nBinsPt = 0;
 
   // different binnings, better solution could be anticipated...
-  if (TString(analysis).CompareTo("tpc", TString::kIgnoreCase) == 0)
+  if (analysisMode == AliPWG0Helper::kTPC || analysisMode == AliPWG0Helper::kTPCITS)
   {
     static Float_t binLimitsPtTmp[] = {0.0, 0.05, 0.1, 0.125, 0.15, 0.175, 0.2, 0.225, 0.25, 0.275, 0.3, 0.325, 0.35, 0.375, 0.4, 0.425, 0.45, 0.475, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.5, 2.0, 5.0, 10.0, 100.0};
     binLimitsPt = (Float_t*) binLimitsPtTmp;
     nBinsPt = 28;
-  } else if (TString(analysis).CompareTo("spd", TString::kIgnoreCase) == 0)
+  } 
+  else if (analysisMode == AliPWG0Helper::kSPD)
   {
     static Float_t binLimitsPtTmp[] = {-0.5, 0.5};
     binLimitsPt = (Float_t*) binLimitsPtTmp;
