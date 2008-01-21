@@ -1420,3 +1420,39 @@ void drawPlots()
   drawPlots(5);
   drawPlots(2);
 }
+
+void CompareCorrection2Measured(const char* dataInput = "analysis_esd_raw.root", const char* correctionMapFile = "correction_map.root", const char* correctionMapFolder = "dndeta_correction")
+{
+  loadlibs();
+
+  AlidNdEtaCorrection* dNdEtaCorrection = new AlidNdEtaCorrection(correctionMapFolder, correctionMapFolder);
+  TFile::Open(correctionMapFile);
+  dNdEtaCorrection->LoadHistograms();
+
+  TFile* file = TFile::Open(dataInput);
+
+  if (!file)
+  {
+    cout << "Error. File not found" << endl;
+    return;
+  }
+
+  dNdEtaAnalysis* fdNdEtaAnalysis = new dNdEtaAnalysis("dndeta", "dndeta");
+  fdNdEtaAnalysis->LoadHistograms("fdNdEtaAnalysisESD");
+
+  gROOT->cd();
+  
+  TH3* hist1 = (TH3*) dNdEtaCorrection->GetTrack2ParticleCorrection()->GetTrackCorrection()->GetMeasuredHistogram()->Clone("mc");
+  hist1->SetTitle("mc");
+
+  TH3* hist2 = (TH3*) fdNdEtaAnalysis->GetData()->GetTrackCorrection()->GetMeasuredHistogram()->Clone("esd");
+  hist2->SetTitle("esd");
+
+  AliPWG0Helper::CreateDividedProjections(hist1, hist2);
+
+  new TCanvas; gROOT->FindObject("mc_yx_div_esd_yx")->Draw("COLZ");
+  new TCanvas; gROOT->FindObject("mc_zx_div_esd_zx")->Draw("COLZ");
+  new TCanvas; gROOT->FindObject("mc_zy_div_esd_zy")->Draw("COLZ");
+
+}
+  

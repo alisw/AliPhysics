@@ -8,6 +8,7 @@
 // static helper functions
 
 class AliESD;
+class AliESDEvent;
 class AliESDVertex;
 class TParticle;
 class TH1;
@@ -21,11 +22,14 @@ class AliPWG0Helper : public TObject
 {
   public:
     enum Trigger { kMB1 = 0, kMB2 }; // definition from ALICE-INT-2005-025
+    enum AnalysisMode { kSPD = 0, kTPC, kTPCITS };
 
     static Bool_t IsEventTriggered(const AliESD* aEsd, Trigger trigger = kMB2);
     static Bool_t IsEventTriggered(ULong64_t triggerMask, Trigger trigger = kMB2);
     static Bool_t IsVertexReconstructed(const AliESD* aEsd);
     static Bool_t IsVertexReconstructed(const AliESDVertex* vtxESD);
+    static const AliESDVertex* GetVertex(const AliESDEvent* aEsd, AnalysisMode analysisMethod);
+
     static Bool_t IsPrimaryCharged(TParticle* aParticle, Int_t aTotalPrimaries, Bool_t adebug = kFALSE);
 
     static Int_t GetPythiaEventProcessType(AliHeader* aHeader, Bool_t adebug = kFALSE);

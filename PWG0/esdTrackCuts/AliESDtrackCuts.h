@@ -55,16 +55,16 @@ public:
   // track quality cut setters  
   void SetMinNClustersTPC(Int_t min=-1)          {fCutMinNClusterTPC=min;}
   void SetMinNClustersITS(Int_t min=-1)          {fCutMinNClusterITS=min;}
-  void SetMaxChi2PerClusterTPC(Float_t max=1e99) {fCutMaxChi2PerClusterTPC=max;}
-  void SetMaxChi2PerClusterITS(Float_t max=1e99) {fCutMaxChi2PerClusterITS=max;}
+  void SetMaxChi2PerClusterTPC(Float_t max=1e10) {fCutMaxChi2PerClusterTPC=max;}
+  void SetMaxChi2PerClusterITS(Float_t max=1e10) {fCutMaxChi2PerClusterITS=max;}
   void SetRequireTPCRefit(Bool_t b=kFALSE)       {fCutRequireTPCRefit=b;}
   void SetRequireITSRefit(Bool_t b=kFALSE)       {fCutRequireITSRefit=b;}
   void SetAcceptKingDaughters(Bool_t b=kFALSE)   {fCutAcceptKinkDaughters=b;}
-  void SetMaxCovDiagonalElements(Float_t c1=1e99, Float_t c2=1e99, Float_t c3=1e99, Float_t c4=1e99, Float_t c5=1e99) 
+  void SetMaxCovDiagonalElements(Float_t c1=1e10, Float_t c2=1e10, Float_t c3=1e10, Float_t c4=1e10, Float_t c5=1e10) 
     {fCutMaxC11=c1; fCutMaxC22=c2; fCutMaxC33=c3; fCutMaxC44=c4; fCutMaxC55=c5;}
 
   // track to vertex cut setters
-  void SetMinNsigmaToVertex(Float_t sigma=1e99)       {fCutNsigmaToVertex = sigma;}
+  void SetMinNsigmaToVertex(Float_t sigma=1e10)       {fCutNsigmaToVertex = sigma;}
   void SetRequireSigmaToVertex(Bool_t b=kTRUE )       {fCutSigmaToVertexRequired = b;}
 
   // getters
@@ -72,13 +72,13 @@ public:
   Bool_t GetRequireSigmaToVertex( )    { return fCutSigmaToVertexRequired;}
 
   // track kinmatic cut setters
-  void SetPRange(Float_t r1=0, Float_t r2=1e99)       {fPMin=r1;   fPMax=r2;}
-  void SetPtRange(Float_t r1=0, Float_t r2=1e99)      {fPtMin=r1;  fPtMax=r2;}
-  void SetPxRange(Float_t r1=-1e99, Float_t r2=1e99)  {fPxMin=r1;  fPxMax=r2;}
-  void SetPyRange(Float_t r1=-1e99, Float_t r2=1e99)  {fPyMin=r1;  fPyMax=r2;}
-  void SetPzRange(Float_t r1=-1e99, Float_t r2=1e99)  {fPzMin=r1;  fPzMax=r2;}
-  void SetEtaRange(Float_t r1=-1e99, Float_t r2=1e99) {fEtaMin=r1; fEtaMax=r2;}
-  void SetRapRange(Float_t r1=-1e99, Float_t r2=1e99) {fRapMin=r1; fRapMax=r2;}
+  void SetPRange(Float_t r1=0, Float_t r2=1e10)       {fPMin=r1;   fPMax=r2;}
+  void SetPtRange(Float_t r1=0, Float_t r2=1e10)      {fPtMin=r1;  fPtMax=r2;}
+  void SetPxRange(Float_t r1=-1e10, Float_t r2=1e10)  {fPxMin=r1;  fPxMax=r2;}
+  void SetPyRange(Float_t r1=-1e10, Float_t r2=1e10)  {fPyMin=r1;  fPyMax=r2;}
+  void SetPzRange(Float_t r1=-1e10, Float_t r2=1e10)  {fPzMin=r1;  fPzMax=r2;}
+  void SetEtaRange(Float_t r1=-1e10, Float_t r2=1e10) {fEtaMin=r1; fEtaMax=r2;}
+  void SetRapRange(Float_t r1=-1e10, Float_t r2=1e10) {fRapMin=r1; fRapMax=r2;}
 
   //######################################################
   void SetHistogramsOn(Bool_t b=kFALSE) {fHistogramsOn = b;}

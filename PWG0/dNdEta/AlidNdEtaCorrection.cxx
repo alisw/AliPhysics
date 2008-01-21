@@ -42,7 +42,7 @@ AlidNdEtaCorrection::AlidNdEtaCorrection()
 }
 
 //____________________________________________________________________
-AlidNdEtaCorrection::AlidNdEtaCorrection(const Char_t* name, const Char_t* title, const char* analysis)
+AlidNdEtaCorrection::AlidNdEtaCorrection(const Char_t* name, const Char_t* title, AliPWG0Helper::AnalysisMode analysis)
   : TNamed(name, title),
   fTrack2ParticleCorrection(0),
   fVertexRecoCorrection(0),

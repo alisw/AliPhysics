@@ -53,8 +53,23 @@ void runCorrection(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug =
     gROOT->Macro(taskName);
 
   task = new AlidNdEtaCorrectionTask(option);
-  task->SetTrackCuts(esdTrackCuts);
-  task->SetAnalysisMode(AlidNdEtaCorrectionTask::kTPC);
+
+  AliPWG0Helper::AnalysisMode analysisMode = AliPWG0Helper::kTPC;
+  task->SetAnalysisMode(analysisMode);
+
+  if (analysisMode != AliPWG0Helper::kSPD)
+  {
+    // selection of esd tracks
+    gROOT->ProcessLine(".L ../CreateStandardCuts.C");
+    AliESDtrackCuts* esdTrackCuts = CreateTrackCuts(analysisMode);
+    if (!esdTrackCuts)
+    {
+      printf("ERROR: esdTrackCuts could not be created\n");
+      return;
+    }
+
+    task->SetTrackCuts(esdTrackCuts);
+  }
 
   mgr->AddTask(task);
 

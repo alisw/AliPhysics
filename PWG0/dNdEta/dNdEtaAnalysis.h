@@ -19,11 +19,11 @@
 
 #include <TNamed.h>
 #include "AlidNdEtaCorrection.h"
+#include "AliPWG0Helper.h"
 
 class TH1F;
 class TCollection;
 
-class AlidNdEtaCorrection;
 class AliCorrection;
 
 class dNdEtaAnalysis : public TNamed
@@ -32,7 +32,7 @@ public:
   enum { kVertexBinning = 1+2 }; // the first is for the whole vertex range, the others divide the vertex range
 
   dNdEtaAnalysis();
-  dNdEtaAnalysis(Char_t* name, Char_t* title, const char* analysis = "tpc");
+  dNdEtaAnalysis(Char_t* name, Char_t* title, AliPWG0Helper::AnalysisMode analysisMode = AliPWG0Helper::kTPC);
   virtual ~dNdEtaAnalysis();
 
   dNdEtaAnalysis(const dNdEtaAnalysis &c);

@@ -18,6 +18,7 @@
 
 #include <AliLog.h>
 #include <AliESD.h>
+#include <AliESDEvent.h>
 #include <AliESDVertex.h>
 
 #include <AliGenEventHeader.h>
@@ -104,6 +105,45 @@ Bool_t AliPWG0Helper::IsVertexReconstructed(const AliESDVertex* vtxESD)
     return kFALSE;
 
   return kTRUE;
+}
+
+//____________________________________________________________________
+const AliESDVertex* AliPWG0Helper::GetVertex(const AliESDEvent* aEsd, AnalysisMode analysisMode)
+{
+  // Get the vertex from the ESD and returns it if the vertex is valid
+  //
+  // Second argument decides which vertex is used (this selects
+  // also the quality criteria that are applied)
+
+  const AliESDVertex* vertex = 0;
+  Float_t requiredZResolution = -1;
+  if (analysisMode == kSPD || analysisMode == kTPCITS)
+  {
+    vertex = aEsd->GetVertex();
+    requiredZResolution = 0.1;
+  }
+  else if (analysisMode == kTPC) 
+  {
+    vertex = aEsd->GetPrimaryVertex();
+    requiredZResolution = 0.6;
+  }
+  else
+    Printf("AliPWG0Helper::GetVertex: ERROR: Invalid second argument %d", analysisMode);
+
+  if (!vertex)
+    return 0;
+
+  // check Ncontributors
+  if (vertex->GetNContributors() <= 0)
+    return 0;
+
+  // check resolution
+  Double_t zRes = vertex->GetZRes();
+
+  if (zRes == 0 || zRes > requiredZResolution)
+    return 0;
+
+  return vertex;
 }
 
 //____________________________________________________________________
