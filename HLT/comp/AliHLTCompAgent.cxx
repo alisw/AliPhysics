@@ -37,6 +37,9 @@
 #include "AliHLTCOMPHuffmanAltroComponent.h"
 #include "AliHLTCOMPHuffmanAltroCalibComponent.h"
 
+// header file of the module preprocessor
+#include "AliHLTCompPreprocessor.h"
+
 /** global instance for agent registration */
 AliHLTCompAgent gAliHLTCompAgent;
 
@@ -93,4 +96,10 @@ int AliHLTCompAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
   pHandler->AddComponent(new AliHLTCOMPHuffmanAltroCalibComponent);
 
   return 0;
+}
+
+AliHLTModulePreprocessor* AliHLTCompAgent::GetPreprocessor()
+{
+  // see header file for class documentation
+  return new AliHLTCompPreprocessor;
 }

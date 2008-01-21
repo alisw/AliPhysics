@@ -4,6 +4,7 @@
 include $(MODDIR)/hlt.conf
 
 CLASS_HDRS:=  	AliHLTCompAgent.h \
+		AliHLTCompPreprocessor.h \
 		AliHLTCompDefinitions.h \
 		AliHLTCOMPHuffmanAltro.h \
 		AliHLTCOMPHuffmanAltroComponent.h \
@@ -18,7 +19,7 @@ MODULE_HDRS:= 	$(CLASS_HDRS)
 
 MODULE_DHDR:= 		
 
-EINCLUDE := HLT/BASE HLT/TPCLib
+EINCLUDE := HLT/BASE HLT/shuttle HLT/TPCLib STEER
 
 ###############################################################################
 #

@@ -33,6 +33,7 @@ TRIGGER_DIR=trigger
 SUBDIRS 		= BASE \
 			  sim \
 			  rec \
+			  shuttle \
 			  $(SAMPLE_DIR) \
 			  $(TPC_DIR) \
 			  $(PHOS_DIR) \

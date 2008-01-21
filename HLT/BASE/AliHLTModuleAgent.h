@@ -33,6 +33,7 @@ class AliRawReader;
 class AliRawStream;
 class AliHLTOUTHandler;
 class AliHLTOUT;
+class AliHLTModulePreprocessor;
 
 /**
  * @class AliHLTModuleAgent
@@ -311,6 +312,14 @@ class AliHLTModuleAgent : public TObject, public AliHLTLogging {
 //   virtual AliRawStream* GetRawStream(AliHLTComponentDataType dt,
 // 				     AliHLTUInt32_t spec,
 // 				     const AliHLTOUT* pData);
+
+  /**
+   * Get the preprocessor for this component library.
+   * Create an instance of the preprocessor for this component library.
+   * The caller will delete it after useage.
+   * @return pointer to AliHLTModulePreprocessor object.
+   */
+  virtual AliHLTModulePreprocessor* GetPreprocessor();
 
   /**
    * Old method kept for backward compatibility, redirected to @ref

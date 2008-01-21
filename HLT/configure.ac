@@ -772,6 +772,7 @@ AC_CONFIG_FILES([Makefile
 		 BASE/test/Makefile
 		 sim/Makefile
 		 rec/Makefile
+		 shuttle/Makefile
 		 SampleLib/Makefile
 		 TPCLib/Makefile
 		 TPCLib/mapping2array.cxx

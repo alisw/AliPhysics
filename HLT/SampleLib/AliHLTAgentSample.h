@@ -99,6 +99,8 @@ class AliHLTAgentSample : public AliHLTModuleAgent {
    * @param pHandler  [in] instance of the component handler          
    */
   int RegisterComponents(AliHLTComponentHandler* pHandler) const;
+
+  AliHLTModulePreprocessor* GetPreprocessor();
  protected:
 
  private:

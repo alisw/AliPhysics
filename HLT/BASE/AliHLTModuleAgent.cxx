@@ -162,6 +162,12 @@ int AliHLTModuleAgent::RegisterComponents(AliHLTComponentHandler* /*pHandler*/) 
   return 0;
 }
 
+AliHLTModulePreprocessor* AliHLTModuleAgent::GetPreprocessor()
+{
+  // default method, nothing to be done, child classes can overload
+  return NULL;
+}
+
 AliHLTModuleAgent* AliHLTModuleAgent::fAnchor=NULL;
 AliHLTModuleAgent* AliHLTModuleAgent::fCurrent=NULL;
 int AliHLTModuleAgent::fCount=0;

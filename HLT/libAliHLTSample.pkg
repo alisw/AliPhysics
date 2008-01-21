@@ -10,6 +10,7 @@
 MODULE_SRCS= 	AliHLTSampleComponent1.cxx \
 		AliHLTSampleComponent2.cxx \
 		AliHLTAgentSample.cxx \
+		AliHLTSamplePreprocessor.cxx \
 		AliHLTSampleOfflineSinkComponent.cxx \
 		AliHLTDummyComponent.cxx
 
@@ -18,6 +19,7 @@ MODULE_SRCS= 	AliHLTSampleComponent1.cxx \
 CLASS_HDRS:=  	AliHLTSampleComponent1.h \
 		AliHLTSampleComponent2.h \
 		AliHLTAgentSample.h \
+		AliHLTSamplePreprocessor.h \
 		AliHLTSampleOfflineSinkComponent.h \
 		AliHLTDummyComponent.h
 
@@ -46,7 +48,7 @@ PACKCXXFLAGS := $(filter-out -ansi,$(filter-out -pedantic-errors, $(CXXFLAGS)))
 PACKCFLAGS   := $(filter-out -ansi, $(filter-out -pedantic-errors, $(CFLAGS)))
 PACKDCXXFLAGS:= $(filter-out -pedantic-errors, $(CXXFLAGS))
 
-EINCLUDE := HLT/BASE
+EINCLUDE := HLT/BASE HLT/shuttle
 
 ###############################################################################
 #

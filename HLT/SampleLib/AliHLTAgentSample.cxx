@@ -30,6 +30,9 @@
 // header files of library components
 #include "AliHLTDummyComponent.h"
 
+// header file of the module preprocessor
+#include "AliHLTSamplePreprocessor.h"
+
 /** global instance for agent registration */
 AliHLTAgentSample gAliHLTAgentSample;
 
@@ -118,3 +121,8 @@ int AliHLTAgentSample::RegisterComponents(AliHLTComponentHandler* pHandler) cons
   return 0;
 }
 
+AliHLTModulePreprocessor* AliHLTAgentSample::GetPreprocessor()
+{
+  // see header file for class documentation
+  return new AliHLTSamplePreprocessor;
+}
