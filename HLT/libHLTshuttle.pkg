@@ -1,0 +1,28 @@
+#-*- Mode: Makefile -*-
+# $Id: libHLTshuttle.pkg 22878 2007-12-07 15:32:53Z richterm $
+
+include $(MODDIR)/hlt.conf
+
+LIBHLTSHUTTLE_VERSION := 0
+
+CLASS_HDRS:=  	AliHLTPreprocessor.h \
+		AliHLTModulePreprocessor.h
+
+MODULE_SRCS:= 	$(CLASS_HDRS:.h=.cxx)
+
+MODULE_HDRS:= 	$(CLASS_HDRS)
+
+MODULE_DHDR:= 		
+
+SRCS:=$(patsubst %,shuttle/%,$(MODULE_SRCS))
+CINTHDRS:=$(patsubst %,shuttle/%,$(CLASS_HDRS))
+HDRS:=$(patsubst %,shuttle/%,$(MODULE_HDRS))
+DHDR:=$(patsubst %,shuttle/%,$(MODULE_DHDR))
+CINTAUTOLINK:= $(shell test "x$(MODULE_DHDR)" = "x" && echo 1)
+
+EDEFINE      := ${HLTDEFS}
+PACKCXXFLAGS := ${HLTCXXFLAGS} -DLIBHLTREC_VERSION=$(LIBHLTSHUTTLE_VERSION)
+PACKCFLAGS   := ${HLTCLFAGS}
+PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
+
+EINCLUDE := HLT/shuttle HLT/BASE STEER
