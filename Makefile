@@ -171,14 +171,29 @@ ALILIBS	      := -L$(LIBDIR) -lMUON -lTPC -lPMD -lTRD -lFMD -lTOF \
 
 LIBS := $(ROOTCLIBS) $(ROOTPLIBS) $(SYSLIBS)
 
+ARVERSIONFILE := $(EXPORTDIR)/ARVersion.h
+SVNREV := $(strip $(shell svn info | grep "Last Changed Rev:" | cut -d: -f2 ))
+SVNBRANCH := $(subst //alisoft.cern.ch/AliRoot/,,$(shell svn info | grep "URL:" | cut -d: -f3 ))
+
 #-------------------------------------------------------------------------------
 # default target
 
-default:
+default: $(ARVERSIONFILE)
 	$(MUTE)$(MAKE) aliroot
 
 FORCE:
 
+#-------------------------------------------------------------------------------
+# Write header file with aliroot svn version and url
+
+$(ARVERSIONFILE): FORCE $(EXPORTDIR)
+	$(MUTE)rm -f $(ARVERSIONFILE)
+	@echo "***** Making $(ARVERSIONFILE) *****"
+	@echo "#ifndef ALIROOT_ARVersion" >> $@
+	@echo "#define ALIROOT_ARVersion" >> $@
+	@echo "#define ALIROOT_SVN_REVISION $(SVNREV)" >> $@
+	@echo "#define ALIROOT_SVN_BRANCH \"$(SVNBRANCH)\"" >> $@
+	@echo "#endif" >> $@ 
 #-------------------------------------------------------------------------------
 # Each module will add to these macros
 
