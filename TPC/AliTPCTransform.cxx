@@ -79,7 +79,7 @@ AliTPCTransform::~AliTPCTransform() {
 }
 
 void AliTPCTransform::Transform(Double_t *x,Int_t *i,UInt_t /*time*/,
-				Int_t /*coordinateType*/) {
+				Int_t /*coordinateType*/, Float_t *primvtx) {
   // input: x[0] - pad row
   //        x[1] - pad 
   //        x[2] - time in us
@@ -87,6 +87,14 @@ void AliTPCTransform::Transform(Double_t *x,Int_t *i,UInt_t /*time*/,
   // output: x[0] - x (all in the rotated global coordinate frame)
   //         x[1] - y
   //         x[2] - z
+  //
+  //  primvtx     - position of the primary vertex
+  //                used for the TOF correction
+  //                TOF of particle calculated assuming the speed-of-light and 
+  //                line approximation  
+  //
+  
+
   Int_t row=TMath::Nint(x[0]);
   Int_t pad=TMath::Nint(x[1]);
   Int_t sector=i[0];
@@ -121,7 +129,22 @@ void AliTPCTransform::Transform(Double_t *x,Int_t *i,UInt_t /*time*/,
   // ExB correction
   //
   calib->GetExB()->Correct(x,xx);
-
+  //
+  // Time of flight correction
+  //
+  Float_t deltaDr =0
+  if (primvtx){
+    Float_t dist=0;
+    dist+=(primvtx[0]-x[0])*(primvtx[0]-x[0]);
+    dist+=(primvtx[1]-x[1])*(primvtx[1]-x[1]);
+    dist+=(primvtx[0]-x[2])*(primvtx[0]-x[2]);
+    dist = TMath::Sqrt(dist);
+    // drift length correction because of TOF
+    // the drift velocity is in cm/s therefore multiplication by 0.01
+    deltaDr = (dist*(0.01*param->GetDriftV()))/TMath::C();
+  }
+  xx[2]-=deltaDr;
+  //
   Global2RotatedGlobal(sector,xx);
 
   x[0]=xx[0];x[1]=xx[1];x[2]=xx[2];
