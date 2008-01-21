@@ -16,6 +16,7 @@
 #include <TGraph.h>
 #include <TLegend.h>
 #include <TLine.h>
+#include <TMath.h>
 
 #include <AliLog.h>
 #include <AliESD.h>
@@ -863,6 +864,7 @@ void AliHighMultiplicitySelector::Ntrigger(Bool_t relative)
 
   /*
 
+  gSystem->Load("libANALYSIS");
   gSystem->Load("libPWG0base");
   .L AliHighMultiplicitySelector.cxx+g
   x = new AliHighMultiplicitySelector();
@@ -974,6 +976,7 @@ void AliHighMultiplicitySelector::Ntrigger(Bool_t relative)
       if (downScale < 1)
         downScale = 1;
       Long64_t nTrigger = (Long64_t) (normalRate / downScale * lengthRun);
+      nTrigger = TMath::Nint(((Float_t) nTrigger) / 1000) * 1000;
 
       Printf("Normal rate is %f, downscale: %f, Simulating %lld triggers", normalRate, downScale, nTrigger);
       proj2->FillRandom(proj, nTrigger);

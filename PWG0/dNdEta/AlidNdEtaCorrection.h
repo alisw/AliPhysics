@@ -61,6 +61,7 @@ public:
   void    SaveHistograms();
   Bool_t  LoadHistograms(const Char_t* dir = 0);
   void    DrawHistograms();
+  void    DrawOverview(const char* canvasName = 0);
 
   Float_t GetMeasuredFraction(CorrectionType correctionType, Float_t ptCutOff, Float_t eta = -100, Bool_t debug = kFALSE);
 

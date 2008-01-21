@@ -20,6 +20,12 @@ Int_t gMax = 5;
 
 extern TSystem* gSystem;
 
+void loadlibs()
+{
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libPWG0base");
+}
+
 void SetRanges(TAxis* axis)
 {
   if (strcmp(axis->GetTitle(), "#eta") == 0)
@@ -92,6 +98,23 @@ void InitPadCOLZ()
 
   gPad->SetGridx();
   gPad->SetGridy();
+}
+
+// --- end of helpers --- begin functions ---
+
+void DrawOverview(const char* fileName, const char* dirName)
+{
+  loadlibs();
+  if (!TFile::Open(fileName))
+    return;
+
+  AlidNdEtaCorrection* dNdEtaCorrection = new AlidNdEtaCorrection(dirName, dirName);
+  if (!dNdEtaCorrection->LoadHistograms())
+    return;
+
+  dNdEtaCorrection->Finish();
+
+  dNdEtaCorrection->DrawOverview();
 }
 
 void ComparedNdEta(const char* ESDfolder = "dndeta", const char* MCfolder = "dndeta", const char* esdFile = "analysis_esd.root", const char* mcFile = "analysis_mc.root")
@@ -202,6 +225,28 @@ void CompareTrack2ParticleWithAnalysisData(const char* correctionMapFile = "corr
   diff->Draw();
 }
 
+Double_t PrintIntegratedDeviation(TH1* histMC, TH1* histESD, const char* desc = "")
+{
+  Double_t avgMC = 0;
+  Double_t avgESD = 0;
+  for (Int_t bin = histMC->FindBin(-0.7999); bin <= histMC->FindBin(0.7999); bin++)
+  {
+    avgMC += histMC->GetBinContent(bin);
+    avgESD += histESD->GetBinContent(bin);
+  }
+  Int_t nBins = histMC->FindBin(0.7999) - histMC->FindBin(-0.7999) + 1;
+
+  avgMC /= nBins;
+  avgESD /= nBins;
+
+  // deviation when integrate in |eta| < 0.8 between mc and esd
+  Double_t diffFullRange = (avgMC - avgESD) / avgMC;
+
+  Printf("%s: Integrated deviation in |eta| < 0.8 is %.2f %%", desc, diffFullRange * 100);
+
+  return diffFullRange;
+}
+
 void dNdEta(Bool_t onlyESD = kFALSE)
 {
   TFile* file = TFile::Open("analysis_esd.root");
@@ -279,7 +324,7 @@ void dNdEta(Bool_t onlyESD = kFALSE)
   if (onlyESD)
     return;
 
-  gSystem->Load("libPWG0base");
+  loadlibs();
 
   TFile* file2 = TFile::Open("analysis_mc.root");
   TH1* histMC = (TH1*) file2->Get("dndeta/dNdEta_corrected")->Clone("cloned");
@@ -362,6 +407,20 @@ void dNdEta(Bool_t onlyESD = kFALSE)
 
   ratio->SetLineColor(1);
   ratioNoPt->SetLineColor(2);
+
+  Double_t average = 0;       // average deviation from 1 in ratio (depends on the number of bins if statistical)
+  for (Int_t bin = ratio->FindBin(-0.7999); bin <= ratio->FindBin(0.7999); bin++)
+    average += TMath::Abs(ratio->GetBinContent(bin) - 1);
+  Int_t nBins = ratio->FindBin(0.7999) - ratio->FindBin(-0.7999) + 1;
+  average /= nBins;
+  Printf("Average deviation in |eta| < 0.8 is %.2f %%", average * 100);
+
+  PrintIntegratedDeviation(histMC, histESD, "all events");
+  PrintIntegratedDeviation(histMCTr, histESDMB, "triggered");
+  PrintIntegratedDeviation(histMCTrVtx, histESDMBVtx, "trigger, vertex");
+  PrintIntegratedDeviation(histMCPtCut, histESDNoPt, "all events (no pt corr)");
+  PrintIntegratedDeviation(histMCTrPtCut, histESDMBNoPt, "triggered (no pt corr)");
+  PrintIntegratedDeviation(histMCTrVtxPtCut, histESDMBVtxNoPt, "trigger, vertex (no pt corr)");
 
   TCanvas* canvas3 = new TCanvas("dNdEta", "dNdEta", 700, 600);
   canvas3->Range(0, 0, 1, 1);

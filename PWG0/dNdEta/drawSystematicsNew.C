@@ -2,6 +2,16 @@
 Int_t markers[] = {20,21,22,23,28,29};
 Int_t colors[]  = {1,2,3,4,6,8,102};
 
+void loadlibs()
+{
+  gSystem->Load("libTree");
+  gSystem->Load("libVMC");
+
+  gSystem->Load("libSTEERBase");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libPWG0base");
+}
+
 void DrawpiKpAndCombinedZOnly(Float_t upperPtLimit=0.99)
 {
   //gROOT->ProcessLine(".L drawPlots.C");
@@ -42,35 +52,39 @@ void DrawpiKpAndCombinedZOnly(Float_t upperPtLimit=0.99)
 }
 
 
-void DrawEffectOfChangeInCrossSection() {
+void DrawEffectOfChangeInCrossSection(const char* fileName) {
   
   //get the data
-  TFile* fin = TFile::Open("systematics_xsections.root");
+  TFile* fin = TFile::Open(fileName);
 
-  const Char_t* changes[]  = {"pythia","ddmore","ddless","sdmore","sdless", "dmore", "dless"};
-  Int_t colors[] = {1,2,103,102,4,6,1};
+  const Char_t* changes[]  = {"pythia","ddmore","ddless","sdmore","sdless", "dmore", "dless", "sdmoreddless", "sdlessddmore" };
+  //const Char_t* changes[]  = {"pythia","ddmore25","ddless25","sdmore25","sdless25", "dmore25", "dless25", "sdmoreddless25", "sdlessddmore25" };
+  Int_t colors[] = {1,1,kRed,kBlue,kGreen,kPink,1,kRed,kBlue};
 
-  TH1F* hRatios[7];
-  for(Int_t i=0; i<7; i++) {
+  TH1F* hRatios[9];
+  for(Int_t i=0; i<9; i++) {
     hRatios[i] = (TH1F*)fin->Get(Form("ratio_vertexReco_triggerBias_%s",changes[i]));
     hRatios[i]->SetLineWidth(2);
-    hRatios[i]->SetLineColor(colors[i]);				 
+    hRatios[i]->SetLineColor(colors[i]);
     hRatios[i]->SetMarkerStyle(22);
     hRatios[i]->SetMarkerSize(0.8);
+
+    Float_t average = hRatios[i]->Integral(hRatios[i]->FindBin(-1), hRatios[i]->FindBin(1)) / (hRatios[i]->FindBin(1) - hRatios[i]->FindBin(-1) + 1);
+    Printf("%s: %.2f %%" , hRatios[i]->GetTitle(), (average - 1) * 100);
   }
 
   TPad* p = DrawCanvasAndPad("syst_changeInXsection",700,400);
   p->SetRightMargin(0.2);
   p->SetLeftMargin(0.13);
 
-  TH2F* null = new TH2F("","",100,-1.05,1.05,100,0.93,1.06);
+  TH2F* null = new TH2F("","",100,-1.05,1.05,100,0.9,1.1);
   null->GetXaxis()->SetTitle("#eta");
   null->GetYaxis()->SetTitle("Ratio pythia/modified cross-sections");
   null->Draw();
 
-  TLatex* text[7];
+  TLatex* text[9];
 
-  for(Int_t i=1; i<7; i++) {
+  for(Int_t i=1; i<9; i++) {
     hRatios[i]->Draw("same");
     
     TString str(hRatios[i]->GetTitle());
@@ -169,16 +183,17 @@ TPad* DrawCanvasAndPad(const Char_t* name, Int_t sizeX=600, Int_t sizeY=500) {
   return p1;
 }
 
-void MisalignmentShowRawTrackPlots()
+void MisalignmentShowRawTrackPlots(const char* dirName = "fdNdEtaAnalysisESD")
 {
-  gSystem->Load("libPWG0base");
-  TFile* file = TFile::Open("resC-resC/analysis_esd_raw.root");
-  dNdEtaAnalysis* fdNdEtaAnalysis = new dNdEtaAnalysis("dndeta", "dndeta");
-  fdNdEtaAnalysis->LoadHistograms("dndeta");
+  loadlibs();
 
-  TFile* file2 = TFile::Open("resC-fullA/analysis_esd_raw.root");
-  dNdEtaAnalysis* fdNdEtaAnalysis2 = new dNdEtaAnalysis("dndeta", "dndeta");
-  fdNdEtaAnalysis2->LoadHistograms("dndeta");
+  TFile* file = TFile::Open("fullA-simrec/MB2/analysis_esd_raw.root");
+  dNdEtaAnalysis* fdNdEtaAnalysis = new dNdEtaAnalysis(dirName, dirName);
+  fdNdEtaAnalysis->LoadHistograms();
+
+  TFile* file2 = TFile::Open("fullA-sim/analysis_esd_raw.root");
+  dNdEtaAnalysis* fdNdEtaAnalysis2 = new dNdEtaAnalysis(dirName, dirName);
+  fdNdEtaAnalysis2->LoadHistograms();
 
   TH3* track1 = fdNdEtaAnalysis->GetData()->GetTrackCorrection()->GetMeasuredHistogram()->Clone("track1");
   TH3* track2 = fdNdEtaAnalysis2->GetData()->GetTrackCorrection()->GetMeasuredHistogram()->Clone("track2");
@@ -224,7 +239,7 @@ void MisalignmentShowRawTrackPlots()
   peripheral->SetMarkerStyle(22);
   peripheral->SetMarkerColor(2);
 
-  TH2* tmp = new TH2F("tmp", ";p_{T} [GeV/c]      ;#frac{tracks residual misalignment}{tracks full misalignment}", 1, 0.1, 10, 1, 0.9, 1.3);
+  TH2* tmp = new TH2F("tmp", ";p_{T} [GeV/c]      ;#frac{tracks full misalignment during rec.}{tracks ideal misalignment during rec.}", 1, 0.1, 10, 1, 0.9, 1.3);
 
   tmp->SetStats(kFALSE);
   //tmp->GetXaxis()->SetNoExponent();
@@ -394,5 +409,70 @@ void vertexShift()
   prof->Draw();
 
   canvas->SaveAs(Form("%s.eps", canvas->GetName()));
+}
+
+void CompareRawTrackPlots(Float_t ptCut = 0.0)
+{
+  loadlibs();
+
+  const char* dirName = "fdNdEtaAnalysisESD";
+
+  TFile* file = TFile::Open("fullA-simrec/MB2/analysis_esd_raw.root");
+  dNdEtaAnalysis* fdNdEtaAnalysis = new dNdEtaAnalysis(dirName, dirName);
+  fdNdEtaAnalysis->LoadHistograms();
+
+  //TFile* file2 = TFile::Open("fullA-sim/analysis_esd_raw.root");
+  TFile* file2 = TFile::Open("fullA-simrecexcepttpc/analysis_esd_raw.root");
+  dNdEtaAnalysis* fdNdEtaAnalysis2 = new dNdEtaAnalysis(dirName, dirName);
+  fdNdEtaAnalysis2->LoadHistograms();
+
+  TH3* track1 = fdNdEtaAnalysis->GetData()->GetTrackCorrection()->GetMeasuredHistogram()->Clone("track1");
+  TH3* track2 = fdNdEtaAnalysis2->GetData()->GetTrackCorrection()->GetMeasuredHistogram()->Clone("track2");
+
+  // normalize to number of events;
+  TH2* event1 = fdNdEtaAnalysis->GetData()->GetEventCorrection()->GetMeasuredHistogram();
+  TH2* event2 = fdNdEtaAnalysis2->GetData()->GetEventCorrection()->GetMeasuredHistogram();
+  Int_t event1Count = event1->Integral();
+  Int_t event2Count = event2->Integral();
+  track1->Scale(1.0 / event1Count);
+  track2->Scale(1.0 / event2Count);
+
+  Float_t nTrack1 = track1->Integral(-1, -1, -1, -1, track1->GetZaxis()->FindBin(ptCut), track1->GetZaxis()->GetNbins());
+  Float_t nTrack2 = track2->Integral(-1, -1, -1, -1, track2->GetZaxis()->FindBin(ptCut), track2->GetZaxis()->GetNbins());
+
+  Printf("There are %.2f tracks/event in the first sample and %.2f tracks/event in the second sample. %.2f %% difference (with pt cut at %.2f GeV/c)", nTrack1, nTrack2, 100.0 * (nTrack1 - nTrack2) / nTrack1, ptCut);
+
+  gROOT->cd();
+
+  AliPWG0Helper::CreateDividedProjections(track1, track2);
+
+  new TCanvas; gROOT->FindObject("track1_yx_div_track2_yx")->Draw("COLZ");
+  new TCanvas; gROOT->FindObject("track1_zx_div_track2_zx")->Draw("COLZ");
+  new TCanvas; gROOT->FindObject("track1_zy_div_track2_zy")->Draw("COLZ");
+
+  new TCanvas;
+  proj1 = track1->Project3D("ze2");
+  proj2 = track2->Project3D("ze2");
+  AliPWG0Helper::NormalizeToBinWidth(proj1);
+  AliPWG0Helper::NormalizeToBinWidth(proj2);
+
+  proj1->DrawCopy();
+  proj2->SetLineColor(2);
+  proj2->SetMarkerColor(2);
+  proj2->DrawCopy("SAME");
+
+  AliPWG0Helper::CreateDividedProjections(track1, track2, "ze2");
+  TH1* pt = gROOT->FindObject("track1_ze2_div_track2_ze2");
+  new TCanvas; pt->Draw();
+}
+
+void MagnitudeOfCorrection(const char* fileName, const char* dirName = "dndeta", Float_t ptCut = 0.3)
+{
+  loadlibs();
+
+  TFile* file = TFile::Open(fileName);
+  dNdEtaAnalysis* fdNdEtaAnalysis = new dNdEtaAnalysis(dirName, dirName);
+  fdNdEtaAnalysis->LoadHistograms();
+  fdNdEtaAnalysis->GetData()->PrintInfo(ptCut);
 }
 

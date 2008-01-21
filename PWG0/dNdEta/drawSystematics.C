@@ -26,6 +26,16 @@ void Track2Particle1DCreatePlots(const char* fileName = "correction_map.root", c
 Int_t markers[] = {20,20,21,22,23,28,29};
 Int_t colors[]  = {1,2,3,4,6,8,102};
 
+void loadlibs()
+{
+  gSystem->Load("libTree");
+  gSystem->Load("libVMC");
+
+  gSystem->Load("libSTEERBase");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libPWG0base");
+}
+
 void SetRanges(TAxis* axis)
 {
   if (strcmp(axis->GetTitle(), "#eta") == 0)
@@ -748,21 +758,39 @@ TH1F* Sigma2VertexGaussian()
   return ratio2;
 }
 
-TH1F* Sigma2VertexSimulation()
+TH1F** Sigma2VertexSimulation(const char* fileName = "systematics.root")
 {
-  TFile* file = TFile::Open("systematics.root");
+  TFile* file = TFile::Open(fileName);
 
-  TH1F* sigmavertex = dynamic_cast<TH1F*> (file->Get("fSigmaVertex"));
-  if (!sigmavertex)
+  TH1F* sigmavertex = dynamic_cast<TH1F*> (file->Get("fSigmaVertexTracks"));
+  TH1F* sigmavertexPrim = dynamic_cast<TH1F*> (file->Get("fSigmaVertexPrim"));
+  if (!sigmavertex || !sigmavertexPrim)
   {
-    printf("Could not read histogram\n");
+    printf("Could not read histogram(s)\n");
     return;
   }
 
+  // calculate ratio
   TH1F* ratio = new TH1F("sigmavertexsimulation_ratio", "sigmavertexsimulation_ratio;N#sigma;% included in 3 #sigma / % included in N#sigma", sigmavertex->GetNbinsX(), sigmavertex->GetXaxis()->GetXmin(), sigmavertex->GetXaxis()->GetXmax());
 
+  // calculate contamination
+  TH1F* contamination = ratio->Clone("sigmavertexsimulation_contamination");
+  contamination->SetTitle("sigmavertexsimulation_contamination;N#sigma;1 + N_{secondaries} / N_{all}");
+
   for (Int_t i=1; i<=sigmavertex->GetNbinsX(); ++i)
+  {
     ratio->SetBinContent(i, sigmavertex->GetBinContent(sigmavertex->GetXaxis()->FindBin(3)) / sigmavertex->GetBinContent(i));
+    contamination->SetBinContent(i, 1 + (sigmavertex->GetBinContent(i) - sigmavertexPrim->GetBinContent(i)) / sigmavertex->GetBinContent(i));
+  }
+
+  // print stats
+  for (Float_t sigma = 2.0; sigma < 4.25; sigma += 0.5)
+  {
+    Float_t error1 = 1 - ratio->GetBinContent(sigmavertex->GetXaxis()->FindBin(sigma)) / ratio->GetBinContent(sigmavertex->GetXaxis()->FindBin(sigma - 0.5));
+    Float_t error2 = -1 + ratio->GetBinContent(sigmavertex->GetXaxis()->FindBin(sigma)) / ratio->GetBinContent(sigmavertex->GetXaxis()->FindBin(sigma + 0.5));
+    Float_t cont = -1 + contamination->GetBinContent(sigmavertex->GetXaxis()->FindBin(sigma));
+    Printf("%.2f sigma --> syst. error = - %.2f %% + %.2f %%, cont. = %.2f %%", sigma, error1 * 100, error2 * 100, cont * 100);
+  }
 
   TCanvas* canvas = new TCanvas("Sigma2VertexSimulation", "Sigma2VertexSimulation", 1000, 500);
   canvas->Divide(2, 1);
@@ -775,13 +803,22 @@ TH1F* Sigma2VertexSimulation()
   ratio->SetMarkerStyle(21);
   ratio->DrawCopy("P");
 
-  return ratio;
+  contamination->DrawCopy("SAME");
+
+  TH1F** returnContainer = new TH1F*[2];
+  returnContainer[0] = ratio;
+  returnContainer[1] = contamination;
+
+  return returnContainer;
 }
 
-void Sigma2VertexCompare()
+void Sigma2VertexCompare(const char* fileName = "systematics.root")
 {
   TH1F* ratio1 = Sigma2VertexGaussian();
-  TH1F* ratio2 = Sigma2VertexSimulation();
+
+  TH1F** hists = Sigma2VertexSimulation(fileName);
+  TH1F* ratio2 = hists[0];
+  TH1F* contamination = hists[1];
 
   ratio1->SetStats(kFALSE);
   ratio2->SetStats(kFALSE);
@@ -792,14 +829,15 @@ void Sigma2VertexCompare()
   ratio1->SetLineWidth(2);
   ratio2->SetLineWidth(2);
 
-  TLegend* legend = new TLegend(0.7, 0.8, 0.95, 0.95);
+  TLegend* legend = new TLegend(0.6, 0.8, 0.95, 0.95);
   legend->SetFillColor(0);
   legend->AddEntry(ratio1, "Gaussian");
   legend->AddEntry(ratio2, "Simulation");
+  legend->AddEntry(contamination, "1 + Contamination");
 
   ratio2->SetTitle("");
   ratio2->GetYaxis()->SetTitleOffset(1.5);
-  ratio2->GetXaxis()->SetRangeUser(2, 4);
+  ratio2->GetXaxis()->SetRangeUser(2, 5);
 
   TCanvas* canvas = new TCanvas("Sigma2VertexCompare", "Sigma2VertexCompare", 500, 500);
   InitPad();
@@ -812,6 +850,8 @@ void Sigma2VertexCompare()
   ratio2->SetMarkerColor(kRed);
   ratio2->Draw("PL");
   ratio1->Draw("SAMEPL");
+
+  contamination->Draw("SAME");
 
   legend->Draw();
 
@@ -923,135 +963,147 @@ void DrawdNdEtaDifferences()
   canvas2->SaveAs("particlecomposition_result.eps");
 }
 
-mergeCorrectionsWithDifferentCrosssections(Char_t* standardCorrectionFileName="correction_map.root",
-					     Char_t* systematicCorrectionFileName="systematics.root",
-					     Char_t* outputFileName="systematics_vtxtrigger_compositions.root") {
+mergeCorrectionsWithDifferentCrosssections(Char_t* correctionFileName="correction_map.root", const char* analysisFileName = "analysis_esd_raw.root", const Char_t* outputFileName="systematics_vtxtrigger_compositions.root") {
   //
   // Function used to merge standard corrections with vertex
   // reconstruction corrections obtained by a certain mix of ND, DD
   // and SD events.
-  // 
+  //
+  // the dn/deta spectrum is corrected and the ratios
+  // (standard to changed x-section) of the different dN/deta
+  // distributions are saved to a file.
+  //
 
-  gSystem->Load("libPWG0base");
+  loadlibs();
 
   const Char_t* typeName[] = { "vertexreco", "trigger", "vtxtrigger" };
-  const Char_t* changes[]  = {"pythia","ddmore","ddless","sdmore","sdless", "dmore", "dless"};
-  Float_t scalesDD[] = {1.0, 1.5, 0.5, 1.0, 1.0, 1.5, 0.5};
-  Float_t scalesSD[] = {1.0, 1.0, 1.0, 1.5, 0.5, 1.5, 0.5};
+  const Char_t* changes[]  = { "pythia","ddmore","ddless","sdmore","sdless", "dmore", "dless", "sdmoreddless", "sdlessddmore", "ddmore25","ddless25","sdmore25","sdless25", "dmore25", "dless25", "sdmoreddless25", "sdlessddmore25"};
+  Float_t scalesDD[] = {1.0, 1.5, 0.5, 1.0, 1.0, 1.5, 0.5, 1.5, 0.5, 1.25, 0.75, 1.0,  1.0,  1.25, 0.75, 1.25, 0.75};
+  Float_t scalesSD[] = {1.0, 1.0, 1.0, 1.5, 0.5, 1.5, 0.5, 0.5, 1.5, 1.0,  1.0,  1.25, 0.75, 1.25, 0.75, 0.75, 1.25};
 
   // cross section from Pythia
   Float_t sigmaND = 55.2;
   Float_t sigmaDD = 9.78;
   Float_t sigmaSD = 14.30;
 
-  AlidNdEtaCorrection* corrections[21];
+  // standard correction
+  TFile::Open(correctionFileName);
+  AlidNdEtaCorrection* correctionStandard = new AlidNdEtaCorrection("dndeta_correction","dndeta_correction");
+  correctionStandard->LoadHistograms();
+
+  // dont take vertexreco from this one
+  correctionStandard->GetVertexRecoCorrection()->Reset();
+  // dont take triggerbias from this one
+  correctionStandard->GetTriggerBiasCorrectionINEL()->Reset();
+  correctionStandard->GetTriggerBiasCorrectionNSD()->Reset();
+  correctionStandard->GetTriggerBiasCorrectionND()->Reset();
+
+  AlidNdEtaCorrection* corrections[100];
+  TH1F* hRatios[100];
+
+  Int_t counter = 0;
   for (Int_t j=0; j<3; j++) { // j = 0 (change vtx), j = 1 (change trg), j = 2 (change both)
-    AlidNdEtaCorrection* correctionStandard = new AlidNdEtaCorrection("dndeta_correction","dndeta_correction");
-    correctionStandard->LoadHistograms(standardCorrectionFileName);
 
-    // dont take vertexreco from this one
-    correctionStandard->GetVertexRecoCorrection()->Reset();
-    // dont take triggerbias from this one
-    correctionStandard->GetTriggerBiasCorrectionINEL()->Reset();
+    for (Int_t i=0; i<17; i++) {
+      TFile::Open(correctionFileName);
 
-    for (Int_t i=0; i<7; i++) {
       TString name;
       name.Form("dndeta_correction_syst_%s_%s", typeName[j], changes[i]);
       AlidNdEtaCorrection* current = new AlidNdEtaCorrection(name, name);
 
-      name.Form("vertexRecoND");
-      AlidNdEtaCorrection* dNdEtaCorrectionVtxND = new AlidNdEtaCorrection(name,name);
-      dNdEtaCorrectionVtxND->LoadHistograms(systematicCorrectionFileName, name);
-      name.Form("vertexRecoDD");
-      AlidNdEtaCorrection* dNdEtaCorrectionVtxDD = new AlidNdEtaCorrection(name,name);
-      dNdEtaCorrectionVtxDD->LoadHistograms(systematicCorrectionFileName, name);
-      name.Form("vertexRecoSD");
-      AlidNdEtaCorrection* dNdEtaCorrectionVtxSD = new AlidNdEtaCorrection(name,name);
-      dNdEtaCorrectionVtxSD->LoadHistograms(systematicCorrectionFileName, name);
-
-      name.Form("triggerBiasND");
-      AlidNdEtaCorrection* dNdEtaCorrectionTriggerND = new AlidNdEtaCorrection(name,name);
-      dNdEtaCorrectionTriggerND->LoadHistograms(systematicCorrectionFileName, name);
-      name.Form("triggerBiasDD");
-      AlidNdEtaCorrection* dNdEtaCorrectionTriggerDD = new AlidNdEtaCorrection(name,name);
-      dNdEtaCorrectionTriggerDD->LoadHistograms(systematicCorrectionFileName, name);
-      name.Form("triggerBiasSD");
-      AlidNdEtaCorrection* dNdEtaCorrectionTriggerSD = new AlidNdEtaCorrection(name,name);
-      dNdEtaCorrectionTriggerSD->LoadHistograms(systematicCorrectionFileName, name);
+      name.Form("dndeta_correction_ND");
+      AlidNdEtaCorrection* dNdEtaCorrectionND = new AlidNdEtaCorrection(name,name);
+      dNdEtaCorrectionND->LoadHistograms();
+      name.Form("dndeta_correction_DD");
+      AlidNdEtaCorrection* dNdEtaCorrectionDD = new AlidNdEtaCorrection(name,name);
+      dNdEtaCorrectionDD->LoadHistograms();
+      name.Form("dndeta_correction_SD");
+      AlidNdEtaCorrection* dNdEtaCorrectionSD = new AlidNdEtaCorrection(name,name);
+      dNdEtaCorrectionSD->LoadHistograms();
 
       // calculating relative
       Float_t nd = 100 * sigmaND/(sigmaND + (scalesDD[i]*sigmaDD) + (scalesDD[i]*sigmaSD));
       Float_t dd = 100 * (scalesDD[i]*sigmaDD)/(sigmaND + (scalesDD[i]*sigmaDD) + (scalesDD[i]*sigmaSD));
       Float_t sd = 100 * (scalesSD[i]*sigmaSD)/(sigmaND + (scalesDD[i]*sigmaDD) + (scalesDD[i]*sigmaSD));
 
-      printf(Form("%s : ND=%.1f\%, DD=%.1f\%, SD=%.1f\% \n",changes[i],nd,dd,sd));
+      printf(Form("%s : ND=%.2f\%, DD=%.2f\%, SD=%.2f\% \n",changes[i],nd,dd,sd));
       current->SetTitle(Form("ND=%.2f\%,DD=%.2f\%,SD=%.2f\%",nd,dd,sd));
       current->SetTitle(name);
 
       // scale
       if (j == 0 || j == 2)
       {
-        dNdEtaCorrectionVtxDD->GetVertexRecoCorrection()->GetMeasuredHistogram()->Scale(scalesDD[i]);
-        dNdEtaCorrectionVtxSD->GetVertexRecoCorrection()->GetMeasuredHistogram()->Scale(scalesSD[i]);
-        dNdEtaCorrectionVtxDD->GetVertexRecoCorrection()->GetGeneratedHistogram()->Scale(scalesDD[i]);
-        dNdEtaCorrectionVtxSD->GetVertexRecoCorrection()->GetGeneratedHistogram()->Scale(scalesSD[i]);
+        dNdEtaCorrectionDD->GetVertexRecoCorrection()->Scale(scalesDD[i]);
+        dNdEtaCorrectionSD->GetVertexRecoCorrection()->Scale(scalesSD[i]);
       }
       if (j == 1 || j == 2)
       {
-        dNdEtaCorrectionTriggerDD->GetTriggerBiasCorrectionINEL()->GetMeasuredHistogram()->Scale(scalesDD[i]);
-        dNdEtaCorrectionTriggerSD->GetTriggerBiasCorrectionINEL()->GetMeasuredHistogram()->Scale(scalesSD[i]);
-        dNdEtaCorrectionTriggerDD->GetTriggerBiasCorrectionINEL()->GetGeneratedHistogram()->Scale(scalesDD[i]);
-        dNdEtaCorrectionTriggerSD->GetTriggerBiasCorrectionINEL()->GetGeneratedHistogram()->Scale(scalesSD[i]);
+        dNdEtaCorrectionDD->GetTriggerBiasCorrectionINEL()->Scale(scalesDD[i]);
+        dNdEtaCorrectionSD->GetTriggerBiasCorrectionINEL()->Scale(scalesSD[i]);
+
+        dNdEtaCorrectionDD->GetTriggerBiasCorrectionNSD()->Scale(scalesDD[i]);
+        dNdEtaCorrectionSD->GetTriggerBiasCorrectionNSD()->Scale(scalesSD[i]);
+
+        dNdEtaCorrectionDD->GetTriggerBiasCorrectionND()->Scale(scalesDD[i]);
+        dNdEtaCorrectionSD->GetTriggerBiasCorrectionND()->Scale(scalesSD[i]);
       }
 
-      //clear track, trigger in Vtx correction
-      dNdEtaCorrectionVtxND->GetTrack2ParticleCorrection()->Reset();
-      dNdEtaCorrectionVtxND->GetTriggerBiasCorrectionNSD()->Reset();
-      dNdEtaCorrectionVtxND->GetTriggerBiasCorrectionND()->Reset();
-      dNdEtaCorrectionVtxND->GetTriggerBiasCorrectionINEL()->Reset();
-      dNdEtaCorrectionVtxSD->GetTrack2ParticleCorrection()->Reset();
-      dNdEtaCorrectionVtxSD->GetTriggerBiasCorrectionNSD()->Reset();
-      dNdEtaCorrectionVtxSD->GetTriggerBiasCorrectionND()->Reset();
-      dNdEtaCorrectionVtxSD->GetTriggerBiasCorrectionINEL()->Reset();
-      dNdEtaCorrectionVtxDD->GetTrack2ParticleCorrection()->Reset();
-      dNdEtaCorrectionVtxDD->GetTriggerBiasCorrectionNSD()->Reset();
-      dNdEtaCorrectionVtxDD->GetTriggerBiasCorrectionND()->Reset();
-      dNdEtaCorrectionVtxDD->GetTriggerBiasCorrectionINEL()->Reset();
-
-      //clear track, vertexreco in trigger correction
-      dNdEtaCorrectionTriggerND->GetTrack2ParticleCorrection()->Reset();
-      dNdEtaCorrectionTriggerND->GetTriggerBiasCorrectionNSD()->Reset();
-      dNdEtaCorrectionTriggerND->GetTriggerBiasCorrectionND()->Reset();
-      dNdEtaCorrectionTriggerND->GetVertexRecoCorrection()->Reset();
-      dNdEtaCorrectionTriggerSD->GetTrack2ParticleCorrection()->Reset();
-      dNdEtaCorrectionTriggerSD->GetTriggerBiasCorrectionNSD()->Reset();
-      dNdEtaCorrectionTriggerSD->GetTriggerBiasCorrectionND()->Reset();
-      dNdEtaCorrectionTriggerSD->GetVertexRecoCorrection()->Reset();
-      dNdEtaCorrectionTriggerDD->GetTrack2ParticleCorrection()->Reset();
-      dNdEtaCorrectionTriggerDD->GetTriggerBiasCorrectionNSD()->Reset();
-      dNdEtaCorrectionTriggerDD->GetTriggerBiasCorrectionND()->Reset();
-      dNdEtaCorrectionTriggerDD->GetVertexRecoCorrection()->Reset();
+      //clear track in correction
+      dNdEtaCorrectionND->GetTrack2ParticleCorrection()->Reset();
+      dNdEtaCorrectionDD->GetTrack2ParticleCorrection()->Reset();
+      dNdEtaCorrectionSD->GetTrack2ParticleCorrection()->Reset();
 
       TList collection;
       collection.Add(correctionStandard);
-      collection.Add(dNdEtaCorrectionVtxND);
-      collection.Add(dNdEtaCorrectionVtxDD);
-      collection.Add(dNdEtaCorrectionVtxSD);
-      collection.Add(dNdEtaCorrectionTriggerND);
-      collection.Add(dNdEtaCorrectionTriggerDD);
-      collection.Add(dNdEtaCorrectionTriggerSD);
+      collection.Add(dNdEtaCorrectionND);
+      collection.Add(dNdEtaCorrectionDD);
+      collection.Add(dNdEtaCorrectionSD);
 
       current->Merge(&collection);
       current->Finish();
 
-      corrections[i+j*7] = current;
+      corrections[counter] = current;
+
+      // now correct dNdeta distribution with modified correction map
+      TFile::Open(analysisFileName);
+
+      dNdEtaAnalysis* fdNdEtaAnalysis = new dNdEtaAnalysis("fdNdEtaAnalysisESD", "fdNdEtaAnalysisESD");
+      fdNdEtaAnalysis->LoadHistograms();
+
+      fdNdEtaAnalysis->Finish(current, 0.3, AlidNdEtaCorrection::kINEL);
+      //fdNdEtaAnalysis->Finish(current, 0.3, AlidNdEtaCorrection::kNSD);
+
+      name = "ratio";
+      if (j==0) name.Append("_vetexReco_");
+      if (j==1) name.Append("_triggerBias_");
+      if (j==2) name.Append("_vertexReco_triggerBias_");
+      name.Append(changes[i]);
+
+      hRatios[counter] = (TH1F*) fdNdEtaAnalysis->GetdNdEtaHistogram()->Clone(name);
+
+      name.Append(Form(" (DD #times %0.2f, SD #times %0.2f)",scalesDD[i],scalesSD[i]));
+      hRatios[counter]->SetTitle(name.Data());
+      hRatios[counter]->SetYTitle("ratio (Pythia x-sections)/(changed x-sections)");
+
+      if (counter > 0)
+        hRatios[counter]->Divide(hRatios[0],hRatios[counter],1,1);
+
+      delete fdNdEtaAnalysis;
+
+      counter++;
     }
   }
 
   TFile* fout = new TFile(outputFileName,"RECREATE");
 
-  for (Int_t i=0; i<21; i++)
+  // to make everything consistent
+  hRatios[0]->Divide(hRatios[0],hRatios[0],1,1);
+
+  for (Int_t i=0; i<51; i++)
+  {
     corrections[i]->SaveHistograms();
+    hRatios[i]->Write();
+  }
 
   fout->Write();
   fout->Close();

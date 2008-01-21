@@ -85,9 +85,6 @@ class AliMultiplicityCorrection : public TNamed {
     void SetGenMeasFromFunc(TF1* inputMC, Int_t id);
     TH2F* CalculateMultiplicityESD(TH1* inputMC, Int_t correlationMap);
 
-    static void NormalizeToBinWidth(TH1* hist);
-    static void NormalizeToBinWidth(TH2* hist);
-
     void GetComparisonResults(Float_t* mc = 0, Int_t* mcLimit = 0, Float_t* residuals = 0, Float_t* ratioAverage = 0) const;
 
     TH1* GetEfficiency(Int_t inputRange, EventType eventType);

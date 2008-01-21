@@ -270,38 +270,37 @@ void AlidNdEtaTask::Exec(Option_t*)
   // Processing of ESD information (always)
   if (eventTriggered)
   {
-    // control hists
+    // control hist
     fMult->Fill(inputCount);
     if (eventVertex)
+    {
+      // control hist
       fMultVtx->Fill(inputCount);
 
-    // count all events
-    if (!eventVertex)
-      vtx[2] = 0;
-
-    for (Int_t i=0; i<inputCount; ++i)
-    {
-      Float_t eta = etaArr[i];
-      Float_t pt  = ptArr[i];
-
-      fdNdEtaAnalysisESD->FillTrack(vtx[2], eta, pt);
-
-      if (TMath::Abs(vtx[2]) < 20)
+      for (Int_t i=0; i<inputCount; ++i)
       {
-        fPartEta[0]->Fill(eta);
+        Float_t eta = etaArr[i];
+        Float_t pt  = ptArr[i];
 
-        if (vtx[2] < 0)
-          fPartEta[1]->Fill(eta);
-        else
-          fPartEta[2]->Fill(eta);
+        fdNdEtaAnalysisESD->FillTrack(vtx[2], eta, pt);
+
+        if (TMath::Abs(vtx[2]) < 20)
+        {
+          fPartEta[0]->Fill(eta);
+
+          if (vtx[2] < 0)
+            fPartEta[1]->Fill(eta);
+          else
+            fPartEta[2]->Fill(eta);
+        }
       }
+
+      // for event count per vertex
+      fdNdEtaAnalysisESD->FillEvent(vtx[2], inputCount);
+
+      // control hists
+      fEvents->Fill(vtx[2]);
     }
-
-    // for event count per vertex
-    fdNdEtaAnalysisESD->FillEvent(vtx[2], inputCount);
-
-    // control hists
-    fEvents->Fill(vtx[2]);
   }
 
   if (fReadMC)   // Processing of MC information (optional)

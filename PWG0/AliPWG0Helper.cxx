@@ -5,6 +5,7 @@
 #include <TParticle.h>
 #include <TParticlePDG.h>
 #include <TH1.h>
+#include <TH2.h>
 #include <TH3.h>
 #include <TList.h>
 #include <TTree.h>
@@ -41,23 +42,24 @@ Bool_t AliPWG0Helper::IsEventTriggered(ULong64_t triggerMask, Trigger trigger)
   // check if the event was triggered
   //
   // this function needs the branch fTriggerMask
-  //
-  // MB should be
-  // ITS_SPD_GFO_L0  : 32
-  // VZERO_OR_LEFT   : 1
-  // VZERO_OR_RIGHT  : 2
+  
+
+  // definitions from p-p.cfg
+  ULong64_t spdFO = (1 << 14);
+  ULong64_t v0left = (1 << 11);
+  ULong64_t v0right = (1 << 12);
 
   switch (trigger)
   {
     case kMB1:
     {
-      if (triggerMask&32 || ((triggerMask&1) || (triggerMask&2)))
+      if (triggerMask & spdFO || ((triggerMask & v0left) || (triggerMask & v0right)))
         return kTRUE;
       break;
     }
     case kMB2:
     {
-      if (triggerMask&32 && ((triggerMask&1) || (triggerMask&2)))
+      if (triggerMask & spdFO && ((triggerMask & v0left) || (triggerMask & v0right)))
         return kTRUE;
       break;
     }
@@ -89,6 +91,10 @@ Bool_t AliPWG0Helper::IsVertexReconstructed(const AliESDVertex* vtxESD)
   if (strcmp(vtxESD->GetName(), "default")==0)
     return kFALSE;
 
+  // check Ncontributors
+  if (vtxESD->GetNContributors() <= 0)
+    return kFALSE;
+
   Double_t vtx_res[3];
   vtx_res[0] = vtxESD->GetXRes();
   vtx_res[1] = vtxESD->GetYRes();
@@ -96,8 +102,6 @@ Bool_t AliPWG0Helper::IsVertexReconstructed(const AliESDVertex* vtxESD)
 
   if (vtx_res[2]==0 || vtx_res[2]>0.1)
     return kFALSE;
-
-  // check Ncontributors, if <0 it means error *gna*
 
   return kTRUE;
 }
@@ -111,6 +115,8 @@ Bool_t AliPWG0Helper::IsPrimaryCharged(TParticle* aParticle, Int_t aTotalPrimari
   //
   // This function or a equivalent should be available in some common place of AliRoot
   //
+  // WARNING: Call this function only for particles that are among the particles from the event generator!
+  // --> stack->Particle(id) with id < stack->GetNprimary()
 
   // if the particle has a daughter primary, we do not want to count it
   if (aParticle->GetFirstDaughter() != -1 && aParticle->GetFirstDaughter() < aTotalPrimaries)
@@ -395,4 +401,34 @@ void AliPWG0Helper::SetBranchStatusRecursive(TTree* tree, char *bname, Bool_t st
       else        branch->SetBit(kDoNotProcess);
     }
   }
+}
+
+//____________________________________________________________________
+void AliPWG0Helper::NormalizeToBinWidth(TH1* hist)
+{
+  //
+  // normalizes a 1-d histogram to its bin width
+  //
+
+  for (Int_t i=1; i<=hist->GetNbinsX(); ++i)
+  {
+    hist->SetBinContent(i, hist->GetBinContent(i) / hist->GetBinWidth(i));
+    hist->SetBinError(i, hist->GetBinError(i) / hist->GetBinWidth(i));
+  }
+}
+
+//____________________________________________________________________
+void AliPWG0Helper::NormalizeToBinWidth(TH2* hist)
+{
+  //
+  // normalizes a 2-d histogram to its bin width (x width * y width)
+  //
+
+  for (Int_t i=1; i<=hist->GetNbinsX(); ++i)
+    for (Int_t j=1; j<=hist->GetNbinsY(); ++j)
+    {
+      Double_t factor = hist->GetXaxis()->GetBinWidth(i) * hist->GetYaxis()->GetBinWidth(j);
+      hist->SetBinContent(i, j, hist->GetBinContent(i, j) / factor);
+      hist->SetBinError(i, j, hist->GetBinError(i, j) / factor);
+    }
 }
