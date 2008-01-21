@@ -184,7 +184,7 @@ void AliCorrection::Divide()
   fEventCorr->Divide();
   fTrackCorr->Divide();
 
-  Int_t emptyBins = fTrackCorr->CheckEmptyBins(-9.99, 9.99, -0.79, 0.79, 0.3, 9.9);
+  Int_t emptyBins = fTrackCorr->CheckEmptyBins(-9.99, 9.99, -0.79, 0.79, 0.3, 4.9);
   printf("INFO: In the central region the track correction of %s has %d empty bins\n", GetName(), emptyBins);
 }
 
@@ -284,6 +284,39 @@ void AliCorrection::DrawHistograms(const Char_t* name)
     fTrackCorr->DrawHistograms(Form("%s track", name));
 }
 
+void AliCorrection::DrawOverview(const char* canvasName)
+{
+  // draw projection of the corrections
+  //   to the 3 axis of fTrackCorr and 2 axis of fEventCorr
+
+  TString canvasNameTmp(GetName());
+  if (canvasName)
+    canvasNameTmp = canvasName;
+
+  TCanvas* canvas = new TCanvas(canvasNameTmp, canvasNameTmp, 1200, 800);
+  canvas->Divide(3, 2);
+
+  if (fTrackCorr) {
+    canvas->cd(1);
+    fTrackCorr->Get1DCorrectionHistogram("x", 0.3, 5, -1, 1)->DrawCopy()->GetYaxis()->SetRangeUser(0, 10);
+
+    canvas->cd(2);
+    fTrackCorr->Get1DCorrectionHistogram("y", 0.3, 5, 0, 0)->DrawCopy()->GetYaxis()->SetRangeUser(0, 10);
+
+    canvas->cd(3);
+    fTrackCorr->Get1DCorrectionHistogram("z", 0, -1, -1, 1)->DrawCopy()->GetYaxis()->SetRangeUser(0, 10);
+  }
+
+  if (fEventCorr)
+  {
+    canvas->cd(4);
+    fEventCorr->Get1DCorrectionHistogram("x")->DrawCopy();
+
+    canvas->cd(5);
+    fEventCorr->Get1DCorrectionHistogram("y")->DrawCopy()->GetXaxis()->SetRangeUser(0, 30);
+  }
+}
+
 //____________________________________________________________________
 void AliCorrection::SetCorrectionToUnity()
 {
@@ -312,4 +345,36 @@ void AliCorrection::Multiply()
 
   if (fTrackCorr)
     fTrackCorr->Multiply();
+}
+
+//____________________________________________________________________
+void AliCorrection::Scale(Double_t factor)
+{
+  // scales the two contained corrections
+
+  fEventCorr->Scale(factor);
+  fTrackCorr->Scale(factor);
+}
+
+//____________________________________________________________________
+void AliCorrection::PrintInfo(Float_t ptCut)
+{
+  // prints some stats
+
+  TH3* measured = GetTrackCorrection()->GetMeasuredHistogram();
+  TH3* generated = GetTrackCorrection()->GetGeneratedHistogram();
+
+  TH2* measuredEvents = GetEventCorrection()->GetMeasuredHistogram();
+  TH2* generatedEvents = GetEventCorrection()->GetGeneratedHistogram();
+
+  Printf("tracks measured: %.1f tracks generated: %.1f, events measured: %1.f, events generated %1.f", measured->Integral(), generated->Integral(), measuredEvents->Integral(), generatedEvents->Integral());
+
+  // normalize to number of events;
+  measured->Scale(1.0 / measuredEvents->Integral());
+  generated->Scale(1.0 / generatedEvents->Integral());
+
+  Float_t nMeasured = measured->Integral(-1, -1, -1, -1, measured->GetZaxis()->FindBin(ptCut), measured->GetZaxis()->GetNbins());
+  Float_t nGenerated = generated->Integral(-1, -1, -1, -1, generated->GetZaxis()->FindBin(ptCut), generated->GetZaxis()->GetNbins());
+
+  Printf("%.2f tracks/event measured, %.2f tracks after correction --> effective average correction factor is %.2f (pt cut %.2f GeV/c)", nMeasured, nGenerated, nGenerated / nMeasured, ptCut);
 }

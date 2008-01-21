@@ -132,25 +132,25 @@ TH1F* AliCorrectionMatrix2D::Get1DCorrectionHistogram(Char_t* opt, Float_t min, 
       gene1D = ((TH2F*)fhGene)->ProjectionX();
     }
     else {
-      AliDebug(AliLog::kDebug+1, Form("Getting 1D map. Including y-bins %d to %d \n", binMin, binMax));
+      Printf("Getting 1D map. Including y-bins %d to %d", binMin, binMax);
 
-      meas1D = ((TH2F*)fhMeas)->ProjectionX("pm",binMin,binMax);
-      gene1D = ((TH2F*)fhGene)->ProjectionX("pg",binMin,binMax);
+      meas1D = ((TH2F*)fhMeas)->ProjectionX(Form("%s_pm", GetName()),binMin,binMax);
+      gene1D = ((TH2F*)fhGene)->ProjectionX(Form("%s_pg", GetName()),binMin,binMax);
     }
   }
   if (strcmp(opt,"y")==0) {
     Int_t binMin = fhMeas->GetXaxis()->FindBin(min);
     Int_t binMax = fhMeas->GetXaxis()->FindBin(max);
-    
+
     if (min>=max) {
       meas1D = ((TH2F*)fhMeas)->ProjectionY();
       gene1D = ((TH2F*)fhGene)->ProjectionY();
     }
     else {
       AliDebug(AliLog::kDebug+1, Form("Getting 1D map. Including x-bins %d to %d \n", binMin, binMax));
-      
-      meas1D = ((TH2F*)fhMeas)->ProjectionY("pm", binMin, binMax);
-      gene1D = ((TH2F*)fhGene)->ProjectionY("pg", binMin, binMax);
+
+      meas1D = ((TH2F*)fhMeas)->ProjectionY(Form("%s_pm", GetName()), binMin, binMax);
+      gene1D = ((TH2F*)fhGene)->ProjectionY(Form("%s_pg", GetName()), binMin, binMax);
     }
   }
   gene1D->Sumw2();

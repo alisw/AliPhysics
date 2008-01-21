@@ -10,6 +10,8 @@
 class AliESD;
 class AliESDVertex;
 class TParticle;
+class TH1;
+class TH2;
 class TH3;
 class AliHeader;
 class AliStack;
@@ -35,6 +37,9 @@ class AliPWG0Helper : public TObject
     static const char* GetAxisTitle(TH3* hist, const char axis);
 
     static void SetBranchStatusRecursive(TTree* tree, char *bname, Bool_t status, Bool_t debug = kFALSE);
+
+    static void NormalizeToBinWidth(TH1* hist);
+    static void NormalizeToBinWidth(TH2* hist);
 
   protected:
     ClassDef(AliPWG0Helper, 0)

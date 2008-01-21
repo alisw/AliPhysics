@@ -54,7 +54,7 @@ void runCorrection(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug =
 
   task = new AlidNdEtaCorrectionTask(option);
   task->SetTrackCuts(esdTrackCuts);
-  task->SetAnalysisMode(AlidNdEtaCorrectionTask::kSPD);
+  task->SetAnalysisMode(AlidNdEtaCorrectionTask::kTPC);
 
   mgr->AddTask(task);
 
@@ -77,7 +77,10 @@ void runCorrection(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug =
 
   // Enable debug printouts
   if (aDebug)
+  {
     mgr->SetDebugLevel(2);
+    AliLog::SetClassDebugLevel("AlidNdEtaCorrectionTask", AliLog::kDebug+2);
+  }
 
   // Run analysis
   mgr->InitAnalysis();

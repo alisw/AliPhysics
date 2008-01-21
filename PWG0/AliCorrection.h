@@ -40,16 +40,19 @@ public:
   void Divide();
   void Multiply();
   void SetCorrectionToUnity();
+  void Scale(Double_t factor);
 
   void Add(AliCorrection* aCorrectionToAdd, Float_t c=1);
 
   virtual Bool_t LoadHistograms(const Char_t* dir = 0);
   virtual void SaveHistograms();
   virtual void DrawHistograms(const Char_t* name = 0);
+  virtual void DrawOverview(const char* canvasName = 0);
 
   virtual void ReduceInformation();
 
   virtual void Reset(Option_t* option = "");
+  void PrintInfo(Float_t ptCut);
 
 protected:
   AliCorrectionMatrix2D* fEventCorr; // correction on event level

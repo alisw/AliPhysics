@@ -1894,6 +1894,43 @@ Double_t FitPtFunc(Double_t *x, Double_t *par)
   }
 }
 
+void FitPtNew(const char* fileName = "TruePt14TeV.root")
+{
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libPWG0base");
+
+  TFile::Open(fileName);
+
+  TH1* genePt = (TH1*) gFile->Get("fHistPt");
+  genePt->Sumw2();
+
+  // normalize by bin width
+  for (Int_t x=1; x<genePt->GetNbinsX(); x++)
+    genePt->SetBinContent(x, genePt->GetBinContent(x) / genePt->GetBinWidth(x));
+
+  genePt->GetXaxis()->SetRangeUser(0.05, 2.0);
+
+  genePt->Scale(1.0 / genePt->Integral());
+
+  TF1* func = new TF1("func", "[0]*TMath::Exp([1]*x*x)", 0.001, 100);
+  //func->SetLineColor(2);
+  func->SetParameters(1, -1);
+
+  genePt->SetMarkerStyle(25);
+  genePt->SetTitle("");
+  genePt->SetStats(kFALSE);
+  genePt->GetYaxis()->SetRangeUser(1e-4, genePt->GetMaximum() * 1.2);
+  //func->Draw("SAME");
+
+  genePt->Fit(func, "0", "", 0.05, 1);
+
+  new TCanvas;
+  genePt->DrawCopy("P");
+  func->SetRange(0.02, 8);
+  func->DrawCopy("SAME");
+  gPad->SetLogy();
+}
+
 void FitPt(const char* fileName = "firstplots100k_truept.root")
 {
   gSystem->Load("libPWG0base");
@@ -1927,6 +1964,9 @@ void FitPt(const char* fileName = "firstplots100k_truept.root")
 
   TH1* genePt = gene->Project3D("z");*/
   TH1* genePt = (TH1*) gFile->Get("fdNdpTTrue");
+  if (!genePt)
+    genePt = (TH1*) gFile->Get("fHistPt");
+ 
   genePt->Sumw2();
 
   //genePt->Scale(1.0 / genePt->Integral());
@@ -1940,6 +1980,7 @@ void FitPt(const char* fileName = "firstplots100k_truept.root")
   genePt->GetXaxis()->SetRangeUser(0, 7.9);
   //genePt->GetYaxis()->SetTitle("a.u.");
 
+  //TF1* func = new TF1("func", "[0]*TMath::Exp([1]*x*x)", 0.001, 100);
   TF1* func = new TF1("func", "[0]*TMath::Exp([1]*x)+[2]/(1+(x*[4])**[3])", 0.001, 100);
   //func->SetLineColor(2);
   func->SetParameters(1, -1, 1, 1, 1);

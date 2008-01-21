@@ -189,33 +189,46 @@ AliCorrectionMatrix2D* AliCorrectionMatrix3D::Get2DCorrection(Char_t* opt, Float
 
   TString option = opt;
 
+  // unzoom
+  fhMeas->GetXaxis()->UnZoom();
+  fhMeas->GetYaxis()->UnZoom();
+  fhMeas->GetZaxis()->UnZoom();
+
+  fhGene->GetXaxis()->UnZoom();
+  fhGene->GetYaxis()->UnZoom();
+  fhGene->GetZaxis()->UnZoom();
+
   if (aMin<aMax) {
     if (option.Contains("xy") || option.Contains("yx")) {
       Int_t bMin = fhMeas->GetZaxis()->FindBin(aMin);
       Int_t bMax = fhMeas->GetZaxis()->FindBin(aMax);
-      fhMeas->GetZaxis()->SetRange(bMin, bMax);      
+      fhGene->GetZaxis()->SetRange(bMin, bMax);
+      fhMeas->GetZaxis()->SetRange(bMin, bMax);
     }
     else if (option.Contains("xz") || option.Contains("zx")) {
       Int_t bMin = fhMeas->GetYaxis()->FindBin(aMin);
       Int_t bMax = fhMeas->GetYaxis()->FindBin(aMax);
-      fhMeas->GetYaxis()->SetRange(bMin, bMax);      
+      fhGene->GetYaxis()->SetRange(bMin, bMax);
+      fhMeas->GetYaxis()->SetRange(bMin, bMax);
     }
     else if (option.Contains("yz") || option.Contains("zy")) {
       Int_t bMin = fhMeas->GetXaxis()->FindBin(aMin);
       Int_t bMax = fhMeas->GetXaxis()->FindBin(aMax);
-      fhMeas->GetXaxis()->SetRange(bMin, bMax);      
+      fhGene->GetXaxis()->SetRange(bMin, bMax);
+      fhMeas->GetXaxis()->SetRange(bMin, bMax);
     }
     else {
       AliDebug(AliLog::kWarning, Form("WARNING: unknown projection option %s", opt));
       return 0;
     }
   }
+
   AliCorrectionMatrix2D* corr2D = new AliCorrectionMatrix2D(Form("%s_%s",GetName(),opt),Form("%s projection %s",GetName(),opt),100,0,100,100,0,100);
 
-  TH2F* meas = (TH2F*) ((TH3F*)fhMeas)->Project3D(opt);
-  TH2F* gene = (TH2F*) ((TH3F*)fhGene)->Project3D(opt);
+  TH2F* meas = (TH2F*) ((TH3F*)fhMeas)->Project3D(option)->Clone(Form("%s_meas", corr2D->GetName()));
+  TH2F* gene = (TH2F*) ((TH3F*)fhGene)->Project3D(option)->Clone(Form("%s_gene", corr2D->GetName()));
 
-  TH2F* corr = (TH2F*)gene->Clone("corr");
+  TH2F* corr = (TH2F*)gene->Clone(Form("%s_corr", corr2D->GetName()));
   corr->Reset();
 
   corr2D->SetGeneratedHistogram(gene);
@@ -225,9 +238,9 @@ AliCorrectionMatrix2D* AliCorrectionMatrix3D::Get2DCorrection(Char_t* opt, Float
   corr2D->Divide();
 
   // unzoom
-  fhMeas->GetXaxis()->UnZoom();  
-  fhMeas->GetYaxis()->UnZoom();  
-  fhMeas->GetZaxis()->UnZoom();  
+  fhMeas->GetXaxis()->UnZoom();
+  fhMeas->GetYaxis()->UnZoom();
+  fhMeas->GetZaxis()->UnZoom();
 
   fhGene->GetXaxis()->UnZoom();
   fhGene->GetYaxis()->UnZoom();
@@ -243,24 +256,22 @@ TH1F* AliCorrectionMatrix3D::Get1DCorrectionHistogram(Char_t* opt, Float_t aMin1
   AliDebug(AliLog::kWarning, Form("WARNING: test"));
   
   AliCorrectionMatrix2D* corr2D;
-  if (strcmp(opt,"x")==0) {  
-    corr2D = Get2DCorrection("xy",aMin1,aMax1);
+  if (strcmp(opt,"x")==0) {
+    corr2D = Get2DCorrection("yx",aMin1,aMax1);
     return corr2D->Get1DCorrectionHistogram("x",aMin2,aMax2);
   }
   if (strcmp(opt,"y")==0) {
     corr2D = Get2DCorrection("xy",aMin1,aMax1);
-    return corr2D->Get1DCorrectionHistogram("y",aMin2,aMax2);
+    return corr2D->Get1DCorrectionHistogram("x",aMin2,aMax2);
   }  
   if (strcmp(opt,"z")==0) {
-    corr2D = Get2DCorrection("yz",aMin1,aMax1);    
+    corr2D = Get2DCorrection("yz",aMin1,aMax1);
     return corr2D->Get1DCorrectionHistogram("x",aMin2,aMax2);
   }  
   AliDebug(AliLog::kWarning, Form("WARNING: unknown projection option %s (should be x,y or z)", opt));  
   
   return 0;
 }
-
-
 
 //____________________________________________________________________
 void AliCorrectionMatrix3D::FillMeas(Float_t ax, Float_t ay, Float_t az)

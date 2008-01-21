@@ -48,7 +48,7 @@ public:
 
   AliCorrectionMatrix2D* Get2DCorrection(Char_t* opt, Float_t aMin, Float_t aMax);
   TH2F* Get2DCorrectionHistogram(Char_t* opt, Float_t aMin, Float_t aMax) {return Get2DCorrection(opt,aMin,aMax)->GetCorrectionHistogram();}
-  TH1F* Get1DCorrectionHistogram(Char_t* opt, Float_t aMins1, Float_t aMax1, Float_t aMins2, Float_t aMax2);
+  TH1F* Get1DCorrectionHistogram(Char_t* opt, Float_t aMins1=0, Float_t aMax1=0, Float_t aMins2=0, Float_t aMax2=0);
 
   void FillMeas(Float_t ax, Float_t ay, Float_t az);
   void FillGene(Float_t ax, Float_t ay, Float_t az);

@@ -1225,36 +1225,6 @@ void AliMultiplicityCorrection::ApplyNBDFit(Int_t inputRange, Bool_t fullPhaseSp
 }
 
 //____________________________________________________________________
-void AliMultiplicityCorrection::NormalizeToBinWidth(TH1* hist)
-{
-  //
-  // normalizes a 1-d histogram to its bin width
-  //
-
-  for (Int_t i=1; i<=hist->GetNbinsX(); ++i)
-  {
-    hist->SetBinContent(i, hist->GetBinContent(i) / hist->GetBinWidth(i));
-    hist->SetBinError(i, hist->GetBinError(i) / hist->GetBinWidth(i));
-  }
-}
-
-//____________________________________________________________________
-void AliMultiplicityCorrection::NormalizeToBinWidth(TH2* hist)
-{
-  //
-  // normalizes a 2-d histogram to its bin width (x width * y width)
-  //
-
-  for (Int_t i=1; i<=hist->GetNbinsX(); ++i)
-    for (Int_t j=1; j<=hist->GetNbinsY(); ++j)
-    {
-      Double_t factor = hist->GetXaxis()->GetBinWidth(i) * hist->GetYaxis()->GetBinWidth(j);
-      hist->SetBinContent(i, j, hist->GetBinContent(i, j) / factor);
-      hist->SetBinError(i, j, hist->GetBinError(i, j) / factor);
-    }
-}
-
-//____________________________________________________________________
 void AliMultiplicityCorrection::DrawHistograms()
 {
   //

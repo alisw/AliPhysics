@@ -239,7 +239,7 @@ void AlidNdEtaCorrection::SaveHistograms()
 void AlidNdEtaCorrection::DrawHistograms()
 {
   //
-  // call the draw histogram method of the correction
+  // call the draw histogram method of the corrections
   //
 
   fTrack2ParticleCorrection     ->DrawHistograms();
@@ -247,6 +247,20 @@ void AlidNdEtaCorrection::DrawHistograms()
   fTriggerBiasCorrectionMBToINEL->DrawHistograms();
   fTriggerBiasCorrectionMBToNSD ->DrawHistograms();
   fTriggerBiasCorrectionMBToND  ->DrawHistograms();
+}
+
+//____________________________________________________________________
+void AlidNdEtaCorrection::DrawOverview(const char* canvasName)
+{
+  //
+  // call the DrawOverview histogram method of the corrections
+  //
+
+  fTrack2ParticleCorrection     ->DrawOverview(canvasName);
+  fVertexRecoCorrection         ->DrawOverview(canvasName);
+  fTriggerBiasCorrectionMBToINEL->DrawOverview(canvasName);
+  fTriggerBiasCorrectionMBToNSD ->DrawOverview(canvasName);
+  fTriggerBiasCorrectionMBToND  ->DrawOverview(canvasName);
 }
 
 //____________________________________________________________________

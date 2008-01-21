@@ -364,3 +364,14 @@ void AliCorrectionMatrix::SetCorrectionToUnity()
       for (Int_t z=1; z<=fhCorr->GetNbinsZ(); ++z)
         fhCorr->SetBinContent(x, y, z, 1);
 }
+
+//____________________________________________________________________
+void AliCorrectionMatrix::Scale(Double_t factor)
+{
+  // scales the generated and measured histogram with the given factor
+
+  Printf("Scaling histograms with %f", factor);
+
+  fhMeas->Scale(factor);
+  fhGene->Scale(factor);
+}

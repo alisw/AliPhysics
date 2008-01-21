@@ -42,6 +42,7 @@ public:
   void Divide();
   void Multiply();
   void SetCorrectionToUnity();
+  void Scale(Double_t factor);
 
   void Add(AliCorrectionMatrix* aMatrixToAdd, Float_t c=1);
 

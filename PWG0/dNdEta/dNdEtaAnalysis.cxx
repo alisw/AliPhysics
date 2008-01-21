@@ -185,11 +185,11 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
     if (correctionType >= AlidNdEtaCorrection::kTrack2Particle)
       trackCorr->Multiply(correction->GetTrack2ParticleCorrection()->GetTrackCorrection()->GetCorrectionHistogram());
 
-    /*if (correctionType >= AlidNdEtaCorrection::kVertexReco)
+    if (correctionType >= AlidNdEtaCorrection::kVertexReco)
     {
       trackCorr->Multiply(correction->GetVertexRecoCorrection()->GetTrackCorrection()->GetCorrectionHistogram());
       eventCorr->Multiply(correction->GetVertexRecoCorrection()->GetEventCorrection()->GetCorrectionHistogram());
-    }*/
+    }
 
     switch (correctionType)
     {
@@ -361,12 +361,12 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
         fdNdEtaPtCutOffCorrected[vertexPos]->SetBinContent(bin, dndeta);
         fdNdEtaPtCutOffCorrected[vertexPos]->SetBinError(bin, error);
 
-        Printf("Bin %d has dN/deta = %f", bin, dndeta);
+        //Printf("Bin %d has dN/deta = %f", bin, dndeta);
       }
     }
   }
 
-  new TCanvas; fdNdEta[0]->DrawCopy();
+  //new TCanvas; fdNdEta[0]->DrawCopy();
 }
 
 //____________________________________________________________________
