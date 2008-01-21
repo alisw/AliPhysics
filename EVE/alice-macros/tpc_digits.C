@@ -7,19 +7,16 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-#include "TGLViewer.h"
-
-namespace Alieve {
 class AliEveTPCData;
 class AliEveEventManager;
-}
 
-AliEveTPCData* g_tpc_data = 0;
-AliEveEventManager*   g_tpc_last_event = 0;
+AliEveTPCData      *g_tpc_data       = 0;
+AliEveEventManager *g_tpc_last_event = 0;
 
 void tpc_digits(Int_t mode=1)
 {
-  if (g_tpc_data == 0 || g_tpc_last_event != gEvent) {
+  if (g_tpc_data == 0 || g_tpc_last_event != gEvent)
+  {
     AliRunLoader* rl =  AliEveEventManager::AssertRunLoader();
     rl->LoadDigits("TPC");
     TTree* dt = rl->GetTreeD("TPC", false);
@@ -68,7 +65,8 @@ void tpc_digits(Int_t mode=1)
       l->SetMainColor(Color_t(col));
       gEve->AddElement(l);
 
-      for(Int_t i = 0; i<18; i++) {
+      for (Int_t i = 0; i<18; i++)
+      {
 	AliEveTPCSector2D* s = new AliEveTPCSector2D(Form("AliEveTPCSector2D %d", i));
 	s->SetSectorID(i);
 	s->SetDataSource(g_tpc_data);
@@ -83,7 +81,8 @@ void tpc_digits(Int_t mode=1)
       l->SetMainColor(Color_t(col));
 
       gEve->AddElement(l);
-      for(Int_t i = 18; i<36; i++) {
+      for (Int_t i = 18; i<36; i++)
+      {
 	AliEveTPCSector2D* s = new AliEveTPCSector2D(Form("AliEveTPCSector2D %d", i));
 	s->SetSectorID(i);
 	s->SetDataSource(g_tpc_data);
@@ -114,7 +113,8 @@ void tpc_digits(Int_t mode=1)
       l->SetMainColor(Color_t(col));
       gEve->AddElement(l);
 
-      for(Int_t i = 0; i<18; i++) {
+      for (Int_t i = 0; i<18; i++)
+      {
 	AliEveTPCSector3D* s = new AliEveTPCSector3D(Form("AliEveTPCSector3D %d", i));
 	s->SetSectorID(i);
 	s->SetDataSource(g_tpc_data);
@@ -129,7 +129,8 @@ void tpc_digits(Int_t mode=1)
       l->SetMainColor(Color_t(col));
 
       gEve->AddElement(l);
-      for(Int_t i = 18; i<36; i++) {
+      for (Int_t i = 18; i<36; i++)
+      {
 	AliEveTPCSector3D* s = new AliEveTPCSector3D(Form("AliEveTPCSector3D %d", i));
 	s->SetSectorID(i);
 	s->SetDataSource(g_tpc_data);
@@ -172,7 +173,8 @@ void tpc_digits_2drange(Int_t start, Int_t end)
     l->SetMainColor(Color_t(col));
     gEve->AddElement(l);
 
-    for(Int_t i=start; i<=end; i++) {
+    for (Int_t i=start; i<=end; i++)
+    {
       AliEveTPCSector2D* s = new AliEveTPCSector2D();
       s->SetSectorID(i);
       s->SetDataSource(g_tpc_data);

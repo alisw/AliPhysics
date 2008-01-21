@@ -7,20 +7,6 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-
-// #include "EVE/Alieve/EventAlieve.h"
-// #include "TEveManager.h"
-// #include "AliEveV0.h"
-
-// #include "AliESD.h"
-// #include "AliESDtrack.h"
-// #include "AliESDv0.h"
-// #include "AliESDVertex.h"
-
-// using namespace TEveUtil;
-// using namespace Alieve;
-
-
 AliEveV0* esd_make_v0(TEveTrackPropagator* rnrStyle, AliESDVertex* primVtx,
 		      AliESDtrack* neg, AliESDtrack* pos, AliESDv0* v0, Int_t i)
 {

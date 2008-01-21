@@ -8,17 +8,14 @@
  **************************************************************************/
 #ifdef __CINT__
 
-namespace TEveUtil
-{
 class TEveElement;
 class TEvePointSet;
-}
 
 #else
 
 #include <TEveManager.h>
 #include <TEvePointSet.h>
-#include <Alieve/AliEveEventManager.h>
+#include <EveDet/AliEveEventManager.h>
 
 #include <AliRunLoader.h>
 #include <AliCluster.h>

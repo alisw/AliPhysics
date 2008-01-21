@@ -1,9 +1,9 @@
-SRCS  := Alieve/alieve_main/alieve_main.cxx
+SRCS  := alieve_main/alieve_main.cxx
 CSRCS :=
 
 EINCLUDE :=
 ELIBSDIR :=
-ELIBS    := Alieve \
+ELIBS    := EveDet \
   MUONevaluation MUONgeometry MUONrec MUONsim MUONbase MUONtrigger MUONraw MUONcalib MUONmapping MUONcore \
   TPCbase TPCsim TPCrec TPCfast \
   ITSbase ITSsim ITSrec PMDbase PMDsim PMDrec TRDbase \

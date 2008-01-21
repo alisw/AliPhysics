@@ -7,11 +7,7 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-namespace Alieve {
 class AliEveEventManager;
-}
-
-
 
 void t0_raw()
 {
@@ -22,7 +18,4 @@ void t0_raw()
   gStyle->SetPalette(1, 0);
 
   AliEveT0Module::LoadRaw("raw.root",ievt);
-
-
 }
-

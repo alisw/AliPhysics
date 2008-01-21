@@ -9,8 +9,6 @@
 
 void geom_trd_tof()
 {
-  using namespace std;
-
   gGeoManager = gEve->GetGeometry("$REVESYS/alice-data/alice_fullgeo.root");
   TGeoNode* node = gGeoManager->GetTopVolume()->FindNode("B077_1");
 

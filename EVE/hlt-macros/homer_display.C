@@ -18,11 +18,8 @@
 
 
 #include "TTimer.h"
-#include "TGLViewer.h"
-#include "TTimer.h"
 #include "TRandom.h"
 #include "TVirtualPad.h"
-//#include "AliEveHOMERManager.h"
 
 class AliRawReaderMemory;
 
@@ -33,18 +30,15 @@ class TEvePointSet;
 class TEveTrackList;
 class TEveTrack;
 
-namespace Alieve {
 class AliEveTPCLoader;
 class AliEveTPCData;
 class AliEveTPCSector2D;
 class AliEveTPCSector3D;
-}
 
-
-AliEveTPCLoader*  loader  = 0;
-AliEveTPCData*    tpcdata = 0;
-TEvePointSet*   tpc_cls = 0;
-TEveTrackList*  tpc_trk = 0;
+AliEveTPCLoader* loader  = 0;
+AliEveTPCData*   tpcdata = 0;
+TEvePointSet*    tpc_cls = 0;
+TEveTrackList*   tpc_trk = 0;
 
 AliRawReaderMemory* memreader = 0;
 AliEveHOMERManager* homerM = 0;

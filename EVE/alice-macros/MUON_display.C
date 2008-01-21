@@ -6,22 +6,19 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
-#include "TGLViewer.h"
 
-namespace Alieve {
 class AliEveMUONData;
 class AliEveEventManager;
-}
 
-AliEveMUONData* g_muon_data = 0;
-AliEveEventManager*    g_muon_last_event = 0;
+AliEveMUONData     *g_muon_data       = 0;
+AliEveEventManager *g_muon_last_event = 0;
 
-Int_t g_currentEvent = -1;
-Bool_t g_fromRaw = kFALSE;
+Int_t  g_currentEvent = -1;
+Bool_t g_fromRaw      = kFALSE;
+
 
 void MUON_display(Bool_t fromRaw = kFALSE, Bool_t showTracks = kTRUE)
 {
-
   if (!AliMpSegmentation::Instance()) AliMpCDB::LoadMpSegmentation();
   if (!AliMpDDLStore::Instance())     AliMpCDB::LoadDDLStore();
 
@@ -96,8 +93,8 @@ void MUON_display(Bool_t fromRaw = kFALSE, Bool_t showTracks = kTRUE)
   l->SetMainColor(Color_t(2));
   gEve->AddElement(l);
 
-  for (Int_t ic = 0; ic < 14; ic++) {
-
+  for (Int_t ic = 0; ic < 14; ic++)
+  {
     AliEveMUONChamber* mucha = new AliEveMUONChamber(ic);
 
     mucha->SetFrameColor(2);
@@ -106,7 +103,6 @@ void MUON_display(Bool_t fromRaw = kFALSE, Bool_t showTracks = kTRUE)
     mucha->SetDataSource(g_muon_data);
 
     gEve->AddElement(mucha, l);
-
   }
 
   if (showTracks) {
@@ -117,20 +113,13 @@ void MUON_display(Bool_t fromRaw = kFALSE, Bool_t showTracks = kTRUE)
     MUON_MC_tracks();
   }
 
-  gEve->EnableRedraw();
   gEve->Redraw3D(kTRUE);
-
-  /*
-  TGLViewer* view = dynamic_cast<TGLViewer*>(gEve->GetGLCanvas()->GetViewer3D());
-  view->ResetCamerasAfterNextUpdate();
-  gEve->GetGLCanvas()->Modified();
-  gEve->GetGLCanvas()->Update();
-  */
+  gEve->EnableRedraw();
 }
 
 //______________________________________________________________________________
-void MUON_tracks() {
-
+void MUON_tracks()
+{
   AliRunLoader* rl =  AliEveEventManager::AssertRunLoader();
   rl->LoadTracks("MUON");
   TTree* tt = rl->GetTreeT("MUON", false);
@@ -161,8 +150,8 @@ void MUON_tracks() {
   AliMUONTrack *mt;
   TEveRecTrack  rt;
   Int_t count;
-  for (Int_t n = 0; n < ntracks; n++) {
-
+  for (Int_t n = 0; n < ntracks; n++)
+  {
     count = 0;
 
     mt = (AliMUONTrack*) tracks->At(n);
@@ -174,7 +163,6 @@ void MUON_tracks() {
     track->MakeMUONTrack(mt);
 
     gEve->AddElement(track, lt);
-
   }
 
   rl->UnloadTracks("MUON");
@@ -182,8 +170,8 @@ void MUON_tracks() {
 }
 
 //______________________________________________________________________________
-void MUON_trigger_tracks() {
-
+void MUON_trigger_tracks()
+{
   AliRunLoader* rl =  AliEveEventManager::AssertRunLoader();
   rl->LoadTracks("MUON");
   TTree* tt = rl->GetTreeT("MUON", false);
@@ -214,8 +202,8 @@ void MUON_trigger_tracks() {
   AliMUONTriggerTrack *mt;
   TEveRecTrack  rt;
   Int_t count;
-  for (Int_t n = 0; n < ntracks; n++) {
-
+  for (Int_t n = 0; n < ntracks; n++)
+  {
     count = 0;
 
     mt = (AliMUONTriggerTrack*) tracks->At(n);
@@ -227,7 +215,6 @@ void MUON_trigger_tracks() {
     track->MakeMUONTriggerTrack(mt);
 
     gEve->AddElement(track, lt);
-
   }
 
   rl->UnloadTracks("MUON");
@@ -235,8 +222,8 @@ void MUON_trigger_tracks() {
 }
 
 //______________________________________________________________________________
-void MUON_ESD_tracks() {
-
+void MUON_ESD_tracks()
+{
   AliESDEvent* esd = AliEveEventManager::AssertESD();
 
   TEveTrackList* lt = new TEveTrackList("ESD-Tracks");
@@ -248,8 +235,8 @@ void MUON_ESD_tracks() {
   AliESDMuonTrack *mt;
   TEveRecTrack rt;
   Int_t nMuonTracks = esd->GetNumberOfMuonTracks();
-  for (Int_t n = 0; n < nMuonTracks; n++) {
-
+  for (Int_t n = 0; n < nMuonTracks; n++)
+  {
     mt = esd->GetMuonTrack(n);
 
     rt.label = n;
@@ -259,14 +246,13 @@ void MUON_ESD_tracks() {
     track->MakeESDTrack(mt);
 
     gEve->AddElement(track, lt);
-
   }
 
 }
 
 //______________________________________________________________________________
-void MUON_Ref_tracks() {
-
+void MUON_Ref_tracks()
+{
   TString dataPath = TString(gEvent->GetTitle());
   dataPath.Append("/");
 
@@ -282,8 +268,8 @@ void MUON_Ref_tracks() {
 
   TEveRecTrack rt;
   Int_t i = 0;
-  while ( ( trackRef = static_cast<AliMUONTrack*>(next()) ) ) {
-
+  while ( ( trackRef = static_cast<AliMUONTrack*>(next()) ) )
+  {
     rt.label = i++;
 
     AliEveMUONTrack* track = new AliEveMUONTrack(&rt, lt->GetPropagator());
@@ -291,14 +277,13 @@ void MUON_Ref_tracks() {
     track->MakeRefTrack(trackRef);
 
     gEve->AddElement(track, lt);
-
   }
 
 }
 
 //______________________________________________________________________________
-void MUON_MC_tracks() {
-
+void MUON_MC_tracks()
+{
   Double_t RADDEG = 180.0/TMath::Pi();
 
   AliRunLoader* rl =  AliEveEventManager::AssertRunLoader();
@@ -320,8 +305,8 @@ void MUON_MC_tracks() {
 
   Int_t nHitTracks = g_muon_data->GetNTrackList();
   Int_t index;
-  for (Int_t i = 0; i < nHitTracks; i++) {
-
+  for (Int_t i = 0; i < nHitTracks; i++)
+  {
     index = g_muon_data->GetTrack(i);
     if (index >= nTracks) {
       cout << "TEveHit track index larger than number in stack!" << endl;
@@ -337,10 +322,8 @@ void MUON_MC_tracks() {
     track->MakeMCTrack(part);
 
     gEve->AddElement(track, lt);
-
   }
 
   rl->UnloadKinematics();
-
 }
 

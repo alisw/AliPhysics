@@ -6,7 +6,8 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
-// #include "EVE/Alieve/EventAlieve.h"
+
+// #include "AliEveEventManager.h"
 // #include "TEveManager.h"
 // #include "AliEveCascade.h"
 
@@ -14,11 +15,6 @@
 // #include "AliESDtrack.h"
 // #include "AliESDcascade.h"
 // #include "AliESDVertex.h"
-
-// using namespace TEveUtil;
-// using namespace Alieve;
-
-
 
 AliEveCascade* esd_make_cas(TEveTrackPropagator* rnrStyle, AliESDVertex* primVtx,
 			    AliESDcascade* cas, AliESDtrack* neg, AliESDtrack* pos,

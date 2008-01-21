@@ -6,11 +6,8 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
-#include "TGLViewer.h"
-namespace Alieve
-{
+
 class AliEveITSModuleStepper;
-}
 
 void its_module_stepper(Int_t det = 0)
 {

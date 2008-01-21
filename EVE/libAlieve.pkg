@@ -1,7 +1,0 @@
-ORGSRCS  := $(wildcard EVE/Alieve/*.cxx)
-SRCS     := $(patsubst EVE/%, %, ${ORGSRCS})
-HDRS     := $(SRCS:.cxx=.h)
-
-DHDR     := Alieve/LinkDef.h
-
-EINCLUDE := RAW ITS TPC TRD TOF T0 MUON MUON/mapping PMD HLT/BASE HLT/BASE/HOMER

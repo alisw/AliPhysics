@@ -15,12 +15,9 @@
 
 class AliRawReaderRoot;
 
-namespace Alieve {
 class AliEveTPCData;
 class AliEveTPCSector2D;
 class AliEveTPCSector3D;
-}
-
 
 AliEveTPCData*     x = 0;
 AliEveTPCSector2D* s = 0;

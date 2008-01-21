@@ -6,14 +6,13 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
+
 class AliRawReaderFile;
 
-namespace Alieve {
 class AliEveTPCData;
-}
 
-AliEveTPCData*  x = 0;
-AliRawReaderFile* reader = 0;
+AliEveTPCData    *x      = 0;
+AliRawReaderFile *reader = 0;
 
 void tpc_raw_test()
 {

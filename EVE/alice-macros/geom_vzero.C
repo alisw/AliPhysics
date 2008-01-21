@@ -9,8 +9,6 @@
 
 void geom_vzero()
 {
-  using namespace std;
-
   static const TEveException eH("geom_vzero() ");
 
   gGeoManager = gEve->GetGeometry("$REVESYS/alice-data/alice_fullgeo.root");

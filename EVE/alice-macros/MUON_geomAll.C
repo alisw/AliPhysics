@@ -9,9 +9,6 @@
 
 void MUON_geomAll()
 {
-
-  using namespace std;
-
   TString dataPath = TString(gEvent->GetTitle());
   dataPath.Append("/geometry.root");
   gGeoManager = gEve->GetGeometry(dataPath.Data());

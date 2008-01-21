@@ -20,19 +20,17 @@
 
 class AliRawReaderRoot;
 
-namespace Alieve {
 class AliEveTPCData;
 class AliEveTPCSector2D;
 class AliEveTPCSector3D;
-}
 
 #else
 
 #include <TEve.h>
 #include <TEveManager.h>
-#include <Alieve/AliEveTPCData.h>
-#include <Alieve/AliEveTPCSector2D.h>
-#include <Alieve/AliEveTPCSector3D.h>
+#include <EveDet/AliEveTPCData.h>
+#include <EveDet/AliEveTPCSector2D.h>
+#include <EveDet/AliEveTPCSector3D.h>
 
 #include <RAW/AliRawReaderRoot.h>
 #include <TPC/AliTPCRawStream.h>

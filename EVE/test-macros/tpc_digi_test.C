@@ -6,11 +6,10 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
+
 class TTree;
 
-namespace Alieve {
 class AliEveTPCData;
-}
 
 AliEveTPCData*  x = 0;
 TTree*            tree = 0;

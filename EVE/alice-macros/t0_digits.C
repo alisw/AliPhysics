@@ -7,9 +7,7 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-namespace Alieve {
 class AliEveEventManager;
-}
 
 void t0_digits()
 {
