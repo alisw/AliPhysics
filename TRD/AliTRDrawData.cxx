@@ -191,24 +191,37 @@ Bool_t AliTRDrawData::Digits2Raw(AliTRDdigitsManager *digitsManager)
 
         // Get the digits array
         AliTRDdataArrayS *digits = (AliTRDdataArrayS *) digitsManager->GetDigits(iDet);
-        digits->Expand();
+        if (digits->HasData()) {
 
-        Int_t hcwords = 0;
-	Int_t rv = fFee->GetRAWversion();
+          digits->Expand();
 
-        // Process A side of the chamber
-	if ( rv >= 1 && rv <= 2 ) hcwords = ProduceHcDataV1andV2(digits,0,iDet,hcBuffer,kMaxHcWords);
-	if ( rv == 3 )            hcwords = ProduceHcDataV3     (digits,0,iDet,hcBuffer,kMaxHcWords);
+          Int_t hcwords = 0;
+	  Int_t rv = fFee->GetRAWversion();
 
-        of->WriteBuffer((char *) hcBuffer, hcwords*4);
-        npayloadbyte += hcwords*4;
+          // Process A side of the chamber
+	  if ( rv >= 1 && rv <= 2 ) {
+            hcwords = ProduceHcDataV1andV2(digits,0,iDet,hcBuffer,kMaxHcWords);
+	  }
+	  if ( rv == 3 ) { 
+            hcwords = ProduceHcDataV3     (digits,0,iDet,hcBuffer,kMaxHcWords);
+	  }
 
-        // Process B side of the chamber
-	if ( rv >= 1 && rv <= 2 ) hcwords = ProduceHcDataV1andV2(digits,1,iDet,hcBuffer,kMaxHcWords);
-	if ( rv >= 3 )            hcwords = ProduceHcDataV3     (digits,1,iDet,hcBuffer,kMaxHcWords);
+          of->WriteBuffer((char *) hcBuffer, hcwords*4);
+          npayloadbyte += hcwords*4;
 
-        of->WriteBuffer((char *) hcBuffer, hcwords*4);
-        npayloadbyte += hcwords*4;
+          // Process B side of the chamber
+	  if ( rv >= 1 && rv <= 2 ) {
+            hcwords = ProduceHcDataV1andV2(digits,1,iDet,hcBuffer,kMaxHcWords);
+	  }
+	  if ( rv >= 3 ) {
+            hcwords = ProduceHcDataV3     (digits,1,iDet,hcBuffer,kMaxHcWords);
+	  }
+
+          of->WriteBuffer((char *) hcBuffer, hcwords*4);
+          npayloadbyte += hcwords*4;
+
+	}
+
       }
     }
 
