@@ -8,7 +8,7 @@
  **************************************************************************/
 
 #include "AliEveJetPlaneGL.h"
-#include <EveDet/AliEveJetPlane.h>
+#include "AliEveJetPlane.h"
 
 #include <TGLRnrCtx.h>
 #include <TGLSelectRecord.h>

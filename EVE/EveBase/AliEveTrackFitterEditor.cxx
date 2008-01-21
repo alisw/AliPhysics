@@ -8,7 +8,7 @@
  **************************************************************************/
 
 #include "AliEveTrackFitterEditor.h"
-#include <EveDet/AliEveTrackFitter.h>
+#include "AliEveTrackFitter.h"
 
 #include <TGButton.h>
 

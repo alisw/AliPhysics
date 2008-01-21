@@ -8,7 +8,8 @@
  **************************************************************************/
 
 #include "AliEveJetPlaneEditor.h"
-#include <EveDet/AliEveJetPlane.h>
+#include "AliEveJetPlane.h"
+
 #include <TEveGValuators.h>
 
 #include <TVirtualPad.h>

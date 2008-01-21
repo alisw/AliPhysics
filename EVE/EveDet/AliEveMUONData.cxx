@@ -19,7 +19,7 @@
 #include "AliEveMUONData.h"
 
 #include <EveDet/AliEveMUONChamberData.h>
-#include <EveDet/AliEveEventManager.h>
+#include <EveBase/AliEveEventManager.h>
 
 #include <AliRawReader.h>
 #include <AliRawReaderFile.h>

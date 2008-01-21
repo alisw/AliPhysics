@@ -8,8 +8,10 @@
  **************************************************************************/
 
 #include "AliEveTPCLoaderEditor.h"
+
 #include <EveDet/AliEveTPCLoader.h>
 #include <EveDet/AliEveTPCData.h>
+
 #include <TEveManager.h>
 #include <TEveGValuators.h>
 
@@ -31,27 +33,27 @@
 
 ClassImp(AliEveTPCLoaderEditor)
 
-  AliEveTPCLoaderEditor::AliEveTPCLoaderEditor(const TGWindow *p,
-				   Int_t width, Int_t height,
-				   UInt_t options, Pixel_t back) :
-    TGedFrame(p, width, height, options | kVerticalFrame, back),
+AliEveTPCLoaderEditor::AliEveTPCLoaderEditor(const TGWindow *p,
+					     Int_t width, Int_t height,
+					     UInt_t options, Pixel_t back) :
+  TGedFrame(p, width, height, options | kVerticalFrame, back),
 
-    fM (0),
+  fM        (0),
 
-    fFile     (0),
-    fOpenFile (0),
+  fFile     (0),
+  fOpenFile (0),
 
-    fEvent    (0),
-    fDoubleSR (0),
+  fEvent    (0),
+  fDoubleSR (0),
 
-    fDataLoadThreshold (0),
-    fDataLoadPedestal  (0),
-    fDataAutoPedestal  (0),
+  fDataLoadThreshold (0),
+  fDataLoadPedestal  (0),
+  fDataAutoPedestal  (0),
 
-    fUpdateSectors   (0),
-    fReloadSectors   (0),
-    fCreateSectors3D (0),
-    fDeleteSectors3D (0)
+  fUpdateSectors   (0),
+  fReloadSectors   (0),
+  fCreateSectors3D (0),
+  fDeleteSectors3D (0)
 {
   MakeTitle("AliEveTPCLoader");
 
@@ -281,4 +283,3 @@ void AliEveTPCLoaderEditor::DoDeleteSectors3D()
 {
   fM->DeleteSectors3D();
 }
-

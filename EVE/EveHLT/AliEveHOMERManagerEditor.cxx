@@ -8,7 +8,7 @@
  **************************************************************************/
 
 #include "AliEveHOMERManagerEditor.h"
-#include <EveDet/AliEveHOMERManager.h>
+#include "AliEveHOMERManager.h"
 
 #include <TVirtualPad.h>
 #include <TColor.h>
@@ -18,6 +18,7 @@
 #include <TGNumberEntry.h>
 #include <TGColorSelect.h>
 #include <TGDoubleSlider.h>
+
 //______________________________________________________________________________
 // AliEveHOMERManagerEditor
 //

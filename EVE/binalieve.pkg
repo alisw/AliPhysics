@@ -1,9 +1,11 @@
 SRCS  := alieve_main/alieve_main.cxx
 CSRCS :=
 
+$(BINPATH)/alieve: $(EveBaseLIB) $(EveDetLIB) $(EveHLTLIB)
+
 EINCLUDE :=
 ELIBSDIR :=
-ELIBS    := EveDet \
+ELIBS    := EveBase EveDet EveHLT \
   MUONevaluation MUONgeometry MUONrec MUONsim MUONbase MUONtrigger MUONraw MUONcalib MUONmapping MUONcore \
   TPCbase TPCsim TPCrec TPCfast \
   ITSbase ITSsim ITSrec PMDbase PMDsim PMDrec TRDbase \

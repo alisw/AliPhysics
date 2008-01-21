@@ -6,51 +6,10 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
+
 #pragma link off all functions;
 #pragma link off all globals;
 #pragma link off all classes;
-
-
-//================================
-// base/
-//================================
-
-// AliEveEventManager
-#pragma link C++ class  AliEveEventManager+;
-#pragma link C++ global gEvent;
-
-#pragma link C++ class AliEveKineTools+;
-
-#pragma link C++ class AliEveVSDCreator+;
-
-// Fit
-#pragma link C++ class AliEveTrackFitter+;
-#pragma link C++ class AliEveTrackFitterEditor+;
-
-// AliEveJetPlane
-#pragma link C++ class AliEveJetPlane+;
-#pragma link C++ class AliEveJetPlaneGL+;
-#pragma link C++ class AliEveJetPlaneEditor+;
-#pragma link C++ class AliEveJetPlaneEditor::StaticDataWindow+;
-
-// Removed. Messy code, tons of violations and incompatible with TEve
-// classes. Author Ludovic Gaudichet left ALICE.
-// Should be thoroughly revised.
-//
-// AliEveCascade
-//#pragma link C++ class AliEveCascade+;
-//#pragma link C++ class CascadeList+;
-//#pragma link C++ class CascadeListEditor+;
-//
-// AliEveV0
-//#pragma link C++ class AliEveV0+;
-//#pragma link C++ class V0List+;
-//#pragma link C++ class V0ListEditor+;
-
-
-//================================
-// detectors/
-//================================
 
 // ITS
 #pragma link C++ class AliEveITSModuleSelection+;
@@ -127,13 +86,3 @@
 #pragma link C++ class AliEveTOFDigitsInfoEditor+;
 #pragma link C++ class AliEveTOFSectorEditor+;
 #pragma link C++ class AliEveTOFStripEditor+;
-
-
-//================================
-// HLT/
-//================================
-
-#pragma link C++ class AliEveHOMERManager+;
-#pragma link C++ class AliEveHOMERManagerEditor+;
-#pragma link C++ class AliEveHOMERSource+;
-#pragma link C++ class AliEveHOMERSourceList+;

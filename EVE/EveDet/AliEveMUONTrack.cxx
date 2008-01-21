@@ -8,7 +8,7 @@
  **************************************************************************/
 #include "AliEveMUONTrack.h"
 
-#include <EveDet/AliEveEventManager.h>
+#include <EveBase/AliEveEventManager.h>
 
 #include <AliMagF.h>
 #include <AliMagFMaps.h>

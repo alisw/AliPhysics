@@ -23,7 +23,7 @@
 
 #include <Riostream.h>
 
-#include <EveDet/AliEveEventManager.h>
+#include <EveBase/AliEveEventManager.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 ///
