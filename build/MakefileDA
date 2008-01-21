@@ -42,7 +42,7 @@ ifneq ($(findstring $(DAMODULE),$(MODULES)),)
 CXXFLAGS:=$(filter-out -pedantic-errors,$(CXXFLAGS))
 CXXFLAGS+=-I${ALICE_ROOT}/RAW
 CXXFLAGS+=-I${ALICE_ROOT}/$(DAMODULE)
-CXXFLAGS+=$(addprefix -I,$(filter-out %tgt_${ALICE_TARGET},$(filter-out %CVS,$(patsubst %/,%,$(shell ls -d ${ALICE_ROOT}/$(DAMODULE)/*/)))))
+CXXFLAGS+=$(addprefix -I,$(filter-out %tgt_${ALICE_TARGET},$(patsubst %/,%,$(shell ls -d ${ALICE_ROOT}/$(DAMODULE)/*/))))
 
 DATARGETDIR=${DAMODULE}/tgt_${ALICE_TARGET}
 DASRC=${DAMODULE}/${DAMODULE}$(SUBDAMODULE)${DANAME}da.cxx
@@ -51,14 +51,12 @@ DADEP=${DATARGETDIR}/${DAMODULE}$(SUBDAMODULE)${DANAME}da.d
 DALIB=${ALICE_ROOT}/lib/tgt_${ALICE_TARGET}/lib${DAMODULE}$(SUBDAMODULE)${DANAME}DA.a
 DAEXE=${ALICE_ROOT}/bin/tgt_${ALICE_TARGET}/${DAMODULE}$(SUBDAMODULE)${DANAME}da.exe
 
-DAVERSION=$(firstword $(shell cvs status $(DASRC) | grep "Working revision:" | cut -d: -f2 ))
+DAVERSION=$(firstword $(shell svn info $(DASRC) | grep "Last Changed Rev:" | cut -d: -f2 ))
 
 DAROOTRELEASE=$(subst /,.,$(shell root-config --version))
 
-DAALIROOTRELEASE=$(subst -,.,$(firstword $(shell cvs status $(DASRC) | grep "Sticky Tag:" | cut -d: -f2 )))
-ifeq ($(DAALIROOTRELEASE),(none))
-DAALIROOTRELEASE:="HEAD_"$(subst -,.,$(shell date --iso-8601))
-endif
+#DAALIROOTRELEASE=$(notdir $(subst /$(DASRC),,$(shell svn info $(DASRC) | grep "URL:" | cut -d: -f3 )))
+DAALIROOTRELEASE+=$(subst -,.,$(notdir $(subst /$(DASRC),,$(shell svn info $(DASRC) | grep "URL:" | cut -d: -f3 ))))"."$(firstword $(shell svn info $(DASRC) | grep "Revision:" | cut -d: -f2 ))
 
 DAARCNAME=$(patsubst %-,%,daqDA-${ONLINEDETECTORNAME}-${DANAME})
 DAARC=$(DAARCNAME)-$(DAVERSION)
