@@ -75,7 +75,8 @@ void testCFContainers(){
   
   
   //the nstep grids "container" 
-  AliCFContainer *cont = new AliCFContainer("cont","example of  container",nstep,nvar,iBin);
+  //   AliCFContainer *cont = new AliCFContainer("cont","example of  container",nstep,nvar,iBin);
+  AliCFContainer *cont = new AliCFContainer("cont","example of  container",nstep,nvar,iBin, 0x0,kTRUE);
 
   //setting the bin limits
   cont->SetBinLimits(ipt,binLim1);
@@ -161,6 +162,7 @@ void testCFContainers(){
   hptvtx2a->SetMinimum(0.01);
   hptvtx2a->Draw("lego");
   
+  ceff->Print("eff.gif");
 
   //get the corrected data grid  
   AliCFDataGrid *corrdata = new AliCFDataGrid("corrdata","corrected data",*data);
@@ -180,11 +182,6 @@ void testCFContainers(){
   TH1D *hpt3b = corrdata->Project(ipt); //corrected data
   hpt3b->SetMinimum(0.01);
   hpt3b->Draw();
-//the "MC truth" (ideally == corrdata, modulo 0-efficiency bins....so this depends on the segmentation of your grid and the statistics you have)
-  TH1D *hpt3c = eff->GetDen()->Project(ipt); 
-  hpt3c->SetMinimum(0.01);
-  hpt3c->SetLineColor(2);
-  hpt3c->Draw("same");
   ccorrdata->cd(3);
   TH1D *hvtx3a = corrdata->GetData()->Project(ivtx); //uncorrected data
   hvtx3a->SetMinimum(0.01);
@@ -193,11 +190,6 @@ void testCFContainers(){
   TH1D *hvtx3b = corrdata->Project(ivtx); //corrected data
   hvtx3b->SetMinimum(0.01);
   hvtx3b->Draw();
-//the "MC truth" (ideally == corrdata, modulo 0-efficiency bins....so this depends on the segmentation of your grid and the statistics you have)
-  TH1D *hvtx3c = eff->GetDen()->Project(ivtx); 
-  hvtx3c->SetMinimum(0.01);
-  hvtx3c->SetLineColor(2);
-  hvtx3c->Draw("same");
   ccorrdata->Print("corrdata.gif");
 
 }

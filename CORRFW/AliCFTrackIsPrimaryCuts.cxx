@@ -365,43 +365,43 @@ void AliCFTrackIsPrimaryCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_
 
   switch(index){
   case kCutNSigmaToVertex:
-    fhNBinsNSigma=nbins;
+    fhNBinsNSigma=nbins+1;
     fhBinLimNSigma=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimNSigma[i]=bins[i];
     break;
 
   case kCutRequireSigmaToVertex:
-    fhNBinsRequireSigma=nbins;
+    fhNBinsRequireSigma=nbins+1;
     fhBinLimRequireSigma=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimRequireSigma[i]=bins[i];
     break;
 
   case kCutAcceptKinkDaughters:
-    fhNBinsAcceptKink=nbins;
+    fhNBinsAcceptKink=nbins+1;
     fhBinLimAcceptKink=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimAcceptKink[i]=bins[i];
     break;
 
   case kDcaXY:
-    fhNBinsDcaXY=nbins;
+    fhNBinsDcaXY=nbins+1;
     fhBinLimDcaXY=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimDcaXY[i]=bins[i];
     break;
 
   case kDcaZ:
-    fhNBinsDcaZ=nbins;
+    fhNBinsDcaZ=nbins+1;
     fhBinLimDcaZ=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimDcaZ[i]=bins[i];
     break;
 
   case kDcaXYnorm:
-    fhNBinsDcaXYnorm=nbins;
+    fhNBinsDcaXYnorm=nbins+1;
     fhBinLimDcaXYnorm=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimDcaXYnorm[i]=bins[i];
     break;
 
   case kDcaZnorm:
-    fhNBinsDcaZnorm=nbins;
+    fhNBinsDcaZnorm=nbins+1;
     fhBinLimDcaZnorm=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimDcaZnorm[i]=bins[i];
     break;
@@ -415,43 +415,43 @@ void AliCFTrackIsPrimaryCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_
   //
   switch(index){
   case kCutNSigmaToVertex:
-    fhNBinsNSigma=nbins;
+    fhNBinsNSigma=nbins+1;
     fhBinLimNSigma=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimNSigma[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
     break;
 
   case kCutRequireSigmaToVertex:
-    fhNBinsRequireSigma=nbins;
+    fhNBinsRequireSigma=nbins+1;
     fhBinLimRequireSigma=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimRequireSigma[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
     break;
 
   case kCutAcceptKinkDaughters:
-    fhNBinsAcceptKink=nbins;
+    fhNBinsAcceptKink=nbins+1;
     fhBinLimAcceptKink=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimAcceptKink[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
     break;
 
   case kDcaXY:
-    fhNBinsDcaXY=nbins;
+    fhNBinsDcaXY=nbins+1;
     fhBinLimDcaXY=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimDcaXY[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
     break;
 
   case kDcaZ:
-    fhNBinsDcaZ=nbins;
+    fhNBinsDcaZ=nbins+1;
     fhBinLimDcaZ=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimDcaZ[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
     break;
 
   case kDcaXYnorm:
-    fhNBinsDcaXYnorm=nbins;
+    fhNBinsDcaXYnorm=nbins+1;
     fhBinLimDcaXYnorm=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimDcaXYnorm[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
     break;
 
   case kDcaZnorm:
-    fhNBinsDcaZnorm=nbins;
+    fhNBinsDcaZnorm=nbins+1;
     fhBinLimDcaZnorm=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimDcaZnorm[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
     break;
@@ -489,13 +489,13 @@ void AliCFTrackIsPrimaryCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_
 
     fhDcaXYvsDcaZ[i]            = new  TH2F(Form("%s_dcaXYvsDcaZ%s",GetName(),str),"",200,-10,10,200,-10,10);
     fhDcaXYvsDcaZnorm[i]        = new  TH2F(Form("%s_dcaXYvsDcaZnorm%s",GetName(),str),"",200,-10,10,200,-10,10);
-    fhQA[kCutNSigmaToVertex][i]	= new TH1F(Form("%s_nSigmaToVertex%s",GetName(),str),"",fhNBinsNSigma,fhBinLimNSigma);
-    fhQA[kCutRequireSigmaToVertex][i] = new TH1F(Form("%s_requireSigmaToVertex%s",GetName(),str),"",fhNBinsRequireSigma,fhBinLimRequireSigma);
-    fhQA[kCutAcceptKinkDaughters][i] = new TH1F(Form("%s_acceptKinkDaughters%s",GetName(),str),"",fhNBinsAcceptKink,fhBinLimAcceptKink);
-    fhQA[kDcaXY][i]		= new TH1F(Form("%s_dcaXY%s",GetName(),str),"",fhNBinsDcaXY,fhBinLimDcaXY);
-    fhQA[kDcaZ][i]		= new TH1F(Form("%s_dcaZ%s",GetName(),str),"",fhNBinsDcaZ,fhBinLimDcaZ);
-    fhQA[kDcaXYnorm][i]		= new TH1F(Form("%s_dcaXYnorm%s",GetName(),str),"",fhNBinsDcaXYnorm,fhBinLimDcaXYnorm);
-    fhQA[kDcaZnorm][i]		= new TH1F(Form("%s_dcaZnorm%s",GetName(),str),"",fhNBinsDcaZnorm,fhBinLimDcaZnorm);
+    fhQA[kCutNSigmaToVertex][i]	= new TH1F(Form("%s_nSigmaToVertex%s",GetName(),str),"",fhNBinsNSigma-1,fhBinLimNSigma);
+    fhQA[kCutRequireSigmaToVertex][i] = new TH1F(Form("%s_requireSigmaToVertex%s",GetName(),str),"",fhNBinsRequireSigma-1,fhBinLimRequireSigma);
+    fhQA[kCutAcceptKinkDaughters][i] = new TH1F(Form("%s_acceptKinkDaughters%s",GetName(),str),"",fhNBinsAcceptKink-1,fhBinLimAcceptKink);
+    fhQA[kDcaXY][i]		= new TH1F(Form("%s_dcaXY%s",GetName(),str),"",fhNBinsDcaXY-1,fhBinLimDcaXY);
+    fhQA[kDcaZ][i]		= new TH1F(Form("%s_dcaZ%s",GetName(),str),"",fhNBinsDcaZ-1,fhBinLimDcaZ);
+    fhQA[kDcaXYnorm][i]		= new TH1F(Form("%s_dcaXYnorm%s",GetName(),str),"",fhNBinsDcaXYnorm-1,fhBinLimDcaXYnorm);
+    fhQA[kDcaZnorm][i]		= new TH1F(Form("%s_dcaZnorm%s",GetName(),str),"",fhNBinsDcaZnorm-1,fhBinLimDcaZnorm);
 
     fhDcaXYvsDcaZ[i]->SetXTitle("impact par. d_{z}");
     fhDcaXYvsDcaZ[i]->SetYTitle("impact par. d_{xy}");

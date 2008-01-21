@@ -448,55 +448,55 @@ void AliCFTrackKineCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_t *bi
 
   switch(index){
   case kCutP:
-    fhNBinsMomentum=nbins;
+    fhNBinsMomentum=nbins+1;
     fhBinLimMomentum=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimMomentum[i]=bins[i];
     break;
 
   case kCutPt:
-    fhNBinsPt=nbins;
+    fhNBinsPt=nbins+1;
     fhBinLimPt=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimPt[i]=bins[i];
     break;
 
   case kCutPx:
-    fhNBinsPx=nbins;
+    fhNBinsPx=nbins+1;
     fhBinLimPx=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimPx[i]=bins[i];
     break;
 
   case kCutPy:
-    fhNBinsPy=nbins;
+    fhNBinsPy=nbins+1;
     fhBinLimPy=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimPy[i]=bins[i];
     break;
 
   case kCutPz:
-    fhNBinsPz=nbins;
+    fhNBinsPz=nbins+1;
     fhBinLimPz=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimPz[i]=bins[i];
     break;
 
   case kCutRapidity:
-    fhNBinsRapidity=nbins;
+    fhNBinsRapidity=nbins+1;
     fhBinLimRapidity=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimRapidity[i]=bins[i];
     break;
 
   case kCutEta:
-    fhNBinsEta=nbins;
+    fhNBinsEta=nbins+1;
     fhBinLimEta=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimEta[i]=bins[i];
     break;
 
   case kCutPhi:
-    fhNBinsPhi=nbins;
+    fhNBinsPhi=nbins+1;
     fhBinLimPhi=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimPhi[i]=bins[i];
     break;
 
   case kCutCharge:
-    fhNBinsCharge=nbins;
+    fhNBinsCharge=nbins+1;
     fhBinLimCharge=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimCharge[i]=bins[i];
     break;
@@ -510,55 +510,55 @@ void AliCFTrackKineCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_t xmi
   //
   switch(index){
   case kCutP:
-    fhNBinsMomentum=nbins;
+    fhNBinsMomentum=nbins+1;
     fhBinLimMomentum=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimMomentum[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
     break;
 
   case kCutPt:
-    fhNBinsPt=nbins;
+    fhNBinsPt=nbins+1;
     fhBinLimPt=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimPt[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
     break;
 
   case kCutPx:
-    fhNBinsPx=nbins;
+    fhNBinsPx=nbins+1;
     fhBinLimPx=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimPx[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
     break;
 
   case kCutPy:
-    fhNBinsPy=nbins;
+    fhNBinsPy=nbins+1;
     fhBinLimPy=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimPy[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
     break;
 
   case kCutPz:
-    fhNBinsPz=nbins;
+    fhNBinsPz=nbins+1;
     fhBinLimPz=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimPz[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
     break;
 
   case kCutRapidity:
-    fhNBinsRapidity=nbins;
+    fhNBinsRapidity=nbins+1;
     fhBinLimRapidity=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimRapidity[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
     break;
 
   case kCutEta:
-    fhNBinsEta=nbins;
+    fhNBinsEta=nbins+1;
     fhBinLimEta=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimEta[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
     break;
 
   case kCutPhi:
-    fhNBinsPhi=nbins;
+    fhNBinsPhi=nbins+1;
     fhBinLimPhi=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimPhi[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
     break;
 
   case kCutCharge:
-    fhNBinsCharge=nbins;
+    fhNBinsCharge=nbins+1;
     fhBinLimCharge=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimCharge[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
     break;
@@ -616,15 +616,15 @@ void AliCFTrackKineCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_t xmi
     if (i==0) sprintf(str," ");
     else sprintf(str,"_cut");
   
-    fhQA[kCutP][i]	= new  TH1F(Form("%s_momentum%s",GetName(),str),	"",fhNBinsMomentum,fhBinLimMomentum);
-    fhQA[kCutPt][i]	= new  TH1F(Form("%s_transverse_momentum%s",GetName(),str),"",fhNBinsPt,fhBinLimPt);
-    fhQA[kCutPx][i]	= new  TH1F(Form("%s_px%s",GetName(),str),		"",fhNBinsPx,fhBinLimPx);
-    fhQA[kCutPy][i]	= new  TH1F(Form("%s_py%s",GetName(),str),		"",fhNBinsPy,fhBinLimPy);
-    fhQA[kCutPz][i]	= new  TH1F(Form("%s_pz%s",GetName(),str),		"",fhNBinsPz,fhBinLimPz);
-    fhQA[kCutRapidity][i]=new  TH1F(Form("%s_rapidity%s",GetName(),str),	"",fhNBinsRapidity,fhBinLimRapidity);
-    fhQA[kCutEta][i]	= new  TH1F(Form("%s_eta%s",GetName(),str),		"",fhNBinsEta,fhBinLimEta);
-    fhQA[kCutPhi][i]	= new  TH1F(Form("%s_phi%s",GetName(),str),		"",fhNBinsPhi,fhBinLimPhi);
-    fhQA[kCutCharge][i]	= new  TH1F(Form("%s_charge%s",GetName(),str),		"",fhNBinsCharge,fhBinLimCharge);
+    fhQA[kCutP][i]	= new  TH1F(Form("%s_momentum%s",GetName(),str),	"",fhNBinsMomentum-1,fhBinLimMomentum);
+    fhQA[kCutPt][i]	= new  TH1F(Form("%s_transverse_momentum%s",GetName(),str),"",fhNBinsPt-1,fhBinLimPt);
+    fhQA[kCutPx][i]	= new  TH1F(Form("%s_px%s",GetName(),str),		"",fhNBinsPx-1,fhBinLimPx);
+    fhQA[kCutPy][i]	= new  TH1F(Form("%s_py%s",GetName(),str),		"",fhNBinsPy-1,fhBinLimPy);
+    fhQA[kCutPz][i]	= new  TH1F(Form("%s_pz%s",GetName(),str),		"",fhNBinsPz-1,fhBinLimPz);
+    fhQA[kCutRapidity][i]=new  TH1F(Form("%s_rapidity%s",GetName(),str),	"",fhNBinsRapidity-1,fhBinLimRapidity);
+    fhQA[kCutEta][i]	= new  TH1F(Form("%s_eta%s",GetName(),str),		"",fhNBinsEta-1,fhBinLimEta);
+    fhQA[kCutPhi][i]	= new  TH1F(Form("%s_phi%s",GetName(),str),		"",fhNBinsPhi-1,fhBinLimPhi);
+    fhQA[kCutCharge][i]	= new  TH1F(Form("%s_charge%s",GetName(),str),		"",fhNBinsCharge-1,fhBinLimCharge);
 
     fhQA[kCutP][i]	->SetXTitle("momentum p (GeV/c)");
     fhQA[kCutPt][i]	->SetXTitle("p_{T} (GeV/c)");

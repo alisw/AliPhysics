@@ -39,7 +39,6 @@ class AliCFDataGrid : public AliCFGrid
   virtual void  ApplyEffCorrection(const AliCFEffGrid &eff);
   virtual void  ApplyBGCorrection(const AliCFDataGrid &c);
   virtual void  SetContainer(const AliCFContainer &c) {fContainer=&c;};
-
   //basic operations
   virtual void   Copy(TObject& data) const;
  

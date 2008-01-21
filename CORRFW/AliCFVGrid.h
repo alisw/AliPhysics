@@ -32,8 +32,6 @@ class AliCFVGrid : public AliCFFrame
 
   virtual Float_t GetOverFlows(Int_t var) const = 0;
   virtual Float_t GetUnderFlows(Int_t var)const = 0;
-  virtual Float_t GetOverFlows()const = 0;
-  virtual Float_t GetUnderFlows()const = 0;
   virtual Float_t GetEntries()const = 0 ;
 
   virtual Float_t GetElement(Int_t iel)const = 0; 

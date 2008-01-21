@@ -22,7 +22,7 @@ class AliCFContainer : public AliCFFrame
  public:
   AliCFContainer();
   AliCFContainer(const Char_t* name,const Char_t* title);
-  AliCFContainer(const Char_t* name, const Char_t* title,const Int_t nSelStep, const Int_t nVarIn, const Int_t* nBinIn, const Double_t  *binLimitsIn=0);
+  AliCFContainer(const Char_t* name, const Char_t* title,const Int_t nSelStep, const Int_t nVarIn, const Int_t* nBinIn, const Double_t  *binLimitsIn=0, const Bool_t useSparse = kFALSE);
   AliCFContainer(const AliCFContainer& c);
   
   virtual ~AliCFContainer();
@@ -33,8 +33,6 @@ class AliCFContainer : public AliCFFrame
 
   virtual Float_t GetOverFlows(Int_t var,Int_t istep) const;
   virtual Float_t GetUnderFlows(Int_t var,Int_t istep)const ;
-  virtual Float_t GetOverFlows(Int_t istep)const ;
-  virtual Float_t GetUnderFlows(Int_t istep)const ;
   virtual Float_t GetEntries(Int_t istep)const ;
   virtual Int_t   GetEmptyBins(Int_t istep)const ;
   virtual Int_t   GetEmptyBins(Int_t istep, Double_t *varMin,Double_t *varMax) const ;

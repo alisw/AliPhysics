@@ -400,43 +400,43 @@ void AliCFEventClassCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_t *b
 
   switch(index){
   case kTrigger:
-    fhNBinsTrigger=nbins;
+    fhNBinsTrigger=nbins+1;
     fhBinLimTrigger=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimTrigger[i]=bins[i];
     break;
     
   case kZDCEnergyN1:
-    fhNBinsZDCEnN1=nbins;
+    fhNBinsZDCEnN1=nbins+1;
     fhBinLimZDCEnN1=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimZDCEnN1[i]=bins[i];
     break;
 
   case kZDCEnergyP1:
-    fhNBinsZDCEnP1=nbins;
+    fhNBinsZDCEnP1=nbins+1;
     fhBinLimZDCEnP1=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimZDCEnP1[i]=bins[i];
     break;
 
   case kZDCEnergyN2:
-    fhNBinsZDCEnN2=nbins;
+    fhNBinsZDCEnN2=nbins+1;
     fhBinLimZDCEnN2=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimZDCEnN2[i]=bins[i];
     break;
 
   case kZDCEnergyP2:
-    fhNBinsZDCEnP2=nbins;
+    fhNBinsZDCEnP2=nbins+1;
     fhBinLimZDCEnP2=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimZDCEnP2[i]=bins[i];
     break;
 
   case kZDCEnergyEM1:
-    fhNBinsZDCEnEM1=nbins;
+    fhNBinsZDCEnEM1=nbins+1;
     fhBinLimZDCEnEM1=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimZDCEnEM1[i]=bins[i];
     break;
 
   case kZDCEnergyEM2:
-    fhNBinsZDCEnEM2=nbins;
+    fhNBinsZDCEnEM2=nbins+1;
     fhBinLimZDCEnEM2=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimZDCEnEM2[i]=bins[i];
     break;
@@ -454,43 +454,43 @@ void AliCFEventClassCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_t xm
   //
   switch(index){
   case kTrigger:
-    fhNBinsTrigger=nbins;
+    fhNBinsTrigger=nbins+1;
     fhBinLimTrigger=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimTrigger[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
     break;
     
   case kZDCEnergyN1:
-    fhNBinsZDCEnN1=nbins;
+    fhNBinsZDCEnN1=nbins+1;
     fhBinLimZDCEnN1=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimZDCEnN1[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
     break;
 
   case kZDCEnergyP1:
-    fhNBinsZDCEnP1=nbins;
+    fhNBinsZDCEnP1=nbins+1;
     fhBinLimZDCEnP1=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimZDCEnP1[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
     break;
 
   case kZDCEnergyN2:
-    fhNBinsZDCEnN2=nbins;
+    fhNBinsZDCEnN2=nbins+1;
     fhBinLimZDCEnN2=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimZDCEnN2[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
     break;
 
   case kZDCEnergyP2:
-    fhNBinsZDCEnP2=nbins;
+    fhNBinsZDCEnP2=nbins+1;
     fhBinLimZDCEnP2=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimZDCEnP2[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
     break;
 
   case kZDCEnergyEM1:
-    fhNBinsZDCEnEM1=nbins;
+    fhNBinsZDCEnEM1=nbins+1;
     fhBinLimZDCEnEM1=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimZDCEnEM1[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
     break;
 
   case kZDCEnergyEM2:
-    fhNBinsZDCEnEM2=nbins;
+    fhNBinsZDCEnEM2=nbins+1;
     fhBinLimZDCEnEM2=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimZDCEnEM2[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
     break;
@@ -516,13 +516,13 @@ void AliCFEventClassCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_t xm
     if (i==0) sprintf(str," ");
     else sprintf(str,"_cut");
 
-    fhQA[kTrigger][i]	= new  TH1F(Form("%s_TriggerBits%s",GetName(),str),	                "",fhNBinsTrigger,fhBinLimTrigger);
-    fhQA[kZDCEnergyN1][i]	= new  TH1F(Form("%s_ZDC_Energy_N1%s",GetName(),str),		"",fhNBinsZDCEnN1,fhBinLimZDCEnN1);
-    fhQA[kZDCEnergyP1][i]	= new  TH1F(Form("%s_ZDC_Energy_P1%s",GetName(),str),		"",fhNBinsZDCEnP1,fhBinLimZDCEnP1);
-    fhQA[kZDCEnergyN2][i]	= new  TH1F(Form("%s_ZDC_Energy_N2%s",GetName(),str),		"",fhNBinsZDCEnN2,fhBinLimZDCEnN2);
-    fhQA[kZDCEnergyP2][i]	= new  TH1F(Form("%s_ZDC_Energy_P2%s",GetName(),str),		"",fhNBinsZDCEnP2,fhBinLimZDCEnP2);
-    fhQA[kZDCEnergyEM1][i]	= new  TH1F(Form("%s_ZDC_Energy_EM1%s",GetName(),str),		"",fhNBinsZDCEnEM1,fhBinLimZDCEnEM1);
-    fhQA[kZDCEnergyEM2][i]	= new  TH1F(Form("%s_ZDC_Energy_EM2%s",GetName(),str),		"",fhNBinsZDCEnEM2,fhBinLimZDCEnEM2);
+    fhQA[kTrigger][i]	= new  TH1F(Form("%s_TriggerBits%s",GetName(),str),	                "",fhNBinsTrigger-1,fhBinLimTrigger);
+    fhQA[kZDCEnergyN1][i]	= new  TH1F(Form("%s_ZDC_Energy_N1%s",GetName(),str),		"",fhNBinsZDCEnN1-1,fhBinLimZDCEnN1);
+    fhQA[kZDCEnergyP1][i]	= new  TH1F(Form("%s_ZDC_Energy_P1%s",GetName(),str),		"",fhNBinsZDCEnP1-1,fhBinLimZDCEnP1);
+    fhQA[kZDCEnergyN2][i]	= new  TH1F(Form("%s_ZDC_Energy_N2%s",GetName(),str),		"",fhNBinsZDCEnN2-1,fhBinLimZDCEnN2);
+    fhQA[kZDCEnergyP2][i]	= new  TH1F(Form("%s_ZDC_Energy_P2%s",GetName(),str),		"",fhNBinsZDCEnP2-1,fhBinLimZDCEnP2);
+    fhQA[kZDCEnergyEM1][i]	= new  TH1F(Form("%s_ZDC_Energy_EM1%s",GetName(),str),		"",fhNBinsZDCEnEM1-1,fhBinLimZDCEnEM1);
+    fhQA[kZDCEnergyEM2][i]	= new  TH1F(Form("%s_ZDC_Energy_EM2%s",GetName(),str),		"",fhNBinsZDCEnEM2-1,fhBinLimZDCEnEM2);
 
 
     fhQA[kTrigger][i]	        ->SetXTitle("Trigger Bits");

@@ -111,13 +111,13 @@ class AliCFTrackIsPrimaryCuts : public AliCFCutBase
   TBits *fBitmap ; 			// stores single selection decisions
 
   // QA histogram setters
-  Int_t fhNBinsNSigma;			// number of bins: dca in units of sigma
-  Int_t fhNBinsRequireSigma;		// number of bins: require successful calcuation
-  Int_t fhNBinsAcceptKink;		// number of bins: acceptkink daughters
-  Int_t fhNBinsDcaXY;			// number of bins: dca in transverse plane
-  Int_t fhNBinsDcaZ;			// number of bins: dca along beam axis
-  Int_t fhNBinsDcaXYnorm;		// number of bins: normalised dca in transverse plane
-  Int_t fhNBinsDcaZnorm;		// number of bins: normalised dca along beam axis
+  Int_t fhNBinsNSigma;			// number of bins+1: dca in units of sigma
+  Int_t fhNBinsRequireSigma;		// number of bins+1: require successful calcuation
+  Int_t fhNBinsAcceptKink;		// number of bins+1: acceptkink daughters
+  Int_t fhNBinsDcaXY;			// number of bins+1: dca in transverse plane
+  Int_t fhNBinsDcaZ;			// number of bins+1: dca along beam axis
+  Int_t fhNBinsDcaXYnorm;		// number of bins+1: normalised dca in transverse plane
+  Int_t fhNBinsDcaZnorm;		// number of bins+1: normalised dca along beam axis
 
   Double_t *fhBinLimNSigma; //[fhNBinsNSigma] bin limits: dca in units of sigma
   Double_t *fhBinLimRequireSigma;//[fhNBinsRequireSigma] bin limits: require successful calcuation

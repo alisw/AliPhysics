@@ -127,17 +127,17 @@ class AliCFTrackQualityCuts : public AliCFCutBase
   TBits *fBitmap ; 			// stores single selection decisions
 
   // QA histogram setters
-  Int_t fhNBinsClusterTPC;		// number of bins: cluster TPC
-  Int_t fhNBinsClusterITS;		// number of bins: cluster ITS
-  Int_t fhNBinsChi2TPC;			// number of bins: chi2 per cluster TPC
-  Int_t fhNBinsChi2ITS;			// number of bins: chi2 per cluster ITS
-  Int_t fhNBinsRefitTPC;		// number of bins: require refit TPC
-  Int_t fhNBinsRefitITS;		// number of bins: require refit ITS  
-  Int_t fhNBinsCovariance11;		// number of bins: covariance matrix element 11
-  Int_t fhNBinsCovariance22;		// number of bins: covariance matrix element 22
-  Int_t fhNBinsCovariance33;		// number of bins: covariance matrix element 33
-  Int_t fhNBinsCovariance44;		// number of bins: covariance matrix element 44
-  Int_t fhNBinsCovariance55;		// number of bins: covariance matrix element 55
+  Int_t fhNBinsClusterTPC;		// number of bins+1: cluster TPC
+  Int_t fhNBinsClusterITS;		// number of bins+1: cluster ITS
+  Int_t fhNBinsChi2TPC;			// number of bins+1: chi2 per cluster TPC
+  Int_t fhNBinsChi2ITS;			// number of bins+1: chi2 per cluster ITS
+  Int_t fhNBinsRefitTPC;		// number of bins+1: require refit TPC
+  Int_t fhNBinsRefitITS;		// number of bins+1: require refit ITS  
+  Int_t fhNBinsCovariance11;		// number of bins+1: covariance matrix element 11
+  Int_t fhNBinsCovariance22;		// number of bins+1: covariance matrix element 22
+  Int_t fhNBinsCovariance33;		// number of bins+1: covariance matrix element 33
+  Int_t fhNBinsCovariance44;		// number of bins+1: covariance matrix element 44
+  Int_t fhNBinsCovariance55;		// number of bins+1: covariance matrix element 55
 
   Double_t *fhBinLimClusterTPC;	//[fhNBinsClusterTPC] bin limits: cluster TPC
   Double_t *fhBinLimClusterITS;	//[fhNBinsClusterITS] bin limits: cluster ITS

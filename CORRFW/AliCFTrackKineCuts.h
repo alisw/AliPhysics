@@ -139,15 +139,15 @@ class AliCFTrackKineCuts : public AliCFCutBase
   TBits *fBitmap ; 			// stores single selection decisions
 
   // QA histogram setters
-  Int_t fhNBinsMomentum;		// number of bins: momentum
-  Int_t fhNBinsPt;			// number of bins: pt
-  Int_t fhNBinsPx;			// number of bins: px
-  Int_t fhNBinsPy;			// number of bins: py
-  Int_t fhNBinsPz;			// number of bins: pz
-  Int_t fhNBinsEta;			// number of bins: eta
-  Int_t fhNBinsRapidity;		// number of bins: rapidity
-  Int_t fhNBinsPhi;			// number of bins: phi
-  Int_t fhNBinsCharge;			// number of bins: charge
+  Int_t fhNBinsMomentum;		// number of bins+1: momentum
+  Int_t fhNBinsPt;			// number of bins+1: pt
+  Int_t fhNBinsPx;			// number of bins+1: px
+  Int_t fhNBinsPy;			// number of bins+1: py
+  Int_t fhNBinsPz;			// number of bins+1: pz
+  Int_t fhNBinsEta;			// number of bins+1: eta
+  Int_t fhNBinsRapidity;		// number of bins+1: rapidity
+  Int_t fhNBinsPhi;			// number of bins+1: phi
+  Int_t fhNBinsCharge;			// number of bins+1: charge
   
   Double_t *fhBinLimMomentum;	//[fhNBinsMomentum] bin limits: momentum
   Double_t *fhBinLimPt;		//[fhNBinsPt] bin limits: pt

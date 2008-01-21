@@ -26,7 +26,7 @@
 //
 #include <AliLog.h>
 #include "AliCFGrid.h"
-//#include "AliCFGridSparse.h"
+#include "AliCFGridSparse.h"
 #include "AliCFContainer.h"
 
 //____________________________________________________________________
@@ -52,7 +52,7 @@ AliCFContainer::AliCFContainer(const Char_t* name, const Char_t* title) :
 }
 
 //____________________________________________________________________
-AliCFContainer::AliCFContainer(const Char_t* name, const Char_t* title,const Int_t nSelSteps, const Int_t nVarIn, const Int_t * nBinIn, const Double_t *binLimitsIn) :  
+AliCFContainer::AliCFContainer(const Char_t* name, const Char_t* title,const Int_t nSelSteps, const Int_t nVarIn, const Int_t * nBinIn, const Double_t *binLimitsIn, const Bool_t useSparse) :  
   AliCFFrame(name,title,nVarIn,nBinIn,binLimitsIn),
   fNStep(0),
   fGrid(0x0)
@@ -69,8 +69,12 @@ AliCFContainer::AliCFContainer(const Char_t* name, const Char_t* title,const Int
   char gname[30];
   for(Int_t istep=0;istep<fNStep;istep++){
     sprintf(gname,"%s%s%i",GetName(),"_SelStep", istep);
-    fGrid[istep] = new AliCFGrid(gname,title,nVarIn,nBinIn,binLimitsIn); 
-    //fGrid[istep] = new AliCFGridSparse(gname,title,nVarIn,nBinIn,binLimitsIn); 
+    if(!useSparse){
+      fGrid[istep] = new AliCFGrid(gname,title,nVarIn,nBinIn,binLimitsIn); 
+      }
+    else{
+      fGrid[istep] = new AliCFGridSparse(gname,title,nVarIn,nBinIn,binLimitsIn); 
+    }
     fGrid[istep]->SumW2(); 
   }
 }
@@ -234,25 +238,11 @@ Float_t AliCFContainer::GetOverFlows( Int_t ivar, Int_t istep) const {
   return fGrid[istep]->GetOverFlows(ivar);
 } 
 //____________________________________________________________________
-Float_t AliCFContainer::GetOverFlows( Int_t istep) const {
-  //
-  // Get overflows in variable var at selection level istep
-  //
-  return fGrid[istep]->GetOverFlows();
-} 
-//____________________________________________________________________
 Float_t AliCFContainer::GetUnderFlows( Int_t ivar, Int_t istep) const {
   //
   // Get overflows in variable var at selection level istep
   //
   return fGrid[istep]->GetUnderFlows(ivar);
-} 
-//____________________________________________________________________
-Float_t AliCFContainer::GetUnderFlows( Int_t istep) const {
-  //
-  // Get overflows in variable var at selection level istep
-  //
-  return fGrid[istep]->GetUnderFlows();
 } 
 //____________________________________________________________________
 Float_t AliCFContainer::GetEntries( Int_t istep) const {

@@ -445,67 +445,67 @@ void AliCFTrackQualityCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_t 
 
   switch(index){
   case kCutClusterTPC:
-    fhNBinsClusterTPC=nbins;
+    fhNBinsClusterTPC=nbins+1;
     fhBinLimClusterTPC=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimClusterTPC[i]=bins[i];
     break;
 
   case kCutClusterITS:
-    fhNBinsClusterITS=nbins;
+    fhNBinsClusterITS=nbins+1;
     fhBinLimClusterITS=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimClusterITS[i]=bins[i];
     break;
 
   case kCutChi2TPC:
-    fhNBinsChi2TPC=nbins;
+    fhNBinsChi2TPC=nbins+1;
     fhBinLimChi2TPC=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimChi2TPC[i]=bins[i];
     break;
 
   case kCutChi2ITS:
-    fhNBinsChi2ITS=nbins;
+    fhNBinsChi2ITS=nbins+1;
     fhBinLimChi2ITS=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimChi2ITS[i]=bins[i];
     break;
 
   case kCutRefitTPC:
-    fhNBinsRefitTPC=nbins;
+    fhNBinsRefitTPC=nbins+1;
     fhBinLimRefitTPC=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimRefitTPC[i]=bins[i];
     break;
 
   case kCutRefitITS:
-    fhNBinsRefitITS=nbins;
+    fhNBinsRefitITS=nbins+1;
     fhBinLimRefitITS=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimRefitITS[i]=bins[i];
     break;
 
   case kCutCovElement11:
-    fhNBinsCovariance11=nbins;
+    fhNBinsCovariance11=nbins+1;
     fhBinLimCovariance11=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimCovariance11[i]=bins[i];
     break;
 
   case kCutCovElement22:
-    fhNBinsCovariance22=nbins;
+    fhNBinsCovariance22=nbins+1;
     fhBinLimCovariance22=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimCovariance22[i]=bins[i];
     break;
 
   case kCutCovElement33:
-    fhNBinsCovariance33=nbins;
+    fhNBinsCovariance33=nbins+1;
     fhBinLimCovariance33=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimCovariance33[i]=bins[i];
     break;
 
   case kCutCovElement44:
-    fhNBinsCovariance44=nbins;
+    fhNBinsCovariance44=nbins+1;
     fhBinLimCovariance44=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimCovariance44[i]=bins[i];
     break;
 
   case kCutCovElement55:
-    fhNBinsCovariance55=nbins;
+    fhNBinsCovariance55=nbins+1;
     fhBinLimCovariance55=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimCovariance55[i]=bins[i];
     break;
@@ -519,67 +519,67 @@ void AliCFTrackQualityCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_t 
   //
   switch(index){
   case kCutClusterTPC:
-    fhNBinsClusterTPC=nbins;
+    fhNBinsClusterTPC=nbins+1;
     fhBinLimClusterTPC=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimClusterTPC[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
     break;
 
   case kCutClusterITS:
-    fhNBinsClusterITS=nbins;
+    fhNBinsClusterITS=nbins+1;
     fhBinLimClusterITS=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimClusterITS[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
     break;
 
   case kCutChi2TPC:
-    fhNBinsChi2TPC=nbins;
+    fhNBinsChi2TPC=nbins+1;
     fhBinLimChi2TPC=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimChi2TPC[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
     break;
 
   case kCutChi2ITS:
-    fhNBinsChi2ITS=nbins;
+    fhNBinsChi2ITS=nbins+1;
     fhBinLimChi2ITS=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimChi2ITS[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
     break;
 
   case kCutRefitTPC:
-    fhNBinsRefitTPC=nbins;
+    fhNBinsRefitTPC=nbins+1;
     fhBinLimRefitTPC=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimRefitTPC[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
     break;
 
   case kCutRefitITS:
-    fhNBinsRefitITS=nbins;
+    fhNBinsRefitITS=nbins+1;
     fhBinLimRefitITS=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimRefitITS[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
     break;
 
   case kCutCovElement11:
-    fhNBinsCovariance11=nbins;
+    fhNBinsCovariance11=nbins+1;
     fhBinLimCovariance11=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimCovariance11[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
     break;
 
   case kCutCovElement22:
-    fhNBinsCovariance22=nbins;
+    fhNBinsCovariance22=nbins+1;
     fhBinLimCovariance22=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimCovariance22[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
     break;
 
   case kCutCovElement33:
-    fhNBinsCovariance33=nbins;
+    fhNBinsCovariance33=nbins+1;
     fhBinLimCovariance33=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimCovariance33[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
     break;
 
   case kCutCovElement44:
-    fhNBinsCovariance44=nbins;
+    fhNBinsCovariance44=nbins+1;
     fhBinLimCovariance44=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimCovariance44[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
     break;
 
   case kCutCovElement55:
-    fhNBinsCovariance55=nbins;
+    fhNBinsCovariance55=nbins+1;
     fhBinLimCovariance55=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimCovariance55[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
     break;
@@ -640,17 +640,17 @@ void AliCFTrackQualityCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_t 
     if (i==0) sprintf(str," ");
     else sprintf(str,"_cut");
 
-    fhQA[kCutClusterTPC][i]	= new TH1F(Form("%s_nClustersTPC%s",GetName(),str)     ,"",fhNBinsClusterTPC,fhBinLimClusterTPC);
-    fhQA[kCutClusterITS][i]	= new TH1F(Form("%s_nClustersITS%s",GetName(),str)     ,"",fhNBinsClusterITS,fhBinLimClusterITS);
-    fhQA[kCutChi2TPC][i]	= new TH1F(Form("%s_chi2PerClusterTPC%s",GetName(),str),"",fhNBinsChi2TPC,fhBinLimChi2TPC);
-    fhQA[kCutChi2ITS][i]	= new TH1F(Form("%s_chi2PerClusterITS%s",GetName(),str),"",fhNBinsChi2ITS,fhBinLimChi2ITS);
-    fhQA[kCutRefitTPC][i]	= new TH1F(Form("%s_refitTPC%s",GetName(),str)	   ,"",fhNBinsRefitTPC,fhBinLimRefitTPC);
-    fhQA[kCutRefitITS][i]	= new TH1F(Form("%s_refitITS%s",GetName(),str)	   ,"",fhNBinsRefitITS,fhBinLimRefitITS);
-    fhQA[kCutCovElement11][i]	= new TH1F(Form("%s_covMatrixDiagonal11%s",GetName(),str),"",fhNBinsCovariance11,fhBinLimCovariance11);
-    fhQA[kCutCovElement22][i]	= new TH1F(Form("%s_covMatrixDiagonal22%s",GetName(),str),"",fhNBinsCovariance22,fhBinLimCovariance22);
-    fhQA[kCutCovElement33][i]	= new TH1F(Form("%s_covMatrixDiagonal33%s",GetName(),str),"",fhNBinsCovariance33,fhBinLimCovariance33);
-    fhQA[kCutCovElement44][i]	= new TH1F(Form("%s_covMatrixDiagonal44%s",GetName(),str),"",fhNBinsCovariance44,fhBinLimCovariance44);
-    fhQA[kCutCovElement55][i]	= new TH1F(Form("%s_covMatrixDiagonal55%s",GetName(),str),"",fhNBinsCovariance55,fhBinLimCovariance55);
+    fhQA[kCutClusterTPC][i]	= new TH1F(Form("%s_nClustersTPC%s",GetName(),str)     ,"",fhNBinsClusterTPC-1,fhBinLimClusterTPC);
+    fhQA[kCutClusterITS][i]	= new TH1F(Form("%s_nClustersITS%s",GetName(),str)     ,"",fhNBinsClusterITS-1,fhBinLimClusterITS);
+    fhQA[kCutChi2TPC][i]	= new TH1F(Form("%s_chi2PerClusterTPC%s",GetName(),str),"",fhNBinsChi2TPC-1,fhBinLimChi2TPC);
+    fhQA[kCutChi2ITS][i]	= new TH1F(Form("%s_chi2PerClusterITS%s",GetName(),str),"",fhNBinsChi2ITS-1,fhBinLimChi2ITS);
+    fhQA[kCutRefitTPC][i]	= new TH1F(Form("%s_refitTPC%s",GetName(),str)	   ,"",fhNBinsRefitTPC-1,fhBinLimRefitTPC);
+    fhQA[kCutRefitITS][i]	= new TH1F(Form("%s_refitITS%s",GetName(),str)	   ,"",fhNBinsRefitITS-1,fhBinLimRefitITS);
+    fhQA[kCutCovElement11][i]	= new TH1F(Form("%s_covMatrixDiagonal11%s",GetName(),str),"",fhNBinsCovariance11-1,fhBinLimCovariance11);
+    fhQA[kCutCovElement22][i]	= new TH1F(Form("%s_covMatrixDiagonal22%s",GetName(),str),"",fhNBinsCovariance22-1,fhBinLimCovariance22);
+    fhQA[kCutCovElement33][i]	= new TH1F(Form("%s_covMatrixDiagonal33%s",GetName(),str),"",fhNBinsCovariance33-1,fhBinLimCovariance33);
+    fhQA[kCutCovElement44][i]	= new TH1F(Form("%s_covMatrixDiagonal44%s",GetName(),str),"",fhNBinsCovariance44-1,fhBinLimCovariance44);
+    fhQA[kCutCovElement55][i]	= new TH1F(Form("%s_covMatrixDiagonal55%s",GetName(),str),"",fhNBinsCovariance55-1,fhBinLimCovariance55);
 
     fhQA[kCutClusterTPC][i]	->SetXTitle("n TPC clusters");
     fhQA[kCutClusterITS][i]	->SetXTitle("n ITS clusters");

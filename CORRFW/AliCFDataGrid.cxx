@@ -205,7 +205,6 @@ void AliCFDataGrid::ApplyBGCorrection(const AliCFDataGrid &c)
       
   }
 }
-
 //____________________________________________________________________
 void AliCFDataGrid::Copy(TObject& eff) const
 {

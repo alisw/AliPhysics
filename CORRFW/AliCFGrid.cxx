@@ -41,8 +41,6 @@ ClassImp(AliCFGrid)
 //____________________________________________________________________
 AliCFGrid::AliCFGrid() : 
   AliCFVGrid(),
-  fNunflTot(0),
-  fNovflTot(0),
   fNentriesTot(0),
   fNunfl(0x0),
   fNovfl(0x0),
@@ -54,8 +52,6 @@ AliCFGrid::AliCFGrid() :
 //____________________________________________________________________
 AliCFGrid::AliCFGrid(const Char_t* name, const Char_t* title) : 
   AliCFVGrid(name,title),
-  fNunflTot(0),
-  fNovflTot(0),
   fNentriesTot(0),
   fNunfl(0x0),
   fNovfl(0x0),
@@ -68,8 +64,6 @@ AliCFGrid::AliCFGrid(const Char_t* name, const Char_t* title) :
 //____________________________________________________________________
 AliCFGrid::AliCFGrid(const Char_t* name, const Char_t* title, const Int_t nVarIn, const Int_t * nBinIn, const Double_t *binLimitsIn) :  
   AliCFVGrid(name,title,nVarIn,nBinIn,binLimitsIn),
-  fNunflTot(0),
-  fNovflTot(0),
   fNentriesTot(0),
   fNunfl(0x0),
   fNovfl(0x0),
@@ -86,8 +80,6 @@ AliCFGrid::AliCFGrid(const Char_t* name, const Char_t* title, const Int_t nVarIn
 
 
   //Initialization
-  fNunflTot =0;
-  fNovflTot =0;
   fNentriesTot =0;
   for(Int_t j=0;j<fNVar;j++){
     fNunfl[j] =0;
@@ -106,8 +98,6 @@ AliCFGrid::AliCFGrid(const Char_t* name, const Char_t* title, const Int_t nVarIn
 //____________________________________________________________________
 AliCFGrid::AliCFGrid(const AliCFGrid& c) : 
   AliCFVGrid(c),
-  fNunflTot(0),
-  fNovflTot(0),
   fNentriesTot(0),
   fNunfl(0x0),
   fNovfl(0x0),
@@ -462,8 +452,6 @@ void AliCFGrid::Fill(Double_t *var, Double_t weight)
   // Total number of entries, overflows and underflows
 
   fNentriesTot++;
-  if(isunfl)fNunflTot++;
-  if(isovfl)fNovflTot++;
 
   //if not ovfl/unfl, fill the element  
 
@@ -481,25 +469,11 @@ Float_t AliCFGrid::GetOverFlows( Int_t ivar) const {
   return fNovfl[ivar];
 } 
 //____________________________________________________________________
-Float_t AliCFGrid::GetOverFlows() const {
-  //
-  // Get overflows 
-  //
-  return fNovflTot;
-} 
-//____________________________________________________________________
 Float_t AliCFGrid::GetUnderFlows( Int_t ivar) const {
   //
   // Get overflows in variable var 
   //
   return fNunfl[ivar];
-} 
-//____________________________________________________________________
-Float_t AliCFGrid::GetUnderFlows() const {
-  //
-  // Get overflows 
-  //
-  return fNunflTot;
 } 
 //____________________________________________________________________
 Float_t AliCFGrid::GetEntries( ) const {
@@ -863,11 +837,9 @@ void AliCFGrid::Add(AliCFVGrid* aGrid, Double_t c)
   //Add entries, overflows and underflows
 
   fNentriesTot+= c*aGrid->GetEntries();
-  fNunflTot+= c*aGrid->GetUnderFlows();
-  fNovflTot+= c*aGrid->GetOverFlows();
   for(Int_t j=0;j<fNVar;j++){
     fNunfl[j]+= c*aGrid->GetUnderFlows(j);
-    fNovfl[j]+= c*aGrid->GetUnderFlows(j);
+    fNovfl[j]+= c*aGrid->GetOverFlows(j);
   }
 }
 //____________________________________________________________________
@@ -904,11 +876,9 @@ void AliCFGrid::Add(AliCFVGrid* aGrid1, AliCFVGrid* aGrid2, Double_t c1,Double_t
   //Add entries, overflows and underflows
 
   fNentriesTot= c1*aGrid1->GetEntries()+c2*aGrid2->GetEntries();
-  fNunflTot= c1*aGrid1->GetUnderFlows()+c2*aGrid2->GetUnderFlows();
-  fNovflTot= c1*aGrid1->GetOverFlows()+c2*aGrid2->GetOverFlows();
   for(Int_t j=0;j<fNVar;j++){
     fNunfl[j]= c1*aGrid1->GetUnderFlows(j)+c2*aGrid2->GetUnderFlows(j);
-    fNovfl[j]= c1*aGrid1->GetUnderFlows(j)+c2*aGrid2->GetUnderFlows(j);
+    fNovfl[j]= c1*aGrid1->GetOverFlows(j)+c2*aGrid2->GetOverFlows(j);
   }
 }
 //____________________________________________________________________
@@ -945,11 +915,9 @@ void AliCFGrid::Multiply(AliCFVGrid* aGrid, Double_t c)
   //Set entries to the number of bins, preserve original overflows and underflows
 
   fNentriesTot=fNDim;
-  fNunflTot=GetUnderFlows();
-  fNovflTot=GetOverFlows();
   for(Int_t j=0;j<fNVar;j++){
     fNunfl[j]= GetUnderFlows(j);
-    fNovfl[j]= GetUnderFlows(j);
+    fNovfl[j]= GetOverFlows(j);
   }
 }
 //____________________________________________________________________
@@ -985,11 +953,9 @@ void AliCFGrid::Multiply(AliCFVGrid* aGrid1, AliCFVGrid* aGrid2, Double_t c1, Do
   //Set entries to the number of bins, preserve original overflows and underflows
 
   fNentriesTot=fNDim;
-  fNunflTot=GetUnderFlows();
-  fNovflTot=GetOverFlows();
   for(Int_t j=0;j<fNVar;j++){
     fNunfl[j]= GetUnderFlows(j);
-    fNovfl[j]= GetUnderFlows(j);
+    fNovfl[j]= GetOverFlows(j);
   }
 }
 //____________________________________________________________________
@@ -1029,11 +995,9 @@ void AliCFGrid::Divide(AliCFVGrid* aGrid, Double_t c)
   //Set entries to the number of bins, preserve original overflows and underflows
 
   fNentriesTot=fNDim;
-  fNunflTot=GetUnderFlows();
-  fNovflTot=GetOverFlows();
   for(Int_t j=0;j<fNVar;j++){
     fNunfl[j]= GetUnderFlows(j);
-    fNovfl[j]= GetUnderFlows(j);
+    fNovfl[j]= GetOverFlows(j);
   }
 }
 //____________________________________________________________________
@@ -1086,11 +1050,9 @@ void AliCFGrid::Divide(AliCFVGrid* aGrid1, AliCFVGrid* aGrid2, Double_t c1,Doubl
   //Set entries to the number of bins, preserve original overflows and underflows
 
   fNentriesTot=fNDim;
-  fNunflTot=GetUnderFlows();
-  fNovflTot=GetOverFlows();
   for(Int_t j=0;j<fNVar;j++){
     fNunfl[j]= GetUnderFlows(j);
-    fNovfl[j]= GetUnderFlows(j);
+    fNovfl[j]= GetOverFlows(j);
   }
 }
 //____________________________________________________________________
@@ -1117,8 +1079,6 @@ void AliCFGrid::Copy(TObject& c) const
   //
   AliCFGrid& target = (AliCFGrid &) c;
 
-  target.fNunflTot = fNunflTot;
-  target.fNovflTot = fNovflTot;
   target.fNentriesTot = fNentriesTot;
   if (fNunfl)
     target.fNunfl = fNunfl;

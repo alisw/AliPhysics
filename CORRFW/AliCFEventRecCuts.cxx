@@ -394,37 +394,37 @@ void AliCFEventRecCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_t *bin
 
   switch(index){
   case kNTracks:
-    fhNBinsNTracks=nbins;
+    fhNBinsNTracks=nbins+1;
     fhBinLimNTracks=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimNTracks[i]=bins[i];
     break;
   case kVtxPosX:
-    fhNBinsVtxPosX=nbins;
+    fhNBinsVtxPosX=nbins+1;
     fhBinLimVtxPosX=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimVtxPosX[i]=bins[i];
     break;
   case kVtxPosY:
-    fhNBinsVtxPosY=nbins;
+    fhNBinsVtxPosY=nbins+1;
     fhBinLimVtxPosY=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimVtxPosY[i]=bins[i];
     break;
   case kVtxPosZ:
-    fhNBinsVtxPosZ=nbins;
+    fhNBinsVtxPosZ=nbins+1;
     fhBinLimVtxPosZ=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimVtxPosZ[i]=bins[i];
     break;
   case kVtxResX:
-    fhNBinsVtxResX=nbins;
+    fhNBinsVtxResX=nbins+1;
     fhBinLimVtxResX=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimVtxResX[i]=bins[i];
     break;
   case kVtxResY:
-    fhNBinsVtxResY=nbins;
+    fhNBinsVtxResY=nbins+1;
     fhBinLimVtxResY=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimVtxResY[i]=bins[i];
     break;
   case kVtxResZ:
-    fhNBinsVtxResZ=nbins;
+    fhNBinsVtxResZ=nbins+1;
     fhBinLimVtxResZ=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimVtxResZ[i]=bins[i];
     break;
@@ -441,37 +441,37 @@ void AliCFEventRecCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_t xmin
   //
   switch(index){
   case kNTracks:
-    fhNBinsNTracks=nbins;
+    fhNBinsNTracks=nbins+1;
     fhBinLimNTracks=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimNTracks[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
     break;
   case kVtxPosX:
-    fhNBinsVtxPosX=nbins;
+    fhNBinsVtxPosX=nbins+1;
     fhBinLimVtxPosX=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimVtxPosX[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
     break;
   case kVtxPosY:
-    fhNBinsVtxPosY=nbins;
+    fhNBinsVtxPosY=nbins+1;
     fhBinLimVtxPosY=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimVtxPosY[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
     break;
   case kVtxPosZ:
-    fhNBinsVtxPosZ=nbins;
+    fhNBinsVtxPosZ=nbins+1;
     fhBinLimVtxPosZ=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimVtxPosZ[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
     break;
   case kVtxResX:
-    fhNBinsVtxResX=nbins;
+    fhNBinsVtxResX=nbins+1;
     fhBinLimVtxResX=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimVtxResX[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
     break;
   case kVtxResY:
-    fhNBinsVtxResY=nbins;
+    fhNBinsVtxResY=nbins+1;
     fhBinLimVtxResY=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimVtxResY[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
     break;
   case kVtxResZ:
-    fhNBinsVtxResZ=nbins;
+    fhNBinsVtxResZ=nbins+1;
     fhBinLimVtxResZ=new Double_t[nbins+1];
     for(Int_t i=0;i<nbins+1;i++)fhBinLimVtxResZ[i]=xmin+i*(xmax-xmin)/Double_t(nbins);
     break;
@@ -497,14 +497,14 @@ void AliCFEventRecCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_t xmin
     if (i==0) sprintf(str," ");
     else sprintf(str,"_cut");
 
-    fhQA[kNTracks][i]	= new  TH1F(Form("%s_NTracks%s",GetName(),str),	                "",fhNBinsNTracks,fhBinLimNTracks);
-    fhQA[kVtxPosX][i]	= new  TH1F(Form("%s_Vtx_Pos_X%s",GetName(),str),		"",fhNBinsVtxPosX,fhBinLimVtxPosX);
-    fhQA[kVtxPosY][i]	= new  TH1F(Form("%s_Vtx_Pos_Y%s",GetName(),str),		"",fhNBinsVtxPosY,fhBinLimVtxPosY);
-    fhQA[kVtxPosZ][i]	= new  TH1F(Form("%s_Vtx_Pos_Z%s",GetName(),str),		"",fhNBinsVtxPosZ,fhBinLimVtxPosZ);
+    fhQA[kNTracks][i]	= new  TH1F(Form("%s_NTracks%s",GetName(),str),	                "",fhNBinsNTracks-1,fhBinLimNTracks);
+    fhQA[kVtxPosX][i]	= new  TH1F(Form("%s_Vtx_Pos_X%s",GetName(),str),		"",fhNBinsVtxPosX-1,fhBinLimVtxPosX);
+    fhQA[kVtxPosY][i]	= new  TH1F(Form("%s_Vtx_Pos_Y%s",GetName(),str),		"",fhNBinsVtxPosY-1,fhBinLimVtxPosY);
+    fhQA[kVtxPosZ][i]	= new  TH1F(Form("%s_Vtx_Pos_Z%s",GetName(),str),		"",fhNBinsVtxPosZ-1,fhBinLimVtxPosZ);
 
-    fhQA[kVtxResX][i]	= new  TH1F(Form("%s_Vtx_Res_X%s",GetName(),str),		"",fhNBinsVtxResX,fhBinLimVtxResX);
-    fhQA[kVtxResY][i]	= new  TH1F(Form("%s_Vtx_Res_Y%s",GetName(),str),		"",fhNBinsVtxResY,fhBinLimVtxResY);
-    fhQA[kVtxResZ][i]	= new  TH1F(Form("%s_Vtx_Res_Z%s",GetName(),str),		"",fhNBinsVtxResZ,fhBinLimVtxResZ);
+    fhQA[kVtxResX][i]	= new  TH1F(Form("%s_Vtx_Res_X%s",GetName(),str),		"",fhNBinsVtxResX-1,fhBinLimVtxResX);
+    fhQA[kVtxResY][i]	= new  TH1F(Form("%s_Vtx_Res_Y%s",GetName(),str),		"",fhNBinsVtxResY-1,fhBinLimVtxResY);
+    fhQA[kVtxResZ][i]	= new  TH1F(Form("%s_Vtx_Res_Z%s",GetName(),str),		"",fhNBinsVtxResZ-1,fhBinLimVtxResZ);
  
     fhQA[kNTracks][i]	->SetXTitle("Number of ESD tracks");
     fhQA[kVtxPosX][i]	->SetXTitle("Vertex Position X (cm)");
