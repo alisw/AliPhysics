@@ -171,6 +171,7 @@ Bool_t AliTRDtrackV1::CookPID()
     //for (Int_t iSlice = 0; iSlice < AliESDtrack::kNSlice; iSlice++) fdEdxPlane[itrklt][iSlice] = -1.;
 
 		if(fTrackletIndex[itrklt]<0) continue;
+		if(!fTracklet[itrklt].IsOK()) continue;
 		if(!(prob = fTracklet[itrklt].GetProbability())) return kFALSE;
 		
 		Int_t nspec = 0; // quality check of tracklet dEdx
