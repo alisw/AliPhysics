@@ -74,7 +74,7 @@ Int_t ShowITSRecPoints(){
   Float_t xlim[6]={4.5,7.5,16.,26.,40.,45.};
   Float_t zlim[6]={15.,15.,22.,30.,45.,55.};
 
-  TH1F* hlayer=new TH1F("hlayer","",6,0.5,6.5);
+  TH1F* hlayer=new TH1F("hlayer","",6,-0.5,5.5);
   TH1F** hmod=new TH1F*[6];
   TH1F** hxl=new TH1F*[6];
   TH1F** hzl=new TH1F*[6];
