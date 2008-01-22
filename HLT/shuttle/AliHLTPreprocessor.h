@@ -17,6 +17,7 @@
 
 #include "TList.h"
 #include "AliPreprocessor.h"
+#include "AliHLTShuttleInterface.h"
 
 /**
  * @class AliHLTPreprocessor
@@ -33,7 +34,7 @@
  * preprocessors and to make the AliPreprocessor interface methods
  * publicly available.
  */
-class AliHLTPreprocessor : public AliPreprocessor
+class AliHLTPreprocessor : public AliPreprocessor , public AliHLTShuttleInterface
 {
  public:
   /**
@@ -76,60 +77,60 @@ class AliHLTPreprocessor : public AliPreprocessor
   static const char* fgkHLTPreproc; 			// see above
 
   /** Get the run no which has been previously initialized */
-  Int_t GetRun() {return fRun;}
+  Int_t PreprocessorGetRun() {return fRun;}
 
   /** Get the start time no which has been previously initialized */
-  UInt_t GetStartTime() {return fStartTime;}
+  UInt_t PreprocessorGetStartTime() {return fStartTime;}
 
   /** Get the end time no which has been previously initialized */
-  UInt_t GetEndTime() {return fEndTime;}
+  UInt_t PreprocessorGetEndTime() {return fEndTime;}
 
 
   // AliPreprocessor methods made publicly available
   //
-  Bool_t Store(const char* pathLevel2, const char* pathLevel3, TObject* object,
+  Bool_t PreprocessorStore(const char* pathLevel2, const char* pathLevel3, TObject* object,
 	       AliCDBMetaData* metaData, Int_t validityStart = 0, Bool_t validityInfinite = kFALSE) {
     return AliPreprocessor::Store(pathLevel2, pathLevel3, object, metaData, validityStart, validityInfinite);
   }
 
-  Bool_t StoreReferenceData(const char* pathLevel2, const char* pathLevel3, TObject* object,
+  Bool_t PreprocessorStoreReferenceData(const char* pathLevel2, const char* pathLevel3, TObject* object,
 			    AliCDBMetaData* metaData) {
     return AliPreprocessor::StoreReferenceData(pathLevel2, pathLevel3, object, metaData);
   }
 
-  Bool_t StoreReferenceFile(const char* localFile, const char* gridFileName) {
+  Bool_t PreprocessorStoreReferenceFile(const char* localFile, const char* gridFileName) {
     return AliPreprocessor::StoreReferenceFile(localFile, gridFileName);
   }
 
-  Bool_t StoreRunMetadataFile(const char* localFile, const char* gridFileName) {
+  Bool_t PreprocessorStoreRunMetadataFile(const char* localFile, const char* gridFileName) {
     return AliPreprocessor::StoreRunMetadataFile(localFile, gridFileName);
   }
     
-  const char* GetFile(Int_t system, const char* id, const char* source) {
+  const char* PreprocessorGetFile(Int_t system, const char* id, const char* source) {
     return AliPreprocessor::GetFile(system, id, source);
   }
 
-  TList* GetFileSources(Int_t system, const char* id = 0) {
+  TList* PreprocessorGetFileSources(Int_t system, const char* id = 0) {
     return AliPreprocessor::GetFileSources(system, id);
   }
 
-  TList* GetFileIDs(Int_t system, const char* source) {
+  TList* PreprocessorGetFileIDs(Int_t system, const char* source) {
     return AliPreprocessor::GetFileIDs(system, source);
   }
 
-  const char* GetRunParameter(const char* param) {
+  const char* PreprocessorGetRunParameter(const char* param) {
     return AliPreprocessor::GetRunParameter(param);
   }
 
-  AliCDBEntry* GetFromOCDB(const char* pathLevel2, const char* pathLevel3) {
+  AliCDBEntry* PreprocessorGetFromOCDB(const char* pathLevel2, const char* pathLevel3) {
     return AliPreprocessor::GetFromOCDB(pathLevel2, pathLevel3);
   }
 
-  const char* GetRunType() {
+  const char* PreprocessorGetRunType() {
     return AliPreprocessor::GetRunType();
   }
 
-  void Log(const char* message) {
+  void PreprocessorLog(const char* message) {
     AliPreprocessor::Log(message);
   }
 

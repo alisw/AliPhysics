@@ -90,7 +90,7 @@ void AliHLTPreprocessor::Initialize(Int_t run, UInt_t startTime,
   while (pAgent) {
     AliHLTModulePreprocessor* pProc=pAgent->GetPreprocessor();
     if (pProc) {
-      pProc->SetContainer(this);
+      pProc->SetShuttleInterface(this);
       pProc->Initialize(run, startTime, endTime);
       fProcessors.Add(pProc);
       TString msg;

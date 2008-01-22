@@ -26,6 +26,7 @@ class AliHLTPreprocessor;
 class TMap;
 class AliCDBMetaData;
 class AliCDBEntry;
+class AliHLTShuttleInterface;
 
 /**
  * @class AliHLTModulePreprocessor
@@ -49,7 +50,7 @@ public:
   /**
    * Set the container class which is the gateway to the shuttle.
    */
-  void SetContainer(AliHLTPreprocessor* pContainer);
+  void SetShuttleInterface(AliHLTShuttleInterface* pInterface);
 
   /**
    * Initialize the Preprocessor.
@@ -82,7 +83,7 @@ public:
 
 protected:
   // the AliPreprocessor interface, all functions redirected via the
-  // AliHLTPreprocessor
+  // AliHLTShuttleInterface to the AliHLTPreprocessor
   Bool_t Store(const char* pathLevel2, const char* pathLevel3, TObject* object,
 	       AliCDBMetaData* metaData, Int_t validityStart = 0, Bool_t validityInfinite = kFALSE);
   Bool_t StoreReferenceData(const char* pathLevel2, const char* pathLevel3, TObject* object,
@@ -111,13 +112,9 @@ private:
   /** assignment operator prohibited */
   AliHLTModulePreprocessor& operator=(const AliHLTModulePreprocessor& rhs);
 
-  /** the contaner class which is the gateway to the shuttle */
-  AliHLTPreprocessor* fpContainer;                        //! transient
+  /** the interface class which is the gateway to the shuttle */
+  AliHLTShuttleInterface* fpInterface;                             //! transient
 
   ClassDef(AliHLTModulePreprocessor, 0);
 };
-
-
 #endif
-
-

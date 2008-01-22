@@ -21,7 +21,6 @@
  * @file   AliHLTSamplePreprocessor.cxx
  * @author Kenneth Aamodt, Sebastian Bablok
  * @date   2007-12-06
- * @update 2008-01-22 formerly AliHLTPreprocessor splitted into modules
  * @brief  HLT Preprocessor plugin for the AliHLTComp library
  */
 

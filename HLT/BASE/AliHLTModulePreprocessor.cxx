@@ -25,13 +25,13 @@
 
 #include <cassert>
 #include "AliHLTModulePreprocessor.h"
-#include "AliHLTPreprocessor.h"
+#include "AliHLTShuttleInterface.h"
 
 ClassImp(AliHLTModulePreprocessor)
 
 AliHLTModulePreprocessor::AliHLTModulePreprocessor() 
   :
-  fpContainer(NULL)
+  fpInterface(NULL)
 {
   // see header file for class documentation
   // or
@@ -45,37 +45,37 @@ AliHLTModulePreprocessor::~AliHLTModulePreprocessor()
   // see header file for function documentation
 }
 
-void AliHLTModulePreprocessor::SetContainer(AliHLTPreprocessor* pContainer)
+void AliHLTModulePreprocessor::SetShuttleInterface(AliHLTShuttleInterface* pInterface)
 {
-  assert(fpContainer==NULL || fpContainer==pContainer || pContainer==NULL);
-  fpContainer=pContainer;
+  assert(fpInterface==NULL || fpInterface==pInterface || pInterface==NULL);
+  fpInterface=pInterface;
 }
 
 Int_t AliHLTModulePreprocessor::GetRun()
 {
   // see header file for function documentation
 
-  assert(fpContainer);
-  if (!fpContainer) return 0;
-  return fpContainer->GetRun();
+  assert(fpInterface);
+  if (!fpInterface) return 0;
+  return fpInterface->PreprocessorGetRun();
 }
 
 UInt_t AliHLTModulePreprocessor::GetStartTime()
 {
   // see header file for function documentation
 
-  assert(fpContainer);
-  if (!fpContainer) return 0;
-  return fpContainer->GetStartTime();
+  assert(fpInterface);
+  if (!fpInterface) return 0;
+  return fpInterface->PreprocessorGetStartTime();
 }
 
 UInt_t AliHLTModulePreprocessor::GetEndTime()
 {
   // see header file for function documentation
 
-  assert(fpContainer);
-  if (!fpContainer) return 0;
-  return fpContainer->GetEndTime();
+  assert(fpInterface);
+  if (!fpInterface) return 0;
+  return fpInterface->PreprocessorGetEndTime();
 }
 
 Bool_t AliHLTModulePreprocessor::Store(const char* pathLevel2, const char* pathLevel3, TObject* object,
@@ -83,9 +83,9 @@ Bool_t AliHLTModulePreprocessor::Store(const char* pathLevel2, const char* pathL
 {
   // see header file for function documentation
 
-  assert(fpContainer);
-  if (!fpContainer) return 0;
-  return fpContainer->Store(pathLevel2, pathLevel3, object, metaData, validityStart, validityInfinite);
+  assert(fpInterface);
+  if (!fpInterface) return 0;
+  return fpInterface->PreprocessorStore(pathLevel2, pathLevel3, object, metaData, validityStart, validityInfinite);
 }
 
 Bool_t AliHLTModulePreprocessor::StoreReferenceData(const char* pathLevel2, const char* pathLevel3, TObject* object,
@@ -93,88 +93,88 @@ Bool_t AliHLTModulePreprocessor::StoreReferenceData(const char* pathLevel2, cons
 {
   // see header file for function documentation
 
-  assert(fpContainer);
-  if (!fpContainer) return 0;
-  return fpContainer->StoreReferenceData(pathLevel2, pathLevel3, object, metaData);
+  assert(fpInterface);
+  if (!fpInterface) return 0;
+  return fpInterface->PreprocessorStoreReferenceData(pathLevel2, pathLevel3, object, metaData);
 }
 
 Bool_t AliHLTModulePreprocessor::StoreReferenceFile(const char* localFile, const char* gridFileName)
 {
   // see header file for function documentation
 
-  assert(fpContainer);
-  if (!fpContainer) return 0;
-  return fpContainer->StoreReferenceFile(localFile, gridFileName);
+  assert(fpInterface);
+  if (!fpInterface) return 0;
+  return fpInterface->PreprocessorStoreReferenceFile(localFile, gridFileName);
 }
 
 Bool_t AliHLTModulePreprocessor::StoreRunMetadataFile(const char* localFile, const char* gridFileName)
 {
   // see header file for function documentation
 
-  assert(fpContainer);
-  if (!fpContainer) return 0;
-  return fpContainer->StoreRunMetadataFile(localFile, gridFileName);
+  assert(fpInterface);
+  if (!fpInterface) return 0;
+  return fpInterface->PreprocessorStoreRunMetadataFile(localFile, gridFileName);
 }
     
 const char* AliHLTModulePreprocessor::GetFile(Int_t system, const char* id, const char* source)
 {
   // see header file for function documentation
 
-  assert(fpContainer);
-  if (!fpContainer) return 0;
-  return fpContainer->GetFile(system, id, source);
+  assert(fpInterface);
+  if (!fpInterface) return 0;
+  return fpInterface->PreprocessorGetFile(system, id, source);
 }
 
 TList* AliHLTModulePreprocessor::GetFileSources(Int_t system, const char* id)
 {
   // see header file for function documentation
 
-  assert(fpContainer);
-  if (!fpContainer) return 0;
-  return fpContainer->GetFileSources(system, id);
+  assert(fpInterface);
+  if (!fpInterface) return 0;
+  return fpInterface->PreprocessorGetFileSources(system, id);
 }
 
 TList* AliHLTModulePreprocessor::GetFileIDs(Int_t system, const char* source)
 {
   // see header file for function documentation
 
-  assert(fpContainer);
-  if (!fpContainer) return 0;
-  return fpContainer->GetFileIDs(system, source);
+  assert(fpInterface);
+  if (!fpInterface) return 0;
+  return fpInterface->PreprocessorGetFileIDs(system, source);
 }
 
 const char* AliHLTModulePreprocessor::GetRunParameter(const char* param)
 {
   // see header file for function documentation
 
-  assert(fpContainer);
-  if (!fpContainer) return 0;
-  return fpContainer->GetRunParameter(param);
+  assert(fpInterface);
+  if (!fpInterface) return 0;
+  return fpInterface->PreprocessorGetRunParameter(param);
 }
 
 AliCDBEntry* AliHLTModulePreprocessor::GetFromOCDB(const char* pathLevel2, const char* pathLevel3)
 {
   // see header file for function documentation
 
-  assert(fpContainer);
-  if (!fpContainer) return 0;
-  return fpContainer->GetFromOCDB(pathLevel2, pathLevel3);
+  assert(fpInterface);
+  if (!fpInterface) return 0;
+  return fpInterface->PreprocessorGetFromOCDB(pathLevel2, pathLevel3);
 }
 
 const char* AliHLTModulePreprocessor::GetRunType()
 {
   // see header file for function documentation
 
-  assert(fpContainer);
-  if (!fpContainer) return 0;
-  return fpContainer->GetRunType();
+  assert(fpInterface);
+  if (!fpInterface) return 0;
+  return fpInterface->PreprocessorGetRunType();
 }
 
 void AliHLTModulePreprocessor::Log(const char* message)
 {
   // see header file for function documentation
 
-  assert(fpContainer);
-  if (!fpContainer) return;
-  fpContainer->Log(message);
+  assert(fpInterface);
+  if (!fpInterface) return;
+  fpInterface->PreprocessorLog(message);
 }

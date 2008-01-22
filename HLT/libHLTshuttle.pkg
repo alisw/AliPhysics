@@ -5,8 +5,7 @@ include $(MODDIR)/hlt.conf
 
 LIBHLTSHUTTLE_VERSION := 0
 
-CLASS_HDRS:=  	AliHLTPreprocessor.h \
-		AliHLTModulePreprocessor.h
+CLASS_HDRS:=  	AliHLTPreprocessor.h
 
 MODULE_SRCS:= 	$(CLASS_HDRS:.h=.cxx)
 
