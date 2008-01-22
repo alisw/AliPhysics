@@ -91,7 +91,7 @@ void AliQADataMakerRec::EndOfCycle(AliQA::TASKINDEX task)
 	
 	EndOfDetectorCycle(task, list) ; 
 	TDirectory * subDir = fDetectorDir->GetDirectory(AliQA::GetTaskName(task)) ; 
-	if ( subdir ) {
+	if ( subDir ) {
 		subDir->cd() ; 
 		list->Write() ;
 	}
