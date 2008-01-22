@@ -11,7 +11,7 @@
 #define ALIEVE_TRDLoaderManager_H
 
 ////////////////////////////////////////////////////////////////////////
-//                                                                      
+//
 // - ALIEVE implementation -
 // Loader manager for the TRD detector
 //    - AliEveTRDLoaderManager - manager of TRD data loaders (simulation + measured)
@@ -70,7 +70,7 @@ private:
   TGComboBox	*fSelector;
   TGTextButton	*fAdd, *fRemoveButton;
   TGGroupFrame 	*fGroupFrame;
-  TClonesArray	*fRemove;              
+  TClonesArray	*fRemove;
 
   ClassDef(AliEveTRDLoaderManagerEditor, 1); // Editor for AliEveTRDLoaderManager
 };

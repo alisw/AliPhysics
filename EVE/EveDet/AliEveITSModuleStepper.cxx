@@ -41,6 +41,7 @@ ClassImp(AliEveITSModuleStepper)
 AliEveITSModuleStepper::AliEveITSModuleStepper(AliEveITSDigitsInfo* di) :
   TEveElementList("ITS 2DStore", "AliEveITSModuleStepper", kTRUE),
 
+  fIDs(),
   fPosition(0),
 
   fDigitsInfo(di),

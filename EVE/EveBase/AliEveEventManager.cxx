@@ -43,7 +43,7 @@ ClassImp(AliEveEventManager)
 AliEveEventManager* gEvent = 0;
 
 Bool_t AliEveEventManager::fgAssertRunLoader = kFALSE;
-Bool_t AliEveEventManager::fgAssertESDTree   = kFALSE;
+Bool_t AliEveEventManager::fgAssertESD       = kFALSE;
 
 TString  AliEveEventManager::fgCdbUri("local://$ALICE_ROOT");
 
@@ -53,20 +53,24 @@ AliMagF* AliEveEventManager::fgMagField = 0;
 AliEveEventManager::AliEveEventManager() :
   TEveEventManager(),
 
-  fPath (), fEventId   (0),
-  fRunLoader (0),
-  fESDFile   (0), fESDTree (0), fESD (0),
-  fESDfriend (0), fESDfriendExists(kFALSE)
-{}
-
-AliEveEventManager::AliEveEventManager(TString path, Int_t ev) :
-  TEveEventManager("AliEVE AliEveEventManager"),
-
-  fPath (path), fEventId(-1),
+  fPath       (), fEventId (0),
   fRunLoader (0),
   fESDFile   (0), fESDTree (0), fESD (0),
   fESDfriend (0), fESDfriendExists(kFALSE)
 {
+  // Default constructor.
+}
+
+AliEveEventManager::AliEveEventManager(TString path, Int_t ev) :
+  TEveEventManager("AliEVE AliEveEventManager"),
+
+  fPath   (path), fEventId(-1),
+  fRunLoader (0),
+  fESDFile   (0), fESDTree (0), fESD (0),
+  fESDfriend (0), fESDfriendExists(kFALSE)
+{
+  // Constructor with event-directory URL and event-id.
+
   Open();
   if (ev >= 0) GotoEvent(ev);
 }
@@ -75,6 +79,12 @@ AliEveEventManager::AliEveEventManager(TString path, Int_t ev) :
 
 void AliEveEventManager::Open()
 {
+  // Open event-data from URL specified in fPath.
+  // Attempts to create AliRunLoader() and to open ESD with ESDfriends.
+  // Warning is reported if run-loader or ESD is not found.
+  // Global data-members fgAssertRunLoader and fgAssertESD can be set
+  // to throw exceptions instead.
+
   static const TEveException eH("AliEveEventManager::Open ");
 
   gSystem->ExpandPathName(fPath);
@@ -164,7 +174,7 @@ void AliEveEventManager::Open()
   }
   if (fESDTree == 0)
   {
-    if (fgAssertESDTree)
+    if (fgAssertESD)
     {
       throw(eH + "ESD not initialized. Its precence was requested.");
     } else {
@@ -243,9 +253,8 @@ void AliEveEventManager::Close()
 
 
 /******************************************************************************/
+// Static convenience functions, mainly used from macros.
 /******************************************************************************/
-
-// Static convenience functions.
 
 AliRunLoader* AliEveEventManager::AssertRunLoader()
 {

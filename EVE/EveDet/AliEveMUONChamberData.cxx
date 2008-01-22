@@ -39,10 +39,10 @@ AliMUONGeometryTransformer* AliEveMUONChamberData::fgTransformer = 0;
 //______________________________________________________________________________
 AliEveMUONChamberData::AliEveMUONChamberData(Int_t chamber) :
   TObject(),
-  fChamberID(0),           
-  fNDetElem(0),            
-  fNDigits(0),             
-  fNClusters(0),           
+  fChamberID(0),
+  fNDetElem(0),
+  fNDigits(0),
+  fNClusters(0),
   fNHits(0)
 {
   //

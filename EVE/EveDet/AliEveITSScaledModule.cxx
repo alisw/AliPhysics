@@ -58,7 +58,8 @@ void AliEveDigitScaleInfo::StatTypeChanged(Int_t t)
 //______________________________________________________________________________
 // ScaledDigit
 //
-ScaledDigit::ScaledDigit():
+
+AliEveITSScaledModule::ScaledDigit::ScaledDigit() :
   TObject(),
   N(0),
   sum(0), sqr_sum(0),
@@ -66,7 +67,7 @@ ScaledDigit::ScaledDigit():
 {
 }
 
-ScaledDigit::ScaledDigit(Int_t di, Int_t dj):
+AliEveITSScaledModule::ScaledDigit::ScaledDigit(Int_t di, Int_t dj) :
   TObject(),
   N(0),
   sum(0), sqr_sum(0),
@@ -74,7 +75,7 @@ ScaledDigit::ScaledDigit(Int_t di, Int_t dj):
 {
 }
 
-void ScaledDigit::Dump() const
+void AliEveITSScaledModule::ScaledDigit::Dump() const
 {
   printf("N %d, sum %f, sqr_sum %f",N, sum, sqr_sum);
 }
@@ -87,6 +88,7 @@ ClassImp(AliEveITSScaledModule)
 
 AliEveITSScaledModule::AliEveITSScaledModule(Int_t gid, AliEveITSDigitsInfo* info, AliEveDigitScaleInfo* si):
   AliEveITSModule("AliEveITSScaledModule", "AliEveITSScaledModule"),
+  fDigitsMap(),
   fNx(-1),
   fNz(-1),
   fNCx(-1),

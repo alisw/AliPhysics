@@ -30,7 +30,7 @@ class AliEveMUONChamberGL : public TGLObject
   void DrawQuads(TGLRnrCtx& rnrCtx) const;
   void DrawPoints() const;
 
-  AliEveMUONChamber*             fChamber; // fModel dynamic-casted to AliEveMUONChamberGL
+  AliEveMUONChamber       *fChamber; // Model object.
   TEveQuadSetGL            fQS1;
   TEveQuadSetGL            fQS2;
 

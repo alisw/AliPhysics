@@ -56,21 +56,6 @@ public:
 // ScaledDigit
 /******************************************************************************/
 
-class ScaledDigit : public TObject
-{
-public:
-  Int_t N;
-  Float_t sum;
-  Float_t sqr_sum;
-  Int_t min_i,min_j;
-  Int_t max_i,max_j;
-
-  ScaledDigit();
-  ScaledDigit(Int_t di, Int_t dj);
-
-  virtual void Dump() const;
-};
-
 /******************************************************************************/
 // AliEveITSScaledModule
 /******************************************************************************/
@@ -78,6 +63,23 @@ public:
 class AliEveITSScaledModule : public AliEveITSModule
 {
   friend class ITSSDSubEditor;
+
+public:
+  struct ScaledDigit : public TObject
+  {
+  public:
+    Int_t N;
+    Float_t sum;
+    Float_t sqr_sum;
+    Int_t min_i,min_j;
+    Int_t max_i,max_j;
+
+    ScaledDigit();
+    ScaledDigit(Int_t di, Int_t dj);
+
+    void Dump() const;
+  };
+
 private:
   std::map<Int_t, ScaledDigit> fDigitsMap;
 
@@ -85,7 +87,7 @@ private:
   AliEveITSScaledModule& operator=(const AliEveITSScaledModule&); // Not implemented
 
 protected:
-  Int_t       fNx;  //  per module
+  Int_t       fNx;   // per module
   Int_t       fNz;
 
   Int_t       fNCx;  // per cell
@@ -105,7 +107,7 @@ public:
   void         SyncPalette();
 
   void         GetScaleData(Int_t& cnx, Int_t& cnz, Int_t& total);
-  AliEveDigitScaleInfo*  GetScaleInfo(){ return fScaleInfo; }
+  AliEveDigitScaleInfo*  GetScaleInfo() { return fScaleInfo; }
 
   ClassDef(AliEveITSScaledModule, 1);
 }; // endclass AliEveITSScaledModule

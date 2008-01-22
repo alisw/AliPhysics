@@ -64,7 +64,7 @@ AliEveTRDModuleEditor::AliEveTRDModuleEditor(const TGWindow* p, Int_t width, Int
   fThresValue(0),
   fDisplayClusters(0),
   fClustersColor(0),
-  fDisplayTracks(0)                               
+  fDisplayTracks(0)
 {
   MakeTitle("TRD Detector");
 

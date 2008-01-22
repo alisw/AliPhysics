@@ -30,27 +30,27 @@ private:
   AliEveEventManager& operator=(const AliEveEventManager&); // Not implemented
 
 protected:
-  TString       fPath;
-  Int_t         fEventId;
+  TString       fPath;			// URL to event-data.
+  Int_t         fEventId;		// Id of current event.
 
-  AliRunLoader* fRunLoader;
+  AliRunLoader* fRunLoader;		// Run loader.
 
-  TFile*        fESDFile;
-  TTree*        fESDTree;
-  AliESDEvent*  fESD;
-  AliESDfriend* fESDfriend;
-  Bool_t        fESDfriendExists;
+  TFile*        fESDFile;		// ESD file.
+  TTree*        fESDTree;		// ESD tree.
+  AliESDEvent*  fESD;			// ESDEvent object.
+  AliESDfriend* fESDfriend;		// ESDfriend object.
+  Bool_t        fESDfriendExists;	// Flag specifying if ESDfriend was found during opening of the event-data.
 
-  static TString  fgCdbUri;
-  static Bool_t   fgAssertRunLoader;
-  static Bool_t   fgAssertESDTree;
+  static TString  fgCdbUri;		// Global URI to CDB.
+  static Bool_t   fgAssertRunLoader;	// Global flag specifying if AliRunLoader must be asserted during opening of the event-data.
+  static Bool_t   fgAssertESD;		// Global flag specifying if ESDEvent must be asserted during opening of the event-data.
 
-  static AliMagF* fgMagField;
+  static AliMagF* fgMagField;		// Global pointer to magneti field.
 
 public:
   static void SetCdbUri(const Text_t* cdb) { if (cdb) fgCdbUri = cdb; }
   static void SetAssertElements(Bool_t assertRunloader, Bool_t assertEsd)
-  { fgAssertRunLoader = assertRunloader; fgAssertESDTree = assertEsd; }
+  { fgAssertRunLoader = assertRunloader; fgAssertESD = assertEsd; }
 
   AliEveEventManager();
   AliEveEventManager(TString path, Int_t ev=0);

@@ -109,22 +109,24 @@ AliEveTOFSector::AliEveTOFSector(TGeoManager *localGeoManager,
   InitModule();
 
 }
+
 /* ************************************************************************ */
 
-AliEveTOFSector::AliEveTOFSector(TGeoManager *localGeoManager,
-		     Int_t nSector,
-		     TTree *tofTree)
-  :
-  TEveQuadSet(Form("Sector%i",nSector)),
+AliEveTOFSector::AliEveTOFSector(TGeoManager* localGeoManager,
+				 Int_t nSector, TTree *tofTree) :
+  TEveQuadSet(Form("Sector%i", nSector)),
   fTOFgeometry(new AliTOFGeometry()),
   fTOFarray(0x0),
   fTOFtree(tofTree),
   fSector(nSector),
   fDx(0), fDy(0), fDz(0),
   fAutoTrans (kTRUE),
-  //fPlateFlag0(kTRUE), fPlateFlag1(kTRUE), fPlateFlag2(kTRUE), fPlateFlag3(kTRUE), fPlateFlag4(kTRUE),
-  fThreshold (5), fMaxVal    (80),
+  fMinTime   (0), fMaxTime (0),
+  fThreshold (5), fMaxVal  (80),
   fSectorID  (nSector),
+  fPlateFlag (0), fPlateFlag0(kFALSE), fPlateFlag1(kFALSE), fPlateFlag2(kFALSE), fPlateFlag3(kTRUE), fPlateFlag4(kFALSE),
+  fFrameColor(4),
+  fRnrFrame  (kFALSE),
   fGeoManager(localGeoManager)
 {
 

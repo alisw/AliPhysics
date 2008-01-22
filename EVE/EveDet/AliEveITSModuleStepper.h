@@ -21,12 +21,11 @@
 class TGLText;
 class TGLAxis;
 
-
 class AliEveITSDigitsInfo;
 class AliEveDigitScaleInfo;
 
 class AliEveITSModuleStepper : public TEveElementList,
-                         public TGLOverlayElement
+			       public TGLOverlayElement
 {
   friend class ITSModuleStepperGL;
 
@@ -42,13 +41,13 @@ private:
   AliEveITSModuleStepper& operator=(const AliEveITSModuleStepper&); // Not implemented
 
 protected:
-  AliEveITSDigitsInfo*          fDigitsInfo;
-  AliEveDigitScaleInfo*         fScaleInfo;
+  AliEveITSDigitsInfo    *fDigitsInfo;
+  AliEveDigitScaleInfo   *fScaleInfo;
   Int_t                   fSubDet;
 
-  TEveGridStepper*      fStepper;
-  TGLAxis*                fAxis;
-  TGLText*                fText;
+  TEveGridStepper        *fStepper;
+  TGLAxis                *fAxis;
+  TGLText                *fText;
   Float_t                 fTextSize;
   Float_t                 fPagerGap;
   Bool_t                  fRnrFrame;
@@ -65,7 +64,7 @@ protected:
   Int_t                   fWActive;
   Float_t                 fWWidth;
   Float_t                 fWHeight;
-  Float_t                 fWOff; ///offset relative to widget size
+  Float_t                 fWOff; // offset relative to widget size
   Color_t                 fWCol;
   Int_t                   fWActiveCol;
   Color_t                 fFontCol;
