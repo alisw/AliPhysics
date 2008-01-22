@@ -75,9 +75,9 @@ AliQADataMaker::AliQADataMaker(const AliQADataMaker& qadm) :
 Int_t AliQADataMaker::Add2List(TH1 * hist, const Int_t index, TObjArray * list) 
 { 
 	// Set histograms memory resident and add to the list
-	// Maximm allowed is 100
-	if ( index > 100 ) {
-		AliError("Max number of authorized QA objects is 100") ; 
+	// Maximm allowed is 10000
+	if ( index > 10000 ) {
+		AliError("Max number of authorized QA objects is 10000") ; 
 		return -1 ; 
 	} else {
 		hist->SetDirectory(0) ; 
