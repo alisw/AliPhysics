@@ -744,8 +744,8 @@ TH1F* Sigma2VertexGaussian()
   canvas->cd(2);
   ratio->DrawCopy("P");
 
-  TH1F* ratio2 = new TH1F("Sigma2Vertex_ratio2", "Sigma2Vertex_ratio2;nSigma;% included 3 sigma / % included n sigma", 50, 0.05, 5.05);
-  Double_t sigma3 = Sigma2VertexCount(tracks, 3);
+  TH1F* ratio2 = new TH1F("Sigma2Vertex_ratio2", "Sigma2Vertex_ratio2;nSigma;% included 4 sigma / % included n sigma", 50, 0.05, 5.05);
+  Double_t sigma3 = Sigma2VertexCount(tracks, 4);
   for (Double_t nSigma = 0.1; nSigma < 5.05; nSigma += 0.1)
     ratio2->Fill(nSigma, sigma3 / ratio->GetBinContent(ratio->FindBin(nSigma)));
   ratio2->SetMarkerStyle(21);
@@ -771,7 +771,7 @@ TH1F** Sigma2VertexSimulation(const char* fileName = "systematics.root")
   }
 
   // calculate ratio
-  TH1F* ratio = new TH1F("sigmavertexsimulation_ratio", "sigmavertexsimulation_ratio;N#sigma;% included in 3 #sigma / % included in N#sigma", sigmavertex->GetNbinsX(), sigmavertex->GetXaxis()->GetXmin(), sigmavertex->GetXaxis()->GetXmax());
+  TH1F* ratio = new TH1F("sigmavertexsimulation_ratio", "sigmavertexsimulation_ratio;N#sigma;% included in 4 #sigma / % included in N#sigma", sigmavertex->GetNbinsX(), sigmavertex->GetXaxis()->GetXmin(), sigmavertex->GetXaxis()->GetXmax());
 
   // calculate contamination
   TH1F* contamination = ratio->Clone("sigmavertexsimulation_contamination");
@@ -779,12 +779,12 @@ TH1F** Sigma2VertexSimulation(const char* fileName = "systematics.root")
 
   for (Int_t i=1; i<=sigmavertex->GetNbinsX(); ++i)
   {
-    ratio->SetBinContent(i, sigmavertex->GetBinContent(sigmavertex->GetXaxis()->FindBin(3)) / sigmavertex->GetBinContent(i));
+    ratio->SetBinContent(i, sigmavertex->GetBinContent(sigmavertex->GetXaxis()->FindBin(4)) / sigmavertex->GetBinContent(i));
     contamination->SetBinContent(i, 1 + (sigmavertex->GetBinContent(i) - sigmavertexPrim->GetBinContent(i)) / sigmavertex->GetBinContent(i));
   }
 
   // print stats
-  for (Float_t sigma = 2.0; sigma < 4.25; sigma += 0.5)
+  for (Float_t sigma = 2.0; sigma < 5.25; sigma += 0.5)
   {
     Float_t error1 = 1 - ratio->GetBinContent(sigmavertex->GetXaxis()->FindBin(sigma)) / ratio->GetBinContent(sigmavertex->GetXaxis()->FindBin(sigma - 0.5));
     Float_t error2 = -1 + ratio->GetBinContent(sigmavertex->GetXaxis()->FindBin(sigma)) / ratio->GetBinContent(sigmavertex->GetXaxis()->FindBin(sigma + 0.5));

@@ -153,6 +153,9 @@ void FinishAnalysisAll(const char* dataInput = "analysis_esd_raw.root", const ch
   //fdNdEtaAnalysis->DrawHistograms(kTRUE);
   file2->cd();
   fdNdEtaAnalysis->SaveHistograms();
+
+  file2->Write();
+  file2->Close();
 }
 
 void* FinishAnalysis(const char* analysisFile = "analysis_esd_raw.root", const char* analysisDir = "fdNdEtaAnalysisESD", const char* correctionMapFile = "correction_map.root", const char* correctionMapFolder = "dndeta_correction", Bool_t useUncorrected = kFALSE, Bool_t simple = kFALSE)
