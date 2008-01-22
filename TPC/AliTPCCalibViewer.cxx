@@ -1440,7 +1440,7 @@ AliTPCCalROC* AliTPCCalibViewer::GetCalROC(const char* desiredData, UInt_t secto
   // sector specifies the sector of the created AliTPCCalROC
   //
    TString drawStr(desiredData);
-   drawStr.Append(Form(":channel%s", fAbbreviation));
+   drawStr.Append(Form(":channel%s", fAbbreviation.Data()));
    Int_t entries = EasyDraw1D(drawStr.Data(), (Int_t)sector, cuts, "goff");
    if (entries == -1) return 0;
    AliTPCCalROC * createdROC = new AliTPCCalROC(sector);
