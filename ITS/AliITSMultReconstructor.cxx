@@ -42,8 +42,12 @@
 // 
 //  Author :  Tiziano Virgili 
 //  
-//  
+//  Recent updates (D. Elia, INFN Bari):
+//     - multiple association forbidden (fOnlyOneTrackletPerC2 = kTRUE) 
+//     - phi definition changed to ALICE convention (0,2*TMath::pi()) 
+//     - cluster coordinates taken with GetGlobalXYZ()
 //
+//  fGeometry removed
 //____________________________________________________________________
 
 #include <TClonesArray.h>
@@ -62,7 +66,6 @@ ClassImp(AliITSMultReconstructor)
 
 //____________________________________________________________________
 AliITSMultReconstructor::AliITSMultReconstructor():
-fGeometry(0),
 fClustersLay1(0),
 fClustersLay2(0),
 fTracklets(0),
@@ -93,7 +96,6 @@ fhphiClustersLay1(0){
   // Method to reconstruct the charged particles multiplicity with the 
   // SPD (tracklets).
 
-  fGeometry =0;
 
   SetHistOn();
   SetPhiWindow();
@@ -141,17 +143,16 @@ fhphiClustersLay1(0){
 
   fhetaTracklets  = new TH1F("etaTracklets",  "eta",  100,-2.,2.);
   fhetaTracklets->SetDirectory(0);
-  fhphiTracklets  = new TH1F("phiTracklets",  "phi",  100,-3.14159,3.14159);
+  fhphiTracklets  = new TH1F("phiTracklets",  "phi",  100, 0., 2*TMath::Pi());
   fhphiTracklets->SetDirectory(0);
   fhetaClustersLay1  = new TH1F("etaClustersLay1",  "etaCl1",  100,-2.,2.);
   fhetaClustersLay1->SetDirectory(0);
-  fhphiClustersLay1  = new TH1F("phiClustersLay1", "phiCl1", 100,-3.141,3.141);
+  fhphiClustersLay1  = new TH1F("phiClustersLay1", "phiCl1", 100, 0., 2*TMath::Pi());
   fhphiClustersLay1->SetDirectory(0);
 }
 
 //______________________________________________________________________
 AliITSMultReconstructor::AliITSMultReconstructor(const AliITSMultReconstructor &mr) : TObject(mr),
-fGeometry(mr.fGeometry),
 fClustersLay1(mr.fClustersLay1),
 fClustersLay2(mr.fClustersLay2),
 fTracklets(mr.fTracklets),
@@ -440,6 +441,7 @@ AliITSMultReconstructor::LoadClusterArrays(TTree* itsClusterTree) {
   itsClusterBranch->SetAddress(&itsClusters);
 
   Int_t nItsSubs = (Int_t)itsClusterTree->GetEntries();  
+  Float_t cluGlo[3]={0.,0.,0.};
  
   // loop over the its subdetectors
   for (Int_t iIts=0; iIts < nItsSubs; iIts++) {
@@ -449,24 +451,6 @@ AliITSMultReconstructor::LoadClusterArrays(TTree* itsClusterTree) {
     
     Int_t nClusters = itsClusters->GetEntriesFast();
     
-    // stuff needed to get the global coordinates
-    Double_t rot[9];   fGeometry->GetRotMatrix(iIts,rot);
-    Int_t lay,lad,det; fGeometry->GetModuleId(iIts,lay,lad,det);
-    Float_t tx,ty,tz;  fGeometry->GetTrans(lay,lad,det,tx,ty,tz);
-    
-    // Below:
-    // "alpha" is the angle from the global X-axis to the
-    //         local GEANT X'-axis  ( rot[0]=cos(alpha) and rot[1]=sin(alpha) )
-    // "phi" is the angle from the global X-axis to the
-    //       local cluster X"-axis
-    
-    Double_t alpha   = TMath::ATan2(rot[1],rot[0])+TMath::Pi();
-    Double_t itsPhi = TMath::Pi()/2+alpha;
-    
-    if (lay==1) itsPhi+=TMath::Pi();
-    Double_t cp=TMath::Cos(itsPhi), sp=TMath::Sin(itsPhi);
-    Double_t r=tx*cp+ty*sp;
-    
     // loop over clusters
     while(nClusters--) {
       AliITSRecPoint* cluster = (AliITSRecPoint*)itsClusters->UncheckedAt(nClusters);
@@ -474,9 +458,10 @@ AliITSMultReconstructor::LoadClusterArrays(TTree* itsClusterTree) {
       if (cluster->GetLayer()>1) 
 	continue;            
       
-      Float_t x = r*cp - cluster->GetY()*sp;
-      Float_t y = r*sp + cluster->GetY()*cp;
-      Float_t z = cluster->GetZ();      
+      cluster->GetGlobalXYZ(cluGlo);
+      Float_t x = cluGlo[0];
+      Float_t y = cluGlo[1];
+      Float_t z = cluGlo[2];      
       
       if (cluster->GetLayer()==0) {
 	fClustersLay1[fNClustersLay1][0] = x;

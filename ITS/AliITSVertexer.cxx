@@ -94,7 +94,6 @@ void AliITSVertexer::FindMultiplicity(Int_t evnumber){
   AliITSMultReconstructor* multReco = new AliITSMultReconstructor();
   AliRunLoader *rl =AliRunLoader::GetRunLoader();
   AliITSLoader* itsLoader = (AliITSLoader*)rl->GetLoader("ITSLoader");
-  multReco->SetGeometry(itsLoader->GetITSgeom());
   itsLoader->LoadRecPoints();
   rl->GetEvent(evnumber);
   TTree* itsClusterTree = itsLoader->TreeR();

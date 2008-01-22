@@ -36,8 +36,6 @@ public:
   AliITSMultReconstructor();
   virtual ~AliITSMultReconstructor();
 
-  void SetGeometry(AliITSgeom* geo) {fGeometry = geo;}
-
   void Reconstruct(TTree* tree, Float_t* vtx, Float_t* vtxRes);
 
   void SetPhiWindow(Float_t w=0.08) {fPhiWindow=w;}
@@ -61,7 +59,6 @@ protected:
   AliITSMultReconstructor(const AliITSMultReconstructor& mr);
   AliITSMultReconstructor& operator=(const AliITSMultReconstructor& mr);
 
-  AliITSgeom*   fGeometry;            // ITS geometry
   
   Float_t**     fClustersLay1;        // clusters in the 1st layer of ITS 
   Float_t**     fClustersLay2;        // clusters in the 2nd layer of ITS 
@@ -102,7 +99,7 @@ protected:
 
   void LoadClusterArrays(TTree* tree);
 
-  ClassDef(AliITSMultReconstructor,2)
+  ClassDef(AliITSMultReconstructor,3)
 };
 
 #endif
