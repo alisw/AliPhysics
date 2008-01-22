@@ -35,7 +35,8 @@ ClassImp(AliESDInputHandler)
 AliESDInputHandler::AliESDInputHandler() :
   AliInputEventHandler(),
   fEvent(0x0),
-  fBranches("")
+  fBranches(""),
+  fBranchesOn("")
 {
   // default constructor
 }
@@ -49,7 +50,7 @@ AliESDInputHandler::~AliESDInputHandler()
 
 //______________________________________________________________________________
 AliESDInputHandler::AliESDInputHandler(const char* name, const char* title):
-    AliInputEventHandler(name, title), fEvent(0x0), fBranches("")
+    AliInputEventHandler(name, title), fEvent(0x0), fBranches(""), fBranchesOn("")
 {
 }
 
