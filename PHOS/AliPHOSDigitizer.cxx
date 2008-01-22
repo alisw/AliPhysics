@@ -550,6 +550,10 @@ void AliPHOSDigitizer::Digitize(Int_t event)
   Int_t relId[4];
 
   //set amplitudes in bad channels to zero
+  if(!gime->CalibData()) {
+    AliPHOSCalibData* cdb = new AliPHOSCalibData(-1);
+    gime->SetCalibData(cdb);
+  }
   for(i = 0 ; i <digits->GetEntries(); i++){
     digit = dynamic_cast<AliPHOSDigit*>( digits->At(i) ) ;
     gime->PHOSGeometry()->AbsToRelNumbering(digit->GetId(),relId);
