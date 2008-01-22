@@ -274,7 +274,11 @@ aliroot: alilibs $(BINPATH) $(ALLEXECS)
 
 ROOTALIBDIR=$(shell root-config --libdir)
 
-alimdc-rpm: alimdc-static RAW/alimdc.spec
+ALIMDCSPECFILE=$(RAWDIRO)/alimdc.spec
+ALIMDCVERSION=$(subst -,.,$(notdir $(subst /RAW/mdc.h,,$(shell svn info RAW/mdc.h | grep "URL:" | cut -d: -f3 ))))
+ALIMDCRELEASE=$(firstword $(shell svn info RAW/mdc.h | grep "Revision:" | cut -d: -f2 ))
+
+alimdc-rpm: alimdc-static alimdc-specfile
 	$(MUTE)rm -rf alimdc-root
 	$(MUTE)mkdir -p alimdc-root/opt/alimdc/lib
 	$(MUTE)mkdir -p alimdc-root/opt/alimdc/include
@@ -285,11 +289,60 @@ alimdc-rpm: alimdc-static RAW/alimdc.spec
 	alimdc-root/opt/alimdc/lib
 	$(MUTE)rm -rf RPMS
 	$(MUTE)mkdir -p RPMS/i386
-	$(MUTE)rpmbuild --verbose --define "_topdir $(ALICE_ROOT)" --define "_tmppath $(ALICE_ROOT)" -bb RAW/alimdc.spec
+	$(MUTE)rpmbuild --verbose --define "_topdir $(ALICE_ROOT)" --define "_tmppath $(ALICE_ROOT)" -bb $(ALIMDCSPECFILE)
 	$(MUTE)cp -p RPMS/i386/alimdc-*.rpm .
 	$(MUTE)rm -rf alimdc-root
 	$(MUTE)rm -rf RPMS
 	@echo "***** alimdc RPM created and put $(ALICE_ROOT) folder *****"
+
+alimdc-specfile: $(RAWDIRO)
+	$(MUTE)rm -rf $(ALIMDCSPECFILE)
+	@echo "***** Making alimdc RPM spec-file $(ALIMDCSPECFILE) *****"
+	@echo "# RPM specfile for alimdc static libs" >> $(ALIMDCSPECFILE)
+	@echo "# Package contains both ROOT and AliRoot" >> $(ALIMDCSPECFILE)
+	@echo "# static libs needed by mStreamRecorder" >> $(ALIMDCSPECFILE)
+	@echo "# in order to ROOT-ify the incoming raw" >> $(ALIMDCSPECFILE)
+	@echo "# data" >> $(ALIMDCSPECFILE)
+	@echo "# Example how-to build alimdc RPM:" >> $(ALIMDCSPECFILE)
+	@echo "# cd $ALICE_ROOT" >> $(ALIMDCSPECFILE)
+	@echo "# make alimdc-rpm" >> $(ALIMDCSPECFILE)
+	@echo "" >> $(ALIMDCSPECFILE)
+	@echo "Summary: AliMDC static libraries" >> $(ALIMDCSPECFILE)
+	@echo "Name: alimdc" >> $(ALIMDCSPECFILE)
+	@echo "Version:  $(ALIMDCVERSION)" >> $(ALIMDCSPECFILE)
+	@echo "Release: $(ALIMDCRELEASE)" >> $(ALIMDCSPECFILE)
+	@echo "# Copyright: CERN Alice Off-line" >> $(ALIMDCSPECFILE)
+	@echo "License: CERN Alice Off-line" >> $(ALIMDCSPECFILE)
+	@echo "Vendor: ALICE Core Off-line Group" >> $(ALIMDCSPECFILE)
+	@echo "URL: http://aliceinfo.cern.ch" >> $(ALIMDCSPECFILE)
+	@echo "Group: Applications/Alice" >> $(ALIMDCSPECFILE)
+	@echo "Prefix: /opt/%{name}" >> $(ALIMDCSPECFILE)
+	@echo "BuildRoot: %{_tmppath}/%{name}-root" >> $(ALIMDCSPECFILE)
+	@echo "" >> $(ALIMDCSPECFILE)
+	@echo "# automatic dependencies" >> $(ALIMDCSPECFILE)
+	@echo "AutoReqProv: yes" >> $(ALIMDCSPECFILE)
+	@echo "" >> $(ALIMDCSPECFILE)
+	@echo "# list here required RPM packages for runtime" >> $(ALIMDCSPECFILE)
+	@echo "Requires: glibc" >> $(ALIMDCSPECFILE)
+	@echo "" >> $(ALIMDCSPECFILE)
+	@echo "Provides: alimdc" >> $(ALIMDCSPECFILE)
+	@echo "" >> $(ALIMDCSPECFILE)
+	@echo "# description of the package" >> $(ALIMDCSPECFILE)
+	@echo "%description" >> $(ALIMDCSPECFILE)
+	@echo "Package contains both ROOT and AliRoot" >> $(ALIMDCSPECFILE)
+	@echo "static libs needed by mStreamRecorder" >> $(ALIMDCSPECFILE)
+	@echo "in order to ROOT-ify the incoming raw" >> $(ALIMDCSPECFILE)
+	@echo "data. The package version correspond to" >> $(ALIMDCSPECFILE)
+	@echo "the AliRoot one." >> $(ALIMDCSPECFILE)
+	@echo "" >> $(ALIMDCSPECFILE)
+	@echo "# list of files to be installed" >> $(ALIMDCSPECFILE)
+	@echo "%files" >> $(ALIMDCSPECFILE)
+	@echo "%defattr (-,root,root)" >> $(ALIMDCSPECFILE)
+	@echo "%{prefix}/lib/libAliMDC.a" >> $(ALIMDCSPECFILE)
+	@echo "%{prefix}/lib/libRoot.a" >> $(ALIMDCSPECFILE)
+	@echo "%{prefix}/lib/libpcre.a" >> $(ALIMDCSPECFILE)
+	@echo "%{prefix}/lib/libfreetype.a" >> $(ALIMDCSPECFILE)
+	@echo "%{prefix}/include/mdc.h" >> $(ALIMDCSPECFILE)
 
 alimdc-static: $(LIBPATH) $(BINPATH) $(RAWDatabaseALIB) $(MDCALIB) $(ESDALIB) $(STEERBaseALIB) $(alimdcCXXO)
 	 $(MUTE)rm -rf $(LIBPATH)/libAliMDC.a
