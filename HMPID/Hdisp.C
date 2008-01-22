@@ -167,7 +167,7 @@ void PrintEsd()
 void DrawChamber(Int_t iCh) 
 {//used by Draw() to Draw() chamber structure
   gPad->Range(-10,-10,AliHMPIDParam::SizeAllX()+5,AliHMPIDParam::SizeAllY()+5);
-  if(iCh>=0){TLatex txt; txt.SetTextSize(0.1); txt.DrawLatex(-5,-5,Form("%i",iCh));}
+  if(iCh>=0){TLatex txt; txt.SetTextSize(0.06); txt.DrawLatex(55,-9,Form("RICH %i",iCh));}
   
   for(Int_t iPc=AliHMPIDParam::kMinPc;iPc<=AliHMPIDParam::kMaxPc;iPc++){
     TBox *pBox=new TBox(AliHMPIDParam::MinPcX(iPc),AliHMPIDParam::MinPcY(iPc),
@@ -187,15 +187,36 @@ void DrawLegend()
     nClu+=fRenClu[ch]->Size();
     nDig+=nDigs[ch];
   }
-  TLegend *pLeg=new TLegend(0.2,0.2,0.8,0.8);
+  TLegend *pLeg=new TLegend(0.15,0.3,0.85,0.98);
   pLeg->SetHeader(Form("Event %i Total %i",fEvt,fNevt));
-  pLeg->AddEntry(fRenTxC[0],   Form("TRKxPC %i"     ,nTxC),"p");
-  pLeg->AddEntry(fRenMip[0],   Form("Mip hits %i"   ,nMip),"p");    
+  pLeg->AddEntry(fRenTxC[0],   Form("TRKxPC %i"  ,nTxC),"p");
+  pLeg->AddEntry(fRenMip[0],   Form("Mip hits %i"  ,nMip),"p");    
   pLeg->AddEntry(fRenCko[0],   Form("Ckov hits %i"  ,nCko),"p");    
   pLeg->AddEntry(fRenFee[0],   Form("Feed hits %i"  ,nFee),"p");    
-  pLeg->AddEntry(fRenDig[0][0],Form("Digs %i"       ,nDig),"p");    
-  pLeg->AddEntry(fRenClu[0],   Form("Clus %i"       ,nClu),"p");    
+  pLeg->AddEntry(fRenDig[0][0],Form("Digs %i"  ,nDig),"p");    
+  pLeg->AddEntry(fRenClu[0],   Form("Clus %i"  ,nClu),"p");    
   pLeg->Draw();
+ 
+/*  TLegend *pLeg2 = new TLegend(0.4,0.087,0.8,0.97);
+  pLeg2->SetHeader("");
+  pLeg2->AddEntry(fRenMip[0],Form("Mip hits %i"   ,nMip),"p");
+  pLeg2->Draw();*/
+
+ TBox *pBox = new TBox(0.012,0.03,0.97,0.28);
+ pBox->Draw("l");
+
+ TText *pText = new TText(0.35,0.21, "ddl = (0....13)");
+ pText->SetTextSize(0.07);
+ pText->Draw();
+
+ TText *pText2 = new TText(0.09,0.13,"RICH n ---> ddl 2n (left) & 2n+1 (right)");
+ pText2->SetTextSize(0.07);
+ pText2->Draw();
+
+ TText *pText3 = new TText(0.1,0.05, "phcat (0,2,4) left,   phcat (1,3,5) right");
+ pText3->SetTextSize(0.07);
+ pText3->Draw();
+
 }//DrawLegend()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void Draw()
