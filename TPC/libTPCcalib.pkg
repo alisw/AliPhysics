@@ -1,11 +1,11 @@
 
 SRCS = AliTPCcalibTracksCuts.cxx   AliTPCcalibTracks.cxx   AliTPCcalibTracksGain.cxx  \
-        AliTPCSelectorESD.cxx   AliTPCSelectorTracks.cxx   AliTPCCalPadRegion.cxx AliTPCFitPad.cxx
-       
+        AliTPCSelectorESD.cxx   AliTPCSelectorTracks.cxx   AliTPCCalPadRegion.cxx AliTPCFitPad.cxx AliAnaTPCTrackBase.cxx AliAnaTPCTrackCalib.cxx
+      
 
 HDRS:= $(SRCS:.cxx=.h) 
 
-EINCLUDE:=RAW TPC STEER
+EINCLUDE:=RAW TPC STEER ANALYSIS
 
 DHDR= TPCcalibLinkDef.h
 
