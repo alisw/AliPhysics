@@ -1,10 +1,15 @@
 #ifndef ALIITSPREPROCESSORSDD_H
 #define ALIITSPREPROCESSORSDD_H
+/* Copyright(c) 2007-2009, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
 
 ////////////////////////////////////////////////////
-//  Class for the                                 //
-//  SDD beam test digit preprocessing             //
+//                                                //
+//  Class for SDD data preprocessing              //
 //  Origin: E. Crescio - crescio@to.infn.it       //
+//          F. Prino   - prino@to.infn.t          //
 //                                                //
 ////////////////////////////////////////////////////
 
@@ -21,7 +26,10 @@ class AliITSPreprocessorSDD : public AliPreprocessor {
     AliPreprocessor("SDD", shuttle){}
   virtual ~AliITSPreprocessorSDD(){;}
 
-
+  enum {kNumberOfSDD = 260};    // number of SDD modules
+  enum {kNumberOfDDL = 24};     // number of DDLs in SDD
+  enum {kModulesPerDDL = 12};   // number of modules in each DDL 
+  enum {kNumberOfChannels = 512}; // number of channels per module
 
  protected:      
 
@@ -29,12 +37,9 @@ class AliITSPreprocessorSDD : public AliPreprocessor {
   
   virtual UInt_t Process(TMap* dcsAliasMap);
 
-  static const Int_t fgkNumberOfSDD;       // number of SDD modules 
-  static const Int_t fgkNumberOfChannels;  // number of channels per module
-
   static const TString fgkNameHistoPedestals; //name of ped. histo
   static const TString fgkNameHistoNoise;  //name of noise histo
-  ClassDef(AliITSPreprocessorSDD,3)  // Alice ITS-SDD preprocessor.
+  ClassDef(AliITSPreprocessorSDD,4)  // Alice ITS-SDD preprocessor.
 
  };
 

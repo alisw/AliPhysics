@@ -39,7 +39,7 @@ ClassImp(AliITSOnlineSDDBase)
   SetNSigmaNoise();
 }
 //______________________________________________________________________
-  AliITSOnlineSDDBase::AliITSOnlineSDDBase(Int_t mod, Int_t sid):AliITSOnlineSDD(mod,sid),fNEvents(0),fMinBaseline(0.),fMaxBaseline(0.),fMinRawNoise(0.),fMaxRawNoise(0.),fNSigmaNoise(0.)
+  AliITSOnlineSDDBase::AliITSOnlineSDDBase(Int_t nddl, Int_t ncarlos, Int_t sid):AliITSOnlineSDD(nddl,ncarlos,sid),fNEvents(0),fMinBaseline(0.),fMaxBaseline(0.),fMinRawNoise(0.),fMaxRawNoise(0.),fNSigmaNoise(0.)
 {
   // default constructor
   Reset();
@@ -156,7 +156,7 @@ void AliITSOnlineSDDBase::WriteToASCII(){
   //
   Char_t outfilnam[100];
   Float_t basMin=GetMinimumBaseline();
-  sprintf(outfilnam,"SDDbase_step1_mod%03d_sid%d.data",fModuleId,fSide);
+  sprintf(outfilnam,"SDDbase_step1_ddl%02dc%02d_sid%d.data",fDDL,fCarlos,fSide);
   FILE* outf=fopen(outfilnam,"w");
   Float_t corrnoise=2.;
   for(Int_t ian=0;ian<fgkNAnodes;ian++){

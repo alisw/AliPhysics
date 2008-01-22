@@ -26,38 +26,13 @@
 #include "AliLog.h"
 
 ClassImp(AliITSRawStreamSDD)
-
-const Int_t AliITSRawStreamSDD::fgkDDLModuleMap[kDDLsNumber][kModulesPerDDL] = {
- 
-  {240,241,242,246,247,248,252,253,254,258,259,260},
-  {264,265,266,270,271,272,276,277,278,282,283,284},
-  {288,289,290,294,295,296,300,301,302,306,307,308},
-  {312,313,314,318,319,320,-1,-1,-1,-1,-1,-1},
-  {243,244,245,249,250,251,255,256,257,261,262,263},
-  {267,268,269,273,274,275,279,280,281,285,286,287},
-  {291,292,293,297,298,299,303,304,305,309,310,311},
-  {315,316,317,321,322,323,-1,-1,-1,-1,-1,-1},
-  {324,325,326,327,332,333,334,335,340,341,342,343},
-  {348,349,350,351,356,357,358,359,364,365,366,367},
-  {372,373,374,375,380,381,382,383,388,389,390,391},
-  {396,397,398,399,404,405,406,407,412,413,414,415},
-  {420,421,422,423,428,429,430,431,436,437,438,439},
-  {444,445,446,447,452,453,454,455,460,461,462,463},
-  {468,469,470,471,476,477,478,479,484,485,486,487},
-  {492,493,494,495,-1,-1,-1,-1,-1,-1,-1,-1},
-  {328,329,330,331,336,337,338,339,344,345,346,347},
-  {352,353,354,355,360,361,362,363,368,369,370,371},
-  {376,377,378,379,384,385,386,387,392,393,394,395},
-  {400,401,402,403,408,409,410,411,416,417,418,419},
-  {424,425,426,427,432,433,434,435,440,441,442,443},
-  {448,449,450,451,456,457,458,459,464,465,466,467},
-  {472,473,474,475,480,481,482,483,488,489,490,491},
-  {496,497,498,499,-1,-1,-1,-1,-1,-1,-1,-1}};
   
 const UInt_t AliITSRawStreamSDD::fgkCodeLength[8] =  {8, 18, 2, 3, 4, 5, 6, 7};
 
+//______________________________________________________________________
 AliITSRawStreamSDD::AliITSRawStreamSDD(AliRawReader* rawReader) :
   AliITSRawStream(rawReader),
+fDDLModuleMap(0),
 fData(0),
 fEventId(0),
 fCarlosId(-1),
@@ -69,7 +44,8 @@ fEndWords(0),
 fResetSkip(0)
 {
 // create an object to read ITS SDD raw digits
-
+  fDDLModuleMap=new AliITSDDLModuleMapSDD();
+  fDDLModuleMap->SetDefaultMap();
   Reset();
   for(Int_t i=0;i<kFifoWords;i++) fNfifo[i]=0;
   for(Int_t i=0;i<kDDLsNumber;i++) fSkip[i]=0;
@@ -80,6 +56,36 @@ fResetSkip(0)
   for(Short_t i=0; i<kFifoWords; i++) fIFifoWord[i]=0x30000010 + i;  // 805306384+i;
 }
 
+//______________________________________________________________________
+AliITSRawStreamSDD::AliITSRawStreamSDD(const AliITSRawStreamSDD& rs) :
+AliITSRawStream(rs.fRawReader),
+fDDLModuleMap(rs.fDDLModuleMap),
+fData(0),
+fEventId(0),
+fCarlosId(-1),
+fChannel(0),
+fJitter(0),
+fNCarlos(kModulesPerDDL),
+fDDL(0),
+fEndWords(0),
+fResetSkip(0)
+{
+  // copy constructor
+  AliError("Copy constructor should not be used.");
+}
+//__________________________________________________________________________
+AliITSRawStreamSDD& AliITSRawStreamSDD::operator=(const AliITSRawStreamSDD& rs) {
+  // assignment operator
+  if (this!=&rs) {}
+  AliError("Assignment opertator should not be used.");
+  return *this;
+}
+
+//______________________________________________________________________
+AliITSRawStreamSDD::~AliITSRawStreamSDD(){
+  if(fDDLModuleMap) delete fDDLModuleMap;
+}
+//______________________________________________________________________
 UInt_t AliITSRawStreamSDD::ReadBits()
 {
 // read bits from the given channel
@@ -89,6 +95,7 @@ UInt_t AliITSRawStreamSDD::ReadBits()
   return result;
 }
 
+//______________________________________________________________________
 Int_t AliITSRawStreamSDD::DecompAmbra(Int_t value) const
 {
   // AMBRA decompression (from 8 to 10 bit)
@@ -105,6 +112,7 @@ Int_t AliITSRawStreamSDD::DecompAmbra(Int_t value) const
   
 }
 
+//______________________________________________________________________
 Bool_t AliITSRawStreamSDD::Next()
 {
 // read the next raw digit
@@ -192,7 +200,7 @@ Bool_t AliITSRawStreamSDD::Next()
       
       if (fNCarlos == 8 && fCarlosId >= 8) continue;  // old data, fNCarlos = 8;
       if(fCarlosId>=0 && fCarlosId <kModulesPerDDL){
-	 fModuleID = fgkDDLModuleMap[ddln][fCarlosId];
+	 fModuleID = GetModuleNumber(ddln,fCarlosId);
       }
     } else {  // decode data
       if (fReadCode[fCarlosId][fChannel]) {// read the next code word
@@ -222,6 +230,7 @@ Bool_t AliITSRawStreamSDD::Next()
   return kFALSE;
 }
 
+//______________________________________________________________________
 void AliITSRawStreamSDD::Reset(){
 
   //reset data member for a new ddl
@@ -240,6 +249,7 @@ void AliITSRawStreamSDD::Reset(){
   for(Int_t i=0;i<kModulesPerDDL;i++) fICountFoot[i]=0;
 }
 
+//______________________________________________________________________
 Bool_t AliITSRawStreamSDD::ResetSkip(Int_t ddln){
   // skip the 1 DDL header word = 0xffffffff
   Bool_t startCount=kFALSE;

@@ -253,6 +253,13 @@ void AliITSClusterFinderV2SDD::RawdataToClusters(AliRawReader* rawReader,TClones
   //------------------------------------------------------------
   rawReader->Reset();
   AliITSRawStreamSDD inputSDD(rawReader);
+  AliITSCalibrationSDD* cal = (AliITSCalibrationSDD*)GetResp(240);
+  /*
+  printf("gain anode 10=%f\n",cal->GetDriftSpeedAtAnode(10));
+  printf("drift speed anode 10=%f\n",cal->GetChannelGain(10));
+  */
+  AliITSDDLModuleMapSDD *ddlmap=(AliITSDDLModuleMapSDD*)fDetTypeRec->GetDDLModuleMapSDD();
+  inputSDD.SetDDLModuleMap(ddlmap);
   FindClustersSDD(&inputSDD,clusters);
 
 }

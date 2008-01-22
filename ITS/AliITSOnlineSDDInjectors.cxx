@@ -45,7 +45,7 @@ AliITSOnlineSDDInjectors::AliITSOnlineSDDInjectors():AliITSOnlineSDD(),fHisto(),
   SetTimeDiffTB();
 }
 //______________________________________________________________________
-AliITSOnlineSDDInjectors::AliITSOnlineSDDInjectors(Int_t mod, Int_t sid):AliITSOnlineSDD(mod,sid),fHisto(),fTbZero(0.),fParam(),fPolOrder(0),fMinDriftVel(0.),fMaxDriftVel(0.),fThreshold(0.),fTimeDiffTB()
+AliITSOnlineSDDInjectors::AliITSOnlineSDDInjectors(Int_t nddl, Int_t ncarlos, Int_t sid):AliITSOnlineSDD(nddl,ncarlos,sid),fHisto(),fTbZero(0.),fParam(),fPolOrder(0),fMinDriftVel(0.),fMaxDriftVel(0.),fThreshold(0.),fTimeDiffTB()
 { 
 // standard constructor
   SetMinDriftVel();
@@ -390,7 +390,7 @@ void AliITSOnlineSDDInjectors::PrintCentroids(){
 void AliITSOnlineSDDInjectors::WriteToASCII(Int_t evNumb, UInt_t timeStamp, Int_t optAppend){
   //
   Char_t outfilnam[100];
-  sprintf(outfilnam,"SDDinj_mod%03d_sid%d.data",fModuleId,fSide);
+  sprintf(outfilnam,"SDDinj_ddl%02dc%02d_sid%d.data",fDDL,fCarlos,fSide);  
   FILE* outf;
   if(optAppend==0){ 
     outf=fopen(outfilnam,"w");

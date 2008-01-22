@@ -16,7 +16,7 @@ class AliITSOnlineSDDTP : public AliITSOnlineSDD {
 
  public:
   AliITSOnlineSDDTP();
-  AliITSOnlineSDDTP(Int_t mod, Int_t sid,Float_t xDAC);
+  AliITSOnlineSDDTP(Int_t nddl, Int_t ncarlos, Int_t sid, Float_t xDAC);
   virtual ~AliITSOnlineSDDTP();
   void Reset();
   void AddEvent(TH2F* hrawd);

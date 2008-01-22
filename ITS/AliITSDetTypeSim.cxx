@@ -80,6 +80,7 @@ fSDigits(),      //! [NMod][NSDigits]
 fNDigits(0),     //! number of Digits
 fRunNumber(0),   //! Run number (to access DB)
 fDigits(),       //! [NMod][NDigits]
+fDDLMapSDD(0),
 fHitClassName(), // String with Hit class name.
 fSDigClassName(),// String with SDigit class name.
 fDigClassName(), // String with digit class name.
@@ -99,6 +100,7 @@ fFirstcall(kTRUE){ // flag
   fSDigits = new TClonesArray("AliITSpListItem",1000);
   fDigits = new TObjArray(fgkNdettypes);
   fNDigits = new Int_t[fgkNdettypes];
+  fDDLMapSDD=new AliITSDDLModuleMapSDD();
   fNMod[0] = fgkDefaultNModulesSPD;
   fNMod[1] = fgkDefaultNModulesSDD;
   fNMod[2] = fgkDefaultNModulesSSD;
@@ -148,6 +150,7 @@ AliITSDetTypeSim::~AliITSDetTypeSim(){
 	delete fPostProcess;
     }
     fPostProcess = 0;
+    if(fDDLMapSDD) delete fDDLMapSDD;
     if(fNDigits) delete [] fNDigits;
     fNDigits = 0;
     if (fLoader)fLoader->GetModulesFolder()->Remove(this);
@@ -175,6 +178,7 @@ fSDigits(source.fSDigits),      //! [NMod][NSDigits]
 fNDigits(source.fNDigits),     //! number of Digits
 fRunNumber(source.fRunNumber),   //! Run number (to access DB)
 fDigits(source.fDigits),       //! [NMod][NDigits]
+fDDLMapSDD(source.fDDLMapSDD),
 fHitClassName(source.fHitClassName), // String with Hit class name.
 fSDigClassName(source.fSDigClassName),// String with SDigit class name.
 fDigClassName(), // String with digit class name.
@@ -452,6 +456,7 @@ Bool_t AliITSDetTypeSim::GetCalibration() {
   AliCDBEntry *entrySPD = AliCDBManager::Instance()->Get("ITS/Calib/SPDDead", run);
   AliCDBEntry *entrySDD = AliCDBManager::Instance()->Get("ITS/Calib/CalibSDD", run);
   AliCDBEntry *drSpSDD = AliCDBManager::Instance()->Get("ITS/Calib/DriftSpeedSDD",run);
+  AliCDBEntry *ddlMapSDD = AliCDBManager::Instance()->Get("ITS/Calib/DDLMapSDD",run);
   AliCDBEntry *mapASDD = AliCDBManager::Instance()->Get("ITS/Calib/MapsAnodeSDD",run);
   AliCDBEntry *mapTSDD = AliCDBManager::Instance()->Get("ITS/Calib/MapsTimeSDD",run);
   // AliCDBEntry *entrySSD = AliCDBManager::Instance()->Get("ITS/Calib/CalibSSD", run);
@@ -464,7 +469,7 @@ Bool_t AliITSDetTypeSim::GetCalibration() {
   AliCDBEntry *entry2SSD = AliCDBManager::Instance()->Get("ITS/Calib/RespSSD", run);
 
   if(!entrySPD || !entrySDD || !entryNoiseSSD || !entryGainSSD || !entryBadChannelsSSD || 
-     !entry2SPD || !entry2SDD || !entry2SSD || !drSpSDD || !mapASDD ||!mapTSDD){
+     !entry2SPD || !entry2SDD || !entry2SSD || !drSpSDD || !ddlMapSDD || !mapASDD ||!mapTSDD){
     AliFatal("Calibration object retrieval failed! ");
     return kFALSE;
   }  	
@@ -494,6 +499,10 @@ Bool_t AliITSDetTypeSim::GetCalibration() {
   TObjArray *drSp = (TObjArray *)drSpSDD->GetObject();
   if(!isCacheActive)drSpSDD->SetObject(NULL);
   drSpSDD->SetOwner(kTRUE);
+
+  AliITSDDLModuleMapSDD *ddlsdd=(AliITSDDLModuleMapSDD*)ddlMapSDD->GetObject();
+  if(!isCacheActive)ddlMapSDD->SetObject(NULL);
+  ddlMapSDD->SetOwner(kTRUE);
 
   TObjArray *mapAn = (TObjArray *)mapASDD->GetObject();
   if(!isCacheActive)mapASDD->SetObject(NULL);
@@ -538,11 +547,12 @@ Bool_t AliITSDetTypeSim::GetCalibration() {
     delete mapASDD;   
     delete mapTSDD;
     delete drSpSDD;
+    delete ddlMapSDD;
   }
   
   AliCDBManager::Instance()->SetCacheFlag(origCacheStatus);
 
-  if ((!pSPD)||(!pSDD)||(!pSSD) || (!calSPD) || (!calSDD) || (!drSp)
+  if ((!pSPD)||(!pSDD)||(!pSSD) || (!calSPD) || (!calSDD) || (!drSp) || (!ddlsdd)
       || (!mapAn) || (!mapT) || (!noiseSSD)|| (!gainSSD)|| (!badchannelsSSD)) {
     AliWarning("Can not get calibration from calibration database !");
     return kFALSE;
@@ -576,6 +586,7 @@ Bool_t AliITSDetTypeSim::GetCalibration() {
     cal->SetMapA(1,ma1);
     cal->SetMapT(0,mt0);
     cal->SetMapT(1,mt1);
+    fDDLMapSDD->SetDDLMap(ddlsdd);
     Int_t iMod = i + fNMod[0];
     SetCalibrationModel(iMod, cal);
  }

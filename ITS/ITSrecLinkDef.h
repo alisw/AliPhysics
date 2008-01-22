@@ -112,7 +112,6 @@
 #pragma link C++ class AliITSOnlineSDD+;
 #pragma link C++ class AliITSOnlineSDDBase+;
 #pragma link C++ class AliITSOnlineSDDTP+;
-#pragma link C++ class AliITSOnlineSDDBTP+;
 #pragma link C++ class AliITSOnlineSDDCMN+;
 #pragma link C++ class AliITSOnlineSDDInjectors+;
 #pragma link C++ class AliITSPreprocessorSSD+;

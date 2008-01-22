@@ -12,6 +12,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliITSRawStream.h"
+#include "AliITSDDLModuleMapSDD.h"
 
 class AliRawReader;
 
@@ -19,7 +20,9 @@ class AliRawReader;
 class AliITSRawStreamSDD: public AliITSRawStream {
   public :
     AliITSRawStreamSDD(AliRawReader* rawReader);
-    virtual ~AliITSRawStreamSDD() {};
+    AliITSRawStreamSDD(const AliITSRawStreamSDD& rs);
+    AliITSRawStreamSDD& operator=(const AliITSRawStreamSDD& rs);
+    virtual ~AliITSRawStreamSDD();
 
     virtual Bool_t   Next();
 
@@ -28,12 +31,15 @@ class AliITSRawStreamSDD: public AliITSRawStream {
     virtual Int_t    GetChannel() const {return fChannel;}
     virtual Int_t    ReadJitter() const {return 0;}
     virtual Int_t    GetCarlosId() const {return fCarlosId;}
+    virtual Int_t    GetEventId() const {return fEventId;}
 
+    virtual void SetDDLModuleMap(AliITSDDLModuleMapSDD* ddlsdd){fDDLModuleMap->SetDDLMap(ddlsdd);}
     virtual void     SetLowCarlosThreshold(Int_t th, Int_t i) 
       {fLowThreshold[i]=th;}
     virtual void     SetNCarlos(Int_t nC=12){fNCarlos=nC;}
-    static  Int_t    GetModuleNumber(UInt_t iDDL, UInt_t iModule)
-                     {return fgkDDLModuleMap[iDDL][iModule];}
+    Int_t   GetModuleNumber(UInt_t iDDL, UInt_t iModule) const {
+      return fDDLModuleMap->GetModuleNumber(iDDL,iModule);
+    }
     virtual void     Reset(); 
     virtual Bool_t   ResetSkip(Int_t ddln); 
 
@@ -46,13 +52,12 @@ class AliITSRawStreamSDD: public AliITSRawStream {
       kDataFormatErr = 2
     };
   protected:
-    static const Int_t fgkDDLModuleMap[kDDLsNumber][kModulesPerDDL]; //  mapping DDL/module -> module number
-
     virtual UInt_t   ReadBits();
     virtual Int_t    DecompAmbra(Int_t value) const;
 
     static const UInt_t fgkCodeLength[8]; //code length
 
+    AliITSDDLModuleMapSDD* fDDLModuleMap; // mapping DDL/module -> module number 
     UInt_t           fData;         // data read for file
     Int_t            fSkip[kDDLsNumber];// number of skipped words
     Int_t            fEventId;      // event ID from header

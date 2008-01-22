@@ -56,6 +56,7 @@
 #pragma link C++ class  AliITSMapSDD+;
 #pragma link C++ class  AliITSDriftSpeedSDD+;
 #pragma link C++ class  AliITSDriftSpeedArraySDD+;
+#pragma link C++ class  AliITSDDLModuleMapSDD+;
 #pragma link C++ class  AliITSBadChannelsSSD+;
 #pragma link C++ class  AliITSGainSSD+;
 #pragma link C++ class  AliITSNoiseSSD+;

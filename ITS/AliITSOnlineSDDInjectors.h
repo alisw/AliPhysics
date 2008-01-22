@@ -17,7 +17,7 @@ class AliITSOnlineSDDInjectors : public AliITSOnlineSDD {
 
  public:
   AliITSOnlineSDDInjectors();      
-  AliITSOnlineSDDInjectors(Int_t mod, Int_t sid);
+  AliITSOnlineSDDInjectors(Int_t nddl, Int_t ncarlos, Int_t sid);
   virtual ~AliITSOnlineSDDInjectors();
 
   void SetSide(Int_t sid){fSide=sid;}

@@ -16,7 +16,7 @@ class AliITSOnlineSDDCMN : public AliITSOnlineSDD {
 
  public:
   AliITSOnlineSDDCMN();
-  AliITSOnlineSDDCMN(Int_t mod, Int_t sid);
+  AliITSOnlineSDDCMN(Int_t nddl, Int_t ncarlos, Int_t sid);
   virtual ~AliITSOnlineSDDCMN();
   void Reset();
   void AddEvent(TH2F* hrawd);

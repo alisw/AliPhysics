@@ -31,6 +31,7 @@
 #include "AliRawDataHeaderSim.h"
 #include "AliITSRawStreamSPD.h"
 #include "AliITSRawStreamSDD.h"
+#include "AliITSDDLModuleMapSDD.h"
 #include "AliITSRawStreamSSD.h"
 #include "AliITSIntMap.h"
 #include "AliBitPacking.h"
@@ -578,7 +579,7 @@ Int_t AliITSDDLRawData::RawDataSSD(TBranch* branch){
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-Int_t AliITSDDLRawData::RawDataSDD(TBranch* branch){
+Int_t AliITSDDLRawData::RawDataSDD(TBranch* branch, AliITSDDLModuleMapSDD* ddlsdd){
     //This method creates the Raw data files for SDD detectors
   const Int_t kSize=131072; //256*512
   UInt_t buf[kSize];      
@@ -609,7 +610,7 @@ Int_t AliITSDDLRawData::RawDataSDD(TBranch* branch){
 
     //Loops over Modules of a particular DDL
     for (Int_t mod=0; mod<AliITSRawStreamSDD::kModulesPerDDL; mod++){
-      Int_t moduleNumber = AliITSRawStreamSDD::GetModuleNumber(i, mod);
+      Int_t moduleNumber = ddlsdd->GetModuleNumber(i, mod);
       if(moduleNumber!=-1){
 	digits->Clear();
 	branch->GetEvent(moduleNumber);

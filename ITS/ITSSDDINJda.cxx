@@ -5,7 +5,7 @@
 - DA Type: - LDC
 - Number of events needed: 
 - Input Files: - 
-- Output Files: - SDDinj_mod*_sid*.data
+- Output Files: - SDDinj_ddl*c*_sid*.data
 - Trigger types used: 
 */
 
@@ -77,19 +77,25 @@ int main(int argc, char **argv) {
   Int_t eqOffset = 256;
   Int_t DDLrange = 24;
   Int_t maxNEvents=10; // maximum number of events to be analyzed
-  const Int_t nSDDmodules=12;  // temp for test raw data
-  AliITSOnlineSDDInjectors **injan=new AliITSOnlineSDDInjectors*[2*nSDDmodules];
-  TH2F **histo=new TH2F*[2*nSDDmodules];
-  Int_t nWrittenEv[2*nSDDmodules];
+  const Int_t kTotDDL=24;
+  const Int_t kModPerDDL=12;
+  const Int_t kSides=2;
+  AliITSOnlineSDDInjectors **injan=new AliITSOnlineSDDInjectors*[kTotDDL*kModPerDDL*kSides];
+  TH2F **histo=new TH2F*[kTotDDL*kModPerDDL*kSides];
+  Int_t nWrittenEv[kTotDDL*kModPerDDL*kSides];
+  Bool_t isFilled[kTotDDL*kModPerDDL*kSides];
 
   Char_t hisnam[20];
-  for(Int_t imod=0; imod<nSDDmodules;imod++){
-    for(Int_t isid=0;isid<2;isid++){
-      Int_t index=2*imod+isid;
-      injan[index]=new AliITSOnlineSDDInjectors(imod,isid);
-      sprintf(hisnam,"his%03ds%d",imod,isid);
-      histo[index]=new TH2F(hisnam,"",256,-0.5,255.5,256,-0.5,255.5);
-      nWrittenEv[index]=0;
+  for(Int_t iddl=0; iddl<kTotDDL;iddl++){
+    for(Int_t imod=0; imod<kModPerDDL;imod++){
+      for(Int_t isid=0;isid<kSides;isid++){
+	Int_t index=kSides*(kModPerDDL*iddl+imod)+isid;
+	injan[index]=new AliITSOnlineSDDInjectors(iddl,imod,isid);
+	sprintf(hisnam,"h%02dc%02ds%d",iddl,imod,isid);
+	histo[index]=new TH2F(hisnam,"",256,-0.5,255.5,256,-0.5,255.5);
+	nWrittenEv[index]=0;
+	isFilled[index]=0;
+      }
     }
   }
   
@@ -163,36 +169,39 @@ int main(int argc, char **argv) {
 	}
 
 	rawReader->Reset();
-	for(Int_t imod=0; imod<nSDDmodules;imod++){
-	  for(Int_t isid=0; isid<2;isid++){
-	    Int_t index=2*imod+isid;
-	    histo[index]->Reset();
+	for(Int_t iddl=0; iddl<kTotDDL;iddl++){
+	  for(Int_t imod=0; imod<kModPerDDL;imod++){
+	    for(Int_t isid=0;isid<kSides;isid++){
+	      Int_t index=kSides*(kModPerDDL*iddl+imod)+isid;
+	      histo[index]->Reset();
+	    }
 	  }
 	}
 	AliITSRawStreamSDD s(rawReader);
 	
 	while(s.Next()){
-	  Int_t iddl=rawReader->GetDDLID();
-	  iddl=0; // temporary for test raw data
-	  Int_t isddmod=s.GetModuleNumber(iddl,s.GetCarlosId()); 
-	  isddmod-=240;  // to have SDD modules from 0 to 259
-	  isddmod=s.GetCarlosId(); // temporary for test raw data
-	  if(isddmod<nSDDmodules&&s.IsCompletedModule()==kFALSE){ 
-	    Int_t index=2*isddmod+s.GetChannel(); 
+	  Int_t iDDL=rawReader->GetDDLID();
+	  Int_t iCarlos=s.GetCarlosId();
+	  if(iDDL>=0 && iDDL<kTotDDL && s.IsCompletedModule()==kFALSE){ 
+	    Int_t index=kSides*(kModPerDDL*iDDL+iCarlos)+s.GetChannel(); 
 	    histo[index]->Fill(s.GetCoord2(),s.GetCoord1(),s.GetSignal());
+	    isFilled[index]=1;
 	  }
 	}
 	delete rawReader;
-	for(Int_t imod=0; imod<nSDDmodules;imod++){
-	  for(Int_t isid=0; isid<2;isid++){
-	    Int_t index=2*imod+isid;
-	    injan[index]->Reset();
-	    injan[index]->AnalyzeEvent(histo[index]);    
-	    injan[index]->WriteToASCII(iev,timeSt,nWrittenEv[index]);
-	    nWrittenEv[index]++;
+	for(Int_t iddl=0; iddl<kTotDDL;iddl++){
+	  for(Int_t imod=0; imod<kModPerDDL;imod++){
+	    for(Int_t isid=0;isid<kSides;isid++){
+	      Int_t index=kSides*(kModPerDDL*iddl+imod)+isid;
+	      if(isFilled[index]){
+		injan[index]->Reset();
+		injan[index]->AnalyzeEvent(histo[index]);    
+		injan[index]->WriteToASCII(iev,timeSt,nWrittenEv[index]);
+		nWrittenEv[index]++;
+	      }
+	    }
 	  }
 	}
-	
 	/* free resources */
 	free(event);
       }
@@ -201,12 +210,17 @@ int main(int argc, char **argv) {
   }
     
   Char_t filnam[100],command[120];
-  for(Int_t imod=0; imod<nSDDmodules;imod++){
-    for(Int_t isid=0; isid<2;isid++){
-      sprintf(filnam,"SDDinj_mod%03d_sid%d.data",imod,isid);
-      sprintf(command,"tar -rf SDDinj_LDC1.tar %s",filnam);
-      gSystem->Exec(command);
-    }  
+  for(Int_t iddl=0; iddl<kTotDDL;iddl++){
+    for(Int_t imod=0; imod<kModPerDDL;imod++){
+      for(Int_t isid=0;isid<kSides;isid++){
+	Int_t index=kSides*(kModPerDDL*iddl+imod)+isid;
+	if(nWrittenEv[index]>0){
+	  sprintf(filnam,"SDDinj_ddl%02dc%02d_sid%d.data",iddl,imod,isid);
+	  sprintf(command,"tar -rf SDDinj_LDC.tar %s",filnam);
+	  gSystem->Exec(command);
+	}
+      }  
+    }
   }
 
   /* write report */

@@ -16,6 +16,7 @@ $Id$
 #include <TObjArray.h>
 #include <TClonesArray.h>
 #include "AliITSCalibration.h"
+#include "AliITSDDLModuleMapSDD.h"
 #include "AliITSLoader.h"
 #include "AliITSgeom.h"
 
@@ -53,6 +54,7 @@ class AliITSDetTypeSim : public TObject {
     virtual AliITSresponse* GetResponse(Int_t dettype) {
 	return GetCalibrationModel(
 	    GetITSgeom()->GetStartDet(dettype))->GetResponse();}
+    virtual AliITSDDLModuleMapSDD* GetDDLModuleMapSDD()const { return fDDLMapSDD;}
     TObjArray* GetCalibrationArray() const {return fCalibration;}
     TObjArray* GetSegmentation() const {return fSegmentation;}
     void ResetCalibrationArray();
@@ -112,13 +114,14 @@ class AliITSDetTypeSim : public TObject {
     Int_t*        fNDigits;      //! [NDet] number of Digits for det.
     Int_t         fRunNumber;    //! run number (to access DB)
     TObjArray     *fDigits;      //! [NMod][NDigits]
+    AliITSDDLModuleMapSDD *fDDLMapSDD; //! mapping DDL/module -> SDD module number
     TString       fHitClassName; //! String with Hit class name
     TString       fSDigClassName;//! String with SDigit class name.
     Char_t*       fDigClassName[3]; //! String with digit class name.
     AliITSLoader* fLoader;          //! loader  
     Bool_t        fFirstcall;       //! flag
     
-    ClassDef(AliITSDetTypeSim,5) // ITS Simulation structure
+    ClassDef(AliITSDetTypeSim,6) // ITS Simulation structure
  
 };
 

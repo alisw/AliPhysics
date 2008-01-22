@@ -38,7 +38,7 @@ AliITSOnlineSDDTP::AliITSOnlineSDDTP():AliITSOnlineSDD(),fDAC(0.),fNSigmaGain(0.
   SetNSigmaNoise();
 }
 //______________________________________________________________________
-AliITSOnlineSDDTP::AliITSOnlineSDDTP(Int_t mod, Int_t sid, Float_t xDAC):AliITSOnlineSDD(mod,sid),fDAC(xDAC),fNSigmaGain(0.),fNSigmaNoise(0.)
+AliITSOnlineSDDTP::AliITSOnlineSDDTP(Int_t nddl, Int_t ncarlos, Int_t sid, Float_t xDAC):AliITSOnlineSDD(nddl,ncarlos,sid),fDAC(xDAC),fNSigmaGain(0.),fNSigmaNoise(0.)
 {
   // standard constructor
   Reset();
@@ -90,7 +90,7 @@ void AliITSOnlineSDDTP::AddEvent(TH2F* hrawd){
 void AliITSOnlineSDDTP::ReadBaselines(){
   // assume baselines and good anodes are taken from previous run
   Char_t basfilnam[100];
-  sprintf(basfilnam,"SDDbase_step2_mod%03d_sid%d.data",fModuleId,fSide);
+  sprintf(basfilnam,"SDDbase_step2_ddl%02dc%02d_sid%d.data",fDDL,fCarlos,fSide);
   FILE* basf=fopen(basfilnam,"r");
   if(basf==0){
     AliWarning("Baselinefile not present, Set all baselines to 50\n");
@@ -168,9 +168,9 @@ void AliITSOnlineSDDTP::StatGain(Float_t &mean, Float_t  &rms){
 void AliITSOnlineSDDTP::WriteToASCII(){
   //
   Char_t outfilnam[100];
-  sprintf(outfilnam,"SDDbase_mod%03d_sid%d.data",fModuleId,fSide);
+  sprintf(outfilnam,"SDDbase_ddl%02dc%02d_sid%d.data",fDDL,fCarlos,fSide);
   FILE* outf=fopen(outfilnam,"w");
-  fprintf(outf,"%d %d %d\n",fModuleId,fSide,IsModuleGood());
+  fprintf(outf,"%d %d %d\n",fCarlos,fSide,IsModuleGood());
   for(Int_t ian=0;ian<fgkNAnodes;ian++){
     fprintf(outf,"%d %d %8.3f %d %d %8.3f %8.3f %8.3f %8.3f\n",ian,IsAnodeGood(ian),GetAnodeBaseline(ian),GetAnodeEqualizedBaseline(ian),GetAnodeBaselineOffset(ian),GetAnodeRawNoise(ian),GetAnodeCommonMode(ian),GetAnodeCorrNoise(ian),GetChannelGain(ian));
   }
@@ -185,17 +185,17 @@ Bool_t AliITSOnlineSDDTP::WriteToROOT(TFile *fil){
   }
   Char_t hisnam[20];
   fil->cd();
-  sprintf(hisnam,"hgood%03ds%d",fModuleId,fSide);
+  sprintf(hisnam,"hgood%02dc%02ds%d",fDDL,fCarlos,fSide);
   TH1F hgood(hisnam,"",256,-0.5,255.5);
-  sprintf(hisnam,"hbase%03ds%d",fModuleId,fSide);
+  sprintf(hisnam,"hbase%02dc%02ds%d",fDDL,fCarlos,fSide);
   TH1F hbase(hisnam,"",256,-0.5,255.5);
-  sprintf(hisnam,"hnois%03ds%d",fModuleId,fSide);
+  sprintf(hisnam,"hnois%02dc%02ds%d",fDDL,fCarlos,fSide);
   TH1F hnois(hisnam,"",256,-0.5,255.5);
-  sprintf(hisnam,"hcmn%03ds%d",fModuleId,fSide);
+  sprintf(hisnam,"hcmn%02dc%02ds%d",fDDL,fCarlos,fSide);
   TH1F hcmn(hisnam,"",256,-0.5,255.5);
-  sprintf(hisnam,"hcorn%03ds%d",fModuleId,fSide);
+  sprintf(hisnam,"hcorn%02dc%02ds%d",fDDL,fCarlos,fSide);
   TH1F hcorn(hisnam,"",256,-0.5,255.5);
-  sprintf(hisnam,"hgain%03ds%d",fModuleId,fSide);
+  sprintf(hisnam,"hgain%02dc%02ds%d",fDDL,fCarlos,fSide);
   TH1F hgain(hisnam,"",256,-0.5,255.5);
   for(Int_t ian=0;ian<fgkNAnodes;ian++){
     hgood.SetBinContent(ian+1,float(IsAnodeGood(ian)));

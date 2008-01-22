@@ -1096,6 +1096,7 @@ void AliITS::Digits2Raw(){
       return;
   }
   fDetTypeSim->SetTreeAddressD(digits,(Char_t*)GetName());
+  AliITSDDLModuleMapSDD* ddlsdd=fDetTypeSim->GetDDLModuleMapSDD();
 
   AliITSDDLRawData rawWriter;
   //Verbose level
@@ -1114,7 +1115,7 @@ void AliITS::Digits2Raw(){
     
   //SILICON DRIFT DETECTOR
   Info("Digits2Raw", "Formatting raw data for SDD");
-  rawWriter.RawDataSDD(digits->GetBranch("ITSDigitsSDD"));
+  rawWriter.RawDataSDD(digits->GetBranch("ITSDigitsSDD"),ddlsdd);
     
   //SILICON STRIP DETECTOR
   Info("Digits2Raw", "Formatting raw data for SSD");
@@ -1199,6 +1200,8 @@ Bool_t AliITS::Raw2SDigits(AliRawReader* rawReader)
     AliITSsegmentationSDD* segSDD = (AliITSsegmentationSDD*) fDetTypeSim->GetSegmentationModel(1);
     npx = segSDD->Npx();
     AliITSRawStreamSDD inputSDD(rawReader);
+    AliITSDDLModuleMapSDD* ddlmap=fDetTypeSim->GetDDLModuleMapSDD();
+    inputSDD.SetDDLModuleMap(ddlmap);
     while(1){
 	Bool_t next  = inputSDD.Next();
 	if (!next) break;

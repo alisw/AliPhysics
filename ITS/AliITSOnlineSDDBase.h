@@ -16,7 +16,7 @@ class AliITSOnlineSDDBase : public AliITSOnlineSDD {
 
  public:
   AliITSOnlineSDDBase();
-  AliITSOnlineSDDBase(Int_t mod, Int_t sid);
+  AliITSOnlineSDDBase(Int_t nddl, Int_t ncarlos, Int_t sid);
   virtual ~AliITSOnlineSDDBase();
   void Reset();
   void AddEvent(TH2F* hrawd);

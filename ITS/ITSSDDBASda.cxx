@@ -5,7 +5,7 @@
 - DA Type: - LDC
 - Number of events needed: 100
 - Input Files: - 
-- Output Files: - SDDbase_step1_mod*_sid*.data SDDbase_step2_mod*_sid*.data
+- Output Files: - SDDbase_step1_ddl*c*_sid*.data SDDbase_step2_ddl*c*_sid*.data
 - Trigger types used: 
 */
 
@@ -65,7 +65,7 @@ int main(int argc, char **argv) {
                                         "TStreamerInfo()");
 
   /* log start of process */
-  printf("ITS SDD BASE algorithm program started\n");  
+  printf("ITS SDD BASELINE+NOISE algorithm program started\n");  
 
 
   /* check that we got some arguments = list of files */
@@ -78,19 +78,22 @@ int main(int argc, char **argv) {
   Int_t eqOffset = 256;
   Int_t DDLrange = 24;
   Int_t maxNEvents=18; // maximum number of events to be analyzed
-  const Int_t nSDDmodules=260;  // temp for test raw data
-  AliITSOnlineSDDBase **base=new AliITSOnlineSDDBase*[2*nSDDmodules];
-  AliITSOnlineSDDCMN **corr=new AliITSOnlineSDDCMN*[2*nSDDmodules];
-  TH2F **histo=new TH2F*[2*nSDDmodules];
+  const Int_t kTotDDL=24;
+  const Int_t kModPerDDL=12;
+  const Int_t kSides=2;
+  AliITSOnlineSDDBase **base=new AliITSOnlineSDDBase*[kTotDDL*kModPerDDL*kSides];
+  AliITSOnlineSDDCMN **corr=new AliITSOnlineSDDCMN*[kTotDDL*kModPerDDL*kSides];
+  TH2F **histo=new TH2F*[kTotDDL*kModPerDDL*kSides];
 
   Char_t hisnam[20];
-  for(Int_t imod=0; imod<nSDDmodules;imod++){
-    for(Int_t isid=0;isid<2;isid++){
-      Int_t index=2*imod+isid;
-      base[index]=new AliITSOnlineSDDBase(imod,isid);
-      corr[index]=new AliITSOnlineSDDCMN(imod,isid);
-      sprintf(hisnam,"his%03ds%d",imod,isid);
-      histo[index]=new TH2F(hisnam,"",256,-0.5,255.5,256,-0.5,255.5);
+  for(Int_t iddl=0; iddl<kTotDDL;iddl++){
+    for(Int_t imod=0; imod<kModPerDDL;imod++){
+      for(Int_t isid=0;isid<kSides;isid++){
+	Int_t index=kSides*(kModPerDDL*iddl+imod)+isid;
+	base[index]=new AliITSOnlineSDDBase(iddl,imod,isid);
+	sprintf(hisnam,"h%02dc%02ds%d",iddl,imod,isid);
+	histo[index]=new TH2F(hisnam,"",256,-0.5,255.5,256,-0.5,255.5);
+      }
     }
   }
   
@@ -101,10 +104,12 @@ int main(int argc, char **argv) {
     printf("Start Analysis Step %d\n",iStep);
     iev=0;
     if(iStep==1){
-      for(Int_t imod=0; imod<nSDDmodules;imod++){
-	for(Int_t isid=0;isid<2;isid++){
-	  Int_t index=2*imod+isid;
-	  corr[index]->Reset();
+      for(Int_t iddl=0; iddl<kTotDDL;iddl++){
+	for(Int_t imod=0; imod<kModPerDDL;imod++){
+	  for(Int_t isid=0;isid<kSides;isid++){
+	    Int_t index=kSides*(kModPerDDL*iddl+imod)+isid;
+	    corr[index]=new AliITSOnlineSDDCMN(iddl,imod,isid);
+	  }
 	}
       }
     }
@@ -176,28 +181,32 @@ int main(int argc, char **argv) {
 	  }
 
 	  rawReader->Reset();
-	  for(Int_t imod=0; imod<nSDDmodules;imod++){
-	    for(Int_t isid=0; isid<2;isid++){
-	      Int_t index=2*imod+isid;
-	      histo[index]->Reset();
+	  for(Int_t iddl=0; iddl<kTotDDL;iddl++){
+	    for(Int_t imod=0; imod<kModPerDDL;imod++){
+	      for(Int_t isid=0;isid<kSides;isid++){
+		Int_t index=kSides*(kModPerDDL*iddl+imod)+isid;
+		histo[index]->Reset();
+	      }
 	    }
 	  }
 	  AliITSRawStreamSDD s(rawReader);
 
 	  while(s.Next()){
-	    Int_t isddmod=s.GetModuleID();//Number(iddl,s.GetCarlosId()); 	    
-	    isddmod-=240;  // to have SDD modules from 0 to 259
-	    if(isddmod>0 && isddmod<nSDDmodules && s.IsCompletedModule()==kFALSE){ 
-	      Int_t index=2*isddmod+s.GetChannel(); 
+	    Int_t iDDL=rawReader->GetDDLID();
+	    Int_t iCarlos=s.GetCarlosId();
+	    if(iDDL>=0 && iDDL<kTotDDL && s.IsCompletedModule()==kFALSE){ 
+	      Int_t index=kSides*(kModPerDDL*iDDL+iCarlos)+s.GetChannel(); 
 	      histo[index]->Fill(s.GetCoord2(),s.GetCoord1(),s.GetSignal());
 	    }
 	  }
 	  delete rawReader;
-	  for(Int_t imod=0; imod<nSDDmodules;imod++){
-	    for(Int_t isid=0; isid<2;isid++){
-	      Int_t index=2*imod+isid;
-	      if(iStep==0) base[index]->AddEvent(histo[index]);    
-	      if(iStep==1) corr[index]->AddEvent(histo[index]);    
+	  for(Int_t iddl=0; iddl<kTotDDL;iddl++){
+	    for(Int_t imod=0; imod<kModPerDDL;imod++){
+	      for(Int_t isid=0;isid<kSides;isid++){
+		Int_t index=kSides*(kModPerDDL*iddl+imod)+isid;
+		if(iStep==0) base[index]->AddEvent(histo[index]);
+		if(iStep==1) corr[index]->AddEvent(histo[index]);
+	      }
 	    }
 	  }
 
@@ -205,22 +214,19 @@ int main(int argc, char **argv) {
 	  free(event);
 	}
       }
-    
     }
-    
-    for(Int_t imod=0; imod<nSDDmodules;imod++){
-      for(Int_t isid=0; isid<2;isid++){
-	Int_t index=2*imod+isid;
-	if(iStep==0){
-	  base[index]->ValidateAnodes();
-	  base[index]->WriteToASCII();
+
+    if(iStep==0){
+      for(Int_t iddl=0; iddl<kTotDDL;iddl++){
+	for(Int_t imod=0; imod<kModPerDDL;imod++){
+	  for(Int_t isid=0;isid<kSides;isid++){
+	    Int_t index=kSides*(kModPerDDL*iddl+imod)+isid;
+	    base[index]->ValidateAnodes();
+	    base[index]->WriteToASCII();
+	  }
 	}
-	if(iStep==1){
-	  corr[index]->ValidateAnodes();
-	  corr[index]->WriteToASCII();
-	}
-      }
-    }  
+      }  
+    }
   }
 
   /* write report */
@@ -232,10 +238,14 @@ int main(int argc, char **argv) {
 
 
   TFile *fh=new TFile("SDDbaseHistos.root","RECREATE");
-  for(Int_t imod=0; imod<nSDDmodules;imod++){
-    for(Int_t isid=0; isid<2;isid++){
-      Int_t index=2*imod+isid;
-      corr[index]->WriteToROOT(fh);
+  for(Int_t iddl=0; iddl<kTotDDL;iddl++){
+    for(Int_t imod=0; imod<kModPerDDL;imod++){
+      for(Int_t isid=0;isid<kSides;isid++){
+	Int_t index=kSides*(kModPerDDL*iddl+imod)+isid;
+	corr[index]->ValidateAnodes();
+	corr[index]->WriteToASCII();
+	corr[index]->WriteToROOT(fh);
+      }
     }
   }
   fh->Close();

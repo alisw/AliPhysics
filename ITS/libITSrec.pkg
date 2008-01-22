@@ -79,7 +79,6 @@ SRCS = 	AliITSDetTypeRec.cxx \
 		AliITSOnlineSDD.cxx \
 		AliITSOnlineSDDBase.cxx \
 		AliITSOnlineSDDTP.cxx \
-		AliITSOnlineSDDBTP.cxx \
 		AliITSOnlineSDDInjectors.cxx \
                 AliITSOnlineSDDCMN.cxx \
 		AliITSPreprocessorSSD.cxx \
