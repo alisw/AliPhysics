@@ -32,13 +32,6 @@ ClassImp(AliZDCReco)
 AliZDCReco::AliZDCReco() :
 	
   TObject(),
-  fZN1Energy(0),
-  fZP1Energy(0),
-  fZN2Energy(0),
-  fZP2Energy(0),
-  //
-  fZEM1signal(0),
-  fZEM2signal(0),
   //
   fNDetSpecNLeft(0),
   fNDetSpecPLeft(0),
@@ -58,43 +51,30 @@ AliZDCReco::AliZDCReco() :
   //
   // Default constructor
   //
-  for(Int_t i=0; i<5; i++){
-     fZN1EnTow[i] = 0;
-     fZP1EnTow[i] = 0;
-     fZN2EnTow[i] = 0;
-     fZP2EnTow[i] = 0;
-     fZN1SigLowRes[i] = 0;
-     fZP1SigLowRes[i] = 0;
-     fZN2SigLowRes[i] = 0;
-     fZP2SigLowRes[i] = 0;
-     
+  for(Int_t i=0; i<10; i++){
+     fZN1EnTow[i] = fZP1EnTow[i] = fZN2EnTow[i] = fZP2EnTow[i] = 0.;
+     if(i<2){
+       fZN1Energy[i] = fZP1Energy[i] = fZN2Energy[i] = fZP2Energy[i] =  0.;
+       fZEM1signal[i] = fZEM2signal[i] = 0.;
+       fPMRef1[i] = fPMRef2[i] = 0.;
+     }
   }
 }
   
 
 //_____________________________________________________________________________
-AliZDCReco::AliZDCReco(Float_t ezn1, Float_t ezp1, Float_t ezn2, Float_t ezp2,  
-	     //
+AliZDCReco::AliZDCReco(Float_t* ezn1, Float_t* ezp1, Float_t* ezn2, Float_t* ezp2,  
 	     Float_t* ezn1tow, Float_t* ezp1tow,
 	     Float_t* ezn2tow, Float_t* ezp2tow, 
-	     Float_t* ezn1siglr, Float_t* ezp1siglr,
-	     Float_t* ezn2siglr, Float_t* ezp2siglr,
-	     Float_t ezem1, Float_t ezem2,
+	     Float_t* ezem1, Float_t* ezem2, 
+	     Float_t* ref1, Float_t* ref2, 
 	     //	   
-	     Int_t detspnLeft,  Int_t detsppLeft, Int_t detspnRight,
-	     Int_t detsppRight,  Int_t trspnLeft, Int_t trsppLeft, 
-	     Int_t trspLeft, Int_t partLeft, Int_t trspnRight, 
-	     Int_t trsppRight, Int_t trspRight, Int_t partRight,  
-	     Float_t b) :
+	     Int_t detspnLeft,  Int_t detsppLeft, Int_t detspnRight, Int_t detsppRight,  
+	     Int_t trspnLeft, Int_t trsppLeft, Int_t trspLeft, 
+	     Int_t trspnRight, Int_t trsppRight, Int_t trspRight,
+	     Int_t partLeft, Int_t partRight, Float_t b) :
 	
   TObject(),
-  fZN1Energy(ezn1),
-  fZP1Energy(ezp1),
-  fZN2Energy(ezn2),
-  fZP2Energy(ezp2),
-  //
-  fZEM1signal(ezem1),
-  fZEM2signal(ezem2),
   //
   fNDetSpecNLeft(detspnLeft),
   fNDetSpecPLeft(detsppLeft),
@@ -114,15 +94,21 @@ AliZDCReco::AliZDCReco(Float_t ezn1, Float_t ezp1, Float_t ezn2, Float_t ezp2,
   //
   // Constructor
   //
-  for(Int_t j=0; j<5; j++){
+  for(Int_t j=0; j<10; j++){
      fZN1EnTow[j] =  ezn1tow[j];
      fZP1EnTow[j] =  ezp1tow[j];
      fZN2EnTow[j] =  ezn2tow[j];
      fZP2EnTow[j] =  ezp2tow[j];
-     fZN1SigLowRes[j] = ezn1siglr[j];
-     fZP1SigLowRes[j] = ezp1siglr[j];
-     fZN2SigLowRes[j] = ezn2siglr[j];
-     fZP2SigLowRes[j] = ezp2siglr[j];
+     if(j<2){
+       fZN1Energy[j] = ezn1[j];
+       fZP1Energy[j] = ezp1[j];
+       fZN2Energy[j] = ezn2[j];
+       fZP2Energy[j] = ezp2[j];
+       fZEM1signal[j] = ezem1[j];
+       fZEM2signal[j] = ezem2[j];
+       fPMRef1[j] = ref1[j];
+       fPMRef2[j] = ref2[j];
+     }
   }
   
 }
@@ -134,24 +120,34 @@ AliZDCReco::AliZDCReco(const AliZDCReco &oldreco) :
 {
   // Copy constructor
 
-  fZN1Energy  = oldreco.GetZN1Energy();
-  fZP1Energy  = oldreco.GetZP1Energy();            
-  fZN2Energy  = oldreco.GetZN2Energy();	   
-  fZP2Energy  = oldreco.GetZP2Energy(); 	   
+  fZN1Energy[0]  = oldreco.GetZN1HREnergy();
+  fZP1Energy[0]  = oldreco.GetZP1HREnergy();		
+  fZN2Energy[0]  = oldreco.GetZN2HREnergy();	     
+  fZP2Energy[0]  = oldreco.GetZP2HREnergy();	 
+  //    
+  fZN1Energy[1]  = oldreco.GetZN1LREnergy();
+  fZP1Energy[1]  = oldreco.GetZP1LREnergy();	       
+  fZN2Energy[1]  = oldreco.GetZN2LREnergy();	    
+  fZP2Energy[1]  = oldreco.GetZP2LREnergy();	    
   //
   for(Int_t i=0; i<5; i++){	  
-     fZN1EnTow[i]  = oldreco.GetZN1EnTow(i);
-     fZP1EnTow[i]  = oldreco.GetZP1EnTow(i);
-     fZN2EnTow[i]  = oldreco.GetZN2EnTow(i);
-     fZP2EnTow[i]  = oldreco.GetZP2EnTow(i);
-     fZN1SigLowRes[i] = oldreco.GetZN1SigLowRes(i);
-     fZP1SigLowRes[i] = oldreco.GetZP1SigLowRes(i);
-     fZN2SigLowRes[i] = oldreco.GetZN2SigLowRes(i);
-     fZP2SigLowRes[i] = oldreco.GetZP2SigLowRes(i);
+     fZN1EnTow[i]  = oldreco.GetZN1HREnTow(i);
+     fZP1EnTow[i]  = oldreco.GetZP1HREnTow(i);
+     fZN2EnTow[i]  = oldreco.GetZN2HREnTow(i);
+     fZP2EnTow[i]  = oldreco.GetZP2HREnTow(i);
+     fZN1EnTow[i+5]  = oldreco.GetZN1LREnTow(i);
+     fZP1EnTow[i+5]  = oldreco.GetZP1LREnTow(i);
+     fZN2EnTow[i+5]  = oldreco.GetZN2LREnTow(i);
+     fZP2EnTow[i+5]  = oldreco.GetZP2LREnTow(i);
   }
-  //
-  fZEM1signal = oldreco.GetZEM1signal();	
-  fZEM2signal = oldreco.GetZEM2signal();	
+  fZEM1signal[0] = oldreco.GetZEM1HRsignal();
+  fZEM1signal[1] = oldreco.GetZEM1LRsignal();
+  fZEM2signal[0] = oldreco.GetZEM2HRsignal();
+  fZEM2signal[1] = oldreco.GetZEM2LRsignal();
+  fPMRef1[0] = oldreco.GetPMRef1HRsignal();
+  fPMRef1[1] = oldreco.GetPMRef1LRsignal();
+  fPMRef2[0] = oldreco.GetPMRef2HRsignal();
+  fPMRef2[1] = oldreco.GetPMRef2LRsignal();
   //   
   fNDetSpecNLeft = oldreco.GetNDetSpecNLeft();	
   fNDetSpecPLeft = oldreco.GetNDetSpecPLeft();	
@@ -180,7 +176,8 @@ void AliZDCReco::Print(Option_t *) const {
 	 " \t NDetSpecNRight = %d, NDetSpecPRight = %d, NspecnRight = %d,"
 	 " NspecpRight = %d, NpartRight = %d"
 	 " \t b = %f fm\n ", 
-	 fZN1Energy,fZP1Energy,fZEM1signal,fZEM2signal, fZN2Energy, fZP2Energy,
+	 fZN1Energy[0],fZP1Energy[0],fZEM1signal[0],fZEM2signal[0], 
+	 fZN2Energy[0], fZP2Energy[0],
 	 fNDetSpecNLeft,fNDetSpecPLeft,fNTrueSpecNLeft,fNTrueSpecPLeft,fNPartLeft,
 	 fNDetSpecNRight,fNDetSpecPRight,fNTrueSpecNRight,fNTrueSpecPRight,fNPartRight,
 	 fImpPar);

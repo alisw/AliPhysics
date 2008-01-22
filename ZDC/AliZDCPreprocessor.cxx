@@ -148,22 +148,22 @@ if(runType == "PEDESTAL_RUN"){
 	   return 1;
          }
          Log(Form("File %s connected to process pedestal data", pedFileName));
-         Float_t pedVal[(3*knZDCch)][2];
+         Float_t pedVal[(3*knZDCch)][3];
          for(Int_t i=0; i<(3*knZDCch); i++){
-            for(Int_t j=0; j<2; j++){
+            for(Int_t j=0; j<3; j++){
                fscanf(file,"%f",&pedVal[i][j]);
 	       //if(j==1) printf("pedVal[%d] -> %f, %f \n",i,pedVal[i][0],pedVal[i][1]);
             }
             if(i<knZDCch){
-              pedCalib->SetMeanPed(i,pedVal[i][0]);
-              pedCalib->SetMeanPedWidth(i,pedVal[i][1]);
+              pedCalib->SetMeanPed(i,pedVal[i][1]);
+              pedCalib->SetMeanPedWidth(i,pedVal[i][2]);
             }
             else if(i>=knZDCch && i<(2*knZDCch)){
-              pedCalib->SetOOTPed(i-knZDCch,pedVal[i][0]);
-              pedCalib->SetOOTPedWidth(i-knZDCch,pedVal[i][1]);
+              pedCalib->SetOOTPed(i-knZDCch,pedVal[i][1]);
+              pedCalib->SetOOTPedWidth(i-knZDCch,pedVal[i][2]);
             }
             else if(i>=(2*knZDCch) && i<(3*knZDCch)){
-              pedCalib->SetPedCorrCoeff(i-(2*knZDCch),pedVal[i][0],pedVal[i][1]);
+              pedCalib->SetPedCorrCoeff(i-(2*knZDCch),pedVal[i][1],pedVal[i][2]);
             }
          }
        }

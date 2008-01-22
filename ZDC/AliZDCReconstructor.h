@@ -46,12 +46,9 @@ private:
   AliZDCReconstructor(const AliZDCReconstructor&);
   AliZDCReconstructor& operator =(const AliZDCReconstructor&);
 
-  void   ReconstructEvent(TTree *clustersTree, Float_t* ZN1ADCCorrHG, 
-  		Float_t* ZP1ADCCorrHG, Float_t* ZN2ADCCorrHG, 
-		Float_t* ZP2ADCCorrHG, Float_t* ZN1ADCCorrLG, 
-		Float_t* ZP1ADCCorrLG, Float_t* ZN2ADCCorrLG, 
-		Float_t* ZP2ADCCorrLG, 
-		Float_t ZEM1ADCCorrHG, Float_t ZEM2ADCCorrHG) const;
+  void   ReconstructEvent(TTree *clustersTree, 
+  	    Float_t* ZN1ADCCorr, Float_t* ZP1ADCCorr, Float_t* ZN2ADCCorr, Float_t* ZP2ADCCorr,
+	    Float_t* ZEM1ADCCorr, Float_t* ZEM2ADCCorr, Float_t* PMRef1, Float_t* PMRef2) const;
   void   FillZDCintoESD(TTree *clustersTree, AliESDEvent*esd) const;
 
   TF1*   fZNCen;     //! Nspectator n true vs. EZN

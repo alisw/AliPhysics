@@ -237,11 +237,11 @@ int main(int argc, char **argv) {
   	  Int_t index=-1;
   	  if(rawStreamZDC->IsADCDataWord()){
 	  if(rawStreamZDC->GetSector(1)!=5){ // Physics signals
-    	    if(rawStreamZDC->GetSector(0)==1) index = rawStreamZDC->GetSector(1); // *** ZN1
-	    else if(rawStreamZDC->GetSector(0)==2) index = rawStreamZDC->GetSector(1)+5; // *** ZP1
+    	    if(rawStreamZDC->GetSector(0)==1) index = rawStreamZDC->GetSector(1); // *** ZNC
+	    else if(rawStreamZDC->GetSector(0)==2) index = rawStreamZDC->GetSector(1)+5; // *** ZPC
 	    else if(rawStreamZDC->GetSector(0)==3) index = rawStreamZDC->GetSector(1)+9; // *** ZEM
-	    else if(rawStreamZDC->GetSector(0)==4) index = rawStreamZDC->GetSector(1)+12; // *** ZN2
-	    else if(rawStreamZDC->GetSector(0)==5) index = rawStreamZDC->GetSector(1)+17; // *** ZP2
+	    else if(rawStreamZDC->GetSector(0)==4) index = rawStreamZDC->GetSector(1)+12; // *** ZNA
+	    else if(rawStreamZDC->GetSector(0)==5) index = rawStreamZDC->GetSector(1)+17; // *** ZPA
 	  }
 	  else{ // Reference PMs
 	    index = (rawStreamZDC->GetSector(0)-1)/3+22;
@@ -313,7 +313,7 @@ int main(int argc, char **argv) {
      ADCfunchg[i] = hPedhg[i]->GetFunction("gaus");
      MeanPed[i] = ADCfunchg[i]->GetParameter(1);
      MeanPedWidth[i] = ADCfunchg[i]->GetParameter(2);
-     fprintf(fileShuttle,"\t%f\t%f\n",MeanPed[i],MeanPedWidth[i]);
+     fprintf(fileShuttle,"\t%d\t%f\t%f\n",i,MeanPed[i],MeanPedWidth[i]);
      //printf("\t MeanPed[%d] = %f\n",i, MeanPed[i]);
   }
   TF1 *ADCfunclg[kNChannels];
@@ -322,7 +322,7 @@ int main(int argc, char **argv) {
      ADCfunclg[i] = hPedlg[i]->GetFunction("gaus");
      MeanPed[i+kNChannels] = ADCfunclg[i]->GetParameter(1);
      MeanPedWidth[i+kNChannels] = ADCfunclg[i]->GetParameter(2);
-     fprintf(fileShuttle,"\t%f\t%f\n",MeanPed[i+kNChannels],MeanPedWidth[i+kNChannels]);
+     fprintf(fileShuttle,"\t%d\t%f\t%f\n",i+kNChannels,MeanPed[i+kNChannels],MeanPedWidth[i+kNChannels]);
      //printf("\t MeanPed[%d] = %f\n",i+kNChannels, MeanPed[i+kNChannels]);
   }
   // --- Out-of-time pedestals
@@ -332,7 +332,7 @@ int main(int argc, char **argv) {
      ADCootfunchg[i] = hPedOutOfTimehg[i]->GetFunction("gaus");
      MeanPedOOT[i] = ADCootfunchg[i]->GetParameter(1);
      MeanPedWidthOOT[i] = ADCootfunchg[i]->GetParameter(2);
-     fprintf(fileShuttle,"\t%f\t%f\n",MeanPedOOT[i],MeanPedWidthOOT[i]);
+     fprintf(fileShuttle,"\t%d\t%f\t%f\n",i,MeanPedOOT[i],MeanPedWidthOOT[i]);
      //printf("\t MeanPedOOT[%d] = %f\n",i, MeanPedOOT[i]);
   }
   TF1 *ADCootfunclg[kNChannels];
@@ -341,7 +341,7 @@ int main(int argc, char **argv) {
      ADCootfunclg[i] = hPedOutOfTimelg[i]->GetFunction("gaus");
      MeanPedOOT[i+kNChannels] = ADCootfunclg[i]->GetParameter(1);
      MeanPedWidthOOT[i+kNChannels] = ADCootfunclg[i]->GetParameter(2);
-     fprintf(fileShuttle,"\t%f\t%f\n",MeanPedOOT[i+kNChannels],MeanPedWidthOOT[i+kNChannels]);
+     fprintf(fileShuttle,"\t%d\t%f\t%f\n",i+kNChannels,MeanPedOOT[i+kNChannels],MeanPedWidthOOT[i+kNChannels]);
      //printf("\t MeanPedOOT[%d] = %f\n",i+kNChannels, MeanPedOOT[i+kNChannels]);
   }
   //
@@ -357,7 +357,7 @@ int main(int argc, char **argv) {
      ffunchg[i] = hPedCorrProfhg[i]->GetFunction("pol1");
      CorrCoeff0[i] = ffunchg[i]->GetParameter(0);
      CorrCoeff1[i] = ffunchg[i]->GetParameter(1);
-     fprintf(fileShuttle,"\t%f\t%f\n",CorrCoeff0[i],CorrCoeff1[i]);
+     fprintf(fileShuttle,"\t%d\t%f\t%f\n",i,CorrCoeff0[i],CorrCoeff1[i]);
      //printf("\t CorrCoeff0[%d] = %f, CorrCoeff1[%d] = %f\n",i, CorrCoeff0[i], i, CorrCoeff1[i]);
   }    
   for(int i=0;i<kNChannels;i++) {
@@ -368,7 +368,7 @@ int main(int argc, char **argv) {
      ffunclg[i] = hPedCorrProflg[i]->GetFunction("pol1");
      CorrCoeff0[i+kNChannels] = ffunclg[i]->GetParameter(0);
      CorrCoeff1[i+kNChannels] = ffunclg[i]->GetParameter(1);
-     fprintf(fileShuttle,"\t%f\t%f\n",CorrCoeff0[i+kNChannels],CorrCoeff1[i+kNChannels]);
+     fprintf(fileShuttle,"\t%d\t%f\t%f\n",i+kNChannels,CorrCoeff0[i+kNChannels],CorrCoeff1[i+kNChannels]);
      //printf("\t CorrCoeff0[%d] = %f, CorrCoeff1[%d] = %f\n",
      //		i+kNChannels, CorrCoeff0[i+kNChannels], i+kNChannels, CorrCoeff1[i+kNChannels]);
   }    

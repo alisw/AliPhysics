@@ -534,8 +534,8 @@ void AliZDC::Digits2Raw()
     }
     // *** ADC2 (Reference PTMs) or ADC4 (Reference PTMs o.o.t.)
     else if(digit.GetSector(1)==5){
-      index = 20 + (digit.GetSector(0)-1)*1/3; 
-      lADCDataChannel = 5 + (digit.GetSector(0)-1)*8/3;
+      index = 20 + (digit.GetSector(0)-1)/3; 
+      lADCDataChannel = 5 + 8*(digit.GetSector(0)-1)/3;
       //
       /*printf("\t AliZDC::Digits2Raw -> idig%d det %d quad %d index %d, ADCch %d ADCVal[%d, %d]\n",
 		iDigit,digit.GetSector(0),digit.GetSector(1),index,lADCDataChannel,
@@ -708,22 +708,20 @@ Int_t AliZDC::Pedestal(Int_t Det, Int_t Quad, Int_t Res) const
     return -1;
   }
   //
-  Float_t pedValue;
-  Float_t meanPed, pedWidth;
-    Int_t index=0;
-    if(Quad!=5){
-      if(Det==1)	index = Quad+24*Res;	   // ZN1
-      else if(Det==2)	index = (Quad+5)+24*Res;	   // ZP1
-      else if(Det==3)	index = (Quad+9)+24*Res; // ZEM
-      else if(Det==4)	index = (Quad+12)+24*Res; // ZN2
-      else if(Det==5)	index = (Quad+17)+24*Res; // ZP2
-    }
-    else index = (Det-1)/3+22+24*Res; // Reference PMs
+  Int_t index=0, kNch=24;
+  if(Quad!=5){
+    if(Det==1)        index = Quad+kNch*Res;	 // ZN1
+    else if(Det==2)   index = Quad+5+kNch*Res;  	 // ZP1
+    else if(Det==3)   index = Quad+9+kNch*Res; // ZEM
+    else if(Det==4)   index = Quad+12+kNch*Res; // ZN2
+    else if(Det==5)   index = Quad+17+kNch*Res; // ZP2
+  }
+  else index = (Det-1)/3+22+kNch*Res; // Reference PMs
   //
   //
-  meanPed = calibPed->GetMeanPed(index);
-  pedWidth = calibPed->GetMeanPedWidth(index);
-  pedValue = gRandom->Gaus(meanPed,pedWidth);
+  Float_t meanPed = calibPed->GetMeanPed(index);
+  Float_t pedWidth = calibPed->GetMeanPedWidth(index);
+  Float_t pedValue = gRandom->Gaus(meanPed,pedWidth);
   //
   //printf("\t AliZDC::Pedestal - det(%d, %d) - Ped[%d] = %d\n",Det, Quad, index,(Int_t) pedValue); // Chiara debugging!
   

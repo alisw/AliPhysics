@@ -468,22 +468,20 @@ Int_t AliZDCDigitizer::Pedestal(Int_t Det, Int_t Quad, Int_t Res) const
   // Returns a pedestal for detector det, PM quad, channel with res.
   //
   Float_t pedValue;
-  
   // Normal run
   if(fIsCalibration == 0){
-    Float_t meanPed, pedWidth;
-    Int_t index=0;
+    Int_t index=0, kNch=24;
     if(Quad!=5){
-      if(Det==1)	index = Quad+24*Res;	  // ZN1
-      else if(Det==2)	index = (Quad+5)+24*Res;  // ZP1
-      else if(Det==3)	index = (Quad+9)+24*Res;  // ZEM
-      else if(Det==4)	index = (Quad+12)+24*Res; // ZN2
-      else if(Det==5)	index = (Quad+17)+24*Res; // ZP2
+      if(Det==1)	index = Quad+kNch*Res;	  // ZNC
+      else if(Det==2)	index = (Quad+5)+kNch*Res;  // ZPC
+      else if(Det==3)	index = (Quad+9)+kNch*Res;  // ZEM
+      else if(Det==4)	index = (Quad+12)+kNch*Res; // ZNA
+      else if(Det==5)	index = (Quad+17)+kNch*Res; // ZPA
     }
-    else index = (Det-1)/3+22+24*Res; // Reference PMs
+    else index = (Det-1)/3+22+kNch*Res; // Reference PMs
     //
-    meanPed = fPedData->GetMeanPed(index);
-    pedWidth = fPedData->GetMeanPedWidth(index);
+    Float_t meanPed = fPedData->GetMeanPed(index);
+    Float_t pedWidth = fPedData->GetMeanPedWidth(index);
     pedValue = gRandom->Gaus(meanPed,pedWidth);
     //
     /*printf("\t  AliZDCDigitizer::Pedestal -> det %d quad %d res %d - Ped[%d] = %d\n",
