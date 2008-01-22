@@ -27,7 +27,7 @@ public:
 			       AliESDEvent* esd) const
   {FillESD((TTree*)NULL,(TTree*)NULL,esd);}
 
-  void SetRecoParam(AliTPCRecoParam * param){ fgkRecoParam = param;}
+  static void SetRecoParam(AliTPCRecoParam * param) { fgkRecoParam = param;}
   static const AliTPCRecoParam* GetRecoParam();
   //
   static Double_t GetCtgRange()     { return fgkRecoParam->GetCtgRange();}
