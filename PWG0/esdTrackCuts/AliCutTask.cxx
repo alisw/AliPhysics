@@ -28,9 +28,12 @@
 ClassImp(AliCutTask)
 
 //________________________________________________________________________
-AliCutTask::AliCutTask(const char *name) 
-  : AliAnalysisTask(name, ""), fESD(0), fTrackCuts(0), fTrackCutsPrimaries(0),
-    fTrackCutsSecondaries(0), fVertex(0), fTriggerStats(0), fOutput(0)
+AliCutTask::AliCutTask(const char *name) : 
+  AliAnalysisTask(name, ""), fESD(0), fTrackCuts(0), 
+  fAnalysisMode(AliPWG0Helper::kTPCITS),
+  fTrackCutsPrimaries(0),
+  fTrackCutsSecondaries(0), fVertex(0), fTriggerStats(0), fOutput(0),
+  fPrimStats(0)
 {
   // Constructor
 
@@ -50,7 +53,7 @@ void AliCutTask::ConnectInputData(Option_t *)
     Printf("ERROR: Could not read chain from input slot 0");
   } else {
     // Disable all branches and enable only the needed ones
-    tree->SetBranchStatus("*", kFALSE);
+    //tree->SetBranchStatus("*", kFALSE);
 
     // old esd
     tree->SetBranchStatus("fTriggerMask", kTRUE);
@@ -60,8 +63,8 @@ void AliCutTask::ConnectInputData(Option_t *)
     // new esd
     tree->SetBranchStatus("TriggerMask", kTRUE);
     tree->SetBranchStatus("AliESDHeader", kTRUE);
-    AliPWG0Helper::SetBranchStatusRecursive(tree, "Tracks", kTRUE);
-    AliPWG0Helper::SetBranchStatusRecursive(tree, "SPDVertex", kTRUE);
+    //AliPWG0Helper::SetBranchStatusRecursive(tree, "Tracks", kTRUE);
+    //AliPWG0Helper::SetBranchStatusRecursive(tree, "SPDVertex", kTRUE);
 
     AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
 
@@ -98,6 +101,16 @@ void AliCutTask::CreateOutputObjects()
   fTriggerStats->GetXaxis()->SetBinLabel(5, "VZERO_OR_LEFT | VZERO_OR_RIGHT");
   fOutput->Add(fTriggerStats);
 
+  fPrimStats = new TH1F("fPrimStats", "fPrimStats", 8, 0.5, 8.5);
+  fPrimStats->GetXaxis()->SetBinLabel(1, "Primary accepted once");
+  fPrimStats->GetXaxis()->SetBinLabel(2, "Primary accepted more than once");
+  fPrimStats->GetXaxis()->SetBinLabel(3, "Primary accepted more than once (count)");
+  fPrimStats->GetXaxis()->SetBinLabel(4, "Primary track rejected");
+  fPrimStats->GetXaxis()->SetBinLabel(5, "Primary track rejected (count)");
+  fPrimStats->GetXaxis()->SetBinLabel(6, "Primary track rejected, but other track accepted");
+  fPrimStats->GetXaxis()->SetBinLabel(7, "Primary track rejected, but other track accepted (count)");
+  fOutput->Add(fPrimStats);
+
   // disable info messages of AliMCEvent (per event)
   AliLog::SetClassDebugLevel("AliMCEvent", AliLog::kWarning - AliLog::kDebug + 1);
 }
@@ -133,15 +146,22 @@ void AliCutTask::Exec(Option_t *)
   if (fESD->GetTriggerMask() & 1 || fESD->GetTriggerMask() & 2)
     fTriggerStats->Fill(4);
 
-  //if (!AliPWG0Helper::IsEventTriggered(fESD->GetTriggerMask()), AliPWG0Helper::kMB1)
-  if (fESD->GetTriggerMask() & (0x1 << 14) == 0)
+  //if (fESD->GetTriggerMask() & (0x1 << 14) == 0)
+  if (!AliPWG0Helper::IsEventTriggered(fESD->GetTriggerMask(), AliPWG0Helper::kMB2))
     return;
 
-  if (!AliPWG0Helper::IsVertexReconstructed(fESD->GetVertex()))
+  // get the ESD vertex
+  const AliESDVertex* vtxESD = AliPWG0Helper::GetVertex(fESD, fAnalysisMode);
+  
+  if (!vtxESD)
+  {
+    Printf("No vertex. Skipping event");
     return;
+  }
 
-  //Printf("There are %d tracks in this event", fESD->GetNumberOfTracks());
-  fTrackCuts->CountAcceptedTracks(fESD);
+  Printf("There are %d tracks in this event", fESD->GetNumberOfTracks());
+  Int_t acceptedTracks = fTrackCuts->CountAcceptedTracks(fESD);
+  Printf("Accepted %d tracks", acceptedTracks);
   
   if (fTrackCutsPrimaries && fTrackCutsSecondaries)
   {
@@ -163,7 +183,17 @@ void AliCutTask::Exec(Option_t *)
       Printf("ERROR: Stack not available");
       return;
     }
-    
+
+    // count if primaries are counted several times
+    Int_t max = stack->GetNprimary();
+    Int_t* primAcc = new Int_t[max];
+    Int_t* primRej = new Int_t[max];
+    for (Int_t i=0; i<max; i++)
+    {
+      primAcc[i] = 0;
+      primRej[i] = 0;
+    }
+
     for (Int_t trackId = 0; trackId < fESD->GetNumberOfTracks(); trackId++)
     {
       AliESDtrack* track = fESD->GetTrack(trackId);
@@ -182,7 +212,19 @@ void AliCutTask::Exec(Option_t *)
       Int_t label = TMath::Abs(track->GetLabel());
       if (stack->IsPhysicalPrimary(label) == kTRUE)
       {
-        fTrackCutsPrimaries->AcceptTrack(track);
+	if (label >= max)
+	{
+	  Printf("Warning label %d is higher than number of primaries %d", label, max);
+	  continue;
+	}
+	    
+        if (fTrackCutsPrimaries->AcceptTrack(track)) 
+	{
+	  primAcc[label]++;
+	} 
+	else
+	  primRej[label]++;
+
       }
       else
       {
@@ -208,10 +250,32 @@ void AliCutTask::Exec(Option_t *)
         fTrackCutsSecondaries->AcceptTrack(track);
       }
     }
+
+    for (Int_t i=0; i<max; i++) {
+      if (primAcc[i] == 1) {
+	fPrimStats->Fill(1);
+      } else if (primAcc[i] > 1) {
+	fPrimStats->Fill(2);
+	fPrimStats->Fill(3, primAcc[i]);
+      }
+
+      if (primRej[i] > 0) {
+	if (primAcc[i] == 0) {
+	  fPrimStats->Fill(4);
+	  fPrimStats->Fill(5, primRej[i]);
+	} else if (primAcc[i] > 0) {
+	  fPrimStats->Fill(6);
+	  fPrimStats->Fill(7, primRej[i]);
+	}
+      }
+    }
+
+    delete[] primAcc;
+    delete[] primRej;
   }
 
   // get the ESD vertex
-  fVertex->Fill(fESD->GetVertex()->GetZv());
+  fVertex->Fill(vtxESD->GetZv());
 }
 
 //________________________________________________________________________
@@ -258,6 +322,9 @@ void AliCutTask::Terminate(Option_t *)
 
   if (fTrackCutsSecondaries)
     fTrackCutsSecondaries->SaveHistograms();
+
+  if (fPrimStats)
+    fPrimStats->Write();
   
   file->Close();
   
