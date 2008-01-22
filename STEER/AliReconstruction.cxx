@@ -1045,15 +1045,17 @@ Bool_t AliReconstruction::Run(const char* input, Bool_t IsOnline)
   tree->Write(tree->GetName(),TObject::kOverwrite);
   hlttree->Write();
 
-  if (fWriteAOD) {
-    TFile *aodFile = TFile::Open("AliAOD.root", "RECREATE");
-    ESDFile2AODFile(file, aodFile);
-    aodFile->Close();
-  }
-
   gROOT->cd();
   CleanUp(file, fileOld);
     
+  if (fWriteAOD) {
+    TFile *esdFile = TFile::Open("AliESDs.root", "READONLY");
+    TFile *aodFile = TFile::Open("AliAOD.root", "RECREATE");
+    ESDFile2AODFile(esdFile, aodFile);
+    aodFile->Close();
+    esdFile->Close();
+  }
+
   // Create tags for the events in the ESD tree (the ESD tree is always present)
   // In case of empty events the tags will contain dummy values
   AliESDTagCreator *esdtagCreator = new AliESDTagCreator();
