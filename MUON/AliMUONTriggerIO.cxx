@@ -256,7 +256,7 @@ AliMUONTriggerIO::ReadLocalLUT(AliMUONTriggerLut& lut,
 
   UShort_t address;
   
-  UChar_t buffer;
+  UChar_t buffer[16384];   // 32768 hpt/lpt addresses divided by two
   UChar_t mask1 = 0xF0;
   UChar_t mask2 = 0x0F;
   UChar_t maskHpt = 0x0C;
@@ -274,15 +274,16 @@ AliMUONTriggerIO::ReadLocalLUT(AliMUONTriggerLut& lut,
   Int_t ny = 0;
   Bool_t trigx = kFALSE;
   
+  // read two lut addresses at once, 32768/2=16384 times
+  fread(buffer,16384,1,flut);
+
   // create the 32767 addresses for the 4-bits lpt and hpt half-bytes
-  for (UShort_t ilut = 0; ilut < 0x7FFF; ilut += 2) 
+  for (UShort_t ilut = 0; ilut < 32768; ilut += 2) 
   {
-    // read two lut addresses at once
-    fread(&buffer,1,1,flut);
     
     // 1st 4-bits half-byte
     address = ilut;   
-    lh = (buffer & mask1) >> 4;
+    lh = (buffer[ilut/2] & mask1) >> 4;
     
     // Lpt and Hpt response
     hpt = (lh & maskHpt) >> 2;
@@ -312,7 +313,7 @@ AliMUONTriggerIO::ReadLocalLUT(AliMUONTriggerLut& lut,
     
     // 2nd 4-bits half-byte
     address = ilut+1; 
-    lh = (buffer & mask2);
+    lh = (buffer[ilut/2] & mask2);
     
     // Lpt and Hpt response
     hpt = (lh & maskHpt) >> 2;
@@ -730,6 +731,9 @@ AliMUONTriggerIO::WriteLocalLUT(const AliMUONTriggerLut& lut,
   const Int_t kMaskYtri = 0x01;
   const Int_t kMaskXdev = 0x1F;
   const Int_t kMaskXpos = 0x1F;
+
+  UChar_t buffer[16384];  // 32768 hpt/lpt addresses divided by two
+  Int_t bc = 0;
   
   for (Int_t i = 0; i < 32768; ++i) 
   {
@@ -784,26 +788,25 @@ AliMUONTriggerIO::WriteLocalLUT(const AliMUONTriggerLut& lut,
       lut.GetLutOutput(localBoardId,iXpos,iXdev,iYpos,lutLpt,lutHpt);
     }
     
-    UChar_t buffer;
-    
     // fill byte
     if (i%2 == 0) 
     {
       // upper half-byte
-      buffer = 0;	    
-      buffer += lutHpt[1] << 7;
-      buffer += lutHpt[0] << 6;
-      buffer += lutLpt[1] << 5;
-      buffer += lutLpt[0] << 4;
+      buffer[bc] = 0;	    
+      buffer[bc] += lutHpt[1] << 7;
+      buffer[bc] += lutHpt[0] << 6;
+      buffer[bc] += lutLpt[1] << 5;
+      buffer[bc] += lutLpt[0] << 4;
     } else {
       // lower half-byte
-      buffer += lutHpt[1] << 3;
-      buffer += lutHpt[0] << 2;
-      buffer += lutLpt[1] << 1;
-      buffer += lutLpt[0] << 0;
-      fwrite(&buffer,1,1,flut);
+      buffer[bc] += lutHpt[1] << 3;
+      buffer[bc] += lutHpt[0] << 2;
+      buffer[bc] += lutLpt[1] << 1;
+      buffer[bc] += lutLpt[0] << 0;
+      bc++;
     }
   }
+  fwrite(&buffer,bc,1,flut);
 }  
 
 //_____________________________________________________________________________
