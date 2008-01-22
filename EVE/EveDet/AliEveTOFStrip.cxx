@@ -6,6 +6,7 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
+
 #include "AliEveTOFStrip.h"
 
 #include <TEveManager.h>
@@ -15,9 +16,7 @@
 
 #include <TStyle.h>
 
-using namespace std;
-
-Bool_t       AliEveTOFStrip::fgStaticInitDone = kFALSE;
+Bool_t           AliEveTOFStrip::fgStaticInitDone   = kFALSE;
 TEveFrameBox*    AliEveTOFStrip::fgTOFstripFrameBox = 0;
 TEveRGBAPalette* AliEveTOFStrip::fgTOFstripPalette  = 0;
 
@@ -31,7 +30,8 @@ AliEveTOFStrip::AliEveTOFStrip(const Text_t* n, const Text_t* t) :
   fTOFgeometry(new AliTOFGeometry()),
   fTOFarray(0),
   fSector(-1), fPlate(-1), fStrip(-1),
-  fDx(0), fDz(0)
+  fDx(0), fDz(0),
+  fGeoManager(0)
 {
 
   fGeoManager = (TGeoManager*)gEve->GetGeometry("$REVESYS/alice-data/alice_fullgeo.root");
@@ -41,9 +41,8 @@ AliEveTOFStrip::AliEveTOFStrip(const Text_t* n, const Text_t* t) :
 /* ************************************************************************ */
 
 AliEveTOFStrip::AliEveTOFStrip(TGeoManager *localGeoManager,
-		   Int_t nSector, Int_t nPlate, Int_t nStrip)
-  :
-  TEveQuadSet(Form("Strip%i",nStrip)),
+			       Int_t nSector, Int_t nPlate, Int_t nStrip) :
+  TEveQuadSet(Form("Strip%i", nStrip)),
   fTOFgeometry(new AliTOFGeometry()),
   fTOFarray(0),
   fSector(nSector), fPlate(nPlate), fStrip(nStrip),
@@ -59,10 +58,9 @@ AliEveTOFStrip::AliEveTOFStrip(TGeoManager *localGeoManager,
 /* ************************************************************************ */
 
 AliEveTOFStrip::AliEveTOFStrip(TGeoManager *localGeoManager,
-		   Int_t nSector, Int_t nPlate, Int_t nStrip,
-		   TClonesArray *tofArray)
-  :
-  TEveQuadSet(Form("Strip%i",nStrip)),
+			       Int_t nSector, Int_t nPlate, Int_t nStrip,
+			       TClonesArray *tofArray) :
+  TEveQuadSet(Form("Strip%i", nStrip)),
   fTOFgeometry(new AliTOFGeometry()),
   fTOFarray(tofArray),
   fSector(nSector), fPlate(nPlate), fStrip(nStrip),

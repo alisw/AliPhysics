@@ -1,25 +1,7 @@
 // $Id$
 // Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
-
-/**************************************************************************
- * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
- * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
- * full copyright notice.                                                 *
- **************************************************************************/
-/**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Authors: Jochen Thaeder <thaeder@kip.uni-heidelberg.de>                *
- *          for The ALICE HLT Project.                                    *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+// Author: Jochen Thaeder <thaeder@kip.uni-heidelberg.de>                *
+//         for The ALICE HLT Project.                                    *
 
 /** @file   AliEveHOMERManager.cxx
     @author Jochen Thaeder
@@ -99,23 +81,6 @@ AliEveHOMERManager::AliEveHOMERManager( TString xmlFile ) :
   // refer to README to build package
   // or
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
-}
-
-//##################################################################################
-AliEveHOMERManager::AliEveHOMERManager( const AliEveHOMERManager& m) :
-  TEveElementList(m.GetName(), m.GetTitle())
-{
-  // see header file for class documentation
-
-  AliError( Form( "copy constructor to be tested." ) );
-}
-
-//##################################################################################
-AliEveHOMERManager& AliEveHOMERManager::operator=( const AliEveHOMERManager& ) {
-  // see header file for class documentation
-
-  AliError( Form( "assignment constructor to be tested." ) );
-  return *this;
 }
 
 //##################################################################################

@@ -66,6 +66,9 @@ public:
   class StaticDataWindow : public TGTransientFrame
   {
   private:
+    StaticDataWindow(const StaticDataWindow&);            // Not implemented
+    StaticDataWindow& operator=(const StaticDataWindow&); // Not implemented
+
     TGCompositeFrame    *fFrame1, *fF2;
     TGButton            *fOkButton, *fCancelButton;
     TGLayoutHints       *fL1, *fL2, *fL3, *fL5;

@@ -24,8 +24,8 @@
 
 
 class AliEveJetPlane : public TEveElementList,
-			      public TAtt3D,
-			      public TAttBBox
+		       public TAtt3D,
+		       public TAttBBox
 {
   friend class AliEveJetPlaneGL;
 
@@ -76,10 +76,10 @@ public:
   void AddJet(AliAODJet jet);
   void AddTrack(AliAODTrack track);
 
-  Int_t GetNEtaDiv() const   { return fNEtaDiv; }
+  Int_t GetNEtaDiv() const  { return fNEtaDiv; }
   void  SetNEtaDiv(Int_t r) { fNEtaDiv = r; }
 
-  Int_t GetNPhiDiv() const   { return fNPhiDiv; }
+  Int_t GetNPhiDiv() const  { return fNPhiDiv; }
   void  SetNPhiDiv(Int_t r) { fNPhiDiv = r; }
 
   Bool_t GetRnrJets() const   { return fRnrJets; }
@@ -115,12 +115,12 @@ public:
   virtual Bool_t  CanEditMainColor()   { return kTRUE; }
 
   virtual Bool_t  CanEditMainHMTrans() { return kTRUE; }
-  virtual TEveTrans* PtrMainHMTrans()     { return &fHMTrans; }
+  virtual TEveTrans* PtrMainHMTrans()  { return &fHMTrans; }
 
   virtual void ComputeBBox();
   virtual void Paint(Option_t* option = "");
 
-  TEveTrans& RefHMTrans() { return fHMTrans; }
+  TEveTrans& RefHMTrans()                    { return fHMTrans; }
   void SetTransMatrix(Double_t* carr)        { fHMTrans.SetFrom(carr); }
   void SetTransMatrix(const TGeoMatrix& mat) { fHMTrans.SetFrom(mat);  }
 

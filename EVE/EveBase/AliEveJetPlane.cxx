@@ -48,11 +48,17 @@ AliEveJetPlane::AliEveJetPlane(Int_t iev) :
 
   fGridColor(5),
 
+  fHMTrans(),
+  fJets(),
+  fTracks(),
+
   fRnrJets (kTRUE),
   fRnrTracks (kTRUE),
 
   fOneSelection (kTRUE),
   fTwoSelection (kFALSE),
+
+  fJet1(0), fJet2(0), fTrack1(0), fTrack2(0),
 
   fSelectionFlag (1)
 {

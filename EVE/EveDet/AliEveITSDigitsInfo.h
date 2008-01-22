@@ -78,9 +78,9 @@ private:
   void InitInternals();
 
 protected:
-  map<Int_t,  TClonesArray*> fSPDmap;     // Map from module-id to SPD data.
-  map<Int_t,  TClonesArray*> fSDDmap;     // Map from module-id to SDD data.
-  map<Int_t,  TClonesArray*> fSSDmap;     // Map from module-id to SSD data.
+  std::map<Int_t,  TClonesArray*> fSPDmap;     // Map from module-id to SPD data.
+  std::map<Int_t,  TClonesArray*> fSDDmap;     // Map from module-id to SDD data.
+  std::map<Int_t,  TClonesArray*> fSSDmap;     // Map from module-id to SSD data.
 
   void        SetITSSegmentation();
 

@@ -35,14 +35,15 @@
 ClassImp(AliEveTrackFitter)
 
 AliEveTrackFitter::AliEveTrackFitter(const Text_t* name, Int_t n_points) :
-    TEvePointSet(name, n_points),
+    TEvePointSet   (name, n_points),
 
-    fGraphSelected(0),
-    fGraphFitted(0),
-
-    fRieman(0),
-    fConnected(kFALSE),
-    fTrackList(0)
+    fGraphSelected (0),
+    fGraphFitted   (0),
+    fAlpha         (0),
+    fRieman        (0),
+    fConnected     (kFALSE),
+    fTrackList     (0),
+    fMapPS         ()
 {
   // Constructor.
 

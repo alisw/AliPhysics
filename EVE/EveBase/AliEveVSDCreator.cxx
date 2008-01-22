@@ -35,9 +35,6 @@
 #include <TFile.h>
 #include <TError.h>
 
-
-using namespace std;
-
 //______________________________________________________________________________
 // AliEveVSDCreator
 //
@@ -47,7 +44,7 @@ ClassImp(AliEveVSDCreator)
 AliEveVSDCreator::AliEveVSDCreator(const Text_t* name, const Text_t* title) :
   TEveVSD(name, title),
 
-  mKineType (KT_Standard),
+  mKineType (kKT_Standard),
   mDataDir  ("."),
   mEvent    (0),
 
@@ -240,7 +237,7 @@ void AliEveVSDCreator::ConvertKinematics()
   fTreeK = new TTree("Kinematics", "TParticles sorted by Label");
 
   Int_t nentries = stack->GetNtrack();
-  vector<TEveMCTrack>  vmc(nentries);
+  std::vector<TEveMCTrack>  vmc(nentries);
   for (Int_t idx=0; idx<nentries; idx++) {
     TParticle* tp = stack->Particle(idx);
     vmc[idx]        = *tp;
@@ -290,7 +287,7 @@ void AliEveVSDCreator::ConvertKinematics()
   fTreeK->Branch("K", "TEveMCTrack",  &fpK, fBuffSize);
 
   printf("sizeofvmc = %d\n", vmc.size());
-  for(vector<TEveMCTrack>::iterator k=vmc.begin(); k!=vmc.end(); ++k) {
+  for(std::vector<TEveMCTrack>::iterator k=vmc.begin(); k!=vmc.end(); ++k) {
     TEveMCTrack& mct = *k;
     fK = mct;
 
@@ -349,7 +346,7 @@ void AliEveVSDCreator::ConvertHits()
   fTreeH =  new TTree("Hits", "Combined detector hits.");
   fTreeH->Branch("H", "TEveHit", &fpH, fBuffSize);
 
-  map<Int_t, Int_t> hmap;
+  std::map<Int_t, Int_t> hmap;
   // parameters for ITS, TPC hits filtering
   Float_t x,y,z, x1,y1,z1;
   Float_t tpc_sqr_res = mTPCHitRes*mTPCHitRes;
@@ -437,7 +434,7 @@ void AliEveVSDCreator::ConvertHits()
 
 
   //set geninfo
-  for(map<Int_t, Int_t>::iterator j=hmap.begin(); j!=hmap.end(); ++j) {
+  for(std::map<Int_t, Int_t>::iterator j=hmap.begin(); j!=hmap.end(); ++j) {
     GetGeninfo(j->first)->fNHits += j->second;
   }
 }
@@ -504,7 +501,7 @@ void AliEveVSDCreator::ConvertTPCClusters()
   // calculate xyz for a cluster and add it to container
   Double_t x,y,z;
   Float_t cs, sn, tmp;
-  map<Int_t, Int_t> cmap;
+  std::map<Int_t, Int_t> cmap;
 
   for (Int_t n=0; n<tree->GetEntries(); n++) {
     tree->GetEntry(n);
@@ -541,7 +538,7 @@ void AliEveVSDCreator::ConvertTPCClusters()
     }
   }
   //set geninfo
-  for(map<Int_t, Int_t>::iterator j=cmap.begin(); j!=cmap.end(); ++j) {
+  for(std::map<Int_t, Int_t>::iterator j=cmap.begin(); j!=cmap.end(); ++j) {
     GetGeninfo(j->first)->fNClus += j->second;
   }
 }
@@ -581,7 +578,7 @@ void AliEveVSDCreator::ConvertITSClusters()
   tree->SetBranchAddress("Clusters", &arr);
   Int_t nmods = tree->GetEntries();
   Float_t gc[3];
-  map<Int_t, Int_t> cmap;
+  std::map<Int_t, Int_t> cmap;
 
   for (Int_t mod=0; mod<nmods; mod++) {
     tree->GetEntry(mod);
@@ -621,7 +618,7 @@ void AliEveVSDCreator::ConvertITSClusters()
       }
     }
 
-    for(map<Int_t, Int_t>::iterator j=cmap.begin(); j!=cmap.end(); ++j) {
+    for(std::map<Int_t, Int_t>::iterator j=cmap.begin(); j!=cmap.end(); ++j) {
       GetGeninfo(j->first)->fNClus += j->second;
     }
   }
@@ -837,7 +834,7 @@ void AliEveVSDCreator::ConvertGenInfo()
   fTreeGI->Branch("K.", "TEveMCTrack",  &fpK);
   fTreeGI->Branch("R.", "TEveRecTrack", &fpR);
 
-  for (map<Int_t, TEveMCRecCrossRef*>::iterator j=mGenInfoMap.begin(); j!=mGenInfoMap.end(); ++j) {
+  for (std::map<Int_t, TEveMCRecCrossRef*>::iterator j=mGenInfoMap.begin(); j!=mGenInfoMap.end(); ++j) {
     fGI        = *(j->second);
     fGI.fLabel = j->first;
     fTreeK->GetEntry(j->first);
@@ -883,7 +880,7 @@ TEveMCRecCrossRef* AliEveVSDCreator::GetGeninfo(Int_t label)
 {
   // printf("get_geninfo %d\n", label);
   TEveMCRecCrossRef* gi;
-  map<Int_t, TEveMCRecCrossRef*>::iterator i = mGenInfoMap.find(label);
+  std::map<Int_t, TEveMCRecCrossRef*>::iterator i = mGenInfoMap.find(label);
   if(i == mGenInfoMap.end()) {
     gi =  new TEveMCRecCrossRef();
     mGenInfoMap[label] = gi;

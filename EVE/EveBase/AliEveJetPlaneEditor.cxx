@@ -181,15 +181,11 @@ ClassImp(AliEveJetPlaneEditor::StaticDataWindow)
 AliEveJetPlaneEditor::StaticDataWindow::StaticDataWindow(const TGWindow *p, const TGWindow *main,
 						   UInt_t w, UInt_t h, UInt_t options) :
   TGTransientFrame(p, main, w, h, options),
-  fFrame1(0),
-  fOkButton(0),
-  fCancelButton(0),
-  fL1(0),
-  fL2(0),
-  fL3(0),
-  fL5(0),
+  fFrame1(0), fF2(0),
+  fOkButton(0), fCancelButton(0),
+  fL1(0), fL2(0), fL3(0), fL5(0),
   fTab(0),
-  fChk1(0),fChk2(0),fChk3(0),fChk4(0),fChk5(0)
+  fChk1(0), fChk2(0), fChk3(0), fChk4(0), fChk5(0)
 {
   // Create a dialog window. A dialog window pops up with respect to its
   // "main" window.

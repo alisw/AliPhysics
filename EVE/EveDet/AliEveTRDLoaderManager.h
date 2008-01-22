@@ -6,11 +6,13 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
+
 #ifndef ALIEVE_TRDLoaderManager_H
 #define ALIEVE_TRDLoaderManager_H
 
 ////////////////////////////////////////////////////////////////////////
-//                                                                      // - ALIEVE implementation -
+//                                                                      
+// - ALIEVE implementation -
 // Loader manager for the TRD detector
 //    - AliEveTRDLoaderManager - manager of TRD data loaders (simulation + measured)
 //    - AliEveTRDLoaderManagerEditor - UI
@@ -20,54 +22,58 @@
 
 #include <TEveElement.h>
 
-#ifndef ROOT_TNamed
 #include <TNamed.h>
-#endif
-
-#ifndef ROOT_TGedFrame
 #include <TGedFrame.h>
-#endif
 
 class TGComboBox;
 class TGTextButton;
 class TClonesArray;
 
 
-	class AliEveTRDLoaderManager : public TEveElementList
-	{
-	friend class AliEveTRDLoaderManagerEditor;
-	public:
-		AliEveTRDLoaderManager(const Text_t* name="AliEveTRDLoader", const Text_t* title=0x0);
-		~AliEveTRDLoaderManager();
-		void 	Paint(Option_t *option);
+class AliEveTRDLoaderManager : public TEveElementList
+{
+  friend class AliEveTRDLoaderManagerEditor;
+private:
+  AliEveTRDLoaderManager(const AliEveTRDLoaderManager&);            // Not implemented
+  AliEveTRDLoaderManager& operator=(const AliEveTRDLoaderManager&); // Not implemented
+public:
+  AliEveTRDLoaderManager(const Text_t* name="AliEveTRDLoader", const Text_t* title=0x0);
+  ~AliEveTRDLoaderManager();
+  void 	Paint(Option_t *option);
 
-	protected:
-		void	Add(Int_t type, const Text_t *name, const Text_t *title=0x0);
-		void	Remove(Int_t entry);
+protected:
+  void	Add(Int_t type, const Text_t *name, const Text_t *title=0x0);
+  void	Remove(Int_t entry);
 
-		ClassDef(AliEveTRDLoaderManager, 1) // Alieve loaders manager for TRD
-	};
+  ClassDef(AliEveTRDLoaderManager, 1); // Alieve loaders manager for TRD
+};
 
-	class AliEveTRDLoaderManagerEditor : public TGedFrame
-	{
-	public:
-		AliEveTRDLoaderManagerEditor(const TGWindow* p=0, Int_t width = 170, Int_t height = 30, UInt_t options = kChildFrame, Pixel_t back = GetDefaultFrameBackground());
-		~AliEveTRDLoaderManagerEditor();
-		virtual void	Add();
-		virtual void	Remove(Int_t entry);
-		virtual void	SetModel(TObject* obj);
 
-	protected:
-		AliEveTRDLoaderManager* fM;
+class AliEveTRDLoaderManagerEditor : public TGedFrame
+{
+private:
+  AliEveTRDLoaderManagerEditor(const AliEveTRDLoaderManagerEditor&);            // Not implemented
+  AliEveTRDLoaderManagerEditor& operator=(const AliEveTRDLoaderManagerEditor&); // Not implemented
+public:
+  AliEveTRDLoaderManagerEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30,
+			       UInt_t options=kChildFrame, Pixel_t back=GetDefaultFrameBackground());
+  ~AliEveTRDLoaderManagerEditor();
 
-	private:
-		ULong_t bg;        // background color
-		TGComboBox		*fSelector;
-		TGTextButton	*fAdd, *fRemoveButton;
-		TGGroupFrame 	*fGroupFrame;
-		TClonesArray	*fRemove;
+  virtual void	Add();
+  virtual void	Remove(Int_t entry);
+  virtual void	SetModel(TObject* obj);
 
-		ClassDef(AliEveTRDLoaderManagerEditor, 1)// Editor for AliEveTRDLoaderManager
-	};
+protected:
+  AliEveTRDLoaderManager* fM;
+
+private:
+  TGComboBox	*fSelector;
+  TGTextButton	*fAdd, *fRemoveButton;
+  TGGroupFrame 	*fGroupFrame;
+  TClonesArray	*fRemove;              
+
+  ClassDef(AliEveTRDLoaderManagerEditor, 1); // Editor for AliEveTRDLoaderManager
+};
+
 #endif
 

@@ -23,7 +23,7 @@
 class AliEveDigitScaleInfo : public TQObject, public TEveRefBackPtr
 {
 public:
-  enum StatType_e { ST_Occup, ST_Average, ST_Rms };
+  enum StatType_e { kST_Occup, kST_Average, kST_Rms };
 
   // Bool_t           fAutoUpdatePalette;
 private:
@@ -79,7 +79,7 @@ class AliEveITSScaledModule : public AliEveITSModule
 {
   friend class ITSSDSubEditor;
 private:
-  map<Int_t, ScaledDigit> fDigitsMap;
+  std::map<Int_t, ScaledDigit> fDigitsMap;
 
   AliEveITSScaledModule(const AliEveITSScaledModule&);            // Not implemented
   AliEveITSScaledModule& operator=(const AliEveITSScaledModule&); // Not implemented

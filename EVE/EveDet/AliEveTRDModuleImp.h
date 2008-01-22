@@ -6,6 +6,7 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
+
 #ifndef ALIEVE_TRDModuleImp_H
 #define ALIEVE_TRDModuleImp_H
 
@@ -22,9 +23,7 @@
 
 #include <TEveElement.h>
 
-#ifndef ALIEVE_TRDModule_H
 #include "AliEveTRDModule.h"
-#endif
 
 class AliTRDpadPlane;
 class AliTRDgeometry;
@@ -35,71 +34,76 @@ class TObjArray;
 
 class TEveTrack;
 
-	class AliEveTRDHits;
-	class AliEveTRDDigits;
+class AliEveTRDHits;
+class AliEveTRDDigits;
 
-	class AliEveTRDChamber : public TEveElement, public AliEveTRDModule
-	{
-	friend class AliEveTRDDigits;
-	public:
+class AliEveTRDChamber : public TEveElement, public AliEveTRDModule
+{
+  friend class AliEveTRDDigits;
 
-		AliEveTRDChamber(Int_t det=0);
-		virtual ~AliEveTRDChamber() {}
+private:
+  AliEveTRDChamber(const AliEveTRDChamber&);            // Not implemented.
+  AliEveTRDChamber& operator=(const AliEveTRDChamber&); // Not implemented.
 
-		AliEveTRDChamber(const AliEveTRDChamber&);
-		AliEveTRDChamber& operator=(const AliEveTRDChamber&);
+public:
 
-		void	AddHit(AliTRDhit *hit);
-		Int_t	GetRowMax() const {return rowMax;}
-		Int_t	GetColMax() const {return colMax;}
-		Int_t	GetTimeMax() const {return timeMax;}
-		Int_t	GetSM() const;
-		Int_t	GetSTK() const;
-		Int_t	GetPlane() const {return fPla;}
-		void	LoadClusters(TObjArray *cs);
-		void	LoadDigits(AliTRDdigitsManager *digits);
-		void	LoadTracklets(TObjArray *ts);
-		void	Paint(Option_t* option="");
-		void	Reset();
-		void	SetGeometry(AliTRDgeometry *geo);
+  AliEveTRDChamber(Int_t det=0);
+  virtual ~AliEveTRDChamber() {}
 
-	protected:
-		AliEveTRDDigits	*fDigits;   // digits representation
-		AliEveTRDHits		*fHits;     // hits representation
-		AliEveTRDHits		*fRecPoints;// cluster representation
-		std::vector<TEveTrack*> *fTracklets; // mcm tracklets
+  void  AddHit(AliTRDhit *hit);
+  Int_t GetRowMax()  const {return fRowMax;}
+  Int_t GetColMax()  const {return fColMax;}
+  Int_t GetTimeMax() const {return fTimeMax;}
+  Int_t GetSM() const;
+  Int_t GetSTK() const;
+  Int_t GetPlane() const {return fPla;}
 
-		// data representation section
-		Int_t		rowMax; // number of rows for this pad plane
-  	Int_t		colMax; // number of columns for this pad plane
-  	Int_t		timeMax; // number of timebins
-		Float_t	samplingFrequency; // sampling frequency
-		Float_t	fX0; // radial distance from vertex to the chamber
-		Int_t		fPla; // detector plane
-		AliTRDpadPlane *fPadPlane; // pad plane object
-		AliTRDgeometry *fGeo; // TRD geometry
+  void  LoadClusters(TObjArray *cs);
+  void  LoadDigits(AliTRDdigitsManager *digits);
+  void  LoadTracklets(TObjArray *ts);
+  void  Paint(Option_t* option="");
+  void  Reset();
+  void  SetGeometry(AliTRDgeometry *geo);
 
-	ClassDef(AliEveTRDChamber,1) // Holder for TRD chamber data
-	};
+protected:
+  AliEveTRDDigits         *fDigits;    // digits representation
+  AliEveTRDHits           *fHits;      // hits representation
+  AliEveTRDHits           *fRecPoints; // cluster representation
+  std::vector<TEveTrack*> *fTracklets; // mcm tracklets
+
+  // data representation section
+  Int_t           fRowMax;   // number of rows for this pad plane
+  Int_t           fColMax;   // number of columns for this pad plane
+  Int_t           fTimeMax;  // number of timebins
+  Float_t         fSamplingFrequency; // sampling frequency
+  Float_t         fX0;       // radial distance from vertex to the chamber
+  Int_t           fPla;      // detector plane
+  AliTRDpadPlane *fPadPlane; // pad plane object
+  AliTRDgeometry *fGeo;      // TRD geometry
+
+  ClassDef(AliEveTRDChamber,1); // Holder for TRD chamber data
+};
 
 
-	class AliEveTRDNode : public TEveElement, public AliEveTRDModule
-	{
-	public:
-		AliEveTRDNode(const char *typ, Int_t det=0);
-		void	Paint(Option_t* option="");
-		void	Reset();
+class AliEveTRDNode : public TEveElement, public AliEveTRDModule
+{
+public:
+  AliEveTRDNode(const char *typ, Int_t det=0);
 
-		void	Collapse(); // *MENU*
-		void	Expand(); // *MENU*
-		void	EnableListElements(); // *MENU*
-		void	DisableListElements(); // *MENU*
-		void	UpdateLeaves();
-		void	UpdateNode();
+  void Paint(Option_t* option="");
+  void Reset();
 
-		List_i begin(){return fChildren.begin();}
-		List_i end(){return fChildren.end();}
+  void Collapse();            // *MENU*
+  void Expand();              // *MENU*
+  void EnableListElements();  // *MENU*
+  void DisableListElements(); // *MENU*
+  void UpdateLeaves();
+  void UpdateNode();
 
-	ClassDef(AliEveTRDNode, 1)
-	};
+  List_i begin(){return fChildren.begin();}
+  List_i end(){return fChildren.end();}
+
+  ClassDef(AliEveTRDNode, 1);
+};
+
 #endif

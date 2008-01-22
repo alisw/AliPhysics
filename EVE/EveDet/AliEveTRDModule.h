@@ -6,6 +6,7 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
+
 #ifndef ALIEVE_TRDModule_H
 #define ALIEVE_TRDModule_H
 
@@ -34,63 +35,75 @@ class TGNumberEntry;
 class TGColorSelect;
 
 
-	class AliEveTRDModule : public TNamed
-	{
-	friend class AliEveTRDModuleEditor;
-	friend class AliEveTRDNode;
-	friend class AliEveTRDChamber;
-	public:
-		AliEveTRDModule(const char *typ="XXX", Int_t id=0);
-		virtual ~AliEveTRDModule() {}
+class AliEveTRDModule : public TNamed
+{
+  friend class AliEveTRDModuleEditor;
+  friend class AliEveTRDNode;
+  friend class AliEveTRDChamber;
 
-		virtual Bool_t GetDigitsBox(){return fDigitsBox;}
-		virtual Bool_t GetDigitsLog(){return fDigitsLog;}
-		virtual UShort_t GetDigitsThreshold(){return fDigitsThreshold;}
-		virtual Int_t	GetID(){return fDet;}
-		virtual void	Paint(Option_t* option="")=0;
-		virtual void	Reset()=0;
+private:
+  AliEveTRDModule(const AliEveTRDModule&);            // Not implemented
+  AliEveTRDModule& operator=(const AliEveTRDModule&); // Not implemented
 
-	protected:
-		// UI section
-		Bool_t	fLoadHits, fRnrHits;
-		Bool_t	fLoadDigits, fRnrDigits, fDigitsLog, fDigitsBox;
-		Bool_t	kDigitsNeedRecompute;
+public:
+  AliEveTRDModule(const char *typ="XXX", Int_t id=0);
+  virtual ~AliEveTRDModule() {}
 
-		Bool_t	fLoadRecPoints, fRnrRecPoints;
-		Bool_t	fLoadTracklets, fRnrTracklets;
+  virtual Bool_t GetDigitsBox(){return fDigitsBox;}
+  virtual Bool_t GetDigitsLog(){return fDigitsLog;}
+  virtual UShort_t GetDigitsThreshold(){return fDigitsThreshold;}
+  virtual Int_t	GetID(){return fDet;}
+  virtual void	Paint(Option_t* option="")=0;
+  virtual void	Reset()=0;
 
-		Int_t fDet; // detector number
-		UShort_t	fDigitsThreshold; // digits threshold
-	ClassDef(AliEveTRDModule,1) // Structure holder for TRD chamber
-	};
+protected:
+  // UI section
+  Bool_t	fLoadHits, fRnrHits;
+  Bool_t	fLoadDigits, fRnrDigits, fDigitsLog, fDigitsBox;
+  Bool_t	fDigitsNeedRecompute;
+
+  Bool_t	fLoadRecPoints, fRnrRecPoints;
+  Bool_t	fLoadTracklets, fRnrTracklets;
+
+  Int_t         fDet;             // detector number
+  UShort_t	fDigitsThreshold; // digits threshold
+
+  ClassDef(AliEveTRDModule,1); // Structure holder for TRD chamber
+};
 
 
-	class AliEveTRDModuleEditor : public TGedFrame
-	{
-	public:
-		AliEveTRDModuleEditor(const TGWindow* p=0, Int_t width = 170, Int_t height = 30, UInt_t options = kChildFrame, Pixel_t back = GetDefaultFrameBackground());
-		~AliEveTRDModuleEditor();
+class AliEveTRDModuleEditor : public TGedFrame
+{
+private:
+  AliEveTRDModuleEditor(const AliEveTRDModuleEditor&);            // Not implemented
+  AliEveTRDModuleEditor& operator=(const AliEveTRDModuleEditor&); // Not implemented
 
-		virtual void SetModel(TObject* obj);
+public:
+  AliEveTRDModuleEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30,
+			UInt_t options=kChildFrame, Pixel_t back=GetDefaultFrameBackground());
+  ~AliEveTRDModuleEditor();
 
-		void	ModifyDigitsView();
-		void	SetThreshold(Long_t thres);
-		void	UpdateChamber();
-		void	UpdateClusters(Pixel_t);
-		void	UpdateHits(Pixel_t);
+  virtual void SetModel(TObject* obj);
 
-	protected:
-		AliEveTRDModule* fM;
+  void	ModifyDigitsView();
+  void	SetThreshold(Long_t thres);
+  void	UpdateChamber();
+  void	UpdateClusters(Pixel_t);
+  void	UpdateHits(Pixel_t);
 
-	private:
-		TGCheckButton *fDisplayHits;
-		TGColorSelect *fHitsColor;
-		TGCheckButton *fDisplayDigits, *fToggleLog, *fToggleBox, *fThreshold;
-		TGNumberEntry	*fThresValue;
-		TGCheckButton *fDisplayClusters;
-		TGColorSelect *fClustersColor;
-		TGCheckButton *fDisplayTracks;
+protected:
+  AliEveTRDModule* fM;
 
-	ClassDef(AliEveTRDModuleEditor,1) // Editor for AliEveTRDModule
-	};
+private:
+  TGCheckButton *fDisplayHits;
+  TGColorSelect *fHitsColor;
+  TGCheckButton *fDisplayDigits, *fToggleLog, *fToggleBox, *fThreshold;
+  TGNumberEntry	*fThresValue;
+  TGCheckButton *fDisplayClusters;
+  TGColorSelect *fClustersColor;
+  TGCheckButton *fDisplayTracks;
+
+  ClassDef(AliEveTRDModuleEditor,1); // Editor for AliEveTRDModule
+};
+
 #endif

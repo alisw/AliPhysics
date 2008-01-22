@@ -29,20 +29,21 @@ ClassImp(AliEveMUONChamber)
 
 //______________________________________________________________________________
 AliEveMUONChamber::AliEveMUONChamber(Int_t id, const Text_t* n, const Text_t* t) :
-TEveElement(fFrameColor),
-TNamed(n,t),
-fMUONData(0),
-fFrameColor((Color_t)2),
-fRTS(1),
-fChamberID(0),
-fQuadSet1(n,t),
-fQuadSet2(n,t),
-fPointSet1(n),
-fPointSet2(n),
-fThreshold(0),
-fMaxVal(4096),
-fClusterSize(5),
-fHitSize(5)
+  TEveElement(fFrameColor),
+  TNamed(n,t),
+  fMUONData(0),
+  fFrameColor((Color_t)2),
+  fRTS(1),
+  fChamberID(0),
+  fQuadSet1(n,t),
+  fQuadSet2(n,t),
+  fPointSet1(n),
+  fPointSet2(n),
+  fThreshold(0),
+  fMaxVal(4096),
+  fClusterSize(5),
+  fHitSize(5),
+  fColorArray(0)
 {
   //
   // constructor

@@ -15,9 +15,7 @@
 
 #include <TStyle.h>
 
-using namespace std;
-
-Bool_t       AliEveTOFSector::fgStaticInitDone = kFALSE;
+Bool_t           AliEveTOFSector::fgStaticInitDone    = kFALSE;
 TEveFrameBox*    AliEveTOFSector::fgTOFsectorFrameBox = 0;
 TEveRGBAPalette* AliEveTOFSector::fgTOFsectorPalette  = 0;
 
@@ -34,37 +32,40 @@ AliEveTOFSector::AliEveTOFSector(const Text_t* n, const Text_t* t) :
   fSector(-1),
   fDx(0), fDy(0), fDz(0),
   fAutoTrans (kTRUE),
-  //fPlateFlag0(kTRUE), fPlateFlag1(kTRUE), fPlateFlag2(kTRUE), fPlateFlag3(kTRUE), fPlateFlag4(kTRUE),
-  fThreshold (5), fMaxVal    (80),
+  fMinTime   (0), fMaxTime (0),
+  fThreshold (5), fMaxVal  (80),
   fSectorID  (0),
+  fPlateFlag (0), fPlateFlag0(kFALSE), fPlateFlag1(kFALSE), fPlateFlag2(kFALSE), fPlateFlag3(kTRUE), fPlateFlag4(kFALSE),
+  fFrameColor(4),
+  fRnrFrame  (kFALSE),
   fGeoManager(0)
 {
 
   fPlateFlag = new Bool_t[5];
   for (Int_t ii=0; ii<5; ii++) fPlateFlag[ii]=kTRUE;
 
-
   fGeoManager = (TGeoManager*)gEve->GetGeometry("$REVESYS/alice-data/alice_fullgeo.root");
   if (!fGeoManager) {
     printf("ERROR: no TGeo\n");
   }
-
 }
+
 /* ************************************************************************ */
 
-AliEveTOFSector::AliEveTOFSector(TGeoManager *localGeoManager,
-		     Int_t nSector)
-  :
-  TEveQuadSet(Form("Sector%i",nSector)),
+AliEveTOFSector::AliEveTOFSector(TGeoManager *localGeoManager, Int_t nSector) :
+  TEveQuadSet(Form("Sector%i", nSector)),
   fTOFgeometry(new AliTOFGeometry()),
   fTOFarray(0x0),
   fTOFtree(0x0),
   fSector(nSector),
   fDx(0), fDy(0), fDz(0),
   fAutoTrans (kTRUE),
-  //fPlateFlag0(kTRUE), fPlateFlag1(kTRUE), fPlateFlag2(kTRUE), fPlateFlag3(kTRUE), fPlateFlag4(kTRUE),
-  fThreshold (5), fMaxVal    (80),
+  fMinTime   (0), fMaxTime (0),
+  fThreshold (5), fMaxVal  (80),
   fSectorID  (nSector),
+  fPlateFlag (0), fPlateFlag0(kFALSE), fPlateFlag1(kFALSE), fPlateFlag2(kFALSE), fPlateFlag3(kTRUE), fPlateFlag4(kFALSE),
+  fFrameColor(4),
+  fRnrFrame  (kFALSE),
   fGeoManager(localGeoManager)
 {
 
@@ -78,8 +79,8 @@ AliEveTOFSector::AliEveTOFSector(TGeoManager *localGeoManager,
   */
 
   InitModule();
-
 }
+
 /* ************************************************************************ */
 
 AliEveTOFSector::AliEveTOFSector(TGeoManager *localGeoManager,
@@ -93,9 +94,12 @@ AliEveTOFSector::AliEveTOFSector(TGeoManager *localGeoManager,
   fSector(nSector),
   fDx(0), fDy(0), fDz(0),
   fAutoTrans (kTRUE),
-  //fPlateFlag0(kTRUE), fPlateFlag1(kTRUE), fPlateFlag2(kTRUE), fPlateFlag3(kTRUE), fPlateFlag4(kTRUE),
-  fThreshold (5), fMaxVal    (80),
+  fMinTime   (0), fMaxTime (0),
+  fThreshold (5), fMaxVal  (80),
   fSectorID  (nSector),
+  fPlateFlag (0), fPlateFlag0(kFALSE), fPlateFlag1(kFALSE), fPlateFlag2(kFALSE), fPlateFlag3(kTRUE), fPlateFlag4(kFALSE),
+  fFrameColor(4),
+  fRnrFrame  (kFALSE),
   fGeoManager(localGeoManager)
 {
 
@@ -371,7 +375,7 @@ void AliEveTOFSector::SetMaxVal(Int_t mv)
 
 void AliEveTOFSector::DigitSelected(Int_t idx)
 {
-  // Override control-click from TEveQuadSet
+  // Override control-click from TEveQuadSet.
 
   DigitBase_t* qb   = GetDigit(idx);
   TObject* obj   = qb->fId.GetObject();

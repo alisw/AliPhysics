@@ -18,11 +18,9 @@ class AliMUONGeometryTransformer;
 
 class AliEveMUONChamberData : public TObject
 {
-
+private:
   AliEveMUONChamberData(const AliEveMUONChamberData&);            // Not implemented
   AliEveMUONChamberData& operator=(const AliEveMUONChamberData&); // Not implemented
-
-private:
 
   static AliMUONGeometryTransformer* fgTransformer;   // geometry transformer
 

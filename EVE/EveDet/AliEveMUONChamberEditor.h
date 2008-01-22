@@ -24,11 +24,11 @@ class AliEveMUONChamber;
 
 class AliEveMUONChamberEditor : public TGedFrame
 {
-
+private:
   AliEveMUONChamberEditor(const AliEveMUONChamberEditor&);            // Not implemented
   AliEveMUONChamberEditor& operator=(const AliEveMUONChamberEditor&); // Not implemented
 
- protected:
+protected:
 
   AliEveMUONChamber* fM; // fModel dynamic-casted to AliEveMUONChamberEditor
 

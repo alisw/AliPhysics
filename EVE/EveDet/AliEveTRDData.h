@@ -19,99 +19,116 @@
 #ifndef ALIEVE_TRDData_H
 #define ALIEVE_TRDData_H
 
-#ifndef REVE_QuadSet_H
 #include <TEveQuadSet.h>
-#endif
-
-#ifndef REVE_BoxSet_H
 #include <TEveBoxSet.h>
-#endif
-
-#ifndef REVE_PointSet_H
 #include <TEvePointSet.h>
-#endif
 
-#ifndef ROOT_TGedFrame
 #include <TGedFrame.h>
-#endif
+
 
 #include "AliTRDdataArrayI.h"
 
 class AliTRDdigitsManager;
-
-	class AliEveTRDChamber;
-	class AliEveTRDHits : public TEvePointSet
-	{
-	public:
-		AliEveTRDHits(AliEveTRDChamber *p);
-
-		void PointSelected(Int_t n);
-
-	protected:
-		AliEveTRDChamber *fParent;
-
-	ClassDef(AliEveTRDHits,1) // Base class for TRD hits visualisation
-	};
-
-	class AliEveTRDHitsEditor : public TGedFrame
-	{
-	public:
-		AliEveTRDHitsEditor(const TGWindow* p=0, Int_t width = 170, Int_t height = 30, UInt_t options = kChildFrame, Pixel_t back = GetDefaultFrameBackground());
-		~AliEveTRDHitsEditor();
-
-		virtual void SetModel(TObject* obj);
-
-	protected:
-		AliEveTRDHits* fM;
-
-	ClassDef(AliEveTRDHitsEditor,1) // Editor for AliEveTRDHits
-	};
+class AliEveTRDChamber;
 
 
-	class AliEveTRDDigits : public TEveQuadSet
-	{
-	friend class AliEveTRDDigitsEditor;
-	public:
-		AliEveTRDDigits(AliEveTRDChamber *p);
+class AliEveTRDHits : public TEvePointSet
+{
+private:
+  AliEveTRDHits(const AliEveTRDHits&);            // Not implemented
+  AliEveTRDHits& operator=(const AliEveTRDHits&); // Not implemented
 
-		void			ComputeRepresentation();
-		void			Paint(Option_t *opt="");
-		void			Reset();
-		void			SetData(AliTRDdigitsManager *digits);
+public:
+  AliEveTRDHits(AliEveTRDChamber *p);
 
-	protected:
-		AliEveTRDChamber *fParent;
+  void PointSelected(Int_t n);
 
-	private:
-		TEveBoxSet			fBoxes;
-		AliTRDdataArrayI	fData;
+protected:
+  AliEveTRDChamber *fParent;
 
-		ClassDef(AliEveTRDDigits,1) // Digits visualisation for TRD
-	};
-
-	class AliEveTRDDigitsEditor : public TGedFrame
-	{
-	public:
-		AliEveTRDDigitsEditor(const TGWindow* p=0, Int_t width = 170, Int_t height = 30, UInt_t options = kChildFrame, Pixel_t back = GetDefaultFrameBackground());
-		~AliEveTRDDigitsEditor();
-
-		virtual void SetModel(TObject* obj);
-
-	protected:
-		AliEveTRDDigits* fM;
-
-	ClassDef(AliEveTRDDigitsEditor,1) // Editor for AliEveTRDDigits
-	};
+  ClassDef(AliEveTRDHits,1); // Base class for TRD hits visualisation
+};
 
 
-	class AliEveTRDClusters : public AliEveTRDHits
-	{
-	public:
-		AliEveTRDClusters(AliEveTRDChamber *p);
+class AliEveTRDHitsEditor : public TGedFrame
+{
+private:
+  AliEveTRDHitsEditor(const AliEveTRDHitsEditor&);            // Not implemented
+  AliEveTRDHitsEditor& operator=(const AliEveTRDHitsEditor&); // Not implemented
 
-		void PointSelected(Int_t n);
+public:
+  AliEveTRDHitsEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30,
+		      UInt_t options=kChildFrame, Pixel_t back=GetDefaultFrameBackground());
+  ~AliEveTRDHitsEditor();
 
-	ClassDef(AliEveTRDClusters,1) // Base class for TRD clusters visualisation
-	};
+  virtual void SetModel(TObject* obj);
+
+protected:
+  AliEveTRDHits* fM;
+
+  ClassDef(AliEveTRDHitsEditor,1); // Editor for AliEveTRDHits
+};
+
+
+class AliEveTRDDigits : public TEveQuadSet
+{
+  friend class AliEveTRDDigitsEditor;
+
+private:
+  AliEveTRDDigits(const AliEveTRDDigits&);            // Not implemented
+  AliEveTRDDigits& operator=(const AliEveTRDDigits&); // Not implemented
+
+public:
+  AliEveTRDDigits(AliEveTRDChamber *p);
+
+  void			ComputeRepresentation();
+  void			Paint(Option_t *opt="");
+  void			Reset();
+  void			SetData(AliTRDdigitsManager *digits);
+
+protected:
+  AliEveTRDChamber *fParent;
+
+private:
+  TEveBoxSet		fBoxes;
+  AliTRDdataArrayI	fData;
+
+  ClassDef(AliEveTRDDigits,1); // Digits visualisation for TRD
+};
+
+
+class AliEveTRDDigitsEditor : public TGedFrame
+{
+private:
+  AliEveTRDDigitsEditor(const AliEveTRDDigitsEditor&);            // Not implemented
+  AliEveTRDDigitsEditor& operator=(const AliEveTRDDigitsEditor&); // Not implemented
+
+public:
+  AliEveTRDDigitsEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30,
+			UInt_t options=kChildFrame, Pixel_t back=GetDefaultFrameBackground());
+  ~AliEveTRDDigitsEditor();
+
+  virtual void SetModel(TObject* obj);
+
+protected:
+  AliEveTRDDigits* fM;
+
+  ClassDef(AliEveTRDDigitsEditor,1); // Editor for AliEveTRDDigits
+};
+
+
+class AliEveTRDClusters : public AliEveTRDHits
+{
+private:
+  AliEveTRDClusters(const AliEveTRDClusters&);            // Not implemented
+  AliEveTRDClusters& operator=(const AliEveTRDClusters&); // Not implemented
+
+public:
+  AliEveTRDClusters(AliEveTRDChamber *p);
+
+  void PointSelected(Int_t n);
+
+  ClassDef(AliEveTRDClusters,1); // Base class for TRD clusters visualisation
+};
 
 #endif

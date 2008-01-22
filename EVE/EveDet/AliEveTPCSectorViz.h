@@ -25,9 +25,9 @@ class AliEveTPCSector2D;  class AliEveTPCSector2DEditor;  class AliEveTPCSector2
 class AliEveTPCSector3D;  class AliEveTPCSector3DEditor;  class AliEveTPCSector3DGL;
 
 class AliEveTPCSectorViz : public TEveElement,
-                     public TNamed,
-                     public TAtt3D,
-                     public TAttBBox
+			   public TNamed,
+			   public TAtt3D,
+			   public TAttBBox
 {
   friend class AliEveTPCSectorVizEditor;
   friend class AliEveTPCSector2D;
@@ -41,27 +41,27 @@ class AliEveTPCSectorViz : public TEveElement,
   AliEveTPCSectorViz& operator=(const AliEveTPCSectorViz&); // Not implemented
 
 protected:
-  AliEveTPCData*    fTPCData;
-  Int_t       fSectorID;
+  AliEveTPCData    *fTPCData;
+  Int_t             fSectorID;
 
-  Int_t       fMinTime;
-  Int_t       fMaxTime;
-  Short_t     fThreshold;
-  Int_t       fMaxVal;
+  Int_t             fMinTime;
+  Int_t             fMaxTime;
+  Short_t           fThreshold;
+  Int_t             fMaxVal;
 
-  Bool_t      fRnrInn;
-  Bool_t      fRnrOut1;
-  Bool_t      fRnrOut2;
+  Bool_t            fRnrInn;
+  Bool_t            fRnrOut1;
+  Bool_t            fRnrOut2;
 
-  Color_t      fFrameColor;
-  Bool_t       fRnrFrame;
-  TEveTrans fHMTrans;
-  Bool_t       fAutoTrans;
-  UInt_t       fRTS;       //! Rendering TimeStamp
+  Color_t           fFrameColor;
+  Bool_t            fRnrFrame;
+  TEveTrans         fHMTrans;
+  Bool_t            fAutoTrans;
+  UInt_t            fRTS;       //! Rendering TimeStamp
+
+  mutable UChar_t  *fColorArray;
 
   void SetupColor(Int_t val, UChar_t* pix) const;
-
-  mutable UChar_t* fColorArray;
   void ClearColorArray();
   void SetupColorArray() const;
   UChar_t* ColorFromArray(Int_t val) const;

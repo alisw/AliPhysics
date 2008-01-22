@@ -34,28 +34,34 @@ protected:
   struct Point_t
   {
     // inner structure to check duplicates
-    TEvePointSet* fPS;   // selected pointset
+    TEvePointSet   *fPS;   // selected pointset
     Int_t           fIdx;  // location in the point set array
-    Point_t(TEvePointSet* ps, Int_t i): fPS(ps), fIdx(i){}
+
+    Point_t(TEvePointSet* ps, Int_t i) : fPS(ps), fIdx(i) {}
+    Point_t(const Point_t& p) : fPS(p.fPS), fIdx(p.fIdx)  {}
+    Point_t& operator=(const Point_t& p)
+    { fPS = p.fPS; fIdx = p.fIdx; return *this; }
+
     bool operator<(const Point_t& o) const
     { if (fPS != o.fPS) return fPS < o.fPS; return fIdx < o.fIdx; }
   };
 
-  Float_t    fAlpha;          // transformation agle to local system (where x>>y)
-  AliRieman* fRieman;         // rieman fitter
+  Float_t    fAlpha;                // transformation agle to local system (where x>>y)
+  AliRieman* fRieman;               // rieman fitter
 
-  Bool_t     fConnected;      // object connected to pointset Ctrl-shift signal
+  Bool_t     fConnected;            // object connected to pointset Ctrl-shift signal
 
-  TEveTrackList* fTrackList; // track list created with rieman fit
+  TEveTrackList* fTrackList;        // track list created with rieman fit
 
-  std::map<Point_t, Int_t> fMapPS; // map of selected points from different TEvePointSet
+  std::map<Point_t, Int_t> fMapPS;  // map of selected points from different TEvePointSet
+
 public:
   AliEveTrackFitter(const Text_t* name, Int_t n_points=0);
   virtual ~AliEveTrackFitter();
 
   virtual void AddFitPoint(TEvePointSet*,Int_t);  // slot for PointCtrlClicked() signal
 
-  virtual void DestroyElements(); // *MENU*
+  virtual void DestroyElements();   // *MENU*
 
   virtual void Start();
   virtual void Stop();

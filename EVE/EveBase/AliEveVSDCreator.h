@@ -24,7 +24,7 @@ class AliEveVSDCreator : public TEveVSD
   AliEveVSDCreator& operator=(const AliEveVSDCreator&); // Not implemented
 
 public:
-  enum KineType_e { KT_Standard, KT_ProtonProton };
+  enum KineType_e { kKT_Standard, kKT_ProtonProton };
 
 protected:
   void          MakeItsDigitsInfo();

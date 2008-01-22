@@ -46,6 +46,10 @@ class AliHLTHOMERLibManager;
 
 class AliEveHOMERManager : public TEveElementList
 {
+private:
+  AliEveHOMERManager(const AliEveHOMERManager&);            // Not implemented.
+  AliEveHOMERManager& operator=(const AliEveHOMERManager&); // Not implemented.
+
 public:
 
   /*
@@ -59,10 +63,6 @@ public:
    * @param argv    Array of command line arguments.
    */
   AliEveHOMERManager(TString xmlFile="" );
-  /** not a valid copy constructor, defined according to effective C++ style */
-  AliEveHOMERManager( const AliEveHOMERManager& );
-  /** not a valid assignment op, but defined according to effective C++ style */
-  AliEveHOMERManager& operator=( const AliEveHOMERManager& );
   /** destructor */
   virtual ~AliEveHOMERManager();
 

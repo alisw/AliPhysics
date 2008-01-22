@@ -33,9 +33,9 @@ protected:
   virtual void InitModule();
   virtual void SetTrans();
 
-  AliTOFGeometry* fTOFgeometry;
+  AliTOFGeometry *fTOFgeometry;
 
-  TClonesArray *fTOFarray;
+  TClonesArray   *fTOFarray;
 
   Int_t fSector;
   Int_t fPlate;

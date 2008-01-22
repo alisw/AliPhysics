@@ -57,7 +57,10 @@ AliEveITSDigitsInfo::AliEveITSDigitsInfo() :
   fSPDmap(), fSDDmap(), fSSDmap(),
   fTree (0),
   fGeom (0),
-  fSegSPD(0), fSegSDD(0), fSegSSD(0)
+  fSegSPD     (0), fSegSDD     (0), fSegSSD     (0),
+  fSPDMinVal  (0), fSSDMinVal  (0), fSDDMinVal  (0), 
+  fSPDMaxVal  (0), fSSDMaxVal  (0), fSDDMaxVal  (0), 
+  fSPDHighLim (0), fSDDHighLim (0), fSSDHighLim (0)
 {
   // Default constructor.
 
@@ -133,7 +136,7 @@ AliEveITSDigitsInfo:: ~AliEveITSDigitsInfo()
   // Destructor.
   // Deletes the data-maps and the tree.
 
-  map<Int_t, TClonesArray*>::iterator j;
+  std::map<Int_t, TClonesArray*>::iterator j;
   for(j = fSPDmap.begin(); j != fSPDmap.end(); ++j)
     delete j->second;
   for(j = fSDDmap.begin(); j != fSDDmap.end(); ++j)
@@ -290,7 +293,7 @@ TClonesArray* AliEveITSDigitsInfo::GetDigits(Int_t mod, Int_t subdet)
     case 0:
     {
       TClonesArray* digitsSPD = 0;
-      map<Int_t, TClonesArray*>::iterator i = fSPDmap.find(mod);
+      std::map<Int_t, TClonesArray*>::iterator i = fSPDmap.find(mod);
       if (i == fSPDmap.end()) {
 	if (fTree) {
 	  TBranch* br =  fTree->GetBranch("ITSDigitsSPD");
@@ -309,7 +312,7 @@ TClonesArray* AliEveITSDigitsInfo::GetDigits(Int_t mod, Int_t subdet)
     case 1:
     {
       TClonesArray* digitsSDD = 0;
-      map<Int_t, TClonesArray*>::iterator i = fSDDmap.find(mod);
+      std::map<Int_t, TClonesArray*>::iterator i = fSDDmap.find(mod);
       if (i == fSDDmap.end()) {
 	if (fTree) {
 	  TBranch* br =  fTree->GetBranch("ITSDigitsSDD");
@@ -328,7 +331,7 @@ TClonesArray* AliEveITSDigitsInfo::GetDigits(Int_t mod, Int_t subdet)
     case 2:
     {
       TClonesArray* digitsSSD = 0;
-      map<Int_t, TClonesArray*>::iterator i = fSSDmap.find(mod);
+      std::map<Int_t, TClonesArray*>::iterator i = fSSDmap.find(mod);
       if (i == fSSDmap.end()) {
 	if (fTree) {
 	  TBranch* br =  fTree->GetBranch("ITSDigitsSSD");

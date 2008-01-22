@@ -73,7 +73,7 @@ struct cmp_pathmark
   { return a->fTime < b->fTime; }
 };
 
-void slurp_tracks(map<Int_t, TEveTrack*>& tracks, TEveElement* cont, Bool_t recurse)
+void slurp_tracks(std::map<Int_t, TEveTrack*>& tracks, TEveElement* cont, Bool_t recurse)
 {
   TEveElement::List_i citer = cont->BeginChildren();
   while(citer != cont->EndChildren())
@@ -95,7 +95,7 @@ void AliEveKineTools::SetTrackReferences(TEveElement* cont, TTree* treeTR, Bool_
   static const TEveException eH("AliEveKineTools::ImportPathMarks");
 
   // Fill map
-  map<Int_t, TEveTrack*> tracks;
+  std::map<Int_t, TEveTrack*> tracks;
   slurp_tracks(tracks, cont, recurse);
 
   Int_t nPrimaries = (Int_t) treeTR->GetEntries();
@@ -115,7 +115,7 @@ void AliEveKineTools::SetTrackReferences(TEveElement* cont, TTree* treeTR, Bool_
       el->GetEntry(iPrimPart);
 
       Int_t last_label = -1;
-      map<Int_t, TEveTrack*>::iterator iter = tracks.end();
+      std::map<Int_t, TEveTrack*>::iterator iter = tracks.end();
       Int_t Nent =  arr->GetEntriesFast();
       for (Int_t iTrackRef = 0; iTrackRef < Nent; iTrackRef++)
       {
@@ -150,11 +150,11 @@ void AliEveKineTools::SortPathMarks(TEveElement* cont, Bool_t recurse)
   // Sort path-marks for all tracks by time.
 
   // Fill map
-  map<Int_t, TEveTrack*> tracks;
+  std::map<Int_t, TEveTrack*> tracks;
   slurp_tracks(tracks, cont, recurse);
 
   // sort
-  for(map<Int_t, TEveTrack*>::iterator j=tracks.begin(); j!=tracks.end(); ++j)
+  for(std::map<Int_t, TEveTrack*>::iterator j=tracks.begin(); j!=tracks.end(); ++j)
   {
     j->second->SortPathMarksByTime();
   }

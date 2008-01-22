@@ -37,7 +37,8 @@ AliEveMUONChamberEditor::AliEveMUONChamberEditor(const TGWindow *p,
   fM(0),
   fThreshold(0),
   fMaxVal(0),
-  fClusterSize(0)
+  fClusterSize(0),
+  fHitSize(0)
 {
   //
   // constructor

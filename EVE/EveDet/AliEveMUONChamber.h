@@ -24,23 +24,21 @@ class AliEveMUONChamberEditor;
 class AliEveMUONChamberGL;
 
 class AliEveMUONChamber : public TEveElement,
-                    public TNamed,
-                    public TAtt3D,
-                    public TAttBBox
-
+			  public TNamed,
+			  public TAtt3D,
+			  public TAttBBox
 {
-
   friend class AliEveMUONChamberGL;
   friend class AliEveMUONChamberEditor;
 
+private:
   AliEveMUONChamber(const AliEveMUONChamber&);            // Not implemented
   AliEveMUONChamber& operator=(const AliEveMUONChamber&); // Not implemented
 
- protected:
-
+protected:
   void UpdateQuads();
 
-  AliEveMUONData*         fMUONData;      // data for the current event
+  AliEveMUONData   *fMUONData;      // data for the current event
   Color_t           fFrameColor;    // main coloring
   UInt_t            fRTS;           //! Rendering Time Stamp
   Int_t             fChamberID;     // number of the chamber, 0 to 13
@@ -55,7 +53,8 @@ class AliEveMUONChamber : public TEveElement,
 
   void SetupColor(Int_t val, UChar_t* pix) const;
 
-  mutable UChar_t* fColorArray;
+  mutable UChar_t  *fColorArray;    // color-cache
+
   void     ClearColorArray();
   void     SetupColorArray() const;
   UChar_t* ColorFromArray(Int_t val) const;

@@ -21,7 +21,7 @@ ClassImp(AliEveDigitScaleInfo)
 
 AliEveDigitScaleInfo::AliEveDigitScaleInfo():
   fScale(1),
-  fStatType (ST_Average),
+  fStatType (kST_Average),
   fSyncPalette(kFALSE)
 {
 }
@@ -120,8 +120,8 @@ void AliEveITSScaledModule::LoadQuads()
   Int_t         c1, c2;          // original coordinates
 
   Int_t id;
-  map<Int_t, Int_t> dmap;
-  map<Int_t, Int_t>::iterator miter;
+  std::map<Int_t, Int_t> dmap;
+  std::map<Int_t, Int_t>::iterator miter;
   digits  = fInfo->GetDigits(fID, fDetID);
   ndigits = digits->GetEntriesFast();
 
@@ -320,13 +320,13 @@ void AliEveITSScaledModule::SetQuadValues()
     {
       using namespace TMath;
 
-      case AliEveDigitScaleInfo::ST_Occup:
+      case AliEveDigitScaleInfo::kST_Occup:
 	v = Nint((100.0*sd->N) / (fNCx*fNCz));
 	break;
-      case AliEveDigitScaleInfo::ST_Average:
+      case AliEveDigitScaleInfo::kST_Average:
 	v = Nint((Double_t) sd->sum / sd->N);
 	break;
-      case AliEveDigitScaleInfo::ST_Rms:
+      case AliEveDigitScaleInfo::kST_Rms:
 	v = Nint(Sqrt(sd->sqr_sum) / sd->N);
 	break;
     }
@@ -340,7 +340,7 @@ void AliEveITSScaledModule::SetQuadValues()
 void AliEveITSScaledModule::SyncPalette()
 {
   // printf("AliEveITSScaledModule::SyncPalette()\n");
-  if(fScaleInfo->GetStatType() == AliEveDigitScaleInfo::ST_Occup)
+  if(fScaleInfo->GetStatType() == AliEveDigitScaleInfo::kST_Occup)
   {
     // SPD
     AliEveITSModule::fgSPDPalette->SetLimits(0, 100);
