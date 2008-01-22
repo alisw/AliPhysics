@@ -1,3 +1,5 @@
+#include "ARVersion.h"
+
 void MakeAllDETsResMisAlignment(Char_t* CDBstorage = "local://$HOME/ResidualMisAlignment", Bool_t partialGeom=kFALSE){
   // Make residual misalignment objects for all detectors
   // Pass different "CDBstorage" argument if needed (e.g. to fill
@@ -15,8 +17,7 @@ void MakeAllDETsResMisAlignment(Char_t* CDBstorage = "local://$HOME/ResidualMisA
   }else{  
     gSystem->Setenv("TOCDB","kTRUE");
     gSystem->Setenv("STORAGE",strStorage.Data());
-    gROOT->ProcessLine(".L $ALICE_ROOT/macros/GetARversion.C");
-    gSystem->Setenv("ARVERSION",GetARversion());
+    gSystem->Setenv("ARVERSION",ALIROOT_SVN_BRANCH);
   }
   if(partialGeom){
     gSystem->Setenv("PARTGEOM","kTRUE");

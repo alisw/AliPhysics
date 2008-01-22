@@ -1,3 +1,5 @@
+#include "ARVersion.h"
+
 void MakeAllDETsFullMisAlignment(Char_t* CDBstorage = "local://$HOME/FullMisAlignment", Bool_t partialGeom=kFALSE){
    // Make full misalignment objects for all detectors
   // Pass different "CDBstorage" argument if needed (e.g. to fill
@@ -15,8 +17,7 @@ void MakeAllDETsFullMisAlignment(Char_t* CDBstorage = "local://$HOME/FullMisAlig
   }else{  
     gSystem->Setenv("TOCDB","kTRUE");
     gSystem->Setenv("STORAGE",strStorage.Data());
-    gROOT->ProcessLine(".L $ALICE_ROOT/macros/GetARversion.C");
-    gSystem->Setenv("ARVERSION",GetARversion());
+    gSystem->Setenv("ARVERSION",ALIROOT_SVN_BRANCH);
   }
   if(partialGeom){
     gSystem->Setenv("PARTGEOM","kTRUE");
@@ -57,7 +58,8 @@ void MakeAllDETsFullMisAlignment(Char_t* CDBstorage = "local://$HOME/FullMisAlig
   gSystem->Exec("aliroot -b -q $ALICE_ROOT/GRP/MakeSTRUCTFullMisAlignment.C");
 
   // run macros for sensitive modules
-  TString sModules="EMCAL,FMD,HMPID,ITS,MUON,PMD,PHOS,T0,TRD,TPC,TOF,VZERO,ZDC";
+  //TString sModules="EMCAL,FMD,HMPID,ITS,MUON,PMD,PHOS,T0,TRD,TPC,TOF,VZERO,ZDC";
+  TString sModules="ZDC";
   TObjArray *detArray = sModules.Tokenize(',');
   TIter iter(detArray);
   TObjString *ostr;

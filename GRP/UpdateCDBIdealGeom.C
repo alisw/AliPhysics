@@ -1,3 +1,5 @@
+#include "ARVersion.h"
+
 void UpdateCDBIdealGeom(const char* cdbUri, const char* cfgFile){
   // Produce the ideal geometry and store it in the specified CDB
   // The second argument allows to specify the config file to be used
@@ -17,10 +19,13 @@ void UpdateCDBIdealGeom(const char* cdbUri, const char* cfgFile){
   // Get root and AliRoot versions
   const char* rootv = gROOT->GetVersion();
   gROOT->ProcessLine(".L $ALICE_ROOT/macros/GetARversion.C");
-  TString av(GetARversion());
+  TString av(ALIROOT_SVN_BRANCH);
+  Int_t revnum = ALIROOT_SVN_REVISION;
+
+  Printf("AliRoot %s, revision number %d",av.Data(),revnum);
 
   md->SetAliRootVersion(av.Data());
-  md->SetComment(Form("Geometry produced with root version %s and AliRoot version %s",rootv,av.Data()));
+  md->SetComment(Form("Geometry produced with root version %s and AliRoot %s, revision number %d",rootv,av.Data(),revnum));
   
   gAlice->Init(cfgFile);
   
