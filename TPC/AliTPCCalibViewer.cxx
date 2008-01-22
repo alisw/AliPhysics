@@ -53,9 +53,11 @@
 #include "TFile.h"
 #include "TKey.h"
 #include "TGraph.h"
+#include "TDirectory.h"
 #include "AliTPCCalibPulser.h"
 #include "AliTPCCalibPedestal.h"
 #include "AliTPCCalibCE.h"
+#include "TFriendElement.h"
 // #include "TObjArray.h"
 // #include "TObjString.h"
 // #include "TString.h"
@@ -69,12 +71,15 @@
 
 ClassImp(AliTPCCalibViewer)
 
+
 AliTPCCalibViewer::AliTPCCalibViewer()
                   :TObject(),
                    fTree(0),
                    fFile(0),
                    fListOfObjectsToBeDeleted(0),
-                   fTreeMustBeDeleted(0)
+                   fTreeMustBeDeleted(0), 
+                   fAbbreviation(0), 
+                   fAppendString(0)
 {
   //
   // Default constructor
@@ -88,7 +93,9 @@ AliTPCCalibViewer::AliTPCCalibViewer(const AliTPCCalibViewer &c)
                    fTree(0),
                    fFile(0),
                    fListOfObjectsToBeDeleted(0),
-                   fTreeMustBeDeleted(0)
+                   fTreeMustBeDeleted(0),
+                   fAbbreviation(0), 
+                   fAppendString(0)
 {
   //
   // dummy AliTPCCalibViewer copy constructor
@@ -98,6 +105,8 @@ AliTPCCalibViewer::AliTPCCalibViewer(const AliTPCCalibViewer &c)
   fTreeMustBeDeleted = c.fTreeMustBeDeleted;
   //fFile = new TFile(*(c.fFile));
   fListOfObjectsToBeDeleted = c.fListOfObjectsToBeDeleted;
+  fAbbreviation = c.fAbbreviation;
+  fAppendString = c.fAppendString;
 }
 
 //_____________________________________________________________________________
@@ -106,7 +115,9 @@ AliTPCCalibViewer::AliTPCCalibViewer(TTree* tree)
                    fTree(0),
                    fFile(0),
                    fListOfObjectsToBeDeleted(0),
-                   fTreeMustBeDeleted(0)
+                   fTreeMustBeDeleted(0),
+                   fAbbreviation(0), 
+                   fAppendString(0)
 {
   //
   // Constructor that initializes the calibration viewer
@@ -114,6 +125,8 @@ AliTPCCalibViewer::AliTPCCalibViewer(TTree* tree)
   fTree = tree;
   fTreeMustBeDeleted = kFALSE;
   fListOfObjectsToBeDeleted = new TObjArray();
+  fAbbreviation = "~";
+  fAppendString = ".fElements";
 }
 
 //_____________________________________________________________________________
@@ -122,7 +135,10 @@ AliTPCCalibViewer::AliTPCCalibViewer(char* fileName, char* treeName)
                    fTree(0),
                    fFile(0),
                    fListOfObjectsToBeDeleted(0),
-                   fTreeMustBeDeleted(0)
+                   fTreeMustBeDeleted(0),
+                   fAbbreviation(0), 
+                   fAppendString(0)
+                   
 {
    //
    // Constructor to initialize the calibration viewer
@@ -132,6 +148,8 @@ AliTPCCalibViewer::AliTPCCalibViewer(char* fileName, char* treeName)
    fTree = (TTree*) fFile->Get(treeName);
    fTreeMustBeDeleted = kTRUE;
    fListOfObjectsToBeDeleted = new TObjArray();
+   fAbbreviation = "~";
+   fAppendString = ".fElements";
 }
                    
 //____________________________________________________________________________
@@ -145,6 +163,8 @@ AliTPCCalibViewer & AliTPCCalibViewer::operator =(const AliTPCCalibViewer & para
    fTreeMustBeDeleted = param.fTreeMustBeDeleted;
    //fFile = new TFile(*(param.fFile));
    fListOfObjectsToBeDeleted = param.fListOfObjectsToBeDeleted;
+   fAbbreviation = param.fAbbreviation;
+   fAppendString = param.fAppendString;
    return (*this);
 }
 
@@ -218,25 +238,25 @@ Int_t AliTPCCalibViewer::EasyDraw(const char* drawCommand, const char* sector, c
       drawOptionsStr += "profcolz";
 
    if (sectorStr == "A") {
-      drawStr += ":gy.fElements:gx.fElements>>prof";
+      drawStr += Form(":gy%s:gx%s>>prof", fAppendString.Data(), fAppendString.Data());
       drawStr += rndNumber;
       drawStr += "(330,-250,250,330,-250,250)";
       cutStr += "(sector/18)%2==0 ";
    }
    else if  (sectorStr == "C") {
-      drawStr += ":gy.fElements:gx.fElements>>prof";
+      drawStr += Form(":gy%s:gx%s>>prof", fAppendString.Data(), fAppendString.Data());
       drawStr += rndNumber;
       drawStr += "(330,-250,250,330,-250,250)";
       cutStr += "(sector/18)%2==1 ";
    }
    else if  (sectorStr == "ALL") {
-      drawStr += ":gy.fElements:gx.fElements>>prof";
+      drawStr += Form(":gy%s:gx%s>>prof", fAppendString.Data(), fAppendString.Data());
       drawStr += rndNumber;
       drawStr += "(330,-250,250,330,-250,250)";
    }
    else if (sectorStr.IsDigit()) {
       Int_t isec = sectorStr.Atoi();
-      drawStr += ":rpad.fElements:row.fElements>>prof";
+      drawStr += Form(":rpad%s:row%s>>prof", fAppendString.Data(), fAppendString.Data());
       drawStr += rndNumber;
       if (isec < 36 && isec >= 0)
          drawStr += "(63,0,63,108,-54,54)";
@@ -257,10 +277,15 @@ Int_t AliTPCCalibViewer::EasyDraw(const char* drawCommand, const char* sector, c
       cutStr += cuts;
       cutStr += ")";
    }
-   drawStr.ReplaceAll("~", ".fElements");
-   cutStr.ReplaceAll("~", ".fElements");
+   drawStr.ReplaceAll(fAbbreviation, fAppendString);
+   cutStr.ReplaceAll(fAbbreviation, fAppendString);
    if (writeDrawCommand) std::cout << "fTree->Draw(\"" << drawStr << "\", \"" <<  cutStr << "\", \"" << drawOptionsStr << "\");" << std::endl;
-   return fTree->Draw(drawStr.Data(), cutStr.Data(), drawOptionsStr.Data());
+   Int_t returnValue = fTree->Draw(drawStr.Data(), cutStr.Data(), drawOptionsStr.Data());
+   TString profName("prof");
+   profName += rndNumber;
+   TObject *obj = gDirectory->Get(profName.Data());
+   if (obj && obj->InheritsFrom("TH1")) FormatHistoLabels((TH1*)obj);
+   return returnValue;
 }
 
 
@@ -324,10 +349,19 @@ Int_t AliTPCCalibViewer::EasyDraw1D(const char* drawCommand, const char* sector,
       cutStr += ")";
    }
 
-   drawStr.ReplaceAll("~", ".fElements");
-   cutStr.ReplaceAll("~", ".fElements");
+   drawStr.ReplaceAll(fAbbreviation, fAppendString);
+   cutStr.ReplaceAll(fAbbreviation, fAppendString);
    if (writeDrawCommand) std::cout << "fTree->Draw(\"" << drawStr << "\", \"" <<  cutStr << "\", \"" << drawOptionsStr << "\");" << std::endl;
-   return fTree->Draw(drawStr.Data(), cutStr.Data(), drawOptionsStr.Data());
+   Int_t returnValue = fTree->Draw(drawStr.Data(), cutStr.Data(), drawOptionsStr.Data());
+   
+   TObject *obj = gPad->GetPrimitive("htemp"); 
+   if (!obj) obj = (TH1F*)gDirectory->Get("htemp");
+   if (!obj) obj = gPad->GetPrimitive("tempHist");
+   if (!obj) obj = (TH1F*)gDirectory->Get("tempHist");
+   if (!obj) obj = gPad->GetPrimitive("Graph");
+   if (!obj) obj = (TH1F*)gDirectory->Get("Graph");
+   if (obj && obj->InheritsFrom("TH1")) FormatHistoLabels((TH1*)obj);
+   return returnValue;
 }
 
 
@@ -348,6 +382,38 @@ Int_t AliTPCCalibViewer::EasyDraw1D(const char* drawCommand, Int_t sector, const
    }
   Error("EasyDraw","The TPC contains only sectors between 0 and 71.");
   return -1;
+}
+
+
+void AliTPCCalibViewer::FormatHistoLabels(TH1 *histo) const {
+   // 
+   // formats title and axis labels of histo 
+   // removes '.fElements'
+   // 
+   if (!histo) return;
+   TString replaceString(fAppendString.Data());
+   TString *str = new TString(histo->GetTitle());
+   str->ReplaceAll(replaceString, "");
+   histo->SetTitle(str->Data());
+   delete str;
+   if (histo->GetXaxis()) {
+      str = new TString(histo->GetXaxis()->GetTitle());
+      str->ReplaceAll(replaceString, "");
+      histo->GetXaxis()->SetTitle(str->Data());
+      delete str;
+   }
+   if (histo->GetYaxis()) {
+      str = new TString(histo->GetYaxis()->GetTitle());
+      str->ReplaceAll(replaceString, "");
+      histo->GetYaxis()->SetTitle(str->Data());
+      delete str;
+   }
+   if (histo->GetZaxis()) {
+      str = new TString(histo->GetZaxis()->GetTitle());
+      str->ReplaceAll(replaceString, "");
+      histo->GetZaxis()->SetTitle(str->Data());
+      delete str;
+   }
 }
 
 
@@ -390,6 +456,11 @@ Int_t  AliTPCCalibViewer::DrawHisto1D(const char* drawCommand, const char* secto
    }
    
    TString drawStr(drawCommand);
+   Bool_t dangerousToDraw = drawStr.Contains(":") || drawStr.Contains(">>");
+   if (dangerousToDraw) {
+      Warning("DrawHisto1D", "The draw string must not contain ':' or '>>'.");
+      return -1;
+   }
    drawStr += " >> tempHist";
    Int_t entries = EasyDraw1D(drawStr.Data(), sector, cuts);
    TH1F *htemp = (TH1F*)gDirectory->Get("tempHist");
@@ -404,12 +475,12 @@ Int_t  AliTPCCalibViewer::DrawHisto1D(const char* drawCommand, const char* secto
    char c[500];
    TLegend * legend = new TLegend(.7,.7, .99, .99, "Statistical information");
 //    sprintf(c, "%s, sector: %i", type, sector);
-   fListOfObjectsToBeDeleted->Add(legend);
+   //fListOfObjectsToBeDeleted->Add(legend);
 
    if (plotMean) {
       // draw Mean
       TLine* line = new TLine(mean, 0, mean, maxY);
-      fListOfObjectsToBeDeleted->Add(line);
+      //fListOfObjectsToBeDeleted->Add(line);
       line->SetLineColor(kRed);
       line->SetLineWidth(2);
       line->SetLineStyle(1);
@@ -419,12 +490,12 @@ Int_t  AliTPCCalibViewer::DrawHisto1D(const char* drawCommand, const char* secto
       // draw sigma lines
       for (Int_t i = 0; i < nsigma.GetNoElements(); i++) {
          TLine* linePlusSigma = new TLine(mean + nsigma[i] * sigma, 0, mean + nsigma[i] * sigma, maxY);
-         fListOfObjectsToBeDeleted->Add(linePlusSigma);
+         //fListOfObjectsToBeDeleted->Add(linePlusSigma);
          linePlusSigma->SetLineColor(kRed);
          linePlusSigma->SetLineStyle(2 + i);
          linePlusSigma->Draw();
          TLine* lineMinusSigma = new TLine(mean - nsigma[i] * sigma, 0, mean - nsigma[i] * sigma, maxY);
-         fListOfObjectsToBeDeleted->Add(lineMinusSigma);
+         //fListOfObjectsToBeDeleted->Add(lineMinusSigma);
          lineMinusSigma->SetLineColor(kRed);
          lineMinusSigma->SetLineStyle(2 + i);
          lineMinusSigma->Draw();
@@ -435,7 +506,7 @@ Int_t  AliTPCCalibViewer::DrawHisto1D(const char* drawCommand, const char* secto
    if (plotMedian) {
       // draw median
       TLine* line = new TLine(median, 0, median, maxY);
-      fListOfObjectsToBeDeleted->Add(line);
+      //fListOfObjectsToBeDeleted->Add(line);
       line->SetLineColor(kBlue);
       line->SetLineWidth(2);
       line->SetLineStyle(1);
@@ -445,12 +516,12 @@ Int_t  AliTPCCalibViewer::DrawHisto1D(const char* drawCommand, const char* secto
       // draw sigma lines
       for (Int_t i = 0; i < nsigma.GetNoElements(); i++) {
          TLine* linePlusSigma = new TLine(median + nsigma[i] * sigma, 0, median + nsigma[i]*sigma, maxY);
-         fListOfObjectsToBeDeleted->Add(linePlusSigma);
+         //fListOfObjectsToBeDeleted->Add(linePlusSigma);
          linePlusSigma->SetLineColor(kBlue);
          linePlusSigma->SetLineStyle(2 + i);
          linePlusSigma->Draw();
          TLine* lineMinusSigma = new TLine(median - nsigma[i] * sigma, 0, median - nsigma[i]*sigma, maxY);
-         fListOfObjectsToBeDeleted->Add(lineMinusSigma);
+         //fListOfObjectsToBeDeleted->Add(lineMinusSigma);
          lineMinusSigma->SetLineColor(kBlue);
          lineMinusSigma->SetLineStyle(2 + i);
          lineMinusSigma->Draw();
@@ -463,7 +534,7 @@ Int_t  AliTPCCalibViewer::DrawHisto1D(const char* drawCommand, const char* secto
       Double_t ltmRms = 0;
       Double_t ltm = GetLTM(entries, values, &ltmRms, ltmFraction);
       TLine* line = new TLine(ltm, 0, ltm, maxY);
-      fListOfObjectsToBeDeleted->Add(line);
+      //fListOfObjectsToBeDeleted->Add(line);
       line->SetLineColor(kGreen+2);
       line->SetLineWidth(2);
       line->SetLineStyle(1);
@@ -473,13 +544,13 @@ Int_t  AliTPCCalibViewer::DrawHisto1D(const char* drawCommand, const char* secto
       // draw sigma lines
       for (Int_t i = 0; i < nsigma.GetNoElements(); i++) {
          TLine* linePlusSigma = new TLine(ltm + nsigma[i] * ltmRms, 0, ltm + nsigma[i] * ltmRms, maxY);
-         fListOfObjectsToBeDeleted->Add(linePlusSigma);
+         //fListOfObjectsToBeDeleted->Add(linePlusSigma);
          linePlusSigma->SetLineColor(kGreen+2);
          linePlusSigma->SetLineStyle(2+i);
          linePlusSigma->Draw();
    
          TLine* lineMinusSigma = new TLine(ltm - nsigma[i] * ltmRms, 0, ltm - nsigma[i] * ltmRms, maxY);
-         fListOfObjectsToBeDeleted->Add(lineMinusSigma);
+         //fListOfObjectsToBeDeleted->Add(lineMinusSigma);
          lineMinusSigma->SetLineColor(kGreen+2);
          lineMinusSigma->SetLineStyle(2+i);
          lineMinusSigma->Draw();
@@ -537,6 +608,11 @@ Int_t AliTPCCalibViewer::SigmaCut(const char* drawCommand, const char* sector, c
    Double_t ltmFraction = 0.8;
    
    TString drawStr(drawCommand);
+   Bool_t dangerousToDraw = drawStr.Contains(":") || drawStr.Contains(">>");
+   if (dangerousToDraw) {
+      Warning("SigmaCut", "The draw string must not contain ':' or '>>'.");
+      return -1;
+   }
    drawStr += " >> tempHist";
    
    Int_t entries = EasyDraw1D(drawStr.Data(), sector, cuts, "goff");
@@ -549,7 +625,7 @@ Int_t AliTPCCalibViewer::SigmaCut(const char* drawCommand, const char* sector, c
    Double_t sigma = TMath::RMS(entries, values);
    
    TLegend * legend = new TLegend(.7,.7, .99, .99, "Cumulative");
-   fListOfObjectsToBeDeleted->Add(legend);
+   //fListOfObjectsToBeDeleted->Add(legend);
    TH1F *cutHistoMean = 0;
    TH1F *cutHistoMedian = 0;
    TH1F *cutHistoLTM = 0;
@@ -565,7 +641,7 @@ Int_t AliTPCCalibViewer::SigmaCut(const char* drawCommand, const char* sector, c
    if (plotMean) {
       cutHistoMean = AliTPCCalibViewer::SigmaCut(htemp, mean, sigma, sigmaMax, sigmaStep, pm);
       if (cutHistoMean) {
-         fListOfObjectsToBeDeleted->Add(cutHistoMean);
+         //fListOfObjectsToBeDeleted->Add(cutHistoMean);
          cutHistoMean->SetLineColor(kRed);
          legend->AddEntry(cutHistoMean, "Mean", "l");
          cutHistoMean->SetTitle(Form("%s, cumulative; Multiples of #sigma; Fraction of included data", htemp->GetTitle()));
@@ -577,7 +653,7 @@ Int_t AliTPCCalibViewer::SigmaCut(const char* drawCommand, const char* sector, c
    if (plotMedian) {
       cutHistoMedian = AliTPCCalibViewer::SigmaCut(htemp, median, sigma, sigmaMax, sigmaStep, pm);
       if (cutHistoMedian) {
-         fListOfObjectsToBeDeleted->Add(cutHistoMedian);
+         //fListOfObjectsToBeDeleted->Add(cutHistoMedian);
          cutHistoMedian->SetLineColor(kBlue);
          legend->AddEntry(cutHistoMedian, "Median", "l");
          cutHistoMedian->SetTitle(Form("%s, cumulative; Multiples of #sigma; Fraction of included data", htemp->GetTitle()));
@@ -591,7 +667,7 @@ Int_t AliTPCCalibViewer::SigmaCut(const char* drawCommand, const char* sector, c
       Double_t ltm = GetLTM(entries, values, &ltmRms, ltmFraction);
       cutHistoLTM = AliTPCCalibViewer::SigmaCut(htemp, ltm, ltmRms, sigmaMax, sigmaStep, pm);
       if (cutHistoLTM) {
-         fListOfObjectsToBeDeleted->Add(cutHistoLTM);
+         //fListOfObjectsToBeDeleted->Add(cutHistoLTM);
          cutHistoLTM->SetLineColor(kGreen+2);
          legend->AddEntry(cutHistoLTM, "LTM", "l");
          cutHistoLTM->SetTitle(Form("%s, cumulative; Multiples of #sigma; Fraction of included data", htemp->GetTitle()));
@@ -604,6 +680,7 @@ Int_t AliTPCCalibViewer::SigmaCut(const char* drawCommand, const char* sector, c
    legend->Draw();
    return 1;
 }
+
 
 Int_t AliTPCCalibViewer::SigmaCutNew(const char* drawCommand, const char* sector, const char* cuts, Float_t sigmaMax, Bool_t plotMean, Bool_t plotMedian, Bool_t plotLTM, Bool_t pm, const char *sigmas, Float_t sigmaStep) const {
    //
@@ -640,7 +717,7 @@ Int_t AliTPCCalibViewer::SigmaCutNew(const char* drawCommand, const char* sector
    Double_t sigma = TMath::RMS(entries, values);
    
    TLegend * legend = new TLegend(.7,.7, .99, .99, "Cumulative");
-   fListOfObjectsToBeDeleted->Add(legend);
+   //fListOfObjectsToBeDeleted->Add(legend);
    
    // parse sigmas string
    TObjArray *sigmasTokens = TString(sigmas).Tokenize(";");  
@@ -658,7 +735,7 @@ Int_t AliTPCCalibViewer::SigmaCutNew(const char* drawCommand, const char* sector
       }
       cutGraphMean = new TGraph(entries, xarray, yarray);
       if (cutGraphMean) {
-         fListOfObjectsToBeDeleted->Add(cutGraphMean);
+         //fListOfObjectsToBeDeleted->Add(cutGraphMean);
          cutGraphMean->SetLineColor(kRed);
          legend->AddEntry(cutGraphMean, "Mean", "l");
          cutGraphMean->SetTitle(Form("%s, Cumulative; Multiples of #sigma; Fraction of included data", htemp->GetTitle()));
@@ -697,8 +774,6 @@ Int_t AliTPCCalibViewer::SigmaCutNew(const char* drawCommand, const char* sector
    legend->Draw();
    return 1;
 }
-
-
 
 
 Int_t AliTPCCalibViewer::Integrate(const char* drawCommand,       Int_t sector, const char* cuts, Float_t sigmaMax, Bool_t plotMean, Bool_t plotMedian, Bool_t plotLTM, const char *sigmas, Float_t sigmaStep) const {
@@ -760,7 +835,7 @@ Int_t AliTPCCalibViewer::IntegrateOld(const char* drawCommand, const char* secto
    }
   
    TLegend * legend = new TLegend(.7,.7, .99, .99, "Integrated histogram");
-   fListOfObjectsToBeDeleted->Add(legend);
+   //fListOfObjectsToBeDeleted->Add(legend);
    TH1F *integralHistoMean = 0;
    TH1F *integralHistoMedian = 0;
    TH1F *integralHistoLTM = 0;
@@ -768,7 +843,7 @@ Int_t AliTPCCalibViewer::IntegrateOld(const char* drawCommand, const char* secto
    if (plotMean) {
       integralHistoMean = AliTPCCalibViewer::Integrate(htemp, mean, sigma, sigmaMax, sigmaStep);
       if (integralHistoMean) {
-         fListOfObjectsToBeDeleted->Add(integralHistoMean);
+         //fListOfObjectsToBeDeleted->Add(integralHistoMean);
          integralHistoMean->SetLineColor(kRed);
          legend->AddEntry(integralHistoMean, "Mean", "l");
          integralHistoMean->SetTitle(Form("%s, integrated; Multiples of #sigma; Fraction of included data", htemp->GetTitle()));
@@ -779,7 +854,7 @@ Int_t AliTPCCalibViewer::IntegrateOld(const char* drawCommand, const char* secto
    if (plotMedian) {
       integralHistoMedian = AliTPCCalibViewer::Integrate(htemp, median, sigma, sigmaMax, sigmaStep);
       if (integralHistoMedian) {
-         fListOfObjectsToBeDeleted->Add(integralHistoMedian);
+         //fListOfObjectsToBeDeleted->Add(integralHistoMedian);
          integralHistoMedian->SetLineColor(kBlue);
          legend->AddEntry(integralHistoMedian, "Median", "l");
          integralHistoMedian->SetTitle(Form("%s, integrated; Multiples of #sigma; Fraction of included data", htemp->GetTitle()));
@@ -793,7 +868,7 @@ Int_t AliTPCCalibViewer::IntegrateOld(const char* drawCommand, const char* secto
       Double_t ltm = GetLTM(entries, values, &ltmRms, ltmFraction);
       integralHistoLTM = AliTPCCalibViewer::Integrate(htemp, ltm, ltmRms, sigmaMax, sigmaStep);
       if (integralHistoLTM) {
-         fListOfObjectsToBeDeleted->Add(integralHistoLTM);
+         //fListOfObjectsToBeDeleted->Add(integralHistoLTM);
          integralHistoLTM->SetLineColor(kGreen+2);
          legend->AddEntry(integralHistoLTM, "LTM", "l");
          integralHistoLTM->SetTitle(Form("%s, integrated; Multiples of #sigma; Fraction of included data", htemp->GetTitle()));
@@ -827,6 +902,11 @@ Int_t AliTPCCalibViewer::Integrate(const char* drawCommand, const char* sector, 
    sigmaStep = sigmaStep;
    
    TString drawStr(drawCommand);
+   Bool_t dangerousToDraw = drawStr.Contains(":") || drawStr.Contains(">>");
+   if (dangerousToDraw) {
+      Warning("Integrate", "The draw string must not contain ':' or '>>'.");
+      return -1;
+   }
    drawStr += " >> tempHist";
    
    Int_t entries = EasyDraw1D(drawStr.Data(), sector, cuts, "goff");
@@ -854,7 +934,7 @@ Int_t AliTPCCalibViewer::Integrate(const char* drawCommand, const char* sector, 
    }
   
    TLegend * legend = new TLegend(.7,.7, .99, .99, "Integrated histogram");
-   fListOfObjectsToBeDeleted->Add(legend);
+   //fListOfObjectsToBeDeleted->Add(legend);
   
    if (plotMean) {
       for (Int_t i = 0; i < entries; i++) {
@@ -863,7 +943,7 @@ Int_t AliTPCCalibViewer::Integrate(const char* drawCommand, const char* sector, 
       }
       integralGraphMean = new TGraph(entries, xarray, yarray);
       if (integralGraphMean) {
-         fListOfObjectsToBeDeleted->Add(integralGraphMean);
+         //fListOfObjectsToBeDeleted->Add(integralGraphMean);
          integralGraphMean->SetLineColor(kRed);
          legend->AddEntry(integralGraphMean, "Mean", "l");
          integralGraphMean->SetTitle(Form("%s, integrated; Multiples of #sigma; Fraction of included data", htemp->GetTitle()));
@@ -878,7 +958,7 @@ Int_t AliTPCCalibViewer::Integrate(const char* drawCommand, const char* sector, 
       }
       integralGraphMedian = new TGraph(entries, xarray, yarray);
       if (integralGraphMedian) {
-         fListOfObjectsToBeDeleted->Add(integralGraphMedian);
+         //fListOfObjectsToBeDeleted->Add(integralGraphMedian);
          integralGraphMedian->SetLineColor(kBlue);
          legend->AddEntry(integralGraphMedian, "Median", "l");
          integralGraphMedian->SetTitle(Form("%s, integrated; Multiples of #sigma; Fraction of included data", htemp->GetTitle()));
@@ -896,7 +976,7 @@ Int_t AliTPCCalibViewer::Integrate(const char* drawCommand, const char* sector, 
       }
       integralGraphLTM = new TGraph(entries, xarray, yarray);
       if (integralGraphLTM) {
-         fListOfObjectsToBeDeleted->Add(integralGraphLTM);
+         //fListOfObjectsToBeDeleted->Add(integralGraphLTM);
          integralGraphLTM->SetLineColor(kGreen+2);
          legend->AddEntry(integralGraphLTM, "LTM", "l");
          integralGraphLTM->SetTitle(Form("%s, integrated; Multiples of #sigma; Fraction of included data", htemp->GetTitle()));
@@ -923,12 +1003,12 @@ void AliTPCCalibViewer::DrawLines(TH1F *histogram, TVectorF nsigma, TLegend *leg
       if (!pm) { 
          Int_t bin = histogram->GetXaxis()->FindBin(nsigma[i]);
          TLine* lineUp = new TLine(nsigma[i], 0, nsigma[i], histogram->GetBinContent(bin));
-         fListOfObjectsToBeDeleted->Add(lineUp);
+         //fListOfObjectsToBeDeleted->Add(lineUp);
          lineUp->SetLineColor(color);
          lineUp->SetLineStyle(2 + i);
          lineUp->Draw();
          TLine* lineLeft = new TLine(nsigma[i], histogram->GetBinContent(bin), 0, histogram->GetBinContent(bin));
-         fListOfObjectsToBeDeleted->Add(lineLeft);
+         //fListOfObjectsToBeDeleted->Add(lineLeft);
          lineLeft->SetLineColor(color);
          lineLeft->SetLineStyle(2 + i);
          lineLeft->Draw();
@@ -938,12 +1018,12 @@ void AliTPCCalibViewer::DrawLines(TH1F *histogram, TVectorF nsigma, TLegend *leg
       else { // if (pm)
          Int_t bin = histogram->GetXaxis()->FindBin(nsigma[i]);
          TLine* lineUp1 = new TLine(nsigma[i], 0, nsigma[i], histogram->GetBinContent(bin));
-         fListOfObjectsToBeDeleted->Add(lineUp1);
+         //fListOfObjectsToBeDeleted->Add(lineUp1);
          lineUp1->SetLineColor(color);
          lineUp1->SetLineStyle(2 + i);
          lineUp1->Draw();
          TLine* lineLeft1 = new TLine(nsigma[i], histogram->GetBinContent(bin), histogram->GetBinLowEdge(0)+histogram->GetBinWidth(0), histogram->GetBinContent(bin));
-         fListOfObjectsToBeDeleted->Add(lineLeft1);
+         //fListOfObjectsToBeDeleted->Add(lineLeft1);
          lineLeft1->SetLineColor(color);
          lineLeft1->SetLineStyle(2 + i);
          lineLeft1->Draw();
@@ -951,12 +1031,12 @@ void AliTPCCalibViewer::DrawLines(TH1F *histogram, TVectorF nsigma, TLegend *leg
          legend->AddEntry(lineLeft1, c, "l");
          bin = histogram->GetXaxis()->FindBin(-nsigma[i]);
          TLine* lineUp2 = new TLine(-nsigma[i], 0, -nsigma[i], histogram->GetBinContent(bin));
-         fListOfObjectsToBeDeleted->Add(lineUp2);
+         //fListOfObjectsToBeDeleted->Add(lineUp2);
          lineUp2->SetLineColor(color);
          lineUp2->SetLineStyle(2 + i);
          lineUp2->Draw();
          TLine* lineLeft2 = new TLine(-nsigma[i], histogram->GetBinContent(bin), histogram->GetBinLowEdge(0)+histogram->GetBinWidth(0), histogram->GetBinContent(bin));
-         fListOfObjectsToBeDeleted->Add(lineLeft2);
+         //fListOfObjectsToBeDeleted->Add(lineLeft2);
          lineLeft2->SetLineColor(color);
          lineLeft2->SetLineStyle(2 + i);
          lineLeft2->Draw();
@@ -978,12 +1058,12 @@ void AliTPCCalibViewer::DrawLines(TGraph *graph, TVectorF nsigma, TLegend *legen
    for (Int_t i = 0; i < nsigma.GetNoElements(); i++) {
       if (!pm) { 
          TLine* lineUp = new TLine(nsigma[i], 0, nsigma[i], graph->Eval(nsigma[i]));
-         fListOfObjectsToBeDeleted->Add(lineUp);
+         //fListOfObjectsToBeDeleted->Add(lineUp);
          lineUp->SetLineColor(color);
          lineUp->SetLineStyle(2 + i);
          lineUp->Draw();
          TLine* lineLeft = new TLine(nsigma[i], graph->Eval(nsigma[i]), 0, graph->Eval(nsigma[i]));
-         fListOfObjectsToBeDeleted->Add(lineLeft);
+         //fListOfObjectsToBeDeleted->Add(lineLeft);
          lineLeft->SetLineColor(color);
          lineLeft->SetLineStyle(2 + i);
          lineLeft->Draw();
@@ -992,24 +1072,24 @@ void AliTPCCalibViewer::DrawLines(TGraph *graph, TVectorF nsigma, TLegend *legen
       }
       else { // if (pm)
          TLine* lineUp1 = new TLine(nsigma[i], 0, nsigma[i], graph->Eval(nsigma[i]));
-         fListOfObjectsToBeDeleted->Add(lineUp1);
+         //fListOfObjectsToBeDeleted->Add(lineUp1);
          lineUp1->SetLineColor(color);
          lineUp1->SetLineStyle(2 + i);
          lineUp1->Draw();
          TLine* lineLeft1 = new TLine(nsigma[i], graph->Eval(nsigma[i]), graph->GetHistogram()->GetXaxis()->GetBinLowEdge(0), graph->Eval(nsigma[i]));
-         fListOfObjectsToBeDeleted->Add(lineLeft1);
+         //fListOfObjectsToBeDeleted->Add(lineLeft1);
          lineLeft1->SetLineColor(color);
          lineLeft1->SetLineStyle(2 + i);
          lineLeft1->Draw();
          sprintf(c, "Fraction(+%f #sigma) = %f",nsigma[i], graph->Eval(nsigma[i]));
          legend->AddEntry(lineLeft1, c, "l");
          TLine* lineUp2 = new TLine(-nsigma[i], 0, -nsigma[i], graph->Eval(-nsigma[i]));
-         fListOfObjectsToBeDeleted->Add(lineUp2);
+         //fListOfObjectsToBeDeleted->Add(lineUp2);
          lineUp2->SetLineColor(color);
          lineUp2->SetLineStyle(2 + i);
          lineUp2->Draw();
          TLine* lineLeft2 = new TLine(-nsigma[i], graph->Eval(-nsigma[i]), graph->GetHistogram()->GetXaxis()->GetBinLowEdge(0), graph->Eval(-nsigma[i]));
-         fListOfObjectsToBeDeleted->Add(lineLeft2);
+         //fListOfObjectsToBeDeleted->Add(lineLeft2);
          lineLeft2->SetLineColor(color);
          lineLeft2->SetLineStyle(2 + i);
          lineLeft2->Draw();
@@ -1120,7 +1200,6 @@ TH1F* AliTPCCalibViewer::SigmaCut(TH1F *histogram, Float_t mean, Float_t sigma, 
    return AliTPCCalibViewer::SigmaCut(nbins, array, mean, sigma, nbins, binLow, binUp, sigmaMax, sigmaStep, pm);
 }   
    
-
 
 TH1F* AliTPCCalibViewer::SigmaCut(Int_t n, Float_t *array, Float_t mean, Float_t sigma, Int_t nbins, Float_t binLow, Float_t binUp, Float_t sigmaMax, Float_t sigmaStep, Bool_t pm){
    //
@@ -1340,7 +1419,8 @@ AliTPCCalPad* AliTPCCalibViewer::GetCalPad(const char* desiredData, char* cuts, 
   //  - this takes a while -
   //
    TString drawStr(desiredData);
-   drawStr.Append(":channel~");
+   drawStr.Append(":channel");
+   drawStr.Append(fAbbreviation);
    AliTPCCalPad * createdCalPad = new AliTPCCalPad(calPadName, calPadName);
    Int_t entries = 0;
    for (Int_t sec = 0; sec < 72; sec++) {
@@ -1360,7 +1440,7 @@ AliTPCCalROC* AliTPCCalibViewer::GetCalROC(const char* desiredData, UInt_t secto
   // sector specifies the sector of the created AliTPCCalROC
   //
    TString drawStr(desiredData);
-   drawStr.Append(":channel~");
+   drawStr.Append(Form(":channel%s", fAbbreviation));
    Int_t entries = EasyDraw1D(drawStr.Data(), (Int_t)sector, cuts, "goff");
    if (entries == -1) return 0;
    AliTPCCalROC * createdROC = new AliTPCCalROC(sector);
@@ -1392,7 +1472,42 @@ TObjArray* AliTPCCalibViewer::GetListOfVariables(Bool_t printList) {
             str->String() == "row" || str->String() == "rpad" || str->String() == "sector"  ))
          arr->Add(str);
    }
+   
+   // loop over all friends (if there are some) and add them to the list
+   if (fTree->GetListOfFriends()) {
+      for (Int_t ifriend = 0; ifriend < fTree->GetListOfFriends()->GetEntries(); ifriend++){
+         // printf("iterating through friendlist, currently at %i\n", ifriend);
+         // printf("working with %s\n", fTree->GetListOfFriends()->At(ifriend)->ClassName());
+         if (TString(fTree->GetListOfFriends()->At(ifriend)->ClassName()) != "TFriendElement") continue; // no friendElement found
+         TFriendElement *friendElement = (TFriendElement*)fTree->GetListOfFriends()->At(ifriend);
+         if (friendElement->GetTree() == 0) continue; // no tree found in friendElement
+         // printf("friend found \n");
+         for (Int_t i = 0; i < friendElement->GetTree()->GetListOfBranches()->GetEntries(); i++) {
+            // printf("iterating through friendelement entries, currently at %i\n", i);
+            str = new TObjString(friendElement->GetTree()->GetListOfBranches()->At(i)->GetName());
+            str->String().ReplaceAll("_Median", "");
+            str->String().ReplaceAll("_Mean", "");
+            str->String().ReplaceAll("_RMS", "");
+            str->String().ReplaceAll("_LTM", "");
+            str->String().ReplaceAll("_OutlierCutted", "");
+            str->String().ReplaceAll(".", "");
+            if (!(str->String() == "channel" || str->String() == "gx" || str->String() == "gy" || 
+                  str->String() == "lx" || str->String() == "ly" || str->String() == "pad" || 
+                  str->String() == "row" || str->String() == "rpad" || str->String() == "sector"  )){
+               // insert "<friendName>." at the beginning: (<friendName> is per default "R")
+               str->String().Insert(0, ".");
+               str->String().Insert(0, friendElement->GetName());
+               if (!arr->FindObject(str)) arr->Add(str);
+               // printf("added string %s \n", str->String().Data());
+            }
+         }
+      }
+   } // if (fTree->GetListOfFriends())
+   
    arr->Sort();
+//   ((TFriendElement*)gui->GetViewer()->GetTree()->GetListOfFriends()->At(0))->GetTree()->GetListOfBranches()->At(0)->GetName()
+// ((TFriendElement*)gui->GetViewer()->GetTree()->GetListOfFriends()->At(0))->GetTree()->GetListOfBranches()
+
 
    if (printList) {
       TIterator* iter = arr->MakeIterator();
@@ -1419,9 +1534,9 @@ TObjArray* AliTPCCalibViewer::GetListOfNormalizationVariables(Bool_t printList) 
    arr->Add(new TObjString("_Median_OutlierCutted"));
    arr->Add(new TObjString("_LTM"));
    arr->Add(new TObjString("_LTM_OutlierCutted"));
-   arr->Add(new TObjString("LFitIntern_4_8.fElements"));
-   arr->Add(new TObjString("GFitIntern_Lin.fElements"));
-   arr->Add(new TObjString("GFitIntern_Par.fElements"));
+   arr->Add(new TObjString(Form("LFitIntern_4_8%s", fAppendString.Data())));
+   arr->Add(new TObjString(Form("GFitIntern_Lin%s", fAppendString.Data())));
+   arr->Add(new TObjString(Form("GFitIntern_Par%s", fAppendString.Data())));
    arr->Add(new TObjString("FitLinLocal"));
    arr->Add(new TObjString("FitLinGlobal"));
    arr->Add(new TObjString("FitParLocal"));
@@ -1461,10 +1576,10 @@ TObjArray* AliTPCCalibViewer::GetArrayOfCalPads(){
    TObjArray *calPadsArray = new TObjArray();
    Int_t numberOfCalPads = listOfCalPads->GetEntries();
    for (Int_t i = 0; i < numberOfCalPads; i++) {
-     std::cout << "Creating calPad " << (i+1) << " of " << numberOfCalPads << "\r" << std::flush;
+      std::cout << "Creating calPad " << (i+1) << " of " << numberOfCalPads << "\r" << std::flush;
       char* calPadName = (char*)((TObjString*)(listOfCalPads->At(i)))->GetString().Data();
       TString drawCommand = ((TObjString*)(listOfCalPads->At(i)))->GetString();
-      drawCommand.Append("~");
+      drawCommand.Append(fAbbreviation.Data());
       AliTPCCalPad* calPad = GetCalPad(drawCommand.Data(), "", calPadName); 
       calPadsArray->Add(calPad); 
    }
@@ -1487,12 +1602,12 @@ TString* AliTPCCalibViewer::Fit(const char* drawCommand, const char* formula, co
    TString cutStr(cuts);
    
    // abbreviations:
-   drawStr.ReplaceAll("~",".fElements");
-   cutStr.ReplaceAll("~",".fElements");
-   formulaStr.ReplaceAll("~", ".fElements");
+   drawStr.ReplaceAll(fAbbreviation, fAppendString);
+   cutStr.ReplaceAll(fAbbreviation, fAppendString);
+   formulaStr.ReplaceAll(fAbbreviation, fAppendString);
    
-   formulaStr.ReplaceAll("++", "~");
-   TObjArray* formulaTokens = formulaStr.Tokenize("~"); 
+   formulaStr.ReplaceAll("++", fAbbreviation);
+   TObjArray* formulaTokens = formulaStr.Tokenize(fAbbreviation.Data()); 
    Int_t dim = formulaTokens->GetEntriesFast();
    
    fitParam.ResizeTo(dim);
@@ -1934,6 +2049,7 @@ void AliTPCCalibViewer::MakeTree(const char *outPutFileName, const Char_t *input
    CreateObjectList(inputFileName, &objArray);
    MakeTree(outPutFileName, &objArray, mapFileName, outlierPad, ltmFraction);   
 }
+
 
 void AliTPCCalibViewer::CreateObjectList(const Char_t *filename, TObjArray *calibObjects){
    // 

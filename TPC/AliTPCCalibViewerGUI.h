@@ -29,6 +29,7 @@
 #include <TGButtonGroup.h>
 #include <TGLabel.h>
 #include <TGTab.h>
+class TROOTt;
 class AliTPCCalibViewer;
 
 
@@ -56,22 +57,37 @@ public:
 
    virtual ~AliTPCCalibViewerGUI();
    // virtual void CloseWindow();
-
+   
+   void DrawGUI(const TGWindow *p, UInt_t w, UInt_t h);         // to be called by the costructor, here the windows is drawn
+   void SetInitialValues();                                     // set the initial button states
+   void Initialize(char* fileName, char* treeName = "calPads"); // initializes the GUI with default settings and opens tree for drawing
+   void Initialize(AliTPCCalibViewer *viewer);                  // initializes the GUI with default settings and opens tree for drawing
+   void Reload(){Initialize(fViewer);}                          // reload the viewr after it has been changed, e.g. added a new referenceTree, ...
+   TString* GetDrawString();                                    // create the draw string out of selection
+   TString* GetCutString();                                     // create the cut string out of selection
+   TString* GetSectorString();                                  // create the sector string out of selection
+   AliTPCCalibViewer* GetViewer() {return fViewer;}             // returns the internal AliTPCCalibViewer object, which does the work
+   static TObjArray* ShowGUI(const char* fileName);             // initialize and show GUI for presentation, standalone
+   
    void HandleButtonsGeneral(Int_t id = -1); // handles mutual radio button exclusions for general Tab
    void HandleButtons1D(Int_t id = -1);      // handles mutual radio button exclusions for 1D Tab
    void HandleButtonsStat(Int_t id = -1);    // handles statistic check boxes 
-   void HandleButtonsRight(Int_t id = -1);   // handles mutual radio button exclusions for right side
+   void HandleButtonsCuts(Int_t id = -1);    // handles mutual radio button exclusions for right side
+   void HandleButtonsNoRedraw(Int_t id = -1);// handles label & scaling checkboxes without redrawing
    void DoNewSelection();                    // decides whether to redraw if user makes another selection
    void DoDraw();                            // main method for drawing according to user selection
    void DoFit();                             // main method for fitting
+   void DoExport();                          // function to export a CalPad to Cint
+   void DoExportNorm();                      // function to use a calPad for normalization
    void SavePicture();                       // method for saving
    void GetMinMax();                         // Read current Min & Max from the plot and set it to fTxtSetMin & fTxtSetMax
+   void SetMinMaxLabel();                    // Set min, max and label without redrawing
    void ChangeSector();                      // function that is called, when the number of the sector is changed
    void AddFitFunction() const;              // adds the last fit function to the normalization list
-   static void ShowGUI(const char* fileName); //initialize and show GUI for presentation
+   void MouseMove(Int_t event, Int_t x, Int_t y, TObject *selected); 
+   void UnchekAllStat();                     // Disable all statistical legend entries, no statistical legend.
    
-   
-protected:
+ protected:   
    AliTPCCalibViewer   *fViewer;             // CalibViewer object used for drawing
 
    TGCompositeFrame    *fContTopBottom;      // container for all GUI elements, vertical divided
@@ -170,6 +186,7 @@ protected:
    TGCompositeFrame    *fContStatKurt;       // container for kurtosis and its error in stat opt
    TGCheckButton       *fChkStatKurtosis;    // checkbox to display kurtosis in statistic legend
    TGCheckButton       *fChkStatKurtosisPM;  // checkbox to display kurtosis error in statistic legend
+   TGButton            *fBtnUnchekAll;       // Button to uncheck all statistic entries
    TGGroupFrame        *fContLabeling;       // groupframe container for labeling
    TGCheckButton       *fChkLabelTitle;      // checkbox to display specified title
    TGTextEntry         *fTxtLabelTitle;      // text box to specify title
@@ -183,8 +200,14 @@ protected:
    TGCompositeFrame    *fContAddSaveOpt;     // container for additional save options
    TGCheckButton       *fChkAddSaveOpt;      // checkbox for additional save options
    TGComboBox          *fComboAddSaveOpt;    // combobox for additional save options
+   TGGroupFrame        *fContExport;         // container for cint-export
+   TGCompositeFrame    *fContAddExport;      // container for dropdown list to enter export name
+   TGComboBox          *fComboExportName;    // dropdownbox to enter a name for the exported CalPad
+   TGTextButton        *fBtnExport;          // button to export a CalPad
+   TGTextButton        *fBtnAddNorm;         // button to add a CalPad to the normalization
    
-   void Initialize(char* fileName);          // initializes the GUI with default settings and opens tree for drawing
+   private:
+   Bool_t fInitialized;                      // has the GUI already been initialized?
    
    ClassDef(AliTPCCalibViewerGUI, 0)
 };

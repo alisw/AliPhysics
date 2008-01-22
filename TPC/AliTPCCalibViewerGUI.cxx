@@ -24,36 +24,7 @@
 /*
   aliroot
   AliTPCCalibViewerGUI::ShowGUI("CalibTree.root")
-  Begin_macro(source,gui)
-  {   
-      char* fileName = "CalibTreeEmpty.root";
-      AliTPCCalibViewer::MakeTree(fileName, 0, "$ALICE_ROOT/TPC/Calib/MapCalibrationObjects.root");
-      gROOT->SetStyle("Plain");
-      // content of AliTPCCalibViewerGUI::ShowGUI(...)
-      TGMainFrame* frmMain = new TGMainFrame(gClient->GetRoot(), 1000, 600);
-      frmMain->SetWindowName("AliTPCCalibViewer GUI");
-      frmMain->SetCleanup(kDeepCleanup);
-      
-      TGTab* tabMain = new TGTab(frmMain, 1000, 600);
-      frmMain->AddFrame(tabMain, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY, 0, 0, 0, 0));
-   
-      TGCompositeFrame* tabCont1 = tabMain->AddTab("Viewer 1");
-      TGCompositeFrame* tabCont2 = tabMain->AddTab("Viewer 2");
-   
-      AliTPCCalibViewerGUI* calibViewer1 = new AliTPCCalibViewerGUI(tabCont1, 1000, 600, fileName);
-      tabCont1->AddFrame(calibViewer1, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY, 0, 0, 0, 0));
-   
-      AliTPCCalibViewerGUI* calibViewer2 = new AliTPCCalibViewerGUI(tabCont2, 1000, 600, fileName);
-      tabCont2->AddFrame(calibViewer2, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY, 0, 0, 0, 0));
-      
-      frmMain->MapSubwindows();
-      frmMain->Resize();
-      frmMain->MapWindow();
-      
-      return frmMain;
-     
-  }
-  End_macro
+  
 */
 //                         //
 //                                                                           //
@@ -67,6 +38,7 @@
 #include <TPad.h>
 #include <TVirtualPad.h>
 
+#include <TROOT.h>
 #include <TObjArray.h>
 #include <TObjString.h>
 #include <TVector.h>
@@ -194,6 +166,7 @@ AliTPCCalibViewerGUI::AliTPCCalibViewerGUI(const TGWindow *p, UInt_t w, UInt_t h
     fContStatKurt(0),
     fChkStatKurtosis(0),
     fChkStatKurtosisPM(0),
+    fBtnUnchekAll(0),
     fContLabeling(0),
     fChkLabelTitle(0),
     fTxtLabelTitle(0),
@@ -206,14 +179,38 @@ AliTPCCalibViewerGUI::AliTPCCalibViewerGUI(const TGWindow *p, UInt_t w, UInt_t h
     fBtnSave(0),
     fContAddSaveOpt(0),
     fChkAddSaveOpt(0),
-    fComboAddSaveOpt(0)
-
+    fComboAddSaveOpt(0),
+    fContExport(0),
+    fContAddExport(0),
+    fComboExportName(0),
+    fBtnExport(0),
+    fBtnAddNorm(0)
 {
    //
    // AliTPCCalibViewerGUI constructor; fileName specifies the ROOT tree used for drawing 
    //
-   SetCleanup(kDeepCleanup);
+
+   // draw the GUI:
+   DrawGUI(p, w, h);
+   // initialize the AliTPCCalibViewer:
+   if (fileName) Initialize(fileName);
+   // set default button states:
+   SetInitialValues();
+   // do first drawing: 
+   DoDraw();
+}
+
+
+void AliTPCCalibViewerGUI::DrawGUI(const TGWindow *p, UInt_t w, UInt_t h) {
+   // 
+   // draw the GUI
+   // 
+   // ======================================================================   
+   // ************************* Display everything *************************
+   // ======================================================================
    
+   SetCleanup(kDeepCleanup);
+
    // *****************************************************************************
    // ************************* content of this MainFrame *************************
    // *****************************************************************************
@@ -259,6 +256,7 @@ AliTPCCalibViewerGUI::AliTPCCalibViewerGUI(const TGWindow *p, UInt_t w, UInt_t h
    fContLeft->AddFrame(fBtnDraw, new TGLayoutHints(kLHintsExpandX, 10, 10, 0, 0));
    //fBtnDraw->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "DoTest(=\"fBtnDraw clicked\")");
    fBtnDraw->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "DoDraw()");
+   fBtnDraw->SetToolTipText("Press here to draw according to selections.");
    
    // tabs on the left side:
    ftabLeft = new TGTab(fContLeft);
@@ -281,11 +279,13 @@ AliTPCCalibViewerGUI::AliTPCCalibViewerGUI(const TGWindow *p, UInt_t w, UInt_t h
          fRadio1D = new TGRadioButton(fContDrawOptSub1D2D, "1D", 30);
          fContDrawOptSub1D2D->AddFrame(fRadio1D, new TGLayoutHints(kLHintsNormal, 0, 2, 0, 0));
          fRadio1D->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "HandleButtonsGeneral()");
+         fRadio1D->SetToolTipText("1D drawing \nSelect this if you want to have the full control for the custom draw.");
          
          // 2D radio button
          fRadio2D = new TGRadioButton(fContDrawOptSub1D2D, "2D", 31);
          fContDrawOptSub1D2D->AddFrame(fRadio2D, new TGLayoutHints(kLHintsNormal, 2, 2, 0, 0));
          fRadio2D->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "HandleButtonsGeneral()");
+         fRadio2D->SetToolTipText("2D drawing");
          
          // additional draw options container
          fContAddDrawOpt = new TGCompositeFrame(fContDrawOpt, 200, 200, kVerticalFrame | kFitWidth | kFitHeight);
@@ -297,24 +297,27 @@ AliTPCCalibViewerGUI::AliTPCCalibViewerGUI(const TGWindow *p, UInt_t w, UInt_t h
             //fChkAddDrawOpt->SetTextJustify(kTextLeft);
             fContAddDrawOpt->AddFrame(fChkAddDrawOpt, new TGLayoutHints(kLHintsNormal | kLHintsExpandX));
             fChkAddDrawOpt->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "DoNewSelection()");
+            fChkAddDrawOpt->SetToolTipText("Enter additional draw options like 'prof' or 'colz' here.\nBe careful with the option 'same' for 2D drawings as it will crash (ROOT feature).");
             
             // additional draw options combo box
             fComboAddDrawOpt = new TGComboBox(fContAddDrawOpt);
             fComboAddDrawOpt->Resize(0, fBtnDraw->GetDefaultHeight());
             fComboAddDrawOpt->EnableTextInput(kTRUE);
             fContAddDrawOpt->AddFrame(fComboAddDrawOpt, new TGLayoutHints(kLHintsNormal | kLHintsExpandX, 0, 0, 0, 0));
-            fComboAddDrawOpt->Connect("ReturnPressed()", "AliTPCCalibViewerGUI", this, "DoNewSelection()");
+            fComboAddDrawOpt->Connect("ReturnPressed()", "AliTPCCalibViewerGUI", this, "HandleButtonsGeneral(=14)");
             fComboAddDrawOpt->Connect("Selected(Int_t)", "AliTPCCalibViewerGUI", this, "DoNewSelection()");
                   
          // automatic redraw check button
-         fChkAuto = new TGCheckButton(fContDrawOpt, "auto redraw");
+         fChkAuto = new TGCheckButton(fContDrawOpt, "Auto redraw");
          fContDrawOpt->AddFrame(fChkAuto, new TGLayoutHints(kLHintsNormal, 0, 2, 0, 0));
+         fChkAuto->SetToolTipText("Decide if you want an automatic redraw on each new selection.\nNot recommended on a slow machine, during remote connection or if your draw option is 'same'.");
                
       
       // *** predefined radio button ***  " Predefined "
       fRadioPredefined = new TGRadioButton(ftabLeft0, "Predefined: ", 13);
       ftabLeft0->AddFrame(fRadioPredefined, new TGLayoutHints(kLHintsExpandX, 0, 0, 0, 0));
       fRadioPredefined->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "HandleButtonsGeneral()");
+      fRadioPredefined->SetToolTipText("Draw predefined variables according to selection.");
       
       // list of variables
       fListVariables = new TGListBox(ftabLeft0);
@@ -332,11 +335,13 @@ AliTPCCalibViewerGUI::AliTPCCalibViewerGUI(const TGWindow *p, UInt_t w, UInt_t h
          fRadioRaw = new TGRadioButton(fContPlotOpt, "Raw", 10);
          fContPlotOpt->AddFrame(fRadioRaw, new TGLayoutHints(kLHintsExpandX, 0, 0, 0, 0));
          fRadioRaw->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "HandleButtonsGeneral()");
+         fRadioRaw->SetToolTipText("Plot without normalization");
       
          // normalized radio button
          fRadioNormalized = new TGRadioButton(fContPlotOpt, "Normalized", 11);
          fContPlotOpt->AddFrame(fRadioNormalized, new TGLayoutHints(kLHintsExpandX, 0, 0, 0, 0));
          fRadioNormalized->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "HandleButtonsGeneral()");
+         fRadioNormalized->SetToolTipText("Normalize data");
       
          // normalized options container *** fContNormalized ***
          fContNormalized = new TGCompositeFrame(fContPlotOpt, 200, 200, kVerticalFrame | kFitWidth | kFitHeight);
@@ -359,6 +364,7 @@ AliTPCCalibViewerGUI::AliTPCCalibViewerGUI(const TGWindow *p, UInt_t w, UInt_t h
       fRadioCustom = new TGRadioButton(ftabLeft0, "Custom: ", 12);
       ftabLeft0->AddFrame(fRadioCustom, new TGLayoutHints(kLHintsExpandX, 0, 0, 0, 0));
       fRadioCustom->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "HandleButtonsGeneral()");
+      fRadioCustom->SetToolTipText("Draw data according to user specific text entry in the 'Custom Draw' line. Remember '~' (= '.fElements')!");
       // custom options container is located further down
       
       // **************************** content of tabLeft1 *******************************
@@ -378,14 +384,17 @@ AliTPCCalibViewerGUI::AliTPCCalibViewerGUI(const TGWindow *p, UInt_t w, UInt_t h
             fRadioNorm = new TGRadioButton(fContDrawOpt1DSubNSC, "Normal", 110);
             fContDrawOpt1DSubNSC->AddFrame(fRadioNorm, new TGLayoutHints(kLHintsNormal, 0, 0, 0, 0));
             fRadioNorm->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "HandleButtons1D()");
+            fRadioNorm->SetToolTipText("Produce a normal 1D plot, a histogram of the selected data.");
                
             fRadioSigma = new TGRadioButton(fContDrawOpt1DSubNSC, "Sigma", 111);
             fContDrawOpt1DSubNSC->AddFrame(fRadioSigma, new TGLayoutHints(kLHintsNormal, 0, 0, 5, 0));
             fRadioSigma->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "HandleButtons1D()");
+            fRadioSigma->SetToolTipText("Draw a normal histogram, but also lines that indicate the mean/median/LTM \nand sigmas of the selected data.");
 
             fTxtSigmas = new TGTextEntry(fContDrawOpt1DSubNSC, "2; 4; 6", 111);
             fContDrawOpt1DSubNSC->AddFrame(fTxtSigmas, new TGLayoutHints(kLHintsNormal | kLHintsExpandX, 10, 15, 0, 0));
             fTxtSigmas->Connect("ReturnPressed()", "AliTPCCalibViewerGUI", this, "HandleButtons1D(=111)");
+            fTxtSigmas->SetToolTipText("Enter sigma intervals you would like to be indicated by lines. \nExample: '2; 4; 6'");
                
             fContCumuLR = new TGCompositeFrame(fContDrawOpt1DSubNSC, 200, 23, kHorizontalFrame | kFitWidth | kFitHeight);
             fContDrawOpt1DSubNSC->AddFrame(fContCumuLR, new TGLayoutHints(kLHintsExpandX, 0, 0, 5, 0));
@@ -396,14 +405,17 @@ AliTPCCalibViewerGUI::AliTPCCalibViewerGUI(const TGWindow *p, UInt_t w, UInt_t h
                   fRadioCumulative = new TGRadioButton(fContCumLeft, "Cumulative", 112);
                   fContCumLeft->AddFrame(fRadioCumulative, new TGLayoutHints(kLHintsNormal, 0, 10, 0, 0));
                   fRadioCumulative->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "HandleButtons1D()");
+                  fRadioCumulative->SetToolTipText("Draw the cumulative (SigmaCut) of the given selection. \nThe data distribution is integrated, starting from the mean/median/LTM.");
                   
                   fCheckCumulativePM = new TGCheckButton(fContCumLeft, "Plus/Minus");
                   fContCumLeft->AddFrame(fCheckCumulativePM, new TGLayoutHints(kLHintsNormal, 10, 15, 0, 0));
                   fCheckCumulativePM->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "HandleButtons1D()");
+                  fCheckCumulativePM->SetToolTipText("Decide whether you want the cumulative integration for each direction (+/-) \nor only for the absolute distance to the mean/median/LTM value.");
                   
                   fRadioIntegrate = new TGRadioButton(fContCumLeft, "Integrate", 113);
                   fContCumLeft->AddFrame(fRadioIntegrate, new TGLayoutHints(kLHintsNormal, 0, 0, 5, 0));
                   fRadioIntegrate->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "HandleButtons1D()");
+                  fRadioIntegrate->SetToolTipText("Draw the integral of the given selection.");
                   
                fContCumRight = new TGCompositeFrame(fContCumuLR, 200, 23, kVerticalFrame | kFitWidth | kFitHeight);
                fContCumuLR->AddFrame(fContCumRight, new TGLayoutHints(kLHintsExpandX, 0, 0, 0, 0));
@@ -415,6 +427,7 @@ AliTPCCalibViewerGUI::AliTPCCalibViewerGUI(const TGWindow *p, UInt_t w, UInt_t h
                   fTxtSigmaMax = new TGTextEntry(fContCumRight, "5", 112);
                   fContCumRight->AddFrame(fTxtSigmaMax, new TGLayoutHints(kLHintsNormal | kLHintsExpandX, 10, 15, 0, 0));
                   fTxtSigmaMax->Connect("ReturnPressed()", "AliTPCCalibViewerGUI", this, "HandleButtons1D(=112)");
+                  fTxtSigmaMax->SetToolTipText("Enter up to which multiple of sigma you want to integrate.");
              
             
          fContDrawOpt1DSubMML = new TGCompositeFrame(fcontDrawOpt1DSubLR, 200, 23, kHorizontalFrame | kFitWidth | kFitHeight);
@@ -424,14 +437,17 @@ AliTPCCalibViewerGUI::AliTPCCalibViewerGUI(const TGWindow *p, UInt_t w, UInt_t h
             fChkMean = new TGCheckButton(fContDrawOpt1DSubMML, "Mean");
             fContDrawOpt1DSubMML->AddFrame(fChkMean, new TGLayoutHints(kLHintsNormal, 0, 0, 0, 0));
             fChkMean->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "HandleButtons1D()");
+            fChkMean->SetToolTipText("Activate Mean for Sigma/Cumulative/Integrate");
 
             fChkMedian = new TGCheckButton(fContDrawOpt1DSubMML, "Median");
             fContDrawOpt1DSubMML->AddFrame(fChkMedian, new TGLayoutHints(kLHintsNormal, 0, 0, 0, 0));
             fChkMedian->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "HandleButtons1D()");
+            fChkMedian->SetToolTipText("Activate Median for Sigma/Cumulative/Integrate");
 
             fChkLTM = new TGCheckButton(fContDrawOpt1DSubMML, "LTM");
             fContDrawOpt1DSubMML->AddFrame(fChkLTM, new TGLayoutHints(kLHintsNormal, 0, 0, 0, 0));
             fChkLTM->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "HandleButtons1D()");
+            fChkLTM->SetToolTipText("Activate LTM for Sigma/Cumulative/Integrate");
             
       
       // statistic options container *** fcontStatOpt1D ***  " Statistic options "      
@@ -441,10 +457,12 @@ AliTPCCalibViewerGUI::AliTPCCalibViewerGUI(const TGWindow *p, UInt_t w, UInt_t h
          fChkStatName = new TGCheckButton(fContStatOpt, "Name");
          fContStatOpt->AddFrame(fChkStatName, new TGLayoutHints(kLHintsNormal, 0, 0, 0, 0));
          fChkStatName->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "HandleButtonsStat()");
+         fChkStatName->SetToolTipText("Display the name in the statistics legend.");
       
          fChkStatEntries = new TGCheckButton(fContStatOpt, "Entries");
          fContStatOpt->AddFrame(fChkStatEntries, new TGLayoutHints(kLHintsNormal, 0, 0, 0, 0));
          fChkStatEntries->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "HandleButtonsStat()");
+         fChkStatEntries->SetToolTipText("Display the number of entries in the statistics legend.");
       
          fContStatMean = new TGCompositeFrame(fContStatOpt, 1, 1, kHorizontalFrame | kFitWidth | kFitHeight);
          fContStatOpt->AddFrame(fContStatMean, new TGLayoutHints(kLHintsExpandX, 0, 0, 0, 0));
@@ -452,10 +470,12 @@ AliTPCCalibViewerGUI::AliTPCCalibViewerGUI(const TGWindow *p, UInt_t w, UInt_t h
             fChkStatMean = new TGCheckButton(fContStatMean, "Mean");
             fContStatMean->AddFrame(fChkStatMean, new TGLayoutHints(kLHintsNormal, 0, 0, 0, 0));
             fChkStatMean->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "HandleButtonsStat()");
+            fChkStatMean->SetToolTipText("Display the mean value of the data in the statistics legend.");
             
             fChkStatMeanPM = new TGCheckButton(fContStatMean, "+- Error");
             fContStatMean->AddFrame(fChkStatMeanPM, new TGLayoutHints(kLHintsNormal, 10, 0, 0, 0));
             fChkStatMeanPM->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "HandleButtonsStat()");
+            fChkStatMeanPM->SetToolTipText("Display the mean value's error in the statistics legend.");
 
          fContStatRMS = new TGCompositeFrame(fContStatOpt, 1, 1, kHorizontalFrame | kFitWidth | kFitHeight);
          fContStatOpt->AddFrame(fContStatRMS, new TGLayoutHints(kLHintsExpandX, 0, 0, 0, 0));
@@ -463,22 +483,27 @@ AliTPCCalibViewerGUI::AliTPCCalibViewerGUI(const TGWindow *p, UInt_t w, UInt_t h
             fChkStatRMS = new TGCheckButton(fContStatRMS, "RMS");
             fContStatRMS->AddFrame(fChkStatRMS, new TGLayoutHints(kLHintsNormal, 0, 0, 0, 0));
             fChkStatRMS->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "HandleButtonsStat()");
+            fChkStatRMS->SetToolTipText("Display the RMS value of the data in the statistics legend.");
             
             fChkStatRMSPM = new TGCheckButton(fContStatRMS, "+- Error");
             fContStatRMS->AddFrame(fChkStatRMSPM, new TGLayoutHints(kLHintsNormal, 10, 0, 0, 0));
             fChkStatRMSPM->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "HandleButtonsStat()");
+            fChkStatRMSPM->SetToolTipText("Display the RMS value's error in the statistics legend.");
 
          fChkStatUnderflow = new TGCheckButton(fContStatOpt, "Underflow");
          fContStatOpt->AddFrame(fChkStatUnderflow, new TGLayoutHints(kLHintsNormal, 0, 0, 0, 0));
          fChkStatUnderflow->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "HandleButtonsStat()");
+         fChkStatUnderflow->SetToolTipText("Display the number of entries in the underflow bin.");
       
          fChkStatOverflow = new TGCheckButton(fContStatOpt, "Overflow");
          fContStatOpt->AddFrame(fChkStatOverflow, new TGLayoutHints(kLHintsNormal, 0, 0, 0, 0));
          fChkStatOverflow->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "HandleButtonsStat()");
+         fChkStatOverflow->SetToolTipText("Display the number of entries in the overflow bin.");
       
          fChkStatIntegral = new TGCheckButton(fContStatOpt, "Integral");
          fContStatOpt->AddFrame(fChkStatIntegral, new TGLayoutHints(kLHintsNormal, 0, 0, 0, 0));
          fChkStatIntegral->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "HandleButtonsStat()");
+         fChkStatIntegral->SetToolTipText("Display the integral of the data in the statistics legend.");
       
          fContStatSkew = new TGCompositeFrame(fContStatOpt, 1, 1, kHorizontalFrame | kFitWidth | kFitHeight);
          fContStatOpt->AddFrame(fContStatSkew, new TGLayoutHints(kLHintsExpandX, 0, 0, 0, 0));
@@ -486,10 +511,12 @@ AliTPCCalibViewerGUI::AliTPCCalibViewerGUI(const TGWindow *p, UInt_t w, UInt_t h
             fChkStatSkewness = new TGCheckButton(fContStatSkew, "Skewness");
             fContStatSkew->AddFrame(fChkStatSkewness, new TGLayoutHints(kLHintsNormal, 0, 0, 0, 0));
             fChkStatSkewness->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "HandleButtonsStat()");
+            fChkStatSkewness->SetToolTipText("Display the skewness of the data in the statistics legend. \nBe careful! Sometimes the skewness causes a floating point exception that hangs the GUI!");
             
             fChkStatSkewnessPM = new TGCheckButton(fContStatSkew, "+- Error");
             fContStatSkew->AddFrame(fChkStatSkewnessPM, new TGLayoutHints(kLHintsNormal, 10, 0, 0, 0));
             fChkStatSkewnessPM->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "HandleButtonsStat()");
+            fChkStatSkewnessPM->SetToolTipText("Display the skewness' error in the statistics legend.");
 
          fContStatKurt = new TGCompositeFrame(fContStatOpt, 1, 1, kHorizontalFrame | kFitWidth | kFitHeight);
          fContStatOpt->AddFrame(fContStatKurt, new TGLayoutHints(kLHintsExpandX, 0, 0, 0, 0));
@@ -497,10 +524,18 @@ AliTPCCalibViewerGUI::AliTPCCalibViewerGUI(const TGWindow *p, UInt_t w, UInt_t h
             fChkStatKurtosis = new TGCheckButton(fContStatKurt, "Kurtosis");
             fContStatKurt->AddFrame(fChkStatKurtosis, new TGLayoutHints(kLHintsNormal, 0, 0, 0, 0));
             fChkStatKurtosis->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "HandleButtonsStat()");
+            fChkStatKurtosis->SetToolTipText("Display the kurtosis of the data in the statistics legend.");
             
             fChkStatKurtosisPM = new TGCheckButton(fContStatKurt, "+- Error");
             fContStatKurt->AddFrame(fChkStatKurtosisPM, new TGLayoutHints(kLHintsNormal, 10, 0, 0, 0));
             fChkStatKurtosisPM->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "HandleButtonsStat()");
+            fChkStatKurtosisPM->SetToolTipText("Display the kurtosis' error in the statistics legend.");
+       
+      fBtnUnchekAll = new TGTextButton(fContStatOpt, "&Uncheck all");
+      fContStatOpt->AddFrame(fBtnUnchekAll, new TGLayoutHints(kLHintsExpandX, 10, 10, 0, 0));
+      //fBtnDraw->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "DoTest(=\"fBtnDraw clicked\")");
+      fBtnUnchekAll->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "UnchekAllStat()");
+      fBtnUnchekAll->SetToolTipText("Disable all statistics legend entries, \nno statistics legend.");
 
       
       // custom options container
@@ -509,7 +544,7 @@ AliTPCCalibViewerGUI::AliTPCCalibViewerGUI(const TGWindow *p, UInt_t w, UInt_t h
       fContTopBottom->AddFrame(fContCustom, new TGLayoutHints(kLHintsExpandX, 10, 0, 0, 0));
    
          // ------------------------- content of fContCustom -------------------------
-         fLblCustomDraw = new TGLabel(fContCustom, "Custom Draw: ");
+         fLblCustomDraw = new TGLabel(fContCustom, "Custom draw: ");
          fLblCustomDraw->SetTextJustify(kTextLeft);
          fContCustom->AddFrame(fLblCustomDraw, new TGLayoutHints(kLHintsNormal, 5, 0, 0, 0));
          // text field for custom draw command
@@ -526,7 +561,7 @@ AliTPCCalibViewerGUI::AliTPCCalibViewerGUI(const TGWindow *p, UInt_t w, UInt_t h
       fContTopBottom->AddFrame(fContAddCuts, new TGLayoutHints(kLHintsExpandX, 10, 0, 0, 0));
       
          // ------------------------- content of fContAddCuts -------------------------
-         fLblAddCuts = new TGLabel(fContAddCuts, "Custom Cuts:  ");
+         fLblAddCuts = new TGLabel(fContAddCuts, "Custom cuts:  ");
          fLblAddCuts->SetTextJustify(kTextLeft);
          fContAddCuts->AddFrame(fLblAddCuts, new TGLayoutHints(kLHintsNormal, 5, 0, 0, 0));
          // combo text field for additional cuts
@@ -534,19 +569,18 @@ AliTPCCalibViewerGUI::AliTPCCalibViewerGUI(const TGWindow *p, UInt_t w, UInt_t h
          fComboAddCuts->Resize(0, fBtnDraw->GetDefaultHeight());
          fComboAddCuts->EnableTextInput(kTRUE);
          fContAddCuts->AddFrame(fComboAddCuts, new TGLayoutHints(kLHintsNormal | kLHintsExpandX, 0, 0, 0, 0));
-         fComboAddCuts->Connect("ReturnPressed()", "AliTPCCalibViewerGUI", this, "HandleButtonsRight(=31)");
+         fComboAddCuts->Connect("ReturnPressed()", "AliTPCCalibViewerGUI", this, "HandleButtonsCuts(=31)");
          fComboAddCuts->Connect("Selected(Int_t)", "AliTPCCalibViewerGUI", this, "DoNewSelection()");
          
-         
-
    // ==========================================================================
    // ************************* content of fContCenter *************************
    // ========================================================================
    // main drawing canvas
-   fCanvMain = new TRootEmbeddedCanvas("Main Canvas", fContCenter, 200, 200, kFitWidth | kFitHeight);
+   fCanvMain = new TRootEmbeddedCanvas("Main_Canvas", fContCenter, 200, 200, kFitWidth | kFitHeight);
    fContCenter->AddFrame(fCanvMain, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY, 0, 0, 0, 0));
-      
-   
+   fCanvMain->GetCanvas()->Connect("ProcessedEvent(Int_t, Int_t, Int_t, TObject*)", "AliTPCCalibViewerGUI", this, "MouseMove(Int_t, Int_t, Int_t, TObject*)");
+   fCanvMain->GetCanvas()->Connect("RangeAxisChanged()", "AliTPCCalibViewerGUI", this, "GetMinMax()");
+   fCanvMain->GetCanvas()->SetToolTipText("The Main_Canvas, here your plots are displayed.");
    
    
    // =========================================================================   
@@ -568,24 +602,28 @@ AliTPCCalibViewerGUI::AliTPCCalibViewerGUI(const TGWindow *p, UInt_t w, UInt_t h
       
          // ************************* content of fContCuts *************************
          // TPC radio button
-         fRadioTPC = new TGRadioButton(fContCuts, "whole TPC", 20);
+         fRadioTPC = new TGRadioButton(fContCuts, "Whole TPC", 20);
          fContCuts->AddFrame(fRadioTPC, new TGLayoutHints(kLHintsExpandX, 0, 0, 0, 0));
-         fRadioTPC->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "HandleButtonsRight()");
+         fRadioTPC->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "HandleButtonsCuts()");
+         fRadioTPC->SetToolTipText("No cuts, use the whole TPC. \nIn 2D mode, A side and C side are superimposed!");
       
          // side A radio button
-         fRadioSideA = new TGRadioButton(fContCuts, "side A", 21);
+         fRadioSideA = new TGRadioButton(fContCuts, "Side A", 21);
          fContCuts->AddFrame(fRadioSideA, new TGLayoutHints(kLHintsExpandX, 0, 0, 0, 0));
-         fRadioSideA->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "HandleButtonsRight()");
+         fRadioSideA->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "HandleButtonsCuts()");
+         fRadioSideA->SetToolTipText("Use only side A.");
       
          // side C radio button
-         fRadioSideC = new TGRadioButton(fContCuts, "side C", 22);
+         fRadioSideC = new TGRadioButton(fContCuts, "Side C", 22);
          fContCuts->AddFrame(fRadioSideC, new TGLayoutHints(kLHintsExpandX, 0, 0, 0, 0));
-         fRadioSideC->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "HandleButtonsRight()");
+         fRadioSideC->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "HandleButtonsCuts()");
+         fRadioSideC->SetToolTipText("Use only side C.");
       
          // sector radio button
-         fRadioSector = new TGRadioButton(fContCuts, "sector", 23);
+         fRadioSector = new TGRadioButton(fContCuts, "ROC", 23);
          fContCuts->AddFrame(fRadioSector, new TGLayoutHints(kLHintsExpandX, 0, 0, 0, 0));
-         fRadioSector->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "HandleButtonsRight()");
+         fRadioSector->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "HandleButtonsCuts()");
+         fRadioSector->SetToolTipText("Use only one ROC (readout chamber).");
       
          // sector options container
          fContSector = new TGCompositeFrame(fContCuts, 200, 200, kHorizontalFrame | kFitWidth | kFitHeight);
@@ -606,11 +644,13 @@ AliTPCCalibViewerGUI::AliTPCCalibViewerGUI(const TGWindow *p, UInt_t w, UInt_t h
          fChkCutZero = new TGCheckButton(fContCuts, "Cut zeros");
          fContCuts->AddFrame(fChkCutZero, new TGLayoutHints(kLHintsNormal, 0, 0, 0, 0));
          fChkCutZero->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "DoNewSelection()");
+         fChkCutZero->SetToolTipText("Use only values that are not zero. \nWhen doing a custom draw this cut is composed of the draw string\nup to the first ':' or '>>' and the condition that this should not be zero.");
       
          // additional cuts check button
          fChkAddCuts = new TGCheckButton(fContCuts, "Custom cuts");
          fContCuts->AddFrame(fChkAddCuts, new TGLayoutHints(kLHintsNormal, 0, 0, 0, 0));
          fChkAddCuts->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "DoNewSelection()");
+         fChkAddCuts->SetToolTipText("Activate the custom cuts on the bottom. Remember '~' (= '.fElements')!");
          // fContAddCuts' content is locaed further op
       
       
@@ -627,12 +667,14 @@ AliTPCCalibViewerGUI::AliTPCCalibViewerGUI(const TGWindow *p, UInt_t w, UInt_t h
             // SetMaximum - checkbox
             fChkSetMax = new TGCheckButton(fContSetMax, "Set fixed max.");
             fContSetMax->AddFrame(fChkSetMax, new TGLayoutHints(kLHintsNormal, 0, 0, 0, 0));
-            fChkSetMax->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "HandleButtonsRight()");
+            fChkSetMax->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "HandleButtonsNoRedraw()");
+            fChkSetMax->SetToolTipText("Set the maximum fixed to the value specified here.");
             
             // text field for maximum value
             fTxtSetMax = new TGTextEntry(fContSetMax, "", 41);
             fContSetMax->AddFrame(fTxtSetMax, new TGLayoutHints(kLHintsNormal | kLHintsExpandX, 0, 0, 0, 0));
-            fTxtSetMax->Connect("ReturnPressed()", "AliTPCCalibViewerGUI", this, "HandleButtonsRight()");
+            fTxtSetMax->Connect("ReturnPressed()", "AliTPCCalibViewerGUI", this, "HandleButtonsNoRedraw()");
+            fTxtSetMax->SetToolTipText("maximum value for the drawing");
       
          // SetMinimum container
          fContSetMin = new TGCompositeFrame(fContScaling, 200, 200, kVerticalFrame | kFitWidth | kFitHeight);
@@ -642,22 +684,26 @@ AliTPCCalibViewerGUI::AliTPCCalibViewerGUI(const TGWindow *p, UInt_t w, UInt_t h
             // SetMinimum - checkbox
             fChkSetMin = new TGCheckButton(fContSetMin, "Set fixed min.");
             fContSetMin->AddFrame(fChkSetMin, new TGLayoutHints(kLHintsNormal, 0, 0, 0, 0));
-            fChkSetMin->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "DoNewSelection()");
+            fChkSetMin->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "HandleButtonsNoRedraw()");
+            fChkSetMin->SetToolTipText("Set the minimum fixed to the value specified here.");
             
             // text field for minimum value
             fTxtSetMin = new TGTextEntry(fContSetMin, "", 40);
             fContSetMin->AddFrame(fTxtSetMin, new TGLayoutHints(kLHintsNormal | kLHintsExpandX, 0, 0, 0, 0));
-            fTxtSetMin->Connect("ReturnPressed()", "AliTPCCalibViewerGUI", this, "HandleButtonsRight()");
+            fTxtSetMin->Connect("ReturnPressed()", "AliTPCCalibViewerGUI", this, "HandleButtonsNoRedraw()");
+            fTxtSetMin->SetToolTipText("minimum value for the drawing");
          
          // get Min & Max from Plot - button
          fBtnGetMinMax = new TGTextButton(fContScaling, "&Get scale from plot");
          fContScaling->AddFrame(fBtnGetMinMax, new TGLayoutHints(kLHintsExpandX, 0, 0, 0, 0));
          fBtnGetMinMax->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "GetMinMax()");
+         fBtnGetMinMax->SetToolTipText("Get min and max from plot, e.g. after rescaling by dragging the palette. \nObsolete! The button's function will change to 'Unzoom all'.");
          
          // GetMinMaxAuto - checkbox
          fChkGetMinMaxAuto = new TGCheckButton(fContScaling, "Get Min + Max auto.");
          fContScaling->AddFrame(fChkGetMinMaxAuto, new TGLayoutHints(kLHintsNormal, 0, 0, 0, 0));
-         fChkGetMinMaxAuto->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "DoNewSelection()");
+         fChkGetMinMaxAuto->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "HandleButtonsNoRedraw()");
+         fChkGetMinMaxAuto->SetToolTipText("Get minimum and maximum automatically from each new plot. \nDeactivate this, if you want to 'save' your specified minimum and maximum.");
          
       // labeling container *** fContLabeling ***  " Labeling "      
          fContLabeling = new TGGroupFrame(fTabRight0, "Labeling", kVerticalFrame | kFitWidth | kFitHeight);
@@ -665,41 +711,49 @@ AliTPCCalibViewerGUI::AliTPCCalibViewerGUI(const TGWindow *p, UInt_t w, UInt_t h
          
             fChkLabelTitle = new TGCheckButton(fContLabeling, "Set title:");
             fContLabeling->AddFrame(fChkLabelTitle, new TGLayoutHints(kLHintsNormal, 0, 0, 0, 0));
-            fChkLabelTitle->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "HandleButtonsRight()");
+            fChkLabelTitle->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "HandleButtonsNoRedraw()");
+            fChkLabelTitle->SetToolTipText("Set the plot title.");
                
             fTxtLabelTitle = new TGTextEntry(fContLabeling, "Title", 500);
             fContLabeling->AddFrame(fTxtLabelTitle, new TGLayoutHints(kLHintsNormal | kLHintsExpandX, 0, 0, 0, 0));
-            fTxtLabelTitle->Connect("ReturnPressed()", "AliTPCCalibViewerGUI", this, "HandleButtonsRight(=50)");
+            fTxtLabelTitle->Connect("ReturnPressed()", "AliTPCCalibViewerGUI", this, "HandleButtonsNoRedraw(=50)");
+            fTxtLabelTitle->SetToolTipText("plot title");
    
             fChkLabelXaxis = new TGCheckButton(fContLabeling, "Set X-axis label:");
             fContLabeling->AddFrame(fChkLabelXaxis, new TGLayoutHints(kLHintsNormal, 0, 0, 0, 0));
-            fChkLabelXaxis->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "HandleButtonsRight()");
+            fChkLabelXaxis->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "HandleButtonsNoRedraw()");
+            fChkLabelXaxis->SetToolTipText("Set the X-axis label.");
                
             fTxtLabelXaxis = new TGTextEntry(fContLabeling, "XaxisLabel", 500);
             fContLabeling->AddFrame(fTxtLabelXaxis, new TGLayoutHints(kLHintsNormal | kLHintsExpandX, 0, 0, 0, 0));
-            fTxtLabelXaxis->Connect("ReturnPressed()", "AliTPCCalibViewerGUI", this, "HandleButtonsRight(=51)");
+            fTxtLabelXaxis->Connect("ReturnPressed()", "AliTPCCalibViewerGUI", this, "HandleButtonsNoRedraw(=51)");
+            fTxtLabelXaxis->SetToolTipText("X-axis label");
    
             fChkLabelYaxis = new TGCheckButton(fContLabeling, "Set Y-axis label:");
             fContLabeling->AddFrame(fChkLabelYaxis, new TGLayoutHints(kLHintsNormal, 0, 0, 0, 0));
-            fChkLabelYaxis->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "HandleButtonsRight()");
+            fChkLabelYaxis->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "HandleButtonsNoRedraw()");
+            fChkLabelYaxis->SetToolTipText("Set the Y-axis label.");
                
             fTxtLabelYaxis = new TGTextEntry(fContLabeling, "YaxisLabel", 500);
             fContLabeling->AddFrame(fTxtLabelYaxis, new TGLayoutHints(kLHintsNormal | kLHintsExpandX, 0, 0, 0, 0));
-            fTxtLabelYaxis->Connect("ReturnPressed()", "AliTPCCalibViewerGUI", this, "HandleButtonsRight(=52)");
+            fTxtLabelYaxis->Connect("ReturnPressed()", "AliTPCCalibViewerGUI", this, "HandleButtonsNoRedraw(=52)");
+            fTxtLabelYaxis->SetToolTipText("Y-axis label");
    
             fChkLabelGetAuto = new TGCheckButton(fContLabeling, "Get labels auto.");
             fContLabeling->AddFrame(fChkLabelGetAuto, new TGLayoutHints(kLHintsNormal, 0, 0, 0, 0));
-            fChkLabelGetAuto->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "HandleButtonsRight()");
+            fChkLabelGetAuto->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "HandleButtonsNoRedraw()");
+            fChkLabelGetAuto->SetToolTipText("Get labels automatically from each new plot \nDeactivate this, if you want to 'save' your specified labels.");
 
       
-      // **************************** content of ftabLeft1 *******************************
+      // **************************** content of ftabRight1 *******************************
       // Save container
       fContSave = new TGGroupFrame(fTabRight1, "Save", kVerticalFrame | kFitWidth | kFitHeight);
       fTabRight1->AddFrame(fContSave, new TGLayoutHints(kLHintsExpandX, 0, 0, 0, 0));
          // save button
-         fBtnSave = new TGTextButton(fContSave, "&Save picute");
+         fBtnSave = new TGTextButton(fContSave, "&Save picture");
          fContSave->AddFrame(fBtnSave, new TGLayoutHints(kLHintsExpandX, 0, 0, 0, 0));
          fBtnSave->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "SavePicture()");
+         fBtnSave->SetToolTipText("Open a 'Save as...' dialog to save the current plot as picture or macro.");
 
          // additional save options container
          fContAddSaveOpt = new TGCompositeFrame(fContSave, 200, 200, kVerticalFrame | kFitWidth | kFitHeight);
@@ -710,6 +764,7 @@ AliTPCCalibViewerGUI::AliTPCCalibViewerGUI(const TGWindow *p, UInt_t w, UInt_t h
             fChkAddSaveOpt = new TGCheckButton(fContAddSaveOpt, "Save options:");
             fContAddSaveOpt->AddFrame(fChkAddSaveOpt, new TGLayoutHints(kLHintsNormal | kLHintsExpandX));
             fChkAddSaveOpt->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "DoNewSelection()");
+            fChkAddSaveOpt->SetToolTipText("Additional save options (see documentation for TPad::Print()).");
             
             // additional save options combo box
             fComboAddSaveOpt = new TGComboBox(fContAddSaveOpt);
@@ -719,8 +774,39 @@ AliTPCCalibViewerGUI::AliTPCCalibViewerGUI(const TGWindow *p, UInt_t w, UInt_t h
             fComboAddSaveOpt->Connect("ReturnPressed()", "AliTPCCalibViewerGUI", this, "SavePicture()");
             // fComboAddSaveOpt->Connect("Selected(Int_t)", "AliTPCCalibViewerGUI", this, "SavePicture()");
      
+      // calPad export container
+      fContExport = new TGGroupFrame(fTabRight1, "Export AliTPCCalPad", kVerticalFrame | kFitWidth | kFitHeight);
+      fTabRight1->AddFrame(fContExport, new TGLayoutHints(kLHintsExpandX, 0, 0, 0, 0));
+   
+         // ------------------------- content of fContExport -------------------------
+         // container for export name
+         fContAddExport = new TGCompositeFrame(fContExport, 200, 200, kVerticalFrame | kFitWidth | kFitHeight);
+         fContExport->AddFrame(fContAddExport, new TGLayoutHints(kLHintsExpandX, -5, -5, 0, 0));
+         
+         fComboExportName = new TGComboBox(fContAddExport);
+         fComboExportName->Resize(0, fBtnDraw->GetDefaultHeight());
+         fContAddExport->AddFrame(fComboExportName, new TGLayoutHints(kLHintsNormal | kLHintsExpandX, 0, 0, 0, 0));
+         fComboExportName->AddEntry("calPad",  0);  // first default value
+         fComboExportName->Select(0);               // select default value before connecting
+         fComboExportName->EnableTextInput(kTRUE);
+         fComboExportName->Connect("ReturnPressed()", "AliTPCCalibViewerGUI", this, "DoExport()");
+         fComboExportName->Connect("Selected(Int_t)", "AliTPCCalibViewerGUI", this, "DoExport()");
+  
+         // export button
+         fBtnExport = new TGTextButton(fContExport, "&Export to CINT");
+         fContExport->AddFrame(fBtnExport, new TGLayoutHints(kLHintsExpandX, 0, 0, 0, 0));
+         fBtnExport->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "DoExport()");
+         fBtnExport->SetToolTipText("Export the current 2D view as AliTPCCalPad to the CINT command line interpreter, use the specified name. \nThis works only in 2D mode.");
+      
+         // export button
+         fBtnAddNorm = new TGTextButton(fContExport, "&Add to normalization");
+         fContExport->AddFrame(fBtnAddNorm, new TGLayoutHints(kLHintsExpandX, 0, 0, 0, 0));
+         fBtnAddNorm->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "DoExportNorm()");
+         fBtnAddNorm->SetToolTipText("Use the current 2D view as normalization variable, use the specified name. \nNot yet working!");
+         
+      
       // Fit options container
-      fContFit = new TGGroupFrame(fTabRight1, "Custom Fit", kVerticalFrame | kFitWidth | kFitHeight);
+      fContFit = new TGGroupFrame(fTabRight1, "Custom fit", kVerticalFrame | kFitWidth | kFitHeight);
       fTabRight1->AddFrame(fContFit, new TGLayoutHints(kLHintsExpandX, 0, 0, 0, 0));
    
          // ------------------------- content of fContFit -------------------------
@@ -741,14 +827,24 @@ AliTPCCalibViewerGUI::AliTPCCalibViewerGUI(const TGWindow *p, UInt_t w, UInt_t h
          fBtnFit = new TGTextButton(fContAddFit, "&Fit");
          fContAddFit->AddFrame(fBtnFit, new TGLayoutHints(kLHintsExpandX, 0, 0, 0, 0));
          fBtnFit->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "DoFit()");
+         fBtnFit->SetToolTipText("Fit a whole TPC side, e.g. with gx~ ++ gy~, the result is printed to the console \nNot yet final status.");
       
          // add fit function button
          //fBtnAddFitFunction = new TGTextButton(fContAddFit, "&Add fit function to normalization");
          //fContAddFit->AddFrame(fBtnAddFitFunction, new TGLayoutHints(kLHintsExpandX, 0, 0, 0, 0));
          //fBtnAddFitFunction->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "AddFitFunction()");
 
-               
-   // set default button states
+   SetWindowName("AliTPCCalibViewer GUI");
+   MapSubwindows();
+   Resize(GetDefaultSize());
+   MapWindow();
+}
+
+
+void AliTPCCalibViewerGUI::SetInitialValues() {
+   // 
+   // Set the default button states
+   // 
    fRadioPredefined->SetState(kButtonDown);
    fRadioRaw->SetState(kButtonDown);
    fRadioTPC->SetState(kButtonDown);
@@ -764,14 +860,92 @@ AliTPCCalibViewerGUI::AliTPCCalibViewerGUI(const TGWindow *p, UInt_t w, UInt_t h
    fChkMean->SetState(kButtonDown);
    fCheckCumulativePM->SetState(kButtonUp);
    
+   fChkLabelGetAuto->SetState(kButtonDown);
+
+   // TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO 
+   // TODO Set the checkboxes state as it is really     TODO 
+   // TODO in gStyle                                    TODO 
+   // TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO 
+//          k = 1;  kurtosis printed
+//          k = 2;  kurtosis and kurtosis error printed
+//          s = 1;  skewness printed
+//          s = 2;  skewness and skewness error printed
+//          i = 1;  integral of bins printed
+//          o = 1;  number of overflows printed
+//          u = 1;  number of underflows printed
+//          r = 1;  rms printed
+//          r = 2;  rms and rms error printed
+//          m = 1;  mean value printed
+//          m = 2;  mean and mean error values printed
+//          e = 1;  number of entries printed
+//          n = 1;  name of histogram is printed    
+//          (default = 000001111)
+         
+   Int_t statOpt = gStyle->GetOptStat();
+   if (statOpt == 1) statOpt = 1111;
+   if (statOpt / 200000000 >= 1) {
+      fChkStatKurtosis->SetState(kButtonDown);
+      fChkStatKurtosisPM->SetState(kButtonDown);
+      statOpt -= 200000000;
+   }
+   if (statOpt / 100000000 >= 1) {
+      fChkStatKurtosis->SetState(kButtonDown);
+      statOpt -= 100000000;
+   }
+   if (statOpt / 20000000 >= 1) {
+      fChkStatSkewness->SetState(kButtonDown);
+      fChkStatSkewnessPM->SetState(kButtonDown);
+      statOpt -= 20000000;
+   }
+   if (statOpt / 10000000 >= 1) {
+      fChkStatSkewness->SetState(kButtonDown);
+      statOpt -= 10000000;
+   }
+   if (statOpt / 1000000 >= 1) {
+      fChkStatIntegral->SetState(kButtonDown);
+      statOpt -= 1000000;
+   }
+   if (statOpt / 100000 >= 1) {
+      fChkStatOverflow->SetState(kButtonDown);
+      statOpt -= 100000;
+   }
+   if (statOpt / 10000 >= 1) {
+      fChkStatUnderflow->SetState(kButtonDown);
+      statOpt -= 10000;
+   }
+   if (statOpt / 2000 >= 1) {
+      fChkStatRMS->SetState(kButtonDown);
+      fChkStatRMSPM->SetState(kButtonDown);
+      statOpt -= 2000;
+   }
+   if (statOpt / 1000 >= 1) {
+      fChkStatRMS->SetState(kButtonDown);
+      statOpt -= 1000;
+   }
+   if (statOpt / 200 >= 1) {
+      fChkStatMean->SetState(kButtonDown);
+      fChkStatMeanPM->SetState(kButtonDown);
+      statOpt -= 200;
+   }
+   if (statOpt / 100 >= 1) {
+      fChkStatMean->SetState(kButtonDown);
+      statOpt -= 100;
+   }
+   if (statOpt / 10 >= 1) {
+      fChkStatEntries->SetState(kButtonDown);
+      statOpt -= 10;
+   }
+   if (statOpt / 1 >= 1) {
+      fChkStatName->SetState(kButtonDown);
+      statOpt -= 1;
+   }
+   
+  /* 
    fChkStatName->SetState(kButtonDown);
    fChkStatEntries->SetState(kButtonDown);
    fChkStatMean->SetState(kButtonDown);
    fChkStatRMS->SetState(kButtonDown);
-   
-   fChkLabelGetAuto->SetState(kButtonDown);
-   
-   
+   */
 //    fChkStatMeanPM->SetState(kButtonUp);
 //    fChkStatRMSPM->SetState(kButtonUp);
 //    fChkStatUnderflow->SetState(kButtonUp);
@@ -779,19 +953,60 @@ AliTPCCalibViewerGUI::AliTPCCalibViewerGUI(const TGWindow *p, UInt_t w, UInt_t h
 //    fChkStatIntegral->SetState(kButtonUp);
 //    fChkStatSkewness->SetState(kButtonUp);
 //    fChkStatSkewnessPM->SetState(kButtonUp);
-//    fChkStatKurtosis->SetState(kButtonUp);
-//    fChkStatKurtosisPM->SetState(kButtonUp);
-      
-   // ======================================================================   
-   // ************************* Display everything *************************
-   // ======================================================================
+//    fChkStatKurtosis->SetState(kButtonDown);
+//    fChkStatKurtosisPM->SetState(kButtonDown);
+   
+   // fill fComboAddDrawOpt with some additional drawing options
+   fComboAddDrawOpt->AddEntry("same",      0);
+   fComboAddDrawOpt->AddEntry("profbox",   1);
+   fComboAddDrawOpt->AddEntry("profcolz",  2);
+   fComboAddDrawOpt->AddEntry("profcont0", 3);
+   fComboAddDrawOpt->AddEntry("proflego",  4);
+   fComboAddDrawOpt->AddEntry("proflego2", 5);
+   fComboAddDrawOpt->AddEntry("profsurf",  6);
+   fComboAddDrawOpt->AddEntry("profsurf1", 7);
+   fComboAddDrawOpt->AddEntry("profsurf2", 8);
+   fComboAddDrawOpt->AddEntry("box",    9);
+   fComboAddDrawOpt->AddEntry("colz",  10);
+   fComboAddDrawOpt->AddEntry("cont0", 11);
+   fComboAddDrawOpt->AddEntry("lego",  12);
+   fComboAddDrawOpt->AddEntry("lego2", 13);
+   fComboAddDrawOpt->AddEntry("surf",  14);
+   fComboAddDrawOpt->AddEntry("surf1", 15);
+   fComboAddDrawOpt->AddEntry("surf2", 16);
 
-   if (fileName) Initialize(fileName);
-   SetWindowName("AliTPCCalibViewer GUI");
-   MapSubwindows();
-   Resize(GetDefaultSize());
-   MapWindow();
+   // fill fComboAddSaveOpt with some additional drawing options
+   fComboAddSaveOpt->AddEntry("Portrait",  0);
+   fComboAddSaveOpt->AddEntry("Landscape", 1);
+   fComboAddSaveOpt->AddEntry("Preview",   2);
+   fComboAddSaveOpt->AddEntry("+50",       3);
+
+   // fill fComboMethod
+   fComboMethod->AddEntry("subtract",  0);
+   fComboMethod->AddEntry("divide by", 1);
+   
+   // fill fComboExportName
+//    fComboExportName->AddEntry("calPad",  0);
+   // fComboExportName->AddEntry("calPad2", 1);
+   fBtnExport->SetEnabled(kFALSE);
+   fBtnAddNorm->SetEnabled(kFALSE);
+
+   // select initial variables
+   fListVariables->Select(0);
+   fListNormalization->Select(0);
+   fComboMethod->Select(0);
+//    fComboExportName->Select(0);
+//    fComboExportName->EnableTextInput(kTRUE);
+
+   //fCanvMain->GetCanvas()->ToggleEventStatus(); // klappt nicht
+   //fCanvMain->GetCanvas()->GetCanvasImp()->ShowStatusBar(kTRUE); // klappt auch nicht
+   fListVariables->IntegralHeight(kFALSE);         // naja
+   fListNormalization->IntegralHeight(kFALSE);     // naja
+   
+   // Make first drawing:
+   // DoDraw();
 }
+
 
 AliTPCCalibViewerGUI::AliTPCCalibViewerGUI(const AliTPCCalibViewerGUI &c)
    : TGCompositeFrame(c.fParent, c.fWidth, c.fHeight),
@@ -892,6 +1107,7 @@ AliTPCCalibViewerGUI::AliTPCCalibViewerGUI(const AliTPCCalibViewerGUI &c)
     fContStatKurt(0),
     fChkStatKurtosis(0),
     fChkStatKurtosisPM(0),
+    fBtnUnchekAll(0),
     fContLabeling(0),
     fChkLabelTitle(0),
     fTxtLabelTitle(0),
@@ -904,14 +1120,18 @@ AliTPCCalibViewerGUI::AliTPCCalibViewerGUI(const AliTPCCalibViewerGUI &c)
     fBtnSave(0),
     fContAddSaveOpt(0),
     fChkAddSaveOpt(0),
-    fComboAddSaveOpt(0)
-
-       
+    fComboAddSaveOpt(0),
+    fContExport(0),
+    fContAddExport(0),
+    fComboExportName(0),
+    fBtnExport(0),
+    fBtnAddNorm(0)
 {
   //
   // dummy AliTPCCalibViewerGUI copy constructor
   //
 }
+
 
 AliTPCCalibViewerGUI & AliTPCCalibViewerGUI::operator =(const AliTPCCalibViewerGUI & param) {
    //
@@ -919,6 +1139,7 @@ AliTPCCalibViewerGUI & AliTPCCalibViewerGUI::operator =(const AliTPCCalibViewerG
    //
    return (*this);
 }
+
 
 AliTPCCalibViewerGUI::~AliTPCCalibViewerGUI() {
    // 
@@ -934,88 +1155,90 @@ AliTPCCalibViewerGUI::~AliTPCCalibViewerGUI() {
    if (fViewer) fViewer->Delete();
 }
 
+
 /*
 void AliTPCCalibViewerGUI::CloseWindow() {
    DeleteWindow();
 }
 */
 
-void AliTPCCalibViewerGUI::Initialize(char* fileName) {
+
+void AliTPCCalibViewerGUI::Initialize(char* fileName, char* treeName) {
+   // 
+   // initialize the GUI with a calibrationTree from fileName
+   // 
+   
+   // create AliTPCCalibViewer object, which will be used for generating all drawings
+   if (fViewer) delete fViewer;
+   fViewer = new AliTPCCalibViewer(fileName, treeName);
+   Initialize(fViewer);   
+}
+
+
+void AliTPCCalibViewerGUI::Initialize(AliTPCCalibViewer *viewer) {
    //
    // initializes the GUI with default settings and opens tree for drawing
    //
    
-   // create AliTPCCalibViewer object, which will be used for generating all drawings
-   if (fViewer) delete fViewer;
-   fViewer = new AliTPCCalibViewer(fileName);
-
-   // fill fListVariables
+   fViewer = viewer;
+   TString selectedVariable("");
+   TString selectedNormalization("");
+   Int_t variableId = -1;
+   Int_t normalizationId = -1;
+   if (fInitialized) {
+      // remember the selected entry
+      if (fListVariables->GetSelectedEntry()) selectedVariable = fListVariables->GetSelectedEntry()->GetTitle();
+      if (fListNormalization->GetSelectedEntry()) selectedNormalization = fListNormalization->GetSelectedEntry()->GetTitle();
+   }
+   
+   // fill fListVariables, list of drawable variables:
    TObjArray* arr = fViewer->GetListOfVariables();
    TIterator* iter = arr->MakeIterator();
    iter->Reset();
    TObjString* currentStr = 0;
    Int_t id = 0;
+   fListVariables->RemoveAll();
    while ((currentStr = (TObjString*)(iter->Next()))) {
       fListVariables->AddEntry(currentStr->GetString().Data(), id);
+      if (fInitialized && currentStr->GetString() == selectedVariable) variableId = id;
       id++;
    }
    delete iter;
    arr->Delete();
    delete arr;
 
-   // fill fComboMethod
-   fComboMethod->AddEntry("subtract", 0);
-   fComboMethod->AddEntry("divide by", 1);
-
-   // fill fListNorm
+   // fill fListNorm, list of normalization variables:
    arr = fViewer->GetListOfNormalizationVariables();
    iter = arr->MakeIterator();
    iter->Reset();
    currentStr = 0;
    id = 0;
+   fListNormalization->RemoveAll();
    while ((currentStr = (TObjString*)(iter->Next()))) {
       fListNormalization->AddEntry(currentStr->GetString().Data(), id);
+      if (fInitialized && currentStr->GetString() == selectedNormalization) normalizationId = id;
       id++;
    }
    delete iter;
    arr->Delete();
    delete arr;
+   
+   // trick do display the entries corectly after reinitialization
+   // otherwise all the entries would appear as one kryptic entry
+   // resizing the listbox somehow fixes the problem...
+   if (fInitialized) fListVariables->Resize(fListVariables->GetWidth()-1, fListVariables->GetHeight());
+   if (fInitialized) fListVariables->Resize(fListVariables->GetWidth()+1, fListVariables->GetHeight());
+   if (fInitialized) fListNormalization->Resize(fListNormalization->GetWidth()-1, fListNormalization->GetHeight());
+   if (fInitialized) fListNormalization->Resize(fListNormalization->GetWidth()+1, fListNormalization->GetHeight());
+   
+   // select the last selected variable and normalization
+   if (fInitialized && variableId != -1)     fListVariables->Select(variableId);
+   if (fInitialized && normalizationId != -1)fListVariables->Select(normalizationId);
+   
+   if (fInitialized) Info("Initialize", "AliTPCCalibViewerGUI new initialized.");
+   fInitialized = kTRUE;
 
-   // fill fComboAddDrawOpt with some additional drawing options
-   fComboAddDrawOpt->AddEntry("profbox", 0);
-   fComboAddDrawOpt->AddEntry("profcolz", 1);
-   fComboAddDrawOpt->AddEntry("profcont0", 2);
-   fComboAddDrawOpt->AddEntry("proflego", 3);
-   fComboAddDrawOpt->AddEntry("proflego2", 4);
-   fComboAddDrawOpt->AddEntry("profsurf", 5);
-   fComboAddDrawOpt->AddEntry("profsurf1", 6);
-   fComboAddDrawOpt->AddEntry("profsurf2", 7);
-   fComboAddDrawOpt->AddEntry("box", 8);
-   fComboAddDrawOpt->AddEntry("colz", 9);
-   fComboAddDrawOpt->AddEntry("cont0", 10);
-   fComboAddDrawOpt->AddEntry("lego", 11);
-   fComboAddDrawOpt->AddEntry("lego2", 12);
-   fComboAddDrawOpt->AddEntry("surf", 13);
-   fComboAddDrawOpt->AddEntry("surf1", 14);
-   fComboAddDrawOpt->AddEntry("surf2", 15);
-
-   // fill fComboAddSaveOpt with some additional drawing options
-   fComboAddSaveOpt->AddEntry("Portrait", 0);
-   fComboAddSaveOpt->AddEntry("Landscape", 1);
-   fComboAddSaveOpt->AddEntry("Preview", 2);
-   fComboAddSaveOpt->AddEntry("+50", 3);
-
-   fListVariables->Select(0);
-   fListNormalization->Select(0);
-   fComboMethod->Select(0);
-
-   //fCanvMain->GetCanvas()->ToggleEventStatus(); // klappt nicht
-   //fCanvMain->GetCanvas()->GetCanvasImp()->ShowStatusBar(kTRUE); // klappt auch nicht
-   fListVariables->IntegralHeight(kFALSE);         // naja
-   fListNormalization->IntegralHeight(kFALSE);     // naja
-   DoDraw();
 }
-
 
 
 void AliTPCCalibViewerGUI::HandleButtonsGeneral(Int_t id) {
@@ -1046,9 +1269,8 @@ void AliTPCCalibViewerGUI::HandleButtonsGeneral(Int_t id) {
          // fComboCustom->SetEnabled(kFALSE);
          // fRadioNormalized->SetState(kButtonUp);
          break;
-      case 42:             // fComboCustom
-         fRadioCustom->SetState(kButtonDown);
-         fRadioPredefined->SetState(kButtonUp);
+      case 14:             // select Draw options fComboAddDrawOpt
+         fChkAddDrawOpt->SetState(kButtonDown);
          break;
       case 13:             // fRadioPredefined
          fRadioCustom->SetState(kButtonUp);
@@ -1058,9 +1280,17 @@ void AliTPCCalibViewerGUI::HandleButtonsGeneral(Int_t id) {
       //--------
       case 30:             // fRadio1D
          fRadio2D->SetState(kButtonUp);
+         fBtnExport->SetEnabled(kFALSE);
+         fBtnAddNorm->SetEnabled(kFALSE);
          break;
       case 31:             // fRadio2D
          fRadio1D->SetState(kButtonUp);
+         fBtnExport->SetEnabled(kTRUE);
+         fBtnAddNorm->SetEnabled(kTRUE);
+         break;
+      case 42:             // fComboCustom
+         fRadioCustom->SetState(kButtonDown);
+         fRadioPredefined->SetState(kButtonUp);
          break;
    }
    DoNewSelection();
@@ -1132,13 +1362,13 @@ void AliTPCCalibViewerGUI::HandleButtonsStat(Int_t id) {
    if (fChkStatSkewnessPM->GetState() == kButtonDown) statOpt.Append("S");
    if (fChkStatKurtosis->GetState() == kButtonDown && fChkStatKurtosisPM->GetState() == kButtonUp) statOpt.Append("k");
    if (fChkStatKurtosisPM->GetState() == kButtonDown) statOpt.Append("K");
-
+   
    gStyle->SetOptStat(statOpt);
    DoNewSelection();
 }
 
 
-void AliTPCCalibViewerGUI::HandleButtonsRight(Int_t id) {
+void AliTPCCalibViewerGUI::HandleButtonsCuts(Int_t id) {
    //
    // handles mutual radio button exclusions
    // right side buttons
@@ -1172,6 +1402,22 @@ void AliTPCCalibViewerGUI::HandleButtonsRight(Int_t id) {
       case 31:            // fComboAddCuts
          fChkAddCuts->SetState(kButtonDown);
          break;
+   }
+   DoNewSelection();
+}
+
+
+void AliTPCCalibViewerGUI::HandleButtonsNoRedraw(Int_t id) {
+   //
+   // handles label & scaling checkboxes 
+   // without redrawing (not necessary, faster like this)
+   //
+    if (id == -1) {
+      TGButton *btn = (TGButton *) gTQSender;
+      id = btn->WidgetId();
+   }
+
+   switch (id) {
       case 40:             // fTxtSetMin
          fChkSetMin->SetState(kButtonDown);
          break;
@@ -1188,7 +1434,7 @@ void AliTPCCalibViewerGUI::HandleButtonsRight(Int_t id) {
          fChkLabelYaxis->SetState(kButtonDown);
          break;
    }
-   DoNewSelection();
+   SetMinMaxLabel();
 }
 
 
@@ -1197,21 +1443,20 @@ void AliTPCCalibViewerGUI::DoNewSelection() {
    //
    // decides whether to redraw if user makes another selection
    //
-   
    if (fChkAuto->GetState() == kButtonDown) DoDraw();
 }
 
 
-void AliTPCCalibViewerGUI::DoDraw() {
-   //
-   // main method for drawing according to user selection
-   //
+TString* AliTPCCalibViewerGUI::GetDrawString() {
+   // 
+   // create the draw string out of selection
+   // 
    
    // specify data to plot
    TString desiredData("");
-   if (!fListVariables->GetSelectedEntry()) return;
+   if (!fListVariables->GetSelectedEntry()) return 0;
    desiredData += ((TGTextLBEntry*)(fListVariables->GetSelectedEntry()))->GetTitle();
-   desiredData += "~";
+   desiredData += fViewer->GetAbbreviation();
 
    // specify normalization
    if (fRadioPredefined->GetState() == kButtonDown && fRadioNormalized->GetState() == kButtonDown) {
@@ -1225,7 +1470,7 @@ void AliTPCCalibViewerGUI::DoDraw() {
             break;
       }
       TString normalizationData("");
-      if (!fListNormalization->GetSelectedEntry()) return;
+      if (!fListNormalization->GetSelectedEntry()) return 0;
       normalizationData += ((TGTextLBEntry*)(fListNormalization->GetSelectedEntry()))->GetTitle();
       
       if ( normalizationData.BeginsWith("Fit")) {
@@ -1259,8 +1504,9 @@ void AliTPCCalibViewerGUI::DoDraw() {
             formulaStr = "lx~ ++ ly~ ++ lx~^2 ++ ly~^2 ++ lx~*ly~";
          if (normalizationData.CompareTo("FitParGlobal") == 0)
             formulaStr = "gx~ ++ gy~ ++ gx~^2 ++ gy~^2 ++ gx~*gy~";
+         formulaStr.ReplaceAll("~", fViewer->GetAbbreviation());
          normalizationData = *fViewer->Fit(desiredData.Data(), formulaStr.Data(), cutStr.Data(), chi2, fitParam, covMatrix);
-      }
+      }  // if ( normalizationData.BeginsWith("Fit")
 
       desiredData += op;
       if (! (TString(((TGTextLBEntry*)(fListNormalization->GetSelectedEntry()))->GetTitle())).BeginsWith("Fit"))
@@ -1269,10 +1515,18 @@ void AliTPCCalibViewerGUI::DoDraw() {
    }
    else if (fRadioCustom->GetState() == kButtonDown) {
       desiredData = fComboCustom->GetTextEntry()->GetText();
-      if (desiredData == "") return;
+      if (desiredData == "") return 0;
    }
+   
+   return new TString(desiredData.Data());
+}   
 
-   // specify cuts
+  
+TString* AliTPCCalibViewerGUI::GetSectorString() {
+   // 
+   // create the sector string out of selection
+   // 
+
    TString sectorStr("");
    if (fRadioTPC->GetState() == kButtonDown)
       sectorStr += "ALL";
@@ -1284,27 +1538,60 @@ void AliTPCCalibViewerGUI::DoDraw() {
       Int_t sector = (Int_t)(fNmbSector->GetNumber());
       sectorStr += sector; //cuts += "sector==";
    }
+   return new TString(sectorStr.Data());
+}   
+  
+ 
+ TString* AliTPCCalibViewerGUI::GetCutString() {
+   // 
+   // create the cut string out of selection
+   // 
+  
    TString cutsStr("");
    if (fChkCutZero->GetState() == kButtonDown) {
-      cutsStr += desiredData.Data();
+      TString cutZerosStr(GetDrawString()->Data());
+      if (cutZerosStr.Contains(">>")) {
+         cutZerosStr.Remove(cutZerosStr.First(">>"));
+      }
+      if (cutZerosStr.Contains(":")) {
+         cutZerosStr.Remove(cutZerosStr.First(":"));
+      }
+      cutsStr += cutZerosStr.Data();
       cutsStr += "!=0";
       if (fChkAddCuts->GetState() == kButtonDown) cutsStr += " && ";
    }
    if (fChkAddCuts->GetState() == kButtonDown)
       cutsStr += fComboAddCuts->GetTextEntry()->GetText();
+   return new TString(cutsStr.Data());
+}
+
+
+void AliTPCCalibViewerGUI::DoDraw() {
+   //
+   // main method for drawing according to user selection
+   //
+   
+   // specify data to plot:
+   TString desiredData(GetDrawString()->Data());
+   // specify sector:
+   TString sectorStr(GetSectorString()->Data());
+   // specify cuts:
+   TString cutsStr(GetCutString()->Data());
 
    TString addDrawOpt("");
    if (fChkAddDrawOpt->GetState() == kButtonDown)
       addDrawOpt += fComboAddDrawOpt->GetTextEntry()->GetText();
    
-   // draw finally
-   for (Int_t i = 0; i < fCanvMain->GetCanvas()->GetListOfPrimitives()->GetEntries(); i++) {
-      if (strcmp(fCanvMain->GetCanvas()->GetListOfPrimitives()->At(i)->ClassName(), "TFrame") != 0)
-         fCanvMain->GetCanvas()->GetListOfPrimitives()->At(i)->Delete();
-   }
+   // remove last picture
+   if (!addDrawOpt.Contains("same"))
+      for (Int_t i = 0; i < fCanvMain->GetCanvas()->GetListOfPrimitives()->GetEntries(); i++) {
+         if (strcmp(fCanvMain->GetCanvas()->GetListOfPrimitives()->At(i)->ClassName(), "TFrame") != 0)
+            fCanvMain->GetCanvas()->GetListOfPrimitives()->At(i)->Delete();
+      }
    //fCanvMain->GetCanvas()->Clear();
    fCanvMain->GetCanvas()->cd();
    Int_t entries = -1;
+   // draw finally
    if (fRadio1D->GetState() == kButtonDown){
       // 1D-Drawing
       TString strSigmaMax(fTxtSigmaMax->GetText());  // get sigmaMax from text enty
@@ -1332,51 +1619,7 @@ void AliTPCCalibViewerGUI::DoDraw() {
    }
    if (entries == -1) return; // nothing was drawn, there is no histogram to get min and max
    
-   
-   // get or set Min & Max 
-   // 
-   // search for histogram
-   TList* listOfPrimitives = fCanvMain->GetCanvas()->GetListOfPrimitives();
-   TObject* ptr = 0;
-   for (Int_t i = 0; i < listOfPrimitives->GetEntries(); i++) {
-      ptr = listOfPrimitives->At(i);
-      if ( ptr->InheritsFrom("TH1") ) break;
-   }
-   if ( ptr == 0 || !ptr->InheritsFrom("TH1") ) {  // if the loop did not find a TH1
-      fCanvMain->GetCanvas()->Update();
-      return;
-      // unable to find histogram, no min and max wil be read out
-   }
-   TH1 *hist = (TH1*)ptr; 
-   TString minTxt(fTxtSetMin->GetText());
-   TString maxTxt(fTxtSetMax->GetText());
-   // set min and max according to specified values, if checkbox is checked
-   if (fChkSetMax->GetState() == kButtonDown && (maxTxt.IsDigit() || maxTxt.IsFloat()) )
-      hist->SetMaximum(maxTxt.Atof());
-   if (fChkSetMin->GetState() == kButtonDown && (minTxt.IsDigit() || minTxt.IsFloat()) )
-      hist->SetMinimum(minTxt.Atof());
-   // get min and max from plot       
-   if (fChkGetMinMaxAuto->GetState() == kButtonDown) {
-      if (fChkSetMax->GetState() == kButtonUp)
-         fTxtSetMax->SetText(Form("%f", hist->GetMaximum()));
-      if (fChkSetMin->GetState() == kButtonUp)
-         fTxtSetMin->SetText(Form("%f", hist->GetMinimum()));
-   }
-   
-   // set labels accoring to specification, if cehckboxes are checked
-   if (fChkLabelTitle->GetState() == kButtonDown) 
-      hist->SetTitle(fTxtLabelTitle->GetText());
-   if (fChkLabelXaxis->GetState() == kButtonDown)
-      hist->GetXaxis()->SetTitle(fTxtLabelXaxis->GetText());
-   if (fChkLabelYaxis->GetState() == kButtonDown)
-      hist->GetYaxis()->SetTitle(fTxtLabelYaxis->GetText());
-   // get and/or set labels and title
-   if (fChkLabelGetAuto->GetState() == kButtonDown) {
-      fTxtLabelTitle->SetText(hist->GetTitle());
-      fTxtLabelXaxis->SetTitle(hist->GetXaxis()->GetTitle());
-      fTxtLabelYaxis->SetTitle(hist->GetYaxis()->GetTitle());
-   }
-   
+   SetMinMaxLabel();
    fCanvMain->GetCanvas()->Update();
 }
 
@@ -1389,40 +1632,13 @@ void AliTPCCalibViewerGUI::DoFit() {
    Double_t chi2 = 0;
    TVectorD fitParam(0);
    TMatrixD covMatrix(0,0);
-   TString drawStr("");
    TString cutStr("");
    TString formulaStr("");
    TString *returnStr = new TString("");
 
-   
-   // ******** create draw string *********
-   if (fRadioCustom->GetState() == kButtonDown) {
-   // take custom text as draw string
-      drawStr = fComboCustom->GetTextEntry()->GetText();
-      if (drawStr == "") return;
-   }
-   else if (fRadioPredefined->GetState() == kButtonDown) {
-   // create drawStr out of selection
-      drawStr += ((TGTextLBEntry*)(fListVariables->GetSelectedEntry()))->GetTitle();
-      drawStr += ".fElements";
-      if (fRadioNormalized->GetState() == kButtonDown) {
-      // normalize data by selection
-         TString op("");
-         switch (fComboMethod->GetSelected()) {
-            case 0:        // subtraction
-               op += "-";
-               break;
-            case 1:        // division
-               op += "/";
-               break;
-         }
-         TString normalizationData("");
-         normalizationData += ((TGTextLBEntry*)(fListNormalization->GetSelectedEntry()))->GetTitle();
-         drawStr += op;
-         drawStr += ((TGTextLBEntry*)(fListVariables->GetSelectedEntry()))->GetTitle();
-         drawStr += normalizationData;
-      }
-   }
+   // specify data to plot:
+   TString drawStr(GetDrawString()->Data());
+
 
    // ********** create cut string **********
    if (fRadioTPC->GetState() == kButtonDown)
@@ -1453,10 +1669,64 @@ void AliTPCCalibViewerGUI::DoFit() {
    std::cout << "chi2 = " << chi2 << std::endl;
 }
 
+
+void AliTPCCalibViewerGUI::DoExport() {
+   //
+   // function to export a CalPad to Cint
+   //
+   if ( fRadio2D->GetState() != kButtonDown){
+      Error("ExportCalPad", "Export of AliTPCCalPad to CINT works only in 2D mode.");
+      return;
+   }
+   // specify data to plot:
+   TString desiredData(GetDrawString()->Data());
+   // specify cuts:
+   TString cutsStr(GetCutString()->Data());
+   // get name for the calPad   
+   const char* calPadName = fComboExportName->GetTextEntry()->GetText();
+   // create calPad according to drawCommand and cuts
+   AliTPCCalPad *calPad = fViewer->GetCalPad(desiredData.Data(), (char*)cutsStr.Data(), (char*)calPadName);
+   // finally export calPad to Cint:
+   gROOT->ProcessLine(Form("AliTPCCalPad* %s = (AliTPCCalPad*)0x%lx;", calPadName, calPad));
+   Info("ExportCalPad", "Current 2D view has been exported to an AliTPCCalPad* with name '%s'", calPadName);
+}
+
+
+void AliTPCCalibViewerGUI::DoExportNorm() {
+   //
+   // function to export a CalPad to Cint
+   //
+   
+   if ( fRadio2D->GetState() != kButtonDown){
+      Error("ExportCalPad", "Adding an AliTPCCalPad to the normalization works only in 2D mode.");
+      return;
+   }
+   
+   Error("DoExportNorm", "Not yet implemented.");
+   return;
+   
+   // specify data to plot:
+   TString desiredData(GetDrawString()->Data());
+   // specify sector:
+   TString sectorStr(GetSectorString()->Data());
+   // specify cuts:
+   TString cutsStr(GetCutString()->Data());
+   
+   // get name for the calPad   
+   const char* calPadName = fComboExportName->GetTextEntry()->GetText();
+   // create calPad according to drawCommand and cuts
+   AliTPCCalPad *calPad = fViewer->GetCalPad(desiredData.Data(), (char*)cutsStr.Data(), (char*)fComboExportName->GetTextEntry()->GetText());
+   // finally export calPad to Cint:
+   gROOT->ProcessLine(Form("AliTPCCalPad* %s = (AliTPCCalPad*)0x%lx;", calPadName, calPad));
+   Info("ExportCalPad", "Current 2D view has been exported to an AliTPCCalPad* with name '%s'", calPadName);
+}
+
+
 void AliTPCCalibViewerGUI::GetMinMax() {
    //
    // Read current Min & Max from the plot and set it to fTxtSetMin & fTxtSetMax
    //
+   if (fChkGetMinMaxAuto->GetState() == kButtonUp) return;
    TList* listOfPrimitives = fCanvMain->GetCanvas()->GetListOfPrimitives();
    TObject* ptr = 0;
    for (Int_t i = 0; i < listOfPrimitives->GetEntries(); i++) {
@@ -1471,6 +1741,66 @@ void AliTPCCalibViewerGUI::GetMinMax() {
    fTxtSetMin->SetText(Form("%f",histMin));
 }
 
+
+void AliTPCCalibViewerGUI::SetMinMaxLabel() {
+   // 
+   // Set Minimum, Maximum and labels without redrawing the plot
+   // (faster)
+   // 
+   
+   // search for histogram
+   TList* listOfPrimitives = fCanvMain->GetCanvas()->GetListOfPrimitives();
+   TObject* ptr = 0;
+   for (Int_t i = 0; i < listOfPrimitives->GetEntries(); i++) {
+      ptr = listOfPrimitives->At(i);
+      if ( ptr->InheritsFrom("TH1") ) break;
+   }
+   if ( ptr == 0 || !ptr->InheritsFrom("TH1") ) {  // if the loop did not find a TH1
+      fCanvMain->GetCanvas()->Update();
+      Warning("SetMinMaxLabel","No Histogram found!");
+      return;
+      // unable to find histogram, no min and max wil be read out
+   }
+   
+   TH1 *hist = (TH1*)ptr; 
+   TString minTxt(fTxtSetMin->GetText());
+   TString maxTxt(fTxtSetMax->GetText());
+   // set min and max according to specified values, if checkbox is checked
+   if (fChkSetMax->GetState() == kButtonDown && (maxTxt.IsDigit() || maxTxt.IsFloat()) )
+      hist->SetMaximum(maxTxt.Atof());
+   if (fChkSetMax->GetState() == kButtonUp)
+      hist->SetMaximum(-1111);  // default value, to unzoom
+   if (fChkSetMin->GetState() == kButtonDown && (minTxt.IsDigit() || minTxt.IsFloat()) )
+      hist->SetMinimum(minTxt.Atof());
+   if (fChkSetMin->GetState() == kButtonUp)
+      hist->SetMinimum(-1111);  // default value, to unzoom
+   // get min and max from plot       
+   if (fChkGetMinMaxAuto->GetState() == kButtonDown) {
+      // maybe call here GetMinMax ???
+      if (fChkSetMax->GetState() == kButtonUp)
+         fTxtSetMax->SetText(Form("%f", hist->GetMaximum()));
+      if (fChkSetMin->GetState() == kButtonUp)
+         fTxtSetMin->SetText(Form("%f", hist->GetMinimum()));
+   }
+   
+   // set labels according to specification, if cehckboxes are checked
+   if (fChkLabelTitle->GetState() == kButtonDown) 
+      hist->SetTitle(fTxtLabelTitle->GetText());
+   if (fChkLabelXaxis->GetState() == kButtonDown)
+      hist->GetXaxis()->SetTitle(fTxtLabelXaxis->GetText());
+   if (fChkLabelYaxis->GetState() == kButtonDown)
+      hist->GetYaxis()->SetTitle(fTxtLabelYaxis->GetText());
+   // get and/or set labels and title
+   if (fChkLabelGetAuto->GetState() == kButtonDown) {
+      fTxtLabelTitle->SetText(hist->GetTitle());
+      fTxtLabelXaxis->SetTitle(hist->GetXaxis()->GetTitle());
+      fTxtLabelYaxis->SetTitle(hist->GetYaxis()->GetTitle());
+   }
+   hist->SetTitle(hist->GetTitle());  // trick to update the histogram
+   fCanvMain->GetCanvas()->Update();
+}
+   
+   
 void AliTPCCalibViewerGUI::ChangeSector(){
    // 
    // function that is called, when the number of the sector is changed
@@ -1490,12 +1820,105 @@ void AliTPCCalibViewerGUI::ChangeSector(){
    DoNewSelection();
 }
 
+
 void AliTPCCalibViewerGUI::AddFitFunction() const { 
    //
    // adds the last fit function to the normalization list
    // 
    std::cout << "Not yet implemented." << std::endl;
 }
+
+
+void AliTPCCalibViewerGUI::UnchekAllStat() {
+   // 
+   // Disable all statistical legend entries, no statistical legend.
+   // 
+   fChkStatName->SetState(kButtonUp);
+   fChkStatEntries->SetState(kButtonUp);
+   fChkStatMean->SetState(kButtonUp);
+   fChkStatMeanPM->SetState(kButtonUp);
+   fChkStatRMS->SetState(kButtonUp);
+   fChkStatRMSPM->SetState(kButtonUp);
+   fChkStatUnderflow->SetState(kButtonUp);
+   fChkStatOverflow->SetState(kButtonUp);
+   fChkStatIntegral->SetState(kButtonUp);
+   fChkStatSkewness->SetState(kButtonUp);
+   fChkStatSkewnessPM->SetState(kButtonUp);
+   fChkStatKurtosis->SetState(kButtonUp);
+   fChkStatKurtosisPM->SetState(kButtonUp);
+   
+   HandleButtonsStat(0);
+}
+
+
+void AliTPCCalibViewerGUI::MouseMove(Int_t event, Int_t x, Int_t y, TObject *selectedObject) { 
+   //
+   // mouse move
+   // zoom to sector works ONLY in 2D mode, if one side is specified
+   // 
+   Double_t pi = TMath::Pi();
+   if (event != kButton1Double )
+      return;
+   if (!selectedObject->InheritsFrom("TH2")) return;
+   // zoom to sector works ONLY in 2D mode, if one side is specified
+   if (fRadio2D->GetState() == kButtonUp) return;
+   if (fRadioSector->GetState() == kButtonDown) { // return to full side view
+      // return to full side view
+      Int_t sector = (Int_t)(fNmbSector->GetNumber());
+      if ( (sector >= 0 && sector <= 17) || (sector >= 36 &&  sector <= 53) ) {
+         // A-Side
+         fRadioSideA->Clicked();
+         fRadioSideA->SetState(kButtonDown);
+         DoNewSelection();
+      }
+      if ( (sector >= 18 && sector <= 35) || (sector >= 54 &&  sector <= 71) ) {
+         // C-Side
+         fRadioSideC->Clicked();
+         fRadioSideC->SetState(kButtonDown);
+         DoNewSelection();
+      }
+      return;
+   }
+   if (!(fRadioSideA->GetState() == kButtonDown || fRadioSideC->GetState() == kButtonDown)) return;
+   
+   // Int_t    px        = gPad->GetEventX();
+   // Int_t    py        = gPad->GetEventY();
+   Float_t  upy       = gPad->AbsPixeltoY(y);
+   Float_t  upx       = gPad->AbsPixeltoX(x);
+   Float_t  gy         = gPad->PadtoY(upy);
+   Float_t  gx         = gPad->PadtoX(upx);
+   Int_t quadrant = -1;
+   if (gx >= 0 && gy >= 0) quadrant = 1;
+   if (gx <  0 && gy >= 0) quadrant = 2;
+   if (gx <  0 && gy <  0) quadrant = 3;
+   if (gx >= 0 && gy <  0) quadrant = 4;
+   gx = TMath::Abs(gx);
+   gy = TMath::Abs(gy);
+   Double_t phi = TMath::ATan(gy/gx);        // angle phi is in Pi- units
+   Double_t r   = TMath::Sqrt(gx*gx + gy*gy);
+   if (quadrant == 2) phi = pi - phi;
+   if (quadrant == 3) phi = pi + phi;
+   if (quadrant == 4) phi = 2 * pi - phi;
+   Double_t phiGrad = phi / pi * 180;
+   Int_t sector = (Int_t) phiGrad / 20;  // one sector coresponds to 20°
+   // IROC starts at 84.5 cm
+   // IROC ends at 135.5 cm, OROC begins
+   // OROC ends at 250 cm
+   if (r < 84.5 || r > 250) return; // outside TPC
+   if (r < 135.5) { // IROC 
+      if (fRadioSideC->GetState() == kButtonDown) sector += 18;
+   }
+   else {// OROC
+      sector += 36;
+      if (fRadioSideC->GetState() == kButtonDown) sector += 18;
+   }
+   // printf("r: %f, phi: %f, phiGrad: %f, gy/gx: %f, quadrant: %i, sector: %i \n", r, phi, phiGrad, gy/gx, quadrant, sector);
+   fNmbSector->SetNumber(sector);
+   fRadioSector->Clicked();
+   fRadioSector->SetState(kButtonDown);
+   ChangeSector();   
+}
+
 
 void AliTPCCalibViewerGUI::SavePicture() {
    // 
@@ -1521,8 +1944,6 @@ void AliTPCCalibViewerGUI::SavePicture() {
    //       "xml" - a XML file
    //       "root" - a ROOT binary file
    
-
-      
    const char *kSaveAsTypes[] = {
       "Postscript",  "*.ps",
       "Encapsulated Postscript",   "*.eps",
@@ -1550,7 +1971,10 @@ void AliTPCCalibViewerGUI::SavePicture() {
    fi.fOverwrite = kFALSE;
    new TGFileDialog(gClient->GetRoot(), gClient->GetRoot(), kFDSave, &fi);
    if (fi.fFilename && strlen(fi.fFilename)) {
-      fCanvMain->GetCanvas()->Print(fi.fFilename, addSaveOpt.Data());
+      if (addSaveOpt != "")
+         fCanvMain->GetCanvas()->Print(fi.fFilename, addSaveOpt.Data());
+      else 
+         fCanvMain->GetCanvas()->Print(fi.fFilename);
    }
 
 // TList*	fFileNamesList	list of selected file names
@@ -1564,9 +1988,10 @@ void AliTPCCalibViewerGUI::SavePicture() {
 }
    
 
-void AliTPCCalibViewerGUI::ShowGUI(const char* fileName) {
+TObjArray* AliTPCCalibViewerGUI::ShowGUI(const char* fileName) {
    //
-   // initialize and show GUI for presentation
+   // Initialize and show GUI for presentation for demonstration purposes
+   // or for fast standalone use
    // 
    TGMainFrame* frmMain = new TGMainFrame(gClient->GetRoot(), 1000, 600);
    frmMain->SetWindowName("AliTPCCalibViewer GUI");
@@ -1584,9 +2009,14 @@ void AliTPCCalibViewerGUI::ShowGUI(const char* fileName) {
    AliTPCCalibViewerGUI* calibViewer2 = new AliTPCCalibViewerGUI(tabCont2, 1000, 600, (char*)fileName);
    tabCont2->AddFrame(calibViewer2, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY, 0, 0, 0, 0));
    
+   TObjArray *guiArray = new TObjArray();
+   guiArray->Add(calibViewer1);
+   guiArray->Add(calibViewer2);
+   
    frmMain->MapSubwindows();
    frmMain->Resize();
    frmMain->MapWindow();
-
+   
+   return guiArray;
 }
 

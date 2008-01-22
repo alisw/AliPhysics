@@ -33,6 +33,11 @@ public:
    virtual ~AliTPCCalibViewer();
    virtual void Delete(Option_t* option = "");
    
+   TString GetAbbreviation() const { return fAbbreviation;  }
+   TString GetAppendString() const { return fAppendString; }
+   void SetAbbreviation(char* abr) { fAbbreviation = abr; }
+   void SetAppendString(char* str) { fAppendString = str; }
+   
    virtual void     Draw(Option_t* opt="") { fTree->Draw(opt); }
    virtual Long64_t Draw(const char* varexp, const TCut& selection, Option_t* option = "", Long64_t nentries = 1000000000, Long64_t firstentry = 0) { return fTree->Draw(varexp, selection, option, nentries, firstentry); };
    virtual Long64_t Draw(const char* varexp, const char* selection, Option_t* option = "", Long64_t nentries = 1000000000, Long64_t firstentry = 0) { return fTree->Draw(varexp, selection, option, nentries, firstentry); };
@@ -41,6 +46,7 @@ public:
    Int_t EasyDraw(const char* drawCommand, Int_t sector, const char* cuts = 0, const char* drawOptions = 0, Bool_t writeDrawCommand = kFALSE) const;   // easy drawing of data, use '~' for abbreviation of '.fElements'
    Int_t EasyDraw1D(const char* drawCommand, const char* sector, const char* cuts = 0, const char* drawOptions = 0, Bool_t writeDrawCommand = kFALSE) const;   // easy drawing of data, use '~' for abbreviation of '.fElements'
    Int_t EasyDraw1D(const char* drawCommand, Int_t sector, const char* cuts = 0, const char* drawOptions = 0, Bool_t writeDrawCommand = kFALSE) const;   // easy drawing of data, use '~' for abbreviation of '.fElements'
+   void FormatHistoLabels(TH1 *histo) const; // formats title and axis labels of histo, removes '.fElements'
    
    Int_t  DrawHisto1D(const char* drawCommand,       Int_t sector, const char* cuts = 0, const char *sigmas = "2;4;6", Bool_t plotMean = kTRUE, Bool_t plotMedian = kTRUE, Bool_t plotLTM = kTRUE) const; // draws 1d histograms and superimposes mean, median, ltm and several sigma cuts
    Int_t  DrawHisto1D(const char* drawCommand, const char* sector, const char* cuts = 0, const char *sigmas = "2;4;6", Bool_t plotMean = kTRUE, Bool_t plotMedian = kTRUE, Bool_t plotLTM = kTRUE) const; // draws 1d histograms and superimposes mean, median, ltm and several sigma cuts
@@ -90,6 +96,8 @@ protected:
    TFile* fFile;     // file that contains a calPads tree (e.g. written by AliTPCCalPad::MakeTree(...)
    TObjArray* fListOfObjectsToBeDeleted;  //Objects, that will be deleted when the destructor ist called
    Bool_t fTreeMustBeDeleted;  // decides weather the tree must be deleted in destructor or not 
+   TString fAbbreviation;       // the abreviation for '.fElements'
+   TString fAppendString;      // '.fElements', stored in a TStrig
    
    void DrawLines(TH1F *cutHistoMean, TVectorF nsigma, TLegend *legend, Int_t color, Bool_t pm) const;
    void DrawLines(TGraph *graph, TVectorF nsigma, TLegend *legend, Int_t color, Bool_t pm) const;
