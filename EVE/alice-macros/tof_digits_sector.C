@@ -6,6 +6,7 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
+
 void tof_digits_sector(Int_t sector=0)
 {
   Int_t nDigitsInVolume[3] = {-1, -1, -1};

@@ -6,6 +6,7 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
+
 AliEveJetPlane* jetplane(Int_t iev)
 {
   TFile* f       = new TFile("aod.root");
@@ -20,7 +21,7 @@ AliEveJetPlane* jetplane(Int_t iev)
 
   TClonesArray* jets = aod->GetJets();
   Int_t njets = jets->GetEntries();
-  printf("AliEveEventManager: %5d Number of jets: %5d \n", iev, njets);
+  printf("Event: %5d Number of jets: %5d \n", iev, njets);
 
   for (Int_t ij = 0; ij < njets; ij++)
   {
@@ -32,7 +33,7 @@ AliEveJetPlane* jetplane(Int_t iev)
 
   TClonesArray* tracks = aod->GetTracks();
   Int_t ntracks = tracks->GetEntries();
-  printf("AliEveEventManager: %5d Number of tracks: %5d \n", iev, ntracks);
+  printf("Event: %5d Number of tracks: %5d \n", iev, ntracks);
 
   for (Int_t ij = 0; ij < ntracks; ij++)
   {

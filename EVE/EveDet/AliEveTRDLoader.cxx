@@ -165,7 +165,7 @@ Bool_t AliEveTRDLoader::GoToEvent(int ev)
 
   TTree *t = 0x0;
   TFile *f = new TFile(Form("%s/%s", fDir.Data(), fFilename.Data()));
-  if(! f->cd(Form("AliEveEventManager%d", ev))){
+  if(! f->cd(Form("Event%d", ev))){
     AliError(Form("Couldn't find event %d in file \"%s/%s\".", ev, fDir.Data(), fFilename.Data()));
     f->Close(); delete f;
     return kFALSE;
@@ -369,7 +369,7 @@ AliEveTRDLoaderEditor::AliEveTRDLoaderEditor(const TGWindow* p, Int_t width, Int
   AddFrame(f);
 
 
-  fEvent = new TEveGValuator(this, "AliEveEventManager:", 110, 0);
+  fEvent = new TEveGValuator(this, "Event:", 110, 0);
   fEvent->SetShowSlider(kFALSE);
   fEvent->SetLabelWidth(labelW);
   fEvent->SetNELength(6);

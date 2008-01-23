@@ -9,7 +9,7 @@
 
 TEveProjectionManager* NLT_test(TEveElement* top=0)
 {
-  TEveScene* s = gEve->SpawnNewScene("Projected AliEveEventManager");
+  TEveScene* s = gEve->SpawnNewScene("Projected Event");
   gEve->GetDefViewer()->AddScene(s);
 
   TGLViewer* v = (TGLViewer *)gEve->GetGLViewer();

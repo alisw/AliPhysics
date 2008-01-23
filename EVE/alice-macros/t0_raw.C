@@ -7,8 +7,6 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-class AliEveEventManager;
-
 void t0_raw()
 {
   AliRunLoader* rl =  AliEveEventManager::AssertRunLoader();

@@ -6,17 +6,18 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
-//   fV0CHeight1         =    2.5; // height of cell 1
-//   fV0CHeight2         =    4.4; // height of cell 2
-//   fV0CHeight3         =    7.4; // height of cell 3
-//   fV0CHeight4         =   12.5; // height of cell 4
-//   fV0CRMin            =    4.6; // inner radius of box
 
-//   fV0AR0     =  4.2;  // Radius of hole
-//   fV0AR1     =  7.6;  // Maximun radius of 1st cell
-//   fV0AR2     = 13.8; // Maximun radius of 2nd cell
-//   fV0AR3     = 22.7; // Maximun radius of 3rd cell
-//   fV0AR4     = 41.3; // Maximun radius of 4th cell
+//   fV0CHeight1  =  2.5; // height of cell 1
+//   fV0CHeight2  =  4.4; // height of cell 2
+//   fV0CHeight3  =  7.4; // height of cell 3
+//   fV0CHeight4  = 12.5; // height of cell 4
+//   fV0CRMin     =  4.6; // inner radius of box
+//
+//   fV0AR0       =  4.2; // Radius of hole
+//   fV0AR1       =  7.6; // Maximun radius of 1st cell
+//   fV0AR2       = 13.8; // Maximun radius of 2nd cell
+//   fV0AR3       = 22.7; // Maximun radius of 3rd cell
+//   fV0AR4       = 41.3; // Maximun radius of 4th cell
 
 void vzero_digits()
 {

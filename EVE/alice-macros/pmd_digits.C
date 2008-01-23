@@ -6,7 +6,7 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
-// ---------------------------------------------------------------------- //
+
 void pmd_digits(Int_t mode = 0)
 {
   Bool_t drawBackPolygons = kFALSE;

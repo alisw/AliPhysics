@@ -82,7 +82,7 @@ AliEveTPCLoaderEditor::AliEveTPCLoaderEditor(const TGWindow *p,
     AddFrame(f);
   }
 
-  fEvent = new TEveGValuator(this, "AliEveEventManager:", 110, 0);
+  fEvent = new TEveGValuator(this, "Event:", 110, 0);
   fEvent->SetShowSlider(kFALSE);
   fEvent->SetLabelWidth(labelW);
   fEvent->SetNELength(6);
@@ -91,7 +91,7 @@ AliEveTPCLoaderEditor::AliEveTPCLoaderEditor(const TGWindow *p,
   fEvent->SetToolTip("Current event number");
   fEvent->Connect("ValueSet(Double_t)",
 		  "AliEveTPCLoaderEditor", this, "DoEvent()");
-  // Reuse AliEveEventManager for DoubleSR button
+  // Reuse Event for DoubleSR button
   fDoubleSR = new TGCheckButton(fEvent, "Double SR");
   fDoubleSR->SetToolTipText("Double sampling rate");
   fEvent->AddFrame(fDoubleSR, new TGLayoutHints(kLHintsLeft, 12, 0, 2, 0));

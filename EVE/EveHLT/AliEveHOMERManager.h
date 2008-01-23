@@ -107,11 +107,11 @@ public:
 
   /*
    * ---------------------------------------------------------------------------------
-   *                            AliEveEventManager Handling - public
+   *                            Event Handling - public
    * ---------------------------------------------------------------------------------
    */
 
-  /** Loads the next AliEveEventManager, after being connected
+  /** Loads the next Event, after being connected
    * @return            0 on sucess, "HOMER" errors on error
    */
   Int_t NextEvent();

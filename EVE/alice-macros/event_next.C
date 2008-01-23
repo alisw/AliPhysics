@@ -6,10 +6,11 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
+
 void event_next()
 {
-  if(gEvent == 0) {
-    printf("AliEveEventManager not set!\n");
+  if (gEvent == 0) {
+    printf("AliEveEventManager is not initialized!\n");
     return;
   }
   gEvent->NextEvent();

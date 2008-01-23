@@ -7,15 +7,6 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-// #include "AliEveEventManager.h"
-// #include "TEveManager.h"
-// #include "AliEveCascade.h"
-
-// #include "AliESD.h"
-// #include "AliESDtrack.h"
-// #include "AliESDcascade.h"
-// #include "AliESDVertex.h"
-
 AliEveCascade* esd_make_cas(TEveTrackPropagator* rnrStyle, AliESDVertex* primVtx,
 			    AliESDcascade* cas, AliESDtrack* neg, AliESDtrack* pos,
 			    AliESDtrack* bach,Int_t i) {
@@ -56,8 +47,6 @@ AliEveCascade* esd_make_cas(TEveTrackPropagator* rnrStyle, AliESDVertex* primVtx
 
   return myCas;
 }
-
-
 
 
 CascadeList* esd_AliEveCascade(Double_t min_pt=0.1, Double_t max_pt=100)

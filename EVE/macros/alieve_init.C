@@ -12,6 +12,10 @@
 #include <string>
 #endif
 
+// !!!!! Need initialization that will also work for raw.
+// Path and event-id are usually not needed.
+// const Text_t* raw_file = 0,
+
 void alieve_init(const Text_t* path   = ".", Int_t event=0,
 		 const Text_t* cdburi = 0,
 		 Bool_t assert_runloader=kFALSE, Bool_t assert_esd=kFALSE)

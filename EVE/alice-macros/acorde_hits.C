@@ -8,9 +8,9 @@
  **************************************************************************/
 
 TEvePointSet*
-acorde_hits(const char *varexp    = "ACORDE.fX:ACORDE.fY:ACORDE.fZ",
-	 const char *selection = "",
-         TEveElement* cont = 0)
+acorde_hits(const char  *varexp    = "ACORDE.fX:ACORDE.fY:ACORDE.fZ",
+	    const char  *selection = "",
+	    TEveElement *cont      = 0)
 {
   AliRunLoader* rl =  AliEveEventManager::AssertRunLoader();
   rl->LoadHits("ACORDE");

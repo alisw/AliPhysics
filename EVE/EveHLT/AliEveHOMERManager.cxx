@@ -668,7 +668,7 @@ void AliEveHOMERManager::CreateReadoutList( const char** sourceHostnames, UShort
 
 /*
  * ---------------------------------------------------------------------------------
- *                            AliEveEventManager Handling
+ *                            Event Handling
  * ---------------------------------------------------------------------------------
  */
 
@@ -722,7 +722,7 @@ Int_t AliEveHOMERManager::NextEvent(){
   fEventID = (ULong64_t) fReader->GetEventID();
   fCurrentBlk = 0;
 
-  AliInfo( Form("AliEveEventManager 0x%016LX (%Lu) with %lu blocks", fEventID, fEventID, fNBlks) );
+  AliInfo( Form("Event 0x%016LX (%Lu) with %lu blocks", fEventID, fEventID, fNBlks) );
 
 #if 1
 
