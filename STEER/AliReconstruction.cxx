@@ -1070,9 +1070,6 @@ Bool_t AliReconstruction::Run(const char* input, Bool_t IsOnline)
    AliWarning("Finish PlaneEff evaluation failed");
   }
 
-  gROOT->cd();
-  CleanUp(file, fileOld);
-    
   // Create tags for the events in the ESD tree (the ESD tree is always present)
   // In case of empty events the tags will contain dummy values
   AliESDTagCreator *esdtagCreator = new AliESDTagCreator();
