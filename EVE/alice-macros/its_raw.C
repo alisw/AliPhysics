@@ -6,6 +6,7 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
+
 void its_raw(const char *input = "rawdata.root",
 	     Int_t  mode       = 63,
 	     Int_t  event      = 0,
@@ -16,6 +17,9 @@ void its_raw(const char *input = "rawdata.root",
     Error("its_raw", "file '%s' not found.", input);
     return;
   }
+
+  AliCDBManager::Instance()->SetRun(0);
+  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
 
   AliRawReader *rawReader = NULL;
   TString fileName(input);

@@ -260,7 +260,9 @@ void AliEveITSDigitsInfo::ReadRaw(AliRawReader* raw, Int_t mode)
       Int_t strip   = input.GetStrip();
       Int_t signal  = input.GetSignal();
 
-      if (input.IsNewModule())
+      // !!!! IsNewModule() is false in the beginning of the stream, so we also
+      // !!!! check for digits == 0. Should be fixed in SSD stream.
+      if (input.IsNewModule() || digits == 0)
       {
 	digits = fSSDmap[module];
 	if (digits == 0)

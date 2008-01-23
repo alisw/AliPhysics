@@ -93,12 +93,12 @@ public:
   AliITSsegmentationSSD*   fSegSSD;       // Segmentation of SSD.
   AliITSDDLModuleMapSDD*   fDDLMapSDD;    // Mapping DDL/module to SDD-module number.
 
-  Int_t                    fSPDMinVal;    // Default lower limit for display of SPD digits.
-  Int_t                    fSSDMinVal;    // Default lower limit for display of SSD digits.
-  Int_t                    fSDDMinVal;    // Default lower limit for display of SDD digits.
-  Int_t                    fSPDMaxVal;    // Default high  limit for display of SPD digits.
-  Int_t                    fSSDMaxVal;    // Default high  limit for display of SSD digits.
-  Int_t                    fSDDMaxVal;    // Default high  limit for display of SDD digits.
+  Int_t                    fSPDMinVal;    // Default low  limit for display of SPD digits.
+  Int_t                    fSSDMinVal;    // Default low  limit for display of SSD digits.
+  Int_t                    fSDDMinVal;    // Default low  limit for display of SDD digits.
+  Int_t                    fSPDMaxVal;    // Default high limit for display of SPD digits.
+  Int_t                    fSSDMaxVal;    // Default high limit for display of SSD digits.
+  Int_t                    fSDDMaxVal;    // Default high limit for display of SDD digits.
 
   Int_t                    fSPDHighLim;   // Maximum value of SPD digits.
   Int_t                    fSDDHighLim;   // Maximum value of SDD digits.
