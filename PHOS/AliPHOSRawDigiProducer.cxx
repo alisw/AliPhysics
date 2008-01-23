@@ -128,16 +128,16 @@ void AliPHOSRawDigiProducer::MakeDigits(TClonesArray *digits, AliPHOSRawDecoder*
        continue;
 
     if(lowGainFlag){
-      new(tmpLG[ilgDigit]) AliPHOSDigit(-1,absId,(Float_t)energy,(Float_t)time);                                                        
+      new(tmpLG[ilgDigit]) AliPHOSDigit(-1,absId,(Float_t)energy,(Float_t)time);
       ilgDigit++ ; 
     }
     else{ 
       if(decoder->IsOverflow()) //Keep this digit to replace it by Low Gain later.
                                 //If there is no LogGain it wil be removed by cut on Min E
-        new((*digits)[iDigit]) AliPHOSDigit(-1,absId,-1.f,(Float_t)time);                                                       
+        new((*digits)[iDigit]) AliPHOSDigit(-1,absId,-1.f,(Float_t)time);
       else
-        new((*digits)[iDigit]) AliPHOSDigit(-1,absId,(Float_t)energy,(Float_t)time);                                                       
-      iDigit++;                                                                                                                          
+        new((*digits)[iDigit]) AliPHOSDigit(-1,absId,(Float_t)energy,(Float_t)time);
+      iDigit++;
     }
   }
 
@@ -150,15 +150,16 @@ void AliPHOSRawDigiProducer::MakeDigits(TClonesArray *digits, AliPHOSRawDecoder*
   Int_t nLG1 = tmpLG.GetEntriesFast()-1 ;
   for(Int_t iDig=0 ; iDig < digits->GetEntriesFast() ; iDig++) { 
     AliPHOSDigit * digHG = dynamic_cast<AliPHOSDigit*>(digits->At(iDig)) ;
+    if (!digHG) continue;
     AliPHOSDigit * digLG = dynamic_cast<AliPHOSDigit*>(tmpLG.At(iLG)) ;
     while(iLG<nLG1 && digHG->GetId()> digLG->GetId()){
       iLG++ ;
       digLG = dynamic_cast<AliPHOSDigit*>(tmpLG.At(iLG)) ;
     }
-    if(digHG->GetId() == digLG->GetId()){ //we found pair
+    if(digLG && digHG->GetId() == digLG->GetId()){ //we found pair
       if(digHG->GetEnergy()<0.){ //This is overflow in HG
-        digHG->SetTime(digLG->GetTime()) ;                                                                                                  
-        digHG->SetEnergy(digLG->GetEnergy()) ;                                                                                              
+        digHG->SetTime(digLG->GetTime()) ;
+        digHG->SetEnergy(digLG->GetEnergy()) ;
       } 
       else{ //Make approximate comparison of HG and LG energies
         Double_t de = (digHG->GetEnergy()-digLG->GetEnergy())/16./0.005 ; //aproximate difference in LG ADC ch. 
