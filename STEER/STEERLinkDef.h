@@ -128,9 +128,6 @@
 #pragma link C++ class AliSurveyObj+;
 #pragma link C++ class AliSurveyPoint+;
 
-#pragma link C++ class AliCodeTimer+;
-#pragma link C++ class AliCodeTimer::AliPair+;
-
 #pragma link C++ class AliFstream+;
 #pragma link C++ class AliCTPRawData+;
 
