@@ -19,11 +19,11 @@
 #include <TClonesArray.h>
 #include <TTree.h>
 
-#include <AliITS.h>
-#include <AliITSgeom.h>
-#include <AliITSsegmentationSPD.h>
-#include <AliITSsegmentationSDD.h>
-#include <AliITSsegmentationSSD.h>
+class AliITSgeom;
+class AliITSsegmentationSPD;
+class AliITSsegmentationSDD;
+class AliITSsegmentationSSD;
+class AliITSDDLModuleMapSDD;
 
 class AliRawReader;
 
@@ -91,6 +91,7 @@ public:
   AliITSsegmentationSPD*   fSegSPD;       // Segmentation of SPD.
   AliITSsegmentationSDD*   fSegSDD;       // Segmentation of SDD.
   AliITSsegmentationSSD*   fSegSSD;       // Segmentation of SSD.
+  AliITSDDLModuleMapSDD*   fDDLMapSDD;    // Mapping DDL/module to SDD-module number.
 
   Int_t                    fSPDMinVal;    // Default lower limit for display of SPD digits.
   Int_t                    fSSDMinVal;    // Default lower limit for display of SSD digits.
@@ -123,8 +124,9 @@ public:
 
   virtual void Print(Option_t* opt="") const;
 
-  ClassDef(AliEveITSDigitsInfo, 1); // Stores ITS geometry information and event-data in format suitable for visualization.
+  ClassDef(AliEveITSDigitsInfo, 0); // Stores ITS geometry information and event-data in format suitable for visualization.
 }; // endclass AliEveITSDigitsInfo
+
 
 inline void AliEveITSDigitsInfo::GetSPDLocalZ(Int_t j, Float_t& z)
 {

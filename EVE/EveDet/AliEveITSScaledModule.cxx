@@ -9,10 +9,16 @@
 
 #include "AliEveITSScaledModule.h"
 
+#include <AliITSgeom.h>
+#include <AliITSsegmentationSPD.h>
+#include <AliITSsegmentationSDD.h>
+#include <AliITSsegmentationSSD.h>
+
 #include <AliITSdigitSPD.h>
 #include <AliITSdigitSDD.h>
 #include <AliITSdigitSSD.h>
 
+#include <TMath.h>
 
 //______________________________________________________________________________
 // AliEveDigitScaleInfo

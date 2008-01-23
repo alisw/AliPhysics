@@ -7,21 +7,34 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-#include <TMath.h>
-#include <TVector3.h>
+#include "AliEveITSDigitsInfo.h"
+#include <EveBase/AliEveEventManager.h>
 
 #include <TEveTreeTools.h>
 #include <TEveTrans.h>
 
-#include "AliEveITSDigitsInfo.h"
+#include <AliITS.h>
+#include <AliITSInitGeometry.h>
+#include <AliITSgeom.h>
+#include <AliITSsegmentationSPD.h>
+#include <AliITSsegmentationSDD.h>
+#include <AliITSsegmentationSSD.h>
+#include <AliITSDDLModuleMapSDD.h>
+
 #include <AliITSCalibrationSDD.h>
 #include <AliITSdigit.h>
 #include <AliITSdigitSPD.h>
+
+#include <AliCDBEntry.h>
+#include <AliCDBManager.h>
 
 #include <AliRawReader.h>
 #include <AliITSRawStreamSPD.h>
 #include <AliITSRawStreamSDD.h>
 #include <AliITSRawStreamSSD.h>
+
+#include <TMath.h>
+#include <TVector3.h>
 
 //______________________________________________________________________________
 //
@@ -58,6 +71,7 @@ AliEveITSDigitsInfo::AliEveITSDigitsInfo() :
   fTree (0),
   fGeom (0),
   fSegSPD     (0), fSegSDD     (0), fSegSSD     (0),
+  fDDLMapSDD  (0),
   fSPDMinVal  (0), fSSDMinVal  (0), fSDDMinVal  (0),
   fSPDMaxVal  (0), fSSDMaxVal  (0), fSDDMaxVal  (0),
   fSPDHighLim (0), fSDDHighLim (0), fSSDHighLim (0)
@@ -75,10 +89,9 @@ void AliEveITSDigitsInfo::InitInternals()
 
   static const TEveException eH("AliEveITSDigitsInfo::InitInternals ");
 
-  fGeom = new AliITSgeom();
-  fGeom->ReadNewFile("$REVESYS/alice-data/ITSgeometry.det");
-  if (fGeom == 0)
-    throw(eH + "can not load ITS geometry \n");
+  AliEveEventManager::AssertGeometry();
+  AliITSInitGeometry initGeom;
+  fGeom = initGeom.CreateAliITSgeom();
 
   SetITSSegmentation();
 
@@ -127,6 +140,22 @@ void AliEveITSDigitsInfo::InitInternals()
   fSSDScale[2] = 9;
   fSSDScale[3] = 20;
   fSSDScale[4] = 30;
+  
+  fDDLMapSDD = new AliITSDDLModuleMapSDD();
+  AliCDBManager *man       = AliCDBManager::Instance();
+  AliCDBEntry   *ddlMapSDD = man->Get("ITS/Calib/DDLMapSDD");
+  ddlMapSDD->SetOwner(kTRUE);
+  if (!ddlMapSDD) {
+    AliWarning("SDD DDL map file retrieval from OCDB failed! - Use default DDL map");
+  } else {
+    AliITSDDLModuleMapSDD *ddlsdd = (AliITSDDLModuleMapSDD*)ddlMapSDD->GetObject();
+    if (!ddlsdd) {
+      AliWarning("SDD DDL map object not found in OCDB file! - Use default DDL map");
+    } else {
+      fDDLMapSDD->SetDDLMap(ddlsdd);
+    }
+  }
+  delete ddlMapSDD;
 }
 
 /******************************************************************************/
@@ -137,13 +166,13 @@ AliEveITSDigitsInfo:: ~AliEveITSDigitsInfo()
   // Deletes the data-maps and the tree.
 
   std::map<Int_t, TClonesArray*>::iterator j;
-  for(j = fSPDmap.begin(); j != fSPDmap.end(); ++j)
+  for (j = fSPDmap.begin(); j != fSPDmap.end(); ++j)
     delete j->second;
-  for(j = fSDDmap.begin(); j != fSDDmap.end(); ++j)
+  for (j = fSDDmap.begin(); j != fSDDmap.end(); ++j)
     delete j->second;
-  for(j = fSSDmap.begin(); j != fSSDmap.end(); ++j)
+  for (j = fSSDmap.begin(); j != fSSDmap.end(); ++j)
     delete j->second;
-
+  delete fDDLMapSDD;
   delete fSegSPD; delete fSegSDD; delete fSegSSD;
   delete fGeom;
   delete fTree;
@@ -164,7 +193,8 @@ void AliEveITSDigitsInfo::ReadRaw(AliRawReader* raw, Int_t mode)
   // Read raw-data into internal structures. AliITSdigit is used to
   // store raw-adata for all sub-detectors.
 
-  if ((mode & 1) || (mode & 2)){
+  if ((mode & 1) || (mode & 2))
+  {
     AliITSRawStreamSPD inputSPD(raw);
     TClonesArray* digits = 0;
     while (inputSPD.Next())
@@ -190,8 +220,10 @@ void AliEveITSDigitsInfo::ReadRaw(AliRawReader* raw, Int_t mode)
     raw->Reset();
   }
 
-  if ((mode & 4) || (mode & 8)){
+  if ((mode & 4) || (mode & 8))
+  {
     AliITSRawStreamSDD input(raw);
+    input.SetDDLModuleMap(fDDLMapSDD);
     TClonesArray* digits = 0;
     while (input.Next())
     {
@@ -217,7 +249,8 @@ void AliEveITSDigitsInfo::ReadRaw(AliRawReader* raw, Int_t mode)
     raw->Reset();
   }
 
-  if ((mode & 16) || (mode & 32)){
+  if ((mode & 16) || (mode & 32))
+  {
     AliITSRawStreamSSD input(raw);
     TClonesArray* digits = 0;
     while (input.Next())
@@ -277,6 +310,8 @@ void AliEveITSDigitsInfo::SetITSSegmentation()
 
   // SDD
   fSegSDD = new AliITSsegmentationSDD(fGeom);
+  // !!!! Set default drift speed, eventually need to get it from CDB.
+  fSegSDD->SetDriftSpeed(7.3);
 
   // SSD
   fSegSSD = new AliITSsegmentationSSD(fGeom);

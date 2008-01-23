@@ -11,11 +11,13 @@ class AliEveITSModuleStepper;
 
 void its_module_stepper(Int_t det = 0)
 {
-  TFile *file = TFile::Open("ITS.Digits.root");
-  TDirectory* dir = (TDirectory*) file->Get("Event0");
-  TTree* tree =  (TTree*)dir->Get("TreeD");
+  AliRunLoader* rl =  AliEveEventManager::AssertRunLoader();
+  rl->LoadDigits("ITS");
+  TTree* dt = rl->GetTreeD("ITS", false);
+
   AliEveITSDigitsInfo* di = new AliEveITSDigitsInfo();
-  di->SetTree(tree);
+  di->SetTree(dt);
+  di->Dump();
 
   gEve->DisableRedraw();
   AliEveITSModuleStepper* ms = new AliEveITSModuleStepper(di);

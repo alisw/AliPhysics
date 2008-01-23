@@ -18,6 +18,7 @@
 #include <TEveTrans.h>
 
 #include <TObject.h>
+#include <TMath.h>
 
 #include <TBuffer3D.h>
 #include <TBuffer3DTypes.h>

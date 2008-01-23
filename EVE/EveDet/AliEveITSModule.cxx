@@ -6,7 +6,13 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
+
 #include "AliEveITSModule.h"
+
+#include <AliITSgeom.h>
+#include <AliITSsegmentationSPD.h>
+#include <AliITSsegmentationSDD.h>
+#include <AliITSsegmentationSSD.h>
 
 #include <AliITSdigitSPD.h>
 #include <AliITSdigitSDD.h>
@@ -15,8 +21,7 @@
 #include <TStyle.h>
 
 
-
-Bool_t       AliEveITSModule::fgStaticInitDone = kFALSE;
+Bool_t AliEveITSModule::fgStaticInitDone = kFALSE;
 
 TEveFrameBox*    AliEveITSModule::fgSPDFrameBox = 0;
 TEveFrameBox*    AliEveITSModule::fgSDDFrameBox = 0;
