@@ -36,26 +36,26 @@
 #include <TError.h>
 
 //______________________________________________________________________________
-// AliEveVSDCreator
 //
+// Create VSD file from ALICE data.
 
 ClassImp(AliEveVSDCreator)
 
 AliEveVSDCreator::AliEveVSDCreator(const Text_t* name, const Text_t* title) :
   TEveVSD(name, title),
 
-  mKineType (kKT_Standard),
-  mDataDir  ("."),
-  mEvent    (0),
+  fDataDir    ("."),
+  fEvent      (0),
 
-  mTPCHitRes (2),
-  mTRDHitRes (2),
+  fTPCHitRes  (2),
+  fTRDHitRes  (2),
 
-  mDebugLevel (0),
-  mGenInfoMap (),
-
-  pRunLoader (0)
+  fDebugLevel (0),
+  fRunLoader  (0),
+  fGenInfoMap ()
 {
+  // Constructor.
+
   // Particles not in ROOT's PDG database occuring in ALICE
   AliPDG::AddParticlesToPdgDataBase();
   {
@@ -84,53 +84,58 @@ AliEveVSDCreator::AliEveVSDCreator(const Text_t* name, const Text_t* title) :
 
 /******************************************************************************/
 
-void AliEveVSDCreator::CreateVSD(const Text_t* data_dir, Int_t event,
-			   const Text_t* vsd_file)
+void AliEveVSDCreator::CreateVSD(const Text_t* dataDir, Int_t event,
+				 const Text_t* vsdFile)
 {
+  // Create the VSD for specified data-directory and event.
+  // Result is stored in vsdFile.
+  //
+  // Needs to be extended to support conversion of multiple events.
+
   static const TEveException eH("AliEveVSDCreator::CreateVSD ");
 
-  mDataDir = data_dir;
-  mEvent   = event;
+  fDataDir = dataDir;
+  fEvent   = event;
 
-  string galice_file (Form("%s/galice.root", mDataDir.Data()));
+  string galiceFile (Form("%s/galice.root", fDataDir.Data()));
 
-  if(mDebugLevel > 0)
-    printf("%s opening %s \n", eH.Data(), galice_file.c_str());
+  if(fDebugLevel > 0)
+    printf("%s opening %s \n", eH.Data(), galiceFile.c_str());
 
-  if(gSystem->AccessPathName(galice_file.c_str(), kReadPermission)) {
-    throw(eH + "Can not read file '" + galice_file + "'.");
+  if(gSystem->AccessPathName(galiceFile.c_str(), kReadPermission)) {
+    throw(eH + "Can not read file '" + galiceFile + "'.");
   }
-  pRunLoader = AliRunLoader::Open(galice_file.c_str());
-  if(pRunLoader == 0)
+  fRunLoader = AliRunLoader::Open(galiceFile.c_str());
+  if(fRunLoader == 0)
     throw(eH + "AliRunLoader::Open failed.");
 
-  pRunLoader->LoadgAlice();
-  Int_t status = pRunLoader->GetEvent(mEvent);
+  fRunLoader->LoadgAlice();
+  Int_t status = fRunLoader->GetEvent(fEvent);
   if(status)
-    throw(eH + Form("GetEvent(%d) failed, exit code %s.", mEvent, status));
+    throw(eH + Form("GetEvent(%d) failed, exit code %s.", fEvent, status));
 
-  if(mDebugLevel > 0)
+  if(fDebugLevel > 0)
     printf("%s open seems ok. Now loading sim data.\n", eH.Data());
 
-  pRunLoader->LoadHeader();
-  pRunLoader->LoadKinematics();
-  pRunLoader->LoadTrackRefs();
-  pRunLoader->LoadHits();
+  fRunLoader->LoadHeader();
+  fRunLoader->LoadKinematics();
+  fRunLoader->LoadTrackRefs();
+  fRunLoader->LoadHits();
 
   // GledNS::PushFD();
 
-  if(mDebugLevel > 0)
+  if(fDebugLevel > 0)
     printf("%s opening output TEveVSD.\n", eH.Data());
 
-  TFile* file = TFile::Open(vsd_file, "RECREATE", "ALICE VisualizationDataSummary");
+  TFile* file = TFile::Open(vsdFile, "RECREATE", "ALICE VisualizationDataSummary");
   fDirectory = new TDirectoryFile("Event0", "");
 
-  if(mDebugLevel > 0)
+  if(fDebugLevel > 0)
     printf("%s creating trees now ...\n", eH.Data());
 
   CreateTrees();
 
-  if(mDebugLevel > 0)
+  if(fDebugLevel > 0)
     printf("%s trees created, closing files.\n", eH.Data());
 
   file->Write();
@@ -150,44 +155,48 @@ void AliEveVSDCreator::CreateVSD(const Text_t* data_dir, Int_t event,
   fTreeR      = 0;
   fTreeGI     = 0;
 
-  pRunLoader->UnloadAll();
-  delete pRunLoader;
+  fRunLoader->UnloadAll();
+  delete fRunLoader;
   if(gAlice) {
     delete gAlice; gAlice = 0;
   }
-  pRunLoader = 0;
+  fRunLoader = 0;
 
-  if(mDebugLevel > 0)
+  if(fDebugLevel > 0)
     printf("%s all done.\n", eH.Data());
 }
 
 void AliEveVSDCreator::CreateTrees()
 {
+  // Create and fill the output trees by calling all the
+  // ConvertXyzz() functions.
+  // Exceptions from individual functions are displayed as warnings.
+
   static const TEveException eH("AliEveVSDCreator::CreateTrees ");
 
-  if(fDirectory == 0)
+  if (fDirectory == 0)
     throw(eH + "output directory not set.");
 
   try {
-    if(mDebugLevel > 1)
+    if (fDebugLevel > 1)
       printf("%sConvertKinematics.\n", eH.Data());
     ConvertKinematics();
   } catch(TEveException& exc) { Warning(eH, exc); }
 
   try {
-    if(mDebugLevel > 1)
+    if (fDebugLevel > 1)
       printf("%sConvertHits.\n", eH.Data());
     ConvertHits();
   } catch(TEveException& exc) { Warning(eH, exc); }
 
   try {
-    if(mDebugLevel > 1)
+    if (fDebugLevel > 1)
       printf("%sConvertClusters.\n", eH.Data());
     ConvertClusters();
   } catch(TEveException& exc) { Warning(eH, exc); }
 
   try {
-    if(mDebugLevel > 1)
+    if (fDebugLevel > 1)
       printf("%sConvertRecTracks.\n", eH.Data());
     ConvertRecTracks();
   } catch(TEveException& exc) {
@@ -196,13 +205,13 @@ void AliEveVSDCreator::CreateTrees()
   }
 
   try {
-    if(mDebugLevel > 1)
+    if (fDebugLevel > 1)
       printf("%sConvertV0.\n", eH.Data());
     ConvertV0();
   } catch(TEveException& exc) { Warning(eH, exc); }
 
   try {
-    if(mDebugLevel > 1)
+    if (fDebugLevel > 1)
       printf("%sConvertKinks.\n", eH.Data());
     ConvertKinks();
   } catch(TEveException& exc) { Warning(eH, exc); }
@@ -210,7 +219,7 @@ void AliEveVSDCreator::CreateTrees()
 end_esd_processing:
 
   try {
-    if(mDebugLevel > 1)
+    if (fDebugLevel > 1)
       printf("%sConvertGenInfo.\n", eH.Data());
     ConvertGenInfo();
   } catch(TEveException& exc) { Warning(eH, exc); }
@@ -224,12 +233,15 @@ end_esd_processing:
 
 void AliEveVSDCreator::ConvertKinematics()
 {
+  // Convert kinematics.
+  // Track references are not stored, they should be.
+
   static const TEveException eH("AliEveVSDCreator::ConvertKinematics ");
 
   if(fTreeK != 0)
     throw (eH + "kinematics already converted");
 
-  AliStack* stack = pRunLoader->Stack();
+  AliStack* stack = fRunLoader->Stack();
   if(stack == 0)
     throw(eH + "stack is null.");
 
@@ -239,7 +251,7 @@ void AliEveVSDCreator::ConvertKinematics()
   Int_t nentries = stack->GetNtrack();
   std::vector<TEveMCTrack>  vmc(nentries);
   for (Int_t idx=0; idx<nentries; idx++) {
-    TParticle* tp = stack->Particle(idx);
+    TParticle*   tp = stack->Particle(idx);
     vmc[idx]        = *tp;
     vmc[idx].fLabel = idx;
   }
@@ -247,7 +259,7 @@ void AliEveVSDCreator::ConvertKinematics()
   // read track refrences
   // functionality now in AliEveKineTools.
   /*
-  TTree* fTreeTR =  pRunLoader->TreeTR();
+  TTree* fTreeTR =  fRunLoader->TreeTR();
 
   if(fTreeTR == 0) {
     Warning(eH, "no TrackRefs; some data will not be available.");
@@ -337,9 +349,13 @@ namespace {
 
 void AliEveVSDCreator::ConvertHits()
 {
+  // Convert MC hits.
+  // TPC hits are handled specially as they are compressed - only mayor
+  // hits are stored
+
   static const TEveException eH("AliEveVSDCreator::ConvertHits ");
 
-  if(fTreeH != 0)
+  if (fTreeH != 0)
     throw(eH + "hits already converted.");
 
   fDirectory->cd();
@@ -349,92 +365,101 @@ void AliEveVSDCreator::ConvertHits()
   std::map<Int_t, Int_t> hmap;
   // parameters for ITS, TPC hits filtering
   Float_t x,y,z, x1,y1,z1;
-  Float_t tpc_sqr_res = mTPCHitRes*mTPCHitRes;
-  Float_t trd_sqr_res = mTRDHitRes*mTRDHitRes;
+  Float_t tpcSqrRes = fTPCHitRes*fTPCHitRes;
+  Float_t trdSqrRes = fTRDHitRes*fTRDHitRes;
 
   int l=0;
   // load hits from the rest of detectors
-  while(detects[l].name != 0) {
+  while (detects[l].name != 0)
+  {
     Detector& det = detects[l++];
 
-    switch(det.detidx) {
-    case 1: {
-      Int_t count = 0;
-      TTree* treeh = pRunLoader->GetTreeH(det.name, false);
-      if(treeh == 0) {
-	Warning(eH, Form("no hits for %s.", det.name));
-	continue;
+    switch(det.detidx)
+    {
+      case 1:
+      {
+	Int_t count = 0;
+	TTree* treeh = fRunLoader->GetTreeH(det.name, false);
+	if(treeh == 0) {
+	  Warning(eH, Form("no hits for %s.", det.name));
+	  continue;
+	}
+	AliTPCTrackHitsV2 hv2, *hv2p = &hv2;
+	treeh->SetBranchAddress("TPC2", &hv2p);
+	Int_t np = treeh->GetEntries();
+	for (Int_t i = 0; i < np; ++i)
+	{
+	  treeh->GetEntry(i);
+	  Int_t evaIdx = np -i -1;
+	  if (hv2.First() == 0) continue;
+	  x = y = z = 0;
+	  do {
+	    AliHit* ah = hv2.GetHit();
+	    x1 = ah->X(); y1 = ah->Y(); z1 = ah->Z();
+	    if ((x-x1)*(x-x1) + (y-y1)*(y-y1) + (z-z1)*(z-z1) > tpcSqrRes)
+	    {
+	      fH.fDetId    = det.detidx;
+	      fH.fSubdetId = 0;
+	      fH.fLabel    = ah->Track();
+	      fH.fEvaLabel = evaIdx;
+	      fH.fV.fX = x1; fH.fV.fY = y1; fH.fV.fZ = z1;
+	      fTreeH->Fill();
+	      hmap[fH.fLabel]++;
+	      x = x1; y = y1; z = z1;
+	      count++;
+	    }
+	  } while (hv2.Next());
+	}
+	// printf("%d entries in TPChits \n",count);
+	break;
       }
-      AliTPCTrackHitsV2 hv2, *_hv2=&hv2;
-      treeh->SetBranchAddress("TPC2", &_hv2);
-      Int_t np = treeh->GetEntries();
-      for(Int_t i=0; i<np; i++){
-	treeh->GetEntry(i);
-	Int_t eva_idx = np -i -1;
-	if (hv2.First() == 0) continue;
-        x = y = z = 0;
-	do {
-	  AliHit* ah = hv2.GetHit();
-	  x1 = ah->X(); y1 = ah->Y(); z1 = ah->Z();
-	  if ((x-x1)*(x-x1) + (y-y1)*(y-y1) + (z-z1)*(z-z1) > tpc_sqr_res)
+      default:
+      {
+	TTree* treeh = fRunLoader->GetTreeH(det.name, false);
+	if (treeh == 0) {
+	  Warning(eH, Form("no hits for %s.", det.name));
+	  continue;
+	}
+	TClonesArray *arr = new TClonesArray(det.hitbranch);
+	treeh->SetBranchAddress(det.name, &arr);
+	Int_t np = treeh->GetEntries();
+	// in TreeH files hits are grouped in clones arrays
+	// each eva particle has its own clone array
+	for (Int_t i = 0; i < np; ++i)
+	{
+	  treeh->GetEntry(i);
+	  Int_t evaIdx = np -i -1;
+	  Int_t nh=arr->GetEntriesFast();
+	  x = y = z = 0;
+	  // printf("%d entry %d hits for primary %d \n", i, nh, evaIdx);
+	  for (Int_t j = 0; j < nh; ++j)
 	  {
+	    AliHit* aliHit = (AliHit*)arr->UncheckedAt(j);
 	    fH.fDetId    = det.detidx;
 	    fH.fSubdetId = 0;
-	    fH.fLabel    = ah->Track();
-	    fH.fEvaLabel = eva_idx;
-	    fH.fV.fX = x1; fH.fV.fY = y1; fH.fV.fZ = z1;
-	    fTreeH->Fill();
+	    fH.fLabel     = aliHit->GetTrack();
+	    fH.fEvaLabel = evaIdx;
+	    fH.fV.Set(aliHit->X(), aliHit->Y(), aliHit->Z());
+	    if (det.detidx == 2)
+	    {
+	      x1=aliHit->X();y1=aliHit->Y();z1=aliHit->Z();
+	      if ((x-x1)*(x-x1)+(y-y1)*(y-y1)+(z-z1)*(z-z1) < trdSqrRes) continue;
+	      x=x1; y=y1; z=z1;
+	    }
 	    hmap[fH.fLabel]++;
-	    x = x1; y = y1; z = z1;
-	    count++;
+	    fTreeH->Fill();
 	  }
-	} while (hv2.Next());
-      }
-      // printf("%d entries in TPChits \n",count);
-      break;
-    }
-    default: {
-      TTree* treeh = pRunLoader->GetTreeH(det.name, false);
-      if(treeh == 0) {
-	Warning(eH, Form("no hits for %s.", det.name));
-	continue;
-      }
-      TClonesArray *arr = new TClonesArray(det.hitbranch);
-      treeh->SetBranchAddress(det.name, &arr);
-      Int_t np = treeh->GetEntries();
-      // in TreeH files hits are grouped in clones arrays
-      // each eva particle has its own clone array
-      for (Int_t i=0; i<np; i++) {
-	treeh->GetEntry(i);
-	Int_t eva_idx = np -i -1;
-	Int_t nh=arr->GetEntriesFast();
-	x = y = z = 0;
-	// printf("%d entry %d hits for primary %d \n", i, nh, eva_idx);
-	for (Int_t j=0; j<nh; j++) {
-	  AliHit* ali_hit = (AliHit*)arr->UncheckedAt(j);
-	  fH.fDetId    = det.detidx;
-	  fH.fSubdetId = 0;
-	  fH.fLabel     = ali_hit->GetTrack();
-	  fH.fEvaLabel = eva_idx;
-	  fH.fV.Set(ali_hit->X(), ali_hit->Y(), ali_hit->Z());
-	  if(det.detidx == 2) {
-	    x1=ali_hit->X();y1=ali_hit->Y();z1=ali_hit->Z();
-	    if((x-x1)*(x-x1)+(y-y1)*(y-y1)+(z-z1)*(z-z1) < trd_sqr_res) continue;
-	    x=x1; y=y1; z=z1;
-	  }
-	  hmap[fH.fLabel]++;
-	  fTreeH->Fill();
 	}
-      }
-      delete arr;
-      break;
-    } // end default
+	delete arr;
+	break;
+      } // end default
     } // end switch
   } // end while
 
 
   //set geninfo
-  for(std::map<Int_t, Int_t>::iterator j=hmap.begin(); j!=hmap.end(); ++j) {
+  for(std::map<Int_t, Int_t>::iterator j=hmap.begin(); j!=hmap.end(); ++j)
+  {
     GetGeninfo(j->first)->fNHits += j->second;
   }
 }
@@ -445,6 +470,14 @@ void AliEveVSDCreator::ConvertHits()
 
 void AliEveVSDCreator::ConvertClusters()
 {
+  // Convert clusters.
+  //
+  // Only supported for ITS and TPC at the moment, see dedicated
+  // functions ConvertITSClusters() and ConvertTPCClusters().
+  //
+  // It should be possible now to do this in a general manner (with
+  // the alignment framework).
+
   static const TEveException eH("AliEveVSDCreator::ConvertClusters ");
 
   if(fTreeC != 0)
@@ -467,35 +500,38 @@ void AliEveVSDCreator::ConvertClusters()
 
 void AliEveVSDCreator::ConvertTPCClusters()
 {
+  // Convert TPC clusters and transform them to global coordinates.
+
   static const TEveException eH("AliEveVSDCreator::ConvertTPCClusters ");
 
   auto_ptr<TFile> f
-    ( TFile::Open(Form("%s/TPC.RecPoints.root", mDataDir.Data())) );
-  if(!f.get())
+    ( TFile::Open(Form("%s/TPC.RecPoints.root", fDataDir.Data())) );
+  if (!f.get())
     throw(eH + "can not open 'TPC.RecPoints.root' file.");
 
   auto_ptr<TDirectory> d
-    ( (TDirectory*) f->Get(Form("AliEveEventManager%d", mEvent)) );
-  if(!d.get())
+    ( (TDirectory*) f->Get(Form("Event%d", fEvent)) );
+  if (!d.get())
     throw(eH + Form("event directory '%d' not found.", 0));
 
   auto_ptr<TTree> tree( (TTree*) d->Get("TreeR") );
-  if(!tree.get())
+  if (!tree.get())
     throw(eH + "'TreeR' not found.");
 
   auto_ptr<AliTPCParam> par( GetTpcParam(eH) );
 
-  AliTPCClustersRow  clrow, *_clrow=&clrow;
+  AliTPCClustersRow  clrow, *clrowp = &clrow;
   AliTPCclusterMI   *cl;
-  _clrow->SetClass("AliTPCclusterMI");
-  tree->SetBranchAddress("Segment", &_clrow);
+  clrow.SetClass("AliTPCclusterMI");
+  tree->SetBranchAddress("Segment", &clrowp);
 
   // count clusters
   Int_t nClusters = 0;
-  Int_t n_ent = tree->GetEntries();
-  for (Int_t n=0; n<n_ent; n++) {
+  Int_t nEnt = tree->GetEntries();
+  for (Int_t n = 0; n < nEnt; ++n)
+  {
     tree->GetEntry(n);
-    nClusters += _clrow->GetArray()->GetEntriesFast();
+    nClusters += clrow.GetArray()->GetEntriesFast();
   }
 
   // calculate xyz for a cluster and add it to container
@@ -503,17 +539,21 @@ void AliEveVSDCreator::ConvertTPCClusters()
   Float_t cs, sn, tmp;
   std::map<Int_t, Int_t> cmap;
 
-  for (Int_t n=0; n<tree->GetEntries(); n++) {
+  for (Int_t n = 0; n < tree->GetEntries(); ++n)
+  {
     tree->GetEntry(n);
-    Int_t ncl = _clrow->GetArray()->GetEntriesFast();
-    if(ncl > 0) {
+    Int_t ncl = clrow.GetArray()->GetEntriesFast();
+    if (ncl > 0)
+    {
       Int_t sec,row;
-      par->AdjustSectorRow(_clrow->GetID(),sec,row);
-      while (ncl--) {
-	if(_clrow->GetArray()) {
-	  // cl = new AliTPCclusterMI(*(AliTPCclusterMI*)_clrow->GetArray()->UncheckedAt(ncl));
-	  cl = (AliTPCclusterMI*)_clrow->GetArray()->UncheckedAt(ncl);
-          if(cl->GetLabel(0) >= 0)
+      par->AdjustSectorRow(clrow.GetID(),sec,row);
+      while (ncl--)
+      {
+	if (clrow.GetArray())
+	{
+	  // cl = new AliTPCclusterMI(*(AliTPCclusterMI*)clrow.GetArray()->UncheckedAt(ncl));
+	  cl = (AliTPCclusterMI*)clrow.GetArray()->UncheckedAt(ncl);
+          if (cl->GetLabel(0) >= 0)
 	  {
 	    x = par->GetPadRowRadii(sec,row); y = cl->GetY(); z = cl->GetZ();
 	    par->AdjustCosSin(sec,cs,sn);
@@ -529,7 +569,7 @@ void AliEveVSDCreator::ConvertTPCClusters()
 	    fTreeC->Fill();
 	    {
 	      int i = 0;
-	      while(i < 3 && fC.fLabel[i])
+	      while (i < 3 && fC.fLabel[i])
 		cmap[fC.fLabel[i++]]++;
 	    }
 	  }
@@ -538,7 +578,8 @@ void AliEveVSDCreator::ConvertTPCClusters()
     }
   }
   //set geninfo
-  for(std::map<Int_t, Int_t>::iterator j=cmap.begin(); j!=cmap.end(); ++j) {
+  for (std::map<Int_t, Int_t>::iterator j=cmap.begin(); j!=cmap.end(); ++j)
+  {
     GetGeninfo(j->first)->fNClus += j->second;
   }
 }
@@ -547,31 +588,31 @@ void AliEveVSDCreator::ConvertTPCClusters()
 
 void AliEveVSDCreator::ConvertITSClusters()
 {
+  // Convert ITS clusters and transform them to global coordinates.
+
   static const TEveException eH("AliEveVSDCreator::ConvertITSClusters ");
 
   auto_ptr<TFile> f
-    ( TFile::Open(Form("%s/ITS.RecPoints.root", mDataDir.Data())) );
-  if(!f.get())
+    ( TFile::Open(Form("%s/ITS.RecPoints.root", fDataDir.Data())) );
+  if (!f.get())
     throw(eH + "can not open 'ITS.RecPoints.root' file.");
 
   auto_ptr<TDirectory> d
-    ( (TDirectory*) f->Get(Form("AliEveEventManager%d", mEvent)) );
-  if(!d.get())
+    ( (TDirectory*) f->Get(Form("Event%d", fEvent)) );
+  if (!d.get())
     throw(eH + Form("event directory '%d' not found.", 0));
 
   auto_ptr<TTree> tree( (TTree*) d->Get("TreeR") );
-  if(!tree.get())
+  if (!tree.get())
     throw(eH + "'TreeR' not found.");
 
-  AliITSLoader* ITSld =  (AliITSLoader*) pRunLoader->GetLoader("ITSLoader");
-  //AliITS* pITS = ITSld->GetITS();
+  // 
+  AliITSLoader* ITSld =  (AliITSLoader*) fRunLoader->GetLoader("ITSLoader");
   AliITSgeom* geom = ITSld->GetITSgeom();
-  //AliITSgeom* geom = new AliITSgeom();
-  //geom->ReadNewFile("/home/aljam/ITSgeometry.det");
 
   //printf("alice ITS geom %p \n",geom );
 
-  if(!geom)
+  if (!geom)
     throw(eH + "can not find ITS geometry");
 
   TClonesArray *arr = new TClonesArray("AliITSclusterV2");
@@ -580,11 +621,13 @@ void AliEveVSDCreator::ConvertITSClusters()
   Float_t gc[3];
   std::map<Int_t, Int_t> cmap;
 
-  for (Int_t mod=0; mod<nmods; mod++) {
+  for (Int_t mod = 0; mod < nmods; ++mod)
+  {
     tree->GetEntry(mod);
     Int_t nc=arr->GetEntriesFast();
-    for (Int_t j=0; j<nc; j++) {
-      AliITSclusterV2* recp = (AliITSclusterV2*)arr->UncheckedAt(j);
+    for (Int_t j = 0; j < nc; ++j)
+    {
+      AliITSclusterV2* recp = (AliITSclusterV2*) arr->UncheckedAt(j);
 
       Double_t rot[9];
       geom->GetRotMatrix(mod,rot);
@@ -595,7 +638,7 @@ void AliEveVSDCreator::ConvertITSClusters()
 
       Double_t alpha=TMath::ATan2(rot[1],rot[0])+TMath::Pi();
       Double_t phi1=TMath::Pi()/2+alpha;
-      if(lay==1) phi1+=TMath::Pi();
+      if (lay == 1) phi1+=TMath::Pi();
 
       Float_t cp=TMath::Cos(phi1), sp=TMath::Sin(phi1);
       Float_t  r=tx*cp+ty*sp;
@@ -618,7 +661,8 @@ void AliEveVSDCreator::ConvertITSClusters()
       }
     }
 
-    for(std::map<Int_t, Int_t>::iterator j=cmap.begin(); j!=cmap.end(); ++j) {
+    for (std::map<Int_t, Int_t>::iterator j=cmap.begin(); j!=cmap.end(); ++j)
+    {
       GetGeninfo(j->first)->fNClus += j->second;
     }
   }
@@ -631,9 +675,11 @@ void AliEveVSDCreator::ConvertITSClusters()
 
 void AliEveVSDCreator::ConvertRecTracks()
 {
+  // Convert reconstructed tracks.
+
   static const TEveException eH("AliEveVSDCreator::ConvertRecTracks ");
 
-  if(fTreeR != 0)
+  if (fTreeR != 0)
     throw(eH + "tracks already converted.");
 
   fDirectory->cd();
@@ -641,8 +687,8 @@ void AliEveVSDCreator::ConvertRecTracks()
 
   fTreeR->Branch("R", "TEveRecTrack", &fpR, 512*1024,1);
 
-  TFile f(Form("%s/AliESDs.root", mDataDir.Data()));
-  if(!f.IsOpen())
+  TFile f(Form("%s/AliESDs.root", fDataDir.Data()));
+  if (!f.IsOpen())
     throw(eH + "no AliESDs.root file.");
 
   TTree* tree = (TTree*) f.Get("esdTree");
@@ -650,17 +696,18 @@ void AliEveVSDCreator::ConvertRecTracks()
     throw(eH + "no esdTree.");
 
 
-  AliESDEvent *fEvent= new AliESDEvent();
-  fEvent->ReadFromTree(tree);
-  tree->GetEntry(mEvent);
-  if(fEvent->GetAliESDOld())fEvent->CopyFromOldESD();
+  AliESDEvent *esdEvent = new AliESDEvent();
+  esdEvent->ReadFromTree(tree);
+  tree->GetEntry(fEvent);
+  if (esdEvent->GetAliESDOld()) esdEvent->CopyFromOldESD();
 
 
   // reconstructed tracks
   AliESDtrack* esd_t;
   Double_t     dbuf[3];
-  for (Int_t n=0; n<fEvent->GetNumberOfTracks(); n++) {
-    esd_t = fEvent->GetTrack(n);
+  for (Int_t n = 0; n < esdEvent->GetNumberOfTracks(); ++n)
+  {
+    esd_t = esdEvent->GetTrack(n);
 
     fR.fLabel  = esd_t->GetLabel();
     fR.fStatus = (Int_t) esd_t->GetStatus();
@@ -672,13 +719,15 @@ void AliEveVSDCreator::ConvertRecTracks()
     fTreeR->Fill();
   }
   fTreeR->BuildIndex("label");
-  delete fEvent;
+  delete esdEvent;
 }
 
 /******************************************************************************/
 
 void AliEveVSDCreator::ConvertV0()
 {
+  // Convert reconstructed V0s.
+
   static const TEveException eH("AliEveVSDCreator::ConvertV0 ");
 
   if(fTreeV0 != 0)
@@ -689,8 +738,8 @@ void AliEveVSDCreator::ConvertV0()
 
   fTreeV0->Branch("AliEveV0", "TEveRecV0", &fpV0, 512*1024,1);
 
-  TFile f(Form("%s/AliESDs.root", mDataDir.Data()));
-  if(!f.IsOpen()){
+  TFile f(Form("%s/AliESDs.root", fDataDir.Data()));
+  if (!f.IsOpen()){
     throw(eH + "no AliESDs.root file.");
   }
 
@@ -698,16 +747,16 @@ void AliEveVSDCreator::ConvertV0()
   if (tree == 0)
     throw(eH + "no esdTree.");
 
-  AliESDEvent *fEvent= new AliESDEvent();
-  fEvent->ReadFromTree(tree);
-  tree->GetEntry(mEvent);
-  if(fEvent->GetAliESDOld())fEvent->CopyFromOldESD();
+  AliESDEvent *esdEvent= new AliESDEvent();
+  esdEvent->ReadFromTree(tree);
+  tree->GetEntry(fEvent);
+  if (esdEvent->GetAliESDOld()) esdEvent->CopyFromOldESD();
 
-  for (Int_t n =0; n< fEvent->GetNumberOfV0s(); n++)
+  for (Int_t n = 0; n < esdEvent->GetNumberOfV0s(); ++n)
   {
-    AliESDv0    *av     = fEvent->GetV0(n);
-    AliESDtrack *trackN = fEvent->GetTrack(av->GetNindex()); // negative daughter
-    AliESDtrack *trackP = fEvent->GetTrack(av->GetPindex()); // positive daughter
+    AliESDv0    *av     = esdEvent->GetV0(n);
+    AliESDtrack *trackN = esdEvent->GetTrack(av->GetNindex()); // negative daughter
+    AliESDtrack *trackP = esdEvent->GetTrack(av->GetPindex()); // positive daughter
 
     Double_t pos[3];
 
@@ -746,17 +795,19 @@ void AliEveVSDCreator::ConvertV0()
 
     fTreeV0->Fill();
   }
-  // if(fEvent->GetNumberOfV0s()) fTreeV0->BuildIndex("label");
-  delete fEvent;
+  // if (esdEvent->GetNumberOfV0s()) fTreeV0->BuildIndex("label");
+  delete esdEvent;
 }
 
 /******************************************************************************/
 
 void AliEveVSDCreator::ConvertKinks()
 {
+  // Convert reconstructed kinks.
+
   static const TEveException eH("AliEveVSDCreator::ConvertKinks ");
 
-  if(fTreeKK != 0)
+  if (fTreeKK != 0)
     throw(eH + "Kinks already converted.");
 
   fDirectory->cd();
@@ -764,8 +815,8 @@ void AliEveVSDCreator::ConvertKinks()
 
   fTreeKK->Branch("KK", "TEveRecKink", &fpKK, fBuffSize);
 
-  TFile f(Form("%s/AliESDs.root", mDataDir.Data()));
-  if(!f.IsOpen()){
+  TFile f(Form("%s/AliESDs.root", fDataDir.Data()));
+  if (!f.IsOpen()){
     throw(eH + "no AliESDs.root file.");
   }
 
@@ -774,15 +825,15 @@ void AliEveVSDCreator::ConvertKinks()
     throw(eH + "no esdTree.");
 
 
-  AliESDEvent *fEvent= new AliESDEvent();
-  fEvent->ReadFromTree(tree);
-  tree->GetEntry(mEvent);
-  if(fEvent->GetAliESDOld())fEvent->CopyFromOldESD();
+  AliESDEvent *esdEvent= new AliESDEvent();
+  esdEvent->ReadFromTree(tree);
+  tree->GetEntry(fEvent);
+  if (esdEvent->GetAliESDOld()) esdEvent->CopyFromOldESD();
 
-
-  //  printf("CONVERT KINK Read %d entries in tree kinks \n",  fEvent->GetNumberOfKinks());
-  for (Int_t n =0; n< fEvent->GetNumberOfKinks(); n++) {
-    AliESDkink* kk = fEvent->GetKink(n);
+  //  printf("CONVERT KINK Read %d entries in tree kinks \n",  esdEvent->GetNumberOfKinks());
+  for (Int_t n = 0; n < esdEvent->GetNumberOfKinks(); ++n)
+  {
+    AliESDkink* kk = esdEvent->GetKink(n);
 
     Double_t pos[3];
 
@@ -793,27 +844,27 @@ void AliEveVSDCreator::ConvertKinks()
     fKK.fLabelSec = kk->GetLabel(1);
     fKK.fVKink.Set(kk->GetPosition());
 
-    const AliExternalTrackParam& tp_mother = kk->RefParamMother();
+    const AliExternalTrackParam& tpMother = kk->RefParamMother();
     // momentum and position of mother
-    tp_mother.GetPxPyPz(pos);
+    tpMother.GetPxPyPz(pos);
     fKK.fP.Set(pos);
-    tp_mother.GetXYZ(pos);
+    tpMother.GetXYZ(pos);
     fKK.fV.Set(pos);
-    const Double_t* par =  tp_mother.GetParameter();
-    // printf("KINK Pt %f, %f \n",1/tp_mother.Pt(),par[4] );
+    const Double_t* par =  tpMother.GetParameter();
+    // printf("KINK Pt %f, %f \n",1/tpMother.Pt(),par[4] );
     fKK.fSign = (par[4] < 0) ? -1 : 1;
 
-    const AliExternalTrackParam& tp_daughter = kk->RefParamDaughter();
+    const AliExternalTrackParam& tpDaughter = kk->RefParamDaughter();
     // momentum and position of daughter
-    tp_daughter.GetPxPyPz(pos);
+    tpDaughter.GetPxPyPz(pos);
     fKK.fPSec.Set(pos);
-    tp_daughter.GetXYZ(pos);
+    tpDaughter.GetXYZ(pos);
     fKK.fVEnd.Set(pos);
 
     fTreeKK->Fill();
   }
-  if(fEvent->GetNumberOfKinks()) fTreeKK->BuildIndex("label");
-  delete fEvent;
+  if (esdEvent->GetNumberOfKinks()) fTreeKK->BuildIndex("label");
+  delete esdEvent;
 }
 /******************************************************************************/
 // TEveMCRecCrossRef
@@ -821,6 +872,9 @@ void AliEveVSDCreator::ConvertKinks()
 
 void AliEveVSDCreator::ConvertGenInfo()
 {
+  // Build simulation-reconstruction cross-reference table.
+  // In a rather poor state at the moment.
+
   static const TEveException eH("AliEveVSDCreator::ConvertGenInfo ");
 
   if(fTreeGI != 0)
@@ -834,7 +888,7 @@ void AliEveVSDCreator::ConvertGenInfo()
   fTreeGI->Branch("K.", "TEveMCTrack",  &fpK);
   fTreeGI->Branch("R.", "TEveRecTrack", &fpR);
 
-  for (std::map<Int_t, TEveMCRecCrossRef*>::iterator j=mGenInfoMap.begin(); j!=mGenInfoMap.end(); ++j) {
+  for (std::map<Int_t, TEveMCRecCrossRef*>::iterator j=fGenInfoMap.begin(); j!=fGenInfoMap.end(); ++j) {
     fGI        = *(j->second);
     fGI.fLabel = j->first;
     fTreeK->GetEntry(j->first);
@@ -844,17 +898,17 @@ void AliEveVSDCreator::ConvertGenInfo()
       if(re != -1)
 	fGI.fIsRec = true;
     }
-    //    Int_t has_v0 =  fTreeV0->GetEntryNumberWithIndex(j->first);
-    //if (has_v0 != -1)
+    //    Int_t hasV0 =  fTreeV0->GetEntryNumberWithIndex(j->first);
+    //if (hasV0 != -1)
     //  fGI.has_AliEveV0 = true;
     if (fTreeKK) {
-      Int_t has_kk =  fTreeKK->GetEntryNumberWithIndex(j->first);
-      if (has_kk != -1)
+      Int_t hasKk =  fTreeKK->GetEntryNumberWithIndex(j->first);
+      if (hasKk != -1)
 	fGI.fHasKink = true;
     }
     fTreeGI->Fill();
   }
-  mGenInfoMap.clear();
+  fGenInfoMap.clear();
 }
 
 /******************************************************************************/
@@ -865,7 +919,10 @@ void AliEveVSDCreator::ConvertGenInfo()
 
 AliTPCParam* AliEveVSDCreator::GetTpcParam(const TEveException& eh)
 {
-  auto_ptr<TFile> fp( TFile::Open(Form("%s/galice.root", mDataDir.Data())) );
+  // Return TPC parameters, needed for local-global transformation of
+  // TPC clusters.
+
+  auto_ptr<TFile> fp( TFile::Open(Form("%s/galice.root", fDataDir.Data())) );
   if(!fp.get())
     throw(eh + "can not open 'galice.root' file.");
   AliTPCParam* par = (AliTPCParam *) fp->Get("75x40_100x60_150x60");
@@ -874,16 +931,17 @@ AliTPCParam* AliEveVSDCreator::GetTpcParam(const TEveException& eh)
   return par;
 }
 
-
-
 TEveMCRecCrossRef* AliEveVSDCreator::GetGeninfo(Int_t label)
 {
+  // Return the cross-reference structure for given label.
+  // If the object does not exist it is created.
+
   // printf("get_geninfo %d\n", label);
   TEveMCRecCrossRef* gi;
-  std::map<Int_t, TEveMCRecCrossRef*>::iterator i = mGenInfoMap.find(label);
-  if(i == mGenInfoMap.end()) {
+  std::map<Int_t, TEveMCRecCrossRef*>::iterator i = fGenInfoMap.find(label);
+  if (i == fGenInfoMap.end()) {
     gi =  new TEveMCRecCrossRef();
-    mGenInfoMap[label] = gi;
+    fGenInfoMap[label] = gi;
   } else {
     gi = i->second;
   }

@@ -193,12 +193,19 @@ void AliEveEventManager::Open()
     cdb->SetRun(runNo);
   }
 
-  SetName(Form("AliEveEventManager %d", fEventId));
+  SetName(Form("Event %d", fEventId));
   SetTitle(fPath);
 }
 
 void AliEveEventManager::GotoEvent(Int_t event)
 {
+  // Load data for specified event.
+  // If event is out of range an exception is thrown and old state
+  // is preserved.
+  // After successful loading of event, the virtual function
+  // AfterNewEventLoaded() is called. This executes commands that
+  // were registered via TEveEventManager::AddNewEventCommand().
+
   static const TEveException eH("AliEveEventManager::GotoEvent ");
 
   Int_t maxEvent = 0;
@@ -221,7 +228,7 @@ void AliEveEventManager::GotoEvent(Int_t event)
   // additinal parents.
   DestroyElements();
   fEventId = event;
-  SetName(Form("AliEveEventManager %d", fEventId));
+  SetName(Form("Event %d", fEventId));
   UpdateItems();
 
   if (fRunLoader) {
@@ -242,6 +249,10 @@ void AliEveEventManager::GotoEvent(Int_t event)
 
 void AliEveEventManager::Close()
 {
+  // Close the event files.
+  // For the moment only ESD is closed. Needs to be investigated for
+  // AliRunLoader and Raw.
+
   if (fESDTree) {
     delete fESD;       fESD       = 0;
     delete fESDfriend; fESDfriend = 0;
@@ -258,6 +269,10 @@ void AliEveEventManager::Close()
 
 AliRunLoader* AliEveEventManager::AssertRunLoader()
 {
+  // Make sure AliRunLoader is initialized and return it.
+  // Throws exception in case run-loader is not available.
+  // Static utility for macros.
+
   static const TEveException eH("AliEveEventManager::AssertRunLoader ");
 
   if (gEvent == 0)
@@ -269,6 +284,10 @@ AliRunLoader* AliEveEventManager::AssertRunLoader()
 
 AliESDEvent* AliEveEventManager::AssertESD()
 {
+  // Make sure AliESDEvent is initialized and return it.
+  // Throws exception in case ESD is not available.
+  // Static utility for macros.
+
   static const TEveException eH("AliEveEventManager::AssertESD ");
 
   if (gEvent == 0)
@@ -280,6 +299,10 @@ AliESDEvent* AliEveEventManager::AssertESD()
 
 AliESDfriend* AliEveEventManager::AssertESDfriend()
 {
+  // Make sure AliESDfriend is initialized and return it.
+  // Throws exception in case ESDfriend-loader is not available.
+  // Static utility for macros.
+
   static const TEveException eH("AliEveEventManager::AssertESDfriend ");
 
   if (gEvent == 0)
@@ -291,6 +314,10 @@ AliESDfriend* AliEveEventManager::AssertESDfriend()
 
 AliMagF* AliEveEventManager::AssertMagField()
 {
+  // Make sure AliMagF is initialized and return it.
+  // Throws exception in case magnetic field is not available.
+  // Static utility for macros.
+
   if (fgMagField == 0)
   {
     if (gEvent && gEvent->fRunLoader && gEvent->fRunLoader->GetAliRun())
@@ -303,6 +330,14 @@ AliMagF* AliEveEventManager::AssertMagField()
 
 TGeoManager* AliEveEventManager::AssertGeometry()
 {
+  // Make sure AliGeomManager is initialized and returns the
+  // corresponding TGeoManger.
+  // gGeoManager is not set, maybe it should be.
+  // Throws exception in case run-loader is not available.
+  // Static utility for macros.
+
+  // !!!! Should we set gGeoManager here?
+
   static const TEveException eH("AliEveEventManager::AssertGeometry ");
 
   if (AliGeomManager::GetGeometry() == 0)

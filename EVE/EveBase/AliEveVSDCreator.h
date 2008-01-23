@@ -20,34 +20,32 @@ class AliRunLoader;
 
 class AliEveVSDCreator : public TEveVSD
 {
+private:
   AliEveVSDCreator(const AliEveVSDCreator&);            // Not implemented
   AliEveVSDCreator& operator=(const AliEveVSDCreator&); // Not implemented
 
-public:
-  enum KineType_e { kKT_Standard, kKT_ProtonProton };
-
 protected:
-  void          MakeItsDigitsInfo();
+  void               MakeItsDigitsInfo();
   TEveMCRecCrossRef* GetGeninfo(Int_t label);
-  AliTPCParam*   GetTpcParam(const TEveException& eh);
+  AliTPCParam*       GetTpcParam(const TEveException& eh);
 
-  KineType_e    mKineType;  // X{GS} 7 PhonyEnum()
-  TString       mDataDir;   // X{G}
-  Int_t         mEvent;     // X{G}
+  TString       fDataDir;    // Source data directory.
+  Int_t         fEvent;      // Source event number.
 
-  Float_t       mTPCHitRes;  // X{gs}
-  Float_t       mTRDHitRes;  // X{gs}
+  Float_t       fTPCHitRes;  // Resolution for storing TPC hits.
+  Float_t       fTRDHitRes;  // Resolution for storing TRD hits.
 
-  Int_t         mDebugLevel;
+  Int_t         fDebugLevel; // Internal debug level.
 
-  std::map<Int_t, TEveMCRecCrossRef*> mGenInfoMap; //!
+  AliRunLoader *fRunLoader;  // Internal run-loader.
+
+  std::map<Int_t, TEveMCRecCrossRef*> fGenInfoMap; // Map label to MC-Rec cross-ref data structure.
 
 public:
   AliEveVSDCreator(const Text_t* name="AliEveVSDCreator", const Text_t* title="");
   virtual ~AliEveVSDCreator() {}
 
-  void CreateVSD(const Text_t* data_dir, Int_t event,
-                 const Text_t* vsd_file);  // X{Ed}
+  void CreateVSD(const Text_t* dataDir, Int_t event, const Text_t* vsdFile);
 
   void CreateTrees();
 
@@ -65,16 +63,11 @@ public:
   void ConvertGenInfo();
 
   // --------------------------------------------------------------
-  // Get/Set crap
-  Int_t GetDebugLevel() const   { return mDebugLevel; }
-  void  SetDebugLevel(Int_t dl) { mDebugLevel = dl; }
 
-  // --------------------------------------------------------------
-  // Globals.
+  Int_t GetDebugLevel() const   { return fDebugLevel; }
+  void  SetDebugLevel(Int_t dl) { fDebugLevel = dl; }
 
-  AliRunLoader* pRunLoader;
-
-  ClassDef(AliEveVSDCreator, 1);
+  ClassDef(AliEveVSDCreator, 0); // Create VSD file from ALICE data.
 }; // endclass AliEveVSDCreator
 
 #endif
