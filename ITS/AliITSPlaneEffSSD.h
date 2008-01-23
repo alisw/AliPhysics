@@ -50,6 +50,11 @@ class AliITSPlaneEffSSD :  public AliITSPlaneEff {
     virtual Bool_t ReadFromCDB(); // this method reads Data Members (statistics) from DataBase
     virtual Bool_t AddFromCDB()   // this method updates Data Members (statistics) from DataBase
       {AliError("AddFromCDB: Still To be implemented"); return kFALSE;}
+   // method to locate a basic block from Detector Local coordinate (to be used in tracking)
+   // see file cxx for numbering convention.
+   // here idet runs from 0 to 747 for layer 4 and from 0 to 949 for layer 5
+    UInt_t GetKeyFromDetLocCoord(Int_t ilay,Int_t idet, Float_t, Float_t locz) const;
+    UInt_t Nblock() const; // return the number of basic blocks
 
  protected:
     virtual void Copy(TObject &obj) const;
@@ -66,5 +71,8 @@ class AliITSPlaneEffSSD :  public AliITSPlaneEff {
 
     ClassDef(AliITSPlaneEffSSD,1) // SSD Plane Efficiency class
 };
+//
+inline UInt_t AliITSPlaneEffSSD::Nblock() const {return kNModule;}
+//
 #endif
 

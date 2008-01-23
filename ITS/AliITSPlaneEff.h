@@ -3,8 +3,8 @@
 /* Copyright(c) 2007-2009, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-#include <TObject.h>
 #include <TString.h>
+#include "AliPlaneEff.h"
 #include "AliLog.h"
 
 class AliITSsegmentation;
@@ -20,12 +20,11 @@ class AliITSgeom;
 
 /* $Id$ */
 
-class AliITSPlaneEff : public TObject {
+class AliITSPlaneEff : public AliPlaneEff {
  public:
  
     AliITSPlaneEff();// Default constructor
     // Standard constructor
-    //AliITSPlaneEff(AliITSDetTypeSim *dettyp);
     virtual ~AliITSPlaneEff(){;};
     // copy constructor. See detector specific implementation.
     AliITSPlaneEff(const AliITSPlaneEff &source);
@@ -41,6 +40,8 @@ class AliITSPlaneEff : public TObject {
     Double_t ErrPlaneEff(Int_t nfound,Int_t ntried) const; 
     virtual void GetPlaneEff(Int_t nfound,Int_t ntried,Double_t &eff, Double_t &err) const
         {eff=PlaneEff(nfound,ntried); err=ErrPlaneEff(nfound,ntried); return;};
+    //
+    virtual Double_t PlaneEff(const UInt_t key) const=0;
     // Plane efficiency for active  detector (excluding dead/noisy channels)
     virtual Double_t LivePlaneEff(UInt_t) const
        {AliWarning("This method gives just a rough estimate of the live-Det Efficiency!"); 
@@ -66,6 +67,11 @@ class AliITSPlaneEff : public TObject {
        {AliError("This method must be implemented in a derived class"); return kFALSE;};
     virtual Bool_t AddFromCDB()
        {AliError("This method must be implemented in a derived class"); return kFALSE;};
+    // method to locate a basic block from Detector Local coordinate 
+    virtual UInt_t GetKeyFromDetLocCoord(Int_t, Int_t, Float_t, Float_t) const
+      {AliError("This method must be implemented in a derived class"); return 999999;};
+    virtual UInt_t Nblock() const // return the number of basic blocks
+      {AliError("This method must be implemented in a derived class"); return 999999;};
 
  protected:
 

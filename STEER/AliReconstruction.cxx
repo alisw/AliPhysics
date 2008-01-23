@@ -187,6 +187,8 @@
 #include "AliQA.h"
 #include "AliQADataMakerSteer.h"
 
+#include "AliPlaneEff.h"
+
 #include "AliSysInfo.h" // memory snapshots
 
 
@@ -251,7 +253,9 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename,
   fSetRunNumberFromDataCalled(kFALSE),
   fRunQA(kTRUE),  
   fRunGlobalQA(kFALSE),
-  fInLoopQA(kFALSE)
+  fInLoopQA(kFALSE),
+
+  fRunPlaneEff(kFALSE)
 {
 // create reconstruction object with default parameters
   
@@ -320,7 +324,8 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fSetRunNumberFromDataCalled(rec.fSetRunNumberFromDataCalled),
   fRunQA(rec.fRunQA),  
   fRunGlobalQA(rec.fRunGlobalQA),
-  fInLoopQA(rec.fInLoopQA)
+  fInLoopQA(rec.fInLoopQA),
+  fRunPlaneEff(rec.fRunPlaneEff)
 {
 // copy constructor
 
@@ -780,6 +785,10 @@ Bool_t AliReconstruction::Run(const char* input, Bool_t IsOnline)
      }
   }
 
+  //Initialize the Plane Efficiency framework
+  if (fRunPlaneEff && !InitPlaneEff()) {
+    if(fStopOnError) {CleanUp(file, fileOld); return kFALSE;}
+  }
 
   //******* The loop over events
   for (Int_t iEvent = 0; iEvent < fRunLoader->GetNumberOfEvents(); iEvent++) {
@@ -1056,6 +1065,14 @@ Bool_t AliReconstruction::Run(const char* input, Bool_t IsOnline)
     esdFile->Close();
   }
 
+// Finish with Plane Efficiency evaluation
+  if (fRunPlaneEff && !FinishPlaneEff()) {
+   AliWarning("Finish PlaneEff evaluation failed");
+  }
+
+  gROOT->cd();
+  CleanUp(file, fileOld);
+    
   // Create tags for the events in the ESD tree (the ESD tree is always present)
   // In case of empty events the tags will contain dummy values
   AliESDTagCreator *esdtagCreator = new AliESDTagCreator();
@@ -3045,4 +3062,43 @@ Int_t AliReconstruction::GetDetIndex(const char* detector)
 	break ; 
   }	
   return index ; 
+}
+//_____________________________________________________________________________
+Bool_t AliReconstruction::FinishPlaneEff() {
+ //
+ // Here execute all the necessary operationis, at the end of the tracking phase,
+ // in case that evaluation of PlaneEfficiencies was required for some detector. 
+ // E.g., write into a DataBase file the PlaneEfficiency which have been evaluated. 
+ //
+ // This Preliminary version works only FOR ITS !!!!!
+ // other detectors (TOF,TRD, etc. have to develop their specific codes)
+ //
+ //  Input: none
+ //  Return: kTRUE if all operations have been done properly, kFALSE otherwise 
+ //
+ Bool_t ret=kFALSE;
+ //for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
+ for (Int_t iDet = 0; iDet < 1; iDet++) { // for the time being only ITS  
+   //if (!IsSelected(fgkDetectorName[iDet], detStr)) continue;
+   //if(fReconstructor[iDet]->GetRecoParam()->GetComputePlaneEff()) continue;
+   ret=fTracker[iDet]->GetPlaneEff()->WriteIntoCDB();
+ }
+ return ret;
+}
+//_____________________________________________________________________________
+Bool_t AliReconstruction::InitPlaneEff() {
+//
+ // Here execute all the necessary operations, before of the tracking phase,
+ // for the evaluation of PlaneEfficiencies, in case required for some detectors.
+ // E.g., read from a DataBase file a first evaluation of the PlaneEfficiency 
+ // which should be updated/recalculated.
+ //
+ // This Preliminary version will work only FOR ITS !!!!!
+ // other detectors (TOF,TRD, etc. have to develop their specific codes)
+ //
+ //  Input: none
+ //  Return: kTRUE if all operations have been done properly, kFALSE otherwise
+ //
+ AliWarning(Form("Implementation of this method not yet done !! Method return kTRUE"));
+ return kTRUE;
 }

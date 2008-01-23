@@ -34,7 +34,7 @@
 
 ClassImp(AliITSPlaneEff)
 //______________________________________________________________________
-AliITSPlaneEff::AliITSPlaneEff(): TObject(),
+AliITSPlaneEff::AliITSPlaneEff(): AliPlaneEff(),
 fRunNumber(0), 
 fCDBUri(""),
 fInitCDBCalled(kFALSE)
@@ -49,7 +49,7 @@ fInitCDBCalled(kFALSE)
  InitCDB();
 }
 //______________________________________________________________________
-AliITSPlaneEff::AliITSPlaneEff(const AliITSPlaneEff &s) : TObject(s),
+AliITSPlaneEff::AliITSPlaneEff(const AliITSPlaneEff &s) : AliPlaneEff(s),
 fRunNumber(s.fRunNumber),
 fCDBUri(s.fCDBUri),
 fInitCDBCalled(s.fInitCDBCalled)
@@ -90,13 +90,25 @@ AliITSPlaneEff&  AliITSPlaneEff::operator=(const AliITSPlaneEff &source){
        source.Copy(*this);
     }
     return *this;
-//    if(&s == this) return *this;
-//    this->fRunNumber		= s.fRunNumber;
-//    this->fCDBUri		= s.fCDBUri;
-//    this->fInitCDBCalled	= s.fInitCDBCalled;
-//    return *this;
 }
-//_____________________________________________________________
+//_________________________________________________________________________
+/*
+AliPlaneEff&  AliITSPlaneEff::operator=(const
+                                           AliPlaneEff &s){
+    //    Assignment operator
+    // Inputs:
+    //    AliPlaneEff &s The original class for which
+    //                          this class is a copy of
+    // Outputs:
+    //    none.
+    // Return: 
+
+    if(&s == this) return *this;
+    AliWarning("AliITSPlaneEff Not allowed to make a = Using default creator instead");
+    return *this;
+}
+*/
+//_________________________________________________________________________
 void AliITSPlaneEff::Copy(TObject &obj) const {
   // copy this to obj
   ((AliITSPlaneEff& ) obj).fRunNumber		= fRunNumber;

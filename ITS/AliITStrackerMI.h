@@ -19,6 +19,7 @@ class AliESDEvent;
 #include "AliITSRecPoint.h"
 #include "AliITStrackMI.h"
 #include "AliITSPlaneEff.h"
+#include "AliPlaneEff.h"
 #include "AliTracker.h"
 
 //-------------------------------------------------------------------------
@@ -41,9 +42,9 @@ public:
   Int_t PropagateBack(AliESDEvent *event);
   Int_t RefitInward(AliESDEvent *event);
   Bool_t RefitAt(Double_t x, AliITStrackMI *track, 
-		 const AliITStrackMI *clusters, Bool_t extra=kFALSE);
+		 const AliITStrackMI *clusters, Bool_t extra=kFALSE, Bool_t planeeff=kFALSE);
   Bool_t RefitAt(Double_t x, AliITStrackMI *track, 
-		 const Int_t *clusters, Bool_t extra=kFALSE);
+		 const Int_t *clusters, Bool_t extra=kFALSE, Bool_t planeeff=kFALSE);
   void SetupFirstPass(Int_t *flags, Double_t *cuts=0);
   void SetupSecondPass(Int_t *flags, Double_t *cuts=0);
 
@@ -54,6 +55,7 @@ public:
   void  GetDCASigma(AliITStrackMI* track, Float_t & sigmarfi, Float_t &sigmaz);
   Double_t GetPredictedChi2MI(AliITStrackMI* track, const AliITSRecPoint *cluster,Int_t layer);
   Int_t UpdateMI(AliITStrackMI* track, const AliITSRecPoint* cl,Double_t chi2,Int_t layer) const;
+  AliPlaneEff *GetPlaneEff() {return (AliPlaneEff*)fPlaneEff;}   // return the pointer to AliPlaneEff
   class AliITSdetector { 
   public:
     AliITSdetector():fR(0),fPhi(0),fSinPhi(0),fCosPhi(0),fYmin(0),fYmax(0),fZmin(0),fZmax(0){}
@@ -225,6 +227,11 @@ protected:
   Int_t CheckDeadZone(/*AliITStrackMI *track,*/Int_t ilayer,Int_t idet,Double_t zmin,Double_t zmax/*,Double_t ymin,Double_t ymax*/) const;
   Bool_t LocalModuleCoord(Int_t ilayer,Int_t idet,AliITStrackMI *track,
 			  Float_t &xloc,Float_t &zloc) const;
+// method to be used for Plane Efficiency evaluation
+  Bool_t IsOKForPlaneEff(AliITStrackMI* track, Int_t ilayer) const; // Check if a track is usable 
+                                                                    // for Plane Eff evaluation
+  void UseTrackForPlaneEff(AliITStrackMI* track, Int_t ilayer);     // Use this track for Plane Eff 
+// 
   Int_t fI;                              // index of the current layer
   static AliITSlayer fgLayers[AliITSgeomTGeo::kNLayers];// ITS layers
   AliITStrackMI fTracks[AliITSgeomTGeo::kNLayers];      // track estimations at the ITS layers

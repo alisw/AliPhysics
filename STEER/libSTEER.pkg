@@ -45,6 +45,7 @@ AliHelix.cxx AliV0.cxx AliKink.cxx \
 AliSelectorRL.cxx \
 AliMagFMapsV1.cxx \
 AliSurveyObj.cxx AliSurveyPoint.cxx \
+AliCodeTimer.cxx \
 AliFstream.cxx \
 AliCTPRawData.cxx \
 AliQADataMaker.cxx \
@@ -56,8 +57,8 @@ AliQAChecker.cxx \
 AliQACheckerBase.cxx \
 AliMillepede.cxx \
 AliRecoParam.cxx \
-AliDetectorRecoParam.cxx 
-
+AliDetectorRecoParam.cxx \
+AliPlaneEff.cxx
 
 
 HDRS:= $(SRCS:.cxx=.h) 

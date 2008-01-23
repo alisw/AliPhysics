@@ -11,6 +11,7 @@
 //       Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch 
 //-------------------------------------------------------------------------
 #include <TObject.h>
+#include <AliPlaneEff.h>
 
 class TTree;
 class AliMagF;
@@ -38,6 +39,7 @@ public:
   virtual Int_t LoadClusters(TTree *)=0;
   virtual void UnloadClusters()=0;
   virtual AliCluster *GetCluster(Int_t index) const=0;
+  virtual AliPlaneEff *GetPlaneEff() {return NULL;}
   virtual Bool_t GetTrackPoint(Int_t /* index */ , AliTrackPoint& /* p */) const { return kFALSE;}
   virtual Bool_t GetTrackPointTrackingError(Int_t /* index */, 
   	   AliTrackPoint& /* p */, const AliESDtrack* /* t */) { return kFALSE;}

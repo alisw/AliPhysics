@@ -119,6 +119,9 @@ public:
   void    SetRunGlobalQA(Bool_t flag=kTRUE){fRunGlobalQA = flag;}
   void    SetInLoopQA(Bool_t flag=kTRUE)   {fInLoopQA    = flag;} 
 
+  // Plane Efficiency Evaluation
+  void    SetRunPlaneEff(Bool_t flag=kFALSE)  {fRunPlaneEff = flag;}
+
 private:
   void 		 InitCDB();
   void 		 SetCDBLock();
@@ -154,6 +157,10 @@ private:
   AliQADataMakerRec*   GetQADataMaker(Int_t iDet);
   const Int_t          GetQACycles(const char * detector) { return fQACycles[GetDetIndex(detector)] ; }
   void                 CheckQA() ;
+
+  // Plane Efficiency evaluation
+  Bool_t  FinishPlaneEff(); //ultimate tasks related to Plane Eff. evaluation 
+  Bool_t  InitPlaneEff();   // initialize what is needed for Plane Eff. evaluation
 
   //*** Global reconstruction flags *******************
   Bool_t         fUniformField;       // uniform field tracking flag
@@ -219,6 +226,8 @@ private:
   Bool_t             fRunQA ;        // Run QA flag
   Bool_t             fRunGlobalQA;   // Run global QA flag
   Bool_t             fInLoopQA;      // In-loop QA flag
+  // Plane Efficiency Evaluation
+  Bool_t         fRunPlaneEff ;      // Evaluate Plane Efficiency
 
   ClassDef(AliReconstruction, 19)      // class for running the reconstruction
 };

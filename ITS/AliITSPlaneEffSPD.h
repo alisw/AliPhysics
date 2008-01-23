@@ -23,7 +23,8 @@ class AliITSPlaneEffSPD :  public AliITSPlaneEff {
     AliITSPlaneEffSPD(const AliITSPlaneEffSPD &source);
     // ass. operator
     AliITSPlaneEffSPD& operator=(const AliITSPlaneEffSPD &s);
-    virtual AliITSPlaneEff& operator=(const AliITSPlaneEff &source);
+    AliITSPlaneEff& operator=(const AliITSPlaneEff &source);
+    //AliPlaneEff& operator=(const AliPlaneEff &source);
     // Simple way to add another class (i.e. statistics). 
     AliITSPlaneEffSPD& operator +=( const AliITSPlaneEffSPD &add);
     // Getters for average Plane efficiency (icluding dead/noisy)
@@ -60,6 +61,11 @@ class AliITSPlaneEffSPD :  public AliITSPlaneEff {
     virtual Bool_t ReadFromCDB(); // this method reads Data Members (statistics) from DataBase
     virtual Bool_t AddFromCDB()   // this method updates Data Members (statistics) from DataBase
       {AliError("AddFromCDB: Still To be implemented"); return kFALSE;}
+   // method to locate a basic block from Detector Local coordinate (to be used in tracking)
+   // see file cxx for numbering convention.
+   // here idet runs from 0 to 79 for layer 0 and from 0 to 159 for layer 1
+    UInt_t GetKeyFromDetLocCoord(Int_t ilay,Int_t idet, Float_t, Float_t locz) const;
+    UInt_t Nblock() const; // return the number of basic blocks
 
  protected:
     virtual void Copy(TObject &obj) const;
@@ -74,10 +80,14 @@ class AliITSPlaneEffSPD :  public AliITSPlaneEff {
     UInt_t GetModFromKey(const UInt_t key) const;
     UInt_t GetChipFromKey(const UInt_t key) const;
     UInt_t GetChipFromCol(const UInt_t col) const;  // get the chip number (from 0 to kNChip)
+    UInt_t GetColFromLocZ(Float_t zloc) const;      // get the Column from the local z
     void GetModAndChipFromKey(const UInt_t key, UInt_t& mod, UInt_t& chip) const;
     void GetDeadAndNoisyInChip(const UInt_t key, UInt_t& dead, UInt_t& noisy) const;
 
     ClassDef(AliITSPlaneEffSPD,1) // SPD Plane Efficiency class
 };
+//
+inline UInt_t AliITSPlaneEffSPD::Nblock() const {return kNModule*kNChip;}
+//
 #endif
 

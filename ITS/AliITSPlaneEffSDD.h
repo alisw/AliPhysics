@@ -50,7 +50,7 @@ class AliITSPlaneEffSDD :  public AliITSPlaneEff {
     enum {kNSubWing = 1}; // Eventually sub-divide each wing (by 2 ?) to account for different 
                           // efficiencies due to different drift times.  
     enum {kNAnode = 64};   // Number of channels/chip (i.e. anodes per chip)
-    enum {kNTimeBin = 72};   // granularity along drift direction (i.e. segmentation in r-phi)
+    //enum {kNTimeBin = 174};   // granularity along drift direction (i.e. segmentation in r-phi)
 //
 //  Plane efficiency for active  detector (excluding dead/noisy channels)
 //  access to DB is needed
@@ -70,6 +70,11 @@ class AliITSPlaneEffSDD :  public AliITSPlaneEff {
     virtual Bool_t ReadFromCDB(); // this method reads Data Members (statistics) from DataBase
     virtual Bool_t AddFromCDB()   // this method updates Data Members (statistics) from DataBase
       {AliError("AddFromCDB: Still To be implemented"); return kFALSE;}
+    // method to locate a basic block from Detector Local coordinate (to be used in tracking)
+    // see file cxx for numbering convention.
+    // here idet runs from 0 to 83 for layer 2 and from 0 to 175 for layer 3
+    UInt_t GetKeyFromDetLocCoord(Int_t ilay,Int_t idet, Float_t locx, Float_t locz) const;
+    UInt_t Nblock() const; // return the number of basic blocks
 
  protected:
     virtual void Copy(TObject &obj) const;
@@ -89,6 +94,12 @@ class AliITSPlaneEffSDD :  public AliITSPlaneEff {
     UInt_t ChipFromAnode(const UInt_t anode) const; // return the chip number (from 0 to kNChip-1)
     UInt_t WingFromAnode(const UInt_t anode) const; // return the wing number (from 0 to kNWing-1)
     void   ChipAndWingFromAnode(const UInt_t anode,UInt_t& chip,UInt_t& wing) const; 
+    // return the Subwing  (from 0 to kNSubWing-1) from the cell time bin in the range 
+    // [0,ntb] and from the number of time bins 
+    UInt_t SubWingFromTimeBin(const Int_t tb, const Int_t ntb) const; 
+                                                  
+    void   ChipAndWingAndSubWingFromLocCoor(Float_t locx, Float_t locz, 
+                                 UInt_t& chip, UInt_t& wing, UInt_t& subw) const; 
     //
     void GetAllFromKey(const UInt_t key, UInt_t& mod, UInt_t& chip, 
                        UInt_t& wing, UInt_t& subw) const;
@@ -96,5 +107,8 @@ class AliITSPlaneEffSDD :  public AliITSPlaneEff {
 
     ClassDef(AliITSPlaneEffSDD,1) // SDD Plane Efficiency class
 };
+//
+inline UInt_t AliITSPlaneEffSDD::Nblock() const {return kNModule*kNChip*kNWing*kNSubWing;}
+//
 #endif
 

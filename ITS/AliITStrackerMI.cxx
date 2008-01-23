@@ -43,12 +43,15 @@
 #include "AliTrackPointArray.h"
 #include "AliAlignObj.h"
 #include "AliITSClusterParam.h"
-#include "AliITSPlaneEff.h"
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
 #include "AliITSCalibrationSPD.h"
 #include "AliITSCalibrationSDD.h"
 #include "AliITSCalibrationSSD.h"
+#include "AliITSPlaneEff.h"
+#include "AliITSPlaneEffSPD.h"
+#include "AliITSPlaneEffSDD.h"
+#include "AliITSPlaneEffSSD.h"
 #include "AliITStrackerMI.h"
 
 ClassImp(AliITStrackerMI)
@@ -205,6 +208,19 @@ fPlaneEff(0) {
   
   fDebugStreamer = new TTreeSRedirector("ITSdebug.root");
 
+  // only for plane efficiency evaluation
+  if (AliITSReconstructor::GetRecoParam()->GetComputePlaneEff()) {
+    for(Int_t ilay=0;ilay<6;ilay++) { 
+      if(AliITSReconstructor::GetRecoParam()->GetLayersToSkip(ilay)) {
+        if (ilay<2) fPlaneEff = new AliITSPlaneEffSPD();
+        else if (ilay<4) fPlaneEff = new AliITSPlaneEffSDD();
+        else fPlaneEff = new AliITSPlaneEffSSD();
+        break; // only one layer type to skip at once
+      }
+    }
+    if(!fPlaneEff->ReadFromCDB()) 
+      {AliWarning("AliITStrackerMI reading of AliITSPlaneEff from OCDB failed") ;}
+  }
 }
 //------------------------------------------------------------------------
 AliITStrackerMI::AliITStrackerMI(const AliITStrackerMI &tracker):AliTracker(tracker),
@@ -632,7 +648,8 @@ Int_t AliITStrackerMI::RefitInward(AliESDEvent *event) {
       fTrackToFollow.ResetCovariance(10.);
 
     //Refitting...
-    if (RefitAt(AliITSRecoParam::GetrInsideSPD1(),&fTrackToFollow,t,kTRUE)) {
+    Bool_t pe=AliITSReconstructor::GetRecoParam()->GetComputePlaneEff();
+    if (RefitAt(AliITSRecoParam::GetrInsideSPD1(),&fTrackToFollow,t,kTRUE,pe)) {
        fTrackToFollow.SetLabel(t->GetLabel());
        //       fTrackToFollow.CookdEdx();
        CookdEdx(&fTrackToFollow);
@@ -1890,13 +1907,15 @@ Int_t AliITStrackerMI::AliITSlayer::InRoad() const {
 }
 //------------------------------------------------------------------------
 Bool_t AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *track,
-				const AliITStrackMI *clusters,Bool_t extra) 
+				const AliITStrackMI *clusters,Bool_t extra, Bool_t planeeff) 
 {
   //--------------------------------------------------------------------
   // This function refits the track "track" at the position "x" using
   // the clusters from "clusters"
   // If "extra"==kTRUE, 
   //    the clusters from overlapped modules get attached to "track" 
+  // If "planeff"==kTRUE,
+  //    special approach for plane efficiency evaluation is applyed
   //--------------------------------------------------------------------
 
   Int_t index[AliITSgeomTGeo::kNLayers];
@@ -1909,17 +1928,19 @@ Bool_t AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *track,
     index[ilayer]=idx; 
   }
 
-  return RefitAt(xx,track,index,extra); // call the method below
+  return RefitAt(xx,track,index,extra,planeeff); // call the method below
 }
 //------------------------------------------------------------------------
 Bool_t AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *track,
-				const Int_t *clusters,Bool_t extra) 
+				const Int_t *clusters,Bool_t extra, Bool_t planeeff) 
 {
   //--------------------------------------------------------------------
   // This function refits the track "track" at the position "x" using
   // the clusters from array
   // If "extra"==kTRUE, 
   //    the clusters from overlapped modules get attached to "track" 
+  // If "planeff"==kTRUE,
+  //    special approach for plane efficiency evaluation is applyed
   //--------------------------------------------------------------------
   Int_t index[AliITSgeomTGeo::kNLayers];
   Int_t k;
@@ -2032,12 +2053,16 @@ Bool_t AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *track,
 	   maxchi2=chi2; 
 	   modstatus = 1; // found
 	 } else {
-	   return kFALSE;
+	    return kFALSE; //
 	 }
        }
      } else { // no cluster in this layer
        if (skip==1) {
 	 modstatus = 3; // skipped
+         if (planeeff) {  // Plane Eff determination: 
+           if (IsOKForPlaneEff(track,ilayer))  // only adequate track for plane eff. evaluation
+              UseTrackForPlaneEff(track,ilayer); 
+         }
        } else {
 	 modstatus = 5; // no cls in road
 	 // check dead
@@ -4901,3 +4926,133 @@ Bool_t AliITStrackerMI::LocalModuleCoord(Int_t ilayer,Int_t idet,
   return kTRUE;
 }
 //------------------------------------------------------------------------
+Bool_t AliITStrackerMI::IsOKForPlaneEff(AliITStrackMI* track, Int_t ilayer) const {
+// Method still to be implemented: 
+//
+// it will apply a pre-selection to obtain good quality tracks.  
+// Here also  you will have the possibility to put a control on the 
+// impact point of the track on the basic block, in order to exclude border regions 
+// this will be done by calling a proper method of the AliITSPlaneEff class.  
+//
+// input: AliITStrackMI* track, ilayer= layer number [0,5]
+// output: Bool_t   -> kTRUE if usable track, kFALSE if not usable. 
+return kTRUE;
+}
+//------------------------------------------------------------------------
+void AliITStrackerMI::UseTrackForPlaneEff(AliITStrackMI* track, Int_t ilayer) {
+//
+// This Method has to be optimized! For the time-being it uses the same criteria
+// as those used in the search of extra clusters for overlapping modules.
+//
+// Method Purpose: estabilish whether a track has produced a recpoint or not
+//                 in the layer under study (For Plane efficiency)
+//
+// inputs: AliITStrackMI* track  (pointer to a usable track)
+// outputs: none
+// side effects: update (by 1 count) the Plane Efficiency statistics of the basic block
+//               traversed by this very track. In details:
+//               - if a cluster can be associated to the track then call
+//                  AliITSPlaneEff::UpDatePlaneEff(key,kTRUE);
+//               - if not, the AliITSPlaneEff::UpDatePlaneEff(key,kFALSE) is called
+//
+  AliITSlayer &layer=fgLayers[ilayer];
+  Double_t r=layer.GetR();
+  //AliITStrackV2 tmp(*track);
+  AliITStrackMI tmp(*track);
+
+// detector number
+  Double_t phi,z;
+  if (!tmp.GetPhiZat(r,phi,z)) return;
+  Int_t idet=layer.FindDetectorIndex(phi,z);
+
+  if(idet<0) return;
+
+  Double_t trackGlobXYZ1[3];
+  tmp.GetXYZ(trackGlobXYZ1);
+
+// Get the budget to the primary vertex for the current track being prolonged
+  Double_t budgetToPrimVertex = GetEffectiveThickness();
+
+//propagate to the intersection with the detector plane
+  const AliITSdetector &det=layer.GetDetector(idet);
+  if (!tmp.Propagate(det.GetPhi(),det.GetR())) return;
+  
+  //Float_t xloc,zloc;
+
+//***************
+// DEFINITION OF SEARCH ROAD FOR CLUSTERS SELECTION
+//
+  Double_t dz=AliITSReconstructor::GetRecoParam()->GetNSigmaRoadZ()*
+                    TMath::Sqrt(tmp.GetSigmaZ2() +
+                    AliITSReconstructor::GetRecoParam()->GetNSigmaZLayerForRoadZ()*
+                    AliITSReconstructor::GetRecoParam()->GetNSigmaZLayerForRoadZ()*
+                    AliITSReconstructor::GetRecoParam()->GetSigmaZ2(ilayer));
+  Double_t dy=AliITSReconstructor::GetRecoParam()->GetNSigmaRoadY()*
+                    TMath::Sqrt(tmp.GetSigmaY2() +
+                    AliITSReconstructor::GetRecoParam()->GetNSigmaYLayerForRoadY()*
+                    AliITSReconstructor::GetRecoParam()->GetNSigmaYLayerForRoadY()*
+                    AliITSReconstructor::GetRecoParam()->GetSigmaY2(ilayer));
+
+// road in global (rphi,z) [i.e. in tracking ref. system]
+  Double_t zmin = tmp.GetZ() - dz;
+  Double_t zmax = tmp.GetZ() + dz;
+  Double_t ymin = tmp.GetY() + r*det.GetPhi() - dy;
+  Double_t ymax = tmp.GetY() + r*det.GetPhi() + dy;
+
+// select clusters in road
+  layer.SelectClusters(zmin,zmax,ymin,ymax);
+
+// Define criteria for track-cluster association
+  Double_t msz = tmp.GetSigmaZ2() +
+  AliITSReconstructor::GetRecoParam()->GetNSigmaZLayerForRoadZ()*
+  AliITSReconstructor::GetRecoParam()->GetNSigmaZLayerForRoadZ()*
+  AliITSReconstructor::GetRecoParam()->GetSigmaZ2(ilayer);
+  Double_t msy = tmp.GetSigmaY2() +
+  AliITSReconstructor::GetRecoParam()->GetNSigmaYLayerForRoadY()*
+  AliITSReconstructor::GetRecoParam()->GetNSigmaYLayerForRoadY()*
+  AliITSReconstructor::GetRecoParam()->GetSigmaY2(ilayer);
+ // if (constrain) {
+    msz *= AliITSReconstructor::GetRecoParam()->GetNSigma2RoadZC();
+    msy *= AliITSReconstructor::GetRecoParam()->GetNSigma2RoadYC();
+ // }  else {
+ //   msz *= AliITSReconstructor::GetRecoParam()->GetNSigma2RoadZNonC();
+ //   msy *= AliITSReconstructor::GetRecoParam()->GetNSigma2RoadYNonC();
+ // }
+  msz = 1./msz; // 1/RoadZ^2
+  msy = 1./msy; // 1/RoadY^2
+//
+
+  const AliITSRecPoint *cl=0; Int_t clidx=-1, ci=-1;
+  Int_t idetc=-1;
+  Double_t maxchi2=1000.*AliITSReconstructor::GetRecoParam()->GetMaxChi2(), tolerance=0.1;
+  while ((cl=layer.GetNextCluster(clidx))!=0) {
+    idetc = cl->GetDetectorIndex();
+    if(idet!=idetc) continue;
+    //Int_t ilay = cl->GetLayer();
+
+    if (TMath::Abs(tmp.GetZ() - cl->GetZ()) > tolerance) continue;
+    if (TMath::Abs(tmp.GetY() - cl->GetY()) > tolerance) continue;
+
+    Double_t chi2=tmp.GetPredictedChi2(cl);
+    if (chi2<maxchi2) { maxchi2=chi2; ci=clidx; }
+  }
+  Float_t locx; // to be changed (if no cluster)
+  Float_t locz; // to be changed (if no cluster)
+  LocalModuleCoord(ilayer,idet,&tmp,locx,locz);
+//
+  AliDebug(2,Form("ilayer= %d, idet=%d, x= %f, z=%f",ilayer,idet,locx,locz));
+  UInt_t key=fPlaneEff->GetKeyFromDetLocCoord(ilayer,idet,locx,locz);
+  if(key>fPlaneEff->Nblock()) return;
+  Bool_t found=kFALSE;
+  if (ci>=0) {
+    cl=layer.GetCluster(ci);
+    // here real control to see whether the cluster can be associated to the track.  
+    // if() ....
+    found=kTRUE;
+   // track->SetExtraCluster(ilayer,(ilayer<<28)+ci);
+   // track->SetExtraModule(ilayer,idetExtra);
+  }
+  if(!fPlaneEff->UpDatePlaneEff(found,key))
+       AliError(Form("UseTrackForPlaneEff: cannot UpDate PlaneEff for key=%d",key));
+return;
+}

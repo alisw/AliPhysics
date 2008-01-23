@@ -14,8 +14,8 @@
  **************************************************************************/
 ///////////////////////////////////////////////////////////////////////////
 //  Plane Efficiency class for ITS                      
-//  It is used for chip by chip efficiency (eventually with subwing division 
-//  along the drift direction ) of the SDD,        
+//  It is used for chip by chip efficiency (eventually with sui-bwing division 
+//  along the drift direction) of the SDD,        
 //  evaluated by tracks
 //  (Inherits from AliITSPlaneEff)
 //  Author: G.E. Bruno 
@@ -32,13 +32,14 @@
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
 //#include "AliCDBRunRange.h"
+#include "AliITSgeom.h"
 #include "AliITSCalibrationSDD.h"
+#include "AliITSsegmentationSDD.h"
 
 ClassImp(AliITSPlaneEffSDD)	
 //______________________________________________________________________
 AliITSPlaneEffSDD::AliITSPlaneEffSDD():
   AliITSPlaneEff(){
-  // Default constructor
   for (UInt_t i=0; i<kNModule*kNChip*kNWing*kNSubWing; i++){
     fFound[i]=0;
     fTried[i]=0;
@@ -125,9 +126,7 @@ AliITSPlaneEff&  AliITSPlaneEffSDD::operator=(const
     // Return:
 
     if(&s == this) return *this;
-    Error("AliITSPlaneEffSDD","Not allowed to make a = with "
-          "AliITSPlaneEffSDD","Using default creater instead");
-
+    AliError("operator=: Not allowed to make a =, use default creater instead");
     return *this;
 }
 //_______________________________________________________________________
@@ -147,7 +146,7 @@ Int_t AliITSPlaneEffSDD::GetMissingTracksForGivenEff(Double_t eff, Double_t RelE
   //   Return: the estimated n. of tracks 
   //
 if (im>=kNModule || ic>=kNChip || iw>=kNWing || is>=kNSubWing) 
- {Error("AliITSPlaneEffSDD","you asked for a non existing block");
+ {AliError("GetMissingTracksForGivenEff: you asked for a non existing block");
  return -1;}
 else return GetNTracksForGivenEff(eff,RelErr)-fTried[GetKey(im,ic,iw,is)];
 }
@@ -161,7 +160,7 @@ Double_t  AliITSPlaneEffSDD::PlaneEff(const UInt_t im,const UInt_t ic,
 //        iw     -> wing number [0,1]
 //        is     -> chip number [0,kNSubWing-1]
 if (im>=kNModule || ic>=kNChip || iw>=kNWing || is>=kNSubWing) 
- {Error("AliITSPlaneEffSDD","you asked for a non existing block"); return -1.;}
+ {AliError("PlaneEff(UInt_t,UInt_t,UInt_t,UInt_t): you asked for a non existing block"); return -1.;}
  Int_t nf=fFound[GetKey(im,ic,iw,is)];
  Int_t nt=fTried[GetKey(im,ic,iw,is)];
 return AliITSPlaneEff::PlaneEff(nf,nt);
@@ -177,7 +176,7 @@ Double_t  AliITSPlaneEffSDD::ErrPlaneEff(const UInt_t im,const UInt_t ic,
     //        iw     -> wing number [0,1]
     //        is     -> chip number [0,kNSubWing-1]
 if (im>=kNModule || ic>=kNChip || iw>=kNWing || is>=kNSubWing) 
- {Error("AliITSPlaneEffSDD","you asked for a non existing block"); return -1.;}
+ {AliError("ErrPlaneEff(UInt_t,UInt_t,UInt_t,UInt_t): you asked for a non existing block"); return -1.;}
 Int_t nf=fFound[GetKey(im,ic,iw,is)];
 Int_t nt=fTried[GetKey(im,ic,iw,is)];
 return AliITSPlaneEff::ErrPlaneEff(nf,nt);
@@ -188,7 +187,7 @@ Bool_t AliITSPlaneEffSDD::UpDatePlaneEff(const Bool_t Kfound,
                                          const UInt_t iw, const UInt_t is) {
   // Update efficiency for a basic block
 if (im>=kNModule || ic>=kNChip || iw>=kNWing || is>=kNSubWing) 
- {Error("AliITSPlaneEffSDD","you asked for a non existing block"); return kFALSE;}
+ {AliError("UpDatePlaneEff: you asked for a non existing block"); return kFALSE;}
  fTried[GetKey(im,ic,iw,is)]++;
  if(Kfound) fFound[GetKey(im,ic,iw,is)]++;
  return kTRUE;
@@ -199,7 +198,7 @@ void AliITSPlaneEffSDD::ChipAndWingFromAnode(const UInt_t anode, UInt_t& chip,
   // Retun the chip number [0,3] and the wing number [0,1] given the anode number
   // input: anode number [0,511]
 if(anode>=kNAnode*kNChip*kNWing)
- {Error("AliITSPlaneEffSDD::ChipAndWingFromAnode","you asked for a non existing anode"); 
+ {AliError("ChipAndWingFromAnode: you asked for a non existing anode"); 
   chip=999;
   wing=99;
   return;}
@@ -214,7 +213,7 @@ UInt_t AliITSPlaneEffSDD::ChipFromAnode(const UInt_t anode) const {
   // Retun the chip number [0,3] given the anode number 
   // input: anode number [0,511]
 if(anode>=kNAnode*kNChip*kNWing) 
- {Error("AliITSPlaneEffSDD::ChipFromAnode","you asked for a non existing anode"); return 999;}
+ {AliError("ChipFromAnode: you asked for a non existing anode"); return 999;}
 Int_t wing=0;
 Int_t chip=anode/kNAnode;
 if(anode>=kNChip*kNAnode) wing=1;
@@ -226,7 +225,7 @@ UInt_t AliITSPlaneEffSDD::WingFromAnode(const UInt_t anode) const {
   // return the wing number [0,1] given the anode number 
   // input: anode number [0,511]
 if(anode>=kNAnode*kNChip*kNWing) 
- {Error("AliITSPlaneEffSDD::GetWingFromAnode","you asked for a non existing anode"); return 99;}
+ {AliError("WingFromAnode: you asked for a non existing anode"); return 99;}
 Int_t wing=0;
 if(anode>=kNChip*kNAnode) wing=1;
 return wing;
@@ -236,35 +235,35 @@ UInt_t AliITSPlaneEffSDD::GetKey(const UInt_t mod, const UInt_t chip,
                                  const UInt_t wing, const UInt_t subw) const {
   // get key given a basic block
 if(mod>=kNModule || chip>=kNChip || wing>= kNWing || subw>=kNSubWing)
-  {Error("AliITSPlaneEffSDD::GetKey","you asked for a non existing block"); return 99999;}
+  {AliError("GetKey: you asked for a non existing block"); return 99999;}
 return mod*kNChip*kNWing*kNSubWing+chip*kNWing*kNSubWing+wing*kNSubWing+subw;
 }
 //__________________________________________________________________________
 UInt_t AliITSPlaneEffSDD::GetModFromKey(const UInt_t key) const {
   // get mod. from key
 if(key>=kNModule*kNChip*kNWing*kNSubWing)
-  {Error("AliITSPlaneEffSDD::GetModFromKey","you asked for a non existing key"); return 9999;}
+  {AliError("GetModFromKey: you asked for a non existing key"); return 9999;}
 return key/(kNChip*kNWing*kNSubWing);
 }
 //__________________________________________________________________________
 UInt_t AliITSPlaneEffSDD::GetChipFromKey(const UInt_t key) const {
   // retrieves chip from key
 if(key>=kNModule*kNChip*kNWing*kNSubWing)
-  {Error("AliITSPlaneEffSDD::GetChipFromKey","you asked for a non existing key"); return 999;}
+  {AliError("GetChipFromKey: you asked for a non existing key"); return 999;}
 return (key%(kNChip*kNWing*kNSubWing))/(kNWing*kNSubWing);
 }
 //__________________________________________________________________________
 UInt_t AliITSPlaneEffSDD::GetWingFromKey(const UInt_t key) const {
   // retrieves wing from key
 if(key>=kNModule*kNChip*kNWing*kNSubWing)
-  {Error("AliITSPlaneEffSDD::GetWingFromKey","you asked for a non existing key"); return 99;}
+  {AliError("GetWingFromKey: you asked for a non existing key"); return 99;}
 return ((key%(kNChip*kNWing*kNSubWing))%(kNWing*kNSubWing))/(kNSubWing);
 }
 //__________________________________________________________________________
 UInt_t AliITSPlaneEffSDD::GetSubWingFromKey(const UInt_t key) const {
   // retrieves sub-wing from key
 if(key>=kNModule*kNChip*kNWing*kNSubWing)
-  {Error("AliITSPlaneEffSDD::GetSubWingFromKey","you asked for a non existing key"); return 9;}
+  {AliError("GetSubWingFromKey: you asked for a non existing key"); return 9;}
 return ((key%(kNChip*kNWing*kNSubWing))%(kNWing*kNSubWing))%(kNSubWing);
 }
 //__________________________________________________________________________
@@ -272,7 +271,7 @@ void AliITSPlaneEffSDD::GetAllFromKey(const UInt_t key,UInt_t& mod,UInt_t& chip,
                                       UInt_t& wing,UInt_t& subw) const {
   // get module, chip, wing and subwing from a key
 if(key>=kNModule*kNChip*kNWing*kNSubWing)
-  {Error("AliITSPlaneEffSDD::GetAllFromKey","you asked for a non existing key"); 
+  {AliError("GetAllFromKey: you asked for a non existing key"); 
   mod=9999;
   chip=999;
   wing=99;
@@ -288,7 +287,7 @@ return;
 Double_t AliITSPlaneEffSDD::LivePlaneEff(UInt_t key) const {
   // returns plane efficieny after adding the fraction of sensor which is bad
 if(key>=kNModule*kNChip*kNWing*kNSubWing)
-  {Error("AliITSPlaneEffSDD::LivePlaneEff","you asked for a non existing key");
+  {AliError("LivePlaneEff: you asked for a non existing key");
    return -1.;}
 Double_t leff=AliITSPlaneEff::LivePlaneEff(0); // this just for the Warning
 leff=PlaneEff(key)+GetFracBad(key);
@@ -298,7 +297,7 @@ return leff>1?1:leff;
 Double_t AliITSPlaneEffSDD::ErrLivePlaneEff(UInt_t key) const {
   // returns error on live plane efficiency
 if(key>=kNModule*kNChip*kNWing*kNSubWing)
-  {Error("AliITSPlaneEffSDD::ErrLivePlaneEff","you asked for a non existing key");
+  {AliError("ErrLivePlaneEff: you asked for a non existing key");
    return -1.;}
 Int_t nf=fFound[key];
 Double_t triedInLive=GetFracLive(key)*fTried[key];
@@ -309,7 +308,7 @@ return AliITSPlaneEff::ErrPlaneEff(nf,nt); // for the time being: to be checked
 Double_t AliITSPlaneEffSDD::GetFracLive(const UInt_t key) const {
   // returns the fraction of the sensor which is OK
 if(key>=kNModule*kNChip*kNWing*kNSubWing)
-  {Error("AliITSPlaneEffSDD::GetFracLive","you asked for a non existing key");
+  {AliError("GetFracLive: you asked for a non existing key");
    return -1.;}
     // Compute the fraction of bad (dead+noisy) detector 
 UInt_t bad=0;
@@ -324,11 +323,11 @@ void AliITSPlaneEffSDD::GetBadInBlock(const UInt_t key, UInt_t& nrBadInBlock) co
   // (it depends on the chip, not on the sub-wing)
 nrBadInBlock=0;
 if(key>=kNModule*kNChip*kNWing*kNSubWing)
-  {Error("AliITSPlaneEffSDD::GetBadInBlock","you asked for a non existing key");
+  {AliError("GetBadInBlock: you asked for a non existing key");
    return;}
 //
 if(!fInitCDBCalled) 
-  {Error("AliITSPlaneEffSDD::GetBadInBlock","CDB not inizialized: call InitCDB first");
+  {AliError("GetBadInBlock: CDB not inizialized: call InitCDB first");
    return;};
 AliCDBManager* man = AliCDBManager::Instance();
 // retrieve map of dead Pixel 
@@ -337,10 +336,10 @@ TObjArray* sddEntry;
 if(cdbSDD) {
   sddEntry = (TObjArray*)cdbSDD->GetObject();
   if(!sddEntry) 
-  {Error("AliITSPlaneEffSDD::GetBadInBlock"," SDDEntry not found in CDB");
+  {AliError("GetBadInBlock: SDDEntry not found in CDB");
    return;}
 } else {
-  Error("AliITSPlaneEffSDD::GetBadInBlock","Did not find Calib/CalibSDD");
+  AliError("GetBadInBlock: Did not find Calib/CalibSDD");
   return;
 }
 //
@@ -360,7 +359,7 @@ return;
 Double_t AliITSPlaneEffSDD::GetFracBad(const UInt_t key) const {
   // returns 1-fractional live
 if(key>=kNModule*kNChip*kNWing*kNSubWing)
-  {Error("AliITSPlaneEffSDD::GetFracBad","you asked for a non existing key");
+  {AliError("GetFracBad: you asked for a non existing key");
    return -1.;}
 return 1.-GetFracLive(key);
 }
@@ -368,7 +367,7 @@ return 1.-GetFracLive(key);
 Bool_t AliITSPlaneEffSDD::WriteIntoCDB() const {
 // write onto CDB
 if(!fInitCDBCalled)
-  {Error("AliITSPlaneEffSDD::WriteIntoCDB","CDB not inizialized: call InitCDB first");
+  {AliError("WriteIntoCDB: CDB not inizialized: call InitCDB first");
    return kFALSE;}
 // to be written properly: now only for debugging 
   AliCDBMetaData *md= new AliCDBMetaData(); // metaData describing the object
@@ -387,7 +386,7 @@ if(!fInitCDBCalled)
 Bool_t AliITSPlaneEffSDD::ReadFromCDB() {
 // read from CDB
 if(!fInitCDBCalled)
-  {Error("AliITSPlaneEffSDD::ReadFromCDB","CDB not inizialized: call InitCDB first");
+  {AliError("ReadFromCDB: CDB not inizialized: call InitCDB first");
    return kFALSE;}
 //if(!AliCDBManager::Instance()->IsDefaultStorageSet()) {
 //    AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
@@ -397,4 +396,123 @@ AliITSPlaneEffSDD* eff= (AliITSPlaneEffSDD*)cdbEntry->GetObject();
 if(this==eff) return kFALSE;
 eff->Copy(*this);
 return kTRUE;
+}
+//_____________________________________________________________________________
+UInt_t AliITSPlaneEffSDD::GetKeyFromDetLocCoord(Int_t ilay, Int_t idet,
+                                                Float_t locx, Float_t locz) const {
+// method to locate a basic block from Detector Local coordinate (to be used in tracking)
+//
+// If kNSubWing = 1, i.e. no sub-wing subdivision, then the numbering scheme of the 
+// unique key is the following, e.g. for the first detector (idet=0,  ilayer=2)
+//
+//			      ^x_loc (cm)
+//			      |
+//   _________________________|__________________________ 3.5085
+//  |            |            |            |            |
+//  |            |            |            |            |
+//  |            |            |            |            |
+//  |   key=1    |   key=3    |   key=5    |   key=7    |
+//  |            |            |            |            |
+//  |____________|____________|____________|____________|_0_____\  local z (cm)
+//  |            |            |            |            |       /
+//  |            |            |            |            |
+//  |   key=0    |   key=2    |   key=4    |   key=6    |
+//  |            |            |            |            |
+//  |            |            |            |            |
+//  |____________|____________|____________|____________| -3.5085
+//-3.7632     -1.8816         0          1.1186      3.7632 
+//
+// for the second detector (idet=2, ilay=2), first key is 8 (bottom-left), 
+// last one is 15 (upper-right), and so on. 
+//
+// If subwing division has been applied, then you count in each wing, starting from 
+// the one with negative local ,  from the anode side (outer part) towards the 
+// cathod strip (center). 
+//                    first column: 
+//                      bottom wing   (from below): 0,1,..,kNSubWing-1, 
+//                      upper wing    (from up):    kNSubWing, ... , 2*kNSubWing-1
+//                    2nd column  
+//                      bottom wing   (from below): 2*kNSubWing, .. , 3*kNSubWing-1
+//                      upper wing    (from up):    3*kNSubWing, ... ,4*kNSubWing-1
+//                      ... 
+//                    4nd (last) column :   
+//                      bottom wing   (from below): 6*kNSubWing, .. , 7*kNSubWing-1
+//                      upper wing    (from up):    7*kNSubWing, ... ,8*kNSubWing-1
+//
+// E.g. kNSubWing=2.
+//
+//			      ^x_loc (cm)
+//		              |   
+//   _________________________|__________________________ 3.5085
+//  |            |            |            |            |
+//  |   key=2    |   key=6    |   key=10   |   key=14   |
+//  |____________|____________|____________|____________|
+//  |            |            |            |            |
+//  |   key=3    |   key=7    |   key=11   |   key=15   |
+//  |____________|____________|____________|____________|_0_____\  local z (cm)
+//  |            |            |            |            |       /
+//  |   key=1    |   key=5    |   key=9    |   key=13   |
+//  |____________|____________|____________|____________|
+//  |            |            |            |            |
+//  |   key=0    |   key=4    |   key=8    |   key=12   |
+//  |____________|____________|____________|____________| -3.5085
+//-3.7632     -1.8816         0          1.1186      3.7632 
+//
+//___________________________________________________________________________
+//
+UInt_t key=999999;
+if(ilay<2 || ilay>3)
+  {AliError("GetKeyFromDetLocCoord: you asked for a non existing layer");
+   return key;}
+if(ilay==2 && (idet<0 || idet>83))
+ {AliError("GetKeyFromDetLocCoord: you asked for a non existing detector");
+   return key;}
+if(ilay==3 && (idet<0 || idet>175))
+ {AliError("GetKeyFromDetLocCoord: you asked for a non existing detector");
+   return key;}
+UInt_t mod=idet;
+if(ilay==3) mod+=84;
+UInt_t chip=0,wing=0,subw=0;
+ChipAndWingAndSubWingFromLocCoor(locx,locz,chip,wing,subw);
+key=GetKey(mod,chip,wing,subw);
+return key;
+}
+//_____________________________________________________________________________
+void AliITSPlaneEffSDD::ChipAndWingAndSubWingFromLocCoor(Float_t xloc, Float_t zloc, 
+                                UInt_t& chip, UInt_t& wing, UInt_t& subw) const {
+AliITSgeom* geom=NULL;
+//AliITSsegmentationSDD* sdd=new AliITSsegmentationSDD(geom);
+AliITSsegmentationSDD sdd=AliITSsegmentationSDD(geom);
+sdd.SetDriftSpeed(sdd.GetDriftSpeed()); // this only for setting fSetDriftSpeed=kTRUE !!!
+Int_t ix,iz;
+Int_t ntb;
+UInt_t anode=0;
+if(sdd.LocalToDet(xloc,zloc,ix,iz)) {  
+  anode+=iz; 
+  ChipAndWingFromAnode(anode,chip,wing);
+  if(sdd.LocalToDet(0.,0.,ntb,iz)) {  // in this way the sub-division along time coordinate
+    subw=SubWingFromTimeBin(ix,ntb); }  // is purely geometrical one and it does not 
+  else {				// depen on the drift-velocity. 
+    AliError("ChipAndWingAndSubWingFromLocCoor: cannot calculate n. of time bins for SubWing.");
+    subw=9;
+  }
+} else {
+  AliError("ChipAndWingAndSubWingFromLocCoor: cannot calculate anode number and time bin."); 
+  chip=999; 
+  wing=99; 
+  subw=9;
+}
+delete geom;
+}
+//__________________________________________________________________________________
+UInt_t AliITSPlaneEffSDD::SubWingFromTimeBin(const Int_t tb, const Int_t ntb) const {
+if(tb<0 || tb>ntb || ntb<0) {
+ AliError(Form("SubWingFromTimeBin: you asked time bin = %d with %d n. of bins",tb,ntb));
+ return 9;
+}
+//AliDebug(Form("tb = %d, ntb= %d , NSubWing = %d",tb,ntb,kNSubWing));
+Float_t h=tb;
+ h/=ntb;
+ h*=(kNSubWing-1);
+return TMath::Nint(h);
 }

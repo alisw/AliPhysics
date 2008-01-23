@@ -22,7 +22,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 
-/* $Id$ */
+/*  $Id$ */
 
 #include <TMath.h>
 #include "AliITSPlaneEffSSD.h"
@@ -37,7 +37,6 @@ ClassImp(AliITSPlaneEffSSD)
 //______________________________________________________________________
 AliITSPlaneEffSSD::AliITSPlaneEffSSD():
   AliITSPlaneEff(){
-  // Default constructor
   for (UInt_t i=0; i<kNModule; i++){
     fFound[i]=0;
     fTried[i]=0;
@@ -118,9 +117,7 @@ AliITSPlaneEff&  AliITSPlaneEffSSD::operator=(const
     // Return:
 
     if(&s == this) return *this;
-    Error("AliITSPlaneEffSSD","Not allowed to make a = with "
-          "AliITSPlaneEffSSD","Using default creater instead");
-
+    AliError("operator=: Not allowed to make a =, use default creater instead");
     return *this;
 }
 //_______________________________________________________________________
@@ -137,7 +134,7 @@ Int_t AliITSPlaneEffSSD::GetMissingTracksForGivenEff(Double_t eff, Double_t RelE
   //   Return: the estimated n. of tracks 
   //
 if (im>=kNModule) 
- {Error("AliITSPlaneEffSSD","you asked for a non existing module");
+ {AliError("GetMissingTracksForGivenEff: you asked for a non existing module");
  return -1;}
 else return GetNTracksForGivenEff(eff,RelErr)-fTried[GetKey(im)];
 }
@@ -147,7 +144,7 @@ Double_t  AliITSPlaneEffSSD::PlaneEff(const UInt_t im) const {
 // Inputs:
 //        im     -> module number [0,1697]
 if (im>=kNModule) 
- {Error("AliITSPlaneEffSSD","you asked for a non existing module"); return -1.;}
+ {AliError("PlaneEff(UInt_t): you asked for a non existing module"); return -1.;}
  Int_t nf=fFound[GetKey(im)];
  Int_t nt=fTried[GetKey(im)];
 return AliITSPlaneEff::PlaneEff(nf,nt);
@@ -159,7 +156,7 @@ Double_t  AliITSPlaneEffSSD::ErrPlaneEff(const UInt_t im) const {
     // Inputs:
     //        im     -> module number [0,1697]
 if (im>=kNModule) 
- {Error("AliITSPlaneEffSSD","you asked for a non existing module"); return -1.;}
+ {AliError("ErrPlaneEff(UInt_t): you asked for a non existing module"); return -1.;}
 Int_t nf=fFound[GetKey(im)];
 Int_t nt=fTried[GetKey(im)];
 return AliITSPlaneEff::ErrPlaneEff(nf,nt);
@@ -168,7 +165,7 @@ return AliITSPlaneEff::ErrPlaneEff(nf,nt);
 Bool_t AliITSPlaneEffSSD::UpDatePlaneEff(const Bool_t Kfound, const UInt_t im) {
   // Update efficiency for a basic block
 if (im>=kNModule) 
- {Error("AliITSPlaneEffSSD","you asked for a non existing module"); return kFALSE;}
+ {AliError("UpDatePlaneEff: you asked for a non existing module"); return kFALSE;}
  fTried[GetKey(im)]++;
  if(Kfound) fFound[GetKey(im)]++;
  return kTRUE;
@@ -177,21 +174,21 @@ if (im>=kNModule)
 UInt_t AliITSPlaneEffSSD::GetKey(const UInt_t mod) const {
   // get key given a basic block
 if(mod>=kNModule)
-  {Error("AliITSPlaneEffSSD::GetKey","you asked for a non existing block"); return 99999;}
+  {AliError("GetKey: you asked for a non existing block"); return 99999;}
 return mod;
 }
 //__________________________________________________________________________
 UInt_t AliITSPlaneEffSSD::GetModFromKey(const UInt_t key) const {
   // get mod. from key
 if(key>=kNModule)
-  {Error("AliITSPlaneEffSSD::GetModFromKey","you asked for a non existing key"); return 9999;}
+  {AliError("GetModFromKey: you asked for a non existing key"); return 9999;}
 return key;
 }
 //__________________________________________________________________________
 Double_t AliITSPlaneEffSSD::LivePlaneEff(UInt_t key) const {
   // returns plane efficieny after adding the fraction of sensor which is bad
 if(key>=kNModule)
-  {Error("AliITSPlaneEffSSD::LivePlaneEff","you asked for a non existing key");
+  {AliError("LivePlaneEff: you asked for a non existing key");
    return -1.;}
 Double_t leff=AliITSPlaneEff::LivePlaneEff(0); // this just for the Warning
 leff=PlaneEff(key)+GetFracBad(key);
@@ -201,7 +198,7 @@ return leff>1?1:leff;
 Double_t AliITSPlaneEffSSD::ErrLivePlaneEff(UInt_t key) const {
   // returns error on live plane efficiency
 if(key>=kNModule)
-  {Error("AliITSPlaneEffSSD::ErrLivePlaneEff","you asked for a non existing key");
+  {AliError("ErrLivePlaneEff: you asked for a non existing key");
    return -1.;}
 Int_t nf=fFound[key];
 Double_t triedInLive=GetFracLive(key)*fTried[key];
@@ -212,7 +209,7 @@ return AliITSPlaneEff::ErrPlaneEff(nf,nt); // for the time being: to be checked
 Double_t AliITSPlaneEffSSD::GetFracLive(const UInt_t key) const {
   // returns the fraction of the sensor which is OK
 if(key>=kNModule)
-  {Error("AliITSPlaneEffSSD::GetFracLive","you asked for a non existing key");
+  {AliError("GetFracLive: you asked for a non existing key");
    return -1.;}
     // Compute the fraction of bad (dead+noisy) detector 
 UInt_t bad=0;
@@ -226,12 +223,12 @@ void AliITSPlaneEffSSD::GetBadInModule(const UInt_t key, UInt_t& nrBadInMod) con
   // returns the number of dead and noisy pixels
 nrBadInMod=0;
 if(key>=kNModule)
-  {Error("AliITSPlaneEffSSD::GetDeadAndNoisyInModule","you asked for a non existing key");
+  {AliError("GetBadInModule: you asked for a non existing key");
    return;}
     // Compute the number of bad (dead+noisy) pixel in a module
 //
 if(!fInitCDBCalled) 
-  {Error("AliITSPlaneEffSSD::GetDeadAndNoisyInModule","CDB not inizialized: call InitCDB first");
+  {AliError("GetBadInModule: CDB not inizialized: call InitCDB first");
    return;};
 AliCDBManager* man = AliCDBManager::Instance();
 // retrieve map of dead Pixel 
@@ -240,10 +237,10 @@ TObjArray* ssdEntry;
 if(cdbSSD) {
   ssdEntry = (TObjArray*)cdbSSD->GetObject();
   if(!ssdEntry) 
-  {Error("AliITSPlaneEffSSD::GetDeadAndNoisyInChip"," SSDEntry not found in CDB");
+  {AliError("GetBadInChip: SSDEntry not found in CDB");
    return;}
 } else {
-  Error("AliITSPlaneEffSSD::GetDeadAndNoisyInChip","Did not find Calib/BadChannelsSSD");
+  AliError("GetBadInChip: did not find Calib/BadChannelsSSD");
   return;
 }
 //
@@ -260,7 +257,7 @@ return;
 Double_t AliITSPlaneEffSSD::GetFracBad(const UInt_t key) const {
   // returns 1-fractional live
 if(key>=kNModule)
-  {Error("AliITSPlaneEffSSD::GetFracBad","you asked for a non existing key");
+  {AliError("GetFracBad: you asked for a non existing key");
    return -1.;}
 return 1.-GetFracLive(key);
 }
@@ -268,7 +265,7 @@ return 1.-GetFracLive(key);
 Bool_t AliITSPlaneEffSSD::WriteIntoCDB() const {
 // write onto CDB
 if(!fInitCDBCalled)
-  {Error("AliITSPlaneEffSSD::WriteIntoCDB","CDB not inizialized: call InitCDB first");
+  {AliError("WriteIntoCDB: CDB not inizialized. Call InitCDB first");
    return kFALSE;}
 // to be written properly: now only for debugging 
   AliCDBMetaData *md= new AliCDBMetaData(); // metaData describing the object
@@ -287,7 +284,7 @@ if(!fInitCDBCalled)
 Bool_t AliITSPlaneEffSSD::ReadFromCDB() {
 // read from CDB
 if(!fInitCDBCalled)
-  {Error("AliITSPlaneEffSSD::ReadFromCDB","CDB not inizialized: call InitCDB first");
+  {AliError("ReadFromCDB: CDB not inizialized. Call InitCDB first");
    return kFALSE;}
 //if(!AliCDBManager::Instance()->IsDefaultStorageSet()) {
 //    AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
@@ -297,4 +294,24 @@ AliITSPlaneEffSSD* eff= (AliITSPlaneEffSSD*)cdbEntry->GetObject();
 if(this==eff) return kFALSE;
 eff->Copy(*this);
 return kTRUE;
+}
+//_____________________________________________________________________________
+UInt_t AliITSPlaneEffSSD::GetKeyFromDetLocCoord(Int_t ilay, Int_t idet,
+                                                Float_t, Float_t) const {
+// method to locate a basic block from Detector Local coordinate (to be used in tracking)
+UInt_t key=999999;
+if(ilay<4 || ilay>5)
+  {AliError("GetKeyFromDetLocCoord: you asked for a non existing layer");
+   return key;}
+if(ilay==4 && (idet<0 || idet>747))
+ {AliError("GetKeyFromDetLocCoord: you asked for a non existing detector");
+   return key;}
+if(ilay==5 && (idet<0 || idet>949))
+ {AliError("GetKeyFromDetLocCoord: you asked for a non existing detector");
+   return key;}
+
+UInt_t mod=idet;
+if(ilay==1) mod+=748;
+key=GetKey(mod);
+return key;
 }
