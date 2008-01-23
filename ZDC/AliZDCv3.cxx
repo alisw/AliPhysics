@@ -2499,7 +2499,7 @@ void AliZDCv3::StepManager()
        //Looking into the light tables 
        Float_t charge = gMC->TrackCharge();
        
-       if((vol[0]==1)) {	// (1)  ZN fibres
+       if(vol[0]==1 || vol[0]==4) {	// (1)  ZN fibres
          if(ibe>fNben) ibe=fNben;
          out =  charge*charge*fTablen[ibeta][ialfa][ibe];
 	 nphe = gRandom->Poisson(out);
@@ -2519,7 +2519,7 @@ void AliZDCv3::StepManager()
 	   AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(), vol, hits);
 	 }
        } 
-       else if((vol[0]==2)) {	// (2) ZP fibres
+       else if(vol[0]==2 || vol[0]==5) {// (2) ZP fibres
          if(ibe>fNbep) ibe=fNbep;
          out =  charge*charge*fTablep[ibeta][ialfa][ibe];
 	 nphe = gRandom->Poisson(out);

@@ -277,7 +277,7 @@ void AliZDC::Hits2SDigits()
 {
   // Create summable digits from hits
   
-  AliDebug(1,"\n	Entering AliZDC::Hits2Digits() ");
+  AliDebug(1,"\n	Entering AliZDC::Hits2SDigits() ");
   
   fLoader->LoadHits("read");
   fLoader->LoadSDigits("recreate");
@@ -287,8 +287,9 @@ void AliZDC::Hits2SDigits()
 
   // Event loop
   for(Int_t iEvent = 0; iEvent < runLoader->GetNumberOfEvents(); iEvent++) {
-    Float_t pmCZN = 0, pmCZP = 0, pmQZN[4], pmQZP[4], pmZEM1 = 0, pmZEM2 = 0;
-    for(Int_t i = 0; i < 4; i++) pmQZN[i] = pmQZP[i] = 0;
+    Float_t pmCZNC=0, pmCZPC=0, pmCZNA=0, pmCZPA=0, pmZEM1 = 0, pmZEM2 = 0;
+    Float_t pmQZNC[4], pmQZPC[4], pmQZNA[4], pmQZPA[4];
+    for(Int_t i = 0; i < 4; i++) pmQZNC[i] = pmQZPC[i] =  pmQZNA[i] = pmQZPA[i] = 0;
 
     runLoader->GetEvent(iEvent);
     TTree* treeH = fLoader->TreeH();
@@ -304,7 +305,7 @@ void AliZDC::Hits2SDigits()
 		      
 	sector[0] = zdcHit->GetVolume(0);
 	sector[1] = zdcHit->GetVolume(1);
-	if((sector[1] < 1) || (sector[1] > 4)) {
+	if((sector[1] < 1) || (sector[1] > 5)) {
 	  Error("Hits2SDigits", "sector[0] = %d, sector[1] = %d", 
 		sector[0], sector[1]);
 	  continue;
@@ -312,16 +313,26 @@ void AliZDC::Hits2SDigits()
 	Float_t lightQ = zdcHit->GetLightPMQ();
 	Float_t lightC = zdcHit->GetLightPMC();
      
-	if(sector[0] == 1) {          //ZN 
-	  pmCZN += lightC;
-	  pmQZN[sector[1]-1] += lightQ;
-	} else if(sector[0] == 2) {   //ZP 
-	  pmCZP += lightC;
-	  pmQZP[sector[1]-1] += lightQ;
-	} else if(sector[0] == 3) {   //ZEM 
+	if(sector[0] == 1) { //ZNC 
+	  pmCZNC += lightC;
+	  pmQZNC[sector[1]-1] += lightQ;
+	} 
+	else if(sector[0] == 2) { //ZPC 
+	  pmCZPC += lightC;
+	  pmQZPC[sector[1]-1] += lightQ;
+	} 
+	else if(sector[0] == 3) { //ZEM 
 	  if(sector[1] == 1) pmZEM1 += lightC;
-	  else                pmZEM2 += lightQ;
+	  else pmZEM2 += lightQ;
 	}
+	if(sector[0] == 4) { //ZNA 
+	  pmCZNA += lightC;
+	  pmQZNA[sector[1]-1] += lightQ;
+	} 
+	else if(sector[0] == 5) { //ZPA 
+	  pmCZPA += lightC;
+	  pmQZPA[sector[1]-1] += lightQ;
+	} 
       }//Hits loop
     }
 
@@ -331,26 +342,26 @@ void AliZDC::Hits2SDigits()
     const Int_t kBufferSize = 4000;
     treeS->Branch(GetName(), "AliZDCSDigit", &psdigit, kBufferSize);
 
-    // Create sdigits for ZN1
-    sector[0] = 1; // Detector = ZN1
+    // Create sdigits for ZNC
+    sector[0] = 1; // Detector = ZNC
     sector[1] = 0; // Common PM ADC
-    new(psdigit) AliZDCSDigit(sector, pmCZN);
-    if(pmCZN > 0) treeS->Fill();
+    new(psdigit) AliZDCSDigit(sector, pmCZNC);
+    if(pmCZNC > 0) treeS->Fill();
     for(Int_t j = 0; j < 4; j++) {
       sector[1] = j+1; // Towers PM ADCs
-      new(psdigit) AliZDCSDigit(sector, pmQZN[j]);
-      if(pmQZN[j] > 0) treeS->Fill();
+      new(psdigit) AliZDCSDigit(sector, pmQZNC[j]);
+      if(pmQZNC[j] > 0) treeS->Fill();
     }
   
-    // Create sdigits for ZP1
-    sector[0] = 2; // Detector = ZP1
+    // Create sdigits for ZPC
+    sector[0] = 2; // Detector = ZPC
     sector[1] = 0; // Common PM ADC
-    new(psdigit) AliZDCSDigit(sector, pmCZP);
-    if(pmCZP > 0) treeS->Fill();
+    new(psdigit) AliZDCSDigit(sector, pmCZPC);
+    if(pmCZPC > 0) treeS->Fill();
     for(Int_t j = 0; j < 4; j++) {
       sector[1] = j+1; // Towers PM ADCs
-      new(psdigit) AliZDCSDigit(sector, pmQZP[j]);
-      if(pmQZP[j] > 0) treeS->Fill();
+      new(psdigit) AliZDCSDigit(sector, pmQZPC[j]);
+      if(pmQZPC[j] > 0) treeS->Fill();
     }
 
     // Create sdigits for ZEM
@@ -361,6 +372,28 @@ void AliZDC::Hits2SDigits()
     sector[1] = 2; // Detector = ZEM2
     new(psdigit) AliZDCSDigit(sector, pmZEM2);
     if(pmZEM2 > 0) treeS->Fill();
+
+    // Create sdigits for ZNA
+    sector[0] = 4; // Detector = ZNA
+    sector[1] = 0; // Common PM ADC
+    new(psdigit) AliZDCSDigit(sector, pmCZNA);
+    if(pmCZNA > 0) treeS->Fill();
+    for(Int_t j = 0; j < 4; j++) {
+      sector[1] = j+1; // Towers PM ADCs
+      new(psdigit) AliZDCSDigit(sector, pmQZNA[j]);
+      if(pmQZNA[j] > 0) treeS->Fill();
+    }
+  
+    // Create sdigits for ZPA
+    sector[0] = 5; // Detector = ZPA
+    sector[1] = 0; // Common PM ADC
+    new(psdigit) AliZDCSDigit(sector, pmCZPA);
+    if(pmCZPA > 0) treeS->Fill();
+    for(Int_t j = 0; j < 4; j++) {
+      sector[1] = j+1; // Towers PM ADCs
+      new(psdigit) AliZDCSDigit(sector, pmQZPA[j]);
+      if(pmQZPA[j] > 0) treeS->Fill();
+    }
 
     // write the output tree
     fLoader->WriteSDigits("OVERWRITE");

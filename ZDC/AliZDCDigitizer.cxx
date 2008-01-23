@@ -241,9 +241,9 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
   treeD->Branch("ZDC", "AliZDCDigit", &pdigit, kBufferSize);
 
   // Create digits
-  Int_t sector[2], sectorL[2];
-  Int_t digi[2], digiL[2], digioot[2];
-  for(sector[0]=1; sector[0]<=3; sector[0]++){
+  Int_t sector[2];
+  Int_t digi[2], digioot[2];
+  for(sector[0]=1; sector[0]<6; sector[0]++){
     for(sector[1]=0; sector[1]<5; sector[1]++){
         if((sector[0]==3) && ((sector[1]<1) || (sector[1]>2))) continue;
         for(Int_t res=0; res<2; res++){
@@ -256,23 +256,6 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
 	//
 	new(pdigit) AliZDCDigit(sector, digi);
         treeD->Fill();
-	//
-	// --- Adding digits for 2nd ZDC set (left side w.r.t. IP) ---
-	// --- they are copied from right ZDC digits
-	if(sector[0]==1 || sector[0]==2){
-	   sectorL[0] = sector[0]+3;
-	   sectorL[1] = sector[1];
-           for(Int_t res=0; res<2; res++){
-             digiL[res] = Phe2ADCch(sectorL[0], sectorL[1], pm[sector[0]-1][sector[1]], res) 
-	            + Pedestal(sectorL[0], sectorL[1], res);
-      	   }
-	   /*printf("\t DIGIT added -> det %d quad %d - digi[0,1] = [%d, %d]\n",
-	         sectorL[0], sectorL[1], digiL[0], digiL[1]); // Chiara debugging!
-	   */
-	   //
-	   new(pdigit) AliZDCDigit(sectorL, digiL);
-           treeD->Fill();
-	}
     }
   } // Loop over detector
   // Adding in-time digits for 2 reference PTM signals (after signal ch.)
@@ -280,8 +263,9 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
   Int_t sectorRef[2];
   sectorRef[1] = 5;
   Int_t sigRef[2];
+  // Reference signal are set to 100 (high gain chain) and 800 (low gain chain)
   if(fIsCalibration==0) {sigRef[0]=100;  sigRef[1]=800;}
-  else {sigRef[0]=0;  sigRef[1]=0;}
+  else {sigRef[0]=0;  sigRef[1]=0;} // calibration -> simulation of pedestal values
   //
   for(Int_t iref=0; iref<2; iref++){
      sectorRef[0] = 3*iref+1;
@@ -296,7 +280,7 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
   }
   //
   // --- Adding digits for out-of-time channels after signal digits
-  for(sector[0]=1; sector[0]<=3; sector[0]++){
+  for(sector[0]=1; sector[0]<6; sector[0]++){
     for(sector[1]=0; sector[1]<5; sector[1]++){
         if((sector[0]==3) && ((sector[1]<1) || (sector[1]>2))) continue;
         for(Int_t res=0; res<2; res++){
@@ -308,21 +292,6 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
 	//
 	new(pdigit) AliZDCDigit(sector, digioot);
         treeD->Fill();
-	//
-	if(sector[0]==1 || sector[0]==2){
-	   sectorL[0] = sector[0]+3;
-	   sectorL[1] = sector[1];
-           for(Int_t res=0; res<2; res++){
-             digioot[res] = Pedestal(sectorL[0], sectorL[1], res); // out-of-time ADCs
-      	   }
-	   /*printf("\t DIGIToot added -> det = %d, quad = %d - digi[0,1] = [%d, %d]\n",
-	         sectorL[0], sectorL[1], digioot[0], digioot[1]); // Chiara debugging!
-	   */
-	   //
-	   new(pdigit) AliZDCDigit(sectorL, digioot);
-           treeD->Fill();
-	}
-	//
     }
   }
   // Adding out-of-time digits for 2 reference PTM signals (after out-of-time ch.)
@@ -337,7 +306,6 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
      */
      new(pdigit) AliZDCDigit(sectorRef, sigRefoot);
      treeD->Fill();
-     
   }
   //printf("\t AliZDCDigitizer -> TreeD has %d entries\n",(Int_t) treeD->GetEntries());
 
