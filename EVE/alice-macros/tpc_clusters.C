@@ -16,7 +16,7 @@ class TEvePointSet;
 
 #include <TEveManager.h>
 #include <TEvePointSet.h>
-#include <EveDet/AliEveEventManager.h>
+#include <EveBase/AliEveEventManager.h>
 
 #include <AliRunLoader.h>
 #include <AliCluster.h>
