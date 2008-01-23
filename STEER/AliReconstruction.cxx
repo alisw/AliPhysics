@@ -1054,6 +1054,11 @@ Bool_t AliReconstruction::Run(const char* input, Bool_t IsOnline)
   tree->Write(tree->GetName(),TObject::kOverwrite);
   hlttree->Write();
 
+// Finish with Plane Efficiency evaluation: before of CleanUp !!!
+  if (fRunPlaneEff && !FinishPlaneEff()) {
+   AliWarning("Finish PlaneEff evaluation failed");
+  }
+
   gROOT->cd();
   CleanUp(file, fileOld);
     
@@ -1063,11 +1068,6 @@ Bool_t AliReconstruction::Run(const char* input, Bool_t IsOnline)
     ESDFile2AODFile(esdFile, aodFile);
     aodFile->Close();
     esdFile->Close();
-  }
-
-// Finish with Plane Efficiency evaluation
-  if (fRunPlaneEff && !FinishPlaneEff()) {
-   AliWarning("Finish PlaneEff evaluation failed");
   }
 
   // Create tags for the events in the ESD tree (the ESD tree is always present)
@@ -3077,8 +3077,7 @@ Bool_t AliReconstruction::FinishPlaneEff() {
  //for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
  for (Int_t iDet = 0; iDet < 1; iDet++) { // for the time being only ITS  
    //if (!IsSelected(fgkDetectorName[iDet], detStr)) continue;
-   //if(fReconstructor[iDet]->GetRecoParam()->GetComputePlaneEff()) continue;
-   ret=fTracker[iDet]->GetPlaneEff()->WriteIntoCDB();
+   if(fTracker[iDet]) ret=fTracker[iDet]->GetPlaneEff()->WriteIntoCDB();
  }
  return ret;
 }
