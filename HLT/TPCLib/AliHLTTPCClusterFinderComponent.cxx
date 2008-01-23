@@ -43,9 +43,13 @@ using namespace std;
 #include "AliHLTTPCTransform.h"
 #include "AliHLTTPCClusters.h"
 #include "AliHLTTPCDefinitions.h"
+#include "AliCDBEntry.h"
+#include "AliCDBManager.h"
+
 #include <cstdlib>
 #include <cerrno>
 #include "TString.h"
+#include "TObjString.h"
 #include <sys/time.h>
 
 // this is a global object used for automatic component registration, do not use this
@@ -54,6 +58,7 @@ using namespace std;
 AliHLTTPCClusterFinderComponent gAliHLTTPCClusterFinderComponentPacked(true);
 AliHLTTPCClusterFinderComponent gAliHLTTPCClusterFinderComponentUnpacked(false);
 
+/** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCClusterFinderComponent)
 
 AliHLTTPCClusterFinderComponent::AliHLTTPCClusterFinderComponent(bool packed)
@@ -516,4 +521,25 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& ev
   size = tSize;
 
   return 0;
+}
+
+int AliHLTTPCClusterFinderComponent::Reconfigure(const char* cdbEntry, const char* chainId)
+{
+  // see header file for class documentation
+  const char* path="HLT/ConfigTPC";
+  if (cdbEntry) path=cdbEntry;
+  if (path) {
+    HLTInfo("reconfigure from entry %s, chain id %s", path, (chainId!=NULL && chainId[0]!=0)?chainId:"<none>");
+    AliCDBEntry *pEntry = AliCDBManager::Instance()->Get(path/*,GetRunNo()*/);
+    if (pEntry) {
+      TObjString* pString=dynamic_cast<TObjString*>(pEntry->GetObject());
+      if (pString) {
+	HLTInfo("received configuration object: %s", pString->GetString().Data());
+      } else {
+	HLTError("configuration object \"%s\" has wrong type, required TObjString", path);
+      }
+    } else {
+      HLTError("can not fetch object \"%s\" from CDB", path);
+    }
+  }
 }

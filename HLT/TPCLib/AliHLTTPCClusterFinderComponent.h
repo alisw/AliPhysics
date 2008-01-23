@@ -85,6 +85,7 @@ class AliHLTTPCClusterFinderComponent : public AliHLTProcessor
 	int DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
 		     AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
 		     AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks );
+	int Reconfigure(const char* cdbEntry, const char* chainId);
 	
 	using AliHLTProcessor::DoEvent;
 
