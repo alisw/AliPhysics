@@ -344,7 +344,7 @@ void AliZDCReconstructor::ReconstructEvent(TTree *clustersTree, Float_t* ZN1ADCC
   
   // Energy calibration of detector responses
   Float_t calibTowZN1[10], calibTowZN2[10], calibTowZP1[10], calibTowZP2[10];
-  Float_t calibSumZN1[2], calibSumZN2[2], calibSumZP1[2], calibSumZP2[2];
+  Float_t calibSumZN1[]={0,0}, calibSumZN2[]={0,0}, calibSumZP1[]={0,0}, calibSumZP2[]={0,0};
   for(Int_t gi=0; gi<10; gi++){
      calibTowZN1[gi] = equalTowZN1[gi]*calibEne[0];
      calibTowZP1[gi] = equalTowZP1[gi]*calibEne[1];
