@@ -29,7 +29,6 @@ void its_raw(const char *input = "rawdata.root",
     rawReader = new AliRawReaderRoot(fileName);
   } else if (!fileName.IsNull()) {
     rawReader = new AliRawReaderDate(fileName);
-    rawReader->SelectEvents(7);
   }
 
   AliEveITSDigitsInfo* di = new AliEveITSDigitsInfo();
