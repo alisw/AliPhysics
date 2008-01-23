@@ -323,6 +323,28 @@ class AliHLTComponent : public AliHLTLogging {
 			    AliHLTComponentBlockDataList& outputBlocks,
 			    AliHLTComponentEventDoneData*& edd ) = 0;
 
+  /**
+   * Init the CDB.
+   * The function must not be called when running in AliRoot unless it it
+   * really wanted. The CDB path will be set to the specified path, which might
+   * override the path initialized at the beginning of the AliRoot reconstruction.
+   *
+   * The method is used from the external interface in order to set the correct
+   * path when running on-line.
+   */
+  int InitCDB(const char* cdbPath);
+
+  /**
+   * Set the run no for the CDB.
+   * The function must not be called when running in AliRoot unless it it
+   * really wanted. The CDB path will be set to the specified path, which might
+   * override the run no initialized at the beginning of the AliRoot reconstruction.
+   *
+   * The method is used from the external interface in order to set the correct
+   * path when running on-line.
+   */
+  int SetCDBRunNo(int runNo);
+
   // Information member functions for registration.
 
   /**
@@ -571,6 +593,25 @@ class AliHLTComponent : public AliHLTLogging {
    * The method is called by @ref Deinit
    */
   virtual int DoDeinit();
+
+  /**
+   * Reconfigure the component.
+   * The method is called when an event of type @ref kAliHLTDataTypeComConf
+   * {COM_CONF:PRIV} is received by the component. If the event is sent as
+   * part of a normal event, the component configuration is called first.
+   *
+   * The CDB path parameter specifies the path in the CDB, i.e. without
+   * leading absolute path of the CDB location. The framework might alse
+   * provide the id of the component in the analysis chain.
+   *
+   * \b Note: The CDB will be initialized by the framework, either already set
+   * from AliRoot or from the wrapper interface during initialization.
+   *
+   * @param cdbEntry     path of the cdbEntry
+   * @param chainId      the id of the component in the analysis chain
+   * @note both parameters can be NULL, check before usage
+   */
+  virtual int Reconfigure(const char* cdbEntry, const char* chainId);
 
   /**
    * General memory allocation method.
@@ -1149,6 +1190,12 @@ class AliHLTComponent : public AliHLTLogging {
   /** the current DDL list */
   AliHLTEventDDL* fpDDLList;                                       //! transient
 
-  ClassDef(AliHLTComponent, 3)
+  /** indicates that the CDB has been initialized locally */
+  bool fCDBInitialized;                                            //! transient
+
+  /** id of the component in the analysis chain */
+  string fChainId;                                                 //! transient
+
+  ClassDef(AliHLTComponent, 4)
 };
 #endif

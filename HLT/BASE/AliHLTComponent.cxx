@@ -43,6 +43,7 @@ using namespace std;
 #include "TClass.h"
 #include "TStopwatch.h"
 #include "AliHLTMemoryFile.h"
+#include "AliHLTMisc.h"
 #include <cassert>
 
 /** ROOT macro for the implementation of ROOT specific class methods */
@@ -76,8 +77,9 @@ AliHLTComponent::AliHLTComponent()
   fpStopwatches(new TObjArray(kSWTypeCount)),
   fMemFiles(),
   fpRunDesc(NULL),
-  fpDDLList(NULL)
-
+  fpDDLList(NULL),
+  fCDBInitialized(false),
+  fChainId()
 {
   // see header file for class documentation
   // or
@@ -197,23 +199,61 @@ int AliHLTComponent::Deinit()
     fpRunDesc=NULL;
     delete pRunDesc;
   }
+  fEventCount=0;
   return iResult;
 }
 
-int AliHLTComponent::DoInit( int argc, const char** argv )
+int AliHLTComponent::InitCDB(const char* cdbPath)
 {
-  // see header file for function documentation
-  if (argc==0 && argv==NULL) {
-    // this is currently just to get rid of the warning "unused parameter"
+  int iResult=0;
+  // we presume the library already to be loaded
+  // find the symbol
+  AliHLTComponentHandler cHandler;
+  AliHLTMiscInitCDB_t pFunc=(AliHLTMiscInitCDB_t)cHandler.FindSymbol(ALIHLTMISC_LIBRARY, ALIHLTMISC_INIT_CDB); 
+  if (pFunc) {
+    iResult=(*pFunc)(cdbPath);
+    fCDBInitialized=iResult>=0;
+  } else {
+    Message(NULL, kHLTLogError, "AliHLTComponent::InitCDB", "init CDB",
+	    "can not find initialization function");
+    iResult=-ENOSYS;
   }
-  fEventCount=0;
+  return iResult;
+}
+
+int AliHLTComponent::SetCDBRunNo(int runNo)
+{
+  int iResult=0;
+  if (!fCDBInitialized) return iResult;
+  // we presume the library already to be loaded
+  // find the symbol
+  AliHLTComponentHandler cHandler;
+  AliHLTMiscSetCDBRunNo_t pFunc=(AliHLTMiscSetCDBRunNo_t)cHandler.FindSymbol(ALIHLTMISC_LIBRARY, ALIHLTMISC_SET_CDB_RUNNO); 
+  if (pFunc) {
+    iResult=(*pFunc)(runNo);
+  } else {
+    Message(NULL, kHLTLogError, "AliHLTComponent::SetCDBRunNo", "init CDB",
+	    "can not find initialization function");
+    iResult=-ENOSYS;
+  }
+  return iResult;
+}
+
+int AliHLTComponent::DoInit( int /*argc*/, const char** /*argv*/)
+{
+  // default implementation, childs can overload
   return 0;
 }
 
 int AliHLTComponent::DoDeinit()
 {
-  // see header file for function documentation
-  fEventCount=0;
+  // default implementation, childs can overload
+  return 0;
+}
+
+int AliHLTComponent::Reconfigure(const char* /*cdbEntry*/, const char* /*chainId*/)
+{
+  // default implementation, childs can overload
   return 0;
 }
 
@@ -1078,42 +1118,67 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
 
   // find special events
   if (fpInputBlocks) {
+    // first look for all special events and execute in the appropriate
+    // sequence afterwords
+    int indexComConfEvent=-1;
+    int indexSOREvent=-1;
+    int indexEOREvent=-1;
     for (unsigned int i=0; i<evtData.fBlockCnt && iResult>=0; i++) {
       if (fpInputBlocks[i].fDataType==kAliHLTDataTypeSOR) {
-	// start of run
-	if (fpRunDesc==NULL) {
-	  fpRunDesc=new AliHLTRunDesc;
-	  if (fpRunDesc) {
-	    if ((iResult=CopyStruct(fpRunDesc, sizeof(AliHLTRunDesc), i, "AliHLTRunDesc", "SOR"))>0) {
-	      HLTDebug("set run decriptor, run no %d", fpRunDesc->fRunNo);
-	    }
-	  } else {
-	    iResult=-ENOMEM;
-	  }
-	} else {
-	  HLTWarning("already received SOR event run no %d, ignoring SOR", fpRunDesc->fRunNo);
-	}
+	indexSOREvent=i;
       } else if (fpInputBlocks[i].fDataType==kAliHLTDataTypeEOR) {
-	if (fpRunDesc!=NULL) {
-	  if (fpRunDesc) {
-	    AliHLTRunDesc rundesc;
-	    if ((iResult=CopyStruct(&rundesc, sizeof(AliHLTRunDesc), i, "AliHLTRunDesc", "SOR"))>0) {
-	      if (fpRunDesc->fRunNo!=rundesc.fRunNo) {
-		HLTWarning("run no missmatch: SOR %d, EOR %d", fpRunDesc->fRunNo, rundesc.fRunNo);
-	      } else {
-		HLTDebug("EOR run no %d", fpRunDesc->fRunNo);
-	      }
-	    }
-	    AliHLTRunDesc* pRunDesc=fpRunDesc;
-	    fpRunDesc=NULL;
-	    delete pRunDesc;
-	  }
-	} else {
-	  HLTWarning("did not receive SOR, ignoring EOR");
-	}
-	// end of run
+	indexEOREvent=i;
       } else if (fpInputBlocks[i].fDataType==kAliHLTDataTypeDDL) {
 	// DDL list
+	// this event is most likely deprecated
+      } else if (fpInputBlocks[i].fDataType==kAliHLTDataTypeComConf) {
+	indexComConfEvent=i;
+      }
+    }
+    if (indexSOREvent>=0) {
+      // start of run
+      if (fpRunDesc==NULL) {
+	fpRunDesc=new AliHLTRunDesc;
+	if (fpRunDesc) {
+	  if ((iResult=CopyStruct(fpRunDesc, sizeof(AliHLTRunDesc), indexSOREvent, "AliHLTRunDesc", "SOR"))>0) {
+	    HLTDebug("set run decriptor, run no %d", fpRunDesc->fRunNo);
+	    SetCDBRunNo(fpRunDesc->fRunNo);
+	  }
+	} else {
+	  iResult=-ENOMEM;
+	}
+      } else {
+	HLTWarning("already received SOR event run no %d, ignoring SOR", fpRunDesc->fRunNo);
+      }
+    }
+    if (indexEOREvent>=0) {
+      if (fpRunDesc!=NULL) {
+	if (fpRunDesc) {
+	  AliHLTRunDesc rundesc;
+	  if ((iResult=CopyStruct(&rundesc, sizeof(AliHLTRunDesc), indexEOREvent, "AliHLTRunDesc", "SOR"))>0) {
+	    if (fpRunDesc->fRunNo!=rundesc.fRunNo) {
+	      HLTWarning("run no missmatch: SOR %d, EOR %d", fpRunDesc->fRunNo, rundesc.fRunNo);
+	    } else {
+	      HLTDebug("EOR run no %d", fpRunDesc->fRunNo);
+	    }
+	  }
+	  AliHLTRunDesc* pRunDesc=fpRunDesc;
+	  fpRunDesc=NULL;
+	  delete pRunDesc;
+	}
+      } else {
+	HLTWarning("did not receive SOR, ignoring EOR");
+      }
+    }
+    if (indexComConfEvent>=0) {
+      TString cdbEntry;
+      if (fpInputBlocks[indexComConfEvent].fPtr!=NULL && fpInputBlocks[indexComConfEvent].fSize>0) {
+	cdbEntry.Append(reinterpret_cast<const char*>(fpInputBlocks[indexComConfEvent].fPtr), fpInputBlocks[indexComConfEvent].fSize);
+      }
+      HLTDebug("received component configuration command: entry %s", cdbEntry.IsNull()?"none":cdbEntry.Data());
+      int tmpResult=Reconfigure(cdbEntry[0]==0?NULL:cdbEntry.Data(), fChainId.c_str());
+      if (tmpResult<0) {
+	HLTWarning("reconfiguration of component %p (%s) failed with error code %d", this, GetComponentID(), tmpResult);
       }
     }
   }

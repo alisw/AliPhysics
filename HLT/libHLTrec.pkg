@@ -9,6 +9,7 @@ CLASS_HDRS:=  	AliHLTReconstructor.h \
 		AliHLTOUTRawReader.h
 
 MODULE_SRCS:= 	AliHLTDynamicAliLog.cxx \
+		AliHLTMisc.cxx \
 		$(CLASS_HDRS:.h=.cxx)
 
 MODULE_HDRS:= 	$(CLASS_HDRS)

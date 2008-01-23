@@ -90,6 +90,11 @@ int AliHLT_C_CreateComponent( const char* componentType, void* environ_param, in
   if ( !handle ) return EINVAL;
   AliHLTComponent* comp;
   int ret = gComponentHandler_C->CreateComponent( componentType, environ_param, argc, argv, comp );
+  if (comp) {
+    const char* cdbPath = getenv("ALIHLT_HCDBDIR");
+    if (!cdbPath) cdbPath = getenv("ALICE_ROOT");
+    if (cdbPath) comp->InitCDB(cdbPath);
+  }
   *handle = reinterpret_cast<AliHLTComponentHandle>( comp );
 
   return ret;

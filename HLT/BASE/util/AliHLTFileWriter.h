@@ -21,7 +21,7 @@
  * An HLT data sink component which writes data to file(s).
  *
  * Component ID: \b FileWriter <br>
- * Library: \b libAliHLTUtil.
+ * Library: \b libAliHLTUtil.so
  *
  * Mandatory arguments: <br>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formating -->

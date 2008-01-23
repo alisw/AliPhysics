@@ -20,6 +20,9 @@
  *
  * \image html PubSub_WrapperComponent.png "Wrapper interface"
  *
+ * CDB handling: The interface initializes the CDB from the path found
+ * in the environment variable ALIHLT_HCDBDIR. Default path is
+ * <tt>$ALICE_ROOT</tt>.
  */
 
 #include <AliHLTDataTypes.h>
