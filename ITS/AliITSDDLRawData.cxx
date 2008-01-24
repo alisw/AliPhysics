@@ -510,7 +510,7 @@ Int_t AliITSDDLRawData::RawDataSPD(TBranch* branch){
       branch->GetEvent(moduleNumber);
       //For each Module, buf contains the array of data words in Binary format	  
       //fIndex gives the number of 32 bits words in the buffer for each module
-      GetDigitsSPD(digits,mod,i,buf);
+      GetDigitsSPD(digits,moduleNumber,i,buf);
       outfile->WriteBuffer((char *)buf,((fIndex+1)*sizeof(UInt_t)));
       for(Int_t i=0;i<(fIndex+1);i++){
 	buf[i]=0;
@@ -690,4 +690,3 @@ void  AliITSDDLRawData::WriteHit(UInt_t *buf,Int_t RowAddr,Int_t HitAddr,UInt_t 
   }//end else
   return;
 }//end WriteHit
-
