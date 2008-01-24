@@ -6,5 +6,6 @@
 
 #pragma link C++ class AliPHOSCalibHistoProducer+;
 #pragma link C++ class AliPHOSPreprocessor+;
+#pragma link C++ class AliPHOSDA1+;
 
 #endif
