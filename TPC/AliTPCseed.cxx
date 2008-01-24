@@ -535,21 +535,18 @@ Int_t AliTPCseed::Compare(const TObject *o) const {
 
 
 //_____________________________________________________________________________
-Bool_t AliTPCseed::Update(const AliCluster *c, Double_t chisq, Int_t /*index*/)
+Bool_t AliTPCseed::Update(const AliCluster *c, Double_t chisq, Int_t index)
 {
   //-----------------------------------------------------------------
   // This function associates a cluster with this track.
   //-----------------------------------------------------------------
-  Double_t p[2]={c->GetY(), c->GetZ()};
-  Double_t cov[3]={fErrorY2, 0., fErrorZ2};
-
-  if (!AliExternalTrackParam::Update(p,cov)) return kFALSE;
-
   Int_t n=GetNumberOfClusters();
-  //  fIndex[n]=index;
-  SetNumberOfClusters(n+1);
-  SetChi2(GetChi2()+chisq);
+  Int_t idx=GetClusterIndex(n);    // save the current cluster index
 
+  AliCluster cl(*c);  cl.SetSigmaY2(fErrorY2); cl.SetSigmaZ2(fErrorZ2);
+  if (!AliTPCtrack::Update(&cl,chisq,index)) return kFALSE;
+
+  SetClusterIndex(n,idx);          // restore the current cluster index
   return kTRUE;
 }
 

@@ -278,6 +278,8 @@ Bool_t AliTPCtrack::Update(const AliCluster *c, Double_t chisq, Int_t index) {
 
   if (!AliExternalTrackParam::Update(p,cov)) return kFALSE;
 
+  AliTracker::FillResiduals(this,p,cov,c->GetVolumeId());
+
   Int_t n=GetNumberOfClusters();
   fIndex[n]=index;
   SetNumberOfClusters(n+1);
