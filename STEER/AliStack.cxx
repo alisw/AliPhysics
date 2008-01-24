@@ -1016,10 +1016,16 @@ Bool_t AliStack::IsPhysicalPrimary(Int_t index)
 //
 // Particle produced during transport
 //
-// Check if this is a heavy flavor decay product
+
 	Int_t imo =  p->GetFirstMother();
 	TParticle* pm  = Particle(imo);
 	Int_t mpdg = TMath::Abs(pm->GetPdgCode());
+// Check if it comes from a pi0 decay
+//
+// What about the pi0 Dalitz ??
+//	if ((mpdg == kPi0) && (imo < GetNprimary())) return kTRUE; 
+
+// Check if this is a heavy flavor decay product
 	Int_t mfl  = Int_t (mpdg / TMath::Power(10, Int_t(TMath::Log10(mpdg))));
 	//
 	// Light hadron
@@ -1034,7 +1040,7 @@ Bool_t AliStack::IsPhysicalPrimary(Int_t index)
 	// To be sure that heavy flavor has not been produced in a secondary interaction
 	// Loop back to the generated mother
 	while (imo >=  GetNprimary()) {
-	    imo = p->GetFirstMother();
+	    imo = pm->GetFirstMother();
 	    pm  =  Particle(imo);
 	}
 	mpdg = TMath::Abs(pm->GetPdgCode());
@@ -1047,4 +1053,3 @@ Bool_t AliStack::IsPhysicalPrimary(Int_t index)
 	} 
     } // produced by generator ?
 } 
-
