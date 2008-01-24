@@ -88,61 +88,154 @@ void AliTRDQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX task, TObjArray *
   //
   // Detector specific actions at end of cycle
   //
-
-  //AliInfo(Form("EndOfCycle", "Fitting RecPoints %d", task));
-
- 
+  //TStopwatch watch;
+  //watch.Start();
+  
+  //AliInfo(Form("Fitting RecPoints %d", task))
+  
   if (task == AliQA::kRECPOINTS) {
-
+    
+    TH1D *hist = new TH1D("fitHist", "", 200, -0.5, 199.5);
     //list->Print();
     
+    // fill detector map;
+    for(int i=0; i<540; i++) {
+      Double_t v = ((TH1D*)list->At(0))->GetBinContent(i+1);
+      Int_t sm = i/30;
+      Int_t det = i%30;
+
+      TH2D *detMap = (TH2D*)list->At(51);
+      Int_t bin = detMap->FindBin(sm, det);
+      detMap->SetBinContent(bin, v);
+    }
+
+
     // Rec points full chambers
-    if (((TH2D*)list->At(1))->GetEntries() > 1e4) {
-      for (Int_t i=0; i<540; i++) {
+    for (Int_t i=0; i<540; i++) {
+      
+      //AliInfo(Form("I = %d", i));
+
+      //TH1D *h = ((TH2D*)list->At(1))->ProjectionY(Form("qaTRD_recPoints_amp_%d",i), i+1, i+1);
+      hist->Reset();
+      for(Int_t b=1; b<hist->GetXaxis()->GetNbins()-1; b++) {
+	Double_t xvalue = hist->GetBinCenter(b);
+	Int_t bin = ((TH2D*)list->At(1))->FindBin(i,xvalue);
+	Double_t value =  ((TH2D*)list->At(1))->GetBinContent(bin);
+	hist->SetBinContent(b, value);
+      }
+      
+      //printf("Sum = %d %f\n", i, hist->GetSum());
+      if (hist->GetSum() < 100) continue; // chamber not present
+      
+      hist->Fit("landau", "q0", "goff", 10, 180);
+      TF1 *fit = hist->GetFunction("landau");
+      ((TH1D*)list->At(12))->Fill(fit->GetParameter(1));
+      ((TH1D*)list->At(13))->Fill(fit->GetParameter(2));
+    }
+    
+    // time-bin by time-bin sm by sm
+    for(Int_t i=0; i<18; i++) { // loop over super-modules
+      
+      for(Int_t j=0; j<35; j++) { // loop over time bins
 	
-	TH1D *h = ((TH2D*)list->At(1))->ProjectionY(Form("qaTRD_recPoints_amp_%d",i), i+1, i+1);
-	if (h->GetSum() < 100) continue; // chamber not present
+	//TH1D *h =  ((TH3D*)list->At(10))->ProjectionZ(Form("ampTime_%d",i), i+1, i+1, j+1, j+1);     
+	hist->Reset();
+	for(Int_t b=1; b<hist->GetXaxis()->GetNbins()-1; b++) {
+	  Double_t xvalue = hist->GetBinCenter(b);
+	  Double_t svalue = 0;
+	  
+	  for(Int_t det=i*30; det<(i+1)*30; det++) { // loop over detectors
+	    Int_t bin = ((TH3D*)list->At(10))->FindBin(det,j,xvalue);
+	    Double_t value =  ((TH3D*)list->At(10))->GetBinContent(bin);
+	    svalue += value;
+	  }
+	  //printf("v = %f\n", value);
+	  hist->SetBinContent(b, svalue);
+	}
 	
-	h->Fit("landau", "q0", "goff", 10, 180);
-	TF1 *fit = h->GetFunction("landau");
-	((TH1D*)list->At(12))->Fill(fit->GetParameter(1));
-	((TH1D*)list->At(13))->Fill(fit->GetParameter(2));
-	delete h;      
+	if (hist->GetSum() < 100) continue;
+	//printf("fitting %d %d %f\n", i, j, hist->GetSum());
+	
+	hist->Fit("landau", "q0", "goff", 10, 180);
+	TF1 *fit = hist->GetFunction("landau");
+	
+	TH1D *h1 = (TH1D*)list->At(14+18+i);
+	Int_t bin = h1->FindBin(j);
+	// printf("%d %d %d\n", det, j, bin);
+	h1->SetBinContent(bin, TMath::Abs(fit->GetParameter(1)));
+      }
+    }
+      
+
+    // time-bin by time-bin chamber by chamber
+    for (Int_t i=0; i<540; i++) {
+      
+      //TH1D *test = ((TH3D*)list->At(10))->ProjectionZ(Form("ampTime_%d",i), i+1, i+1, 0, 35);     
+      //if (test->GetSum() < 100) continue;
+      
+      //AliInfo(Form("fitting det = %d", i));
+      
+      for(Int_t j=0; j<35; j++) {
+	
+	//TH1D *h =  ((TH3D*)list->At(10))->ProjectionZ(Form("ampTime_%d",i), i+1, i+1, j+1, j+1);     
+	hist->Reset();
+	for(Int_t b=1; b<hist->GetXaxis()->GetNbins()-1; b++) {
+	  Double_t xvalue = hist->GetBinCenter(b);
+	  Int_t bin = ((TH3D*)list->At(10))->FindBin(i,j,xvalue);
+	  Double_t value =  ((TH3D*)list->At(10))->GetBinContent(bin);
+	  //printf("v = %f\n", value);
+	  hist->SetBinContent(b, value);
+	}
+	
+	if (hist->GetSum() < 100) continue;
+	//printf("fitting %d %d %f\n", i, j, hist->GetSum());
+	
+	hist->Fit("landau", "q0", "goff", 10, 180);
+	TF1 *fit = hist->GetFunction("landau");
+	
+	Int_t sm = i/30;
+	Int_t det = i%30;
+	TH2D *h2 = (TH2D*)list->At(14+sm);
+	Int_t bin = h2->FindBin(det,j);
+	// printf("%d %d %d\n", det, j, bin);
+	h2->SetBinContent(bin, TMath::Abs(fit->GetParameter(1)));
+	h2->SetBinError(bin,fit->GetParError(1));
       }
     }
     
+    if (hist) delete hist;
+  }
+  
+  //////////////////////////
+  // const Int_t knbits = 6;
+  // const char *suf[knbits] = {"TPCi", "TPCo", "TPCz", "TRDo", "TRDr", "TRDz"};
+  //const char *sufRatio[4] = {"TRDrTRDo", "TRDoTPCo", "TRDrTPCo", "TRDzTPCo"};
+
+  if (task == AliQA::kESDS) {
     
-    if (((TH2D*)list->At(10))->GetEntries() > 1e5) {
-      for (Int_t i=0; i<540; i++) {
-	
-	TH1D *test = ((TH3D*)list->At(10))->ProjectionZ(Form("ampTime_%d",i), i+1, i+1, 0, 35);     
-	if (test->GetSum() < 100) continue;
-	
-	//AliInfo(Form("fitting det = %d", i));
-	
-	for(Int_t j=0; j<35; j++) {
-	  
-	  TH1D *h =  ((TH3D*)list->At(10))->ProjectionZ(Form("ampTime_%d",i), i+1, i+1, j+1, j+1);     
-	  if (h->GetSum() < 50) continue;
-	  
-	  h->Fit("landau", "q0", "goff", 10, 180);
-	  TF1 *fit = h->GetFunction("landau");
-	  
-	  Int_t sm = i/18;
-	  Int_t det = i%18;
-	  TH2D *h2 = (TH2D*)list->At(14+sm);
-	  Int_t bin = h2->FindBin(det,j);
-	  // printf("%d %d %d\n", det, j, bin);
-	  h2->SetBinContent(bin, fit->GetParameter(1));
-	}
+    const Int_t knRatio = 4;
+    const Int_t kN[knRatio] = {4,3,4,5};
+    const Int_t kD[knRatio] = {3,1,1,3}; 
+    
+    // create ratios
+    for(Int_t type=0; type<2; type++) {
+      for(Int_t i=0; i<knRatio; i++) {
+
+	TH1D *ratio = (TH1D*)list->At(19 + 2*i + type);
+	TH1D *histN = (TH1D*)list->At(3 + 2*kN[i] + type);
+	TH1D *histD = (TH1D*)list->At(3 + 2*kD[i] + type);
+
+	BuildRatio(ratio, histN, histD);
+	//ratio->Reset();
+	//ratio->Add(histN);
+	//ratio->Divide(histD);
       }
     }
   }
+
   
   // call the checker
   AliQAChecker::Instance()->Run(AliQA::kTRD, task, list) ;    
-
-
 }
 
 //____________________________________________________________________________ 
@@ -152,19 +245,20 @@ void AliTRDQADataMakerRec::InitESDs()
   // Create ESDs histograms in ESDs subdir
   //
 
-  const Int_t kNhist = 19;
+  const Int_t kNhist = 27;
   TH1 *hist[kNhist];
   Int_t histoCounter = -1 ;
 
-  hist[++histoCounter] = new TH1D("qaTRD_esd_ntracks", ":Number of tracks", 300, -0.5, 299.5);
-  hist[++histoCounter] = new TH1D("qaTRD_esd_sector", ":Sector", 18, -0.5, 17.7);
+  hist[++histoCounter] = new TH1D("qaTRD_esd_ntracks", ";Number of tracks", 300, -0.5, 299.5);
+  hist[++histoCounter] = new TH1D("qaTRD_esd_sector", ";Sector", 18, -0.5, 17.7);
   hist[++histoCounter] = new TH1D("qaTRD_esd_bits", ";Bits", 64, -0.5, 63.5);
 
   const Int_t knbits = 6;
   const char *suf[knbits] = {"TPCi", "TPCo", "TPCz", "TRDo", "TRDr", "TRDz"};
 
-  for(Int_t i=0; i<knbits; i++) {
-    hist[++histoCounter] = new TH1D(Form("qaTRD_esd_pt%s",suf[i]), ";p_{T} (GeV/c);", 50, 0, 10);
+  // histo = 3
+  for(Int_t i=0; i<knbits; i++) { 
+    hist[++histoCounter] = new TH1D(Form("qaTRD_esd_pt%s",suf[i]), ";p_{T} (GeV/c);", 100, 0, 10);
     hist[++histoCounter] = new TH1D(Form("qaTRD_esd_trdz%s", suf[i]), ";z (cm)", 200, -400, 400); 
   }
 
@@ -174,6 +268,19 @@ void AliTRDQADataMakerRec::InitESDs()
   //hist[++histoCounter] = new TH1D("qaTRD_esd_clsRatio", ";cluster ratio", 100, 0., 1.3);;
 
   hist[++histoCounter] = new TH2D("qaTRD_esd_sigMom", ";momentum (GeV/c);signal", 100, 0, 5, 200, 0, 1e3);
+
+  // end of cycle plots (hist 19)
+  const char *sufRatio[4] = {"TRDrTRDo", "TRDoTPCo", "TRDrTPCo", "TRDzTPCo"};
+
+  for(int i=0; i<4; i++) {
+    hist[++histoCounter] = new TH1D(Form("qaTRD_esd_pt%s",sufRatio[i]), 
+				    Form("Efficiency in Pt %s;p_{T};eff", sufRatio[i]),
+				    100, 0, 10);
+
+    hist[++histoCounter] = new TH1D(Form("qaTRD_esd_trdz%s",sufRatio[i]), 
+				    Form("Efficiency in Z %s;z (cm);eff", sufRatio[i]),
+				    200, -400, 400);
+  }
 
   for(Int_t i=0; i<=histoCounter; i++) {
     //hist[i]->Sumw2();
@@ -189,7 +296,7 @@ void AliTRDQADataMakerRec::InitRecPoints()
   // Create Reconstructed Points histograms in RecPoints subdir
   //
 
-  const Int_t kNhist = 14 + 18;
+  const Int_t kNhist = 14 + 18 + 18 + 2;
   TH1 *hist[kNhist];
 
   hist[0] = new TH1D("qaTRD_recPoints_det", ";Detector ID of the cluster", 540, -0.5, 539.5);
@@ -210,15 +317,29 @@ void AliTRDQADataMakerRec::InitRecPoints()
   hist[11] = new TProfile("qaTRD_recPoints_prf", ";distance;center of gravity"
                          , 120, -0.6, 0.6, -1.2, 1.2, "");
 
-  hist[12] = new TH1D("qaTRD_recPoints_ampMPV", ";amplitude MPV", 100, 0, 100);
-  hist[13] = new TH1D("qaTRD_recPoints_ampSigma", ";amplitude Sigma", 100, 0, 100); 
-
+  hist[12] = new TH1D("qaTRD_recPoints_ampMPV", ";amplitude MPV", 200, 0, 200);
+  hist[13] = new TH1D("qaTRD_recPoints_ampSigma", ";amplitude Sigma", 200, 0, 200); 
+  
+  // chamber bu chamber
   for(Int_t i=0; i<18; i++) {
     hist[14+i] = new TH2D(Form("qaTRD_recPoints_sigTime_sm%d",i), Form("sm%d;det;time bin"), 
 			30, -0.5, 29.5, 35, -0.5, 34.5);
     hist[14+i]->SetMinimum(20);
     hist[14+i]->SetMaximum(40);
   }
+ 
+  // time bin by time bin sm-by-sm
+  for(Int_t i=0; i<18; i++) {
+    hist[14+18+i] = new TH1D(Form("qaTRD_recPoints_sigTimeShape_sm%d", i), 
+			     Form("sm%d;time bin;signal"),
+			     35, -0.5, 34.5);
+    
+    hist[14+18+i]->SetMaximum(120);    
+  }
+
+  hist[50] = new TH1D("qaTRD_recPoints_signal", ";amplitude", 200, -0.5, 199.5);
+  hist[51] = new TH2D("qaTRD_recPoints_detMap", ";sm;chamber", 18, -0.5, 17.5, 30, -0.5, 29.5);
+
 
   for(Int_t i=0; i<kNhist; i++) {
     //hist[i]->Sumw2();
@@ -453,6 +574,8 @@ void AliTRDQADataMakerRec::MakeRecPoints(TTree * clustersTree)
   //  
   // Makes data from RecPoints
   // 
+  
+  //  Info("MakeRecPoints", "making");
 
   Int_t nsize = Int_t(clustersTree->GetTotBytes() / (sizeof(AliTRDcluster))); 
   TObjArray *clusterArray = new TObjArray(nsize+1000); 
@@ -486,6 +609,7 @@ void AliTRDQADataMakerRec::MakeRecPoints(TTree * clustersTree)
       Int_t iDet = c->GetDetector();
       nDet[iDet]++;
       GetRecPointsData(0)->Fill(iDet);
+      GetRecPointsData(50)->Fill(c->GetQ());
       GetRecPointsData(1)->Fill(iDet, c->GetQ());
       GetRecPointsData(2)->Fill(c->GetNPads());
       if (c->GetNPads() < 6)
@@ -539,5 +663,37 @@ Int_t AliTRDQADataMakerRec::CheckPointer(TObject *obj, const char *name)
 
   if (!obj) AliWarning(Form("null pointer: %s", name));
   return !!obj;
-
 }
+//__________________________________________________________________________
+void AliTRDQADataMakerRec::BuildRatio(TH1D *ratio, TH1D *histN, TH1D*histD) {
+  //
+  // Calculate the ratio of two histograms 
+  // error are calculated assuming the histos have the same counts
+  //
+
+  // calclate
+
+  Int_t nbins = histN->GetXaxis()->GetNbins();
+  for(Int_t i=1; i<nbins+2; i++) {
+    
+    Double_t valueN = histN->GetBinContent(i);
+    Double_t valueD = histD->GetBinContent(i);
+    
+    if (valueD < 1) {
+      ratio->SetBinContent(i, 0);
+      ratio->SetBinError(i, 0);
+      continue;
+    }
+
+    Double_t eps = (valueN < valueD-valueN)? valueN : valueD-valueN;
+    
+    ratio->SetBinContent(i, valueN/valueD);
+    ratio->SetBinError(i, TMath::Sqrt(eps)/valueD);
+  }
+
+  // style
+  ratio->SetMinimum(-0.1);
+  ratio->SetMaximum(1.1);
+  ratio->SetMarkerStyle(20);
+}
+//__________________________________________________________________________
