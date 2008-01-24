@@ -40,7 +40,6 @@ ClassImp(AliCFGridSparse)
 //____________________________________________________________________
 AliCFGridSparse::AliCFGridSparse() : 
   AliCFVGrid(),
-  fExcludeOffEntries(kTRUE),
   fData(0x0)
 {
   // default constructor
@@ -48,7 +47,6 @@ AliCFGridSparse::AliCFGridSparse() :
 //____________________________________________________________________
 AliCFGridSparse::AliCFGridSparse(const Char_t* name, const Char_t* title) : 
   AliCFVGrid(name,title),
-  fExcludeOffEntries(kTRUE),
   fData(0x0)
 {
   // default constructor
@@ -56,7 +54,6 @@ AliCFGridSparse::AliCFGridSparse(const Char_t* name, const Char_t* title) :
 //____________________________________________________________________
 AliCFGridSparse::AliCFGridSparse(const Char_t* name, const Char_t* title, const Int_t nVarIn, const Int_t * nBinIn, const Double_t *binLimitsIn) :  
   AliCFVGrid(name,title,nVarIn,nBinIn,binLimitsIn),
-  fExcludeOffEntries(kTRUE),
   fData(0x0)
 {
   //
@@ -80,7 +77,6 @@ AliCFGridSparse::AliCFGridSparse(const Char_t* name, const Char_t* title, const 
 //____________________________________________________________________
 AliCFGridSparse::AliCFGridSparse(const AliCFGridSparse& c) : 
   AliCFVGrid(c),
-  fExcludeOffEntries(c.fExcludeOffEntries),
   fData(c.fData)
 {
   //
@@ -143,18 +139,15 @@ TH1D *AliCFGridSparse::Project(Int_t ivar) const
   //
 
   //exclude overflows by default (used in projections)
-  if(fExcludeOffEntries){
+  if(fExclOffEntriesInProj){
     for(Int_t i=0;i<fNVar;i++){
       fData->GetAxis(i)->SetBit(TAxis::kAxisRange);
     }
   }
-  TH1D *hist=fData->Projection(ivar);
-  Float_t sum=0;
-  for(Int_t i=1;i<=fNVarBins[ivar]; i++){
-    sum+=hist->GetBinContent(i);
-  }
 
-  hist->SetEntries(sum+GetOverFlows(ivar)+GetUnderFlows(ivar));
+
+  TH1D *hist=fData->Projection(ivar);
+
   return hist;
 
 }
@@ -166,21 +159,12 @@ TH2D *AliCFGridSparse::Project(Int_t ivar1, Int_t ivar2) const
   //
 
   //exclude overflows by default (used in projections)
-  if(fExcludeOffEntries){
+  if(fExclOffEntriesInProj){
     for(Int_t i=0;i<fNVar;i++){
       fData->GetAxis(i)->SetBit(TAxis::kAxisRange);
     }
   }
-  TH2D *hist=fData->Projection(ivar2,ivar1); //notice inverted axis (THnSparse uses TH3 2d-projction convention...)
-
-  Float_t sum=0;
-  for(Int_t i=1;i<=fNVarBins[ivar1]; i++){
-    for(Int_t j=1;j<=fNVarBins[ivar2]; j++){
-    sum+=hist->GetBinContent(i,j);
-    }
-  }
-
-  hist->SetEntries(sum+GetOverFlows(ivar1)+GetUnderFlows(ivar1)+GetOverFlows(ivar2)+GetUnderFlows(ivar2));
+  TH2D *hist=fData->Projection(ivar2,ivar1); //notice inverted axis (THnSparse uses TH3 2d-projection convention...)
   return hist;
 
 }
@@ -191,24 +175,13 @@ TH3D *AliCFGridSparse::Project(Int_t ivar1, Int_t ivar2, Int_t ivar3) const
   // Make a 3D projection along variables ivar1 & ivar2 & ivar3 
   //
   //exclude overflows by default (used in projections)
-  if(fExcludeOffEntries){
+  if(fExclOffEntriesInProj){
     for(Int_t i=0;i<fNVar;i++){
       fData->GetAxis(i)->SetBit(TAxis::kAxisRange);
     }
   }
 
   TH3D *hist=fData->Projection(ivar1,ivar2,ivar3); 
-
-  Float_t sum=0;
-  for(Int_t i=1;i<=fNVarBins[ivar1]; i++){
-    for(Int_t j=1;j<=fNVarBins[ivar2]; j++){
-      for(Int_t k=1;k<=fNVarBins[ivar3]; k++){
-	sum+=hist->GetBinContent(i,j,k);
-      }
-    }
-  }
-
-  hist->SetEntries(sum+GetOverFlows(ivar1)+GetUnderFlows(ivar1)+GetOverFlows(ivar2)+GetUnderFlows(ivar2)+GetOverFlows(ivar3)+GetUnderFlows(ivar3));
   return hist;
 
 }
@@ -217,7 +190,7 @@ TH3D *AliCFGridSparse::Project(Int_t ivar1, Int_t ivar2, Int_t ivar3) const
 Float_t AliCFGridSparse::GetOverFlows(Int_t ivar) const
 {
   //
-  // Returns overflows in variable ivar
+  // Returns exclusive overflows in variable ivar
   //
   Int_t* bin = new Int_t[fNDim];
   memset(bin, 0, sizeof(Int_t) * fNDim);
@@ -240,7 +213,7 @@ Float_t AliCFGridSparse::GetOverFlows(Int_t ivar) const
 Float_t AliCFGridSparse::GetUnderFlows(Int_t ivar) const
 {
   //
-  // Returns overflows in variable ivar
+  // Returns exclusive overflows in variable ivar
   //
   Int_t* bin = new Int_t[fNDim];
   memset(bin, 0, sizeof(Int_t) * fNDim);

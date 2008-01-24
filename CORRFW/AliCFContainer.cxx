@@ -36,6 +36,7 @@ ClassImp(AliCFContainer)
 AliCFContainer::AliCFContainer() : 
   AliCFFrame(),
   fNStep(0),
+  fExclOffEntriesInProj(kTRUE),
   fGrid(0x0)
 {
   //
@@ -46,6 +47,7 @@ AliCFContainer::AliCFContainer() :
 AliCFContainer::AliCFContainer(const Char_t* name, const Char_t* title) : 
   AliCFFrame(name,title),
   fNStep(0),
+  fExclOffEntriesInProj(kTRUE),
   fGrid(0x0)
 {
   // default constructor
@@ -55,6 +57,7 @@ AliCFContainer::AliCFContainer(const Char_t* name, const Char_t* title) :
 AliCFContainer::AliCFContainer(const Char_t* name, const Char_t* title,const Int_t nSelSteps, const Int_t nVarIn, const Int_t * nBinIn, const Double_t *binLimitsIn, const Bool_t useSparse) :  
   AliCFFrame(name,title,nVarIn,nBinIn,binLimitsIn),
   fNStep(0),
+  fExclOffEntriesInProj(kTRUE),
   fGrid(0x0)
 {
   //
@@ -81,8 +84,9 @@ AliCFContainer::AliCFContainer(const Char_t* name, const Char_t* title,const Int
 //____________________________________________________________________
 AliCFContainer::AliCFContainer(const AliCFContainer& c) : 
   AliCFFrame(),
-  fNStep(0),
-  fGrid(0x0)
+  fNStep(c.fNStep),
+  fExclOffEntriesInProj(c.fExclOffEntriesInProj),
+  fGrid(c.fGrid)
 {
   //
   // copy constructor
@@ -130,6 +134,7 @@ void AliCFContainer::Copy(TObject& c) const
   //
   AliCFContainer& target = (AliCFContainer &) c;
   target.fNStep=fNStep;
+  target.fExclOffEntriesInProj=fExclOffEntriesInProj;
   target.fNVar=fNVar;
   target.fNDim=fNDim;
   target.fNVarBinLimits=fNVarBinLimits;
@@ -160,6 +165,7 @@ TH1D *AliCFContainer::ShowProjection(Int_t ivar, Int_t istep) const
   //
   // returns 1-D projection along variable ivar at selection step istep
   //
+  fGrid[istep]->SetExcludeOffEntriesInProj(fExclOffEntriesInProj);
   return fGrid[istep]->Project(ivar);
 }
 //___________________________________________________________________
@@ -168,6 +174,7 @@ TH2D *AliCFContainer::ShowProjection(Int_t ivar1, Int_t ivar2, Int_t istep) cons
   //
   // returns 2-D projection along variables ivar1,ivar2 at selection step istep
   //
+  fGrid[istep]->SetExcludeOffEntriesInProj(fExclOffEntriesInProj);
   return fGrid[istep]->Project(ivar1,ivar2);
 }
 //___________________________________________________________________
@@ -177,6 +184,7 @@ TH3D *AliCFContainer::ShowProjection(Int_t ivar1, Int_t ivar2, Int_t ivar3, Int_
   // returns 3-D projection along variables ivar1,ivar2,ivar3 
   // at selection step istep
   //
+  fGrid[istep]->SetExcludeOffEntriesInProj(fExclOffEntriesInProj);
   return fGrid[istep]->Project(ivar1,ivar2,ivar3);
 }
 //___________________________________________________________________

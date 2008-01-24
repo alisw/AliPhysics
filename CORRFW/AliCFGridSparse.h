@@ -26,8 +26,6 @@ class AliCFGridSparse : public AliCFVGrid
   virtual ~AliCFGridSparse();
   AliCFGridSparse& operator=(const AliCFGridSparse& corr) ;
   virtual void  SetBinLimits(Int_t ivar, Double_t * array);
-  virtual void  SetExcludeOffEntries(Bool_t in){fExcludeOffEntries=in;}; 
-  virtual Bool_t GetExcludeOffEntries( ) const {return fExcludeOffEntries;}; 
   
   virtual void  Fill(Double_t *var, Double_t weight=1.);
 
@@ -73,9 +71,8 @@ class AliCFGridSparse : public AliCFVGrid
   
  protected:
 
-  Bool_t fExcludeOffEntries; // exclude under/overflows in 'hidden dimensions' when performing projections, default is kTRUE. 
   THnSparse  *fData;//  The data Container: a THnSparse  
-  ClassDef(AliCFGridSparse,1);
+  ClassDef(AliCFGridSparse,2);
 };
     
 #endif

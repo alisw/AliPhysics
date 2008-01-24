@@ -66,6 +66,8 @@ class AliCFVGrid : public AliCFFrame
 
   //implemented in AliCFVGrid
 
+  virtual void   SetExcludeOffEntriesInProj(Bool_t in){fExclOffEntriesInProj=in;}; 
+  virtual Bool_t GetExcludeOffEntriesInProj( ) const {return fExclOffEntriesInProj;}; 
   virtual void Scale(Int_t iel, Double_t *fact); 
   virtual void Scale(Int_t* bin, Double_t *fact); 
   virtual void Scale(Double_t* var, Double_t *fact); 
@@ -84,9 +86,14 @@ class AliCFVGrid : public AliCFFrame
 
   Double_t GetSum(Int_t ivar, Int_t *binMin, Int_t* binMax) const; 
   void GetScaledValues(Double_t *fact, Double_t *in, Double_t *out) const;
+  Bool_t fExclOffEntriesInProj; // exclude under/overflows in 
+  //'hidden dimensions' when performing projections, 
+  // default is kTRUE. please notice that 
+  // if you you use AliCFGrid instead of AliCFGridSparse, 
+  // only option kTRUE is actually available  
   Bool_t   fSumW2;//flag to check if calculation of squared weights enabled
    
-  ClassDef(AliCFVGrid,1);
+  ClassDef(AliCFVGrid,2);
 };
     
 #endif

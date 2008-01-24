@@ -89,9 +89,12 @@ AliCFGrid::AliCFGrid(const Char_t* name, const Char_t* title, const Int_t nVarIn
 
   // the grid
  
-  fData = new Float_t[fNDim]; //num
+  fData = new Float_t[fNDim]; 
 
   //Initialization
+  for(Int_t j=0;j<fNDim;j++){
+    fData[j] =0;
+  }
  
 }
 
@@ -538,7 +541,7 @@ TH1D *AliCFGrid::Project(Int_t ivar) const
   delete [] err;
   proj1D->SetBinContent(nbins+1,GetOverFlows(ivar));
   proj1D->SetBinContent(0,GetUnderFlows(ivar));
-  proj1D->SetEntries(sum+GetUnderFlows(ivar)+GetOverFlows(ivar));
+  proj1D->SetEntries(fNentriesTot);
   return proj1D;
 } 
 
@@ -620,7 +623,7 @@ TH2D *AliCFGrid::Project(Int_t ivar1, Int_t ivar2) const
   proj2D->SetBinContent(nbins1+1,nbins2/2,GetOverFlows(ivar1));
   proj2D->SetBinContent(nbins1/2,0,GetUnderFlows(ivar2));
   proj2D->SetBinContent(nbins1/2,nbins2+1,GetOverFlows(ivar2));
-  proj2D->SetEntries(sum+GetUnderFlows(ivar1)+GetOverFlows(ivar1)+GetUnderFlows(ivar2)+GetOverFlows(ivar2));
+  proj2D->SetEntries(fNentriesTot);
   return proj2D;
 } 
 //___________________________________________________________________
@@ -716,7 +719,8 @@ TH3D *AliCFGrid::Project(Int_t ivar1, Int_t ivar2, Int_t ivar3) const
   delete err;
   delete err2;
   delete err3;
-  proj3D->SetEntries(sum+GetUnderFlows(ivar1)+GetOverFlows(ivar1)+GetUnderFlows(ivar2)+GetOverFlows(ivar2)+GetUnderFlows(ivar3)+GetOverFlows(ivar3));
+
+  proj3D->SetEntries(fNentriesTot);
   return proj3D;
 } 
 
@@ -1090,3 +1094,27 @@ void AliCFGrid::Copy(TObject& c) const
     target.fErr2 = fErr2;
   
 }
+//____________________________________________________________________
+void AliCFGrid::SetExcludeOffEntriesInProj(Bool_t in)
+{
+  //
+  // require under/overflows in 'hidden dimensions' to be excluded
+  // or included, when performing projections.
+  // For AliCFGrid implementation, only option = kTRUE is available
+
+  if(in){
+    AliInfo(Form("This option not available for AliCFGrid")); 
+    return;
+  }
+
+  fExclOffEntriesInProj=in;
+} 
+//____________________________________________________________________
+Bool_t AliCFGrid::GetExcludeOffEntriesInProj( ) const 
+{
+  //
+  // return flag saying whether under/overflows are excluded in projections 
+  //
+  
+  return fExclOffEntriesInProj;
+} 

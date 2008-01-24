@@ -32,6 +32,7 @@ ClassImp(AliCFVGrid)
 //____________________________________________________________________
 AliCFVGrid::AliCFVGrid() : 
   AliCFFrame(),
+  fExclOffEntriesInProj(kTRUE),
   fSumW2(kFALSE)
 {
   // default constructor
@@ -39,6 +40,7 @@ AliCFVGrid::AliCFVGrid() :
 //____________________________________________________________________
 AliCFVGrid::AliCFVGrid(const Char_t* name, const Char_t* title) : 
   AliCFFrame(name,title),
+  fExclOffEntriesInProj(kTRUE),
   fSumW2(kFALSE)
 {
   // default constructor
@@ -47,6 +49,7 @@ AliCFVGrid::AliCFVGrid(const Char_t* name, const Char_t* title) :
 //____________________________________________________________________
 AliCFVGrid::AliCFVGrid(const Char_t* name, const Char_t* title, const Int_t nVarIn, const Int_t * nBinIn, const Double_t *binLimitsIn) :  
   AliCFFrame(name,title,nVarIn,nBinIn,binLimitsIn),
+  fExclOffEntriesInProj(kTRUE),
   fSumW2(kFALSE)
 {
   //
@@ -58,6 +61,7 @@ AliCFVGrid::AliCFVGrid(const Char_t* name, const Char_t* title, const Int_t nVar
 //____________________________________________________________________
 AliCFVGrid::AliCFVGrid(const AliCFVGrid& c) : 
   AliCFFrame(c),
+  fExclOffEntriesInProj(c.fExclOffEntriesInProj),
   fSumW2(c.fSumW2)
 {
   //

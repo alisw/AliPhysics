@@ -28,6 +28,8 @@ class AliCFGrid : public AliCFVGrid
 
   virtual void  Fill(Double_t *var, Double_t weight=1.);
 
+  virtual void   SetExcludeOffEntriesInProj(Bool_t in); 
+  virtual Bool_t GetExcludeOffEntriesInProj( ) const; 
   virtual Float_t GetOverFlows(Int_t var) const;
   virtual Float_t GetUnderFlows(Int_t var)const ;
   virtual Float_t GetEntries()const ;
