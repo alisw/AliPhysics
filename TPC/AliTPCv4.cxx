@@ -1147,7 +1147,7 @@ void AliTPCv4::Init()
   fIDrift=gMC->VolId("TPC_Drift");
   fSecOld=-100; // fake number 
 
-  gMC->SetMaxNStep(30000); // max. number of steps increased
+  gMC->SetMaxNStep(-30000); // max. number of steps increased
 
   gMC->Gstpar(idtmed[20],"LOSS",6); // specific energy loss
 

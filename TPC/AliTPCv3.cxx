@@ -986,7 +986,7 @@ void AliTPCv3::Init()
 
    fIdSens=gMC->VolId("TPC_Drift"); // drift gas as a sensitive volume
 
-  gMC->SetMaxNStep(30000); // max. number of steps increased
+  gMC->SetMaxNStep(-30000); // max. number of steps increased
 
   gMC->Gstpar(idtmed[2],"LOSS",5);
 

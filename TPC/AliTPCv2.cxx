@@ -1144,7 +1144,7 @@ void AliTPCv2::Init()
   fIDrift=gMC->VolId("TPC_Drift");
   fSecOld=-100; // fake number 
 
-  gMC->SetMaxNStep(30000); // max. number of steps increased
+  gMC->SetMaxNStep(-30000); // max. number of steps increased
 
   if (fPrimaryIonisation) {
       gMC->Gstpar(idtmed[2],"PRIMIO_E", 20.77); // 1st ionisation potential
