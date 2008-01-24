@@ -314,12 +314,12 @@ protected:
   Int_t     fKinkIndexes[3]; // array of indexes of posible kink candidates 
   Int_t     fV0Indexes[3];   // array of indexes of posible kink candidates 
 
-  Double32_t   fR[AliPID::kSPECIES]; //[0.,1.,8] combined "detector response probability"
-  Double32_t   fITSr[AliPID::kSPECIES]; //[0.,1.,8] "detector response probabilities" (for the PID)
-  Double32_t   fTPCr[AliPID::kSPECIES]; //[0.,1.,8] "detector response probabilities" (for the PID)
-  Double32_t   fTRDr[AliPID::kSPECIES]; //[0.,1.,8] "detector response probabilities" (for the PID)  
-  Double32_t   fTOFr[AliPID::kSPECIES]; //[0.,1.,8] "detector response probabilities" (for the PID)
-  Double32_t   fHMPIDr[AliPID::kSPECIES];//[0.,1.,8] "detector response probabilities" (for the PID)
+  Double32_t   fR[AliPID::kSPECIES]; //[0.,0.,8] combined "detector response probability"
+  Double32_t   fITSr[AliPID::kSPECIES]; //[0.,0.,8] "detector response probabilities" (for the PID)
+  Double32_t   fTPCr[AliPID::kSPECIES]; //[0.,0.,8] "detector response probabilities" (for the PID)
+  Double32_t   fTRDr[AliPID::kSPECIES]; //[0.,0.,8] "detector response probabilities" (for the PID)  
+  Double32_t   fTOFr[AliPID::kSPECIES]; //[0.,0.,8] "detector response probabilities" (for the PID)
+  Double32_t   fHMPIDr[AliPID::kSPECIES];//[0.,0.,8] "detector response probabilities" (for the PID)
 
   Double32_t fHMPIDtrkTheta;//[-2*pi,2*pi,16] theta of the track extrapolated to the HMPID, LORS
   // how much of this is needed?
@@ -332,21 +332,21 @@ protected:
   Double32_t   fZ;             // Impact parameter in Z
   Double32_t   fCdd,fCdz,fCzz; // Covariance matrix of the impact parameters 
 
-  Double32_t   fCchi2; // chi2 at the primary vertex
-  Double32_t   fITSchi2;        // chi2 in the ITS
-  Double32_t   fTPCchi2;        // chi2 in the TPC
-  Double32_t   fTRDchi2;        // chi2 in the TRD
-  Double32_t   fTOFchi2;        // chi2 in the TOF
-  Double32_t fHMPIDchi2;       // chi2 in the HMPID
+  Double32_t   fCchi2;          // [0.,0.,8] chi2 at the primary vertex
+  Double32_t   fITSchi2;        // [0.,0.,8] chi2 in the ITS
+  Double32_t   fTPCchi2;        // [0.,0.,8] chi2 in the TPC
+  Double32_t   fTRDchi2;        // [0.,0.,8] chi2 in the TRD
+  Double32_t   fTOFchi2;        // [0.,0.,8] chi2 in the TOF
+  Double32_t fHMPIDchi2;        // [0.,0.,8] chi2 in the HMPID
 
 
-  Double32_t  fITSsignal;      // detector's PID signal
-  Double32_t  fTPCsignal;     // detector's PID signal
-  Double32_t  fTPCsignalS;    // RMS of dEdx measurement
-  Double32_t  fTPCPoints[4];  // TPC points -first, max. dens, last and max density
+  Double32_t  fITSsignal;     // [0.,0.,10] detector's PID signal
+  Double32_t  fTPCsignal;     // [0.,0.,10] detector's PID signal
+  Double32_t  fTPCsignalS;    // [0.,0.,10] RMS of dEdx measurement
+  Double32_t  fTPCPoints[4];  // [0.,0.,10] TPC points -first, max. dens, last and max density
 
   Double32_t fTRDsignal;      // detector's PID signal
-  Double32_t fTRDsignals[kNPlane][kNSlice];  // TRD signals from all six planes in 3 slices each
+  Double32_t fTRDsignals[kNPlane][kNSlice];  //  TRD signals from all six planes in 3 slices each
   Double32_t fTRDQuality;     // trd quality factor for TOF
   Double32_t fTRDBudget;      // trd material budget
 
