@@ -50,12 +50,17 @@ public:
   void LadderSupportLayer6(TGeoVolume* moth); // Setting Ladder Support of Layer 6
   void EndCapSupportSystemLayer5(TGeoVolume* moth); // Setting End Cap Support + End Cap Assembly Layer 5
   void EndCapSupportSystemLayer6(TGeoVolume* moth); // Setting End Cap Support + End Cap Assembly Layer 6
+  void CreateMaterials();				// Method setting the materials 
 private:
   /////////////////////////////////////////////////////////////////////////////////
   // Names of the Sensitive Volumes of Layer 5 and Layer 6
   /////////////////////////////////////////////////////////////////////////////////
   static const char* fgSDDsensitiveVolName5;       // sens. vol. name for lay. 5
   static const char* fgSDDsensitiveVolName6;       // sens. vol. name for lay. 6
+  /////////////////////////////////////////////////////////////////////////////////
+  // Variable for Vertical Disalignement of Modules
+  /////////////////////////////////////////////////////////////////////////////////
+  static const Double_t fgkSSDModuleVerticalDisalignment;  // Vertical Disalignement of Volume
   /////////////////////////////////////////////////////////////////////////
   // Layer5 (lengths are in mm and angles in degrees)
   /////////////////////////////////////////////////////////////////////////
@@ -350,7 +355,6 @@ private:
   /////////////////////////////////////////////////////////////////////////
   // Private methods for private members generation
   /////////////////////////////////////////////////////////////////////////
-  void CreateMaterials();				// Method setting the materials 
   void CreateTransformationMatrices();  // Method setting the transformation matrices
   void CreateBasicObjects();			// Method creating the basic objects of ssd geometry
   void SetSSDSensor();					// Method setting the SSD Layer 5 and 6 sensors
@@ -602,3 +606,4 @@ private:
 ClassDef(AliITSv11GeometrySSD, 3)     // ITS v11 SSD geometry
 };
 #endif
+
