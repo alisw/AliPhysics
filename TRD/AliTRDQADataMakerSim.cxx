@@ -136,7 +136,7 @@ void AliTRDQADataMakerSim::InitDigits()
 
   hist[0] = new TH1D("qaTRD_digits_det", ";Detector Id of the digit", 540, -0.5, 539.5);
   hist[1] = new TH1D("qaTRD_digits_time", ";Time bin", 40, -0.5, 39.5);
-  hist[2] = new TH1D("qaTRD_digits_amp", ";Amplitude", 100, 0, 100.);
+  hist[2] = new TH1D("qaTRD_digits_amp", ";Amplitude", 100, -5.5, 94.5);
 
   for(Int_t i=0; i<kNhist; i++) {
     hist[i]->Sumw2();
@@ -230,7 +230,11 @@ void AliTRDQADataMakerSim::MakeDigits(TClonesArray * digits)
 
   TIter next(digits) ; 
   AliTRDdigit * digit ; 
+  
+  // Info("Make digits", "From the arrya");
+  
   while ( (digit = dynamic_cast<AliTRDdigit *>(next())) ) {
+    if (digit->GetAmp() < 1) continue;
     GetDigitsData(0)->Fill(digit->GetDetector());
     GetDigitsData(1)->Fill(digit->GetTime());
     GetDigitsData(2)->Fill(digit->GetAmp());
@@ -245,9 +249,15 @@ void AliTRDQADataMakerSim::MakeDigits(TTree * digits)
   // Makes data from digits tree
   //
 
+  // Info("Make digits", "From a tree");
+
   AliTRDdigitsManager *digitsManager = new AliTRDdigitsManager();
   digitsManager->CreateArrays();
   digitsManager->ReadDigits(digits);
+
+  TH1D *histDet = (TH1D*)GetDigitsData(0);
+  TH1D *histTime = (TH1D*)GetDigitsData(1);
+  TH1D *histSignal = (TH1D*)GetDigitsData(2);
 
   for (Int_t i = 0; i < AliTRDgeometry::kNdet; i++) {
 
@@ -270,9 +280,10 @@ void AliTRDQADataMakerSim::MakeDigits(TTree * digits)
 	for(Int_t time = 0; time < nTbins; time++) {
 
 	  Float_t signal = digitsIn->GetDataUnchecked(row,col,time);
-	  GetDigitsData(0)->Fill(i);
-	  GetDigitsData(1)->Fill(time);
-	  GetDigitsData(2)->Fill(signal);
+	  if (signal < 1) continue;
+	  histDet->Fill(i);
+	  histTime->Fill(time);
+	  histSignal->Fill(signal);
       	}
 
     //delete digitsIn;
@@ -310,6 +321,10 @@ void AliTRDQADataMakerSim::MakeSDigits(TTree * digits)
   digitsManager->CreateArrays();
   digitsManager->ReadDigits(digits);
 
+  TH1D *histDet = (TH1D*)GetSDigitsData(0);
+  TH1D *histTime = (TH1D*)GetSDigitsData(1);
+  TH1D *histSignal = (TH1D*)GetSDigitsData(2);
+
   for (Int_t i = 0; i < AliTRDgeometry::kNdet; i++) {
 
     AliTRDdataArrayS *digitsIn = (AliTRDdataArrayS *) digitsManager->GetDigits(i);      
@@ -331,10 +346,10 @@ void AliTRDQADataMakerSim::MakeSDigits(TTree * digits)
 	for(Int_t time = 0; time < nTbins; time++) {
 
 	  Float_t signal = digitsIn->GetDataUnchecked(row,col,time);
-	  if (signal <= 0) continue;
-	  GetSDigitsData(0)->Fill(i);
-	  GetSDigitsData(1)->Fill(time);
-	  GetSDigitsData(2)->Fill(signal);
+	  if (signal < 1) continue;
+	  histDet->Fill(i);
+	  histTime->Fill(time);
+	  histSignal->Fill(signal);
       	}
 
     // delete digitsIn;
