@@ -11,6 +11,7 @@ CLASS_HDRS:=  	AliHLTTPCTransform.h \
 		AliHLTTPCFileHandler.h \
 		AliHLTTPCBenchmark.h \
 		AliHLTTPCClusterFinder.h \
+		AliHLTTPCMapping.h \
 		AliHLTTPCDigitReader.h \
 		AliHLTTPCDigitReaderPacked.h \
 		AliHLTTPCDigitReaderUnpacked.h \

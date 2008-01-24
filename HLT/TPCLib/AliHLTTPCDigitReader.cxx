@@ -118,7 +118,7 @@ int AliHLTTPCDigitReader::NextBunch()
   return false;
 }
 
-AliHLTUInt32_t* AliHLTTPCDigitReader::GetSignals()
+const UInt_t* AliHLTTPCDigitReader::GetSignals()
 {
   // see header file for class documentation
   PrintMissingFastAccessWarning();
@@ -171,6 +171,13 @@ int AliHLTTPCDigitReader::RewindToPrevChannel()
   SetFlag(kNoRewind);
   if (!CheckFlag(kChannelCaching)) return -ENODATA;
   return -ENOSYS;
+}
+
+int AliHLTTPCDigitReader::GetBunchSize()
+{
+  // see header file for class documentation
+  PrintMissingFastAccessWarning();
+  return 0;
 }
 
 void AliHLTTPCDigitReader::PrintMissingFastAccessWarning()

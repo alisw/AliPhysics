@@ -29,6 +29,7 @@ using namespace std;
 #endif
 
 #include "AliHLTTPCDigitReaderDecoder.h"
+#include "AliHLTTPCMapping.h"
 #include "AliAltroDecoder.h"
 #include "AliAltroData.h"
 #include "AliAltroBunch.h"
@@ -37,7 +38,13 @@ ClassImp(AliHLTTPCDigitReaderDecoder)
 
 AliHLTTPCDigitReaderDecoder::AliHLTTPCDigitReaderDecoder()
   :
-  AliHLTTPCDigitReader()  
+  AliHLTTPCDigitReader(),
+  fAltroDecoder(NULL),
+  fAltroData(),
+  fAltroBunch(NULL),
+  fMapping(NULL),
+  fNextCounter(0),
+  fNextSignalMethodUsed(kFALSE)
 {
   // see header file for class documentation
   // or
@@ -49,48 +56,80 @@ AliHLTTPCDigitReaderDecoder::AliHLTTPCDigitReaderDecoder()
 AliHLTTPCDigitReaderDecoder::~AliHLTTPCDigitReaderDecoder()
 {
   // see header file for class documentation
+  if(fAltroDecoder){
+    delete fAltroDecoder;
+  }
+  if(fAltroBunch){
+    delete fAltroBunch;
+  }
+  if(fMapping){
+    delete fMapping;
+  }
 }
 
 int AliHLTTPCDigitReaderDecoder::InitBlock(void* ptr,unsigned long size, Int_t patch, Int_t slice)
 {
   // see header file for class documentation
+  fMapping = new AliHLTTPCMapping(patch);
+  fAltroDecoder = new AliAltroDecoder();
+  fAltroBunch = new AliAltroBunch();
+  fAltroDecoder->SetMemory((UChar_t*)ptr, size);
+  fAltroDecoder->Decode();
   return 0;
 }
 
 bool AliHLTTPCDigitReaderDecoder::NextChannel()
 {
   // see header file for class documentation
-  return false;
+  return fAltroDecoder->NextChannel(&fAltroData);
 }
 
 int AliHLTTPCDigitReaderDecoder::NextBunch()
 {
   // see header file for class documentation
-  return 0;
+  return fAltroData.NextBunch(fAltroBunch);
 }
 
 bool AliHLTTPCDigitReaderDecoder::NextSignal()
 {
   // see header file for class documentation
-  return false;
+  /*  nextSignalMethodUsed=kTRUE;
+  if(!fAltroBunch){      // this is true when NextChannel and Next bunch has not been called yet
+    if(NextChannel()){   // checks if ther is any pads with data
+      if(!NextBunch()){  // checks if there is any bunch
+	return false;
+      }
+    }
+    else{
+      return false;
+    }
+  }
+  
+  UInt_t bunchSize=fAltroBunchSize;
+  if(nextCounter==bunchSize){
+    nextCounter=0;
+    return false;
+    }*/
+  return true;
 }
 
-AliHLTUInt32_t* AliHLTTPCDigitReaderDecoder::GetSignals()
+const UInt_t* AliHLTTPCDigitReaderDecoder::GetSignals()
 {
   // see header file for class documentation
-  return NULL;
+  return fAltroBunch->GetData();
 }
 
 int AliHLTTPCDigitReaderDecoder::GetRow()
 {
   // see header file for class documentation
-  return 0;
+  return fMapping->GetRow(fAltroData.GetHadd());
 }
 
 int AliHLTTPCDigitReaderDecoder::GetPad()
 {
   // see header file for class documentation
-  return 0;
+  return fMapping->GetPad(fAltroData.GetHadd());
+    //    return 0;
 }
 
 int AliHLTTPCDigitReaderDecoder::GetSignal()
@@ -102,5 +141,15 @@ int AliHLTTPCDigitReaderDecoder::GetSignal()
 int AliHLTTPCDigitReaderDecoder::GetTime()
 {
   // see header file for class documentation
-  return 0;
+  if(!fNextSignalMethodUsed){// this is true if the bunch approach is used
+    return fAltroBunch->GetStartTimeBin();
+  }
+  else{
+    return fAltroBunch->GetStartTimeBin()+fNextCounter;
+  }
+}
+
+int AliHLTTPCDigitReaderDecoder::GetBunchSize()
+{
+  return fAltroBunch->GetBunchSize();
 }

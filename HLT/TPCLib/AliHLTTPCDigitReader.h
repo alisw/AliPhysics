@@ -137,7 +137,7 @@ public:
   /**
    * Get pointer to the the current ADC value.
    */
-  virtual AliHLTUInt32_t* GetSignals();
+  virtual const UInt_t* GetSignals();
 
   /**
    * Get the time bin of the current value.
@@ -173,6 +173,11 @@ public:
    * rewinds to the begnning of that channel.
    */
   int RewindChannel();
+
+  /**
+   * Returns the bunch size. Used by the fast decoder. 
+   */
+  virtual int GetBunchSize();
 
   /**
    * Access operator to the data of a specific time bin.

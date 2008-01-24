@@ -21,6 +21,10 @@
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 #include "AliHLTTPCDigitReader.h"
+#include "AliAltroData.h"
+class AliHLTTPCMapping;
+class AliAltroDecoder;
+class AliAltroBunch;
 
 /**
  * @class AliHLTTPCDigitReaderDecoder
@@ -41,15 +45,29 @@ public:
   int GetRow();
   int GetPad();
   int GetSignal();
-  AliHLTUInt32_t* GetSignals();
+  const UInt_t* GetSignals();
   int GetTime();
-
+  int GetBunchSize();
 protected:
   bool NextSignal();
 
 private:
+  /** copy constructor prohibited */
+  AliHLTTPCDigitReaderDecoder(const AliHLTTPCDigitReaderDecoder&);
+  /** assignment operator prohibited */
+  AliHLTTPCDigitReaderDecoder& operator=(const AliHLTTPCDigitReaderDecoder&);
 
-  ClassDef(AliHLTTPCDigitReaderDecoder, 0)
+  AliAltroDecoder *fAltroDecoder;                                  //! transient
+  AliAltroData fAltroData;                                         //! transient
+  AliAltroBunch *fAltroBunch;                                      //! transient
+  AliHLTTPCMapping *fMapping;                                      //! transient
+
+  UInt_t fNextCounter;                                             //! transient
+  Bool_t fNextSignalMethodUsed;                                    //! transient
+
+
+
+  ClassDef(AliHLTTPCDigitReaderDecoder, 1)
     
 };
 #endif
