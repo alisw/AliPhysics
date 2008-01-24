@@ -1,4 +1,4 @@
-# Makefile for AliRoot for MacOS X with gcc 64-bit mode
+# Makefile for AliRoot for MacOS X with gcc
 
 XARGS = xargs
 
@@ -30,7 +30,7 @@ NOOPT         = -O0 -g
 CXXOPT        = $(OPT) 
 CXXNOOPT      = $(NOOPT) 
 COPT	      = $(OPT)
-FOPT	      = $(OPT) -fno-second-underscore 
+FOPT	      = $(OPT) -fno-second-underscore -m64
 ifeq (g95,$(findstring g95,$(ROOTBUILD)))
 FOPT	     += -fbounds-check
 endif
@@ -41,19 +41,26 @@ CLIBCXXOPTS   =
 CLIBCOPT      =
 CLIBFOPT      = $(CLIBDEFS)
 
-CXXSTF        = -m64 -pipe -Wall -W -Wno-long-double -pipe -fbounds-check -fsigned-char -fno-common -fmessage-length=0 -Woverloaded-virtual -Weffc++ -Wconversion -fno-default-inline -fno-inline -I/usr/X11R6/include -I$(FINK_ROOT)/include
+CXXSTF        =  -m64 -pipe -Wall -W -Wno-long-double -pipe -fbounds-check -fsigned-char -fno-common -fmessage-length=0 -Woverloaded-virtual -Weffc++ -Wconversion -fno-default-inline -fno-inline -I/usr/X11R6/include -I$(FINK_ROOT)/include
 
 # Compiler flags
-CXXFLAGS      = $(CXXOPT) $(CXXSTF)
+CXXFLAGS      = $(CXXOPT) $(CXXSTF) -Weffc++
 
-ifeq (g95,$(findstring g95,$(ROOTBUILD)))
-CXXFLAGS+=-DFORTRAN_G95
+ifneq (,$(findstring g95,$(ROOTBUILD)))
+FFLAGS	      +=-DFORTRAN_G95
+else
+ifneq (,$(findstring gfortran,$(ROOTBUILD)))
+FFLAGS	      +=-DFORTRAN_GFORTRAN
+else
+FFLAGS	      +=
 endif
+endif
+
 CXXFLAGSNO    = $(CXXNOOPT) $(CXXSTF) 
 
 CFLAGS	      = $(COPT) -m64 -Wall -W -fno-common -pipe -I$(FINK_ROOT)/include
 
-FFLAGS        = $(CLIBFOPT) $(FOPT) -m64
+FFLAGS        = $(CLIBFOPT) $(FOPT)
 ifeq (g95,$(findstring g95,$(ROOTBUILD)))
 FFLAGS        += -ftrace=full
 endif
@@ -66,7 +73,7 @@ CINTFLAGS     =
 LD            = export MACOSX_DEPLOYMENT_TARGET=$(MACOSX_MAJOR).$(MACOSX_MINOR) ; \
 		unset LD_PREBIND ; \
 		g++
-LDFLAGS       = $(OPT) $(DICTLOAD) -m64
+LDFLAGS       = $(OPT) -m64 $(DICTLOAD)
 
 SHLD	     := $(LD)
 SOFLAGS      := -m64 -bundle -undefined dynamic_lookup
@@ -94,6 +101,6 @@ EXEFLAGS     := -bind_at_load
 ifeq (g95,$(findstring g95,$(ROOTBUILD)))
 SYSLIBS += -L$(shell g95 --print-search-dirs | sed -n -e 's/install: //p') -lf95
 else
-SYSLIBS += -ldl $(shell $(F77) -m64 -print-file-name=libgfortran.dylib)
-SYSLIBS += $(shell $(F77) -m64 -print-file-name=libgfortranbegin.a)
+SYSLIBS += -ldl $(shell $(F77) -print-file-name=libgfortran.dylib)
+SYSLIBS += $(shell $(F77) -print-file-name=libgfortranbegin.a)
 endif
