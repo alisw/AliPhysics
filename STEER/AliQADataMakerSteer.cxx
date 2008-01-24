@@ -591,7 +591,7 @@ Bool_t AliQADataMakerSteer::Run(const char * detectors, AliRawReader * rawReader
 	// Initialize all QA data makers for all detectors
 	for (UInt_t iDet = 0; iDet < fgkNDetectors ; iDet++) {
 		if (IsSelected(AliQA::GetDetName(iDet))) {
-			AliQADataMaker * qadm = GetQADataMaker(iDet, "Rec") ;
+			AliQADataMaker * qadm = GetQADataMaker(iDet, "rec") ;
 			if (!qadm) {
 				AliWarning(Form("AliQADataMaker not found for %s", AliQA::GetDetName(iDet))) ; 
 			} else {
@@ -603,7 +603,7 @@ Bool_t AliQADataMakerSteer::Run(const char * detectors, AliRawReader * rawReader
 	} 
 	fFirst = kFALSE ;
 		
-	return DoIt(AliQA::kRAWS, "Rec") ; 
+	return DoIt(AliQA::kRAWS, "rec") ; 
 }
 
 //_____________________________________________________________________________
@@ -613,13 +613,13 @@ Bool_t AliQADataMakerSteer::Run(const char * detectors, const char * fileName)
 	fCycleSame       = kTRUE ; 
 	fDetectors       = detectors ; 
 	
-	if ( !Init(AliQA::kRAWS, "Rec", fileName) ) 
+	if ( !Init(AliQA::kRAWS, "rec", fileName) ) 
 		return kFALSE ; 
 
 	// Initialize all QA data makers for all detectors
 	for (UInt_t iDet = 0; iDet < fgkNDetectors ; iDet++) {
 		if (IsSelected(AliQA::GetDetName(iDet))) {
-			AliQADataMaker * qadm = GetQADataMaker(iDet, "Rec") ;
+			AliQADataMaker * qadm = GetQADataMaker(iDet, "rec") ;
 			if (!qadm) {
 				AliWarning(Form("AliQADataMaker not found for %s", AliQA::GetDetName(iDet))) ; 
 			} else {
@@ -631,7 +631,7 @@ Bool_t AliQADataMakerSteer::Run(const char * detectors, const char * fileName)
 	} 
 	fFirst = kFALSE ;
 	
-	return DoIt(AliQA::kRAWS, "Rec") ; 
+	return DoIt(AliQA::kRAWS, "rec") ; 
 }
 
 //_____________________________________________________________________________
@@ -644,9 +644,9 @@ Bool_t AliQADataMakerSteer::Run(const char * detectors, const AliQA::TASKINDEX t
 
 	char * mode ; 
 	if ( (taskIndex == AliQA::kHITS) || (taskIndex == AliQA::kSDIGITS) || (taskIndex == AliQA::kDIGITS) ) 
-		mode = "Sim" ; 
+		mode = "sim" ; 
 	else if ( (taskIndex == AliQA::kRAWS) || (taskIndex == AliQA::kRECPOINTS) || (taskIndex == AliQA::kESDS) )
-		mode = "Rec" ; 
+		mode = "rec" ; 
 	else {
 		AliError(Form("%s not implemented", AliQA::GetTaskName(taskIndex).Data())) ; 
 		return rv ;
