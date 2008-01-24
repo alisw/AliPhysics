@@ -62,11 +62,27 @@ AliHLTTPCSliceTrackerComponent::AliHLTTPCSliceTrackerComponent()
   fVertex(NULL),
   fDoNonVertex(false),
   fDoPP(false),
+  fDoPbPb(false),
   fMultiplicity(4000),
   fBField(0.4),
   fnonvertextracking(kFALSE),
   fmainvertextracking(kTRUE),
-  fpInterMerger(NULL)
+  fpInterMerger(NULL),
+  fPhisegment(50),
+  fEtasegment(100),
+  fTrackletlength(3),
+  fTracklength(60),
+  fRowscopetracklet(6),
+  fRowscopetrack(6),
+  fMinPtFit(0),
+  fMaxangle(0.1745),
+  fGoodDist(5),
+  fHitChi2Cut(100),
+  fGoodHitChi2(5),
+  fTrackChi2Cut(50),
+  fMaxdist(50),
+  fMaxphi(0.1),
+  fMaxeta(0.1)
 {
   // see header file for class documentation
   // or
@@ -111,7 +127,7 @@ void AliHLTTPCSliceTrackerComponent::GetOutputDataSize( unsigned long& constBase
   // see header file for class documentation
   // XXX TODO: Find more realistic values.
   constBase = 0;
-  inputMultiplier = 0.2;
+  inputMultiplier = 1;
 }
 
 AliHLTComponent* AliHLTTPCSliceTrackerComponent::Spawn()
@@ -126,8 +142,8 @@ void AliHLTTPCSliceTrackerComponent::SetTrackerParam(Int_t phiSegments, Int_t et
 				   Double_t minPtFit, Double_t maxangle,
 				   Double_t goodDist, Double_t hitChi2Cut,
 				   Double_t goodHitChi2, Double_t trackChi2Cut,
-				   Int_t maxdist, Double_t maxphi,Double_t maxeta, bool /*vertexConstraints*/ )
-    {
+				   Int_t maxdist, Double_t maxphi,Double_t maxeta)
+{
   // see header file for class documentation
     //fTracker->SetClusterFinderParam( fXYClusterError, fZClusterError, kTRUE ); // ??
     //Set parameters input to the tracker
@@ -179,163 +195,154 @@ void AliHLTTPCSliceTrackerComponent::SetTrackerParam(Int_t phiSegments, Int_t et
     fTracker->InitVolumes();
     }
 
-void AliHLTTPCSliceTrackerComponent::SetTrackerParam( bool doPP, int multiplicity, double bField )
-    {
+
+void AliHLTTPCSliceTrackerComponent::SetTrackerParam( Bool_t doPP, Bool_t doPbPb, Int_t multiplicity, 
+						      Double_t bField, Int_t etasegment, Double_t hitchi2cut, 
+						      Int_t rowscopetracklet, Int_t rowscopetrack, 
+						      Int_t trackletlength, Int_t tracklength )
+{
   // see header file for class documentation
-    AliHLTTPCTransform::SetBField( bField );
-    Logging( kHLTLogDebug, "HLT::TPCSliceTracker::DoInit", "BField", "Setting b field to %f T\n", bField );
-
-    if ( doPP )
-	{
-	//tracker->SetClusterFinderParam(xyerror,zerror,kTRUE); // ??
-	/* the old setup used during TPC
-  	SetTrackerParam( 50, 100, 3, 10,
-	                 2, 2,
-	  	         0, 0.1745, 5, 100,
-	  	         5, 50, 50, 0.1, 0.1, kTRUE);
-	*/
-	  SetTrackerParam( 50,        // phi_segments:     Devide the space into phi_segments                                      
-			   100,       // ets_segments:     Devide the space into eta_segments                                       
-			   3,         // trackletlength:   Number of hits a tracklet has to have                                   
-			   50,         // tracklength:      Number of hits a track has to have                                      
-			   6,         // rowscopetracklet: Search range of rows for a tracklet                                     
-			   6,         // rowscopetrack:    Search range of rows for a track                                       
-			   0,         // min_pt_fit:       Cut for moment fit, use:SetMaxDca(min_pt_fit)                           
-			   AliHLTTPCTransform::Deg2Rad(10),
-			   // maxangle:         AliHLTTPCTransform::Deg2Rad(10), max angle for the three point look aheand         
-			   5,         // goodDist:         Threshold distancs between two hits when building tracklets             
-			   100,        // hitChi2Cut:       Max chi2 of added hit to track                                         
-			   5,         // goodHitChi2:      Stop looking for next hit to add if chi2 is less then goodHitChi2       
-			   50,        // trackChi2Cut:     Max chi2 for track after final fit                                      
-			   50,        // maxdist:          Maximum distance between two clusters when forming segments             
-			   0.1,       // maxphi:           Max phi difference for neighboring hits                                
-			   0.1,       // maxeta:           Max eta difference for neighboring hits                                 
-			   kTRUE);    // vertexConstrain:  False if one want to look for secondary vertex track 	  
-	}
-    else
-	{
-	int mults[] = { 1000, 2000, 4000, 8000 };
-	int multCount = 4;
-	int closestMult = 0;
-	int i;
-	int multDist, tmpMultDist;
-	if ( multiplicity>mults[closestMult] )
-	    multDist = multiplicity-mults[closestMult];
-	else
-	    multDist = mults[closestMult]-multiplicity;
-	for ( i = 1; i < multCount; i++ )
-	    {
-	    if ( multiplicity>mults[i] )
-		tmpMultDist = multiplicity-mults[i];
-	    else
-		tmpMultDist = mults[i]-multiplicity;
-	    if ( tmpMultDist < multDist )
-		{
-		closestMult = i;
-		multDist = tmpMultDist;
-		}
-	    }
-	
-	double bfs[] = { 0.2, 0.4 };
-	int bfCount = 2;
-	int closestBf = 0;
-	double bfDist, tmpBFDist;
-	if ( bField>bfs[closestBf] )
-	    bfDist = bField-bfs[closestBf];
-	else
-	    bfDist = bfs[closestBf]-bField;
-	for ( i = 1; i < bfCount; i++ )
-	    {
-	    if ( bField>bfs[i] )
-		tmpBFDist = bField-bfs[i];
-	    else
-		tmpBFDist = bfs[i]-bField;
-	    if ( tmpBFDist < bfDist )
-		{
-		closestBf = i;
-		bfDist = tmpBFDist;
-		}
-	    }
-
-	switch ( closestMult )
-	    {
-	    case 0: // 1000
-		switch ( closestBf )
-		    {
-		    case 0: // 0.2
-			SetTrackerParam( 50, 100, 3, 10,
-					2, 4,
-					0, 0.1745, 5, 100,
-					5, 50, 50, 0.1, 0.1, kTRUE );
-			break;
-		    case 1: // 0.4
-			SetTrackerParam( 50, 100, 3, 10,
-					 2, 4,
-					 0, 0.1745, 5, 100,
-					 5, 50, 50, 0.1, 0.1, kTRUE );
-			break;
-		    }
-		break;
-	    case 1: // 2000
-		switch ( closestBf )
-		    {
-		    case 0: // 0.2
-			SetTrackerParam( 50, 100, 3, 10,
-					 2, 4,
-					 0, 0.1745, 5, 30,
-					 5, 20, 50, 0.1, 0.1, kTRUE );
-			break;
-		    case 1: // 0.4
-			SetTrackerParam( 50, 100, 3, 10,
-					 2, 5,
-					 0, 0.1745, 5, 30,
-					 5, 20, 50, 0.1, 0.1, kTRUE );
-			break;
-		    }
-		break;
-	    case 2: // 4000
-		switch ( closestBf )
-		    {
-		    case 0: // 0.2
-			SetTrackerParam( 50, 100, 3, 10,
-					 2 , 10,
-					 0, 0.1745, 5, 20,
-					 5, 10 , 50, 0.1, 0.1, kTRUE );
-			break;
-		    case 1: // 0.4
-			SetTrackerParam( 50, 100, 3, 10,
-					 2, 10,
-					 0, 0.1745, 5, 20,
-					 5, 10, 50, 0.1, 0.1, kTRUE );
-			break;
-		    }
-		break;
-	    case 3: // 8000
-		switch ( closestBf )
-		    {
-		    case 0: // 0.2
-			SetTrackerParam( 50, 100, 3, 10,
-					 3, 15,
-					 0, 0.1745, 5, 10,
-					 5, 5, 50, 0.1, 0.1, kTRUE );
-			break;
-		    case 1: // 0.4
-			SetTrackerParam( 50, 100, 3, 10,
-					 2, 15,
-					 0, 0.1745, 5, 15,
-					 5, 5, 50, 0.1, 0.1, kTRUE );
-			break;
-		    }
-		break;
-	    }
-//	Logging( kHLTLogDebug, "HLT::TPCSliceTracker::DoInit", "BField", "Setting b field to %f\n", bfs[closestBf] );
-//	AliHLTTPCTransform::SetBField( bfs[closestBf] );
-//	AliHLTTPCTransform::SetBField( bField );
-//	Logging( kHLTLogDebug, "HLT::TPCSliceTracker::DoInit", "BField", "Setting b field to %f\n", bField );
-	}
+  AliHLTTPCTransform::SetBField( bField );
+  Logging( kHLTLogDebug, "HLT::TPCSliceTracker::DoInit", "BField", "Setting b field to %f T\n", bField );
+  
+  if ( doPP )
+    {
+      //tracker->SetClusterFinderParam(xyerror,zerror,kTRUE); // ??
+      
+      SetTrackerParam( 50, 100, 3, 10,
+		       2, 2,
+		       0, 0.1745, 5, 100,
+		       5, 50, 50, 0.1, 0.1);
     }
-
-
+  else if(doPbPb)
+    {
+      int mults[] = { 1000, 2000, 4000, 8000 };
+      int multCount = 4;
+      int closestMult = 0;
+      int i;
+      int multDist, tmpMultDist;
+      if ( multiplicity>mults[closestMult] )
+	multDist = multiplicity-mults[closestMult];
+      else
+	multDist = mults[closestMult]-multiplicity;
+      for ( i = 1; i < multCount; i++ )
+	{
+	  if ( multiplicity>mults[i] )
+	    tmpMultDist = multiplicity-mults[i];
+	  else
+	    tmpMultDist = mults[i]-multiplicity;
+	  if ( tmpMultDist < multDist )
+	    {
+	      closestMult = i;
+	      multDist = tmpMultDist;
+	    }
+	}
+      
+      double bfs[] = { 0.2, 0.4 };
+      int bfCount = 2;
+      int closestBf = 0;
+      double bfDist, tmpBFDist;
+      if ( bField>bfs[closestBf] )
+	bfDist = bField-bfs[closestBf];
+      else
+	bfDist = bfs[closestBf]-bField;
+      for ( i = 1; i < bfCount; i++ )
+	{
+	  if ( bField>bfs[i] )
+	    tmpBFDist = bField-bfs[i];
+	  else
+	    tmpBFDist = bfs[i]-bField;
+	  if ( tmpBFDist < bfDist )
+	    {
+	      closestBf = i;
+	      bfDist = tmpBFDist;
+	    }
+	}
+      
+      switch ( closestMult )
+	{
+	case 0: // 1000
+	  switch ( closestBf )
+	    {
+	    case 0: // 0.2
+	      SetTrackerParam( 50, 100, 3, 10,
+			       2, 4,
+			       0, 0.1745, 5, 100,
+			       5, 50, 50, 0.1, 0.1);
+	      break;
+	    case 1: // 0.4
+	      SetTrackerParam( 50, 100, 3, 10,
+			       2, 4,
+			       0, 0.1745, 5, 100,
+			       5, 50, 50, 0.1, 0.1);
+	      break;
+	    }
+	  break;
+	case 1: // 2000
+	  switch ( closestBf )
+	    {
+	    case 0: // 0.2
+	      SetTrackerParam( 50, 100, 3, 10,
+			       2, 4,
+			       0, 0.1745, 5, 30,
+			       5, 20, 50, 0.1, 0.1);
+	      break;
+	    case 1: // 0.4
+	      SetTrackerParam( 50, 100, 3, 10,
+			       2, 5,
+			       0, 0.1745, 5, 30,
+			       5, 20, 50, 0.1, 0.1);
+	      break;
+	    }
+	  break;
+	case 2: // 4000
+	  switch ( closestBf )
+	    {
+	    case 0: // 0.2
+	      SetTrackerParam( 50, 100, 3, 10,
+			       2 , 10,
+			       0, 0.1745, 5, 20,
+			       5, 10 , 50, 0.1, 0.1);
+	      break;
+	    case 1: // 0.4
+	      SetTrackerParam( 50, 100, 3, 10,
+			       2, 10,
+			       0, 0.1745, 5, 20,
+			       5, 10, 50, 0.1, 0.1);
+	      break;
+	    }
+	  break;
+	case 3: // 8000
+	  switch ( closestBf )
+	    {
+	    case 0: // 0.2
+	      SetTrackerParam( 50, 100, 3, 10,
+			       3, 15,
+			       0, 0.1745, 5, 10,
+			       5, 5, 50, 0.1, 0.1);
+	      break;
+	    case 1: // 0.4
+	      SetTrackerParam( 50, 100, 3, 10,
+			       2, 15,
+			       0, 0.1745, 5, 15,
+			       5, 5, 50, 0.1, 0.1);
+	      break;
+	    }
+	  break;
+	}
+      //	Logging( kHLTLogDebug, "HLT::TPCSliceTracker::DoInit", "BField", "Setting b field to %f\n", bfs[closestBf] );
+      //	AliHLTTPCTransform::SetBField( bfs[closestBf] );
+      //	AliHLTTPCTransform::SetBField( bField );
+      //	Logging( kHLTLogDebug, "HLT::TPCSliceTracker::DoInit", "BField", "Setting b field to %f\n", bField );
+    }
+  else
+    {
+      SetTrackerParam( 50, etasegment, trackletlength, tracklength,
+		       rowscopetracklet, rowscopetrack,
+		       0, 0.1745, 5, hitchi2cut,
+		       5, 50, 50, 0.1, 0.1);
+    }
+}
 	
 int AliHLTTPCSliceTrackerComponent::DoInit( int argc, const char** argv )
     {
@@ -351,26 +358,48 @@ int AliHLTTPCSliceTrackerComponent::DoInit( int argc, const char** argv )
     fDoNonVertex = false;
     Bool_t bDoMerger=kTRUE;
     fMultiplicity = 4000;
-    fBField = 0.4;
+    fBField = 0.5;
     fDoPP = false;
+    fDoPbPb = false;
+    fPhisegment=50;
+    fEtasegment=100;
+    fTrackletlength=3;
+    fTracklength=60;
+    fRowscopetracklet=6;
+    fRowscopetrack=6;
+    fMinPtFit=0;
+    fMaxangle=0.1745;
+    fGoodDist=5;
+    fHitChi2Cut=100;
+    fGoodHitChi2=5;
+    fTrackChi2Cut=50;
+    fMaxdist=50;
+    fMaxphi=0.1;
+    fMaxeta=0.1;
 
     int i = 0;
     char* cpErr;
     while ( i < argc )
 	{
-	if ( !strcmp( argv[i], "disable-merger" ) ){
+	if ( !strcmp( argv[i], "-disable-merger" ) ){
 	    bDoMerger = kFALSE;
 	    i++;
 	    continue;	    
 	}
 
-	if ( !strcmp( argv[i], "pp-run" ) )
+	if ( !strcmp( argv[i], "-pp-run" ) )
 	    {
 	    fDoPP = true;
 	    i++;
 	    continue;
 	    }
-	if ( !strcmp( argv[i], "multiplicity" ) )
+	if ( !strcmp( argv[i], "-PbPb-run" ) )
+	  {
+	    fDoPbPb = true;
+	    i++;
+	    continue;
+	  }
+	if ( !strcmp( argv[i], "-multiplicity" ) )
 	    {
 	    if ( argc <= i+1 )
 		{
@@ -386,7 +415,7 @@ int AliHLTTPCSliceTrackerComponent::DoInit( int argc, const char** argv )
 	    i += 2;
 	    continue;
 	    }
-	if ( !strcmp( argv[i], "bfield" ) )
+	if ( !strcmp( argv[i], "-bfield" ) )
 	    {
 	    if ( argc <= i+1 )
 		{
@@ -396,26 +425,26 @@ int AliHLTTPCSliceTrackerComponent::DoInit( int argc, const char** argv )
 	    fBField = strtod( argv[i+1], &cpErr );
 	    if ( *cpErr )
 		{
-		Logging( kHLTLogError, "HLT::TPCSliceTracker::DoInit", "Missing multiplicity", "Cannot convert B-field specifier '%s'.", argv[i+1] );
+		Logging( kHLTLogError, "HLT::TPCSliceTracker::DoInit", "Missing B-field", "Cannot convert B-field specifier '%s'.", argv[i+1] );
 		return EINVAL;
 		}
 	    i += 2;
 	    continue;
 	    }
 
-	if ( !strcmp( argv[i], "nonvertextracking" ) ){
+	if ( !strcmp( argv[i], "-nonvertextracking" ) ){
 	  fnonvertextracking = kTRUE;
 	  i++;
 	  continue;	    
 	}
 	
-	if ( !strcmp( argv[i], "mainvertextrackingoff" ) ){	
+	if ( !strcmp( argv[i], "-mainvertextrackingoff" ) ){	
 	  fmainvertextracking = kFALSE;
 	  i++;
 	  continue;	    
 	}
 	
-	if ( !strcmp( argv[i], "etarange" ) ){	
+	if ( !strcmp( argv[i], "-etarange" ) ){	
 	  if ( argc <= i+1 ){
 	    Logging( kHLTLogError, "HLT::TPCSliceTracker::DoInit", "Missing Eta range", "Missing Eta-range specifiers." );
 	    return ENOTSUP;
@@ -429,6 +458,107 @@ int AliHLTTPCSliceTrackerComponent::DoInit( int argc, const char** argv )
 	  i += 2;
 	  continue;
 	}
+	if ( !strcmp( argv[i], "-etasegment" ) )
+	    {
+	    if ( argc <= i+1 )
+		{
+		Logging( kHLTLogError, "HLT::TPCSliceTracker::DoInit", "Missing etasegment", "Missing etasegment specifier." );
+		return ENOTSUP;
+		}
+	    fEtasegment = strtol( argv[i+1], &cpErr,10);
+	    if ( *cpErr )
+		{
+		Logging( kHLTLogError, "HLT::TPCSliceTracker::DoInit", "Missing etasegment", "Cannot convert etasegment specifier '%s'.", argv[i+1] );
+		return EINVAL;
+		}
+	    i += 2;
+	    continue;
+	    }
+	
+	if ( !strcmp( argv[i], "-chi2cut" ) )
+	    {
+	    if ( argc <= i+1 )
+		{
+		Logging( kHLTLogError, "HLT::TPCSliceTracker::DoInit", "Missing chi2cut", "Missing chi2cut specifier." );
+		return ENOTSUP;
+		}
+	    fHitChi2Cut = strtod( argv[i+1], &cpErr );
+	    if ( *cpErr )
+		{
+		Logging( kHLTLogError, "HLT::TPCSliceTracker::DoInit", "Missing chi2cut", "Cannot convert chi2cut specifier '%s'.", argv[i+1] );
+		return EINVAL;
+		}
+	    i += 2;
+	    continue;
+	    }
+	if ( !strcmp( argv[i], "-rowscopetracklet" ) )
+	    {
+	    if ( argc <= i+1 )
+		{
+		Logging( kHLTLogError, "HLT::TPCSliceTracker::DoInit", "Missing RowScopeTracklet", "Missing etasegment specifier." );
+		return ENOTSUP;
+		}
+	    fRowscopetracklet = strtol( argv[i+1], &cpErr,10 );
+	    if ( *cpErr )
+		{
+		Logging( kHLTLogError, "HLT::TPCSliceTracker::DoInit", "Missing RowScopeTracklet", "Cannot convert etasegment specifier '%s'.", argv[i+1] );
+		return EINVAL;
+		}
+	    i += 2;
+	    continue;
+	    }
+
+	if ( !strcmp( argv[i], "-rowscopetrack" ) )
+	    {
+	    if ( argc <= i+1 )
+		{
+		Logging( kHLTLogError, "HLT::TPCSliceTracker::DoInit", "Missing RowScopeTrack", "Missing etasegment specifier." );
+		return ENOTSUP;
+		}
+	    fRowscopetrack = strtol( argv[i+1], &cpErr,10 );
+	    if ( *cpErr )
+		{
+		Logging( kHLTLogError, "HLT::TPCSliceTracker::DoInit", "Missing RowScopeTrack", "Cannot convert etasegment specifier '%s'.", argv[i+1] );
+		return EINVAL;
+		}
+	    i += 2;
+	    continue;
+	    }
+
+	if ( !strcmp( argv[i], "-trackletlength" ) )
+	    {
+	    if ( argc <= i+1 )
+		{
+		Logging( kHLTLogError, "HLT::TPCSliceTracker::DoInit", "Missing TrackletLength", "Missing etasegment specifier." );
+		return ENOTSUP;
+		}
+	    fTrackletlength = strtol( argv[i+1], &cpErr,10 );
+	    if ( *cpErr )
+		{
+		Logging( kHLTLogError, "HLT::TPCSliceTracker::DoInit", "Missing TrackletLength", "Cannot convert etasegment specifier '%s'.", argv[i+1] );
+		return EINVAL;
+		}
+	    i += 2;
+	    continue;
+	    }
+
+	if ( !strcmp( argv[i], "-tracklength" ) )
+	    {
+	    if ( argc <= i+1 )
+		{
+		Logging( kHLTLogError, "HLT::TPCSliceTracker::DoInit", "Missing TrackLength", "Missing etasegment specifier." );
+		return ENOTSUP;
+		}
+	    fTracklength = strtol( argv[i+1], &cpErr,10 );
+	    if ( *cpErr )
+		{
+		Logging( kHLTLogError, "HLT::TPCSliceTracker::DoInit", "Missing TrackLength", "Cannot convert etasegment specifier '%s'.", argv[i+1] );
+		return EINVAL;
+		}
+	    i += 2;
+	    continue;
+	    }
+
 	Logging(kHLTLogError, "HLT::TPCSliceTracker::DoInit", "Unknown Option", "Unknown option '%s'", argv[i] );
 	return EINVAL;
 	}
@@ -442,7 +572,7 @@ int AliHLTTPCSliceTrackerComponent::DoInit( int argc, const char** argv )
     if (bDoMerger)
       fpInterMerger = new AliHLTTPCInterMerger();
 
-    SetTrackerParam( fDoPP, fMultiplicity, fBField );
+    SetTrackerParam(fDoPP,fDoPbPb,fMultiplicity,fBField,fEtasegment,fHitChi2Cut,fRowscopetracklet,fRowscopetrack,fTrackletlength,fTracklength);
     return 0;
     }
 
@@ -714,8 +844,7 @@ void AliHLTTPCSliceTrackerComponent::SetTrackerParam1()
   // see header file for class documentation
   SetTrackerParam( 10, 20, 5, 10, 2,2,
 		   0, 1.31, 5, 100,
-		   50, 100, 50, 0.1, 0.1,
-		   true );
+		   50, 100, 50, 0.1, 0.1);
 }
 
 	

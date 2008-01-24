@@ -28,12 +28,41 @@ class AliHLTTPCInterMerger;
  * @class AliHLTTPCSliceTrackerComponent
  * The TPC conformal mapping tracker component.
  * 
- * The component has the following component arguments:
- * - disable-merger  disable merging of track segments
- * - pp-run          parameter set for pp run
- * - multiplicity    multiplicity to choose parameter set for
- * - bfield          magnatic field
+ * Component ID: \b TPCSliceTracker <br>
+ * Library: \b libAliHLTTPC.
+ *
+ * Mandatory arguments: <br>
+ * \li -bfield     <i> magnetic field   </i> <br> 
+ *      should allways be used. If there is no magnetic field, use 0.00001
  * 
+ * Optional arguments: <br>
+ * \li -pp-run <br>  
+ *      will give fixed trackparameters for p-p runs.
+ * \li -Pb-Pb-run <br>  
+ *      will give fixed trackparameters for Pb-Pb runs.
+ * \li -multiplicity     <i> multiplicity  </i> <br> 
+ *      set the multiplicity of your collitions. Used for Pb-Pb events.
+ * \li -disable-merger <br>
+ *      turns off the intermerging on sectorlevel. Only use in spacial cases.
+ * \li -nonvertextracking <br> 
+ *      the tracking will do a reconstruction of clusters without vertex constraint.
+ * \li -mainvertextrackingoff <br>
+ *      will turn off the tracking with vertex constraint. Use together with -nonvertextracking.
+ * \li -etarange   <i> eta range   </i> <br> 
+ *      sets the eta range for the tracking.
+ * \li -etasegment <i> eta segments   </i> <br> 
+ *      let you set the number of eta segments in the trscker.
+ * \li -chi2cut <i> chi²   </i> <br> 
+ *      set the chi² for the tracker.
+ * \li -rowscopetracklet <i> number of padrows   </i> <br> 
+ *     tells the tracker how many padrows down it should look for the next cluster when making tracklets.
+ * \li -rowscopetrack <i> number of padrows   </i> <br>
+ *     tells the tracker how many padrows down it should look for the next cluster when making track.
+ * \li -trackletlength <i> number of clusters   </i> <br>
+ *     the minimum number of clusters to be on a tracklet.
+ * \li -tracklength <i> number of clusters   </i> <br>
+ *     the minimum number of clusters to be on a track.
+ *
  * @ingroup alihlt_tpc
  */
 class AliHLTTPCSliceTrackerComponent : public AliHLTProcessor
@@ -71,15 +100,17 @@ protected:
 		       Double_t minPtFit=0,Double_t maxangle=1.31,
 		       Double_t goodDist=5,Double_t hitChi2Cut=10,
 		       Double_t goodHitChi2=20,Double_t trackChi2Cut=50,
-		       Int_t maxdist=50,Double_t maxphi=0.1,Double_t maxeta=0.1,
-		       bool vertexconstraint=true);
+		       Int_t maxdist=50,Double_t maxphi=0.1,Double_t maxeta=0.1);
 
   /**
    * Set Tracker parameters
    * Knowledge on that has been lost, so somebody has to insert more
    * documentation.
    */
-  void SetTrackerParam( bool doPP, int multiplicity, double bField );
+  void SetTrackerParam( Bool_t doPP, Bool_t doPbPb, Int_t multiplicity, 
+			Double_t bField, Int_t etasegment, Double_t hitchi2cut, 
+			Int_t rowscopetracklet, Int_t rowscopetrack, 
+			Int_t trackletlength, Int_t tracklength );
 
   /**
    * Set default tracker parameters
@@ -119,6 +150,8 @@ private:
   Bool_t fDoNonVertex;                                             //  see above
   /** */
   Bool_t  fDoPP;                                                   //  see above
+   /** */
+  Bool_t  fDoPbPb;                                                 //  see above
   /** multiplicity estimate */
   Int_t fMultiplicity;                                             //  see above
   /** magnetic field */
@@ -127,6 +160,40 @@ private:
   Bool_t fnonvertextracking;   // enable NONVERTEX Tracking
   Bool_t fmainvertextracking;  // enable MAINVERTEX Tracking
 
+  /** ParameterVariables for the trackeparameters */
+
+
+  /** phi_segments:     Devide the space into phi_segments */
+  Int_t fPhisegment;              //! transient    
+  /** ets_segments:     Devide the space into eta_segments */
+  Int_t fEtasegment;              //! transient
+  /** trackletlength:   Number of hits a tracklet has to have */
+  Int_t fTrackletlength;          //! transient
+  /** tracklength:      Number of hits a track has to have */
+  Int_t fTracklength;             //! transient
+  /** rowscopetracklet: Search range of rows for a tracklet */
+  Int_t fRowscopetracklet;        //! transient
+  /** rowscopetrack:    Search range of rows for a track */
+  Int_t fRowscopetrack;           //! transient
+  /** min_pt_fit:       Cut for moment fit, use:SetMaxDca(min_pt_fit) */
+  Double_t fMinPtFit;             //! transient
+  /** maxangle:         AliHLTTPCTransform::Deg2Rad(10), max angle for the three point look aheand */
+  Double_t fMaxangle;             //! transient
+  /** goodDist:         Threshold distancs between two hits when building tracklets */
+  Double_t fGoodDist;             //! transient
+  /** hitChi2Cut:       Max chi2 of added hit to track */
+  Double_t fHitChi2Cut;           //! transient
+  /** goodHitChi2:      Stop looking for next hit to add if chi2 is less then goodHitChi2 */
+  Double_t fGoodHitChi2;          //! transient
+  /** trackChi2Cut:     Max chi2 for track after final fit */
+  Double_t fTrackChi2Cut;         //! transient
+  /** maxdist:          Maximum distance between two clusters when forming segments */
+  Int_t fMaxdist;                 //! transient
+  /** maxphi:           Max phi difference for neighboring hits */
+  Double_t fMaxphi;               //! transient
+  /** maxeta:           Max eta difference for neighboring hits */
+  Double_t fMaxeta;               //! transient 
+ 
   /** merger object */
   AliHLTTPCInterMerger *fpInterMerger;                             //! transient
 
