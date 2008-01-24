@@ -27,7 +27,7 @@
 
 Int_t fPos[170000];
 Int_t iPos = 0;
-static Bool_t stDeb = kTRUE;
+//static Bool_t stDeb = kTRUE;
 
 ClassImp(AliHMPIDRawStream)
 
@@ -109,12 +109,12 @@ Bool_t AliHMPIDRawStream::Next()
   
   if(fRawReader->GetType() == 7)  {                             //New: Select Physics events, Old: Raw data size is not 0 and not 47148 (pedestal)
     fDDLNumber = fRawReader->GetDDLID();
-    Printf("DDL %i started to be decoded!.",fDDLNumber);
+//    Printf("DDL %i started to be decoded!.",fDDLNumber);
     InitVars(fRawReader->GetDataSize()/4);
     status = ReadHMPIDRawData();
-    if(status) Printf("Event DDL %i successfully decoded!.",fDDLNumber);
-    else Printf("Event DDL %i ERROR in decoding!.",fDDLNumber);
-    if(stDeb) DumpData(fRawReader->GetDataSize());
+//    if(status) Printf("Event DDL %i successfully decoded!.",fDDLNumber);
+//    else Printf("Event DDL %i ERROR in decoding!.",fDDLNumber);
+//    if(stDeb) DumpData(fRawReader->GetDataSize());
 //    stDeb=kFALSE;
   }
 //  return status;
@@ -242,6 +242,8 @@ Bool_t AliHMPIDRawStream::ReadDilogic(Int_t &cntDilogic)
     UInt_t pad = (fWord >> kbit12) & 0x3f;                                          //pad info in raw word is between bits: 12...17
     if(!CheckPad(pad)) continue;
     Int_t charge = fWord & 0xfff;
+//    if(charge==0) Printf(" CARICA ZERO!!! at %i",fPosition);
+//    if(charge==0) return kFALSE;
     fPad[fNPads] = GetPad(fDDLNumber,row,dilogic,pad);
     fCharge[fNPads] = charge;
     fNPads++;
