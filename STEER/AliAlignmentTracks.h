@@ -78,6 +78,8 @@ class AliAlignmentTracks : public TObject {
   Bool_t  GetUpdate() const { return fDoUpdate;}
   void WriteRealignObjArray(TString outfilename,AliGeomManager::ELayerID layerRangeMin,AliGeomManager::ELayerID layerRangeMin);
 
+  Int_t GetLastIndex(Int_t iLayer,Int_t iModule) const { return fLastIndex[iLayer][iModule]; }  
+
  protected:
 
   void InitIndex();
