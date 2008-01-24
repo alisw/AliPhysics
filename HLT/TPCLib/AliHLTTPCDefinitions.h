@@ -76,12 +76,25 @@ public:
   static const AliHLTComponentDataType fgkTracksDataType;          // see above
   /** vertex data structure */
   static const AliHLTComponentDataType fgkVertexDataType;          // see above
+
+  // Cluster & Tracks model data
+  /** cluster tracks model data type */
+  static const AliHLTComponentDataType fgkClusterTracksModelDataType; // see above
+  /** remaining clusters model data type */
+  static const AliHLTComponentDataType fgkRemainingClustersModelDataType; // see above
+  /** cluster tracks compressed data type */
+  static const AliHLTComponentDataType fgkClusterTracksCompressedDataType; // see above
+  /** remaining clusters compressed data type */
+  static const AliHLTComponentDataType fgkRemainingClustersCompressedDataType; // see above
+
+  // Calibration data
   /** pedestal calibration data */
   static const AliHLTComponentDataType fgkCalibPedestalDataType;   // see above
   /** signal calibration data */
   static const AliHLTComponentDataType fgkCalibPulserDataType;     // see above
   /** active pads data type, Used for cosmics test december 2007 */
   static const AliHLTComponentDataType fgkActivePadsDataType;     // see above
+
 
   ClassDef(AliHLTTPCDefinitions, 1);
 

@@ -46,6 +46,15 @@ const AliHLTComponentDataType AliHLTTPCDefinitions::fgkTrackSegmentsDataType =
   (AliHLTComponentDataType){sizeof(AliHLTComponentDataType),                          {'T','R','A','K','S','E','G','S'},  kAliHLTDataOriginAny} | kAliHLTDataOriginTPC;
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkTracksDataType =		      								  	      
   (AliHLTComponentDataType){sizeof(AliHLTComponentDataType),                          {'T','R','A','C','K','S',' ',' '},  kAliHLTDataOriginAny} | kAliHLTDataOriginTPC;
+
+const AliHLTComponentDataType AliHLTTPCDefinitions::fgkClusterTracksModelDataType =
+  (AliHLTComponentDataType){ sizeof(AliHLTComponentDataType),                         {'C','L','S','T','R','K','M','D'},  kAliHLTDataOriginAny} | kAliHLTDataOriginTPC;
+const AliHLTComponentDataType AliHLTTPCDefinitions::fgkRemainingClustersModelDataType =
+  (AliHLTComponentDataType) { sizeof(AliHLTComponentDataType),                        {'R','E','M','C','L','S','M','D'},  kAliHLTDataOriginAny} | kAliHLTDataOriginTPC;
+const AliHLTComponentDataType AliHLTTPCDefinitions::fgkClusterTracksCompressedDataType =
+  (AliHLTComponentDataType) { sizeof(AliHLTComponentDataType),                        {'C','L','S','T','R','K','C','M'},  kAliHLTDataOriginAny} | kAliHLTDataOriginTPC;
+const AliHLTComponentDataType AliHLTTPCDefinitions::fgkRemainingClustersCompressedDataType =
+  (AliHLTComponentDataType) { sizeof(AliHLTComponentDataType),                        {'R','E','M','C','L','S','C','M'},  kAliHLTDataOriginAny} | kAliHLTDataOriginTPC;
 										      								  	      
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkCalibPedestalDataType =	      								  	      
   (AliHLTComponentDataType){sizeof(AliHLTComponentDataType),                          {'C','A','L','_','P','E','D',' '},  kAliHLTDataOriginAny} | kAliHLTDataOriginTPC;

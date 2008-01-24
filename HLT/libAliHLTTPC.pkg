@@ -54,6 +54,17 @@ CLASS_HDRS:=  	AliHLTTPCTransform.h \
 		tracking-ca/AliHLTTPCCATracker.h \
 		tracking-ca/AliHLTTPCCATrack.h \
 		tracking-ca/AliHLTTPCCATrackPar.h \
+		comp/AliHLTTPCCompDataCompressorHelper.h \
+		comp/AliHLTTPCCompDumpComponent.h \
+		comp/AliHLTTPCCompModelAnalysis.h \
+		comp/AliHLTTPCCompModelConverter.h \
+		comp/AliHLTTPCCompModelConverterComponent.h \
+		comp/AliHLTTPCCompModelDeconverter.h \
+		comp/AliHLTTPCCompModelDeconverterComponent.h \
+		comp/AliHLTTPCCompModelDeflater.h \
+		comp/AliHLTTPCCompModelDeflaterComponent.h \
+		comp/AliHLTTPCCompModelInflater.h \
+		comp/AliHLTTPCCompModelInflaterComponent.h \
 		AliHLTTPCCalibPedestalComponent.h \
 		AliHLTTPCCalibPulserComponent.h
 
@@ -99,4 +110,4 @@ PACKCXXFLAGS := ${HLTCXXFLAGS}
 PACKCFLAGS   := ${HLTCLFAGS}
 PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
 
-EINCLUDE := HLT/TPCLib HLT/TPCLib/tracking HLT/TPCLib/tracking-ca HLT/BASE HLT/BASE/util TPC RAW STEER
+EINCLUDE := HLT/TPCLib HLT/TPCLib/tracking HLT/TPCLib/comp HLT/TPCLib/tracking-ca HLT/BASE HLT/BASE/util TPC RAW STEER
