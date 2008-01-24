@@ -49,6 +49,7 @@ public:
  AliTriggerConfiguration* GetConfiguration() { return fConfiguration; }
              TObjArray*   GetFiredClasses() const;
                   void    Print( const Option_t* opt ="" ) const;
+	       TString    GetTriggeredDetectors() const;
 protected:
              ULong64_t    fClassMask;          // UID ( bitwise OR of conditions mask )
                UChar_t    fClusterMask;        // UID ( bitwise OR of clusters mask )
@@ -58,7 +59,7 @@ private:
                 Bool_t    IsSelected( TString detName, TString& detectors ) const;
 		AliCentralTrigger( const AliCentralTrigger& ctp );
 
-   ClassDef( AliCentralTrigger, 2 )  // class for running the Central Trigger Processor
+   ClassDef( AliCentralTrigger, 3 )  // class for running the Central Trigger Processor
 };
 
 

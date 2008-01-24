@@ -371,3 +371,60 @@ Bool_t AliCentralTrigger::IsSelected( TString detName, TString& detectors ) cons
 
    return result;
 }
+
+//_____________________________________________________________________________
+TString AliCentralTrigger::GetTriggeredDetectors() const
+{
+  // Check the trigger mask, finds which trigger classes
+  // have been fired, load the corresponding trigger clusters and
+  // finally makes a list of the detectors that have been readout
+  // for each particular event
+
+  if (!fConfiguration) {
+    AliError("The trigger confiration has not yet been loaded!");
+    return "";
+  }
+
+  // Now loop over the trigger classes
+  const TObjArray& classesArray = fConfiguration->GetClasses();
+  Int_t nclasses = classesArray.GetEntriesFast();
+  UChar_t clustMask = 0;
+  for( Int_t j=0; j<nclasses; j++ ) {
+    AliTriggerClass* trclass = (AliTriggerClass*)classesArray.At( j );
+    if (trclass->GetMask() & fClassMask) { // class was fired
+      AliTriggerCluster *clust = trclass->GetCluster();
+      clustMask |= clust->GetClusterMask();
+    }
+  }
+
+  // Compare the stored cluster mask with the one
+  // that we get from trigger classes
+  // To be enables after we store the cluster mask in the trigger tree
+  //  if (clustMask != fClusterMask)
+  //    AliError(Form("Wrong cluster mask from trigger classes (%x), expecting (%x)!",(UInt_t)clustMask,(UInt_t)fClusterMask));
+
+  // Now loop over clusters and produce the string
+  // with the triggered detectors
+  TString trigDets;
+  const TObjArray& clustArray = fConfiguration->GetClusters();
+  Int_t nclust = clustArray.GetEntriesFast();
+  for( Int_t i=0; i<nclust; i++ ) {
+    AliTriggerCluster* clust = (AliTriggerCluster*)clustArray.At( i );
+    if (clustMask & clust->GetClusterMask()) { // the cluster was fired
+      TString detStr = clust->GetDetectorsInCluster();
+      TObjArray* det = detStr.Tokenize(" ");
+      Int_t ndet = det->GetEntriesFast();
+      for( Int_t j=0; j<ndet; j++ ) {
+	TString &detj = ((TObjString*)det->At(j))->String();
+         if((trigDets.CompareTo(detj) == 0) || 
+	    trigDets.BeginsWith(detj) ||
+	    trigDets.EndsWith(detj) ||
+	    trigDets.Contains( " "+detj+" " )) continue;
+         trigDets.Append( " " );
+         trigDets.Append( detj );
+      }
+    }
+  }
+
+  return trigDets;
+}

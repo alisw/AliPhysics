@@ -62,6 +62,8 @@ public:
 				 Bool_t deleteIntermediateFiles = kFALSE)
                    {fWriteRawData = detectors; fRawDataFileName = fileName;
 		   fDeleteIntermediateFiles = deleteIntermediateFiles;};
+  void           SetWriteSelRawData(Bool_t sel = kTRUE)
+                   {fWriteSelRawData = sel;}
   void           SetAlignObjArray(TObjArray *array)
                    {fAlignObjArray = array;
 		   fLoadAlignFromCDB = kFALSE;}
@@ -88,9 +90,11 @@ public:
   virtual Bool_t RunHitsDigitization(const char* detectors = "ALL");
   virtual Bool_t WriteRawData(const char* detectors = "ALL",
 			      const char* fileName = NULL,
-			      Bool_t deleteIntermediateFiles = kFALSE);
+			      Bool_t deleteIntermediateFiles = kFALSE,
+			      Bool_t selrawdata = kFALSE);
   virtual Bool_t WriteRawFiles(const char* detectors = "ALL");
-  virtual Bool_t ConvertRawFilesToDate(const char* dateFileName = "raw.date");
+  virtual Bool_t ConvertRawFilesToDate(const char* dateFileName = "raw.date",
+				       const char* dateFileName = "");
   virtual Bool_t ConvertDateToRoot(const char* dateFileName = "raw.date",
 				   const char* rootFileName = "raw.root");
   virtual Bool_t ConvertRaw2SDigits(const char* rawDirectory, const char* esdFile = "");
@@ -128,6 +132,7 @@ private:
   TString        fWriteRawData;       // write raw data for these detectors
   TString        fRawDataFileName;    // file name for the raw data file
   Bool_t         fDeleteIntermediateFiles; // delete intermediate raw data files
+  Bool_t         fWriteSelRawData;    // write detectors raw data in a separate file accoring to the trigger cluster
   Bool_t         fStopOnError;        // stop or continue on errors
 
   Int_t          fNEvents;            // number of events
@@ -159,7 +164,7 @@ private:
   //HLT
   TString        fRunHLT;             // HLT options, HLT is disabled if empty, default='default'
 
-  ClassDef(AliSimulation, 7)  // class for running generation, simulation and digitization
+  ClassDef(AliSimulation, 8)  // class for running generation, simulation and digitization
 };
 
 #endif

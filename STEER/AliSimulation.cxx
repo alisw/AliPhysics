@@ -161,6 +161,7 @@ AliSimulation::AliSimulation(const char* configFileName,
   fWriteRawData(""),
   fRawDataFileName(""),
   fDeleteIntermediateFiles(kFALSE),
+  fWriteSelRawData(kFALSE),
   fStopOnError(kFALSE),
 
   fNEvents(1),
@@ -206,6 +207,7 @@ AliSimulation::AliSimulation(const AliSimulation& sim) :
   fWriteRawData(sim.fWriteRawData),
   fRawDataFileName(""),
   fDeleteIntermediateFiles(kFALSE),
+  fWriteSelRawData(kFALSE),
   fStopOnError(sim.fStopOnError),
 
   fNEvents(sim.fNEvents),
@@ -684,7 +686,7 @@ Bool_t AliSimulation::Run(Int_t nEvents)
   // digits -> raw data
   if (!fWriteRawData.IsNull()) {
     if (!WriteRawData(fWriteRawData, fRawDataFileName, 
-		      fDeleteIntermediateFiles)) {
+		      fDeleteIntermediateFiles,fWriteSelRawData)) {
       if (fStopOnError) return kFALSE;
     }
   }
@@ -1048,7 +1050,8 @@ Bool_t AliSimulation::RunHitsDigitization(const char* detectors)
 //_____________________________________________________________________________
 Bool_t AliSimulation::WriteRawData(const char* detectors, 
 				   const char* fileName,
-				   Bool_t deleteIntermediateFiles)
+				   Bool_t deleteIntermediateFiles,
+				   Bool_t selrawdata)
 {
 // convert the digits to raw data
 // First DDL raw data files for the given detectors are created.
@@ -1058,6 +1061,8 @@ Bool_t AliSimulation::WriteRawData(const char* detectors,
 // If the file name has the extension ".root", the DATE file is converted
 // to a root file.
 // If deleteIntermediateFiles is true, the DATE file is deleted afterwards.
+// 'selrawdata' flag can be used to enable writing of detectors raw data
+// accoring to the trigger cluster.
 
   AliCodeTimerAuto("")
 
@@ -1069,7 +1074,12 @@ Bool_t AliSimulation::WriteRawData(const char* detectors,
   if (!dateFileName.IsNull()) {
     Bool_t rootOutput = dateFileName.EndsWith(".root");
     if (rootOutput) dateFileName += ".date";
-    if (!ConvertRawFilesToDate(dateFileName)) {
+    TString selDateFileName;
+    if (selrawdata) {
+      selDateFileName = "selected.";
+      selDateFileName+= dateFileName;
+    }
+    if (!ConvertRawFilesToDate(dateFileName,selDateFileName)) {
       if (fStopOnError) return kFALSE;
     }
     if (deleteIntermediateFiles) {
@@ -1088,6 +1098,16 @@ Bool_t AliSimulation::WriteRawData(const char* detectors,
       }
       if (deleteIntermediateFiles) {
 	gSystem->Unlink(dateFileName);
+      }
+      if (selrawdata) {
+	TString selFileName = "selected.";
+	selFileName        += fileName;
+	if (!ConvertDateToRoot(selDateFileName, selFileName)) {
+	  if (fStopOnError) return kFALSE;
+	}
+	if (deleteIntermediateFiles) {
+	  gSystem->Unlink(selDateFileName);
+	}
       }
     }
   }
@@ -1146,9 +1166,12 @@ Bool_t AliSimulation::WriteRawFiles(const char* detectors)
 }
 
 //_____________________________________________________________________________
-Bool_t AliSimulation::ConvertRawFilesToDate(const char* dateFileName)
+Bool_t AliSimulation::ConvertRawFilesToDate(const char* dateFileName,
+					    const char* selDateFileName)
 {
 // convert raw data DDL files to a DATE file with the program "dateStream"
+// The second argument is not empty when the user decides to write
+// the detectors raw data according to the trigger cluster.
 
   AliCodeTimerAuto("")
   
@@ -1164,6 +1187,9 @@ Bool_t AliSimulation::ConvertRawFilesToDate(const char* dateFileName)
   if (!runLoader) return kFALSE;
 
   AliInfo(Form("converting raw data DDL files to DATE file %s", dateFileName));
+  Bool_t selrawdata = kFALSE;
+  if (strcmp(selDateFileName,"") != 0) selrawdata = kTRUE;
+
   char command[256];
   // Note the option -s. It is used in order to avoid
   // the generation of SOR/EOR events.
@@ -1171,10 +1197,24 @@ Bool_t AliSimulation::ConvertRawFilesToDate(const char* dateFileName)
 	  dateFileName, runLoader->GetNumberOfEvents(),runLoader->GetHeader()->GetRun());
   FILE* pipe = gSystem->OpenPipe(command, "w");
 
+  Int_t selEvents = 0;
   for (Int_t iEvent = 0; iEvent < runLoader->GetNumberOfEvents(); iEvent++) {
     fprintf(pipe, "GDC\n");
     Float_t ldc = 0;
     Int_t prevLDC = -1;
+
+    if (selrawdata) {
+      // Check if the event was triggered by CTP
+      runLoader->GetEvent(iEvent);
+      if (!runLoader->LoadTrigger()) {
+	AliCentralTrigger *aCTP = runLoader->GetTrigger();
+	if (aCTP->GetClassMask()) selEvents++;
+      }
+      else {
+	AliWarning("No trigger can be loaded! Writing of selected raw data is abandoned !");
+	selrawdata = kFALSE;
+      }
+    }
 
     // loop over detectors and DDLs
     for (Int_t iDet = 0; iDet < AliDAQ::kNDetectors; iDet++) {
@@ -1207,8 +1247,70 @@ Bool_t AliSimulation::ConvertRawFilesToDate(const char* dateFileName)
 
   Int_t result = gSystem->ClosePipe(pipe);
 
+  if (!selrawdata && selEvents > 0) {
+    delete runLoader;
+    return (result == 0);
+  }
+
+  AliInfo(Form("converting selected by trigger cluster raw data DDL files to DATE file %s", selDateFileName));
+  
+  sprintf(command, "dateStream -c -s -D -o %s -# %d -C -run %d", 
+	  selDateFileName,selEvents,runLoader->GetHeader()->GetRun());
+  FILE* pipe2 = gSystem->OpenPipe(command, "w");
+
+  for (Int_t iEvent = 0; iEvent < runLoader->GetNumberOfEvents(); iEvent++) {
+
+    // Get the trigger decision and cluster
+    TString detClust;
+    runLoader->GetEvent(iEvent);
+    if (!runLoader->LoadTrigger()) {
+      AliCentralTrigger *aCTP = runLoader->GetTrigger();
+      if (aCTP->GetClassMask() == 0) continue;
+      detClust = aCTP->GetTriggeredDetectors();
+      AliInfo(Form("List of detectors to be read out: %s",detClust.Data()));
+    }
+
+    fprintf(pipe2, "GDC\n");
+    Float_t ldc = 0;
+    Int_t prevLDC = -1;
+
+    // loop over detectors and DDLs
+    for (Int_t iDet = 0; iDet < AliDAQ::kNDetectors; iDet++) {
+      // Write only raw data from detectors that
+      // are contained in the trigger cluster(s)
+      if (!IsSelected(AliDAQ::DetectorName(iDet),detClust)) continue;
+
+      for (Int_t iDDL = 0; iDDL < AliDAQ::NumberOfDdls(iDet); iDDL++) {
+
+        Int_t ddlID = AliDAQ::DdlID(iDet,iDDL);
+        Int_t ldcID = Int_t(ldc + 0.0001);
+        ldc += AliDAQ::NumberOfLdcs(iDet) / AliDAQ::NumberOfDdls(iDet);
+
+        char rawFileName[256];
+        sprintf(rawFileName, "raw%d/%s", 
+                iEvent, AliDAQ::DdlFileName(iDet,iDDL));
+
+	// check existence and size of raw data file
+        FILE* file = fopen(rawFileName, "rb");
+        if (!file) continue;
+        fseek(file, 0, SEEK_END);
+        unsigned long size = ftell(file);
+	fclose(file);
+        if (!size) continue;
+
+        if (ldcID != prevLDC) {
+          fprintf(pipe2, " LDC Id %d\n", ldcID);
+          prevLDC = ldcID;
+        }
+        fprintf(pipe2, "  Equipment Id %d Payload %s\n", ddlID, rawFileName);
+      }
+    }
+  }
+
+  Int_t result2 = gSystem->ClosePipe(pipe2);
+
   delete runLoader;
-  return (result == 0);
+  return ((result == 0) && (result2 == 0));
 }
 
 //_____________________________________________________________________________
