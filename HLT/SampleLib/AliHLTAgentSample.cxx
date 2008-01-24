@@ -29,6 +29,8 @@
 
 // header files of library components
 #include "AliHLTDummyComponent.h"
+#include "AliHLTSampleComponent1.h"
+#include "AliHLTSampleComponent2.h"
 
 // header file of the module preprocessor
 #include "AliHLTSamplePreprocessor.h"
@@ -118,6 +120,9 @@ int AliHLTAgentSample::RegisterComponents(AliHLTComponentHandler* pHandler) cons
   assert(pHandler);
   if (!pHandler) return -EINVAL;
   pHandler->AddComponent(new AliHLTDummyComponent);
+  pHandler->AddComponent(new AliHLTSampleComponent1);
+  pHandler->AddComponent(new AliHLTSampleComponent2);
+
   return 0;
 }
 

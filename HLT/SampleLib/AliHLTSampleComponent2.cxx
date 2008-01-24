@@ -28,12 +28,6 @@ using namespace std;
 
 #include "AliHLTSampleComponent2.h"
 
-/**
- * The global object used for automatic component registration, 
- * @note DO NOT use this component for calculation!
- */
-AliHLTSampleComponent2 gAliHLTSampleComponent2;
-
 ClassImp(AliHLTSampleComponent2)
 
 AliHLTSampleComponent2::AliHLTSampleComponent2()

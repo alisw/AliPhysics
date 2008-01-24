@@ -1,23 +1,69 @@
+//-*- Mode: C++ -*-
 // @(#) $Id$
-
 #ifndef ALIHLTSAMPLECOMPONENT1_H
 #define ALIHLTSAMPLECOMPONENT1_H
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
+
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               */
 
 /** @file   AliHLTSampleComponent1.h
     @author Matthias Richter, Timm Steinbeck
     @date   
-    @brief  A sample processing component for the HLT. */
+    @brief  A sample processing component for the HLT.
+*/
 
 #include "AliHLTProcessor.h"
 
 /**
  * @class AliHLTSampleComponent1
- * @brief An HLT sample component.
+ * An HLT sample component.
  * This component does not any data processing at all. It just
  * illustrates the existence of several components in ine library and
  * allows to set up a very simple chain with different components.
+ *
+ * Component ID: \b Sample-component1 <br>
+ * Library: \b libAliHLTSample.so
+ *
+ * Mandatory arguments: <br>
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formating -->
+ * \li -mandatory1     <i> teststring   </i> <br>
+ *      an argument with one parameter
+ * \li -mandatory2                           <br>
+ *      an argument without parameters
+ *
+ * Optional arguments: <br>
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formating -->
+ * \li -optional1      <i> teststring   </i> <br>
+ *      an argument with one parameter
+ * \li -optional2                            <br>
+ *      an argument without parameters
+ *
+ * Configuration: <br>
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formating -->
+ * \li -config1      <i> teststring   </i> <br>
+ *      a configuration argument with one parameter
+ * \li -config2                            <br>
+ *      a configuration argument without parameters
+ *
+ * Furthermore it illustrates the component argument scanning and the
+ * component configuration. There are actually two methods to init/
+ * configure a component:
+ * - via command line arguments. The arguments are specified in the HLT
+ *   chain configuration and are passed to the component during
+ *   initialization in @ref DoInit()
+ * - from a CDB entry. The CDB can contain configuration objects for a
+ *   component and the component can implement the handling
+ *
+ * The component implements the @ref alihltcomponent-low-level-interface.
+ * for data processing.
+ *
+ * Using the latter case, a component can also be reconfigured. Special
+ * events are propageted through the chain in order to trigger the re-
+ * configuration. The component needs to implement the function
+ * @ref Reconfigure(). The simplest version of a configuration object is
+ * a string object (TObjString) containing configuration arguments.
+ *
  * @ingroup alihlt_tutorial
  */
 class AliHLTSampleComponent1 : public AliHLTProcessor {
@@ -25,6 +71,7 @@ public:
   AliHLTSampleComponent1();
   virtual ~AliHLTSampleComponent1();
 
+  // AliHLTComponent interface functions
   const char* GetComponentID() { return "Sample-component1";}
   void GetInputDataTypes( vector<AliHLTComponentDataType>& list) {
     list.push_back(kAliHLTAnyDataType);
@@ -36,17 +83,27 @@ public:
   AliHLTComponent* Spawn() {return new AliHLTSampleComponent1;};
 
  protected:
-  
+  // AliHLTComponent interface functions
   int DoInit( int argc, const char** argv );
   int DoDeinit();
   int DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
 		       AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
 		       AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks );
+  int Reconfigure(const char* cdbEntry, const char* chainId);
 
   using AliHLTProcessor::DoEvent;
 
 private:
+  /**
+   * Configure the component.
+   * Parse a string for the configuration arguments and set the component
+   * properties.
+   *
+   * This function illustrates the scanning of an argument string. The string
+   * was presumably fetched from the CDB.
+   */
+  int Configure(const char* arguments);
 
-  ClassDef(AliHLTSampleComponent1, 0)
+  ClassDef(AliHLTSampleComponent1, 1)
 };
 #endif
