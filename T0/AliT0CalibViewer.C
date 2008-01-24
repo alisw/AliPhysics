@@ -37,6 +37,8 @@ void AliT0CalibViewer()
 		  "Draw CFD vs QTC");
   menu->AddButton("Draw CFDvsLED","DrawCFDvsLED()",
 		  "Draw CFD vs LED-CFD");
+  menu->AddButton("Draw Walk","DrawWalk()",
+		  "Draw CFD vs LED-CFD");
   menu->Show();
 }
 void OpenFile()
@@ -62,7 +64,7 @@ void DrawCFD()
   Bool_t down=false;
   Int_t index[20];
    
-  TCanvas *c1 = new TCanvas("c1", "c1",0,48,1280,951);
+  TCanvas *c1 = new TCanvas("c1", "CFD C side",0,48,1280,951);
   c1->Divide(4,3);
   gStyle->SetOptFit(1111);
   //c1->Divide(2,2);
@@ -72,28 +74,71 @@ void DrawCFD()
       c1->cd(i+1);
       sprintf(buf1,"T0_C_%i_CFD",i+1);
       TH1F *cfd = (TH1F*) gFile->Get(buf1);
-      //     cfd->Draw();
+      //    cfd->Draw();
+      
       TSpectrum *s = new TSpectrum(2*npeaks,1);
       Int_t nfound = s->Search(cfd,sigma," ",0.05);
       cout<<"Found "<<nfound<<" peaks sigma "<<sigma<<endl;;
       if(nfound!=0){
 	Float_t *xpeak = s->GetPositionX();
   	TMath::Sort(nfound, xpeak, index,down);
-  	Float_t xp = xpeak[index[0]];
+	Float_t xp = xpeak[index[0]];
+	cout<<" index[0] "<<index[0]<<endl;
+		//	Float_t xp = xpeak[1];
 	Int_t xbin = cfd->GetXaxis()->FindBin(xp);
 	Float_t yp = cfd->GetBinContent(xbin);
 	cout<<"xbin = "<<xbin<<"\txpeak = "<<xpeak[1]<<"\typeak = "<<yp<<endl;
 	Float_t hmax = xp+3*sigma;
 	Float_t hmin = xp-3*sigma;
 	cout<<hmin<< " "<<hmax<<endl;
-	cfd->GetXaxis()->SetRange(hmin-20,hmax+20);
-	//	cout<<" cfd range "<<mean<<" rms "<<rms<<" "<<hmin<<" "<<hmax<<endl;
+	cfd->GetXaxis()->SetRange(hmin-10,hmax+10);
+	cout<<" cfd range "<<hmin-10<<" "<<hmax+10<<endl;
+	cfd->GetXaxis()->SetLabelSize(0.03);
 	TF1 *g1 = new TF1("g1", "gaus", hmin, hmax);
-	//	cfd->Fit("g1","R");
-	cfd->Draw();
+		cfd->Fit("g1","R");
+		//	cfd->Draw();
+	
       }
+
     }
- 
+  TCanvas *c2 = new TCanvas("c2", "CFD A side",0,48,1280,951);
+  c2->Divide(4,3);
+  gStyle->SetOptFit(1111);
+  //c1->Divide(2,2);
+  Char_t buf1[10];
+  for (Int_t i=0; i<12; i++)
+    {
+      c2->cd(i+1);
+      sprintf(buf1,"T0_A_%i_CFD",i+1);
+      TH1F *cfd = (TH1F*) gFile->Get(buf1);
+      //    cfd->Draw();
+      
+      TSpectrum *s = new TSpectrum(2*npeaks,1);
+      Int_t nfound = s->Search(cfd,sigma," ",0.05);
+      cout<<"Found "<<nfound<<" peaks sigma "<<sigma<<endl;;
+      if(nfound!=0){
+	Float_t *xpeak = s->GetPositionX();
+  	TMath::Sort(nfound, xpeak, index,down);
+	Float_t xp = xpeak[index[0]];
+	cout<<" index[0] "<<index[0]<<endl;
+		//	Float_t xp = xpeak[1];
+	Int_t xbin = cfd->GetXaxis()->FindBin(xp);
+	Float_t yp = cfd->GetBinContent(xbin);
+	cout<<"xbin = "<<xbin<<"\txpeak = "<<xpeak[1]<<"\typeak = "<<yp<<endl;
+	Float_t hmax = xp+3*sigma;
+	Float_t hmin = xp-3*sigma;
+	cout<<hmin<< " "<<hmax<<endl;
+	cfd->GetXaxis()->SetRange(hmin-10,hmax+10);
+	cout<<" cfd range "<<hmin-10<<" "<<hmax+10<<endl;
+	cfd->GetXaxis()->SetLabelSize(0.03);
+	TF1 *g1 = new TF1("g1", "gaus", hmin, hmax);
+		cfd->Fit("g1","R");
+		//	cfd->Draw();
+	
+      }
+
+    }
+
 }
 //------------------------------------------------------------------------
 void DrawLED()
@@ -103,7 +148,7 @@ void DrawLED()
   Bool_t down=false;
   Int_t index[20];
   
-  TCanvas *c1 = new TCanvas("c1", "c1",0,48,1280,951);
+  TCanvas *c1 = new TCanvas("c1", "LED C side",0,48,1280,951);
   c1->Divide(4,3);
   
   Char_t buf1[20];
@@ -111,6 +156,139 @@ void DrawLED()
     {
       c1->cd(i+1);
       sprintf(buf1,"T0_C_%i_LED",i+1);
+      TH1F *cfd = (TH1F*) gFile->Get(buf1);
+       TSpectrum *s = new TSpectrum(2*npeaks,1);
+      Int_t nfound = s->Search(cfd,sigma," ",0.2);
+      cout<<"Found "<<nfound<<" peaks sigma "<<sigma<<endl;;
+      if(nfound!=0) {
+	Float_t *xpeak = s->GetPositionX();
+	TMath::Sort(nfound, xpeak, index,down);
+	Float_t xp = xpeak[index[0]];
+        Int_t xbin = cfd->GetXaxis()->FindBin(xp);
+        Float_t yp = cfd->GetBinContent(xbin);
+        cout<<"xbin = "<<xbin<<"\txpeak = "<<xpeak[index[0]]<<"\typeak = "<<yp<<endl;
+        Float_t hmin=xp-3*sigma;
+        Float_t hmax =xp+3*sigma;
+        cfd->GetXaxis()->SetRange(hmin,hmax);
+ 	cfd->GetXaxis()->SetLabelSize(0.03);
+	TF1 *g1 = new TF1("g1", "gaus", hmin, hmax);
+	cfd->Fit("g1","R");
+	//      cfd->Draw();
+	
+      }
+      
+    }
+  TCanvas *c2 = new TCanvas("c2", "LED A side",0,48,1280,951);
+  c2->Divide(4,3);
+  
+  Char_t buf1[20];
+  for (Int_t i=0; i<12; i++)
+    {
+      c2->cd(i+1);
+      sprintf(buf1,"T0_A_%i_LED",i+1);
+      TH1F *cfd = (TH1F*) gFile->Get(buf1);
+ 
+      TSpectrum *s = new TSpectrum(2*npeaks,1);
+      Int_t nfound = s->Search(cfd,sigma," ",0.2);
+      cout<<"Found "<<nfound<<" peaks sigma "<<sigma<<endl;;
+      if(nfound!=0) {
+	Float_t *xpeak = s->GetPositionX();
+	TMath::Sort(nfound, xpeak, index,down);
+	Float_t xp = xpeak[index[0]];
+        Int_t xbin = cfd->GetXaxis()->FindBin(xp);
+        Float_t yp = cfd->GetBinContent(xbin);
+        cout<<"xbin = "<<xbin<<"\txpeak = "<<xpeak[index[0]]<<"\typeak = "<<yp<<endl;
+        Float_t hmin=xp-3*sigma;
+        Float_t hmax =xp+3*sigma;
+        cfd->GetXaxis()->SetRange(hmin,hmax);
+	cfd->GetXaxis()->SetLabelSize(0.03);
+ 	TF1 *g1 = new TF1("g1", "gaus", hmin, hmax);
+	cfd->Fit("g1","R");
+	//      cfd->Draw();
+	
+      }
+      
+    }
+}
+
+//------------------------------------------------------------------------
+void DrawQTC()
+{
+  
+  TCanvas *c1 = new TCanvas("c1", "QTC C side",0,48,1280,951);
+   c1->Divide(4,3);
+   // c1->Divide(2,3);
+  
+  Char_t buf1[10];
+  for (Int_t i=0; i<12; i++)
+    {
+      c1->cd(i+1);
+      sprintf(buf1,"QTC%i",i+1);
+      
+      TH1F *qtc = (TH1F*) gFile->Get(buf1);
+      
+      Float_t mean = qtc->GetMean();
+      Float_t rms = qtc->GetRMS();
+      Float_t hminR=mean - 0.1*mean;
+      Float_t hmaxR =mean + 0.1*mean;
+      qtc->GetXaxis()->SetRange(hminR,hmaxR);
+      Float_t hmin=mean - 3*rms;
+      Float_t hmax =mean + 3*rms;
+      qtc->GetXaxis()->SetRange(hmin,hmax);
+
+     // TF1 *g2 = new TF1("g2", "gaus", hmin, hmax);
+       //             qtc->Fit("g2","RQ");
+	qtc->GetXaxis()->SetLabelSize(0.03);
+       
+       qtc->Draw();
+    }
+  
+  TCanvas *c2 = new TCanvas("c2", "QTC A side",0,48,1280,951);
+   c2->Divide(4,3);
+   // c1->Divide(2,3);
+  
+  Char_t buf1[10];
+  for (Int_t i=12; i<24; i++)
+    {
+      c2->cd(i+1-12);
+      sprintf(buf1,"QTC%i",i+1);
+      
+      TH1F *qtc = (TH1F*) gFile->Get(buf1);
+      
+      Float_t mean = qtc->GetMean();
+      Float_t rms = qtc->GetRMS();
+      Float_t hminR=mean - 0.1*mean;
+      Float_t hmaxR =mean + 0.1*mean;
+      qtc->GetXaxis()->SetRange(hminR,hmaxR);
+      Float_t hmin=mean - 3*rms;
+      Float_t hmax =mean + 3*rms;
+      qtc->GetXaxis()->SetRange(hmin,hmax);
+      // TF1 *g2 = new TF1("g2", "gaus", hmin, hmax);
+       //             qtc->Fit("g2","RQ");
+ 	qtc->GetXaxis()->SetLabelSize(0.03);
+      
+       qtc->Draw();
+    }
+  
+  
+}
+
+//------------------------------------------------------------------------
+void DrawLEDminCFD()
+{
+  Int_t npeaks = 10;
+  Int_t sigma=10.;
+  Bool_t down=false;
+  Int_t index[20];
+  
+  TCanvas *c1 = new TCanvas("c1", " LED-CFD C side",0,48,1280,951);
+  c1->Divide(4,3);
+  
+  Char_t buf1[20];
+  for (Int_t i=0; i<12; i++)
+    {
+      c1->cd(i+1);
+      sprintf(buf1,"LEDminCFD%i",i+1);
       TH1F *cfd = (TH1F*) gFile->Get(buf1);
       cfd->Draw();
       TSpectrum *s = new TSpectrum(2*npeaks,1);
@@ -126,61 +304,21 @@ void DrawLED()
         Float_t hmin=xp-3*sigma;
         Float_t hmax =xp+3*sigma;
         cfd->GetXaxis()->SetRange(hmin,hmax);
- 	TF1 *g1 = new TF1("g1", "gaus", hmin, hmax);
-	cfd->Fit("g1","R");
-	//      cfd->Draw();
+	TF1 *g1 = new TF1("g1", "gaus", hmin, hmax);
+        cfd->Fit("g1","RQ");
+
 	
       }
       
     }
-}
-
-//------------------------------------------------------------------------
-void DrawQTC()
-{
-  
-  TCanvas *c1 = new TCanvas("c1", "QTC",0,48,1280,951);
-  // c1->Divide(4,3);
-  c1->Divide(2,3);
-  
-  Char_t buf1[10];
-  for (Int_t i=0; i<12; i++)
-    {
-      c1->cd(i+1);
-      sprintf(buf1,"QTC%i",i+1);
-      TH1F *qtc = (TH1F*) gFile->Get(buf1);
-      Float_t mean = qtc->GetMean();
-      Float_t rms = qtc->GetRMS();
-      Float_t hminR=mean - 0.1*mean;
-      Float_t hmaxR =mean + 0.1*mean;
-      qtc->GetXaxis()->SetRange(hminR,hmaxR);
-      Float_t hmin=mean - 3*rms;
-      Float_t hmax =mean + 3*rms;
-      qtc->GetXaxis()->SetRange(hmin,hmax);
-      // TF1 *g2 = new TF1("g2", "gaus", hmin, hmax);
-       //             qtc->Fit("g2","RQ");
-       qtc->Draw();
-    }
-  
-  
-}
-
-//------------------------------------------------------------------------
-void DrawLEDminCFD()
-{
-  Int_t npeaks = 10;
-  Int_t sigma=10.;
-  Bool_t down=false;
-  Int_t index[20];
-  
-  TCanvas *c1 = new TCanvas("c1", "c1",0,48,1280,951);
-  c1->Divide(4,3);
+ TCanvas *c2 = new TCanvas("c2", "LED-CFD A side",0,48,1280,951);
+  c2->Divide(4,3);
   
   Char_t buf1[20];
-  for (Int_t i=0; i<12; i++)
+  for (Int_t i=12; i<24; i++)
     {
-      c1->cd(i+1);
-      sprintf(buf1,"LED-CFD%i",i+1);
+      c2->cd(i+1-12);
+      sprintf(buf1,"LEDminCFD%i",i+1);
       TH1F *cfd = (TH1F*) gFile->Get(buf1);
       cfd->Draw();
       TSpectrum *s = new TSpectrum(2*npeaks,1);
@@ -238,11 +376,95 @@ void DrawCFDvsQTC()
   Int_t index[20];
   Char_t buf1[10], buf2[10];
   
+  TCanvas *c1 = new TCanvas("c1", "CFD vs QTC C side",0,48,1280,951);
+  gStyle->SetOptStat(111111);
+  c1->Divide(4,3);
+  
+  for (Int_t i=0; i<12; i++)
+    {
+      c1->cd(i+1);
+      sprintf(buf1,"T0_C_%i_CFD",i+1);
+      sprintf(buf2,"CFDvsQTC%i",i+1);
+      cout<<buf1<<" "<<buf2<<endl;
+      TH2F *qtc_cfd = (TH2F*) gFile->Get(buf2);
+      TH1F *cfd = (TH1F*) gFile->Get(buf1);
+      //       cfd->Draw();
+      TSpectrum *s = new TSpectrum(2*npeaks,1);
+      Int_t nfound = s->Search(cfd,sigma," ",0.05);
+      cout<<"Found "<<nfound<<" peaks sigma "<<sigma<<endl;;
+      if(nfound!=0){
+	Float_t *xpeak = s->GetPositionX();
+  	TMath::Sort(nfound, xpeak, index,down);
+  	Float_t xp = xpeak[index[0]];
+	Int_t xbin = cfd->GetXaxis()->FindBin(xp);
+	Float_t yp = cfd->GetBinContent(xbin);
+	cout<<"xbin = "<<xbin<<"\txpeak = "<<xpeak[1]<<"\typeak = "<<yp<<endl;
+	Float_t hmax = xp+10*sigma;
+	Float_t hmin = xp-10*sigma;
+	cout<<hmin<< " "<<hmax<<endl;
+	//	    cfd->GetXaxis()->SetRange(hmin,hmax);
+	//	    TF1 *g1 = new TF1("g1", "gaus", hmin, hmax);
+	// cfd->Fit("g1","R");
+	qtc_cfd->GetYaxis()->SetRange(hmin,hmax);
+	qtc_cfd->Draw();
+	
+      }
+      
+    }
+  TCanvas *c2 = new TCanvas("c2", "CFD vs QTC A side",0,48,1280,951);
+  gStyle->SetOptStat(111111);
+  c2->Divide(4,3);
+  
+  for (Int_t i=12; i<24; i++)
+    {
+      c2->cd(i+1-12);
+      sprintf(buf1,"T0_A_%i_CFD",i+1-12);
+      sprintf(buf2,"CFDvsQTC%i",i+1);
+      cout<<buf1<<" "<<buf2<<endl;
+      TH2F *qtc_cfd = (TH2F*) gFile->Get(buf2);
+      TH1F *cfd = (TH1F*) gFile->Get(buf1);
+      //       cfd->Draw();
+      TSpectrum *s = new TSpectrum(2*npeaks,1);
+      Int_t nfound = s->Search(cfd,sigma," ",0.05);
+      cout<<"Found "<<nfound<<" peaks sigma "<<sigma<<endl;;
+      if(nfound!=0){
+	Float_t *xpeak = s->GetPositionX();
+  	TMath::Sort(nfound, xpeak, index,down);
+  	Float_t xp = xpeak[index[0]];
+	Int_t xbin = cfd->GetXaxis()->FindBin(xp);
+	Float_t yp = cfd->GetBinContent(xbin);
+	cout<<"xbin = "<<xbin<<"\txpeak = "<<xpeak[1]<<"\typeak = "<<yp<<endl;
+	Float_t hmax = xp+10*sigma;
+	Float_t hmin = xp-10*sigma;
+	cout<<hmin<< " "<<hmax<<endl;
+	//	    cfd->GetXaxis()->SetRange(hmin,hmax);
+	//	    TF1 *g1 = new TF1("g1", "gaus", hmin, hmax);
+	// cfd->Fit("g1","R");
+	qtc_cfd->GetYaxis()->SetRange(hmin,hmax);
+	qtc_cfd->Draw();
+	
+      }
+      
+    }
+  
+  
+  
+}
+//------------------------------------------------------------------------
+void DrawWalk()
+{
+  Int_t npeaks = 20;
+  Int_t sigma=3.;
+  Bool_t down = false;
+
+  Int_t index[20];
+  Char_t buf1[10], buf2[10];
+  
   TCanvas *c1 = new TCanvas("c1", "c1",0,48,1280,951);
   gStyle->SetOptStat(0);
-  c1->Divide(3,2);
+  c1->Divide(4,3);
   
-  for (Int_t i=0; i<5; i++)
+  for (Int_t i=0; i<12; i++)
     {
       c1->cd(i+1);
       sprintf(buf1,"T0_C_%i_CFD",i+1);
@@ -273,6 +495,7 @@ void DrawCFDvsQTC()
 	cout<<"  qtc_cfd "<<hminbin<<" "<<hmaxbin<<" "<<nbins<<endl;
 	//  qtc_cfd->Draw();
 	TProfile *pr_y = qtc_cfd->ProfileX();
+	Float_t maxHr=pr_y->GetBinCenter(hmaxbin);
 	
 	pr_y->SetMaximum(hmax);
 	pr_y->SetMinimum(hmin);
@@ -289,14 +512,14 @@ void DrawCFDvsQTC()
 	      //	cout<<ng<<" "<<pr_y->GetBinContent(ip)<<" "<<yg<<endl;
 	      ng++;}
 	    else {
-	      xx[ip/20] = Float_t (ip);
+	      xx[ip/20] = Float_t (pr_y->GetBinCenter(ip));
 	      yy[ip/20] = yg/ng;
 	      yg=0;
 	      ng=0;
-	      //	      cout<<ip<<" "<<ip/20<<" "<< xx[ip/20]<<" "<< yy[ip/20]<<endl;
+	     	      cout<<ip<<" "<<ip/20<<" "<< xx[ip/20]<<" "<< yy[ip/20]<<endl;
 	    }
 	  }
-	TH2F *hr = new TH2F("hr"," ",np,0,nbins, np, hmin, hmax);
+	TH2F *hr = new TH2F("hr"," ",np,0,maxHr, np, hmin, hmax);
 	hr->Draw();
 	TGraph *gr = new TGraph(np,xx,yy);
 	gr->SetMinimum(hmin);
@@ -323,14 +546,17 @@ void DrawCFDvsLED()
   Int_t npeaks = 20;
   Int_t sigma=2.;
   Char_t buf1[10], buf2[10];
-  
-  for (Int_t i=0; i<1; i++)
+   TCanvas *c1 = new TCanvas("c1", "c1",0,48,1280,951);
+  gStyle->SetOptStat(0);
+  c1->Divide(4,3);
+  for (Int_t i=0; i<12; i++)
     {
-      //   c1->cd(i+1);
+      c1->cd(i+1);
       sprintf(buf1,"T0_C_%i_CFD",i+1);
-      sprintf(buf2,"CFD_LED%i",i+1);
+      sprintf(buf2,"CFDvsLED%i",i+1);
       
       TH2F *qtc_cfd = (TH2F*) gFile->Get(buf2);
+      //qtc_cfd->Draw();
       TH1F *cfd = (TH1F*) gFile->Get(buf1);
       //       cfd->Draw();
       TSpectrum *s = new TSpectrum(2*npeaks,1);
@@ -357,8 +583,8 @@ void DrawCFDvsLED()
 	Int_t hmaxbin=  qtc_cfd->GetXaxis()->GetLast();
 	Int_t nbins= qtc_cfd->GetXaxis()->GetNbins();
 	cout<<"  qtc_cfd "<<hminbin<<" "<<hmaxbin<<" "<<nbins<<endl;
-	//  qtc_cfd->Draw();
-	TProfile *pr_y = qtc_cfd->ProfileX();
+        qtc_cfd->Draw();
+	/*TProfile *pr_y = qtc_cfd->ProfileX();
 	
 	pr_y->SetMaximum(hmax);
 	pr_y->SetMinimum(hmin);
@@ -393,9 +619,9 @@ void DrawCFDvsLED()
 	
 	// pr_y->Rebin(10);
 	//  pr_y->Draw();
-	
+	*/
       }
-      
+ 
     }
   
 

@@ -9,6 +9,7 @@
  * See cxx source for full Copyright notice                               
  ***************************************************************************/
 #include "TGNumberEntry.h"
+#include "TGTextEntry.h"
 #include "TObject.h"
 
 class AliT0CalibLaserData : public TObject
@@ -16,19 +17,24 @@ class AliT0CalibLaserData : public TObject
  public:
   AliT0CalibLaserData ();
   AliT0CalibLaserData(const AliT0CalibLaserData &calibda) : TObject(calibda),
-  	           fRunNumber(0) {}
+    fTEntry(0),
+    fFileName(" ")
+    {}
   AliT0CalibLaserData & operator= (const AliT0CalibLaserData  &) {return *this;}
   virtual ~AliT0CalibLaserData() {}
-  void ReadHistSize(Int_t rNumber=905);
+  void ReadHistSize();
   void DoOk();
   void            ReadData();
+  void OpenFile();
 
  private:
-  Int_t           fRunNumber;       // run number
-  TGNumberEntry * fEntries[30];     //for GUI
+  TGNumberEntry * fEntries[30];     //for GUI histogram limits
+  TGTextEntry * fTEntry;     //for GUI file name
   double          fHistLimits[30];  // histogram limits
+  const char *fFileName;     // file name
 
-  ClassDef(AliT0CalibLaserData,1)
+
+  ClassDef(AliT0CalibLaserData,2)
 };
 
 #endif
