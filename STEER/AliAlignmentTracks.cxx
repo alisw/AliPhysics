@@ -969,3 +969,30 @@ Bool_t AliAlignmentTracks::Misalign(const char *misalignObjFileName, const char*
     }
   return kTRUE;
 }
+
+
+//________________________________________________
+void AliAlignmentTracks::WriteRealignObjArray(TString outfilename,AliGeomManager::ELayerID layerRangeMin,AliGeomManager::ELayerID layerRangeMax){
+  
+  Int_t last=0;
+  TClonesArray *clonesArray=new TClonesArray("AliAlignObjParams",2200);
+  TClonesArray &alo=*clonesArray;
+  for (Int_t iLayer = layerRangeMin-AliGeomManager::kFirstLayer; iLayer <= (layerRangeMax - AliGeomManager::kFirstLayer);iLayer++) {
+  
+    for (Int_t iModule = 0; iModule < AliGeomManager::LayerSize(iLayer + AliGeomManager::kFirstLayer); iModule++) {
+     
+      AliAlignObj *alignObj = fAlignObjs[iLayer][iModule]; 
+      new(alo[last])AliAlignObjParams(*alignObj);
+      last++;
+    }
+  }
+  TFile *file=new TFile(outfilename.Data(),"RECREATE");
+  file->cd();
+ 
+  alo.Write("ITSAlignObjs",TObject::kSingleKey);
+  file->Close();    
+ 
+     
+  delete clonesArray;
+  return;
+}
