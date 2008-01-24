@@ -1,6 +1,8 @@
 #ifndef ALIITSRAWSTREAMSPDERRORLOG_H
 #define ALIITSRAWSTREAMSPDERRORLOG_H
 
+/* $Id$ */
+
 ///////////////////////////////////////////////////////////////////////
 // Author: Henrik Tydesjo                                            //
 // For easier handling of error messages from AliITSRawStreamSPD.    //
@@ -44,7 +46,8 @@ class AliITSRawStreamSPDErrorLog : public TObject {
 
   TGraph* GetConsErrEvent(UInt_t errorCode, UInt_t eq);
   TH1F*   GetConsErrType(UInt_t eq);
-  TH1F*   GetConsErrFraction(UInt_t eq);
+  TH1F*   GetConsErrFraction(UInt_t eq);        // NB!!! Take care of deleting returned object later
+  TH1F*   GetConsErrFractionUnScaled(UInt_t eq);
   TH1F*   GetConsErrPos(UInt_t errorCode, UInt_t eq);
   TGText* GetText() {return fText;}
 

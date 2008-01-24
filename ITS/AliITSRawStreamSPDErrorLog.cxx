@@ -9,6 +9,8 @@
 #include "AliITSRawStreamSPDErrorLog.h"
 #include "AliLog.h"
 
+/* $Id$ */
+
 ClassImp(AliITSRawStreamSPDErrorLog)
 //________________________________________________________________________________________________
 AliITSRawStreamSPDErrorLog::AliITSRawStreamSPDErrorLog() :
@@ -368,6 +370,15 @@ TH1F* AliITSRawStreamSPDErrorLog::GetConsErrFraction(UInt_t eq) {
     //    returnhisto->SetMaximum(1.);
     return returnhisto;
   }
+  else {
+    AliWarning(Form("Eq nr (%d) out of bounds",eq));
+    return NULL;
+  }
+}
+//________________________________________________________________________________________________
+TH1F* AliITSRawStreamSPDErrorLog::GetConsErrFractionUnScaled(UInt_t eq) {
+  // returns a pointer to the histogram
+  if (eq<20) return fConsErrFraction[eq];
   else {
     AliWarning(Form("Eq nr (%d) out of bounds",eq));
     return NULL;
