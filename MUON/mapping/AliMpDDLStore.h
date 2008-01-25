@@ -98,6 +98,7 @@ class AliMpDDLStore : public  TObject {
     Bool_t ReadTrigger();
     Bool_t SetTriggerDDLs();
     Bool_t SetManus();
+    Bool_t ReadBusPatchSpecial();
     Bool_t SetPatchModules();
     Bool_t SetBusPatchLength();
     Int_t  GetLocalBoardId(TString name) const;
@@ -106,6 +107,8 @@ class AliMpDDLStore : public  TObject {
     static AliMpDDLStore* fgInstance; ///< Singleton instance
     static const Int_t    fgkNofDDLs; ///< Total number of DDLs
     static const Int_t    fgkNofTriggerDDLs; ///< Total number of trigger DDLs
+    static const TString  fgkRevertKeyword; ///< A keyword for ReadBusPatchSpecial()
+    static const TString  fgkExplicitKeyword; ///< A keyword for ReadBusPatchSpecial()
 
     // data members	
     TObjArray     fDDLs;           ///< Array of DDL objects

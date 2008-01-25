@@ -214,7 +214,26 @@ The DDL id is needed for the rawdata generation only.
 To generate this file, the macro MUONGenerateBusPatch.C could be used.
 
 
-\subsection mapping_s3_sub8  crate.dat
+\subsection mapping_s3_sub7  BusPatchSpecial.dat
+
+Lines starting with # are comments.
+
+Contains the list of bus patches which manu readout is
+not in the standard order. The format:
+
+<pre>
+KEYWORD  DDLs  BusPatches [ManuIDs}
+         where KEYWORD = REVERT or EXPLICIT
+</pre>
+
+- For the bus patches following the REVERT keyword,
+  the manus are just reordered in a reverted order.
+- For the bus patches following the EXPLICIT keyword,
+the manus filled with a standard procedure (using the DetElemIdToBusPatch.dat
+file) are replaced with the list of manus in this file.
+
+
+\subsection mapping_s3_sub9  crate.dat
   
 Muon trigger electronics configuration file (decoded in class 
 AliMUONTriggerCrateStore) directly copy/paste from the ALICE PRR 

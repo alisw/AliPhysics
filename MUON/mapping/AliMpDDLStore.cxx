@@ -58,6 +58,8 @@ ClassImp(AliMpDDLStore)
 AliMpDDLStore* AliMpDDLStore::fgInstance = 0;
 const Int_t    AliMpDDLStore::fgkNofDDLs = 20;
 const Int_t    AliMpDDLStore::fgkNofTriggerDDLs = 2;
+const TString  AliMpDDLStore::fgkRevertKeyword = "REVERT"; 
+const TString  AliMpDDLStore::fgkExplicitKeyword = "EXPLICIT";
 
 //
 // static methods
@@ -124,6 +126,7 @@ AliMpDDLStore::AliMpDDLStore()
     ReadTrigger();
     SetTriggerDDLs();
     SetManus();
+    ReadBusPatchSpecial();
     SetPatchModules();
     SetBusPatchLength();
 }
@@ -322,7 +325,6 @@ Bool_t  AliMpDDLStore::SetTriggerDDLs()
     // Create DDL if it does not yet exist and set it to the crate
     AliMpDDL* ddl = (AliMpDDL*)fDDLs.At(iDDL);
     if ( !ddl) {
-      cout << "ReadRegionalTrigger: creating DDL: " << iDDL << endl;
       ddl = new AliMpDDL(iDDL);
       fDDLs.AddAt(ddl, iDDL);
     }
@@ -465,6 +467,89 @@ Bool_t AliMpDDLStore::SetManus() {
 
     return true;
 }
+
+//______________________________________________________________________________
+Bool_t AliMpDDLStore::ReadBusPatchSpecial()
+{
+/// Read file with bus patches with a special order of manus
+/// and reset the manus arrays filled via SetManu function
+
+  TString infile = AliMpFiles::BusPatchSpecialFilePath();
+
+  ifstream in(infile, ios::in);
+  if (!in) {
+    AliErrorStream() << "Data file " << infile << " not found.";
+    return false;
+  }
+
+  char line[255];
+
+  while ( in.getline(line,255) ) {
+
+    if ( line[0] == '#' ) continue;
+
+    TString tmp(AliMpHelper::Normalize(line));
+    TObjArray* stringList = tmp.Tokenize(TString(" "));
+
+    TString sKey = ((TObjString*)stringList->At(0))->GetString();
+    
+    TString sDDL = ((TObjString*)stringList->At(1))->GetString();
+    TArrayI ddlList;
+    AliMpHelper::DecodeName(sDDL,';',ddlList);
+
+    TString sBusPatch = ((TObjString*)stringList->At(2))->GetString();
+    TArrayI busPatchList;
+    AliMpHelper::DecodeName(sBusPatch,',',busPatchList);
+    
+    // Loop over DDL and Bus Patch
+    for (Int_t iDDL = 0; iDDL < ddlList.GetSize(); ++iDDL ) {
+      for (Int_t iBusPatch = 0; iBusPatch < busPatchList.GetSize(); ++iBusPatch) {
+        // Global bus patch ID
+        Int_t busPatchID 
+          = AliMpBusPatch::GetGlobalBusID(
+              busPatchList.At(iBusPatch), ddlList.At(iDDL));
+        
+        // Get this bus patch
+        AliMpBusPatch* busPatch = GetBusPatch(busPatchID);
+        if ( ! busPatch ) {
+          AliErrorStream() << "Bus patch " << busPatchID << " does not exist." << endl;
+          return kFALSE;
+        }
+     
+        if ( sKey == fgkRevertKeyword ) {
+          AliDebugStream(3)
+            << "Reverting readout of bus patch " << busPatchID  << endl;
+        
+          // Now revert the manus in this bus patch
+          busPatch->RevertReadout();     
+        }
+        else if ( sKey == fgkExplicitKeyword ) {
+        
+          busPatch->ResetReadout();
+
+          TString sManus = ((TObjString*)stringList->At(3))->GetString();
+          TArrayI manuList;
+          AliMpHelper::DecodeName(sManus,',',manuList);
+
+          AliDebugStream(3)
+            << "Reseting readout of bus patch " << busPatchID  
+            << "  manus: " << sManus.Data() << endl;
+
+          for (Int_t i = 0; i < manuList.GetSize(); i++) {
+            busPatch->AddManu(manuList.At(i));
+          }
+        }
+        else {             
+          AliErrorStream() << "Unrecognized key." << endl;
+          return kFALSE;
+        }
+      }
+    }
+  }
+  
+  return kTRUE;
+}    
+ 
 
 //______________________________________________________________________________
 Bool_t AliMpDDLStore::SetPatchModules() {

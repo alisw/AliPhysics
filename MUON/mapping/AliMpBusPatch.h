@@ -32,7 +32,9 @@ class AliMpBusPatch : public  TObject {
     Bool_t AddManu(Int_t manuId);
     Bool_t SetNofManusPerModule(Int_t manuNumber = 0);
     void   SetCableLength(Float_t length);
-
+    void   RevertReadout();
+    void   ResetReadout();
+  
     // get methods
     Int_t  GetId() const;
     Int_t  GetDEId() const;

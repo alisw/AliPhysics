@@ -67,6 +67,7 @@ const TString AliMpFiles::fgkTriggerLocalBoards = "RegionalCrate";
 const TString AliMpFiles::fgkTriggerGlobalBoards = "GlobalCrate";
 const TString AliMpFiles::fgkBusPatchFileName = "DetElemIdToBusPatch";
 const TString AliMpFiles::fgkBusPatchLengthFileName = "BusPatchLength";
+const TString AliMpFiles::fgkBusPatchSpecialFileName = "BusPatchSpecial";
 //______________________________________________________________________________
 AliMpFiles::~AliMpFiles() 
 {
@@ -174,6 +175,14 @@ TString AliMpFiles::BusPatchLengthFilePath()
 /// Return path to data file with bus patch mapping.
 
   return GetTop() + fgkDataDir + "/" + fgkBusPatchLengthFileName + fgkDataExt;
+}  
+
+//______________________________________________________________________________
+TString AliMpFiles::BusPatchSpecialFilePath()
+{
+/// Return path to data file with special bus patch mapping.
+
+  return GetTop() + fgkDataDir + "/" + fgkBusPatchSpecialFileName + fgkDataExt;
 }  
 
 //______________________________________________________________________________

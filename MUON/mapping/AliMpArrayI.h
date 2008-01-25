@@ -30,6 +30,8 @@ class AliMpArrayI : public TObject
     // methods
     Bool_t Add(Int_t value, Bool_t warn=kTRUE);
     Bool_t Remove(Int_t value);
+    Bool_t Revert();
+    void   Reset();
 
     // set methods
     void SetSize(Int_t size);

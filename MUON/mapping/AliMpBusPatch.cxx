@@ -81,7 +81,7 @@ AliMpBusPatch::AliMpBusPatch(TRootIOCtor* /*ioCtor*/)
     fId(),
     fDEId(),
     fDdlId(),
-    fManus(),
+    fManus(false),
     fNofManusPerModule(false),
     fCableLength(-1)
 {
@@ -209,6 +209,22 @@ Bool_t AliMpBusPatch::SetNofManusPerModule(Int_t manuNumber)
   
   return false; 
 }     
+
+//______________________________________________________________________________
+void  AliMpBusPatch::RevertReadout()
+{
+/// Revert order of manus
+
+  fManus.Revert();
+}
+
+//______________________________________________________________________________
+void  AliMpBusPatch::ResetReadout()
+{
+/// Revert order of manus
+
+  fManus.Reset();
+}
 
 //______________________________________________________________________________
 Int_t AliMpBusPatch::GetNofManus() const

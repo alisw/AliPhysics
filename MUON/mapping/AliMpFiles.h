@@ -41,6 +41,7 @@ class AliMpFiles : public TObject
     //
     static TString BusPatchFilePath(); 
     static TString BusPatchLengthFilePath(); 
+    static TString BusPatchSpecialFilePath(); 
 
     // de names
     //
@@ -119,6 +120,7 @@ class AliMpFiles : public TObject
     static const TString fgkTriggerGlobalBoards;///<  global board name to id mapping
     static const TString fgkBusPatchFileName;  ///< DetElemIdToBusPatch file name
     static const TString fgkBusPatchLengthFileName;///< BusPatch length file name
+    static const TString fgkBusPatchSpecialFileName;///< BusPatch special file name
 
   ClassDef(AliMpFiles, 0) //File names and paths 
 };  

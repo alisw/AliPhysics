@@ -150,6 +150,40 @@ Bool_t AliMpArrayI::Remove(Int_t value)
 }
 
 //_____________________________________________________________________________
+Bool_t  AliMpArrayI::Revert()
+{
+/// Revert the order of elements
+
+  if ( fSort ) {
+    AliErrorStream() << "Cannot revert sorted array." << endl;
+    return false;
+  }  
+
+  Int_t size = GetSize();
+  TArrayI newArray(size);
+  Int_t idx = 0 ;
+  for ( Int_t i = size-1 ; i >= 0 ; i--) {
+    Int_t value = GetValue(i);
+    newArray.AddAt(value,idx++);
+  }
+
+  for (Int_t i = 0; i < size ; i++) {
+    fValues[i]=newArray.At(i);
+  }
+  return true;
+}  
+
+//_____________________________________________________________________________
+void AliMpArrayI::Reset()
+{
+/// Reset the array
+
+  fValues.Set(fgkDefaultSize);
+  fNofValues = 0;
+  fLimits = AliMpIntPair(INT_MIN,INT_MAX);
+} 
+
+//_____________________________________________________________________________
 void AliMpArrayI::SetSize(Int_t size)
 {
 /// Set given size to the array
