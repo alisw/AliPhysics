@@ -1,5 +1,5 @@
 // $Id$
-// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
+// Main authors: Matevz Tadel & Alja Mrak-Tadel & Bogdan Vulpescu: 2006, 2007
 
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
@@ -232,8 +232,13 @@ void AliEveMUONChamberGL::DrawChamberFrame() const
       yRad  = frameCoord[3];
       z     = frameCoord[4];
 
-      xRad += 0.0;
-      yRad += 0.0;
+      if (fChamber->GetID() < 2) {
+	xRad += TMath::Sign(15.0,(Double_t)xRad);
+	yRad += TMath::Sign(15.0,(Double_t)yRad);
+      } else {
+	xRad += TMath::Sign( 5.0,(Double_t)xRad);
+	yRad += TMath::Sign( 5.0,(Double_t)yRad);
+      }
 
       glBegin(GL_LINE_LOOP);
 

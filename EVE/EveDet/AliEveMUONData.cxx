@@ -1,21 +1,11 @@
 // $Id$
-// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
+// Main authors: Matevz Tadel & Alja Mrak-Tadel & Bogdan Vulpescu: 2006, 2007
 
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
-
-//
-// Sources:
-//
-// GetTrackerMapping = AliMUONDigitMaker::GetMapping
-// GetTriggerMapping = AliMUONDigitMaker::TriggerDigits
-// GetTriggerChamber = AliMUONDigitMaker::GetTriggerChamber
-// LoadRawTracker    = MUONRawStreamTracker.C
-// LoadRawTrigger    = MUONRawStreamTrigger.C
-//
 
 #include "AliEveMUONData.h"
 
@@ -36,10 +26,15 @@
 #include <AliMUONVDigit.h>
 #include "AliMUONDigitStoreV1.h"
 #include "AliMUONVDigitStore.h"
+#include "AliMUONTrackParam.h"
+#include "AliMUONTrack.h"
+#include "AliESDMuonTrack.h"
+#include "AliESDEvent.h"
 #include "TTree.h"
 #include "TString.h"
 #include "TClonesArray.h"
 #include "TList.h"
+#include "TFile.h"
 
 
 //______________________________________________________________________________
@@ -245,6 +240,66 @@ void AliEveMUONData::LoadRecPoints(TTree* tree)
   }
 
   delete clusterStore;
+
+}
+
+//______________________________________________________________________________
+void AliEveMUONData::LoadRecPointsFromESD(Char_t *fileName)
+{
+  //
+  // load reconstructed points stored in AliESDs.root
+  // load local trigger information
+  //
+
+  TFile* esdFile = TFile::Open(fileName);
+  if (!esdFile || !esdFile->IsOpen()) {
+    cout << "opening ESD file " << fileName << "failed" << endl;
+    return;
+  }
+  TTree* esdTree = (TTree*) esdFile->Get("esdTree");
+  if (!esdTree) {
+    cout << "no ESD tree found" << endl;
+    esdFile->Close();
+    return;
+  }
+  AliESDEvent* esdEvent = new AliESDEvent();
+  esdEvent->ReadFromTree(esdTree);
+
+  AliMUONVCluster *cluster;
+  AliMUONTrackParam *trackParam;
+  AliESDMuonTrack *esdTrack;
+  Int_t detElemId, chamber, nTrackParam;
+  Double_t clsX, clsY, clsZ, charge;
+  
+  if (esdTree->GetEvent(gEvent->GetEventId()) <= 0) {
+    cout << "fails to read ESD object for event " << gEvent->GetEventId() << endl;
+    return;
+  }
+    
+  Int_t nTracks = Int_t(esdEvent->GetNumberOfMuonTracks());
+  for (Int_t iTrack = 0; iTrack < nTracks; iTrack++) {
+    esdTrack = esdEvent->GetMuonTrack(iTrack);
+    if (!esdTrack->ClustersStored()) continue;
+    AliMUONTrack muonTrack(*esdTrack);
+    nTrackParam = muonTrack.GetTrackParamAtCluster()->GetEntries();
+    for(Int_t iCluster = 0; iCluster < nTrackParam; iCluster++) {
+      trackParam = (AliMUONTrackParam *) muonTrack.GetTrackParamAtCluster()->At(iCluster);
+      cluster = trackParam->GetClusterPtr();
+      chamber   = cluster->GetChamberId();
+      detElemId = cluster->GetDetElemId();
+      charge  = cluster->GetCharge();
+      clsX = cluster->GetX();
+      clsY = cluster->GetY();
+      clsZ = cluster->GetZ();
+      
+      fChambers[chamber]->RegisterCluster(detElemId,0,clsX,clsY,clsZ,charge);
+      fChambers[chamber]->RegisterCluster(detElemId,1,clsX,clsY,clsZ,charge);
+      
+    }
+  }
+
+  delete esdEvent;
+  esdFile->Close();
 
 }
 

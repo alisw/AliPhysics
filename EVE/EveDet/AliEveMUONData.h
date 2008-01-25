@@ -1,5 +1,5 @@
 // $Id$
-// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
+// Main authors: Matevz Tadel & Alja Mrak-Tadel & Bogdan Vulpescu: 2006, 2007
 
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
@@ -47,6 +47,7 @@ class AliEveMUONData : public TObject, public TEveRefCnt
 
   void LoadDigits(TTree* tree);
   void LoadRecPoints(TTree* tree);
+  void LoadRecPointsFromESD(Char_t *fileName);
   void LoadHits(TTree* tree);
   void LoadRaw(TString fileName);
 
