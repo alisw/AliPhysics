@@ -75,7 +75,7 @@
 //header file
 #include "AliLog.h"
 #include "AliTRDCalibPadStatus.h"
-#include "AliTRDrawStreamTB.h"
+#include "AliTRDrawStreamBase.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDCommonParam.h"
 #include "./Cal/AliTRDCalROC.h"
@@ -210,7 +210,7 @@ Int_t AliTRDCalibPadStatus::UpdateHisto(const Int_t icdet, /*FOLD00*/
   return 0;
 }
 //_____________________________________________________________________
-Int_t AliTRDCalibPadStatus::ProcessEvent(AliTRDrawStreamTB *rawStream, Bool_t nocheck)
+Int_t AliTRDCalibPadStatus::ProcessEvent(AliTRDrawStreamBase *rawStream, Bool_t nocheck)
 {
   //
   // Event Processing loop - AliTRDRawStreamCosmic
@@ -322,12 +322,17 @@ Int_t AliTRDCalibPadStatus::ProcessEvent(AliRawReader *rawReader, Bool_t nocheck
   //  Event processing loop - AliRawReader
   //
 
-
-  AliTRDrawStreamTB rawStream(rawReader);
-
+  Int_t result;
+  
   rawReader->Select("TRD");
+  
+  AliTRDrawStreamBase *pstream = AliTRDrawStreamBase::GetRawStream(rawReader);
+ 
+  result = ProcessEvent(pstream, nocheck);
 
-  return ProcessEvent(&rawStream, nocheck);
+  delete pstream;
+
+  return result;
 }
 
 //_________________________________________________________________________
