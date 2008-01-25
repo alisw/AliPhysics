@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
+/* $Id:  $ */
 
 ///////////////////////////////////////////////////////////////////////////////
 ///
@@ -489,11 +489,21 @@ UInt_t AliITSRawStreamSPD::GetOnlineChipFromOffline(UInt_t module, UInt_t colM) 
   for (UInt_t eq=0; eq<20; eq++) {
     for (UInt_t iModule=0; iModule<12; iModule++) {
       if (GetModuleNumber(eq,iModule)==(Int_t)module) {
-	if (eq<10) { // side A
-	  return (159-colM)/32 + 5*(iModule%2);
+	if (module<80) {
+	  if (eq<10) { // side A
+	    return (159-colM)/32 + 5*(iModule%2);
+	  }
+	  else { // side C
+	    return colM/32 + 5*(iModule%2);
+	  }
 	}
-	else { // side C
-	  return colM/32 + 5*(iModule%2);
+	else if (module<240) {
+	  if (eq<10) { // side A
+	    return colM/32 + 5*(iModule%2);
+	  }
+	  else { // side C
+	    return (159-colM)/32 + 5*(iModule%2);
+	  }
 	}
       }
     }
@@ -507,7 +517,7 @@ UInt_t AliITSRawStreamSPD::GetOnlineColFromOffline(UInt_t module, UInt_t colM) {
     return colM%32;
   }
   else if (module<240) { // outer layer
-    return (159-colM)%32;
+    return colM%32;
   }
   return 32; // error
 }
@@ -515,7 +525,7 @@ UInt_t AliITSRawStreamSPD::GetOnlineColFromOffline(UInt_t module, UInt_t colM) {
 UInt_t AliITSRawStreamSPD::GetOnlineRowFromOffline(UInt_t module, UInt_t rowM) {
   // offline->online (row)
   if (module<80) { // inner layer
-    return rowM;
+    return (255-rowM);
   }
   else if (module<240) { // outer layer
     return (255-rowM);
@@ -543,10 +553,10 @@ UInt_t AliITSRawStreamSPD::GetOfflineColFromOnline(UInt_t eqId, UInt_t hs, UInt_
   }
   else {
     if (eqId<10) {
-      return 159 - (col + offset); // outer layer, side A
+      return (col + offset); // outer layer, side A
     }
     else {
-      return 31-col + offset; // outer layer, side C
+      return 159 - (31-col + offset); // outer layer, side C
     }
   }
 }
@@ -554,12 +564,7 @@ UInt_t AliITSRawStreamSPD::GetOfflineColFromOnline(UInt_t eqId, UInt_t hs, UInt_
 UInt_t AliITSRawStreamSPD::GetOfflineRowFromOnline(UInt_t eqId, UInt_t hs, UInt_t chip, UInt_t row) {
   // online->offline (row)
   if (eqId>=20 || hs>=6 || chip>=10 || row>=256) return 256; // error
-  if (hs<2) {
-    return row;
-  }
-  else {
-    return 255-row;
-  }
+  return 255-row;
 }
 
 
