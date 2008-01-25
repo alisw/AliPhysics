@@ -146,9 +146,15 @@ class AliITSv11Geometry : public TObject {
     void AnglesForRoundedCorners(Double_t x0,Double_t y0,Double_t r0,
                                  Double_t x1,Double_t y1,Double_t r1,
                                  Double_t &t0,Double_t &t1)const;
+    // Define a general CreateMaterials function here so that if
+    // any specific subdetector does not define it this null function
+    // will due. This function is not declaired const so that a sub-
+    // detector's version may use class variables if they wish.
+    void CreateDefaultMaterials();
+    virtual void CreateMaterials(){};
     // Function to create figure needed for this class' documentation
-     void MakeFigure1(Double_t x0=0.0,Double_t y0=0.0,Double_t r0=2.0,
-                      Double_t x1=-4.0,Double_t y1=-2.0,Double_t r1=1.0);
+    void MakeFigure1(Double_t x0=0.0,Double_t y0=0.0,Double_t r0=2.0,
+                     Double_t x1=-4.0,Double_t y1=-2.0,Double_t r1=1.0);
   protected:
 
     // Units, Convert from k?? to cm,degree,GeV,seconds,
@@ -158,6 +164,8 @@ class AliITSv11Geometry : public TObject {
     static const Double_t fgkDegree; //Convert degrees to TGeom's degrees
     static const Double_t fgkRadian; //To Radians
     static const Double_t fgkgcm3;   // Density in g/cm^3
+    static const Double_t fgkKgm3;   // Density in kg/m^3
+    static const Double_t fgkKgdm3;   // Density in kg/dm^3
     static const Double_t fgkCelsius; // Temperature in degrees Celcius
     static const Double_t fgkPascal;  // Preasure in Pascal
     static const Double_t fgkKPascal;  // Preasure in KPascal

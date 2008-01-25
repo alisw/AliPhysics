@@ -1,9 +1,10 @@
 //----------------------------------------------------------------------
 
-AliITSv11GeometrySPD *gspd;
-AliITSv11GeometrySDD *gsdd;
-AliITSv11GeometrySupport *gsupp;
-AliITSv11GeometrySSD *gssd;
+static AliITSv11GeometrySPD *gspd;
+static AliITSv11GeometrySDD *gsdd;
+static AliITSv11GeometrySSD *gssd;
+static AliITSv11GeometrySupport *gsupp;
+static AliITSgeom *geom;
 //
 //----------------------------------------------------------------------
 void Displayv11(const char* filename=""){
@@ -21,13 +22,22 @@ void Displayv11(const char* filename=""){
     mgr2 = gGeoManager = new TGeoManager("ITSGeometry",
                                          " ITS Simulation Geometry Manager");
     //
+    const AliITSVersion_t kv11=110;
+    const Char_t *cvsDate="$Date$";
+    const Char_t *cvsRevision="$Revision$";
+    const Int_t kLength=100;
+    Char_t vstrng[kLength];
+    AliITSInitGeometry initgeom(kv11,1);
+    //
     TGeoMaterial *vacmat = new TGeoMaterial("Vacume",0,0,0);
     TGeoMedium   *vacmed = new TGeoMedium("Vacume_med",1,vacmat);
     TGeoVolume *ALIC = mgr2->MakeBox("ALIC",vacmed,1000.,1000.,2000.);
     mgr2->SetTopVolume(ALIC);
     TGeoVolume *ITS = mgr2->MakeBox("ITSV",vacmed,990.,990.,1990.);
-    TGeoVolumeAssembly *ITSspd = new TGeoVolumeAssembly("ITSspd");
-    ITS->AddNode(ITSspd,1);
+    if(initgeom.WriteVersionString(vstrng,kLength,kv11,1,cvsDate,cvsRevision))
+        ITS->SetTitle(vstrng);
+    //TGeoVolumeAssembly *ITSSPD = new TGeoVolumeAssembly("ITSSPD");
+    //ITS->AddNode(ITSSPD,1);
     ALIC->AddNode(ITS,1);
     //
     /*
@@ -38,23 +48,35 @@ void Displayv11(const char* filename=""){
     its->CreateMaterials();
     its->CreateGeometry();
     */
-    gspd = new AliITSv11GeometrySPD(0);
-    //gsdd = new AliITSv11GeometrySDD();
+    gspd  = new AliITSv11GeometrySPD(0);
+    gsdd  = new AliITSv11GeometrySDD();
     gsupp = new AliITSv11GeometrySupport(0);
-    //gssd = new AliITSv11GeometrySSD();
+    gssd  = new AliITSv11GeometrySSD();
     //
     Int_t imat=1,imed=1,ireturn=0;
     ireturn = gspd->CreateSPDCentralMaterials(imed,imat);
-    gspd->SPDSector(ITSspd,mgr2);
+    gspd->SPDSector(ITS,mgr2);
     gsupp->SPDCone(ITS,mgr2);
     gsupp->SetDebug(0);
     gsupp->SDDCone(ITS,mgr2);
-    //gsdd->Layer3(ITS);
-    //gsdd->Layer4(ITS);
+    gsdd->Layer3(ITS);
+    gsdd->Layer4(ITS);
+    gsdd->ForwardLayer3(ITS);// in Hybrid its in IS02
+    gsdd->ForwardLayer4(ITS);// in Hybrid its in IS02
+    gssd->Layer5(ITS);
+    gssd->Layer6(ITS);
+    gssd->LadderSupportLayer5(ITS);
+    gssd->LadderSupportLayer6(ITS);
+    gssd->EndCapSupportSystemLayer6(ITS);
+    gssd->EndCapSupportSystemLayer5(ITS);
     gsupp->SSDCone(ITS,mgr2);
     gsupp->ServicesCableSupport(ITS);
     //
     mgr2->CloseGeometry();
+    //
+    geom = new AliITSgeom();
+    initgeom.InitAliITSgeom(geom);
+    geom->WriteNewFile("ITSgeomV11.det");
     //
     TControlBar *bar=new TControlBar("vertical","ITS Geometry Display",10,10);
     bar->AddButton("Set Clipping on","ISetits(2,1)","Clipping on");
@@ -69,6 +91,8 @@ void Displayv11(const char* filename=""){
     bar->AddButton("Display Geometry","Displayit()","Run Displayit");
     bar->AddButton("Display SPD Sector Volume","EngineeringSPDSector()",
                    "Run EngineeringSPDSector");
+    bar->AddButton("Print SPD Sector Volume data xfig","PrintSPDSectorData()",
+                   "Run PrintSPDSectorData");
     bar->AddButton("Display SPD Ceneral Volume","EngineeringSPDCenter()",
                    "Run EngineeringSPDCenter");
     bar->AddButton("Display SPD Thermal Sheald","EngineeringSPDThS()",
@@ -193,7 +217,7 @@ void Displayit(){
     TCanvas *c1;
     if(!(c1 = (TCanvas*)gROOT->FindObject("C1")))
         c1 = new TCanvas("C1","ITS Simulation Geometry",900,900);
-    c1->Divide(2,2);
+    //c1->Divide(2,2);
     //
     mgr2->SetNsegments(ISetits(1,-1));
     //
@@ -220,7 +244,7 @@ void Displayit(){
         if(ISetits(3,-1)!=0) view1->ShowAxis();
     } // end if view1
     if(ISetits(5,-1)==1) ALIC->Raytrace();
-    c1->cd(2);
+    /*c1->cd(2);
     ALIC->Draw();
     TPad *p2 = c1->GetPad(2);
     TView *view2 = p2->GetView();
@@ -260,7 +284,7 @@ void Displayit(){
         if(ISetits(3,-1)!=0) view4->ShowAxis();
     } // end if view4
     if(ISetits(5,-1)==1) ALIC->Raytrace();
-    //
+    *///
 }
 //----------------------------------------------------------------------
 void EngineeringSPDSCS(){
@@ -290,7 +314,7 @@ void EngineeringSPDSCS(){
     b1->SetLineStyle(2); // dashed
     p->SetMarkerColor(2);
     p->SetMarkerStyle(5);
-    if(gspd->Make2DcrossSections(*a0,*a1,*b0,*b1,*p)==kFALSE) return;
+    if(gspd==0||gspd->Make2DcrossSections(*a0,*a1,*b0,*b1,*p)==kFALSE)return;
     for(i=0;i<a0->GetN();i++) {
       if(TMath::Abs(a0->GetX()[i])>max) max = TMath::Abs(a0->GetX()[i]);
       if(TMath::Abs(a0->GetY()[i])>max) max = TMath::Abs(a0->GetY()[i]);
@@ -336,20 +360,22 @@ void EngineeringSPDSector(){
     //
     TGeoManager *mgr2 = gGeoManager;
     TGeoVolume *ALIC = mgr2->GetTopVolume();
-    TCanvas *c4;
+    TCanvas *c4=0;
     if(!(c4 = (TCanvas*)gROOT->FindObject("C4")))
         c4 = new TCanvas("C4","ITS SPD Layer Geometry Side View",500,500);
-    TGeoVolume *ITS,*ITSspd,*SPDLay=0;
-    TGeoNode *node;
+    TGeoVolume *ITS=0,*ITSSPD=0,*SPDLay=0;
+    TGeoNode *node=0;
     TArrow *arrow=new TArrow();
     //
     node = ALIC->FindNode("ITSV_1");
     ITS = node->GetVolume();
-    node = ITS->FindNode("ITSspd_1");
-    ITSspd = node->GetVolume();
-    node = ITSspd->FindNode("ITSSPDCarbonFiberSectorV_1");
-    //node = ITSspd->FindNode("ITSSPDTempSPDMotherVolume_1");
+    node = ITS->FindNode("ITSSPD_1");
+    ITSSPD = node->GetVolume();
+    node = ITSSPD->FindNode("ITSSPDCarbonFiberSectorV_1");
+    if(node==0)Error("EngineeringSPDSector","could not find node %s",
+                     "ITSSPDCarbonFiberSectorV_1");
     SPDLay = node->GetVolume();
+    if(SPDLay==0)Error("EngineeringSPDSector","could not find volume SPDLay");
     //
     mgr2->SetNsegments(ISetits(1,-1));
     //
@@ -392,6 +418,45 @@ void EngineeringSPDSector(){
     //
 }
 //----------------------------------------------------------------------
+void PrintSPDSectorData(){
+    // Print SPD Sector Data
+    // Inputs:
+    //    none.
+    // Outputs:
+    //    none.
+    // Retrurn:
+    //    none.
+    Int_t irr,i;
+    //
+    TGeoManager *mgr2 = gGeoManager;
+    TGeoXtru * sA0;
+    TGeoVolume *ITS,*ITSSPD,*vA0=0;
+    TGeoNode *node;
+
+    //mgr2->PushPath();
+    //mgr2->cd("ITSSPDCarbonFiberSupportSectorA0_1");
+    vA0 = mgr2->FindVolumeFast("ITSSPDCarbonFiberSupportSectorA0");
+    sA0 = (TGeoXtru*) vA0->GetShape();
+    irr = sA0->GetNvert();
+    Double_t x,y;
+    cout <<endl;
+    cout <<"2 3 0 1 0 7 50 -1 -1 0.000 0 0 -1 0 0 "<<irr;
+    for(i=0;i<irr;i++){
+        x = sA0->GetX(i)+2.5;
+        y = sA0->GetY(i)+2.5;
+        if(!(i%6)) { cout << endl; cout <<"        ";}
+        cout<<" "<<TMath::Nint(x*450.)<<" "<<TMath::Nint(y*450);
+        //cout<<" "<<x<<" "<<y;
+    } // end for i
+    x = sA0->GetX(0)+2.5;
+    y = sA0->GetY(0)+2.5;
+    if(!(i%6)) { cout << endl; cout <<"        ";}
+    cout<<" "<<TMath::Nint(x*450.)<<" "<<TMath::Nint(y*450);
+    //cout<<" "<<x<<" "<<y;
+    cout << endl;
+    //
+}
+//----------------------------------------------------------------------
 void EngineeringSPDCenter(){
     // Display SPD Centeral Geometry
     // Inputs:
@@ -407,14 +472,14 @@ void EngineeringSPDCenter(){
     TCanvas *c4;
     if(!(c4 = (TCanvas*)gROOT->FindObject("C4")))
         c4 = new TCanvas("C4","ITS SPD Layer Geometry Side View",500,500);
-    TGeoVolume *ITS,*ITSspd,*SPDLay=0;
+    TGeoVolume *ITS,*ITSSPD,*SPDLay=0;
     TGeoNode *node;
     TArrow *arrow=new TArrow();
     //
     node = ALIC->FindNode("ITSV_1");
     ITS = node->GetVolume();
-    node = ITS->FindNode("ITSspd_1");
-    ITSspd = node->GetVolume();
+    node = ITS->FindNode("ITSSPD_1");
+    ITSSPD = node->GetVolume();
     //
     mgr2->SetNsegments(ISetits(1,-1));
     //
@@ -429,7 +494,7 @@ void EngineeringSPDCenter(){
     mgr2->SetPhiRange(DSetits(1,-1.),DSetits(0,-1.));
     if(ISetits(2,-1)!=0) mgr2->SetPhiRange(DSetits(1,-1.),DSetits(0,-1.));
     //
-    ITSspd->Draw();
+    ITSSPD->Draw();
     TView *view1 = c4->GetView();
     if(view1){
         view1->SetView(DSetits(2,-1.),DSetits(3,-1.),DSetits(4,-1.),irr);
@@ -443,7 +508,7 @@ void EngineeringSPDCenter(){
     //
     if(!(c5 = (TCanvas*)gROOT->FindObject("C5")))
         c5 = new TCanvas("C5","ITS SPD Centeral Geometry End View",500,500);
-    ITSspd->Draw();
+    ITSSPD->Draw();
     TView *view2 = c5->GetView();
     if(view2){
         view2->SetView(DSetits(2,-1.),DSetits(3,-1.),DSetits(4,-1.),irr);
@@ -453,7 +518,7 @@ void EngineeringSPDCenter(){
         view2->Top();
         if(ISetits(3,-1)!=0) view2->ShowAxis();
     } // end if view2
-    if(ISetits(5,-1)==1) ITSspd->Raytrace();
+    if(ISetits(5,-1)==1) ITSSPD->Raytrace();
     //
 }
 //----------------------------------------------------------------------

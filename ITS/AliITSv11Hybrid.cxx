@@ -32,7 +32,10 @@
 
 
 
-// $Log$
+// $Log: AliITSv11Hybrid.cxx,v $
+// Revision 1.14  2008/01/10 11:14:13  masera
+// SPD/SDD thermal shield and SPD cones updated (M. Sitta)
+//
 // Revision 1.13  2007/12/20 16:58:46  masera
 // bug fixes for SPD1 and SDD1 (A. Dainese)
 //
@@ -360,9 +363,7 @@ void AliITSv11Hybrid::SetT2Lmatrix(const char *name, Double_t yShift,
 }
 
 //______________________________________________________________________
-void AliITSv11Hybrid::AddAlignableVolumes() const
-{
-  //
+void AliITSv11Hybrid::AddAlignableVolumes() const{
   // Creates entries for alignable volumes associating the symbolic volume
   // name with the corresponding volume path.
   // 
@@ -371,6 +372,12 @@ void AliITSv11Hybrid::AddAlignableVolumes() const
   // system
   // For this, this function has to run before the misalignment because we
   // are using the ideal positions in the AliITSgeom object.
+  // Inputs:
+  //   none.
+  // Outputs:
+  //   none.
+  // Return:
+  //   none.
 
   AliInfo("Add ITS alignable volumes");
 
@@ -380,7 +387,8 @@ void AliITSv11Hybrid::AddAlignableVolumes() const
   }
 
   if( !gGeoManager->SetAlignableEntry("ITS","ALIC_1/ITSV_1") )
-    AliFatal("Unable to set alignable entry!!");    
+    AliFatal(Form("Unable to set alignable entry ! %s :: %s",
+                  "ITS","ALIC_1/ITSV_1"));    
 
   TString strSPD = "ITS/SPD";
   TString strSDD = "ITS/SDD";
@@ -398,11 +406,11 @@ void AliITSv11Hybrid::AddAlignableVolumes() const
   //===== SPD layers =====
   if (AliITSInitGeometry::SPDIsTGeoNative()) { // new SPD geometry
 
-    TString str0 = "ALIC_1/ITSV_1/ITSSPDCarbonFiberSectorV_";
-    TString str1 = "/ITSSPDSensitiveVirtualvolumeM0_1/LAY1_STAVE_";
-    TString str1Bis = "/HALF-STAVE";
+    TString str0 = "ALIC_1/ITSV_1/ITSSPD_1/ITSSPDCarbonFiberSectorV_";
+    TString str1 = "/ITSSPDSensitiveVirtualvolumeM0_1/ITSSPDlay1-Stave_";
+    TString str1Bis = "/ITSSPDhalf-Stave";
     TString str1Tierce = "_1";
-    TString str2 = "/LAY1_LADDER_";
+    TString str2 = "/ITSSPDlay1-Ladder_";
   
     TString sector;
     TString stave;
@@ -418,14 +426,14 @@ void AliITSv11Hybrid::AddAlignableVolumes() const
       strEntryName1 += strSector;
       strEntryName1 += cSect;
       if(!gGeoManager->SetAlignableEntry(strEntryName1.Data(),sector.Data()))
-	AliFatal("Unable to set alignable entry!!");    
-      //printf("%s   ==   %s\n",strEntryName1.Data(),sector.Data());
-      
+	AliFatal(Form("New lay 1: Unable to set alignable entry 1! %s::%s",
+                 strEntryName1.Data(),sector.Data()));
+
       for(Int_t cStave=0; cStave<2; cStave++) {
 	
 	stave = sector;
 	stave += str1;
-	stave += cStave;
+	stave += cStave+1;
 	strEntryName2 = strEntryName1;
 	strEntryName2 += strStave;
 	strEntryName2 += cStave;
@@ -440,31 +448,35 @@ void AliITSv11Hybrid::AddAlignableVolumes() const
 	  strEntryName3 += strHalfStave;
 	  strEntryName3 += cHS;
 
-	  if(!gGeoManager->SetAlignableEntry(strEntryName3.Data(),halfStave.Data()))
-	    AliFatal(Form("Unable to set alignable entry!! %s :: %s",strEntryName3.Data(),halfStave.Data()));    
+	  if(!gGeoManager->SetAlignableEntry(strEntryName3.Data(),
+                                             halfStave.Data()))
+	    AliFatal(Form("New lay 1: Unable to set alignable entry 3! %s::%s",
+                          strEntryName3.Data(),halfStave.Data()));    
 
 	  for(Int_t cLad=0; cLad<2; cLad++) {
 	  
 	    module = halfStave;
 	    module += str2;
-	    module += cLad+cHS*2;
+	    module += cLad+cHS*2+1;
 	    strEntryName4 = strEntryName3;
 	    strEntryName4 += strLadder;
 	    strEntryName4 += cLad+cHS*2;
-	    if(!gGeoManager->SetAlignableEntry(strEntryName4.Data(),module.Data()))
-	      AliFatal("Unable to set alignable entry!!");    
-	    
+	    if(!gGeoManager->SetAlignableEntry(strEntryName4.Data(),
+                                               module.Data()))
+	      AliFatal(Form("New lay 1: Unable to set alignable entry 4! %s::%s",
+                       strEntryName4.Data(),module.Data()));
+
 	    SetT2Lmatrix(strEntryName4.Data(), 0.0081, kTRUE, kTRUE);
-	    // 0.0081 is the shift between the centers of alignable and sensitive volumes
-	    // It is directly extracted from the new SPD geometry
- 
-	  }
-	}
-      }
-    }
-    
-    str1 = "/ITSSPDSensitiveVirtualvolumeM0_1/LAY2_STAVE_";
-    str2 = "/LAY2_LADDER_";
+	    // 0.0081 is the shift between the centers of alignable 
+            // and sensitive volumes. It is directly extracted from 
+            // the new SPD geometry
+	  } // end for cLad
+	} // end for cHS
+      } // end for cStave
+    } // end for cSect
+
+    str1 = "/ITSSPDSensitiveVirtualvolumeM0_1/ITSSPDlay2-Stave_";
+    str2 = "/ITSSPDlay2-Ladder_";
 
     for(Int_t cSect = 0; cSect<10; cSect++) {
 
@@ -479,7 +491,7 @@ void AliITSv11Hybrid::AddAlignableVolumes() const
 	
 	stave = sector;
 	stave += str1;
-	stave += cStave;
+	stave += cStave+1;
 	strEntryName2 = strEntryName1;
 	strEntryName2 += strStave;
 	strEntryName2 += cStave;
@@ -494,25 +506,29 @@ void AliITSv11Hybrid::AddAlignableVolumes() const
 	  strEntryName3 += strHalfStave;
 	  strEntryName3 += cHS;
 
-	  if(!gGeoManager->SetAlignableEntry(strEntryName3.Data(),halfStave.Data()))
-	    AliFatal("Unable to set alignable entry!!");    
+	  if(!gGeoManager->SetAlignableEntry(strEntryName3.Data(),
+                                             halfStave.Data()))
+	    AliFatal(Form("New lay 2: Unable to set alignable entry 3! %s::%s",
+                     strEntryName3.Data(),halfStave.Data()));    
 
 	  for(Int_t cLad=0; cLad<2; cLad++) {
-	  
+
 	    module = halfStave;
 	    module += str2;
-	    module += cLad+cHS*2;
+	    module += cLad+cHS*2 +1;
 	    strEntryName4 = strEntryName3;
 	    strEntryName4 += strLadder;
 	    strEntryName4 += cLad+cHS*2;
-	    if(!gGeoManager->SetAlignableEntry(strEntryName4.Data(),module.Data()))
-	      AliFatal("Unable to set alignable entry!!");    
+	    if(!gGeoManager->SetAlignableEntry(strEntryName4.Data(),
+                                               module.Data()))
+	      AliFatal(Form("New lay 2: Unable to set alignable entry 4! %s::%s",
+                       strEntryName4.Data(),module.Data()));
 
 	    SetT2Lmatrix(strEntryName4.Data(), -0.0081, kFALSE);
-	  }
-	}
-      }
-    }
+	  } // end for cLad
+	} // end for cHS
+      } // end for cStave
+    } // cSect
 
   } else {  // else old SPD geometry
 
@@ -535,19 +551,20 @@ void AliITSv11Hybrid::AddAlignableVolumes() const
       strEntryName1 += 0;
       strEntryName1 += strSector;
       strEntryName1 += cSect;
-      //printf("%s   ==   %s\n",strEntryName1.Data(),sector.Data());
       if(!gGeoManager->SetAlignableEntry(strEntryName1.Data(),sector.Data()))
-	AliFatal("Unable to set alignable entry!!");    
-      
+	AliFatal(Form("Old lay1: Unable to set alignable entry 1! %s::%s",
+                 strEntryName1.Data(),sector.Data()));    
+
       for(Int_t cStave = 0; cStave<2; cStave++) {
-	
+
 	stave = sector;
 	stave += str1;
 	stave += cStave+1;
 	strEntryName2 = strEntryName1;
 	strEntryName2 += strStave;
 	strEntryName2 += cStave;
-	//printf("%s   ==   %s\n",strEntryName2.Data(),stave.Data()); // this is a stave
+        // this is a stave
+	//printf("%s   ==   %s\n",strEntryName2.Data(),stave.Data()); 
 
 	for(Int_t cHS=0; cHS<2; cHS++) {
 
@@ -558,9 +575,12 @@ void AliITSv11Hybrid::AddAlignableVolumes() const
 	  strEntryName3 = strEntryName2;
 	  strEntryName3 += strHalfStave;
 	  strEntryName3 += cHS;
-	  //printf("%s   ==   %s\n",strEntryName3.Data(),halfStave.Data()); // this is a half-stave
-	  if(!gGeoManager->SetAlignableEntry(strEntryName3.Data(),halfStave.Data()))
-	    AliFatal("Unable to set alignable entry!!");    
+          // this is a half-stave
+	  //printf("%s   ==   %s\n",strEntryName3.Data(),halfStave.Data()); 
+	  if(!gGeoManager->SetAlignableEntry(strEntryName3.Data(),
+                                             halfStave.Data()))
+	    AliFatal(Form("Old lay 1: Unable to set alignable entry 3! %s::%s",
+                     strEntryName3.Data(),halfStave.Data()));
 
 	  for(Int_t cLadder = 0; cLadder<2; cLadder++) {
 	    
@@ -571,14 +591,16 @@ void AliITSv11Hybrid::AddAlignableVolumes() const
 	    strEntryName4 += strLadder;
 	    strEntryName4 += cLadder+cHS*2;
 	    //printf("%s   ==   %s\n",strEntryName4.Data(),module.Data());
-	    if(!gGeoManager->SetAlignableEntry(strEntryName4.Data(),module.Data()))
-	      AliFatal("Unable to set alignable entry!!");    
+	    if(!gGeoManager->SetAlignableEntry(strEntryName4.Data(),
+                                               module.Data()))
+	      AliFatal(Form("Old lay 1: Unable to set alignable entry 4! %s::%s",
+                       strEntryName4.Data(),module.Data()));
 
 	    SetT2Lmatrix(strEntryName4.Data(), -fChip1*0.0001/2., kTRUE);
-	  }
-	}
-      }
-    }
+	  } // end for cLadder
+	} // end for cHS
+      } // end for cStave
+    } // end for cSect
 
     str1Bis = "/L2H-STAVE";
     str1 = "/I20B_";
@@ -592,11 +614,11 @@ void AliITSv11Hybrid::AddAlignableVolumes() const
       strEntryName1 += 1;
       strEntryName1 += strSector;
       strEntryName1 += cSect;
-      //       if(!gGeoManager->SetAlignableEntry(strEntryName1.Data(),sector.Data()))
-      // 	AliFatal("Unable to set alignable entry!!");    
-      // we don't need the previous lines because the whole sector is already define
-      // with first layer ...
-      
+      //if(!gGeoManager->SetAlignableEntry(strEntryName1.Data(),sector.Data()))
+      // 	AliFatal(Form("Unable to set alignable entry!!");    
+      // we don't need the previous lines because the whole sector is 
+      // already define with first layer ...
+
       for(Int_t cStave =0; cStave<4; cStave++) {
 	
 	stave = sector;
@@ -615,12 +637,15 @@ void AliITSv11Hybrid::AddAlignableVolumes() const
 	  strEntryName3 = strEntryName2;
 	  strEntryName3 += strHalfStave;
 	  strEntryName3 += cHS;
-	  //printf("%s   ==   %s\n",strEntryName3.Data(),halfStave.Data()); // this is a half-stave
-	  if(!gGeoManager->SetAlignableEntry(strEntryName3.Data(),halfStave.Data()))
-	    AliFatal("Unable to set alignable entry!!");    
+          // this is a half-stave
+	  //printf("%s   ==   %s\n",strEntryName3.Data(),halfStave.Data()); 
+	  if(!gGeoManager->SetAlignableEntry(strEntryName3.Data(),
+                                             halfStave.Data()))
+	    AliFatal(Form("Old lay 2: Unable to set alignable entry 3! %s::%s",
+                     strEntryName3.Data(),halfStave.Data()));
 
 	  for(Int_t cLad =0; cLad<2; cLad++) {
-	  
+
 	    module = halfStave;
 	    module += str2;
 	    module += cLad+cHS*2+1;
@@ -628,15 +653,17 @@ void AliITSv11Hybrid::AddAlignableVolumes() const
 	    strEntryName4 += strLadder;
 	    strEntryName4 += cLad+cHS*2;
 	    //printf("%s   ==   %s\n",strEntryName4.Data(),module.Data());
-	    if(!gGeoManager->SetAlignableEntry(strEntryName4.Data(),module.Data()))
-	      AliFatal("Unable to set alignable entry!!");
+	    if(!gGeoManager->SetAlignableEntry(strEntryName4.Data(),
+                                               module.Data()))
+	      AliFatal(Form("Old lay2: Unable to set alignable entry 4! %s::%s",
+                       strEntryName4.Data(),module.Data()));
 
 	    SetT2Lmatrix(strEntryName4.Data(), -fChip2*0.0001/2., kFALSE);
-	  }
-	}
-      }
-    }
-  }
+	  } // end for cLad
+	} // end for cHS
+      } // end for cStave
+    } // end for cSect
+  } // end if AliITSInitGeometry::SPSIsTGeoNative().
 
   //===== SDD layers =====
   if (AliITSInitGeometry::SDDIsTGeoNative()) { // new SDD geometry
@@ -657,7 +684,8 @@ void AliITSv11Hybrid::AddAlignableVolumes() const
       strEntryName1 += c1;
       //printf("%s    ==    %s\n",strEntryName1.Data(),ladder.Data());
       if(!gGeoManager->SetAlignableEntry(strEntryName1.Data(),ladder.Data()))
-	AliFatal("Unable to set alignable entry!!");    
+	AliFatal(Form("Unable to set alignable entry 1! %s :: %s",
+                 strEntryName1.Data(),ladder.Data()));
 
       for(Int_t c2 =0; c2<6; c2++) {
 
@@ -670,7 +698,8 @@ void AliITSv11Hybrid::AddAlignableVolumes() const
 	strEntryName2 += c2;
 	//printf("%s    ==    %s\n",strEntryName2.Data(),wafer.Data());
 	if(!gGeoManager->SetAlignableEntry(strEntryName2.Data(),wafer.Data()))
-	  AliFatal("Unable to set alignable entry!!");
+	  AliFatal(Form("Unable to set alignable entry 2! %s :: %s",
+                   strEntryName2.Data(),wafer.Data()));
 
 	if(c1 != 2) { 
 	SetT2Lmatrix(strEntryName2.Data(), 0, kFALSE, c2>=3);
@@ -694,7 +723,8 @@ void AliITSv11Hybrid::AddAlignableVolumes() const
       strEntryName1 += c1;
       //printf("%s    ==    %s\n",strEntryName1.Data(),ladder.Data());
       if(!gGeoManager->SetAlignableEntry(strEntryName1.Data(),ladder.Data()))
-	AliFatal("Unable to set alignable entry!!");    
+	AliFatal(Form("Unable to set alignable entry 1! %s :: %s",
+                 strEntryName1.Data(),ladder.Data()));
 
       for(Int_t c2 =0; c2<8; c2++) {
 
@@ -707,7 +737,8 @@ void AliITSv11Hybrid::AddAlignableVolumes() const
 	strEntryName2 += c2;
 	//printf("%s    ==    %s\n",strEntryName2.Data(),wafer.Data());
 	if(!gGeoManager->SetAlignableEntry(strEntryName2.Data(),wafer.Data()))
-	  AliFatal("Unable to set alignable entry!!");  
+	  AliFatal(Form("Unable to set alignable entry 2! %s :: %s",
+                   strEntryName2.Data(),wafer.Data()));
 
   	SetT2Lmatrix(strEntryName2.Data(), 0, kFALSE, c2>=4);
       }
@@ -730,8 +761,8 @@ void AliITSv11Hybrid::AddAlignableVolumes() const
       strEntryName1 +=strLadder;
       strEntryName1 += (c1-1);
       if(!gGeoManager->SetAlignableEntry(strEntryName1.Data(),ladder.Data()))
-	AliFatal("Unable to set alignable entry!!");    
-      //printf("%s    ==    %s\n",strEntryName1.Data(),ladder.Data());
+	AliFatal(Form("Unable to set alignable entry 1! %s :: %s",
+                 strEntryName1.Data(),ladder.Data()));
 
       for(Int_t c2 =1; c2<=6; c2++){
 
@@ -742,8 +773,8 @@ void AliITSv11Hybrid::AddAlignableVolumes() const
 	strEntryName2 += strSensor;
 	strEntryName2 += (c2-1);
 	if(!gGeoManager->SetAlignableEntry(strEntryName2.Data(),wafer.Data()))
-	  AliFatal("Unable to set alignable entry!!");    
-	//printf("%s    ==    %s\n",strEntryName2.Data(),wafer.Data());
+	  AliFatal(Form("Unable to set alignable entry 2! %s :: %s",
+                   strEntryName2.Data(),wafer.Data()));
 
 	SetT2Lmatrix(strEntryName2.Data(), 0, kFALSE);
       }
@@ -761,8 +792,8 @@ void AliITSv11Hybrid::AddAlignableVolumes() const
       strEntryName1 +=strLadder;
       strEntryName1 += (c1-1);
       if(!gGeoManager->SetAlignableEntry(strEntryName1.Data(),ladder.Data()))
-	AliFatal("Unable to set alignable entry!!");    
-      //printf("%s    ==    %s\n",strEntryName1.Data(),ladder.Data());
+	AliFatal(Form("Unable to set alignable entry 1! %s :: %s",
+                 strEntryName1.Data(),ladder.Data()));
 
       for(Int_t c2 =1; c2<=8; c2++){
 
@@ -773,8 +804,8 @@ void AliITSv11Hybrid::AddAlignableVolumes() const
 	strEntryName2 += strSensor;
 	strEntryName2 += (c2-1);
 	if(!gGeoManager->SetAlignableEntry(strEntryName2.Data(),wafer.Data()))
-	  AliFatal("Unable to set alignable entry!!");    
-	//printf("%s    ==    %s\n",strEntryName2.Data(),wafer.Data());
+	  AliFatal(Form("Unable to set alignable entry 2! %s,%s",
+                        strEntryName2.Data(),wafer.Data()));
 
 	SetT2Lmatrix(strEntryName2.Data(), 0, kFALSE);
       }
@@ -784,7 +815,7 @@ void AliITSv11Hybrid::AddAlignableVolumes() const
   //===== SSD layers =====
   if (AliITSInitGeometry::SSDIsTGeoNative()) { // new SSD geometry
 
-    TString str0 = "/ALIC_1/ITSV_1/ITSssdLayer5_1/ITSssdLay5Ladd_"; // SSD layer1
+    TString str0 = "/ALIC_1/ITSV_1/ITSssdLayer5_1/ITSssdLay5Ladd_";//SSD layer1
     TString str1 = "/ITSsddSensor5_";
     TString str2 = "";
     TString ladder;
@@ -800,7 +831,8 @@ void AliITSv11Hybrid::AddAlignableVolumes() const
       strEntryName1 += c1;
       //printf("%s    ==    %s\n",strEntryName1.Data(),ladder.Data());
       if(!gGeoManager->SetAlignableEntry(strEntryName1.Data(),ladder.Data()))
-	AliFatal("Unable to set alignable entry!!");    
+	AliFatal(Form("Unable to set alignable entry 1! %s :: %s",
+                 strEntryName1.Data(),ladder.Data()));
 
       for(Int_t c2 =0; c2<22; c2++) {
 
@@ -813,7 +845,8 @@ void AliITSv11Hybrid::AddAlignableVolumes() const
 	strEntryName2 += c2;
 	//printf("%s    ==    %s\n",strEntryName2.Data(),wafer.Data());
 	if(!gGeoManager->SetAlignableEntry(strEntryName2.Data(),wafer.Data()))
-	  AliFatal("Unable to set alignable entry!!");
+	  AliFatal(Form("Unable to set alignable entry 2! %s :: %s",
+                   strEntryName2.Data(),wafer.Data()));
 
 	SetT2Lmatrix(strEntryName2.Data(), 0, kFALSE, kFALSE);
       }
@@ -833,7 +866,8 @@ void AliITSv11Hybrid::AddAlignableVolumes() const
       strEntryName1 += c1;
       //printf("%s    ==    %s\n",strEntryName1.Data(),ladder.Data());
       if(!gGeoManager->SetAlignableEntry(strEntryName1.Data(),ladder.Data()))
-	AliFatal("Unable to set alignable entry!!");    
+	AliFatal(Form("Unable to set alignable entry 1! %s :: %s",
+                 strEntryName1.Data(),ladder.Data()));
 
       for(Int_t c2 =0; c2<25; c2++) {
 
@@ -846,7 +880,8 @@ void AliITSv11Hybrid::AddAlignableVolumes() const
 	strEntryName2 += c2;
 	//printf("%s    ==    %s\n",strEntryName2.Data(),wafer.Data());
 	if(!gGeoManager->SetAlignableEntry(strEntryName2.Data(),wafer.Data()))
-	  AliFatal("Unable to set alignable entry!!");  
+	  AliFatal(Form("Unable to set alignable entry 2! %s :: %s",
+                   strEntryName2.Data(),wafer.Data()));
 
 	SetT2Lmatrix(strEntryName2.Data(), 0, kFALSE, kFALSE);
       }
@@ -867,9 +902,9 @@ void AliITSv11Hybrid::AddAlignableVolumes() const
       strEntryName1 +=strLadder;
       strEntryName1 += (c1-1);
       if(!gGeoManager->SetAlignableEntry(strEntryName1.Data(),ladder.Data()))
-	AliFatal("Unable to set alignable entry!!");    
-      //printf("%s    ==    %s\n",strEntryName1.Data(),ladder.Data());
-      
+          AliFatal(Form("Unable to set alignable entry 1! %s :: %s",
+                   strEntryName1.Data(),ladder.Data()));
+
       for(Int_t c2 = 1; c2<=22; c2++){
 	
 	wafer = ladder;
@@ -879,9 +914,9 @@ void AliITSv11Hybrid::AddAlignableVolumes() const
 	strEntryName2 += strSensor;
 	strEntryName2 += (c2-1);
 	if(!gGeoManager->SetAlignableEntry(strEntryName2.Data(),wafer.Data()))
-	  AliFatal("Unable to set alignable entry!!");    
-	//printf("%s    ==    %s\n",strEntryName2.Data(),wafer.Data());
-	
+	  AliFatal(Form("Unable to set alignable entry 2! %s :: %s",
+                   strEntryName2.Data(),wafer.Data()));
+
 	SetT2Lmatrix(strEntryName2.Data(), 0, kFALSE);
       }
     }
@@ -898,9 +933,9 @@ void AliITSv11Hybrid::AddAlignableVolumes() const
       strEntryName1 +=strLadder;
       strEntryName1 += (c1-1);
       if(!gGeoManager->SetAlignableEntry(strEntryName1.Data(),ladder.Data()))
-	AliFatal("Unable to set alignable entry!!");    
-      //printf("%s    ==    %s\n",strEntryName1.Data(),ladder.Data());
-      
+	AliFatal(Form("Unable to set alignable entry 1! %s :: %s",
+                 strEntryName1.Data(),ladder.Data()));
+
       for(Int_t c2 = 1; c2<=25; c2++){
 	
 	wafer = ladder;
@@ -910,9 +945,9 @@ void AliITSv11Hybrid::AddAlignableVolumes() const
 	strEntryName2 += strSensor;
 	strEntryName2 += (c2-1);
 	if(!gGeoManager->SetAlignableEntry(strEntryName2.Data(),wafer.Data()))
-	  AliFatal("Unable to set alignable entry!!");    
-	//printf("%s    ==    %s\n",strEntryName2.Data(),wafer.Data());
-	
+	  AliFatal(Form("Unable to set alignable entry 2! %s :: %s",
+                   strEntryName2.Data(),wafer.Data()));
+
 	SetT2Lmatrix(strEntryName2.Data(), 0, kFALSE);
       }
     }

@@ -714,8 +714,8 @@ Bool_t AliITSInitGeometry::InitAliITSgeomPPRasymmFMD(AliITSgeom *geom){
 	 "%sIT56_1/I569_%d/I566_%d/ITS6_%d/"},// lay=6
 // 	{"%sIT12_1/I12B_%d/I10B_%d/I107_%d/I101_1/ITS1_1", // lay=1
 // 	 "%sIT12_1/I12B_%d/I20B_%d/I1D7_%d/I1D1_1/ITS2_1", // lay=2
-	{"%sIT12_1/I12B_%d/I10B_%d/L1H-STAVE%d_1/I107_%d/I101_1/ITS1_1", // lay=1
-	 "%sIT12_1/I12B_%d/I20B_%d/L2H-STAVE%d_1/I1D7_%d/I1D1_1/ITS2_1", // lay=2
+	{"%sIT12_1/I12B_%d/I10B_%d/L1H-STAVE%d_1/I107_%d/I101_1/ITS1_1",//lay=1
+	 "%sIT12_1/I12B_%d/I20B_%d/L2H-STAVE%d_1/I1D7_%d/I1D1_1/ITS2_1",//lay=2
 	 "%sIT34_1/I004_%d/I302_%d/ITS3_%d", // lay=3
 	 "%sIT34_1/I005_%d/I402_%d/ITS4_%d", // lay=4
 	 "%sIT56_1/I565_%d/I562_%d/ITS5_%d", // lay=5
@@ -744,7 +744,8 @@ Bool_t AliITSInitGeometry::InitAliITSgeomPPRasymmFMD(AliITSgeom *geom){
         geom->CreateMatrix(mod,lay,lad,det,kIdet[lay-1],tran,rot);
         RecodeDetector(mod,cpn0,cpn1,cpn2); // Write reusing lay,lad,det.
 
-	if (kIdet[lay-1]==kSPD) { // we need 1 more copy number because of the half-stave
+	if (kIdet[lay-1]==kSPD) { // we need 1 more copy number because 
+                                  // of the half-stave
 	  if (det<3) cpnHS = 0; else cpnHS = 1;
 	  path.Form(kNames[fMinorVersion-1][lay-1].Data(),kPathbase.Data(),
 		    cpn0,cpn1,cpnHS,cpn2);
@@ -800,8 +801,8 @@ Bool_t AliITSInitGeometry::InitAliITSgeomV11Hybrid(AliITSgeom *geom){
 
   char *pathSPDsens1, *pathSPDsens2;
   if (SPDIsTGeoNative()) {
-    pathSPDsens1="%sITSSPDCarbonFiberSectorV_%d/ITSSPDSensitiveVirtualvolumeM0_1/LAY1_STAVE_%d/HALF-STAVE%d_1/LAY1_LADDER_%d/LAY1_SENSOR_1";
-    pathSPDsens2="%sITSSPDCarbonFiberSectorV_%d/ITSSPDSensitiveVirtualvolumeM0_1/LAY2_STAVE_%d/HALF-STAVE%d_1/LAY2_LADDER_%d/LAY2_SENSOR_1";
+    pathSPDsens1="%sITSSPD_1/ITSSPDCarbonFiberSectorV_%d/ITSSPDSensitiveVirtualvolumeM0_1/ITSSPDlay1-Stave_%d/ITSSPDhalf-Stave%d_1/ITSSPDlay1-Ladder_%d/ITSSPDlay1-sensor_1";
+    pathSPDsens2="%sITSSPD_1/ITSSPDCarbonFiberSectorV_%d/ITSSPDSensitiveVirtualvolumeM0_1/ITSSPDlay2-Stave_%d/ITSSPDhalf-Stave%d_1/ITSSPDlay2-Ladder_%d/ITSSPDlay2-sensor_1";
   } else{
     pathSPDsens1 = "%sITSD_1/IT12_1/I12B_%d/I10B_%d/L1H-STAVE%d_1/I107_%d/I101_1/ITS1_1";
     pathSPDsens2 = "%sITSD_1/IT12_1/I12B_%d/I20B_%d/L2H-STAVE%d_1/I1D7_%d/I1D1_1/ITS2_1";
@@ -1002,15 +1003,16 @@ Bool_t AliITSInitGeometry::InitGeomShapePPRasymmFMD(AliITSDetector idet,
 	initSeg[idet] = kTRUE;
 	AliITSgeomSPD *geomSPD = new AliITSgeomSPD425Short();
 	Float_t bx[256],bz[280];
-	for(i=000;i<256;i++) bx[i] =  50.0*kmicron2cm; // in x all are 50 microns.
-	for(i=000;i<160;i++) bz[i] = 425.0*kmicron2cm; // most are 425 microns
+	for(i=000;i<256;i++) bx[i] = 50.0*kmicron2cm;//in x all are 50 microns.
+	for(i=000;i<160;i++) bz[i] =425.0*kmicron2cm; // most are 425 microns
 	// except below
 	for(i=160;i<280;i++) bz[i] =   0.0*kmicron2cm; // Outside of detector.
 	bz[ 31] = bz[ 32] = 625.0*kmicron2cm; // first chip boundry
 	bz[ 63] = bz[ 64] = 625.0*kmicron2cm; // first chip boundry
 	bz[ 95] = bz[ 96] = 625.0*kmicron2cm; // first chip boundry
 	bz[127] = bz[128] = 625.0*kmicron2cm; // first chip boundry
-	bz[160] = 425.0*kmicron2cm;// Set so that there is no zero pixel size for fNz.
+	bz[160] = 425.0*kmicron2cm;// Set so that there is no zero 
+                                   // pixel size for fNz.
 	geomSPD->ReSetBins(shapeParF[1],256,bx,160,bz);
 	geom->ReSetShape(idet,geomSPD);
     }break;
@@ -1912,8 +1914,8 @@ void AliITSInitGeometry::DecodeDetectorLayersvITS04(Int_t mod,Int_t &lay,
     return;
 }
 //______________________________________________________________________
-void AliITSInitGeometry::DecodeDetectorvPPRasymmFMD(Int_t &mod,Int_t layer,Int_t cpn0,
-                                        Int_t cpn1,Int_t cpn2) const {
+void AliITSInitGeometry::DecodeDetectorvPPRasymmFMD(Int_t &mod,Int_t layer,
+                                    Int_t cpn0,Int_t cpn1,Int_t cpn2) const {
     // decode geometry into detector module number. There are two decoding
     // Scheams. Old which does not follow the ALICE coordinate system
     // requirements, and New which dose.
@@ -2165,8 +2167,8 @@ void AliITSInitGeometry::DecodeDetectorLayersvPPRasymmFMD(Int_t mod,Int_t &lay,
     return;
 }
 //______________________________________________________________________
-void AliITSInitGeometry::DecodeDetectorv11Hybrid(Int_t &mod,Int_t layer,Int_t cpn0,
-                                        Int_t cpn1,Int_t cpn2) const {
+void AliITSInitGeometry::DecodeDetectorv11Hybrid(Int_t &mod,Int_t layer,
+                                 Int_t cpn0,Int_t cpn1,Int_t cpn2) const {
     // decode geometry into detector module number
     // Inputs:
     //    Int_t layer    The ITS layer
@@ -2291,40 +2293,38 @@ void AliITSInitGeometry::RecodeDetectorv11Hybrid(Int_t mod,Int_t &cpn0,
     //    Int_t cpn2     the highest copy number (SPD ladder or 1 for SDD/SSD)
     // Return:
     //    none.
+    const Int_t kDetPerLadderSPD[2]={2,4};
+    Int_t lay,lad,det;
 
-  const Int_t kDetPerLadderSPD[2]={2,4};
-  Int_t lay,lad,det;
-  DecodeDetectorLayersv11Hybrid(mod,lay,lad,det);
-
-  if (lay<3) { // SPD
-    cpn2 = det;     // Detector 1-4
-    cpn0 = (lad+kDetPerLadderSPD[lay-1]-1)/kDetPerLadderSPD[lay-1];
-    cpn1 = (lad+kDetPerLadderSPD[lay-1]-1)%kDetPerLadderSPD[lay-1] + 1;
-    if (SPDIsTGeoNative()) {
-      cpn2--;
-      cpn1--;
-    }
-  } else { // SDD and SSD
-    cpn2 = 1;
-    cpn1 = det;
-    cpn0 = lad;
-    if (lay<5) { // SDD
-      if (SDDIsTGeoNative()) {
-	cpn1--;
-	cpn0--;
-      }
-    } else { //SSD
-      if (SSDIsTGeoNative()) {
-	cpn1--;
-	cpn0--;
-      }
-    }
-  }
+    DecodeDetectorLayersv11Hybrid(mod,lay,lad,det);
+    if (lay<3) { // SPD
+        cpn2 = det;     // Detector 1-4
+        cpn0 = (lad+kDetPerLadderSPD[lay-1]-1)/kDetPerLadderSPD[lay-1];
+        cpn1 = (lad+kDetPerLadderSPD[lay-1]-1)%kDetPerLadderSPD[lay-1] + 1;
+        //if (SPDIsTGeoNative()) {
+        //    cpn2--;
+        //    cpn1--;
+        //}
+    } else { // SDD and SSD
+        cpn2 = 1;
+        cpn1 = det;
+        cpn0 = lad;
+        if (lay<5) { // SDD
+            if (SDDIsTGeoNative()) {
+                cpn1--;
+                cpn0--;
+            } // end if SDDIsTGeoNative()
+        } else { //SSD
+            if (SSDIsTGeoNative()) {
+                cpn1--;
+                cpn0--;
+            }// end if SSDIsTGeoNative()
+        } // end if Lay<5/else
+    } // end if lay<3/else
+    /*printf("AliITSInitGeometry::RecodeDetectorv11Hybrid:"
+           "mod=%d lay=%d lad=%d det=%d cpn0=%d cpn1=%d cpn2=%d\n",
+           mod,lay,lad,det,cpn0,cpn1,cpn2);*/
 }
-
-
-
-
 // //______________________________________________________________________
 // void AliITSInitGeometry::DecodeDetectorLayersv11Hybrid(Int_t mod,Int_t &lay,
 //                                               Int_t &lad,Int_t &det) {
@@ -2400,10 +2400,10 @@ void AliITSInitGeometry::DecodeDetectorLayersv11Hybrid(Int_t mod,Int_t &lay,
   lad = mod2/kDetPerLadder[lay-1];
 
   if(lad>=kLadPerLayer[lay-1]||lad<0) Error("DecodeDetectorLayers",
-					    "lad=%d not in the correct range",lad);
+				      "lad=%d not in the correct range",lad);
   det = (mod2 - lad*kDetPerLadder[lay-1])+1;
   if(det>kDetPerLadder[lay-1]||det<1) Error("DecodeDetectorLayers",
-					    "det=%d not in the correct range",det);
+				      "det=%d not in the correct range",det);
   lad++;
 }
 
@@ -2432,7 +2432,7 @@ Bool_t AliITSInitGeometry::WriteVersionString(Char_t *str,Int_t length,
     Int_t i,n,cvsDateLength,cvsRevisionLength;
 
     cvsDateLength = (Int_t)strlen(cvsDate);
-   if(cvsDateLength>30){ // svn string, make a cvs like string
+    if(cvsDateLength>30){ // svn string, make a cvs like string
         i=0;n=0;
         do{
             cvslikedate[i] = cvsDate[i];

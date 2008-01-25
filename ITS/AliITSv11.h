@@ -14,6 +14,7 @@
 #include "AliITS.h"
 class AliITSv11GeometrySPD;
 class AliITSv11GeometrySDD;
+class AliITSv11GeometrySSD;
 class AliITSv11GeometrySupport;
 
 class AliITSv11 : public AliITS {
@@ -87,9 +88,10 @@ class AliITSv11 : public AliITS {
     char   fEuclidGeomDet[60];// file where detector transormation are define.
     char   fRead[60];         //! file name to read .det file
     char   fWrite[60];        //! file name to write .det file
-    //AliITSv11GeometrySPD *fSPDgeom;      //SPD Geometry
+    AliITSv11GeometrySPD *fSPDgeom;      //SPD Geometry
     AliITSv11GeometrySDD *fSDDgeom;      //! SDD Geometry
-    //AliITSv11GeometrySupport /fSupgeom;  //Support Geometry
+    AliITSv11GeometrySSD *fSSDgeom;  //SSD Geometry
+    AliITSv11GeometrySupport *fSupgeom;  //Support Geometry
     AliITSInitGeometry fIgm; //! Geometry initlization object
 
     ClassDef(AliITSv11,1)  // ITS version 11 
