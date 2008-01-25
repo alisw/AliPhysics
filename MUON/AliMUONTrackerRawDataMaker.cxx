@@ -31,6 +31,7 @@
 #include "AliCDBStorage.h"
 #include "AliRawEventHeaderBase.h"
 #include "AliRawReader.h"
+#include "AliLog.h"
 #include <Riostream.h>
 
 ///\class AliMUONTrackerRawDataMaker
@@ -59,7 +60,8 @@ AliMUONTrackerRawDataMaker::AliMUONTrackerRawDataMaker(AliRawReader* reader,
   fDigitCalibrator(0x0),
   fCalibrationData(0x0),
   fDigitStore(0x0), 
-  fCDBPath(cdbpath)
+  fCDBPath(cdbpath),
+  fNumberOfEvents(0)
 {
   /// Ctor
   reader->NextEvent(); // to be sure to get run number available
@@ -87,6 +89,7 @@ AliMUONTrackerRawDataMaker::AliMUONTrackerRawDataMaker(AliRawReader* reader,
   reader->RewindEvents();
 
   fDigitMaker = new AliMUONDigitMaker;
+  fDigitMaker->SetMakeTriggerDigits(kFALSE);
   fDigitStore = new AliMUONDigitStoreV2R;
 
   if ( calibrate ) 
@@ -140,45 +143,61 @@ AliMUONTrackerRawDataMaker::NextEvent()
 {
   /// Read next event
  
+  static Int_t nphysics(0);
+  static Int_t ngood(0);
+
   if ( !IsRunning() ) return kTRUE;
   
   Bool_t ok = fRawReader->NextEvent();
 
   if (!ok) 
   {
+    fDigitMaker->Print();
     return kFALSE;
   }
   
   Int_t eventType = fRawReader->GetType();
+
+  ++fNumberOfEvents;
   
   if (eventType != AliRawEventHeaderBase::kPhysicsEvent ) 
   {
     return kTRUE; // for the moment
   }
 
-  fDigitMaker->Raw2Digits(fRawReader,fDigitStore);
+  ++nphysics;
+
+  Int_t rv = fDigitMaker->Raw2Digits(fRawReader,fDigitStore);
   
+  if ( ( rv & AliMUONDigitMaker::kTrackerBAD ) != 0 ) return kTRUE;
+
   if ( fDigitCalibrator ) 
   {
     fDigitCalibrator->Calibrate(*fDigitStore);
   }
   
-  ConvertDigits();
+  Bool_t dok = ConvertDigits();
   
-  fAccumulatedData->Add(*fOneEventData);
-                
+  if ( dok )
+    {
+      ++ngood;
+      fAccumulatedData->Add(*fOneEventData);
+    }
+
+  AliDebug(1,Form("n %10d nphysics %10d ngood %10d",fNumberOfEvents,nphysics,ngood));
+
   return kTRUE;
 }
 
 //_____________________________________________________________________________
-void 
+Bool_t 
 AliMUONTrackerRawDataMaker::ConvertDigits()
 {
   /// Convert digitstore into fOneEventData
   
   TIter next(fDigitStore->CreateIterator());
   AliMUONVDigit* digit;
-  
+
   fOneEventData->Clear();
   
   while ( ( digit = static_cast<AliMUONVDigit*>(next())) )
@@ -201,6 +220,8 @@ AliMUONTrackerRawDataMaker::ConvertDigits()
       param->SetValueAsDouble(digit->ManuChannel(),0,value);
     }
   }
+
+  return kTRUE;
 }
 
 //_____________________________________________________________________________
@@ -220,4 +241,5 @@ AliMUONTrackerRawDataMaker::Rewind()
 {
   /// Rewind events
   fRawReader->RewindEvents();
+  fNumberOfEvents=0;
 }

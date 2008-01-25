@@ -66,13 +66,16 @@ public:
   /// Get our digit store
   AliMUONVDigitStore* DigitStore() const { return fDigitStore; }
   
+  /// Number of events seen
+    Int_t NumberOfEvents() const { return fNumberOfEvents; }
+
 private:
   /// Not implemented
   AliMUONTrackerRawDataMaker(const AliMUONTrackerRawDataMaker& rhs);
   /// Not implemented
   AliMUONTrackerRawDataMaker& operator=(const AliMUONTrackerRawDataMaker& rhs);
   
-  void ConvertDigits();
+  Bool_t ConvertDigits();
   
 private:
   AliRawReader* fRawReader; ///< reader of the data (owner)
@@ -86,6 +89,7 @@ private:
   AliMUONCalibrationData* fCalibrationData; ///< calibration data (if calibrating data)  
   AliMUONVDigitStore* fDigitStore; ///< digit store (if calibrating data)
   TString fCDBPath; ///< OCDB path (if calibrating data)
+  Int_t fNumberOfEvents; ///< number of events seen
   static Int_t fgkCounter; ///< to count the number of instances
   
   ClassDef(AliMUONTrackerRawDataMaker,1) // Producer of AliMUONVTrackerData from raw data

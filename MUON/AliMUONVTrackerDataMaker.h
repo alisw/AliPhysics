@@ -53,6 +53,9 @@ public:
   
   /// Get our source URI
   virtual TString Source() const = 0;
+
+  /// Get the number of events we have seen (but not necessarily used...)
+  virtual Int_t NumberOfEvents() const = 0;
   
   ClassDef(AliMUONVTrackerDataMaker,1) // Producer of AliMUONVTrackerData
 };

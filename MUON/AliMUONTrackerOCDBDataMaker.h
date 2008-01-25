@@ -57,6 +57,9 @@ public:
   /// Get our source URI
   virtual TString Source() const { return fSource; }
   
+  /// Number of events is always 1
+    Int_t NumberOfEvents() const { return 1; }
+
 private:
   /// Not implemented
   AliMUONTrackerOCDBDataMaker(const AliMUONTrackerOCDBDataMaker& rhs);
