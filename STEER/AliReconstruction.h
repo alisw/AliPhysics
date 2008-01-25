@@ -73,6 +73,7 @@ public:
   //*** Global reconstruction flag setters
   void SetUniformFieldTracking(Bool_t flag=kTRUE){fUniformField=flag;} 
   void SetRunVertexFinder(Bool_t flag=kTRUE) {fRunVertexFinder=flag;};
+  void SetRunVertexFinderTracks(Bool_t flag=kTRUE) {fRunVertexFinderTracks=flag;};
   void SetRunHLTTracking(Bool_t flag=kTRUE) {fRunHLTTracking=flag;};
   void SetRunV0Finder(Bool_t flag=kTRUE) {fRunV0Finder=flag;};
   void SetRunCascadeFinder(Bool_t flag=kTRUE) {fRunCascadeFinder=flag;};
@@ -165,6 +166,7 @@ private:
   //*** Global reconstruction flags *******************
   Bool_t         fUniformField;       // uniform field tracking flag
   Bool_t         fRunVertexFinder;    // run the vertex finder
+  Bool_t         fRunVertexFinderTracks;    // run the vertex finder with tracks
   Bool_t         fRunHLTTracking;     // run the HLT tracking
   Bool_t         fRunMuonTracking;    // run the HLT tracking
   Bool_t         fRunV0Finder;        // run the ESD V0 finder
@@ -229,7 +231,7 @@ private:
   // Plane Efficiency Evaluation
   Bool_t         fRunPlaneEff ;      // Evaluate Plane Efficiency
 
-  ClassDef(AliReconstruction, 19)      // class for running the reconstruction
+  ClassDef(AliReconstruction, 20)      // class for running the reconstruction
 };
 
 #endif

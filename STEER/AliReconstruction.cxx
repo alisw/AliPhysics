@@ -207,6 +207,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename,
 
   fUniformField(kTRUE),
   fRunVertexFinder(kTRUE),
+  fRunVertexFinderTracks(kTRUE),
   fRunHLTTracking(kFALSE),
   fRunMuonTracking(kFALSE),
   fRunV0Finder(kTRUE),
@@ -278,6 +279,7 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
 
   fUniformField(rec.fUniformField),
   fRunVertexFinder(rec.fRunVertexFinder),
+  fRunVertexFinderTracks(rec.fRunVertexFinderTracks),
   fRunHLTTracking(rec.fRunHLTTracking),
   fRunMuonTracking(rec.fRunMuonTracking),
   fRunV0Finder(rec.fRunV0Finder),
@@ -926,14 +928,13 @@ Bool_t AliReconstruction::Run(const char* input, Bool_t IsOnline)
 
     //Try to improve the reconstructed primary vertex position using the tracks
     AliESDVertex *pvtx=0;
-    Bool_t dovertex=kTRUE;
     TObject* obj = fOptions.FindObject("ITS");
     if (obj) {
       TString optITS = obj->GetTitle();
       if (optITS.Contains("cosmics") || optITS.Contains("COSMICS")) 
-	dovertex=kFALSE;
+	fRunVertexFinderTracks=kFALSE;
     }
-    if(dovertex) pvtx=tVertexer.FindPrimaryVertex(esd);
+    if(fRunVertexFinderTracks) pvtx=tVertexer.FindPrimaryVertex(esd);
     if(fDiamondProfile) esd->SetDiamond(fDiamondProfile);
     
     if (pvtx)
