@@ -383,6 +383,7 @@ void AliITSDDLRawData::GetDigitsSPD(TClonesArray *ITSdigits,Int_t mod,Int_t ddl,
 
   Int_t chipLow  = AliITSRawStreamSPD::GetOnlineChipFromOffline(mod,0);
   Int_t chipHigh = AliITSRawStreamSPD::GetOnlineChipFromOffline(mod,159);
+
   if (chipLow>chipHigh) {chipLow  -= 4; chipHigh += 4;}
   UInt_t hs = AliITSRawStreamSPD::GetOnlineHSFromOffline(mod);
 
@@ -417,7 +418,7 @@ void AliITSDDLRawData::GetDigitsSPD(TClonesArray *ITSdigits,Int_t mod,Int_t ddl,
 
       //  insert digit into map...
       // (reverse order of cols and rows as in real raw data)
-      digMap->Insert(chip*256*32+(32-col)*256+(256-row),row);
+      digMap->Insert(chip*256*32+(31-col)*256+(255-row),row);
     }
   }
 
@@ -427,7 +428,7 @@ void AliITSDDLRawData::GetDigitsSPD(TClonesArray *ITSdigits,Int_t mod,Int_t ddl,
     for (UInt_t nHit=0; nHit<nrHits; nHit++) {
       Int_t key = digMap->GetKeyIndex(nHit);
       chip = key/(256*32);
-      Int_t col = 32 - (key%(256*32))/256;
+      Int_t col = 31 - (key%(256*32))/256;
       Int_t row = digMap->GetValIndex(nHit);
 
       if(previousChip==-1) { // first hit
@@ -690,3 +691,4 @@ void  AliITSDDLRawData::WriteHit(UInt_t *buf,Int_t RowAddr,Int_t HitAddr,UInt_t 
   }//end else
   return;
 }//end WriteHit
+
