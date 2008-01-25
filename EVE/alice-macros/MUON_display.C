@@ -16,11 +16,19 @@ AliEveEventManager *g_muon_last_event = 0;
 Int_t  g_currentEvent = -1;
 Bool_t g_fromRaw      = kFALSE;
 
+AliMagFMaps *g_field = 0;
 
 void MUON_display(Bool_t fromRaw = kFALSE, Bool_t showTracks = kTRUE)
 {
   if (!AliMpSegmentation::Instance()) AliMpCDB::LoadMpSegmentation();
   if (!AliMpDDLStore::Instance())     AliMpCDB::LoadDDLStore();
+
+  if (g_field == 0) {
+    printf("Loading field map...\n");
+    g_field = new AliMagFMaps("Maps","Maps", 1, 1., 10., AliMagFMaps::k5kG);
+    AliTracker::SetFieldMap(g_field, kFALSE);
+    AliMUONTrackExtrap::SetField(AliTracker::GetFieldMap());
+  }
 
   TTree* dt = 0;
   TTree* ct = 0;
@@ -74,7 +82,10 @@ void MUON_display(Bool_t fromRaw = kFALSE, Bool_t showTracks = kTRUE)
 
   rl->LoadRecPoints("MUON");
   ct = rl->GetTreeR("MUON", false);
-  g_muon_data->LoadRecPoints(ct);
+
+  TString esdDataPath = TString(gEvent->GetTitle());
+  esdDataPath.Append("/AliESDs.root");
+  g_muon_data->LoadRecPointsFromESD(esdDataPath.Data());
 
   rl->LoadHits("MUON");
   ht = rl->GetTreeH("MUON", false);
@@ -106,8 +117,6 @@ void MUON_display(Bool_t fromRaw = kFALSE, Bool_t showTracks = kTRUE)
   }
 
   if (showTracks) {
-    MUON_tracks();
-    MUON_trigger_tracks();
     MUON_ESD_tracks();
     MUON_Ref_tracks();
     MUON_MC_tracks();
@@ -156,7 +165,7 @@ void MUON_tracks()
 
     mt = (AliMUONTrack*) tracks->At(n);
 
-    rt.label = n;
+    rt.fLabel = n;
 
     AliEveMUONTrack* track = new AliEveMUONTrack(&rt, lt->GetPropagator());
 
@@ -208,7 +217,7 @@ void MUON_trigger_tracks()
 
     mt = (AliMUONTriggerTrack*) tracks->At(n);
 
-    rt.label = n;
+    rt.fLabel = n;
 
     AliEveMUONTrack* track = new AliEveMUONTrack(&rt, lt->GetPropagator());
 
@@ -239,7 +248,7 @@ void MUON_ESD_tracks()
   {
     mt = esd->GetMuonTrack(n);
 
-    rt.label = n;
+    rt.fLabel = n;
 
     AliEveMUONTrack* track = new AliEveMUONTrack(&rt, lt->GetPropagator());
 
@@ -253,10 +262,12 @@ void MUON_ESD_tracks()
 //______________________________________________________________________________
 void MUON_Ref_tracks()
 {
-  TString dataPath = TString(gEvent->GetTitle());
-  dataPath.Append("/");
+  TString dataPathESD = TString(gEvent->GetTitle());
+  dataPathESD.Append("/AliESDs.root");
+  TString dataPathSIM = TString(gEvent->GetTitle());
+  dataPathSIM.Append("/");
 
-  AliMUONRecoCheck recoCheck(dataPath.Data(),dataPath.Data());
+  AliMUONRecoCheck recoCheck(dataPathESD.Data(),dataPathSIM.Data());
   AliMUONVTrackStore* trackRefStore = recoCheck.ReconstructibleTracks(gEvent->GetEventId());
   TIter next(trackRefStore->CreateIterator());
   AliMUONTrack* trackRef;
@@ -270,7 +281,7 @@ void MUON_Ref_tracks()
   Int_t i = 0;
   while ( ( trackRef = static_cast<AliMUONTrack*>(next()) ) )
   {
-    rt.label = i++;
+    rt.fLabel = i++;
 
     AliEveMUONTrack* track = new AliEveMUONTrack(&rt, lt->GetPropagator());
 
@@ -315,7 +326,7 @@ void MUON_MC_tracks()
 
     part = stack->Particle(index);
     if (part->P() < 0.001) continue;  // skip momenta < 1.0 MeV/c
-    rt.label = i;
+    rt.fLabel = i;
 
     AliEveMUONTrack* track = new AliEveMUONTrack(&rt, lt->GetPropagator());
 
