@@ -22,123 +22,75 @@
 /// \author Laurent Aphecetche, Subatech
 
 
-#include "AliMUONPainterDataSourceFrame.h"
+#include "AliMUONMchViewApplication.h"
 #include "AliMUONPainterHelper.h"
-#include "AliMUONPainterMasterFrame.h"
-#include "AliMUONPainterRegistry.h"
 #include "AliCDBManager.h"
 #include "AliCodeTimer.h"
 #include "AliLog.h"
-#include <Riostream.h>
-#include <TCanvas.h>
-#include <TEnv.h>
-#include <TGMenu.h>
-#include <TGTab.h>
 #include <TROOT.h>
-#include <TRint.h>
-#include <TString.h>
 #include <TStyle.h>
+#include <TObjArray.h>
+#include <TObjString.h>
+#include <Riostream.h>
 
-//_____________________________________________________________________________
-void CreateMenuBar(TRint* app, TGMainFrame* mainFrame, UInt_t w)
+//______________________________________________________________________________
+Int_t Usage()
 {
-  /// Create the menu bar of the program
-
-  TGPopupMenu* file = new TGPopupMenu(gClient->GetRoot());
-  
-  file->AddEntry("&Exit",1);
-  
-  file->Connect("Activated(Int_t)","TRint",app,"Terminate()");
-
-  TGMenuBar* bar = new TGMenuBar(mainFrame,w);
-  
-  bar->AddPopup("&File",file,new TGLayoutHints(kLHintsLeft|kLHintsTop));
-  
-  mainFrame->AddFrame(bar,new TGLayoutHints(kLHintsLeft|kLHintsExpandX));
-  
-  AliMUONPainterRegistry::Instance()->SetMenuBar(bar);
+  /// Printout available options of the program
+  cout << "mchview " << endl;
+  cout << "  --version : shows the current version of the program" << endl;
+  return -1;
 }
 
-
+//______________________________________________________________________________
 int main(int argc, char** argv)
 {
   /// Main function for the program
-
+  TObjArray args;
+  
+  for ( int i = 1; i < argc; ++i ) 
+  {
+    args.Add(new TObjString(argv[i]));
+  }
+  
+  Int_t nok(0);
+  
+  for ( Int_t i = 0; i <= args.GetLast(); ++i ) 
+  {
+    TString a(static_cast<TObjString*>(args.At(i))->String());
+    if ( a == "--version" ) 
+    {
+      cout << "mchview Version " << AliMUONMchViewApplication::Version() << " ($Id$)" << endl;
+      ++nok;
+      return 0;
+    }
+  }
+  
+  if ( nok < args.GetLast() )
+  {
+    return Usage();
+  }
+  
   AliWarningGeneral("main","Remove default storage and run number from here...");
   
   AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
   AliCDBManager::Instance()->SetRun(0);
-  
-  TRint *theApp = new TRint("mchview", &argc, argv);
-
-  gROOT->SetStyle("Plain");
-  
+ 
+  gROOT->SetStyle("Plain");  
   gStyle->SetPalette(1);
-  
   Int_t n = gStyle->GetNumberOfColors();
-  
   Int_t* colors = new Int_t[n+2];
-  
   for ( Int_t i = 1; i <= n; ++i )
   {
     colors[i] = gStyle->GetColorPalette(i-1);
   }
-  
   colors[0] = 0;
   colors[n+1] = 1;
-  
   gStyle->SetPalette(n+2,colors);
-  
   delete[] colors;
   
-  UInt_t dw = gClient->GetDisplayWidth(); 
-  UInt_t dh = gClient->GetDisplayHeight(); 
-  
-  UInt_t w = (UInt_t)(0.7*dw);
-  UInt_t h = (UInt_t)(0.90*dh);
-    
-  TGMainFrame* mainFrame = new TGMainFrame(gClient->GetRoot(),w,h);
-  
-  const Int_t kbs = 2;
-  
-  CreateMenuBar(theApp,mainFrame,w);
-
-//  h -= 60; // menubar
-  
-  TGTab* tabs = new TGTab(mainFrame,w,h);
-  
-  TGCompositeFrame* t = tabs->AddTab("Painter Master Frame");
-
-  AliMUONPainterMasterFrame* pf = 
-    new AliMUONPainterMasterFrame(t,t->GetWidth()-kbs*2,t->GetHeight()-kbs*2);
-  
-  t->AddFrame(pf, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY,kbs,kbs,kbs,kbs));
-
-  t = tabs->AddTab("Data Sources");
-  
-  AliMUONPainterDataSourceFrame* dsf = 
-    new AliMUONPainterDataSourceFrame(t,t->GetWidth()-kbs*2,t->GetHeight()-kbs*2);
-  
-  t->AddFrame(dsf,new TGLayoutHints(kLHintsExpandX | kLHintsExpandY,kbs,kbs,kbs,kbs));
-  
-  mainFrame->AddFrame(tabs,new TGLayoutHints(kLHintsExpandX | kLHintsExpandY,0,0,0,0));
-
-  mainFrame->SetWindowName("mchview - Visualization of MUON Tracker detector");
-
-  mainFrame->MapSubwindows();
-  mainFrame->Resize();
-  mainFrame->MapWindow();
-  
-  mainFrame->Connect("CloseWindow()","TRint",theApp,"Terminate()");
-  
-  UInt_t x = dw/2 - w/2;
-  UInt_t y = 0;
-  
-  mainFrame->MoveResize(x, y, w, h); 
-  mainFrame->SetWMPosition(x, y);
-  
-  mainFrame->SetWMSizeHints(w,h,w,h,0,0);
-
+  TRint* theApp = new AliMUONMchViewApplication("mchview", &argc, argv, 0.7, 0.9);
+   
   AliCodeTimer::Instance()->Print();
 
   // --- Start the event loop ---

@@ -39,5 +39,6 @@
 #pragma link C++ class AliMUONVTrackerDataMaker+;
 #pragma link C++ class AliMUONTrackerData+;
 #pragma link C++ class AliMUONTrackerRawDataMaker+;
+#pragma link C++ class AliMUONMchViewApplication+;
 
 #endif
