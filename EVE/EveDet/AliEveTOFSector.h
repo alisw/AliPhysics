@@ -21,13 +21,13 @@
 
 #include <AliTOFGeometry.h>
 
-
+  
   class AliEveTOFSector : public TEveQuadSet
-
+                   
   {
     AliEveTOFSector(const AliEveTOFSector&);            // Not implemented
     AliEveTOFSector& operator=(const AliEveTOFSector&); // Not implemented
-
+ 
     //Int_t       fSectorID;
   private:
 
@@ -49,22 +49,22 @@
     Float_t  fDz;
     ///////////////////////////////
 
-    Bool_t      fAutoTrans;
-    Int_t       fMinTime;
-    Int_t       fMaxTime;
+    Bool_t      fAutoTrans; 
+    //Int_t       fMinTime;     
+    //Int_t       fMaxTime;
     Short_t     fThreshold;
     Int_t       fMaxVal;
     Int_t       fSectorID;
     Bool_t      *fPlateFlag;
 
-    Bool_t      fPlateFlag0;
-    Bool_t      fPlateFlag1;
-    Bool_t      fPlateFlag2;
-    Bool_t      fPlateFlag3;
-    Bool_t      fPlateFlag4;
+    //Bool_t      fPlateFlag0;
+    //Bool_t      fPlateFlag1;
+    //Bool_t      fPlateFlag2;
+    //Bool_t      fPlateFlag3;
+    //Bool_t      fPlateFlag4;
 
-    Color_t     fFrameColor;
-    Bool_t      fRnrFrame;
+    //Color_t     fFrameColor;
+    //Bool_t      fRnrFrame;
 
     TGeoManager *fGeoManager;
 
@@ -72,10 +72,10 @@
     // Bool_t       fAutoTrans;
 
     virtual void InitModule();
-    virtual void SetTrans();
+    virtual void SetTrans(); 
     AliEveTOFSector(const Text_t* n="AliEveTOFSector", const Text_t* t=0);
     AliEveTOFSector(TGeoManager *localGeoManager, Int_t nSector);
-
+    
     AliEveTOFSector(TGeoManager *localGeoManager, Int_t nSector,
 	      TClonesArray *tofArray);
     AliEveTOFSector(TGeoManager *localGeoManager,

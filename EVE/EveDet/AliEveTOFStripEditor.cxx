@@ -7,6 +7,7 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
+
 #include "AliEveTOFStripEditor.h"
 #include <EveDet/AliEveTOFStrip.h>
 
@@ -18,7 +19,6 @@
 #include <TGNumberEntry.h>
 #include <TGColorSelect.h>
 #include <TGDoubleSlider.h>
-
 
 //______________________________________________________________________________
 // AliEveTOFStripEditor

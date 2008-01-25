@@ -31,10 +31,11 @@ ClassImp(AliEveTOFSectorEditor)
 AliEveTOFSectorEditor::AliEveTOFSectorEditor(const TGWindow *p, Int_t width, Int_t height,
 					     UInt_t options, Pixel_t back) :
   TGedFrame(p, width, height, options | kVerticalFrame, back),
-  fM(0),
-  fSectorID(0), fAutoTrans(0),
-  fPlate(0), fPlate0(0), fPlate1(0), fPlate2(0), fPlate3(0), fPlate4(0),
-  fThreshold(0), fMaxVal(0)
+  fM(0) ,
+  fSectorID  (0), fAutoTrans (0),
+  fPlate (0),
+  fPlate0(0), fPlate1(0), fPlate2(0), fPlate3(0), fPlate4(0),
+  fThreshold (0), fMaxVal(0)
 {
 
   fPlate = new TGCheckButton*[5];
@@ -125,6 +126,8 @@ AliEveTOFSectorEditor::AliEveTOFSectorEditor(const TGWindow *p, Int_t width, Int
 
 }
 
+/******************************************************************************/
+
 AliEveTOFSectorEditor::~AliEveTOFSectorEditor()
 {
   delete [] fPlate;
@@ -210,3 +213,12 @@ void AliEveTOFSectorEditor::DoMaxVal()
   fMaxVal->SetValue(fM->GetMaxVal());
   Update();
 }
+
+/*
+void AliEveTOFSectorEditor::DoTime()
+{ 
+  fM->SetMinTime((Int_t) fTime->GetMin());
+  fM->SetMaxTime((Int_t) fTime->GetMax());
+  Update();
+}
+*/

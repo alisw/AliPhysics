@@ -13,17 +13,19 @@
 #include <TEveTreeTools.h>
 
 #include "AliEveTOFDigitsInfo.h"
+
+#include <AliDAQ.h>
+
 #include <AliTOFdigit.h>
 #include <AliTOFGeometry.h>
-//#include <AliTOFDigitMap.h>
-
-using namespace std;
+#include <AliTOFrawData.h>
+#include <AliTOFRawStream.h>
 
 //_________________________________________________________
 
 ClassImp(AliEveTOFDigitsInfo)
 
-  AliEveTOFDigitsInfo::AliEveTOFDigitsInfo():
+  AliEveTOFDigitsInfo::AliEveTOFDigitsInfo(): 
     TObject(),
     TEveRefCnt(),
     fTree (0),
@@ -33,7 +35,7 @@ ClassImp(AliEveTOFDigitsInfo)
 {}
 /* ******************************************************* */
 
-AliEveTOFDigitsInfo:: ~AliEveTOFDigitsInfo()
+AliEveTOFDigitsInfo:: ~AliEveTOFDigitsInfo() 
 {
 
   delete fGeom;
@@ -47,7 +49,7 @@ AliEveTOFDigitsInfo:: ~AliEveTOFDigitsInfo()
 void AliEveTOFDigitsInfo::SetTree(TTree* tree)
 {
   static const TEveException eH("AliEveTOFDigitsInfo::SetTree ");
-
+  
   if(fGeom == 0) {
     fGeom = new AliTOFGeometry();
   }
@@ -59,7 +61,117 @@ void AliEveTOFDigitsInfo::SetTree(TTree* tree)
   */
 }
 /* ******************************************************* */
+void AliEveTOFDigitsInfo::ReadRaw(AliRawReader* rawReader, Int_t nEvent)
+{
+  // Read raw-data. AliTOFdigit is used to
+  // store raw-adata for all sub-detectors.
 
+  //ofstream ftxt;
+  //Char_t fileName[100];
+  //sprintf(fileName,"TOFrawDataReadingFromEVE%d.txt",nEvent);
+
+  //ftxt.open(fileName,ios::app);
+  //ftxt << endl;
+  //ftxt << "  " << nEvent << endl;
+
+  const Int_t kDDL = AliDAQ::NumberOfDdls("TOF");
+
+  TClonesArray *tofDigits = new TClonesArray("AliTOFdigit",10000);
+  fTree = new TTree();
+  Int_t bufsize = 32000;
+  TBranch *branch = fTree->Branch("TOF", &tofDigits, bufsize);
+  fTree->GetEntry(0);
+
+  TClonesArray * clonesRawData = 0x0;
+
+  Int_t detectorIndex[5];
+  Int_t digit[4];
+
+  AliTOFRawStream stream(rawReader);
+
+  for (Int_t indexDDL = 0; indexDDL < kDDL; indexDDL++) {
+
+    rawReader->Reset();
+    stream.LoadRawData(indexDDL);
+
+    clonesRawData = (TClonesArray*)stream.GetRawData();
+
+    for (Int_t iRawData = 0; iRawData<clonesRawData->GetEntriesFast(); iRawData++) {
+
+      AliTOFrawData *tofRawDatum = (AliTOFrawData*)clonesRawData->UncheckedAt(iRawData);
+
+      if (tofRawDatum->GetTOT()==-1 || tofRawDatum->GetTOF()==-1) continue;
+
+      digit[0] = tofRawDatum->GetTOF();
+      digit[1] = tofRawDatum->GetTOT();
+      digit[2] = tofRawDatum->GetTOT();
+      digit[3] = -1;
+      /*
+      if (indexDDL<10) ftxt << "  " << indexDDL;
+      else             ftxt << " " << indexDDL;
+      if (tofRawDatum->GetTRM()<10) ftxt << "  " << tofRawDatum->GetTRM();
+      else                          ftxt << " " << tofRawDatum->GetTRM();
+      ftxt << "  " << tofRawDatum->GetTRMchain();
+      if (tofRawDatum->GetTDC()<10) ftxt << "  " << tofRawDatum->GetTDC();
+      else                          ftxt << " " << tofRawDatum->GetTDC();
+      ftxt << "  " << tofRawDatum->GetTDCchannel();
+      */
+      stream.EquipmentId2VolumeId(indexDDL, tofRawDatum->GetTRM(), tofRawDatum->GetTRMchain(),
+				    tofRawDatum->GetTDC(), tofRawDatum->GetTDCchannel(), detectorIndex);
+      //dummy = detectorIndex[3];
+      //detectorIndex[3] = detectorIndex[4];
+      //detectorIndex[4] = dummy;
+      /*
+      if (detectorIndex[0]<10) ftxt  << "  ->  " << detectorIndex[0];
+      else                     ftxt  << "  -> " << detectorIndex[0];
+      ftxt << "  " << detectorIndex[1];
+      if (detectorIndex[2]<10) ftxt << "  " << detectorIndex[2];
+      else                     ftxt << " " << detectorIndex[2];
+      ftxt << "  " << detectorIndex[3];
+      if (detectorIndex[4]<10) ftxt << "  " << detectorIndex[4];
+      else                     ftxt << " " << detectorIndex[4];
+
+      if (tofRawDatum->GetTOT()<10)                                            ftxt << "        " << tofRawDatum->GetTOT();
+      else if (tofRawDatum->GetTOT()>=10 && tofRawDatum->GetTOT()<100)         ftxt << "       " << tofRawDatum->GetTOT();
+      else if (tofRawDatum->GetTOT()>=100 && tofRawDatum->GetTOT()<1000)       ftxt << "      " << tofRawDatum->GetTOT();
+      else if (tofRawDatum->GetTOT()>=1000 && tofRawDatum->GetTOT()<10000)     ftxt << "     " << tofRawDatum->GetTOT();
+      else if (tofRawDatum->GetTOT()>=10000 && tofRawDatum->GetTOT()<100000)   ftxt << "    " << tofRawDatum->GetTOT();
+      else if (tofRawDatum->GetTOT()>=100000 && tofRawDatum->GetTOT()<1000000) ftxt << "   " << tofRawDatum->GetTOT();
+      else                                                                     ftxt << "  " << tofRawDatum->GetTOT();
+      if (tofRawDatum->GetTOF()<10)                                            ftxt << "        " << tofRawDatum->GetTOF() << endl;
+      else if (tofRawDatum->GetTOF()>=10 && tofRawDatum->GetTOF()<100)         ftxt << "       " << tofRawDatum->GetTOF() << endl;
+      else if (tofRawDatum->GetTOF()>=100 && tofRawDatum->GetTOF()<1000)       ftxt << "      " << tofRawDatum->GetTOF() << endl;
+      else if (tofRawDatum->GetTOF()>=1000 && tofRawDatum->GetTOF()<10000)     ftxt << "     " << tofRawDatum->GetTOF() << endl;
+      else if (tofRawDatum->GetTOF()>=10000 && tofRawDatum->GetTOF()<100000)   ftxt << "    " << tofRawDatum->GetTOF() << endl;
+      else if (tofRawDatum->GetTOF()>=100000 && tofRawDatum->GetTOF()<1000000) ftxt << "   " << tofRawDatum->GetTOF() << endl;
+      else                                                                     ftxt << "  " << tofRawDatum->GetTOF() << endl;
+      */
+
+      TClonesArray &aDigits = *tofDigits;
+      Int_t last = tofDigits->GetEntriesFast();
+
+      fTOFdigitMap->AddDigit(detectorIndex, last);
+
+      AliDebug(2,Form(" %3i -> %2i %2i %2i %2i %2i   %i  %i\n",
+		      last, detectorIndex[0], detectorIndex[1], detectorIndex[2], detectorIndex[4], detectorIndex[3],
+		      digit[1], digit[0]));
+
+      Int_t tracknum[3]={-1,-1,-1};
+      new (aDigits[last]) AliTOFdigit(tracknum, detectorIndex, digit);
+
+    } // while loop
+
+    clonesRawData->Clear();
+
+  } // DDL Loop
+
+  fTree->Fill();
+
+  //ftxt.close();
+
+}
+
+/* ******************************************************* */
 void AliEveTOFDigitsInfo::LoadDigits()
 {
 
@@ -80,8 +192,8 @@ void AliEveTOFDigitsInfo::LoadDigits()
     vol[0] = digs->GetSector(); // Sector Number (0-17)
     vol[1] = digs->GetPlate();  // Plate Number (0-4)
     vol[2] = digs->GetStrip();  // Strip Number (0-14/18)
-    vol[3] = digs->GetPadx();   // TEvePad Number in x direction (0-47)
-    vol[4] = digs->GetPadz();   // TEvePad Number in z direction (0-1)
+    vol[3] = digs->GetPadx();   // Pad Number in x direction (0-47)
+    vol[4] = digs->GetPadz();   // Pad Number in z direction (0-1)
 
     fTOFdigitMap->AddDigit(vol, digitNumber);
     //if (digitNumber==digitsTOF->GetEntries()-1) printf(" I am inside LoadDigits %3i \n", digitNumber);
@@ -137,7 +249,7 @@ TClonesArray* AliEveTOFDigitsInfo::GetDigits(Int_t nSector, Int_t nPlate,
       for (Int_t ii=0; ii<3; ii++) {
 
 	if (nDigitsInVolume[ii]>=0 ) {
-	  //printf("  nDigitsInVolume[%2i]  = %3i\n ", ii, nDigitsInVolume[ii]);
+	  //AliDebug(2,Form("  nDigitsInVolume[%2i]  = %3i\n ", ii, nDigitsInVolume[ii]));
 	  digs = (AliTOFdigit*)digitsTOF->UncheckedAt(nDigitsInVolume[ii]);
 	  informations[0] = digs->GetTdc();
 	  informations[1] = digs->GetAdc();
@@ -157,8 +269,8 @@ TClonesArray* AliEveTOFDigitsInfo::GetDigits(Int_t nSector, Int_t nPlate,
 
   /*
   if (digitsTOFnew)
-    printf("Sector %2i   Plate %1i  Strip %2i  -> number of digits %3i \n",
-	   nSector, nPlate, nStrip, digitsTOFnew->GetEntries());
+    AliDebug(2,Form("Sector %2i   Plate %1i  Strip %2i  -> number of digits %3i \n",
+    nSector, nPlate, nStrip, digitsTOFnew->GetEntries()));
   */
   return digitsTOFnew;
 
@@ -186,7 +298,7 @@ TClonesArray* AliEveTOFDigitsInfo::GetDigits(Int_t nSector)
 
   //Int_t nSector = 1;
   Int_t vol[5] = {nSector,-1,-1,-1,-1};
-
+ 
   for(Int_t iPlate=0; iPlate<fGeom->NPlates(); iPlate++){
     vol[1] = iPlate;
     if(iPlate==2) nStrips=15;
@@ -208,13 +320,18 @@ TClonesArray* AliEveTOFDigitsInfo::GetDigits(Int_t nSector)
 	  for (Int_t ii=0; ii<3; ii++) {
 
 	    if (nDigitsInVolume[ii]>=0 ) {
-	      //printf("  nDigitsInVolume[%2i]  = %3i\n ", ii, nDigitsInVolume[ii]);
+
 	      digs = (AliTOFdigit*)digitsTOF->UncheckedAt(nDigitsInVolume[ii]);
 	      informations[0] = digs->GetTdc();
 	      informations[1] = digs->GetAdc();
 	      informations[2] = digs->GetToT();
 	      informations[3] = digs->GetTdcND();
 	      new (ldigits[newCounter++]) AliTOFdigit(dummy, vol, informations);
+
+	      AliDebug(2,Form(" %2i -> %2i %2i %2i %2i %2i %7i %7i\n",
+			    nDigitsInVolume[ii], vol[0], vol[1], vol[2], vol[4], vol[3],
+			    informations[1], informations[0]));
+
 	    }
 
 	  }
@@ -230,14 +347,42 @@ TClonesArray* AliEveTOFDigitsInfo::GetDigits(Int_t nSector)
 
   /*
   if (digitsTOFnew)
-    printf("Sector %2i   Plate %1i  Strip %2i  -> number of digits %3i \n",
-	   nSector, nPlate, nStrip, digitsTOFnew->GetEntries());
+  AliDebug(Form(("Sector %2i   Plate %1i  Strip %2i  -> number of digits %3i \n",
+  nSector, nPlate, nStrip, digitsTOFnew->GetEntries()));
   */
   return digitsTOFnew;
 
 }
 /* ******************************************************* */
 
+Int_t AliEveTOFDigitsInfo::GetTOFInfos() const
+{
+
+  return fTOFdigitMap->GetFilledCellNumber();
+
+}
+
+/* ******************************************************* */
+Int_t AliEveTOFDigitsInfo::IsStripFilled(Int_t iSector, Int_t iPlate, Int_t iStrip)
+{
+
+  Int_t vol[5] = {iSector, iPlate, iStrip, -1, -1};
+
+  Int_t index = 0;
+
+  for (Int_t iPadZ=0; iPadZ<fGeom->NpadZ(); iPadZ++) 
+    for (Int_t iPadX=0; iPadX<fGeom->NpadX(); iPadX++) 
+      {
+	vol[3] = iPadX;
+	vol[4] = iPadZ;
+	if (fTOFdigitMap->GetDigitIndex(vol,0)>=0) index++;
+      }
+
+  return index;
+
+}
+
+/* ******************************************************* */
 void AliEveTOFDigitsInfo::GetDigits()
 {
 

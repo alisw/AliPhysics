@@ -49,11 +49,11 @@ protected:
 public:
   AliEveTOFStrip(const Text_t* n="AliEveTOFStrip", const Text_t* t=0);
   AliEveTOFStrip(TGeoManager *localGeoManager,
-	    Int_t nSector, Int_t nPlate, Int_t nStrip);
+		 Int_t nSector, Int_t nPlate, Int_t nStrip);
 
   AliEveTOFStrip(TGeoManager *localGeoManager,
-	    Int_t nSector, Int_t nPlate, Int_t nStrip,
-	    TClonesArray *tofArray);
+		 Int_t nSector, Int_t nPlate, Int_t nStrip,
+		 TClonesArray *tofArray);
   virtual ~AliEveTOFStrip();
 
   static Bool_t    fgStaticInitDone;

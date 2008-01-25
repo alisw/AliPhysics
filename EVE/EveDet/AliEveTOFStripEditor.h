@@ -7,6 +7,7 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
+
 #ifndef ALIEVE_TOFStripEditor_H
 #define ALIEVE_TOFStripEditor_H
 
@@ -16,6 +17,7 @@ class TGCheckButton;
 class TGNumberEntry;
 class TGColorSelect;
 
+ 
 
 class AliEveTOFStrip;
 
@@ -42,5 +44,6 @@ public:
 
   ClassDef(AliEveTOFStripEditor, 0); // Editor for AliEveTOFStrip
 }; // endclass AliEveTOFStripEditor
+
 
 #endif

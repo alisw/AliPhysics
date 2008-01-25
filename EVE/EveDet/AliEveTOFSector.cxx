@@ -32,40 +32,45 @@ AliEveTOFSector::AliEveTOFSector(const Text_t* n, const Text_t* t) :
   fSector(-1),
   fDx(0), fDy(0), fDz(0),
   fAutoTrans (kTRUE),
-  fMinTime   (0), fMaxTime (0),
-  fThreshold (5), fMaxVal  (80),
+  //fMinTime   (0), fMaxTime (0),
+  fThreshold (5), fMaxVal (80),
   fSectorID  (0),
-  fPlateFlag (0), fPlateFlag0(kFALSE), fPlateFlag1(kFALSE), fPlateFlag2(kFALSE), fPlateFlag3(kTRUE), fPlateFlag4(kFALSE),
-  fFrameColor(4),
-  fRnrFrame  (kFALSE),
+  //fPlateFlag0(kTRUE), fPlateFlag1(kTRUE), fPlateFlag2(kTRUE), fPlateFlag3(kTRUE), fPlateFlag4(kTRUE),
+  fPlateFlag (0x0),
+  //fFrameColor(4),
+  //fRnrFrame  (kFALSE),
   fGeoManager(0)
 {
 
   fPlateFlag = new Bool_t[5];
   for (Int_t ii=0; ii<5; ii++) fPlateFlag[ii]=kTRUE;
 
-  fGeoManager = (TGeoManager*)gEve->GetGeometry("$REVESYS/alice-data/alice_fullgeo.root");
+
+  //fGeoManager = (TGeoManager*)gEve->GetGeometry("$REVESYS/alice-data/alice_fullgeo.root");
   if (!fGeoManager) {
     printf("ERROR: no TGeo\n");
   }
-}
 
+}
 /* ************************************************************************ */
 
-AliEveTOFSector::AliEveTOFSector(TGeoManager *localGeoManager, Int_t nSector) :
-  TEveQuadSet(Form("Sector%i", nSector)),
+AliEveTOFSector::AliEveTOFSector(TGeoManager *localGeoManager,
+		     Int_t nSector)
+  :
+  TEveQuadSet(Form("Sector%i",nSector)),
   fTOFgeometry(new AliTOFGeometry()),
   fTOFarray(0x0),
   fTOFtree(0x0),
   fSector(nSector),
   fDx(0), fDy(0), fDz(0),
   fAutoTrans (kTRUE),
-  fMinTime   (0), fMaxTime (0),
+  //fMinTime   (0), fMaxTime (0),
   fThreshold (5), fMaxVal  (80),
   fSectorID  (nSector),
-  fPlateFlag (0), fPlateFlag0(kFALSE), fPlateFlag1(kFALSE), fPlateFlag2(kFALSE), fPlateFlag3(kTRUE), fPlateFlag4(kFALSE),
-  fFrameColor(4),
-  fRnrFrame  (kFALSE),
+  //fPlateFlag0(kTRUE), fPlateFlag1(kTRUE), fPlateFlag2(kTRUE), fPlateFlag3(kTRUE), fPlateFlag4(kTRUE),
+  fPlateFlag (0x0),
+  //fFrameColor(4),
+  //fRnrFrame  (kFALSE),
   fGeoManager(localGeoManager)
 {
 
@@ -79,8 +84,8 @@ AliEveTOFSector::AliEveTOFSector(TGeoManager *localGeoManager, Int_t nSector) :
   */
 
   InitModule();
-}
 
+}
 /* ************************************************************************ */
 
 AliEveTOFSector::AliEveTOFSector(TGeoManager *localGeoManager,
@@ -94,12 +99,13 @@ AliEveTOFSector::AliEveTOFSector(TGeoManager *localGeoManager,
   fSector(nSector),
   fDx(0), fDy(0), fDz(0),
   fAutoTrans (kTRUE),
-  fMinTime   (0), fMaxTime (0),
-  fThreshold (5), fMaxVal  (80),
+  //fMinTime   (0), fMaxTime (0),
+  fThreshold (5), fMaxVal    (80),
   fSectorID  (nSector),
-  fPlateFlag (0), fPlateFlag0(kFALSE), fPlateFlag1(kFALSE), fPlateFlag2(kFALSE), fPlateFlag3(kTRUE), fPlateFlag4(kFALSE),
-  fFrameColor(4),
-  fRnrFrame  (kFALSE),
+  //fPlateFlag0(kTRUE), fPlateFlag1(kTRUE), fPlateFlag2(kTRUE), fPlateFlag3(kTRUE), fPlateFlag4(kTRUE),
+  fPlateFlag (0x0),
+  //fFrameColor(4),
+  //fRnrFrame  (kFALSE),
   fGeoManager(localGeoManager)
 {
 
@@ -109,24 +115,26 @@ AliEveTOFSector::AliEveTOFSector(TGeoManager *localGeoManager,
   InitModule();
 
 }
-
 /* ************************************************************************ */
 
-AliEveTOFSector::AliEveTOFSector(TGeoManager* localGeoManager,
-				 Int_t nSector, TTree *tofTree) :
-  TEveQuadSet(Form("Sector%i", nSector)),
+AliEveTOFSector::AliEveTOFSector(TGeoManager *localGeoManager,
+		     Int_t nSector,
+		     TTree *tofTree)
+  :
+  TEveQuadSet(Form("Sector%i",nSector)),
   fTOFgeometry(new AliTOFGeometry()),
   fTOFarray(0x0),
   fTOFtree(tofTree),
   fSector(nSector),
   fDx(0), fDy(0), fDz(0),
   fAutoTrans (kTRUE),
-  fMinTime   (0), fMaxTime (0),
-  fThreshold (5), fMaxVal  (80),
+  //fMinTime   (0), fMaxTime (0),
+  fThreshold (5), fMaxVal    (80),
   fSectorID  (nSector),
-  fPlateFlag (0), fPlateFlag0(kFALSE), fPlateFlag1(kFALSE), fPlateFlag2(kFALSE), fPlateFlag3(kTRUE), fPlateFlag4(kFALSE),
-  fFrameColor(4),
-  fRnrFrame  (kFALSE),
+  //fPlateFlag0(kTRUE), fPlateFlag1(kTRUE), fPlateFlag2(kTRUE), fPlateFlag3(kTRUE), fPlateFlag4(kTRUE),
+  fPlateFlag (0x0),
+  //fFrameColor(4),
+  //fRnrFrame  (kFALSE),
   fGeoManager(localGeoManager)
 {
 
@@ -175,8 +183,9 @@ void AliEveTOFSector::InitStatics()
   fgTOFsectorFrameBox->SetFrameColor((Color_t) 32);//31);
 
   //fgTOFsectorPalette  = new TEveRGBAPalette(0, 2048); // TOT
-  fgTOFsectorPalette  = new TEveRGBAPalette(0, 8192/*1024*/); // TDC
-  fgTOFsectorPalette->SetLimits(0, 8192);
+  //fgTOFsectorPalette->SetLimits(0, 2048); 
+  fgTOFsectorPalette  = new TEveRGBAPalette(0, 8192); // TDC
+  //fgTOFsectorPalette->SetLimits(0, 8192); 
 
   fgStaticInitDone = kTRUE;
 }
@@ -206,8 +215,6 @@ void AliEveTOFSector::InitModule()
 void AliEveTOFSector::LoadQuads()
 {
 
-  Reset(kQT_FreeQuad, kFALSE, 32);
-
   //Int_t n_col = gStyle->GetNumberOfColors();
 
   Int_t vol[5] = {fSectorID, -1, -1, -1, -1};
@@ -218,6 +225,8 @@ void AliEveTOFSector::LoadQuads()
 
   Double_t **coord = new Double_t*[4];
   for (Int_t ii=0; ii<4; ii++) coord[ii] = new Double_t[3];
+
+  Reset(kQT_FreeQuad, kFALSE, 32);
 
   //printf(" fTOFarray->GetEntries() = %4i \n",fTOFarray->GetEntries());
 
@@ -243,8 +252,8 @@ void AliEveTOFSector::LoadQuads()
 
       vol[1] = digs->GetPlate();  // Plate Number (0-4)
       vol[2] = digs->GetStrip();  // Strip Number (0-14/18)
-      vol[3] = digs->GetPadx();   // TEvePad Number in x direction (0-47)
-      vol[4] = digs->GetPadz();   // TEvePad Number in z direction (0-1)
+      vol[3] = digs->GetPadx();   // Pad Number in x direction (0-47)
+      vol[4] = digs->GetPadz();   // Pad Number in z direction (0-1)
 
       informations[0] = digs->GetTdc();
       informations[1] = digs->GetAdc();
@@ -296,6 +305,7 @@ void AliEveTOFSector::LoadQuads()
 
       // In principle could have color based on number of neigbours. We
       // can insert the time-of-flight value for each pad
+
       //QuadValue((Int_t)tot);
       QuadValue((Int_t)tdc);
       QuadId(tofDigit);
@@ -377,17 +387,19 @@ void AliEveTOFSector::SetMaxVal(Int_t mv)
 
 void AliEveTOFSector::DigitSelected(Int_t idx)
 {
-  // Override control-click from TEveQuadSet.
+  // Override control-click from TEveQuadSet
 
   DigitBase_t* qb   = GetDigit(idx);
   TObject* obj   = qb->fId.GetObject();
   AliTOFdigit* digs = dynamic_cast<AliTOFdigit*>(obj);
   // printf("AliEveTOFSector::QuadSelected "); Print();
+  /*
   printf("  idx = %5i, value = %5d, obj = 0x%lx, digit = 0x%lx  ",
 	 idx, qb->fValue, (ULong_t)obj, (ULong_t)digs);
+  */
   if (digs)
-    printf("-> Sector = %2i  Plate = %1i  Strip = %2i  ToT = %3i  Tof = %5i\n",
-	   fSector , digs->GetPlate(), digs->GetStrip(), digs->GetToT(), digs->GetTdc());
+    printf("\n Sector = %2i  Plate = %1i  Strip = %2i  PadZ = %1i PadX = %2i  ToT = %3i  Tof = %5i\n",
+	   fSector , digs->GetPlate(), digs->GetStrip(), digs->GetPadz(), digs->GetPadx(), digs->GetToT(), digs->GetTdc());
   else printf("\n");
 
 }
