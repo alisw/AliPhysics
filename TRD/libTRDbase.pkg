@@ -16,6 +16,7 @@ SRCS= AliTRDarrayI.cxx \
       AliTRDRawStream.cxx \
       AliTRDRawStreamV2.cxx \
       AliTRDrawStreamTB.cxx \
+      AliTRDrawStreamBase.cxx \
       AliTRDtestBeam.cxx \
       AliTRDCommonParam.cxx \
       AliTRDfeeParam.cxx \

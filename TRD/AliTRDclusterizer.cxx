@@ -48,8 +48,9 @@
 #include "AliTRDCommonParam.h"
 #include "AliTRDtransform.h"
 #include "AliTRDSignalIndex.h"
-#include "AliTRDRawStream.h"
-#include "AliTRDRawStreamV2.h"
+#include "AliTRDrawStreamBase.h"
+// #include "AliTRDRawStream.h"
+// #include "AliTRDRawStreamV2.h"
 #include "AliTRDfeeParam.h"
 
 #include "Cal/AliTRDCalROC.h"
@@ -68,7 +69,7 @@ AliTRDclusterizer::AliTRDclusterizer()
   ,fRawVersion(2)
   ,fIndexesOut(NULL)
   ,fIndexesMaxima(NULL)
-  ,fTransform(NULL)
+  ,fTransform(new AliTRDtransform(0))
 {
   //
   // AliTRDclusterizer default constructor
@@ -509,136 +510,138 @@ Bool_t AliTRDclusterizer::Raw2Clusters(AliRawReader *rawReader)
   // Creates clusters from raw data
   //
 
-  AliTRDdataArrayS *digits = 0;
-  AliTRDdataArrayI *track0 = 0;
-  AliTRDdataArrayI *track1 = 0;
-  AliTRDdataArrayI *track2 = 0; 
+//   AliTRDdataArrayS *digits = 0;
+//   AliTRDdataArrayI *track0 = 0;
+//   AliTRDdataArrayI *track1 = 0;
+//   AliTRDdataArrayI *track2 = 0; 
 
-  AliTRDSignalIndex *indexes = 0;
+//   AliTRDSignalIndex *indexes = 0;
 
-  // Create the digits manager
-  if (!fDigitsManager)
-    {
-      fDigitsManager = new AliTRDdigitsManager();
-      fDigitsManager->CreateArrays();
-    }
+//   // Create the digits manager
+//   if (!fDigitsManager)
+//     {
+//       fDigitsManager = new AliTRDdigitsManager();
+//       fDigitsManager->CreateArrays();
+//     }
 
-  AliTRDRawStreamV2 input(rawReader);
-  input.SetRawVersion( fRawVersion );
-  input.Init();
+// //   AliTRDRawStreamV2 input(rawReader);
+// //   input.SetRawVersion( fRawVersion );
+// //   input.Init();
+//   AliTRDrawStreamBase &input = *AliTRDrawStreamBase::GetRawStream(rawReader);
 
-  AliInfo(Form("Stream version: %s", input.IsA()->GetName()));
+//   AliInfo(Form("Stream version: %s", input.IsA()->GetName()));
 
-  // Loop through the digits
-  Int_t lastdet = -1;
-  Int_t det     =  0;
-  Int_t it      =  0;
-  while (input.Next()) 
-    {
+//   // Loop through the digits
+//   Int_t lastdet = -1;
+//   Int_t det     =  0;
+//   Int_t it      =  0;
+//   while (input.Next()) 
+//     {
 
-      det = input.GetDet();
+//       det = input.GetDet();
 
-      if (det != lastdet) 
-	{
+//       if (det != lastdet) 
+// 	{
 	
-	  if (lastdet != -1)
-	    {
-	      digits = (AliTRDdataArrayS *) fDigitsManager->GetDigits(lastdet);
-	      Bool_t iclusterBranch = kFALSE;
-	      if (indexes->HasEntry())
-		iclusterBranch = MakeClusters(lastdet);
-	      if (iclusterBranch == kFALSE)
-		{
-		  WriteClusters(lastdet);
-		  ResetRecPoints();
-		}
-	    }
+// 	  if (lastdet != -1)
+// 	    {
+// 	      digits = (AliTRDdataArrayS *) fDigitsManager->GetDigits(lastdet);
+// 	      Bool_t iclusterBranch = kFALSE;
+// 	      if (indexes->HasEntry())
+// 		iclusterBranch = MakeClusters(lastdet);
+// 	      if (iclusterBranch == kFALSE)
+// 		{
+// 		  WriteClusters(lastdet);
+// 		  ResetRecPoints();
+// 		}
+// 	    }
 
-	  if (digits)
-	    {
-	      fDigitsManager->RemoveDigits(lastdet);
-	      fDigitsManager->RemoveDictionaries(lastdet);
-	      fDigitsManager->ClearIndexes(lastdet);
-	    }
+// 	  if (digits)
+// 	    {
+// 	      fDigitsManager->RemoveDigits(lastdet);
+// 	      fDigitsManager->RemoveDictionaries(lastdet);
+// 	      fDigitsManager->ClearIndexes(lastdet);
+// 	    }
 
-	  lastdet = det;
+// 	  lastdet = det;
 
-	  // Add a container for the digits of this detector
-	  digits = (AliTRDdataArrayS *) fDigitsManager->GetDigits(det);
-	  track0 = (AliTRDdataArrayI *) fDigitsManager->GetDictionary(det,0);
-	  track1 = (AliTRDdataArrayI *) fDigitsManager->GetDictionary(det,1);
-	  track2 = (AliTRDdataArrayI *) fDigitsManager->GetDictionary(det,2);
+// 	  // Add a container for the digits of this detector
+// 	  digits = (AliTRDdataArrayS *) fDigitsManager->GetDigits(det);
+// 	  track0 = (AliTRDdataArrayI *) fDigitsManager->GetDictionary(det,0);
+// 	  track1 = (AliTRDdataArrayI *) fDigitsManager->GetDictionary(det,1);
+// 	  track2 = (AliTRDdataArrayI *) fDigitsManager->GetDictionary(det,2);
 
-	  // Allocate memory space for the digits buffer
-	  if (!digits->HasData()) 
-	    {
-	      //AliDebug(5, Form("Alloc digits for det %d", det));
-	      digits->Allocate(input.GetMaxRow(),input.GetMaxCol(), input.GetNumberOfTimeBins());
-	      track0->Allocate(input.GetMaxRow(),input.GetMaxCol(), input.GetNumberOfTimeBins());
-	      track1->Allocate(input.GetMaxRow(),input.GetMaxCol(), input.GetNumberOfTimeBins());
-	      track2->Allocate(input.GetMaxRow(),input.GetMaxCol(), input.GetNumberOfTimeBins());
-	    }
+// 	  // Allocate memory space for the digits buffer
+// 	  if (!digits->HasData()) 
+// 	    {
+// 	      //AliDebug(5, Form("Alloc digits for det %d", det));
+// 	      digits->Allocate(input.GetMaxRow(),input.GetMaxCol(), input.GetNumberOfTimeBins());
+// 	      track0->Allocate(input.GetMaxRow(),input.GetMaxCol(), input.GetNumberOfTimeBins());
+// 	      track1->Allocate(input.GetMaxRow(),input.GetMaxCol(), input.GetNumberOfTimeBins());
+// 	      track2->Allocate(input.GetMaxRow(),input.GetMaxCol(), input.GetNumberOfTimeBins());
+// 	    }
 	  
-	  indexes = fDigitsManager->GetIndexes(det);
-	  indexes->SetSM(input.GetSM());
-	  indexes->SetStack(input.GetStack());
-	  indexes->SetLayer(input.GetLayer());
-	  indexes->SetDetNumber(det);
-	  if (indexes->IsAllocated() == kFALSE)
-	    {
-	      indexes->Allocate(input.GetMaxRow(), input.GetMaxCol(), input.GetNumberOfTimeBins());
-	    }
+// 	  indexes = fDigitsManager->GetIndexes(det);
+// 	  indexes->SetSM(input.GetSM());
+// 	  indexes->SetStack(input.GetStack());
+// 	  indexes->SetLayer(input.GetLayer());
+// 	  indexes->SetDetNumber(det);
+// 	  if (indexes->IsAllocated() == kFALSE)
+// 	    {
+// 	      indexes->Allocate(input.GetMaxRow(), input.GetMaxCol(), input.GetNumberOfTimeBins());
+// 	    }
 
-	}
+// 	}
       
-      for (it = 0; it < 3; it++)
-	{
-	  if ( input.GetTimeBin() + it < input.GetNumberOfTimeBins() )
-	    {
-	      if (input.GetSignals()[it] > 0)
-		{
-		  digits->SetDataUnchecked(input.GetRow(), input.GetCol(),
-					   input.GetTimeBin() + it, input.GetSignals()[it]);
+//       for (it = 0; it < 3; it++)
+// 	{
+// 	  if ( input.GetTimeBin() + it < input.GetNumberOfTimeBins() )
+// 	    {
+// 	      if (input.GetSignals()[it] > 0)
+// 		{
+// 		  digits->SetDataUnchecked(input.GetRow(), input.GetCol(),
+// 					   input.GetTimeBin() + it, input.GetSignals()[it]);
 
-		  indexes->AddIndexTBin(input.GetRow(), input.GetCol(),
-					input.GetTimeBin() + it);
-		  track0->SetDataUnchecked(input.GetRow(), input.GetCol(),
-					   input.GetTimeBin() + it, 0);
-		  track1->SetDataUnchecked(input.GetRow(), input.GetCol(),
-					   input.GetTimeBin() + it, 0);
-		  track2->SetDataUnchecked(input.GetRow(), input.GetCol(),
-					   input.GetTimeBin() + it, 0);
-		}
-	    }
-	}
+// 		  indexes->AddIndexTBin(input.GetRow(), input.GetCol(),
+// 					input.GetTimeBin() + it);
+// 		  track0->SetDataUnchecked(input.GetRow(), input.GetCol(),
+// 					   input.GetTimeBin() + it, 0);
+// 		  track1->SetDataUnchecked(input.GetRow(), input.GetCol(),
+// 					   input.GetTimeBin() + it, 0);
+// 		  track2->SetDataUnchecked(input.GetRow(), input.GetCol(),
+// 					   input.GetTimeBin() + it, 0);
+// 		}
+// 	    }
+// 	}
 
-    }
+//     }
 
-  if (lastdet != -1)
-    {
-      Bool_t iclusterBranch = kFALSE;
-      if (indexes->HasEntry()) 
-        {
-	  iclusterBranch = MakeClusters(lastdet);
-        }
-      if (iclusterBranch == kFALSE)
-	{
-	  WriteClusters(lastdet);
-	  ResetRecPoints();
-	}
-      //MakeClusters(lastdet);
-      if (digits)
-	{
-	  fDigitsManager->RemoveDigits(lastdet);
-	  fDigitsManager->RemoveDictionaries(lastdet);
-	  fDigitsManager->ClearIndexes(lastdet);
-	}
-    }
+//   if (lastdet != -1)
+//     {
+//       Bool_t iclusterBranch = kFALSE;
+//       if (indexes->HasEntry()) 
+//         {
+// 	  iclusterBranch = MakeClusters(lastdet);
+//         }
+//       if (iclusterBranch == kFALSE)
+// 	{
+// 	  WriteClusters(lastdet);
+// 	  ResetRecPoints();
+// 	}
+//       //MakeClusters(lastdet);
+//       if (digits)
+// 	{
+// 	  fDigitsManager->RemoveDigits(lastdet);
+// 	  fDigitsManager->RemoveDictionaries(lastdet);
+// 	  fDigitsManager->ClearIndexes(lastdet);
+// 	}
+//     }
 
-  delete fDigitsManager;
-  fDigitsManager = NULL;
-  return kTRUE;
+//   delete fDigitsManager;
+//   fDigitsManager = NULL;
+//   return kTRUE;
 
+return Raw2ClustersChamber(rawReader);
 }
 
 //_____________________________________________________________________________
@@ -657,9 +660,11 @@ Bool_t AliTRDclusterizer::Raw2ClustersChamber(AliRawReader *rawReader)
 
   fDigitsManager->SetUseDictionaries(fAddLabels);
 
-  AliTRDRawStreamV2 input(rawReader);
-  input.SetRawVersion( fRawVersion );
-  input.Init();
+//   AliTRDRawStreamV2 input(rawReader);
+//   input.SetRawVersion( fRawVersion );
+//   input.Init();
+  AliTRDrawStreamBase *pinput = AliTRDrawStreamBase::GetRawStream(rawReader);
+  AliTRDrawStreamBase &input = *pinput;
 
   AliInfo(Form("Stream version: %s", input.IsA()->GetName()));
   
@@ -683,6 +688,9 @@ Bool_t AliTRDclusterizer::Raw2ClustersChamber(AliRawReader *rawReader)
 
   delete fDigitsManager;
   fDigitsManager = NULL;
+
+  delete pinput;
+  pinput = NULL;
   return kTRUE;
 
 }

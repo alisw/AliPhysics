@@ -35,6 +35,7 @@ class AliTRDrawData : public TObject {
   virtual Bool_t       Digits2Raw(TTree *digits, TTree *tracks = NULL);
 
   virtual AliTRDdigitsManager *Raw2Digits(AliRawReader *rawReader);
+  virtual AliTRDdigitsManager *Raw2DigitsOLD(AliRawReader *rawReader);
 
  protected:
 

@@ -122,7 +122,8 @@ Int_t AliTRDrawStreamTB::fgEmptySignals[] =
   };
 
 AliTRDrawStreamTB::AliTRDrawStreamTB()
-  : TObject()
+  : AliTRDrawStreamBase()
+//: TObject()
   , fSM()
   , fStack(0)
   , fHC(0)
@@ -162,7 +163,8 @@ AliTRDrawStreamTB::AliTRDrawStreamTB()
 
 //--------------------------------------------------------
 AliTRDrawStreamTB::AliTRDrawStreamTB(AliRawReader *rawReader)
-  : TObject()
+  : AliTRDrawStreamBase(rawReader)
+//: TObject()
   , fSM()
   , fStack(0)
   , fHC(0)
@@ -209,7 +211,8 @@ AliTRDrawStreamTB::AliTRDrawStreamTB(AliRawReader *rawReader)
 //------------------------------------------------------------
 
 AliTRDrawStreamTB::AliTRDrawStreamTB(const AliTRDrawStreamTB& /*st*/)
-  : TObject()
+  : AliTRDrawStreamBase()
+//: TObject()
   , fSM()
   , fStack(0)
   , fHC(0)
@@ -244,13 +247,14 @@ AliTRDrawStreamTB::AliTRDrawStreamTB(const AliTRDrawStreamTB& /*st*/)
 }
 
 //------------------------------------------------------------
-void AliTRDrawStreamTB::SetRawVersion(Int_t fraw)
+Bool_t AliTRDrawStreamTB::SetRawVersion(Int_t fraw)
 {
   //
   // function provided for backward compatibility
   //
   AliWarning("Raw data version is read from raw data stream! No point of setting it in here.");
   fraw = 0; // avoid warnings
+  return kFALSE;
 }
 
 //------------------------------------------------------------

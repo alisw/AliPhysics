@@ -45,7 +45,8 @@ ClassImp(AliTRDRawStream)
 
 //_____________________________________________________________________________
 AliTRDRawStream::AliTRDRawStream() 
-  :TObject()
+  :AliTRDrawStreamBase()
+//  :TObject()
   ,fGeo(NULL) 
   ,fSig()
   ,fADC(0)
@@ -124,7 +125,8 @@ AliTRDRawStream::AliTRDRawStream()
 
 //_____________________________________________________________________________
 AliTRDRawStream::AliTRDRawStream(AliRawReader *rawReader) 
-  :TObject()
+  :AliTRDrawStreamBase(rawReader)
+//  :TObject()
   ,fGeo(NULL) 
   ,fSig()
   ,fADC(0)
@@ -205,7 +207,8 @@ AliTRDRawStream::AliTRDRawStream(AliRawReader *rawReader)
 
 //_____________________________________________________________________________
 AliTRDRawStream::AliTRDRawStream(const AliTRDRawStream& stream)
-  :TObject(stream)
+  :AliTRDrawStreamBase(stream)
+//  :TObject()
   ,fGeo(NULL)
   ,fSig()
   ,fADC(-1)
@@ -337,7 +340,7 @@ Bool_t AliTRDRawStream::SetRawVersion(Int_t rv)
 }
 
 //____________________________________________________________________________
-Int_t AliTRDRawStream::Init()
+Bool_t AliTRDRawStream::Init()
 {
   //
   // Initialization
@@ -345,7 +348,7 @@ Int_t AliTRDRawStream::Init()
 
   if (!AliTRDcalibDB::Instance()) {
     AliError("Could not get calibration object");
-    return 0;
+    return kFALSE;
   }
 
   if (!fGeo) {

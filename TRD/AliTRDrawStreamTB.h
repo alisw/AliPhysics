@@ -14,6 +14,7 @@
 
 #include "TObject.h"
 #include "TString.h"
+#include "AliTRDrawStreamBase.h"
 
 class AliTRDgeometry;
 class AliRawReader;
@@ -21,11 +22,13 @@ class AliTRDdigitsManager;
 class TTreeSRedirector;
 class AliTRDfeeParam;
 
-#define TRD_MAX_TBINS 30
-#define TRD_MAX_ADC   21
-#define TRD_MAX_MCM   4 * 16
+// definitions in AliTRDrawStreamBase.h:
+/* #define TRD_MAX_TBINS 30 */
+/* #define TRD_MAX_ADC   21 */
+/* #define TRD_MAX_MCM   4 * 16 */
 
-class AliTRDrawStreamTB : public TObject
+//class AliTRDrawStreamTB : public TObject
+class AliTRDrawStreamTB : public AliTRDrawStreamBase
 { // class def begin
 
  public:
@@ -393,7 +396,7 @@ class AliTRDrawStreamTB : public TObject
   virtual Int_t NextChamber(AliTRDdigitsManager *man); // read next chamber data
   virtual Bool_t       Init();              // Init some internal variables
 
-  void     SetRawVersion(Int_t fraw); // set the raw version - used for backward compat.
+  Bool_t   SetRawVersion(Int_t fraw); // set the raw version - used for backward compat.
   
   Bool_t   IsCurrentPadShared() const {return fADC->fIsShared;}          // is current pad shared between mcms
   void     SetSharedPadReadout(Bool_t fv) {fSharedPadsOn = fv;}          //  set the flag on if the reader should return the shared pads

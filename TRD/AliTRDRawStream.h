@@ -12,6 +12,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #include <TObject.h>
+#include "AliTRDrawStreamBase.h"
 
 class AliRawReader;
 
@@ -23,7 +24,8 @@ const UInt_t kEndoftrackletmarker = 0xAAAAAAAA; /*This marks the end of tracklet
 const UInt_t kEndofrawdatamarker  = 0x00000000; /*This marks the end of half-chamber-data*/
 const UInt_t kSizeWord            = sizeof(UInt_t);
 
-class AliTRDRawStream: public TObject {
+//class AliTRDRawStream: public TObject {
+class AliTRDRawStream: public AliTRDrawStreamBase {
 
   public :
 
@@ -33,7 +35,7 @@ class AliTRDRawStream: public TObject {
 
     virtual Bool_t       Next();                                // Read the next data
     virtual Int_t        NextChamber(AliTRDdigitsManager *man); // Read next chamber data
-    virtual Int_t        Init();                                // Init for the fRawVersion > 1
+    virtual Bool_t        Init();                                // Init for the fRawVersion > 1
 
     enum { kDDLOffset = 0x400 };                                // Offset for DDL numbers
 
@@ -57,7 +59,7 @@ class AliTRDRawStream: public TObject {
     Bool_t               IsGTULinkActive(Int_t sm, Int_t la, Int_t sta, Int_t side)
       { return ( ((fGTUlinkMask[sm][sta]) >> (2*la+side)) & 0x1 ); };
 
-    Int_t *GetSignals()                { return fSig;     } // Signals in the three time bins from Data Word
+    Int_t *GetSignals() const          { return (Int_t*)fSig;     } // Signals in the three time bins from Data Word
     Int_t  GetADC() const              { return fADC;     } // MCM ADC channel and Time Bin of word 1
     Int_t  GetTimeBin() const          { return fTB - 3;  } // MCM ADC channel and Time Bin of word 1
     Int_t  GetEventNumber() const      { return fEv;      } // MCM Event number and position of current MCM

@@ -35,6 +35,7 @@
 #include "AliTRDgeometry.h"
 #include "AliTRDdataArrayI.h"
 #include "AliTRDdataArrayS.h"
+#include "AliTRDrawStreamBase.h"
 #include "AliTRDRawStream.h"
 #include "AliTRDRawStreamV2.h"
 #include "AliTRDcalibDB.h"
@@ -565,6 +566,60 @@ Int_t AliTRDrawData::ProduceHcDataV3(AliTRDdataArrayS *digits, Int_t side
 
 //_____________________________________________________________________________
 AliTRDdigitsManager *AliTRDrawData::Raw2Digits(AliRawReader *rawReader)
+{
+  //
+  // Vx of the raw data reading
+  //
+
+  AliTRDdataArrayS *digits = 0;
+  AliTRDdataArrayI *track0 = 0;
+  AliTRDdataArrayI *track1 = 0;
+  AliTRDdataArrayI *track2 = 0; 
+
+  //AliTRDSignalIndex *indexes = 0;
+  // Create the digits manager
+  AliTRDdigitsManager* digitsManager = new AliTRDdigitsManager();
+  digitsManager->CreateArrays();
+
+  //AliTRDRawStream input(rawReader);
+  //   AliTRDRawStreamV2 input(rawReader);
+  //   input.SetRawVersion( fFee->GetRAWversion() );
+  //   input.Init();
+
+  AliTRDrawStreamBase *pinput = AliTRDrawStreamBase::GetRawStream(rawReader);
+  AliTRDrawStreamBase &input = *pinput;
+
+  AliInfo(Form("Stream version: %s", input.IsA()->GetName()));
+
+  // Loop through the digits
+  Int_t det    = 0;
+
+  while (det >= 0)
+    {
+      det = input.NextChamber(digitsManager);
+      if (det >= 0)
+	{
+	  // get...
+	  digits = (AliTRDdataArrayS *) digitsManager->GetDigits(det);
+	  track0 = (AliTRDdataArrayI *) digitsManager->GetDictionary(det,0);
+	  track1 = (AliTRDdataArrayI *) digitsManager->GetDictionary(det,1);
+	  track2 = (AliTRDdataArrayI *) digitsManager->GetDictionary(det,2);
+	  // and compress
+	  if (digits) digits->Compress(1,0);
+	  if (track0) track0->Compress(1,0);
+	  if (track1) track1->Compress(1,0);
+	  if (track2) track2->Compress(1,0);
+	}
+    }
+
+  delete pinput;
+  pinput = NULL;
+
+  return digitsManager;
+}
+
+//_____________________________________________________________________________
+AliTRDdigitsManager *AliTRDrawData::Raw2DigitsOLD(AliRawReader *rawReader)
 {
   //
   // Vx of the raw data reading

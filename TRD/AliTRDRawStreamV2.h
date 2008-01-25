@@ -12,12 +12,14 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <TObject.h>
+#include "AliTRDrawStreamBase.h"
 
 class AliTRDgeometry;
 class AliRawReader;
 class AliTRDdigitsManager;
 
-class AliTRDRawStreamV2: public TObject {
+//class AliTRDRawStreamV2: public TObject {
+class AliTRDRawStreamV2 : public AliTRDrawStreamBase {
 
   public :
 
@@ -27,7 +29,7 @@ class AliTRDRawStreamV2: public TObject {
 
     virtual Bool_t       Next();                                //  Read the next data
     virtual Int_t        NextChamber(AliTRDdigitsManager *man); //  Read next chamber data
-    virtual Int_t        Init();                                //  Init for the fRawVersion > 1
+    virtual Bool_t        Init();                                //  Init for the fRawVersion > 1
 
     enum { kDDLOffset = 0x400 };                                //  Offset for DDL numbers
 
@@ -51,7 +53,7 @@ class AliTRDRawStreamV2: public TObject {
     Bool_t               IsGTULinkActive(Int_t sm, Int_t la, Int_t sta, Int_t side)
       { return ( ((fGTUlinkMask[sm][sta]) >> (2*la+side)) & 0x1 ); };
 
-    Int_t *GetSignals()          { return fSig;     } //  Signals in the three time bins from Data Word
+    Int_t *GetSignals() const    { return (Int_t*)fSig;     } //  Signals in the three time bins from Data Word
     Int_t GetADC() const         { return fADC;     } //  MCM ADC channel and Time Bin of word 1
     Int_t GetTimeBin() const     { return fTB - 3;  } //  MCM ADC channel and Time Bin of word 1
     Int_t GetEventNumber() const { return fEv;      } //  MCM Event number and position of current MCM on TRD chamber
