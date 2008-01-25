@@ -43,9 +43,9 @@ class AliGenTherminator : public AliGenMC
   void SetBWDelay(Double_t bwd); 
 
   void SetModel(const char *model);
+  void ReadShareParticleTable();
 
  protected:
-  void     ReadShareParticleTable();
   void     CreateTherminatorInputFile();
 
   Int_t    fNt;                // CurrentTrack;

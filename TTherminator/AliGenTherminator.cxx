@@ -14,6 +14,7 @@
 #include "AliConst.h"
 #include "AliDecayer.h"
 #include "AliGenEventHeader.h"
+#include "AliGenHijingEventHeader.h"
 #include "AliGenTherminator.h"
 #include "AliLog.h"
 #include "AliRun.h"
@@ -100,6 +101,7 @@ void AliGenTherminator::Generate()
   AliWarning(Form("Imported %d particles", np));
 
   TParticle *iparticle;
+  Double_t evrot = gRandom->Rndm()*TMath::Pi();
   
   for (int i = 0; i < np; i++) {
     iparticle = (TParticle *) fParticles->At(i);
@@ -108,8 +110,12 @@ void AliGenTherminator::Generate()
     
     kf   = iparticle->GetPdgCode();
     ks   = iparticle->GetStatusCode();
-    p[0] = iparticle->Px();
-    p[1] = iparticle->Py();
+    Double_t aphi = TMath::ATan2(iparticle->Py(), iparticle->Px());
+    Double_t arho = TMath::Hypot(iparticle->Px(), iparticle->Py());
+    p[0] = arho*TMath::Cos(aphi + evrot);
+    p[1] = arho*TMath::Sin(aphi + evrot);
+//     p[0] = iparticle->Px();
+//     p[1] = iparticle->Py();
     p[2] = iparticle->Pz();
     mass = TDatabasePDG::Instance()->GetParticle(kf)->Mass();
     energy = sqrt(mass*mass + p[0]*p[0] + p[1]*p[1] + p[2]*p[2]);
@@ -144,11 +150,56 @@ void AliGenTherminator::Generate()
   eventVertex[1] = origin0[1];
   eventVertex[2] = origin0[2];
 
+// Builds the event header, to be called after each event
+  AliGenEventHeader* header = new AliGenHijingEventHeader("Therminator");
+
   // Header
-  AliGenEventHeader* header = new AliGenEventHeader("Therminator");
+  //  AliGenEventHeader* header = new AliGenEventHeader("Therminator");
   // Event Vertex
-  header->SetPrimaryVertex(eventVertex);
-  header->SetNProduced(fNprimaries);
+//   header->SetPrimaryVertex(eventVertex);
+//   header->SetNProduced(fNprimaries);
+
+  ((AliGenHijingEventHeader*) header)->SetNProduced(fNprimaries);
+  ((AliGenHijingEventHeader*) header)->SetPrimaryVertex(eventVertex);
+  ((AliGenHijingEventHeader*) header)->SetImpactParameter(0.0);
+  ((AliGenHijingEventHeader*) header)->SetTotalEnergy(0.0);
+  ((AliGenHijingEventHeader*) header)->SetHardScatters(0);
+  ((AliGenHijingEventHeader*) header)->SetParticipants(0, 0);
+  ((AliGenHijingEventHeader*) header)->SetCollisions(0, 0, 0, 0);
+  ((AliGenHijingEventHeader*) header)->SetSpectators(0, 0, 0, 0);
+  ((AliGenHijingEventHeader*) header)->SetReactionPlaneAngle(evrot);
+
+
+// 4-momentum vectors of the triggered jets.
+//
+// Before final state gluon radiation.
+//     TLorentzVector* jet1 = new TLorentzVector(fHijing->GetHINT1(21), 
+// 					      fHijing->GetHINT1(22),
+// 					      fHijing->GetHINT1(23),
+// 					      fHijing->GetHINT1(24));
+
+//     TLorentzVector* jet2 = new TLorentzVector(fHijing->GetHINT1(31), 
+// 					      fHijing->GetHINT1(32),
+// 					      fHijing->GetHINT1(33),
+// 					      fHijing->GetHINT1(34));
+// // After final state gluon radiation.
+//     TLorentzVector* jet3 = new TLorentzVector(fHijing->GetHINT1(26), 
+// 					      fHijing->GetHINT1(27),
+// 					      fHijing->GetHINT1(28),
+// 					      fHijing->GetHINT1(29));
+
+//     TLorentzVector* jet4 = new TLorentzVector(fHijing->GetHINT1(36), 
+// 					      fHijing->GetHINT1(37),
+// 					      fHijing->GetHINT1(38),
+// 					      fHijing->GetHINT1(39));
+//     ((AliGenHijingEventHeader*) header)->SetJets(jet1, jet2, jet3, jet4);
+// Bookkeeping for kinematic bias
+//     ((AliGenHijingEventHeader*) header)->SetTrials(fTrials);
+// Event Vertex
+  header->SetPrimaryVertex(fVertex);
+  AddHeader(header);
+  fCollisionGeometry = (AliGenHijingEventHeader*)  header;
+
   gAlice->SetGenEventHeader(header); 
 }
 

@@ -103,22 +103,24 @@ double Integrator::Calka(double aMass, double aMiu,
     double tDpdHS = mFOHS->fDpdhs((*aPhiS),tZeta)/kFmToGev;	// distance derivative over (*aPhiS) [GeV^-1]
     double tDzdHS = mFOHS->fDzdhs((*aPhiS),tZeta)/kFmToGev;	// distance derivative over tZeta    [GeV^-1]
     double tTemp  = mFOHS->TFO;					// freeze-out temparature
+    double ttau0  = mFOHS->tau0/kFmToGev;			// tau 0
     double tMt    = TMath::Hypot(aMass, (*aPt));		// transverse mass
     (*aRho)       = tdHS*cos(tZeta);				// rho
     double tdPt   = 1.0/((1-tZet)*(1-tZet));			// dPt
-    (*aTime)      = tdHS*sin(tZeta)*cosh(*aAlfaP);		// t
+    (*aTime)      = (ttau0+tdHS*sin(tZeta))*cosh(*aAlfaP);	// t
 
     double tPU    = 1.0/sqrt(1.0-tvHS*tvHS)*(tMt*cosh((*aRap)-(*aAlfaP))-(*aPt)*tvHS*cos((*aPhiS)-(*aPhiP)+taHS));
-    double tFC    = tdHS*tdHS*sin(tZeta)*(
+    double tFC    = tdHS*(ttau0+tdHS*sin(tZeta))*(
 		      tdHS  *cos(tZeta)*( tMt*sin(tZeta)*cosh((*aRap)-(*aAlfaP))+(*aPt)*cos(tZeta)*cos((*aPhiS)-(*aPhiP)))+
 		      tDzdHS*cos(tZeta)*(-tMt*cos(tZeta)*cosh((*aRap)-(*aAlfaP))+(*aPt)*sin(tZeta)*cos((*aPhiS)-(*aPhiP)))+
 		      tDpdHS*(*aPt)*sin((*aPhiS)-(*aPhiP))
 		    );
-    if(tFC < 0.0) tFC = 0.0;
+   if(tFC < 0.0) tFC = 0.0;
     if (fabs(floor(aSpin)-aSpin) < 0.01)
       tFpod =1.0/kTwoPi3 * tdPt*(*aPt) * tFC * CalcBE((tPU-aMiu)/tTemp);
     else
       tFpod =1.0/kTwoPi3 * tdPt*(*aPt) * tFC * CalcFD((tPU-aMiu)/tTemp);
+
   }
   else if (sModel == 11) { // Lhyquid2D
     (*aAlfaP)     = (*aRap);					// dirac delta (Y-ap)
@@ -129,10 +131,11 @@ double Integrator::Calka(double aMass, double aMiu,
     double tDpdHS = mFOHS->fDpdhs((*aPhiS),tZeta)/kFmToGev;	// distance derivative over (*aPhiS) [GeV^-1]
     double tDzdHS = mFOHS->fDzdhs((*aPhiS),tZeta)/kFmToGev;	// distance derivative over tZeta    [GeV^-1]
     double tTemp  = mFOHS->TFO;					// freeze-out temparature
+    double ttau0  = mFOHS->tau0/kFmToGev;			// tau 0
     double tMt    = TMath::Hypot(aMass, (*aPt));		// transverse mass
     (*aRho)       = tdHS*cos(tZeta);				// rho
     double tdPt   = 1.0/((1-tZet)*(1-tZet));			// dPt
-    (*aTime)      = tdHS*sin(tZeta)*cosh(*aAlfaP);		// t
+    (*aTime)      = (ttau0+tdHS*sin(tZeta))*cosh(*aAlfaP);	// t
 
     double tPU    = 1.0/sqrt(1.0-tvHS*tvHS)*(tMt-(*aPt)*tvHS*cos((*aPhiS)-(*aPhiP)+taHS));
     double tFC    = tdHS*(

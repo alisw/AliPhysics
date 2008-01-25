@@ -38,6 +38,7 @@ class Hypersurface {
     ~Hypersurface(void);
     // variables
     double TFO;
+    double tau0;
     // functions
     double fahs  (double p, double z);
     double fvhs  (double p, double z);

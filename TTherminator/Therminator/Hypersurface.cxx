@@ -24,6 +24,9 @@ Hypersurface::Hypersurface(void) {
 // freeze-out temperature
     HSFile->getline(buff,100);
     TFO=atof(buff);
+// hydro initial time
+    HSFile->getline(buff,100);
+    tau0=atof(buff);
 
     HSFile->close();
     dp = (fp-ip)/(Np-1);
