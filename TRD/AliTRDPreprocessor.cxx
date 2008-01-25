@@ -571,7 +571,7 @@ Bool_t AliTRDPreprocessor::ExtractHLT()
 	  (nbfit        >= 0.95*nbE)) {
 	// create the cal objects
 	TObjArray object           = calibra->GetVectorFit();
-	AliTRDCalDet *objgaindet   = calibra->CreateDetObjectGain(&object,calibra->GetScaleFitFactor(),kTRUE);
+	AliTRDCalDet *objgaindet   = calibra->CreateDetObjectGain(&object);
 	TObject *objgainpad        = calibra->CreatePadObjectGain();
 	// store them
 	if(!Store("Calib","ChamberGainFactor",(TObject *) objgaindet         ,&md1,0,kTRUE)){

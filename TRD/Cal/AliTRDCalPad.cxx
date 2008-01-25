@@ -447,9 +447,11 @@ TH2F *AliTRDCalPad::MakeHisto2DSmPl(Int_t sm, Int_t pl, const AliTRDCalDet *calD
 	  if (TMath::Abs(calRoc->GetValue(icol,irow))>kEpsilon){
 	    Int_t binz     = 0;
 	    Int_t kb       = kNcham-1-k;
-	    if(kb > 2) binz = 16*(kb-1)+12+irow+1;
-	    else binz = 16*kb+irow+1; 
-	    Int_t biny = icol+1;
+	    Int_t krow     = calRoc->GetNrows()-1-irow;
+	    Int_t kcol     = calRoc->GetNcols()-1-icol;
+	    if(kb > 2) binz = 16*(kb-1)+12+krow+1;
+	    else binz = 16*kb+krow+1; 
+	    Int_t biny = kcol+1;
 	    Float_t value = calRoc->GetValue(icol,irow);
 	    if(typedet == 0) his->SetBinContent(binz,biny,value*factor);
 	    else his->SetBinContent(binz,biny,value+factor);

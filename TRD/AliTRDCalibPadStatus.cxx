@@ -221,7 +221,7 @@ Int_t AliTRDCalibPadStatus::ProcessEvent(AliTRDrawStreamTB *rawStream, Bool_t no
 
   Int_t withInput = 1;
 
-  //rawStream->SetSharedPadReadout(kTRUE);
+  rawStream->SetSharedPadReadout(kTRUE);
 
   if(!nocheck) {
     while (rawStream->Next()) {

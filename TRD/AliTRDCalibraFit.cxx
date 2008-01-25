@@ -130,8 +130,9 @@ AliTRDCalibraFit::AliTRDCalibraFit()
   ,fMethod(0)
   ,fBeginFitCharge(3.5)
   ,fFitPHPeriode(1)
-  ,fTakeTheMaxPH(kFALSE)
-  ,fT0Shift(0.124797)
+  ,fTakeTheMaxPH(kTRUE)
+  ,fT0Shift0(0.124797)
+  ,fT0Shift1(0.267451)
   ,fRangeFitPRF(1.0)
   ,fAccCDB(kFALSE)
   ,fMinEntries(800)
@@ -188,7 +189,8 @@ AliTRDCalibraFit::AliTRDCalibraFit(const AliTRDCalibraFit &c)
 ,fBeginFitCharge(c.fBeginFitCharge)
 ,fFitPHPeriode(c.fFitPHPeriode)
 ,fTakeTheMaxPH(c.fTakeTheMaxPH)
-,fT0Shift(c.fT0Shift)
+,fT0Shift0(c.fT0Shift0)
+,fT0Shift1(c.fT0Shift1)
 ,fRangeFitPRF(c.fRangeFitPRF)
 ,fAccCDB(c.fAccCDB)
 ,fMinEntries(c.fMinEntries)
@@ -313,6 +315,28 @@ void AliTRDCalibraFit::Destroy()
     delete fgInstance;
     fgInstance = 0x0;
   }
+
+}
+//__________________________________________________________________________________
+void AliTRDCalibraFit::RangeChargeIntegration(Float_t vdrift, Float_t t0, Int_t &begin, Int_t &peak, Int_t &end)
+{
+  //
+  // From the drift velocity and t0
+  // return the position of the peak and maximum negative slope
+  //
+  
+  const Float_t kDrWidth = AliTRDgeometry::DrThick();    // drift region
+  Double_t widbins = 0.1;                                // 0.1 mus
+
+  //peak and maxnegslope in mus
+  Double_t begind = t0*widbins + fT0Shift0;
+  Double_t peakd  = t0*widbins + fT0Shift1;
+  Double_t maxnegslope = (kDrWidth + vdrift*peakd)/vdrift; 
+
+  // peak and maxnegslope in timebin
+  begin = TMath::Nint(begind*widbins);
+  peak  = TMath::Nint(peakd*widbins);
+  end   = TMath::Nint(maxnegslope*widbins); 
 
 }
 //____________Functions fit Online CH2d________________________________________
@@ -1744,15 +1768,32 @@ void AliTRDCalibraFit::SetBeginFitCharge(Float_t beginFitCharge)
 }
 
 //_____________________________________________________________________________
-void AliTRDCalibraFit::SetT0Shift(Float_t t0Shift) 
+void AliTRDCalibraFit::SetT0Shift0(Float_t t0Shift) 
 { 
   //
-  // The t0 calculated with the maximum positif slope is shift from t0Shift
-  // You can here set t0Shift
+  // The t0 calculated with the maximum positif slope is shift from t0Shift0
+  // You can here set t0Shift0
   //
 
   if (t0Shift > 0) {
-    fT0Shift = t0Shift; 
+    fT0Shift0 = t0Shift; 
+  } 
+  else {
+    AliInfo("t0Shift0 must be strict positif!");
+  }
+
+}
+
+//_____________________________________________________________________________
+void AliTRDCalibraFit::SetT0Shift1(Float_t t0Shift) 
+{ 
+  //
+  // The t0 calculated with the maximum of the amplification region is shift from t0Shift1
+  // You can here set t0Shift1
+  //
+
+  if (t0Shift > 0) {
+    fT0Shift1 = t0Shift; 
   } 
   else {
     AliInfo("t0Shift must be strict positif!");
@@ -2533,7 +2574,7 @@ void AliTRDCalibraFit::FillFillCH(Int_t idect)
     Float_t gfs        = fCurrentCoef[1]; 
     Float_t gfE        = fCurrentCoefE;
     
-    (*fDebugStreamer) << "GAIN" <<
+    (*fDebugStreamer) << "FillFillCH" <<
       "detector=" << detector <<
       "caligroup=" << caligroup <<
       "rowmin=" << rowmin <<
@@ -2590,7 +2631,7 @@ void AliTRDCalibraFit::FillFillPH(Int_t idect)
    
 
 
-      (* fDebugStreamer) << "PH"<<
+      (* fDebugStreamer) << "FillFillPH"<<
 	"detector="<<detector<<
 	"caligroup="<<caligroup<<
 	"rowmin="<<rowmin<<
@@ -2644,7 +2685,7 @@ void AliTRDCalibraFit::FillFillPRF(Int_t idect)
       Float_t wids         = fCurrentCoef[1]; 
       Float_t widfE        = fCurrentCoefE;
 
-      (* fDebugStreamer) << "PRF"<<
+      (* fDebugStreamer) << "FillFillPRF"<<
 	"detector="<<detector<<
 	"plane="<<plane<<
 	"caligroup="<<caligroup<<
@@ -2702,7 +2743,7 @@ void AliTRDCalibraFit::FillFillLinearFitter()
     Float_t elorentzangler   = fCurrentCoefE2;
     Float_t lorentzangles    = fCurrentCoef2[1];
    
-    (* fDebugStreamer) << "LinearFitter"<<
+    (* fDebugStreamer) << "FillFillLinearFitter"<<
       "detector="<<detector<<
       "chamber="<<chamber<<
       "plane="<<plane<<
@@ -3060,9 +3101,16 @@ void AliTRDCalibraFit::FitPente(TH1* projPH)
   if((l3P1dr != 0.0) && (l3P2dr != 0.0)){
     fCurrentCoefE += (l3P1drE/l3P1dr + l3P2drE/l3P2dr)*fPhd[2]; 
   }
-  Float_t fPhdt0 = 0.0;
-  if(fTakeTheMaxPH) fPhdt0 = fPhd[1];
-  else fPhdt0 = fPhd[0];
+  Float_t fPhdt0  = 0.0;
+  Float_t t0Shift = 0.0;
+  if(fTakeTheMaxPH) {
+    fPhdt0 = fPhd[1];
+    t0Shift = fT0Shift1;
+  }
+  else {
+    fPhdt0 = fPhd[0];
+    t0Shift = fT0Shift0;
+  }
 
   if ((fPhd[2] > fPhd[0]) && 
       (fPhd[2] > fPhd[1]) && 
@@ -3072,7 +3120,7 @@ void AliTRDCalibraFit::FitPente(TH1* projPH)
     fNumberFitSuccess++;
 
     if (fPhdt0 >= 0.0) {
-      fCurrentCoef2[0] = (fPhdt0 - fT0Shift) / widbins;
+      fCurrentCoef2[0] = (fPhdt0 - t0Shift) / widbins;
       if (fCurrentCoef2[0] < -1.0) {
         fCurrentCoef2[0] = fCurrentCoef2[1];
       }
@@ -3581,9 +3629,16 @@ void AliTRDCalibraFit::FitLagrangePoly(TH1* projPH)
     fPhd[2] = placeminimum;
   }
   
-  Float_t fPhdt0 = 0.0;
-  if(fTakeTheMaxPH) fPhdt0 = fPhd[1];
-  else fPhdt0 = fPhd[0];
+  Float_t fPhdt0  = 0.0;
+  Float_t t0Shift = 0.0;
+  if(fTakeTheMaxPH) {
+    fPhdt0 = fPhd[1];
+    t0Shift = fT0Shift1;
+  }
+  else {
+    fPhdt0 = fPhd[0];
+    t0Shift = fT0Shift0;
+  }
 
   if ((fPhd[2] > fPhd[0]) && 
       (fPhd[2] > fPhd[1]) && 
@@ -3592,7 +3647,7 @@ void AliTRDCalibraFit::FitLagrangePoly(TH1* projPH)
     fCurrentCoef[0] = (kDrWidth) / (fPhd[2]-fPhd[1]);
     fNumberFitSuccess++;
     if (fPhdt0 >= 0.0) {
-      fCurrentCoef2[0] = (fPhdt0 - fT0Shift) / widbins;
+      fCurrentCoef2[0] = (fPhdt0 - t0Shift) / widbins;
       if (fCurrentCoef2[0] < -1.0) {
         fCurrentCoef2[0] = fCurrentCoef2[1];
       }
@@ -4009,7 +4064,7 @@ void AliTRDCalibraFit::FitTnpRange(Double_t *arraye, Double_t *arraym, Double_t 
       Float_t  wid          = fCurrentCoef[0];
       Float_t  widfE        = fCurrentCoefE;
 
-      (* fDebugStreamer) << "FitTnpRangeFill"<<
+      (* fDebugStreamer) << "FitTnpRange0"<<
 	"detector="<<detector<<
 	"plane="<<plane<<
 	"nbtotal="<<nbtotal<<
@@ -4086,7 +4141,7 @@ void AliTRDCalibraFit::FitTnpRange(Double_t *arraye, Double_t *arraym, Double_t 
       Double_t colsize[6]   = {0.635,0.665,0.695,0.725,0.755,0.785};  
       Double_t sigmax       = TMath::Sqrt(TMath::Abs(pars0[2]))*10000*colsize[plane];      
 
-      (* fDebugStreamer) << "FitTnpRangeFit"<<
+      (* fDebugStreamer) << "FitTnpRange1"<<
 	"detector="<<detector<<
 	"plane="<<plane<<
 	"nbtotal="<<nbtotal<<
@@ -4510,7 +4565,7 @@ void AliTRDCalibraFit::NormierungCharge()
       fDebugStreamer = new TTreeSRedirector("TRDDebugFit.root");
       if ( backup ) backup->cd();  //we don't want to be cd'd to the debug streamer
     } 
-    (* fDebugStreamer) << "ScaleFactor"<<
+    (* fDebugStreamer) << "NormierungCharge"<<
       "scalefactor="<<scalefactor<<
       "\n";  
     }
