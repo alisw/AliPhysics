@@ -276,9 +276,9 @@ UInt_t AliHLTTPCMapping::GetRow(UInt_t hwadd)
 {
   // see header file for class documentation
   assert(fCurrentRowMapping);
-  assert(hwadd<fMaxHWAdd);
+  assert(hwadd<=fMaxHWAdd);
   if (!fCurrentRowMapping) return 0;
-  if (hwadd>=fMaxHWAdd) return 0;
+  if (hwadd>fMaxHWAdd) return 0;
   return fCurrentRowMapping[hwadd];
 }
 
@@ -286,8 +286,8 @@ UInt_t AliHLTTPCMapping::GetPad(UInt_t hwadd)
 {
   // see header file for class documentation
   assert(fCurrentPadMapping);
-  assert(hwadd<fMaxHWAdd);
+  assert(hwadd<=fMaxHWAdd);
   if (!fCurrentPadMapping) return 0;
-  if (hwadd>=fMaxHWAdd) return 0;
+  if (hwadd>fMaxHWAdd) return 0;
   return fCurrentPadMapping[hwadd];
 }
