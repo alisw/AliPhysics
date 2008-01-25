@@ -118,6 +118,7 @@
 
 // Classes for alignment
 #pragma link C++ class AliITSAlignMille+;
+#pragma link C++ class AliITSResidualsAnalysis+;
 // Classes for QA
 #pragma link C++ class AliITSQAChecker+;
 #pragma link C++ class AliITSQADataMakerRec+;

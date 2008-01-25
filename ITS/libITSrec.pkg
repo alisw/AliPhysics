@@ -84,6 +84,7 @@ SRCS = 	AliITSDetTypeRec.cxx \
 		AliITSPreprocessorSSD.cxx \
 		AliITSAlignMille.cxx \
 		AliITSQAChecker.cxx \
+		AliITSResidualsAnalysis.cxx \
 		AliITSQADataMakerRec.cxx 
 
 HDRS:=  $(SRCS:.cxx=.h)
