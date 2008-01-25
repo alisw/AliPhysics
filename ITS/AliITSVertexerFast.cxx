@@ -127,7 +127,8 @@ void AliITSVertexerFast::PrintStatus() const {
 
 //______________________________________________________________________
 AliITSVertexerFast::AliITSVertexerFast(const AliITSVertexerFast &vtxr) : 
-                    AliITSVertexer(vtxr) {
+  AliITSVertexer(vtxr),
+fSmear(0)  {
   // Copy constructor
   // Copies are not allowed. The method is protected to avoid misuse.
   Error("AliITSVertexerFast","Copy constructor not allowed\n");

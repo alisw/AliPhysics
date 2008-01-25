@@ -59,7 +59,10 @@ fLadOnLay2(0)
 }
 
 //______________________________________________________________________
-AliITSVertexer::AliITSVertexer(const AliITSVertexer &vtxr) : AliVertexer(vtxr) {
+AliITSVertexer::AliITSVertexer(const AliITSVertexer &vtxr) : AliVertexer(vtxr),
+fLadders(), 
+fLadOnLay2(0) 
+{
   // Copy constructor
   // Copies are not allowed. The method is protected to avoid misuse.
   Error("AliITSVertexer","Copy constructor not allowed\n");
