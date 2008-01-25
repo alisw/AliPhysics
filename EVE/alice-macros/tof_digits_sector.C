@@ -9,8 +9,7 @@
 
 void tof_digits_sector(Int_t sector=0)
 {
-  Int_t nDigitsInVolume[3] = {-1, -1, -1};
-  Int_t nStrips=19;
+  
   TGeoManager *localGeoManager = (TGeoManager*)gEve->GetGeometry("./geometry.root");//"$REVESYS/alice-data/alice_fullgeo.root");
   if (!localGeoManager) {
     printf("ERROR: no TGeo\n");

@@ -40,7 +40,7 @@ void tof_digits_strips()
   TString bsPadZ="PadZ";
   TString sPadX;
   TString bsPadX="PadX";
-
+  
   Char_t sectorName[100];
   Char_t sectorTitle[200];
 
@@ -66,7 +66,7 @@ void tof_digits_strips()
       sPlate+=iPlate;
       TEveElementList* relPlate = new TEveElementList(sPlate.Data());
       relPlate->SetMainColor((Color_t)2);
-      gEve->AddElement(relPlaete, l);
+      gEve->AddElement(relPlate, l);
 
 
       for(Int_t iStrip=0; iStrip<nStrips; iStrip++) {

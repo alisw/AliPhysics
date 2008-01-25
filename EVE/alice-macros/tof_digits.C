@@ -7,12 +7,11 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
+
 void tof_digits()
-{
+{  
   TClonesArray *array = 0x0;
 
-  Int_t nDigitsInVolume[3] = {-1, -1, -1};
-  Int_t nStrips=19;
   TGeoManager *localGeoManager = (TGeoManager*)gEve->GetGeometry("./geometry.root");//"$REVESYS/alice-data/alice_fullgeo.root");
   if (!localGeoManager) {
     printf("ERROR: no TGeo\n");
@@ -28,7 +27,7 @@ void tof_digits()
   di->Dump();
 
   AliTOFGeometry* g = di->fGeom;
-
+ 
   gStyle->SetPalette(1, 0);
   gEve->DisableRedraw();
 
@@ -38,9 +37,9 @@ void tof_digits()
   gEve->AddElement(ll);
 
   for(Int_t iSector=0; iSector<g->NSectors(); iSector++) {
-
+    
     array = di->GetDigits(iSector);
-
+   
     AliEveTOFSector* m = new AliEveTOFSector(localGeoManager,iSector,array);
 
     gEve->AddElement(m, ll);
