@@ -26,7 +26,7 @@ ClassImp(AliKFParticle)
 
 Double_t AliKFParticle::fgBz = -5.;  //* Bz compoment of the magnetic field
 
-AliKFParticle::AliKFParticle( const Double_t Param[], const Double_t Cov[], Int_t Charge, Int_t PID )
+void AliKFParticle::Create( const Double_t Param[], const Double_t Cov[], Int_t Charge, Int_t PID )
 {
   // Constructor from "cartesian" track, PID hypothesis should be provided
   //
@@ -56,7 +56,7 @@ AliKFParticle::AliKFParticle( const AliExternalTrackParam &track, Int_t PID )
   track.GetPxPyPz(fP+3);
   fQ = (track.GetSigned1Pt() >0 ) ?1 :-1;
   track.GetCovarianceXYZPxPyPz( fC );
-  AliKFParticle(fP,fC,fQ,PID);
+  Create(fP,fC,fQ,PID);
 }
 
 AliKFParticle::AliKFParticle( const AliESDVertex &vertex )

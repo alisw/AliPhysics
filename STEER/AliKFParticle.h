@@ -57,7 +57,7 @@ class AliKFParticle :public AliKFParticleBase
  //* Initialisation from "cartesian" coordinates ( X Y Z Px Py Pz )
  //* Parameters, covariance matrix, charge and PID hypothesis should be provided 
 
-  AliKFParticle( const Double_t Param[], const Double_t Cov[], Int_t Charge, Int_t PID );
+  void Create( const Double_t Param[], const Double_t Cov[], Int_t Charge, Int_t PID );
 
  //* Initialisation from ALICE track, PID hypothesis shoould be provided 
 
