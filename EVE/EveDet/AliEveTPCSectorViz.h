@@ -41,25 +41,25 @@ class AliEveTPCSectorViz : public TEveElement,
   AliEveTPCSectorViz& operator=(const AliEveTPCSectorViz&); // Not implemented
 
 protected:
-  AliEveTPCData    *fTPCData;
-  Int_t             fSectorID;
+  AliEveTPCData    *fTPCData;    //  Source of data.
+  Int_t             fSectorID;   //  Id of the displayed sector.
 
-  Int_t             fMinTime;
-  Int_t             fMaxTime;
-  Short_t           fThreshold;
-  Int_t             fMaxVal;
+  Int_t             fMinTime;    //  Min time-bin to display.
+  Int_t             fMaxTime;    //  Max time-bin to display.
+  Short_t           fThreshold;  //  Threshold for display/
+  Int_t             fMaxVal;     //  Maximum signal-value, all above is of the same color.
 
-  Bool_t            fRnrInn;
-  Bool_t            fRnrOut1;
-  Bool_t            fRnrOut2;
+  Bool_t            fRnrInn;     //  Render inner segment.
+  Bool_t            fRnrOut1;    //  Render middle segment.
+  Bool_t            fRnrOut2;    //  Render outer segment.
 
-  Color_t           fFrameColor;
-  Bool_t            fRnrFrame;
-  TEveTrans         fHMTrans;
-  Bool_t            fAutoTrans;
-  UInt_t            fRTS;       //! Rendering TimeStamp
+  Color_t           fFrameColor; //  Color of the frame, the main color.
+  Bool_t            fRnrFrame;   //  Render frame.
+  TEveTrans         fHMTrans;    //  Transformation matrix.
+  Bool_t            fAutoTrans;  //  Automatically calculate transformation based on sector id.
+  UInt_t            fRTS;        //! Rendering TimeStamp
 
-  mutable UChar_t  *fColorArray;
+  mutable UChar_t  *fColorArray; //  Color array caching signal to color mapping.
 
   void SetupColor(Int_t val, UChar_t* pix) const;
   void ClearColorArray();
@@ -101,7 +101,7 @@ public:
   TEveTrans& RefHMTrans() { return fHMTrans; }
   void SetUseTrans(Bool_t t) { fHMTrans.SetUseTrans(t); }
 
-  ClassDef(AliEveTPCSectorViz, 1); // Base-class for TPC raw-data visualization
+  ClassDef(AliEveTPCSectorViz, 1); // Base-class for visualization of data for one TPC sector.
 }; // endclass AliEveTPCSectorViz
 
 

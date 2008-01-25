@@ -14,20 +14,18 @@
 #include <TVirtualPad.h>
 #include <TVirtualViewer3D.h>
 
-
 //______________________________________________________________________________
-// AliEveJetPlane
 //
+// Show jets and tracks in eta-phi plane.
 
+ClassImp(AliEveJetPlane)
 
 Bool_t AliEveJetPlane::fgOneMomentumXYZ      = kFALSE;
 Bool_t AliEveJetPlane::fgOneMomentumPhiTheta = kFALSE;
-Bool_t AliEveJetPlane::fgOneEta     = kFALSE;
-Bool_t AliEveJetPlane::fgOneE       = kFALSE;
-Bool_t AliEveJetPlane::fgOneChgMass = kFALSE;
+Bool_t AliEveJetPlane::fgOneEta              = kFALSE;
+Bool_t AliEveJetPlane::fgOneE                = kFALSE;
+Bool_t AliEveJetPlane::fgOneChgMass          = kFALSE;
 
-
-ClassImp(AliEveJetPlane)
 
 AliEveJetPlane::AliEveJetPlane(Int_t iev) :
   TEveElementList(Form("AliEveJetPlane %i",iev), Form("%i",iev)),
@@ -69,6 +67,8 @@ AliEveJetPlane::AliEveJetPlane(Int_t iev) :
 
 void AliEveJetPlane::AddJet(AliAODJet jet)
 {
+  // Add a jet for display.
+
   fJets.push_back(jet);
 }
 
@@ -76,6 +76,8 @@ void AliEveJetPlane::AddJet(AliAODJet jet)
 
 void AliEveJetPlane::AddTrack(AliAODTrack track)
 {
+  // Add a track for display.
+
   fTracks.push_back(track);
 }
 
@@ -84,6 +86,8 @@ void AliEveJetPlane::AddTrack(AliAODTrack track)
 
 void AliEveJetPlane::ComputeBBox()
 {
+  // Calculate bounding-box.
+
   BBoxInit();
   BBoxCheckPoint(-350, -350, -20);
   BBoxCheckPoint( 350,  350,  20);
@@ -91,6 +95,8 @@ void AliEveJetPlane::ComputeBBox()
 
 void AliEveJetPlane::Paint(Option_t* /*option*/)
 {
+  // Paint the object.
+
   TBuffer3D buff(TBuffer3DTypes::kGeneric);
 
   // Section kCore

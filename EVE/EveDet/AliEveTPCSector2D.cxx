@@ -54,19 +54,22 @@ AliEveTPCSector2D::AliEveTPCSector2D(const Text_t* n, const Text_t* t) :
   fUseTexture (kTRUE),
   fPickEmpty  (kFALSE),
   fPickMode   (1)
-{}
-
-AliEveTPCSector2D::~AliEveTPCSector2D()
-{}
+{
+  // Constructor.
+}
 
 /******************************************************************************/
 
 void AliEveTPCSector2D::MakeSector3D()
 {
+  // Make a 3D sector with same setting as this one.
+  // It is added as a child ot this object.
+
   AliEveTPCSector3D* s = new AliEveTPCSector3D;
   s->SetDataSource(fTPCData);
   s->SetSectorID(fSectorID);
   s->SetAutoTrans(fAutoTrans);
+  s->CopyVizParams(*this);
   gEve->AddElement(s, this);
   gEve->Redraw3D();
 }
@@ -75,6 +78,8 @@ void AliEveTPCSector2D::MakeSector3D()
 
 void AliEveTPCSector2D::ComputeBBox()
 {
+  // Compute boundig-box.
+
   const AliEveTPCSectorData::SegmentInfo&  iSeg = AliEveTPCSectorData::GetInnSeg();
   const AliEveTPCSectorData::SegmentInfo& o2Seg = AliEveTPCSectorData::GetOut2Seg();
 
@@ -154,6 +159,8 @@ void AliEveTPCSector2D::PadSelected(Int_t row, Int_t pad)
 
 void AliEveTPCSector2D::Paint(Option_t* )
 {
+  // Paint object.
+
   if(fRnrSelf == kFALSE)
     return;
 

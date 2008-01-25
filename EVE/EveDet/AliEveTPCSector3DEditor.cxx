@@ -24,18 +24,20 @@
 
 
 //______________________________________________________________________________
-// AliEveTPCSector3DEditor
 //
+// Editor for AliEveTPCSector3D.
 
 ClassImp(AliEveTPCSector3DEditor)
 
 AliEveTPCSector3DEditor::AliEveTPCSector3DEditor(const TGWindow *p,
-                                     Int_t width, Int_t height,
-                                     UInt_t options, Pixel_t back) :
+                                                 Int_t width, Int_t height,
+                                                 UInt_t options, Pixel_t back) :
   TGedFrame(p, width, height, options | kVerticalFrame, back),
   fM(0),
   fRnrFrame(0), fDriftVel(0), fPointFrac(0), fPointSize(0)
 {
+  // Constructor.
+
   MakeTitle("AliEveTPCSector3D");
 
   Int_t labelW = 60;
@@ -80,13 +82,12 @@ AliEveTPCSector3DEditor::AliEveTPCSector3DEditor(const TGWindow *p,
   AddFrame(fPointSize, new TGLayoutHints(kLHintsTop, 1, 1, 2, 1));
 }
 
-AliEveTPCSector3DEditor::~AliEveTPCSector3DEditor()
-{}
-
 /******************************************************************************/
 
 void AliEveTPCSector3DEditor::SetModel(TObject* obj)
 {
+  // Set model object.
+
   fM = dynamic_cast<AliEveTPCSector3D*>(obj);
 
   fRnrFrame->SetState(fM->fRnrFrame ? kButtonDown : kButtonUp);
@@ -100,24 +101,32 @@ void AliEveTPCSector3DEditor::SetModel(TObject* obj)
 
 void AliEveTPCSector3DEditor::DoRnrFrame()
 {
+  // Slot for RnrFrame.
+
   fM->SetRnrFrame(fRnrFrame->IsOn());
   Update();
 }
 
 void AliEveTPCSector3DEditor::DoDriftVel()
 {
+  // Slot for DriftVel.
+
   fM->SetDriftVel(fDriftVel->GetValue());
   Update();
 }
 
 void AliEveTPCSector3DEditor::DoPointFrac()
 {
+  // Slot for PointFrac.
+
   fM->SetPointFrac(fPointFrac->GetValue());
   Update();
 }
 
 void AliEveTPCSector3DEditor::DoPointSize()
 {
+  // Slot for PointSize.
+
   fM->SetPointSize(fPointSize->GetValue());
   Update();
 }

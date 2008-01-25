@@ -16,18 +16,20 @@
 
 
 //______________________________________________________________________________
-// AliEveTPCSector2DEditor
 //
+// Editor for AliEveTPCSector2D.
 
 ClassImp(AliEveTPCSector2DEditor)
 
 AliEveTPCSector2DEditor::AliEveTPCSector2DEditor(const TGWindow *p,
-				     Int_t width, Int_t height,
-				     UInt_t options, Pixel_t back) :
+                                                 Int_t width, Int_t height,
+                                                 UInt_t options, Pixel_t back) :
   TGedFrame(p, width, height, options | kVerticalFrame, back),
   fM(0),
   fShowMax(0), fAverage(0), fUseTexture(0), fPickEmpty(0), fPickMode(0)
 {
+  // Constructor.
+
   MakeTitle("AliEveTPCSector2D");
 
   {
@@ -67,13 +69,12 @@ AliEveTPCSector2DEditor::AliEveTPCSector2DEditor(const TGWindow *p,
   }
 }
 
-AliEveTPCSector2DEditor::~AliEveTPCSector2DEditor()
-{}
-
 /******************************************************************************/
 
 void AliEveTPCSector2DEditor::SetModel(TObject* obj)
 {
+  // Set model object.
+
   fM = dynamic_cast<AliEveTPCSector2D*>(obj);
 
   fShowMax->SetState(fM->fShowMax ? kButtonDown : kButtonUp);
@@ -88,6 +89,8 @@ void AliEveTPCSector2DEditor::SetModel(TObject* obj)
 
 void AliEveTPCSector2DEditor::DoShowMax()
 {
+  // Slot for ShowMax.
+
   fM->SetShowMax(fShowMax->IsOn());
   SetupAverage();
   Update();
@@ -95,13 +98,17 @@ void AliEveTPCSector2DEditor::DoShowMax()
 
 void AliEveTPCSector2DEditor::DoAverage()
 {
+  // Slot for Average.
+
   fM->SetAverage(fAverage->IsOn());
   Update();
 }
 
 void AliEveTPCSector2DEditor::SetupAverage()
 {
-  if(fM->fShowMax) {
+  // Setup Average button according to mode.
+
+  if (fM->fShowMax) {
     fAverage->SetEnabled(kFALSE);
   } else {
     fAverage->SetEnabled(kTRUE);
@@ -113,18 +120,22 @@ void AliEveTPCSector2DEditor::SetupAverage()
 
 void AliEveTPCSector2DEditor::DoUseTexture()
 {
+  // Slot for UseTexture.
+
   fM->fUseTexture = fUseTexture->IsOn();
   Update();
 }
 
 void AliEveTPCSector2DEditor::DoPickEmpty()
 {
+  // Slot for PickEmpty.
+
   fM->fPickEmpty = fPickEmpty->IsOn();
-  // Update();
 }
 
 void AliEveTPCSector2DEditor::DoPickMode(Int_t mode)
 {
+  // Slot for PickMode.
+
   fM->fPickMode = mode;
-  // Update();
 }

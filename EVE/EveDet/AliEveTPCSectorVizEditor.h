@@ -31,26 +31,26 @@ class AliEveTPCSectorVizEditor : public TGedFrame
   AliEveTPCSectorVizEditor& operator=(const AliEveTPCSectorVizEditor&); // Not implemented
 
 protected:
-  AliEveTPCSectorViz* fM; // fModel dynamic-casted to AliEveTPCSectorVizEditor
+  AliEveTPCSectorViz   *fM;          // Model dynamic-casted to AliEveTPCSectorVizEditor
 
-  TEveTransSubEditor* fHMTrans;
+  TEveTransSubEditor   *fHMTrans;    // Widget for transormation.
 
-  TEveGValuator* fSectorID;
-  TGCheckButton*    fAutoTrans;
+  TEveGValuator        *fSectorID;   // Widget for SectorID.
+  TGCheckButton        *fAutoTrans;  // Widget for AutoTrans.
 
-  TGCheckButton*    fRnrInn;
-  TGCheckButton*    fRnrOut1;
-  TGCheckButton*    fRnrOut2;
+  TGCheckButton        *fRnrInn;     // Widget for RnrInn.
+  TGCheckButton        *fRnrOut1;    // Widget for RnrOut1.
+  TGCheckButton        *fRnrOut2;    // Widget for RnrOut2.
 
-  TEveGValuator* fThreshold;
-  TEveGValuator* fMaxVal;
+  TEveGValuator        *fThreshold;  // Widget for Threshold.
+  TEveGValuator        *fMaxVal;     // Widget for MaxVal.
 
-  TEveGDoubleValuator* fTime;
+  TEveGDoubleValuator  *fTime;       // Widget for time-range.
 
 public:
   AliEveTPCSectorVizEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30,
 		     UInt_t options=kChildFrame, Pixel_t back=GetDefaultFrameBackground());
-  ~AliEveTPCSectorVizEditor();
+  ~AliEveTPCSectorVizEditor() {}
 
   virtual void SetModel(TObject* obj);
 
@@ -66,7 +66,7 @@ public:
 
   void DoTime();
 
-  ClassDef(AliEveTPCSectorVizEditor, 0); // Editor for AliEveTPCSectorViz
+  ClassDef(AliEveTPCSectorVizEditor, 0); // Editor for AliEveTPCSectorViz.
 }; // endclass AliEveTPCSectorVizEditor
 
 #endif

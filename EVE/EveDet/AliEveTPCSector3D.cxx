@@ -20,8 +20,8 @@
 
 
 //______________________________________________________________________________
-// AliEveTPCSector3D
 //
+// Visualization of TPC raw-data in 3D.
 
 ClassImp(AliEveTPCSector3D)
 
@@ -39,17 +39,18 @@ AliEveTPCSector3D::AliEveTPCSector3D(const Text_t* n, const Text_t* t) :
   fDriftVel  (1),
   fZStep     (250.0/450)
 {
+  // Constructor.
+
   fRnrFrame = kFALSE;
   ComputeBBox();
 }
-
-AliEveTPCSector3D::~AliEveTPCSector3D()
-{}
 
 /******************************************************************************/
 
 void AliEveTPCSector3D::SetRnrFrame(Bool_t rf)
 {
+  // Setter for fRnrFrame.
+
   if(fRnrFrame != rf) {
     fRnrFrame = rf;
     IncRTS();
@@ -60,6 +61,8 @@ void AliEveTPCSector3D::SetRnrFrame(Bool_t rf)
 
 void AliEveTPCSector3D::ComputeBBox()
 {
+  // Compute bounding box containing whole sector.
+
   const AliEveTPCSectorData::SegmentInfo&  iSeg = AliEveTPCSectorData::GetInnSeg();
   const AliEveTPCSectorData::SegmentInfo& o2Seg = AliEveTPCSectorData::GetOut2Seg();
 
@@ -79,6 +82,8 @@ void AliEveTPCSector3D::ComputeBBox()
 
 void AliEveTPCSector3D::Paint(Option_t* /*option*/)
 {
+  // Paint object.
+
   if(fRnrSelf == kFALSE)
     return;
 
@@ -105,6 +110,8 @@ void AliEveTPCSector3D::Paint(Option_t* /*option*/)
 void AliEveTPCSector3D::LoadPadrow(AliEveTPCSectorData::RowIterator& iter,
                              Float_t xs, Float_t ys, Float_t pw, Float_t ph)
 {
+  // Load data of one padrow. Fill internal boxset and pointset objects.
+
   Short_t pad, time, val;
   Float_t x0, z0;
   Float_t ym = ys + 0.5*ph;
@@ -136,9 +143,9 @@ void AliEveTPCSector3D::LoadPadrow(AliEveTPCSectorData::RowIterator& iter,
   }
 }
 
-void AliEveTPCSector3D::UpdateBoxes()
+void AliEveTPCSector3D::UpdateBoxesAndPoints()
 {
-  // Populate parent class TEveBoxSet with digit information.
+  // Populate BoxSet and PointSet with digit information.
 
   // printf("AliEveTPCSector3D update boxes\n");
 
@@ -170,20 +177,22 @@ void AliEveTPCSector3D::UpdateBoxes()
     }
 
     fBoxSet.RefitPlex();
-    if(fPointSetOn)
+    if (fPointSetOn)
       fPointSetArray.CloseBins();
   }
 }
 
 void AliEveTPCSector3D::SetupPointSetArray()
 {
-  Int_t   nBins = (Int_t) TMath::Nint(fPointFrac*gStyle->GetNumberOfColors());
-  if(nBins > 0) {
+  // Setup fPointSetArray for current settings.
+
+  Int_t nBins = (Int_t) TMath::Nint(fPointFrac*gStyle->GetNumberOfColors());
+  if (nBins > 0) {
     fPointSetOn = kTRUE;
     fPointSetMaxVal = fThreshold + (Int_t) TMath::Nint(fPointFrac*(fMaxVal - fThreshold));
     // printf("SetupPointSetArray frac=%f nbins=%d psmv=%d (%d,%d)\n", fPointFrac, nBins, fPointSetMaxVal, fThreshold, fMaxVal);
     fPointSetArray.InitBins("", nBins, fThreshold, fPointSetMaxVal, kFALSE);
-    for(Int_t b=0; b<nBins; ++b) {
+    for (Int_t b=0; b<nBins; ++b) {
       fPointSetArray.GetBin(b)->SetMarkerColor(gStyle->GetColorPalette(b));
     }
   } else {

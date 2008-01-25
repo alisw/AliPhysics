@@ -40,18 +40,13 @@ AliEveJetPlaneEditor::AliEveJetPlaneEditor(const TGWindow *p, Int_t width, Int_t
   fRnrTracks(0),
   fEnergyScale(0),
   fEnergyColorScale(0),
-  fOneSelection(0),
-  fTwoSelection(0),
+  fOneSelection(0), fTwoSelection(0),
   fInformationSetup(0)
-  // Initialize widget pointers to 0
 {
+  // Constructor.
+
   MakeTitle("AliEveJetPlane");
   Int_t labelW = 67;
-
-  // Create widgets
-  // fXYZZ = new TGSomeWidget(this, ...);
-  // AddFrame(fXYZZ, new TGLayoutHints(...));
-  // fXYZZ->Connect("SignalName()", "AliEveJetPlaneEditor", this, "DoXYZZ()");
 
   fRnrJets  = new TGCheckButton(this, "Rnr Jets");
   AddFrame(fRnrJets, new TGLayoutHints(kLHintsTop, 1, 1, 1, 1));
@@ -91,13 +86,12 @@ AliEveJetPlaneEditor::AliEveJetPlaneEditor(const TGWindow *p, Int_t width, Int_t
   // fInformationSetup->Connect("Clicked()", "AliEveJetPlaneEditor", this, "DoStaticDataWindow()");
 }
 
-AliEveJetPlaneEditor::~AliEveJetPlaneEditor()
-{}
-
 /******************************************************************************/
 
 void AliEveJetPlaneEditor::SetModel(TObject* obj)
 {
+  // Set model object.
+
   fM = dynamic_cast<AliEveJetPlane*>(obj);
 
   // Set values of widgets
@@ -112,40 +106,42 @@ void AliEveJetPlaneEditor::SetModel(TObject* obj)
 
 /******************************************************************************/
 
-// Implements callback/slot methods
-
-// void AliEveJetPlaneEditor::DoXYZZ()
-// {
-//   fM->SetXYZZ(fXYZZ->GetValue());
-//   Update();
-// }
-
 void AliEveJetPlaneEditor::DoRnrJets()
 {
+  // Slot for RnrJets.
+
   fM->SetRnrJets(fRnrJets->IsOn());
   Update();
 }
 
 void AliEveJetPlaneEditor::DoRnrTracks()
 {
+  // Slot for RnrTracks.
+
   fM->SetRnrTracks(fRnrTracks->IsOn());
   Update();
 }
 
 void AliEveJetPlaneEditor::DoEnergyColorScale()
 {
+  // Slot for EnergyColorScale.
+
   fM->SetEnergyColorScale(fEnergyColorScale->GetValue());
   Update();
 }
 
 void AliEveJetPlaneEditor::DoEnergyScale()
 {
+  // Slot for EnergyScale.
+
   fM->SetEnergyScale(fEnergyScale->GetValue());
   Update();
 }
 
 void AliEveJetPlaneEditor::DoOneSelection()
 {
+  // Slot for OneSelection.
+
   fTwoSelection->SetState(kButtonUp);
   fM->SetOneSelection(fOneSelection->IsOn());
   fM->SetTwoSelection(fTwoSelection->IsOn());
@@ -154,6 +150,8 @@ void AliEveJetPlaneEditor::DoOneSelection()
 
 void AliEveJetPlaneEditor::DoTwoSelection()
 {
+  // Slot for TwoSelection.
+
   fOneSelection->SetState(kButtonUp);
   fM->SetOneSelection(fOneSelection->IsOn());
   fM->SetTwoSelection(fTwoSelection->IsOn());
@@ -162,6 +160,8 @@ void AliEveJetPlaneEditor::DoTwoSelection()
 
 void AliEveJetPlaneEditor::DoStaticDataWindow()
 {
+  // Slot for StaticDataWindow.
+
   printf("\n Soon available ... \n");
   if (fgStaticWindow == 0)
     fgStaticWindow = new StaticDataWindow(gClient->GetRoot(), this, 400, 200);
@@ -174,12 +174,18 @@ void AliEveJetPlaneEditor::DoStaticDataWindow()
   fgStaticWindow->CenterOnParent();
 }
 
+
 /******************************************************************************/
+/******************************************************************************/
+
+//______________________________________________________________________________
+//
+// Common settings for all AliEveJetPlane objects.
 
 ClassImp(AliEveJetPlaneEditor::StaticDataWindow)
 
 AliEveJetPlaneEditor::StaticDataWindow::StaticDataWindow(const TGWindow *p, const TGWindow *main,
-						   UInt_t w, UInt_t h, UInt_t options) :
+                                                         UInt_t w, UInt_t h, UInt_t options) :
   TGTransientFrame(p, main, w, h, options),
   fFrame1(0), fF2(0),
   fOkButton(0), fCancelButton(0),
@@ -187,6 +193,7 @@ AliEveJetPlaneEditor::StaticDataWindow::StaticDataWindow(const TGWindow *p, cons
   fTab(0),
   fChk1(0), fChk2(0), fChk3(0), fChk4(0), fChk5(0)
 {
+  // Constructor.
   // Create a dialog window. A dialog window pops up with respect to its
   // "main" window.
 
@@ -260,11 +267,15 @@ AliEveJetPlaneEditor::StaticDataWindow::StaticDataWindow(const TGWindow *p, cons
 
 AliEveJetPlaneEditor::StaticDataWindow::~StaticDataWindow()
 {
+  // Destructor, deletes the window.
+
   DeleteWindow();
 }
 
 void AliEveJetPlaneEditor::StaticDataWindow::DoClose()
 {
+  // Close the window.
+
   UnmapWindow();
 }
 
@@ -277,11 +288,15 @@ void AliEveJetPlaneEditor::StaticDataWindow::DoOK()
 
 void AliEveJetPlaneEditor::StaticDataWindow::DoCancel()
 {
+  // Cancel, close the window.
+
   SendCloseMessage();
 }
 
 void AliEveJetPlaneEditor::StaticDataWindow::DoTab(Int_t /*id*/)
 {
+  // Tab selected.
+
   // printf("Tab item %d activated\n", id);
 }
 

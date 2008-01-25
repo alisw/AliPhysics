@@ -24,19 +24,19 @@ class AliEveTPCSector2DEditor : public TGedFrame
   AliEveTPCSector2DEditor& operator=(const AliEveTPCSector2DEditor&); // Not implemented
 
 protected:
-  AliEveTPCSector2D* fM; // fModel dynamic-casted to AliEveTPCSector2DEditor
+  AliEveTPCSector2D *fM;            // Model object.
 
-  TGCheckButton*   fShowMax;
-  TGCheckButton*   fAverage;
+  TGCheckButton     *fShowMax;      // Check to show maximum signal.
+  TGCheckButton     *fAverage;      // Check-box to show average of the signal.
 
-  TGCheckButton*   fUseTexture;
-  TGCheckButton*   fPickEmpty;
-  TGComboBox*      fPickMode;
+  TGCheckButton     *fUseTexture;   // Check-box to use texture.
+  TGCheckButton     *fPickEmpty;    // Check-box for picking of empty pads.
+  TGComboBox        *fPickMode;     // Selector of pick-mode.
 
 public:
   AliEveTPCSector2DEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30,
 		    UInt_t options=kChildFrame, Pixel_t back=GetDefaultFrameBackground());
-  ~AliEveTPCSector2DEditor();
+  ~AliEveTPCSector2DEditor() {}
 
   virtual void SetModel(TObject* obj);
 
@@ -48,7 +48,7 @@ public:
   void DoPickEmpty();
   void DoPickMode(Int_t mode);
 
-  ClassDef(AliEveTPCSector2DEditor, 0); // Editor for AliEveTPCSector2D
+  ClassDef(AliEveTPCSector2DEditor, 0); // Editor for AliEveTPCSector2D.
 }; // endclass AliEveTPCSector2DEditor
 
 #endif

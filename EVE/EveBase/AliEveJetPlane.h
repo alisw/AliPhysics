@@ -34,40 +34,41 @@ private:
   AliEveJetPlane& operator=(const AliEveJetPlane&); // Not implemented
 
 protected:
-  Float_t fMinEta;
-  Float_t fMaxEta;
-  Float_t fMinPhi;
-  Float_t fMaxPhi;
-  Int_t   fNEtaDiv;
-  Int_t   fNPhiDiv;
+  Float_t fMinEta;    // Min eta for display.
+  Float_t fMaxEta;    // Max eta for display.
+  Float_t fMinPhi;    // Min phi for display.
+  Float_t fMaxPhi;    // Max phi for display.
+  Int_t   fNEtaDiv;   // Number of eta divisions for display.
+  Int_t   fNPhiDiv;   // Number of phi divisions for display.
 
-  Float_t fEtaScale;
-  Float_t fPhiScale;
-  Float_t fEnergyScale;
-  Float_t fEnergyColorScale;
+  Float_t fEtaScale;          // Multiplier for eta.
+  Float_t fPhiScale;          // Multiplier for phi.
+  Float_t fEnergyScale;       // Multiplier for energy.
+  Float_t fEnergyColorScale;  // Multiplier for energy color.
 
-  Color_t fGridColor;
+  Color_t fGridColor; // Color of coordinate grid.
 
-  TEveTrans  fHMTrans;
+  TEveTrans  fHMTrans;// Transformation matrix.
 
-  std::vector<AliAODJet>   fJets;
-  std::vector<AliAODTrack> fTracks;
+  std::vector<AliAODJet>   fJets;   // Jets to display.
+  std::vector<AliAODTrack> fTracks; // Tracks to display.
 
-  Bool_t                 fRnrJets;
-  Bool_t                 fRnrTracks;
-  Bool_t                 fOneSelection;
-  Bool_t                 fTwoSelection;
+  Bool_t                 fRnrJets;       // Show jets.
+  Bool_t                 fRnrTracks;     // Show tracks.
+  Bool_t                 fOneSelection;  // One object selected.
+  Bool_t                 fTwoSelection;  // Two objects selected.
 
-  AliAODJet             *fJet1,   *fJet2;
-  AliAODTrack           *fTrack1, *fTrack2;
+  AliAODJet             *fJet1,   *fJet2;    // Selection jets.
+  AliAODTrack           *fTrack1, *fTrack2;  // Selection tracks.
 
-  Int_t                  fSelectionFlag;
+  Int_t                  fSelectionFlag; // Selection state, handled by GL renderer.
 
-  static Bool_t fgOneMomentumXYZ;
-  static Bool_t fgOneMomentumPhiTheta;
-  static Bool_t fgOneEta;
-  static Bool_t fgOneE;
-  static Bool_t fgOneChgMass;
+  // Common settings:
+  static Bool_t fgOneMomentumXYZ;       // Display momentum as coordinates.
+  static Bool_t fgOneMomentumPhiTheta;  // Display momentum as phi/theta.
+  static Bool_t fgOneEta;               // Display eta.
+  static Bool_t fgOneE;                 // Display energy.
+  static Bool_t fgOneChgMass;           // Display charge and mass.
 
 public:
   AliEveJetPlane(Int_t iev);
@@ -124,7 +125,7 @@ public:
   void SetTransMatrix(Double_t* carr)        { fHMTrans.SetFrom(carr); }
   void SetTransMatrix(const TGeoMatrix& mat) { fHMTrans.SetFrom(mat);  }
 
-  ClassDef(AliEveJetPlane, 1);
+  ClassDef(AliEveJetPlane, 1); // Show jets and tracks in eta-phi plane.
 }; // endclass AliEveJetPlane
 
 #endif

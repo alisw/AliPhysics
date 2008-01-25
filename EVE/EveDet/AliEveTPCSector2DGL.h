@@ -40,12 +40,12 @@ protected:
 
   UChar_t* GetRowCol(Int_t row, Int_t col) const;
 
-  AliEveTPCSector2D*                 fSector;
-  mutable AliEveTPCSectorData*       fSectorData;
+  AliEveTPCSector2D              *fSector;     // Model object.
+  mutable AliEveTPCSectorData    *fSectorData; // Data of displayed sector.
 
-  mutable UChar_t*             fImage;
-  mutable UInt_t               fTexture;
-  mutable UInt_t               fRTS;
+  mutable UChar_t                *fImage;      // Texture data.
+  mutable UInt_t                  fTexture;    // Texture id.
+  mutable UInt_t                  fRTS;        // Render time-stamp.
 
 public:
   AliEveTPCSector2DGL();
@@ -60,11 +60,12 @@ public:
   static void TraceStepsUp  (const AliEveTPCSectorData::SegmentInfo& s);
   static void TraceStepsDown(const AliEveTPCSectorData::SegmentInfo& s);
 
-  static const Int_t fgkTextureWidth;
-  static const Int_t fgkTextureHeight;
-  static const Int_t fgkTextureByteSize;
+  static const Int_t fgkTextureWidth;     // Width of the texture.
+  static const Int_t fgkTextureHeight;    // Height of the texture.
+  static const Int_t fgkTextureByteSize;  // Size of the texture in bytes.
 
-}; // endclass TPCSector2D_GL_Rnr
+  ClassDef(AliEveTPCSector2DGL, 0); // GL renderer for TPCSector2D.
+};
 
 
 inline UChar_t* AliEveTPCSector2DGL::GetRowCol(Int_t row, Int_t col) const

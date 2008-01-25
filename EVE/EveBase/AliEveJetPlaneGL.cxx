@@ -23,23 +23,24 @@
 
 
 //______________________________________________________________________________
-// AliEveJetPlaneGL
 //
+// GL renderer for AliEveJetPlane.
 
 ClassImp(AliEveJetPlaneGL)
 
 AliEveJetPlaneGL::AliEveJetPlaneGL() : TGLObject(), fM(0)
 {
+  // Constructor.
+
   fDLCache = kFALSE; // Disable display list -- axis pain.
 }
-
-AliEveJetPlaneGL::~AliEveJetPlaneGL()
-{}
 
 /******************************************************************************/
 
 Bool_t AliEveJetPlaneGL::SetModel(TObject* obj, const Option_t* /*opt*/)
 {
+  // Set model object.
+
   if(SetModelCheckClass(obj, AliEveJetPlane::Class())) {
     fM = dynamic_cast<AliEveJetPlane*>(obj);
     return kTRUE;
@@ -49,7 +50,8 @@ Bool_t AliEveJetPlaneGL::SetModel(TObject* obj, const Option_t* /*opt*/)
 
 void AliEveJetPlaneGL::SetBBox()
 {
-  // !! This ok if master sub-classed from TAttBBox
+  // Set bounding box.
+
   SetAxisAlignedBBox(((AliEveJetPlane*)fExternalObj)->AssertBBox());
 }
 
@@ -57,13 +59,14 @@ void AliEveJetPlaneGL::SetBBox()
 
 void AliEveJetPlaneGL::DirectDraw(TGLRnrCtx & /*rnrCtx*/) const
 {
+  // Render the object.
 
   Float_t minEta = (fM->fMinEta)*(fM->fEtaScale);
   Float_t maxEta = (fM->fMaxEta)*(fM->fEtaScale);
   Float_t minPhi = (fM->fMinPhi)*(fM->fPhiScale);
   Float_t maxPhi = (fM->fMaxPhi)*(fM->fPhiScale);
   Float_t phiCoord, etaCoord, dPhi, dEta;
-  Double_t eta, phi, E, x, y;
+  Double_t eta, phi, e, x, y;
 
   // Show frame for Eta-Phi coordinates
 
@@ -161,12 +164,12 @@ void AliEveJetPlaneGL::DirectDraw(TGLRnrCtx & /*rnrCtx*/) const
     {
       eta = j->Eta();
       phi = j->Phi();
-      E   = j->E();
+      e   = j->E();
 
       x = eta*(fM->fEtaScale);
       y = phi*(fM->fPhiScale);
 
-      Int_t colBin = TMath::Min((Int_t) ((nCol-2)*E*
+      Int_t colBin = TMath::Min((Int_t) ((nCol-2)*e*
 					 TMath::Power(10.,fM->fEnergyColorScale)/(eMax)),nCol-2);
       Int_t colIdx = gStyle->GetColorPalette(colBin);
       TColor* c    = gROOT->GetColor(colIdx);
@@ -179,10 +182,9 @@ void AliEveJetPlaneGL::DirectDraw(TGLRnrCtx & /*rnrCtx*/) const
       }
 
       glLoadName(jetid);
-      TGLUtil::DrawLine( TGLVertex3(x,y,0.),
-			 TGLVector3(0.,0.,TMath::Log(E + 1.)*fM->fEnergyScale),
-			 TGLUtil::kLineHeadArrow, 25.0, col);
-
+      TGLUtil::DrawLine(TGLVertex3(x,y,0.),
+			TGLVector3(0.,0.,TMath::Log(e + 1.)*fM->fEnergyScale),
+			TGLUtil::kLineHeadArrow, 25.0, col);
       ++j; ++jetid;
     }
   }
@@ -196,16 +198,15 @@ void AliEveJetPlaneGL::DirectDraw(TGLRnrCtx & /*rnrCtx*/) const
     glEnable(GL_DEPTH_TEST);	 // Turn Depth Testing On
     UInt_t trackid = 0;
 
-
     k = fM->fTracks.begin();
 
     while (k != fM->fTracks.end())
     {
       eta = k->Eta();
       phi = k->Phi();
-      E   = k->E();
+      e   = k->E();
 
-      if (E < 0.)
+      if (e < 0.)
       {
 	//			printf(" WARNING: Particle with negative energy has been found.\n");
 	//			printf(" PARTICLE NOT DISPLAYED. TrackID: %i\n", trackid);
@@ -216,7 +217,7 @@ void AliEveJetPlaneGL::DirectDraw(TGLRnrCtx & /*rnrCtx*/) const
       x = eta*(fM->fEtaScale);
       y = phi*(fM->fPhiScale);
 
-      Int_t colBin = TMath::Min((Int_t) ((nCol-2)*E*
+      Int_t colBin = TMath::Min((Int_t) ((nCol-2)*e*
 					 TMath::Power(10.,fM->fEnergyColorScale)/(eMax)),nCol-2);
       Int_t colIdx = gStyle->GetColorPalette(colBin);
       TColor* c    = gROOT->GetColor(colIdx);
@@ -230,7 +231,7 @@ void AliEveJetPlaneGL::DirectDraw(TGLRnrCtx & /*rnrCtx*/) const
 
       glLoadName(trackid);
       TGLUtil::DrawLine( TGLVertex3(x,y,0.),
-			 TGLVector3(0.,0.,TMath::Log(E + 1.)*fM->fEnergyScale),
+			 TGLVector3(0.,0.,TMath::Log(e + 1.)*fM->fEnergyScale),
 			 TGLUtil::kLineHeadArrow, 5.0, col);
 
       ++k; ++trackid;
@@ -239,15 +240,14 @@ void AliEveJetPlaneGL::DirectDraw(TGLRnrCtx & /*rnrCtx*/) const
 
   glPopName();
   TGLUtil::ResetDrawQuality();
-
-
-
 }
 
 /******************************************************************************/
 
 void AliEveJetPlaneGL::ProcessSelection(TGLRnrCtx & /*rnrCtx*/, TGLSelectRecord & rec)
 {
+  // Process selection and print jet information.
+
   //   printf("beep %u\n", rec.GetN());
   //   rec.Print();
   static Int_t jet1State;
@@ -320,17 +320,17 @@ void AliEveJetPlaneGL::ProcessSelection(TGLRnrCtx & /*rnrCtx*/, TGLSelectRecord 
 
       if(jet1State && jet2State)
       {
-	Double_t Eta1, Eta2, Phi1, Phi2, d;
+	Double_t eta1, eta2, phi1, phi2, d;
 
-	Eta1 = (fM->GetJet1()).Eta();
-	Eta2 = (fM->GetJet2()).Eta();
-	Phi1 = (fM->GetJet1()).Phi();
-        Phi2 = (fM->GetJet2()).Phi();
+	eta1 = (fM->GetJet1()).Eta();
+	eta2 = (fM->GetJet2()).Eta();
+	phi1 = (fM->GetJet1()).Phi();
+        phi2 = (fM->GetJet2()).Phi();
 
-	d = TMath::Sqrt(TMath::Power(Eta2-Eta1,2) + TMath::Power(Phi2-Phi1,2));
+	d = TMath::Sqrt(TMath::Power(eta2-eta1,2) + TMath::Power(phi2-phi1,2));
 
-	printf("Eta-Phi: %f, %f\n", Eta1, Phi1 );
-	printf("Eta-Phi: %f, %f\n", Eta2, Phi2 );
+	printf("Eta-Phi: %f, %f\n", eta1, phi1);
+	printf("Eta-Phi: %f, %f\n", eta2, phi2);
 	printf("Eta-Phi Distance: %f\n", d);
       }
 

@@ -32,21 +32,19 @@ private:
   AliEveJetPlaneEditor& operator=(const AliEveJetPlaneEditor&); // Not implemented
 
 protected:
-  AliEveJetPlane          *fM; // fModel dynamic-casted to AliEveJetPlaneEditor
+  AliEveJetPlane   *fM; // Model object.
 
-  // Declare widgets
-  // TGSomeWidget*   fXYZZ;
-  TGCheckButton*     fRnrJets;
-  TGCheckButton*     fRnrTracks;
-  TEveGValuator*  fEnergyScale;
-  TEveGValuator*  fEnergyColorScale;
-  TGButton          *fOneSelection, *fTwoSelection;
-  TGButton          *fInformationSetup;
+  TGCheckButton    *fRnrJets;          // Widget for flag RnrJets.
+  TGCheckButton    *fRnrTracks;        // Widget for flag RnrTracks.
+  TEveGValuator    *fEnergyScale;      // Widget for EnergyScale.
+  TEveGValuator    *fEnergyColorScale; // Widget for EnergyColorScale.
+  TGButton         *fOneSelection, *fTwoSelection;  // Widgets for one/two selection flags.
+  TGButton         *fInformationSetup; // Widget for InformationSetup.
 
 public:
   AliEveJetPlaneEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30,
-		 UInt_t options = kChildFrame, Pixel_t back=GetDefaultFrameBackground());
-  virtual ~AliEveJetPlaneEditor();
+                       UInt_t options=kChildFrame, Pixel_t back=GetDefaultFrameBackground());
+  virtual ~AliEveJetPlaneEditor() {}
 
   virtual void SetModel(TObject* obj);
 
@@ -69,11 +67,11 @@ public:
     StaticDataWindow(const StaticDataWindow&);            // Not implemented
     StaticDataWindow& operator=(const StaticDataWindow&); // Not implemented
 
-    TGCompositeFrame    *fFrame1, *fF2;
-    TGButton            *fOkButton, *fCancelButton;
-    TGLayoutHints       *fL1, *fL2, *fL3, *fL5;
-    TGTab               *fTab;
-    TGButton            *fChk1, *fChk2,*fChk3, *fChk4,*fChk5;
+    TGCompositeFrame    *fFrame1, *fF2;             // Frames.
+    TGButton            *fOkButton, *fCancelButton; // Ok, cancel buttons.
+    TGLayoutHints       *fL1, *fL2, *fL3, *fL5;     // Layout hints.
+    TGTab               *fTab;                      // Tab container.
+    TGButton            *fChk1, *fChk2,*fChk3, *fChk4,*fChk5; // Check-buttons.
 
   public:
     StaticDataWindow(const TGWindow *p, const TGWindow *main, UInt_t w, UInt_t h,
@@ -86,13 +84,13 @@ public:
     void DoCancel();
     void DoTab(Int_t id);
 
-    ClassDef(StaticDataWindow, 0);
+    ClassDef(StaticDataWindow, 0); // Common settings for all AliEveJetPlane objects.
   };
 
 protected:
-  static StaticDataWindow* fgStaticWindow;
+  static StaticDataWindow* fgStaticWindow; // Common window for global settings.
 
-  ClassDef(AliEveJetPlaneEditor, 1); // Editor for AliEveJetPlane
+  ClassDef(AliEveJetPlaneEditor, 1); // Editor for AliEveJetPlane.
 }; // endclass AliEveJetPlaneEditor
 
 #endif

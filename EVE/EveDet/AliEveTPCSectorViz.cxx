@@ -18,7 +18,6 @@
 
 
 //______________________________________________________________________________
-// AliEveTPCSectorViz
 //
 // Base class for TPC raw-data visualization.
 // See AliEveTPCSector2D and AliEveTPCSector3D for concrete implementations.
@@ -50,16 +49,22 @@ AliEveTPCSectorViz::AliEveTPCSectorViz(const Text_t* n, const Text_t* t) :
   fRTS        (1),
 
   fColorArray (0)
-{}
+{
+  // Constructor.
+}
 
 AliEveTPCSectorViz::~AliEveTPCSectorViz()
 {
-  if(fTPCData) fTPCData->DecRefCount();
+  // Destructor.
+
+  if (fTPCData) fTPCData->DecRefCount();
   delete [] fColorArray;
 }
 
 void AliEveTPCSectorViz::CopyVizParams(const AliEveTPCSectorViz& v)
 {
+  // Copy basic viualization parameters from another TPCSectorViz.
+
   fMinTime   = v.fMinTime;
   fMaxTime   = v.fMaxTime;
   fThreshold = v.fThreshold;
@@ -74,25 +79,31 @@ void AliEveTPCSectorViz::CopyVizParams(const AliEveTPCSectorViz& v)
 
 void AliEveTPCSectorViz::SetDataSource(AliEveTPCData* data)
 {
-  if(data == fTPCData) return;
-  if(fTPCData) fTPCData->DecRefCount();
+  // Set the data source.
+
+  if (data == fTPCData) return;
+  if (fTPCData) fTPCData->DecRefCount();
   fTPCData = data;
-  if(fTPCData) fTPCData->IncRefCount();
+  if (fTPCData) fTPCData->IncRefCount();
   IncRTS();
 }
 
 void AliEveTPCSectorViz::SetSectorID(Int_t id)
 {
-  if(id < 0)  id = 0;
-  if(id > 35) id = 35;
+  // Set sector id.
+
+  if (id < 0)  id = 0;
+  if (id > 35) id = 35;
   fSectorID = id;
-  if(fAutoTrans)
+  if (fAutoTrans)
     SetAutoTrans(kTRUE); // Force repositioning.
   IncRTS();
 }
 
 AliEveTPCSectorData* AliEveTPCSectorViz::GetSectorData() const
 {
+  // Get sector-data.
+
   return fTPCData ? fTPCData->GetSectorData(fSectorID) : 0;
 }
 
@@ -100,6 +111,8 @@ AliEveTPCSectorData* AliEveTPCSectorViz::GetSectorData() const
 
 void AliEveTPCSectorViz::SetThreshold(Short_t t)
 {
+  // Set visualization threshold.
+
   fThreshold = TMath::Min(t, (Short_t)(fMaxVal - 1));
   ClearColorArray();
   IncRTS();
@@ -107,6 +120,9 @@ void AliEveTPCSectorViz::SetThreshold(Short_t t)
 
 void AliEveTPCSectorViz::SetMaxVal(Int_t mv)
 {
+  // Set visualization max signal value.
+  // Signals above this will have the same color.
+
   fMaxVal = TMath::Max(mv, (Int_t)(fThreshold + 1));
   ClearColorArray();
   IncRTS();
@@ -116,8 +132,11 @@ void AliEveTPCSectorViz::SetMaxVal(Int_t mv)
 
 void AliEveTPCSectorViz::SetAutoTrans(Bool_t trans)
 {
+  // Set automatic update of transformation matrix.
+  // The position is calculated immediately.
+
   fAutoTrans = trans;
-  if(fAutoTrans) {
+  if (fAutoTrans) {
     fHMTrans.UnitTrans();
 
     using namespace TMath;
@@ -125,7 +144,7 @@ void AliEveTPCSectorViz::SetAutoTrans(Bool_t trans)
     Float_t s = Sin((fSectorID + 0.5)*20*Pi()/180 - PiOver2());
     Float_t z = AliEveTPCSectorData::GetZLength();
     Float_t d = -1;
-    if(fSectorID >= 18) {
+    if (fSectorID >= 18) {
       z = -z;
       d = -d;
     }
@@ -145,17 +164,21 @@ void AliEveTPCSectorViz::SetAutoTrans(Bool_t trans)
 
 void AliEveTPCSectorViz::SetupColor(Int_t val, UChar_t* pixel) const
 {
+  // Set pixel color to represent signal val from the current palette.
+
   using namespace TMath;
   Float_t div  = Max(1, fMaxVal - fThreshold);
   Int_t   nCol = gStyle->GetNumberOfColors();
   Int_t   cBin = (Int_t) Nint(nCol*(val - fThreshold)/div);
 
-  TEveUtil::TEveUtil::ColorFromIdx(gStyle->GetColorPalette(Min(nCol - 1, cBin)), pixel);
+  TEveUtil::ColorFromIdx(gStyle->GetColorPalette(Min(nCol - 1, cBin)), pixel);
 }
 
 void AliEveTPCSectorViz::ClearColorArray()
 {
-  if(fColorArray) {
+  // Clear cached color array.
+
+  if (fColorArray) {
     delete [] fColorArray;
     fColorArray = 0;
   }
@@ -163,11 +186,13 @@ void AliEveTPCSectorViz::ClearColorArray()
 
 void AliEveTPCSectorViz::SetupColorArray() const
 {
-  if(fColorArray)
+  // Initialize cached color array.
+
+  if (fColorArray)
     return;
 
   fColorArray = new UChar_t [4 * (fMaxVal - fThreshold + 1)];
   UChar_t* p = fColorArray;
-  for(Int_t v=fThreshold; v<=fMaxVal; ++v, p+=4)
+  for (Int_t v=fThreshold; v<=fMaxVal; ++v, p+=4)
     SetupColor(v, p);
 }

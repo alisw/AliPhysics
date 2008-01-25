@@ -25,8 +25,8 @@
 
 
 //______________________________________________________________________________
-// AliEveTPCSectorVizEditor
 //
+// Editor for AliEveTPCSectorViz.
 
 ClassImp(AliEveTPCSectorVizEditor)
 
@@ -41,6 +41,8 @@ AliEveTPCSectorVizEditor::AliEveTPCSectorVizEditor(const TGWindow *p,
   fThreshold (0), fMaxVal    (0),
   fTime      (0)
 {
+  // Constructor.
+
   fPriority = 40;
 
   Int_t labelW = 60;
@@ -119,13 +121,12 @@ AliEveTPCSectorVizEditor::AliEveTPCSectorVizEditor(const TGWindow *p,
   AddFrame(fTime, new TGLayoutHints(kLHintsTop, 1, 1, 2, 1));
 }
 
-AliEveTPCSectorVizEditor::~AliEveTPCSectorVizEditor()
-{}
-
 /******************************************************************************/
 
 void AliEveTPCSectorVizEditor::SetModel(TObject* obj)
 {
+  // Set model object.
+
   fM = dynamic_cast<AliEveTPCSectorViz*>(obj);
 
   fHMTrans->SetModel(&fM->fHMTrans);
@@ -147,12 +148,16 @@ void AliEveTPCSectorVizEditor::SetModel(TObject* obj)
 
 void AliEveTPCSectorVizEditor::DoSectorID()
 {
+  // Slot for SectorID.
+
   fM->SetSectorID((Int_t) fSectorID->GetValue());
   Update();
 }
 
 void AliEveTPCSectorVizEditor::DoAutoTrans()
 {
+  // Slot for AutoTrans.
+
   fM->SetAutoTrans(fAutoTrans->IsOn());
   Update();
 }
@@ -161,18 +166,24 @@ void AliEveTPCSectorVizEditor::DoAutoTrans()
 
 void AliEveTPCSectorVizEditor::DoRnrInn()
 {
+  // Slot for RnrInn.
+
   fM->SetRnrInn(fRnrInn->IsOn());
   Update();
 }
 
 void AliEveTPCSectorVizEditor::DoRnrOut1()
 {
+  // Slot for RnrOut1.
+
   fM->SetRnrOut1(fRnrOut1->IsOn());
   Update();
 }
 
 void AliEveTPCSectorVizEditor::DoRnrOut2()
 {
+  // Slot for RnrOut2.
+
   fM->SetRnrOut2(fRnrOut2->IsOn());
   Update();
 }
@@ -181,6 +192,8 @@ void AliEveTPCSectorVizEditor::DoRnrOut2()
 
 void AliEveTPCSectorVizEditor::DoThreshold()
 {
+  // Slot for Threshold.
+
   fM->SetThreshold((Short_t) fThreshold->GetValue());
   fThreshold->SetValue(fM->fThreshold);
   Update();
@@ -188,6 +201,8 @@ void AliEveTPCSectorVizEditor::DoThreshold()
 
 void AliEveTPCSectorVizEditor::DoMaxVal()
 {
+  // Slot for MaxVal.
+
   fM->SetMaxVal((Int_t) fMaxVal->GetValue());
   fMaxVal->SetValue(fM->fMaxVal);
   Update();
@@ -197,6 +212,8 @@ void AliEveTPCSectorVizEditor::DoMaxVal()
 
 void AliEveTPCSectorVizEditor::DoTime()
 {
+  // Slot for time-range.
+
   fM->SetMinTime((Int_t) fTime->GetMin());
   fM->SetMaxTime((Int_t) fTime->GetMax());
   Update();

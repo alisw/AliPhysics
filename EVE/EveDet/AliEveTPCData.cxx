@@ -18,7 +18,6 @@
 
 
 //______________________________________________________________________________
-// AliEveTPCData
 //
 // A central manager for TPC data of an event.  Can read digits (from
 // a tree: LoadDigits()) and raw-data (via AliRawReader: LoadRaw()).
@@ -41,11 +40,15 @@ AliEveTPCData::AliEveTPCData() :
   fSectors(36), fSectorBlockSize(65536),
   fLoadThreshold(0), fLoadPedestal(0), fAutoPedestal(kFALSE)
 {
+  // Constructor.
+
   AliEveTPCSectorData::InitStatics();
 }
 
 AliEveTPCData::~AliEveTPCData()
 {
+  // Destructor, deletes all sector-data.
+
   DeleteAllSectors();
 }
 
@@ -53,27 +56,35 @@ AliEveTPCData::~AliEveTPCData()
 
 void AliEveTPCData::CreateSector(Int_t sector)
 {
-  if(fSectors[sector] == 0)
+  // Create sector-data for sector if it does not exist already.
+
+  if (fSectors[sector] == 0)
     fSectors[sector] = new AliEveTPCSectorData(sector, fSectorBlockSize);
 }
 
 void AliEveTPCData::CreateAllSectors()
 {
-  for(Int_t s=0; s<36; ++s)
+  // Create all 36 sectors.
+
+  for (Int_t s=0; s<36; ++s)
     CreateSector(s);
 }
 
 void AliEveTPCData::DropAllSectors()
 {
-  for(Int_t s=0; s<36; ++s) {
-    if(fSectors[s] != 0)
+  // Drop data of all existing sectors.
+
+  for (Int_t s=0; s<36; ++s) {
+    if (fSectors[s] != 0)
       fSectors[s]->DropData();
   }
 }
 
 void AliEveTPCData::DeleteAllSectors()
 {
-  for(Int_t s=0; s<36; ++s) {
+  // Delete all sector-data.
+
+  for (Int_t s=0; s<36; ++s) {
     delete fSectors[s];
     fSectors[s] = 0;
   }
@@ -83,8 +94,11 @@ void AliEveTPCData::DeleteAllSectors()
 
 AliEveTPCSectorData* AliEveTPCData::GetSectorData(Int_t sector, Bool_t spawnSectors)
 {
-  if(sector < 0 || sector > 35) return 0;
-  if(fSectors[sector] == 0 && spawnSectors)
+  // Get sector-data for sector. If spawnSectors is true, the
+  // sector-data is created if it does not exist already.
+
+  if (sector < 0 || sector > 35) return 0;
+  if (fSectors[sector] == 0 && spawnSectors)
     CreateSector(sector);
   return fSectors[sector];
 }
@@ -110,15 +124,15 @@ void AliEveTPCData::LoadDigits(TTree* tree, Bool_t spawnSectors)
   for (Int_t ent=0; ent<numEnt; ent++) {
     tree->GetEntry(ent);
     AliEveTPCSectorData::GetParam().AdjustSectorRow(digit.GetID(), sector, row);
-    if(sector >= 36) {
+    if (sector >= 36) {
       sector -= 36;
       row    += AliEveTPCSectorData::GetInnSeg().GetNRows();
     }
     secData = GetSectorData(sector, spawnSectors);
-    if(secData == 0)
+    if (secData == 0)
       continue;
 
-    if(digit.First() == kFALSE)
+    if (digit.First() == kFALSE)
       continue;
     curPad = -1;
     do {
@@ -126,23 +140,23 @@ void AliEveTPCData::LoadDigits(TTree* tree, Bool_t spawnSectors)
       time   = digit.CurrentRow();
       signal = digit.CurrentDigit();
 
-      if(pad != curPad) {
-	if(inFill)
+      if (pad != curPad) {
+	if (inFill)
 	  secData->EndPad(fAutoPedestal, fLoadThreshold);
 	secData->BeginPad(row, pad, kFALSE);
 	curPad = pad;
 	inFill = kTRUE;
       }
-      if(fAutoPedestal) {
+      if (fAutoPedestal) {
 	secData->RegisterData(time, signal);
       } else {
 	signal -= fLoadPedestal;
-	if(signal >= fLoadThreshold)
+	if (signal >= fLoadThreshold)
 	  secData->RegisterData(time, signal);
       }
 
     } while (digit.Next());
-    if(inFill) {
+    if (inFill) {
       secData->EndPad(fAutoPedestal, fLoadThreshold);
       inFill = kFALSE;
     }
@@ -169,12 +183,12 @@ void AliEveTPCData::LoadRaw(AliTPCRawStream& input, Bool_t spawnSectors, Bool_t 
 
   while (input.Next()) {
     if (input.IsNewSector()) {
-      if(inFill) {
+      if (inFill) {
 	secData->EndPad(fAutoPedestal, threshold);
 	inFill = kFALSE;
       }
       sector = input.GetSector();
-      if(sector >= 36) {
+      if (sector >= 36) {
 	sector -= 36;
 	rowOffset = AliEveTPCSectorData::GetInnSeg().GetNRows();
       } else {
@@ -186,15 +200,15 @@ void AliEveTPCData::LoadRaw(AliTPCRawStream& input, Bool_t spawnSectors, Bool_t 
       continue;
 
     if (input.IsNewPad()) {
-      if(inFill) {
+      if (inFill) {
 	secData->EndPad(fAutoPedestal, threshold);
 	inFill = kFALSE;
       }
       row = input.GetRow() + rowOffset;
       pad = input.GetPad();
 
-      if(pad >= AliEveTPCSectorData::GetNPadsInRow(row)) {
-	if(warn) {
+      if (pad >= AliEveTPCSectorData::GetNPadsInRow(row)) {
+	if (warn) {
 	  Warning(eH.Data(), "pad out of range (row=%d, pad=%d, maxpad=%d).",
 		  row, pad, AliEveTPCSectorData::GetNPadsInRow(row));
 	}
@@ -202,7 +216,7 @@ void AliEveTPCData::LoadRaw(AliTPCRawStream& input, Bool_t spawnSectors, Bool_t 
       }
 
       AliEveTPCSectorData::PadRowHack* prh = secData->GetPadRowHack(row, pad);
-      if(prh != 0) {
+      if (prh != 0) {
 	threshold = prh->fThrExt + Short_t(prh->fThrFac*fLoadThreshold);
       } else {
 	threshold = fLoadThreshold;
@@ -215,9 +229,9 @@ void AliEveTPCData::LoadRaw(AliTPCRawStream& input, Bool_t spawnSectors, Bool_t 
 
     time   = input.GetTime();
     signal = input.GetSignal();
-    if(time >= lastTime) {
-      if(lastTimeWarn == kFALSE) {
-	if(warn)
+    if (time >= lastTime) {
+      if (lastTimeWarn == kFALSE) {
+	if (warn)
 	  Warning(eH.Data(), "time out of order (row=%d, pad=%d, time=%d, lastTime=%d).",
 		  row, pad, time, lastTime);
         lastTimeWarn = kTRUE;
@@ -225,16 +239,16 @@ void AliEveTPCData::LoadRaw(AliTPCRawStream& input, Bool_t spawnSectors, Bool_t 
       continue;
     }
     lastTime = time;
-    if(fAutoPedestal) {
+    if (fAutoPedestal) {
       secData->RegisterData(time, signal);
     } else {
       signal -= fLoadPedestal;
-      if(signal > threshold)
+      if (signal > threshold)
 	secData->RegisterData(time, signal);
     }
   }
 
-  if(inFill) {
+  if (inFill) {
     secData->EndPad(fAutoPedestal, threshold);
     inFill = kFALSE;
   }

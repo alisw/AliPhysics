@@ -15,11 +15,9 @@
 #include <TGLSelectRecord.h>
 #include <TGLIncludes.h>
 
-using namespace std;
-
 //______________________________________________________________________________
-// AliEveTPCSector2DGL
 //
+// GL renderer for TPCSector2D.
 
 ClassImp(AliEveTPCSector2DGL)
 
@@ -40,19 +38,26 @@ AliEveTPCSector2DGL::AliEveTPCSector2DGL() :
   fImage   (0),
   fTexture (0),
   fRTS     (0)
-{}
+{
+  // Constructor.
+}
 
 AliEveTPCSector2DGL::~AliEveTPCSector2DGL()
 {
-  if(fImage)   delete fImage;
-  if(fTexture) glDeleteTextures(1, &fTexture);
+  // Destructor.
+  // !!!! Should unregister texture via ContextIdentity!
+
+  if (fImage)   delete fImage;
+  if (fTexture) glDeleteTextures(1, &fTexture);
 }
 
 /******************************************************************************/
 
 Bool_t AliEveTPCSector2DGL::SetModel(TObject* obj, const Option_t* /*opt*/)
 {
-  if(SetModelCheckClass(obj, AliEveTPCSector2D::Class())) {
+  // Set model object.
+
+  if (SetModelCheckClass(obj, AliEveTPCSector2D::Class())) {
     fSector = (AliEveTPCSector2D*) fExternalObj;
     return kTRUE;
   }
@@ -61,14 +66,19 @@ Bool_t AliEveTPCSector2DGL::SetModel(TObject* obj, const Option_t* /*opt*/)
 
 void AliEveTPCSector2DGL::SetBBox()
 {
+  // Set bounding-box.
+
   SetAxisAlignedBBox(((AliEveTPCSector2D*)fExternalObj)->AssertBBox());
 }
 
 /******************************************************************************/
 
 void AliEveTPCSector2DGL::ProcessSelection(TGLRnrCtx       & /*rnrCtx*/,
-				     TGLSelectRecord & rec)
+                                           TGLSelectRecord & rec)
 {
+  // Process selection record.
+  // Determine row and pad, call PadSelected() in model object.
+
   if (rec.GetN() != 3) return;
   Int_t row = rec.GetItem(1);
   Int_t pad = rec.GetItem(2);
@@ -152,8 +162,10 @@ void AliEveTPCSector2DGL::DirectDraw(TGLRnrCtx& rnrCtx) const
 /******************************************************************************/
 
 void AliEveTPCSector2DGL::LoadPadrow(AliEveTPCSectorData::RowIterator& iter,
-			       Int_t row, Int_t col_off) const
+                                     Int_t row, Int_t col_off) const
 {
+  // Load data for one pad-row into the texture.
+
   Int_t    padVal;
   Int_t    time, val;
 
@@ -198,6 +210,8 @@ void AliEveTPCSector2DGL::LoadPadrow(AliEveTPCSectorData::RowIterator& iter,
 
 void AliEveTPCSector2DGL::CreateTexture() const
 {
+  // Create texture that holds pad data.
+
   if (fImage == 0 ) {
     fImage = new UChar_t[fgkTextureByteSize];
     glGenTextures(1, &fTexture);
@@ -244,8 +258,10 @@ void AliEveTPCSector2DGL::CreateTexture() const
 /******************************************************************************/
 
 void AliEveTPCSector2DGL::DisplayTexture(const AliEveTPCSectorData::SegmentInfo& seg,
-                                   Int_t startCol, Int_t startRow) const
+                                         Int_t startCol, Int_t startRow) const
 {
+  // Display segment data via one textured rectangle.
+
   Float_t w  = seg.GetNMaxPads()*seg.GetPadWidth()/2;
   Float_t y1 = seg.GetRLow();
   Float_t y2 = y1 + seg.GetNRows()*seg.GetPadHeight();
@@ -266,8 +282,10 @@ void AliEveTPCSector2DGL::DisplayTexture(const AliEveTPCSectorData::SegmentInfo&
 /******************************************************************************/
 
 void AliEveTPCSector2DGL::DisplayQuads(const AliEveTPCSectorData::SegmentInfo& seg,
-                                 Int_t startCol, Int_t startRow) const
+                                       Int_t startCol, Int_t startRow) const
 {
+  // Display segment data by rendering one quad per pad.
+
   Float_t y_d, y_u;
   Float_t x_off, x;
   Float_t padW = seg.GetPadWidth();
@@ -297,8 +315,11 @@ void AliEveTPCSector2DGL::DisplayQuads(const AliEveTPCSectorData::SegmentInfo& s
 }
 
 void AliEveTPCSector2DGL::DisplayNamedQuads(const AliEveTPCSectorData::SegmentInfo& seg,
-				      Int_t startCol, Int_t startRow) const
+                                            Int_t startCol, Int_t startRow) const
 {
+  // Display segmen data as one quad per pad.
+  // Tag the rows and pads for selection.
+
   Float_t y_d, y_u;
   Float_t x_off, x;
   Float_t padW = seg.GetPadWidth();
@@ -338,6 +359,8 @@ void AliEveTPCSector2DGL::DisplayNamedQuads(const AliEveTPCSectorData::SegmentIn
 
 void AliEveTPCSector2DGL::TraceStepsUp(const AliEveTPCSectorData::SegmentInfo& s)
 {
+  // Trace border of segment upwards.
+
   Float_t x = -(s.GetNMaxPads()*1.0/2 - s.GetNYSteps())*s.GetPadWidth();
   Float_t y  = s.GetRLow();
   glVertex2f(x, y);
@@ -353,6 +376,8 @@ void AliEveTPCSector2DGL::TraceStepsUp(const AliEveTPCSectorData::SegmentInfo& s
 
 void AliEveTPCSector2DGL::TraceStepsDown(const AliEveTPCSectorData::SegmentInfo& s)
 {
+  // Trace border of segment downwards.
+
   Float_t x = s.GetNMaxPads()*s.GetPadWidth()/2;
   Float_t y = s.GetRLow() + s.GetNRows()*s.GetPadHeight();
   glVertex2f(x, y);
@@ -368,6 +393,9 @@ void AliEveTPCSector2DGL::TraceStepsDown(const AliEveTPCSectorData::SegmentInfo&
 
 void AliEveTPCSector2DGL::DisplayFrame() const
 {
+  // Display frame of the sector.
+  // Each segment's frame is drawn only if its data is drawn, too.
+
   UChar_t col[4];
   TEveUtil::TEveUtil::ColorFromIdx(fSector->fFrameColor, col);
   glColor4ubv(col);

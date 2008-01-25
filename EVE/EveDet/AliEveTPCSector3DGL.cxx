@@ -18,8 +18,8 @@
 
 
 //______________________________________________________________________________
-// AliEveTPCSector3DGL
 //
+// GL renderer for AliEveTPCSector3D.
 
 ClassImp(AliEveTPCSector3DGL)
 
@@ -28,11 +28,15 @@ AliEveTPCSector3DGL::AliEveTPCSector3DGL() :
   fSector(0), fBoxRnr(0),
   fRTS(0)
 {
+  // Constructor.
+
   // fDLCache = false; // Disable display list.
 }
 
 AliEveTPCSector3DGL::~AliEveTPCSector3DGL()
 {
+  // Destructor.
+
   delete fBoxRnr;
 }
 
@@ -55,6 +59,8 @@ Short_t AliEveTPCSector3DGL::QuantizeShapeLOD(Short_t shapeLOD, Short_t combiLOD
 
 Bool_t AliEveTPCSector3DGL::SetModel(TObject* obj, const Option_t* /*opt*/)
 {
+  // Set model object.
+
   if(SetModelCheckClass(obj, AliEveTPCSector3D::Class())) {
     fSector = (AliEveTPCSector3D*) fExternalObj;
     if(fBoxRnr == 0) {
@@ -68,6 +74,8 @@ Bool_t AliEveTPCSector3DGL::SetModel(TObject* obj, const Option_t* /*opt*/)
 
 void AliEveTPCSector3DGL::SetBBox()
 {
+  // Set bounding-box.
+
   SetAxisAlignedBBox(((AliEveTPCSector3D*)fExternalObj)->AssertBBox());
 }
 
@@ -75,10 +83,12 @@ void AliEveTPCSector3DGL::SetBBox()
 
 void AliEveTPCSector3DGL::DirectDraw(TGLRnrCtx & rnrCtx) const
 {
+  // Render object.
+
   // printf("AliEveTPCSector3DGL::DirectDraw Style %d, LOD %d\n", rnrCtx.Style(), rnrCtx.LOD());
 
   if(fRTS < fSector->fRTS) {
-    fSector->UpdateBoxes();
+    fSector->UpdateBoxesAndPoints();
     fRTS = fSector->fRTS;
   }
 
@@ -140,8 +150,10 @@ void AliEveTPCSector3DGL::DirectDraw(TGLRnrCtx & rnrCtx) const
 }
 
 void AliEveTPCSector3DGL::DrawSegmentFrame(const AliEveTPCSectorData::SegmentInfo& s,
-                                     Int_t botExtraPads, Int_t topExtraPads) const
+                                           Int_t botExtraPads, Int_t topExtraPads) const
 {
+  // Draw frame of given segment.
+
   Float_t xl, xh, yl, yh, zl, zh;
   xl = 0.5*s.GetPadWidth()*(AliEveTPCSectorData::GetNPadsInRow(s.GetFirstRow()) + botExtraPads);
   xh = 0.5*s.GetPadWidth()*(AliEveTPCSectorData::GetNPadsInRow(s.GetLastRow())  + topExtraPads);

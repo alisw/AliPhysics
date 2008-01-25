@@ -22,16 +22,16 @@ class AliEveTPCSector2D : public AliEveTPCSectorViz
   friend class AliEveTPCSector2DEditor;
 
 protected:
-  Bool_t      fShowMax;
-  Bool_t      fAverage;
+  Bool_t      fShowMax;    // Show maximum signal-value in time range.
+  Bool_t      fAverage;    // Show average signal value in time range.
 
-  Bool_t      fUseTexture;
-  Bool_t      fPickEmpty;
-  Int_t       fPickMode;  // 0-print, 1-1dhisto of pad, 2-2dhisto of padrow
+  Bool_t      fUseTexture; // Use texture to draw each segment.
+  Bool_t      fPickEmpty;  // Pick also empty pads.
+  Int_t       fPickMode;   // Pick mode: 0-print, 1-1dhisto of pad, 2-2dhisto of padrow.
 
 public:
   AliEveTPCSector2D(const Text_t* n="AliEveTPCSector2D", const Text_t* t=0);
-  virtual ~AliEveTPCSector2D();
+  virtual ~AliEveTPCSector2D() {}
 
   void SetShowMax(Bool_t sm)  { fShowMax  = sm;  IncRTS(); }
   void SetAverage(Bool_t avg) { fAverage  = avg; IncRTS(); }
@@ -47,7 +47,7 @@ public:
 
   virtual void Paint(Option_t* option="");
 
-  ClassDef(AliEveTPCSector2D, 1); // Visualization of TPC raw-data in 2D
+  ClassDef(AliEveTPCSector2D, 1); // Visualization of TPC raw-data in 2D.
 }; // endclass AliEveTPCSector2D
 
 #endif

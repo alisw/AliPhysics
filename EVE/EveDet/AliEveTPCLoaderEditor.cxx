@@ -28,8 +28,8 @@
 
 
 //______________________________________________________________________________
-// AliEveTPCLoaderEditor
 //
+// Editor for AliEveTPCLoader.
 
 ClassImp(AliEveTPCLoaderEditor)
 
@@ -55,6 +55,8 @@ AliEveTPCLoaderEditor::AliEveTPCLoaderEditor(const TGWindow *p,
   fCreateSectors3D (0),
   fDeleteSectors3D (0)
 {
+  // Constructor.
+
   MakeTitle("AliEveTPCLoader");
 
   Int_t labelW;
@@ -163,13 +165,12 @@ AliEveTPCLoaderEditor::AliEveTPCLoaderEditor(const TGWindow *p,
   }
 }
 
-AliEveTPCLoaderEditor::~AliEveTPCLoaderEditor()
-{}
-
 /******************************************************************************/
 
 void AliEveTPCLoaderEditor::SetModel(TObject* obj)
 {
+  // Set model object.
+
   fM = dynamic_cast<AliEveTPCLoader*>(obj);
 
   // !!!! order changed, need TGTextEntry::SetText NO BLOODY EMIT.
@@ -203,6 +204,8 @@ const char *tpcfiletypes[] = {
 
 void AliEveTPCLoaderEditor::FileSelect()
 {
+  // Slot for FileSelect.
+
   TGFileInfo fi;
   fi.fIniDir    = StrDup(gSystem->DirName (fM->fFile));
   fi.fFilename  = StrDup(gSystem->BaseName(fM->fFile));
@@ -217,11 +220,15 @@ void AliEveTPCLoaderEditor::FileSelect()
 
 void AliEveTPCLoaderEditor::FileChanged()
 {
+  // Slot for FileChanged.
+
   fM->fFile = fFile->GetText();
 }
 
 void AliEveTPCLoaderEditor::DoOpen()
 {
+  // Slot for Open.
+
   fM->OpenFile();
   SetModel(fM);
 }
@@ -230,12 +237,16 @@ void AliEveTPCLoaderEditor::DoOpen()
 
 void AliEveTPCLoaderEditor::DoEvent()
 {
+  // Slot for Event.
+
   fM->GotoEvent((Int_t) fEvent->GetValue());
   SetModel(fM);
 }
 
 void AliEveTPCLoaderEditor::DoDoubleSR()
 {
+  // Slot for DoubleSR.
+
   fM->SetDoubleSR(fDoubleSR->IsOn());
   Update();
 }
@@ -244,18 +255,24 @@ void AliEveTPCLoaderEditor::DoDoubleSR()
 
 void AliEveTPCLoaderEditor::DoDataLoadThreshold()
 {
+  // Slot for DataLoadThreshold.
+
   if (fM->GetData() == 0) return;
   fM->GetData()->SetLoadThreshold((Short_t) fDataLoadThreshold->GetValue());
 }
 
 void AliEveTPCLoaderEditor::DoDataLoadPedestal()
 {
+  // Slot for DataLoadPedestal.
+
   if (fM->GetData() == 0) return;
   fM->GetData()->SetLoadPedestal((Short_t) fDataLoadPedestal->GetValue());
 }
 
 void AliEveTPCLoaderEditor::DoDataAutoPedestal()
 {
+  // Slot for DataAutoPedestal.
+
   if (fM->GetData() == 0) return;
   fM->GetData()->SetAutoPedestal(fDataAutoPedestal->IsOn());
   fDataLoadPedestal->SetEnabled(!fDataAutoPedestal->IsOn());
@@ -265,21 +282,29 @@ void AliEveTPCLoaderEditor::DoDataAutoPedestal()
 
 void AliEveTPCLoaderEditor::DoUpdateSectors()
 {
+  // Slot for UpdateSectors.
+
   fM->UpdateSectors();
 }
 
 void AliEveTPCLoaderEditor::DoReloadSectors()
 {
+  // Slot for ReloadSectors.
+
   fM->ReloadSectors();
 }
 
 void AliEveTPCLoaderEditor::DoCreateSectors3D()
 {
+  // Slot for CreateSectors3D.
+
   fM->CreateSectors3D();
 }
 
 
 void AliEveTPCLoaderEditor::DoDeleteSectors3D()
 {
+  // Slot for DeleteSectors3D.
+
   fM->DeleteSectors3D();
 }

@@ -25,22 +25,22 @@ class AliEveTPCSector3D : public AliEveTPCSectorViz
 protected:
   void LoadPadrow(AliEveTPCSectorData::RowIterator& iter,
                   Float_t sx, Float_t sy, Float_t pw, Float_t ph);
-  void UpdateBoxes();
+  void UpdateBoxesAndPoints();
   void SetupPointSetArray();
 
-  TEveBoxSet        fBoxSet;
-  TEvePointSetArray fPointSetArray;
-  Float_t             fPointFrac;
-  Float_t             fPointSize;
-  Bool_t              fPointSetOn;
-  Int_t               fPointSetMaxVal;
+  TEveBoxSet          fBoxSet;          // BoxSet used to display digits as boxes.
+  TEvePointSetArray   fPointSetArray;   // PointSet used to display digits as points.
+  Float_t             fPointFrac;       // Fraction of signal range shown as points.
+  Float_t             fPointSize;       // Point size.
+  Bool_t              fPointSetOn;      // PointSet initialized.
+  Int_t               fPointSetMaxVal;  // Maximum signal value for data in pointset.
 
-  Float_t             fDriftVel;
-  Float_t             fZStep;
+  Float_t             fDriftVel;        // Drift velocity for 'z' coordinate.
+  Float_t             fZStep;           // Z width of a time-bin.
 
 public:
   AliEveTPCSector3D(const Text_t* n="AliEveTPCSector3D", const Text_t* t=0);
-  virtual ~AliEveTPCSector3D();
+  virtual ~AliEveTPCSector3D() {}
 
   void SetPointFrac(Float_t f) { fPointFrac = f; IncRTS(); }
   void SetPointSize(Float_t s) { fPointSize = s; }
@@ -53,7 +53,7 @@ public:
   virtual void ComputeBBox();
   virtual void Paint(Option_t* option="");
 
-  ClassDef(AliEveTPCSector3D, 1);
-}; // endclass AliEveTPCSector3D
+  ClassDef(AliEveTPCSector3D, 1); // Visualization of TPC raw-data in 3D.
+};
 
 #endif

@@ -25,13 +25,13 @@ private:
   AliEveJetPlaneGL& operator=(const AliEveJetPlaneGL&); // Not implemented
 
 protected:
-  AliEveJetPlane* fM; // fModel dynamic-casted to AliEveJetPlaneGL
+  AliEveJetPlane* fM; // Model object.
 
   virtual void DirectDraw(TGLRnrCtx & rnrCtx) const;
 
 public:
   AliEveJetPlaneGL();
-  virtual ~AliEveJetPlaneGL();
+  virtual ~AliEveJetPlaneGL() {}
 
   virtual Bool_t SetModel(TObject* obj, const Option_t* opt=0);
   virtual void   SetBBox();
@@ -40,7 +40,7 @@ public:
   virtual Bool_t SupportsSecondarySelect() const { return kTRUE; }
   virtual void ProcessSelection(TGLRnrCtx & rnrCtx, TGLSelectRecord & rec);
 
-  ClassDef(AliEveJetPlaneGL, 0);
+  ClassDef(AliEveJetPlaneGL, 0); // GL renderer for AliEveJetPlane.
 }; // endclass AliEveJetPlaneGL
 
 #endif

@@ -26,11 +26,11 @@ class AliEveTPCSectorData;
 class AliEveTPCData : public TObject, public TEveRefCnt
 {
 protected:
-  std::vector<AliEveTPCSectorData*>  fSectors;
-  Int_t                        fSectorBlockSize;
-  Short_t                      fLoadThreshold;
-  Short_t                      fLoadPedestal;
-  Bool_t                       fAutoPedestal;
+  std::vector<AliEveTPCSectorData*>  fSectors; // Vector of sector-data.
+  Int_t                      fSectorBlockSize; // Block-size of sector-data.
+  Short_t                    fLoadThreshold;   // Threshold at load-time.
+  Short_t                    fLoadPedestal;    // Pedestal at load-time.
+  Bool_t                     fAutoPedestal;    // If true determine pedestals automatically for each pad.
 
 public:
   AliEveTPCData();

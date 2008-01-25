@@ -25,10 +25,10 @@ class AliEveTPCSector3DGL : public TGLObject
   AliEveTPCSector3DGL& operator=(const AliEveTPCSector3DGL&); // Not implemented
 
 protected:
-  AliEveTPCSector3D*    fSector; // fModel dynamic-casted to AliEveTPCSector3DGL
-  TEveBoxSetGL* fBoxRnr;
+  AliEveTPCSector3D  *fSector; // Model object.
+  TEveBoxSetGL       *fBoxRnr; // Box-set GL renderer.
 
-  mutable UInt_t  fRTS;
+  mutable UInt_t      fRTS;    // Rendering time-stamp.
 
   virtual void DirectDraw(TGLRnrCtx & rnrCtx) const;
 
@@ -49,7 +49,7 @@ public:
   virtual Bool_t SupportsSecondarySelect() const { return kTRUE; }
   virtual void   ProcessSelection(TGLRnrCtx & rnrCtx, TGLSelectRecord & rec);
 
-  ClassDef(AliEveTPCSector3DGL, 0);
+  ClassDef(AliEveTPCSector3DGL, 0); // GL renderer for AliEveTPCSector3D.
 }; // endclass AliEveTPCSector3DGL
 
 #endif
