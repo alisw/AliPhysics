@@ -56,7 +56,8 @@ AliMUONRecoParam::AliMUONRecoParam()
   fComplementTracks(kFALSE),
   fImproveTracks(kFALSE),
   fUseSmoother(kFALSE),
-  fSaveFullClusterInESD(kTRUE)
+  fSaveFullClusterInESD(kTRUE),
+  fCalibrationMode("NOGAIN")
 {
   /// Constructor
   SetNameTitle("MUON","MUON");
@@ -149,6 +150,7 @@ void AliMUONRecoParam::Print(Option_t *option) const
   
   cout<<endl<<"\t------Reconstruction parameters------"<<endl;
   
+  cout<<Form("Calibration mode = %s",fCalibrationMode.Data())<<endl;
   cout<<Form("Clustering mode = %s",fClusteringMode.Data())<<endl;
   
   cout<<Form("Tracking mode = %s",fTrackingMode.Data())<<endl;

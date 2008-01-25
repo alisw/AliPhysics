@@ -17,8 +17,6 @@
 
 #include "AliMUONDigitCalibrator.h"
 
-#include "AliLog.h"
-#include "AliMpConstants.h"
 #include "AliMUONCalibrationData.h"
 #include "AliMUONVDigit.h"
 #include "AliMUONVDigitStore.h"
@@ -27,6 +25,10 @@
 #include "AliMUONPadStatusMapMaker.h"
 #include "AliMUONVStore.h"
 #include "AliMUONVCalibParam.h"
+#include "AliMpConstants.h"
+#include "AliMpDetElement.h"
+#include "AliMpDDLStore.h"
+#include "AliLog.h"
 
 //-----------------------------------------------------------------------------
 /// \class AliMUONDigitCalibrator
@@ -52,16 +54,48 @@
 ClassImp(AliMUONDigitCalibrator)
 /// \endcond
 
+const Int_t AliMUONDigitCalibrator::fgkNoGain(0);
+const Int_t AliMUONDigitCalibrator::fgkGainConstantCapa(1);
+const Int_t AliMUONDigitCalibrator::fgkGain(2);
+
 //_____________________________________________________________________________
-AliMUONDigitCalibrator::AliMUONDigitCalibrator(const AliMUONCalibrationData& calib)
+AliMUONDigitCalibrator::AliMUONDigitCalibrator(const AliMUONCalibrationData& calib,
+                                               const char* calibMode)
 : TObject(),
 fLogger(new AliMUONLogger(1000)),
 fStatusMaker(0x0),
 fStatusMapMaker(0x0),
 fPedestals(0x0),
-fGains(0x0)
+fGains(0x0),
+fApplyGains(0),
+fCapacitances(0x0)
 {
   /// ctor
+  
+  TString cMode(calibMode);
+  cMode.ToUpper();
+  
+  if ( cMode == "NOGAIN" ) 
+  {
+    fApplyGains = fgkNoGain;
+    AliInfo("Will NOT apply gain correction");
+  }
+  else if ( cMode = "GAINCONSTANTCAPA" ) 
+  {
+    fApplyGains = fgkGainConstantCapa;
+    AliInfo("Will apply gain correction, but with constant capacitance");
+  }
+  else if ( cMode == "GAIN" ) 
+  {
+    fApplyGains = fgkGain;
+    AliInfo("Will apply gain correction, with measured capacitances");
+  }
+  else
+  {
+    AliError(Form("Invalid calib mode = %s. Will use NOGAIN instead",calibMode));
+    fApplyGains = fgkNoGain;
+  }
+       
   fStatusMaker = new AliMUONPadStatusMaker(calib);
   
   // this is here that we decide on our "goodness" policy, i.e.
@@ -85,7 +119,14 @@ fGains(0x0)
   fStatusMapMaker = new AliMUONPadStatusMapMaker(*fStatusMaker,mask,deferredInitialization);
   
   fPedestals = calib.Pedestals();
-  fGains = calib.Gains();
+
+  fGains = calib.Gains(); // we get gains whatever the calibMode is, in order
+  // to get the saturation value...
+
+  if ( fApplyGains == fgkGain ) 
+  {
+    fCapacitances = calib.Capacitances();
+  }
 }
 
 //_____________________________________________________________________________
@@ -150,15 +191,16 @@ AliMUONDigitCalibrator::CalibrateDigit(AliMUONVDigit& digit)
     AliMUONVCalibParam* pedestal = static_cast<AliMUONVCalibParam*>
     (fPedestals->FindObject(digit.DetElemId(),digit.ManuId()));
     
-    AliMUONVCalibParam* gain = static_cast<AliMUONVCalibParam*>
-      (fGains->FindObject(digit.DetElemId(),digit.ManuId()));
-    
     if (!pedestal)
     {
       AliFatal(Form("Got a null ped object for DE,manu=%d,%d",
                     digit.DetElemId(),digit.ManuId()));
       
     }
+
+    AliMUONVCalibParam* gain = static_cast<AliMUONVCalibParam*>
+        (fGains->FindObject(digit.DetElemId(),digit.ManuId()));
+
     if (!gain)
     {
       AliFatal(Form("Got a null gain object for DE,manu=%d,%d",
@@ -169,23 +211,48 @@ AliMUONDigitCalibrator::CalibrateDigit(AliMUONVDigit& digit)
     Float_t adc = digit.ADC();
     Float_t padc = adc-pedestal->ValueAsFloat(manuChannel,0);
     Float_t charge(0);
+    Float_t capa(1.0);
+    
+    if ( fApplyGains == fgkGainConstantCapa ) 
+    {
+      capa = 0.2; // pF
+    }
+    else if ( fApplyGains == fgkGain ) 
+    {
+      AliMpDetElement* de = AliMpDDLStore::Instance()->GetDetElement(digit.DetElemId());
+      
+      Int_t serialNumber = de->GetManuSerialFromId(digit.ManuId());
+
+      AliMUONVCalibParam* param = static_cast<AliMUONVCalibParam*>(fCapacitances->FindObject(serialNumber));
+      
+      capa = param->ValueAsFloat(digit.ManuChannel());
+    }
+    
     if ( padc > 3.0*pedestal->ValueAsFloat(manuChannel,1) ) 
     {
-      Float_t a0 = gain->ValueAsFloat(manuChannel,0);
-      Float_t a1 = gain->ValueAsFloat(manuChannel,1);
-      Int_t thres = gain->ValueAsInt(manuChannel,2);
-      if ( padc < thres ) 
+      if ( fApplyGains != fgkNoGain ) 
       {
-        charge = a0*padc;
+        Float_t a0 = gain->ValueAsFloat(manuChannel,0);
+        Float_t a1 = gain->ValueAsFloat(manuChannel,1);
+        Int_t thres = gain->ValueAsInt(manuChannel,2);
+        if ( padc < thres ) 
+        {
+          charge = a0*padc;
+        }
+        else
+        {
+          charge = a0*thres + a0*(padc-thres) + a1*(padc-thres)*(padc-thres);
+        }
       }
       else
       {
-        charge = a0*thres + a0*(padc-thres) + a1*(padc-thres)*(padc-thres);
+        charge = padc;
       }
     }
+    charge *= capa;
     digit.SetCharge(charge);
     Int_t saturation = gain->ValueAsInt(manuChannel,4);
-    if ( charge >= saturation )
+    if ( padc >= saturation )
     {
       digit.Saturated(kTRUE);
     }

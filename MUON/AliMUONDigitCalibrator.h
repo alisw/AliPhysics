@@ -27,7 +27,7 @@ class AliMUONPadStatusMapMaker;
 class AliMUONDigitCalibrator : public TObject
 {
 public:
-  AliMUONDigitCalibrator(const AliMUONCalibrationData& calib);
+  AliMUONDigitCalibrator(const AliMUONCalibrationData& calib, const char* calibMode="NOGAIN");
   
   virtual ~AliMUONDigitCalibrator();
   
@@ -47,8 +47,14 @@ private:
     AliMUONPadStatusMapMaker* fStatusMapMaker; //!< to build status map
     AliMUONVStore* fPedestals; //!< pedestal values
     AliMUONVStore* fGains; //!< gain values
+    Int_t fApplyGains; //!< whether we should apply gains or not, capa or not...
+    AliMUONVStore* fCapacitances; //!< capa values
     
-  ClassDef(AliMUONDigitCalibrator,4) // Calibrate raw digit
+    static const Int_t fgkNoGain; //!< do not apply gain calib at all
+    static const Int_t fgkGainConstantCapa; //!< apply gain (from OCDB) with constant capa
+    static const Int_t fgkGain; //!< apply gain and capa (from OCDB)
+    
+  ClassDef(AliMUONDigitCalibrator,5) // Calibrate raw digit
 };
 
 #endif

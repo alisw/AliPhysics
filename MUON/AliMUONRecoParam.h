@@ -21,6 +21,11 @@ class AliMUONRecoParam : public AliDetectorRecoParam
   static AliMUONRecoParam *GetLowFluxParam();
   static AliMUONRecoParam *GetHighFluxParam();
   
+  /// set the calibration mode
+  void SetCalibrationMode(Option_t* mode) { fCalibrationMode = mode; }
+  /// get the calibration mode
+  Option_t* GetCalibrationMode() const { return fCalibrationMode.Data(); }
+    
   /// set the clustering (pre-clustering) mode
   void      SetClusteringMode(Option_t* mode) {fClusteringMode = mode;}
   /// get the clustering (pre-clustering) mode
@@ -167,12 +172,15 @@ class AliMUONRecoParam : public AliDetectorRecoParam
   
   Bool_t     fSaveFullClusterInESD; ///< kTRUE to save all cluster info (including pads) in ESD
   
+  /// calibration mode:  GAIN, NOGAIN
+  TString fCalibrationMode; ///<\brief calibration mode
+  
   // functions
   void SetLowFluxParam();
   void SetHighFluxParam();
   
   
-  ClassDef(AliMUONRecoParam,1) // MUON reco parameters
+  ClassDef(AliMUONRecoParam,2) // MUON reco parameters
 };
 
 #endif

@@ -449,7 +449,9 @@ AliMUONReconstructor::CreateCalibrator() const
     AliWarning("NOSTATUSMAP is obsolete");
   }
 
-  fDigitCalibrator = new AliMUONDigitCalibrator(*fCalibrationData);
+  TString calibMode = GetRecoParam()->GetCalibrationMode();
+
+  fDigitCalibrator = new AliMUONDigitCalibrator(*fCalibrationData,calibMode.Data());
 }
 
 //_____________________________________________________________________________
