@@ -34,6 +34,16 @@ class AliRawReaderHLT : public AliRawReader {
   virtual ~AliRawReaderHLT();
 
   // interface methods of AliRawReader
+  void     Select(Int_t detectorID, 
+		  Int_t minDDLID = -1, Int_t maxDDLID = -1);
+//   void     Select(const char *detectorName, 
+// 		  Int_t minDDLID = -1, Int_t maxDDLID = -1);
+  void     SelectEquipment(Int_t equipmentType, 
+			   Int_t minEquipmentId = -1, 
+			   Int_t maxEquipmentId = -1);
+  void     SkipInvalid(Bool_t skip = kTRUE);
+  void     SelectEvents(Int_t type);
+
   UInt_t   GetType() const;
   UInt_t   GetRunNumber() const;
   const UInt_t* GetEventId() const;

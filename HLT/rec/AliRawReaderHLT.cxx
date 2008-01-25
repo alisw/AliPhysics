@@ -29,6 +29,7 @@
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 #include "AliRawReaderHLT.h"
+#include "AliLog.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliRawReaderHLT)
@@ -145,44 +146,57 @@ Int_t    AliRawReaderHLT::GetEquipmentType() const
 Int_t    AliRawReaderHLT::GetEquipmentId() const
 {
   // see header file for class documentation
-  return fpParentReader->GetEquipmentId();
+  Int_t id=fpParentReader->GetEquipmentId();
+  //AliInfo(Form("id=%d",id));
+  return id;
 }
 
 Bool_t   AliRawReaderHLT::ReadHeader()
 {
   // see header file for class documentation
-  return fpParentReader->ReadHeader();
+  Bool_t result=fpParentReader->ReadHeader();
+  fHeader=const_cast<AliRawDataHeader*>(GetDataHeader());
+  return result;
 }
 
 Bool_t   AliRawReaderHLT::ReadNextData(UChar_t*& data)
 {
   // see header file for class documentation
-  return fpParentReader->ReadNextData(data);
+  Bool_t result=fpParentReader->ReadNextData(data);
+  fHeader=const_cast<AliRawDataHeader*>(GetDataHeader());
+  return result;
 }
 
 Bool_t   AliRawReaderHLT::ReadNextInt(UInt_t& data)
 {
   // see header file for class documentation
-  return fpParentReader->ReadNextInt(data);
+  Bool_t result=fpParentReader->ReadNextInt(data);
+  fHeader=const_cast<AliRawDataHeader*>(GetDataHeader());
+  return result;
 }
 
 Bool_t   AliRawReaderHLT::ReadNextShort(UShort_t& data)
 {
   // see header file for class documentation
-  return fpParentReader->ReadNextShort(data);
-
+  Bool_t result=fpParentReader->ReadNextShort(data);
+  fHeader=const_cast<AliRawDataHeader*>(GetDataHeader());
+  return result;
 }
 
 Bool_t   AliRawReaderHLT::ReadNextChar(UChar_t& data)
 {
   // see header file for class documentation
-  return fpParentReader->ReadNextChar(data);
+  Bool_t result=fpParentReader->ReadNextChar(data);
+  fHeader=const_cast<AliRawDataHeader*>(GetDataHeader());
+  return result;
 }
 
 Bool_t   AliRawReaderHLT::ReadNext(UChar_t* data, Int_t size)
 {
   // see header file for class documentation
-  return fpParentReader->ReadNext(data, size);
+  Bool_t result=fpParentReader->ReadNext(data, size);
+  fHeader=const_cast<AliRawDataHeader*>(GetDataHeader());
+  return result;
 }
 
 Bool_t   AliRawReaderHLT::Reset()
@@ -194,17 +208,59 @@ Bool_t   AliRawReaderHLT::Reset()
 Bool_t   AliRawReaderHLT::NextEvent()
 {
   // see header file for class documentation
-  fpParentReader-NextEvent();
+  //AliInfo(Form("SelectEquipment: type=%d min=%d max=%d", fSelectEquipmentType, fSelectMinEquipmentId, fSelectMaxEquipmentId));
+  //fpParentReader->SelectEquipment(fSelectEquipmentType, fSelectMinEquipmentId, fSelectMaxEquipmentId);
+  Bool_t result=fpParentReader->NextEvent();
+  if (result) fEventNumber++;
+  AliInfo(Form("event %d", fEventNumber));
+  return result;
 }
 
 Bool_t   AliRawReaderHLT::RewindEvents()
 {
   // see header file for class documentation
+  fEventNumber=-1;
   return fpParentReader->RewindEvents();
+}
+
+void AliRawReaderHLT::Select(Int_t detectorID, Int_t minDDLID, Int_t maxDDLID)
+{
+  AliRawReader::Select(detectorID, minDDLID, maxDDLID);
+  fpParentReader->Select(detectorID, minDDLID, maxDDLID);
+}
+
+// most likely we do not need this method since the base class directly forwards
+// to this method
+// void AliRawReaderHLT::Select(const char *detectorName, Int_t minDDLID, Int_t maxDDLID)
+// {
+//   AliInfo(Form("detectorName=%s, minDDLID=%d, maxDDLID=%d", detectorName, minDDLID, maxDDLID));
+//   AliRawReader::Select(detectorName, minDDLID, maxDDLID);
+//   fpParentReader->Select(detectorName, minDDLID, maxDDLID);
+// }
+
+void AliRawReaderHLT::SelectEquipment(Int_t equipmentType, Int_t minEquipmentId, Int_t maxEquipmentId)
+{
+  AliInfo(Form("equipmentType=%d, minEquipmentId=%d, maxEquipmentId=%d", equipmentType, minEquipmentId, maxEquipmentId));
+  AliRawReader::Select(equipmentType, minEquipmentId, maxEquipmentId);
+  fpParentReader->Select(equipmentType, minEquipmentId, maxEquipmentId);
+}
+
+void AliRawReaderHLT::SkipInvalid(Bool_t skip)
+{
+  AliRawReader::SkipInvalid(skip);
+  fpParentReader->SkipInvalid(skip);
+}
+
+void AliRawReaderHLT::SelectEvents(Int_t type)
+{
+  AliInfo(Form("type=%d", type));
+  AliRawReader::SelectEvents(type);
+  fpParentReader->SelectEvents(type);
 }
 
 AliRawReader* AliRawReaderHLTCreateInstance(AliRawReader* pParentReader, const char* options)
 {
   // see header file for class documentation
+  if (!pParentReader) return NULL;
   return new AliRawReaderHLT(pParentReader, options);
 }
