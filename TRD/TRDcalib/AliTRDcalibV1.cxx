@@ -1,4 +1,4 @@
-#define AliTRDcalib_cxx
+#define AliTRDcalibV1_cxx
 // The class definition in Calib.h has been generated automatically
 // by the ROOT utility TTree::MakeSelector(). This class is derived
 // from the ROOT class TSelector. For more information on the TSelector
@@ -18,12 +18,12 @@
 //
 // To use this file, try the following session on your Tree T:
 //
-// Root > T->Process("AliTRDcalib.cxx")
-// Root > T->Process("AliTRDcalib.cxx","some options")
-// Root > T->Process("AliTRDcalib.cxx+")
+// Root > T->Process("AliTRDcalibV1.cxx")
+// Root > T->Process("AliTRDcalibV1.cxx","some options")
+// Root > T->Process("AliTRDcalibV1.cxx+")
 //
 
-#include "AliTRDcalib.h"
+#include "AliTRDcalibV1.h"
 #include <TTree.h>
 #include <TObject.h>
 #include <TH2.h>
@@ -46,7 +46,7 @@
 #include <AliTRDCalibraVdriftLinearFit.h>
 
 
-AliTRDcalib::AliTRDcalib(TTree *) : 
+AliTRDcalibV1::AliTRDcalibV1(TTree *) : 
    TSelector(),
    fESD(0),
    fev(0),
@@ -60,7 +60,7 @@ AliTRDcalib::AliTRDcalib(TTree *) :
    //G__SetCatchException(0);     
  }  
 //_____________________________________________________________________
-void AliTRDcalib::Begin(TTree * /*tree*/)
+void AliTRDcalibV1::Begin(TTree * /*tree*/)
 {
    // The Begin() function is called at the start of the query.
    // When running with PROOF Begin() is only called on the client.
@@ -70,7 +70,7 @@ void AliTRDcalib::Begin(TTree * /*tree*/)
   
 }
 //______________________________________________________________________
-void AliTRDcalib::SlaveBegin(TTree * tree)
+void AliTRDcalibV1::SlaveBegin(TTree * tree)
 {
    // The SlaveBegin() function is called after the Begin() function.
    // When running with PROOF SlaveBegin() is called on each slave server.
@@ -110,7 +110,7 @@ void AliTRDcalib::SlaveBegin(TTree * tree)
 
 }
 //__________________________________________________________________________
-void   AliTRDcalib::CleanESD(){
+void   AliTRDcalibV1::CleanESD(){
   //
   //printf("CleanESD\n");
   if (fev!=0){
@@ -123,7 +123,7 @@ void   AliTRDcalib::CleanESD(){
   }
 }
 //_________________________________________________________________________________
-Bool_t AliTRDcalib::Process(Long64_t entry)
+Bool_t AliTRDcalibV1::Process(Long64_t entry)
 {
    // The Process() function is called for each entry in the tree (or possibly
    // keyed object in the case of PROOF) to be processed. The entry argument
@@ -143,19 +143,24 @@ Bool_t AliTRDcalib::Process(Long64_t entry)
    //
    // The return value is currently not used.
   //printf("process\n");
-
-
-  ////////////////////////////////
-  // Get the stuff
-  //////////////////////////////
-  Int_t status = ReadEvent(entry);
-  if (status<0) return status; 
-  Int_t ntr = fev->GetNumberOfTracks();
+ 
+  if (!fChain) return kFALSE;  
+  //printf("process1\n");
+  Int_t nBytes;
   Int_t nTRDcls = 0;
-
-  //////////////////////////////
-  // Loop over AliESDtrack
-  //////////////////////////////
+  nBytes = fChain->GetTree()->GetEntry(entry);
+  //printf("There are %d bytes for these event\n",nBytes);
+  if (!fev || (nBytes == 0)) { 
+    return kFALSE;
+  }
+  if(fev->GetAliESDOld()) fev->CopyFromOldESD();
+  //printf("process2\n");
+  Int_t ntr = fev->GetNumberOfTracks();
+  //printf("Tracks new %d\n",ntr);
+  
+  if (!fevf || (fevf->GetNumberOfTracks()!=ntr)) {
+    return kFALSE;
+  }
   
   if(ntr>0){
     
@@ -169,16 +174,17 @@ Bool_t AliTRDcalib::Process(Long64_t entry)
       fesdTrack = fev->GetTrack(itrk);
       if(!(nTRDcls = fesdTrack->GetTRDncls())) continue;
       if(!(fesdTrack->GetFriendTrack())) continue;
-      ffriendTrack = new AliESDfriendTrack(*(fesdTrack->GetFriendTrack()));
-                 
+      //ffriendTrack = new AliESDfriendTrack(*(fesdTrack->GetFriendTrack()));
+      ffriendTrack = fevf->GetTrack(itrk);        
+         
       Int_t icalib=0;
       while((fo = (TObject *)(ffriendTrack->GetCalibObject(icalib++)))){
 	//printf("Name of calibObject %s\n",fo->IsA()->GetName());
-	if(strcmp(fo->IsA()->GetName(), "AliTRDtrack") != 0) continue;
+	if(strcmp(fo->IsA()->GetName(), "AliTRDtrackV1") != 0) continue;
 	//printf("\tfound %s @ 0x%x; calib object %d\n", fo->IsA()->GetName(), fo, icalib-1);
-	ft = (AliTRDtrack *)fo;
+	ft = (AliTRDtrackV1 *)fo;
 	
-	fcalib->UpdateHistograms(ft);
+	fcalib->UpdateHistogramsV1(ft);
       }
     }
   }
@@ -187,7 +193,7 @@ Bool_t AliTRDcalib::Process(Long64_t entry)
   return kTRUE;
 }
 //______________________________________________________________________________________________
-void AliTRDcalib::SlaveTerminate()
+void AliTRDcalibV1::SlaveTerminate()
 {
    // The SlaveTerminate() function is called after all entries or objects
    // have been processed. When running with PROOF SlaveTerminate() is called
@@ -221,7 +227,7 @@ void AliTRDcalib::SlaveTerminate()
  
 }
 //____________________________________________________________________________________
-void AliTRDcalib::Terminate()
+void AliTRDcalibV1::Terminate()
 {
    // The Terminate() function is the last function to be called during
    // a query. It always runs on the client, it can be used to present
@@ -312,16 +318,16 @@ void AliTRDcalib::Terminate()
 
 }
 //___________________________________________________________________________________________
-void AliTRDcalib::Init(TTree *tree)
+void AliTRDcalibV1::Init(TTree *tree)
 {
-  // The Init() function is called when the selector needs to initialize
-  // a new tree or chain. Typically here the branch addresses and branch
-  // pointers of the tree will be set.
-  // It is normaly not necessary to make changes to the generated
-  // code, but the routine can be extended by the user if needed.
-  // Init() will be called many times when running on PROOF
-  // (once per file to be processed).
-  
+   // The Init() function is called when the selector needs to initialize
+   // a new tree or chain. Typically here the branch addresses and branch
+   // pointers of the tree will be set.
+   // It is normaly not necessary to make changes to the generated
+   // code, but the routine can be extended by the user if needed.
+   // Init() will be called many times when running on PROOF
+   // (once per file to be processed).
+
   // Set branch addresses and branch pointers
   if (!tree) return;
   fChain = tree;
@@ -359,7 +365,7 @@ void AliTRDcalib::Init(TTree *tree)
 
 }
 //___________________________________________________________________________________________
-Bool_t AliTRDcalib::Notify()
+Bool_t AliTRDcalibV1::Notify()
 {
    // The Notify() function is called when a new file is opened. This
    // can be either for a new TTree in a TChain or when when a new TTree
@@ -373,7 +379,7 @@ Bool_t AliTRDcalib::Notify()
   return kTRUE;
 }
 //__________________________________________________________________________________
-Int_t   AliTRDcalib::ReadEvent(Long64_t entry){
+Int_t AliTRDcalibV1::ReadEvent(Long64_t entry){
   //
   //
   //

@@ -1,4 +1,5 @@
-SRCS = AliTRDcalib.cxx
+SRCS= AliTRDcalib.cxx \
+      AliTRDcalibV1.cxx
        
 
 HDRS:= $(SRCS:.cxx=.h) 

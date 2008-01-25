@@ -5,8 +5,8 @@
 // found on file: AliESDs.root
 //////////////////////////////////////////////////////////
 
-#ifndef AliTRDcalib_h
-#define AliTRDcalib_h
+#ifndef AliTRDcalibV1_h
+#define AliTRDcalibV1_h
 
 #include <TROOT.h>
 #include <TH2I.h>
@@ -26,18 +26,19 @@ class AliESDtrack;
 class AliESDfriendTrack;
 
 class AliTRDCalibraFillHisto;
-class AliTRDtrack;
+class AliTRDtrackV1;
 
-class AliTRDcalib : public TSelector {
+
+class AliTRDcalibV1 : public TSelector {
 public :
   TTree          *fChain;   //!pointer to the analyzed TTree or TChain
 
   //variables
-  AliESD      *fESD;         
+  AliESD      *fESD;
   AliESDEvent *fev;
   AliESDfriend *fevf;
   TObject *fo;
-  AliTRDtrack *ft;
+  AliTRDtrackV1 *ft;
   const AliESDtrack *fesdTrack;
   AliESDfriendTrack *ffriendTrack;
 
@@ -55,8 +56,8 @@ public :
   // For the case no proof
   Int_t    fFileNo;
 
-  AliTRDcalib(TTree *tree=0);
-  virtual ~AliTRDcalib() { }
+  AliTRDcalibV1(TTree *tree=0);
+  virtual ~AliTRDcalibV1() { }
   virtual Int_t   Version() const { return 2; }
   virtual void    Begin(TTree *tree);
   virtual void    SlaveBegin(TTree *tree);
@@ -73,7 +74,8 @@ public :
   void            CleanESD();
   Int_t           ReadEvent(Long64_t entry);
 
-   ClassDef(AliTRDcalib,0);
+
+   ClassDef(AliTRDcalibV1,0);
 };
 
 #endif

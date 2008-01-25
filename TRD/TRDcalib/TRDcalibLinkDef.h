@@ -11,6 +11,7 @@
 
 
 #pragma link C++ class  AliTRDcalib+;
+#pragma link C++ class  AliTRDcalibV1+;
 
 #endif
 
