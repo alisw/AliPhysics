@@ -103,6 +103,7 @@ public:
   Double_t  GetSigma2DiamondX() const {return  fESDRun->GetSigma2DiamondX();}
   Double_t  GetSigma2DiamondY() const {return  fESDRun->GetSigma2DiamondY();}
   void      GetDiamondCovXY(Float_t cov[3]) const {fESDRun->GetDiamondCovXY(cov);}   
+  void     SetTriggerClass(const char*name, Int_t index) {fESDRun->SetTriggerClass(name,index);}
   
 
   // HEADER

@@ -168,6 +168,8 @@
 #include "AliAlignObj.h"
 
 #include "AliCentralTrigger.h"
+#include "AliTriggerConfiguration.h"
+#include "AliTriggerClass.h"
 #include "AliCTPRawStream.h"
 
 #include "AliAODEvent.h"
@@ -1646,6 +1648,8 @@ Bool_t AliReconstruction::FillTriggerESD(AliESDEvent*& esd)
   
   AliInfo("Filling trigger information into the ESD");
 
+  AliCentralTrigger *aCTP = NULL;
+
   if (fRawReader) {
     AliCTPRawStream input(fRawReader);
     if (!input.Next()) {
@@ -1654,6 +1658,13 @@ Bool_t AliReconstruction::FillTriggerESD(AliESDEvent*& esd)
     }
     esd->SetTriggerMask(input.GetClassMask());
     esd->SetTriggerCluster(input.GetClusterMask());
+
+    aCTP = new AliCentralTrigger();
+    TString configstr("");
+    if (!aCTP->LoadConfiguration(configstr)) { // Load CTP config from OCDB
+      AliError("No trigger configuration found in OCDB! The trigger classes information will no be stored in ESD!");
+      return kFALSE;
+    }
   }
   else {
     AliRunLoader *runloader = AliRunLoader::GetRunLoader();
@@ -1672,6 +1683,21 @@ Bool_t AliReconstruction::FillTriggerESD(AliESDEvent*& esd)
       AliError("No run loader is available! The trigger information is not stored in the ESD !");
       return kFALSE;
     }
+  }
+
+  // Now fill the trigger class names into AliESDRun object
+  AliTriggerConfiguration *config = aCTP->GetConfiguration();
+  if (!config) {
+    AliError("No trigger configuration has been found! The trigger classes information will no be stored in ESD!");
+    return kFALSE;
+  }
+
+  const TObjArray& classesArray = config->GetClasses();
+  Int_t nclasses = classesArray.GetEntriesFast();
+  for( Int_t j=0; j<nclasses; j++ ) {
+    AliTriggerClass* trclass = (AliTriggerClass*)classesArray.At( j );
+    Int_t trindex = (Int_t)TMath::Log2(trclass->GetMask());
+    esd->SetTriggerClass(trclass->GetName(),trindex);
   }
 
   return kTRUE;
