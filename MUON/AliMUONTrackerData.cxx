@@ -779,10 +779,11 @@ AliMUONTrackerData::Value(const AliMUONVCalibParam& param, Int_t i, Int_t dim) c
   }
   else
   {
-    Double_t sumw = param.ValueAsDouble(i,dim-1);
-    Double_t mean = sumw/n;
+    Double_t N = occ;
     
-    return  TMath::Sqrt(TMath::Abs(value/occ - mean*mean));
+    Double_t mean = param.ValueAsDouble(i,dim-1)/N;
+    
+    return  TMath::Sqrt(TMath::Abs((value-N*mean*mean)/(N-1.0)));
   }
   
   AliError("Why am I here ?");
