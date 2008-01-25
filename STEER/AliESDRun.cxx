@@ -12,9 +12,11 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+#include <TNamed.h>
 
 #include "AliESDRun.h"
 #include "AliESDVertex.h"
+#include "AliLog.h"
 
 //-------------------------------------------------------------------------
 //                     Implementation Class AliESDRun
@@ -31,10 +33,12 @@ AliESDRun::AliESDRun() :
   fMagneticField(0),
   fPeriodNumber(0),
   fRunNumber(0),
-  fRecoVersion(0) 
+  fRecoVersion(0),
+  fTriggerClasses(kNTriggerClasses)
 {
   for (Int_t i=0; i<2; i++) fDiamondXY[i]=0.;
   for (Int_t i=0; i<3; i++) fDiamondCovXY[i]=0.;
+  fTriggerClasses.SetOwner(kTRUE);
 }
 
 //______________________________________________________________________________
@@ -43,11 +47,17 @@ AliESDRun::AliESDRun(const AliESDRun &esd) :
   fMagneticField(esd.fMagneticField),
   fPeriodNumber(esd.fPeriodNumber),
   fRunNumber(esd.fRunNumber),
-  fRecoVersion(esd.fRecoVersion)
+  fRecoVersion(esd.fRecoVersion),
+  fTriggerClasses(TObjArray(kNTriggerClasses))
 { 
   // Copy constructor
   for (Int_t i=0; i<2; i++) fDiamondXY[i]=esd.fDiamondXY[i];
   for (Int_t i=0; i<3; i++) fDiamondCovXY[i]=esd.fDiamondCovXY[i];
+
+  for(Int_t i = 0; i < kNTriggerClasses; i++) {
+    TNamed *str = (TNamed *)((esd.fTriggerClasses).At(i));
+    if (str) fTriggerClasses.AddAt(new TNamed(*str),i);
+  }
 }
 
 //______________________________________________________________________________
@@ -62,6 +72,11 @@ AliESDRun& AliESDRun::operator=(const AliESDRun &esd)
     fMagneticField=esd.fMagneticField;
     for (Int_t i=0; i<2; i++) fDiamondXY[i]=esd.fDiamondXY[i];
     for (Int_t i=0; i<3; i++) fDiamondCovXY[i]=esd.fDiamondCovXY[i];
+    fTriggerClasses.Clear();
+    for(Int_t i = 0; i < kNTriggerClasses; i++) {
+      TNamed *str = (TNamed *)((esd.fTriggerClasses).At(i));
+      if (str) fTriggerClasses.AddAt(new TNamed(*str),i);
+    }
   } 
   return *this;
 }
@@ -87,6 +102,13 @@ void AliESDRun::Print(const Option_t *) const
   printf("Magnetic field = %f T\n",
 	 GetMagneticField());
   printf("Event from reconstruction version %d \n",fRecoVersion);
+  
+  printf("List of active trigger classes: ");
+  for(Int_t i = 0; i < kNTriggerClasses; i++) {
+    TNamed *str = (TNamed *)((fTriggerClasses).At(i));
+    printf("%s ",str->GetName());
+  }
+  printf("\n");
 }
 
 void AliESDRun::Reset() 
@@ -98,5 +120,90 @@ void AliESDRun::Reset()
   fMagneticField = 0;
   for (Int_t i=0; i<2; i++) fDiamondXY[i]=0.;
   for (Int_t i=0; i<3; i++) fDiamondCovXY[i]=0.;
+  fTriggerClasses.Clear();
 }
 
+//______________________________________________________________________________
+void AliESDRun::SetTriggerClass(const char*name, Int_t index)
+{
+  // Fill the trigger class name
+  // into the corresponding array
+  if (index >= kNTriggerClasses || index < 0) {
+    AliError(Form("Index (%d) is outside the allowed range (0,49)!",index));
+    return;
+  }
+
+  fTriggerClasses.AddAt(new TNamed(name,NULL),index);
+}
+
+//______________________________________________________________________________
+const char* AliESDRun::GetTriggerClass(Int_t index) const
+{
+  // Get the trigger class name at
+  // specified position in the trigger mask
+  TNamed *trclass = (TNamed *)fTriggerClasses.At(index);
+  if (trclass)
+    return trclass->GetName();
+  else
+    return "";
+}
+
+//______________________________________________________________________________
+TString AliESDRun::GetActiveTriggerClasses() const
+{
+  // Construct and return
+  // the list of trigger classes
+  // which are present in the run
+  TString trclasses;
+  for(Int_t i = 0; i < kNTriggerClasses; i++) {
+    TNamed *str = (TNamed *)((fTriggerClasses).At(i));
+    if (str) {
+      trclasses += " ";
+      trclasses += str->GetName();
+      trclasses += " ";
+    }
+  }
+
+  return trclasses;
+}
+
+//______________________________________________________________________________
+TString AliESDRun::GetFiredTriggerClasses(ULong64_t mask) const
+{
+  // Constructs and returns the
+  // list of trigger classes that
+  // have been fired. Uses the trigger
+  // class mask as an argument.
+  TString trclasses;
+  for(Int_t i = 0; i < kNTriggerClasses; i++) {
+    if (mask && (1 << i)) {
+      TNamed *str = (TNamed *)((fTriggerClasses).At(i));
+      if (str) {
+	trclasses += " ";
+	trclasses += str->GetName();
+      trclasses += " ";
+      }
+    }
+  }
+
+  return trclasses;
+}
+
+//______________________________________________________________________________
+Bool_t AliESDRun::IsTriggerClassFired(ULong64_t mask, const char *name) const
+{
+  // Checks if the trigger class
+  // identified by 'name' has been
+  // fired. Uses the trigger class mask.
+
+  TNamed *trclass = (TNamed *)fTriggerClasses.FindObject(name);
+  if (!trclass) return kFALSE;
+
+  Int_t iclass = fTriggerClasses.IndexOf(trclass);
+  if (iclass < 0) return kFALSE;
+
+  if (mask && (1 << iclass))
+    return kTRUE;
+  else
+    return kFALSE;
+}

@@ -12,6 +12,8 @@
 //-------------------------------------------------------------------------
 
 #include <TObject.h>
+#include <TObjArray.h>
+#include <TString.h>
 
 class AliESDVertex;
 
@@ -32,7 +34,7 @@ public:
   void    Reset();
   void    Print(const Option_t *opt=0) const;
   void SetDiamond(const AliESDVertex *vertex);
-
+  void    SetTriggerClass(const char*name, Int_t index);
 
   Double_t GetDiamondX() const {return fDiamondXY[0];}
   Double_t GetDiamondY() const {return fDiamondXY[1];}
@@ -41,6 +43,13 @@ public:
   void GetDiamondCovXY(Float_t cov[3]) const {
     for(Int_t i=0;i<3;i++) cov[i]=fDiamondCovXY[i]; return;
   }
+  const char* GetTriggerClass(Int_t index) const;
+  TString     GetActiveTriggerClasses() const;
+  TString     GetFiredTriggerClasses(ULong64_t mask) const;
+  Bool_t      IsTriggerClassFired(ULong64_t mask, const char *name) const;
+
+  enum {kNTriggerClasses = 50};
+
 private:
   Double32_t      fMagneticField;   // Solenoid Magnetic Field in kG : for compatibility with AliMagF
   Double32_t      fDiamondXY[2];    // Interaction diamond (x,y) in RUN
@@ -48,9 +57,10 @@ private:
   UInt_t          fPeriodNumber;    // PeriodNumber
   Int_t           fRunNumber;       // Run Number
   Int_t           fRecoVersion;     // Version of reconstruction 
+  TObjArray       fTriggerClasses;  // array of TNamed containing the names of the active trigger classes
 
 
-  ClassDef(AliESDRun,2)
+  ClassDef(AliESDRun,3)
 };
 
 #endif 
