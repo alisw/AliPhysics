@@ -21,6 +21,9 @@ public:
     AliQADataMakerRec(qadm) {;}
 
   void InitRecPoints();
+  void InitESDs();
+
+  void MakeESDs(AliESDEvent *event);
 
   void StartOfDetectorCycle() {;}
 

@@ -779,8 +779,10 @@ Bool_t AliReconstruction::Run(const char* input, Bool_t IsOnline)
         TObjArray *arr=
           qadm->Init(AliQA::kRECPOINTS, AliCDBManager::Instance()->GetRun());
 	AliTracker::SetResidualsArray(arr);
+        qadm->Init(AliQA::kESDS, AliCDBManager::Instance()->GetRun());
         if (!fInLoopQA) {
            qadm->StartOfCycle(AliQA::kRECPOINTS);
+           qadm->StartOfCycle(AliQA::kESDS);
         }
      }
   }
@@ -823,6 +825,7 @@ Bool_t AliReconstruction::Run(const char* input, Bool_t IsOnline)
        if (fRunGlobalQA) {
           AliQADataMakerRec *qadm = GetQADataMaker(fgkNDetectors);
           qadm->StartOfCycle(AliQA::kRECPOINTS);
+          qadm->StartOfCycle(AliQA::kESDS);
        }
     }
 
@@ -997,6 +1000,7 @@ Bool_t AliReconstruction::Run(const char* input, Bool_t IsOnline)
            AliQADataMakerRec *qadm = GetQADataMaker(fgkNDetectors);
            if (qadm) {
 	      qadm->EndOfCycle(AliQA::kRECPOINTS);
+	      qadm->EndOfCycle(AliQA::kESDS);
 	      qadm->Finish();
  	   }
         }
@@ -1089,6 +1093,7 @@ Bool_t AliReconstruction::Run(const char* input, Bool_t IsOnline)
         AliQADataMakerRec *qadm = GetQADataMaker(fgkNDetectors);
         if (qadm) {
 	   qadm->EndOfCycle(AliQA::kRECPOINTS);
+	   qadm->EndOfCycle(AliQA::kESDS);
 	   qadm->Finish();
  	}
      }

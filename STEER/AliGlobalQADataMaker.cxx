@@ -9,12 +9,13 @@
 
 #include "AliGlobalQADataMaker.h"
 #include "AliGeomManager.h"
+#include "AliESDEvent.h"
 
 ClassImp(AliGlobalQADataMaker)
  
 void AliGlobalQADataMaker::InitRecPoints() {
   //------------------------------------------------------
-  // This function fills the histograms of *track*residuals*
+  // This function books the histograms of *track*residuals*
   // as a part of global QA
   //------------------------------------------------------
   Char_t *name[]={
@@ -53,5 +54,48 @@ void AliGlobalQADataMaker::InitRecPoints() {
     Add2RecPointsList(h,i);    
     h=new TH1F(name[i+1],name[i+1],100,-5.,5.);
     Add2RecPointsList(h,i+1);    
+  }
+}
+
+void AliGlobalQADataMaker::InitESDs() {
+  //------------------------------------------------------
+  // This function books the ESD QA histograms
+  // as a part of global QA
+  //------------------------------------------------------
+  Char_t *name[]={
+    "Fraction of the assigned clusters in ITS",
+    "Fraction of the assigned clusters in TPC",
+    "Fraction of the assigned clusters in TRD"
+  };
+  Add2ESDsList(new TH1F(name[0],name[0],100,0.,2.),0);
+  Add2ESDsList(new TH1F(name[1],name[1],100,0.,2.),1);
+  Add2ESDsList(new TH1F(name[2],name[2],100,0.,2.),2);
+}
+
+void AliGlobalQADataMaker::MakeESDs(AliESDEvent * esd) {
+  //-----------------------------------------------------------
+  // This function fills the ESD QA histograms
+  // as a part of global QA
+  //-----------------------------------------------------------
+  Int_t ntrk=esd->GetNumberOfTracks() ; 
+  for (Int_t i=0; i<ntrk; i++) {
+    AliESDtrack *track=esd->GetTrack(i);
+
+    if (track->IsOn(AliESDtrack::kITSrefit)) {
+      Int_t n=track->GetITSclusters(0);
+      GetESDsData(0)->Fill(Float_t(n)/6.); //6 is the number of ITS layers
+    }
+
+    if (track->IsOn(AliESDtrack::kTPCrefit)) {
+      Int_t n =track->GetTPCNcls();
+      Int_t nf=track->GetTPCNclsF();      // number of crossed TPC pad rows
+      GetESDsData(1)->Fill(Float_t(n)/nf);
+    }
+
+    if (track->IsOn(AliESDtrack::kTRDrefit)) {
+      Int_t n=track->GetTRDclusters(0);
+      GetESDsData(2)->Fill(Float_t(n)/120.);//120 is the number of TRD time bins
+    }
+
   }
 }
