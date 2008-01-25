@@ -94,7 +94,10 @@ class AliTrackPointArray : public TObject {
 
   Bool_t    HasVolumeID(UShort_t volid) const;
 
+  void Sort(Bool_t down=kTRUE);
+
  private:
+  Bool_t fSorted;        // Sorted flag
 
   Int_t     fNPoints;    // Number of space points
   Float_t   *fX;         //[fNPoints] Array with space point X coordinates
@@ -104,7 +107,7 @@ class AliTrackPointArray : public TObject {
   Float_t   *fCov;       //[fSize] Array with space point coordinates cov matrix
   UShort_t  *fVolumeID;  //[fNPoints] Array of space point volume IDs
 
-  ClassDef(AliTrackPointArray,1)
+  ClassDef(AliTrackPointArray,2)
 };
 
 #endif

@@ -33,6 +33,7 @@ ClassImp(AliTrackPointArray)
 //______________________________________________________________________________
 AliTrackPointArray::AliTrackPointArray() :
   TObject(),
+  fSorted(kFALSE),
   fNPoints(0),
   fX(0),
   fY(0),
@@ -46,6 +47,7 @@ AliTrackPointArray::AliTrackPointArray() :
 //______________________________________________________________________________
 AliTrackPointArray::AliTrackPointArray(Int_t npoints):
   TObject(),
+  fSorted(kFALSE),
   fNPoints(npoints),
   fX(new Float_t[npoints]),
   fY(new Float_t[npoints]),
@@ -61,6 +63,7 @@ AliTrackPointArray::AliTrackPointArray(Int_t npoints):
 //______________________________________________________________________________
 AliTrackPointArray::AliTrackPointArray(const AliTrackPointArray &array):
   TObject(array),
+  fSorted(array.fSorted),
   fNPoints(array.fNPoints),
   fX(new Float_t[fNPoints]),
   fY(new Float_t[fNPoints]),
@@ -86,6 +89,7 @@ AliTrackPointArray &AliTrackPointArray::operator =(const AliTrackPointArray& arr
   if(this==&array) return *this;
   ((TObject *)this)->operator=(array);
 
+  fSorted = array.fSorted;
   fNPoints = array.fNPoints;
   fSize = array.fSize;
   delete [] fX;
@@ -157,6 +161,29 @@ Bool_t AliTrackPointArray::HasVolumeID(UShort_t volid) const
     if (fVolumeID[ipoint] == volid) check = kTRUE;
 
   return check;
+}
+
+//______________________________________________________________________________
+void AliTrackPointArray::Sort(Bool_t down)
+{
+  // Sort the array by the values of Y-coordinate of the track points.
+  // The order is given by "down".
+  // Optimized more for maintenance rather than for speed.
+ 
+  if (fSorted) return;
+
+  Int_t *index=new Int_t[fNPoints];
+  AliTrackPointArray a(*this);
+  TMath::Sort(fNPoints,a.GetY(),index,down);
+ 
+  AliTrackPoint p;
+  for (Int_t i = 0; i < fNPoints; i++) {
+    a.GetPoint(p,index[i]);
+    AddPoint(i,&p);
+  }
+
+  delete[] index;
+  fSorted=kTRUE;
 }
 
 ClassImp(AliTrackPoint)
@@ -492,3 +519,4 @@ void AliTrackPoint::SetAlignCovMatrix(const TMatrixDSym alignparmtrx){
   SetXYZ(fX,fY,fZ,newcov);
 
 }
+

@@ -56,6 +56,7 @@ Bool_t AliTrackFitterKalman::Begin(Int_t first, Int_t last) {
   // This is the "default" seed.
   //
   if (fSeed) return kTRUE;
+  fPoints->Sort();
   AliTrackPoint fp,lp;
   fPoints->GetPoint(fp,first); fPoints->GetPoint(lp,last);
   return MakeSeed(&fp,&lp);
