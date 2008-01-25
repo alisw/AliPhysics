@@ -6,7 +6,6 @@
 
 #include <TError.h>
 #include <TSysEvtHandler.h>
-#ifdef ALI_DATE
 #include "deroot.h"
 
 int deroot(const char *rootFileName, const char *dateFileName);
@@ -67,11 +66,3 @@ int main(int argc, char **argv) {
 
 }
 
-#else
-int main(int /*argc*/, char** /*argv*/)
-{
-  ::Error("main", "this program was compiled without DATE");
-
-  return 1;
-}
-#endif

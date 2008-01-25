@@ -13,7 +13,6 @@
 #include "AliRawEquipment.h"
 #include "AliRawEquipmentHeader.h"
 #include "AliRawReaderRoot.h"
-#include "event.h"
 
 #include <Riostream.h>
 
