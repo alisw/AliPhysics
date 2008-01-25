@@ -516,3 +516,70 @@ Float_t h=tb;
  h*=(kNSubWing-1);
 return TMath::Nint(h);
 }
+//________________________________________________________
+Bool_t AliITSPlaneEffSDD::GetBlockBoundaries(const UInt_t key, Float_t& xmn,Float_t& xmx,
+                                             Float_t& zmn,Float_t& zmx) const {
+//
+//  This method return the geometrical boundaries of the active volume of a given
+//  basic block, in the detector reference system.
+//  Input: unique key to locate a basic block.
+//
+//  Output: Ymin, Ymax, Zmin, Zmax of a basic block (chip for SPD)
+//  Return: kTRUE if computation was succesfully, kFALSE otherwise
+//
+// the following scheemes will help in following the method implementation
+// E.g. kNSubWing=1
+//                            ^x_loc (cm)
+//     for all: subw=0        |
+//   _________________________|__________________________ 3.5085
+//  |   wing=1   |   wing=1   |   wing=1   |   wing=1   |
+//  |   chip=0   |   chip=1   |   chip=2   |   chip=3   |
+//  |   key=1    |   key=3    |   key=5    |   key=7    |
+//  |____________|____________|____________|____________|_0_____\  local z (cm)
+//  |   wing=0   |   wing=0   |   wing=0   |   wing=0   |       /
+//  |   chip=0   |   chip=1   |   chip=2   |   chip=3   |
+//  |   key=0    |   key=2    |   key=4    |   key=6    |
+//  |____________|____________|____________|____________| -3.5085
+//-3.7632     -1.8816         0          1.1186      3.7632
+//
+// E.g. kNSubWing=2
+//                            ^x_loc (cm)
+//                            |
+//   _________________________|__________________________ 3.5085
+//  |   chip=0   |   chip=1   |   chip=2   |   chip=3   |
+//  |   key=2    |   key=6    |   key=10   |   key=14   | subw=0
+//  |____________|____________|____________|____________|        wing=1
+//  |   chip=0   |   chip=1   |   chip=2   |   chip=3   | subw=1
+//  |   key=3    |   key=7    |   key=11   |   key=15   |
+//  |____________|____________|____________|____________|_0________\  local z (cm)
+//  |   chip=0   |   chip=1   |   chip=2   |   chip=3   |          /
+//  |   key=1    |   key=5    |   key=9    |   key=13   | subw=1
+//  |____________|____________|____________|____________|        wing=0
+//  |   chip=0   |   chip=1   |   chip=2   |   chip=3   | subw=0  
+//  |   key=0    |   key=4    |   key=8    |   key=12   | 
+//  |____________|____________|____________|____________| -3.5085
+//-3.7632     -1.8816         0          1.1186      3.7632
+//
+if(key>=kNModule*kNChip*kNWing*kNSubWing)
+  {AliWarning("GetBlockBoundaries: you asked for a non existing key"); return kFALSE;}
+//
+const Float_t kDxDefault = 35085.; // For Plane Eff. purpouses, default values
+const Float_t kDzDefault = 75264.; // are precise enough !!!
+const Float_t kconv = 1.0E-04;  //converts microns to cm.
+UInt_t chip=GetChipFromKey(key);
+UInt_t wing=GetWingFromKey(key);
+UInt_t subw=GetSubWingFromKey(key);
+zmn=kconv*(kDzDefault/kNChip*chip-0.5*kDzDefault);
+zmx=kconv*(kDzDefault/kNChip*(chip+1)-0.5*kDzDefault);
+if(wing==0) { // count from below
+xmn=kconv*(kDxDefault/kNSubWing*subw-kDxDefault);
+xmx=kconv*(kDxDefault/kNSubWing*(subw+1)-kDxDefault);
+}
+else if(wing==1) { // count from top
+xmx=kconv*(kDxDefault-kDxDefault/kNSubWing*subw);
+xmn=kconv*(kDxDefault-kDxDefault/kNSubWing*(subw+1));
+}
+else {AliError("GetBlockBoundaries: you got wrong n. of wing"); return kFALSE;}
+return kTRUE;
+}
+//________________________________________________________

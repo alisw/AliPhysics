@@ -55,6 +55,8 @@ class AliITSPlaneEffSSD :  public AliITSPlaneEff {
    // here idet runs from 0 to 747 for layer 4 and from 0 to 949 for layer 5
     UInt_t GetKeyFromDetLocCoord(Int_t ilay,Int_t idet, Float_t, Float_t locz) const;
     UInt_t Nblock() const; // return the number of basic blocks
+   // compute the geometrical limit of a basic block (chip) in detector local coordinate system
+    Bool_t GetBlockBoundaries(const UInt_t key,Float_t& xmn,Float_t& xmx,Float_t& zmn,Float_t& zmx) const;
 
  protected:
     virtual void Copy(TObject &obj) const;
@@ -73,6 +75,20 @@ class AliITSPlaneEffSSD :  public AliITSPlaneEff {
 };
 //
 inline UInt_t AliITSPlaneEffSSD::Nblock() const {return kNModule;}
+inline Bool_t AliITSPlaneEffSSD::GetBlockBoundaries(const UInt_t key,Float_t& xmn,Float_t& xmx,
+                                                    Float_t& zmn,Float_t& zmx) const {
+//  This method return the geometrical boundaries of the active volume of a given
+//  basic block, in the detector reference system.
+//
+if(key>=kNModule)
+  {AliWarning("GetBlockBoundaries: you asked for a non existing key"); return kFALSE;}
+const Float_t kDxDefault = 72960.; // For Plane Eff. purpouses, default values 
+const Float_t kDzDefault = 40000.; // are precise enough !!!
+const Float_t kconv = 1.0E-04;  //converts microns to cm.
+xmn=-kconv*kDxDefault/2.; xmx=kconv*kDxDefault/2.;
+zmn=-kconv*kDzDefault/2.; zmx=kconv*kDzDefault/2.;
+return kTRUE;
+}
 //
 #endif
 

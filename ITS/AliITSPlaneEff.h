@@ -72,6 +72,8 @@ class AliITSPlaneEff : public AliPlaneEff {
       {AliError("This method must be implemented in a derived class"); return 999999;};
     virtual UInt_t Nblock() const // return the number of basic blocks
       {AliError("This method must be implemented in a derived class"); return 999999;};
+    virtual Bool_t GetBlockBoundaries(const UInt_t,Float_t&,Float_t&,Float_t&,Float_t&) const
+      {AliError("This method must be implemented in a derived class"); return kFALSE;};
 
  protected:
 

@@ -75,6 +75,8 @@ class AliITSPlaneEffSDD :  public AliITSPlaneEff {
     // here idet runs from 0 to 83 for layer 2 and from 0 to 175 for layer 3
     UInt_t GetKeyFromDetLocCoord(Int_t ilay,Int_t idet, Float_t locx, Float_t locz) const;
     UInt_t Nblock() const; // return the number of basic blocks
+    // compute the geometrical limit of a basic block in detector local coordinate system
+    Bool_t GetBlockBoundaries(const UInt_t key,Float_t& xmn,Float_t& xmx,Float_t& zmn,Float_t& zmx) const;
 
  protected:
     virtual void Copy(TObject &obj) const;

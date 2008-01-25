@@ -415,3 +415,78 @@ col+=j;
 return col;
 }
 //________________________________________________________
+Bool_t AliITSPlaneEffSPD::GetBlockBoundaries(const UInt_t key, Float_t& xmn,Float_t& xmx,
+                                             Float_t& zmn,Float_t& zmx) const {
+//
+//  This method return the geometrical boundaries of the active volume of a given 
+//  basic block, in the detector reference system.
+//  Input: unique key to locate a basic block.
+//  
+//  Output: Ymin, Ymax, Zmin, Zmax of a basic block (chip for SPD)
+//  Return: kTRUE if computation was succesfully, kFALSE otherwise
+//
+if(key>=kNModule*kNChip)
+  {AliWarning("GetBlockBoundaries: you asked for a non existing key"); return kFALSE;}
+UInt_t chip=GetChipFromKey(key);
+zmn=GetLocZFromCol(chip*kNCol);
+zmx=GetLocZFromCol((chip+1)*kNCol);
+xmn=GetLocXFromRow(0);
+xmx=GetLocXFromRow(kNRow);
+Float_t tmp=zmn;
+if(zmx<zmn) {zmn=zmx; zmx=tmp;}
+tmp=xmn;
+if(xmx<xmn) {xmn=xmx; xmx=tmp;}
+return kTRUE;
+}
+//________________________________________________________
+Float_t AliITSPlaneEffSPD::GetLocXFromRow(const UInt_t row) const {
+// 
+//  This method return the local (i.e. detector reference system) lower x coordinate 
+//  of the row. To get the central value of a given row, you can do 
+//  1/2*[LocXFromRow(row)+LocXFromRow(row+1)].
+//
+//  Input: row number in the range [0,kNRow] 
+//  Output: lower local X coordinate of this row.
+//
+if(row>kNRow)  // not >= ! allow also computation of upper limit of the last row. 
+  {AliError("LocYFromRow: you asked for a non existing row"); return 9999999.;}
+const Float_t kconv = 1.0E-04; // converts microns to cm.
+Float_t bx[256];
+for(Int_t i=000;i<256;i++) bx[i] = 50.0; // in x all are 50 microns.
+//
+Float_t dx=0;
+for(Int_t i=000;i<256;i++) dx+=bx[i];
+dx = -0.5*kconv*dx;
+for(UInt_t j=0;j<row;j++){
+  dx += kconv*bx[j];
+} // end for j
+return dx;
+}
+//________________________________________________________
+Float_t AliITSPlaneEffSPD::GetLocZFromCol(const UInt_t col) const {
+//
+//  This method return the local (i.e. detector reference system) lower Z coordinate
+//  of the column. To get the central value of a given column, you can do
+//  1/2*[LocZFromCol(col)+LocZFromCol(col+1)].
+//
+//  Input: col number in the range [0,kNChip*kNCol]
+//  Output: lower local Y coordinate of this row.
+//
+if(col>kNChip*kNCol) // not >= ! allow also computation of upper limit of the last column
+  {AliError("LocZFromCol: you asked for a non existing column"); return 9999999.;}
+const Float_t kconv = 1.0E-04; // converts microns to cm.
+Float_t bz[160];
+for(Int_t i=000;i<160;i++) bz[i] = 425.0; // most are 425 microns except below
+bz[ 31] = bz[ 32] = 625.0; // first chip boundry
+bz[ 63] = bz[ 64] = 625.0; // first chip boundry
+bz[ 95] = bz[ 96] = 625.0; // first chip boundry
+bz[127] = bz[128] = 625.0; // first chip boundry
+//
+Float_t dz=0;
+for(Int_t i=000;i<160;i++) dz+=bz[i];
+dz = -0.5*kconv*dz;
+for(UInt_t j=0;j<col;j++){
+  dz += kconv*bz[j];
+} // end for j
+return dz;
+}

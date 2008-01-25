@@ -66,6 +66,8 @@ class AliITSPlaneEffSPD :  public AliITSPlaneEff {
    // here idet runs from 0 to 79 for layer 0 and from 0 to 159 for layer 1
     UInt_t GetKeyFromDetLocCoord(Int_t ilay,Int_t idet, Float_t, Float_t locz) const;
     UInt_t Nblock() const; // return the number of basic blocks
+    // compute the geometrical limit of a basic block (chip) in detector local coordinate system 
+    Bool_t GetBlockBoundaries(const UInt_t key,Float_t& xmn,Float_t& xmx,Float_t& zmn,Float_t& zmx) const;
 
  protected:
     virtual void Copy(TObject &obj) const;
@@ -81,6 +83,10 @@ class AliITSPlaneEffSPD :  public AliITSPlaneEff {
     UInt_t GetChipFromKey(const UInt_t key) const;
     UInt_t GetChipFromCol(const UInt_t col) const;  // get the chip number (from 0 to kNChip)
     UInt_t GetColFromLocZ(Float_t zloc) const;      // get the Column from the local z
+    Float_t GetLocZFromCol(const UInt_t col) const; // get the local Z from the column number,  
+                                                    // the latter in the range [0,kNChip*kNCol]
+    Float_t GetLocXFromRow(const UInt_t row) const; // get the local X from the row number  
+                                                    // the latter in the range [0,kNRow]
     void GetModAndChipFromKey(const UInt_t key, UInt_t& mod, UInt_t& chip) const;
     void GetDeadAndNoisyInChip(const UInt_t key, UInt_t& dead, UInt_t& noisy) const;
 
