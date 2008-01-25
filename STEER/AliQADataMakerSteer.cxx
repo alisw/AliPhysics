@@ -313,7 +313,12 @@ AliQADataMaker * AliQADataMakerSteer::GetQADataMaker(const Int_t iDet, const cha
 		// load the QA data maker object
 		TPluginManager* pluginManager = gROOT->GetPluginManager() ;
 		TString detName = AliQA::GetDetName(iDet) ;
-		TString qadmName = "Ali" + detName + "QADataMaker" + mode ;
+		TString tmp(mode) ; 
+		if (tmp.Contains("sim")) 
+			tmp.ReplaceAll("s", "S") ; 
+		else if (tmp.Contains("rec")) 
+			tmp.ReplaceAll("r", "R") ; 
+		TString qadmName = "Ali" + detName + "QADataMaker" + tmp ;
 
 		// first check if a plugin is defined for the quality assurance data maker
 		TPluginHandler* pluginHandler = pluginManager->FindHandler("AliQADataMaker", detName) ;
