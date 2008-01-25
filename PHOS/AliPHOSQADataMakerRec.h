@@ -26,6 +26,20 @@ class TObjArray ;
 class AliPHOSQADataMakerRec: public AliQADataMakerRec {
 
 public:
+  //Histograms for Raw data control
+  enum HRawType {kHGmod1,kHGmod2,kHGmod3,kHGmod4,kHGmod5,
+                 kLGmod1,kLGmod2,kLGmod3,kLGmod4,kLGmod5,
+                 kNmodLG,kNmodHG,
+                 kNtotLG,kNtotHG,kEtotLG,kEtotHG,
+                 kLGtime,kHGtime,kSpecLG,kSpecHG} ;
+  //Histograms for RecPoints  control
+  enum HRPType {kRPmod1,kRPmod2,kRPmod3,kRPmod4,kRPmod5,
+                kRPNtot,kRPEtot,kRPSpec,kRPTime,kRPNcpv} ;
+  //Histograms for ESDs  control
+  enum HESDType {kESDNtot,kESDEtot,kESDSpec,kESDpid} ;
+                 
+
+public:
   AliPHOSQADataMakerRec() ;          // ctor
   AliPHOSQADataMakerRec(const AliPHOSQADataMakerRec& qadm) ;   
   AliPHOSQADataMakerRec& operator = (const AliPHOSQADataMakerRec& qadm) ;
@@ -34,15 +48,11 @@ public:
 private:
   virtual void   EndOfDetectorCycle(AliQA::TASKINDEX, TObjArray * list) ;
   virtual void   InitESDs() ; 
-  //virtual void   InitRecParticles() ; 
   virtual void   InitRecPoints() ; 
   virtual void   InitRaws() ; 
-  //virtual void   InitTrackSegments() ; 
   virtual void   MakeESDs(AliESDEvent * esd) ;
-  // virtual void   MakeRecParticles(TTree * recpar) ; 
   virtual void   MakeRecPoints(TTree * recpoTree) ; 
   virtual void   MakeRaws(AliRawReader* rawReader) ; 
-  //virtual void   MakeTrackSegments(TTree *ts ) ; 
   virtual void   StartOfDetectorCycle() ; 
 
   ClassDef(AliPHOSQADataMakerRec,1)  // description 
