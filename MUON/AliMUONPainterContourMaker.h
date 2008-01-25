@@ -65,7 +65,7 @@ public:
     
   /// \ingroup graphics
   /// \brief Store information about one pad's neighbours.
-  /// \authorLaurent Aphecetche, Subatech
+  /// \author Laurent Aphecetche, Subatech
   class AliMUONNeighbour : public TObject
   {
 public:

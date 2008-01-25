@@ -49,14 +49,14 @@
 #include <cassert>
 #include <float.h>
 
-///\class AliMUONPainterContourMaker
+/// \class AliMUONPainterContourMaker
 ///
 /// A class to build painter contours. 
 ///
 /// The basics are to build one manu contour, and then to merge contours
 /// to build higher order objects, like PCBS, DEs, etc...
 ///
-///\author Laurent Aphecetche, Subatech
+/// \author Laurent Aphecetche, Subatech
 
 ///\cond CLASSIMP
 ClassImp(AliMUONPainterContourMaker)
