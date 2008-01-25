@@ -14,7 +14,10 @@
  **************************************************************************/
 
 /*
-$Log$
+$Log: AliTOFcalib.cxx,v $
+Revision 1.21  2007/11/02 15:41:49  hristov
+Provide return value if the function is not void
+
 Revision 1.20  2007/10/26 15:13:50  zampolli
 Using a TChain instead of a TTree
 
@@ -102,6 +105,7 @@ author: Chiara Zampolli, zampolli@bo.infn.it
 
 #include "AliTOFcalib.h"
 #include "AliTOFChannelOnline.h"
+#include "AliTOFChannelOnlineStatus.h"
 #include "AliTOFChannelOffline.h"
 #include "AliTOFGeometry.h"
 #include "AliTOFRecoParam.h"
@@ -116,6 +120,9 @@ AliTOFcalib::AliTOFcalib():
   TTask("AliTOFcalib",""),
   fNChannels(-1),
   fTOFCalOnline(0x0),
+  fTOFCalOnlinePulser(0x0),
+  fTOFCalOnlineNoise(0x0),
+  fTOFCalOnlineHW(0x0),
   fTOFCalOffline(0x0),
   fTOFSimToT(0x0),
   fkValidity(0x0),
@@ -134,6 +141,9 @@ AliTOFcalib::AliTOFcalib(const AliTOFcalib & calib):
   TTask("AliTOFcalib",""),
   fNChannels(calib.fNChannels),
   fTOFCalOnline(0x0),
+  fTOFCalOnlinePulser(0x0),
+  fTOFCalOnlineNoise(0x0),
+  fTOFCalOnlineHW(0x0),
   fTOFCalOffline(0x0),
   fTOFSimToT(calib.fTOFSimToT),
   fkValidity(calib.fkValidity),
@@ -146,8 +156,14 @@ AliTOFcalib::AliTOFcalib(const AliTOFcalib & calib):
   //TOF Calibration Class copy ctor
   for (Int_t iarray = 0; iarray<fNChannels; iarray++){
     AliTOFChannelOnline * calChOnline = (AliTOFChannelOnline*)calib.fTOFCalOnline->At(iarray);
+    AliTOFChannelOnlineStatus * calChOnlineStPulser = (AliTOFChannelOnlineStatus*)calib.fTOFCalOnlinePulser->At(iarray);
+    AliTOFChannelOnlineStatus * calChOnlineStNoise = (AliTOFChannelOnlineStatus*)calib.fTOFCalOnlineNoise->At(iarray);
+    AliTOFChannelOnlineStatus * calChOnlineStHW = (AliTOFChannelOnlineStatus*)calib.fTOFCalOnlineHW->At(iarray);
     AliTOFChannelOffline * calChOffline = (AliTOFChannelOffline*)calib.fTOFCalOffline->At(iarray);
     fTOFCalOnline->AddAt(calChOnline,iarray);
+    fTOFCalOnlinePulser->AddAt(calChOnlineStPulser,iarray);
+    fTOFCalOnlineNoise->AddAt(calChOnlineStNoise,iarray);
+    fTOFCalOnlineHW->AddAt(calChOnlineStHW,iarray);
     fTOFCalOffline->AddAt(calChOffline,iarray);
 
   }
@@ -169,7 +185,13 @@ AliTOFcalib& AliTOFcalib::operator=(const AliTOFcalib &calib)
   for (Int_t iarray = 0; iarray<fNChannels; iarray++){
     AliTOFChannelOnline * calChOnline = (AliTOFChannelOnline*)calib.fTOFCalOnline->At(iarray);
     AliTOFChannelOffline * calChOffline = (AliTOFChannelOffline*)calib.fTOFCalOffline->At(iarray);
+    AliTOFChannelOnlineStatus * calChOnlineStPulser = (AliTOFChannelOnlineStatus*)calib.fTOFCalOnlinePulser->At(iarray);
+    AliTOFChannelOnlineStatus * calChOnlineStNoise = (AliTOFChannelOnlineStatus*)calib.fTOFCalOnlineNoise->At(iarray);
+    AliTOFChannelOnlineStatus * calChOnlineStHW = (AliTOFChannelOnlineStatus*)calib.fTOFCalOnlineHW->At(iarray);
     this->fTOFCalOnline->AddAt(calChOnline,iarray);
+    this->fTOFCalOnlinePulser->AddAt(calChOnlineStPulser,iarray);
+    this->fTOFCalOnlineNoise->AddAt(calChOnlineStNoise,iarray);
+    this->fTOFCalOnlineHW->AddAt(calChOnlineStHW,iarray);
     this->fTOFCalOffline->AddAt(calChOffline,iarray);
   }
   return *this;
@@ -184,6 +206,15 @@ AliTOFcalib::~AliTOFcalib()
     if (fTOFCalOnline){
       delete fTOFCalOnline;
     }
+    if (fTOFCalOnlinePulser){
+      delete fTOFCalOnlinePulser;
+    }
+    if (fTOFCalOnlineNoise){
+      delete fTOFCalOnlineNoise;
+    }
+    if (fTOFCalOnlineHW){
+      delete fTOFCalOnlineHW;
+    }
     if (fTOFCalOffline){
       delete fTOFCalOffline;
     }
@@ -197,13 +228,25 @@ void AliTOFcalib::CreateCalArrays(){
   // creating arrays for online/offline calibration objs
 
   fTOFCalOnline = new TObjArray(fNChannels);
+  fTOFCalOnlinePulser = new TObjArray(fNChannels);
+  fTOFCalOnlineNoise = new TObjArray(fNChannels);
+  fTOFCalOnlineHW = new TObjArray(fNChannels);
   fTOFCalOffline = new TObjArray(fNChannels);
   fTOFCalOnline->SetOwner();
+  fTOFCalOnlinePulser->SetOwner();
+  fTOFCalOnlineNoise->SetOwner();
+  fTOFCalOnlineHW->SetOwner();
   fTOFCalOffline->SetOwner();
   for (Int_t iarray = 0; iarray<fNChannels; iarray++){
     AliTOFChannelOnline * calChOnline = new AliTOFChannelOnline();
+    AliTOFChannelOnlineStatus * calChOnlineStPulser = new AliTOFChannelOnlineStatus();
+    AliTOFChannelOnlineStatus * calChOnlineStNoise = new AliTOFChannelOnlineStatus();
+    AliTOFChannelOnlineStatus * calChOnlineStHW = new AliTOFChannelOnlineStatus();
     AliTOFChannelOffline * calChOffline = new AliTOFChannelOffline();
     fTOFCalOnline->AddAt(calChOnline,iarray);
+    fTOFCalOnlinePulser->AddAt(calChOnlineStPulser,iarray);
+    fTOFCalOnlineNoise->AddAt(calChOnlineStNoise,iarray);
+    fTOFCalOnlineHW->AddAt(calChOnlineStHW,iarray);
     fTOFCalOffline->AddAt(calChOffline,iarray);
   }
 }
@@ -228,6 +271,66 @@ void AliTOFcalib::WriteParOnlineOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun)
   delete md;
 }
 //_____________________________________________________________________________
+void AliTOFcalib::WriteParOnlinePulserOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun)
+{
+  //Write calibration parameters from pulser to the CDB
+  SetFirstRun(minrun);
+  SetLastRun(maxrun);
+  AliCDBManager *man = AliCDBManager::Instance();
+  Char_t *sel1 = "Pulser" ;  // to be consistent with TOFPreprocessor
+  Char_t  out[100];
+  sprintf(out,"%s/%s",sel,sel1); 
+  AliDebug(2,Form("Writing TOF online calib obj from pulser on CDB with run range [%i, %i] ",fFirstRun,fLastRun));
+  AliCDBId id(out,fFirstRun,fLastRun);
+  AliCDBMetaData *md = new AliCDBMetaData();
+  md->SetResponsible("Chiara Zampolli");
+  if (!fTOFCalOnlinePulser) {
+    // deve uscire!!
+  }
+  man->Put(fTOFCalOnlinePulser,id,md);
+  delete md;
+}
+//_____________________________________________________________________________
+void AliTOFcalib::WriteParOnlineNoiseOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun)
+{
+  //Write calibration parameters from noise to the CDB
+  SetFirstRun(minrun);
+  SetLastRun(maxrun);
+  AliCDBManager *man = AliCDBManager::Instance();
+  Char_t *sel1 = "Noise" ;  // to be consistent with TOFPreprocessor
+  Char_t  out[100];
+  sprintf(out,"%s/%s",sel,sel1); 
+  AliDebug(2,Form("Writing TOF online calib obj from noise on CDB with run range [%i, %i] ",fFirstRun,fLastRun));
+  AliCDBId id(out,fFirstRun,fLastRun);
+  AliCDBMetaData *md = new AliCDBMetaData();
+  md->SetResponsible("Chiara Zampolli");
+  if (!fTOFCalOnlineNoise) {
+    // deve uscire!!
+  }
+  man->Put(fTOFCalOnlineNoise,id,md);
+  delete md;
+}
+//_____________________________________________________________________________
+void AliTOFcalib::WriteParOnlineHWOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun)
+{
+  //Write calibration parameters from hardware to the CDB
+  SetFirstRun(minrun);
+  SetLastRun(maxrun);
+  AliCDBManager *man = AliCDBManager::Instance();
+  Char_t *sel1 = "HW" ;  // to be consistent with TOFPreprocessor
+  Char_t  out[100];
+  sprintf(out,"%s/%s",sel,sel1); 
+  AliDebug(2,Form("Writing TOF online calib obj from hardware on CDB with run range [%i, %i] ",fFirstRun,fLastRun));
+  AliCDBId id(out,fFirstRun,fLastRun);
+  AliCDBMetaData *md = new AliCDBMetaData();
+  md->SetResponsible("Chiara Zampolli");
+  if (!fTOFCalOnlineHW) {
+    // deve uscire!!
+  }
+  man->Put(fTOFCalOnlineHW,id,md);
+  delete md;
+}
+//_____________________________________________________________________________
 
 void AliTOFcalib::WriteParOnlineOnCDB(Char_t *sel)
 {
@@ -245,6 +348,66 @@ void AliTOFcalib::WriteParOnlineOnCDB(Char_t *sel)
     // deve uscire!!
   }
   man->Put(fTOFCalOnline,id,md);
+  delete md;
+}
+//_____________________________________________________________________________
+
+void AliTOFcalib::WriteParOnlinePulserOnCDB(Char_t *sel)
+{
+  //Write calibration parameters from pulser to the CDB with infinite validity
+  AliCDBManager *man = AliCDBManager::Instance();
+  Char_t *sel1 = "Pulser" ;  // to be consistent with TOFPreprocessor
+  Char_t  out[100];
+  sprintf(out,"%s/%s",sel,sel1); 
+  AliCDBRunRange runrange(fFirstRun,fLastRun);
+  AliDebug(2,Form("Writing TOF online calib obj from pulser on CDB with run range [%i, %i] ",runrange.GetFirstRun(),runrange.GetLastRun()));
+  AliCDBId id(out,runrange);
+  AliCDBMetaData *md = new AliCDBMetaData();
+  md->SetResponsible("Chiara Zampolli");
+  if (!fTOFCalOnlinePulser) {
+    // deve uscire!!
+  }
+  man->Put(fTOFCalOnlinePulser,id,md);
+  delete md;
+}
+//_____________________________________________________________________________
+
+void AliTOFcalib::WriteParOnlineNoiseOnCDB(Char_t *sel)
+{
+  //Write calibration parameters from noise to the CDB with infinite validity
+  AliCDBManager *man = AliCDBManager::Instance();
+  Char_t *sel1 = "Noise" ;  // to be consistent with TOFPreprocessor
+  Char_t  out[100];
+  sprintf(out,"%s/%s",sel,sel1); 
+  AliCDBRunRange runrange(fFirstRun,fLastRun);
+  AliDebug(2,Form("Writing TOF online calib obj from noise on CDB with run range [%i, %i] ",runrange.GetFirstRun(),runrange.GetLastRun()));
+  AliCDBId id(out,runrange);
+  AliCDBMetaData *md = new AliCDBMetaData();
+  md->SetResponsible("Chiara Zampolli");
+  if (!fTOFCalOnlineNoise) {
+    // deve uscire!!
+  }
+  man->Put(fTOFCalOnlineNoise,id,md);
+  delete md;
+}
+//_____________________________________________________________________________
+
+void AliTOFcalib::WriteParOnlineHWOnCDB(Char_t *sel)
+{
+  //Write calibration parameters from hardware to the CDB with infinite validity
+  AliCDBManager *man = AliCDBManager::Instance();
+  Char_t *sel1 = "HW" ;  // to be consistent with TOFPreprocessor
+  Char_t  out[100];
+  sprintf(out,"%s/%s",sel,sel1); 
+  AliCDBRunRange runrange(fFirstRun,fLastRun);
+  AliDebug(2,Form("Writing TOF online calib obj from harware on CDB with run range [%i, %i] ",runrange.GetFirstRun(),runrange.GetLastRun()));
+  AliCDBId id(out,runrange);
+  AliCDBMetaData *md = new AliCDBMetaData();
+  md->SetResponsible("Chiara Zampolli");
+  if (!fTOFCalOnlineHW) {
+    // deve uscire!!
+  }
+  man->Put(fTOFCalOnlineHW,id,md);
   delete md;
 }
 //_____________________________________________________________________________
@@ -302,6 +465,72 @@ Bool_t AliTOFcalib::ReadParOnlineFromCDB(Char_t *sel, Int_t nrun)
   }  
   
   fTOFCalOnline =(TObjArray*)entry->GetObject();
+
+  return kTRUE; 
+   
+}
+//_____________________________________________________________________________
+
+Bool_t AliTOFcalib::ReadParOnlinePulserFromCDB(Char_t *sel, Int_t nrun)
+{
+  //Read calibration parameters from pulser from the CDB
+  AliCDBManager *man = AliCDBManager::Instance();
+  Char_t *sel1 = "Pulser" ;
+  Char_t  out[100];
+  sprintf(out,"%s/%s",sel,sel1); 
+  if (!man->Get(out,nrun)) { 
+    return kFALSE;
+  }
+  AliCDBEntry *entry = man->Get(out,nrun);
+  if(!entry->GetObject()){
+    return kFALSE;
+  }  
+  
+  fTOFCalOnlinePulser =(TObjArray*)entry->GetObject();
+
+  return kTRUE; 
+   
+}
+//_____________________________________________________________________________
+
+Bool_t AliTOFcalib::ReadParOnlineNoiseFromCDB(Char_t *sel, Int_t nrun)
+{
+  //Read calibration parameters from noise from the CDB
+  AliCDBManager *man = AliCDBManager::Instance();
+  Char_t *sel1 = "Noise" ;
+  Char_t  out[100];
+  sprintf(out,"%s/%s",sel,sel1); 
+  if (!man->Get(out,nrun)) { 
+    return kFALSE;
+  }
+  AliCDBEntry *entry = man->Get(out,nrun);
+  if(!entry->GetObject()){
+    return kFALSE;
+  }  
+  
+  fTOFCalOnlineNoise =(TObjArray*)entry->GetObject();
+
+  return kTRUE; 
+   
+}
+//_____________________________________________________________________________
+
+Bool_t AliTOFcalib::ReadParOnlineHWFromCDB(Char_t *sel, Int_t nrun)
+{
+  //Read calibration parameters from hardware from the CDB
+  AliCDBManager *man = AliCDBManager::Instance();
+  Char_t *sel1 = "HW" ;
+  Char_t  out[100];
+  sprintf(out,"%s/%s",sel,sel1); 
+  if (!man->Get(out,nrun)) { 
+    return kFALSE;
+  }
+  AliCDBEntry *entry = man->Get(out,nrun);
+  if(!entry->GetObject()){
+    return kFALSE;
+  }  
+  
+  fTOFCalOnlineHW =(TObjArray*)entry->GetObject();
 
   return kTRUE; 
    

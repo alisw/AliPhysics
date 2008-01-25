@@ -14,7 +14,10 @@
  **************************************************************************/
 
 /*
-$Log$
+$Log: AliTOFChannelOnline.cxx,v $
+Revision 1.2  2007/11/24 14:52:33  zampolli
+Status flag implemented as UChar_t
+
 Revision 1.1  2006/10/26 09:13:24  arcelli
  TOF Online Calibration channel (C.Zampolli)
 
@@ -32,15 +35,16 @@ ClassImp(AliTOFChannelOnline)
 
 //________________________________________________________________
 AliTOFChannelOnline::AliTOFChannelOnline():
-fStatus(kTOFOnlineUnknown),
+  //fStatus(kFALSE),
 fDelay(0)
 {
   //default constructor
 }
 
 //________________________________________________________________
-AliTOFChannelOnline::AliTOFChannelOnline(UChar_t status, Float_t delay):
-fStatus(status),
+//AliTOFChannelOnline::AliTOFChannelOnline(Bool_t status, Float_t delay):
+AliTOFChannelOnline::AliTOFChannelOnline(Float_t delay):
+  //fStatus(status),
 fDelay(delay)
 {
   // constructor with status and delay
@@ -49,7 +53,7 @@ fDelay(delay)
 //________________________________________________________________
 AliTOFChannelOnline::AliTOFChannelOnline(const AliTOFChannelOnline& channel) :
   TObject(channel),
-  fStatus(kTOFOnlineUnknown),
+  //  fStatus(kFALSE),
   fDelay(0)
 {
 // copy constructor
@@ -61,7 +65,7 @@ AliTOFChannelOnline::AliTOFChannelOnline(const AliTOFChannelOnline& channel) :
 AliTOFChannelOnline &AliTOFChannelOnline::operator =(const AliTOFChannelOnline& channel)
 {
 // assignment operator
-  fStatus= channel.GetStatus();
+//  fStatus= channel.GetStatus();
   fDelay=channel.GetDelay();
   return *this;
 }

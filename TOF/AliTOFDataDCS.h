@@ -23,7 +23,7 @@ class AliTOFFormatDCS;
 
 class AliTOFDataDCS : public TObject {
 public:
-  enum {kNAliases=10512, kNHV=90, kNLV=576, 
+  enum {kNAliases=10944, kNHV=90, kNLV=792, 
 	kNLV33=72, kNLV50=72, kNLV48=72, 
 	kNFEEthr=1152, kNFEEtfeac=576, kNFEEttrm=6840, 
 	kNFunctions=0};
@@ -79,6 +79,9 @@ public:
   AliTOFFormatDCS* GetFEEttrm(Int_t pos) const
     {return pos<kNFEEttrm ? fFEEttrm[pos] : 0;}
 
+  void SetFDRFlag(Bool_t flag) {fFDR = flag;}
+  Bool_t GetFDRFlag() const {return fFDR;}
+
 private:
   void Init();
   void Introduce(UInt_t numAlias, const TObjArray* aliasArr) const;
@@ -86,8 +89,7 @@ private:
   
   Int_t fRun;       // Run number
   Int_t fStartTime; // start time
-  Int_t fEndTime;   // end time
-  
+  Int_t fEndTime;   // end time  
   
   TString fAliasNames[kNAliases];        // aliases for DCS data
   AliTOFFormatDCS *fHVvp[kNHV];          // HV voltages, positive ch
@@ -107,8 +109,9 @@ private:
   AliTOFFormatDCS *fFEEttrm[kNFEEttrm];  // FEE trm temperatures
   
   Bool_t fIsProcessed;                   // bool to know processing status
+  Bool_t fFDR;                   // bool to know whether we are in a FDR run
   
-  ClassDef(AliTOFDataDCS, 3);
+  ClassDef(AliTOFDataDCS, 4);
 };
 
 #endif

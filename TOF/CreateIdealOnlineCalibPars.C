@@ -1,9 +1,12 @@
 void CreateIdealOnlineCalibPars(){
-  // Create TOF Dummy (delay=0) Offline Calibration Object for reconstruction
+  // Create TOF Dummy (delay=0, pulser/noise/HW status ok) Offline Calibration Object for reconstruction
   // and write it on CDB
   AliTOFcalib *tofcalib = new AliTOFcalib();
   tofcalib->CreateCalArrays();
   TObjArray *tofCalOnline = (TObjArray*) tofcalib->GetTOFCalArrayOnline(); 
+  TObjArray *tofCalOnlinePulser = (TObjArray*) tofcalib->GetTOFCalArrayOnlinePulser(); 
+  TObjArray *tofCalOnlineNoise = (TObjArray*) tofcalib->GetTOFCalArrayOnlineNoise(); 
+  TObjArray *tofCalOnlineHW = (TObjArray*) tofcalib->GetTOFCalArrayOnlineHW(); 
   // Write the dummy offline calibration object on CDB
 
   AliCDBManager *man = AliCDBManager::Instance();
@@ -11,10 +14,18 @@ void CreateIdealOnlineCalibPars(){
   Int_t nChannels = AliTOFGeometry::NSectors()*(2*(AliTOFGeometry::NStripC()+AliTOFGeometry::NStripB())+AliTOFGeometry::NStripA())*AliTOFGeometry::NpadZ()*AliTOFGeometry::NpadX();
   for (Int_t ipad = 0 ; ipad<nChannels; ipad++){
     AliTOFChannelOnline *calChannelOnline = (AliTOFChannelOnline*)tofCalOnline->At(ipad);
+    AliTOFChannelOnlineStatus *calChannelOnlinePulser = (AliTOFChannelOnlineStatus*)tofCalOnlinePulser->At(ipad);
+    AliTOFChannelOnlineStatus *calChannelOnlineNoise = (AliTOFChannelOnlineStatus*)tofCalOnlineNoise->At(ipad);
+    AliTOFChannelOnlineStatus *calChannelOnlineHW = (AliTOFChannelOnlineStatus*)tofCalOnlineHW->At(ipad);
     Float_t delay = 0.;
-    calChannelOnline->SetDelay(delay);
-    calChannelOnline->SetStatus(AliTOFChannelOnline::kTOFOnlineOk);
-  }
+    calChannelOnline->SetDelay(delay); 
+    calChannelOnlinePulser->SetStatus(AliTOFChannelOnlineStatus::kTOFPulserOk);
+    calChannelOnlineNoise->SetStatus(AliTOFChannelOnlineStatus::kTOFNoiseOk);
+    calChannelOnlineHW->SetStatus(AliTOFChannelOnlineStatus::kTOFHWOk);
+ } 
   tofcalib->WriteParOnlineOnCDB("TOF/Calib");
-  return;
+  tofcalib->WriteParOnlinePulserOnCDB("TOF/Calib");
+  tofcalib->WriteParOnlineNoiseOnCDB("TOF/Calib");
+  tofcalib->WriteParOnlineHWOnCDB("TOF/Calib");
+ return;
 }

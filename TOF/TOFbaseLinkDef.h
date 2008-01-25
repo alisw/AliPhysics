@@ -18,6 +18,7 @@
 #pragma link C++ class  AliTOFDecoder+;
 #pragma link C++ class  AliTOFChannelOffline+;
 #pragma link C++ class  AliTOFChannelOnline+;
+#pragma link C++ class  AliTOFChannelOnlineStatus+;
 #pragma link C++ class  AliTOFcalib+;
 #pragma link C++ class  AliTOFAlignment+;
 #pragma link C++ class  AliTOFPreprocessor+;

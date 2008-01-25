@@ -4,7 +4,7 @@ TOF DA for online calibration from pulser data
 
 Contact: Chiara.Zampolli@bo.infn.it
 Link: www.bo.infn.it/~zampolli
-Run Type: CALIBRATION, PULSER - to be properly defined
+Run Type: PULSER
 DA Type: LDC
 Number of events needed: 10000
 Input Files: TOF<nrun>.raw, where <nrun> is the run number 

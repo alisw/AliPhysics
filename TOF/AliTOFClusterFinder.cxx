@@ -14,7 +14,10 @@
  **************************************************************************/
 
 /* 
-$Log$
+$Log: AliTOFClusterFinder.cxx,v $
+Revision 1.31  2007/11/24 14:53:19  zampolli
+Status flag implemented as UChar_t
+
 Revision 1.30  2007/10/04 13:08:52  arcelli
 updates to comply with AliTOFGeometryV5 becoming AliTOFGeometry
 
@@ -114,6 +117,7 @@ Revision 0.01  2005/07/25 A. De Caro
 
 #include "AliTOFcalib.h"
 #include "AliTOFChannelOnline.h"
+#include "AliTOFChannelOnlineStatus.h"
 #include "AliTOFChannelOffline.h"
 #include "AliTOFClusterFinder.h"
 #include "AliTOFcluster.h"
@@ -928,6 +932,9 @@ void AliTOFClusterFinder::CalibrateRecPoint()
   AliInfo(" Calibrating TOF Clusters: ")
   
   TObjArray *calTOFArrayOnline = fTOFcalib->GetTOFCalArrayOnline();  
+  TObjArray *calTOFArrayOnlinePulser = fTOFcalib->GetTOFCalArrayOnlinePulser();  
+  TObjArray *calTOFArrayOnlineNoise = fTOFcalib->GetTOFCalArrayOnlineNoise();  
+  TObjArray *calTOFArrayOnlineHW = fTOFcalib->GetTOFCalArrayOnlineHW();  
   TObjArray *calTOFArrayOffline = fTOFcalib->GetTOFCalArrayOffline();
   TString validity = (TString)fTOFcalib->GetOfflineValidity();
   AliInfo(Form(" validity = %s",validity.Data()));
@@ -946,12 +953,32 @@ void AliTOFClusterFinder::CalibrateRecPoint()
 
     Int_t index = AliTOFGeometry::GetIndex(detectorIndex);
      
-    AliTOFChannelOnline * calChannelOnline = (AliTOFChannelOnline* )calTOFArrayOnline->At(index);
+    AliTOFChannelOnlineStatus * calChannelOnlineStPulser = (AliTOFChannelOnlineStatus* )calTOFArrayOnlinePulser->At(index);
+    AliTOFChannelOnlineStatus * calChannelOnlineStNoise = (AliTOFChannelOnlineStatus* )calTOFArrayOnlineNoise->At(index);
+    AliTOFChannelOnlineStatus * calChannelOnlineStHW = (AliTOFChannelOnlineStatus* )calTOFArrayOnlineHW->At(index);
 
     // Get channel status 
-    UChar_t status=calChannelOnline->GetStatus();
-    if((status & AliTOFChannelOnline::kTOFOnlineOk)!=(AliTOFChannelOnline::kTOFOnlineOk))fTofClusters[ii]->SetStatus(kFALSE); //odd convention, to avoid conflict with calibration objects currently in the db (temporary solution).
+    UChar_t statusPulser=calChannelOnlineStPulser->GetStatus();
+    UChar_t statusNoise=calChannelOnlineStNoise->GetStatus();
+    UChar_t statusHW=calChannelOnlineStHW->GetStatus();
+
+    //check the status, also unknow is fine!!!!!!!
+
+    UChar_t status = 0x0;
+    status |= statusPulser;
+    status |= statusNoise;
+    status |= statusHW;
+    // set status of the cluster to false if at least one of the three status (Pulser/Noise/HW) is bad
+    if((statusPulser & AliTOFChannelOnlineStatus::kTOFPulserBad)==(AliTOFChannelOnlineStatus::kTOFPulserBad)||(statusNoise & AliTOFChannelOnlineStatus::kTOFNoiseBad)==(AliTOFChannelOnlineStatus::kTOFNoiseBad)||(statusHW & AliTOFChannelOnlineStatus::kTOFHWBad)==(AliTOFChannelOnlineStatus::kTOFHWBad)){
+      AliDebug(2, Form(" Bad Status for channel %i",index));
+      fTofClusters[ii]->SetStatus(kFALSE); //odd convention, to avoid conflict with calibration objects currently in the db (temporary solution).
+    }
+    else {
+      AliDebug(2, Form(" Good Status for channel %i",index));
+    }
+    //    if((status & AliTOFChannelOnlineStatus::kTOFOnlineOk)!=(AliTOFChannelOnline::kTOFOnlineOk))fTofClusters[ii]->SetStatus(kFALSE); //odd convention, to avoid conflict with calibration objects currently in the db (temporary solution).
     // Get Rough channel online equalization 
+    AliTOFChannelOnline * calChannelOnline = (AliTOFChannelOnline* )calTOFArrayOnline->At(index);
     Double_t roughDelay=(Double_t)calChannelOnline->GetDelay();  // in ns
     AliDebug(2,Form(" channel delay (ns) = %f", roughDelay));
     // Get Refined channel offline calibration parameters

@@ -11,17 +11,19 @@ $Id$
 //   CreateInputFilesMap() creates a list of local files, that can be accessed by the shuttle
 
 extern TBenchmark *gBenchmark;
-void TOFPreprocessor()
+void TOFPreprocessor(Char_t * RunType="PHYSICS")
 {
   gSystem->Load("$ALICE/SHUTTLE/TestShuttle/libTestShuttle.so");
 
-  AliLog::SetClassDebugLevel("AliTOFPreprocessor",1);
+  //AliLog::SetClassDebugLevel("AliTOFPreprocessor",1);
   // initialize location of CDB
   AliTestShuttle::SetMainCDB("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB");
   AliTestShuttle::SetMainRefStorage("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestReference");
 
   // create AliTestShuttle instance
   AliTestShuttle* shuttle = new AliTestShuttle(0, 0, 1000);
+  //setting run type to physiscs
+  shuttle->SetInputRunType(RunType);
 
   // Generation of "fake" input DCS data
   TMap* dcsAliasMap = CreateDCSAliasMap();  
@@ -34,6 +36,7 @@ void TOFPreprocessor()
   shuttle->AddInputFile(AliTestShuttle::kDAQ, "TOF", "RUNLevel", "MON", "$ALICE_ROOT/TOF/ShuttleInput/Partial.root");
   char filename[100];
   char LDCname[5];
+
   for (Int_t iLDC=0;iLDC<2;iLDC++){
     sprintf(filename,"$ALICE_ROOT/TOF/ShuttleInput/TOFoutPulserLDC_%02i.root",iLDC*2);
     sprintf(LDCname,"LDC%i",iLDC*2);
@@ -110,7 +113,11 @@ TMap* CreateDCSAliasMap()
     sigmaFEEthr=0.1, sigmaFEEtfeac=10, sigmaFEEttrm=4;
 
   Float_t tent=0, sigma=0, thr=0;
-  Int_t NAliases=10514, NHV=90, NLV=576, NLV33=72, NLV50=72, NLV48=72, NFEEthr=1152, NFEEtfeac=576, NFEEttrm=6840, NT=1, NP=1;
+  // to have all the aliases, deccoment the following line:
+  //  Int_t NAliases=10944, NHV=90, NLV=792, NLV33=72, NLV50=72, NLV48=72, NFEEthr=1152, NFEEtfeac=576, NFEEttrm=6840;
+
+  // if not all the aliases are there, use this:
+  Int_t NAliases=4104, NHV=90, NLV=792, NLV33=72, NLV50=72, NLV48=72, NFEEthr=1152, NFEEtfeac=576;
 
   for(int nAlias=0;nAlias<NAliases;nAlias++) {
 
@@ -260,6 +267,7 @@ TMap* CreateDCSAliasMap()
       sigma=sigmaFEEtfeac;
       //thr=thrFEEthr;
     }
+    /*
     else if (nAlias<NHV*4+2*NLV+2*NLV33+2*NLV50+2*NLV48+NFEEthr+NFEEtfeac+NFEEttrm){
       //cout << " nalias fee temp = " << nAlias << endl;
       //      aliasName = "FEEt";
@@ -272,7 +280,7 @@ TMap* CreateDCSAliasMap()
       sigma=sigmaFEEttrm;
       //thr=thrFEEthr;
     }
-
+    */
     // gauss generation of values 
     for (int timeStamp=0;timeStamp<1000;timeStamp+=10){
       Float_t gaussvalue = (Float_t) (random.Gaus(tent,sigma));

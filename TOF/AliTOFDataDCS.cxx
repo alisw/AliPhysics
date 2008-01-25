@@ -14,7 +14,10 @@
  **************************************************************************/
 
 /*
-$Log$
+$Log: AliTOFDataDCS.cxx,v $
+Revision 1.9  2007/05/04 14:02:45  decaro
+AliTOFDataDCS::Draw(Option_t *) method declared const: compiling warning suppression
+
 Revision 1.8  2007/05/03 09:45:09  decaro
 Coding convention: RN11 violation -> suppression
 
@@ -72,7 +75,8 @@ AliTOFDataDCS::AliTOFDataDCS():
 	fRun(0),
 	fStartTime(0),
 	fEndTime(0),
-	fIsProcessed(kFALSE)
+	fIsProcessed(kFALSE),
+	fFDR(kFALSE)
 {
 
   // main constructor 
@@ -125,7 +129,8 @@ AliTOFDataDCS::AliTOFDataDCS(Int_t nRun, UInt_t startTime, UInt_t endTime):
 	fRun(nRun),
 	fStartTime(startTime),
 	fEndTime(endTime),
-	fIsProcessed(kFALSE)
+	fIsProcessed(kFALSE),
+	fFDR(kFALSE)
 {
 
   // constructor with arguments
@@ -145,7 +150,8 @@ AliTOFDataDCS::AliTOFDataDCS(const AliTOFDataDCS & data):
   fRun(0),
   fStartTime(0),
   fEndTime(0),
-  fIsProcessed(kFALSE)
+  fIsProcessed(kFALSE),
+  fFDR(kFALSE)
 
 {
 
@@ -155,6 +161,7 @@ AliTOFDataDCS::AliTOFDataDCS(const AliTOFDataDCS & data):
   fStartTime=data.fStartTime;
   fEndTime=data.fEndTime;
   fIsProcessed=data.fIsProcessed;
+  fFDR=data.fFDR;
 
   for(int i=0;i<kNAliases;i++) {
     fAliasNames[i]=data.fAliasNames[i];
@@ -254,6 +261,7 @@ AliTOFDataDCS& AliTOFDataDCS:: operator=(const AliTOFDataDCS & data) {
   }
 
   this->fIsProcessed=data.fIsProcessed;
+  this->fFDR=data.fFDR;
 
   return *this;
 }
@@ -346,7 +354,12 @@ Bool_t AliTOFDataDCS::ProcessData(TMap& aliasMap){
     aliasArr = (TObjArray*) aliasMap.GetValue(fAliasNames[j].Data());
     if(!aliasArr){
       AliError(Form("Alias %s not found!", fAliasNames[j].Data()));
-      return kFALSE;
+      if (!fFDR){
+	return kFALSE;    // returning only in case we are not in a FDR run
+      }
+      else {
+	continue;
+      }
     }
 
     Introduce(j, aliasArr);
