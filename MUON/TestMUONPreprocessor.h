@@ -11,6 +11,7 @@
 
 class TMap;
 
+/// Create a fake DCS alias map
 TMap* CreateDCSAliasMap(const char* inputCDB, Int_t runNumber);
 
 #endif
