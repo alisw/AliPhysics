@@ -41,10 +41,10 @@ CLIBCXXOPTS   =
 CLIBCOPT      =
 CLIBFOPT      = $(CLIBDEFS)
 
-CXXSTF        =  -m64 -pipe -Wall -W -Wno-long-double -pipe -fbounds-check -fsigned-char -fno-common -fmessage-length=0 -Woverloaded-virtual -Weffc++ -Wconversion -fno-default-inline -fno-inline -I/usr/X11R6/include -I$(FINK_ROOT)/include
+CXXSTF        = -m64 -pipe -Wall -W -Wno-long-double -pipe -fbounds-check -fsigned-char -fno-common -fmessage-length=0 -Woverloaded-virtual -Weffc++ -Wconversion -fno-default-inline -fno-inline -I/usr/X11R6/include -I$(FINK_ROOT)/include
 
 # Compiler flags
-CXXFLAGS      = $(CXXOPT) $(CXXSTF) -Weffc++
+CXXFLAGS      = $(CXXOPT) $(CXXSTF)
 
 ifneq (,$(findstring g95,$(ROOTBUILD)))
 FFLAGS	      +=-DFORTRAN_G95
@@ -101,6 +101,6 @@ EXEFLAGS     := -bind_at_load
 ifeq (g95,$(findstring g95,$(ROOTBUILD)))
 SYSLIBS += -L$(shell g95 --print-search-dirs | sed -n -e 's/install: //p') -lf95
 else
-SYSLIBS += -ldl $(shell $(F77) -print-file-name=libgfortran.dylib)
-SYSLIBS += $(shell $(F77) -print-file-name=libgfortranbegin.a)
+SYSLIBS += -ldl $(shell $(F77) -m64 -print-file-name=libgfortran.dylib)
+SYSLIBS += $(shell $(F77) -m64 -print-file-name=libgfortranbegin.a)
 endif
