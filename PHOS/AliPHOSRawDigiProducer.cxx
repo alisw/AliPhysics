@@ -47,18 +47,20 @@ AliPHOSCalibData * AliPHOSRawDigiProducer::fgCalibData  = 0 ;
 
 //--------------------------------------------------------------------------------------
 AliPHOSRawDigiProducer::AliPHOSRawDigiProducer():TObject(),
-  fEmcMinE(0.),fCpvMinE(0.),fEmcCrystals(0),fGeom(0){
+  fEmcMinE(0.),fCpvMinE(0.),fSampleQualityCut(1.),fEmcCrystals(0),fGeom(0){
 
 }
 //--------------------------------------------------------------------------------------
 AliPHOSRawDigiProducer::AliPHOSRawDigiProducer(const AliPHOSRecoParam* parEmc, const AliPHOSRecoParam* parCpv):TObject(),
-  fEmcMinE(0.),fCpvMinE(0.),fEmcCrystals(0),fGeom(0){
+  fEmcMinE(0.),fCpvMinE(0.),fSampleQualityCut(1.),fEmcCrystals(0),fGeom(0){
 
   if(!parEmc) AliFatal("Reconstruction parameters for EMC not set!");
   if(!parCpv) AliFatal("Reconstruction parameters for CPV not set!");
 
   fEmcMinE = parEmc->GetMinE();
   fCpvMinE = parCpv->GetMinE();
+
+  fSampleQualityCut = parEmc->GetSampleQualityCut() ;
 
   fGeom=AliPHOSGeometry::GetInstance() ;
   if(!fGeom) fGeom = AliPHOSGeometry::GetInstance("IHEP");
@@ -69,7 +71,7 @@ AliPHOSRawDigiProducer::AliPHOSRawDigiProducer(const AliPHOSRecoParam* parEmc, c
 }
 //--------------------------------------------------------------------------------------                       
 AliPHOSRawDigiProducer::AliPHOSRawDigiProducer(const AliPHOSRawDigiProducer &dp):TObject(),
-  fEmcMinE(0.),fCpvMinE(0.),fEmcCrystals(0),fGeom(0){                                                          
+  fEmcMinE(0.),fCpvMinE(0.),fSampleQualityCut(1.),fEmcCrystals(0),fGeom(0){                                                          
 
   fEmcMinE = dp.fEmcMinE ;
   fCpvMinE = dp.fCpvMinE ;
@@ -82,6 +84,7 @@ AliPHOSRawDigiProducer& AliPHOSRawDigiProducer::operator= (const AliPHOSRawDigiP
 
   fEmcMinE = dp.fEmcMinE ;
   fCpvMinE = dp.fCpvMinE ;
+  fSampleQualityCut = dp.fSampleQualityCut ;
   fEmcCrystals = dp.fEmcCrystals ;
   fGeom = dp.fGeom ;
   return  *this;
@@ -110,6 +113,12 @@ void AliPHOSRawDigiProducer::MakeDigits(TClonesArray *digits, AliPHOSRawDecoder*
     Double_t energy=decoder->GetEnergy() ; 
     if(energy<=baseLine) //in ADC channels
       continue ;
+
+    //remove digits with bas shape. Decoder should calculate quality so that 
+    //in default case quality [0,1], while larger values of quality mean somehow 
+    //corrupted samples, 999 means obviously corrupted sample.
+    if(decoder->GetSampleQuality() > fSampleQualityCut )
+       continue ;
 
     Bool_t lowGainFlag = decoder->IsLowGain();
 

@@ -32,6 +32,7 @@ public:
 
   Double_t GetEnergy() { return fEnergy; }
   Double_t GetTime() { return fTime; }
+  Double_t GetSampleQuality(){return fQuality ;}
   Int_t GetModule() { return fModule; }
   Int_t GetColumn() { return fColumn; }
   Int_t GetRow() { return fRow; }
@@ -49,6 +50,7 @@ protected:
 
   Double_t fEnergy; // "digit" energy
   Double_t fTime;   // "digit" time
+  Double_t fQuality ; //Sample quality
   Int_t fModule;    // PHOS module number (1-5)
   Int_t fColumn;    // column in the module
   Int_t fRow;       // row

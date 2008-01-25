@@ -75,16 +75,17 @@ AliPHOSRawDecoderv1::AliPHOSRawDecoderv1(AliRawReader* rawReader,  AliAltroMappi
 
   if(!gMinuit) 
     gMinuit = new TMinuit(100);
-  fSampleParamsHigh =new TArrayD(5) ;
-  fSampleParamsHigh->AddAt(4.25,0) ;
-  fSampleParamsHigh->AddAt(0.094,1) ;
-  fSampleParamsHigh->AddAt(0.0151,2) ;
-  fSampleParamsHigh->AddAt(0.0384,3) ;
-  fSampleParamsLow=new TArrayD(5) ;
-  fSampleParamsLow->AddAt(5.14,0) ;
-  fSampleParamsLow->AddAt(0.0970,1) ;
-  fSampleParamsLow->AddAt(0.0088,2) ;
-  fSampleParamsLow->AddAt(0.0346,3) ;
+  fSampleParamsHigh =new TArrayD(7) ;
+  fSampleParamsHigh->AddAt(2.174,0) ;
+  fSampleParamsHigh->AddAt(0.106,1) ;
+  fSampleParamsHigh->AddAt(0.173,2) ;
+  fSampleParamsHigh->AddAt(0.06106,3) ;
+  //last two parameters are pedestal and overflow
+  fSampleParamsLow=new TArrayD(7) ;
+  fSampleParamsLow->AddAt(2.456,0) ;
+  fSampleParamsLow->AddAt(0.137,1) ;
+  fSampleParamsLow->AddAt(2.276,2) ;
+  fSampleParamsLow->AddAt(0.08246,3) ;
   fToFit = new TList() ;
 }
 
@@ -146,19 +147,32 @@ Bool_t AliPHOSRawDecoderv1::NextDigit()
   //reasonable shape, fits it with Gamma2 function and extracts 
   //energy and time.
 
-//  TCanvas * c  = (TCanvas *)gROOT->FindObjectAny("canvMy") ;
-//  TH1S * h = new TH1S("s","",200,0.5,200.5) ;
-//  TF1 * fff = new TF1("fff","[0]+[1]*((x-[2])+[3]*(x-[2])*(x-[2]))*(exp(-(x-[2])*[4])+[5]*exp(-(x-[2])*[6]))",0.,1000.) ;
+//Debug=====================
+//  TCanvas * c = (TCanvas*)gROOT->FindObjectAny("CSample") ;
+//  if(!c)
+//    c = new TCanvas("CSample","CSample") ;
+// 
+//  TH1D * h = (TH1D*)gROOT->FindObjectAny("hSample") ;
+//  if(!h)
+//    h=new TH1D("hSample","",200,0.,200.) ;
+// 
+//  TF1 * fff = (TF1*)gROOT->FindObjectAny("fff") ;
+//  if(!fff)
+//    fff = new TF1("fff","[0]+[1]*((abs(x-[2]))^[3]*exp(-(x-[2])*[4])+[5]*(x-[2])*(x-[2])*exp(-(x-[2])*[6]))",0.,1000.) ;
+//End debug===========
   
   AliCaloRawStream* in = fCaloStream;
   
-  Int_t    iBin     = 0;
+  Int_t    iBin     = fSamples->GetSize() ;
   Int_t    tLength  = 0;
   fEnergy = -111;
   Float_t pedMean = 0;
   Int_t   nPed = 0;
   Float_t baseLine = 1.0;
   const Float_t nPreSamples = 10;
+  fQuality= 999. ;
+  const Float_t sampleMaxHG=102.332 ;  //maximal height of HG sample with given parameterization
+  const Float_t sampleMaxLG=277.196 ;  //maximal height of HG sample with given parameterization
   
   while ( in->Next() ) { 
     
@@ -166,17 +180,18 @@ Bool_t AliPHOSRawDecoderv1::NextDigit()
       tLength = in->GetTimeLength();
       if(tLength!=fSamples->GetSize()) {
 	delete fSamples ;
+	delete fTimes ;
 	fSamples = new TArrayI(tLength);
+	fTimes = new TArrayI(tLength);
+        iBin= fSamples->GetSize() ;
       }
       else{
-	for(Int_t i=0; i<fSamples->GetSize(); i++){
-	  fSamples->AddAt(0,i) ;
-	}
+        fSamples->Reset() ;
       }
     }
     
     // Fit the full sample
-    if(in->IsNewHWAddress() && iBin>0) {
+    if(in->IsNewHWAddress() && iBin != fSamples->GetSize()) {
       
       Double_t pedestal =0. ;
       if(fPedSubtract){ 
@@ -185,30 +200,55 @@ Bool_t AliPHOSRawDecoderv1::NextDigit()
 	else
 	  return kFALSE;
       }
-      
-      //calculate energy
-      //first estimate if this sample looks like gamma2 function
-      Double_t aMean=0. ;
-      Double_t aRMS=0. ;
-      Int_t tStart = 0 ;
-      Int_t cnts=0 ;
-      for(Int_t i=0; i<fSamples->GetSize(); i++){
-	if(fSamples->At(i)>0){
-	  Double_t de=fSamples->At(i)-pedestal ;
-	  aMean+=de ;
-	  aRMS+=de*de ;
-	  cnts++;
-	  if(de>2 && tStart==0)
-	    tStart=i ;
-	  if(fSamples->At(i)>fEnergy)
-	    fEnergy=fSamples->At(i) ;
-	}
+
+      //calculate time and energy
+      Int_t maxBin=0 ;
+      Int_t maxAmp=0 ;
+      Double_t aMean=0. ;                                                                                                                  
+      Double_t aRMS=0. ;                                                                                                                   
+      Int_t tStart = 0 ;                                                                                                                   
+      Int_t cnts=0 ;                                                                                                                       
+      for(Int_t i=iBin; i<fSamples->GetSize(); i++){
+        if(fSamples->At(i)>0){                                                                                                             
+          Double_t de=fSamples->At(i)-pedestal ;                                                                                           
+          aMean+=de ;                                                                                                                      
+          aRMS+=de*de ;                                                                                                                    
+          cnts++;                                                                                                                          
+          if(de>2 && tStart==0) 
+            tStart=i ;                                                                                                                     
+          if(maxAmp<fSamples->At(i)){
+            maxBin=i ;
+            maxAmp=fSamples->At(i) ;
+          }
+        }
       }
+      if(maxBin==fSamples->GetSize()-1){//bad sample
+        fEnergy=0. ;
+        fTime=-999.;
+        fQuality= 999. ;
+        return kTRUE ;
+      }
+      fEnergy=Double_t(maxAmp)-pedestal ;
+      fOverflow =0 ;  //look for plato on the top of sample
+      if(fEnergy>500 &&  //this is not fluctuation of soft sample
+         maxBin<fSamples->GetSize()-1 && fSamples->At(maxBin+1)==maxAmp){ //and there is a plato
+         fOverflow = kTRUE ;
+      }
+      
       if(cnts>0){
 	aMean/=cnts; 
 	aRMS=aRMS/cnts-aMean*aMean;
       }
       
+//Debug:=====Draw sample
+//if(fEnergy>pedestal+10.){
+//    c->cd() ;
+//    h->Draw() ;
+//    c->Update() ;
+// printf("fEnergy=%f, cnts=%d, aMean=%f, aRMS=%f \n",fEnergy,cnts,aMean,aRMS) ;   
+//}
+//======================
+
       //IF sample has reasonable mean and RMS, try to fit it with gamma2
       if(fEnergy>2.&& cnts >20 && aMean>0. && aRMS>2.){ //more or less reasonable sample
 	
@@ -220,13 +260,24 @@ Bool_t AliPHOSRawDecoderv1::NextDigit()
        fToFit->Clear() ;
        if(fLowGainFlag){
          fSampleParamsLow->AddAt(pedestal,4) ;
+         if(fOverflow)
+           fSampleParamsLow->AddAt(double(maxAmp),5) ;
+         else
+           fSampleParamsLow->AddAt(double(1023),5) ;
+         fSampleParamsLow->AddAt(double(iBin),6) ;
          fToFit->AddFirst((TObject*)fSampleParamsLow) ; 
         }
         else{
          fSampleParamsHigh->AddAt(pedestal,4) ;
+         if(fOverflow)
+           fSampleParamsHigh->AddAt(double(maxAmp),5) ;
+         else
+           fSampleParamsHigh->AddAt(double(1023),5);
+         fSampleParamsHigh->AddAt(double(iBin),6);
          fToFit->AddFirst((TObject*)fSampleParamsHigh) ; 
         }
         fToFit->AddLast((TObject*)fSamples) ;
+        fToFit->AddLast((TObject*)fTimes) ;
 
 	gMinuit->SetObjectFit((TObject*)fToFit) ;         // To tranfer pointer to UnfoldingChiSquare
 	Int_t ierflg ;
@@ -235,15 +286,21 @@ Bool_t AliPHOSRawDecoderv1::NextDigit()
 //	  AliWarning(Form("Unable to set initial value for fit procedure : t0=%e\n",1.*tStart) ) ;
 	  fEnergy=0. ;
 	  fTime=-999. ;
+          fQuality=999 ;
 	  return kTRUE ; //will scan further
 	}
-        Double_t amp0=(fEnergy-pedestal)*0.0032;
+        Double_t amp0; 
+        if(fLowGainFlag)
+          amp0=fEnergy/sampleMaxLG;
+        else
+          amp0=fEnergy/sampleMaxHG;
 
 	gMinuit->mnparm(1, "Energy", amp0 , 0.001*amp0, 0, 0, ierflg) ;
 	if(ierflg != 0){
 //	  AliWarning(Form("Unable to set initial value for fit procedure : E=%e\n", amp0)) ;
 	  fEnergy=0. ;
 	  fTime=-999. ;
+          fQuality=999 ;
 	  return kTRUE ; //will scan further
 	}
 	
@@ -257,57 +314,68 @@ Bool_t AliPHOSRawDecoderv1::NextDigit()
 	gMinuit->mnexcm("SET NOW", &p2 , 0, ierflg) ;  // No Warnings
 	
 	gMinuit->mnexcm("MIGRAD", &p0, 0, ierflg) ;    // minimize 
+
 	
 	Double_t err,t0err ;
 	Double_t t0,efit ;
 	gMinuit->GetParameter(0,t0, t0err) ;    
 	gMinuit->GetParameter(1,efit, err) ;    
-	
-        Double_t a,alpha ;
-        if(fLowGainFlag){
-          a=fSampleParamsLow->At(0) ;
-          alpha=fSampleParamsLow->At(1) ;
-        }
-        else{
-          a=fSampleParamsHigh->At(0) ;
-          alpha=fSampleParamsHigh->At(1) ;
-        }
 
-//    c->cd() ;
-//    h->Draw() ;
-//    if(fLowGainFlag){
-//      fff->SetParameters(pedestal,efit,t0,a,alpha,fSampleParamsLow->At(2),fSampleParamsLow->At(3)) ;
-//    }
-//    else{
-//      fff->SetParameters(pedestal,efit,t0,a,alpha,fSampleParamsHigh->At(2),fSampleParamsHigh->At(3)) ;
-//    }
-//    fff->Draw("same") ;
-//    c->Update();
-          
-        efit*=(2.*a+TMath::Sqrt(4.*a*a+alpha*alpha))/alpha/alpha*TMath::Exp(-1.+(alpha-TMath::Sqrt(4.*a*a+alpha*alpha))/2./a) ;
-//printf("efit=%f, t0=%e +- %e, ped=%f \n",efit,t0,t0err,pedestal) ;
+        //Calculate total energy
+        if(fLowGainFlag)
+          efit*=sampleMaxLG;
+        else
+          efit*=sampleMaxHG;
+
+        if(efit<0. || efit > 10000.){                                                                          
+          fEnergy=0 ; //bad sample                                                    
+          fTime=-999.;                                                                
+          fQuality=999 ;                                                              
+          return kTRUE;
+        }                                                                             
+ 
+        //evaluate fit quality
 	Double_t fmin,fedm,errdef ;
 	Int_t npari,nparx,istat;
 	gMinuit->mnstat(fmin,fedm,errdef,npari,nparx,istat) ;
-  
-//if(fLowGainFlag)
-// printf("LowGain \n") ;
-//else
-// printf("highGain \n") ;
+        fQuality=fmin/(fSamples->GetSize()-iBin) ;
+        //compare quality with some parameterization
+        fQuality/=5.*TMath::Exp(0.0025*efit) ;
 
-//printf("fmin=%e \n",fmin) ;
-//getchar() ;	
+//Debug================
+//        Double_t n,alpha,b,beta ;
+//        if(fLowGainFlag){
+//          n=fSampleParamsLow->At(0) ;
+//          alpha=fSampleParamsLow->At(1) ;
+//          b=fSampleParamsLow->At(2) ;
+//          beta=fSampleParamsLow->At(3) ;
+//        }
+//        else{
+//          n=fSampleParamsHigh->At(0) ;
+//          alpha=fSampleParamsHigh->At(1) ;
+//          b=fSampleParamsHigh->At(2) ;
+//          beta=fSampleParamsHigh->At(3) ;
+//        }
+//
+//    if( fQuality > 5.*TMath::Exp(0.0025*efit)){
+//    if( fQuality > 1.){
+//   printf("Col=%d, row=%d, qual=%f, E=%f \n",fColumn,fRow,fQuality,efit) ;
+//    c->cd() ;
+//    h->Draw() ;
+//    if(fLowGainFlag){
+//      fff->SetParameters(pedestal,efit/sampleMaxLG,t0,n,alpha,b,beta) ;
+//    }
+//    else{
+//      fff->SetParameters(pedestal,efit/sampleMaxHG,t0,n,alpha,b,beta) ;
+//    }
+//    fff->Draw("same") ;
+//    c->Update();
+//    getchar() ;
+//    }
+//====================
 
-	if(1){ //fmin < 3.+0.3*efit ){ //Chi^2 of a good sample
-	  if(efit>0.){
-	    fEnergy=efit ;
-	    fTime=t0 ;
-	  }
-	}
-	else{
-	  fEnergy=0 ; //bad sample
-	  fTime=-999.;
-	}
+        fEnergy=efit ;
+        fTime=t0 ;
 	
         fTime*=fPulseGenerator->GetRawFormatTimeTrigger() ; 
 
@@ -316,6 +384,7 @@ Bool_t AliPHOSRawDecoderv1::NextDigit()
       else{ //bad sample
 	fEnergy=0. ;
 	fTime=-999. ;
+        fQuality=999.;
       }
       
       return kTRUE;
@@ -327,15 +396,17 @@ Bool_t AliPHOSRawDecoderv1::NextDigit()
     fRow    = in->GetRow()   +1;
     fColumn = in->GetColumn()+1;
     
-    
     // Fill array with samples
-    iBin++;                                                             
-    if(tLength-iBin < nPreSamples) {
+    iBin--;
+    if(fPedSubtract && (in->GetTime() < nPreSamples)) {
       pedMean += in->GetSignal();
       nPed++;
     }
-    fSamples->AddAt(in->GetSignal(),tLength-iBin);
-//    h->SetBinContent(tLength-iBin+1,in->GetSignal()) ;
+    fSamples->AddAt(in->GetSignal(),iBin);
+    fTimes->AddAt(in->GetTime(),iBin);
+ 
+//Debug==============
+//    h->SetBinContent(iBin,in->GetSignal()) ;
     
   } // in.Next()
   
@@ -350,44 +421,38 @@ void AliPHOSRawDecoderv1::UnfoldingChiSquare(Int_t & /*nPar*/, Double_t * Grad, 
   TList * toFit= (TList*)gMinuit->GetObjectFit() ;
   TArrayD * params=(TArrayD*)toFit->At(0) ; 
   TArrayI * samples = (TArrayI*)toFit->At(1) ;
+  TArrayI * times = (TArrayI*)toFit->At(2) ;
 
   fret = 0. ;     
   if(iflag == 2)
     for(Int_t iparam = 0 ; iparam < 2 ; iparam++)    
       Grad[iparam] = 0 ; // Will evaluate gradient
   
-  Int_t nSamples=samples->GetSize() ; //Math::Min(70,samples->GetSize()) ;
   Double_t t0=x[0] ;
   Double_t en=x[1] ;
-  Double_t a=params->At(0) ;
+  Double_t n=params->At(0) ;
   Double_t alpha=params->At(1) ;
   Double_t b=params->At(2) ;
   Double_t beta=params->At(3) ;
+  Int_t overflow=(Int_t)params->At(5) ;
+  Int_t iBin = (Int_t) params->At(6) ;
+  Int_t nSamples=TMath::Min(iBin+70,samples->GetSize()) ; //Here we set number of points to fit (70)
   
-  for(Int_t i = 0 ; i < nSamples ; i++) {
-    if(samples->At(i)==0 || samples->At(i)==1023) //zero or overflow
+  for(Int_t i = iBin ; i < nSamples ; i++) {
+    Int_t sample = samples->At(i) ;
+    if(sample==0 || sample==overflow) //zero or overflow - scip point
       continue ;
-    Double_t dt=i*1.-t0 ;
-    Double_t diff=float(samples->At(i))-Gamma2(dt,en,params) ;
-    Double_t w=0.1+0.005*i ; //Mean Pedestal RMS + rising modulation
-    //    if(w==0)w=1. ;
-    diff/=w ;
+    Double_t dt=1.*times->At(i)-t0 ;
+    Double_t diff=float(sample)-Gamma2(dt,en,params) ;
     if(iflag == 2){  // calculate gradient
       if(dt>=0.){
-	Grad[0] += -2.*en*diff*((alpha*dt*(1.+a*dt)-1.-2.*a*dt)*TMath::Exp(-alpha*dt)+
-                              b*(beta*dt*(1.+a*dt)-1.-2.*a*dt)*TMath::Exp(-beta*dt)) /w ; //derivative over t0
-	Grad[1] += -2.*diff*(dt+a*dt*dt)*(TMath::Exp(-alpha*dt)+
-                     b*TMath::Exp(-dt*beta))/w ;
+	Grad[0] +=  2.*en*diff*(TMath::Power(dt,n-1.)*(n-alpha*dt)*TMath::Exp(-alpha*dt)+
+                              b*dt*(2.-beta*dt)*TMath::Exp(-beta*dt))  ; //derivative over t0
+	Grad[1] += -2.*diff*(TMath::Power(dt,n)*TMath::Exp(-alpha*dt)+
+                     b*dt*dt*TMath::Exp(-dt*beta)) ;
       }
     }
     fret += diff*diff ;
-  }
-  if(nSamples){
-    fret/=nSamples ;
-    if(iflag == 2){
-      for(Int_t iparam = 0 ; iparam < 2 ; iparam++)    
-	Grad[iparam] /= nSamples ;
-    }
   }
   
 }
@@ -402,6 +467,6 @@ Double_t AliPHOSRawDecoderv1::Gamma2(Double_t dt,Double_t en,TArrayD * params){ 
   if(dt<0.)
     return ped ; //pedestal
   else
-    return ped+en*(dt+params->At(0)*dt*dt)*(TMath::Exp(-dt*params->At(1))+params->At(2)*TMath::Exp(-dt*params->At(3))) ;
+    return ped+en*(TMath::Power(dt,params->At(0))*TMath::Exp(-dt*params->At(1))+params->At(2)*dt*dt*TMath::Exp(-dt*params->At(3))) ;
 }
 

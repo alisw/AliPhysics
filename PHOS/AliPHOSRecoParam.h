@@ -24,6 +24,7 @@ public:
   Float_t GetLocalMaxCut()         const { return fLocMaxCut;            }
   Float_t GetMinE()                const { return fMinE;                 }
   Float_t GetLogWeight()           const { return fW0;                   }
+  Float_t GetSampleQualityCut()    const { return fSampleQualityCut;                   }
   Bool_t  SubtractPedestals()      const { return fSubtractPedestals;    }
   Bool_t  ToUnfold()               const { return fUnfold;               }
   Bool_t  IsOldRCUFormat()         const { return fOldRCUFormat;         }
@@ -33,6 +34,7 @@ public:
   void SetLocalMaxCut(Float_t cut)                { fLocMaxCut          =cut;     }
   void SetMinE(Float_t minE)                      { fMinE               =minE;    }
   void SetLogWeight(Float_t w)                    { fW0                 =w;       }
+  void SetSampleQualityCut(Float_t qu)            { fSampleQualityCut   =qu;       }
   void SetSubtractPedestals(Bool_t subtract)      { fSubtractPedestals  =subtract;} 
   void SetDecoderVersion(const char* version="v1"){fDecoderVersion      =version ;}
   void SetUnfolding(Bool_t toUnfold=kFALSE)       {fUnfold              =toUnfold;}
@@ -44,6 +46,7 @@ protected:
   Float_t fLocMaxCut;
   Float_t fMinE;
   Float_t fW0;
+  Float_t fSampleQualityCut;
   Bool_t  fSubtractPedestals;
   Bool_t  fUnfold;
   Bool_t  fOldRCUFormat; // kTRUE if RCU has old firmware (2006-2007)

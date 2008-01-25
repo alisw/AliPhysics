@@ -31,6 +31,7 @@ AliPHOSRecoParam::AliPHOSRecoParam() :
   fLocMaxCut(9999),
   fMinE(9999),
   fW0(9999),
+  fSampleQualityCut(1.),
   fSubtractPedestals(kTRUE),
   fUnfold(kTRUE),
   fOldRCUFormat(kFALSE),
@@ -46,6 +47,7 @@ AliPHOSRecoParam::AliPHOSRecoParam(const AliPHOSRecoParam& recoParam):
   fLocMaxCut(9999),
   fMinE(9999),
   fW0(9999),
+  fSampleQualityCut(1.),
   fSubtractPedestals(kTRUE),
   fUnfold(kTRUE),
   fOldRCUFormat(kFALSE),
@@ -64,6 +66,7 @@ AliPHOSRecoParam& AliPHOSRecoParam::operator = (const AliPHOSRecoParam& recoPara
     fLocMaxCut           = recoParam.fLocMaxCut;
     fMinE                = recoParam.fMinE;
     fW0                  = recoParam.fW0;
+    fSampleQualityCut    = recoParam.fSampleQualityCut ;
     fSubtractPedestals   = recoParam.fSubtractPedestals;
     fUnfold              = recoParam.fUnfold;
     fOldRCUFormat        = recoParam.fOldRCUFormat;

@@ -48,16 +48,18 @@ ClassImp(AliPHOSRawDecoder)
 
 //-----------------------------------------------------------------------------
 AliPHOSRawDecoder::AliPHOSRawDecoder():
-  fRawReader(0),fCaloStream(0),fPedSubtract(kFALSE),fEnergy(-111),fTime(-111),fModule(-1),fColumn(-1),fRow(-1),
-  fLowGainFlag(kFALSE),fOverflow(kFALSE),fSamples(0),fTimes(0),fPulseGenerator(0)
+  fRawReader(0),fCaloStream(0),fPedSubtract(kFALSE),fEnergy(-111),fTime(-111),fQuality(0.),
+  fModule(-1),fColumn(-1),fRow(-1), fLowGainFlag(kFALSE),fOverflow(kFALSE),fSamples(0),
+  fTimes(0),fPulseGenerator(0)
 {
   //Default constructor.
 }
 
 //-----------------------------------------------------------------------------
 AliPHOSRawDecoder::AliPHOSRawDecoder(AliRawReader* rawReader,  AliAltroMapping **mapping):
-  fRawReader(0),fCaloStream(0),fPedSubtract(kFALSE),fEnergy(-111),fTime(-111),fModule(-1),fColumn(-1),fRow(-1),
-  fLowGainFlag(kFALSE),fOverflow(kFALSE),fSamples(0),fTimes(0),fPulseGenerator(0)
+  fRawReader(0),fCaloStream(0),fPedSubtract(kFALSE),fEnergy(-111),fTime(-111),fQuality(0.),
+  fModule(-1),fColumn(-1),fRow(-1),fLowGainFlag(kFALSE),fOverflow(kFALSE),fSamples(0),
+  fTimes(0),fPulseGenerator(0)
 {
   //Construct a decoder object.
   //Is is user responsibility to provide next raw event 
@@ -86,7 +88,7 @@ AliPHOSRawDecoder::~AliPHOSRawDecoder()
 AliPHOSRawDecoder::AliPHOSRawDecoder(const AliPHOSRawDecoder &phosDecoder ):
   fRawReader(phosDecoder.fRawReader),fCaloStream(phosDecoder.fCaloStream),
   fPedSubtract(phosDecoder.fPedSubtract),
-  fEnergy(phosDecoder.fEnergy),fTime(phosDecoder.fTime),
+  fEnergy(phosDecoder.fEnergy),fTime(phosDecoder.fTime),fQuality(phosDecoder.fQuality),
   fModule(phosDecoder.fModule),fColumn(phosDecoder.fColumn),
   fRow(phosDecoder.fRow),fLowGainFlag(phosDecoder.fLowGainFlag),
   fOverflow(phosDecoder.fOverflow),fSamples(phosDecoder.fSamples),
@@ -108,6 +110,7 @@ AliPHOSRawDecoder& AliPHOSRawDecoder::operator = (const AliPHOSRawDecoder &phosD
 
     fEnergy = phosDecode.fEnergy;
     fTime = phosDecode.fTime;
+    fQuality = phosDecode.fQuality ;
     fModule = phosDecode.fModule;
     fColumn = phosDecode.fColumn;
     fRow = phosDecode.fRow;
