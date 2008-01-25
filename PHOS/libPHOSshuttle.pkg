@@ -1,6 +1,8 @@
 SRCS          =  AliPHOSCalibHistoProducer.cxx \
                  AliPHOSPreprocessor.cxx \
-		 AliPHOSDA1.cxx
+		 AliPHOSDA1.cxx \
+		 AliPHOSCpvDA1.cxx \
+		 AliPHOSCpvPreprocessor.cxx
 
 HDRS:= $(SRCS:.cxx=.h) 
 
