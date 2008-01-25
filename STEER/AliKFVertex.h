@@ -47,6 +47,13 @@ class AliKFVertex :public AliKFParticle
 
   void CopyToESDVertex( AliESDVertex &Vtx ) const ;
 
+  //*
+  //*  ACCESSORS
+  //*
+
+  //* Number of tracks composing the vertex
+
+  Int_t GetNContributors() const { return (fNDF+3)/2; }
 
   //* 
   //* CONSTRUCTION OF THE VERTEX BY ITS DAUGHTERS 
