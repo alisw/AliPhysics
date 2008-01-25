@@ -1670,7 +1670,7 @@ Bool_t AliReconstruction::FillTriggerESD(AliESDEvent*& esd)
     AliRunLoader *runloader = AliRunLoader::GetRunLoader();
     if (runloader) {
       if (!runloader->LoadTrigger()) {
-	AliCentralTrigger *aCTP = runloader->GetTrigger();
+	aCTP = runloader->GetTrigger();
 	esd->SetTriggerMask(aCTP->GetClassMask());
 	esd->SetTriggerCluster(aCTP->GetClusterMask());
       }
