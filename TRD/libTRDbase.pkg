@@ -40,6 +40,7 @@ SRCS= AliTRDarrayI.cxx \
       AliTRDCalibraVdriftLinearFit.cxx \
       AliTRDCalibPadStatus.cxx \
       AliTRDQAChecker.cxx \
+      AliTRDqaBlackEvents.cxx \
       AliTRDPreprocessor.cxx \
       AliTRDDataDCS.cxx \
       AliTRDSensor.cxx \
