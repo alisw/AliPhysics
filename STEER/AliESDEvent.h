@@ -119,6 +119,8 @@ public:
   void      SetTriggerCluster(UChar_t n) {fHeader->SetTriggerCluster(n);}
   
   ULong64_t GetTriggerMask() const {return fHeader->GetTriggerMask();}
+  TString   GetFiredTriggerClasses() const {return fESDRun->GetFiredTriggerClasses(fHeader->GetTriggerMask());}
+  Bool_t    IsTriggerClassFired(const char *name) const {return fESDRun->IsTriggerClassFired(fHeader->GetTriggerMask(),name);}
   UInt_t    GetOrbitNumber() const {return fHeader->GetOrbitNumber();}
   UInt_t    GetTimeStamp()  const { return fHeader->GetTimeStamp();}
   UInt_t    GetEventType()  const { return fHeader->GetEventType();}
