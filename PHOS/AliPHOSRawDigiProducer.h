@@ -13,6 +13,7 @@ class AliPHOSCalibData ;
 class AliPHOSDigit ;
 class AliPHOSRecoParam ;
 class AliPHOSGeometry ;
+class AliPHOSPulseGenerator;
 #include "TObject.h"
 
 class AliPHOSRawDigiProducer: public TObject {
@@ -24,7 +25,7 @@ public:
   AliPHOSRawDigiProducer(const AliPHOSRawDigiProducer &dp);
   AliPHOSRawDigiProducer& operator= (const AliPHOSRawDigiProducer &dp);
  
-  virtual ~AliPHOSRawDigiProducer() {}
+  virtual ~AliPHOSRawDigiProducer(); 
 
   void MakeDigits(TClonesArray *digits, AliPHOSRawDecoder* decoder);
 
@@ -47,6 +48,7 @@ private:
   Int_t fEmcCrystals ;               //  number of EMC crystalls
   AliPHOSGeometry * fGeom ;          //! PHOS geometry
   static AliPHOSCalibData * fgCalibData ;   //! Calibration database if aval.
+  AliPHOSPulseGenerator * fPulseGenerator ; //! Class with pulse parameters
 
   ClassDef(AliPHOSRawDigiProducer,2)
 };

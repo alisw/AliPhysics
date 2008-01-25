@@ -13,7 +13,6 @@
 #include "AliCaloRawStream.h"
 
 class TArrayI;
-class AliPHOSPulseGenerator;
 
 class AliPHOSRawDecoder {
 
@@ -54,13 +53,17 @@ protected:
   Int_t fModule;    // PHOS module number (1-5)
   Int_t fColumn;    // column in the module
   Int_t fRow;       // row
+  Int_t fNewModule;    // PHOS module number (1-5) of keeped sample
+  Int_t fNewColumn;    // column in the module  of keeped sample
+  Int_t fNewRow;       // row  of keeped sample
+  Int_t fNewAmp ;      //Keeped amp
+  Int_t fNewTime ;     //Time of keeped sample
   Bool_t fLowGainFlag;
+  Bool_t fNewLowGainFlag;
   Bool_t fOverflow ;   //Wether there was overflow
   TArrayI* fSamples;   // array of samples
   TArrayI* fTimes ;    // array of times corresponding to samples
 
-  AliPHOSPulseGenerator* fPulseGenerator; // ALTRO pulse simulator
-  
   ClassDef(AliPHOSRawDecoder,1)
 };
 

@@ -39,6 +39,7 @@
 #include "AliPHOSDigit.h"
 #include "AliPHOSRecoParam.h"
 #include "AliPHOSCalibData.h"
+#include "AliPHOSPulseGenerator.h"
 #include "AliLog.h"
 
 ClassImp(AliPHOSRawDigiProducer)
@@ -47,12 +48,13 @@ AliPHOSCalibData * AliPHOSRawDigiProducer::fgCalibData  = 0 ;
 
 //--------------------------------------------------------------------------------------
 AliPHOSRawDigiProducer::AliPHOSRawDigiProducer():TObject(),
-  fEmcMinE(0.),fCpvMinE(0.),fSampleQualityCut(1.),fEmcCrystals(0),fGeom(0){
+  fEmcMinE(0.),fCpvMinE(0.),fSampleQualityCut(1.),
+  fEmcCrystals(0),fGeom(0),fPulseGenerator(0){
 
 }
 //--------------------------------------------------------------------------------------
 AliPHOSRawDigiProducer::AliPHOSRawDigiProducer(const AliPHOSRecoParam* parEmc, const AliPHOSRecoParam* parCpv):TObject(),
-  fEmcMinE(0.),fCpvMinE(0.),fSampleQualityCut(1.),fEmcCrystals(0),fGeom(0){
+  fEmcMinE(0.),fCpvMinE(0.),fSampleQualityCut(1.),fEmcCrystals(0),fGeom(0),fPulseGenerator(0){
 
   if(!parEmc) AliFatal("Reconstruction parameters for EMC not set!");
   if(!parCpv) AliFatal("Reconstruction parameters for CPV not set!");
@@ -67,15 +69,18 @@ AliPHOSRawDigiProducer::AliPHOSRawDigiProducer(const AliPHOSRecoParam* parEmc, c
 
   fEmcCrystals=fGeom->GetNCristalsInModule()*fGeom->GetNModules() ;
 
+  fPulseGenerator = new AliPHOSPulseGenerator();
+
   GetCalibrationParameters() ; 
 }
 //--------------------------------------------------------------------------------------                       
 AliPHOSRawDigiProducer::AliPHOSRawDigiProducer(const AliPHOSRawDigiProducer &dp):TObject(),
-  fEmcMinE(0.),fCpvMinE(0.),fSampleQualityCut(1.),fEmcCrystals(0),fGeom(0){                                                          
+  fEmcMinE(0.),fCpvMinE(0.),fSampleQualityCut(1.),fEmcCrystals(0),fGeom(0),fPulseGenerator(0){                                                          
 
   fEmcMinE = dp.fEmcMinE ;
   fCpvMinE = dp.fCpvMinE ;
   fEmcCrystals = dp.fEmcCrystals ;
+  fPulseGenerator = new AliPHOSPulseGenerator();
   fGeom = dp.fGeom ;
 }
 //--------------------------------------------------------------------------------------
@@ -87,9 +92,15 @@ AliPHOSRawDigiProducer& AliPHOSRawDigiProducer::operator= (const AliPHOSRawDigiP
   fSampleQualityCut = dp.fSampleQualityCut ;
   fEmcCrystals = dp.fEmcCrystals ;
   fGeom = dp.fGeom ;
+  if(fPulseGenerator) delete fPulseGenerator ;
+  fPulseGenerator = new AliPHOSPulseGenerator();
   return  *this;
 } 
- 
+//--------------------------------------------------------------------------------------                                                   
+AliPHOSRawDigiProducer::~AliPHOSRawDigiProducer(){
+ if(fPulseGenerator) delete fPulseGenerator ;
+ fPulseGenerator=0 ;
+}
 //--------------------------------------------------------------------------------------
 void AliPHOSRawDigiProducer::MakeDigits(TClonesArray *digits, AliPHOSRawDecoder* decoder) 
 {
@@ -157,6 +168,7 @@ void AliPHOSRawDigiProducer::MakeDigits(TClonesArray *digits, AliPHOSRawDecoder*
   tmpLG.Sort() ;
   Int_t iLG = 0;
   Int_t nLG1 = tmpLG.GetEntriesFast()-1 ;
+
   for(Int_t iDig=0 ; iDig < digits->GetEntriesFast() ; iDig++) { 
     AliPHOSDigit * digHG = dynamic_cast<AliPHOSDigit*>(digits->At(iDig)) ;
     if (!digHG) continue;
@@ -184,7 +196,8 @@ void AliPHOSRawDigiProducer::MakeDigits(TClonesArray *digits, AliPHOSRawDecoder*
       fGeom->AbsToRelNumbering(absId,relId) ;
       if(relId[2]%2==1 && relId[3]%16==4) 
         continue ;
-      digits->RemoveAt(iDig) ;                                                                                                            
+      if(digHG->GetEnergy()>16*5*0.005) //LG too low to exist
+        digits->RemoveAt(iDig) ;                                                                                                            
     }
   }
 
@@ -215,6 +228,7 @@ Double_t AliPHOSRawDigiProducer::CalibrateE(Double_t amp, Int_t* relId, Bool_t i
 Double_t AliPHOSRawDigiProducer::CalibrateT(Double_t time, Int_t * relId, Bool_t /* isLowGain */)
 {
   //Calibrate time
+  time*=fPulseGenerator->GetRawFormatTimeTrigger() ;
   if(fgCalibData){
     Int_t   module = relId[0];
     Int_t   column = relId[3];

@@ -42,15 +42,14 @@
 
 // --- AliRoot header files ---
 #include "AliPHOSRawDecoder.h"
-#include "AliPHOSPulseGenerator.h"
-
+#include <iostream.h>
 ClassImp(AliPHOSRawDecoder)
 
 //-----------------------------------------------------------------------------
 AliPHOSRawDecoder::AliPHOSRawDecoder():
   fRawReader(0),fCaloStream(0),fPedSubtract(kFALSE),fEnergy(-111),fTime(-111),fQuality(0.),
-  fModule(-1),fColumn(-1),fRow(-1), fLowGainFlag(kFALSE),fOverflow(kFALSE),fSamples(0),
-  fTimes(0),fPulseGenerator(0)
+  fModule(-1),fColumn(-1),fRow(-1),fNewModule(-1),fNewColumn(-1),fNewRow(-1),fNewAmp(0),fNewTime(0), 
+  fLowGainFlag(kFALSE),fNewLowGainFlag(kFALSE),fOverflow(kFALSE),fSamples(0),fTimes(0)
 {
   //Default constructor.
 }
@@ -58,8 +57,8 @@ AliPHOSRawDecoder::AliPHOSRawDecoder():
 //-----------------------------------------------------------------------------
 AliPHOSRawDecoder::AliPHOSRawDecoder(AliRawReader* rawReader,  AliAltroMapping **mapping):
   fRawReader(0),fCaloStream(0),fPedSubtract(kFALSE),fEnergy(-111),fTime(-111),fQuality(0.),
-  fModule(-1),fColumn(-1),fRow(-1),fLowGainFlag(kFALSE),fOverflow(kFALSE),fSamples(0),
-  fTimes(0),fPulseGenerator(0)
+  fModule(-1),fColumn(-1),fRow(-1),fNewModule(-1),fNewColumn(-1),fNewRow(-1),fNewAmp(0),fNewTime(0),
+  fLowGainFlag(kFALSE),fNewLowGainFlag(kFALSE),fOverflow(kFALSE),fSamples(0),fTimes(0)
 {
   //Construct a decoder object.
   //Is is user responsibility to provide next raw event 
@@ -70,7 +69,6 @@ AliPHOSRawDecoder::AliPHOSRawDecoder(AliRawReader* rawReader,  AliAltroMapping *
   fCaloStream->SetOldRCUFormat(kFALSE);
   fSamples = new TArrayI(100);
   fTimes = new TArrayI(100);
-  fPulseGenerator = new AliPHOSPulseGenerator();
 }
 
 //-----------------------------------------------------------------------------
@@ -81,7 +79,6 @@ AliPHOSRawDecoder::~AliPHOSRawDecoder()
   if(fCaloStream){ delete fCaloStream; fCaloStream=0;}
   if(fSamples){ delete fSamples; fSamples=0 ;}
   if(fTimes){ delete fTimes; fTimes=0 ;}
-  if(fPulseGenerator){ delete fPulseGenerator; fPulseGenerator=0 ;}
 }
 
 //-----------------------------------------------------------------------------
@@ -90,9 +87,11 @@ AliPHOSRawDecoder::AliPHOSRawDecoder(const AliPHOSRawDecoder &phosDecoder ):
   fPedSubtract(phosDecoder.fPedSubtract),
   fEnergy(phosDecoder.fEnergy),fTime(phosDecoder.fTime),fQuality(phosDecoder.fQuality),
   fModule(phosDecoder.fModule),fColumn(phosDecoder.fColumn),
-  fRow(phosDecoder.fRow),fLowGainFlag(phosDecoder.fLowGainFlag),
+  fRow(phosDecoder.fRow),fNewModule(phosDecoder.fNewModule),fNewColumn(phosDecoder.fNewColumn),
+  fNewRow(phosDecoder.fNewRow),fNewAmp(phosDecoder.fNewAmp),fNewTime(phosDecoder.fNewTime),
+  fLowGainFlag(phosDecoder.fLowGainFlag),fNewLowGainFlag(phosDecoder.fNewLowGainFlag),
   fOverflow(phosDecoder.fOverflow),fSamples(phosDecoder.fSamples),
-  fTimes(phosDecoder.fTimes),fPulseGenerator(phosDecoder.fPulseGenerator)
+  fTimes(phosDecoder.fTimes)
 {
   //Copy constructor.
 }
@@ -114,7 +113,13 @@ AliPHOSRawDecoder& AliPHOSRawDecoder::operator = (const AliPHOSRawDecoder &phosD
     fModule = phosDecode.fModule;
     fColumn = phosDecode.fColumn;
     fRow = phosDecode.fRow;
+    fNewModule = phosDecode.fNewModule;
+    fNewColumn = phosDecode.fNewColumn;
+    fNewRow = phosDecode.fNewRow;
+    fNewAmp = phosDecode.fNewAmp ;
+    fNewTime= phosDecode.fNewTime ;
     fLowGainFlag = phosDecode.fLowGainFlag;
+    fNewLowGainFlag = phosDecode.fNewLowGainFlag;
     fOverflow = phosDecode.fOverflow ;
     
     if(fSamples) delete fSamples;
@@ -122,9 +127,6 @@ AliPHOSRawDecoder& AliPHOSRawDecoder::operator = (const AliPHOSRawDecoder &phosD
 
     if(fTimes) delete fTimes;
     fTimes = phosDecode.fTimes;
-
-    if(fPulseGenerator) delete fPulseGenerator;
-    fPulseGenerator = phosDecode.fPulseGenerator;
   }
 
   return *this;
@@ -163,6 +165,13 @@ Bool_t AliPHOSRawDecoder::NextDigit()
      if(in->IsNewHWAddress() && iBin>0) {
        
        iBin=0;
+       //First remember new sample
+       fNewLowGainFlag = in->IsLowGain();
+       fNewModule = in->GetModule()+1;
+       fNewRow    = in->GetRow()   +1;
+       fNewColumn = in->GetColumn()+1;
+       fNewAmp = in->GetSignal() ;
+       fNewTime=in->GetTime() ;                                                                                                                               
        
        // Temporarily we take the energy as a maximum amplitude
        // and the pedestal from the 0th point (30 Aug 2006).
@@ -174,7 +183,6 @@ Bool_t AliPHOSRawDecoder::NextDigit()
 	   fEnergy -= (Double_t)(pedMean/nPed); // pedestal subtraction
 	 else
 	   return kFALSE;
-       
        if (fEnergy < baseLine) fEnergy = 0;
 
        pedMean = 0;
@@ -182,10 +190,16 @@ Bool_t AliPHOSRawDecoder::NextDigit()
      }
 
      fLowGainFlag = in->IsLowGain();
-     fTime = fPulseGenerator->GetRawFormatTimeTrigger() * in->GetTime();
+//     fTime =   in->GetTime();
      fModule = in->GetModule()+1;
      fRow    = in->GetRow()   +1;
      fColumn = in->GetColumn()+1;
+
+    if(fLowGainFlag==fNewLowGainFlag && fModule==fNewModule &&
+       fRow==fNewRow && fColumn==fNewColumn ){
+       if(fNewAmp>fEnergy)  fEnergy = (Double_t)fNewAmp ;
+       fNewModule=-1 ;
+    } 
 
      //Calculate pedestal if necessary
      if(fPedSubtract && in->GetTime() < nPreSamples) {

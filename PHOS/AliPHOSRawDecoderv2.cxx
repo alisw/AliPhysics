@@ -131,13 +131,13 @@ Bool_t AliPHOSRawDecoderv2::NextDigit()
   //reasonable shape, fits it with Gamma2 function and extracts 
   //energy and time.
 
-//  TCanvas * cs = (TCanvas*)gROOT->FindObjectAny("CSample") ;
-//  if(!cs)
-//    cs = new TCanvas("CSample","CSample") ;
-//
-//  TH1D * h = (TH1D*)gROOT->FindObjectAny("hSample") ;
-//  if(!h)
-//    h=new TH1D("hSample","",200,0.,200.) ;
+  TCanvas * cs = (TCanvas*)gROOT->FindObjectAny("CSample") ;
+  if(!cs)
+    cs = new TCanvas("CSample","CSample") ;
+
+  TH1D * h = (TH1D*)gROOT->FindObjectAny("hSample") ;
+  if(!h)
+    h=new TH1D("hSample","",200,0.,200.) ;
 
 
   AliCaloRawStream* in = fCaloStream;
@@ -145,9 +145,11 @@ Bool_t AliPHOSRawDecoderv2::NextDigit()
   Int_t    iBin     = fSamples->GetSize();
   fEnergy = 0;
   Double_t pedMean = 0;
+  Double_t pedRMS = 0;
   Int_t   nPed = 0;
   Double_t baseLine = 1.0;
   const Int_t nPreSamples = 10;
+  fQuality = 0. ;
   
   while ( in->Next() ) { 
     
@@ -161,34 +163,41 @@ Bool_t AliPHOSRawDecoderv2::NextDigit()
 	else
 	  return kFALSE;
       }
-//      for(Int_t i=0; i<fSamples->GetSize(); i++){
-//        h->SetBinContent(i+1,fSamples->At(i)) ;
-//      }      
+      for(Int_t i=0; i<fSamples->GetSize(); i++){
+        h->SetBinContent(i+1,fSamples->At(i)) ;
+      }      
 
       //calculate time and energy
       Int_t maxBin=0 ;
       Int_t maxAmp=0 ; 
       for(Int_t i=iBin; i<fSamples->GetSize(); i++){
-	Double_t de=fSamples->At(i)-pedestal ;
-        if(fEnergy<de){
-          fEnergy=de ;
+        if(maxAmp<fSamples->At(i)){
           maxBin=i ;
           maxAmp=fSamples->At(i) ;
         }
       }
+      if(maxBin==fSamples->GetSize()-1){//bad sample 
+        fEnergy=0. ;                                                                                                                       
+        fTime=-999.;                                                                                                                       
+        return kTRUE ;                                                                                                                     
+      } 
+      fEnergy=Double_t(maxAmp)-pedestal ;
       fOverflow =0 ;  //look for plato on the top of sample
-      if(fEnergy>700 &&  //this is not fluctuation of soft sample
+      if(fEnergy>500 &&  //this is not fluctuation of soft sample
          maxBin<fSamples->GetSize()-1 && fSamples->At(maxBin+1)==maxAmp){ //and there is a plato
          fOverflow = kTRUE ;
       }
 
-//    if(fEnergy>1020.){
-//    printf("fE=%f \n",fEnergy) ;
+//    if(fEnergy>500.){
+// if(fRow==54 && fColumn==24){
+//    printf("fE=%f, ped=%f, row=%d, col=%d \n",fEnergy,pedestal,fRow,fColumn) ;
+//    if(fOverflow)printf(" Overflow \n") ;
+//    else printf("iBin=%d, maxBin=%d, maxAmp=%d,Amp(+1)=%d,Amp(-1)=%d  \n",iBin,maxBin,maxAmp,fSamples->At(maxBin+1),fSamples->At(maxBin-1)) ;
 //    cs->cd() ;
 //    h->Draw() ;
 //    cs->Update() ;
 //    getchar() ;
-//    }
+// }
 
       if(fOverflow)
         return kTRUE ; //do not calculate energy and time for overflowed channels
@@ -241,19 +250,51 @@ Bool_t AliPHOSRawDecoderv2::NextDigit()
  
       if(tW>0.){
         fTime/=tW ;
-        tRMS/=tW ;
-        tRMS-=fTime*fTime ;
+        fQuality = tRMS/tW-fTime*fTime ;
+        //Normalize quality
 //printf("t0=%f, RMS=%f, cut=%f \n",fTime,tRMS,fRMScut) ;
-        if(tRMS>=fRMScut){ //bad sample
-          fTime=-999. ;
-          fEnergy=0. ;
-        }
+//        if(tRMS>=fRMScut){ //bad sample
+//          fTime=-999. ;
+//          fEnergy=0. ;
+//        }
       }
       else{
         fTime=-999. ;
+        fQuality=999. ;
       }
 
-      fTime*=fPulseGenerator->GetRawFormatTimeTrigger() ;
+      Bool_t isBad = 0 ;
+      for(Int_t i=iBin+1; i<fSamples->GetSize()-1&&!isBad; i++){
+        if(fSamples->At(i)>fSamples->At(i-1)+5 && fSamples->At(i)>fSamples->At(i+1)+5) { //single jump
+          isBad=1 ;
+        }
+      }
+      if(pedestal<10.)
+        isBad=1 ;
+
+      pedRMS=pedRMS/nPed-pedestal*pedestal ;
+      if(pedRMS>0.1)
+        isBad=1 ;
+
+      for(Int_t i=iBin+1; i<fSamples->GetSize()-1&&!isBad; i++){                                                                           
+         if(fSamples->At(i)<pedestal-1)
+           isBad=1 ;
+      }
+
+      //two maxima
+
+
+    if(fEnergy>10. && !isBad ){
+    printf("fE=%f, ped=%f, fQuality=%f, pedRMS=%f \n",fEnergy,pedestal,fQuality,pedRMS) ;
+    if(fOverflow)printf(" Overflow \n") ;
+    if(isBad)printf("bad") ;
+//    else printf("iBin=%d, maxBin=%d, maxAmp=%d,Amp(+1)=%d,Amp(-1)=%d  \n",iBin,maxBin,maxAmp,fSamples->At(maxBin+1),fSamples->At(maxBin-1)) ;
+    cs->cd() ;
+    h->Draw() ;
+    cs->Update() ;
+    getchar() ;
+ }
+
 
       return kTRUE ; //will scan further
     }
@@ -268,6 +309,7 @@ Bool_t AliPHOSRawDecoderv2::NextDigit()
     iBin--;                                                             
     if(fPedSubtract && (in->GetTime() < nPreSamples)) {
       pedMean += in->GetSignal();
+      pedRMS += in->GetSignal()*in->GetSignal();
       nPed++;
     }
     fSamples->AddAt(in->GetSignal(),iBin);

@@ -87,21 +87,20 @@ void AliPHOSQADataMakerRec::InitESDs()
 {
   //Create histograms to controll ESD
  
-  TH1F * h5 = new TH1F("hNEmcPhosRecPoints",  "ESDs spectrum in PHOS",    200, 0., 20.) ;                                         
-  h5->Sumw2() ;
-  Add2ESDsList(h5, kESDSpec)  ;                                                                                                        
+  TH1F * h1 = new TH1F("hESDPhosSpectrum",  "ESDs spectrum in PHOS",    200, 0., 20.) ; 
+  h1->Sumw2() ;
+  Add2ESDsList(h1, kESDSpec)  ;                                                                                                        
+  TH1I * h2 = new TH1I("hESDPhosMul", "ESDs multiplicity distribution in PHOS", 100, 0,  100) ; 
+  h2->Sumw2() ;
+  Add2ESDsList(h2, kESDNtot) ;
  
-  TH1I * h6 = new TH1I("hEmcPhosRecPointsMul", "ESDs multiplicity distribution in PHOS", 100, 0,  100) ;                         
-  h6->Sumw2() ;
-  Add2ESDsList(h6, kESDNtot) ;
+  TH1I * h3 = new TH1I("hESDPhosEtot", "ESDs Etot", 100, 0,  1000.) ; 
+  h3->Sumw2() ;
+  Add2ESDsList(h3, kESDEtot) ;
  
-  TH1I * h7 = new TH1I("hEmcPhosRecPointsEtot", "ESDs Etot", 100, 0,  1000.) ;                                                    
-  h7->Sumw2() ;                                                                                                                            
-  Add2ESDsList(h7, kESDEtot) ;                                                                                                         
- 
-  TH1F * h8 = new TH1F("hESDpid",    "ESDs PID distribution in PHOS",       100, 0., 1.) ;
-  h8->Sumw2() ;
-  Add2ESDsList(h8, kESDpid) ;
+  TH1F * h4 = new TH1F("hESDpid",    "ESDs PID distribution in PHOS",       100, 0., 1.) ;
+  h4->Sumw2() ;
+  Add2ESDsList(h4, kESDpid) ;
 	
 }
 
@@ -120,7 +119,7 @@ void AliPHOSQADataMakerRec::InitRecPoints()
   TH2I * h4 = new TH2I("hRpPHOSxyMod5","RecPoints Rows x Columns for PHOS module 5", 64, -72., 72., 56, -63., 63.) ;                             
   Add2RecPointsList(h4,kRPmod5) ;
  
-  TH1F * h5 = new TH1F("hNEmcPhosRecPoints",  "EMC RecPoints spectrum in PHOS",    200, 0., 20.) ; 
+  TH1F * h5 = new TH1F("hEmcPhosRecPointsSpectrum",  "EMC RecPoints spectrum in PHOS",   2000, 0., 20.) ; 
   h5->Sumw2() ;
   Add2RecPointsList(h5, kRPSpec)  ;
 
@@ -128,7 +127,7 @@ void AliPHOSQADataMakerRec::InitRecPoints()
   h6->Sumw2() ;
   Add2RecPointsList(h6, kRPNtot) ;
 
-  TH1I * h7 = new TH1I("hEmcPhosRecPointsEtot", "EMC RecPoints Etot", 100, 0,  1000.) ; 
+  TH1I * h7 = new TH1I("hEmcPhosRecPointsEtot", "EMC RecPoints Etot", 200, 0,  200.) ; 
   h7->Sumw2() ;
   Add2RecPointsList(h7, kRPEtot) ;
 
@@ -170,10 +169,10 @@ void AliPHOSQADataMakerRec::InitRaws()
   h11->Sumw2() ;                                                                                                                           
   Add2RawsList(h11, kNmodHG) ;                                                                                                             
                                                                                                                                            
-  TH1F * h12 = new TH1F("hLowPhosRawtime", "Low Gain Time of raw hits in PHOS", 500, -5.e-6, 20.e-6) ;                                            
+  TH1F * h12 = new TH1F("hLowPhosRawtime", "Low Gain Time of raw hits in PHOS", 500, -50., 200.) ;                                            
   h12->Sumw2() ;                                                                                                                           
   Add2RawsList(h12, kLGtime) ;                                                                                                             
-  TH1F * h13 = new TH1F("hHighPhosRawtime", "High Gain Time of raw hits in PHOS", 500, -5.e-6, 20.e-6) ;                                          
+  TH1F * h13 = new TH1F("hHighPhosRawtime", "High Gain Time of raw hits in PHOS", 500, -50., 200.) ;                                          
   h13->Sumw2() ;                                                                                                                           
   Add2RawsList(h13, kHGtime) ;                                                                                                             
                                                                                                                                            
@@ -224,6 +223,7 @@ void AliPHOSQADataMakerRec::MakeESDs(AliESDEvent * esd)
 //____________________________________________________________________________
 void AliPHOSQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 {
+  //Fill prepared histograms with Raw digit properties
   rawReader->Reset() ;
   AliPHOSRawDecoder * decoder ;
   if(strcmp(AliPHOSReconstructor::GetRecoParamEmc()->DecoderVersion(),"v1")==0)

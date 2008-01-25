@@ -148,15 +148,15 @@ Bool_t AliPHOSRawDecoderv1::NextDigit()
   //energy and time.
 
 //Debug=====================
-//  TCanvas * c = (TCanvas*)gROOT->FindObjectAny("CSample") ;
+//  TCanvas * c = 0; //(TCanvas*)gROOT->FindObjectAny("CSample") ;
 //  if(!c)
 //    c = new TCanvas("CSample","CSample") ;
 // 
-//  TH1D * h = (TH1D*)gROOT->FindObjectAny("hSample") ;
+//  TH1D * h = 0 ; //(TH1D*)gROOT->FindObjectAny("hSample") ;
 //  if(!h)
 //    h=new TH1D("hSample","",200,0.,200.) ;
 // 
-//  TF1 * fff = (TF1*)gROOT->FindObjectAny("fff") ;
+//  TF1 * fff = 0 ; //(TF1*)gROOT->FindObjectAny("fff") ;
 //  if(!fff)
 //    fff = new TF1("fff","[0]+[1]*((abs(x-[2]))^[3]*exp(-(x-[2])*[4])+[5]*(x-[2])*(x-[2])*exp(-(x-[2])*[6]))",0.,1000.) ;
 //End debug===========
@@ -173,6 +173,7 @@ Bool_t AliPHOSRawDecoderv1::NextDigit()
   fQuality= 999. ;
   const Float_t sampleMaxHG=102.332 ;  //maximal height of HG sample with given parameterization
   const Float_t sampleMaxLG=277.196 ;  //maximal height of HG sample with given parameterization
+  const Float_t maxEtoFit=5 ; //fit only samples above this energy, accept all samples (with good aRMS) below it
   
   while ( in->Next() ) { 
     
@@ -192,7 +193,15 @@ Bool_t AliPHOSRawDecoderv1::NextDigit()
     
     // Fit the full sample
     if(in->IsNewHWAddress() && iBin != fSamples->GetSize()) {
-      
+
+      //First remember new sample
+      fNewLowGainFlag = in->IsLowGain();                                                                                                        
+      fNewModule = in->GetModule()+1;                                                                                                           
+      fNewRow    = in->GetRow()   +1;                                                                                                           
+      fNewColumn = in->GetColumn()+1;                                                                                                           
+      fNewAmp = in->GetSignal() ;
+      fNewTime=in->GetTime() ;                                                                                                                                       
+      //new handle already collected 
       Double_t pedestal =0. ;
       if(fPedSubtract){ 
 	if (nPed > 0)
@@ -206,14 +215,16 @@ Bool_t AliPHOSRawDecoderv1::NextDigit()
       Int_t maxAmp=0 ;
       Double_t aMean=0. ;                                                                                                                  
       Double_t aRMS=0. ;                                                                                                                   
+      Double_t wts=0 ;                                                                                                                       
       Int_t tStart = 0 ;                                                                                                                   
-      Int_t cnts=0 ;                                                                                                                       
       for(Int_t i=iBin; i<fSamples->GetSize(); i++){
         if(fSamples->At(i)>0){                                                                                                             
           Double_t de=fSamples->At(i)-pedestal ;                                                                                           
-          aMean+=de ;                                                                                                                      
-          aRMS+=de*de ;                                                                                                                    
-          cnts++;                                                                                                                          
+          if(de>1.){
+            aMean+=de*i ;                                                                                                                      
+            aRMS+=de*i*i ;                                                                                                                    
+            wts+=de; 
+          }                                                                                                                         
           if(de>2 && tStart==0) 
             tStart=i ;                                                                                                                     
           if(maxAmp<fSamples->At(i)){
@@ -222,7 +233,7 @@ Bool_t AliPHOSRawDecoderv1::NextDigit()
           }
         }
       }
-      if(maxBin==fSamples->GetSize()-1){//bad sample
+      if(maxBin==fSamples->GetSize()-1){//bad "rising" sample
         fEnergy=0. ;
         fTime=-999.;
         fQuality= 999. ;
@@ -235,22 +246,40 @@ Bool_t AliPHOSRawDecoderv1::NextDigit()
          fOverflow = kTRUE ;
       }
       
-      if(cnts>0){
-	aMean/=cnts; 
-	aRMS=aRMS/cnts-aMean*aMean;
+      if(wts>0){
+	aMean/=wts; 
+	aRMS=aRMS/wts-aMean*aMean;
       }
+
+      //do not take too small energies
+      if(fEnergy < baseLine) 
+         fEnergy = 0;
+
+      //do not test quality of too soft samples
+      if(fEnergy<maxEtoFit){
+        fTime=fTimes->At(tStart);
+        if(aRMS<2.) //sigle peak
+          fQuality=999. ;
+        else
+          fQuality= 0. ;                                                                                                                   
+        return kTRUE ;                                                                                                                     
+      } 
+
       
 //Debug:=====Draw sample
 //if(fEnergy>pedestal+10.){
+//if(fLowGainFlag && fEnergy>2){
+//  if(!c)
+//    c = new TCanvas("CSample","CSample") ;
 //    c->cd() ;
 //    h->Draw() ;
 //    c->Update() ;
-// printf("fEnergy=%f, cnts=%d, aMean=%f, aRMS=%f \n",fEnergy,cnts,aMean,aRMS) ;   
+// printf("fEnergy=%f, aRMS=%f \n",fEnergy,aRMS) ;   
+//getchar() ;
 //}
 //======================
 
       //IF sample has reasonable mean and RMS, try to fit it with gamma2
-      if(fEnergy>2.&& cnts >20 && aMean>0. && aRMS>2.){ //more or less reasonable sample
 	
 	gMinuit->mncler();                     // Reset Minuit's list of paramters
 	gMinuit->SetPrintLevel(-1) ;           // No Printout
@@ -353,12 +382,13 @@ Bool_t AliPHOSRawDecoderv1::NextDigit()
 //        else{
 //          n=fSampleParamsHigh->At(0) ;
 //          alpha=fSampleParamsHigh->At(1) ;
-//          b=fSampleParamsHigh->At(2) ;
+//         b=fSampleParamsHigh->At(2) ;
 //          beta=fSampleParamsHigh->At(3) ;
 //        }
 //
 //    if( fQuality > 5.*TMath::Exp(0.0025*efit)){
 //    if( fQuality > 1.){
+//      if(fLowGainFlag){
 //   printf("Col=%d, row=%d, qual=%f, E=%f \n",fColumn,fRow,fQuality,efit) ;
 //    c->cd() ;
 //    h->Draw() ;
@@ -374,27 +404,32 @@ Bool_t AliPHOSRawDecoderv1::NextDigit()
 //    }
 //====================
 
-        fEnergy=efit ;
-        fTime=t0 ;
-	
-        fTime*=fPulseGenerator->GetRawFormatTimeTrigger() ; 
+      fEnergy=efit ;
+      fTime=t0 ;
 
-	if (fEnergy < baseLine) fEnergy = 0;
-      }
-      else{ //bad sample
-	fEnergy=0. ;
-	fTime=-999. ;
-        fQuality=999.;
-      }
       
       return kTRUE;
     }
     
     fLowGainFlag = in->IsLowGain();
-    fTime = fPulseGenerator->GetRawFormatTimeTrigger() * in->GetTime();
     fModule = in->GetModule()+1;
     fRow    = in->GetRow()   +1;
     fColumn = in->GetColumn()+1;
+
+    //add previouly taken if coincides
+    if(fLowGainFlag==fNewLowGainFlag && fModule==fNewModule &&
+       fRow==fNewRow && fColumn==fNewColumn){
+       iBin--;                                                                                                                                
+       if(fPedSubtract && fNewTime < nPreSamples) {                                                                                    
+         pedMean += in->GetSignal();                                                                                                          
+         nPed++;                                                                                                                              
+       }                                                                                                                                      
+       fSamples->AddAt(fNewAmp,iBin);                                                                                                 
+       fTimes->AddAt(fNewTime,iBin);                                                                                                     
+    
+       //Mark that we already take it
+       fNewModule=-1 ;
+    }
     
     // Fill array with samples
     iBin--;
