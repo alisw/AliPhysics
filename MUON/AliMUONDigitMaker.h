@@ -32,6 +32,14 @@ class AliMUONDigitMaker : public TObject
   AliMUONDigitMaker(Bool_t enableErrorLogger = kTRUE, Bool_t useFastDecoder = kFALSE); // Constructor
   virtual ~AliMUONDigitMaker(void); // Destructor
     
+  /// Code to indicate readout errors
+  enum ErrorCode
+  {
+    kOK=0,             ///< everything is OK 
+    kTrackerBAD=1<<1,  ///< tracker part had readout errors 
+    kTriggerBAD=1<<2   ///< trigger part had readout errors 
+  };
+  
   // write raw data
   Int_t  Raw2Digits(AliRawReader* rawReader, 
                     AliMUONVDigitStore* digitContainer=0,
@@ -50,6 +58,8 @@ class AliMUONDigitMaker : public TObject
   void  SetMakeTriggerDigits(Bool_t flag = kFALSE) { fMakeTriggerDigits = flag; }
 
   void  SetFastDecoder(Bool_t useFastDecoder); 
+
+  void Print(Option_t* opt="") const;
 
 private:
     
