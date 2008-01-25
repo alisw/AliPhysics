@@ -314,7 +314,7 @@ AliMUONPainterDataSourceFrame::CreateRawDataSource(const TString& uri)
          
     rawReader = new AliRawReaderRoot(filename.Data());
   }
-  else if ( uri.Contains(TRegexp(".raw$")) )
+  else if ( uri.Contains(TRegexp(".raw")) )
   {
     AliDebug(1,"Using RawReaderDate");
     rawReader = new AliRawReaderDate(filename.Data());
