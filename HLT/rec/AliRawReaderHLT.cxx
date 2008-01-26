@@ -1,4 +1,4 @@
-// $Id: AliRawReaderHLT.cxx,v 1.3 2007/11/15 18:12:44 szostak Exp $
+// $Id: AliHLTReconstructor.cxx 21363 2007-10-12 13:24:47Z richterm $
 
 /**************************************************************************
  * This file is property of and copyright by the ALICE HLT Project        * 
@@ -155,7 +155,7 @@ Bool_t   AliRawReaderHLT::ReadHeader()
 {
   // see header file for class documentation
   Bool_t result=fpParentReader->ReadHeader();
-  fHeader=const_cast<AliRawDataHeader*>(GetDataHeader());
+  fHeader=const_cast<AliRawDataHeader*>(fpParentReader->GetDataHeader());
   return result;
 }
 
@@ -163,7 +163,7 @@ Bool_t   AliRawReaderHLT::ReadNextData(UChar_t*& data)
 {
   // see header file for class documentation
   Bool_t result=fpParentReader->ReadNextData(data);
-  fHeader=const_cast<AliRawDataHeader*>(GetDataHeader());
+  fHeader=const_cast<AliRawDataHeader*>(fpParentReader->GetDataHeader());
   return result;
 }
 
@@ -171,7 +171,7 @@ Bool_t   AliRawReaderHLT::ReadNextInt(UInt_t& data)
 {
   // see header file for class documentation
   Bool_t result=fpParentReader->ReadNextInt(data);
-  fHeader=const_cast<AliRawDataHeader*>(GetDataHeader());
+  fHeader=const_cast<AliRawDataHeader*>(fpParentReader->GetDataHeader());
   return result;
 }
 
@@ -179,7 +179,7 @@ Bool_t   AliRawReaderHLT::ReadNextShort(UShort_t& data)
 {
   // see header file for class documentation
   Bool_t result=fpParentReader->ReadNextShort(data);
-  fHeader=const_cast<AliRawDataHeader*>(GetDataHeader());
+  fHeader=const_cast<AliRawDataHeader*>(fpParentReader->GetDataHeader());
   return result;
 }
 
@@ -187,7 +187,7 @@ Bool_t   AliRawReaderHLT::ReadNextChar(UChar_t& data)
 {
   // see header file for class documentation
   Bool_t result=fpParentReader->ReadNextChar(data);
-  fHeader=const_cast<AliRawDataHeader*>(GetDataHeader());
+  fHeader=const_cast<AliRawDataHeader*>(fpParentReader->GetDataHeader());
   return result;
 }
 
@@ -195,7 +195,7 @@ Bool_t   AliRawReaderHLT::ReadNext(UChar_t* data, Int_t size)
 {
   // see header file for class documentation
   Bool_t result=fpParentReader->ReadNext(data, size);
-  fHeader=const_cast<AliRawDataHeader*>(GetDataHeader());
+  fHeader=const_cast<AliRawDataHeader*>(fpParentReader->GetDataHeader());
   return result;
 }
 
@@ -212,7 +212,7 @@ Bool_t   AliRawReaderHLT::NextEvent()
   //fpParentReader->SelectEquipment(fSelectEquipmentType, fSelectMinEquipmentId, fSelectMaxEquipmentId);
   Bool_t result=fpParentReader->NextEvent();
   if (result) fEventNumber++;
-  AliInfo(Form("event %d", fEventNumber));
+  //AliInfo(Form("event %d", fEventNumber));
   return result;
 }
 
@@ -240,7 +240,7 @@ void AliRawReaderHLT::Select(Int_t detectorID, Int_t minDDLID, Int_t maxDDLID)
 
 void AliRawReaderHLT::SelectEquipment(Int_t equipmentType, Int_t minEquipmentId, Int_t maxEquipmentId)
 {
-  AliInfo(Form("equipmentType=%d, minEquipmentId=%d, maxEquipmentId=%d", equipmentType, minEquipmentId, maxEquipmentId));
+  //AliInfo(Form("equipmentType=%d, minEquipmentId=%d, maxEquipmentId=%d", equipmentType, minEquipmentId, maxEquipmentId));
   AliRawReader::Select(equipmentType, minEquipmentId, maxEquipmentId);
   fpParentReader->Select(equipmentType, minEquipmentId, maxEquipmentId);
 }
@@ -253,7 +253,7 @@ void AliRawReaderHLT::SkipInvalid(Bool_t skip)
 
 void AliRawReaderHLT::SelectEvents(Int_t type)
 {
-  AliInfo(Form("type=%d", type));
+  //AliInfo(Form("type=%d", type));
   AliRawReader::SelectEvents(type);
   fpParentReader->SelectEvents(type);
 }
