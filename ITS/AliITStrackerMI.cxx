@@ -4937,6 +4937,8 @@ Bool_t AliITStrackerMI::IsOKForPlaneEff(AliITStrackMI* track, Int_t ilayer) cons
 //
 // input: AliITStrackMI* track, ilayer= layer number [0,5]
 // output: Bool_t   -> kTRUE 2f usable track, kFALSE if not usable. 
+  if(!fPlaneEff) 
+    {AliWarning("IsOKForPlaneEff: null pointer to AliITSPlaneEff"); return kFALSE;}
   AliITSlayer &layer=fgLayers[ilayer];
   Double_t r=layer.GetR();
   //AliITStrackV2 tmp(*track);
@@ -4962,7 +4964,8 @@ Bool_t AliITStrackerMI::IsOKForPlaneEff(AliITStrackMI* track, Int_t ilayer) cons
   if(key>fPlaneEff->Nblock()) return kFALSE;
   Float_t blockXmn,blockXmx,blockZmn,blockZmx;
   if (!fPlaneEff->GetBlockBoundaries(key,blockXmn,blockXmx,blockZmn,blockZmx)) return kFALSE;
-  // transform Local boundaries of the basic block into Global (i.e. tracking) coordinate
+  // transform Local boundaries of the basic block into 
+  //  Global (i.e. ALICE not tracking reference) coordinate
   //
   Double_t a1[3]={blockXmn,0.,blockZmn};
   Double_t a2[3]={blockXmx,0.,blockZmn};
@@ -4970,29 +4973,41 @@ Bool_t AliITStrackerMI::IsOKForPlaneEff(AliITStrackMI* track, Int_t ilayer) cons
   Int_t ndet=AliITSgeomTGeo::GetNDetectors(ilayer+1); // layers from 1 to 6
   Int_t lad = Int_t(idet/ndet) + 1;
   Int_t hdet = idet - (lad-1)*ndet + 1;
+  Double_t xyzGlob[3];
   AliITSgeomTGeo::LocalToGlobal(ilayer+1,lad,hdet,a1,a1);
   AliITSgeomTGeo::LocalToGlobal(ilayer+1,lad,hdet,a2,a2);
   AliITSgeomTGeo::LocalToGlobal(ilayer+1,lad,hdet,a3,a3);
   Double_t gBlockYmn,gBlockYmx,gBlockZmn,gBlockZmx;
   if(a1[1]>a2[1]) {gBlockYmn=a2[1]; gBlockYmx=a1[1];}
   else            {gBlockYmn=a1[1]; gBlockYmx=a2[1];}
-  if(a2[2]>a3[2]) {gBlockZmn=a2[2]; gBlockZmx=a3[2];}
-  else            {gBlockZmn=a3[2]; gBlockZmx=a2[2];}
+  if(a2[2]>a3[2]) {gBlockZmn=a3[2]; gBlockZmx=a2[2];}
+  else            {gBlockZmn=a2[2]; gBlockZmx=a3[2];}
+  AliDebug(2,Form("Boundaries in Global system Ymin=%f, Ymax=%f, Zmin=%f, Zmax=%f", 
+           gBlockYmn,gBlockYmx,gBlockZmn,gBlockZmx));
 
   //***************
   // DEFINITION OF SEARCH ROAD FOR accepting a track 
   //
   //For the time being they are hard-wired, later on from AliITSRecoParam
-  Double_t dz=4.*TMath::Sqrt(tmp.GetSigmaZ2()); 
-  Double_t dy=4.*TMath::Sqrt(tmp.GetSigmaY2()); 
+  Double_t dz=4.*TMath::Sqrt(tmp.GetSigmaZ2());  // those are precisions in the tracking reference system
+  Double_t dy=4.*TMath::Sqrt(tmp.GetSigmaY2());  // dy needs to be reduced (it is max now) if you do  
+                                                 // comparison in Global Reference system 
+  Float_t gdz=dz;
+  Float_t gdy=dy*TMath::Abs(TMath::Cos(tmp.GetAlpha()));
 
  // exclude tracks at boundary between detectors
   //Double_t boundaryWidth=AliITSRecoParam::GetBoundaryWidth();
   Double_t boundaryWidth=0; // for the time being hard-wired, later on from AliITSRecoParam
-  if ( (tmp.GetY()-dy < gBlockYmn+boundaryWidth) ||
-       (tmp.GetY()+dy > gBlockYmx-boundaryWidth) ||
-       (tmp.GetZ()-dz < gBlockZmn+boundaryWidth) ||
-       (tmp.GetZ()+dz > gBlockZmx-boundaryWidth) ) return kFALSE;
+  AliDebug(2,Form("Tracking: track impact x=%f, y=%f, z=%f",tmp.GetX(), tmp.GetY(), tmp.GetZ()));
+  tmp.GetXYZ(xyzGlob);
+  AliDebug(2,Form("Global:   track impact x=%f, y=%f, z=%f",xyzGlob[0],xyzGlob[1],xyzGlob[2]));
+  //AliInfo(Form("TEST GLOBAL track y = %f, z=%f",tmp.GetY(),tmp.GetZ()));
+  AliDebug(2,Form("Search Road. Tracking: dy=%f , dz=%f",dy,dz));
+  AliDebug(2,Form("Search Road. Global: Gdy=%f , Gdz=%f",gdy,gdz));
+  if ( (xyzGlob[1]-gdy < gBlockYmn+boundaryWidth) ||
+       (xyzGlob[1]+gdy > gBlockYmx-boundaryWidth) ||
+       (xyzGlob[2]-gdz < gBlockZmn+boundaryWidth) ||
+       (xyzGlob[2]+gdz > gBlockZmx-boundaryWidth) ) return kFALSE;
 
   return kTRUE;
 }
@@ -5013,6 +5028,8 @@ void AliITStrackerMI::UseTrackForPlaneEff(AliITStrackMI* track, Int_t ilayer) {
 //                  AliITSPlaneEff::UpDatePlaneEff(key,kTRUE);
 //               - if not, the AliITSPlaneEff::UpDatePlaneEff(key,kFALSE) is called
 //
+  if(!fPlaneEff)
+    {AliWarning("UseTrackForPlaneEff: null pointer to AliITSPlaneEff"); return;}
   AliITSlayer &layer=fgLayers[ilayer];
   Double_t r=layer.GetR();
   //AliITStrackV2 tmp(*track);
@@ -5123,3 +5140,4 @@ void AliITStrackerMI::UseTrackForPlaneEff(AliITStrackMI* track, Int_t ilayer) {
        AliWarning(Form("UseTrackForPlaneEff: cannot UpDate PlaneEff for key=%d",key));
 return;
 }
+
