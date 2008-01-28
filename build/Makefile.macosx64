@@ -46,16 +46,6 @@ CXXSTF        = -m64 -pipe -Wall -W -Wno-long-double -pipe -fbounds-check -fsign
 # Compiler flags
 CXXFLAGS      = $(CXXOPT) $(CXXSTF)
 
-ifneq (,$(findstring g95,$(ROOTBUILD)))
-FFLAGS	      +=-DFORTRAN_G95
-else
-ifneq (,$(findstring gfortran,$(ROOTBUILD)))
-FFLAGS	      +=-DFORTRAN_GFORTRAN
-else
-FFLAGS	      +=
-endif
-endif
-
 CXXFLAGSNO    = $(CXXNOOPT) $(CXXSTF) 
 
 CFLAGS	      = $(COPT) -m64 -Wall -W -fno-common -pipe -I$(FINK_ROOT)/include
@@ -63,7 +53,11 @@ CFLAGS	      = $(COPT) -m64 -Wall -W -fno-common -pipe -I$(FINK_ROOT)/include
 FFLAGS        = $(CLIBFOPT) $(FOPT)
 ifeq (g95,$(findstring g95,$(ROOTBUILD)))
 FFLAGS        += -ftrace=full
+FFLAGS	      +=-DFORTRAN_G95
+else
+FFLAGS	      +=-DFORTRAN_GFORTRAN
 endif
+
 # rmkdepend flags for building dependencies of FORTRAN files
 DEPENDFFLAGS  = $(FFLAGS)
 

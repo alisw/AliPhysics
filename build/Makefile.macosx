@@ -44,11 +44,8 @@ CLIBFOPT      = $(CLIBDEFS)
 CXXSTF        =  -pipe -Wall -W -Wno-long-double -pipe -fbounds-check -fsigned-char -fno-common -fmessage-length=0 -Woverloaded-virtual -Weffc++ -Wconversion -fno-default-inline -fno-inline -I/usr/X11R6/include -I$(FINK_ROOT)/include
 
 # Compiler flags
-CXXFLAGS      = $(CXXOPT) $(CXXSTF) -Weffc++
+CXXFLAGS      = $(CXXOPT) $(CXXSTF)
 
-ifeq (g95,$(findstring g95,$(ROOTBUILD)))
-CXXFLAGS+=-DFORTRAN_G95
-endif
 CXXFLAGSNO    = $(CXXNOOPT) $(CXXSTF) 
 
 CFLAGS	      = $(COPT) -Wall -W -fno-common -pipe -I$(FINK_ROOT)/include
@@ -56,7 +53,11 @@ CFLAGS	      = $(COPT) -Wall -W -fno-common -pipe -I$(FINK_ROOT)/include
 FFLAGS        = $(CLIBFOPT) $(FOPT)
 ifeq (g95,$(findstring g95,$(ROOTBUILD)))
 FFLAGS        += -ftrace=full
+FFLAGS        +=-DFORTRAN_G95
+else
+FFLAGS        +=-DFORTRAN_GFORTRAN
 endif
+
 # rmkdepend flags for building dependencies of FORTRAN files
 DEPENDFFLAGS  = $(FFLAGS)
 
