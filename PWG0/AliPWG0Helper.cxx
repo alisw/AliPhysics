@@ -108,7 +108,7 @@ Bool_t AliPWG0Helper::IsVertexReconstructed(const AliESDVertex* vtxESD)
 }
 
 //____________________________________________________________________
-const AliESDVertex* AliPWG0Helper::GetVertex(const AliESDEvent* aEsd, AnalysisMode analysisMode)
+const AliESDVertex* AliPWG0Helper::GetVertex(const AliESDEvent* aEsd, AnalysisMode analysisMode, Bool_t debug)
 {
   // Get the vertex from the ESD and returns it if the vertex is valid
   //
@@ -121,27 +121,43 @@ const AliESDVertex* AliPWG0Helper::GetVertex(const AliESDEvent* aEsd, AnalysisMo
   {
     vertex = aEsd->GetVertex();
     requiredZResolution = 0.1;
+    if (debug)
+      Printf("AliPWG0Helper::GetVertex: Returning SPD vertex");
   }
   else if (analysisMode == kTPC) 
   {
     vertex = aEsd->GetPrimaryVertex();
     requiredZResolution = 0.6;
+    if (debug)
+      Printf("AliPWG0Helper::GetVertex: Returning vertex from tracks");
   }
   else
     Printf("AliPWG0Helper::GetVertex: ERROR: Invalid second argument %d", analysisMode);
 
-  if (!vertex)
+  if (!vertex) {
+    if (debug)
+      Printf("AliPWG0Helper::GetVertex: No vertex found in ESD");
     return 0;
+  }
 
   // check Ncontributors
-  if (vertex->GetNContributors() <= 0)
+  if (vertex->GetNContributors() <= 0) {
+    if (debug)
+      Printf("AliPWG0Helper::GetVertex: NContributors() <= 0");
     return 0;
+  }
 
   // check resolution
   Double_t zRes = vertex->GetZRes();
 
-  if (zRes == 0 || zRes > requiredZResolution)
+  if (zRes == 0 || zRes > requiredZResolution) {
+    if (debug)
+      Printf("AliPWG0Helper::GetVertex: Resolution too poor %f (required: %f", zRes, requiredZResolution);
     return 0;
+  }
+
+  if (debug)
+    Printf("AliPWG0Helper::GetVertex: Returning valid vertex");
 
   return vertex;
 }
