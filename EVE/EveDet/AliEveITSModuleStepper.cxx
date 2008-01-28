@@ -34,8 +34,10 @@
 
 
 //______________________________________________________________________________
-// AliEveITSModuleStepper
 //
+// Display scaled ITS modules in a paged layout, also providing
+// GL-overaly control GUI.
+
 
 ClassImp(AliEveITSModuleStepper)
 
@@ -71,6 +73,8 @@ AliEveITSModuleStepper::AliEveITSModuleStepper(AliEveITSDigitsInfo* di) :
   fWActiveCol(45),
   fFontCol(8)
 {
+  // Constructor.
+
   // override member from base TEveElementList
   fChildClass = AliEveITSScaledModule::Class();
 
@@ -99,6 +103,8 @@ AliEveITSModuleStepper::AliEveITSModuleStepper(AliEveITSDigitsInfo* di) :
 
 AliEveITSModuleStepper::~AliEveITSModuleStepper()
 {
+  // Destructor.
+
   gEve->GetGLViewer()->RemoveOverlayElement(this);
 
    fScaleInfo->DecRefCount();
@@ -114,6 +120,10 @@ AliEveITSModuleStepper::~AliEveITSModuleStepper()
 
 void AliEveITSModuleStepper::Capacity()
 {
+  // Make sure we have just enough children (module representations)
+  // to store as many modules as required by the grid-stepper
+  // configuration.
+
   Int_t N = fStepper->GetNx()*fStepper->GetNy();
   if (N != GetNChildren())
   {
@@ -132,8 +142,8 @@ void AliEveITSModuleStepper::SetFirst(Int_t first)
   Int_t lastpage = fIDs.size()/Nxy();
   if(fIDs.size() % Nxy() ) lastpage++;
 
-  Int_t first_lastpage = (lastpage -1)*Nxy();
-  if(first > first_lastpage) first = first_lastpage;
+  Int_t firstLastpage = (lastpage - 1)*Nxy();
+  if(first > firstLastpage) first = firstLastpage;
   if(first < 0) first = 0;
   fPosition = first;
   Apply();
@@ -141,26 +151,33 @@ void AliEveITSModuleStepper::SetFirst(Int_t first)
 
 void AliEveITSModuleStepper::Start()
 {
+  // Go to first page.
+
   fPosition = 0;
   Apply();
 }
 
 void AliEveITSModuleStepper::Next()
 {
+  // Go to next page.
+
   SetFirst(fPosition + Nxy());
 }
 
 void AliEveITSModuleStepper::Previous()
 {
-  // move to the top left corner first
+  // Go to previous page.
+
   SetFirst(fPosition - Nxy());
 }
 
 void AliEveITSModuleStepper::End()
 {
+  // Go to last page.
+
   Int_t lastpage = fIDs.size()/Nxy();
-  if(fIDs.size() % Nxy() ) lastpage++;
-  fPosition = (lastpage -1)*Nxy();
+  if (fIDs.size() % Nxy()) lastpage++;
+  fPosition = (lastpage - 1)*Nxy();
 
   fStepper->Reset();
   Apply();
@@ -170,6 +187,8 @@ void AliEveITSModuleStepper::End()
 
 void AliEveITSModuleStepper::DisplayDet(Int_t det, Int_t layer)
 {
+  // Select modules to display by sub-det type / layer. 
+
   fSubDet = det;
   fIDs.clear();
   AliEveITSModuleSelection sel = AliEveITSModuleSelection();
@@ -185,6 +204,8 @@ void AliEveITSModuleStepper::DisplayDet(Int_t det, Int_t layer)
 
 void AliEveITSModuleStepper::DisplayTheta(Float_t min, Float_t max)
 {
+  // Select modules to display by theta range.
+
   fIDs.clear();
   AliEveITSModuleSelection sel = AliEveITSModuleSelection();
   sel.SetThetaRange(min, max);
@@ -196,9 +217,11 @@ void AliEveITSModuleStepper::DisplayTheta(Float_t min, Float_t max)
 
 Int_t AliEveITSModuleStepper::GetCurrentPage()
 {
-  Int_t idx = fPosition +1;
-  Int_t n = idx/Nxy();
-  if(idx % Nxy()) n++;
+  // Get number of current page.
+
+  Int_t idx = fPosition + 1;
+  Int_t n   = idx/Nxy();
+  if (idx % Nxy()) n++;
   return n;
 }
 
@@ -206,6 +229,8 @@ Int_t AliEveITSModuleStepper::GetCurrentPage()
 
 Int_t AliEveITSModuleStepper::GetPages()
 {
+  // Get number of all pages.
+
   Int_t n = fIDs.size()/Nxy();
   if(fIDs.size() % Nxy()) n++;
   return n;
@@ -215,6 +240,8 @@ Int_t AliEveITSModuleStepper::GetPages()
 
 void  AliEveITSModuleStepper::Apply()
 {
+  // Apply current settings to children modules.
+
   // printf("AliEveITSModuleStepper::Apply fPosition %d \n", fPosition);
   gEve->DisableRedraw();
   Capacity();
@@ -280,6 +307,8 @@ void  AliEveITSModuleStepper::Apply()
 
 void AliEveITSModuleStepper::Render(TGLRnrCtx& rnrCtx)
 {
+  // Render the overlay elements.
+
   // render everyting in relative coordinates
   glMatrixMode(GL_PROJECTION);
   glPushMatrix();
@@ -329,6 +358,8 @@ void AliEveITSModuleStepper::Render(TGLRnrCtx& rnrCtx)
 //______________________________________________________________________________
 Float_t AliEveITSModuleStepper::TextLength(const char* txt)
 {
+  // Calculate length of text txt.
+
   Float_t llx, lly, llz, urx, ury, urz;
   fText->BBox(txt, llx, lly, llz, urx, ury, urz);
   return (urx-llx)*fTextSize;
@@ -337,6 +368,8 @@ Float_t AliEveITSModuleStepper::TextLength(const char* txt)
 //______________________________________________________________________________
 void AliEveITSModuleStepper::RenderString(TString string, Int_t id)
 {
+  // Render text for button id.
+
   Float_t txtY = fWHeight*0.5;
   Float_t txtl = TextLength(string.Data());
 
@@ -373,7 +406,10 @@ void AliEveITSModuleStepper::RenderString(TString string, Int_t id)
 //______________________________________________________________________________
 void AliEveITSModuleStepper::RenderFrame(Float_t dx, Float_t dy, Int_t id)
 {
-  if(fRnrFrame == kFALSE)return;
+  // Render frame for button id, taking into account if it is currently
+  // below mouse.
+
+  if (fRnrFrame == kFALSE)return;
 
   glPushAttrib(GL_ENABLE_BIT | GL_POLYGON_BIT);
   glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -394,6 +430,9 @@ void AliEveITSModuleStepper::RenderFrame(Float_t dx, Float_t dy, Int_t id)
 //______________________________________________________________________________
 void AliEveITSModuleStepper::RenderSymbol(Float_t dx, Float_t dy, Int_t id)
 {
+  // Render an overlay / GUI symbol, based on button id:
+  // 1 ~ <, 2 ~ <<, 3 ~ >, 4 ~ >>, 5 ~ ^, 6 ~ v.
+
   glLoadName(id);
 
   UChar_t color[4];
@@ -465,6 +504,8 @@ void AliEveITSModuleStepper::RenderSymbol(Float_t dx, Float_t dy, Int_t id)
 //______________________________________________________________________________
 void AliEveITSModuleStepper::RenderPalette(Float_t dx, Float_t x, Float_t y)
 {
+  // Render color palette with number axis.
+
   glPushMatrix();
   glLoadIdentity();
   glTranslatef(1 -x- dx, -1+y*4, 0);
@@ -505,6 +546,8 @@ void AliEveITSModuleStepper::RenderPalette(Float_t dx, Float_t x, Float_t y)
 //______________________________________________________________________________
 void AliEveITSModuleStepper::RenderMenu()
 {
+  // Render menu: page control, scale control, detector type buttons.
+
   Float_t ww = 2*fWWidth;
   Float_t wh = 2*fWHeight;
 
@@ -600,6 +643,8 @@ void AliEveITSModuleStepper::RenderMenu()
 //______________________________________________________________________________
 void AliEveITSModuleStepper::RenderCellIDs()
 {
+  // Render module-ids under their cells.
+
   fText->SetTextSize(fStepper->GetDy()*0.1);
   fText->SetTextColor(fFontCol);
   Double_t x, y, z;
@@ -632,8 +677,8 @@ void AliEveITSModuleStepper::RenderCellIDs()
 
 //______________________________________________________________________________
 Bool_t AliEveITSModuleStepper::Handle(TGLRnrCtx          & /*rnrCtx*/,
-                                TGLOvlSelectRecord & rec,
-                                Event_t            * event)
+                                      TGLOvlSelectRecord & rec,
+                                      Event_t            * event)
 {
   // Handle overlay event.
   // Return TRUE if event was handled.
@@ -718,13 +763,15 @@ Bool_t AliEveITSModuleStepper::Handle(TGLRnrCtx          & /*rnrCtx*/,
 //______________________________________________________________________________
 Bool_t AliEveITSModuleStepper::MouseEnter(TGLOvlSelectRecord& /*rec*/)
 {
+  // Mouse has entered overlay area.
+
   return kTRUE;
 }
 
 //______________________________________________________________________________
 void AliEveITSModuleStepper::MouseLeave()
 {
-  // Mouse has left the element.
+  // Mouse has left overlay area.
 
   fWActive = -1;
 }

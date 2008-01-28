@@ -28,18 +28,19 @@ private:
   AliEveITSModuleStepperEditor& operator=(const AliEveITSModuleStepperEditor&); // Not implemented
 
 protected:
-  AliEveITSModuleStepper*     fM; // fModel dynamic-casted to AliEveITSModuleStepperEditor
+  AliEveITSModuleStepper   *fM;         // Model object.
 
-  TEveGridStepperSubEditor* fStepper;
+  TEveGridStepperSubEditor *fStepper;   // GUI component for grid-stepper control.
 
 public:
   AliEveITSModuleStepperEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30, UInt_t options = kChildFrame, Pixel_t back=GetDefaultFrameBackground());
-  virtual ~AliEveITSModuleStepperEditor();
+  virtual ~AliEveITSModuleStepperEditor() {}
 
   virtual void SetModel(TObject* obj);
 
-  void                  UpdateStore();
-  ClassDef(AliEveITSModuleStepperEditor, 0); // Editor for AliEveITSModuleStepper
-}; // endclass AliEveITSModuleStepperEditor
+  void         UpdateStepper();
+
+  ClassDef(AliEveITSModuleStepperEditor, 0); // Editor for AliEveITSModuleStepper.
+};
 
 #endif

@@ -21,6 +21,12 @@
 #include <TStyle.h>
 
 
+//______________________________________________________________________________
+//
+// Visualization of an ITS module.
+
+ClassImp(AliEveITSModule)
+
 Bool_t AliEveITSModule::fgStaticInitDone = kFALSE;
 
 TEveFrameBox*    AliEveITSModule::fgSPDFrameBox = 0;
@@ -31,13 +37,6 @@ TEveRGBAPalette* AliEveITSModule::fgSPDPalette  = 0;
 TEveRGBAPalette* AliEveITSModule::fgSDDPalette  = 0;
 TEveRGBAPalette* AliEveITSModule::fgSSDPalette  = 0;
 
-//______________________________________________________________________________
-// AliEveITSModule
-//
-//
-
-ClassImp(AliEveITSModule)
-
 /******************************************************************************/
 
 AliEveITSModule::AliEveITSModule(const Text_t* n, const Text_t* t) :
@@ -46,7 +45,9 @@ AliEveITSModule::AliEveITSModule(const Text_t* n, const Text_t* t) :
   fID(-1), fDetID(-1),
   fLayer(-1), fLadder(-1), fDet(-1),
   fDx(0), fDz(0), fDy(0)
-{}
+{
+  // Constructor.
+}
 
 AliEveITSModule::AliEveITSModule(Int_t gid, AliEveITSDigitsInfo* info) :
   TEveQuadSet(Form("ITS module %d", gid)),
@@ -55,12 +56,16 @@ AliEveITSModule::AliEveITSModule(Int_t gid, AliEveITSDigitsInfo* info) :
   fLayer(-1), fLadder(-1), fDet(-1),
   fDx(0), fDz(0), fDy(0)
 {
+  // Constructor with module id and data-source.
+
   SetDigitsInfo(info);
   SetID(gid);
 }
 
 AliEveITSModule::~AliEveITSModule()
 {
+  // Destructor.
+
   if(fInfo) fInfo->DecRefCount();
 }
 
@@ -68,6 +73,8 @@ AliEveITSModule::~AliEveITSModule()
 
 void AliEveITSModule::InitStatics(AliEveITSDigitsInfo* info)
 {
+  // Initialize static variables,
+
   if (fgStaticInitDone) return;
   fgStaticInitDone = kTRUE;
 
@@ -118,6 +125,8 @@ void AliEveITSModule::InitStatics(AliEveITSDigitsInfo* info)
 
 void AliEveITSModule::SetDigitsInfo(AliEveITSDigitsInfo* info)
 {
+  // Set data and geometry source.
+
   if (fInfo == info) return;
   if (fInfo) fInfo->DecRefCount();
   fInfo = info;
@@ -128,6 +137,8 @@ void AliEveITSModule::SetDigitsInfo(AliEveITSDigitsInfo* info)
 
 void AliEveITSModule::SetID(Int_t gid, Bool_t trans)
 {
+  // Set detector id.
+
   static const TEveException eH("AliEveITSModule::SetID ");
 
   if(fInfo == 0)
@@ -255,12 +266,8 @@ void AliEveITSModule::SetID(Int_t gid, Bool_t trans)
 
 void AliEveITSModule::LoadQuads()
 {
-  // Here we still use 'z' for the name of axial coordinates.
-  // The transforamtion matrix aplied rotates y -> z.
-  // We need this as TEveQuadSet offers optimized treatment for
-  // quads in the x-y plane.
-
-  // printf("its module load quads \n");
+  // Read module data from source and create low-level objects for
+  // visualization - called quads.
 
   TClonesArray *digits  = fInfo->GetDigits(fID, fDetID);
   Int_t         ndigits = digits ? digits->GetEntriesFast() : 0;
@@ -381,7 +388,7 @@ void AliEveITSModule::SetTrans()
 
 void AliEveITSModule::DigitSelected(Int_t idx)
 {
-  // Override control-click from TEveQuadSet
+  // Override control-click from TEveQuadSet.
 
   DigitBase_t* qb   = GetDigit(idx);
   TObject* obj   = qb->fId.GetObject();
@@ -399,5 +406,8 @@ void AliEveITSModule::DigitSelected(Int_t idx)
 
 void AliEveITSModule::Print(Option_t* ) const
 {
-  printf("ID %d, layer %d, ladder %d, det %d \n", fID, fLayer, fLadder, fDetID);
+  // Print object summary information.
+
+  printf("AliEveITSModule: ID %d, layer %d, ladder %d, det %d\n",
+         fID, fLayer, fLadder, fDetID);
 }

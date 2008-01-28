@@ -23,8 +23,8 @@
 
 
 //______________________________________________________________________________
-// AliEveITSModuleStepperEditor
 //
+// Editor for AliEveITSModuleStepper.
 
 ClassImp(AliEveITSModuleStepperEditor)
 
@@ -35,28 +35,31 @@ AliEveITSModuleStepperEditor::AliEveITSModuleStepperEditor(const TGWindow *p, In
   fM(0),
   fStepper(0)
 {
+  // Constructor.
+
   MakeTitle("AliEveITSModuleStepper");
 
   fStepper =  new TEveGridStepperSubEditor(this);
-  fStepper->Connect("Changed()", "AliEveITSModuleStepperEditor", this, "UpdateStore()");
+  fStepper->Connect("Changed()", "AliEveITSModuleStepperEditor", this, "UpdateStepper()");
   AddFrame(fStepper, new TGLayoutHints(kLHintsTop | kLHintsExpandX, 2, 0, 0, 0));
 }
-
-AliEveITSModuleStepperEditor::~AliEveITSModuleStepperEditor()
-{}
 
 /******************************************************************************/
 
 void AliEveITSModuleStepperEditor::SetModel(TObject* obj)
 {
+  // Set model object.
+
   fM = dynamic_cast<AliEveITSModuleStepper*>(obj);
   fStepper->SetModel(fM->GetStepper());
 }
 
 /******************************************************************************/
 
-void AliEveITSModuleStepperEditor::UpdateStore()
+void AliEveITSModuleStepperEditor::UpdateStepper()
 {
+  // Update the model object.
+
   fM->Apply();
   Update();
   gEve->Redraw3D(kTRUE);

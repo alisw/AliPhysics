@@ -23,6 +23,7 @@
 //______________________________________________________________________________
 // AliEveDigitScaleInfo
 //
+
 ClassImp(AliEveDigitScaleInfo)
 
 AliEveDigitScaleInfo::AliEveDigitScaleInfo():
@@ -86,9 +87,15 @@ void AliEveITSScaledModule::ScaledDigit::Dump() const
   printf("N %d, sum %f, sqr_sum %f",N, sum, sqr_sum);
 }
 
+
 //______________________________________________________________________________
+
 // AliEveITSScaledModule
+
+//______________________________________________________________________________
 //
+// Visualization of an ITS module with digits aggregated
+// on a grid of pre-defined size.
 
 ClassImp(AliEveITSScaledModule)
 

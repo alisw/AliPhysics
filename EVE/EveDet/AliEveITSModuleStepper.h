@@ -34,40 +34,40 @@ public:
   typedef std::vector<UInt_t>::iterator vpInt_i;
 
 private:
-  vpInt_t                 fIDs;
-  UInt_t                  fPosition;  // position of top corner ITS module in vector fIDs
+  vpInt_t                 fIDs;       // Vector of module IDs to be displayed.
+  UInt_t                  fPosition;  // Position of top corner ITS module in vector fIDs.
 
   AliEveITSModuleStepper(const AliEveITSModuleStepper&);            // Not implemented
   AliEveITSModuleStepper& operator=(const AliEveITSModuleStepper&); // Not implemented
 
 protected:
-  AliEveITSDigitsInfo    *fDigitsInfo;
-  AliEveDigitScaleInfo   *fScaleInfo;
-  Int_t                   fSubDet;
+  AliEveITSDigitsInfo    *fDigitsInfo; // Source of data and geometry.
+  AliEveDigitScaleInfo   *fScaleInfo;  // Parameters for digit-scaling.
+  Int_t                   fSubDet;     // Sub-det, 0~SPD, 1~SDD, 2~SSD.
 
-  TEveGridStepper        *fStepper;
-  TGLAxis                *fAxis;
-  TGLText                *fText;
-  Float_t                 fTextSize;
-  Float_t                 fPagerGap;
-  Bool_t                  fRnrFrame;
+  TEveGridStepper        *fStepper;    // Module placement.
+  TGLAxis                *fAxis;       // Axis of color scale.
+  TGLText                *fText;       // GL text-output object.
+  Float_t                 fTextSize;   // Overlay text size.
+  Float_t                 fPagerGap;   //
+  Bool_t                  fRnrFrame;   //
 
   // module configuration
-  Float_t                 fExpandCell;
-  Color_t                 fModuleFrameCol;
+  Float_t                 fExpandCell;     //
+  Color_t                 fModuleFrameCol; //
 
   // palette configuratiom
-  Float_t                 fPaletteOffset;
-  Float_t                 fPaletteLength;
+  Float_t                 fPaletteOffset;  //
+  Float_t                 fPaletteLength;  //
 
   // symbol configuration
-  Int_t                   fWActive;
-  Float_t                 fWWidth;
-  Float_t                 fWHeight;
-  Float_t                 fWOff; // offset relative to widget size
-  Color_t                 fWCol;
-  Int_t                   fWActiveCol;
-  Color_t                 fFontCol;
+  Int_t                   fWActive;     // 
+  Float_t                 fWWidth;      // 
+  Float_t                 fWHeight;     // 
+  Float_t                 fWOff;        // Offset relative to widget size.
+  Color_t                 fWCol;        // 
+  Int_t                   fWActiveCol;  // 
+  Color_t                 fFontCol;     // 
 
   // wrappers
   Float_t TextLength(const char* txt);
@@ -118,7 +118,7 @@ public:
   TGLText* GetFont()             { return fText; }
   void     SetGLText(TGLText* t) { fText = t;    }
 
-  ClassDef(AliEveITSModuleStepper, 0);
+  ClassDef(AliEveITSModuleStepper, 0); // Display scaled ITS modules in a paged layout, also providing GL-overaly control GUI.
 };
 
 #endif

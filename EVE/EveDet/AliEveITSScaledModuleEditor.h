@@ -37,26 +37,25 @@ private:
   void CreateInfoFrame();
 
 protected:
-  TGVerticalFrame*  fInfoFrame;
+  AliEveITSScaledModule *fModule;       // Model object.
 
-  AliEveITSScaledModule*  fModule; // fModel dynamic-casted to AliEveITSScaledModuleEditor
+  TGNumberEntry         *fScale;        // Number-entry for digit-scale.
+  TGComboBox            *fStatistic;    // Selection of scaling algorithm.
 
-  TGNumberEntry*    fScale;
-  TGComboBox*       fStatistic;
-
-  TGLabel*          fInfoLabel0;
-  TGLabel*          fInfoLabel1;
+  TGVerticalFrame       *fInfoFrame;    // Frame in "Info" tab.
+  TGLabel               *fInfoLabel0;   // Info text.
+  TGLabel               *fInfoLabel1;   // Info text.
 
 public:
   AliEveITSScaledModuleEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30, UInt_t options = kChildFrame, Pixel_t back=GetDefaultFrameBackground());
-  virtual ~AliEveITSScaledModuleEditor();
+  virtual ~AliEveITSScaledModuleEditor() {}
 
   virtual void   SetModel(TObject* obj);
 
   void DoScale();
   void DoStatType(Int_t t);
 
-  ClassDef(AliEveITSScaledModuleEditor, 0); // Editor for AliEveITSScaledModule
-}; // endclass AliEveITSScaledModuleEditor
+  ClassDef(AliEveITSScaledModuleEditor, 0); // Editor for AliEveITSScaledModule.
+};
 
 #endif

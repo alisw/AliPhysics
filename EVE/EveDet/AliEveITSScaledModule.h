@@ -31,23 +31,23 @@ private:
   AliEveDigitScaleInfo& operator=(const AliEveDigitScaleInfo&); // Not implemented
 
 protected:
-  Int_t            fScale;
-  Int_t            fStatType;
+  Int_t            fScale;        // Current scale.
+  Int_t            fStatType;     // Digit scaling algorithm, see StatType_e.
 
-  Bool_t           fSyncPalette;
+  Bool_t           fSyncPalette;  // Synchronize palette on next usage.
 
 public:
   AliEveDigitScaleInfo();
-  virtual ~AliEveDigitScaleInfo(){}
+  virtual ~AliEveDigitScaleInfo() {}
 
-  Int_t            GetScale() { return fScale; }
-  void             ScaleChanged(Int_t s);
+  Int_t  GetScale() const { return fScale; }
+  void   ScaleChanged(Int_t s);
 
-  Int_t            GetStatType() { return fStatType; }
-  void             StatTypeChanged(Int_t t);
+  Int_t  GetStatType() const { return fStatType; }
+  void   StatTypeChanged(Int_t t);
 
-  Bool_t           GetSyncPalette(){return fSyncPalette;}
-  void             SetSyncPalette(Bool_t x){fSyncPalette = x;}
+  Bool_t GetSyncPalette() const   { return fSyncPalette; }
+  void   SetSyncPalette(Bool_t x) { fSyncPalette = x; }
 
   ClassDef(AliEveDigitScaleInfo, 1);
 };
@@ -109,7 +109,7 @@ public:
   void         GetScaleData(Int_t& cnx, Int_t& cnz, Int_t& total);
   AliEveDigitScaleInfo*  GetScaleInfo() { return fScaleInfo; }
 
-  ClassDef(AliEveITSScaledModule, 1);
+  ClassDef(AliEveITSScaledModule, 1); // Visualization of an ITS module with digits aggregated on a grid of pre-defined size.
 }; // endclass AliEveITSScaledModule
 
 #endif

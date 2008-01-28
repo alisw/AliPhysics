@@ -26,24 +26,23 @@
 
 
 //______________________________________________________________________________
-// AliEveITSScaledModuleEditor
 //
+// Editor for AliEveITSScaledModule.
 
 ClassImp(AliEveITSScaledModuleEditor)
 
-  AliEveITSScaledModuleEditor::AliEveITSScaledModuleEditor(const TGWindow *p, Int_t width, Int_t height,
-					       UInt_t options, Pixel_t back) :
-    TGedFrame(p, width, height, options | kVerticalFrame, back),
-
-    fInfoFrame(0),
-
-    fModule(0),
-
-    fScale(0),
-    fStatistic(0),
-    fInfoLabel0(0),
-    fInfoLabel1(0)
+AliEveITSScaledModuleEditor::AliEveITSScaledModuleEditor(const TGWindow *p, Int_t width, Int_t height,
+                                                         UInt_t options, Pixel_t back) :
+  TGedFrame(p, width, height, options | kVerticalFrame, back),
+  fModule(0),
+  fScale(0),
+  fStatistic(0),
+  fInfoFrame(0),
+  fInfoLabel0(0),
+  fInfoLabel1(0)
 {
+  // Constructor.
+
   MakeTitle("AliEveITSScaledModule");
   // Create widgets
   {
@@ -76,12 +75,11 @@ ClassImp(AliEveITSScaledModuleEditor)
 }
 
 /******************************************************************************/
-AliEveITSScaledModuleEditor::~AliEveITSScaledModuleEditor()
-{}
 
-/******************************************************************************/
 void AliEveITSScaledModuleEditor::CreateInfoFrame()
 {
+  // Create a frame under tab "Info".
+
   fInfoFrame = CreateEditorTabSubFrame("Info");
   TGCompositeFrame *title1 = new TGCompositeFrame(fInfoFrame, 145, 10,
 						  kHorizontalFrame |
@@ -100,19 +98,20 @@ void AliEveITSScaledModuleEditor::CreateInfoFrame()
   fInfoLabel0 = new TGLabel(fInfoFrame);
   fInfoLabel0->SetTextJustify(kTextLeft);
   fInfoFrame->AddFrame(fInfoLabel0, new TGLayoutHints(kLHintsLeft|kLHintsExpandX,
-					  lp, 0, 8, 0));
+                                                      lp, 0, 8, 0));
 
   fInfoLabel1 = new TGLabel(fInfoFrame);
   fInfoLabel1->SetTextJustify(kTextLeft);
   fInfoFrame->AddFrame(fInfoLabel1, new TGLayoutHints(kLHintsLeft|kLHintsExpandX,
-					  lp, 0, 2, 8));
-
+                                                      lp, 0, 2, 8));
 }
 
 /******************************************************************************/
 
 void AliEveITSScaledModuleEditor::SetModel(TObject* obj)
 {
+  // Set model object.
+
   fModule = dynamic_cast<AliEveITSScaledModule*>(obj);
 
   // widgets
@@ -131,6 +130,8 @@ void AliEveITSScaledModuleEditor::SetModel(TObject* obj)
 
 void AliEveITSScaledModuleEditor::DoScale()
 {
+  // Slot for Scale.
+
   fModule->GetScaleInfo()->ScaleChanged(fScale->GetIntNumber());
 
   Int_t cnx, cnz, total;
@@ -144,6 +145,8 @@ void AliEveITSScaledModuleEditor::DoScale()
 
 void AliEveITSScaledModuleEditor::DoStatType(Int_t v)
 {
+  // Slot for StatType.
+
   fModule->GetScaleInfo()->StatTypeChanged(v);
   Update();
   fGedEditor->SetModel(fGedEditor->GetPad(), fGedEditor->GetModel(), kButton1Down);

@@ -20,20 +20,20 @@ class AliEveITSModule : public TEveQuadSet
   AliEveITSModule& operator=(const AliEveITSModule&); // Not implemented
 
 protected:
-  AliEveITSDigitsInfo* fInfo;
+  AliEveITSDigitsInfo* fInfo; // Source of geometry and data.
 
-  Int_t       fID;    // Module   id
-  Int_t       fDetID; // Detector id (0~SPD, 1~SDD, 2~SSD)
+  Int_t       fID;      // Module id.
+  Int_t       fDetID;   // Detector id (0~SPD, 1~SDD, 2~SSD).
 
-  Int_t       fLayer;
-  Int_t       fLadder;
-  Int_t       fDet;
+  Int_t       fLayer;   // Layer (0 - 5).
+  Int_t       fLadder;  // Ladder.
+  Int_t       fDet;     // Detector.
 
-  Float_t     fDx;
-  Float_t     fDz;
-  Float_t     fDy;
+  Float_t     fDx;      // Digit half-size in x.
+  Float_t     fDz;      // Digit half-size in z.
+  Float_t     fDy;      // Digit half-size in y.
 
-  static Bool_t fgStaticInitDone;
+  static Bool_t fgStaticInitDone; // Flag for static variable initialization.
 
 public:
   AliEveITSModule(const Text_t* n="AliEveITSModule", const Text_t* t=0);
@@ -57,15 +57,15 @@ public:
 
   virtual void Print(Option_t* opt="") const;
 
-  static TEveFrameBox* fgSPDFrameBox;
-  static TEveFrameBox* fgSDDFrameBox;
-  static TEveFrameBox* fgSSDFrameBox;
+  static TEveFrameBox    *fgSPDFrameBox; // Module frame for SPD.
+  static TEveFrameBox    *fgSDDFrameBox; // Module frame for SDD.
+  static TEveFrameBox    *fgSSDFrameBox; // Module frame for SSD.
 
-  static TEveRGBAPalette* fgSPDPalette;
-  static TEveRGBAPalette* fgSDDPalette;
-  static TEveRGBAPalette* fgSSDPalette;
+  static TEveRGBAPalette *fgSPDPalette;  // Signal to color mapping for SPD.
+  static TEveRGBAPalette *fgSDDPalette;  // Signal to color mapping for SDD.
+  static TEveRGBAPalette *fgSSDPalette;  // Signal to color mapping for SSD.
 
-  ClassDef(AliEveITSModule, 1);
+  ClassDef(AliEveITSModule, 1); // Visualization of an ITS module.
 };
 
 #endif
