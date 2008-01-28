@@ -12,6 +12,21 @@ void loadlibs()
   gSystem->Load("libPWG0base");
 }
 
+void InitPad()
+{
+  if (!gPad)
+    return;
+
+  gPad->Range(0, 0, 1, 1);
+  gPad->SetLeftMargin(0.15);
+  //gPad->SetRightMargin(0.05);
+  //gPad->SetTopMargin(0.13);
+  //gPad->SetBottomMargin(0.1);
+
+  gPad->SetGridx();
+  gPad->SetGridy();
+}
+
 void DrawpiKpAndCombinedZOnly(Float_t upperPtLimit=0.99)
 {
   //gROOT->ProcessLine(".L drawPlots.C");
@@ -21,8 +36,6 @@ void DrawpiKpAndCombinedZOnly(Float_t upperPtLimit=0.99)
   const char* folderNames[] = { "correction_0", "correction_1", "correction_2", "dndeta_correction" };
   const char* legendNames[] = { "#pi", "K", "p", "standard" };
   Int_t folderCount = 3;
-
-
 
   TH2F* h2DCorrections[4];
   TH1F* h1DCorrections[4];
@@ -275,10 +288,13 @@ void MisalignmentShowRawTrackPlots(const char* dirName = "fdNdEtaAnalysisESD")
 
 void drawdNdEtaRatios(const char* canvasName, Int_t n, const char** files, const char** dirs, const char** names, Int_t* histID)
 {
-  gSystem->Load("libPWG0base");
+  loadlibs();
+  gROOT->ProcessLine(".L $ALICE_ROOT/PWG0/dNdEta/drawPlots.C");
 
   TCanvas* canvas = new TCanvas(canvasName, canvasName, 1000, 500);
   canvas->Divide(2, 1);
+  canvas->cd(2)->SetGridx();
+  canvas->cd(2)->SetGridy();
 
   TLegend* legend = new TLegend(0.63, 0.73, 0.98, 0.98);
   legend->SetFillColor(0);
@@ -307,9 +323,11 @@ void drawdNdEtaRatios(const char* canvasName, Int_t n, const char** files, const
 
     if (i != 0)
     {
+      PrintIntegratedDeviation(hist, base, names[i]);
+
       canvas->cd(2);
-      hist->Divide(hist, base, 1, 1, "B");
-      hist->GetYaxis()->SetRangeUser(0.98, 1.02);
+      hist->Divide(hist, base, 1, 1);
+      hist->GetYaxis()->SetRangeUser(0.9, 1.1);
       hist->DrawCopy((i == 1) ? "" : "SAME");
     }
   }
@@ -370,6 +388,47 @@ void drawdNdEtaRatios(const char* canvasName, Int_t n, const char** files1, cons
   canvas->SaveAs(Form("%s.eps", canvas->GetName()));
 }
 
+void MaterialBudgetChange()
+{
+  const char* files[] =
+    { "Material-normal-mcvtx/analysis_esd.root",
+      "Material-increased-mcvtx/analysis_esd.root",
+      "Material-decreased-mcvtx/analysis_esd.root" };
+
+  const char* dirs[] = { "dndeta", "dndeta", "dndeta"};
+  const char* names[] = { "no change", "+ 10 % material", "- 10 % material" };
+  Int_t hist[] = { 0, 0, 0 };
+
+  drawdNdEtaRatios("MaterialBudgetChange", 3, files, dirs, names, hist);
+}
+
+void MisalignmentChange()
+{
+  const char* files[] =
+    { "maps/v4-09-Release/tpc-only/fullC-simrec--fullA-sim-mcvtx/analysis_esd.root",
+      "maps/v4-09-Release/tpc-only/fullC-simrec--fullA-simrec-mcvtx/analysis_esd.root" };
+
+  const char* dirs[] = { "dndeta", "dndeta", "dndeta"};
+  const char* names[] = { "no change", "increased in sim/rec", "increased in sim" };
+  Int_t hist[] = { 0, 0, 0 };
+
+  drawdNdEtaRatios("MisalignmentChange", 2, files, dirs, names, hist);
+}
+
+void dNdEtaVertexRanges()
+{
+  const char* files[] =
+    { "analysis_esd.root",
+      "analysis_esd.root",
+      "analysis_esd.root" };
+
+  const char* dirs[] = { "dndeta", "dndeta", "dndeta"};
+  const char* names[] = { "|vtx-z| < 10 cm", "-10 cm < vtx-z < 0 cm", "0 cm < vtx-z < 10 cm" };
+  Int_t hist[] = { 0, 1, 2 };
+
+  drawdNdEtaRatios("dNdEtaVertexRanges", 3, files, dirs, names, hist);
+}
+
 void vertexShiftStudy(Int_t histID)
 {
   const char* files[] = { "maps/idealA/mc-vertex/analysis_esd.root", "results/idealC-idealA/analysis_esd.root", "maps/idealA/mc-vertex-shift-0.05/analysis_esd.root", "maps/idealA/mc-vertex-shift-0.1/analysis_esd.root", "maps/idealA/mc-vertex-shift-dep/analysis_esd.root" };
@@ -411,18 +470,17 @@ void vertexShift()
   canvas->SaveAs(Form("%s.eps", canvas->GetName()));
 }
 
-void CompareRawTrackPlots(Float_t ptCut = 0.0)
+void CompareRawTrackPlots(const char* fileName1, const char* fileName2, Float_t ptCut = 0.0)
 {
   loadlibs();
 
   const char* dirName = "fdNdEtaAnalysisESD";
 
-  TFile* file = TFile::Open("fullA-simrec/MB2/analysis_esd_raw.root");
+  TFile* file = TFile::Open(fileName1);
   dNdEtaAnalysis* fdNdEtaAnalysis = new dNdEtaAnalysis(dirName, dirName);
   fdNdEtaAnalysis->LoadHistograms();
 
-  //TFile* file2 = TFile::Open("fullA-sim/analysis_esd_raw.root");
-  TFile* file2 = TFile::Open("fullA-simrecexcepttpc/analysis_esd_raw.root");
+  TFile* file2 = TFile::Open(fileName2);
   dNdEtaAnalysis* fdNdEtaAnalysis2 = new dNdEtaAnalysis(dirName, dirName);
   fdNdEtaAnalysis2->LoadHistograms();
 
@@ -437,8 +495,8 @@ void CompareRawTrackPlots(Float_t ptCut = 0.0)
   track1->Scale(1.0 / event1Count);
   track2->Scale(1.0 / event2Count);
 
-  Float_t nTrack1 = track1->Integral(-1, -1, -1, -1, track1->GetZaxis()->FindBin(ptCut), track1->GetZaxis()->GetNbins());
-  Float_t nTrack2 = track2->Integral(-1, -1, -1, -1, track2->GetZaxis()->FindBin(ptCut), track2->GetZaxis()->GetNbins());
+  Float_t nTrack1 = track1->Integral(track1->GetXaxis()->FindBin(-9.9), track1->GetXaxis()->FindBin(9.9), track1->GetYaxis()->FindBin(-0.79), track1->GetYaxis()->FindBin(0.79), track1->GetZaxis()->FindBin(ptCut), track1->GetZaxis()->GetNbins());
+  Float_t nTrack2 = track2->Integral(track2->GetXaxis()->FindBin(-9.9), track2->GetXaxis()->FindBin(9.9), track2->GetYaxis()->FindBin(-0.79), track2->GetYaxis()->FindBin(0.79), track2->GetZaxis()->FindBin(ptCut), track2->GetZaxis()->GetNbins());
 
   Printf("There are %.2f tracks/event in the first sample and %.2f tracks/event in the second sample. %.2f %% difference (with pt cut at %.2f GeV/c)", nTrack1, nTrack2, 100.0 * (nTrack1 - nTrack2) / nTrack1, ptCut);
 
@@ -450,20 +508,26 @@ void CompareRawTrackPlots(Float_t ptCut = 0.0)
   new TCanvas; gROOT->FindObject("track1_zx_div_track2_zx")->Draw("COLZ");
   new TCanvas; gROOT->FindObject("track1_zy_div_track2_zy")->Draw("COLZ");
 
-  new TCanvas;
-  proj1 = track1->Project3D("ze2");
-  proj2 = track2->Project3D("ze2");
-  AliPWG0Helper::NormalizeToBinWidth(proj1);
-  AliPWG0Helper::NormalizeToBinWidth(proj2);
+  for (Int_t i=0; i<3; i++)
+  {
+    char c = 'x' + (char) i;
 
-  proj1->DrawCopy();
-  proj2->SetLineColor(2);
-  proj2->SetMarkerColor(2);
-  proj2->DrawCopy("SAME");
+    /*proj1 = track1->Project3D(Form("%ce2", c));
+    proj2 = track2->Project3D(Form("%ce2", c));
+    AliPWG0Helper::NormalizeToBinWidth(proj1);
+    AliPWG0Helper::NormalizeToBinWidth(proj2);
 
-  AliPWG0Helper::CreateDividedProjections(track1, track2, "ze2");
-  TH1* pt = gROOT->FindObject("track1_ze2_div_track2_ze2");
-  new TCanvas; pt->Draw();
+    new TCanvas;
+    proj1->DrawCopy();
+    proj2->SetLineColor(2);
+    proj2->SetMarkerColor(2);
+    proj2->DrawCopy("SAME");*/
+
+    AliPWG0Helper::CreateDividedProjections(track1, track2, Form("%ce2", c));
+    TH1* pt = gROOT->FindObject(Form("track1_%ce2_div_track2_%ce2", c, c));
+    new TCanvas; pt->DrawCopy();
+    gPad->SetGridx(); gPad->SetGridy();
+  }
 }
 
 void MagnitudeOfCorrection(const char* fileName, const char* dirName = "dndeta", Float_t ptCut = 0.3)
@@ -476,3 +540,184 @@ void MagnitudeOfCorrection(const char* fileName, const char* dirName = "dndeta",
   fdNdEtaAnalysis->GetData()->PrintInfo(ptCut);
 }
 
+Double_t ConvSigma1To2D(Double_t sigma)
+{
+  return TMath::Sqrt( - TMath::Log( 1 - TMath::Erf(sigma / TMath::Sqrt(2)) ) * 2);
+}
+
+Double_t ConvDistance1DTo2D(Double_t distance)
+{
+  return TMath::ErfInverse(1 - TMath::Exp(-distance * distance / 2)) * TMath::Sqrt(2);
+}
+
+Double_t Sigma2VertexCount(TH2F* tracks, Double_t nSigma)
+{
+  Double_t count = 0;
+
+  //nSigma = ConvSigma1To2D(nSigma);
+
+  for (Int_t x=1; x<=tracks->GetNbinsX(); ++x)
+    for (Int_t y=1; y<=tracks->GetNbinsY(); ++y)
+    {
+      Double_t impactX = tracks->GetXaxis()->GetBinCenter(x);
+      Double_t impactY = tracks->GetYaxis()->GetBinCenter(y);
+
+      Float_t d = TMath::Sqrt(impactX*impactX + impactY*impactY);
+
+      d = ConvDistance1DTo2D(d);
+
+      if (d < nSigma)
+        count += tracks->GetBinContent(x, y);
+    }
+
+  return count;
+}
+
+TH2F* Sigma2VertexGaussianTracksHist()
+{
+  TH2F* tracks = new TH2F("Sigma2Vertex_tracks", "Sigma2Vertex_tracks", 200, -5, 5, 200, -5, 5);
+
+  TF2* gaussian2D = new TF2("gaussian2D", "xgausn(0) * ygausn(3)", -5, 5, -5, 5);
+  gaussian2D->SetParameters(1, 0, 1, 1, 0, 1);
+
+  for (Int_t x=1; x<=tracks->GetNbinsX(); ++x)
+    for (Int_t y=1; y<=tracks->GetNbinsY(); ++y)
+      tracks->SetBinContent(x, y, gaussian2D->Eval(tracks->GetXaxis()->GetBinCenter(x), tracks->GetYaxis()->GetBinCenter(y)));
+
+  //normalize
+  tracks->Scale(1.0 / tracks->Integral());
+
+  return tracks;
+}
+
+TH1F* Sigma2VertexGaussian()
+{
+  TH2F* tracks = Sigma2VertexGaussianTracksHist();
+
+  TCanvas* canvas = new TCanvas("Sigma2VertexGaussian", "Sigma2VertexGaussian", 1000, 1000);
+  canvas->Divide(2, 2);
+
+  canvas->cd(1);
+  tracks->Draw("COLZ");
+
+  TH1F* ratio = new TH1F("Sigma2Vertex_ratio", "Sigma2Vertex_ratio;n sigma;included", 50, 0.05, 5.05);
+  for (Double_t nSigma = 0.1; nSigma < 5.05; nSigma += 0.1)
+    ratio->Fill(nSigma, Sigma2VertexCount(tracks, nSigma));
+  ratio->SetMarkerStyle(21);
+
+  canvas->cd(2);
+  ratio->DrawCopy("P");
+
+  TH1F* ratio2 = new TH1F("Sigma2Vertex_ratio2", "Sigma2Vertex_ratio2;nSigma;% included 4 sigma / % included n sigma", 50, 0.05, 5.05);
+  Double_t sigma3 = Sigma2VertexCount(tracks, 4);
+  for (Double_t nSigma = 0.1; nSigma < 5.05; nSigma += 0.1)
+    ratio2->Fill(nSigma, sigma3 / ratio->GetBinContent(ratio->FindBin(nSigma)));
+  ratio2->SetMarkerStyle(21);
+
+  canvas->cd(3);
+  ratio2->DrawCopy("P");
+
+  canvas->SaveAs("Sigma2Vertex.eps");
+
+  return ratio2;
+}
+
+TH1F** Sigma2VertexSimulation(const char* fileName = "systematics.root")
+{
+  TFile* file = TFile::Open(fileName);
+
+  TH1F* sigmavertex = dynamic_cast<TH1F*> (file->Get("fSigmaVertexTracks"));
+  TH1F* sigmavertexPrim = dynamic_cast<TH1F*> (file->Get("fSigmaVertexPrim"));
+  if (!sigmavertex || !sigmavertexPrim)
+  {
+    printf("Could not read histogram(s)\n");
+    return;
+  }
+
+  // calculate ratio
+  TH1F* ratio = new TH1F("sigmavertexsimulation_ratio", "sigmavertexsimulation_ratio;N#sigma;% included in 4 #sigma / % included in N#sigma", sigmavertex->GetNbinsX(), sigmavertex->GetXaxis()->GetXmin(), sigmavertex->GetXaxis()->GetXmax());
+
+  // calculate contamination
+  TH1F* contamination = ratio->Clone("sigmavertexsimulation_contamination");
+  contamination->SetTitle("sigmavertexsimulation_contamination;N#sigma;1 + N_{secondaries} / N_{all}");
+
+  for (Int_t i=1; i<=sigmavertex->GetNbinsX(); ++i)
+  {
+    ratio->SetBinContent(i, sigmavertex->GetBinContent(sigmavertex->GetXaxis()->FindBin(4)) / sigmavertex->GetBinContent(i));
+    contamination->SetBinContent(i, 1 + (sigmavertex->GetBinContent(i) - sigmavertexPrim->GetBinContent(i)) / sigmavertex->GetBinContent(i));
+  }
+
+  // print stats
+  for (Float_t sigma = 2.0; sigma < 5.25; sigma += 0.5)
+  {
+    Float_t error1 = 1 - ratio->GetBinContent(sigmavertex->GetXaxis()->FindBin(sigma)) / ratio->GetBinContent(sigmavertex->GetXaxis()->FindBin(sigma - 0.5));
+    Float_t error2 = -1 + ratio->GetBinContent(sigmavertex->GetXaxis()->FindBin(sigma)) / ratio->GetBinContent(sigmavertex->GetXaxis()->FindBin(sigma + 0.5));
+    Float_t cont = -1 + contamination->GetBinContent(sigmavertex->GetXaxis()->FindBin(sigma));
+    Printf("%.2f sigma --> syst. error = - %.2f %% + %.2f %%, cont. = %.2f %%", sigma, error1 * 100, error2 * 100, cont * 100);
+  }
+
+  TCanvas* canvas = new TCanvas("Sigma2VertexSimulation", "Sigma2VertexSimulation", 1000, 500);
+  canvas->Divide(2, 1);
+
+  canvas->cd(1);
+  sigmavertex->SetMarkerStyle(21);
+  sigmavertex->Draw("P");
+
+  canvas->cd(2);
+  ratio->SetMarkerStyle(21);
+  ratio->DrawCopy("P");
+
+  contamination->DrawCopy("SAME");
+
+  TH1F** returnContainer = new TH1F*[2];
+  returnContainer[0] = ratio;
+  returnContainer[1] = contamination;
+
+  return returnContainer;
+}
+
+void Sigma2VertexCompare(const char* fileName = "systematics.root")
+{
+  TH1F* ratio1 = Sigma2VertexGaussian();
+
+  TH1F** hists = Sigma2VertexSimulation(fileName);
+  TH1F* ratio2 = hists[0];
+  TH1F* contamination = hists[1];
+
+  ratio1->SetStats(kFALSE);
+  ratio2->SetStats(kFALSE);
+
+  ratio1->SetMarkerStyle(0);
+  ratio2->SetMarkerStyle(0);
+
+  ratio1->SetLineWidth(2);
+  ratio2->SetLineWidth(2);
+
+  TLegend* legend = new TLegend(0.6, 0.8, 0.95, 0.95);
+  legend->SetFillColor(0);
+  legend->AddEntry(ratio1, "Gaussian");
+  legend->AddEntry(ratio2, "Simulation");
+  legend->AddEntry(contamination, "1 + Contamination");
+
+  ratio2->SetTitle("");
+  ratio2->GetYaxis()->SetTitleOffset(1.5);
+  ratio2->GetXaxis()->SetRangeUser(2, 5);
+
+  TCanvas* canvas = new TCanvas("Sigma2VertexCompare", "Sigma2VertexCompare", 500, 500);
+  InitPad();
+
+  ratio2->SetMarkerStyle(21);
+  ratio1->SetMarkerStyle(22);
+
+  ratio2->GetYaxis()->SetRangeUser(0.8, 1.2);
+  ratio2->SetLineColor(kRed);
+  ratio2->SetMarkerColor(kRed);
+  ratio2->Draw("PL");
+  ratio1->Draw("SAMEPL");
+
+  contamination->Draw("SAME");
+
+  legend->Draw();
+
+  canvas->SaveAs("Sigma2VertexCompare.eps");
+}

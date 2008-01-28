@@ -354,6 +354,7 @@ Float_t AlidNdEtaCorrection::GetMeasuredFraction(CorrectionType correctionType, 
     etaEnd = etaBegin;
   }
 
+  //Printf("AlidNdEtaCorrection::GetMeasuredFraction: Using vtx range of +- 10 cm");
   Int_t vertexBegin = generated->GetXaxis()->FindBin(-9.99);
   Int_t vertexEnd = generated->GetXaxis()->FindBin(9.99);
 
@@ -385,6 +386,26 @@ Float_t AlidNdEtaCorrection::GetMeasuredFraction(CorrectionType correctionType, 
     printf("AlidNdEtaCorrection::GetMeasuredFraction: pt cut off = %f, eta = %f, => fraction = %f\n", ptCutOff, eta, fraction);
 
   return fraction;
+}
+
+//____________________________________________________________________
+TH1* AlidNdEtaCorrection::GetMeasuredEventFraction(CorrectionType correctionType, Int_t multCut)
+{
+  // calculates the fraction of events above multCut (but including it)
+  //
+  // uses the generated event histogram from the correction passed, e.g. pass GetTrack2ParticleCorrection()
+
+  if (!GetCorrection(correctionType))
+    return 0;
+
+  const TH2F* generated = GetCorrection(correctionType)->GetEventCorrection()->GetGeneratedHistogram();
+
+  TH1* allEvents = generated->ProjectionX(Form("%s_all", generated->GetName()), 1, generated->GetNbinsY());
+  TH1* aboveEvents = generated->ProjectionX(Form("%s_above", generated->GetName()), generated->GetYaxis()->FindBin(multCut), generated->GetNbinsY());
+  
+  aboveEvents->Divide(aboveEvents, allEvents, 1, 1, "B");
+
+  return aboveEvents;  
 }
 
 //____________________________________________________________________

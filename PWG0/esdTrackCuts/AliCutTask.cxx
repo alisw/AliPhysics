@@ -212,18 +212,18 @@ void AliCutTask::Exec(Option_t *)
       Int_t label = TMath::Abs(track->GetLabel());
       if (stack->IsPhysicalPrimary(label) == kTRUE)
       {
-	if (label >= max)
-	{
-	  Printf("Warning label %d is higher than number of primaries %d", label, max);
-	  continue;
-	}
-	    
-        if (fTrackCutsPrimaries->AcceptTrack(track)) 
-	{
-	  primAcc[label]++;
-	} 
-	else
-	  primRej[label]++;
+        if (label >= max)
+        {
+          Printf("Warning label %d is higher than number of primaries %d", label, max);
+          continue;
+        }
+
+        if (fTrackCutsPrimaries->AcceptTrack(track))
+        {
+          primAcc[label]++;
+        }
+        else
+          primRej[label]++;
 
       }
       else
@@ -253,20 +253,20 @@ void AliCutTask::Exec(Option_t *)
 
     for (Int_t i=0; i<max; i++) {
       if (primAcc[i] == 1) {
-	fPrimStats->Fill(1);
+        fPrimStats->Fill(1);
       } else if (primAcc[i] > 1) {
-	fPrimStats->Fill(2);
-	fPrimStats->Fill(3, primAcc[i]);
+        fPrimStats->Fill(2);
+        fPrimStats->Fill(3, primAcc[i]);
       }
 
       if (primRej[i] > 0) {
-	if (primAcc[i] == 0) {
-	  fPrimStats->Fill(4);
-	  fPrimStats->Fill(5, primRej[i]);
-	} else if (primAcc[i] > 0) {
-	  fPrimStats->Fill(6);
-	  fPrimStats->Fill(7, primRej[i]);
-	}
+        if (primAcc[i] == 0) {
+          fPrimStats->Fill(4);
+          fPrimStats->Fill(5, primRej[i]);
+        } else if (primAcc[i] > 0) {
+          fPrimStats->Fill(6);
+          fPrimStats->Fill(7, primRej[i]);
+        }
       }
     }
 

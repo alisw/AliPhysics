@@ -362,7 +362,10 @@ void AliCorrectionMatrix::SetCorrectionToUnity()
   for (Int_t x=1; x<=fhCorr->GetNbinsX(); ++x)
     for (Int_t y=1; y<=fhCorr->GetNbinsY(); ++y)
       for (Int_t z=1; z<=fhCorr->GetNbinsZ(); ++z)
+      {
         fhCorr->SetBinContent(x, y, z, 1);
+        fhCorr->SetBinError(x, y, z, 0);
+      }
 }
 
 //____________________________________________________________________
