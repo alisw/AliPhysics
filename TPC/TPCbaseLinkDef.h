@@ -65,5 +65,6 @@
 
 #pragma link C++ class AliTPCAlign;
 #pragma link C++ class AliTPCdataQA;
+#pragma link C++ class AliTPCQAChecker+;
 #endif
 
