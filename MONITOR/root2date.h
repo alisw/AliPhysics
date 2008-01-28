@@ -12,10 +12,11 @@
 #include "AliRawEventHeaderBase.h"
 #include "AliRawEquipment.h"
 #include "AliRawEquipmentHeader.h"
-#include "AliRawReaderRoot.h"
+#include "AliRawData.h"
+#include "AliDAQ.h"
 
 #include <Riostream.h>
 
-int Root2Date(AliRawEvent *gdcRootEvent, unsigned char *gdcDateEvent);
+int Root2Date(AliRawEvent *gdcRootEvent, unsigned char *gdcDateEvent, char *ddlDir);
 
 #endif

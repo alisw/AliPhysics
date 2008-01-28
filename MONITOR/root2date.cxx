@@ -7,7 +7,7 @@
 
 #include "root2date.h"
 
-int Root2Date(AliRawEvent *gdcRootEvent, unsigned char *gdcDateEvent) {
+int Root2Date(AliRawEvent *gdcRootEvent, unsigned char *gdcDateEvent, char *ddlDir) {
 
  unsigned char *p=gdcDateEvent;
  int ldcCounter, equipmentCounter, chunkSize;
@@ -36,6 +36,18 @@ int Root2Date(AliRawEvent *gdcRootEvent, unsigned char *gdcDateEvent) {
     p+=chunkSize;
    }
    memcpy(p, aliEquipment->GetRawData()->GetBuffer(), chunkSize=aliEquipment->GetRawData()->GetSize()); // Write Equipment payload (including CDH)
+   // Write ddl files if requested by the user
+   if (ddlDir) {
+     Int_t ddlIndex;
+     Int_t detId = AliDAQ::DetectorIDFromDdlID(aliEquipmentHeader->GetId(),ddlIndex);
+     char ddlFileName[256];
+     sprintf(ddlFileName,"%s/%s",ddlDir,AliDAQ::DdlFileName(detId,ddlIndex));
+     FILE *ddlFile;
+     if(ddlFile=fopen(ddlFileName, "wb")) {
+       fwrite(p, chunkSize, 1, ddlFile);
+     }
+     fclose(ddlFile);
+   }
    p+=chunkSize;
   }
  }
