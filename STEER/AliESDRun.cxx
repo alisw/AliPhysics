@@ -176,7 +176,7 @@ TString AliESDRun::GetFiredTriggerClasses(ULong64_t mask) const
   // class mask as an argument.
   TString trclasses;
   for(Int_t i = 0; i < kNTriggerClasses; i++) {
-    if (mask && (1 << i)) {
+    if (mask & (1 << i)) {
       TNamed *str = (TNamed *)((fTriggerClasses).At(i));
       if (str) {
 	trclasses += " ";
@@ -202,7 +202,7 @@ Bool_t AliESDRun::IsTriggerClassFired(ULong64_t mask, const char *name) const
   Int_t iclass = fTriggerClasses.IndexOf(trclass);
   if (iclass < 0) return kFALSE;
 
-  if (mask && (1 << iclass))
+  if (mask & (1 << iclass))
     return kTRUE;
   else
     return kFALSE;
