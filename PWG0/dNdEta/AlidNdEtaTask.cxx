@@ -254,6 +254,8 @@ void AlidNdEtaTask::Exec(Option_t*)
       ptArr[inputCount] = esdTrack->Pt();
       ++inputCount;
     }
+
+    delete list;
   }
   else
     return;
@@ -344,10 +346,12 @@ void AlidNdEtaTask::Exec(Option_t*)
         continue;
 
       AliDebug(AliLog::kDebug+1, Form("Accepted primary %d, unique ID: %d", iMc, particle->GetUniqueID()));
-      ++nAcceptedParticles;
-
       Float_t eta = particle->Eta();
       Float_t pt = particle->Pt();
+
+       // make a rough eta cut (so that nAcceptedParticles is not too far off)
+      if (TMath::Abs(eta) < 1.5)
+        nAcceptedParticles++;
 
       fdNdEtaAnalysis->FillTrack(vtxMC[2], eta, pt);
       fVertex->Fill(particle->Vx(), particle->Vy(), particle->Vz());
