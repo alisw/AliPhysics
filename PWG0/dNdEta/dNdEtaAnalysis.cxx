@@ -33,6 +33,7 @@ dNdEtaAnalysis::dNdEtaAnalysis() :
 
   for (Int_t i=0; i<kVertexBinning; ++i)
   {
+    fdNdEtaNotEventCorrected[i] = 0;
     fdNdEta[i] = 0;
     fdNdEtaPtCutOffCorrected[i] = 0;
   }
@@ -57,11 +58,13 @@ dNdEtaAnalysis::dNdEtaAnalysis(Char_t* name, Char_t* title, AliPWG0Helper::Analy
 
   fdNdEta[0] = new TH1F("dNdEta", "dN_{ch}/d#eta;#eta;dN_{ch}/d#eta", 40, -2, 2);
 
+  fdNdEtaNotEventCorrected[0] = dynamic_cast<TH1F*> (fdNdEta[0]->Clone(Form("%s_noteventcorrected", fdNdEta[0]->GetName())));
   fdNdEtaPtCutOffCorrected[0] = dynamic_cast<TH1F*> (fdNdEta[0]->Clone(Form("%s_corrected", fdNdEta[0]->GetName())));
 
   for (Int_t i=1; i<kVertexBinning; ++i)
   {
     fdNdEta[i]    = dynamic_cast<TH1F*> (fdNdEta[0]->Clone(Form("%s_%d", fdNdEta[0]->GetName(), i)));
+    fdNdEtaNotEventCorrected[i]    = dynamic_cast<TH1F*> (fdNdEtaNotEventCorrected[0]->Clone(Form("%s_%d", fdNdEta[0]->GetName(), i)));
     fdNdEtaPtCutOffCorrected[i]    = dynamic_cast<TH1F*> (fdNdEtaPtCutOffCorrected[0]->Clone(Form("%s_%d", fdNdEtaPtCutOffCorrected[0]->GetName(), i)));
   }
 
@@ -83,6 +86,11 @@ dNdEtaAnalysis::~dNdEtaAnalysis()
 
   for (Int_t i=0; i<kVertexBinning; ++i)
   {
+    if (fdNdEtaNotEventCorrected[i])
+    {
+      delete fdNdEtaNotEventCorrected[i];
+      fdNdEtaNotEventCorrected[i] = 0;
+    }
     if (fdNdEta[i])
     {
       delete fdNdEta[i];
@@ -139,6 +147,7 @@ void dNdEtaAnalysis::Copy(TObject &c) const
 
   for (Int_t i=0; i<kVertexBinning; ++i)
   {
+    target.fdNdEtaNotEventCorrected[i] = dynamic_cast<TH1F*> (fdNdEtaNotEventCorrected[i]->Clone());
     target.fdNdEta[i] = dynamic_cast<TH1F*> (fdNdEta[i]->Clone());
     target.fdNdEtaPtCutOffCorrected[i] = dynamic_cast<TH1F*> (fdNdEtaPtCutOffCorrected[i]->Clone());
   }
@@ -165,14 +174,21 @@ void dNdEtaAnalysis::FillEvent(Float_t vtx, Float_t n)
 }
 
 //____________________________________________________________________
-void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, AlidNdEtaCorrection::CorrectionType correctionType)
+void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, AlidNdEtaCorrection::CorrectionType correctionType, Int_t multCut)
 {
   //
   // correct with the given correction values and calculate dNdEta and pT distribution
   // the corrections that are applied can be steered by the flag correctionType
+  // the measured result is not used up to a multiplicity of multCut (the bin at multCut is the first that is used!)
   //
 
   // TODO put tag somewhere which corrections have been applied
+
+  if (multCut > 1)
+  {
+    Printf("ERROR: A bigger multiplicity cut than 1 is not possible in the current implementation");
+    return;
+  }
 
   // set corrections to 1
   fData->SetCorrectionToUnity();
@@ -218,12 +234,26 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
     printf("INFO: No correction applied\n");
 
   fData->Multiply();
+  fData->PrintInfo(ptCut);
 
   TH3F* dataHist = fData->GetTrackCorrection()->GetGeneratedHistogram();
 
   // integrate multiplicity axis out (include under/overflow bins!!!)
   TH2F* tmp = fData->GetEventCorrection()->GetGeneratedHistogram();
-  TH1D* vertexHist = tmp->ProjectionX("_px", 0, tmp->GetNbinsY() + 1, "e");
+
+  // multiplicity cut correction
+  // correct for not-measured events with too small multiplicity
+  // the measured result is not used up to a multiplicity of multCut (the bin at multCut is the first that is used!)
+  TH1D* vertexHistUncorrected = tmp->ProjectionX("_px", tmp->GetYaxis()->FindBin(multCut), tmp->GetNbinsY() + 1, "e");
+  TH1D* vertexHist = (TH1D*) vertexHistUncorrected->Clone("vertexHist");
+
+  Printf("Using %d events (above a cut of %d)", (Int_t) vertexHistUncorrected->Integral(), multCut);
+  if (correction && correctionType >= AlidNdEtaCorrection::kVertexReco) 
+  {
+    TH1* eventFraction = correction->GetMeasuredEventFraction(correctionType, multCut);
+    vertexHist->Divide(eventFraction);
+    Printf("Multiplicity cut correction: Corrected from %d events to %d events", (Int_t) vertexHistUncorrected->Integral(), (Int_t) vertexHist->Integral());
+  }
 
   // create pt hist
   {
@@ -309,6 +339,13 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
 
       //printf("vertexBinBegin = %d, vertexBinEnd = %d\n", vertexBinBegin, vertexBinEnd);
 
+      Float_t totalEventsUncorrected = vertexHistUncorrected->Integral(vertexBinBegin, vertexBinEnd - 1);
+      if (totalEventsUncorrected == 0)
+      {
+        printf("WARNING: No events (uncorrected) for hist %d %d %d\n", vertexPos, vertexBinBegin, vertexBinEnd);
+        continue;
+      }
+
       Float_t totalEvents = vertexHist->Integral(vertexBinBegin, vertexBinEnd - 1);
       if (totalEvents == 0)
       {
@@ -346,8 +383,17 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
       Int_t bin = fdNdEta[vertexPos]->FindBin(vtxVsEta->GetYaxis()->GetBinCenter(iEta));
       if (bin > 0 && bin < fdNdEta[vertexPos]->GetNbinsX())
       {
-        Float_t dndeta = sum / totalEvents;
-        Float_t error  = TMath::Sqrt(sumError2) / totalEvents;
+        Float_t dndeta = sum / totalEventsUncorrected;
+        Float_t error  = TMath::Sqrt(sumError2) / totalEventsUncorrected;
+
+        dndeta = dndeta / fdNdEta[vertexPos]->GetBinWidth(bin);
+        error  = error / fdNdEta[vertexPos]->GetBinWidth(bin);
+
+        fdNdEtaNotEventCorrected[vertexPos]->SetBinContent(bin, dndeta);
+        fdNdEtaNotEventCorrected[vertexPos]->SetBinError(bin, error);
+  
+        dndeta = sum / totalEvents;
+        error  = TMath::Sqrt(sumError2) / totalEvents;
 
         dndeta = dndeta / fdNdEta[vertexPos]->GetBinWidth(bin);
         error  = error / fdNdEta[vertexPos]->GetBinWidth(bin);
@@ -391,6 +437,11 @@ void dNdEtaAnalysis::SaveHistograms()
 
   for (Int_t i=0; i<kVertexBinning; ++i)
   {
+    if (fdNdEtaNotEventCorrected[i])
+      fdNdEtaNotEventCorrected[i]->Write();
+    else
+      printf("dNdEtaAnalysis::SaveHistograms: UNEXPECTED: fdNdEtaNotEventCorrected[%d] is 0\n", i);
+
     if (fdNdEta[i])
       fdNdEta[i]->Write();
     else
@@ -418,6 +469,9 @@ void dNdEtaAnalysis::LoadHistograms(const Char_t* dir)
 
   for (Int_t i=0; i<kVertexBinning; ++i)
   {
+    if (dynamic_cast<TH1F*> (gDirectory->Get(fdNdEtaNotEventCorrected[i]->GetName())))
+      fdNdEtaNotEventCorrected[i] = dynamic_cast<TH1F*> (gDirectory->Get(fdNdEtaNotEventCorrected[i]->GetName()));
+  
     fdNdEta[i] = dynamic_cast<TH1F*> (gDirectory->Get(fdNdEta[i]->GetName()));
     fdNdEtaPtCutOffCorrected[i] = dynamic_cast<TH1F*> (gDirectory->Get(fdNdEtaPtCutOffCorrected[i]->GetName()));
   }
@@ -540,7 +594,7 @@ Long64_t dNdEtaAnalysis::Merge(TCollection* list)
   TObject* obj;
 
   // sub collections
-  const Int_t nCollections = 2 * kVertexBinning + 2; // 2 standalone hists, two arrays of size kVertexBinning
+  const Int_t nCollections = 3 * kVertexBinning + 2; // 2 standalone hists, two arrays of size kVertexBinning
   TList* collections[nCollections];
   for (Int_t i=0; i<nCollections; ++i)
     collections[i] = new TList;
@@ -559,6 +613,7 @@ Long64_t dNdEtaAnalysis::Merge(TCollection* list)
     {
       collections[2+i]->Add(entry->fdNdEta[i]);
       collections[2+kVertexBinning+i]->Add(entry->fdNdEtaPtCutOffCorrected[i]);
+      collections[2+2*kVertexBinning+i]->Add(entry->fdNdEtaNotEventCorrected[i]);
     }
 
     ++count;
@@ -569,7 +624,8 @@ Long64_t dNdEtaAnalysis::Merge(TCollection* list)
   for (Int_t i=0; i<kVertexBinning; ++i)
   {
     fdNdEta[i]->Merge(collections[2+i]);
-    fdNdEta[i]->Merge(collections[2+kVertexBinning+i]);
+    fdNdEtaPtCutOffCorrected[i]->Merge(collections[2+kVertexBinning+i]);
+    fdNdEtaNotEventCorrected[i]->Merge(collections[2+kVertexBinning+i]);
   }
 
   for (Int_t i=0; i<nCollections; ++i)

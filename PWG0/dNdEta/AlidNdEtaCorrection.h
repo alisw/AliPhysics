@@ -23,6 +23,7 @@
 #include "AliPWG0Helper.h"
 
 class AliCorrection;
+class TH1;
 
 class AlidNdEtaCorrection : public TNamed
 {
@@ -65,6 +66,7 @@ public:
   void    DrawOverview(const char* canvasName = 0);
 
   Float_t GetMeasuredFraction(CorrectionType correctionType, Float_t ptCutOff, Float_t eta = -100, Bool_t debug = kFALSE);
+  TH1*    GetMeasuredEventFraction(CorrectionType correctionType, Int_t multCut);
 
   void ReduceInformation();
 

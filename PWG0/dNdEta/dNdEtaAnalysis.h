@@ -42,7 +42,7 @@ public:
   void FillTrack(Float_t vtx, Float_t eta, Float_t pt);
   void FillEvent(Float_t vtx, Float_t n);
 
-  void Finish(AlidNdEtaCorrection* correction, Float_t ptCut, AlidNdEtaCorrection::CorrectionType correctionType);
+  void Finish(AlidNdEtaCorrection* correction, Float_t ptCut, AlidNdEtaCorrection::CorrectionType correctionType, Int_t multCut = 0);
 
   void DrawHistograms(Bool_t simple = kFALSE);
   void LoadHistograms(const Char_t* dir = 0);
@@ -62,8 +62,9 @@ protected:
 
   TH1F* fPtDist; // pt distribution
 
-  TH1F* fdNdEta[kVertexBinning]; // dndeta results for different vertex bins (0 = full range)
-  TH1F* fdNdEtaPtCutOffCorrected[kVertexBinning];  // dndeta results for different vertex bins (0 = full range), pt cut off corrected
+  TH1F* fdNdEtaNotEventCorrected[kVertexBinning];  // dndeta results for different vertex bins (0 = full range)
+  TH1F* fdNdEta[kVertexBinning];                   // dndeta results for different vertex bins (0 = full range), mult cut off corrected
+  TH1F* fdNdEtaPtCutOffCorrected[kVertexBinning];  // dndeta results for different vertex bins (0 = full range), mult + pt cut off corrected 
 
   ClassDef(dNdEtaAnalysis, 1)
 };

@@ -33,25 +33,30 @@ void printStats(const char* fileName = "trackCuts.root")
     Printf("UNEXPECTED: %f != %f", fPrimStats->GetBinContent(5) + fPrimStats->GetBinContent(7), fStatsPrim->GetBinContent(2));
 
   Float_t notLostPrimaries = 100.0 * fPrimStats->GetBinContent(7) / (fPrimStats->GetBinContent(5) + fPrimStats->GetBinContent(7));
- 
+
   Printf("Accepted %d out of %d primary tracks (%.2f %%)", tracksPrimAc, tracksPrim, 100.0 * tracksPrimAc / tracksPrim);
+  Printf("Per Event: %.2f out of %.2f", (Float_t) tracksPrimAc / eventsVertex, (Float_t) tracksPrim / eventsVertex);
 
   Printf("Among the non accepted ones %.2f %% are from primaries that have been found with other tracks", notLostPrimaries);
 
   Printf("Accepted %d out of %d secondary tracks (%.2f %%)", tracksSecAc, tracksSec, 100.0 * tracksSecAc / tracksSec);
+  Printf("Per Event: %.2f out of %.2f", (Float_t) tracksSecAc / eventsVertex, (Float_t) tracksSec / eventsVertex);
 
   Printf("Before cuts: %.2f %% of the tracks are secondaries", 100.0 * tracksSec / (tracksPrim + tracksSec));
 
   Printf("After cuts: %.2f %% of the tracks are secondaries", 100.0 * tracksSecAc / (tracksPrimAc + tracksSecAc));
 }
 
-void ComparePlots(const char* fileName1, const char* fileName2, const char* dir = "AliESDtrackCuts/before_cuts")
+void ComparePlots(const char* fileName1, const char* fileName2, const char* dirName1 = "AliESDtrackCuts/before_cuts", const char* dirName2 = 0)
 {
   file1 = TFile::Open(fileName1);
   file2 = TFile::Open(fileName2);
 
-  dir1 = file1->GetDirectory(dir);
-  dir2 = file2->GetDirectory(dir);
+  if (!dirName2)
+    dirName1 = dirName2;
+
+  dir1 = file1->GetDirectory(dirName1);
+  dir2 = file2->GetDirectory(dirName2);
 
   keyList = dir1->GetListOfKeys();
   TIter iter(keyList);
@@ -68,10 +73,18 @@ void ComparePlots(const char* fileName1, const char* fileName2, const char* dir 
 
     TString name(key->GetName());
 
-    c = new TCanvas(key->GetName(), key->GetName(), 600, 400);
+    c = new TCanvas(Form("%s_canvas", key->GetName()), key->GetName(), 600, 400);
+
     hist1->Draw();
     hist2->SetLineColor(2);
     hist2->Draw("SAME");
+
+    /* this does not work, although given here: http://pcroot.cern.ch/root/html/THistPainter.html ;-)
+    TPaveStats *st = (TPaveStats*) hist1->FindObject("stats");
+    st->SetTextColor(2);
+    st->SetY1NDC(st->GetY1NDC() - 0.2);
+    st->SetY2NDC(st->GetY2NDC() - 0.2);
+    */
 
     Float_t min = 0.9 * TMath::Min(hist1->GetMinimum(), hist2->GetMinimum());
 
@@ -85,7 +98,7 @@ void ComparePlots(const char* fileName1, const char* fileName2, const char* dir 
     hist1->GetYaxis()->SetRangeUser(min, 1.1 * TMath::Max(hist1->GetMaximum(), hist2->GetMaximum()));
 
     c->SaveAs(Form("%s.gif", key->GetName()));
-    
+
     //break;
   }
 }

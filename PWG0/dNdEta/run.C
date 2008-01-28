@@ -125,7 +125,7 @@ void FinishAnalysisAll(const char* dataInput = "analysis_esd_raw.root", const ch
 
   dNdEtaAnalysis* fdNdEtaAnalysis = new dNdEtaAnalysis("dndeta", "dndeta");
   fdNdEtaAnalysis->LoadHistograms("fdNdEtaAnalysisESD");
-  fdNdEtaAnalysis->Finish(dNdEtaCorrection, 0.3, AlidNdEtaCorrection::kINEL);
+  fdNdEtaAnalysis->Finish(dNdEtaCorrection, 0.3, AlidNdEtaCorrection::kINEL, 1);
   //fdNdEtaAnalysis->DrawHistograms(kTRUE);
   TFile* file2 = TFile::Open(dataOutput, "RECREATE");
   fdNdEtaAnalysis->SaveHistograms();
@@ -133,7 +133,7 @@ void FinishAnalysisAll(const char* dataInput = "analysis_esd_raw.root", const ch
   file->cd();
   fdNdEtaAnalysis = new dNdEtaAnalysis("dndetaTr", "dndetaTr");
   fdNdEtaAnalysis->LoadHistograms("fdNdEtaAnalysisESD");
-  fdNdEtaAnalysis->Finish(dNdEtaCorrection, 0.3, AlidNdEtaCorrection::kVertexReco);
+  fdNdEtaAnalysis->Finish(dNdEtaCorrection, 0.3, AlidNdEtaCorrection::kVertexReco, 1);
   //fdNdEtaAnalysis->DrawHistograms(kTRUE);
   file2->cd();
   fdNdEtaAnalysis->SaveHistograms();
@@ -141,7 +141,7 @@ void FinishAnalysisAll(const char* dataInput = "analysis_esd_raw.root", const ch
   file->cd();
   fdNdEtaAnalysis = new dNdEtaAnalysis("dndetaTrVtx", "dndetaTrVtx");
   fdNdEtaAnalysis->LoadHistograms("fdNdEtaAnalysisESD");
-  fdNdEtaAnalysis->Finish(dNdEtaCorrection, 0.3, AlidNdEtaCorrection::kTrack2Particle);
+  fdNdEtaAnalysis->Finish(dNdEtaCorrection, 0.3, AlidNdEtaCorrection::kTrack2Particle, 1);
   //fdNdEtaAnalysis->DrawHistograms(kTRUE);
   file2->cd();
   fdNdEtaAnalysis->SaveHistograms();
@@ -149,7 +149,7 @@ void FinishAnalysisAll(const char* dataInput = "analysis_esd_raw.root", const ch
   file->cd();
   fdNdEtaAnalysis = new dNdEtaAnalysis("dndetaTracks", "dndetaTracks");
   fdNdEtaAnalysis->LoadHistograms("fdNdEtaAnalysisESD");
-  fdNdEtaAnalysis->Finish(0, 0.3, AlidNdEtaCorrection::kNone);
+  fdNdEtaAnalysis->Finish(0, 0.3, AlidNdEtaCorrection::kNone, 1);
   //fdNdEtaAnalysis->DrawHistograms(kTRUE);
   file2->cd();
   fdNdEtaAnalysis->SaveHistograms();
@@ -178,7 +178,7 @@ void* FinishAnalysis(const char* analysisFile = "analysis_esd_raw.root", const c
     //fdNdEtaAnalysis->Finish(dNdEtaCorrection, 0, AlidNdEtaCorrection::kTrack2Particle);
   }
   else
-    fdNdEtaAnalysis->Finish(0, 0, AlidNdEtaCorrection::kNone);
+    fdNdEtaAnalysis->Finish(0, 0.3, AlidNdEtaCorrection::kNone);
 
   fdNdEtaAnalysis->DrawHistograms(simple);
 

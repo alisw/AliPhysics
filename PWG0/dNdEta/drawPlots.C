@@ -102,7 +102,7 @@ void InitPadCOLZ()
 
 // --- end of helpers --- begin functions ---
 
-void DrawOverview(const char* fileName, const char* dirName)
+void DrawOverview(const char* fileName = "correction_map.root", const char* dirName = "dndeta_correction")
 {
   loadlibs();
   if (!TFile::Open(fileName))
@@ -247,7 +247,7 @@ Double_t PrintIntegratedDeviation(TH1* histMC, TH1* histESD, const char* desc = 
   return diffFullRange;
 }
 
-void dNdEta(Bool_t onlyESD = kFALSE)
+void dNdEta(Bool_t onlyESD = kFALSE, Bool_t save = kTRUE)
 {
   TFile* file = TFile::Open("analysis_esd.root");
   TH1* histESD = (TH1*) file->Get("dndeta/dNdEta_corrected");
@@ -258,6 +258,8 @@ void dNdEta(Bool_t onlyESD = kFALSE)
   TH1* histESDMBVtxNoPt = (TH1*) file->Get("dndetaTrVtx/dNdEta");
   TH1* histESDMBTracksNoPt = (TH1*) file->Get("dndetaTracks/dNdEta");
 
+  TH1* histESDNoEvCorr = (TH1*) file->Get("dndeta/dNdEta_noteventcorrected");
+
   Prepare1DPlot(histESD);
   Prepare1DPlot(histESDMB);
   Prepare1DPlot(histESDMBVtx);
@@ -267,6 +269,8 @@ void dNdEta(Bool_t onlyESD = kFALSE)
   Prepare1DPlot(histESDMBVtxNoPt);
   Prepare1DPlot(histESDMBTracksNoPt);
 
+  Prepare1DPlot(histESDNoEvCorr);
+  
   histESD->SetLineWidth(0);
   histESDMB->SetLineWidth(0);
   histESDMBVtx->SetLineWidth(0);
@@ -279,10 +283,16 @@ void dNdEta(Bool_t onlyESD = kFALSE)
   histESDMB->SetMarkerColor(2);
   histESDMBVtx->SetMarkerColor(3);
 
+  histESD->SetLineColor(1);
+  histESDMB->SetLineColor(2);
+  histESDMBVtx->SetLineColor(3);
+
   histESDNoPt->SetMarkerColor(1);
   histESDMBNoPt->SetMarkerColor(2);
   histESDMBVtxNoPt->SetMarkerColor(3);
   histESDMBTracksNoPt->SetMarkerColor(4);
+
+  histESDNoEvCorr->SetMarkerColor(6);
 
   histESD->SetMarkerStyle(20);
   histESDMB->SetMarkerStyle(21);
@@ -292,6 +302,8 @@ void dNdEta(Bool_t onlyESD = kFALSE)
   histESDMBNoPt->SetMarkerStyle(21);
   histESDMBVtxNoPt->SetMarkerStyle(22);
   histESDMBTracksNoPt->SetMarkerStyle(23);
+  
+  histESDNoEvCorr->SetMarkerStyle(29);
 
   TH2F* dummy = new TH2F("dummy", "", 100, -1.5, 1.5, 1000, 0, histESDMBVtx->GetMaximum() * 1.1);
   Prepare1DPlot(dummy);
@@ -300,7 +312,7 @@ void dNdEta(Bool_t onlyESD = kFALSE)
   dummy->SetYTitle("dN_{ch}/d#eta");
   dummy->GetYaxis()->SetTitleOffset(1);
 
-  Float_t etaLimit = 0.7999;
+  Float_t etaLimit = 1.2999;
 
   histESDMBVtx->GetXaxis()->SetRangeUser(-etaLimit, etaLimit);
   histESDMB->GetXaxis()->SetRangeUser(-etaLimit, etaLimit);
@@ -318,8 +330,11 @@ void dNdEta(Bool_t onlyESD = kFALSE)
   histESDMB->Draw("SAME");
   histESD->Draw("SAME");
 
-  canvas->SaveAs("dNdEta1.gif");
-  canvas->SaveAs("dNdEta1.eps");
+  if (save)
+  {
+    canvas->SaveAs("dNdEta1.gif");
+    canvas->SaveAs("dNdEta1.eps");
+  }
 
   if (onlyESD)
     return;
@@ -333,8 +348,13 @@ void dNdEta(Bool_t onlyESD = kFALSE)
 
   dNdEtaAnalysis* fdNdEtaAnalysis = new dNdEtaAnalysis("dndeta", "dndeta");
   fdNdEtaAnalysis->LoadHistograms();
+  dNdEtaAnalysis* fdNdEtaAnalysis2 = (dNdEtaAnalysis*) fdNdEtaAnalysis->Clone();
+
   fdNdEtaAnalysis->Finish(0, 0.3, AlidNdEtaCorrection::kNone);
-  TH1* histMCPtCut = fdNdEtaAnalysis->GetdNdEtaHistogram(0);
+  TH1* histMCPtCut = (TH1*) fdNdEtaAnalysis->GetdNdEtaHistogram(0)->Clone("histMCPtCut");
+
+  fdNdEtaAnalysis2->Finish(0, 0.3, AlidNdEtaCorrection::kNone, 1);
+  TH1* histMCPtCutNoEvCorr = (TH1*) fdNdEtaAnalysis2->GetdNdEtaHistogram(0)->Clone("histMCPtCutNoEvCorr");
 
   fdNdEtaAnalysis = new dNdEtaAnalysis("dndetaTr", "dndetaTr");
   fdNdEtaAnalysis->LoadHistograms();
@@ -343,12 +363,12 @@ void dNdEta(Bool_t onlyESD = kFALSE)
 
   fdNdEtaAnalysis = new dNdEtaAnalysis("dndetaTrVtx", "dndetaTrVtx");
   fdNdEtaAnalysis->LoadHistograms();
-  fdNdEtaAnalysis->Finish(0, 0.3, AlidNdEtaCorrection::kNone);
+  fdNdEtaAnalysis->Finish(0, 0.3, AlidNdEtaCorrection::kNone, 1);
   TH1* histMCTrVtxPtCut = fdNdEtaAnalysis->GetdNdEtaHistogram(0);
 
   fdNdEtaAnalysis = new dNdEtaAnalysis("dndetaTracks", "dndetaTracks");
   fdNdEtaAnalysis->LoadHistograms();
-  fdNdEtaAnalysis->Finish(0, 0.3, AlidNdEtaCorrection::kNone);
+  fdNdEtaAnalysis->Finish(0, 0.3, AlidNdEtaCorrection::kNone, 1);
   TH1* histMCTracksPtCut = fdNdEtaAnalysis->GetdNdEtaHistogram(0);
 
   TCanvas* canvas2 = new TCanvas("dNdEta2", "dNdEta2", 500, 500);
@@ -358,6 +378,7 @@ void dNdEta(Bool_t onlyESD = kFALSE)
   Prepare1DPlot(histMCTrVtx);
 
   Prepare1DPlot(histMCPtCut);
+  Prepare1DPlot(histMCPtCutNoEvCorr);
   Prepare1DPlot(histMCTrPtCut);
   Prepare1DPlot(histMCTrVtxPtCut);
   if (histMCTracksPtCut)
@@ -372,6 +393,7 @@ void dNdEta(Bool_t onlyESD = kFALSE)
   histMCTrVtxPtCut->SetLineColor(3);
   if (histMCTracksPtCut)
     histMCTracksPtCut->SetLineColor(4);
+  histMCPtCutNoEvCorr->SetLineColor(6);
 
   TH2* dummy2 = (TH2F*) dummy->Clone("dummy2");
   Prepare1DPlot(dummy2);
@@ -388,14 +410,19 @@ void dNdEta(Bool_t onlyESD = kFALSE)
   histESDMBNoPt->Draw("SAME");
   histESDMBVtxNoPt->Draw("SAME");
   histESDMBTracksNoPt->Draw("SAME");
+  histESDNoEvCorr->Draw("SAME");
   histMCPtCut->Draw("SAME");
+  histMCPtCutNoEvCorr->Draw("SAME");
   histMCTrPtCut->Draw("SAME");
   histMCTrVtxPtCut->Draw("SAME");
   if (histMCTracksPtCut)
     histMCTracksPtCut->Draw("SAME");
 
-  canvas2->SaveAs("dNdEta2.gif");
-  canvas2->SaveAs("dNdEta2.eps");
+  if (save)
+  {
+    canvas2->SaveAs("dNdEta2.gif");
+    canvas2->SaveAs("dNdEta2.eps");
+  }
 
   TH1* ratio = (TH1*) histMC->Clone("ratio");
   TH1* ratioNoPt = (TH1*) histMCPtCut->Clone("ratioNoPt");
@@ -403,7 +430,7 @@ void dNdEta(Bool_t onlyESD = kFALSE)
   ratio->Divide(histESD);
   ratioNoPt->Divide(histESDNoPt);
 
-  ratio->GetXaxis()->SetRangeUser(-0.7999, 0.7999);
+  ratio->GetXaxis()->SetRangeUser(-etaLimit, etaLimit);
 
   ratio->SetLineColor(1);
   ratioNoPt->SetLineColor(2);
@@ -486,8 +513,11 @@ void dNdEta(Bool_t onlyESD = kFALSE)
 
   canvas3->Modified();
 
-  canvas3->SaveAs("dNdEta.gif");
-  canvas3->SaveAs("dNdEta.eps");
+  if (save)
+  {
+    canvas3->SaveAs("dNdEta.gif");
+    canvas3->SaveAs("dNdEta.eps");
+  }
 
   TCanvas* canvas4 = new TCanvas("ratio", "ratio", 700, 500);
 
@@ -1444,15 +1474,85 @@ void CompareCorrection2Measured(const char* dataInput = "analysis_esd_raw.root",
   
   TH3* hist1 = (TH3*) dNdEtaCorrection->GetTrack2ParticleCorrection()->GetTrackCorrection()->GetMeasuredHistogram()->Clone("mc");
   hist1->SetTitle("mc");
+  Printf("mc contains %f entries", hist1->Integral());
+  Printf("mc contains %f entries in |vtx-z| < 10, pt > 0.3", hist1->Integral(hist1->GetXaxis()->FindBin(-9.9), hist1->GetXaxis()->FindBin(9.9), 1, hist1->GetNbinsY(), hist1->GetZaxis()->FindBin(0.301), hist1->GetNbinsZ()));
 
   TH3* hist2 = (TH3*) fdNdEtaAnalysis->GetData()->GetTrackCorrection()->GetMeasuredHistogram()->Clone("esd");
   hist2->SetTitle("esd");
+  Printf("esd contains %f entries", hist2->Integral());
+  Printf("esd contains %f entries in |vtx-z| < 10, pt > 0.3", hist2->Integral(hist2->GetXaxis()->FindBin(-9.9), hist2->GetXaxis()->FindBin(9.9), 1, hist2->GetNbinsY(), hist2->GetZaxis()->FindBin(0.301), hist2->GetNbinsZ()));
 
   AliPWG0Helper::CreateDividedProjections(hist1, hist2);
 
   new TCanvas; gROOT->FindObject("mc_yx_div_esd_yx")->Draw("COLZ");
   new TCanvas; gROOT->FindObject("mc_zx_div_esd_zx")->Draw("COLZ");
   new TCanvas; gROOT->FindObject("mc_zy_div_esd_zy")->Draw("COLZ");
+}
+
+void CompareMeasured2Measured(const char* dataInput = "analysis_esd_raw.root", const char* dataInput2 = "analysis_esd_raw.root")
+{
+  loadlibs();
+
+  TFile* file = TFile::Open(dataInput);
+
+  if (!file)
+  {
+    cout << "Error. File not found" << endl;
+    return;
+  }
+
+  dNdEtaAnalysis* fdNdEtaAnalysis = new dNdEtaAnalysis("dndeta", "dndeta");
+  fdNdEtaAnalysis->LoadHistograms("fdNdEtaAnalysisESD");
+
+  TFile* file = TFile::Open(dataInput2);
+
+  if (!file)
+  {
+    cout << "Error. File not found" << endl;
+    return;
+  }
+
+  dNdEtaAnalysis* fdNdEtaAnalysis2 = new dNdEtaAnalysis("dndeta2", "dndeta2");
+  fdNdEtaAnalysis2->LoadHistograms("fdNdEtaAnalysisESD");
+
+  gROOT->cd();
+
+  TH3* hist1 = (TH3*) fdNdEtaAnalysis->GetData()->GetTrackCorrection()->GetMeasuredHistogram()->Clone("esd1");
+  hist1->SetTitle("esd1");
+  Printf("esd1 contains %f entries", hist1->GetEntries());
+  Printf("esd1 contains %f entries in |vtx-z| < 10, pt > 0.3", hist1->Integral(hist1->GetXaxis()->FindBin(-9.9), hist1->GetXaxis()->FindBin(9.9), 1, hist1->GetNbinsY(), hist1->GetZaxis()->FindBin(0.301), hist1->GetNbinsZ()));
+
+  TH3* hist2 = (TH3*) fdNdEtaAnalysis2->GetData()->GetTrackCorrection()->GetMeasuredHistogram()->Clone("esd2");
+  hist2->SetTitle("esd2");
+  Printf("esd2 contains %f entries", hist2->GetEntries());
+  Printf("esd2 contains %f entries in |vtx-z| < 10, pt > 0.3", hist2->Integral(hist2->GetXaxis()->FindBin(-9.9), hist2->GetXaxis()->FindBin(9.9), 1, hist2->GetNbinsY(), hist2->GetZaxis()->FindBin(0.301), hist2->GetNbinsZ()));
+
+  AliPWG0Helper::CreateDividedProjections(hist1, hist2);
+
+  new TCanvas; gROOT->FindObject("esd1_yx_div_esd2_yx")->Draw("COLZ");
+  new TCanvas; gROOT->FindObject("esd1_zx_div_esd2_zx")->Draw("COLZ");
+  new TCanvas; gROOT->FindObject("esd1_zy_div_esd2_zy")->Draw("COLZ");
+
+  TH2* event1 = (TH2*) fdNdEtaAnalysis->GetData()->GetEventCorrection()->GetMeasuredHistogram()->Clone("event1");
+  TH2* event2 = (TH2*) fdNdEtaAnalysis2->GetData()->GetEventCorrection()->GetMeasuredHistogram()->Clone("event2");
+
+  Printf("event1 contains %f entries", event1->GetEntries());
+  Printf("event2 contains %f entries", event2->GetEntries());
+  Printf("event1 integral is %f", event1->Integral());
+  Printf("event2 integral is %f", event2->Integral());
+  Printf("event1 contains %f entries in |vtx-z| < 10", event1->Integral(event1->GetXaxis()->FindBin(-9.9), event1->GetXaxis()->FindBin(9.9), 1, event1->GetNbinsY()));
+  Printf("event2 contains %f entries in |vtx-z| < 10", event2->Integral(event2->GetXaxis()->FindBin(-9.9), event2->GetXaxis()->FindBin(9.9), 1, event2->GetNbinsY()));
+
+  projx1 = event1->ProjectionX();
+  projx2 = event2->ProjectionX();
+
+  new TCanvas; projx1->DrawCopy(); projx2->SetLineColor(2); projx2->DrawCopy("SAME");
+
+  projx1->Divide(projx2);
+  new TCanvas; projx1->Draw();
+
+  event1->Divide(event2);
+  new TCanvas; event1->Draw("COLZ");
 
 }
-  
+
