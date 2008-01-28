@@ -45,7 +45,9 @@ AliHLTTPCDigitDumpComponent::AliHLTTPCDigitDumpComponent()
   :
   AliHLTFileWriter(),
   fRawreaderMode(DefaultRawreaderMode),
-  fDigitReaderType(kDigitReaderRaw)
+  fDigitReaderType(kDigitReaderRaw),
+  fRcuTrailerSize(2),
+  fUnsorted(false)
 {
   // see header file for class documentation
   // or
@@ -129,6 +131,29 @@ int AliHLTTPCDigitDumpComponent::ScanArgument(int argc, const char** argv)
       break;
     }
 
+    // -rcutrailersize
+    if (argument.CompareTo("-rcutrailersize")==0) {
+      if ((bMissingParam=(++i>=argc))) break;
+      char *endptr=NULL;
+      fRcuTrailerSize=strtoul(argv[i], &endptr, 0);
+      if (/*endptr ||*/ fRcuTrailerSize<1) {
+	HLTError("invalid parameter '%s', %s", argv[i], endptr==NULL?"number >= 1 expected":"can not convert string to number");
+	iResult=-EINVAL;
+      }
+      break;
+    }
+
+    // -unsorted
+    if (argument.CompareTo("-unsorted")==0) {
+      fUnsorted=true;
+      break;
+    }
+
+    // -sorted
+    if (argument.CompareTo("-sorted")==0) {
+      fUnsorted=false;
+      break;
+    }
   } while (0); // just use the do/while here to have the option of breaking
 
   if (bMissingParam) iResult=-EPROTO;
@@ -188,6 +213,9 @@ int AliHLTTPCDigitDumpComponent::DumpEvent( const AliHLTComponentEventData& evtD
 	case kDigitReaderPacked:
 	  HLTInfo("create DigitReaderPacked");
 	  pReader=new AliHLTTPCDigitReaderPacked; 
+	  if (pReader && fRcuTrailerSize==1) {
+	    pReader->SetOldRCUFormat(true);
+	  }
 	  break;
 	case kDigitReaderRaw:
 	  HLTInfo("create DigitReaderRaw");
@@ -199,6 +227,7 @@ int AliHLTTPCDigitDumpComponent::DumpEvent( const AliHLTComponentEventData& evtD
 	  iResult=-EFAULT;
 	  break;
 	}
+	pReader->SetUnsorted(fUnsorted);
 	iResult=pReader->InitBlock(pDesc->fPtr,pDesc->fSize,firstRow,lastRow,part,slice);
 
 	int iPrintedRow=-1;
@@ -225,7 +254,7 @@ int AliHLTTPCDigitDumpComponent::DumpEvent( const AliHLTComponentEventData& evtD
 	  }
 	  if (iPrintedPad!=pReader->GetPad()) {
 	    iPrintedPad=pReader->GetPad();
-	    dump << "Row: " << iPrintedRow << "  Pad: " << iPrintedPad << endl;
+	    dump << "Row: " << iPrintedRow << "  Pad: " << iPrintedPad << "  HW address: " << pReader->GetAltroBlockHWaddr() << endl;
 	    iLastTime=-1;
 	  }
 	  if (iLastTime!=pReader->GetTime()+1 && iLastTime!=pReader->GetTime()-1 ) {

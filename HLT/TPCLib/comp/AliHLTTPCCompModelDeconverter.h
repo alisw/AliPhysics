@@ -83,6 +83,10 @@ class AliHLTTPCCompModelDeconverter: public AliHLTLogging
       UInt_t fRemainingClustersModelDataSize;
 
     private:
+      /** copy constructor prohibited */
+      AliHLTTPCCompModelDeconverter(const AliHLTTPCCompModelDeconverter&);
+      /** assignment operator prohibited */
+      AliHLTTPCCompModelDeconverter& operator=(const AliHLTTPCCompModelDeconverter&);
 
 	ClassDef(AliHLTTPCCompModelDeconverter, 1)
 

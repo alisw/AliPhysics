@@ -113,8 +113,12 @@ Int_t AliHLTTPCDigitReaderPacked::InitBlock(void* ptr,ULong_t size, Int_t patch,
 
   fRawMemoryReader->SetEquipmentID(DDLid);
   //fRawMemoryReader->SetEquipmentID(1);
-  if(fOldRCUFormat)
+  if(fOldRCUFormat) {
     fTPCRawStream->SetOldRCUFormat(kTRUE);
+    HLTInfo("set old RCU format (1 trailer word: 40bit payload)");
+  }
+  fRawMemoryReader->RewindEvents();
+  fRawMemoryReader->NextEvent();
 
   if(!fUnsorted){
   //#if ENABLE_PAD_SORTING
@@ -236,6 +240,11 @@ int AliHLTTPCDigitReaderPacked::GetPad(){
   else{
     return fTPCRawStream->GetPad();
   }
+}
+
+AliHLTUInt32_t AliHLTTPCDigitReaderPacked::GetAltroBlockHWaddr() const
+{
+  return fTPCRawStream->GetHWAddress();
 }
 
 Int_t AliHLTTPCDigitReaderPacked::GetSignal(){ 

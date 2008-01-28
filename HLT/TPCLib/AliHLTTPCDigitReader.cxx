@@ -180,6 +180,11 @@ int AliHLTTPCDigitReader::GetBunchSize()
   return 0;
 }
 
+AliHLTUInt32_t AliHLTTPCDigitReader::GetAltroBlockHWaddr() const
+{
+  return 0;
+}
+
 void AliHLTTPCDigitReader::PrintMissingFastAccessWarning()
 {
   // see header file for class documentation

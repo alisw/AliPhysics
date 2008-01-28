@@ -40,6 +40,12 @@
  *      data mode of the <b>AliHLTTPCDigitReaderRaw</b> 
  * \li -digitreader    <i> reader   </i> <br>
  *      type of the digit reader: <i>unpacked, packed, raw</i> 
+ * \li -rcutrailersize    <i> size   </i> <br>
+ *      size of the RCU trailer in 32bit words (default 2)
+ * \li -unsorted <br>
+ *      unsorted mode of digit readers (default sorted)
+ * \li -sorted <br>
+ *      sorted mode of digit readers (default)
  *
  */
 class AliHLTTPCDigitDumpComponent : public AliHLTFileWriter {
@@ -83,6 +89,12 @@ class AliHLTTPCDigitDumpComponent : public AliHLTFileWriter {
 
   /** the digit reader to use */
   short fDigitReaderType; //!transient
+
+  /** size of the RCU trailer in 32bit words */
+  short fRcuTrailerSize; //! transient
+
+  /** unsorted/sorted mode of digit readers */
+  bool fUnsorted; //!transient
 
   ClassDef(AliHLTTPCDigitDumpComponent, 0);
 };

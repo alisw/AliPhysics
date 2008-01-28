@@ -120,6 +120,11 @@ public:
   virtual int NextBunch();
 
   /**
+   * Get current hardware address.
+   */
+  virtual AliHLTUInt32_t GetAltroBlockHWaddr() const;
+
+  /**
    * Get the row number of the current value.
    */
   virtual int GetRow()=0;

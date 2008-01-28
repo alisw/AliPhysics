@@ -53,6 +53,7 @@ public:
   Int_t GetPad();
   Int_t GetSignal();
   Int_t GetTime();
+  AliHLTUInt32_t GetAltroBlockHWaddr() const;
     
 protected:
     
