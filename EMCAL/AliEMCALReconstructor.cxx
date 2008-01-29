@@ -28,6 +28,7 @@
 // --- AliRoot header files ---
 #include "AliEMCALReconstructor.h"
 
+#include "AliCodeTimer.h"
 #include "AliESDEvent.h"
 #include "AliESDCaloCluster.h"
 #include "AliESDCaloCells.h"
@@ -71,6 +72,8 @@ AliEMCALReconstructor::AliEMCALReconstructor(const AliEMCALReconstructor & rec)
 AliEMCALReconstructor::~AliEMCALReconstructor()
 {
   // dtor
+
+  AliCodeTimer::Instance()->Print();
 } 
 
 //____________________________________________________________________________
@@ -100,6 +103,8 @@ void AliEMCALReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) 
   // the global tracking.
   // Works on the current event.
 
+  AliCodeTimerAuto("")
+
   InitRecParam();
   AliEMCALClusterizerv1 clu;
   clu.SetInput(digitsTree);
@@ -118,6 +123,9 @@ void AliEMCALReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
   // Conversion from raw data to
   // EMCAL digits.
   // Works on a single-event basis
+
+
+  AliCodeTimerAuto("")
 
   rawReader->Reset() ; 
 
@@ -157,7 +165,8 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   //######################################################
   //#########Calculate trigger and set trigger info###########
   //######################################################
- 
+
+  AliCodeTimerStart(Form("JLK trigger info"));
   AliEMCALTrigger tr ;
   //   tr.SetPatchSize(1);//create 4x4 patches
   tr.Trigger();
@@ -208,11 +217,15 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
 
   esd->AddEMCALTriggerPosition(triggerPosition);
   esd->AddEMCALTriggerAmplitudes(triggerAmplitudes);
-  
+
+  AliCodeTimerStop(Form("JLK trigger info"));
+
   //########################################
   //##############Fill CaloCells###############
   //########################################
-  
+
+  AliCodeTimerStart(Form("JLK fill calocells"));
+
   TClonesArray *digits = new TClonesArray("AliEMCALDigit",1000);
   TBranch *branchdig = digitsTree->GetBranch("EMCAL");
   if (!branchdig) { 
@@ -237,6 +250,8 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   emcCells.SetNumberOfCells(idignew);
   emcCells.Sort();
 
+  AliCodeTimerStop(Form("JLK fill calocells"));
+
   //------------------------------------------------------------
   //-----------------CLUSTERS-----------------------------
   //------------------------------------------------------------
@@ -254,6 +269,8 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   //######################################################
   //Fill list of integers, each one is index of track to which the cluster belongs.
 
+  AliCodeTimerStart(Form("JLK track matching"));
+
   // step 1 - initialize array of matched track indexes
   Int_t *matchedTrack = new Int_t[nClusters];
   for (Int_t iclus = 0; iclus < nClusters; iclus++)
@@ -268,9 +285,13 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
     if(iemcalMatch >= 0) matchedTrack[iemcalMatch] = itrack;
   } 
 
+  AliCodeTimerStop(Form("JLK track matching"));
+
   //########################################
   //##############Fill CaloClusters############
   //########################################
+
+  AliCodeTimerStart(Form("JLK fill caloclusters"));
 
   esd->SetNumberOfEMCALClusters(nClusters);
   for (Int_t iClust = 0 ; iClust < nClusters ; iClust++) {
@@ -367,6 +388,8 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
    pid->SetReconstructor(kTRUE);
    pid->RunPID(esd);
    delete pid;
+
+  AliCodeTimerStop(Form("JLK fill caloclusters"));
   
 }
 

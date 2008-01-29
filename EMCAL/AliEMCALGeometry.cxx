@@ -80,7 +80,7 @@ Char_t*            AliEMCALGeometry::fgDefaultGeometryName = "SHISH_77_TRD1_2X2_
 //  ==                                      =============================
 //  AliRunLoader    *rl   = AliRunLoader::GetRunLoader();
 // AliEMCALGeometry *geom = dynamic_cast<AliEMCAL*>(rl->GetAliRun()->GetDetector("EMCAL"))->GetGeometry();
-
+// TGeoManager::Import("geometry.root");
 
 AliEMCALGeometry::AliEMCALGeometry() 
   : AliGeometry(),
@@ -1158,6 +1158,11 @@ void AliEMCALGeometry::GetGlobal(Int_t absId , double glob[3]) const
   // Alice numbering scheme - Jun 03, 2006
   static Int_t nSupMod, nModule, nIphi, nIeta;
   static double loc[3];
+
+  if (!gGeoManager || !gGeoManager->IsClosed()) {
+    AliError("Can't get the global coordinates! gGeoManager doesn't exist or it is still open!");
+    return;
+  }
 
   glob[0]=glob[1]=glob[2]=0.0; // bad case
   if(RelPosCellInSModule(absId, loc)) {
