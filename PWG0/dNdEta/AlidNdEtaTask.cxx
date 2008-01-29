@@ -44,17 +44,20 @@ AlidNdEtaTask::AlidNdEtaTask(const char* opt) :
   fOption(opt),
   fAnalysisMode(AliPWG0Helper::kTPC),
   fReadMC(kFALSE),
+  fUseMCVertex(kFALSE),
   fEsdTrackCuts(0),
   fdNdEtaAnalysisESD(0),
   fMult(0),
   fMultVtx(0),
   fEvents(0),
+  fVertexResolution(0),
   fdNdEtaAnalysis(0),
   fdNdEtaAnalysisTr(0),
   fdNdEtaAnalysisTrVtx(0),
   fdNdEtaAnalysisTracks(0),
   fVertex(0),
-  fPartPt(0)
+  fPartPt(0),
+  fDeltaPhi(0)
 {
   //
   // Constructor. Initialization of pointers
@@ -99,12 +102,15 @@ void AlidNdEtaTask::ConnectInputData(Option_t *)
     tree->SetBranchStatus("fSPDVertex*", 1);
     // PrimaryVertex also needed
 
-    if (fAnalysisMode == AliPWG0Helper::kSPD)
+    if (fAnalysisMode == AliPWG0Helper::kSPD) {
       tree->SetBranchStatus("fSPDMult*", 1);
-
+      //AliPWG0Helper::SetBranchStatusRecursive(tree, "AliMultiplicity", kTRUE);
+    }
+    
     if (fAnalysisMode == AliPWG0Helper::kTPC || fAnalysisMode == AliPWG0Helper::kTPCITS) {
       AliESDtrackCuts::EnableNeededBranches(tree);
       tree->SetBranchStatus("fTracks.fLabel", 1);
+      //AliPWG0Helper::SetBranchStatusRecursive(tree, "Tracks", kTRUE);
     }
 
     AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
@@ -114,11 +120,16 @@ void AlidNdEtaTask::ConnectInputData(Option_t *)
     } else
       fESD = esdH->GetEvent();
   }
+
+  // disable info messages of AliMCEvent (per event)
+  AliLog::SetClassDebugLevel("AliMCEvent", AliLog::kWarning - AliLog::kDebug + 1);
 }
 
 void AlidNdEtaTask::CreateOutputObjects()
 {
   // create result objects and add to output list
+
+  Printf("AlidNdEtaTask::CreateOutputObjects");
 
   fOutput = new TList;
   fOutput->SetOwner();
@@ -142,6 +153,9 @@ void AlidNdEtaTask::CreateOutputObjects()
   fEvents = new TH1F("dndeta_check_vertex", "dndeta_check_vertex", 40, -20, 20);
   fOutput->Add(fEvents);
 
+  fVertexResolution = new TH1F("dndeta_vertex_resolution_z", "dndeta_vertex_resolution_z", 1000, 0, 10);
+  fOutput->Add(fVertexResolution);
+
   if (fReadMC)
   {
     fdNdEtaAnalysis = new dNdEtaAnalysis("dndeta", "dndeta", fAnalysisMode);
@@ -163,6 +177,9 @@ void AlidNdEtaTask::CreateOutputObjects()
     fPartPt->Sumw2();
     fOutput->Add(fPartPt);
   }
+
+  if (fAnalysisMode == AliPWG0Helper::kSPD)
+    fDeltaPhi = new TH1F("fDeltaPhi", "fDeltaPhi;#Delta #phi;Entries", 1000, -3.14, 3.14);
 }
 
 void AlidNdEtaTask::Exec(Option_t*)
@@ -183,8 +200,15 @@ void AlidNdEtaTask::Exec(Option_t*)
   const AliESDVertex* vtxESD = AliPWG0Helper::GetVertex(fESD, fAnalysisMode);
   
   Double_t vtx[3];
-  if (vtxESD)
+  if (vtxESD) {
     vtxESD->GetXYZ(vtx);
+  }
+  else
+    Printf("No vertex");
+  
+  // fill z vertex resolution
+  if (vtxESD)
+    fVertexResolution->Fill(vtxESD->GetZRes());
 
   // post the data already here
   PostData(0, fOutput);
@@ -217,11 +241,15 @@ void AlidNdEtaTask::Exec(Option_t*)
       if (mult->GetDeltaPhi(i) < -1000)
         continue;
 
+      fDeltaPhi->Fill(mult->GetDeltaPhi(i));
+
       etaArr[inputCount] = mult->GetEta(i);
       labelArr[inputCount] = mult->GetLabel(i);
       ptArr[inputCount] = 0; // no pt for tracklets
       ++inputCount;
     }
+
+    Printf("Accepted %d tracklets", inputCount);
   }
   else if (fAnalysisMode == AliPWG0Helper::kTPC || fAnalysisMode == AliPWG0Helper::kTPCITS)
   {
@@ -255,10 +283,46 @@ void AlidNdEtaTask::Exec(Option_t*)
       ++inputCount;
     }
 
+    Printf("Accepted %d tracks", nGoodTracks);
+
     delete list;
   }
   else
     return;
+
+  if (fUseMCVertex) {
+    Printf("WARNING: Replacing vertex by MC vertex. This is for systematical checks only.");
+    if (!fReadMC) {
+      Printf("ERROR: fUseMCVertex set without fReadMC set!");
+      return;
+    }
+
+    AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+    if (!eventHandler) {
+      Printf("ERROR: Could not retrieve MC event handler");
+      return;
+    }
+
+    AliMCEvent* mcEvent = eventHandler->MCEvent();
+    if (!mcEvent) {
+      Printf("ERROR: Could not retrieve MC event");
+      return;
+    }
+
+    AliHeader* header = mcEvent->Header();
+    if (!header)
+    {
+      AliDebug(AliLog::kError, "Header not available");
+      return;
+    }
+
+    // get the MC vertex
+    AliGenEventHeader* genHeader = header->GenEventHeader();
+    TArrayF vtxMC(3);
+    genHeader->PrimaryVertex(vtxMC);
+
+    vtx[2] = vtxMC[2];
+  }
 
   // Processing of ESD information (always)
   if (eventTriggered)
@@ -291,7 +355,7 @@ void AlidNdEtaTask::Exec(Option_t*)
       // for event count per vertex
       fdNdEtaAnalysisESD->FillEvent(vtx[2], inputCount);
 
-      // control hists
+      // control hist
       fEvents->Fill(vtx[2]);
     }
   }
@@ -349,8 +413,8 @@ void AlidNdEtaTask::Exec(Option_t*)
       Float_t eta = particle->Eta();
       Float_t pt = particle->Pt();
 
-       // make a rough eta cut (so that nAcceptedParticles is not too far off)
-      if (TMath::Abs(eta) < 1.5)
+       // make a rough eta cut (so that nAcceptedParticles is not too far off the true measured value (NB: this histograms are only gathered for comparison))
+      if (TMath::Abs(eta) < 1.5 && pt > 0.3)
         nAcceptedParticles++;
 
       fdNdEtaAnalysis->FillTrack(vtxMC[2], eta, pt);
@@ -424,6 +488,7 @@ void AlidNdEtaTask::Terminate(Option_t *)
   fMult = dynamic_cast<TH1F*> (fOutput->FindObject("fMult"));
   fMultVtx = dynamic_cast<TH1F*> (fOutput->FindObject("fMultVtx"));
   fEvents = dynamic_cast<TH1F*> (fOutput->FindObject("dndeta_check_vertex"));
+  fVertexResolution = dynamic_cast<TH1F*> (fOutput->FindObject("dndeta_vertex_resolution_z"));
   for (Int_t i=0; i<3; ++i)
     fPartEta[i] = dynamic_cast<TH1F*> (fOutput->FindObject(Form("dndeta_check_%d", i)));
 
@@ -446,6 +511,10 @@ void AlidNdEtaTask::Terminate(Option_t *)
     Int_t events1 = (Int_t) fEvents->Integral(fEvents->GetXaxis()->FindBin(-19.9), fEvents->GetXaxis()->FindBin(-0.001));
     Int_t events2 = (Int_t) fEvents->Integral(fEvents->GetXaxis()->FindBin(0.001), fEvents->GetXaxis()->FindBin(19.9));
 
+    Printf("%d events with vertex used", events1 + events2);
+
+    if (events1 > 0 && events2 > 0)
+    {
     fPartEta[0]->Scale(1.0 / (events1 + events2));
     fPartEta[1]->Scale(1.0 / events1);
     fPartEta[2]->Scale(1.0 / events2);
@@ -458,6 +527,7 @@ void AlidNdEtaTask::Terminate(Option_t *)
     {
       fPartEta[i]->SetLineColor(i+1);
       fPartEta[i]->Draw((i==0) ? "" : "SAME");
+    }
     }
   }
 
@@ -487,6 +557,12 @@ void AlidNdEtaTask::Terminate(Option_t *)
 
   if (fEvents)
     fEvents->Write();
+
+  if (fVertexResolution)
+    fVertexResolution->Write();
+
+  if (fDeltaPhi)
+    fDeltaPhi->Write();
 
   fout->Write();
   fout->Close();

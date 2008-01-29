@@ -2,10 +2,13 @@
 
 #include "AlidNdEtaCorrectionTask.h"
 
+#include <TROOT.h>
 #include <TCanvas.h>
 #include <TChain.h>
 #include <TFile.h>
 #include <TH1F.h>
+#include <TH2F.h>
+#include <TProfile.h>
 #include <TParticle.h>
 
 #include <AliLog.h>
@@ -26,6 +29,7 @@
 //#include "AliCorrectionMatrix3D.h"
 #include "dNdEta/dNdEtaAnalysis.h"
 #include "dNdEta/AlidNdEtaCorrection.h"
+#include "AliVertexerTracks.h"
 
 ClassImp(AlidNdEtaCorrectionTask)
 
@@ -42,6 +46,9 @@ AlidNdEtaCorrectionTask::AlidNdEtaCorrectionTask(const char* opt) :
   fdNdEtaAnalysisESD(0),
   fPIDParticles(0),
   fPIDTracks(0),
+  fVertexCorrelation(0),
+  fVertexProfile(0),
+  fVertexShiftNorm(0),
   fSigmaVertexTracks(0),
   fSigmaVertexPrim(0)
 {
@@ -145,9 +152,9 @@ void AlidNdEtaCorrectionTask::CreateOutputObjects()
   fOutput->Add(fdNdEtaAnalysisESD);
 
   if (fOption.Contains("process-types")) {
-    fdNdEtaCorrectionProcessType[0] = new AlidNdEtaCorrection("dndeta_correction_ND", "dndeta_correction_ND");
-    fdNdEtaCorrectionProcessType[1] = new AlidNdEtaCorrection("dndeta_correction_SD", "dndeta_correction_SD");
-    fdNdEtaCorrectionProcessType[2] = new AlidNdEtaCorrection("dndeta_correction_DD", "dndeta_correction_DD");
+    fdNdEtaCorrectionProcessType[0] = new AlidNdEtaCorrection("dndeta_correction_ND", "dndeta_correction_ND", fAnalysisMode);
+    fdNdEtaCorrectionProcessType[1] = new AlidNdEtaCorrection("dndeta_correction_SD", "dndeta_correction_SD", fAnalysisMode);
+    fdNdEtaCorrectionProcessType[2] = new AlidNdEtaCorrection("dndeta_correction_DD", "dndeta_correction_DD", fAnalysisMode);
 
     fOutput->Add(fdNdEtaCorrectionProcessType[0]);
     fOutput->Add(fdNdEtaCorrectionProcessType[1]);
@@ -162,6 +169,10 @@ void AlidNdEtaCorrectionTask::CreateOutputObjects()
     fOutput->Add(fSigmaVertexPrim);
     Printf("WARNING: sigma-vertex analysis enabled. This will produce weird results in the AliESDtrackCuts histograms");
   }
+
+  fVertexCorrelation = new TH2F("fVertexCorrelation", "fVertexCorrelation;MC z-vtx;ESD z-vtx", 80, -20, 20, 80, -20, 20);
+  fVertexProfile = new TProfile("fVertexProfile", "fVertexProfile;MC z-vtx;MC z-vtx - ESD z-vtx", 40, -20, 20);
+  fVertexShiftNorm = new TH1F("fVertexShiftNorm", "fVertexShiftNorm;(MC z-vtx - ESD z-vtx) / #sigma_{ESD z-vtx};Entries", 200, -100, 100);
 }
 
 void AlidNdEtaCorrectionTask::Exec(Option_t*)
@@ -176,14 +187,67 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
   }
 
   // trigger definition
-  Bool_t eventTriggered = AliPWG0Helper::IsEventTriggered(fESD->GetTriggerMask(), AliPWG0Helper::kMB1);
-
-  Bool_t eventVertex = kFALSE;
-  if (AliPWG0Helper::GetVertex(fESD, fAnalysisMode))
-    eventVertex = kTRUE;
+  Bool_t eventTriggered = AliPWG0Helper::IsEventTriggered(fESD->GetTriggerMask(), AliPWG0Helper::kMB2);
 
   // post the data already here
   PostData(0, fOutput);
+
+  // MC info
+  AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+  if (!eventHandler) {
+    Printf("ERROR: Could not retrieve MC event handler");
+    return;
+  }
+
+  AliMCEvent* mcEvent = eventHandler->MCEvent();
+  if (!mcEvent) {
+    Printf("ERROR: Could not retrieve MC event");
+    return;
+  }
+
+  AliStack* stack = mcEvent->Stack();
+  if (!stack)
+  {
+    AliDebug(AliLog::kError, "Stack not available");
+    return;
+  }
+
+  AliHeader* header = mcEvent->Header();
+  if (!header)
+  {
+    AliDebug(AliLog::kError, "Header not available");
+    return;
+  }
+
+  // get process type; NB: this only works for Pythia
+  Int_t processType = AliPWG0Helper::GetPythiaEventProcessType(header);
+  AliDebug(AliLog::kDebug+1, Form("Found pythia process type %d", processType));
+
+  if (processType<0)
+    AliDebug(AliLog::kError, Form("Unknown Pythia process type %d.", processType));
+
+  // get the MC vertex
+  AliGenEventHeader* genHeader = header->GenEventHeader();
+  TArrayF vtxMC(3);
+  genHeader->PrimaryVertex(vtxMC);
+
+  // get the ESD vertex
+  const AliESDVertex* vtxESD = AliPWG0Helper::GetVertex(fESD, fAnalysisMode);
+
+  Bool_t eventVertex = kFALSE;
+  Double_t vtx[3];
+  if (vtxESD) 
+  {
+    vtxESD->GetXYZ(vtx);
+    eventVertex = kTRUE;
+    
+    Double_t diff = vtxMC[2] - vtx[2];
+    if (vtxESD->GetZRes() > 0) 
+      fVertexShiftNorm->Fill(diff / vtxESD->GetZRes());
+  } 
+  else
+    Printf("No vertex found");
+
 
   // create list of (label, eta, pt) tuples
   Int_t inputCount = 0;
@@ -231,6 +295,8 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
     TObjArray* list = fEsdTrackCuts->GetAcceptedTracks(fESD);
     Int_t nGoodTracks = list->GetEntries();
 
+    Printf("Accepted %d tracks", nGoodTracks);
+
     labelArr = new Int_t[nGoodTracks];
     etaArr = new Float_t[nGoodTracks];
     ptArr = new Float_t[nGoodTracks];
@@ -250,47 +316,18 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
       ptArr[inputCount] = esdTrack->Pt();
       ++inputCount;
     }
+
+    delete list;
   }
   else
     return;
 
-  AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-  if (!eventHandler) {
-    Printf("ERROR: Could not retrieve MC event handler");
-    return;
-  }
-
-  AliMCEvent* mcEvent = eventHandler->MCEvent();
-  if (!mcEvent) {
-    Printf("ERROR: Could not retrieve MC event");
-    return;
-  }
-
-  AliStack* stack = mcEvent->Stack();
-  if (!stack)
+  if (eventTriggered && eventVertex)
   {
-    AliDebug(AliLog::kError, "Stack not available");
-    return;
+    fVertexCorrelation->Fill(vtxMC[2], vtx[2]);
+    fVertexProfile->Fill(vtxMC[2], vtxMC[2] - vtx[2]);
   }
 
-  AliHeader* header = mcEvent->Header();
-  if (!header)
-  {
-    AliDebug(AliLog::kError, "Header not available");
-    return;
-  }
-
-  // get process type; NB: this only works for Pythia
-  Int_t processType = AliPWG0Helper::GetPythiaEventProcessType(header);
-  AliDebug(AliLog::kDebug+1, Form("Found pythia process type %d", processType));
-
-  if (processType<0)
-    AliDebug(AliLog::kError, Form("Unknown Pythia process type %d.", processType));
-
-  // get the MC vertex
-  AliGenEventHeader* genHeader = header->GenEventHeader();
-  TArrayF vtxMC(3);
-  genHeader->PrimaryVertex(vtxMC);
 
   // loop over mc particles
   Int_t nPrim  = stack->GetNprimary();
@@ -340,7 +377,7 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
 
     if (label < 0)
     {
-      AliDebug(AliLog::kWarning, Form("WARNING: cannot find corresponding mc part for track %d.", label));
+      Printf("WARNING: cannot find corresponding mc part for track(let) %d with label %d.", i, label);
       continue;
     }
 
@@ -504,10 +541,17 @@ void AlidNdEtaCorrectionTask::Terminate(Option_t *)
   if (fSigmaVertexPrim)
     fSigmaVertexPrim->Write();
 
+  if (fVertexCorrelation)
+    fVertexCorrelation->Write();
+  if (fVertexProfile)
+    fVertexProfile->Write();
+  if (fVertexShiftNorm)
+    fVertexShiftNorm->Write();
+
   fout->Write();
   fout->Close();
 
-  fdNdEtaCorrection->DrawHistograms();
+  //fdNdEtaCorrection->DrawHistograms();
 
   Printf("Writting result to %s", fileName.Data());
 
