@@ -1,5 +1,5 @@
 // XEmacs -*-C++-*-
-// $Id: AliHLTTPCCompModelDeconverterComponent.h,v 1.2 2006/08/10 09:46:51 richterm Exp $
+// $Id$
 
 #ifndef ALIHLTTPCCOMPMODELDECONVERTERCOMPONENT_H
 #define ALIHLTTPCCOMPMODELDECONVERTERCOMPONENT_H
@@ -80,7 +80,7 @@ class AliHLTTPCCompModelDeconverterComponent : public AliHLTProcessor
       int DoDeinit();
 
       /** do event function
-       * @param evt Data     const AliHLTComponent_EventData& to event data
+       * @param evtData      const AliHLTComponent_EventData& to event data
        * @param blocks       const AliHLTComponent_BlockData* to blocks of event data
        * @param trigData     AliHLTComponent_TriggerData& of trigger data
        * @param outputPtr    AliHLTUInt8_t* pointer to output data

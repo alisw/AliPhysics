@@ -1,5 +1,5 @@
 //-*- Mode: C++ -*-
-// $Id: AliHLTReconstructor.cxx 21363 2007-10-12 13:24:47Z richterm $
+// $Id$
 
 #ifndef ALIRAWREADERHLT_H
 #define ALIRAWREADERHLT_H

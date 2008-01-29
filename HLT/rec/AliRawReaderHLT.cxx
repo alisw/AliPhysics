@@ -1,4 +1,4 @@
-// $Id: AliHLTReconstructor.cxx 21363 2007-10-12 13:24:47Z richterm $
+// $Id$
 
 /**************************************************************************
  * This file is property of and copyright by the ALICE HLT Project        * 

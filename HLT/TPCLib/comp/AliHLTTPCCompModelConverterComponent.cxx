@@ -1,4 +1,4 @@
-// $Id: AliHLTTPCCompModelConverterComponent.cxx,v 1.2 2006/08/10 09:46:51 richterm Exp $
+// $Id$
 
 /**************************************************************************
  * TPCCompModelConverterright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *

@@ -1,5 +1,5 @@
 // XEmacs -*-C++-*-
-// $Id: AliHLTTPCCompModelConverter.h,v 1.2 2006/08/10 09:46:51 richterm Exp $
+// $Id$
 
 #ifndef ALIHLTTPCCOMPMODELCONVERTER_H
 #define ALIHLTTPCCOMPMODELCONVERTER_H

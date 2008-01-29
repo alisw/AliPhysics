@@ -37,7 +37,7 @@ extern "C" {
 
   /**
    * Init the Run no for the CDB access.
-   * @param cdbpath     path to the CDB
+   * @param runNo       the run no
    * @return neg. error code if failed
    * @note function implemented in libHLTrec
    */

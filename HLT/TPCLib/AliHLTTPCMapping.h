@@ -1,5 +1,5 @@
 // -*- Mode: C++ -*-
-// $Id: AliHLTTPCDigitReaderRaw.cxx 22518 2007-11-26 23:19:47Z richterm $
+// $Id$
 
 #ifndef ALIHLTTPCMAPPING_H
 #define ALIHLTTPCMAPPING_H

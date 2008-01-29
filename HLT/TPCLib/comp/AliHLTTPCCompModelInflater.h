@@ -1,5 +1,5 @@
 // XEmacs -*-C++-*-
-// $Id: AliHLTTPCCompModelInflater.h,v 1.2 2006/08/10 09:46:51 richterm Exp $
+// $Id$
 
 #ifndef ALIHLTTPCCOMPMODELINFLATER_H
 #define ALIHLTTPCCOMPMODELINFLATER_H

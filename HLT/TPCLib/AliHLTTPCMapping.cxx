@@ -1,4 +1,5 @@
-// $Id: AliHLTTPCDigitReaderRaw.cxx 22518 2007-11-26 23:19:47Z richterm $
+// $Id$
+
 /**************************************************************************
  * This file is property of and copyright by the ALICE HLT Project        * 
  * ALICE Experiment at CERN, All rights reserved.                         *

@@ -1,5 +1,5 @@
 // XEmacs -*-C++-*-
-// @(#) $Id: AliHLTTPCDigitReaderDecoder.h,v 1.9 2007/11/28 21:29:24 richterm Exp $
+// $Id$
 
 #ifndef ALIHLTTPCDIGITREADERDECODER_H
 #define ALIHLTTPCDIGITREADERDECODER_H

@@ -1,4 +1,4 @@
-// @(#) $Id: AliHLTDynamicAliLog.cxx 23318 2008-01-14 12:43:28Z hristov $
+// $Id$
 
 /**************************************************************************
  * This file is property of and copyright by the ALICE HLT Project        * 

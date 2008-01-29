@@ -1,4 +1,4 @@
-// $Id: AliHLTTPCDigitReaderDecoder.cxx,v 1.18 2007/11/26 23:19:47 richterm Exp $
+// $Id$
 
 //**************************************************************************
 //* This file is property of and copyright by the ALICE HLT Project        * 

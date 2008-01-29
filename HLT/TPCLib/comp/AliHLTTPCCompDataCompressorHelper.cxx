@@ -1,4 +1,4 @@
-// @(#) $Id: AliHLTTPCCompDataCompressorHelper.cxx,v 1.1 2006/11/30 17:45:41 hristov Exp $
+// $Id$
 
 /**************************************************************************
  * TPCCompModelAnalysisright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
@@ -40,6 +40,10 @@ using namespace std;
 
 
 ClassImp(AliHLTTPCCompDataCompressorHelper)
+
+AliHLTTPCCompDataCompressorHelper::AliHLTTPCCompDataCompressorHelper()
+{
+}
 
 // see header file for more documentation
 // used variables for compression

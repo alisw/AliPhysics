@@ -1,4 +1,5 @@
-// @(#) $Id: AliHLTTPCCompDataCompressorHelper.h,v 1.1 2006/11/30 17:45:41 hristov Exp $
+// XEmacs -*-C++-*-
+// $Id$
 
 /**************************************************************************
  * TPCCompModelAnalysisright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
@@ -161,7 +162,7 @@ class AliHLTTPCCompDataCompressorHelper {
  private:
 
   /** standard constructor */
-  AliHLTTPCCompDataCompressorHelper() {};
+  AliHLTTPCCompDataCompressorHelper();
 
   /** standard destructor */
   virtual ~AliHLTTPCCompDataCompressorHelper() {};
