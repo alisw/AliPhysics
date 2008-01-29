@@ -7,6 +7,7 @@ void rec() {
   AliTPCRecoParam * tpcRecoParam = AliTPCRecoParam::GetHighFluxParam();
   AliTPCReconstructor::SetRecoParam(tpcRecoParam);
   //  AliTPCReconstructor::SetStreamLevel(1);
+  reco.SetRunVertexFinderTracks(kFALSE);
 
   TStopwatch timer;
   timer.Start();

@@ -96,6 +96,11 @@ const char * TrigConfName[] = {
     "p-p","Pb-Pb"
 };
 
+enum PprGeo_t
+  {
+    kHoles, kNoHoles
+  };
+
 //--- Functions ---
 AliGenPythia *PythiaHVQ(PDC06Proc_t proc);
 AliGenerator *MbCocktail();
@@ -108,6 +113,7 @@ static DecayHvFl_t   decHvFl  = kNature;
 static YCut_t        ycut     = kFull;
 static Mag_t         mag      = k5kG; 
 static TrigConf_t    trig     = kDefaultPPTrig; // default pp trigger configuration
+static PprGeo_t geo = kHoles;
 //========================//
 // Set Random Number seed //
 //========================//
@@ -407,6 +413,11 @@ void Config()
         //=================== FRAME parameters ============================
 
         AliFRAMEv2 *FRAME = new AliFRAMEv2("FRAME", "Space Frame");
+        if (geo == kHoles) {
+	  FRAME->SetHoles(1);
+	} else {
+	  FRAME->SetHoles(0);
+	}
     }
 
     if (iSHIL)

@@ -18,6 +18,7 @@ void rec() {
   reco.SetInput("raw.root");
 
   reco.SetNumberOfEventsPerFile(-1); // all events in one single file
+  reco.SetRunVertexFinderTracks(kFALSE);
 
   TStopwatch timer;
   timer.Start();

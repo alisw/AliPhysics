@@ -54,9 +54,15 @@ const char * pprTrigConfName[] = {
     "p-p","Pb-Pb"
 };
 
+enum PprGeo_t
+  {
+    kHoles, kNoHoles
+  };
+
 Float_t EtaToTheta(Float_t arg);
 
 static PprTrigConf_t strig = kDefaultPPTrig;// default PP trigger configuration
+static PprGeo_t geo = kHoles;
 
 void Config()
 {
@@ -335,6 +341,11 @@ void Config()
         //=================== FRAME parameters ============================
 
         AliFRAMEv2 *FRAME = new AliFRAMEv2("FRAME", "Space Frame");
+        if (geo == kHoles) {
+	  FRAME->SetHoles(1);
+	} else {
+	  FRAME->SetHoles(0);
+	}
     }
 
     if (iSHIL)
