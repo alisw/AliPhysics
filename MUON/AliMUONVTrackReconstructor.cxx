@@ -757,7 +757,6 @@ void AliMUONVTrackReconstructor::ValidateTracksWithTrigger(AliMUONVTrackStore& t
   AliCodeTimerAuto("");
 
   trackHitPattern.ExecuteValidation(trackStore, triggerTrackStore, triggerStore);
-  trackHitPattern.UpdateQA();
 }
 
   //__________________________________________________________________________

@@ -107,9 +107,6 @@ AliMUONTrackHitPattern::~AliMUONTrackHitPattern(void)
 {
   /// Destructor
   delete fTrigCovariance;
-  for(Int_t cath=0; cath<fgkNcathodes; cath++){
-    delete fPadFired[cath];
-  }
 }
 
 
@@ -133,20 +130,6 @@ void AliMUONTrackHitPattern::InitMembers()
   (*fTrigCovariance)(1,1) = kTrigBendReso * kTrigBendReso;
   (*fTrigCovariance)(2,2) = kTrigSlopeBendReso * kTrigSlopeBendReso;
   (*fTrigCovariance)(1,2) = (*fTrigCovariance)(2,1) = kTrigCovSlopeBend;
-
-  const Int_t kMaxNpads[fgkNcathodes] = {GetMaxX(0)*GetMaxY(0), GetMaxX(1)*GetMaxY(1)};
-  Char_t histoName[40];
-  Char_t *cathCode[fgkNcathodes] = {"bendPlane", "nonBendPlane"};
-
-  const Int_t kNslats = 18;
-
-  for(Int_t cath=0; cath<fgkNcathodes; cath++){
-    sprintf(histoName, "fPadFired%s", cathCode[cath]);
-    fPadFired[cath] = new TH3F(histoName, histoName,
-			       fgkNchambers, -0.5, (Float_t)fgkNchambers - 0.5,
-			       kNslats, -0.5, (Float_t)kNslats - 0.5,
-			       kMaxNpads[cath], -0.5, (Float_t)kMaxNpads[cath] - 0.5);
-  }
 }
 
 
@@ -617,10 +600,6 @@ Int_t AliMUONTrackHitPattern::FindPadMatchingTrig(AliMUONVDigitStore& digitStore
 	for(Int_t loc=pad.GetNofLocations(); loc<fgkNlocations; loc++){
 	    nboard[cathode][loc]=-1;
 	}
-
-	// Fired pads info
-	Int_t currPair = ix*GetMaxY(cathode) + iy;
-	fPadFired[cathode]->Fill(ch, currSlat, currPair);
     }
 
     for(Int_t cath=0; cath<fgkNcathodes; cath++){
@@ -912,69 +891,3 @@ Bool_t AliMUONTrackHitPattern::PerformTrigTrackMatch(UShort_t &pattern,
   AddEffInfo(pattern, firstSlat, goodForEff);
   return kTRUE;
 }
-
-
-//_____________________________________________________________________________
-void AliMUONTrackHitPattern::UpdateQA() const
-{
-  //
-  /// Save map of fired strips in the QA file
-  //
-
-  TDirectory *dir = gDirectory;
-
-  TFile *logFile = 0x0;
-  TString logFileName;
-  Bool_t reopenFile = kFALSE;
-  TString baseFileName = "MUON.QA";
-  TString dirName = "EfficiencyRelated";
-
-  TSeqCollection *list = gROOT->GetListOfFiles();
-  Int_t n = list->GetEntries();
-  for(Int_t i=0; i<n; i++) {
-    logFile = (TFile*)list->At(i);
-    logFileName = logFile->GetName();
-    if (logFileName.Contains(baseFileName.Data())) break;
-    logFile = 0x0;
-  }
-
-  if(!logFile) {
-    void * dirp = gSystem->OpenDirectory(gSystem->pwd());
-    const char * name = 0x0;
-    // Add all files matching *pattern* to the chain
-    while((name = gSystem->GetDirEntry(dirp))) {
-      logFileName = name;
-      if (logFileName.Contains(baseFileName.Data())) {
-	logFile = new TFile(logFileName.Data(), "update");
-	AliWarning(Form("%s already stored on disk. Re-opening in update mode.",baseFileName.Data()));
-	break;
-      }
-      logFile = 0x0;
-    }//directory loop
-    reopenFile = kTRUE;
-  }
-    
-  if(logFile){
-    logFile->cd();
-    TDirectory *muonDir = (TDirectory*)logFile->Get("MUON");
-    muonDir->cd();
-    TDirectory *effDir = (TDirectory*)muonDir->Get(dirName.Data());
-    if(!effDir) {
-      effDir = muonDir->mkdir(dirName.Data());
-    }
-    effDir->cd();
-    TH3F *histo = 0x0;
-    for(Int_t cath=0; cath<fgkNcathodes; cath++){
-      histo = (TH3F*) effDir->Get(fPadFired[cath]->GetName());
-      if(!histo) histo = (TH3F*)fPadFired[cath]->Clone();
-      else histo->Add(fPadFired[cath]);
-      histo->Write(histo->GetName(), TObject::kOverwrite);
-    }
-    if(reopenFile){
-      logFile->Close();
-    }
-  }
-  else AliWarning(Form("Map of strips entering efficiency calculation could not be found in %s", baseFileName.Data()));
-  dir->cd();
-}
-

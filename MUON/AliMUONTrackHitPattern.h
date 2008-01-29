@@ -15,7 +15,6 @@
 #include <TMatrixD.h>
 #include <TArrayI.h>
 #include <TArrayF.h>
-#include <TH3.h>
 
 class AliMUONVTrackStore;
 class AliMUONVTriggerStore;
@@ -47,8 +46,6 @@ public:
   UShort_t GetHitPattern(AliMUONTrackParam& trackParam,
 			 AliMUONTriggerTrack* matchedTriggerTrack,
 			 AliMUONVDigitStore& digitStore) const;
-
-  void UpdateQA() const;
 
 protected:
   void ApplyMCSCorrections(AliMUONTrackParam& trackParam) const;
@@ -96,10 +93,6 @@ private:
   AliMUONTrackHitPattern& operator = (const AliMUONTrackHitPattern& rhs);
 
   void CheckConstants() const;
-  /// Get max number of strips along x
-  Int_t GetMaxX(Int_t cath) const {return (cath==0) ? 7 : 112;}
-  /// Get max number of strips along x
-  Int_t GetMaxY(Int_t cath) const {return (cath==0) ? 64 : 1;}
 
   const AliMUONGeometryTransformer& fTransformer; //!< geometry transformer
   const AliMUONDigitMaker& fDigitMaker; //!< pointer to digit maker
@@ -120,8 +113,6 @@ private:
     kSlatEff,
     kBoardEff
   };
-
-  TH3F *fPadFired[fgkNcathodes]; ///< Histo counting the fired pads
 
   ClassDef(AliMUONTrackHitPattern, 0) // MUON track hit pattern
 };

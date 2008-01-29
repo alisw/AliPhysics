@@ -19,7 +19,8 @@
 #include <TFile.h> 
 #include <TH1F.h> 
 #include <TH1I.h> 
-#include <TH2F.h> 
+#include <TH2F.h>
+#include <TH3F.h> 
 #include <TLorentzVector.h>
 
 // --- AliRoot header files ---
@@ -34,6 +35,12 @@
 #include "AliMUONVClusterStore.h"
 #include "AliMUONVCluster.h"
 #include "AliESDMuonTrack.h"
+
+#include "AliMUONDigitMaker.h"
+#include "AliMUONVDigitStore.h"
+#include "AliMUONVTriggerStore.h"
+#include "AliMUONVDigit.h"
+#include "AliMUONLocalTrigger.h"
 
 #include "AliMUONQADataMakerRec.h"
 
@@ -51,34 +58,52 @@ ClassImp(AliMUONQADataMakerRec)
 //____________________________________________________________________________ 
 AliMUONQADataMakerRec::AliMUONQADataMakerRec() : 
     AliQADataMakerRec(AliQA::GetDetName(AliQA::kMUON), "MUON Quality Assurance Data Maker"),
-    fClusterStore(0x0)
+    fDigitStore(0x0),
+    fTriggerStore(0x0),
+    fDigitMaker(0x0)
 {
     /// ctor
+  fDigitStore = AliMUONVDigitStore::Create("AliMUONDigitStoreV1");
+  fDigitMaker = new AliMUONDigitMaker(kTRUE,kFALSE);
+
 }
 
 //____________________________________________________________________________ 
 AliMUONQADataMakerRec::AliMUONQADataMakerRec(const AliMUONQADataMakerRec& qadm) :
-    AliQADataMakerRec()
+    AliQADataMakerRec(qadm),
+    fDigitStore(0x0),
+    fTriggerStore(0x0),
+    fDigitMaker(0x0)
 {
     ///copy ctor 
     SetName((const char*)qadm.GetName()) ; 
     SetTitle((const char*)qadm.GetTitle()); 
+
+    // Do not copy the digit store and digit maker, but create its own ones
+    fDigitStore = AliMUONVDigitStore::Create("AliMUONDigitStoreV1");
+    fDigitMaker = new AliMUONDigitMaker(kTRUE,kFALSE);
 }
 
 //__________________________________________________________________
 AliMUONQADataMakerRec& AliMUONQADataMakerRec::operator = (const AliMUONQADataMakerRec& qadm )
 {
-    /// Equal operator.
-    this->~AliMUONQADataMakerRec();
-    new(this) AliMUONQADataMakerRec(qadm);
-    return *this;
+  /// Assignment operator
+
+  // check assignment to self
+  if (this == &qadm) return *this;
+
+  this->~AliMUONQADataMakerRec();
+  new(this) AliMUONQADataMakerRec(qadm);
+  return *this;
 }
 
 //__________________________________________________________________
 AliMUONQADataMakerRec::~AliMUONQADataMakerRec()
 {
     /// dtor
-    delete fClusterStore;
+    delete fDigitStore;
+    delete fTriggerStore;
+    delete fDigitMaker;
 }
 
 //____________________________________________________________________________ 
@@ -105,11 +130,17 @@ void AliMUONQADataMakerRec::InitRaws()
 void AliMUONQADataMakerRec::InitRecPoints()
 {
     /// create Reconstructed Points histograms in RecPoints subdir
-    TH1F* h0 = new TH1F("hClusterCharge", "Clusters Charge distribution", 1000, 0., 4095.); 
-    Add2RecPointsList(h0, 0);
+    TH3F *h2 = new TH3F("hTriggerDigitsBendPlane", "Trigger digits in bending plane",
+			4, -0.5, 4. - 0.5,
+			18, -0.5, 18. - 0.5,
+			7*64, -0.5, 7.*64. - 0.5);
+    Add2RecPointsList(h2, 0);
 
-    TH1I* h1 = new TH1I("hClusterDetElem", "DetElemId distribution in Clusters ", 1000, 100., 1100.); 
-    Add2RecPointsList(h1, 1);
+    TH3F *h3 = new TH3F("hTriggerDigitsNonBendPlane", "Trigger digits in non-bending plane",
+			4, -0.5, 4. - 0.5,
+			18, -0.5, 18. - 0.5,
+			112, -0.5, 112. - 0.5);
+    Add2RecPointsList(h3, 1);
 }
 
 
@@ -148,27 +179,50 @@ void AliMUONQADataMakerRec::MakeRaws(AliRawReader* rawReader)
       GetRawsData(1)->Fill(charge);
 		  
     } // Next digit
-
 }
 
 //____________________________________________________________________________
 void AliMUONQADataMakerRec::MakeRecPoints(TTree* clustersTree)
 {
   
-    /// makes data from RecPoints
-    if (!fClusterStore)
-	fClusterStore = AliMUONVClusterStore::Create(*clustersTree);
-    fClusterStore->Connect(*clustersTree, false);
+    /// makes data from trigger response
+      
+    // Fired pads info
+    fDigitStore->Clear();
+
+    if (!fTriggerStore) fTriggerStore = AliMUONVTriggerStore::Create(*clustersTree);
+    fTriggerStore->Clear();
+    fTriggerStore->Connect(*clustersTree, false);
     clustersTree->GetEvent(0);
-    
-    TIter next(fClusterStore->CreateIterator());
 
-    AliMUONVCluster* clus = 0x0;
+    AliMUONLocalTrigger* locTrg;
+    TIter nextLoc(fTriggerStore->CreateLocalIterator());
 
-    while ( ( clus = static_cast<AliMUONVCluster*>(next()) ) )
+    while ( ( locTrg = static_cast<AliMUONLocalTrigger*>(nextLoc()) ) ) 
     {
-      GetRecPointsData(0)->Fill(clus->GetCharge());
-      GetRecPointsData(1)->Fill(clus->GetDetElemId());
+      if (locTrg->IsNull()) continue;
+   
+      TArrayS xyPattern[2];
+      locTrg->GetXPattern(xyPattern[0]);
+      locTrg->GetYPattern(xyPattern[1]);
+
+      Int_t nBoard = locTrg->LoCircuit();
+       fDigitMaker->TriggerDigits(nBoard, xyPattern, *fDigitStore);
+    }
+
+    TIter nextDigit(fDigitStore->CreateIterator());
+    AliMUONVDigit* mDigit;
+    while ( ( mDigit = static_cast<AliMUONVDigit*>(nextDigit()) ) )
+    {
+      Int_t detElemId = mDigit->DetElemId();
+      Int_t ch = detElemId/100 - 11;
+      Int_t slat = detElemId%100;
+      Int_t cathode = mDigit->Cathode();
+      Int_t ix = mDigit->PadX();
+      Int_t iy = mDigit->PadY();
+      Int_t maxY = (cathode==0) ? 64 : 1;
+      Int_t currPair = ix*maxY + iy;
+      ((TH3F*)GetRecPointsData(cathode))->Fill(ch, slat, currPair);
     }
 }
 

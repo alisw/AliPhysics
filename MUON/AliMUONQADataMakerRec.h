@@ -16,8 +16,10 @@
 class TObjArray; 
 
 // --- AliRoot header files ---
-class AliMUONVClusterStore;
 class AliMUONVTrackStore;
+class AliMUONDigitMaker;
+class AliMUONVDigitStore;
+class AliMUONVTriggerStore;
 
 #include "AliQADataMakerRec.h"
 
@@ -41,9 +43,11 @@ private:
   virtual void   MakeESDs(AliESDEvent* esd) ;
   virtual void   EndOfDetectorCycle(AliQA::TASKINDEX task, TObjArray* list);
 
-  AliMUONVClusterStore* fClusterStore; //!< pointer to cluster store
+  AliMUONVDigitStore* fDigitStore; //!< pointer to digits store
+  AliMUONVTriggerStore* fTriggerStore; //!< pointer to trigger store
+  AliMUONDigitMaker* fDigitMaker;  //!< pointer to digit maker
 
-  ClassDef(AliMUONQADataMakerRec,1)  // MUON Quality assurance data maker
+  ClassDef(AliMUONQADataMakerRec,2)  // MUON Quality assurance data maker
 
 };
 #endif
