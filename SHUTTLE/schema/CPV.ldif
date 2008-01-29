@@ -1,0 +1,7 @@
+# CPV config
+dn: det=CPV,o=shuttle,dc=cern,dc=ch
+objectClass: detectorConfig
+det: CPV
+strictRunOrder: 0
+responsible: Boris.Polichtchouk@cern.ch
+
