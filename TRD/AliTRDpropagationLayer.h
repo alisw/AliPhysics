@@ -49,6 +49,7 @@ class AliTRDpropagationLayer : public TObject
   //                   , Double_t Yc = 0.0, Double_t Zc = 0.0);
   void         SetSector(const Int_t sec)                       { fSec           = sec;         }
   void         SetX(Double_t x)                                 { fX             = x;           }
+	void         SetT0(Bool_t set = kTRUE) {SetBit(1, set);}
 	
   Double_t     GetYmax() const                                  { return fYmax;                 }
   Double_t     GetZmax(Int_t c) const                           { return fZmax[c];              }
@@ -62,6 +63,7 @@ class AliTRDpropagationLayer : public TObject
 
   Bool_t       IsHole(Int_t zone) const                         { return fIsHole[zone];         }
   Bool_t       IsSensitive() const                              { return (fTimeBinIndex >= 0) ? kTRUE : kFALSE;}
+	Bool_t       IsT0() const {return TestBit(1);}
 
   void         Clear(const Option_t * /*o*/)                    { ; } 
   void         Clear()                                          { for (Int_t i = 0; i < fN; i++) 

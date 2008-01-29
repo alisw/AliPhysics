@@ -40,6 +40,8 @@ class AliTRDseed : public TObject {
           Float_t  GetTilt() const                          { return fTilt;          }
           Float_t  GetPadLength() const                     { return fPadLength;     }
           Float_t  GetX0() const                            { return fX0;            }
+          Float_t  GetY0() const                            { return fYfit[0];       }
+          Float_t  GetZ0() const                            { return fZfit[0];       }
           Float_t  GetX(Int_t i) const                      { return fX[i];          }
           Float_t  GetY(Int_t i) const                      { return fY[i];          }
           Float_t  GetZ(Int_t i) const                      { return fZ[i];          }
@@ -64,7 +66,6 @@ class AliTRDseed : public TObject {
           Float_t  GetChi2() const                          { return fChi2;          }
           Float_t  GetChi2Z() const                         { return fChi2Z;         }
           Int_t    GetNTimeBins() const                   { return fgTimeBins; }
-          Int_t    GetNTimeBinsRange() const              { return fTimeBinsRange; }
 
 				
           void     SetTilt(Float_t tilt)                    { fTilt        = tilt;   }
@@ -95,15 +96,12 @@ class AliTRDseed : public TObject {
           void     SetChi2(Float_t chi2)                    { fChi2        = chi2;   }
           void     SetChi2Z(Float_t chi2z)                  { fChi2Z       = chi2z;  }
   static  void     SetNTimeBins(Int_t nTB)                { fgTimeBins  = nTB; }
-          void     SetNTimeBinsRange(Int_t nTB)           { fTimeBinsRange  = nTB; }
 
  protected:
 
           void     Copy(TObject &o) const;
           
   static  Int_t          fgTimeBins;            //  Local copy of the total number of TB
-          Int_t          fTimeBinsRange;        //  Number of time bins in the geometrical range of the detector
-          Int_t          fTimeBin0;             //  Time bin corresponding to t0
           Float_t        fTilt;                 //  Tilting angle
           Float_t        fPadLength;            //  Pad length
           Float_t        fX0;                   //  X0 position

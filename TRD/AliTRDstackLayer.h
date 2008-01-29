@@ -54,6 +54,9 @@ class AliTRDstackLayer : public AliTRDpropagationLayer
 	Double_t       GetDZ0()                          const { return fZLength; }
 	Int_t          GetNClusters()                    const { return fN; }
 	UInt_t         GetStackNr()                      const { return fStackNr; }
+	
+	Bool_t         IsT0() const {return TestBit(1);}
+	
 	void           PrintClusters()                   const;
 	Int_t          SearchNearestCluster(const Double_t y, const Double_t z, const Double_t Roady, const Double_t Roadz) const;
 	void           SetRange(Float_t z0, Float_t zLength);
@@ -64,6 +67,7 @@ class AliTRDstackLayer : public AliTRDpropagationLayer
 	void           SetIndexArray(UInt_t *indexArray){fIndex = indexArray;}
 	void           SetDebugStream(TTreeSRedirector *debug) {fDebugStream = debug;}
 	void           SetRecoParam(AliTRDrecoParam *p) {fRecoParam = p;}
+	void           SetT0(Bool_t set=kTRUE) {SetBit(1, set);}
 
 private:
 	void           Copy(TObject &o) const;

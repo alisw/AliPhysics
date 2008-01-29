@@ -301,8 +301,8 @@ Bool_t  AliTRDtrackV1::Update(AliTRDseedV1 *trklt, Double_t chisq)
 	
 	// update tracklet
 	trklt->SetMomentum(GetP());
-  Double_t s = GetSnp(), t = GetTgl();
-	trklt->SetdQdl(TMath::Sqrt((1.0 - s*s) / (1.0 + t*t)));
+	trklt->SetSnp(GetSnp());
+	trklt->SetTgl(GetTgl());
 	return kTRUE;
 }
 

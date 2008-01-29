@@ -1,3 +1,4 @@
+
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -435,6 +436,12 @@ Int_t AliTRDtrackerV1::RefitInward(AliESDEvent *event)
 
   Int_t   nseed    = 0; // contor for loaded seeds
   Int_t   found    = 0; // contor for updated TRD tracks
+  
+  // Calibration monitor
+  AliTRDCalibraFillHisto *calibra = AliTRDCalibraFillHisto::Instance();
+  if (!calibra) AliInfo("Could not get Calibra instance\n");
+  
+  
   AliTRDtrackV1 track;
   for (Int_t itrack = 0; itrack < event->GetNumberOfTracks(); itrack++) {
     AliESDtrack *seed = event->GetTrack(itrack);
@@ -454,25 +461,31 @@ Int_t AliTRDtrackerV1::RefitInward(AliESDEvent *event)
     track.ResetCovariance(50.0);
 
 		// do the propagation and processing
-    FollowProlongation(track);
-    // computes PID for track
-    track.CookPID();
-    // update calibration references using this track
-		//track.Calibrate();
-
-		// Prolongate to TPC
-    Double_t xTPC = 250.0;
-    if (PropagateToX(track, xTPC, fgkMaxStep)) { //  -with update
-      seed->UpdateTrackParams(&track, AliESDtrack::kTRDrefit);
-      track.UpdateESDtrack(seed);
-    	// Add TRD track to ESDfriendTrack
-			if (AliTRDReconstructor::StreamLevel() > 0 /*&& quality TODO*/){ 
-				AliTRDtrackV1 *calibTrack = new AliTRDtrackV1(track);
-				calibTrack->SetOwner();
-				seed->AddCalibObject(calibTrack);
+    Bool_t kUPDATE = kFALSE;
+		Double_t xTPC = 250.0;
+    if(FollowProlongation(track)){
+			// computes PID for track
+			track.CookPID();
+			// update calibration references using this track
+			if(calibra->GetHisto2d()) calibra->UpdateHistogramsV1(&track);
+	
+			// Prolongate to TPC
+			if (PropagateToX(track, xTPC, fgkMaxStep)) { //  -with update
+				seed->UpdateTrackParams(&track, AliESDtrack::kTRDrefit);
+				track.UpdateESDtrack(seed);
+				// Add TRD track to ESDfriendTrack
+				if (AliTRDReconstructor::StreamLevel() > 0 /*&& quality TODO*/){ 
+					AliTRDtrackV1 *calibTrack = new AliTRDtrackV1(track);
+					calibTrack->SetOwner();
+					seed->AddCalibObject(calibTrack);
+				}
+				found++;
+				kUPDATE = kTRUE;
 			}
-			found++;
-    } else {  // - without update
+		}	 
+		
+		// Prolongate to TPC without update
+		if(!kUPDATE) {
       AliTRDtrackV1 tt(*seed);
       if (PropagateToX(tt, xTPC, fgkMaxStep)) seed->UpdateTrackParams(&tt, AliESDtrack::kTRDrefit);
     }
@@ -699,18 +712,20 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
 				stackLayer[itb].BuildIndices();
 				nClustersChmb += stackLayer[itb].GetNClusters();
 			}
+			if(!nClustersChmb) continue;
 			//AliInfo(Form("Detector p[%d] c[%d]. Building tracklet from %d clusters ... ", iplane, ichmb, nClustersChmb));
 
 			tracklet.SetRecoParam(fRecoParam);
 			tracklet.SetTilt(TMath::Tan(-TMath::DegToRad()*pp->GetTiltingAngle()));
 			tracklet.SetPadLength(pp->GetLengthIPad());
 			tracklet.SetPlane(iplane);
-			Int_t tbRange   = fTimeBinsPerPlane; //Int_t(AliTRDgeometry::CamHght()+AliTRDgeometry::CdrHght() * AliTRDCommonParam::Instance()->GetSamplingFrequency()/AliTRDcalibDB::Instance()->GetVdriftDet()->GetValue(det));
+			//Int_t tbRange   = fTimeBinsPerPlane; //Int_t(AliTRDgeometry::CamHght()+AliTRDgeometry::CdrHght() * AliTRDCommonParam::Instance()->GetSamplingFrequency()/AliTRDcalibDB::Instance()->GetVdriftDet()->GetValue(det));
 			//printf("%d hl[%f] pl[%f] tb[%d]\n", il, hL[il], padlength[il], tbRange[il]);
-			tracklet.SetNTimeBinsRange(tbRange);
+			//tracklet.SetNTimeBinsRange(tbRange);
 			tracklet.SetX0(x0);
 			tracklet.Init(&t);
 			if(!tracklet.AttachClustersIter(stackLayer, 1000.)) continue;
+			tracklet.Init(&t);
 
 			//if(!tracklet.AttachClusters(stackLayer, kTRUE)) continue;
 			//if(!tracklet.Fit()) continue;
@@ -1391,7 +1406,7 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDstackLayer *layers
 #endif
 	
 	// Init chambers geometry
-	Int_t det, tbRange[6]; // time bins inside the detector geometry
+	Int_t det/*, tbRange[6]*/; // time bins inside the detector geometry
 	Double_t hL[kNPlanes];       // Tilting angle
 	Float_t padlength[kNPlanes]; // pad lenghts
 	AliTRDpadPlane *pp;
@@ -1400,7 +1415,7 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDstackLayer *layers
 		hL[il]        = TMath::Tan(-TMath::DegToRad()*pp->GetTiltingAngle());
 		padlength[il] = pp->GetLengthIPad();
 		det           = il; // to be fixed !!!!!
-		tbRange[il]   = fTimeBinsPerPlane; //Int_t(AliTRDgeometry::CamHght()+AliTRDgeometry::CdrHght() * AliTRDCommonParam::Instance()->GetSamplingFrequency()/AliTRDcalibDB::Instance()->GetVdriftDet()->GetValue(det));
+		//tbRange[il]   = fTimeBinsPerPlane; //Int_t(AliTRDgeometry::CamHght()+AliTRDgeometry::CdrHght() * AliTRDCommonParam::Instance()->GetSamplingFrequency()/AliTRDcalibDB::Instance()->GetVdriftDet()->GetValue(det));
 		//printf("%d hl[%f] pl[%f] tb[%d]\n", il, hL[il], padlength[il], tbRange[il]);
 	}
 
@@ -1451,7 +1466,7 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDstackLayer *layers
 					tseed->SetPlane(jLayer);
 					tseed->SetTilt(hL[jLayer]);
 					tseed->SetPadLength(padlength[jLayer]);
-					tseed->SetNTimeBinsRange(tbRange[jLayer]);
+					//tseed->SetNTimeBinsRange(tbRange[jLayer]);
 					tseed->SetX0(layer[iLayer]->GetX());//layers[jLayer*fTimeBinsPerPlane].GetX());
 
 					tseed->Init(fFitter->GetRiemanFitter());
@@ -1589,7 +1604,7 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDstackLayer *layers
 					cseed[jLayer].SetTilt(hL[jLayer]);
 					cseed[jLayer].SetX0(layers[(jLayer +1) * fTimeBinsPerPlane-1].GetX());
 					cseed[jLayer].SetPadLength(padlength[jLayer]);
-					cseed[jLayer].SetNTimeBinsRange(tbRange[jLayer]);
+					//cseed[jLayer].SetNTimeBinsRange(tbRange[jLayer]);
 					cseed[jLayer].Init(rim);
 // 					AliTRDcluster *cd = FindSeedingCluster(&layers[jLayer*fTimeBinsPerPlane], &cseed[jLayer]);
 // 					if(cd == 0x0) continue;

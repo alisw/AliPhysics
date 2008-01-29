@@ -671,6 +671,12 @@ Int_t AliTRDtracker::RefitInward(AliESDEvent *event)
   //Int_t innerTB    = fTrSec[0]->GetInnerTimeBin();
   AliTRDtrack seed2;
   
+  // Calibration fill 2D
+  AliTRDCalibraFillHisto *calibra = AliTRDCalibraFillHisto::Instance();
+  if (!calibra) {
+    AliInfo("Could not get Calibra instance\n");
+  }
+  
   Int_t n = event->GetNumberOfTracks();
   for (Int_t i = 0; i < n; i++) {
 
@@ -721,6 +727,7 @@ Int_t AliTRDtracker::RefitInward(AliESDEvent *event)
     pt->CookdEdxTimBin(seed->GetID());
     pt->SetPIDMethod(AliTRDtrack::kLQ);  //switch between TRD PID methods
     pt->CookPID(pidQ);
+    if(calibra->GetHisto2d()) calibra->UpdateHistograms(pt);
     found++;
 
     Double_t xTPC = 250.0;
@@ -969,14 +976,14 @@ Int_t AliTRDtracker::FollowBackProlongation(AliTRDtrack &t)
     clusters[i] = -1;
   }
 
-  // Calibration fill 2D
-  AliTRDCalibraFillHisto *calibra = AliTRDCalibraFillHisto::Instance();
-  if (!calibra) {
-    AliInfo("Could not get Calibra instance\n");
-  }
-  if (calibra->GetMITracking()) {
-    calibra->ResetTrack();
-  }
+//   // Calibration fill 2D
+//   AliTRDCalibraFillHisto *calibra = AliTRDCalibraFillHisto::Instance();
+//   if (!calibra) {
+//     AliInfo("Could not get Calibra instance\n");
+//   }
+//   if (calibra->GetMITracking()) {
+//     calibra->ResetTrack();
+//   }
 
   // Loop through the TRD planes
   for (Int_t iplane = 0; iplane < AliESDtrack::kNPlane; iplane++) {
@@ -1101,9 +1108,9 @@ Int_t AliTRDtracker::FollowBackProlongation(AliTRDtrack &t)
 						} // else SetCluster(cl, GetNumberOfClusters()-1); // A.Bercuci 25.07.07
   
 
-          if (calibra->GetMITracking()) {
-            calibra->UpdateHistograms(cl,&t);
-          }
+//           if (calibra->GetMITracking()) {
+//             calibra->UpdateHistograms(cl,&t);
+//           }
 
 					// Reset material budget if 2 consecutive gold
 					if (plane > 0) {
@@ -2760,7 +2767,8 @@ AliTRDtracker::AliTRDtrackingSector
       zc[ch]            = -(pad * nPads) / 2.0 + row0;
     }
 
-    dx        = AliTRDcalibDB::Instance()->GetVdrift(0,0,0)
+		AliTRDcalibDB *fCalibration = AliTRDcalibDB::Instance();
+    dx        = fCalibration->GetVdrift(0,0,0)
               / AliTRDCommonParam::Instance()->GetSamplingFrequency();
     rho       = 0.00295 * 0.85; //????
     radLength = 11.0;  
@@ -2768,6 +2776,9 @@ AliTRDtracker::AliTRDtrackingSector
     Double_t x0 = (Double_t) AliTRDgeometry::GetTime0(plane);
     //Double_t xbottom = x0 - dxDrift;
     //Double_t xtop    = x0 + dxAmp;
+		
+		//temporary !! (A.Bercuci)
+  	Int_t T0 = (Int_t)fCalibration->GetT0Average(AliTRDgeometry::GetDetector(plane, 2, gs));
 
     Int_t nTimeBins =  AliTRDcalibDB::Instance()->GetNumberOfTimeBins();    
     for (Int_t iTime = 0; iTime < nTimeBins; iTime++) {
@@ -2781,7 +2792,9 @@ AliTRDtracker::AliTRDtrackingSector
       ppl->SetYmax(ymax,ymaxsensitive);
       ppl->SetZ(zc,zmax,zmaxsensitive);
       ppl->SetHoles(holes);
-      InsertLayer(ppl);      
+      if(iTime == T0) ppl->SetT0();
+			
+			InsertLayer(ppl);      
 
     }
 

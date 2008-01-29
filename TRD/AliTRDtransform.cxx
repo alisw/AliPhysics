@@ -201,8 +201,7 @@ void AliTRDtransform::SetDetector(Int_t det)
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDtransform::Transform(Double_t *x, Int_t *i, UInt_t time
-	  		        , Int_t  /*coordinateType*/)
+Bool_t AliTRDtransform::Transform(Double_t *x, Int_t *i, UInt_t time, Bool_t &out, Int_t  /*coordinateType*/)
 {
   //
   // Transforms the local cluster coordinates into calibrated 
@@ -303,6 +302,9 @@ Bool_t AliTRDtransform::Transform(Double_t *x, Int_t *i, UInt_t time
     x[4] = colSize*colSize * (clusterSigmaY2 + 1.0/12.0);
     x[5] = rowSize*rowSize / 12.0;                                       
     i[2] = TMath::Nint(timeT0Cal);
+		
+		// A.Bercuci for TRD tracking calibration awareness
+		out = (i[2] < 0 || i[2] > Int_t(3.5*fSamplingFrequency/vdrift)) ? kTRUE : kFALSE; 
 
     return kTRUE;
 
@@ -339,12 +341,13 @@ void AliTRDtransform::Recalibrate(AliTRDcluster *c, Bool_t setDet)
   clusterRCT[1] = c->GetPadCol();
   clusterRCT[2] = 0;
   Int_t time    = c->GetPadTime();
-  Transform(clusterXYZ,clusterRCT,((UInt_t) time),0);
+  Bool_t out;
+  Transform(clusterXYZ,clusterRCT,((UInt_t) time), out, 0);
 
   // Set the recalibrated coordinates
   c->SetX(clusterXYZ[0]);
   c->SetY(clusterXYZ[1]);
   c->SetZ(clusterXYZ[2]);
   c->SetLocalTimeBin(((Char_t) clusterRCT[2]));
-
+	c->SetInChamber(!out);
 }

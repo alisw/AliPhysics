@@ -50,16 +50,15 @@ AliTRDseedV1::AliTRDseedV1(Int_t layer, AliTRDrecoParam *p)
   ,fPlane(layer)
   ,fOwner(kFALSE)
   ,fMom(0.)
+  ,fSnp(0.)
+  ,fTgl(0.)
+  ,fdX(0.)
   ,fRecoParam(p)
 {
   //
   // Constructor
   //
 	for(int islice=0; islice < knSlices; islice++) fdEdx[islice] = 0.;
-	for(int itb=0; itb < knTimebins; itb++){
-		fdQdl[itb]  = 0.;
-		fdQ[itb]    = 0.;
-	}
 	for(int ispec=0; ispec<AliPID::kSPECIES; ispec++) fProb[ispec]  = -1.;
 }
 
@@ -69,6 +68,9 @@ AliTRDseedV1::AliTRDseedV1(const AliTRDseedV1 &ref)
   ,fPlane(ref.fPlane)
   ,fOwner(kFALSE)
   ,fMom(ref.fMom)
+  ,fSnp(ref.fSnp)
+  ,fTgl(ref.fTgl)
+  ,fdX(ref.fdX)
   ,fRecoParam(ref.fRecoParam)
 {
   //
@@ -78,10 +80,6 @@ AliTRDseedV1::AliTRDseedV1(const AliTRDseedV1 &ref)
 	//AliInfo("");
 	if(ref.fOwner) SetOwner();
 	for(int islice=0; islice < knSlices; islice++) fdEdx[islice] = ref.fdEdx[islice];
-	for(int itb=0; itb < knTimebins; itb++){ 
-		fdQdl[itb] = ref.fdQdl[itb];
-		fdQ[itb]   = ref.fdQ[itb];
-	}
 	for(int ispec=0; ispec<AliPID::kSPECIES; ispec++) fProb[ispec] = ref.fProb[ispec];
 }
 
@@ -131,13 +129,12 @@ void AliTRDseedV1::Copy(TObject &ref) const
 	
 	target.fPlane         = fPlane;
 	target.fMom           = fMom;
+	target.fSnp           = fSnp;
+	target.fTgl           = fTgl;
+	target.fdX            = fdX;
 	target.fRecoParam     = fRecoParam;
 	
 	for(int islice=0; islice < knSlices; islice++) target.fdEdx[islice] = fdEdx[islice];
-	for(int itb=0; itb < knTimebins; itb++){
-		target.fdQdl[itb] = fdQdl[itb];
-		target.fdQ[itb]   = fdQ[itb];
-	}
 	for(int ispec=0; ispec<AliPID::kSPECIES; ispec++) target.fProb[ispec] = fProb[ispec];
 	
 	AliTRDseed::Copy(target);
@@ -169,6 +166,71 @@ void AliTRDseedV1::Init(AliTRDtrack *track)
 	fZref[1] = track->GetTgl();
 
 	//printf("Tracklet ref x[%7.3f] y[%7.3f] z[%7.3f], snp[%f] tgl[%f]\n", fX0, fYref[0], fZref[0], track->GetSnp(), track->GetTgl());
+}
+
+
+//____________________________________________________________________
+void AliTRDseedV1::CookdEdx(Int_t nslices)
+{
+// Calculates average dE/dx for all slices and store them in the internal array fdEdx. 
+//
+// Parameters:
+//  nslices : number of slices for which dE/dx should be calculated
+// Output:
+//  store results in the internal array fdEdx. This can be accessed with the method
+//  AliTRDseedV1::GetdEdx()
+//
+// Detailed description
+// Calculates average dE/dx for all slices. Depending on the PID methode 
+// the number of slices can be 3 (LQ) or 8(NN). 
+// The calculation of dQ/dl are done using the tracklet fit results (see AliTRDseedV1::GetdQdl(Int_t)) i.e.
+//
+// dQ/dl = qc/(dx * sqrt(1 + dy/dx^2 + dz/dx^2))
+//
+// The following effects are included in the calculation:
+// 1. calibration values for t0 and vdrift (using x coordinate to calculate slice)
+// 2. cluster sharing (optional see AliTRDrecoParam::SetClusterSharing())
+// 3. cluster size
+//
+
+	Int_t nclusters[knSlices];
+	for(int i=0; i<knSlices; i++){ 
+		fdEdx[i]     = 0.;
+		nclusters[i] = 0;
+	}
+	Float_t clength = (/*.5 * */AliTRDgeometry::AmThick() + AliTRDgeometry::DrThick());
+
+	AliTRDcluster *cluster = 0x0;
+	for(int ic=0; ic<fgTimeBins; ic++){
+		if(!(cluster = fClusters[ic])) continue;
+		Float_t x = cluster->GetX();
+		
+		// Filter clusters for dE/dx calculation
+		
+		// 1.consider calibration effects for slice determination
+		Int_t slice; 
+		if(cluster->IsInChamber()) slice = Int_t(TMath::Abs(fX0 - x) * nslices / clength);
+		else slice = x < fX0 ? 0 : nslices-1;
+		
+		// 2. take sharing into account
+		Float_t w = cluster->IsShared() ? .5 : 1.;
+		
+		// 3. take into account large clusters TODO
+		//w *= c->GetNPads() > 3 ? .8 : 1.;
+		
+		//CHECK !!!
+		fdEdx[slice]   += w * GetdQdl(ic); //fdQdl[ic];
+		nclusters[slice]++;
+	} // End of loop over clusters
+
+	// calculate mean charge per slice
+	for(int is=0; is<nslices; is++) if(nclusters[is]) fdEdx[is] /= nclusters[is];
+}
+
+//____________________________________________________________________
+Float_t AliTRDseedV1::GetdQdl(Int_t ic) const
+{
+	return fClusters[ic] ? TMath::Abs(fClusters[ic]->GetQ()) /fdX / TMath::Sqrt(1. + fYfit[1]*fYfit[1] + fZfit[1]*fZfit[1]) : 0.;
 }
 
 //____________________________________________________________________
@@ -214,50 +276,6 @@ Double_t* AliTRDseedV1::GetProbability()
 }
 
 //____________________________________________________________________
-void AliTRDseedV1::CookdEdx(Int_t nslices)
-{
-// Calculates average dE/dx for all slices and store them in the internal array fdEdx. 
-//
-// Parameters:
-//  nslices : number of slices for which dE/dx should be calculated
-// Output:
-//
-// Detailed description
-// Calculates average dE/dx for all slices. Depending on the PID methode 
-// the number of slices can be 3 (LQ) or 8(NN). The calculation is based 
-// on previously calculated quantities dQ/dl of each cluster. The 
-// following effects are included in the calculation:
-// 1. calibration values for t0 and vdrift
-// 2. cluster sharing (optional see AliTRDrecoParam::SetClusterSharing())
-//
-
-	Int_t nclusters[knSlices];
-	for(int i=0; i<knSlices; i++){ 
-		fdEdx[i]     = 0.;
-		nclusters[i] = 0;
-	}
-	
-	AliTRDcluster *cluster = 0x0;
-	for(int ic=0; ic<fgTimeBins; ic++){
-		if(!(cluster = fClusters[ic])) continue;
-		Int_t tb = cluster->GetLocalTimeBin();
-		
-		// consider calibration effects
-		if(tb < fTimeBin0 || tb >= fTimeBin0+fTimeBinsRange) continue;
-	
-		// consider cluster sharing ... TO DO
-		//if(fRecoParam->GetClusterSharing() && cluster->GetSharing()) continue;
-		
-		Int_t slice = (tb-fTimeBin0)*nslices/fTimeBinsRange;
-		fdEdx[slice]   += fdQdl[ic];
-		nclusters[slice]++;
-	} // End of loop over clusters
-
-	// calculate mean charge per slice
-	for(int is=0; is<nslices; is++) if(nclusters[is]) fdEdx[is] /= nclusters[is];
-}
-
-//____________________________________________________________________
 Float_t AliTRDseedV1::GetQuality(Bool_t kZcorr) const
 {
   //
@@ -289,11 +307,6 @@ void AliTRDseedV1::GetCovAt(Double_t /*x*/, Double_t *cov) const
 	cov[2] = sz2;
 }
 
-//____________________________________________________________________
-void AliTRDseedV1::SetdQdl(Double_t length)
-{
-	for(int ic=0; ic<fgTimeBins; ic++) fdQdl[ic] = fdQ[ic] *length;
-}
 
 //____________________________________________________________________
 void AliTRDseedV1::SetOwner(Bool_t own)
@@ -364,56 +377,59 @@ Bool_t	AliTRDseedV1::AttachClustersIter(AliTRDstackLayer *layer
 				}
 			} else zexp = fZref[0];
 			yexp  = fYref[0] + fYref[1] * dxlayer - zcorr;
-			// get  cluster
-// 			printf("xexp = %3.3f ,yexp = %3.3f, zexp = %3.3f\n",layer[iTime].GetX(),yexp,zexp);
-// 			printf("layer[%i].GetNClusters() = %i\n", iTime, layer[iTime].GetNClusters());
-			Int_t    index = layer[iTime].SearchNearestCluster(yexp, zexp, kroady, kroadz);
-
-// 			printf("%d[%d] x[%7.3f | %7.3f] y[%7.3f] z[%7.3f]\n", iTime, layer[iTime].GetNClusters(), dxlayer, layer[iTime].GetX(), yexp, zexp);
-// 			for(Int_t iclk = 0; iclk < layer[iTime].GetNClusters(); iclk++){
-// 				AliTRDcluster *testcl = layer[iTime].GetCluster(iclk);
-// 				printf("Cluster %i: %d x = %7.3f, y = %7.3f, z = %7.3f\n", iclk, testcl->GetLocalTimeBin(), testcl->GetX(), testcl->GetY(), testcl->GetZ());
-// 			}
-// 			printf("Index = %i\n",index);
-
-			if (index < 0) continue;
 			
-			// Register cluster
+			// Get and register cluster
+			Int_t    index = layer[iTime].SearchNearestCluster(yexp, zexp, kroady, kroadz);
+			if (index < 0) continue;
 			AliTRDcluster *cl = (AliTRDcluster*) layer[iTime].GetCluster(index);
 			
- 			//printf("Cluster %i(0x%x): x = %3.3f, y = %3.3f, z = %3.3f\n", index, cl, cl->GetX(), cl->GetY(), cl->GetZ());
-
 			Int_t globalIndex = layer[iTime].GetGlobalIndex(index);
 			fIndexes[iTime]  = globalIndex;
 			fClusters[iTime] = cl;
-			fX[iTime]        = dxlayer;
 			fY[iTime]        = cl->GetY();
 			fZ[iTime]        = cl->GetZ();
-			fdQ[iTime]       = cl->GetQ()/layer[iTime].GetdX();
-			
-			// Debugging
 			ncl++;
 		}
-
-#ifdef SEED_DEBUG
-// 		Int_t nclusters = 0;
-// 		Float_t fD[iter] = 0.;
-// 		for(int ic=0; ic<fgTimeBins+1; ic++){
-// 			AliTRDcluster *ci = fClusters[ic];
-// 			if(!ci) continue;
-// 			for(int jc=ic+1; jc<fgTimeBins+1; jc++){
-// 				AliTRDcluster *cj = fClusters[jc];
-// 				if(!cj) continue;
-// 				fD[iter] += TMath::Sqrt((ci->GetY()-cj->GetY())*(ci->GetY()-cj->GetY())+
-// 				(ci->GetZ()-cj->GetZ())*(ci->GetZ()-cj->GetZ()));
-// 				nclusters++;
-// 			}
-// 		}
-// 		if(nclusters) fD[iter] /= float(nclusters);
-#endif
-
-		AliTRDseed::Update();
-
+		
+		if(ncl){	
+			// calculate length of the time bin (calibration aware)
+			Int_t irp = 0; Float_t x[2]; Int_t tb[2];
+			for (Int_t iTime = 0; iTime < fgTimeBins; iTime++) {
+				if(!fClusters[iTime]) continue;
+				x[irp]  = fClusters[iTime]->GetX();
+				tb[irp] = iTime;
+				irp++;
+				if(irp==2) break;
+			} 
+			fdX = (x[1] - x[0]) / (tb[0] - tb[1]);
+	
+			// update X0 from the clusters (calibration/alignment aware)
+			for (Int_t iTime = 0; iTime < fgTimeBins; iTime++) {
+				if(!layer[iTime].IsT0()) continue;
+				if(fClusters[iTime]){ 
+					fX0 = fClusters[iTime]->GetX();
+					break;
+				} else { // we have to infere the position of the anode wire from the other clusters
+					for (Int_t jTime = iTime+1; jTime < fgTimeBins; jTime++) {
+						if(!fClusters[jTime]) continue;
+						fX0 = fClusters[jTime]->GetX() + fdX * (jTime - iTime);
+					}
+					break;
+				}
+			}	
+			
+			// update YZ reference point
+			// TODO
+			
+			// update x reference positions (calibration/alignment aware)
+			for (Int_t iTime = 0; iTime < fgTimeBins; iTime++) {
+				if(!fClusters[iTime]) continue;
+				fX[iTime] = fClusters[iTime]->GetX() - fX0;
+			} 
+			
+			AliTRDseed::Update();
+		}
+		
 		if(IsOK()){
 			tquality = GetQuality(kZcorr);
 			if(tquality < quality) break;
@@ -543,7 +559,6 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDstackLayer *layer
 		fClusters[iTime] = c;
 		fY[iTime]        = c->GetY();
 		fZ[iTime]        = c->GetZ();
-		fdQ[iTime]       = c->GetQ()/layer[iTime].GetdX();
 		lastCluster      = tboundary[iTime];
 		fN2++;
 	}
@@ -599,15 +614,16 @@ Bool_t AliTRDseedV1::Fit()
 	      zout[2*knTimebins];//
 	
 	fN = 0;
-	for (Int_t iTime = 0; iTime < fTimeBinsRange; iTime++) {
+	for (Int_t iTime = 0; iTime < fgTimeBins; iTime++) {
     if (!fClusters[iTime]) continue;
-    yres[iTime] = fY[iTime] - fYref[0] - (fYref[1] + anglecor) * fX[iTime];
+    if (!fClusters[iTime]->IsInChamber()) continue;
+    yres[iTime] = fY[iTime] - fYref[0] - (fYref[1] + anglecor) * fX[iTime] + fTilt * (fZ[iTime] - fZref[0]);
 		zint[fN] = Int_t(fZ[iTime]);
 		fN++;
 	}
 
 	// calculate pad row boundary crosses
-	Int_t kClmin = Int_t(fRecoParam->GetFindableClusters()*fTimeBinsRange);
+	Int_t kClmin = Int_t(fRecoParam->GetFindableClusters()*fgTimeBins);
 	Int_t nz = AliMathBase::Freq(fN, zint, zout, kFALSE);
   fZProb   = zout[0];
   if(nz <= 1) zout[3] = 0;
@@ -630,7 +646,7 @@ Bool_t AliTRDseedV1::Fit()
   fMPads = 0;
 	fMeanz = 0.;
 	// we will use only the clusters which are in the detector range
-	for(int iTime=0; iTime<fTimeBinsRange; iTime++){
+	for(int iTime=0; iTime<fgTimeBins; iTime++){
     fUsable[iTime] = kFALSE;
     if (!fClusters[iTime]) continue;
 		npads = fClusters[iTime]->GetNPads();
@@ -669,7 +685,7 @@ Bool_t AliTRDseedV1::Fit()
   fYfitR[1]    = (sumw   * sumwxy - sumwx * sumwy)  / det;
   
   fSigmaY2 = 0;
-  for (Int_t i = 0; i < fTimeBinsRange+1; i++) {
+  for (Int_t i = 0; i < fgTimeBins+1; i++) {
     if (!fUsable[i]) continue;
     Float_t delta = yres[i] - fYfitR[0] - fYfitR[1] * fX[i];
     fSigmaY2 += delta*delta;
@@ -732,12 +748,8 @@ Float_t AliTRDseedV1::FitRiemanTilt(AliTRDseedV1 *cseed, Bool_t terror)
       uvt[4]  = 2.0 * (y + tilt * z) * uvt[1];
       
       Double_t error = 2.0 * uvt[1];
-      if (terror) {
-        error *= cseed[iLayer].fSigmaY;
-      }
-      else {
-        error *= 0.2; //Default error
-      }
+      error *= terror ? cseed[iLayer].fSigmaY : .2;
+
 // 			printf("\tadd point :\n");
 // 			for(int i=0; i<5; i++) printf("%f ", uvt[i]);
 // 			printf("\n");
@@ -805,9 +817,9 @@ Float_t AliTRDseedV1::FitRiemanTilt(AliTRDseedV1 *cseed, Bool_t terror)
     if (-params[2]*params[0] + params[1]*params[1] + 1 > 0) {
       Double_t rm1 = params[0] / TMath::Sqrt(-params[2]*params[0] + params[1]*params[1] + 1); 
       if (1.0/(rm1*rm1) - (x-x0) * (x-x0) > 0.0) {
-	Double_t res = (x - x0) / TMath::Sqrt(1.0 / (rm1*rm1) - (x-x0)*(x-x0));
-	if (params[0] < 0) res *= -1.0;
-	dy = res;
+				Double_t res = (x - x0) / TMath::Sqrt(1.0 / (rm1*rm1) - (x-x0)*(x-x0));
+				if (params[0] < 0) res *= -1.0;
+				dy = res;
       }
     }
     z  = rpolz0 + rpolz1 * (x - xref2);

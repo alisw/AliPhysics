@@ -60,12 +60,14 @@ class AliTRDseedV1 : public AliTRDseed
 	inline Float_t   GetChi2Y(const Float_t y = 0.) const;
 	       void      GetCovAt(Double_t x, Double_t *cov) const;
 	       Float_t*  GetdEdx() {return &fdEdx[0];}
-	       Double_t* GetdQdl() {return &fdQdl[0];}
+	       Float_t   GetdQdl(Int_t ic) const;
 	       Double_t  GetMomentum() const {return fMom;}
 	       Int_t     GetN() const {return fN2;}
 	       Float_t   GetQuality(Bool_t kZcorr) const;
 	       Int_t     GetPlane() const                       { return fPlane;    }
 	       Double_t* GetProbability();
+	       Double_t  GetSnp() const {return fSnp;}
+	       Double_t  GetTgl() const {return fTgl;}
 	       Double_t  GetYat(Double_t x) const {return fYfitR[0] + fYfitR[1] * (x - fX0);}
 	       Double_t  GetZat(Double_t x) const {return fZfitR[0] + fZfitR[1] * (x - fX0);}
 				 
@@ -73,11 +75,12 @@ class AliTRDseedV1 : public AliTRDseed
          void      Print(Option_t * /*o*/) const          { }
 	       void      Print();
 	       
-	       void      SetdQdl(Double_t length);
 	       void      SetMomentum(Double_t mom) {fMom = mom;}
 	       void      SetOwner(Bool_t own = kTRUE);
 	       void      SetPlane(Int_t p)                      { fPlane     = p;   }
 	       void      SetRecoParam(AliTRDrecoParam *p)       { fRecoParam = p;   }
+	       void      SetSnp(Double_t snp) {fSnp = snp;}
+	       void      SetTgl(Double_t tgl) {fTgl = tgl;}
 
  protected:
 
@@ -88,10 +91,11 @@ class AliTRDseedV1 : public AliTRDseed
 	Int_t            fPlane;                  //  TRD plane
 	Bool_t           fOwner;                  //  Toggle ownership of clusters
 	Float_t          fMom;                    //  Momentum estimate for tracklet [GeV/c]
+	Float_t          fSnp;                    // sin of track with respect to x direction in XY plane	
+	Float_t          fTgl;                    // tg of track with respect to x direction in XZ plane 	
+	Float_t          fdX;                     // length of time bin
 	Float_t          fdEdx[knSlices];         //  dE/dx measurements for tracklet
- 	Double_t         fdQdl[knTimebins];       //  dQ/dl for all clusters attached to tracklet 
- 	Double_t         fdQ[knTimebins];         //! dQ for all clusters attached to tracklet TODO migrate to AliTRDcluster
-        Double_t         fProb[AliPID::kSPECIES]; //  PID probabilities
+	Double_t         fProb[AliPID::kSPECIES]; //  PID probabilities
  	AliTRDrecoParam *fRecoParam;              //! Local copy of the reco params 
 
 	ClassDef(AliTRDseedV1, 1)                 //  New TRD seed 

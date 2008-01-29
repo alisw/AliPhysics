@@ -992,8 +992,9 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
           clusterRCT[0] = row;
           clusterRCT[1] = col;
           clusterRCT[2] = 0;
-
-	  if (fTransform->Transform(clusterXYZ,clusterRCT,((UInt_t) time),0)) {
+		
+		Bool_t out = kTRUE;
+	  if (fTransform->Transform(clusterXYZ, clusterRCT, ((UInt_t) time), out, 0)) {
 
   	    // Add the cluster to the output array
 	    // The track indices will be stored later 
@@ -1019,7 +1020,8 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
 						      ,clusterTimeBin
 						      ,clusterPosCol
 						      ,volid);
-
+			cluster->SetInChamber(!out);
+			
 	    // Temporarily store the row, column and time bin of the center pad
 	    // Used to later on assign the track indices
 	    cluster->SetLabel( row,0);

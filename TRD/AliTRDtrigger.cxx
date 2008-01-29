@@ -655,11 +655,6 @@ Bool_t AliTRDtrigger::TestTracklet(Int_t det, Int_t row, Int_t seed, Int_t n)
   // LTU Pt cut
   fTrkTest->MakeTrackletGraph(fGeo,fField);
 
-  // TRD Online calibration
-  if (calibra->GetMcmTracking()) {
-    calibra->UpdateHistogramcm(fTrkTest);
-  }
-
   fTrkTest->MakeClusAmpGraph();
 
   if (TMath::Abs(fTrkTest->GetPt()) < AliTRDtrigParam::Instance()->GetLtuPtCut()) {

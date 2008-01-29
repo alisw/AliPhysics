@@ -1,5 +1,5 @@
 #ifndef ALITRDCALIBRAFILLHISTO_H
-#define ALITRDCALIBRAFILLHISTO_H
+#define ALITRDCALIBRAFILLHISTOs_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -41,7 +41,10 @@ class AliTRDCalibraVector;
 class AliTRDCalibraVdriftLinearFit;
 class AliTRDrawStreamTB;
 class AliTRDcluster;
+class AliTRDtrackV1;
 class AliTRDtrack;
+class AliTRDseedV1;
+class AliTRDmcm;
 class AliTRDmcmTracklet;
 class AliTRDgeometry;
 class AliTRDCalDet;
@@ -58,29 +61,28 @@ class AliTRDCalibraFillHisto : public TObject {
   static AliTRDCalibraFillHisto *Instance();
   static void Terminate();
   static void Destroy();
+  void DestroyDebugStreamer();
+
 
   AliTRDCalibraFillHisto(const AliTRDCalibraFillHisto &c);
   AliTRDCalibraFillHisto &operator=(const AliTRDCalibraFillHisto &) { return *this; }
 
-  // Functions for initialising the AliTRDCalibraFillHisto in the code
-          Bool_t   Init2Dhistos();
-	  Bool_t   Init2Dhistostrack();
-
-  // Functions for filling the histos in the code
-          Bool_t   ResetTrack();
-	  Bool_t   UpdateHistograms(AliTRDtrack *t);
-          Bool_t   UpdateHistograms(AliTRDcluster *cl, AliTRDtrack *t);
-          Bool_t   UpdateHistogramcm(AliTRDmcmTracklet *trk);
+  // Functions for initialising and filling with AliTRDtrackV1
+          Bool_t  Init2Dhistos();
+	  Bool_t  UpdateHistograms(AliTRDtrack *t);
+	  Bool_t  UpdateHistogramsV1(AliTRDtrackV1 *t);
  
   // Process events DAQ
 	  Int_t   ProcessEventDAQ(AliTRDrawStreamTB *rawStream, Bool_t nocheck = kFALSE);
 	  Int_t   ProcessEventDAQ(AliRawReader *rawReader, Bool_t nocheck = kFALSE);
 	  Int_t   ProcessEventDAQ(eventHeaderStruct *event, Bool_t nocheck = kFALSE);
 
-	  Bool_t   UpdateDAQ(Int_t det, Int_t /*row*/, Int_t /*col*/, Int_t timebin, Int_t signal, Int_t nbtimebins);
+	  Int_t   ProcessEventDAQV1(AliTRDrawStreamTB *rawStream, Bool_t nocheck = kFALSE);
+	  Int_t   ProcessEventDAQV1(AliRawReader *rawReader, Bool_t nocheck = kFALSE);
+	  Int_t   ProcessEventDAQV1(eventHeaderStruct *event, Bool_t nocheck = kFALSE);
 
   // Is Pad on
-          Bool_t   IsPadOn(Int_t detector, Int_t col, Int_t row) const;
+          Bool_t   IsPadOn(Int_t detector, Int_t row, Int_t col) const;
 
   // Functions for write
 	  void     Write2d(const Char_t *filename = "TRD.calibration.root", Bool_t append = kFALSE);
@@ -96,8 +98,6 @@ class AliTRDCalibraFillHisto : public TObject {
   //
 
   // Choice to fill or not the 2D
-          void     SetMITracking(Bool_t mitracking = kTRUE)                  { fMITracking      = mitracking;        }
-          void     SetMcmTracking(Bool_t mcmtracking = kTRUE)                { fMcmTracking     = mcmtracking;       }
           void     SetMcmCorrectAngle(Bool_t mcmcorrectangle = kTRUE)        { fMcmCorrectAngle = mcmcorrectangle;   }
           void     SetPH2dOn(Bool_t ph2don = kTRUE)                          { fPH2dOn          = ph2don;            }
           void     SetCH2dOn(Bool_t ch2don = kTRUE)                          { fCH2dOn          = ch2don;            }
@@ -108,8 +108,6 @@ class AliTRDCalibraFillHisto : public TObject {
 	  void     SetLinearFitterDebugOn(Bool_t debug = kTRUE)              { fLinearFitterDebugOn = debug;         }
 	 	  
   
-          Bool_t   GetMITracking() const                                     { return fMITracking;             }
-          Bool_t   GetMcmTracking() const                                    { return fMcmTracking;            }
           Bool_t   GetMcmCorrectAngle() const                                { return fMcmCorrectAngle;        }
           Bool_t   GetPH2dOn() const                                         { return fPH2dOn;                 }
           Bool_t   GetCH2dOn() const                                         { return fCH2dOn;                 }
@@ -117,9 +115,11 @@ class AliTRDCalibraFillHisto : public TObject {
           Bool_t   GetHisto2d() const                                        { return fHisto2d;                }
           Bool_t   GetVector2d() const                                       { return fVector2d;               }
           Bool_t   GetLinearFitterOn() const                                 { return fLinearFitterOn;         }
-	  Bool_t   GetLinearFitterDebugOn() const                            { return fLinearFitterDebugOn;    }
-  
-  TH2I            *GetCH2d() const                                           { return fCH2d;                   }
+	  Bool_t   GetLinearFitterDebugOn() const                            { return fLinearFitterDebugOn; }
+
+
+  // Get stuff that are filled
+  TH2I            *GetCH2d();
   TProfile2D      *GetPH2d(Int_t nbtimebin=24, Float_t samplefrequency= 10.0);
   TProfile2D      *GetPRF2d() const                                          { return fPRF2d;                  } 
   TObjArray        GetLinearFitterArray() const                              { return fLinearFitterArray;      }
@@ -135,6 +135,7 @@ class AliTRDCalibraFillHisto : public TObject {
           void     SetProcent(Float_t procent)                               { fProcent              = procent;              }
           void     SetDifference(Short_t difference)                         { fDifference           = difference;           }
           void     SetNumberClusters(Short_t numberClusters)                 { fNumberClusters       = numberClusters;       }
+	  void     SetNumberClustersf(Short_t numberClustersf)               { fNumberClustersf      = numberClustersf;      }
           void     SetNumberBinCharge(Short_t numberBinCharge)               { fNumberBinCharge      = numberBinCharge;      }
           void     SetNumberBinPRF(Short_t numberBinPRF)                     { fNumberBinPRF         = numberBinPRF;         }
 	  void     SetNumberGroupsPRF(Short_t numberGroupsPRF);
@@ -144,6 +145,7 @@ class AliTRDCalibraFillHisto : public TObject {
 	  Float_t  GetProcent() const                                        { return fProcent;                }
           Short_t  GetDifference() const                                     { return fDifference;             }
           Short_t  GetNumberClusters() const                                 { return fNumberClusters;         }
+	  Short_t  GetNumberClustersf() const                                { return fNumberClustersf;        }
           Short_t  GetNumberBinCharge() const                                { return fNumberBinCharge;        }
           Short_t  GetNumberBinPRF() const                                   { return fNumberBinPRF;           }
 	  Short_t  GetNumberGroupsPRF() const                                { return fNgroupprf;              }
@@ -161,8 +163,6 @@ AliTRDCalibraVector *GetCalibraVector() const                                { r
   AliTRDgeometry  *fGeo;                    //! The TRD geometry
 
   // Choice to fill or not the 2D
-          Bool_t   fMITracking;             // Chose to fill the 2D histos or vectors during the offline MI tracking
-          Bool_t   fMcmTracking;            // Chose to fill the 2D histos or vectors during the tracking with tracklets
           Bool_t   fMcmCorrectAngle;        // Apply correction due to the mcmtrackletangle in the z direction (only) assuming  from vertex
           Bool_t   fCH2dOn;                 // Chose to fill the 2D histos or vectors for the relative gain calibration 
           Bool_t   fPH2dOn;                 // Chose to fill the 2D histos or vectors for the drift velocity and T0
@@ -186,11 +186,11 @@ AliTRDCalibraVector *GetCalibraVector() const                                { r
   //
 
   // Fill the 2D histos in the offline tracking
-          Bool_t   fDetectorAliTRDtrack;    // Change of track
 	  Int_t    fDetectorPreviousTrack;  // Change of detector
 	  Int_t    fMCMPrevious;            // Change of MCM
 	  Int_t    fROBPrevious;            // Change of ROB
 	  Short_t  fNumberClusters;         // Minimum number of clusters in the tracklets
+	  Short_t  fNumberClustersf;        // Maximum number of clusters in the tracklets
           Float_t  fProcent;                // Limit to take the info of the most important calibration group if the track goes through 2 groups (CH)
           Short_t  fDifference;             // Limit to take the info of the most important calibration group if the track goes through 2 groups (CH)
           Int_t    fNumberTrack;            // How many tracks could be used (Debug for the moment)
@@ -203,20 +203,11 @@ AliTRDCalibraVector *GetCalibraVector() const                                { r
 	  Short_t  fNgroupprf;              // Number of groups in tnp bins for PRF /2.0
 
   // Variables per tracklet
-	  TObjArray     *fListClusters;              // List of clusters
-	  Double_t      *fPar0;                      // List of track parameter fP[0]
-	  Double_t      *fPar1;                      // List of track parameter fP[1]
-	  Double_t      *fPar2;                      // List of track parameter fP[2]
-	  Double_t      *fPar3;                      // List of track parameter fP[3]
-	  Double_t      *fPar4;                      // List of track paarmeter fP[4]
 	  Float_t       *fAmpTotal;                  // Energy deposited in the calibration group by the track
           Short_t       *fPHPlace;                   // Calibration group of PH
           Float_t       *fPHValue;                   // PH
 	  Bool_t         fGoodTracklet;              // Good tracklet
- // Variables per track
-	  Bool_t         fGoodTrack;                 // no return
-
- //Statistics
+  //Statistics
 	  Int_t         *fEntriesCH;                 // Number of entries CH
 	  Int_t         *fEntriesLinearFitter;       // Number of entries LinearFitter
 
@@ -238,10 +229,7 @@ AliTRDCalibraVector *GetCalibraVector() const                                { r
  // Current calib object: to correct for the database used
 	  AliTRDCalDet *fCalDetGain;                      // Current calib object gain
 	  AliTRDCalROC *fCalROCGain;                      // Current calib object gain
-	  AliTRDCalDet *fCalDetT0;                        // Current calib object T0
-	  AliTRDCalROC *fCalROCT0;                        // Current calib object T0
-
- 
+	   
   //
   // A lot of internal functions......
   //
@@ -250,23 +238,30 @@ AliTRDCalibraVector *GetCalibraVector() const                                { r
           void     CreatePH2d(Int_t nn);
           void     CreatePRF2d(Int_t nn);
   
-  // Fill the 2D
+  // Calibration with AliTRDtrackV1
           void     FillTheInfoOfTheTrackPH();
-          void     FillTheInfoOfTheTrackCH();
+          void     FillTheInfoOfTheTrackCH(Int_t nbclusters);
+	  Bool_t   FindP1TrackPHtracklet(AliTRDtrack *t, Int_t index0, Int_t index1);
+	  Bool_t   FindP1TrackPHtrackletV1(const AliTRDseedV1 *tracklet, Int_t nbclusters);
+	  Bool_t   HandlePRFtracklet(AliTRDtrack *t, Int_t index0, Int_t index1);
+	  Bool_t   HandlePRFtrackletV1(const AliTRDseedV1 *tracklet, Int_t nbclusters);
+	  void     ResetfVariablestracklet();
+	  void     StoreInfoCHPHtrack(AliTRDcluster *cl, Double_t dqdl, Int_t *group, Int_t row, Int_t col);
 	  void     FillCH2d(Int_t x, Float_t y);
-	  Bool_t   FindP1TrackPH();
-	  Bool_t   FindP1TrackPHtrack(AliTRDtrack *t, Int_t index0, Int_t index1);
-          void     ResetfVariables();
-	  void     ResetfVariablestrack();
+
+  // Calibration on DAQ
+
+	  Int_t    FillDAQ(Double_t phvalue[16][144][36]);
+	  Int_t    FillDAQ(AliTRDmcm *mcm);
+	  Int_t    TestTracklet( Int_t idet, Int_t row, Int_t iSeed, AliTRDmcm *mcm);
+	  Bool_t   UpdateDAQ(Int_t det, Int_t /*row*/, Int_t /*col*/, Int_t timebin, Float_t signal, Int_t nbtimebins);
+	  Int_t    UpdateHistogramcm(AliTRDmcmTracklet *trk);
+
+  // row col calibration groups stuff
           Bool_t   LocalisationDetectorXbins(Int_t detector);
-	  Int_t   *CalculateRowCol(AliTRDcluster *cl) const;
-	  void     CheckGoodTracklet(Int_t detector, Int_t *rowcol);
-	  Int_t    CalculateCalibrationGroup(Int_t i, Int_t *rowcol) const;
 	  Int_t    CalculateTotalNumberOfBins(Int_t i);
-	  void     StoreInfoCHPH(AliTRDcluster *cl, AliTRDtrack *t, Int_t *group, Int_t *rowcol);
-	  void     StoreInfoCHPHtrack(AliTRDcluster *cl, AliTRDtrack *t, Int_t index, Int_t *group, Int_t *rowcol);
-	  Bool_t   HandlePRF();
-	  Bool_t   HandlePRFtrack(AliTRDtrack *t, Int_t index0, Int_t index1);
+	  void     CheckGoodTracklet(Int_t detector, Int_t row, Int_t col);
+	  Int_t    CalculateCalibrationGroup(Int_t i, Int_t row, Int_t col) const;
  
   // LinearFitter
 	  void     AnalyseLinearFitter();
@@ -279,9 +274,7 @@ AliTRDCalibraVector *GetCalibraVector() const                                { r
   virtual Int_t    GetChamber(Int_t d) const;
   virtual Int_t    GetSector(Int_t d) const;
 	  
-          Int_t    Arrondi(Double_t x)const;
- 
-
+          
   // Instance of this class and so on
   static  AliTRDCalibraFillHisto *fgInstance;                // Instance
   static  Bool_t   fgTerminated;                             // If terminated

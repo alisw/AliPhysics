@@ -27,7 +27,10 @@ class AliTRDcluster : public AliCluster {
 
   virtual void     AddTrackIndex(Int_t *i); 
 
-          Int_t    IsUsed() const               { return (fQ < 0) ? 1 : 0; }
+          Bool_t   IsInChamber() const          { return TestBit(1);       }
+          Bool_t   IsShared() const             { return TestBit(2);       }
+          Bool_t   IsUsed() const               { return (fQ < 0) ? kTRUE : kFALSE; }
+          
           void     Use(Int_t = 0)               { fQ = -fQ;                }
     
           Int_t    GetDetector() const          { return fDetector;        }
@@ -42,6 +45,7 @@ class AliTRDcluster : public AliCluster {
           Float_t  GetSumS() const;
 
           void     SetLocalTimeBin(Char_t t)    { fLocalTimeBin = t;       }
+          void     SetInChamber(Bool_t in = kTRUE)      {SetBit(1, in);}
 
  protected:
   

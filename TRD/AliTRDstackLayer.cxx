@@ -81,6 +81,7 @@ z0, Double_t zLength, UChar_t stackNr, AliTRDrecoParam *p):
 // Standard constructor.
 // Initialize also the underlying AliTRDpropagationLayer using the copy constructor.
 
+	SetT0(layer.IsT0());
 	for(int i=0; i<kMaxRows; i++) fPositions[i] = 0;
 }
 
@@ -97,6 +98,7 @@ AliTRDstackLayer::AliTRDstackLayer(const AliTRDpropagationLayer &layer):
 {
 // Standard constructor using only AliTRDpropagationLayer.
 	
+	SetT0(layer.IsT0());
 	for(int i=0; i<kMaxRows; i++) fPositions[i] = 0;
 }
 
@@ -113,6 +115,7 @@ AliTRDstackLayer::AliTRDstackLayer(const AliTRDstackLayer &layer):
 {
 // Copy Constructor (performs a deep copy)
 	
+	SetT0(layer.IsT0());
 	for(Int_t i = 0; i < kMaxRows; i++) fPositions[i] = layer.fPositions[i];
 // 	BuildIndices();
 }
@@ -148,6 +151,7 @@ void AliTRDstackLayer::Copy(TObject &o) const
 	layer.fStackNr     = fStackNr;
 	layer.fDebugStream = fDebugStream;
 	layer.fRecoParam   = fRecoParam;
+	layer.SetT0(IsT0());
 	
 	AliTRDpropagationLayer::Copy(layer); // copies everything into layer
 	for(UChar_t i = 0; i < kMaxRows; i++) layer.fPositions[i] = 0;
