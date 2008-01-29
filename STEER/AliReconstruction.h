@@ -86,6 +86,7 @@ public:
   void SetMeanVertexConstraint(Bool_t flag=kTRUE){fMeanVertexConstraint=flag;}
 		   
   void SetCleanESD(Bool_t flag=kTRUE){fCleanESD=flag;}
+  void SetUseHLTData(const char* detectors){fUseHLTData=detectors;}
   void SetV0DCAmax(Float_t d) {fV0DCAmax=d;}
   void SetV0CsPmin(Float_t d) {fV0CsPmin=d;}
   void SetDmax(Float_t d) {fDmax=d;}
@@ -199,10 +200,11 @@ private:
   Bool_t         fLoadAlignFromCDB;   // Load alignment data from CDB and apply it to geometry or not
   TString        fLoadAlignData;      // Load alignment data from CDB for these detectors
   TString        fESDPar;             // String where the esd.par is stored, will be attached to the tree         
-
+  TString        fUseHLTData;        // Detectors for which the HLT data is used as input
 
   AliRunLoader*  fRunLoader;          //! current run loader object
   AliRawReader*  fRawReader;          //! current raw data reader
+  AliRawReader*  fParentRawReader;    //! parent raw data reader in case of AliRawReaderHLT
 
   static const Int_t fgkNDetectors = 15;   //! number of detectors
   static const char* fgkDetectorName[fgkNDetectors]; //! names of detectors
