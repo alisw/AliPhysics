@@ -1,9 +1,13 @@
 void CreateOnlineCalibPars(){
   // Create TOF Online Calibration Object for reconstruction
-  // and write it on CDB
+  // and write it on CDB;
+  // NB: only delay set, status still ok
   AliTOFcalib *tofcalib = new AliTOFcalib();
   tofcalib->CreateCalArrays();
   TObjArray *tofCalOnline = (TObjArray*) tofcalib->GetTOFCalArrayOnline(); 
+  TObjArray *tofCalOnlinePulser = (TObjArray*) tofcalib->GetTOFCalArrayOnlinePulser(); 
+  TObjArray *tofCalOnlineNoise = (TObjArray*) tofcalib->GetTOFCalArrayOnlineNoise(); 
+  TObjArray *tofCalOnlineHW = (TObjArray*) tofcalib->GetTOFCalArrayOnlineHW(); 
   // Write the offline calibration object on CDB
 
   AliCDBManager *man = AliCDBManager::Instance();
@@ -15,10 +19,18 @@ void CreateOnlineCalibPars(){
   TRandom *rnd   = new TRandom(4357);
   for (Int_t ipad = 0 ; ipad<nChannels; ipad++){
     AliTOFChannelOnline *calChannelOnline = (AliTOFChannelOnline*)tofCalOnline->At(ipad);
+    AliTOFChannelOnlineStatus *calChannelOnlinePulser = (AliTOFChannelOnlineStatus*)tofCalOnlinePulser->At(ipad);
+    AliTOFChannelOnlineStatus *calChannelOnlineNoise = (AliTOFChannelOnlineStatus*)tofCalOnlineNoise->At(ipad);
+    AliTOFChannelOnlineStatus *calChannelOnlineHW = (AliTOFChannelOnlineStatus*)tofCalOnlineHW->At(ipad);
     delay = rnd->Gaus(meanDelay,sigmaDelay);
     calChannelOnline->SetDelay(delay);
-    calChannelOnline->SetStatus(AliTOFChannelOnline::kTOFOnlineOk);
+    calChannelOnlinePulser->SetStatus(AliTOFChannelOnlineStatus::kTOFPulserOk);
+    calChannelOnlineNoise->SetStatus(AliTOFChannelOnlineStatus::kTOFNoiseOk);
+    calChannelOnlineHW->SetStatus(AliTOFChannelOnlineStatus::kTOFHWOk);
   }
   tofcalib->WriteParOnlineOnCDB("TOF/Calib");
+  tofcalib->WriteParOnlinePulserOnCDB("TOF/Calib");
+  tofcalib->WriteParOnlineNoiseOnCDB("TOF/Calib");
+  tofcalib->WriteParOnlineHWOnCDB("TOF/Calib");
   return;
 }
