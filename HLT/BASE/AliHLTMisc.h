@@ -1,4 +1,4 @@
-// @(#) $Id: AliHLTMisc.h 23396 2008-01-18 12:45:35Z richterm $
+// @(#) $Id$
 
 #ifndef ALIHLTMISC_H
 #define ALIHLTMISC_H
