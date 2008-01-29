@@ -101,6 +101,10 @@
 // The reconstruction requires digits or raw data as input. For the creation //
 // of digits and raw data have a look at the class AliSimulation.            //
 //                                                                           //
+// The input data of a detector can be replaced by the corresponding HLT     //
+// data by calling (usual detector string)                                   //
+// SetUseHLTData("...");                                                     //
+//                                                                           //
 // For debug purposes the method SetCheckPointLevel can be used. If the      //
 // argument is greater than 0, files with ESD events will be written after   //
 // selected steps of the reconstruction for each event:                      //
@@ -192,6 +196,7 @@
 #include "AliPlaneEff.h"
 
 #include "AliSysInfo.h" // memory snapshots
+#include "AliRawHLTManager.h"
 
 
 ClassImp(AliReconstruction)
@@ -239,9 +244,11 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename,
   fLoadAlignFromCDB(kTRUE),
   fLoadAlignData("ALL"),
   fESDPar(""),
+  fUseHLTData(),
 
   fRunLoader(NULL),
   fRawReader(NULL),
+  fParentRawReader(NULL),
 
   fVertexer(NULL),
   fDiamondProfile(NULL),
@@ -620,6 +627,18 @@ Bool_t AliReconstruction::Run(const char* input, Bool_t IsOnline)
 
   if (!fEquipIdMap.IsNull() && fRawReader)
     fRawReader->LoadEquipmentIdsMap(fEquipIdMap);
+
+  if (!fUseHLTData.IsNull()) {
+    // create the RawReaderHLT which performs redirection of HLT input data for
+    // the specified detectors
+    AliRawReader* pRawReader=AliRawHLTManager::CreateRawReaderHLT(fRawReader, fUseHLTData.Data());
+    if (pRawReader) {
+      fParentRawReader=fRawReader;
+      fRawReader=pRawReader;
+    } else {
+      AliError(Form("can not create Raw Reader for HLT input %s", fUseHLTData.Data()));
+    }
+  }
 
    AliSysInfo::AddStamp("Start");
   // get the run loader
@@ -2013,6 +2032,8 @@ void AliReconstruction::CleanUp(TFile* file, TFile* fileOld)
   fRunLoader = NULL;
   delete fRawReader;
   fRawReader = NULL;
+  if (fParentRawReader) delete fParentRawReader;
+  fParentRawReader=NULL;
 
   if (file) {
     file->Close();
