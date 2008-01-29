@@ -13,6 +13,8 @@ class AlidNdEtaCorrection;
 class TH1F;
 class AliESDEvent;
 class TParticlePDG;
+class TH2F;
+class TProfile;
 
 class AlidNdEtaCorrectionTask : public AliAnalysisTask {
   public:
@@ -47,6 +49,10 @@ class AlidNdEtaCorrectionTask : public AliAnalysisTask {
     // control histograms
     TH1F* fPIDParticles;                         //! pid of primary particles
     TH1F* fPIDTracks;                            //! pid of reconstructed tracks
+ 
+    TH2F* fVertexCorrelation;                    //! ESD z-vtx vs MC z-vtx
+    TProfile* fVertexProfile;                    //! Profile of MC z-vtx - ESD z-vtx vs. MC z-vtx
+    TH1F* fVertexShiftNorm;                      //! (MC z-vtx - ESD z-vtx) / (sigma_ESD-z-vtx) histogrammed
 
     // histograms for systematic studies (must be enabled with option)
 

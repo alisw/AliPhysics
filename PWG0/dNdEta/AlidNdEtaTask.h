@@ -26,6 +26,7 @@ class AlidNdEtaTask : public AliAnalysisTask {
     void SetTrackCuts(AliESDtrackCuts* cuts) { fEsdTrackCuts = cuts; }
     void SetAnalysisMode(AliPWG0Helper::AnalysisMode mode) { fAnalysisMode = mode; }
     void SetReadMC(Bool_t flag = kTRUE) { fReadMC = flag; }
+    void SetUseMCVertex(Bool_t flag = kTRUE) { fUseMCVertex = flag; }
 
  protected:
     AliESDEvent *fESD;    //! ESD object
@@ -35,6 +36,7 @@ class AlidNdEtaTask : public AliAnalysisTask {
     AliPWG0Helper::AnalysisMode fAnalysisMode; // detector that is used for analysis
 
     Bool_t  fReadMC;       // if true reads MC data (to build correlation maps)
+    Bool_t  fUseMCVertex;  // the MC vtx is used instead of the ESD vertex (for syst. check)
 
     AliESDtrackCuts* fEsdTrackCuts;         // Object containing the parameters of the esd track cuts
 
@@ -45,6 +47,7 @@ class AlidNdEtaTask : public AliAnalysisTask {
     TH1F* fMultVtx;                            //! raw multiplicity histogram of evts with vtx (control histogram)
     TH1F* fPartEta[3];            //! counted particles as function of eta (full vertex range, below 0 range, above 0 range)
     TH1F* fEvents;                //! events counted as function of vtx
+    TH1F* fVertexResolution;      //! z resolution of the vertex
 
     // Gathered from MC (when fReadMC is set)
     dNdEtaAnalysis* fdNdEtaAnalysis;        //! contains the dndeta from the full sample
@@ -54,6 +57,7 @@ class AlidNdEtaTask : public AliAnalysisTask {
     // the following are control histograms to check the dNdEtaAnalysis class
     TH3F* fVertex;                //! vertex of counted particles
     TH1F* fPartPt;                //! counted particles as function of pt
+    TH1F* fDeltaPhi;              //! histogram of delta_phi values for tracklets (only for SPD analysis)
 
  private:
     AlidNdEtaTask(const AlidNdEtaTask&);
