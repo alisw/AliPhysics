@@ -195,7 +195,8 @@ const Double_t AliITSv11GeometrySDD::fgkWaferWidth         =  72.5 *fgkmm;
 const Double_t AliITSv11GeometrySDD::fgkWaferLength        =  87.6 *fgkmm;
 const Double_t AliITSv11GeometrySDD::fgkWaferThickSens     = 299.8*fgkmu;
 const Double_t AliITSv11GeometrySDD::fgkWaferWidthSens     =  70.17*fgkmm;
-const Double_t AliITSv11GeometrySDD::fgkWaferLengthSens    =  74.97*fgkmm;
+// 256 anodes times 294 microns of pitch
+const Double_t AliITSv11GeometrySDD::fgkWaferLengthSens    =  256*294*fgkmicron;
 
 const Double_t AliITSv11GeometrySDD::fgkDigitCablWidth     = 18.4*fgkmm;
 const Double_t AliITSv11GeometrySDD::fgkDigitCablAlThick   = (30+30*8./10.)*fgkmicron; // will probably change
