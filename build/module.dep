@@ -28,7 +28,7 @@ PHOS/module.mk:		PHOS/libPHOSbase.pkg PHOS/libPHOSsim.pkg PHOS/libPHOSrec.pkg PH
 PMD/module.mk:		PMD/libPMDbase.pkg PMD/libPMDsim.pkg PMD/libPMDrec.pkg
 PYTHIA6/module.mk:	PYTHIA6/libpythia6.pkg PYTHIA6/libAliPythia6.pkg
 RALICE/module.mk:	RALICE/libRALICE.pkg
-RAW/module.mk:		RAW/libRAWDatabase.pkg RAW/libRAWDatasim.pkg RAW/libRAWDatarec.pkg RAW/binalimdc.pkg RAW/bindateStream.pkg
+RAW/module.mk:		RAW/libRAWDatabase.pkg RAW/libRAWDatasim.pkg RAW/libRAWDatarec.pkg RAW/binalimdc.pkg RAW/bindateStream.pkg RAW/binalirawdump.pkg
 RAW/module.mk:		RAW/libMDC.pkg RAW/libMDCFilter.pkg
 HMPID/module.mk:	HMPID/libHMPIDbase.pkg HMPID/libHMPIDrec.pkg HMPID/libHMPIDsim.pkg
 SHUTTLE/module.mk:	SHUTTLE/libSHUTTLE.pkg SHUTTLE/TestShuttle/TestShuttle.pkg
