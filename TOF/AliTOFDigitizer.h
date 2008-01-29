@@ -38,8 +38,8 @@ class AliTOFDigitizer : public AliDigitizer {
   TClonesArray* SDigits() const {return fSDigitsArray;}
   void ReadSDigit(Int_t inputFile);
   void CreateDigits();
-  void InitDecalibration(AliTOFcalib *calib) const;
-  void DecalibrateTOFSignal(AliTOFcalib *calib);
+  void InitDecalibration() const;
+  void DecalibrateTOFSignal();
   
  private:
   void CollectSDigit(AliTOFSDigit * sdigit) ;
@@ -53,7 +53,8 @@ class AliTOFDigitizer : public AliDigitizer {
 			       //container for all sdigits to be
 			       //merged
   AliTOFHitMap *fhitMap ;      //! hit map used to perform the merging
+  AliTOFcalib * fCalib;        //! calibration object
   
-  ClassDef(AliTOFDigitizer,1)  // TOF/Merging/Digitization
+  ClassDef(AliTOFDigitizer,2)  // TOF/Merging/Digitization
 };    
 #endif

@@ -63,9 +63,11 @@ ClassImp(AliTOFDigitizer)
     AliDigitizer(),
     fDigits(0x0),
     fSDigitsArray(0x0),
-    fhitMap(0x0)
+  fhitMap(0x0),
+  fCalib(new AliTOFcalib())
 {
   // Default ctor - don't use it
+  InitDecalibration();
 }
 
 //___________________________________________
@@ -73,23 +75,22 @@ AliTOFDigitizer::AliTOFDigitizer(AliRunDigitizer* manager):
   AliDigitizer(manager), 
   fDigits(0x0),
   fSDigitsArray(0x0),
-  fhitMap(0x0)
+  fhitMap(0x0),
+  fCalib(new AliTOFcalib())
 {
   //ctor with RunDigitizer
+  InitDecalibration();
 }
 
 //------------------------------------------------------------------------
 AliTOFDigitizer::AliTOFDigitizer(const AliTOFDigitizer &source):
   AliDigitizer(source),
-  fDigits(0),
-  fSDigitsArray(0),
-  fhitMap(0)
+  fDigits(source.fDigits),
+  fSDigitsArray(source.fSDigitsArray),
+  fhitMap(source.fhitMap),
+  fCalib(source.fCalib)
 {
   // copy constructor
-  this->fDigits=source.fDigits;
-  this->fSDigitsArray=source.fSDigitsArray;
-  this->fhitMap=source.fhitMap;
-
 }
 
 //------------------------------------------------------------------------
@@ -99,6 +100,7 @@ AliTOFDigitizer::AliTOFDigitizer(const AliTOFDigitizer &source):
   this->fDigits=source.fDigits;
   this->fSDigitsArray=source.fSDigitsArray;
   this->fhitMap=source.fhitMap;
+  this->fCalib=source.fCalib;
   return *this;
 
 }
@@ -107,6 +109,7 @@ AliTOFDigitizer::AliTOFDigitizer(const AliTOFDigitizer &source):
 AliTOFDigitizer::~AliTOFDigitizer()
 {
   // Destructor
+  delete fCalib;
 }
 
 //---------------------------------------------------------------------
@@ -285,10 +288,7 @@ void AliTOFDigitizer::CreateDigits()
 
   //Insert Decalibration 
   AliInfo("in digitizer, create digits");
-  AliTOFcalib * calib = new AliTOFcalib();
-  InitDecalibration(calib);
-  DecalibrateTOFSignal(calib);
-  delete calib;
+  DecalibrateTOFSignal();
 }
 
 //---------------------------------------------------------------------
@@ -405,27 +405,27 @@ void AliTOFDigitizer::CollectSDigit(AliTOFSDigit * sdigit)
 }
 
 //_____________________________________________________________________________
-void AliTOFDigitizer::InitDecalibration( AliTOFcalib *calib) const {
+void AliTOFDigitizer::InitDecalibration() const {
   //
   //
   //
 
-  calib->CreateCalArrays();
-  calib->ReadSimHistoFromCDB("TOF/Calib", -1); // use AliCDBManager's number
-  calib->ReadParOfflineFromCDB("TOF/Calib", -1); // use AliCDBManager's number
+  fCalib->CreateCalArrays();
+  fCalib->ReadSimHistoFromCDB("TOF/Calib", -1); // use AliCDBManager's number
+  fCalib->ReadParOfflineFromCDB("TOF/Calib", -1); // use AliCDBManager's number
 }
 //---------------------------------------------------------------------
-void AliTOFDigitizer::DecalibrateTOFSignal( AliTOFcalib *calib){
+void AliTOFDigitizer::DecalibrateTOFSignal(){
 
   // Read Calibration parameters from the CDB
 
-  TObjArray * calOffline= calib->GetTOFCalArrayOffline();
+  TObjArray * calOffline= fCalib->GetTOFCalArrayOffline();
 
   AliDebug(2,Form("Size of array for Offline Calibration = %i",calOffline->GetEntries()));
 
   // Initialize Quantities to Simulate ToT Spectra
 
-  TH1F * hToT= calib->GetTOFSimToT();
+  TH1F * hToT= fCalib->GetTOFSimToT();
   Int_t nbins = hToT->GetNbinsX();
   Float_t delta = hToT->GetBinWidth(1);
   Float_t maxch = hToT->GetBinLowEdge(nbins)+delta;
