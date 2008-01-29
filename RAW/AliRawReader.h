@@ -27,16 +27,16 @@ class AliRawReader: public TObject {
     AliRawReader& operator = (const AliRawReader& rawReader);
     virtual ~AliRawReader();
 
-    void             Select(Int_t detectorID, 
+    virtual void     Select(Int_t detectorID, 
 			    Int_t minDDLID = -1, Int_t maxDDLID = -1);
-    void             Select(const char *detectorName, 
+    virtual void     Select(const char *detectorName, 
 			    Int_t minDDLID = -1, Int_t maxDDLID = -1);
-    void             SelectEquipment(Int_t equipmentType, 
+    virtual void     SelectEquipment(Int_t equipmentType, 
 				     Int_t minEquipmentId = -1, 
 				     Int_t maxEquipmentId = -1);
-    void             SkipInvalid(Bool_t skip = kTRUE)
+    virtual void     SkipInvalid(Bool_t skip = kTRUE)
       {fSkipInvalid = skip;};
-    void             SelectEvents(Int_t type);
+    virtual void     SelectEvents(Int_t type);
     virtual void     RequireHeader(Bool_t required)
       {fRequireHeader = required;};
 

@@ -4,6 +4,7 @@ SRCS:=  AliFilter.cxx \
 	AliRawReader.cxx AliRawReaderFile.cxx AliRawReaderRoot.cxx \
 	AliRawReaderDate.cxx AliRawReaderDateV3.cxx \
 	AliRawReaderMemory.cxx \
+	AliRawHLTManager.cxx \
 	AliAltroRawStream.cxx \
 	AliCaloRawStream.cxx \
 	AliVMERawStream.cxx \
@@ -15,7 +16,7 @@ HDRS +=
 
 EHDRS:=$(shell root-config --incdir)/TH1F.h
 
-EINCLUDE+=
+EINCLUDE+= HLT/rec
 
 DHDR:= RAWrecLinkDef.h 
 
