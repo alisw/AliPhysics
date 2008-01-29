@@ -55,4 +55,8 @@
 
 #pragma link C++ class AliQA+;
 
+#pragma link C++ class AliTimeStamp+;
+#pragma link C++ class AliTriggerScalers+;
+#pragma link C++ class AliTriggerScalersRecord+;
+
 #endif

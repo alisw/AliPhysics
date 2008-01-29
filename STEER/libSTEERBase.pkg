@@ -15,7 +15,8 @@ SRCS = AliVParticle.cxx \
        AliMCEvent.cxx AliMCParticle.cxx \
        AliMagF.cxx \
        AliCodeTimer.cxx \
-       AliQA.cxx		   	
+       AliQA.cxx \
+       AliTimeStamp.cxx AliTriggerScalers.cxx AliTriggerScalersRecord.cxx
 
 HDRS:= $(SRCS:.cxx=.h) 
 

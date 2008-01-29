@@ -57,7 +57,8 @@ AliQACheckerBase.cxx \
 AliMillepede.cxx \
 AliRecoParam.cxx \
 AliDetectorRecoParam.cxx \
-AliPlaneEff.cxx
+AliPlaneEff.cxx \
+AliTriggerRunScalers.cxx
 
 
 HDRS:= $(SRCS:.cxx=.h) 
