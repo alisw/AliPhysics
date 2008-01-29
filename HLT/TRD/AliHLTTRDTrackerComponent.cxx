@@ -204,7 +204,6 @@ int AliHLTTRDTrackerComponent::DoInit( int argc, const char** argv )
     }
   else
     {
-      calibra->SetMITracking(kTRUE);
       calibra->Init2Dhistos();
     }
 
