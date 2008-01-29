@@ -29,15 +29,16 @@
 #include "AliTPCCalibCE.h"
 #include "TFile.h"
 #include "TTree.h"
-#include "TGraph.h" //!new
+#include "TGraph.h" 
 #include "TEnv.h"
+#include "TParameter.h"
 
 #include <TTimeStamp.h>
 
 const Int_t kValCutTemp = 100;               // discard temperatures > 100 degrees
 const Int_t kDiffCutTemp = 5;	             // discard temperature differences > 5 degrees
-const TString kPedestalRunType = "PEDESTAL_RUN";  // pedestal run identifier
-const TString kPulserRunType = "PULSER_RUN";   // pulser run identifier
+const TString kPedestalRunType = "PEDESTAL";  // pedestal run identifier
+const TString kPulserRunType = "PULSER";   // pulser run identifier
 const TString kPhysicsRunType = "PHYSICS";   // physics run identifier
 const TString kStandAloneRunType = "STANDALONE"; // standalone run identifier
 const TString kDaqRunType = "DAQ"; // DAQ run identifier
@@ -92,9 +93,11 @@ AliTPCPreprocessor& AliTPCPreprocessor::operator = (const AliTPCPreprocessor& )
 void AliTPCPreprocessor::Initialize(Int_t run, UInt_t startTime,
 	UInt_t endTime)
 {
-  // Creates AliTestDataDCS object
+  // Creates AliTestDataDCS object -- start maps half an hour beforre actual run start
 
-  AliPreprocessor::Initialize(run, startTime, endTime);
+  UInt_t startTimeLocal = startTime-1800;
+
+  AliPreprocessor::Initialize(run, startTimeLocal, endTime);
 
 	AliInfo(Form("\n\tRun %d \n\tStartTime %s \n\tEndTime %s", run,
 		TTimeStamp(startTime).AsString(),
@@ -124,7 +127,7 @@ void AliTPCPreprocessor::Initialize(Int_t run, UInt_t startTime,
 	   fConfigOK = kFALSE;
 	   return;
         }
-        fTemp = new AliTPCSensorTempArray(fStartTime, fEndTime, confTree, kAmandaTemp);
+        fTemp = new AliTPCSensorTempArray(startTimeLocal, fEndTime, confTree, kAmandaTemp);
 	fTemp->SetValCut(kValCutTemp);
 	fTemp->SetDiffCut(kDiffCutTemp);
        }
@@ -143,7 +146,7 @@ void AliTPCPreprocessor::Initialize(Int_t run, UInt_t startTime,
            fConfigOK = kFALSE;
            return;
         }
-        fHighVoltage = new AliDCSSensorArray(fStartTime, fEndTime, confTree);
+        fHighVoltage = new AliDCSSensorArray(startTimeLocal, fEndTime, confTree);
       }
 }
 
@@ -154,10 +157,27 @@ UInt_t AliTPCPreprocessor::Process(TMap* dcsAliasMap)
 
   // Amanda servers provide information directly through dcsAliasMap
 
-  if (!dcsAliasMap) return 9;
-  if (dcsAliasMap->GetEntries() == 0 ) return 9;
+  
   if (!fConfigOK) return 9;
   UInt_t result = 0;
+  TObjArray *resultArray = new TObjArray();
+  TString errorHandling = fConfEnv->GetValue("ErrorHandling","ON");
+  errorHandling.ToUpper();
+  TObject * status;
+
+  UInt_t dcsResult=0;
+  if (errorHandling == "OFF" ) {
+    if (!dcsAliasMap) dcsResult=1;
+    if (dcsAliasMap->GetEntries() == 0 ) dcsResult=1;  
+    status = new TParameter<int>("dcsResult",dcsResult);
+    resultArray->Add(status);
+  } else {
+    if (!dcsAliasMap) return 9;
+    if (dcsAliasMap->GetEntries() == 0 ) return 9;
+  }
+
+
+  
 
   TString runType = GetRunType();
 
@@ -168,6 +188,8 @@ UInt_t AliTPCPreprocessor::Process(TMap* dcsAliasMap)
   if (tempConf != "OFF" ) {
     UInt_t tempResult = MapTemperature(dcsAliasMap);
     result=tempResult;
+    status = new TParameter<int>("tempResult",tempResult);
+    resultArray->Add(status);
   }
 
   // High Voltage recordings
@@ -178,6 +200,8 @@ UInt_t AliTPCPreprocessor::Process(TMap* dcsAliasMap)
   if (hvConf != "OFF" ) { 
    UInt_t hvResult = MapHighVoltage(dcsAliasMap);
    result+=hvResult;
+   status = new TParameter<int>("hvResult",hvResult);
+   resultArray->Add(status);
  }
 
   // Other calibration information will be retrieved through FXS files
@@ -210,6 +234,8 @@ UInt_t AliTPCPreprocessor::Process(TMap* dcsAliasMap)
        if ( pedestalResult == 0 ) break;
      }
      result += pedestalResult;
+     status = new TParameter<int>("pedestalResult",pedestalResult);
+     resultArray->Add(status);
     }
   }
 
@@ -235,6 +261,8 @@ UInt_t AliTPCPreprocessor::Process(TMap* dcsAliasMap)
        if ( pulserResult == 0 ) break;
      }
      result += pulserResult;
+     status = new TParameter<int>("pulserResult",pulserResult);
+     resultArray->Add(status);
     }
   }
 
@@ -264,15 +292,21 @@ UInt_t AliTPCPreprocessor::Process(TMap* dcsAliasMap)
        if ( ceResult == 0 ) break;
      }
      result += ceResult;
+     status = new TParameter<int>("ceResult",ceResult);
+     resultArray->Add(status);
     }
   }
   
-  TString errorHandling = fConfEnv->GetValue("ErrorHandling","ON");
-  errorHandling.ToUpper();
   if (errorHandling == "OFF" ) {
-   return 0;
+    AliCDBMetaData metaData;
+    metaData.SetBeamPeriod(0);
+    metaData.SetResponsible("Haavard Helstrup");
+    metaData.SetComment("Preprocessor AliTPC status.");
+    Store("Calib", "PreprocStatus", resultArray, &metaData, 0, kFALSE);
+    resultArray->Delete();
+    return 0;
   } else { 
-   return result;
+    return result;
   }
 }
 //______________________________________________________________________________________________
@@ -554,14 +588,17 @@ UInt_t AliTPCPreprocessor::ExtractCE(Int_t sourceFXS)
  AliTPCCalPad *ceTmean=0;
  AliTPCCalPad *ceTrms=0;
  AliTPCCalPad *ceQmean=0;
- TObjArray    *rocTtime=0;  //!new
- TObjArray    *rocQtime=0;  //!new
+ TObjArray    *rocTtime=0;  
+ TObjArray    *rocQtime=0;  
+
  AliCDBEntry* entry = GetFromOCDB("Calib", "CE");
  if (entry) ceObjects = (TObjArray*)entry->GetObject();
  if ( ceObjects==NULL ) {
      Log("AliTPCPreprocsessor: No previous TPC central electrode entry available.\n");
      ceObjects = new TObjArray;    
  }
+
+ Int_t nSectors = fROC->GetNSectors();
 
  ceTmean = (AliTPCCalPad*)ceObjects->FindObject("CETmean");
  if ( !ceTmean ) {
@@ -581,26 +618,21 @@ UInt_t AliTPCPreprocessor::ExtractCE(Int_t sourceFXS)
  //!new from here please have a look!!!
  rocTtime = (TObjArray*)ceObjects->FindObject("rocTtime");
  if ( !rocTtime ) {
-     rocTtime = new TObjArray(72);
+     rocTtime = new TObjArray(nSectors);
      rocTtime->SetName("rocTtime");
      ceObjects->Add(rocTtime);
  }
- // delete old objects, it they exist, not sure here!!!!
- rocTtime->Delete();
-rocQtime = (TObjArray*)ceObjects->FindObject("rocQtime");
+ 
+ rocQtime = (TObjArray*)ceObjects->FindObject("rocQtime");
  if ( !rocQtime ) {
-     rocQtime = new TObjArray(72);
+     rocQtime = new TObjArray(nSectors);
      rocQtime->SetName("rocQtime");
      ceObjects->Add(rocQtime);
  }
- // delete old objects, it they exist, not sure here!!!!
- rocQtime->Delete();
-//!end new
 
 
  UInt_t result=0;
 
- Int_t nSectors = fROC->GetNSectors();
  TList* list = GetFileSources(sourceFXS,"CE");
  
  if (list && list->GetEntries()>0) {
@@ -631,10 +663,10 @@ rocQtime = (TObjArray*)ceObjects->FindObject("rocQtime");
            if ( rocTrms )  ceTrms->SetCalROC(rocTrms,sector);
            AliTPCCalROC *rocQmean=calCE->GetCalRocQ(sector);
 	   if ( rocQmean )  ceQmean->SetCalROC(rocQmean,sector);
-	   TGraph *grT=calCE->MakeGraphTimeCE(sector,0,2); //!new T time graph
-           if ( grT ) rocTtime->AddAt(grT,sector);         //!new
-	   TGraph *grQ=calCE->MakeGraphTimeCE(sector,0,3); //!new Q time graph
-           if ( grT ) rocTtime->AddAt(grT,sector);         //!new
+	   TGraph *grT=calCE->MakeGraphTimeCE(sector,0,2); // T time graph
+           if ( grT ) rocTtime->AddAt(grT,sector);         
+	   TGraph *grQ=calCE->MakeGraphTimeCE(sector,0,3); // Q time graph
+           if ( grQ ) rocTtime->AddAt(grQ,sector);         
         }
       }
      ++index;
