@@ -63,6 +63,7 @@ public:
 		       kESDFMD,
 		       kESDVZERO,
 		       kESDTZERO,
+		       kTPCVertex,
 		       kSPDVertex,
 		       kPrimaryVertex,
 		       kSPDMult,
@@ -172,8 +173,15 @@ public:
 
 
 
-  void SetVertex(const AliESDVertex *vertex); 
-  const AliESDVertex *GetVertex() const {return fSPDVertex;}
+  void SetPrimaryVertexTPC(const AliESDVertex *vertex); 
+  const AliESDVertex *GetPrimaryVertexTPC() const {return fTPCVertex;}
+
+  void SetPrimaryVertexSPD(const AliESDVertex *vertex); 
+  const AliESDVertex *GetPrimaryVertexSPD() const {return fSPDVertex;}
+  const AliESDVertex *GetVertex() const {
+    //For the backward compatibily only
+     return GetPrimaryVertexSPD();
+  }
 
   void SetPrimaryVertex(const AliESDVertex *vertex);
   const AliESDVertex *GetPrimaryVertex() const {return fPrimaryVertex;}
@@ -340,6 +348,7 @@ protected:
   AliESDFMD       *fESDFMD;           //! FMD object containing rough multiplicity
   AliESDVZERO     *fESDVZERO;         //! VZERO object containing rough multiplicity
   AliESDTZERO     *fESDTZERO;         //! TZEROObject
+  AliESDVertex    *fTPCVertex;        //! Primary vertex estimated by the TPC
   AliESDVertex    *fSPDVertex;        //! Primary vertex estimated by the SPD
   AliESDVertex    *fPrimaryVertex;    //! Primary vertex estimated using ESD tracks
   AliMultiplicity *fSPDMult;          //! SPD tracklet multiplicity
@@ -373,7 +382,7 @@ protected:
   Int_t        fPHOSClusters;     // Number of PHOS clusters (subset of caloclusters)
   Int_t        fFirstPHOSCluster; // First PHOS cluster in the fCaloClusters list 
 
-  ClassDef(AliESDEvent,6)  //ESDEvent class 
+  ClassDef(AliESDEvent,7)  //ESDEvent class 
 };
 #endif 
 

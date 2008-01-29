@@ -894,7 +894,7 @@ Bool_t AliReconstruction::Run(const char* input, Bool_t IsOnline)
     // HLT tracking
     if (!fRunTracking.IsNull()) {
       if (fRunHLTTracking) {
-	hltesd->SetVertex(esd->GetVertex());
+	hltesd->SetPrimaryVertexSPD(esd->GetVertex());
 	if (!RunHLTTracking(hltesd)) {
 	  if (fStopOnError) {CleanUp(file, fileOld); return kFALSE;}
 	}
@@ -1311,7 +1311,7 @@ Bool_t AliReconstruction::RunVertexFinder(AliESDEvent*& esd)
     AliWarning("no vertex reconstructed");
     vertex = new AliESDVertex(vtxPos, vtxErr);
   }
-  esd->SetVertex(vertex);
+  esd->SetPrimaryVertexSPD(vertex);
   // if SPD multiplicity has been determined, it is stored in the ESD
   AliMultiplicity *mult = fVertexer->GetMultiplicity();
   if(mult)esd->SetMultiplicity(mult);

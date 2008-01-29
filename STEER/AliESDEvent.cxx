@@ -74,6 +74,7 @@ ClassImp(AliESDEvent)
 						       "AliESDFMD",
 						       "AliESDVZERO",
 						       "AliESDTZERO",
+						       "TPCVertex",
 						       "SPDVertex",
 						       "PrimaryVertex",
 						       "AliMultiplicity",
@@ -100,6 +101,7 @@ AliESDEvent::AliESDEvent():
   fESDFMD(0),
   fESDVZERO(0),
   fESDTZERO(0),
+  fTPCVertex(0),
   fSPDVertex(0),
   fPrimaryVertex(0),
   fSPDMult(0),
@@ -134,6 +136,7 @@ AliESDEvent::AliESDEvent(const AliESDEvent& esd):
   fESDFMD(new AliESDFMD(*esd.fESDFMD)),
   fESDVZERO(new AliESDVZERO(*esd.fESDVZERO)),
   fESDTZERO(new AliESDTZERO(*esd.fESDTZERO)),
+  fTPCVertex(new AliESDVertex(*esd.fTPCVertex)),
   fSPDVertex(new AliESDVertex(*esd.fSPDVertex)),
   fPrimaryVertex(new AliESDVertex(*esd.fPrimaryVertex)),
   fSPDMult(new AliMultiplicity(*esd.fSPDMult)),
@@ -166,6 +169,7 @@ AliESDEvent::AliESDEvent(const AliESDEvent& esd):
   AddObject(fESDFMD);
   AddObject(fESDVZERO);
   AddObject(fESDTZERO);
+  AddObject(fTPCVertex);
   AddObject(fSPDVertex);
   AddObject(fPrimaryVertex);
   AddObject(fSPDMult);
@@ -201,6 +205,7 @@ AliESDEvent & AliESDEvent::operator=(const AliESDEvent& source) {
   fESDFMD = new AliESDFMD(*source.fESDFMD);
   fESDVZERO = new AliESDVZERO(*source.fESDVZERO);
   fESDTZERO = new AliESDTZERO(*source.fESDTZERO);
+  fTPCVertex = new AliESDVertex(*source.fTPCVertex);
   fSPDVertex = new AliESDVertex(*source.fSPDVertex);
   fPrimaryVertex = new AliESDVertex(*source.fPrimaryVertex);
   fSPDMult = new AliMultiplicity(*source.fSPDMult);
@@ -229,6 +234,7 @@ AliESDEvent & AliESDEvent::operator=(const AliESDEvent& source) {
   AddObject(fESDFMD);
   AddObject(fESDVZERO);
   AddObject(fESDTZERO);
+  AddObject(fTPCVertex);
   AddObject(fSPDVertex);
   AddObject(fPrimaryVertex);
   AddObject(fSPDMult);
@@ -317,6 +323,11 @@ void AliESDEvent::ResetStdContent()
   }  
   if(fESDTZERO) fESDTZERO->Reset(); 
   // CKB no clear/reset implemented
+  if(fTPCVertex){
+    fTPCVertex->~AliESDVertex();
+    new (fTPCVertex) AliESDVertex();
+    fTPCVertex->SetName(fgkESDListName[kTPCVertex]);
+  }
   if(fSPDVertex){
     fSPDVertex->~AliESDVertex();
     new (fSPDVertex) AliESDVertex();
@@ -654,7 +665,7 @@ Bool_t AliESDEvent::Clean(Float_t *cleanPars) {
 
   Float_t dmax=cleanPars[2], zmax=cleanPars[3];
 
-  const AliESDVertex *vertex=GetVertex();
+  const AliESDVertex *vertex=GetPrimaryVertexSPD();
   Bool_t vtxOK=vertex->GetStatus();
   
   Int_t nTracks=GetNumberOfTracks();
@@ -731,7 +742,17 @@ void  AliESDEvent::AddRawDataErrorLog(const AliRawDataErrorLog *log) {
   new(errlogs[errlogs.GetEntriesFast()])  AliRawDataErrorLog(*log);
 }
 
-void  AliESDEvent::SetVertex(const AliESDVertex *vertex) 
+void  AliESDEvent::SetPrimaryVertexTPC(const AliESDVertex *vertex) 
+{
+  // Set the TPC vertex
+  // use already allocated space
+  if(fTPCVertex){
+    *fTPCVertex = *vertex;
+    fTPCVertex->SetName(fgkESDListName[kTPCVertex]);
+  }
+}
+
+void  AliESDEvent::SetPrimaryVertexSPD(const AliESDVertex *vertex) 
 {
   // Set the SPD vertex
   // use already allocated space
@@ -816,6 +837,7 @@ void AliESDEvent::GetStdContent()
   fESDFMD = (AliESDFMD*)fESDObjects->FindObject(fgkESDListName[kESDFMD]);
   fESDVZERO = (AliESDVZERO*)fESDObjects->FindObject(fgkESDListName[kESDVZERO]);
   fESDTZERO = (AliESDTZERO*)fESDObjects->FindObject(fgkESDListName[kESDTZERO]);
+  fTPCVertex = (AliESDVertex*)fESDObjects->FindObject(fgkESDListName[kTPCVertex]);
   fSPDVertex = (AliESDVertex*)fESDObjects->FindObject(fgkESDListName[kSPDVertex]);
   fPrimaryVertex = (AliESDVertex*)fESDObjects->FindObject(fgkESDListName[kPrimaryVertex]);
   fSPDMult =       (AliMultiplicity*)fESDObjects->FindObject(fgkESDListName[kSPDMult]);
@@ -865,6 +887,7 @@ void AliESDEvent::CreateStdContent()
   AddObject(new AliESDFMD());
   AddObject(new AliESDVZERO());
   AddObject(new AliESDTZERO());
+  AddObject(new AliESDVertex());
   AddObject(new AliESDVertex());
   AddObject(new AliESDVertex());
   AddObject(new AliMultiplicity());
@@ -1167,7 +1190,7 @@ void AliESDEvent::CopyFromOldESD()
     // VZERO
     if (fESDOld->GetVZEROData()) SetVZEROData(fESDOld->GetVZEROData());
 
-    if(fESDOld->GetVertex())SetVertex(fESDOld->GetVertex());
+    if(fESDOld->GetVertex())SetPrimaryVertexSPD(fESDOld->GetVertex());
 
     if(fESDOld->GetPrimaryVertex())SetPrimaryVertex(fESDOld->GetPrimaryVertex());
 
