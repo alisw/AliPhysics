@@ -904,11 +904,10 @@ PropagateToDCA(AliExternalTrackParam *p, Double_t b) {
 }
 
 
-
-
-Bool_t AliExternalTrackParam::PropagateToDCA(const AliESDVertex *vtx, Double_t b, Double_t maxd){
+Bool_t AliExternalTrackParam::PropagateToDCA(const AliESDVertex *vtx, 
+Double_t b, Double_t maxd, Double_t dz[2], Double_t covar[3]) {
   //
-  // Try to relate this track to the vertex "vtx", 
+  // Propagate this track to the DCA to vertex "vtx", 
   // if the (rough) transverse impact parameter is not bigger then "maxd". 
   //            Magnetic field is "b" (kG).
   //
@@ -922,7 +921,7 @@ Bool_t AliExternalTrackParam::PropagateToDCA(const AliESDVertex *vtx, Double_t b
   Double_t sn=TMath::Sin(alpha), cs=TMath::Cos(alpha);
   Double_t x=GetX(), y=GetParameter()[0], snp=GetParameter()[2];
   Double_t xv= vtx->GetXv()*cs + vtx->GetYv()*sn;
-  Double_t yv=-vtx->GetXv()*sn + vtx->GetYv()*cs;
+  Double_t yv=-vtx->GetXv()*sn + vtx->GetYv()*cs, zv=vtx->GetZv();
   x-=xv; y-=yv;
 
   //Estimate the impact parameter neglecting the track curvature
@@ -930,14 +929,34 @@ Bool_t AliExternalTrackParam::PropagateToDCA(const AliESDVertex *vtx, Double_t b
   if (d > maxd) return kFALSE; 
 
   //Propagate to the DCA
-  Double_t crv=0.299792458e-3*b*GetParameter()[4];
+  Double_t crv=kB2C*b*GetParameter()[4];
+  if (TMath::Abs(b) < kAlmost0Field) crv=0.;
+
   Double_t tgfv=-(crv*x - snp)/(crv*y + TMath::Sqrt(1.-snp*snp));
   sn=tgfv/TMath::Sqrt(1.+ tgfv*tgfv); cs=TMath::Sqrt(1.- sn*sn);
+  if (TMath::Abs(tgfv)>0.) cs = sn/tgfv;
+  else cs=1.;
 
   x = xv*cs + yv*sn;
   yv=-xv*sn + yv*cs; xv=x;
 
   if (!Propagate(alpha+TMath::ASin(sn),xv,b)) return kFALSE;
+
+  if (dz==0) return kTRUE;
+  dz[0] = GetParameter()[0] - yv;
+  dz[1] = GetParameter()[1] - zv;
+  
+  if (covar==0) return kTRUE;
+  Double_t cov[6]; vtx->GetCovMatrix(cov);
+
+  //***** Improvements by A.Dainese
+  alpha=GetAlpha(); sn=TMath::Sin(alpha); cs=TMath::Cos(alpha);
+  Double_t s2ylocvtx = cov[0]*sn*sn + cov[2]*cs*cs - 2.*cov[1]*cs*sn;
+  covar[0] = GetCovariance()[0] + s2ylocvtx;   // neglecting correlations
+  covar[1] = GetCovariance()[1];               // between (x,y) and z
+  covar[2] = GetCovariance()[2] + cov[5];      // in vertex's covariance matrix
+  //*****
+
   return kTRUE;
 }
 

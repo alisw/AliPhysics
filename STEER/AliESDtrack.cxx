@@ -1134,58 +1134,28 @@ Bool_t AliESDtrack::RelateToVertex
 
   if (!vtx) return kFALSE;
 
-  Double_t alpha=GetAlpha();
-  Double_t sn=TMath::Sin(alpha), cs=TMath::Cos(alpha);
-  Double_t x=GetX(), y=GetParameter()[0], snp=GetParameter()[2];
-  Double_t xv= vtx->GetXv()*cs + vtx->GetYv()*sn;
-  Double_t yv=-vtx->GetXv()*sn + vtx->GetYv()*cs, zv=vtx->GetZv();
-  x-=xv; y-=yv;
+  Double_t dz[2],cov[3];
+  if (!PropagateToDCA(vtx, b, maxd, dz, cov)) return kFALSE;
 
-  //Estimate the impact parameter neglecting the track curvature
-  Double_t d=TMath::Abs(x*snp - y*TMath::Sqrt(1.- snp*snp));
-  if (d > maxd) return kFALSE; 
-
-  //Propagate to the DCA
-  Double_t crv=kB2C*b*GetParameter()[4];
-  if (TMath::Abs(b) < kAlmost0Field) crv=0.;
-
-  Double_t tgfv=-(crv*x - snp)/(crv*y + TMath::Sqrt(1.-snp*snp));
-  sn=tgfv/TMath::Sqrt(1.+ tgfv*tgfv);
-  if (TMath::Abs(tgfv)>0.) cs = sn/tgfv;
-  else cs=1.;
-
-  x = xv*cs + yv*sn;
-  yv=-xv*sn + yv*cs; xv=x;
-
-  if (!Propagate(alpha+TMath::ASin(sn),xv,b)) return kFALSE;
-
-  fD = GetParameter()[0] - yv;
-  fZ = GetParameter()[1] - zv;
+  fD = dz[0];
+  fZ = dz[1];  
+  fCdd = cov[0];
+  fCdz = cov[1];
+  fCzz = cov[2];
   
-  Double_t cov[6]; vtx->GetCovMatrix(cov);
+  Double_t covar[6]; vtx->GetCovMatrix(covar);
+  Double_t p[2]={GetParameter()[0]-dz[0],GetParameter()[1]-dz[1]};
+  Double_t c[3]={covar[2],0.,covar[5]};
 
-  //***** Improvements by A.Dainese
-  alpha=GetAlpha(); sn=TMath::Sin(alpha); cs=TMath::Cos(alpha);
-  Double_t s2ylocvtx = cov[0]*sn*sn + cov[2]*cs*cs - 2.*cov[1]*cs*sn;
-  fCdd = GetCovariance()[0] + s2ylocvtx;   // neglecting correlations
-  fCdz = GetCovariance()[1];               // between (x,y) and z
-  fCzz = GetCovariance()[2] + cov[5];      // in vertex's covariance matrix
-  //*****
+  Double_t chi2=GetPredictedChi2(p,c);
+  if (chi2>77.) return kFALSE;
 
-  {//Try to constrain 
-    Double_t p[2]={yv,zv}, c[3]={cov[2],0.,cov[5]};
-    Double_t chi2=GetPredictedChi2(p,c);
+  delete fCp;
+  fCp=new AliExternalTrackParam(*this);  
 
-    if (chi2>77.) return kFALSE;
-
-    AliExternalTrackParam tmp(*this);
-    if (!tmp.Update(p,c)) return kFALSE;
-
-    fCchi2=chi2;
-    if (!fCp) fCp=new AliExternalTrackParam();
-    new (fCp) AliExternalTrackParam(tmp);
-  }
-
+  if (!fCp->Update(p,c)) {delete fCp; fCp=0; return kFALSE;}
+  
+  fCchi2=chi2;
   return kTRUE;
 }
 

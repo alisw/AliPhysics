@@ -133,8 +133,9 @@ class AliExternalTrackParam: public AliVParticle {
   Double_t GetDCA(const AliExternalTrackParam *p, Double_t b,
     Double_t &xthis,Double_t &xp) const;
   Double_t PropagateToDCA(AliExternalTrackParam *p, Double_t b);
-  Bool_t PropagateToDCA(const AliESDVertex *vtx, Double_t b, Double_t maxd);
-
+  Bool_t PropagateToDCA(const AliESDVertex *vtx, Double_t b, Double_t maxd,
+                        Double_t dz[2]=0, Double_t cov[3]=0);
+  
   void GetDirection(Double_t d[3]) const;
   Bool_t GetPxPyPz(Double_t *p) const;
   Bool_t GetXYZ(Double_t *p) const;
