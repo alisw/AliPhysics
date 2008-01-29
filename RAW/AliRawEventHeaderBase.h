@@ -45,11 +45,13 @@ public:
    void          SetExtendedDataSize(Int_t size) { fExtendedDataSize = size; }
    void          SetExtendedData(char *data) { fExtendedData = data; }
 
-   const char *  GetTypeName();
+   const char *  GetTypeName() const;
    static AliRawEventHeaderBase* Create(char*& data);
    Int_t         ReadHeader(char*& data);
    UInt_t        Get(const char *datamember) const;
    const UInt_t* GetP(const char *datamember) const;
+
+   void          Print( const Option_t* opt ="" ) const;
 
    // The following enumeration can be used once the kEventTypeMask has been
    // applied to the raw event type

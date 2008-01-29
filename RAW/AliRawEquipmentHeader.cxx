@@ -25,6 +25,9 @@
 #include <Bytes.h>
 
 #include "AliRawEquipmentHeader.h"
+#include "AliDAQ.h"
+
+#include <Riostream.h>
 
 ClassImp(AliRawEquipmentHeader)
 
@@ -74,4 +77,18 @@ void AliRawEquipmentHeader::Reset()
 
   for(Int_t i = 0; i < kAttributeWords; i++)
     fTypeAttribute[i] = 0;
+}
+
+//_____________________________________________________________________________
+void AliRawEquipmentHeader::Print( const Option_t* opt ) const
+{
+  // Dumps the equipment header
+  // fields
+
+  cout << opt << "  Equipment size: " << fSize << endl;
+  cout << opt << "  Equipment type: " << fEquipmentType << endl;
+  Int_t ddlIndex;
+  cout << opt << "  Equipment ID: " << fEquipmentID << " ( " << AliDAQ::DetectorNameFromDdlID(fEquipmentID,ddlIndex) << " )" << endl;
+  cout << opt << "  Type attribute: " << fTypeAttribute[0] << "-" << fTypeAttribute[1] << "-" << fTypeAttribute[2] << endl;
+  cout << opt << "  Basic element size type: " << fBasicElementSizeType << endl;
 }

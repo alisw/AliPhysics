@@ -36,6 +36,7 @@
 #include "AliLog.h"
 #include "AliRawEventHeaderBase.h"
 
+#include <Riostream.h>
 
 ClassImp(AliRawEventHeaderBase)
 
@@ -118,7 +119,7 @@ void AliRawEventHeaderBase::Swap()
 }
 
 //______________________________________________________________________________
-const char *AliRawEventHeaderBase::GetTypeName()
+const char *AliRawEventHeaderBase::GetTypeName() const
 {
    // Get event type as a string.
    // Will fail in case data header
@@ -364,4 +365,23 @@ const UInt_t* AliRawEventHeaderBase::GetP(const char *datamember) const
   const void *pointer = (char *)this+member->GetOffset();
 
   return (const UInt_t*)pointer;
+}
+
+//_____________________________________________________________________________
+void AliRawEventHeaderBase::Print( const Option_t* opt ) const
+{
+  // Dumps the event or sub-event
+  // header fields
+
+  cout << opt << "  Event size: " << GetEventSize() << endl;
+  cout << opt << "  Event header size: " << GetHeadSize() << endl;
+  cout << opt << "  Event header version: " << GetMajorVersion() << "." << GetMinorVersion() << endl;
+  cout << opt << "  Event type: " << Get("Type") << "( " << GetTypeName() << " )" << endl;
+  cout << opt << "  Run Number: " << Get("RunNb") << endl;
+  const UInt_t *id = GetP("Id");
+  cout << opt << "  Period: " << (((id)[0]>>4)&0x0fffffff) << " Orbit: " << ((((id)[0]<<20)&0xf00000)|(((id)[1]>>12)&0xfffff)) << " Bunch-crossing: " << ((id)[1]&0x00000fff) << endl;
+  cout << opt << "  Trigger pattern: " << GetP("TriggerPattern")[0] << "-" << GetP("TriggerPattern")[1] << endl;
+  cout << opt << "  Detector pattern: " << Get("DetectorPattern") << endl;
+  cout << opt << "  Type attribute: " << GetP("TypeAttribute")[0] << "-" << GetP("TypeAttribute")[1] << "-" << GetP("TypeAttribute")[2] << endl;
+  cout << opt << "  GDC: " << Get("GdcId") << " LDC: " << Get("LdcId") << endl;
 }

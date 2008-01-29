@@ -36,6 +36,8 @@ public:
 
    void          Reset();
 
+   void          Print( const Option_t* opt ="" ) const;
+
    enum {
      kAttributeWords = 3
    };
