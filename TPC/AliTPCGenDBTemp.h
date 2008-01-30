@@ -17,6 +17,7 @@
 #include "AliLog.h"
 #include "AliDCSGenDB.h"
 
+
 class AliTPCGenDBTemp : public AliDCSGenDB {
 
 public:
@@ -29,14 +30,18 @@ public:
   void            MakeCalib(const char *file, const char *fMap,
                             const TTimeStamp& startTime,
 			    const TTimeStamp& endTime, Int_t run);
+  void            MakeConfig(const char *file, Int_t firstRun, Int_t lastRun, 
+                            const char *confDir, const TString& amandaString=0);
 
 // functionality
 
-  static TClonesArray *  ReadList(const char* fname);
-  static TTree        *  ReadListTree(const char* fname);
+  static TClonesArray* ReadList(const char* fname, const char *title="tempConf", 
+                                 const TString& amandaString=0);
+  static TTree*   ReadListTree(const char* fname, const char *title="tempConf",
+                                 const TString& amandaString=0);
 
 // getters/setters
-
+ 
 
 private:
   AliTPCGenDBTemp(const AliTPCGenDBTemp& org);

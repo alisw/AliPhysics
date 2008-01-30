@@ -49,7 +49,8 @@ public:
   void SetNum    (Int_t num)       {fNum    = num;   }
 
 
-  static TClonesArray * ReadList(const char *fname);
+  static TClonesArray * ReadList(const char *fname,
+                                 const TString& amandaString = kAmandaString);
   static TClonesArray * ReadTree(TTree *tree, 
                                  const TString& amandaString = kAmandaString);
 

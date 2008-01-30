@@ -23,14 +23,15 @@
 
 // Running instructions:
 /*
-  TClonesArray * arr = AliTPCSensorTemp::ReadList("TempSensor.txt");
+  TClonesArray * arr = AliTPCSensorTemp::ReadList("TempSensor.txt","tpc_PT_%d.Temperature");
   TFile f("TempSensors.root","RECREATE");
   TTree * tree = new TTree("TempSensor", "TempSensor");
   tree->Branch("Temp",&arr);
   tree->Fill();
   tree->Write();
   
- */
+*/
+
 //
 
 
@@ -162,13 +163,14 @@ AliTPCSensorTemp& AliTPCSensorTemp::operator=(const AliTPCSensorTemp& source){
 }
 //______________________________________________________________________________________________
 
-TClonesArray * AliTPCSensorTemp::ReadList(const char *fname) {
+TClonesArray * AliTPCSensorTemp::ReadList(const char *fname,
+                                          const TString& amandaString) {
   //
   // read values from ascii file
   //
   TTree * tree = new TTree("asci","asci");
   tree->ReadFile(fname,"");
-  TClonesArray *arr = ReadTree(tree);
+  TClonesArray *arr = ReadTree(tree, amandaString);
   delete tree;
   return arr;
 }
