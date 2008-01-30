@@ -299,7 +299,7 @@ extern "C" {
   static const int gkAliHLTCommonHeaderCount = 8;
 
   /** size of the DDL list */
-  static const int gkAliHLTDDLListSize = 29;
+  static const int gkAliHLTDDLListSize = 30;
 
   /**
    * @struct AliHLTEventDDL
