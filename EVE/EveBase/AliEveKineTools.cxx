@@ -20,28 +20,43 @@
 #include <TEveTrack.h>
 #include <TEveElement.h>
 
-#include <algorithm>
 #include <map>
 
 //______________________________________________________________________________
 // AliEveKineTools
+//
+// Tools for import of kinematics. Preliminary version.
 //
 
 using namespace std;
 
 ClassImp(AliEveKineTools)
 
-AliEveKineTools::AliEveKineTools()
-{}
 
-/******************************************************************************/
+namespace {
+
+  typedef std::map<Int_t, TEveTrack*> TrackMap_t;
+
+  void MapTracks(TrackMap_t& map, TEveElement* cont, Bool_t recurse)
+  {
+    TEveElement::List_i i = cont->BeginChildren();
+    while (i != cont->EndChildren()) {
+      TEveTrack* track = dynamic_cast<TEveTrack*>(*i);
+      map[track->GetLabel()] = track;
+      if (recurse)
+        MapTracks(map, track, recurse);
+      ++i;
+    }
+  }
+}
+
+/**************************************************************************/
 
 void AliEveKineTools::SetDaughterPathMarks(TEveElement* cont, AliStack* stack, Bool_t recurse)
 {
   // Import daughters birth points.
 
   TEveElement::List_i  iter = cont->BeginChildren();
-
   while(iter != cont->EndChildren())
   {
     TEveTrack* track = dynamic_cast<TEveTrack*>(*iter);
@@ -64,39 +79,16 @@ void AliEveKineTools::SetDaughterPathMarks(TEveElement* cont, AliStack* stack, B
   }
 }
 
-/******************************************************************************/
-
-namespace {
-struct cmp_pathmark
-{
-  bool operator()(TEvePathMark* const & a, TEvePathMark* const & b)
-  { return a->fTime < b->fTime; }
-};
-
-void slurp_tracks(std::map<Int_t, TEveTrack*>& tracks, TEveElement* cont, Bool_t recurse)
-{
-  TEveElement::List_i citer = cont->BeginChildren();
-  while(citer != cont->EndChildren())
-  {
-    TEveTrack* track = dynamic_cast<TEveTrack*>(*citer);
-    tracks[track->GetLabel()] = track;
-    if (recurse)
-      slurp_tracks(tracks, track, recurse);
-    ++citer;
-  }
-}
-
-}
+/**************************************************************************/
 
 void AliEveKineTools::SetTrackReferences(TEveElement* cont, TTree* treeTR, Bool_t recurse)
 {
-  // set decay and reference points
+  // Set decay and track reference path-marks.
 
   static const TEveException eH("AliEveKineTools::ImportPathMarks");
 
-  // Fill map
-  std::map<Int_t, TEveTrack*> tracks;
-  slurp_tracks(tracks, cont, recurse);
+  TrackMap_t map;
+  MapTracks(map, cont, recurse);
 
   Int_t nPrimaries = (Int_t) treeTR->GetEntries();
   TIter next(treeTR->GetListOfBranches());
@@ -115,7 +107,7 @@ void AliEveKineTools::SetTrackReferences(TEveElement* cont, TTree* treeTR, Bool_
       el->GetEntry(iPrimPart);
 
       Int_t last_label = -1;
-      std::map<Int_t, TEveTrack*>::iterator iter = tracks.end();
+      TrackMap_t::iterator iter = map.end();
       Int_t Nent =  arr->GetEntriesFast();
       for (Int_t iTrackRef = 0; iTrackRef < Nent; iTrackRef++)
       {
@@ -127,11 +119,11 @@ void AliEveKineTools::SetTrackReferences(TEveElement* cont, TTree* treeTR, Bool_
 			  iTrackRef, el->GetName()));
 
         if(label != last_label) {
-	  iter = tracks.find(label);
+	  iter = map.find(label);
 	  last_label = label;
 	}
 
-	if (iter != tracks.end()) {
+	if (iter != map.end()) {
 	  TEvePathMark* pm = new TEvePathMark(isRef ? TEvePathMark::kReference : TEvePathMark::kDecay);
 	  pm->fV.Set(atr->X(),atr->Y(), atr->Z());
 	  pm->fP.Set(atr->Px(),atr->Py(), atr->Pz());
@@ -140,22 +132,24 @@ void AliEveKineTools::SetTrackReferences(TEveElement* cont, TTree* treeTR, Bool_
           track->AddPathMark(pm);
 	}
       } // loop track refs
-    } // loop primaries, clones arrays
+    } // loop primaries in clones arrays
     delete arr;
   } // end loop through top branches
 }
 
-void AliEveKineTools::SortPathMarks(TEveElement* cont, Bool_t recurse)
+/**************************************************************************/
+
+void AliEveKineTools::SortPathMarks(TEveElement* el, Bool_t recurse)
 {
   // Sort path-marks for all tracks by time.
 
-  // Fill map
-  std::map<Int_t, TEveTrack*> tracks;
-  slurp_tracks(tracks, cont, recurse);
+  TEveTrack* track = dynamic_cast<TEveTrack*>(el);
+  if(track) track->SortPathMarksByTime();
 
-  // sort
-  for(std::map<Int_t, TEveTrack*>::iterator j=tracks.begin(); j!=tracks.end(); ++j)
-  {
-    j->second->SortPathMarksByTime();
+  TEveElement::List_i i = el->BeginChildren();
+  while (i != el->EndChildren() && recurse) {
+    track = dynamic_cast<TEveTrack*>(el);
+    if (track) track->SortPathMarksByTime();
+    i++;
   }
 }

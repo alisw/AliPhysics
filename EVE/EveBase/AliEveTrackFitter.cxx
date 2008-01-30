@@ -26,10 +26,10 @@
 //______________________________________________________________________________
 // AliEveTrackFitter
 //
-// AliEveTrackFitter is an interface to helix fit. It creates a set of
-// points, listening to signal PointCtrlClicked() of any
-// TEvePointSet. Via editor it fits selected points and creates a
-// reconstructed track.
+// AliEveTrackFitter is an interface to TEvePointSet allowing AliRieman fit.
+// It builds a list of points by listening to selection signal of any object of type
+// TEvePointSet. After selection the list is feeded to AliRieman fitter,
+// which returns helix parameters visualized with TEveTrack.
 //
 
 ClassImp(AliEveTrackFitter)
@@ -37,28 +37,20 @@ ClassImp(AliEveTrackFitter)
 AliEveTrackFitter::AliEveTrackFitter(const Text_t* name, Int_t n_points) :
     TEvePointSet   (name, n_points),
 
-    fGraphSelected (0),
-    fGraphFitted   (0),
     fAlpha         (0),
     fRieman        (0),
+
     fConnected     (kFALSE),
+    fSPMap         (),
     fTrackList     (0),
-    fMapPS         ()
+
+    fGraphPicked   (0),
+    fGraphHelix    (0)
 {
   // Constructor.
 
   SetMarkerColor(3);
   SetOwnIds(kFALSE);
-
-  fGraphSelected = new TGraph();
-  fGraphSelected->SetName("Selected points");
-  fGraphSelected->SetMarkerColor(4);
-  fGraphSelected->SetMarkerStyle(4);
-  fGraphSelected->SetMarkerSize(2);
-
-  fGraphFitted = new TGraphErrors();
-  fGraphFitted->SetName("Fitted points");
-  fGraphFitted->SetMarkerColor(2);
 
   fTrackList = new TEveTrackList("Tracks");
   fTrackList->SetLineWidth(2);
@@ -67,6 +59,16 @@ AliEveTrackFitter::AliEveTrackFitter(const Text_t* name, Int_t n_points) :
   fTrackList->GetPropagator()->SetEditPathMarks(kTRUE);
   gEve->AddElement(fTrackList, this);
   UpdateItems();
+
+  fGraphPicked = new TGraph();
+  fGraphPicked->SetName("Selected points");
+  fGraphPicked->SetMarkerColor(4);
+  fGraphPicked->SetMarkerStyle(4);
+  fGraphPicked->SetMarkerSize(2);
+
+  fGraphHelix = new TGraphErrors();
+  fGraphHelix->SetName("Fitted points");
+  fGraphHelix->SetMarkerColor(2);
 }
 
 AliEveTrackFitter::~AliEveTrackFitter()
@@ -74,40 +76,29 @@ AliEveTrackFitter::~AliEveTrackFitter()
   // Destructor.
 
   if(fRieman) delete fRieman;
+
   fTrackList->DecDenyDestroy();
   delete fTrackList;
 }
 
 /******************************************************************************/
-void AliEveTrackFitter::DestroyElements()
-{
-  // Virtual method of base class TEveElement.
-  // It preserves track list to have coomon track propagator attributes.
-
-  TEveElement::DestroyElements();
-  gEve->AddElement(fTrackList, this);
-  fTrackList->DestroyElements();
-  UpdateItems();
-}
-
-/******************************************************************************/
 void AliEveTrackFitter::Start()
 {
-  // Start selection of points.
+  // Clear existing point selection and maintain connection to the
+  // TEvePointSet signal.
 
   Reset();
   if(fConnected == kFALSE)
   {
     TQObject::Connect("TEvePointSet", "PointCtrlClicked(TEvePointSet*,Int_t)",
 		      "AliEveTrackFitter", this, "AddFitPoint(TEvePointSet*,Int_t)");
-
     fConnected = kTRUE;
   }
 }
 
 void AliEveTrackFitter::Stop()
 {
-  // Stop selection of points.
+  // Stop adding points for the fit.
 
   if(fConnected)
   {
@@ -116,16 +107,25 @@ void AliEveTrackFitter::Stop()
   }
 }
 
+void AliEveTrackFitter::Reset(Int_t n, Int_t ids)
+{
+  // Reset selection.
+
+  if(fRieman) fRieman->Reset();
+  TEvePointSet::Reset(n, ids);
+  fSPMap.clear();
+}
+
 /******************************************************************************/
 
 void AliEveTrackFitter::AddFitPoint(TEvePointSet* ps, Int_t n)
 {
-  // Add/remove given point depending if exists in the fMapPS.
+  // Add or remove given point depending if exists in the map.
 
   Float_t x, y, z;
 
-  std::map<Point_t, Int_t>::iterator g = fMapPS.find(Point_t(ps, n));
-  if(g != fMapPS.end())
+  PointMap_t::iterator g = fSPMap.find(Point_t(ps, n));
+  if(g != fSPMap.end())
   {
     Int_t idx = g->second;
     if(idx != fLastPoint)
@@ -133,16 +133,17 @@ void AliEveTrackFitter::AddFitPoint(TEvePointSet* ps, Int_t n)
       GetPoint(fLastPoint, x, y, z);
       SetPoint(idx, x, y, z);
     }
-    fMapPS.erase(g);
+    fSPMap.erase(g);
     fLastPoint--;
   }
   else
   {
-    fMapPS[Point_t(ps, n)] = Size();
+    fSPMap[Point_t(ps, n)] = Size();
     ps->GetPoint(n, x, y, z);
     SetNextPoint(x, y, z);
     SetPointId(ps->GetPointId(n));
   }
+
   ResetBBox();
   ElementChanged(kTRUE, kTRUE);
 }
@@ -219,42 +220,48 @@ void AliEveTrackFitter::FitTrack()
 }
 
 
-void AliEveTrackFitter::Reset(Int_t n, Int_t ids)
+/******************************************************************************/
+void AliEveTrackFitter::DestroyElements()
 {
-  // Reset selection.
+  // Virtual method of base class TEveElement.
+  // Preserves TEveTrackPropagator object for fitted helices.
 
-  if(fRieman) fRieman->Reset();
-  TEvePointSet::Reset(n, ids);
-  fMapPS.clear();
+  TEveElement::DestroyElements();
+
+  gEve->AddElement(fTrackList, this);
+  fTrackList->DestroyElements();
+  UpdateItems();
 }
 
 /******************************************************************************/
-void AliEveTrackFitter::DrawRiemanGraph()
+void AliEveTrackFitter::DrawDebugGraph()
 {
-  // Draw graph of rieman fit.
+  // Draw graph of picked points and helix points.
 
-   static const TEveException eH("AliEveTrackFitter::DrawRiemanGraph ");
+  static const TEveException eH("AliEveTrackFitter::DrawRiemanGraph ");
 
   if(fRieman == 0)
     throw(eH + "fitter not set.");
 
   Int_t nR = fRieman->GetN();
-  fGraphSelected->Set(nR);
-  fGraphFitted->Set(nR);
+  fGraphPicked->Set(nR);
+  fGraphHelix->Set(nR);
 
-  Double_t* x =  fRieman->GetX();
-  Double_t* y =  fRieman->GetY();
+  Double_t* x  =  fRieman->GetX();
+  Double_t* y  =  fRieman->GetY();
   Double_t* sy =  fRieman->GetSy();
   for (Int_t i=0; i<nR; i++)
   {
-    fGraphSelected->SetPoint(i, x[i], y[i]);
-    fGraphFitted->SetPoint(i, x[i], fRieman->GetYat(x[i]));
-    fGraphFitted->SetPointError(i, 0.1, sy[i]);
+    fGraphPicked->SetPoint(i, x[i], y[i]);
+    fGraphHelix->SetPoint (i, x[i], fRieman->GetYat(x[i]));
+    fGraphHelix->SetPointError(i, 0.1, sy[i]); // now faked
   }
 
-  if (gPad) gPad->Clear();
-  fGraphSelected->Draw("AP");
-  fGraphFitted->Draw("SAME P");
+  if (gPad)
+    gPad->Clear();
+
+  fGraphPicked->Draw("AP");
+  fGraphHelix->Draw("SAME P");
   gPad->GetCanvas()->SetTitle(Form("AliRieman alpha: %f", fAlpha));
   gPad->Modified();
   gPad->Update();

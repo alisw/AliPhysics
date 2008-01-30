@@ -20,7 +20,7 @@
 ClassImp(AliEveTrackFitterEditor)
 
 AliEveTrackFitterEditor::AliEveTrackFitterEditor(const TGWindow *p, Int_t width, Int_t height,
-	     UInt_t options, Pixel_t back) :
+    UInt_t options, Pixel_t back) :
   TGedFrame(p, width, height, options | kVerticalFrame, back),
   fM(0),
   fFit(0),
@@ -34,7 +34,7 @@ AliEveTrackFitterEditor::AliEveTrackFitterEditor(const TGWindow *p, Int_t width,
   MakeTitle("AliEveTrackFitter");
 
   fStart = new TGTextButton(this, "Start");
-  AddFrame(fStart, new TGLayoutHints(kLHintsLeft | kLHintsExpandX, 4, 1, 1, 1));
+  AddFrame(fStart, new TGLayoutHints(kLHintsLeft | kLHintsExpandX, 4, 1, 3, 1));
   fStart->Connect("Clicked()",
                   "AliEveTrackFitterEditor", this, "DoStart()");
 
@@ -49,12 +49,12 @@ AliEveTrackFitterEditor::AliEveTrackFitterEditor(const TGWindow *p, Int_t width,
                   "AliEveTrackFitterEditor", this, "DoReset()");
 
   fStop = new TGTextButton(this, "Stop");
-  AddFrame(fStop, new TGLayoutHints(kLHintsLeft | kLHintsExpandX, 4, 1, 1, 1));
+  AddFrame(fStop, new TGLayoutHints(kLHintsLeft | kLHintsExpandX, 4, 1, 1, 4));
   fStop->Connect("Clicked()",
                  "AliEveTrackFitterEditor", this, "DoStop()");
 
-  fGraph = new TGTextButton(this, " RiemanGraph ");
-  AddFrame(fGraph, new TGLayoutHints(kLHintsLeft, 4, 2, 4, 1));
+  fGraph = new TGTextButton(this, "DebugGraph");
+  AddFrame(fGraph, new TGLayoutHints(kLHintsLeft | kLHintsExpandX, 4, 2, 4, 1));
   fGraph->Connect("Clicked()",
                  "AliEveTrackFitterEditor", this, "DoGraph()");
  }
@@ -79,6 +79,8 @@ void AliEveTrackFitterEditor::SetModel(TObject* obj)
     fStart->SetState(kButtonUp);
   }
 }
+
+/**************************************************************************/
 
 void AliEveTrackFitterEditor::DoFit()
 {
@@ -114,12 +116,10 @@ void AliEveTrackFitterEditor::DoStop()
   fStart->SetState(kButtonUp);
 }
 
-/******************************************************************************/
-
 void AliEveTrackFitterEditor::DoGraph()
 {
   // Draw graph slot.
 
-  fM->DrawRiemanGraph();
+  fM->DrawDebugGraph();
   Update();
 }

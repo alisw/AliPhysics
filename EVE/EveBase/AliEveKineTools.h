@@ -7,9 +7,6 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-// Tools for import of kinematics.
-// Preliminary/minimal solution.
-
 #ifndef ALIEVE_KineTools_H
 #define ALIEVE_KineTools_H
 
@@ -19,27 +16,21 @@
 class TTree;
 class AliStack;
 
-class TEveTrackList;
-
-
 class AliEveKineTools
 {
 private:
   AliEveKineTools(const AliEveKineTools&);            // Not implemented
   AliEveKineTools& operator=(const AliEveKineTools&); // Not implemented
 
-protected:
-  // data from TreeK
 public:
-  AliEveKineTools();
+  AliEveKineTools(){}
   virtual ~AliEveKineTools(){}
 
-  // data from TreeTR
   void SetDaughterPathMarks(TEveElement* cont, AliStack* stack, Bool_t recurse=kFALSE);
   void SetTrackReferences  (TEveElement* cont, TTree* treeTR=0, Bool_t recurse=kFALSE);
   void SortPathMarks       (TEveElement* cont, Bool_t recurse=kFALSE);
 
-  ClassDef(AliEveKineTools, 1);
-}; // endclass AliEveKineTools
+  ClassDef(AliEveKineTools, 1); // Tools for import of kinematics.
+};
 
 #endif
