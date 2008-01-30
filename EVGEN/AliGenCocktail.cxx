@@ -38,6 +38,7 @@ ClassImp(AliGenCocktail)
 AliGenCocktail::AliGenCocktail()
     :AliGenerator(), 
      fNGenerators(0),
+     fTotalRate(0.),
      fRandom(kFALSE),
      fUsePerEventRate(kFALSE),
      fProb(0),
@@ -67,7 +68,7 @@ AddGenerator(AliGenerator *Generator, const char* Name, Float_t RateExp)
 // Add a generator to the list 
 // First check that list exists
     if (!fEntries) fEntries = new TList();
-
+    fTotalRate += RateExp;
 //
 //  Forward parameters to the new generator
     if(TestBit(kPtRange) && !(Generator->TestBit(kPtRange)) && !(Generator->TestBit(kMomentumRange))) 

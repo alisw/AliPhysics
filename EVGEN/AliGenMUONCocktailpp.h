@@ -15,6 +15,7 @@ class AliGenMUONCocktailpp : public AliGenCocktail
     AliGenMUONCocktailpp();
     virtual ~AliGenMUONCocktailpp();    
     virtual void Init();
+    virtual void CreateCocktail();
     virtual void Generate();    
     Int_t   GetNSucceded()         const {return fNSucceded;}    
     Int_t   GetNGenerated()        const {return fNGenerated;}
@@ -46,7 +47,6 @@ class AliGenMUONCocktailpp : public AliGenCocktail
     AliDecayer* fDecayer;
     Decay_t fDecayModeResonance; //decay mode in which resonances are forced to decay, default: kAll
     Decay_t fDecayModePythia; //decay mode in which particles in Pythia are forced to decay, default: kAll
-    Float_t fTotalRate;// Total rate of the full cocktail processes
     Int_t   fMuonMultiplicity; // Muon multiplicity for the primordial trigger
     Float_t fMuonPtCut;// Transverse momentum cut for muons
     Float_t fMuonPCut;// Momentum cut for muons    

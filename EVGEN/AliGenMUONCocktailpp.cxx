@@ -42,7 +42,6 @@
 #include "AliStack.h"
 #include "AliDecayer.h"
 #include "AliLog.h"
-#include "AliGenPythia.h"
 #include "AliGenCorrHF.h"
 
 ClassImp(AliGenMUONCocktailpp)  
@@ -53,7 +52,6 @@ AliGenMUONCocktailpp::AliGenMUONCocktailpp()
      fDecayer(0),
      fDecayModeResonance(kAll),
      fDecayModePythia(kAll),
-     fTotalRate(0),
      fMuonMultiplicity(0),
      fMuonPtCut(0.),
      fMuonPCut(0.),
@@ -74,7 +72,7 @@ AliGenMUONCocktailpp::~AliGenMUONCocktailpp()
 }
 
 //_________________________________________________________________________
-void AliGenMUONCocktailpp::Init()
+void AliGenMUONCocktailpp::CreateCocktail()
 {
 // MinBias NN cross section @ pp 14 TeV -PR  Vol II p:473
     Double_t sigmaReaction =   0.070; 
@@ -133,8 +131,6 @@ void AliGenMUONCocktailpp::Init()
     genjpsi->SetPhiRange(phiMin, phiMax);
     genjpsi->Init(); // generation in selected kinematic range
     AddGenerator(genjpsi, "Jpsi", ratiojpsi); // Adding Generator
-    fTotalRate+=ratiojpsi;
-    
 //------------------------------------------------------------------
 // Psi prime generator
     AliGenParam * genpsiP = new AliGenParam(1, AliGenMUONlib::kPsiP, "CDF pp", "PsiP");
@@ -155,8 +151,6 @@ void AliGenMUONCocktailpp::Init()
     genpsiP->SetPhiRange(phiMin, phiMax);
     genpsiP->Init(); // generation in selected kinematic range
     AddGenerator(genpsiP, "PsiP", ratiopsiP); // Adding Generator
-    fTotalRate+=ratiopsiP;
-    
 //------------------------------------------------------------------
 // Upsilon 1S generator
     AliGenParam * genupsilon = new AliGenParam(1, AliGenMUONlib::kUpsilon, "CDF pp", "Upsilon");
@@ -176,8 +170,6 @@ void AliGenMUONCocktailpp::Init()
     genupsilon->SetPhiRange(phiMin, phiMax);
     genupsilon->Init(); // generation in selected kinematical range
     AddGenerator(genupsilon,"Upsilon", ratioupsilon); // Adding Generator
-    fTotalRate+=ratioupsilon;
-    
 //------------------------------------------------------------------
 // Upsilon 2S generator
     AliGenParam * genupsilonP = new AliGenParam(1, AliGenMUONlib::kUpsilonP, "CDF pp", "UpsilonP");
@@ -197,7 +189,6 @@ void AliGenMUONCocktailpp::Init()
     genupsilonP->SetPhiRange(phiMin, phiMax);
     genupsilonP->Init(); // generation in selected kinematical range
     AddGenerator(genupsilonP,"UpsilonP", ratioupsilonP); // Adding Generator
-    fTotalRate+=ratioupsilonP;
     
 //------------------------------------------------------------------
 // Upsilon 3S generator
@@ -218,47 +209,54 @@ void AliGenMUONCocktailpp::Init()
     genupsilonPP->SetPhiRange(phiMin, phiMax);
     genupsilonPP->Init(); // generation in selected kinematical range
     AddGenerator(genupsilonPP,"UpsilonPP", ratioupsilonPP); // Adding Generator
-    fTotalRate+=ratioupsilonPP;
 
 //------------------------------------------------------------------
 // Generator of charm
     
     AliGenCorrHF *gencharm = new AliGenCorrHF(1, 4);  
-          gencharm->SetMomentumRange(0,9999);
-          gencharm->SetForceDecay(kAll);
-	  ratioccbar = sigmaccbar/sigmaReaction;
-          gencharm->Init();
-          AddGenerator(gencharm,"CorrHFCharm",ratioccbar);
-	  fTotalRate+=ratioccbar;
+    gencharm->SetMomentumRange(0,9999);
+    gencharm->SetForceDecay(kAll);
+    ratioccbar = sigmaccbar/sigmaReaction;
+    if (!gMC) gencharm->SetDecayer(fDecayer);  
+    gencharm->Init();
+    AddGenerator(gencharm,"CorrHFCharm",ratioccbar);
 
 //------------------------------------------------------------------
 // Generator of beauty
 
-	  AliGenCorrHF *genbeauty = new AliGenCorrHF(1, 5);  
-          genbeauty->SetMomentumRange(0,9999);
-          genbeauty->SetForceDecay(kAll);
-	  ratiobbbar = sigmabbbar/sigmaReaction;
-	  genbeauty->Init();
-          AddGenerator(genbeauty,"CorrHFBeauty",ratiobbbar); 
-	  fTotalRate+=ratiobbbar;
+    AliGenCorrHF *genbeauty = new AliGenCorrHF(1, 5);  
+    genbeauty->SetMomentumRange(0,9999);
+    genbeauty->SetForceDecay(kAll);
+    ratiobbbar = sigmabbbar/sigmaReaction;
+    if (!gMC) genbeauty->SetDecayer(fDecayer);  
+    genbeauty->Init();
+    AddGenerator(genbeauty,"CorrHFBeauty",ratiobbbar); 
 
-//--------------------------t----------------------------------------
+//-------------------------------------------------------------------
 // Pythia generator
-    AliGenPythia *pythia = new AliGenPythia(1);
-    pythia->SetProcess(kPyMbMSEL1);
-    pythia->SetStrucFunc(kCTEQ5L);
-    pythia->SetEnergyCMS(14000.);
-    AliInfo(Form("\n\npythia uses the decay mode %d",fDecayModePythia));
-    pythia->SetForceDecay(fDecayModePythia);
-    pythia->SetPtRange(0.,100.);
-    pythia->SetYRange(-8.,8.);
-    pythia->SetPhiRange(0.,360.);
-    pythia->SetPtHard(2.76,-1.0);
-    pythia->SwitchHFOff();
-    pythia->Init(); 
-    AddGenerator(pythia,"Pythia",1);
-    fTotalRate+=1.;
+//
+// This has to go into the Config.C
+//
+//    AliGenPythia *pythia = new AliGenPythia(1);
+//    pythia->SetProcess(kPyMbMSEL1);
+//    pythia->SetStrucFunc(kCTEQ5L);
+//    pythia->SetEnergyCMS(14000.);
+//    AliInfo(Form("\n\npythia uses the decay mode %d", GetDecayModePythia()));
+//    Decay_t dt = gener->GetDecayModePythia();
+//    pythia->SetForceDecay(dt);
+//    pythia->SetPtRange(0.,100.);
+//    pythia->SetYRange(-8.,8.);
+//    pythia->SetPhiRange(0.,360.);
+//    pythia->SetPtHard(2.76,-1.0);
+//    pythia->SwitchHFOff();
+//    pythia->Init(); 
+//    AddGenerator(pythia,"Pythia",1);
+}
 
+void AliGenMUONCocktailpp::Init()
+{
+    //
+    // Initialisation
     TIter next(fEntries);
     AliGenCocktailEntry *entry;
     if (fStack) {

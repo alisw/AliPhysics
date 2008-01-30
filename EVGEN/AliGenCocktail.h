@@ -46,6 +46,7 @@ class AliGenCocktail : public AliGenerator
 	    
  protected:
     Int_t fNGenerators;                 // Number of generators booked
+    Float_t fTotalRate;                 // Total rate of the generators booked
     Bool_t fRandom;                     // Flag to select random generator from list
     Bool_t fUsePerEventRate;            // Flag to generate the events according to the rate per event    
     TArrayF  fProb;                     // Probability of an event (if fRandom == kTRUE)
