@@ -3,31 +3,27 @@
 #include <Riostream.h>
 #include <TFile.h>
 #include <TTree.h>
-#include <TBranch.h>
 #include <TGeoManager.h>
 
 #include "AliRunLoader.h"
-#include "AliESD.h"
 #include "AliRun.h"
+#include "AliESDEvent.h"
 
-#include "AliITSgeom.h"
 #include "AliITSLoader.h"
 #include "AliITSMultReconstructor.h"
+#include "AliGeomManager.h"                                                                                 
 
 #endif
 
-void testITSMultReco(Char_t* dir = ".") {
+  void testITSMultReco(Char_t* dir = ".") {
 
-  Char_t str[256];
+  Char_t fileName[256];
 
-  // ########################################################
   // defining pointers
   AliRunLoader* runLoader;
-  TFile* esdFile = 0;
   TTree* esdTree = 0;
-  AliESD* esd = 0;
+  AliESDEvent* esd = new AliESDEvent();
 
-  // #########################################################
   // get runloader
 
   if (gAlice) {
@@ -36,58 +32,42 @@ void testITSMultReco(Char_t* dir = ".") {
     gAlice=0;
   }
 
-  sprintf(str,"%s/galice.root",dir);
-  runLoader = AliRunLoader::Open(str);
-  if (runLoader == 0x0) {
+  sprintf(fileName,"%s/galice.root",dir);
+  runLoader = AliRunLoader::Open(fileName);
+/*  if (runLoader == 0x0) {
     cout << "Can not open session"<<endl;
     return;
-  }
+  }*/
+  
   // get geometry (here geometry.root is used, change it if needed)
   if (!gGeoManager) {
-    sprintf(str,"%s/geometry.root",dir);
-    TGeoManager::Import(str);
-    if(!gGeoManager) {
-      cout << "Can not access the geometry file"<<endl;
-      return;
-    }
+    sprintf(fileName,"%s/geometry.root",dir);
+    AliGeomManager::LoadGeometry(fileName);
   }
 
+  // open the ESD file and get the tree
 
-  // #########################################################
-  // open esd file and get the tree
+  sprintf(fileName,"%s/AliESDs.root",dir);
+  TFile esdFile(fileName, "READ");
+  esdTree = (TTree*)esdFile.Get("esdTree");
+  esd->ReadFromTree(esdTree);
 
-  // close it first to avoid memory leak
-  if (esdFile)
-    if (esdFile->IsOpen())
-      esdFile->Close();
-
-  sprintf(str,"%s/AliESDs.root",dir);
-  esdFile = TFile::Open(str);
-  esdTree = (TTree*)esdFile->Get("esdTree");
-  TBranch * esdBranch = esdTree->GetBranch("ESD");
-  esdBranch->SetAddress(&esd);
-
-
-  // #########################################################
-  // setup its stuff
+  // setup ITS stuff
 
   AliITSLoader* itsLoader = (AliITSLoader*)runLoader->GetLoader("ITSLoader");
   if (!itsLoader) {
     cout << " Can't get the ITS loader!" << endl;
     return ;
   }
-  AliITSgeom* itsGeo=itsLoader->GetITSgeom();
   itsLoader->LoadRecPoints("read");
 
-  // #########################################################
   AliITSMultReconstructor* multReco = new AliITSMultReconstructor();
-  multReco->SetGeometry(itsGeo);
+//  multReco->SetGeometry(itsGeo);
 
-  // #########################################################
   // getting number of events
 
   Int_t nEvents = (Int_t)runLoader->GetNumberOfEvents();
-  Int_t nESDEvents = esdBranch->GetEntries();
+  Int_t nESDEvents = esdTree->GetEntries();
 
   if (nEvents!=nESDEvents) {
     cout << " Different number of events from runloader and esdtree!!!" 
@@ -95,18 +75,17 @@ void testITSMultReco(Char_t* dir = ".") {
     return;
   }
 
-  // ########################################################
   // loop over number of events
   cout << nEvents << " event(s) found in the file set" << endl;
-  for(Int_t i=0; i<nEvents; i++) {
+  for (Int_t iEv=0; iEv<nEvents; ++iEv) {
     
-    cout << "-------------------------" << endl << " event# " << i << endl;
+    cout << "-------------------------" << endl << " event# " << iEv << endl;
     
-    runLoader->GetEvent(i);
-    esdBranch->GetEntry(i);
+    runLoader->GetEvent(iEv);
+    esdTree->GetEvent(iEv);
 
-    // ########################################################
-    // get the EDS vertex
+    // get the ESD vertex
+
     const AliESDVertex* vtxESD = esd->GetVertex();
     Double_t vtx[3];
     vtxESD->GetXYZ(vtx);   
@@ -114,31 +93,35 @@ void testITSMultReco(Char_t* dir = ".") {
     esdVtx[0] = vtx[0];
     esdVtx[1] = vtx[1];
     esdVtx[2] = vtx[2];
-    
-    ///#########################################################
+//    cout<<"vertex Z->"<<esdVtx[2]<<endl;    
+
     // get ITS clusters 
+
     TTree* itsClusterTree = itsLoader->TreeR();
     if (!itsClusterTree) {
       cerr<< " Can't get the ITS cluster tree !\n";
       return;
     }
+
     multReco->SetHistOn(kTRUE);
     multReco->Reconstruct(itsClusterTree, esdVtx, esdVtx);
 
-    cout <<" >>>> Number of tracklets: "<<multReco->GetNTracklets()<<endl;     
-    for (Int_t t=0; t<multReco->GetNTracklets(); t++) {
+    cout <<"Number of tracklets: "<<multReco->GetNTracklets()<<endl;     
+    for (Int_t itr=0; itr<multReco->GetNTracklets(); itr++) {
       
-      cout << "  tracklet " << t 
-	   << " , theta = " << multReco->GetTracklet(t)[0]
-	   << " , phi = " << multReco->GetTracklet(t)[1] 
-           << " , DeltaPhi = " << multReco->GetTracklet(t)[2]<< endl; 
+      cout << "  tracklet "    << itr 
+	   << " , theta = "    << multReco->GetTracklet(itr)[0]
+	   << " , phi = "      << multReco->GetTracklet(itr)[1] 
+           << " , DeltaPhi = " << multReco->GetTracklet(itr)[2]<< endl; 
+
     }
-    cout <<" >>>> Number of single layer 1 clusters: "<<multReco->GetNSingleClusters()<<endl;     
-    for (Int_t t=0; t<multReco->GetNSingleClusters(); t++) {
+    cout<<""<<endl;
+    cout <<"Number of single clusters (inner layer): "<<multReco->GetNSingleClusters()<<endl;     
+    for (Int_t iscl=0; iscl<multReco->GetNSingleClusters(); iscl++) {
       
-      cout << "  cluster " << t 
-	   << " , theta = " << multReco->GetCluster(t)[0]
-	   << " , phi = " << multReco->GetCluster(t)[1] << endl; 
+      cout << "  cluster "  << iscl
+	   << " , theta = " << multReco->GetCluster(iscl)[0]
+	   << " , phi = "   << multReco->GetCluster(iscl)[1] << endl; 
     }
 
   }
