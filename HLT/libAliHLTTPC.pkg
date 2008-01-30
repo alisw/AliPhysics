@@ -66,8 +66,8 @@ CLASS_HDRS:=  	AliHLTTPCTransform.h \
 		comp/AliHLTTPCCompModelInflater.h \
 		comp/AliHLTTPCCompModelInflaterComponent.h \
 		AliHLTTPCCalibPedestalComponent.h \
-		AliHLTTPCCalibPulserComponent.h
-
+		AliHLTTPCCalibPulserComponent.h \
+		AliHLTTPCCalibCEComponent.h	
 
 # 		AliHLTTPCDDLDataFileHandler.h
 # 		tracking/AliHLTTPCHough.h \

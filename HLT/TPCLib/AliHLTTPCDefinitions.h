@@ -61,29 +61,29 @@ public:
 		}
 
   /** DDL packed RAW data */
-  static const AliHLTComponentDataType fgkDDLPackedRawDataType;    // see above
+  static const AliHLTComponentDataType fgkDDLPackedRawDataType;         // see above
   /** DDL entropy encoded data */
   static const AliHLTComponentDataType fgkDDLEncodedEntropyRawDataType; // see above
   /** packed RAW data */
-  static const AliHLTComponentDataType fgkPackedRawDataType;       // see above
+  static const AliHLTComponentDataType fgkPackedRawDataType;            // see above
   /** unpacked RAW data */
-  static const AliHLTComponentDataType fgkUnpackedRawDataType;     // see above
+  static const AliHLTComponentDataType fgkUnpackedRawDataType;          // see above
   /** cluster data */
-  static const AliHLTComponentDataType fgkClustersDataType;        // see above
+  static const AliHLTComponentDataType fgkClustersDataType;             // see above
   /** track segments in local coordinates */
-  static const AliHLTComponentDataType fgkTrackSegmentsDataType;   // see above
+  static const AliHLTComponentDataType fgkTrackSegmentsDataType;        // see above
   /** tracks in global koordinates */
-  static const AliHLTComponentDataType fgkTracksDataType;          // see above
+  static const AliHLTComponentDataType fgkTracksDataType;               // see above
   /** vertex data structure */
-  static const AliHLTComponentDataType fgkVertexDataType;          // see above
+  static const AliHLTComponentDataType fgkVertexDataType;               // see above
 
   // Cluster & Tracks model data
   /** cluster tracks model data type */
-  static const AliHLTComponentDataType fgkClusterTracksModelDataType; // see above
+  static const AliHLTComponentDataType fgkClusterTracksModelDataType;          // see above
   /** remaining clusters model data type */
-  static const AliHLTComponentDataType fgkRemainingClustersModelDataType; // see above
+  static const AliHLTComponentDataType fgkRemainingClustersModelDataType;      // see above
   /** cluster tracks compressed data type */
-  static const AliHLTComponentDataType fgkClusterTracksCompressedDataType; // see above
+  static const AliHLTComponentDataType fgkClusterTracksCompressedDataType;     // see above
   /** remaining clusters compressed data type */
   static const AliHLTComponentDataType fgkRemainingClustersCompressedDataType; // see above
 
@@ -92,9 +92,12 @@ public:
   static const AliHLTComponentDataType fgkCalibPedestalDataType;   // see above
   /** signal calibration data */
   static const AliHLTComponentDataType fgkCalibPulserDataType;     // see above
-  /** active pads data type, Used for cosmics test december 2007 */
-  static const AliHLTComponentDataType fgkActivePadsDataType;     // see above
+  /** central electrode calibration data */
+  static const AliHLTComponentDataType fgkCalibCEDataType;         // see above
 
+  /** active pads data type, Used for cosmics test december 2007 */
+  static const AliHLTComponentDataType fgkActivePadsDataType;      // see above
+ 
 
   ClassDef(AliHLTTPCDefinitions, 1);
 

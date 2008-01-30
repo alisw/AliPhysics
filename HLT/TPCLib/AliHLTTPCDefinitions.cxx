@@ -60,6 +60,8 @@ const AliHLTComponentDataType AliHLTTPCDefinitions::fgkCalibPedestalDataType =
   (AliHLTComponentDataType){sizeof(AliHLTComponentDataType),                          {'C','A','L','_','P','E','D',' '},  kAliHLTDataOriginAny} | kAliHLTDataOriginTPC;
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkCalibPulserDataType =	      								  	      
   (AliHLTComponentDataType){sizeof(AliHLTComponentDataType),                          {'C','A','L','_','P','U','L','S'},  kAliHLTDataOriginAny} | kAliHLTDataOriginTPC;
+const AliHLTComponentDataType AliHLTTPCDefinitions::fgkCalibCEDataType =	      								  	      
+  (AliHLTComponentDataType){sizeof(AliHLTComponentDataType),                          {'C','A','L','_','C','E',' ',' '},  kAliHLTDataOriginAny} | kAliHLTDataOriginTPC;
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkActivePadsDataType =	      								  	      
   (AliHLTComponentDataType){sizeof(AliHLTComponentDataType),                          {'A','C','T','I','V','P','A','D'},  kAliHLTDataOriginAny} | kAliHLTDataOriginTPC;
 
