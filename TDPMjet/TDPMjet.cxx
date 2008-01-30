@@ -39,8 +39,9 @@
 #include "TDPMjet.h"
 //*KEEP,DPMCOMMON.
 #include "DPMcommon.h"
-//*KEEP,TParticle,T=C++.
+//*KEEP,TParticle,T=C++
 #include "TParticle.h"
+#include "TClonesArray.h"
 //*KEND.
 
 //*KEEP,TROOT.

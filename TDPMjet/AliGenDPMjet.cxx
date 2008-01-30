@@ -28,6 +28,7 @@
 #include <TParticleClassPDG.h>
 #include <TPDGCode.h>
 #include <TLorentzVector.h>
+#include <TClonesArray.h>
 #include "AliRunLoader.h"
 #include "AliGenDPMjet.h"
 #include "AliGenDPMjetEventHeader.h"

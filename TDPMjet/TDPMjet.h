@@ -18,6 +18,7 @@
 #endif
 
 typedef enum {kDpmMb, kDpmMbNonDiffr, kDpmDiffr, kDpmSingleDiffr, kDpmDoubleDiffr} DpmProcess_t;
+class TClonesArray;
 
 
 class TDPMjet : public TGenerator {

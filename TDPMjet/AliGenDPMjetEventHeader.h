@@ -19,15 +19,19 @@ class AliGenDPMjetEventHeader : public AliGenEventHeader, public AliCollisionGeo
 
   // Getters
   Float_t TotalEnergy()  {return fTotalEnergy;} 
-  Int_t   Trials() {return fTrials;}
-
+  Int_t   Trials()       {return fTrials;}
+  Int_t   ProcessType()  {return fProcessType;}
+  
+	  
   // Setters
-  void SetTotalEnergy(Float_t energy)  {fTotalEnergy=energy;}
-  void SetTrials(Int_t trials) {fTrials = trials;}
+  void SetTotalEnergy(Float_t energy)  {fTotalEnergy = energy;}
+  void SetTrials(Int_t trials)         {fTrials      = trials;}
+  void SetProcessType(Int_t type)      {fProcessType = type;}
 	  
 protected:
   Float_t fTotalEnergy;              // Total energy of produced particles
   Int_t   fTrials;                   // Number of trials to fulfill trigger condition
+  Int_t   fProcessType;              // Process Type 
   
   ClassDef(AliGenDPMjetEventHeader,1) // Event header for dpmjet event
 };
