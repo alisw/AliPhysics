@@ -31,7 +31,7 @@ kine_tracks(Double_t min_pt  = 0.1,   Double_t min_p   = 0.2,
   cont->SetMainColor(Color_t(3));
   TEveTrackPropagator* rnrStyle = cont->GetPropagator();
   // !!! Watch the '-', apparently different sign convention then for ESD.
-  rnrStyle->SetMagField( - gAlice->Field()->SolenoidField() );
+  rnrStyle->SetMagField( -0.1*gAlice->Field()->SolenoidField() );
 
   gEve->AddElement(cont);
   Int_t count = 0;
@@ -213,7 +213,7 @@ kine_track(Int_t  label,
 
       TEveTrackPropagator* rnrStyle = tlist->GetPropagator();
       // !!! Watch the '-', apparently different sign convention then for ESD.
-      rnrStyle->SetMagField( - gAlice->Field()->SolenoidField() );
+      rnrStyle->SetMagField( -0.1*gAlice->Field()->SolenoidField() );
       char tooltip[1000];
       sprintf(tooltip,"Ndaughters=%d", p->GetNDaughters());
       tlist->SetTitle(tooltip);

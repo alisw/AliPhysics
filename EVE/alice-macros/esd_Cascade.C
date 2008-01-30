@@ -62,7 +62,7 @@ CascadeList* esd_AliEveCascade(Double_t min_pt=0.1, Double_t max_pt=100)
   CascadeList* cont = new CascadeList("ESD cascade");
   cont->SetMainColor(Color_t(3)); // green
   TEveTrackPropagator* rnrStyle = cont->GetPropagator();
-  rnrStyle->SetMagField( esd->GetMagneticField() );
+  rnrStyle->SetMagField( 0.1*esd->GetMagneticField() );
 
   gEve->AddElement(cont);
 

@@ -57,7 +57,7 @@ TEveTrackList* esd_tracks(Double_t min_pt=0.1, Double_t max_pt=100)
   TEveTrackList* cont = new TEveTrackList("ESD Tracks");
   cont->SetMainColor(Color_t(6));
   TEveTrackPropagator* rnrStyle = cont->GetPropagator();
-  rnrStyle->SetMagField( esd->GetMagneticField() );
+  rnrStyle->SetMagField( 0.1*esd->GetMagneticField() );
 
   gEve->AddElement(cont);
 
@@ -117,7 +117,7 @@ TEveTrackList* esd_tracks_from_array(TCollection* col, AliESDEvent* esd=0)
   TEveTrackList* cont = new TEveTrackList("ESD Tracks");
   cont->SetMainColor(Color_t(6));
   TEveTrackPropagator* rnrStyle = cont->GetPropagator();
-  rnrStyle->SetMagField( esd->GetMagneticField() );
+  rnrStyle->SetMagField( 0.1*esd->GetMagneticField() );
 
   gEve->AddElement(cont);
 
@@ -228,31 +228,31 @@ TEveElementList* esd_tracks_vertex_cut()
 
   tl[0] = new TEveTrackList("Sigma < 3");
   tc[0] = 0;
-  tl[0]->GetPropagator()->SetMagField( esd->GetMagneticField() );
+  tl[0]->GetPropagator()->SetMagField( 0.1*esd->GetMagneticField() );
   tl[0]->SetMainColor(Color_t(3));
   gEve->AddElement(tl[0], cont);
 
   tl[1] = new TEveTrackList("3 < Sigma < 5");
   tc[1] = 0;
-  tl[1]->GetPropagator()->SetMagField( esd->GetMagneticField() );
+  tl[1]->GetPropagator()->SetMagField( 0.1*esd->GetMagneticField() );
   tl[1]->SetMainColor(Color_t(7));
   gEve->AddElement(tl[1], cont);
 
   tl[2] = new TEveTrackList("5 < Sigma");
   tc[2] = 0;
-  tl[2]->GetPropagator()->SetMagField( esd->GetMagneticField() );
+  tl[2]->GetPropagator()->SetMagField( 0.1*esd->GetMagneticField() );
   tl[2]->SetMainColor(Color_t(46));
   gEve->AddElement(tl[2], cont);
 
   tl[3] = new TEveTrackList("no ITS refit; Sigma < 5");
   tc[3] = 0;
-  tl[3]->GetPropagator()->SetMagField( esd->GetMagneticField() );
+  tl[3]->GetPropagator()->SetMagField( 0.1*esd->GetMagneticField() );
   tl[3]->SetMainColor(Color_t(41));
   gEve->AddElement(tl[3], cont);
 
   tl[4] = new TEveTrackList("no ITS refit; Sigma > 5");
   tc[4] = 0;
-  tl[4]->GetPropagator()->SetMagField( esd->GetMagneticField() );
+  tl[4]->GetPropagator()->SetMagField( 0.1*esd->GetMagneticField() );
   tl[4]->SetMainColor(Color_t(48));
   gEve->AddElement(tl[4], cont);
 

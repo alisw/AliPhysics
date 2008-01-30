@@ -79,7 +79,7 @@ V0List* esd_AliEveV0(Double_t min_pt=0.1, Double_t max_pt=100)
   V0List* cont = new V0List("ESD v0");
   cont->SetMainColor(Color_t(3)); // green
   TEveTrackPropagator* rnrStyle = cont->GetPropagator();
-  rnrStyle->SetMagField( esd->GetMagneticField() );
+  rnrStyle->SetMagField( 0.1*esd->GetMagneticField() );
 
   gEve->AddElement(cont);
 
