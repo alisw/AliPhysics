@@ -13,40 +13,50 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-// Class creating the T0 aligmnent objects from the surveys.
+/*
+$Log: AliT0Align.cxx,v $
+ Revision   2008/01/30
+Removing code violations 
 
-//
-//  Creates the T0 align object
-//
+ Version 1.1  2006/10
+Preliminary test version (T.Malkiewicz)
+*/
 
 #include "AliT0Align.h"
-//
 #include "TROOT.h"
 #include "Riostream.h"
 #include "TFile.h"
 #include "TMath.h"
 #include "TSystem.h"
 #include "AliSurveyObj.h"
-#include "AliSurveyPoint.h"
 #include "AliAlignObjParams.h"
 #include "AliCDBStorage.h"
 #include <TClonesArray.h>
 #include <TFile.h>
 #include "AliLog.h"
 #include "AliCDBManager.h"
+#include "AliSurveyPoint.h" 
+
+// Class creating the T0 aligmnent objects 
+// from the surveys done by surveyers at Point2.
+// Survey results are fetched from 
+// Survey Depot, based on survey results 
+// position of T0 alignment objects is computed.
+
 
 ClassImp(AliT0Align)
 
 AliT0Align::AliT0Align() :
   TObject(),
+  fFileGlob(0x0),
   fT0AAlignObj(0x0),
   fT0CAlignObj(0x0),
-  fFileGlob(0x0),
+  fDebug(0),
   fXPos(0.),
   fYPos(0.),
-  fDebug(0),
   fRepLoc(0)
-{
+
+ {
   //
   //  default constructor
   //
@@ -54,12 +64,12 @@ AliT0Align::AliT0Align() :
 //________________________________________________________________________
 AliT0Align::AliT0Align(Int_t reportloc, Int_t reportglob) :
   TObject(),
+  fFileGlob(0x0),
   fT0AAlignObj(0x0),
   fT0CAlignObj(0x0),
-  fFileGlob(0x0),
+  fDebug(0),
   fXPos(0.),
   fYPos(0.),
-  fDebug(0),
   fRepLoc(0)
 {
   //
@@ -78,12 +88,12 @@ AliT0Align::AliT0Align(Int_t reportloc, Int_t reportglob) :
 //_________________________________________________________________________
 AliT0Align::AliT0Align(const AliT0Align &align) :
   TObject(),
+  fFileGlob(0x0),
   fT0AAlignObj(0x0),
   fT0CAlignObj(0x0),
-  fFileGlob(0x0),
+  fDebug(0),
   fXPos(0.),
   fYPos(0.),
-  fDebug(0),
   fRepLoc(0)
 {
   //
@@ -178,7 +188,7 @@ Double_t AliT0Align::ComputePosition()
 {
  //  Float_t fZPos, shift;
  //  fZPos = surveyedPoints[3] - shift;
-  return 99999;
+	
 }
 //_______________________________________________________________________
 void AliT0Align::CreateAlignObj(){
@@ -217,6 +227,9 @@ void AliT0Align::Run(){
 
 void AliT0Align::StoreAlignObj()
 {
+ //
+ // Storing T0 alignment objects 
+ //
  AliCDBManager* cdb = AliCDBManager::Instance();
  if(!cdb->IsDefaultStorageSet()) cdb->SetDefaultStorage("local://$ALICE_ROOT");
  //

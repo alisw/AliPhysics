@@ -1,3 +1,26 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *  * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/*
+$Log: AliT0DataDCS.cxx,v $
+ Revision   2008/01/30 
+Fetching data points from DCS, calculating mean and storing data to Reference DB 
+ 
+ Version 1.1  2006/10
+Preliminary test version (T.Malkiewicz)
+*/
+
 #include "AliT0DataDCS.h"
 
 #include "AliCDBMetaData.h"
@@ -13,12 +36,18 @@
 #include <TStyle.h>
 #include <TCanvas.h>
 
+// AliT0DataDCS class
+// declaring DCS aliases for T0
+// fetching T0 data points from DCS, 
+// calculating mean values for the entire run
+// and storing the result to Reference DB
+
 ClassImp(AliT0DataDCS)
 
 //---------------------------------------------------------------
 AliT0DataDCS::AliT0DataDCS():
 	TObject(),
-	fRun(0),
+	fRun(0),	
 	fStartTime(0),
 	fEndTime(0),
 	fIsProcessed(kFALSE)
@@ -49,55 +78,49 @@ AliT0DataDCS::~AliT0DataDCS() {
 //---------------------------------------------------------------
 Bool_t AliT0DataDCS::ProcessData(TMap& aliasMap)
 {
- 	        Float_t t0_scaler[32]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+ 	        Float_t t0_scaler[32];
+		Int_t aliasEntr[32];
 		TObjArray *aliasArr;
-		AliDCSValue* aValue;
         	for(int j=0; j<kNAliases; j++)
         	{
-                  aliasArr = (TObjArray*) aliasMap.GetValue(fAliasNames[j].Data());
+		  for (Int_t k=0;k<32;k++) 
+		  {
+		    t0_scaler[k]=0;
+		    aliasEntr[k]=0;	
+      		  }
+		  aliasArr = (TObjArray*) aliasMap.GetValue(fAliasNames[j].Data());
                   if(!aliasArr)
                   {
                         AliError(Form("Alias %s not found!", fAliasNames[j].Data()));
                         continue;
                   }
-                  // Introduce(j, aliasArr);
-
                   if(aliasArr->GetEntries()<2)
                   {
                         AliError(Form("Alias %s has just %d entries!",
                                         fAliasNames[j].Data(),aliasArr->GetEntries()));
                         continue;
                   }
-
-		  for(int j=0; j<32; j++)
+		  aliasEntr[j] = aliasArr->GetEntries();
+		  for(int l=0; l<aliasEntr[j]; l++)
 		  {
-		    TString aliasName =Form("t00_ac_scaler_%d",j);
-                    // printf("aliasname: %s\n",aliasName.Data());
-                    //aliasArr = dynamic_cast<TObjArray*> (aliasMap->GetValue(aliasName.Data()));
-                    if(!aliasArr)
-		    {
-                      AliError(Form("Alias %s not found!", aliasName.Data()));
-                      continue;
-                    }
-                  AliDCSValue *aValue=dynamic_cast<AliDCSValue*> (aliasArr->At(j));
-                  // printf("I'm here! %f %x\n", aValue->GetFloat(), aValue->GetTimeStamp());
-		  t0_scaler[j]= aValue->GetFloat();
+                  AliDCSValue *aValue=dynamic_cast<AliDCSValue*> (aliasArr->At(l));
+		  t0_scaler[j]+= aValue->GetFloat();
 	          }
+		fScalerMean[j] = t0_scaler[j] / aliasEntr[j] ;
 	        }
-	CalcScalerMean(t0_scaler);
 	fIsProcessed=kTRUE;
+	return kTRUE;
 }
 
 //---------------------------------------------------------------
 void AliT0DataDCS::Init()
 {
-
-	TH1::AddDirectory(kFALSE);
-
+	TString sindex;
 	for(int i=0;i<kNAliases;i++)
 	{
-		fAliasNames[i] = "DCSAlias";
-		fAliasNames[i] += i;
+		fAliasNames[i] = "t00_ac_scaler_";
+		 sindex.Form("%02d",i);
+	        fAliasNames[i] += sindex;
 	}
 
 }
@@ -111,14 +134,5 @@ void AliT0DataDCS::Introduce(UInt_t numAlias, const TObjArray* aliasArr){
 
 }
 
-//---------------------------------------------------------------
-
-void AliT0DataDCS::CalcScalerMean(Float_t *t0_scal)
-{
-  for (Int_t i=0; i<23; i++)
-    {
-        SetScalerMean(i,t0_scal[i]);
-    }
-}
 
 

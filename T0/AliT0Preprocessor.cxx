@@ -30,12 +30,6 @@ Preprocessor storing data to OCDB (T.Malkiewicz)
 Version 1.1  2006/10   
 Preliminary test version (T.Malkiewicz)
 */   
-// T0 preprocessor:
-// 1) takes data from DCS and passes it to the class AliTOFDataDCS 
-// for processing and writes the result to the Reference DB.
-// 2) takes data form DAQ (both from Laser Calibration and Physics runs), 
-// processes it, and stores either to OCDB or to Reference DB.
-
 
 #include "AliT0Preprocessor.h"
 #include "AliT0DataDCS.h"
@@ -52,13 +46,17 @@ Preliminary test version (T.Malkiewicz)
 #include <TNamed.h>
 #include "AliT0Dqclass.h"
 
+// T0 preprocessor:
+// 1) takes data from DCS and passes it to the class AliTOFDataDCS 
+// for processing and writes the result to the Reference DB.
+// 2) takes data form DAQ (both from Laser Calibration and Physics runs), 
+// processes it, and stores either to OCDB or to Reference DB.
+
 
 ClassImp(AliT0Preprocessor)
 
 //____________________________________________________
-AliT0Preprocessor::AliT0Preprocessor(AliShuttleInterface* shuttle) : 
-  AliPreprocessor("T00", shuttle), 
-  fData(0)
+AliT0Preprocessor::AliT0Preprocessor(AliShuttleInterface* shuttle) : AliPreprocessor("T00", shuttle), fData(0)
 {
   //constructor
 }
@@ -105,7 +103,7 @@ UInt_t AliT0Preprocessor::Process(TMap* dcsAliasMap )
         }
         else
         {
-	  /*
+	  
           resultDCSMap=fData->ProcessData(*dcsAliasMap);
           if(!resultDCSMap)
           {
@@ -114,22 +112,19 @@ UInt_t AliT0Preprocessor::Process(TMap* dcsAliasMap )
           }
           else
           {
-	    Float_t *meanScaler[24] = fData->GetScalerMean();
-	     	
             AliCDBMetaData metaDataDCS;
             metaDataDCS.SetBeamPeriod(0);
             metaDataDCS.SetResponsible("Tomasz Malkiewicz");
             metaDataDCS.SetComment("This preprocessor fills an AliTODataDCS object.");
             AliInfo("Storing DCS Data");
-            resultDCSStore = Store("Calib","DCSData",meanScaler, &metaDataDCS);
+            resultDCSStore = StoreReferenceData("Calib","DCSData", fData, &metaDataDCS);
             if (!resultDCSStore)
             {
               Log("Some problems occurred while storing DCS data results in ReferenceDB");
-              return 2;// return error Code for processed DCS data not stored
+              //return 2;// return error Code for processed DCS data not stored
             }
 
           }
-	  */
         }
 
         // processing DAQ
