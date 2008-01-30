@@ -526,6 +526,7 @@ Int_t AliTRDtrackerV1::FollowProlongation(AliTRDtrackV1 &t)
   
 	//AliInfo("");
 	Int_t    nClustersExpected = 0;
+	Float_t clength = AliTRDgeometry::AmThick() + AliTRDgeometry::DrThick();
 	Int_t lastplane = 5; //GetLastPlane(&t);
 	for (Int_t iplane = lastplane; iplane >= 0; iplane--) {
 		//AliInfo(Form("plane %d", iplane));
@@ -571,7 +572,7 @@ Int_t AliTRDtrackerV1::FollowProlongation(AliTRDtrackV1 &t)
 		//AliInfo(Form("reco %p", tracklet->GetRecoParam()));
 		t.SetTracklet(tracklet, iplane, index);
 		
-		t.PropagateTo(tracklet->GetX0(), xx0, xrho); // not correct
+		t.PropagateTo(tracklet->GetX0() - clength, xx0, xrho);
 	  if (!AdjustSector(&t)) break;
 	  
     Double_t maxChi2 = t.GetPredictedChi2(tracklet);
@@ -629,7 +630,6 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
 //
 
 	Int_t nClustersExpected = 0;
-
   // Loop through the TRD planes
   for (Int_t iplane = 0; iplane < AliTRDgeometry::Nplan(); iplane++) {
 		//AliInfo(Form("Processing plane %d ...", iplane));
@@ -808,26 +808,21 @@ void AliTRDtrackerV1::UnloadClusters()
   Int_t nentr;
 
   nentr = fClusters->GetEntriesFast();
-	//AliInfo(Form("clearing %d clusters", nentr));
   for (i = 0; i < nentr; i++) {
     delete fClusters->RemoveAt(i);
   }
   fNclusters = 0;
-
-  nentr = fTracklets->GetEntriesFast();
-	//AliInfo(Form("clearing %d tracklets", nentr));
-  for (i = 0; i < nentr; i++) {
-    delete fTracklets->RemoveAt(i);
-  }
+  
+	if(fTracklets){
+  	for (i = 0; i < fTracklets->GetEntriesFast(); i++) delete fTracklets->RemoveAt(i);
+	}
 
   nentr = fSeeds->GetEntriesFast();
-	//AliInfo(Form("clearing %d seeds", nentr));
   for (i = 0; i < nentr; i++) {
     delete fSeeds->RemoveAt(i);
   }
 
   nentr = fTracks->GetEntriesFast();
-  //AliInfo(Form("clearing %d tracks", nentr));
 	for (i = 0; i < nentr; i++) {
     delete fTracks->RemoveAt(i);
   }
