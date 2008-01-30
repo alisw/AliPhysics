@@ -330,9 +330,16 @@ class AliHLTComponent : public AliHLTLogging {
    * override the path initialized at the beginning of the AliRoot reconstruction.
    *
    * The method is used from the external interface in order to set the correct
-   * path when running on-line.
+   * path when running on-line. The function also initializes the function
+   * callback for setting the run no during operation.
+   *
+   * A separation of library and component handling is maybe appropriate in the
+   * future. Using the global component handler here is maybe not the cleanest
+   * solution.
+   * @param cdbPath      path of the CDB
+   * @param pHandler     the component handler used for llibrary handling.
    */
-  int InitCDB(const char* cdbPath);
+  int InitCDB(const char* cdbPath, AliHLTComponentHandler* pHandler);
 
   /**
    * Set the run no for the CDB.
@@ -1190,12 +1197,12 @@ class AliHLTComponent : public AliHLTLogging {
   /** the current DDL list */
   AliHLTEventDDL* fpDDLList;                                       //! transient
 
-  /** indicates that the CDB has been initialized locally */
-  bool fCDBInitialized;                                            //! transient
+  /** external fct to set CDB run no, indicates external CDB initialization */
+  void* fCDBSetRunNoFunc;                                          //! transient
 
   /** id of the component in the analysis chain */
   string fChainId;                                                 //! transient
 
-  ClassDef(AliHLTComponent, 4)
+  ClassDef(AliHLTComponent, 5)
 };
 #endif

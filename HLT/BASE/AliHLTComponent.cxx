@@ -78,7 +78,7 @@ AliHLTComponent::AliHLTComponent()
   fMemFiles(),
   fpRunDesc(NULL),
   fpDDLList(NULL),
-  fCDBInitialized(false),
+  fCDBSetRunNoFunc(false),
   fChainId()
 {
   // see header file for class documentation
@@ -203,40 +203,40 @@ int AliHLTComponent::Deinit()
   return iResult;
 }
 
-int AliHLTComponent::InitCDB(const char* cdbPath)
+int AliHLTComponent::InitCDB(const char* cdbPath, AliHLTComponentHandler* pHandler)
 {
+  // see header file for function documentation
   int iResult=0;
-  // we presume the library already to be loaded
+  if (cdbPath, pHandler) {
+  // I have to think about separating the library handling from the
+  // component handler. Requiring the component hanlder here is not
+  // the cleanest solution.
+  // We presume the library already to be loaded
   // find the symbol
-  AliHLTComponentHandler cHandler;
-  AliHLTMiscInitCDB_t pFunc=(AliHLTMiscInitCDB_t)cHandler.FindSymbol(ALIHLTMISC_LIBRARY, ALIHLTMISC_INIT_CDB); 
+  AliHLTMiscInitCDB_t pFunc=(AliHLTMiscInitCDB_t)pHandler->FindSymbol(ALIHLTMISC_LIBRARY, ALIHLTMISC_INIT_CDB);
   if (pFunc) {
-    iResult=(*pFunc)(cdbPath);
-    fCDBInitialized=iResult>=0;
+    if ((iResult=(*pFunc)(cdbPath))>=0) {
+      if (!(fCDBSetRunNoFunc=pHandler->FindSymbol(ALIHLTMISC_LIBRARY, ALIHLTMISC_SET_CDB_RUNNO))) {
+	Message(NULL, kHLTLogWarning, "AliHLTComponent::InitCDB", "init CDB",
+		"can not find function to set CDB run no");
+      }
+    }
   } else {
     Message(NULL, kHLTLogError, "AliHLTComponent::InitCDB", "init CDB",
 	    "can not find initialization function");
     iResult=-ENOSYS;
+  }
+  } else {
+    iResult=-EINVAL;
   }
   return iResult;
 }
 
 int AliHLTComponent::SetCDBRunNo(int runNo)
 {
-  int iResult=0;
-  if (!fCDBInitialized) return iResult;
-  // we presume the library already to be loaded
-  // find the symbol
-  AliHLTComponentHandler cHandler;
-  AliHLTMiscSetCDBRunNo_t pFunc=(AliHLTMiscSetCDBRunNo_t)cHandler.FindSymbol(ALIHLTMISC_LIBRARY, ALIHLTMISC_SET_CDB_RUNNO); 
-  if (pFunc) {
-    iResult=(*pFunc)(runNo);
-  } else {
-    Message(NULL, kHLTLogError, "AliHLTComponent::SetCDBRunNo", "init CDB",
-	    "can not find initialization function");
-    iResult=-ENOSYS;
-  }
-  return iResult;
+  // see header file for function documentation
+  if (!fCDBSetRunNoFunc) return 0;
+  return (*((AliHLTMiscSetCDBRunNo_t)fCDBSetRunNoFunc))(runNo);
 }
 
 int AliHLTComponent::DoInit( int /*argc*/, const char** /*argv*/)
@@ -259,6 +259,7 @@ int AliHLTComponent::Reconfigure(const char* /*cdbEntry*/, const char* /*chainId
 
 int AliHLTComponent::GetOutputDataTypes(AliHLTComponentDataTypeList& /*tgtList*/)
 {
+  // default implementation, childs can overload
   HLTLogKeyword("dummy");
   return 0;
 }

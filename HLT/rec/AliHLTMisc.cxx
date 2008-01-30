@@ -34,7 +34,6 @@ int AliHLTMiscInitCDB(const char* cdbpath)
   if (!pCDB) {
     log.Logging(kHLTLogError, "InitCDB", "CDB handling", "Could not get CDB instance");
   } else {
-    pCDB->SetRun(0); // This will be retrieved during the SOR event
     pCDB->SetDefaultStorage(cdbpath);
     log.Logging(kHLTLogDebug, "InitCDB", "CDB handling", "CDB instance 0x%x", pCDB);
   }
