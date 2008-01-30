@@ -38,6 +38,7 @@
 #include <TSystem.h>
 #include <TEnv.h>
 #include <TArrayC.h>
+#include <Varargs.h> // platform independent definition of va_copy
 
 #include "AliLog.h"
 
@@ -1055,6 +1056,8 @@ void  AliLog::PrintString(Int_t type, FILE* stream, const char* format, ...)
 #ifdef R__VA_COPY
     va_list bap;
     R__VA_COPY(bap, ap);
+#else
+#warning definition of R__VA_COPY has disappeared
 #endif //R__VA_COPY
 
     Int_t iResult=0;
