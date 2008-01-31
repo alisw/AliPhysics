@@ -1,9 +1,18 @@
 /*
-*********************************************************
-Author:                                                 *
-this file provides the detector algorithm for HMPID.    *
-*********************************************************
+
+HMPID DA for online calibration
+
+Contact: Levente.Molnar@ba.infn.it, Giacomo.Volpe@ba.infn.it
+Link: http://richpc1.ba.infn.it/~levente/Files4Public/ValidateHmpidDA/
+Run Type: PEDESTAL -- but we select on the PHYSICS_EVENTS in th HMPIDda.cxx
+DA Type: LDC
+Number of events needed: 1000 events
+Input Files: Raw pedestal file, no external config file
+Output Files: 14 txt files including pedestal values
+Trigger types used: PEDESTAL RUN (selecting on PHYSICS_EVENT)
+
 */
+
 extern "C" {
 #include <daqDA.h>
 }
@@ -57,14 +66,18 @@ int main(int argc, char **argv){
   /* report progress */
   daqDA_progressReport(10);
 
+  
+  
+  /* define wait event timeout - 1s max */
+  monitorSetNowait();
+  monitorSetNoWaitNetworkTimeout(1000);
 
   /* init the pedestal calculation */
   AliHMPIDCalib *pCal=new AliHMPIDCalib();
   
   /* init event counter */
   Int_t iEvtNcal=0;
-
-  Int_t cnt=0;
+  ULong_t runNum=0;
   
   int n;
   for (n=1;n<argc;n++) {
@@ -80,6 +93,10 @@ int main(int argc, char **argv){
     daqDA_progressReport(10+80*n/argc);
 
     for(;;) { // infinite loop 
+      
+       /* check shutdown condition */
+    if (daqDA_checkShutdown()) {break;}
+    
       struct eventHeaderStruct *event;
       eventTypeType eventT;
 
@@ -108,29 +125,27 @@ int main(int argc, char **argv){
 
       if (eventT==PHYSICS_EVENT) {                                                //we use PHYSICS_EVENT for pedestal not CALIBRATION_EVENT
 	
+        runNum=(unsigned long)event->eventRunNb;                                  //assuming that only one run is processed at a time
+             
 	iEvtNcal++;
         
 	AliRawReader *reader = new AliRawReaderDate((void*)event);
-
-	// Temporary there. Shall be removed as soon as the equipment ID is set correctly
-	// For the moment ddl.map file contains one line which maps
-	// the observed eqID=225 to the first HMPID DDL with ID=1536
-	//	reader->LoadEquipmentIdsMap("ddl.map");
-	
 	AliHMPIDRawStream stream(reader);
-
-	while(stream.Next()) {
-          Int_t nDDL=stream.GetDDLNumber();
-            for(Int_t row = 1; row <=AliHMPIDRawStream::kNRows; row++){
-              for(Int_t dil = 1; dil <=AliHMPIDRawStream::kNDILOGICAdd; dil++){
-                for(Int_t pad = 0; pad < AliHMPIDRawStream::kNPadAdd; pad++){
-                  pCal->FillPedestal(nDDL,row,dil,pad,stream.GetCharge(nDDL,row,dil,pad));
-                }//pad
-              }//dil
-            }//row
-	} //raw data loop
 	
-	delete reader;
+        while(stream.Next())
+          {
+             for(Int_t iPad=0;iPad<stream.GetNPads();iPad++) {
+             pCal->FillPedestal(stream.GetPadArray()[iPad],stream.GetChargeArray()[iPad]);
+           }
+           
+           for(Int_t iddl=0;iddl<AliHMPIDRawStream::kNDDL;iddl++){                                         
+              for(Int_t ierr=0; ierr < AliHMPIDRawStream::kSumErr; ierr++) {
+                 pCal->FillErrors(iddl,ierr,stream.GetErrors(iddl,ierr));
+               }
+            }
+          
+        }//Next()    
+        stream.Delete();            
 
       }// if CALIBRATION_EVENT
 
@@ -147,7 +162,7 @@ int main(int argc, char **argv){
   }//arg
 
   /* write report */
-  printf("Run #%s, received %d calibration events\n",getenv("DATE_RUN_NUMBER"),iEvtNcal);
+  printf("HMPID DA processed RUN #%s, with %d calibration events\n",getenv("DATE_RUN_NUMBER"),iEvtNcal);
 
   if (!iEvtNcal) {
     printf("No calibration events have been read. Exiting\n");
@@ -157,23 +172,33 @@ int main(int argc, char **argv){
   /* report progress */
   daqDA_progressReport(90);
 
+   
   for(Int_t nDDL=0; nDDL < AliHMPIDCalib::kNDDL; nDDL++) {
     
     /* Calculate pedestal for the given ddl, if there is no ddl go t next */
-    if(!pCal->CalcPedestal(nDDL,Form("./HmpidPedDdl%02i.txt",nDDL),iEvtNcal)) continue;
+    if(!pCal->CalcPedestal(runNum,nDDL,Form("./HmpidPedDdl%02i.txt",nDDL),iEvtNcal)) continue;
+    if(!pCal->WriteErrors(runNum,nDDL,Form("./HmpidErrorsDdl%02i.txt",nDDL),iEvtNcal)) continue;
     
     /* store the result file on FES */
-    
+    /*
     status=daqDA_FES_storeFile(Form("./HmpidPedDdl%02i.txt",nDDL),Form("HMPID_DA_Pedestals_ddl=%02i",nDDL));
     if (status) {
       printf("Failed to export file : %d\n",status);
       return -1;
     }
+    */
+    status=daqDA_FES_storeFile(Form("./HmpidPedDdl%02i.txt",nDDL),Form("HMPID_DA_Pedestals_ddl=%02i",nDDL));
+    if (status) { printf("Failed to export file : %d\n",status); }
+    status=daqDA_FES_storeFile(Form("./HmpidErrorsDdl%02i.txt",nDDL),Form("HMPID_DA_Errors_ddl=%02i",nDDL));
+    if (status) { printf("Failed to export file : %d\n",status); }
     
   }//nDDL
+  delete pCal;
+  if (status) return -1;
   
   /* report progress */
   daqDA_progressReport(100);
+  
 
   return status;
 }
