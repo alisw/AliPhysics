@@ -105,7 +105,7 @@ int AliHLTBlockFilterComponent::DoInit( int argc, const char** argv )
     if (argument.CompareTo("-datatype")==0) {
       if ((bMissingParam=(i+2>=argc))) break;
 
-      if (rule.fDataType!=kAliHLTAnyDataType) {
+      if (!MatchExactly(rule.fDataType,kAliHLTAnyDataType)) {
 	// the data type has already been set, add to list
 	// and reset
 	fFilterRules.push_back(rule);
@@ -140,7 +140,7 @@ int AliHLTBlockFilterComponent::DoInit( int argc, const char** argv )
       break;
     }
   }
-  if (iResult>=0 && (rule.fSpecification!=kAliHLTVoidDataSpec || rule.fDataType!=kAliHLTAnyDataType)) {
+  if (iResult>=0 && (rule.fSpecification!=kAliHLTVoidDataSpec || !MatchExactly(rule.fDataType,kAliHLTAnyDataType))) {
     // add the pending rule
     fFilterRules.push_back(rule);
     FillBlockData(rule);
@@ -202,9 +202,9 @@ int AliHLTBlockFilterComponent::IsSelected(const AliHLTComponentBlockData& block
     // 2. data spec match or filter data wpec not set
     // 3. either filter data type or spec is set
     //HLTDebug("check rule : %s spec %#x", DataType2Text((*desc).fDataType, 2).c_str(), block.fSpecification);
-    if (((*desc).fDataType==block.fDataType || (*desc).fDataType==kAliHLTAnyDataType) &&
+    if (((*desc).fDataType==block.fDataType) &&
 	((*desc).fSpecification==block.fSpecification || (*desc).fSpecification==kAliHLTVoidDataSpec) &&
-	((*desc).fDataType!=kAliHLTAnyDataType || (*desc).fSpecification!=kAliHLTVoidDataSpec)) {
+	(!MatchExactly((*desc).fDataType,kAliHLTAnyDataType) || (*desc).fSpecification!=kAliHLTVoidDataSpec)) {
       return 1;
     }
   } while (++desc!=fFilterRules.end());

@@ -409,8 +409,7 @@ int AliHLTComponent::FindMatchingDataTypes(AliHLTComponent* pConsumer, AliHLTCom
       AliHLTComponentDataTypeList::iterator otype=otypes.begin();
       while (otype!=otypes.end() && (*itype)!=(*otype)) otype++;
       //if (otype!=otypes.end()) PrintDataTypeContent(*otype, "publisher \'%s\'");
-      if (otype!=otypes.end() ||
-	  (*itype)==kAliHLTAnyDataType) {
+      if (otype!=otypes.end()) {
 	if (tgtList) tgtList->push_back(*itype);
 	iResult++;
       }
@@ -597,11 +596,7 @@ int AliHLTComponent::FindInputBlock(const AliHLTComponentDataType& dt, int start
 	AliHLTUInt32_t firstWord=*((AliHLTUInt32_t*)fpInputBlocks[idx].fPtr);
 	if (firstWord!=fpInputBlocks[idx].fSize-sizeof(AliHLTUInt32_t)) continue;
       }
-      if (dt == kAliHLTAnyDataType || fpInputBlocks[idx].fDataType == dt ||
-	  (memcmp(dt.fID, kAliHLTAnyDataTypeID, kAliHLTComponentDataTypefIDsize)==0 &&
-	   memcmp(dt.fOrigin, fpInputBlocks[idx].fDataType.fOrigin, kAliHLTComponentDataTypefOriginSize)==0) ||
-	  (memcmp(dt.fID, fpInputBlocks[idx].fDataType.fID, kAliHLTComponentDataTypefIDsize)==0) &&
-	   memcmp(dt.fOrigin, kAliHLTDataOriginAny, kAliHLTComponentDataTypefOriginSize)==0) {
+      if (dt==fpInputBlocks[idx].fDataType) {
 	iResult=idx;
       }
     }

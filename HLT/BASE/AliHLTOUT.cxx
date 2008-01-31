@@ -107,7 +107,7 @@ int AliHLTOUT::FindAndSelectDataBlock()
   if (CheckStatusFlag(kLocked)) return -EPERM;
   int iResult=-ENOENT;
   while (fCurrent!=fBlockDescList.end() && iResult==-ENOENT) {
-    if ((fSearchDataType==kAliHLTAnyDataType || (*fCurrent)==fSearchDataType) &&
+    if ((*fCurrent)==fSearchDataType &&
 	fSearchSpecification==kAliHLTVoidDataSpec || (*fCurrent)==fSearchSpecification &&
 	1/*fSearchHandlerType==AliHLTModuleAgent::kUnknownOutput*/) {
       iResult=0;

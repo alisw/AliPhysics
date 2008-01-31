@@ -154,8 +154,7 @@ int AliHLTDataBuffer::FindMatchingDataSegments(const AliHLTComponent* pConsumer,
     while (segment!=fSegments.end()) {
       AliHLTComponentDataTypeList::iterator type=dtlist.begin();
       while (type!=dtlist.end()) {
-	if ((*segment).fDataType==(*type) ||
-	    (*type)==kAliHLTAnyDataType) {
+	if ((*segment).fDataType==(*type)) {
 	  tgtList.push_back(*segment);
 	  iResult++;
 	  break;
