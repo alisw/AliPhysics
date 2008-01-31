@@ -92,9 +92,9 @@ public:
             /// Return local clock
    UInt_t  GetClock()   const {return fClk;}
             /// Return switch
-   UChar_t GetSwitch()  const {return (fEOS >> 2) & 0x3FF;}
+   UChar_t GetSwitch()  const {return (fEOS >> 1) & 0x3FF;}
             /// Return ComptXY
-   UChar_t GetComptXY() const {return  fEOS & 3;}
+   UChar_t GetComptXY() const {return  fEOS & 1;}
 
             /// Return XY1
    UShort_t GetXY1(Int_t n) const {return  (n % 2 == 0) ?
