@@ -34,8 +34,8 @@ class AliHMPIDRawStream: public TObject {
             void     InitVars(Int_t n);
             void     DelVars();
     
-	    Int_t GetDDLNumber()  const { return fDDLNumber; }                                                                            // Provide current DDL number
-	    inline Int_t GetPad(Int_t ddl,Int_t row,Int_t dil,Int_t pad);                                                                 //
+	    Int_t GetDDLNumber()  const { return fDDLNumber; }                                                                          // Provide current DDL number
+   static inline Int_t GetPad(Int_t ddl,Int_t row,Int_t dil,Int_t pad);                                                                 //
 	    Int_t   GetNPads()       const { return fNPads;}
             Int_t*  GetPadArray()    const { return fPad;}
             Int_t*  GetChargeArray() const { return fCharge;}
@@ -45,7 +45,7 @@ class AliHMPIDRawStream: public TObject {
    
 	    inline  Bool_t SetZeroSup (Bool_t isSup);
     inline  Bool_t GetZeroSup(); 
-    inline  Int_t GetErrors(Int_t eType);                                                                                          //Get errors and occurance
+    inline  Int_t  GetErrors(Int_t ddl,Int_t eType);                                                                                   //Get errors and occurance
     
     Bool_t ReadHMPIDRawData();                           // Read HMPID Raw data
     Bool_t ReadSegment(Int_t &cntSegment);               // Read Segment
@@ -78,19 +78,19 @@ enum Ebits {kbit0,kbit1 , kbit2, kbit3, kbit4, kbit5, kbit6, kbit7, kbit8,
                   kbit25,kbit26,kbit27,kbit28,kbit29,kbit30,kbit31,kbit32};
     
     enum EHMPIDRawStreamError {
-      kRawDataSizeErr = 1,
-      kRowMarkerErr = 2,
-      kWrongRowErr = 3,
-      kWrongDilogicErr = 4,
-      kWrongPadErr = 5,
-      kEoEFlagErr = 6,
-      kEoESizeErr = 7,
-      kEoEDILOGICErr = 8,
-      kEoERowErr = 9,
-      kBadSegWordErr = 10,
-      kWrongSegErr = 11,
+      kRawDataSizeErr   = 1,
+      kRowMarkerErr     = 2,
+      kWrongRowErr      = 3,
+      kWrongDilogicErr  = 4,
+      kWrongPadErr      = 5,
+      kEoEFlagErr       = 6,
+      kEoESizeErr       = 7,
+      kEoEDILOGICErr    = 8,
+      kEoERowErr        = 9,
+      kBadSegWordErr    = 10,
+      kWrongSegErr      = 11,
       kRowMarkerSizeErr = 12,
-      kSumErr=13                                            //This is always the last one, to retreive the number of errors
+      kSumErr           = 13                                            //This is always the last one, to retreive the number of errors
     };
     
     enum {
@@ -113,17 +113,19 @@ enum Ebits {kbit0,kbit1 , kbit2, kbit3, kbit4, kbit5, kbit6, kbit7, kbit8,
     UInt_t           GetWord(Int_t n=1,EDirection dir=kFwd);             // Get n-th word
     UInt_t           GetNextWord();                                      // Get next word
     Int_t            fNPads;                                             // counter of pads in one DDL
-    Int_t            *fCharge;                                           // Array for charge values for all channels in one DDL
-    Int_t            *fPad;                                              // Array for abs pad values for all channels in one DDL
-    Int_t            fNumOfErr[kSumErr];                                 // Store the numner of errors for a given error type
+    Int_t           *fCharge;                                            // Array for charge values for all channels in one DDL
+    Int_t           *fPad;                                               // Array for abs pad values for all channels in one DDL
     Int_t            fDDLNumber;                                         // index of current DDL number
-    AliRawReader*    fRawReader;                                         // object for reading the raw data
-    UChar_t*         fData;                                              // raw data
+    AliRawReader    *fRawReader;                                         // object for reading the raw data
+    UChar_t         *fData;                                              // raw data
+    Int_t          **fNumOfErr;                                          // Store the numner of errors for a given error type and a given DDL
     Int_t            fPosition;                                          // current word
     UInt_t           fWord;                                              // current position in fData
-    Bool_t           fZeroSup;
-
-    ClassDef(AliHMPIDRawStream, 1)                                       // base class for reading HMPID raw digits
+    Bool_t           fZeroSup;                                           // set if zero suppression is applied
+    Int_t           *fPos;                                               // for debug purposes
+    Int_t            iPos;                                               // counter for debug
+  
+    ClassDef(AliHMPIDRawStream, 2)                                       // base class for reading HMPID raw digits
 };
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     /*
@@ -239,14 +241,14 @@ void AliHMPIDRawStream::WriteSegMarker(AliFstream *ddl,UInt_t row, Int_t nwInSeg
   //Arguments: ddl stream and the segment: row 8 -> 0x5800, row 16 -> 5801, row 24 -> 5802 for pedestal
   //Retruns:   nothing
     UInt_t w32=0;
-    Printf("============ Number of words in segment: %d in row: %d ",nwInSeg,row);
+
       //Segment marker: 2736 == ab0
-//      AliBitPacking::PackWord((UInt_t)0   ,w32,27,31);          //zero out the rest of the bits, since they are not needed
+      //AliBitPacking::PackWord((UInt_t)0   ,w32,27,31);          //zero out the rest of the bits, since they are not needed
       AliBitPacking::PackWord((UInt_t)2736   ,w32,20,31);       //ab0 the segment marker word
       AliBitPacking::PackWord((UInt_t)nwInSeg,w32, 8,19);       //number of words in the segment
       AliBitPacking::PackWord((UInt_t)(row/8),w32, 0, 7);       //segment 0,1,2    
       ddl->WriteBuffer((char*)&w32,sizeof(w32)); 
-      Printf("Segment word created is: %x",w32);
+      //Printf("Segment word created is: %x",w32);
 }      
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++     
 Bool_t AliHMPIDRawStream::SetZeroSup (Bool_t isSup)
@@ -358,17 +360,17 @@ void AliHMPIDRawStream::WriteRaw(TObjArray *pDigAll)
   }//chambers loop
 }//WriteRaw()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Int_t AliHMPIDRawStream::GetErrors(Int_t eType)
+Int_t AliHMPIDRawStream::GetErrors(Int_t ddl,Int_t eType)
 {
 // Return the number of errors for a given error tye during raw data reading
 // Arguments: errorType
 //   Returns: error or -999 if error Type does not exist
   
   if(eType < 1 || eType> kSumErr-1 ) return -999;
+  else if( ddl < 0 || ddl > kNDDL-1 )  return -999;
   else 
-    return fNumOfErr[eType];
-        
-
+    return fNumOfErr[ddl][eType];
 } //GetErrors()     
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 #endif
