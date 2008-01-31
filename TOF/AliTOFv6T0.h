@@ -62,7 +62,6 @@ private:
   Int_t fIdFLTA; // FLTA volume identifier (inner plate A)
   Int_t fIdFLTB; // FLTB volume identifier (inner plate B)
   Int_t fIdFLTC; // FLTC volume identifier (inner plate C)
-  Bool_t fTOFHoles; // Selecting Geometry with and w/o holes
 
   //private:
 

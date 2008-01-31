@@ -12,7 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
 /* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -85,6 +84,7 @@ AliTOF::AliTOF():
   fReconParticles(0x0),
   fIdSens(-1),
   fTZero(kFALSE),
+  fTOFHoles(kTRUE),
   fTOFGeometry(0x0)
 {
   //
@@ -111,6 +111,7 @@ AliTOF::AliTOF(const char *name, const char *title, Option_t *option)
   fReconParticles(0x0),
   fIdSens(-1),
   fTZero(kFALSE),
+  fTOFHoles(kTRUE),
   fTOFGeometry(0x0)
 {
   //
@@ -188,7 +189,8 @@ void AliTOF::GetTOFSectors(Int_t *sectors) const
 }
 //_____________________________________________________________________________
 AliTOF::AliTOF(const AliTOF &source)
-  :AliDetector(),
+  :
+  AliDetector(),
   fFGeom(0x0),
   fDTask(0x0),
   fReTask(0x0),
@@ -197,6 +199,7 @@ AliTOF::AliTOF(const AliTOF &source)
   fReconParticles(0x0),
   fIdSens(-1),
   fTZero(kFALSE),
+  fTOFHoles(kTRUE),
   fTOFGeometry(0x0)
 {
   // copy constructor

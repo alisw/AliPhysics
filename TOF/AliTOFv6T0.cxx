@@ -157,8 +157,8 @@ const Float_t AliTOFv6T0::fgkBarS2[3] = {fgkBarS[0], fgkBar2[1], fgkBar2[2]}; //
   fIdFTOC(-1),
   fIdFLTA(-1),
   fIdFLTB(-1),
-  fIdFLTC(-1),
-  fTOFHoles(kFALSE)
+  fIdFLTC(-1)//,
+//fTOFHoles(kFALSE)
 {
   //
   // Default constructor
@@ -174,33 +174,40 @@ AliTOFv6T0::AliTOFv6T0(const char *name, const char *title):
   fIdFTOC(-1),
   fIdFLTA(-1),
   fIdFLTB(-1),
-  fIdFLTC(-1),
-  fTOFHoles(kFALSE)
+  fIdFLTC(-1)//,
+  //fTOFHoles(kFALSE)
 {
   //
   // Standard constructor
   //
+
   //
   // Check that FRAME is there otherwise we have no place where to
   // put TOF
 
+  /*
   AliModule* frame = (AliModule*)gAlice->GetModule("FRAME");
+
   if(!frame) {
     AliFatal("TOF needs FRAME to be present");
-  } else{
-    
+  } else {
     if (fTOFGeometry) delete fTOFGeometry;
     fTOFGeometry = new AliTOFGeometry();
 
     if(frame->IsVersion()==1) {
       AliDebug(1,Form("Frame version %d", frame->IsVersion())); 
       AliDebug(1,"Full Coverage for TOF");
-      fTOFHoles=false;}    
+      fTOFHoles=false;}
     else {
       AliDebug(1,Form("Frame version %d", frame->IsVersion())); 
       AliDebug(1,"TOF with Holes for PHOS");
-      fTOFHoles=true;}      
+      fTOFHoles=true;}
+
   }
+  */
+
+  if (fTOFGeometry) delete fTOFGeometry;
+  fTOFGeometry = new AliTOFGeometry();
   fTOFGeometry->SetHoles(fTOFHoles);
 
   //AliTOF::fTOFGeometry = fTOFGeometry;

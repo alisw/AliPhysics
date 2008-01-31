@@ -85,6 +85,8 @@ public:
   void CreateSDigitsArray();
   virtual void   SetTOFSectors(Int_t *sectors);
   virtual void   GetTOFSectors(Int_t *sectors) const;
+  virtual void   SetTOFHoles(Bool_t holes) { fTOFHoles = holes; };
+  virtual Bool_t GetTOFHoles() const { return fTOFHoles; };
   AliTOFGeometry *GetGeometry() const { return fTOFGeometry; }; 
 
   // Trigger
@@ -109,6 +111,7 @@ protected:
 
   Bool_t  fTZero;      // Flag indicating if T0 is used
   Int_t fTOFSectors[18]; // Selecting TOF Sectors to be simulated
+  Bool_t fTOFHoles; // Selecting geometry with and w/o holes
   AliTOFGeometry *fTOFGeometry; //The TOF Geometry parameters
  
 private:
