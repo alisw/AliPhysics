@@ -413,13 +413,13 @@ void AliTPCdataQA::Analyse()
        << "EventCounter: " << fEventCounter << endl
        << "TimeBins: " << nTimeBins << endl;
 
-  fMeanCharge->Divide(fNoThreshold);
+  if (fMeanCharge && fNoThreshold) fMeanCharge->Divide(fNoThreshold);
 
   Float_t normalization = 1.0 / Float_t(fEventCounter * nTimeBins);
-  fNoThreshold->Multiply(normalization);  
-  fOverThreshold0->Multiply(normalization);  
-  fOverThreshold5->Multiply(normalization);  
-  fOverThreshold10->Multiply(normalization);  
-  fOverThreshold20->Multiply(normalization);  
-  fOverThreshold30->Multiply(normalization);  
+  if (fNoThreshold)     fNoThreshold->Multiply(normalization);  
+  if (fOverThreshold0)  fOverThreshold0->Multiply(normalization);  
+  if (fOverThreshold5)  fOverThreshold5->Multiply(normalization);  
+  if (fOverThreshold10) fOverThreshold10->Multiply(normalization);  
+  if (fOverThreshold20) fOverThreshold20->Multiply(normalization);  
+  if (fOverThreshold30) fOverThreshold30->Multiply(normalization);  
 }
