@@ -132,6 +132,8 @@ protected:
 	       AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
 	       AliHLTUInt32_t& size, AliHLTComponentBlockDataList& outputBlocks );
 
+  int Reconfigure(const char* cdbEntry, const char* chainId);
+
   using AliHLTProcessor::DoEvent;
   
 private:
@@ -139,6 +141,12 @@ private:
   AliHLTTPCSliceTrackerComponent(const AliHLTTPCSliceTrackerComponent&);
   /** assignment operator prohibited */
   AliHLTTPCSliceTrackerComponent& operator=(const AliHLTTPCSliceTrackerComponent&);
+  /**
+   * Configure the component.
+   * Parse a string for the configuration arguments and set the component
+   * properties.
+   */  
+  int Configure(const char* arguments);
 
   /** instance of the tracker */
   AliHLTTPCConfMapper* fTracker;                                   //! transient

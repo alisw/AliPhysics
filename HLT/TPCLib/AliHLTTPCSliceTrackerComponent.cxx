@@ -46,6 +46,11 @@ using namespace std;
 #include "AliHLTTPCInterMerger.h"
 #include "AliHLTTPCMemHandler.h"
 #include "AliHLTTPCDefinitions.h"
+#include "TString.h"
+#include "TObjString.h"
+#include "TObjArray.h"
+#include "AliCDBEntry.h"
+#include "AliCDBManager.h"
 //#include "AliHLTTPC.h"
 //#include <stdlib.h>
 //#include <cerrno>
@@ -356,7 +361,6 @@ int AliHLTTPCSliceTrackerComponent::DoInit( int argc, const char** argv )
     fEta[0] = 0.;
     fEta[1] = 1.1;
     fDoNonVertex = false;
-    Bool_t bDoMerger=kTRUE;
     fMultiplicity = 4000;
     fBField = 0.5;
     fDoPP = false;
@@ -376,204 +380,23 @@ int AliHLTTPCSliceTrackerComponent::DoInit( int argc, const char** argv )
     fMaxdist=50;
     fMaxphi=0.1;
     fMaxeta=0.1;
-
-    int i = 0;
-    char* cpErr;
-    while ( i < argc )
-	{
-	if ( !strcmp( argv[i], "-disable-merger" ) ){
-	    bDoMerger = kFALSE;
-	    i++;
-	    continue;	    
-	}
-
-	if ( !strcmp( argv[i], "-pp-run" ) )
-	    {
-	    fDoPP = true;
-	    i++;
-	    continue;
-	    }
-	if ( !strcmp( argv[i], "-PbPb-run" ) )
-	  {
-	    fDoPbPb = true;
-	    i++;
-	    continue;
-	  }
-	if ( !strcmp( argv[i], "-multiplicity" ) )
-	    {
-	    if ( argc <= i+1 )
-		{
-		Logging( kHLTLogError, "HLT::TPCSliceTracker::DoInit", "Missing multiplicity", "Missing event multiplicity specifier." );
-		return ENOTSUP;
-		}
-	    fMultiplicity = strtoul( argv[i+1], &cpErr, 0 );
-	    if ( *cpErr )
-		{
-		Logging( kHLTLogError, "HLT::TPCSliceTracker::DoInit", "Missing multiplicity", "Cannot convert event multiplicity specifier '%s'.", argv[i+1] );
-		return EINVAL;
-		}
-	    i += 2;
-	    continue;
-	    }
-	if ( !strcmp( argv[i], "-bfield" ) )
-	    {
-	    if ( argc <= i+1 )
-		{
-		Logging( kHLTLogError, "HLT::TPCSliceTracker::DoInit", "Missing B-field", "Missing B-field specifier." );
-		return ENOTSUP;
-		}
-	    fBField = strtod( argv[i+1], &cpErr );
-	    if ( *cpErr )
-		{
-		Logging( kHLTLogError, "HLT::TPCSliceTracker::DoInit", "Missing B-field", "Cannot convert B-field specifier '%s'.", argv[i+1] );
-		return EINVAL;
-		}
-	    i += 2;
-	    continue;
-	    }
-
-	if ( !strcmp( argv[i], "-nonvertextracking" ) ){
-	  fnonvertextracking = kTRUE;
-	  i++;
-	  continue;	    
-	}
-	
-	if ( !strcmp( argv[i], "-mainvertextrackingoff" ) ){	
-	  fmainvertextracking = kFALSE;
-	  i++;
-	  continue;	    
-	}
-	
-	if ( !strcmp( argv[i], "-etarange" ) ){	
-	  if ( argc <= i+1 ){
-	    Logging( kHLTLogError, "HLT::TPCSliceTracker::DoInit", "Missing Eta range", "Missing Eta-range specifiers." );
-	    return ENOTSUP;
-	  }
-	  fEta[1] = strtod( argv[i+1], &cpErr );
-	  if ( *cpErr ){
-	    Logging( kHLTLogError, "HLT::TPCSliceTracker::DoInit", "Missing Eta range", "Cannot convert Eta-range specifier '%s'.", argv[i+1] );
-	    return EINVAL;
-	  }
-	  
-	  i += 2;
-	  continue;
-	}
-	if ( !strcmp( argv[i], "-etasegment" ) )
-	    {
-	    if ( argc <= i+1 )
-		{
-		Logging( kHLTLogError, "HLT::TPCSliceTracker::DoInit", "Missing etasegment", "Missing etasegment specifier." );
-		return ENOTSUP;
-		}
-	    fEtasegment = strtol( argv[i+1], &cpErr,10);
-	    if ( *cpErr )
-		{
-		Logging( kHLTLogError, "HLT::TPCSliceTracker::DoInit", "Missing etasegment", "Cannot convert etasegment specifier '%s'.", argv[i+1] );
-		return EINVAL;
-		}
-	    i += 2;
-	    continue;
-	    }
-	
-	if ( !strcmp( argv[i], "-chi2cut" ) )
-	    {
-	    if ( argc <= i+1 )
-		{
-		Logging( kHLTLogError, "HLT::TPCSliceTracker::DoInit", "Missing chi2cut", "Missing chi2cut specifier." );
-		return ENOTSUP;
-		}
-	    fHitChi2Cut = strtod( argv[i+1], &cpErr );
-	    if ( *cpErr )
-		{
-		Logging( kHLTLogError, "HLT::TPCSliceTracker::DoInit", "Missing chi2cut", "Cannot convert chi2cut specifier '%s'.", argv[i+1] );
-		return EINVAL;
-		}
-	    i += 2;
-	    continue;
-	    }
-	if ( !strcmp( argv[i], "-rowscopetracklet" ) )
-	    {
-	    if ( argc <= i+1 )
-		{
-		Logging( kHLTLogError, "HLT::TPCSliceTracker::DoInit", "Missing RowScopeTracklet", "Missing etasegment specifier." );
-		return ENOTSUP;
-		}
-	    fRowscopetracklet = strtol( argv[i+1], &cpErr,10 );
-	    if ( *cpErr )
-		{
-		Logging( kHLTLogError, "HLT::TPCSliceTracker::DoInit", "Missing RowScopeTracklet", "Cannot convert etasegment specifier '%s'.", argv[i+1] );
-		return EINVAL;
-		}
-	    i += 2;
-	    continue;
-	    }
-
-	if ( !strcmp( argv[i], "-rowscopetrack" ) )
-	    {
-	    if ( argc <= i+1 )
-		{
-		Logging( kHLTLogError, "HLT::TPCSliceTracker::DoInit", "Missing RowScopeTrack", "Missing etasegment specifier." );
-		return ENOTSUP;
-		}
-	    fRowscopetrack = strtol( argv[i+1], &cpErr,10 );
-	    if ( *cpErr )
-		{
-		Logging( kHLTLogError, "HLT::TPCSliceTracker::DoInit", "Missing RowScopeTrack", "Cannot convert etasegment specifier '%s'.", argv[i+1] );
-		return EINVAL;
-		}
-	    i += 2;
-	    continue;
-	    }
-
-	if ( !strcmp( argv[i], "-trackletlength" ) )
-	    {
-	    if ( argc <= i+1 )
-		{
-		Logging( kHLTLogError, "HLT::TPCSliceTracker::DoInit", "Missing TrackletLength", "Missing etasegment specifier." );
-		return ENOTSUP;
-		}
-	    fTrackletlength = strtol( argv[i+1], &cpErr,10 );
-	    if ( *cpErr )
-		{
-		Logging( kHLTLogError, "HLT::TPCSliceTracker::DoInit", "Missing TrackletLength", "Cannot convert etasegment specifier '%s'.", argv[i+1] );
-		return EINVAL;
-		}
-	    i += 2;
-	    continue;
-	    }
-
-	if ( !strcmp( argv[i], "-tracklength" ) )
-	    {
-	    if ( argc <= i+1 )
-		{
-		Logging( kHLTLogError, "HLT::TPCSliceTracker::DoInit", "Missing TrackLength", "Missing etasegment specifier." );
-		return ENOTSUP;
-		}
-	    fTracklength = strtol( argv[i+1], &cpErr,10 );
-	    if ( *cpErr )
-		{
-		Logging( kHLTLogError, "HLT::TPCSliceTracker::DoInit", "Missing TrackLength", "Cannot convert etasegment specifier '%s'.", argv[i+1] );
-		return EINVAL;
-		}
-	    i += 2;
-	    continue;
-	    }
-
-	Logging(kHLTLogError, "HLT::TPCSliceTracker::DoInit", "Unknown Option", "Unknown option '%s'", argv[i] );
-	return EINVAL;
-	}
-    if (fBField == 0.){
-      // parameter for B=0 T 
-      fDoPP = kTRUE;
-      fnonvertextracking = kTRUE;
-      fmainvertextracking = kFALSE;
-    }
+    int iResult=0;
         
-    if (bDoMerger)
-      fpInterMerger = new AliHLTTPCInterMerger();
+    TString configuration="";
+    TString argument="";
+    for (int i=0; i<argc && iResult>=0; i++) {
+      argument=argv[i];
+      if (!configuration.IsNull()) configuration+=" ";
+      configuration+=argument;
+    }
 
-    SetTrackerParam(fDoPP,fDoPbPb,fMultiplicity,fBField,fEtasegment,fHitChi2Cut,fRowscopetracklet,fRowscopetrack,fTrackletlength,fTracklength);
-    return 0;
+    if (!configuration.IsNull()) {
+      iResult=Configure(configuration.Data());
+    } else {
+      iResult=Reconfigure(NULL, NULL);
+    }
+    
+    return iResult;
     }
 
 int AliHLTTPCSliceTrackerComponent::DoDeinit()
@@ -838,6 +661,159 @@ int AliHLTTPCSliceTrackerComponent::DoEvent( const AliHLTComponentEventData& evt
     size = tSize;
     return 0;
     }
+
+int AliHLTTPCSliceTrackerComponent::Configure(const char* arguments)
+{
+  // see header file for class documentation
+  int iResult=0;
+  if (!arguments) return iResult;
+  
+  TString allArgs=arguments;
+  TString argument;
+  int bMissingParam=0;
+  Bool_t bDoMerger=kTRUE;
+
+  TObjArray* pTokens=allArgs.Tokenize(" ");
+  if (pTokens) {
+    for (int i=0; i<pTokens->GetEntries() && iResult>=0; i++) {
+      argument=((TObjString*)pTokens->At(i))->GetString();
+      if (argument.IsNull()) continue;
+      
+      if (argument.CompareTo("-disable-merger")==0) {
+	HLTInfo("Disabled Inter Merger");
+	bDoMerger = kFALSE;
+	continue;
+      }
+      else if (argument.CompareTo("-pp-run")==0) {
+	HLTInfo("Using Trackparameters for pp-run");
+	fDoPP = true;
+	continue;
+      }
+      else if (argument.CompareTo("-PbPb-run")==0) {
+	HLTInfo("Using Trackparameters for Pb-Pb-run");
+	fDoPbPb = true;
+	continue;
+      }
+      else if (argument.CompareTo("-nonvertextracking")==0) {
+	HLTInfo("Doing Nonvertex Tracking");
+	fnonvertextracking = kTRUE;
+	continue;
+      }     
+      else if (argument.CompareTo("-mainvertextrackingoff")==0) {
+	HLTInfo("Mainvertex Tracking off");
+	fmainvertextracking = kFALSE;
+	continue;
+      }
+      else if (argument.CompareTo("-multiplicity")==0) {
+	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+	HLTInfo("Multiplicity set to: %s", ((TObjString*)pTokens->At(i))->GetString().Data());
+	fMultiplicity=((TObjString*)pTokens->At(i))->GetString().Atoi();
+	continue;
+      } 
+      else if (argument.CompareTo("-bfield")==0) {
+	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+	HLTInfo("Magnetic Field set to: %s", ((TObjString*)pTokens->At(i))->GetString().Data());
+	fBField=((TObjString*)pTokens->At(i))->GetString().Atof();
+	continue;
+      } 
+      else if (argument.CompareTo("-etarange")==0) {
+	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+	HLTInfo("Etarange set to: %s", ((TObjString*)pTokens->At(i))->GetString().Data());
+	fEta[1]=((TObjString*)pTokens->At(i))->GetString().Atof();
+	continue;
+      }
+      else if (argument.CompareTo("-etasegment")==0) {
+	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+	HLTInfo("Number of Etasegment: %s", ((TObjString*)pTokens->At(i))->GetString().Data());
+	fEtasegment=((TObjString*)pTokens->At(i))->GetString().Atoi();
+	continue;
+      }
+      else if (argument.CompareTo("-chi2cut")==0) {
+	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+	HLTInfo("chi2cut set to: %s", ((TObjString*)pTokens->At(i))->GetString().Data());
+	fHitChi2Cut=((TObjString*)pTokens->At(i))->GetString().Atof();
+	continue;
+      }
+      else if (argument.CompareTo("-rowscopetracklet")==0) {
+	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+	HLTInfo("Number of row to look for next cluster for tracklet: %s", ((TObjString*)pTokens->At(i))->GetString().Data());
+	fRowscopetracklet=((TObjString*)pTokens->At(i))->GetString().Atoi();
+	continue;
+      }
+      else if (argument.CompareTo("-rowscopetrack")==0) {
+	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+	HLTInfo("Number of row to look for next cluster for track: %s", ((TObjString*)pTokens->At(i))->GetString().Data());
+	fRowscopetrack=((TObjString*)pTokens->At(i))->GetString().Atoi();
+	continue;
+      }
+      else if (argument.CompareTo("-trackletlength")==0) {
+	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+	HLTInfo("Minimum number of clusters on a Tracklet: %s", ((TObjString*)pTokens->At(i))->GetString().Data());
+	fTrackletlength=((TObjString*)pTokens->At(i))->GetString().Atoi();
+	continue;
+      }
+      else if (argument.CompareTo("-tracklength")==0) {
+	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+	HLTInfo("Minimum number of clusters on a Track: %s", ((TObjString*)pTokens->At(i))->GetString().Data());
+	fTracklength=((TObjString*)pTokens->At(i))->GetString().Atoi();
+	continue;
+      }
+      else {
+	HLTError("unknown argument %s", argument.Data());
+	iResult=-EINVAL;
+	break;
+      }
+    }
+    delete pTokens;
+  }
+  if (bMissingParam) {
+    HLTError("missing parameter for argument %s", argument.Data());
+    iResult=-EINVAL;
+  }
+  if (fBField == 0.){
+    // parameter for B=0 T 
+    fDoPP = kTRUE;
+    fnonvertextracking = kTRUE;
+    fmainvertextracking = kFALSE;
+  }
+ 
+  if (bDoMerger)
+    fpInterMerger = new AliHLTTPCInterMerger();
+  else
+    fpInterMerger = NULL;
+
+  SetTrackerParam(fDoPP,fDoPbPb,fMultiplicity,fBField,fEtasegment,fHitChi2Cut,fRowscopetracklet,fRowscopetrack,fTrackletlength,fTracklength);
+  
+  return iResult;
+}
+
+int AliHLTTPCSliceTrackerComponent::Reconfigure(const char* cdbEntry, const char* chainId)
+{
+  // see header file for class documentation
+  int iResult=0;
+  const char* path="HLT/ConfigTPC/SliceTrackerComponent";
+  const char* defaultNotify="";
+  if (cdbEntry) {
+    path=cdbEntry;
+    defaultNotify=" (default)";
+  }
+  if (path) {
+    HLTInfo("reconfigure from entry %s%s, chain id %s", path, defaultNotify,(chainId!=NULL && chainId[0]!=0)?chainId:"<none>");
+    AliCDBEntry *pEntry = AliCDBManager::Instance()->Get(path/*,GetRunNo()*/);
+    if (pEntry) {
+      TObjString* pString=dynamic_cast<TObjString*>(pEntry->GetObject());
+      if (pString) {
+	HLTInfo("received configuration object string: \'%s\'", pString->GetString().Data());
+	iResult=Configure(pString->GetString().Data());
+      } else {
+	HLTError("configuration object \"%s\" has wrong type, required TObjString", path);
+      }
+    } else {
+      HLTError("can not fetch object \"%s\" from CDB", path);
+    }
+  }
+  return iResult;
+}
 
 void AliHLTTPCSliceTrackerComponent::SetTrackerParam1()
 {
