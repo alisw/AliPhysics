@@ -9,10 +9,6 @@
 ////////////////////////////////////////////////
 
 #include "TNamed.h"
-#include "TH1.h"
-#include "AliCDBEntry.h"
-
-class AliZDC;
 
 class AliZDCRecParam: public TNamed {
 
@@ -63,7 +59,7 @@ class AliZDCRecParam: public TNamed {
   Float_t  fEZP2MaxValue;	 // Max value of ZP2 vs. Nspec p correlation
   Float_t  fEZDC2MaxValue;	 // Max value of ZDC2 vs. Nspec n+p correlation
   //
-  ClassDef(AliZDCRecParam,1)    // ZDC  Calibration data
+  ClassDef(AliZDCRecParam,3)    // ZDC  Calibration data
 };
 
 #endif

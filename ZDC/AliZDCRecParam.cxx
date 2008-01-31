@@ -22,6 +22,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliZDCRecParam.h"
+#include "TH1.h"
+#include "AliCDBEntry.h"
 
 ClassImp(AliZDCRecParam)
 
