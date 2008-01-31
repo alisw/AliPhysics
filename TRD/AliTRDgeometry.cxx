@@ -1877,14 +1877,15 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
 
   //
   // The gas tubes connecting the chambers in the super modules with holes
+  // Material: Stainless steel
   //
 
   parTube[0] = 0.0;
   parTube[1] = 2.2/2.0;
   parTube[2] = fClength[5][2]/2.0 - fgkHspace/2.0;
-  gMC->Gsvolu("UTG1","TUBE",idtmed[1322-1],parTube,kNparTube);
+  gMC->Gsvolu("UTG1","TUBE",idtmed[1308-1],parTube,kNparTube);
   parTube[0] = 0.0;
-  parTube[1] = 1.9/2.0;
+  parTube[1] = 2.1/2.0;
   parTube[2] = fClength[5][2]/2.0 - fgkHspace/2.0;
   gMC->Gsvolu("UTG2","TUBE",idtmed[1309-1],parTube,kNparTube);
   xpos  = 0.0;
@@ -2163,22 +2164,18 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
   ypos = 0.0;
   zpos = 0.0;
   gMC->Gspos("UTGD",1,"UTF1",xpos,ypos,zpos,        0,"ONLY");
-  gMC->Gspos("UTGD",2,"UTF2",xpos,ypos,zpos,        0,"ONLY");
   xpos =  -3.0;
   ypos =   0.0;
   zpos =   6.5;
   gMC->Gspos("UTGT",1,"UTF1",xpos,ypos,zpos,        0,"ONLY");
-  gMC->Gspos("UTGT",2,"UTF2",xpos,ypos,zpos,        0,"ONLY");
   xpos = -11.25;
   ypos =   0.0;
   zpos =   0.5;
   gMC->Gspos("UTGT",3,"UTF1",xpos,ypos,zpos,matrix[2],"ONLY");
-  gMC->Gspos("UTGT",4,"UTF2",xpos,ypos,zpos,matrix[2],"ONLY");
   xpos =  11.25;
   ypos =   0.0;
   zpos =   0.5;
   gMC->Gspos("UTGT",5,"UTF1",xpos,ypos,zpos,matrix[2],"ONLY");
-  gMC->Gspos("UTGT",6,"UTF2",xpos,ypos,zpos,matrix[2],"ONLY");
 
   // Cooling manifolds
   parBox[0]  =  5.0/2.0;
@@ -2239,6 +2236,106 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
   gMC->Gspos("UTCM",2,"UTF1",-xpos, ypos, zpos,matrix[1],"ONLY");
   gMC->Gspos("UTCM",3,"UTF2", xpos,-ypos, zpos,matrix[5],"ONLY");
   gMC->Gspos("UTCM",4,"UTF2",-xpos,-ypos, zpos,matrix[6],"ONLY");
+
+  // Power connection boards (Cu)
+  parBox[0] =  0.5/2.0;
+  parBox[1] = 15.0/2.0;
+  parBox[2] =  7.0/2.0;
+  gMC->Gsvolu("UTPC","BOX ",idtmed[1325-1],parBox,kNparBox);
+  for (iplan = 0; iplan < kNplan-1; iplan++) { 
+    xpos      = fCwidth[iplan]/2.0 + kPWRwid/2.0;
+    ypos      = 0.0;
+    zpos      = fgkVrocsm + fgkSMpltT + kPWRhgt/2.0 - fgkSheight/2.0 + kPWRposz 
+              + (iplan+1) * (fgkCH + fgkVspace);
+    gMC->Gspos("UTPC",iplan       ,"UTF1", xpos,ypos,zpos,matrix[0],"ONLY");
+    gMC->Gspos("UTPC",iplan+kNplan,"UTF1",-xpos,ypos,zpos,matrix[1],"ONLY");
+  }
+  xpos      = fCwidth[5]/2.0 + kPWRhgt/2.0 - 1.3;
+  ypos      = 0.0;
+  zpos      = fgkSheight/2.0 - fgkSMpltT - 2.0; 
+  gMC->Gspos("UTPC",5       ,"UTF1", xpos,ypos,zpos,matrix[3],"ONLY");
+  gMC->Gspos("UTPC",5+kNplan,"UTF1",-xpos,ypos,zpos,matrix[3],"ONLY");
+
+  // Power connection panel (Al)
+  parBox[0] = 60.0/2.0;
+  parBox[1] = 10.0/2.0;
+  parBox[2] =  3.0/2.0;
+  gMC->Gsvolu("UTPP","BOX ",idtmed[1301-1],parBox,kNparBox);
+  xpos      =  0.0;
+  ypos      =  0.0;
+  zpos      = 18.0;
+  gMC->Gspos("UTPP",1,"UTF1", xpos,ypos,zpos,0,"ONLY");
+
+  //
+  // Electronics boxes
+  //
+
+  // Casing (INOX)
+  parBox[0] = 60.0/2.0;
+  parBox[1] = 10.0/2.0;
+  parBox[2] =  6.0/2.0;
+  gMC->Gsvolu("UTE1","BOX ",idtmed[1308-1],parBox,kNparBox);
+  // Interior (air)
+  parBox[0] = parBox[0] - 0.5;
+  parBox[1] = parBox[1] - 0.5;
+  parBox[2] = parBox[2] - 0.5;
+  gMC->Gsvolu("UTE2","BOX ",idtmed[1302-1],parBox,kNparBox);
+  xpos      = 0.0;
+  ypos      = 0.0;
+  zpos      = 0.0;
+  gMC->Gspos("UTE2",1,"UTE1",xpos,ypos,zpos,0,"ONLY");
+  xpos      = 0.0;
+  ypos      =  fgkSlength/2.0 - 10.0/2.0 - 3.0;
+  zpos      = -fgkSheight/2.0 +  6.0/2.0 + 1.0;
+  gMC->Gspos("UTE1",1,"UTI1", xpos,ypos,zpos,0,"ONLY");
+  gMC->Gspos("UTE1",2,"UTI2", xpos,ypos,zpos,0,"ONLY");
+  gMC->Gspos("UTE1",3,"UTI3", xpos,ypos,zpos,0,"ONLY");
+
+  // Casing (INOX)
+  parBox[0] = 50.0/2.0;
+  parBox[1] = 15.0/2.0;
+  parBox[2] = 20.0/2.0;
+  gMC->Gsvolu("UTE3","BOX ",idtmed[1308-1],parBox,kNparBox);
+  // Interior (air)
+  parBox[0] = parBox[0] - 0.5;
+  parBox[1] = parBox[1] - 0.5;
+  parBox[2] = parBox[2] - 0.5;
+  gMC->Gsvolu("UTE4","BOX ",idtmed[1302-1],parBox,kNparBox);
+  xpos      = 0.0;
+  ypos      = 0.0;
+  zpos      = 0.0;
+  gMC->Gspos("UTE4",1,"UTE3",xpos,ypos,zpos,0,"ONLY");
+  xpos      = 0.0;
+  ypos      = -fgkSlength/2.0 + 15.0/2.0 + 3.0;
+  zpos      = -fgkSheight/2.0 + 20.0/2.0 + 1.0;
+  gMC->Gspos("UTE3",1,"UTI1", xpos,ypos,zpos,0,"ONLY");
+  gMC->Gspos("UTE3",2,"UTI2", xpos,ypos,zpos,0,"ONLY");
+  gMC->Gspos("UTE3",3,"UTI3", xpos,ypos,zpos,0,"ONLY");
+
+  // Casing (INOX)
+  parBox[0] = 20.0/2.0;
+  parBox[1] =  7.0/2.0;
+  parBox[2] = 20.0/2.0;
+  gMC->Gsvolu("UTE5","BOX ",idtmed[1308-1],parBox,kNparBox);
+  // Interior (air)
+  parBox[0] = parBox[0] - 0.5;
+  parBox[1] = parBox[1] - 0.5;
+  parBox[2] = parBox[2] - 0.5;
+  gMC->Gsvolu("UTE6","BOX ",idtmed[1302-1],parBox,kNparBox);
+  xpos      = 0.0;
+  ypos      = 0.0;
+  zpos      = 0.0;
+  gMC->Gspos("UTE6",1,"UTE5",xpos,ypos,zpos,0,"ONLY");
+  xpos      = 20.0;
+  ypos      = -fgkSlength/2.0 +  7.0/2.0 + 3.0;
+  zpos      = 0.0;
+  gMC->Gspos("UTE5",1,"UTI1", xpos,ypos,zpos,0,"ONLY");
+  gMC->Gspos("UTE5",2,"UTI2", xpos,ypos,zpos,0,"ONLY");
+  gMC->Gspos("UTE5",3,"UTI3", xpos,ypos,zpos,0,"ONLY");
+  xpos      = -xpos;
+  gMC->Gspos("UTE5",4,"UTI1", xpos,ypos,zpos,0,"ONLY");
+  gMC->Gspos("UTE5",5,"UTI2", xpos,ypos,zpos,0,"ONLY");
+  gMC->Gspos("UTE5",6,"UTI3", xpos,ypos,zpos,0,"ONLY");
 
 }
 
@@ -2420,27 +2517,30 @@ Int_t AliTRDgeometry::GetChamber(Double_t z, Int_t plane)
   //
   // Reconstruct the chamber number from the z position and plane number
   //
-  // The return function has to be protected for pozitiveness !!
+  // The return function has to be protected for positiveness !!
+  //
 
-	if(plane<0 || plane>=fgkNplan) return -1;
+  if ((plane <         0) || 
+      (plane >= fgkNplan)) return -1;
 	
-	Int_t ichmb = fgkNcham;
-	Double_t zmin, zmax;
-  //printf("Looking for z[%7.3f] in plane %d\n", z, plane);
-  do{
-  	ichmb--;
-  	if(ichmb<0) break;
-  	AliTRDpadPlane *pp = GetPadPlane(plane, ichmb);
+  Int_t    ichmb = fgkNcham;
+  Double_t zmin;
+  Double_t zmax;
+
+  do {
+    ichmb--;
+    if (ichmb < 0) break;
+    AliTRDpadPlane *pp = GetPadPlane(plane,ichmb);
     zmax  = pp->GetRow0();
-    // why don't we have the function AliTRDpadPlane::GetLength() ???
-		Int_t nrows = pp->GetNrows();
-		zmin = zmax - 2*pp->GetLengthOPad() - (nrows-2)*pp->GetLengthIPad() - (nrows-1)*pp->GetRowSpacing(); // pp->GetLength();
-  	//printf("%d %7.3f %7.3f\n", ichmb, zmin, zmax);
-  } while(z < zmin || z > zmax);
+    Int_t nrows = pp->GetNrows();
+    zmin = zmax -         2 * pp->GetLengthOPad() 
+                - (nrows-2) * pp->GetLengthIPad() 
+                - (nrows-1) * pp->GetRowSpacing();
+  } while((z < zmin) || (z > zmax));
   
   return ichmb;
-}
 
+}
 
 //_____________________________________________________________________________
 Int_t AliTRDgeometry::GetSector(Int_t d) const
