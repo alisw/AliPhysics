@@ -362,7 +362,7 @@ int AliHLTComponent::MakeOutputDataBlockList( const AliHLTComponentBlockDataList
 	return -ENOMEM;
     for ( unsigned long i = 0; i < count; i++ ) {
 	(*outputBlocks)[i] = blocks[i];
-	if (blocks[i].fDataType==kAliHLTAnyDataType) {
+	if (MatchExactly(blocks[i].fDataType, kAliHLTAnyDataType)) {
 	  (*outputBlocks)[i].fDataType=GetOutputDataType();
 	  /* data type was set to the output data type by the PubSub AliRoot
 	     Wrapper component, if data type of the block was ********:****.

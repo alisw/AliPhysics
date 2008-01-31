@@ -523,6 +523,17 @@ inline bool operator!=( const AliHLTComponentDataType& dt1, const AliHLTComponen
   return !(dt1==dt2);
 }
 
+inline bool MatchExactly( const AliHLTComponentDataType& dt1, const AliHLTComponentDataType& dt2 )
+{
+  for ( int i = 0; i < kAliHLTComponentDataTypefIDsize; i++ )
+    if ( dt1.fID[i] != dt2.fID[i] )
+      return false;
+  for ( int i = 0; i < kAliHLTComponentDataTypefOriginSize; i++ )
+    if ( dt1.fOrigin[i] != dt2.fOrigin[i] )
+      return false;
+  return true;
+}
+
 inline AliHLTComponentDataType operator|(const AliHLTComponentDataType srcdt, const char origin[kAliHLTComponentDataTypefOriginSize])
 {
   AliHLTComponentDataType dt=srcdt;
