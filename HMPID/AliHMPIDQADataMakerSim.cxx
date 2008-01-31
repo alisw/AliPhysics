@@ -16,80 +16,41 @@
 
 /* $Id$ */
 
-//---
-//  Produces the data needed to calculate the quality assurance. 
-//  All data must be mergeable objects.
-//  A. Mastroserio
-//---
-
 // --- ROOT system ---
 #include <TClonesArray.h>
 #include <TFile.h> 
 #include <TH1F.h> 
 #include <TH2F.h>
-#include <TH1I.h> 
-#include <TDirectory.h>
+#include <TProfile.h>
 #include <Riostream.h>
 // --- Standard library ---
 
 // --- AliRoot header files ---
+#include "AliESDCaloCluster.h"
+#include "AliESDEvent.h"
+#include "AliQAChecker.h"
 #include "AliLog.h"
 #include "AliHMPIDDigit.h"
 #include "AliHMPIDHit.h"
+#include "AliHMPIDCluster.h"
 #include "AliHMPIDQADataMakerSim.h"
-
+#include "AliHMPIDParam.h"
+#include "AliHMPIDRawStream.h"
+#include "AliLog.h"
 ClassImp(AliHMPIDQADataMakerSim)
            
 //____________________________________________________________________________ 
   AliHMPIDQADataMakerSim::AliHMPIDQADataMakerSim() : 
-  AliQADataMakerSim(AliQA::GetDetName(AliQA::kHMPID), "HMPID Quality Assurance Data Maker"),
-  fhHitQdc(0x0), 
-  fhSDigits(0x0),
-  fhDigPcEvt(0x0),
-  fhDigChEvt(0x0),
-  fhDigQ(0x0)
- // fhCluEvt(0x0),
-//  fhCluChi2(0x0),
-//  fhCluQ(0x0),
-//  fhCluFlg(0x0), 
-//  fhCluSize(0x0),  
-//  fhMipCluSize(0x0),
-//  fhCkovP(0x0),
-//  fhSigP(0x0),
-//  fhMipXY(0x0),
-//  fhDifXY(0x0)
+  AliQADataMakerSim(AliQA::GetDetName(AliQA::kHMPID), "HMPID Quality Assurance Data Maker")
 {
   // ctor
-  for(Int_t i=0; i<7; i++) fhHitMap[i]=0x0;
-//  for(Int_t j=0; j<5; j++) fhPid[j]=0x0;
-//   fDetectorDir = fOutput->GetDirectory(GetName()) ;  
-//   if (!fDetectorDir) 
-//     fDetectorDir = fOutput->mkdir(GetName()) ;  
 }
 
 //____________________________________________________________________________ 
 AliHMPIDQADataMakerSim::AliHMPIDQADataMakerSim(const AliHMPIDQADataMakerSim& qadm) :
-  AliQADataMakerSim(), 
-  fhHitQdc(qadm.fhHitQdc), 
-  fhSDigits(qadm.fhSDigits),
-  fhDigPcEvt(qadm.fhDigPcEvt),
-  fhDigChEvt(qadm.fhDigChEvt),
-  fhDigQ(qadm.fhDigQ)
-//  fhCluEvt(qadm.fhCluEvt),
-//  fhCluChi2(qadm.fhCluChi2),
-//  fhCluQ(qadm.fhCluQ),
-//  fhCluFlg(qadm.fhCluFlg),
-//  fhCluSize(qadm.fhCluSize),
-//  fhMipCluSize(qadm.fhMipCluSize),
-//  fhCkovP(qadm.fhCkovP),
-//  fhSigP(qadm.fhSigP),
-//  fhMipXY(qadm.fhMipXY),
-//  fhDifXY(qadm.fhDifXY)
+  AliQADataMakerSim() 
 {
   //copy ctor 
-  for(Int_t i=0; i<7; i++) fhHitMap[i]=qadm.fhHitMap[i];
-//  for(Int_t j=0; j<5; j++) fhPid[j]=qadm.fhPid[j];
-
   SetName((const char*)qadm.GetName()) ; 
   SetTitle((const char*)qadm.GetTitle()); 
 }
@@ -107,31 +68,50 @@ AliHMPIDQADataMakerSim& AliHMPIDQADataMakerSim::operator = (const AliHMPIDQAData
 void AliHMPIDQADataMakerSim::InitHits()
 {
   // create Hits histograms in Hits subdir
-     fhHitQdc=new TH1F("HitQdc","HMPID Hit Qdc all chamber;QDC",500,0,4000);
-     for(Int_t iCh=0;iCh<7;iCh++) 
-		 fhHitMap[iCh]=new TH2F(Form("HMPID HitMap%i",iCh),Form("Ch%i;x_{Hit};y_{Hit}",iCh),162,-1,161,146,-1,145);   
+     TH1F *hHitQdc=new TH1F("HitQdc","HMPID Hit Qdc all chamber;QDC",500,0,4000);
+     Add2HitsList(hHitQdc,0);
+     TH2F *hHitMap[7];
+     for(Int_t iCh=0;iCh<7;iCh++) {
+     hHitMap[iCh]=new TH2F(Form("HMPID HitMap%i",iCh),Form("Ch%i;x_{Hit};y_{Hit}",iCh),162,-1,161,146,-1,145);   
+    Add2HitsList(hHitMap[iCh],iCh+1);
+    }
+
 }
 
 //____________________________________________________________________________ 
 void AliHMPIDQADataMakerSim::InitDigits()
 {
   // create Digits histograms in Digits subdir
-      fhDigPcEvt=new TH1F("hDigPcEvt","PC occupancy",156,-1,77);
-      fhDigChEvt=new TH1F("hDigChEvt","Chamber occupancy",32,-1,7);
-      fhDigQ  =new TH1F("Q        "," digit charge               ",3000,0,3000);
+      TH1F *hDigPcEvt = new TH1F("hDigPcEvt","PC occupancy",156,-1,77);
+      TH1F *hDigQ     = new TH1F("Q        ","Charge of digits (ADC)     ",3000,0,3000);
+      TH1F *hDigChEvt = new TH1F("hDigChEvt","Chamber occupancy per event",AliHMPIDParam::kMaxCh+1,AliHMPIDParam::kMinCh,AliHMPIDParam::kMaxCh+1);
+
+      TProfile *tDigHighQ = new TProfile("tDigHighQ","Highest charge in chamber  ",AliHMPIDParam::kMaxCh+1,AliHMPIDParam::kMinCh,AliHMPIDParam::kMaxCh+1);
+      TProfile *tDigChEvt = new TProfile("tDigChEvt","Chamber occupancy per event (profile)",AliHMPIDParam::kMaxCh+1,AliHMPIDParam::kMinCh,AliHMPIDParam::kMaxCh+1);
+
+Add2DigitsList(hDigPcEvt,0);
+Add2DigitsList(hDigQ    ,1);
+Add2DigitsList(hDigChEvt,2);
+Add2DigitsList(tDigHighQ,3);
+Add2DigitsList(tDigChEvt,4);
 }
 
 //____________________________________________________________________________ 
 void AliHMPIDQADataMakerSim::InitSDigits()
 {
   // create SDigits histograms in SDigits subdir
-      fhSDigits     = new TH1F("hHmpidSDigits",    "SDigits Q  distribution in HMPID",  500, 0., 5000.) ; 
+   TH1F   *hSDigits     = new TH1F("hHmpidSDigits",    "SDigits Q  distribution in HMPID",  500, 0., 5000.) ; 
+
+Add2SDigitsList(hSDigits,0);
 }
 
-//____________________________________________________________________________
-void AliHMPIDQADataMakerSim::MakeHits(TObject * data)
+//____________________________________________________________________________ 
+
+void AliHMPIDQADataMakerSim::MakeHits(TClonesArray * data)
 {
-  //fills QA histos for Hits
+ //
+ //filling QA histos for Hits
+ //
   TClonesArray * hits = dynamic_cast<TClonesArray *>(data) ; 
   if (!hits){
     AliError("Wrong type of hits container") ; 
@@ -139,50 +119,119 @@ void AliHMPIDQADataMakerSim::MakeHits(TObject * data)
     TIter next(hits); 
     AliHMPIDHit * hit ; 
     while ( (hit = dynamic_cast<AliHMPIDHit *>(next())) ) {
-      if(hit->Pid()<500000) fhHitQdc->Fill(hit->Q()) ;
-      if(hit->Pid()<500000) fhHitMap[hit->Ch()]->Fill(hit->LorsX(),hit->LorsY());
+      if(hit->Pid()<500000) GetHitsData(0)->Fill(hit->Q()) ;
+      if(hit->Pid()<500000) GetHitsData(hit->Ch()+1)->Fill(hit->LorsX(),hit->LorsY());
     }
   } 
-}
 
-//____________________________________________________________________________
-void AliHMPIDQADataMakerSim::MakeDigits( TObject * data)
+}
+//___________________________________________________________________________
+void AliHMPIDQADataMakerSim::MakeHits(TTree * data)
 {
-  //fills QA histos for Digits
-  TObjArray *chambers = dynamic_cast<TObjArray*>(data);
-  if ( !chambers) {
+//
+//Opening of the Hit TTree 
+//
+ TClonesArray *pHits=new TClonesArray("AliHMPIDHit");  data->SetBranchAddress("HMPID",&pHits);
+  for(Int_t iEnt=0;iEnt<data->GetEntriesFast();iEnt++){//entries loop
+    data->GetEntry(iEnt);
+    MakeHits(pHits);
+  }//entries loop
+}
+//____________________________________________________________________________
+void AliHMPIDQADataMakerSim::MakeDigits(TClonesArray * data)
+{
+ //
+ //filling QA histos for Digits
+ //
+  TObjArray *chamber = dynamic_cast<TObjArray*>(data);
+  if ( !chamber) {
     AliError("Wrong type of digits container") ; 
   } else {
-    for(Int_t i =0; i< chambers->GetEntries(); i++)
+    for(Int_t i =0; i< chamber->GetEntries(); i++)
       {
-	TClonesArray * digits = dynamic_cast<TClonesArray*>(chambers->At(i)); 
-	fhDigChEvt->Fill(i,digits->GetEntriesFast()/(48.*80.*6.));
+	TClonesArray * digits = dynamic_cast<TClonesArray*>(chamber->At(i)); 
+	GetDigitsData(2)->Fill(i,digits->GetEntriesFast()/(48.*80.*6.));
+        GetDigitsData(4)->Fill(i,digits->GetEntriesFast()/(48.*80.*6.));
+        Double_t highQ=0;
 	TIter next(digits); 
 	AliHMPIDDigit * digit; 
 	while ( (digit = dynamic_cast<AliHMPIDDigit *>(next())) ) {
-	  fhDigPcEvt->Fill(10.*i+digit->Pc(),1./(48.*80.));
-	  fhDigQ->Fill(digit->Q());
+	  GetDigitsData(0)->Fill(10.*i+digit->Pc(),1./(48.*80.));
+	  GetDigitsData(1)->Fill(digit->Q());
+          if(digit->Q()>highQ) highQ = digit->Q();
 	}  
+      GetDigitsData(3)->Fill(i,highQ);
+ 
       }
   }
 }
-
-//____________________________________________________________________________
-void AliHMPIDQADataMakerSim::MakeSDigits( TObject * data)
+//___________________________________________________________________________
+void AliHMPIDQADataMakerSim::MakeDigits(TTree * data)
 {
-  //fills QA histos for SDigits
+//
+//Opening the Digit Tree
+//
+ TObjArray *pObjDig=new TObjArray(AliHMPIDParam::kMaxCh+1);
+  for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++){
+    TClonesArray *pCA=new TClonesArray("AliHMPIDDigit");
+    pObjDig->AddAt(pCA,iCh);
+  }
+
+  pObjDig->SetOwner(kTRUE);
+
+  for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++){
+    data->SetBranchAddress(Form("HMPID%i",iCh),&(*pObjDig)[iCh]);
+  }
+  data->GetEntry(0);
+
+   MakeDigits((TClonesArray *)pObjDig);
+}
+//____________________________________________________________________________
+
+void AliHMPIDQADataMakerSim::MakeSDigits(TClonesArray * data)
+{
+ //
+ //filling QA histos for SDigits
+ //
   TClonesArray * sdigits = dynamic_cast<TClonesArray *>(data) ; 
   if (!sdigits) {
     AliError("Wrong type of sdigits container") ; 
   } else {
-    AliHMPIDDigit *ref = (AliHMPIDDigit *)sdigits->At(0);
-    Float_t zero = ref->GetTrack(0); 
     TIter next(sdigits) ; 
     AliHMPIDDigit * sdigit ; 
     while ( (sdigit = dynamic_cast<AliHMPIDDigit *>(next())) ) {
-      fhSDigits->Fill(sdigit->Q()) ;
-      if(zero == sdigit->GetTrack(0)) continue;
-      else zero = sdigit->GetTrack(0);
+	    GetSDigitsData(0)->Fill(sdigit->Q());
     } 
   }
 }
+//___________________________________________________________________________
+void AliHMPIDQADataMakerSim::MakeSDigits(TTree * data)
+{
+ //
+ // Opening the SDigit Tree
+ //
+ TClonesArray * sdigits = new TClonesArray("AliHMPIDDigit", 1000) ;
+
+  TBranch * branch = data->GetBranch("HMPID") ;
+  if ( ! branch ) {
+    AliError("HMPID SDigit Tree not found") ;
+    return;
+  }
+  branch->SetAddress(&sdigits) ;
+  branch->GetEntry(0) ;
+  MakeSDigits(sdigits) ;
+}
+//____________________________________________________________________________
+void AliHMPIDQADataMakerSim::StartOfDetectorCycle()
+{
+  //Detector specific actions at start of cycle
+  
+}
+
+void AliHMPIDQADataMakerSim::EndOfDetectorCycle(AliQA::TASKINDEX, TObjArray *)
+{
+  //Detector specific actions at end of cycle
+  // do the QA checking
+//  AliQAChecker::Instance()->Run(AliQA::kHMPID, task, obj) ;  
+}
+

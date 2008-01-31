@@ -16,83 +16,41 @@
 
 /* $Id$ */
 
-//---
-//  Produces the data needed to calculate the quality assurance. 
-//  All data must be mergeable objects.
-//  A. Mastroserio
-//---
-
 // --- ROOT system ---
 #include <TClonesArray.h>
 #include <TFile.h> 
 #include <TH1F.h> 
 #include <TH2F.h>
-#include <TH1I.h> 
-#include <TDirectory.h>
+#include <TProfile.h>
 #include <Riostream.h>
 // --- Standard library ---
 
 // --- AliRoot header files ---
 #include "AliESDCaloCluster.h"
 #include "AliESDEvent.h"
+#include "AliQAChecker.h"
 #include "AliLog.h"
 #include "AliHMPIDDigit.h"
 #include "AliHMPIDHit.h"
 #include "AliHMPIDCluster.h"
 #include "AliHMPIDQADataMakerRec.h"
-
+#include "AliHMPIDParam.h"
+#include "AliHMPIDRawStream.h"
+#include "AliLog.h"
 ClassImp(AliHMPIDQADataMakerRec)
            
 //____________________________________________________________________________ 
   AliHMPIDQADataMakerRec::AliHMPIDQADataMakerRec() : 
-  AliQADataMakerRec(AliQA::GetDetName(AliQA::kHMPID), "HMPID Quality Assurance Data Maker"),
-//  fhHitQdc(0x0), 
-//  fhSDigits(0x0),
-//  fhDigPcEvt(0x0),
-//  fhDigChEvt(0x0),
-//  fhDigQ(0x0),
-//  fhCluEvt(0x0),
-//  fhCluChi2(0x0),
-//  fhCluQ(0x0),
-  fhCluFlg(0x0), 
-  fhCluSize(0x0),  
-  fhMipCluSize(0x0),
-  fhCkovP(0x0),
-  fhSigP(0x0),
-  fhMipXY(0x0),
-  fhDifXY(0x0)
+  AliQADataMakerRec(AliQA::GetDetName(AliQA::kHMPID), "HMPID Quality Assurance Data Maker")
 {
   // ctor
-//  for(Int_t i=0; i<7; i++) fhHitMap[i]=0x0;
-  for(Int_t j=0; j<5; j++) fhPid[j]=0x0;
-//   fDetectorDir = fOutput->GetDirectory(GetName()) ;  
-//   if (!fDetectorDir) 
-//     fDetectorDir = fOutput->mkdir(GetName()) ;  
 }
 
 //____________________________________________________________________________ 
 AliHMPIDQADataMakerRec::AliHMPIDQADataMakerRec(const AliHMPIDQADataMakerRec& qadm) :
-  AliQADataMakerRec(), 
- // fhHitQdc(qadm.fhHitQdc), 
-//  fhSDigits(qadm.fhSDigits),
-//  fhDigPcEvt(qadm.fhDigPcEvt),
-//  fhDigChEvt(qadm.fhDigChEvt),
-//  fhDigQ(qadm.fhDigQ),
-  fhCluEvt(qadm.fhCluEvt),
-  fhCluChi2(qadm.fhCluChi2),
-  fhCluQ(qadm.fhCluQ),
-  fhCluFlg(qadm.fhCluFlg),
-  fhCluSize(qadm.fhCluSize),
-  fhMipCluSize(qadm.fhMipCluSize),
-  fhCkovP(qadm.fhCkovP),
-  fhSigP(qadm.fhSigP),
-  fhMipXY(qadm.fhMipXY),
-  fhDifXY(qadm.fhDifXY)
+  AliQADataMakerRec() 
 {
   //copy ctor 
-//  for(Int_t i=0; i<7; i++) fhHitMap[i]=qadm.fhHitMap[i];
-  for(Int_t j=0; j<5; j++) fhPid[j]=qadm.fhPid[j];
-
   SetName((const char*)qadm.GetName()) ; 
   SetTitle((const char*)qadm.GetTitle()); 
 }
@@ -111,50 +69,114 @@ AliHMPIDQADataMakerRec& AliHMPIDQADataMakerRec::operator = (const AliHMPIDQAData
 void AliHMPIDQADataMakerRec::InitRecPoints()
 {
   // create cluster histograms in RecPoint subdir
-      fhCluEvt=new TH1F("CluPerEvt","# clusters per chamber",16,-1,7);
-      fhCluChi2  =new TH1F("CluChi2"  ,"Chi2 "               ,1000,0,100);
-      fhCluQ   =new TH1F("CluQ"   ,"Cluster charge"        ,3000,0,3000);
-      fhCluFlg   =new TH1F("CluFlg"   ,"Cluster flag"        ,14,-1.5,12.5);
-      fhCluSize  =new TH1F("CluSize"  ,"Raw cluster size    ",100,0,100);
-      fhMipCluSize =new TH1F("MipCluSize"  ,"Mip cluster size    ",100,0,100);
+
+  TH1F *hCluEvt=new TH1F("CluPerEvt","Cluster multiplicity"   ,100,0,100);
+  TH1F *hCluChi2  =new TH1F("CluChi2"  ,"Chi2 "               ,1000,0,100);
+  TH1F *hCluFlg   =new TH1F("CluFlg"   ,"Cluster flag"        ,14,-1.5,12.5); hCluFlg->SetFillColor(5);
+  TH1F *hCluSize  =new TH1F("CluSize"  ,"Cluster size        ",100,0,100);
+  TH1F *hCluQ     =new TH1F("CluQ"     ,"Cluster charge (ADC)",1000,0,5000);
+
+  Add2RecPointsList(hCluEvt , 0);
+  Add2RecPointsList(hCluChi2, 1);
+  Add2RecPointsList(hCluFlg , 2);
+  Add2RecPointsList(hCluSize, 3);
+  Add2RecPointsList(hCluQ   , 4);
+}
+//____________________________________________________________________________
+
+void AliHMPIDQADataMakerRec::InitRaws()
+{
+//
+// Booking QA histo for Raw data
+//
+  const Int_t nerr = (Int_t)AliHMPIDRawStream::kSumErr+1;
+  const char *hnames[nerr]={"RawDataSize","RawMarkerSize","WrongRow","WrongDilogic","WrongPad","EoEFlag",
+                             "EoESize","EoEDILOGIC","EoERow","BadSegWord","WrongSeg","RowMarkerSize","NoErrors","Invalid"};
+  TH1F *hqPad[14], *hSumErr[14];
+
+  for(Int_t iddl =0; iddl<14; iddl++) {
+
+  hqPad[iddl] = new TH1F(Form("hqPadDDL%i",iddl), Form("Pad Q Entries at DDL %i",iddl), 500,0,5000);
+  Add2RawsList(hqPad[iddl],iddl);
+  hSumErr[iddl] = new TH1F(Form("SumErrDDL%i",iddl), Form("Error summary for ddl %i",iddl), 2*nerr,0,2*nerr);
+  hSumErr[iddl]->SetYTitle("%");
+  for(Int_t ilabel=0; ilabel< nerr; ilabel++) {
+  hSumErr[iddl]->GetXaxis()->CenterLabels(kTRUE);
+  hSumErr[iddl]->GetXaxis()->SetBinLabel((2*ilabel+1),Form("%i  %s",ilabel+1,hnames[ilabel]));
+  }
+  Add2RawsList(hSumErr[iddl],iddl+14);
+ }
+  TH1F *hNevRaws = new TH1F("NevRaws","Events per DDL",15,0,15);
+  Add2RawsList(hNevRaws,28);
 }
 //____________________________________________________________________________
 void AliHMPIDQADataMakerRec::InitESDs()
 {
-  //create ESDs histograms in ESDs subdir
-     fhCkovP  = new TH2F("CkovP" , "#theta_{c}, [rad];P, [GeV]"   , 150,   0,  7  ,100, 0, 1)   ;
-     fhSigP   = new TH2F("SigP"  ,"#sigma_{#theta_c} [mrad];[GeV]", 150,   0,  7  ,100, 0, 1)   ;
-     fhMipXY  = new TH2F("MipXY" ,"mip position"                  , 260,   0,130  ,252, 0,126)  ;
-     fhDifXY  = new TH2F("DifXY" ,"diff"                          , 200, -10, 10  ,200,-10,10)  ;
-     fhPid[0] = new TH1F("PidE" ,"PID: e yellow #mu magenta"  ,100,0,1)                         ;
-     fhPid[1] = new TH1F("PidMu","pid of #mu"                 ,100,0,1)                         ;
-     fhPid[2] = new TH1F("PidPi","PID: #pi red K green p blue",100,0,1)                         ;
-     fhPid[3] = new TH1F("PidK" ,"pid of K"                   ,100,0,1)                         ;
-     fhPid[4] = new TH1F("PidP" ,"pid of p"                   ,100,0,1)                         ;
-}
+  //
+  //Booking ESDs histograms
+   TH2F*  hCkovP  = new TH2F("CkovP" , "#theta_{c}, [rad];P, [GeV]"   , 150,      0,  7  ,100, 0, 1)   ;
+   TH2F*  hSigP   = new TH2F("SigP"  ,"#sigma_{#theta_c} [mrad];[GeV]", 150,      0,  7  ,100, 0, 1)   ;
+   TH2F*  hMipXY  = new TH2F("MipXY" ,"mip position"                  , 260,      0,130  ,252, 0,126)  ;
+   TH2F*  hDifXY  = new TH2F("DifXY" ,"diff"                          , 200,    -10, 10  ,200,-10,10)  ;
+   TH1F*  hPid[5];
+   hPid[0] = new TH1F("PidE" ,"electron response"              , 101, -0.005,1.005)             ;
+   hPid[1] = new TH1F("PidMu","#mu response"                   , 101, -0.005,1.005)             ;
+   hPid[2] = new TH1F("PidPi","#pi response"                   , 101, -0.005,1.005)             ;
+   hPid[3] = new TH1F("PidK" ,"K response"                     , 101, -0.005,1.005)             ;
+   hPid[4] = new TH1F("PidP" ,"p response"                         ,101, -0.005,1.005)             ;
 
+Add2ESDsList(hCkovP,0);
+Add2ESDsList(hSigP ,1);
+Add2ESDsList(hMipXY,2);
+Add2ESDsList(hDifXY,3);
+for(Int_t i=0; i< 5; i++) Add2ESDsList(hPid[i],i+4);
+}
 //____________________________________________________________________________
+void AliHMPIDQADataMakerRec::MakeRaws(AliRawReader *rawReader)
+{
+//
+// Filling Raws QA histos
+//
+    AliHMPIDRawStream stream(rawReader);
+
+    while(stream.Next())
+     {
+       UInt_t ddl=stream.GetDDLNumber(); //returns 0,1,2 ... 13
+
+       for(Int_t iPad=0;iPad<stream.GetNPads();iPad++) {
+       GetRawsData(ddl)->Fill(stream.GetChargeArray()[iPad]);}
+                                                           
+       GetRawsData(28)->Fill(ddl);
+
+       for(Int_t iErr =1; iErr<(Int_t)AliHMPIDRawStream::kSumErr; iErr++){
+ 
+         Int_t NumOfErr = stream.GetErrors(ddl,iErr);
+
+         GetRawsData(ddl+14)->Fill(iErr,NumOfErr);
+       }
+     }
+   stream.Delete();
+}
+//___________________________________________________________________________
 void AliHMPIDQADataMakerRec::MakeRecPoints(TTree * clustersTree)
 {
-  //fills QA histos for clusters
-
+  //
+  //filling QA histos for clusters
+  //
   TClonesArray *clusters = new TClonesArray("AliHMPIDCluster");
   for(int i=AliHMPIDParam::kMinCh;i<=AliHMPIDParam::kMaxCh;i++){
     TBranch *branch = clustersTree->GetBranch(Form("HMPID%d",i));
     branch->SetAddress(&clusters);
     branch->GetEntry(0);
 
-    fhCluEvt->Fill(i,clusters->GetEntries());
+    GetRecPointsData(0)->Fill(i,clusters->GetEntries());
     TIter next(clusters);
     AliHMPIDCluster *clu;
-    while ( (clu = dynamic_cast<AliHMPIDCluster *>(next())) ) {;
-      fhCluFlg->Fill(clu->Status());  fhCluChi2->Fill(clu->Chi2());  fhCluSize->Fill(clu->Size());
-      fhCluQ->Fill(clu->Q()); 
-      Int_t qCut=100;
-      if(clu->Q()>qCut) {
-	fhMipCluSize->SetTitle(Form("Mip cluster size at a Qcut = %i ADC",qCut));
-	fhMipCluSize->Fill(clu->Size());
-      }
+    while ( (clu = dynamic_cast<AliHMPIDCluster *>(next())) ) {
+      GetRecPointsData(1)->Fill(clu->Chi2());
+      GetRecPointsData(2)->Fill(clu->Status());
+      GetRecPointsData(3)->Fill(clu->Size());
+      GetRecPointsData(4)->Fill(clu->Q()); 
     }
   }
 
@@ -165,21 +187,42 @@ void AliHMPIDQADataMakerRec::MakeRecPoints(TTree * clustersTree)
 //____________________________________________________________________________
 void AliHMPIDQADataMakerRec::MakeESDs(AliESDEvent * esd)
 {
+  //
   //fills QA histos for ESD
+  //
   for(Int_t iTrk = 0 ; iTrk < esd->GetNumberOfTracks() ; iTrk++){
     AliESDtrack *pTrk = esd->GetTrack(iTrk) ;
-    fhCkovP->Fill(pTrk->GetP(),pTrk->GetHMPIDsignal());
-    fhSigP->Fill( pTrk->GetP(),TMath::Sqrt(pTrk->GetHMPIDchi2()));
+    GetESDsData(0)->Fill(pTrk->GetP(),pTrk->GetHMPIDsignal());
+    GetESDsData(1)->Fill( pTrk->GetP(),TMath::Sqrt(pTrk->GetHMPIDchi2()));
     Float_t xm,ym; Int_t q,np;  
     pTrk->GetHMPIDmip(xm,ym,q,np);                       //mip info
-    fhMipXY->Fill(xm,ym);
+    GetESDsData(2)->Fill(xm,ym);
     Float_t xRad,yRad,th,ph;        
     pTrk->GetHMPIDtrk(xRad,yRad,th,ph);              //track info at the middle of the radiator
     Float_t xPc = xRad+9.25*TMath::Tan(th)*TMath::Cos(ph); // temporar: linear extrapol (B=0!)
     Float_t yPc = yRad+9.25*TMath::Tan(th)*TMath::Sin(ph); // temporar:          "
-    fhDifXY->Fill(xm-xPc,ym-yPc); //track info
+    GetESDsData(3)->Fill(xm-xPc,ym-yPc); //track info
     Double_t pid[5] ;      pTrk->GetHMPIDpid(pid) ;
-    for(Int_t i = 0 ; i < 5 ; i++) fhPid[i]->Fill(pid[i]) ;
+    for(Int_t i = 0 ; i < 5 ; i++) GetESDsData(4+i)->Fill(pid[i]) ;
+  }
+}
+//____________________________________________________________________________
+void AliHMPIDQADataMakerRec::StartOfDetectorCycle()
+{
+  //Detector specific actions at start of cycle
+  
+}
+
+void AliHMPIDQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX, TObjArray *)
+{
+  //Detector specific actions at end of cycle
+  // do the QA checking
+  //AliQAChecker::Instance()->Run(AliQA::kHMPID, task, obj);
+  //if(task==AliQA::kRAWS){  
+
+   for(Int_t iddl=0; iddl<14; iddl++)
+  {
+  if(GetRawsData(28)->GetBinContent(iddl)!=0) GetRawsData(iddl+14)->Scale(100./GetRawsData(28)->GetBinContent(iddl));
   }
 }
 
