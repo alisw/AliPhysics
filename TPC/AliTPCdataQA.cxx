@@ -165,10 +165,13 @@ Bool_t AliTPCdataQA::ProcessEventFast(AliRawReader *rawReader)
   //
   //  Event processing loop - AliRawReader
   //
-  fEventCounter++;
   fSectorLast  = -1;
   AliTPCRawStreamFast *rawStreamFast = new AliTPCRawStreamFast(rawReader, (AliAltroMapping**)fMapping);
   Bool_t res=ProcessEventFast(rawStreamFast);
+  if(res)
+    fEventCounter++; // only increment event counter if there is TPC data
+                     // otherwise Analyse (called in QA) fails
+
   delete rawStreamFast;
   return res;
 }
@@ -208,11 +211,15 @@ Bool_t AliTPCdataQA::ProcessEvent(AliRawReader *rawReader)
   //
 
   // if fMapping is NULL the rawstream will crate its own mapping
-  fEventCounter++;
   fSectorLast  = -1;
   AliTPCRawStream rawStream(rawReader, (AliAltroMapping**)fMapping);
   rawReader->Select("TPC");
-  return ProcessEvent(&rawStream);
+  Bool_t res =  ProcessEvent(&rawStream);
+
+  if(res)
+    fEventCounter++; // only increment event counter if there is TPC data
+                     // otherwise Analyse (called in QA) fails
+  return res;
 }
 
 
@@ -409,8 +416,7 @@ void AliTPCdataQA::Analyse()
 
   Int_t nTimeBins = fLastTimeBin - fFirstTimeBin +1;
   
-  cout << "Analyse called" << endl
-       << "EventCounter: " << fEventCounter << endl
+  cout << "EventCounter: " << fEventCounter << endl
        << "TimeBins: " << nTimeBins << endl;
 
   if (fMeanCharge && fNoThreshold) fMeanCharge->Divide(fNoThreshold);

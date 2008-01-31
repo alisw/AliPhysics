@@ -130,11 +130,16 @@ void AliTPCQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX task, TObjArray *
 
   if(fTPCdataQA) { // do the final step of the QA for Raw data
 
-    fTPCdataQA->Analyse();
+    fTPCdataQA->Analyse(); // 31/1-08 Analyse is now protected against
+                           //         RAW data files with no TPC data
     
     // get the histograms and add them to the output
-    fHistRawsOccupancy = fTPCdataQA->GetNoThreshold()->MakeHisto1D(0, 1, -1);
-    Add2RawsList(fHistRawsOccupancy, 0);
+    // 31/8-08 Histogram is only added if the Calibration class 
+    //         receives TPC data 
+    if(fTPCdataQA->GetNoThreshold()) { 
+      fHistRawsOccupancy = fTPCdataQA->GetNoThreshold()->MakeHisto1D(0, 1, -1);
+      Add2RawsList(fHistRawsOccupancy, 0);
+    }
   }
 
   AliQAChecker::Instance()->Run(AliQA::kTPC, task, list) ;  
