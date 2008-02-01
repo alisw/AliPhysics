@@ -145,6 +145,10 @@ int main(int argc, char **argv) {
   int startSeg = 1;
 
 #ifndef SPD_DA_OFF
+  if (getenv("DATE_RUN_NUMBER")==0) {
+    printf("DATE_RUN_NUMBER not properly set.\n");
+    return -1;
+  }
   int runNr = atoi(getenv("DATE_RUN_NUMBER"));
 #else
   int runNr = atoi(argv[1]);

@@ -129,6 +129,10 @@ int main(int argc, char **argv) {
   // ********* STEP 1: Produce phys container files (Reference Data). ***********************************
 
 #ifndef SPD_DA_OFF
+  if (getenv("DATE_RUN_NUMBER")==0) {
+    printf("DATE_RUN_NUMBER not properly set.\n");
+    return -1;
+  }
   int runNr = atoi(getenv("DATE_RUN_NUMBER"));
 #else
   int runNr = atoi(argv[1]);
