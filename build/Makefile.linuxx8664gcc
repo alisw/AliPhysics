@@ -8,6 +8,8 @@ XARGS = xargs -r
 CXX           = g++ 
 F77	      = g77
 CC	      = gcc
+CCMAJORV      = $(shell $(CC) -dumpversion | cut -d. -f1)
+CCMINORV      = $(shell $(CC) -dumpversion | cut -d. -f2)
 
 # Global optimisation
 OPT           = -g -O
@@ -25,8 +27,13 @@ CLIBCOPT      =
 CLIBFOPT      = $(CLIBDEFS)
 
 # Compiler flags
+ifeq ($(CCMAJORV),4)
+CXXFLAGS       = $(CXXOPT) -W -Wall -Weffc++ -Woverloaded-virtual -fPIC -pipe -fmessage-length=0 -Wno-long-long -pedantic-errors -ansi
+CXXFLAGSNO     = $(CXXNOOPT) -W -Wall -Weffc++ -fPIC -pipe -fmessage-length=0 -Wno-long-long -pedantic-errors -ansi
+else
 CXXFLAGS      = $(CXXOPT)  -Wall -fPIC -pipe
 CXXFLAGSNO    = $(CXXNOOPT)  -Wall -fPIC -pipe
+endif
 CFLAGS	      = -Wall -fPIC -pipe
 FFLAGS        = $(CLIBFOPT) $(FOPT) -fno-second-underscore -fPIC
 # rmkdepend flags for building dependencies of FORTRAN files
