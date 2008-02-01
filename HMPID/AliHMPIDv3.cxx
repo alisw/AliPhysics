@@ -1258,10 +1258,10 @@ The trapezoid is build in the xy plane
   xtruOut->DefineSection(1,  +l[4]/2., 0., 0., 1.0);//1= II piano z;
   
   Double_t tgalpha = 0;
-   if(xv[3]-xv[0] == 0 ) tgalpha = 9999999999; 
+   if(xv[3]-xv[0] == 0 ) tgalpha = 999999; 
    else tgalpha =  l[2]/TMath::Abs(xv[3]-xv[0]);
   Double_t tgbeta = 0;
-  if(xv[2]-xv[1]==0) tgbeta = 9999999999;
+  if(xv[2]-xv[1]==0) tgbeta = 999999;
   else tgbeta = l[2]/TMath::Abs(xv[2]-xv[1]);
   
   xv[0] = xv[0]-l[5]/tgalpha; yv[0] =  l[2]/2 - l[5];
