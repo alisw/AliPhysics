@@ -362,8 +362,11 @@ void AliTOFRawStream::LoadRawData(Int_t indexDDL)
     indexDDL++) {
   */
 
-  fTOFrawData = new TClonesArray("AliTOFrawData",1000); //potential memory leak
-    //fTOFrawData->Clear();
+  fTOFrawData->Clear();
+  //fTOFrawData = new TClonesArray("AliTOFrawData",1000); //potential memory leak
+  //fTOFrawData->Clear();
+  TClonesArray &arrayTofRawData =  *fTOFrawData;
+
   fPackedDigits = 0;
 
   // create raw data map
@@ -377,7 +380,7 @@ void AliTOFRawStream::LoadRawData(Int_t indexDDL)
     
   Bool_t signal = kFALSE;
 
-  
+  AliTOFrawData *rawDigit = NULL;
 
   while(Next()) {
 
@@ -392,7 +395,7 @@ void AliTOFRawStream::LoadRawData(Int_t indexDDL)
 
       if (rawMap->TestHit(slot) != kEmpty) {
 
-	AliTOFrawData *rawDigit = static_cast<AliTOFrawData*>(rawMap->GetHit(slot));
+	rawDigit = static_cast<AliTOFrawData*>(rawMap->GetHit(slot));
 
 	if (rawDigit->GetLeading()!=-1 && rawDigit->GetTrailing()==-1 &&
 	    fLeadingEdge==-1 && fTrailingEdge!=-1) {
@@ -408,18 +411,18 @@ void AliTOFRawStream::LoadRawData(Int_t indexDDL)
 		  fLeadingEdge!=-1 && fTrailingEdge==-1) */)
 	  {
 
-	  TClonesArray &arrayTofRawData =  *fTOFrawData;
-	  new (arrayTofRawData[fPackedDigits++]) AliTOFrawData(fTRM, fTRMchain, fTDC, fTDCchannel, fTime, fToT, fLeadingEdge, fTrailingEdge, fPSbit, fACQ, fErrorFlag);
+	    //TClonesArray &arrayTofRawData =  *fTOFrawData;
+	    new (arrayTofRawData[fPackedDigits++]) AliTOFrawData(fTRM, fTRMchain, fTDC, fTDCchannel, fTime, fToT, fLeadingEdge, fTrailingEdge, fPSbit, fACQ, fErrorFlag);
 
-	rawMap->SetHit(slot);
+	    rawMap->SetHit(slot);
 
-	}
+	  }
 
 
       }
       else {
 
-	TClonesArray &arrayTofRawData =  *fTOFrawData;
+	//TClonesArray &arrayTofRawData =  *fTOFrawData;
 	new (arrayTofRawData[fPackedDigits++]) AliTOFrawData(fTRM, fTRMchain, fTDC, fTDCchannel, fTime, fToT, fLeadingEdge, fTrailingEdge, fPSbit, fACQ, fErrorFlag);
 
 	rawMap->SetHit(slot);
@@ -457,7 +460,7 @@ void AliTOFRawStream::LoadRawData(Int_t indexDDL)
 
     //} // closed loop on indexDDL
 
-
+  rawMap->Delete();
 
 }
 
