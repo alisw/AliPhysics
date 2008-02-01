@@ -59,10 +59,21 @@ int main(int argc, char **argv) {
                                         "TStreamerInfo",
                                         "RIO",
                                         "TStreamerInfo()");
+
+  if(daqDA_DB_getFile(FILE_IN, FILE_IN)){
+     printf("Couldn't get input file >>inPhys.dat<< from DAQ_DB !!!\n");
+     return -1;
+  }
+
   
   FILE *inp;
   char c;
   inp = fopen(FILE_IN, "r");
+  if(!inp){
+        printf("Input file >>inPhys.dat<< not found !!!\n");
+        return -1;
+  }
+
   while((c=getc(inp))!=EOF) {
     switch(c) {
       case 'a': {fscanf(inp, "%d", &ccbx ); break;} //N of X bins hCFD1_CFD
@@ -149,7 +160,7 @@ int main(int argc, char **argv) {
       continue;
     }
  
-    iev++; 
+//    iev++; 
 
     /* use event - here, just write event id to result file */
     eventT=event->eventType;
@@ -163,8 +174,13 @@ int main(int argc, char **argv) {
 	break;
 
       case PHYSICS_EVENT:
-      printf(" event number = %i \n",iev);
+      iev++;
 
+      if(iev==1){
+           printf("First event - %i\n",iev);
+      }
+
+//      printf(" event number = %i \n",iev);
 
       // Initalize raw-data reading and decoding
       AliRawReader *reader = new AliRawReaderDate((void*)event);
@@ -226,6 +242,7 @@ int main(int argc, char **argv) {
     /* exit when last event received, no need to wait for TERM signal */
     if (eventT==END_OF_RUN) {
       printf("EOR event detected\n");
+      printf("Number of events processed - %i\n ",iev); 	
       break;
     }
   }

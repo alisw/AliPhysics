@@ -59,9 +59,21 @@ int main(int argc, char **argv) {
 					"TStreamerInfo",
 					"RIO",
 					"TStreamerInfo()"); 
+  
+  if(daqDA_DB_getFile(FILE_IN, FILE_IN)){
+     printf("Couldn't get input file >>inLaser.dat<< from DAQ_DB !!!\n");
+     return -1;
+  }
+  
+
   FILE *inp;
   char c;
   inp = fopen(FILE_IN, "r");  
+  if(!inp){
+	printf("Input file >>inLaser.dat<< not found !!!\n");
+	return -1;
+  }
+
   while((c=getc(inp))!=EOF) {
     switch(c) {
       case 'a': {fscanf(inp, "%d", &cqbx ); break;} //N of X bins hCFD_QTC
@@ -157,7 +169,7 @@ int main(int argc, char **argv) {
       continue;
     }
  
-    iev++; 
+//    iev++; 
 
     /* use event - here, just write event id to result file */
     eventT=event->eventType;
@@ -170,9 +182,16 @@ int main(int argc, char **argv) {
       case END_OF_RUN:
 	break;
 
-//      case CALIBRATION_EVENT:
-      case PHYSICS_EVENT:
-      printf(" event number = %i \n",iev);
+      case CALIBRATION_EVENT:
+//      case PHYSICS_EVENT:
+      iev++; 
+
+      if(iev==1){
+           printf("First event - %i\n",iev);
+      }
+//      if((iev<10) || (iev>11000)){ 
+//           printf(" event number = %i \n",iev);
+//      }
 
 
       // Initalize raw-data reading and decoding
@@ -247,6 +266,7 @@ int main(int argc, char **argv) {
     /* exit when last event received, no need to wait for TERM signal */
     if (eventT==END_OF_RUN) {
       printf("EOR event detected\n");
+      printf("Number of events processed - %i\n ",iev);
       break;
     }
   }
