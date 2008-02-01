@@ -220,9 +220,9 @@ void AliHMPIDQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX, TObjArray *)
   //AliQAChecker::Instance()->Run(AliQA::kHMPID, task, obj);
   //if(task==AliQA::kRAWS){  
 
-   for(Int_t iddl=0; iddl<14; iddl++)
-  {
-  if(GetRawsData(28)->GetBinContent(iddl)!=0) GetRawsData(iddl+14)->Scale(100./GetRawsData(28)->GetBinContent(iddl));
-  }
+//   for(Int_t iddl=0; iddl<14; iddl++)
+//  {
+//  if(GetRawsData(28)->GetBinContent(iddl)!=0) GetRawsData(iddl+14)->Scale(100./GetRawsData(28)->GetBinContent(iddl));
+//  }
 }
 
