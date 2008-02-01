@@ -40,6 +40,7 @@ class AliGRPPreprocessor: public AliPreprocessor {
 
   TList *ProcessDaqLB();
   UInt_t ProcessDaqFxs();
+  UInt_t ProcessDcsFxs();
   TList *ProcessDcsDPs(TMap* valueSet, UInt_t iStartTime, UInt_t iStopTime);
   AliDCSSensorArray *GetPressureMap(TMap *dcsAliasMap, AliDCSSensorArray *fPressure);
 

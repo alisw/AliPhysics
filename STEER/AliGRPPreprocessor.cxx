@@ -33,6 +33,9 @@
 #include "AliGRPDCS.h"
 #include "AliDCSSensorArray.h"
 
+#include "AliTriggerConfiguration.h"
+#include "AliTriggerRunScalers.h"
+
 #include "AliCDBMetaData.h"
 #include "AliLog.h"
 
@@ -120,6 +123,16 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap) {
 	return 1;
   }
   
+  //=================//
+  // DCS FXS         //
+  //=================//
+  UInt_t iDcsFxs = ProcessDcsFxs();
+  if(iDcsFxs == 0) {
+  	Log(Form("ProcessDcsFxs successful!"));
+  } else {
+  	Log(Form("Could not store CTP run configuration and scalers!"));
+	return 1;
+  }
   
   //=================//
   // DCS data points //
@@ -327,6 +340,81 @@ UInt_t AliGRPPreprocessor::ProcessDaqFxs() {
   
   return 0;
   
+}
+
+//_______________________________________________________________
+UInt_t AliGRPPreprocessor::ProcessDcsFxs() {
+  //======DCS FXS======//
+  // Get the CTP run configuration
+  // and scalers from DCS FXS
+
+  {
+    // Get the CTP run configuration
+    TList* list = GetFileSources(kDCS,"CTP_runconfig");  
+    if (!list) {
+      Log("No CTP runconfig file: connection problems with DAQ FXS logbook!");
+      return 1;
+    }
+  
+    if (list->GetEntries() == 0) {
+      Log("No CTP runconfig file to be processed!");
+    }
+    else {
+      TIter iter(list);
+      TObjString *source;
+      while ((source = dynamic_cast<TObjString *> (iter.Next()))) {
+	TString runcfgfile = GetFile(kDCS, "CTP_runconfig", source->GetName());
+	Log(Form("File with Id CTP_runconfig found in source %s! Copied to %s",source->GetName(),runcfgfile.Data()));
+	AliTriggerConfiguration *runcfg = AliTriggerConfiguration::LoadConfiguration(runcfgfile);
+	if (!runcfg) {
+	  Log("Bad CTP run configuration file! The corresponding CDB entry will not be filled!");
+	}
+	AliCDBMetaData metaData;
+	metaData.SetBeamPeriod(0);
+	metaData.SetResponsible("Roman Lietava");
+	metaData.SetComment("CTP run configuration");
+	if (!Store("CTP","Config", runcfg, &metaData, 0, 0)) {
+	  Log("Unable to store the CTP run configuration object to OCDB!");
+	}
+      }
+    }
+    delete list;
+  }
+
+  {
+    // Get the CTP counters information
+    TList* list = GetFileSources(kDCS,"CTP_xcounters");  
+    if (!list) {
+      Log("No CTP counters file: connection problems with DAQ FXS logbook!");
+      return 1;
+    }
+  
+    if (list->GetEntries() == 0) {
+      Log("No CTP counters file to be processed!");
+    }
+    else {
+      TIter iter(list);
+      TObjString *source;
+      while ((source = dynamic_cast<TObjString *> (iter.Next()))) {
+	TString countersfile = GetFile(kDCS, "CTP_xcounters", source->GetName());
+	Log(Form("File with Id CTP_xcounters found in source %s! Copied to %s",source->GetName(),countersfile.Data()));
+	AliTriggerRunScalers *scalers = AliTriggerRunScalers::ReadScalers(countersfile);
+	if (!scalers) {
+	  Log("Bad CTP counters file! The corresponding CDB entry will not be filled!");
+	}
+	AliCDBMetaData metaData;
+	metaData.SetBeamPeriod(0);
+	metaData.SetResponsible("Roman Lietava");
+	metaData.SetComment("CTP scalers");
+	if (!Store("CTP","Scalers", scalers, &metaData, 0, 0)) {
+	  Log("Unable to store the CTP scalers object to OCDB!");
+	}
+      }
+    }
+    delete list;
+  }
+
+  return 0;
 }
 
 //_______________________________________________________________
