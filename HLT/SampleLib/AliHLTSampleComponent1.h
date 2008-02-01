@@ -22,29 +22,50 @@
  * illustrates the existence of several components in ine library and
  * allows to set up a very simple chain with different components.
  *
- * Component ID: \b Sample-component1 <br>
- * Library: \b libAliHLTSample.so
+ * <h2>General properties:</h2>
  *
- * Mandatory arguments: <br>
+ * Component ID: \b Sample-component1 <br>
+ * Library: \b libAliHLTSample.so     <br>
+ * Input Data Types: @ref kAliHLTAnyDataType <br>
+ * Output Data Types: none <br>
+ *
+ * <h2>Mandatory arguments:</h2>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formating -->
  * \li -mandatory1     <i> teststring   </i> <br>
  *      an argument with one parameter
  * \li -mandatory2                           <br>
  *      an argument without parameters
  *
- * Optional arguments: <br>
+ * <h2>Optional arguments:</h2>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formating -->
  * \li -optional1      <i> teststring   </i> <br>
  *      an argument with one parameter
  * \li -optional2                            <br>
  *      an argument without parameters
  *
- * Configuration: <br>
+ * <h2>Configuration:</h2>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formating -->
  * \li -config1      <i> teststring   </i> <br>
  *      a configuration argument with one parameter
  * \li -config2                            <br>
  *      a configuration argument without parameters
+ *
+ * <h2>Default CDB entries:</h2>
+ * The component has just one default CDB entry in 
+ * <tt>HLT/ConfigSample/SampleComponent1</tt>.
+ * It does not load any configuration from the global <tt>ConfigHLT</tt>
+ * folder.
+ * \li -TObjString object holding a string with the configuration parameters
+ *      explained above
+ *
+ * <h2>Performance:</h2>
+ * The component does not any event data processing.
+ *
+ * <h2>Memory consumption:</h2>
+ * The component does not any event data processing.
+ *
+ * <h2>Output size:</h2>
+ * The component has no output data.
  *
  * Furthermore it illustrates the component argument scanning and the
  * component configuration. There are actually two methods to init/

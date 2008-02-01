@@ -215,7 +215,13 @@ int AliHLTComponent::InitCDB(const char* cdbPath, AliHLTComponentHandler* pHandl
   // find the symbol
   AliHLTMiscInitCDB_t pFunc=(AliHLTMiscInitCDB_t)pHandler->FindSymbol(ALIHLTMISC_LIBRARY, ALIHLTMISC_INIT_CDB);
   if (pFunc) {
-    if ((iResult=(*pFunc)(cdbPath))>=0) {
+    TString path=cdbPath;
+    // very temporary fix, have to check for other formats
+    if (!path.BeginsWith("local://")) {
+      path="local://";
+      path+=cdbPath;
+    }
+    if ((iResult=(*pFunc)(path.Data()))>=0) {
       if (!(fCDBSetRunNoFunc=pHandler->FindSymbol(ALIHLTMISC_LIBRARY, ALIHLTMISC_SET_CDB_RUNNO))) {
 	Message(NULL, kHLTLogWarning, "AliHLTComponent::InitCDB", "init CDB",
 		"can not find function to set CDB run no");
