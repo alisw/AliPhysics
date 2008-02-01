@@ -36,6 +36,7 @@
 #include "AliMUONGeometryTransformer.h"
 
 #include "AliRun.h"
+#include "AliCDBManager.h"
 
 #include <Riostream.h>
 
@@ -49,6 +50,11 @@ void MUONGenerateGeometryData(Bool_t transforms = true,
 /// \param svmaps          option to generete svmap.dat
 /// \param writeEnvelope   option to include virtual envelopes
 ///                        in the volume paths
+
+  // Default CDB and run number
+  AliCDBManager* man = AliCDBManager::Instance();
+  man->SetDefaultStorage("local://$ALICE_ROOT");
+  man->SetRun(0);
 
   // Initialize
   gAlice->Init("$ALICE_ROOT/MUON/Config.C");
