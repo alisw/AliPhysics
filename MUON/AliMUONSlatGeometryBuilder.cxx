@@ -504,11 +504,11 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	char compName[11] = "SC5C";
 	char csName[14] = "centerSlatC5C";
 	TGeoVolume *mVol = 0x0;
-	TGeoShape *centerSlat[nSlatType*((nVol+1)*2)];	
-	TGeoShape *composite[nSlatType*((nVol+1)*2)];
+	TObjArray centerSlat(nSlatType*((nVol+1)*2));	
+	TObjArray composite(nSlatType*((nVol+1)*2));
+
 
 	// Beam shield recess
-	//	TGeoTube *tubeCut = new TGeoTube("tubeCut", 0., AliMUONConstants::Rmin(2), kSlatWidth/2.+0.001);
 	new TGeoTube("tubeCut", 0., AliMUONConstants::Rmin(2), kSlatWidth/2.+0.001);
 	// Displacement
 	TGeoTranslation* trCTube = new TGeoTranslation("trCTube", -(kPcbLength-csvPcbLength/2.+kVframeLength/2.), 0., 0.);
@@ -521,7 +521,6 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	// Displacement
 	TGeoTranslation* trCBox = new TGeoTranslation("trCBox",cFramepar3[0]*TMath::Cos(cPhi2)+boxCCut->GetDX(), 0., 0.);
 	trCBox->RegisterYourself();
-	//	TGeoBBox *boxDCut = new TGeoBBox("boxDCut",(kPcbLength+kVframeLength)/2., hFramepar3[1], vFramepar[2]+0.001);
 	new TGeoBBox("boxDCut",(kPcbLength+kVframeLength)/2., hFramepar3[1], vFramepar[2]+0.001);
 	// Displacement
 	TGeoTranslation* trDBox = new TGeoTranslation("trDBox",kPcbLength/2., kYpos3[1], 0.);
@@ -544,8 +543,8 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	      else {
 		centerSlat[lIndex] = mVol->GetShape();
 		sprintf(csName,"centerSlat%c%d%c",slatType[iSlatType],iCh,volLetter[iVol]);
-		centerSlat[lIndex]->SetName(csName);	 	  
-		
+		((TGeoShape*)centerSlat[lIndex])->SetName(csName); 
+
 		// Composite shape
 		TString compOperation(csName);
 		compOperation+="-tubeCut:tr";
@@ -561,7 +560,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 		composite[lIndex] = new TGeoCompositeShape(compName, compOperation.Data()); 
 		
 		// Reset shape to volume      
-		mVol->SetShape(composite[lIndex]);
+		mVol->SetShape((TGeoShape*)composite[lIndex]);
 	      }
 	    }
 
@@ -576,7 +575,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	    else {
 	      centerSlat[lIndex] = mVol->GetShape();
 	      sprintf(csName,"centerSlat%c%dD",slatType[iSlatType],iCh);
-	      centerSlat[lIndex]->SetName(csName);	 	  
+	      ((TGeoShape*)centerSlat[lIndex])->SetName(csName);	 	  
 	      
 	      // Composite shape
 	      TString compOperation(csName);
@@ -590,7 +589,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	      sprintf(compName,"composite%c%dD",slatType[iSlatType],iCh);
 	      composite[lIndex] = new TGeoCompositeShape(compName, compOperation.Data()); 	      
 	      // Reset shape to volume      
-	      mVol->SetShape(composite[lIndex]);
+	      mVol->SetShape((TGeoShape*)composite[lIndex]);
 	    }
 	  }
 	}
@@ -1176,14 +1175,12 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
       char csName[16] = "rounded4SlatD7C";
       TGeoVolume *mVol = 0x0;
       // Beam shield recess
-      //      TGeoTube *tube4Cut = new TGeoTube("tube4Cut", 0., AliMUONConstants::Rmin(3), kSlatWidth/2.+0.001);
       new TGeoTube("tube4Cut", 0., AliMUONConstants::Rmin(3), kSlatWidth/2.+0.001);
-      TGeoShape *rounded4Slat[nSlatType*((nVol+1)*2)];	
+      TObjArray rounded4Slat(nSlatType*((nVol+1)*2));	
       // Displacement
       TGeoTranslation* trDTube4 = new TGeoTranslation("trDTube4", -(kPcbLength+kVframeLength)/2., -kYpos41[1], 0.);
       trDTube4->RegisterYourself();
-      TGeoShape *composite4[nSlatType*((nVol+1)*2)];
-      //      TGeoBBox *box4DCut = new TGeoBBox("box4DCut",(kPcbLength+kVframeLength)/2., hFramepar[1], vFramepar[2]+0.001);
+      TObjArray composite4(nSlatType*((nVol+1)*2));
       new TGeoBBox("box4DCut",(kPcbLength+kVframeLength)/2., hFramepar[1], vFramepar[2]+0.001);
       // Displacement
       TGeoTranslation* trDBox4 = new TGeoTranslation("trDBox4",kPcbLength/2., kYpos41[1], 0.);
@@ -1206,7 +1203,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	    else {
 	      rounded4Slat[lIndex] = mVol->GetShape();
 	      sprintf(csName,"rounded4Slat%c%d%c",slatType[iSlatType],iCh,volLetter[iVol]);
-	      rounded4Slat[lIndex]->SetName(csName);	 	  
+	      ((TGeoShape*)rounded4Slat[lIndex])->SetName(csName);
 	      
 	      // Composite shape
 	      TString compOperation(csName);
@@ -1226,7 +1223,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	      composite4[lIndex] = new TGeoCompositeShape(compName, compOperation.Data()); 
 	      
 	      // Reset shape to volume      
-	      mVol->SetShape(composite4[lIndex]);
+	      mVol->SetShape((TGeoShape*)composite4[lIndex]);
 	    }
 	  }
 
@@ -1241,7 +1238,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	  else {
 	    rounded4Slat[lIndex] = mVol->GetShape();
 	    sprintf(csName,"rounded4Slat%c%dD",slatType[iSlatType],iCh);
-	    rounded4Slat[lIndex]->SetName(csName);	 	  
+	    ((TGeoShape*)rounded4Slat[lIndex])->SetName(csName);
 	    
 	    // Composite shape
 	    TString compOperation(csName);
@@ -1252,7 +1249,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	    sprintf(compName,"composite4%c%dD",slatType[iSlatType],iCh);
 	    composite4[lIndex] = new TGeoCompositeShape(compName, compOperation.Data()); 	      
 	    // Reset shape to volume      
-	    mVol->SetShape(composite4[lIndex]);
+	    mVol->SetShape((TGeoShape*)composite4[lIndex]);
 	  }
 	}
       }
@@ -1730,14 +1727,12 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
       char csName[16] = "rounded5SlatD9D";
       TGeoVolume *mVol = 0x0;
       // Beam shield recess
-      //      TGeoTube *tube5Cut = new TGeoTube("tube5Cut", 0., AliMUONConstants::Rmin(4), kSlatWidth/2.+0.001);
       new TGeoTube("tube5Cut", 0., AliMUONConstants::Rmin(4), kSlatWidth/2.+0.001);
-      TGeoShape *rounded5Slat[nSlatType*((nVol+1)*2)];	
+      TObjArray rounded5Slat(nSlatType*((nVol+1)*2));	
       // Displacement
       TGeoTranslation* trDTube5 = new TGeoTranslation("trDTube5", -(kPcbLength+kVframeLength)/2., -kYpos5[1], 0.);
       trDTube5->RegisterYourself();
-      TGeoShape *composite5[nSlatType*((nVol+1)*2)];
-      //      TGeoBBox *box5DCut = new TGeoBBox("box5DCut",(kPcbLength+kVframeLength)/2., hFramepar[1], vFramepar[2]+0.001);
+      TObjArray composite5(nSlatType*((nVol+1)*2));
       new TGeoBBox("box5DCut",(kPcbLength+kVframeLength)/2., hFramepar[1], vFramepar[2]+0.001);
       // Displacement
       TGeoTranslation* trDBox5 = new TGeoTranslation("trDBox5",kPcbLength/2., kYpos5[1], 0.);
@@ -1760,7 +1755,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	    else {
 	      rounded5Slat[lIndex] = mVol->GetShape();
 	      sprintf(csName,"rounded5Slat%c%d%c",slatType[iSlatType],iCh%10,volLetter[iVol]);
-	      rounded5Slat[lIndex]->SetName(csName);	 	  
+	      ((TGeoShape*)rounded5Slat[lIndex])->SetName(csName);  
 	      
 	      // Composite shape
 	      TString compOperation(csName);
@@ -1777,7 +1772,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	      composite5[lIndex] = new TGeoCompositeShape(compName, compOperation.Data()); 
 	      
 	      // Reset shape to volume      
-	      mVol->SetShape(composite5[lIndex]);
+	      mVol->SetShape((TGeoShape*)composite5[lIndex]);
 	    }
 	  }
 
@@ -1792,7 +1787,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	  else {
 	    rounded5Slat[lIndex] = mVol->GetShape();
 	    sprintf(csName,"rounded5Slat%c%dD",slatType[iSlatType],iCh%10);
-	    rounded5Slat[lIndex]->SetName(csName);	 	  
+	    ((TGeoShape*)rounded5Slat[lIndex])->SetName(csName);	 	  
 	    
 	    // Composite shape
 	    TString compOperation(csName);
@@ -1803,7 +1798,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	    sprintf(compName,"composite5%c%dD",slatType[iSlatType],iCh%10);
 	    composite5[lIndex] = new TGeoCompositeShape(compName, compOperation.Data()); 	      
 	    // Reset shape to volume      
-	    mVol->SetShape(composite5[lIndex]);
+	    mVol->SetShape((TGeoShape*)composite5[lIndex]);
 	  }
 	}
       }
