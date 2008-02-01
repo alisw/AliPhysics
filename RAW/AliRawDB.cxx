@@ -461,7 +461,7 @@ const char *AliRawDB::GetAliRootTag()
   // used to generate the raw data file.
   // Stored in the raw-data file title.
 
-  TString version = fgkAliRootTag;
+  static TString version = fgkAliRootTag;
   version.Remove(TString::kBoth,'$');
   version.ReplaceAll("Rev","AliRoot version");
 
