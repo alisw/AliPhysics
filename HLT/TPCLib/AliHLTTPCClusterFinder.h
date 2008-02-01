@@ -58,7 +58,7 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
 
   void SetOutputArray(AliHLTTPCSpacePointData *pt);
   void WriteClusters(Int_t n_clusters,AliClusterData *list);
-
+  void PrintClusters();
   void SetXYError(Float_t f) {fXYErr=f;}
   void SetZError(Float_t f) {fZErr=f;}
   void SetDeconv(Bool_t f) {fDeconvPad=f; fDeconvTime=f;}
@@ -75,12 +75,15 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
 
   //----------------------------------Methods for the new unsorted way of reading data ----------
   void SetPadArray(AliHLTTPCPadArray *padArray);
-  void ReadDataUnsorted(void* ptr,unsigned long size);
+  void ReadDataUnsorted(void* ptr,unsigned long size, Int_t mode);
   void FindClusters();
-  Int_t GetActivePads(AliHLTTPCPadArray::AliHLTTPCActivePads* activePads,Int_t maxActivePads);
+  //  Int_t GetActivePads(AliHLTTPCPadArray::AliHLTTPCActivePads* activePads,Int_t maxActivePads);
   void WriteClusters(Int_t nclusters,AliHLTTPCClusters *list);
   void SetUnsorted(Int_t unsorted){fUnsorted=unsorted;}
-
+  void SetPatch(Int_t patch){fCurrentPatch=patch;}
+  void InitializePadArray();
+  Int_t DeInitializePadArray();
+  Bool_t ComparePads(AliHLTTPCPad *nextPad,AliHLTTPCClusters* candidate,Int_t nextPadToRead);
  private: 
   /** copy constructor prohibited */
   AliHLTTPCClusterFinder(const AliHLTTPCClusterFinder&);
@@ -120,6 +123,19 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
   AliHLTTPCPadArray * fPadArray; //! transient
 
   Int_t fUnsorted;       // enable for processing of unsorted digit data
+  Bool_t fVectorInitialized;
+
+  typedef vector<AliHLTTPCPad*> AliHLTTPCPadVector;
+
+  vector<AliHLTTPCPadVector> fRowPadVector;                        //! transient
+
+  vector<AliHLTTPCClusters> fClusters;                             //! transient
+  
+  UInt_t* fNumberOfPadsInRow;                                      //! transient
+  
+  UInt_t fNumberOfRows;                                            //! transient
+  
+  UInt_t fRowOfFirstCandidate;
 
   /** list of active pads if PadArray is not used */
   vector<AliHLTTPCPadArray::AliHLTTPCActivePads> fActivePads; //!transient
@@ -128,6 +144,6 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
   void GetTrackID(Int_t pad,Int_t time,Int_t *trackID);
 #endif
   
-  ClassDef(AliHLTTPCClusterFinder,3) //Fast cluster finder
+  ClassDef(AliHLTTPCClusterFinder,4) //Fast cluster finder
 };
 #endif

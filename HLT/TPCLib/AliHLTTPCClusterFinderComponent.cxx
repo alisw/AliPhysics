@@ -37,6 +37,7 @@ using namespace std;
 #include "AliHLTTPCDigitReaderPacked.h"
 #include "AliHLTTPCDigitReaderUnpacked.h"
 #include "AliHLTTPCDigitReaderRaw.h"
+#include "AliHLTTPCDigitReaderDecoder.h"
 #include "AliHLTTPCClusterFinder.h"
 #include "AliHLTTPCSpacePointData.h"
 #include "AliHLTTPCClusterDataFormat.h"
@@ -55,20 +56,21 @@ using namespace std;
 // this is a global object used for automatic component registration, do not use this
 // use fPackedSwitch = true for packed inputtype "gkDDLPackedRawDataType"
 // use fPackedSwitch = false for unpacked inputtype "gkUnpackedRawDataType"
-AliHLTTPCClusterFinderComponent gAliHLTTPCClusterFinderComponentPacked(true);
-AliHLTTPCClusterFinderComponent gAliHLTTPCClusterFinderComponentUnpacked(false);
+AliHLTTPCClusterFinderComponent gAliHLTTPCClusterFinderComponentPacked(0);
+AliHLTTPCClusterFinderComponent gAliHLTTPCClusterFinderComponentUnpacked(1);
+AliHLTTPCClusterFinderComponent gAliHLTTPCClusterFinderComponentDecoder(2);
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCClusterFinderComponent)
 
-AliHLTTPCClusterFinderComponent::AliHLTTPCClusterFinderComponent(bool packed)
+AliHLTTPCClusterFinderComponent::AliHLTTPCClusterFinderComponent(int mode)
   :
   fClusterFinder(NULL),
   fReader(NULL),
   fClusterDeconv(true),
   fXYClusterError(-1),
   fZClusterError(-1),
-  fPackedSwitch(packed),
+  fModeSwitch(mode),
   fUnsorted(0),
   fPatch(0),
   fPadArray(NULL),
@@ -92,17 +94,34 @@ AliHLTTPCClusterFinderComponent::~AliHLTTPCClusterFinderComponent()
 const char* AliHLTTPCClusterFinderComponent::GetComponentID()
 {
   // see header file for class documentation
-  if (fPackedSwitch) return "TPCClusterFinderPacked";
-  else return "TPCClusterFinderUnpacked";
+  switch(fModeSwitch){
+  case 0:
+    return "TPCClusterFinderPacked";
+    break;
+  case 1:
+    return "TPCClusterFinderUnpacked";
+    break;
+  case 2:
+    return "TPCClusterFinderDecoder";
+    break;
+  }
 }
 
 void AliHLTTPCClusterFinderComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
 {
   // see header file for class documentation
   list.clear(); 
-  if (fPackedSwitch) list.push_back( kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTPC );
-  else list.push_back( AliHLTTPCDefinitions::fgkUnpackedRawDataType );
-   
+  switch(fModeSwitch){
+  case 0:
+    list.push_back( kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTPC );
+    break;
+  case 1:
+    list.push_back( AliHLTTPCDefinitions::fgkUnpackedRawDataType );
+    break;
+  case 2:
+    list.push_back( kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTPC );
+    break;
+  }
 }
 
 AliHLTComponentDataType AliHLTTPCClusterFinderComponent::GetOutputDataType()
@@ -126,14 +145,23 @@ void AliHLTTPCClusterFinderComponent::GetOutputDataSize( unsigned long& constBas
   // see header file for class documentation
   // XXX TODO: Find more realistic values.  
   constBase = 0;
-  if (fPackedSwitch)  inputMultiplier = (6 * 0.4);
-  else  inputMultiplier = 0.4;
+  switch(fModeSwitch){
+  case 0:
+    inputMultiplier = (6 * 0.4);
+    break;
+  case 1:
+    inputMultiplier = 0.4;
+    break;
+  case 2:
+    inputMultiplier = (6 * 0.4);
+    break;
+  }
 }
 
 AliHLTComponent* AliHLTTPCClusterFinderComponent::Spawn()
 {
   // see header file for class documentation
-  return new AliHLTTPCClusterFinderComponent(fPackedSwitch);
+  return new AliHLTTPCClusterFinderComponent(fModeSwitch);
 }
 	
 int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
@@ -275,8 +303,7 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
   }
 
   // Choose reader
-
-  if (fPackedSwitch) { 
+  if (fModeSwitch==0) { 
     if (rawreadermode == -2) {
       HLTDebug("using AliHLTTPCDigitReaderPacked");
       fReader = new AliHLTTPCDigitReaderPacked();
@@ -290,7 +317,8 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
 	fReader->SetUnsorted(kTRUE);
       }
       fClusterFinder->SetReader(fReader);
-    } else {
+    } 
+    else {
 #if defined(HAVE_TPC_MAPPING)
       HLTDebug("using AliHLTTPCDigitReaderRaw mode %d", rawreadermode);
       fReader = new AliHLTTPCDigitReaderRaw(rawreadermode);
@@ -301,12 +329,18 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
 #endif //defined(HAVE_TPC_MAPPING)
     }
   }
-  else {
+  else if(fModeSwitch==1){
     HLTDebug("using AliHLTTPCDigitReaderUnpacked");
     fReader = new AliHLTTPCDigitReaderUnpacked();
     fClusterFinder->SetReader(fReader);
   }
-
+  else if(fModeSwitch==2){
+    fReader = new AliHLTTPCDigitReaderDecoder();
+    fClusterFinder->SetReader(fReader);
+  }
+  else{
+    HLTFatal("No mode set for clusterfindercomponent");
+  }
   // if pp-run use occupancy limit else set to 1. ==> use all 
   if ( !fClusterDeconv )
     fClusterFinder->SetOccupancyLimit(occulimit);
@@ -378,7 +412,7 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& ev
       offset = tSize;
 
 
-      if (fPackedSwitch) {
+      if (fModeSwitch==0 || fModeSwitch==2) {
 	HLTDebug("Event 0x%08LX (%Lu) received datatype: %s - required datatype: %s",
 		 evtData.fEventID, evtData.fEventID, 
 		 DataType2Text( iter->fDataType).c_str(), 
@@ -395,7 +429,7 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& ev
 	     iter->fDataType != AliHLTTPCDefinitions::fgkDDLPackedRawDataType ) continue;
 
       }
-      else {
+      else if(fModeSwitch==1){
 	HLTDebug("Event 0x%08LX (%Lu) received datatype: %s - required datatype: %s",
 		 evtData.fEventID, evtData.fEventID, 
 		 DataType2Text( iter->fDataType).c_str(), 
@@ -409,22 +443,29 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& ev
       patch = AliHLTTPCDefinitions::GetMinPatchNr( *iter );
       row[0] = AliHLTTPCTransform::GetFirstRow( patch );
       row[1] = AliHLTTPCTransform::GetLastRow( patch );
-	
+
+
       if(fUnsorted){
-	if(fPadArray==NULL){
-	  fClusterFinder->SetUnsorted(fUnsorted);
-	  fPadArray = new AliHLTTPCPadArray(patch);
-	  fPadArray->InitializeVector();
-	}
-	else if(fPadArray->GetPatch()!=patch||fPadArray->GetPatch()==-1){
-	  if (GetEventCount()<3) {
-	    HLTWarning("pad array not initialized for data of specification 0x%08x, block skipped", iter->fSpecification);
-	  } else if ((GetEventCount()%5000)==0) { // assuming 0.5 to 1kHz this gives a message rate of 0.1 to 0.5 Hz
-	    HLTWarning("reminder: pad array not initialized for data of specification 0x%08x", iter->fSpecification);
-	  }
-	  continue;
-	}
+	fClusterFinder->SetUnsorted(fUnsorted);
+	fClusterFinder->SetPatch(patch);
       }
+      /*      if(fUnsorted){
+	      if(fPadArray==NULL){
+	      fClusterFinder->SetUnsorted(fUnsorted);
+	      //fPadArray = new AliHLTTPCPadArray(patch);
+	      //fPadArray->InitializeVector(fModeSwitch);
+	      }
+	      else if(fPadArray->GetPatch()!=patch||fPadArray->GetPatch()==-1){
+	      if (GetEventCount()<3) {
+	      HLTWarning("pad array not initialized for data of specification 0x%08x, block skipped", iter->fSpecification);
+	      } else if ((GetEventCount()%5000)==0) { // assuming 0.5 to 1kHz this gives a message rate of 0.1 to 0.5 Hz
+	      HLTWarning("reminder: pad array not initialized for data of specification 0x%08x", iter->fSpecification);
+	      }
+	      continue;
+	      }
+	      }
+      */
+      
 
       outPtr = (AliHLTTPCClusterData*)outBPtr;
 
@@ -434,31 +475,8 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& ev
       fClusterFinder->SetOutputArray( (AliHLTTPCSpacePointData*)outPtr->fSpacePoints );
 	
       if(fUnsorted){
+	fClusterFinder->ReadDataUnsorted(iter->fPtr, iter->fSize, fModeSwitch);
 
-
-	fClusterFinder->SetPadArray(fPadArray);
-	/*	  
-	double totalT=0;
-	struct timeval startT, endT;
-	gettimeofday( &startT, NULL );
-	*/
-	fClusterFinder->ReadDataUnsorted(iter->fPtr, iter->fSize );
-	/*
-	gettimeofday( &endT, NULL );
-	unsigned long long dt;
-	dt = endT.tv_sec-startT.tv_sec;
-	dt *= 1000000ULL;
-	dt += endT.tv_usec-startT.tv_usec;
-	double dtd = ((double)dt);
-	totalT += dtd;
-	//	  dtd = dtd / (double)eventIterations;
-	//	  if ( iterations<=1 )
-	cout<<endl;
-	printf( "Time needed to read data: %f microsec. / %f millisec. / %f s\n", 
-		dtd, dtd/1000.0, dtd/1000000.0 );
-	  
-	cout<<endl;
-	*/
 	fClusterFinder->FindClusters();
       }
       else{
@@ -487,26 +505,27 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& ev
       outBPtr += mysize;
       outPtr = (AliHLTTPCClusterData*)outBPtr;
 	
-      if(fGetActivePads){
-	AliHLTTPCPadArray::AliHLTTPCActivePads* outPtrActive;
-	UInt_t activePadsSize, activePadsN = 0;
- 	outPtrActive = (AliHLTTPCPadArray::AliHLTTPCActivePads*)outBPtr;
- 	offset=tSize;
- 	Int_t maxActivePads = (size-tSize)/sizeof(AliHLTTPCPadArray::AliHLTTPCActivePads);
- 	activePadsSize= fClusterFinder->GetActivePads((AliHLTTPCPadArray::AliHLTTPCActivePads*)outPtrActive,maxActivePads)*sizeof(AliHLTTPCPadArray::AliHLTTPCActivePads);
+      /*      if(fGetActivePads){
+	      AliHLTTPCPadArray::AliHLTTPCActivePads* outPtrActive;
+	      UInt_t activePadsSize, activePadsN = 0;
+	      outPtrActive = (AliHLTTPCPadArray::AliHLTTPCActivePads*)outBPtr;
+	      offset=tSize;
+	      Int_t maxActivePads = (size-tSize)/sizeof(AliHLTTPCPadArray::AliHLTTPCActivePads);
+	      activePadsSize= fClusterFinder->GetActivePads((AliHLTTPCPadArray::AliHLTTPCActivePads*)outPtrActive,maxActivePads)*sizeof(AliHLTTPCPadArray::AliHLTTPCActivePads);
  	
- 	AliHLTComponentBlockData bdActive;
- 	FillBlockData( bdActive );
- 	bdActive.fOffset = offset;
- 	bdActive.fSize = activePadsSize;
- 	bdActive.fSpecification = iter->fSpecification;
- 	bdActive.fDataType = AliHLTTPCDefinitions::fgkActivePadsDataType;
- 	outputBlocks.push_back( bdActive );
+	      AliHLTComponentBlockData bdActive;
+	      FillBlockData( bdActive );
+	      bdActive.fOffset = offset;
+	      bdActive.fSize = activePadsSize;
+	      bdActive.fSpecification = iter->fSpecification;
+	      bdActive.fDataType = AliHLTTPCDefinitions::fgkActivePadsDataType;
+	      outputBlocks.push_back( bdActive );
  	
- 	tSize+=activePadsSize;
- 	outBPtr += activePadsSize;
- 	outPtrActive = (AliHLTTPCPadArray::AliHLTTPCActivePads*)outBPtr;
-      }
+	      tSize+=activePadsSize;
+	      outBPtr += activePadsSize;
+	      outPtrActive = (AliHLTTPCPadArray::AliHLTTPCActivePads*)outBPtr;
+	      }
+      */
  
 
       if ( tSize > size )

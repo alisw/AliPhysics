@@ -1,5 +1,4 @@
 // $Id$
-
 /**************************************************************************
  * This file is property of and copyright by the ALICE HLT Project        * 
  * ALICE Experiment at CERN, All rights reserved.                         *
@@ -182,7 +181,7 @@ void AliHLTTPCMapping::InitializeMap(UInt_t patch)
 	    break;
 	  }
 	  while(inFile>>hwAdd && inFile>>row && inFile>>pad){
-	    if (hwAdd>=fMaxHWAdd) {
+	    if (hwAdd>fMaxHWAdd) {
 	      HLTFatal("hardware address exceeds max hwAddress %d, mapping file %s corrupted?", fMaxHWAdd);
 	      break;
 	    }
@@ -197,7 +196,7 @@ void AliHLTTPCMapping::InitializeMap(UInt_t patch)
 	    break;
 	  }
 	  while(inFile>>hwAdd && inFile>>row && inFile>>pad){
-	    if (hwAdd>=fMaxHWAdd) {
+	    if (hwAdd>fMaxHWAdd) {
 	      HLTFatal("hardware address exceeds max hwAddress %d, mapping file %s corrupted?", fMaxHWAdd);
 	      break;
 	    }
@@ -212,7 +211,7 @@ void AliHLTTPCMapping::InitializeMap(UInt_t patch)
 	    break;
 	  }
 	  while(inFile>>hwAdd && inFile>>row && inFile>>pad){
-	    if (hwAdd>=fMaxHWAdd) {
+	    if (hwAdd>fMaxHWAdd) {
 	      HLTFatal("hardware address exceeds max hwAddress %d, mapping file %s corrupted?", fMaxHWAdd);
 	      break;
 	    }
@@ -227,7 +226,7 @@ void AliHLTTPCMapping::InitializeMap(UInt_t patch)
 	    break;
 	  }
 	  while(inFile>>hwAdd && inFile>>row && inFile>>pad){
-	    if (hwAdd>=fMaxHWAdd) {
+	    if (hwAdd>fMaxHWAdd) {
 	      HLTFatal("hardware address exceeds max hwAddress %d, mapping file %s corrupted?", fMaxHWAdd);
 	      break;
 	    }
@@ -242,7 +241,7 @@ void AliHLTTPCMapping::InitializeMap(UInt_t patch)
 	    break;
 	  }
 	  while(inFile>>hwAdd && inFile>>row && inFile>>pad){
-	    if (hwAdd>=fMaxHWAdd) {
+	    if (hwAdd>fMaxHWAdd) {
 	      HLTFatal("hardware address exceeds max hwAddress %d, mapping file %s corrupted?", fMaxHWAdd);
 	      break;
 	    }
@@ -257,7 +256,7 @@ void AliHLTTPCMapping::InitializeMap(UInt_t patch)
 	    break;
 	  }
 	  while(inFile>>hwAdd && inFile>>row && inFile>>pad){
-	    if (hwAdd>=fMaxHWAdd) {
+	    if (hwAdd>fMaxHWAdd) {
 	      HLTFatal("hardware address exceeds max hwAddress %d, mapping file %s corrupted?", fMaxHWAdd);
 	      break;
 	    }

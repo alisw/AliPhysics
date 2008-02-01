@@ -44,6 +44,12 @@ public:
 
   /** 
    * Constructor
+   * @param mode  mode determines if one need the raw data(not quite true at the moment but will be)
+   */
+  AliHLTTPCPad(Int_t mode);
+
+  /** 
+   * Constructor
    * @param offset   The number of bins to ignore at the beginning
    *                 of the channels
    * @param nofBins  The total number of bins for one channel
@@ -248,6 +254,8 @@ public:
    */
   Int_t GetSize() const {return fNofBins;}
   
+  void ClearCandidates();
+
   /**
    * Set the data array to -1
    */
@@ -287,6 +295,12 @@ public:
    * they are stored in a cluster candidate vector.
    */
   void FindClusterCandidates();
+
+  /**
+   * Adds cluster candidate to the fClusterCandidates.
+   */
+  void AddClusterCandidate(AliHLTTPCClusters candidate);
+
   /**
    * Prints the raw data og this pad.
    */
@@ -377,6 +391,7 @@ public:
   Double_t fNSigmaThreshold;                                       //! transient
   Double_t fSignalThreshold;                                       //! transient
 
-  ClassDef(AliHLTTPCPad, 3)
+  Int_t fModeSwitch;                                               //! transient
+  ClassDef(AliHLTTPCPad, 4)
 };
 #endif // ALIHLTTPCPAD_H

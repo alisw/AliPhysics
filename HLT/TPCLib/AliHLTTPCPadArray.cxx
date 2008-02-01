@@ -88,7 +88,7 @@ AliHLTTPCPadArray::~AliHLTTPCPadArray()
   // see header file for class documentation
 }
 
-Int_t AliHLTTPCPadArray::InitializeVector()
+Int_t AliHLTTPCPadArray::InitializeVector(Int_t mode)
 {
   // see header file for class documentation
 
@@ -143,60 +143,168 @@ void AliHLTTPCPadArray::SetDigitReader(AliHLTTPCDigitReader* digitReader)
   fDigitReader=digitReader;
 }
 
-Int_t AliHLTTPCPadArray::ReadData()
+Int_t AliHLTTPCPadArray::ReadData(Int_t mode)
 {
   // see header file for class documentation
 
   switch (fPatch){
   case 0:
-    while(fDigitReader->Next()){
-      UInt_t row  = fDigitReader->GetRow();
-      UInt_t pad  = fDigitReader->GetPad();
-      UInt_t time = fDigitReader->GetTime();
-      if(row<fNumberOfRows){
-	if(pad<fNumberOfPadsInRow[row]&&time<AliHLTTPCTransform::GetNTimeBins()){
-	  fRowPadVector[row][pad]->SetDataSignal(time,fDigitReader->GetSignal());
+    if(mode!=2){
+      while(fDigitReader->Next()){
+	UInt_t row  = fDigitReader->GetRow();
+	UInt_t pad  = fDigitReader->GetPad();
+	UInt_t time = fDigitReader->GetTime();
+	if(row<fNumberOfRows){
+	  if(pad<fNumberOfPadsInRow[row]&&time<AliHLTTPCTransform::GetNTimeBins()){
+	    fRowPadVector[row][pad]->SetDataSignal(time,fDigitReader->GetSignal());
+	  }
 	}
       }
+    }
+    else{
+      	while(fDigitReader->NextChannel()){
+	  while(fDigitReader->NextBunch()){
+	    const UInt_t *bunchData= fDigitReader->GetSignals();
+	    UInt_t row=fDigitReader->GetRow();
+	    UInt_t pad=fDigitReader->GetPad();
+	    UInt_t time=fDigitReader->GetTime();
+	    AliHLTTPCClusters candidate;
+	    for(Int_t i=0;i<fDigitReader->GetBunchSize();i++){
+	      candidate.fTotalCharge+=bunchData[i];	
+	      candidate.fTime += time*bunchData[i];
+	      candidate.fTime2 += time*time*bunchData[i];
+	      time++;
+	    }
+	    if(candidate.fTotalCharge>0){
+	      candidate.fMean=candidate.fTime/candidate.fTotalCharge;
+	      candidate.fPad=candidate.fTotalCharge*pad;
+	      candidate.fPad2=candidate.fPad*pad;
+	      candidate.fLastMergedPad=pad;
+	      fRowPadVector[row][pad]->AddClusterCandidate(candidate);
+	    }
+	  }
+	}
+
     }
     break;
   case 1:
-    while(fDigitReader->Next()){
-      UInt_t row  = fDigitReader->GetRow()-fFirstRow;
-      UInt_t pad  = fDigitReader->GetPad();
-      UInt_t time = fDigitReader->GetTime();
-      if(row<fNumberOfRows){
-	if(pad<fNumberOfPadsInRow[row]&&time<AliHLTTPCTransform::GetNTimeBins()){
-	  fRowPadVector[row][pad]->SetDataSignal(time,fDigitReader->GetSignal()); 
-	}
-      }     
+    if(mode!=2){
+      while(fDigitReader->Next()){
+	UInt_t row  = fDigitReader->GetRow()-fFirstRow;
+	UInt_t pad  = fDigitReader->GetPad();
+	UInt_t time = fDigitReader->GetTime();
+	if(row<fNumberOfRows){
+	  if(pad<fNumberOfPadsInRow[row]&&time<AliHLTTPCTransform::GetNTimeBins()){
+	    fRowPadVector[row][pad]->SetDataSignal(time,fDigitReader->GetSignal()); 
+	  }
+	}     
+      }
     }
+    else{
+      	while(fDigitReader->NextChannel()){
+	  while(fDigitReader->NextBunch()){
+	    const UInt_t *bunchData= fDigitReader->GetSignals();
+	    UInt_t row=fDigitReader->GetRow();
+	    UInt_t pad=fDigitReader->GetPad();
+	    UInt_t time=fDigitReader->GetTime();
+	    AliHLTTPCClusters candidate;
+	    for(Int_t i=0;i<fDigitReader->GetBunchSize();i++){
+	      candidate.fTotalCharge+=bunchData[i];	
+	      candidate.fTime += time*bunchData[i];
+	      candidate.fTime2 += time*time*bunchData[i];
+	      time++;
+	    }
+	    if(candidate.fTotalCharge>0){
+	      candidate.fMean=candidate.fTime/candidate.fTotalCharge;
+	      candidate.fPad=candidate.fTotalCharge*pad;
+	      candidate.fPad2=candidate.fPad*pad;
+	      candidate.fLastMergedPad=pad;
+	      fRowPadVector[row][pad]->AddClusterCandidate(candidate);
+	    }
+	  }
+	}
+
+    }
+
     break;
   case 2:
-    while(fDigitReader->Next()){
-      UInt_t row=fDigitReader->GetRow();
-      UInt_t pad=fDigitReader->GetPad();
-      UInt_t time= fDigitReader->GetTime();
-      if(row<fNumberOfRows){
-	if(pad<fNumberOfPadsInRow[row]&&time<AliHLTTPCTransform::GetNTimeBins()){
-	  fRowPadVector[fDigitReader->GetRow()][fDigitReader->GetPad()]->SetDataSignal(fDigitReader->GetTime(),fDigitReader->GetSignal());
+    if(mode!=2){
+      while(fDigitReader->Next()){
+	UInt_t row=fDigitReader->GetRow();
+	UInt_t pad=fDigitReader->GetPad();
+	UInt_t time= fDigitReader->GetTime();
+	if(row<fNumberOfRows){
+	  if(pad<fNumberOfPadsInRow[row]&&time<AliHLTTPCTransform::GetNTimeBins()){
+	    fRowPadVector[fDigitReader->GetRow()][fDigitReader->GetPad()]->SetDataSignal(fDigitReader->GetTime(),fDigitReader->GetSignal());
+	  }
 	}
       }
+    }
+    else{
+      while(fDigitReader->NextChannel()){
+	while(fDigitReader->NextBunch()){
+	  const UInt_t *bunchData= fDigitReader->GetSignals();
+	  UInt_t row=fDigitReader->GetRow();
+	  UInt_t pad=fDigitReader->GetPad();
+	  UInt_t time=fDigitReader->GetTime();
+	  AliHLTTPCClusters candidate;
+	  for(Int_t i=0;i<fDigitReader->GetBunchSize();i++){
+	    candidate.fTotalCharge+=bunchData[i];	
+	    candidate.fTime += time*bunchData[i];
+	    candidate.fTime2 += time*time*bunchData[i];
+	    time++;
+	  }
+	  if(candidate.fTotalCharge>0){
+	    candidate.fMean=candidate.fTime/candidate.fTotalCharge;
+	    candidate.fPad=candidate.fTotalCharge*pad;
+	    candidate.fPad2=candidate.fPad*pad;
+	    candidate.fLastMergedPad=pad;
+	    fRowPadVector[row][pad]->AddClusterCandidate(candidate);
+	  }
+	}
+      }  
     }
     break;
   case 3:
-    while(fDigitReader->Next()){
-      UInt_t row=fDigitReader->GetRow()-27;
-      UInt_t pad=fDigitReader->GetPad();
-      UInt_t time= fDigitReader->GetTime();
-      if(row<fNumberOfRows){
-	if(pad<fNumberOfPadsInRow[row]&&time<AliHLTTPCTransform::GetNTimeBins()){
-	  fRowPadVector[row][pad]->SetDataSignal(time,fDigitReader->GetSignal());
+    if(mode!=2){
+      while(fDigitReader->Next()){
+	UInt_t row=fDigitReader->GetRow()-27;
+	UInt_t pad=fDigitReader->GetPad();
+	UInt_t time= fDigitReader->GetTime();
+	if(row<fNumberOfRows){
+	  if(pad<fNumberOfPadsInRow[row]&&time<AliHLTTPCTransform::GetNTimeBins()){
+	    fRowPadVector[row][pad]->SetDataSignal(time,fDigitReader->GetSignal());
+	  }
 	}
       }
     }
+    else{
+      while(fDigitReader->NextChannel()){
+	while(fDigitReader->NextBunch()){
+	  const UInt_t *bunchData= fDigitReader->GetSignals();
+	  UInt_t row=fDigitReader->GetRow();
+	  UInt_t pad=fDigitReader->GetPad();
+	  UInt_t time=fDigitReader->GetTime();
+	  AliHLTTPCClusters candidate;
+	  for(Int_t i=0;i<fDigitReader->GetBunchSize();i++){
+	    candidate.fTotalCharge+=bunchData[i];	
+	    candidate.fTime += time*bunchData[i];
+	    candidate.fTime2 += time*time*bunchData[i];
+	    time++;
+	  }
+	  if(candidate.fTotalCharge>0){
+	    candidate.fMean=candidate.fTime/candidate.fTotalCharge;
+	    candidate.fPad=candidate.fTotalCharge*pad;
+	    candidate.fPad2=candidate.fPad*pad;
+	    candidate.fLastMergedPad=pad;
+	    fRowPadVector[row][pad]->AddClusterCandidate(candidate);
+	  }
+	}
+      } 
+    }
     break;
   case 4:
+    if(mode!=2){
     while(fDigitReader->Next()){
       UInt_t row=fDigitReader->GetRow()-54;
       UInt_t pad=fDigitReader->GetPad();
@@ -207,18 +315,73 @@ Int_t AliHLTTPCPadArray::ReadData()
 	}
       }
     }
+    }
+    else{
+      	while(fDigitReader->NextChannel()){
+	  while(fDigitReader->NextBunch()){
+	    const UInt_t *bunchData= fDigitReader->GetSignals();
+	    UInt_t row=fDigitReader->GetRow();
+	    UInt_t pad=fDigitReader->GetPad();
+	    UInt_t time=fDigitReader->GetTime();
+	    AliHLTTPCClusters candidate;
+	    for(Int_t i=0;i<fDigitReader->GetBunchSize();i++){
+	      candidate.fTotalCharge+=bunchData[i];	
+	      candidate.fTime += time*bunchData[i];
+	      candidate.fTime2 += time*time*bunchData[i];
+	      time++;
+	    }
+	    if(candidate.fTotalCharge>0){
+	      candidate.fMean=candidate.fTime/candidate.fTotalCharge;
+	      candidate.fPad=candidate.fTotalCharge*pad;
+	      candidate.fPad2=candidate.fPad*pad;
+	      candidate.fLastMergedPad=pad;
+	      fRowPadVector[row][pad]->AddClusterCandidate(candidate);
+	    }
+	  }
+	}
+
+    }
+
     break;
   case 5:
-    while(fDigitReader->Next()){
-      UInt_t row=fDigitReader->GetRow()-76;
-      UInt_t pad=fDigitReader->GetPad();
-      UInt_t time= fDigitReader->GetTime();
-      if(row<fNumberOfRows){
-	if(pad<fNumberOfPadsInRow[row]&&time<AliHLTTPCTransform::GetNTimeBins()){
-	  fRowPadVector[row][pad]->SetDataSignal(time,fDigitReader->GetSignal());
+    if(mode!=2){
+      while(fDigitReader->Next()){
+	UInt_t row=fDigitReader->GetRow()-76;
+	UInt_t pad=fDigitReader->GetPad();
+	UInt_t time= fDigitReader->GetTime();
+	if(row<fNumberOfRows){
+	  if(pad<fNumberOfPadsInRow[row]&&time<AliHLTTPCTransform::GetNTimeBins()){
+	    fRowPadVector[row][pad]->SetDataSignal(time,fDigitReader->GetSignal());
+	  }
 	}
       }
     }
+    else{
+      while(fDigitReader->NextChannel()){
+	while(fDigitReader->NextBunch()){
+	  const UInt_t *bunchData= fDigitReader->GetSignals();
+	  UInt_t row=fDigitReader->GetRow();
+	  UInt_t pad=fDigitReader->GetPad();
+	  UInt_t time=fDigitReader->GetTime();
+	    AliHLTTPCClusters candidate;
+	    for(Int_t i=0;i<fDigitReader->GetBunchSize();i++){
+	      candidate.fTotalCharge+=bunchData[i];	
+	      candidate.fTime += time*bunchData[i];
+	      candidate.fTime2 += time*time*bunchData[i];
+	      time++;
+	    }
+	    if(candidate.fTotalCharge>0){
+	      candidate.fMean=candidate.fTime/candidate.fTotalCharge;
+	      candidate.fPad=candidate.fTotalCharge*pad;
+	      candidate.fPad2=candidate.fPad*pad;
+	      candidate.fLastMergedPad=pad;
+	      fRowPadVector[row][pad]->AddClusterCandidate(candidate);
+	    }
+	  }
+	}
+
+    }
+
     break;
   }
   return 0;
@@ -461,6 +624,7 @@ void AliHLTTPCPadArray::DataToDefault()
 	fRowPadVector[i][j]->SetDataToDefault();
     }
   }
+  fClusters.clear();
 }
 
 void AliHLTTPCPadArray::FindClusterCandidates()

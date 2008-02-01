@@ -54,7 +54,7 @@ class AliHLTTPCClusterFinderComponent : public AliHLTProcessor
          * constructor 
          * @param packed    whether to use the packed or unpacked reader 
          */
-	AliHLTTPCClusterFinderComponent(bool packed);
+	AliHLTTPCClusterFinderComponent(int mode);
 	/** destructor */
 	virtual ~AliHLTTPCClusterFinderComponent();
 
@@ -104,10 +104,11 @@ class AliHLTTPCClusterFinderComponent : public AliHLTProcessor
       float fZClusterError; //!transient
       /**
        * switch to indicated the reader
-       * use fPackedSwitch = true for packed inputtype "gkDDLPackedRawDataType"
-       * use fPackedSwitch = false for unpacked inputtype "gkUnpackedRawDataType"
+       * use fModeSwitch = 0 for packed inputtype "gkDDLPackedRawDataType"
+       * use fModeSwitch = 1 for unpacked inputtype "gkUnpackedRawDataType"
+       * use fModeSwitch = 2 for packed inputtype "gkDDLPackedRawDataType" with new digit reader
        */
-      Int_t fPackedSwitch;                                                           // see above
+      Int_t fModeSwitch;                                                           // see above
       
       /*
        * Reads the data the new unsorted way if true

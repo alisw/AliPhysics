@@ -74,7 +74,8 @@ AliHLTTPCPad::AliHLTTPCPad()
   fSignalPositionArray(NULL),
   fSizeOfSignalPositionArray(0),
   fNSigmaThreshold(0),
-  fSignalThreshold(0)
+  fSignalThreshold(0),
+  fModeSwitch(0)
 {
   // see header file for class documentation
   // or
@@ -84,10 +85,44 @@ AliHLTTPCPad::AliHLTTPCPad()
   //  HLTInfo("Entering default constructor");
   fDataSignals= new AliHLTTPCSignal_t[AliHLTTPCTransform::GetNTimeBins()];
   memset( fDataSignals, 0xFF, sizeof(Int_t)*(AliHLTTPCTransform::GetNTimeBins()));
-
+  
   fSignalPositionArray= new AliHLTTPCSignal_t[AliHLTTPCTransform::GetNTimeBins()];
   memset( fSignalPositionArray, 0xFF, sizeof(Int_t)*(AliHLTTPCTransform::GetNTimeBins()));
   fSizeOfSignalPositionArray=0;
+}
+
+AliHLTTPCPad::AliHLTTPCPad(Int_t mode)
+  :
+  fClusterCandidates(0),
+  fUsedClusterCandidates(0),
+  fRowNo(-1),
+  fPadNo(-1),
+  fThreshold(0),
+  fAverage(-1),
+  fNofEvents(0),
+  fSum(0),
+  fCount(0),
+  fTotal(0),
+  fBLMax(-1),
+  fBLMaxBin(-1),
+  fBLMin(-1),
+  fBLMinBin(-1),
+  fFirstBLBin(0),
+  fNofBins(0),
+  fReadPos(0),
+  fpRawData(NULL),
+  fDataSignals(NULL),
+  fSignalPositionArray(NULL),
+  fSizeOfSignalPositionArray(0),
+  fNSigmaThreshold(0),
+  fSignalThreshold(0),
+  fModeSwitch(mode)
+{
+  // see header file for class documentation
+  // or
+  // refer to README to build package
+  // or
+  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 }
 
 AliHLTTPCPad::AliHLTTPCPad(Int_t offset, Int_t nofBins)
@@ -449,14 +484,22 @@ void AliHLTTPCPad::PrintRawData()
   cout<<"bins: "<<AliHLTTPCTransform::GetNTimeBins()<<endl;
 }
 
+void AliHLTTPCPad::ClearCandidates(){
+  fClusterCandidates.clear();
+  fUsedClusterCandidates.clear();
+}
+
 void AliHLTTPCPad::SetDataToDefault()
 {
   // see header file for class documentation
-  if(fpRawData){
+  /*
+    if(fpRawData){
     memset( fDataSignals, 0xFF, sizeof(Int_t)*(AliHLTTPCTransform::GetNTimeBins()));
     memset( fSignalPositionArray, 0xFF, sizeof(Int_t)*(AliHLTTPCTransform::GetNTimeBins()));
     fSizeOfSignalPositionArray=0;
   }
+  */
+  fClusterCandidates.clear();
 }
 
 void AliHLTTPCPad::SetDataSignal(Int_t bin,Int_t signal)
@@ -622,6 +665,10 @@ void AliHLTTPCPad::ZeroSuppress(Double_t nSigma = 3,Int_t threshold = 20 ,Int_t 
       fDataSignals[i]=-1;
     } 
   }
+}
+void AliHLTTPCPad::AddClusterCandidate(AliHLTTPCClusters candidate){
+  fClusterCandidates.push_back(candidate);
+  fUsedClusterCandidates.push_back(0);
 }
 
 void AliHLTTPCPad::FindClusterCandidates()

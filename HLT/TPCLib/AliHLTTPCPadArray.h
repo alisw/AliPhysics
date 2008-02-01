@@ -70,8 +70,9 @@ public:
 
   /**
    * Initialize the pad vector for the patch set.
+   *@param mode Switch to keep raw data or not
    */
-  Int_t InitializeVector();
+  Int_t InitializeVector(Int_t mode);
 
   /**
    * Deinitialize the pad vector for the patch set.
@@ -101,7 +102,7 @@ public:
   /**
    * Reads the data, and set it in the Pad objects.
    */
-  Int_t ReadData();
+  Int_t ReadData(Int_t mode);
 
   /**
    * Retuns number of pads in this row.
