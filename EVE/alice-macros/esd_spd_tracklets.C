@@ -26,13 +26,13 @@ TEveStraightLineSet* esd_spd_tracklets(Float_t rad=8)
   pv->GetXYZ(pvx);
   pv->GetSigmaXYZ(pve);
 
-  TEveStraightLineSet* ls = new TEveStraightLineSet();
+  TEveStraightLineSet* ls = new TEveStraightLineSet("SPD tracklets");
 
   for (Int_t i=0; i<mul->GetNumberOfTracklets(); ++i)
   {
     using namespace TMath;
     Float_t dr[3];
-    Float_t phi = PiOver2() - mul->GetPhi(i); // strange people
+    Float_t phi = mul->GetPhi(i);
     dr[0] = rad*Cos(phi);
     dr[1] = rad*Sin(phi);
     dr[2] = rad/Tan(mul->GetTheta(i));
