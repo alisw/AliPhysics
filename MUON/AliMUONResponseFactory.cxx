@@ -113,6 +113,7 @@ void AliMUONResponseFactory::BuildStation1()
   responseSt1.SetMaxAdc(4096);
   responseSt1.SetSaturation(3000);
   responseSt1.SetZeroSuppression(6);
+  responseSt1.SetTailEffect(fIsTailEffect);
 
    for (Int_t chamber = 0; chamber < 2; chamber++) {
     fMUON->SetResponseModel(chamber, responseSt1); // special response      

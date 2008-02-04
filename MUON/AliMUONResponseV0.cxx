@@ -222,7 +222,7 @@ AliMUONResponseV0::DisIntegrate(const AliMUONHit& hit, TList& digits)
   //Modify to take the tailing effect.
   if(fIsTailEffect){
     Double_t locX,locY,locZ,globXCenter,globYCenter,globZ;
-    Int_t para = 5; // This parameter is a natural number(excluding zero and four), higher the value less is the tailing effect 
+    Int_t para = 5; // This parameter is a natural number(excluding zero), higher the value less is the tailing effect 
     Double_t termA = 1.0;
     Double_t termB = 1.0;
     if(para>0){
@@ -238,18 +238,19 @@ AliMUONResponseV0::DisIntegrate(const AliMUONHit& hit, TList& digits)
 	    Global2Local(detElemId,hitX,hitY,hitZ,locX,locY,locZ);
 	    TVector2 hitPoint(locX,locY);
 	    AliMpPad pad = seg->PadByPosition(hitPoint,kFALSE);
-	    Double_t locYCenter = pad.Position().Y();
-	    Double_t locXCenter = pad.Position().X();
-	    const AliMUONGeometryTransformer* transformer = muon()->GetGeometryTransformer();
-	    transformer->Local2Global(detElemId,locXCenter,locYCenter,locZ,globXCenter,globYCenter,globZ);
-	    for(Int_t itime = 0; itime<para; itime++)
-	      termA *= 10.0;
-	    
-	    for(Int_t itime = 0; itime<Int_t((2*para) + 1); itime++)
-	      termB *= (hitY - globYCenter) ; 
-
-	    hitY = hitY + termA*termB;
-	    
+            if(pad.IsValid()){
+              Double_t locYCenter = pad.Position().Y();
+              Double_t locXCenter = pad.Position().X();
+              const AliMUONGeometryTransformer* transformer = muon()->GetGeometryTransformer();
+              transformer->Local2Global(detElemId,locXCenter,locYCenter,locZ,globXCenter,globYCenter,globZ);
+              for(Int_t itime = 0; itime<para; itime++)
+                termA *= 10.0;
+            
+              for(Int_t itime = 0; itime<Int_t((2*para) + 1); itime++)
+                termB *= (hitY - globYCenter) ; 
+            
+              hitY = hitY + termA*termB;
+            }// if the pad is a valid one
 	  }// if bending plane
 	}// cathode loop
     }// if para > 0 condn

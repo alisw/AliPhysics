@@ -214,8 +214,8 @@ void Config(char directory[100]="", char option[6]="param", const char* digitsto
   // To generate and read scaler trigger events in rawdata
   // MUON->SetTriggerScalerEvent();
   
-  // To switch on the tail effect
-  // MUON->SetTailEffect(kTRUE);
+  // To switch off the tail effect
+  // MUON->SetTailEffect(kFALSE);
 
   // If you want to play with builders, first reset the geometry builder,
   // and then add yours.
