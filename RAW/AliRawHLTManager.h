@@ -74,4 +74,17 @@ class AliRawHLTManager {
 
   ClassDef(AliRawHLTManager, 0)
 };
+
+// those definitions have been copied one to one from rec/AliRawReaderHLT.h
+// to avoid including this header file
+#define ALIHLTREC_LIBRARY                   "libHLTrec.so"
+#define ALIHLTREC_LIBRARY_VERSION           0
+#define ALIRAWREADERHLT_CREATE_INSTANCE     "AliRawReaderHLTCreateInstance"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+  typedef AliRawReader* (*AliRawReaderHLTCreateInstance_t)(AliRawReader* pParentReader, const char* options);
+}
+
 #endif //ALIRAWHLTMANAGER_H

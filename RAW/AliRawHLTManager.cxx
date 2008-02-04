@@ -23,7 +23,6 @@
 */
 
 #include "AliRawHLTManager.h"
-#include "AliRawReaderHLT.h"
 #include "AliLog.h"
 #include "TSystem.h"
 #include "TClass.h"
