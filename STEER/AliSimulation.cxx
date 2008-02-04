@@ -139,6 +139,7 @@
 #include "AliMC.h"
 #include "AliHLTSimulation.h"
 #include "AliQADataMakerSteer.h"
+#include "AliSysInfo.h"
 
 ClassImp(AliSimulation)
 
@@ -644,20 +645,23 @@ Bool_t AliSimulation::Run(Int_t nEvents)
     if(!MisalignGeometry()) if (fStopOnError) return kFALSE;
   }
 
+
   // hits -> summable digits
+  AliSysInfo::AddStamp("Start_sdigitization");
   if (!fMakeSDigits.IsNull()) {
     if (!RunSDigitization(fMakeSDigits)) if (fStopOnError) return kFALSE;
  
   }
+  AliSysInfo::AddStamp("Stop_sdigitization");
   
-
-  
+  AliSysInfo::AddStamp("Start_digitization");  
   // summable digits -> digits  
   if (!fMakeDigits.IsNull()) {
     if (!RunDigitization(fMakeDigits, fMakeDigitsFromHits)) {
       if (fStopOnError) return kFALSE;
     }
    }
+  AliSysInfo::AddStamp("Stop_digitization");
 
   
   
@@ -892,10 +896,11 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
   }
 
   AliInfo("running gAlice");
+  AliSysInfo::AddStamp("Start_simulation");
   StdoutToAliInfo(StderrToAliError(
     gAlice->Run(nEvents);
   ););
-
+  AliSysInfo::AddStamp("Stop_simulation");
   delete runLoader;
 
   return kTRUE;
@@ -905,7 +910,7 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
 Bool_t AliSimulation::RunSDigitization(const char* detectors)
 {
 // run the digitization and produce summable digits
-
+  static Int_t eventNr=0;
   AliCodeTimerAuto("")
 
   // initialize CDB storage, run number, set CDB lock
@@ -924,8 +929,8 @@ Bool_t AliSimulation::RunSDigitization(const char* detectors)
     if (IsSelected(det->GetName(), detStr)) {
       AliInfo(Form("creating summable digits for %s", det->GetName()));
       AliCodeTimerAuto(Form("creating summable digits for %s", det->GetName()));
-	  
       det->Hits2SDigits();
+      AliSysInfo::AddStamp(Form("Digit_%s_%d",det->GetName(),eventNr), 0,1, eventNr);
     }
   }
 
@@ -934,7 +939,7 @@ Bool_t AliSimulation::RunSDigitization(const char* detectors)
                   detStr.Data()));
     if (fStopOnError) return kFALSE;
   }
-
+  eventNr++;
   delete runLoader;
 
   return kTRUE;
