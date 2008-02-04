@@ -56,9 +56,9 @@ using namespace std;
 // this is a global object used for automatic component registration, do not use this
 // use fPackedSwitch = true for packed inputtype "gkDDLPackedRawDataType"
 // use fPackedSwitch = false for unpacked inputtype "gkUnpackedRawDataType"
-AliHLTTPCClusterFinderComponent gAliHLTTPCClusterFinderComponentPacked(0);
-AliHLTTPCClusterFinderComponent gAliHLTTPCClusterFinderComponentUnpacked(1);
-AliHLTTPCClusterFinderComponent gAliHLTTPCClusterFinderComponentDecoder(2);
+AliHLTTPCClusterFinderComponent gAliHLTTPCClusterFinderComponentPacked(AliHLTTPCClusterFinderComponent::kClusterFinderPacked);
+AliHLTTPCClusterFinderComponent gAliHLTTPCClusterFinderComponentUnpacked(AliHLTTPCClusterFinderComponent::kClusterFinderUnpacked);
+AliHLTTPCClusterFinderComponent gAliHLTTPCClusterFinderComponentDecoder(AliHLTTPCClusterFinderComponent::kClusterFinderDecoder);
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCClusterFinderComponent)
@@ -95,13 +95,13 @@ const char* AliHLTTPCClusterFinderComponent::GetComponentID()
 {
   // see header file for class documentation
   switch(fModeSwitch){
-  case 0:
+  case kClusterFinderPacked:
     return "TPCClusterFinderPacked";
     break;
-  case 1:
+  case kClusterFinderUnpacked:
     return "TPCClusterFinderUnpacked";
     break;
-  case 2:
+  case kClusterFinderDecoder:
     return "TPCClusterFinderDecoder";
     break;
   }
@@ -112,13 +112,13 @@ void AliHLTTPCClusterFinderComponent::GetInputDataTypes( vector<AliHLTComponentD
   // see header file for class documentation
   list.clear(); 
   switch(fModeSwitch){
-  case 0:
+  case kClusterFinderPacked:
     list.push_back( kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTPC );
     break;
-  case 1:
+  case kClusterFinderUnpacked:
     list.push_back( AliHLTTPCDefinitions::fgkUnpackedRawDataType );
     break;
-  case 2:
+  case kClusterFinderDecoder:
     list.push_back( kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTPC );
     break;
   }
@@ -303,7 +303,7 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
   }
 
   // Choose reader
-  if (fModeSwitch==0) { 
+  if (fModeSwitch==kClusterFinderPacked) { 
     if (rawreadermode == -2) {
       HLTDebug("using AliHLTTPCDigitReaderPacked");
       fReader = new AliHLTTPCDigitReaderPacked();
@@ -329,12 +329,12 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
 #endif //defined(HAVE_TPC_MAPPING)
     }
   }
-  else if(fModeSwitch==1){
+  else if(fModeSwitch==kClusterFinderUnpacked){
     HLTDebug("using AliHLTTPCDigitReaderUnpacked");
     fReader = new AliHLTTPCDigitReaderUnpacked();
     fClusterFinder->SetReader(fReader);
   }
-  else if(fModeSwitch==2){
+  else if(fModeSwitch==kClusterFinderDecoder){
     fReader = new AliHLTTPCDigitReaderDecoder();
     fClusterFinder->SetReader(fReader);
   }

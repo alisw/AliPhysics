@@ -38,7 +38,7 @@ class AliTPCCalibCE;
  *   -rcuformat <old/new>  : Whether to use old or new rcuformat ( default is new )
  *   -enableanalysis       : Whether to enable analyis before shipping data to FXS
  *
- * @ingroup alihlt_tpc
+ * @ingroup alihlt_tpc_components
  */
 class AliHLTTPCCalibCEComponent : public AliHLTCalibrationProcessor
     {

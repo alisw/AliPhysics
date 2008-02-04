@@ -783,7 +783,8 @@ AC_CONFIG_FILES([Makefile
 		 trigger/Makefile
 		 comp/Makefile
 		 doc/Makefile
-		 doc/doxygen.conf])
+		 doc/doxygen.conf
+		 doc/doxymodule.conf])
 
 
 AC_OUTPUT

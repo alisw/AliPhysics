@@ -21,6 +21,8 @@ class AliHLTTPCVertexFinder;
  * A vertex finder component for the TPC.
  * This component has never been tested in the new framework and needs certainly
  * some investigation.
+ *
+ * @ingroup alihlt_tpc_components
  */
 class AliHLTTPCVertexFinderComponent : public AliHLTProcessor
     {

@@ -24,7 +24,7 @@
 /**
  * @class AliHLTTPCDigitDumpComponent
  * A converter for digit data of the TPC input to ASCII output.
- * Data blocks of type @ref kAliHLTDataTypeDDLRaw and origin 'TPC ' is docoded
+ * Data blocks of type ::kAliHLTDataTypeDDLRaw and origin 'TPC ' is docoded
  * written in readable ASCII format to a file.
  * 
  * Component ID: \b TPCDigitDump <br>
@@ -47,6 +47,7 @@
  * \li -sorted <br>
  *      sorted mode of digit readers (default)
  *
+ * @ingroup alihlt_tpc_components
  */
 class AliHLTTPCDigitDumpComponent : public AliHLTFileWriter {
  public:

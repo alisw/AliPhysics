@@ -28,6 +28,7 @@ class AliHLTTPCTrackArray;
 
 /**
  * @class AliHLTTPCEsdWriterComponent
+ * Translation of internal TPC track data to the ESD format.
  * This class translates incoming track segments structures from the TPC
  * conformal mapping tracker (datatype TRAKSEGS/TPC) or tracks in global 
  * coordinates from the AliHLTTPCGlobalMergerComponent (TRACKS/TPC) into
@@ -35,7 +36,7 @@ class AliHLTTPCTrackArray;
  *
  * The \em TPCEsdWriter writes it to a ROOT file, the \em TPCEsdConverter
  * to a TTree and sends the whole object to the output stream with data
- * type @ref kAliHLTDataTypeESDTree and origin TPC.
+ * type ::kAliHLTDataTypeESDTree and origin TPC.
  *
  * In case of TRAKSEGS, the component can only process data block containing
  * data of one slice, but it can read an unlimeted number of data blocks.
@@ -53,9 +54,9 @@ class AliHLTTPCTrackArray;
  * Arguments TPCEsdConverter: <br>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formating -->
  * \li -notree
- *      write ESD directly to output (@ref kAliHLTDataTypeESDObject)
+ *      write ESD directly to output (::kAliHLTDataTypeESDObject)
  * \li -tree
- *      write ESD directly to TTree and to output (@ref kAliHLTDataTypeESDTree),
+ *      write ESD directly to TTree and to output (::kAliHLTDataTypeESDTree),
  *      this is the default behavior.
  *
  * <pre>
@@ -74,6 +75,8 @@ class AliHLTTPCTrackArray;
  * </pre>
  *
  * @see AliHLTFileWriter and AliHLTRootFileWriterComponent for more parameters
+ *
+ * @ingroup alihlt_tpc_components
  */
 class AliHLTTPCEsdWriterComponent : public AliHLTLogging
 {

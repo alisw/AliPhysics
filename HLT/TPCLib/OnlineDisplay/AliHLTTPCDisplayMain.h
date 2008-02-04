@@ -35,7 +35,7 @@ class AliHLTTPCDisplayFront;
  * and the worker classes for the ALICE HLT online display. It also handles the interface
  * to the AnalysisChain via HOMER reader class. Furthermore all relavant global variables 
  * are stored here via get and set functions.
- * @ingroup alihlt_tpc
+ * @ingroup alihlt_tpc_display
  */
 
 class AliHLTTPCDisplayMain : public TObject , public AliHLTLogging {

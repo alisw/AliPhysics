@@ -28,6 +28,8 @@ class AliAltroBunch;
 
 /**
  * @class AliHLTTPCDigitReaderDecoder
+ * Digit reader implementation for real ALTRO/RCU data using the fast
+ * AliAltroDecoder class.
  * @ingroup alihlt_tpc
  */
 class AliHLTTPCDigitReaderDecoder : public AliHLTTPCDigitReader {

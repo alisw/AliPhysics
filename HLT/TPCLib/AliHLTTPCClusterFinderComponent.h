@@ -45,14 +45,29 @@ class AliHLTTPCDigitReader;
  *                   only be done on patch level since it use a lot of memory
  * - patch           specify on which patch to resd the data unsorted
  *
- * @ingroup alihlt_tpc
+ * @ingroup alihlt_tpc_components
  */
 class AliHLTTPCClusterFinderComponent : public AliHLTProcessor
     {
     public:
+      /**
+       * Defines for the cluster finder type.
+       * The cluster finders can work on different formats of input data,
+       * the AliHLTTPCDigitReader interface provides a transparent way to
+       * read the data.
+       */
+      enum {
+	/** real data, offline AliAltroRawStream used for data decoding */
+	kClusterFinderPacked,
+	/** Unpacked data of format AliHLTTPCUnpackedRawData */
+	kClusterFinderUnpacked,
+	/** real data, fast AliAltroDecoder used for data decoding */
+	kClusterFinderDecoder
+      };
+
         /**
          * constructor 
-         * @param packed    whether to use the packed or unpacked reader 
+         * @param mode    input type see e.g. @ref kClusterFinderUnpacked
          */
 	AliHLTTPCClusterFinderComponent(int mode);
 	/** destructor */
@@ -90,6 +105,8 @@ class AliHLTTPCClusterFinderComponent : public AliHLTProcessor
 	using AliHLTProcessor::DoEvent;
 
     private:
+	/** standard constructor prohibited */
+	AliHLTTPCClusterFinderComponent();
 	/** copy constructor prohibited */
 	AliHLTTPCClusterFinderComponent(const AliHLTTPCClusterFinderComponent&);
 	/** assignment operator prohibited */

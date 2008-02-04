@@ -38,7 +38,7 @@ class AliTPCCalibPulser;
  *   -rcuformat <old/new>  : Wether to use old or new rcuformat ( default is new )
  *   -enableanalysis       : Wether to enable analyis before shipping data to FXS
  *
- * @ingroup alihlt_tpc
+ * @ingroup alihlt_tpc_components
  */
 class AliHLTTPCCalibPulserComponent : public AliHLTCalibrationProcessor
     {

@@ -63,7 +63,7 @@ class AliHLTTPCInterMerger;
  * \li -tracklength <i> number of clusters   </i> <br>
  *     the minimum number of clusters to be on a track.
  *
- * @ingroup alihlt_tpc
+ * @ingroup alihlt_tpc_components
  */
 class AliHLTTPCSliceTrackerComponent : public AliHLTProcessor
 {

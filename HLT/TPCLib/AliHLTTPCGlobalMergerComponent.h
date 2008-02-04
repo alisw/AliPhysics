@@ -28,6 +28,8 @@ class AliHLTTPCVertex;
  * The TPC global merger component
  * The component is the interface to the AliHLTGlobalMerger processing
  * class.
+ *
+ * @ingroup alihlt_tpc_components
  */
 class AliHLTTPCGlobalMergerComponent : public AliHLTProcessor
     {

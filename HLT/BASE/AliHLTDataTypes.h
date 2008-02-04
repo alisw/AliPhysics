@@ -27,6 +27,8 @@
  *           to be used with the operator| (AliHLTComponentDataType)
  *           2007-11-24 added trigger structs and ESD tree data type
  *   4       Component configuration event added
+ *           gkAliHLTDDLListSize set from 29 to 30 according to new PubSub
+ *           specs
  */
 #define ALIHLT_DATA_TYPES_VERSION 4
 
@@ -178,15 +180,27 @@ extern "C" {
   //
   //////////////////////////////////////////////////////////////////////////
 
-  enum AliHLTComponentLogSeverity { 
+  /**
+   * Logging severities of the HLT
+   */
+  enum AliHLTComponentLogSeverity {
+    /** no logging */
     kHLTLogNone      = 0,
+    /** benchmark messages */
     kHLTLogBenchmark = 0x1,
+    /** debug messages */
     kHLTLogDebug     = 0x2,
+    /** info messages */
     kHLTLogInfo      = 0x4,
+    /** warning messages */
     kHLTLogWarning   = 0x8,
+    /** error messages */
     kHLTLogError     = 0x10,
+    /** fata error messages */
     kHLTLogFatal     = 0x20,
+    /** special value to enable all messages */
     kHLTLogAll       = 0x3f,
+    /** the default logging filter */
     kHLTLogDefault   = 0x3d 
 };
 
