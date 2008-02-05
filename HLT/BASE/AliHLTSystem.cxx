@@ -387,7 +387,7 @@ int AliHLTSystem::InitTasks()
   TObjLink *lnk=fTaskList.FirstLink();
 
   if (lnk==NULL) {
-    HLTWarning("Task list is empty, aborting ...");
+    HLTWarning("Task list is empty, skipping HLT");
     return -126 /*ENOKEY*/;
   }
   while (lnk && iResult>=0) {
