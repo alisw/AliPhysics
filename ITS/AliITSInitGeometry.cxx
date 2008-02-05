@@ -2188,8 +2188,8 @@ void AliITSInitGeometry::DecodeDetectorv11Hybrid(Int_t &mod,Int_t layer,
   switch(layer) {
   case 1: case 2:{
     if (SPDIsTGeoNative()) {
-      lad = cpn1+kDetPerLadderSPD[layer-1]*(cpn0-1)+1;
-      det = cpn2 + 1;
+      lad = cpn1+kDetPerLadderSPD[layer-1]*(cpn0-1);
+      det = cpn2;
     } else {
       lad = cpn1+kDetPerLadderSPD[layer-1]*(cpn0-1);
       det = cpn2;
@@ -2552,3 +2552,4 @@ Bool_t AliITSInitGeometry::ReadVersionString(const Char_t *str,Int_t length,
     } // end switch
     return ok;
 }
+
