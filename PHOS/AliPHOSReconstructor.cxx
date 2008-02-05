@@ -361,11 +361,7 @@ void  AliPHOSReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
     else
       dc=new AliPHOSRawDecoder(rawReader,mapping);
 
-  TString option = GetOption();
-  if (option.Contains("OldRCUFormat"))
-    dc->SetOldRCUFormat(kTRUE);
-  else
-    dc->SetOldRCUFormat(kFALSE);
+  dc->SetOldRCUFormat(fgkRecoParamEmc->IsOldRCUFormat());
   
   dc->SubtractPedestals(fgkRecoParamEmc->SubtractPedestals());
   
