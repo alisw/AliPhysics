@@ -47,6 +47,7 @@ fMagic(0),
 fHeadSize(0),
 fVersion(0),
 fExtendedDataSize(0),
+fExtendedAllocSize(0),
 fExtendedData(NULL),
 fIsSwapped(kFALSE)
 {
@@ -247,10 +248,7 @@ AliRawEventHeaderBase* AliRawEventHeaderBase::Create(char*& data)
   }
   else {
     if (extsize > 0) {
-      hdr->SetExtendedDataSize(extsize);
-      char *extdata = new char[extsize];
-      memset(extdata,0,extsize);
-      hdr->SetExtendedData(extdata);
+      hdr->AllocateExtendedData(extsize);
     }
   }
 
@@ -282,23 +280,60 @@ Int_t AliRawEventHeaderBase::ReadHeader(char*& data)
     data += HeaderBaseSize();
     SwapData(data, HeaderBegin(), HeaderSize());
     data += HeaderSize();
-    if(GetExtendedDataSize()>0) {
-      SwapData(data, GetExtendedData(), GetExtendedDataSize());
-      data += GetExtendedDataSize();
-    }
   }
   else {
     memcpy(HeaderBaseBegin(), data, HeaderBaseSize());
     data += HeaderBaseSize();
     memcpy(HeaderBegin(), data, HeaderSize());
     data += HeaderSize();
-    if(GetExtendedDataSize()>0) {
-      memcpy(GetExtendedData(), data, GetExtendedDataSize());
-      data += GetExtendedDataSize();
-    }
   }
+  data += ReadExtendedData(data);
 
   return (Int_t)((Long_t)data - start);
+}
+
+//______________________________________________________________________________
+void AliRawEventHeaderBase::AllocateExtendedData(Int_t extsize)
+{
+  // Allocate the space for the header
+  // extended data
+  if (fExtendedData) delete [] fExtendedData;
+  
+  fExtendedDataSize = fExtendedAllocSize = extsize;
+  fExtendedData = new char[fExtendedAllocSize];
+  memset(fExtendedData,0,fExtendedAllocSize);
+}
+
+//______________________________________________________________________________
+Int_t AliRawEventHeaderBase::ReadExtendedData(char*& data)
+{
+  // Read extended header data
+  // Reallocates memory if the present
+  // buffer is insufficient
+  Int_t extsize = (Int_t)GetHeadSize() - (HeaderBaseSize() + HeaderSize());
+
+  if (extsize == 0) {
+    fExtendedDataSize = 0;
+    return 0;
+  }
+
+  if (extsize < 0) {
+    AliFatal(Form("Invalid header size (%d < %d +%d)!",
+		  GetHeadSize(),HeaderBaseSize(),HeaderSize()));
+    // try recovery... how?
+    return 0;
+  }
+
+  fExtendedDataSize = extsize;
+  if (fExtendedDataSize > fExtendedAllocSize)
+    AllocateExtendedData(fExtendedDataSize);
+
+  if (DataIsSwapped())
+    SwapData(data, fExtendedData, fExtendedDataSize);
+  else
+    memcpy(fExtendedData, data, fExtendedDataSize);
+
+  return fExtendedDataSize;
 }
 
 //______________________________________________________________________________

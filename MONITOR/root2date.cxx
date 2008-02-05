@@ -21,12 +21,16 @@ int Root2Date(AliRawEvent *gdcRootEvent, unsigned char *gdcDateEvent, char *ddlD
  p+=chunkSize;
  memcpy(p, aliHeader->HeaderBegin(), chunkSize=aliHeader->HeaderSize()); // Write DATE GDC header
  p+=chunkSize;
+ memcpy(p, aliHeader->GetExtendedData(), chunkSize=aliHeader->GetExtendedDataSize());
+ p+=chunkSize;
  for(ldcCounter=0; ldcCounter<gdcRootEvent->GetNSubEvents(); ldcCounter++) {
   ldcRootEvent=gdcRootEvent->GetSubEvent(ldcCounter);
   aliHeader=ldcRootEvent->GetHeader();
   memcpy(p, aliHeader->HeaderBaseBegin(), chunkSize=aliHeader->HeaderBaseSize());
   p+=chunkSize;
   memcpy(p, aliHeader->HeaderBegin(), chunkSize=aliHeader->HeaderSize()); // Write DATE LDC header
+  p+=chunkSize;
+  memcpy(p, aliHeader->GetExtendedData(), chunkSize=aliHeader->GetExtendedDataSize());
   p+=chunkSize;
   for(equipmentCounter=0; equipmentCounter<ldcRootEvent->GetNEquipments(); equipmentCounter++) {
    aliEquipment=ldcRootEvent->GetEquipment(equipmentCounter);

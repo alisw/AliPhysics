@@ -42,12 +42,12 @@ public:
 
    UInt_t        GetExtendedDataSize() const { return fExtendedDataSize; }
    char*         GetExtendedData() const { return fExtendedData; }
-   void          SetExtendedDataSize(Int_t size) { fExtendedDataSize = size; }
-   void          SetExtendedData(char *data) { fExtendedData = data; }
 
    const char *  GetTypeName() const;
    static AliRawEventHeaderBase* Create(char*& data);
+   void          AllocateExtendedData(Int_t extsize);
    Int_t         ReadHeader(char*& data);
+   Int_t         ReadExtendedData(char*& data);
    UInt_t        Get(const char *datamember) const;
    const UInt_t* GetP(const char *datamember) const;
 
@@ -81,6 +81,7 @@ private:
    UInt_t fVersion;       // unique version identifier
 
    UInt_t fExtendedDataSize; // size of header extension data
+   UInt_t fExtendedAllocSize;//! size of allocated memory for header extension data
    char  *fExtendedData;  //[fExtendedDataSize] pointer to header extension data 
 
    Bool_t fIsSwapped;     // is data swapped
@@ -88,7 +89,7 @@ private:
    static const UInt_t fgkEventMagicNumber        = 0xDA1E5AFE; // magic word
    static const UInt_t fgkEventMagicNumberSwapped = 0xFE5A1EDA; // swapped magic word
 
-   ClassDef(AliRawEventHeaderBase,1)  // Alice raw event header base class
+   ClassDef(AliRawEventHeaderBase,2)  // Alice raw event header base class
 };
 
 #define EVENT_HEADER_VERSION(AA,BB) AliRawEventHeaderV##AA##_##BB
