@@ -44,7 +44,25 @@ TEveTrack* esd_make_track(TEveTrackPropagator*   rnrStyle,
   return track;
 }
 
-Bool_t gkFixFailedITSExtr = kFALSE;
+void esd_track_add_param(TEveTrack* track, AliExternalTrackParam* tp)
+{
+  if (tp == 0)
+    return;
+
+  Double_t      pbuf[3], vbuf[3];
+  tp->GetXYZ(vbuf);
+  tp->GetPxPyPz(pbuf);
+
+  TEvePathMark* pm = new TEvePathMark(TEvePathMark::kReference);
+  pm->fV.Set(vbuf);
+  pm->fP.Set(pbuf);
+  track->AddPathMark(pm);
+}
+
+/******************************************************************************/
+
+Bool_t gkFixFailedITSExtr    = kFALSE;
+Bool_t gkMakeTrackParamLines = kTRUE;
 
 TEveTrackList* esd_tracks(Double_t min_pt=0.1, Double_t max_pt=100)
 {
@@ -60,6 +78,13 @@ TEveTrackList* esd_tracks(Double_t min_pt=0.1, Double_t max_pt=100)
   rnrStyle->SetMagField( 0.1*esd->GetMagneticField() );
 
   gEve->AddElement(cont);
+
+  TEveElementList* contLines = 0;
+  if (gkMakeTrackParamLines)
+  {
+    contLines = new TEveElementList("MyTracks");  
+    gEve->AddElement(contLines);
+  }
 
   Int_t    count = 0;
   Double_t pbuf[3];
@@ -77,14 +102,31 @@ TEveTrackList* esd_tracks(Double_t min_pt=0.1, Double_t max_pt=100)
 
     // If gkFixFailedITSExtr is TRUE (FALSE by default) and
     // if ITS refit failed, take track parameters at inner TPC radius.
+    Bool_t innerTaken = kFALSE;
     AliExternalTrackParam* tp = at;
     if (gkFixFailedITSExtr && !at->IsOn(AliESDtrack::kITSrefit)) {
-       tp = at->GetInnerParam();
+      tp = at->GetInnerParam();
+      innerTaken = kTRUE;
     }
 
     TEveTrack* track = esd_make_track(rnrStyle, n, at, tp);
     track->SetAttLineAttMarker(cont);
+
+    // Needs eve development brach from ROOT. 
+    // if (!innerTaken) {
+    //   esd_track_add_param(track, at->GetInnerParam());
+    // }
+    // esd_track_add_param(track, at->GetOuterParam());
+
     gEve->AddElement(track, cont);
+
+    if (gkMakeTrackParamLines) {
+      TEveLine* l = new TEveLine; 
+      l->SetName(Form("Track%d", count));
+      l->SetLineColor((Color_t)5);
+      at->FillPolymarker(l, esd->GetMagneticField(), 0, 250, 5);
+      contLines->AddElement(l);
+    }
   }
 
   //PH The line below is replaced waiting for a fix in Root
