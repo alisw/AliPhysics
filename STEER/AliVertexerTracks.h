@@ -5,7 +5,7 @@
 
 
 //-------------------------------------------------------
-// Class for vertex determination with ESD tracks
+// Class for vertex determination with tracks
 //
 //   Origin: AliITSVertexerTracks  
 //           A.Dainese, Padova, andrea.dainese@pd.infn.it
@@ -16,19 +16,18 @@
 
 /*****************************************************************************
  *                                                                           *
- * This class determines the vertex of a set of ESD tracks.                  *
+ * This class determines the vertex of a set of tracks.                      *
  * Different algorithms are implemented, see data member fAlgo.              *
  *                                                                           *
  *****************************************************************************/
 
-#include "AliESDVertex.h"
-#include "AliESDtrack.h"
-#include "AliLog.h"
-
 #include <TObjArray.h>
 #include <TMatrixD.h>
 
-class TTree; 
+#include "AliESDVertex.h"
+#include "AliExternalTrackParam.h"
+#include "AliLog.h"
+
 class AliESDEvent;
 
 class AliVertexerTracks : public TObject {
@@ -39,21 +38,26 @@ class AliVertexerTracks : public TObject {
   virtual ~AliVertexerTracks();
 
   AliESDVertex* FindPrimaryVertex(const AliESDEvent *esdEvent);
-  AliESDVertex* VertexForSelectedTracks(TTree *trkTree,Bool_t optUseFitter=kTRUE, Bool_t optPropagate=kTRUE);
-  AliESDVertex* VertexForSelectedTracks(TObjArray *trkArray, Bool_t optUseFitter=kTRUE, Bool_t optPropagate=kTRUE);
-  AliESDVertex* RemoveTracksFromVertex(AliESDVertex *inVtx,TTree *trksTree,Float_t *diamondxy); 
+  AliESDVertex* FindPrimaryVertex(TObjArray *trkArrayOrig,UShort_t *idOrig);
+  AliESDVertex* VertexForSelectedTracks(TObjArray *trkArray,UShort_t *id,
+					Bool_t optUseFitter=kTRUE,
+					Bool_t optPropagate=kTRUE);
+  AliESDVertex* VertexForSelectedESDTracks(TObjArray *trkArray,
+					Bool_t optUseFitter=kTRUE,
+					Bool_t optPropagate=kTRUE);
+  AliESDVertex* RemoveTracksFromVertex(AliESDVertex *inVtx,
+				       TObjArray *trkArray,UShort_t *id,
+				       Float_t *diamondxy); 
   void  SetConstraintOff() { fConstraint=kFALSE; return; }
   void  SetConstraintOn() { fConstraint=kTRUE; return; }
   void  SetDebug(Int_t optdebug=0) { fDebug=optdebug; return; }
   void  SetDCAcut(Double_t maxdca) { fDCAcut=maxdca; return; }
   void  SetFinderAlgorithm(Int_t opt=1) { fAlgo=opt; return; }
-  void  SetITSRequired() { fITSin=kTRUE; return; }
-  void  SetITSrefitRequired() { fITSin=kTRUE;fITSrefit=kTRUE; return; }
-  void  SetITSNotRequired() { fITSrefit=kFALSE;fITSin=kFALSE; return; }
+  void  SetITSrefitRequired() { fITSrefit=kTRUE; return; }
   void  SetITSrefitNotRequired() { fITSrefit=kFALSE; return; }
   void  SetMaxd0z0(Double_t maxd0z0=0.5) { fMaxd0z0=maxd0z0; return; }
-  void  SetMinITSClusters(Int_t n=5) { fMinITSClusters = n; return; }
-  void  SetMinTracks(Int_t n=1) { fMinTracks = n; return; }
+  void  SetMinITSClusters(Int_t n=5) { fMinITSClusters=n; return; }
+  void  SetMinTracks(Int_t n=1) { fMinTracks=n; return; }
   void  SetNSigmad0(Double_t n=3) { fNSigma=n; return; }
   Double_t GetNSigmad0() const { return fNSigma; }
   void  SetOnlyFitter() { if(!fConstraint) AliFatal("Set constraint first!"); 
@@ -80,14 +84,15 @@ class AliVertexerTracks : public TObject {
  protected:
   void     HelixVertexFinder();
   void     OneTrackVertFinder();
-  Int_t    PrepareTracks(TTree &trkTree,Int_t optImpParCut);
-  Bool_t   TrackToPoint(AliESDtrack *t,
+  Int_t    PrepareTracks(TObjArray &trkArrayOrig,UShort_t *idOrig,
+			 Int_t optImpParCut);
+  Bool_t   TrackToPoint(AliExternalTrackParam *t,
 		        TMatrixD &ri,TMatrixD &wWi,
 			Bool_t uUi3by3=kFALSE) const;     
   void     VertexFinder(Int_t optUseWeights=0);
-  void     VertexFitter(Bool_t useConstraint=kFALSE);
+  void     VertexFitter();
   void     StrLinVertexFinderMinDist(Int_t optUseWeights=0);
-  void     TooFewTracks(const AliESDEvent *esdEvent);
+  void     TooFewTracks();
 
   AliESDVertex fVert;         // vertex after vertex finder
   AliESDVertex *fCurrentVertex;  // ESD vertex after fitter
@@ -100,16 +105,15 @@ class AliVertexerTracks : public TObject {
                               // (use only with beam constraint)
   Int_t     fMinTracks;       // minimum number of tracks
   Int_t     fMinITSClusters;  // minimum number of ITS clusters per track
-  TObjArray fTrkArray;        // array with tracks to be processed
-  Int_t     *fTrksToSkip;     // tracks to be skipped for find and fit 
+  TObjArray fTrkArraySel;     // array with tracks to be processed
+  UShort_t  *fIdSel;          // IDs of the tracks (AliESDtrack::GetID())
+  Int_t     *fTrksToSkip;     // track IDs to be skipped for find and fit 
   Int_t     fNTrksToSkip;     // number of tracks to be skipped 
   Double_t  fDCAcut;          // maximum DCA between 2 tracks used for vertex
   Int_t     fAlgo;            // option for vertex finding algorythm
   Double_t  fNSigma;          // number of sigmas for d0 cut in PrepareTracks()
   Double_t  fMaxd0z0;         // value [mm] for sqrt(d0d0+z0z0) cut 
                               // in PrepareTracks(1) if fConstraint=kFALSE
-  Bool_t    fITSin;           // if kTRUE (default), use only kITSin tracks
-                              // if kFALSE, use all tracks (also TPC only)
   Bool_t    fITSrefit;        // if kTRUE (default), use only kITSrefit tracks
                               // if kFALSE, use all tracks (also TPC only)
   Double_t  fnSigmaForUi00;   // n. sigmas from finder in TrackToPoint
@@ -132,7 +136,7 @@ class AliVertexerTracks : public TObject {
   AliVertexerTracks(const AliVertexerTracks & source);
   AliVertexerTracks & operator=(const AliVertexerTracks & source);
 
-  ClassDef(AliVertexerTracks,9) // 3D Vertexing with ESD tracks 
+  ClassDef(AliVertexerTracks,10) // 3D Vertexing with tracks 
 };
 
 #endif
