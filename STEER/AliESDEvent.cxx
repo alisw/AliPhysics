@@ -657,9 +657,8 @@ Bool_t AliESDEvent::Clean(Float_t *cleanPars) {
     Float_t dca=v0->GetDcaV0Daughters();
     Float_t csp=v0->GetV0CosineOfPointingAngle();
     Float_t cspcut=cspMin + dca/dcaMax*(1.-cspMin);
-    if (csp > cspcut){
-      if (RemoveV0(i)) rc=kTRUE;
-    }
+    if (csp > cspcut) continue;
+    if (RemoveV0(i)) rc=kTRUE;
   }
 
 
