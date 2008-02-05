@@ -761,19 +761,21 @@ AliESDVertex* AliAnalysisVertexingHF::OwnPrimaryVertex(Int_t ntrks,
 
   // removing the prongs tracks
   if(fRmTrksFromPrimVtx) { 
-    TTree *rmTree = new TTree("trksTree","tree with tracks to be removed");
+    TObjArray rmArray(ntrks);
+    UShort_t *rmId = new UShort_t[ntrks];
     AliESDtrack *esdTrack = 0;
-    rmTree->Branch("tracks","AliESDtrack",&esdTrack);
     AliESDtrack *t = 0;
     for(Int_t i=0; i<ntrks; i++) {
       t = (AliESDtrack*)trkArray->UncheckedAt(i);
       esdTrack = new AliESDtrack(*t);
-      rmTree->Fill();
+      rmArray.AddLast(esdTrack);
+      rmId[i]=(UShort_t)esdTrack->GetID();
       delete esdTrack;
     }
     Float_t diamondxy[2]={esd->GetDiamondX(),esd->GetDiamondY()};
-    ownPrimVertex = vertexer1->RemoveTracksFromVertex(fV1,rmTree,diamondxy);
-    delete rmTree; rmTree=NULL;
+    ownPrimVertex = vertexer1->RemoveTracksFromVertex(fV1,&rmArray,rmId,diamondxy);
+    delete [] rmId; rmId=NULL;
+    rmArray.Delete();
   }
 
   delete vertexer1; vertexer1=NULL;
@@ -1110,7 +1112,7 @@ AliESDVertex* AliAnalysisVertexingHF::ReconstructSecondaryVertex(TObjArray *trkA
     AliVertexerTracks *vertexer2 = new AliVertexerTracks(fBzkG);
     vertexer2->SetDebug(0);
     vertexer2->SetVtxStart(fV1);
-    vertex = (AliESDVertex*)vertexer2->VertexForSelectedTracks(trkArray);
+    vertex = (AliESDVertex*)vertexer2->VertexForSelectedESDTracks(trkArray);
     delete vertexer2;
 
   } else { // Kalman Filter vertexer (AliKFParticle)
