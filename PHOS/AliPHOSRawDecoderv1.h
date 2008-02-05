@@ -27,7 +27,7 @@ public:
 
   virtual Bool_t NextDigit();
 
-  static Double_t Gamma2(Double_t dt,Double_t en,TArrayD * fitparams) ; // Shape of correct sample
+  static Double_t Gamma2(Double_t dt,Double_t en,Double_t b,TArrayD * fitparams) ; // Shape of correct sample
                                                  //class member function (not object member function)
   static void UnfoldingChiSquare(Int_t & nPar, Double_t * Grad, Double_t & fret, Double_t * x, Int_t iflag)  ;
                                             // Chi^2 of the fit. Should be static to be passed to MINUIT
