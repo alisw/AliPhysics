@@ -14,6 +14,7 @@
 #include "AliFemtoModelWeightGenerator.h"
 #include "AliFemtoModelHiddenInfo.h"
 
+const Int_t AliFemtoModelWeightGenerator::fgkPairTypeNone = 0;
 const Int_t AliFemtoModelWeightGenerator::fgkPionPlusPionPlus = 1;
 const Int_t AliFemtoModelWeightGenerator::fgkPionPlusPionMinus = 2;
 const Int_t AliFemtoModelWeightGenerator::fgkKaonPlusKaonPlus = 3;
@@ -58,49 +59,58 @@ Int_t    AliFemtoModelWeightGenerator::GetPairType() const
 //_____________________________________________
 void     AliFemtoModelWeightGenerator::SetPairTypeFromPair(AliFemtoPair *aPair)
 {
+  fPairType = GetPairTypeFromPair(aPair);
+}
+//_____________________________________________
+Int_t    AliFemtoModelWeightGenerator::GetPairTypeFromPair(AliFemtoPair *aPair)
+{
   // Get the type of pair from PID of particles in the pair
   AliFemtoModelHiddenInfo *inf1 = ( AliFemtoModelHiddenInfo *) aPair->Track1()->HiddenInfo();
   AliFemtoModelHiddenInfo *inf2 = ( AliFemtoModelHiddenInfo *) aPair->Track2()->HiddenInfo();
+
+  Int_t tPairType = fgkPairTypeNone;
 
   const Int_t ktPid1 = inf1->GetPDGPid();
   const Int_t ktPid2 = inf2->GetPDGPid();
 
   if      (((ktPid1 ==   211) && (ktPid2 ==   211)) ||
            ((ktPid1 ==  -211) && (ktPid2 ==  -211)))
-    fPairType = fgkPionPlusPionPlus;
+    tPairType = fgkPionPlusPionPlus;
   else if (((ktPid1 ==  -211) && (ktPid2 ==   211)) ||
            ((ktPid1 ==   211) && (ktPid2 ==  -211)))
-    fPairType = fgkPionPlusPionMinus;
+    tPairType = fgkPionPlusPionMinus;
   else if (((ktPid1 ==   321) && (ktPid2 ==   321)) ||
            ((ktPid1 ==  -321) && (ktPid2 ==  -321)))
-    fPairType = fgkKaonPlusKaonPlus;
+    tPairType = fgkKaonPlusKaonPlus;
   else if (((ktPid1 ==  -321) && (ktPid2 ==   321)) ||
            ((ktPid1 ==   321) && (ktPid2 ==  -321)))
-    fPairType = fgkKaonPlusKaonMinus;
+    tPairType = fgkKaonPlusKaonMinus;
   else if (((ktPid1 ==  2212) && (ktPid2 ==  2212)) ||
            ((ktPid1 == -2212) && (ktPid2 == -2212)))
-    fPairType = fgkProtonProton;
+    tPairType = fgkProtonProton;
   else if (((ktPid1 == -2212) && (ktPid2 ==  2212)) ||
            ((ktPid1 ==  2212) && (ktPid2 == -2212)))
-    fPairType = fgkProtonAntiproton;
+    tPairType = fgkProtonAntiproton;
   else if (((ktPid1 ==   211) && (ktPid2 ==   321)) ||
            ((ktPid1 ==  -211) && (ktPid2 ==  -321)))
-    fPairType = fgkPionPlusKaonPlus;
+    tPairType = fgkPionPlusKaonPlus;
   else if (((ktPid1 ==  -211) && (ktPid2 ==   321)) ||
            ((ktPid1 ==   211) && (ktPid2 ==  -321)))
-    fPairType = fgkPionPlusKaonMinus;
+    tPairType = fgkPionPlusKaonMinus;
   else if (((ktPid1 ==   211) && (ktPid2 ==  2212)) ||
            ((ktPid1 ==  -211) && (ktPid2 == -2212)))
-    fPairType = fgkPionPlusProton;
+    tPairType = fgkPionPlusProton;
   else if (((ktPid1 ==  -211) && (ktPid2 ==  2212)) ||
            ((ktPid1 ==   211) && (ktPid2 == -2212)))
-    fPairType = fgkPionPlusAntiproton;
+    tPairType = fgkPionPlusAntiproton;
   else if (((ktPid1 ==   321) && (ktPid2 ==  2212)) ||
            ((ktPid1 ==  -321) && (ktPid2 == -2212)))
-    fPairType = fgkKaonPlusProton;
+    tPairType = fgkKaonPlusProton;
   else if (((ktPid1 ==  -321) && (ktPid2 ==  2212)) ||
            ((ktPid1 ==   321) && (ktPid2 == -2212)))
-    fPairType = fgkKaonPlusAntiproton;
+    tPairType = fgkKaonPlusAntiproton;
+
+  return tPairType;
 }
 
 //_____________________________________________

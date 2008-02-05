@@ -1,3 +1,12 @@
+///////////////////////////////////////////////////////////////////////////
+//                                                                       //
+// AliFemtoKink: main class holding all the necessary information        //
+// about a kink (before the identification) that is required during      //
+// femtoscopic analysis. This class is filled with information from the  //
+// input stream by the reader. A particle has a link back to the Kink    //
+// it was created from, so we do not copy the information.               //
+//                                                                       //
+///////////////////////////////////////////////////////////////////////////
 /***********************************************************************
  *
  * $Id$
@@ -61,8 +70,8 @@ AliFemtoKink::AliFemtoKink():
   fHitDistanceParentVertex(0),
   fDecayAngle(0), fDecayAngleCM(0),             
   fDaughter(),            
-  mParent(),               
-  mPosition(0,0,0)        
+  fParent(),               
+  fPosition(0,0,0)        
 {/* no-op */}
 // -----------------------------------------------------------------------
 AliFemtoKink::AliFemtoKink(const AliFemtoKink& k):
@@ -71,8 +80,8 @@ AliFemtoKink::AliFemtoKink(const AliFemtoKink& k):
   fHitDistanceParentVertex(0),
   fDecayAngle(0), fDecayAngleCM(0),             
   fDaughter(),            
-  mParent(),               
-  mPosition(0,0,0)        
+  fParent(),               
+  fPosition(0,0,0)        
 { // copy constructor
 
   fDcaParentDaughter          =   k.fDcaParentDaughter;           
@@ -86,8 +95,8 @@ AliFemtoKink::AliFemtoKink(const AliFemtoKink& k):
   fDecayAngle                 =   k.fDecayAngle;                  
   fDecayAngleCM               =   k.fDecayAngleCM;                
   fDaughter                   =   k.fDaughter;                    
-  mParent                     =   k.mParent;                      
-  mPosition                   =   k.mPosition;                
+  fParent                     =   k.fParent;                      
+  fPosition                   =   k.fPosition;                
 
 }
 // -----------------------------------------------------------------------
@@ -123,13 +132,13 @@ AliFemtoKink::AliFemtoKink( const StKinkVertex& SKV, AliFemtoThreeVector Primary
   // Parent
   StTrk = SKV.parent();
   HbtTrk = new AliFemtoTrack(StTrk,PrimaryVertex); // generate NEW HbtTrack from StTrack
-  mParent = *HbtTrk;                           // invoke copy ctr of AliFemtoTrack
+  fParent = *HbtTrk;                           // invoke copy ctr of AliFemtoTrack
   delete HbtTrk;                               // get rid of the NEW HbtTrack - we are done with that
 
   // finally, the kink position
-  mPosition.setX(SKV.position().x());
-  mPosition.setY(SKV.position().y());
-  mPosition.setZ(SKV.position().z());
+  fPosition.setX(SKV.position().x());
+  fPosition.setY(SKV.position().y());
+  fPosition.setZ(SKV.position().z());
 
 }
 

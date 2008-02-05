@@ -1,3 +1,8 @@
+///////////////////////////////////////////////////////////////////////////
+//                                                                       //
+// AliFemtoDummyPairCut: a summy pair cut. Accepts all pairs             //
+//                                                                       //
+///////////////////////////////////////////////////////////////////////////
 /***************************************************************************
  *
  * $Id$
@@ -65,9 +70,9 @@ AliFemtoDummyPairCut::AliFemtoDummyPairCut() :
   /* no-op */
 }
 //__________________
-//AliFemtoDummyPairCut::~AliFemtoDummyPairCut(){
-//  /* no-op */
-//}
+AliFemtoDummyPairCut::~AliFemtoDummyPairCut(){
+  /* no-op */
+}
 //__________________
 bool AliFemtoDummyPairCut::Pass(const AliFemtoPair* pair){
   // Pass all pairs

@@ -42,6 +42,8 @@ class AliFemtoCutMonitorHandler{
   void FillCutMonitor(const AliFemtoParticleCollection* partColl);// Gael 19/06/02
   void FillCutMonitor(const AliFemtoEvent* event, const AliFemtoParticleCollection* partColl);// Gael 19/06/02
   void Finish();
+
+  virtual TList *GetOutputList();
   
  private:
   bool fCollectionsEmpty;                  // Are the collections empty?

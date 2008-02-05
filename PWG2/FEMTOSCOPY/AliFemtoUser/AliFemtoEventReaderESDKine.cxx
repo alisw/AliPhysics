@@ -42,7 +42,7 @@
 #include "AliESDtrack.h"
 #include "AliESDVertex.h"
 #include "AliStack.h"
-#include "AliAODParticle.h"
+//#include "AliAODParticle.h"
 #include "TParticle.h"
 
 //#include "TSystem.h"
@@ -53,6 +53,8 @@
 #include "SystemOfUnits.h"
 
 #include "AliFemtoEvent.h"
+
+#include "TMath.h"
 
 ClassImp(AliFemtoEventReaderESDKine)
 
@@ -355,24 +357,44 @@ AliFemtoEvent* AliFemtoEventReaderESDKine::ReturnHbtEvent()
       trackCopy->SetTPCnclsF(esdtrack->GetTPCNclsF());      
       trackCopy->SetTPCsignalN((short)esdtrack->GetTPCsignalN()); //due to bug in aliesdtrack class   
       trackCopy->SetTPCsignalS(esdtrack->GetTPCsignalSigma()); 
+      trackCopy->SetSigmaToVertex(GetSigmaToVertex(esdtrack));
 
       trackCopy->SetTPCClusterMap(esdtrack->GetTPCClusterMap());
       trackCopy->SetTPCSharedMap(esdtrack->GetTPCSharedMap());
 
+      double pvrt[3];
+      fEvent->GetPrimaryVertex()->GetXYZ(pvrt);
+
+      double xtpc[3];
+      esdtrack->GetInnerXYZ(xtpc);
+      xtpc[2] -= pvrt[2];
+      trackCopy->SetNominalTPCEntrancePoint(xtpc);
+
+      esdtrack->GetOuterXYZ(xtpc);
+      xtpc[2] -= pvrt[2];
+      trackCopy->SetNominalTPCExitPoint(xtpc);
+
+      int indexes[3];
+      for (int ik=0; ik<3; ik++) {
+	indexes[ik] = esdtrack->GetKinkIndex(ik);
+      }
+      trackCopy->SetKinkIndexes(indexes);
+
       // Fill the hidden information with the simulated data
       TParticle *tPart = tStack->Particle(TMath::Abs(esdtrack->GetLabel()));
-      AliAODParticle* tParticle= new AliAODParticle(*tPart,i);
+      //      AliAODParticle* tParticle= new AliAODParticle(*tPart,i);
       AliFemtoModelHiddenInfo *tInfo = new AliFemtoModelHiddenInfo();
-      tInfo->SetPDGPid(tParticle->GetMostProbable());
-      tInfo->SetTrueMomentum(tParticle->Px(), tParticle->Py(), tParticle->Pz());
-      Double_t mass2 = (tParticle->E()*tParticle->E() -
-			 tParticle->Px()*tParticle->Px() -
-			 tParticle->Py()*tParticle->Py() -
-			 tParticle->Pz()*tParticle->Pz());
+      tInfo->SetPDGPid(tPart->GetPdgCode());
+      tInfo->SetTrueMomentum(tPart->Px(), tPart->Py(), tPart->Pz());
+      Double_t mass2 = (tPart->Energy() *tPart->Energy() -
+			tPart->Px()*tPart->Px() -
+			tPart->Py()*tPart->Py() -
+			tPart->Pz()*tPart->Pz());
       if (mass2>0.0)
 	tInfo->SetMass(TMath::Sqrt(mass2));
       else 
 	tInfo->SetMass(0.0);
+      tInfo->SetEmissionPoint(tPart->Vx()*1e13, tPart->Vy()*1e13, tPart->Vz()*1e13, tPart->T()*1e13*300000);
       trackCopy->SetHiddenInfo(tInfo);
 
       //decision if we want this track
@@ -400,4 +422,44 @@ AliFemtoEvent* AliFemtoEventReaderESDKine::ReturnHbtEvent()
       delete fTree;
     }
   return hbtEvent; 
+}
+//____________________________________________________________________
+Float_t AliFemtoEventReaderESDKine::GetSigmaToVertex(const AliESDtrack* esdTrack)
+{
+  // Calculates the number of sigma to the vertex.
+
+  Float_t b[2];
+  Float_t bRes[2];
+  Float_t bCov[3];
+  esdTrack->GetImpactParameters(b,bCov);
+//   if (bCov[0]<=0 || bCov[2]<=0) {
+//     AliDebug(1, "Estimated b resolution lower or equal zero!");
+//     bCov[0]=0; bCov[2]=0;
+//   }
+  bRes[0] = TMath::Sqrt(bCov[0]);
+  bRes[1] = TMath::Sqrt(bCov[2]);
+
+  // -----------------------------------
+  // How to get to a n-sigma cut?
+  //
+  // The accumulated statistics from 0 to d is
+  //
+  // ->  Erf(d/Sqrt(2)) for a 1-dim gauss (d = n_sigma)
+  // ->  1 - Exp(-d**2) for a 2-dim gauss (d*d = dx*dx + dy*dy != n_sigma)
+  //
+  // It means that for a 2-dim gauss: n_sigma(d) = Sqrt(2)*ErfInv(1 - Exp((-x**2)/2)
+  // Can this be expressed in a different way?
+
+  if (bRes[0] == 0 || bRes[1] ==0)
+    return -1;
+
+  Float_t d = TMath::Sqrt(TMath::Power(b[0]/bRes[0],2) + TMath::Power(b[1]/bRes[1],2));
+
+  // stupid rounding problem screws up everything:
+  // if d is too big, TMath::Exp(...) gets 0, and TMath::ErfInverse(1) that should be infinite, gets 0 :(
+  if (TMath::Exp(-d * d / 2) < 1e-10)
+    return 1000;
+
+  d = TMath::ErfInverse(1 - TMath::Exp(-d * d / 2)) * TMath::Sqrt(2);
+  return d;
 }

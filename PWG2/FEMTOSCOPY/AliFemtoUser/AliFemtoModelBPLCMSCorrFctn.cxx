@@ -22,25 +22,25 @@ AliFemtoModelBPLCMSCorrFctn::AliFemtoModelBPLCMSCorrFctn(char* title, const int&
   fNumerator3DTrue(0),
   fNumerator3DFake(0),
   fDenominator3D(0),
-  fQinvHisto(0)
+  fQinvHisto(0),
+  fPairCut(0)
 {
-
   // set up true numerator
-  char TitNumT[100] = "Num3DTrue";
-  strcat(TitNumT,title);
-  fNumerator3DTrue = new TH3D(TitNumT,title,nbins,QLo,QHi,nbins,QLo,QHi,nbins,QLo,QHi);
+  char tTitNumT[100] = "Num3DTrue";
+  strcat(tTitNumT,title);
+  fNumerator3DTrue = new TH3D(tTitNumT,title,nbins,QLo,QHi,nbins,QLo,QHi,nbins,QLo,QHi);
   // set up fake numerator
-  char TitNumF[100] = "Num3DFake";
-  strcat(TitNumF,title);
-  fNumerator3DFake = new TH3D(TitNumF,title,nbins,QLo,QHi,nbins,QLo,QHi,nbins,QLo,QHi);
+  char tTitNumF[100] = "Num3DFake";
+  strcat(tTitNumF,title);
+  fNumerator3DFake = new TH3D(tTitNumF,title,nbins,QLo,QHi,nbins,QLo,QHi,nbins,QLo,QHi);
   // set up denominator
-  char TitDen[100] = "Den3D";
-  strcat(TitDen,title);
-  fDenominator3D = new TH3D(TitDen,title,nbins,QLo,QHi,nbins,QLo,QHi,nbins,QLo,QHi);
+  char tTitDen[100] = "Den3D";
+  strcat(tTitDen,title);
+  fDenominator3D = new TH3D(tTitDen,title,nbins,QLo,QHi,nbins,QLo,QHi,nbins,QLo,QHi);
   // set up ave qInv
-  char TitQinv[100] = "Qinv";
-  strcat(TitQinv,title);
-  fQinvHisto = new TH3D(TitQinv,title,nbins,QLo,QHi,nbins,QLo,QHi,nbins,QLo,QHi);
+  char tTitQinv[100] = "Qinv";
+  strcat(tTitQinv,title);
+  fQinvHisto = new TH3D(tTitQinv,title,nbins,QLo,QHi,nbins,QLo,QHi,nbins,QLo,QHi);
 
   // to enable error bar calculation...
   fNumerator3DTrue->Sumw2();
@@ -53,16 +53,20 @@ AliFemtoModelBPLCMSCorrFctn::AliFemtoModelBPLCMSCorrFctn(const AliFemtoModelBPLC
   fNumerator3DTrue(0),
   fNumerator3DFake(0),
   fDenominator3D(0),
-  fQinvHisto(0)
+  fQinvHisto(0),
+  fPairCut(0)
 {
+  // Copy constructor
   fNumerator3DTrue = new TH3D(*aCorrFctn.fNumerator3DTrue);
   fNumerator3DFake = new TH3D(*aCorrFctn.fNumerator3DFake);
   fDenominator3D   = new TH3D(*aCorrFctn.fDenominator3D);
   fQinvHisto       = new TH3D(*aCorrFctn.fQinvHisto);
+  fPairCut         = aCorrFctn.fPairCut->Clone();
 }
 //____________________________
 AliFemtoModelBPLCMSCorrFctn::~AliFemtoModelBPLCMSCorrFctn()
 {
+  // destructor
   if (fNumeratorTrue) delete fNumeratorTrue;
   if (fNumeratorFake) delete fNumeratorFake;
   if (fDenominator) delete fDenominator;
@@ -70,10 +74,12 @@ AliFemtoModelBPLCMSCorrFctn::~AliFemtoModelBPLCMSCorrFctn()
   delete fNumerator3DFake;
   delete fDenominator3D;
   delete fQinvHisto;
+  if (fPairCut) delete fPairCut;
 }
 //_________________________
 AliFemtoModelBPLCMSCorrFctn& AliFemtoModelBPLCMSCorrFctn::operator=(const AliFemtoModelBPLCMSCorrFctn& aCorrFctn)
 {
+  // Assignment operator
   if (this == &aCorrFctn)
     return *this;
   if (fNumerator3DTrue) delete fNumerator3DTrue;
@@ -84,17 +90,32 @@ AliFemtoModelBPLCMSCorrFctn& AliFemtoModelBPLCMSCorrFctn::operator=(const AliFem
   fDenominator3D = new TH3D(*aCorrFctn.fDenominator3D);
   if (fQinvHisto) delete fQinvHisto;
   fQinvHisto = new TH3D(*aCorrFctn.fQinvHisto);
+  fPairCut = aCorrFctn.fPairCut->Clone();
 
   return *this;
 }
 
 //_________________________
 void AliFemtoModelBPLCMSCorrFctn::Write(){
+  // Write out data histograms
   AliFemtoModelCorrFctn::Write();
   fNumerator3DTrue->Write();
   fNumerator3DFake->Write();
   fDenominator3D->Write();
   fQinvHisto->Write();
+}
+//________________________
+TList* AliFemtoModelBPLCMSCorrFctn::GetOutputList()
+{
+  // Prepare the list of objects to be written to the output
+  TList *tOutputList = AliFemtoModelCorrFctn::GetOutputList();
+
+  tOutputList->Add(fNumerator3DTrue); 
+  tOutputList->Add(fNumerator3DFake);  
+  tOutputList->Add(fDenominator3D);  
+  tOutputList->Add(fQinvHisto);  
+
+  return tOutputList;
 }
 
 //_________________________
@@ -104,6 +125,7 @@ void AliFemtoModelBPLCMSCorrFctn::Finish(){
 
 //____________________________
 AliFemtoString AliFemtoModelBPLCMSCorrFctn::Report(){
+  // Prepare a report from the execution
   string stemp = "LCMS Frame Bertsch-Pratt 3D Model Correlation Function Report:\n";
   char ctemp[100];
   sprintf(ctemp,"Number of entries in numerator:\t%E\n",fNumeratorTrue->GetEntries());
@@ -127,7 +149,13 @@ AliFemtoString AliFemtoModelBPLCMSCorrFctn::Report(){
   return returnThis;
 }
 //____________________________
-void AliFemtoModelBPLCMSCorrFctn::AddRealPair( AliFemtoPair* pair){
+void AliFemtoModelBPLCMSCorrFctn::AddRealPair( AliFemtoPair* pair)
+{
+  // Store a real pair in numerator
+  if (fPairCut){
+    if (!(fPairCut->Pass(pair))) return;
+  }
+  
   Double_t weight = fManager->GetWeight(pair);
 
   double qOut = fabs(pair->QOutCMS());
@@ -139,6 +167,11 @@ void AliFemtoModelBPLCMSCorrFctn::AddRealPair( AliFemtoPair* pair){
 }
 //____________________________
 void AliFemtoModelBPLCMSCorrFctn::AddMixedPair( AliFemtoPair* pair){
+  // store mixed pair in denominator
+  if (fPairCut){
+    if (!(fPairCut->Pass(pair))) return;
+  }
+
   Double_t weight = fManager->GetWeight(pair);
 
   double qOut = fabs(pair->QOutCMS());
@@ -158,4 +191,9 @@ AliFemtoModelCorrFctn* AliFemtoModelBPLCMSCorrFctn::Clone()
   AliFemtoModelBPLCMSCorrFctn *tCopy = new AliFemtoModelBPLCMSCorrFctn(*this);
   
   return tCopy;
+}
+
+void AliFemtoModelBPLCMSCorrFctn::SetSpecificPairCut(AliFemtoPairCut* aCut)
+{
+  fPairCut = aCut;
 }

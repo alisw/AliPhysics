@@ -506,6 +506,7 @@ void AliFemtoSimpleAnalysis::AddEventProcessed() {
 //_________________________
 TList* AliFemtoSimpleAnalysis::ListSettings()
 {
+  // Collect settings list
   TList *tListSettings = new TList();
 
   TList *p1Cut = fFirstParticleCut->ListSettings();
@@ -538,5 +539,49 @@ TList* AliFemtoSimpleAnalysis::ListSettings()
   }
 
   return tListSettings;
+  
+}
+
+//_________________________
+TList* AliFemtoSimpleAnalysis::GetOutputList()
+{
+  // Collect the list of output objects
+  // to be written 
+  TList *tOutputList = new TList();
+
+  TList *p1Cut = fFirstParticleCut->GetOutputList();
+
+  TListIter nextp1(p1Cut);
+  while (TObject *obj = nextp1.Next()) {
+    tOutputList->Add(obj);
+  }
+
+  if (fSecondParticleCut != fFirstParticleCut) {
+    TList *p2Cut = fSecondParticleCut->GetOutputList();
+    
+    TIter nextp2(p2Cut);
+    while (TObject *obj = nextp2()) {
+      tOutputList->Add(obj);
+    }
+  }
+
+  TList *pairCut = fPairCut->GetOutputList();
+
+  TIter nextpair(pairCut);
+  while (TObject *obj = nextpair()) {
+    tOutputList->Add(obj);
+  }
+
+  AliFemtoCorrFctnIterator iter;
+  for (iter=fCorrFctnCollection->begin(); iter!=fCorrFctnCollection->end();iter++){
+    TList *tListCf = (*iter)->GetOutputList();
+    
+    TIter nextListCf(tListCf);
+    while (TObject *obj = nextListCf()) {
+      tOutputList->Add(obj);
+    }
+  }
+
+  return tOutputList;
   
 }

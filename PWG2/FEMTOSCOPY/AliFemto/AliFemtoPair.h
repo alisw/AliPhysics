@@ -79,31 +79,31 @@ public:
   // assumption is important for the Event Mixing-- it is not a mistake. - MALisa
   double NominalTpcExitSeparation() const;
   double NominalTpcEntranceSeparation() const;
-  double NominalTpcAverageSeparation() const;
+  //  double NominalTpcAverageSeparation() const;
   // adapted calculation of Entrance/Exit/Average Tpc separation to V0 daughters
-  double TpcExitSeparationTrackV0Pos() const;
-  double TpcEntranceSeparationTrackV0Pos() const;
-  double TpcAverageSeparationTrackV0Pos() const; 
+/*   double TpcExitSeparationTrackV0Pos() const; */
+/*   double TpcEntranceSeparationTrackV0Pos() const; */
+/*   double TpcAverageSeparationTrackV0Pos() const;  */
 
-  double TpcExitSeparationTrackV0Neg() const;
-  double TpcEntranceSeparationTrackV0Neg() const;
-  double TpcAverageSeparationTrackV0Neg() const; 
+/*   double TpcExitSeparationTrackV0Neg() const; */
+/*   double TpcEntranceSeparationTrackV0Neg() const; */
+/*   double TpcAverageSeparationTrackV0Neg() const;  */
 
-  double TpcExitSeparationV0PosV0Pos() const;
-  double TpcEntranceSeparationV0PosV0Pos() const;
-  double TpcAverageSeparationV0PosV0Pos() const; 
+/*   double TpcExitSeparationV0PosV0Pos() const; */
+/*   double TpcEntranceSeparationV0PosV0Pos() const; */
+/*   double TpcAverageSeparationV0PosV0Pos() const;  */
 
-  double TpcExitSeparationV0PosV0Neg() const;
-  double TpcEntranceSeparationV0PosV0Neg() const;
-  double TpcAverageSeparationV0PosV0Neg() const; 
+/*   double TpcExitSeparationV0PosV0Neg() const; */
+/*   double TpcEntranceSeparationV0PosV0Neg() const; */
+/*   double TpcAverageSeparationV0PosV0Neg() const;  */
  
-  double TpcExitSeparationV0NegV0Pos() const;
-  double TpcEntranceSeparationV0NegV0Pos() const;
-  double TpcAverageSeparationV0NegV0Pos() const; 
+/*   double TpcExitSeparationV0NegV0Pos() const; */
+/*   double TpcEntranceSeparationV0NegV0Pos() const; */
+/*   double TpcAverageSeparationV0NegV0Pos() const;  */
   
-  double TpcExitSeparationV0NegV0Neg() const;
-  double TpcEntranceSeparationV0NegV0Neg() const;
-  double TpcAverageSeparationV0NegV0Neg() const; 
+/*   double TpcExitSeparationV0NegV0Neg() const; */
+/*   double TpcEntranceSeparationV0NegV0Neg() const; */
+/*   double TpcAverageSeparationV0NegV0Neg() const;  */
 
   double PInv() const;
   double KStar() const;
@@ -142,16 +142,16 @@ public:
   double GetClosestRowAtDCA() const;
   double GetWeightedAvSep() const;
   // >>>
-  double GetFracOfMergedRowTrkV0Pos() const;
-  double GetClosestRowAtDCATrkV0Pos() const;
+/*   double GetFracOfMergedRowTrkV0Pos() const; */
+/*   double GetClosestRowAtDCATrkV0Pos() const; */
 
-  double GetFracOfMergedRowTrkV0Neg() const;
-  double GetClosestRowAtDCATrkV0Neg() const;
+/*   double GetFracOfMergedRowTrkV0Neg() const; */
+/*   double GetClosestRowAtDCATrkV0Neg() const; */
 
-  double GetFracOfMergedRowV0PosV0Neg() const;
-  double GetFracOfMergedRowV0NegV0Pos() const;
-  double GetFracOfMergedRowV0PosV0Pos() const;
-  double GetFracOfMergedRowV0NegV0Neg() const;
+/*   double GetFracOfMergedRowV0PosV0Neg() const; */
+/*   double GetFracOfMergedRowV0NegV0Pos() const; */
+/*   double GetFracOfMergedRowV0PosV0Pos() const; */
+/*   double GetFracOfMergedRowV0NegV0Neg() const; */
 
 private:
   AliFemtoParticle* fTrack1; // Link to the first track in the pair
@@ -317,92 +317,92 @@ inline double AliFemtoPair::GetWeightedAvSep() const {
 }
 
 
-inline double AliFemtoPair::GetFracOfMergedRowTrkV0Pos() const{
-  if(fMergingParNotCalculatedTrkV0Pos)
-    CalcMergingParFctn(&fMergingParNotCalculatedTrkV0Pos,
-		       &(fTrack1->fZ[0]),&(fTrack1->fU[0]),
-		       &(fTrack2->fZ[0]),&(fTrack2->fU[0]),
-		       &(fTrack1->fSect[0]),&(fTrack2->fSect[0]),
-		       &(fFracOfMergedRowTrkV0Pos),&(fClosestRowAtDCATrkV0Pos)
-		       );
-  return fFracOfMergedRowTrkV0Pos;
-}
-inline double AliFemtoPair::GetClosestRowAtDCATrkV0Pos() const{
-  if(fMergingParNotCalculatedTrkV0Pos)
-    CalcMergingParFctn(&fMergingParNotCalculatedTrkV0Pos,
-		       &(fTrack1->fZ[0]),&(fTrack1->fU[0]),
-		       &(fTrack2->fZ[0]),&(fTrack2->fU[0]),
-		       &(fTrack1->fSect[0]),&(fTrack2->fSect[0]),
-		       &fFracOfMergedRowTrkV0Pos,&fClosestRowAtDCATrkV0Pos
-		       );
-  return fClosestRowAtDCATrkV0Pos;
-}
-inline double AliFemtoPair::GetFracOfMergedRowTrkV0Neg() const{
-  if(fMergingParNotCalculatedTrkV0Neg)
-    CalcMergingParFctn(&fMergingParNotCalculatedTrkV0Neg,
-		       &(fTrack1->fZ[0]),&(fTrack1->fU[0]),
-		       &(fTrack2->fV0NegZ[0]),&(fTrack2->fV0NegU[0]),
-		       &(fTrack1->fSect[0]),&(fTrack2->fV0NegSect[0]),
-		       &(fFracOfMergedRowTrkV0Neg),&(fClosestRowAtDCATrkV0Neg)
-		       );
-  return fFracOfMergedRowTrkV0Neg;
-}
-inline double AliFemtoPair::GetClosestRowAtDCATrkV0Neg() const{
-  if(fMergingParNotCalculatedTrkV0Neg)
-    CalcMergingParFctn(&fMergingParNotCalculatedTrkV0Neg,
-		       &(fTrack1->fZ[0]),&(fTrack1->fU[0]),
-		       &(fTrack2->fV0NegZ[0]),&(fTrack2->fV0NegU[0]),
-		       &(fTrack1->fSect[0]),&(fTrack2->fV0NegSect[0]),
-		       &fFracOfMergedRowTrkV0Neg,&fClosestRowAtDCATrkV0Neg
-		       );
-  return fClosestRowAtDCATrkV0Neg;
-}
-inline double AliFemtoPair::GetFracOfMergedRowV0PosV0Neg() const{
-  if(fMergingParNotCalculatedV0PosV0Neg)
-    CalcMergingParFctn(&fMergingParNotCalculatedV0PosV0Neg,
-		       &(fTrack1->fZ[0]),&(fTrack1->fU[0]),
-		       &(fTrack2->fV0NegZ[0]),&(fTrack2->fV0NegU[0]),
-		       &(fTrack1->fSect[0]),&(fTrack2->fV0NegSect[0]),
-		       &(fFracOfMergedRowV0PosV0Neg),
-		       &(fClosestRowAtDCAV0PosV0Neg)
-		       );
-  return fFracOfMergedRowV0PosV0Neg;
-}
-inline double AliFemtoPair::GetFracOfMergedRowV0NegV0Pos() const{
-  if(fMergingParNotCalculatedV0NegV0Pos)
-    CalcMergingParFctn(&fMergingParNotCalculatedV0NegV0Pos,
-		       &(fTrack1->fV0NegZ[0]),&(fTrack1->fV0NegU[0]),
-		       &(fTrack2->fZ[0]),&(fTrack2->fU[0]),
-		       &(fTrack1->fV0NegSect[0]),
-		       &(fTrack2->fSect[0]),
-		       &(fFracOfMergedRowV0NegV0Pos),
-		       &(fClosestRowAtDCAV0NegV0Pos)
-		       );
-  return fFracOfMergedRowV0NegV0Pos;
-}
-inline double AliFemtoPair::GetFracOfMergedRowV0PosV0Pos() const{
-  if(fMergingParNotCalculatedV0PosV0Pos)
-    CalcMergingParFctn(&fMergingParNotCalculatedV0PosV0Pos,
-		       &(fTrack1->fZ[0]),&(fTrack1->fU[0]),
-		       &(fTrack2->fZ[0]),&(fTrack2->fU[0]),
-		       &(fTrack1->fSect[0]),
-		       &(fTrack2->fSect[0]),
-		       &(fFracOfMergedRowV0PosV0Pos),
-		       &(fClosestRowAtDCAV0PosV0Pos)
-		       );
-  return fFracOfMergedRowV0PosV0Pos;
-}
-inline double AliFemtoPair::GetFracOfMergedRowV0NegV0Neg() const{
-  if(fMergingParNotCalculatedV0NegV0Neg)
-    CalcMergingParFctn(&fMergingParNotCalculatedV0NegV0Neg,
-		       &(fTrack1->fV0NegZ[0]),&(fTrack1->fV0NegU[0]),
-		       &(fTrack2->fV0NegZ[0]),&(fTrack2->fV0NegU[0]),
-		       &(fTrack1->fV0NegSect[0]),
-		       &(fTrack2->fV0NegSect[0]),
-		       &(fFracOfMergedRowV0NegV0Neg),
-		       &(fClosestRowAtDCAV0NegV0Neg)
-		       );
-  return fFracOfMergedRowV0NegV0Neg;
-}
+/* inline double AliFemtoPair::GetFracOfMergedRowTrkV0Pos() const{ */
+/*   if(fMergingParNotCalculatedTrkV0Pos) */
+/*     CalcMergingParFctn(&fMergingParNotCalculatedTrkV0Pos, */
+/* 		       &(fTrack1->fZ[0]),&(fTrack1->fU[0]), */
+/* 		       &(fTrack2->fZ[0]),&(fTrack2->fU[0]), */
+/* 		       &(fTrack1->fSect[0]),&(fTrack2->fSect[0]), */
+/* 		       &(fFracOfMergedRowTrkV0Pos),&(fClosestRowAtDCATrkV0Pos) */
+/* 		       ); */
+/*   return fFracOfMergedRowTrkV0Pos; */
+/* } */
+/* inline double AliFemtoPair::GetClosestRowAtDCATrkV0Pos() const{ */
+/*   if(fMergingParNotCalculatedTrkV0Pos) */
+/*     CalcMergingParFctn(&fMergingParNotCalculatedTrkV0Pos, */
+/* 		       &(fTrack1->fZ[0]),&(fTrack1->fU[0]), */
+/* 		       &(fTrack2->fZ[0]),&(fTrack2->fU[0]), */
+/* 		       &(fTrack1->fSect[0]),&(fTrack2->fSect[0]), */
+/* 		       &fFracOfMergedRowTrkV0Pos,&fClosestRowAtDCATrkV0Pos */
+/* 		       ); */
+/*   return fClosestRowAtDCATrkV0Pos; */
+/* } */
+/* inline double AliFemtoPair::GetFracOfMergedRowTrkV0Neg() const{ */
+/*   if(fMergingParNotCalculatedTrkV0Neg) */
+/*     CalcMergingParFctn(&fMergingParNotCalculatedTrkV0Neg, */
+/* 		       &(fTrack1->fZ[0]),&(fTrack1->fU[0]), */
+/* 		       &(fTrack2->fV0NegZ[0]),&(fTrack2->fV0NegU[0]), */
+/* 		       &(fTrack1->fSect[0]),&(fTrack2->fV0NegSect[0]), */
+/* 		       &(fFracOfMergedRowTrkV0Neg),&(fClosestRowAtDCATrkV0Neg) */
+/* 		       ); */
+/*   return fFracOfMergedRowTrkV0Neg; */
+/* } */
+/* inline double AliFemtoPair::GetClosestRowAtDCATrkV0Neg() const{ */
+/*   if(fMergingParNotCalculatedTrkV0Neg) */
+/*     CalcMergingParFctn(&fMergingParNotCalculatedTrkV0Neg, */
+/* 		       &(fTrack1->fZ[0]),&(fTrack1->fU[0]), */
+/* 		       &(fTrack2->fV0NegZ[0]),&(fTrack2->fV0NegU[0]), */
+/* 		       &(fTrack1->fSect[0]),&(fTrack2->fV0NegSect[0]), */
+/* 		       &fFracOfMergedRowTrkV0Neg,&fClosestRowAtDCATrkV0Neg */
+/* 		       ); */
+/*   return fClosestRowAtDCATrkV0Neg; */
+/* } */
+/* inline double AliFemtoPair::GetFracOfMergedRowV0PosV0Neg() const{ */
+/*   if(fMergingParNotCalculatedV0PosV0Neg) */
+/*     CalcMergingParFctn(&fMergingParNotCalculatedV0PosV0Neg, */
+/* 		       &(fTrack1->fZ[0]),&(fTrack1->fU[0]), */
+/* 		       &(fTrack2->fV0NegZ[0]),&(fTrack2->fV0NegU[0]), */
+/* 		       &(fTrack1->fSect[0]),&(fTrack2->fV0NegSect[0]), */
+/* 		       &(fFracOfMergedRowV0PosV0Neg), */
+/* 		       &(fClosestRowAtDCAV0PosV0Neg) */
+/* 		       ); */
+/*   return fFracOfMergedRowV0PosV0Neg; */
+/* } */
+/* inline double AliFemtoPair::GetFracOfMergedRowV0NegV0Pos() const{ */
+/*   if(fMergingParNotCalculatedV0NegV0Pos) */
+/*     CalcMergingParFctn(&fMergingParNotCalculatedV0NegV0Pos, */
+/* 		       &(fTrack1->fV0NegZ[0]),&(fTrack1->fV0NegU[0]), */
+/* 		       &(fTrack2->fZ[0]),&(fTrack2->fU[0]), */
+/* 		       &(fTrack1->fV0NegSect[0]), */
+/* 		       &(fTrack2->fSect[0]), */
+/* 		       &(fFracOfMergedRowV0NegV0Pos), */
+/* 		       &(fClosestRowAtDCAV0NegV0Pos) */
+/* 		       ); */
+/*   return fFracOfMergedRowV0NegV0Pos; */
+/* } */
+/* inline double AliFemtoPair::GetFracOfMergedRowV0PosV0Pos() const{ */
+/*   if(fMergingParNotCalculatedV0PosV0Pos) */
+/*     CalcMergingParFctn(&fMergingParNotCalculatedV0PosV0Pos, */
+/* 		       &(fTrack1->fZ[0]),&(fTrack1->fU[0]), */
+/* 		       &(fTrack2->fZ[0]),&(fTrack2->fU[0]), */
+/* 		       &(fTrack1->fSect[0]), */
+/* 		       &(fTrack2->fSect[0]), */
+/* 		       &(fFracOfMergedRowV0PosV0Pos), */
+/* 		       &(fClosestRowAtDCAV0PosV0Pos) */
+/* 		       ); */
+/*   return fFracOfMergedRowV0PosV0Pos; */
+/* } */
+/* inline double AliFemtoPair::GetFracOfMergedRowV0NegV0Neg() const{ */
+/*   if(fMergingParNotCalculatedV0NegV0Neg) */
+/*     CalcMergingParFctn(&fMergingParNotCalculatedV0NegV0Neg, */
+/* 		       &(fTrack1->fV0NegZ[0]),&(fTrack1->fV0NegU[0]), */
+/* 		       &(fTrack2->fV0NegZ[0]),&(fTrack2->fV0NegU[0]), */
+/* 		       &(fTrack1->fV0NegSect[0]), */
+/* 		       &(fTrack2->fV0NegSect[0]), */
+/* 		       &(fFracOfMergedRowV0NegV0Neg), */
+/* 		       &(fClosestRowAtDCAV0NegV0Neg) */
+/* 		       ); */
+/*   return fFracOfMergedRowV0NegV0Neg; */
+/* } */
 
 #endif

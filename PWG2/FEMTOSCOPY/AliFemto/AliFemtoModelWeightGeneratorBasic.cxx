@@ -143,12 +143,24 @@ Double_t AliFemtoModelWeightGeneratorBasic::GenerateWeight(AliFemtoPair *aPair)
   fKStar = ::sqrt(fKStarOut*fKStarOut + fKStarSide*fKStarSide + fKStarLong*fKStarLong);
 //   Double_t tRSt = fRStar/0.197327;
 
-  if ((fPairType == AliFemtoModelWeightGenerator::fgkPionPlusPionPlus) || (fPairType == AliFemtoModelWeightGenerator::fgkKaonPlusKaonPlus))
-    return 1.0 + cos (2*(fKStarOut * tROS + fKStarSide * tRSS + fKStarLong * tRLS));
-  else if (fPairType == AliFemtoModelWeightGenerator::fgkProtonProton)
-    return 1.0 - 0.5 * cos (2*(fKStarOut * tROS + fKStarSide * tRSS + fKStarLong * tRLS));
-  else 
-    return 1.0;
+  if (fPairType != fgkPairTypeNone) {
+    if ((fPairType == PionPlusPionPlus()) || (fPairType == KaonPlusKaonPlus()))
+      return 1.0 + cos (2*(fKStarOut * tROS + fKStarSide * tRSS + fKStarLong * tRLS));
+    else if (fPairType == ProtonProton())
+      return 1.0 - 0.5 * cos (2*(fKStarOut * tROS + fKStarSide * tRSS + fKStarLong * tRLS));
+    else 
+      return 1.0;
+  }
+  else {
+    Int_t tPairType = GetPairTypeFromPair(aPair);
+    if ((tPairType == PionPlusPionPlus()) || (tPairType == KaonPlusKaonPlus()))
+      return 1.0 + cos (2*(fKStarOut * tROS + fKStarSide * tRSS + fKStarLong * tRLS));
+    else if (tPairType == ProtonProton())
+      return 1.0 - 0.5 * cos (2*(fKStarOut * tROS + fKStarSide * tRSS + fKStarLong * tRLS));
+    else 
+      return 1.0;
+    
+  }
 }
 
 //________________________

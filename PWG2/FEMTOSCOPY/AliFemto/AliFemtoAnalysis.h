@@ -22,6 +22,7 @@ public:
   virtual AliFemtoString Report() = 0;       //! returns reports of all cuts applied and correlation functions being done
   virtual TList* ListSettings() = 0;         // return list of cut settings for the analysis
 
+  virtual TList* GetOutputList() = 0;        // Return a TList of objects to be written as output
   virtual void ProcessEvent(const AliFemtoEvent* aEventToAnalyze) = 0;
 
   virtual void Finish() = 0;

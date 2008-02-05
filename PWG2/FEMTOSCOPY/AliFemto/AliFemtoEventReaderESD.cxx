@@ -353,6 +353,18 @@ AliFemtoEvent* AliFemtoEventReaderESD::ReturnHbtEvent()
       trackCopy->SetTPCClusterMap(esdtrack->GetTPCClusterMap());
       trackCopy->SetTPCSharedMap(esdtrack->GetTPCSharedMap());
 
+      double pvrt[3];
+      fEvent->GetPrimaryVertex()->GetXYZ(pvrt);
+
+      double xtpc[3];
+      esdtrack->GetInnerXYZ(xtpc);
+      xtpc[2] -= pvrt[2];
+      trackCopy->SetNominalTPCEntrancePoint(xtpc);
+
+      esdtrack->GetOuterXYZ(xtpc);
+      xtpc[2] -= pvrt[2];
+      trackCopy->SetNominalTPCExitPoint(xtpc);
+
       int indexes[3];
       for (int ik=0; ik<3; ik++) {
 	indexes[ik] = esdtrack->GetKinkIndex(ik);

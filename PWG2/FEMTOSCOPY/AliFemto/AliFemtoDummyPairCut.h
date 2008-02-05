@@ -1,3 +1,8 @@
+///////////////////////////////////////////////////////////////////////////
+//                                                                       //
+// AliFemtoDummyPairCut: a summy pair cut. Accepts all pairs             //
+//                                                                       //
+///////////////////////////////////////////////////////////////////////////
 /***************************************************************************
  *
  * $Id$
@@ -84,7 +89,7 @@ class AliFemtoDummyPairCut : public AliFemtoPairCut{
 public:
   AliFemtoDummyPairCut();
   AliFemtoDummyPairCut(const AliFemtoDummyPairCut&);
-  //~AliFemtoDummyPairCut();
+  virtual ~AliFemtoDummyPairCut();
 
   virtual bool Pass(const AliFemtoPair*);
   virtual AliFemtoString Report();

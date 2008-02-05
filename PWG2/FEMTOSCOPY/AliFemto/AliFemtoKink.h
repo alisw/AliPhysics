@@ -1,3 +1,12 @@
+///////////////////////////////////////////////////////////////////////////
+//                                                                       //
+// AliFemtoKink: main class holding all the necessary information        //
+// about a kink (before the identification) that is required during      //
+// femtoscopic analysis. This class is filled with information from the  //
+// input stream by the reader. A particle has a link back to the Kink    //
+// it was created from, so we do not copy the information.               //
+//                                                                       //
+///////////////////////////////////////////////////////////////////////////
 /***********************************************************************
  *
  * $Id$
@@ -47,8 +56,8 @@
  * 
  *
  ***********************************************************************/
-#ifndef AliFemtoKink_hh
-#define AliFemtoKink_hh
+#ifndef ALIFEMTOKINK_H
+#define ALIFEMTOKINK_H
 
 class StKinkVertex;
 //#include "StEvent/StKinkVertex.h"  // from StEvent
@@ -59,7 +68,7 @@ class StKinkVertex;
 class AliFemtoKink {
 public:
   AliFemtoKink();
-  AliFemtoKink( const AliFemtoKink&); // copy constructor
+  AliFemtoKink( const AliFemtoKink& k); // copy constructor
 #ifndef __NO_STAR_DEPENDENCE_ALLOWED__
 #ifdef __ROOT__
   AliFemtoKink( const StKinkVertex&, AliFemtoThreeVector PrimaryVertex); // create a AliFemtoKink from a StKinkVertex
@@ -93,8 +102,8 @@ protected:
   float        fDecayAngle;                  // from StKinkVertex class directly 
   float        fDecayAngleCM;                // from StKinkVertex class directly 
   AliFemtoTrack   fDaughter;                    // from StKinkVertex class directly 
-  AliFemtoTrack   mParent;                      // from StVertex class (which StKinkVertex inherits from)
-  AliFemtoThreeVector mPosition;                // from StMeasuredPoint class (which StVertex inherits from)
+  AliFemtoTrack   fParent;                      // from StVertex class (which StKinkVertex inherits from)
+  AliFemtoThreeVector fPosition;                // from StMeasuredPoint class (which StVertex inherits from)
 
 };
 
@@ -108,8 +117,8 @@ inline float        AliFemtoKink::DeltaEnergy(int i) const {return fDeltaEnergy[
 inline float        AliFemtoKink::DecayAngle() const {return fDecayAngle;}
 inline float        AliFemtoKink::DecayAngleCM() const {return fDecayAngleCM;}
 inline AliFemtoTrack   AliFemtoKink::Daughter() const {return fDaughter;}
-inline AliFemtoTrack   AliFemtoKink::Parent() const {return mParent;}
-inline AliFemtoThreeVector AliFemtoKink::Position() const {return mPosition;}
+inline AliFemtoTrack   AliFemtoKink::Parent() const {return fParent;}
+inline AliFemtoThreeVector AliFemtoKink::Position() const {return fPosition;}
 
 
 

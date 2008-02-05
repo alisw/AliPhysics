@@ -33,6 +33,7 @@ public:
   virtual void EventEnd(const AliFemtoEvent* aEvent);
   virtual void Finish();
 
+  virtual TList* GetOutputList();
   virtual void Write();
 
   virtual AliFemtoModelCorrFctn* Clone();
@@ -41,7 +42,7 @@ public:
   void SetAnalysis(AliFemtoAnalysis* aAnalysis);
 
 protected:
-  AliFemtoModelManager *fManager; // Link back to the managet to get the weights
+  AliFemtoModelManager *fManager; // Link back to the manager to get the weights
   
   TH1D *fNumeratorTrue; // Numerator made with pairs from the same event
   TH1D *fNumeratorFake; // Numerator made with pairs from different events (mixed pairs)

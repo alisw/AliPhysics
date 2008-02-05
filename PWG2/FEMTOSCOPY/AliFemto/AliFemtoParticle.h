@@ -46,8 +46,8 @@ public:
   AliFemtoV0* V0() const;
   AliFemtoKink* Kink() const;
 
-  const AliFemtoThreeVector& NominalTpcExitPoint() const;     // position track exits TPC assuming start at (0,0,0)
-  const AliFemtoThreeVector& NominalTpcEntrancePoint() const; // position track crosses IFC assuming start at (0,0,0)
+/*   const AliFemtoThreeVector& NominalTpcExitPoint() const;     // position track exits TPC assuming start at (0,0,0) */
+/*   const AliFemtoThreeVector& NominalTpcEntrancePoint() const; // position track crosses IFC assuming start at (0,0,0) */
   const AliFemtoThreeVector& TpcV0PosExitPoint() const;  
   const AliFemtoThreeVector& TpcV0PosEntrancePoint() const;
   const AliFemtoThreeVector& TpcV0NegExitPoint() const;  
@@ -59,10 +59,10 @@ public:
   // NOTE - this requires the fHelix, so be sure this is filled
 
 
-  AliFemtoThreeVector fNominalPosSample[11];  // I make this public for convenience and speed of AliFemtoPair()
-  float fZ[45];  // Z position of cluster on padrow
-  float fU[45];  // U position of cluster on padrow
-  int fSect[45]; // Sector number of cluster on padrow
+/*   AliFemtoThreeVector fNominalPosSample[11];  // I make this public for convenience and speed of AliFemtoPair() */
+/*   float fZ[45];  // Z position of cluster on padrow */
+/*   float fU[45];  // U position of cluster on padrow */
+/*   int fSect[45]; // Sector number of cluster on padrow */
 
   void ResetFourMomentum(const AliFemtoLorentzVector& fourMomentum);
 
@@ -74,19 +74,19 @@ public:
   double GetPionPurity();
   double GetKaonPurity();
   double GetProtonPurity();
-  void CalculateTpcExitAndEntrancePoints( AliFmPhysicalHelixD* tHelix,
-					  AliFemtoThreeVector* PrimVert,
-					  AliFemtoThreeVector* SecVert,
-					  AliFemtoThreeVector* tmpTpcEntrancePoint,
-					  AliFemtoThreeVector* tmpTpcExitPoint,
-					  AliFemtoThreeVector* tmpPosSample,
-					  float* tmpZ,float* tmpU,int* tmpSect);
+/*   void CalculateTpcExitAndEntrancePoints( AliFmPhysicalHelixD* tHelix, */
+/* 					  AliFemtoThreeVector* PrimVert, */
+/* 					  AliFemtoThreeVector* SecVert, */
+/* 					  AliFemtoThreeVector* tmpTpcEntrancePoint, */
+/* 					  AliFemtoThreeVector* tmpTpcExitPoint, */
+/* 					  AliFemtoThreeVector* tmpPosSample, */
+/* 					  float* tmpZ,float* tmpU,int* tmpSect); */
 
   // For V0 Neg Daugthers TpcEntrance/ExitPoints
-  AliFemtoThreeVector* fTpcV0NegPosSample; // Sample of TPC V0 neg
-  float* fV0NegZ;                          // Array of Neg Z cluster positions
-  float* fV0NegU;                          // Array of Neg U cluster positions
-  int* fV0NegSect;                         // Array of Neg cluster sectors
+/*   AliFemtoThreeVector* fTpcV0NegPosSample; // Sample of TPC V0 neg */
+/*   float* fV0NegZ;                          // Array of Neg Z cluster positions */
+/*   float* fV0NegU;                          // Array of Neg U cluster positions */
+/*   int* fV0NegSect;                         // Array of Neg cluster sectors */
  
 private:
   AliFemtoTrack* fTrack;  // copy of the track the particle was formed of, else Null
@@ -98,8 +98,8 @@ private:
   AliFmPhysicalHelixD fHelix;          // Particle trajectory helix
   //unsigned long  fMap[2]; 
   //int fNhits;
-  AliFemtoThreeVector fNominalTpcExitPoint; // Point where particle exits TPC
-  AliFemtoThreeVector fNominalTpcEntrancePoint; // Point where particle enters TPC
+/*   AliFemtoThreeVector fNominalTpcExitPoint; // Point where particle exits TPC */
+/*   AliFemtoThreeVector fNominalTpcEntrancePoint; // Point where particle enters TPC */
   AliFemtoHiddenInfo* fHiddenInfo;  // Fab private
 
   double fPurity[6];  // Purity variables

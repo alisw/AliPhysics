@@ -67,6 +67,9 @@ public:
   TH1D* Denominator();
   TH1D* Ratio();
 
+  virtual TList* GetOutputList();
+  void Write();
+
 private:
   TH1D* fNumerator;          // numerator - real pairs
   TH1D* fDenominator;        // denominator - mixed pairs

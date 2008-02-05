@@ -157,4 +157,15 @@ AliFemtoModelCorrFctn* AliFemtoModelCorrFctn::Clone()
   
   return tCopy;
 }
+//_________________________
+TList* AliFemtoModelCorrFctn::GetOutputList()
+{
+  // Prepare the list of objects to be written to the output
+  TList *tOutputList = new TList();
 
+  tOutputList->Add(fNumeratorTrue); 
+  tOutputList->Add(fNumeratorFake); 
+  tOutputList->Add(fDenominator); 
+
+  return tOutputList;
+}

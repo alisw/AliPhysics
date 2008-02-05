@@ -43,6 +43,7 @@ public:
   float GetNormRangeHi() const;
 
   void WriteOutHistos();
+  virtual TList* GetOutputList();
 
   //  void SetCoulombCorrection(AliFemtoCoulomb* Correction);
 

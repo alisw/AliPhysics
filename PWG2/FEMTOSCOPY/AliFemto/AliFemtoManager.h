@@ -46,7 +46,6 @@ public:
   AliFemtoEventReader* EventReader();
   void SetEventReader(AliFemtoEventReader* r);
 
-
   int Init();
   int ProcessEvent();   // a "0" return value means success - otherwise quit
   void Finish();
