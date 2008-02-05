@@ -28,6 +28,7 @@
 #include "AliKalmanTrack.h"
 #include "AliLog.h"
 #include "AliTrackPointArray.h"
+#include "TPolyMarker3D.h"
 
 ClassImp(AliESDtrack)
 
@@ -1203,3 +1204,59 @@ void AliESDtrack::Print(Option_t *) const {
   }
 } 
 
+
+//
+// Draw functionality
+// Origin: Marian Ivanov, Marian.Ivanov@cern.ch
+//
+void AliESDtrack::FillPolymarker(TPolyMarker3D *pol, Float_t magF, Float_t minR, Float_t maxR, Float_t stepR){
+  //
+  // Fill points in the polymarker
+  //
+  TObjArray arrayRef;
+  arrayRef.AddLast(new AliExternalTrackParam(*this));
+  if (fIp) arrayRef.AddLast(new AliExternalTrackParam(*fIp));
+  if (fOp) arrayRef.AddLast(new AliExternalTrackParam(*fOp));
+  //
+  Double_t mpos[3]={0,0,0};
+  Int_t entries=arrayRef.GetEntries();
+  for (Int_t i=0;i<entries;i++){
+    Double_t pos[3];
+    ((AliExternalTrackParam*)arrayRef.At(i))->GetXYZ(pos);
+    mpos[0]+=pos[0]/entries;
+    mpos[1]+=pos[1]/entries;
+    mpos[2]+=pos[2]/entries;    
+  }
+  // Rotate to the mean position
+  //
+  Float_t fi= TMath::ATan2(mpos[1],mpos[0]);
+  for (Int_t i=0;i<entries;i++){
+    Bool_t res = ((AliExternalTrackParam*)arrayRef.At(i))->Rotate(fi);
+    if (!res) delete arrayRef.RemoveAt(i);
+  }
+  Int_t counter=0;
+  for (Double_t r=minR; r<maxR; r+=stepR){
+    Double_t sweight=0;
+    Double_t mlpos[3]={0,0,0};
+    for (Int_t i=0;i<entries;i++){
+      Double_t point[3]={0,0,0};
+      AliExternalTrackParam *param = ((AliExternalTrackParam*)arrayRef.At(i));
+      if (!param) continue;
+      if (param->GetXYZAt(r,magF,point)){
+	Double_t weight = 1./(10.+(r-param->GetX())*(r-param->GetX()));
+	sweight+=weight;
+	mlpos[0]+=point[0]*weight;
+	mlpos[1]+=point[1]*weight;
+	mlpos[2]+=point[2]*weight;
+      }
+    }
+    if (sweight>0){
+      mlpos[0]/=sweight;
+      mlpos[1]/=sweight;
+      mlpos[2]/=sweight;      
+      pol->SetPoint(counter,mlpos[0],mlpos[1], mlpos[2]);
+      printf("xyz\t%f\t%f\t%f\n",mlpos[0], mlpos[1],mlpos[2]);
+      counter++;
+    }
+  }
+}

@@ -28,6 +28,7 @@
 #include <TMatrixDSym.h>
 #include "AliExternalTrackParam.h"
 #include "AliESDVertex.h"
+#include "TPolyMarker3D.h"
 #include "AliLog.h"
 
 ClassImp(AliExternalTrackParam)
@@ -1312,4 +1313,38 @@ Bool_t AliExternalTrackParam::GetDistance(AliExternalTrackParam *param2, Double_
   dist[2] = xyz[2]-xyz2[2];
 
   return kTRUE;
+}
+
+
+//
+// Draw functionality.
+// Origin: Marian Ivanov, Marian.Ivanov@cern.ch
+//
+
+void  AliExternalTrackParam::DrawTrack(Float_t magf, Float_t minR, Float_t maxR, Float_t stepR){
+  //
+  // Draw track line
+  //
+  if (minR>maxR) return ;
+  if (stepR<=0) return ;
+  Int_t npoints = TMath::Nint((maxR-minR)/stepR)+1;
+  if (npoints<1) return;
+  TPolyMarker3D *polymarker = new TPolyMarker3D(npoints);
+  FillPolymarker(polymarker, magf,minR,maxR,stepR);
+  polymarker->Draw();
+}
+
+//
+void AliExternalTrackParam::FillPolymarker(TPolyMarker3D *pol, Float_t magF, Float_t minR, Float_t maxR, Float_t stepR){
+  //
+  // Fill points in the polymarker
+  //
+  Int_t counter=0;
+  for (Double_t r=minR; r<maxR; r+=stepR){
+    Double_t point[3];
+    GetXYZAt(r,magF,point);
+    pol->SetPoint(counter,point[0],point[1], point[2]);
+    printf("xyz\t%f\t%f\t%f\n",point[0], point[1],point[2]);
+    counter++;
+  }
 }

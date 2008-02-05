@@ -32,6 +32,7 @@ class TParticle;
 class AliESDVertex;
 class AliKalmanTrack;
 class AliTrackPointArray;
+class TPolyMarker3D;
 
 class AliESDtrack : public AliExternalTrackParam {
 public:
@@ -266,6 +267,10 @@ public:
     p[0]=fD; p[1]=fZ; cov[0]=fCdd; cov[1]=fCdz; cov[2]=fCzz;
   }
   virtual void Print(Option_t * opt) const ; 
+  //
+  // visualization (M. Ivanov)
+  //
+  void FillPolymarker(TPolyMarker3D *pol, Float_t magf, Float_t minR, Float_t maxR, Float_t stepR);
 
   enum {
     kITSin=0x0001,kITSout=0x0002,kITSrefit=0x0004,kITSpid=0x0008,

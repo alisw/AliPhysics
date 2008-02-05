@@ -28,6 +28,7 @@ const Double_t kMostProbablePt=0.35;
 Double_t ApproximateBetheBloch(Double_t);
 
 class AliESDVertex;
+class TPolyMarker3D; 
 
 class AliExternalTrackParam: public AliVParticle {
  public:
@@ -153,13 +154,16 @@ class AliExternalTrackParam: public AliVParticle {
 
   Bool_t GetDistance(AliExternalTrackParam *param2, Double_t x, Double_t dist[3], Double_t b);
   Int_t GetIndex(Int_t i, Int_t j) const {return i+(j+1)*j/2;}
-
-
-protected:
+  //
+  // visualization (M. Ivanov)
+  //
+  virtual void FillPolymarker(TPolyMarker3D *pol, Float_t magf, Float_t minR, Float_t maxR, Float_t stepR);
+  virtual void DrawTrack(Float_t magF, Float_t minR, Float_t maxR, Float_t stepR);
+ protected:
   Double_t &Par(Int_t i) {return fP[i];}
   Double_t &Cov(Int_t i) {return fC[i];}
-
-private:
+  
+ private:
   Double32_t           fX;     // X coordinate for the point of parametrisation
   Double32_t           fAlpha; // Local <-->global coor.system rotation angle
   Double32_t           fP[5];  // The track parameters
