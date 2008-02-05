@@ -420,6 +420,7 @@ AliFMDBaseDigitizer::DigitizeHits(AliFMD* fmd) const
 	  Float_t edep = fEdep(detector, ring, sector, strip).fEdep;
 	  ConvertToCount(edep, last, detector, ring, sector, strip, counts);
 	  last = edep;
+	  if (edep<=0) continue;
 	  AddDigit(fmd, detector, ring, sector, strip, edep, 
 		   UShort_t(counts[0]), Short_t(counts[1]), 
 		   Short_t(counts[2]), Short_t(counts[3]));
