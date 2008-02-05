@@ -183,7 +183,7 @@ void AliPHOSQADataMakerRec::InitRaws()
   h15->Sumw2() ;                                                                                                                           
   Add2RawsList(h15, kSpecHG) ;                                                                                                             
                                                                                                                                            
-  TH1F * h16 = new TH1F("hLowNtot", "Low Gain Total Number of raw hits in PHOS", 500, 0., 500.) ;                                         
+  TH1F * h16 = new TH1F("hLowNtot", "Low Gain Total Number of raw hits in PHOS", 500, 0., 5000.) ;                                         
   h16->Sumw2() ;                                                                                                                           
   Add2RawsList(h16, kNtotLG) ;                                                                                                             
   TH1F * h17 = new TH1F("hHighNtot", "High Gain Total Number of raw hits in PHOS",500,0., 5000.) ;                                         
@@ -248,41 +248,41 @@ void AliPHOSQADataMakerRec::MakeRaws(AliRawReader* rawReader)
    Double_t energy  = decoder->GetEnergy() ;
    Bool_t lowGain = decoder->IsLowGain();
    if (lowGain) {
-     if(energy<1.)
+     if(energy<2.)
        continue ;
      switch(module){
-        case 1: GetRawsData(kLGmod1)->Fill(col+0.5,row+0.5) ; break ;
-        case 2: GetRawsData(kLGmod2)->Fill(col+0.5,row+0.5) ; break ;
-        case 3: GetRawsData(kLGmod3)->Fill(col+0.5,row+0.5) ; break ;
-        case 4: GetRawsData(kLGmod4)->Fill(col+0.5,row+0.5) ; break ;
-        case 5: GetRawsData(kLGmod5)->Fill(col+0.5,row+0.5) ; break ;
-     }                                                                                                                                     
-     GetRawsData(kNmodLG)->Fill(module) ;                                                                                                  
-     GetRawsData(kLGtime)->Fill(time) ;                                                                                                    
-     GetRawsData(kSpecLG)->Fill(energy) ;                                                                                                  
-     lgEtot+=energy ;                                                                                                                      
-     lgNtot++ ;                                                                                                                            
-   } else {                                                                                                                                
-     if(energy<3.)
+        case 1: GetRawsData(kLGmod1)->Fill(row-0.5,col-0.5) ; break ;
+        case 2: GetRawsData(kLGmod2)->Fill(row-0.5,col-0.5) ; break ;
+        case 3: GetRawsData(kLGmod3)->Fill(row-0.5,col-0.5) ; break ;
+        case 4: GetRawsData(kLGmod4)->Fill(row-0.5,col-0.5) ; break ;
+        case 5: GetRawsData(kLGmod5)->Fill(row-0.5,col-0.5) ; break ;
+     }                                  
+     GetRawsData(kNmodLG)->Fill(module) ;
+     GetRawsData(kLGtime)->Fill(time) ; 
+     GetRawsData(kSpecLG)->Fill(energy) ;    
+     lgEtot+=energy ;
+     lgNtot++ ;   
+   } else {        
+     if(energy<8.)
        continue ;
-     switch (module){                                                                                                                          
-         case 1: GetRawsData(kHGmod1)->Fill(col+0.5,row+0.5) ; break ;                                                                              
-         case 2: GetRawsData(kHGmod2)->Fill(col+0.5,row+0.5) ; break ;                                                                              
-         case 3: GetRawsData(kHGmod3)->Fill(col+0.5,row+0.5) ; break ;                                                                              
-         case 4: GetRawsData(kHGmod4)->Fill(col+0.5,row+0.5) ; break ;                                                                              
-         case 5: GetRawsData(kHGmod5)->Fill(col+0.5,row+0.5) ; break ;                                                                              
-     }                                                                                                                                      
-     GetRawsData(kNmodHG)->Fill(module) ;                                                                                                  
-     GetRawsData(kHGtime)->Fill(time) ;                                                                                                    
-     GetRawsData(kSpecHG)->Fill(energy) ;                                                                                                  
-     hgEtot+=energy ;                                                                                                                      
-     hgNtot++ ;                                                                                                                            
-   }                                                                                                                                       
+     switch (module){
+         case 1: GetRawsData(kHGmod1)->Fill(row-0.5,col-0.5) ; break ;
+         case 2: GetRawsData(kHGmod2)->Fill(row-0.5,col-0.5) ; break ;
+         case 3: GetRawsData(kHGmod3)->Fill(row-0.5,col-0.5) ; break ;
+         case 4: GetRawsData(kHGmod4)->Fill(row-0.5,col-0.5) ; break ;
+         case 5: GetRawsData(kHGmod5)->Fill(row-0.5,col-0.5) ; break ;
+     }              
+     GetRawsData(kNmodHG)->Fill(module) ; 
+     GetRawsData(kHGtime)->Fill(time) ;  
+     GetRawsData(kSpecHG)->Fill(energy) ;
+     hgEtot+=energy ; 
+     hgNtot++ ;  
+   }                 
   }                    
-  GetRawsData(kEtotLG)->Fill(lgEtot) ;                                                                                                     
-  GetRawsData(kEtotHG)->Fill(hgEtot) ;                                                                                                     
-  GetRawsData(kNtotLG)->Fill(lgNtot) ;                                                                                                     
-  GetRawsData(kNtotHG)->Fill(hgNtot) ;                                                                                                     
+  GetRawsData(kEtotLG)->Fill(lgEtot) ; 
+  GetRawsData(kEtotHG)->Fill(hgEtot) ;  
+  GetRawsData(kNtotLG)->Fill(lgNtot) ;
+  GetRawsData(kNtotHG)->Fill(hgNtot) ;
 }
 //____________________________________________________________________________
 void AliPHOSQADataMakerRec::MakeRecPoints(TTree * clustersTree)
