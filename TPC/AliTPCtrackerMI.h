@@ -140,7 +140,7 @@ public:
      AliTPCclusterMI* GetCluster1(Int_t i) const {return &fClusters1[i];}
      AliTPCclusterMI* GetCluster2(Int_t i) const {return &fClusters2[i];}
      Short_t GetFastCluster(Int_t i) const {return fFastCluster[i];}
-     void SetFastCluster(Int_t i, Short_t cl) {fFastCluster[i]=cl;}
+     void SetFastCluster(Int_t i, Short_t cl);
 
 private:  
      AliTPCRow & operator=(const AliTPCRow & );

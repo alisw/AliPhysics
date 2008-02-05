@@ -4441,7 +4441,7 @@ void  AliTPCtrackerMI::FindSplitted(TObjArray * array, AliESDEvent */*esd*/, Int
 
 
 
-void  AliTPCtrackerMI::FindCurling(TObjArray * array, AliESDEvent *esd, Int_t iter)
+void  AliTPCtrackerMI::FindCurling(TObjArray * array, AliESDEvent */*esd*/, Int_t iter)
 {
   //
   //  find Curling tracks
@@ -7061,6 +7061,10 @@ AliTPCtrackerMI::AliTPCRow::InsertCluster(const AliTPCclusterMI* c, UInt_t index
   if (fN==kMaxClusterPerRow) {
     cerr<<"AliTPCRow::InsertCluster(): Too many clusters !\n"; return;
   }
+  if (fN>=fN1+fN2) {
+    cout<<"AliTPCRow::InsertCluster(): Too many clusters !\n";
+  }
+
   if (fN==0) {fIndex[0]=index; fClusters[fN++]=c; return;}
   Int_t i=Find(c->GetZ());
   memmove(fClusters+i+1 ,fClusters+i,(fN-i)*sizeof(AliTPCclusterMI*));
@@ -7162,6 +7166,17 @@ AliTPCclusterMI * AliTPCtrackerMI::AliTPCRow::FindNearest2(Double_t y, Double_t 
   return cl;      
 }
 
+
+void AliTPCtrackerMI::AliTPCRow::SetFastCluster(Int_t i, Short_t cl){
+  //
+  // Set cluster info for fast navigation
+  //
+  if (i>510|| i<0){
+    cerr<<"Out of range cluster\t"<<i<<"\n";
+  }else{
+    fFastCluster[i]=cl;
+  }
+}
 
 
 
