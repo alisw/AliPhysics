@@ -113,7 +113,7 @@ void AliPHOSRawDigiProducer::MakeDigits(TClonesArray *digits, AliPHOSRawDecoder*
   Int_t relId[4], absId =0;
 
   const Double_t baseLine=1. ; //Minimal energy of digit in ADC ch. 
-  const Double_t highLowDiff=2. ; //Maximal difference between High and Low channels in LG adc channels 
+  const Double_t highLowDiff=2.; //Maximal difference between High and Low channels in LG adc channels 
 
   //Temporary array for LowGain digits
   TClonesArray tmpLG("AliPHOSDigit",10000) ;
@@ -128,7 +128,9 @@ void AliPHOSRawDigiProducer::MakeDigits(TClonesArray *digits, AliPHOSRawDecoder*
     //remove digits with bas shape. Decoder should calculate quality so that 
     //in default case quality [0,1], while larger values of quality mean somehow 
     //corrupted samples, 999 means obviously corrupted sample.
-    if(decoder->GetSampleQuality() > fSampleQualityCut )
+    //It is difficult to fit samples with overflow (even setting cut on overflow values)
+    //because too few points are left to fit. So we do not evaluate samples with overflow
+    if(decoder->GetSampleQuality() > fSampleQualityCut && !(decoder->IsOverflow()))
        continue ;
 
     Bool_t lowGainFlag = decoder->IsLowGain();
@@ -173,30 +175,31 @@ void AliPHOSRawDigiProducer::MakeDigits(TClonesArray *digits, AliPHOSRawDecoder*
     AliPHOSDigit * digHG = dynamic_cast<AliPHOSDigit*>(digits->At(iDig)) ;
     if (!digHG) continue;
     AliPHOSDigit * digLG = dynamic_cast<AliPHOSDigit*>(tmpLG.At(iLG)) ;
-    while(iLG<nLG1 && digHG->GetId()> digLG->GetId()){
+    while(digLG && iLG<nLG1 && digHG->GetId()> digLG->GetId()){
       iLG++ ;
       digLG = dynamic_cast<AliPHOSDigit*>(tmpLG.At(iLG)) ;
     }
+    Int_t absId=digHG->GetId() ;                                                                                                         
+    Int_t relId[4] ;                                                                                                                     
+    fGeom->AbsToRelNumbering(absId,relId) ;                                                                                              
+ 
     if(digLG && digHG->GetId() == digLG->GetId()){ //we found pair
       if(digHG->GetEnergy()<0.){ //This is overflow in HG
         digHG->SetTime(digLG->GetTime()) ;
         digHG->SetEnergy(digLG->GetEnergy()) ;
       } 
       else{ //Make approximate comparison of HG and LG energies
-        Double_t de = (digHG->GetEnergy()-digLG->GetEnergy())/16./0.005 ; //aproximate difference in LG ADC ch. 
-        if(TMath::Abs(de)>highLowDiff){ //too strong difference, remove digit
+        Double_t de = (digHG->GetEnergy()-digLG->GetEnergy()) ; 
+        if(TMath::Abs(de)>CalibrateE(double(highLowDiff),relId,1)){ //too strong difference, remove digit
           digits->RemoveAt(iDig) ;
         }
       }
     }
     else{ //no pair - remove
       // temporary fix for dead LG channels
-      Int_t absId=digHG->GetId() ;
-      Int_t relId[4] ;
-      fGeom->AbsToRelNumbering(absId,relId) ;
       if(relId[2]%2==1 && relId[3]%16==4) 
         continue ;
-      if(digHG->GetEnergy()>16*5*0.005) //LG too low to exist
+      if(digHG->GetEnergy()>CalibrateE(double(5.),relId,1)) //One can not always find LG with Amp<5 ADC ch.
         digits->RemoveAt(iDig) ;                                                                                                            
     }
   }
