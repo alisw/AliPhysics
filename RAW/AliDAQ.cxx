@@ -63,6 +63,7 @@ const char* AliDAQ::fgkDetectorName[AliDAQ::kNDetectors] = {
   "ACORDE",
   "TRG",
   "EMCAL",
+  "DAQ_TEST",
   "HLT"
 };
 
@@ -86,6 +87,7 @@ Int_t AliDAQ::fgkNumberOfDdls[AliDAQ::kNDetectors] = {
   1,
   1,
   24,
+  1,
   10
 };
 
@@ -109,6 +111,7 @@ Float_t AliDAQ::fgkNumberOfLdcs[AliDAQ::kNDetectors] = {
   1,
   1,
   4,
+  1,
   5
 };
 
@@ -176,6 +179,9 @@ Int_t AliDAQ::DdlIDOffset(Int_t detectorID)
     AliErrorClass(Form("Invalid detector index: %d (%d -> %d) !",detectorID,0,kNDetectors-1));
     return -1;
   }
+  // HLT has a DDL offset = 30
+  if (detectorID == (kNDetectors-1)) return (kHLTId << 8);
+
   return (detectorID << 8);
 }
 
@@ -198,6 +204,10 @@ Int_t AliDAQ::DetectorIDFromDdlID(Int_t ddlID,Int_t &ddlIndex)
   // detector range for
   // a given input DDL ID
   Int_t detectorID = ddlID >> 8;
+
+  // HLT
+  if (detectorID == kHLTId) detectorID = kNDetectors-1;
+
   if (detectorID < 0 || detectorID >= kNDetectors) {
     AliErrorClass(Form("Invalid detector index: %d (%d -> %d) !",detectorID,0,kNDetectors-1));
     return -1;

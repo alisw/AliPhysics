@@ -53,7 +53,7 @@ const char *AliRawDB::fgkAliRootTag = "$Rev$";
 
 // Split TPC into 9 branches in order to avoid problems with big memory
 // consumption in case of TPC events w/o zero-suppression
-Int_t AliRawDB::fgkDetBranches[AliDAQ::kNDetectors+1] = {1,1,1,18,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
+Int_t AliRawDB::fgkDetBranches[AliDAQ::kNDetectors+1] = {1,1,1,18,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,10,1};
 
 //______________________________________________________________________________
 AliRawDB::AliRawDB(AliRawEvent *event,

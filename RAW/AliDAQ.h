@@ -59,7 +59,8 @@ class AliDAQ: public TObject {
   static void        PrintConfig();
 
   enum {
-    kNDetectors = 20    // Number of detectors
+    kNDetectors = 21,    // Number of detectors
+    kHLTId = 30          // HLT detector index
   };
 
  private:
@@ -68,7 +69,7 @@ class AliDAQ: public TObject {
   static Int_t       fgkNumberOfDdls[kNDetectors]; // Number of DDLs per detector
   static Float_t     fgkNumberOfLdcs[kNDetectors]; // Number of LDCs per detector (not fixed - used only for the raw data simulation)
 
-  ClassDef(AliDAQ, 1)   // ALICE DAQ Configuration class
+  ClassDef(AliDAQ, 2)   // ALICE DAQ Configuration class
 };
 
 #endif
