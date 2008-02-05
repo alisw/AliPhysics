@@ -335,11 +335,15 @@ void AliZDCReconstructor::ReconstructEvent(TTree *clustersTree, Float_t* ZN1ADCC
   
   // Equalization of detector responses
   Float_t equalTowZN1[10], equalTowZN2[10], equalTowZP1[10], equalTowZP2[10];
-  for(Int_t gi=0; gi<10; gi++){
+  for(Int_t gi=0; gi<5; gi++){
      equalTowZN1[gi] = ZN1ADCCorr[gi]*equalCoeffZN1[gi];
+     equalTowZN1[gi+5] = ZN1ADCCorr[gi+5]*equalCoeffZN1[gi];
      equalTowZP1[gi] = ZP1ADCCorr[gi]*equalCoeffZP1[gi];
+     equalTowZP1[gi+5] = ZP1ADCCorr[gi+5]*equalCoeffZP1[gi];
      equalTowZN2[gi] = ZN2ADCCorr[gi]*equalCoeffZN2[gi];
+     equalTowZN2[gi+5] = ZN2ADCCorr[gi+5]*equalCoeffZN2[gi];
      equalTowZP2[gi] = ZP2ADCCorr[gi]*equalCoeffZP2[gi];
+     equalTowZP2[gi+5] = ZP2ADCCorr[gi+5]*equalCoeffZP2[gi];
   }
   
   // Energy calibration of detector responses
