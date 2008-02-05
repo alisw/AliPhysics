@@ -192,7 +192,8 @@ public:
   Char_t   GetTRDTimBin(Int_t i) const {return fTRDTimBin[i];}
   Double_t GetTRDchi2() const {return fTRDchi2;}
   UChar_t   GetTRDclusters(Int_t *idx) const;
- UChar_t   GetTRDncls() const {return fTRDncls;}
+  UChar_t   GetTRDncls() const {return fTRDncls;}
+  UChar_t   GetTRDncls0() const {return fTRDncls0;}
   UChar_t   GetTRDtracklets(Int_t *idx) const;
   void    SetTRDpid(Int_t iSpecies, Float_t p);
   Double_t GetTRDpid(Int_t iSpecies) const;
