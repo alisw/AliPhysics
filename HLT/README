@@ -212,7 +212,7 @@ A wiki with detailed information is set up at
 
 8. Reporting bugs/Asking for support
 ====================================
-Please include the following information into your request:
+Please include the following information into your report/request:
  - config.log from your build directory
  - output of the make process. Note: Redirect BOTH the stdout and stderr
    channel to a log file. Redirection depends on the shell you are using:     <br>
@@ -222,20 +222,22 @@ Please include the following information into your request:
  - history of the commands you are using for compilation
    history > history.log
 
-9. Committing to the AliRoot CVS
+9. Committing to the AliRoot SVN
 ================================
 For development of HLT analysis code check out a HEAD version from the 
 repository and implement your code. 
 
 For committing do:
  - 1. make sure that the code changes are correct                    <br><tt>
-      cvs diff | less                                                </tt><br>
+      svn diff | less                                                </tt><br>
       \b Remember to restore all temporary changes you made (e.g. log level)
- - 2. cvs update
+ - 2. svn update
  - 3. correct merging conflicts
  - 4. compile and test your code again
- - 5. send the whole HLT module except the build sub-directories to
+ - 5. depending on where you changes are send the whole HLT module except the build
+      sub-directories or your HLT sub- directory to
       Matthias.Richter@ift.uib.no
  - 6. you will get a notification when the code is committed, right after that
-      you must either do another cvs update or check out the complete module
-      again in order to have the right CVS information.
+      you must either do another svn update or check out the complete module
+      again in order to have the right SVN information. Please check that your
+      code has been correctly committed.
