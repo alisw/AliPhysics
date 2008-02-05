@@ -241,6 +241,7 @@ Int_t AliMDC::ProcessEvent(void* event, Bool_t isIovecArray)
   const Long64_t kFileSizeErrorLevel   = 19000000000LL;
 
   Long64_t currentFileSize = GetTotalSize();
+  AliDebug(1,Form("current file size is %lld bytes",currentFileSize));
   if(currentFileSize > kFileSizeErrorLevel) {
     Error("ProcessEvent", "file size (%lu) exceeds the limit "
 	  , currentFileSize);
