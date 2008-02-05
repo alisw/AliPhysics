@@ -52,6 +52,8 @@ class AliFemtoEventReaderESDChain : public AliFemtoEventReader
 /*   list<Int_t>  **fSharedList;       //! Table (one list per padrow) of clusters which are shared */
 /*   list<Int_t>  **fClusterPerPadrow; //! Table (one list per padrow) of clusters in each padrow */
 		
+  Float_t GetSigmaToVertex(const AliESDtrack* esdTrack);
+
 #ifdef __ROOT__
   ClassDef(AliFemtoEventReaderESDChain, 1)
 #endif

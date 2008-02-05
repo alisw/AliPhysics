@@ -125,5 +125,22 @@ void AliFemtoQinvCorrFctn::AddMixedPair(AliFemtoPair* pair){
   double tQinv = fabs(pair->QInv());   // note - qInv() will be negative for identical pairs...
   fDenominator->Fill(tQinv,weight);
 }
+//____________________________
+void AliFemtoQinvCorrFctn::Write(){
+  // Write out neccessary objects
+  fNumerator->Write(); 
+  fDenominator->Write();  
+}
+//______________________________
+TList* AliFemtoQinvCorrFctn::GetOutputList()
+{
+  // Prepare the list of objects to be written to the output
+  TList *tOutputList = new TList();
+
+  tOutputList->Add(fNumerator); 
+  tOutputList->Add(fDenominator);  
+
+  return tOutputList;
+}
 
 

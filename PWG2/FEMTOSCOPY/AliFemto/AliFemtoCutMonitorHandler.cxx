@@ -8,6 +8,7 @@
 //                                                                       //
 ///////////////////////////////////////////////////////////////////////////
 
+#include <TList.h>
 #include "AliFemtoCutMonitorHandler.h"
 #include "AliFemtoTypes.h"
 
@@ -246,7 +247,35 @@ AliFemtoCutMonitor* AliFemtoCutMonitorHandler::FailMonitor(int n) {
     iter++;
   return *iter;
 }
+//_____________________________________________________________________________
+TList *AliFemtoCutMonitorHandler::GetOutputList()
+{
+  TList *tOutputList = new TList();
 
+  for (int ipass=0; ipass<fPassColl->size(); ipass++) {
+    TList *tLp = PassMonitor(ipass)->GetOutputList();
+
+    TIter nextLp(tLp);
+    while (TObject *obj = nextLp()) {
+      tOutputList->Add(obj);
+    }
+    
+    delete tLp;
+  }
+
+  for (int ipass=0; ipass<fFailColl->size(); ipass++) {
+    TList *tLf = FailMonitor(ipass)->GetOutputList();
+
+    TIter nextLf(tLf);
+    while (TObject *obj = nextLf()) {
+      tOutputList->Add(obj);
+    }
+    
+    delete tLf;
+  }
+
+  return tOutputList;
+}
 
 
  

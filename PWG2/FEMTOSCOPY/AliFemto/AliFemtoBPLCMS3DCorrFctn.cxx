@@ -265,6 +265,18 @@ void AliFemtoBPLCMS3DCorrFctn::WriteOutHistos(){
     }
   */
 }
+//______________________________
+TList* AliFemtoBPLCMS3DCorrFctn::GetOutputList()
+{
+  // Prepare the list of objects to be written to the output
+  TList *tOutputList = new TList();
+
+  tOutputList->Add(fNumerator); 
+  tOutputList->Add(fDenominator);  
+  tOutputList->Add(fQinvHisto);  
+
+  return tOutputList;
+}
 
 //_________________________
 void AliFemtoBPLCMS3DCorrFctn::Finish(){

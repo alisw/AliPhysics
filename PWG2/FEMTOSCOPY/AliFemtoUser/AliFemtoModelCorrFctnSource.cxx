@@ -164,6 +164,20 @@ void AliFemtoModelCorrFctnSource::Write()
   
   AliFemtoModelCorrFctn::Write();
 }
+//________________________
+TList* AliFemtoModelCorrFctnSource::GetOutputList()
+{
+  // Prepare the list of objects to be written to the output
+  TList *tOutputList = AliFemtoModelCorrFctn::GetOutputList();
+
+  tOutputList->Add(fHistROut); 
+  tOutputList->Add(fHistRSide);  
+  tOutputList->Add(fHistRLong);  
+  tOutputList->Add(fHistRStar);  
+  tOutputList->Add(fHistdNdR);  
+
+  return tOutputList;
+}
 //_______________________
 AliFemtoModelCorrFctn* AliFemtoModelCorrFctnSource::Clone()
 {

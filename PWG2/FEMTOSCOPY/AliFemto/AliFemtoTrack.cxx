@@ -47,8 +47,11 @@ AliFemtoTrack::AliFemtoTrack():
   fTPCnclsF(0),      
   fTPCsignalN(0),    
   fTPCsignalS(0),
+  fSigmaToVertex(0),
   fClusters(159),
   fShared(159),
+  fNominalTpcEntrancePoint(0,0,0),
+  fNominalTpcExitPoint(0,0,0),
   fHiddenInfo(0)
 {
   // Default constructor
@@ -85,8 +88,11 @@ AliFemtoTrack::AliFemtoTrack(const AliFemtoTrack& t) :
   fTPCnclsF(0),      
   fTPCsignalN(0),    
   fTPCsignalS(0),
+  fSigmaToVertex(0),
   fClusters(159),
   fShared(159),
+  fNominalTpcEntrancePoint(0,0,0),
+  fNominalTpcExitPoint(0,0,0),
   fHiddenInfo(0)
  { 
    // copy constructor
@@ -114,8 +120,11 @@ AliFemtoTrack::AliFemtoTrack(const AliFemtoTrack& t) :
   fTPCnclsF=t.fTPCnclsF;      
   fTPCsignalN=t.fTPCsignalN;    
   fTPCsignalS=t.fTPCsignalS;  
+  fSigmaToVertex=t.fSigmaToVertex;
   fClusters=t.fClusters;
   fShared=t.fShared;
+  fNominalTpcEntrancePoint=t.fNominalTpcEntrancePoint;
+  fNominalTpcExitPoint=t.fNominalTpcExitPoint;
   if (t.ValidHiddenInfo())
     fHiddenInfo = t.GetHiddenInfo()->Clone();
   else 
@@ -157,6 +166,8 @@ AliFemtoTrack& AliFemtoTrack::operator=(const AliFemtoTrack& aTrack)
   fTPCsignalS=aTrack.fTPCsignalS;  
   fClusters=aTrack.fClusters;
   fShared=aTrack.fShared;
+  fNominalTpcEntrancePoint=aTrack.fNominalTpcEntrancePoint;
+  fNominalTpcExitPoint=aTrack.fNominalTpcExitPoint;
   fKinkIndexes[0] = aTrack.fKinkIndexes[0];
   fKinkIndexes[1] = aTrack.fKinkIndexes[1];
   fKinkIndexes[2] = aTrack.fKinkIndexes[2];
@@ -196,6 +207,7 @@ void AliFemtoTrack::SetTPCncls(const int& TPCncls){fTPCncls=TPCncls;}
 void AliFemtoTrack::SetTPCnclsF(const short& TPCnclsF){fTPCnclsF=TPCnclsF;}      
 void AliFemtoTrack::SetTPCsignalN(const short& TPCsignalN){fTPCsignalN=TPCsignalN;}    
 void AliFemtoTrack::SetTPCsignalS(const float& TPCsignalS){fTPCsignalS=TPCsignalS;} 
+void AliFemtoTrack::SetSigmaToVertex(const float& Sigma){fSigmaToVertex=Sigma;} 
 
 
 short AliFemtoTrack::Charge() const {return fCharge;}  
@@ -217,6 +229,7 @@ int   AliFemtoTrack::TPCncls() const{return fTPCncls;}
 short AliFemtoTrack::TPCnclsF() const{return fTPCnclsF;}      
 short AliFemtoTrack::TPCsignalN() const{return fTPCsignalN;}    
 float AliFemtoTrack::TPCsignalS() const{return fTPCsignalS;} 
+float AliFemtoTrack::SigmaToVertex() const{return fSigmaToVertex;} 
 
 void AliFemtoTrack::SetHiddenInfo(AliFemtoHiddenInfo* aHiddenInfo) {fHiddenInfo=aHiddenInfo;}
 bool AliFemtoTrack::ValidHiddenInfo() const { if (fHiddenInfo) return true; else return false; }
@@ -224,6 +237,7 @@ AliFemtoHiddenInfo* AliFemtoTrack::GetHiddenInfo() const {return fHiddenInfo;}
   
 AliFemtoTrack::~AliFemtoTrack()
 {
+  // destructor
   if (fHiddenInfo)
     delete fHiddenInfo;
   //  cout << "Deleted track " << this << endl;
@@ -253,6 +267,7 @@ void AliFemtoTrack::SetTPCSharedMap(const TBits& aBits)
 
 void AliFemtoTrack::SetKinkIndexes(int points[3])
 {
+  // Transfer the Kink indices
   fKinkIndexes[0] = points[0];
   fKinkIndexes[1] = points[1];
   fKinkIndexes[2] = points[2];
@@ -260,8 +275,59 @@ void AliFemtoTrack::SetKinkIndexes(int points[3])
 
 int  AliFemtoTrack::KinkIndex(int aIndex) const
 {
+  // Return Kink index
   if ((aIndex <3) && (aIndex>=0))
     return fKinkIndexes[aIndex];
   else
     return 0;
+}
+
+// void AliFemtoTrack::SetXTPC(const AliFemtoThreeVector& aXTPC)
+// {
+//   fXTPC = aXTPC;
+// }
+
+// void AliFemtoTrack::SetXTPC(double *aXTPC)
+// {
+//   fXTPC.setX(aXTPC[0]);
+//   fXTPC.setY(aXTPC[1]);
+//   fXTPC.setZ(aXTPC[2]);
+// }
+
+// AliFemtoThreeVector AliFemtoTrack::XTPC() const
+// {
+//   return fXTPC;
+// }
+
+const AliFemtoThreeVector& AliFemtoTrack::NominalTpcExitPoint() const
+{
+  return fNominalTpcExitPoint;
+}
+const AliFemtoThreeVector& AliFemtoTrack::NominalTpcEntrancePoint() const
+{
+  return fNominalTpcEntrancePoint;
+}
+
+void AliFemtoTrack::SetNominalTPCEntrancePoint(const AliFemtoThreeVector& aXTPC)
+{
+  fNominalTpcEntrancePoint = aXTPC;
+}
+void AliFemtoTrack::SetNominalTPCEntrancePoint(double *aXTPC)
+{
+  // Store the nominal TPC entrance point
+  fNominalTpcEntrancePoint.setX(aXTPC[0]);
+  fNominalTpcEntrancePoint.setY(aXTPC[1]);
+  fNominalTpcEntrancePoint.setZ(aXTPC[2]);
+}
+
+void AliFemtoTrack::SetNominalTPCExitPoint(const AliFemtoThreeVector& aXTPC)
+{
+  fNominalTpcExitPoint = aXTPC;
+}
+void AliFemtoTrack::SetNominalTPCExitPoint(double *aXTPC)
+{
+  // Store the nominal TPC exit point
+  fNominalTpcExitPoint.setX(aXTPC[0]);
+  fNominalTpcExitPoint.setY(aXTPC[1]);
+  fNominalTpcExitPoint.setZ(aXTPC[2]);
 }

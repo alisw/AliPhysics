@@ -269,7 +269,7 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
 	tGoodMomentum=esdtrack->GetPxPyPz(pxyz);//reading noconstarined momentum
 
       AliFemtoThreeVector v(pxyz[0],pxyz[1],pxyz[2]);
-      if (v.mag() == 0) {
+      if (v.mag() < 0.0001) {
 	//	cout << "Found 0 momentum ???? " <<endl;
 	delete trackCopy;
 	continue;
@@ -302,38 +302,31 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
       trackCopy->SetTPCnclsF(esdtrack->GetTPCNclsF());      
       trackCopy->SetTPCsignalN((short)esdtrack->GetTPCsignalN()); //due to bug in aliesdtrack class   
       trackCopy->SetTPCsignalS(esdtrack->GetTPCsignalSigma()); 
-
-//       // Fill cluster per padrow information
-//       Int_t tTrackIndices[AliESDfriendTrack::kMaxTPCcluster];
-//       Int_t tNClusters = esdtrack->GetTPCclusters(tTrackIndices);
-//       for (int tNcl=0; tNcl<AliESDfriendTrack::kMaxTPCcluster; tNcl++) {
-// 	if (tTrackIndices[tNcl] > 0)
-// 	  trackCopy->SetTPCcluster(tNcl, 1);
-// 	else
-// 	  trackCopy->SetTPCcluster(tNcl, 0);
-//       }
-      
-//       // Fill shared cluster information
-//       list<Int_t>::iterator tClustIter;
-
-//       for (int tNcl=0; tNcl<AliESDfriendTrack::kMaxTPCcluster; tNcl++) {
-// 	if (tTrackIndices[tNcl] > 0) {
-// 	  tClustIter = find(fSharedList[tNcl]->begin(), fSharedList[tNcl]->end(), tTrackIndices[tNcl]);
-// 	  if (tClustIter != fSharedList[tNcl]->end()) {
-// 	    trackCopy->SetTPCshared(tNcl, 1);
-// 	    cout << "Event next" <<  endl;
-// 	    cout << "Track: " << i << endl;
-// 	    cout << "Shared cluster: " << tNcl << " " << tTrackIndices[tNcl] << endl;
-// 	  }
-// 	  else {
-// 	    trackCopy->SetTPCshared(tNcl, 0);
-// 	  }
-// 	}
-//       }
+      trackCopy->SetSigmaToVertex(GetSigmaToVertex(esdtrack));
 
       trackCopy->SetTPCClusterMap(esdtrack->GetTPCClusterMap());
       trackCopy->SetTPCSharedMap(esdtrack->GetTPCSharedMap());
 
+      double pvrt[3];
+      fEvent->GetPrimaryVertex()->GetXYZ(pvrt);
+
+      double xtpc[3];
+      esdtrack->GetInnerXYZ(xtpc);
+      xtpc[2] -= pvrt[2];
+      trackCopy->SetNominalTPCEntrancePoint(xtpc);
+
+      esdtrack->GetOuterXYZ(xtpc);
+      xtpc[2] -= pvrt[2];
+      trackCopy->SetNominalTPCExitPoint(xtpc);
+
+      int indexes[3];
+      for (int ik=0; ik<3; ik++) {
+	indexes[ik] = esdtrack->GetKinkIndex(ik);
+      }
+      trackCopy->SetKinkIndexes(indexes);
+      //decision if we want this track
+      //if we using diffrent labels we want that this label was use for first time 
+      //if we use hidden info we want to have match between sim data and ESD
       if (tGoodMomentum==true)
 	{
 	  hbtEvent->TrackCollection()->push_back(trackCopy);//adding track to analysis
@@ -367,6 +360,46 @@ void AliFemtoEventReaderESDChain::SetESDSource(AliESDEvent *aESD)
 //   fEventFriend = aFriend;
 // }
 
+//____________________________________________________________________
+Float_t AliFemtoEventReaderESDChain::GetSigmaToVertex(const AliESDtrack* esdTrack)
+{
+  // Calculates the number of sigma to the vertex.
+
+  Float_t b[2];
+  Float_t bRes[2];
+  Float_t bCov[3];
+  esdTrack->GetImpactParameters(b,bCov);
+//   if (bCov[0]<=0 || bCov[2]<=0) {
+//     AliDebug(1, "Estimated b resolution lower or equal zero!");
+//     bCov[0]=0; bCov[2]=0;
+//   }
+  bRes[0] = TMath::Sqrt(bCov[0]);
+  bRes[1] = TMath::Sqrt(bCov[2]);
+
+  // -----------------------------------
+  // How to get to a n-sigma cut?
+  //
+  // The accumulated statistics from 0 to d is
+  //
+  // ->  Erf(d/Sqrt(2)) for a 1-dim gauss (d = n_sigma)
+  // ->  1 - Exp(-d**2) for a 2-dim gauss (d*d = dx*dx + dy*dy != n_sigma)
+  //
+  // It means that for a 2-dim gauss: n_sigma(d) = Sqrt(2)*ErfInv(1 - Exp((-x**2)/2)
+  // Can this be expressed in a different way?
+
+  if (bRes[0] == 0 || bRes[1] ==0)
+    return -1;
+
+  Float_t d = TMath::Sqrt(TMath::Power(b[0]/bRes[0],2) + TMath::Power(b[1]/bRes[1],2));
+
+  // stupid rounding problem screws up everything:
+  // if d is too big, TMath::Exp(...) gets 0, and TMath::ErfInverse(1) that should be infinite, gets 0 :(
+  if (TMath::Exp(-d * d / 2) < 1e-10)
+    return 1000;
+
+  d = TMath::ErfInverse(1 - TMath::Exp(-d * d / 2)) * TMath::Sqrt(2);
+  return d;
+}
 
 
 

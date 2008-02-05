@@ -78,9 +78,9 @@ public:
   void SetPidProbProton(const float& x);
   void SetPidProbMuon(const float& x);
    
-  void SetP(const AliFemtoThreeVector&);
+  void SetP(const AliFemtoThreeVector& p);
   void SetPt(const float& x);
-  void SetHelix(const AliFmPhysicalHelixD&);
+  void SetHelix(const AliFmPhysicalHelixD& h);
   void SetTrackId(const short& s);
   void SetFlags(const long int& i);
   void SetLabel(const int& i);
@@ -114,6 +114,17 @@ public:
   AliFemtoHiddenInfo* GetHiddenInfo() const;
   /***/
   
+  const AliFemtoThreeVector& NominalTpcExitPoint() const;
+  const AliFemtoThreeVector& NominalTpcEntrancePoint() const;
+    
+  void SetNominalTPCEntrancePoint(const AliFemtoThreeVector& aXTPC);
+  void SetNominalTPCEntrancePoint(double *aXTPC);
+
+  void SetNominalTPCExitPoint(const AliFemtoThreeVector& aXTPC);
+  void SetNominalTPCExitPoint(double *aXTPC);
+  void SetSigmaToVertex(const float& Sigma);
+  float SigmaToVertex() const;
+ 
   //Alice stuff
   enum {
     kITSin=0x0001,kITSout=0x0002,kITSrefit=0x0004,kITSpid=0x0008,
@@ -140,7 +151,6 @@ public:
   AliFemtoThreeVector fP; // track momentum
   float fPt;              // transverse momenta
   AliFmPhysicalHelixD fHelix; // track helix
-
   //alice stuff
   long int fFlags; //Reconsruction status flags
   int fLabel; //Track label  
@@ -156,8 +166,11 @@ public:
   short fTPCnclsF;       // number of findable clusters in the TPC
   short fTPCsignalN;     // number of points used for dEdx
   float fTPCsignalS;     // RMS of dEdx measurement
+  float fSigmaToVertex;  // Distance from track to vertex in sigmas
   TBits fClusters;       // Cluster per padrow map
   TBits fShared;         // Sharing per padrow map
+  AliFemtoThreeVector fNominalTpcEntrancePoint; // Nominal track entrance point into TPC
+  AliFemtoThreeVector fNominalTpcExitPoint;     // Nominal track exit point from TPC
 
   int   fKinkIndexes[3]; // Kink Index list
   /* Th stuff */

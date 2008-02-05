@@ -28,6 +28,8 @@ public:
   virtual void EventEnd(const AliFemtoEvent* aEvent) { /* no-op */ }
   virtual void Finish() = 0;
 
+  virtual TList* GetOutputList() = 0;
+
   virtual AliFemtoCorrFctn* Clone() { return 0;}
 
   AliFemtoAnalysis* HbtAnalysis(){return fyAnalysis;};

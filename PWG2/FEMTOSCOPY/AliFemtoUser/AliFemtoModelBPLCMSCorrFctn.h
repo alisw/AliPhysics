@@ -6,8 +6,8 @@
 /// Authors: Adam Kisiel, kisiel@mps.ohio-state.edu                          ///
 ///                                                                          ///
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef AliFemtoModelBPLCMSCorrFctn_hh
-#define AliFemtoModelBPLCMSCorrFctn_hh
+#ifndef ALIFEMTOMODELBPLCMSCORRFCTN_H
+#define ALIFEMTOMODELBPLCMSCORRFCTN_H
 
 #include "AliFemtoCorrFctn.h"
 #include "AliFemtoModelCorrFctn.h"
@@ -24,12 +24,15 @@ class AliFemtoModelBPLCMSCorrFctn : public AliFemtoModelCorrFctn {
   AliFemtoModelBPLCMSCorrFctn& operator=(const AliFemtoModelBPLCMSCorrFctn& aCorrFctn);
 
   virtual AliFemtoString Report();
-  virtual void AddRealPair(AliFemtoPair*);
-  virtual void AddMixedPair(AliFemtoPair*);
+  virtual void AddRealPair(AliFemtoPair* pair);
+  virtual void AddMixedPair(AliFemtoPair* pair);
 
   virtual void Finish();
 
   virtual void Write();
+  virtual TList* GetOutputList();
+
+  void SetSpecificPairCut(AliFemtoPairCut* aCut);
 
   virtual AliFemtoModelCorrFctn* Clone();
 
@@ -39,6 +42,8 @@ protected:
   TH3D* fDenominator3D;              // 3D Denominator with the weight of 1.0
 
   TH3D* fQinvHisto;                  // Averag qinv histogram
+
+  AliFemtoPairCut* fPairCut;    //! this is a PairCut specific to THIS CorrFctn, not the Analysis
 
 #ifdef __ROOT__
   ClassDef(AliFemtoModelBPLCMSCorrFctn, 1)

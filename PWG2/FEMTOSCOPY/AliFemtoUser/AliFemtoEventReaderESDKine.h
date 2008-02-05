@@ -38,6 +38,7 @@
 #include <string>
 #include <vector>
 #include "TChain.h"
+#include "AliESDtrack.h"
 #include "AliESDEvent.h"
 #include <list>
 #include "AliRunLoader.h"
@@ -74,6 +75,8 @@ class AliFemtoEventReaderESDKine : public AliFemtoEventReader
   AliESDEvent*   fEvent;            // ESD event
   AliRunLoader*  fRunLoader;        // Run loader for kine reading 
 		
+  Float_t GetSigmaToVertex(const AliESDtrack* esdTrack);
+
 #ifdef __ROOT__
   ClassDef(AliFemtoEventReaderESDKine, 1)
 #endif

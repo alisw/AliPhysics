@@ -7,12 +7,14 @@
 #pragma link C++ class AliFemtoEventReader;
 #pragma link C++ class AliFemtoKinkCut;
 #pragma link C++ class AliFemtoPairCut;
+#pragma link C++ class AliFemtoKTPairCut;
 #pragma link C++ class AliFemtoParticleCut;
 #pragma link C++ class AliFemtoTrackCut;
 #pragma link C++ class AliFemtoV0Cut;
 #pragma link C++ class AliFemtoXiCut;
 #pragma link C++ class AliFemtoBPLCMS3DCorrFctn;
 #pragma link C++ class AliFemtoQinvCorrFctn;
+#pragma link C++ class AliFemtoCorrFctnNonIdDR;
 #pragma link C++ class AliFemtoBasicEventCut;
 #pragma link C++ class AliFemtoBasicTrackCut;
 #pragma link C++ class AliFemtoDummyPairCut;
@@ -27,6 +29,7 @@
 #pragma link C++ class AliFmThreeVectorF;
 #pragma link C++ class AliFemtoEventReaderESD;
 #pragma link C++ class AliFemtoEventReaderESDChain;
+#pragma link C++ class AliFemtoEventReaderESDChainKine;
 #pragma link C++ class AliFemtoModelManager;
 #pragma link C++ class AliFemtoModelWeightGenerator;
 #pragma link C++ class AliFemtoModelWeightGeneratorBasic;
@@ -35,3 +38,4 @@
 #pragma link C++ class AliFemtoModelHiddenInfo;
 #pragma link C++ class AliFemtoModelCorrFctn;
 #pragma link C++ class AliFemtoModelWeightGeneratorLednicky;
+#pragma link C++ class AliFemtoCutMonitorParticleYPt;

@@ -28,6 +28,7 @@ public:
   virtual void Finish();
 
   void WriteHistos();
+  virtual TList* GetOutputList();
 private:
   
   TH2D *fShareNumerator;        // Share fraction for real pairs

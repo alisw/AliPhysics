@@ -88,6 +88,9 @@ AliFemtoESDTrackCut::AliFemtoESDTrackCut() :
     fStatus(0),
     fminTPCclsF(0),
     fminITScls(0),
+    fMaxITSchiNdof(1000.0),
+    fMaxTPCchiNdof(1000.0),
+    fMaxSigmaToVertex(1000.0),
     fNTracksPassed(0),
     fNTracksFailed(0),
     fRemoveKinks(kFALSE),
@@ -132,7 +135,16 @@ bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
 	}
 	
     }
+  if (fRemoveKinks) {
+    if ((track->KinkIndex(0)) || (track->KinkIndex(1)) || (track->KinkIndex(2)))
+      return false;
+  }
   if (fminTPCclsF>track->TPCnclsF())
+    {
+      //cout<<" No go because TPC Number of ClsF"<<fminTPCclsF<< " "<<track->TPCnclsF()<<endl;
+      return false;
+    }
+  if (fminTPCncls>track->TPCncls())
     {
       //cout<<" No go because TPC Number of ClsF"<<fminTPCclsF<< " "<<track->TPCnclsF()<<endl;
       return false;
@@ -143,6 +155,20 @@ bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
       return false;
     }
 	
+  if (fMaxSigmaToVertex < track->SigmaToVertex()) {
+    return false;
+  }
+  
+  if (track->ITSncls() > 0) 
+    if ((track->ITSchi2()/track->ITSncls()) > fMaxITSchiNdof) {
+      return false;
+    }
+
+  if (track->TPCncls() > 0)
+    if ((track->TPCchi2()/track->TPCncls()) > fMaxTPCchiNdof) {
+      return false;
+    }
+
   if (fLabel)
     {
       //cout<<"labels"<<endl;
@@ -227,10 +253,6 @@ bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
       //cout<<fPidProbMuon[0]<<" <  mi="<<track->PidProbMuon()<<" <"<<fPidProbMuon[1]<<endl;
       return false;
     }
-  if (fRemoveKinks) {
-    if ((track->KinkIndex(0)) || (track->KinkIndex(1)) || (track->KinkIndex(2)))
-      return false;
-  }
 
   if (fMostProbable) {
     tMost[0] = track->PidProbElectron()*PidFractionElectron(track->P().mag());
@@ -322,6 +344,12 @@ TList *AliFemtoESDTrackCut::ListSettings()
   snprintf(buf, 200, "AliFemtoESDTrackCut.rapidity.maximum=%lf", fRapidity[1]);
   tListSetttings->AddLast(new TObjString(buf));
   snprintf(buf, 200, "AliFemtoESDTrackCut.removekinks=%i", fRemoveKinks);
+  tListSetttings->AddLast(new TObjString(buf));
+  snprintf(buf, 200, "AliFemtoESDTrackCut.maxitschindof=%lf", fMaxITSchiNdof);
+  tListSetttings->AddLast(new TObjString(buf));
+  snprintf(buf, 200, "AliFemtoESDTrackCut.maxtpcchindof=%lf", fMaxTPCchiNdof);
+  tListSetttings->AddLast(new TObjString(buf));
+  snprintf(buf, 200, "AliFemtoESDTrackCut.maxsigmatovertex=%lf", fMaxSigmaToVertex);
   tListSetttings->AddLast(new TObjString(buf));
   if (fMostProbable) {
     if (fMostProbable == 2)

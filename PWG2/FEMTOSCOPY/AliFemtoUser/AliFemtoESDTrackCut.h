@@ -28,6 +28,7 @@ class AliFemtoESDTrackCut : public AliFemtoTrackCut
 
   virtual AliFemtoString Report();
   virtual TList *ListSettings();
+  virtual AliFemtoParticleType Type(){return hbtTrack;}
 
   void SetPt(const float& lo, const float& hi);
   void SetRapidity(const float& lo, const float& hi);
@@ -40,8 +41,12 @@ class AliFemtoESDTrackCut : public AliFemtoTrackCut
   void SetLabel(const bool& flag);
   void SetStatus(const long& w);
   void SetminTPCclsF(const short& s);
+  void SetminTPCncls(const short& s);
   void SetminITScls(const int& s);
   void SetRemoveKinks(const bool& flag);
+  void SetMaxITSChiNdof(const float& maxchi);
+  void SetMaxTPCChiNdof(const float& maxchi);
+  void SetMaxSigmaToVertex(const float& maxsig);
   void SetMostProbablePion();
   void SetMostProbableKaon();
   void SetMostProbableProton();
@@ -60,7 +65,11 @@ class AliFemtoESDTrackCut : public AliFemtoTrackCut
   bool              fLabel;              // if true label<0 will not pass throught 
   long              fStatus;             // staus flag
   short             fminTPCclsF;         // min number of findable clusters in the TPC
+  short             fminTPCncls;         // min number of clusters in the TPC
   int               fminITScls;          // min number of clusters assigned in the ITS 
+  float             fMaxITSchiNdof;      // maximum allowed chi2/ndof for ITS clusters
+  float             fMaxTPCchiNdof;      // maximum allowed chi2/ndof for TPC clusters
+  float             fMaxSigmaToVertex;   // maximum allowed sigma to primary vertex
   long              fNTracksPassed;      // passed tracks count
   long              fNTracksFailed;      // failed tracks count
   bool              fRemoveKinks;        // if true particles with any kink label will not pass
@@ -88,11 +97,15 @@ inline void AliFemtoESDTrackCut::SetPidProbMuon(const float& lo,const float& hi)
 inline void AliFemtoESDTrackCut::SetLabel(const bool& flag){fLabel=flag;}
 inline void AliFemtoESDTrackCut::SetStatus(const long& status){fStatus=status;}
 inline void AliFemtoESDTrackCut::SetminTPCclsF(const short& minTPCclsF){fminTPCclsF=minTPCclsF;}
+inline void AliFemtoESDTrackCut::SetminTPCncls(const short& s){fminTPCncls=s;}
 inline void AliFemtoESDTrackCut::SetminITScls(const int& minITScls){fminITScls=minITScls;}
 inline void AliFemtoESDTrackCut::SetMostProbablePion() { fMostProbable = 2; }
 inline void AliFemtoESDTrackCut::SetMostProbableKaon() { fMostProbable = 3; }
 inline void AliFemtoESDTrackCut::SetMostProbableProton() { fMostProbable = 4; }
 inline void AliFemtoESDTrackCut::SetNoMostProbable() { fMostProbable = 0; }
+inline void AliFemtoESDTrackCut::SetMaxITSChiNdof(const float& maxchi) { fMaxITSchiNdof = maxchi; }
+inline void AliFemtoESDTrackCut::SetMaxTPCChiNdof(const float& maxchi) { fMaxTPCchiNdof = maxchi; }
+inline void AliFemtoESDTrackCut::SetMaxSigmaToVertex(const float& maxsig) { fMaxSigmaToVertex = maxsig; }
 
 #endif
 

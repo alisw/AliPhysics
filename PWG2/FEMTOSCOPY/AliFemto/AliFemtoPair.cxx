@@ -595,39 +595,39 @@ double AliFemtoPair::Quality2() const {
 
 double AliFemtoPair::NominalTpcExitSeparation() const {
   // separation at exit from STAR TPC
-  AliFemtoThreeVector diff = fTrack1->NominalTpcExitPoint() - fTrack2->NominalTpcExitPoint();
+  AliFemtoThreeVector diff = fTrack1->Track()->NominalTpcExitPoint() - fTrack2->Track()->NominalTpcExitPoint();
   return (diff.mag());
 }
 
 double AliFemtoPair::NominalTpcEntranceSeparation() const {
   // separation at entrance to STAR TPC
-  AliFemtoThreeVector diff = fTrack1->NominalTpcEntrancePoint() - fTrack2->NominalTpcEntrancePoint();
+  AliFemtoThreeVector diff = fTrack1->Track()->NominalTpcEntrancePoint() - fTrack2->Track()->NominalTpcEntrancePoint();
   return (diff.mag());
 }
 
-double AliFemtoPair::NominalTpcAverageSeparation() const {
-  // average separation in STAR TPC
-  AliFemtoThreeVector diff;
-  double tAveSep = 0.0;
-  int ipt = 0;
-  if (fTrack1->fNominalPosSample && fTrack2->fNominalPosSample){
-  while (fabs(fTrack1->fNominalPosSample[ipt].x())<9999. &&
-	 fabs(fTrack1->fNominalPosSample[ipt].y())<9999. && 
-	 fabs(fTrack1->fNominalPosSample[ipt].z())<9999. &&
-	 fabs(fTrack2->fNominalPosSample[ipt].x())<9999. &&
-	 fabs(fTrack2->fNominalPosSample[ipt].y())<9999. && 
-	 fabs(fTrack2->fNominalPosSample[ipt].z())<9999. &&
-	 ipt<11
-	 ){
-    //  for (int ipt=0; ipt<11; ipt++){
-    diff = fTrack1->fNominalPosSample[ipt] - fTrack2->fNominalPosSample[ipt];
-    ipt++;
-    tAveSep += diff.mag();
-  }
-  tAveSep = tAveSep/(ipt+1.);
-  return (tAveSep);}
-  else return -1;
-}
+// double AliFemtoPair::NominalTpcAverageSeparation() const {
+//   // average separation in STAR TPC
+//   AliFemtoThreeVector diff;
+//   double tAveSep = 0.0;
+//   int ipt = 0;
+//   if (fTrack1->fNominalPosSample && fTrack2->fNominalPosSample){
+//   while (fabs(fTrack1->fNominalPosSample[ipt].x())<9999. &&
+// 	 fabs(fTrack1->fNominalPosSample[ipt].y())<9999. && 
+// 	 fabs(fTrack1->fNominalPosSample[ipt].z())<9999. &&
+// 	 fabs(fTrack2->fNominalPosSample[ipt].x())<9999. &&
+// 	 fabs(fTrack2->fNominalPosSample[ipt].y())<9999. && 
+// 	 fabs(fTrack2->fNominalPosSample[ipt].z())<9999. &&
+// 	 ipt<11
+// 	 ){
+//     //  for (int ipt=0; ipt<11; ipt++){
+//     diff = fTrack1->fNominalPosSample[ipt] - fTrack2->fNominalPosSample[ipt];
+//     ipt++;
+//     tAveSep += diff.mag();
+//   }
+//   tAveSep = tAveSep/(ipt+1.);
+//   return (tAveSep);}
+//   else return -1;
+// }
 
 double AliFemtoPair::OpeningAngle() const {
   // opening angle
@@ -845,359 +845,359 @@ void AliFemtoPair::CalcNonIdPar() const{ // fortran like function! faster?
 
 
 
-double AliFemtoPair::DcaInsideTpc() const{
-  // dcs inside the STAR TPC
-  double tMinDist=NominalTpcEntranceSeparation();
-  double tExit = NominalTpcExitSeparation();
-  tMinDist = (tExit>tMinDist) ? tMinDist : tExit;
-  double tInsideDist;
-  //tMinDist = 999.;
+// double AliFemtoPair::DcaInsideTpc() const{
+//   // dcs inside the STAR TPC
+//   double tMinDist=NominalTpcEntranceSeparation();
+//   double tExit = NominalTpcExitSeparation();
+//   tMinDist = (tExit>tMinDist) ? tMinDist : tExit;
+//   double tInsideDist;
+//   //tMinDist = 999.;
 
-  double rMin = 60.;
-  double rMax = 190.;
-  const AliFmPhysicalHelixD& tHelix1 = fTrack1->Helix();
-  const AliFmPhysicalHelixD& tHelix2 = fTrack2->Helix();
-  // --- One is a line and other one a helix
-  //if (tHelix1.mSingularity != tHelix2.mSingularity) return -999.;
-  // --- 2 lines : don't care right now
-  //if (tHelix1.mSingularity)  return -999.;
-  // --- 2 helix
-  double dx = tHelix2.XCenter() - tHelix1.XCenter();
-  double dy = tHelix2.YCenter() - tHelix1.YCenter();
-  double dd = ::sqrt(dx*dx + dy*dy);
-  double r1 = 1/tHelix1.Curvature();
-  double r2 = 1/tHelix2.Curvature();
-  double cosAlpha = (r1*r1 + dd*dd - r2*r2)/(2*r1*dd);
+//   double rMin = 60.;
+//   double rMax = 190.;
+//   const AliFmPhysicalHelixD& tHelix1 = fTrack1->Helix();
+//   const AliFmPhysicalHelixD& tHelix2 = fTrack2->Helix();
+//   // --- One is a line and other one a helix
+//   //if (tHelix1.mSingularity != tHelix2.mSingularity) return -999.;
+//   // --- 2 lines : don't care right now
+//   //if (tHelix1.mSingularity)  return -999.;
+//   // --- 2 helix
+//   double dx = tHelix2.XCenter() - tHelix1.XCenter();
+//   double dy = tHelix2.YCenter() - tHelix1.YCenter();
+//   double dd = ::sqrt(dx*dx + dy*dy);
+//   double r1 = 1/tHelix1.Curvature();
+//   double r2 = 1/tHelix2.Curvature();
+//   double cosAlpha = (r1*r1 + dd*dd - r2*r2)/(2*r1*dd);
     
-  double x, y, r;
-  double s;
-  if (fabs(cosAlpha) < 1) {           // two solutions
-    double sinAlpha = sin(acos(cosAlpha));
-    x = tHelix1.XCenter() + r1*(cosAlpha*dx - sinAlpha*dy)/dd;
-    y = tHelix1.YCenter() + r1*(sinAlpha*dx + cosAlpha*dy)/dd;
-    r = ::sqrt(x*x+y*y);
-    if( r > rMin &&  r < rMax && 
-	fabs(atan2(y,x)-fTrack1->NominalTpcEntrancePoint().phi())< 0.5
-	){ // first solution inside
-      s = tHelix1.PathLength(x, y);
-      tInsideDist=tHelix2.Distance(tHelix1.At(s));
-      if(tInsideDist<tMinDist) tMinDist = tInsideDist;
-    }
-    else{ 
-      x = tHelix1.XCenter() + r1*(cosAlpha*dx + sinAlpha*dy)/dd;
-      y = tHelix1.YCenter() + r1*(cosAlpha*dy - sinAlpha*dx)/dd;
-      r = ::sqrt(x*x+y*y);
-      if( r > rMin &&  r < rMax &&
-	  fabs(atan2(y,x)-fTrack1->NominalTpcEntrancePoint().phi())< 0.5
-	  ) {  // second solution inside
-        s = tHelix1.PathLength(x, y);
-        tInsideDist=tHelix2.Distance(tHelix1.At(s));
-        if(tInsideDist<tMinDist) tMinDist = tInsideDist;
-      }     
-    }
-  }
-  return tMinDist;
-}
+//   double x, y, r;
+//   double s;
+//   if (fabs(cosAlpha) < 1) {           // two solutions
+//     double sinAlpha = sin(acos(cosAlpha));
+//     x = tHelix1.XCenter() + r1*(cosAlpha*dx - sinAlpha*dy)/dd;
+//     y = tHelix1.YCenter() + r1*(sinAlpha*dx + cosAlpha*dy)/dd;
+//     r = ::sqrt(x*x+y*y);
+//     if( r > rMin &&  r < rMax && 
+// 	fabs(atan2(y,x)-fTrack1->Track()->NominalTpcEntrancePoint().phi())< 0.5
+// 	){ // first solution inside
+//       s = tHelix1.PathLength(x, y);
+//       tInsideDist=tHelix2.Distance(tHelix1.At(s));
+//       if(tInsideDist<tMinDist) tMinDist = tInsideDist;
+//     }
+//     else{ 
+//       x = tHelix1.XCenter() + r1*(cosAlpha*dx + sinAlpha*dy)/dd;
+//       y = tHelix1.YCenter() + r1*(cosAlpha*dy - sinAlpha*dx)/dd;
+//       r = ::sqrt(x*x+y*y);
+//       if( r > rMin &&  r < rMax &&
+// 	  fabs(atan2(y,x)-fTrack1->Track()->NominalTpcEntrancePoint().phi())< 0.5
+// 	  ) {  // second solution inside
+//         s = tHelix1.PathLength(x, y);
+//         tInsideDist=tHelix2.Distance(tHelix1.At(s));
+//         if(tInsideDist<tMinDist) tMinDist = tInsideDist;
+//       }     
+//     }
+//   }
+//   return tMinDist;
+// }
 
-void AliFemtoPair::CalcMergingPar() const{
-  // Calculate merging factor for the pair in STAR TPC
-  fMergingParNotCalculated=0;
+// void AliFemtoPair::CalcMergingPar() const{
+//   // Calculate merging factor for the pair in STAR TPC
+//   fMergingParNotCalculated=0;
 
-  double tDu, tDz;
-  int tN = 0;
-  fFracOfMergedRow = 0.;
-  fWeightedAvSep =0.;
-  double tDist;
-  double tDistMax = 200.;
-  for(int ti=0 ; ti<45 ; ti++){
-    if(fTrack1->fSect[ti]==fTrack2->fSect[ti] && fTrack1->fSect[ti]!=-1){
-      tDu = fabs(fTrack1->fU[ti]-fTrack2->fU[ti]);
-      tDz = fabs(fTrack1->fZ[ti]-fTrack2->fZ[ti]);
-      tN++;
-      if(ti<13){
-	fFracOfMergedRow += (tDu<fgMaxDuInner && tDz<fgMaxDzInner);
-	tDist = ::sqrt(tDu*tDu/fgMaxDuInner/fgMaxDuInner+
-		     tDz*tDz/fgMaxDzInner/fgMaxDzInner);
-	//fFracOfMergedRow += (tDu<fgMaxDuInner && tDz<fgMaxDzInner);
-      }
-      else{
-	fFracOfMergedRow += (tDu<fgMaxDuOuter && tDz<fgMaxDzOuter);
-	tDist = ::sqrt(tDu*tDu/fgMaxDuOuter/fgMaxDuOuter+
-		     tDz*tDz/fgMaxDzOuter/fgMaxDzOuter);
-	//fFracOfMergedRow += (tDu<fgMaxDuOuter && tDz<fgMaxDzOuter);
-      }
-      if(tDist<tDistMax){
-	fClosestRowAtDCA = ti+1;
-	tDistMax = tDist;
-      }
-      fWeightedAvSep += tDist;
-    }
-  }
-  if(tN>0){
-    fWeightedAvSep /= tN;
-    fFracOfMergedRow /= tN;
-  }
-  else{
-    fClosestRowAtDCA = -1;
-    fFracOfMergedRow = -1.;
-    fWeightedAvSep = -1.;
-  }
-}
-double AliFemtoPair::TpcExitSeparationTrackV0Pos() const {
-//________________V0 daughters exit/entrance/average separation calc.
-//_______1st part is a track 2nd is a V0 considering Pos daughter
+//   double tDu, tDz;
+//   int tN = 0;
+//   fFracOfMergedRow = 0.;
+//   fWeightedAvSep =0.;
+//   double tDist;
+//   double tDistMax = 200.;
+//   for(int ti=0 ; ti<45 ; ti++){
+//     if(fTrack1->fSect[ti]==fTrack2->fSect[ti] && fTrack1->fSect[ti]!=-1){
+//       tDu = fabs(fTrack1->fU[ti]-fTrack2->fU[ti]);
+//       tDz = fabs(fTrack1->fZ[ti]-fTrack2->fZ[ti]);
+//       tN++;
+//       if(ti<13){
+// 	fFracOfMergedRow += (tDu<fgMaxDuInner && tDz<fgMaxDzInner);
+// 	tDist = ::sqrt(tDu*tDu/fgMaxDuInner/fgMaxDuInner+
+// 		     tDz*tDz/fgMaxDzInner/fgMaxDzInner);
+// 	//fFracOfMergedRow += (tDu<fgMaxDuInner && tDz<fgMaxDzInner);
+//       }
+//       else{
+// 	fFracOfMergedRow += (tDu<fgMaxDuOuter && tDz<fgMaxDzOuter);
+// 	tDist = ::sqrt(tDu*tDu/fgMaxDuOuter/fgMaxDuOuter+
+// 		     tDz*tDz/fgMaxDzOuter/fgMaxDzOuter);
+// 	//fFracOfMergedRow += (tDu<fgMaxDuOuter && tDz<fgMaxDzOuter);
+//       }
+//       if(tDist<tDistMax){
+// 	fClosestRowAtDCA = ti+1;
+// 	tDistMax = tDist;
+//       }
+//       fWeightedAvSep += tDist;
+//     }
+//   }
+//   if(tN>0){
+//     fWeightedAvSep /= tN;
+//     fFracOfMergedRow /= tN;
+//   }
+//   else{
+//     fClosestRowAtDCA = -1;
+//     fFracOfMergedRow = -1.;
+//     fWeightedAvSep = -1.;
+//   }
+// }
+// double AliFemtoPair::TpcExitSeparationTrackV0Pos() const {
+// //________________V0 daughters exit/entrance/average separation calc.
+// //_______1st part is a track 2nd is a V0 considering Pos daughter
   
-  AliFemtoThreeVector diff = fTrack1->NominalTpcExitPoint() - fTrack2->TpcV0PosExitPoint();
-  return (diff.mag());
-}
+//   AliFemtoThreeVector diff = fTrack1->Track()->NominalTpcExitPoint() - fTrack2->TpcV0PosExitPoint();
+//   return (diff.mag());
+// }
 
-double AliFemtoPair::TpcEntranceSeparationTrackV0Pos() const {
-//________________V0 daughters exit/entrance/average separation calc.
-//_______1st part is a track 2nd is a V0 considering Pos daughter
-  AliFemtoThreeVector diff = fTrack1->NominalTpcEntrancePoint() - fTrack2->TpcV0PosEntrancePoint();
-  return (diff.mag());
-}
+// double AliFemtoPair::TpcEntranceSeparationTrackV0Pos() const {
+// //________________V0 daughters exit/entrance/average separation calc.
+// //_______1st part is a track 2nd is a V0 considering Pos daughter
+//   AliFemtoThreeVector diff = fTrack1->Track()->NominalTpcEntrancePoint() - fTrack2->TpcV0PosEntrancePoint();
+//   return (diff.mag());
+// }
 
-double AliFemtoPair::TpcAverageSeparationTrackV0Pos() const {
-//________________V0 daughters exit/entrance/average separation calc.
-//_______1st part is a track 2nd is a V0 considering Pos daughter
-  AliFemtoThreeVector diff;
-  double tAveSep = 0.0;
-  int ipt = 0;
-  if (fTrack1->fNominalPosSample && fTrack2->fNominalPosSample){
-  while (fabs(fTrack1->fNominalPosSample[ipt].x())<9999. &&
-	 fabs(fTrack1->fNominalPosSample[ipt].y())<9999. && 
-	 fabs(fTrack1->fNominalPosSample[ipt].z())<9999. &&
-	 fabs(fTrack2->fNominalPosSample[ipt].x())<9999. &&
-	 fabs(fTrack2->fNominalPosSample[ipt].y())<9999. && 
-	 fabs(fTrack2->fNominalPosSample[ipt].z())<9999. &&
-	 (ipt<11)
-	 ){
-    diff = fTrack1->fNominalPosSample[ipt] - fTrack2->fNominalPosSample[ipt];
-    ipt++;
-    tAveSep += diff.mag();
-  }
-  tAveSep = tAveSep/(ipt+1.);
-  return (tAveSep);}
-  else return -1;
-}
-double AliFemtoPair::TpcExitSeparationTrackV0Neg() const {
-//_______1st part is a track 2nd is a V0 considering Neg daughter
-  AliFemtoThreeVector diff = fTrack1->NominalTpcExitPoint() - fTrack2->TpcV0NegExitPoint();
-  return (diff.mag());
-}
+// double AliFemtoPair::TpcAverageSeparationTrackV0Pos() const {
+// //________________V0 daughters exit/entrance/average separation calc.
+// //_______1st part is a track 2nd is a V0 considering Pos daughter
+//   AliFemtoThreeVector diff;
+//   double tAveSep = 0.0;
+//   int ipt = 0;
+//   if (fTrack1->fNominalPosSample && fTrack2->fNominalPosSample){
+//   while (fabs(fTrack1->fNominalPosSample[ipt].x())<9999. &&
+// 	 fabs(fTrack1->fNominalPosSample[ipt].y())<9999. && 
+// 	 fabs(fTrack1->fNominalPosSample[ipt].z())<9999. &&
+// 	 fabs(fTrack2->fNominalPosSample[ipt].x())<9999. &&
+// 	 fabs(fTrack2->fNominalPosSample[ipt].y())<9999. && 
+// 	 fabs(fTrack2->fNominalPosSample[ipt].z())<9999. &&
+// 	 (ipt<11)
+// 	 ){
+//     diff = fTrack1->fNominalPosSample[ipt] - fTrack2->fNominalPosSample[ipt];
+//     ipt++;
+//     tAveSep += diff.mag();
+//   }
+//   tAveSep = tAveSep/(ipt+1.);
+//   return (tAveSep);}
+//   else return -1;
+// }
+// double AliFemtoPair::TpcExitSeparationTrackV0Neg() const {
+// //_______1st part is a track 2nd is a V0 considering Neg daughter
+//   AliFemtoThreeVector diff = fTrack1->Track()->NominalTpcExitPoint() - fTrack2->TpcV0NegExitPoint();
+//   return (diff.mag());
+// }
 
-double AliFemtoPair::TpcEntranceSeparationTrackV0Neg() const {
-//_______1st part is a track 2nd is a V0 considering Neg daughter
-  AliFemtoThreeVector diff = fTrack1->NominalTpcEntrancePoint() - fTrack2->TpcV0NegEntrancePoint();
-  return (diff.mag());
-}
+// double AliFemtoPair::TpcEntranceSeparationTrackV0Neg() const {
+// //_______1st part is a track 2nd is a V0 considering Neg daughter
+//   AliFemtoThreeVector diff = fTrack1->Track()->NominalTpcEntrancePoint() - fTrack2->TpcV0NegEntrancePoint();
+//   return (diff.mag());
+// }
 
-double AliFemtoPair::TpcAverageSeparationTrackV0Neg() const {
-//_______1st part is a track 2nd is a V0 considering Neg daughter
-  AliFemtoThreeVector diff;
-  double tAveSep = 0.0;
-  int ipt = 0;
-  if (fTrack1->fNominalPosSample && fTrack2->fTpcV0NegPosSample){
-  while (fabs(fTrack1->fNominalPosSample[ipt].x())<9999. &&
-	 fabs(fTrack1->fNominalPosSample[ipt].y())<9999. && 
-	 fabs(fTrack1->fNominalPosSample[ipt].z())<9999. &&
-	 fabs(fTrack2->fTpcV0NegPosSample[ipt].x())<9999. &&
-	 fabs(fTrack2->fTpcV0NegPosSample[ipt].y())<9999. && 
-	 fabs(fTrack2->fTpcV0NegPosSample[ipt].z())<9999. &&
-	 (ipt<11)
-	 ){
-    diff = fTrack1->fNominalPosSample[ipt] - fTrack2->fTpcV0NegPosSample[ipt];
-    ipt++;
-    tAveSep += diff.mag();
-  }
-  tAveSep = tAveSep/(ipt+1.);
-  return (tAveSep);}
-  else return -1;
-}
+// double AliFemtoPair::TpcAverageSeparationTrackV0Neg() const {
+// //_______1st part is a track 2nd is a V0 considering Neg daughter
+//   AliFemtoThreeVector diff;
+//   double tAveSep = 0.0;
+//   int ipt = 0;
+//   if (fTrack1->fNominalPosSample && fTrack2->fTpcV0NegPosSample){
+//   while (fabs(fTrack1->fNominalPosSample[ipt].x())<9999. &&
+// 	 fabs(fTrack1->fNominalPosSample[ipt].y())<9999. && 
+// 	 fabs(fTrack1->fNominalPosSample[ipt].z())<9999. &&
+// 	 fabs(fTrack2->fTpcV0NegPosSample[ipt].x())<9999. &&
+// 	 fabs(fTrack2->fTpcV0NegPosSample[ipt].y())<9999. && 
+// 	 fabs(fTrack2->fTpcV0NegPosSample[ipt].z())<9999. &&
+// 	 (ipt<11)
+// 	 ){
+//     diff = fTrack1->fNominalPosSample[ipt] - fTrack2->fTpcV0NegPosSample[ipt];
+//     ipt++;
+//     tAveSep += diff.mag();
+//   }
+//   tAveSep = tAveSep/(ipt+1.);
+//   return (tAveSep);}
+//   else return -1;
+// }
 
-double AliFemtoPair::TpcExitSeparationV0PosV0Pos() const {
-//_______1st part is a V0 considering Pos daughter 2nd is a V0 considering Pos daughter
-  AliFemtoThreeVector diff = fTrack1->TpcV0PosExitPoint() - fTrack2->TpcV0PosExitPoint();
-  return (diff.mag());
-}
+// double AliFemtoPair::TpcExitSeparationV0PosV0Pos() const {
+// //_______1st part is a V0 considering Pos daughter 2nd is a V0 considering Pos daughter
+//   AliFemtoThreeVector diff = fTrack1->TpcV0PosExitPoint() - fTrack2->TpcV0PosExitPoint();
+//   return (diff.mag());
+// }
 
-double AliFemtoPair::TpcEntranceSeparationV0PosV0Pos() const {
-//_______1st part is a V0 considering Pos daughter 2nd is a V0 considering Pos daughter
-  AliFemtoThreeVector diff = fTrack1->TpcV0PosEntrancePoint() - fTrack2->TpcV0PosEntrancePoint();
-  return (diff.mag());
-}
-double AliFemtoPair::TpcAverageSeparationV0PosV0Pos() const {
-//_______1st part is a V0 considering Pos daughter 2nd is a V0 considering Pos daughter
-  AliFemtoThreeVector diff;
-  double tAveSep = 0.0;
-  int ipt=0;
-  if (fTrack1->fNominalPosSample && (fTrack2->fNominalPosSample)){
-    while ((fabs(fTrack1->fNominalPosSample[ipt].x())<9999.) &&
-	(fabs(fTrack1->fNominalPosSample[ipt].y())<9999.) &&
-	(fabs(fTrack1->fNominalPosSample[ipt].z())<9999.) &&
-	(fabs(fTrack2->fNominalPosSample[ipt].x())<9999.) &&
-	(fabs(fTrack2->fNominalPosSample[ipt].y())<9999.) &&
-	(fabs(fTrack2->fNominalPosSample[ipt].z())<9999.) &&
-	 (ipt<11)  
-	){
-      diff = fTrack1->fNominalPosSample[ipt] - fTrack2->fNominalPosSample[ipt];
-      ipt++;
-      tAveSep += diff.mag();
-    }
-    tAveSep = tAveSep/(ipt+1);
-    return (tAveSep);}
-  else return -1;
-}
+// double AliFemtoPair::TpcEntranceSeparationV0PosV0Pos() const {
+// //_______1st part is a V0 considering Pos daughter 2nd is a V0 considering Pos daughter
+//   AliFemtoThreeVector diff = fTrack1->TpcV0PosEntrancePoint() - fTrack2->TpcV0PosEntrancePoint();
+//   return (diff.mag());
+// }
+// double AliFemtoPair::TpcAverageSeparationV0PosV0Pos() const {
+// //_______1st part is a V0 considering Pos daughter 2nd is a V0 considering Pos daughter
+//   AliFemtoThreeVector diff;
+//   double tAveSep = 0.0;
+//   int ipt=0;
+//   if (fTrack1->fNominalPosSample && (fTrack2->fNominalPosSample)){
+//     while ((fabs(fTrack1->fNominalPosSample[ipt].x())<9999.) &&
+// 	(fabs(fTrack1->fNominalPosSample[ipt].y())<9999.) &&
+// 	(fabs(fTrack1->fNominalPosSample[ipt].z())<9999.) &&
+// 	(fabs(fTrack2->fNominalPosSample[ipt].x())<9999.) &&
+// 	(fabs(fTrack2->fNominalPosSample[ipt].y())<9999.) &&
+// 	(fabs(fTrack2->fNominalPosSample[ipt].z())<9999.) &&
+// 	 (ipt<11)  
+// 	){
+//       diff = fTrack1->fNominalPosSample[ipt] - fTrack2->fNominalPosSample[ipt];
+//       ipt++;
+//       tAveSep += diff.mag();
+//     }
+//     tAveSep = tAveSep/(ipt+1);
+//     return (tAveSep);}
+//   else return -1;
+// }
 
-double AliFemtoPair::TpcExitSeparationV0PosV0Neg() const {
-//_______1st part is a V0 considering Pos daughter 2nd is a V0 considering Neg daughter
-  AliFemtoThreeVector diff = fTrack1->TpcV0PosExitPoint() - fTrack2->TpcV0NegExitPoint();
-  return (diff.mag());
-}
+// double AliFemtoPair::TpcExitSeparationV0PosV0Neg() const {
+// //_______1st part is a V0 considering Pos daughter 2nd is a V0 considering Neg daughter
+//   AliFemtoThreeVector diff = fTrack1->TpcV0PosExitPoint() - fTrack2->TpcV0NegExitPoint();
+//   return (diff.mag());
+// }
 
-double AliFemtoPair::TpcEntranceSeparationV0PosV0Neg() const {
-//_______1st part is a V0 considering Pos daughter 2nd is a V0 considering Neg daughter
-  AliFemtoThreeVector diff = fTrack1->TpcV0PosEntrancePoint() - fTrack2->TpcV0NegEntrancePoint();
-  return (diff.mag());
-}
-double AliFemtoPair::TpcAverageSeparationV0PosV0Neg() const {
-//_______1st part is a V0 considering Pos daughter 2nd is a V0 considering Neg daughter
-  AliFemtoThreeVector diff;
-  double tAveSep = 0.0;
-  int ipt = 0;
-  if (fTrack1->fNominalPosSample && fTrack2->fTpcV0NegPosSample){
-  while (fabs(fTrack1->fNominalPosSample[ipt].x())<9999. &&
-	 fabs(fTrack1->fNominalPosSample[ipt].y())<9999. && 
-	 fabs(fTrack1->fNominalPosSample[ipt].z())<9999. &&
-	 fabs(fTrack2->fTpcV0NegPosSample[ipt].x())<9999. &&
-	 fabs(fTrack2->fTpcV0NegPosSample[ipt].y())<9999. && 
-	 fabs(fTrack2->fTpcV0NegPosSample[ipt].z())<9999. &&
-	 (ipt<11)
-	 ){
-    diff = fTrack1->fNominalPosSample[ipt] - fTrack2->fTpcV0NegPosSample[ipt];
-    ipt++;
-    tAveSep += diff.mag();
-  }
-  tAveSep = tAveSep/(ipt+1.);
-  return (tAveSep);}
-  else return -1; 
-}
-double AliFemtoPair::TpcExitSeparationV0NegV0Pos() const {
-//_______1st part is a V0 considering Neg daughter 2nd is a V0 considering Pos daughter
-// this is to check the upper case
-  AliFemtoThreeVector diff = fTrack1->TpcV0NegExitPoint() - fTrack2->TpcV0PosExitPoint();
-  return (diff.mag());
-}
+// double AliFemtoPair::TpcEntranceSeparationV0PosV0Neg() const {
+// //_______1st part is a V0 considering Pos daughter 2nd is a V0 considering Neg daughter
+//   AliFemtoThreeVector diff = fTrack1->TpcV0PosEntrancePoint() - fTrack2->TpcV0NegEntrancePoint();
+//   return (diff.mag());
+// }
+// double AliFemtoPair::TpcAverageSeparationV0PosV0Neg() const {
+// //_______1st part is a V0 considering Pos daughter 2nd is a V0 considering Neg daughter
+//   AliFemtoThreeVector diff;
+//   double tAveSep = 0.0;
+//   int ipt = 0;
+//   if (fTrack1->fNominalPosSample && fTrack2->fTpcV0NegPosSample){
+//   while (fabs(fTrack1->fNominalPosSample[ipt].x())<9999. &&
+// 	 fabs(fTrack1->fNominalPosSample[ipt].y())<9999. && 
+// 	 fabs(fTrack1->fNominalPosSample[ipt].z())<9999. &&
+// 	 fabs(fTrack2->fTpcV0NegPosSample[ipt].x())<9999. &&
+// 	 fabs(fTrack2->fTpcV0NegPosSample[ipt].y())<9999. && 
+// 	 fabs(fTrack2->fTpcV0NegPosSample[ipt].z())<9999. &&
+// 	 (ipt<11)
+// 	 ){
+//     diff = fTrack1->fNominalPosSample[ipt] - fTrack2->fTpcV0NegPosSample[ipt];
+//     ipt++;
+//     tAveSep += diff.mag();
+//   }
+//   tAveSep = tAveSep/(ipt+1.);
+//   return (tAveSep);}
+//   else return -1; 
+// }
+// double AliFemtoPair::TpcExitSeparationV0NegV0Pos() const {
+// //_______1st part is a V0 considering Neg daughter 2nd is a V0 considering Pos daughter
+// // this is to check the upper case
+//   AliFemtoThreeVector diff = fTrack1->TpcV0NegExitPoint() - fTrack2->TpcV0PosExitPoint();
+//   return (diff.mag());
+// }
 
-double AliFemtoPair::TpcEntranceSeparationV0NegV0Pos() const {
-//_______1st part is a V0 considering Neg daughter 2nd is a V0 considering Pos daughter
-// this is to check the upper case
-  AliFemtoThreeVector diff = fTrack1->TpcV0NegEntrancePoint() - fTrack2->TpcV0PosEntrancePoint();
-  return (diff.mag());
-}
-double AliFemtoPair::TpcAverageSeparationV0NegV0Pos() const {
-//_______1st part is a V0 considering Neg daughter 2nd is a V0 considering Pos daughter
-// this is to check the upper case
-   AliFemtoThreeVector diff;
-   double tAveSep = 0.0;
-   int ipt = 0;
-   if ( fTrack1->fTpcV0NegPosSample &&  fTrack2->fNominalPosSample){
-     while (fabs(fTrack1->fTpcV0NegPosSample[ipt].x())<9999. &&
-	    fabs(fTrack1->fTpcV0NegPosSample[ipt].y())<9999. && 
-	    fabs(fTrack1->fTpcV0NegPosSample[ipt].z())<9999. &&
-	    fabs(fTrack2->fNominalPosSample[ipt].x())<9999. &&
-	    fabs(fTrack2->fNominalPosSample[ipt].y())<9999. && 
-	    fabs(fTrack2->fNominalPosSample[ipt].z())<9999. &&
-	    (ipt<11)
-	    ){
-       diff = fTrack1->fTpcV0NegPosSample[ipt] - fTrack2->fNominalPosSample[ipt];
-       ipt++;
-       tAveSep += diff.mag();
-     }
-     tAveSep = tAveSep/(ipt+1);
-     return (tAveSep);}
-     else return -1;
-}
-double AliFemtoPair::TpcExitSeparationV0NegV0Neg() const {
-//_______1st part is a V0 considering Neg daughter 2nd is a V0 considering Neg daughter
-  AliFemtoThreeVector diff = fTrack1->TpcV0NegExitPoint() - fTrack2->TpcV0NegExitPoint();
-  return (diff.mag());
-}
+// double AliFemtoPair::TpcEntranceSeparationV0NegV0Pos() const {
+// //_______1st part is a V0 considering Neg daughter 2nd is a V0 considering Pos daughter
+// // this is to check the upper case
+//   AliFemtoThreeVector diff = fTrack1->TpcV0NegEntrancePoint() - fTrack2->TpcV0PosEntrancePoint();
+//   return (diff.mag());
+// }
+// double AliFemtoPair::TpcAverageSeparationV0NegV0Pos() const {
+// //_______1st part is a V0 considering Neg daughter 2nd is a V0 considering Pos daughter
+// // this is to check the upper case
+//    AliFemtoThreeVector diff;
+//    double tAveSep = 0.0;
+//    int ipt = 0;
+//    if ( fTrack1->fTpcV0NegPosSample &&  fTrack2->fNominalPosSample){
+//      while (fabs(fTrack1->fTpcV0NegPosSample[ipt].x())<9999. &&
+// 	    fabs(fTrack1->fTpcV0NegPosSample[ipt].y())<9999. && 
+// 	    fabs(fTrack1->fTpcV0NegPosSample[ipt].z())<9999. &&
+// 	    fabs(fTrack2->fNominalPosSample[ipt].x())<9999. &&
+// 	    fabs(fTrack2->fNominalPosSample[ipt].y())<9999. && 
+// 	    fabs(fTrack2->fNominalPosSample[ipt].z())<9999. &&
+// 	    (ipt<11)
+// 	    ){
+//        diff = fTrack1->fTpcV0NegPosSample[ipt] - fTrack2->fNominalPosSample[ipt];
+//        ipt++;
+//        tAveSep += diff.mag();
+//      }
+//      tAveSep = tAveSep/(ipt+1);
+//      return (tAveSep);}
+//      else return -1;
+// }
+// double AliFemtoPair::TpcExitSeparationV0NegV0Neg() const {
+// //_______1st part is a V0 considering Neg daughter 2nd is a V0 considering Neg daughter
+//   AliFemtoThreeVector diff = fTrack1->TpcV0NegExitPoint() - fTrack2->TpcV0NegExitPoint();
+//   return (diff.mag());
+// }
 
-double AliFemtoPair::TpcEntranceSeparationV0NegV0Neg() const {
-//_______1st part is a V0 considering Neg daughter 2nd is a V0 considering Neg daughter
-  AliFemtoThreeVector diff = fTrack1->TpcV0NegEntrancePoint() - fTrack2->TpcV0NegEntrancePoint();
-  return (diff.mag());
-}
-double AliFemtoPair::TpcAverageSeparationV0NegV0Neg() const {
-//_______1st part is a V0 considering Neg daughter 2nd is a V0 considering Neg daughter
-   AliFemtoThreeVector diff;
-   double tAveSep = 0.0;
-   int ipt=0;
-   if (fTrack1->fTpcV0NegPosSample && fTrack2->fTpcV0NegPosSample){
-     while (fabs(fTrack1->fTpcV0NegPosSample[ipt].x())<9999. &&
-	    fabs(fTrack1->fTpcV0NegPosSample[ipt].y())<9999. && 
-	    fabs(fTrack1->fTpcV0NegPosSample[ipt].z())<9999. &&
-	    fabs(fTrack2->fTpcV0NegPosSample[ipt].x())<9999. &&
-	    fabs(fTrack2->fTpcV0NegPosSample[ipt].y())<9999. && 
-	    fabs(fTrack2->fTpcV0NegPosSample[ipt].z())<9999. &&
-	    (ipt<11)
-	    ){
-       diff = fTrack1->fTpcV0NegPosSample[ipt] - fTrack2->fTpcV0NegPosSample[ipt];
-       ipt++;
-       tAveSep += diff.mag();
-     }
-     tAveSep = tAveSep/(ipt+1);
-     return (tAveSep);}
-   else return -1;
-}
+// double AliFemtoPair::TpcEntranceSeparationV0NegV0Neg() const {
+// //_______1st part is a V0 considering Neg daughter 2nd is a V0 considering Neg daughter
+//   AliFemtoThreeVector diff = fTrack1->TpcV0NegEntrancePoint() - fTrack2->TpcV0NegEntrancePoint();
+//   return (diff.mag());
+// }
+// double AliFemtoPair::TpcAverageSeparationV0NegV0Neg() const {
+// //_______1st part is a V0 considering Neg daughter 2nd is a V0 considering Neg daughter
+//    AliFemtoThreeVector diff;
+//    double tAveSep = 0.0;
+//    int ipt=0;
+//    if (fTrack1->fTpcV0NegPosSample && fTrack2->fTpcV0NegPosSample){
+//      while (fabs(fTrack1->fTpcV0NegPosSample[ipt].x())<9999. &&
+// 	    fabs(fTrack1->fTpcV0NegPosSample[ipt].y())<9999. && 
+// 	    fabs(fTrack1->fTpcV0NegPosSample[ipt].z())<9999. &&
+// 	    fabs(fTrack2->fTpcV0NegPosSample[ipt].x())<9999. &&
+// 	    fabs(fTrack2->fTpcV0NegPosSample[ipt].y())<9999. && 
+// 	    fabs(fTrack2->fTpcV0NegPosSample[ipt].z())<9999. &&
+// 	    (ipt<11)
+// 	    ){
+//        diff = fTrack1->fTpcV0NegPosSample[ipt] - fTrack2->fTpcV0NegPosSample[ipt];
+//        ipt++;
+//        tAveSep += diff.mag();
+//      }
+//      tAveSep = tAveSep/(ipt+1);
+//      return (tAveSep);}
+//    else return -1;
+// }
 
-void AliFemtoPair::CalcMergingParFctn(short* tmpMergingParNotCalculatedFctn,
-				   float* tmpZ1,float* tmpU1,
-				   float* tmpZ2,float* tmpU2,
-				   int *tmpSect1,int *tmpSect2,
-				   double* tmpFracOfMergedRow,
-				   double* tmpClosestRowAtDCA
-				   ) const{
-// calculate heper variables for merging 
-  tmpMergingParNotCalculatedFctn=0;
-  double tDu, tDz;
-  int tN = 0;
-  *tmpFracOfMergedRow = 0.;
-  *tmpClosestRowAtDCA = 0.;
-  double tDist;
-  double tDistMax = 100000000.;
-  for(int ti=0 ; ti<45 ; ti++){
-    if(tmpSect1[ti]==tmpSect2[ti] && tmpSect1[ti]!=-1){
-	tDu = fabs(tmpU1[ti]-tmpU2[ti]);
-	tDz = fabs(tmpZ1[ti]-tmpZ2[ti]);
-	tN++;
-      if(ti<13){
-	*tmpFracOfMergedRow += (tDu<fgMaxDuInner && tDz<fgMaxDzInner);
-	tDist = ::sqrt(tDu*tDu/fgMaxDuInner/fgMaxDuInner+
-		     tDz*tDz/fgMaxDzInner/fgMaxDzInner);
-      }
-      else{
-	*tmpFracOfMergedRow += (tDu<fgMaxDuOuter && tDz<fgMaxDzOuter);
-	tDist = ::sqrt(tDu*tDu/fgMaxDuOuter/fgMaxDuOuter+
-		     tDz*tDz/fgMaxDzOuter/fgMaxDzOuter);
-	}
-      if(tDist<tDistMax){
-	fClosestRowAtDCA = ti+1;
-	tDistMax = tDist;
-      }
-      //fWeightedAvSep += tDist; // now, wrong but not used
-    }	
-  }
-  if(tN>0){
-    //fWeightedAvSep /= tN;
-    *tmpFracOfMergedRow /= tN;
-  }
-  else{
-    *tmpClosestRowAtDCA = -1;
-    *tmpFracOfMergedRow = -1.;
-    //fWeightedAvSep = -1.;
-  }
-}
+// void AliFemtoPair::CalcMergingParFctn(short* tmpMergingParNotCalculatedFctn,
+// 				   float* tmpZ1,float* tmpU1,
+// 				   float* tmpZ2,float* tmpU2,
+// 				   int *tmpSect1,int *tmpSect2,
+// 				   double* tmpFracOfMergedRow,
+// 				   double* tmpClosestRowAtDCA
+// 				   ) const{
+// // calculate heper variables for merging 
+//   tmpMergingParNotCalculatedFctn=0;
+//   double tDu, tDz;
+//   int tN = 0;
+//   *tmpFracOfMergedRow = 0.;
+//   *tmpClosestRowAtDCA = 0.;
+//   double tDist;
+//   double tDistMax = 100000000.;
+//   for(int ti=0 ; ti<45 ; ti++){
+//     if(tmpSect1[ti]==tmpSect2[ti] && tmpSect1[ti]!=-1){
+// 	tDu = fabs(tmpU1[ti]-tmpU2[ti]);
+// 	tDz = fabs(tmpZ1[ti]-tmpZ2[ti]);
+// 	tN++;
+//       if(ti<13){
+// 	*tmpFracOfMergedRow += (tDu<fgMaxDuInner && tDz<fgMaxDzInner);
+// 	tDist = ::sqrt(tDu*tDu/fgMaxDuInner/fgMaxDuInner+
+// 		     tDz*tDz/fgMaxDzInner/fgMaxDzInner);
+//       }
+//       else{
+// 	*tmpFracOfMergedRow += (tDu<fgMaxDuOuter && tDz<fgMaxDzOuter);
+// 	tDist = ::sqrt(tDu*tDu/fgMaxDuOuter/fgMaxDuOuter+
+// 		     tDz*tDz/fgMaxDzOuter/fgMaxDzOuter);
+// 	}
+//       if(tDist<tDistMax){
+// 	fClosestRowAtDCA = ti+1;
+// 	tDistMax = tDist;
+//       }
+//       //fWeightedAvSep += tDist; // now, wrong but not used
+//     }	
+//   }
+//   if(tN>0){
+//     //fWeightedAvSep /= tN;
+//     *tmpFracOfMergedRow /= tN;
+//   }
+//   else{
+//     *tmpClosestRowAtDCA = -1;
+//     *tmpFracOfMergedRow = -1.;
+//     //fWeightedAvSep = -1.;
+//   }
+// }
 

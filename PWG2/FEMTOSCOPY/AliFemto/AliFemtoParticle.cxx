@@ -41,15 +41,15 @@ int TpcLocalTransform(AliFmThreeVectorD& xgl,
 
 //_____________________
 AliFemtoParticle::AliFemtoParticle() : 
-  fTpcV0NegPosSample(0),
-  fV0NegZ(0),
-  fV0NegU(0),
-  fV0NegSect(0),
+//   fTpcV0NegPosSample(0),
+//   fV0NegZ(0),
+//   fV0NegU(0),
+//   fV0NegSect(0),
   fTrack(0), fV0(0), fKink(0), fXi(0), 
   fFourMomentum(0),
   fHelix(),
-  fNominalTpcExitPoint(0),
-  fNominalTpcEntrancePoint(0),
+//   fNominalTpcExitPoint(0),
+//   fNominalTpcEntrancePoint(0),
   fHiddenInfo(0),
   fPrimaryVertex(0),
   fSecondaryVertex(0),
@@ -66,15 +66,15 @@ AliFemtoParticle::AliFemtoParticle() :
 }
 //_____________________
 AliFemtoParticle::AliFemtoParticle(const AliFemtoParticle& aParticle):
-  fTpcV0NegPosSample(0),
-  fV0NegZ(0),
-  fV0NegU(0),
-  fV0NegSect(0),
+//   fTpcV0NegPosSample(0),
+//   fV0NegZ(0),
+//   fV0NegU(0),
+//   fV0NegSect(0),
   fTrack(0), fV0(0), fKink(0), fXi(0),
   fFourMomentum(0),
   fHelix(),
-  fNominalTpcExitPoint(0),
-  fNominalTpcEntrancePoint(0),
+//   fNominalTpcExitPoint(0),
+//   fNominalTpcEntrancePoint(0),
   fHiddenInfo(0), 
   fPrimaryVertex(0),
   fSecondaryVertex(0),
@@ -97,30 +97,30 @@ AliFemtoParticle::AliFemtoParticle(const AliFemtoParticle& aParticle):
   fFourMomentum = aParticle.fFourMomentum;
   fHelix = aParticle.fHelix;
 
-  for (int iter=0; iter<11; iter++)
-    fNominalPosSample[iter] = aParticle.fNominalPosSample[iter];
+//   for (int iter=0; iter<11; iter++)
+//     fNominalPosSample[iter] = aParticle.fNominalPosSample[iter];
 
-  if (aParticle.fTpcV0NegPosSample) {
-    fTpcV0NegPosSample = (AliFemtoThreeVector *) malloc(sizeof(AliFemtoThreeVector) * 11);
-    for (int iter=0; iter<11; iter++)
-      fTpcV0NegPosSample[iter] = aParticle.fTpcV0NegPosSample[iter];
-  }
+//   if (aParticle.fTpcV0NegPosSample) {
+//     fTpcV0NegPosSample = (AliFemtoThreeVector *) malloc(sizeof(AliFemtoThreeVector) * 11);
+//     for (int iter=0; iter<11; iter++)
+//       fTpcV0NegPosSample[iter] = aParticle.fTpcV0NegPosSample[iter];
+//   }
 
-  if (aParticle.fV0NegZ) {
-    fV0NegZ = (float *) malloc(sizeof(float) * 45);
-    for (int iter=0; iter<11; iter++)
-      fV0NegZ[iter] = aParticle.fV0NegZ[iter];
-  }
-  if (aParticle.fV0NegU) {
-    fV0NegU = (float *) malloc(sizeof(float) * 45);
-    for (int iter=0; iter<11; iter++)
-      fV0NegU[iter] = aParticle.fV0NegU[iter];
-  }
-  if (aParticle.fV0NegSect) {
-    fV0NegSect = (int *) malloc(sizeof(int) * 45);
-    for (int iter=0; iter<11; iter++)
-      fV0NegSect[iter] = aParticle.fV0NegSect[iter];
-  }
+//   if (aParticle.fV0NegZ) {
+//     fV0NegZ = (float *) malloc(sizeof(float) * 45);
+//     for (int iter=0; iter<11; iter++)
+//       fV0NegZ[iter] = aParticle.fV0NegZ[iter];
+//   }
+//   if (aParticle.fV0NegU) {
+//     fV0NegU = (float *) malloc(sizeof(float) * 45);
+//     for (int iter=0; iter<11; iter++)
+//       fV0NegU[iter] = aParticle.fV0NegU[iter];
+//   }
+//   if (aParticle.fV0NegSect) {
+//     fV0NegSect = (int *) malloc(sizeof(int) * 45);
+//     for (int iter=0; iter<11; iter++)
+//       fV0NegSect[iter] = aParticle.fV0NegSect[iter];
+//   }
 
   fPrimaryVertex = aParticle.fPrimaryVertex;
   fSecondaryVertex = aParticle.fSecondaryVertex;
@@ -129,8 +129,8 @@ AliFemtoParticle::AliFemtoParticle(const AliFemtoParticle& aParticle):
     fHiddenInfo= aParticle.HiddenInfo()->Clone();
   }
   
-  fNominalTpcEntrancePoint = aParticle.fNominalTpcEntrancePoint;
-  fNominalTpcExitPoint     = aParticle.fNominalTpcExitPoint;
+//   fNominalTpcEntrancePoint = aParticle.fNominalTpcEntrancePoint;
+//   fNominalTpcExitPoint     = aParticle.fNominalTpcExitPoint;
   
   for (int iter=0; iter<6; iter++)
     fPurity[iter] = aParticle.fPurity[iter];
@@ -148,10 +148,10 @@ AliFemtoParticle::~AliFemtoParticle(){
 
   if (fTrack) delete fTrack;
   if (fV0) {
-    delete[] fTpcV0NegPosSample;
-    delete[] fV0NegZ;
-    delete[] fV0NegU;
-    delete[] fV0NegSect;
+//     delete[] fTpcV0NegPosSample;
+//     delete[] fV0NegZ;
+//     delete[] fV0NegU;
+//     delete[] fV0NegSect;
     delete fV0;
   }
   if (fKink) delete fKink;
@@ -165,15 +165,15 @@ AliFemtoParticle::~AliFemtoParticle(){
 }
 //_____________________
 AliFemtoParticle::AliFemtoParticle(const AliFemtoTrack* const hbtTrack,const double& mass) : 
-  fTpcV0NegPosSample(0),
-  fV0NegZ(0),
-  fV0NegU(0),
-  fV0NegSect(0),
+//   fTpcV0NegPosSample(0),
+//   fV0NegZ(0),
+//   fV0NegU(0),
+//   fV0NegSect(0),
   fTrack(0), fV0(0), fKink(0), fXi(0),
   fFourMomentum(0),
   fHelix(),
-  fNominalTpcExitPoint(0),
-  fNominalTpcEntrancePoint(0),
+//   fNominalTpcExitPoint(0),
+//   fNominalTpcEntrancePoint(0),
   fHiddenInfo(0), 
   fPrimaryVertex(0),
   fSecondaryVertex(0),
@@ -227,15 +227,15 @@ AliFemtoParticle::AliFemtoParticle(const AliFemtoTrack* const hbtTrack,const dou
 }
 //_____________________
 AliFemtoParticle::AliFemtoParticle(const AliFemtoV0* const hbtV0,const double& mass) : 
-  fTpcV0NegPosSample(0),
-  fV0NegZ(0),
-  fV0NegU(0),
-  fV0NegSect(0),
+//   fTpcV0NegPosSample(0),
+//   fV0NegZ(0),
+//   fV0NegU(0),
+//   fV0NegSect(0),
   fTrack(0), fV0(0), fKink(0),  fXi(0),
   fFourMomentum(0),
   fHelix(),
-  fNominalTpcExitPoint(0),
-  fNominalTpcEntrancePoint(0),
+//   fNominalTpcExitPoint(0),
+//   fNominalTpcEntrancePoint(0),
   fHiddenInfo(0),
   fPrimaryVertex(0),
   fSecondaryVertex(0),
@@ -260,27 +260,27 @@ AliFemtoParticle::AliFemtoParticle(const AliFemtoV0* const hbtV0,const double& m
   fSecondaryVertex = hbtV0->DecayVertexV0();
   fHelixV0Pos = hbtV0->HelixPos();
 
-  fTpcV0NegPosSample = new AliFemtoThreeVector[45];//for V0Neg
-  fV0NegZ = new float[45];//for V0Neg
-  fV0NegU = new float[45];//for V0Neg
-  fV0NegSect = new int[45];//for V0Neg
-  CalculateTpcExitAndEntrancePoints(&fHelixV0Pos,&fPrimaryVertex,
-				    &fSecondaryVertex,
-				    &fTpcV0PosEntrancePoint,
-				    &fTpcV0PosExitPoint,
-				    &fNominalPosSample[0],
-				    &fZ[0],
-				    &fU[0],&fSect[0]);
+//   fTpcV0NegPosSample = new AliFemtoThreeVector[45];//for V0Neg
+//   fV0NegZ = new float[45];//for V0Neg
+//   fV0NegU = new float[45];//for V0Neg
+//   fV0NegSect = new int[45];//for V0Neg
+//   CalculateTpcExitAndEntrancePoints(&fHelixV0Pos,&fPrimaryVertex,
+// 				    &fSecondaryVertex,
+// 				    &fTpcV0PosEntrancePoint,
+// 				    &fTpcV0PosExitPoint,
+// 				    &fNominalPosSample[0],
+// 				    &fZ[0],
+// 				    &fU[0],&fSect[0]);
   fHelixV0Neg = hbtV0->HelixNeg();
 
-  CalculateTpcExitAndEntrancePoints(&fHelixV0Neg,
-				    &fPrimaryVertex,
-				    &fSecondaryVertex,
-				    &fTpcV0NegEntrancePoint,
-				    &fTpcV0NegExitPoint,
-				    &fTpcV0NegPosSample[0],
-				    &fV0NegZ[0],
-				    &fV0NegU[0],&fV0NegSect[0]);
+//   CalculateTpcExitAndEntrancePoints(&fHelixV0Neg,
+// 				    &fPrimaryVertex,
+// 				    &fSecondaryVertex,
+// 				    &fTpcV0NegEntrancePoint,
+// 				    &fTpcV0NegExitPoint,
+// 				    &fTpcV0NegPosSample[0],
+// 				    &fV0NegZ[0],
+// 				    &fV0NegU[0],&fV0NegSect[0]);
 
   // ***
   fHiddenInfo= 0;
@@ -291,15 +291,15 @@ AliFemtoParticle::AliFemtoParticle(const AliFemtoV0* const hbtV0,const double& m
 }
 //_____________________
 AliFemtoParticle::AliFemtoParticle(const AliFemtoKink* const hbtKink,const double& mass) : 
-  fTpcV0NegPosSample(0),
-  fV0NegZ(0),
-  fV0NegU(0),
-  fV0NegSect(0),
+//   fTpcV0NegPosSample(0),
+//   fV0NegZ(0),
+//   fV0NegU(0),
+//   fV0NegSect(0),
   fTrack(0), fV0(0), fKink(0), fXi(0),
   fFourMomentum(0),
   fHelix(),
-  fNominalTpcExitPoint(0),
-  fNominalTpcEntrancePoint(0),
+//   fNominalTpcExitPoint(0),
+//   fNominalTpcEntrancePoint(0),
   fHiddenInfo(0),
   fPrimaryVertex(0),
   fSecondaryVertex(0),
@@ -323,15 +323,15 @@ AliFemtoParticle::AliFemtoParticle(const AliFemtoKink* const hbtKink,const doubl
 
 //_____________________
 AliFemtoParticle::AliFemtoParticle(const AliFemtoXi* const hbtXi, const double& mass) :
-  fTpcV0NegPosSample(0),
-  fV0NegZ(0),
-  fV0NegU(0),
-  fV0NegSect(0),
+//   fTpcV0NegPosSample(0),
+//   fV0NegZ(0),
+//   fV0NegU(0),
+//   fV0NegSect(0),
   fTrack(0), fV0(0), fKink(0), fXi(0),
   fFourMomentum(0),
   fHelix(),
-  fNominalTpcExitPoint(0),
-  fNominalTpcEntrancePoint(0),
+//   fNominalTpcExitPoint(0),
+//   fNominalTpcEntrancePoint(0),
   fHiddenInfo(0), 
   fPrimaryVertex(0),
   fSecondaryVertex(0),
@@ -370,34 +370,34 @@ AliFemtoParticle& AliFemtoParticle::operator=(const AliFemtoParticle& aParticle)
   fFourMomentum = aParticle.fFourMomentum;
   fHelix = aParticle.fHelix;
 
-  for (int iter=0; iter<11; iter++)
-    fNominalPosSample[iter] = aParticle.fNominalPosSample[iter];
+//   for (int iter=0; iter<11; iter++)
+//     fNominalPosSample[iter] = aParticle.fNominalPosSample[iter];
 
-  if (fTpcV0NegPosSample) delete fTpcV0NegPosSample;
-  if (aParticle.fTpcV0NegPosSample) {
-    fTpcV0NegPosSample = (AliFemtoThreeVector *) malloc(sizeof(AliFemtoThreeVector) * 11);
-    for (int iter=0; iter<11; iter++)
-      fTpcV0NegPosSample[iter] = aParticle.fTpcV0NegPosSample[iter];
-  }
+//   if (fTpcV0NegPosSample) delete fTpcV0NegPosSample;
+//   if (aParticle.fTpcV0NegPosSample) {
+//     fTpcV0NegPosSample = (AliFemtoThreeVector *) malloc(sizeof(AliFemtoThreeVector) * 11);
+//     for (int iter=0; iter<11; iter++)
+//       fTpcV0NegPosSample[iter] = aParticle.fTpcV0NegPosSample[iter];
+//   }
 
-  if (fV0NegZ) delete fV0NegZ;
-  if (aParticle.fV0NegZ) {
-    fV0NegZ = (float *) malloc(sizeof(float) * 45);
-    for (int iter=0; iter<11; iter++)
-      fV0NegZ[iter] = aParticle.fV0NegZ[iter];
-  }
-  if (fV0NegU) delete fV0NegU;
-  if (aParticle.fV0NegU) {
-    fV0NegU = (float *) malloc(sizeof(float) * 45);
-    for (int iter=0; iter<11; iter++)
-      fV0NegU[iter] = aParticle.fV0NegU[iter];
-  }
-  if (fV0NegSect) delete fV0NegSect;
-  if (aParticle.fV0NegSect) {
-    fV0NegSect = (int *) malloc(sizeof(int) * 45);
-    for (int iter=0; iter<11; iter++)
-      fV0NegSect[iter] = aParticle.fV0NegSect[iter];
-  }
+//   if (fV0NegZ) delete fV0NegZ;
+//   if (aParticle.fV0NegZ) {
+//     fV0NegZ = (float *) malloc(sizeof(float) * 45);
+//     for (int iter=0; iter<11; iter++)
+//       fV0NegZ[iter] = aParticle.fV0NegZ[iter];
+//   }
+//   if (fV0NegU) delete fV0NegU;
+//   if (aParticle.fV0NegU) {
+//     fV0NegU = (float *) malloc(sizeof(float) * 45);
+//     for (int iter=0; iter<11; iter++)
+//       fV0NegU[iter] = aParticle.fV0NegU[iter];
+//   }
+//   if (fV0NegSect) delete fV0NegSect;
+//   if (aParticle.fV0NegSect) {
+//     fV0NegSect = (int *) malloc(sizeof(int) * 45);
+//     for (int iter=0; iter<11; iter++)
+//       fV0NegSect[iter] = aParticle.fV0NegSect[iter];
+//   }
 
   fPrimaryVertex = aParticle.fPrimaryVertex;
   fSecondaryVertex = aParticle.fSecondaryVertex;
@@ -406,9 +406,9 @@ AliFemtoParticle& AliFemtoParticle::operator=(const AliFemtoParticle& aParticle)
     fHiddenInfo= aParticle.fHiddenInfo->Clone();
   }
   
-  fNominalTpcEntrancePoint = aParticle.fNominalTpcEntrancePoint;
-  fNominalTpcExitPoint     = aParticle.fNominalTpcExitPoint;
-  
+//   fNominalTpcEntrancePoint = aParticle.fNominalTpcEntrancePoint;
+//   fNominalTpcExitPoint     = aParticle.fNominalTpcExitPoint;
+ 
   if (fHiddenInfo) delete fHiddenInfo;
   if (aParticle.fHiddenInfo) 
     fHiddenInfo = aParticle.HiddenInfo()->Clone();
@@ -425,18 +425,18 @@ AliFemtoParticle& AliFemtoParticle::operator=(const AliFemtoParticle& aParticle)
 
   return *this;
 }
-//_____________________
-const AliFemtoThreeVector& AliFemtoParticle::NominalTpcExitPoint() const{
-  // in future, may want to calculate this "on demand" only, sot this routine may get more sophisticated
-  // for now, we calculate Exit and Entrance points upon instantiation
-  return fNominalTpcExitPoint;
-}
-//_____________________
-const AliFemtoThreeVector& AliFemtoParticle::NominalTpcEntrancePoint() const{
-  // in future, may want to calculate this "on demand" only, sot this routine may get more sophisticated
-  // for now, we calculate Exit and Entrance points upon instantiation
-  return fNominalTpcEntrancePoint;
-}
+// //_____________________
+// const AliFemtoThreeVector& AliFemtoParticle::NominalTpcExitPoint() const{
+//   // in future, may want to calculate this "on demand" only, sot this routine may get more sophisticated
+//   // for now, we calculate Exit and Entrance points upon instantiation
+//   return fNominalTpcExitPoint;
+// }
+// //_____________________
+// const AliFemtoThreeVector& AliFemtoParticle::NominalTpcEntrancePoint() const{
+//   // in future, may want to calculate this "on demand" only, sot this routine may get more sophisticated
+//   // for now, we calculate Exit and Entrance points upon instantiation
+//   return fNominalTpcEntrancePoint;
+// }
 //_____________________
 void AliFemtoParticle::CalculatePurity(){
   // Calculate additional parameterized purity
@@ -483,270 +483,270 @@ double AliFemtoParticle::GetProtonPurity()
     return fPurity[4];
 }
 
-void AliFemtoParticle::CalculateTpcExitAndEntrancePoints(AliFmPhysicalHelixD* tHelix,
-						       AliFemtoThreeVector*  PrimVert,
-						       AliFemtoThreeVector*  SecVert,
-						       AliFemtoThreeVector* tmpTpcEntrancePoint,
-						       AliFemtoThreeVector* tmpTpcExitPoint,
-						       AliFemtoThreeVector* tmpPosSample,
-						       float* tmpZ,
-						       float* tmpU,
-						       int* tmpSect){
-  // this calculates the exit point of a secondary track, 
-  // either through the endcap or through the Outer Field Cage
-  // We assume the track to start at tHelix.origin-PrimaryVertex
-  // it also calculates the entrance point of the secondary track, 
-  // which is the point at which it crosses the
-  // inner field cage
-  //  static AliFemtoThreeVector ZeroVec(0.,0.,0.);
-  AliFemtoThreeVector tZeroVec(0.,0.,0.);
-//   tZeroVec.setX(tHelix->origin().x()-PrimVert->x());
-//   tZeroVec.setY(tHelix->origin().y()-PrimVert->y());
-//   tZeroVec.setZ(tHelix->origin().z()-PrimVert->z());
-  tZeroVec.setX(SecVert->x()-PrimVert->x());
-  tZeroVec.setY(SecVert->y()-PrimVert->y());
-  tZeroVec.setZ(SecVert->z()-PrimVert->z());
-  double dip, curv, phase;
-  int h;
-  curv = tHelix->Curvature();
-  dip  = tHelix->DipAngle();
-  phase= tHelix->Phase();
-  h    = tHelix->H();
+// void AliFemtoParticle::CalculateTpcExitAndEntrancePoints(AliFmPhysicalHelixD* tHelix,
+// 						       AliFemtoThreeVector*  PrimVert,
+// 						       AliFemtoThreeVector*  SecVert,
+// 						       AliFemtoThreeVector* tmpTpcEntrancePoint,
+// 						       AliFemtoThreeVector* tmpTpcExitPoint,
+// 						       AliFemtoThreeVector* tmpPosSample,
+// 						       float* tmpZ,
+// 						       float* tmpU,
+// 						       int* tmpSect){
+//   // this calculates the exit point of a secondary track, 
+//   // either through the endcap or through the Outer Field Cage
+//   // We assume the track to start at tHelix.origin-PrimaryVertex
+//   // it also calculates the entrance point of the secondary track, 
+//   // which is the point at which it crosses the
+//   // inner field cage
+//   //  static AliFemtoThreeVector ZeroVec(0.,0.,0.);
+//   AliFemtoThreeVector tZeroVec(0.,0.,0.);
+// //   tZeroVec.setX(tHelix->origin().x()-PrimVert->x());
+// //   tZeroVec.setY(tHelix->origin().y()-PrimVert->y());
+// //   tZeroVec.setZ(tHelix->origin().z()-PrimVert->z());
+//   tZeroVec.setX(SecVert->x()-PrimVert->x());
+//   tZeroVec.setY(SecVert->y()-PrimVert->y());
+//   tZeroVec.setZ(SecVert->z()-PrimVert->z());
+//   double dip, curv, phase;
+//   int h;
+//   curv = tHelix->Curvature();
+//   dip  = tHelix->DipAngle();
+//   phase= tHelix->Phase();
+//   h    = tHelix->H();
   
-  AliFmHelixD hel(curv,dip,phase,tZeroVec,h);
+//   AliFmHelixD hel(curv,dip,phase,tZeroVec,h);
 
-  pairD candidates;
-  double sideLength;  // this is how much length to go to leave through sides of TPC
-  double endLength;  // this is how much length to go to leave through endcap of TPC
-  // figure out how far to go to leave through side...
-  candidates = hel.PathLength(200.0);  // bugfix MAL jul00 - 200cm NOT 2cm
-  sideLength = (candidates.first > 0) ? candidates.first : candidates.second;
+//   pairD candidates;
+//   double sideLength;  // this is how much length to go to leave through sides of TPC
+//   double endLength;  // this is how much length to go to leave through endcap of TPC
+//   // figure out how far to go to leave through side...
+//   candidates = hel.PathLength(200.0);  // bugfix MAL jul00 - 200cm NOT 2cm
+//   sideLength = (candidates.first > 0) ? candidates.first : candidates.second;
 
-  static AliFemtoThreeVector tWestEnd(0.,0.,200.);  // bugfix MAL jul00 - 200cm NOT 2cm
-  static AliFemtoThreeVector tEastEnd(0.,0.,-200.); // bugfix MAL jul00 - 200cm NOT 2cm
-  static AliFemtoThreeVector tEndCapNormal(0.,0.,1.0);
+//   static AliFemtoThreeVector tWestEnd(0.,0.,200.);  // bugfix MAL jul00 - 200cm NOT 2cm
+//   static AliFemtoThreeVector tEastEnd(0.,0.,-200.); // bugfix MAL jul00 - 200cm NOT 2cm
+//   static AliFemtoThreeVector tEndCapNormal(0.,0.,1.0);
 
-  endLength = hel.PathLength(tWestEnd,tEndCapNormal);
-  if (endLength < 0.0) endLength = hel.PathLength(tEastEnd,tEndCapNormal);
+//   endLength = hel.PathLength(tWestEnd,tEndCapNormal);
+//   if (endLength < 0.0) endLength = hel.PathLength(tEastEnd,tEndCapNormal);
 
-  if (endLength < 0.0) cout << 
-			 "AliFemtoParticle::CalculateTpcExitAndEntrancePoints(): "
-                            << "Hey -- I cannot find an exit point out endcaps" << endl;
-  // OK, firstExitLength will be the shortest way out of the detector...
-  double firstExitLength = (endLength < sideLength) ? endLength : sideLength;
-  // now then, let's return the POSITION at which particle leaves TPC...
-  *tmpTpcExitPoint = hel.At(firstExitLength);
-  // Finally, calculate the position at which the track crosses the inner field cage
-  candidates = hel.PathLength(50.0);  // bugfix MAL jul00 - 200cm NOT 2cm
+//   if (endLength < 0.0) cout << 
+// 			 "AliFemtoParticle::CalculateTpcExitAndEntrancePoints(): "
+//                             << "Hey -- I cannot find an exit point out endcaps" << endl;
+//   // OK, firstExitLength will be the shortest way out of the detector...
+//   double firstExitLength = (endLength < sideLength) ? endLength : sideLength;
+//   // now then, let's return the POSITION at which particle leaves TPC...
+//   *tmpTpcExitPoint = hel.At(firstExitLength);
+//   // Finally, calculate the position at which the track crosses the inner field cage
+//   candidates = hel.PathLength(50.0);  // bugfix MAL jul00 - 200cm NOT 2cm
 
-  sideLength = (candidates.first > 0) ? candidates.first : candidates.second;
-  //  cout << "sideLength 2 ="<<sideLength << endl;
-  *tmpTpcEntrancePoint = hel.At(sideLength);
-  // This is the secure way !  
-  if (IsNaN(tmpTpcEntrancePoint->x()) || 
-      IsNaN(tmpTpcEntrancePoint->y()) || 
-      IsNaN(tmpTpcEntrancePoint->z()) ){ 
-    cout << "tmpTpcEntrancePoint NAN"<< endl; 
-    cout << "tmpNominalTpcEntrancePoint = " <<tmpTpcEntrancePoint<< endl;
-    tmpTpcEntrancePoint->setX(-9999.);
-    tmpTpcEntrancePoint->setY(-9999.);
-    tmpTpcEntrancePoint->setZ(-9999.);
-  } 
+//   sideLength = (candidates.first > 0) ? candidates.first : candidates.second;
+//   //  cout << "sideLength 2 ="<<sideLength << endl;
+//   *tmpTpcEntrancePoint = hel.At(sideLength);
+//   // This is the secure way !  
+//   if (IsNaN(tmpTpcEntrancePoint->x()) || 
+//       IsNaN(tmpTpcEntrancePoint->y()) || 
+//       IsNaN(tmpTpcEntrancePoint->z()) ){ 
+//     cout << "tmpTpcEntrancePoint NAN"<< endl; 
+//     cout << "tmpNominalTpcEntrancePoint = " <<tmpTpcEntrancePoint<< endl;
+//     tmpTpcEntrancePoint->setX(-9999.);
+//     tmpTpcEntrancePoint->setY(-9999.);
+//     tmpTpcEntrancePoint->setZ(-9999.);
+//   } 
     
-  if (IsNaN(tmpTpcExitPoint->x()) || 
-      IsNaN(tmpTpcExitPoint->y()) || 
-      IsNaN(tmpTpcExitPoint->z()) ) {
-//     cout << "tmpTpcExitPoint NAN set at (-9999,-9999,-9999)"<< endl; 
-//     cout << "tmpTpcExitPoint X= " <<tmpTpcExitPoint->x()<< endl;
-//     cout << "tmpTpcExitPoint Y= " <<tmpTpcExitPoint->y()<< endl;
-//     cout << "tmpTpcExitPoint Z= " <<tmpTpcExitPoint->z()<< endl;
-    tmpTpcExitPoint->setX(-9999.);
-    tmpTpcExitPoint->setY(-9999.);
-    tmpTpcExitPoint->setZ(-9999.);
-  }
+//   if (IsNaN(tmpTpcExitPoint->x()) || 
+//       IsNaN(tmpTpcExitPoint->y()) || 
+//       IsNaN(tmpTpcExitPoint->z()) ) {
+// //     cout << "tmpTpcExitPoint NAN set at (-9999,-9999,-9999)"<< endl; 
+// //     cout << "tmpTpcExitPoint X= " <<tmpTpcExitPoint->x()<< endl;
+// //     cout << "tmpTpcExitPoint Y= " <<tmpTpcExitPoint->y()<< endl;
+// //     cout << "tmpTpcExitPoint Z= " <<tmpTpcExitPoint->z()<< endl;
+//     tmpTpcExitPoint->setX(-9999.);
+//     tmpTpcExitPoint->setY(-9999.);
+//     tmpTpcExitPoint->setZ(-9999.);
+//   }
 
 
-//   if (IsNaN(tmpTpcExitPoint->x())) *tmpTpcExitPoint = AliFemtoThreeVector(-9999.,-9999.,-9999); 
-//   if (IsNaN(tmpTpcEntrancetPoint->x())) *tmpTpcEntrancePoint = AliFemtoThreeVector(-9999.,-9999.,-9999); 
-  //  cout << "tmpTpcEntrancePoint"<<*tmpTpcEntrancePoint << endl;
+// //   if (IsNaN(tmpTpcExitPoint->x())) *tmpTpcExitPoint = AliFemtoThreeVector(-9999.,-9999.,-9999); 
+// //   if (IsNaN(tmpTpcEntrancetPoint->x())) *tmpTpcEntrancePoint = AliFemtoThreeVector(-9999.,-9999.,-9999); 
+//   //  cout << "tmpTpcEntrancePoint"<<*tmpTpcEntrancePoint << endl;
 
-  // 03Oct00 - mal.  OK, let's try something a little more 
-  // along the lines of NA49 and E895 strategy.
-  // calculate the "nominal" position at N radii (say N=11) 
-  // within the TPC, and for a pair cut
-  // use the average separation of these N
-  int irad = 0;
-  candidates = hel.PathLength(50.0);
-  sideLength = (candidates.first > 0) ? candidates.first : candidates.second;
-  while (irad<11 && !IsNaN(sideLength)){ 
-    float radius = 50.0 + irad*15.0;
-    candidates = hel.PathLength(radius);
-    sideLength = (candidates.first > 0) ? candidates.first : candidates.second;
-    tmpPosSample[irad] = hel.At(sideLength);
-    if(IsNaN(tmpPosSample[irad].x()) ||
-       IsNaN(tmpPosSample[irad].y()) ||
-       IsNaN(tmpPosSample[irad].z()) 
-       ){
-      cout << "tmpPosSample for radius=" << radius << " NAN"<< endl; 
-      cout << "tmpPosSample=(" <<tmpPosSample[irad]<<")"<< endl;
-      tmpPosSample[irad] =  AliFemtoThreeVector(-9999.,-9999.,-9999);
-    }
-    irad++;
-    if (irad<11){
-      float radius = 50.0 + irad*15.0;
-      candidates = hel.PathLength(radius);
-      sideLength = (candidates.first > 0) ? candidates.first : candidates.second;
-    }
-   }
-   for (int i = irad; i<11; i++)
-     {
-       tmpPosSample[i] =  AliFemtoThreeVector(-9999.,-9999.,-9999);   
-     }
+//   // 03Oct00 - mal.  OK, let's try something a little more 
+//   // along the lines of NA49 and E895 strategy.
+//   // calculate the "nominal" position at N radii (say N=11) 
+//   // within the TPC, and for a pair cut
+//   // use the average separation of these N
+//   int irad = 0;
+//   candidates = hel.PathLength(50.0);
+//   sideLength = (candidates.first > 0) ? candidates.first : candidates.second;
+//   while (irad<11 && !IsNaN(sideLength)){ 
+//     float radius = 50.0 + irad*15.0;
+//     candidates = hel.PathLength(radius);
+//     sideLength = (candidates.first > 0) ? candidates.first : candidates.second;
+//     tmpPosSample[irad] = hel.At(sideLength);
+//     if(IsNaN(tmpPosSample[irad].x()) ||
+//        IsNaN(tmpPosSample[irad].y()) ||
+//        IsNaN(tmpPosSample[irad].z()) 
+//        ){
+//       cout << "tmpPosSample for radius=" << radius << " NAN"<< endl; 
+//       cout << "tmpPosSample=(" <<tmpPosSample[irad]<<")"<< endl;
+//       tmpPosSample[irad] =  AliFemtoThreeVector(-9999.,-9999.,-9999);
+//     }
+//     irad++;
+//     if (irad<11){
+//       float radius = 50.0 + irad*15.0;
+//       candidates = hel.PathLength(radius);
+//       sideLength = (candidates.first > 0) ? candidates.first : candidates.second;
+//     }
+//    }
+//    for (int i = irad; i<11; i++)
+//      {
+//        tmpPosSample[i] =  AliFemtoThreeVector(-9999.,-9999.,-9999);   
+//      }
 
-  static float tRowRadius[45] = {60,64.8,69.6,74.4,79.2,84,88.8,93.6,98.8, 
-				 104,109.2,114.4,119.6,127.195,129.195,131.195,
-				 133.195,135.195,137.195,139.195,141.195,
-				 143.195,145.195,147.195,149.195,151.195,
-				 153.195,155.195,157.195,159.195,161.195,
-				 163.195,165.195,167.195,169.195,171.195,
-				 173.195,175.195,177.195,179.195,181.195,
-				 183.195,185.195,187.195,189.195};
-  int tRow,tSect,tOutOfBound;
-  double tLength,tPhi;
-  float tU;
-  AliFemtoThreeVector tPoint;
-  AliFmThreeVectorD tn(0,0,0);
-  AliFmThreeVectorD tr(0,0,0);
-  int ti =0;
-  // test to enter the loop
-  candidates =  hel.PathLength(tRowRadius[ti]);
-  tLength = (candidates.first > 0) ? candidates.first : candidates.second;
-  if (IsNaN(tLength)){
-    cout <<"tLength Init tmp NAN" << endl;
-    cout <<"padrow number= "<<ti << "not reached" << endl;
-    cout << "*** DO NOT ENTER THE LOOP***" << endl;
-    tmpSect[ti]=-1;//sector
-  }
-  // end test
-  while(ti<45 && !IsNaN(tLength)){
-    candidates =  hel.PathLength(tRowRadius[ti]);
-    tLength = (candidates.first > 0) ? candidates.first : candidates.second;
-    if (IsNaN(tLength)){
-      cout <<"tLength loop 1st NAN" << endl;
-      cout <<"padrow number=  " << ti << " not reached" << endl;
-      cout << "*** THIS IS AN ERROR SHOULDN'T  LOOP ***" << endl;
-      tmpSect[ti]=-1;//sector
-    }
-    tPoint = hel.At(tLength);
-    // Find which sector it is on
-    TpcLocalTransform(tPoint,tmpSect[ti],tRow,tU,tPhi);
-    if (IsNaN(tmpSect[ti])){
-      cout <<"***ERROR tmpSect"<< endl; 
-    }
-    if (IsNaN(tRow)){
-      cout <<"***ERROR tRow"<< endl;
-    }
-    if (IsNaN(tU)){
-      cout <<"***ERROR tU"<< endl;
-    }
-    if (IsNaN(tPhi)){
-      cout <<"***ERROR tPhi"<< endl;
-    }  
-    // calculate crossing plane
-    tn.setX(cos(tPhi));
-    tn.setY(sin(tPhi));       
-    tr.setX(tRowRadius[ti]*cos(tPhi));
-    tr.setY(tRowRadius[ti]*sin(tPhi));
-    // find crossing point
-    tLength = hel.PathLength(tr,tn); 
-    if (IsNaN(tLength)){
-      cout <<"tLength loop 2nd  NAN" << endl;
-      cout <<"padrow number=  " << ti << " not reached" << endl;
-      tmpSect[ti]=-2;//sector
-    }
-    tPoint = hel.At(tLength);
-    tmpZ[ti] = tPoint.z();
-    tOutOfBound = TpcLocalTransform(tPoint,tSect,tRow,tmpU[ti],tPhi);
-    if (IsNaN(tSect)){
-      cout <<"***ERROR tSect 2"<< endl; 
-    }
-    if (IsNaN(tRow)){
-      cout <<"***ERROR tRow 2"<< endl;
-    }
-    if (IsNaN(tmpU[ti])){
-      cout <<"***ERROR tmpU[ti] 2"<< endl;
-    }
-    if (IsNaN(tPhi)){
-      cout <<"***ERROR tPhi 2 "<< endl;
-    }  
-    if(tOutOfBound || (tmpSect[ti] == tSect && tRow!=(ti+1))){
-      tmpSect[ti]=-2;
-      //	  cout << "missed once"<< endl;
-    }
-    else{
-      if(tmpSect[ti] != tSect){
-	// Try again on the other sector
-	tn.setX(cos(tPhi));
-	tn.setY(sin(tPhi));       
-	tr.setX(tRowRadius[ti]*cos(tPhi));
-	tr.setY(tRowRadius[ti]*sin(tPhi));
-	// find crossing point
-	tLength = hel.PathLength(tr,tn);
-	tPoint = hel.At(tLength);
-	if (IsNaN(tLength)){
-	  cout <<"tLength loop 3rd NAN" << endl;
-	  cout <<"padrow number=  "<< ti << " not reached" << endl;
-	  tmpSect[ti]=-1;//sector
-	}
-	tmpZ[ti] = tPoint.z();
-	tmpSect[ti] = tSect;
-	tOutOfBound = TpcLocalTransform(tPoint,tSect,tRow,tmpU[ti],tPhi);
-	if (IsNaN(tSect)){
-	  cout <<"***ERROR tSect 3"<< endl; 
-	}
-	if (IsNaN(tRow)){
-	  cout <<"***ERROR tRow 3"<< endl;
-	}
-	if (IsNaN(tmpU[ti])){
-	  cout <<"***ERROR tmpU[ti] 3"<< endl;
-	}
-	if (IsNaN(tPhi)){
-	  cout <<"***ERROR tPhi 3 "<< endl;
-	}  
-	if(tOutOfBound || tSect!= tmpSect[ti] || tRow!=(ti+1)){
-	  tmpSect[ti]=-1;
-	}
-      }
-    }
-    if (IsNaN(tmpSect[ti])){
-      cout << "*******************ERROR***************************" << endl;
-      cout <<"AliFemtoParticle--Fctn tmpSect=" << tmpSect[ti] << endl;
-      cout << "*******************ERROR***************************" << endl;
-    }
-    if (IsNaN(tmpU[ti])){
-      cout << "*******************ERROR***************************" << endl;
-      cout <<"AliFemtoParticle--Fctn tmpU=" << tmpU[ti] << endl;
-      cout << "*******************ERROR***************************" << endl;
-    }
-    if (IsNaN(tmpZ[ti])){
-      cout << "*******************ERROR***************************" << endl;
-      cout <<"AliFemtoParticle--Fctn tmpZ=" << tmpZ[ti] << endl;
-      cout << "*******************ERROR***************************" << endl;
-    }
-    // If padrow ti not reached all other beyond are not reached
-    // in this case set sector to -1
-    if (tmpSect[ti]==-1){
-      for (int tj=ti; tj<45;tj++){
-	tmpSect[tj] = -1;
-	ti=45;
-      }
-    }
-    ti++;
-    if (ti<45){
-      candidates =  hel.PathLength(tRowRadius[ti]);
-      tLength = (candidates.first > 0) ? candidates.first : candidates.second;}
-  }
-}
+//   static float tRowRadius[45] = {60,64.8,69.6,74.4,79.2,84,88.8,93.6,98.8, 
+// 				 104,109.2,114.4,119.6,127.195,129.195,131.195,
+// 				 133.195,135.195,137.195,139.195,141.195,
+// 				 143.195,145.195,147.195,149.195,151.195,
+// 				 153.195,155.195,157.195,159.195,161.195,
+// 				 163.195,165.195,167.195,169.195,171.195,
+// 				 173.195,175.195,177.195,179.195,181.195,
+// 				 183.195,185.195,187.195,189.195};
+//   int tRow,tSect,tOutOfBound;
+//   double tLength,tPhi;
+//   float tU;
+//   AliFemtoThreeVector tPoint;
+//   AliFmThreeVectorD tn(0,0,0);
+//   AliFmThreeVectorD tr(0,0,0);
+//   int ti =0;
+//   // test to enter the loop
+//   candidates =  hel.PathLength(tRowRadius[ti]);
+//   tLength = (candidates.first > 0) ? candidates.first : candidates.second;
+//   if (IsNaN(tLength)){
+//     cout <<"tLength Init tmp NAN" << endl;
+//     cout <<"padrow number= "<<ti << "not reached" << endl;
+//     cout << "*** DO NOT ENTER THE LOOP***" << endl;
+//     tmpSect[ti]=-1;//sector
+//   }
+//   // end test
+//   while(ti<45 && !IsNaN(tLength)){
+//     candidates =  hel.PathLength(tRowRadius[ti]);
+//     tLength = (candidates.first > 0) ? candidates.first : candidates.second;
+//     if (IsNaN(tLength)){
+//       cout <<"tLength loop 1st NAN" << endl;
+//       cout <<"padrow number=  " << ti << " not reached" << endl;
+//       cout << "*** THIS IS AN ERROR SHOULDN'T  LOOP ***" << endl;
+//       tmpSect[ti]=-1;//sector
+//     }
+//     tPoint = hel.At(tLength);
+//     // Find which sector it is on
+//     TpcLocalTransform(tPoint,tmpSect[ti],tRow,tU,tPhi);
+//     if (IsNaN(tmpSect[ti])){
+//       cout <<"***ERROR tmpSect"<< endl; 
+//     }
+//     if (IsNaN(tRow)){
+//       cout <<"***ERROR tRow"<< endl;
+//     }
+//     if (IsNaN(tU)){
+//       cout <<"***ERROR tU"<< endl;
+//     }
+//     if (IsNaN(tPhi)){
+//       cout <<"***ERROR tPhi"<< endl;
+//     }  
+//     // calculate crossing plane
+//     tn.setX(cos(tPhi));
+//     tn.setY(sin(tPhi));       
+//     tr.setX(tRowRadius[ti]*cos(tPhi));
+//     tr.setY(tRowRadius[ti]*sin(tPhi));
+//     // find crossing point
+//     tLength = hel.PathLength(tr,tn); 
+//     if (IsNaN(tLength)){
+//       cout <<"tLength loop 2nd  NAN" << endl;
+//       cout <<"padrow number=  " << ti << " not reached" << endl;
+//       tmpSect[ti]=-2;//sector
+//     }
+//     tPoint = hel.At(tLength);
+//     tmpZ[ti] = tPoint.z();
+//     tOutOfBound = TpcLocalTransform(tPoint,tSect,tRow,tmpU[ti],tPhi);
+//     if (IsNaN(tSect)){
+//       cout <<"***ERROR tSect 2"<< endl; 
+//     }
+//     if (IsNaN(tRow)){
+//       cout <<"***ERROR tRow 2"<< endl;
+//     }
+//     if (IsNaN(tmpU[ti])){
+//       cout <<"***ERROR tmpU[ti] 2"<< endl;
+//     }
+//     if (IsNaN(tPhi)){
+//       cout <<"***ERROR tPhi 2 "<< endl;
+//     }  
+//     if(tOutOfBound || (tmpSect[ti] == tSect && tRow!=(ti+1))){
+//       tmpSect[ti]=-2;
+//       //	  cout << "missed once"<< endl;
+//     }
+//     else{
+//       if(tmpSect[ti] != tSect){
+// 	// Try again on the other sector
+// 	tn.setX(cos(tPhi));
+// 	tn.setY(sin(tPhi));       
+// 	tr.setX(tRowRadius[ti]*cos(tPhi));
+// 	tr.setY(tRowRadius[ti]*sin(tPhi));
+// 	// find crossing point
+// 	tLength = hel.PathLength(tr,tn);
+// 	tPoint = hel.At(tLength);
+// 	if (IsNaN(tLength)){
+// 	  cout <<"tLength loop 3rd NAN" << endl;
+// 	  cout <<"padrow number=  "<< ti << " not reached" << endl;
+// 	  tmpSect[ti]=-1;//sector
+// 	}
+// 	tmpZ[ti] = tPoint.z();
+// 	tmpSect[ti] = tSect;
+// 	tOutOfBound = TpcLocalTransform(tPoint,tSect,tRow,tmpU[ti],tPhi);
+// 	if (IsNaN(tSect)){
+// 	  cout <<"***ERROR tSect 3"<< endl; 
+// 	}
+// 	if (IsNaN(tRow)){
+// 	  cout <<"***ERROR tRow 3"<< endl;
+// 	}
+// 	if (IsNaN(tmpU[ti])){
+// 	  cout <<"***ERROR tmpU[ti] 3"<< endl;
+// 	}
+// 	if (IsNaN(tPhi)){
+// 	  cout <<"***ERROR tPhi 3 "<< endl;
+// 	}  
+// 	if(tOutOfBound || tSect!= tmpSect[ti] || tRow!=(ti+1)){
+// 	  tmpSect[ti]=-1;
+// 	}
+//       }
+//     }
+//     if (IsNaN(tmpSect[ti])){
+//       cout << "*******************ERROR***************************" << endl;
+//       cout <<"AliFemtoParticle--Fctn tmpSect=" << tmpSect[ti] << endl;
+//       cout << "*******************ERROR***************************" << endl;
+//     }
+//     if (IsNaN(tmpU[ti])){
+//       cout << "*******************ERROR***************************" << endl;
+//       cout <<"AliFemtoParticle--Fctn tmpU=" << tmpU[ti] << endl;
+//       cout << "*******************ERROR***************************" << endl;
+//     }
+//     if (IsNaN(tmpZ[ti])){
+//       cout << "*******************ERROR***************************" << endl;
+//       cout <<"AliFemtoParticle--Fctn tmpZ=" << tmpZ[ti] << endl;
+//       cout << "*******************ERROR***************************" << endl;
+//     }
+//     // If padrow ti not reached all other beyond are not reached
+//     // in this case set sector to -1
+//     if (tmpSect[ti]==-1){
+//       for (int tj=ti; tj<45;tj++){
+// 	tmpSect[tj] = -1;
+// 	ti=45;
+//       }
+//     }
+//     ti++;
+//     if (ti<45){
+//       candidates =  hel.PathLength(tRowRadius[ti]);
+//       tLength = (candidates.first > 0) ? candidates.first : candidates.second;}
+//   }
+// }
 //_____________________
 const AliFemtoThreeVector& AliFemtoParticle::TpcV0PosExitPoint() const{
   return fTpcV0PosExitPoint;

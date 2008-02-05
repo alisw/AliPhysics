@@ -39,7 +39,7 @@ public:
   virtual bool Pass(const AliFemtoPair* pair);
   virtual AliFemtoString Report();
   virtual TList *ListSettings();
-  AliFemtoShareQualityPairCut* Clone();
+  virtual AliFemtoPairCut* Clone();
   void SetShareQualityMax(Double_t aAliFemtoShareQualityMax);
   Double_t GetAliFemtoShareQualityMax() const;
   void SetShareFractionMax(Double_t aAliFemtoShareFractionMax);
@@ -69,6 +69,6 @@ inline AliFemtoShareQualityPairCut::AliFemtoShareQualityPairCut(const AliFemtoSh
   fShareFractionMax(1.0)// no cut
 { /* no-op */ }
 
-inline AliFemtoShareQualityPairCut* AliFemtoShareQualityPairCut::Clone() { AliFemtoShareQualityPairCut* c = new AliFemtoShareQualityPairCut(*this); return c;}
+inline AliFemtoPairCut* AliFemtoShareQualityPairCut::Clone() { AliFemtoShareQualityPairCut* c = new AliFemtoShareQualityPairCut(*this); return c;}
 
 #endif

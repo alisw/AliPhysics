@@ -22,6 +22,7 @@ class AliFemtoModelWeightGenerator
   virtual void     SetPairType(Int_t aPairType);
   virtual void     SetPairTypeFromPair(AliFemtoPair *aPair);
   virtual Int_t    GetPairType() const;
+  virtual Int_t    GetPairTypeFromPair(AliFemtoPair *aPair);
 
   virtual Double_t GetKStar() const;
   virtual Double_t GetKStarOut() const;
@@ -46,8 +47,10 @@ class AliFemtoModelWeightGenerator
   static Int_t PionPlusAntiproton();
   static Int_t KaonPlusProton();    
   static Int_t KaonPlusAntiproton();
+  static Int_t PairTypeNone();
 
  protected:
+  static const Int_t fgkPairTypeNone;      // no pair type set - read from model
   static const Int_t fgkPionPlusPionPlus;  // identical pion pair
   static const Int_t fgkPionPlusPionMinus; // non-identical pion pair
   static const Int_t fgkKaonPlusKaonPlus;  // identical kaon pair
@@ -89,6 +92,7 @@ inline Double_t AliFemtoModelWeightGenerator::GetRStarOut() const { return fRSta
 inline Double_t AliFemtoModelWeightGenerator::GetRStarSide() const { return fRStarSide; }
 inline Double_t AliFemtoModelWeightGenerator::GetRStarLong() const { return fRStarLong; }
 
+inline Int_t AliFemtoModelWeightGenerator::PairTypeNone() { return fgkPairTypeNone; }  
 inline Int_t AliFemtoModelWeightGenerator::PionPlusPionPlus() { return fgkPionPlusPionPlus; }  
 inline Int_t AliFemtoModelWeightGenerator::PionPlusPionMinus() { return fgkPionPlusPionMinus; } 
 inline Int_t AliFemtoModelWeightGenerator::KaonPlusKaonPlus() { return fgkKaonPlusKaonPlus; }  

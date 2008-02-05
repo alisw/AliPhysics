@@ -12,6 +12,7 @@ class AliFemtoKink;
 class AliFemtoPair; // Gael 12/04/02
 #include "AliFemtoString.h"
 #include "AliFemtoParticleCollection.h" // Gael 19/06/02
+#include <TList.h>
 
 class AliFemtoCutMonitor{
   
@@ -27,7 +28,9 @@ public:
   }
   virtual void EventBegin(const AliFemtoEvent* aEvent) { /* no-op */ }
   virtual void EventEnd(const AliFemtoEvent* aEvent) { /* no-op */ }
+  virtual TList *GetOutputList() { TList *tOutputList = new TList(); return tOutputList; };
   virtual void Fill(const AliFemtoEvent* aEvent) { 
+
 #ifdef STHBTDEBUG
     cout << " *** no user defined Fill(const AliFemtoEvent*), take from base class" << endl;
 #endif

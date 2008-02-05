@@ -155,10 +155,15 @@ void                   AliFemtoModelHiddenInfo::SetMass(Double_t aMass)
 void                   AliFemtoModelHiddenInfo::SetEmissionPoint(Double_t aRx, Double_t aRy, Double_t aRz, Double_t aT)
 {
   // set position from components
-  fEmissionPoint->setX(aRx);
-  fEmissionPoint->setY(aRy);
-  fEmissionPoint->setZ(aRz);
-  fEmissionPoint->setT(aT);
+  if (fEmissionPoint) {
+    fEmissionPoint->setX(aRx);
+    fEmissionPoint->setY(aRy);
+    fEmissionPoint->setZ(aRz);
+    fEmissionPoint->setT(aT);
+  }
+  else {
+    fEmissionPoint = new AliFemtoLorentzVector(aRx, aRy, aRz, aT); 
+  }
 }
 //_____________________________________________
  AliFemtoHiddenInfo* AliFemtoModelHiddenInfo::GetParticleHiddenInfo() const
