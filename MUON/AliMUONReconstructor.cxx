@@ -631,7 +631,7 @@ AliMUONReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) const
     // i.e. w/o going through raw data, this will be the case)
     TIter next(fDigitStore->CreateIterator());
     AliMUONVDigit* digit = static_cast<AliMUONVDigit*>(next());
-    if (!digit->IsCalibrated())
+    if (digit && !digit->IsCalibrated())
     {
       Calibrate(*fDigitStore);
     }
