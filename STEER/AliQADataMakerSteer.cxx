@@ -519,8 +519,7 @@ Bool_t AliQADataMakerSteer::Merge(const Int_t runNumber) const
 		return kFALSE ; 
 	}
 	
-	Int_t previousRun = -1 ;
-	Int_t runIndex = 0 ;  
+	Int_t runIndex = 1 ;  
 	char stmp[10] ; 
 	sprintf(stmp, ".%s.", AliQA::GetQADataFileName()) ; 
 	for (Int_t ifile = 0 ; ifile < index-1 ; ifile++) {
@@ -530,9 +529,10 @@ Bool_t AliQADataMakerSteer::Merge(const Int_t runNumber) const
 		tmp.Remove(0, tmp.Index(stmp)+4) ; 
 		TString ttmp = tmp(0, tmp.Index(".")) ; 
 		Int_t newRun = ttmp.Atoi() ;
-		if (newRun != previousRun) {
+		for (Int_t irun = 0; irun < runIndex; irun++) {
+			if (newRun == run[irun]) 
+				break ; 
 			run[runIndex] = newRun ; 
-			previousRun = newRun ; 
 			runIndex++ ; 
 		}
 		ttmp = tmp(tmp.Index("."), tmp.Length()) ; 
@@ -542,11 +542,11 @@ Bool_t AliQADataMakerSteer::Merge(const Int_t runNumber) const
 	for (Int_t irun = 0 ; irun < runIndex ; irun++) {
 		TFileMerger merger ; 
 		char outFileName[20] ; 
-		sprintf(outFileName, "Merged.%s.%d.root", AliQA::GetQADataFileName(), runIndex-1) ; 
+		sprintf(outFileName, "Merged.%s.%d.root", AliQA::GetQADataFileName(), run[irun]) ; 
 		merger.OutputFile(outFileName) ; 
 		for (Int_t ifile = 0 ; ifile < index-1 ; ifile++) {
 			char pattern[100] ; 
-			sprintf(pattern, "%s.%d.", AliQA::GetQADataFileName(), runIndex-1) ; 
+			sprintf(pattern, "%s.%d.", AliQA::GetQADataFileName(), run[irun]) ; 
 			TString tmp(file[ifile]) ; 
 			if (tmp.Contains(pattern))
 				merger.AddFile(tmp) ; 
