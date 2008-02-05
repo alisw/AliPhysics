@@ -25,7 +25,7 @@ void AliAnalysisVertexingHFTest(Int_t evFirst=0,
   vHF->SetITSrefitRequired();
   vHF->SetBothSPDNotRequired();
   vHF->SetMinITSCls(5);
-  vHF->SetMinPtCut(0.);
+  vHF->SetMinPtCut(0.1);
   vHF->SetMind0Cut(0.);
   //--- set cuts for candidates selection
   //vHF->SetD0toKpiCuts(); 
