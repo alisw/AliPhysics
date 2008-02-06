@@ -129,8 +129,7 @@ Bool_t TerminateSignalHandler::Notify()
 }
 
 //______________________________________________________________________________________________
-AliShuttleTrigger::AliShuttleTrigger(const AliShuttleConfig* config,
-		UInt_t timeout, Int_t retries):
+AliShuttleTrigger::AliShuttleTrigger(const AliShuttleConfig* config):
 	fConfig(config), fShuttle(NULL),
 	fNotified(kFALSE), fTerminate(kFALSE),
 	fMutex(), fCondition(&fMutex),
@@ -145,6 +144,8 @@ AliShuttleTrigger::AliShuttleTrigger(const AliShuttleConfig* config,
 	//
 
 	if (!fConfig->IsValid()) AliFatal("********** !!!!! Invalid configuration !!!!! **********");
+	UInt_t timeout = fConfig->GetDCSTimeOut();
+	Int_t retries = fConfig->GetDCSRetries();
 	fShuttle = new AliShuttle(config, timeout, retries);
 
 	TerminateSignalHandler* fQuitSignalHandler = new TerminateSignalHandler(this, kSigQuit);

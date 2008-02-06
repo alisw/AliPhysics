@@ -1,4 +1,3 @@
-# Global config
 dn: name=globalConfig,o=shuttle_prod,dc=cern,dc=ch
 objectClass: top
 objectClass: globalConfig
@@ -11,11 +10,21 @@ daqLbPort: 1444
 daqLbTable: logbook
 shuttleLbTable: logbook_shuttle
 runTypeLbTable: logbook_detectors
-ppTimeOut: 3600
 ppMaxMem: 2097152
-ppMaxRetries: 2
+ppmaxRetries: 2
 monitorHost: aliendb1.cern.ch
 monitorTable: SHUTTLE_PROD
-triggerWait: 100
 mode: prod
+triggerWait: 600
+ppTimeOut: 1200
+keepDCSMap: 1
+keepTempFolder: 1
+dcsTimeOut: 1100
+sendMail: 1
+shuttleAdmin: alberto.colla@cern.ch
+shuttleAdmin: chiara.zampolli@cern.ch
+shuttleAdmin: raffaele.grosso@cern.ch
+amandaAdmin: Jan.Fiete.Grosse-Oetringhaus@cern.ch
+amandaAdmin: svetozar.kapusta@cern.ch
+nDCSretries: 5
 

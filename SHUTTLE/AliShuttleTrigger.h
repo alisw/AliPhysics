@@ -46,7 +46,7 @@ private:
 class AliShuttleTrigger: public TObject {
 
 public:
-	AliShuttleTrigger(const AliShuttleConfig* config, UInt_t timeout = 5000, Int_t retries = 5);
+	AliShuttleTrigger(const AliShuttleConfig* config);
 	~AliShuttleTrigger();
 
 	AliShuttle* GetShuttle() {return fShuttle;}

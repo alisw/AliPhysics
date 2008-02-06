@@ -60,6 +60,8 @@ public:
 	Int_t GetMaxRetries() const { return fMaxRetries; }
 
 	Int_t GetPPTimeOut() const { return fPPTimeOut; }
+	Int_t GetDCSTimeOut() const { return fDCSTimeOut; }
+	Int_t GetDCSRetries() const { return fDCSRetries; }
 	Int_t GetPPMaxMem() const { return fPPMaxMem; }
 
 	Bool_t KeepDCSMap() const { return fKeepDCSMap; }
@@ -205,6 +207,8 @@ private:
 	Int_t fMaxRetries;        	// number of retries of a failed preprocessor
 	
 	Int_t fPPTimeOut;         	// timeout until a preprocessor is killed
+	Int_t fDCSTimeOut;         	// timeout until the query to DCS is terminated
+	Int_t fDCSRetries;         	// number of retries until the query to DCS connection is terminated
 	Int_t fPPMaxMem;          	// maximum allowed memory until a preprocessor is killed
 	
 	TString fMonitorHost;           // host of the MonaLisa monitoring server

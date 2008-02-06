@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id:$ */
+/* $Id$ */
 
 //
 // This class is the main manager for AliShuttle. 

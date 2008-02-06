@@ -537,6 +537,7 @@ AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 	fRunTypelbTable(""),
 	fMaxRetries(0), 
 	fPPTimeOut(0), 
+	fDCSTimeOut(0), 
 	fPPMaxMem(0), 
 	fMonitorHost(""), 
 	fMonitorTable(""), 
@@ -990,6 +991,22 @@ UInt_t AliShuttleConfig::SetGlobalConfig(TList* list)
 	tmpStr = anAttribute->GetValue();
 	fPPTimeOut = tmpStr.Atoi();
 
+	anAttribute = anEntry->GetAttribute("dcsTimeOut");
+	if (!anAttribute) {
+		AliError("Can't find dcsTimeOut attribute!");
+		return 4;
+	}
+	tmpStr = anAttribute->GetValue();
+	fDCSTimeOut = tmpStr.Atoi();
+
+	anAttribute = anEntry->GetAttribute("nDCSretries");
+	if (!anAttribute) {
+		AliError("Can't find dcsTimeOut attribute!");
+		return 4;
+	}
+	tmpStr = anAttribute->GetValue();
+	fDCSRetries = tmpStr.Atoi();
+
 	anAttribute = anEntry->GetAttribute("ppMaxMem");
 	if (!anAttribute) {
 		AliError("Can't find ppMaxMem attribute!");
@@ -1360,9 +1377,9 @@ void AliShuttleConfig::Print(Option_t* option) const
 		result += "\n";
 	}
 
-	result += Form("PP time out = %d - max PP mem size = %d KB - max retries = %d "
+	result += Form("PP time out = %d - DCS time out = %d - max PP mem size = %d KB - max retries = %d "
 		       "- DIM trigger waiting timeout = %d\n", 
-				fPPTimeOut, fPPMaxMem, fMaxRetries, fTriggerWait);
+				fPPTimeOut, fDCSTimeOut, fPPMaxMem, fMaxRetries, fTriggerWait);
 	result += Form("FLAGS: keepDCSMap = %d - keepTempFolder = %d - SendMail = %d \n", 
 				fKeepDCSMap, fKeepTempFolder, fSendMail);
 	const TObjArray* shuttleAdmins = GetAdmins(kGlobal);
