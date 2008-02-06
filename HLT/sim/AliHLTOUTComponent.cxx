@@ -105,8 +105,20 @@ int AliHLTOUTComponent::DoInit( int argc, const char** argv )
     argument=argv[i];
     if (argument.IsNull()) continue;
 
-    {
+    // -links
+    if (argument.CompareTo("-links")==0) {
+      if ((bMissingParam=(++i>=argc))) break;
+      TString parameter(argv[i]);
+      parameter.Remove(TString::kLeading, ' '); // remove all blanks
+      if (parameter.IsDigit()) {
+	fNofDDLs=parameter.Atoi();
+      } else {
+	HLTError("wrong parameter for argument %s, number expected", argument.Data());
+	iResult=-EINVAL;
+      }
+    } else {
       HLTError("unknown argument %s", argument.Data());
+      iResult=-EINVAL;
       break;
     }
   }
@@ -123,6 +135,7 @@ int AliHLTOUTComponent::DoInit( int argc, const char** argv )
     for (writerNo=0; writerNo<fNofDDLs; writerNo++) {
       AliHLTMonitoringWriter* pWriter=fpLibManager->OpenWriter();
       if (pWriter) {
+	HLTDebug("HOMER writer %p added", pWriter);
 	fWriters.push_back(pWriter);
       } else {
 	HLTError("can nor open HOMER writer");
@@ -148,6 +161,7 @@ int AliHLTOUTComponent::DoDeinit()
       assert(*element);
       // wanted to have a dynamic_cast<AliHLTHOMERWriter*> here, but this results into
       // undefined symbol when loading the library
+      (*element)->Clear();
       if (*element!=NULL) fpLibManager->DeleteWriter((AliHLTHOMERWriter*)(*element));
       element=fWriters.erase(element);
     }
@@ -163,7 +177,6 @@ int AliHLTOUTComponent::DumpEvent( const AliHLTComponentEventData& evtData,
   // see header file for class documentation
   int iResult=0;
   HLTInfo("write %d output blocks", evtData.fBlockCnt);
-  fWriters.clear();
   if (iResult>=0) {
     homer_uint64 homerHeader[kCount_64b_Words];
     HOMERBlockDescriptor homerDescriptor(homerHeader);
@@ -173,13 +186,19 @@ int AliHLTOUTComponent::DumpEvent( const AliHLTComponentEventData& evtData,
       homerDescriptor.SetType(reinterpret_cast<homer_uint64>(blocks[n].fDataType.fID));
       homerDescriptor.SetSubType1(reinterpret_cast<homer_uint64>(blocks[n].fDataType.fOrigin));
       homerDescriptor.SetSubType2(static_cast<homer_uint64>(blocks[n].fSpecification));
+      homerDescriptor.SetBlockSize(blocks[n].fSize);
       int writerNo=ShuffleWriters(fWriters, blocks[n].fSize);
       assert(writerNo>=0 && writerNo<fWriters.size());
-      fWriters[writerNo]->AddBlock(&homerDescriptor, blocks[n].fPtr);
+      // I'm puzzled by the different headers, buffers etc. used in the
+      // HOMER writer/data. In additional, there is no type check as there
+      // are void pointers used and names mixed.
+      // It seems that HOMERBlockDescriptor is just a tool to set the
+      // different fields in the homer header, which is an array of 64 bit
+      // words.
+      fWriters[writerNo]->AddBlock(homerHeader, blocks[n].fPtr);
     }
   }
 
-  HLTInfo("added blocks to HOMER writer");
   return iResult;
 }
 
@@ -188,7 +207,6 @@ int AliHLTOUTComponent::FillESD(int eventNo, AliRunLoader* runLoader, AliESDEven
   // see header file for class documentation
   int iResult=0;
   if (fWriters.size()==0) return 0;
-  HLTInfo("writing files");
   
   // search for the writer with the biggest data volume in order to allocate the
   // output buffer of sufficient size
@@ -196,11 +214,10 @@ int AliHLTOUTComponent::FillESD(int eventNo, AliRunLoader* runLoader, AliESDEven
   for (size_t i=0; i<fWriters.size(); i++) {
     assert(fWriters[i]);
     if (fWriters[i]) {
-      //TODO: sorted.size() can never ever ever be negative. Please check the logic.
-      if (/*sorted.size()>=0 &&*/ fWriters[i]->GetTotalMemorySize()>fWriters[sorted[0]]->GetTotalMemorySize()) {
-	sorted.insert(sorted.begin(), i);
-      } else {
+      if (sorted.size()==0 || fWriters[i]->GetTotalMemorySize()<=fWriters[sorted[0]]->GetTotalMemorySize()) {
 	sorted.push_back(i);
+      } else {
+	sorted.insert(sorted.begin(), i);
       }
     }
   }
@@ -214,6 +231,7 @@ int AliHLTOUTComponent::FillESD(int eventNo, AliRunLoader* runLoader, AliESDEven
       if (fWriteDigits) WriteDigits(eventNo, runLoader, *ddlno, pBuffer, bufferSize);
       if (fWriteRaw) WriteRawFile(eventNo, runLoader, *ddlno, pBuffer, bufferSize);
     }
+    fWriters[*ddlno]->Clear();
     ddlno++;
   }
   return iResult;
@@ -261,7 +279,7 @@ int AliHLTOUTComponent::FillOutputBuffer(int eventNo, AliHLTMonitoringWriter* pW
 
   // space for common data header
   bufferSize+=sizeof(AliRawDataHeader);
-  assert(sizeof(AliRawDataHeader)==24);
+  assert(sizeof(AliRawDataHeader)==32);
 
   // space for HLT event header
   bufferSize+=sizeof(AliHLTOUT::AliHLTOUTEventHeader);
@@ -291,6 +309,7 @@ int AliHLTOUTComponent::FillOutputBuffer(int eventNo, AliHLTMonitoringWriter* pW
     pCDH->fSize=sizeof(AliRawDataHeader)+pHLTH->fLength;
     
     pBuffer=&fBuffer[0];
+    iResult=(int)bufferSize;
   } else {
     pBuffer=NULL;
     iResult=-ENOMEM;
@@ -299,22 +318,22 @@ int AliHLTOUTComponent::FillOutputBuffer(int eventNo, AliHLTMonitoringWriter* pW
   return iResult;
 }
 
-//TODO: Please consider making bufferSize unsigned int and not just int.
-int AliHLTOUTComponent::WriteDigits(int /*eventNo*/, AliRunLoader* /*runLoader*/, int /*hltddl*/, const AliHLTUInt8_t* /*pBuffer*/, int /*bufferSize*/)
+int AliHLTOUTComponent::WriteDigits(int /*eventNo*/, AliRunLoader* /*runLoader*/, int /*hltddl*/, const AliHLTUInt8_t* /*pBuffer*/, unsigned int /*bufferSize*/)
 {
   // see header file for class documentation
   int iResult=0;
   return iResult;
 }
 
-//TODO: Please consider making bufferSize unsigned int and not just int.
-int AliHLTOUTComponent::WriteRawFile(int /*eventNo*/, AliRunLoader* /*runLoader*/, int hltddl, const AliHLTUInt8_t* pBuffer, int bufferSize)
+int AliHLTOUTComponent::WriteRawFile(int eventNo, AliRunLoader* /*runLoader*/, int hltddl, const AliHLTUInt8_t* pBuffer, unsigned int bufferSize)
 {
   // see header file for class documentation
   int iResult=0;
   const char* fileName=AliDAQ::DdlFileName("HLT", hltddl);
   assert(fileName!=NULL);
-  TString filePath(fileName);
+  TString filePath;
+  filePath.Form("raw%d/", eventNo);
+  filePath+=fileName;
   if (fileName) {
     ios::openmode filemode=(ios::openmode)0;
     ofstream rawfile(filePath.Data(), filemode);

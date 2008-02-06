@@ -32,6 +32,7 @@
 #include "AliRawReaderFile.h"
 #include "AliRawReaderDate.h"
 #include "AliRawReaderRoot.h"
+#include "AliESDEvent.h"
 
 #if ALIHLTSIMULATION_LIBRARY_VERSION != LIBHLTSIM_VERSION
 #error library version in header file and lib*.pkg do not match
@@ -175,12 +176,14 @@ int AliHLTSimulation::Run(AliRunLoader* pRunLoader)
 
   // Note: the rawreader is already placed at the first event
   if ((iResult=fpSystem->Reconstruct(1, pRunLoader, fpRawReader))>=0) {
+    fpSystem->FillESD(0, pRunLoader, NULL);
     for (int i=1; i<nEvents; i++) {
       if (fpRawReader && !fpRawReader->NextEvent()) {
 	AliError("missmatch in event count, rawreader corrupted");
 	break;
       }
       fpSystem->Reconstruct(1, pRunLoader, fpRawReader);
+      fpSystem->FillESD(i, pRunLoader, NULL);
     }
     // send specific 'event' to execute the stop sequence
     fpSystem->Reconstruct(0, NULL, NULL);

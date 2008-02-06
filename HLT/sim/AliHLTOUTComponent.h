@@ -29,7 +29,44 @@ typedef vector<AliHLTMonitoringWriter*> AliHLTMonitoringWriterPVector;
  * @class AliHLTOUTComponent
  * The HLTOUT data sink component which models the behavior of the HLTOUT
  * nodes of the HLT cluster.
- * @ingroup alihlt_component
+ * <h2>General properties:</h2>
+ *
+ * Component ID: \b HLTOUT <br>
+ * Library: \b libHLTrec.so     <br>
+ * Input Data Types: @ref kAliHLTAnyDataType <br>
+ * Output Data Types: none (offline data sink) <br>
+ *
+ * <h2>Mandatory arguments:</h2>
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formating -->
+ *
+ * <h2>Optional arguments:</h2>
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formating -->
+ * \li -links      <i> n   </i> <br>
+ *      number of output ddl links
+ *
+ * <h2>Configuration:</h2>
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formating -->
+ * none
+ *
+ * <h2>Default CDB entries:</h2>
+ * none
+ *
+ * <h2>Performance:</h2>
+ * The component does not any event data processing.
+ *
+ * <h2>Memory consumption:</h2>
+ * The component does not any event data processing.
+ *
+ * <h2>Output size:</h2>
+ * The component is an offline sink component and has no output data.
+ *
+ * The component can be used to write data in the same format as
+ * the HLTOUT on the real HLT. In case of AliRoot simulation, the
+ * component is automatically added to the chain if the specified
+ * chains have output data. By that means, the HLT output is added
+ * to the simulation.
+ *
+ * @ingroup alihlt_rec
  */
 class AliHLTOUTComponent : public AliHLTOfflineDataSink  {
  public:
@@ -105,7 +142,7 @@ class AliHLTOUTComponent : public AliHLTOfflineDataSink  {
    * @param size       size of the buffer
    * @return neg. error if failed
    */
-  int WriteDigits(int eventNo, AliRunLoader* runLoader, int hltddl, const AliHLTUInt8_t* pBuffer, int size);
+  int WriteDigits(int eventNo, AliRunLoader* runLoader, int hltddl, const AliHLTUInt8_t* pBuffer, unsigned int size);
 
   /**
    * Write the raw file for one DDL
@@ -116,7 +153,7 @@ class AliHLTOUTComponent : public AliHLTOfflineDataSink  {
    * @param size       size of the buffer
    * @return neg. error if failed
    */
-  int WriteRawFile(int eventNo, AliRunLoader* runLoader, int hltddl, const AliHLTUInt8_t* pBuffer, int size);
+  int WriteRawFile(int eventNo, AliRunLoader* runLoader, int hltddl, const AliHLTUInt8_t* pBuffer, unsigned int size);
 
   /** list of HOMER writers */
   AliHLTMonitoringWriterPVector fWriters; //!transient
