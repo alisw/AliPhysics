@@ -2436,7 +2436,7 @@ Bool_t AliITSInitGeometry::WriteVersionString(Char_t *str,Int_t length,
         i=0;n=0;
         do{
             cvslikedate[i] = cvsDate[i];
-            if(cvsDate[i++]=='-'){
+            if(cvsDate[i]=='+' || cvsDate[i++]=='-'){
                 n++; // count number of -
                 cvslikedate[i-1] = '/'; // replace -'s by /'s.
             } // end if
@@ -2552,4 +2552,3 @@ Bool_t AliITSInitGeometry::ReadVersionString(const Char_t *str,Int_t length,
     } // end switch
     return ok;
 }
-
