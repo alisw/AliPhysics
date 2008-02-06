@@ -128,6 +128,7 @@
 #include <TLorentzVector.h>
 #include <TArrayS.h>
 #include <TArrayD.h>
+#include <TObjArray.h>
 
 #include "AliReconstruction.h"
 #include "AliCodeTimer.h"
@@ -945,30 +946,83 @@ Bool_t AliReconstruction::Run(const char* input, Bool_t IsOnline)
 
     file->cd();
 
-    //Try to improve the reconstructed primary vertex position using the tracks
-    AliESDVertex *pvtx=0;
-    TObject* obj = fOptions.FindObject("ITS");
+    //
+    // Propagate track to the beam pipe  (if not laready done by ITS)
+    //
+    const Int_t ntracks = esd->GetNumberOfTracks();
+    const Double_t kBz = esd->GetMagneticField();
+    const Double_t kRadius  = 2.8; //something less than the beam pipe radius
+
+    TObjArray trkArray;
+    UShort_t *selectedIdx=new UShort_t[ntracks];
+
+    for (Int_t itrack=0; itrack<ntracks; itrack++){
+      const Double_t kMaxStep = 5;   //max step over the material
+      Bool_t ok;
+
+      AliESDtrack *track = esd->GetTrack(itrack);
+      if (!track) continue;
+
+      AliExternalTrackParam *tpcTrack =
+           (AliExternalTrackParam *)track->GetTPCInnerParam();
+      ok = AliTracker::
+           PropagateTrackTo(tpcTrack,kRadius,track->GetMass(),kMaxStep,kTRUE);
+      if (ok) {
+	Int_t n=trkArray.GetEntriesFast();
+        selectedIdx[n]=track->GetID();
+        trkArray.AddLast(tpcTrack);
+      }
+
+      if (track->GetX() < kRadius) continue;
+
+      ok = AliTracker::
+           PropagateTrackTo(track,kRadius,track->GetMass(),kMaxStep,kTRUE);
+      if (ok) {
+         track->RelateToVertex(esd->GetPrimaryVertexSPD(), kBz, kRadius);
+      }
+    }
+
+    //
+    // Improve the reconstructed primary vertex position using the tracks
+    //
+    TObject *obj = fOptions.FindObject("ITS");
     if (obj) {
       TString optITS = obj->GetTitle();
       if (optITS.Contains("cosmics") || optITS.Contains("COSMICS")) 
 	fRunVertexFinderTracks=kFALSE;
     }
-    if(fRunVertexFinderTracks) pvtx=tVertexer.FindPrimaryVertex(esd);
+    if (fRunVertexFinderTracks) {
+       // TPC + ITS primary vertex
+       AliESDVertex *pvtx=tVertexer.FindPrimaryVertex(esd);
+       if (pvtx) {
+          if (pvtx->GetStatus()) {
+             esd->SetPrimaryVertex(pvtx);
+             for (Int_t i=0; i<ntracks; i++) {
+	         AliESDtrack *t = esd->GetTrack(i);
+                 t->RelateToVertex(pvtx, kBz, kRadius);
+             } 
+          }
+       }
+
+       // TPC-only primary vertex
+       pvtx=tVertexer.FindPrimaryVertex(&trkArray,selectedIdx);
+       if (pvtx) {
+          if (pvtx->GetStatus()) {
+             esd->SetPrimaryVertexTPC(pvtx);
+             Int_t nsel=trkArray.GetEntriesFast();
+             for (Int_t i=0; i<nsel; i++) {
+	         AliExternalTrackParam *t = 
+                   (AliExternalTrackParam *)trkArray.UncheckedAt(i);
+                 t->PropagateToDCA(pvtx, kBz, kRadius);
+             } 
+          }
+       }
+
+    }
+    delete[] selectedIdx;
+
     if(fDiamondProfile) esd->SetDiamond(fDiamondProfile);
     
-    if (pvtx)
-    if (pvtx->GetStatus()) {
-       // Store the improved primary vertex
-       esd->SetPrimaryVertex(pvtx);
-       // Propagate the tracks to the DCA to the improved primary vertex
-       Double_t somethingbig = 777.;
-       Double_t bz = esd->GetMagneticField();
-       Int_t nt=esd->GetNumberOfTracks();
-       while (nt--) {
-	 AliESDtrack *t = esd->GetTrack(nt);
-         t->RelateToVertex(pvtx, bz, somethingbig);
-       } 
-    }
 
     if (fRunV0Finder) {
        // V0 finding
@@ -1562,21 +1616,6 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd)
 
   if (fRunQA && fRunGlobalQA) AliTracker::SetFillResiduals(kFALSE);     
 
-  //
-  // Propagate track to the vertex - if not done by ITS
-  //
-  Int_t ntracks = esd->GetNumberOfTracks();
-  for (Int_t itrack=0; itrack<ntracks; itrack++){
-    const Double_t kRadius  = 3;   // beam pipe radius
-    const Double_t kMaxStep = 5;   // max step
-    const Double_t kMaxD    = 123456;  // max distance to prim vertex
-    Double_t       fieldZ   = AliTracker::GetBz();  //
-    AliESDtrack * track = esd->GetTrack(itrack);
-    if (!track) continue;
-    if (track->IsOn(AliESDtrack::kITSrefit)) continue;
-   AliTracker::PropagateTrackTo(track,kRadius,track->GetMass(),kMaxStep,kTRUE);
-    track->RelateToVertex(esd->GetVertex(),fieldZ, kMaxD);
-  }
   eventNr++;
   return kTRUE;
 }
