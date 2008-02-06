@@ -29,14 +29,26 @@
 #include "AliPHOSEmcCalibData.h"
 #include "TFile.h"
 #include "TH1.h"
+#include "TF1.h"
+#include "TH2.h"
 #include "TMap.h"
 #include "TRandom.h"
 #include "TKey.h"
 #include "TList.h"
 #include "TObjString.h"
+#include "TObject.h"
+#include "TString.h"
+#include "TMath.h"
 #include "AliPHOSEmcBadChannelsMap.h"
 
 ClassImp(AliPHOSPreprocessor)
+
+  Double_t rgaus(Double_t *x, Double_t *par)
+{
+  Double_t gaus = par[0] * TMath::Exp( -(x[0]-par[1])*(x[0]-par[1]) /
+                                       (2*par[2]*par[2]) );
+  return gaus;
+}
 
 //_______________________________________________________________________________________
 AliPHOSPreprocessor::AliPHOSPreprocessor() :
@@ -102,7 +114,8 @@ UInt_t AliPHOSPreprocessor::Process(TMap* /*valueSet*/)
 
     Double_t coeff;
     char hnam[80];
-    TH1F* histo=0;
+    TH2F* h2=0;
+    TH1D* h1=0;
     
     //Get the reference histogram
     //(author: Gustavo Conesa Balbastre)
@@ -111,30 +124,37 @@ UInt_t AliPHOSPreprocessor::Process(TMap* /*valueSet*/)
     Int_t nkeys   = f.GetNkeys();
     Bool_t ok = kFALSE;
     TKey  *key;
-    TString refHistoName= "";
     Int_t ikey = 0;
     Int_t counter = 0;
-    TH1F* hRef = 0;
-    
+    TH1D* hRef = 0;
+
     //Check if the file contains any histogram
     
     if(nkeys< 2){
       Log(Form("Not enough histograms (%d) for calibration.",nkeys));
       return 1;
     }
-
+    
     while(!ok){
       ikey = gRandom->Integer(nkeys);
       key = (TKey*)keylist->At(ikey);
-      refHistoName = key->GetName();
-      hRef = (TH1F*)f.Get(refHistoName);
-      counter++;
-      // Check if the reference histogram has too little statistics
-      if(hRef->GetEntries()>2) ok=kTRUE;
-      if(!ok && counter >= nMod*nCol*nRow){
-	Log("No histogram with enough statistics for reference.");
-	return 1;
+      TObject* obj = f.Get(key->GetName());
+      TString cname(obj->ClassName());
+      if(cname == "TH2F") {
+	h2 = (TH2F*)obj;
+	TString htitl = h2->GetTitle();
+	if(htitl.Contains("and gain 1")) {
+	  hRef = h2->ProjectionX();
+	  hRef->SetBins(1000,0.,1000.); // to cut off saturation peak at 1023
+	  // Check if the reference histogram has too little statistics
+	  if(hRef->GetEntries()>2) ok=kTRUE;
+	  if(!ok && counter > nkeys){
+	    Log("No histogram with enough statistics for reference.");
+	    return 1;
+	  }
+	}
       }
+      counter++;
     }
     
     Log(Form("reference histogram %s, %.1f entries, mean=%.3f, rms=%.3f.",
@@ -148,11 +168,19 @@ UInt_t AliPHOSPreprocessor::Process(TMap* /*valueSet*/)
     for(Int_t mod=0; mod<nMod; mod++) {
       for(Int_t col=0; col<nCol; col++) {
 	for(Int_t row=0; row<nRow; row++) {
-	  sprintf(hnam,"mod%dcol%drow%d",mod,col,row);
-	  histo = (TH1F*)f.Get(hnam);
+
+	  //High Gain to Low Gain ratio
+	  Float_t ratio = HG2LG(mod,row,col,&f);
+	  calibData.SetHighLowRatioEmc(mod+1,col+1,row+1,ratio);
+	  
+	  sprintf(hnam,"%d_%d_%d_1",mod,row,col); // high gain!
+	  h2 = (TH2F*)f.Get(hnam);
+
 	  //TODO: dead channels exclusion!
-	  if(histo) {
-	    coeff = histo->GetMean()/refMean;
+	  if(h2) {
+	    h1 = h2->ProjectionX();
+	    h1->SetBins(1000,0.,1000.); // to cut off saturation peak at 1023
+	    coeff = h1->GetMean()/refMean;
 	    if(coeff>0)
 	      calibData.SetADCchannelEmc(mod+1,col+1,row+1,1./coeff);
 	    else 
@@ -240,5 +268,41 @@ Bool_t AliPHOSPreprocessor::ProcessLEDRun()
   //Bad channels data valid from current run fRun until updated (validityInfinite=kTRUE)
   Bool_t result = Store("Calib", "EmcBadChannels", &badMap, &badMapMetaData, fRun, kTRUE);
   return result;
+
+}
+
+Float_t AliPHOSPreprocessor::HG2LG(Int_t mod, Int_t X, Int_t Z, TFile* f)
+{
+  //Calculates High gain to Low gain ratio 
+  //for crystal at the position (X,Z) in the PHOS module mod.
+  
+  char hname[128];
+  sprintf(hname,"%d_%d_%d",mod,X,Z);
+
+  TH1F* h1 = (TH1F*)f->Get(hname);
+  if(!h1) return 16.;
+
+  if(!h1->GetEntries()) return 16.;
+  if(h1->GetMaximum()<10.) return 16.;
+
+  Double_t max = h1->GetBinCenter(h1->GetMaximumBin()); // peak
+  Double_t xmin = max - (h1->GetRMS()/3);
+  Double_t xmax = max + (h1->GetRMS()/2);
+  //       Double_t xmin = max - (h1->GetRMS());
+  //       Double_t xmax = max + (h1->GetRMS());
+
+  TF1* gaus1 = new TF1("gaus1",rgaus,xmin,xmax,3);
+  gaus1->SetParNames("Constant","Mean","Sigma");
+  gaus1->SetParameter("Constant",h1->GetMaximum());
+  gaus1->SetParameter("Mean",max);
+  gaus1->SetParameter("Sigma",1.);
+  gaus1->SetLineColor(kBlue);
+  h1->Fit(gaus1,"LERQ+");
+
+  Log(Form("\t%s: %d entries, mean=%.3f, peak=%.3f, rms= %.3f. HG/LG = %.3f\n",
+	   h1->GetTitle(),h1->GetEntries(),h1->GetMean(),max,h1->GetRMS(),
+	   gaus1->GetParameter("Mean"))); 
+
+  return gaus1->GetParameter("Mean");
 
 }

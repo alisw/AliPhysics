@@ -11,6 +11,7 @@
 
 
 #include "AliPreprocessor.h"
+#include "TFile.h"
 
 class AliPHOSPreprocessor : public AliPreprocessor {
 public:
@@ -22,6 +23,7 @@ protected:
 
   virtual UInt_t Process(TMap* valueSet);
   Bool_t ProcessLEDRun();
+  Float_t HG2LG(Int_t module, Int_t X, Int_t Z, TFile* f);
 
   ClassDef(AliPHOSPreprocessor,1);
 
