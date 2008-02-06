@@ -28,6 +28,7 @@ and save results in a file (named from RESULT_FILE define - see below).
 */
 
 #define RESULT_FILE "tpcCE.root"
+#define MAPPING_FILE "tpcMapping.root"
 
 
 #include <daqDA.h>
@@ -75,6 +76,28 @@ int main(int argc, char **argv) {
 
 
   int i,status;
+
+  /* copy locally the mapping file from daq detector config db */
+  status = daqDA_DB_getFile(MAPPING_FILE,"./tpcMapping.root");
+  if (status) {
+    printf("Failed to get mapping file (%s) from DAQdetDB, status=%d\n", MAPPING_FILE, status);
+    printf("Continue anyway ... maybe it works?\n");              // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    //return -1;   // temporarily uncommented for testing on pcald47 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  }
+
+  /* open the mapping file and retrieve mapping object */
+  AliTPCmapper *mapping = 0;   // The TPC mapping
+  TFile *fileMapping = new TFile(MAPPING_FILE, "read");
+  mapping = (AliTPCmapper*) fileMapping->Get("tpcMapping");
+  if (mapping == 0) {
+    printf("Failed to get mapping object from %s. Exiting ...\n", MAPPING_FILE);
+    delete fileMapping;
+    return -1;
+  } else {
+    printf("Got mapping object from %s\n", MAPPING_FILE);
+  }
+
+
   AliTPCCalibCE calibCE;   // pedestal and noise calibration
 
   if (argc<2) {
@@ -89,7 +112,7 @@ int main(int argc, char **argv) {
 
   /* set time bin range */
   calibCE.SetRangeTime(800,940);
-
+  calibCE.SetAltroMapping(mapping->GetAltroMapping()); // Use altro mapping we got from daqDetDb
 
   /* declare monitoring program */
   status=monitorDeclareMp( __FILE__ );

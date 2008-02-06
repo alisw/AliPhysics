@@ -23,6 +23,8 @@ class AliRawReader;
 class AliTPCRawStream;
 class AliTPCRawStreamFast;
 class TGraph;
+class AliTPCAltroMapping;
+
 struct eventHeaderStruct;
 
 class AliTPCCalibCE : public TObject {
@@ -45,6 +47,10 @@ public:
     Int_t Update(const Int_t isector, const Int_t iRow, const Int_t iPad,
 	       const Int_t iTimeBin, const Float_t signal);
     void Analyse();
+     //
+    AliTPCAltroMapping **GetAltroMapping() { return fMapping; };
+    void  SetAltroMapping(AliTPCAltroMapping **mapp) { fMapping = mapp; };
+
     //
     AliTPCCalROC* GetCalRocT0  (Int_t sector, Bool_t force=kFALSE);  // get calibration object - sector
     AliTPCCalROC* GetCalRocQ   (Int_t sector, Bool_t force=kFALSE);  // get calibration object - sector
@@ -124,6 +130,7 @@ private:
     Bool_t  fOldRCUformat;            //! Should we use the old RCU format for data reading
 
     AliTPCROC   *fROC;                //! ROC information
+    AliTPCAltroMapping **fMapping;    //! Altro Mapping object
     AliTPCParam *fParam;              //! TPC information
 
     AliTPCCalPad *fPedestalTPC;       //! Pedestal Information whole TPC

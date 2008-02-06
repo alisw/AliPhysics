@@ -216,6 +216,7 @@ AliTPCCalibPulser::AliTPCCalibPulser() :
     fLastSector(-1),
     fOldRCUformat(kTRUE),
     fROC(AliTPCROC::Instance()),
+    fMapping(NULL),
     fParam(new AliTPCParam),
     fPedestalTPC(0x0),
     fPadNoiseTPC(0x0),
@@ -269,6 +270,7 @@ AliTPCCalibPulser::AliTPCCalibPulser(const AliTPCCalibPulser &sig) :
     fLastSector(-1),
     fOldRCUformat(kTRUE),
     fROC(AliTPCROC::Instance()),
+    fMapping(NULL),
     fParam(new AliTPCParam),
     fPedestalTPC(0x0),
     fPadNoiseTPC(0x0),
@@ -715,7 +717,7 @@ Bool_t AliTPCCalibPulser::ProcessEventFast(AliRawReader *rawReader)
   //
   //  Event processing loop - AliRawReader
   //
-  AliTPCRawStreamFast *rawStreamFast = new AliTPCRawStreamFast(rawReader);
+  AliTPCRawStreamFast *rawStreamFast = new AliTPCRawStreamFast(rawReader, (AliAltroMapping**)fMapping);
   Bool_t res=ProcessEventFast(rawStreamFast);
   delete rawStreamFast;
   return res;
@@ -756,7 +758,7 @@ Bool_t AliTPCCalibPulser::ProcessEvent(AliRawReader *rawReader)
   //
 
 
-  AliTPCRawStream rawStream(rawReader);
+  AliTPCRawStream rawStream(rawReader, (AliAltroMapping**)fMapping);
 
   rawReader->Select("TPC");
 

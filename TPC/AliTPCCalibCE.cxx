@@ -311,6 +311,7 @@ AliTPCCalibCE::AliTPCCalibCE() :
     fLastSector(-1),
     fOldRCUformat(kTRUE),
     fROC(AliTPCROC::Instance()),
+    fMapping(NULL),
     fParam(new AliTPCParam),
     fPedestalTPC(0x0),
     fPadNoiseTPC(0x0),
@@ -377,6 +378,7 @@ AliTPCCalibCE::AliTPCCalibCE(const AliTPCCalibCE &sig) :
     fLastSector(-1),
     fOldRCUformat(kTRUE),
     fROC(AliTPCROC::Instance()),
+    fMapping(NULL),
     fParam(new AliTPCParam),
     fPedestalTPC(0x0),
     fPadNoiseTPC(0x0),
@@ -1076,7 +1078,7 @@ Bool_t AliTPCCalibCE::ProcessEventFast(AliRawReader *rawReader)
   }
   fEventId = *rawReader->GetEventId();
 
-  AliTPCRawStreamFast *rawStreamFast = new AliTPCRawStreamFast(rawReader);
+  AliTPCRawStreamFast *rawStreamFast = new AliTPCRawStreamFast(rawReader, (AliAltroMapping**)fMapping);
   Bool_t res=ProcessEventFast(rawStreamFast);
   delete rawStreamFast;
   return res;
@@ -1122,7 +1124,7 @@ Bool_t AliTPCCalibCE::ProcessEvent(AliRawReader *rawReader)
   //
 
 
-    AliTPCRawStream rawStream(rawReader);
+  AliTPCRawStream rawStream(rawReader,(AliAltroMapping**)fMapping);
     AliRawEventHeaderBase* eventHeader = (AliRawEventHeaderBase*)rawReader->GetEventHeader();
     if (eventHeader){
 	fTimeStamp   = eventHeader->Get("Timestamp");
