@@ -965,8 +965,10 @@ Bool_t AliReconstruction::Run(const char* input, Bool_t IsOnline)
 
       AliExternalTrackParam *tpcTrack =
            (AliExternalTrackParam *)track->GetTPCInnerParam();
-      ok = AliTracker::
-           PropagateTrackTo(tpcTrack,kRadius,track->GetMass(),kMaxStep,kTRUE);
+      ok = kFALSE;
+      if (tpcTrack)
+	ok = AliTracker::
+	  PropagateTrackTo(tpcTrack,kRadius,track->GetMass(),kMaxStep,kTRUE);
       if (ok) {
 	Int_t n=trkArray.GetEntriesFast();
         selectedIdx[n]=track->GetID();
