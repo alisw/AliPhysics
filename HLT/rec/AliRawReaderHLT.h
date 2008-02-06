@@ -19,9 +19,12 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
-#include "AliRawReader.h"
+#include "AliHLTDataTypes.h"
+#include "AliRawReader.h"      // RAW, base class
 #include "TString.h"
+#include <vector>
 
+class AliHLTOUT;
 /**
  * @class AliRawReaderHLT
  * Handler of HLTOUT data for AliRawReader input.
@@ -84,13 +87,52 @@ class AliRawReaderHLT : public AliRawReader {
   /** assignment operator prohibited */
   AliRawReaderHLT& operator=(const AliRawReaderHLT&);
 
+  /**
+   * Scan the options.
+   * Set the ids for the specified detectors in the detector
+   * list. Currently, no other options are available.
+   */
+  int ScanOptions(const char* options);
+
+  /**
+   * Read the next data block from the HLT stream
+   */
+  Bool_t ReadNextHLTData();
+
+  /**
+   * Check if a ddlid is part of the ones which are selected for
+   * input replacement.
+   */
+  Bool_t IsHLTInput(int ddlid);
+
   /** the rawreader */
   AliRawReader* fpParentReader; //!transient
 
   /** options */
   TString fOptions; //!transient
-  
-  ClassDef(AliRawReaderHLT, 0)
+
+  /** current data set, either extracted from the HLT stream or parent raw reader */
+  const AliHLTUInt8_t* fpData; // !transient
+
+  /** size of the current data set */
+  int fDataSize; // !transient
+
+  /** current stream offset in the data set */
+  int fOffset; // !transient
+
+  /** equipment id of the current data set, >0 indicates data set from HLT stream */
+  int fEquipmentId; // !transient
+
+  /** indicates the availibility of data from the HLT stream */
+  bool fbHaveHLTData; // !transient
+
+  /** list of detectors for which data will be taken from HLT stream */
+  vector<int> fDetectors; // !transient
+
+  /** instance of the HLTOUT handler */
+  AliHLTOUT* fpHLTOUT; // !transient
+
+  ClassDef(AliRawReaderHLT, 1)
 };
 
 #define ALIHLTREC_LIBRARY                   "libHLTrec.so"
