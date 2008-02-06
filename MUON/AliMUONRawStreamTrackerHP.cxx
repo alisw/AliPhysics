@@ -208,7 +208,7 @@ Bool_t AliMUONRawStreamTrackerHP::NextDDL()
 	}
 	
 #ifndef R__BYTESWAP
-	Swap(fBuffer, dataSize); // Swap needed for mac power pc.
+	Swap(reinterpret_cast<UInt_t*>fBuffer, dataSize / sizeof(UInt_t)); // Swap needed for mac power pc.
 #endif
 	
 	bool result = false;

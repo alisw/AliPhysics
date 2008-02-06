@@ -223,7 +223,7 @@ Bool_t AliMUONRawStreamTrigger::GetNextDDL()
   }
 
 #ifndef R__BYTESWAP  
-  swap(buffer, totalDataWord); // swap needed for mac power pc
+  Swap(buffer, totalDataWord / sizeof(UInt_t)); // swap needed for mac power pc
 #endif
 
   fPayload->ResetDDL();
@@ -354,8 +354,8 @@ Bool_t AliMUONRawStreamTrigger::NextDDL()
   // check not necessary yet, but for future developments
   if (!GetReader()->ReadNext((UChar_t*)buffer, totalDataWord)) return kFALSE; 
   
-#ifndef R__BYTESWAP  
-  swap(buffer, totalDataWord); // swap needed for mac power pc
+#ifndef R__BYTESWAP
+  Swap(buffer, totalDataWord / sizeof(UInt_t)); // swap needed for mac power pc
 #endif
 
   fPayload->Decode(buffer);

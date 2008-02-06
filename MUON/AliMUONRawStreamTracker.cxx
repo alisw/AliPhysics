@@ -227,7 +227,7 @@ AliMUONRawStreamTracker::GetNextDDL()
   fPayload->ResetDDL();
   
 #ifndef R__BYTESWAP  
-  swap(buffer, totalDataWord); // swap needed for mac power pc
+  Swap(buffer, totalDataWord / sizeof(UInt_t)); // swap needed for mac power pc
 #endif
 
   Bool_t ok = fPayload->Decode(buffer, totalDataWord/4);
@@ -393,7 +393,7 @@ Bool_t AliMUONRawStreamTracker::NextDDL()
   }
 
 #ifndef R__BYTESWAP  
-  swap(buffer, totalDataWord); // swap needed for mac power pc
+  Swap(buffer, totalDataWord / sizeof(UInt_t)); // swap needed for mac power pc
 #endif
   
   Bool_t ok = fPayload->Decode(buffer, totalDataWord/4);
