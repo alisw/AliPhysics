@@ -543,7 +543,7 @@ AliTPCCalibCE::~AliTPCCalibCE()
 
     if ( fDebugStreamer) delete fDebugStreamer;
 //    if ( fHTime0 ) delete fHTime0;
-    delete fROC;
+//    delete fROC;
     delete fParam;
 }
 //_____________________________________________________________________
@@ -755,7 +755,7 @@ void AliTPCCalibCE::FindLocalMaxima(TVectorF &maxima)
     //
     // Find local maxima on the pad signal and Histogram them
     //
-    Float_t ceThreshold = 5.*fPadNoise;  // threshold for the signal
+  Float_t ceThreshold = 5.*TMath::Max(fPadNoise,Float_t(1.));  // threshold for the signal
     Int_t   count       = 0;
     Int_t   tminus      = 2;
     Int_t   tplus       = 3;
@@ -781,8 +781,6 @@ void AliTPCCalibCE::ProcessPad()
                              // however if we are on a high noise pad a lot more peaks due to the noise might occur
     FindLocalMaxima(maxima);
     if ( (fNevents == 0) || (fOldRunNumber!=fRunNumber) ) return;  // return because we don't have Time0 info for the CE yet
-
-
 
     TVectorD param(3);
     Float_t  qSum;
@@ -1522,8 +1520,8 @@ void AliTPCCalibCE::Merge(AliTPCCalibCE *ce)
             arrPol2->Expand(fNevents+nCEevents);
 	}
 	if ( vMeanTimeCE && vMeanQCE ){
-	    vMeanTime = GetTMeanEvents(iSec);
-	    vMeanQCE  = GetQMeanEvents(iSec);
+	    vMeanTime = GetTMeanEvents(iSec,kTRUE);
+	    vMeanQ    = GetQMeanEvents(iSec,kTRUE);
 	    vMeanTime->ResizeTo(fNevents+nCEevents);
 	    vMeanQ->ResizeTo(fNevents+nCEevents);
 	}

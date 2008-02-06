@@ -189,6 +189,7 @@
 #include "AliTPCCalibPulser.h"
 #include "AliTPCcalibDB.h"
 #include "AliMathBase.h"
+#include "AliLog.h"
 #include "TTreeStream.h"
 
 //date
@@ -218,6 +219,7 @@ AliTPCCalibPulser::AliTPCCalibPulser() :
     fParam(new AliTPCParam),
     fPedestalTPC(0x0),
     fPadNoiseTPC(0x0),
+    fOutliers(0x0),
     fPedestalROC(0x0),
     fPadNoiseROC(0x0),
     fCalRocArrayT0(72),
@@ -270,6 +272,7 @@ AliTPCCalibPulser::AliTPCCalibPulser(const AliTPCCalibPulser &sig) :
     fParam(new AliTPCParam),
     fPedestalTPC(0x0),
     fPadNoiseTPC(0x0),
+    fOutliers(0x0),
     fPedestalROC(0x0),
     fPadNoiseROC(0x0),
     fCalRocArrayT0(72),
@@ -352,6 +355,17 @@ AliTPCCalibPulser::~AliTPCCalibPulser()
     // destructor
     //
 
+    Reset();
+
+    if ( fDebugStreamer) delete fDebugStreamer;
+    delete fROC;
+    delete fParam;
+}
+void AliTPCCalibPulser::Reset()
+{
+    //
+    // Delete all information: Arrays, Histograms, CalRoc objects
+    //
     fCalRocArrayT0.Delete();
     fCalRocArrayQ.Delete();
     fCalRocArrayRMS.Delete();
@@ -365,10 +379,6 @@ AliTPCCalibPulser::~AliTPCCalibPulser()
     fPadQArrayEvent.Delete();
     fPadRMSArrayEvent.Delete();
     fPadPedestalArrayEvent.Delete();
-
-    if ( fDebugStreamer) delete fDebugStreamer;
-    delete fROC;
-    delete fParam;
 }
 //_____________________________________________________________________
 Int_t AliTPCCalibPulser::Update(const Int_t icsector,
@@ -383,6 +393,11 @@ Int_t AliTPCCalibPulser::Update(const Int_t icsector,
     // assumes that it is looped over consecutive time bins of one pad
     //
     if ( (icTimeBin>fLastTimeBin) || (icTimeBin<fFirstTimeBin)   ) return 0;
+
+    if ( icRow<0 || icPad<0 ){
+	AliWarning("Wrong Pad or Row number, skipping!");
+	return 0;
+    }
 
     Int_t iChannel  = fROC->GetRowIndexes(icsector)[icRow]+icPad; //  global pad position in sector
 
@@ -467,6 +482,7 @@ void AliTPCCalibPulser::FindPedestal(Float_t part)
 	}
 	// truncated mean
 	//
+        // what if by chance histo[median] == 0 ?!?
 	Float_t count=histo[median] ,mean=histo[median]*median,  rms=histo[median]*median*median ;
 	//
 	for (Int_t idelta=1; idelta<10; ++idelta){
@@ -502,12 +518,18 @@ void AliTPCCalibPulser::FindPulserSignal(TVectorD &param, Float_t &qSum)
 
     Float_t ceQmax  =0, ceQsum=0, ceTime=0, ceRMS=0;
     Int_t   cemaxpos       = fMaxTimeBin;
-    Float_t ceSumThreshold = 8.*fPadNoise;  // threshold for the signal sum
+    Float_t ceSumThreshold = 10.*TMath::Max(fPadNoise,Float_t(1.));  // threshold for the signal sum
+    Float_t ceMaxThreshold = 5.*TMath::Max(fPadNoise,Float_t(1.));  // threshold for the signal max
     const Int_t    kCemin  = 2;             // range for the analysis of the ce signal +- channels from the peak
     const Int_t    kCemax  = 7;
+    param[0] = ceQmax;
+    param[1] = ceTime;
+    param[2] = ceRMS;
+    qSum     = ceQsum;
 
-    if (cemaxpos!=0){
-        ceQmax = fPadSignal.GetMatrixArray()[cemaxpos]-fPadPedestal;
+    if (cemaxpos>0){
+	ceQmax = fPadSignal.GetMatrixArray()[cemaxpos]-fPadPedestal;
+        if ( ceQmax<ceMaxThreshold ) return;
 	for (Int_t i=cemaxpos-kCemin; i<cemaxpos+kCemax; ++i){
             Float_t signal = fPadSignal.GetMatrixArray()[i]-fPadPedestal;
 	    if ( (i>fFirstTimeBin) && (i<fLastTimeBin) && (signal>0) ){
@@ -517,11 +539,19 @@ void AliTPCCalibPulser::FindPulserSignal(TVectorD &param, Float_t &qSum)
 	    }
 	}
     }
-    if (ceQmax&&ceQsum>ceSumThreshold) {
+    if (ceQsum>ceSumThreshold) {
 	ceTime/=ceQsum;
 	ceRMS  = TMath::Sqrt(TMath::Abs(ceRMS/ceQsum-ceTime*ceTime));
-	fVTime0Offset.GetMatrixArray()[fCurrentSector]+=ceTime;   // mean time for each sector
-	fVTime0OffsetCounter.GetMatrixArray()[fCurrentSector]++;
+        //only fill the Time0Offset if pad was not marked as an outlier!
+	if ( !fOutliers ){
+	    fVTime0Offset.GetMatrixArray()[fCurrentSector]+=ceTime;   // mean time for each sector
+	    fVTime0OffsetCounter.GetMatrixArray()[fCurrentSector]++;
+	} else {
+	    if ( !(fOutliers->GetCalROC(fCurrentSector)->GetValue(fCurrentChannel)) ){
+		fVTime0Offset.GetMatrixArray()[fCurrentSector]+=ceTime;   // mean time for each sector
+		fVTime0OffsetCounter.GetMatrixArray()[fCurrentSector]++;
+	    }
+	}
 
 	//Normalise Q to the pad area
 	Float_t norm = fParam->GetPadPitchWidth(fCurrentSector)*fParam->GetPadPitchLength(fCurrentSector,fCurrentRow);
@@ -552,6 +582,7 @@ void AliTPCCalibPulser::ProcessPad()
 
     Double_t meanT  = param[1];
     Double_t sigmaT = param[2];
+
 
     //Fill Event T0 counter
     (*GetPadTimesEvent(fCurrentSector,kTRUE)).GetMatrixArray()[fCurrentChannel] = meanT;
@@ -591,6 +622,7 @@ void AliTPCCalibPulser::EndEvent()
 	    Float_t time  = (*vTimes).GetMatrixArray()[iChannel];
 
             GetHistoT0(iSec,kTRUE)->Fill( time-time0,iChannel );
+            //GetHistoT0(iSec,kTRUE)->Fill( time,iChannel );
 
 
 	    //Debug start

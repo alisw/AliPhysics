@@ -29,6 +29,8 @@ public:
     AliTPCCalibPulser(const AliTPCCalibPulser &sig);
     virtual ~AliTPCCalibPulser();
 
+    void Reset();
+
     AliTPCCalibPulser& operator = (const  AliTPCCalibPulser &source);
 
     Bool_t ProcessEventFast(AliTPCRawStreamFast *rawStreamFast);
@@ -70,6 +72,7 @@ public:
     void  SetDebugLevel(Short_t debug=1){ fDebugLevel = debug;}
 
     void  SetPedestalDatabase(AliTPCCalPad *pedestalTPC, AliTPCCalPad *padNoiseTPC) {fPedestalTPC = pedestalTPC; fPadNoiseTPC = padNoiseTPC;}
+    void  SetOutliers(AliTPCCalPad *outliers)  {fOutliers = outliers;}
 
     Int_t GetFirstTimeBin()   const { return fFirstTimeBin;  }
     Int_t GetLastTimeBin()    const { return fLastTimeBin;   }
@@ -105,6 +108,7 @@ private:
 
     AliTPCCalPad *fPedestalTPC;       //! Pedestal Information
     AliTPCCalPad *fPadNoiseTPC;       //! Pad noise Information whole TPC
+    AliTPCCalPad *fOutliers;          //! Outlier information. Those will not be used for calculating the T0
     AliTPCCalROC *fPedestalROC;       //! Pedestal Information for current ROC
     AliTPCCalROC *fPadNoiseROC;       //! Pad noise Information for current ROC
 //    Bool_t fBpedestal;                //! are we running with pedestal substraction
