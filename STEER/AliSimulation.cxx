@@ -1252,7 +1252,7 @@ Bool_t AliSimulation::ConvertRawFilesToDate(const char* dateFileName,
 
   Int_t result = gSystem->ClosePipe(pipe);
 
-  if (!selrawdata && selEvents > 0) {
+  if (!(selrawdata && selEvents > 0)) {
     delete runLoader;
     return (result == 0);
   }
