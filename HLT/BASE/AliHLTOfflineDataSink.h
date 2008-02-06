@@ -46,14 +46,15 @@ class AliHLTOfflineDataSink
  public:
   /** standard constructor */
   AliHLTOfflineDataSink();
-  /** not a valid copy constructor, defined according to effective C++ style */
-  AliHLTOfflineDataSink(const AliHLTOfflineDataSink&);
-  /** not a valid assignment op, but defined according to effective C++ style */
-  AliHLTOfflineDataSink& operator=(const AliHLTOfflineDataSink&);
   /** destructor */
   virtual ~AliHLTOfflineDataSink();
 
  private:
+  /** copy constructor prohibited */
+  AliHLTOfflineDataSink(const AliHLTOfflineDataSink&);
+  /** assignment operator prohibited */
+  AliHLTOfflineDataSink& operator=(const AliHLTOfflineDataSink&);
+
   ClassDef(AliHLTOfflineDataSink, 1);
 };
 

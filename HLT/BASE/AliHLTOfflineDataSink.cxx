@@ -34,23 +34,7 @@ AliHLTOfflineDataSink::AliHLTOfflineDataSink()
   // refer to README to build package
   // or
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
-}
-
-AliHLTOfflineDataSink::AliHLTOfflineDataSink(const AliHLTOfflineDataSink&)
-   :
-   AliHLTDataSink(),
-   AliHLTOfflineInterface()
-{
-  // see header file for class documentation
-  HLTFatal("copy constructor untested");
   Register(this);
-}
-
-AliHLTOfflineDataSink& AliHLTOfflineDataSink::operator=(const AliHLTOfflineDataSink&)
-{ 
-  // see header file for class documentation
-  HLTFatal("assignment operator untested");
-  return *this;
 }
 
 AliHLTOfflineDataSink::~AliHLTOfflineDataSink()

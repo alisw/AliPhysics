@@ -45,10 +45,6 @@ class AliHLTOfflineDataSource
  public:
   /** standard constructor */
   AliHLTOfflineDataSource();
-  /** not a valid copy constructor, defined according to effective C++ style */
-  AliHLTOfflineDataSource(const AliHLTOfflineDataSource&);
-  /** not a valid assignment op, but defined according to effective C++ style */
-  AliHLTOfflineDataSource& operator=(const AliHLTOfflineDataSource&);
   /** destructor */
   virtual ~AliHLTOfflineDataSource();
 
@@ -60,6 +56,10 @@ class AliHLTOfflineDataSource
   }
 
  private:
+  /** copy constructor prohibited */
+  AliHLTOfflineDataSource(const AliHLTOfflineDataSource&);
+  /** assignment operator prohibited */
+  AliHLTOfflineDataSource& operator=(const AliHLTOfflineDataSource&);
  
   ClassDef(AliHLTOfflineDataSource, 1);
 };

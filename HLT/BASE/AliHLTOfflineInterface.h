@@ -53,10 +53,6 @@ class AliHLTOfflineInterface : public TObject {
    *  @param pRawReader   pointer to AliRoot raw reader
    */
   AliHLTOfflineInterface(AliRunLoader* pRunLoader, AliRawReader* pRawReader);
-  /** not a valid copy constructor, defined according to effective C++ style */
-  AliHLTOfflineInterface(const AliHLTOfflineInterface&);
-  /** not a valid assignment op, but defined according to effective C++ style */
-  AliHLTOfflineInterface& operator=(const AliHLTOfflineInterface&);
   /** destructor */
   virtual ~AliHLTOfflineInterface();
 
@@ -150,6 +146,11 @@ protected:
   static int Unregister(AliHLTOfflineInterface* me);
 
  private:
+  /** copy constructor prohibited */
+  AliHLTOfflineInterface(const AliHLTOfflineInterface&);
+  /** assignment operator prohibited */
+  AliHLTOfflineInterface& operator=(const AliHLTOfflineInterface&);
+
   /** global AliRoot run loader instance (for all components) */
   static AliRunLoader* fgpRunLoader;                              //! transient
   /** global AliRoot raw reader instance (for all components) */

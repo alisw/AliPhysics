@@ -57,25 +57,6 @@ AliHLTOfflineInterface::AliHLTOfflineInterface(AliRunLoader* pRunLoader, AliRawR
 {
 }
 
-AliHLTOfflineInterface::AliHLTOfflineInterface(const AliHLTOfflineInterface&)
-  :
-  TObject(),
-  fpRunLoader(NULL),
-  fpRawReader(NULL),
-  fpESD(NULL),
-  fpNext(NULL)
-{
-  // see header file for class documentation
-  //HLTFatal("copy constructor untested");
-}
-
-AliHLTOfflineInterface& AliHLTOfflineInterface::operator=(const AliHLTOfflineInterface&)
-{ 
-  // see header file for class documentation
-  //HLTFatal("assignment operator untested");
-  return *this;
-}
-
 AliHLTOfflineInterface::~AliHLTOfflineInterface()
 {
 }

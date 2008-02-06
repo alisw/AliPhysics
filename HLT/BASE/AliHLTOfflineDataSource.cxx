@@ -37,22 +37,6 @@ AliHLTOfflineDataSource::AliHLTOfflineDataSource()
   Register(this);
 }
 
-AliHLTOfflineDataSource::AliHLTOfflineDataSource(const AliHLTOfflineDataSource&)
-  :
-  AliHLTDataSource(),
-  AliHLTOfflineInterface()
-{
-  // see header file for class documentation
-  HLTFatal("copy constructor untested");
-}
-
-AliHLTOfflineDataSource& AliHLTOfflineDataSource::operator=(const AliHLTOfflineDataSource&)
-{ 
-  // see header file for class documentation
-  HLTFatal("assignment operator untested");
-  return *this;
-}
-
 AliHLTOfflineDataSource::~AliHLTOfflineDataSource()
 {
   // see header file for class documentation
