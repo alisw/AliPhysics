@@ -67,6 +67,8 @@ DICTINCLUDE			= AliHLTTPCSpacePointData.h \
 nodist_libAliHLTTPCDisplay_la_SOURCES  =  $(COMPILE_INFO) \
 				 	  $(DICTCPP)
 
+MODULE_DHDR			=
+
 EXTRA_DIST			= $(libAliHLTTPCDisplay_la_DATA)
 CLEANFILES			= $(COMPILE_INFO)
 
