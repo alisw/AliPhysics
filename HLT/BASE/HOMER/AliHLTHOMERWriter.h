@@ -85,8 +85,30 @@ class AliHLTHOMERWriter : public AliHLTMonitoringWriter
          */
 	void Clear();
 
-	void AddBlock( const void* descriptor, const void* data );
+        /**
+         * Add a data block to the writer.
+         * @param homerHeader    pointer to the header describing the block
+         */
+	void AddBlock( const void* homerHeader, const void* data );
+
+        /**
+         * Add a data block to the writer.
+         * The function has certainly been introduced to make type
+         * conversion easier. In fact it makes it worse. The presence of the
+         * function with void* argument leads to a wrong interpretation when
+         * passing a non const pointer to HOMERBlockDescriptor. Then the
+         * other function is called directly, leading to pointer mess up.
+         */
 	void AddBlock( const HOMERBlockDescriptor* descriptor, const void* data )
+		{
+		AddBlock( descriptor->GetHeader(), data );
+		}
+
+        /**
+         * Add a data block to the writer.
+         * Function added to avoid potential pointer mismatches
+         */
+	void AddBlock( HOMERBlockDescriptor* descriptor, const void* data )
 		{
 		AddBlock( descriptor->GetHeader(), data );
 		}
