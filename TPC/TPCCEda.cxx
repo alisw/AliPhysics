@@ -86,14 +86,6 @@ int main(int argc, char **argv) {
   int i,status;
   AliTPCmapper *mapping = 0;   // The TPC mapping
   // if  test setup get parameters from $DAQDA_TEST_DIR 
-  if (gSystem->Getenv("DAQDA_TEST_DIR")){
-    printf("Test setup\tGetting data from local storage\n");
-    char localname[1000];
-    sprintf(localname,"%s/%s",gSystem->Getenv("DAQDA_TEST_DIR"),MAPPING_FILE);
-    TFile *fileMapping = new TFile(localname,"read");
-    mapping = (AliTPCmapper*) fileMapping->Get("tpcMapping");
-    delete fileMapping;
-  }
   
   if (!mapping){
     /* copy locally the mapping file from daq detector config db */
