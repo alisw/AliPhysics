@@ -94,7 +94,7 @@ public:
 			      Bool_t selrawdata = kFALSE);
   virtual Bool_t WriteRawFiles(const char* detectors = "ALL");
   virtual Bool_t ConvertRawFilesToDate(const char* dateFileName = "raw.date",
-				       const char* dateFileName = "");
+				       const char* rootFileName = "");
   virtual Bool_t ConvertDateToRoot(const char* dateFileName = "raw.date",
 				   const char* rootFileName = "raw.root");
   virtual Bool_t ConvertRaw2SDigits(const char* rawDirectory, const char* esdFile = "");
