@@ -37,7 +37,7 @@
 extern ReadPar* sRPInstance;
 
 Event::Event(ParticleDB *aDB, Integrator* aInteg) :
-  mCurIter(NULL),
+  mCurIter(),
   mScanStarted(0)
 {
   mDB = aDB;
