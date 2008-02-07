@@ -214,6 +214,8 @@ AliFMDRawWriter::WriteDigits(TClonesArray* digits)
 		    det, ring, sector, strip));
       continue;
     }
+    preSamples = pars->GetPreSamples(det, ring, sector, strip);
+    
     AliFMDDebug(10, ("FMD%d%c[%2d,%3d]-> ddl: 0x%x addr: 0x%x", 
 		    det, ring, sector, strip, ddl, addr));
     if (addr != prevaddr) {

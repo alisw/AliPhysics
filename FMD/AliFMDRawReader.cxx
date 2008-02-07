@@ -111,10 +111,13 @@ AliFMDRawReader::ReadAdcs(TClonesArray* array)
   // Get sample rate 
   AliFMDParameters* pars = AliFMDParameters::Instance();
   AliFMDRawStream input(fReader);
+  AliFMDDebug(5, ("Setting old RCU format and 7 word headers"));
+  input.SetOldRCUFormat(!pars->HasRcuTrailer());
+  input.SetShortDataHeader(!pars->HasCompleteHeader());
 
   UShort_t stripMin = 0;
   UShort_t stripMax = 127;
-  UShort_t preSamp  = 0;
+  UShort_t preSamp  = 14+5;
   
   UInt_t ddl    = 0;
   UInt_t rate   = 0;
@@ -123,7 +126,9 @@ AliFMDRawReader::ReadAdcs(TClonesArray* array)
   // Data array is approx twice the size needed. 
   UShort_t data[2048];
 
-  while (input.ReadChannel(ddl, hwaddr, last, data)) {
+  Bool_t isGood = kTRUE;
+  while (isGood) {
+    isGood = input.ReadChannel(ddl, hwaddr, last, data);
 
     AliFMDDebug(5, ("Read channel 0x%x of size %d", hwaddr, last));
     UShort_t det, sec, str;
@@ -136,6 +141,7 @@ AliFMDRawReader::ReadAdcs(TClonesArray* array)
     rate     = pars->GetSampleRate(det, ring, sec, str);
     stripMin = pars->GetMinStrip(det, ring, sec, str);
     stripMax = pars->GetMaxStrip(det, ring, sec, str);
+    preSamp  = pars->GetPreSamples(det, ring, sec, str);
     AliFMDDebug(5, ("DDL 0x%04x, address 0x%03x maps to FMD%d%c[%2d,%3d]", 
 		       ddl, hwaddr, det, ring, sec, str));
     
@@ -143,10 +149,15 @@ AliFMDRawReader::ReadAdcs(TClonesArray* array)
     for (size_t i = 0; i < last; i++) {
       if (i < preSamp) continue;
       Int_t    n      = array->GetEntriesFast();
-      UShort_t curStr = str + stripMin + i / rate;
+      Short_t  curStr = str + stripMin + (i-preSamp) / rate;
       if ((curStr-str) > stripMax) {
-	AliError(Form("Current strip is %d but DB says max is %d", 
-		      curStr, stripMax));
+	// AliInfo(Form("timebin %4d -> (%3d+%3d+(%4d-%d)/%d) -> %d", 
+	//              i, str, stripMin, i, preSamp, rate, curStr));
+	// AliError(Form("Current strip is %3d (0x%04x,0x%03x,%4d) "
+	// 	         "but DB says max is %3d (rate=%d)", 
+	//	         curStr, ddl, hwaddr, i, str+stripMax, rate));
+	// Garbage timebins - ignore 
+	continue;
       }
       AliFMDDebug(5, ("making digit for FMD%d%c[%2d,%3d] from sample %4d", 
 		       det, ring, sec, curStr, i));

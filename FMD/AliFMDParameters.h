@@ -161,6 +161,14 @@ public:
       @param min Minimum strip number (0-127). 
       @param max Maximum strip number (0-127). */
   void SetStripRange(UShort_t min=0, UShort_t max=127);
+  /** Whether raw data is in the old ALTRO format (i.e., no RCU
+      trailer), or in the new format (with a trailer). 
+      @param yes if true the raw data has RCU trailer */ 
+  void UseRcuTrailer(Bool_t yes=kTRUE) { fHasRcuTrailer = yes; } 
+  /** Whether raw data has full common data header (8 32bit words) or
+      the older invalid format (7 32bit words with bogus entries)
+      @param yes if true the raw data has complete data header */ 
+  void UseCompleteHeader(Bool_t yes=kTRUE) { fHasCompleteHeader = yes; } 
   /** @} */
 
   /** @{ */
@@ -261,6 +269,16 @@ public:
 		       Char_t ring, 
 		       UShort_t sector, 
 		       UShort_t strip) const;
+  /** Get the number of pre-samples in ALTRO channels
+      @param detector Detector # (1-3)
+      @param ring     Ring ID ('I' or 'O')
+      @param sector   Sector number (0-39)
+      @param strip    Strip number (0-511)
+      @return Maximum strip */
+  UShort_t GetPreSamples(UShort_t, 
+			 Char_t, 
+			 UShort_t, 
+			 UShort_t) const { return 14+5; }
   /** Translate hardware address to detector coordinates 
       @param ddl      DDL number 
       @param board    Board address
@@ -314,6 +332,15 @@ public:
       @return Get the map that translates hardware to detector
       coordinates */ 
   AliFMDAltroMapping* GetAltroMap() const;
+  /** Whether raw data is in the old ALTRO format (i.e., no RCU
+      trailer), or in the new format (with a trailer). 
+      @return false if the raw data has no RCU trailer */ 
+  Bool_t HasRcuTrailer() const { return fHasRcuTrailer; } 
+  /** Whether raw data has full common data header (8 32bit words) or
+      the older invalid format (7 32bit words with bogus entries)
+      @return false if the raw data has incomplete data header */ 
+  Bool_t HasCompleteHeader() const { return fHasCompleteHeader; } 
+
   /** @} */
 
   static const char* PulseGainPath()       { return fgkPulseGain; }
@@ -344,6 +371,8 @@ protected:
       fFixedMaxStrip(o.fFixedMaxStrip),
       fFixedPulseGain(o.fFixedPulseGain),
       fEdepMip(o.fEdepMip),
+      fHasRcuTrailer(o.fHasRcuTrailer),
+      fHasCompleteHeader(o.fHasCompleteHeader),
       fZeroSuppression(o.fZeroSuppression),
       fSampleRate(o.fSampleRate),
       fPedestal(o.fPedestal),
@@ -406,6 +435,8 @@ protected:
   UShort_t        fFixedMaxStrip;        // Maximum strip read-out 
   mutable Float_t fFixedPulseGain;       //! Gain (cached)
   mutable Float_t fEdepMip;              //! Cache of energy loss for a MIP
+  Bool_t          fHasRcuTrailer;        // if the raw data has RCU trailer
+  Bool_t          fHasCompleteHeader;    // raw data has incomplete data header
   
   AliFMDCalibZeroSuppression* fZeroSuppression; // Zero suppression from CDB
   AliFMDCalibSampleRate*      fSampleRate;      // Sample rate from CDB 
