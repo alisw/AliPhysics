@@ -7,7 +7,7 @@ Link: http://richpc1.ba.infn.it/~levente/Files4Public/ValidateHmpidDA/
 Run Type: PEDESTAL -- but we select on the PHYSICS_EVENTS in th HMPIDda.cxx
 DA Type: LDC
 Number of events needed: 1000 events
-Input Files: Raw pedestal file, no external config file
+Input Files: Raw pedestal file, EXTERNAL config file: HmpidSigmaCut.txt on both HMPID LDCs
 Output Files: 14 txt files including pedestal values
 Trigger types used: PEDESTAL RUN (selecting on PHYSICS_EVENT)
 
@@ -29,17 +29,11 @@ extern "C" {
 #include "AliHMPIDCalib.h"
 #include "AliRawReaderDate.h"
 #include "AliBitPacking.h"
-#include "TMath.h"
 
 //ROOT
 #include "TFile.h"
-#include "TSystem.h"
-#include "TKey.h"
-#include "TH2S.h"
+#include "TROOT.h"
 #include "TObject.h"
-#include "TBenchmark.h"
-#include "TMath.h"
-#include "TRandom.h"
 
 
 int main(int argc, char **argv){ 
@@ -48,7 +42,13 @@ int main(int argc, char **argv){
 
   /* log start of process */
   printf("HMPID DA program started\n");  
-
+/*
+  gROOT->GetPluginManager()->AddHandler("TVirtualStreamerInfo",
+                                        "*",
+                                        "TStreamerInfo",
+                                        "RIO",
+                                        "TStreamerInfo()");
+  */
   /* check that we got some arguments = list of files */
   if (argc<2) {
     printf("Wrong number of arguments\n");
@@ -74,11 +74,18 @@ int main(int argc, char **argv){
 
   /* init the pedestal calculation */
   AliHMPIDCalib *pCal=new AliHMPIDCalib();
+  /* Set the number of sigma cuts inside the file HmpidSigmaCut.txt on BOTH LDCs! */
+  /* If the file is NOT present then the default cut 3 will be used!*/
+  pCal->SetSigCutFromFile("HmpidSigmaCut.txt");
+  /* ONLY set this option to kTRUE if you want to create the ADC dsitributions for all 161280 pads!!!!*/  
+  /* kTRUE is not suggested for production mode b/c of the memory consumption! */
+  pCal->SetWriteHistoPads(kFALSE);
   
   /* init event counter */
   Int_t iEvtNcal=0;
   ULong_t runNum=0;
-  
+  ULong_t ldcId=0;
+
   int n;
   for (n=1;n<argc;n++) {
 
@@ -126,27 +133,26 @@ int main(int argc, char **argv){
       if (eventT==PHYSICS_EVENT) {                                                //we use PHYSICS_EVENT for pedestal not CALIBRATION_EVENT
 	
         runNum=(unsigned long)event->eventRunNb;                                  //assuming that only one run is processed at a time
-             
-	iEvtNcal++;
+        ldcId=(unsigned long)event->eventLdcId;
+        if(iEvtNcal==0 && pCal->GetWritePads()==kTRUE) pCal->InitFile((Int_t)ldcId);
+        iEvtNcal++;
         
 	AliRawReader *reader = new AliRawReaderDate((void*)event);
 	AliHMPIDRawStream stream(reader);
-	
         while(stream.Next())
           {
              for(Int_t iPad=0;iPad<stream.GetNPads();iPad++) {
              pCal->FillPedestal(stream.GetPadArray()[iPad],stream.GetChargeArray()[iPad]);
-           }
-           
-           for(Int_t iddl=0;iddl<AliHMPIDRawStream::kNDDL;iddl++){                                         
-              for(Int_t ierr=0; ierr < AliHMPIDRawStream::kSumErr; ierr++) {
-                 pCal->FillErrors(iddl,ierr,stream.GetErrors(iddl,ierr));
+              } //pads
+          }//while     
+         for(Int_t iddl=0;iddl<stream.GetNDDL();iddl++){                                         
+           for(Int_t ierr=0; ierr < stream.GetNErrors(); ierr++) {
+               pCal->FillErrors(iddl,ierr,stream.GetErrors(iddl,ierr));
                }
-            }
+          }//err   
           
-        }//Next()    
+        pCal->SetRunParams(runNum,stream.GetTimeStamp(),stream.GetLDCNumber());   //Get the last TimeStam read and the LDC ID
         stream.Delete();            
-
       }// if CALIBRATION_EVENT
 
       /* exit when last event received, no need to wait for TERM signal */
@@ -162,7 +168,7 @@ int main(int argc, char **argv){
   }//arg
 
   /* write report */
-  printf("HMPID DA processed RUN #%s, with %d calibration events\n",getenv("DATE_RUN_NUMBER"),iEvtNcal);
+  printf("HMPID DA processed RUN #%s on LDC#%d, with %d calibration events\n",getenv("DATE_RUN_NUMBER"),ldcId,iEvtNcal);
 
   if (!iEvtNcal) {
     printf("No calibration events have been read. Exiting\n");
@@ -171,34 +177,33 @@ int main(int argc, char **argv){
 
   /* report progress */
   daqDA_progressReport(90);
-
-   
-  for(Int_t nDDL=0; nDDL < AliHMPIDCalib::kNDDL; nDDL++) {
+ 
+  for(Int_t nDDL=0; nDDL < AliHMPIDRawStream::kNDDL; nDDL++) {
     
     /* Calculate pedestal for the given ddl, if there is no ddl go t next */
-    if(!pCal->CalcPedestal(runNum,nDDL,Form("./HmpidPedDdl%02i.txt",nDDL),iEvtNcal)) continue;
-    if(!pCal->WriteErrors(runNum,nDDL,Form("./HmpidErrorsDdl%02i.txt",nDDL),iEvtNcal)) continue;
+    if(!pCal->CalcPedestal(nDDL,Form("./HmpidPedDdl%02i.txt",nDDL),iEvtNcal)) continue;
+    if(!pCal->WriteErrors(nDDL,Form("./HmpidErrorsDdl%02i.txt",nDDL),iEvtNcal)) continue;
     
     /* store the result file on FES */
-    /*
-    status=daqDA_FES_storeFile(Form("./HmpidPedDdl%02i.txt",nDDL),Form("HMPID_DA_Pedestals_ddl=%02i",nDDL));
-    if (status) {
-      printf("Failed to export file : %d\n",status);
-      return -1;
-    }
-    */
+   
     status=daqDA_FES_storeFile(Form("./HmpidPedDdl%02i.txt",nDDL),Form("HMPID_DA_Pedestals_ddl=%02i",nDDL));
     if (status) { printf("Failed to export file : %d\n",status); }
     status=daqDA_FES_storeFile(Form("./HmpidErrorsDdl%02i.txt",nDDL),Form("HMPID_DA_Errors_ddl=%02i",nDDL));
     if (status) { printf("Failed to export file : %d\n",status); }
     
   }//nDDL
-  delete pCal;
+
+  if(pCal->GetWritePads()==kTRUE) {
+      pCal->CloseFile((Int_t)ldcId);  
+      status=daqDA_FES_storeFile(Form("HmpidPadsOnLdc%2d.root",ldcId),Form("HMPID_PADS_ON_LDC=%2d",ldcId));
+    }
+  
+  delete pCal;  
   if (status) return -1;
   
   /* report progress */
   daqDA_progressReport(100);
   
-
+  
   return status;
 }

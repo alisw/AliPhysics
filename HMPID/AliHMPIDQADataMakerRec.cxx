@@ -90,21 +90,21 @@ void AliHMPIDQADataMakerRec::InitRaws()
 // Booking QA histo for Raw data
 //
   const Int_t nerr = (Int_t)AliHMPIDRawStream::kSumErr+1;
-  const char *hnames[nerr]={"RawDataSize","RawMarkerSize","WrongRow","WrongDilogic","WrongPad","EoEFlag",
-                             "EoESize","EoEDILOGIC","EoERow","BadSegWord","WrongSeg","RowMarkerSize","NoErrors","Invalid"};
   TH1F *hqPad[14], *hSumErr[14];
 
-  for(Int_t iddl =0; iddl<14; iddl++) {
-
-  hqPad[iddl] = new TH1F(Form("hqPadDDL%i",iddl), Form("Pad Q Entries at DDL %i",iddl), 500,0,5000);
-  Add2RawsList(hqPad[iddl],iddl);
-  hSumErr[iddl] = new TH1F(Form("SumErrDDL%i",iddl), Form("Error summary for ddl %i",iddl), 2*nerr,0,2*nerr);
-  hSumErr[iddl]->SetYTitle("%");
-  for(Int_t ilabel=0; ilabel< nerr; ilabel++) {
-  hSumErr[iddl]->GetXaxis()->CenterLabels(kTRUE);
-  hSumErr[iddl]->GetXaxis()->SetBinLabel((2*ilabel+1),Form("%i  %s",ilabel+1,hnames[ilabel]));
-  }
-  Add2RawsList(hSumErr[iddl],iddl+14);
+  for(Int_t iddl =0; iddl<AliHMPIDRawStream::kNDDL; iddl++) {
+    hqPad[iddl] = new TH1F(Form("hqPadDDL%i",iddl), Form("Pad Q Entries at DDL %i",iddl), 500,0,5000);
+    Add2RawsList(hqPad[iddl],iddl);
+    hSumErr[iddl] = new TH1F(Form("SumErrDDL%i",iddl), Form("Error summary for ddl %i",iddl), 2*nerr,0,2*nerr);
+    hSumErr[iddl]->SetYTitle("%");
+    
+    for(Int_t ilabel=0; ilabel< nerr; ilabel++) {
+      hSumErr[iddl]->GetXaxis()->CenterLabels(kTRUE);
+      //hSumErr[iddl]->GetXaxis()->SetBinLabel((2*ilabel+1),Form("%i  %s",ilabel+1,hnames[ilabel]));
+      hSumErr[iddl]->GetXaxis()->SetBinLabel((2*ilabel+1),Form("%i  %s",ilabel+1,AliHMPIDRawStream::GetErrName(ilabel)));
+      }
+      
+    Add2RawsList(hSumErr[iddl],iddl+14);
  }
   TH1F *hNevRaws = new TH1F("NevRaws","Events per DDL",15,0,15);
   Add2RawsList(hNevRaws,28);

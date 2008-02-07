@@ -36,6 +36,8 @@ AliHMPIDRawStream::AliHMPIDRawStream(AliRawReader* rawReader) :
   fCharge(0x0),
   fPad(0x0),
   fDDLNumber(-1),
+  fLDCNumber( 0),
+  fTimeStamp( 0),
   fRawReader(rawReader),
   fData(0x0),
   fNumOfErr(0x0),
@@ -43,10 +45,18 @@ AliHMPIDRawStream::AliHMPIDRawStream(AliRawReader* rawReader) :
   fWord(0),
   fZeroSup(kTRUE),
   fPos(0x0),
-  iPos(0)
+  fiPos(0)
 {
+  //
   // Constructor
-
+  //
+  fNumOfErr = new Int_t*[kNDDL];                                 // Store the numner of errors for a given error type and a given DD
+  for(Int_t i=0;i<kNDDL;i++) {
+    fNumOfErr[i] = new Int_t [kSumErr];
+  }
+  
+  for(Int_t iddl=0;iddl<kNDDL;iddl++) 
+    for(Int_t ierr=0; ierr < kSumErr; ierr++) fNumOfErr[iddl][ierr]=0;               //reset errors  
   fRawReader->Reset();
   fRawReader->Select("HMPID");
 }
@@ -56,21 +66,35 @@ AliHMPIDRawStream::AliHMPIDRawStream() :
   fCharge(0x0),
   fPad(0x0),
   fDDLNumber(-1),
+  fLDCNumber( 0),
+  fTimeStamp( 0),
   fRawReader(0x0),
   fData(0x0),
-  fNumOfErr(0x0),
+  fNumOfErr(0x0),  
   fPosition(-1),
   fWord(0),
   fZeroSup(kTRUE),
   fPos(0x0),
-  iPos(0)
+  fiPos(0) 
 {
+  //
+  // Constructor
+  //
+  fNumOfErr = new Int_t*[kNDDL];                                 // Store the numner of errors for a given error type and a given DD
+  for(Int_t i=0;i<kNDDL;i++) {
+    fNumOfErr[i] = new Int_t [kSumErr];
+  }
+  for(Int_t iddl=0;iddl<kNDDL;iddl++) 
+    for(Int_t ierr=0; ierr < kSumErr; ierr++) fNumOfErr[iddl][ierr]=0;               //reset errors  
+
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 AliHMPIDRawStream::~AliHMPIDRawStream()
 {
+  //
   // destructor
-    DelVars();
+  //
+  DelVars();
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDRawStream::Reset()
@@ -78,6 +102,8 @@ void AliHMPIDRawStream::Reset()
   // reset raw stream params
   // Reinitalize the containers
   fDDLNumber = -1;
+  fLDCNumber =  0;
+  fTimeStamp =  0;
   fPosition = -1;
   fData = NULL;
   if (fRawReader) fRawReader->Reset();
@@ -114,16 +140,16 @@ Bool_t AliHMPIDRawStream::Next()
 
   fPosition = 0;
   Bool_t status;
-          
+  Int_t  rawDataSize=0;        
   if(fRawReader->GetType() == 7)  {                             //New: Select Physics events, Old: Raw data size is not 0 and not 47148 (pedestal)
     fDDLNumber = fRawReader->GetDDLID();
-    if (fDDLNumber<0) {
-      AliWarning("Negative DDL number!");
-      return kFALSE;
-    }
+    fLDCNumber = fRawReader->GetLDCId();
+    fTimeStamp = fRawReader->GetTimestamp();
 
-    if(stDeb) Printf("DDL %i started to be decoded!.",fDDLNumber);
-    InitVars(fRawReader->GetDataSize()/4);
+    if(stDeb) Printf("DDL %i started to be decoded!",fDDLNumber); 
+    rawDataSize=fRawReader->GetDataSize()/4;
+    InitVars(rawDataSize);
+    
     status = ReadHMPIDRawData();
    
     if(stDeb) {
@@ -131,58 +157,60 @@ Bool_t AliHMPIDRawStream::Next()
       else Printf("Event DDL %i ERROR in decoding!.",fDDLNumber);
 //      DumpData(fRawReader->GetDataSize());
     }
-    DelVars();
 //    stDeb=kFALSE;
   }
 //  return status;
-  return kTRUE;
+    return kTRUE;
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDRawStream::InitVars(Int_t n)
 {
+  //
+  //
+  //
   fNPads = 0;
-  if (n>0) fCharge = new Int_t[n];
-  if (n>0) fPad = new Int_t[n];
-  fNumOfErr = new Int_t*[kNDDL];                                 // Store the numner of errors for a given error type and a given DD
-  for(Int_t i=0;i<kNDDL;i++) {
-    fNumOfErr[i] = new Int_t [kSumErr];
-    for (Int_t j=0; j<kSumErr; j++) fNumOfErr[i][j] = 0;
-  }
+  fCharge = new Int_t[n];
+  fPad = new Int_t[n];
   //for debug purpose
-  if (n>0) fPos = new Int_t[4*n];                     //reset debug
-  iPos = 0;
+  fPos = new Int_t[4*n+4];                     //reset debug
+  fiPos = 0;
 }    
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDRawStream::DelVars()
 {
+  //
+  //
+  // 
   fNPads = 0;
-  if (fCharge) {
-    delete [] fCharge;
-    fCharge = 0x0;
-  }
-  if (fPad) {
-    delete [] fPad;
-    fPad = 0x0;
-  }
-  if (fNumOfErr) {
-    for(Int_t i=0;i<kNDDL;i++) if(fNumOfErr[i]) delete [] fNumOfErr[i];
-    delete [] fNumOfErr;
-    fNumOfErr = 0x0;
-  }
-  if (fPos) {
-    delete [] fPos;
-    fPos = 0x0;
-  }
+  fDDLNumber=0;
+  fLDCNumber=0;
+  fTimeStamp=0;
+  fPosition=0;
+  fWord=0;
+  fZeroSup=0;
+  fiPos=0;
+  
+  if (fCharge)     { delete [] fCharge;    fCharge = 0x0;    }
+  if (fPad)        { delete [] fPad;       fPad = 0x0;       }   
+  if (fPos)        { delete [] fPos;       fPos = 0x0;       }     
+  for(Int_t i=0;i<kSumErr;i++) delete [] fNumOfErr[i]; 
+  delete [] fNumOfErr; 
+
+  
+      
 }    
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Bool_t AliHMPIDRawStream::ReadHMPIDRawData()
 {
   Int_t cntGlob = fRawReader->GetDataSize()/4;
+  if(cntGlob==0) {fNumOfErr[fDDLNumber][kRawDataSizeErr]++; return kFALSE; }
+  
   Int_t cnt = cntGlob;
   Int_t nwSeg;
   Int_t cntSegment;
 
-  fWord = GetWord(cnt);cnt--;
+  if(!GetWord(cnt)) return kFALSE;
+  cnt--;
 
   
   while (cnt>0) {
@@ -192,7 +220,7 @@ Bool_t AliHMPIDRawStream::ReadHMPIDRawData()
     if(!ReadSegment(cntSegment)) return kFALSE;
 
     if(nwSeg != cntSegment) {if(stDeb){Printf("Error in Segment counters: %i different wrt %i",nwSeg,cntSegment);} return kFALSE;}
-    fWord = GetWord(cntSegment+1,kBwd);
+    if(!GetWord(cntSegment+1,kBwd)) return kFALSE;
     cnt-=cntSegment+1;
   }
   
@@ -207,7 +235,7 @@ Bool_t AliHMPIDRawStream::ReadSegment(Int_t &cntSegment)
   Int_t cntRow;
   Int_t nwRow;
 
-  fWord = GetWord(cnt,kBwd);
+  if(!GetWord(cnt,kBwd)) return kFALSE;
   
   while (cnt>0) {
 
@@ -216,7 +244,7 @@ Bool_t AliHMPIDRawStream::ReadSegment(Int_t &cntSegment)
     if(!ReadRow(nwRow)) return kFALSE;
 
     if(nwRow != cntRow) {if(stDeb){Printf("Error in Row counters: %i different wrt %i",nwRow,cntRow);} return kFALSE;}
-    fWord = GetWord(cntRow+1);
+    if(!GetWord(cntRow+1)) return kFALSE;
     cnt -= cntRow+1;
     
   }
@@ -236,7 +264,7 @@ Bool_t AliHMPIDRawStream::ReadRow(Int_t &cntRow)
   cntRow  = (fWord >> kbit16) & 0xfff;
   cnt = cntRow;  
   
-  fWord = GetWord(cntRow);
+  if(!GetWord(cntRow)) return kFALSE;
   
   while (cnt>0) {
     
@@ -245,7 +273,7 @@ Bool_t AliHMPIDRawStream::ReadRow(Int_t &cntRow)
     
     if(nwDil != cntDilogic) {if(stDeb){Printf("Error in Dilogic counters: %i different wrt %i",nwDil,cntDilogic);}return kFALSE;}
     cnt -= cntDilogic;
-    fWord = GetWord(1,kBwd); // go to next Dilogic bank...
+    if(!GetWord(1,kBwd)) return kFALSE; // go to next Dilogic bank...
     cnt--;
 //    Printf(" cnt %i cntDilogic %i ",cnt,cntDilogic);
   }
@@ -266,7 +294,7 @@ Bool_t AliHMPIDRawStream::ReadDilogic(Int_t &cntDilogic)
 
   for(Int_t iDil=0;iDil<cntDilogic;iDil++) {
     UInt_t dilogic = 0, row = 0;
-    fWord = GetWord(1,kBwd);
+    if(!GetWord(1,kBwd)) return kFALSE;
 //check on row number      
     cnt--;
     row = (fWord >> kbit22) & 0x1f;
@@ -414,27 +442,34 @@ Bool_t AliHMPIDRawStream::CheckRowMarker()
   return kTRUE;
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-UInt_t AliHMPIDRawStream::GetWord(Int_t n,EDirection dir)
+Bool_t AliHMPIDRawStream::GetWord(Int_t n,EDirection dir)
 {
   // This method returns the n-th 32 bit word
   // inside the raw data payload.
   // The method is supposed to be endian (platform)
   // independent.
+  
+  fWord = 0;
   if (!fData || fPosition < 0) AliFatal("Raw data payload buffer is not yet initialized !");
-  
-  UInt_t word = 0;
-  
+
   if(dir==kBwd) n = -n; 
   fPosition+=4*n-4;
+
+  if(fPosition==-4) return kTRUE;
   
+  if(fPosition<0 || fPosition > fRawReader->GetDataSize()) {
+    if(stDeb) Printf("fPosition out of boundaries %i",fPosition);
+    return kFALSE;
+  }
+    
   StorePosition();
   
-  word |= fData[fPosition++];
-  word |= fData[fPosition++] << 8;
-  word |= fData[fPosition++] << 16;
-  word |= fData[fPosition++] << 24;
+  fWord |= fData[fPosition++];
+  fWord |= fData[fPosition++] << 8;
+  fWord |= fData[fPosition++] << 16;
+  fWord |= fData[fPosition++] << 24;
 
-  return word;
+  return kTRUE;
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDRawStream::DumpData(Int_t nw)
@@ -448,12 +483,13 @@ void AliHMPIDRawStream::DumpData(Int_t nw)
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDRawStream::StorePosition()
 {
+//  Printf("@@@@@@@@@ fPos: %x fPosition: %d",fPos,fPosition);
   if(fPos[fPosition]!=0) {
 //    Printf("Position already stored!!! Value %i at address %i",fPos[fPosition],fPosition); 
     return;
   }
-  iPos++;
-  fPos[fPosition] = iPos;
+  fiPos++;
+  fPos[fPosition] = fiPos;
 //  if(stDeb)Printf("%i - Actual position %i",iPos,fPosition); 
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
