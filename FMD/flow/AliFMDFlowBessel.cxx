@@ -49,7 +49,7 @@ namespace
     Int_t    nn = 0;
     for (UInt_t i = 0; i < 20; i++) { 
       nn = n1 - (n1 - n0) / (1. - f0 / f1);
-      if (fabs(nn - n1) < 1) break;
+      if (fabs(Double_t(nn - n1)) < 1) break;
       n0 = n1;
       f0 = f1;
       n1 = nn;
@@ -193,7 +193,7 @@ AliFMDFlowBessel::Ihalf(Int_t n, Double_t x, Double_t* bi, Double_t* di)
   // Double_t tdi[p*n/2+2];
   
   // Calculate I(-1/2) for n>0 or I(1/2) for n<0 
-  Double_t bim = sqrt(2) * (*c)(x) / sqrt(M_PI * x);
+  Double_t bim = sqrt(Double_t(2)) * (*c)(x) / sqrt(M_PI * x);
 
   // We calculate one more than n, that is we calculate 
   //   I(1/2), I(3/2),...,I(n/2+1) 

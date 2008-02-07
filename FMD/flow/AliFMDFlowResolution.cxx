@@ -107,7 +107,7 @@ AliFMDFlowResolution::Correction(UShort_t, Double_t& e2) const
   //  e2 The square error on the correction 
   // Returns <cos(n(psi - psi_R))>
   e2 = fSqVar / fN;
-  return sqrt(2) * sqrt(fabs(fAverage));
+  return sqrt(Double_t(2)) * sqrt(fabs(fAverage));
 }
 
 //____________________________________________________________________
@@ -120,7 +120,7 @@ AliFMDFlowResolution::Draw(Option_t* option)
   TGraph* g = new TGraph(100);
   for (UShort_t i = 0; i < g->GetN(); i++) { 
     Double_t x = -1. + 2. / 100 * i;
-    Double_t y = sqrt(2) * sqrt(fabs(x));
+    Double_t y = sqrt(Double_t(2)) * sqrt(fabs(x));
     g->SetPoint(i, x, y);
   }
   g->SetName("naive_res");
@@ -151,7 +151,7 @@ AliFMDFlowResolutionStar::Correction(UShort_t k, Double_t& e2) const
   Double_t delta = 0;
   Double_t chi   = Chi(fAverage, k, delta);
   Double_t dr    = 0;
-  Double_t res   = Res(sqrt(2) * chi, k, dr);
+  Double_t res   = Res(sqrt(Double_t(2)) * chi, k, dr);
   e2             = pow(dr * delta,2);
   return res;
 }
@@ -226,7 +226,7 @@ AliFMDFlowResolutionStar::Res(Double_t chi, UShort_t k, Double_t& dr) const
   //            2   
   // 
   Double_t y  = chi * chi / 4;
-  Double_t c  = sqrt(M_PI) * exp(-y) / (2 * sqrt(2));   
+  Double_t c  = sqrt(M_PI) * exp(-y) / (2 * sqrt(Double_t(2)));   
   
   // i[0] = I[(k-1)/2-1], i[1] = I[(k-1)/2], i[2] = I[(k-1)/2+1]
   Double_t i[3], di[3];
@@ -273,7 +273,7 @@ AliFMDFlowResolutionStar::Draw(Option_t* option)
       if (chi) y  = c;
       else { 
 	Double_t dr = 0;
-	y           = Res(sqrt(2) * c, k, dr);
+	y           = Res(sqrt(Double_t(2)) * c, k, dr);
 	e2          = pow(dr * e2,2);
       }
       g->SetPoint(i, x, y);
