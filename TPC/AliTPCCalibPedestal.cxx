@@ -336,7 +336,10 @@ Int_t AliTPCCalibPedestal::Update(const Int_t icsector, /*FOLD00*/
   //
   // Signal filling method
   //
-
+  if (icRow<0) return 0;
+  if (icPad<0) return 0;
+  if (icTimeBin<0) return 0;
+ 
   // Time dependent pedestals
   if ( fTimeAnalysis ) {
     if ( icsector < 36 ) // IROC

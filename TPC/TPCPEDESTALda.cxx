@@ -32,7 +32,7 @@ and save results in a file (named from RESULT_FILE define - see below).
 
 #define RESULT_FILE  "tpcPedestal.root"
 #define MAPPING_FILE "tpcMapping.root"
-
+#define AliDebugLevel() -1
 
 extern "C" {
 #include <daqDA.h>
@@ -64,6 +64,8 @@ extern "C" {
 #include "AliTPCCalPad.h"
 #include "AliMathBase.h"
 #include "TTreeStream.h"
+#include "AliLog.h"
+#include "TSystem.h"
 
 //
 // TPC calibration algorithm includes
@@ -79,6 +81,12 @@ int main(int argc, char **argv) {
   //
   // Main for TPC pedestal detector algorithm
   //
+
+  AliLog::SetClassDebugLevel("AliTPCRawStream",AliLog::kFatal);
+  AliLog::SetClassDebugLevel("AliRawReaderDate",AliLog::kFatal);
+  AliLog::SetClassDebugLevel("AliTPCAltroMapping",AliLog::kFatal);
+  AliLog::SetModuleDebugLevel("TPC",AliLog::kFatal);
+  AliLog::SetModuleDebugLevel("RAW",AliLog::kFatal);
 
   Bool_t timeAnalysis = kTRUE;
 
@@ -105,22 +113,35 @@ int main(int argc, char **argv) {
     return -1;
   }
 
-  /* copy locally the mapping file from daq detector config db */
-  status = daqDA_DB_getFile(MAPPING_FILE,"./tpcMapping.root");
-  if (status) {
-    printf("Failed to get mapping file (%s) from DAQdetDB, status=%d\n", MAPPING_FILE, status);
-    printf("Continue anyway ... maybe it works?\n");              // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    //return -1;   // temporarily uncommented for testing on pcald47 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  AliTPCmapper *mapping = 0;   // The TPC mapping
+  // if  test setup get parameters from $DAQDA_TEST_DIR 
+  if (gSystem->Getenv("DAQDA_TEST_DIR")){
+    printf("Test setup\tGetting data from local storage\n");
+    char localname[1000];
+    sprintf(localname,"%s/%s",gSystem->Getenv("DAQDA_TEST_DIR"),MAPPING_FILE);
+    TFile *fileMapping = new TFile(localname,"read");
+    mapping = (AliTPCmapper*) fileMapping->Get("tpcMapping");
+    delete fileMapping;
+  }
+  
+  if (!mapping){
+    /* copy locally the mapping file from daq detector config db */
+    status = daqDA_DB_getFile(MAPPING_FILE,"./tpcMapping.root");
+    if (status) {
+      printf("Failed to get mapping file (%s) from DAQdetDB, status=%d\n", MAPPING_FILE, status);
+      printf("Continue anyway ... maybe it works?\n");              // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      return -1;   // temporarily uncommented for testing on pcald47 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    }
+
+    /* open the mapping file and retrieve mapping object */
+    TFile *fileMapping = new TFile(MAPPING_FILE, "read");
+    mapping = (AliTPCmapper*) fileMapping->Get("tpcMapping");
+    delete fileMapping;
   }
 
-  /* open the mapping file and retrieve mapping object */
-  AliTPCmapper *mapping = 0;   // The TPC mapping
-  TFile *fileMapping = new TFile(MAPPING_FILE, "read");
-  mapping = (AliTPCmapper*) fileMapping->Get("tpcMapping");
   if (mapping == 0) {
-    printf("Failed to get mapping object from %s. Exiting ...\n", MAPPING_FILE);
-    delete fileMapping;
-    return -1;
+    printf("Failed to get mapping object from %s.  ...\n", MAPPING_FILE);
+    //return -1;
   } else {
     printf("Got mapping object from %s\n", MAPPING_FILE);
   }
@@ -128,8 +149,9 @@ int main(int argc, char **argv) {
   AliTPCCalibPedestal calibPedestal;                         // pedestal and noise calibration
   calibPedestal.SetRangeTime(60,940);                        // set time bin range
   calibPedestal.SetTimeAnalysis(timeAnalysis);               // pedestal(t) calibration
-  calibPedestal.SetAltroMapping(mapping->GetAltroMapping()); // Use altro mapping we got from daqDetDb
-
+  if (mapping){
+    calibPedestal.SetAltroMapping(mapping->GetAltroMapping()); // Use altro mapping we got from daqDetDb
+  }
   /* loop over RAW data files */
   int nevents=0;
   for ( i=1; i<argc; i++ ) {
@@ -139,7 +161,6 @@ int main(int argc, char **argv) {
     status=monitorSetDataSource( argv[i] );
     if (status!=0) {
       printf("monitorSetDataSource() failed. Error=%s. Exiting ...\n", monitorDecodeError(status));
-      delete fileMapping;
       return -1;
     }
 
@@ -173,8 +194,8 @@ int main(int argc, char **argv) {
 
       //  Pedestal calibration
       AliRawReader *rawReader = new AliRawReaderDate((void*)event);
-      //calibPedestal.ProcessEvent(rawReader);
-      calibPedestal.ProcessEventFast(rawReader);   // fast data reader
+      calibPedestal.ProcessEvent(rawReader);
+      //calibPedestal.ProcessEventFast(rawReader);   // fast data reader
       delete rawReader;
 
       /* free resources */
@@ -284,7 +305,6 @@ int main(int argc, char **argv) {
   pedmemfile.close();
   printf("Wrote ASCII files.\n");
 
-  delete fileMapping;
 
   return status;
 }

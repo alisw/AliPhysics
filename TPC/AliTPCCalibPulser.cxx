@@ -394,6 +394,10 @@ Int_t AliTPCCalibPulser::Update(const Int_t icsector,
     // no extra analysis necessary. Assumes knowledge of the signal shape!
     // assumes that it is looped over consecutive time bins of one pad
     //
+
+   if (icRow<0) return 0;
+   if (icPad<0) return 0;
+   if (icTimeBin<0) return 0;
     if ( (icTimeBin>fLastTimeBin) || (icTimeBin<fFirstTimeBin)   ) return 0;
 
     if ( icRow<0 || icPad<0 ){

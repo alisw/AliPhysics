@@ -29,6 +29,7 @@ and save results in a file (named from RESULT_FILE define - see below).
 
 #define RESULT_FILE "tpcPulser.root"
 #define MAPPING_FILE "tpcMapping.root"
+#define AliDebugLevel() -1
 
 
 #include <daqDA.h>
@@ -55,7 +56,8 @@ and save results in a file (named from RESULT_FILE define - see below).
 #include "AliTPCCalPad.h"
 #include "AliMathBase.h"
 #include "TTreeStream.h"
-#include "TTreeStream.h"
+#include "AliLog.h"
+#include "TSystem.h"
 
 //
 // TPC calibration algorithm includes
@@ -69,6 +71,11 @@ and save results in a file (named from RESULT_FILE define - see below).
       Arguments: list of DATE raw data files
 */
 int main(int argc, char **argv) {
+  AliLog::SetClassDebugLevel("AliTPCRawStream",AliLog::kFatal);
+  AliLog::SetClassDebugLevel("AliRawReaderDate",AliLog::kFatal);
+  AliLog::SetClassDebugLevel("AliTPCAltroMapping",AliLog::kFatal);
+  AliLog::SetModuleDebugLevel("TPC",AliLog::kFatal);
+  AliLog::SetModuleDebugLevel("RAW",AliLog::kFatal);
 
  gROOT->GetPluginManager()->AddHandler("TVirtualStreamerInfo",
                                          "*",
@@ -78,27 +85,38 @@ int main(int argc, char **argv) {
 
 
   int i,status;
+  AliTPCmapper *mapping = 0;   // The TPC mapping
+  // if  test setup get parameters from $DAQDA_TEST_DIR 
+  if (gSystem->Getenv("DAQDA_TEST_DIR")){
+    printf("Test setup\tGetting data from local storage\n");
+    char localname[1000];
+    sprintf(localname,"%s/%s",gSystem->Getenv("DAQDA_TEST_DIR"),MAPPING_FILE);
+    TFile *fileMapping = new TFile(localname,"read");
+    mapping = (AliTPCmapper*) fileMapping->Get("tpcMapping");
+    delete fileMapping;
+  }
+  
+  if (!mapping){
+    /* copy locally the mapping file from daq detector config db */
+    status = daqDA_DB_getFile(MAPPING_FILE,"./tpcMapping.root");
+    if (status) {
+      printf("Failed to get mapping file (%s) from DAQdetDB, status=%d\n", MAPPING_FILE, status);
+      printf("Continue anyway ... maybe it works?\n");              // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      return -1;   // temporarily uncommented for testing on pcald47 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    }
 
-  /* copy locally the mapping file from daq detector config db */
-  status = daqDA_DB_getFile(MAPPING_FILE,"./tpcMapping.root");
-  if (status) {
-    printf("Failed to get mapping file (%s) from DAQdetDB, status=%d\n", MAPPING_FILE, status);
-    printf("Continue anyway ... maybe it works?\n");              // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    //return -1;   // temporarily uncommented for testing on pcald47 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    /* open the mapping file and retrieve mapping object */
+    TFile *fileMapping = new TFile(MAPPING_FILE, "read");
+    mapping = (AliTPCmapper*) fileMapping->Get("tpcMapping");
+    delete fileMapping;
   }
 
-  /* open the mapping file and retrieve mapping object */
-  AliTPCmapper *mapping = 0;   // The TPC mapping
-  TFile *fileMapping = new TFile(MAPPING_FILE, "read");
-  mapping = (AliTPCmapper*) fileMapping->Get("tpcMapping");
   if (mapping == 0) {
-    printf("Failed to get mapping object from %s. Exiting ...\n", MAPPING_FILE);
-    delete fileMapping;
-    return -1;
+    printf("Failed to get mapping object from %s.  ...\n", MAPPING_FILE);
+    //return -1;
   } else {
     printf("Got mapping object from %s\n", MAPPING_FILE);
   }
-
 
 
   AliTPCCalibPulser calibPulser;   // pedestal and noise calibration
