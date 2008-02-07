@@ -1,5 +1,5 @@
 /**************************************************************************
- * Copyright(c) 2004, ALICE Experiment at CERN, All rights reserved. *
+ * Copyright(c) 2004, ALICE Experiment at CERN, All rights reserved.      *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
  * Contributors are mentioned in the code where appropriate.              *
@@ -40,19 +40,21 @@
 //_____________________________________________________________________
 
 ClassImp(AliFMDQADataMakerSim)
-           
+#if 0
+; // This line is for Emacs - do not delete!
+#endif
 //_____________________________________________________________________
-AliFMDQADataMakerSim::AliFMDQADataMakerSim() : 
-AliQADataMakerSim(AliQA::GetDetName(AliQA::kFMD),
-		  "FMD Quality Assurance Data Maker")
+AliFMDQADataMakerSim::AliFMDQADataMakerSim() 
+  :  AliQADataMakerSim(AliQA::GetDetName(AliQA::kFMD),
+		       "FMD Quality Assurance Data Maker")
 {
   // ctor
   
 }
 
 //_____________________________________________________________________
-AliFMDQADataMakerSim::AliFMDQADataMakerSim(const AliFMDQADataMakerSim& qadm) :
-  AliQADataMakerSim()
+AliFMDQADataMakerSim::AliFMDQADataMakerSim(const AliFMDQADataMakerSim& qadm) 
+  : AliQADataMakerSim()
 {
   //copy ctor 
   // Parameters: 
@@ -61,11 +63,15 @@ AliFMDQADataMakerSim::AliFMDQADataMakerSim(const AliFMDQADataMakerSim& qadm) :
 }
 
 //_____________________________________________________________________
-void AliFMDQADataMakerSim::EndOfDetectorCycle(AliQA::TASKINDEX task, TObjArray * list)
+void AliFMDQADataMakerSim::EndOfDetectorCycle(AliQA::TASKINDEX task, 
+					      TObjArray * list)
 {
   //Detector specific actions at end of cycle
   // do the QA checking
-  AliLog::Message(5,"FMD: end of detector cycle","AliFMDQADataMakerSim","AliFMDQADataMakerSim","AliFMDQADataMakerSim::EndOfDetectorCycle","AliFMDQADataMakerSim.cxx",83);
+  AliLog::Message(5,"FMD: end of detector cycle",
+		  "AliFMDQADataMakerSim","AliFMDQADataMakerSim",
+		  "AliFMDQADataMakerSim::EndOfDetectorCycle",
+		  "AliFMDQADataMakerSim.cxx",83);
   AliQAChecker::Instance()->Run(AliQA::kFMD, task, list) ;  
   
 }
@@ -74,7 +80,7 @@ void AliFMDQADataMakerSim::EndOfDetectorCycle(AliQA::TASKINDEX task, TObjArray *
 void AliFMDQADataMakerSim::InitHits()
 {
   // create Digits histograms in Digits subdir
-  TH1F* hEnergyOfHits    = new TH1F("hEnergyOfHits","Energy distribution",100,0,3);
+  TH1F* hEnergyOfHits = new TH1F("hEnergyOfHits","Energy distribution",100,0,3);
   hEnergyOfHits->SetXTitle("Edep");
   hEnergyOfHits->SetYTitle("Counts");
   Add2HitsList(hEnergyOfHits, 0);
@@ -85,14 +91,8 @@ void AliFMDQADataMakerSim::InitDigits()
 {
   // create Digits histograms in Digits subdir
   TH1I* hADCCounts = new TH1I("hADCCounts","Dist of ADC counts",1024,0,1024);
-  //TH1F* hEnergyOfDigits    = new TH1F("hEnergyOfDigits","Energy distribution",100,0,3);
   hADCCounts->SetXTitle("ADC counts");
-  //hADCCounts->SetYTitle("Counts");
-  //hEnergyOfDigits->SetXTitle("Edep/Emip");
-  //hEnergyOfDigits->SetYTitle("Counts");
   Add2DigitsList(hADCCounts, 0);
-  //Add2DigitsList(hEnergyOfDigits, 1);
-  
 }
 
 //_____________________________________________________________________

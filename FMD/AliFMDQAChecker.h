@@ -5,20 +5,21 @@
  *
  * See cxx source for full Copyright notice                               
  */
-
+#include "AliQACheckerBase.h"
 class TFile; 
 class TH1F; 
 class TH1I; 
 
-#include "AliQACheckerBase.h"
-
+/** @class AliFMDQAChecker 
+    @brief Quality assurance checker for the FMD */
 class AliFMDQAChecker : public AliQACheckerBase 
 {
 public:
+  /** Constructor */
   AliFMDQAChecker() 
     : AliQACheckerBase("FMD","FMD Quality Assurance Checker") 
   {}          
- 
+  /** Destructor */
   virtual ~AliFMDQAChecker() {}
 
 private:

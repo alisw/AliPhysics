@@ -1,51 +1,56 @@
-void MakeFMDFullMisAlignment(){
+void MakeFMDFullMisAlignment()
+{
   // Create TClonesArray of full misalignment objects for FMD
-  //
   const char* macroname = "MakeFMDFullMisAlignment.C";
 
   // Activate CDB storage and load geometry from CDB
   AliCDBManager* cdb = AliCDBManager::Instance();
   if(!cdb->IsDefaultStorageSet()) cdb->SetDefaultStorage("local://$ALICE_ROOT");
   cdb->SetRun(0);
+
+  Bool_t  toCdb   = TString(gSystem->Getenv("TOCDB")) == TString("kTRUE");
+  TString storage = gSystem->Getenv("STORAGE");
   
-  TString Storage;
-  
-  if( TString(gSystem->Getenv("TOCDB")) == TString("kTRUE") ){
-    Storage = gSystem->Getenv("STORAGE");
-    if(!Storage.BeginsWith("local://") && !Storage.BeginsWith("alien://")) {
-      Error(macroname,"STORAGE variable set to %s is not valid. Exiting\n",Storage.Data());
+  if(toCdb) {
+    if(!storage.BeginsWith("local://") && 
+       !storage.BeginsWith("alien://")) {
+      Error(macroname,"STORAGE=\"%s\" is not valid. Exiting\n", storage.Data());
       return;
     }
-    AliCDBStorage* storage = cdb->GetStorage(Storage.Data());
-    if(!storage){
-      Error(macroname,"Unable to open storage %s\n",Storage.Data());
+
+    AliCDBStorage* store = cdb->GetStorage(storage.Data());
+    if(!store){
+      Error(macroname,"Unable to open storage %s\n", storage.Data());
       return;
     }
-    AliCDBPath path("GRP","Geometry","Data");
-    AliCDBEntry *entry = storage->Get(path.GetPath(),cdb->GetRun());
+
+    AliCDBPath   path("GRP","Geometry","Data");
+    AliCDBEntry* entry = storage->Get(path.GetPath(),cdb->GetRun());
     if(!entry) Fatal(macroname,"Could not get the specified CDB entry!");
+
     entry->SetOwner(0);
-    TGeoManager* geom = (TGeoManager*) entry->GetObject();
+    TGeoManager* geom = static_cast<TGeoManager*>(entry->GetObject());
     AliGeomManager::SetGeometry(geom);
-  }else{
-    AliGeomManager::LoadGeometry(); //load geom from default CDB storage
-  }    
+  }else
+    //load geom from default CDB storage
+    AliGeomManager::LoadGeometry(); 
   
   gSystem->Load("libFMDutil.so");
-  if( TString(gSystem->Getenv("TOCDB")) != TString("kTRUE") ){
-    // save on file
-    AliFMDAlignFaker faker(AliFMDAlignFaker::kAll, "geometry.root","FMDfullMisalignment.root");
-  }else{
-    // save in CDB storage
-    AliFMDAlignFaker faker(AliFMDAlignFaker::kAll, "geometry.root", Storage.Data());
-  }
+  AliFMDAlignFaker* faker = (toCdb ? 
+			     // save on file
+			     new AliFMDAlignFaker(AliFMDAlignFaker::kAll, 
+						  "geometry.root",
+						  "FMDfullMisalignment.root") :
+			     // save in CDB storage
+			     new AliFMDAlignFaker(AliFMDAlignFaker::kAll, 
+						  "geometry.root", 
+						  storage.Data()));
 
-  // fRunMax should be changed in the constructor
-
-  faker.SetSensorDisplacement(-0.005, -0.005, -0.005, 0.005, 0.005, 0.005);
-  faker.SetSensorRotation(-0.5, -0.5, -0.5, 0.5, 0.5, 0.5);
-  faker.SetHalfDisplacement(-0.25, -0.25, -0.25, 0.25, 0.25, 0.25);
-  faker.SetHalfRotation(-0.5, -0.5, -0.5, 0.5, 0.5, 0.5);
-  faker.Exec();
-
+  // Displacements and rotations
+  faker->SetSensorDisplacement(-0.005, -0.005, -0.005, 0.005, 0.005, 0.005);
+  faker->SetSensorRotation(-0.5, -0.5, -0.5, 0.5, 0.5, 0.5);
+  faker->SetHalfDisplacement(-0.25, -0.25, -0.25, 0.25, 0.25, 0.25);
+  faker->SetHalfRotation(-0.5, -0.5, -0.5, 0.5, 0.5, 0.5);
+  faker->Exec();
+  delete faker;
 }

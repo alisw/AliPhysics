@@ -18,14 +18,13 @@ class TList;
 // Author : Hans Hjersing Dalsgaard, hans.dalsgaard@cern.ch
 //_____________________________________________________________________
 
-class AliFMDQADataMakerRec: public AliQADataMakerRec {
-
- public:
+class AliFMDQADataMakerRec: public AliQADataMakerRec 
+{
+public:
   AliFMDQADataMakerRec();
-  AliFMDQADataMakerRec(const AliFMDQADataMakerRec& qadm) ;   
+  AliFMDQADataMakerRec(const AliFMDQADataMakerRec& qadm);   
   virtual ~AliFMDQADataMakerRec() {}
-  
- private:
+private:
   virtual void   EndOfDetectorCycle(AliQA::TASKINDEX, TObjArray * list);
   virtual void   InitESDs(); 
   virtual void   InitDigits(); 
@@ -40,7 +39,7 @@ class AliFMDQADataMakerRec: public AliQADataMakerRec {
 
   ClassDef(AliFMDQADataMakerRec,0)  // description 
 
-    };
+};
 
 #endif // AliFMDQADataMakerRec_H
 //____________________________________________________________________

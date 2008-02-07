@@ -56,10 +56,10 @@ AliFMDQADataMakerRec::AliFMDQADataMakerRec() :
 }
 
 //_____________________________________________________________________
-AliFMDQADataMakerRec::AliFMDQADataMakerRec(const AliFMDQADataMakerRec& qadm) :
-  AliQADataMakerRec()
+AliFMDQADataMakerRec::AliFMDQADataMakerRec(const AliFMDQADataMakerRec& qadm) 
+  : AliQADataMakerRec()
 {
-  //copy ctor 
+  // copy ctor 
   // Parameters: 
   //    qadm    Object to copy from
   
@@ -74,7 +74,10 @@ AliFMDQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX task,
 {
   // Detector specific actions at end of cycle
   // do the QA checking
-  AliLog::Message(5,"FMD: end of detector cycle","AliFMDQADataMakerRec","AliFMDQADataMakerRec","AliFMDQADataMakerRec::EndOfDetectorCycle","AliFMDQADataMakerRec.cxx",95);
+  AliLog::Message(5,"FMD: end of detector cycle",
+		  "AliFMDQADataMakerRec","AliFMDQADataMakerRec",
+		  "AliFMDQADataMakerRec::EndOfDetectorCycle",
+		  "AliFMDQADataMakerRec.cxx",95);
   AliQAChecker::Instance()->Run(AliQA::kFMD, task, list);
 }
 
@@ -95,14 +98,9 @@ void AliFMDQADataMakerRec::InitDigits()
   // create Digits histograms in Digits subdir
   TH1I* hADCCounts      = new TH1I("hADCCounts","Dist of ADC counts",
 				   1024,0,1024);
-  // TH1F* hEnergyOfDigits = new TH1F("hEnergyOfDigits", "Energy distribution",
-  // 100,0,3);
   hADCCounts->SetXTitle("ADC counts");
   hADCCounts->SetYTitle("");
-  // hEnergyOfDigits->SetXTitle("Edep/Emip");
-  // hEnergyOfDigits->SetYTitle("Counts");
   Add2DigitsList(hADCCounts, 0);
-  // Add2DigitsList(hEnergyOfDigits, 1);
   
 }
 
@@ -154,8 +152,8 @@ void AliFMDQADataMakerRec::MakeDigits(TClonesArray * digits)
 {
   // makes data from Digits  
   if(!digits)  {
-      AliError("FMD Digit object not found!!") ;
-      return;
+    AliError("FMD Digit object not found!!") ;
+    return;
   }
   for(Int_t i=0;i<digits->GetEntries();i++) {
     //Raw ADC counts
@@ -168,16 +166,16 @@ void AliFMDQADataMakerRec::MakeDigits(TClonesArray * digits)
 void AliFMDQADataMakerRec::MakeDigits(TTree * digitTree)
 {
   
-  TClonesArray* digits = new TClonesArray("AliFMDDigit", 1000) ; 
-  TBranch*      branch = digitTree->GetBranch("FMD") ;
-  if (!branch ) {
+  TClonesArray* digits = new TClonesArray("AliFMDDigit", 1000); 
+  TBranch*      branch = digitTree->GetBranch("FMD");
+  if (!branch) {
     AliWarning("FMD branch in Digit Tree not found") ; 
     return;
   } 
   
-  branch->SetAddress(&digits) ;
-  branch->GetEntry(0) ; 
-  MakeDigits(digits) ; 
+  branch->SetAddress(&digits);
+  branch->GetEntry(0); 
+  MakeDigits(digits); 
 }
 
 //_____________________________________________________________________
@@ -196,7 +194,7 @@ void AliFMDQADataMakerRec::MakeRecPoints(TTree* clustersTree)
     return;
   }
   
-  TClonesArray * fmdrecpoints = new TClonesArray("AliFMDRecPoint", 1000) ;
+  TClonesArray * fmdrecpoints = new TClonesArray("AliFMDRecPoint", 1000);
   fmdbranch->SetAddress(&fmdrecpoints);
   fmdbranch->GetEntry(0);
     
