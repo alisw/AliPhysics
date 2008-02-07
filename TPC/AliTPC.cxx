@@ -100,7 +100,8 @@ ClassImp(AliTPC)
 		   fNoiseDepth(0),
 		   fNoiseTable(0),
 		   fCurrentNoise(0),
-		   fActiveSectors(0)
+		   fActiveSectors(0),
+                   fGainFactor(1.)
                    
 
 {
@@ -133,7 +134,8 @@ AliTPC::AliTPC(const char *name, const char *title)
 		   fNoiseDepth(0),
 		   fNoiseTable(0),
 		   fCurrentNoise(0),
-                   fActiveSectors(0)
+                   fActiveSectors(0),
+                   fGainFactor(1.)
                   
 {
   //
@@ -1796,6 +1798,7 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
   AliTPCcalibDB* const calib=AliTPCcalibDB::Instance();
 
   Float_t gasgain = fTPCParam->GetGasGain();
+  gasgain = gasgain/fGainFactor;
   Int_t i;
   Float_t xyz[5]; 
 

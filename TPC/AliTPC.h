@@ -96,6 +96,8 @@ public:
    void    SetActiveSectors(Int_t flag=1); //loop over al hits and set active only hitted sectors
    Bool_t  TrackInVolume(Int_t id,Int_t track);  //return true if current track is in volume
    void    SetPrimaryIonisation(Bool_t flag = kTRUE) {fPrimaryIonisation = flag;}
+   void    SetGainFactor(Float_t gain){fGainFactor=gain;} //gas gain scaling factor
+   Float_t GetGainFactor()const {return fGainFactor;}//gas gain scaling factor
 // static functions
    static AliTPCParam* LoadTPCParam(TFile *file); 
 protected:
@@ -136,9 +138,9 @@ protected:
   Float_t *  fNoiseTable;  //! table with noise
   Int_t      fCurrentNoise; //! index of the noise in  the noise table 
   Bool_t*    fActiveSectors; //! bool indicating which sectors are active
- 
+  Float_t    fGainFactor; // scaling factor
 
-  ClassDef(AliTPC,12)  // Time Projection Chamber class
+  ClassDef(AliTPC,13)  // Time Projection Chamber class
 };
 
 
