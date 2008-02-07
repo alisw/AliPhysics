@@ -46,6 +46,10 @@
 #pragma link C++ class AliTPCClusterParam+;
 #pragma link C++ class AliTPCTracklet+;
 #pragma link C++ class AliTPCQADataMakerRec+;
+#pragma link C++ class AliTPCvtpr+;
+#pragma link C++ class AliPadMax+;
+#pragma link C++ class AliTPCclusterKr+;
+#pragma link C++ class AliTPCclustererKr+;
 
 #endif
 
