@@ -59,6 +59,24 @@ static bool DumpCDH(AliRawDataHeader *cdh)
 }
 
 //______________________________________________________________________________
+static bool CheckCDH(AliRawDataHeader *cdhRef,AliRawDataHeader *cdh)
+{
+  // Check the consistency of the CDHs
+  // ...
+  if ((cdhRef->GetEventID1() != cdh->GetEventID1()) ||
+      (cdhRef->GetVersion() != cdh->GetVersion()) ||
+      (cdhRef->GetEventID2() != cdh->GetEventID2()) ||
+      (cdhRef->GetMiniEventID() != cdh->GetMiniEventID()) ||
+      (cdhRef->GetTriggerClasses() != cdh->GetTriggerClasses())) {
+    cout << "CDH mismatch detected:" << endl;
+    DumpCDH(cdhRef);
+    DumpCDH(cdh);
+    return false;
+  }
+  return true;
+}
+
+//______________________________________________________________________________
 static bool DumpEvent(const char *progname, AliRawEvent *rawEvent)
 {
   // Dumps and checks one
@@ -72,6 +90,8 @@ static bool DumpEvent(const char *progname, AliRawEvent *rawEvent)
 
   cout << "  *********** Event header ***********" << endl;
   rawEventHeader->Print();
+
+  AliRawDataHeader *cdhRef = NULL;
 
   for(Int_t iSubEvent=0; iSubEvent < rawEvent->GetNSubEvents(); iSubEvent++) {
     AliRawEvent *rawSubEvent = rawEvent->GetSubEvent(iSubEvent);
@@ -88,6 +108,13 @@ static bool DumpEvent(const char *progname, AliRawEvent *rawEvent)
       AliRawData *rawData = rawEquip->GetRawData();
       AliRawDataHeader *cdh = (AliRawDataHeader*)rawData->GetBuffer();
       if (!DumpCDH(cdh)) return false;
+      // check the CDH consistency
+      if (cdhRef == NULL) {
+	cdhRef = cdh;
+      }
+      else {
+	if (!CheckCDH(cdhRef,cdh)) return false;
+      }
     }
   }
 
