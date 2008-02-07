@@ -51,7 +51,8 @@
 #include "AliLoader.h"
 #include "AliRunDigitizer.h"
 #include "AliMC.h"
-#include "AliRun.h"	
+#include "AliRun.h"
+#include "AliRawDataHeaderSim.h"
 #include "AliMUON.h"
 #include "AliMUONChamberTrigger.h"
 #include "AliMUONConstants.h"
@@ -482,6 +483,8 @@ void AliMUON::Digits2Raw()
 {
 /// Convert digits of the current event to raw data
 
+  AliRawDataHeaderSim header;
+
   if (!fRawWriter)
   {
     fRawWriter = new AliMUONRawWriter;
@@ -510,6 +513,7 @@ void AliMUON::Digits2Raw()
   
   treeD->GetEvent(0);
   
+  fRawWriter->SetHeader(header);
   if (!fRawWriter->Digits2Raw(digitStore,triggerStore))
   {
     AliError("pb writting raw data");

@@ -12,7 +12,6 @@
 //  Author Christian Finck and Laurent Aphecetche, Subatech
 
 #include <TObject.h>
-#include "AliRawDataHeaderSim.h"
 #include "AliFstream.h"
 
 class AliMUONBlockHeader;
@@ -27,6 +26,7 @@ class AliMUONVDigitStore;
 class AliMUONVTriggerStore;
 class AliMpDDLStore;
 class AliMpExMap;
+class AliRawDataHeaderSim;
 
 class AliMUONRawWriter : public TObject 
 {
@@ -38,6 +38,9 @@ class AliMUONRawWriter : public TObject
   Int_t Digits2Raw(AliMUONVDigitStore* digitStore, AliMUONVTriggerStore* triggerStore);
   
   void SetScalersNumbers();
+
+  /// Set the header of DDL
+  void SetHeader(AliRawDataHeaderSim& header) {fHeader = &header;}
 
 private:
 
@@ -70,12 +73,12 @@ private:
 
   Bool_t fScalerEvent;               ///< flag to generates scaler event
 
-  AliRawDataHeaderSim    fHeader;           ///< header of DDL
+  AliRawDataHeaderSim*    fHeader;           ///< header of DDL
   
   Int_t fBufferSize; //!< size of internal data buffer
   Int_t* fBuffer; //!< internal data buffer
 
-  ClassDef(AliMUONRawWriter,4) // MUON cluster reconstructor in ALICE
+  ClassDef(AliMUONRawWriter,5) // MUON cluster reconstructor in ALICE
 };
 	
 #endif

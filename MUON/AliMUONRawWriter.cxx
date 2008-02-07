@@ -77,6 +77,7 @@
 #include "AliMpVSegmentation.h"
 
 #include "AliRawReader.h"
+#include "AliRawDataHeaderSim.h"
 #include "AliBitPacking.h" 
 #include "AliDAQ.h"
 #include "AliLog.h"
@@ -99,7 +100,7 @@ AliMUONRawWriter::AliMUONRawWriter()
     fLocalStruct(new AliMUONLocalStruct()),
     fDDLStore(AliMpDDLStore::Instance()),
     fScalerEvent(kFALSE),
-    fHeader(),
+    fHeader(0x0),
     fBufferSize((((43*AliMpConstants::ManuNofChannels() + 4)*5 + 10)*5 + 8)*2),
     fBuffer(new Int_t [fBufferSize])
 {
@@ -309,6 +310,10 @@ AliMUONRawWriter::WriteTrackerDDL(AliMpExMap& busPatchMap, Int_t iDDL)
  
   AliCodeTimerAuto("")
 
+  if (fHeader == 0x0) {
+    AliError("Raw data header must be set");
+    return;
+  }
   memset(fBuffer,0,fBufferSize*sizeof(Int_t));
   
   AliMpDDL* ddl = fDDLStore->GetDDL(iDDL);
@@ -406,13 +411,14 @@ AliMUONRawWriter::WriteTrackerDDL(AliMpExMap& busPatchMap, Int_t iDDL)
   // writting onto disk
   // total length in bytes
   // DDL header
-  Int_t headerSize = sizeof(fHeader)/4;
+
+  Int_t headerSize = sizeof(AliRawDataHeader)/4;
   
-  fHeader.fSize = (totalDDLLength + headerSize) * 4;
+  fHeader->fSize = (totalDDLLength + headerSize) * 4;
   
   AliFstream* file = new AliFstream(AliDAQ::DdlFileName("MUONTRK",iDDL));
   
-  file->WriteBuffer((char*)(&fHeader),headerSize*4);
+  file->WriteBuffer((char*)fHeader,headerSize*4);
   file->WriteBuffer((char*)fBuffer,sizeof(int)*index);
   delete file;
 }
@@ -431,6 +437,11 @@ Int_t AliMUONRawWriter::WriteTriggerDDL(const AliMUONVTriggerStore& triggerStore
   /// Write trigger DDL
   
   AliCodeTimerAuto("")
+
+  if (fHeader == 0x0) {
+    AliError("Raw data header must be set");
+    return 0;
+  }
 
  // DDL event one per half chamber
 
@@ -666,8 +677,8 @@ Int_t AliMUONRawWriter::WriteTriggerDDL(const AliMUONVTriggerStore& triggerStore
 
     // writting onto disk
     // write DDL's
-    fHeader.fSize = (index + headerSize) * 4;// total length in bytes
-    file[iDDL]->WriteBuffer((char*)(&fHeader),headerSize*4);
+    fHeader->fSize = (index + headerSize) * 4;// total length in bytes
+    file[iDDL]->WriteBuffer((char*)fHeader,headerSize*4);
     file[iDDL]->WriteBuffer((char*)buffer,sizeof(int)*index);
   
   }
