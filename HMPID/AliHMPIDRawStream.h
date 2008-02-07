@@ -368,8 +368,8 @@ Int_t AliHMPIDRawStream::GetErrors(Int_t ddl,Int_t eType)
   
   if(eType < 1 || eType> kSumErr-1 ) return -999;
   else if( ddl < 0 || ddl > kNDDL-1 )  return -999;
-  else 
-    return fNumOfErr[ddl][eType];
+  else if (!fNumOfErr) return -999;
+  else return fNumOfErr[ddl][eType];
 } //GetErrors()     
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 

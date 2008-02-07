@@ -32,25 +32,38 @@ ClassImp(AliHMPIDRawStream)
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 AliHMPIDRawStream::AliHMPIDRawStream(AliRawReader* rawReader) :
+  fNPads(0),
+  fCharge(0x0),
+  fPad(0x0),
   fDDLNumber(-1),
   fRawReader(rawReader),
-  fData(NULL),
-  fPosition(-1)
+  fData(0x0),
+  fNumOfErr(0x0),
+  fPosition(-1),
+  fWord(0),
+  fZeroSup(kTRUE),
+  fPos(0x0),
+  iPos(0)
 {
   // Constructor
-  fNPads = 0;
-  fCharge = 0x0;
-  fPad =0x0;
 
   fRawReader->Reset();
   fRawReader->Select("HMPID");
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 AliHMPIDRawStream::AliHMPIDRawStream() :
+  fNPads(0),
+  fCharge(0x0),
+  fPad(0x0),
   fDDLNumber(-1),
   fRawReader(0x0),
-  fData(NULL),
-  fPosition(-1)
+  fData(0x0),
+  fNumOfErr(0x0),
+  fPosition(-1),
+  fWord(0),
+  fZeroSup(kTRUE),
+  fPos(0x0),
+  iPos(0)
 {
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -104,6 +117,11 @@ Bool_t AliHMPIDRawStream::Next()
           
   if(fRawReader->GetType() == 7)  {                             //New: Select Physics events, Old: Raw data size is not 0 and not 47148 (pedestal)
     fDDLNumber = fRawReader->GetDDLID();
+    if (fDDLNumber<0) {
+      AliWarning("Negative DDL number!");
+      return kFALSE;
+    }
+
     if(stDeb) Printf("DDL %i started to be decoded!.",fDDLNumber);
     InitVars(fRawReader->GetDataSize()/4);
     status = ReadHMPIDRawData();
@@ -113,6 +131,7 @@ Bool_t AliHMPIDRawStream::Next()
       else Printf("Event DDL %i ERROR in decoding!.",fDDLNumber);
 //      DumpData(fRawReader->GetDataSize());
     }
+    DelVars();
 //    stDeb=kFALSE;
   }
 //  return status;
@@ -122,25 +141,38 @@ Bool_t AliHMPIDRawStream::Next()
 void AliHMPIDRawStream::InitVars(Int_t n)
 {
   fNPads = 0;
-  fCharge = new Int_t[n];
-  fPad = new Int_t[n];
+  if (n>0) fCharge = new Int_t[n];
+  if (n>0) fPad = new Int_t[n];
   fNumOfErr = new Int_t*[kNDDL];                                 // Store the numner of errors for a given error type and a given DD
   for(Int_t i=0;i<kNDDL;i++) {
     fNumOfErr[i] = new Int_t [kSumErr];
+    for (Int_t j=0; j<kSumErr; j++) fNumOfErr[i][j] = 0;
   }
   //for debug purpose
-  fPos = new Int_t[4*n];                     //reset debug
+  if (n>0) fPos = new Int_t[4*n];                     //reset debug
   iPos = 0;
 }    
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDRawStream::DelVars()
 {
   fNPads = 0;
-  delete fCharge;
-  delete fPad;
-  delete fNumOfErr;
-  for(Int_t i=0;i<kNDDL;i++) delete [] fNumOfErr[i]; delete [] fNumOfErr;
-  delete fPos;
+  if (fCharge) {
+    delete [] fCharge;
+    fCharge = 0x0;
+  }
+  if (fPad) {
+    delete [] fPad;
+    fPad = 0x0;
+  }
+  if (fNumOfErr) {
+    for(Int_t i=0;i<kNDDL;i++) if(fNumOfErr[i]) delete [] fNumOfErr[i];
+    delete [] fNumOfErr;
+    fNumOfErr = 0x0;
+  }
+  if (fPos) {
+    delete [] fPos;
+    fPos = 0x0;
+  }
 }    
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Bool_t AliHMPIDRawStream::ReadHMPIDRawData()
