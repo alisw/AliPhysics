@@ -104,7 +104,7 @@ void AliITSIntMap::InsertNode(Int_t key, Int_t val, AliITSIntMapNode* &node, UIn
     fNrEntries++;
     fFastAccess=kFALSE;
     fFastAccessSerialize=kFALSE;
-    UInt_t balanceHeight = (UInt_t) (log(fNrEntries+1)/log(2)+1);
+    UInt_t balanceHeight = (UInt_t) (TMath::Log(fNrEntries+1)/TMath::Log(2)+1);
     if ( (height-balanceHeight)*(height-balanceHeight) > fNrEntries ) {
       Balance();
     }
@@ -198,7 +198,7 @@ AliITSIntMapNode*  AliITSIntMap::FindNode(Int_t key, AliITSIntMapNode* node, UIn
   else if (key>node->Key()) return FindNode(key,node->Right(),height);
   else { // Match
 //    //*** balance if height too high. const above have to be removed if this is needed ***
-//    UInt_t balanceHeight = (UInt_t) (log(fNrEntries+1)/log(2)+1);
+//    UInt_t balanceHeight = (UInt_t) (TMath::Log(fNrEntries+1)/TMath::Log(2)+1);
 //    if ( (height-balanceHeight)*(height-balanceHeight) > fNrEntries ) {
 //      Balance();
 //    }
