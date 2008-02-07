@@ -517,7 +517,8 @@ TObjArray AliTPCTracklet::CreateTracklets(const TObjArray &clusters,
 					  Bool_t storeClusters,
 					  Int_t minClusters,
 					  Int_t maxTracklets) {
-
+  TObjArray tracklets;
+  return tracklets;
 }
 
 Bool_t AliTPCTracklet::PropagateToMeanX(const AliTPCTracklet &t1,
