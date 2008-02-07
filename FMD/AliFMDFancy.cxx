@@ -68,6 +68,7 @@ AliFMDFancy::AliFMDFancy(const char* gAliceFile)
     fFMD2(2),
     fFMD3Pad(0),
     fFMD3(3),
+    fSummary(0),
     fEvent(.1, .8, "Event #"),
     fFMD1IHits(.2, .7, "# in FMD1I: "),
     fFMD2IHits(.2, .6, "# in FMD2I: "),
@@ -90,7 +91,16 @@ AliFMDFancy::AliFMDFancy(const char* gAliceFile)
 
 //____________________________________________________________________
 AliFMDFancy::AliFancyDetector::AliFancyDetector(UShort_t id)
-  : fId(id)
+  : fFrame(0),
+    fId(id), 
+    fShapes(0),
+    fNInnerHits(0), 
+    fInnerHits(0),
+    fNOuterHits(0), 
+    fOuterHits(0),
+    fMaxR(0), 
+    fMinZ(0), 
+    fMaxZ(0)
 {
   // CTOR 
   fInnerHits.SetName(Form("FMD%dI", id));

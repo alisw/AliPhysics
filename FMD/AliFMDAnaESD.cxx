@@ -26,6 +26,7 @@
 
 //____________________________________________________________________
 AliFMDAnaESD::AliFMDAnaESD()
+  : fNEvents(0)
 {
   // Constructor 
   // Parameters:

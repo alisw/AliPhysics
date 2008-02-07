@@ -101,6 +101,7 @@ AliFMDDisplay::AliFMDDisplay(Bool_t onlyFMD, const char* gAliceFile)
     fHits(0),
     fCanvas(0), 
     fPad(0), 
+    fButtons(0),
     fSlider(0),
     fZoomMode(kFALSE),
     fX0(0),
@@ -114,7 +115,10 @@ AliFMDDisplay::AliFMDDisplay(Bool_t onlyFMD, const char* gAliceFile)
     fOldXPixel(0),
     fOldYPixel(0),
     fLineDrawn(0),
-    fOnlyFMD(onlyFMD)
+    fOnlyFMD(onlyFMD),
+    fSpec(0), 
+    fSpecCut(0),
+    fAux(0)
 {
   // Constructor of an FMD display object. 
   // Must be called 

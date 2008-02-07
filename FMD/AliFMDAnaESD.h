@@ -38,7 +38,7 @@ public:
       @return  @c false on error  */
   virtual Bool_t ProcessESDs();
   /** Fill for analysis */
-  virtual void Fill(Float_t phi, Float_t eta, Float_t mult) {}
+  virtual void Fill(Float_t /*phi*/, Float_t /*eta*/, Float_t /*mult*/) {}
   /** Called at the end of event
       @return @c false in case of errors */
   virtual Bool_t End();
@@ -50,6 +50,18 @@ public:
   /** This is a folder */ 
   virtual Bool_t IsFolder() const { return kTRUE; }
 protected:
+  AliFMDAnaESD(const AliFMDAnaESD& o) 
+    : AliFMDInput(o), 
+      fNEvents(o.fNEvents)
+  {
+    for (size_t i = 0; i < 4; i++) fRing[i] = o.fRing[i];
+  }
+  AliFMDAnaESD& operator=(const AliFMDAnaESD& o) 
+  {
+    for (size_t i = 0; i < 4; i++) fRing[i] = o.fRing[i];
+    fNEvents = o.fNEvents;
+    return *this;
+  }
   /** Add a ring 
       @param ring Ring object */
   virtual void AddRing(AliFMDAnaRing* ring);

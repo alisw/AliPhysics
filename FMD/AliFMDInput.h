@@ -260,9 +260,11 @@ protected:
       fArrayS(0),
       fArrayR(0),
       fArrayA(0),
+      fHeader(0),
       fGeoManager(0),
       fTreeMask(0),
-      fIsInit(kFALSE)
+      fIsInit(kFALSE),
+      fEventCount(0)
   {}
   /** Assignement operator 
       @return  REference to this */

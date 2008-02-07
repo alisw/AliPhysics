@@ -195,6 +195,8 @@ AliFMDPattern::AliFMDPatternDetector::AddMarker(Double_t x, Double_t y, Float_t 
 //____________________________________________________________________
 AliFMDPattern::AliFMDPattern(const char* gAliceFile)
   : AliFMDDisplay(kTRUE, gAliceFile),
+    fInners(0), 
+    fOuters(0),
     fInnerMax(0), 
     fOuterMax(0),
     fFMD1Pad(0),
@@ -203,6 +205,7 @@ AliFMDPattern::AliFMDPattern(const char* gAliceFile)
     fFMD2(2),
     fFMD3Pad(0),
     fFMD3(3),
+    fSummary(0),
     fEvent(.1, .8, "Event #"),
     fFMD1Sum(.2, .7, "# in FMD1: "),
     fFMD2Sum(.2, .6, "# in FMD2: "),

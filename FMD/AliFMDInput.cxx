@@ -91,9 +91,11 @@ AliFMDInput::AliFMDInput()
     fArrayS(0), 
     fArrayR(0), 
     fArrayA(0), 
+    fHeader(0),
     fGeoManager(0),
     fTreeMask(0), 
-    fIsInit(kFALSE)
+    fIsInit(kFALSE),
+    fEventCount(0)
 {
 
   // Constructor of an FMD input object.  Specify what data to read in
@@ -128,9 +130,11 @@ AliFMDInput::AliFMDInput(const char* gAliceFile)
     fArrayS(0), 
     fArrayR(0), 
     fArrayA(0), 
+    fHeader(0),
     fGeoManager(0),
     fTreeMask(0), 
-    fIsInit(kFALSE)
+    fIsInit(kFALSE),
+    fEventCount(0)
 {
   
   // Constructor of an FMD input object.  Specify what data to read in
