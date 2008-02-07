@@ -310,6 +310,8 @@ AliFMDSDigitizer::AddDigit(AliFMD*  fmd,
 			   Short_t  count4) const
 {
   // Add a summable digit
+  if (count1 == 0 && count1 === count2 && count2 == count3 && count3 == count4)
+    return;
   fmd->AddSDigitByFields(detector, ring, sector, strip, edep, 
 			 count1, count2, count3, count4); 
 }

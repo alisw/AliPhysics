@@ -30,6 +30,7 @@
 #pragma link C++ class  AliFMDDigitizer+;
 #pragma link C++ class  AliFMDSDigitizer+;
 #pragma link C++ class  AliFMDRawWriter+;
+#pragma link C++ class  AliFMDQADataMakerSim+;
 
 #else
 # error Not for compilation 

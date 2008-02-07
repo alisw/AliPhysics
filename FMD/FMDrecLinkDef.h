@@ -23,6 +23,7 @@
 #pragma link C++ class  AliFMDRecPoint+;
 #pragma link C++ class  AliFMDRawStream+;
 #pragma link C++ class  AliFMDRawReader+;
+#pragma link C++ class  AliFMDQADataMakerRec+;
 
 #else
 # error Not for compilation 

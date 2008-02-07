@@ -25,7 +25,13 @@
 void 
 Reconstruct()
 {
+  // Debug the FMD.
   // AliLog::SetModuleDebugLevel("FMD", 1);
+
+  // To reconstruct raw data from FDR-I, please enable below lines: 
+  // AliFMDParameters::Instance()->UseRcuTrailer(false);
+  // AliFMDParameters::Instance()->UseCompleteHeader(false);
+  
   AliReconstruction rec;   
   rec.SetRunLocalReconstruction("FMD");
   rec.SetRunVertexFinder(kFALSE);
