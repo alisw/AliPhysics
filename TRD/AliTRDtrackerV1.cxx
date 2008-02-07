@@ -160,7 +160,7 @@ Int_t AliTRDtrackerV1::Clusters2Tracks(AliESDEvent *esd)
 
 
 //_____________________________________________________________________________
-Bool_t AliTRDtrackerV1::GetTrackPoint(Int_t /*index*/, AliTrackPoint &/*p*/) const
+Bool_t AliTRDtrackerV1::GetTrackPoint(Int_t index, AliTrackPoint &/*p*/) const
 {
 	//AliInfo(Form("Asking for tracklet %d", index));
 	
