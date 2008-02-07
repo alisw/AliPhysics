@@ -188,7 +188,7 @@ Double_t AliT0Align::ComputePosition()
 {
  //  Float_t fZPos, shift;
  //  fZPos = surveyedPoints[3] - shift;
-	
+  return 0;
 }
 //_______________________________________________________________________
 void AliT0Align::CreateAlignObj(){
