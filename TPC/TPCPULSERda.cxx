@@ -48,11 +48,13 @@ and save results in a file (named from RESULT_FILE define - see below).
 //
 #include "AliRawReader.h"
 #include "AliRawReaderDate.h"
+#include "AliTPCmapper.h"
 #include "AliTPCRawStream.h"
 #include "AliTPCROC.h"
 #include "AliTPCCalROC.h"
 #include "AliTPCCalPad.h"
 #include "AliMathBase.h"
+#include "TTreeStream.h"
 #include "TTreeStream.h"
 
 //
