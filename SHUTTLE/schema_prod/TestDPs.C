@@ -1,5 +1,7 @@
-void TestDPs(const char* detector)
+void TestDPs(const char* detector, int tsFrom, int tsTo)
 {
+	// Query amanda for DPs for detector from timestamp tsFrom to tsTo
+	//
 	gSystem->Load("libRLDAP.so");
 	gSystem->Load("libMonaLisa");
 	gSystem->Load("libSHUTTLE");
@@ -12,6 +14,6 @@ void TestDPs(const char* detector)
 	for (Int_t i=0; i<list->GetEntries(); i++)
 	{
 	  //Printf("%s", list->At(i)->GetName());
-	  client.GetAliasValues(list, 1197825708, 1197825808, i, i+1);
+	  client.GetAliasValues(list, tsFrom, tsTo, i, i+1);
 	}
 }
