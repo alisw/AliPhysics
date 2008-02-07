@@ -11,13 +11,16 @@
 void
 Convert2Raw()
 {
+  AliCDBManager* cdb = AliCDBManager::Instance();
+  cdb->SetRun(0);
+  cdb->SetDefaultStorage("local://$ALICE_ROOT");
   AliRunLoader* runLoader = 
     AliRunLoader::Open("galice.root", "Alice", "read");
   runLoader->LoadgAlice();
   AliRun* run = runLoader->GetAliRun();
   AliLoader* fmdLoader = runLoader->GetLoader("FMDLoader");
   AliFMD* fmd = static_cast<AliFMD*>(run->GetDetector("FMD"));
-  AliLog::SetModuleDebugLevel("FMD", 1);
+  AliLog::SetModuleDebugLevel("FMD", 5);
 
   AliFMDParameters::Instance()->Init();
   AliFMDRawWriter rw(fmd);
