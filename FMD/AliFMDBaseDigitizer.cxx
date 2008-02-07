@@ -255,7 +255,8 @@ AliFMDBaseDigitizer::AliFMDBaseDigitizer(const Char_t* name,
     fEdep(AliFMDMap::kMaxDetectors, 
 	  AliFMDMap::kMaxRings, 
 	  AliFMDMap::kMaxSectors, 
-	  AliFMDMap::kMaxStrips)
+	  AliFMDMap::kMaxStrips),
+    fShapingTime(6)
 {
   // Normal CTOR
   AliFMDDebug(1, (" processed"));
