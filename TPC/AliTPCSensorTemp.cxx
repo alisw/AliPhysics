@@ -34,7 +34,7 @@
 
 //
 
-
+#include <strings.h>
 #include "AliTPCSensorTemp.h"
 ClassImp(AliTPCSensorTemp)
 
