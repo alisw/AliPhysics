@@ -5,7 +5,9 @@
 SRCS		=  AliFMDReconstructor.cxx 	\
 		   AliFMDRawStream.cxx  	\
 		   AliFMDRawReader.cxx  	\
-		   AliFMDRecPoint.cxx		
+		   AliFMDRecPoint.cxx		\
+		   AliFMDQADataMakerRec.cxx		
+
 HDRS		=  $(SRCS:.cxx=.h)
 DHDR		:= FMDrecLinkDef.h
 EINCLUDE 	:= RAW
