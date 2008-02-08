@@ -195,11 +195,16 @@ Bool_t AliHMPIDPreprocessor::ProcPed()
   AliHMPIDDigit dig;
   AliHMPIDRawStream rs;
   Int_t nSigCut,r,d,a,hard;  Float_t mean,sigma;
-  
+  Int_t  runNumber,ldcId,timeStamp,nEv;  Char_t tName[10]; 
+    
   for(Int_t ddl=0;ddl<14;ddl++){  
     ifstream infile(Form("HmpidPedDdl%02i.txt",ddl));
     if(!infile.is_open()) {Log("No pedestal file found for HMPID,bye!");return kFALSE;}
     TMatrix *pM=(TMatrixF*)aDaqSig.At(ddl/2);
+    infile>>tName>>runNumber;
+    infile>>tName>>ldcId;
+    infile>>tName>>timeStamp;
+    infile>>tName>>nEv; 
     infile>>nSigCut; pM->SetUniqueID(nSigCut); //n. of pedestal distribution sigmas used to create zero suppresion table
     while(!infile.eof()){
       infile>>dec>>r>>d>>a>>mean>>sigma>>hex>>hard;      
