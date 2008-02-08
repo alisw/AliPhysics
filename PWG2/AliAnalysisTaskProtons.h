@@ -4,8 +4,10 @@
 // Analysis task creating a the 2d y-p_t spectrum of p and antip
 // Author: Panos Cristakoglou
 
+class TString;
 class TList;
 class AliESDEvent;
+class AliAODEvent;
 #include "TF1.h"
 
 #include "PWG2spectra/SPECTRA/AliProtonAnalysis.h"
@@ -21,6 +23,7 @@ class AliAnalysisTaskProtons : public AliAnalysisTask {
   virtual void   Exec(Option_t *option);
   virtual void   Terminate(Option_t *);
 
+  void SetType(const char* type) {fAnalysisType = type;}
   void SetPriorProbabilityFunctions(TF1 *felectrons, 
 				    TF1 *fmuons,
 				    TF1 *fpions,
@@ -36,6 +39,8 @@ class AliAnalysisTaskProtons : public AliAnalysisTask {
   
  private:
   AliESDEvent *fESD;    //ESD object
+  AliAODEvent *fAOD;    //AOD object
+  TString fAnalysisType;//"ESD" or "AOD"
   TList  *fList; //TList output object
   AliProtonAnalysis *fAnalysis; //analysis object
   TF1 *fElectronFunction; //TF1 for e
