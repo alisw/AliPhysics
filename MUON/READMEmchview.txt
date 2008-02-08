@@ -61,8 +61,11 @@ From top to bottom, you'll see group of frames used to :
 
 - select from a list of recently used source
 
-- select a raw data source (either by typing in its full pathname, or opening a file dialog). The second text field in this group is to specify the
-location of the OCDB to be used (if any). If that field is not empty (and the corresponding entry is correct, of course), the raw data will be calibrated.
+- select a raw data source (either by typing in its full pathname, or opening a file dialog). 
+The second line in this group is to specify that you want to calibrate the data. Check the calibrate button, and specify the
+location of the OCDB to be used. If that field is not empty (and the corresponding entry is correct, of course), 
+the raw data will be calibrated.
+The last line in that group is a single check button, to instruct the program to produce histograms of the data (see \ref mchview_histogramming)
 
 - select an OCDB data source (pedestals, gains, capacitances)
 
@@ -70,6 +73,12 @@ In all the frames, once you've selected or entered the needed information, you'l
 and a new data source line will appear in the bottom of that tab (and in also in the first tab, that data source will now 
 be selectable for plotting). Each data source line indicates the short name of the data source, the full path, and a list of buttons to run, stop, rewind and
 remove. Run/Stop/Rewind is only selectable for data sources where the notion of event means something (e.g. for pedestals it won't).
+The short name of the data source is as follow :
+
+- RAW# : raw data for run #
+- RAW(#) : raw data for simulated run (where run number is always 0, so # here is the number of such data sources opened at the same time)
+- HRAW# (or HRAW(#)) : as above, but with histogramming turned on
+- CAL# (or CAL(#)): as above, but for calibrated data.
 
 Note that all the file paths can be local ones or alien ones, if you have a correctly installed alien, and you use a short wrapped to call the \em mchview program.
 For instance :
@@ -97,6 +106,31 @@ source /tmp/gclient_env_$UID
 export alien_API_USER=youralienuserid # only needed if different from your local username
 mchview $*
 </pre>
+
+\section mchview_histogramming Histogramming
+
+Starting at version 0.9 of the \em mchview program, you can now produce histograms of the raw adc values, while running over the
+data. For this you have to check the "histogram" button when creating the data source. Please note that turning on the histogram will slow down
+a bit the data reading. 
+Histograms produced by the program are as compact as possible in order to fit in memory (so they are *not* plain TH1 objects).
+Plain TH1 objects are produced later on (on request only), and should be deleted as soon as possible (you have to realize that
+1 million TH1 of 4096 channels has no chance to fit in memory...)
+For the moment, access to the histograms cannot be done through the GUI. So you have to use the root prompt (of the \em mchview program itself).
+First get the data object, and then ask the data object to create the histogram(s) you want. Remember to delete those histograms as soon
+as you no longer need them :
+
+<pre>
+AliMUONPainterRegistry* reg = AliMUONPainterRegistry::Instance();
+reg->Print();
+AliMUONVTrackerData* data = reg->FindDataSource("HRAW(1)");
+TH1* h = data->CreateChannelHisto(707,1025,63);
+h->Draw();
+delete h;
+h = data->CreateManuHisto(707,1025);
+etc...
+</pre>
+
+You can get histograms for all levels (except PCB) : channel, manu, bus patch, detection element, chamber. See AliMUONVTrackerData doc. for the methods.
 
 ---------
 

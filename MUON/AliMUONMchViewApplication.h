@@ -33,7 +33,7 @@ public:
   void HandleMenu(Int_t i);
 
   /// Return the version number of the mchview application
-  static const char* Version() { return "0.8"; }
+  static const char* Version() { return "0.9"; }
   
 private:
   /// Not implemented

@@ -24,6 +24,7 @@
 #endif
 
 class AliMUONVStore;
+class TH1;
 
 class AliMUONVTrackerData : public TNamed
 {
@@ -62,6 +63,9 @@ public:
   /// Whether we have data for a given buspath
   virtual Bool_t HasBusPatch(Int_t busPatchId) const = 0;
 
+  /// Whether we have a given channel or not
+  virtual Bool_t HasChannel(Int_t detElemId, Int_t manuId, Int_t manuChannel) const;
+  
   /// Whether we have data for a given chamber
   virtual Bool_t HasChamber(Int_t chamberId) const = 0;
   
@@ -103,6 +107,31 @@ public:
 
   /// Set the name of a given dimension
   virtual void SetDimensionName(Int_t index, const char* value) = 0;
+
+  /// Whether or not we can make histograms.
+  virtual Bool_t CanHistogram() const { return kFALSE; }
+  
+  /// Select a dimension to be histogrammed (if CanHistogram==kTRUE) only
+  virtual void SetHistogramDimension(Int_t /* index */, Bool_t /* value */) { }
+
+  /// Create (if CanHistogram) an histo for a given channel
+  virtual TH1* CreateChannelHisto(Int_t /*detElemId*/, Int_t /*manuId*/, 
+                                  Int_t /*manuChannel*/, Int_t /*dim*/=0) { return 0x0; }
+  
+  /// Create (if CanHistogram) an histo for a given bus patch
+  virtual TH1* CreateBusPatchHisto(Int_t /*busPatchId*/, Int_t /*dim*/=0)  { return 0x0; }
+  
+  /// Create (if CanHistogram) an histo for a given detection element
+  virtual TH1* CreateDEHisto(Int_t /*detElemId*/, Int_t /*dim*/=0)  { return 0x0; }
+  
+  /// Create (if CanHistogram) an histo for a given manu
+  virtual TH1* CreateManuHisto(Int_t /*detElemId*/, Int_t /*manuId*/, Int_t /*dim*/=0)  { return 0x0; }
+  
+  /// Create (if CanHistogram) an histo for a given pcb
+  virtual TH1* CreatePCBHisto(Int_t /*detElemId*/, Int_t /*pcbIndex*/, Int_t /*dim*/=0)  { return 0x0; }
+  
+  /// Create (if CanHistogram) an histo for a given chamber
+  virtual TH1* CreateChamberHisto(Int_t /*chamberId*/, Int_t /*dim*/=0)  { return 0x0; }
   
 private:
   /// not implemented

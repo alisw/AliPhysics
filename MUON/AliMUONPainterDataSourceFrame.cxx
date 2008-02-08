@@ -17,14 +17,15 @@
 
 #include "AliMUONPainterDataSourceFrame.h"
 
+
+#include "AliLog.h"
 #include "AliMUONPainterDataSourceItem.h"
 #include "AliMUONPainterEnv.h"
 #include "AliMUONPainterHelper.h"
 #include "AliMUONPainterRegistry.h"
+#include "AliMUONTrackerCalibratedDataMaker.h"
 #include "AliMUONTrackerOCDBDataMaker.h"
 #include "AliMUONTrackerRawDataMaker.h"
-#include "AliMUONVTrackerDataMaker.h"
-#include "AliLog.h"
 #include "AliRawReaderDate.h"
 #include "AliRawReaderRoot.h"
 #include <TGButton.h>
@@ -59,10 +60,16 @@ AliMUONPainterDataSourceFrame::AliMUONPainterDataSourceFrame(const TGWindow* p, 
 : TGCompositeFrame(p,w,h,kVerticalFrame),
   fRecentSourceSelector(new TGGroupFrame(p,"Recent sources",kHorizontalFrame)),
   fRawSelector(new TGGroupFrame(p,"Raw file URI",kHorizontalFrame)),
+  fRawSelector2(new TGCompositeFrame(fRawSelector,w,h,kVerticalFrame)),
+  fRawSelector21(new TGCompositeFrame(fRawSelector2,w,h,kHorizontalFrame)),
+  fRawSelector22(new TGCompositeFrame(fRawSelector2,w,h,kHorizontalFrame)),
+  fRawSelector23(new TGCompositeFrame(fRawSelector2,w,h,kHorizontalFrame)),
+  fCalibrateButton(new TGCheckButton(fRawSelector22,"Calibrate")),
+  fHistogramButton(new TGCheckButton(fRawSelector23,"Histogram")),
+  fRawOCDBPath(new TGTextEntry(fRawSelector22,"")),
   fOCDBSelector(new TGGroupFrame(p,"OCDB Path",kHorizontalFrame)),
   fDataReaders(new TGGroupFrame(p,"Data sources")),
-  fFilePath(new TGTextEntry(fRawSelector,"")),
-  fRawOCDBPath(new TGTextEntry(fRawSelector,"")),
+  fFilePath(new TGTextEntry(fRawSelector21,"")),
   fOCDBPath(new TGTextEntry(fOCDBSelector,"")),
   fRunSelector(new TGNumberEntry(fOCDBSelector,0)),
   fOCDBTypes(new TGComboBox(fOCDBSelector)),
@@ -109,17 +116,33 @@ AliMUONPainterDataSourceFrame::AliMUONPainterDataSourceFrame(const TGWindow* p, 
                                     
     /// Raw file selection
     
-    TGButton* openButton = new TGPictureButton(fRawSelector,
+    TGButton* openButton = new TGPictureButton(fRawSelector21,
                                            gClient->GetPicture("fileopen.xpm"));
     openButton->SetToolTipText("Click to open file dialog");
                                         
+    fRawSelector2->AddFrame(fRawSelector21, new TGLayoutHints(kLHintsExpandX,5,5,5,5));
+    fRawSelector2->AddFrame(fRawSelector22, new TGLayoutHints(kLHintsExpandX,5,5,5,5));
+    fRawSelector2->AddFrame(fRawSelector23, new TGLayoutHints(kLHintsExpandX,5,5,5,5));
+
+    fRawSelector21->AddFrame(openButton,new TGLayoutHints(kLHintsTop,5,5,5,5));
+    fRawSelector21->AddFrame(fFilePath, new TGLayoutHints(kLHintsExpandX | kLHintsTop,5,5,5,5));
+
+    fRawSelector22->AddFrame(fCalibrateButton, new TGLayoutHints(kLHintsTop,5,5,5,5));
+    fRawSelector22->AddFrame(fRawOCDBPath, new TGLayoutHints(kLHintsExpandX | kLHintsTop,5,5,5,5));
+    fRawOCDBPath->SetEnabled(kFALSE);
+    
+    fRawSelector23->AddFrame(fHistogramButton,new TGLayoutHints(kLHintsTop,5,5,5,5));
+
     TGButton* createRawButton = new TGTextButton(fRawSelector,"Create data source");
     
-    fRawSelector->AddFrame(fFilePath, new TGLayoutHints(kLHintsExpandX | kLHintsTop,5,5,5,5));
-    fRawSelector->AddFrame(fRawOCDBPath, new TGLayoutHints(kLHintsTop,5,5,5,5));
-    fRawSelector->AddFrame(openButton,new TGLayoutHints(kLHintsTop,5,5,5,5));
-    fRawSelector->AddFrame(createRawButton,new TGLayoutHints(kLHintsTop,5,5,5,5));
-    
+    fRawSelector->AddFrame(fRawSelector2, new TGLayoutHints(kLHintsExpandX | kLHintsTop,5,5,5,5));
+    fRawSelector->AddFrame(createRawButton, new TGLayoutHints(kLHintsCenterY,5,5,5,5));
+        
+    fCalibrateButton->Connect("Clicked()",
+                              "AliMUONPainterDataSourceFrame",
+                              this,
+                              "CalibrateButtonClicked()");
+
     openButton->Connect("Clicked()",
                         "AliMUONPainterDataSourceFrame",
                         this,
@@ -189,6 +212,25 @@ AliMUONPainterDataSourceFrame::AddRecentSource(const char* name)
   fRecentSources->AddEntry(name,lb->GetNumberOfEntries());
   fRecentSources->MapSubwindows();
   fRecentSources->Layout();
+}
+
+//_____________________________________________________________________________
+void
+AliMUONPainterDataSourceFrame::CalibrateButtonClicked()
+{
+  /// Calibrate button was clicked.
+  
+  if ( fCalibrateButton->IsOn() ) 
+  {
+    fRawOCDBPath->SetEnabled(kTRUE);
+    fRawOCDBPath->SetFocus();
+    fHistogramButton->SetEnabled(kFALSE);
+  }
+  else
+  {
+    fRawOCDBPath->SetEnabled(kFALSE);
+    fHistogramButton->SetEnabled(kTRUE);
+  }
 }
 
 //_____________________________________________________________________________
@@ -271,7 +313,7 @@ AliMUONPainterDataSourceFrame::CreateRawDataSource()
     return;
   }
 
-  uri = Form("RAW;%s;%s",uri.Data(),fRawOCDBPath->GetText());
+  uri = Form("%sRAW;%s;%s",( fHistogramButton->IsOn() ? "H":""),uri.Data(),fRawOCDBPath->GetText());
   
   if ( CreateRawDataSource(uri) )
   {
@@ -325,7 +367,18 @@ AliMUONPainterDataSourceFrame::CreateRawDataSource(const TString& uri)
     return kFALSE;
   }
   
-  AliMUONTrackerRawDataMaker* reader = new AliMUONTrackerRawDataMaker(rawReader,ocdbPath.Data());
+  AliMUONVTrackerDataMaker* reader(0x0);
+  Bool_t histogram(kFALSE);
+  
+  if ( ocdbPath.Length() > 0 ) 
+  {
+    reader = new AliMUONTrackerCalibratedDataMaker(rawReader,ocdbPath.Data());
+  }
+  else
+  {
+    if ( uri.Contains(TRegexp("^H")) ) histogram = kTRUE;
+    reader = new AliMUONTrackerRawDataMaker(rawReader,histogram);
+  }
   
   reader->SetSource(filename.Data());
   
@@ -337,7 +390,7 @@ AliMUONPainterDataSourceFrame::CreateRawDataSource(const TString& uri)
   
   env->Set(fgkNumberOfDataSourcesKey,n+1);
   
-  TString ds(Form("RAW;%s;%s",filename.Data(),ocdbPath.Data()));
+  TString ds(Form("%sRAW;%s;%s",(histogram ? "H":""),filename.Data(),ocdbPath.Data()));
   
   env->Set(Form(fgkDataSourceURIKey,n),ds.Data());
   
@@ -353,8 +406,6 @@ void
 AliMUONPainterDataSourceFrame::DataReaderWasRegistered(AliMUONVTrackerDataMaker* reader)
 {
   /// Update ourselves as a new data reader was created
-  
-  AliInfo(Form("%s",reader->GetName()));
   
   AliMUONPainterDataSourceItem* item = new AliMUONPainterDataSourceItem(fDataReaders,100,20,reader);
       
@@ -372,7 +423,7 @@ AliMUONPainterDataSourceFrame::DataReaderWasUnregistered(AliMUONVTrackerDataMake
 {
   /// Update ourselves as a new data reader was deleted
   
-  AliInfo(Form("%s",reader->GetName()));
+//  AliInfo(Form("%s",reader->GetName()));
           
 }
 
@@ -402,7 +453,7 @@ AliMUONPainterDataSourceFrame::OpenRecentSource()
 
   TString uri(t->GetText()->GetString());
   
-  if ( uri.Contains(TRegexp("^RAW")) )
+  if ( uri.Contains(TRegexp("^RAW")) || uri.Contains(TRegexp("^HRAW")) )
   {
     CreateRawDataSource(uri);
   }

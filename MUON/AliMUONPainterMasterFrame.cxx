@@ -365,11 +365,6 @@ AliMUONPainterMasterFrame::ShiftClicked(AliMUONVPainter* painter, Double_t*)
       return;
     }
     
-    AliInfo(Form("Starting from %s will generate %s and %s",
-                 a.GetName(),
-                 a1.GetName(),
-                 a2.GetName()));
-    
     p1->UpdateGroupsFrom(*(painter->Master()));
     p2->UpdateGroupsFrom(*(painter->Master()));
     

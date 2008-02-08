@@ -16,18 +16,21 @@
 #  include <TGFrame.h>
 #endif
 
-class TObjArray;
-class TGGroupFrame;
 class AliMUONVTrackerDataMaker;
-class TGTextEntry;
-class TGNumberEntry;
+class TGCheckButton;
 class TGComboBox;
+class TGGroupFrame;
+class TGNumberEntry;
+class TGTextEntry;
+class TObjArray;
 
 class AliMUONPainterDataSourceFrame : public TGCompositeFrame
 {
 public:
   AliMUONPainterDataSourceFrame(const TGWindow* p, UInt_t w, UInt_t h);
   virtual ~AliMUONPainterDataSourceFrame();
+  
+  void CalibrateButtonClicked(); 
   
   void CreateOCDBDataSource();
 
@@ -58,11 +61,19 @@ private:
 private:
     
   TGGroupFrame* fRecentSourceSelector; ///< to select recently used sources   
+  
   TGGroupFrame* fRawSelector; ///< to select a new raw data source
+  TGCompositeFrame* fRawSelector2; ///< idem
+  TGCompositeFrame* fRawSelector21; ///< idem
+  TGCompositeFrame* fRawSelector22; ///< idem
+  TGCompositeFrame* fRawSelector23; ///< idem
+  TGCheckButton* fCalibrateButton; ///< to trig calibration of raw data
+  TGCheckButton* fHistogramButton; ///< to trig histogramming of raw data
+  TGTextEntry* fRawOCDBPath; ///< OCDB path for raw data calibration
+  
   TGGroupFrame* fOCDBSelector; ///< to select a new OCDB data source
   TGGroupFrame* fDataReaders; ///< to display currently active data sources  
   TGTextEntry* fFilePath; ///< raw data file path text entry widget
-  TGTextEntry* fRawOCDBPath; ///< OCDB path for raw data calibration
   TGTextEntry* fOCDBPath; ///< OCDB path text entry widget
   TGNumberEntry* fRunSelector; ///< OCDB run number entry widget
   TGComboBox* fOCDBTypes; ///< OCDB type combo box entry widget  
@@ -72,7 +83,7 @@ private:
   static const char* fgkNumberOfDataSourcesKey; ///< key used to store the # of data sources in the resource file
   static const char* fgkDataSourceURIKey; ///< key usde to store the data source URIs in the resource file
 
-  ClassDef(AliMUONPainterDataSourceFrame,1) // Data source selection frame
+  ClassDef(AliMUONPainterDataSourceFrame,2) // Data source selection frame
 };
 
 #endif

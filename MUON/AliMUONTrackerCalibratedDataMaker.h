@@ -1,5 +1,5 @@
-#ifndef ALIMUONTRACKERRAWDATAMAKER_H
-#define ALIMUONTRACKERRAWDATAMAKER_H
+#ifndef ALIMUONTRACKERCALIBRATEDDATAMAKER_H
+#define ALIMUONTRACKERCALIBRATEDDATAMAKER_H
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 * See cxx source for full Copyright notice                               */
@@ -7,8 +7,8 @@
 // $Id$
 
 /// \ingroup graphics
-/// \class AliMUONTrackerRawDataMaker
-/// \brief Creator of raw AliMUONVTrackerData from AliRawReader
+/// \class AliMUONTrackerCalibratedDataMaker
+/// \brief Creator of calibrated AliMUONVTrackerData from AliRawReader
 /// 
 // Author Laurent Aphecetche, Subatech
 
@@ -20,14 +20,18 @@
 #endif
 
 class AliRawReader;
-class AliMUONVStore;
+class AliMUONCalibrationData;
+class AliMUONDigitCalibrator;
+class AliMUONDigitMaker;
 class AliMUONVTrackerData;
+class AliMUONVStore;
+class AliMUONVDigitStore;
 
-class AliMUONTrackerRawDataMaker : public AliMUONVTrackerDataMaker
+class AliMUONTrackerCalibratedDataMaker : public AliMUONVTrackerDataMaker
 {
 public:
-  AliMUONTrackerRawDataMaker(AliRawReader* reader = 0x0, Bool_t histogram=kFALSE);
-  virtual ~AliMUONTrackerRawDataMaker();
+  AliMUONTrackerCalibratedDataMaker(AliRawReader* reader = 0x0, const char* cdbpath=0x0);
+  virtual ~AliMUONTrackerCalibratedDataMaker();
   
   /// Whether we have a valid raw reader
   Bool_t IsValid() const { return fRawReader != 0x0; }
@@ -59,14 +63,19 @@ public:
   /// Set our source URI
   void SetSource(const char* source) { fSource = source; }
   
+  /// Get our digit store
+  AliMUONVDigitStore* DigitStore() const { return fDigitStore; }
+  
   /// Number of events seen
-  Int_t NumberOfEvents() const { return fNumberOfEvents; }
+    Int_t NumberOfEvents() const { return fNumberOfEvents; }
 
 private:
   /// Not implemented
-  AliMUONTrackerRawDataMaker(const AliMUONTrackerRawDataMaker& rhs);
+  AliMUONTrackerCalibratedDataMaker(const AliMUONTrackerCalibratedDataMaker& rhs);
   /// Not implemented
-  AliMUONTrackerRawDataMaker& operator=(const AliMUONTrackerRawDataMaker& rhs);
+  AliMUONTrackerCalibratedDataMaker& operator=(const AliMUONTrackerCalibratedDataMaker& rhs);
+  
+  Bool_t ConvertDigits();
   
 private:
   AliRawReader* fRawReader; ///< reader of the data (owner)
@@ -75,10 +84,15 @@ private:
   Bool_t fIsOwner; ///< whether we are owner of our data or not
   TString fSource; ///< where the data comes from
   Bool_t fIsRunning; ///< whether we are running or are paused
+  AliMUONDigitMaker* fDigitMaker; ///< digit maker
+  AliMUONDigitCalibrator* fDigitCalibrator; ///< digit calibrator (if calibrating data)
+  AliMUONCalibrationData* fCalibrationData; ///< calibration data (if calibrating data)  
+  AliMUONVDigitStore* fDigitStore; ///< digit store (if calibrating data)
+  TString fCDBPath; ///< OCDB path (if calibrating data)
   Int_t fNumberOfEvents; ///< number of events seen
   static Int_t fgkCounter; ///< to count the number of instances
   
-  ClassDef(AliMUONTrackerRawDataMaker,2) // Producer of AliMUONVTrackerData from raw data
+  ClassDef(AliMUONTrackerCalibratedDataMaker,1) // Producer of calibrated AliMUONVTrackerData from raw data
 };
 
 #endif

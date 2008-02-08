@@ -50,6 +50,15 @@ AliMUONVTrackerData::~AliMUONVTrackerData()
 }
 
 //_____________________________________________________________________________
+Bool_t 
+AliMUONVTrackerData::HasChannel(Int_t detElemId, Int_t manuId, Int_t manuChannel) const
+{
+  /// Whether we have data for a given channel
+  
+  return (Count(detElemId,manuId,manuChannel) > 0.0);
+}
+
+//_____________________________________________________________________________
 void 
 AliMUONVTrackerData::NumberOfEventsChanged()
 {
