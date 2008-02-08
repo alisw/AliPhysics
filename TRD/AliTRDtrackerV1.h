@@ -78,6 +78,7 @@ class AliTRDtrackerV1 : public AliTRDtracker
 	AliTRDstackLayer *MakeSeedingLayer(AliTRDstackLayer *layers, Int_t Plane);
 	Int_t          MakeSeeds(AliTRDstackLayer *layers, AliTRDseedV1 *sseed, Int_t *ipar);
 	AliTRDtrackV1*   MakeTrack(AliTRDseedV1 *seeds, Double_t *params);
+  Int_t          PropagateToX(AliTRDtrackV1 &t, Double_t xToGo, Double_t maxStep);
 	Int_t          SetTracklet(AliTRDseedV1 *tracklet);
 
 private:

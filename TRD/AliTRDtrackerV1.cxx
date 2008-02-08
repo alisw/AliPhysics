@@ -797,6 +797,72 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
 	return nClustersExpected;
 }
 
+//_____________________________________________________________________________
+Int_t AliTRDtrackerV1::PropagateToX(AliTRDtrackV1 &t, Double_t xToGo, Double_t maxStep)
+{
+  //
+  // Starting from current X-position of track <t> this function
+  // extrapolates the track up to radial position <xToGo>. 
+  // Returns 1 if track reaches the plane, and 0 otherwise 
+  //
+
+  const Double_t kEpsilon = 0.00001;
+
+  // Current track X-position
+  Double_t xpos = t.GetX();
+
+  // Direction: inward or outward
+  Double_t dir  = (xpos < xToGo) ? 1.0 : -1.0;
+
+  while (((xToGo - xpos) * dir) > kEpsilon) {
+
+    Double_t xyz0[3];
+    Double_t xyz1[3];
+    Double_t param[7];
+    Double_t x;
+    Double_t y;
+    Double_t z;
+
+    // The next step size
+    Double_t step = dir * TMath::Min(TMath::Abs(xToGo-xpos),maxStep);
+
+    // Get the global position of the starting point
+    t.GetXYZ(xyz0);
+
+    // X-position after next step
+    x = xpos + step;
+
+    // Get local Y and Z at the X-position of the next step
+    if (!t.GetProlongation(x,y,z)) {
+      return 0; // No prolongation possible
+    }
+
+    // The global position of the end point of this prolongation step
+    xyz1[0] =  x * TMath::Cos(t.GetAlpha()) - y * TMath::Sin(t.GetAlpha()); 
+    xyz1[1] = +x * TMath::Sin(t.GetAlpha()) + y * TMath::Cos(t.GetAlpha());
+    xyz1[2] =  z;
+
+    // Calculate the mean material budget between start and
+    // end point of this prolongation step
+    AliTracker::MeanMaterialBudget(xyz0,xyz1,param);
+
+    // Propagate the track to the X-position after the next step
+    if (!t.PropagateTo(x,param[1],param[0]*param[4])) {
+      return 0;
+    }
+
+    // Rotate the track if necessary
+    AdjustSector(&t);
+
+    // New track X-position
+    xpos = t.GetX();
+
+  }
+
+  return 1;
+
+}
+
 //____________________________________________________________________
 void AliTRDtrackerV1::UnloadClusters() 
 { 
