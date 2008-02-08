@@ -96,6 +96,8 @@ eventIdType currEventId;
 int gotAliceTrigger;
 int bufferData;
 
+struct commonDataHeaderStruct *cdhRef = NULL;
+
 void dumpPayload( const struct payloadDescriptorStruct *p ) {
   char *c;
   int i;
@@ -1194,7 +1196,7 @@ void createEvent( void ) {
       for ( eq = ldc->head; eq != NULL; eq = eq->next ) {
 	if ( !bufferData ) {
 	  loadBuffer( eq->payload );
-	  if ( !currGdc->loaded ) decodeCDH( ldc, eq->payload );
+	  decodeCDH( ldc, eq->payload );
 	}
 	loadCdh( (struct commonDataHeaderStruct*)eq->payload->data,
 		 &currEventId );
@@ -1210,6 +1212,7 @@ void createEvent( void ) {
 	currGdc->loaded = TRUE;
       }
     }
+    cdhRef = NULL;
   } else if ( workingAs == ldc ) {
     struct equipmentEventDescriptorStruct *eq;
 
@@ -1219,12 +1222,13 @@ void createEvent( void ) {
     for ( eq = currLdc->head; eq != NULL; eq = eq->next ) {
       if ( !bufferData ) {
 	loadBuffer( eq->payload );
-	if ( !currLdc->loaded ) decodeCDH( currLdc, eq->payload );
+	decodeCDH( currLdc, eq->payload );
       }
       loadCdh( (struct commonDataHeaderStruct*)eq->payload->data,
 	       &currEventId );
       currLdc->loaded = TRUE;
     }
+    cdhRef = NULL;
   }
   ADD_EVENT_ID( currEventId, oneEventDelta );
 
@@ -1407,7 +1411,6 @@ void initEquipment( struct equipmentHeaderStruct * const eq ) {
 void decodeCDH(       struct ldcEventDescriptorStruct * const ldc,
 		const struct payloadDescriptorStruct  * const payloadDesc ) {
   if ( handleCDH ) {
-    static struct commonDataHeaderStruct *cdhRef = NULL;
     struct commonDataHeaderStruct *cdh;
     static int softwareTriggerIndicator = FALSE;
     int attr;
@@ -1615,6 +1618,7 @@ void initEvents() {
 	}
 	gdc->header.eventSize += ldc->header.eventSize;
       }
+      cdhRef = NULL;
     }
 
     DBG_VERBOSE {
@@ -1670,6 +1674,7 @@ void initEvents() {
 	OR_ALL_ATTRIBUTES( eq->header.equipmentTypeAttribute,
 			   ldc->header.eventTypeAttribute );
       }
+      cdhRef = NULL;
     }
     DBG_VERBOSE {
       printf( "Headers:\n" );
