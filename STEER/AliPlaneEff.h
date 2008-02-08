@@ -30,13 +30,20 @@ class AliPlaneEff : public TObject {
     //Int_t   GetRunNumber() const {return fRunNumber;}
     //void    SetRunNumber(Int_t n) {fRunNumber=n;}
     //
-    // Write into the data base 
+    // Write into (read from) the data base 
     virtual Bool_t WriteIntoCDB() const
        {AliError("This method must be implemented in a derived class"); return kFALSE;};
     virtual Bool_t ReadFromCDB()
        {AliError("This method must be implemented in a derived class"); return kFALSE;};
     virtual Bool_t AddFromCDB()
        {AliError("This method must be implemented in a derived class"); return kFALSE;};
+    // Write/read Histograms to/from File
+    virtual Bool_t WriteHistosToFile(TString ,Option_t* )
+       {AliError("This method must be implemented in a derived class"); return kFALSE; }
+    virtual Bool_t ReadHistosFromFile(TString )
+       {AliError("This method must be implemented in a derived class"); return kFALSE; }
+    virtual Bool_t GetCreateHistos() const
+       {AliError("This method must be implemented in a derived class"); return kFALSE; }
 
  protected:
 

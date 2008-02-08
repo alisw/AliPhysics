@@ -220,6 +220,10 @@ fPlaneEff(0) {
     }
     if(!fPlaneEff->ReadFromCDB()) 
       {AliWarning("AliITStrackerMI reading of AliITSPlaneEff from OCDB failed") ;}
+    if(AliITSReconstructor::GetRecoParam()->GetHistoPlaneEff()) {
+      fPlaneEff->SetCreateHistos(kTRUE); 
+      //fPlaneEff->ReadHistosFromFile();
+    }
   }
 }
 //------------------------------------------------------------------------
@@ -4965,7 +4969,7 @@ Bool_t AliITStrackerMI::IsOKForPlaneEff(AliITStrackMI* track, Int_t ilayer) cons
   Float_t blockXmn,blockXmx,blockZmn,blockZmx;
   if (!fPlaneEff->GetBlockBoundaries(key,blockXmn,blockXmx,blockZmn,blockZmx)) return kFALSE;
   // transform Local boundaries of the basic block into 
-  //  Global (i.e. ALICE not tracking reference) coordinate
+  //  Global (i.e. ALICE, not tracking reference) coordinate
   //
   Double_t a1[3]={blockXmn,0.,blockZmn};
   Double_t a2[3]={blockXmx,0.,blockZmn};
@@ -5138,6 +5142,21 @@ void AliITStrackerMI::UseTrackForPlaneEff(AliITStrackMI* track, Int_t ilayer) {
   }
   if(!fPlaneEff->UpDatePlaneEff(found,key))
        AliWarning(Form("UseTrackForPlaneEff: cannot UpDate PlaneEff for key=%d",key));
+  if(fPlaneEff->GetCreateHistos()&&  AliITSReconstructor::GetRecoParam()->GetHistoPlaneEff()) {
+    Int_t ndet=AliITSgeomTGeo::GetNDetectors(ilayer+1); // layers from 1 to 6
+    Int_t lad = Int_t(idet/ndet) + 1;
+    Int_t hdet = idet - (lad-1)*ndet + 1;
+    Double_t xyzGlob[3],xyzLoc[3];
+    tmp.GetXYZ(xyzGlob);
+    AliITSgeomTGeo::GlobalToLocal(ilayer+1,lad,hdet,xyzGlob,xyzLoc);
+    Float_t tr[2]={xyzLoc[0],xyzLoc[2]};
+    Float_t cl[2];
+    cl[0]=layer.GetCluster(ci)->GetDetLocalX();
+    cl[1]=layer.GetCluster(ci)->GetDetLocalZ();
+    Int_t cltype[2];
+    cltype[0]=layer.GetCluster(ci)->GetNy();
+    cltype[1]=layer.GetCluster(ci)->GetNz();
+    fPlaneEff->FillHistos(key,found,tr,cl,cltype);
+  }
 return;
 }
-

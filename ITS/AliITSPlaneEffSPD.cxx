@@ -25,6 +25,10 @@
 /* $Id$ */
 
 #include <TMath.h>
+#include <TH1F.h>
+#include <TFile.h>
+#include <TTree.h>
+#include <TROOT.h>
 #include "AliITSPlaneEffSPD.h"
 #include "AliLog.h"
 #include "AliCDBStorage.h"
@@ -37,12 +41,14 @@
 ClassImp(AliITSPlaneEffSPD)	
 //______________________________________________________________________
 AliITSPlaneEffSPD::AliITSPlaneEffSPD():
-  AliITSPlaneEff(){
-//  for (UInt_t im=0; im<kNModule; im++){
-//  for (UInt_t ic=0; ic<kNChip; ic++){
-//    fFound[im][ic]=0;
-//    fTried[im][ic]=0;
-//  }}
+  AliITSPlaneEff(),
+  //fHis(kFALSE),
+  fHisResX(0),
+  fHisResZ(0),
+  fHisResXZ(0),
+  fHisClusterSize(0),
+  fHisResXclu(0),
+  fHisResZclu(0){
   for (UInt_t i=0; i<kNModule*kNChip; i++){
     fFound[i]=0;
     fTried[i]=0;
@@ -59,10 +65,17 @@ AliITSPlaneEffSPD::~AliITSPlaneEffSPD(){
     //    none.
     // Return:
     //     none.
+    DeleteHistos();
 }
 //______________________________________________________________________
-AliITSPlaneEffSPD::AliITSPlaneEffSPD(const AliITSPlaneEffSPD &s) : AliITSPlaneEff(s) //,
+AliITSPlaneEffSPD::AliITSPlaneEffSPD(const AliITSPlaneEffSPD &s) : AliITSPlaneEff(s), 
 //fHis(s.fHis),
+fHisResX(0),
+fHisResZ(0),
+fHisResXZ(0),
+fHisClusterSize(0),
+fHisResXclu(0),
+fHisResZclu(0)
 {
     //     Copy Constructor
     // Inputs:
@@ -72,6 +85,23 @@ AliITSPlaneEffSPD::AliITSPlaneEffSPD(const AliITSPlaneEffSPD &s) : AliITSPlaneEf
     //    none.
     // Return:
 
+ for (UInt_t i=0; i<kNModule*kNChip; i++){
+    fFound[i]=s.fFound[i];
+    fTried[i]=s.fTried[i];
+ }
+ if(fHis) { 
+   InitHistos();
+   for(Int_t i=0; i<kNHisto; i++) {
+      s.fHisResX[i]->Copy(*fHisResX[i]);
+      s.fHisResZ[i]->Copy(*fHisResZ[i]);
+      s.fHisResXZ[i]->Copy(*fHisResXZ[i]);
+      s.fHisClusterSize[i]->Copy(*fHisClusterSize[i]);
+      for(Int_t clu=0; clu<kNclu; clu++) {  // clu=0 --> cluster size 1
+        s.fHisResXclu[i][clu]->Copy(*fHisResXclu[i][clu]);
+        s.fHisResZclu[i][clu]->Copy(*fHisResZclu[i][clu]);
+      }
+   }
+ }
 }
 //_________________________________________________________________________
 AliITSPlaneEffSPD& AliITSPlaneEffSPD::operator+=(const AliITSPlaneEffSPD &add){
@@ -85,6 +115,18 @@ AliITSPlaneEffSPD& AliITSPlaneEffSPD::operator+=(const AliITSPlaneEffSPD &add){
     for (UInt_t i=0; i<kNModule*kNChip; i++){
       fFound[i] += add.fFound[i];
       fTried[i] += add.fTried[i];
+    }
+    if(fHis && add.fHis) {
+      for(Int_t i=0; i<kNHisto; i++) {
+        fHisResX[i]->Add(add.fHisResX[i]); 
+        fHisResZ[i]->Add(add.fHisResZ[i]); 
+        fHisResXZ[i]->Add(add.fHisResXZ[i]); 
+        fHisClusterSize[i]->Add(add.fHisClusterSize[i]); 
+        for(Int_t clu=0; clu<kNclu; clu++) {  // clu=0 --> cluster size 1
+          fHisResXclu[i][clu]->Add(add.fHisResXclu[i][clu]); 
+          fHisResZclu[i][clu]->Add(add.fHisResZclu[i][clu]); 
+        }
+      }
     }
     return *this;
 }
@@ -101,22 +143,45 @@ AliITSPlaneEffSPD&  AliITSPlaneEffSPD::operator=(const
  
     if(this==&s) return *this;
     s.Copy(*this);
-//    if(&s == this) return *this;
-//    for (UInt_t i=0; i<kNModule*kNChip; i++){
-//      this->fFound[i] = s.fFound[i];
-//      this->fTried[i] = s.fTried[i];
-//    }
     return *this;
 }
 //______________________________________________________________________
 void AliITSPlaneEffSPD::Copy(TObject &obj) const {
   // protected method. copy this to obj
   AliITSPlaneEff::Copy(obj);
-  //((AliITSPlaneEffSPD& ) obj).fNpx  = fNpx;
+  AliITSPlaneEffSPD& target = (AliITSPlaneEffSPD &) obj;
   for(Int_t i=0;i<kNModule*kNChip;i++) {
-      ((AliITSPlaneEffSPD& ) obj).fFound[i] = fFound[i];
-      ((AliITSPlaneEffSPD& ) obj).fTried[i] = fTried[i];
+      target.fFound[i] = fFound[i];
+      target.fTried[i] = fTried[i];
   }
+  CopyHistos(target);
+  return;
+}
+//_______________________________________________________________________
+void AliITSPlaneEffSPD::CopyHistos(AliITSPlaneEffSPD &target) const {
+  // protected method: copy histos from this to target
+  target.fHis  = fHis; // this is redundant only in some cases. Leave as it is.
+  if(fHis) {
+    target.fHisResX=new TH1F*[kNHisto];
+    target.fHisResZ=new TH1F*[kNHisto];
+    target.fHisResXZ=new TH2F*[kNHisto];
+    target.fHisClusterSize=new TH2I*[kNHisto];
+    target.fHisResXclu=new TH1F**[kNHisto];
+    target.fHisResZclu=new TH1F**[kNHisto];
+    for(Int_t i=0; i<kNHisto; i++) {
+      target.fHisResX[i] = new TH1F(*fHisResX[i]);
+      target.fHisResZ[i] = new TH1F(*fHisResZ[i]);
+      target.fHisResXZ[i] = new TH2F(*fHisResXZ[i]);
+      target.fHisClusterSize[i] = new TH2I(*fHisClusterSize[i]);
+      target.fHisResXclu[i]=new TH1F*[kNclu];
+      target.fHisResZclu[i]=new TH1F*[kNclu];
+      for(Int_t clu=0; clu<kNclu; clu++) {  // clu=0 --> cluster size 1
+        target.fHisResXclu[i][clu] = new TH1F(*fHisResXclu[i][clu]);
+        target.fHisResZclu[i][clu] = new TH1F(*fHisResZclu[i][clu]);
+      }
+    }
+  }
+return;
 }
 //______________________________________________________________________
 AliITSPlaneEff&  AliITSPlaneEffSPD::operator=(const
@@ -355,7 +420,8 @@ if(!fInitCDBCalled)
 AliCDBEntry *cdbEntry = AliCDBManager::Instance()->Get("ITS/PlaneEff/PlaneEffSPD",fRunNumber);
 AliITSPlaneEffSPD* eff= (AliITSPlaneEffSPD*)cdbEntry->GetObject();
 if(this==eff) return kFALSE;
-eff->Copy(*this);
+if(fHis) CopyHistos(*eff); // If histos already exist then copy them to eff
+eff->Copy(*this);          // copy everything (statistics and histos) from eff to this
 return kTRUE;
 }
 //_____________________________________________________________________________
@@ -489,4 +555,310 @@ for(UInt_t j=0;j<col;j++){
   dz += kconv*bz[j];
 } // end for j
 return dz;
+}
+//__________________________________________________________
+void AliITSPlaneEffSPD::InitHistos() {
+  // for the moment let's create the histograms 
+  // module by  module
+  TString histnameResX="HistResX_mod_",aux;
+  TString histnameResZ="HistResZ_mod_";
+  TString histnameResXZ="HistResXZ_mod_";
+  TString histnameClusterType="HistClusterType_mod_";
+  TString histnameResXclu="HistResX_mod_";
+  TString histnameResZclu="HistResZ_mod_";
+//
+  fHisResX=new TH1F*[kNHisto];
+  fHisResZ=new TH1F*[kNHisto];
+  fHisResXZ=new TH2F*[kNHisto];
+  fHisClusterSize=new TH2I*[kNHisto];
+  fHisResXclu=new TH1F**[kNHisto];
+  fHisResZclu=new TH1F**[kNHisto];
+
+  for (Int_t nhist=0;nhist<kNHisto;nhist++){
+    aux=histnameResX;
+    aux+=nhist;
+    fHisResX[nhist]=new TH1F("histname","histname",800,-0.04,0.04); // +- 400 micron; 1 bin=1 micron
+    fHisResX[nhist]->SetName(aux.Data());
+    fHisResX[nhist]->SetTitle(aux.Data());
+
+    aux=histnameResZ;
+    aux+=nhist;
+    fHisResZ[nhist]=new TH1F("histname","histname",800,-0.32,0.32); // +-3200 micron; 1 bin=8 micron
+    fHisResZ[nhist]->SetName(aux.Data());
+    fHisResZ[nhist]->SetTitle(aux.Data());
+
+    aux=histnameResXZ;
+    aux+=nhist;
+    fHisResXZ[nhist]=new TH2F("histname","histname",40,-0.02,0.02,40,-0.16,0.16); // binning:
+                                                                                   // 10 micron in x; 
+                                                                                   // 80 micron in z; 
+    fHisResXZ[nhist]->SetName(aux.Data());
+    fHisResXZ[nhist]->SetTitle(aux.Data());
+
+    aux=histnameClusterType;
+    aux+=nhist;
+    fHisClusterSize[nhist]=new TH2I("histname","histname",10,0.5,10.5,10,0.5,10.5);
+    fHisClusterSize[nhist]->SetName(aux.Data());
+    fHisClusterSize[nhist]->SetTitle(aux.Data());
+
+    fHisResXclu[nhist]=new TH1F*[kNclu];
+    fHisResZclu[nhist]=new TH1F*[kNclu];
+    for(Int_t clu=0; clu<kNclu; clu++) {  // clu=0 --> cluster size 1
+      aux=histnameResXclu;
+      aux+=nhist;
+      aux+="_clu_";
+      aux+=clu+1; // clu=0 --> cluster size 1
+      fHisResXclu[nhist][clu]=new TH1F("histname","histname",800,-0.04,0.04); // +- 400 micron; 1 bin=1 micron
+      fHisResXclu[nhist][clu]->SetName(aux.Data());
+      fHisResXclu[nhist][clu]->SetTitle(aux.Data());
+
+      aux=histnameResZclu;
+      aux+=nhist;
+      aux+="_clu_";
+      aux+=clu+1; // clu=0 --> cluster size 1
+      fHisResZclu[nhist][clu]=new TH1F("histname","histname",800,-0.32,0.32); // +-3200 micron; 1 bin=8 micron
+      fHisResZclu[nhist][clu]->SetName(aux.Data());
+      fHisResZclu[nhist][clu]->SetTitle(aux.Data());
+    }
+
+  }
+return;
+}
+//__________________________________________________________
+void AliITSPlaneEffSPD::DeleteHistos() {
+  if(fHisResX) {
+    for (Int_t i=0; i<kNHisto; i++ ) delete fHisResX[i];
+    delete [] fHisResX; 
+  }
+  if(fHisResZ) {
+    for (Int_t i=0; i<kNHisto; i++ ) delete fHisResZ[i];
+    delete [] fHisResZ;
+  }
+  if(fHisResXZ) {
+    for (Int_t i=0; i<kNHisto; i++ ) delete fHisResXZ[i];
+    delete [] fHisResXZ;
+  }
+  if(fHisClusterSize) {
+    for (Int_t i=0; i<kNHisto; i++ ) delete fHisClusterSize[i];
+    delete [] fHisClusterSize;
+  }
+  if(fHisResXclu) {
+    for (Int_t i=0; i<kNHisto; i++ ) {
+      for (Int_t clu=0; clu<kNclu; clu++) if (fHisResXclu[i][clu]) delete fHisResXclu[i][clu];
+      delete [] fHisResXclu[i];
+    }
+    delete [] fHisResXclu;
+    fHisResXclu = 0;
+  }
+  if(fHisResZclu) {
+    for (Int_t i=0; i<kNHisto; i++ ) {
+      for (Int_t clu=0; clu<kNclu; clu++) if (fHisResZclu[i][clu]) delete fHisResZclu[i][clu];
+      delete [] fHisResZclu[i];
+    }
+    delete [] fHisResZclu;
+    fHisResZclu = 0;
+  }
+
+return;
+}
+//__________________________________________________________
+Bool_t AliITSPlaneEffSPD::FillHistos(UInt_t key, Bool_t found, 
+                                     Float_t tXZ[2], Float_t cXZ[2], Int_t ctXZ[2]) {
+// this method fill the histograms
+// input: - key: unique key of the basic block 
+//        - found: Boolean to asses whether a cluster has been associated to the track or not 
+//        - tXZ[2] local X and Z coordinates of the track prediction
+//        - cXZ[2] local X and Z coordinates of the cluster associated to the track
+// output: kTRUE if filling was succesfull kFALSE otherwise
+// side effects: updating of the histograms. 
+//
+  if (!fHis) {
+    AliWarning("FillHistos: histograms do not exist! Call SetCreateHistos(kTRUE) first");
+    return kFALSE;
+  }
+  if(key>=kNModule*kNChip)
+    {AliWarning("FillHistos: you asked for a non existing key"); return kFALSE;}
+  Int_t id=GetModFromKey(key);
+  if(id>=kNHisto) 
+    {AliWarning("FillHistos: you want to fill a non-existing histos"); return kFALSE;}
+  if(found) {
+    Float_t resx=tXZ[0]-cXZ[0];
+    Float_t resz=tXZ[1]-cXZ[1];
+    fHisResX[id]->Fill(resx);
+    fHisResZ[id]->Fill(resz);
+    fHisResXZ[id]->Fill(resx,resz);
+    fHisClusterSize[id]->Fill((Double_t)ctXZ[0],(Double_t)ctXZ[1]);
+    if(ctXZ[0]>0 &&  ctXZ[0]<=kNclu) fHisResXclu[id][ctXZ[0]-1]->Fill(resx);
+    if(ctXZ[1]>0 &&  ctXZ[1]<=kNclu) fHisResZclu[id][ctXZ[1]-1]->Fill(resx);
+  }
+  return kTRUE;
+}
+//__________________________________________________________
+Bool_t AliITSPlaneEffSPD::WriteHistosToFile(TString filename, Option_t* option) {
+  //
+  // Saves the histograms into a tree and saves the trees into a file
+  //
+  if (!fHis) return kFALSE;
+  if (filename.Data()=="") {
+     AliWarning("WriteHistosToFile: null output filename!");
+     return kFALSE;
+  }
+  char branchname[30];
+  TFile *hFile=new TFile(filename.Data(),option,
+                         "The File containing the TREEs with ITS PlaneEff Histos");
+  TTree *SPDTree=new TTree("SPDTree","Tree whith Residuals and Cluster Type distributions for SPD");
+  TH1F *histZ,*histX;
+  TH2F *histXZ;
+  TH2I *histClusterType;
+  TH1F *histXclu[kNclu];
+  TH1F *histZclu[kNclu];
+
+  histZ=new TH1F();
+  histX=new TH1F();
+  histXZ=new TH2F();
+  histClusterType=new TH2I();
+  for(Int_t clu=0;clu<kNclu;clu++) {
+    histXclu[clu]=new TH1F();
+    histZclu[clu]=new TH1F();
+  }
+
+  SPDTree->Branch("histX","TH1F",&histX,128000,0);
+  SPDTree->Branch("histZ","TH1F",&histZ,128000,0);
+  SPDTree->Branch("histXZ","TH2F",&histXZ,128000,0);
+  SPDTree->Branch("histClusterType","TH2I",&histClusterType,128000,0);
+  for(Int_t clu=0;clu<kNclu;clu++) {
+    sprintf(branchname,"histXclu_%d",clu+1);
+    SPDTree->Branch(branchname,"TH1F",&histXclu[clu],128000,0);
+    sprintf(branchname,"histZclu_%d",clu+1);
+    SPDTree->Branch(branchname,"TH1F",&histZclu[clu],128000,0);
+  }
+
+  for(Int_t j=0;j<kNHisto;j++){
+    histX=fHisResX[j];
+    histZ=fHisResZ[j];
+    histXZ=fHisResXZ[j];
+    histClusterType=fHisClusterSize[j];
+    for(Int_t clu=0;clu<kNclu;clu++) {
+      histXclu[clu]=fHisResXclu[j][clu];
+      histZclu[clu]=fHisResZclu[j][clu];
+    }
+    SPDTree->Fill();
+  }
+  hFile->Write();
+  hFile->Close();
+return kTRUE;
+}
+//__________________________________________________________
+Bool_t AliITSPlaneEffSPD::ReadHistosFromFile(TString filename) {
+  //
+  // Read histograms from an already existing file 
+  //
+  if (!fHis) return kFALSE;
+  if (filename.Data()=="") {
+     AliWarning("ReadHistosFromFile: incorrect output filename!");
+     return kFALSE;
+  }
+  char branchname[30];
+
+  TH1F *h  = 0;
+  TH2F *h2 = 0;
+  TH2I *h2i= 0;
+
+  TFile *file=TFile::Open(filename.Data(),"READONLY");
+
+  if (!file || file->IsZombie()) {
+    AliWarning(Form("Can't open %s !",filename.Data()));
+    delete file;
+    return kFALSE;
+  }
+  TTree *tree = (TTree*) file->Get("SPDTree");
+
+  TBranch *histX = (TBranch*) tree->GetBranch("histX");
+  TBranch *histZ = (TBranch*) tree->GetBranch("histZ");
+  TBranch *histXZ = (TBranch*) tree->GetBranch("histXZ");
+  TBranch *histClusterType = (TBranch*) tree->GetBranch("histClusterType");
+   
+  TBranch *histXclu[kNclu], *histZclu[kNclu];
+  for(Int_t clu=0; clu<kNclu; clu++) {
+    sprintf(branchname,"histXclu_%d",clu+1);
+    histXclu[clu]= (TBranch*) tree->GetBranch(branchname);
+    sprintf(branchname,"histZclu_%d",clu+1);
+    histZclu[clu]= (TBranch*) tree->GetBranch(branchname);
+  }
+
+  gROOT->cd();
+
+  Int_t nevent = (Int_t)histX->GetEntries();
+  if(nevent!=kNHisto) 
+    {AliWarning("ReadHistosFromFile: trying to read too many or too few histos!"); return kFALSE;}
+  histX->SetAddress(&h);
+  for(Int_t j=0;j<kNHisto;j++){
+    delete h; h=0;
+    histX->GetEntry(j);
+    fHisResX[j]->Add(h);
+  }
+
+  nevent = (Int_t)histZ->GetEntries();
+  if(nevent!=kNHisto) 
+    {AliWarning("ReadHistosFromFile: trying to read too many or too few histos!"); return kFALSE;}
+  histZ->SetAddress(&h);
+  for(Int_t j=0;j<kNHisto;j++){
+    delete h; h=0;
+    histZ->GetEntry(j);
+    fHisResZ[j]->Add(h);
+  }
+
+  nevent = (Int_t)histXZ->GetEntries();
+  if(nevent!=kNHisto) 
+    {AliWarning("ReadHistosFromFile: trying to read too many or too few histos!"); return kFALSE;}
+  histXZ->SetAddress(&h2);
+  for(Int_t j=0;j<kNHisto;j++){
+    delete h2; h2=0;
+    histXZ->GetEntry(j);
+    fHisResXZ[j]->Add(h2);
+  }
+
+  nevent = (Int_t)histClusterType->GetEntries();
+  if(nevent!=kNHisto) 
+    {AliWarning("ReadHistosFromFile: trying to read too many or too few histos!"); return kFALSE;}
+  histClusterType->SetAddress(&h2i);
+  for(Int_t j=0;j<kNHisto;j++){
+    delete h2i; h2i=0;
+    histClusterType->GetEntry(j);
+    fHisClusterSize[j]->Add(h2i);
+  }
+
+  for(Int_t clu=0; clu<kNclu; clu++) {
+
+    nevent = (Int_t)histXclu[clu]->GetEntries();
+    if(nevent!=kNHisto)
+      {AliWarning("ReadHistosFromFile: trying to read too many or too few histos!"); return kFALSE;}
+    histXclu[clu]->SetAddress(&h);
+    for(Int_t j=0;j<kNHisto;j++){
+      delete h; h=0;
+      histXclu[clu]->GetEntry(j);
+      fHisResXclu[j][clu]->Add(h);
+    }
+
+   nevent = (Int_t)histZclu[clu]->GetEntries();
+    if(nevent!=kNHisto)
+      {AliWarning("ReadHistosFromFile: trying to read too many or too few histos!"); return kFALSE;}
+    histZclu[clu]->SetAddress(&h);
+    for(Int_t j=0;j<kNHisto;j++){
+      delete h; h=0;
+      histZclu[clu]->GetEntry(j);
+      fHisResZclu[j][clu]->Add(h);
+    }
+  }
+
+  delete h;   h=0;
+  delete h2;  h2=0;
+  delete h2i; h2i=0;
+
+  if (file) {
+    file->Close();
+  }
+
+  fHisResZclu[0][0]->Draw();
+return kTRUE;
 }

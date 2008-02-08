@@ -37,7 +37,8 @@ ClassImp(AliITSPlaneEff)
 AliITSPlaneEff::AliITSPlaneEff(): AliPlaneEff(),
 fRunNumber(0), 
 fCDBUri(""),
-fInitCDBCalled(kFALSE)
+fInitCDBCalled(kFALSE),
+fHis(kFALSE)
 {
     // Default constructor
     // Inputs:
@@ -52,7 +53,8 @@ fInitCDBCalled(kFALSE)
 AliITSPlaneEff::AliITSPlaneEff(const AliITSPlaneEff &s) : AliPlaneEff(s),
 fRunNumber(s.fRunNumber),
 fCDBUri(s.fCDBUri),
-fInitCDBCalled(s.fInitCDBCalled)
+fInitCDBCalled(s.fInitCDBCalled),
+fHis(s.fHis)
 {
     //     Copy Constructor
     // Inputs:
@@ -114,6 +116,7 @@ void AliITSPlaneEff::Copy(TObject &obj) const {
   ((AliITSPlaneEff& ) obj).fRunNumber		= fRunNumber;
   ((AliITSPlaneEff& ) obj).fCDBUri		= fCDBUri;
   ((AliITSPlaneEff& ) obj).fInitCDBCalled	= fInitCDBCalled;
+  ((AliITSPlaneEff& ) obj).fHis			= fHis;
 }
 //_________________________________________________________________________
 Double_t AliITSPlaneEff::PlaneEff(Int_t nf,Int_t nt) const {

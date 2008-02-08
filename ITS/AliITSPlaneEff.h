@@ -74,6 +74,17 @@ class AliITSPlaneEff : public AliPlaneEff {
       {AliError("This method must be implemented in a derived class"); return 999999;};
     virtual Bool_t GetBlockBoundaries(const UInt_t,Float_t&,Float_t&,Float_t&,Float_t&) const
       {AliError("This method must be implemented in a derived class"); return kFALSE;};
+  // Methods for dealing with auxiliary histograms
+    // method to set on/off the creation/updates of histograms (Histos are created/destroyed)
+    virtual void   SetCreateHistos(Bool_t)
+      {AliError("This method must be implemented in a derived class"); return; }
+    virtual Bool_t GetCreateHistos() const {return fHis;};
+    virtual Bool_t FillHistos(UInt_t, Bool_t, Float_t[2], Float_t[2], Int_t[2])
+      {AliError("This method must be implemented in a derived class"); return kFALSE; }
+    virtual Bool_t WriteHistosToFile(TString ,Option_t*)
+      {AliError("This method must be implemented in a derived class"); return kFALSE; }
+    virtual Bool_t ReadHistosFromFile(TString )
+      {AliError("This method must be implemented in a derived class"); return kFALSE; }
 
  protected:
 
@@ -84,6 +95,7 @@ class AliITSPlaneEff : public AliPlaneEff {
     Int_t	fRunNumber;	//! run number (to access CDB)
     TString	fCDBUri;	//! Uri of the default CDB storage
     Bool_t	fInitCDBCalled;	//! flag to check if CDB storages are already initialized
+    Bool_t      fHis;           //! if true, then histograms are created and filled 
    
  private:
     //Int_t*	fFound;		// number of associated clusters into a given block (e.g. SPD 1200 chip)

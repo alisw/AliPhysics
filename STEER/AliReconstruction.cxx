@@ -3176,7 +3176,16 @@ Bool_t AliReconstruction::FinishPlaneEff() {
  //for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
  for (Int_t iDet = 0; iDet < 1; iDet++) { // for the time being only ITS  
    //if (!IsSelected(fgkDetectorName[iDet], detStr)) continue;
-   if(fTracker[iDet]) ret=fTracker[iDet]->GetPlaneEff()->WriteIntoCDB();
+   if(fTracker[iDet]) {
+      AliPlaneEff *planeeff=fTracker[iDet]->GetPlaneEff(); 
+      ret=planeeff->WriteIntoCDB();
+      if(planeeff->GetCreateHistos()) {
+        TString name="PlaneEffHisto";
+        name+=fgkDetectorName[iDet];
+        name+=".root";
+        ret*=planeeff->WriteHistosToFile(name,"RECREATE");
+      }
+   }
  }
  return ret;
 }
