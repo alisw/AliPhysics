@@ -170,74 +170,73 @@ void AliTPCQADataMakerSim::MakeHits(TTree * hitTree)
   const Int_t nTracks = hitTree->GetEntries();
   TBranch* branch = hitTree->GetBranch("TPC2");  
   AliTPCv2* tpc = (AliTPCv2*)gAlice->GetDetector("TPC");
-
+  
   //
   // loop over tracks
   //
   for(Int_t n = 0; n < nTracks; n++){
-    
     Int_t nHits = 0;
     branch->GetEntry(n);
+    
     AliTPChit* tpcHit = (AliTPChit*)tpc->FirstHit(-1);  
     
-    Float_t dist  = 0.;
-    Int_t   nprim = 0;
-    Float_t xold  = tpcHit->X();
-    Float_t yold  = tpcHit->Y();
-    Float_t zold  = tpcHit->Z(); 
-    Float_t radiusOld = TMath::Sqrt(xold*xold + yold*yold);
-    Float_t q     = 0.;
-    
-    while(tpcHit) {
-      
-      Float_t x = tpcHit->X();
-      Float_t y = tpcHit->Y();
-      Float_t z = tpcHit->Z(); 
-      Float_t radius = TMath::Sqrt(x*x + y*y);
-      
-      if(radius>50) { // Skip hits at interaction point
+    if (tpcHit) {
+      Float_t dist  = 0.;
+      Int_t   nprim = 0;
+      Float_t xold  = tpcHit->X();
+      Float_t yold  = tpcHit->Y();
+      Float_t zold  = tpcHit->Z(); 
+      Float_t radiusOld = TMath::Sqrt(xold*xold + yold*yold);
+      Float_t q     = 0.;
+      while(tpcHit) {
+	Float_t x = tpcHit->X();
+	Float_t y = tpcHit->Y();
+	Float_t z = tpcHit->Z(); 
+	Float_t radius = TMath::Sqrt(x*x + y*y);
 	
-	nHits++;
-	
-	Int_t trackNo = tpcHit->GetTrack();
-	
-	if(trackNo==n) { // primary track
+	if(radius>50) { // Skip hits at interaction point
 	  
-	  fHistHitsElectrons->Fill(tpcHit->fQ);
-	  fHistHitsRadius->Fill(radius);
+	  nHits++;
 	  
-	  // find the new distance
-	  dist += TMath::Sqrt((x-xold)*(x-xold) + (y-yold)*(y-yold) + 
-			      (z-zold)*(z-zold));
-	  if(dist<1.){  
-	    // add data to this 1 cm step
-	    nprim++;  
-	    q += tpcHit->fQ;
+	  Int_t trackNo = tpcHit->GetTrack();
+	  
+	  if(trackNo==n) { // primary track
 	    
-	  } else{
-	    // Fill the histograms normalized to per cm 
+	    fHistHitsElectrons->Fill(tpcHit->fQ);
+	    fHistHitsRadius->Fill(radius);
 	    
-	    if(nprim==1)
-	      cout << radius << ", " << radiusOld << ", " << dist << endl; 
-
-	    fHistHitsPrimPerCm->Fill((Float_t)nprim);
-	    fHistHitsElectronsPerCm->Fill(q);
-
-	    dist  = 0;
-	    q     = 0;
-	    nprim = 0;
+	    // find the new distance
+	    dist += TMath::Sqrt((x-xold)*(x-xold) + (y-yold)*(y-yold) + 
+				(z-zold)*(z-zold));
+	    if(dist<1.){  
+	      // add data to this 1 cm step
+	      nprim++;  
+	      q += tpcHit->fQ;
+	      
+	    } else{
+	      // Fill the histograms normalized to per cm 
+	      
+	      if(nprim==1)
+		cout << radius << ", " << radiusOld << ", " << dist << endl; 
+	      
+	      fHistHitsPrimPerCm->Fill((Float_t)nprim);
+	      fHistHitsElectronsPerCm->Fill(q);
+	      
+	      dist  = 0;
+	      q     = 0;
+	      nprim = 0;
+	    }
 	  }
 	}
+	
+	radiusOld = radius;
+	xold = x;
+	yold = y;
+	zold = z;
+	
+	tpcHit = (AliTPChit*) tpc->NextHit();
       }
-      
-      radiusOld = radius;
-      xold = x;
-      yold = y;
-      zold = z;
-      
-      tpcHit = (AliTPChit*) tpc->NextHit();
     }
-    
     fHistHitsNhits->Fill(nHits);
   }
 }
