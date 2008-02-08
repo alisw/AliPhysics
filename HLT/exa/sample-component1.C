@@ -1,4 +1,4 @@
-// $Id:  1.1 2007/11/08 12:17:24 richterm Exp $
+// $Id $
 /**
  * @file sample-component1.C
  * @brief Sample macro for the component initialization and configuration.
