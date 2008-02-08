@@ -39,7 +39,8 @@ public:
    //GlobalFlag:1, CTP trig:1, DAQ:1, Reg pattern:8;
 
             /// Return event type
-   Bool_t  GetEventType()  const {return (fWord &  0x40000000);}
+   //Bool_t  GetEventType()  const {return (fWord &  0x40000000);}
+   Bool_t  GetEventType() const;
             /// Return Darc type
    UChar_t GetDarcType()   const {return (UChar_t)(fWord >> 24) &  0x7;}
             /// Return serial number

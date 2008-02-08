@@ -186,6 +186,23 @@ void AliMUONDarcHeader::SetScalersNumbers()
     fGlobalScaler[i] = i;
 
 }
+//___________________________________________
+Bool_t  AliMUONDarcHeader::GetEventType()  const 
+{
+  /// return 1 for physics trigger
+  /// return 0 for software trigger
+  // 01 = trigger physics
+  // 10 = trigger software "start of run"
+  // 11 = trigger software "end of run"
+  // 00 = other trigger software
+  
+  Bool_t b1 =   (fWord >> 30) &  0x1;
+  Bool_t b2 = !((fWord >> 31) &  0x1);
+  
+  //printf("%d\n", b1 & b2);
+  //printf("%d %d\n", b2 , b1);
+  return (b1 & b2);
+}
 
 //___________________________________________
 void AliMUONDarcHeader::Clear(Option_t* )
