@@ -95,11 +95,11 @@ void AliGenKrypton::Generate(){
   for(Int_t i=0;i<ngamma;i++){
     rnd=gRandom->Rndm();
     Double_t theta = TMath::Pi()*rnd;
+    rnd=gRandom->Rndm();
     phi=TMath::TwoPi()*rnd;    
     ptot=egamma[i];
     p[0]=ptot*TMath::Cos(phi)*TMath::Sin(theta);
     p[1]=ptot*TMath::Sin(phi)*TMath::Sin(theta);
-    rnd=gRandom->Rndm();
     p[2]=ptot*TMath::Cos(theta);
     //
     // her push particle
