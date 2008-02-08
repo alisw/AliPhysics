@@ -15,6 +15,8 @@
 #include "TGeoMatrix.h"
 #include "TObject.h"
 
+//class TGeoMatrix;
+
 class AliTOFGeometry: public TObject{
 
  public:

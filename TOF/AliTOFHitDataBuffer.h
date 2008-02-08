@@ -14,6 +14,8 @@
 #include "TObject.h"
 #include "AliTOFHitData.h"
 
+//class AliTOFHitData;
+
 //data buffer size
 #define DATA_BUFFER_SIZE 1000
 

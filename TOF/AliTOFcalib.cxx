@@ -85,13 +85,14 @@ author: Chiara Zampolli, zampolli@bo.infn.it
 #include "TFile.h"
 #include "TH1F.h"
 #include "TH2F.h"
-#include "TList.h"
-#include "TROOT.h"
-#include "TStyle.h"
+//#include "TList.h"
+//#include "TROOT.h"
+//#include "TStyle.h"
 #include "TTree.h"
 #include "TChain.h"
 #include "TProfile.h"
 #include "TGrid.h"
+#include "TMath.h"
 
 #include "AliCDBEntry.h"
 #include "AliCDBRunRange.h"
@@ -99,8 +100,8 @@ author: Chiara Zampolli, zampolli@bo.infn.it
 #include "AliCDBManager.h"
 #include "AliCDBStorage.h"
 #include "AliCDBMetaData.h"
-#include "AliESDtrack.h"
-#include "AliESD.h"
+//#include "AliESDtrack.h"
+//#include "AliESD.h"
 #include "AliLog.h"
 
 #include "AliTOFcalib.h"
@@ -109,6 +110,9 @@ author: Chiara Zampolli, zampolli@bo.infn.it
 #include "AliTOFChannelOffline.h"
 #include "AliTOFGeometry.h"
 #include "AliTOFRecoParam.h"
+
+class TROOT;
+class TStyle;
 
 extern TROOT *gROOT;
 extern TStyle *gStyle;

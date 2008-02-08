@@ -12,10 +12,12 @@
 ///////////////////////////////////////////////////////////////
 
 #include "TObject.h"
-#include "AliTOFHitData.h"
+
+//#include "AliTOFHitData.h"
 #include "AliTOFHitDataBuffer.h"
 #include "AliTOFDecoder.h"
 
+class AliTOFHitData;
 
 /**********************************
  * OLD DEFINITIONS 

@@ -82,7 +82,7 @@
 #include <TCanvas.h>
 #include <TClonesArray.h>
 #include <TFile.h>
-#include <TFolder.h>
+//#include <TFolder.h>
 #include <TFrame.h>
 #include <TH1.h>
 #include <TParticle.h>
@@ -98,6 +98,12 @@
 #include "AliTOFhitT0.h"
 #include "AliTOFT0.h"
 #include "AliTOF.h"
+
+extern TROOT *gROOT;
+extern TRandom *gRandom;
+extern TBenchmark *gBenchmark;
+
+extern AliRun *gAlice;
 
 ClassImp(AliTOFT0)
 

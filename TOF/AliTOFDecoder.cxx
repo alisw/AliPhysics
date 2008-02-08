@@ -46,6 +46,7 @@ TOF Raw Data decoder
 
 #include "AliLog.h"
 #include "AliTOFHitData.h"
+#include "AliTOFHitDataBuffer.h"
 #include "AliTOFDecoder.h"
 #include "AliTOFGeometry.h"
 

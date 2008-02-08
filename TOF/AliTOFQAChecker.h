@@ -11,10 +11,11 @@
 //                                                                 // 
 /////////////////////////////////////////////////////////////////////
 
-class TFile ; 
-class TH1F ; 
-class TH1I ; 
 #include "AliQACheckerBase.h"
+
+//class TFile ; 
+//class TH1F ; 
+//class TH1I ; 
 
 class AliTOFQAChecker: public AliQACheckerBase {
 

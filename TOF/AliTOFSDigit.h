@@ -13,7 +13,7 @@
 /* $Id$ */
 
 #include "TObject.h"
-#include "TArrayF.h"
+//#include "TArrayF.h"
 #include "TArrayI.h"
 
 class AliTOFSDigit : public TObject {

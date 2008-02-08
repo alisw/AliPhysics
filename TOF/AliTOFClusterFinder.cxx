@@ -99,21 +99,22 @@ Revision 0.01  2005/07/25 A. De Caro
 //                                                            //
 ////////////////////////////////////////////////////////////////
 
+#include "Riostream.h"
 
 #include "TClonesArray.h"
 #include "TStopwatch.h"
 #include "TTree.h"
-#include <TGeoManager.h>
-#include <AliGeomManager.h>
+//#include <TGeoManager.h>
 #include <TGeoMatrix.h>
-#include <TGeoPhysicalNode.h>
-#include "AliAlignObj.h"
+//#include <TGeoPhysicalNode.h>
 
 #include "AliDAQ.h"
 #include "AliLoader.h"
 #include "AliLog.h"
 #include "AliRawReader.h"
 #include "AliRunLoader.h"
+//#include "AliAlignObj.h"
+#include <AliGeomManager.h>
 
 #include "AliTOFcalib.h"
 #include "AliTOFChannelOnline.h"
@@ -125,7 +126,6 @@ Revision 0.01  2005/07/25 A. De Caro
 #include "AliTOFGeometry.h"
 #include "AliTOFrawData.h"
 #include "AliTOFRawStream.h"
-#include "Riostream.h"
 
 //extern TFile *gFile;
 

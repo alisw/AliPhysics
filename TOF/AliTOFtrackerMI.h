@@ -16,7 +16,7 @@
 
 #include "AliTracker.h"
 
-#include "AliTOFpidESD.h"
+//#include "AliTOFpidESD.h"
 
 class TTreeSRedirector;
 class TClonesArray;
@@ -27,6 +27,7 @@ class AliTOFcluster;
 class AliTOFRecoParam;
 class AliTOFGeometry;
 class AliTOFtrack;
+class AliTOFpidESD;
 
 class AliTOFtrackerMI : public AliTracker {
 
@@ -89,36 +90,36 @@ public:
 
 private:
 
-  Int_t InsertCluster(AliTOFcluster *c); // Fills TofClusters Array
-  Int_t FindClusterIndex(Double_t z) const; // Returns cluster index 
-  void  MatchTracks(Bool_t mLastStep); // Matching Algorithm 
-  void  MatchTracksMI(Bool_t mLastStep); // Matching Algorithm 
-  void  CollectESD(); // Select starting Set for Matching 
-  //void  Init();
-  Float_t GetLinearDistances(AliTOFtrack * track, AliTOFcluster *cluster, Float_t distances[5]);
-  AliTOFRecoParam*  fRecoParam;           // Pointer to TOF Recontr. Params
-  AliTOFGeometry*  fGeom;                 // Pointer to TOF geometry
-  AliTOFpidESD*    fPid;               // Pointer to TOF PID
-  AliTOFcluster *fClusters[kMaxCluster];  // pointers to the TOF clusters
+ Int_t InsertCluster(AliTOFcluster *c); // Fills TofClusters Array
+ Int_t FindClusterIndex(Double_t z) const; // Returns cluster index 
+ void  MatchTracks(Bool_t mLastStep); // Matching Algorithm 
+ void  MatchTracksMI(Bool_t mLastStep); // Matching Algorithm 
+ void  CollectESD(); // Select starting Set for Matching 
+ //void  Init();
+ Float_t GetLinearDistances(AliTOFtrack * track, AliTOFcluster *cluster, Float_t distances[5]);
+ AliTOFRecoParam*  fRecoParam;           // Pointer to TOF Recontr. Params
+ AliTOFGeometry*  fGeom;                 // Pointer to TOF geometry
+ AliTOFpidESD*    fPid;               // Pointer to TOF PID
+ AliTOFcluster *fClusters[kMaxCluster];  // pointers to the TOF clusters
 
-  Int_t fN;              // Number of Clusters
-  Int_t fNseeds;         // Number of track seeds  
-  Int_t fNseedsTOF;      // TPC BP tracks
-  Int_t fngoodmatch;     // Correctly matched  tracks
-  Int_t fnbadmatch;      // Wrongly matched tracks
-  Int_t fnunmatch;       // Unmatched tracks
-  Int_t fnmatch;         // Total matched tracks
+ Int_t fN;              // Number of Clusters
+ Int_t fNseeds;         // Number of track seeds  
+ Int_t fNseedsTOF;      // TPC BP tracks
+ Int_t fngoodmatch;     // Correctly matched  tracks
+ Int_t fnbadmatch;      // Wrongly matched tracks
+ Int_t fnunmatch;       // Unmatched tracks
+ Int_t fnmatch;         // Total matched tracks
  
-  Float_t fR;            // Intermediate radius in TOF, used in matching
-  Float_t fTOFHeigth;    // Inner TOF radius for propagation
-  Float_t fdCut;         // Cut on minimum distance track-pad in matching 
-  Float_t fDx;           // Pad Size in X   
-  Float_t fDy;           // Pad Size in Y (== X  TOF convention)
-  Float_t fDz;           // Pad Size in Z 
-  TClonesArray* fTracks; //! pointer to the TClonesArray with TOF tracks
-  TClonesArray* fSeeds;  //! pointer to the TClonesArray with ESD tracks
-  TTreeSRedirector *fDebugStreamer;     //!debug streamer
-  ClassDef(AliTOFtrackerMI, 1) // TOF trackerMI 
+ Float_t fR;            // Intermediate radius in TOF, used in matching
+ Float_t fTOFHeigth;    // Inner TOF radius for propagation
+ Float_t fdCut;         // Cut on minimum distance track-pad in matching 
+ Float_t fDx;           // Pad Size in X   
+ Float_t fDy;           // Pad Size in Y (== X  TOF convention)
+ Float_t fDz;           // Pad Size in Z 
+ TClonesArray* fTracks; //! pointer to the TClonesArray with TOF tracks
+ TClonesArray* fSeeds;  //! pointer to the TClonesArray with ESD tracks
+ TTreeSRedirector *fDebugStreamer;     //!debug streamer
+ ClassDef(AliTOFtrackerMI, 1) // TOF trackerMI 
 };
 
 #endif

@@ -7,18 +7,21 @@
 //////////////////////////////////////////////////////////////////
 //  class for TOF Alignment::                                   //
 //////////////////////////////////////////////////////////////////
-#include <TObject.h>
-#include <TString.h>
+//#include <TObject.h>
+//#include <TString.h>
 #include "TTask.h"
-#include "TGeoManager.h"
-#include "TGeoVolume.h"
-#include "TGeoBBox.h"
-#include "TGeoTrd1.h"
-#include "TGeoPhysicalNode.h"
-#include "TGeoNode.h"
+//#include "TGeoManager.h"
+//#include "TGeoVolume.h"
+//#include "TGeoBBox.h"
+//#include "TGeoTrd1.h"
+//#include "TGeoPhysicalNode.h"
+//#include "TGeoNode.h"
+//#include "TGeoMatrix.h"
 
-
+class TGeoManager;
 class TObjArray;
+class TString;
+class TGeoMatrix;
 
 class AliTOFAlignment :public TTask{
 

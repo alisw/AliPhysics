@@ -7,14 +7,14 @@
 /* $Id$ */
 
 #include "TObject.h" 
-#include "TString.h"
+//#include "TString.h"
 
 class TMap;
 class TClonesArray;
-class TH2F;
-class TGraph;
-class TF1;
-//class TString;
+//class TH2F;
+//class TGraph;
+//class TF1;
+class TString;
 class AliTOFFormatDCS;
 
 // AliTOFDataDCS class

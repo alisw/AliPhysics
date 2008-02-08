@@ -24,11 +24,13 @@
 //                                                                 //
 /////////////////////////////////////////////////////////////////////
 
-#include "AliLog.h"
 #include "TH1.h"
 #include "TList.h"
-#include "AliQA.h"
-#include "AliQAChecker.h"
+
+#include "AliLog.h"
+//#include "AliQA.h"
+//#include "AliQAChecker.h"
+
 #include "AliTOFQAChecker.h"
 
 ClassImp(AliTOFQAChecker)

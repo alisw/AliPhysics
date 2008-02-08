@@ -34,12 +34,15 @@
 #include <TFile.h>
 #include <TH1F.h>
 #include <TH2F.h>
+#include <TSeqCollection.h>
 
-#include "AliAlignObj.h"
+//#include "AliAlignObj.h"
 #include "AliESDtrack.h"
 #include "AliESDEvent.h"
 #include "AliLog.h"
 #include "AliTrackPointArray.h"
+#include "AliGeomManager.h"
+#include "AliCDBManager.h"
 
 #include "AliTOFcalib.h"
 #include "AliTOFRecoParam.h"
@@ -47,8 +50,7 @@
 #include "AliTOFGeometry.h"
 #include "AliTOFtrackerV1.h"
 #include "AliTOFtrack.h"
-
-#include "AliCDBManager.h"
+#include "AliTOFpidESD.h"
 
 extern TROOT *gROOT;
 

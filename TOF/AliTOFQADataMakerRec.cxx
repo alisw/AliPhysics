@@ -22,19 +22,22 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include <TClonesArray.h>
-#include <TFile.h> 
-#include <TH1I.h> 
+//#include <TFile.h> 
+//#include <TH1I.h> 
 #include <TH1F.h> 
 #include <TH2F.h> 
+
+#include "AliLog.h"
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
-#include "AliTOFcluster.h"
-#include "AliTOFQADataMakerRec.h"
 #include "AliQAChecker.h"
 #include "AliRawReader.h"
+
+#include "AliTOFcluster.h"
+#include "AliTOFQADataMakerRec.h"
 #include "AliTOFRawStream.h"
 #include "AliTOFrawData.h"
-#include "AliLog.h"
+#include "AliTOFGeometry.h"
 
 ClassImp(AliTOFQADataMakerRec)
            

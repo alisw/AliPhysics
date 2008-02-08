@@ -33,7 +33,7 @@ class TObjArray;
 class TTree;
 class TChain;
 
-class AliESD;
+//class AliESD;
 
 class AliTOFCal;
 class AliTOFRecoParam;

@@ -21,7 +21,7 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "TFile.h"
+//#include "TFile.h"
 #include "TObjArray.h"
 #include "TString.h"
 
@@ -36,11 +36,13 @@
 #include "AliTOFReconstructor.h"
 
 class TTree;
+//class TFile;
+//class TDirectory;
 
 class AliESDEvent;
 
-extern TDirectory *gDirectory;
-extern TFile *gFile;
+//extern TDirectory *gDirectory;
+//extern TFile *gFile;
 
 ClassImp(AliTOFReconstructor)
 

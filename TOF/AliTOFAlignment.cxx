@@ -82,12 +82,20 @@ author: Silvia Arcelli, arcelli@bo.infn.it
 
 #include <Rtypes.h>
 
+#include "TGeoMatrix.h"
 #include "TMath.h"
 #include "TFile.h"
 #include "TRandom.h"
+#include "TGeoManager.h"
+#include "TGeoVolume.h"
+#include "TGeoBBox.h"
+#include "TGeoTrd1.h"
+#include "TGeoPhysicalNode.h"
+#include "TGeoNode.h"
+#include "TObjString.h"
 
 #include "AliLog.h"
-#include "AliAlignObj.h"
+//#include "AliAlignObj.h"
 #include "AliAlignObjParams.h"
 #include "AliAlignObjMatrix.h"
 #include "AliCDBManager.h"
@@ -97,7 +105,7 @@ author: Silvia Arcelli, arcelli@bo.infn.it
 #include "AliTOFAlignment.h"
 #include "AliSurveyObj.h"
 #include "AliSurveyPoint.h"
-#include "TObjString.h"
+
 ClassImp(AliTOFAlignment)
 
 const Double_t AliTOFAlignment::fgkRorigTOF  = 384.5; // Mean Radius of the TOF ext. volume, cm

@@ -22,19 +22,20 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include <TClonesArray.h>
-#include <TFile.h> 
-#include <TH1I.h> 
+//#include <TFile.h> 
+//#include <TH1I.h> 
 #include <TH1F.h> 
 #include <TH2F.h> 
 #include <TTree.h>
 #include <TMath.h>
+
+#include "AliLog.h"
 
 #include "AliTOFdigit.h"
 #include "AliTOFSDigit.h"
 #include "AliTOFhitT0.h"
 #include "AliTOFQADataMakerSim.h"
 #include "AliQAChecker.h"
-#include "AliLog.h"
 #include "AliTOFGeometry.h"
 
 

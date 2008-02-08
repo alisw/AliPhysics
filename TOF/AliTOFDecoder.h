@@ -1,8 +1,6 @@
 #ifndef ALITOFDECODER_H
 #define ALITOFDECODER_H
 
-#include "AliTOFGeometry.h"
-
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -88,7 +86,11 @@
 
 #include "TObject.h"
 #include "AliTOFRawDataFormat.h"
-#include "AliTOFHitDataBuffer.h"
+#include "AliTOFHitData.h"
+//#include "AliTOFHitDataBuffer.h"
+//#include "AliTOFGeometry.h"
+
+class AliTOFHitDataBuffer;
 
 class AliTOFDecoder : public TObject
 {

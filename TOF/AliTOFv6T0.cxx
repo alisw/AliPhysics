@@ -89,6 +89,7 @@ Revision 0.1 2007 March G. Cara Romeo and A. De Caro
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include "TDirectory.h"
 #include "TBRIK.h"
 #include "TGeometry.h"
 #include "TLorentzVector.h"

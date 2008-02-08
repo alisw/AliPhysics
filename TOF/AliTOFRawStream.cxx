@@ -100,6 +100,7 @@ Revision 0.01  2005/07/22 A. De Caro
 #include "AliTOFRawMap.h"
 #include "AliTOFRawStream.h"
 
+#include "AliTOFHitData.h"
 
 ClassImp(AliTOFRawStream)
 

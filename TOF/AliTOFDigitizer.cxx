@@ -25,9 +25,9 @@
 //                                                                         //
 //_________________________________________________________________________//
 
-#include "Riostream.h"
+//#include "Riostream.h"
 
-#include "TFile.h"
+//#include "TFile.h"
 #include "TH1F.h"
 #include "TTree.h"
 #include "TRandom.h"
@@ -40,7 +40,7 @@
 #include "AliRun.h"
 
 #include "AliTOFcalib.h"
-#include "AliTOFChannelOnline.h"
+//#include "AliTOFChannelOnline.h"
 #include "AliTOFChannelOffline.h"
 #include "AliTOFDigitizer.h"
 #include "AliTOFdigit.h"
@@ -50,7 +50,7 @@
 #include "AliTOF.h"
 
 extern TDirectory *gDirectory;
-extern TFile *gFile;
+//extern TFile *gFile;
 extern TRandom *gRandom;
 
 extern AliRun *gAlice;

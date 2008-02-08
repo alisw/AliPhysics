@@ -24,11 +24,11 @@
 #include <Rtypes.h>
 
 #include "TClonesArray.h"
-#include "TGeoManager.h"
+//#include "TGeoManager.h"
 #include "TTree.h"
 #include "TTreeStream.h"
 
-#include "AliRun.h"
+//#include "AliRun.h"
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
 
@@ -38,6 +38,9 @@
 #include "AliTOFGeometry.h"
 #include "AliTOFtrackerMI.h"
 #include "AliTOFtrack.h"
+#include "AliTOFpidESD.h"
+
+class TGeoManager;
 
 extern TGeoManager *gGeoManager;
 

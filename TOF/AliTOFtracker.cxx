@@ -29,26 +29,29 @@
 #include <Rtypes.h>
 #include <TROOT.h>
 
+#include <TSeqCollection.h>
 #include <TClonesArray.h>
 #include <TGeoManager.h>
 #include <TTree.h>
 #include <TFile.h>
 #include <TH2F.h>
 
-#include "AliAlignObj.h"
+//#include "AliAlignObj.h"
+#include "AliGeomManager.h"
 #include "AliESDtrack.h"
 #include "AliESDEvent.h"
 #include "AliLog.h"
 #include "AliTrackPointArray.h"
+#include "AliCDBManager.h"
 
 #include "AliTOFcalib.h"
+#include "AliTOFpidESD.h"
 #include "AliTOFRecoParam.h"
 #include "AliTOFcluster.h"
 #include "AliTOFGeometry.h"
 #include "AliTOFtracker.h"
 #include "AliTOFtrack.h"
 
-#include "AliCDBManager.h"
 extern TGeoManager *gGeoManager;
 extern TROOT *gROOT;
 

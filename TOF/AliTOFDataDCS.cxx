@@ -44,18 +44,18 @@ Class for handling the TOF DCS data in the Shuttle (C.Zampolli)
 
 */  
 
-#include "AliTOFDataDCS.h"
+#include "TString.h"
+//#include "TF1.h"
+//#include "TH1F.h"
+#include "TTimeStamp.h"
+#include "TMap.h"
+#include "TCanvas.h"
 
 #include "AliDCSValue.h"
 #include "AliLog.h"
 
-//#include "TString.h"
+#include "AliTOFDataDCS.h"
 #include "AliTOFFormatDCS.h"
-#include "TF1.h"
-#include "TCanvas.h"
-#include "TH1F.h"
-#include "TTimeStamp.h"
-#include "TMap.h"
 
 class TH2;
 class AliCDBMetaData;

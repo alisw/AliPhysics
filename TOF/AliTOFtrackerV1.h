@@ -20,16 +20,17 @@
 //----------------------------------------------------------------------//
 
 #include "AliTracker.h"
-#include "AliTOFpidESD.h"
+//#include "AliTOFpidESD.h"
 
 class TClonesArray;
+class TH1F;
+class TH2F;
 
 class AliESDEvent;
 
 class AliTOFcluster;
 class AliTOFRecoParam;
-class TH1F;
-class TH2F;
+class AliTOFpidESD;
 
 class AliTOFtrackerV1 : public AliTracker {
 
@@ -42,54 +43,54 @@ public:
  AliTOFtrackerV1& operator=(const AliTOFtrackerV1 &source); // ass. op.
 
  virtual ~AliTOFtrackerV1();
-  virtual Int_t Clusters2Tracks(AliESDEvent* /*event*/) {return -1;};
-  virtual Int_t PropagateBack(AliESDEvent* event);
-  virtual Int_t RefitInward(AliESDEvent* /*event*/) {return -1;};
-  virtual Int_t LoadClusters(TTree * cTree); // Load Clusters
-  virtual void  UnloadClusters();// UnLoad Clusters
-  virtual AliCluster *GetCluster(Int_t /*index*/) const {return NULL;};
-  Bool_t GetTrackPoint(Int_t index, AliTrackPoint& p) const;
-  void InitCheckHists();
-  void SaveCheckHists();
+ virtual Int_t Clusters2Tracks(AliESDEvent* /*event*/) {return -1;};
+ virtual Int_t PropagateBack(AliESDEvent* event);
+ virtual Int_t RefitInward(AliESDEvent* /*event*/) {return -1;};
+ virtual Int_t LoadClusters(TTree * cTree); // Load Clusters
+ virtual void  UnloadClusters();// UnLoad Clusters
+ virtual AliCluster *GetCluster(Int_t /*index*/) const {return NULL;};
+ Bool_t GetTrackPoint(Int_t index, AliTrackPoint& p) const;
+ void InitCheckHists();
+ void SaveCheckHists();
 
 private:
 
-  Int_t FindClusterIndex(Double_t z) const; // Returns cluster index 
-  void  MatchTracks(); // Matching Algorithm 
-  void  CollectESD(); // Select starting Set for Matching 
-  Float_t  GetTimeZerofromTOF(AliESDEvent* /*event*/) const; // T0 from TOF
-  Float_t  GetTimeZerofromT0(AliESDEvent* event) const; // T0 from T0
-  Float_t  CorrectTimeWalk(Float_t dist,Float_t tof); // Time Walk correction
+ Int_t FindClusterIndex(Double_t z) const; // Returns cluster index 
+ void  MatchTracks(); // Matching Algorithm 
+ void  CollectESD(); // Select starting Set for Matching 
+ Float_t  GetTimeZerofromTOF(AliESDEvent* /*event*/) const; // T0 from TOF
+ Float_t  GetTimeZerofromT0(AliESDEvent* event) const; // T0 from T0
+ Float_t  CorrectTimeWalk(Float_t dist,Float_t tof); // Time Walk correction
 
-  AliTOFRecoParam* fRecoParam;           // Pointer to TOF Recon. Pars
-  AliTOFpidESD*    fPid;               // Pointer to TOF PID
-  AliTOFcluster *fClusters[kMaxCluster];  // pointers to the TOF clusters
+ AliTOFRecoParam* fRecoParam;           // Pointer to TOF Recon. Pars
+ AliTOFpidESD*    fPid;               // Pointer to TOF PID
+ AliTOFcluster *fClusters[kMaxCluster];  // pointers to the TOF clusters
 
-  Int_t fN;              // Number of Clusters
-  Int_t fNseeds;         // Number of track seeds  
-  Int_t fNseedsTOF;      // TPC BP tracks
-  Int_t fngoodmatch;     // Correctly matched  tracks
-  Int_t fnbadmatch;      // Wrongly matched tracks
-  Int_t fnunmatch;       // Unmatched tracks
-  Int_t fnmatch;         // Total matched tracks
+ Int_t fN;              // Number of Clusters
+ Int_t fNseeds;         // Number of track seeds  
+ Int_t fNseedsTOF;      // TPC BP tracks
+ Int_t fngoodmatch;     // Correctly matched  tracks
+ Int_t fnbadmatch;      // Wrongly matched tracks
+ Int_t fnunmatch;       // Unmatched tracks
+ Int_t fnmatch;         // Total matched tracks
  
-  TClonesArray* fTracks; //! pointer to the TClonesArray with TOF tracks
-  TClonesArray* fSeeds;  //! pointer to the TClonesArray with ESD tracks
-  //Digits/Reco QA histos
+ TClonesArray* fTracks; //! pointer to the TClonesArray with TOF tracks
+ TClonesArray* fSeeds;  //! pointer to the TClonesArray with ESD tracks
+ //Digits/Reco QA histos
 
-  TH2F * fHDigClusMap; //Digits QA, Cluster Map 
-  TH1F * fHDigNClus;   //Digits QA, # of clusters on TOF/event
-  TH1F * fHDigClusTime;//Digits QA, Cluster Time (ns)
-  TH1F * fHDigClusToT; //Digits QA, Cluster ToT (ns)
-  TH1F * fHRecNClus; //Reco QA, cluster occupancy in search window
-  TH1F * fHRecChi2;//Reco QA, track-best TOF cluster chi2
-  TH1F * fHRecDistZ;//Reco QA, track-TOF cluster closest distance (cm)
-  TH2F * fHRecSigYVsP;//Reco QA, track error in Y at TOF inner surface (cm)
-  TH2F * fHRecSigZVsP; //Reco QA, track error in Z at TOF inner surface (cm)
-  TH2F * fHRecSigYVsPWin;//Reco QA, search window size in Y (cm)
-  TH2F * fHRecSigZVsPWin;//Reco QA, search window size in X (cm)
+ TH2F * fHDigClusMap; //Digits QA, Cluster Map 
+ TH1F * fHDigNClus;   //Digits QA, # of clusters on TOF/event
+ TH1F * fHDigClusTime;//Digits QA, Cluster Time (ns)
+ TH1F * fHDigClusToT; //Digits QA, Cluster ToT (ns)
+ TH1F * fHRecNClus; //Reco QA, cluster occupancy in search window
+ TH1F * fHRecChi2;//Reco QA, track-best TOF cluster chi2
+ TH1F * fHRecDistZ;//Reco QA, track-TOF cluster closest distance (cm)
+ TH2F * fHRecSigYVsP;//Reco QA, track error in Y at TOF inner surface (cm)
+ TH2F * fHRecSigZVsP; //Reco QA, track error in Z at TOF inner surface (cm)
+ TH2F * fHRecSigYVsPWin;//Reco QA, search window size in Y (cm)
+ TH2F * fHRecSigZVsPWin;//Reco QA, search window size in X (cm)
 
-  ClassDef(AliTOFtrackerV1, 1) // TOF tracker 
+ ClassDef(AliTOFtrackerV1, 1) // TOF tracker 
 };
 
 #endif

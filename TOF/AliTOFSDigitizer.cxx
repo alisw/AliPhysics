@@ -49,6 +49,7 @@
 #include "AliTOFSDigit.h"
 #include "AliTOF.h"
 
+extern TROOT *gROOT;
 
 ClassImp(AliTOFSDigitizer)
 
