@@ -74,12 +74,15 @@ void AliEveTOFDigitsInfo::ReadRaw(AliRawReader* rawReader, Int_t nEvent)
   //ftxt << endl;
   //ftxt << "  " << nEvent << endl;
 
+  if (nEvent<0) printf("%3i\n", nEvent); // only to use nEvent variable
+
   const Int_t kDDL = AliDAQ::NumberOfDdls("TOF");
 
   TClonesArray *tofDigits = new TClonesArray("AliTOFdigit",10000);
   fTree = new TTree();
   Int_t bufsize = 32000;
-  TBranch *branch = fTree->Branch("TOF", &tofDigits, bufsize);
+  //TBranch *branch = fTree->Branch("TOF", &tofDigits, bufsize);
+  fTree->Branch("TOF", &tofDigits, bufsize);
   fTree->GetEntry(0);
 
   TClonesArray * clonesRawData = 0x0;
