@@ -264,8 +264,48 @@ void Config()
     gtof->SetPart(kProton);
     gtof->SetMomentum(2.5);
     gtof->SetTheta(95);
-    pG1->SetPhi(340);
+    gtof->SetPhi(340);
     gener->AddGenerator(gtof,"Proton for TOF",1);
+
+    //FMD1
+    AliGenFixed *gfmd1=new AliGenFixed(1);
+    gfmd1->SetPart(kGamma);
+    gfmd1->SetMomentum(25);
+    gfmd1->SetTheta(1.8);
+    gfmd1->SetPhi(10);
+    gener->AddGenerator(gfmd1,"Gamma for FMD1",1);
+    
+    //FMD2i
+    AliGenFixed *gfmd2i=new AliGenFixed(1);
+    gfmd2i->SetPart(kPiPlus);
+    gfmd2i->SetMomentum(1.5);
+    gfmd2i->SetTheta(7.3);
+    gfmd2i->SetPhi(20);
+    gener->AddGenerator(gfmd2i,"Pi+ for FMD2i",1);
+    
+    //FMD2o
+    AliGenFixed *gfmd2o=new AliGenFixed(1);
+    gfmd2o->SetPart(kPiMinus);
+    gfmd2o->SetMomentum(1.5);
+    gfmd2o->SetTheta(16.1);
+    gfmd2o->SetPhi(30);
+    gener->AddGenerator(gfmd2o,"Pi- for FMD2o",1);
+    
+    //FMD3o
+    AliGenFixed *gfmd3o=new AliGenFixed(1);
+    gfmd3o->SetPart(kPiPlus);
+    gfmd3o->SetMomentum(1.5);
+    gfmd3o->SetTheta(163.9);
+    gfmd3o->SetPhi(40);
+    gener->AddGenerator(gfmd3o,"Pi+ for FMD3o",1);
+    
+    //FMD3i
+    AliGenFixed *gfmd3i=new AliGenFixed(1);
+    gfmd3i->SetPart(kPiMinus);
+    gfmd3i->SetMomentum(1.5);
+    gfmd3i->SetTheta(170.5);
+    gfmd3i->SetPhi(50);
+    gener->AddGenerator(gfmd3i,"Pi- for FMD3i",1);
     
     gener->Init();
 
