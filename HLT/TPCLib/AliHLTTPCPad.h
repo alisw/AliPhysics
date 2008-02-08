@@ -21,9 +21,12 @@
 
 #include "AliHLTLogging.h"
 #include "AliHLTTPCClusters.h"
+#include "TH1F.h"
 #include <vector>
 
 typedef Int_t AliHLTTPCSignal_t;
+
+#define DebugHisto 0
 
 /**
  * @class AliHLTTPCPad
@@ -282,13 +285,18 @@ public:
    * The method is checked with 2006 cosmics data, and it looks good.
    * If you want to use the threshold approach you HAVE to set nSigma=-1 and threshold>0. For example: If you want all signals 
    * 30 adc counts above threshold you should call the function like this: ZeroSuppress(-1,30)
-   * @param nSigma          Specify nSigma above threshold default=3
-   * @param threshold       Specify what adc threshold above average default=20 (remember to give nSigma=-1 if you want to use this approach)
+   * @param nRMS            Specify nRMS threshold
+   * @param threshold       Specify what adc threshold above average (remember to give nRMS=-1 if you want to use this approach)
    * @param reqMinPoint     Required minimum number of points to do zerosuppression default AliHLTTPCTransform::GetNTimeBins/2 (1024/2).
-   * @param beginTime       Lowest timebin value. Gating grid causes some problems in the first timebins. default= 50
-   * @param endTime         Highest timebin value. Default AliHLTTPCTransform::GetNTimeBins-1
+   * @param beginTime       Lowest timebin value. Gating grid causes some problems in the first timebins.
+   * @param endTime         Highest timebin value.
    */
-  void ZeroSuppress(Double_t nSigma,Int_t threshold,Int_t reqMinPoint,Int_t beginTime,Int_t endTime);
+  void ZeroSuppress(Double_t nRMS,Int_t threshold,Int_t reqMinPoint,Int_t beginTime,Int_t endTime,Int_t timebinsLeft, Int_t timebinsRight, Int_t valueBelowAverage);
+  
+
+  Bool_t GetNextGoodSignal(Int_t &time,Int_t &signal);
+
+  UInt_t GetNAddedSignals(){return fSizeOfSignalPositionArray;}
 
   /**
    * Finds the cluster candidate. If atleast two signals in the data array are neighbours
@@ -316,6 +324,7 @@ public:
    */
   void SetNSigmaThreshold(Double_t i){fNSigmaThreshold=i;}
 
+  void SaveHistograms();
 
   /**
    * Vector of cluster candidates
@@ -387,10 +396,15 @@ public:
    */
   Int_t *fSignalPositionArray;                                     //! transient
   Int_t fSizeOfSignalPositionArray;                                //! transient
+
+  Int_t fNGoodSignalsSent;
   
   Double_t fNSigmaThreshold;                                       //! transient
   Double_t fSignalThreshold;                                       //! transient
 
+  TH1F *fDebugHistoBeforeZS;                                       //! transient
+  TH1F *fDebugHistoAfterZS;                                        //! transient
+  
   Int_t fModeSwitch;                                               //! transient
   ClassDef(AliHLTTPCPad, 4)
 };

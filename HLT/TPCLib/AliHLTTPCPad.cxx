@@ -42,6 +42,8 @@ using namespace std;
 #include "AliHLTTPCTransform.h"
 #include "AliHLTTPCClusters.h"
 #include <sys/time.h>
+#include "TMath.h"
+#include "TFile.h"
 //------------------------------
 
 /** margin for the base line be re-avaluated */
@@ -75,7 +77,10 @@ AliHLTTPCPad::AliHLTTPCPad()
   fSizeOfSignalPositionArray(0),
   fNSigmaThreshold(0),
   fSignalThreshold(0),
-  fModeSwitch(0)
+  fModeSwitch(0),
+  fNGoodSignalsSent(0),
+  fDebugHistoBeforeZS(NULL),
+  fDebugHistoAfterZS(NULL)
 {
   // see header file for class documentation
   // or
@@ -89,6 +94,7 @@ AliHLTTPCPad::AliHLTTPCPad()
   fSignalPositionArray= new AliHLTTPCSignal_t[AliHLTTPCTransform::GetNTimeBins()];
   memset( fSignalPositionArray, 0xFF, sizeof(Int_t)*(AliHLTTPCTransform::GetNTimeBins()));
   fSizeOfSignalPositionArray=0;
+
 }
 
 AliHLTTPCPad::AliHLTTPCPad(Int_t mode)
@@ -116,7 +122,10 @@ AliHLTTPCPad::AliHLTTPCPad(Int_t mode)
   fSizeOfSignalPositionArray(0),
   fNSigmaThreshold(0),
   fSignalThreshold(0),
-  fModeSwitch(mode)
+  fModeSwitch(mode),
+  fNGoodSignalsSent(0),
+  fDebugHistoBeforeZS(NULL),
+  fDebugHistoAfterZS(NULL)
 {
   // see header file for class documentation
   // or
@@ -149,7 +158,11 @@ AliHLTTPCPad::AliHLTTPCPad(Int_t offset, Int_t nofBins)
   fSignalPositionArray(NULL),
   fSizeOfSignalPositionArray(0),
   fNSigmaThreshold(0),
-  fSignalThreshold(0)
+  fSignalThreshold(0),
+  fModeSwitch(0),
+  fNGoodSignalsSent(0),
+  fDebugHistoBeforeZS(NULL),
+  fDebugHistoAfterZS(NULL)
 {
   // see header file for class documentation
 }
@@ -162,16 +175,21 @@ AliHLTTPCPad::~AliHLTTPCPad()
     StopEvent();
   }
   if (fDataSignals) {
-    AliHLTTPCSignal_t* pData=fDataSignals;
+    delete [] fDataSignals;
     fDataSignals=NULL;
-    delete [] pData;
   }
   if (fSignalPositionArray) {
-    //AliHLTTPCSignal_t* pData=fSignalPositionArray;
+    delete [] fSignalPositionArray;
     fSignalPositionArray=NULL;
-    //   delete [] pData;
   }
-
+  if(fDebugHistoBeforeZS){
+    delete fDebugHistoBeforeZS;
+    fDebugHistoBeforeZS=NULL;
+  }
+  if(fDebugHistoAfterZS){
+    delete fDebugHistoAfterZS;
+    fDebugHistoAfterZS=NULL;
+  }
 }
 
 Int_t AliHLTTPCPad::SetID(Int_t rowno, Int_t padno)
@@ -179,6 +197,16 @@ Int_t AliHLTTPCPad::SetID(Int_t rowno, Int_t padno)
   // see header file for class documentation
   fRowNo=rowno;
   fPadNo=padno;
+
+#if DebugHisto
+  char *nameBefore;
+  sprintf(nameBefore,"beforeRow%dPad%d",fRowNo,fPadNo);
+  char *nameAfter;
+  sprintf(nameAfter,"afterRow%dPad%d",fRowNo,fPadNo);
+  fDebugHistoBeforeZS = new TH1F(nameBefore,nameBefore,1024,0,1024);
+  fDebugHistoAfterZS = new TH1F(nameAfter,nameAfter,1024,0,1024);
+#endif
+
   return 0;
 }
 
@@ -331,6 +359,7 @@ Int_t AliHLTTPCPad::AddBaseLineValue(Int_t bin, AliHLTTPCSignal_t value)
 Int_t AliHLTTPCPad::SetRawData(Int_t bin, AliHLTTPCSignal_t value)
 {
   // see header file for class documentation
+  //  printf("Row: %d    Pad: %d  Time: %d Charge %d", fRowNo, fPadNo, bin, value);
   Int_t iResult=0;
   if (fpRawData) {
     if (bin<fNofBins) {
@@ -481,7 +510,7 @@ void AliHLTTPCPad::PrintRawData()
     if(GetDataSignal(bin)>0)
       cout<<fRowNo<<"\t"<<fPadNo<<"\t"<<bin<<"\t"<<GetDataSignal(bin)<<endl;;
   }
-  cout<<"bins: "<<AliHLTTPCTransform::GetNTimeBins()<<endl;
+  //  cout<<"bins: "<<AliHLTTPCTransform::GetNTimeBins()<<endl;
 }
 
 void AliHLTTPCPad::ClearCandidates(){
@@ -492,14 +521,12 @@ void AliHLTTPCPad::ClearCandidates(){
 void AliHLTTPCPad::SetDataToDefault()
 {
   // see header file for class documentation
-  /*
-    if(fpRawData){
-    memset( fDataSignals, 0xFF, sizeof(Int_t)*(AliHLTTPCTransform::GetNTimeBins()));
-    memset( fSignalPositionArray, 0xFF, sizeof(Int_t)*(AliHLTTPCTransform::GetNTimeBins()));
+  if(fDataSignals && fSignalPositionArray){
+    for(Int_t i =0;i<fSizeOfSignalPositionArray;i++){
+      fDataSignals[fSignalPositionArray[i]]=-1;
+    }
     fSizeOfSignalPositionArray=0;
   }
-  */
-  fClusterCandidates.clear();
 }
 
 void AliHLTTPCPad::SetDataSignal(Int_t bin,Int_t signal)
@@ -508,6 +535,25 @@ void AliHLTTPCPad::SetDataSignal(Int_t bin,Int_t signal)
   fDataSignals[bin]=signal;
   fSignalPositionArray[fSizeOfSignalPositionArray]=bin;
   fSizeOfSignalPositionArray++;
+#if DebugHisto 
+  fDebugHistoBeforeZS->Fill(bin,signal);
+#endif
+}
+
+Bool_t AliHLTTPCPad::GetNextGoodSignal(Int_t &time, Int_t &signal ){
+  /*  for(Int_t i=70;i<900;i++){
+    if(fDataSignals[i]>0){
+      printf("Signals which are good: Bin: %d Signal: %d\n",i,fDataSignals[i]);
+    }
+    }*/
+  if(fNGoodSignalsSent<fSizeOfSignalPositionArray&&fSizeOfSignalPositionArray>0){
+    time = fSignalPositionArray[fNGoodSignalsSent];
+    signal = GetDataSignal(time);
+    //    printf("GoodSignal: Row: %d Pad: %d time %d  signal %d  signalsSent: %d\n",fRowNo,fPadNo,fSignalPositionArray[fNGoodSignalsSent],GetDataSignal(time), fNGoodSignalsSent);
+    fNGoodSignalsSent++;
+    return kTRUE;
+  }
+  return kFALSE;
 }
 
 Int_t AliHLTTPCPad::GetDataSignal(Int_t bin) const
@@ -516,21 +562,22 @@ Int_t AliHLTTPCPad::GetDataSignal(Int_t bin) const
   return fDataSignals[bin];
 }
 
-void AliHLTTPCPad::ZeroSuppress(Double_t nSigma = 3,Int_t threshold = 20 ,Int_t reqMinPoint = AliHLTTPCTransform::GetNTimeBins()/2, Int_t beginTime = 50,Int_t endTime = AliHLTTPCTransform::GetNTimeBins()-1){
+void AliHLTTPCPad::ZeroSuppress(Double_t nRMS, Int_t threshold, Int_t reqMinPoint, Int_t beginTime, Int_t endTime, Int_t timebinsLeft, Int_t timebinsRight, Int_t valueUnderAverage){
   //see headerfile for documentation
  
-  Bool_t useSigma= kFALSE;
-  if(nSigma>0){
-    useSigma=kTRUE;
+  //HLTDebug("In Pad: nRMS=%d, threshold=%d, reqMinPoint=%d, beginTime=%d, endTime=%d, timebinsLeft=%d timebinsRight=%d valueUnderAverage=%d \n",nRMS,threshold,reqMinPoint,beginTime,endTime,timebinsLeft,timebinsRight,valueUnderAverage);
+
+  Bool_t useRMS= kFALSE;
+  if(nRMS>0){
+    useRMS=kTRUE;
+    if(threshold>0){
+      HLTInfo("Both RMSThreshold and SignalThreshold defined, using RMSThreshold");
+    }
   }
-  if(threshold<1 && nSigma<=0){
+  if(threshold<1 && nRMS<=0){
     //setting the data to -1 for this pad
-    memset( fDataSignals, 0xFF, sizeof(Int_t)*(AliHLTTPCTransform::GetNTimeBins()));
-    fSizeOfSignalPositionArray=0;
+    HLTInfo("Neither of RMSThreshold and SignalThreshold set, zerosuppression aborted");
     return;
-  }
-  if(endTime>=AliHLTTPCTransform::GetNTimeBins()){
-    endTime=AliHLTTPCTransform::GetNTimeBins()-1;
   }
  
   Int_t fThresholdUsed=threshold;
@@ -538,143 +585,120 @@ void AliHLTTPCPad::ZeroSuppress(Double_t nSigma = 3,Int_t threshold = 20 ,Int_t 
   Int_t nAdded=0;
   Int_t sumNAdded=0;
   fSizeOfSignalPositionArray=0;
-  for(Int_t i=beginTime;i<endTime+1;i++){
-    if(fDataSignals[i]>0){
-      nAdded++;
-      sumNAdded+=fDataSignals[i];
-    }
-  }
- 
-  if(nAdded<reqMinPoint){
-    return;      //This will ensure that no data is read in FindClusterCandidates() (since fSizeOfSignalPositionArray=0)
-  }
- 
-  Double_t averageValue=sumNAdded/nAdded;
- 
-  Double_t sigma=0;
-  if(useSigma){
-    //Calculate the sigma
-    Double_t sumOfDifferenceSquared=0;
-    for(Int_t i=endTime;i>=beginTime;i--){
+  if(useRMS){
+    for(Int_t i=beginTime;i<endTime+1;i++){
       if(fDataSignals[i]>0){
-	if(fDataSignals[i]-averageValue<50){
-	  sumOfDifferenceSquared+=(fDataSignals[i]-averageValue)*(fDataSignals[i]-averageValue);
-	}
-	else{
-	  nAdded--;
-	}
+	nAdded++;
+	sumNAdded+=fDataSignals[i]*fDataSignals[i];
       }
     }
-    sigma=sumOfDifferenceSquared/nAdded;
-    fThresholdUsed=(Int_t)(nSigma*sigma);
   }
-     
-  //For now just set the adc value outside [beginTime,endTime] to -1
-  for(Int_t i=0;i<beginTime;i++){
-    fDataSignals[i]=-1;
+  else if(threshold>0){
+    for(Int_t i=beginTime;i<endTime+1;i++){
+      if(fDataSignals[i]>0){
+	nAdded++;
+	sumNAdded+=fDataSignals[i];
+      }
+    }
   }
-  for(Int_t i=endTime+1;i<AliHLTTPCTransform::GetNTimeBins();i++){
-    fDataSignals[i]=-1;
+  else{
+    HLTFatal("This should never happen because this is tested earlier in the code.(nRMSThreshold<1&&signal-threshold<1)");
+  }
+  if(nAdded<reqMinPoint){
+    HLTInfo("Number of signals is less than required, zero suppression aborted");
+    return;
   }
  
+  if(nAdded==0){
+    HLTInfo("No signals added for this pad, zerosuppression aborted: pad %d row %d",fPadNo,fRowNo);
+    return;
+  }
+  // HLTInfo("sumNAdded=%d    nAdded=%d pad %d ",sumNAdded,nAdded,fPadNo);
+  Double_t averageValue=(Double_t)sumNAdded/nAdded;//true average for threshold approach, average of signals squared for rms approach
+ 
+  //  Double_t rms=0;
+  if(useRMS){
+    //Calculate the RMS
+    if(averageValue>0){
+      fThresholdUsed =(Int_t)(TMath::Sqrt(averageValue)*nRMS);
+    }
+    else{
+      HLTFatal("average value in ZeroSuppression less than 0, investigation needed. This should never happen");
+    }
+  }
+  else{
+    fThresholdUsed = (Int_t)(averageValue + threshold); 
+  }
+
+  averageValue = 55.3;
   // Do zero suppression on the adc values within [beginTime,endTime]
-  for(Int_t i=endTime;i>=beginTime;i--){
-    //the +1 in the if below is there to avoid getting a signal which is 0, adding to the numbers you have to loop over in the end 
-    //(better to set it to -1 which is default for no signal)
-    if(fDataSignals[i]>(Int_t)(averageValue+fThresholdUsed+1) && fDataSignals[i-1]>(Int_t)(averageValue+fThresholdUsed+1)){
-      //here the signals below threshold to the right of the candidate is added
-      Bool_t contRight=kTRUE;
-      Int_t endRight=i;
-      Int_t nToAddRight=0;
-      while(contRight){
-	if(endRight+1<endTime){
-	  //      cout<<fDataSignals[endRight+1]<<"    "<<fDataSignals[endRight+2]<<endl;;
-	  if(fDataSignals[endRight+1]>=fDataSignals[endRight+2] && fDataSignals[endRight+1]>averageValue){
-	    nToAddRight++;
-	  }
-	  else{
-	    if(fDataSignals[endRight+1]> averageValue){
-	      nToAddRight++;
-	    }
-	    contRight=kFALSE;
-	  }
-	}
-	else if(endRight>endTime+1){
-	  contRight=kFALSE;
-	}
-	endRight++;
-      }
-      for(int j=i+nToAddRight;j>i;j--){
-	fDataSignals[j]=(Int_t)(fDataSignals[j]-averageValue);
-	fSignalPositionArray[fSizeOfSignalPositionArray]=j;
-	fSizeOfSignalPositionArray++;
-      }
- 
- 
-      //before while the two consecutive timebin values are added
-      fDataSignals[i]=(Int_t)(fDataSignals[i]-averageValue);
-      fSignalPositionArray[fSizeOfSignalPositionArray]=i;
-      fSizeOfSignalPositionArray++;
-      fDataSignals[i-1]=(Int_t)(fDataSignals[i-1]-averageValue);
-      fSignalPositionArray[fSizeOfSignalPositionArray]=i-1;
-      fSizeOfSignalPositionArray++;
-      i--;
-      //      cout<<""<<endl;
-      //Here the consecutive pads after the two first are added
-      if(i-1>0){
-	while(fDataSignals[i-1]>(Int_t)(averageValue+fThresholdUsed+1)){
-	  fDataSignals[i-1]=(Int_t)(fDataSignals[i-1]-averageValue);
-	  fSignalPositionArray[fSizeOfSignalPositionArray]=i-1;
-	  fSizeOfSignalPositionArray++;
-	  i--;
-	}
-      }
-      //adding the signal below threshold belonging to the total signal
-      Bool_t contLeft=kTRUE;
-      while(contLeft){
-	if(i-2>0){
-	  if(fDataSignals[i-1]>=fDataSignals[i-2] && fDataSignals[i-1]>averageValue){
-	    fDataSignals[i-1]=(Int_t)(fDataSignals[i-1]-averageValue);
-	    fSignalPositionArray[fSizeOfSignalPositionArray]=i-1;
-	    fSizeOfSignalPositionArray++;
-	    i--;
-	  }
-	  else{
-	    if(fDataSignals[i-1]> averageValue){
-	      fDataSignals[i-1]=(Int_t)(fDataSignals[i-1]-averageValue);
-	      fSignalPositionArray[fSizeOfSignalPositionArray]=i-1;
-	      fSizeOfSignalPositionArray++;
-	      i--;
-	    }
-	    contLeft=kFALSE;
-	  }
+  for(Int_t i=beginTime;i<endTime;i++){
+    if(fDataSignals[i]>fThresholdUsed){
+      //  HLTInfo("Signal Larger in pad %d time %d signal %d  ,   threshold: %d  averageValue %e",fPadNo,i,fDataSignals[i],fThresholdUsed, averageValue);
+      Int_t firstSignalTime=i;
+      for(Int_t left=1;left<timebinsLeft;left++){//looking 5 to the left of the signal to add tail
+	if(fDataSignals[i-left]-averageValue+valueUnderAverage>0&&i-left>=beginTime){
+	  firstSignalTime--;
 	}
 	else{
-	  contLeft=kFALSE;
+	  break;
 	}
- 
       }
-    }
-  }
-  Int_t nReadFromPositionArray=0;
-  for(Int_t i=endTime;i>=beginTime;i--){
-    if(i==fSignalPositionArray[nReadFromPositionArray]){
-      nReadFromPositionArray++;
+      Int_t lastSignalTime=i;
+      for(Int_t right=1;right<timebinsRight;right++){//looking 5 to the left of the signal to add tail
+	if(fDataSignals[i+right]-averageValue+valueUnderAverage>0&&i+right<endTime){
+	  lastSignalTime++;
+	}
+	else{
+	  break;
+	}	
+      }
+      for(Int_t t=firstSignalTime;t<lastSignalTime;t++){
+	//	cout<<"Row: "<<fRowNo<<" Pad: "<<fPadNo<<"   Adding to tmebin: "<<t<<" signal: "<<(AliHLTTPCSignal_t)(fDataSignals[t]-averageValue + valueUnderAverage)<<endl;
+	fDataSignals[t]=(AliHLTTPCSignal_t)(fDataSignals[t]-averageValue + valueUnderAverage);
+	//	cout<<"Adding to signalPosition array bin number: "<<fSizeOfSignalPositionArray<<"    timebin number: "<<t<<endl;
+	fSignalPositionArray[fSizeOfSignalPositionArray]=t;
+	fSizeOfSignalPositionArray++;
+	//	cout<<"Number of signals added so far: "<<fSizeOfSignalPositionArray<<"     firstSignalTimeBin: "<<firstSignalTime<<"     lastSignalTimeBin: "<<lastSignalTime<<endl;
+	/*	if(fRowNo==29&&fPadNo==58){
+	  cout<<"Signal added: Row: "<<fRowNo<<" Pad: "<<fPadNo<<"  Time: "<<t<<" signal: "<<fDataSignals[t]<<"  #signals: "<<fSizeOfSignalPositionArray<<endl;
+	}
+	*/
+#if DebugHisto
+      fDebugHistoAfterZS->Fill(t,fDataSignals[t]);
+#endif
+      }
+      i+=lastSignalTime;
     }
     else{
       fDataSignals[i]=-1;
-    } 
+    }
   }
 }
+
 void AliHLTTPCPad::AddClusterCandidate(AliHLTTPCClusters candidate){
   fClusterCandidates.push_back(candidate);
   fUsedClusterCandidates.push_back(0);
 }
 
+void AliHLTTPCPad::SaveHistograms(){
+#if DebugHisto
+  if(fSizeOfSignalPositionArray==0){
+    return;
+  }
+  char* filename;
+  sprintf(filename,"/afsuser/kenneth/SimpleComponentWrapper/histos/HistogramsRow%dPad%d.root",fRowNo,fPadNo);
+  TFile file(filename,"RECREATE");
+  fDebugHistoBeforeZS->Write();
+  fDebugHistoAfterZS->Write();
+  file.Close();
+#endif
+}
+
 void AliHLTTPCPad::FindClusterCandidates()
 {
   // see header file for class documentation
-
+  /*
   if(fSizeOfSignalPositionArray<2){
     return;
   }
@@ -798,5 +822,6 @@ void AliHLTTPCPad::FindClusterCandidates()
       tmpSig.clear();
     }
   }
+  */
 }
 
