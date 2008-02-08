@@ -12,10 +12,11 @@
 //                                                           //
 ///////////////////////////////////////////////////////////////
 
-#include "TROOT.h"
+//#include "TROOT.h"
+#include "TObject.h"
 
 //TRM global header
-class AliTOFTRMGlobalHeader
+class AliTOFTRMGlobalHeader : public TObject
 {
  public:
   UInt_t GetSlotID() {return fSlotID;};
@@ -34,7 +35,7 @@ class AliTOFTRMGlobalHeader
 };
 
 //TRM global trailer
-class AliTOFTRMGlobalTrailer
+class AliTOFTRMGlobalTrailer : public TObject
 {
  public:
   UInt_t GetSlotID() {return fSlotID;};
@@ -49,7 +50,7 @@ class AliTOFTRMGlobalTrailer
 };
 
 //TRM chain header
-class AliTOFTRMChainHeader
+class AliTOFTRMChainHeader : public TObject
 {
  public:
   UInt_t GetSlotID() {return fSlotID;};
@@ -68,7 +69,7 @@ class AliTOFTRMChainHeader
 };
 
 //TRM chain trailer
-class AliTOFTRMChainTrailer
+class AliTOFTRMChainTrailer : public TObject
 {
  public:
   UInt_t GetStatus() {return fStatus;};
@@ -83,7 +84,7 @@ class AliTOFTRMChainTrailer
 };
 
 //TDC packed hit
-class AliTOFTDCPackedHit
+class AliTOFTDCPackedHit : public TObject
 {
  public:
   UInt_t GetHitTime() {return fHitTime;};
@@ -104,7 +105,7 @@ class AliTOFTDCPackedHit
 };
 
 //TDC unpacked hit
-class AliTOFTDCUnpackedHit
+class AliTOFTDCUnpackedHit : public TObject
 {
  public:
   UInt_t GetHitTime() {return fHitTime;};
@@ -123,7 +124,7 @@ class AliTOFTDCUnpackedHit
 };
 
 //TRM TDC error
-class AliTOFTRMTDCError
+class AliTOFTRMTDCError : public TObject
 {
  public:
   UInt_t GetErrorFlags() {return fErrorFlags;};
@@ -138,7 +139,7 @@ class AliTOFTRMTDCError
 };
 
 //TRM diagnostic error word 1
-class AliTOFTRMDiagnosticErrorWord1
+class AliTOFTRMDiagnosticErrorWord1 : public TObject
 {
  public:
   UInt_t GetFaultChipFlagID() {return fFaultChipFlagID;};
@@ -155,7 +156,7 @@ class AliTOFTRMDiagnosticErrorWord1
 };
 
 //TRM diagnostic error word 2
-class AliTOFTRMDiagnosticErrorWord2
+class AliTOFTRMDiagnosticErrorWord2 : public TObject
 {
  public:
   UInt_t GetJtagErrorCode() {return fJtagErrorCode;};
