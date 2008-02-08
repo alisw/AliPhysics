@@ -7,7 +7,6 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-
 #ifndef ALIEVE_TOFStripEditor_H
 #define ALIEVE_TOFStripEditor_H
 
@@ -17,6 +16,10 @@ class TGCheckButton;
 class TGNumberEntry;
 class TGColorSelect;
 
+class TGHSlider;
+
+class TEveGValuator;
+class TEveGDoubleValuator;
  
 
 class AliEveTOFStrip;
@@ -33,11 +36,16 @@ protected:
   // Declare widgets
   // TGSomeWidget*   fXYZZ;
 
+  TEveGValuator*    fThreshold;
+  TEveGValuator*    fMaxVal;
+
 public:
   AliEveTOFStripEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30, UInt_t options = kChildFrame, Pixel_t back=GetDefaultFrameBackground());
   virtual ~AliEveTOFStripEditor();
 
   virtual void SetModel(TObject* obj);
+  void DoThreshold();
+  void DoMaxVal();
 
   // Declare callback/slot methods
   // void DoXYZZ();

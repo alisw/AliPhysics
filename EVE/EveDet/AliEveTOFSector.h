@@ -55,7 +55,7 @@
     Short_t     fThreshold;
     Int_t       fMaxVal;
     Int_t       fSectorID;
-    Bool_t      *fPlateFlag;
+    Bool_t     *fPlateFlag;
 
     //Bool_t      fPlateFlag0;
     //Bool_t      fPlateFlag1;

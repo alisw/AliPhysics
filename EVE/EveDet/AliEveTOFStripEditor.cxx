@@ -7,17 +7,18 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-
 #include "AliEveTOFStripEditor.h"
 #include <EveDet/AliEveTOFStrip.h>
 
 #include <TVirtualPad.h>
 #include <TColor.h>
+#include <TEveGValuators.h>
 
 #include <TGLabel.h>
 #include <TGButton.h>
 #include <TGNumberEntry.h>
 #include <TGColorSelect.h>
+#include <TGSlider.h>
 #include <TGDoubleSlider.h>
 
 //______________________________________________________________________________
@@ -38,6 +39,27 @@ AliEveTOFStripEditor::AliEveTOFStripEditor(const TGWindow *p, Int_t width, Int_t
   // fXYZZ = new TGSomeWidget(this, ...);
   // AddFrame(fXYZZ, new TGLayoutHints(...));
   // fXYZZ->Connect("SignalName()", "AliEveTOFStripEditor", this, "DoXYZZ()");
+
+  fThreshold = new TEveGValuator(this, "Threshold", 200, 0);
+  fThreshold->SetNELength(4);
+  fThreshold->SetLabelWidth(60);
+  fThreshold->Build();
+  fThreshold->GetSlider()->SetWidth(120);
+  fThreshold->SetLimits(0,250);
+  fThreshold->Connect("ValueSet(Double_t)",
+		      "AliEveTOFSectorEditor", this, "DoThreshold()");
+  AddFrame(fThreshold, new TGLayoutHints(kLHintsTop, 1, 1, 2, 1));
+
+  fMaxVal = new TEveGValuator(this,"MaxVal", 200, 0);
+  fMaxVal->SetNELength(4);
+  fMaxVal->SetLabelWidth(60);
+  fMaxVal->Build();
+  fMaxVal->GetSlider()->SetWidth(60);
+  fMaxVal->SetLimits(0, 500);
+  fMaxVal->Connect("ValueSet(Double_t)",
+		   "AliEveTOFSectorEditor", this, "DoMaxVal()");
+  AddFrame(fMaxVal, new TGLayoutHints(kLHintsTop, 1, 1, 2, 1));
+
 }
 
 AliEveTOFStripEditor::~AliEveTOFStripEditor()
@@ -54,6 +76,19 @@ void AliEveTOFStripEditor::SetModel(TObject* obj)
 }
 
 /******************************************************************************/
+void AliEveTOFStripEditor::DoThreshold()
+{
+  fM->SetThreshold((Short_t) fThreshold->GetValue());
+  fThreshold->SetValue(fM->GetThreshold());
+  Update();
+}
+
+void AliEveTOFStripEditor::DoMaxVal()
+{
+  fM->SetMaxVal((Int_t) fMaxVal->GetValue());
+  fMaxVal->SetValue(fM->GetMaxVal());
+  Update();
+}
 
 // Implements callback/slot methods
 

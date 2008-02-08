@@ -29,6 +29,7 @@ AliEveTOFStrip::AliEveTOFStrip(const Text_t* n, const Text_t* t) :
   TEveQuadSet(n, t),
   fTOFgeometry(new AliTOFGeometry()),
   fTOFarray(0),
+  fThreshold (5), fMaxVal (80),
   fSector(-1), fPlate(-1), fStrip(-1),
   fDx(0), fDz(0),
   fGeoManager(0)
@@ -45,6 +46,7 @@ AliEveTOFStrip::AliEveTOFStrip(TGeoManager *localGeoManager,
   TEveQuadSet(Form("Strip%i", nStrip)),
   fTOFgeometry(new AliTOFGeometry()),
   fTOFarray(0),
+  fThreshold (5), fMaxVal (80),
   fSector(nSector), fPlate(nPlate), fStrip(nStrip),
   fDx(0), fDz(0),
   fGeoManager(localGeoManager)
@@ -63,6 +65,7 @@ AliEveTOFStrip::AliEveTOFStrip(TGeoManager *localGeoManager,
   TEveQuadSet(Form("Strip%i", nStrip)),
   fTOFgeometry(new AliTOFGeometry()),
   fTOFarray(tofArray),
+  fThreshold (5), fMaxVal (80),
   fSector(nSector), fPlate(nPlate), fStrip(nStrip),
   fDx(0), fDz(0),
   fGeoManager(localGeoManager)
@@ -108,6 +111,7 @@ void AliEveTOFStrip::InitStatics()
 
   //fgTOFstripPalette  = new TEveRGBAPalette(0, 2048); // TOT
   fgTOFstripPalette  = new TEveRGBAPalette(0, 8192); // TDC
+  fgTOFstripPalette->SetOverflowAction(0);
 
   fgStaticInitDone = kTRUE;
 }
@@ -173,6 +177,7 @@ void AliEveTOFStrip::LoadQuads()
     // can insert the time-of-flight value for each pad
     //QuadValue((Int_t)tot);
     QuadValue((Int_t)tdc);
+    QuadId(tofDigit);
 
     //if (fSector==4 && fPlate==2  && fStrip==0) printf("  %1i   %2i    %f  %f \n", iPadZ, iPadX, x, z);
 
@@ -212,3 +217,41 @@ void AliEveTOFStrip::SetTrans()
   fHMTrans.SetBaseVec(4, tr);
 
 }
+
+/******************************************************************************/
+void AliEveTOFStrip::SetThreshold(Short_t t)
+{
+  fThreshold = TMath::Min(t, (Short_t)(fMaxVal - 1));
+  // ClearColorArray();
+}
+
+/******************************************************************************/
+
+void AliEveTOFStrip::SetMaxVal(Int_t mv)
+{
+  fMaxVal = TMath::Max(mv, (Int_t)(fThreshold + 1));
+  //ClearColorArray();
+}
+
+/******************************************************************************/
+
+void AliEveTOFStrip::DigitSelected(Int_t idx)
+{
+  // Override control-click from TEveQuadSet
+
+  DigitBase_t* qb   = GetDigit(idx);
+  TObject* obj   = qb->fId.GetObject();
+  AliTOFdigit* digs = dynamic_cast<AliTOFdigit*>(obj);
+  // printf("AliEveTOFStrip::QuadSelected "); Print();
+  /*
+  printf("  idx = %5i, value = %5d, obj = 0x%lx, digit = 0x%lx  ",
+	 idx, qb->fValue, (ULong_t)obj, (ULong_t)digs);
+  */
+  if (digs)
+    printf("\n Sector = %2i  Plate = %1i  Strip = %2i  PadZ = %1i PadX = %2i  ToT = %3i  Tof = %5i\n",
+	   fSector , fPlate, fStrip, digs->GetPadz(), digs->GetPadx(), digs->GetToT(), digs->GetTdc());
+  else printf("\n");
+
+}
+
+/******************************************************************************/

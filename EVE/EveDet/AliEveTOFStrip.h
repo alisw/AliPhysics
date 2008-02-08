@@ -30,23 +30,27 @@ private:
   void LoadQuads();
 
 protected:
-  virtual void InitModule();
-  virtual void SetTrans();
 
   AliTOFGeometry *fTOFgeometry;
 
   TClonesArray   *fTOFarray;
 
-  Int_t fSector;
-  Int_t fPlate;
-  Int_t fStrip;
+  Short_t fThreshold;
+  Int_t   fMaxVal;
+  Int_t   fSector;
+  Int_t   fPlate;
+  Int_t   fStrip;
 
-  Float_t  fDx;
-  Float_t  fDz;
+  Float_t fDx;
+  Float_t fDz;
 
   TGeoManager *fGeoManager;
 
 public:
+
+  virtual void InitModule();
+  virtual void SetTrans();
+
   AliEveTOFStrip(const Text_t* n="AliEveTOFStrip", const Text_t* t=0);
   AliEveTOFStrip(TGeoManager *localGeoManager,
 		 Int_t nSector, Int_t nPlate, Int_t nStrip);
@@ -58,6 +62,12 @@ public:
 
   static Bool_t    fgStaticInitDone;
   static void      InitStatics();
+
+  void SetThreshold(Short_t t);
+  void SetMaxVal(Int_t mv);
+  Short_t GetThreshold() const {return fThreshold;};
+  Int_t GetMaxVal() const {return fMaxVal;};
+  virtual void DigitSelected(Int_t idx);
 
   static TEveFrameBox* fgTOFstripFrameBox;
 
