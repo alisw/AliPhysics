@@ -112,6 +112,7 @@ Revision 0.1 2004 November G. Cara Romeo and A. De Caro
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include "TDirectory.h"
 #include "TBRIK.h"
 #include "TGeometry.h"
 #include "TLorentzVector.h"
@@ -147,8 +148,8 @@ ClassImp(AliTOFv5T0)
   fIdFTOC(-1),
   fIdFLTA(-1),
   fIdFLTB(-1),
-  fIdFLTC(-1),
-  fTOFHoles(kFALSE)
+  fIdFLTC(-1)//,
+  //fTOFHoles(kFALSE)
 {
   //
   // Default constructor
@@ -163,8 +164,8 @@ AliTOFv5T0::AliTOFv5T0(const char *name, const char *title):
   fIdFTOC(-1),
   fIdFLTA(-1),
   fIdFLTB(-1),
-  fIdFLTC(-1),
-  fTOFHoles(kFALSE)
+  fIdFLTC(-1)//,
+  //fTOFHoles(kFALSE)
 {
   //
   // Standard constructor
@@ -173,7 +174,7 @@ AliTOFv5T0::AliTOFv5T0(const char *name, const char *title):
   // Check that FRAME is there otherwise we have no place where to
   // put TOF
 
-
+  /*
   AliModule* frame = (AliModule*)gAlice->GetModule("FRAME");
   if(!frame) {
     AliFatal("TOF needs FRAME to be present");
@@ -191,6 +192,11 @@ AliTOFv5T0::AliTOFv5T0(const char *name, const char *title):
       AliDebug(1,"TOF with Holes for PHOS");
       fTOFHoles=true;}      
   }
+  fTOFGeometry->SetHoles(fTOFHoles);
+  */
+
+  if (fTOFGeometry) delete fTOFGeometry;
+  fTOFGeometry = new AliTOFGeometry();
   fTOFGeometry->SetHoles(fTOFHoles);
 
   //AliTOF::fTOFGeometry = fTOFGeometry;
