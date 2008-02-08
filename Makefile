@@ -454,9 +454,10 @@ endif
 
 clean-modules:
 ifndef ALIQUIET
-	@echo "***** Cleaning up module.mk files *****"
+	@echo "***** Cleaning up module.mk and temporary compilation files *****"
 endif
 	$(MUTE)rm -rf $(patsubst %,%/module.mk,$(MODULES))
+	$(MUTE)rm -rf $(patsubst %,%/tgt_$(ALICE_TARGET),$(MODULES))
 
 clean-depend:
 ifndef ALIQUIET
