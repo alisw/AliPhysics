@@ -1,9 +1,12 @@
 // $Id:  1.1 2007/11/08 12:17:24 richterm Exp $
 /**
- * Sample macro for the component initialization and configuration
+ * @file sample-component1.C
+ * @brief Sample macro for the component initialization and configuration.
  *
  * Usage:
+ * <pre>
  *   aliroot -b -q sample-component1.C | tee sample-component1.log
+ * </pre>
  *
  * This macro illustrates the creation of an HLT component and it's
  * initialization and configuration.
@@ -22,7 +25,24 @@
  * The component can also decide if it wants to configure already during
  * initialization (DoInit) from configuration objects.
  *
+ * The Sample-component1 (AliHLTSampleComponent1) implements configuration
+ * via a string of arguments like e.g. '-config1 config-param -config2'.
+ * Two different ways of configuration are implemented:
+ * - configuration arguments can be part of the initialization arguments.
+ *   All arguments not known to the argument scan in DoInit are treated
+ *   as configuration arguments. Scanning of those remaining arguments
+ *   is done at the end of the DoInit
+ * - if there are no configuration arguments, the configuration is done
+ *   from the default object in the CDB
+ * - The implemented Reconfigure method retrieves either the object
+ *   specified in the reconfiguration event or the default object.
+ *
+ * The macro defines the CDB in the /tmp folder and creates an object
+ * in the CDB. Then it defines a very simple chain, which models the
+ * respons of the component to the reconfiguration event.
+ *
  * @author Matthias.Richter@ift.uib.no
+ * @ingroup alihlt_tutorial
  */
 {
   /////////////////////////////////////////////////////////////////////////
