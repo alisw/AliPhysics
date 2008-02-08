@@ -14,10 +14,13 @@
 //-------------------------------------------------------------------------
 
 #include <TObject.h>
+#include "AliPID.h"
 
 class TF1;
 class TH2F;
 class TH1D;
+class AliAODEvent;
+class AliAODtrack;
 class AliESDEvent;
 class AliESDtrack;
 
@@ -32,6 +35,7 @@ class AliProtonAnalysis : public TObject {
 		      Int_t nbinsPt, Float_t fLowPt, Float_t fHighPt);
   void ReadFromFile(const char* filename);
   void Analyze(AliESDEvent* fESD);
+  void Analyze(AliAODEvent* fAOD);
   
   TH2F *GetProtonYPtHistogram() {return fHistYPtProtons;}
   TH2F *GetAntiProtonYPtHistogram() {return fHistYPtAntiProtons;}
@@ -74,7 +78,7 @@ class AliProtonAnalysis : public TObject {
   void    SetTPCRefit() {fTPCRefitFlag = kTRUE;}
   
   //Prior probabilities
-  void    SetPriorProbabilities(Double_t *partFrac) {for(Int_t i = 0; i < 5; i++) fPartFrac[i] = partFrac[i];} 
+  void    SetPriorProbabilities(Double_t *partFrac) {for(Int_t i = 0; i < AliPID::kSPECIESN; i++) fPartFrac[i] = partFrac[i];} 
   void    SetPriorProbabilityFunctions(TF1 *felectron, TF1 *fmuon, TF1 *fpion, TF1 *fkaon, TF1 *fproton) {
     fFunctionProbabilityFlag = kTRUE;
     fElectronFunction = felectron; 
@@ -108,7 +112,7 @@ class AliProtonAnalysis : public TObject {
   
   //pid
   Bool_t fFunctionProbabilityFlag; //flag: kTRUE if functions used
-  Double_t fPartFrac[5]; //prior probabilities
+  Double_t fPartFrac[10]; //prior probabilities
   TF1  *fElectronFunction; //momentum dependence of the prior probs
   TF1  *fMuonFunction; //momentum dependence of the prior probs
   TF1  *fPionFunction; //momentum dependence of the prior probs

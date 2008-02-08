@@ -27,8 +27,10 @@
 
 #include "AliProtonAnalysis.h"
 
+#include <AliAODEvent.h>
 #include <AliESDEvent.h>
 #include <AliLog.h>
+#include <AliPID.h>
 
 ClassImp(AliProtonAnalysis)
 
@@ -295,6 +297,31 @@ void AliProtonAnalysis::Analyze(AliESDEvent* fESD) {
         else if(track->Charge() < 0) fHistYPtAntiProtons->Fill(Rapidity(track),Pt);
       }//proton check
     }//cuts
+  }//track loop 
+}
+
+//____________________________________________________________________//
+void AliProtonAnalysis::Analyze(AliAODEvent* fAOD) {
+  //Main analysis part
+  Int_t nGoodTracks = fAOD->GetNumberOfTracks();
+  for(Int_t iTracks = 0; iTracks < nGoodTracks; iTracks++) {
+    AliAODTrack* track = fAOD->GetTrack(iTracks);
+    Double_t Pt = track->Pt();
+    Double_t P = track->P();
+    
+    //pid
+    Double_t probability[10];
+    track->GetPID(probability);
+    Double_t rcc = 0.0;
+    for(Int_t i = 0; i < AliPID::kSPECIESN; i++) rcc += probability[i]*GetParticleFraction(i,P);
+    if(rcc == 0.0) continue;
+    Double_t w[5];
+    for(Int_t i = 0; i < AliPID::kSPECIESN; i++) w[i] = probability[i]*GetParticleFraction(i,P)/rcc;
+    Long64_t fParticleType = TMath::LocMax(AliPID::kSPECIESN,w);
+    if(fParticleType == 4) {
+      if(track->Charge() > 0) fHistYPtProtons->Fill(track->Y(fParticleType),Pt);
+      else if(track->Charge() < 0) fHistYPtAntiProtons->Fill(track->Y(fParticleType),Pt);
+    }//proton check
   }//track loop 
 }
 
