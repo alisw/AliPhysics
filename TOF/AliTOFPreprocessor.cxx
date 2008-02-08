@@ -15,14 +15,14 @@
 
 /* $Id$ */
 
-#include <Riostream.h>
-#include <stdio.h>
-#include <stdlib.h>
+//#include <Riostream.h>
+//#include <stdio.h>
+//#include <stdlib.h>
 
 #include <TFile.h>
-#include <TH1.h>
-#include <TH1F.h>
-#include <TH1S.h>
+//#include <TH1.h>
+//#include <TH1F.h>
+//#include <TH1S.h>
 #include <TH2S.h>
 #include <TMath.h>
 #include <TObjArray.h>
@@ -38,9 +38,9 @@
 #include "AliTOFGeometry.h"
 #include "AliTOFPreprocessor.h"
 
-class TF1;
-class AliDCSValue;
-class AliTOFGeometry;
+//class TF1;
+//class AliDCSValue;
+//class AliTOFGeometry;
 
 // TOF preprocessor class.
 // It takes data from DCS and passes them to the class AliTOFDataDCS, which
@@ -385,9 +385,9 @@ UInt_t AliTOFPreprocessor::ProcessPulserData()
   Bool_t resultPulserRef=kFALSE;
   Bool_t resultPulser=kFALSE;
 
-  static const Int_t size = AliTOFGeometry::NPadXSector()*AliTOFGeometry::NSectors();
-  TH1S * htofPulser = new TH1S("hTOFpulser","histo with signals on TOF during pulser", size,-0.5,size-0.5);
-  for (Int_t ibin =1;ibin<=size;ibin++){
+  static const Int_t kSize = AliTOFGeometry::NPadXSector()*AliTOFGeometry::NSectors();
+  TH1S * htofPulser = new TH1S("hTOFpulser","histo with signals on TOF during pulser", kSize,-0.5,kSize-0.5);
+  for (Int_t ibin =1;ibin<=kSize;ibin++){
     htofPulser->SetBinContent(ibin,-1);
   }
 
@@ -423,7 +423,7 @@ UInt_t AliTOFPreprocessor::ProcessPulserData()
 	  AliInfo(Form("Got the file %s, now we can store the Reference Data for pulser for the current Run.", fileNamePulser.Data()));
 	  daqFile = new TFile(fileNamePulser.Data(),"READ");
 	  h1 = (TH1S*) daqFile->Get("hTOFpulser");
-	  for (Int_t ibin=0;ibin<size;ibin++){
+	  for (Int_t ibin=0;ibin<kSize;ibin++){
 	    if ((h1->GetBinContent(ibin+1))!=-1){
 	      if ((htofPulser->GetBinContent(ibin+1))==-1){
 		htofPulser->SetBinContent(ibin+1,h1->GetBinContent(ibin+1));
@@ -531,9 +531,9 @@ UInt_t AliTOFPreprocessor::ProcessNoiseData()
   Bool_t resultNoiseRef=kFALSE;
   Bool_t resultNoise=kFALSE;
 
-  static const Int_t size = AliTOFGeometry::NPadXSector()*AliTOFGeometry::NSectors();
-  TH1F * htofNoise = new TH1F("hTOFnoise","histo with signals on TOF during pulser", size,-0.5,size-0.5);
-  for (Int_t ibin =1;ibin<=size;ibin++){
+  static const Int_t kSize = AliTOFGeometry::NPadXSector()*AliTOFGeometry::NSectors();
+  TH1F * htofNoise = new TH1F("hTOFnoise","histo with signals on TOF during pulser", kSize,-0.5,kSize-0.5);
+  for (Int_t ibin =1;ibin<=kSize;ibin++){
     htofNoise->SetBinContent(ibin,-1);
   }
 
@@ -569,7 +569,7 @@ UInt_t AliTOFPreprocessor::ProcessNoiseData()
 	  AliInfo(Form("Got the file %s, now we can store the Reference Data for noise for the current Run.", fileNameNoise.Data()));
 	  daqFile = new TFile(fileNameNoise.Data(),"READ");
 	  h1 = (TH1F*) daqFile->Get("hTOFnoise");
-	  for (Int_t ibin=0;ibin<size;ibin++){
+	  for (Int_t ibin=0;ibin<kSize;ibin++){
 	    if ((h1->GetBinContent(ibin+1))!=-1){
 	      if ((htofNoise->GetBinContent(ibin+1))==-1){
 		htofNoise->SetBinContent(ibin+1,h1->GetBinContent(ibin+1));
@@ -664,6 +664,9 @@ UInt_t AliTOFPreprocessor::ProcessHWData()
 
 UInt_t AliTOFPreprocessor::Process(TMap* dcsAliasMap)
 {
+  //
+  //
+  //
 
   TString runType = GetRunType();
   Log(Form("RunType %s",runType.Data()));
