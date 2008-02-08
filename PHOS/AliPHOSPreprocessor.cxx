@@ -199,7 +199,7 @@ UInt_t AliPHOSPreprocessor::Process(TMap* /*valueSet*/)
   //Store EMC calibration data
   
   AliCDBMetaData emcMetaData;
-  Bool_t emcOK = Store("Calib", "EmcGainPedestals", &calibData, &emcMetaData);
+  Bool_t emcOK = Store("Calib", "EmcGainPedestals", &calibData, &emcMetaData, 0, kTRUE); // valid from 0 to infinity);
 
   if(emcOK) return 0;
   else
