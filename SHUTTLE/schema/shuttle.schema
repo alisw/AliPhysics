@@ -75,12 +75,14 @@ attributetype ( GLOBAL_CONFIG:17 NAME 'amandaAdmin'    DESC 'Amanda admin(s) ema
 attributetype ( GLOBAL_CONFIG:18 NAME 'sendMail' 	DESC 'Send email flag (1/0)'  EQUALITY integerMatch       SUP uidNumber SINGLE-VALUE )
 attributetype ( GLOBAL_CONFIG:19 NAME 'keepDCSMap' 	DESC 'keep DCS map flag (1/0)'  EQUALITY integerMatch       SUP uidNumber SINGLE-VALUE )
 attributetype ( GLOBAL_CONFIG:20 NAME 'keepTempFolder' 	DESC 'keep temp folder flag (1/0)'  EQUALITY integerMatch       SUP uidNumber SINGLE-VALUE )
+attributetype ( GLOBAL_CONFIG:21 NAME 'dcsTimeOut'      DESC 'seconds before dcs abort'	   EQUALITY integerMatch    SUP uidNumber SINGLE-VALUE )
+attributetype ( GLOBAL_CONFIG:22 NAME 'nDCSretries'     DESC 'number of dcs retries before abort'	EQUALITY integerMatch    SUP uidNumber SINGLE-VALUE )
 
 objectclass ( GLOBAL_CONFIG
         NAME 'globalConfig'
         DESC 'ALICE: settings for DAQ logbook access'
         SUP top
-        MUST (name $ daqLbHost $ daqLbUser $ daqLbPasswd $ daqLbDB $ daqLbTable $ shuttleLbTable $ runTypeLbTable $ ppMaxRetries $ ppTimeOut $ ppMaxMem $ monitorHost $ monitorTable)
+        MUST (name $ daqLbHost $ daqLbUser $ daqLbPasswd $ daqLbDB $ daqLbTable $ shuttleLbTable $ runTypeLbTable $ ppMaxRetries $ ppTimeOut $ ppMaxMem $ dcsTimeOut $ nDCSretries $ monitorHost $ monitorTable)
         MAY ( daqLbPort $ triggerWait $ mode $ keepDCSMap $ keepTempFolder $ shuttleAdmin $ amandaAdmin $ sendMail) )
 
 

@@ -1,4 +1,3 @@
-# TOF Config
 dn: det=TOF,o=shuttle_prod,dc=cern,dc=ch
 objectClass: detectorConfig
 det: TOF
@@ -11,10 +10,8 @@ objectClass: dcsConfig
 dcsHost: alidcsamanda.cern.ch
 dcsPort: 1337
 multiSplit: 4000
-dcsAlias: tof_lv_i48_02
-dcsAlias: tof_lv_v48_02
-dcsAlias: tof_lv_i33_02
-dcsAlias: tof_lv_v33_02
-
-
+dcsAlias: tof_hv_vp_[00..89]
+dcsAlias: tof_hv_vn_[00..89]
+dcsAlias: tof_hv_ip_[00..89]
+dcsAlias: tof_hv_in_[00..89]
 
