@@ -6,6 +6,7 @@
 .L $ALICE_ROOT/TPC/macros/testTPC/AliTPCjobs.cxx+
 AliTPCJobs jobs;
 jobs.fJobFile="job.list"
+jobs.ProcessAllJobs();
 */
 class AliTPCJobs : public TNamed{
 public:
@@ -20,8 +21,10 @@ public:
 
   TString  fJobFile;    
   TString  fWorkDir;
+  ClassDef(AliTPCJobs,0)
 };
 
+ ClassImp(AliTPCJobs)
 
 AliTPCJobs::AliTPCJobs(){
   // 
@@ -38,7 +41,7 @@ void AliTPCJobs::ProcessAllJobs(){
   Int_t counter=0;
   while (GetNextJob()){
     //
-    printf("PROCESSING JOB\n",counter);
+    printf("PROCESSING JOB\t%d\n",counter);
     counter++;
     if (!GetNextJob()) break;   
   }
@@ -104,6 +107,14 @@ void AliTPCJobs::ProcessJob(TString jobID, TString inputData, TString outputDir,
     printf("Exec\t%s\n", command);
     gSystem->Exec(command);
     //TFile::Cp(inputData.Data(), outputDir.Data());
+  }else{
+    char command[10000];
+    sprintf(command,"$ALICE_ROOT/TPC/macros/testTPC/action.sh %s %s %s %s", jobID.Data(), inputData.Data(), outputDir.Data(), action.Data());
+    printf("%s\n\n",command);
+    gSystem->Exec(command);
+    printf("\n\n");
+
   }
+  
   SetDone(jobID);
 }
