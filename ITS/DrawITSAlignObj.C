@@ -8,8 +8,9 @@
 #include <Riostream.h>
 #include "AliAlignObj.h"
 #endif
-void DrawITSAlignObj(const char* filename="ITSrealisticMisalignment.root",
-		     Bool_t local=kTRUE) {
+void DrawITSAlignObj(const char* filename="ITSfullMisalignment.root",
+		     const char* filenameOut="ITSfullModuleMisalignment.root",
+		     Bool_t local=kFALSE) {
   //
   // Draw distribution of alignment constants
   // (original version: A.Jacholkowski; modified by: A.Dainese)
@@ -17,7 +18,7 @@ void DrawITSAlignObj(const char* filename="ITSrealisticMisalignment.root",
 
 /* $Id$ */
 
-  TGeoManager::Import("geometry.root");
+  AliGeomManager::LoadGeometry("geometry.root");
 
   TFile* f = TFile::Open(filename);
   if(!f) {cerr<<"cannot open input file\n"; return;}
@@ -133,11 +134,19 @@ void DrawITSAlignObj(const char* filename="ITSrealisticMisalignment.root",
   TClonesArray* ar = (TClonesArray*)f->Get("ITSAlignObjs");
   Int_t entries = ar->GetEntriesFast();
   cout<<"number of alignment objects: "<<entries<<endl;
+  Bool_t overlaps;
+  AliGeomManager::ApplyAlignObjsToGeom(*ar,overlaps);
 
   AliAlignObj* a;
   Option_t *opt = NULL;
   Double_t tr[3];
   Double_t rot[3];
+  TGeoHMatrix delta;
+
+
+  TClonesArray *arrayOut = new TClonesArray("AliAlignObjParams",4000);
+  TClonesArray &alobjOut = *arrayOut;
+  Int_t j=0;
 
   for(Int_t i=0; i<entries; i++){
     a=(AliAlignObj*)ar->UncheckedAt(i);
@@ -147,7 +156,21 @@ void DrawITSAlignObj(const char* filename="ITSrealisticMisalignment.root",
       a->GetPars(tr,rot);
     }
     TString symName = a->GetSymName();
-    printf("  %s\n",symName.Data());
+    UShort_t volUID = a->GetVolUID();
+    printf("VolId %d    %s\n",volUID,symName.Data());
+
+    AliGeomManager::GetDeltaForBranch(*a,delta);
+    //delta.Print();
+
+    // create AliAlignObjParam with total delta
+    if(i==0 || volUID!=0) {
+      new(alobjOut[j]) AliAlignObjParams(symName.Data(),volUID,delta,kTRUE);
+      j++;
+    }
+
+
+    // plots
+    //
     if(!symName.Contains("SPD") && !symName.Contains("SDD") && !symName.Contains("SSD")) {
       a->Print(opt);
     }
@@ -157,7 +180,7 @@ void DrawITSAlignObj(const char* filename="ITSrealisticMisalignment.root",
       hzSPDsector->Fill(tr[2]);
       hrxSPDsector->Fill(rot[0]);
       hrySPDsector->Fill(rot[1]);
-      hrzSPDsector->Fill(rot[2]); printf("%f\n",rot[2]);
+      hrzSPDsector->Fill(rot[2]);
     }
     if(symName.Contains("SPD") && symName.Contains("Sector") && symName.Contains("HalfStave") && !symName.Contains("Ladder")) {
       hxSPDhalfstave->Fill(tr[0]);
@@ -304,5 +327,11 @@ void DrawITSAlignObj(const char* filename="ITSrealisticMisalignment.root",
   cSSDsensor->cd(6);
   hrzSSDsensor->Draw();
 
+
+  TFile fout(filenameOut,"RECREATE");
+  fout.cd();
+  fout.WriteObject(arrayOut,"ITSAlignObjs","kSingleKey");
+  fout.Close();
+  
   return;
 }
