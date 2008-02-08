@@ -20,7 +20,7 @@ command xrdcp $2 data.root
 echo aliroot -b -q $ALICE_ROOT/TPC/macros/testTPC/$4.C
 
 command aliroot -b -q $ALICE_ROOT/TPC/macros/testTPC/$4.C
-
+rm data.root
 for name in `ls *.root`; do
   xrdcp $name $3/$4/$name
 done

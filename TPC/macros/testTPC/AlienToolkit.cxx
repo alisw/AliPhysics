@@ -28,7 +28,7 @@
   toolkit.MakeCollection(path,mask);
 
   //
-  toolkit.MakeJobList("job.list","root://gsiaf.gsi.de:1094/", "COPY");
+  toolkit.MakeJobList("job.list","root://gsiaf.gsi.de:1094/", "", "COPY");
 
 */
 
@@ -200,8 +200,8 @@ void   AlienToolkit::MakeJobList(const  char * outname, const char *outputPrefix
     TString outputDir=outputPrefix;
     outputDir+=lfn->String().Data();
     
-    aout<<jobID<<"\t"<<pfn->String().Data()<<"\t"<<outputDir.Data()<<"\t"<<action;
-    if (suffix)  aout<<"\t"<<suffix<<"\n";
+    aout<<jobID<<" "<<pfn->String().Data()<<"  "<<outputDir.Data()<<" "<<action;
+    if (suffix)  aout<<" "<<suffix<<"\n";
     aout<<endl;
   }
   aout.close();
