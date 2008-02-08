@@ -11,6 +11,8 @@
 
 #include "AliESDEvent.h"
 #include "AliESDInputHandler.h"
+#include "AliAODEvent.h"
+#include "AliAODInputHandler.h"
 
 #include "PWG2spectra/SPECTRA/AliProtonAnalysis.h"
 #include "AliAnalysisTaskProtons.h"
@@ -22,7 +24,8 @@ ClassImp(AliAnalysisTaskProtons)
 
 //________________________________________________________________________
 AliAnalysisTaskProtons::AliAnalysisTaskProtons(const char *name) 
-: AliAnalysisTask(name, ""), fESD(0), fList(0), fAnalysis(0), 
+: AliAnalysisTask(name, ""), fESD(0), fAOD(0), fAnalysisType("ESD"), 
+  fList(0), fAnalysis(0), 
   fElectronFunction(0), fMuonFunction(0),
   fPionFunction(0), fKaonFunction(0), fProtonFunction(0),
   fFunctionUsed(kFALSE) { 
@@ -46,15 +49,27 @@ void AliAnalysisTaskProtons::ConnectInputData(Option_t *) {
   } else {
     // Disable all branches and enable only the needed ones
     // The next two lines are different when data produced as AliESDEvent is read
-    tree->SetBranchStatus("*", kFALSE);
-    tree->SetBranchStatus("fTracks.*", kTRUE);
+    if(fAnalysisType == "ESD") {
+      tree->SetBranchStatus("*", kFALSE);
+      tree->SetBranchStatus("fTracks.*", kTRUE);
 
-    AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-
-    if (!esdH) {
-      Printf("ERROR: Could not get ESDInputHandler");
-    } else
-      fESD = esdH->GetEvent();
+      AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+      
+      if (!esdH) {
+	Printf("ERROR: Could not get ESDInputHandler");
+      } else
+	fESD = esdH->GetEvent();
+    }
+    else if(fAnalysisType == "AOD") {
+      AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+      
+      if (!aodH) {
+	Printf("ERROR: Could not get AODInputHandler");
+      } else
+	fAOD = aodH->GetEvent();
+    }
+    else 
+      Printf("Wrong analysis type: Only ESD and AOD types are allowed!");
   }
 }
 
@@ -66,17 +81,19 @@ void AliAnalysisTaskProtons::CreateOutputObjects() {
 
   fAnalysis = new AliProtonAnalysis();
   fAnalysis->InitHistograms(10,-1.0,1.0,30,0.1,3.1);
-  fAnalysis->SetMinTPCClusters(50);
-  fAnalysis->SetMinITSClusters(1);
-  fAnalysis->SetMaxChi2PerTPCCluster(3.5);
-  fAnalysis->SetMaxCov11(2.0);
-  fAnalysis->SetMaxCov22(2.0);
-  fAnalysis->SetMaxCov33(0.5);
-  fAnalysis->SetMaxCov44(0.5);
-  fAnalysis->SetMaxCov55(2.0);
-  fAnalysis->SetMaxSigmaToVertex(3.);
-  fAnalysis->SetITSRefit();
-  fAnalysis->SetTPCRefit();
+  if(fAnalysisType == "ESD") {
+    fAnalysis->SetMinTPCClusters(50);
+    fAnalysis->SetMinITSClusters(1);
+    fAnalysis->SetMaxChi2PerTPCCluster(3.5);
+    fAnalysis->SetMaxCov11(2.0);
+    fAnalysis->SetMaxCov22(2.0);
+    fAnalysis->SetMaxCov33(0.5);
+    fAnalysis->SetMaxCov44(0.5);
+    fAnalysis->SetMaxCov55(2.0);
+    fAnalysis->SetMaxSigmaToVertex(3.);
+    fAnalysis->SetITSRefit();
+    fAnalysis->SetTPCRefit();
+  }
   if(fFunctionUsed)
     fAnalysis->SetPriorProbabilityFunctions(fElectronFunction,
 					    fMuonFunction,
@@ -92,13 +109,24 @@ void AliAnalysisTaskProtons::Exec(Option_t *) {
   // Main loop
   // Called for each event
   
-  if (!fESD) {
-    Printf("ERROR: fESD not available");
-    return;
-  }
+  if(fAnalysisType == "ESD") {
+    if (!fESD) {
+      Printf("ERROR: fESD not available");
+      return;
+    }
   
-  Printf("Task2: There are %d tracks in this event", fESD->GetNumberOfTracks());
-  fAnalysis->Analyze(fESD);
+    Printf("Proton analysis task: There are %d tracks in this event", fESD->GetNumberOfTracks());
+    fAnalysis->Analyze(fESD);
+  }
+  else if(fAnalysisType == "AOD") {
+    if (!fAOD) {
+      Printf("ERROR: fAOD not available");
+      return;
+    }
+    
+    Printf("Proton analysis task: There are %d tracks in this event", fAOD->GetNumberOfTracks());
+    fAnalysis->Analyze(fAOD);
+  }
   fList = new TList();
   fList->Add(fAnalysis->GetProtonYPtHistogram()); 
   fList->Add(fAnalysis->GetAntiProtonYPtHistogram()); 
