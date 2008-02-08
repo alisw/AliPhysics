@@ -33,7 +33,6 @@ class AliMUONPayloadTrigger: public TObject {
     Int_t GetMaxLoc() const {return fMaxLoc;}
 
 
-    void SetMaxReg(Int_t reg);
     void SetMaxLoc(Int_t loc);
 
     /// Return pointer to local structure
@@ -65,7 +64,8 @@ class AliMUONPayloadTrigger: public TObject {
     AliMUONPayloadTrigger& operator = (const AliMUONPayloadTrigger& stream);
 
     void   AddErrorMessage(const Char_t* msg);
-    
+    void   SetMaxReg(Int_t reg);
+
     Int_t fMaxReg;        ///< maximum number of regional cards in DATE file
     Int_t fMaxLoc;        ///< maximum number of local cards in DATE file
 

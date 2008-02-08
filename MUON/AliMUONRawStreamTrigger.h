@@ -59,7 +59,7 @@ class AliMUONRawStreamTrigger: public AliMUONRawStream {
     /// Return maximum number of local cards in DATE file
     Int_t GetMaxLoc() const {return fPayload->GetMaxLoc();}
 
-    void SetMaxReg(Int_t reg);
+    //void SetMaxReg(Int_t reg);
     void SetMaxLoc(Int_t loc);
 
     /// Return pointer for DDL structure

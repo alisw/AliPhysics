@@ -369,12 +369,12 @@ Bool_t AliMUONRawStreamTrigger::NextDDL()
   return kTRUE;
 }
 
-//______________________________________________________
-void AliMUONRawStreamTrigger::SetMaxReg(Int_t reg) 
-{
-  /// set regional card number
-  fPayload->SetMaxReg(reg);
-}
+// //______________________________________________________
+// void AliMUONRawStreamTrigger::SetMaxReg(Int_t reg) 
+// {
+//   /// set regional card number
+//   fPayload->SetMaxReg(reg);
+// }
 
 //______________________________________________________
 void AliMUONRawStreamTrigger::SetMaxLoc(Int_t loc) 

@@ -96,8 +96,8 @@ Bool_t AliMUONPayloadTrigger::Decode(UInt_t *buffer)
   memcpy(darcHeader->GetHeader(), &buffer[index], (kDarcHeaderSize)*4); 
   index += kDarcHeaderSize;
 
-  if (!fNofRegSet) // if regional board number not set, set it with darc type
-  { 
+//   if (!fNofRegSet) // if regional board number not set, set it with darc type
+//   { 
     // darc type vardorh
     if (darcHeader->GetDarcType() == 4)
       fMaxReg = 1;
@@ -110,7 +110,7 @@ Bool_t AliMUONPayloadTrigger::Decode(UInt_t *buffer)
       scalerEvent = kTRUE;
     } else
       scalerEvent = kFALSE;
-  }
+//   }
   
   if(scalerEvent) {
     // 6 DARC scaler words
