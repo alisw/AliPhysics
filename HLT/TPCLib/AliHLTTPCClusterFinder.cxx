@@ -778,6 +778,11 @@ void AliHLTTPCClusterFinder::ReadDataUnsorted(void* ptr,unsigned long size, Int_
   while(fDigitReader->NextChannel()){
     UInt_t row=fDigitReader->GetRow();
     UInt_t pad=fDigitReader->GetPad();
+    if(row==1000||pad==1000){
+      HLTInfo("Corrupt data, hw address exceeded the maximum amount");
+      continue;
+    }
+
     fRowPadVector[row][pad]->ClearCandidates();
     while(fDigitReader->NextBunch()){
       if(fDigitReader->GetBunchSize()>1){//to remove single timebin values, this will have to change at some point
