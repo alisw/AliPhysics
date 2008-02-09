@@ -446,7 +446,7 @@ class AliHLTComponent : public AliHLTLogging {
   /**
    * Helper function to print content of data type.
    */
-  void PrintDataTypeContent(AliHLTComponentDataType& dt, const char* format=NULL) const;
+  static void PrintDataTypeContent(AliHLTComponentDataType& dt, const char* format=NULL);
 
   /**
    * helper function to initialize AliHLTComponentEventData structure
@@ -458,7 +458,7 @@ class AliHLTComponent : public AliHLTLogging {
    * This is just a helper function to examine an @ref AliHLTComponentDataType
    * structur.
    */
-  void PrintComponentDataTypeInfo(const AliHLTComponentDataType& dt);
+  static void PrintComponentDataTypeInfo(const AliHLTComponentDataType& dt);
 
   /**
    * Fill AliHLTComponentBlockData structure with default values.

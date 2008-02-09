@@ -427,25 +427,26 @@ int AliHLTComponent::FindMatchingDataTypes(AliHLTComponent* pConsumer, AliHLTCom
   return iResult;
 }
 
-void AliHLTComponent::PrintDataTypeContent(AliHLTComponentDataType& dt, const char* format) const
+void AliHLTComponent::PrintDataTypeContent(AliHLTComponentDataType& dt, const char* format)
 {
   // see header file for function documentation
-  const char* fmt="publisher \'%s\'";
+  const char* fmt="\'%s\'";
   if (format) fmt=format;
-  HLTMessage(fmt, (DataType2Text(dt)).c_str());
-  HLTMessage("%x %x %x %x %x %x %x %x : %x %x %x %x", 
-	     dt.fID[0],
-	     dt.fID[1],
-	     dt.fID[2],
-	     dt.fID[3],
-	     dt.fID[4],
-	     dt.fID[5],
-	     dt.fID[6],
-	     dt.fID[7],
-	     dt.fOrigin[0],
-	     dt.fOrigin[1],
-	     dt.fOrigin[2],
-	     dt.fOrigin[3]);
+  AliHLTLogging::Message(NULL, kHLTLogNone, NULL , NULL, Form(fmt, (DataType2Text(dt)).c_str()));
+  AliHLTLogging::Message(NULL, kHLTLogNone, NULL , NULL, 
+			 Form("%x %x %x %x %x %x %x %x : %x %x %x %x", 
+			      dt.fID[0],
+			      dt.fID[1],
+			      dt.fID[2],
+			      dt.fID[3],
+			      dt.fID[4],
+			      dt.fID[5],
+			      dt.fID[6],
+			      dt.fID[7],
+			      dt.fOrigin[0],
+			      dt.fOrigin[1],
+			      dt.fOrigin[2],
+			      dt.fOrigin[3]));
 }
 
 void AliHLTComponent::FillBlockData( AliHLTComponentBlockData& blockData )
