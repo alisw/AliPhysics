@@ -1,7 +1,12 @@
-void rec(const char *filename="data.root")
+void rec(const char *filename="data.root", const char *ocdbpath = "alien://folder=/alice/data/2007/LHC07w/OCDB/")
 {
   gSystem->Load("libXrdClient.so");
-  gSystem->Load("libNetX.so");
+  gSystem->Load("libNetx.so"); 
+  AliLog::SetClassDebugLevel("AliTPCRawStream",-5);
+  AliLog::SetClassDebugLevel("AliRawReaderDate",-5);
+  AliLog::SetClassDebugLevel("AliTPCAltroMapping",-5);
+  AliLog::SetModuleDebugLevel("RAW",-5);
+  AliLog::SetGlobalLogLevel(3);
   //
   // First version of the reconstruction
   // script for the FDR'07
@@ -10,15 +15,16 @@ void rec(const char *filename="data.root")
   // AliLog::SetModuleDebugLevel("STEER",2);
   AliCDBManager * man = AliCDBManager::Instance();
   //man->SetDefaultStorage("alien://folder=/alice/data/2007/LHC07w/OCDB/");
-  man->SetDefaultStorage("/data/test2007/OCDB");
-  man->SetSpecificStorage("GRP/GRP/Data","local://$ALICE_ROOT");
-  man->SetSpecificStorage("ITS/Calib/DDLMapSDD","local://$ALICE_ROOT");
-  man->SetSpecificStorage("MUON/Calib/Mapping","local://$ALICE_ROOT");
-  man->SetSpecificStorage("MUON/Calib/DDLStore","local://$ALICE_ROOT");
+  man->SetDefaultStorage(ocdbpath);
+  //  man->SetSpecificStorage("TPC/Calib/Parameters","local:///data/test2007/");
+  // man->SetSpecificStorage("TPC/Calib/PadNoise","local:///data/test2007/");
+  //   man->SetSpecificStorage("ITS/Calib/DDLMapSDD","local://$ALICE_ROOT");
+  //   man->SetSpecificStorage("MUON/Calib/Mapping","local://$ALICE_ROOT");
+  //   man->SetSpecificStorage("MUON/Calib/DDLStore","local://$ALICE_ROOT");
 
   // TPC settings
   AliLog::SetClassDebugLevel("AliTPCclustererMI",2);
-  AliTPCRecoParam * tpcRecoParam = AliTPCRecoParam::GetCosmicTestParam(kTRUE);
+  AliTPCRecoParam * tpcRecoParam = AliTPCRecoParam::GetCosmicTestParam(kFALSE);
   tpcRecoParam->SetTimeInterval(60,940);
   tpcRecoParam->Dump();
   AliTPCReconstructor::SetRecoParam(tpcRecoParam);
@@ -44,7 +50,7 @@ void rec(const char *filename="data.root")
 
   // AliReconstruction settings
   AliReconstruction rec;
-  rec.SetUniformFieldTracking(kFALSE);  
+  rec.SetUniformFieldTracking(kFALSE);  
   rec.SetWriteESDfriend(kTRUE);
   rec.SetWriteAlignmentData();
   rec.SetInput(filename);
@@ -52,21 +58,11 @@ void rec(const char *filename="data.root")
   //rec.SetRunLocalReconstruction("");
   rec.SetRunReconstruction("TPC");
   rec.SetFillESD("TPC");
+  rec.SetRunV0Finder(kFALSE);  
   rec.SetRunVertexFinder(kFALSE);
-  rec.SetRunQA(kFALSE);
-  //
-  //rec.SetEventRange(1,5);
 
-  // In case some detectors have to be switched off...
-  //  rec.SetRunLocalReconstruction("ALL");
-  //  rec.SetRunTracking("ALL");
-  //  rec.SetFillESD("ALL");
-  // Disable vertex finder for the moment
-  //  rec.SetRunVertexFinder(kFALSE);
-
-  // To be enabled if some equipment IDs are not set correctly by DAQ
-  //  rec.SetEquipmentIdMap("EquipmentIdMap.data");
-
+  rec.SetRunQA(kTRUE);
+  
   // Detector options if any
   rec.SetOption("MUON","SAVEDIGITS");
   rec.SetOption("TPC","OldRCUFormat");
