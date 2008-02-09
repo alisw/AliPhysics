@@ -309,7 +309,7 @@ AliHLTHOMERReader::AliHLTHOMERReader( unsigned int tcpCnt, const char** hostname
 	}
     }
 
-AliHLTHOMERReader::AliHLTHOMERReader( const void* /*pBuffer*/, int /*size*/ )
+AliHLTHOMERReader::AliHLTHOMERReader( const void* pBuffer, int size )
   :
   AliHLTMonitoringReader(),
   fCurrentEventType(~(homer_uint64)0),
@@ -335,13 +335,12 @@ AliHLTHOMERReader::AliHLTHOMERReader( const void* /*pBuffer*/, int /*size*/ )
 	fConnectionStatus = ENOMEM;
 	return;
 	}
-    //fConnectionStatus = AddDataSource( shmKey, shmSize, fDataSources[0] );
+    fConnectionStatus = AddDataSource(const_cast<void*>(pBuffer), size, fDataSources[0] );
     if ( fConnectionStatus )
 	fErrorConnection = 0;
     else
 	{
 	fDataSourceCnt++;
-	fShmDataSourceCnt++;
 	fDataSources[0].fNdx = 0;
 	}
     }
@@ -776,7 +775,7 @@ int AliHLTHOMERReader::ReadNextEvent( bool useTimeout, unsigned long timeout )
 	return ENXIO;
     // Clean up currently active event.
     ReleaseCurrentEvent();
-    int ret;
+    int ret=0;
     // Trigger all configured data sources
     for ( unsigned n = 0; n<fDataSourceCnt; n++ )
 	{
@@ -818,11 +817,17 @@ int AliHLTHOMERReader::ReadNextEvent( bool useTimeout, unsigned long timeout )
     //Check to see that all sources contributed data for the same event
     homer_uint64 eventID;
     homer_uint64 eventType;
+    if (!fDataSources[0].fData)
+      {
+	fErrorConnection = 0;
+	fConnectionStatus=56;//ENOBUF;
+	return fConnectionStatus;
+      }
     eventID = GetSourceEventID( fDataSources[0] );
     eventType = GetSourceEventType( fDataSources[0] );
     for ( unsigned n = 1; n < fDataSourceCnt; n++ )
 	{
-	if ( GetSourceEventID( fDataSources[n] ) != eventID || GetSourceEventType( fDataSources[n] ) != eventType )
+	if ( !fDataSources[n].fData || GetSourceEventID( fDataSources[n] ) != eventID || GetSourceEventType( fDataSources[n] ) != eventType )
 	    {
 	    fErrorConnection = n;
 	    fConnectionStatus=56;//EBADRQC;
@@ -859,7 +864,10 @@ void AliHLTHOMERReader::ReleaseCurrentEvent()
 	    {
 	    if ( fDataSources[n].fType == kTCP )
 		delete [] (homer_uint8*)fDataSources[n].fData;
-	    fDataSources[n].fData = NULL;
+	    // do not reset the data pointer for kBuf sources since this
+	    // can not be set again.
+	    if ( fDataSources[n].fType != kBuf )
+	      fDataSources[n].fData = NULL;
 	    }
 	fDataSources[n].fDataSize = fDataSources[n].fDataRead = 0;
 	}

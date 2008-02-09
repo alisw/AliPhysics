@@ -87,7 +87,10 @@ class AliHLTHOMERWriter : public AliHLTMonitoringWriter
 
         /**
          * Add a data block to the writer.
+	 * The HOMER header must contain all meta information including the
+	 * size of the data.
          * @param homerHeader    pointer to the header describing the block
+	 * @param data           pointer to data
          */
 	void AddBlock( const void* homerHeader, const void* data );
 
