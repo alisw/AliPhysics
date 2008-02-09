@@ -824,17 +824,19 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
       }else{
 	allBins[iRow][iPad*fMaxTime+iTimeBin] = signal;
       }
-      allBins[iRow][iPad*fMaxTime+0]=1.;  // pad with signal
+      allBins[iRow][iPad*fMaxTime+0]+=1.;  // pad with signal
 
       // Temporary
       digCounter++;
     } // End of the loop over altro data
     //
     //
+    //
+    //
     // Now loop over rows and perform pedestal subtraction
     if (digCounter==0) continue;
-    //    if (fPedSubtraction) {
-    if (calcPedestal) {
+    //    if (calcPedestal) {
+    if (kTRUE) {
       for (Int_t iRow = 0; iRow < nRows; iRow++) {
 	Int_t maxPad;
 	if (fSector < kNIS)
@@ -843,6 +845,15 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
 	  maxPad = fParam->GetNPadsUp(iRow);
 
 	for (Int_t iPad = 3; iPad < maxPad + 3; iPad++) {
+	  //
+	  // Temporary fix for data production - !!!! MARIAN
+	  // The noise calibration should take mean and RMS - currently the Gaussian fit used
+	  // In case of double peak  - the pad should be rejected
+	  //
+	  // Line mean - if more than given digits over threshold - make a noise calculation
+	  // and pedestal substration
+	  if (!calcPedestal && allBins[iRow][iPad*fMaxTime+0]<50) continue;
+	  //
 	  if (allBins[iRow][iPad*fMaxTime+0] <1 ) continue;  // no data
 	  Float_t *p = &allBins[iRow][iPad*fMaxTime+3];
 	  //Float_t pedestal = TMath::Median(fMaxTime, p);	
@@ -942,8 +953,8 @@ void AliTPCclustererMI::FindClusters(AliTPCCalROC * noiseROC)
     if (b[0]<minMaxCutAbs) continue;   //threshold for maxima  
     //
     if (b[-1]+b[1]+b[-fMaxTime]+b[fMaxTime]<=0) continue;  // cut on isolated clusters 
-    //    if (b[-1]+b[1]<=0) continue;               // cut on isolated clusters
-    //if (b[-fMaxTime]+b[fMaxTime]<=0) continue; // cut on isolated clusters
+    if (b[-1]+b[1]<=0) continue;               // cut on isolated clusters
+    if (b[-fMaxTime]+b[fMaxTime]<=0) continue; // cut on isolated clusters
     //
     if ((b[0]+b[-1]+b[1])<minUpDownCutAbs) continue;   //threshold for up down  (TRF) 
     if ((b[0]+b[-fMaxTime]+b[fMaxTime])<minLeftRightCutAbs) continue;   //threshold for left right (PRF)    
