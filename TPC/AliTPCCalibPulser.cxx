@@ -621,10 +621,9 @@ void AliTPCCalibPulser::EndEvent()
     //loop over all ROCs, fill Time0 histogram corrected for the mean Time0 of each ROC
     for ( Int_t iSec = 0; iSec<72; ++iSec ){
 	TVectorF *vTimes = GetPadTimesEvent(iSec);
-        if ( !vTimes ) continue;
-
+        if ( !vTimes || fVTime0OffsetCounter[iSec]==0 ) continue;
+	Float_t time0 = fVTime0Offset[iSec]/fVTime0OffsetCounter[iSec];
 	for ( UInt_t iChannel=0; iChannel<fROC->GetNChannels(iSec); ++iChannel ){
-	    Float_t time0 = fVTime0Offset[iSec]/fVTime0OffsetCounter[iSec];
 	    Float_t time  = (*vTimes).GetMatrixArray()[iChannel];
 
             GetHistoT0(iSec,kTRUE)->Fill( time-time0,iChannel );
