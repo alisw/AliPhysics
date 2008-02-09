@@ -95,7 +95,7 @@ class AliHLTHOMERLibManager {
    * Load HOMER library dynamically and create object working on the provided
    * buffer.
    */
-  AliHLTHOMERReader* OpenReader(const AliHLTUInt8_t* pBuffer, int size);
+  AliHLTHOMERReader* OpenReaderBuffer(const AliHLTUInt8_t* pBuffer, int size);
 
   /**
    * Delete a HOMER reader.

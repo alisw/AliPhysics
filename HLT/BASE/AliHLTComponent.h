@@ -504,6 +504,16 @@ class AliHLTComponent : public AliHLTLogging {
   static void SetDataType(AliHLTComponentDataType& tgtdt, const char* id, const char* origin);
 
   /**
+   * Set the ID and Origin of an AliHLTComponentDataType structure.
+   * Given the fact that the data type ID is 64bit wide and origin 32, this helper
+   * function sets the data type from those two parameters.
+   * @param tgtdt   target data type structure
+   * @param id      64bit id
+   * @param origin  32bit origin
+   */
+  static void SetDataType(AliHLTComponentDataType& dt, AliHLTUInt64_t id, AliHLTUInt32_t orig); 
+
+  /**
    * Stopwatch type for benchmarking.
    */
   enum AliHLTStopwatchType {

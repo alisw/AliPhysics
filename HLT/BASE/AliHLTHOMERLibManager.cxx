@@ -94,7 +94,7 @@ AliHLTHOMERReader* AliHLTHOMERLibManager::OpenReader(unsigned int tcpCnt, const 
   return pReader;
 }
 
-AliHLTHOMERReader* AliHLTHOMERLibManager::OpenReader(const AliHLTUInt8_t* pBuffer, int size)
+AliHLTHOMERReader* AliHLTHOMERLibManager::OpenReaderBuffer(const AliHLTUInt8_t* pBuffer, int size)
 {
   // see header file for class documentation
   if (fLibraryStatus<0) return NULL;

@@ -68,10 +68,12 @@ int AliHLTOUT::Init()
 {
   // see header file for class documentation
   int iResult=0;
+  SetStatusFlag(kCollecting);
   if ((iResult=GenerateIndex())>=0) {
     if ((iResult=InitHandlers())>=0) {
     }
   }
+  ClearStatusFlag(kCollecting);
   return iResult;
 }
 
@@ -97,6 +99,7 @@ int AliHLTOUT::SelectNextDataBlock()
 {
   // see header file for class documentation
   if (CheckStatusFlag(kLocked)) return -EPERM;
+  if (fCurrent==fBlockDescList.end()) return -ENOENT;
   fCurrent++;
   return FindAndSelectDataBlock();
 }
@@ -110,7 +113,7 @@ int AliHLTOUT::FindAndSelectDataBlock()
     if ((*fCurrent)==fSearchDataType &&
 	fSearchSpecification==kAliHLTVoidDataSpec || (*fCurrent)==fSearchSpecification &&
 	1/*fSearchHandlerType==AliHLTModuleAgent::kUnknownOutput*/) {
-      iResult=0;
+      iResult=fCurrent->GetIndex();
       // TODO: check the byte order on the current system and the byte order of the
       // data block, print warning when missmatch and user did not check
       //AliHLTOUTByteOrder_t blockBO=CheckByteOrder();
@@ -126,6 +129,8 @@ int AliHLTOUT::FindAndSelectDataBlock()
       // TODO: check the alignment on the current system and the alignment of the
       // data block, print warning when missmatch and user did not check
       ClearStatusFlag(kAlignmentChecked);
+
+      break;
     }
     fCurrent++;
   }
@@ -147,8 +152,8 @@ int AliHLTOUT::GetDataBlockDescription(AliHLTComponentDataType& dt, AliHLTUInt32
 AliHLTUInt32_t AliHLTOUT::GetDataBlockIndex()
 {
   // see header file for class documentation
-  assert(0); // not implemented
-  return AliHLTOUTInvalidIndex;
+  if (fCurrent==fBlockDescList.end()) return AliHLTOUTInvalidIndex;
+  return fCurrent->GetIndex();
 }
 
 int AliHLTOUT::GetDataBuffer(const AliHLTUInt8_t* &pBuffer, AliHLTUInt32_t& size)
@@ -213,7 +218,7 @@ int AliHLTOUT::InitHandlers()
   // see header file for class documentation
   int iResult=0;
   AliHLTOUTIndexList remnants;
-  for (iResult=SelectFirstDataBlock(kAliHLTAnyDataType, kAliHLTVoidDataSpec); iResult>0; iResult=SelectNextDataBlock()) {
+  for (iResult=SelectFirstDataBlock(kAliHLTAnyDataType, kAliHLTVoidDataSpec); iResult>=0; iResult=SelectNextDataBlock()) {
     remnants.push_back(GetDataBlockIndex());
     AliHLTComponentDataType dt=kAliHLTVoidDataType;
     AliHLTUInt32_t spec=kAliHLTVoidDataSpec;
@@ -308,15 +313,21 @@ AliHLTOUT::AliHLTOUTHandlerListEntry& AliHLTOUT::AliHLTOUTHandlerListEntry::oper
   return *this;
 }
 
-AliHLTUInt32_t AliHLTOUT::AliHLTOUTHandlerListEntry::operator[](int i) const {
+AliHLTUInt32_t AliHLTOUT::AliHLTOUTHandlerListEntry::operator[](int i) const
+{
+  // see header file for class documentation
   return fBlocks.size()>i?fBlocks[i]:AliHLTOUTInvalidIndex;
 }
 
 bool AliHLTOUT::AliHLTOUTHandlerListEntry::operator==(const AliHLTOUTHandlerListEntry& entry) const
 {
+  // see header file for class documentation
+  assert(0); // not yet implemented
   return false;
 }
 
-void AliHLTOUT::AliHLTOUTHandlerListEntry::AddIndex(AliHLTUInt32_t index) {
+void AliHLTOUT::AliHLTOUTHandlerListEntry::AddIndex(AliHLTUInt32_t index)
+{
+  // see header file for class documentation
   fBlocks.push_back(index);
 }

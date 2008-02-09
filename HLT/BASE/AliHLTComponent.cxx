@@ -496,6 +496,16 @@ void AliHLTComponent::SetDataType(AliHLTComponentDataType& tgtdt, const char* id
   }
 }
 
+void AliHLTComponent::SetDataType(AliHLTComponentDataType& dt, AliHLTUInt64_t id, AliHLTUInt32_t origin)
+{
+  // see header file for function documentation
+  dt.fStructSize=sizeof(AliHLTComponentDataType);
+  assert(kAliHLTComponentDataTypefIDsize==sizeof(id));
+  assert(kAliHLTComponentDataTypefOriginSize==sizeof(origin));
+  memcpy(&dt.fID, &id, kAliHLTComponentDataTypefIDsize);
+  memcpy(&dt.fOrigin, &origin, kAliHLTComponentDataTypefOriginSize);
+}
+
 void AliHLTComponent::FillEventData(AliHLTComponentEventData& evtData)
 {
   // see header file for function documentation

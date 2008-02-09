@@ -66,7 +66,8 @@ class AliHLTOUT : public AliHLTLogging {
    *         neg. error code if failed                                    <br>
    *                        -EPERM if access denied (object locked)
    */
-  int SelectFirstDataBlock(AliHLTComponentDataType dt, AliHLTUInt32_t spec,
+  int SelectFirstDataBlock(AliHLTComponentDataType dt=kAliHLTAnyDataType,
+			   AliHLTUInt32_t spec=kAliHLTVoidDataSpec,
 			   AliHLTModuleAgent::AliHLTOUTHandlerType handlerType=AliHLTModuleAgent::kUnknownOutput);
 
   /**

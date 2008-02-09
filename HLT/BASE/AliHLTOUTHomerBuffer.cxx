@@ -71,7 +71,7 @@ int AliHLTOUTHomerBuffer::GenerateIndex()
   int iResult=0;
   if (!fpReader) {
     if (fpManager) {
-      fpReader=fpManager->OpenReader(fpBuffer, fSize);
+      fpReader=fpManager->OpenReaderBuffer(fpBuffer, fSize);
     }
   }
   if (fpReader) {
@@ -119,7 +119,7 @@ int AliHLTOUTHomerBuffer::ScanReader(AliHLTMonitoringReader* pReader, AliHLTUInt
 {
   // see header file for class documentation
   int iResult=0;
-  if (pReader) {
+  if (pReader && pReader->ReadNextEvent()==0) {
     AliHLTUInt32_t nofBlocks=pReader->GetBlockCnt();
     AliHLTUInt32_t tmp1=0x1;
     AliHLTUInt32_t tmp2=offset;
@@ -142,9 +142,9 @@ int AliHLTOUTHomerBuffer::ScanReader(AliHLTMonitoringReader* pReader, AliHLTUInt
       homer_uint32 origin=pReader->GetBlockDataOrigin( i );
       homer_uint32 spec=pReader->GetBlockDataSpec( i );
       AliHLTComponentDataType dt;
-      memcpy(&dt.fID, &id, kAliHLTComponentDataTypefIDsize);
-      memcpy(&dt.fOrigin, &origin, kAliHLTComponentDataTypefOriginSize);
+      AliHLTComponent::SetDataType(dt, id, origin);
       AliHLTOUTBlockDescriptor desc(dt, spec, offset|i);
+      HLTDebug("adding block %d: %s %#x", i, AliHLTComponent::DataType2Text(dt).c_str(), spec);
       iResult=AddBlockDescriptor(desc);
     }
   } else {

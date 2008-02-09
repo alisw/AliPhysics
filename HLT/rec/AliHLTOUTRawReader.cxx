@@ -72,7 +72,7 @@ int AliHLTOUTRawReader::GenerateIndex()
     while (fpRawreader->ReadNextData(pSrc) && pSrc!=NULL && iResult>=0) {
       AliHLTUInt32_t id=(fpRawreader->GetEquipmentId())<<fgkIdShift;
       int size=fpRawreader->GetDataSize();
-      AliHLTHOMERReader* pReader=fpManager->OpenReader(pSrc, size);
+      AliHLTHOMERReader* pReader=fpManager->OpenReaderBuffer(pSrc, size);
       if (pReader) {
 	iResult=ScanReader(pReader, id);
 	fpManager->DeleteReader(pReader);
@@ -105,7 +105,7 @@ int AliHLTOUTRawReader::GetDataBuffer(AliHLTUInt32_t index, const AliHLTUInt8_t*
       fpRawreader->SelectEquipment(-1, id, id);
       UChar_t* pSrc=NULL;
       if (fpRawreader->ReadNextData(pSrc) && pSrc!=NULL) {
-	fpCurrent=fpManager->OpenReader(pSrc, size);
+	fpCurrent=fpManager->OpenReaderBuffer(pSrc, size);
       } else {
 	iResult=-ENOSYS;
       }

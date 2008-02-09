@@ -183,8 +183,8 @@ int AliHLTOUTComponent::DumpEvent( const AliHLTComponentEventData& evtData,
     for (int n=0; n<(int)evtData.fBlockCnt; n++ ) {
       memset( homerHeader, 0, sizeof(homer_uint64)*kCount_64b_Words );
       homerDescriptor.Initialize();
-      homerDescriptor.SetType(reinterpret_cast<homer_uint64>(blocks[n].fDataType.fID));
-      homerDescriptor.SetSubType1(reinterpret_cast<homer_uint64>(blocks[n].fDataType.fOrigin));
+      homerDescriptor.SetType(*(reinterpret_cast<const homer_uint64*>(blocks[n].fDataType.fID)));
+      homerDescriptor.SetSubType1(*(reinterpret_cast<const homer_uint32*>(blocks[n].fDataType.fOrigin)));
       homerDescriptor.SetSubType2(static_cast<homer_uint64>(blocks[n].fSpecification));
       homerDescriptor.SetBlockSize(blocks[n].fSize);
       int writerNo=ShuffleWriters(fWriters, blocks[n].fSize);
