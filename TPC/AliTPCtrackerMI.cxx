@@ -7172,7 +7172,6 @@ void AliTPCtrackerMI::AliTPCRow::SetFastCluster(Int_t i, Short_t cl){
   // Set cluster info for fast navigation
   //
   if (i>510|| i<0){
-    cerr<<"Out of range cluster\t"<<i<<"\n";
   }else{
     fFastCluster[i]=cl;
   }
