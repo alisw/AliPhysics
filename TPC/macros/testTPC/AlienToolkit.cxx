@@ -192,6 +192,7 @@ void   AlienToolkit::MakeJobList(const  char * outname, const char *outputPrefix
     TObjString *pfn = (TObjString*)map("alienSURL");
     if (!lfn) continue;
     if (!pfn) continue;
+     if (lfn->String().Contains(".tag.")) continue;
     printf("Job info\t%s\n",lfn->String().Data());
     TString jobID=lfn->String().Data();
     jobID.ReplaceAll("/","_");
