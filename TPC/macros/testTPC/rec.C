@@ -1,12 +1,13 @@
-void rec(const char *filename="data.root", const char *ocdbpath = "alien://folder=/alice/data/2007/LHC07w/OCDB/")
+void rec(const char *filename="data.root", const char *ocdbpath = "local:///d/alice12/miranov/testTPC/OCDB/")
 {
-  gSystem->Load("libXrdClient.so");
-  gSystem->Load("libNetx.so"); 
+  //gSystem->Load("libXrdClient.so");
+  //gSystem->Load("libNetx.so"); 
   AliLog::SetClassDebugLevel("AliTPCRawStream",-5);
   AliLog::SetClassDebugLevel("AliRawReaderDate",-5);
   AliLog::SetClassDebugLevel("AliTPCAltroMapping",-5);
   AliLog::SetModuleDebugLevel("RAW",-5);
   AliLog::SetGlobalLogLevel(3);
+
   //
   // First version of the reconstruction
   // script for the FDR'07
@@ -61,7 +62,7 @@ void rec(const char *filename="data.root", const char *ocdbpath = "alien://folde
   rec.SetRunV0Finder(kFALSE);  
   rec.SetRunVertexFinder(kFALSE);
 
-  rec.SetRunQA(kTRUE);
+  rec.SetRunQA(kFALSE);
   
   // Detector options if any
   rec.SetOption("MUON","SAVEDIGITS");
@@ -85,6 +86,10 @@ void rec(const char *filename="data.root", const char *ocdbpath = "alien://folde
   cout << "--------- Reconstruction Completed. Start merging QAs -----------" << endl;
   cout << "-----------------------------------------------------------------" << endl;
   cout << "-----------------------------------------------------------------" << endl;
-  AliQADataMakerSteer qas;
-  qas.Merge();
+  //
+  cout <<" EXITING RECONSTRUNCTION SESSION\n";
+  //
+  exit();
+  //  AliQADataMakerSteer qas;
+  // qas.Merge();
 }

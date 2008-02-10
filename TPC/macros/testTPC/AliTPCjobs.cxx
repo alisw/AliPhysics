@@ -3,11 +3,17 @@
 #include <TSystem.h>
 
 /*
+
+
 .L $ALICE_ROOT/TPC/macros/testTPC/AliTPCjobs.cxx+
+ 
+
 AliTPCJobs jobs;
 jobs.fJobFile="job.list"
 jobs.ProcessAllJobs();
 */
+
+
 class AliTPCJobs : public TNamed{
 public:
   AliTPCJobs();
@@ -103,7 +109,7 @@ void AliTPCJobs::ProcessJob(TString jobID, TString inputData, TString outputDir,
   SetLock(jobID);
   if (action.Contains("COPY")){
     char command[10000];
-      sprintf(command,"xrdcp -d 1 -DIFirstConnectMaxCnt 2 -DIConnectTimeout 2 -DIRequestTimeout 2 -DIMaxRedirectcount 2 -DIRedirCntTimeout 2 %s\t%s\n",inputData.Data(), outputDir.Data());
+      sprintf(command,"xrdcp  -DIFirstConnectMaxCnt 4 -DIConnectTimeout 4 -DIRequestTimeout 4 -DIMaxRedirectcount 4 -DIRedirCntTimeout 4 %s\t%s\n",inputData.Data(), outputDir.Data());
     printf("Exec\t%s\n", command);
     gSystem->Exec(command);
     //TFile::Cp(inputData.Data(), outputDir.Data());
@@ -117,4 +123,15 @@ void AliTPCJobs::ProcessJob(TString jobID, TString inputData, TString outputDir,
   }
   
   SetDone(jobID);
+}
+
+
+
+void AliTPCjobs(){
+  //
+  //
+  //
+  AliTPCJobs jobs;
+  jobs.fJobFile="job.list";
+  jobs.ProcessAllJobs();
 }
