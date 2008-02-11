@@ -379,7 +379,8 @@ Bool_t AliPHOSRawDecoderv1::NextDigit()
           efit*=80.33109+128.6433*bfit ;
 
         if(efit<0. || efit > 10000.){                                                                          
-          fEnergy=0 ; //bad sample                                                    
+//leave energy as previously found max
+//          fEnergy=0 ; //bad sample                                                    
           fTime=-999.;                                                                
           fQuality=999 ;                                                              
           return kTRUE;
