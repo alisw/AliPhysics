@@ -738,8 +738,8 @@ void  AliPHOSEmcRecPoint::EvalPrimaries(TClonesArray * digits)
     Error("EvalPrimaries", "GetNprimaries ERROR > increase fMaxTrack" ) ;
     nprimaries = fMaxTrack; //skip the rest
   }
-  for(fMulTrack=1; fMulTrack<=nprimaries ; fMulTrack++){
-    tempo[fMulTrack-1] = digit->GetPrimary(fMulTrack) ;
+  for(fMulTrack=0; fMulTrack<nprimaries ; fMulTrack++){
+    tempo[fMulTrack] = digit->GetPrimary(fMulTrack+1) ;
   }
 
   //Now add other digits contributions
@@ -768,7 +768,6 @@ void  AliPHOSEmcRecPoint::EvalPrimaries(TClonesArray * digits)
       }
     }
   } // all digits
-
   if(fMulTrack > 0){
     if(fTracksList)delete [] fTracksList;
     fTracksList = new Int_t[fMulTrack] ;
