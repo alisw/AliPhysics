@@ -804,6 +804,11 @@ TList* AliCDBManager::GetAll(const AliCDBId& query) {
 Bool_t AliCDBManager::Put(TObject* object, AliCDBId& id,  AliCDBMetaData* metaData, DataType type){
 // store an AliCDBEntry object into the database
 
+	if (object==0x0) {
+		AliError("Null Entry! No storage will be done!");
+		return kFALSE;
+	} 
+
 	AliCDBEntry anEntry(object, id, metaData);
 	return Put(&anEntry, type);
 
@@ -816,6 +821,11 @@ Bool_t AliCDBManager::Put(AliCDBEntry* entry, DataType type){
 
 	if(type == kPrivate && !fDefaultStorage) {
 		AliError("No storage set!");
+		return kFALSE;
+	}
+
+	if (entry->GetObject()==0x0){
+		AliError("No valid object in CDB entry!");
 		return kFALSE;
 	}
 

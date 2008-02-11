@@ -369,6 +369,11 @@ AliCDBId* AliCDBStorage::GetId(const AliCDBPath& path,
 Bool_t AliCDBStorage::Put(TObject* object, AliCDBId& id, AliCDBMetaData* metaData, AliCDBManager::DataType type) {
 // store an AliCDBEntry object into the database
 	
+	if (object==0x0) {
+		AliError("Null Entry! No storage will be done!");
+		return kFALSE;
+	} 
+
 	AliCDBEntry anEntry(object, id, metaData);
 
 	return Put(&anEntry, type);
@@ -383,6 +388,11 @@ Bool_t AliCDBStorage::Put(AliCDBEntry* entry, AliCDBManager::DataType type) {
 		return kFALSE;
 	}
 	
+	if (entry->GetObject()==0x0){
+		AliError("No valid object in CDB entry!");
+		return kFALSE;
+	}
+
 	if (!entry->GetId().IsValid()) {
 		AliError(Form("Invalid entry ID: %s",
 			entry->GetId().ToString().Data()));
