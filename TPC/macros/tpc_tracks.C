@@ -7,8 +7,21 @@ class TEveElementList;
 TEveProjectionManager  * proj = 0;
 TEveGeoShape * geom = 0;
 
-void tpc_tracks()
+void tpc_tracks(const char *input=0)
 {
+  //
+  //
+  //
+  if (input){
+    TString ipath(input);
+    if (ipath.Contains(".zip")){
+      char command[1000];
+      sprintf(command,"xrdcp %s in.zip",input);
+      gSystem->Exec(command);
+      gSystem->Exec("unzip in.zip");
+    }
+  }
+
   TEveUtil::LoadMacro("alieve_init.C");
   alieve_init(".", -1);
 
