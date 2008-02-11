@@ -515,6 +515,20 @@ void AliPHOSDigitizer::Digitize(Int_t event)
 
   delete sdigArray ; //We should not delete its contents 
   
+  Int_t relId[4];
+
+  //set amplitudes in bad channels to zero
+  if(!gime->CalibData()) {
+    AliPHOSCalibData* cdb = new AliPHOSCalibData(-1);
+    gime->SetCalibData(cdb);
+  }
+  for(i = 0 ; i <digits->GetEntries(); i++){
+    digit = dynamic_cast<AliPHOSDigit*>( digits->At(i) ) ;
+    gime->PHOSGeometry()->AbsToRelNumbering(digit->GetId(),relId);
+    if(relId[1] == 0) // Emc
+      if(gime->CalibData()->IsBadChannelEmc(relId[0],relId[3],relId[2])) digit->SetEnergy(0.); 
+  }
+
   //remove digits below thresholds
   for(i = 0 ; i < nEMC ; i++){
     digit = dynamic_cast<AliPHOSDigit*>( digits->At(i) ) ;
@@ -526,7 +540,6 @@ void AliPHOSDigitizer::Digitize(Int_t event)
     else
       digit->SetTime(gRandom->Gaus(digit->GetTime(),fTimeResolution) ) ;
   }
-
 
   for(i = nEMC; i < nCPV ; i++)
 //     if( sDigitizer->Calibrate( dynamic_cast<AliPHOSDigit*>(digits->At(i))->GetAmp() ) < fCPVDigitThreshold )
@@ -546,21 +559,6 @@ void AliPHOSDigitizer::Digitize(Int_t event)
       digit->SetAmp(DigitizeCPV(digit->GetEnergy(),digit->GetId()) ) ;
     }
   }
-
-  Int_t relId[4];
-
-  //set amplitudes in bad channels to zero
-  if(!gime->CalibData()) {
-    AliPHOSCalibData* cdb = new AliPHOSCalibData(-1);
-    gime->SetCalibData(cdb);
-  }
-  for(i = 0 ; i <digits->GetEntries(); i++){
-    digit = dynamic_cast<AliPHOSDigit*>( digits->At(i) ) ;
-    gime->PHOSGeometry()->AbsToRelNumbering(digit->GetId(),relId);
-    if(relId[1] == 0) // Emc
-      if(gime->CalibData()->IsBadChannelEmc(relId[0],relId[3],relId[2])) digit->SetEnergy(0.); 
-  }
-
 }
 
 //____________________________________________________________________________
