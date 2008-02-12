@@ -1545,7 +1545,9 @@ Bool_t AliTRDdigitizer::MergeSDigits()
       digitsA = (AliTRDdataArrayF *) fSDigitsManager->GetDigits(iDet);
       digitsB = (AliTRDdataArrayF *) mergeSDigitsManager->GetDigits(iDet);
       digitsA->Expand();
+      if (!digitsA->GetDataSize()) continue;
       digitsB->Expand();
+      if (!digitsB->GetDataSize()) continue;
       for (iDict = 0; iDict < kNDict; iDict++) {
         dictionaryA[iDict] = (AliTRDdataArrayI *) fSDigitsManager->GetDictionary(iDet,iDict);
         dictionaryB[iDict] = (AliTRDdataArrayI *) mergeSDigitsManager->GetDictionary(iDet,iDict);
