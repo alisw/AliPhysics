@@ -363,11 +363,17 @@ void AliAnalysisManager::PackOutput(TList *target)
          if (output->IsSpecialOutput() && strlen(output->GetFileName())) {
             TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject(output->GetFileName());
             if (!file) continue;
+            file->Write();
             file->Close();
             if (strlen(fSpecialOutputLocation.Data())) {
                TString remote = fSpecialOutputLocation;
                remote += "/";
-               remote += gSystem->HostName();
+               TString host(gSystem->HostName());
+               Ssiz_t ind = host.Index(".");
+               TString host1(host);
+               if (ind>0) host1 = host(0,ind);
+               remote += host1;
+               remote += "_";
                remote += output->GetFileName();
                TFile::Cp(output->GetFileName(), remote.Data());
             }
