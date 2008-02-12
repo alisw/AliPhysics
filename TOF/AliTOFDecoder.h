@@ -86,10 +86,11 @@
 
 #include "TObject.h"
 #include "AliTOFRawDataFormat.h"
-#include "AliTOFHitData.h"
+//#include "AliTOFHitData.h"
 //#include "AliTOFHitDataBuffer.h"
 //#include "AliTOFGeometry.h"
 
+class AliTOFHitData;
 class AliTOFHitDataBuffer;
 
 class AliTOFDecoder : public TObject
