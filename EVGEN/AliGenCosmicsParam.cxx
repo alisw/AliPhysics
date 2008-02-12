@@ -45,7 +45,8 @@ fSDDouter(kFALSE),
 fSSDinner(kFALSE),
 fSSDouter(kFALSE),
 fACORDE(kFALSE),
-fACORDE4ITS(kFALSE)
+fACORDE4ITS(kFALSE),
+fBottomScintillator(kFALSE)
 {
   //
   // Default constructor
@@ -156,10 +157,15 @@ void AliGenCosmicsParam::Generate()
 
       // acceptance trigger
       if(IntersectCylinder(rtrigger,ztrigger,ipart,origin,p)) {
-	if(!fACORDE) {
-	  break; 
-	} else {
+	if(fACORDE && !fBottomScintillator) {
 	  if(IntersectACORDE(ipart,origin,p)) break;
+	} else if(!fACORDE && fBottomScintillator) {
+	  if(IntersectBottomScintillator(ipart,origin,p)) break;
+	} else if(fACORDE && fBottomScintillator) {
+	  if(IntersectACORDE(ipart,origin,p) &&
+	     IntersectBottomScintillator(ipart,origin,p)) break;
+	} else { // !fACORDE && !fBottomScintillator
+	  break;
 	}
       }
       //
@@ -241,19 +247,53 @@ Bool_t AliGenCosmicsParam::IntersectACORDE(Int_t pdg,
   //
 
   Float_t en = TMath::Sqrt(0.105*0.105+p[0]*p[0]+p[1]*p[1]+p[2]*p[2]);
-  TParticle part(pdg,0,0,0,0,0,p[0],p[1],p[2],en,o[0],o[1],o[2],0);
+  TParticle part(pdg,0,0,0,0,0,-p[0],-p[1],-p[2],en,o[0],o[1],o[2],0);
   AliESDtrack track(&part);
 
-  Float_t rACORDE=800.0,xACORDE=750.0,zACORDE=500.0;
+  Float_t rACORDE=800.0,xACORDE=750.0/*250.0*/,zACORDE=500.0;
   if(fACORDE4ITS) { xACORDE=100.0; zACORDE=100.0; }
 
-  Double_t xyz[3];
-  track.GetXYZAt(rACORDE,fBkG,xyz);
+  Double_t planepoint[3]={0.,rACORDE,0.};
+  Double_t planenorm[3]={0.,1.,0.};
+
+  if(!track.Intersect(planepoint,planenorm,fBkG)) return kFALSE;
+
+  Double_t xyz[3]={planepoint[0],planepoint[1],planepoint[2]};
+  //printf("XYZ = %f %f  %f\n",xyz[0],xyz[1],xyz[2]);
 
   // check global x 
   if(TMath::Abs(xyz[0]) > xACORDE) return kFALSE;
   // check global z
   if(TMath::Abs(xyz[2]) > zACORDE) return kFALSE;
+
+  return kTRUE;
+}
+//-----------------------------------------------------------------------------
+Bool_t AliGenCosmicsParam::IntersectBottomScintillator(Int_t pdg,
+					   Float_t o[3],Float_t p[3]) const
+{
+  //
+  // Intersection between muon and ACORDE (very rough)
+  //
+
+  Float_t en = TMath::Sqrt(0.105*0.105+p[0]*p[0]+p[1]*p[1]+p[2]*p[2]);
+  TParticle part(pdg,0,0,0,0,0,-p[0],-p[1],-p[2],en,o[0],o[1],o[2],0);
+  AliESDtrack track(&part);
+
+  Double_t xSc=40.,ySc=-350.,zSc=40.;
+
+  Double_t planepoint[3]={0.,ySc,0.};
+  Double_t planenorm[3]={0.,1.,0.};
+
+  if(!track.Intersect(planepoint,planenorm,fBkG)) return kFALSE;
+
+  Double_t xyz[3]={planepoint[0],planepoint[1],planepoint[2]};
+  //printf("XYZ = %f %f  %f\n",xyz[0],xyz[1],xyz[2]);
+
+  // check global x 
+  if(TMath::Abs(xyz[0]) > xSc) return kFALSE;
+  // check global z
+  if(TMath::Abs(xyz[2]) > zSc) return kFALSE;
 
   return kTRUE;
 }

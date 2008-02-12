@@ -28,6 +28,7 @@ public:
   void SetBkG(Float_t b) { fBkG=b; return; }
   void SetInACORDE(Bool_t onlyACORDE4ITS=kFALSE) 
     { fACORDE=kTRUE; fACORDE4ITS=onlyACORDE4ITS; return; }
+  void SetInBottomScintillator() { fBottomScintillator=kTRUE; return; }
   void SetInTPC() { fTPC=kTRUE; return; }
   void SetInITS() { fITS=kTRUE; return; }
   void SetInSPDinner() { fSPDinner=kTRUE; return; }
@@ -43,6 +44,8 @@ private:
 			   Float_t o[3],Float_t p[3]) const;  
   Bool_t IntersectACORDE(Int_t pdg,
 			 Float_t o[3],Float_t p[3]) const;
+  Bool_t IntersectBottomScintillator(Int_t pdg,
+				     Float_t o[3],Float_t p[3]) const; 
   Bool_t fParamMI;              // parametrization from M.Ivanov
   Bool_t fParamACORDE;          // parametrization from AliGenACORDE 
                                 // (parametrized at ALICE y)
@@ -59,8 +62,9 @@ private:
   Bool_t fSSDouter;             // acceptance cuts
   Bool_t fACORDE;               // acceptance cuts
   Bool_t fACORDE4ITS;           // acceptance cuts
+  Bool_t fBottomScintillator;   // acceptance cuts
 
-  ClassDef(AliGenCosmicsParam,3) // parametrized cosmics generator
+  ClassDef(AliGenCosmicsParam,4) // parametrized cosmics generator
 };
 
 #endif
