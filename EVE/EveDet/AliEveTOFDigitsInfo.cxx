@@ -61,7 +61,7 @@ void AliEveTOFDigitsInfo::SetTree(TTree* tree)
   */
 }
 /* ******************************************************* */
-void AliEveTOFDigitsInfo::ReadRaw(AliRawReader* rawReader, Int_t nEvent)
+void AliEveTOFDigitsInfo::ReadRaw(AliRawReader* rawReader, Int_t nEvent, Bool_t newDecoder)
 {
   // Read raw-data. AliTOFdigit is used to
   // store raw-adata for all sub-detectors.
@@ -95,9 +95,12 @@ void AliEveTOFDigitsInfo::ReadRaw(AliRawReader* rawReader, Int_t nEvent)
   for (Int_t indexDDL = 0; indexDDL < kDDL; indexDDL++) {
 
     rawReader->Reset();
-    stream.LoadRawData(indexDDL);
+    if (!newDecoder) stream.LoadRawData(indexDDL);
+    else stream.LoadRawDataBuffers(indexDDL);
 
     clonesRawData = (TClonesArray*)stream.GetRawData();
+
+    //if (clonesRawData->GetEntriesFast()) cout << " " << indexDDL << " " << clonesRawData->GetEntriesFast() << endl;
 
     for (Int_t iRawData = 0; iRawData<clonesRawData->GetEntriesFast(); iRawData++) {
 
@@ -109,6 +112,7 @@ void AliEveTOFDigitsInfo::ReadRaw(AliRawReader* rawReader, Int_t nEvent)
       digit[1] = tofRawDatum->GetTOT();
       digit[2] = tofRawDatum->GetTOT();
       digit[3] = -1;
+
       /*
       if (indexDDL<10) ftxt << "  " << indexDDL;
       else             ftxt << " " << indexDDL;
@@ -120,7 +124,7 @@ void AliEveTOFDigitsInfo::ReadRaw(AliRawReader* rawReader, Int_t nEvent)
       ftxt << "  " << tofRawDatum->GetTDCchannel();
       */
       stream.EquipmentId2VolumeId(indexDDL, tofRawDatum->GetTRM(), tofRawDatum->GetTRMchain(),
-				    tofRawDatum->GetTDC(), tofRawDatum->GetTDCchannel(), detectorIndex);
+				  tofRawDatum->GetTDC(), tofRawDatum->GetTDCchannel(), detectorIndex);
       //dummy = detectorIndex[3];
       //detectorIndex[3] = detectorIndex[4];
       //detectorIndex[4] = dummy;
@@ -158,6 +162,9 @@ void AliEveTOFDigitsInfo::ReadRaw(AliRawReader* rawReader, Int_t nEvent)
       AliDebug(2,Form(" %3i -> %2i %2i %2i %2i %2i   %i  %i\n",
 		      last, detectorIndex[0], detectorIndex[1], detectorIndex[2], detectorIndex[4], detectorIndex[3],
 		      digit[1], digit[0]));
+      /*AliDebug(2,Form(" %3i -> %2i %2i %2i %2i %2i   %i  %i\n",
+		      last, detectorIndex[0], detectorIndex[1], detectorIndex[2], detectorIndex[4], detectorIndex[3],
+		      digit[1], digit[0]));*/
 
       Int_t tracknum[3]={-1,-1,-1};
       new (aDigits[last]) AliTOFdigit(tracknum, detectorIndex, digit);
@@ -173,6 +180,7 @@ void AliEveTOFDigitsInfo::ReadRaw(AliRawReader* rawReader, Int_t nEvent)
   //ftxt.close();
 
 }
+
 
 /* ******************************************************* */
 void AliEveTOFDigitsInfo::LoadDigits()
