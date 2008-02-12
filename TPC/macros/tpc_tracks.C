@@ -15,10 +15,20 @@ void tpc_tracks(const char *input=0)
   if (input){
     TString ipath(input);
     if (ipath.Contains(".zip")){
-      char command[1000];
-      sprintf(command,"xrdcp %s in.zip",input);
-      gSystem->Exec(command);
-      gSystem->Exec("unzip in.zip");
+      gSystem->Exec("rm TPC*");
+      gSystem->Exec("rm AliESD*");
+      if (ipath.Contains("root:/")){
+	char command[1000];
+	sprintf(command,"xrdcp %s in.zip",input);
+	gSystem->Exec(command);
+	gSystem->Exec("unzip in.zip");
+      }
+      if (ipath.Contains("alien:/")){
+	char command[1000];
+	sprintf(command,"alien_cp %s in.zip",input);
+	gSystem->Exec(command);
+	gSystem->Exec("unzip in.zip");
+      }
     }
   }
 
