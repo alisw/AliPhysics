@@ -315,7 +315,7 @@ void AliProtonAnalysis::Analyze(AliAODEvent* fAOD) {
     Double_t rcc = 0.0;
     for(Int_t i = 0; i < AliPID::kSPECIESN; i++) rcc += probability[i]*GetParticleFraction(i,P);
     if(rcc == 0.0) continue;
-    Double_t w[5];
+    Double_t w[10];
     for(Int_t i = 0; i < AliPID::kSPECIESN; i++) w[i] = probability[i]*GetParticleFraction(i,P)/rcc;
     Long64_t fParticleType = TMath::LocMax(AliPID::kSPECIESN,w);
     if(fParticleType == 4) {
