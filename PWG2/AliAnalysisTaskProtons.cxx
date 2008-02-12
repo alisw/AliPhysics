@@ -102,6 +102,10 @@ void AliAnalysisTaskProtons::CreateOutputObjects() {
 					    fProtonFunction);
   else
     fAnalysis->SetPriorProbabilities(partFrac);
+
+  fList = new TList();
+  fList->Add(fAnalysis->GetProtonYPtHistogram()); 
+  fList->Add(fAnalysis->GetAntiProtonYPtHistogram()); 
 }
 
 //________________________________________________________________________
@@ -127,9 +131,6 @@ void AliAnalysisTaskProtons::Exec(Option_t *) {
     Printf("Proton analysis task: There are %d tracks in this event", fAOD->GetNumberOfTracks());
     fAnalysis->Analyze(fAOD);
   }
-  fList = new TList();
-  fList->Add(fAnalysis->GetProtonYPtHistogram()); 
-  fList->Add(fAnalysis->GetAntiProtonYPtHistogram()); 
 
   // Post output data.
   PostData(0, fList);
