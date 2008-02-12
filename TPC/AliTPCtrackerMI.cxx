@@ -7059,10 +7059,11 @@ AliTPCtrackerMI::AliTPCRow::InsertCluster(const AliTPCclusterMI* c, UInt_t index
   // Insert a cluster into this pad row in accordence with its y-coordinate
   //-----------------------------------------------------------------------
   if (fN==kMaxClusterPerRow) {
-    cerr<<"AliTPCRow::InsertCluster(): Too many clusters !\n"; return;
+    //AliInfo("AliTPCRow::InsertCluster(): Too many clusters"); 
+    return;
   }
   if (fN>=fN1+fN2) {
-    cout<<"AliTPCRow::InsertCluster(): Too many clusters !\n";
+    //AliInfo("AliTPCRow::InsertCluster(): Too many clusters !");
   }
 
   if (fN==0) {fIndex[0]=index; fClusters[fN++]=c; return;}
