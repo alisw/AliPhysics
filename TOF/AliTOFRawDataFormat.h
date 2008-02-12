@@ -12,11 +12,10 @@
 //                                                           //
 ///////////////////////////////////////////////////////////////
 
-//#include "TROOT.h"
-#include "TObject.h"
+#include "TROOT.h"
 
 //TRM global header
-class AliTOFTRMGlobalHeader : public TObject
+class AliTOFTRMGlobalHeader
 {
  public:
   UInt_t GetSlotID() {return fSlotID;};
@@ -35,7 +34,7 @@ class AliTOFTRMGlobalHeader : public TObject
 };
 
 //TRM global trailer
-class AliTOFTRMGlobalTrailer : public TObject
+class AliTOFTRMGlobalTrailer
 {
  public:
   UInt_t GetSlotID() {return fSlotID;};
@@ -50,7 +49,7 @@ class AliTOFTRMGlobalTrailer : public TObject
 };
 
 //TRM chain header
-class AliTOFTRMChainHeader : public TObject
+class AliTOFTRMChainHeader
 {
  public:
   UInt_t GetSlotID() {return fSlotID;};
@@ -69,7 +68,7 @@ class AliTOFTRMChainHeader : public TObject
 };
 
 //TRM chain trailer
-class AliTOFTRMChainTrailer : public TObject
+class AliTOFTRMChainTrailer
 {
  public:
   UInt_t GetStatus() {return fStatus;};
@@ -84,7 +83,7 @@ class AliTOFTRMChainTrailer : public TObject
 };
 
 //TDC packed hit
-class AliTOFTDCPackedHit : public TObject
+class AliTOFTDCPackedHit
 {
  public:
   UInt_t GetHitTime() {return fHitTime;};
@@ -105,7 +104,7 @@ class AliTOFTDCPackedHit : public TObject
 };
 
 //TDC unpacked hit
-class AliTOFTDCUnpackedHit : public TObject
+class AliTOFTDCUnpackedHit
 {
  public:
   UInt_t GetHitTime() {return fHitTime;};
@@ -124,7 +123,7 @@ class AliTOFTDCUnpackedHit : public TObject
 };
 
 //TRM TDC error
-class AliTOFTRMTDCError : public TObject
+class AliTOFTRMTDCError
 {
  public:
   UInt_t GetErrorFlags() {return fErrorFlags;};
@@ -139,7 +138,7 @@ class AliTOFTRMTDCError : public TObject
 };
 
 //TRM diagnostic error word 1
-class AliTOFTRMDiagnosticErrorWord1 : public TObject
+class AliTOFTRMDiagnosticErrorWord1
 {
  public:
   UInt_t GetFaultChipFlagID() {return fFaultChipFlagID;};
@@ -156,7 +155,7 @@ class AliTOFTRMDiagnosticErrorWord1 : public TObject
 };
 
 //TRM diagnostic error word 2
-class AliTOFTRMDiagnosticErrorWord2 : public TObject
+class AliTOFTRMDiagnosticErrorWord2
 {
  public:
   UInt_t GetJtagErrorCode() {return fJtagErrorCode;};
