@@ -1,3 +1,5 @@
+#-*- Mode: Makefile -*-
+
 SRCS = AliVParticle.cxx \
        AliVEvent.cxx \
        AliVHeader.cxx \
@@ -23,3 +25,7 @@ HDRS:= $(SRCS:.cxx=.h)
 DHDR= STEERBaseLinkDef.h
 
 EXPORT:=$(SRCS:.cxx=.h)
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(shell root-config --libdir) -lVMC -lEG
+endif

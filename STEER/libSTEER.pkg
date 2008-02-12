@@ -1,3 +1,5 @@
+#-*- Mode: Makefile -*-
+
 SRCS          = AliRunLoader.cxx AliLoader.cxx AliDataLoader.cxx  \
 AliObjectLoader.cxx AliBaseLoader.cxx AliTreeLoader.cxx AliTaskLoader.cxx \
 AliDetector.cxx	\
@@ -58,7 +60,7 @@ AliMillepede.cxx \
 AliRecoParam.cxx \
 AliDetectorRecoParam.cxx \
 AliPlaneEff.cxx \
-AliTriggerRunScalers.cxx
+AliTriggerRunScalers.cxx AliGRPPreprocessor.cxx
 
 
 HDRS:= $(SRCS:.cxx=.h) 
@@ -72,3 +74,8 @@ EINCLUDE+= TPC
 
 EXPORT:=$(SRCS:.cxx=.h) AliConst.h AliCallf77.h AliRawDataHeaderSim.h
 
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+                         -lSTEERBase -lESD -lAOD -lCDB -lRAWDatabase -lRAWDatarec \
+                         -L$(shell root-config --libdir) -lMinuit -lVMC -lEG -lGeom -lProofPlayer
+endif

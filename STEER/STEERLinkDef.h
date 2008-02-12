@@ -145,5 +145,6 @@
 #pragma link C++ class AliPlaneEff+;
 
 #pragma link C++ class AliTriggerRunScalers+;
+#pragma link C++ class AliGRPPreprocessor+;
 
 #endif
