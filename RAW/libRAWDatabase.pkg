@@ -22,3 +22,7 @@ EINCLUDE+= ${DATE_COMMON_DEFS}
 endif
 
 EXPORT:=AliRawDataHeader.h AliAltroMapping.h AliDAQ.h
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) -lSTEERBase
+endif
