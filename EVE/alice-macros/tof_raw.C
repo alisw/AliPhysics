@@ -1,6 +1,7 @@
 void tof_raw(const char *input = "raw.root",
 	     const char *geometry = "geometry.root",
-	     Int_t  event = 0)
+	     Int_t  event = 0,
+	     Bool_t newDecoder = kFALSE)
 {
 
   TClonesArray *array = 0x0;
@@ -37,7 +38,7 @@ void tof_raw(const char *input = "raw.root",
 	di = new AliEveTOFDigitsInfo();
       }
 
-      di->ReadRaw(rawReader, ev);
+      di->ReadRaw(rawReader, ev, newDecoder);
       continue;
     }
 
