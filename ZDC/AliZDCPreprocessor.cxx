@@ -223,7 +223,7 @@ else if(runType == "PULSER_RUN"){
     	   if(j<6){
 	     fscanf(file,"%f",&fitValEMD[j]);
              if(j<4){
-	       calibVal[j] = fitValEMD[j]/2.76;
+	       calibVal[j] = 2.76/fitValEMD[j];
 	       eCalib->SetEnCalib(j,calibVal[j]);
 	     }
 	     else eCalib->SetEnCalib(j,fitValEMD[j]);

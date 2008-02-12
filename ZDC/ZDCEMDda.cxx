@@ -302,14 +302,14 @@ int main(int argc, char **argv) {
   //
    Float_t CalibCoeff[6];
   /*for(Int_t j=0; j<6; j++){
-     if(j<4) CalibCoeff[j] = 2.76/MeanFitVal[j];
+     if(j<4) CalibCoeff[j] = MeanFitVal[j];
      else  CalibCoeff[j] = 1.;
      fprintf(fileShuttle,"\t%f\n",CalibCoeff[j]);
   }
   */
   // --- For the moment we have sim data only for ZN1!!!
   for(Int_t j=0; j<6; j++){
-     if(j==0) CalibCoeff[j] = 2.76/MeanFitVal[j];
+     if(j==0) CalibCoeff[j] = MeanFitVal[j];
      else if(j>0 && j<4) CalibCoeff[j] = CalibCoeff[0];
      else  CalibCoeff[j] = 1.;
      fprintf(fileShuttle,"\t%f\n",CalibCoeff[j]);
