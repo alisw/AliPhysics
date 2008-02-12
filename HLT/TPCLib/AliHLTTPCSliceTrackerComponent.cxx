@@ -812,6 +812,25 @@ int AliHLTTPCSliceTrackerComponent::Reconfigure(const char* cdbEntry, const char
       HLTError("can not fetch object \"%s\" from CDB", path);
     }
   }
+
+  const char* pathBField="TPC/Config/BField";
+
+  if (pathBField) {
+    HLTInfo("reconfigure B-Field from entry %s, chain id %s", path,(chainId!=NULL && chainId[0]!=0)?chainId:"<none>");
+    AliCDBEntry *pEntry = AliCDBManager::Instance()->Get(pathBField/*,GetRunNo()*/);
+    if (pEntry) {
+      TObjString* pString=dynamic_cast<TObjString*>(pEntry->GetObject());
+      if (pString) {
+	HLTInfo("received configuration object string: \'%s\'", pString->GetString().Data());
+	iResult=Configure(pString->GetString().Data());
+      } else {
+	HLTError("configuration object \"%s\" has wrong type, required TObjString", path);
+      }
+    } else {
+      HLTError("can not fetch object \"%s\" from CDB", path);
+    }
+  }
+  
   return iResult;
 }
 
