@@ -1,4 +1,6 @@
-SRCS= THijing.cxx AliGenHijing.cxx
+#-*- Mode: Makefile -*-
+
+SRCS= THijing.cxx AliGenHijing.cxx AliGenBeamGasNew.cxx
 
 HDRS= $(SRCS:.cxx=.h) 
 
@@ -6,4 +8,10 @@ DHDR:=THijingLinkDef.h
 
 EXPORT:=THijing.h
 
-EINCLUDE:=HIJING
+EINCLUDE:=HIJING EVGEN
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+                         -lEVGEN -lSTEER -lSTEERBase -lhijing \
+                         -L$(shell root-config --libdir) -lEG
+endif

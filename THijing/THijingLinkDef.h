@@ -6,4 +6,5 @@
  
 #pragma link C++ class THijing+;
 #pragma link C++ class AliGenHijing+;
+#pragma link C++ class  AliGenBeamGasNew+;
 #endif

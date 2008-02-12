@@ -1,3 +1,5 @@
+#-*- Mode: Makefile -*-
+
 SRCS          = AliGenHIJINGpara.cxx AliGenBox.cxx AliGenFixed.cxx \
                 AliGenCocktail.cxx AliGenCocktailAfterBurner.cxx AliGenFLUKAsource.cxx \
                 AliGenLib.cxx \
@@ -11,7 +13,7 @@ SRCS          = AliGenHIJINGpara.cxx AliGenBox.cxx AliGenFixed.cxx \
 		AliGenReader.cxx AliGenReaderCwn.cxx AliGenReaderTreeK.cxx \
                 AliGenReaderEcalHijing.cxx AliGenReaderEcalJets.cxx\
 		AliGenHIJINGparaBa.cxx AliGeVSimParticle.cxx AliGenGeVSim.cxx\
-		AliGenThetaSlice.cxx AliGenSTRANGElib.cxx AliGenBeamGas.cxx AliGenBeamGasNew.cxx\
+		AliGenThetaSlice.cxx AliGenSTRANGElib.cxx AliGenBeamGas.cxx \
 		AliGenAfterBurnerFlow.cxx \
 		AliGenSlowNucleons.cxx \
 	        AliGenGeVSimEventHeader.cxx\
@@ -31,4 +33,8 @@ EXPORT:=AliDecayer.h AliGenMC.h AliGenCocktailAfterBurner.h AliGenCocktail.h
 
 EINCLUDE:=FASTSIM THijing PYTHIA6
 
-
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+                         -lSTEER -lESD -lSTEERbase -lFASTSIM \
+                         -L$(shell root-config --libdir) -lVMC -lEG
+endif
