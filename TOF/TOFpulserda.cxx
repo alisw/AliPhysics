@@ -258,7 +258,7 @@ int main(int argc, char **argv) {
   fclose(fp);
   
   /* store the result file on FES */
-  status=daqDA_FES_storeFile(filename,filename);
+  status=daqDA_FES_storeFile(filename,"PULSER");
   if (status) {
     status = -2;
   }

@@ -281,7 +281,7 @@ int main(int argc, char **argv) {
   status =0;
 
   /* store the result file on FES */
-  status=daqDA_FES_storeFile(filename,filename);
+  status=daqDA_FES_storeFile(filename,"NOISE");
   if (status) {
     status = -2;
   }
