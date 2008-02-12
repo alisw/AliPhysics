@@ -8,6 +8,7 @@ DA Type: LDC
 Number of events needed: 100
 Input Files: 
 Output Files: tpcPedestal.root, to be exported to the DAQ FXS
+fileId:   pedestals    
 Trigger types used: CALIBRATION_EVENT
 
 */
@@ -31,6 +32,7 @@ and save results in a file (named from RESULT_FILE define - see below).
 */
 
 #define RESULT_FILE  "tpcPedestal.root"
+#define FILE_ID "pedestals"
 #define MAPPING_FILE "tpcMapping.root"
 #define AliDebugLevel() -1
 
@@ -82,11 +84,10 @@ int main(int argc, char **argv) {
   // Main for TPC pedestal detector algorithm
   //
 
-  AliLog::SetClassDebugLevel("AliTPCRawStream",AliLog::kFatal);
-  AliLog::SetClassDebugLevel("AliRawReaderDate",AliLog::kFatal);
-  AliLog::SetClassDebugLevel("AliTPCAltroMapping",AliLog::kFatal);
-  AliLog::SetModuleDebugLevel("TPC",AliLog::kFatal);
-  AliLog::SetModuleDebugLevel("RAW",AliLog::kFatal);
+  AliLog::SetClassDebugLevel("AliTPCRawStream",-5);
+  AliLog::SetClassDebugLevel("AliRawReaderDate",-5);
+  AliLog::SetClassDebugLevel("AliTPCAltroMapping",-5);
+  AliLog::SetModuleDebugLevel("RAW",-5);
 
   Bool_t timeAnalysis = kTRUE;
 
@@ -209,7 +210,7 @@ int main(int argc, char **argv) {
 
  /* store the result file on FES */
  
-   status=daqDA_FES_storeFile(RESULT_FILE,RESULT_FILE);
+   status=daqDA_FES_storeFile(RESULT_FILE,FILE_ID);
    if (status) {
      status = -2;
    }

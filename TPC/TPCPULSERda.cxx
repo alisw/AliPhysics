@@ -8,6 +8,7 @@ DA Type: LDC
 Number of events needed: 100
 Input Files: 
 Output Files: tpcPulser.root, to be exported to the DAQ FXS
+fileId:   pulser
 Trigger types used: CALIBRATION_EVENT
 
 */
@@ -28,6 +29,7 @@ and save results in a file (named from RESULT_FILE define - see below).
 */
 
 #define RESULT_FILE "tpcPulser.root"
+#define FILE_ID "pulser"
 #define MAPPING_FILE "tpcMapping.root"
 #define AliDebugLevel() -1
 
@@ -71,11 +73,10 @@ and save results in a file (named from RESULT_FILE define - see below).
       Arguments: list of DATE raw data files
 */
 int main(int argc, char **argv) {
-  AliLog::SetClassDebugLevel("AliTPCRawStream",AliLog::kFatal);
-  AliLog::SetClassDebugLevel("AliRawReaderDate",AliLog::kFatal);
-  AliLog::SetClassDebugLevel("AliTPCAltroMapping",AliLog::kFatal);
-  AliLog::SetModuleDebugLevel("TPC",AliLog::kFatal);
-  AliLog::SetModuleDebugLevel("RAW",AliLog::kFatal);
+  AliLog::SetClassDebugLevel("AliTPCRawStream",-5);
+  AliLog::SetClassDebugLevel("AliRawReaderDate",-5);
+  AliLog::SetClassDebugLevel("AliTPCAltroMapping",-5);
+  AliLog::SetModuleDebugLevel("RAW",-5);
 
  gROOT->GetPluginManager()->AddHandler("TVirtualStreamerInfo",
                                          "*",
@@ -192,7 +193,7 @@ int main(int argc, char **argv) {
 
   /* store the result file on FES */
 
-  status=daqDA_FES_storeFile(RESULT_FILE,RESULT_FILE);
+  status=daqDA_FES_storeFile(RESULT_FILE,FILE_ID);
   if (status) {
     status = -2;
   }
