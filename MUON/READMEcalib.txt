@@ -48,11 +48,14 @@ One very important notion is that of the DefaultStorage (which you might set wit
  AliCDBManager::Instance()->SetDefaultStorage(path)), which tells the CDB library where
  the CDB is sitting (either locally on disk, or on the grid).
 
-For local tests, path will be most likely = local://$ALICE_ROOT/MUON 
+For local tests, path will be most likely = <code> "local://$ALICE_ROOT"</code>
 (i.e. there is, in CVS a slim version of the calibration objects needed
-  for running the MUON code), or local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB for Shuttle testing.
- 
+for running the MUON code), or <code> "local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB </code>
+for Shuttle testing.
 
+When using alien, the path definition can be eg.
+<code> "alien://folder=/alice/data/2007/LHC07w/OCDB" </code>. 
+ 
 \section calib_s3 Writing to CDB
  
 AliMUONCDB class is used to populate the CDB with fake calibration objects for testing purposes.
