@@ -52,7 +52,21 @@ public:
   Int_t GetSize() const;
 
   const Char_t* ToString() const;
-	void Print(Option_t* /*opt*/) const;
+  void Print(Option_t* /*opt*/) const;
+
+
+/**********************************************/
+
+  Int_t Compare(const TObject* obj) const
+    { if( fTimeStamp < ((AliDCSValue *)obj )->fTimeStamp ) return -1;
+      if( fTimeStamp == ((AliDCSValue *)obj )->fTimeStamp ) return 0;
+      return 1;
+    }
+
+  Bool_t IsSortable() const { return kTRUE; }
+
+/*********************************************/
+
 
 protected:
   void Init();
