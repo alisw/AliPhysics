@@ -21,7 +21,7 @@
 
 ClassImp(amore::TPC::publisher::PublisherQA)
 
-#include <AliPHOSQADataMakerRec.h>
+#include <AliTPCQADataMakerRec.h>
 #include <TObjArray.h>
 #include <AliRawReaderDate.h>
 
@@ -33,7 +33,11 @@ namespace publisher {
 
 using amore::publisher::Publish;
 
-PublisherQA::PublisherQA() : fqadm(new AliPHOSQADataMakerRec) {
+PublisherQA::PublisherQA() : fqadm(new AliTPCQADataMakerRec) {
+  // Constructor
+  // make instance of the TPCQADataMakerRec
+  //
+
 
 }
 

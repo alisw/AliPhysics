@@ -23,7 +23,7 @@
 #include <PublisherModule.h>
 #include "../common/Common.h"
 
-class AliPHOSQADataMakerRec;
+class AliTPCQADataMakerRec;
 class TObjArray;
 
 namespace amore {
@@ -53,7 +53,7 @@ class PublisherQA : public amore::publisher::PublisherModule, public amore::TPC:
  
  protected:
  
- AliPHOSQADataMakerRec* fqadm;
+ AliTPCQADataMakerRec* fqadm;
  TObjArray* fqadmList;
  
  ClassDef(PublisherQA, 1);

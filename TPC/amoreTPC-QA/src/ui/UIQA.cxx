@@ -62,7 +62,7 @@ void UIQA::Construct() { // The custom GUI is constructed here. gRootFrame is th
 void UIQA::SubscribeMonitorObjects() { // Before using any MonitorObject, a subscription should be made.
 
  std::ostringstream stringStream;
- amore::core::String_t sourceName="PHOSQA", subscription; // The agent name acting as a source could be concatenated with all the objects it contains
+ amore::core::String_t sourceName="TPCQA", subscription; // The agent name acting as a source could be concatenated with all the objects it contains
  subscription=sourceName+"/moInt1";
  Subscribe(moInt1, subscription.c_str());
  subscription=sourceName+"/hHighPhosModules";
@@ -75,7 +75,7 @@ void UIQA::Update() { // This is executed after getting the updated contents of 
  std::ostringstream stringStream;
  
  // Example of accessing a normal TObject. The name is the name of the object in the QA framework
- amore::core::MonitorObjectTObject* ptr=gSubscriber->At<amore::core::MOTObj>("PHOSQA/hHighPhosModules");
+ amore::core::MonitorObjectTObject* ptr=gSubscriber->At<amore::core::MOTObj>("TPCQA/hHighPhosModules");
  TH1F* hHighPhosModules=0;
  if(ptr) {
   hHighPhosModules=(TH1F*)ptr->Object();
