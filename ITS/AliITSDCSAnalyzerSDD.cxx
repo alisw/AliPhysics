@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id:$ */
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////
 //                                                               //
@@ -92,6 +92,9 @@ void AliITSDCSAnalyzerSDD::AnalyzeData(TMap* dcsMap)
 
             Int_t moduleLoop = AliITSgeomTGeo::GetModuleIndex( iLay, iLad + 1, iMod + 1 ) - 240;
 
+            fDCSData[moduleLoop] = new AliITSDCSDataSDD();
+                        // DCS data for specific SDD module will be stored in this class
+
             TObjArray* arrHV = (TObjArray*) dcsMap->GetValue( fHVDPNames[moduleLoop].Data() );
             if(!arrHV)
             {
@@ -141,8 +144,6 @@ void AliITSDCSAnalyzerSDD::AnalyzeData(TMap* dcsMap)
                continue;
             } /*if*/
 
-            fDCSData[moduleLoop] = new AliITSDCSDataSDD;
-                        // DCS data for specific SDD module will be stored in this class
 
             Int_t nEntries;     
                         // Number of entries in each TObjArray, that contains DCS variable values
