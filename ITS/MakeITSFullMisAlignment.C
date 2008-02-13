@@ -131,11 +131,11 @@ void MakeITSFullMisAlignment() {
   // misalignment at the level of half-staves (SPD) : source - S.Moretto
   //                              ladders (SDD,SSD) : source -
   //=****************************************
-  Float_t spdhalfstave_dx     = 0.0020; // 20 micron  
-  Float_t spdhalfstave_dy     = 0.0100; // 100 micron 
+  Float_t spdhalfstave_dx     = 0.0100; // 100 micron // normal to plane  
+  Float_t spdhalfstave_dy     = 0.0020; // 20 micron 
   Float_t spdhalfstave_dz     = 0.0020; // 20 micron
-  Float_t spdhalfstave_dpsi   = 0.0050/7.*kRadToDeg; // so as to have 50 micron difference at the two extremes
-  Float_t spdhalfstave_dtheta = 0.0020/7.*kRadToDeg; // so as to have 20 micron difference at the two extremes
+  Float_t spdhalfstave_dpsi   = 0.0020/7.*kRadToDeg; // so as to have 20 micron difference at the two extremes
+  Float_t spdhalfstave_dtheta = 0.0050/7.*kRadToDeg; // so as to have 50 micron difference at the two extremes
   Float_t spdhalfstave_dphi   = 0.0050/0.7*kRadToDeg; // so as to have 50 micron difference at the two extremes
   Bool_t unifspdhalfstave=kTRUE;
 
