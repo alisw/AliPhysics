@@ -97,7 +97,7 @@ AliTOFrawData::AliTOFrawData(Int_t a, Int_t b, Int_t c, Int_t d, Int_t e,
 {
 
   // ctr
-
+  fTime = fLeading;
 }
 
 //_____________________________________________________________________________
@@ -165,20 +165,27 @@ void AliTOFrawData::Update(Int_t tof, Int_t tot, Int_t leading, Int_t trailing, 
 
   AliDebug(2,Form(" %10.0f %10.0f %10.0f %1i %1i %1i",tof, tot, leading, psBit, acq, errorFlag));
 
-  if (fLeading!=-1 && fTime==-1 && fToT==-1 && trailing!=-1) {
+  if (fLeading!=-1 /*&& fTime==-1*/ && fToT==-1 && trailing!=-1) { // adc
 
     fTrailing = trailing;
     fTime = fLeading;
     fToT = Int_t((trailing - fLeading)*AliTOFGeometry::TdcBinWidth()/AliTOFGeometry::ToTBinWidth());
     
   }
-  /*
-  else if (fLeading!=-1 && fTime==-1 && fToT==-1 && leading==-1 && trailing!=-1) {
 
-    fTime = fLeading;
-    fToT = Int_t((trailing - fLeading)*AliTOFGeometry::TdcBinWidth()/AliTOFGeometry::ToTBinWidth());
-    
-  }
-  */
+}
+
+//_____________________________________________________________________________
+Int_t AliTOFrawData::GetTOT() const
+{
+  //
+  //
+  //
+
+  Int_t dummyToT = 0;
+  if (fLeading!=-1 && fToT==-1) dummyToT = 0;
+  else dummyToT = fToT;
+
+  return dummyToT;
 
 }

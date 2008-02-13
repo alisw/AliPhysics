@@ -108,7 +108,6 @@ ClassImp(AliTOFRawStream)
 //_____________________________________________________________________________
 AliTOFRawStream::AliTOFRawStream(AliRawReader* rawReader):
   fRawReader(rawReader),
-  //  fTOFrawData(new TClonesArray("AliTOFrawData",1000)),
   fTOFrawData(0x0),
   fDecoder(new AliTOFDecoder()),
   fDDL(-1),
@@ -157,7 +156,6 @@ AliTOFRawStream::AliTOFRawStream(AliRawReader* rawReader):
 //_____________________________________________________________________________
 AliTOFRawStream::AliTOFRawStream():
   fRawReader(0x0), 
-  //  fTOFrawData(new TClonesArray("AliTOFrawData",1000)),
   fTOFrawData(0x0),
   fDecoder(new AliTOFDecoder()),
   fDDL(-1),
@@ -203,7 +201,6 @@ AliTOFRawStream::AliTOFRawStream():
 AliTOFRawStream::AliTOFRawStream(const AliTOFRawStream& stream) :
   TObject(stream),
   fRawReader(0x0),
-  //  fTOFrawData(new TClonesArray("AliTOFrawData",1000)),
   fTOFrawData(0x0),
   fDecoder(new AliTOFDecoder()),
   fDDL(-1),
@@ -356,16 +353,12 @@ AliTOFRawStream::~AliTOFRawStream()
 
 void AliTOFRawStream::LoadRawData(Int_t indexDDL)
 {
-
-  /*
-    for (Int_t indexDDL = 0;
-    indexDDL < AliDAQ::NumberOfDdls("TOF");
-    indexDDL++) {
-  */
+  //
+  // To load raw data
+  //
 
   fTOFrawData->Clear();
-  //fTOFrawData = new TClonesArray("AliTOFrawData",1000); //potential memory leak
-  //fTOFrawData->Clear();
+
   TClonesArray &arrayTofRawData =  *fTOFrawData;
 
   fPackedDigits = 0;
@@ -387,7 +380,7 @@ void AliTOFRawStream::LoadRawData(Int_t indexDDL)
 
     signal = (fSector!=-1 && fPlate!=-1 && fStrip!=-1 && fPadZ!=-1 && fPadX!=-1);
     if (signal) {
-      //printf("  %2i  %1i  %2i  %1i  %2i  \n", fSector, fPlate, fStrip, fPadZ, fPadX);
+      AliDebug(2,Form("  %2i  %1i  %2i  %1i  %2i  \n", fSector, fPlate, fStrip, fPadZ, fPadX));
 
       slot[0] = fTRM;
       slot[1] = fTRMchain;
@@ -406,13 +399,9 @@ void AliTOFRawStream::LoadRawData(Int_t indexDDL)
 	else if ( ((rawDigit->GetTOF()!=-1 || rawDigit->GetLeading()!=-1 || rawDigit->GetTrailing()!=-1) &&
 		   (fLeadingEdge!=-1 || fTrailingEdge!=-1 || fTime!=-1) )
 
-/*	else if ( ((rawDigit->GetTOF()!=-1 || rawDigit->GetLeading()!=-1 || rawDigit->GetTrailing()!=-1) &&
-		   (fTime!=-1 || fLeadingEdge!=-1 || fTrailingEdge!=-1))*/  /*||
-		  (rawDigit->GetLeading()==-1 && rawDigit->GetTrailing()!=-1 &&
-		  fLeadingEdge!=-1 && fTrailingEdge==-1) */)
+		  )
 	  {
 
-	    //TClonesArray &arrayTofRawData =  *fTOFrawData;
 	    new (arrayTofRawData[fPackedDigits++]) AliTOFrawData(fTRM, fTRMchain, fTDC, fTDCchannel, fTime, fToT, fLeadingEdge, fTrailingEdge, fPSbit, fACQ, fErrorFlag);
 
 	    rawMap->SetHit(slot);
@@ -423,7 +412,6 @@ void AliTOFRawStream::LoadRawData(Int_t indexDDL)
       }
       else {
 
-	//TClonesArray &arrayTofRawData =  *fTOFrawData;
 	new (arrayTofRawData[fPackedDigits++]) AliTOFrawData(fTRM, fTRMchain, fTDC, fTDCchannel, fTime, fToT, fLeadingEdge, fTrailingEdge, fPSbit, fACQ, fErrorFlag);
 
 	rawMap->SetHit(slot);
@@ -433,33 +421,6 @@ void AliTOFRawStream::LoadRawData(Int_t indexDDL)
     } // if (signal)
 
   } // closed -> while (Next())
-
-    /*
-      fDDL  = fRawReader->GetDDLID();
-
-      for (Int_t ii=0; ii<fTOFrawData->GetEntriesFast(); ii++) {
-
-      AliTOFrawData *dummy = (AliTOFrawData*)fTOFrawData->UncheckedAt(ii);
-
-      fTRM = dummy->GetTRM();
-      fTRMchain = dummy->GetTRMchain();
-      fTDC = dummy->GetTDC();
-      fTDCchannel = dummy->GetTDCchannel();
-
-      SetSector();
-      SetPlate();
-      SetStrip();
-      SetPadZ();
-      SetPadX();
-
-      printf("  %2i, %2i %1i, %2i, %1i  -->  %2i, %1i, %2i, %1i, %2i  \n",
-	     fDDL, fTRM, fTRMchain, fTDC, fTDCchannel,
-	     fSector, fPlate, fStrip, fPadZ, fPadX);
-
-	     } // closed loop on TOF raw data TClonesArray
-    */
-
-    //} // closed loop on indexDDL
 
   rawMap->Delete();
 
@@ -1278,7 +1239,7 @@ AliTOFRawStream::LoadRawDataBuffers(Int_t indexDDL, Int_t verbose)
     Int_t   hitTimeBin = hitData->GetTimeBin();
     Int_t   hitTOTBin = hitData->GetTOTBin();
     
-    Int_t hitLeading = -1;
+    Int_t hitLeading = hitData->GetTimeBin();//-1; // adc
     Int_t hitTrailing = -1;
     Int_t hitError = -1;
     

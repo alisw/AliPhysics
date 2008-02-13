@@ -30,7 +30,7 @@ class AliTOFrawData : public TObject {
   Int_t GetTDCchannel() const {return fTDCchannel;};
   
   Int_t GetTOF() const {return fTime;};
-  Int_t GetTOT() const {return fToT;};
+  Int_t GetTOT() const;
   Int_t GetLeading() const {return fLeading;};
   Int_t GetTrailing() const {return fTrailing;};
   
