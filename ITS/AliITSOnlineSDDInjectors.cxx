@@ -294,7 +294,30 @@ Int_t AliITSOnlineSDDInjectors::GetAnodeNumber(Int_t iInjLine) const{
   }
   return ian;
 }
-
+//______________________________________________________________________
+Int_t AliITSOnlineSDDInjectors::GetLineNumberFromAnode(Int_t nAnode) const{
+  //
+  Int_t iLine=-1;
+  if(!fSide){
+    if(nAnode%8==0) iLine=nAnode/8;
+    if(nAnode==255) iLine=32;
+  }else{
+    if(nAnode%8==7) iLine=1+nAnode/8;
+    if(nAnode==0) iLine=0;
+  }
+  if(nAnode>=256) iLine=-1;
+  return iLine;
+}
+//______________________________________________________________________
+Int_t AliITSOnlineSDDInjectors::GetAnodeStatus(Int_t nAnode) const{
+  //
+  Int_t iii=GetLineNumberFromAnode(nAnode);
+  Int_t istatus=0;
+  if(iii>=0){
+    for(Int_t ninj=0;ninj<3;ninj++) istatus+=fGoodInj[iii][ninj]<<ninj;
+  }
+  return istatus;
+}
 //______________________________________________________________________
 void AliITSOnlineSDDInjectors::FindGoodInjectors(){
   // 
