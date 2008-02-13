@@ -41,11 +41,8 @@ public AliITSsegmentation {
     // Transform from real local to cell coordinates
     virtual void    GetPadIxz(Float_t x ,Float_t z ,Int_t   &ix,Int_t   &iz) const;
     // Transform from cell to real local coordinates
-    virtual void    GetPadCxz(Int_t   ix,Int_t   iz,Float_t &x ,Float_t &z ) const;
-    // Transform from real global to local coordinates
-    virtual void    GetLocal(Int_t module,Float_t *g ,Float_t *l) const;
-    // Transform from real local to global coordinates
-    virtual void    GetGlobal(Int_t module,Float_t *l ,Float_t *g) const;
+    virtual void    GetPadCxz(Int_t   ix,Int_t   iz,Float_t &x ,Float_t &z ) const;    
+
     // Get anode and time bucket as floats - numbering from 0
     virtual void    GetPadTxz(Float_t &x ,Float_t &z) const;
     // Transformation from Geant cm detector center local coordinates
@@ -54,6 +51,17 @@ public AliITSsegmentation {
     // Transformation from detector segmentation/cell coordiantes starting
     // from (0,0) to Geant cm detector center local coordinates.
     virtual void    DetToLocal(Int_t ix,Int_t iz,Float_t &x,Float_t &z) const;
+    //
+    virtual Float_t GetAnodeFromLocal(Float_t x,Float_t z) const;
+    virtual Float_t GetLocalZFromAnode(Int_t nAnode) const;
+    virtual Float_t GetLocalZFromAnode(Float_t zAnode) const;
+    virtual Float_t GetDriftTimeFromTb(Int_t tb) const {
+      Float_t xtb=(Float_t)tb+0.5;
+      return GetDriftTimeFromTb(xtb);
+    }
+    virtual Float_t GetDriftTimeFromTb(Float_t xtb) const {
+      return xtb*fTimeStep;
+    }
     //
     // Initialisation
     virtual void Init();
@@ -101,8 +109,9 @@ public AliITSsegmentation {
     static const Float_t fgkClockDefault; //Default value for the clock freq.
     static const Int_t fgkHalfNanodesDefault; //Default value for fNanodes/2
     static const Int_t fgkNsamplesDefault; //Default value for fNsamples
-
-    ClassDef(AliITSsegmentationSDD,4) // SDD segmentation
+    static const Float_t fgkCm2Micron;
+    static const Float_t fgkMicron2Cm;
+    ClassDef(AliITSsegmentationSDD,5) // SDD segmentation
 };
 
 #endif

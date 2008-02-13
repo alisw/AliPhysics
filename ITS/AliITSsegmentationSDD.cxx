@@ -16,15 +16,33 @@
 #include <TMath.h>
 
 #include "AliITSsegmentationSDD.h"
-// #include "AliITS.h"
-#include "AliITSgeom.h"
 #include "AliITSgeomSDD.h"
 #include "AliITSresponseSDD.h"
-//////////////////////////////////////////////////////
-// Segmentation class for                           //
-// drift detectors                                  //
-//                                                  //
-//////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////////////////
+// Segmentation class for drift detectors                                  //
+//                                                                         //
+//     microcables                                  microcables            //
+//       /\                                           /\                   //
+//       ||                                           ||                   //
+//       ||                                           ||                   //
+//       ||                                           ||                   //
+//        0                     256                    0                   //
+//      0 |----------------------|---------------------| 511               //
+//        |       time-bins      |     time-bins       |                   //
+//        | a                    |                   a |                   //
+//        | n                    |                   n |                   //
+//    X <_|_o____________________|___________________o_|__                 //
+//        | d                    |                   d |                   //
+//        | e     LEFT SIDE      |   RIGHT SIDE      e |                   //
+//        | s     CHANNEL 0      |   CHANNEL 1       s |                   //
+//        |       Xlocal > 0     |   Xlocal < 0        |                   //
+//    255 |----------------------|---------------------| 256               //
+//                               |                                         //
+//                               |                                         //
+//                               V                                         //
+//                               Z                                         //
+/////////////////////////////////////////////////////////////////////////////
 
 const Float_t AliITSsegmentationSDD::fgkDxDefault = 35085.;
 const Float_t AliITSsegmentationSDD::fgkDzDefault = 75264.;
@@ -33,10 +51,12 @@ const Float_t AliITSsegmentationSDD::fgkPitchDefault = 294.;
 const Float_t AliITSsegmentationSDD::fgkClockDefault = 40.;
 const Int_t AliITSsegmentationSDD::fgkHalfNanodesDefault = 256; 
 const Int_t AliITSsegmentationSDD::fgkNsamplesDefault = 256;
-
+const Float_t AliITSsegmentationSDD::fgkCm2Micron = 10000.;
+const Float_t AliITSsegmentationSDD::fgkMicron2Cm = 1.0E-04;
 ClassImp(AliITSsegmentationSDD)
 //----------------------------------------------------------------------
 AliITSsegmentationSDD::AliITSsegmentationSDD(AliITSgeom* geom):
+AliITSsegmentation(geom),
 fNsamples(0),
 fNanodes(0),
 fPitch(0),
@@ -44,13 +64,11 @@ fTimeStep(0),
 fDriftSpeed(0),
 fSetDriftSpeed(0){
   // constructor
-   fGeom=geom;
    fDriftSpeed=AliITSresponseSDD::DefaultDriftSpeed();
    fCorr=0;
    SetDetSize(fgkDxDefault,fgkDzDefault,fgkDyDefault);
    SetPadSize(fgkPitchDefault,fgkClockDefault);
    SetNPads(fgkHalfNanodesDefault,fgkNsamplesDefault);
-
 }
 //______________________________________________________________________
 AliITSsegmentationSDD::AliITSsegmentationSDD() : AliITSsegmentation(),
@@ -65,7 +83,6 @@ fSetDriftSpeed(0){
    SetDetSize(fgkDxDefault,fgkDzDefault,fgkDyDefault);
    SetPadSize(fgkPitchDefault,fgkClockDefault);
    SetNPads(fgkHalfNanodesDefault,fgkNsamplesDefault);
-
 }
 
 //______________________________________________________________________
@@ -106,15 +123,14 @@ void AliITSsegmentationSDD::Init(){
   // Standard initilisation routine
 
    if(!fGeom) {
-     Fatal("Init","the pointer to the ITS geometry class (AliITSgeom) is null\n");
+     AliFatal("Pointer to ITS geometry class (AliITSgeom) is null\n");
      return;
    }
    AliITSgeomSDD *gsdd = (AliITSgeomSDD *) (fGeom->GetShape(3,1,1));
 
-   const Float_t kconv=10000.;
-   fDz = 2.*kconv*gsdd->GetDz();
-   fDx = kconv*gsdd->GetDx();
-   fDy = 2.*kconv*gsdd->GetDy();
+   fDz = 2.*fgkCm2Micron*gsdd->GetDz();
+   fDx = fgkCm2Micron*gsdd->GetDx();
+   fDy = 2.*fgkCm2Micron*gsdd->GetDy();
 }
 
 //----------------------------------------------------------------------
@@ -137,52 +153,73 @@ Neighbours(Int_t iX, Int_t iZ, Int_t* Nlist, Int_t Xlist[8], Int_t Zlist[8]) con
     Zlist[2]=Zlist[3]=iZ;
 }
 //----------------------------------------------------------------------
+Float_t AliITSsegmentationSDD::GetAnodeFromLocal(Float_t xloc,Float_t zloc) const {
+  // returns anode coordinate (as float) starting from local coordinates
+  Float_t xAnode=zloc*fgkCm2Micron/fPitch;
+  if(xloc>0){   // left side (anodes 0-255, anode 0 at zloc<0)
+    xAnode+=(Float_t)fNanodes/4;
+  }else{ // right side (anodes 256-511, anode 0 at zloc>0)
+    xAnode=3*fNanodes/4-xAnode;
+  }
+  return xAnode;
+}
+
+//----------------------------------------------------------------------
+Float_t AliITSsegmentationSDD::GetLocalZFromAnode(Int_t nAnode) const{
+  // returns local Z coordinate from anode number (integer)
+  Float_t zAnode=(Float_t)nAnode+0.5;
+  return GetLocalZFromAnode(zAnode);
+}
+
+//----------------------------------------------------------------------
+Float_t AliITSsegmentationSDD::GetLocalZFromAnode(Float_t zAnode) const{
+  // returns local Z coordinate from anode number (float)
+  Float_t zloc=0.;
+  if(zAnode<fNanodes/2){ // left side
+    zloc=(zAnode*fPitch-fDz/2)*fgkMicron2Cm;
+  }else{  // right side
+    zAnode-=fNanodes/2;
+    zloc=-(zAnode*fPitch-fDz/2)*fgkMicron2Cm;
+  }
+  return zloc;
+}
+//----------------------------------------------------------------------
 void AliITSsegmentationSDD::GetPadIxz(Float_t x,Float_t z,
 				      Int_t &timebin,Int_t &anode) const {
-// Returns cell coordinates (time sample,anode) incremented by 1 !!!!! 
+// Returns cell coordinates (time sample,anode)
 // for given real local coordinates (x,z)
 
-    // expects x, z in cm
+  // expects x, z in cm
 
-    const Float_t kconv=10000;  // cm->um
-
-    x *= kconv; // Convert to microns
-    z *= kconv; // Convert to microns
-    Int_t na = fNanodes/2;
-    Float_t driftpath=fDx-TMath::Abs(x);
-    timebin=(Int_t)(driftpath/fDriftSpeed/fTimeStep);
-    anode=(Int_t)(z/fPitch + na/2);
-    if (x > 0) anode += na;
-
-    timebin+=1;
-    anode+=1;
-    if(!fSetDriftSpeed){
-      timebin=-999;
-      Warning("GetPadIxz","Drift speed not set: timebin is dummy");
-    }
+  Float_t driftpath=fDx-TMath::Abs(x*fgkCm2Micron);
+  timebin=(Int_t)(driftpath/fDriftSpeed/fTimeStep);
+  anode=(Int_t)GetAnodeFromLocal(x,z);
+  if(!fSetDriftSpeed){
+    timebin=-999;
+    AliWarning("Drift speed not set: timebin is dummy");
+  }
 
 }
 //----------------------------------------------------------------------
 void AliITSsegmentationSDD::GetPadCxz(Int_t timebin,Int_t anode,
 				      Float_t &x ,Float_t &z) const{
-    // Transform from cell to real local coordinates
-    // returns x, z in cm
+  // Transform from cell to real local coordinates
+  // returns x, z in cm
 
   // the +0.5 means that an # and time bin # should start from 0 !!! 
-    const Float_t kconv=10000;  // um->cm
   // the +0.5 means that an # and time bin # should start from 0 !!! 
 
-    Int_t na = fNanodes/2;
-    Float_t driftpath=(timebin+0.5)*fTimeStep*fDriftSpeed;
-    if (anode >= na) x=(fDx-driftpath)/kconv;
-    else x = -(fDx-driftpath)/kconv;
-    if (anode >= na) anode-=na;
-    z=((anode+0.5)*fPitch-fDz/2)/kconv;
-    if(!fSetDriftSpeed){
-      x=-9999.;
-      Warning("GetPadCxz","Drift speed not set: x coord. is dummy");
-    }
-
+  Float_t driftpath=GetDriftTimeFromTb(timebin)*fDriftSpeed;
+  if (anode < fNanodes/2){ // left side, positive x
+    x=(fDx-driftpath)*fgkMicron2Cm;
+  }else{ // right side, negative x
+    x = -(fDx-driftpath)*fgkMicron2Cm;
+  }
+  z=GetLocalZFromAnode(anode);
+  if(!fSetDriftSpeed){
+    x=-9999.;
+    AliWarning("Drift speed not set: x coord. is dummy");
+  }
 }
 //----------------------------------------------------------------------
 void AliITSsegmentationSDD::GetPadTxz(Float_t &x,Float_t &z) const{
@@ -190,37 +227,16 @@ void AliITSsegmentationSDD::GetPadTxz(Float_t &x,Float_t &z) const{
 
     // expects x, z in cm
 
-    const Float_t kconv=10000;  // cm->um
-
-    Float_t x0=x;
-    Int_t na = fNanodes/2;
-    Float_t driftpath=fDx-TMath::Abs(kconv*x);
+    Float_t xloc=x;
+    Float_t zloc=z;
+    Float_t driftpath=fDx-TMath::Abs(fgkCm2Micron*xloc);
     x=driftpath/fDriftSpeed/fTimeStep;
-    z=kconv*z/fPitch + (float)na/2;
-    if (x0 < 0) x = -x;
+    if (xloc < 0) x = -x;
+    z=GetAnodeFromLocal(xloc,zloc);
     if(!fSetDriftSpeed){
       x=-9999.;
-      Warning("GetPadTxz","Drift speed not set: x coord. is dummy");
+      AliWarning("Drift speed not set: x coord. is dummy");
     }
-}
-//----------------------------------------------------------------------
-void AliITSsegmentationSDD::GetLocal(Int_t module,Float_t *g ,Float_t *l) const {
-  // returns local coordinates from global
-    if(!fGeom) {
-      Fatal("GetLocal","the pointer to the ITS geometry class (AliITSgeom) is null\n");
-        return;
-    }
-    fGeom->GtoL(module,g,l);
-}
-//----------------------------------------------------------------------
-void AliITSsegmentationSDD::GetGlobal(Int_t module,Float_t *l ,Float_t *g) const {
-  // return global coordinates from local
-    if(!fGeom) {
-      Fatal("GetGlobal","the pointer to the ITS geometry class (AliITSgeom) is null\n");
-    }
-
-    fGeom->LtoG(module,l,g);
-
 }
 //----------------------------------------------------------------------
 void AliITSsegmentationSDD::Print(Option_t *opt) const {
@@ -278,48 +294,25 @@ Bool_t AliITSsegmentationSDD::LocalToDet(Float_t x,Float_t z,
 // Int_t    iz      detector z anode coordinate. Has the range 0<=iz<fNandoes.
 //   A value of -1 for ix or iz indecates that this point is outside of the
 // detector segmentation as defined.
-//     This segmentation geometry can be discribed as the following:
-// {assumes 2*Dx()=7.0cm Dz()=7.5264cm, Dpx()=25ns,
-//  res->DeriftSpeed()=7.3mic/ns, Dpz()=512. For other values a only the 
-//  specific numbers will change not their layout.}
-//
-//        0                     191                    0
-//      0 |----------------------|---------------------| 256
-//        | a     time-bins      |     time-bins     a |
-//        | n                    |                   n |
-//        | o                    |___________________o_|__> X
-//        | d                    |                   d |
-//        | e                    |                   e |
-//        | s                    |                   s |
-//    255 |----------------------|---------------------| 511
-//                               |
-//                               V
-//                               Z
-    Float_t dx,dz,tb;
-    const Float_t kconv = 1.0E-04; // converts microns to cm.
+
+    Float_t dx,dz;
 
     ix = -1; // default values
     iz = -1; // default values
-    dx = -kconv*Dx(); // lower left edge in cm.
-    dz = -0.5*kconv*Dz(); // lower left edge in cm.
+    dx = -fgkMicron2Cm*Dx(); // lower left edge in cm.
+    dz = -0.5*fgkMicron2Cm*Dz(); // lower left edge in cm.
     if(x<dx || x>-dx) {
-      Warning("LocalToDet","input argument %f out of range (%f, %f)",x,dx,-dx);
+      AliWarning(Form("Input argument %f out of range (%f, %f)",x,dx,-dx));
       return kFALSE; // outside of defined volume.
     }
     if(z<dz || z>-dz) {
-      Warning("LocalToDet","input argument %f out of range (%f, %f)",z,dz,-dz);
+      AliWarning(Form("Input argument %f out of range (%f, %f)",z,dz,-dz));
       return kFALSE; // outside of defined volume.
     }
-    tb = fDriftSpeed*fTimeStep*kconv; // compute size of time bin.
-    if(x>0) dx = -(dx + x)/tb; // distance from + side in time bin units
-    else dx = (x - dx)/tb;     // distance from - side in time bin units
-    dz = (z - dz)/(kconv*fPitch); // distance in z in anode pitch units
-    ix = (Int_t) dx;   // time bin
-    iz = (Int_t) dz;   // anode
-    if(x>0) iz += Npz()/2; // if x>0 then + side anodes values.
+    GetPadIxz(x,z,ix,iz);
     if(!fSetDriftSpeed){
-      tb=-999;
-      Warning("LocalToDet","Drift speed not set: timebin is dummy");
+      ix=-999;
+      AliWarning("Drift speed not set: timebin is dummy");
       return kFALSE;
     }
     return kTRUE; // Found ix and iz, return.
@@ -339,48 +332,21 @@ void AliITSsegmentationSDD::DetToLocal(Int_t ix,Int_t iz,Float_t &x,Float_t &z) 
 //                  center of the sensitive volulme.
 // If ix and or iz is outside of the segmentation range a value of -Dx()
 // or -0.5*Dz() is returned.
-//     This segmentation geometry can be discribed as the following:
-// {assumes 2*Dx()=7.0cm Dz()=7.5264cm, Dpx()=25ns,
-//  res->DeriftSpeed()=7.3mic/ns, Dpz()=512. For other values a only the 
-//  specific numbers will change not their layout.}
-//
-//        0                     191                    0
-//      0 |----------------------|---------------------| 256
-//        | a     time-bins      |     time-bins     a |
-//        | n                    |                   n |
-//        | o                    |___________________o_|__> X
-//        | d                    |                   d |
-//        | e                    |                   e |
-//        | s                    |                   s |
-//    255 |----------------------|---------------------| 511
-//                               |
-//                               V
-//                               Z
-    Int_t i,j;
-    Float_t tb;
-    const Float_t kconv = 1.0E-04; // converts microns to cm.
 
-    if(iz>=Npz()/2) x = kconv*Dx(); // default value for +x side.
-    else x = -kconv*Dx(); // default value for -x side.
-    z = -0.5*kconv*Dz(); // default value.
-    if(ix<0 || ix>=Npx()) {
-      Warning("DetToLocal","input argument %d out of range (0, %d)",ix,Npx());
-      return; // outside of detector
-    }
-    if(iz<0 || iz>=Npz()) {
-      Warning("DetToLocal","input argument %d out of range (0, %d)",iz,Npz());
-     return; // outside of detctor
-    }
-    tb = fDriftSpeed*fTimeStep*kconv; // compute size of time bin.
-    if(iz>=Npz()/2) tb *= -1.0; // for +x side decrement frmo Dx().
-    for(i=0;i<ix;i++) x += tb; // sum up to cell ix-1
-    x += 0.5*tb; // add 1/2 of cell ix for center location.
-    if(iz>=Npz()/2) iz -=Npz()/2;// If +x side don't count anodes from -x side.
-    for(j=0;j<iz;j++) z += kconv*fPitch; // sum up cell iz-1
-    z += 0.5*kconv*fPitch; // add 1/2 of cell iz for center location.
-    if(!fSetDriftSpeed){
-      x=-9999.;
-      Warning("LocalToDet","Drift speed not set: x coord. is dummy");
-    }
-    return; // Found x and z, return.
+  x=-Dx();
+  z=-0.5*Dz();
+  if(ix<0 || ix>=Npx()) {
+    AliWarning(Form("Input argument %d out of range (0, %d)",ix,Npx()));
+    return; // outside of detector
+  }
+  if(iz<0 || iz>=Npz()) {
+    AliWarning(Form("Input argument %d out of range (0, %d)",iz,Npz()));
+    return; // outside of detctor
+  }
+  GetPadCxz(ix,iz,x,z);
+  if(!fSetDriftSpeed){
+    x=-9999.;
+    AliWarning("Drift speed not set: x coord. is dummy");
+  }
+  return; // Found x and z, return.
 }

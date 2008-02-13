@@ -68,7 +68,7 @@ Float_t AliITSsegmentationSPD::ColFromZ(Float_t z) const {
     Float_t s,col;
 
     if(z<0||z>fDz){
-	Error("ColFromZ","z=%f outside of range 0.0<=z<fDz=%f",z,fDz);
+	AliError(Form("z=%f outside of range 0.0<=z<fDz=%f",z,fDz));
 	return 0.0; // error
     } // end if outsize of detector
     s = 0.0;
@@ -123,7 +123,7 @@ Float_t AliITSsegmentationSPD::ZFromCol(Int_t col) const {
     Float_t z;
 
     if(col<0||col>=fNpz){
-	Error("ZFromCol","col=%d outside of range 0<=col<fNpZ=%d",col,fNpz);
+	AliError(Form("col=%d outside of range 0<=col<fNpZ=%d",col,fNpz));
 	return 0.0; // error
     } // end if outsize of detector
     z = 0.0;
@@ -189,13 +189,12 @@ Float_t AliITSsegmentationSPD::ZpitchFromCol(Int_t col) const {
 }
 //______________________________________________________________________
 AliITSsegmentationSPD::AliITSsegmentationSPD(AliITSgeom *gm):
+AliITSsegmentation(gm),
 fNpx(0),
 fNpz(0){
   // Constructor
    fCorr=0;
    Init(); 
-   fGeom = gm;
-
 }
 //______________________________________________________________________
 void AliITSsegmentationSPD::Copy(TObject &obj) const {

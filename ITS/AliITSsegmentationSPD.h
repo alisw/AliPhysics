@@ -31,8 +31,6 @@ public AliITSsegmentation {
     virtual void    GetPadIxz(Float_t x,Float_t z,Int_t &ix,Int_t &iz) const;
     // Transform from pixel to real coordinates
     virtual void    GetPadCxz(Int_t ix,Int_t iz,Float_t &x,Float_t &z) const;
-    // Transform from real local to global coordinates
-    //virtual void    GetGlobal(Int_t module,Float_t *l ,Float_t *g) {}
     // Local transformation of real local coordinates -
     virtual void    GetPadTxz(Float_t &x ,Float_t &z) const;
     // Transformation from Geant cm detector center local coordinates
@@ -68,7 +66,7 @@ public AliITSsegmentation {
        (Int_t iX,Int_t iZ,Int_t* Nlist,Int_t Xlist[10],Int_t Zlist[10]) const;
     // Print default parameters (static const data members, if any)
     virtual void PrintDefaultParameters() const 
-            {Warning("PrintDefaultParameters","No def. parameters defined as const static data members\n");}
+            {AliWarning("No def. parameters defined as const static data members");}
     
  protected:
 

@@ -61,7 +61,7 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(TClonesArray *digits) {
   Int_t nzBins = nAnodes+2;
   Int_t nTimeBins = GetSeg()->Npx();
   Int_t nxBins = nTimeBins+2;
-  const Int_t kMaxBin=nzBins*(nxBins+2);
+  const Int_t kMaxBin=nzBins*nxBins;
 
   AliBin *bins[2];
   bins[0]=new AliBin[kMaxBin];
@@ -130,20 +130,20 @@ FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins,
       for (k=0; k<npeaks-1; k++){//mark adjacent peaks
         if (idx[k] < 0) continue; //this peak is already removed
         for (l=k+1; l<npeaks; l++) {
-           if (idx[l] < 0) continue; //this peak is already removed
-           Int_t ki=idx[k]/nzBins, kj=idx[k] - ki*nzBins;
-           Int_t li=idx[l]/nzBins, lj=idx[l] - li*nzBins;
-           Int_t di=TMath::Abs(ki - li);
-           Int_t dj=TMath::Abs(kj - lj);
-           if (di>1 || dj>1) continue;
-           if (bins[s][idx[k]].GetQ() > bins[s][idx[l]].GetQ()) {
-              msk[l]=msk[k];
-              idx[l]*=-1;
-           } else {
-              msk[k]=msk[l];
-              idx[k]*=-1;
-              break;
-           } 
+	  if (idx[l] < 0) continue; //this peak is already removed
+	  Int_t ki=idx[k]/nzBins, kj=idx[k] - ki*nzBins;
+	  Int_t li=idx[l]/nzBins, lj=idx[l] - li*nzBins;
+	  Int_t di=TMath::Abs(ki - li);
+	  Int_t dj=TMath::Abs(kj - lj);
+	  if (di>1 || dj>1) continue;
+	  if (bins[s][idx[k]].GetQ() > bins[s][idx[l]].GetQ()) {
+	    msk[l]=msk[k];
+	    idx[l]*=-1;
+	  } else {
+	    msk[k]=msk[l];
+	    idx[k]*=-1;
+	    break;
+	  } 
         }
       }
 
@@ -152,112 +152,102 @@ FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins,
       }
         
       for (k=0; k<npeaks; k++) {
-         if (idx[k] < 0) continue; //removed peak
-         AliITSRecPoint c;
-         MakeCluster(idx[k], nzBins, bins[s], msk[k], c);
-	 //mi change
-	 Int_t milab[10];
-	 for (Int_t ilab=0;ilab<10;ilab++){
-	   milab[ilab]=-2;
-	 }
-	 Int_t maxi=0,mini=0,maxj=0,minj=0;
-	 //AliBin *bmax=&bins[s][idx[k]];
-	 //Float_t max = TMath::Max(TMath::Abs(bmax->GetQ())/5.,3.);
-    
-	 for (Int_t di=-2; di<=2;di++){
-	   for (Int_t dj=-3;dj<=3;dj++){
-	     Int_t index = idx[k]+di+dj*nzBins;
-	     if (index<0) continue;
-	     if (index>=nMaxBin) continue;
-	     AliBin *b=&bins[s][index];
-	     Int_t nAnode=index%nzBins-1;
-	     Int_t adcSignal=b->GetQ();
-	     if(adcSignal>cal->GetThresholdAnode(nAnode)){
-	       if (di>maxi) maxi=di;
-	       if (di<mini) mini=di;
-	       if (dj>maxj) maxj=dj;
-	       if (dj<minj) minj=dj;
-	     }
-	     //
-	     if(digits) {
-	       if (TMath::Abs(di)<2&&TMath::Abs(dj)<2){
-		 AliITSdigitSDD* d=(AliITSdigitSDD*)digits->UncheckedAt(b->GetIndex());
-		 for (Int_t itrack=0;itrack<10;itrack++){
-		   Int_t track = (d->GetTracks())[itrack];
-		   if (track>=0) {
-		     AddLabel(milab, track); 
-		   }
-		 }
-	       }
-	     }
-	   }
-	 }
+	if (idx[k] < 0) continue; //removed peak
+	AliITSRecPoint c;
+	MakeCluster(idx[k], nzBins, bins[s], msk[k], c);
+	//mi change
+	Int_t milab[10];
+	for (Int_t ilab=0;ilab<10;ilab++){
+	  milab[ilab]=-2;
+	}
+	Int_t maxi=0,mini=0,maxj=0,minj=0;
+	//AliBin *bmax=&bins[s][idx[k]];
+	//Float_t max = TMath::Max(TMath::Abs(bmax->GetQ())/5.,3.);
+	
+	for (Int_t di=-2; di<=2;di++){
+	  for (Int_t dj=-3;dj<=3;dj++){
+	    Int_t index = idx[k]+di+dj*nzBins;
+	    if (index<0) continue;
+	    if (index>=nMaxBin) continue;
+	    AliBin *b=&bins[s][index];
+	    Int_t nAnode=index%nzBins-1;
+	    Int_t adcSignal=b->GetQ();
+	    if(adcSignal>cal->GetThresholdAnode(nAnode)){
+	      if (di>maxi) maxi=di;
+	      if (di<mini) mini=di;
+	      if (dj>maxj) maxj=dj;
+	      if (dj<minj) minj=dj;
+	    }
+	    //
+	    if(digits) {
+	      if (TMath::Abs(di)<2&&TMath::Abs(dj)<2){
+		AliITSdigitSDD* d=(AliITSdigitSDD*)digits->UncheckedAt(b->GetIndex());
+		for (Int_t itrack=0;itrack<10;itrack++){
+		  Int_t track = (d->GetTracks())[itrack];
+		  if (track>=0) {
+		    AddLabel(milab, track); 
+		  }
+		}
+	      }
+	    }
+	  }
+	}
 
 
-         Float_t y=c.GetY(),z=c.GetZ(), q=c.GetQ();
-         y/=q; z/=q;
-
-
-	 const Double_t kMicronTocm = 1.0e-4; 
-	 Float_t timeBinCenter = y-0.5;
-	 Float_t zAnode=z-0.5;
-	 Float_t zdet = (zAnode*GetSeg()->Dpz(0)-GetSeg()->Dz()/2.)*kMicronTocm;
-	 Float_t driftTime =  timeBinCenter*GetSeg()->Dpx(0) - cal->GetTimeOffset();
-	 Float_t xdet = cal->GetDriftPath(driftTime,zAnode);
-	 xdet=(xdet-GetSeg()->Dx())*kMicronTocm;
-	 if (s) xdet=-xdet;
+	Float_t y=c.GetY(),z=c.GetZ(), q=c.GetQ();	 
+	y/=q; z/=q;
+	Float_t zAnode=z-0.5;  // to have anode in range 0.-255. and centered on the mid of the pitch
+	Float_t timebin=y-0.5;  // to have time bin in range 0.-255. amd centered on the mid of the bin
+	if(s==1) zAnode += GetSeg()->NpzHalf();  // right side has anodes from 256. to 511.
+	Float_t zdet = GetSeg()->GetLocalZFromAnode(zAnode);
+	Float_t driftTime = GetSeg()->GetDriftTimeFromTb(timebin) - cal->GetTimeOffset();
+	Float_t driftPathMicron = cal->GetDriftPath(driftTime,zAnode);
+	const Double_t kMicronTocm = 1.0e-4; 
+	Float_t xdet=(driftPathMicron-GetSeg()->Dx())*kMicronTocm; // xdet is negative
+	if (s==0) xdet=-xdet; // left side has positive local x
 	 
-	 
-	 CorrectPosition(zdet,xdet);
+	CorrectPosition(zdet,xdet);
 
-	 Double_t loc[3]={xdet,0.,zdet},trk[3]={0.,0.,0.};
-	 mT2L->MasterToLocal(loc,trk);
-	 y=trk[1];
-	 z=trk[2]; 
+	Double_t loc[3]={xdet,0.,zdet},trk[3]={0.,0.,0.};
+	mT2L->MasterToLocal(loc,trk);
+	y=trk[1];
+	z=trk[2]; 
 
-         q/=cal->GetADC2keV();  //to have MPV 1 MIP = 86.4 KeV
-         Float_t hit[5] = {y, z, 0.0030*0.0030, 0.0020*0.0020, q};
-         Int_t  info[3] = {maxj-minj+1, maxi-mini+1, fNlayer[fModule]};
-	 if (digits) {	  
-	   //	   AliBin *b=&bins[s][idx[k]];
-	   //	   AliITSdigitSDD* d=(AliITSdigitSDD*)digits->UncheckedAt(b->GetIndex());
-	   {
-	     //Int_t lab[3];
-	     //lab[0]=(d->GetTracks())[0];
-	     //lab[1]=(d->GetTracks())[1];
-	     //lab[2]=(d->GetTracks())[2];
-	     //CheckLabels(lab);
-	     CheckLabels2(milab); 
-	   }
-	 }
-         milab[3]=fNdet[fModule];
+	q/=cal->GetADC2keV();  //to have MPV 1 MIP = 86.4 KeV
+	Float_t hit[5] = {y, z, 0.0030*0.0030, 0.0020*0.0020, q};
+	Int_t  info[3] = {maxj-minj+1, maxi-mini+1, fNlayer[fModule]};
+	if (digits) {	  
+	  //	   AliBin *b=&bins[s][idx[k]];
+	  //	   AliITSdigitSDD* d=(AliITSdigitSDD*)digits->UncheckedAt(b->GetIndex());
+	  {
+	    //Int_t lab[3];
+	    //lab[0]=(d->GetTracks())[0];
+	    //lab[1]=(d->GetTracks())[1];
+	    //lab[2]=(d->GetTracks())[2];
+	    //CheckLabels(lab);
+	    CheckLabels2(milab); 
+	  }
+	}
+	milab[3]=fNdet[fModule];
 
-         AliITSRecPoint cc(milab,hit,info);
-	 cc.SetType(npeaks);
-
-	 if(clusters) new (cl[ncl]) AliITSRecPoint(cc); 
-	 else {
-	   fDetTypeRec->AddRecPoint(cc);
-	 }
-	 ncl++;
+	AliITSRecPoint cc(milab,hit,info);
+	cc.SetType(npeaks);
+	if(clusters) new (cl[ncl]) AliITSRecPoint(cc); 
+	else {
+	  fDetTypeRec->AddRecPoint(cc);
+	}
+	ncl++;
       }
     }
   
 }
-
-
-
+//______________________________________________________________________
 void AliITSClusterFinderV2SDD::RawdataToClusters(AliRawReader* rawReader,TClonesArray** clusters){
     //------------------------------------------------------------
   // This function creates ITS clusters from raw data
   //------------------------------------------------------------
   rawReader->Reset();
   AliITSRawStreamSDD inputSDD(rawReader);
-  /*
-  AliITSCalibrationSDD* cal = (AliITSCalibrationSDD*)GetResp(240);
-  printf("gain anode 10=%f\n",cal->GetDriftSpeedAtAnode(10));
-  printf("drift speed anode 10=%f\n",cal->GetChannelGain(10));
-  */
   AliITSDDLModuleMapSDD *ddlmap=(AliITSDDLModuleMapSDD*)fDetTypeRec->GetDDLModuleMapSDD();
   inputSDD.SetDDLModuleMap(ddlmap);
   FindClustersSDD(&inputSDD,clusters);
@@ -275,7 +265,7 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(AliITSRawStream* input,
   Int_t nzBins = nAnodes+2;
   Int_t nTimeBins = GetSeg()->Npx();
   Int_t nxBins = nTimeBins+2;
-  const Int_t kMaxBin=nzBins*(nxBins+2);
+  const Int_t kMaxBin=nzBins*nxBins;
   AliBin *bins[2];
   AliBin *ddlbins[kHybridsPerDDL]; // 12 modules (=24 hybrids) of 1 DDL read "in parallel"
   for(Int_t iHyb=0;iHyb<kHybridsPerDDL;iHyb++) ddlbins[iHyb]=new AliBin[kMaxBin];
@@ -352,19 +342,15 @@ void AliITSClusterFinderV2SDD::CorrectPosition(Float_t &z, Float_t&y){
   //correction of coordinates using the maps stored in the DB
 
   AliITSCalibrationSDD* cal = (AliITSCalibrationSDD*)GetResp(fModule);
-  static const Int_t knbint = cal->GetMapTimeNBin();
-  static const Int_t knbina = cal->Chips()*cal->Channels();
-  const Double_t kMicronTocm = 1.0e-4; 
-  Float_t stepa = (GetSeg()->Dpz(0))*kMicronTocm; //anode pitch in cm
-  Float_t stept = (GetSeg()->Dx()/cal->GetMapTimeNBin()/2.)/10.;
-  
-  Int_t bint = TMath::Abs((Int_t)(y/stept));
-  if(y>=0) bint+=(Int_t)(knbint/2.);
-  if(bint>knbint) AliError("Wrong bin number!");
+  static const Int_t knbina = cal->Wings()*cal->Chips()*cal->Channels();
+  Int_t bina =(Int_t) GetSeg()->GetAnodeFromLocal(y,z);
+  if(bina>knbina) AliError("Wrong bin number along anodes!");
 
-  Int_t bina = TMath::Abs((Int_t)(z/stepa));
-  if(z>=0) bina+=(Int_t)(knbina/2.);
-  if(bina>knbina) AliError("Wrong bin number!");
+  static const Int_t knbint = cal->GetMapTimeNBin();
+  const Double_t kMicronTocm = 1.0e-4; 
+  Float_t stept = GetSeg()->Dx()*kMicronTocm/cal->GetMapTimeNBin();  
+  Int_t bint = TMath::Abs((Int_t)(y/stept));
+  if(bint>knbint) AliError("Wrong bin number along drift direction!");
 
   Float_t devz = cal->GetMapACell(bina,bint)*kMicronTocm;
   Float_t devx = cal->GetMapTCell(bina,bint)*kMicronTocm;

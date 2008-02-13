@@ -45,6 +45,7 @@ fLayer(0){
 }
 //----------------------------------------------------------------------
 AliITSsegmentationSSD::AliITSsegmentationSSD(AliITSgeom *geom):
+AliITSsegmentation(geom),
 fNstrips(0),
 fStereoP(0),
 fStereoN(0),
@@ -55,7 +56,6 @@ fStereoPl6(0),
 fStereoNl6(0),
 fLayer(0){
     // constuctor
-    fGeom = geom;
     fCorr = 0;
     SetDetSize(fgkDxDefault,fgkDzDefault,fgkDyDefault);
     SetPadSize(fgkPitchDefault,0.);
@@ -63,7 +63,6 @@ fLayer(0){
     SetAngles();
     fLayer = 0;
 }
-
 //______________________________________________________________________
 void AliITSsegmentationSSD::Copy(TObject &obj) const {
   // protected method. copy this to obj
@@ -131,7 +130,7 @@ void AliITSsegmentationSSD::SetLayer(Int_t l){
   //set fLayer data member (only 5 or 6 are allowed)
     if (l==5) fLayer =5;
     if (l==6) fLayer =6;
-    if((l!=5) && (l!=6))Error("SetLayer","Layer can be 5 or 6, not %d",l);
+    if((l!=5) && (l!=6))AliError(Form("Layer can be 5 or 6, not %d",l));
 }
 //----------------------------------------------------------------------
 void AliITSsegmentationSSD::GetPadTxz(Float_t &x,Float_t &z) const{

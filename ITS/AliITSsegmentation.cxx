@@ -23,6 +23,17 @@ fCorr(0){
   // Default constructor
  
 }
+//_____________________________________________________________
+AliITSsegmentation::AliITSsegmentation(AliITSgeom* geom):
+fDx(0),
+fDz(0),
+fDy(0),
+fGeom(0),
+fCorr(0){
+  // Default constructor
+   fGeom=geom;
+}
+
 
 //_____________________________________________________________
 AliITSsegmentation::~AliITSsegmentation(){

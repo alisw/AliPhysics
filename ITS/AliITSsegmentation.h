@@ -2,9 +2,10 @@
 #define ALIITSSEGMENTATION_H
 
 #include <TObject.h>
+#include "AliLog.h"
+#include "AliITSgeom.h"
 
 class TF1;
-class AliITSgeom;
 //----------------------------------------------
 //
 // ITS  segmentation virtual base class
@@ -13,6 +14,7 @@ class AliITSsegmentation :
 public TObject {
  public:
   AliITSsegmentation();
+  AliITSsegmentation(AliITSgeom *geom);
   AliITSsegmentation(const AliITSsegmentation& source);
   virtual ~AliITSsegmentation();
   AliITSsegmentation& operator=(const AliITSsegmentation &source);
@@ -33,12 +35,22 @@ public TObject {
     virtual void    GetPadIxz(Float_t,Float_t,Int_t &,Int_t &) const = 0;
     // Transform from cell to real coordinates
     virtual void    GetPadCxz(Int_t,Int_t,Float_t &,Float_t &) const = 0;
+
     // Transform from real global to local coordinates
-    virtual void    GetLocal(Int_t,Float_t *,Float_t *) const 
-                                                  {MayNotUse("GetLocal");}
+    void GetLocal(Int_t module,Float_t *g ,Float_t *l) const {
+      if(!fGeom) {
+	AliFatal("Pointer to ITS geometry class (AliITSgeom) is null\n");
+        return;
+      }
+      fGeom->GtoL(module,g,l);      
+    }
     // Transform from real local to global coordinates
-    virtual void    GetGlobal(Int_t,Float_t *,Float_t *) const 
-                                                  {MayNotUse("GetGlobal");}
+    void GetGlobal(Int_t module,Float_t *l ,Float_t *g) const {
+      if(!fGeom) {
+	AliFatal("Pointer to ITS geometry class (AliITSgeom) is null\n");
+      }
+      fGeom->LtoG(module,l,g);
+    }
     // Local transformation of real local coordinates -
     virtual void    GetPadTxz(Float_t &,Float_t &) const = 0;
     // Transformation from Geant cm detector center local coordinates

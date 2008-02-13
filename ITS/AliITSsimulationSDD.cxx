@@ -258,9 +258,8 @@ void AliITSsimulationSDD::Init(){
     fAnodeFire = new Bool_t [fNofMaps];
     
     Float_t sddWidth  = seg->Dz();
-    Int_t dummy        = 0;
-    Float_t anodePitch = seg->Dpz(dummy);
-    Double_t timeStep  = (Double_t)seg->Dpx(dummy);
+    Float_t anodePitch = seg->Dpz(0);
+    Double_t timeStep  = (Double_t)seg->Dpx(0);
 
     if(anodePitch*(fNofMaps/2) > sddWidth) {
         Warning("AliITSsimulationSDD",
@@ -441,19 +440,17 @@ void AliITSsimulationSDD::FinishDigits() {
 //______________________________________________________________________
 void AliITSsimulationSDD::HitsToAnalogDigits( AliITSmodule *mod ) {
     // create maps to build the lists of tracks for each digit
-
   AliITSsegmentationSDD* seg = (AliITSsegmentationSDD*)GetSegmentationModel(1);
   AliITSCalibrationSDD* res = (AliITSCalibrationSDD*)GetCalibrationModel(fModule);
   TObjArray *hits     = mod->GetHits();
     Int_t      nhits    = hits->GetEntriesFast();
 
     //    Int_t      arg[6]   = {0,0,0,0,0,0};
-    Int_t     dummy      = 0;
     Int_t     nofAnodes  = fNofMaps/2;
     Double_t  sddLength  = seg->Dx();
     Double_t  sddWidth   = seg->Dz();
-    Double_t  anodePitch = seg->Dpz(dummy);
-    Double_t  timeStep   = seg->Dpx(dummy);
+    Double_t  anodePitch = seg->Dpz(0);
+    Double_t  timeStep   = seg->Dpx(0);
     Double_t  driftSpeed ;  // drift velocity (anode dependent)
     //Float_t   maxadc     = res->GetMaxAdc();    
     //Float_t   topValue   = res->GetDynamicRange();
@@ -472,9 +469,7 @@ void AliITSsimulationSDD::HitsToAnalogDigits( AliITSmodule *mod ) {
 
     const Float_t kconv = 1.0e+6;  // GeV->KeV
     Int_t     itrack      = 0;
-    Int_t     hitDetector; // detector number (lay,lad,hitDetector)
     Int_t     iWing;       // which detector wing/side.
-    Int_t     detector;    // 2*(detector-1)+iWing
     Int_t     ii,kk,ka,kt; // loop indexs
     Int_t     ia,it,index; // sub-pixel integration indexies
     Int_t     iAnode;      // anode number.
@@ -494,7 +489,7 @@ void AliITSsimulationSDD::HitsToAnalogDigits( AliITSmodule *mod ) {
     Double_t  nmul;   // drift time window multiplication factor.
     Double_t  avDrft;  // x position of path length segment in cm.
     Double_t  avAnode; // Anode for path length segment in Anode number (float)
-    Double_t  xAnode;  // Floating point anode number.
+    Double_t  zAnode;  // Floating point anode number.
     Double_t  driftPath; // avDrft in microns.
     Double_t  width;     // width of signal at anodes.
     Double_t  depEnergy; // Energy deposited in this GEANT step.
@@ -512,192 +507,180 @@ void AliITSsimulationSDD::HitsToAnalogDigits( AliITSmodule *mod ) {
     //  Double_t tof;            // Time of flight in ns of this step.    
 
     for(ii=0; ii<nhits; ii++) {
-        if(!mod->LineSegmentL(ii,xL[0],dxL[0],xL[1],dxL[1],xL[2],dxL[2],
+      if(!mod->LineSegmentL(ii,xL[0],dxL[0],xL[1],dxL[1],xL[2],dxL[2],
                               depEnergy,itrack)) continue;
-        xL[0] += 0.0001*gRandom->Gaus( 0, jitter ); //
-	xAnode=10000.*(xL[2]+0.5*dxL[2])/anodePitch + nofAnodes/2;;
-	driftSpeed = res->GetDriftSpeedAtAnode(xAnode);
-	if(timeStep*fMaxNofSamples < sddLength/driftSpeed) {
-	  Warning("AliITSsimulationSDD",
-              "Time Interval > Allowed Time Interval\n");
-	}
-        depEnergy  *= kconv;
-        hitDetector = mod->GetDet();
-        //tof         = 1.E+09*(mod->GetHit(ii)->GetTOF()); // tof in ns.
-        //if(tof>sddLength/driftSpeed) continue; // hit happed too late.
+      Float_t xloc=xL[0];
+      if(xloc>0) iWing=0; // left side, carlos channel 0
+      else iWing=1; // right side
+
+      Float_t zloc=xL[2]+0.5*dxL[2];
+      zAnode=seg->GetAnodeFromLocal(xloc,zloc); // anode number in the range 0.-511.
+      driftSpeed = res->GetDriftSpeedAtAnode(zAnode);
+      if(timeStep*fMaxNofSamples < sddLength/driftSpeed) {
+	AliWarning("Time Interval > Allowed Time Interval\n");
+      }
+      depEnergy  *= kconv;
         
-        // scale path to simulate a perpendicular track
-        // continue if the particle did not lose energy
-        // passing through detector
-        if (!depEnergy) {
-            AliDebug(1,
-             Form("fTrack = %d hit=%d module=%d This particle has passed without losing energy!",
-		  itrack,ii,mod->GetIndex()));
-            continue;
-        } // end if !depEnergy
+      // scale path to simulate a perpendicular track
+      // continue if the particle did not lose energy
+      // passing through detector
+      if (!depEnergy) {
+	AliDebug(1,
+		 Form("fTrack = %d hit=%d module=%d This particle has passed without losing energy!",
+		      itrack,ii,mod->GetIndex()));
+	continue;
+      } // end if !depEnergy
+      
+      xL[0] += 0.0001*gRandom->Gaus( 0, jitter ); //
+      pathInSDD = TMath::Sqrt(dxL[0]*dxL[0]+dxL[1]*dxL[1]+dxL[2]*dxL[2]);
 
-        pathInSDD = TMath::Sqrt(dxL[0]*dxL[0]+dxL[1]*dxL[1]+dxL[2]*dxL[2]);
-
-        if (fFlag && pathInSDD) { depEnergy *= (0.03/pathInSDD); }
-        drPath = 10000.*(dxL[0]+2.*xL[0])*0.5;
-        if(drPath < 0) drPath = -drPath;
-        drPath = sddLength-drPath;
-        if(drPath < 0) {
-            AliDebug(1, // this should be fixed at geometry level
-              Form("negative drift path drPath=%e sddLength=%e dxL[0]=%e xL[0]=%e",
+      if (fFlag && pathInSDD) { depEnergy *= (0.03/pathInSDD); }
+      drPath = TMath::Abs(10000.*(dxL[0]+2.*xL[0])*0.5);
+      drPath = sddLength-drPath;
+      if(drPath < 0) {
+	AliDebug(1, // this should be fixed at geometry level
+		 Form("negative drift path drPath=%e sddLength=%e dxL[0]=%e xL[0]=%e",
 		   drPath,sddLength,dxL[0],xL[0]));
-            continue;
-        } // end if drPath < 0
+	continue;
+      } // end if drPath < 0
 
         // Compute number of segments to brake step path into
-        drTime = drPath/driftSpeed;  //   Drift Time
-        sigA   = TMath::Sqrt(2.*dfCoeff*drTime+s1*s1);// Sigma along the anodes
-        // calcuate the number of time the path length should be split into.
-        nOfSplits = (Int_t) (1. + 10000.*pathInSDD/sigA);
-        if(fFlag) nOfSplits = 1;
+      drTime = drPath/driftSpeed;  //   Drift Time
+      sigA   = TMath::Sqrt(2.*dfCoeff*drTime+s1*s1);// Sigma along the anodes
+      // calcuate the number of time the path length should be split into.
+      nOfSplits = (Int_t) (1. + 10000.*pathInSDD/sigA);
+      if(fFlag) nOfSplits = 1;
+      
+      // loop over path segments, init. some variables.
+      depEnergy /= nOfSplits;
+      nOfSplitsF = (Float_t) nOfSplits;
+      Float_t theAverage=0.,theSteps=0.;
+      for(kk=0;kk<nOfSplits;kk++) { // loop over path segments
+	kkF       = (Float_t) kk + 0.5;
+	avDrft    = xL[0]+dxL[0]*kkF/nOfSplitsF;
+	avAnode   = xL[2]+dxL[2]*kkF/nOfSplitsF;
+	theSteps+=1.;
+	theAverage+=avAnode;
+	zAnode = seg->GetAnodeFromLocal(avDrft,avAnode);
+	driftSpeed = res->GetDriftSpeedAtAnode(zAnode);	
+	driftPath = TMath::Abs(10000.*avDrft);
+	driftPath = sddLength-driftPath;
+	if(driftPath < 0) {
+	  AliDebug(1, // this should be fixed at geometry level
+		   Form("negative drift path driftPath=%e sddLength=%e avDrft=%e dxL[0]=%e xL[0]=%e",
+			driftPath,sddLength,avDrft,dxL[0],xL[0]));
+	  continue;
+	} // end if driftPath < 0
+	drTime     = driftPath/driftSpeed; // drift time for segment.
+	timeSample = (Int_t) (fScaleSize*drTime/timeStep + 1); // time bin in range 1-256 !!!
+	if(timeSample > fScaleSize*fMaxNofSamples) {
+	  AliWarning(Form("Wrong Time Sample: %e",timeSample));
+	  continue;
+	} // end if timeSample > fScaleSize*fMaxNoofSamples
+	
+	if(zAnode>nofAnodes) zAnode-=nofAnodes;  // to have the anode number between 0. and 256.
+	if(zAnode*anodePitch > sddWidth || zAnode*anodePitch < 0.) 
+	  AliWarning(Form("Exceeding sddWidth=%e Z = %e",sddWidth,zAnode*anodePitch));
+	iAnode = (Int_t) (1.+zAnode); // iAnode in range 1-256 !!!!
+	if(iAnode < 1 || iAnode > nofAnodes) {
+	  AliWarning(Form("Wrong iAnode: 1<%d>%d  (xanode=%e)",iAnode,nofAnodes, zAnode));
+	  continue;
+	} // end if iAnode < 1 || iAnode > nofAnodes
 
-        // loop over path segments, init. some variables.
-        depEnergy /= nOfSplits;
-        nOfSplitsF = (Float_t) nOfSplits;
-        for(kk=0;kk<nOfSplits;kk++) { // loop over path segments
-            kkF       = (Float_t) kk + 0.5;
-            avDrft    = xL[0]+dxL[0]*kkF/nOfSplitsF;
-            avAnode   = xL[2]+dxL[2]*kkF/nOfSplitsF;
-            driftPath = 10000.*avDrft;
-
-            iWing = 2;  // Assume wing is 2
-            if(driftPath < 0) { // if wing is not 2 it is 1.
-                iWing     = 1;
-                driftPath = -driftPath;
-            } // end if driftPath < 0
-            driftPath = sddLength-driftPath;
-            detector  = 2*(hitDetector-1) + iWing;
-            if(driftPath < 0) {
-                AliDebug(1, // this should be fixed at geometry level
-                 Form("negative drift path driftPath=%e sddLength=%e avDrft=%e dxL[0]=%e xL[0]=%e",
-		      driftPath,sddLength,avDrft,dxL[0],xL[0]));
-                continue;
-            } // end if driftPath < 0
-
-            //   Drift Time
-            drTime     = driftPath/driftSpeed; // drift time for segment.
-            timeSample = (Int_t) (fScaleSize*drTime/timeStep + 1);
-            // compute time Sample including tof information. The tof only 
-            // effects the time of the signal is recoreded and not the
-            // the defusion.
-            // timeSample = (Int_t) (fScaleSize*(drTime+tof)/timeStep + 1);
-            if(timeSample > fScaleSize*fMaxNofSamples) {
-                Warning("HitsToAnalogDigits","Wrong Time Sample: %e",
-                        timeSample);
-                continue;
-            } // end if timeSample > fScaleSize*fMaxNoofSamples
-
-            //   Anode
-            xAnode = 10000.*(avAnode)/anodePitch + nofAnodes/2;  // +1?
-            if(xAnode*anodePitch > sddWidth || xAnode*anodePitch < 0.) 
-                Warning("HitsToAnalogDigits",
-                        "Exceedubg sddWidth=%e Z = %e",
-                        sddWidth,xAnode*anodePitch);
-            iAnode = (Int_t) (1.+xAnode); // xAnode?
-            if(iAnode < 1 || iAnode > nofAnodes) {
-                Warning("HitToAnalogDigits","Wrong iAnode: 1<%d>%d  (xanode=%e)",
-                        iAnode,nofAnodes, xAnode);
-                continue;
-            } // end if iAnode < 1 || iAnode > nofAnodes
-
-            // store straight away the particle position in the array
-            // of particles and take idhit=ii only when part is entering (this
-            // requires FillModules() in the macro for analysis) :
-    
-            // Sigma along the anodes for track segment.
-            sigA       = TMath::Sqrt(2.*dfCoeff*drTime+s1*s1);
-            sigT       = sigA/driftSpeed;
-            // Peak amplitude in nanoAmpere
-            amplitude  = fScaleSize*160.*depEnergy/
-                (timeStep*eVpairs*2.*acos(-1.)*sigT*sigA);
-            amplitude *= timeStep/25.; // WARNING!!!!! Amplitude scaling to 
-            // account for clock variations 
-            // (reference value: 40 MHz)
-            chargeloss = 1.-cHloss*driftPath/1000;
-            amplitude *= chargeloss;
-            width  = 2.*nsigma/(nlookups-1);
-            // Spread the charge 
-            // Pixel index
-            ndiv = 2;
-            nmul = 3.; 
-            if(drTime > 1200.) { 
-                ndiv = 4;
-                nmul = 1.5;
-            } // end if drTime > 1200.
-            // Sub-pixel index
-            nsplit = 4; // hard-wired //nsplit=4;nsplit = (nsplit+1)/2*2;
-            // Sub-pixel size see computation of aExpo and tExpo.
-            aStep  = anodePitch/(nsplit*fScaleSize*sigA);
-            aConst = xAnode*anodePitch/sigA;
-            tStep  = timeStep/(nsplit*fScaleSize*sigT);
-            tConst = drTime/sigT;
-            // Define SDD window corresponding to the hit
-            anodeWindow = (Int_t)(fScaleSize*nsigma*sigA/anodePitch+1);
-            timeWindow  = (Int_t) (fScaleSize*nsigma*sigT/timeStep+1.);
-            jamin = (iAnode - anodeWindow/ndiv - 1)*fScaleSize*nsplit +1;
-            jamax = (iAnode + anodeWindow/ndiv)*fScaleSize*nsplit;
-            if(jamin <= 0) jamin = 1;
-            if(jamax > fScaleSize*nofAnodes*nsplit) 
-                jamax = fScaleSize*nofAnodes*nsplit;
-            // jtmin and jtmax are Hard-wired
-            jtmin = (Int_t)(timeSample-timeWindow*nmul-1)*nsplit+1;
-            jtmax = (Int_t)(timeSample+timeWindow*nmul)*nsplit;
-            if(jtmin <= 0) jtmin = 1;
-            if(jtmax > fScaleSize*fMaxNofSamples*nsplit) 
-                jtmax = fScaleSize*fMaxNofSamples*nsplit;
-            // Spread the charge in the anode-time window
-            for(ka=jamin; ka <=jamax; ka++) {
-                ia = (ka-1)/(fScaleSize*nsplit) + 1;
-                if(ia <= 0) {
-                    Warning("HitsToAnalogDigits","ia < 1: ");
-                    continue;
-                } // end if
-                if(ia > nofAnodes) ia = nofAnodes;
-                aExpo     = (aStep*(ka-0.5)-aConst);
-                if(TMath::Abs(aExpo) > nsigma)  anodeAmplitude = 0.;
-                else {
-                    dummy          = (Int_t) ((aExpo+nsigma)/width);
-                    anodeAmplitude = amplitude*res->GetGausLookUp(dummy);
-                } // end if TMath::Abs(aEspo) > nsigma
-                // index starts from 0
-                index = ((detector+1)%2)*nofAnodes+ia-1;
-                if(anodeAmplitude) for(kt=jtmin; kt<=jtmax; kt++) {
-                    it = (kt-1)/nsplit+1;  // it starts from 1
-                    if(it<=0){
-                        Warning("HitsToAnalogDigits","it < 1:");
-                        continue;
-                    } // end if 
-                    if(it>fScaleSize*fMaxNofSamples)
-                        it = fScaleSize*fMaxNofSamples;
-                    tExpo    = (tStep*(kt-0.5)-tConst);
-                    if(TMath::Abs(tExpo) > nsigma) timeAmplitude = 0.;
-                    else {
-                        dummy         = (Int_t) ((tExpo+nsigma)/width);
-                        timeAmplitude = anodeAmplitude*
-                            res->GetGausLookUp(dummy);
-                    } // end if TMath::Abs(tExpo) > nsigma
-                    // build the list of Sdigits for this module        
-                    //                    arg[0]     = index;
-                    //                    arg[1]     = it;
-                    //                    arg[2]     = itrack; // track number
-                    //                    arg[3]     = ii-1; // hit number.
-                    timeAmplitude *= norm;
-                    timeAmplitude *= 10;
-                    //         ListOfFiredCells(arg,timeAmplitude,alst,padr);
-                    Double_t charge = timeAmplitude;
-                    charge += fHitMap2->GetSignal(index,it-1);
-                    fHitMap2->SetHit(index, it-1, charge);
-                    fpList->AddSignal(index,it-1,itrack,ii-1,
-                                      mod->GetIndex(),timeAmplitude);
-                    fAnodeFire[index] = kTRUE;                 
-                } // end if anodeAmplitude and loop over time in window
-            } // loop over anodes in window
-        } // end loop over "sub-hits"
+	// store straight away the particle position in the array
+	// of particles and take idhit=ii only when part is entering (this
+	// requires FillModules() in the macro for analysis) :
+	
+	// Sigma along the anodes for track segment.
+	sigA       = TMath::Sqrt(2.*dfCoeff*drTime+s1*s1);
+	sigT       = sigA/driftSpeed;
+	// Peak amplitude in nanoAmpere
+	amplitude  = fScaleSize*160.*depEnergy/
+	  (timeStep*eVpairs*2.*acos(-1.)*sigT*sigA);
+	amplitude *= timeStep/25.; // WARNING!!!!! Amplitude scaling to 
+	// account for clock variations 
+	// (reference value: 40 MHz)
+	chargeloss = 1.-cHloss*driftPath/1000.;
+	amplitude *= chargeloss;
+	width  = 2.*nsigma/(nlookups-1);
+	// Spread the charge 
+	// Pixel index
+	ndiv = 2;
+	nmul = 3.; 
+	if(drTime > 1200.) { 
+	  ndiv = 4;
+	  nmul = 1.5;
+	} // end if drTime > 1200.
+	// Sub-pixel index
+	nsplit = 4; // hard-wired //nsplit=4;nsplit = (nsplit+1)/2*2;
+	// Sub-pixel size see computation of aExpo and tExpo.
+	aStep  = anodePitch/(nsplit*fScaleSize*sigA);
+	aConst = zAnode*anodePitch/sigA;
+	tStep  = timeStep/(nsplit*fScaleSize*sigT);
+	tConst = drTime/sigT;
+	// Define SDD window corresponding to the hit
+	anodeWindow = (Int_t)(fScaleSize*nsigma*sigA/anodePitch+1);
+	timeWindow  = (Int_t) (fScaleSize*nsigma*sigT/timeStep+1.);
+	jamin = (iAnode - anodeWindow/ndiv - 2)*fScaleSize*nsplit +1;
+	jamax = (iAnode + anodeWindow/ndiv + 1)*fScaleSize*nsplit;
+	if(jamin <= 0) jamin = 1;
+	if(jamax > fScaleSize*nofAnodes*nsplit) 
+	  jamax = fScaleSize*nofAnodes*nsplit;
+	// jtmin and jtmax are Hard-wired
+	jtmin = (Int_t)(timeSample-timeWindow*nmul-1)*nsplit+1;
+	jtmax = (Int_t)(timeSample+timeWindow*nmul)*nsplit;
+	if(jtmin <= 0) jtmin = 1;
+	if(jtmax > fScaleSize*fMaxNofSamples*nsplit) 
+	  jtmax = fScaleSize*fMaxNofSamples*nsplit;
+	// Spread the charge in the anode-time window
+	for(ka=jamin; ka <=jamax; ka++) {
+	  ia = (ka-1)/(fScaleSize*nsplit) + 1;
+	  if(ia <= 0) {
+	    Warning("HitsToAnalogDigits","ia < 1: ");
+	    continue;
+	  } // end if
+	  if(ia > nofAnodes) ia = nofAnodes;
+	  aExpo     = (aStep*(ka-0.5)-aConst);
+	  if(TMath::Abs(aExpo) > nsigma)  anodeAmplitude = 0.;
+	  else {
+	    Int_t theBin = (Int_t) ((aExpo+nsigma)/width+0.5);
+	    anodeAmplitude = amplitude*res->GetGausLookUp(theBin);
+	  } // end if TMath::Abs(aEspo) > nsigma
+	  // index starts from 0
+	  index = iWing*nofAnodes+ia-1;
+	  if(anodeAmplitude){
+	    for(kt=jtmin; kt<=jtmax; kt++) {
+	      it = (kt-1)/nsplit+1;  // it starts from 1
+	      if(it<=0){
+		Warning("HitsToAnalogDigits","it < 1:");
+		continue;
+	      } // end if 
+	      if(it>fScaleSize*fMaxNofSamples)
+		it = fScaleSize*fMaxNofSamples;
+	      tExpo    = (tStep*(kt-0.5)-tConst);
+	      if(TMath::Abs(tExpo) > nsigma) timeAmplitude = 0.;
+	      else {
+		Int_t theBin = (Int_t) ((tExpo+nsigma)/width+0.5);
+		timeAmplitude = anodeAmplitude*res->GetGausLookUp(theBin);
+	      } // end if TMath::Abs(tExpo) > nsigma
+	      // build the list of Sdigits for this module        
+	      //                    arg[0]     = index;
+	      //                    arg[1]     = it;
+	      //                    arg[2]     = itrack; // track number
+	      //                    arg[3]     = ii-1; // hit number.
+	      timeAmplitude *= norm;
+	      timeAmplitude *= 10;
+	      //         ListOfFiredCells(arg,timeAmplitude,alst,padr);
+	      Double_t charge = timeAmplitude;
+	      charge += fHitMap2->GetSignal(index,it-1);
+	      fHitMap2->SetHit(index, it-1, charge);
+	      fpList->AddSignal(index,it-1,itrack,ii-1,
+				mod->GetIndex(),timeAmplitude);
+	      fAnodeFire[index] = kTRUE;
+	    }  // end loop over time in window               
+	  } // end if anodeAmplitude 
+	} // loop over anodes in window
+      } // end loop over "sub-hits"
     } // end loop over hits
 }
 
@@ -1400,7 +1383,7 @@ void AliITSsimulationSDD::WriteSDigits(){
 
     for( Int_t i=0; i<fNofMaps; i++ ) {
         if( !fAnodeFire[i] ) continue;
-        for( Int_t j=0; j<fMaxNofSamples; j++ ) {
+	for( Int_t j=0; j<fMaxNofSamples; j++ ) {
             Double_t sig = fHitMap2->GetSignal( i, j );
             if( sig > 0.2 ) {
                 Int_t jdx = j*fScaleSize;

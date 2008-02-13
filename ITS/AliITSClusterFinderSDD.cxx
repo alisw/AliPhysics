@@ -108,7 +108,6 @@ void AliITSClusterFinderSDD::Find1DClusters(){
     Int_t dummy          = 0;
     Double_t fTimeStep    = GetSeg()->Dpx(dummy);
     Double_t fSddLength   = GetSeg()->Dx();
-    Double_t anodePitch   = GetSeg()->Dpz(dummy);
     AliITSCalibrationSDD* cal = (AliITSCalibrationSDD*)GetResp(fModule);
     AliITSresponseSDD* res  = (AliITSresponseSDD*)((AliITSCalibrationSDD*)GetResp(fModule))->GetResponse();
     const char *option=res->ZeroSuppOption();
@@ -223,9 +222,8 @@ void AliITSClusterFinderSDD::Find1DClusters(){
                             //ns
                         } // end if
                     } // end for its
-
-                    Double_t clusteranodePath = (clusterAnode - fNofAnodes/2)*
-                                                 anodePitch;
+		    Float_t theAnode=clusterAnode+j*fNofAnodes;
+                    Double_t clusteranodePath = GetSeg()->GetLocalZFromAnode(theAnode);
 		    Double_t clusterDriftPath = (Double_t)cal->GetDriftPath(clusterTime,clusteranodePath);
                     clusterDriftPath = fSddLength-clusterDriftPath;
                     if(clusterCharge <= 0.) break;
@@ -261,7 +259,6 @@ void AliITSClusterFinderSDD::Find1DClustersE(){
     Int_t dummy=0;
     Double_t fTimeStep = GetSeg()->Dpx( dummy );
     Double_t fSddLength = GetSeg()->Dx();
-    Double_t anodePitch = GetSeg()->Dpz( dummy );
     AliITSCalibrationSDD* cal = (AliITSCalibrationSDD*)GetResp(fModule);
     Map()->ClearMap();
     Map()->SetThresholdArr( fCutAmplitude );
@@ -326,8 +323,8 @@ void AliITSClusterFinderSDD::Find1DClustersE(){
                             time /= (charge/fTimeStep);   // ns
                                 // time = lmax*fTimeStep;   // ns
                             if( time > fTimeCorr ) time -= fTimeCorr;   // ns
-                            Double_t anodePath =(anode-fNofAnodes/2)*anodePitch;
-                            
+			    Float_t theAnode=anode+j*fNofAnodes;
+                            Double_t anodePath =GetSeg()->GetLocalZFromAnode(theAnode);
 			    Double_t driftPath = (Double_t)cal->GetDriftPath(time,anode);
                             driftPath = fSddLength-driftPath;
                             AliITSRawClusterSDD clust(j+1,anode,time,charge,
