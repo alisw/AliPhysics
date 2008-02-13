@@ -80,9 +80,7 @@ void AliEveTOFDigitsInfo::ReadRaw(AliRawReader* rawReader, Int_t nEvent, Bool_t 
 
   TClonesArray *tofDigits = new TClonesArray("AliTOFdigit",10000);
   fTree = new TTree();
-  Int_t bufsize = 32000;
-  //TBranch *branch = fTree->Branch("TOF", &tofDigits, bufsize);
-  fTree->Branch("TOF", &tofDigits, bufsize);
+  fTree->Branch("TOF", &tofDigits, 32000);
   fTree->GetEntry(0);
 
   TClonesArray * clonesRawData = 0x0;
@@ -100,7 +98,7 @@ void AliEveTOFDigitsInfo::ReadRaw(AliRawReader* rawReader, Int_t nEvent, Bool_t 
 
     clonesRawData = (TClonesArray*)stream.GetRawData();
 
-    //if (clonesRawData->GetEntriesFast()) cout << " " << indexDDL << " " << clonesRawData->GetEntriesFast() << endl;
+    if (clonesRawData->GetEntriesFast()) cout << " " << indexDDL << " " << clonesRawData->GetEntriesFast() << endl;
 
     for (Int_t iRawData = 0; iRawData<clonesRawData->GetEntriesFast(); iRawData++) {
 
@@ -160,11 +158,9 @@ void AliEveTOFDigitsInfo::ReadRaw(AliRawReader* rawReader, Int_t nEvent, Bool_t 
       fTOFdigitMap->AddDigit(detectorIndex, last);
 
       AliDebug(2,Form(" %3i -> %2i %2i %2i %2i %2i   %i  %i\n",
-		      last, detectorIndex[0], detectorIndex[1], detectorIndex[2], detectorIndex[4], detectorIndex[3],
+		      last, detectorIndex[0], detectorIndex[1],
+		      detectorIndex[2], detectorIndex[4], detectorIndex[3],
 		      digit[1], digit[0]));
-      /*AliDebug(2,Form(" %3i -> %2i %2i %2i %2i %2i   %i  %i\n",
-		      last, detectorIndex[0], detectorIndex[1], detectorIndex[2], detectorIndex[4], detectorIndex[3],
-		      digit[1], digit[0]));*/
 
       Int_t tracknum[3]={-1,-1,-1};
       new (aDigits[last]) AliTOFdigit(tracknum, detectorIndex, digit);
@@ -196,7 +192,8 @@ void AliEveTOFDigitsInfo::LoadDigits()
 
   for (Int_t digitNumber=0; digitNumber<digitsTOF->GetEntries(); digitNumber++) {
 
-    //if (digitNumber==digitsTOF->GetEntries()-1) printf(" Hello  4 -> %3i digit of %i \n", digitNumber+1, digitsTOF->GetEntries());
+    if (digitNumber==digitsTOF->GetEntries()-1)
+      AliDebug(2,Form(" Hello  4 -> %3i digit of %i \n", digitNumber+1, digitsTOF->GetEntries()));
 
     digs = (AliTOFdigit*)digitsTOF->UncheckedAt(digitNumber);
 
@@ -207,7 +204,8 @@ void AliEveTOFDigitsInfo::LoadDigits()
     vol[4] = digs->GetPadz();   // Pad Number in z direction (0-1)
 
     fTOFdigitMap->AddDigit(vol, digitNumber);
-    //if (digitNumber==digitsTOF->GetEntries()-1) printf(" I am inside LoadDigits %3i \n", digitNumber);
+    if (digitNumber==digitsTOF->GetEntries()-1)
+      AliDebug(2,Form(" I am inside LoadDigits %3i \n", digitNumber));
 
   }
 
@@ -216,8 +214,8 @@ void AliEveTOFDigitsInfo::LoadDigits()
 /* ******************************************************* */
 
 void AliEveTOFDigitsInfo::GetDigits(Int_t nSector, Int_t nPlate,
-			      Int_t nStrip, Int_t nPadZ, Int_t nPadX,
-			      Int_t indexDigit[3])
+				    Int_t nStrip, Int_t nPadZ, Int_t nPadX,
+				    Int_t indexDigit[3])
 {
 
   Int_t vol[5] = {nSector,nPlate,nStrip,nPadX,nPadZ};
@@ -228,7 +226,7 @@ void AliEveTOFDigitsInfo::GetDigits(Int_t nSector, Int_t nPlate,
 /* ******************************************************* */
 
 TClonesArray* AliEveTOFDigitsInfo::GetDigits(Int_t nSector, Int_t nPlate,
-				       Int_t nStrip)
+					     Int_t nStrip)
 {
 
   Int_t newCounter = 0;
@@ -245,7 +243,6 @@ TClonesArray* AliEveTOFDigitsInfo::GetDigits(Int_t nSector, Int_t nPlate,
   fTree->SetBranchAddress("TOF",&digitsTOF);
   fTree->GetEntry(0);
 
-
   Int_t vol[5] = {nSector,nPlate,nStrip,-1,-1};
 
   for(Int_t iPadZ=0; iPadZ<fGeom->NpadZ(); iPadZ++){
@@ -253,14 +250,12 @@ TClonesArray* AliEveTOFDigitsInfo::GetDigits(Int_t nSector, Int_t nPlate,
     for(Int_t iPadX=0; iPadX<fGeom->NpadX(); iPadX++) {
       vol[3] = iPadX;
 
-      //GetDigits(vol[0], vol[1], vol[2], vol[3], vol[4], nDigitsInVolume)
-
       fTOFdigitMap->GetDigitIndex(vol, nDigitsInVolume);
 
       for (Int_t ii=0; ii<3; ii++) {
 
 	if (nDigitsInVolume[ii]>=0 ) {
-	  //AliDebug(2,Form("  nDigitsInVolume[%2i]  = %3i\n ", ii, nDigitsInVolume[ii]));
+	  AliDebug(2,Form("  nDigitsInVolume[%2i]  = %3i\n ", ii, nDigitsInVolume[ii]));
 	  digs = (AliTOFdigit*)digitsTOF->UncheckedAt(nDigitsInVolume[ii]);
 	  informations[0] = digs->GetTdc();
 	  informations[1] = digs->GetAdc();
@@ -278,11 +273,10 @@ TClonesArray* AliEveTOFDigitsInfo::GetDigits(Int_t nSector, Int_t nPlate,
     }
   }
 
-  /*
   if (digitsTOFnew)
     AliDebug(2,Form("Sector %2i   Plate %1i  Strip %2i  -> number of digits %3i \n",
-    nSector, nPlate, nStrip, digitsTOFnew->GetEntries()));
-  */
+		    nSector, nPlate, nStrip, digitsTOFnew->GetEntries()));
+
   return digitsTOFnew;
 
 }
@@ -340,8 +334,8 @@ TClonesArray* AliEveTOFDigitsInfo::GetDigits(Int_t nSector)
 	      new (ldigits[newCounter++]) AliTOFdigit(dummy, vol, informations);
 
 	      AliDebug(2,Form(" %2i -> %2i %2i %2i %2i %2i %7i %7i\n",
-			    nDigitsInVolume[ii], vol[0], vol[1], vol[2], vol[4], vol[3],
-			    informations[1], informations[0]));
+			      nDigitsInVolume[ii], vol[0], vol[1], vol[2], vol[4], vol[3],
+			      informations[1], informations[0]));
 
 	    }
 
@@ -356,11 +350,10 @@ TClonesArray* AliEveTOFDigitsInfo::GetDigits(Int_t nSector)
     }
   }
 
-  /*
   if (digitsTOFnew)
-  AliDebug(Form(("Sector %2i   Plate %1i  Strip %2i  -> number of digits %3i \n",
-  nSector, nPlate, nStrip, digitsTOFnew->GetEntries()));
-  */
+    AliDebug(2,Form("Sector %2i  -> number of digits %3i \n",
+		    nSector, digitsTOFnew->GetEntries()));
+
   return digitsTOFnew;
 
 }
@@ -394,6 +387,7 @@ Int_t AliEveTOFDigitsInfo::IsStripFilled(Int_t iSector, Int_t iPlate, Int_t iStr
 }
 
 /* ******************************************************* */
+/*
 void AliEveTOFDigitsInfo::GetDigits()
 {
 
@@ -407,3 +401,4 @@ void AliEveTOFDigitsInfo::GetDigits()
   }
 
 }
+*/
