@@ -39,14 +39,14 @@
 /////////////////////////////////////////////////////////////////////////////////
 // Names of the Sensitive Volumes of Layer 5 and Layer 6
 /////////////////////////////////////////////////////////////////////////////////
-const char* AliITSv11GeometrySSD::fgSDDsensitiveVolName5 = "ITSsddSensitivL5";
-const char* AliITSv11GeometrySSD::fgSDDsensitiveVolName6 = "ITSsddSensitivL6";
+const char* AliITSv11GeometrySSD::fgSSDsensitiveVolName5 = "ITSssdSensitivL5";
+const char* AliITSv11GeometrySSD::fgSSDsensitiveVolName6 = "ITSssdSensitivL6";
 /////////////////////////////////////////////////////////////////////////////////
 //Parameters for SSD Geometry
 /////////////////////////////////////////////////////////////////////////////////
 // Variable for Vertical Disalignement of Modules
 /////////////////////////////////////////////////////////////////////////////////
-const Double_t AliITSv11GeometrySSD::fgkSSDModuleVerticalDisalignment = 0.1*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkSSDModuleVerticalDisalignment = 0.2*fgkmm;
 /////////////////////////////////////////////////////////////////////////////////
 // Layer5 (lengths are in mm and angles in degrees)
 /////////////////////////////////////////////////////////////////////////////////
@@ -1517,7 +1517,7 @@ void AliITSv11GeometrySSD::CreateTransformationMatrices(){
                       -		0.5*(fgkCarbonFiberLowerSupportWidth+fgkSSDSensorCenterSupportLength
                       -       fgkSSDSensorCenterSupportThickness[0])+0.5*fgkSSDSensorLength,
 							0.5*fgkSSDSensorHeight-0.5*fgkCoolingTubeSupportHeight
-					  -		fgkSSDModuleCoolingBlockToSensor-fgkSSDModuleVerticalDisalignment
+					  -		fgkSSDModuleCoolingBlockToSensor-0.5*fgkSSDModuleVerticalDisalignment
 					  +    (fgkSSDSensorSideSupportHeight[1]
 					  -		fgkSSDSensorSideSupportHeight[0]));
   localssdsensortrans[1]->SetTranslation(0.5*fgkCarbonFiberTriangleLength,
@@ -1527,7 +1527,7 @@ void AliITSv11GeometrySSD::CreateTransformationMatrices(){
                       -		0.5*(fgkCarbonFiberLowerSupportWidth+fgkSSDSensorCenterSupportLength
                       -       fgkSSDSensorCenterSupportThickness[0])+0.5*fgkSSDSensorLength,
 						    0.5*fgkSSDSensorHeight-0.5*fgkCoolingTubeSupportHeight
-							-fgkSSDModuleCoolingBlockToSensor-fgkSSDModuleVerticalDisalignment);
+							-fgkSSDModuleCoolingBlockToSensor-0.5*fgkSSDModuleVerticalDisalignment);
   for(Int_t i=0; i<2; i++) 
 	localssdsensorcombitrans[i] = new TGeoCombiTrans(*localssdsensortrans[i],
 													 *localssdsensorrot);	
@@ -1873,9 +1873,9 @@ void AliITSv11GeometrySSD::SetSSDSensor(){
                                                 0.5*fgkSSDSensorHeight,
                                                 0.5*ssdsensitivelength);
   TGeoVolume* ssdsensorsensitiveLay5 = 
-	new TGeoVolume(fgSDDsensitiveVolName5,ssdsensorsensitiveshape,fSSDSensorMedium);
+	new TGeoVolume(fgSSDsensitiveVolName5,ssdsensorsensitiveshape,fSSDSensorMedium);
   TGeoVolume* ssdsensorsensitiveLay6 = 
-	new TGeoVolume(fgSDDsensitiveVolName6,ssdsensorsensitiveshape,fSSDSensorMedium);
+	new TGeoVolume(fgSSDsensitiveVolName6,ssdsensorsensitiveshape,fSSDSensorMedium);
   ssdsensorsensitiveLay5->SetLineColor(fColorSilicon);
   ssdsensorsensitiveLay6->SetLineColor(fColorSilicon);
   TGeoBBox* ssdsensorinsensitiveshape[2];
@@ -7445,4 +7445,3 @@ void AliITSv11GeometrySSD::CreateMaterials(){
   fCreateMaterials = kTRUE;
 }
 /////////////////////////////////////////////////////////////////////
-
