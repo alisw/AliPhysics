@@ -3,7 +3,8 @@
 /* Copyright(c) 2007-2009, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-
+#include <TH1F.h>
+#include <TH2I.h>
 #include "AliITSPlaneEff.h"
 
 ///////////////////////////////////////////
@@ -36,8 +37,12 @@ class AliITSPlaneEffSSD :  public AliITSPlaneEff {
     enum {kNChip = 6}; // The number of chips per side of a module (2 sides: 12 chips)
     enum {kNSide = 2}; // The number of sides of a module (p and n side)
     enum {kNStrip = 128}; // The number of strips per chip (in a module 2*768 strips)
+    //
+    enum {kNHisto = kNModule}; // The number of histograms: module by module.
+    //enum {kNclu = 3};          // Build specific histos of residuals up to cluster size kNclu.
+                               // If you change them, then you must change implementation of
+                               // the method FillHistos.
 //
-//  UInt_t GetChip(const UInt_t col) const; // get the chip number (from 0 to kNChip)
 //  Plane efficiency for active  detector (excluding dead/noisy channels)
 //  access to DB is needed
     virtual Double_t LivePlaneEff(UInt_t mod) const;
@@ -57,21 +62,38 @@ class AliITSPlaneEffSSD :  public AliITSPlaneEff {
     UInt_t Nblock() const; // return the number of basic blocks
    // compute the geometrical limit of a basic block (chip) in detector local coordinate system
     Bool_t GetBlockBoundaries(const UInt_t key,Float_t& xmn,Float_t& xmx,Float_t& zmn,Float_t& zmx) const;
-
+  // Methods for dealing with auxiliary histograms
+    // method to set on/off the creation/updates of histograms (Histos are created/destroyed)
+    void   SetCreateHistos(Bool_t his=kFALSE)
+         {fHis=his; if(fHis) {DeleteHistos(); InitHistos();} else DeleteHistos(); return; }
+    Bool_t FillHistos(UInt_t key, Bool_t found, Float_t trackXZ[2], Float_t clusterXZ[2], Int_t ctXZ[2]);
+    Bool_t WriteHistosToFile(TString filename="PlaneEffSSDHistos.root",Option_t* option = "RECREATE");
+    Bool_t ReadHistosFromFile(TString filename="PlaneEffSSDHistos.root"); // histos must exist already !
+                                                                          // This method increases the
+                                                                          // statistics of histos by adding
+                                                                          // those of the input file.
  protected:
     virtual void Copy(TObject &obj) const;
+    void CopyHistos(AliITSPlaneEffSSD& target) const; // copy only histograms to target
     Int_t GetMissingTracksForGivenEff(Double_t eff, Double_t RelErr, UInt_t im) const;
 
 // 
     Int_t fFound[kNModule];  // number of associated clusters in a given module
     Int_t fTried[kNModule];  // number of tracks used for module efficiency evaluation
+//
+    TH1F **fHisResX; //! histos with residual distribution (track-cluster) along local X (r-phi)
+    TH1F **fHisResZ; //! histos with residual distribution (track-cluster) along local Z
+    TH2F **fHisResXZ; //! 2-d histos with residual distribution (track-cluster) along local X and Z
+    TH2I **fHisClusterSize; //! histos with cluster-size distribution
  private:
     UInt_t GetKey(const UInt_t mod) const; // unique key to locate the basic 
                                            // block of the SSD (the module itself)
     UInt_t GetModFromKey(const UInt_t key) const;
     void GetBadInModule(const UInt_t mod, UInt_t& bad) const;
+    void InitHistos();
+    void DeleteHistos();
 
-    ClassDef(AliITSPlaneEffSSD,1) // SSD Plane Efficiency class
+    ClassDef(AliITSPlaneEffSSD,2) // SSD Plane Efficiency class
 };
 //
 inline UInt_t AliITSPlaneEffSSD::Nblock() const {return kNModule;}

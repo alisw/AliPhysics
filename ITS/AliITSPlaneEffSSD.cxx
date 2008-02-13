@@ -25,6 +25,10 @@
 /*  $Id$ */
 
 #include <TMath.h>
+#include <TH1F.h>
+#include <TFile.h>
+#include <TTree.h>
+#include <TROOT.h>
 #include "AliITSPlaneEffSSD.h"
 #include "AliLog.h"
 #include "AliCDBStorage.h"
@@ -36,7 +40,11 @@
 ClassImp(AliITSPlaneEffSSD)	
 //______________________________________________________________________
 AliITSPlaneEffSSD::AliITSPlaneEffSSD():
-  AliITSPlaneEff(){
+  AliITSPlaneEff(),
+  fHisResX(0),
+  fHisResZ(0),
+  fHisResXZ(0),
+  fHisClusterSize(0){
   for (UInt_t i=0; i<kNModule; i++){
     fFound[i]=0;
     fTried[i]=0;
@@ -53,10 +61,14 @@ AliITSPlaneEffSSD::~AliITSPlaneEffSSD(){
     //    none.
     // Return:
     //     none.
+    DeleteHistos();
 }
 //______________________________________________________________________
-AliITSPlaneEffSSD::AliITSPlaneEffSSD(const AliITSPlaneEffSSD &s) : AliITSPlaneEff(s) //,
-//fHis(s.fHis),
+AliITSPlaneEffSSD::AliITSPlaneEffSSD(const AliITSPlaneEffSSD &s) : AliITSPlaneEff(s),
+fHisResX(0),
+fHisResZ(0),
+fHisResXZ(0),
+fHisClusterSize(0)
 {
     //     Copy Constructor
     // Inputs:
@@ -65,6 +77,20 @@ AliITSPlaneEffSSD::AliITSPlaneEffSSD(const AliITSPlaneEffSSD &s) : AliITSPlaneEf
     // Outputs:
     //    none.
     // Return:
+
+ for (UInt_t i=0; i<kNModule; i++){
+    fFound[i]=s.fFound[i];
+    fTried[i]=s.fTried[i];
+ }
+ if(fHis) {
+   InitHistos();
+   for(Int_t i=0; i<kNHisto; i++) {
+      s.fHisResX[i]->Copy(*fHisResX[i]);
+      s.fHisResZ[i]->Copy(*fHisResZ[i]);
+      s.fHisResXZ[i]->Copy(*fHisResXZ[i]);
+      s.fHisClusterSize[i]->Copy(*fHisClusterSize[i]);
+   }
+ }
 }
 //_________________________________________________________________________
 AliITSPlaneEffSSD& AliITSPlaneEffSSD::operator+=(const AliITSPlaneEffSSD &add){
@@ -78,6 +104,14 @@ AliITSPlaneEffSSD& AliITSPlaneEffSSD::operator+=(const AliITSPlaneEffSSD &add){
     for (UInt_t i=0; i<kNModule; i++){
       fFound[i] += add.fFound[i];
       fTried[i] += add.fTried[i];
+    }
+    if(fHis && add.fHis) {
+      for(Int_t i=0; i<kNHisto; i++) {
+        fHisResX[i]->Add(add.fHisResX[i]);
+        fHisResZ[i]->Add(add.fHisResZ[i]);
+        fHisResXZ[i]->Add(add.fHisResXZ[i]);
+        fHisClusterSize[i]->Add(add.fHisClusterSize[i]);
+      }
     }
     return *this;
 }
@@ -100,10 +134,31 @@ AliITSPlaneEffSSD&  AliITSPlaneEffSSD::operator=(const
 void AliITSPlaneEffSSD::Copy(TObject &obj) const {
   // protected method. copy this to obj
   AliITSPlaneEff::Copy(obj);
+  AliITSPlaneEffSSD& target = (AliITSPlaneEffSSD &) obj;
   for(Int_t i=0;i<kNModule;i++) {
-      ((AliITSPlaneEffSSD& ) obj).fFound[i] = fFound[i];
-      ((AliITSPlaneEffSSD& ) obj).fTried[i] = fTried[i];
+      target.fFound[i] = fFound[i];
+      target.fTried[i] = fTried[i];
   }
+  CopyHistos(target);
+  return;
+}
+//_______________________________________________________________________
+void AliITSPlaneEffSSD::CopyHistos(AliITSPlaneEffSSD &target) const {
+  // protected method: copy histos from this to target
+  target.fHis  = fHis; // this is redundant only in some cases. Leave as it is.
+  if(fHis) {
+    target.fHisResX=new TH1F*[kNHisto];
+    target.fHisResZ=new TH1F*[kNHisto];
+    target.fHisResXZ=new TH2F*[kNHisto];
+    target.fHisClusterSize=new TH2I*[kNHisto];
+    for(Int_t i=0; i<kNHisto; i++) {
+      target.fHisResX[i] = new TH1F(*fHisResX[i]);
+      target.fHisResZ[i] = new TH1F(*fHisResZ[i]);
+      target.fHisResXZ[i] = new TH2F(*fHisResXZ[i]);
+      target.fHisClusterSize[i] = new TH2I(*fHisClusterSize[i]);
+    }
+  }
+return;
 }
 //______________________________________________________________________
 AliITSPlaneEff&  AliITSPlaneEffSSD::operator=(const
@@ -207,11 +262,16 @@ return AliITSPlaneEff::ErrPlaneEff(nf,nt); // for the time being: to be checked
 }
 //_____________________________________________________________________________
 Double_t AliITSPlaneEffSSD::GetFracLive(const UInt_t key) const {
-  // returns the fraction of the sensor which is OK
+  // returns the fraction of the sensor area which is OK (neither noisy nor dead)
+  // As for now, it computes only the fraction of good strips / total strips. 
+  // If this fraction is large, then the computation is a good approximation. 
+  // In any case, it is a lower limit of the fraction of the live area. 
+  // The next upgrades would be to add the fraction of area of superoposition 
+  // between bad N-side strips and bad P-side strips.  
 if(key>=kNModule)
   {AliError("GetFracLive: you asked for a non existing key");
    return -1.;}
-    // Compute the fraction of bad (dead+noisy) detector 
+AliInfo("GetFracLive: it computes only the fraction of working strips (N+P side) / total strips");
 UInt_t bad=0;
 GetBadInModule(key,bad);
 Double_t live=bad;
@@ -220,7 +280,7 @@ return 1.-live;
 }
 //_____________________________________________________________________________
 void AliITSPlaneEffSSD::GetBadInModule(const UInt_t key, UInt_t& nrBadInMod) const {
-  // returns the number of dead and noisy pixels
+  // returns the number of dead and noisy strips (sum of P and N sides).
 nrBadInMod=0;
 if(key>=kNModule)
   {AliError("GetBadInModule: you asked for a non existing key");
@@ -292,7 +352,8 @@ if(!fInitCDBCalled)
 AliCDBEntry *cdbEntry = AliCDBManager::Instance()->Get("ITS/PlaneEff/PlaneEffSSD",fRunNumber);
 AliITSPlaneEffSSD* eff= (AliITSPlaneEffSSD*)cdbEntry->GetObject();
 if(this==eff) return kFALSE;
-eff->Copy(*this);
+if(fHis) CopyHistos(*eff); // If histos already exist then copy them to eff
+eff->Copy(*this);          // copy everything (statistics and histos) from eff to this
 return kTRUE;
 }
 //_____________________________________________________________________________
@@ -315,3 +376,221 @@ if(ilay==1) mod+=748;
 key=GetKey(mod);
 return key;
 }
+//__________________________________________________________
+void AliITSPlaneEffSSD::InitHistos() {
+  // for the moment let's create the histograms
+  // module by  module
+  TString histnameResX="HistResX_mod_",aux;
+  TString histnameResZ="HistResZ_mod_";
+  TString histnameResXZ="HistResXZ_mod_";
+  TString histnameClusterType="HistClusterType_mod_";
+
+//
+  fHisResX=new TH1F*[kNHisto];
+  fHisResZ=new TH1F*[kNHisto];
+  fHisResXZ=new TH2F*[kNHisto];
+  fHisClusterSize=new TH2I*[kNHisto];
+
+  for (Int_t nhist=0;nhist<kNHisto;nhist++){
+    aux=histnameResX;
+    aux+=nhist;
+    fHisResX[nhist]=new TH1F("histname","histname",500,-0.05,0.05); // +- 500 micron; 1 bin=2 micron
+    fHisResX[nhist]->SetName(aux.Data());
+    fHisResX[nhist]->SetTitle(aux.Data());
+
+    aux=histnameResZ;
+    aux+=nhist;
+    fHisResZ[nhist]=new TH1F("histname","histname",500,-0.50,0.50); // +-5000 micron; 1 bin=20 micron
+    fHisResZ[nhist]->SetName(aux.Data());
+    fHisResZ[nhist]->SetTitle(aux.Data());
+
+    aux=histnameResXZ;
+    aux+=nhist;
+    fHisResXZ[nhist]=new TH2F("histname","histname",40,-0.02,0.02,40,-0.16,0.16); // binning:
+                                                                                   // 10 micron in x;
+                                                                                   // 80 micron in z;
+    fHisResXZ[nhist]->SetName(aux.Data());
+    fHisResXZ[nhist]->SetTitle(aux.Data());
+
+    aux=histnameClusterType;
+    aux+=nhist;
+    fHisClusterSize[nhist]=new TH2I("histname","histname",6,0.5,6.5,6,0.5,6.5);
+    fHisClusterSize[nhist]->SetName(aux.Data());
+    fHisClusterSize[nhist]->SetTitle(aux.Data());
+
+  }
+return;
+}
+//__________________________________________________________
+void AliITSPlaneEffSSD::DeleteHistos() {
+  if(fHisResX) {
+    for (Int_t i=0; i<kNHisto; i++ ) delete fHisResX[i];
+    delete [] fHisResX; fHisResX=0;
+  }
+  if(fHisResZ) {
+    for (Int_t i=0; i<kNHisto; i++ ) delete fHisResZ[i];
+    delete [] fHisResZ; fHisResZ=0;
+  }
+  if(fHisResXZ) {
+    for (Int_t i=0; i<kNHisto; i++ ) delete fHisResXZ[i];
+    delete [] fHisResXZ; fHisResXZ=0;
+  }
+  if(fHisClusterSize) {
+    for (Int_t i=0; i<kNHisto; i++ ) delete fHisClusterSize[i];
+    delete [] fHisClusterSize; fHisClusterSize=0;
+  }
+
+return;
+}
+//__________________________________________________________
+Bool_t AliITSPlaneEffSSD::FillHistos(UInt_t key, Bool_t found,
+                                     Float_t tXZ[2], Float_t cXZ[2], Int_t ctXZ[2]) {
+// this method fill the histograms
+// input: - key: unique key of the basic block
+//        - found: Boolean to asses whether a cluster has been associated to the track or not
+//        - tXZ[2] local X and Z coordinates of the track prediction
+//        - cXZ[2] local X and Z coordinates of the cluster associated to the track
+// output: kTRUE if filling was succesfull kFALSE otherwise
+// side effects: updating of the histograms.
+//
+  if (!fHis) {
+    AliWarning("FillHistos: histograms do not exist! Call SetCreateHistos(kTRUE) first");
+    return kFALSE;
+  }
+  if(key>=kNModule)
+    {AliWarning("FillHistos: you asked for a non existing key"); return kFALSE;}
+  Int_t id=GetModFromKey(key);
+  if(id>=kNHisto)
+    {AliWarning("FillHistos: you want to fill a non-existing histos"); return kFALSE;}
+  if(found) {
+    Float_t resx=tXZ[0]-cXZ[0];
+    Float_t resz=tXZ[1]-cXZ[1];
+    fHisResX[id]->Fill(resx);
+    fHisResZ[id]->Fill(resz);
+    fHisResXZ[id]->Fill(resx,resz);
+    fHisClusterSize[id]->Fill((Double_t)ctXZ[0],(Double_t)ctXZ[1]);
+  }
+  return kTRUE;
+}
+//__________________________________________________________
+Bool_t AliITSPlaneEffSSD::WriteHistosToFile(TString filename, Option_t* option) {
+  //
+  // Saves the histograms into a tree and saves the trees into a file
+  //
+  if (!fHis) return kFALSE;
+  if (filename.Data()=="") {
+     AliWarning("WriteHistosToFile: null output filename!");
+     return kFALSE;
+  }
+//  char branchname[30];
+  TFile *hFile=new TFile(filename.Data(),option,
+                         "The File containing the TREEs with ITS PlaneEff Histos");
+  TTree *SSDTree=new TTree("SSDTree","Tree whith Residuals and Cluster Type distributions for SSD");
+  TH1F *histZ,*histX;
+  TH2F *histXZ;
+  TH2I *histClusterType;
+
+  histZ=new TH1F();
+  histX=new TH1F();
+  histXZ=new TH2F();
+  histClusterType=new TH2I();
+
+  SSDTree->Branch("histX","TH1F",&histX,128000,0);
+  SSDTree->Branch("histZ","TH1F",&histZ,128000,0);
+  SSDTree->Branch("histXZ","TH2F",&histXZ,128000,0);
+  SSDTree->Branch("histClusterType","TH2I",&histClusterType,128000,0);
+
+  for(Int_t j=0;j<kNHisto;j++){
+    histX=fHisResX[j];
+    histZ=fHisResZ[j];
+    histXZ=fHisResXZ[j];
+    histClusterType=fHisClusterSize[j];
+
+    SSDTree->Fill();
+  }
+  hFile->Write();
+  hFile->Close();
+return kTRUE;
+}
+//__________________________________________________________
+Bool_t AliITSPlaneEffSSD::ReadHistosFromFile(TString filename) {
+  //
+  // Read histograms from an already existing file
+  //
+  if (!fHis) return kFALSE;
+  if (filename.Data()=="") {
+     AliWarning("ReadHistosFromFile: incorrect output filename!");
+     return kFALSE;
+  }
+  char branchname[30];
+
+  TH1F *h  = 0;
+  TH2F *h2 = 0;
+  TH2I *h2i= 0;
+
+  TFile *file=TFile::Open(filename.Data(),"READONLY");
+
+  if (!file || file->IsZombie()) {
+    AliWarning(Form("Can't open %s !",filename.Data()));
+    delete file;
+    return kFALSE;
+  }
+  TTree *tree = (TTree*) file->Get("SSDTree");
+
+  TBranch *histX = (TBranch*) tree->GetBranch("histX");
+  TBranch *histZ = (TBranch*) tree->GetBranch("histZ");
+  TBranch *histXZ = (TBranch*) tree->GetBranch("histXZ");
+  TBranch *histClusterType = (TBranch*) tree->GetBranch("histClusterType");
+
+  gROOT->cd();
+
+  Int_t nevent = (Int_t)histX->GetEntries();
+  if(nevent!=kNHisto)
+    {AliWarning("ReadHistosFromFile: trying to read too many or too few histos!"); return kFALSE;}
+  histX->SetAddress(&h);
+  for(Int_t j=0;j<kNHisto;j++){
+    delete h; h=0;
+    histX->GetEntry(j);
+    fHisResX[j]->Add(h);
+  }
+
+  nevent = (Int_t)histZ->GetEntries();
+  if(nevent!=kNHisto)
+    {AliWarning("ReadHistosFromFile: trying to read too many or too few histos!"); return kFALSE;}
+  histZ->SetAddress(&h);
+  for(Int_t j=0;j<kNHisto;j++){
+    delete h; h=0;
+    histZ->GetEntry(j);
+    fHisResZ[j]->Add(h);
+  }
+
+  nevent = (Int_t)histXZ->GetEntries();
+  if(nevent!=kNHisto)
+    {AliWarning("ReadHistosFromFile: trying to read too many or too few histos!"); return kFALSE;}
+  histXZ->SetAddress(&h2);
+  for(Int_t j=0;j<kNHisto;j++){
+    delete h2; h2=0;
+    histXZ->GetEntry(j);
+    fHisResXZ[j]->Add(h2);
+  }
+
+  nevent = (Int_t)histClusterType->GetEntries();
+  if(nevent!=kNHisto)
+    {AliWarning("ReadHistosFromFile: trying to read too many or too few histos!"); return kFALSE;}
+  histClusterType->SetAddress(&h2i);
+  for(Int_t j=0;j<kNHisto;j++){
+    delete h2i; h2i=0;
+    histClusterType->GetEntry(j);
+    fHisClusterSize[j]->Add(h2i);
+  }
+
+  delete h;   h=0;
+  delete h2;  h2=0;
+  delete h2i; h2i=0;
+
+  if (file) {
+    file->Close();
+  }
+return kTRUE;
+}
+

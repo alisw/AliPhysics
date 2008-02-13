@@ -5150,13 +5150,15 @@ void AliITStrackerMI::UseTrackForPlaneEff(AliITStrackMI* track, Int_t ilayer) {
     tmp.GetXYZ(xyzGlob);
     AliITSgeomTGeo::GlobalToLocal(ilayer+1,lad,hdet,xyzGlob,xyzLoc);
     Float_t tr[2]={xyzLoc[0],xyzLoc[2]};
-    Float_t cl[2];
-    cl[0]=layer.GetCluster(ci)->GetDetLocalX();
-    cl[1]=layer.GetCluster(ci)->GetDetLocalZ();
-    Int_t cltype[2];
-    cltype[0]=layer.GetCluster(ci)->GetNy();
-    cltype[1]=layer.GetCluster(ci)->GetNz();
-    fPlaneEff->FillHistos(key,found,tr,cl,cltype);
+    Float_t clu[2]={-99999.,-99999.};
+    Int_t cltype[2]={-999,-999};
+    if (found){
+      clu[0]=layer.GetCluster(ci)->GetDetLocalX();
+      clu[1]=layer.GetCluster(ci)->GetDetLocalZ();
+      cltype[0]=layer.GetCluster(ci)->GetNy();
+      cltype[1]=layer.GetCluster(ci)->GetNz();
+    }
+    fPlaneEff->FillHistos(key,found,tr,clu,cltype);
   }
 return;
 }

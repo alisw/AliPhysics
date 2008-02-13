@@ -628,19 +628,19 @@ return;
 void AliITSPlaneEffSPD::DeleteHistos() {
   if(fHisResX) {
     for (Int_t i=0; i<kNHisto; i++ ) delete fHisResX[i];
-    delete [] fHisResX; 
+    delete [] fHisResX; fHisResX=0;
   }
   if(fHisResZ) {
     for (Int_t i=0; i<kNHisto; i++ ) delete fHisResZ[i];
-    delete [] fHisResZ;
+    delete [] fHisResZ; fHisResZ=0;
   }
   if(fHisResXZ) {
     for (Int_t i=0; i<kNHisto; i++ ) delete fHisResXZ[i];
-    delete [] fHisResXZ;
+    delete [] fHisResXZ; fHisResXZ=0;
   }
   if(fHisClusterSize) {
     for (Int_t i=0; i<kNHisto; i++ ) delete fHisClusterSize[i];
-    delete [] fHisClusterSize;
+    delete [] fHisClusterSize; fHisClusterSize=0;
   }
   if(fHisResXclu) {
     for (Int_t i=0; i<kNHisto; i++ ) {
@@ -858,7 +858,5 @@ Bool_t AliITSPlaneEffSPD::ReadHistosFromFile(TString filename) {
   if (file) {
     file->Close();
   }
-
-  fHisResZclu[0][0]->Draw();
 return kTRUE;
 }

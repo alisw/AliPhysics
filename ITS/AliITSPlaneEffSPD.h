@@ -79,11 +79,14 @@ class AliITSPlaneEffSPD :  public AliITSPlaneEff {
   // Methods for dealing with auxiliary histograms
     // method to set on/off the creation/updates of histograms (Histos are created/destroyed)
     void   SetCreateHistos(Bool_t his=kFALSE) 
-         {fHis=his; if(fHis) InitHistos(); else DeleteHistos(); return; }
+         //{fHis=his; if(fHis) InitHistos(); else DeleteHistos(); return; }
+         {fHis=his; if(fHis) {DeleteHistos(); InitHistos();} else DeleteHistos(); return; }
     Bool_t FillHistos(UInt_t key, Bool_t found, Float_t trackXZ[2], Float_t clusterXZ[2], Int_t ctXZ[2]);
     Bool_t WriteHistosToFile(TString filename="PlaneEffSPDHistos.root",Option_t* option = "RECREATE");
-    Bool_t ReadHistosFromFile(TString filename="PlaneEffSPDHistos.root");
-
+    Bool_t ReadHistosFromFile(TString filename="PlaneEffSPDHistos.root"); // histos must exist already !
+                                                                          // This method increases the
+                                                                          // statistics of histos by adding 
+									  // those of the input file. 
  protected:
     virtual void Copy(TObject &obj) const;           // copy ALL data members to obj 
                                                      // iboth statistics ad histograms)
@@ -115,7 +118,7 @@ class AliITSPlaneEffSPD :  public AliITSPlaneEff {
     void InitHistos();
     void DeleteHistos();
 
-    ClassDef(AliITSPlaneEffSPD,1) // SPD Plane Efficiency class
+    ClassDef(AliITSPlaneEffSPD,2) // SPD Plane Efficiency class
 };
 //
 inline UInt_t AliITSPlaneEffSPD::Nblock() const {return kNModule*kNChip;}
