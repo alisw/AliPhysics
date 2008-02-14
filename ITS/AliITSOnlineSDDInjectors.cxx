@@ -248,7 +248,7 @@ void AliITSOnlineSDDInjectors::CalcDriftVelocity(Int_t jlin){
     ey[i]=fRMSCentroid[jlin][i];
   }
   for(Int_t i=0;i<3;i++){
-    if(fGoodInj[jlin][i]){
+    if(fGoodInj[jlin][i] && ey[i]!=0){
       sumY+=y[i]/ey[i]/ey[i];
       sumX+=fPosition[i]/ey[i]/ey[i];
       sumXX+=fPosition[i]*fPosition[i]/ey[i]/ey[i];
@@ -264,14 +264,18 @@ void AliITSOnlineSDDInjectors::CalcDriftVelocity(Int_t jlin){
   if(npt>1){ 
     Float_t slope=(sumWEI*sumXY-sumY*sumX)/(sumWEI*sumXX-sumX*sumX);
     Float_t eslope=TMath::Sqrt(sumWEI/(sumWEI*sumXX-sumX*sumX));
-    vel=1./slope*10000./25.;// micron/ns
-    evel=eslope/slope/slope*10000./25.;// micron/ns
+    if(slope!=0){
+      vel=1./slope*10000./25.;// micron/ns
+      evel=eslope/slope/slope*10000./25.;// micron/ns
+    }
   }
   if(npt==1){
     Float_t slope=(sumY-tzero)/sumX;
     Float_t eslope=erry/sumX;
-    vel=1./slope*10000./25.;// micron/ns    
-    evel=eslope/slope/slope*10000./25.;// micron/ns
+    if(slope!=0){
+      vel=1./slope*10000./25.;// micron/ns    
+      evel=eslope/slope/slope*10000./25.;// micron/ns
+    }
   }
   if(vel>fMaxDriftVel||vel<fMinDriftVel){ 
     vel=0.;
