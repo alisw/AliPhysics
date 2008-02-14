@@ -7,6 +7,7 @@ SRCS= AliTRDcluster.cxx \
       AliTRDtrack.cxx \
       AliTRDtracker.cxx \
       AliTRDseed.cxx \
+      AliTRDpropagationLayer.cxx \
       AliTRDpidESD.cxx \
       AliTRDRecParam.cxx \
       AliTRDReconstructor.cxx \
@@ -15,9 +16,10 @@ SRCS= AliTRDcluster.cxx \
       AliTRDseedV1.cxx \
       AliTRDtrackV1.cxx \
       AliTRDtrackerV1.cxx \
-      AliTRDpropagationLayer.cxx \
-      AliTRDstackLayer.cxx \
-      AliTRDtrackerFitter.cxx \
+      AliTRDtrackerDebug.cxx \
+      AliTRDtrackingSector.cxx \
+      AliTRDtrackingChamber.cxx \
+      AliTRDchamberTimeBin.cxx \
       AliTRDQADataMakerRec.cxx
 
 HDRS= $(SRCS:.cxx=.h)
