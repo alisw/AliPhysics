@@ -69,6 +69,7 @@
 // HC word 0
 #define HC_SPECIAL_RAW_VERSION(w) IS_BIT_SET(w,31)
 #define HC_MAJOR_RAW_VERSION(w) GET_VALUE_AT(w,0x7f,24)
+#define HC_MAJOR_RAW_VERSION_OPT(w) GET_VALUE_AT(w,0x7,24)
 #define HC_MINOR_RAW_VERSION(w) GET_VALUE_AT(w,0x7f,17)
 #define HC_EXTRA_WORDS(w) GET_VALUE_AT(w,0x7,14)
 #define HC_DCS_BOARD(w) GET_VALUE_AT(w,0xfff<<20,20)
@@ -102,6 +103,8 @@
 //--------------------------------------------------------
 #define ADC_WORD_MASK(w) ((w) & 0x3)
 //--------------------------------------------------------
+
+
 ClassImp(AliTRDrawStreamTB)
 
 Bool_t AliTRDrawStreamTB::fgExtraSkip = kFALSE;
@@ -1367,7 +1370,7 @@ AliTRDrawStreamTB::DecodeMCMheader()
 
   fMCM->fROW = fTRDfeeParam->GetPadRowFromMCM(fMCM->fROB, fMCM->fMCM);
 
-  if (fHC->fRawVMajor > 2)
+  if ((fHC->fRawVMajor > 2 && fHC->fRawVMajor <64) && fHC->fRawVMajor != 5) //cover old and new version definition of ZS data
     {
       fpPos++;
       if ( fpPos < fpEnd )
@@ -1696,8 +1699,11 @@ AliTRDrawStreamTB::DecodeHC()
 	      if (fgDebugFlag)  AliDebug(9, Form("Buffer short of data. ADC data expected."));	  
 	      if (fRawReader) fRawReader->AddMajorErrorLog(kADCdataMissing, "ADC data missing"); 
 	    }
-	  
-	  //	  for (Int_t iadc = 0; iadc < TRD_MAX_ADC; iadc++)
+
+          //better place to do?
+          unsigned long randVal;
+          int endbits = 0x03;
+          //-------------------
 	  for (Int_t iadc = 0; iadc < fMCM->fADCmax; iadc++)
 	    {
 	      fADC = &fMCM->fADCs[iadc];
@@ -1736,25 +1742,68 @@ AliTRDrawStreamTB::DecodeHC()
 		  return kFALSE;
 		}
 
-	      //DECODE the data here
-	      if (DecodeADC() == kFALSE)
-		{
-		  // check if we are out of the det when the pad is shared
-		  if (fADC->fIsShared && fADC->fCorrupted == 4)
-		    {
-		      fADC->fCOL = -1;
-		      fpPos = fADC->fPos + fMCM->fSingleADCwords;
-		    }
-		  else
-		    {
-		      if (fgWarnError) AliWarning(Form("ADC decode failed."));
-		      //fpPos = fMCM->fPpos + fMCMADCWords;
+              if (fHC->fRawVMajor >= 64) //if the data are test pattern data
+                {
+                  //DECODE test pattern data here
+                  if (fHC->fRawVMajorOpt == 1) //test pattern 1
+                    {
+                      Int_t icpu = iadc/5;
+                      if(iadc==20) icpu = 3;
+                      if(iadc%5==0 && (iadc!=20)) randVal = (1 << 9) | (fMCM->fROB << 6) | (fMCM->fMCM << 2) | icpu;
+                      if (DecodeADCTP1(&randVal,&endbits) == kFALSE)
+                        {
+                          if (fgWarnError) AliWarning(Form("ADC decode failed."));
+                          if (fgDebugStreamer)
+                            {
+                              TTreeSRedirector &cstream = *fgDebugStreamer;
+                              cstream << "ADCDecodeError"
+                                  << "Event=" << fgStreamEventCounter
+                                  << ".hcSM=" << fHC->fSM
+                                  << ".hcStack=" << fHC->fStack
+                                  << ".hcLayer=" << fHC->fLayer
+                                  << ".hcSide=" << fHC->fSide
+                                  << ".hcDet=" << fHC->fDET
+                                  << ".mcmROB=" << fMCM->fROB
+                                  << ".mcmMCM=" << fMCM->fMCM
+                                  << ".mcmADCMaskWord=" << fMCM->fADCMaskWord
+                                  << ".adcErr=" << fADC->fCorrupted
+                                  << ".adcNumber=" << fADC->fADCnumber
+                                  << "\n";
+                            }
+                          if (fADC->fCorrupted >= 8) fHC->fCorrupted += 8;
 
-		      if (fgDebugStreamer)
-			{
-			  TTreeSRedirector &cstream = *fgDebugStreamer;
-			  cstream << "ADCDecodeError"
-				  << "Event=" << fgStreamEventCounter
+                          return kFALSE;
+                        }
+                    }
+                  if (fHC->fRawVMajorOpt == 2) //test pattern 2
+                    {
+                      if (fgWarnError) AliWarning(Form("not yet implemented."));
+                    }
+                  if (fHC->fRawVMajorOpt == 3) //test pattern 3
+                    {
+                      if (fgWarnError) AliWarning(Form("not yet implemented."));
+                    }
+                }
+	      //DECODE normal adc data here
+              else 
+                {
+	         if (DecodeADC() == kFALSE)
+		   {
+		     // check if we are out of the det when the pad is shared
+		     if (fADC->fIsShared && fADC->fCorrupted == 4)
+		       {
+		         fADC->fCOL = -1;
+		         fpPos = fADC->fPos + fMCM->fSingleADCwords;
+		       }
+		     else
+		       {
+		         if (fgWarnError) AliWarning(Form("ADC decode failed."));
+
+		         if (fgDebugStreamer)
+			   {
+			     TTreeSRedirector &cstream = *fgDebugStreamer;
+			     cstream << "ADCDecodeError"
+			  	  << "Event=" << fgStreamEventCounter
 				  << ".hcSM=" << fHC->fSM
 				  << ".hcStack=" << fHC->fStack
 				  << ".hcLayer=" << fHC->fLayer
@@ -1766,15 +1815,15 @@ AliTRDrawStreamTB::DecodeHC()
 				  << ".adcErr=" << fADC->fCorrupted
 				  << ".adcNumber=" << fADC->fADCnumber
 				  << "\n";			
-			}
-                      if (fADC->fCorrupted >= 8) fHC->fCorrupted += 8;
-		      else fpPos = fADC->fPos + fMCM->fSingleADCwords;
+			   }
+                         if (fADC->fCorrupted >= 8) fHC->fCorrupted += 8;
+		         else fpPos = fADC->fPos + fMCM->fSingleADCwords;
 
-		      return kFALSE;
-		    }
-		}
-	      //decode the ADC words here
-	    }	  
+		         return kFALSE;
+		       }
+		   }
+                } //normal adc data decoding loop
+	    } //adc pixel loop in one mcm
 	} //mcm data present
       else
 	{
@@ -1791,8 +1840,8 @@ AliTRDrawStreamTB::DecodeHC()
 
   return kTRUE;
 }
-
 //------------------------------------------------------------
+
 Bool_t
 AliTRDrawStreamTB::DecodeADC()
 {
@@ -1892,8 +1941,111 @@ AliTRDrawStreamTB::DecodeADC()
   fDecodedADCs++;
   return kTRUE;
 }
+//------------------------------------------------------------
 
+Bool_t
+AliTRDrawStreamTB::DecodeADCTP1(unsigned long *randVal, int *endbits)
+{
+  //
+  // decode test pattern ADC channel
+  //
+
+  unsigned long expected;
+
+  fADC->fCorrupted = 0;
+  fADC->fPos = fpPos;
+
+  if (*fpPos == END_OF_TRACKLET_MARKERNEW) //tracklet end marker appears in adc data position
+    {
+      if (fgWarnError) AliError(Form("There should be ADC data. We met END_OF_TRACKLET_MARKER 0x%08x",*fpPos));
+      fADC->fCorrupted += 8;
+      return kFALSE;
+    }
+
+  fTbinADC = 0;
+
+  for (Int_t i = 0; i < TRD_MAX_TBINS; i++)
+     fADC->fSignals[i] = 0;
+
+  for (Int_t iw = 0; iw < fMCM->fSingleADCwords; iw++)
+     {
+       if (HC_HEADER_MASK_ERR(*fpPos) == 0) 
+         {
+           if (fgWarnError) AliError(Form("There should be ADC data. We met HC header 0x%08x",*fpPos));
+           fADC->fCorrupted += 16; //meet half chamber header in adc expected place
+           return kFALSE;
+         }
+       expected = (AdvancePseudoRandom(randVal) << 2) | *endbits;
+       expected |= AdvancePseudoRandom(randVal) << 12;
+       expected |= AdvancePseudoRandom(randVal) << 22;
+       if (fgDebugFlag)  AliDebug(5, Form("TP data no error: fpPos=%d, size=%d, found=0x%08lx, expected=0x%08lx\n",iw, 10, *fpPos, expected));
+       if (*fpPos != expected)
+         {
+           if (fgWarnError) AliError(Form("error: fpPos=%d, size=%d, found=0x%08lx, expected=0x%08lx\n",iw, fMCM->fSingleADCwords, *fpPos, expected));
+           fADC->fCorrupted += 32; //if we meet half chamber header in adc expected place
+         }
+       fADC->fSignals[fTbinADC + 0] = ((*fpPos & 0x00000ffc) >>  2);
+       fADC->fSignals[fTbinADC + 1] = ((*fpPos & 0x003ff000) >> 12);
+       fADC->fSignals[fTbinADC + 2] = ((*fpPos & 0xffc00000) >> 22);
+
+       fTbinADC += 3;
+       fpPos++;
+     }
+  *endbits = *endbits ^ 0x01;
+
+  if (fADC->fADCnumber <= 1 || fADC->fADCnumber == fMaxADCgeom - 1)
+    {
+      fADC->fIsShared = kTRUE;
+    }
+  else
+    {
+      fADC->fIsShared = kFALSE;
+    }
+
+  if ( fADC->fADCnumber >= fMaxADCgeom - 1)
+    {
+      // let us guess the Column
+      // take the one before last ADC and shift by one column
+      // later we check if we are inside the limits of the chamber
+      fADC->fCOL = AliTRDfeeParam::Instance()->GetPadColFromADC(fMCM->fROB, fMCM->fMCM, fADC->fADCnumber - 1);
+      fADC->fCOL--;
+    }
+  else
+    {
+      fADC->fCOL = fTRDfeeParam->GetPadColFromADC(fMCM->fROB, fMCM->fMCM, fADC->fADCnumber);
+    }
+
+/*
+  if (fADC->fCOL >= fHC->fColMax || fADC->fCOL < 0)
+    {
+      if (fADC->fIsShared == kFALSE)
+        {
+          fADC->fCorrupted += 2;
+
+          if (fgWarnError) AliWarning(Form("Wrong column! ADCnumber %d MaxIs %d Col %d MaxIs %d MCM= %s",
+                                           fADC->fADCnumber, fMaxADCgeom, fADC->fCOL, fHC->fColMax, DumpMCMinfo(fMCM)));
+          if (fRawReader) fRawReader->AddMajorErrorLog(kWrongPadcolumn, "Wrong column");
+        }
+      else
+        {
+          // flag it - we are out of the det when the pad is shared
+          if (fgDebugFlag) AliDebug(10, Form("Column out of the detector! ADCnumber %d MaxIs %d Col %d MaxIs %d MCM= %s",
+                                             fADC->fADCnumber, fMaxADCgeom, fADC->fCOL, fHC->fColMax, DumpMCMinfo(fMCM)));
+          fADC->fCorrupted += 4;
+        }
+    }
+*/
+
+  if (fADC->fCorrupted > 0)
+    {
+      return kFALSE;
+    }
+
+  fDecodedADCs++;
+  return kTRUE;
+}
 //--------------------------------------------------------
+
 void AliTRDrawStreamTB::DecodeSMInfo(const UInt_t *word, struct AliTRDrawSM *sm) const
 {
   //
@@ -2008,6 +2160,7 @@ void AliTRDrawStreamTB::DecodeHCwordH0(const UInt_t *word, struct AliTRDrawHC *h
 
   hc->fSpecialRawV =  HC_SPECIAL_RAW_VERSION(vword);
   hc->fRawVMajor = HC_MAJOR_RAW_VERSION(vword);
+  hc->fRawVMajorOpt = HC_MAJOR_RAW_VERSION_OPT(vword); 
   hc->fRawVMinor = HC_MINOR_RAW_VERSION(vword);
   hc->fNExtraWords = HC_EXTRA_WORDS(vword);
   hc->fDCSboard = HC_DCS_BOARD(vword);
@@ -2166,6 +2319,18 @@ void AliTRDrawStreamTB::MCMADCwordsWithTbins(UInt_t fTbins, struct AliTRDrawMCM 
     }
 }
   
+//--------------------------------------------------------
+const unsigned long AliTRDrawStreamTB::AdvancePseudoRandom(unsigned long *val)
+{
+  //
+  // pseudo random number generator for test pattern data
+  //
+  unsigned long currentVal = *val;
+
+  *val = ( (*val << 1) | (((*val >> 9) ^ (*val >> 6)) & 1) ) & 0x3FF;
+  return currentVal;
+}
+
 //--------------------------------------------------------
 const char *AliTRDrawStreamTB::DumpMCMinfo(const struct AliTRDrawMCM *mcm)
 {

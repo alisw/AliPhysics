@@ -183,6 +183,7 @@ class AliTRDrawStreamTB : public AliTRDrawStreamBase
     // word 0
     Int_t               fSpecialRawV;       // Raw data version
     Int_t               fRawVMajor;         // Raw data version
+    Int_t               fRawVMajorOpt;         // Raw data version
     Int_t               fRawVMinor;         // Raw data version
     Int_t               fNExtraWords;       // N extra HC header words
     Int_t               fDCSboard;          // DCS board number
@@ -214,6 +215,7 @@ class AliTRDrawStreamTB : public AliTRDrawStreamBase
       , fH1ErrorCounter(0)
       , fSpecialRawV(0)
       , fRawVMajor(0)
+      , fRawVMajorOpt(0)
       , fRawVMinor(0)
       , fNExtraWords(0)
       , fDCSboard(-1)
@@ -244,6 +246,7 @@ class AliTRDrawStreamTB : public AliTRDrawStreamBase
       , fH1ErrorCounter(p.fH1ErrorCounter)
       , fSpecialRawV(p.fSpecialRawV)
       , fRawVMajor(p.fRawVMajor)
+      , fRawVMajorOpt(p.fRawVMajorOpt)
       , fRawVMinor(p.fRawVMinor)
       , fNExtraWords(p.fNExtraWords)
       , fDCSboard(p.fDCSboard)
@@ -453,6 +456,9 @@ class AliTRDrawStreamTB : public AliTRDrawStreamBase
   Int_t     GetMCM() const {return fMCM ? fMCM->fMCM : -1;} // get current MCM number
   Int_t     GetEventNumber() const { return fMCM->fEvCounter;} //  MCM Event number and position of current MCM on TRD chamber
 
+  Int_t     GetMCMErrorCode() const {return fMCM ? fMCM->fCorrupted : -1;} // get HC error code
+  //Int_t     GetHCErrorCode() const {return fHC ? fHC->fCorrupted : -1;} // get HC error code
+
   Int_t     IsMCMcorrupted() const {return fMCM ? fMCM->fCorrupted : -1;} // is current MCM header corrupted
 
   Int_t    *GetSignals() const { return fADC ? fADC->fSignals : (Int_t *)fgEmptySignals;}//Signals in the n-time bins from Data Word
@@ -473,7 +479,7 @@ class AliTRDrawStreamTB : public AliTRDrawStreamBase
   static void    DeleteDebugStream(); // helper function to delete the debug streamer
   static void    SetDumpHead(UInt_t iv) {fgDumpHead = iv;}
   static void    DisableStackNumberChecker() {fgStackNumberChecker = kFALSE;}  // set false to cleanroom data 
-  static void    DisableStackLinkNumberChecker() {fgStackLinkNumberChecker = kFALSE;}  // set false to cleanroom data 
+  static void    DisableStackLinkNumberChecker() {fgStackLinkNumberChecker = kFALSE;}  
 
   // this is a temporary solution!
   // baseline should come with the HC header word 2 (count from 0!)
@@ -501,6 +507,7 @@ class AliTRDrawStreamTB : public AliTRDrawStreamBase
   void MCMADCwordsWithTbins(UInt_t fTbins, struct AliTRDrawMCM *mcm) const;
   const char *DumpMCMinfo(const struct AliTRDrawMCM *mcm);
   const char *DumpMCMadcMask(const struct AliTRDrawMCM *mcm);
+  const unsigned long AdvancePseudoRandom(unsigned long *val); 
 
  protected:
 
@@ -517,6 +524,7 @@ class AliTRDrawStreamTB : public AliTRDrawStreamBase
   Bool_t DecodeHC();           // decode data in HC
 
   Bool_t DecodeADC();          // decode 10 ADC words
+  Bool_t DecodeADCTP1(unsigned long *randVal, int *endbits); // decode TP ADC words
 
   Bool_t DecodeHCheader();       // decode HC  header
   Bool_t SeekEndOfData();      // go to next end of raw data marker (actually 1 word after)
@@ -628,17 +636,6 @@ class AliTRDrawStreamTB : public AliTRDrawStreamBase
 }; //clas def end
 
 #endif
-
-
-
-
-
-
-
-
-
-
-
 
 
 
