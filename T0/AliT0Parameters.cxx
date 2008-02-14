@@ -31,14 +31,16 @@
 #include "AliT0CalibWalk.h"   
 #include "AliT0CalibTimeEq.h"   
 #include "AliT0LookUpValue.h"
-#include "AliT0LookUpKey.h"
 #include <AliCDBManager.h>        
 #include <AliCDBEntry.h>          
+#include <AliCDBStorage.h>  
 #include <TMath.h>
+#include <TSystem.h>
+#include <Riostream.h>
 #include <TGeoManager.h>
 #include <TGeoPhysicalNode.h>
-#include <AliGeomManager.h>
 #include <TGeoMatrix.h>
+#include <AliGeomManager.h>
 
 AliT0CalibTimeEq* AliT0Parameters::fgCalibData = 0;
 AliT0CalibData* AliT0Parameters::fgLookUp = 0;
@@ -146,8 +148,8 @@ void AliT0Parameters::InitIfOnline()
 // for switching to this one should write
   // AliT0RawReader myrawreader(rawReader);
 //	myrawreader.SetOnlineMode(kTRUE);
- 
- if (fIsInit) return;
+cout<<" AliT0Parameters::InitIfOnline() "<<endl;
+  if (fIsInit) return;
    //standart configuration (used for simulation)
    //Int_t trm=0; Int_t tdc=0; Int_t chain=0; Int_t channel=0;
   // configuration for test Jun07.
@@ -167,11 +169,11 @@ void AliT0Parameters::InitIfOnline()
           lookvalue->SetChain(chain);
           lookvalue->SetChannel(channel);
           lookkey->SetKey(ik);
+	  fgLookUp->GetMapLookup()->Add((TObject*)lookvalue,(TObject*)lookkey);	
 	  if (channel<6) channel +=2;
 	  else {channel = 0; tdc++;}
-	  if(ik==57) { tdc=0; channel=0; chain = 1;}
+	  if(ik==56) { tdc=0; channel=0; chain = 1;}
 
-	  fgLookUp->GetMapLookup()->Add((TObject*)lookvalue,(TObject*)lookkey);	
        }
   
   fIsInit=kTRUE;
@@ -194,7 +196,6 @@ AliT0Parameters::GetTimeDelayCFD(Int_t ipmt)
 
 TGraph *AliT0Parameters::GetAmpLEDRec(Int_t ipmt) const
 {
- // get walk correction by LED-CFD vs CFD graph
    if (!fSlewCorr) {
      AliError("No slewing correction is available!");
      return  (TGraph*)fAmpLEDRec.At(ipmt); 
@@ -206,7 +207,6 @@ TGraph *AliT0Parameters::GetAmpLEDRec(Int_t ipmt) const
 
 TGraph *AliT0Parameters::GetWalk(Int_t ipmt) const
 {
-  // get walk correction by QTC vs CFD
   if (!fSlewCorr) {
     AliError("No walk correction is available!");
     return  (TGraph*)fWalk.At(ipmt); 
@@ -218,8 +218,7 @@ TGraph *AliT0Parameters::GetWalk(Int_t ipmt) const
 
 Float_t AliT0Parameters::GetWalkVal(Int_t ipmt, Float_t mv) const
 {
- // get walk correction by QTC vs CFD
-   if (!fSlewCorr) {
+  if (!fSlewCorr) {
     return ((TGraph*)fWalk.At(ipmt))->Eval(mv); 
   } 
   return fgSlewCorr -> GetWalkVal(ipmt, mv) ;
@@ -230,7 +229,6 @@ Float_t AliT0Parameters::GetWalkVal(Int_t ipmt, Float_t mv) const
 void 
 AliT0Parameters::SetPMTeff(Int_t ipmt)
 {
-  // PMT quantum efficiency
   Float_t lambda[50];
   Float_t eff[50 ] = {0,        0,       0.23619,  0.202909, 0.177913, 
 		    0.175667, 0.17856, 0.190769, 0.206667, 0.230286,
@@ -252,7 +250,6 @@ AliT0Parameters::SetPMTeff(Int_t ipmt)
 Int_t 
 AliT0Parameters::GetChannel(Int_t trm,  Int_t tdc, Int_t chain, Int_t channel)
 {
-    // get logical number of channel according physical address
 
   if (fgLookUp) {
     AliT0LookUpValue key(trm,tdc,chain,channel);
@@ -274,8 +271,6 @@ AliT0Parameters::GetChannel(Int_t trm,  Int_t tdc, Int_t chain, Int_t channel)
 //__________________________________________________________________
 TMap *AliT0Parameters::GetMapLookup()
 {
-  // get LookUp Table
-
   if (!fgLookUp){
     cout<<" No look up table in OCDB";
     return 0;
