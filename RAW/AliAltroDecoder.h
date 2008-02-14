@@ -1,13 +1,21 @@
 //#-*- Mode: c++ -*-
+// $Id$
 
 #ifndef ALIALTRODECODER_H
 #define ALIALTRODECODER_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+/**
+   @file AliAltroDocoder.h
+   @author Per Thomas Hille, Oystein Djuvsland
+   @date   
+   @brief High performance decoder class for the RCU/Altro data format
+*/
+
 ///////////////////////////////////////////////////////////////////////////////
 ///
-/// This is the class for fats deocding of TPC/PHOS/EMCAL raw data
+/// This is the class for fast decoding of TPC/PHOS/EMCAL raw data
 //  see .cxx file for more detailed comments.
 ///
 ///////////////////////////////////////////////////////////////////////////////
@@ -37,6 +45,15 @@ class AliAltroDecoder: public TObject {
   Bool_t Decode();
   Bool_t NextChannel(AliAltroData *altroDataPtr);
 
+  /**
+   * Copy the original 10/40 bit encecoded data of the current channel.
+   * The funtions copies the data to the end of the provided buffer.
+   * @param pBuffer    target buffer
+   * @param bufferSize size of target buffer
+   * @return number of copied bytes, neg. error code if failed
+   */
+  Int_t CopyBackward(Byte_t* pBuffer, Int_t bufferSize);
+
   /* 
    * DONT use !
    * For debugging purphoses only, will be removed in near future
@@ -62,6 +79,20 @@ class AliAltroDecoder: public TObject {
   void PrintInfo(AliAltroData &altrodata, Int_t n = 0, Int_t nPerLine = 4);
   Float_t GetFailureRate();
 
+  /**
+   * Provide a pointer to RCU trailer.
+   * The type of the parameter might not be optimal, but the function has
+   * been chosen that way to be similar to the counterpart in
+   * AliAltroRawStream.
+   * @return kTRUE if trailer available;
+   */
+  Bool_t  GetRCUTrailerData(UChar_t*& data) const;
+
+  /**
+   * Provide size of RCU trailer.
+   */
+  Int_t   GetRCUTrailerSize() const;
+
  private:
 
   AliAltroDecoder& operator = (const AliAltroDecoder& decoder);
@@ -78,7 +109,7 @@ class AliAltroDecoder: public TObject {
   Int_t    fNDDLBlocks;                      // Number of DDL blocks in the payload (the last blocj might/ight not be 160 bits )
   Int_t    f32LastDDLBlockSize;              // Size of the last DDL block
   UInt_t   fDDLBlockDummy[DDL_32BLOCK_SIZE]; // buffer to contain the las DDL block, if the block is not aligned with 160 bitm the remaining fileds are padded with zeroes
-  UInt_t   f32PayloadSize;                   // The size of the payload in entities of 32 bit words (after subtraction of the RCU header and the RCU trailer words)
+  UInt_t   f8PayloadSize;                    // The size of the payload in bytes (after subtraction of the RCU header and the RCU trailer words)
   Long_t   fOutBufferIndex;                  // current buffer position of the buffer for the decoded data (10 bit words represnted as int's)
   UInt_t   fSize;                            // The size of the input RCU/DDL payload in entities of bytes, inluding the RCU header and trailer
   UInt_t   fOutBuffer[MAX_FEE_PER_BRANCH*MAX_BRANCHES*MAX_ALTROS_PER_FEE*CHANNELS_PER_ALTRO*(MAX_SAMPLES_PER_CHANNEL + ALTRO_TRAILER_SIZE)]; // Buffer to hold the decoded data
