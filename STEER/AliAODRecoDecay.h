@@ -300,6 +300,7 @@ inline void AliAODRecoDecay::SetDCAs(Int_t nDCA,Double_t *dca)
     return;
   }
   if(fDCA) delete [] fDCA;
+  fNDCA = nDCA;
   fDCA = new Double32_t[nDCA];
   for(Int_t i=0;i<nDCA;i++) 
     fDCA[i] = dca[i]; 
@@ -320,6 +321,7 @@ inline void AliAODRecoDecay::SetPID(Int_t nprongs,Double_t *pid)
     return;
   }
   if(fPID) delete [] fPID;
+  fNPID = nprongs;
   fPID = new Double32_t[nprongs*5];
   for(Int_t i=0;i<nprongs;i++) 
     for(Int_t j=0;j<5;j++)
