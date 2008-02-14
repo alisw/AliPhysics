@@ -111,8 +111,10 @@ Bool_t AliTRDrawStreamTB::fgCleanDataOnly = kTRUE;
 Bool_t AliTRDrawStreamTB::fgDebugFlag = kTRUE;
 Bool_t AliTRDrawStreamTB::fgDebugStreamFlag = kFALSE;
 Bool_t AliTRDrawStreamTB::fgStackNumberChecker = kTRUE;
+Bool_t AliTRDrawStreamTB::fgStackLinkNumberChecker = kTRUE;
 TTreeSRedirector *AliTRDrawStreamTB::fgDebugStreamer = 0;
 UInt_t AliTRDrawStreamTB::fgStreamEventCounter = 0;
+UInt_t AliTRDrawStreamTB::fgFirstEquipmentID = 0;
 UInt_t AliTRDrawStreamTB::fgDumpHead = 0;
 Int_t  AliTRDrawStreamTB::fgCommonAdditive = 0;
 Int_t AliTRDrawStreamTB::fgEmptySignals[] = 
@@ -133,6 +135,7 @@ AliTRDrawStreamTB::AliTRDrawStreamTB()
   , fpBegin(0)
   , fpEnd(0)
   , fWordLength(0)
+  , fEquipmentID(0)
   , fStackNumber(-1)
   , fStackLinkNumber(-1)
   , fhcMCMcounter(0)
@@ -174,6 +177,7 @@ AliTRDrawStreamTB::AliTRDrawStreamTB(AliRawReader *rawReader)
   , fpBegin(0)
   , fpEnd(0)
   , fWordLength(0)
+  , fEquipmentID(0)
   , fStackNumber(-1)
   , fStackLinkNumber(-1)
   , fhcMCMcounter(0)
@@ -222,6 +226,7 @@ AliTRDrawStreamTB::AliTRDrawStreamTB(const AliTRDrawStreamTB& /*st*/)
   , fpBegin(0)
   , fpEnd(0)
   , fWordLength(0)
+  , fEquipmentID(0)
   , fStackNumber(-1)
   , fStackLinkNumber(-1)
   , fhcMCMcounter(0)
@@ -846,7 +851,12 @@ AliTRDrawStreamTB::InitBuffer(void *buffer, UInt_t length)
   //
 
   // not in the pre scan mode
-  fgStreamEventCounter++;
+  //get Equipment ID 
+  if(fgStreamEventCounter == 0) fgFirstEquipmentID = fRawReader->GetEquipmentId();
+  fEquipmentID = fRawReader->GetEquipmentId(); 
+  //fgStreamEventCounter++;
+  if(fEquipmentID == fgFirstEquipmentID) fgStreamEventCounter++;
+
   
   ResetCounters();
 
@@ -993,6 +1003,18 @@ AliTRDrawStreamTB::DecodeSM(void *buffer, UInt_t length)
 
 	  fHC = &fStack->fHalfChambers[ilink];
 
+          if (fgDebugStreamer)
+            {
+              TTreeSRedirector &cstream = *fgDebugStreamer;
+               cstream << "LINKDataStream"
+                  << "Event=" << fgStreamEventCounter
+                  << ".equipID=" << fEquipmentID
+                  << ".stack=" << fStackNumber
+                  << ".link=" << fStackLinkNumber
+                  << "\n";
+            }
+
+
 	  if (fSM.fTrackletEnable == kTRUE)
 	    {
 	      if (DecodeTracklets() == kFALSE)
@@ -1035,8 +1057,9 @@ AliTRDrawStreamTB::DecodeSM(void *buffer, UInt_t length)
 // 	      if (fgWarnError) AliError(Form("--- Decode HC failed. --------------- Link %d of %d", 
 // 					    ilink + 1, fStack->fActiveLinks));
 	      fSM.fClean = kFALSE;
-	      fHC->fCorrupted += 100;
-              if (fHC->fCorrupted < 1111)  SeekEndOfData(); // In case that we met END_OF_TRACKLET_MARKERNEW during DecodeADC() & DecodeMCMheader()
+	      //fHC->fCorrupted += 100;
+              // mj -> need to look at
+              if (fHC->fCorrupted < 8)  SeekEndOfData(); // In case that we met END_OF_TRACKLET_MARKERNEW during DecodeADC() & DecodeMCMheader()
                                                             // we don't seek ENDOFRAWDATAMARKER
 
 	      if (fgWarnError) 
@@ -1306,7 +1329,7 @@ AliTRDrawStreamTB::IsMCMheaderOK()
   // check the mcm header
   //
 
-  if ( fMCM->fCorrupted > 10 )
+  if ( fMCM->fCorrupted > 2 )
     {
       if (fRawReader) fRawReader->AddMajorErrorLog(kMCMheaderCorrupted,"ADC mask Corrupted"); 
       if (fgWarnError) AliWarning(Form("Wrong ADC Mask word 0x%08x %s. Error : %d", *fMCM->fPos, DumpMCMadcMask(fMCM), fMCM->fCorrupted));
@@ -1376,10 +1399,10 @@ AliTRDrawStreamTB::DecodeMCMheader()
 
   if (IsMCMheaderOK() == kFALSE)
     {
-      if (fMCM->fCorrupted >= 1111)
+      if (fMCM->fCorrupted >= 8)
         {
          fpPos--; // to prevent DecodeTracklets() fault due to previous fpPos++
-         fHC->fCorrupted += 1111;
+         fHC->fCorrupted += 8;
         }
       return kFALSE;
     }
@@ -1454,15 +1477,19 @@ AliTRDrawStreamTB::IsHCheaderOK()
       return kFALSE;
     }
 
-  if ((fHC->fLayer * 2 != fStackLinkNumber) && (fHC->fLayer * 2 != fStackLinkNumber - 1)) 
+  if (fgStackLinkNumberChecker)
     {
-      if (fgWarnError) AliWarning(Form("Missmatch: plane(layer) in HCheader %d HW-Link %d | %s", 
-				       fHC->fLayer, fStackLinkNumber, DumpStackInfo(fStack)));
-      if (fRawReader) fRawReader->AddMajorErrorLog(kHCHeaderWrongLayer, "Plane-Link missmatch"); 
-      // Try this for recovery in DecodeSM(void*,UInt_t) after DecodeHC failed
-      // buffer will still will be marked as NOT clean
-      fStackLinkNumber = -1;
-      return kFALSE;      
+
+      if ((fHC->fLayer * 2 != fStackLinkNumber) && (fHC->fLayer * 2 != fStackLinkNumber - 1)) 
+        {
+          if (fgWarnError) AliWarning(Form("Missmatch: plane(layer) in HCheader %d HW-Link %d | %s", 
+	 			       fHC->fLayer, fStackLinkNumber, DumpStackInfo(fStack)));
+          if (fRawReader) fRawReader->AddMajorErrorLog(kHCHeaderWrongLayer, "Plane-Link missmatch"); 
+          // Try this for recovery in DecodeSM(void*,UInt_t) after DecodeHC failed
+          // buffer will still will be marked as NOT clean
+          fStackLinkNumber = -1;
+          return kFALSE;      
+        }
     }
 
   if (fHC->fSide < 0 || fHC->fSide > 1)
@@ -1582,7 +1609,7 @@ AliTRDrawStreamTB::DecodeHC()
 		  << "Event=" << fgStreamEventCounter
 		  << ".stack=" << fStackNumber
 		  << ".link=" << fStackLinkNumber
-		  << ".hcCorrupted" << fHC->fCorrupted
+		  << ".hcCorrupted=" << fHC->fCorrupted
 		  << ".hcRVmajor=" << fHC->fRawVMajor
 		  << ".hcDCSboard=" << fHC->fDCSboard
 		  << ".hcSM=" << fHC->fSM
@@ -1595,8 +1622,8 @@ AliTRDrawStreamTB::DecodeHC()
 		  << ".hcPreTrigPh=" << fHC->fPreTriggerPhase
 		  << ".hcDet=" << fHC->fDET
 		  << ".hcROC=" << fHC->fROC
-		  << ".hc=RowMax" << fHC->fRowMax
-		  << ".hc=ColMax" << fHC->fColMax
+		  << ".hcRowMax=" << fHC->fRowMax
+		  << ".hcColMax=" << fHC->fColMax
 		  << "\n";
 	}
       
@@ -1691,6 +1718,8 @@ AliTRDrawStreamTB::DecodeHC()
 			      << ".hcSM=" << fHC->fSM
 			      << ".hcStack=" << fHC->fStack
 			      << ".hcLayer=" << fHC->fLayer
+                              << ".hcSide=" << fHC->fSide
+                              << ".hcDet=" << fHC->fDET
 			      << ".mcmROB=" << fMCM->fROB
 			      << ".mcmMCM=" << fMCM->fMCM
 			      << ".mcmADCMaskWord=" << fMCM->fADCMaskWord
@@ -1711,16 +1740,11 @@ AliTRDrawStreamTB::DecodeHC()
 	      if (DecodeADC() == kFALSE)
 		{
 		  // check if we are out of the det when the pad is shared
-		  if (fADC->fIsShared && fADC->fCorrupted == 111)
+		  if (fADC->fIsShared && fADC->fCorrupted == 4)
 		    {
 		      fADC->fCOL = -1;
 		      fpPos = fADC->fPos + fMCM->fSingleADCwords;
 		    }
-                  else if(fADC->fCorrupted >= 1111)
-                    {
-                      fHC->fCorrupted += 1111;
-                      return kFALSE;
-                    }
 		  else
 		    {
 		      if (fgWarnError) AliWarning(Form("ADC decode failed."));
@@ -1734,6 +1758,8 @@ AliTRDrawStreamTB::DecodeHC()
 				  << ".hcSM=" << fHC->fSM
 				  << ".hcStack=" << fHC->fStack
 				  << ".hcLayer=" << fHC->fLayer
+                                  << ".hcSide=" << fHC->fSide
+                                  << ".hcDet=" << fHC->fDET
 				  << ".mcmROB=" << fMCM->fROB
 				  << ".mcmMCM=" << fMCM->fMCM
 				  << ".mcmADCMaskWord=" << fMCM->fADCMaskWord
@@ -1741,8 +1767,9 @@ AliTRDrawStreamTB::DecodeHC()
 				  << ".adcNumber=" << fADC->fADCnumber
 				  << "\n";			
 			}
+                      if (fADC->fCorrupted >= 8) fHC->fCorrupted += 8;
+		      else fpPos = fADC->fPos + fMCM->fSingleADCwords;
 
-		      fpPos = fADC->fPos + fMCM->fSingleADCwords;
 		      return kFALSE;
 		    }
 		}
@@ -1780,7 +1807,7 @@ AliTRDrawStreamTB::DecodeADC()
   if (*fpPos == END_OF_TRACKLET_MARKERNEW) // To read properly ZS data corrupted in this way
     {
       if (fgWarnError) AliError(Form("There should be ADC data. We met END_OF_TRACKLET_MARKER 0x%08x",*fpPos));
-      fADC->fCorrupted += 1111;
+      fADC->fCorrupted += 8;
       return kFALSE;
     }
 
@@ -1798,7 +1825,12 @@ AliTRDrawStreamTB::DecodeADC()
 	  if (fgWarnError) AliWarning(Form("Mask Change in ADC data Previous word (%d) : 0x%08x Previous mask : 0x%08x Current word(%d) : 0x%08x Current mask : 0x%08x", 
 					   iw - 1, *(fpPos-1), fMaskADCword, iw, *fpPos, ADC_WORD_MASK(*fpPos)));
 	  if (fRawReader) fRawReader->AddMajorErrorLog(kADCmaskMissmatch, "Mask change inside single channel"); 
-
+          if (HC_HEADER_MASK_ERR(*fpPos) == 0) 
+            {
+              if (fgWarnError) AliError(Form("There should be ADC data. We met HC header 0x%08x",*fpPos));
+              fADC->fCorrupted += 16; //if we meet half chamber header in adc expected place
+              return kFALSE;
+            }
 	  break;
 	}
 
@@ -1837,7 +1869,7 @@ AliTRDrawStreamTB::DecodeADC()
     {
       if (fADC->fIsShared == kFALSE)
 	{
-	  fADC->fCorrupted += 100;
+	  fADC->fCorrupted += 2;
 
 	  if (fgWarnError) AliWarning(Form("Wrong column! ADCnumber %d MaxIs %d Col %d MaxIs %d MCM= %s", 
 					   fADC->fADCnumber, fMaxADCgeom, fADC->fCOL, fHC->fColMax, DumpMCMinfo(fMCM)));
@@ -1848,7 +1880,7 @@ AliTRDrawStreamTB::DecodeADC()
 	  // flag it - we are out of the det when the pad is shared
 	  if (fgDebugFlag) AliDebug(10, Form("Column out of the detector! ADCnumber %d MaxIs %d Col %d MaxIs %d MCM= %s", 
 					     fADC->fADCnumber, fMaxADCgeom, fADC->fCOL, fHC->fColMax, DumpMCMinfo(fMCM)));
-	  fADC->fCorrupted += 111;
+	  fADC->fCorrupted += 4;
 	}
     }
 
@@ -1998,8 +2030,8 @@ void AliTRDrawStreamTB::DecodeHCwordH1(const UInt_t *word, struct AliTRDrawHC *h
   // do it once here
   UInt_t vword = *word;
 
-  hc->fCorrupted += 10 * HC_HEADER_MASK_ERR(vword);
-  if (hc->fCorrupted > 10)
+  hc->fCorrupted += 2 * HC_HEADER_MASK_ERR(vword);
+  if (hc->fCorrupted >= 2)
     {
       hc->fH1ErrorCounter++;
     }
@@ -2053,7 +2085,7 @@ void AliTRDrawStreamTB::DecodeMCMheader(const UInt_t *word, struct AliTRDrawMCM 
   if (vword == END_OF_TRACKLET_MARKERNEW) // To read properly ZS data corrupted in this way
     {
       if (fgWarnError) AliError(Form("There should be MCM header. We met END_OF_TRACKLET_MARKER 0x%08x",vword));
-      mcm->fCorrupted += 1111;
+      mcm->fCorrupted += 8;
     }
   if (mcm->fCorrupted)
     mcm->fErrorCounter++;
@@ -2088,7 +2120,7 @@ UInt_t AliTRDrawStreamTB::GetMCMadcMask(const UInt_t *word, struct AliTRDrawMCM 
   else
     {
       mcm->fADCMask = 0xffffffff;
-      mcm->fCorrupted += 10;
+      mcm->fCorrupted += 2;
       mcm->fMaskErrorCounter++;
     }
 

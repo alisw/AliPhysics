@@ -473,6 +473,7 @@ class AliTRDrawStreamTB : public AliTRDrawStreamBase
   static void    DeleteDebugStream(); // helper function to delete the debug streamer
   static void    SetDumpHead(UInt_t iv) {fgDumpHead = iv;}
   static void    DisableStackNumberChecker() {fgStackNumberChecker = kFALSE;}  // set false to cleanroom data 
+  static void    DisableStackLinkNumberChecker() {fgStackLinkNumberChecker = kFALSE;}  // set false to cleanroom data 
 
   // this is a temporary solution!
   // baseline should come with the HC header word 2 (count from 0!)
@@ -544,6 +545,7 @@ class AliTRDrawStreamTB : public AliTRDrawStreamBase
   UInt_t *fpEnd;   // end of the buffer
 
   UInt_t  fWordLength; // length of the buffer in 32bit words
+  UInt_t  fEquipmentID; // equipment ID
 
   Int_t   fStackNumber;     // current stack number
   Int_t   fStackLinkNumber; // current link in the stack
@@ -580,8 +582,10 @@ class AliTRDrawStreamTB : public AliTRDrawStreamBase
   static Bool_t fgDebugFlag; // allow debugging info
   static Bool_t fgDebugStreamFlag; // set on debug streamer
   static Bool_t fgStackNumberChecker; // decide if we check stack number insanity - set false to cleanroom data
+  static Bool_t fgStackLinkNumberChecker; // decide if we check stack link number insanity - debuging purpose
   static TTreeSRedirector *fgDebugStreamer; //!Debug streamer
   static UInt_t fgStreamEventCounter; // event counter for debug streamer
+  static UInt_t fgFirstEquipmentID; // first equipmentID for debug streamer
   static UInt_t fgDumpHead; // number of words to dump (from the start of the buffer) on each Init
   static Int_t  fgEmptySignals[30]; // empty signals in case of ADC pointer = NULL
 
