@@ -587,6 +587,7 @@ void AliTRDchamberTimeBin::GetClusters(Double_t *cond, Int_t *index, Int_t& ncl,
 		
 	//Boundary checks
 	Double_t zvals[2];
+	if(cond[1] - cond[3] > fZ0 + fZLength || cond[1] + cond[3] < fZ0) return; // We are outside of the chamvber
 	zvals[0] = ((cond[1] - cond[3]) < fZ0) ? fZ0 : (cond[1] - cond[3]);
 	zvals[1] = ((cond[1] + cond[3]) < fZ0 + fZLength) ? (cond[1] + cond[3]) : fZ0 + fZLength - 1.E-3;
 
