@@ -351,7 +351,7 @@ void AliAnalysisManager::PackOutput(TList *target)
       TIter next(fOutputs);
       AliAnalysisDataContainer *output;
       while ((output=(AliAnalysisDataContainer*)next())) {
-         if (output->GetData()) {
+         if (output->GetData() && !output->IsSpecialOutput()) {
             if (output->GetProducer()->IsPostEventLoop()) continue;
             AliAnalysisDataWrapper *wrap = output->ExportData();
             // Output wrappers must delete data after merging (AG 13/11/07)
@@ -363,17 +363,14 @@ void AliAnalysisManager::PackOutput(TList *target)
          if (output->IsSpecialOutput() && strlen(output->GetFileName())) {
             TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject(output->GetFileName());
             if (!file) continue;
-            file->Write();
+            file->cd();
+            if (output->GetData()) output->GetData()->Write();
             file->Close();
             if (strlen(fSpecialOutputLocation.Data())) {
                TString remote = fSpecialOutputLocation;
                remote += "/";
-               TString host(gSystem->HostName());
-               Ssiz_t ind = host.Index(".");
-               TString host1(host);
-               if (ind>0) host1 = host(0,ind);
-               remote += host1;
-               remote += "_";
+               Int_t gid = gROOT->ProcessLine("gProofServ->GetGroupId();");
+               remote += Form("%s_%d", gSystem->HostName(), gid);
                remote += output->GetFileName();
                TFile::Cp(output->GetFileName(), remote.Data());
             }
@@ -397,7 +394,8 @@ void AliAnalysisManager::ImportWrappers(TList *source)
    AliAnalysisDataWrapper   *wrap;
    Int_t icont = 0;
    while ((cont=(AliAnalysisDataContainer*)next())) {
-      if (cont->GetProducer()->IsPostEventLoop()) continue;
+      if (cont->GetProducer()->IsPostEventLoop() ||
+          cont->IsSpecialOutput()) continue;
       wrap = (AliAnalysisDataWrapper*)source->FindObject(cont->GetName());
       if (!wrap && fDebug>1) {
          printf("(WW) ImportWrappers: container %s not found in analysis output !\n", cont->GetName());
