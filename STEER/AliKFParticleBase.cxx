@@ -210,8 +210,8 @@ void AliKFParticleBase::GetMeasurement( const Double_t XYZ[], Double_t m[], Doub
   Transport( GetDStoPoint(XYZ), m, V );
 
   Double_t d[3] = { XYZ[0]-m[0], XYZ[1]-m[1], XYZ[2]-m[2] };
-  Double_t sigmaS = .1+10.*TMath::Sqrt( (d[0]*d[0]+d[1]*d[1]+d[2]*d[2])/
-					(m[3]*m[3]+m[4]*m[4]+m[5]*m[5])  );
+  Double_t p2 = m[3]*m[3]+m[4]*m[4]+m[5]*m[5];
+  Double_t sigmaS = (p2>1.e-4) ? ( .1+TMath::Sqrt( 100*(d[0]*d[0]+d[1]*d[1]+d[2]*d[2])) )/TMath::Sqrt(p2) : 1.;
 
   Double_t h[6];
 
@@ -983,21 +983,22 @@ void AliKFParticleBase::GetDStoParticleBz( Double_t B, const AliKFParticleBase &
 
   DS = ss[i];
   DS1 = ss1[i1];
-
-  Double_t x= g[i][0], y= g[i][1], z= g[i][2], ppx= g[i][3], ppy= g[i][4];  
-  Double_t x1=g1[i1][0], y1= g1[i1][1], z1= g1[i1][2], ppx1= g1[i1][3], ppy1= g1[i1][4];  
-  Double_t dx = x1-x;
-  Double_t dy = y1-y;
-  Double_t dz = z1-z;
-  Double_t a = ppx*ppx1 + ppy*ppy1 + pz*pz1;
-  Double_t b = dx*ppx1 + dy*ppy1 + dz*pz1;
-  Double_t c = dx*ppx  + dy*ppy  + dz*pz ;
-  Double_t pp2 = ppx*ppx + ppy*ppy + pz*pz;
-  Double_t pp21= ppx1*ppx1 + ppy1*ppy1 + pz1*pz1;
-  Double_t det = pp2*pp21 - a*a;
-  if( TMath::Abs(det)>1.e-8 ){
-    DS+=(a*b-pp21*c)/det;
-    DS1+=(a*c-pp2*b)/det;
+  if(0){
+    Double_t x= g[i][0], y= g[i][1], z= g[i][2], ppx= g[i][3], ppy= g[i][4];  
+    Double_t x1=g1[i1][0], y1= g1[i1][1], z1= g1[i1][2], ppx1= g1[i1][3], ppy1= g1[i1][4];  
+    Double_t dx = x1-x;
+    Double_t dy = y1-y;
+    Double_t dz = z1-z;
+    Double_t a = ppx*ppx1 + ppy*ppy1 + pz*pz1;
+    Double_t b = dx*ppx1 + dy*ppy1 + dz*pz1;
+    Double_t c = dx*ppx  + dy*ppy  + dz*pz ;
+    Double_t pp2 = ppx*ppx + ppy*ppy + pz*pz;
+    Double_t pp21= ppx1*ppx1 + ppy1*ppy1 + pz1*pz1;
+    Double_t det = pp2*pp21 - a*a;
+    if( TMath::Abs(det)>1.e-8 ){
+      DS+=(a*b-pp21*c)/det;
+      DS1+=(a*c-pp2*b)/det;
+    }
   }
 }
 
