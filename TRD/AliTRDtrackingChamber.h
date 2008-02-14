@@ -1,0 +1,56 @@
+#ifndef ALITRDTRACKINGCHAMBER_H
+#define ALITRDTRACKINGCHAMBER_H
+
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id: AliTRDtrackingChamber.h 22646 2007-11-29 18:13:40Z cblume $ */
+
+////////////////////////////////////////////////////////////////////////////
+//                                                                        //
+// Data container for one TRD chamber                                     // 
+//                                                                        // 
+// Authors:                                                               //
+//                                                                        //
+//    Alex Bercuci <A.Bercuci@gsi.de>                                     //
+//                                                                        // 
+////////////////////////////////////////////////////////////////////////////
+
+#ifndef ALITRDCHAMBERTIMEBIN_H
+#include "AliTRDchamberTimeBin.h"
+#endif
+
+class AliTRDgeometry;
+
+class AliTRDtrackingChamber
+{
+
+public:
+	enum{
+		kNTimeBins = 35
+	};
+	AliTRDtrackingChamber(Int_t det);
+	virtual ~AliTRDtrackingChamber(){}
+	
+	Bool_t   Build(AliTRDgeometry *geo);
+  void     Clear(const Option_t *opt = 0x0);
+	Int_t    GetDetector() const {return fDetector;}
+	Int_t    GetNClusters() const;
+	Double_t GetQuality(Int_t ntb);
+	AliTRDchamberTimeBin *GetSeedingLayer(AliTRDgeometry *geo);
+	Float_t  GetX()        const {return fX0;}
+	AliTRDchamberTimeBin* GetTB(int tb) {return tb >= 0 && tb < kNTimeBins ? &fTB[tb] : 0x0;}
+	void     InsertCluster(AliTRDcluster *c, Int_t index);
+	
+
+private:
+	Int_t         fDetector;  // detector number
+	Float_t       fX0;        // approximate position of the pad plane
+	
+	AliTRDchamberTimeBin fTB[kNTimeBins];    // time bins 
+	
+	
+	ClassDef(AliTRDtrackingChamber, 1)  // TRD tracker container for one chamber
+};
+
+#endif  // ALITRDTRACKINGCHAMBER_H

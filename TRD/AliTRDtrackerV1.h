@@ -1,5 +1,6 @@
 #ifndef ALITRDTRACKERV1_H
 #define ALITRDTRACKERV1_H
+
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */ 
 
@@ -10,16 +11,20 @@
 //  The TRD tracker                                                       //
 //                                                                        //
 //  Authors:                                                              //
+//    Marian Ivanov <M.Ivanov@gsi.de>                                     //
 //    Alex Bercuci <A.Bercuci@gsi.de>                                     //
+//    Jouri Belikov <J.Belikov@cern.ch>                                   //
 //    Markus Fasel <M.Fasel@gsi.de>                                       //
 //                                                                        //
-/////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 
-#ifndef ALITRDTRACKER_H
-#include "AliTRDtracker.h"
+#ifndef ALITRACKER_H
+#include "AliTracker.h"
 #endif
 
-#define DEBUG
+#ifndef ALITRDTRACKINGSECTOR_H
+#include "AliTRDtrackingSector.h"
+#endif
 
 /**************************************************************************
  * Class Status see source file                                           *
@@ -28,56 +33,75 @@
 class TFile;
 class TTreeSRedirector;
 class TClonesArray;
+class TLinearFitter;
 
 class AliRieman;
 class AliESDEvent;
+class AliCluster;
 
+class AliTRDcluster;
 class AliTRDseedV1;
-class AliTRDstackLayer;
+class AliTRDtrackingChamber;
+class AliTRDchamberTimeBin;
 class AliTRDtrackerFitter;
-class AliTRDrecoParam;
 class AliTRDtrackV1;
 class AliTrackPoint;
-class AliTRDtrackerV1 : public AliTRDtracker
+class AliTRDtrackerV1 : public AliTracker
 {
-
- public:
+public:
 	enum{
-		kNTimeBins = 35,
-		kNPlanes = 6,
-		kNSeedPlanes = 4,
-		kMaxTracksStack = 100,
-		kNConfigs = 15
+		kMaxLayersPerSector   = 1000
+		, kMaxTimeBinIndex    = 216
+		, kTrackingSectors    = 18
+		, kNTimeBins          = 35
+		, kNPlanes            = 6
+		, kNSeedPlanes        = 4
+		, kMaxTracksStack     = 100
+		, kNConfigs           = 15
 	};
-	AliTRDtrackerV1(AliTRDrecoParam *p = 0x0);
-	AliTRDtrackerV1(const TFile *in, AliTRDrecoParam *p);
+	AliTRDtrackerV1();
 	virtual ~AliTRDtrackerV1();
   
+  //temporary
+  AliTRDtrackingSector* GetTrackingSector(Int_t sec) {return &fTrSec[sec];}
+  
 	Int_t          Clusters2Tracks(AliESDEvent *esd);
+  static TTreeSRedirector* DebugStreamer() {return fgDebugStreamer;}
+  AliCluster*    GetCluster(Int_t index) const;
 	static void    GetExtrapolationConfig(Int_t iconfig, Int_t planes[2]);
 	static void    GetSeedingConfig(Int_t iconfig, Int_t planes[4]);
+	static TLinearFitter *GetTiltedRiemanFitter();
+	static TLinearFitter *GetTiltedRiemanFitterConstraint();
+	static AliRieman *GetRiemanFitter();
+	static void    FitRieman(AliTRDcluster **clusters, Double_t chi2[2]);
+	static Float_t FitRieman(AliTRDseedV1 *tracklets, Double_t *chi2, Int_t *planes = 0x0);
+	static Float_t FitTiltedRiemanConstraint(AliTRDseedV1 *tracklets, Double_t zVertex);
+	static Float_t FitTiltedRieman(AliTRDseedV1 *tracklets, Bool_t sigError);
+	
 	Int_t          FollowBackProlongation(AliTRDtrackV1 &t);
 	Int_t          FollowProlongation(AliTRDtrackV1 &t);
+  Int_t          LoadClusters(TTree *cTree);
 	Int_t          PropagateBack(AliESDEvent *event);
+  Int_t          ReadClusters(TClonesArray* &array, TTree *in) const;
 	Int_t          RefitInward(AliESDEvent *event);
-	void           SetRecoParam(AliTRDrecoParam *p){fRecoParam = p;}
 	void           UnloadClusters();
+  
+  static Int_t   Freq(Int_t n, const Int_t *inlist, Int_t *outlist, Bool_t down); // to be removed 
 
- protected:
-	Double_t       BuildSeedingConfigs(AliTRDstackLayer *layer, Int_t *configs);
-	Int_t          Clusters2TracksSM( AliTRDtracker::AliTRDtrackingSector *sector, AliESDEvent *esd);
-	Int_t          Clusters2TracksStack(AliTRDstackLayer *layer, TClonesArray *esdTrackList);
+protected:
+  Bool_t         AdjustSector(AliTRDtrackV1 *track); 
+	Double_t       BuildSeedingConfigs(AliTRDtrackingChamber **stack, Int_t *configs);
+	static Float_t CalculateChi2Z(AliTRDseedV1 *tracklets, Double_t offset, Double_t slope);
+	Int_t          Clusters2TracksSM(Int_t sector, AliESDEvent *esd);
+	Int_t          Clusters2TracksStack(AliTRDtrackingChamber **stack, TClonesArray *esdTrackList);
 	void           CookLabel(AliKalmanTrack *pt, Float_t wrong) const;
-	Int_t          GetSeedingLayers(AliTRDstackLayer *layers, Double_t *params);
-	void           GetMeanCLStack(AliTRDstackLayer *layers, Int_t *planes, Double_t *params);
+	AliTRDcluster* FindSeedingCluster(AliTRDtrackingChamber *chamber, AliTRDseedV1 *sfit) const;
+	Int_t          GetSeedingLayers(AliTRDtrackingChamber *chamber, Double_t *params);
+	void           GetMeanCLStack(AliTRDtrackingChamber *chamber, Int_t *planes, Double_t *params);
 	AliTRDseedV1*  GetTracklet(AliTRDtrackV1 *trk, Int_t plane, Int_t &idx);
-	virtual Bool_t GetTrackPoint(Int_t index, AliTrackPoint &p) const;
-	AliTRDcluster *FindSeedingCluster(AliTRDstackLayer *layers, AliTRDseedV1/*AliRieman*/ *sfit);
-	
-	Double_t       MakeSeedingPlanes(AliTRDstackLayer *layer);
-	AliTRDstackLayer *MakeSeedingLayer(AliTRDstackLayer *layers, Int_t Plane);
-	Int_t          MakeSeeds(AliTRDstackLayer *layers, AliTRDseedV1 *sseed, Int_t *ipar);
-	AliTRDtrackV1*   MakeTrack(AliTRDseedV1 *seeds, Double_t *params);
+	Bool_t         GetTrackPoint(Int_t index, AliTrackPoint &p) const;	
+	Int_t          MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *sseed, Int_t *ipar);
+	AliTRDtrackV1* MakeTrack(AliTRDseedV1 *seeds, Double_t *params);
   Int_t          PropagateToX(AliTRDtrackV1 &t, Double_t xToGo, Double_t maxStep);
 	Int_t          SetTracklet(AliTRDseedV1 *tracklet);
 
@@ -85,19 +109,37 @@ private:
 	AliTRDtrackerV1(const AliTRDtrackerV1 &tracker);
 	AliTRDtrackerV1 &operator=(const AliTRDtrackerV1 &tracker);
 	Double_t       CookLikelihood(AliTRDseedV1 *cseed, Int_t planes[4], Double_t *chi2);
-	void           ImproveSeedQuality(AliTRDstackLayer *layer, AliTRDseedV1 *cseed);
+	Double_t       CalculateTrackLikelihood(AliTRDseedV1 *tracklets, Double_t *chi2);
+	Int_t          ImproveSeedQuality(AliTRDtrackingChamber **stack, AliTRDseedV1 *tracklet);
 
 private:
+  AliTRDgeometry          *fGeom;                          // Pointer to TRD geometry
+  AliTRDtrackingSector    fTrSec[kTrackingSectors];       // Array of tracking sectors;    
 
+	TClonesArray        *fClusters;                       // List of clusters
+	TClonesArray        *fTracklets;                      // List of tracklets
+	TClonesArray        *fTracks;                         // List of tracks
+  Int_t                    fTimeBinsPerPlane;              // Timebins per plane in track prolongation 
+  
+  // should go to the recoParam
+  static const Double_t    fgkMaxChi2;                     // Max increment in track chi2 
+  static const Float_t     fgkMinClustersInTrack;          // Min number of clusters in track
+  static const Float_t     fgkLabelFraction;               // Min fraction of same label
+  static const Double_t    fgkMaxSnp;                      // Maximal snp for tracking
+  static const Double_t    fgkMaxStep;                     // Maximal step for tracking  
+	
+	// stand alone tracking
 	static Double_t      fgTopologicQA[kNConfigs];         //  Topologic quality
 	Double_t             fTrackQuality[kMaxTracksStack];  //  Track quality 
 	Int_t                fSeedLayer[kMaxTracksStack];     //  Seed layer
 	Int_t                fSieveSeeding;                   //! Seeding iterator
-	TClonesArray        *fTracklets;                      // List of tracklets for all sectors
-	AliTRDrecoParam     *fRecoParam;                      //  Reconstruction parameters
-	AliTRDtrackerFitter *fFitter;                         //! Fitter class of the tracker
+	
+	static TLinearFitter *fgTiltedRieman;                   //  Fitter for the tilted Rieman fit without vertex constriant
+	static TLinearFitter *fgTiltedRiemanConstrained;        //  Fitter for the tilted Rieman fit with vertex constraint	
+	static AliRieman     *fgRieman;                             //  Fitter for the untilted Rieman fit
+  static TTreeSRedirector *fgDebugStreamer;                 //!Debug streamer
 
-	ClassDef(AliTRDtrackerV1, 1)                          //  Stand alone tracker development class
+	ClassDef(AliTRDtrackerV1, 2)                          //  TRD tracker development class
 
 };
 #endif

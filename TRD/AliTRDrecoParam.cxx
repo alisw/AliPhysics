@@ -44,7 +44,7 @@ AliTRDrecoParam::AliTRDrecoParam()
   ,fkRoad2z(20.0)
   ,fkPlaneQualityThreshold(5.0)// 4.2? under Investigation
   ,fkFindable(.333)
-  ,fkChi2Z(14./*12.5*/)
+  ,fkChi2Z(30./*14.*//*12.5*/)
   ,fkChi2Y(.25)
   ,fkTrackLikelihood(-15.)
 {

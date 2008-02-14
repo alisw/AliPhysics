@@ -43,6 +43,15 @@ ClassImp(AliTRDReconstructor)
 
 Bool_t AliTRDReconstructor::fgkSeedingOn  = kFALSE;
 Int_t  AliTRDReconstructor::fgStreamLevel = 0;      // Stream (debug) level
+AliTRDrecoParam* AliTRDReconstructor::fgRecoParam = 0x0; 
+
+
+//_____________________________________________________________________________
+AliTRDReconstructor::~AliTRDReconstructor()                  { 
+	if(fgRecoParam) delete fgRecoParam;
+}
+
+
 
 //_____________________________________________________________________________
 void AliTRDReconstructor::ConvertDigits(AliRawReader *rawReader
@@ -111,7 +120,9 @@ AliTracker *AliTRDReconstructor::CreateTracker() const
 
   //return new AliTRDtracker(NULL);
 
-  return new AliTRDtrackerV1(NULL, AliTRDrecoParam::GetLowFluxParam());
+	// TODO move it to rec.C. check TPC
+ 	fgRecoParam = AliTRDrecoParam::GetLowFluxParam();
+  return new AliTRDtrackerV1();
 
 }
 

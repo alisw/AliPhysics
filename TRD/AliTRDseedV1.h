@@ -27,11 +27,9 @@ class TTreeSRedirector;
 
 class AliRieman;
 
-class AliTRDstackLayer;
+class AliTRDtrackingChamber;
 class AliTRDcluster;
-class AliTRDrecoParam;
 class AliTRDtrack;
-
 class AliTRDseedV1 : public AliTRDseed
 {
 
@@ -41,23 +39,22 @@ class AliTRDseedV1 : public AliTRDseed
 	  knSlices = 10
 	};
 
-	AliTRDseedV1(Int_t layer = -1, AliTRDrecoParam *p=0x0);
+	AliTRDseedV1(Int_t plane = -1);
 	~AliTRDseedV1();
 	AliTRDseedV1(const AliTRDseedV1 &ref);
 	AliTRDseedV1& operator=(const AliTRDseedV1 &ref);
 
-	Bool_t	AttachClustersIter(AliTRDstackLayer *layer, Float_t quality, Bool_t kZcorr = kFALSE
+	Bool_t	AttachClustersIter(AliTRDtrackingChamber *chamber, Float_t quality, Bool_t kZcorr = kFALSE
                                  , AliTRDcluster *c=0x0);
-	Bool_t	AttachClusters(AliTRDstackLayer *layer, Bool_t kZcorr = kFALSE);
+	Bool_t	AttachClusters(AliTRDtrackingChamber *chamber, Bool_t kZcorr = kFALSE);
 	void    CookdEdx(Int_t nslices);
-	static	Float_t FitRiemanTilt(AliTRDseedV1 * cseed, Bool_t terror);
 	Bool_t  Fit();
 
 	       void      Init(AliTRDtrack *track);
 	inline void      Init(const AliRieman *fit);
 	
-	inline Float_t   GetChi2Z(const Float_t z = 0.) const;
-	inline Float_t   GetChi2Y(const Float_t y = 0.) const;
+	inline Float_t   GetChi2Z(const Float_t z = 999.) const;
+	inline Float_t   GetChi2Y(const Float_t y = 999.) const;
 	       void      GetCovAt(Double_t x, Double_t *cov) const;
 	       Float_t*  GetdEdx() {return &fdEdx[0];}
 	       Float_t   GetdQdl(Int_t ic) const;
@@ -78,7 +75,6 @@ class AliTRDseedV1 : public AliTRDseed
 	       void      SetMomentum(Double_t mom) {fMom = mom;}
 	       void      SetOwner(Bool_t own = kTRUE);
 	       void      SetPlane(Int_t p)                      { fPlane     = p;   }
-	       void      SetRecoParam(AliTRDrecoParam *p)       { fRecoParam = p;   }
 	       void      SetSnp(Double_t snp) {fSnp = snp;}
 	       void      SetTgl(Double_t tgl) {fTgl = tgl;}
 
@@ -96,7 +92,6 @@ class AliTRDseedV1 : public AliTRDseed
 	Float_t          fdX;                     // length of time bin
 	Float_t          fdEdx[knSlices];         //  dE/dx measurements for tracklet
 	Double_t         fProb[AliPID::kSPECIES]; //  PID probabilities
- 	AliTRDrecoParam *fRecoParam;              //! Local copy of the reco params 
 
 	ClassDef(AliTRDseedV1, 1)                 //  New TRD seed 
 
@@ -105,7 +100,7 @@ class AliTRDseedV1 : public AliTRDseed
 //____________________________________________________________
 inline Float_t AliTRDseedV1::GetChi2Z(const Float_t z) const
 {
-	Float_t z1  = (z == 0.) ? fMeanz : z;
+	Float_t z1  = (z == 999.) ? fMeanz : z;
 	Float_t chi = fZref[0] - z1;
 	return chi*chi;
 }
@@ -113,7 +108,7 @@ inline Float_t AliTRDseedV1::GetChi2Z(const Float_t z) const
 //____________________________________________________________
 inline Float_t AliTRDseedV1::GetChi2Y(const Float_t y) const
 {
-	Float_t y1  = (y == 0.) ? fYfitR[0] : y;
+	Float_t y1  = (y == 999.) ? fYfitR[0] : y;
 	Float_t chi = fYref[0] - y1;
 	return chi*chi;
 }

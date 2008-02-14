@@ -15,12 +15,12 @@
 
 /* $Id$ */
 
+#include "AliESDtrack.h"
+
 #include "AliTRDtrackV1.h"
 #include "AliTRDcluster.h"
 #include "AliTRDcalibDB.h"
 #include "AliTRDrecoParam.h"
-
-#include "AliESDtrack.h"
 
 ClassImp(AliTRDtrackV1)
 
@@ -38,7 +38,6 @@ ClassImp(AliTRDtrackV1)
 //_______________________________________________________________
 AliTRDtrackV1::AliTRDtrackV1() 
   :AliTRDtrack()
-  ,fRecoParam(0x0)
 {
   //
   // Default constructor
@@ -53,7 +52,6 @@ AliTRDtrackV1::AliTRDtrackV1()
 //_______________________________________________________________
 AliTRDtrackV1::AliTRDtrackV1(const AliESDtrack &t) 
   :AliTRDtrack(t)
-  ,fRecoParam(0x0)
 {
   //
   // Constructor from AliESDtrack
@@ -67,7 +65,6 @@ AliTRDtrackV1::AliTRDtrackV1(const AliESDtrack &t)
 //_______________________________________________________________
 AliTRDtrackV1::AliTRDtrackV1(const AliTRDtrackV1 &ref) 
   :AliTRDtrack(ref)
-  ,fRecoParam(ref.fRecoParam)
 {
   //
   // Copy constructor
@@ -86,11 +83,9 @@ AliTRDtrackV1::AliTRDtrackV1(const AliTRDtrackV1 &ref)
 // }
 	
 //_______________________________________________________________
-AliTRDtrackV1::AliTRDtrackV1(AliTRDseedV1 *trklts, const Double_t p[5]
-                           , const Double_t cov[15]
-                           , Double_t x, Double_t alpha)
+AliTRDtrackV1::AliTRDtrackV1(AliTRDseedV1 *trklts, const Double_t p[5], const Double_t cov[15]
+             , Double_t x, Double_t alpha)
   :AliTRDtrack()
-  ,fRecoParam(0x0)
 {
   //
   // The stand alone tracking constructor
@@ -145,7 +140,7 @@ AliTRDtrackV1::AliTRDtrackV1(AliTRDseedV1 *trklts, const Double_t p[5]
 		//printf("%d N clusters plane %d [%d %d].\n", iplane, nclPlane, fTracklet[iplane].GetN2(), trklts[iplane].GetN());
 	}
 	//printf("N clusters in AliTRDtrackV1 %d.\n", ncl);
-	SetNumberOfClusters(ncl);
+	SetNumberOfClusters(/*ncl*/);
 }
 
 //_______________________________________________________________
@@ -247,6 +242,19 @@ Bool_t AliTRDtrackV1::IsOwner() const
 	return kTRUE;
 }
 	
+//___________________________________________________________
+void AliTRDtrackV1::SetNumberOfClusters() 
+{
+// Calculate the number of clusters attached to this track
+	
+	Int_t ncls = 0;
+	for(int ip=0; ip<6; ip++){
+		if(fTrackletIndex[ip] >= 0) ncls += fTracklet[ip].GetN();
+	}
+	AliKalmanTrack::SetNumberOfClusters(ncls);	
+}
+
+	
 //_______________________________________________________________
 void AliTRDtrackV1::SetOwner(Bool_t own)
 {
@@ -268,7 +276,7 @@ void AliTRDtrackV1::SetTracklet(AliTRDseedV1 *trklt, Int_t plane, Int_t index)
   // Set the tracklets
   //
 
-	if(plane < 0 || plane >=6) return;
+	if(plane < 0 || plane >= AliESDtrack::kNPlane) return;
 	fTracklet[plane]      = (*trklt);
 	fTrackletIndex[plane] = index;
 }
@@ -296,7 +304,7 @@ Bool_t  AliTRDtrackV1::Update(AliTRDseedV1 *trklt, Double_t chisq)
 //   Int_t n      = GetNumberOfClusters();
 //   fIndex[n]    = index;
 //   fClusters[n] = c;
-  SetNumberOfClusters(GetNumberOfClusters()+trklt->GetN());
+  SetNumberOfClusters(/*GetNumberOfClusters()+trklt->GetN()*/);
   SetChi2(GetChi2() + chisq);
 	
 	// update tracklet
