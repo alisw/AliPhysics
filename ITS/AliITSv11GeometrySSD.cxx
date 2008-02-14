@@ -1902,9 +1902,9 @@ void AliITSv11GeometrySSD::SetSSDSensor(){
 											     0.5*fgkSSDSensorWidth,
 											     0.5*fgkSSDSensorHeight,
 											     0.5*fgkSSDSensorLength);
-  fSSDSensor5 = new TGeoVolume("ITSsddSensor5",virtualSSDSensorShape,
+  fSSDSensor5 = new TGeoVolume("ITSssdSensor5",virtualSSDSensorShape,
 										 fSSDAir);	
-  fSSDSensor6 = new TGeoVolume("ITSsddSensor6",virtualSSDSensorShape,
+  fSSDSensor6 = new TGeoVolume("ITSssdSensor6",virtualSSDSensorShape,
 										 fSSDAir);	
   /////////////////////////////////////////////////////////////
   for(Int_t i=0; i<4; i++){ 

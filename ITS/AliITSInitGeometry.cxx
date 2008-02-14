@@ -819,8 +819,8 @@ Bool_t AliITSInitGeometry::InitAliITSgeomV11Hybrid(AliITSgeom *geom){
 
   char *pathSSDsens1, *pathSSDsens2;
   if (SSDIsTGeoNative()) {
-    pathSSDsens1 = "%sITSssdLayer5_1/ITSssdLay5Ladd_%d/ITSsddSensor5_%d/ITSsddSensitivL5_1";
-    pathSSDsens2 = "%sITSssdLayer6_1/ITSssdLay6Ladd_%d/ITSsddSensor6_%d/ITSsddSensitivL6_1";
+    pathSSDsens1 = "%sITSssdLayer5_1/ITSssdLay5Ladd_%d/ITSssdSensor5_%d/ITSssdSensitivL5_1";
+    pathSSDsens2 = "%sITSssdLayer6_1/ITSssdLay6Ladd_%d/ITSssdSensor6_%d/ITSssdSensitivL6_1";
   } else{
     pathSSDsens1 = "%sITSD_1/IT56_1/I565_%d/I562_%d/ITS5_%d";
     pathSSDsens2 = "%sITSD_1/IT56_1/I569_%d/I566_%d/ITS6_%d";

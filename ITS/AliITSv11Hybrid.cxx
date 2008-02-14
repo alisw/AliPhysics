@@ -816,7 +816,7 @@ void AliITSv11Hybrid::AddAlignableVolumes() const{
   if (AliITSInitGeometry::SSDIsTGeoNative()) { // new SSD geometry
 
     TString str0 = "/ALIC_1/ITSV_1/ITSssdLayer5_1/ITSssdLay5Ladd_";//SSD layer1
-    TString str1 = "/ITSsddSensor5_";
+    TString str1 = "/ITSssdSensor5_";
     TString str2 = "";
     TString ladder;
     TString wafer;
@@ -853,7 +853,7 @@ void AliITSv11Hybrid::AddAlignableVolumes() const{
     }
 
     str0 = "/ALIC_1/ITSV_1/ITSssdLayer6_1/ITSssdLay6Ladd_"; // SSD layer2
-    str1 = "/ITSsddSensor6_";
+    str1 = "/ITSssdSensor6_";
     str2 = "";
     
     for(Int_t c1 = 0; c1<38; c1++) {
