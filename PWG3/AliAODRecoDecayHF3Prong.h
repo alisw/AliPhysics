@@ -35,6 +35,9 @@ class AliAODRecoDecayHF3Prong : public AliAODRecoDecayHF {
  
   void GetDCAs(Float_t dca[3]) const 
     {for(Int_t i=0;i<3;i++) dca[i]=GetDCA(i);}
+  Double_t GetSigmaVert() const { return fSigmaVert; }
+  Double_t GetDist12toPrim() const { return fDist12toPrim; }
+  Double_t GetDist23toPrim() const { return fDist23toPrim; }
 
 
   // D+->Kpipi
