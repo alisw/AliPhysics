@@ -30,6 +30,7 @@
 #include "AliT0CalibData.h"   
 #include "AliT0CalibWalk.h"   
 #include "AliT0CalibTimeEq.h"   
+#include "AliT0LookUpKey.h"
 #include "AliT0LookUpValue.h"
 #include <AliCDBManager.h>        
 #include <AliCDBEntry.h>          
