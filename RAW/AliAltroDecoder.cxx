@@ -449,7 +449,7 @@ Int_t AliAltroDecoder::CopyBackward(Byte_t* pBuffer, Int_t bufferSize)
 	if (*pSrc==fOutBuffer[currentIndex]&0xff) {
 
 	  // try to verfify the length of the channel
-	  UInt_t lenCheck=*(pSrc+iCopy+2)|(*(pSrc+iCopy+3)&0x3)>>8;
+	  UInt_t lenCheck=*(pSrc+iCopy+2)|(*(pSrc+iCopy+3)&0x3)<<8;
 	  if (lenCheck==fNAltro10bitWords) {
 
 	    // copy including the 40 bit altro trailer
@@ -464,7 +464,7 @@ Int_t AliAltroDecoder::CopyBackward(Byte_t* pBuffer, Int_t bufferSize)
 	      iCopy=-1;
 	    }
 	  } else {
-	    AliError(Form("can not reproduce channel length: expected %d, read %d", fNAltro10bitWords, lenCheck));
+	    AliWarning(Form("format error: can not reproduce channel length: expected %d, read %d", fNAltro10bitWords, lenCheck));
 	    iCopy=-1;
 	  }
 	} else {
