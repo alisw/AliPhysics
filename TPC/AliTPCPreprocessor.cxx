@@ -405,7 +405,7 @@ UInt_t AliTPCPreprocessor::ExtractPedestals(Int_t sourceFXS)
  }
 
  AliTPCCalPad *calPadRMS=0;
- entry = GetFromOCDB("Calib", "Noise");
+ entry = GetFromOCDB("Calib", "PadNoise");
  if (entry) calPadRMS = (AliTPCCalPad*)entry->GetObject();
  if ( calPadRMS==NULL ) {
      Log("AliTPCPreprocsessor: No previous TPC noise entry available.\n");
