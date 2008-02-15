@@ -50,6 +50,7 @@
 #include "AliITSNoiseSSD.h"
 #include "AliITSGainSSD.h"
 #include "AliITSBadChannelsSSD.h"
+#include "AliITSPedestalSSD.h"
 #include "AliITSsegmentationSPD.h"
 #include "AliITSsegmentationSDD.h"
 #include "AliITSsegmentationSSD.h"
@@ -398,6 +399,7 @@ Bool_t AliITSDetTypeRec::GetCalibration() {
  
  //  AliCDBEntry *entrySSD = AliCDBManager::Instance()->Get("ITS/Calib/CalibSSD");
     AliCDBEntry *entryNoiseSSD = AliCDBManager::Instance()->Get("ITS/Calib/NoiseSSD");
+    AliCDBEntry *entryPedestalSSD = AliCDBManager::Instance()->Get("ITS/Calib/PedestalSSD");
     AliCDBEntry *entryGainSSD = AliCDBManager::Instance()->Get("ITS/Calib/GainSSD");
     AliCDBEntry *entryBadChannelsSSD = AliCDBManager::Instance()->Get("ITS/Calib/BadChannelsSSD");
 
@@ -409,7 +411,8 @@ Bool_t AliITSDetTypeRec::GetCalibration() {
   AliCDBEntry *mapASDD = AliCDBManager::Instance()->Get("ITS/Calib/MapsAnodeSDD");
   AliCDBEntry *mapTSDD = AliCDBManager::Instance()->Get("ITS/Calib/MapsTimeSDD");
 
-  if(!entrySPD || !entrySDD || !entryNoiseSSD || !entryGainSSD || !entryBadChannelsSSD || 
+  if(!entrySPD || !entrySDD || !entryNoiseSSD || !entryGainSSD || 
+     !entryPedestalSSD || !entryBadChannelsSSD || 
      !entry2SPD || !entry2SDD || !entry2SSD || !drSpSDD || !ddlMapSDD || !mapASDD || !mapTSDD){
     AliFatal("Calibration object retrieval failed! ");
     return kFALSE;
@@ -451,6 +454,10 @@ Bool_t AliITSDetTypeRec::GetCalibration() {
   if(!cacheStatus)entryNoiseSSD->SetObject(NULL);
   entryNoiseSSD->SetOwner(kTRUE);
 
+  TObjArray *pedestalSSD = (TObjArray *)entryPedestalSSD->GetObject();
+  if(!cacheStatus)entryPedestalSSD->SetObject(NULL);
+  entryPedestalSSD->SetOwner(kTRUE);
+
   TObjArray *gainSSD = (TObjArray *)entryGainSSD->GetObject();
   if(!cacheStatus)entryGainSSD->SetObject(NULL);
   entryGainSSD->SetOwner(kTRUE);
@@ -468,6 +475,7 @@ Bool_t AliITSDetTypeRec::GetCalibration() {
     delete entrySPD;
     delete entrySDD;
     delete entryNoiseSSD;
+    delete entryPedestalSSD;
     delete entryGainSSD;
     delete entryBadChannelsSSD;
     delete entry2SPD;
@@ -524,6 +532,8 @@ Bool_t AliITSDetTypeRec::GetCalibration() {
     
     AliITSNoiseSSD *noise = (AliITSNoiseSSD*) (noiseSSD->At(i));
     calibSSD->SetNoise(noise);
+    AliITSPedestalSSD *pedestal = (AliITSPedestalSSD*) (pedestalSSD->At(i));
+    calibSSD->SetPedestal(pedestal);
     AliITSGainSSD *gain = (AliITSGainSSD*) (gainSSD->At(i));
     calibSSD->SetGain(gain);
     AliITSBadChannelsSSD *bad = (AliITSBadChannelsSSD*) (badchannelsSSD->At(i));

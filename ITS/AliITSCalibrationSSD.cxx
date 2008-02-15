@@ -1,5 +1,5 @@
 /**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * Copyright(c) 2007-2009, ALICE Experiment at CERN, All rights reserved. *
  *                                                                         *
  * Author: The ALICE Off-line Project.                                    *
  * Contributors are mentioned in the code where appropriate.              *
@@ -12,7 +12,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
+/* $Id$  */
 
 #include "AliITSCalibrationSSD.h"
 //////////////////////////////////////////////////////
@@ -65,12 +65,15 @@ fNoiseN(0),
 fSigmaP(0),
 fSigmaN(0),
 fNoise(0),
+fPedestal(0),
 fGain(0),
 fBadChannels(0),
 fGainP(0),
 fGainN(0),
 fNoisP(0),
 fNoisN(0),
+fPedP(0),
+fPedN(0),
 fNoisePThreshold(0),
 fNoisyPChannelsList(0),
 fNoiseNThreshold(0),

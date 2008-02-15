@@ -1,5 +1,5 @@
 /**************************************************************************
- * Copyright(c) 1998-2003, ALICE Experiment at CERN, All rights reserved. *
+ * Copyright(c) 2007-2009, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
  * Contributors are mentioned in the code where appropriate.              *
@@ -219,6 +219,10 @@ void AliITSClusterFinderV2SSD::RawdataToClusters(AliRawReader* rawReader,TClones
   // This function creates ITS clusters from raw data
   //------------------------------------------------------------
   rawReader->Reset();
+  /*
+  const UInt_t *evid; evid = rawReader->GetEventId();
+  cout<<"Event="<<evid[0]<<endl;
+  */
   AliITSRawStreamSSD inputSSD(rawReader);
   //  rawReader->SelectEquipment(-1,0,15);
   FindClustersSSD(&inputSSD,clusters);
@@ -241,6 +245,7 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input,
   Int_t nDigits = 0;
   Float_t gain=0;
   Float_t noise=0.;
+  Float_t pedestal=0.;
   Float_t oldnoise=0.;
   AliITSCalibrationSSD* cal=NULL;
 
@@ -260,15 +265,15 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input,
     
     // reset signal matrix
     for(Int_t i=0; i<12; i++) { for(Int_t j=0; j<1536; j++) { matrix[i][j] = 65535;} }
-
+    
     if(osignal!=65535) { 
       n++;
       matrix[oadc][ostrip] = osignal; // recover data from previous occurence of input->Next() 
     }
-
+    
     // buffer data for ddl=iddl and ad=iad
     while(kTRUE) {
-
+      
       next = input->Next();
       if((!next)&&(input->flag)) continue;
       Int_t ddl=input->GetDDL(); 
@@ -278,54 +283,70 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input,
       if(input->GetSideFlag()) strip=1535-strip;
       Int_t signal = input->GetSignal();
       //cout<<ddl<<" "<<ad<<" "<<adc<<" "<<strip<<" "<<signal<<endl;
-
+      
       if((ddl==iddl)&&(ad==iad)) {n++; matrix[adc][strip] = signal;}
       else {oddl=iddl; oad=iad; oadc = adc; ostrip = strip; osignal=signal; iddl=ddl; iad=ad; break;}
       
-      if(!next) break;
+      if(!next)  {oddl=iddl; oad=iad; oadc = adc; ostrip = strip; osignal=signal; iddl=ddl; iad=ad; break;}
+      //break;
     }
-
-    // No SDD data
+    
+    // No SSD data
     if(!next && oddl<0) break;
-
+    
     if(n==0) continue; // first occurence
     n=0; osignal=0;
-
+    
     // fill 1Dclusters
     for(Int_t iadc=0; iadc<12; iadc++) {  // loop over ADC index for ddl=oddl and ad=oad
-
+      
       Int_t iimod = (oad - 1)  * 12 + iadc;
       Int_t iModule = AliITSRawStreamSSD::GetModuleNumber(oddl,iimod);
       if(iModule==-1) continue;
-      //cout<<"ddl="<<oddl<<" ad"<<oad<<" module="<<iModule<<endl;
+      //      cout<<"ddl="<<oddl<<" ad"<<oad<<" module="<<iModule<<endl;
       cal = (AliITSCalibrationSSD*)GetResp(iModule);
-
+      
       Bool_t first = 0;
-
+      
       for(Int_t istrip=0; istrip<768; istrip++) { // P-side
-
 	Int_t signal = matrix[iadc][istrip];
+	pedestal = cal->GetPedestalP(istrip);
+	matrix[iadc][istrip]=signal-pedestal;
+      }
+      
+      Float_t cmode=0;
+      for(Int_t l=0; l<6; l++) {
+	cmode=0;
+	for(Int_t n=20; n<108; n++) cmode+=matrix[iadc][l*128+n];
+	cmode/=88.;
+	for(Int_t n=0; n<128; n++) matrix[iadc][l*128+n]-=cmode;
+	
+      }
+      
+      for(Int_t istrip=0; istrip<768; istrip++) { // P-side
+	
+	Int_t signal = TMath::Abs(matrix[iadc][istrip]);
+	
 	oldnoise = noise;
-	noise = cal->GetNoiseP(istrip);
-	if(signal<3*noise) signal = 65535; // in case ZS was not done in hw do it now
+	noise = cal->GetNoiseP(istrip); if(noise<1.) signal = 65535;
+	if(signal<5*noise) signal = 65535; // in case ZS was not done in hw do it now
+	if( (signal<30.) || (istrip<10) || (istrip>758) ) signal=65535;
 
 	if (signal!=65535) {
 	  gain = cal->GetGainP(istrip);
 	  signal = (Int_t) ( signal * gain ); // signal is corrected for gain
-	  //cout<<"ddl="<<oddl<<" ad"<<oad<<" module="<<iModule<<" strip= "<<istrip<<
-	  //	    " sig="<<signal<<endl;
 	  signal = (Int_t) cal->ADCToKeV( signal ); // signal is  converted in KeV 
-	 
+	  
 	  q += signal;	  // add digit to current cluster
 	  y += istrip * signal;	  
 	  nDigits++;
 	  first=1;
 	}
-
+	
 	else if(first) {
-
+	  
 	  if ( ((nDigits==1)&&(q>5*oldnoise)) || (nDigits>1) ) {
-
+	    
 	    Ali1Dcluster& cluster = clusters1D[0][nClusters[0]++];
 	    cluster.SetY(y/q);
 	    cluster.SetQ(q);
@@ -388,17 +409,36 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input,
 	  first=0;
       }
       
+      for(Int_t istrip=768; istrip<1536; istrip++) { // P-side
+	Int_t signal = matrix[iadc][istrip];
+	pedestal = cal->GetPedestalN(1535-istrip);
+	matrix[iadc][istrip]=signal-pedestal;
+      }	
+
+      for(Int_t l=6; l<12; l++) {
+	Float_t cmode=0;
+	for(Int_t n=20; n<108; n++) cmode+=matrix[iadc][l*128+n];
+	cmode/=88.;
+	for(Int_t n=0; n<128; n++) matrix[iadc][l*128+n]-=cmode;
+      }
+
       oldnoise = 0.;
       noise = 0.;
       for(Int_t istrip=768; istrip<1536; istrip++) { // N-side
 	
-	Int_t signal = matrix[iadc][istrip];
+	Int_t signal = TMath::Abs(matrix[iadc][istrip]);
+	//cout<<"####"<<" "<<oddl<<" "<<oad<<" "<<iadc<<" "<<istrip<<" "<<signal<<endl;      
+
 	Int_t strip = 1535-istrip;
+
 	oldnoise = noise;
-	noise = cal->GetNoiseN(strip);
-	if(signal<3*noise) signal = 65535; // in case ZS was not done in hw do it now
+	noise = cal->GetNoiseN(strip); if(noise<1.) signal=65535;
+	if(signal<5*noise) signal = 65535; // in case ZS was not done in hw do it now
+	if( (signal<30.) || (istrip<778) || (istrip>1526) ) signal=65535;
 
 	if (signal!=65535) {
+	  //	  cout<<"ddl="<<oddl<<" ad"<<oad<<" module="<<iModule<<" strip= "<<istrip<<
+	  //  " sig="<<signal<<" "<<cal->GetPedestalN(strip)<<endl;
 	  gain = cal->GetGainN(strip);
 	  signal = (Int_t) ( signal * gain); // signal is corrected for gain
 	  signal = (Int_t) cal->ADCToKeV( signal ); // signal is  converted in KeV 
@@ -609,6 +649,9 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
       zt-=fHlSSD; yt-=fHwSSD;
       ybest=yt; zbest=zt; 
       qbest=0.5*(pos[ip].GetQ()+neg[j].GetQ());
+
+      //cout<<yt<<" "<<zt<<" "<<qbest<<endl;
+
       {
       Double_t loc[3]={ybest,0.,zbest},trk[3]={0.,0.,0.};
       mT2L->MasterToLocal(loc,trk);

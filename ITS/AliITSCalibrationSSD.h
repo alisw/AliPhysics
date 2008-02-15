@@ -1,14 +1,17 @@
 #ifndef ALIITSCALIBRATIONSSD_H
 #define ALIITSCALIBRATIONSSD_H
- 
+/* Copyright(c) 2007-2009, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */ 
 #include "AliITSCalibration.h"
 #include "AliITSNoiseSSD.h"
+#include "AliITSPedestalSSD.h"
 #include "AliITSGainSSD.h"
 #include "AliITSBadChannelsSSD.h"
 #include "AliITSresponseSSD.h"
 #include "TArrayF.h"
 #include "TArrayI.h"
 
+/* $Id$ */
 //////////////////////////////////////////////
 // Response class for SSD                   //
 //                                          //
@@ -37,6 +40,14 @@ class AliITSCalibrationSSD : public AliITSCalibration {
     TArrayF GetNoiseN() {return fNoise->GetNoiseN(); }
     Float_t GetNoiseN(Int_t n) {return fNoise->GetNoiseN(n); }
     void SetNoise( AliITSNoiseSSD* noise) {fNoise=noise;}
+
+    void AddPedestalP(Int_t c, Float_t n) { fPedestal->AddPedestalP(c,n);}       
+    TArrayF GetPedestalP() {return fPedestal->GetPedestalP(); }
+    Float_t GetPedestalP(Int_t n) {return fPedestal->GetPedestalP(n); }
+    void AddPedestalN(Int_t c, Float_t n) { fPedestal->AddPedestalN(c,n);}
+    TArrayF GetPedestalN() {return fPedestal->GetPedestalN(); }
+    Float_t GetPedestalN(Int_t n) {return fPedestal->GetPedestalN(n); }
+    void SetPedestal( AliITSPedestalSSD* pedestal) {fPedestal=pedestal;}
 
     void AddGainP(Int_t c, Float_t n) { fGain->AddGainP(c,n);}       
     TArrayF GetGainP() {return fGain->GetGainP(); }
@@ -131,6 +142,7 @@ protected:
     Double_t fSigmaN;          // Sigma charge spread on Nside
     
     AliITSNoiseSSD *fNoise;
+    AliITSPedestalSSD *fPedestal;
     AliITSGainSSD *fGain;
     AliITSBadChannelsSSD *fBadChannels;
 
@@ -139,6 +151,9 @@ protected:
 
     TArrayF fNoisP;           // Noise for P side channels
     TArrayF fNoisN;           // Noise for N side channels
+
+    TArrayF fPedP;
+    TArrayF fPedN;
 
     Float_t fNoisePThreshold;     // need to decide if channel is noisy  
     TArrayI  fNoisyPChannelsList; // list of P side noisy channels
@@ -152,6 +167,6 @@ protected:
     AliITSCalibrationSSD(const AliITSCalibrationSSD &source); // copy constructor
     AliITSCalibrationSSD& operator=(const AliITSCalibrationSSD &source); // ass. op.
 
-    ClassDef(AliITSCalibrationSSD,1) //Response class for SSD
+    ClassDef(AliITSCalibrationSSD,2) //Response class for SSD
 };
 #endif
