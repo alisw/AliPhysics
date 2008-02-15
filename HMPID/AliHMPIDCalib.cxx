@@ -417,8 +417,8 @@ Bool_t AliHMPIDCalib::CalcPedestal(Int_t nDDL, Char_t* name, Int_t nEv)
         
         
         if(nEvPerPad < 1 ) {                    //if the pad is bad then we assign 100  for the sigma and 50 for the mean
-          mean  = 50;
-          sigma = 100;
+          mean  = 4000;
+          sigma = 1000;
         }
         else{        
          mean = fsq[nDDL][row][dil][pad]*1.0/nEvPerPad;
