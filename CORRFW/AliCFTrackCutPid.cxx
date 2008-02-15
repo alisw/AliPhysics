@@ -217,6 +217,7 @@ AliCFTrackCutPid::~AliCFTrackCutPid() {
   //
   //dtor
   //
+
   for(Int_t i=0; i< kNdets ; i++ )   {
     for(Int_t iP =0; iP<AliPID::kSPECIES; iP++){
       if(fhResp[i][iP])delete fhResp[i][iP];
@@ -229,7 +230,6 @@ AliCFTrackCutPid::~AliCFTrackCutPid() {
     if(fhCombProb[j])delete fhCombProb[j];
     
   }
-  
 }
 //__________________________________
 void AliCFTrackCutPid::SetDetectors(TString dets)
@@ -243,6 +243,8 @@ void AliCFTrackCutPid::SetDetectors(TString dets)
   if(dets.Contains("TRD")) {fDets[kTRD]=kTRUE;}
   if(dets.Contains("TOF")) {fDets[kTOF]=kTRUE;}
   if(dets.Contains("HMPID")) {fDets[kHMPID]=kTRUE;}
+
+  if(dets.Contains("ALL")) for(Int_t i=0; i< kNdets ; i++) fDets[i]=kTRUE;
 }
 //__________________________________
 void AliCFTrackCutPid::SetPriors(Double_t r[AliPID::kSPECIES])
@@ -421,7 +423,7 @@ Bool_t AliCFTrackCutPid::Check(const Double_t *p, Int_t iPsel, Double_t minDiff)
   // is higher than  a lower limit.
   // Returns:  kTRUE= is acceptable
   
-  AliDebug(1,Form("input particle: %i",iPsel));
+  AliDebug(2,Form("input particle: %i",iPsel));
   Bool_t ck=kTRUE;
   
   if(iPsel<0) ck=kFALSE;
@@ -458,10 +460,12 @@ Int_t AliCFTrackCutPid::Identify(Double_t pid[AliPID::kSPECIES]) const
   
   
   if(getpid.GetProbability(sel,fPriors)>fCut) iPart= (Int_t)sel;
-  AliDebug(1,Form("resp   : %f  %f  %f  %f  %f",pid[0],pid[1],pid[2],pid[3],pid[4]));
-  AliDebug(1,Form("probab : %f  %f  %f  %f  %f",probability[0],probability[1],probability[2],probability[3],probability[4]));
+  AliDebug(2,Form("calc response   : %f  %f  %f  %f  %f",pid[0],pid[1],pid[2],pid[3],pid[4]));
+  AliDebug(2,Form("probabilities   : %f  %f  %f  %f  %f",probability[0],probability[1],probability[2],probability[3],probability[4]));
+
   if(fCheckResponse && !Check(pid,iPart, fMinDiffResponse)) iPart=kCheckResp;
   if(fCheckSelection && !Check(probability,iPart,fMinDiffProbability)) iPart=kCheckProb;
+
   return iPart;
 }
 //___________________________________________
@@ -535,6 +539,7 @@ void  AliCFTrackCutPid::CombPID(ULong_t status[kNdets+1],Double_t pid[kNdets+1][
   Double_t prod[AliPID::kSPECIES]={1.,1.,1.,1.,1.};
   Double_t comb[AliPID::kSPECIES]={0.,0.,0.,0.,0.};
   Double_t priors[AliPID::kSPECIES]={0.2,0.2,0.2,0.2,0.2};
+  
   ULong_t andstatus =0;
   if(fIsDetAND) {
     andstatus = StatusForAND(status);
@@ -551,13 +556,13 @@ void  AliCFTrackCutPid::CombPID(ULong_t status[kNdets+1],Double_t pid[kNdets+1][
 	    prod[j]*=pid[i][j];
 	    isdet = kTRUE;
 	    AliDebug(1,Form("-----> trk status %lu   and status %lu -> trk-ANDdetector status combination %lu",status[kNdets],andstatus,status[kNdets]&andstatus));
-	    AliDebug(1,Form("In det loop %i ->  particle %i response is %f",i,j,pid[i][j]));
+	    AliDebug(1,Form("In det %i ->  particle %i response is %f",i,j,pid[i][j]));
 	  }
         }
         else {
 	  prod[j]*=pid[i][j];
 	  isdet=kTRUE;
-	  AliDebug(1,Form("In det loop %i ->  particle %i response is %f",i,j,pid[i][j]));
+	  AliDebug(2,Form("In det %i ->  particle %i response is %f",i,j,pid[i][j]));
 	}
       }//combined mode
     }//loop on dets
@@ -575,20 +580,35 @@ void  AliCFTrackCutPid::CombPID(ULong_t status[kNdets+1],Double_t pid[kNdets+1][
     }//loop on dets
   }//if qa 
   
+  
+  Double_t add = 0; for(Int_t isumm=0; isumm<5; isumm++) add+=prod[isumm];
+  if(add>0) AliDebug(1,Form("calculated comb response: %f %f %f %f %f",prod[0]/add,prod[1]/add,prod[2]/add,prod[3]/add,prod[4]/add));
+            AliDebug(1,Form("the ESDpid response:      %f %f %f %f %f",pid[kNdets][0],pid[kNdets][1],pid[kNdets][2],pid[kNdets][3],pid[kNdets][4]));
+
   if(!isdet) {
-    AliDebug(1,"No proper status for the combined pid -> probabilities are set to zero");
-    for(Int_t nn=0; nn<AliPID::kSPECIES; nn++) {combpid[nn]=0;}
-  }
+    AliWarning("\n !! No detector found for the combined pid --> responses are from the ESDpid !! \n");
+    Double_t sumesdpid=0;
+    for(Int_t nn=0; nn<AliPID::kSPECIES; nn++) {
+      combpid[nn]=pid[kNdets][nn];
+      sumesdpid+=fPriors[nn]*combpid[nn];
+      if(fIsQAOn) {
+        if(!fhCombResp[nn]) AliDebug(1,Form("\n no fhCombResp[%i], check if pidcut->Init() was called",nn));
+        else fhCombResp[nn]->Fill(combpid[nn]);
+      }//fIsQAOn
+    }//loop on species
+    if(sumesdpid > 0) for(Int_t ih = 0; ih < AliPID::kSPECIES; ih++) fhCombProb[ih]->Fill(fPriors[ih]*combpid[ih]/sumesdpid);
+    else AliDebug(1,"priors or ESDpid are zero, please check them");
+  }// end no det
   
   else{
     for(Int_t k=0; k<AliPID::kSPECIES; k++){
       if(fIsQAOn) {
-	if(!fhCombResp[k]) AliDebug(1,Form("no fhCombResp[%i], check if pidcut->Init() was called",k));
+	if(!fhCombResp[k]) AliDebug(1,Form("\n no fhCombResp[%i], check if pidcut->Init() was called \n",k));
 	else fhCombResp[k]->Fill(prod[k]);
       }
-      AliDebug(1,Form("species %i priors %f and prod %f",k,fPriors[k],prod[k]));
+      AliDebug(1,Form("species: %i priors %f and combined prod %f",k,fPriors[k],prod[k]));
       comb[k]=fPriors[k]*prod[k];
-      AliDebug(1,Form("comb %i  %f",k,comb[k]));
+      AliDebug(1,Form("combined probability %i  %f",k,comb[k]));
       sum+=comb[k];
     }
     
@@ -599,11 +619,11 @@ void  AliCFTrackCutPid::CombPID(ULong_t status[kNdets+1],Double_t pid[kNdets+1][
     for(Int_t n=0; n<AliPID::kSPECIES; n++) { 
       combpid[n]=fPriors[n]*prod[n]/sum;
       if(fIsQAOn) {
-	if(!fhCombProb[n]) Printf("no fhCombResp[%i], check if pidcut->Init() was called",n);
-	fhCombProb[n]->Fill(combpid[n]);
+	if(!fhCombProb[n]) AliDebug(1,Form("no fhCombRespi[%i] defined, check if pidcut->Init() was called",n));
+	else fhCombProb[n]->Fill(combpid[n]);
       }
     }
-  } 
+  }//end else 
 }
 //__________________________________________
 //
@@ -638,10 +658,10 @@ void AliCFTrackCutPid::DefineHistograms()
   //
   //QA histo booking
   //
-  char *detect[5]={"ITS","TPC","TRD","TOF","HMPID"};
-  char *partic[5]={"electron","muon","pion","kaon","proton"};
+  char *detect[kNdets]={"ITS","TPC","TRD","TOF","HMPID"};
+  char *partic[AliPID::kSPECIES]={"electron","muon","pion","kaon","proton"};
   
-  for(Int_t iDet =0; iDet< kNdets; iDet++)
+   for(Int_t iDet =0; iDet< kNdets; iDet++)
     {
       if(!fDets[iDet]) continue;
       for(Int_t iP =0; iP < AliPID::kSPECIES; iP++){
@@ -650,7 +670,9 @@ void AliCFTrackCutPid::DefineHistograms()
       }
     }
   
-  if(fgIsComb){
+
+if(fgIsComb)
+   { 
     for(Int_t iPart =0; iPart < AliPID::kSPECIES; iPart++)
       {
 	fhCombResp[iPart] = new TH1F(Form("rCombPart%i",iPart),Form(" %s combined response    ",partic[iPart]),fNbins,fXmin,fXmax);
@@ -675,9 +697,11 @@ void AliCFTrackCutPid::AddQAHistograms(TList *qalist) const
   }
   
   for(Int_t iDet=0; iDet<kNdets; iDet++){
+    if(!fDets[iDet]) continue;
     for(Int_t iP =0; iP<AliPID::kSPECIES; iP++){
-      if(!fgIsComb)qalist->Add(fhResp[iDet][iP]);
-      if(!fgIsComb)qalist->Add(fhProb[iDet][iP]);
+      qalist->Add(fhResp[iDet][iP]);
+      qalist->Add(fhProb[iDet][iP]);
     }
   }  
+
 }
