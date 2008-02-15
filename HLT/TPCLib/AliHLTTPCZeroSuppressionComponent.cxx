@@ -84,6 +84,10 @@ AliHLTTPCZeroSuppressionComponent::~AliHLTTPCZeroSuppressionComponent()
     delete [] fNumberOfPadsInRow;
     fNumberOfPadsInRow=NULL;
   }
+  if(fDigitReader){
+    delete fDigitReader;
+    fDigitReader=NULL;
+  }
 }
 
 // Public functions to implement AliHLTComponent's interface.
@@ -273,7 +277,6 @@ int AliHLTTPCZeroSuppressionComponent::DoInit( int argc, const char** argv )
 int AliHLTTPCZeroSuppressionComponent::DoDeinit()
 {
   // see header file for class documentation
-    
   return 0;
 }
 
@@ -370,100 +373,107 @@ int AliHLTTPCZeroSuppressionComponent::DoEvent( const AliHLTComponentEventData& 
 	InitializePadArray();
       }
       
-      //      HLTInfo("Slice number: %d    Patch number: %d",slice,patch);
-
       fDigitReader->InitBlock(iter->fPtr,iter->fSize,patch,slice);
-	
+
       //Here the reading of the data and the zerosuppression takes place
       while(fDigitReader->NextChannel()){//Pad
-	AliHLTTPCPad *tmpPad = fRowPadVector[fDigitReader->GetRow()][fDigitReader->GetPad()];
+	UInt_t row=(UInt_t)fDigitReader->GetRow();
+	UInt_t pad=(UInt_t)fDigitReader->GetPad();
+	if(row==1000 || pad==1000){
+	  continue;
+	}
+	if(row>=fNumberOfRows){
+	  continue;
+	}
+	else if(pad>=fNumberOfPadsInRow[row]){
+	    continue;
+	}  
+	   AliHLTTPCPad *tmpPad = fRowPadVector[row][pad];
+	
+	//seg fault in here!!!!!!!!!!!!!
+
 	//reading data to pad
 	while(fDigitReader->NextBunch()){
 	  const UInt_t *bunchData= fDigitReader->GetSignals();
-	  UInt_t row=fDigitReader->GetRow();
-	  UInt_t pad=fDigitReader->GetPad();
 	  UInt_t time=fDigitReader->GetTime();
 	  for(Int_t i=0;i<fDigitReader->GetBunchSize();i++){
 	    if(bunchData[i]>0){// disregarding 0 data.
 	      if(time+i>=fStartTimeBin && time+i<=fEndTimeBin){
-		//HLTInfo("Adding %d to time %d row %d and pad %d",bunchData[i], time+i, row,pad);
 		tmpPad->SetDataSignal(time+i,bunchData[i]);
 	      }
 	    }
 	  }
 	}
 	if(tmpPad->GetNAddedSignals()>=fMinimumNumberOfSignals){
-	  //HLTDebug("In ZSC: nRMS=%d, threshold=%d, reqMinPoint=%d, beginTime=%d, endTime=%d, timebinsLeft=%d timebinsRight=%d valueUnderAverage=%d \n",fNRMSThreshold,fSignalThreshold,fMinimumNumberOfSignals,fStartTimeBin,fEndTimeBin,fLeftTimeBin,fRightTimeBin,fValueBelowAverage);
 	  tmpPad->ZeroSuppress(fNRMSThreshold, fSignalThreshold, fMinimumNumberOfSignals, fStartTimeBin, fEndTimeBin, fLeftTimeBin, fRightTimeBin, fValueBelowAverage);
-	  tmpPad->SaveHistograms();
 	}
       }
     }
+  Int_t nAdded=0;
 
   //writing to output
   AliHLTUInt8_t* outBPtr;
-  outBPtr = outputPtr;
-  AliHLTTPCUnpackedRawData* outPtr;
-  outPtr = (AliHLTTPCUnpackedRawData*)outputPtr;
+  UInt_t* outPtr;
   unsigned long long outputSize = 0;
   unsigned long blockOutputSize = 0;
-  unsigned long rowSize = 0;
-  AliHLTTPCDigitRowData* currentRow=outPtr->fDigits;
-  AliHLTTPCDigitData* currentDigit=currentRow->fDigitData;
-  Int_t rowOffset = 0;
-  switch (fCurrentPatch){
-  case 0:
-    rowOffset=0;
-    break;
-  case 1:
-    rowOffset=30;
-    break;
-  case 2:
-    rowOffset=0;
-    break;
-  case 3:
-    rowOffset=28-2;
-    break;
-  case 4:
-    rowOffset=28+26;
-    break;
-  case 5:
-    rowOffset=28+26+22;
-    break;
-  }
-  /*  if ( fCurrentPatch >= 2 ){ // Outer sector, patches 2, 3, 4, 5
-    rowOffset = AliHLTTPCTransform::GetFirstRow( 2 );
-  }
-  */
-  Int_t lastRow=-1;
+  outBPtr = outputPtr;
+  outPtr = (UInt_t*)outputPtr;
+
+  outPtr[nAdded]=0;
+  UInt_t *numberOfChannels=&outPtr[nAdded];
+  nAdded++;
+  outputSize      += sizeof(UInt_t);
+  blockOutputSize += sizeof(UInt_t);
   for(Int_t row=0;row<fNumberOfRows;row++){
     for(Int_t pad=0;pad<fNumberOfPadsInRow[row];pad++){
-      AliHLTTPCPad * zerosuppressedPad= fRowPadVector[row][pad];
-      Int_t time=0;
+      AliHLTTPCPad * zeroSuppressedPad= fRowPadVector[row][pad];
+      Int_t currentTime=0;
+      Int_t bunchSize=0;
       Int_t signal=0;
-      while(zerosuppressedPad->GetNextGoodSignal(time, signal)){
-	if(lastRow!=row){
-	  rowSize=0;
-	  currentRow = (AliHLTTPCDigitRowData*)(outBPtr+outputSize);
-	  currentDigit = currentRow->fDigitData;
-	  currentRow->fRow = row+rowOffset;
-	  currentRow->fNDigit = 0;
-	  outputSize += sizeof(AliHLTTPCDigitRowData);
-	  blockOutputSize += sizeof(AliHLTTPCDigitRowData);
-	  rowSize += sizeof(AliHLTTPCDigitRowData);
-	  lastRow=row;
+      Bool_t newPad=kTRUE;
+      UInt_t *nBunches=NULL;
+      while(zeroSuppressedPad->GetNextGoodSignal(currentTime, bunchSize)){
+	if(newPad){
+   	  (*numberOfChannels)++;
+	  
+	  outPtr[nAdded]=(UInt_t)row;
+	  nAdded++;
+	  outputSize      += sizeof(UInt_t);
+	  blockOutputSize += sizeof(UInt_t);
+
+	  outPtr[nAdded]=(UInt_t)pad;
+	  nAdded++;
+	  outputSize      += sizeof(UInt_t);
+	  blockOutputSize += sizeof(UInt_t);
+
+	  
+	  outPtr[nAdded]=0;
+	  nBunches=&outPtr[nAdded];
+	  nAdded++;
+	  outputSize      += sizeof(UInt_t);
+	  blockOutputSize += sizeof(UInt_t);
+	  
+	  newPad=kFALSE;
 	}
-	currentDigit->fCharge = signal;
-	currentDigit->fPad = pad;
-	currentDigit->fTime = time;
-	printf("Row: %d    Pad: %d  Time: %d Charge %d\n", row + rowOffset, pad, time, signal);
-	currentRow->fNDigit++;
-	currentDigit++;
-	outputSize += sizeof(AliHLTTPCDigitData);
-	blockOutputSize += sizeof(AliHLTTPCDigitData);
-	rowSize += sizeof(AliHLTTPCDigitData);
+	(*nBunches)++;
+
+	outPtr[nAdded]=(UInt_t)currentTime;
+	nAdded++;
+	outputSize      += sizeof(UInt_t);
+	blockOutputSize += sizeof(UInt_t);
+
+	outPtr[nAdded]=(UInt_t)bunchSize;
+	nAdded++;
+	outputSize      += sizeof(UInt_t);
+	blockOutputSize += sizeof(UInt_t);
+	
+	for(Int_t t=0;t<bunchSize;t++){
+	  outPtr[nAdded]=(UInt_t)zeroSuppressedPad->GetDataSignal(currentTime+t);
+	  nAdded++;
+	  outputSize      += sizeof(UInt_t);
+	  blockOutputSize += sizeof(UInt_t);
+	}
       }
-      //      printf("\n");
     }
   }
 

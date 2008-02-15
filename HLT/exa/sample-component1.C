@@ -1,4 +1,4 @@
-// $Id $
+// $Id$
 /**
  * @file sample-component1.C
  * @brief Sample macro for the component initialization and configuration.
