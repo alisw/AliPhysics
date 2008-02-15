@@ -797,17 +797,17 @@ Bool_t AliReconstruction::Run(const char* input, Bool_t IsOnline)
            qadm->StartOfCycle(AliQA::kESDS,"same");
         }
      }
-     if (fRunGlobalQA) {
-        AliQADataMakerRec *qadm = GetQADataMaker(fgkNDetectors);
-	AliInfo(Form("Initializing the global QA data maker"));
-        TObjArray *arr=
+  }
+  if (fRunGlobalQA) {
+     AliQADataMakerRec *qadm = GetQADataMaker(fgkNDetectors);
+     AliInfo(Form("Initializing the global QA data maker"));
+     TObjArray *arr=
           qadm->Init(AliQA::kRECPOINTS, AliCDBManager::Instance()->GetRun());
-	AliTracker::SetResidualsArray(arr);
-        qadm->Init(AliQA::kESDS, AliCDBManager::Instance()->GetRun());
-        if (!fInLoopQA) {
-           qadm->StartOfCycle(AliQA::kRECPOINTS);
-           qadm->StartOfCycle(AliQA::kESDS,"same");
-        }
+     AliTracker::SetResidualsArray(arr);
+     qadm->Init(AliQA::kESDS, AliCDBManager::Instance()->GetRun());
+     if (!fInLoopQA) {
+        qadm->StartOfCycle(AliQA::kRECPOINTS);
+        qadm->StartOfCycle(AliQA::kESDS,"same");
      }
   }
 
@@ -837,14 +837,16 @@ Bool_t AliReconstruction::Run(const char* input, Bool_t IsOnline)
     AliInfo(Form("processing event %d", iEvent));
 
     //Start of cycle for the in-loop QA
-    if (fRunQA && fInLoopQA) {
-       TString detStr(fFillESD); 
-       for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
-          if (!IsSelected(fgkDetectorName[iDet], detStr)) continue;
-          AliQADataMakerRec *qadm = GetQADataMaker(iDet);  
-          if (!qadm) continue;
-          qadm->StartOfCycle(AliQA::kRECPOINTS);
-          qadm->StartOfCycle(AliQA::kESDS, "same") ; 	
+    if (fInLoopQA) {
+       if (fRunQA) {
+          TString detStr(fFillESD); 
+          for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
+             if (!IsSelected(fgkDetectorName[iDet], detStr)) continue;
+             AliQADataMakerRec *qadm = GetQADataMaker(iDet);  
+             if (!qadm) continue;
+             qadm->StartOfCycle(AliQA::kRECPOINTS);
+             qadm->StartOfCycle(AliQA::kESDS, "same") ; 	
+          }
        }
        if (fRunGlobalQA) {
           AliQADataMakerRec *qadm = GetQADataMaker(fgkNDetectors);
@@ -1041,7 +1043,7 @@ Bool_t AliReconstruction::Run(const char* input, Bool_t IsOnline)
     // write ESD
     if (fCleanESD) CleanESD(esd);
 
-    if (fRunQA && fRunGlobalQA) {
+    if (fRunGlobalQA) {
        AliQADataMakerRec *qadm = GetQADataMaker(fgkNDetectors);
        if (qadm) qadm->Exec(AliQA::kESDS, esd);
     }
@@ -1069,16 +1071,18 @@ Bool_t AliReconstruction::Run(const char* input, Bool_t IsOnline)
   
 
   // End of cycle for the in-loop QA
-     if (fRunQA && fInLoopQA) {
-        RunQA(fFillESD.Data(), esd);
-        TString detStr(fFillESD); 
-        for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
-	   if (!IsSelected(fgkDetectorName[iDet], detStr)) continue;
-	   AliQADataMakerRec * qadm = GetQADataMaker(iDet);
-	   if (!qadm) continue;
-	   qadm->EndOfCycle(AliQA::kRECPOINTS);
-	   qadm->EndOfCycle(AliQA::kESDS);
-	   qadm->Finish();
+     if (fInLoopQA) {
+        if (fRunQA) {
+           RunQA(fFillESD.Data(), esd);
+           TString detStr(fFillESD); 
+           for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
+	      if (!IsSelected(fgkDetectorName[iDet], detStr)) continue;
+	      AliQADataMakerRec * qadm = GetQADataMaker(iDet);
+	      if (!qadm) continue;
+	      qadm->EndOfCycle(AliQA::kRECPOINTS);
+	      qadm->EndOfCycle(AliQA::kESDS);
+	      qadm->Finish();
+           }
         }
         if (fRunGlobalQA) {
            AliQADataMakerRec *qadm = GetQADataMaker(fgkNDetectors);
@@ -1168,11 +1172,12 @@ Bool_t AliReconstruction::Run(const char* input, Bool_t IsOnline)
   }
 
   //Finish QA and end of cycle for out-of-loop QA
-  if (fRunQA && !fInLoopQA) {
-     qas.Run(fRunLocalReconstruction.Data(), AliQA::kRECPOINTS);
-     //qas.Reset() ;
-     qas.Run(fRunTracking.Data(), AliQA::kESDS);
-
+  if (!fInLoopQA) {
+     if (fRunQA) {
+        qas.Run(fRunLocalReconstruction.Data(), AliQA::kRECPOINTS);
+        //qas.Reset() ;
+        qas.Run(fRunTracking.Data(), AliQA::kESDS);
+     }
      if (fRunGlobalQA) {
         AliQADataMakerRec *qadm = GetQADataMaker(fgkNDetectors);
         if (qadm) {
@@ -1589,7 +1594,7 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd)
 
   // pass 3: TRD + TPC + ITS refit inwards
 
-  if (fRunQA && fRunGlobalQA) AliTracker::SetFillResiduals(kTRUE);     
+  if (fRunGlobalQA) AliTracker::SetFillResiduals(kTRUE);     
 
   for (Int_t iDet = 2; iDet >= 0; iDet--) {
     if (!fTracker[iDet]) continue;
@@ -1616,7 +1621,7 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd)
     AliSysInfo::AddStamp(Form("RUnloadCluster%s_%d",fgkDetectorName[iDet],eventNr), iDet,5, eventNr);
   }
 
-  if (fRunQA && fRunGlobalQA) AliTracker::SetFillResiduals(kFALSE);     
+  if (fRunGlobalQA) AliTracker::SetFillResiduals(kFALSE);     
 
   eventNr++;
   return kTRUE;
