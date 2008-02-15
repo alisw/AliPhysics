@@ -193,6 +193,7 @@ Int_t AliCFFrame::GetBinIndex(Int_t *ibin) const
 {
   //
   // getting the element number on the grid for a given set of bin indeces 
+  //(here the numbering of bin indeces ranges from 0 to N-1)
   //
   Int_t ind=ibin[fNVar-1];
   for(Int_t i=fNVar-1;i>0;i--){
@@ -204,7 +205,9 @@ Int_t AliCFFrame::GetBinIndex(Int_t *ibin) const
 Int_t AliCFFrame::GetBinIndex(Int_t ivar, Int_t ind) const
 {
   //
-  // getting the bin index on a given dim. ivar for a given element ind on the grid
+  // getting the bin index on a given dim. ivar for a given element ind 
+  // on the grid
+  //(here the numbering of bin indeces ranges from 0 to N-1)
   //
   Int_t index=-1;
   for(Int_t i=fNVar-1;i>=0;i--){
@@ -221,6 +224,7 @@ void AliCFFrame::GetBinIndex(Int_t ind, Int_t *bins ) const
 {
   //
   // getting the set of bin indeces for a given element ind on the grid
+  // (here the numbering of bin indeces ranges from 0 to N-1)
   //
   Int_t index=-1;
   for(Int_t i=fNVar-1;i>=0;i--){
@@ -235,10 +239,16 @@ Double_t AliCFFrame::GetBinCenter(Int_t ivar, Int_t ibin) const
 {
   //
   // getting the bin center of a given bin ibin along variable ivar
+  // (here the numbering of bin indeces in input 
+  //  ranges from 1 to N, TH1/2/3 and THnSparse convention)
   //
  
-  Double_t binMin=fVarBinLimits[fOffset[ivar]+ibin];
-  Double_t binMax=fVarBinLimits[fOffset[ivar]+ibin+1];
+  if(ibin>fNVarBins[ivar] || ibin==0){
+    AliWarning(Form("bin index out of range, number of bins in variable %i ranges from 1 to %i", ivar,fNVarBins[ivar]));
+    return -1;
+  } 
+  Double_t binMin=fVarBinLimits[fOffset[ivar]+ibin-1];
+  Double_t binMax=fVarBinLimits[fOffset[ivar]+ibin];
   Double_t val=0.5*(binMin+binMax);
   return val;
 }
@@ -248,6 +258,8 @@ void AliCFFrame::GetBinCenters(Int_t *ibin, Double_t *binCenter) const
   //
   // gives the centers of the N-dim bin identified by a set of bin indeces 
   // invar
+  // (here the numbering of bin indeces in input 
+  //  ranges from 1 to N, TH1/2/3 and THnSparse convention)
   //
   for(Int_t i=0;i<fNVar;i++){
     binCenter[i]=GetBinCenter(i,ibin[i]);
@@ -257,15 +269,17 @@ Double_t AliCFFrame::GetBinSize(Int_t ivar, Int_t ibin) const
 {
   //
   // getting the bin size on axis ivar of a given bin ibin 
+  // (here the numbering of bin indeces in input 
+  //  ranges from 1 to N, TH1/2/3 and THnSparse convention)
   //
 
-  if(ibin>=fNVarBins[ivar]){
-    AliWarning(Form("bin index out of range, number of bins in variable %i is %i", ivar,fNVarBins[ivar]));
+  if(ibin>fNVarBins[ivar] || ibin==0){
+    AliWarning(Form("bin index out of range, number of bins in variable %i ranges from 1 to %i", ivar,fNVarBins[ivar]));
     return -1;
   } 
 
-  Double_t binMin=fVarBinLimits[fOffset[ivar]+ibin];
-  Double_t binMax=fVarBinLimits[fOffset[ivar]+ibin+1];
+  Double_t binMin=fVarBinLimits[fOffset[ivar]+ibin-1];
+  Double_t binMax=fVarBinLimits[fOffset[ivar]+ibin];
   Double_t val=binMax-binMin;
   return val;
 }
@@ -275,6 +289,8 @@ void AliCFFrame::GetBinSizes(Int_t *ibin, Double_t *binSizes) const
   //
   // gives the sizes of the N-dim bin identified by a set of bin indeces 
   // ibin
+  // (here the numbering of bin indeces in input 
+  //  ranges from 1 to N, TH1/2/3 and THnSparse convention)
   //
   for(Int_t i=0;i<fNVar;i++){
     binSizes[i]=GetBinSize(i,ibin[i]);
