@@ -64,6 +64,8 @@ class AliCFGridSparse : public AliCFVGrid
   virtual void Divide(AliCFVGrid* aGrid, Double_t c=1.);
   virtual void Divide(AliCFVGrid* aGrid1, AliCFVGrid* aGrid2, Double_t c1=1., Double_t c2=1.,Option_t *option=0);
 
+  virtual void Rebin(const Int_t* group);
+
   THnSparse  *GetGrid() const {return fData;};//  Getter for the data Container: a THnSparse
 
   virtual void Copy(TObject& c) const;

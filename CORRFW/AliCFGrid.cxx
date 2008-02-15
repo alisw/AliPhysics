@@ -1060,6 +1060,18 @@ void AliCFGrid::Divide(AliCFVGrid* aGrid1, AliCFVGrid* aGrid2, Double_t c1,Doubl
   }
 }
 //____________________________________________________________________
+void AliCFGrid::Rebin(const Int_t* group)
+{
+  //
+  // Not yet implemented
+  //
+  for(Int_t i=0;i<fNVar;i++){
+    if(group[i]!=1)AliInfo(Form(" merging bins along dimension %i in groups of %i bins", i,group[i]));
+  }
+  AliInfo(Form("This method was so far not implemented for AliCFGrid, but it is available in AliCFGridSparse"));
+
+}
+//____________________________________________________________________
 void AliCFGrid::SumW2()
 {
   //

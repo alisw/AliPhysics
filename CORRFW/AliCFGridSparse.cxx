@@ -138,18 +138,15 @@ TH1D *AliCFGridSparse::Project(Int_t ivar) const
   // Make a 1D projection along variable ivar 
   //
 
-  //exclude overflows by default (used in projections)
+  //exclude overflows in hidden dimesniosn by default (used in projections)
   if(fExclOffEntriesInProj){
     for(Int_t i=0;i<fNVar;i++){
-      fData->GetAxis(i)->SetBit(TAxis::kAxisRange);
+      if(i!=ivar)
+	fData->GetAxis(i)->SetBit(TAxis::kAxisRange);
     }
   }
-
-
   TH1D *hist=fData->Projection(ivar);
-
   return hist;
-
 }
 //___________________________________________________________________
 TH2D *AliCFGridSparse::Project(Int_t ivar1, Int_t ivar2) const
@@ -161,7 +158,8 @@ TH2D *AliCFGridSparse::Project(Int_t ivar1, Int_t ivar2) const
   //exclude overflows by default (used in projections)
   if(fExclOffEntriesInProj){
     for(Int_t i=0;i<fNVar;i++){
-      fData->GetAxis(i)->SetBit(TAxis::kAxisRange);
+      if(i!=ivar1 && i!=ivar2)
+	fData->GetAxis(i)->SetBit(TAxis::kAxisRange);
     }
   }
   TH2D *hist=fData->Projection(ivar2,ivar1); //notice inverted axis (THnSparse uses TH3 2d-projection convention...)
@@ -177,7 +175,8 @@ TH3D *AliCFGridSparse::Project(Int_t ivar1, Int_t ivar2, Int_t ivar3) const
   //exclude overflows by default (used in projections)
   if(fExclOffEntriesInProj){
     for(Int_t i=0;i<fNVar;i++){
-      fData->GetAxis(i)->SetBit(TAxis::kAxisRange);
+      if(i!=ivar1 && i!=ivar2 && i!=ivar3)
+	fData->GetAxis(i)->SetBit(TAxis::kAxisRange);
     }
   }
 
@@ -192,8 +191,8 @@ Float_t AliCFGridSparse::GetOverFlows(Int_t ivar) const
   //
   // Returns exclusive overflows in variable ivar
   //
-  Int_t* bin = new Int_t[fNDim];
-  memset(bin, 0, sizeof(Int_t) * fNDim);
+  Int_t* bin = new Int_t[fNVar];
+  memset(bin, 0, sizeof(Int_t) * fNVar);
   Float_t ovfl=0.;
   for (Long64_t i = 0; i < fData->GetNbins(); ++i) {
     Double_t v = fData->GetBinContent(i, bin);
@@ -215,8 +214,8 @@ Float_t AliCFGridSparse::GetUnderFlows(Int_t ivar) const
   //
   // Returns exclusive overflows in variable ivar
   //
-  Int_t* bin = new Int_t[fNDim];
-  memset(bin, 0, sizeof(Int_t) * fNDim);
+  Int_t* bin = new Int_t[fNVar];
+  memset(bin, 0, sizeof(Int_t) * fNVar);
   Float_t unfl=0.;
   for (Long64_t i = 0; i < fData->GetNbins(); ++i) {
     Double_t v = fData->GetBinContent(i, bin);
@@ -559,6 +558,69 @@ void AliCFGridSparse::Divide(AliCFVGrid* aGrid1, AliCFVGrid* aGrid2, Double_t c1
 }
 
 
+//____________________________________________________________________
+void AliCFGridSparse::Rebin(const Int_t* group)
+{
+  //
+  // rebin the grid according to Rebin() as in THnSparse
+  // Please notice that the original number of bins on
+  // a given axis has to be divisible by the rebin group.
+  //
+
+  for(Int_t i=0;i<fNVar;i++){
+    if(group[i]!=1)AliInfo(Form(" merging bins along dimension %i in groups of %i bins", i,group[i]));
+  }
+
+  THnSparse *rebinned =fData->Rebin(group);
+  fData->Reset();
+  fData = rebinned;
+
+  //redefine the needed stuff
+
+  Int_t ndimTot=1;
+  Int_t nbinTot=0;
+
+  //number of bins in each dimension, auxiliary variables
+
+  for(Int_t ivar=0;ivar<fNVar;ivar++){
+    Int_t nbins = fData->GetAxis(ivar)->GetNbins();
+    fNVarBins[ivar]=nbins;
+    ndimTot*=fNVarBins[ivar];
+    nbinTot+=(fNVarBins[ivar]+1);
+    Int_t offset=0;
+    for(Int_t i =0;i<ivar;i++)offset+=(fNVarBins[i]+1);      
+    fOffset[ivar]=offset;
+    Int_t prod=1;
+    for(Int_t i=0;i<ivar;i++)prod*=fNVarBins[i];
+    fProduct[ivar]=prod;
+  }
+
+  fNDim=ndimTot;
+
+  //now the array of bin limits
+
+  delete fVarBinLimits;
+  fNVarBinLimits=nbinTot;
+  fVarBinLimits=new Double_t[fNVarBinLimits];
+
+  for(Int_t ivar=0;ivar<fNVar;ivar++){
+    Double_t low = fData->GetAxis(ivar)->GetXmin();
+    Double_t high = fData->GetAxis(ivar)->GetXmax();    
+    const TArrayD *xbins = fData->GetAxis(ivar)->GetXbins();
+    if (xbins->fN == 0){
+      for(Int_t ibin=0;ibin<=fNVarBins[ivar];ibin++){
+	fVarBinLimits[ibin+fOffset[ivar]] = low + ibin*(high-low)/((Double_t) fNVarBins[ivar]);
+      }
+    }
+    else{
+      
+      for(Int_t ibin=0;ibin<=fNVarBins[ivar];ibin++) {
+	fVarBinLimits[ibin+fOffset[ivar]] = xbins->At(ibin);
+      }
+    }
+  }   
+  
+}
 //____________________________________________________________________
 void AliCFGridSparse::Copy(TObject& c) const
 {

@@ -61,6 +61,7 @@ class AliCFVGrid : public AliCFFrame
   virtual void Multiply(AliCFVGrid* aGrid1,AliCFVGrid* aGrid2, Double_t c1=1.,Double_t c2=1.) = 0;
   virtual void Divide(AliCFVGrid* aGrid, Double_t c=1.) = 0;
   virtual void Divide(AliCFVGrid* aGrid1, AliCFVGrid* aGrid2, Double_t c1=1., Double_t c2=1.,Option_t *option=0) = 0;
+  virtual void Rebin(const Int_t* group) = 0;
 
 
 
