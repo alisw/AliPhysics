@@ -195,7 +195,8 @@ Bool_t AliHMPIDPreprocessor::ProcPed()
   AliHMPIDDigit dig;
   AliHMPIDRawStream rs;
   Int_t nSigCut,r,d,a,hard;  Float_t mean,sigma;
-  Int_t  runNumber,ldcId,timeStamp,nEv;  Char_t tName[10]; 
+  Int_t  runNumber,ldcId,timeStamp,nEv,nDdlEv,nBadEv;  Char_t tName[10]; 
+  Float_t nBadEvPer;
     
   for(Int_t ddl=0;ddl<14;ddl++){  
     ifstream infile(Form("HmpidPedDdl%02i.txt",ddl));
@@ -205,6 +206,9 @@ Bool_t AliHMPIDPreprocessor::ProcPed()
     infile>>tName>>ldcId;
     infile>>tName>>timeStamp;
     infile>>tName>>nEv; 
+    infile>>tName>>nDdlEv;
+    infile>>tName>>nBadEv;
+    infile>>tName>>nBadEvPer;
     infile>>nSigCut; pM->SetUniqueID(nSigCut); //n. of pedestal distribution sigmas used to create zero suppresion table
     while(!infile.eof()){
       infile>>dec>>r>>d>>a>>mean>>sigma>>hex>>hard;      
