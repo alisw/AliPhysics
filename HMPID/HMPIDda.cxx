@@ -21,6 +21,7 @@ extern "C" {
 #include "monitor.h"
 
 #include <Riostream.h>
+#include "fstream.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -79,10 +80,13 @@ int main(int argc, char **argv){
   pCal->SetSigCutFromFile("HmpidSigmaCut.txt");
   /* ONLY set this option to kTRUE if you want to create the ADC dsitributions for all 161280 pads!!!!*/  
   /* kTRUE is not suggested for production mode b/c of the memory consumption! */
-  pCal->SetWriteHistoPads(kFALSE);
+  pCal->SetWriteHistoPads(kFALSE);               //use this option for default production useage!!!
+  //pCal->SetWriteHistoPads(kTRUE);              //only for expert debug
+  //pCal->SetWriteHistoPads(kTRUE,kTRUE,13);     //DO NOT USE THIS OPTION!
   
   /* init event counter */
-  Int_t iEvtNcal=0;
+  Int_t firstEvt=0;
+  Int_t iEvtNcal=firstEvt;                      //Start from 1 not 0!                                                 
   ULong_t runNum=0;
   ULong_t ldcId=0;
 
@@ -134,9 +138,8 @@ int main(int argc, char **argv){
 	
         runNum=(unsigned long)event->eventRunNb;                                  //assuming that only one run is processed at a time
         ldcId=(unsigned long)event->eventLdcId;
-        if(iEvtNcal==0 && pCal->GetWritePads()==kTRUE) pCal->InitFile((Int_t)ldcId);
-        iEvtNcal++;
-        
+        if(iEvtNcal==firstEvt && pCal->GetWritePads()==kTRUE) pCal->InitFile((Int_t)ldcId);    //The number for iEvtNcal should be the same as for the first value
+        iEvtNcal++;        
 	AliRawReader *reader = new AliRawReaderDate((void*)event);
 	AliHMPIDRawStream stream(reader);
         while(stream.Next())
@@ -144,8 +147,10 @@ int main(int argc, char **argv){
              for(Int_t iPad=0;iPad<stream.GetNPads();iPad++) {
              pCal->FillPedestal(stream.GetPadArray()[iPad],stream.GetChargeArray()[iPad]);
               } //pads
-          }//while     
-         for(Int_t iddl=0;iddl<stream.GetNDDL();iddl++){                                         
+          }//while -- loop on det load in one event
+          
+         for(Int_t iddl=0;iddl<stream.GetNDDL();iddl++){   
+                 pCal->FillDDLCnt(iddl,stream.GetnDDLInStream()[iddl],stream.GetnDDLOutStream()[iddl]);                     
            for(Int_t ierr=0; ierr < stream.GetNErrors(); ierr++) {
                pCal->FillErrors(iddl,ierr,stream.GetErrors(iddl,ierr));
                }
