@@ -361,16 +361,18 @@ void AliAnalysisManager::PackOutput(TList *target)
          }   
          // Special outputs files are closed and copied on the remote location
          if (output->IsSpecialOutput() && strlen(output->GetFileName())) {
+            TDirectory *opwd = gDirectory;
             TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject(output->GetFileName());
             if (!file) continue;
             file->cd();
             if (output->GetData()) output->GetData()->Write();
             file->Close();
+            if (opwd) opwd->cd();
             if (strlen(fSpecialOutputLocation.Data())) {
                TString remote = fSpecialOutputLocation;
                remote += "/";
                Int_t gid = gROOT->ProcessLine("gProofServ->GetGroupId();");
-               remote += Form("%s_%d", gSystem->HostName(), gid);
+               remote += Form("%s_%d_", gSystem->HostName(), gid);
                remote += output->GetFileName();
                TFile::Cp(output->GetFileName(), remote.Data());
             }
