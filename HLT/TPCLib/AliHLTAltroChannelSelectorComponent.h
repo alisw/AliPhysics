@@ -27,15 +27,10 @@
  * to the RAW data {***:DDL_RAW } and gets in addition a list of channels
  * to select. The list must be of identical specification as the RAW data
  * and can be of data type:
- * - {TPC :ACTIVPAD}: description in coordinates of the TPC readout: row and
- *   pad
  * - {***:HWADDR16}: 16 bit hardware addresses
  *
- * Currently, the DigitReaderRaw is used to read the data, the rawreader
- * mode has to be set correctly ([0,5], see AliHLTTPCClusterFinderComponent).
- * Later on if the fast Altro decoder is used as default input decoder for
- * TPC offline reconstruction, we will move to a new DigitReader using
- * this decoder.
+ * TheAliAltroDecoder is used as input decoder to read and scan the
+ * Altro Raw data.
  * 
  * Component ID: \b AltroChannelSelector <br>
  * Library: \b libAliHLTTPC
@@ -92,10 +87,13 @@ class AliHLTAltroChannelSelectorComponent : public AliHLTProcessor {
    */
   int CopyBlockToEnd(AliHLTUInt8_t* pTgt, unsigned capacity, unsigned position, void* pSrc, unsigned size);
 
-  /** the mode for the DigitReaderRaw */
-  unsigned fRawreaderMode; //!transient
+  /** skip corrupted channels */
+  bool fSkipCorrupted; //!transient
 
-  ClassDef(AliHLTAltroChannelSelectorComponent, 0);
+  /** more verbose output */
+  bool fTalkative; //!transient
+
+  ClassDef(AliHLTAltroChannelSelectorComponent, 1);
 };
 
 #endif

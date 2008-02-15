@@ -30,9 +30,9 @@
 #include <cassert>
 #include "AliHLTAltroChannelSelectorComponent.h"
 #include "AliHLTTPCTransform.h"
-#include "AliHLTTPCDigitReaderRaw.h"
 #include "AliHLTTPCDefinitions.h"
-#include "AliHLTTPCPadArray.h"
+#include "AliAltroDecoder.h"
+#include "AliAltroData.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTAltroChannelSelectorComponent)
@@ -40,7 +40,8 @@ ClassImp(AliHLTAltroChannelSelectorComponent)
 AliHLTAltroChannelSelectorComponent::AliHLTAltroChannelSelectorComponent()
   :
   AliHLTProcessor(),
-  fRawreaderMode(0)
+  fSkipCorrupted(false),
+  fTalkative(false)
 {
   // see header file for class documentation
   // or
@@ -65,7 +66,6 @@ void AliHLTAltroChannelSelectorComponent::GetInputDataTypes(AliHLTComponentDataT
   // see header file for class documentation
   list.clear();
   list.push_back(kAliHLTDataTypeDDLRaw|kAliHLTDataOriginTPC);
-  list.push_back(AliHLTTPCDefinitions::fgkActivePadsDataType);
   list.push_back(kAliHLTDataTypeHwAddr16);
 }
 
@@ -98,20 +98,15 @@ int AliHLTAltroChannelSelectorComponent::DoInit(int argc, const char** argv)
     argument=argv[i];
     if (argument.IsNull()) continue;
 
-    // -rawreadermode
-    if (argument.CompareTo("-rawreadermode")==0) {
-      if ((bMissingParam=(++i>=argc))) break;
-      int mode=AliHLTTPCDigitReaderRaw::DecodeMode(argv[i]);
-      if (mode<0) {
-	HLTError("invalid rawreadermode specifier '%s'", argv[i]);
-	iResult=-EINVAL;
-      } else {
-	fRawreaderMode=static_cast<unsigned>(mode);
-	// always use the reader in unsorted mode regardless of the
-	// argument 
-	if (fRawreaderMode%2==0) fRawreaderMode++;
-      }
+    // -skip-corrupted
+    if (argument.CompareTo("-skip-corrupted")==0) {
+      fSkipCorrupted=true;
+
+    // -talkative
+    } else if (argument.CompareTo("-talkative")==0) {
+      fTalkative=true;
     } else {
+      HLTError("unknown argument %s", argument.Data());
       iResult=-EINVAL;
     }
   }
@@ -139,122 +134,142 @@ int AliHLTAltroChannelSelectorComponent::DoEvent(const AliHLTComponentEventData&
 {
   // see header file for class documentation
   int iResult=0;
+  const int cdhSize=32;
 
   // process the DLL input
   int blockno=0;
   const AliHLTComponentBlockData* pDesc=NULL;
 
-  for (pDesc=GetFirstInputBlock(kAliHLTDataTypeDDLRaw|kAliHLTDataOriginTPC); pDesc!=NULL; pDesc=GetNextInputBlock(), blockno++) {
+  AliAltroDecoder* decoder=NULL;
+  for (pDesc=GetFirstInputBlock(kAliHLTDataTypeDDLRaw); pDesc!=NULL; pDesc=GetNextInputBlock(), blockno++) {
+    iResult=0;
 
     // search for the active pad information
-    AliHLTTPCPadArray::AliHLTTPCActivePads* pActivePadsArray=NULL;
     AliHLTUInt16_t* pActiveHwAddressArray=NULL;
     int iArraySize=0;
     for (int i=0; i<(int)evtData.fBlockCnt; i++ ) {
-      const AliHLTComponentBlockData* iter=NULL;
-      // search for selection data of row/pad type
-      for (iter=GetFirstInputBlock(AliHLTTPCDefinitions::fgkActivePadsDataType); iter!=NULL; iter=GetNextInputBlock()) {
-	if (iter->fSpecification==pDesc->fSpecification) {
-	  pActivePadsArray=reinterpret_cast<AliHLTTPCPadArray::AliHLTTPCActivePads*>(iter->fPtr);
-	  iArraySize=iter->fSize/sizeof(AliHLTTPCPadArray::AliHLTTPCActivePads);
-	  break;
-	}
-      }
-
       // search for selection data of hw address type
-      for (iter=GetFirstInputBlock(kAliHLTDataTypeHwAddr16); iter!=NULL; iter=GetNextInputBlock()) {
-	if (iter->fSpecification==pDesc->fSpecification) {
-	  pActiveHwAddressArray=reinterpret_cast<AliHLTUInt16_t*>(iter->fPtr);
-	  iArraySize=iter->fSize/sizeof(AliHLTUInt16_t);
-	  break;
-	}
+      // which matches the data specification of the block
+      if (blocks[i].fDataType==kAliHLTDataTypeHwAddr16 && blocks[i].fSpecification==pDesc->fSpecification) {
+	pActiveHwAddressArray=reinterpret_cast<AliHLTUInt16_t*>(blocks[i].fPtr);
+	iArraySize=blocks[i].fSize/sizeof(AliHLTUInt16_t);
+	break;
       }
     }
-    if (pActivePadsArray==NULL && pActiveHwAddressArray==NULL) {
-      HLTWarning("no block of type %s or %s for specification 0x%08x available, data block unchanged", 
-		 DataType2Text(AliHLTTPCDefinitions::fgkActivePadsDataType).c_str(), 
+    if (pActiveHwAddressArray==NULL) {
+      HLTWarning("no block of type %s for specification 0x%08x available, data block unchanged", 
 		 DataType2Text(kAliHLTDataTypeHwAddr16).c_str(), 
 		 pDesc->fSpecification);
+      iResult=-EFAULT;
+    }
+
+    if (decoder) delete decoder;
+    decoder=new AliAltroDecoder;
+    if (decoder->SetMemory(reinterpret_cast<UChar_t*>(pDesc->fPtr), pDesc->fSize)<0) {
+      HLTWarning("corrupted data block: initialization of decoder failed for block: %s specification %#x size %d",
+		 DataType2Text(pDesc->fDataType).c_str(), pDesc->fSpecification, pDesc->fSize);
+      iResult=-EFAULT;
+    } else {
+      if (decoder->Decode()) {
+	HLTDebug("init decoder %p size %d", pDesc->fPtr,pDesc->fSize);
+      } else {
+	HLTWarning("corrupted data block: decoding failed for raw data block: %s specification %#x size %d",
+		   DataType2Text(pDesc->fDataType).c_str(), pDesc->fSpecification, pDesc->fSize);
+	iResult=-EFAULT;
+      }
+    }
+
+    int rcuTrailerLength=decoder->GetRCUTrailerSize();
+    if (rcuTrailerLength*sizeof(AliHLTUInt32_t)>pDesc->fSize-cdhSize) {
+      HLTWarning("corrupted data block: RCU trailer length exceeds buffer size");
+      iResult=-EFAULT;
+    }
+
+    if (iResult<0) {
       // forward the whole block
       outputBlocks.push_back(*pDesc);
       continue;
     }
 
-    int part=AliHLTTPCDefinitions::GetMinPatchNr(*pDesc);
-    assert(part==AliHLTTPCDefinitions::GetMaxPatchNr(*pDesc));
-    int slice=AliHLTTPCDefinitions::GetMinSliceNr(*pDesc);
-    assert(slice==AliHLTTPCDefinitions::GetMaxSliceNr(*pDesc));
-    int firstRow=AliHLTTPCTransform::GetFirstRow(part);
-    int lastRow=AliHLTTPCTransform::GetLastRow(part);
-    AliHLTTPCDigitReaderRaw reader(fRawreaderMode);
-    HLTDebug("init reader %p size %d", pDesc->fPtr,pDesc->fSize);
-    reader.InitBlock(pDesc->fPtr,pDesc->fSize,firstRow,lastRow,part,slice);
     int iSelected=0;
     int iTotal=0;
+    int iCorrupted=0;
     AliHLTUInt32_t iOutputSize=0;
+    AliHLTUInt32_t iNofAltro40=0;
     AliHLTUInt32_t iCapacity=size;
-    while (reader.NextAltroBlock()) {
+    AliAltroData channel;
+    while (decoder->NextChannel(&channel) && iResult>=0) {
       iTotal++;
 
-      void* pChannel=NULL;
-      AliHLTUInt16_t hwAddress=~(AliHLTUInt16_t)0;
-      int channelSize=reader.GetAltroChannelRawData(pChannel, hwAddress);
-
+      int hwAddress=channel.GetHadd();
       int active=0;
-      if (pActivePadsArray) {
-	for (; active<iArraySize; active++) {
-	  if ((int)pActivePadsArray[active].fRow==reader.GetRow() &&
-	      (int)pActivePadsArray[active].fPad==reader.GetPad()) {
-	    break;
-	  }
-	}
-      } else {
-	for (; active<iArraySize; active++) {
-	  if (pActiveHwAddressArray[active]==hwAddress) {
-	    break;
-	  }
+      for (active=0; active<iArraySize; active++) {
+	if (pActiveHwAddressArray[active]==(AliHLTUInt16_t)hwAddress) {
+	  break;
 	}
       }
       if (active>=iArraySize) {
-	HLTDebug("ALTRO block Row %d, Pad %d discarded (inactive)", reader.GetRow(), reader.GetPad());
+	HLTDebug("ALTRO block %#x (%d) discarded (inactive)", hwAddress, hwAddress);
 	continue;
       }
 
-      iSelected++;
-      HLTDebug("ALTRO block hwAddress 0x%08x Row/Pad %d/%d selected (active), size %d", hwAddress, reader.GetRow(), reader.GetPad(), channelSize);
-      if (channelSize>0 && pChannel!=NULL) {
-	if (iOutputSize==0) {
-	  // first add the RCU trailer
-	  unsigned rcuTrailerLength=reader.GetRCUDataBlockLength();
-	  AliHLTUInt8_t* pSrc=reinterpret_cast<AliHLTUInt8_t*>(pDesc->fPtr);
-	  pSrc+=pDesc->fSize-rcuTrailerLength;
-	  if ((iResult=CopyBlockToEnd(outputPtr, iCapacity, iOutputSize, pSrc, rcuTrailerLength))>=0) {
-	    assert(iResult==rcuTrailerLength);
-	    iOutputSize+=rcuTrailerLength;
-	  } else {
-	    HLTError("failed to write RCU trailer of length %d for block %d", rcuTrailerLength, blockno);
-	    break;
-	  }
+      // no of 10 bit words is without the fill words to fill complete 40 bit words
+      // in addition, align to complete 40 bit words (the '+3')
+      // also, the 5 bytes of the Altro trailer must be added to get the full size
+      int channelSize=((channel.GetDataSize()+3)/4)*5;
+      channelSize+=5;
+      HLTDebug("ALTRO block hwAddress 0x%08x (%d) selected (active), size %d", hwAddress, hwAddress, channelSize);
+      if (iOutputSize==0) {
+	// first add the RCU trailer
+	AliHLTUInt8_t* pSrc=reinterpret_cast<AliHLTUInt8_t*>(pDesc->fPtr);
+	pSrc+=pDesc->fSize-rcuTrailerLength;
+	if ((iResult=CopyBlockToEnd(outputPtr, iCapacity, iOutputSize, pSrc, rcuTrailerLength))>=0) {
+	  assert(iResult==rcuTrailerLength);
+	  iOutputSize+=rcuTrailerLength;
+	} else {
+	  HLTError("failed to write RCU trailer of length %d for block %d, too little space in output buffer?", rcuTrailerLength, blockno);
+	  iResult=-ENOSPC;
+	  break;
 	}
       }
-      if ((iResult=CopyBlockToEnd(outputPtr, iCapacity, iOutputSize, pChannel, channelSize))>=0) {
-	assert(iResult==channelSize);
-	iOutputSize+=channelSize;
+
+      if ((iResult=decoder->CopyBackward(outputPtr, iCapacity-iOutputSize))>=0) {
+	if (channelSize == iResult) {
+	  if (channelSize%5 == 0) {
+	    iNofAltro40+=channelSize/5;
+	    iOutputSize+=channelSize;
+	  } else {
+	    if (fTalkative) HLTWarning("corrupted ALTRO channel: incomplete 40 bit word");
+	    iCorrupted++;
+	    continue;
+	  }
+	} else {
+	  if (fTalkative) HLTWarning("internal error: failed to copy full channel: %d out of %d bytes", iResult, channelSize);
+	  iCorrupted++;
+	  continue;
+	}
       } else {
-	HLTError("failed to write ALTRO channel of length %d for block %d", channelSize, blockno);
-	break;
+	if (fTalkative) HLTError("failed to write ALTRO channel of length %d for block %d", channelSize, blockno);
+	// corrupted channel, but keep going
+	iCorrupted++;
+	iResult=0;
+	continue;
       }
+      iSelected++;
     }
     if (iResult>=0) {
       // write the common data header
-      int cdhSize=reader.GetCommonDataHeaderSize();
       if ((iResult=CopyBlockToEnd(outputPtr, iCapacity, iOutputSize, pDesc->fPtr, cdhSize))>=0) {
 	assert(iResult==cdhSize);
 	iOutputSize+=cdhSize;
 
 	// set new length of the data block
-	AliHLTUInt32_t* pCdhSize=reinterpret_cast<AliHLTUInt32_t*>(outputPtr+iCapacity-iOutputSize+1);
+	AliHLTUInt32_t* pCdhSize=reinterpret_cast<AliHLTUInt32_t*>(outputPtr+iCapacity-iOutputSize);
 	*pCdhSize=iOutputSize;
+
+	// set number of Altro words
+	AliHLTUInt32_t* pNofAltro40=reinterpret_cast<AliHLTUInt32_t*>(outputPtr+iCapacity-rcuTrailerLength);
+	*pNofAltro40=iNofAltro40;
 
 	// insert block descriptor
 	AliHLTComponentBlockData bd;
@@ -270,8 +285,9 @@ int AliHLTAltroChannelSelectorComponent::DoEvent(const AliHLTComponentEventData&
 	break;
       }
     }
-    HLTInfo("data block %d (0x%08x): selected %d out of %d ALTRO channels", blockno, pDesc->fSpecification, iSelected, iTotal);
+    HLTInfo("data block %d (0x%08x): selected %d out of %d ALTRO channel(s), %d corrupted channels skipped", blockno, pDesc->fSpecification, iSelected, iTotal, iCorrupted);
   }
+  if (decoder) delete decoder;
 
   if (iResult<0) {
     outputBlocks.clear();
