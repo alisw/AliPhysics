@@ -28,9 +28,9 @@ ClassImp(AliHMPIDDigit)
 /*
  Preface: all geometrical information (like left-right sides) is reported as seen from electronic side.
  
-     d10          d1    d10          d1 
+      d1          d10    d1           d10 
       _______________    _______________          
-r24  |               |  |               |126.16   r1
+r1   |               |  |               |126.16   r24
      |       4       |  |       5       | 
      |               |  |               | 
      |_______________|  |_______________|85.84 
@@ -43,7 +43,7 @@ r24  |               |  |               |126.16   r1
      |               |  |               |40.32
      |       0       |  |       1       |
      |               |  |               |
-r1   |_______________|  |_______________|0        r24
+r24  |_______________|  |_______________|0        r1        //updated: 15/02/2008
       0           64.0  66.6        130.6 
 
 
