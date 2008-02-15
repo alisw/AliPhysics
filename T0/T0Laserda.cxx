@@ -240,8 +240,8 @@ int main(int argc, char **argv) {
                 if((allData[cc+45][iHt]-allData[0][0]+5000)!=0 && allData[cc+45][iHt]>0){
                  hCFD[cc]->Fill(allData[cc+45][iHt]-allData[0][0]+5000);
                 }
-                if(allData[ik+69][iHt]!=0 && allData[ik+70][iHt]!=0 && allData[cc+45][iHt]!=0){
-                 hCFD_QTC[cc]->Fill(allData[ik+70][iHt]-allData[ik+69][iHt],allData[cc+45][iHt]-allData[0][0]+5000);
+                if(allData[ik+57][iHt]!=0 && allData[ik+58][iHt]!=0 && allData[cc+45][iHt]!=0){
+                 hCFD_QTC[cc]->Fill(allData[ik+57][iHt]-allData[ik+58][iHt],allData[cc+45][iHt]-allData[0][0]+5000);
 		}
                 if(allData[cc+57][iHt]!=0 && allData[cc+45][iHt]!=0){
                  hCFD_LED[cc]->Fill(allData[cc+57][iHt]-allData[cc+45][iHt],allData[cc+45][iHt]-allData[0][0]+5000);
