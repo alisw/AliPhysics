@@ -9,7 +9,8 @@
  * </pre>
  *
  * This macro illustrates the creation of an HLT component and it's
- * initialization and configuration.
+ * initialization and configuration, including update of values from
+ * DCS.
  *
  * A component can be initialized by command line arguments. The scan
  * and interpretation of those arguments must be implemented in the
@@ -51,13 +52,18 @@
   // some parameters for this test macro
 
   // the path of a temporary file needed to send the reconfigure event
-  const char* tmpFile="/tmp/samplecomponent1-dummy.dat";
+  const char* tmpFile1="/tmp/samplecomponent1-comconf.dat";
+  const char* tmpFile2="/tmp/samplecomponent1-updtdcs.dat";
 
   // path of the cdb entry
   const char* cdbEntryPath="HLT/ConfigSample/SampleComponent1";
 
+  // path of detectors with 'active' preprocessors
+  const char* prepDetectors="TPC PHOS";
+
   // path of the CDB to be created
-  const char* cdbUri="local:///tmp/OCDB";
+  const char* cdbLocation="/tmp/OCDB";
+  TString cdbUri; cdbUri.Form("local://%s", cdbLocation);
 
   // initialization arguments for the component
   const char* componentInit="-mandatory1 testarg -mandatory2";
@@ -89,9 +95,17 @@
 
   // this is a tool to send the reconfiguration event and the
   // path of the cdb entry
-  FILE* fp = fopen(tmpFile, "w");
+  FILE* fp = fopen(tmpFile1, "w");
   if (fp) {
     fprintf(fp, cdbEntryPath);
+    fclose(fp);
+  }
+
+  // this is a tool to send the update DCS event and the
+  // path of the cdb entry
+  FILE* fp = fopen(tmpFile2, "w");
+  if (fp) {
+    fprintf(fp, prepDetectors);
     fclose(fp);
   }
 
@@ -118,10 +132,13 @@
 
   // publisher for the reconfigure event
   TString arg;
-  arg.Form("-datatype COM_CONF PRIV -datafile %s", tmpFile);
+  arg.Form("-datatype COM_CONF PRIV -datafile %s", tmpFile1);
   AliHLTConfiguration reconfevent("reconfevent", "FilePublisher", NULL , arg.Data());
 
-  AliHLTConfiguration sc1("sc1", "Sample-component1", "reconfevent" , componentInit);
+  arg.Form("-datatype UPDT_DCS PRIV -datafile %s", tmpFile2);
+  AliHLTConfiguration updtdcsevent("updtdcsevent", "FilePublisher", NULL , arg.Data());
+
+  AliHLTConfiguration sc1("sc1", "Sample-component1", "reconfevent updtdcsevent" , componentInit);
 
   // run the chain
   gHLT.BuildTaskList("sc1");
@@ -134,6 +151,6 @@
 
   // delete temporary file
   TString cmd;
-  cmd.Form("rm -r %s", tmpFile, cdbUri);
+  cmd.Form("rm -r %s %s %s", tmpFile1, tmpFile2, cdbLocation);
   gSystem->Exec(cmd.Data());
 }

@@ -26,7 +26,7 @@
  *           2007-11-23 origin defines have become variables in conjunction
  *           to be used with the operator| (AliHLTComponentDataType)
  *           2007-11-24 added trigger structs and ESD tree data type
- *   4       Component configuration event added
+ *   4       Component configuration and DCS update events added
  *           gkAliHLTDDLListSize set from 29 to 30 according to new PubSub
  *           specs
  */
@@ -122,9 +122,14 @@ const int kAliHLTComponentDataTypefIDsize=8;
 # define kAliHLTEventDataTypeID    {'E','V','E','N','T','T','Y','P'}
 
 /** ComponentConfiguration event
- * - payload contains the ID of the component in the analysis chain
+ * - payload contains the CDB path as string
  */
 # define kAliHLTComConfDataTypeID  {'C','O','M','_','C','O','N','F'}
+
+/** DCS value update event
+ * - payload contains string of relevant detectors
+ */
+# define kAliHLTUpdtDCSDataTypeID  {'U','P','D','T','_','D','C','S'}
 
 /** ESD data block
  * an AliESD object of varying origin
@@ -372,6 +377,8 @@ extern "C" {
   static const AliHLTUInt32_t gkAliEventTypeCalibration=16;
   /** DataReplay eventType specification */
   static const AliHLTUInt32_t gkAliEventTypeDataReplay=32;
+  /** Configuration eventType specification */
+  static const AliHLTUInt32_t gkAliEventTypeConfiguration=34;
   /** Tick eventType specification */ 
   static const AliHLTUInt32_t gkAliEventTypeTick=64;
   /** Max eventType specification */ 
@@ -433,6 +440,9 @@ extern "C" {
 
   /** Configuration event data type */
   extern const AliHLTComponentDataType kAliHLTDataTypeComConf;
+
+  /** DCS value update event */
+  extern const AliHLTComponentDataType kAliHLTDataTypeUpdtDCS;
 
   /** RAW DDL data specification, origin is 'any', data publisher origin correctly */
   extern const AliHLTComponentDataType kAliHLTDataTypeDDLRaw;

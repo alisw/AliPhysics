@@ -201,3 +201,12 @@ int AliHLTSampleComponent1::Reconfigure(const char* cdbEntry, const char* chainI
   }
   return iResult;
 }
+
+int AliHLTSampleComponent1::ReadPreprocessorValues(const char* modules)
+{
+  // see header file for class documentation
+  int iResult=0;
+  TString detectors(modules!=NULL?modules:"");
+  HLTInfo("read preprocessor values for detector(s): %s", detectors.IsNull()?"none":detectors.Data());
+  return iResult;
+}

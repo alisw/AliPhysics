@@ -77,6 +77,13 @@ const AliHLTComponentDataType kAliHLTDataTypeComConf  =  (AliHLTComponentDataTyp
   kAliHLTDataOriginAny
 }|kAliHLTDataOriginPrivate;
 
+/** DCS value update event */
+const AliHLTComponentDataType kAliHLTDataTypeUpdtDCS  =  (AliHLTComponentDataType) {
+  sizeof(AliHLTComponentDataType),
+  kAliHLTUpdtDCSDataTypeID,
+  kAliHLTDataOriginAny
+}|kAliHLTDataOriginPrivate;
+
 /** RAW DDL data specification, data publisher will set type id and origin correctly */
 const AliHLTComponentDataType kAliHLTDataTypeDDLRaw =  (AliHLTComponentDataType) {
   sizeof(AliHLTComponentDataType),

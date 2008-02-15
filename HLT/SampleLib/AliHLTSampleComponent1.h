@@ -111,6 +111,7 @@ public:
 		       AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
 		       AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks );
   int Reconfigure(const char* cdbEntry, const char* chainId);
+  int ReadPreprocessorValues(const char* modules);
 
   using AliHLTProcessor::DoEvent;
 

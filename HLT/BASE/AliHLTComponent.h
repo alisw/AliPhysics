@@ -631,6 +631,19 @@ class AliHLTComponent : public AliHLTLogging {
   virtual int Reconfigure(const char* cdbEntry, const char* chainId);
 
   /**
+   * Read the Preprocessor values.
+   * The function is invoked when the component is notified about available/
+   * updated data points from the detector Preprocessors. The 'modules'
+   * argument contains all detectors for which the Preprocessors have
+   * updated data points. The component has to implement the CDB access to
+   * get the desired data points.
+   * @param modules     detectors for which the Preprocessors have updated
+   *                    data points: TPC, TRD, ITS, PHOS, MUON
+   * @return neg. error code if failed
+   */
+  virtual int ReadPreprocessorValues(const char* modules);
+
+  /**
    * General memory allocation method.
    * All memory which is going to be used 'outside' of the interface must
    * be provided by the framework (online or offline).

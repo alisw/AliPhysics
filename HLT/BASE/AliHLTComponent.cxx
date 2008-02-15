@@ -248,18 +248,28 @@ int AliHLTComponent::SetCDBRunNo(int runNo)
 int AliHLTComponent::DoInit( int /*argc*/, const char** /*argv*/)
 {
   // default implementation, childs can overload
+  HLTLogKeyword("dummy");
   return 0;
 }
 
 int AliHLTComponent::DoDeinit()
 {
   // default implementation, childs can overload
+  HLTLogKeyword("dummy");
   return 0;
 }
 
 int AliHLTComponent::Reconfigure(const char* /*cdbEntry*/, const char* /*chainId*/)
 {
   // default implementation, childs can overload
+  HLTLogKeyword("dummy");
+  return 0;
+}
+
+int AliHLTComponent::ReadPreprocessorValues(const char* /*modules*/)
+{
+  // default implementation, childs can overload
+  HLTLogKeyword("dummy");
   return 0;
 }
 
@@ -1129,11 +1139,14 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
   fOutputBufferFilled=0;
   fOutputBlocks.clear();
 
+  bool bSkipDataProcessing=false;
   // find special events
   if (fpInputBlocks) {
     // first look for all special events and execute in the appropriate
     // sequence afterwords
+    AliHLTUInt32_t eventType=gkAliEventTypeUnknown;
     int indexComConfEvent=-1;
+    int indexUpdtDCSEvent=-1;
     int indexSOREvent=-1;
     int indexEOREvent=-1;
     for (unsigned int i=0; i<evtData.fBlockCnt && iResult>=0; i++) {
@@ -1146,6 +1159,11 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
 	// this event is most likely deprecated
       } else if (fpInputBlocks[i].fDataType==kAliHLTDataTypeComConf) {
 	indexComConfEvent=i;
+      } else if (fpInputBlocks[i].fDataType==kAliHLTDataTypeUpdtDCS) {
+	indexUpdtDCSEvent=i;
+      } else if (fpInputBlocks[i].fDataType==kAliHLTDataTypeEvent) {
+	eventType=fpInputBlocks[i].fSpecification;
+	bSkipDataProcessing=fpInputBlocks[i].fSpecification==gkAliEventTypeConfiguration;
       }
     }
     if (indexSOREvent>=0) {
@@ -1183,15 +1201,26 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
 	HLTWarning("did not receive SOR, ignoring EOR");
       }
     }
-    if (indexComConfEvent>=0) {
+    if (indexComConfEvent>=0 || eventType==gkAliEventTypeConfiguration) {
       TString cdbEntry;
-      if (fpInputBlocks[indexComConfEvent].fPtr!=NULL && fpInputBlocks[indexComConfEvent].fSize>0) {
+      if (indexComConfEvent>=0 && fpInputBlocks[indexComConfEvent].fPtr!=NULL && fpInputBlocks[indexComConfEvent].fSize>0) {
 	cdbEntry.Append(reinterpret_cast<const char*>(fpInputBlocks[indexComConfEvent].fPtr), fpInputBlocks[indexComConfEvent].fSize);
       }
       HLTDebug("received component configuration command: entry %s", cdbEntry.IsNull()?"none":cdbEntry.Data());
       int tmpResult=Reconfigure(cdbEntry[0]==0?NULL:cdbEntry.Data(), fChainId.c_str());
       if (tmpResult<0) {
 	HLTWarning("reconfiguration of component %p (%s) failed with error code %d", this, GetComponentID(), tmpResult);
+      }
+    }
+    if (indexUpdtDCSEvent>=0) {
+      TString modules;
+      if (fpInputBlocks[indexUpdtDCSEvent].fPtr!=NULL && fpInputBlocks[indexUpdtDCSEvent].fSize>0) {
+	modules.Append(reinterpret_cast<const char*>(fpInputBlocks[indexUpdtDCSEvent].fPtr), fpInputBlocks[indexUpdtDCSEvent].fSize);
+      }
+      HLTDebug("received preprocessor update command: detectors %s", modules.IsNull()?"none":modules.Data());
+      int tmpResult=ReadPreprocessorValues(modules[0]==0?NULL:modules.Data());
+      if (tmpResult<0) {
+	HLTWarning("preprocessor update of component %p (%s) failed with error code %d", this, GetComponentID(), tmpResult);
       }
     }
   }
@@ -1201,7 +1230,7 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
     ALIHLTCOMPONENT_DA_STOPWATCH();
     iResult=DoProcessing(evtData, blocks, trigData, outputPtr, size, blockData, edd);
   } // end of the scope of the stopwatch guard
-  if (iResult>=0) {
+  if (iResult>=0 && !bSkipDataProcessing) {
     if (fOutputBlocks.size()>0) {
       //HLTDebug("got %d block(s) via high level interface", fOutputBlocks.size());
       
@@ -1235,12 +1264,12 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
       HLTFatal("component %s (%p): can not convert output block descriptor list", GetComponentID(), this);
     }
   }
-  if (iResult<0) {
+  if (iResult<0 || bSkipDataProcessing) {
     outputBlockCnt=0;
     outputBlocks=NULL;
   }
   CleanupInputObjects();
-  if (iResult>=0) {
+  if (iResult>=0 && !bSkipDataProcessing) {
     IncrementEventCounter();
   }
   return iResult;
