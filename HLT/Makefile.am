@@ -10,6 +10,10 @@ if EN_HLT_TPC
 TPC_DIR=TPCLib
 endif
 
+if EN_HLT_RCU
+RCU_DIR=RCU
+endif
+
 if EN_HLT_PHOS
 PHOS_DIR=PHOS
 endif
@@ -36,6 +40,7 @@ SUBDIRS 		= BASE \
 			  shuttle \
 			  $(SAMPLE_DIR) \
 			  $(TPC_DIR) \
+			  $(RCU_DIR) \
 			  $(PHOS_DIR) \
 			  $(TRD_DIR) \
 			  $(MUON_DIR) \

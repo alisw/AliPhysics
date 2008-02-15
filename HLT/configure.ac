@@ -524,6 +524,52 @@ AC_MSG_RESULT([$enable_module])
 AC_SUBST([ALITPC_LIBS])
 
 dnl ------------------------------------------------------------------
+AH_TEMPLATE([HLT_RCU],[hlt rcu library])
+
+CHECK_HLTMODULE([rcu],
+		[AliAltroDecoder.h], 
+		[$ALIROOT_CPPFLAGS -I$ALICE_ROOT/RAW],
+		[], [-L$ROOTLIBDIR], [$ROOTLIBS $ADD_ROOTLIBS],
+		[], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS], 
+		[$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS])
+
+if test "x$enable_module" = "xmissheader"; then
+  enable_module="no...missing.headers"
+  enable_rcu="no...missing.headers"
+elif test "x$have_alircu" = "xno" ; then
+  enable_module="no...requires.AliRoot.RAW.libraries"
+  enable_rcu="no...requires.AliRoot.RAW.libraries"
+elif test "x$enable_module" = "xforce"; then
+  enable_rcu="yes"
+else
+  AC_LANG_PUSH(C++)
+  save_CPPFLAGS=$CPPFLAGS
+  save_LDFLAGS=$LDFLAGS
+  save_LIBS=$LIBS
+  CPPFLAGS="$save_CPPFLAGS $ALIROOT_CPPFLAGS"
+  LDFLAGS="$save_LDFLAGS -L${ROOTLIBDIR} $ALIROOT_LDFLAGS"
+  LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS"
+  AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <AliAltroDecoder.h>], 
+                                  [AliAltroDecoder decoder;
+				  decoder.CopyBackward(NULL, 0);])],
+                                  [enable_rcu=$enable_module], 
+				  [enable_module="no...requires.AliRoot>v4-10-Release"
+				   enable_rcu="no...requires.AliRoot>v4-10-Release"])
+  CPPFLAGS=$save_CPPFLAGS
+  LDFLAGS=$save_LDFLAGS
+  LIBS=$save_LIBS
+  AC_LANG_POP(C++)
+fi
+
+if test "x$enable_rcu" = "xyes" ; then 
+  AC_DEFINE(HLT_RCU)
+fi
+AM_CONDITIONAL(EN_HLT_RCU, test x$enable_rcu = xyes)
+AC_MSG_CHECKING([whether to compile rcu library])
+AC_MSG_RESULT([$enable_module])
+AC_SUBST([ALIRCU_LIBS])
+
+dnl ------------------------------------------------------------------
 AH_TEMPLATE([HLT_PHOS],[hlt phos library])
   
 ALIPHOS_LIBS=
@@ -777,6 +823,7 @@ AC_CONFIG_FILES([Makefile
 		 TPCLib/Makefile
 		 TPCLib/mapping2array.cxx
 		 TPCLib/OnlineDisplay/Makefile
+		 RCU/Makefile
 		 PHOS/Makefile
 		 TRD/Makefile
 		 MUON/Makefile

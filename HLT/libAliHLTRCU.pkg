@@ -1,0 +1,25 @@
+#-*- Mode: Makefile -*-
+# $Id$
+
+include $(MODDIR)/hlt.conf
+
+CLASS_HDRS:=  	AliHLTRCUAgent.h
+
+MODULE_SRCS= 	$(CLASS_HDRS:.h=.cxx)
+
+MODULE_HDRS:= 	$(CLASS_HDRS)
+
+MODULE_DHDR:= 		
+
+SRCS:=$(patsubst %,BASE/RCU/%,$(MODULE_SRCS))
+CINTHDRS:=$(patsubst %,BASE/RCU/%,$(CLASS_HDRS))
+HDRS:=$(patsubst %,BASE/RCU/%,$(MODULE_HDRS))
+DHDR:=$(patsubst %,BASE/RCU/%,$(MODULE_DHDR))
+CINTAUTOLINK:= $(shell test "x$(MODULE_DHDR)" = "x" && echo 1)
+
+EDEFINE      := ${HLTDEFS}
+PACKCXXFLAGS := ${HLTCXXFLAGS}
+PACKCFLAGS   := ${HLTCLFAGS}
+PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
+
+EINCLUDE := HLT/BASE RAW
