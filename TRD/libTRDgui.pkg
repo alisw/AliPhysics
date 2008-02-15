@@ -1,0 +1,13 @@
+SRCS= qaGui/AliTRDqaGuiMain.cxx \
+      qaGui/AliTRDqaGuiClusters.cxx \
+      qaGui/AliTRDqaGuiClustersSM.cxx \
+      qaGui/AliTRDqaGuiClustersStack.cxx \
+      qaGui/AliTRDqaGuiESDs.cxx \
+      qaGui/AliTRDqaGuiMainBlack.cxx \
+      qaGui/AliTRDqaGuiBlackSM.cxx \
+      qaGui/AliTRDqaGuiBlackChamber.cxx
+
+HDRS= $(SRCS:.cxx=.h)
+
+DHDR= TRDguiLinkDef.h
+
