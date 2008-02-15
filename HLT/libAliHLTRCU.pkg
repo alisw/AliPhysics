@@ -11,10 +11,10 @@ MODULE_HDRS:= 	$(CLASS_HDRS)
 
 MODULE_DHDR:= 		
 
-SRCS:=$(patsubst %,BASE/RCU/%,$(MODULE_SRCS))
-CINTHDRS:=$(patsubst %,BASE/RCU/%,$(CLASS_HDRS))
-HDRS:=$(patsubst %,BASE/RCU/%,$(MODULE_HDRS))
-DHDR:=$(patsubst %,BASE/RCU/%,$(MODULE_DHDR))
+SRCS:=$(patsubst %,RCU/%,$(MODULE_SRCS))
+CINTHDRS:=$(patsubst %,RCU/%,$(CLASS_HDRS))
+HDRS:=$(patsubst %,RCU/%,$(MODULE_HDRS))
+DHDR:=$(patsubst %,RCU/%,$(MODULE_DHDR))
 CINTAUTOLINK:= $(shell test "x$(MODULE_DHDR)" = "x" && echo 1)
 
 EDEFINE      := ${HLTDEFS}
