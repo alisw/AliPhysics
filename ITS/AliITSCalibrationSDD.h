@@ -103,7 +103,7 @@ class AliITSCalibrationSDD : public AliITSCalibration {
     }
     Float_t GetMapACell(Int_t i,Int_t j) const {
       if(i<256) return fMapAW0->GetCellContent(i,j);
-      else return fMapAW1->GetCellContent(i,j);
+      else return fMapAW1->GetCellContent(i-256,j);
     }
     virtual void SetMapA(Int_t wing,AliITSMapSDD* mapA) {
       if(wing==0) fMapAW0=mapA;
@@ -111,7 +111,7 @@ class AliITSCalibrationSDD : public AliITSCalibration {
     } 
     Float_t GetMapTCell(Int_t i,Int_t j) const {
       if(i<256) return fMapTW0->GetCellContent(i,j);
-      else return fMapTW1->GetCellContent(i,j);
+      else return fMapTW1->GetCellContent(i-256,j);
     }
     virtual void SetMapT(Int_t wing,AliITSMapSDD* mapT) {
       if(wing==0) fMapTW0=mapT;
