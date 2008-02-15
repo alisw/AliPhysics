@@ -23,5 +23,11 @@
 #pragma link C++ class  AliCFTrackQualityCuts+;
 #pragma link C++ class  AliCFTrackIsPrimaryCuts+;
 #pragma link C++ class  AliCFTrackCutPid+;
+#pragma link C++ class  AliCFPair+;
+#pragma link C++ class  AliCFPairAcceptanceCuts+;
+#pragma link C++ class  AliCFPairQualityCuts+;
+#pragma link C++ class  AliCFPairIsPrimaryCuts+;
+#pragma link C++ class  AliCFPairPidCut+;
+#pragma link C++ class  AliCFV0TopoCuts+;
 
 #endif

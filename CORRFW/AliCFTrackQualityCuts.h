@@ -44,7 +44,8 @@
 
 #include "AliCFCutBase.h"
 
-class TH2 ;
+class TH2F ;
+class TH1F ;
 class TBits;
 class AliESDtrack ;
 

@@ -16,6 +16,12 @@ SRCS = AliCFFrame.cxx \
        AliCFTrackQualityCuts.cxx \
        AliCFTrackIsPrimaryCuts.cxx \
        AliCFTrackCutPid.cxx \
+       AliCFPair.cxx \
+       AliCFPairAcceptanceCuts.cxx \
+       AliCFPairQualityCuts.cxx \
+       AliCFPairIsPrimaryCuts.cxx \
+       AliCFPairPidCut.cxx \
+       AliCFV0TopoCuts.cxx  
 
 CHECKALIEN = $(shell root-config --has-alien)
 ifeq (yes,$(CHECKALIEN))
