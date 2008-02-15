@@ -745,7 +745,11 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
     AliTPCCalROC * gainROC    = gainTPC->GetCalROC(fSector);  // pad gains per given sector
     AliTPCCalROC * pedestalROC = pedestalTPC->GetCalROC(fSector);  // pedestal per given sector
     AliTPCCalROC * noiseROC   = noiseTPC->GetCalROC(fSector);  // noise per given sector
- 
+    //check the presence of the calibration
+    if (!noiseROC ||!pedestalROC ) {
+      AliError(Form("Missing calibration per sector\t%d\n",fSector));
+      continue;
+    }
     Int_t nRows = 0;
     Int_t nDDLs = 0, indexDDL = 0;
     if (fSector < kNIS) {
@@ -961,6 +965,7 @@ void AliTPCclustererMI::FindClusters(AliTPCCalROC * noiseROC)
     if (!IsMaximum(*b,fMaxTime,b)) continue;
     //
     Float_t noise = noiseROC->GetValue(fRow, i/fMaxTime);
+    if (noise>fRecoParam->GetMaxNoise()) continue;
     // sigma cuts
     if (b[0]<minMaxCutSigma*noise) continue;   //threshold form maxima  
     if ((b[0]+b[-1]+b[1])<minUpDownCutSigma*noise) continue;   //threshold for up town TRF 
