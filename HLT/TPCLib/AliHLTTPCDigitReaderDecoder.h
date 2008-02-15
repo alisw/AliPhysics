@@ -50,6 +50,8 @@ public:
   const UInt_t* GetSignals();
   int GetTime();
   int GetBunchSize();
+  AliHLTUInt32_t GetAltroBlockHWaddr() const;
+
 protected:
   bool NextSignal();
 
@@ -64,12 +66,10 @@ private:
   AliAltroBunch *fAltroBunch;                                      //! transient
   AliHLTTPCMapping *fMapping;                                      //! transient
 
-  UInt_t fNextCounter;                                             //! transient
-  Bool_t fNextSignalMethodUsed;                                    //! transient
+  int fNextCounter;                                                //! transient
+  bool fNextSignalMethodUsed;                                      //! transient
 
-
-
-  ClassDef(AliHLTTPCDigitReaderDecoder, 1)
+  ClassDef(AliHLTTPCDigitReaderDecoder, 2)
     
 };
 #endif

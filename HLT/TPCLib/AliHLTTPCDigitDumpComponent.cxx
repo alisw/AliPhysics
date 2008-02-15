@@ -34,6 +34,7 @@
 #include "AliHLTTPCDigitReaderUnpacked.h"
 #include "AliHLTTPCDigitReaderPacked.h"
 #include "AliHLTTPCDigitReaderRaw.h"
+#include "AliHLTTPCDigitReaderDecoder.h"
 #include "AliHLTTPCDefinitions.h"
 
 #define DefaultRawreaderMode 0
@@ -45,7 +46,7 @@ AliHLTTPCDigitDumpComponent::AliHLTTPCDigitDumpComponent()
   :
   AliHLTFileWriter(),
   fRawreaderMode(DefaultRawreaderMode),
-  fDigitReaderType(kDigitReaderRaw),
+  fDigitReaderType(kDigitReaderDecoder),
   fRcuTrailerSize(2),
   fUnsorted(false)
 {
@@ -119,6 +120,8 @@ int AliHLTTPCDigitDumpComponent::ScanArgument(int argc, const char** argv)
 	fDigitReaderType=kDigitReaderPacked;
       } else if (param.CompareTo("raw", TString::kIgnoreCase)==0) {
 	fDigitReaderType=kDigitReaderRaw;
+      } else if (param.CompareTo("decoder", TString::kIgnoreCase)==0) {
+	fDigitReaderType=kDigitReaderDecoder;
       } else {
 	HLTError("unknown digit reader type %s", param.Data());
 	iResult=-EINVAL;
@@ -221,6 +224,10 @@ int AliHLTTPCDigitDumpComponent::DumpEvent( const AliHLTComponentEventData& evtD
 	  HLTInfo("create DigitReaderRaw");
 	  pReader=new AliHLTTPCDigitReaderRaw(fRawreaderMode);
 	  break;
+	case kDigitReaderDecoder:
+	  HLTInfo("create DigitReaderDecoder");
+	  pReader=new AliHLTTPCDigitReaderDecoder();
+	  break;
 	}
 	if (!pReader) {
 	  HLTError("can not create digit reader of type %d", fDigitReaderType);
@@ -234,11 +241,13 @@ int AliHLTTPCDigitDumpComponent::DumpEvent( const AliHLTComponentEventData& evtD
 	int iPrintedPad=-1;
 	int iLastTime=-1;
 	while (pReader->Next()) {
-	  if ((iPrintedSlice!=-1 && iLastTime!=pReader->GetTime()+1 && iLastTime!=pReader->GetTime()-1) ||
-	      (iPrintedPad!=-1 && iPrintedPad!=pReader->GetPad()) ||
-	      (iPrintedRow!=-1 && iPrintedRow!=pReader->GetRow())) {
+	  if ((iPrintedSlice!=-1 && iLastTime!=-1 && iLastTime!=pReader->GetTime()+1 && iLastTime!=pReader->GetTime()-1)) {
+	    dump << "    -> Time: " << iLastTime << endl;
+	  } else if ((iPrintedPad!=-1 && iPrintedPad!=pReader->GetPad()) ||
+		     (iPrintedRow!=-1 && iPrintedRow!=pReader->GetRow())) {
 	    dump << endl;
 	  }
+
 	  if (iPrintedSlice!=slice || iPrintedPart!=part) {
 	    iPrintedSlice=slice;
 	    iPrintedPart=part;

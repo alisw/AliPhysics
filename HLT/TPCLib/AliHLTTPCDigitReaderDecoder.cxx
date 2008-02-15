@@ -28,6 +28,7 @@
 using namespace std;
 #endif
 
+#include <cassert>
 #include "AliHLTTPCDigitReaderDecoder.h"
 #include "AliHLTTPCMapping.h"
 #include "AliAltroDecoder.h"
@@ -43,7 +44,8 @@ AliHLTTPCDigitReaderDecoder::AliHLTTPCDigitReaderDecoder()
   fAltroData(),
   fAltroBunch(NULL),
   fMapping(NULL),
-  fNextCounter(0),
+  // initialization due to the logic in NextSignals
+  fNextCounter(-1),
   fNextSignalMethodUsed(kFALSE)
 {
   // see header file for class documentation
@@ -70,9 +72,16 @@ AliHLTTPCDigitReaderDecoder::~AliHLTTPCDigitReaderDecoder()
 int AliHLTTPCDigitReaderDecoder::InitBlock(void* ptr,unsigned long size, Int_t patch, Int_t slice)
 {
   // see header file for class documentation
-  fMapping = new AliHLTTPCMapping(patch);
-  fAltroDecoder = new AliAltroDecoder();
-  fAltroBunch = new AliAltroBunch();
+  //  HLTDebug("Initializing block in decoder");
+  if(!fMapping){
+    fMapping = new AliHLTTPCMapping(patch);
+  }
+  if(!fAltroDecoder){
+    fAltroDecoder = new AliAltroDecoder();
+  }
+  if(!fAltroBunch){
+    fAltroBunch = new AliAltroBunch();
+  }
   fAltroDecoder->SetMemory((UChar_t*)ptr, size);
   fAltroDecoder->Decode();
   return 0;
@@ -93,24 +102,25 @@ int AliHLTTPCDigitReaderDecoder::NextBunch()
 bool AliHLTTPCDigitReaderDecoder::NextSignal()
 {
   // see header file for class documentation
-  /*  nextSignalMethodUsed=kTRUE;
-  if(!fAltroBunch){      // this is true when NextChannel and Next bunch has not been called yet
-    if(NextChannel()){   // checks if ther is any pads with data
-      if(!NextBunch()){  // checks if there is any bunch
-	return false;
-      }
+  fNextSignalMethodUsed=kTRUE;
+  do {
+    if (fNextCounter>0) {
+      // there is data available in the current bunch
+      fNextCounter--;
+      return true;
     }
-    else{
-      return false;
+
+    // there is no data left in the current bunch, search for the next one
+    while (NextBunch()) if (GetBunchSize()>0) {
+      fNextCounter=GetBunchSize()-1;
+      return true;
     }
-  }
+
+    fNextCounter=-1;
+    // there is no bunch left, go to the next channel
+  } while (NextChannel());
   
-  UInt_t bunchSize=fAltroBunchSize;
-  if(nextCounter==bunchSize){
-    nextCounter=0;
-    return false;
-    }*/
-  return true;
+  return false;
 }
 
 const UInt_t* AliHLTTPCDigitReaderDecoder::GetSignals()
@@ -129,12 +139,18 @@ int AliHLTTPCDigitReaderDecoder::GetPad()
 {
   // see header file for class documentation
   return fMapping->GetPad(fAltroData.GetHadd());
-    //    return 0;
 }
 
 int AliHLTTPCDigitReaderDecoder::GetSignal()
 {
   // see header file for class documentation
+  if (fNextSignalMethodUsed) {
+    const  UInt_t* pData=GetSignals();
+    if (pData && fNextCounter>=0) {
+      assert(fNextCounter<GetBunchSize());
+      return pData[fNextCounter];
+    }
+  }
   return 0;
 }
 
@@ -145,11 +161,19 @@ int AliHLTTPCDigitReaderDecoder::GetTime()
     return fAltroBunch->GetStartTimeBin();
   }
   else{
+    assert(fNextCounter>=0);
     return fAltroBunch->GetStartTimeBin()+fNextCounter;
   }
 }
 
 int AliHLTTPCDigitReaderDecoder::GetBunchSize()
 {
+  // see header file for class documentation
   return fAltroBunch->GetBunchSize();
+}
+
+AliHLTUInt32_t AliHLTTPCDigitReaderDecoder::GetAltroBlockHWaddr() const
+{
+  // see header file for class documentation
+  return (AliHLTUInt32_t)fAltroData.GetHadd();
 }

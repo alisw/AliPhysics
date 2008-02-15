@@ -36,12 +36,14 @@
  *
  * Optional arguments: <br>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formating -->
+ * \li -digitreader    <i> reader   </i> <br>
+ *      type of the digit reader: <i>unpacked, packed, raw, decoder</i>
+ *      default 'decoder' 
+ * \li -rcutrailersize    <i> size   </i> <br>
+ *      size of the RCU trailer in 32bit words (default 2), if digitreader
+ *      'decoder' is used, the trailer size is determined automatically
  * \li -rawreadermode  <i> mode   </i> <br>
  *      data mode of the <b>AliHLTTPCDigitReaderRaw</b> 
- * \li -digitreader    <i> reader   </i> <br>
- *      type of the digit reader: <i>unpacked, packed, raw</i> 
- * \li -rcutrailersize    <i> size   </i> <br>
- *      size of the RCU trailer in 32bit words (default 2)
  * \li -unsorted <br>
  *      unsorted mode of digit readers (default sorted)
  * \li -sorted <br>
@@ -82,7 +84,8 @@ class AliHLTTPCDigitDumpComponent : public AliHLTFileWriter {
     kDigitReaderInvalid,
     kDigitReaderUnpacked,
     kDigitReaderPacked,
-    kDigitReaderRaw
+    kDigitReaderRaw,
+    kDigitReaderDecoder
   };
 
   /** the mode for the DigitReaderRaw */
