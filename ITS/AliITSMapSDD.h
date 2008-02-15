@@ -14,7 +14,7 @@
 ///////////////////////////////////////////////////////////////////
 
 #include<TNamed.h>
-
+#include "AliLog.h"
 class TH1F;
 class TH2F;
 
@@ -27,9 +27,20 @@ class AliITSMapSDD : public TNamed {
 
   void SetMap(TH2F* hmap);
   void SetCellContent(Int_t iAn, Int_t iTb, Float_t devMicron){
+    if(iAn<0 || iAn>=fgkNAnodPts || iTb<0 || iTb >= fgkNDrifPts){
+      AliWarning(Form("Cell out of bounds, anode=%d time-bin=%d",iAn,iTb));
+      return;
+    }
     fMap[iAn][iTb]=devMicron;
   }
-  Float_t GetCellContent(Int_t iAn, Int_t iTb) const {return fMap[iAn][iTb];}
+  Float_t GetCellContent(Int_t iAn, Int_t iTb) const {
+    if(iAn<0 || iAn>=fgkNAnodPts || iTb<0 || iTb >= fgkNDrifPts){
+      AliWarning(Form("Cell out of bounds, anode=%d timebin=%d",iAn,iTb));
+      return 0.;
+    }
+    else return fMap[iAn][iTb];
+  }
+
   TH2F* GetMapHisto() const;
   TH1F* GetResidualDistr(Float_t dmin=-300., Float_t dmax=300.) const;
 

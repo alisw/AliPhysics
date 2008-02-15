@@ -350,7 +350,9 @@ void AliITSClusterFinderV2SDD::CorrectPosition(Float_t &z, Float_t&y){
   const Double_t kMicronTocm = 1.0e-4; 
   Float_t stept = GetSeg()->Dx()*kMicronTocm/cal->GetMapTimeNBin();  
   Int_t bint = TMath::Abs((Int_t)(y/stept));
-  if(bint>knbint) AliError("Wrong bin number along drift direction!");
+  if(bint==knbint) bint-=1;
+  if(bint>=knbint) AliError("Wrong bin number along drift direction!");
+
 
   Float_t devz = cal->GetMapACell(bina,bint)*kMicronTocm;
   Float_t devx = cal->GetMapTCell(bina,bint)*kMicronTocm;
