@@ -29,7 +29,6 @@
 AliHLTTPCAgent gAliHLTTPCAgent;
 
 // component headers
-#include "AliHLTAltroChannelSelectorComponent.h"
 #include "AliHLTTPCDigitDumpComponent.h"
 #include "AliHLTTPCEsdWriterComponent.h"
 
@@ -119,7 +118,6 @@ int AliHLTTPCAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
 {
   // see header file for class documentation
   if (!pHandler) return -EINVAL;
-  pHandler->AddComponent(new AliHLTAltroChannelSelectorComponent);
   pHandler->AddComponent(new AliHLTTPCDigitDumpComponent);
   pHandler->AddComponent(new AliHLTTPCEsdWriterComponent::AliWriter);
   pHandler->AddComponent(new AliHLTTPCEsdWriterComponent::AliConverter);

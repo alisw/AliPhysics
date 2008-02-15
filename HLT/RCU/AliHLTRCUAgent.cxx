@@ -27,6 +27,7 @@
 #include "AliHLTConfiguration.h"
 
 // header files of library components
+#include "AliHLTAltroChannelSelectorComponent.h"
 
 /** global instance for agent registration */
 AliHLTRCUAgent gAliHLTRCUAgent;
@@ -74,5 +75,6 @@ int AliHLTRCUAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
   // see header file for class documentation
   assert(pHandler);
   if (!pHandler) return -EINVAL;
+  pHandler->AddComponent(new AliHLTAltroChannelSelectorComponent);
   return 0;
 }

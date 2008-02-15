@@ -1,13 +1,23 @@
 // $Id$
-/*
+/**
  * Test macro for the AltroChannelSelector component
  *
  * Usage:
  *   aliroot -b -q altro-channel-selection.C | tee altro-channel-selection.C
  *
+ * The macro expects simulated TPC raw data in the form TPC_<ddlno>.dll in the
+ * current directory, you might need to start the macro in one of the raw<x>
+ * folders. You can easily change the sectors and readout partitions below.
+ *
+ * In order to apply the macro on real RCU v1 data (only on trailer word)
+ * you have to specify the trailer length explicitly, look for the 
+ *
  * The first version allows to write a fake file with the list of the
- * selected pads. Later it will be extended to use the ClusterFinder
+ * selected channels. Later it will be extended to use the ClusterFinder
  * or, better, a separate component.
+ *
+ * Please note that this macro uses also the TPC module, but this does not
+ * imply dependencies to the libAliHLTTPC.
  *
  * Matthias.Richter@ift.uib.no
  */
@@ -22,33 +32,26 @@
 
   // load the component library
   gHLT.LoadComponentLibraries("libAliHLTTPC.so");
+  gHLT.LoadComponentLibraries("libAliHLTRCU.so");
 
   // create a dummy pad selection list
-  const char* dummySelectionList="/tmp/active-pads.dat";
+  const char* dummySelectionList="/tmp/active-channels.dat";
   FILE* fp = fopen(dummySelectionList, "w");
   if (fp) {
-    UInt_t row=0;
-    UInt_t pad=0;
+    UShort_t channel=5;
+    fwrite(&channel, sizeof(UShort_t), 1, fp);
 
-    row=28, pad=5;
-    fwrite(&row, sizeof(UInt_t), 1, fp);
-    fwrite(&pad, sizeof(UInt_t), 1, fp);
+    UShort_t channel=25;
+    fwrite(&channel, sizeof(UShort_t), 1, fp);
 
-    row=28, pad=6;
-    fwrite(&row, sizeof(UInt_t), 1, fp);
-    fwrite(&pad, sizeof(UInt_t), 1, fp);
+    UShort_t channel=56;
+    fwrite(&channel, sizeof(UShort_t), 1, fp);
 
-    row=28, pad=7;
-    fwrite(&row, sizeof(UInt_t), 1, fp);
-    fwrite(&pad, sizeof(UInt_t), 1, fp);
+    UShort_t channel=78;
+    fwrite(&channel, sizeof(UShort_t), 1, fp);
 
-    row=29, pad=42;
-    fwrite(&row, sizeof(UInt_t), 1, fp);
-    fwrite(&pad, sizeof(UInt_t), 1, fp);
-
-    row=29, pad=43;
-    fwrite(&row, sizeof(UInt_t), 1, fp);
-    fwrite(&pad, sizeof(UInt_t), 1, fp);
+    UShort_t channel=100;
+    fwrite(&channel, sizeof(UShort_t), 1, fp);
 
     fclose(fp);
   } else {
@@ -58,6 +61,9 @@
 
   // direct dump switch allows to bypass the selector component
   bool directDump=false;
+
+  // choose if you want to dump to file or translate digits to text file
+  bool textDump=true;
 
   // the configuration
   int iMinSlice=0; 
@@ -80,7 +86,7 @@
 
       // publisher for a dummy active pad list
       activepads.Form("APP_%02d_%d", slice, part);
-      arg.Form("-datatype 'ACTIVPAD' 'TPC ' -dataspec 0x%02x%02x%02x%02x -datafile %s", slice, slice, part, part, dummySelectionList);
+      arg.Form("-datatype 'HWADDR16' 'TPC ' -dataspec 0x%02x%02x%02x%02x -datafile %s", slice, slice, part, part, dummySelectionList);
       AliHLTConfiguration appconf(activepads.Data(), "FilePublisher", NULL , arg.Data());
 
 
@@ -90,7 +96,7 @@
 
       // the selector configuration
       selector.Form("CHANNELSELECT_%02d_%d", slice, part);
-      AliHLTConfiguration channelselect(selector.Data(), "AltroChannelSelector", selectorInput.Data(), "-rawreadermode 4");
+      AliHLTConfiguration channelselect(selector.Data(), "AltroChannelSelector", selectorInput.Data(), "");
 
       // add either the raw file directly to output or the filtered one
       if (writerInput.Length()>0) writerInput+=" ";
@@ -103,8 +109,12 @@
   }
 
   // the writer configuration
-  AliHLTConfiguration digitdump("digitdump", "TPCDigitDump"   , writerInput.Data(), "-rawreadermode 4 -specfmt=_0x%08x -subdir=out_%d -blcknofmt=_0x%x -idfmt=_0x%08x");
-  //AliHLTConfiguration digitdump("digitdump", "FileWriter"   , writerInput.Data(), "-specfmt=_0x%08x -subdir=out_%d -blcknofmt=_0x%x -idfmt=_0x%08x");
+  if (textDump)
+    AliHLTConfiguration digitdump("digitdump", "TPCDigitDump"   , writerInput.Data(), "-specfmt=_0x%08x -subdir=out_%d -blcknofmt=_0x%x -idfmt=_0x%08x");
+  else
+    AliHLTConfiguration digitdump("digitdump", "FileWriter"   , writerInput.Data(), "-specfmt=_0x%08x -subdir=out_%d -blcknofmt=_0x%x -idfmt=_0x%08x");
+
+  // build the ask list and execute
   gHLT.BuildTaskList("digitdump");
   gHLT.Run();
 

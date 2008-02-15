@@ -10,7 +10,7 @@
 /** @file   AliHLTAltroChannelSelectorComponent.h
     @author Matthias Richter
     @date   
-    @brief  Special file writer converting TPC digit input to ASCII.
+    @brief  A filter/selective readout component for Altro data.
 */
 
 // see below for class documentation
@@ -33,7 +33,7 @@
  * Altro Raw data.
  * 
  * Component ID: \b AltroChannelSelector <br>
- * Library: \b libAliHLTTPC
+ * Library: \b libAliHLTRCU
  *
  * Mandatory arguments: <br>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formating -->

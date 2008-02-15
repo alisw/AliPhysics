@@ -19,7 +19,7 @@
 /** @file   AliHLTAltroChannelSelectorComponent.cxx
     @author Matthias Richter
     @date   
-    @brief  A filter/selective readout component for TPC Altro data. */
+    @brief  A filter/selective readout component for Altro data. */
 
 // see header file for class documentation
 // or
@@ -29,8 +29,6 @@
 
 #include <cassert>
 #include "AliHLTAltroChannelSelectorComponent.h"
-#include "AliHLTTPCTransform.h"
-#include "AliHLTTPCDefinitions.h"
 #include "AliAltroDecoder.h"
 #include "AliAltroData.h"
 
@@ -188,6 +186,7 @@ int AliHLTAltroChannelSelectorComponent::DoEvent(const AliHLTComponentEventData&
     if (iResult<0) {
       // forward the whole block
       outputBlocks.push_back(*pDesc);
+      iResult=0;
       continue;
     }
 
