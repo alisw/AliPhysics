@@ -36,6 +36,8 @@ AliHMPIDRawStream::AliHMPIDRawStream(AliRawReader* rawReader) :
   fCharge(0x0),
   fPad(0x0),
   fDDLNumber(-1),
+  fnDDLInStream(0x0),
+  fnDDLOutStream(0x0),
   fLDCNumber( 0),
   fTimeStamp( 0),
   fRawReader(rawReader),
@@ -55,6 +57,10 @@ AliHMPIDRawStream::AliHMPIDRawStream(AliRawReader* rawReader) :
     fNumOfErr[i] = new Int_t [kSumErr];
   }
   
+  fnDDLInStream=new Int_t[kNDDL];
+  fnDDLOutStream=new Int_t[kNDDL];
+  for(Int_t iddl=0;iddl<kNDDL;iddl++) { fnDDLInStream[iddl]=-1;fnDDLOutStream[iddl]=-1;}
+ 
   for(Int_t iddl=0;iddl<kNDDL;iddl++) 
     for(Int_t ierr=0; ierr < kSumErr; ierr++) fNumOfErr[iddl][ierr]=0;               //reset errors  
   fRawReader->Reset();
@@ -66,6 +72,8 @@ AliHMPIDRawStream::AliHMPIDRawStream() :
   fCharge(0x0),
   fPad(0x0),
   fDDLNumber(-1),
+  fnDDLInStream(0x0),
+  fnDDLOutStream(0x0),
   fLDCNumber( 0),
   fTimeStamp( 0),
   fRawReader(0x0),
@@ -84,6 +92,11 @@ AliHMPIDRawStream::AliHMPIDRawStream() :
   for(Int_t i=0;i<kNDDL;i++) {
     fNumOfErr[i] = new Int_t [kSumErr];
   }
+  fnDDLInStream=new Int_t[kNDDL];
+  fnDDLOutStream=new Int_t[kNDDL];
+  for(Int_t iddl=0;iddl<kNDDL;iddl++) { fnDDLInStream[iddl]=-1;fnDDLOutStream[iddl]=-1;}
+
+  
   for(Int_t iddl=0;iddl<kNDDL;iddl++) 
     for(Int_t ierr=0; ierr < kSumErr; ierr++) fNumOfErr[iddl][ierr]=0;               //reset errors  
 
@@ -143,9 +156,13 @@ Bool_t AliHMPIDRawStream::Next()
   Int_t  rawDataSize=0;        
   if(fRawReader->GetType() == 7)  {                             //New: Select Physics events, Old: Raw data size is not 0 and not 47148 (pedestal)
     fDDLNumber = fRawReader->GetDDLID();
+    //if(fnDDLInStream[fDDLNumber]==-1) { fnDDLInStream[fDDLNumber]=0; fnDDLOutStream[fDDLNumber]=0; }//Printf("Setting DDL number: %d to fnDDLInStream[]= %d",fDDLNumber,fnDDLInStream[fDDLNumber]);}
+    fnDDLInStream[fDDLNumber]=1; fnDDLOutStream[fDDLNumber]=0;
+//    fnDDLInStream[fDDLNumber]++;
+    
     fLDCNumber = fRawReader->GetLDCId();
     fTimeStamp = fRawReader->GetTimestamp();
-
+    
     if(stDeb) Printf("DDL %i started to be decoded!",fDDLNumber); 
     rawDataSize=fRawReader->GetDataSize()/4;
     InitVars(rawDataSize);
@@ -159,8 +176,9 @@ Bool_t AliHMPIDRawStream::Next()
     }
 //    stDeb=kFALSE;
   }
-//  return status;
-    return kTRUE;
+    if(status==kTRUE) {fnDDLOutStream[fDDLNumber]++; }//Printf("fnDDLOutStream[%d]=%d",fDDLNumber,fnDDLOutStream[fDDLNumber]); } //Count the number of events when the DDL was succesfully decoded
+    return status;
+ //   return kTRUE;
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDRawStream::InitVars(Int_t n)
@@ -196,8 +214,8 @@ void AliHMPIDRawStream::DelVars()
   for(Int_t i=0;i<kSumErr;i++) delete [] fNumOfErr[i]; 
   delete [] fNumOfErr; 
 
-  
-      
+  if(fnDDLInStream) { delete [] fnDDLInStream; fnDDLInStream = 0x0; }
+     
 }    
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Bool_t AliHMPIDRawStream::ReadHMPIDRawData()
@@ -307,9 +325,16 @@ Bool_t AliHMPIDRawStream::ReadDilogic(Int_t &cntDilogic)
     if(!CheckPad(pad)) continue;
     Int_t charge = fWord & 0xfff;
     fPad[fNPads] = GetPad(fDDLNumber,row,dilogic,pad);
-    fCharge[fNPads] = charge;
+    fCharge[fNPads] = charge; 
     fNPads++;
-  }
+    
+    if(charge==0) 
+    {
+      if(stDeb){AliWarning(Form("If PEDESTAL run -> WARNING: ZERO charge is read from DDL: %d row: %d dil: %d pad: %d",fDDLNumber,row,dilogic,pad));}
+      fNumOfErr[fDDLNumber][kPedQZero]++;
+    }
+    
+  }//iDil
 
   cntDilogic -= cnt;  
   return kTRUE;  

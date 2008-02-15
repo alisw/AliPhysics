@@ -39,9 +39,11 @@ class AliHMPIDRawStream: public TObject {
    static  inline Int_t GetNDDL()     { return kNDDL;}                                 //return the number of max # of DDLs
    static  inline Int_t GetNErrors()  { return kSumErr;}                               //return the number of max # of Error Types
 
-  	    Int_t   GetNPads()       const { return fNPads;}
-            Int_t*  GetPadArray()    const { return fPad;}
-            Int_t*  GetChargeArray() const { return fCharge;}
+  	    Int_t   GetNPads()         const { return fNPads;}                         //Get number of pads present in the stream
+            Int_t*  GetPadArray()      const { return fPad;}                           //Get pad array from stream decoded
+            Int_t*  GetChargeArray()   const { return fCharge;}                        //Get the charge of the pads from dedcoded stream 
+            Int_t*  GetnDDLInStream()  const { return fnDDLInStream;}                  //Get the DDL input check array
+            Int_t*  GetnDDLOutStream() const { return fnDDLOutStream;}                 //Get the DDL output check array
 	    Int_t   Pc          ( Int_t ddl,Int_t row,Int_t dil,Int_t pad                            ) {return AliHMPIDParam::A2P(GetPad(ddl,row,dil,pad));}                                                 //PC position number
 	    Int_t   PadPcX      ( Int_t ddl,Int_t row,Int_t dil,Int_t pad                            ) {return AliHMPIDParam::A2X(GetPad(ddl,row,dil,pad));}                                                 //pad pc x # 0..79
 	    Int_t   PadPcY      ( Int_t ddl,Int_t row,Int_t dil,Int_t pad                            ) {return AliHMPIDParam::A2Y(GetPad(ddl,row,dil,pad));}                                                 //pad pc y # 0..47
@@ -89,7 +91,7 @@ enum Ebits {kbit0,kbit1 , kbit2, kbit3, kbit4, kbit5, kbit6, kbit7, kbit8,
   enum EHMPIDRawStreamError { kRawDataSizeErr   = 0,  kRowMarkerErr     = 1,  kWrongRowErr      = 2,  kWrongDilogicErr  = 3,
                               kWrongPadErr      = 4,  kEoEFlagErr       = 5,  kEoESizeErr       = 6,  kEoEDILOGICErr    = 7,
                               kEoERowErr        = 8,  kBadSegWordErr    = 9,  kWrongSegErr      = 10, kRowMarkerSizeErr = 11,
-                              kSumErr           = 12  //This is always the last one, to retreive the number of errors
+                              kPedQZero         =12,  kSumErr           = 13  //This is always the last one, to retreive the number of errors
                             };                        //Always check the updated list of names in the .cxx file for print-out!
    
   enum {
@@ -115,6 +117,8 @@ enum Ebits {kbit0,kbit1 , kbit2, kbit3, kbit4, kbit5, kbit6, kbit7, kbit8,
     Int_t           *fCharge;                                            // Array for charge values for all channels in one DDL
     Int_t           *fPad;                                               // Array for abs pad values for all channels in one DDL
     Int_t            fDDLNumber;                                         // index of current DDL number
+    Int_t           *fnDDLInStream;                                      // if the DDL is in the raw data
+    Int_t           *fnDDLOutStream;                                     // if the DDL is in the raw data
     UInt_t           fLDCNumber;                                         // index of current LDC number
     UInt_t           fTimeStamp;                                         // TimeStamp
     AliRawReader    *fRawReader;                                         // object for reading the raw data
@@ -124,8 +128,7 @@ enum Ebits {kbit0,kbit1 , kbit2, kbit3, kbit4, kbit5, kbit6, kbit7, kbit8,
     UInt_t           fWord;                                              // current position in fData
     Bool_t           fZeroSup;                                           // set if zero suppression is applied
     Int_t           *fPos;                                               // for debug purposes
-    Int_t            fiPos;                                               // counter for debug
-  
+    Int_t            fiPos;                                              // counter for debug
     ClassDef(AliHMPIDRawStream, 2)                                       // base class for reading HMPID raw digits
 };
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -201,11 +204,13 @@ Int_t AliHMPIDRawStream::GetPad(Int_t ddl,Int_t row,Int_t dil,Int_t pad)
   
   Int_t a2y[6]={3,2,4,1,5,0};     //pady for a given padress (for single DILOGIC chip)
                                   Int_t ch=ddl/2;
-  Int_t tmp=(row-1)/8;            Int_t pc=(ddl%2)? 5-2*tmp:2*tmp; 
-                                  Int_t px=(dil-1)*8+pad/6;
-        tmp=(ddl%2)?(24-row):row-1;   
-                                  Int_t py=6*(tmp%8)+a2y[pad%6];
-                                  
+  Int_t tmp=(24-row)/8;
+  Int_t pc=(ddl%2)?5-2*tmp:2*tmp;
+  Int_t px=(dil-1)*8+pad/6;
+
+  tmp=(ddl%2)?row-1:(24-row);
+  Int_t py=6*(tmp%8)+a2y[pad%6];
+
   return AliHMPIDParam::Abs(ch,pc,px,py);
 }//GetPad()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -317,7 +322,7 @@ void AliHMPIDRawStream::WriteRaw(TObjArray *pDigAll)
    
     for(Int_t iDig=0;iDig<pDigCh->GetEntriesFast();iDig++){//digits loop
       AliHMPIDDigit *pDig1=(AliHMPIDDigit*)pDigCh->At(iDig);
-      pDig1->Raw(w32,ddl,r,d,a);
+      pDig1->Raw(w32,ddl,r,d,a);  //??????????
       isDigThere[ddl][r][d][a]=iDig;
     }  
     
@@ -378,7 +383,7 @@ Char_t* AliHMPIDRawStream::GetErrName(Int_t eType)
   Char_t *eName[]={ "kRawDataSizeErr",  "kRowMarkerErr" , "kWrongRowErr" , "kWrongDilogicErr",
                     "kWrongPadErr"   ,  "kEoEFlagErr"   , "kEoESizeErr"  , "kEoEDILOGICErr",
                     "kEoERowErr"     ,  "kBadSegWordErr", "kWrongSegErr" , "kRowMarkerSizeErr",
-                    "kSumErr"        };                       
+                    "kPedQZero"      ,  "kSumErr"        };                       
   Char_t *eNoErr="NotDefinedErrorType";
   if(eType<0 || eType>kSumErr) return eNoErr;
   else                         return eName[eType];
