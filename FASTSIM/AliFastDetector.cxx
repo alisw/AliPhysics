@@ -49,8 +49,8 @@ AliFastDetector::AliFastDetector():
 
 AliFastDetector::AliFastDetector(char* Name, char* Title):
     TNamed(Name, Title),
-    fSubdetectors(0),
-    fResponses(0),
+    fSubdetectors(new TList()),
+    fResponses(new TList()),
     fLnkD(0),
     fLnkR(0),
     fEfficiency(0),
