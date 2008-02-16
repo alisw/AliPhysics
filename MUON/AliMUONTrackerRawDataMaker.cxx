@@ -81,7 +81,7 @@ AliMUONTrackerRawDataMaker::AliMUONTrackerRawDataMaker(AliRawReader* reader, Boo
   fAccumulatedData->SetDimensionName(0,"Raw charge");
   if ( histogram ) 
   {
-    fAccumulatedData->SetHistogramDimension(0,kTRUE);
+    fAccumulatedData->MakeHistogramForDimension(0,kTRUE);
   }
   
   reader->RewindEvents();

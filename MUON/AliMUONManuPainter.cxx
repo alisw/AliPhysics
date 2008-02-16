@@ -24,6 +24,7 @@
 #include "AliMUONVDigit.h"
 #include "AliMUONVTrackerData.h"
 #include "AliMpDEManager.h"
+#include "AliMpManuUID.h"
 #include "AliMpMotifPosition.h"
 #include "AliMpMotifType.h"
 #include "AliMpSlat.h"
@@ -82,24 +83,24 @@ AliMUONManuPainter::AliMUONManuPainter(const AliMUONAttPainter& att,
     Double_t x,y,z;
     
     AliMp::StationType stationType = AliMpDEManager::GetStationType(detElemId);
-
+    
     if ( stationType == AliMp::kStation345 ) 
     {
       const AliMpSlat* slat = AliMUONPainterHelper::Instance()->GetSlat(detElemId,manuId);
-
+      
       h->Local2Global(fDetElemId,
-                                                   mp->Position().X() -slat->Position().X(),
-                                                   mp->Position().Y() -slat->Position().Y(),
-                                                   0,
-                                                   x,y,z);
+                      mp->Position().X() -slat->Position().X(),
+                      mp->Position().Y() -slat->Position().Y(),
+                      0,
+                      x,y,z);
     }
     else if ( stationType != AliMp::kStationTrigger ) 
     {
       h->Local2Global(fDetElemId,
-                                                     mp->Position().X(),
-                                                     mp->Position().Y(),
-                                                     0,
-                                                     x,y,z);      
+                      mp->Position().X(),
+                      mp->Position().Y(),
+                      0,
+                      x,y,z);      
     }
     else
     {
@@ -109,13 +110,13 @@ AliMUONManuPainter::AliMUONManuPainter(const AliMUONAttPainter& att,
     }
     
     AliMUONPainterContour* contour = h->GetContour(ContourName());
-
+    
     if (!contour)
     {
       contour = h->GenerateManuContour(fDetElemId,
-                                                                      fManuId,
-                                                                      Attributes(),
-                                                                      ContourName());
+                                       fManuId,
+                                       Attributes(),
+                                       ContourName());
     }
     SetContour(contour);
     
@@ -180,6 +181,14 @@ AliMUONManuPainter::Describe(const AliMUONVTrackerData& data, Int_t dataIndex,
   Double_t value = data.Manu(fDetElemId,fManuId,dataIndex);
   
   return AliMUONPainterHelper::Instance()->FormatValue(data.DimensionName(dataIndex).Data(),value);
+}
+
+//_____________________________________________________________________________
+void
+AliMUONManuPainter::FillManuList(TObjArray& manuList) const
+{
+  /// Append our manu to the list
+  manuList.Add(new AliMpManuUID(fDetElemId,fManuId));
 }
 
 //_____________________________________________________________________________

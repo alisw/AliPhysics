@@ -34,6 +34,12 @@ ClassImp(AliMUONMchViewApplication)
 const Int_t AliMUONMchViewApplication::fgkFILESAVEAS(1);
 const Int_t AliMUONMchViewApplication::fgkFILEOPEN(2);
 const Int_t AliMUONMchViewApplication::fgkFILEEXIT(3);
+const Int_t AliMUONMchViewApplication::fgkFILEPRINTAS(4);
+
+const char* AliMUONMchViewApplication::fgkFileTypes[] = { 
+  "ROOT files",    "*.root", 
+  "All files",     "*", 
+  0,               0 }; 
 
 //______________________________________________________________________________
 AliMUONMchViewApplication::AliMUONMchViewApplication(const char* name,
@@ -41,7 +47,8 @@ AliMUONMchViewApplication::AliMUONMchViewApplication(const char* name,
                                                      Float_t wfraction,
                                                      Float_t hfraction) 
 : TRint(name,argc,argv),
-  fMainFrame(0x0)
+  fMainFrame(0x0),
+  fPainterMasterFrame(0x0)
 {
 
   /// ctor
@@ -66,10 +73,10 @@ AliMUONMchViewApplication::AliMUONMchViewApplication(const char* name,
   
   TGCompositeFrame* t = tabs->AddTab("Painter Master Frame");
 
-  AliMUONPainterMasterFrame* pf = 
+  fPainterMasterFrame =
     new AliMUONPainterMasterFrame(t,t->GetWidth()-kbs*2,t->GetHeight()-kbs*2);
   
-  t->AddFrame(pf, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY,kbs,kbs,kbs,kbs));
+  t->AddFrame(fPainterMasterFrame, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY,kbs,kbs,kbs,kbs));
 
   t = tabs->AddTab("Data Sources");
   
@@ -84,6 +91,9 @@ AliMUONMchViewApplication::AliMUONMchViewApplication(const char* name,
 
   fMainFrame->MapSubwindows();
   fMainFrame->Resize();
+  
+  fPainterMasterFrame->Update();
+  
   fMainFrame->MapWindow();
   
   fMainFrame->Connect("CloseWindow()","AliMUONMchViewApplication",this,"Terminate()");
@@ -95,6 +105,12 @@ AliMUONMchViewApplication::AliMUONMchViewApplication(const char* name,
   fMainFrame->SetWMPosition(x, y);
   
   fMainFrame->SetWMSizeHints(w,h,w,h,0,0);
+  
+  cout << "***************************************************" << endl;
+  cout << "   Welcome to mchview" << endl;
+  cout << "   " << FullVersion() << endl;
+  cout << "***************************************************" << endl;
+
 }
 
 //______________________________________________________________________________
@@ -113,14 +129,20 @@ AliMUONMchViewApplication::CreateMenuBar(UInt_t w)
   
   file->AddEntry("&Open...",fgkFILEOPEN);
   file->AddEntry("&Save As...",fgkFILESAVEAS);
+  file->AddEntry("&Print As...",fgkFILEPRINTAS);
   file->AddEntry("&Exit",fgkFILEEXIT);
   
   file->Connect("Activated(Int_t)","AliMUONMchViewApplication",this,"HandleMenu(Int_t)");
   
   TGMenuBar* bar = new TGMenuBar(fMainFrame,w);
   
+  TGPopupMenu* about = new TGPopupMenu(gClient->GetRoot());  
+  about->AddLabel(FullVersion());
+
   bar->AddPopup("&File",file,new TGLayoutHints(kLHintsLeft|kLHintsTop));
+  bar->AddPopup("&About",about,new TGLayoutHints(kLHintsRight|kLHintsTop));
   
+
   fMainFrame->AddFrame(bar,new TGLayoutHints(kLHintsLeft|kLHintsExpandX));
   
   AliMUONPainterRegistry::Instance()->SetMenuBar(bar);
@@ -143,6 +165,9 @@ AliMUONMchViewApplication::HandleMenu(Int_t i)
     case fgkFILESAVEAS:
       Save();
       break;
+    case fgkFILEPRINTAS:
+      PrintAs();
+      break;
     default:
       break;
     }
@@ -155,6 +180,8 @@ AliMUONMchViewApplication::Open()
   /// Open file dialog
   
   TGFileInfo fileInfo;
+  
+  fileInfo.fFileTypes = fgkFileTypes;
   
   new TGFileDialog(gClient->GetRoot(),gClient->GetRoot(),
                    kFDOpen,&fileInfo);
@@ -190,6 +217,20 @@ AliMUONMchViewApplication::Open(const char* filename)
   }
 } 
 
+
+//______________________________________________________________________________
+void
+AliMUONMchViewApplication::PrintAs()
+{
+  /// Print as...
+  
+  TGFileInfo fileInfo;
+  
+  new TGFileDialog(gClient->GetRoot(),gClient->GetRoot(),
+                   kFDSave,&fileInfo);
+  
+  fPainterMasterFrame->SaveAs(gSystem->ExpandPathName(Form("%s",fileInfo.fFilename)));
+}
 
 //______________________________________________________________________________
 void

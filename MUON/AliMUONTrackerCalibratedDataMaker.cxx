@@ -49,7 +49,11 @@ Int_t AliMUONTrackerCalibratedDataMaker::fgkCounter(0);
 
 //_____________________________________________________________________________
 AliMUONTrackerCalibratedDataMaker::AliMUONTrackerCalibratedDataMaker(AliRawReader* reader,
-                                                       const char* cdbpath)
+                                                                     const char* cdbpath,
+                                                                     const char* calibMode,
+                                                                     Bool_t histogram,
+                                                                     Double_t xmin,
+                                                                     Double_t xmax)
 : AliMUONVTrackerDataMaker(),
   fRawReader(reader),
   fAccumulatedData(0x0),
@@ -62,8 +66,7 @@ AliMUONTrackerCalibratedDataMaker::AliMUONTrackerCalibratedDataMaker(AliRawReade
   fCalibrationData(0x0),
   fDigitStore(0x0), 
   fCDBPath(cdbpath),
-  fNumberOfEvents(0)
-{
+  fNumberOfEvents(0){
   /// Ctor
   reader->NextEvent(); // to be sure to get run number available
   
@@ -72,20 +75,40 @@ AliMUONTrackerCalibratedDataMaker::AliMUONTrackerCalibratedDataMaker(AliRawReade
   ++fgkCounter;
   
   Bool_t calibrate = ( fCDBPath.Length() > 0 );
-  
   TString name;
+  TString basename("RAW");
+  
+  if ( calibrate ) 
+  {
+    TString scalib(calibMode);
+    scalib.ToUpper();
+    if ( scalib == "GAIN" ) basename = "CALC";
+    if ( scalib == "NOGAIN" ) basename = "CALZ";
+    if ( scalib == "GAINCONSTANTCAPA" ) basename = "CALG";
+  }
   
   if (!runNumber)
   {
-    name = Form("%s(%d)",(calibrate ? "CAL" : "RAW"),fgkCounter);
+    name = Form("%s%s(%d)",
+                (histogram ? "H" : ""),
+                basename.Data(),
+                fgkCounter);
   }
   else
   {
-    name = Form("%s%d",(calibrate ? "CAL" : "RAW"),runNumber);
+    name = Form("%s%s%d",
+                (histogram ? "H" : ""),
+                basename.Data(),
+                runNumber);
   }
   
   fAccumulatedData = new AliMUONTrackerData(name.Data(),"charge values",1);
   fAccumulatedData->SetDimensionName(0,(calibrate ? "Calibrated charge" : "Raw charge"));
+  if ( histogram ) 
+  {
+    fAccumulatedData->MakeHistogramForDimension(0,kTRUE,xmin,xmax);
+    AliInfo(Form("Will histogram between %e and %e",xmin,xmax));
+  }
   
   reader->RewindEvents();
 
@@ -122,7 +145,7 @@ AliMUONTrackerCalibratedDataMaker::AliMUONTrackerCalibratedDataMaker(AliRawReade
       AliCDBManager::Instance()->SetDefaultStorage(storage);
     }
     
-    fDigitCalibrator = new AliMUONDigitCalibrator(*fCalibrationData);
+    fDigitCalibrator = new AliMUONDigitCalibrator(*fCalibrationData,calibMode);
   }
 }
 

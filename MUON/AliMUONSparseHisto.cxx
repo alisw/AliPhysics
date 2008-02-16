@@ -16,13 +16,15 @@
 // $Id$
 
 #include "AliMUONSparseHisto.h"
-#include <TString.h>
+
 #include <Riostream.h>
 #include <TH1.h>
+#include <TMath.h>
+#include <TString.h>
 
 /// \class AliMUONSparseHisto
 ///
-/// Tiny histogram-like class to hold adc distributions of tracker data.
+/// Tiny histogram-like class to hold some distributions of tracker data.
 /// Only intent of this class is to minimize memory consumption, in
 /// order to fit a maximum number of channel histograms into memory.
 /// The rest is not supported ;-)
@@ -34,19 +36,27 @@ ClassImp(AliMUONSparseHisto)
 /// \endcond
 
 //______________________________________________________________________________
-AliMUONSparseHisto::AliMUONSparseHisto()
+AliMUONSparseHisto::AliMUONSparseHisto(Double_t xmin, Double_t xmax)
 : TObject(),
 fNbins(0),
-fArray(0x0)
+fArray(0x0),
+fXmin(xmin),
+fXmax(xmax),
+fFactor((1<<Nbits())/(xmax-xmin))
 {
   /// ctor
+  SetBit(kOverflow,0);
+  SetBit(kUnderflow,0);
 }
 
 //______________________________________________________________________________
 AliMUONSparseHisto::AliMUONSparseHisto(const AliMUONSparseHisto& rhs)
 : TObject(rhs),
 fNbins(0),
-fArray(0x0)
+fArray(0x0),
+fXmin(0.0),
+fXmax(0.0),
+fFactor(0.0)
 {
   /// copy ctor
   rhs.Copy(*this);
@@ -91,32 +101,61 @@ AliMUONSparseHisto::Copy(TObject& object) const
   delete[] h.fArray;
   h.fArray = 0x0;
   h.fNbins = GetNbins();
+  h.fXmin = Xmin();
+  h.fXmax = Xmax();
+  h.fFactor = Factor();
+  
   if ( GetNbins() > 0 )
   {
-    h.fArray = new Int_t[GetNbins()];
+    h.fArray = new UInt_t[GetNbins()];
     for ( Int_t i = 0; i < GetNbins(); ++i ) 
     {
-      h.fArray[i] = GetBinContent(i);
+      h.fArray[i] = GetBin(i);
     }
   }
 }
 
 //______________________________________________________________________________
-void 
-AliMUONSparseHisto::Decode(Int_t value, Int_t& adc, Int_t& count) const
+Double_t 
+AliMUONSparseHisto::DecodeValue(Int_t value) const
 {
-  /// Convert value into (adc,count) pair
-  
-  adc   = ( value & 0xFFF00000 ) >> 20;
-  count = ( value & 0x000FFFFF );
+  /// From internal integer to "original" double
+  return value/Factor() + Xmin();
 }
 
 //______________________________________________________________________________
 Int_t 
-AliMUONSparseHisto::Encode(Int_t adc, Int_t count) const
+AliMUONSparseHisto::EncodeValue(Double_t value) const
 {
-  /// Convert (adc,count) into a single value
-  return ( ( adc & 0xFFF ) ) << 20 | ( count & 0xFFFFF );
+  /// From original double value to internal integer
+  return TMath::Nint(Factor()*(value-Xmin()));
+}
+
+//______________________________________________________________________________
+Int_t
+AliMUONSparseHisto::BinCenter(UInt_t x) const
+{
+  /// Extract binCenter part from x
+  
+  return ( x & 0xFFF00000 ) >> 20;
+}
+
+//______________________________________________________________________________
+Int_t
+AliMUONSparseHisto::BinContent(UInt_t x) const
+{
+  /// Extract binContent part from x
+  
+  return (x & 0xFFFFF);
+}
+
+//______________________________________________________________________________
+UInt_t 
+AliMUONSparseHisto::Encode(Int_t binCenter, Int_t binContent) const
+{
+  /// Convert (binCenter,binContent) into a single value
+  
+  return ( ( binCenter & 0xFFF ) ) << 20 | ( ( binContent & 0xFFFFF ) );
 }
 
 //______________________________________________________________________________
@@ -127,12 +166,12 @@ AliMUONSparseHisto::Expand()
   if (!fArray || !fNbins) 
   {
     delete[] fArray;
-    fArray = new Int_t[1];
+    fArray = new UInt_t[1];
     fNbins = 1;
   }
   else
   {
-    Int_t* tmp = new Int_t[fNbins+1];
+    UInt_t* tmp = new UInt_t[fNbins+1];
     for ( Int_t i = 0; i < fNbins; ++i ) 
     {
       tmp[i] = fArray[i];
@@ -145,26 +184,40 @@ AliMUONSparseHisto::Expand()
 
 //______________________________________________________________________________
 Int_t 
-AliMUONSparseHisto::Fill(Int_t adc)
+AliMUONSparseHisto::Fill(Double_t value)
 {
   /// Fill
   
-  if ( adc < 0 || adc > 4095 ) return -1;
+  if ( value < Xmin() ) 
+  {
+    SetBit(kUnderflow,1);
+    return -1;
+  }
   
-  Int_t i = Find(adc);
+  if ( value > Xmax() ) 
+  {
+    SetBit(kOverflow,1);
+    return -1;
+  }
+  
+  Int_t ivalue = EncodeValue(value);
+  
+  Int_t i = Find(ivalue);
   
   if ( i < 0 ) 
   {
     Int_t n = fNbins;
     Expand();
-    fArray[n] = Encode(adc,1);
+    fArray[n] = Encode(ivalue,1);
     i = n;
   }
   else
   {
-    Int_t iadc,icontent;
-    Decode(fArray[i],iadc,icontent);
-    fArray[i] = Encode(adc,icontent+1);
+    Int_t bc = GetBinContent(i);
+    if ( bc < 0xFFFFF ) 
+    {
+      fArray[i] = Encode(ivalue,bc+1);
+    }
   }
     
   return i;
@@ -172,27 +225,50 @@ AliMUONSparseHisto::Fill(Int_t adc)
 
 //______________________________________________________________________________
 Int_t 
-AliMUONSparseHisto::Find(Int_t adc) const
+AliMUONSparseHisto::Find(Int_t binCenter) const
 {
-  /// Return the index in fArray of adc, or -1 if not found
+  /// Return the index in fArray of value, or -1 if not found
+  
   for ( Int_t i = 0; i < GetNbins(); ++i ) 
   {
-    Int_t content = GetBinContent(i);
-    Int_t iadc,value;
-    Decode(content,iadc,value);
-    if ( iadc == adc ) return i;
+    if ( binCenter == GetBinCenter(i) ) return i;
   }
   return -1;
+}
+
+//______________________________________________________________________________
+UInt_t 
+AliMUONSparseHisto::GetBin(Int_t bin) const
+{
+  /// Get bin, which is a compacted form of two integers : (binCenter,binContent)
+  /// where binCenter itself might be an integer-fied double value.
+  return fArray[bin];
+}
+
+//______________________________________________________________________________
+Double_t 
+AliMUONSparseHisto::GetBinCenter(Int_t bin) const
+{
+  /// Get bin center
+  if ( bin < 0 ) return -FLT_MAX;
+  if ( bin >= GetNbins() ) return FLT_MAX;
+  
+  UInt_t i = GetBin(bin);
+  
+  return DecodeValue(BinCenter(i));
 }
 
 //______________________________________________________________________________
 Int_t 
 AliMUONSparseHisto::GetBinContent(Int_t bin) const
 {
-  /// Get bin content. Note that the content is compacted, so you must
-  /// use Decode() method to get (adc,count) values.
-  if ( bin >= 0 && bin < GetNbins() ) return fArray[bin];
-  return 0;
+  /// Get bin content
+  
+  if ( bin < 0 || bin >= GetNbins() ) return 0xFFFFFFFF;
+
+  UInt_t i = GetBin(bin);
+
+  return BinContent(i);
 }
 
 //______________________________________________________________________________
@@ -203,7 +279,10 @@ AliMUONSparseHisto::Print(Option_t* opt) const
   Int_t id1 = ( GetUniqueID() & 0xFFFF0000 ) >> 16;
   Int_t id2 = GetUniqueID() & 0xFFFF;
   
-  cout << "(" << id1 << "," << id2 << ") n bins = " << GetNbins() << endl;
+  cout << "ID=(" << id1 << "," << id2 << ") n bins = " << GetNbins();
+  if ( HasUnderflow() ) cout << " has underflow(s)";
+  if ( HasOverflow() ) cout << " has overflow(s)";
+  cout << endl;
   
   TString sopt(opt);
   sopt.ToUpper();
@@ -212,11 +291,7 @@ AliMUONSparseHisto::Print(Option_t* opt) const
   {
     for ( Int_t i = 0; i < GetNbins(); ++i ) 
     {
-      Int_t content = GetBinContent(i);
-      Int_t adc,value;
-      Decode(content,adc,value);
-      cout << Form("i %4d content %10x adc %4d value %6d",i,content,adc,value)
-        << endl;
+      cout << Form("Bin (%10u) %e = %6d",GetBin(i),GetBinCenter(i),GetBinContent(i)) << endl;
     }
   }
 }

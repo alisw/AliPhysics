@@ -39,6 +39,7 @@ Int_t Usage()
   /// Printout available options of the program
   cout << "mchview " << endl;
   cout << "  --version : shows the current version of the program" << endl;
+  cout << "  --use filename.root : reuse a previously saved (from this program) root file" << endl;
   return -1;
 }
 
@@ -55,6 +56,8 @@ int main(int argc, char** argv)
   
   Int_t nok(0);
   
+  TString fileToOpen;
+  
   for ( Int_t i = 0; i <= args.GetLast(); ++i ) 
   {
     TString a(static_cast<TObjString*>(args.At(i))->String());
@@ -63,6 +66,16 @@ int main(int argc, char** argv)
       cout << "mchview Version " << AliMUONMchViewApplication::Version() << " ($Id$)" << endl;
       ++nok;
       return 0;
+    }
+    if ( a == "--use" && i < args.GetLast() )
+    {
+      fileToOpen = static_cast<TObjString*>(args.At(i+1))->String();
+      ++i;
+      nok += 2;
+    }
+    else
+    {
+      return Usage();
     }
   }
   
@@ -89,10 +102,12 @@ int main(int argc, char** argv)
   gStyle->SetPalette(n+2,colors);
   delete[] colors;
   
-  TRint* theApp = new AliMUONMchViewApplication("mchview", &argc, argv, 0.7, 0.9);
+  AliMUONMchViewApplication* theApp = new AliMUONMchViewApplication("mchview", &argc, argv, 0.7, 0.9);
    
   AliCodeTimer::Instance()->Print();
 
+  if ( fileToOpen.Length() > 0 ) theApp->Open(fileToOpen);
+  
   // --- Start the event loop ---
   theApp->Run(kTRUE);
 

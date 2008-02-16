@@ -400,6 +400,14 @@ AliMUONPainterMasterFrame::ShiftClicked(AliMUONVPainter* painter, Double_t*)
 }
 
 //_____________________________________________________________________________
+void 
+AliMUONPainterMasterFrame::SaveAs(const char* filename, Option_t* option) const
+{
+  /// Save painter matrix (in the sense of "print") in filename
+  fPainterMatrixFrame->SaveAs(filename,option);
+}
+
+//_____________________________________________________________________________
 void
 AliMUONPainterMasterFrame::Update()
 {

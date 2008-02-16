@@ -35,12 +35,23 @@ public:
   
   void Rewind();
   
-  void Remove();
+//void Remove(); //*SIGNAL*
   
   void Update();
   
   void Reset();
   
+  /// Return data source reader
+  AliMUONVTrackerDataMaker* DataMaker() const { return fDataReader; }
+  
+  void EnableRun();
+  
+  void DisableRun();
+  
+  void StartRunning(); //*SIGNAL*
+
+  void StopRunning(); //*SIGNAL*
+
 private:
   /// Not implemented
   AliMUONPainterDataSourceItem(const AliMUONPainterDataSourceItem& rhs);

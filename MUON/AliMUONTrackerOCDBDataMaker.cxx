@@ -65,8 +65,8 @@ AliMUONTrackerOCDBDataMaker::AliMUONTrackerOCDBDataMaker(const char* ocdbPath,
     else if ( stype == "GAINS" ) 
     {
       fData = new AliMUONTrackerData(Form("GAIN%d",runNumber),"Gains",5,kFALSE);
-      fData->SetDimensionName(0,"a0");
-      fData->SetDimensionName(1,"a1");
+      fData->SetDimensionName(0,"a1");
+      fData->SetDimensionName(1,"a2");
       fData->SetDimensionName(2,"thres");
       fData->SetDimensionName(3,"qual");
       fData->SetDimensionName(4,"sat");

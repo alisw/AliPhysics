@@ -152,6 +152,20 @@ AliMUONPCBPainter::Copy(TObject& object) const
 }
 
 //_____________________________________________________________________________
+TString
+AliMUONPCBPainter::Describe(const AliMUONVTrackerData& data, Int_t dataIndex,
+                                Double_t, Double_t)
+{
+  /// Describe data at this PCB
+  
+  if (!data.HasPCB(fDetElemId,fPCBIndex)) return "";
+  
+  Double_t value = data.PCB(fDetElemId,fPCBIndex,dataIndex);
+  
+  return AliMUONPainterHelper::Instance()->FormatValue(data.DimensionName(dataIndex).Data(),value);
+}
+
+//_____________________________________________________________________________
 void
 AliMUONPCBPainter::PaintArea(const AliMUONVTrackerData& data, Int_t dataIndex,
                             Double_t min, Double_t max)

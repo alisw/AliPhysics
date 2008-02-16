@@ -19,6 +19,7 @@
 #   include <RQ_OBJECT.h>
 #endif
 
+class AliMUONPainterMasterFrame;
 class TGMainFrame;
 
 class AliMUONMchViewApplication : public TRint
@@ -33,8 +34,13 @@ public:
   void HandleMenu(Int_t i);
 
   /// Return the version number of the mchview application
-  static const char* Version() { return "0.9"; }
+  static const char* Version() { return "0.91"; }
   
+  /// Return the SVN revision  and version number of the mchview application
+  static const char* FullVersion() { return Form("mchview Version %s ($Revision$)",Version()); }
+  
+  void Open(const char* filename);
+
 private:
   /// Not implemented
   AliMUONMchViewApplication(const AliMUONMchViewApplication& rhs);
@@ -45,16 +51,20 @@ private:
   void Save();
   void Save(const char* filename);
   void Open();
-  void Open(const char* filename);
-  
+  void PrintAs();
+    
 private:
   TGMainFrame* fMainFrame; ///< pointer to our mainframe
-
+  AliMUONPainterMasterFrame* fPainterMasterFrame; ///< pointer to our main object
+  
   static const Int_t fgkFILESAVEAS; ///< File/Save As... menu
   static const Int_t fgkFILEOPEN; ///< File/Open... menu
   static const Int_t fgkFILEEXIT; ///< File/Exit menu
+  static const Int_t fgkFILEPRINTAS; ///< File/Print As... menu
 
-  ClassDef(AliMUONMchViewApplication,1) // mchview application
+  static const char* fgkFileTypes[]; ///< For the open menu
+  
+  ClassDef(AliMUONMchViewApplication,2) // mchview application
 };
 
 #endif

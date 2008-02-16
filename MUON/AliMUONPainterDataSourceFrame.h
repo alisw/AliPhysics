@@ -16,6 +16,7 @@
 #  include <TGFrame.h>
 #endif
 
+class AliMUONPainterDataSourceItem;
 class AliMUONVTrackerDataMaker;
 class TGCheckButton;
 class TGComboBox;
@@ -40,10 +41,16 @@ public:
   
   void DataReaderWasUnregistered(AliMUONVTrackerDataMaker* reader);
 
+  void HistogramButtonClicked();
+  
   void OpenFileDialog();
   
   void OpenRecentSource();
-  
+
+  void StartRunning(AliMUONPainterDataSourceItem* item);
+
+  void StopRunning(AliMUONPainterDataSourceItem* item);
+
 private:
   /// Not implemented
   AliMUONPainterDataSourceFrame(const AliMUONPainterDataSourceFrame& rhs);
@@ -67,8 +74,12 @@ private:
   TGCompositeFrame* fRawSelector21; ///< idem
   TGCompositeFrame* fRawSelector22; ///< idem
   TGCompositeFrame* fRawSelector23; ///< idem
-  TGCheckButton* fCalibrateButton; ///< to trig calibration of raw data
+  TGCheckButton* fCalibrateNoGain; ///< to trig calibration of raw data (only 0 suppression)
+  TGCheckButton* fCalibrateGainConstantCapa; ///< to trig calibration of raw data (0-supp and gain w/ constant capacitance)
+  TGCheckButton* fCalibrateGain; ///< to trig calibration of raw data (full blown calibration)
   TGCheckButton* fHistogramButton; ///< to trig histogramming of raw data
+  TGNumberEntry* fHistoMin; ///< xmin of histo to make
+  TGNumberEntry* fHistoMax; ///< xmax of histo to make
   TGTextEntry* fRawOCDBPath; ///< OCDB path for raw data calibration
   
   TGGroupFrame* fOCDBSelector; ///< to select a new OCDB data source

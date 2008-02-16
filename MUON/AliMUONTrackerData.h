@@ -20,7 +20,6 @@ class AliMUONSparseHisto;
 class AliMUONVCalibParam;
 class AliMUONVStore;
 class AliMpDetElement;
-class TH1;
 
 class AliMUONTrackerData : public AliMUONVTrackerData
 {
@@ -67,6 +66,12 @@ public:
   /// Returns the number of dimensions (i.e. the number of values) each element has
   virtual Int_t NumberOfDimensions() const;
   
+  /// The number of values we are inputting
+  virtual Int_t ExternalDimension() const { return fExternalDimension; }
+
+  /// Convert from internal to external dimension
+  virtual Int_t InternalToExternal(Int_t dim) const { return dim/2; }
+
   /// Returns the number of events we have seen so far
   virtual Int_t NumberOfEvents() const { return fNevents; }
   
@@ -81,29 +86,21 @@ public:
 
   Bool_t CanHistogram() const { return kTRUE; }
   
-  void SetHistogramDimension(Int_t index, Bool_t value);
+  void MakeHistogramForDimension(Int_t index, Bool_t value, Double_t xmin=0.0, Double_t xmax=4096.0);
   
-  TH1* CreateChannelHisto(Int_t detElemId, Int_t manuId, 
-                          Int_t manuChannel, Int_t dim=0);
+  virtual void HistogramRange(Double_t& xmin, Double_t& xmax) const { xmin = fXmin; xmax = fXmax; }
 
-  TH1* CreateBusPatchHisto(Int_t busPatchId, Int_t dim=0);
+  AliMUONSparseHisto* GetChannelSparseHisto(Int_t detElemId, Int_t manuId, 
+                                            Int_t manuChannel, Int_t dim=0);
   
-  TH1* CreateDEHisto(Int_t detElemId, Int_t dim=0);
+  virtual AliMUONSparseHisto* GetChannelSparseHisto(Int_t detElemId, Int_t manuId, 
+                                                    Int_t manuChannel, Int_t dim=0) const;
 
-  TH1* CreateManuHisto(Int_t detElemId, Int_t manuId, Int_t dim=0);
-
-  TH1* CreatePCBHisto(Int_t detElemId, Int_t pcbIndex, Int_t dim=0);
-  
-  TH1* CreateChamberHisto(Int_t chamberId, Int_t dim=0);
-  
 private:
     
   void FillChannel(Int_t detElemId, Int_t manuId, Int_t manuChannel,
                    Int_t dim, Double_t value);
 
-  AliMUONSparseHisto* GetChannelHisto(Int_t detElemId, Int_t manuId, 
-                                      Int_t manuChannel, Int_t dim=0);
-  
   AliMUONVCalibParam* BusPatchParam(Int_t busPatch, Bool_t create=kFALSE) const;
 
   AliMUONVCalibParam* CreateBusPatchParam(Int_t busPatch) const;
@@ -133,22 +130,15 @@ private:
   /// Index of the dimension containing the occupancy number
   virtual Int_t IndexOfOccupancyDimension() const { return fDimension - 2; }
 
+  /// Whether we have histograms for a given dimension, or not
+  virtual Bool_t IsHistogrammed(Int_t dim) const { return ( fHistogramming[dim] > 0 ); }
+
 private:
   /// Not implemented
   AliMUONTrackerData(const AliMUONTrackerData& rhs);
   /// Not implemented
   AliMUONTrackerData& operator=(const AliMUONTrackerData& rhs);
   
-  void Add(TH1& h, const AliMUONSparseHisto& sh);
-  
-  void AddManuHisto(TH1& h, Int_t detElemId, Int_t manuId, Int_t dim);
-
-  void AddBusPatchHisto(TH1& h, Int_t busPatchId, Int_t dim);
-
-  void AddDEHisto(TH1& h, Int_t detElemId, Int_t dim);
-  
-  TH1* CreateHisto(const char* name, Int_t dim) const;
-
   AliMUONVCalibParam* CreateDouble(const AliMUONVCalibParam& param) const;
 
   Int_t GetParts(AliMUONVCalibParam* external,
@@ -171,13 +161,7 @@ private:
   
   /// The number of values we actually *store* for each item
   Int_t Dimension() const { return fDimension; }
-
-  /// The number of values we are inputting
-  Int_t ExternalDimension() const { return fExternalDimension; }
-  
-  /// Whether we have histograms for a given dimension, or not
-  Bool_t IsHistogrammed(Int_t dim) const { return ( fHistogramming[dim] > 0 ); }
-  
+    
 private:
     
   AliMUONVStore* fChannelValues; ///< the channel store
@@ -195,11 +179,12 @@ private:
   /// whether we should histogram the dimension(s)
   Int_t* fHistogramming; //[fExternalDimension] whether we should histogram the dimension(s)
   AliMUONVStore* fChannelHistos; ///< the channel histograms
-  
+  Double_t fXmin; ///< min x value for histograms
+  Double_t fXmax; ///< max x value for histograms
   static const Int_t fgkExtraDimension; ///< to hold extra information
   static const Int_t fgkVirtualExtraDimension; ///< to give access to information not stored, but computed on the fly
   
-  ClassDef(AliMUONTrackerData,2) // Implementation of AliMUONVTrackerData
+  ClassDef(AliMUONTrackerData,3) // Implementation of AliMUONVTrackerData
 };
 
 #endif

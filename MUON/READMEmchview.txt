@@ -62,7 +62,7 @@ From top to bottom, you'll see group of frames used to :
 - select from a list of recently used source
 
 - select a raw data source (either by typing in its full pathname, or opening a file dialog). 
-The second line in this group is to specify that you want to calibrate the data. Check the calibrate button, and specify the
+The second line in this group is to specify that you want to calibrate the data. Check one of the calibrate buttons, and specify the
 location of the OCDB to be used. If that field is not empty (and the corresponding entry is correct, of course), 
 the raw data will be calibrated.
 The last line in that group is a single check button, to instruct the program to produce histograms of the data (see \ref mchview_histogramming)
@@ -78,7 +78,9 @@ The short name of the data source is as follow :
 - RAW# : raw data for run #
 - RAW(#) : raw data for simulated run (where run number is always 0, so # here is the number of such data sources opened at the same time)
 - HRAW# (or HRAW(#)) : as above, but with histogramming turned on
-- CAL# (or CAL(#)): as above, but for calibrated data.
+- (H)CALZ# (or (H)CALZ(#)): as above, but for data where zero-suppression has been done (and no gain correction whatsoever)
+- (H)CALG# : for data where zero-suppression and gain correction has been applied (but no channel-per-channel capacitance correction done)
+- (H)CALC# : for data where zero-suppression and full gain correction (including channel-dependent capacitance correction) applied
 
 Note that all the file paths can be local ones or alien ones, if you have a correctly installed alien, and you use a short wrapped to call the \em mchview program.
 For instance :
@@ -115,7 +117,8 @@ a bit the data reading.
 Histograms produced by the program are as compact as possible in order to fit in memory (so they are *not* plain TH1 objects).
 Plain TH1 objects are produced later on (on request only), and should be deleted as soon as possible (you have to realize that
 1 million TH1 of 4096 channels has no chance to fit in memory...)
-For the moment, access to the histograms cannot be done through the GUI. So you have to use the root prompt (of the \em mchview program itself).
+Access to the histograms can be done through the GUI, using the right click on any painter.
+For extra flexibily, you can also use the root prompt (of the \em mchview program itself).
 First get the data object, and then ask the data object to create the histogram(s) you want. Remember to delete those histograms as soon
 as you no longer need them :
 
@@ -132,11 +135,16 @@ etc...
 
 You can get histograms for all levels (except PCB) : channel, manu, bus patch, detection element, chamber. See AliMUONVTrackerData doc. for the methods.
 
----------
+\section mchview_savingprinting Saving and printing
+
+From the File menu of the \em mchview application, you can use SaveAs and PrintAs popups to respectively save the current data sources (meaning you can quit
+the program and start again with the same filled data sources, without having to rerun on the source) and print the current display.
+Printing needs a little bit of polishing (e.g. getting a nice and descriptive title would help a lot), but it's better than nothing.
+Note that the \em mchview application now has a \em --use option to reload a previously saved .root file (same effect as using the File/Open menu).
+
+\section mchview_warnings Important warnings. Please read.
 
 IMPORTANT WARNINGS
-
-The remove button is currently not working...
 
 In principle, you could have several raw data sources running at the same time. This is NOT currently working. You can have several data sources opened
  at the same time, but not running at the same time. (this has to do with AliRawReader not being thread-safe for the moment).

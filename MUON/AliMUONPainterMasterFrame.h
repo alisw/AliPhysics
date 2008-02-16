@@ -52,6 +52,8 @@ public:
 
   void AttributesChanged(AliMUONAttPainter* newValues);
   
+  void SaveAs(const char* filename = "", Option_t* option = "") const;
+  
 private:
   /// not implemented
   AliMUONPainterMasterFrame(const AliMUONPainterMasterFrame& rhs);

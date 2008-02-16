@@ -30,7 +30,12 @@ class AliMUONVDigitStore;
 class AliMUONTrackerCalibratedDataMaker : public AliMUONVTrackerDataMaker
 {
 public:
-  AliMUONTrackerCalibratedDataMaker(AliRawReader* reader = 0x0, const char* cdbpath=0x0);
+  AliMUONTrackerCalibratedDataMaker(AliRawReader* reader = 0x0, 
+                                    const char* cdbpath=0x0,
+                                    const char* calibMode=0x0,
+                                    Bool_t histogram=kFALSE,
+                                    Double_t xmin=0.0,
+                                    Double_t xmax=4096.0);
   virtual ~AliMUONTrackerCalibratedDataMaker();
   
   /// Whether we have a valid raw reader

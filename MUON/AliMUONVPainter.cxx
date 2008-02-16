@@ -17,17 +17,19 @@
 
 #include "AliMUONVPainter.h"
 
+#include "AliCodeTimer.h"
+#include "AliLog.h"
 #include "AliMUONObjectPair.h"
 #include "AliMUONPainterContour.h"
 #include "AliMUONPainterGroup.h"
 #include "AliMUONPainterHelper.h"
+#include "AliMUONTrackerDataHistogrammer.h"
 #include "AliMUONVTrackerData.h"
-#include "AliCodeTimer.h"
-#include "AliLog.h"
 #include <Riostream.h>
 #include <TCanvas.h>
 #include <TClass.h>
-#include <TClass.h>
+#include <TClassMenuItem.h>
+#include <TH1.h>
 #include <TList.h>
 #include <TMap.h>
 #include <TMath.h>
@@ -38,7 +40,6 @@
 #include <TVirtualPad.h>
 #include <cassert>
 #include <float.h>
-
 
 /// \class AliMUONVPainter
 ///
@@ -109,7 +110,8 @@ AliMUONVPainter::AliMUONVPainter(const char* type)
   fAttributes(),
   fLineColor(1),
   fLineWidth(1),
-  fIsValid(kTRUE)
+  fIsValid(kTRUE),
+  fHistogram(0x0)
 {
     /// ctor
     SetID(-1,-1);
@@ -133,7 +135,8 @@ fPad(0x0),
 fAttributes(),
 fLineColor(-1),
 fLineWidth(-1),
-fIsValid(kTRUE)
+fIsValid(kTRUE),
+fHistogram(0x0)
 {
   /// copy ctor
   rhs.Copy(*this);
@@ -156,6 +159,7 @@ AliMUONVPainter::~AliMUONVPainter()
 {
   /// dtor
   delete fChildren;
+  delete fHistogram;
 }
 
 //_____________________________________________________________________________
@@ -293,6 +297,9 @@ AliMUONVPainter::Copy(TObject& object) const
   
   painter.fID[0] = fID[0];
   painter.fID[1] = fID[1];
+  
+  delete painter.fHistogram;
+  painter.fHistogram = 0x0;
   
   TIter next(fChildren);
   AliMUONVPainter* p;
@@ -511,7 +518,7 @@ AliMUONVPainter::ExecuteEvent(Int_t event, Int_t px, Int_t py)
 void
 AliMUONVPainter::FlatList(TList& list)
 {
-  /// Make a flat list of our children
+  /// Make a flat list of our children (and ourselves)
   
   TIter next(fChildren);
   AliMUONVPainter* painter;
@@ -856,6 +863,7 @@ AliMUONVPainter::SetData(const char* pattern, AliMUONVTrackerData* data,
   while ( ( str = static_cast<TObjString*>(next()) ) )
   {
     AliMUONPainterGroup* group = static_cast<AliMUONPainterGroup*>(fPainterGroups->GetValue(str));
+        
     if ( group->Matches(pattern) )
     {
       group->SetData(data,dataIndex);
@@ -868,6 +876,90 @@ AliMUONVPainter::SetData(const char* pattern, AliMUONVTrackerData* data,
     {
       group->SetData(0x0,-1);
     }
+  }
+  
+  // Update context menus
+  TList list;
+  FlatList(list);
+  
+  TIter pnext(&list);
+  AliMUONVPainter* p;
+  
+  AliMUONPainterGroup* group = Master()->PlotterGroup();
+  
+  while ( ( p = static_cast<AliMUONVPainter*>(pnext()) ) )
+  {
+    TList* l = p->IsA()->GetMenuList();
+  
+    l->Clear();
+  
+    if ( group ) 
+    {
+      Int_t dim = group->Data()->InternalToExternal(group->DataIndex());
+      if ( dim < group->Data()->ExternalDimension() )
+      {      
+        if ( data && data->IsHistogrammed(dim) ) 
+        {
+          // Add histo drawing to the popup menu
+          TClassMenuItem* n = new TClassMenuItem(TClassMenuItem::kPopupUserFunction,p->IsA(),
+                                                 "Draw histogram","DrawHistogram",p,"",-1,kTRUE);
+          l->AddFirst(n);
+          
+          n = new TClassMenuItem(TClassMenuItem::kPopupUserFunction,p->IsA(),
+                                 "Draw histogram clone","DrawHistogramClone",p,"",-1,kTRUE);
+          l->AddFirst(n);
+          
+          
+        }
+      }
+    }
+  }
+}
+
+//_____________________________________________________________________________
+void
+AliMUONVPainter::DrawHistogram() const
+{
+  /// Draw histogram (and delete the previous one)
+
+  delete fHistogram;
+  fHistogram = 0x0;
+  
+  DrawHistogramClone();
+}
+
+//_____________________________________________________________________________
+void
+AliMUONVPainter::DrawHistogramClone() const
+{
+  /// Draw histogram 
+  
+  fHistogram = AliMUONTrackerDataHistogrammer::CreateHisto(*this);
+  
+  if (fHistogram) 
+  {
+    new TCanvas();
+    fHistogram->Draw();
+  }
+}
+
+//_____________________________________________________________________________
+void
+AliMUONVPainter::FillManuList(TObjArray& manuList) const
+{
+  /// Append to manulist
+  /// This is the default implementation, which just calls the FillManuList
+  /// of all our children.
+  /// Some derived class might need to override this in order to exclude
+  /// some children from the fill.
+  
+  TIter next(Children());
+  
+  AliMUONVPainter* p;
+  
+  while ( ( p = static_cast<AliMUONVPainter*>(next()) ) )
+  {
+    p->FillManuList(manuList);
   }
 }
 

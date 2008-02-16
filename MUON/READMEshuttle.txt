@@ -59,9 +59,14 @@ We've written an AliMUONPedestalEventGenerator which creates fake pedestal event
 are taken from the Offline Condition DataBase (OCDB) (which is itself fakely filled
 using the WritePedestals() method of AliMUONCDB class
 
-So first generate a valid pedestal CDB entry by using the AliMUONCDB class
+So first generate a valid pedestal CDB entry by using the AliMUONCDB class. There's one
+ little trick : you should first point to the "default" OCDB (local://$ALICE_ROOT) in
+ order to get the mapping loaded. Then only you can play with another OCDB.
 
 <pre>
+root[] AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+root[] AliCDBManager::Instance()->SetRun(0);
+root[] AliMpCDB::LoadDDLStore();
 root[] const char* cdbpath="local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB"; // where to put the CDB
 root[] AliMUONCDB cdb(cdbpath)
 root[] Bool_t defaultValues = kFALSE; // to generate random values instead of plain zeros...

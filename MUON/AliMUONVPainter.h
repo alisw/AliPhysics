@@ -35,6 +35,7 @@ class AliMUONPainterGroup;
 class AliMUONVTrackerData;
 class AliMpArea;
 class TCollection;
+class TH1;
 class TList;
 class TMap;
 class TObjArray;
@@ -212,10 +213,17 @@ public:
 
   AliMUONVPainter* Master() const;
   
+  virtual void DrawHistogram() const;
+
+  virtual void DrawHistogramClone() const;
+
+  /// Append (i.e. don't have the right the clear the array !) our list of manus to manuList
+  virtual void FillManuList(TObjArray& manuList) const;
+  
 protected:
     
   virtual TCollection* Children() const;
-  
+
 private:
 
     void FlatList(TList& list);
@@ -249,7 +257,10 @@ private:
   Int_t fID[2]; ///< our ids
   Bool_t fIsValid; ///< whether we were properly initialized
   
-  ClassDef(AliMUONVPainter,1) // Base class of a graphical object for MUON spectrometer
+protected:
+  mutable TH1* fHistogram; ///< histogram
+  
+  ClassDef(AliMUONVPainter,2) // Base class of a graphical object for MUON spectrometer
 };
 
 #endif

@@ -69,11 +69,11 @@ AliMUONPainterDataSourceItem::AliMUONPainterDataSourceItem(const TGWindow* p,
   fDataReader(reader),
   fSourceName(new TGLabel(this,reader->Data()->Name())),
   fSource(new TGLabel(this,reader->Source().Data())),
-  fNumberOfEvents(new TGLabel(this,"0")),
+  fNumberOfEvents(new TGLabel(this,Form("%10d",0))),
   fRun(new TGTextButton(this,"Run")),
   fStop(new TGTextButton(this,"Stop")),
   fRewind(new TGTextButton(this,"Rewind")),
-  fRemove(new TGTextButton(this,"Remove")),
+  fRemove(0x0),//new TGTextButton(this,"Remove")),
   fThread(0x0),
   fShouldReset(kFALSE)
 {
@@ -99,10 +99,10 @@ AliMUONPainterDataSourceItem::AliMUONPainterDataSourceItem(const TGWindow* p,
                      this,
                      "Rewind()");
     
-    fRemove->Connect("Clicked()",
-                     "AliMUONPainterDataSourceItem",
-                     this,
-                     "Remove()");
+//    fRemove->Connect("Clicked()",
+//                     "AliMUONPainterDataSourceItem",
+//                     this,
+//                     "Remove()");
     
     AddFrame(fSourceName, new TGLayoutHints(kLHintsNormal | kLHintsCenterY,5,5,5,5));
     AddFrame(fSource,new TGLayoutHints(kLHintsExpandX | kLHintsCenterY,5,5,5,5));
@@ -110,7 +110,7 @@ AliMUONPainterDataSourceItem::AliMUONPainterDataSourceItem(const TGWindow* p,
     AddFrame(fRun,new TGLayoutHints(kLHintsCenterY | kLHintsCenterY,5,5,5,5));
     AddFrame(fStop,new TGLayoutHints(kLHintsCenterY | kLHintsCenterY,5,5,5,5));
     AddFrame(fRewind,new TGLayoutHints(kLHintsCenterY | kLHintsCenterY,5,5,5,5));    
-    AddFrame(fRemove,new TGLayoutHints(kLHintsCenterY | kLHintsCenterY,5,5,5,5));    
+//    AddFrame(fRemove,new TGLayoutHints(kLHintsCenterY | kLHintsCenterY,5,5,5,5));    
     
     reader->Data()->Connect("NumberOfEventsChanged()",
                             "AliMUONPainterDataSourceItem",
@@ -127,13 +127,23 @@ AliMUONPainterDataSourceItem::~AliMUONPainterDataSourceItem()
   delete fThread;
 }
 
-//_____________________________________________________________________________
-void
-AliMUONPainterDataSourceItem::Remove()
-{
-  /// Remove button was clicked
-}
 
+//_____________________________________________________________________________
+void 
+AliMUONPainterDataSourceItem::EnableRun() 
+{ 
+  /// Enable run button
+  fRun->SetEnabled(kTRUE); 
+}
+  
+//_____________________________________________________________________________
+void 
+AliMUONPainterDataSourceItem::DisableRun() 
+{ 
+  /// Disable run button
+  fRun->SetEnabled(kFALSE); 
+}
+  
 //_____________________________________________________________________________
 void
 AliMUONPainterDataSourceItem::Reset()
@@ -171,13 +181,15 @@ AliMUONPainterDataSourceItem::Run()
 {
   /// Run button was clicked
   
+  StartRunning();
+  
   if ( fShouldReset ) 
   {
     Reset();
     fShouldReset = kFALSE;
   }
   
-  fRemove->SetEnabled(kFALSE);
+//  fRemove->SetEnabled(kFALSE);
   
   if (!fThread)
   {
@@ -199,11 +211,14 @@ AliMUONPainterDataSourceItem::Stop()
 {
   /// Stop button was clicked
   
+  StopRunning();
+  
   fDataReader->SetRunning(kFALSE);
   
   fStop->SetEnabled(kFALSE);
   fRun->SetEnabled(kTRUE);
-  fRemove->SetEnabled(kTRUE);
+
+  //  fRemove->SetEnabled(kTRUE);
 }
 
 //_____________________________________________________________________________
@@ -213,4 +228,20 @@ AliMUONPainterDataSourceItem::Update()
   /// Update ourselves
   
   fNumberOfEvents->SetText(Form("%10d",fDataReader->Data()->NumberOfEvents()));
+}
+
+//_____________________________________________________________________________
+void
+AliMUONPainterDataSourceItem::StartRunning()
+{
+  /// Signal we start to run
+  Emit("StartRunning()");
+}  
+
+//_____________________________________________________________________________
+void
+AliMUONPainterDataSourceItem::StopRunning()
+{
+  /// Signal we stop to run
+  Emit("StopRunning()");
 }

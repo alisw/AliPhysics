@@ -34,7 +34,6 @@
 #include "AliMpHVNamer.h"
 #include "AliMpManuIterator.h"
 #include <Riostream.h>
-#include <TH1.h>
 #include <TMath.h>
 #include <TObjArray.h>
 #include <TObjString.h>
@@ -73,10 +72,12 @@ fExternalDimensionNames(new TObjArray(dimension)),
 fExternalDimension(dimension),
 fIsRunnable(runnable),
 fHistogramming(new Int_t[fExternalDimension]),
-fChannelHistos(0x0)
+fChannelHistos(0x0),
+fXmin(0.0),
+fXmax(0.0)
 {  
   /// ctor
-  memset(fHistogramming,0,sizeof(Int_t)); // histogramming is off by default. Use SetHistogramDimension to turn it on.
+  memset(fHistogramming,0,sizeof(Int_t)); // histogramming is off by default. Use MakeHistogramForDimension to turn it on.
   fExternalDimensionNames->SetOwner(kTRUE);
   fDimensionNames->SetOwner(kTRUE);  
   fDimensionNames->AddAt(new TObjString("occ"),IndexOfOccupancyDimension());
@@ -532,285 +533,58 @@ AliMUONTrackerData::FillChannel(Int_t detElemId, Int_t manuId, Int_t manuChannel
 {
   /// Fill histogram of a given channel
   
-  AliMUONSparseHisto* h = GetChannelHisto(detElemId, manuId, manuChannel,dim);
+  AliMUONSparseHisto* h = GetChannelSparseHisto(detElemId, manuId, manuChannel,dim);
  
   h->Fill(static_cast<Int_t>(TMath::Nint(value)));
 }
 
 //_____________________________________________________________________________
-TH1*
-AliMUONTrackerData::CreateChannelHisto(Int_t detElemId, Int_t manuId, 
-                                       Int_t manuChannel, Int_t dim)
+AliMUONSparseHisto*
+AliMUONTrackerData::GetChannelSparseHisto(Int_t detElemId, Int_t manuId, 
+                                          Int_t manuChannel, Int_t dim) const
 {
-  /// Create histogram of a given channel. Note that in order
-  /// to keep memory footprint as low as possible, you should delete
-  /// the returned pointer as soon as possible...
-
-  if ( HasChannel(detElemId, manuId, manuChannel) && IsHistogrammed(dim) )
-  {
-    AliMUONSparseHisto* sh = GetChannelHisto(detElemId,manuId,manuChannel,dim);
+  /// Get histogram of a given channel
   
-    if ( sh ) 
-    {
-      TH1* h = new TH1I(Form("DE%04dMANU%04dCH%02d_%d",detElemId,manuId,manuChannel,dim),
-                        Form("Data=%s Dim=%s",GetName(),ExternalDimensionName(dim).Data()),
-                        4096,-0.5,4095.5);
-      
-      Add(*h,*sh);
-      return h;
-    }
-  }
-  return 0x0;
-}
-
-//_____________________________________________________________________________
-void
-AliMUONTrackerData::Add(TH1& h, const AliMUONSparseHisto& sh)
-{
-  /// Add sparse histo content to histogram.
+  if (!fChannelHistos) return 0x0;
   
-  Double_t entries(h.GetEntries());
+  AliMUON1DMap* m = static_cast<AliMUON1DMap*>(fChannelHistos->FindObject(detElemId,manuId));
+  if (!m) return 0x0;
   
-  for ( Int_t i = 0; i < sh.GetNbins(); ++i ) 
-  {
-    Int_t x = sh.GetBinContent(i);
-    Int_t adc, count;
-    sh.Decode(x,adc,count);
-    h.Fill(adc,count);
-    entries += count;
-  }
+  UInt_t uid = ( manuChannel << 16 ) | dim;
   
-  h.SetEntries(entries);
-}
-
-//_____________________________________________________________________________
-TH1*
-AliMUONTrackerData::CreateHisto(const char* name, Int_t dim) const
-{
-  /// Create a single histogram
- 
-  return new TH1I(name,Form("Data=%s Dim=%s",GetName(),ExternalDimensionName(dim).Data()),
-                  4096,-0.5,4095.5);
-}
-
-//_____________________________________________________________________________
-TH1*
-AliMUONTrackerData::CreateBusPatchHisto(Int_t busPatchId, Int_t dim)
-{
-  /// Create histogram of a given bus patch. Note that in order
-  /// to keep memory footprint as low as possible, you should delete
-  /// the returned pointer as soon as possible...
-  
-  TH1* h(0x0);
-  
-  if ( HasBusPatch(busPatchId) && IsHistogrammed(dim)) 
-  {
-    h = CreateHisto(Form("BP%04d_%d",busPatchId,dim),dim);
-    AddBusPatchHisto(*h,busPatchId,dim);
-  }
-  
-  return h;
-}  
- 
-//_____________________________________________________________________________
-void
-AliMUONTrackerData::AddBusPatchHisto(TH1& h, Int_t busPatchId, Int_t dim)
-{
-  /// Add data from one bus patch to the histogram
-      
-  if ( HasBusPatch(busPatchId ) )
-  {
-    AliMpBusPatch* busPatch = AliMpDDLStore::Instance()->GetBusPatch(busPatchId);
-    for ( Int_t i = 0; i < busPatch->GetNofManus(); ++i ) 
-    {
-      Int_t manuId = busPatch->GetManuId(i);
-      AddManuHisto(h,busPatch->GetDEId(),manuId,dim);
-    }
-  }
-}
-
-
-//_____________________________________________________________________________
-TH1*
-AliMUONTrackerData::CreateDEHisto(Int_t detElemId, Int_t dim)
-{
-  /// Create histogram of a given detection element. Note that in order
-  /// to keep memory footprint as low as possible, you should delete
-  /// the returned pointer as soon as possible...
-  
-  TH1* h(0x0);
-  
-  if ( HasDetectionElement(detElemId) && IsHistogrammed(dim) ) 
-  {
-    h = CreateHisto(Form("DE%04d-%d",detElemId,dim),dim);
-    AddDEHisto(*h,detElemId,dim);
-  }
-  
-  return h;
-}
-
-//_____________________________________________________________________________
-void
-AliMUONTrackerData::AddDEHisto(TH1& h, Int_t detElemId, Int_t dim)
-{
-  /// Add data from one detection element to the histogram
-  
-  if ( HasDetectionElement(detElemId) )
-  {
-    AliMpDetElement* de = AliMpDDLStore::Instance()->GetDetElement(detElemId);
-    for ( Int_t i = 0; i < de->GetNofBusPatches(); ++ i ) 
-    {
-      Int_t busPatchId = de->GetBusPatchId(i);
-      AddBusPatchHisto(h,busPatchId,dim);
-    }
-  }
-}
-
-//_____________________________________________________________________________
-TH1*
-AliMUONTrackerData::CreateManuHisto(Int_t detElemId, Int_t manuId, Int_t dim)
-{
-  /// Create histogram of a given manu. Note that in order
-  /// to keep memory footprint as low as possible, you should delete
-  /// the returned pointer as soon as possible...
-  
-  TH1* h(0x0);
-  
-  if ( HasManu(detElemId, manuId) && IsHistogrammed(dim) ) 
-  {
-    h = CreateHisto(Form("DE%04dMANU%04d_%d",detElemId,manuId,dim),dim);
-    AddManuHisto(*h,detElemId,manuId,dim);
-  }
-  
-  return h;
-}
-
-//_____________________________________________________________________________
-void
-AliMUONTrackerData::AddManuHisto(TH1& h, Int_t detElemId, Int_t manuId, Int_t dim)
-{
-  /// Add data from a given manu to histogram
-  
-  if ( HasManu(detElemId,manuId) )
-  {
-    for ( Int_t i = 0; i < AliMpConstants::ManuNofChannels(); ++i ) 
-    {
-      if ( HasChannel(detElemId,manuId,i) )
-      {
-        AliMUONSparseHisto* sh = GetChannelHisto(detElemId,manuId,i,dim);
-      
-        if ( sh ) 
-        {      
-          Add(h,*sh);
-        }
-      }
-    }
-  }
-}
-
-//_____________________________________________________________________________
-TH1*
-AliMUONTrackerData::CreatePCBHisto(Int_t /*detElemId*/, Int_t /*pcbIndex*/, Int_t /*dim*/)
-{
-  /// Create histogram of a given PCB. Note that in order
-  /// to keep memory footprint as low as possible, you should delete
-  /// the returned pointer as soon as possible...
-  
- // TH1* h(0x0);
-//  
-//  if ( HasPCB(detElemId, pcbIndex) && IsHistogrammed(dim)) 
-//  {
-//    h = CreateHisto(Form("DE%04dPCB1d_%d",detElemId,pcbIndex,dim),dim);
-//  }
-//  
-//  return h;
-
-  AliWarning("Not implemented (is it needed ?)");
-  return 0x0;
-}
-
-//_____________________________________________________________________________
-TH1*
-AliMUONTrackerData::CreateChamberHisto(Int_t chamberId, Int_t dim)
-{
-  /// Create histogram of a given chamber. Note that in order
-  /// to keep memory footprint as low as possible, you should delete
-  /// the returned pointer as soon as possible...
-  
-  TH1* h(0x0);
-  
-  if ( HasChamber(chamberId) && IsHistogrammed(dim))
-  {
-    h = CreateHisto(Form("CHAMBER%02d_%d",chamberId,dim),dim);
-    AliMpDEIterator it;
-    it.First(chamberId);
-    while ( !it.IsDone() )
-    {
-      Int_t detElemId = it.CurrentDEId();
-      AddDEHisto(*h,detElemId,dim);
-      it.Next();
-    }
-  }
+  AliMUONSparseHisto* h = static_cast<AliMUONSparseHisto*>(m->FindObject(uid));
   
   return h;
 }
 
 //_____________________________________________________________________________
 AliMUONSparseHisto*
-AliMUONTrackerData::GetChannelHisto(Int_t detElemId, Int_t manuId, 
-                                    Int_t manuChannel, Int_t dim)
+AliMUONTrackerData::GetChannelSparseHisto(Int_t detElemId, Int_t manuId, 
+                                          Int_t manuChannel, Int_t dim)
 {
-  /// Get histogram of a given channel
+  /// Get histogram of a given channel. Create it if necessary
   
   if (!fChannelHistos) fChannelHistos = new AliMUON2DMap(kTRUE);
   
-  TObjArray* dimArray = static_cast<TObjArray*>(fChannelHistos->FindObject(detElemId,manuId));
-  if (!dimArray)
+  AliMUON1DMap* m = static_cast<AliMUON1DMap*>(fChannelHistos->FindObject(detElemId,manuId));
+  if (!m)
   {
-    dimArray = new TObjArray(fExternalDimension);
-    dimArray->SetUniqueID( ( manuId << 16 ) | detElemId );
-    fChannelHistos->Add(dimArray);
+    m = new AliMUON1DMap(AliMpConstants::ManuNofChannels()); // start with only 1 dim
+    m->SetUniqueID( ( manuId << 16 ) | detElemId );
+    fChannelHistos->Add(m);
   }
   
-  TObjArray* channels = static_cast<TObjArray*>(dimArray->UncheckedAt(dim));
-  if (!channels)
-  {
-    channels = new TObjArray(AliMpConstants::ManuNofChannels());
-    dimArray->AddAt(channels,dim);
-  }
+  UInt_t uid = ( manuChannel << 16 ) | dim;
   
-  AliMUONSparseHisto* h = static_cast<AliMUONSparseHisto*>(channels->UncheckedAt(manuChannel));
+  AliMUONSparseHisto* h = static_cast<AliMUONSparseHisto*>(m->FindObject(uid));
   if (!h)
   {
-    h = new AliMUONSparseHisto;
-    h->SetUniqueID(( manuChannel << 16 ) | dim);
-    channels->AddAt(h,manuChannel);
+    h = new AliMUONSparseHisto(fXmin,fXmax);
+    
+    h->SetUniqueID(uid);
+    
+    m->Add(h);
   }
-  
-  return h;
- 
-// below is an alternate implementation, using a 1DMap, which *seems* to be
-// slightly SLOWER.
-//
-//  AliMUON1DMap* m = static_cast<AliMUON1DMap*>(fChannelHistos->FindObject(detElemId,manuId));
-//  if (!m)
-//  {
-//    m = new AliMUON1DMap(kFALSE);
-//    m->SetUniqueID( ( manuId << 16 ) | detElemId );
-//    fChannelHistos->Add(m);
-//  }
-//  
-//  UInt_t uid = ( manuChannel << 16 ) | dim;
-//  
-//  AliMUONSparseHisto* h = static_cast<AliMUONSparseHisto*>(m->FindObject(uid));
-//  if (!h)
-//  {
-//    h = new AliMUONSparseHisto;
-//    
-//    h->SetUniqueID(uid);
-//    
-//    m->Add(h);
-//  }
 
   return h;
 }
@@ -1099,7 +873,7 @@ AliMUONTrackerData::SetDimensionName(Int_t index, const char* name)
 
 //_____________________________________________________________________________
 void 
-AliMUONTrackerData::SetHistogramDimension(Int_t index, Bool_t value)
+AliMUONTrackerData::MakeHistogramForDimension(Int_t index, Bool_t value, Double_t xmin, Double_t xmax)
 {
   /// decide to make histos for a given dimension
   if ( index >= ExternalDimension() ) 
@@ -1109,6 +883,8 @@ AliMUONTrackerData::SetHistogramDimension(Int_t index, Bool_t value)
   }
   
   fHistogramming[index] = value;
+  fXmin = xmin;
+  fXmax = xmax;
 }
 
 //_____________________________________________________________________________

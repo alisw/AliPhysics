@@ -325,8 +325,7 @@ AliMUONPainterMatrixFrame::EventInfo(Int_t event, Int_t px ,Int_t py, TObject* o
   
 //  cout << "EventInfo : event " << event << " px " << px << " py " << py
 //    << " object " << object << " " << object->GetName() << endl;
-//  
-//  
+// 
   if ( event == 7 ) 
   {
     if ( object->InheritsFrom("AliMUONVPainter") )
@@ -467,6 +466,14 @@ AliMUONPainterMatrixFrame::OutlineButtonWasClicked(Int_t id)
   // Update the interface (e.g. list of possible responders can have 
   // changed due to visibility change)
   UpdateInterface(kFALSE);
+}
+
+//_____________________________________________________________________________
+void 
+AliMUONPainterMatrixFrame::SaveAs(const char* filename, Option_t* option) const
+{
+  /// Save painter matrix (in the sense of "print") in filename
+  fView->GetCanvas()->SaveAs(filename,option);
 }
 
 //_____________________________________________________________________________

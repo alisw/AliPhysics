@@ -45,6 +45,8 @@ public:
   
     virtual AliMUONAttPainter Validate(const AliMUONAttPainter& attributes) const;
 
+    virtual void FillManuList(TObjArray& manuList) const;
+    
 private:
   Int_t fDetElemId; ///< our detection element id
   Int_t fManuId; ///< our manu id

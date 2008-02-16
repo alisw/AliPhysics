@@ -234,6 +234,25 @@ AliMUONDEPainter::Describe(const AliMUONVTrackerData& data, Int_t dataIndex,
 
 //_____________________________________________________________________________
 void
+AliMUONDEPainter::FillManuList(TObjArray& manuList) const
+{
+  /// Fill (append to) manu list
+  TIter next(Children());
+  AliMUONVPainter* p;
+  
+  while ( ( p = static_cast<AliMUONVPainter*>(next()) ) )
+  {
+    if ( p->IsA() == AliMUONBusPatchPainter::Class() )
+    {
+      // Only consider bus patch painters (and not PCB ones),
+      // in order not to double count some manus
+      p->FillManuList(manuList);
+    }
+  }
+}
+                            
+//_____________________________________________________________________________
+void
 AliMUONDEPainter::PaintArea(const AliMUONVTrackerData& data, Int_t dataIndex,
                                   Double_t min, Double_t max)
 {

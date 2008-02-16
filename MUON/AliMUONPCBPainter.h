@@ -36,6 +36,9 @@ public:
   void ComputeDataRange(const AliMUONVTrackerData& data, Int_t dataIndex, 
                         Double_t& dataMin, Double_t& dataMax) const;
   
+  TString Describe(const AliMUONVTrackerData& data, Int_t dataIndex,
+                   Double_t, Double_t);
+    
   void PaintArea(const AliMUONVTrackerData& data, Int_t dataIndex,
                  Double_t min, Double_t max);
   

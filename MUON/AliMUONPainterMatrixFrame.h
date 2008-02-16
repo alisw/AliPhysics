@@ -69,6 +69,8 @@ public:
   /// Get the matrix pointer
   AliMUONPainterMatrix* Matrix() const { return fPainterMatrix; }
   
+  void SaveAs(const char* filename="", Option_t* option="") const;
+
 private:
   /// not implemented
   AliMUONPainterMatrixFrame(const AliMUONPainterMatrixFrame& rhs);
