@@ -12,7 +12,14 @@ void Config(char directory[100]="", char option[6]="trgAll")
     
   //=====================================================================
   //  Libraries required by geant321
+  //    gSystem->Load("liblhapdf.so");
+  //    gSystem->Load("libEGPythia6.so");
+  //    gSystem->Load("libPythia6.so");
+  //    gSystem->Load("libpythia6.so");
+  //    gSystem->Load("libAliPythia6.so");
+
     gSystem->Load("libgeant321.so");
+    
     new TGeant3TGeo("C++ Interface to Geant3");
   //=======================================================================
 
@@ -98,6 +105,21 @@ void Config(char directory[100]="", char option[6]="trgAll")
   //    183.,  245.,  395.,  560., 563., 850., 900.  
   //=======================================================================
 
+    AliGenPythia* PythiaForMUONCocktail(Decay_t dt)
+	{
+	    AliGenPythia *pythia = new AliGenPythia(1);
+	    pythia->SetProcess(kPyMbMSEL1);
+	    pythia->SetStrucFunc(kCTEQ5L);
+	    pythia->SetEnergyCMS(14000.);
+	    pythia->SetForceDecay(dt);
+	    pythia->SetPtRange(0.,100.);
+	    pythia->SetYRange(-8.,8.);
+	    pythia->SetPhiRange(0.,360.);
+	    pythia->SetPtHard(2.76,-1.0);
+	    pythia->SwitchHFOff();
+	    return pythia;
+	}
+
     if (!strcmp(option,"trg2mu")) {
 	AliGenMUONCocktailpp *gener = new AliGenMUONCocktailpp();
 	gener->SetPtRange(0.,100.);
@@ -109,6 +131,10 @@ void Config(char directory[100]="", char option[6]="trgAll")
 	gener->SetOrigin(0.,0.,0.); 
 	gener->SetSigma(0.,0.,5.);
 	gener->SetVertexSmear(kPerEvent);
+	Decay_t dt = gener->GetDecayModePythia();
+	AliGenPythia* pythia = PythiaForMUONCocktail(dt);
+	pythia->Init();     
+	gener->AddGenerator(pythia,"Pythia",1);
 	gener->Init(); 
     }
  
@@ -123,6 +149,10 @@ void Config(char directory[100]="", char option[6]="trgAll")
 	gener->SetOrigin(0.,0.,0.); 
 	gener->SetSigma(0.,0.,5.);
 	gener->SetVertexSmear(kPerEvent);
+	Decay_t dt = gener->GetDecayModePythia();
+	AliGenPythia* pythia = PythiaForMUONCocktail(dt);
+	pythia->Init();     
+	gener->AddGenerator(pythia,"Pythia",1);
 	gener->Init(); 
     }
     if (!strcmp(option,"trgAll")) {
@@ -135,6 +165,10 @@ void Config(char directory[100]="", char option[6]="trgAll")
 	gener->SetOrigin(0.,0.,0.); 
 	gener->SetSigma(0.,0.,5.3);
 	gener->SetVertexSmear(kPerEvent);
+	Decay_t dt = gener->GetDecayModePythia();
+	AliGenPythia* pythia = PythiaForMUONCocktail(dt);
+	pythia->Init();     
+	gener->AddGenerator(pythia,"Pythia",1);
 	gener->Init();
     }
   //============================================================= 
@@ -185,3 +219,4 @@ void Config(char directory[100]="", char option[6]="trgAll")
 Float_t EtaToTheta(Float_t arg){
     return (180./TMath::Pi())*2.*atan(exp(-arg));
 }
+
