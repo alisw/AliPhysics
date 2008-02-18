@@ -1,3 +1,3 @@
 #! /bin/sh
 
-make libPWG2AAOD.so
+make libPWG2AOD.so
