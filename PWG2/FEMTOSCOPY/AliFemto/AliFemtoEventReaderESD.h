@@ -48,7 +48,7 @@ class AliFemtoEventReaderESD : public AliFemtoEventReader
  public:
   AliFemtoEventReaderESD();
   AliFemtoEventReaderESD(const AliFemtoEventReaderESD &aReader);
-  ~AliFemtoEventReaderESD();
+  virtual ~AliFemtoEventReaderESD();
 
   AliFemtoEventReaderESD& operator=(const AliFemtoEventReaderESD& aReader);
 

@@ -39,3 +39,6 @@
 #pragma link C++ class AliFemtoModelCorrFctn;
 #pragma link C++ class AliFemtoModelWeightGeneratorLednicky;
 #pragma link C++ class AliFemtoCutMonitorParticleYPt;
+#pragma link C++ class AliFemtoEventReaderAOD;
+#pragma link C++ class AliFemtoEventReaderAODChain;
+#pragma link C++ class AliFemtoAODTrackCut;
