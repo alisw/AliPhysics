@@ -16,7 +16,6 @@
 /* $Id$ */
 
 ///////////////////////////////////////////////////////////////////
-//                                                               //
 // Implementation of the class for SDD DCS data analysis         //
 // Origin: F.Prino, Torino, prino@to.infn.it                     //
 //         V.Pospisil, CTU Prague, gdermog@seznam.cz             //
@@ -32,50 +31,74 @@ ClassImp(AliITSDCSAnalyzerSDD)
 
 //---------------------------------------------------------------
   AliITSDCSAnalyzerSDD::AliITSDCSAnalyzerSDD(): TObject(),
-fHVDelay(0),fMVDelay(0),fTLDelay(0),fTRDelay(0),fStTLDelay(0),fStTRDelay(0),fOKDelay(0)
-{                       
+fHVDelay(0),fMVDelay(0),fTLDelay(0),fTRDelay(0),fStTLDelay(0),fStTRDelay(0),fOKDelay(0),
+fHVThresholdFrac(0), fMVThresholdFrac(0), fTLThresholdFrac(0), fTRThresholdFrac(0)
+{
 // Default constructor
   Init();
+  SetHVThreshold();
+  SetMVThreshold();
+  SetTLThreshold();
+  SetTRThreshold();
+  for( Int_t moduleLoop = 0; moduleLoop < kNmodules; moduleLoop++ ) fDCSData[moduleLoop] = NULL;
 } /*AliITSDCSAnalyzerSDD::AliITSDCSAnalyzerSDD*/
 
 //---------------------------------------------------------------
 
 AliITSDCSAnalyzerSDD::AliITSDCSAnalyzerSDD(const AliITSDCSAnalyzerSDD& /* dcsa */): TObject(),
-fHVDelay(0),fMVDelay(0),fTLDelay(0),fTRDelay(0),fStTLDelay(0),fStTRDelay(0),fOKDelay(0)
-{                       
-// copy constructor
-                        // Copies are not allowed. The method is protected to avoid misuse.
-  fprintf( stderr, "Copy constructor not allowed");
+fHVDelay(0),fMVDelay(0),fTLDelay(0),fTRDelay(0),fStTLDelay(0),fStTRDelay(0),fOKDelay(0),
+fHVThresholdFrac(0), fMVThresholdFrac(0), fTLThresholdFrac(0), fTRThresholdFrac(0)
+{
+// Copy constructor
+// Copies are not allowed. The method is protected to avoid misuse.
+  AliError("Copy constructor not allowed");
 } /*AliITSDCSAnalyzerSDD::AliITSDCSAnalyzerSDD*/
 
 //---------------------------------------------------------------
 
 AliITSDCSAnalyzerSDD& AliITSDCSAnalyzerSDD::operator=(const AliITSDCSAnalyzerSDD& /* dcsa */)
-{                       
-// assigment operator
-                        // Assignment is not allowed. The method is protected to avoid misuse.
-  fprintf( stderr, "Assignment operator not allowed");
+{
+// Assigment operator
+// Assignment is not allowed. The method is protected to avoid misuse.
+  AliError("Assignment operator not allowed");
   return *this;
 }/*AliITSDCSAnalyzerSDD::operator=*/
 
 //---------------------------------------------------------------
 
 AliITSDCSAnalyzerSDD::~AliITSDCSAnalyzerSDD()
-{                       
-// destructor
+{ 
+// Destructor
   for(int j=0; j<kNmodules; j++)
   {
-    if(fDCSData[j]) delete fDCSData[j];
+    if( fDCSData[j] ) delete fDCSData[j];
   } /*for( j )*/
 } /*AliITSDCSAnalyzerSDD::~AliITSDCSAnalyzerSDD*/
 
 //---------------------------------------------------------------
 
 void AliITSDCSAnalyzerSDD::AnalyzeData(TMap* dcsMap)
-{                       
-// Data processing
+{
+// Data processing. Takes DCS points from alias map and sorts them into AliITSDCSDataSDD objects.
 
-   Int_t counter = 0;
+   Int_t   counter = 0; // Counter of stored DCS records
+
+   Float_t lastTLValUpper;
+   Float_t lastTLValLower;
+   Float_t lastTRValUpper;
+   Float_t lastTRValLower;
+   Float_t lastHVValUpper;
+   Float_t lastHVValLower;
+   Float_t lastMVValUpper;
+   Float_t lastMVValLower;
+                        // Thresholds for float DCS variables
+
+   Int_t nEntries;      // Number of entries in each TObjArray, that contains DCS variable values
+   AliDCSValue *valToProcess;
+                        // Pointer to currently processed DCS variable value
+   Float_t valToProcessFloat;
+                        // Value of currently processed DCS variable
+
 
    for( Int_t iLay = 3; iLay < 5; iLay++ )
    {
@@ -96,59 +119,64 @@ void AliITSDCSAnalyzerSDD::AnalyzeData(TMap* dcsMap)
                         // DCS data for specific SDD module will be stored in this class
 
             TObjArray* arrHV = (TObjArray*) dcsMap->GetValue( fHVDPNames[moduleLoop].Data() );
-            if(!arrHV)
+            if(!arrHV)  // There is no record for high voltage in the map
             {
-               fprintf( stderr, Form("DCS HV alias %s not found!\n", fHVDPNames[moduleLoop].Data()));
+               AliWarning( Form("DCS HV alias %s not found!\n", fHVDPNames[moduleLoop].Data()) );
                continue;
             } /*if*/
 
             TObjArray* arrMV = (TObjArray*) dcsMap->GetValue( fMVDPNames[moduleLoop].Data() );
-            if(!arrMV)
+            if(!arrMV)  // There is no record for medium voltage in the map
             {
-               fprintf( stderr, Form("DCS MV alias %s not found!\n", fMVDPNames[moduleLoop].Data()));
+               AliWarning( Form("DCS MV alias %s not found!\n", fMVDPNames[moduleLoop].Data()));
                continue;
             } /*if*/
 
             TObjArray* arrOK = (TObjArray*) dcsMap->GetValue( fOKDPNames[moduleLoop].Data() );
-            if(!arrOK)
+            if(!arrOK)  // There is no record for OK status in the map
             {
-               fprintf( stderr, Form("DCS MOD_OK alias %s not found!\n", fOKDPNames[moduleLoop].Data()));
+               AliWarning( Form("DCS MOD_OK alias %s not found!\n", fOKDPNames[moduleLoop].Data()));
                continue;
             } /*if*/
 
             TObjArray* arrTL = (TObjArray*) dcsMap->GetValue( fTLDPNames[moduleLoop].Data() );
-            if(!arrTL)
+            if(!arrTL)  // There is no record for temperature on left side in the map
             {
-               fprintf( stderr, Form("DCS TEMP_L alias %s not found!\n", fTLDPNames[moduleLoop].Data()));
+               AliWarning( Form("DCS TEMP_L alias %s not found!\n", fTLDPNames[moduleLoop].Data()));
                continue;
             } /*if*/
 
             TObjArray* arrTR = (TObjArray*) dcsMap->GetValue( fTRDPNames[moduleLoop].Data() );
-            if(!arrTR)
+            if(!arrTR)  // There is no record for temperature on right side in the map
             {
-               fprintf( stderr, Form("DCS TEMP_R alias %s not found!\n", fTRDPNames[moduleLoop].Data()));
+               AliWarning( Form("DCS TEMP_R alias %s not found!\n", fTRDPNames[moduleLoop].Data()));
                continue;
             } /*if*/
 
             TObjArray* arrStTL = (TObjArray*) dcsMap->GetValue( fTLStDPNames[moduleLoop].Data() );
-            if(!arrStTL)
+            if(!arrStTL)  // There is no record for TEMP_L status in the map
             {
-               fprintf( stderr, Form("DCS TEMP_L_STATE alias %s not found!\n", fTLStDPNames[moduleLoop].Data()));
+               AliWarning( Form("DCS TEMP_L_STATE alias %s not found!\n", fTLStDPNames[moduleLoop].Data()));
                continue;
             } /*if*/
 
             TObjArray* arrStTR = (TObjArray*) dcsMap->GetValue( fTRStDPNames[moduleLoop].Data() );
-            if(!arrStTR) 
+            if(!arrStTR)  // There is no record for TEMP_R status in the map
             {
-               fprintf( stderr, Form("DCS TEMP_R_STATE alias %s not found!\n", fTRStDPNames[moduleLoop].Data()));
+               AliWarning( Form("DCS TEMP_R_STATE alias %s not found!\n", fTRStDPNames[moduleLoop].Data()));
                continue;
             } /*if*/
 
 
-            Int_t nEntries;     
-                        // Number of entries in each TObjArray, that contains DCS variable values
-            AliDCSValue *valToProcess;
-                        // Pointer to currently processed DCS variable value
+            lastTLValUpper = -1e-10;
+            lastTLValLower = +1e+10;
+            lastTRValUpper = -1e-10;
+            lastTRValLower = +1e+10;
+            lastHVValUpper = -1e-10;
+            lastHVValLower = +1e+10;
+            lastMVValUpper = -1e-10;
+            lastMVValLower = +1e+10;
+                        // First value of any DCS variable must be written
 
             nEntries = arrTL->GetEntries();
             fDCSData[moduleLoop]->SetNPointsTempLeft( nEntries );
@@ -157,9 +185,25 @@ void AliITSDCSAnalyzerSDD::AnalyzeData(TMap* dcsMap)
             for( Int_t tlLoop = 0; tlLoop < nEntries; tlLoop++ )
             {           // Left temerature values are copied into the AliITSDCSDataSDD TempLeft array
                valToProcess = (AliDCSValue *)(arrTL->At(tlLoop));
-               fDCSData[moduleLoop]->SetValueTempLeft( valToProcess->GetTimeStamp() - fTLDelay, valToProcess->GetFloat() );
+               valToProcessFloat = valToProcess->GetFloat();
+                        // Value is readed from the input array
+
+// /**//**/if( moduleLoop == 259 )
+// /**//**/fprintf( stderr, " lastTLValLower = %f, valToProcessFloat = %f, lastTLValUpper = %f, fTLThresholdFrac = %f\n",
+// /**//**/                    lastTLValLower, valToProcessFloat, lastTLValUpper, fTLThresholdFrac );
+
+               if( lastTLValLower <= valToProcessFloat && valToProcessFloat <= lastTLValUpper ) continue;
+                        // Value did not cross the treshold (upper neither lower),
+                        //  it is not necessary to store it.
+               fDCSData[moduleLoop]->SetValueTempLeft( valToProcess->GetTimeStamp() - fTLDelay, valToProcessFloat );
+                        // Value is stored
+               lastTLValLower = valToProcessFloat * ( 1.0 - fTLThresholdFrac );
+               lastTLValUpper = valToProcessFloat * ( 1.0 + fTLThresholdFrac );
+                        // New tresholds are set
+               counter ++;
             } /*for( tlLoop )*/
-            counter += nEntries;
+
+
 
             nEntries = arrTR->GetEntries();
             fDCSData[moduleLoop]->SetNPointsTempRight( nEntries );
@@ -168,9 +212,21 @@ void AliITSDCSAnalyzerSDD::AnalyzeData(TMap* dcsMap)
             for( Int_t trLoop = 0; trLoop < nEntries; trLoop++ )
             {           // Right temerature values are copied into the AliITSDCSDataSDD TempRight array
                valToProcess = (AliDCSValue *)(arrTR->At(trLoop));
-               fDCSData[moduleLoop]->SetValueTempRight( valToProcess->GetTimeStamp() - fTRDelay, valToProcess->GetFloat() );
+               valToProcessFloat = valToProcess->GetFloat();
+                        // Value is readed from the input array
+
+               if( lastTRValLower <= valToProcessFloat && valToProcessFloat <= lastTRValUpper ) continue;
+                        // Value did not cross the treshold (upper neither lower),
+                        //  it is not necessary to store it.
+               fDCSData[moduleLoop]->SetValueTempRight( valToProcess->GetTimeStamp() - fTRDelay, valToProcessFloat );
+                        // Value is stored
+               lastTRValLower = valToProcessFloat * ( 1.0 - fTRThresholdFrac );
+               lastTRValUpper = valToProcessFloat * ( 1.0 + fTRThresholdFrac );
+                        // New tresholds are set
+               counter ++;
             } /*for( trLoop )*/
-            counter += nEntries;
+
+
 
             nEntries = arrHV->GetEntries();
             fDCSData[moduleLoop]->SetNPointsHV( nEntries );
@@ -179,9 +235,20 @@ void AliITSDCSAnalyzerSDD::AnalyzeData(TMap* dcsMap)
             for( Int_t hvLoop = 0; hvLoop < nEntries; hvLoop++ )
             {           // HV values are copied into the AliITSDCSDataSDD HV array
                valToProcess = (AliDCSValue *)(arrHV->At(hvLoop));
-               fDCSData[moduleLoop]->SetValueHV( valToProcess->GetTimeStamp() - fHVDelay, valToProcess->GetFloat() );
+               valToProcessFloat = valToProcess->GetFloat();
+                        // Value is readed from the input array
+               if( lastHVValLower <= valToProcessFloat && valToProcessFloat <= lastHVValUpper ) continue;
+                        // Value did not cross the treshold (upper neither lower),
+                        //  it is not necessary to store it.
+               fDCSData[moduleLoop]->SetValueHV( valToProcess->GetTimeStamp() - fHVDelay, valToProcessFloat );
+                        // Value is stored
+               lastHVValLower = valToProcessFloat * ( 1.0 - fHVThresholdFrac );
+               lastHVValUpper = valToProcessFloat * ( 1.0 + fHVThresholdFrac );
+                        // New tresholds are set
+               counter ++;
             } /*for( hvLoop )*/
-            counter += nEntries;
+
+
 
             nEntries = arrMV->GetEntries();
             fDCSData[moduleLoop]->SetNPointsMV( nEntries );
@@ -190,9 +257,19 @@ void AliITSDCSAnalyzerSDD::AnalyzeData(TMap* dcsMap)
             for( Int_t mvLoop = 0; mvLoop < nEntries; mvLoop++ )
             {           // MV values are copied into the AliITSDCSDataSDD MV array
                valToProcess = (AliDCSValue *)(arrMV->At(mvLoop));
-               fDCSData[moduleLoop]->SetValueMV( valToProcess->GetTimeStamp() - fMVDelay, valToProcess->GetFloat() );
+               valToProcessFloat = valToProcess->GetFloat();
+                        // Value is readed from the input array
+               if( lastMVValLower <= valToProcessFloat && valToProcessFloat <= lastMVValUpper ) continue;
+                        // Value did not cross the treshold (upper neither lower),
+                        //  it is not necessary to store it.
+               fDCSData[moduleLoop]->SetValueMV( valToProcess->GetTimeStamp() - fMVDelay, valToProcessFloat );
+                        // Value is stored
+               lastMVValLower = valToProcessFloat * ( 1.0 - fMVThresholdFrac );
+               lastMVValUpper = valToProcessFloat * ( 1.0 + fMVThresholdFrac );
+                        // New treshold is ser
+               counter ++;
             } /*for( mvLoop )*/
-            counter += nEntries;
+
 
 /* Following part of the code is responsibile for the condensing of all status information given by DCS
    into one array of Char_t. Each record of this array is in principle a bit map : 
@@ -208,9 +285,9 @@ void AliITSDCSAnalyzerSDD::AnalyzeData(TMap* dcsMap)
    Let's vizualize time stamps of the three input arrays. There is time on x-axis :
 
             +------------+---------------------+------
-            |            |                     |           _OK
-      +------+------+---+--------+------------+------
-      |      |      |            |            |           _TEMP_L_STATE
+            |            |                     |          _OK
+      +-----++------+----+--------+------------+------
+      |      |      |             |            |          _TEMP_L_STATE
    +--+------+---+--+-------+-----+--------+---+------
    |             |          |     |        |   |          _TEMP_R_STATE
    +-------------+----------+-----+--------+---+------
@@ -237,7 +314,7 @@ void AliITSDCSAnalyzerSDD::AnalyzeData(TMap* dcsMap)
             if( nStTLEntries < 1 )
             {           // TObjArray arrStTL is empty. This would cause segmentation violation during
                         //  the condensing, so this case must be handled before algorithm starts
-               fprintf( stderr, "%s contains no data!\n", fTLStDPNames[moduleLoop].Data() );
+               AliWarning( Form( "%s contains no data!\n", fTLStDPNames[moduleLoop].Data() ) );
                nStTLEntries = 1;
                arrStTL->Add( new AliDCSValue(  (Int_t)0, 0x7FFFFFFF ) );
                         // 0x7FFFFFFF = 2147483647, maximal signed Int_t number. Left temperature
@@ -247,7 +324,7 @@ void AliITSDCSAnalyzerSDD::AnalyzeData(TMap* dcsMap)
             if( nStTREntries < 1 )
             {           // TObjArray arrStTR is empty. This would cause segmentation violation during
                         //  the condensing, so this case must be handled before algorithm starts
-               fprintf( stderr, "%s contains no data!\n", fTRStDPNames[moduleLoop].Data() );
+               AliWarning( Form( "%s contains no data!\n", fTRStDPNames[moduleLoop].Data() ) );
                nStTREntries = 1;
                arrStTR->Add( new AliDCSValue(  (Int_t)0, 0x7FFFFFFF ) );
                         // 0x7FFFFFFF = 2147483647, maximal signed Int_t number. Right temperature
@@ -257,7 +334,7 @@ void AliITSDCSAnalyzerSDD::AnalyzeData(TMap* dcsMap)
             if( nOKEntries < 1 )
             {           // TObjArray arrOK is empty. This would cause segmentation violation during
                         //  the condensing, so this case must be handled before algorithm starts
-               fprintf( stderr, "%s contains no data!\n", fOKDPNames[moduleLoop].Data() );
+               AliWarning( Form( "%s contains no data!\n", fOKDPNames[moduleLoop].Data() ) );
                nOKEntries = 1;
                arrOK->Add( new AliDCSValue(  (Bool_t)0, 0x7FFFFFFF ) );
                         // 0x7FFFFFFF = 2147483647, maximal signed Int_t number.
@@ -328,10 +405,10 @@ void AliITSDCSAnalyzerSDD::AnalyzeData(TMap* dcsMap)
                         // Bit map is created
 
                if( lastBitStatus != bitStatus )
-               {              // If the status bitmap is teh same as last one, it would not be stored.
-                              //  It will save much space.
+               {        // If the status bitmap is the same as last one, it would not be stored.
+                        //  It will save much space.
                   fDCSData[moduleLoop]->SetValueStatus( tsNew, bitStatus );
-                              // Bit map is written into the output array (if different from last value )
+                        // Bit map is written into the output array (if different from last value )
                   lastBitStatus = bitStatus;
                   counter += nEntries;
                } /*if*/
@@ -368,6 +445,8 @@ void AliITSDCSAnalyzerSDD::AnalyzeData(TMap* dcsMap)
 
             } /*while*/
 
+            fDCSData[moduleLoop]->Compress();
+                        // Size taken by data in AliITSDCSDataSDD object is minimalized
 
           } /*for( iMod )*/
        } /*for( iLad )*/
@@ -382,14 +461,12 @@ void AliITSDCSAnalyzerSDD::AnalyzeData(TMap* dcsMap)
 
 void AliITSDCSAnalyzerSDD::Init()
 {
-  // Initialization of DCS DP names
+// Initialization of DCS DP names
   Char_t dpName[50];
   Char_t modName[50];
 
-
   for( Int_t iLay = 3; iLay < 5; iLay++ )
-  {
-
+  {    
      Int_t maxLad = ( iLay == 3) ? kNladders3 : kNladders4;
      Int_t maxMod = ( iLay == 3) ? kNmodLad3 : kNmodLad4;
 
@@ -420,16 +497,51 @@ void AliITSDCSAnalyzerSDD::Init()
 
   } /*for( iLay )*/
 
-
+  
 } /*AliITSDCSAnalyzerSDD::Init*/
 
 //---------------------------------------------------------------
 void AliITSDCSAnalyzerSDD::PrintDCSDPNames( FILE *output )
 {
-  // Data processing
+// Prints constructed names of DCS variables into specified file (may be even stdout or stderr)
   for( Int_t j = 0; j < kNmodules; j++ )
   {
     fprintf( output, "Module %d      %s   %s   %s   %s\n",j,fHVDPNames[j].Data(),
                           fMVDPNames[j].Data(),fTLDPNames[j].Data(),fTRDPNames[j].Data());
   } /*for( j )*/
 } /*AliITSDCSAnalyzerSDD::PrintDCSDPNames*/
+
+//---------------------------------------------------------------
+
+void AliITSDCSAnalyzerSDD::Export( char *outputDCSFileName )
+{
+// Exports all stored AliITSDCSDataSDD type object into specified root file. Objects are named as
+//
+// DCSDataSDD_module<number>
+//
+// where <number> is in range 0..256 and it is obtained by calling
+//
+// AliITSgeomTGeo::GetModuleIndex( layer, ladder, moduleInLadder ) - 240
+
+   TFile * newFile = new TFile( outputDCSFileName, "RECREATE" );
+   if( newFile == NULL )
+   {                    // Creates .root file with specified name. if it is not possible,
+                        //  warning is displayed and exporting aborted.
+     AliWarning( Form( "Cannot create %s - export aborted ", outputDCSFileName ) );
+     return;
+   } /*if*/
+
+   newFile->cd();
+
+   char buffer[100];
+
+   for( Int_t moduleLoop = 0; moduleLoop < kNmodules; moduleLoop++ )
+   {                    // loops through all modules and writes appropriate object into the file
+      sprintf( buffer, "DCSDataSDD_module%i", moduleLoop );
+      if( fDCSData[moduleLoop] ) fDCSData[moduleLoop]->Write( buffer, TObject::kSingleKey );
+   } /*for( moduleLoop )*/
+
+   newFile->Close();
+   delete newFile;
+
+} /*AliITSDCSAnalyzerSDD::Export*/

@@ -16,7 +16,6 @@
 /* $Id$ */
 
 ///////////////////////////////////////////////////////////////////
-//                                                               //
 // Implementation of the class containing SDD DCS data           //
 // Origin: F.Prino, Torino, prino@to.infn.it                     //
 //         V. Pospisil, CTU Praguem gdermog@seznam.cz            //
@@ -28,6 +27,9 @@
 #define AUTORESIZE 50
 
 ClassImp(AliITSDCSDataSDD)
+
+const Float_t AliITSDCSDataSDD::fgkTPrec = 100.0;
+const Float_t AliITSDCSDataSDD::fgkMVPrec = 1000.0;
 
 //---------------------------------------------------------------------------
 AliITSDCSDataSDD::AliITSDCSDataSDD(): TObject(),
@@ -170,12 +172,12 @@ void AliITSDCSDataSDD::SetValueTempLeft(Int_t time, Float_t temperature )
 
    if( i < fTempLeftSetPoints )
    {
-      Float_t *fromPtrF = fTempLeft.GetArray() + i;
+      Short_t *fromPtrF = fTempLeft.GetArray() + i;
                        // Sets pointer to cell which have to be filled by new value
-      Float_t *toPtrF = fromPtrF + 1;
+      Short_t *toPtrF = fromPtrF + 1;
                        // Sets pointer to cell where the array content have to be shifted 
 
-      memmove( toPtrF, fromPtrF, (fTempLeftSetPoints - i)*sizeof(Float_t) );
+      memmove( toPtrF, fromPtrF, (fTempLeftSetPoints - i)*sizeof(Short_t) );
                        // Shifts array content. Now there is vacant place for new value to be inserted
 
       Int_t *fromPtrI = fTempLeftTimeStamp.GetArray() + i;
@@ -184,7 +186,10 @@ void AliITSDCSDataSDD::SetValueTempLeft(Int_t time, Float_t temperature )
                        // Do the same for time stamp array
    } /*if*/
 
-   fTempLeft.AddAt( temperature, i );
+   UShort_t val = (UShort_t)( temperature * fgkTPrec );
+                       // Float value of temperature is stored as UShort_t with given precision
+
+   fTempLeft.AddAt( (Short_t)val, i );
    fTempLeftTimeStamp.AddAt( time, i );
    fTempLeftSetPoints++;
                        // New values are inserted
@@ -210,12 +215,12 @@ void AliITSDCSDataSDD::SetValueTempRight(Int_t time, Float_t temperature )
 
    if( i < fTempRightSetPoints )
    {                    // Some values have to be moved
-      Float_t *fromPtrF = fTempRight.GetArray() + i;
+      Short_t *fromPtrF = fTempRight.GetArray() + i;
                        // Sets pointer to cell which have to be filled by new value
-      Float_t *toPtrF = fromPtrF + 1;
+      Short_t *toPtrF = fromPtrF + 1;
                        // Sets pointer to cell where the array content have to be shifted 
 
-      memmove( toPtrF, fromPtrF, (fTempRightSetPoints - i)*sizeof(Float_t) );
+      memmove( toPtrF, fromPtrF, (fTempRightSetPoints - i)*sizeof(Short_t) );
                        // Shifts array content. Now there is vacant place for new value to be inserted
 
       Int_t *fromPtrI = fTempRightTimeStamp.GetArray() + i;
@@ -224,7 +229,10 @@ void AliITSDCSDataSDD::SetValueTempRight(Int_t time, Float_t temperature )
                        // Do the same for time stamp array
    } /*if*/
 
-   fTempRight.AddAt( temperature, i );
+   UShort_t val = (UShort_t)( temperature * fgkTPrec );
+                       // Float value of temperature is stored as UShort_t with given precision
+
+   fTempRight.AddAt( (Short_t)val, i );
    fTempRightTimeStamp.AddAt( time, i );
    fTempRightSetPoints++;
                        // New values are inserted
@@ -290,12 +298,12 @@ void AliITSDCSDataSDD::SetValueMV(Int_t time, Float_t voltage )
 
    if( i < fMVSetPoints )
    {
-      Float_t *fromPtrF = fMV.GetArray() + i;
+      Short_t *fromPtrF = fMV.GetArray() + i;
                        // Sets pointer to cell which have to be filled by new value
-      Float_t *toPtrF = fromPtrF + 1;
+      Short_t *toPtrF = fromPtrF + 1;
                        // Sets pointer to cell where the array content have to be shifted 
 
-      memmove( toPtrF, fromPtrF, (fMVSetPoints - i)*sizeof(Float_t) );
+      memmove( toPtrF, fromPtrF, (fMVSetPoints - i)*sizeof(Short_t) );
                        // Shifts array content. Now there is vacant place for new value to be inserted
 
       Int_t *fromPtrI = fMVTimeStamp.GetArray() + i;
@@ -304,7 +312,10 @@ void AliITSDCSDataSDD::SetValueMV(Int_t time, Float_t voltage )
                        // Do the same for time stamp array
    } /*if*/
 
-   fMV.AddAt( voltage, i );
+   UShort_t val = (UShort_t)( voltage * fgkMVPrec );
+                       // Float value of temperature is stored as UShort_t with given precision
+
+   fMV.AddAt( (Short_t)val, i );
    fMVTimeStamp.AddAt( time, i );
    fMVSetPoints++;
                        // New values are inserted
@@ -354,46 +365,9 @@ void AliITSDCSDataSDD::SetValueStatus(Int_t time, Char_t status )
 
 //---------------------------------------------------------------------------
 
-Float_t AliITSDCSDataSDD::GetTempLeft( Int_t time )
-{ 
-  //
-   Int_t i = FindIndex( time, fTempLeftTimeStamp, fTempLeftSetPoints ); 
-   return ( i < 0 ) ? -1.0 : fTempLeft.At(i); 
-} /*AliITSDCSDataSDD::GetTempLeft*/
-
-Float_t AliITSDCSDataSDD::GetTempRight( Int_t time )
-{ 
-  //
-   Int_t i = FindIndex( time, fTempRightTimeStamp, fTempRightSetPoints ); 
-   return ( i < 0 ) ? -1.0 : fTempRight.At(i); 
-} /*AliITSDCSDataSDD::GetTempRight*/
-
-Float_t AliITSDCSDataSDD::GetHV( Int_t time )
-{
-  //
-   Int_t i = FindIndex( time, fHVTimeStamp, fHVSetPoints ); 
-   return ( i < 0 ) ? -1.0 : fHV.At(i);
-} /*AliITSDCSDataSDD::GetHV*/
-
-Float_t AliITSDCSDataSDD::GetMV( Int_t time )
-{
-  //
-   Int_t i = FindIndex( time, fMVTimeStamp, fMVSetPoints ); 
-   return ( i < 0 ) ? -1.0 : fMV.At(i); 
-} /*AliITSDCSDataSDD::GetMV*/
-
-Char_t AliITSDCSDataSDD::GetStatus( Int_t time )
-{ 
-  //
-   Int_t i = FindIndex( time, fStatusTimeStamp, fStatusSetPoints ); 
-   return ( i < 0 ) ? -1 : fStatus.At(i);
-} /*AliITSDCSDataSDD::GetStatus*/
-
-//---------------------------------------------------------------------------
-
 void AliITSDCSDataSDD::Compress()
 {
-  // Tries to minimize array sizes
+// Minimize array sizes
 
    SetNPointsTempLeft( fTempLeftSetPoints );
    SetNPointsTempRight( fTempRightSetPoints );
@@ -405,8 +379,8 @@ void AliITSDCSDataSDD::Compress()
 
 //---------------------------------------------------------------------------
 
-Float_t AliITSDCSDataSDD::GetDriftField( Int_t timeStamp )
-{                      
+Float_t AliITSDCSDataSDD::GetDriftField( Int_t timeStamp ) const
+{
 // Returns drift field counted for specific time
 
    Int_t   cathodesNumber = 291;
@@ -426,10 +400,12 @@ Float_t AliITSDCSDataSDD::GetDriftField( Int_t timeStamp )
 
 
 Float_t AliITSDCSDataSDD::GetDriftSpeed( Int_t /*timeStamp*/ ) const
-{                      
-// Returns drift speed counted for specific time. This metod is not dedicated
-//  for normal usage - it should be used only in cases that the injectors for
-                       //  given module fails
+{
+// Returns drift speed counted for specific time. Calculation is based on temerature
+//  taken  from DCS. This metod is not dedicated for normal usage, it should be used
+//  only in cases that the injectors for given module fails.
+//
+// Presently only a prototype, returns -1.0.
 
    /* PROTOTYPE */
 
@@ -441,7 +417,7 @@ Float_t AliITSDCSDataSDD::GetDriftSpeed( Int_t /*timeStamp*/ ) const
 
 
 void AliITSDCSDataSDD:: PrintValues( FILE *output ) const
-{                       
+{
 // Prints array contents
 
     Int_t nTLEntries = GetTempLeftRecords();
@@ -450,13 +426,13 @@ void AliITSDCSDataSDD:: PrintValues( FILE *output ) const
     Int_t nMVEntries = GetMVRecords();
     Int_t nStatEntries = GetStatusRecords();
 
-    fprintf( output, "+-----------------------------------------------------------------------------------------------------------+\n");
-    fprintf( output, "|                                               DCS content                                                 |\n" ); 
-    fprintf( output, "+----------------------+----------------------+---------------------+---------------------+-----------------+\n");
-    fprintf( output, "|    %05i  records    |    %05i  records    |    %05i  records   |    %05i  records   |  %05i records  |\n",
+    fprintf( output, "+------------------------------------------------------------------------------------------------------------+\n");
+    fprintf( output, "|                                                DCS content                                                 |\n" ); 
+    fprintf( output, "+----------------------+-----------------------+---------------------+---------------------+-----------------+\n");
+    fprintf( output, "|    %05i  records    |    %05i   records    |    %05i  records   |    %05i  records   |  %05i records  |\n",
                           nHVEntries, nMVEntries, nTLEntries, nTREntries, nStatEntries );
-    fprintf( output, "|  time (s)     HV     |  time (s)      MV    |  time (s)     TL    |  time (s)     TR    | time (s)   Stat |\n" );
-    fprintf( output, "+----------------------+----------------------+---------------------+---------------------+-----------------+\n");
+    fprintf( output, "|  time (s)     HV     |  time (s)      MV     |  time (s)     TL    |  time (s)     TR    | time (s)   Stat |\n" );
+    fprintf( output, "+----------------------+-----------------------+---------------------+---------------------+-----------------+\n");
 
     Int_t a = (nHVEntries > nMVEntries ) ? nHVEntries : nMVEntries;
     Int_t b = (nTLEntries > nTREntries ) ? nTLEntries : nTREntries;
@@ -473,9 +449,9 @@ void AliITSDCSDataSDD:: PrintValues( FILE *output ) const
          fprintf( output, "|                      | ");
 
         if( entryLoop < nMVEntries )
-         fprintf( output, " %12i  %2.2f | ", GetMVTimeIdx(entryLoop), GetMVIdx(entryLoop) );
+         fprintf( output, " %12i  %2.3f | ", GetMVTimeIdx(entryLoop), GetMVIdx(entryLoop) );
         else
-         fprintf( output, "                     | ");
+         fprintf( output, "                      | ");
 
         if( entryLoop < nTLEntries )
          fprintf( output, "%12i  %2.2f | ", GetTempLeftTimeIdx(entryLoop), GetTempLeftIdx(entryLoop) );
@@ -499,18 +475,20 @@ void AliITSDCSDataSDD:: PrintValues( FILE *output ) const
 
 //---------------------------------------------------------------------------
 
-Int_t AliITSDCSDataSDD::FindIndex( Int_t time, TArrayI &timeArray, Int_t n ) const
-{                       
-// Provides binary search in the time array
+Int_t AliITSDCSDataSDD::FindIndex( Int_t timeStamp, const TArrayI &timeStampArray, Int_t n ) const
+{
+// Provides binary search in the time array. Returns index in the array of time 
+//  stamps by selected value. Returns -1 if the time is less than time stamp in 
+//  the timeArray[0]
 
   if( n < 1 ) return -1;// Empty array or wrong value of array size
 
-  if( time >= timeArray.At(n-1) ) return n-1;
+  if( timeStamp >= timeStampArray.At(n-1) ) return n-1;
                         // Time is larger than last timestamp - last value in the array have
                         //  to be used. This is the most frequent case, so it have sense
                         //  to check it and avoid searching.
 
-  if( time < timeArray.At(0) ) return -1;
+  if( timeStamp < timeStampArray.At(0) ) return -1;
                         // Time is less than all time stamp stored in the array
 
   Int_t left = 0;
@@ -520,14 +498,14 @@ Int_t AliITSDCSDataSDD::FindIndex( Int_t time, TArrayI &timeArray, Int_t n ) con
   while( !( middle == left || middle == right) )
   {                     // Binary search in the time stamp array
 
-     if( timeArray.At(middle) < time )
+     if( timeStampArray.At(middle) < timeStamp )
       left = middle;
      else
       right = middle;
      middle = (left + right)/2;
   } /*while*/
 
-  if( time >= timeArray.At(right) )
+  if( timeStamp >= timeStampArray.At(right) )
    return right;
   else
    return left;

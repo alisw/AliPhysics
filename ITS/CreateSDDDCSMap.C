@@ -10,18 +10,17 @@
 #include <AliDCSValue.h>
 #endif
 
-
 //////////////////////////////////////////////////////////////////////////////////////
 // Generator of testing data for AliITSDCSPreprocessorSDD and  AliITSAnalyzerrSDD   //
 // Origin: F.Prino, Torino, prino@to.infn.it                                        //
 //         V.Pospisil, CTU Prague, gdermog@seznam.cz                                //
 //////////////////////////////////////////////////////////////////////////////////////
 
-
 TMap* CreateRealisticMap( TTimeStamp startTime, TTimeStamp stopTime );
 TMap* CreateRandomMap( Int_t maxRecords = 1000, Int_t randomTimeStamps = 0 );
 void GenerateOutputFiles( TMap *map, char *dir );
 
+Int_t sizeOfMapContent = 0;
 
 void CreateSDDDCSMap( void )
 {
@@ -48,7 +47,7 @@ void CreateSDDDCSMap( void )
 
  outMap->Write( "DCSAliasMap", TObject::kSingleKey );
 
- printf( "DCSAliasMap created...\n");
+ printf( "DCSAliasMap created, it size is %i byte ...\n", sizeOfMapContent );
 
 } /*CreateMap*/
 
@@ -65,13 +64,13 @@ void CreateSDDDCSMap( void )
 
 // --- Temperature readout (left side) - behavior of DCS --------
 
- Int_t freqROTL = 60;   // Frequency of fixed readout
+ Int_t freqROTL = 300;  // Frequency of fixed readout
  Float_t fluctROTL = 5.0;
                         // Allowed fluctuation (%)
 
 // Temperature readout status (left side) - behavior of SDD chip
 
-  Int_t freqROStTL = 60;// Frequency of fixed readout
+  Int_t freqROStTL = 300;// Frequency of fixed readout
   Float_t failureTL = 0.01;
                         // Probability of thermometer
                         //  failure (in one hour)
@@ -83,13 +82,13 @@ void CreateSDDDCSMap( void )
 
 // --- Temperature readout (right side) - behavior of DCS -------
 
- Int_t freqROTR = 60;   // Frequency of fixed readout
+ Int_t freqROTR = 300;   // Frequency of fixed readout
  Float_t fluctROTR = 5.0;
                         // Allowed fluctuation (%)
 
 // Temperature readout status (right side) - behavior of SDD
 
-  Int_t freqROStTR = 60;// Frequency of fixed readout
+  Int_t freqROStTR = 300;// Frequency of fixed readout
   Float_t failureTR = 0.01;
                         // Probability of thermometer
                         //  failure (in one hour) 
@@ -98,17 +97,17 @@ void CreateSDDDCSMap( void )
 
  Float_t mvalHV = 1791.0;
                         // Mean value of HV
- Float_t fluctHV = 0.5; // Fluctuation (gaussian sigma)
+ Float_t fluctHV = 0.03;// Fluctuation (gaussian sigma)
 
 // --- High voltage readout - behavior of DCS -------------------
 
- Int_t freqROHV = 60;   // Frequency of fixed readout
+ Int_t freqROHV = 300;   // Frequency of fixed readout
  Float_t fluctROHV = 0.01;
                         // Allowed fluctuation (%)
 
 // --- High voltage readout status - behavior of SDD voltage ----
 
-  Int_t freqROOK = 60;  // Frequency of fixed readout
+  Int_t freqROOK = 300;  // Frequency of fixed readout
   Float_t failureHV  = 0.005;
                         // Probability of HV source
                         //  failure (in one hour) 
@@ -116,11 +115,12 @@ void CreateSDDDCSMap( void )
 // --- Medium voltage  - behavior of SDD voltage source --------
 
  Float_t mvalMV = 45.0; // Mean value of MV
- Float_t fluctMV = 0.25;// Fluctuation (gaussian sigma)
+ Float_t fluctMV = 0.005;
+                        // Fluctuation (gaussian sigma)
 
 // --- Medium voltage readout - behavior of DCS -----------------
 
- Int_t freqROMV = 60;   // Frequency of fixed readout
+ Int_t freqROMV = 300;   // Frequency of fixed readout
  Float_t fluctROMV = 0.1;
                         // Allowed fluctuation (%)
 
@@ -156,6 +156,8 @@ TMap* CreateRealisticMap( TTimeStamp startTime, TTimeStamp stopTime )
   TMap* aliasMap = new TMap;
   aliasMap->SetOwner(1);
                         // Empty map is created
+
+  sizeOfMapContent += sizeof( TMap );
 
   TString aliasName;
   Char_t dpName[50];
@@ -207,6 +209,8 @@ TMap* CreateRealisticMap( TTimeStamp startTime, TTimeStamp stopTime )
             TObjArray* valueSetStTL = new TObjArray;
             TObjArray* valueSetStTR = new TObjArray;
 
+            sizeOfMapContent += 7 * sizeof( TObjArray );
+
             valueSetOK->SetOwner(1);
             valueSetHV->SetOwner(1);
             valueSetMV->SetOwner(1);
@@ -238,9 +242,9 @@ TMap* CreateRealisticMap( TTimeStamp startTime, TTimeStamp stopTime )
             Int_t counterOK = 0;
                               // Periodic readout counters
 
-            Int_t endingTimeStamp = stopTime.GetSec();
+            Int_t endingTimeStamp = /*1197477000;*/ stopTime.GetSec();
 
-            for( Int_t timeLoop = startTime.GetSec(); timeLoop < endingTimeStamp; timeLoop ++ )
+            for( Int_t timeLoop = /*1197470000 */ startTime.GetSec(); timeLoop < endingTimeStamp; timeLoop ++ )
             {                 // Loop goes through period of run second per second and determines
                               //  all values according to rules of DCS
 
@@ -349,6 +353,8 @@ TMap* CreateRealisticMap( TTimeStamp startTime, TTimeStamp stopTime )
   fprintf(  stderr, "\nCreated %i objects of type AliDCSValue (%i periodic + %i treshold)... \n", 
             created + created1, created, created1 );
 
+  sizeOfMapContent += (created + created1 ) * ( sizeof( AliDCSValue ) + sizeof( AliDCSValue * ) );
+
   return aliasMap;
 
 } /*CreateRealisticMap*/
@@ -370,6 +376,7 @@ TMap* CreateRandomMap( Int_t maxRecords , Int_t randomTimeStamps  )
   TMap* aliasMap = new TMap;
   aliasMap->SetOwner(1);
 
+  sizeOfMapContent += sizeof( TMap );
 
   TString aliasName;
   Char_t dpName[50];
@@ -396,6 +403,8 @@ TMap* CreateRandomMap( Int_t maxRecords , Int_t randomTimeStamps  )
             TObjArray* valueSetStTL = new TObjArray;
             TObjArray* valueSetStTR = new TObjArray;
 
+            sizeOfMapContent += 7 * sizeof( TObjArray );
+
             valueSetOK->SetOwner(1);
             valueSetH->SetOwner(1);
             valueSetM->SetOwner(1);
@@ -410,20 +419,19 @@ TMap* CreateRandomMap( Int_t maxRecords , Int_t randomTimeStamps  )
 
             sprintf(dpName,"SDD_LAYER%i_LADDER%02d_MODULE%d_OK", iLay,iLad,iMod);
             aliasName=dpName;
-            nrOfRecords = (Int_t)(maxRecords * ( gRandom->Rndm() ) );
+	    nrOfRecords = (Int_t)(maxRecords * ( gRandom->Rndm() ) );
             timeStamp = 1000000000;
-            for( Int_t recLoop = 0; recLoop < nrOfRecords; recLoop ++ )
+	    for( Int_t recLoop = 0; recLoop < nrOfRecords; recLoop ++ )
             {
                if( randomTimeStamps )
                 timeStamp = (Int_t)(1200000000*(gRandom->Rndm()));
                else
                 timeStamp += (Int_t)(50*(gRandom->Rndm()) );
-            if( 1000*(gRandom->Rndm()) > 50 ) 
-               dcsVal = new AliDCSValue((Bool_t)1, timeStamp);
-            else
-               dcsVal = new AliDCSValue((Bool_t)0, timeStamp);
-            valueSetOK->Add(dcsVal);
-
+               if( 1000*(gRandom->Rndm()) > 50 ) 
+                dcsVal = new AliDCSValue((Bool_t)1, timeStamp);
+               else
+                dcsVal = new AliDCSValue((Bool_t)0, timeStamp);
+               valueSetOK->Add(dcsVal);
             } /*for( recLoop )*/
             aliasMap->Add(new TObjString(aliasName), valueSetOK);
             created += nrOfRecords;
@@ -437,24 +445,23 @@ TMap* CreateRandomMap( Int_t maxRecords , Int_t randomTimeStamps  )
                if( randomTimeStamps )
 		timeStamp = (Int_t)(1200000000*(gRandom->Rndm()));
                else
-		timeStamp += (Int_t)(50*(gRandom->Rndm()) );
+                timeStamp += (Int_t)(50*(gRandom->Rndm()) );
                dcsVal = new AliDCSValue( (Float_t)( 1600 + 200*(gRandom->Rndm()) ), timeStamp );
                valueSetH->Add(dcsVal);
-
             } /*for( recLoop )*/
             aliasMap->Add(new TObjString(aliasName), valueSetH);
             created += nrOfRecords;
 
             sprintf(dpName,"SDD_LAYER%i_LADDER%02d_MODULE%d_MV", iLay, iLad,iMod);
             aliasName=dpName;
-            nrOfRecords = (Int_t)(maxRecords * ( gRandom->Rndm() ));
+	    nrOfRecords = (Int_t)(maxRecords * ( gRandom->Rndm() ));
             timeStamp = 1000000000;
             for( Int_t recLoop = 0; recLoop < nrOfRecords; recLoop ++ )
             {
                if( randomTimeStamps )
 		timeStamp = (Int_t)(1200000000*(gRandom->Rndm()));
                else
-		timeStamp += (Int_t)(50*(gRandom->Rndm()) );
+                timeStamp += (Int_t)(50*(gRandom->Rndm()) );
                dcsVal = new AliDCSValue( (Float_t)( 30 + 20*(gRandom->Rndm()) ), timeStamp );
                valueSetM->Add(dcsVal);
             } /*for( recLoop )*/
@@ -463,14 +470,14 @@ TMap* CreateRandomMap( Int_t maxRecords , Int_t randomTimeStamps  )
 
             sprintf(dpName,"SDD_LAYER%i_LADDER%02d_MODULE%d_TEMP_L", iLay, iLad,iMod);
             aliasName=dpName;
-            nrOfRecords = (Int_t)(maxRecords * ( gRandom->Rndm() ));
+	    nrOfRecords = (Int_t)(maxRecords * ( gRandom->Rndm() ));
             timeStamp = 1000000000;
             for( Int_t recLoop = 0; recLoop < nrOfRecords; recLoop ++ )
             {
                if( randomTimeStamps )
 		timeStamp = (Int_t)(1200000000*(gRandom->Rndm()));
-               else
-		timeStamp += (Int_t)(50*(gRandom->Rndm()) );
+                else
+		  timeStamp += (Int_t)(50*(gRandom->Rndm()) );
                dcsVal = new AliDCSValue( (Float_t)( 50 + 50*(gRandom->Rndm()) ), timeStamp );
                valueSetTL->Add(dcsVal);
             } /*for( recLoop )*/
@@ -479,14 +486,14 @@ TMap* CreateRandomMap( Int_t maxRecords , Int_t randomTimeStamps  )
 
             sprintf(dpName,"SDD_LAYER%i_LADDER%02d_MODULE%d_TEMP_R", iLay, iLad,iMod);
             aliasName=dpName;
-            nrOfRecords = (Int_t)(maxRecords * ( gRandom->Rndm() ));
-            timeStamp = 1000000000;
+	    nrOfRecords = (Int_t)(maxRecords * ( gRandom->Rndm() ));
+	    timeStamp = 1000000000;
             for( Int_t recLoop = 0; recLoop < nrOfRecords; recLoop ++ )
             {
                if( randomTimeStamps )
 		timeStamp = (Int_t)(1200000000*(gRandom->Rndm()));
                else
-		timeStamp += (Int_t)(50*(gRandom->Rndm()) );
+		 timeStamp += (Int_t)(50*(gRandom->Rndm()) );
                dcsVal = new AliDCSValue( (Float_t)( 50 + 50*(gRandom->Rndm()) ), timeStamp );
                valueSetTR->Add(dcsVal);
             } /*for( recLoop )*/
@@ -495,14 +502,14 @@ TMap* CreateRandomMap( Int_t maxRecords , Int_t randomTimeStamps  )
 
             sprintf(dpName,"SDD_LAYER%i_LADDER%02d_MODULE%d_TEMP_L_STATE", iLay, iLad,iMod);
             aliasName=dpName;
-            nrOfRecords = (Int_t)(maxRecords * ( gRandom->Rndm() ));
+	    nrOfRecords = (Int_t)(maxRecords * ( gRandom->Rndm() ));
             timeStamp = 1000000000;
             for( Int_t recLoop = 0; recLoop < nrOfRecords; recLoop ++ )
             {
                if( randomTimeStamps )
-		timeStamp = (Int_t)(1200000000*(gRandom->Rndm()));
+		 timeStamp = (Int_t)(1200000000*(gRandom->Rndm()));
                else
-		timeStamp += (Int_t)(50*(gRandom->Rndm()) );
+		 timeStamp += (Int_t)(50*(gRandom->Rndm()) );
                if( 1000*(gRandom->Rndm()) > 50 ) 
                   dcsVal = new AliDCSValue((Int_t)1, timeStamp);
                else
@@ -514,14 +521,14 @@ TMap* CreateRandomMap( Int_t maxRecords , Int_t randomTimeStamps  )
 
             sprintf(dpName,"SDD_LAYER%i_LADDER%02d_MODULE%d_TEMP_R_STATE", iLay, iLad,iMod);
             aliasName=dpName;
-            nrOfRecords = (Int_t)(maxRecords * ( gRandom->Rndm() ));
+	    nrOfRecords = (Int_t)(maxRecords * ( gRandom->Rndm() ));
             timeStamp = 1000000000;
             for( Int_t recLoop = 0; recLoop < nrOfRecords; recLoop ++ )
             {
                if( randomTimeStamps )
 		timeStamp = (Int_t)(1200000000*(gRandom->Rndm()));
                else
-		timeStamp += (Int_t)(50*(gRandom->Rndm()) );
+		 timeStamp += (Int_t)(50*(gRandom->Rndm()) );
                if( 1000*(gRandom->Rndm()) > 50 ) 
                   dcsVal = new AliDCSValue((Int_t)1, timeStamp);
                else
@@ -539,6 +546,8 @@ TMap* CreateRandomMap( Int_t maxRecords , Int_t randomTimeStamps  )
 
   fprintf(  stderr, "\nCreated %i objects of type AliDCSValue ... \n", created);
 
+  sizeOfMapContent += created * ( sizeof( AliDCSValue ) + sizeof( AliDCSValue * ) );
+
   return aliasMap;
 }
 
@@ -551,7 +560,7 @@ void GenerateOutputFiles( TMap *map, char *dir )
   char   buffer[100],cmd[100];
   Int_t  nHVEntries, nMVEntries, nTLEntries, nTREntries;
   Int_t  nOKEntries, nStTLEntries, nStTREntries;
-  
+
   sprintf(cmd,"ls -l %s >/dev/null 2>&1",dir);
   if(gSystem->Exec(cmd)!=0){
     printf("%s --- NOT EXISTS -- create it\n",dir);
@@ -665,7 +674,7 @@ void GenerateOutputFiles( TMap *map, char *dir )
                                  nHVEntries, nMVEntries, nTLEntries, nTREntries, nStTLEntries );
            fprintf( outputFile, "  %05i records  | %05i  records  |\n", nStTREntries, nOKEntries );
 
-           fprintf( outputFile, "|  time (s)     HV     |  time (s)      MV    |  time (s)     TL    |  time (s)     TR    | time (s)   StTL |" );
+           fprintf( outputFile, "|  time (s)     HV     |  time (s)      MV     |  time (s)     TL    |  time (s)     TR    | time (s)   StTL |" );
            fprintf( outputFile, " time (s)   StTR | time (s)   OK   |\n" );
            fprintf( outputFile, "+----------------------+----------------------+---------------------+---------------------+");
            fprintf( outputFile, "-----------------+-----------------+-----------------+\n" );
@@ -691,10 +700,10 @@ void GenerateOutputFiles( TMap *map, char *dir )
                 fprintf( outputFile, "|                      | ");
 
                if( entryLoop < nMVEntries )
-               fprintf( outputFile, " %12i  %2.2f | ", ((AliDCSValue*)arrMV->At(entryLoop))->GetTimeStamp(), 
+               fprintf( outputFile, " %12i  %2.3f | ", ((AliDCSValue*)arrMV->At(entryLoop))->GetTimeStamp(), 
                                                                    ((AliDCSValue*)arrMV->At(entryLoop))->GetFloat() );
                else
-               fprintf( outputFile, "                     | ");
+               fprintf( outputFile, "                      | ");
 
                if( entryLoop < nTLEntries )
                fprintf( outputFile, "%12i  %2.2f | ", ((AliDCSValue*)arrTL->At(entryLoop))->GetTimeStamp(), 
