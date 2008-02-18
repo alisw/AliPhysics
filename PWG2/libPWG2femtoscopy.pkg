@@ -36,7 +36,10 @@ SRCS= FEMTOSCOPY/AliFemto/AliFemtoSimpleAnalysis.cxx \
       FEMTOSCOPY/AliFemto/AliFemtoModelWeightGeneratorLednicky.cxx \
       FEMTOSCOPY/AliFemto/AliFemtoCutMonitorParticleYPt.cxx \
       FEMTOSCOPY/AliFemto/AliFemtoKTPairCut.cxx \
-      FEMTOSCOPY/AliFemto/AliFemtoCorrFctnNonIdDR.cxx
+      FEMTOSCOPY/AliFemto/AliFemtoCorrFctnNonIdDR.cxx \
+      FEMTOSCOPY/AliFemto/AliFemtoEventReaderAOD.cxx \
+      FEMTOSCOPY/AliFemto/AliFemtoEventReaderAODChain.cxx \
+      FEMTOSCOPY/AliFemto/AliFemtoAODTrackCut.cxx
       
 
 HDRS= $(SRCS:.cxx=.h) 
@@ -57,5 +60,5 @@ DHDR:= PWG2femtoscopyLinkDef.h
 
 EXPORT:=
 
-EINCLUDE:= PWG2/FEMTOSCOPY/AliFemto 
+EINCLUDE:= PWG2/FEMTOSCOPY/AliFemto PWG2/AOD
 
