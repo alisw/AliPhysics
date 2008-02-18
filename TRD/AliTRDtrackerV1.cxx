@@ -1294,6 +1294,11 @@ Int_t AliTRDtrackerV1::LoadClusters(TTree *cTree)
     return 1;
   }
   Int_t ncl  = fClusters->GetEntriesFast(), nin = 0;
+	if(!ncl){ 
+  	AliInfo("Clusters 0");
+		return 1;
+	}
+
   Int_t icl = ncl;
   while (icl--) {
     AliTRDcluster *c = (AliTRDcluster *) fClusters->UncheckedAt(icl);
