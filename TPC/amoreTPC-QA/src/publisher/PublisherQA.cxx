@@ -18,6 +18,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 #include "PublisherQA.h"
+#include <AmoreDA.h>
 
 ClassImp(amore::TPC::publisher::PublisherQA)
 

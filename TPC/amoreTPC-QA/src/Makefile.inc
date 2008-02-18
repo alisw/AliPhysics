@@ -23,7 +23,7 @@ MYSQL_LIBS	:= $(shell mysql_config --libs)
 AMORE_CPPFLAGS 	:= $(shell amore-config --includes)
 AMORE_CFLAGS	:= $(shell amore-config --cflags) #-pg #-pedantic
 AMORE_LDFLAGS	:= $(shell amore-config --ldflags) #-pg
-AMORE_LIBS	:= $(shell amore-config --libs)
+AMORE_LIBS	:= $(shell amore-config --libs) -lAmoreDA
 
 CPP		:= g++ -E 
 CPPFLAGS	:= $(ROOT_CPPFLAGS) $(DATE_CPPFLAGS) $(DATE_RCPROXYCFLAGS) $(ALIROOT_CPPFLAGS) $(MYSQL_CPPFLAGS) $(AMORE_CPPFLAGS)

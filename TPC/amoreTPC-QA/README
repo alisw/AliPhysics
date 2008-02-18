@@ -1,0 +1,26 @@
+AMORE AGENT config:
+
+
+Please enter an agent name [MyAgent1] :
+Please enter the hostname where the agent should run [pcmiranov] : localhost
+Please enter the DET code of the agent [DET] : TPC
+Please enter the hostname of the DIM node the agent should use [pcmiranov] : localhost
+Please enter the hostname which should be used as dqmPool (Should be the node which was setup with MySQL for AMORE) [pcmiranov] : localhost
+Please enter the default DATE datasource for this agent [:] : RAW
+Please enter the default AMORE PublisherModule for this agent [MyModule1] : AmoreTPCPublisher
+New amoreAgent was succesfully configured
+
+
+
+
+mysql:
+mysql -udaq -p
+
+use AMORE;
+show tables;
+select moname from CEDA;
+
+
+
+publisher:
+

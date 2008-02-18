@@ -18,6 +18,8 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 #include "UIQA.h"
+#include "AliTPCCalibCE.h"
+#include <AmoreDA.h>
 
 ClassImp(amore::TPC::ui::UIQA)
 
@@ -32,6 +34,9 @@ namespace TPC {
 namespace ui {
 
 using amore::subscriber::Subscribe;
+
+
+
 
 UIQA::UIQA() {
 
@@ -61,33 +66,30 @@ void UIQA::Construct() { // The custom GUI is constructed here. gRootFrame is th
 
 void UIQA::SubscribeMonitorObjects() { // Before using any MonitorObject, a subscription should be made.
 
- std::ostringstream stringStream;
- amore::core::String_t sourceName="TPCQA", subscription; // The agent name acting as a source could be concatenated with all the objects it contains
- subscription=sourceName+"/moInt1";
- Subscribe(moInt1, subscription.c_str());
- subscription=sourceName+"/hHighPhosModules";
- Subscribe(subscription.c_str()); // Here you put a series of subscriptions where the string corresponds to the object name as published in the Publisher Module. As these names are internal to the QA framework, the recommended way of having consistency between AMORE and QA is to factor-out of QA the function that represents the histogram naming convention as a separate AliRoot class/function and use it from inside QA and AMORE.
+  //std::ostringstream stringStream;
+ //amore::core::String_t sourceName="CEDA/", subscription; // The agent name acting as a source could be concatenated with all the objects it contains
+ //subscription=sourceName+"CE";
+ //Subscribe(subscription.c_str()); // Here you put a series of subscriptions where the string corresponds to the object name as published in the Publisher Module. As these names are internal to the QA framework, the recommended way of having consistency between AMORE and QA is to factor-out of QA the function that represents the histogram naming convention as a separate AliRoot class/function and use it from inside QA and AMORE.
  //...
  
 }
 
 void UIQA::Update() { // This is executed after getting the updated contents of the subscribed MonitorObjects. Notice that the output of moInt[i] and moString[i] varies with time for a specific i because on the dqmAgent the "quality" check fails or succeeds. This is the essence of automatic data quality checks in AMORE. Try to use the moString[i] on a text widget to alert the shifter, or -depending of the value of moInt[i], 0 or 1- make part of the screen change color...
  std::ostringstream stringStream;
- 
+ amore::da::AmoreDA amoreDA;
  // Example of accessing a normal TObject. The name is the name of the object in the QA framework
- amore::core::MonitorObjectTObject* ptr=gSubscriber->At<amore::core::MOTObj>("TPCQA/hHighPhosModules");
- TH1F* hHighPhosModules=0;
- if(ptr) {
-  hHighPhosModules=(TH1F*)ptr->Object();
- }
+ //amore::core::MonitorObjectTObject* ptr=gSubscriber->At<amore::core::MOTObj>("CEDA/CE");
+ //AliTPCCalibCE* hCalibCE=0;
+ //if(ptr) {
+ //hCalibCE=(AliTPCCalibCE*)ptr->Object();
+ //}
  // End of access example
- 
- fEC[0]->GetCanvas()->cd(1);
- if(hHighPhosModules) hHighPhosModules->Draw();
- for(size_t i=1; i<=4; ++i) {
-  //Fill the other pads similarly...
- }
- fEC[0]->GetCanvas()->Update();
+
+ // hCalibCE->Dump();
+ TObject *temp=0;
+ amoreDA.Receive("CEDA/CE",temp);
+ temp->Dump();
+
 
 }
 
