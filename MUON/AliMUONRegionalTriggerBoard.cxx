@@ -66,6 +66,9 @@ AliMUONRegionalTriggerBoard::~AliMUONRegionalTriggerBoard()
 void AliMUONRegionalTriggerBoard::Response()
 {
 /// response is given following the regional algorithm
+// output from local trigger algorithm
+// [+, -] * [Hpt, Lpt]
+// transformed to [+, -, US, LS] * [Hpt, Lpt]
 
   Int_t t[16];
 
@@ -86,7 +89,7 @@ void AliMUONRegionalTriggerBoard::Response()
       for (Int_t j = 0; j < rank; ++j)
       {
          UShort_t lthres = Algo(t[2*j],t[2*j+1],"LPT",i);
-
+	 	 
          UShort_t hthres = Algo(t[2*j],t[2*j+1],"HPT",i); hthres <<= 4;
 
          t[ip] = lthres | hthres;
@@ -96,7 +99,6 @@ void AliMUONRegionalTriggerBoard::Response()
       
       rank /= 2; 
    }
-
    fResponse = t[0]; // 8-bit [H4:L4]
 }
 
@@ -107,13 +109,17 @@ UShort_t AliMUONRegionalTriggerBoard::Algo(UShort_t i, UShort_t j, char *thres, 
 /// similar to the global algorithm except for the
 /// input layer
 
+/// level = 0  a ,b = local response = Hpt (+|-) | Lpt (+|-)    
+/// level > 0  a ,b = reg  response  =  Hpt (+|-|us|ls) |  Lpt (+|-|us|ls)    
+   
   TBits a(8), b(8); a.Set(8,&i); b.Set(8,&j);
 
    TBits trg1(2), trg2(2), trg(2);
 
    if (!strcmp(thres,"LPT"))
    {
-      if (!level)
+  
+      if (!level) 
       {         
          trg1[0] = a[0]; trg1[1] = a[1]; 
          trg2[0] = b[0]; trg2[1] = b[1];
@@ -148,13 +154,17 @@ UShort_t AliMUONRegionalTriggerBoard::Algo(UShort_t i, UShort_t j, char *thres, 
    {
        if (!strcmp(thres,"LPT"))
       {
-         trgLS1[0] = a[1]; trgUS1[0] = a[0]; 
-         trgLS2[0] = b[1]; trgUS2[0] = b[0];
+         //trgLS1[0] = a[1]; trgUS1[0] = a[0]; 
+         //trgLS2[0] = b[1]; trgUS2[0] = b[0];
+         trgLS1[0] = a[0]; trgUS1[0] = a[1]; 
+         trgLS2[0] = b[0]; trgUS2[0] = b[1];
       }
       else
       {
-         trgLS1[0] = a[5]; trgUS1[0] = a[4]; 
-         trgLS2[0] = b[5]; trgUS2[0] = b[4];         
+         //trgLS1[0] = a[5]; trgUS1[0] = a[4]; 
+         //trgLS2[0] = b[5]; trgUS2[0] = b[4];         
+         trgLS1[0] = a[4]; trgUS1[0] = a[5]; 
+         trgLS2[0] = b[4]; trgUS2[0] = b[5];         
       }
    }
 
@@ -166,14 +176,14 @@ UShort_t AliMUONRegionalTriggerBoard::Algo(UShort_t i, UShort_t j, char *thres, 
    
    TBits v(4);
    
-   v[0] = trgUS[0];
-   v[1] = trgLS[0];
+   //v[0] = trgUS[0]; 
+   //v[1] = trgLS[0];
+   v[0] = trgLS[0]; 
+   v[1] = trgUS[0];
    v[2] = trg[0];
    v[3] = trg[1];
-   
    UShort_t rv = 0;
    v.Get(&rv);
-
    return rv;
 }
 

@@ -78,7 +78,7 @@ void AliMUONGlobalTriggerBoard::Response()
    /// compute the global trigger board
    /// response according to the algo() method
 // output from global trigger algorithm
-// [+, -, LS, US] * [Hpt, Lpt]
+// [+, -, US, LS] * [Hpt, Lpt]
 // transformed to [usHpt, usLpt, lsHpt, lsLpt, sHpt, sLpt] according
 // to Global Trigger Unit user manual
 
@@ -94,6 +94,7 @@ void AliMUONGlobalTriggerBoard::Response()
      else
        t[i] = 0;
    }
+   
    
    Int_t rank = 8;
 
@@ -117,10 +118,14 @@ void AliMUONGlobalTriggerBoard::Response()
    UChar_t sLpt, sHpt, lsLpt, lsHpt, usLpt, usHpt;
    sLpt  = ((t[0] & 0xC)  != 0);
    sHpt  = ((t[0] & 0xC0) != 0);
-   lsLpt = ((t[0] & 0x2)  != 0);
-   lsHpt = ((t[0] & 0x20) != 0);
-   usLpt = ((t[0] & 0x1 ) != 0);
-   usHpt = ((t[0] & 0x10) != 0);
+   //lsLpt = ((t[0] & 0x2)  != 0);
+   lsLpt = ((t[0] & 0x1)  != 0);
+   //lsHpt = ((t[0] & 0x20) != 0);
+   lsHpt = ((t[0] & 0x10) != 0);
+   //usLpt = ((t[0] & 0x1 ) != 0);
+   usLpt = ((t[0] & 0x2 ) != 0);
+   //usHpt = ((t[0] & 0x10) != 0);
+   usHpt = ((t[0] & 0x20) != 0);
 
    sHpt  <<= 1;
    lsLpt <<= 2;
@@ -129,12 +134,16 @@ void AliMUONGlobalTriggerBoard::Response()
    usHpt <<= 5;
 
    fResponse = sLpt | sHpt | lsLpt | lsHpt | usLpt |usHpt;
+   
+
 }
 
 //___________________________________________
 UShort_t AliMUONGlobalTriggerBoard::Algo(UShort_t i, UShort_t j, char *thres)
 {
-   /// global trigger algorithm
+/// global trigger algorithm
+///   a ,b = reg  response  =  Hpt (+|-|us|ls) |  Lpt (+|-|us|ls)  
+                           
    TBits a(8), b(8); a.Set(8,&i); b.Set(8,&j);
 
    TBits trg1(2), trg2(2), trg(2);
@@ -154,13 +163,17 @@ UShort_t AliMUONGlobalTriggerBoard::Algo(UShort_t i, UShort_t j, char *thres)
 
    if (!strcmp(thres,"LPT"))
    {
-      trgLS1[0] = a[1]; trgUS1[0] = a[0]; 
-      trgLS2[0] = b[1]; trgUS2[0] = b[0];
+      //trgLS1[0] = a[1]; trgUS1[0] = a[0]; 
+      //trgLS2[0] = b[1]; trgUS2[0] = b[0];
+      trgLS1[0] = a[0]; trgUS1[0] = a[1]; 
+      trgLS2[0] = b[0]; trgUS2[0] = b[1];
    }
    else
    {
-      trgLS1[0] = a[5]; trgUS1[0] = a[4]; 
-      trgLS2[0] = b[5]; trgUS2[0] = b[4];         
+      //trgLS1[0] = a[5]; trgUS1[0] = a[4]; 
+      //trgLS2[0] = b[5]; trgUS2[0] = b[4];         
+      trgLS1[0] = a[4]; trgUS1[0] = a[5]; 
+      trgLS2[0] = b[4]; trgUS2[0] = b[5];         
    }
 
    trgLS[0] = ( trg1[0] & trg2[0] ) | ( trg1[1] & trg2[1] ) | trgLS1[0] | trgLS2[0];
@@ -171,8 +184,10 @@ UShort_t AliMUONGlobalTriggerBoard::Algo(UShort_t i, UShort_t j, char *thres)
    
    TBits v(4);
    
-   v[0] = trgUS[0];
-   v[1] = trgLS[0];
+   //v[0] = trgUS[0];
+   //v[1] = trgLS[0];
+   v[0] = trgLS[0];
+   v[1] = trgUS[0];
    v[2] = trg[0];
    v[3] = trg[1];
 
