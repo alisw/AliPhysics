@@ -924,7 +924,8 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
       if (fMCtruthEventHandler) fMCtruthEventHandler->BeginEvent(entry);
 //
 //    Execute the tasks
-      TIter next1(cont->GetConsumers());
+//      TIter next1(cont->GetConsumers());
+      TIter next1(fTopTasks);
       while ((task=(AliAnalysisTask*)next1())) {
          if (fDebug >1) {
             cout << "    Executing task " << task->GetName() << endl;
