@@ -378,7 +378,7 @@ Double_t  AliMathBase::FitGaus(Float_t *arr, Int_t nBins, Float_t xMin, Float_t 
   //  Prameters:
   //     nbins: size of the array and number of histogram bins
   //     xMin, xMax: histogram range
-  //     param: paramters of the fit (0-Constant, 1-Mean, 2-Sigma)
+  //     param: paramters of the fit (0-Constant, 1-Mean, 2-Sigma, 3-Sum)
   //     matrix: covariance matrix -- not implemented yet, pass dummy matrix!!!
   //
   //  Return values:
@@ -416,20 +416,22 @@ Double_t  AliMathBase::FitGaus(Float_t *arr, Int_t nBins, Float_t xMin, Float_t 
       entries+=arr[i];
       if (arr[i]>0) nfilled++;
   }
+  (*param)[0] = 0;
+  (*param)[1] = 0;
+  (*param)[2] = 0;
+  (*param)[3] = 0;
 
   if (max<4) return -4;
   if (entries<12) return -4;
   if (rms<kTol) return -4;
 
-  Int_t npoints=0;
-  //
+  (*param)[3] = entries;
 
-  //
+  Int_t npoints=0;
   for (Int_t ibin=0;ibin<nBins; ibin++){
       Float_t entriesI = arr[ibin];
     if (entriesI>1){
       Double_t xcenter = xMin+(ibin+0.5)*binWidth;
-      
       Float_t error    = 1./TMath::Sqrt(entriesI);
       Float_t val = TMath::Log(Float_t(entriesI));
       fitter.AddPoint(&xcenter,val,error);
@@ -445,7 +447,6 @@ Double_t  AliMathBase::FitGaus(Float_t *arr, Int_t nBins, Float_t xMin, Float_t 
       npoints++;
     }
   }
-
   
   Double_t chi2 = 0;
   if (npoints>=3){
@@ -468,7 +469,8 @@ Double_t  AliMathBase::FitGaus(Float_t *arr, Int_t nBins, Float_t xMin, Float_t 
       if (TMath::Abs(par[1])<kTol) return -4;
       if (TMath::Abs(par[2])<kTol) return -4;
 
-      if (!param)  param  = new TVectorD(3);
+      if (!param)  param  = new TVectorD(4);
+      if ( param->GetNrows()<4 ) param->ResizeTo(4);
       if (!matrix) matrix = new TMatrixD(3,3);  // !!!!might be a memory leek. use dummy matrix pointer to call this function!
 
       (*param)[1] = par[1]/(-2.*par[2]);
