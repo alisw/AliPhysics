@@ -21,14 +21,13 @@ void tpc_tracks(const char *input=0)
 	char command[1000];
 	sprintf(command,"xrdcp %s in.zip",input);
 	gSystem->Exec(command);
-	gSystem->Exec("unzip in.zip");
       }
       if (ipath.Contains("alien:/")){
 	char command[1000];
 	sprintf(command,"alien_cp %s in.zip",input);
 	gSystem->Exec(command);
-	gSystem->Exec("unzip in.zip");
       }
+      gSystem->Exec("unzip in.zip");      
     }
   }
 
