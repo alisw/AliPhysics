@@ -23,9 +23,9 @@ endif
 #  ALICEINC += -I../$(PWG0base_INCLUDE)
 #endif
 
-CXXFLAGS     += $(ALICEINC) -g -IFEMTOSCOPY/AliFemto -IFEMTOSCOPY/AliFemto/Base -IFEMTOSCOPY/AliFemto/Infrastructure -IFEMTOSCOPY/AliFemtoUser
+CXXFLAGS     += $(ALICEINC) -g -IFEMTOSCOPY/AliFemto -IANALYSIS -IFEMTOSCOPY/AliFemtoUser
 
-ALICEINC += -IFEMTOSCOPY/AliFemto -IFEMTOSCOPY/AliFemto/Base -IFEMTOSCOPY/AliFemto/Infrastructure  -IFEMTOSCOPY/AliFemtoUser
+ALICEINC += -IFEMTOSCOPY/AliFemto -IANALYSIS -IFEMTOSCOPY/AliFemtoUser
 
 PACKAGE = PWG2
 include lib$(PACKAGE).pkg
@@ -206,6 +206,29 @@ endif
 	@echo "done"
 
 G__PWG2femtoscopyUser.cxx G__PWG2femtoscopyUser.h: $(HDRS_PWG2femtoscopyUser) $(DHDR_PWG2femtoscopyUser)
+	@echo "Generating dictionary ..."
+	rootcint -f $@ -c $(ALICEINC) $^
+
+## libPWG2AOD part
+include libPWG2AOD.pkg
+
+DHDR_PWG2AOD := $(DHDR)
+HDRS_PWG2AOD := $(HDRS)
+SRCS_PWG2AOD := $(SRCS) G__PWG2AOD.cxx
+OBJS_PWG2AOD := $(SRCS_PWG2AOD:.cxx=.o)
+
+libPWG2AOD.so: $(OBJS_PWG2AOD)
+	@echo "Linking" $@ ...
+	@/bin/rm -f $@
+ifeq ($(PLATFORM),macosx)
+	@$(LD) -bundle -undefined $(UNDEFOPT) $(LDFLAGS) $^ -o $@
+else
+	@$(LD) $(SOFLAGS) $(LDFLAGS) $^ -o $@
+endif
+	@chmod a+x $@
+	@echo "done"
+
+G__PWG2AOD.cxx G__PWG2AOD.h: $(HDRS_PWG2AOD) $(DHDR_PWG2AOD)
 	@echo "Generating dictionary ..."
 	rootcint -f $@ -c $(ALICEINC) $^
 

@@ -1,0 +1,11 @@
+SRCS = AOD/AliPWG2AODTrack.cxx \
+       AOD/AliAnalysisTaskPWG2ESDfilter.cxx
+
+HDRS= $(SRCS:.cxx=.h) 
+
+DHDR:=PWG2AODLinkDef.h
+
+EXPORT:=
+
+EINCLUDE:= PYTHIA6
+
