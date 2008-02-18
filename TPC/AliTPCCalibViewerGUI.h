@@ -31,6 +31,7 @@
 #include <TGTab.h>
 class TROOTt;
 class AliTPCCalibViewer;
+class AliTPCPreprocessorOnline;
 
 
 // class TGListBox;
@@ -67,7 +68,7 @@ public:
    TString* GetCutString();                                     // create the cut string out of selection
    TString* GetSectorString();                                  // create the sector string out of selection
    AliTPCCalibViewer* GetViewer() {return fViewer;}             // returns the internal AliTPCCalibViewer object, which does the work
-   static TObjArray* ShowGUI(const char* fileName);             // initialize and show GUI for presentation, standalone
+   static TObjArray* ShowGUI(const char* fileName = 0);             // initialize and show GUI for presentation, standalone
    
    void HandleButtonsGeneral(Int_t id = -1); // handles mutual radio button exclusions for general Tab
    void HandleButtons1D(Int_t id = -1);      // handles mutual radio button exclusions for 1D Tab
@@ -78,6 +79,8 @@ public:
    void DoDraw();                            // main method for drawing according to user selection
    void DoFit();                             // main method for fitting
    void DoExport();                          // function to export a CalPad to Cint
+   void DoDumpToFile();                      // function to dump a new calib tree to file
+   void DoLoadTree();                        // function to load a new calib tree
    void DoExportNorm();                      // function to use a calPad for normalization
    void SavePicture();                       // method for saving
    void GetMinMax();                         // Read current Min & Max from the plot and set it to fTxtSetMin & fTxtSetMax
@@ -87,8 +90,9 @@ public:
    void MouseMove(Int_t event, Int_t x, Int_t y, TObject *selected); 
    void UnchekAllStat();                     // Disable all statistical legend entries, no statistical legend.
    
- protected:   
+protected:   
    AliTPCCalibViewer   *fViewer;             // CalibViewer object used for drawing
+   AliTPCPreprocessorOnline *fPreprocessor;  // PreprocessorOnline object, used to collect the exported CalPads and to save them into a new calibTree
 
    TGCompositeFrame    *fContTopBottom;      // container for all GUI elements, vertical divided
    TGCompositeFrame    *fContLCR;            // container for all GUI elements, horizontal divided
@@ -133,6 +137,7 @@ public:
    TGRadioButton       *fRadioSector;        // sector radio button
    TGComboBox          *fComboAddDrawOpt;    // additional draw options combo box
    TGCheckButton       *fChkAuto;            // automatic redraw checkbox
+   TGCheckButton       *fChkAutoAppend;      // automatic appendign of "~" checkbox
    TGComboBox          *fComboMethod;        // normalization methods dropdown box
    TGListBox           *fListNormalization;  // listbox with possible normalization variables
    TGComboBox          *fComboCustom;        // combo box for custom draw commands
@@ -205,6 +210,11 @@ public:
    TGComboBox          *fComboExportName;    // dropdownbox to enter a name for the exported CalPad
    TGTextButton        *fBtnExport;          // button to export a CalPad
    TGTextButton        *fBtnAddNorm;         // button to add a CalPad to the normalization
+   TGCompositeFrame    *fContTree;           // container for tree functions
+   TGTextButton        *fBtnDumpToFile;      // button to dump a new CalibTree to file
+   TGTextButton        *fBtnLoadTree;        // button to load a new tree
+   TGCheckButton       *fChkAddAsReference;  // checkbox to add a new tree as referenceTree
+   TGTextEntry         *fTxtRefName;         // text box to specify the referenceTree's name
    
    private:
    Bool_t fInitialized;                      // has the GUI already been initialized?

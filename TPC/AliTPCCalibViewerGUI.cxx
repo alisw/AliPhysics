@@ -45,9 +45,10 @@
 #include <string.h>
 #include <TH1.h>
 #include "TStyle.h"
+#include "TGFileDialog.h"
+#include "TGInputDialog.h"
 #include "AliTPCCalibViewer.h"
-#include "TGFileDialog.h"
-#include "TGFileDialog.h"
+#include "AliTPCPreprocessorOnline.h"
 
 // #include "TGListBox.h"
 // #include "TGNumberEntry"
@@ -70,6 +71,7 @@ ClassImp(AliTPCCalibViewerGUI)
 AliTPCCalibViewerGUI::AliTPCCalibViewerGUI(const TGWindow *p, UInt_t w, UInt_t h, char* fileName)
   : TGCompositeFrame(p, w, h),
     fViewer(0),
+    fPreprocessor(0),
     fContTopBottom(0),
     fContLCR(0),
     fContLeft(0),
@@ -113,6 +115,7 @@ AliTPCCalibViewerGUI::AliTPCCalibViewerGUI(const TGWindow *p, UInt_t w, UInt_t h
     fRadioSector(0),
     fComboAddDrawOpt(0),
     fChkAuto(0),
+    fChkAutoAppend(0),
     fComboMethod(0),
     fListNormalization(0),
     fComboCustom(0),
@@ -184,20 +187,27 @@ AliTPCCalibViewerGUI::AliTPCCalibViewerGUI(const TGWindow *p, UInt_t w, UInt_t h
     fContAddExport(0),
     fComboExportName(0),
     fBtnExport(0),
-    fBtnAddNorm(0)
+    fBtnAddNorm(0), 
+    fContTree(0),
+    fBtnDumpToFile(0),
+    fBtnLoadTree(0),
+    fChkAddAsReference(0),
+    fTxtRefName(0), 
+    fInitialized(0)
 {
    //
    // AliTPCCalibViewerGUI constructor; fileName specifies the ROOT tree used for drawing 
    //
 
    // draw the GUI:
+   fPreprocessor = new AliTPCPreprocessorOnline();
    DrawGUI(p, w, h);
    // initialize the AliTPCCalibViewer:
    if (fileName) Initialize(fileName);
    // set default button states:
    SetInitialValues();
    // do first drawing: 
-   DoDraw();
+   if (fileName) DoDraw();
 }
 
 
@@ -210,6 +220,7 @@ void AliTPCCalibViewerGUI::DrawGUI(const TGWindow *p, UInt_t w, UInt_t h) {
    // ======================================================================
    
    SetCleanup(kDeepCleanup);
+   p = p; // to avoid compiler warnings
 
    // *****************************************************************************
    // ************************* content of this MainFrame *************************
@@ -311,6 +322,11 @@ void AliTPCCalibViewerGUI::DrawGUI(const TGWindow *p, UInt_t w, UInt_t h) {
          fChkAuto = new TGCheckButton(fContDrawOpt, "Auto redraw");
          fContDrawOpt->AddFrame(fChkAuto, new TGLayoutHints(kLHintsNormal, 0, 2, 0, 0));
          fChkAuto->SetToolTipText("Decide if you want an automatic redraw on each new selection.\nNot recommended on a slow machine, during remote connection or if your draw option is 'same'.");
+         
+         // automatic append ending check button
+         fChkAutoAppend = new TGCheckButton(fContDrawOpt, "Auto add appending");
+         fContDrawOpt->AddFrame(fChkAutoAppend, new TGLayoutHints(kLHintsNormal, 0, 2, 0, 0));
+         fChkAutoAppend->SetToolTipText("Tries to repair your custom draw string or custom cut string, if you forgot '~' or '.fElements' \nThis function may be buggy!");
                
       
       // *** predefined radio button ***  " Predefined "
@@ -798,13 +814,39 @@ void AliTPCCalibViewerGUI::DrawGUI(const TGWindow *p, UInt_t w, UInt_t h) {
          fBtnExport->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "DoExport()");
          fBtnExport->SetToolTipText("Export the current 2D view as AliTPCCalPad to the CINT command line interpreter, use the specified name. \nThis works only in 2D mode.");
       
-         // export button
+         // add to normalisation button
          fBtnAddNorm = new TGTextButton(fContExport, "&Add to normalization");
          fContExport->AddFrame(fBtnAddNorm, new TGLayoutHints(kLHintsExpandX, 0, 0, 0, 0));
          fBtnAddNorm->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "DoExportNorm()");
          fBtnAddNorm->SetToolTipText("Use the current 2D view as normalization variable, use the specified name. \nNot yet working!");
-         
-      
+
+      // Tree container
+      fContTree = new TGGroupFrame(fTabRight1, "Tree", kVerticalFrame | kFitWidth | kFitHeight);
+      fTabRight1->AddFrame(fContTree, new TGLayoutHints(kLHintsExpandX, 0, 0, 0, 0));
+
+         // dump tree to file button
+         fBtnDumpToFile = new TGTextButton(fContTree, "&Dump to File");
+         fContTree->AddFrame(fBtnDumpToFile, new TGLayoutHints(kLHintsExpandX, 0, 0, 0, 0));
+         fBtnDumpToFile->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "DoDumpToFile()");
+         fBtnDumpToFile->SetToolTipText("Write the exported CalPads to a new CalibTree");
+
+         // dump tree to file button
+         fBtnLoadTree = new TGTextButton(fContTree, "&Load Tree");
+         fContTree->AddFrame(fBtnLoadTree, new TGLayoutHints(kLHintsExpandX, 0, 0, 0, 0));
+         fBtnLoadTree->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "DoLoadTree()");
+         fBtnLoadTree->SetToolTipText("Load and initialize a new calibration tree. ");
+
+         fChkAddAsReference = new TGCheckButton(fContTree, "as reference:");
+         fContTree->AddFrame(fChkAddAsReference, new TGLayoutHints(kLHintsNormal | kLHintsExpandX));
+         fChkAddAsReference->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "DoLoadTree()");
+         fChkAddAsReference->SetToolTipText("To add a new tree as reference tree.");
+            
+         fTxtRefName = new TGTextEntry(fContTree, "R", 500);
+         fContTree->AddFrame(fTxtRefName, new TGLayoutHints(kLHintsNormal | kLHintsExpandX, 15, 0, 0, 0));
+         // fTxtRefName->Connect("ReturnPressed()", "AliTPCCalibViewerGUI", this, "HandleButtonsNoRedraw(=50)");
+         fTxtRefName->SetToolTipText("Reference Name");
+        
+            
       // Fit options container
       fContFit = new TGGroupFrame(fTabRight1, "Custom fit", kVerticalFrame | kFitWidth | kFitHeight);
       fTabRight1->AddFrame(fContFit, new TGLayoutHints(kLHintsExpandX, 0, 0, 0, 0));
@@ -845,11 +887,11 @@ void AliTPCCalibViewerGUI::SetInitialValues() {
    // 
    // Set the default button states
    // 
+   fChkAuto->SetState(kButtonUp);
    fRadioPredefined->SetState(kButtonDown);
    fRadioRaw->SetState(kButtonDown);
    fRadioTPC->SetState(kButtonDown);
    fRadio1D->SetState(kButtonDown);
-   fChkAuto->SetState(kButtonDown);
    fChkAddCuts->SetState(kButtonUp);
    fChkGetMinMaxAuto->SetState(kButtonDown);
    fChkSetMin->SetState(kButtonUp);
@@ -1002,7 +1044,8 @@ void AliTPCCalibViewerGUI::SetInitialValues() {
    //fCanvMain->GetCanvas()->GetCanvasImp()->ShowStatusBar(kTRUE); // klappt auch nicht
    fListVariables->IntegralHeight(kFALSE);         // naja
    fListNormalization->IntegralHeight(kFALSE);     // naja
-   
+   fChkAuto->SetState(kButtonDown);
+  
    // Make first drawing:
    // DoDraw();
 }
@@ -1011,6 +1054,7 @@ void AliTPCCalibViewerGUI::SetInitialValues() {
 AliTPCCalibViewerGUI::AliTPCCalibViewerGUI(const AliTPCCalibViewerGUI &c)
    : TGCompositeFrame(c.fParent, c.fWidth, c.fHeight),
     fViewer(0),
+    fPreprocessor(0),
     fContTopBottom(0),
     fContLCR(0),
     fContLeft(0),
@@ -1054,6 +1098,7 @@ AliTPCCalibViewerGUI::AliTPCCalibViewerGUI(const AliTPCCalibViewerGUI &c)
     fRadioSector(0),
     fComboAddDrawOpt(0),
     fChkAuto(0),
+    fChkAutoAppend(0),
     fComboMethod(0),
     fListNormalization(0),
     fComboCustom(0),
@@ -1125,7 +1170,13 @@ AliTPCCalibViewerGUI::AliTPCCalibViewerGUI(const AliTPCCalibViewerGUI &c)
     fContAddExport(0),
     fComboExportName(0),
     fBtnExport(0),
-    fBtnAddNorm(0)
+    fBtnAddNorm(0), 
+    fContTree(0),
+    fBtnDumpToFile(0),
+    fBtnLoadTree(0),
+    fChkAddAsReference(0),
+    fTxtRefName(0),
+    fInitialized(0)
 {
   //
   // dummy AliTPCCalibViewerGUI copy constructor
@@ -1153,6 +1204,7 @@ AliTPCCalibViewerGUI::~AliTPCCalibViewerGUI() {
    }
    Cleanup();
    if (fViewer) fViewer->Delete();
+   delete fPreprocessor;
 }
 
 
@@ -1438,7 +1490,6 @@ void AliTPCCalibViewerGUI::HandleButtonsNoRedraw(Int_t id) {
 }
 
 
-
 void AliTPCCalibViewerGUI::DoNewSelection() {
    //
    // decides whether to redraw if user makes another selection
@@ -1518,6 +1569,9 @@ TString* AliTPCCalibViewerGUI::GetDrawString() {
       if (desiredData == "") return 0;
    }
    
+   // try to add forgotten '~'
+   if (fChkAutoAppend->GetState() == kButtonDown) 
+      desiredData = TString(fViewer->AddAbbreviations((char*)desiredData.Data()));
    return new TString(desiredData.Data());
 }   
 
@@ -1562,6 +1616,10 @@ TString* AliTPCCalibViewerGUI::GetSectorString() {
    }
    if (fChkAddCuts->GetState() == kButtonDown)
       cutsStr += fComboAddCuts->GetTextEntry()->GetText();
+   
+   // try to add forgotten '~'
+   if (fChkAutoAppend->GetState() == kButtonDown) 
+      cutsStr = TString(fViewer->AddAbbreviations((char*)cutsStr.Data()));
    return new TString(cutsStr.Data());
 }
 
@@ -1638,8 +1696,7 @@ void AliTPCCalibViewerGUI::DoFit() {
 
    // specify data to plot:
    TString drawStr(GetDrawString()->Data());
-
-
+   
    // ********** create cut string **********
    if (fRadioTPC->GetState() == kButtonDown)
       cutStr += ""; // whole TPC is used for fitting
@@ -1656,9 +1713,14 @@ void AliTPCCalibViewerGUI::DoFit() {
       if (fRadioTPC->GetState() != kButtonDown) cutStr += " && ";
       cutStr += fComboAddCuts->GetTextEntry()->GetText();  
    }
+   // try to add forgotten '~'
+   if (fChkAutoAppend->GetState() == kButtonDown) 
+      cutStr = TString(fViewer->AddAbbreviations((char*)cutStr.Data()));
    
    // ********** get formula string **********
    formulaStr += fComboCustomFit->GetTextEntry()->GetText();
+   if (fChkAutoAppend->GetState() == kButtonDown) 
+      formulaStr = TString(fViewer->AddAbbreviations((char*)formulaStr.Data()));
 
    // ********** call AliTPCCalibViewer's fit-function
    returnStr = fViewer->Fit(drawStr.Data(), formulaStr.Data(), cutStr.Data(), chi2, fitParam, covMatrix);
@@ -1688,6 +1750,7 @@ void AliTPCCalibViewerGUI::DoExport() {
    AliTPCCalPad *calPad = fViewer->GetCalPad(desiredData.Data(), (char*)cutsStr.Data(), (char*)calPadName);
    // finally export calPad to Cint:
    gROOT->ProcessLine(Form("AliTPCCalPad* %s = (AliTPCCalPad*)0x%lx;", calPadName, calPad));
+   fPreprocessor->AddComponent(calPad);
    Info("ExportCalPad", "Current 2D view has been exported to an AliTPCCalPad* with name '%s'", calPadName);
 }
 
@@ -1735,10 +1798,24 @@ void AliTPCCalibViewerGUI::GetMinMax() {
    }
    if ( ptr != 0 && !ptr->InheritsFrom("TH1") ) return;      // if the loop did not find a TH1
    TH1 *hist = (TH1*)ptr;
-   Double_t histMax = hist->GetMaximum();
-   Double_t histMin = hist->GetMinimum();
-   fTxtSetMax->SetText(Form("%f",histMax));
-   fTxtSetMin->SetText(Form("%f",histMin));
+
+//    Double_t histMax = hist->GetMaximum();
+//    Double_t histMin = hist->GetMinimum();
+//    fTxtSetMax->SetText(Form("%f",histMax));
+//    fTxtSetMin->SetText(Form("%f",histMin));
+
+   if (fRadio2D->GetState() == kButtonDown) {
+      if (fChkSetMax->GetState() == kButtonUp)
+         fTxtSetMax->SetText(Form("%f", hist->GetMaximum()));
+      if (fChkSetMin->GetState() == kButtonUp)
+         fTxtSetMin->SetText(Form("%f", hist->GetMinimum()));
+   }
+   else if (fRadio1D->GetState() == kButtonDown) {
+      if (fChkSetMax->GetState() == kButtonUp)
+         fTxtSetMax->SetText( Form("%f", hist->GetXaxis()->GetXmax()) );
+      if (fChkSetMin->GetState() == kButtonUp)
+         fTxtSetMin->SetText( Form("%f", hist->GetXaxis()->GetXmin()) );
+   }
 }
 
 
@@ -1765,23 +1842,31 @@ void AliTPCCalibViewerGUI::SetMinMaxLabel() {
    TH1 *hist = (TH1*)ptr; 
    TString minTxt(fTxtSetMin->GetText());
    TString maxTxt(fTxtSetMax->GetText());
+   
    // set min and max according to specified values, if checkbox is checked
-   if (fChkSetMax->GetState() == kButtonDown && (maxTxt.IsDigit() || maxTxt.IsFloat()) )
-      hist->SetMaximum(maxTxt.Atof());
-   if (fChkSetMax->GetState() == kButtonUp)
-      hist->SetMaximum(-1111);  // default value, to unzoom
-   if (fChkSetMin->GetState() == kButtonDown && (minTxt.IsDigit() || minTxt.IsFloat()) )
-      hist->SetMinimum(minTxt.Atof());
-   if (fChkSetMin->GetState() == kButtonUp)
-      hist->SetMinimum(-1111);  // default value, to unzoom
-   // get min and max from plot       
-   if (fChkGetMinMaxAuto->GetState() == kButtonDown) {
-      // maybe call here GetMinMax ???
+   if (fRadio2D->GetState() == kButtonDown) {
+      if (fChkSetMax->GetState() == kButtonDown && fChkSetMax->GetState() == kButtonDown &&(maxTxt.IsDigit() || maxTxt.IsFloat()) )
+         hist->SetMaximum(maxTxt.Atof());
       if (fChkSetMax->GetState() == kButtonUp)
-         fTxtSetMax->SetText(Form("%f", hist->GetMaximum()));
+         hist->SetMaximum(-1111);  // default value, to unzoom
+      if (fChkSetMin->GetState() == kButtonDown && (minTxt.IsDigit() || minTxt.IsFloat()) )
+         hist->SetMinimum(minTxt.Atof());
       if (fChkSetMin->GetState() == kButtonUp)
-         fTxtSetMin->SetText(Form("%f", hist->GetMinimum()));
+         hist->SetMinimum(-1111);  // default value, to unzoom
    }
+   else if (fRadio2D->GetState() == kButtonDown) {
+      if (fChkSetMin->GetState() == kButtonDown && 
+          fChkSetMax->GetState() == kButtonDown && hist->GetXaxis())
+         hist->GetXaxis()->SetRangeUser(hist->GetXaxis()->GetXmin(), hist->GetXaxis()->GetXmax());
+      else if (fChkSetMax->GetState() == kButtonDown && hist->GetXaxis())
+         hist->GetXaxis()->SetRangeUser(hist->GetXaxis()->GetXmin(), maxTxt.Atof());
+      else if (fChkSetMin->GetState() == kButtonDown && hist->GetXaxis())
+         hist->GetXaxis()->SetRangeUser(minTxt.Atof(), hist->GetXaxis()->GetXmax());
+      hist->SetTitle(hist->GetTitle());  // trick to update the histogram
+   }
+   
+   // get min and max from plot       
+   GetMinMax();
    
    // set labels according to specification, if cehckboxes are checked
    if (fChkLabelTitle->GetState() == kButtonDown) 
@@ -1987,6 +2072,54 @@ void AliTPCCalibViewerGUI::SavePicture() {
    
 }
    
+
+void AliTPCCalibViewerGUI::DoDumpToFile() {
+   // 
+   // This function is called, when the "Dump to File" button is pressed. 
+   // All the exported CalPads will be written into an new CalibTree, 
+   // a Save File dialog will appear to specify the filename
+   // 
+   const char *kSaveAsTypes[] = {
+      "ROOT file",   "*.root",
+       0,              0
+   };
+   TString dir(".");
+   TGFileInfo fi;
+   fi.fFileTypes = kSaveAsTypes;
+   // fi.fIniDir    = StrDup(dir);
+   fi.fOverwrite = kFALSE;
+   new TGFileDialog(gClient->GetRoot(), gClient->GetRoot(), kFDSave, &fi);
+   if (fi.fFilename && strlen(fi.fFilename)) {
+      fPreprocessor->DumpToFile(fi.fFilename);
+      Info("DumpToFile", Form("New CalibTree has been writen to file '%s'", fi.fFilename));
+   }
+}
+
+
+void AliTPCCalibViewerGUI::DoLoadTree() {
+   // function to load a new calib tree
+   // 
+   // 
+   const char *kFileTypes[] = {
+      "ROOT file",   "*.root",
+       0,              0
+   };
+   TString dir(".");
+   TGFileInfo fi;
+   fi.fFileTypes = kFileTypes;
+   // fi.fIniDir    = StrDup(dir);
+   fi.fOverwrite = kFALSE;
+   new TGFileDialog(gClient->GetRoot(), gClient->GetRoot(), kFDOpen, &fi);
+   if (fi.fFilename && strlen(fi.fFilename) && fChkAddAsReference->GetState() == kButtonUp) {
+      Initialize(fi.fFilename);
+      Reload();
+   }
+   else if (fi.fFilename && strlen(fi.fFilename) && fChkAddAsReference->GetState() == kButtonDown) {
+      fViewer->AddReferenceTree(fi.fFilename, "calPads", fTxtRefName->GetText());
+      Reload();
+   }
+}
+
 
 TObjArray* AliTPCCalibViewerGUI::ShowGUI(const char* fileName) {
    //

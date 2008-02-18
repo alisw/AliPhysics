@@ -210,6 +210,108 @@ void AliTPCCalibViewer::Delete(Option_t* option) {
    delete fListOfObjectsToBeDeleted;
 }
 
+
+const char* AliTPCCalibViewer::AddAbbreviations(char* c, Bool_t printDrawCommand){ 
+   // Replace all "<variable>" with "<variable><fAbbreviation>" (Adds forgotten "~")
+   // but take care on the statistical information, like "CEQmean_Mean"
+   // and also take care on correct given variables, like "CEQmean~"
+   // 
+   // For each variable out of "listOfVariables":
+   // - 'Save' correct items:
+   //   - form <replaceString>, take <variable>'s first char, add <removeString>, add rest of <variable>, e.g. "C!#EQmean" (<removeString> = "!#")
+   //   - For each statistical information in "listOfNormalizationVariables":
+   //     - ReplaceAll <variable><statistical_Information> with <replaceString><statistical_Information>
+   //   - ReplaceAll <variable><abbreviation> with <replaceString><abbreviation>, e.g. "CEQmean~" -> "C!#EQmean~"
+   //   - ReplaceAll <variable><appendStr> with <replaceString><appendStr>, e.g. "CEQmean.fElements" -> "C!#EQmean.fElements"
+   //
+   // - Do actual replacing:
+   //   - ReplaceAll <variable> with <variable><fAbbreviation>, e.g. "CEQmean" -> "CEQmean~"
+   //
+   // - Undo saving:
+   //   - For each statistical information in "listOfNormalizationVariables":
+   //     - ReplaceAll <replaceString><statistical_Information> with <variable><statistical_Information> 
+   //   - ReplaceAll <replaceString><abbreviation> with <variable><abbreviation>, e.g. "C!#EQmean~" -> "CEQmean~"
+   //   - ReplaceAll <replaceString><appendStr> with <variable><appendStr>, e.g. "C!#EQmean.fElements" -> "CEQmean.fElements"
+   // 
+   // Now all the missing "~" should be added.
+   
+   TString str(c);
+   TString removeString = "!#";  // very unpropable combination of chars
+   TString replaceString = "";
+   TString searchString = "";
+   TString normString = "";
+   TObjArray *listOfVariables = GetListOfVariables();
+   listOfVariables->Add(new TObjString("channel"));
+   listOfVariables->Add(new TObjString("gx"));
+   listOfVariables->Add(new TObjString("gy"));
+   listOfVariables->Add(new TObjString("lx"));
+   listOfVariables->Add(new TObjString("ly"));
+   listOfVariables->Add(new TObjString("pad"));
+   listOfVariables->Add(new TObjString("row"));
+   listOfVariables->Add(new TObjString("rpad"));
+   listOfVariables->Add(new TObjString("sector"));
+   TObjArray *listOfNormalizationVariables = GetListOfNormalizationVariables();
+   Int_t nVariables = listOfVariables->GetEntriesFast();
+   Int_t nNorm = listOfNormalizationVariables->GetEntriesFast();
+   
+   Int_t *varLengths = new Int_t[nVariables];
+   for (Int_t i = 0; i < nVariables; i++) {
+      varLengths[i] = ((TObjString*)listOfVariables->At(i))->String().Length();
+   }
+   Int_t *normLengths = new Int_t[nNorm];
+   for (Int_t i = 0; i < nNorm; i++) {
+      normLengths[i] = ((TObjString*)listOfNormalizationVariables->At(i))->String().Length();
+      // printf("normLengths[%i] (%s) = %i \n", i,((TObjString*)listOfNormalizationVariables->At(i))->String().Data(), normLengths[i]);
+   }
+   Int_t *varSort = new Int_t[nVariables];
+   TMath::Sort(nVariables, varLengths, varSort, kTRUE);
+   Int_t *normSort = new Int_t[nNorm];
+   TMath::Sort(nNorm, normLengths, normSort, kTRUE);
+   // for (Int_t i = 0; i<nNorm; i++)  printf("normLengths: %i\n", normLengths[normSort[i]]);
+   // for (Int_t i = 0; i<nVariables; i++) printf("varLengths: %i\n", varLengths[varSort[i]]);
+   
+   for (Int_t ivar = 0; ivar < nVariables; ivar++) {
+      // ***** save correct tokens *****
+      // first get the next variable:
+      searchString = ((TObjString*)listOfVariables->At(varSort[ivar]))->String();
+      // printf("searchString: %s ++++++++++++++\n", searchString.Data());
+      // form replaceString:
+      replaceString = "";
+      for (Int_t i = 0; i < searchString.Length(); i++) {
+         replaceString.Append(searchString[i]);
+         if (i == 0) replaceString.Append(removeString);
+      }
+      // go through normalization:
+      // printf("go through normalization\n");
+      for (Int_t inorm = 0; inorm < nNorm; inorm++) {
+         // printf(" inorm=%i, nNorm=%i, normSort[inorm]=%i \n", inorm, nNorm, normSort[inorm]);
+         normString = ((TObjString*)listOfNormalizationVariables->At(normSort[inorm]))->String();
+         // printf(" walking in normalization, i=%i, normString=%s \n", inorm, normString.Data());
+         str.ReplaceAll(searchString + normString, replaceString + normString);
+         // like: str.ReplaceAll("CEQmean_Mean", "C!EQmean_Mean");
+      }
+      str.ReplaceAll(searchString + fAbbreviation, replaceString + fAbbreviation);
+      // like: str.ReplaceAll("CEQmean~", "C!EQmean~");
+      str.ReplaceAll(searchString + fAppendString,    replaceString + fAppendString);
+      // like: str.ReplaceAll("CEQmean.fElements", "C!EQmean.fElements");
+      
+      // ***** add missing extensions *****
+      str.ReplaceAll(searchString, replaceString + fAbbreviation);
+      // like: str.ReplaceAll("CEQmean", "C!EQmean~");
+   }
+   
+   // ***** undo saving *****
+   str.ReplaceAll(removeString, "");
+  
+   if (printDrawCommand) std::cout << "The string looks now like: " << str.Data() << std::endl;
+   delete varSort;
+   delete normSort;
+   return str.Data();
+}
+
+
+
+
 //_____________________________________________________________________________
 Int_t AliTPCCalibViewer::EasyDraw(const char* drawCommand, const char* sector, const char* cuts, const char* drawOptions, Bool_t writeDrawCommand) const {
   //
@@ -228,6 +330,11 @@ Int_t AliTPCCalibViewer::EasyDraw(const char* drawCommand, const char* sector, c
    sectorStr.ToUpper();
    TString cutStr("");
    //TString drawOptionsStr("profcolz ");
+   Bool_t dangerousToDraw = drawStr.Contains(":") || drawStr.Contains(">>");
+   if (dangerousToDraw) {
+      Warning("EasyDraw", "The draw string must not contain ':' or '>>'.");
+      return -1;
+   }
    TString drawOptionsStr("");
    TRandom rnd(0);
    Int_t rndNumber = rnd.Integer(10000);
@@ -353,8 +460,9 @@ Int_t AliTPCCalibViewer::EasyDraw1D(const char* drawCommand, const char* sector,
    cutStr.ReplaceAll(fAbbreviation, fAppendString);
    if (writeDrawCommand) std::cout << "fTree->Draw(\"" << drawStr << "\", \"" <<  cutStr << "\", \"" << drawOptionsStr << "\");" << std::endl;
    Int_t returnValue = fTree->Draw(drawStr.Data(), cutStr.Data(), drawOptionsStr.Data());
+   if (returnValue == -1) return -1;
    
-   TObject *obj = gPad->GetPrimitive("htemp"); 
+   TObject *obj = (gPad) ? gPad->GetPrimitive("htemp") : 0; 
    if (!obj) obj = (TH1F*)gDirectory->Get("htemp");
    if (!obj) obj = gPad->GetPrimitive("tempHist");
    if (!obj) obj = (TH1F*)gDirectory->Get("tempHist");
@@ -1440,7 +1548,8 @@ AliTPCCalROC* AliTPCCalibViewer::GetCalROC(const char* desiredData, UInt_t secto
   // sector specifies the sector of the created AliTPCCalROC
   //
    TString drawStr(desiredData);
-   drawStr.Append(Form(":channel%s", fAbbreviation.Data()));
+   drawStr.Append(":channel");
+   drawStr.Append(fAbbreviation);
    Int_t entries = EasyDraw1D(drawStr.Data(), (Int_t)sector, cuts, "goff");
    if (entries == -1) return 0;
    AliTPCCalROC * createdROC = new AliTPCCalROC(sector);
