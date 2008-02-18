@@ -134,8 +134,10 @@
 //
 // - Accessing the calibration storage objects:
 //
-// AliTPCCalROC *GetCalRocPedestal(Int_t sector);  - for the pedestal values
-// AliTPCCalROC *GetCalRocNoise(Int_t sector);     - for the Noise values
+// AliTPCCalROC *GetCalRocPedestal(Int_t sector);  - for the pedestal values, mean from gaus fit
+// AliTPCCalROC *GetCalRocSigma(Int_t sector);     - for the Noise values, sigma from guas fit
+// AliTPCCalROC *GetCalRocMean(Int_t sector);  - for the pedestal values, truncated mean
+// AliTPCCalROC *GetCalRocRMS(Int_t sector);     - for the Noise values, rms from truncated mean
 //
 // example for visualisation:
 // if the file "PedestalData.root" was created using the above example one could do the following:
@@ -151,7 +153,6 @@
 // padPedestal->MakeHisto2D()->Draw("colz");  //Draw A-Side Pedestal Information
 // padNoise->MakeHisto2D()->Draw("colz");  //Draw A-Side Noise Information
 //
-
 /*
  example: fill pedestal with gausschen noise
  AliTPCCalibPedestal ped;
@@ -177,7 +178,6 @@
  c2->cd(4);
  ped.GetCalRocRMS(36)->Draw("colz");
 */
-
 //
 // Time dependent pedestals:
 //
@@ -199,20 +199,24 @@
 
 ClassImp(AliTPCCalibPedestal)
 
-AliTPCCalibPedestal::AliTPCCalibPedestal() : /*FOLD00*/
+AliTPCCalibPedestal::AliTPCCalibPedestal() : 
   TObject(),
   fFirstTimeBin(60),
   fLastTimeBin(1000),
   fAdcMin(1),
   fAdcMax(100),
+  fAnaMeanDown(0.),
+  fAnaMeanUp(1.),
   fOldRCUformat(kTRUE),
   fTimeAnalysis(kFALSE),
   fROC(AliTPCROC::Instance()),
   fMapping(NULL),
   fCalRocArrayPedestal(72),
-  fCalRocArrayRMS(72),
+  fCalRocArraySigma(72),
   fHistoPedestalArray(72),
-  fTimeSignal(NULL)
+  fTimeSignal(NULL),
+  fCalRocArrayMean(72),
+  fCalRocArrayRMS(72)
 {
   //
   // default constructor
@@ -221,20 +225,24 @@ AliTPCCalibPedestal::AliTPCCalibPedestal() : /*FOLD00*/
 
 
 //_____________________________________________________________________
-AliTPCCalibPedestal::AliTPCCalibPedestal(const AliTPCCalibPedestal &ped) : /*FOLD00*/
+AliTPCCalibPedestal::AliTPCCalibPedestal(const AliTPCCalibPedestal &ped) : 
   TObject(ped),
   fFirstTimeBin(ped.GetFirstTimeBin()),
   fLastTimeBin(ped.GetLastTimeBin()),
   fAdcMin(ped.GetAdcMin()),
   fAdcMax(ped.GetAdcMax()),
+  fAnaMeanDown(ped.fAnaMeanDown),
+  fAnaMeanUp(ped.fAnaMeanUp),
   fOldRCUformat(ped.fOldRCUformat),
   fTimeAnalysis(ped.fTimeAnalysis),
   fROC(AliTPCROC::Instance()),
   fMapping(NULL),
   fCalRocArrayPedestal(72),
-  fCalRocArrayRMS(72),
+  fCalRocArraySigma(72),
   fHistoPedestalArray(72),
-  fTimeSignal(ped.fTimeSignal)
+  fTimeSignal(ped.fTimeSignal),
+  fCalRocArrayMean(72),
+  fCalRocArrayRMS(72)
 {
   //
   // copy constructor
@@ -270,7 +278,7 @@ AliTPCCalibPedestal& AliTPCCalibPedestal::operator = (const  AliTPCCalibPedestal
 
 
 //_____________________________________________________________________
-AliTPCCalibPedestal::~AliTPCCalibPedestal() /*FOLD00*/
+AliTPCCalibPedestal::~AliTPCCalibPedestal() 
 {
   //
   // destructor
@@ -327,7 +335,7 @@ void AliTPCCalibPedestal::SetTimeAnalysis(Bool_t time)
 
 
 //_____________________________________________________________________
-Int_t AliTPCCalibPedestal::Update(const Int_t icsector, /*FOLD00*/
+Int_t AliTPCCalibPedestal::Update(const Int_t icsector, 
 				  const Int_t icRow,
 				  const Int_t icPad,
 				  const Int_t icTimeBin,
@@ -377,11 +385,11 @@ Bool_t AliTPCCalibPedestal::ProcessEventFast(AliTPCRawStreamFast *rawStreamFast)
 	  Int_t isector  = rawStreamFast->GetSector();                       //  current sector
 	  Int_t iRow     = rawStreamFast->GetRow();                          //  current row
 	  Int_t iPad     = rawStreamFast->GetPad();                          //  current pad
-	  Int_t startTbin = (Int_t)rawStreamFast->GetStartTimeBin();
-          Int_t endTbin = (Int_t)rawStreamFast->GetEndTimeBin();
 
 	  while ( rawStreamFast->NextBunch() ){
-	      for (Int_t iTimeBin = startTbin; iTimeBin < endTbin; iTimeBin++){
+            Int_t startTbin = (Int_t)rawStreamFast->GetStartTimeBin();
+            Int_t endTbin = (Int_t)rawStreamFast->GetEndTimeBin();
+            for (Int_t iTimeBin = startTbin; iTimeBin < endTbin; iTimeBin++){
 		  Float_t signal=(Float_t)rawStreamFast->GetSignals()[iTimeBin-startTbin];
 		  Update(isector,iRow,iPad,iTimeBin+1,signal);
 		  withInput = kTRUE;
@@ -460,7 +468,7 @@ Bool_t AliTPCCalibPedestal::ProcessEvent(eventHeaderStruct *event)
 
 
 //_____________________________________________________________________
-Bool_t AliTPCCalibPedestal::TestEvent() /*FOLD00*/
+Bool_t AliTPCCalibPedestal::TestEvent() 
 {
   //
   //  Test event loop
@@ -485,7 +493,7 @@ Bool_t AliTPCCalibPedestal::TestEvent() /*FOLD00*/
 
 
 //_____________________________________________________________________
-TH2F* AliTPCCalibPedestal::GetHisto(Int_t sector, TObjArray *arr, /*FOLD00*/
+TH2F* AliTPCCalibPedestal::GetHisto(Int_t sector, TObjArray *arr, 
 				    Int_t nbinsY, Float_t ymin, Float_t ymax,
 				    Char_t *type, Bool_t force)
 {
@@ -514,7 +522,7 @@ TH2F* AliTPCCalibPedestal::GetHisto(Int_t sector, TObjArray *arr, /*FOLD00*/
 
 
 //_____________________________________________________________________
-TH2F* AliTPCCalibPedestal::GetHistoPedestal(Int_t sector, Bool_t force) /*FOLD00*/
+TH2F* AliTPCCalibPedestal::GetHistoPedestal(Int_t sector, Bool_t force) 
 {
     //
     // return pointer to T0 histogram
@@ -526,7 +534,7 @@ TH2F* AliTPCCalibPedestal::GetHistoPedestal(Int_t sector, Bool_t force) /*FOLD00
 
 
 //_____________________________________________________________________
-AliTPCCalROC* AliTPCCalibPedestal::GetCalRoc(Int_t sector, TObjArray* arr, Bool_t force) /*FOLD00*/
+AliTPCCalROC* AliTPCCalibPedestal::GetCalRoc(Int_t sector, TObjArray* arr, Bool_t force) 
 {
     //
     // return pointer to ROC Calibration
@@ -545,10 +553,10 @@ AliTPCCalROC* AliTPCCalibPedestal::GetCalRoc(Int_t sector, TObjArray* arr, Bool_
 
 
 //_____________________________________________________________________
-AliTPCCalROC* AliTPCCalibPedestal::GetCalRocPedestal(Int_t sector, Bool_t force) /*FOLD00*/
+AliTPCCalROC* AliTPCCalibPedestal::GetCalRocPedestal(Int_t sector, Bool_t force) 
 {
     //
-    // return pointer to Carge ROC Calibration
+    // return pointer to ROC with Pedestal data
     // if force is true create a new histogram if it doesn't exist allready
     //
     TObjArray *arr = &fCalRocArrayPedestal;
@@ -557,14 +565,35 @@ AliTPCCalROC* AliTPCCalibPedestal::GetCalRocPedestal(Int_t sector, Bool_t force)
 
 
 //_____________________________________________________________________
-AliTPCCalROC* AliTPCCalibPedestal::GetCalRocRMS(Int_t sector, Bool_t force) /*FOLD00*/
+AliTPCCalROC* AliTPCCalibPedestal::GetCalRocSigma(Int_t sector, Bool_t force) 
 {
     //
-    // return pointer to signal width ROC Calibration
+    // return pointer to  ROC with signal witdth in sigma
     // if force is true create a new histogram if it doesn't exist allready
     //
-    TObjArray *arr = &fCalRocArrayRMS;
+    TObjArray *arr = &fCalRocArraySigma;
     return GetCalRoc(sector, arr, force);
+}
+//_____________________________________________________________________
+AliTPCCalROC* AliTPCCalibPedestal::GetCalRocMean(Int_t sector, Bool_t force)
+{
+  //
+    // return pointer to ROC with signal mean information
+    // if force is true create a new histogram if it doesn't exist allready
+  //
+  TObjArray *arr = &fCalRocArrayMean;
+  return GetCalRoc(sector, arr, force);
+}
+
+//_____________________________________________________________________
+AliTPCCalROC* AliTPCCalibPedestal::GetCalRocRMS(Int_t sector, Bool_t force) 
+{
+  //
+    // return pointer to signal width ROC Calibration
+    // if force is true create a new histogram if it doesn't exist allready
+  //
+  TObjArray *arr = &fCalRocArrayRMS;
+  return GetCalRoc(sector, arr, force);
 }
 
 
@@ -599,7 +628,7 @@ void AliTPCCalibPedestal::Merge(AliTPCCalibPedestal *ped)
 
 
 //_____________________________________________________________________
-void AliTPCCalibPedestal::Analyse() /*FOLD00*/
+void AliTPCCalibPedestal::Analyse() 
 {
   //
   //  Calculate calibration constants
@@ -607,9 +636,11 @@ void AliTPCCalibPedestal::Analyse() /*FOLD00*/
 
   Int_t nbinsAdc = fAdcMax-fAdcMin;
 
-  TVectorD param(3);
+  TVectorD param(4);
   TMatrixD dummy(3,3);
 
+  TH1F *hChannel=new TH1F("hChannel","hChannel",nbinsAdc,fAdcMin,fAdcMax);
+  
   Float_t *array_hP=0;  
 
   for (Int_t iSec=0; iSec<72; ++iSec){
@@ -617,6 +648,8 @@ void AliTPCCalibPedestal::Analyse() /*FOLD00*/
     if ( !hP ) continue;
 
     AliTPCCalROC *rocPedestal = GetCalRocPedestal(iSec,kTRUE);
+    AliTPCCalROC *rocSigma    = GetCalRocSigma(iSec,kTRUE);
+    AliTPCCalROC *rocMean     = GetCalRocMean(iSec,kTRUE);
     AliTPCCalROC *rocRMS      = GetCalRocRMS(iSec,kTRUE);
 
     array_hP = hP->GetArray();
@@ -624,16 +657,27 @@ void AliTPCCalibPedestal::Analyse() /*FOLD00*/
 
     for (UInt_t iChannel=0; iChannel<nChannels; ++iChannel){
       Int_t offset = (nbinsAdc+2)*(iChannel+1)+1;
+      //calculate mean and sigma using a gaus fit
       Double_t ret = AliMathBase::FitGaus(array_hP+offset,nbinsAdc,fAdcMin,fAdcMax,&param,&dummy);
       // if the fitting failed set noise and pedestal to 0
-      if ( ret == -4 ) {
-	param[1]=0;
-	param[2]=0;
-      }
+      // is now done in AliMathBase::FitGaus !
+//       if ( ret == -4 ) {
+// 	param[1]=0;
+// 	param[2]=0;
+//       }
       rocPedestal->SetValue(iChannel,param[1]);
+      rocSigma->SetValue(iChannel,param[2]);
+      //calculate mean and RMS using a truncated means
+      hChannel->Set(nbinsAdc+2,array_hP+offset-1);
+      hChannel->SetEntries(param[3]);
+      param[1]=0;
+      param[2]=0;
+      if ( param[3]>0 ) AliMathBase::TruncatedMean(hChannel,&param,fAnaMeanDown,fAnaMeanUp);
+      rocMean->SetValue(iChannel,param[1]);
       rocRMS->SetValue(iChannel,param[2]);
     }
   }
+  delete hChannel;
 }
 
 
@@ -660,7 +704,7 @@ void AliTPCCalibPedestal::AnalyseTime(Int_t nevents)
 
 
 //_____________________________________________________________________
-void AliTPCCalibPedestal::DumpToFile(const Char_t *filename, const Char_t *dir, Bool_t append) /*FOLD00*/
+void AliTPCCalibPedestal::DumpToFile(const Char_t *filename, const Char_t *dir, Bool_t append) 
 {
   //
   //  Write class to file

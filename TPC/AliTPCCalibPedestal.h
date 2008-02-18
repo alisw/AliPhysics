@@ -44,8 +44,13 @@ public:
   void  SetAltroMapping(AliTPCAltroMapping **mapp) { fMapping = mapp; };
   //
   AliTPCCalROC* GetCalRocPedestal (Int_t sector, Bool_t force=kFALSE);  // get calibration object - sector
-  AliTPCCalROC* GetCalRocRMS(Int_t sector, Bool_t force=kFALSE);        // get calibration object - sector
+  AliTPCCalROC* GetCalRocSigma(Int_t sector, Bool_t force=kFALSE);        // get calibration object - sector
   const TObjArray* GetCalPadPedestal (){return &fCalRocArrayPedestal;}  // get calibration object
+  const TObjArray* GetCalPadSigma(){return &fCalRocArraySigma;}             // get calibration object
+
+  AliTPCCalROC* GetCalRocMean (Int_t sector, Bool_t force=kFALSE);      // get calibration object - sector
+  AliTPCCalROC* GetCalRocRMS(Int_t sector, Bool_t force=kFALSE);        // get calibration object - sector
+  const TObjArray* GetCalPadMean (){return &fCalRocArrayMean;}          // get calibration object
   const TObjArray* GetCalPadRMS(){return &fCalRocArrayRMS;}             // get calibration object
   
   TH2F* GetHistoPedestal  (Int_t sector, Bool_t force=kFALSE);          // get refernce histogram
@@ -55,13 +60,16 @@ public:
   void  AnalyseTime(Int_t nevents);                            // Makes sense only in TPCPEDESTALda on LDC!
   TArrayF **GetTimePedestals()  const { return fTimeSignal; }  // Get array with time dependent pedestals (for one sector!)
   //
-  Int_t GetFirstTimeBin() const { return fFirstTimeBin; }
-  Int_t GetLastTimeBin()  const { return fLastTimeBin;  }
-  Int_t GetAdcMin()       const { return fAdcMin;       }
-  Int_t GetAdcMax()       const { return fAdcMax;       }
-
+  Int_t   GetFirstTimeBin() const { return fFirstTimeBin; }
+  Int_t   GetLastTimeBin()  const { return fLastTimeBin;  }
+  Int_t   GetAdcMin()       const { return fAdcMin;       }
+  Int_t   GetAdcMax()       const { return fAdcMax;       }
+  Float_t GetAnaMeanDown()  const { return fAnaMeanDown;  }
+  Float_t GetAnaMeanUp()    const { return fAnaMeanUp;    }
+  
   void  SetRangeTime(Int_t tMin, Int_t tMax){ fFirstTimeBin=tMin; fLastTimeBin=tMax; }  // Set time bin range that is used for the pedestal calibration
   void  SetRangeAdc (Int_t aMin, Int_t aMax){ fAdcMin=aMin; fAdcMax=aMax; }  // Set adc range for the pedestal calibration
+  void  SetAnalysisTruncationRange(Float_t down, Float_t up) {fAnaMeanDown=down; fAnaMeanUp=up;}    //Set range for truncated mean analysis of the channel information
 
   void  SetOldRCUformat(Bool_t format=kTRUE) { fOldRCUformat = format; }
 
@@ -77,18 +85,24 @@ private:
   Int_t fAdcMin;                    //  min adc channel of pedestal value
   Int_t fAdcMax;                    //  max adc channel of pedestal value
 
+  Float_t fAnaMeanDown;             // Truncated mean channel analysis - lower cut
+  Float_t fAnaMeanUp;               // Truncated mean channel analysis - upper cut
+  
   Bool_t  fOldRCUformat;            //! Should we use the old RCU format for data reading
   Bool_t  fTimeAnalysis;            //! Should we use the time dependent analysis? ONLY ON LDC!
 
   AliTPCROC *fROC;                  //! ROC information
   AliTPCAltroMapping **fMapping;    //! Altro Mapping object
 
-  TObjArray fCalRocArrayPedestal;   //  Array of AliTPCCalROC class for Time0 calibration
-  TObjArray fCalRocArrayRMS;        //  Array of AliTPCCalROC class for signal width calibration
+  TObjArray fCalRocArrayPedestal;   //  Array of AliTPCCalROC class for pedestal values from gaus fit
+  TObjArray fCalRocArraySigma;      //  Array of AliTPCCalROC class for noise values from gaus fit
 
   TObjArray fHistoPedestalArray;    //  Calibration histograms for Pedestal distribution
 
   TArrayF **fTimeSignal;            //! Arrays which hold time dependent signals
+  
+  TObjArray fCalRocArrayMean;       //  Array of AliTPCCalROC class for pedestal values, simple mean
+  TObjArray fCalRocArrayRMS;        //  Array of AliTPCCalROC class for noise values, simple rms
 
   TH2F* GetHisto(Int_t sector, TObjArray *arr,
 		 Int_t nbinsY, Float_t ymin, Float_t ymax,
@@ -97,7 +111,7 @@ private:
   AliTPCCalROC* GetCalRoc(Int_t sector, TObjArray* arr, Bool_t force);
 
 public:
-  ClassDef(AliTPCCalibPedestal, 4)  // Implementation of the TPC pedestal and noise calibration
+  ClassDef(AliTPCCalibPedestal, 5)  // Implementation of the TPC pedestal and noise calibration
 };
 
 
