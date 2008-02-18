@@ -190,7 +190,7 @@ Int_t AliTPCclustererKr::finderIO(AliRawReader* rawReader)
   Bool_t isAltro=kFALSE;
 
   AliTPCROC * roc = AliTPCROC::Instance();
-  //AliTPCCalPad * noiseTPC = AliTPCcalibDB::Instance()->GetPadNoise();
+  AliTPCCalPad * noiseTPC = AliTPCcalibDB::Instance()->GetPadNoise();
   AliTPCAltroMapping** mapping =AliTPCcalibDB::Instance()->GetMapping();
   //
   AliTPCRawStream input(rawReader,(AliAltroMapping**)mapping);
@@ -208,8 +208,13 @@ Int_t AliTPCclustererKr::finderIO(AliRawReader* rawReader)
   // Loop over sectors
   //
   for(Int_t sec = 0; sec < kNS; sec++) {
-    //AliTPCCalROC * noiseROC   = noiseTPC->GetCalROC(sec);  // noise per given sector
- 
+    AliTPCCalROC * noiseROC;
+    if(noiseTPC==0x0){
+      noiseROC =new AliTPCCalROC(sec);//noise=0
+    }
+    else{
+      noiseROC = noiseTPC->GetCalROC(sec);  // noise per given sector
+    }
     Int_t nRows = 0; //number of rows in sector
     Int_t nDDLs = 0; //number of DDLs
     Int_t indexDDL = 0; //DDL index
@@ -237,6 +242,8 @@ Int_t AliTPCclustererKr::finderIO(AliRawReader* rawReader)
 	digarr->CreateRow(sec,row);
       }//end loop over rows
     }
+    rawReader->Reset();
+    input.SetOldRCUFormat(fIsOldRCUFormat);
     rawReader->Select("TPC",indexDDL,indexDDL+nDDLs-1);
 
     //
@@ -275,12 +282,29 @@ Int_t AliTPCclustererKr::finderIO(AliRawReader* rawReader)
 
       //signal
       Int_t signal = input.GetSignal();
-      if (signal <= zeroSup) {
-	//continue;
+      Short_t timeWindowLow=60, timeWindowHigh=950;
+      if (signal <= zeroSup || 
+	  iTimeBin < timeWindowLow ||
+	  iTimeBin > timeWindowHigh 
+	  ) {
 	digarr->GetRow(sec,iRow)->SetDigitFast(0,iTimeBin,iPad);
+	continue;
       }
-      (//(AliSimDigits*)
-       digarr->GetRow(sec,iRow))->SetDigitFast(signal,iTimeBin,iPad);
+      if (!noiseROC) continue;
+      Double_t noiseOnPad = noiseROC->GetValue(iRow,iPad);//noise on given pad and row in sector
+      if (noiseOnPad>2) continue; // consider noisy pad as dead
+      
+      if(signal<4*noiseOnPad){
+	digarr->GetRow(sec,iRow)->SetDigitFast(0,iTimeBin,iPad);
+	continue;
+      }
+
+//      if(signal>12){
+//	cout<<" s "<<sec<<" r "<<iRow<<" p "<<iPad<<" t "<<iTimeBin<<" dig "<<signal<<endl;      
+      digarr->GetRow(sec,iRow)->SetDigitFast(signal,iTimeBin,iPad);
+//      }else digarr->GetRow(sec,iRow)->SetDigitFast(0,iTimeBin,iPad);
+      
+
     }//end of loop over altro data
   }//end of loop over sectors
   
@@ -321,14 +345,14 @@ Int_t AliTPCclustererKr::findClusterKrIO()
 	  Short_t value_maximum=-1;//value of maximum in adc
 	  Short_t increase_begin=-1;//timebin when increase starts
 	  Short_t sum_adc=0;//sum of adc on the pad in maximum surrounding
-	  bool if_increase_begin=true;//flag - check if increasing start
+	  bool if_increase_begin=true;//flag - check if increasing started
 	  bool if_maximum=false;//flag - check if it could be maximum
 
 	  for(Short_t nt=0;nt<ntime;nt++){
 	    Short_t adc = digrow->GetDigitFast(nt,np);
-	    if(adc<3){
+	    if(adc<6){//standard was 3
 	      if(if_maximum){
-		if(nt-1-increase_begin<1){//at least 2 time bins
+		if(nt-1-increase_begin<1){//at least 2 time bins, was = 1
 		  tb_max=-1;
 		  value_maximum=-1;
 		  increase_begin=-1;
@@ -408,7 +432,7 @@ Int_t AliTPCclustererKr::findClusterKrIO()
       AliTPCclusterKr *tmp=new AliTPCclusterKr();
       
       Short_t n_used_pads=1;
-      Short_t cluster_value=0;
+      Int_t cluster_value=0;
       cluster_value+=(*mp1)->GetSum();
       
       max_dig      =(*mp1)->GetAdc() ;
@@ -442,9 +466,10 @@ Int_t AliTPCclustererKr::findClusterKrIO()
 	
 	if(abs(max_row - (*mp2)->GetRow())<two_row_max && 
 	   abs(max_np - (*mp2)->GetPad())<two_pad_max  &&
-	   abs(max_nt - (*mp2)->GetTime())<7){
+	   abs(max_nt - (*mp2)->GetTime())<7){//was 7
 	  
 	  cluster_value+=(*mp2)->GetSum();
+
 	  n_used_pads++;
 	  
 	  AliSimDigits *digrow_tmp1;

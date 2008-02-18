@@ -28,6 +28,7 @@ public:
   void SetTime(Short_t q){fTime=q;}
   void SetPad(Short_t q){fPad=q;}
   void SetRow(Short_t q){fRow=q;}
+  void SetSector(Short_t sector){fSector=sector;}
 
 
   Short_t GetAdc(){return fAdc;}
@@ -41,10 +42,11 @@ protected:
   Short_t fTime;
   Short_t fPad;
   Short_t fRow;
+  Short_t fSector;
 
 private:
 
-  ClassDef(AliTPCvtpr,1)  // TPC coordinate class
+  ClassDef(AliTPCvtpr,2)  // TPC coordinate class
 };
 
 #endif

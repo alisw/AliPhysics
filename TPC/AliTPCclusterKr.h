@@ -25,13 +25,13 @@ public:
 
 
   void SetMax(AliTPCvtpr q){fMax=q;}//set values of max. in cluster
-  void SetADCcluster(Short_t q){fADCcluster=q;}
+  void SetADCcluster(Int_t q){fADCcluster=q;}
   void SetSec(Short_t q){fNsec=q;}
   void SetNpads(Short_t q){fNpads=q;}
   void SetSize(){fSize=fCluster.size();}
 
   AliTPCvtpr GetMax(){return fMax;}
-  Short_t GetADCcluster(){return  fADCcluster;}
+  Int_t GetADCcluster(){return  fADCcluster;}
   Short_t GetSec(){return fNsec;}
   Short_t GetNpads(){return fNpads;}
   Short_t GetSize(){return fSize;}
@@ -40,12 +40,12 @@ public:
 
 private:
   AliTPCvtpr fMax;//max (ADC,timebin,pad,row) in cluster
-  Short_t fADCcluster; //ADC of cluster
+  Int_t fADCcluster; //ADC of cluster
   Short_t fNsec;  //sector of the cluster
   Short_t fNpads; //number of pads in cluster
   Short_t fSize; //size of vector
 
-  ClassDef(AliTPCclusterKr,1)  // Time Projection Chamber Kr clusters
+  ClassDef(AliTPCclusterKr,2)  // Time Projection Chamber Kr clusters
 };
 
 

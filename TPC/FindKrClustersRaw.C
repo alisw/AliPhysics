@@ -1,7 +1,35 @@
 Int_t FindKrClustersRaw(const char *fileName="data.root"){
 
+
+
+  //
+  // remove Altro warnings
+  //
+  AliLog::SetClassDebugLevel("AliTPCRawStream",-5);
+  AliLog::SetClassDebugLevel("AliRawReaderDate",-5);
+  AliLog::SetClassDebugLevel("AliTPCAltroMapping",-5);
+  AliLog::SetModuleDebugLevel("RAW",-5);
+  //
+  // Get calibration
+  //
+  //  char *ocdbpath = gSystem->Getenv("OCDB_PATH");
+  char *ocdbpath ="local:///afs/cern.ch/alice/tpctest/OCDB";
+  if (ocdbpath==0){
+    ocdbpath="alien://folder=/alice/data/2007/LHC07w/OCDB/";
+  }
+  printf("OCDB PATH = %s\n",ocdbpath); 
+  AliCDBManager * man = AliCDBManager::Instance();
+  man->SetDefaultStorage(ocdbpath);
+  man->SetRun(0);
+
+  AliTPCCalPad * noiseTPC = AliTPCcalibDB::Instance()->GetPadNoise();
+  AliTPCAltroMapping** mapping =AliTPCcalibDB::Instance()->GetMapping();
+  //
+  //
+
+
   //define tree
-  TFile *hfile=new TFile("KryptonCl.root","RECREATE","ADC file");
+  TFile *hfile=new TFile("adc.root","RECREATE","ADC file");
   // Create a ROOT Tree
   TTree *mytree = new TTree("Kr","Krypton cluster tree");
 
@@ -21,25 +49,32 @@ Int_t FindKrClustersRaw(const char *fileName="data.root"){
   clusters->SetOutput(mytree);
   clusters->SetRecoParam(0);
 
+
+  AliTPCParamSR *param=new AliTPCParamSR();
   //only for geometry parameters loading - temporarly
-  //AliRunLoader* rl = AliRunLoader::Open("galice.root");
-  //AliTPCParam *param=(AliTPCParamSR *)gDirectory->Get("75x40_100x60_150x60");
-  AliTPCParam *param=new AliTPCParam;
-  param->SetTSample(1.00000002337219485e-07);
-  param->Update();
+//  AliRunLoader* rl = AliRunLoader::Open("galice.root");
+//  AliTPCParam *param=(AliTPCParamSR *)gDirectory->Get("75x40_100x60_150x60");
   //if (!param) {cerr<<"TPC parameters have not been found !\n"; return 4;}
+
   clusters->SetParam(param);
-  
+
 
   Int_t evtnr=0;
   while (reader->NextEvent()) {
     //output for each event
+  //  AliTPCclustererKr *clusters = new AliTPCclustererKr();
+  //  clusters->SetOutput(mytree);
+  //  clusters->SetRecoParam(0);
+  //  clusters->SetParam(param);
+
+    // if(evtnr++>5) break;
     cout<<"Evt = "<<evtnr<<endl;
     clusters->finderIO(reader);
     evtnr++;
+
   }
 
-  //mytree->Print();//print rootuple summary 
+  mytree->Print();//print rootuple summary 
   // Save all objects in this file
   hfile->Write();
   // Close the file
