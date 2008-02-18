@@ -118,16 +118,16 @@ int main(int argc, char **argv) {
 
   // Allocation of histograms - start
 
-  TH1F *hCFD1_CFD[24];  
+  TH1F *hCFD1minCFD[24];  
   TH1F *hCFD[24];
    
    for(Int_t ic=0; ic<24; ic++) {
       if(ic<12) {
-        hCFD1_CFD[ic] = new TH1F(Form("CFD1-CFD%d",ic+1),"CFD-CFD",ccbx,cclx,ccmx);
+        hCFD1minCFD[ic] = new TH1F(Form("CFD1-CFD%d",ic+1),"CFD-CFD",ccbx,cclx,ccmx);
         hCFD[ic] = new TH1F(Form("CFD%i",ic+1),"CFD",cbx,clx,cmx);
 	}
       if(ic>11){
-        hCFD1_CFD[ic] = new TH1F(Form("CFD13-CFD%i",ic+1),"CFD-CFD",ccbx,cclx,ccmx);
+        hCFD1minCFD[ic] = new TH1F(Form("CFD1-CFD%i",ic+1),"CFD-CFD",ccbx,cclx,ccmx);
         hCFD[ic] = new TH1F(Form("CFD%i",ic+1),"CFD",cbx,clx,cmx);
 	}
     }
@@ -174,6 +174,7 @@ int main(int argc, char **argv) {
 	break;
 
       case PHYSICS_EVENT:
+//      case CALIBRATION_EVENT:
       iev++;
 
       if(iev==1){
@@ -209,23 +210,20 @@ int main(int argc, char **argv) {
 
       // Fill the histograms
 	
-      for (Int_t ik = 0; ik<24; ik+=2)
+      for (Int_t ik = 0; ik<24; ik++)
          for (Int_t iHt=0; iHt<5; iHt++){
-		 Int_t cc = ik/2;
-                if(allData[cc+1][iHt]!=0 ){
-		 hCFD1_CFD[cc]->Fill(allData[cc+1][iHt]-allData[1][iHt]);
-		 hCFD[cc]->Fill(allData[cc+13][iHt]);
+                if(allData[ik+1][iHt]!=0 ){
+		  if(ik<12){
+			 hCFD1minCFD[ik]->Fill(allData[ik+1][iHt]-allData[1][iHt]);
+			 hCFD[ik]->Fill(allData[ik+13][iHt]);
+		  }
+                  if(ik>11){
+                         hCFD1minCFD[ik]->Fill(allData[ik+45][iHt]-allData[57][iHt]);
+                         hCFD[ik]->Fill(allData[ik+45][iHt]);
+                  }
 		}
 	}
 
-      for (Int_t ik = 24; ik<48; ik+=2)
-         for (Int_t iHt=0; iHt<5; iHt++){
-		 Int_t cc = ik/2; 
-                if(allData[cc+45][iHt]!=0 ){
-                 hCFD1_CFD[cc]->Fill(allData[cc+45][iHt]-allData[57][iHt]);
- 		 hCFD[cc]->Fill(allData[cc+45][iHt]);
-       		}
-	}
 
      delete start;
 	start = 0x0;
@@ -251,7 +249,7 @@ int main(int argc, char **argv) {
   TFile *hist = new TFile(FILE_OUT,"RECREATE");
 
   for(Int_t j=0;j<24;j++){
-     hCFD1_CFD[j]->Write();
+     hCFD1minCFD[j]->Write();
      hCFD[j]->Write();	
     }
   hist->Close();

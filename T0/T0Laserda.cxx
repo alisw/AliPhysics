@@ -127,12 +127,12 @@ int main(int argc, char **argv) {
 
   // Allocation of histograms - start
   TH1F *hCFD[24];
-  TH2F *hCFD_QTC[24];
-  TH2F *hCFD_LED[24]; 
+  TH2F *hCFDvsQTC[24];
+  TH2F *hCFDvsLED[24]; 
 
    for(Int_t ic=0; ic<24; ic++) {
-      hCFD_QTC[ic] = new TH2F(Form("CFD_QTC%d",ic+1),"CFD_QTC",cqbx,cqlx,cqmx,cqby,cqly,cqmy);
-      hCFD_LED[ic] = new TH2F(Form("CFD_LED%d",ic+1),"CFD_LED",clbx,cllx,clmx,clby,clly,clmy);
+      hCFDvsQTC[ic] = new TH2F(Form("CFD_QTC%d",ic+1),"CFD_QTC",cqbx,cqlx,cqmx,cqby,cqly,cqmy);
+      hCFDvsLED[ic] = new TH2F(Form("CFD_LED%d",ic+1),"CFD_LED",clbx,cllx,clmx,clby,clly,clmy);
       if(ic<12){
 	hCFD[ic] = new TH1F(Form("T0_C_%d_CFD",ic+1),"CFD", cbx,clx,cmx);	
       }
@@ -227,10 +227,10 @@ int main(int argc, char **argv) {
 		 hCFD[cc]->Fill(allData[cc+1][iHt]-allData[0][0]+5000);
 		}
 		if(allData[ik+25][iHt]!=0 && allData[ik+26][iHt]!=0 && allData[cc+1][iHt]!=0){
-                 hCFD_QTC[cc]->Fill((allData[ik+25][iHt]-allData[ik+26][iHt]) , (allData[cc+1][iHt]-allData[0][0]+5000));
+                 hCFDvsQTC[cc]->Fill((allData[ik+25][iHt]-allData[ik+26][iHt]) , (allData[cc+1][iHt]-allData[0][0]+5000));
 		} 
                 if(allData[cc+13][iHt]!=0 && allData[cc+1][iHt]!=0){
-		 hCFD_LED[cc]->Fill(allData[cc+13][iHt]-allData[cc+1][iHt],allData[cc+1][iHt]-allData[0][0]+5000);
+		 hCFDvsLED[cc]->Fill(allData[cc+13][iHt]-allData[cc+1][iHt],allData[cc+1][iHt]-allData[0][0]+5000);
 		}
 	}
 
@@ -241,10 +241,10 @@ int main(int argc, char **argv) {
                  hCFD[cc]->Fill(allData[cc+45][iHt]-allData[0][0]+5000);
                 }
                 if(allData[ik+57][iHt]!=0 && allData[ik+58][iHt]!=0 && allData[cc+45][iHt]!=0){
-                 hCFD_QTC[cc]->Fill(allData[ik+57][iHt]-allData[ik+58][iHt],allData[cc+45][iHt]-allData[0][0]+5000);
+                 hCFDvsQTC[cc]->Fill(allData[ik+57][iHt]-allData[ik+58][iHt],allData[cc+45][iHt]-allData[0][0]+5000);
 		}
                 if(allData[cc+57][iHt]!=0 && allData[cc+45][iHt]!=0){
-                 hCFD_LED[cc]->Fill(allData[cc+57][iHt]-allData[cc+45][iHt],allData[cc+45][iHt]-allData[0][0]+5000);
+                 hCFDvsLED[cc]->Fill(allData[cc+57][iHt]-allData[cc+45][iHt],allData[cc+45][iHt]-allData[0][0]+5000);
                 }
 	}
 
@@ -273,8 +273,8 @@ int main(int argc, char **argv) {
   TFile *hist = new TFile(FILE_OUT,"RECREATE");
 
   for(Int_t j=0;j<24;j++){
-     hCFD_QTC[j]->Write();
-     hCFD_LED[j]->Write();
+     hCFDvsQTC[j]->Write();
+     hCFDvsLED[j]->Write();
      hCFD[j]->Write();
     }
   hist->Close();
