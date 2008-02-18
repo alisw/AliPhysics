@@ -849,11 +849,17 @@ void AliTPCCalibCE::EndEvent()
 	time0Side[1]/=time0SideCount[1];
     // end find time0 offset
 
+    Int_t nSecMeanT=0;
     //loop over all ROCs, fill CE Time histogram corrected for the mean Time0 of each ROC
     for ( Int_t iSec = 0; iSec<72; ++iSec ){
       //find median and then calculate the mean around it
 	TH1S *hMeanT    = GetHistoTmean(iSec); //histogram with local maxima position information
 	if ( !hMeanT ) continue;
+        //continue if not enough data is filled in the meanT histogram. This is the case if we do not have a laser event.
+        if ( hMeanT->GetEntries() < fROC->GetNChannels(iSec)*2/3 ){
+          hMeanT->Reset();
+          continue;
+        }
 
 	Double_t entries = hMeanT->GetEntries();
 	Double_t sum     = 0;
@@ -861,7 +867,7 @@ void AliTPCCalibCE::EndEvent()
         Int_t ibin=0;
 	for ( ibin=0; ibin<hMeanT->GetNbinsX(); ++ibin){
 	    sum+=arr[ibin];
-            if ( sum>=(entries/2) ) break;
+            if ( sum>=(entries/2.) ) break;
 	}
 	Int_t delta = 4;
         Int_t firstBin = fFirstTimeBin+ibin-delta;
@@ -877,8 +883,9 @@ void AliTPCCalibCE::EndEvent()
             vMeanTime->ResizeTo(vSize+100);
 
 	vMeanTime->GetMatrixArray()[fNevents]=median;
+        nSecMeanT++;
       // end find median
-
+        
 	TVectorF *vTimes = GetPadTimesEvent(iSec);
 	if ( !vTimes ) continue;                     //continue if no time information for this sector is available
 
@@ -972,7 +979,6 @@ void AliTPCCalibCE::EndEvent()
 	    }
 	    //-----------------------------  Debug end  ------------------------------
 	}// end channel loop
-	hMeanT->Reset();
 
 	TVectorD paramPol1(3);
 	TVectorD paramPol2(6);
@@ -993,7 +999,6 @@ void AliTPCCalibCE::EndEvent()
 	    GetParamArrayPol1(iSec,kTRUE)->AddAtAndExpand(new TVectorD(paramPol1), fNevents);
 	    GetParamArrayPol2(iSec,kTRUE)->AddAtAndExpand(new TVectorD(paramPol2), fNevents);
 	}
-//	printf("events: %d -- size: %d\n",fNevents,GetParamArrayPol1(iSec)->GetSize());
 
 	//-------------------------------  Debug start  ------------------------------
 	if ( fDebugLevel>0 ){
@@ -1019,8 +1024,12 @@ void AliTPCCalibCE::EndEvent()
 		"\n";
 	}
 	//-------------------------------  Debug end  ------------------------------
+        hMeanT->Reset();
     }// end sector loop
-
+    //return if no sector has a valid mean time
+    if ( nSecMeanT == 0 ) return;
+    
+    
 //    fTMeanArrayEvent.AddAtAndExpand(new TVectorF(vMeanTime),fNevents);
 //    fQMeanArrayEvent.AddAtAndExpand(new TVectorF(vMeanQ),fNevents);
     if ( fVEventTime.GetNrows() < fNevents+1 ) {
@@ -1049,11 +1058,11 @@ Bool_t AliTPCCalibCE::ProcessEventFast(AliTPCRawStreamFast *rawStreamFast)
 	  Int_t isector  = rawStreamFast->GetSector();                       //  current sector
 	  Int_t iRow     = rawStreamFast->GetRow();                          //  current row
 	  Int_t iPad     = rawStreamFast->GetPad();                          //  current pad
-	  Int_t startTbin = (Int_t)rawStreamFast->GetStartTimeBin();
-          Int_t endTbin = (Int_t)rawStreamFast->GetEndTimeBin();
 
 	  while ( rawStreamFast->NextBunch() ){
-	      for (Int_t iTimeBin = startTbin; iTimeBin < endTbin; iTimeBin++){
+            Int_t startTbin = (Int_t)rawStreamFast->GetStartTimeBin();
+            Int_t endTbin = (Int_t)rawStreamFast->GetEndTimeBin();
+            for (Int_t iTimeBin = startTbin; iTimeBin < endTbin; iTimeBin++){
 		  Float_t signal=(Float_t)rawStreamFast->GetSignals()[iTimeBin-startTbin];
 		  Update(isector,iRow,iPad,iTimeBin+1,signal);
 		  withInput = kTRUE;
@@ -1226,7 +1235,7 @@ TH1S* AliTPCCalibCE::GetHisto(Int_t sector, TObjArray *arr,
     sprintf(name,"hCalib%s%.2d",type,sector);
     sprintf(title,"%s calibration histogram sector %.2d",type,sector);
 
-    // new histogram with Q calib information. One value for each pad!
+    // new histogram with calib information. One value for each pad!
     TH1S* hist = new TH1S(name,title,
 			  fLastTimeBin-fFirstTimeBin,fFirstTimeBin,fLastTimeBin);
     hist->SetDirectory(0);
