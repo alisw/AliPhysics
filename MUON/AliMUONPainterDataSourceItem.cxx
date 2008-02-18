@@ -22,6 +22,7 @@
 #include "AliLog.h"
 #include <TGLabel.h>
 #include <TGButton.h>
+#include <TSystem.h>
 #include <TThread.h>
 #include <Riostream.h>
 
@@ -53,6 +54,7 @@ namespace
     while ( ok ) 
     {
       ok = reader->NextEvent();
+      if ( !reader->IsRunning() ) gSystem->Sleep(1000);
     }
     
     calling->Rewind();
