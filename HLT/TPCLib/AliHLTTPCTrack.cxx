@@ -683,3 +683,14 @@ int AliHLTTPCTrack::Convert2AliKalmanTrack()
 
   return iResult;
 }
+
+void AliHLTTPCTrack::SetHits(Int_t nhits,UInt_t *hits)
+{
+  // set hit array
+  if (!hits) return;
+  if (nhits>fgkHitArraySize) {
+    LOG(AliHLTTPCLog::kWarning,"AliHLTTPCTrack::SetHits","too many hits")
+      << "too many hits (" << nhits << ") for hit array of size " << fgkHitArraySize << ENDLOG; 
+  }
+  memcpy(fHitNumbers,hits,(nhits<=fgkHitArraySize?nhits:fgkHitArraySize)*sizeof(UInt_t));
+}

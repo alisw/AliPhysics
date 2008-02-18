@@ -127,7 +127,7 @@ class AliHLTTPCTrack : public AliTPCtrack {
   void SetMCid(Int_t f) {fMCid = f;}
   void SetFirstPoint(Double_t f,Double_t g,Double_t h) {fFirstPoint[0]=f; fFirstPoint[1]=g; fFirstPoint[2]=h;}
   void SetLastPoint(Double_t f,Double_t g,Double_t h) {fLastPoint[0]=f; fLastPoint[1]=g; fLastPoint[2]=h;}
-  void SetHits(Int_t nhits,UInt_t *hits) {memcpy(fHitNumbers,hits,nhits*sizeof(UInt_t));}
+  void SetHits(Int_t nhits,UInt_t *hits);
   void SetPhi0(Double_t f) {fPhi0 = f;}
   void SetPsi(Double_t f) {fPsi = f;}
   void SetR0(Double_t f) {fR0 = f;}
@@ -199,7 +199,8 @@ class AliHLTTPCTrack : public AliTPCtrack {
   Bool_t fIsLocal; //Track given in local coordinates.
 
   Float_t fPID; //pid 
-  UInt_t fHitNumbers[159]; //Array of hit numbers for this track
+  static const int fgkHitArraySize=159; // size of hit array
+  UInt_t fHitNumbers[fgkHitArraySize]; //Array of hit numbers for this track
 
   Bool_t IsPoint(Bool_t ispoint) {fIsPoint = ispoint;return fIsPoint;}
   
