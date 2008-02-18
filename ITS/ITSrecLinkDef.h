@@ -19,7 +19,6 @@
 #pragma link C++ class  AliITSRawClusterSSD+;
 #pragma link C++ class  AliITSClusterFinder+;
 #pragma link C++ class  AliITSClusterFinderSPD+;
-//#pragma link C++ class  AliITSClusterFinderSPDdubna+;
 #pragma link C++ class  AliITSClusterFinderSDD+;
 #pragma link C++ class  AliITSClusterFinderSSD+;
 #pragma link C++ class  AliITSClusterParam+;
@@ -122,5 +121,8 @@
 // Classes for QA
 #pragma link C++ class AliITSQAChecker+;
 #pragma link C++ class AliITSQADataMakerRec+;
+#pragma link C++ class AliITSQASPDDataMakerRec+;
+#pragma link C++ class AliITSQASDDDataMakerRec+;
+#pragma link C++ class AliITSQASSDDataMakerRec+;
 
 #endif
