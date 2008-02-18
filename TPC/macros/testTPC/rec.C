@@ -1,5 +1,13 @@
-void rec(const char *filename="data.root", const char *ocdbpath = "local:///d/alice12/miranov/testTPC/OCDB/")
+void rec(const char *filename="data.root")
 {
+
+  char *ocdbpath = gSystem->Getenv("OCDB_PATH");
+  if (ocdbpath==0){
+    ocdbpath="alien://folder=/alice/data/2007/LHC07w/OCDB/";
+  }
+  printf("OCDB PATH = %s\n",ocdbpath);
+   
+
   //gSystem->Load("libXrdClient.so");
   //gSystem->Load("libNetx.so"); 
   AliLog::SetClassDebugLevel("AliTPCRawStream",-5);
@@ -62,7 +70,7 @@ void rec(const char *filename="data.root", const char *ocdbpath = "local:///d/al
   rec.SetRunV0Finder(kFALSE);  
   rec.SetRunVertexFinder(kFALSE);
 
-  rec.SetRunQA(kFALSE);
+  rec.SetRunQA(kTRUE);
   
   // Detector options if any
   rec.SetOption("MUON","SAVEDIGITS");
@@ -90,6 +98,7 @@ void rec(const char *filename="data.root", const char *ocdbpath = "local:///d/al
   cout <<" EXITING RECONSTRUNCTION SESSION\n";
   //
   exit();
+  AliTPCcalibDB::Instance()->GetParameters()->Dump();
   //  AliQADataMakerSteer qas;
   // qas.Merge();
 }

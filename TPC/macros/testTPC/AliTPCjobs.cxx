@@ -1,6 +1,17 @@
-#include <fstream>
-#include <TFile.h>
-#include <TSystem.h>
+//#include <fstream>
+//#include <TFile.h>
+//#include <TSystem.h>
+
+
+/*
+
+  Process all jobs specified in the job.list file
+  Concurent agents acces the list
+  Once starting to procces given job the jonb is locked 
+
+*/
+
+
 
 /*
 
@@ -55,18 +66,21 @@ void AliTPCJobs::ProcessAllJobs(){
 
 
 Bool_t AliTPCJobs::GetNextJob(){
-  ifstream in;
-  in.open(fJobFile);
+  //
+  // GetNextJob  - get job from the list which is not locked
+  //
+  ifstream ins;
+  ins.open(fJobFile);
   TString id;
   TString inputData;
   TString outputDir;
   TString action;
   Bool_t hasJob=kFALSE;
-  while(in.good()) {
-    in>>id;
-    in>>inputData;
-    in>>outputDir;
-    in>>action;
+  while(ins.good()) {
+    ins>>id;
+    ins>>inputData;
+    ins>>outputDir;
+    ins>>action;
     if (!IsLocked(id)){
       hasJob=kTRUE;
       break;

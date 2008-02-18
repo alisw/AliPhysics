@@ -21,14 +21,14 @@
   char *mask = "v14*";
   char *path = "/alice/cern.ch/user/m/miranov/test2007/"
   // raw data
-  char *mask = "07000015*.root";
-  char *path = "/alice/data/2007/LHC07w_TPC/"
+  char *mask = "0000191*RecPo*.root";
+  char *path = "/alice/data/2008/LHC08a_TPC/"
  
   AlienToolkit toolkit;
   toolkit.MakeCollection(path,mask);
 
   //
-  toolkit.MakeJobList("job.list","root://gsiaf.gsi.de:1094/", "", "COPY");
+  toolkit.MakeJobList("job.list","", "", "rec");
 
 */
 
@@ -41,10 +41,12 @@ public:
   void             Stage();
   void             LocalCopy(const char* destination);
   void             RemoteCopy(const char* destination="root://gsiaf.gsi.de:1094/", Int_t maxfiles=20);
+  void             PrintPFN();
   void             MakeJobList(const  char * outname, const char *outputPrefix,  const char *action, const char *suffix);
   static Bool_t    IsDir(const char * name);
   static Bool_t    IsFile(const char * name);
   static Bool_t    ResubmitJobs();
+
 public:
   TGridCollection *fCollection;
   TObjArray        fInfoArray;
@@ -180,6 +182,21 @@ void AlienToolkit::LocalCopy(const char *destination){
 }
 
 
+void              AlienToolkit::PrintPFN(){
+  //
+  //
+  // 
+  Int_t entries = fInfoArray.GetEntries();
+  for (Int_t i=0; i<entries;i++){
+    TMap &map = *((TMap*)fInfoArray.At(i));
+    TObjString *lfn = (TObjString*)map("alienLFN");
+    TObjString *pfn = (TObjString*)map("alienSURL");
+    if (!lfn) continue;
+    if (!pfn) continue;
+    printf("%s\n",pfn->String().Data());
+  }
+}
+
 void   AlienToolkit::MakeJobList(const  char * outname, const char *outputPrefix, const char *action, const char *suffix){
   //
   //
@@ -196,6 +213,8 @@ void   AlienToolkit::MakeJobList(const  char * outname, const char *outputPrefix
     printf("Job info\t%s\n",lfn->String().Data());
     TString jobID=lfn->String().Data();
     jobID.ReplaceAll("/","_");
+    //
+    //
     //
     //
     TString outputDir=outputPrefix;
