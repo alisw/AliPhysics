@@ -638,7 +638,8 @@ class AliHLTComponent : public AliHLTLogging {
    * updated data points. The component has to implement the CDB access to
    * get the desired data points.
    * @param modules     detectors for which the Preprocessors have updated
-   *                    data points: TPC, TRD, ITS, PHOS, MUON
+   *                    data points: TPC, TRD, ITS, PHOS, MUON, or ALL if
+   *                    no argument was received.
    * @return neg. error code if failed
    */
   virtual int ReadPreprocessorValues(const char* modules);

@@ -379,6 +379,8 @@ extern "C" {
   static const AliHLTUInt32_t gkAliEventTypeDataReplay=32;
   /** Configuration eventType specification */
   static const AliHLTUInt32_t gkAliEventTypeConfiguration=34;
+  /** Update DCS eventType specification */
+  static const AliHLTUInt32_t gkAliEventTypeReadPreprocessor=35;
   /** Tick eventType specification */ 
   static const AliHLTUInt32_t gkAliEventTypeTick=64;
   /** Max eventType specification */ 

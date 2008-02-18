@@ -60,8 +60,34 @@
  * data block received via the HOMER interface or from the file writer.
  * <pre>
  *  AliHLTMessage msg(buffer, size);
- *  TObject pObj=msg.ReadObject(msg.GetClass());
+ *  TObject* pObj=msg.ReadObject(msg.GetClass());
  * </pre>
+ *
+ * A simple test macro for a file can look like
+ * <pre>
+ *  const char* filename="TPC_804.ddl";
+ *  //const char* filename="TPC_768.ddl";
+ *  TString param=filename;
+ *  param+="?filetype=raw";
+ *  TFile file(param);
+ *  if (file.IsZombie()) {
+ *    cout << "can not open file " << filename << endl;
+ *    return;
+ *  }
+ *  
+ *  TArrayC buffer(file.GetSize());
+ *  TArrayC tgtbuffer(file.GetSize());
+ *  if (file.ReadBuffer(buffer.GetArray(), buffer.GetSize())) {
+ *    cout << "error reading file " << filename << endl;
+ *    return;
+ *  }
+ *
+ *  AliHLTMessage msg(buffer.GetArray(), buffer.GetSize());
+ *  TObject* pObj=msg.ReadObject(msg.GetClass());
+ * </pre>
+ *
+ * @see AliHLTRootFileWriterComponent for an easy way to save objects
+ * exported via AliHLTMessage in a ROOT file.
  */
 class AliHLTMessage 
 :

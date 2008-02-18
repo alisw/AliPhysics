@@ -1163,7 +1163,8 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
 	indexUpdtDCSEvent=i;
       } else if (fpInputBlocks[i].fDataType==kAliHLTDataTypeEvent) {
 	eventType=fpInputBlocks[i].fSpecification;
-	bSkipDataProcessing=fpInputBlocks[i].fSpecification==gkAliEventTypeConfiguration;
+	bSkipDataProcessing|=(fpInputBlocks[i].fSpecification==gkAliEventTypeConfiguration);
+	bSkipDataProcessing|=(fpInputBlocks[i].fSpecification==gkAliEventTypeReadPreprocessor);
       }
     }
     if (indexSOREvent>=0) {
@@ -1212,13 +1213,13 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
 	HLTWarning("reconfiguration of component %p (%s) failed with error code %d", this, GetComponentID(), tmpResult);
       }
     }
-    if (indexUpdtDCSEvent>=0) {
+    if (indexUpdtDCSEvent>=0 || eventType==gkAliEventTypeReadPreprocessor) {
       TString modules;
       if (fpInputBlocks[indexUpdtDCSEvent].fPtr!=NULL && fpInputBlocks[indexUpdtDCSEvent].fSize>0) {
 	modules.Append(reinterpret_cast<const char*>(fpInputBlocks[indexUpdtDCSEvent].fPtr), fpInputBlocks[indexUpdtDCSEvent].fSize);
       }
-      HLTDebug("received preprocessor update command: detectors %s", modules.IsNull()?"none":modules.Data());
-      int tmpResult=ReadPreprocessorValues(modules[0]==0?NULL:modules.Data());
+      HLTDebug("received preprocessor update command: detectors %s", modules.IsNull()?"ALL":modules.Data());
+      int tmpResult=ReadPreprocessorValues(modules[0]==0?"ALL":modules.Data());
       if (tmpResult<0) {
 	HLTWarning("preprocessor update of component %p (%s) failed with error code %d", this, GetComponentID(), tmpResult);
       }
