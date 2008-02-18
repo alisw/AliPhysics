@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$  */
+/* $Id:$  */
 
 ///////////////////////////////////////////////////////////////////////////////
 ///
@@ -23,6 +23,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliITSNoiseSSD.h"
+#include "AliITSPedestalSSD.h"
+#include "AliITSBadChannelsSSD.h"
 #include "AliITSModuleDaSSD.h"
 #include "TString.h"
 #include "AliLog.h"
@@ -405,7 +407,7 @@ Float_t  AliITSModuleDaSSD::GetCM(const Int_t chipn, const Long_t evn)   const
 
 
 //______________________________________________________________________________
-AliITSNoiseSSD* AliITSModuleDaSSD::GetCalibrationSSDModule() const
+AliITSNoiseSSD* AliITSModuleDaSSD::GetCalibrationNoise() const
 {
 // Creates the AliITSNoiseSSD objects with callibration data
   AliITSNoiseSSD  *mc;
@@ -421,6 +423,56 @@ AliITSNoiseSSD* AliITSModuleDaSSD::GetCalibrationSSDModule() const
     if (i < fgkPNStripsPerModule)
           mc->AddNoiseP(i, noise);
     else  mc->AddNoiseN((AliITSChannelDaSSD::GetMaxStripIdConst() - i), noise);                     
+  }
+  return mc;
+}
+
+
+
+//______________________________________________________________________________
+AliITSPedestalSSD* AliITSModuleDaSSD::GetCalibrationPedestal() const
+{
+// Creates the AliITSPedestalSSD objects with callibration data
+  AliITSPedestalSSD  *mc;
+  Float_t             ped;
+  if (!fStrips) return NULL;
+  mc = new AliITSPedestalSSD();
+  mc->SetMod(fModuleId);
+  mc->SetNPedestalP(fgkPNStripsPerModule);
+  mc->SetNPedestalN(fgkPNStripsPerModule);
+  for (Int_t i = 0; i < fNumberOfStrips; i++) {
+    if (!fStrips[i]) ped = AliITSChannelDaSSD::GetUndefinedValue();
+    else  ped = fStrips[i]->GetPedestal();
+    if (i < fgkPNStripsPerModule)
+          mc->AddPedestalP(i, ped);
+    else  mc->AddPedestalN((AliITSChannelDaSSD::GetMaxStripIdConst() - i), ped);                     
+  }
+  return mc;
+}
+
+
+
+//______________________________________________________________________________
+AliITSBadChannelsSSD* AliITSModuleDaSSD::GetCalibrationBadChannels() const
+{
+// Creates the AliITSBadChannelsSSD objects with callibration data
+  AliITSBadChannelsSSD  *mc;
+  Int_t                 *chlist, nch = 0, nchn = 0, nchp = 0;
+  if (!fStrips) return NULL;
+  chlist = new Int_t [GetStripsPerModuleConst()];
+  for (Int_t i = 0; i < fNumberOfStrips; i++) {
+    if (!fStrips[i]) { chlist[nch++] = i; if (i < fgkPNStripsPerModule) nchp++; else nchn++; continue;}
+    if (fStrips[i]->GetNoiseCM() == AliITSChannelDaSSD::GetUndefinedValue())
+       { chlist[nch++] = i; if (i < fgkPNStripsPerModule) nchp++; else nchn++; }
+  }
+  mc = new AliITSBadChannelsSSD();
+  mc->SetMod(fModuleId);
+  if (!nch) return mc;
+  mc->SetNBadPChannelsList(nchp);
+  mc->SetNBadNChannelsList(nchn);
+  for (Int_t i = 0; i < nch; i++) {
+    if (chlist[i] < fgkPNStripsPerModule) mc->AddBadPChannel(chlist[i], i);
+    else mc->AddBadNChannel((AliITSChannelDaSSD::GetMaxStripIdConst() - chlist[i]), (i-nchp));
   }
   return mc;
 }

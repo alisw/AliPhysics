@@ -13,13 +13,14 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
+/* $Id:$ */
 
 ///////////////////////////////////////////////////////////////////////////////
 ///
 /// This class provides ITS SSD data handling
 /// used by DA. 
-///
+//  Author: Oleksandr Borysov
+//  Date: 14/02/2008
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <Riostream.h> 
@@ -32,6 +33,8 @@
 #include "TObjArray.h"
 #include "AliLog.h"
 #include "AliITSNoiseSSD.h"
+#include "AliITSPedestalSSD.h"
+#include "AliITSBadChannelsSSD.h"
 #include "AliITSRawStreamSSD.h"
 #include "AliRawReaderDate.h"
 
@@ -44,7 +47,8 @@ using namespace std;
 
 
 const Int_t    AliITSHandleDaSSD::fgkNumberOfSSDModules = 1698;       // Number of SSD modules in ITS
-const Int_t    AliITSHandleDaSSD::fgkNumberOfSSDModulesPerDdl = 108;  // Number of SSD modules in ITS
+const Int_t    AliITSHandleDaSSD::fgkNumberOfSSDModulesPerDdl = 108;  // Number of SSD modules in DDL
+const Int_t    AliITSHandleDaSSD::fgkNumberOfSSDModulesPerSlot = 12;  // Number of SSD modules in Slot
 const Float_t  AliITSHandleDaSSD::fgkPedestalThresholdFactor = 3.0;   // Defalt value for fPedestalThresholdFactor 
 const Float_t  AliITSHandleDaSSD::fgkCmThresholdFactor = 3.0;         // Defalt value for fCmThresholdFactor
 
@@ -55,6 +59,7 @@ AliITSHandleDaSSD::AliITSHandleDaSSD() :
   fModules(NULL),
   fModIndProcessed(0),
   fModIndRead(0),
+  fModIndex(NULL),
   fNumberOfEvents(0),
   fLdcId(0),
   fRunId(0),
@@ -72,6 +77,7 @@ AliITSHandleDaSSD::AliITSHandleDaSSD(Char_t *rdfname) :
   fModules(NULL),
   fModIndProcessed(0),
   fModIndRead(0),
+  fModIndex(NULL),
   fNumberOfEvents(0),
   fLdcId(0),
   fRunId(0),
@@ -90,6 +96,7 @@ AliITSHandleDaSSD::AliITSHandleDaSSD(const AliITSHandleDaSSD& ssdadldc) :
   fModules(NULL),
   fModIndProcessed(ssdadldc.fModIndProcessed),
   fModIndRead(ssdadldc.fModIndRead),
+  fModIndex(NULL),
   fNumberOfEvents(ssdadldc.fNumberOfEvents),
   fLdcId(ssdadldc.fLdcId),
   fRunId(ssdadldc.fRunId),
@@ -131,6 +138,7 @@ AliITSHandleDaSSD& AliITSHandleDaSSD::operator = (const AliITSHandleDaSSD& ssdad
     delete [] fModules; 
     fModules = NULL;
   }
+  if (fModIndex) { delete [] fModIndex; fModIndex = NULL; }
   if ((ssdadldc.fNumberOfModules > 0) && (ssdadldc.fModules)) {
     fModules = new (nothrow) AliITSModuleDaSSD* [ssdadldc.fNumberOfModules];
     if (fModules) {
@@ -168,6 +176,7 @@ AliITSHandleDaSSD::~AliITSHandleDaSSD()
     }
     delete [] fModules;
   }
+  if (fModIndex) delete [] fModIndex;
 }
 
 
@@ -180,7 +189,8 @@ void AliITSHandleDaSSD::Reset()
     for (Int_t i = 0; i < fNumberOfModules; i++) if (fModules[i]) delete fModules[i];
     delete [] fModules;
     fModules = NULL;
-  }  
+  }
+  if (fModIndex) { delete [] fModIndex; fModIndex = NULL; }
   fRawDataFileName = NULL;
   fModIndProcessed = fModIndRead = 0;
   fNumberOfEvents = 0;
@@ -209,7 +219,6 @@ Bool_t AliITSHandleDaSSD::Init(Char_t *rdfname, const Char_t *configfname)
     return kFALSE;
   }  
   if (rawreaderdate->NextEvent()) {
-    fLdcId = rawreaderdate->GetLDCId();
     fRunId = rawreaderdate->GetRunNumber(); 
     rawreaderdate->RewindEvents();
   } else { MakeZombie(); return kFALSE; }
@@ -221,6 +230,7 @@ Bool_t AliITSHandleDaSSD::Init(Char_t *rdfname, const Char_t *configfname)
     nofstripsev = 0;
     nofeqipmentev = 0;
     while (rawreaderdate->ReadNextData(data)) {
+      fLdcId = rawreaderdate->GetLDCId();
       nofeqipmentev += 1;
       datasize = rawreaderdate->GetDataSize();
       eqbelsize = rawreaderdate->GetEquipmentElementSize();
@@ -246,6 +256,11 @@ Bool_t AliITSHandleDaSSD::Init(Char_t *rdfname, const Char_t *configfname)
   {
     fNumberOfEvents = physeventind;
     fRawDataFileName = rdfname;
+    fModIndex = new (nothrow) Int_t [fgkNumberOfSSDModulesPerDdl * eqn];
+    if (fModIndex) 
+      for (Int_t i = 0; i < fgkNumberOfSSDModulesPerDdl * eqn; i++) fModIndex[i] = -1; 
+    else AliWarning(Form("AliITSHandleDaSSD: Error Init(%s): Index array for %i modules was not created", 
+                                     rdfname, fgkNumberOfSSDModulesPerDdl * eqn));
     if (SetNumberOfModules(fgkNumberOfSSDModules)) {
       TString str = TString::Format("Max number of equipment: %i, max number of channels: %i\n", eqn, strn);
       DumpInitData(str.Data());
@@ -381,10 +396,10 @@ Bool_t AliITSHandleDaSSD::ReadCalibrationDataFile (char* fileName, const Long_t 
   rawreaderdate->SelectEvents(-1);
   while (rawreaderdate->NextEvent()) {
     if ((rawreaderdate->GetType() != PHYSICS_EVENT) && (rawreaderdate->GetType() != CALIBRATION_EVENT)) continue;
-    fLdcId = rawreaderdate->GetLDCId();
     fRunId = rawreaderdate->GetRunNumber(); 
     modind = 0;
     while (rawreaderdate->ReadNextData(databyte)) {
+      fLdcId = rawreaderdate->GetLDCId();
       data = reinterpret_cast<long32*>(databyte);
       Int_t     equipid    = rawreaderdate->GetEquipmentId();              //  EquipmentID required to access to rorc
       Int_t     equiptype  = rawreaderdate->GetEquipmentType();            //
@@ -434,7 +449,7 @@ Int_t AliITSHandleDaSSD::ReadModuleRawData (const Int_t modulesnumber)
   AliITSModuleDaSSD   *module;
   AliITSChannelDaSSD  *strip;
   Long_t            datasize, eventind = 0;
-  Int_t             nofstrips, eqbelsize;
+  Int_t             nofstrips, eqbelsize, nofeqipmentev;
   UShort_t          modind;
   long32           *data;
   UChar_t          *databyte;
@@ -447,6 +462,7 @@ Int_t AliITSHandleDaSSD::ReadModuleRawData (const Int_t modulesnumber)
   modind = 0;
   while (rawreaderdate->NextEvent()) {
     if ((rawreaderdate->GetType() != PHYSICS_EVENT) && (rawreaderdate->GetType() != CALIBRATION_EVENT)) continue;
+    nofeqipmentev = 0;
     while (rawreaderdate->ReadNextData(databyte)) {
       data = reinterpret_cast<long32*>(databyte);
       Int_t     equipid    = rawreaderdate->GetEquipmentId();              //  EquipmentID required to access to rorc
@@ -467,7 +483,10 @@ Int_t AliITSHandleDaSSD::ReadModuleRawData (const Int_t modulesnumber)
         Short_t   signal  = (Short_t)(data[strind] & 0x00000FFF);
                   signal  = (signal > AliITSChannelDaSSD::GetUnderflowConst()) ? (signal - 2 * AliITSChannelDaSSD::GetUnderflowConst()) 
 		                                                               : signal;
-        Int_t modpos = GetModuleIndex(ddlID, ad, adc);
+
+        Int_t indpos = (nofeqipmentev * fgkNumberOfSSDModulesPerDdl)
+	                + ((ad - 1) * fgkNumberOfSSDModulesPerSlot) + (adc < 6 ? adc : (adc - 2));
+	Int_t modpos = fModIndex[indpos];
         if (((modpos > 0) && (modpos < fModIndRead)) || ((modpos < 0) && (modind == modulesnumber))) continue;
 	if ((modpos < 0) && (modind < modulesnumber)) {
 	  module = new AliITSModuleDaSSD(AliITSModuleDaSSD::GetStripsPerModuleConst());
@@ -476,6 +495,7 @@ Int_t AliITSHandleDaSSD::ReadModuleRawData (const Int_t modulesnumber)
 	  modpos = fModIndRead + modind;
 	  modind += 1;
 	  fModules[modpos] = module;
+	  fModIndex[indpos] = modpos;
 	} 
         if (!(strip = fModules[modpos]->GetStrip(stripID))) {
           strip = new AliITSChannelDaSSD(stripID, fNumberOfEvents);
@@ -483,6 +503,7 @@ Int_t AliITSHandleDaSSD::ReadModuleRawData (const Int_t modulesnumber)
         }
         strip->SetSignal(eventind, signal);
       } 
+      nofeqipmentev += 1;
     }
     if (++eventind > fNumberOfEvents) break;
   }
@@ -619,7 +640,7 @@ Bool_t AliITSHandleDaSSD::CalculateNoiseCM(AliITSModuleDaSSD *const module)
       strip->SetNoiseCM(AliITSChannelDaSSD::GetUndefinedValue());
       AliError(Form("SSDDAModule: Error CalculateNoiseWithoutCM(): there are no events data for module[%i] strip[%i]->GetSignal()", 
                      module->GetModuleId(), strind));
-      return kFALSE;
+      continue; //return kFALSE;
     }
     Int_t chipind = strind / AliITSModuleDaSSD::GetStripsPerChip();
     Double_t nsum = 0.0L;
@@ -632,7 +653,7 @@ Bool_t AliITSHandleDaSSD::CalculateNoiseCM(AliITSModuleDaSSD *const module)
     else  noise = AliITSChannelDaSSD::GetUndefinedValue();
     strip->SetNoiseCM(noise);
   }
-return kTRUE;
+  return kTRUE;
 }
 
 
@@ -762,7 +783,7 @@ TObjArray* AliITSHandleDaSSD::GetCalibrationSSDLDC() const
       delete ldcc;
       return NULL;
     }
-    modcalibobj = dynamic_cast<TObject*>(fModules[i]->GetCalibrationSSDModule());
+    modcalibobj = dynamic_cast<TObject*>(fModules[i]->GetCalibrationNoise());
     ldcc->AddAt(modcalibobj, i);
   }
   ldcc->Compress();
@@ -774,21 +795,32 @@ TObjArray* AliITSHandleDaSSD::GetCalibrationSSDLDC() const
 Bool_t AliITSHandleDaSSD::SaveCalibrationSSDLDC(Char_t*& dafname) const
 {
 // Save Calibration data locally
-  TObjArray      *ldcc;
-  TObject        *modcalibobj;
+  TObjArray      *ldcn, *ldcp, *ldcbc;
+  TObject        *modobjn, *modobjp, *modobjbc;
   Char_t         *tmpfname;
   TString         dadatafilename("");
   if (!fModules) return kFALSE;
-  ldcc = new TObjArray(fNumberOfModules, 0);
+  ldcn = new TObjArray(fNumberOfModules, 0);
+  ldcn->SetName("Noise");
+  ldcp = new TObjArray(fNumberOfModules, 0);
+  ldcp->SetName("Pedestal");
+  ldcbc = new TObjArray(fNumberOfModules, 0);
+  ldcbc->SetName("BadChannels");
   for (Int_t i = 0; i < fNumberOfModules; i++) {
     if (!fModules[i]) {
-      delete ldcc;
+      delete ldcn;
       return kFALSE;
     }
-    modcalibobj = dynamic_cast<TObject*>(fModules[i]->GetCalibrationSSDModule());
-    ldcc->AddAt(modcalibobj, i);
+    modobjn = dynamic_cast<TObject*>(fModules[i]->GetCalibrationNoise());
+    modobjp = dynamic_cast<TObject*>(fModules[i]->GetCalibrationPedestal());
+    modobjbc = dynamic_cast<TObject*>(fModules[i]->GetCalibrationBadChannels());
+    ldcn->AddAt(modobjn, i);
+    ldcp->AddAt(modobjp, i);
+    ldcbc->AddAt(modobjbc, i);
   }
-  ldcc->Compress();
+  ldcn->Compress();
+  ldcp->Compress();
+  ldcbc->Compress();
   if (dafname) dadatafilename.Form("%s/", dafname);
   dadatafilename += TString::Format("ITSSSDda_%i_%i.root", fLdcId, fRunId);
   tmpfname = new Char_t[dadatafilename.Length()+1];
@@ -796,16 +828,22 @@ Bool_t AliITSHandleDaSSD::SaveCalibrationSSDLDC(Char_t*& dafname) const
   TFile *fileRun = new TFile (dadatafilename.Data(),"RECREATE");
   if (fileRun->IsZombie()) {
     AliError(Form("AliITSHandleDaSSD: SaveCalibrationSSDLDC() error open file %s", dadatafilename.Data()));
-    ldcc->Delete();
+    ldcn->Delete();
     delete fileRun;
-    delete ldcc;
+    delete ldcn;
+    delete ldcp;
+    delete ldcbc;
     return kFALSE;
   }
-  fileRun->WriteTObject(ldcc);
+  fileRun->WriteTObject(ldcn);
+  fileRun->WriteTObject(ldcp);
+  fileRun->WriteTObject(ldcbc);
   fileRun->Close();
-  ldcc->Delete();
+  ldcn->Delete();
   delete fileRun;
-  delete ldcc;
+  delete ldcn;
+  delete ldcp;
+  delete ldcbc;
   return kTRUE;
 }
 

@@ -4,7 +4,7 @@
 /* Copyright(c) 2007-2009, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 /*                                                                        */
-/* $Id$ */
+/* $Id:$ */
 
 #include "TObject.h"
 #include "AliITSModuleDaSSD.h"
@@ -13,7 +13,8 @@
 ///
 /// This class provides ITS SSD data handling
 /// used by DA. 
-///
+//  Author: Oleksandr Borysov
+//  Date: 14/02/2008
 ///////////////////////////////////////////////////////////////////////////////
 
 class TObjArray;
@@ -70,7 +71,8 @@ class AliITSHandleDaSSD : public TObject {
 
   protected :
     static const Int_t    fgkNumberOfSSDModules ;        // Number of SSD modules in ITS
-    static const Int_t    fgkNumberOfSSDModulesPerDdl;   // Number of SSD modules in ITS
+    static const Int_t    fgkNumberOfSSDModulesPerDdl;   // Number of SSD modules in DDL
+    static const Int_t    fgkNumberOfSSDModulesPerSlot;  // Number of SSD modules in Slot
     static const Float_t  fgkPedestalThresholdFactor;    // Defalt value for fPedestalThresholdFactor 
     static const Float_t  fgkCmThresholdFactor;          // Defalt value for fCmThresholdFactor 
 
@@ -79,6 +81,7 @@ class AliITSHandleDaSSD : public TObject {
     AliITSModuleDaSSD  **fModules;               //[fNumberOfModules] array of pointer on AliITSModuleDaSSD objects (1698 SSD  Modules)
     Int_t                fModIndProcessed;       //! index of the last module in fModules array with processed data
     Int_t                fModIndRead;            //! index of the last module in fModules array with adc data present (read)
+    Int_t               *fModIndex;              //! index array for fModules
     Long_t               fNumberOfEvents;        // Number of physics or calibration events in raw data file fRawDataFileName
     
     UInt_t               fLdcId;                 //  LDC number, read from header
@@ -90,7 +93,7 @@ class AliITSHandleDaSSD : public TObject {
   private :
     Bool_t   SignalOutOfRange (const Short_t signal) const { return (signal >= AliITSChannelDaSSD::GetOverflowConst()); }
 
-    ClassDef(AliITSHandleDaSSD, 2)
+    ClassDef(AliITSHandleDaSSD, 3)
 
 };
 

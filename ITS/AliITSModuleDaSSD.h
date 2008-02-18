@@ -5,10 +5,10 @@
 /* Copyright(c) 2007-2009, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 /*                                                                        */
-/* $Id$ */
+/* $Id:$ */
 ///////////////////////////////////////////////////////////////////////////////
 ///
-/// This class provides storage container ITS SSD module callibration data
+/// This class provides storage container ITS SSD module calibration data
 /// used by DA. 
 ///
 ///////////////////////////////////////////////////////////////////////////////
@@ -18,6 +18,8 @@
 #include "AliITSChannelDaSSD.h"
 
 class AliITSNoiseSSD;
+class AliITSPedestalSSD;
+class AliITSBadChannelsSSD;
 
 class AliITSModuleDaSSD : public TObject {
   public :
@@ -43,7 +45,9 @@ class AliITSModuleDaSSD : public TObject {
     Int_t        GetNumberOfChips() const  { return fNumberOfChips; }
     AliITSChannelDaSSD*  GetStrip(const Int_t stripnumber)  const 
                                 { return (fStrips) ? fStrips[stripnumber] : NULL; }
-    AliITSNoiseSSD* GetCalibrationSSDModule() const;
+    AliITSNoiseSSD*       GetCalibrationNoise() const;
+    AliITSPedestalSSD*    GetCalibrationPedestal() const;
+    AliITSBadChannelsSSD* GetCalibrationBadChannels() const;
     Bool_t  SetEventsNumber(const Long_t eventsnumber);
     Bool_t  SetNumberOfStrips(const Int_t numberofstrips);
     Bool_t  SetNumberOfChips(const Int_t nchips);
@@ -75,7 +79,7 @@ class AliITSModuleDaSSD : public TObject {
     UChar_t        fDdlId;          // index of DDL, ITS SSD: 33-48
     UChar_t        fAd;             // index of AD module     0-9
     UChar_t        fAdc;            // index of ADC module    0-5, 8-13
-    Short_t        fModuleId;       // Module number          0-1697
+    Short_t        fModuleId;       // Module number          500-2197
     
     Int_t                 fNumberOfStrips;     // Number of AliITSChannelDaSSD* allocated
     AliITSChannelDaSSD  **fStrips;             //[fNumberOfStrips]  Array of *AliITSChannelDaSSD
