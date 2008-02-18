@@ -62,6 +62,8 @@
 #pragma link C++ class AliTPCExB+;
 #pragma link C++ class AliTransform+;
 #pragma link C++ class AliTPCTransform+;
+#pragma link C++ class AliTPCCalibTCF+;
+#pragma link C++ class AliTPCAltroEmulator+;
 
 #pragma link C++ class AliTPCAlign;
 #pragma link C++ class AliTPCdataQA;
