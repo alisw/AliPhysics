@@ -45,7 +45,7 @@ void cloneAODTreeAndAddObject(const char *newFileName = "AliAOD_new.root", const
 
     /*
     // read events (only necessary if you want to access the old data)
-    newAodTree->GetEvent(nEv);
+    newAodTree->GetEvent(iEv);
     */
 
     tracks->Delete(); // for each event delete old entries of new TClonesArray
@@ -62,6 +62,10 @@ void cloneAODTreeAndAddObject(const char *newFileName = "AliAOD_new.root", const
     // fill the new branch
     newBranch->Fill();
   }
+
+  // delete old and write new UserInfo
+  newAodTree->GetUserInfo()->Clear();
+  newAodTree->GetUserInfo()->Add(evNew);
 
   // write new TTree to file
   newAodTree->Write();

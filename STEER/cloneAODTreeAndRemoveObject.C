@@ -6,19 +6,24 @@ void cloneAODTreeAndRemoveObject(const char *newFileName = "AliAOD_new.root", co
   TFile orgFile(orgFileName, "READ");
   // get original TTree
   TTree *orgAodTree = (TTree*)orgFile.Get("aodTree");
-  // do your gymnastics with the old TTree
-  AliAODEvent *evOrg = new AliAODEvent();
-  evOrg->ReadFromTree(orgAodTree);
-
-  // switch off one branch (and its subbranches!)
-  orgAodTree->SetBranchStatus("tracks*", 0);
-  // remove TObject from the list
-  evOrg->RemoveObject(evOrg->GetTracks());
 
   // open new output file
   TFile *newFile = new TFile(newFileName, "RECREATE");
   // clone old TTree (only clones branches that are switched on)
   TTree *newAodTree = orgAodTree->CloneTree();
+
+  // get the event within the new TTree
+  AliAODEvent *evNew = new AliAODEvent();
+  evNew->ReadFromTree(newAodTree);
+
+  // switch off one branch (and its subbranches!)
+  newAodTree->SetBranchStatus("tracks*", 0);
+  // remove TObject from the list
+  evNew->RemoveObject(evNew->GetTracks());
+
+  // delete old and write new UserInfo
+  newAodTree->GetUserInfo()->Clear();
+  newAodTree->GetUserInfo()->Add(evNew);
 
   // write new TTree to file
   newAodTree->Write();
