@@ -14,7 +14,7 @@
  **************************************************************************/
 
 /*
-$Id$
+$Id:$
 */
 
 #include <Riostream.h>
@@ -30,6 +30,7 @@ $Id$
 #include "AliITSsimulationSPD.h"
 #include "AliLog.h"
 #include "AliRun.h"
+#include "AliMagF.h"
 
 //#define DEBUG
 
@@ -55,7 +56,9 @@ AliITSsimulationSPD::AliITSsimulationSPD():
 AliITSsimulation(),
 fHis(0),
 fSPDname(),
-fCoupling(){
+fCoupling(),
+fLorentz(kFALSE),
+fTanLorAng(0){
     // Default constructor.
     // Inputs:
     //    none.
@@ -72,7 +75,9 @@ AliITSsimulationSPD::AliITSsimulationSPD(AliITSDetTypeSim *dettyp):
 AliITSsimulation(dettyp),
 fHis(0),
 fSPDname(),
-fCoupling(){
+fCoupling(),
+fLorentz(kFALSE),
+fTanLorAng(0){
     // standard constructor
     // Inputs:
     //    AliITSsegmentation *seg  A pointer to the segmentation class
@@ -118,7 +123,40 @@ void AliITSsimulationSPD::Init(){
     } else {
         fCoupling=1;
     } // end if
-
+    //SetLorentzDrift(kTRUE);
+    if (fLorentz) SetTanLorAngle();
+}
+//______________________________________________________________________
+Bool_t AliITSsimulationSPD::SetTanLorAngle(Double_t WeightHole) {
+     // This function set the Tangent of the Lorentz angle. 
+     // A weighted average is used for electrons and holes 
+     // Input: Double_t WeightHole: wheight for hole: it should be in the range [0,1]
+     // output: Bool_t : kTRUE in case of success
+     //
+     if(!fDetType) {
+       AliError("AliITSsimulationSPD::SetTanLorAngle: AliITSDetTypeSim* fDetType not set ");
+       return kFALSE;}
+     if(WeightHole<0) {
+        WeightHole=0.;
+        AliWarning("AliITSsimulationSPD::SetTanLorAngle: You have asked for negative Hole weight");
+        AliWarning("AliITSsimulationSPD::SetTanLorAngle: I'm going to use only electrons");
+     }
+     if(WeightHole>1) {
+        WeightHole=1.;
+        AliWarning("AliITSsimulationSPD::SetTanLorAngle: You have asked for weight > 1");
+        AliWarning("AliITSsimulationSPD::SetTanLorAngle: I'm going to use only holes");
+     }
+     Double_t WeightEle=1.-WeightHole;
+     AliITSCalibrationSPD* res = (AliITSCalibrationSPD*)GetCalibrationModel(fDetType->GetITSgeom()->GetStartSPD());
+     AliMagF *mf = gAlice->Field();
+     Float_t pos[3]={0.,0.,0.};
+     Float_t B[3]={0.,0.,0.};
+     mf->Field(pos,B);
+     fTanLorAng = TMath::Tan(WeightHole*res->LorentzAngleHole(B[2]) +
+                              WeightEle*res->LorentzAngleElectron(B[2]));
+     fTanLorAng*=-1.; // this only for the old geometry
+                       // comment the upper line for the new geometry
+     return kTRUE;
 }
 //______________________________________________________________________
 AliITSsimulationSPD::~AliITSsimulationSPD(){
@@ -141,7 +179,9 @@ AliITSsimulationSPD::AliITSsimulationSPD(const
 						   &s) : AliITSsimulation(s),
 fHis(s.fHis),
 fSPDname(s.fSPDname),
-fCoupling(s.fCoupling){
+fCoupling(s.fCoupling),
+fLorentz(s.fLorentz),
+fTanLorAng(s.fTanLorAng){
     //     Copy Constructor
     // Inputs:
     //    AliITSsimulationSPD &s The original class for which
@@ -166,6 +206,8 @@ AliITSsimulationSPD&  AliITSsimulationSPD::operator=(const
     this->fHis = s.fHis;
     fCoupling  = s.fCoupling;
     fSPDname   = s.fSPDname;
+    fLorentz   = s.fLorentz;
+    fTanLorAng = s.fTanLorAng;
     return *this;
 }
 //______________________________________________________________________
@@ -313,7 +355,7 @@ void AliITSsimulationSPD::HitToSDigit(AliITSmodule *mod){
     Int_t nhits = hits->GetEntriesFast();
     Int_t h,ix,iz,i;
     Int_t idtrack;
-    Double_t x0=0.0,x1=0.0,y0=0.0,y1=0.0,z0=0.0,z1=0.0,de=0.0;
+    Double_t x0=0.0,x1=0.0,y0=0.0,y1=0.0,z0=0.0,z1=0.0,de=0.0,ld=0.0;
     Double_t x,y,z,t,tp,st,dt=0.2,el,sig,sigx,sigz,fda;
     AliITSsegmentationSPD* seg = (AliITSsegmentationSPD*)GetSegmentationModel(0);
     AliITSCalibrationSPD* res = (AliITSCalibrationSPD*)GetCalibrationModel(fDetType->GetITSgeom()->GetStartSPD());
@@ -345,11 +387,10 @@ void AliITSsimulationSPD::HitToSDigit(AliITSmodule *mod){
                                     <<" de="<<de<<endl;
                 } // end if GetDebug
                 sig = res->SigmaDiffusion1D(TMath::Abs(thick + y)); 
-                //  SpreadCharge(x,z,ix,iz,el,sig,idtrack,h);
                 sigx=sig;
                 sigz=sig*fda;
-                SpreadChargeAsym(x,z,ix,iz,el,sigx,sigz,idtrack,h);
-                cout << "sigx, sigz, y "<< sigx << " " << sigz<< " " << TMath::Abs(thick + y) << endl;// ciccio
+                if (fLorentz) ld=(y+thick)*fTanLorAng;
+                SpreadChargeAsym(x,z,ix,iz,el,sigx,sigz,ld,idtrack,h);
             } // end for t
         } else { // st == 0.0 deposit it at this point
             x   = x0;
@@ -358,10 +399,10 @@ void AliITSsimulationSPD::HitToSDigit(AliITSmodule *mod){
             if(!(seg->LocalToDet(x,z,ix,iz))) continue; // outside
             el  = res->GeVToCharge((Double_t)de);
             sig = res->SigmaDiffusion1D(TMath::Abs(thick + y));
-            // SpreadCharge(x,z,ix,iz,el,sig,idtrack,h);
             sigx=sig;
             sigz=sig*fda;
-            SpreadChargeAsym(x,z,ix,iz,el,sigx,sigz,idtrack,h);
+            if (fLorentz) ld=(y+thick)*fTanLorAng;
+            SpreadChargeAsym(x,z,ix,iz,el,sigx,sigz,ld,idtrack,h);
         } // end if st>0.0
 
     } // Loop over all hits h
@@ -411,7 +452,7 @@ void AliITSsimulationSPD::HitToSDigitFast(AliITSmodule *mod){
     Int_t nhits = hits->GetEntriesFast();
     Int_t h,ix,iz,i;
     Int_t idtrack;
-    Double_t x0=0.0,x1=0.0,y0=0.0,y1=0.0,z0=0.0,z1=0.0,de=0.0;
+    Double_t x0=0.0,x1=0.0,y0=0.0,y1=0.0,z0=0.0,z1=0.0,de=0.0,ld=0.0;
     Double_t x,y,z,t,st,el,sig,sigx,sigz,fda;
     AliITSsegmentationSPD* seg = (AliITSsegmentationSPD*)GetSegmentationModel(0);
     AliITSCalibrationSPD* res = (AliITSCalibrationSPD*)GetCalibrationModel(fDetType->GetITSgeom()->GetStartSPD());
@@ -445,8 +486,8 @@ void AliITSsimulationSPD::HitToSDigitFast(AliITSmodule *mod){
                 sig = res->SigmaDiffusion1D(TMath::Abs(thick + y));
                 sigx=sig;
                 sigz=sig*fda;
-                //SpreadCharge(x,z,ix,iz,el,sig,idtrack,h);
-                SpreadChargeAsym(x,z,ix,iz,el,sigx,sigz,idtrack,h);
+                if (fLorentz) ld=(y+thick)*fTanLorAng;
+                SpreadChargeAsym(x,z,ix,iz,el,sigx,sigz,ld,idtrack,h);
 //                cout << "sigx sigz " << sigx << " " << sigz << endl; // dom
             } // end for i // End Integrate over t
         else { // st == 0.0 deposit it at this point
@@ -456,10 +497,10 @@ void AliITSsimulationSPD::HitToSDigitFast(AliITSmodule *mod){
             if(!(seg->LocalToDet(x,z,ix,iz))) continue; // outside
             el  = res->GeVToCharge((Double_t)de);
             sig = res->SigmaDiffusion1D(TMath::Abs(thick + y));
-            //SpreadCharge(x,z,ix,iz,el,sig,idtrack,h);
             sigx=sig;
             sigz=sig*fda;
-            SpreadChargeAsym(x,z,ix,iz,el,sigx,sigz,idtrack,h);
+            if (fLorentz) ld=(y+thick)*fTanLorAng;
+            SpreadChargeAsym(x,z,ix,iz,el,sigx,sigz,ld,idtrack,h);
         } // end if st>0.0
 
     } // Loop over all hits h
@@ -490,20 +531,21 @@ void AliITSsimulationSPD::HitToSDigitFast(AliITSmodule *mod){
 //______________________________________________________________________
 void AliITSsimulationSPD::SpreadCharge(Double_t x0,Double_t z0,
                                             Int_t ix0,Int_t iz0,
-					    Double_t el,Double_t sig,Int_t t,
-					    Int_t hi){
+					    Double_t el,Double_t sig,Double_t ld,
+					    Int_t t,Int_t hi){
     // Spreads the charge over neighboring cells. Assume charge is distributed
     // as charge(x,z) = (el/2*pi*sig*sig)*exp(-arg)
     // arg=((x-x0)*(x-x0)/2*sig*sig)+((z-z0*z-z0)/2*sig*sig)
+    // if fLorentz=kTRUE, then x0=x0+ld (Lorentz drift taken into account)
     // Defined this way, the integral over all x and z is el.
     // Inputs:
     //    Double_t x0   x position of point where charge is liberated
-    //    Double_t y0   y position of point where charge is liberated
     //    Double_t z0   z position of point where charge is liberated
     //    Int_t    ix0  row of cell corresponding to point x0
     //    Int_t    iz0  columb of cell corresponding to point z0
     //    Double_t el   number of electrons liberated in this step
     //    Double_t sig  Sigma difusion for this step (y0 dependent)
+    //    Double_t ld   lorentz drift in x for this step (y0 dependent)
     //    Int_t    t    track number
     //    Int_t    ti   hit track index number
     //    Int_t    hi   hit "hit" index number
@@ -545,8 +587,8 @@ void AliITSsimulationSPD::SpreadCharge(Double_t x0,Double_t z0,
         x1 -= 0.5*kmictocm*seg->Dpx(ix);  // Lower
         z2  = z1 + 0.5*kmictocm*seg->Dpz(iz); // Upper
         z1 -= 0.5*kmictocm*seg->Dpz(iz);  // Lower
-        x1 -= x0; // Distance from where track traveled
-        x2 -= x0; // Distance from where track traveled
+        x1 -= x0+ld; // Distance from where track traveled (taking into account the Lorentz drift)
+        x2 -= x0+ld; // Distance from where track traveled (taking into account the Lorentz drift)
         z1 -= z0; // Distance from where track traveled
         z2 -= z0; // Distance from where track traveled
         s   = 0.25; // Correction based on definision of Erfc
@@ -567,20 +609,21 @@ void AliITSsimulationSPD::SpreadCharge(Double_t x0,Double_t z0,
 void AliITSsimulationSPD::SpreadChargeAsym(Double_t x0,Double_t z0,
                                             Int_t ix0,Int_t iz0,
                                             Double_t el,Double_t sigx,Double_t sigz,
-                                            Int_t t,Int_t hi){
+                                            Double_t ld,Int_t t,Int_t hi){
     // Spreads the charge over neighboring cells. Assume charge is distributed
     // as charge(x,z) = (el/2*pi*sigx*sigz)*exp(-arg)
     // arg=((x-x0)*(x-x0)/2*sigx*sigx)+((z-z0*z-z0)/2*sigz*sigz)
+    // if fLorentz=kTRUE, then x0=x0+ld (Lorentz drift taken into account)
     // Defined this way, the integral over all x and z is el.
     // Inputs:
     //    Double_t x0   x position of point where charge is liberated
-    //    Double_t y0   y position of point where charge is liberated
     //    Double_t z0   z position of point where charge is liberated
     //    Int_t    ix0  row of cell corresponding to point x0
     //    Int_t    iz0  columb of cell corresponding to point z0
     //    Double_t el   number of electrons liberated in this step
     //    Double_t sigx Sigma difusion along x for this step (y0 dependent)
     //    Double_t sigz Sigma difusion along z for this step (y0 dependent)
+    //    Double_t ld   lorentz drift in x for this stip (y0 dependent)
     //    Int_t    t    track number
     //    Int_t    ti   hit track index number
     //    Int_t    hi   hit "hit" index number
@@ -597,7 +640,7 @@ void AliITSsimulationSPD::SpreadChargeAsym(Double_t x0,Double_t z0,
     AliITSsegmentationSPD* seg = (AliITSsegmentationSPD*)GetSegmentationModel(0);
 
 
-    if(GetDebug(4)) Info("SpreadCharge","(x0=%e,z0=%e,ix0=%d,iz0=%d,el=%e,"
+    if(GetDebug(4)) Info("SpreadChargeAsym","(x0=%e,z0=%e,ix0=%d,iz0=%d,el=%e,"
                          "sig=%e,t=%d,i=%d)",x0,z0,ix0,iz0,el,sigx,sigz,t,hi);
     if(sigx<=0.0 || sigz<=0.0) { // if sig<=0 No diffusion to simulate.
         GetMap()->AddSignal(iz0,ix0,t,hi,GetModuleNumber(),el);
@@ -624,8 +667,8 @@ void AliITSsimulationSPD::SpreadChargeAsym(Double_t x0,Double_t z0,
         x1 -= 0.5*kmictocm*seg->Dpx(ix);  // Lower
         z2  = z1 + 0.5*kmictocm*seg->Dpz(iz); // Upper
         z1 -= 0.5*kmictocm*seg->Dpz(iz);  // Lower
-        x1 -= x0; // Distance from where track traveled
-        x2 -= x0; // Distance from where track traveled
+        x1 -= x0+ld; // Distance from where track traveled (taking into account the Lorentz drift)
+        x2 -= x0+ld; // Distance from where track traveled (taking into account the Lorentz drift)
         z1 -= z0; // Distance from where track traveled
         z2 -= z0; // Distance from where track traveled
         s   = 0.25; // Correction based on definision of Erfc

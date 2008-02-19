@@ -3,6 +3,8 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+/* $Id:$ */
+
 //////////////////////////////////////////////
 // Base ITS calibration class               //
 //////////////////////////////////////////////
@@ -122,6 +124,9 @@ class AliITSCalibration : public TObject {
     // voltage v [volt] through a distance d [cm] in any material at a
     // temperature T [degree K].
     virtual Double_t SigmaDiffusion1D(Double_t l) const;
+    // Computes the Lorentz angle for Electron and Hole, under the Magnetic field bz (in kGauss)
+    virtual Double_t LorentzAngleElectron(Double_t bz) const;
+    virtual Double_t LorentzAngleHole(Double_t bz) const;
     // Compute the thickness of the depleted region in a Si detector, version A
     virtual Double_t DepletedRegionThicknessA(Double_t dopCons,
                                               Double_t voltage,

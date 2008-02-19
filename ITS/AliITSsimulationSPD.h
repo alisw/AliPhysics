@@ -4,7 +4,7 @@
 /* Copyright(c) 2007-2009, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
+/* $Id:$ */
 
 ////////////////////////////////////////////////////////////
 // Simulation class for SPD                               //
@@ -54,8 +54,15 @@ class AliITSsimulationSPD : public AliITSsimulation {
     void HitToSDigitFast(AliITSmodule *mod);
     // Removes dead pixels from pList
     void RemoveDeadPixels(AliITSmodule *mod);
-    // Take pList of signals and apply noise... create Digis
+    // Take pList of signals and apply noise... create Digits
     void FrompListToDigits();
+    // This set the Lorentz drift of Electrons and Holes: by deafult equal weights to Electrons and Holes
+    void SetLorentzDrift(Bool_t b=kFALSE)
+         {fLorentz=b; if(fLorentz) SetTanLorAngle();};
+    // This function set the relative contribution between holes and electrons: use  0<=WeightHole<=1
+    Bool_t SetTanLorAngle(Double_t WeightHole=0.5);
+    // Getter for the Lorentz angle
+    Double_t GetTanLorAngle(){return fTanLorAng;};
     //
     void CreateHistograms();
     void FillHistograms(Int_t ix,Int_t iz,Double_t v=1.0);
@@ -73,9 +80,9 @@ class AliITSsimulationSPD : public AliITSsimulation {
 
  private:
     void SpreadCharge(Double_t x0,Double_t z0,Int_t ix0,Int_t iz0,
-		      Double_t el,Double_t sig,Int_t t,Int_t hi);
+		      Double_t el,Double_t sig,Double_t ld,Int_t t,Int_t hi);
     void SpreadChargeAsym(Double_t x0,Double_t z0,Int_t ix0,Int_t iz0,
-                      Double_t el,Double_t sigx,Double_t sigz,Int_t t,Int_t hi);
+                      Double_t el,Double_t sigx,Double_t sigz,Double_t ld,Int_t t,Int_t hi);
     void UpdateMapSignal(Int_t ix,Int_t iz,Int_t trk,Int_t ht,Double_t signal){
         //  This function adds a signal to the pList from the pList class
         //  Inputs: iz column number  ix row number  trk track number  ht hit number  signal signal strength
@@ -111,6 +118,9 @@ class AliITSsimulationSPD : public AliITSsimulation {
     TString       fSPDname;      //! Histogram name
     Int_t         fCoupling;     // Sets the coupling to be used.
                                  // ==1 use SetCoupling, ==2 use SetCouplingOld
-    ClassDef(AliITSsimulationSPD,2)  // Simulation of SPD clusters
+    Bool_t        fLorentz;      // kTRUE if Lorentz drift has been allowed 
+    Double_t      fTanLorAng;    //! Tangent of the Lorentz Angle (weighted average for hole and electrons)
+    ClassDef(AliITSsimulationSPD,3)  // Simulation of SPD clusters
 };
 #endif 
+

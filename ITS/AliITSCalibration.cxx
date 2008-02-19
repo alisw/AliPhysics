@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
+/* $Id:$ */
 
 //////////////////////////////////////////////////////
 //  Calibration class for set:ITS                   //
@@ -196,6 +196,56 @@ Double_t AliITSCalibration::DiffusionCoefficientHole() const {
     Double_t tT = fT;
 
     return m*kbqe*tT;  // [cm^2/sec]
+}
+//______________________________________________________________________
+Double_t AliITSCalibration::LorentzAngleHole(Double_t B) const {
+   // Computes the Lorentz angle for electrons in Si 
+   // Input: magnetic Field in KGauss
+   // Output: Lorentz angle in radians (positive if Bz is positive)
+   // Main Reference: NIM A 497 (2003) 389–396. 
+   // "An algorithm for calculating the Lorentz angle in silicon detectors", V. Bartsch et al.
+   //
+   const Double_t krH=0.70; // Hall scattering factor for Hole
+   const Double_t kT0  = 300.;       // reference Temperature (degree K).
+   const Double_t kmulow0 = 470.5;   // cm^2/Volt-sec
+   const Double_t keT0 = -2.5;       // Power of Temp.
+   const Double_t beta0 = 1.213;     // beta coeff. at T0=300K
+   const Double_t keT1 = 0.17;       // Power of Temp. for beta
+   const Double_t kvsat0 = 8.37E+06; // saturated velocity at T0=300K (cm/sec)
+   const Double_t keT2 = 0.52;       // Power of Temp. for vsat
+   Double_t tT = fT;
+   Double_t eE= 1./fdv;
+   Double_t muLow=kmulow0*TMath::Power(tT/kT0,keT0);
+   Double_t beta=beta0*TMath::Power(tT/kT0,keT1);
+   Double_t vsat=kvsat0*TMath::Power(tT/kT0,keT2);
+   Double_t mu=muLow/TMath::Power(1+TMath::Power(muLow*eE/vsat,beta),1/beta);
+   Double_t angle=TMath::ATan(krH*mu*B*1.E-05); // Conversion Factor
+   return angle;
+}
+//______________________________________________________________________
+Double_t AliITSCalibration::LorentzAngleElectron(Double_t B) const {
+   // Computes the Lorentz angle for electrons in Si 
+   // Input: magnetic Field in KGauss
+   // Output: Lorentz angle in radians (positive if Bz is positive)
+   // Main Reference: NIM A 497 (2003) 389–396.
+   // "An algorithm for calculating the Lorentz angle in silicon detectors", V. Bartsch et al.
+   //
+   const Double_t krH=1.15; // Hall scattering factor for Electron
+   const Double_t kT0  = 300.;       // reference Temperature (degree K).
+   const Double_t kmulow0 = 1417.0;  // cm^2/Volt-sec
+   const Double_t keT0 = -2.2;       // Power of Temp.
+   const Double_t beta0 = 1.109;     // beta coeff. at T0=300K
+   const Double_t keT1 = 0.66;       // Power of Temp. for beta
+   const Double_t kvsat0 = 1.07E+07; // saturated velocity at T0=300K (cm/sec)
+   const Double_t keT2 = 0.87;       // Power of Temp. for vsat
+   Double_t tT = fT;
+   Double_t eE= 1./fdv;
+   Double_t muLow=kmulow0*TMath::Power(tT/kT0,keT0);
+   Double_t beta=beta0*TMath::Power(tT/kT0,keT1);
+   Double_t vsat=kvsat0*TMath::Power(tT/kT0,keT2);
+   Double_t mu=muLow/TMath::Power(1+TMath::Power(muLow*eE/vsat,beta),1/beta);
+   Double_t angle=TMath::ATan(krH*mu*B*1.E-05);
+   return angle;
 }
 //______________________________________________________________________
 Double_t AliITSCalibration::SpeedElectron() const {
