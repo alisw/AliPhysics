@@ -13,6 +13,7 @@
 //                                                               //
 ///////////////////////////////////////////////////////////////////
 
+#include "AliITSsegmentationSDD.h"
 #include<TNamed.h>
 #include "AliLog.h"
 class TH1F;
@@ -26,20 +27,24 @@ class AliITSMapSDD : public TNamed {
   virtual ~AliITSMapSDD(){};
 
   void SetMap(TH2F* hmap);
-  void SetCellContent(Int_t iAn, Int_t iTb, Float_t devMicron){
-    if(iAn<0 || iAn>=fgkNAnodPts || iTb<0 || iTb >= fgkNDrifPts){
+  Bool_t CheckBounds(Int_t iAn, Int_t iTb) const {
+    if(iAn<0 || iAn>=fgkNAnodPts || iTb<0 || iTb >= fgkNDrifPts){ 
       AliWarning(Form("Cell out of bounds, anode=%d time-bin=%d",iAn,iTb));
-      return;
+      return kFALSE;
     }
-    fMap[iAn][iTb]=devMicron;
+    return kTRUE;
   }
+  void SetCellContent(Int_t iAn, Int_t iTb, Float_t devMicron){
+    if(CheckBounds(iAn,iTb)) fMap[iAn][iTb]=devMicron;
+  }
+
   Float_t GetCellContent(Int_t iAn, Int_t iTb) const {
-    if(iAn<0 || iAn>=fgkNAnodPts || iTb<0 || iTb >= fgkNDrifPts){
-      AliWarning(Form("Cell out of bounds, anode=%d timebin=%d",iAn,iTb));
-      return 0.;
-    }
-    else return fMap[iAn][iTb];
+    if(CheckBounds(iAn,iTb)) return fMap[iAn][iTb];
+    else return 0.;
   }
+  Float_t GetCorrection(Float_t z, Float_t x, AliITSsegmentationSDD *seg);
+  static Int_t GetNBinsAnode() {return fgkNAnodPts;}
+  static Int_t GetNBinsDrift() {return fgkNDrifPts;}
 
   TH2F* GetMapHisto() const;
   TH1F* GetResidualDistr(Float_t dmin=-300., Float_t dmax=300.) const;

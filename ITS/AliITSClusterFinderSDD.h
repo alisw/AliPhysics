@@ -78,7 +78,7 @@ class AliITSClusterFinderSDD : public AliITSClusterFinder{
     void  PeakFunc( Int_t xdim, Int_t zdim, Double_t *par, Double_t *spe,
                     Double_t *Integral=0 );
     void  PrintStatus() const;
-    void CorrectPosition(Double_t &z, Double_t&y);
+
   private:
     virtual AliITSCalibrationSDD* GetResp(Int_t mod)const{
         return (AliITSCalibrationSDD*) fDetTypeRec->GetCalibrationModel(mod);}//Return Response

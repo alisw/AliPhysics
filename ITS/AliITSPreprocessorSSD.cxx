@@ -50,10 +50,10 @@ UInt_t AliITSPreprocessorSSD::Process(TMap* /*dcsAliasMap*/)
   TObjArray badch_array(fgkNumberOfSSD); 
   TObjArray ped_array(fgkNumberOfSSD); 
   //Float_t noise=0, gain=0;
-
+  
   TString runType = GetRunType();
- if(runType == "ELECTRONICS_CALIBRATION_RUN") {
-
+  if(runType == "ELECTRONICS_CALIBRATION_RUN") {
+    
   }
   else if(runType == "PEDESTAL") {
 

@@ -34,7 +34,6 @@ public:
 		       TClonesArray *dig, TClonesArray *clusters=0x0);
 
   void FindClustersSDD(AliITSRawStream* input,TClonesArray** clusters);
-  void CorrectPosition(Float_t &z, Float_t&y);
   virtual AliITSCalibrationSDD* GetResp(Int_t mod)const{
     return (AliITSCalibrationSDD*) fDetTypeRec->GetCalibrationModel(mod);}
   virtual AliITSsegmentationSDD* GetSeg()const{

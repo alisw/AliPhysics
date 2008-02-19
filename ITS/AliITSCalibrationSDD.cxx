@@ -43,6 +43,8 @@ fDeadChannels(0),
 fMinVal(fgkMinValDefault),
 fIsDead(kFALSE),
 fBadChannels(),
+fUseACorrMap(0),
+fUseTCorrMap(0),
 fMapAW0(0),
 fMapAW1(0),
 fMapTW0(0),
@@ -66,6 +68,7 @@ fDrSpeed1(0)
   }
   SetThresholds(fgkMinValDefault,0.);
   SetTemperature(fgkTemperatureDefault);
+  SetUseCorrectionMaps(kTRUE,kTRUE);
   SetDataType();
  }
 //______________________________________________________________________
@@ -76,6 +79,8 @@ fDeadChannels(0),
 fMinVal(fgkMinValDefault),
 fIsDead(kFALSE),
 fBadChannels(),
+fUseACorrMap(0),
+fUseTCorrMap(0),
 fMapAW0(0),
 fMapAW1(0),
 fMapTW0(0),
@@ -98,8 +103,10 @@ fDrSpeed1(0)
     }
   }
 
+
   SetThresholds(fgkMinValDefault,0.);
   SetTemperature(fgkTemperatureDefault);
+  SetUseCorrectionMaps(kTRUE,kTRUE);
   SetDataType(dataType);
  }
 //_____________________________________________________________________
@@ -148,6 +155,22 @@ Float_t AliITSCalibrationSDD::GetChannelGain(Int_t anode) const{
   Int_t iChip=GetChip(anode);
   Int_t iChan=GetChipChannel(anode);
   return fGain[iWing][iChip][iChan];
+}
+//______________________________________________________________________
+void AliITSCalibrationSDD::GetCorrections(Float_t z, Float_t x, Float_t &devz, Float_t &devx, AliITSsegmentationSDD* seg){
+  //correction of coordinates using the maps stored in the DB
+  Int_t nSide=seg->GetSideFromLocalX(x);
+  devz=0;
+  if(fUseACorrMap){
+    if(nSide==0) devz=fMapAW0->GetCorrection(z,x,seg);
+    else devz=fMapAW1->GetCorrection(z,x,seg);
+  }
+  devx=0;
+  if(fUseTCorrMap){
+    if(nSide==0) devx=fMapTW0->GetCorrection(z,x,seg);
+    else devx=fMapTW1->GetCorrection(z,x,seg);
+  }
+  return;
 }
 /*
 //______________________________________________________________________

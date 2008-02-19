@@ -205,8 +205,11 @@ FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins,
 	const Double_t kMicronTocm = 1.0e-4; 
 	Float_t xdet=(driftPathMicron-GetSeg()->Dx())*kMicronTocm; // xdet is negative
 	if (s==0) xdet=-xdet; // left side has positive local x
-	 
-	CorrectPosition(zdet,xdet);
+	
+	Float_t corrx=0, corrz=0;
+	cal->GetCorrections(zdet,xdet,corrz,corrx,GetSeg());
+	zdet+=corrz;
+	xdet+=corrx;
 
 	Double_t loc[3]={xdet,0.,zdet},trk[3]={0.,0.,0.};
 	mT2L->MasterToLocal(loc,trk);
@@ -336,28 +339,4 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(AliITSRawStream* input,
 }
 
 
-//_________________________________________________________________________
-void AliITSClusterFinderV2SDD::CorrectPosition(Float_t &z, Float_t&y){
 
-  //correction of coordinates using the maps stored in the DB
-
-  AliITSCalibrationSDD* cal = (AliITSCalibrationSDD*)GetResp(fModule);
-  static const Int_t knbina = cal->Wings()*cal->Chips()*cal->Channels();
-  Int_t bina =(Int_t) GetSeg()->GetAnodeFromLocal(y,z);
-  if(bina>knbina) AliError("Wrong bin number along anodes!");
-
-  static const Int_t knbint = cal->GetMapTimeNBin();
-  const Double_t kMicronTocm = 1.0e-4; 
-  Float_t stept = GetSeg()->Dx()*kMicronTocm/cal->GetMapTimeNBin();  
-  Int_t bint = TMath::Abs((Int_t)(y/stept));
-  if(bint==knbint) bint-=1;
-  if(bint>=knbint) AliError("Wrong bin number along drift direction!");
-
-
-  Float_t devz = cal->GetMapACell(bina,bint)*kMicronTocm;
-  Float_t devx = cal->GetMapTCell(bina,bint)*kMicronTocm;
-  z+=devz;
-  y+=devx;
-
-
-}

@@ -59,6 +59,21 @@ void AliITSMapSDD::SetMap(TH2F* hmap){
   }
 }
 //______________________________________________________________________
+Float_t AliITSMapSDD::GetCorrection(Float_t z, Float_t x, AliITSsegmentationSDD *seg){
+  // returns correction in cm starting from local coordinates on the module
+  const Double_t kMicronTocm = 1.0e-4; 
+  Int_t nAnodes=seg->Npz();
+  Int_t nAnodesHybrid=seg->NpzHalf();
+  Int_t bina =(Int_t) seg->GetAnodeFromLocal(x,z);
+  if(bina>nAnodes)  AliError("Wrong anode anumber!");
+  if(bina>=nAnodesHybrid) bina-=nAnodesHybrid;
+  Float_t stept = seg->Dx()*kMicronTocm/(Float_t)fgkNDrifPts;
+  Int_t bint = TMath::Abs((Int_t)(x/stept));
+  if(bint==fgkNDrifPts) bint-=1;
+  if(bint>=fgkNDrifPts) AliError("Wrong bin number along drift direction!");
+  return kMicronTocm*GetCellContent(bina,bint);
+}
+//______________________________________________________________________
 TH2F* AliITSMapSDD::GetMapHisto() const{
   // Returns a TH2F histogram with map of residuals
   Char_t hname[50];

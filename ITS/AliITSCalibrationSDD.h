@@ -8,6 +8,7 @@
 
 #include "AliITSCalibration.h"
 #include "AliITSresponseSDD.h"
+#include "AliITSsegmentationSDD.h"
 #include "TArrayI.h"
 
 class AliITSMapSDD;
@@ -97,9 +98,13 @@ class AliITSCalibrationSDD : public AliITSCalibration {
     
     virtual void SetBadChannel(Int_t i,Int_t anode);
     Int_t GetBadChannel(Int_t i) const {return fBadChannels[i];}
-    Bool_t IsBadChannel(Int_t anode){
+    Bool_t IsBadChannel(Int_t anode) const{
       if(GetChannelGain(anode)==0) return kTRUE;
       else return kFALSE;
+    }
+    void SetUseCorrectionMaps(Bool_t useAnodeMap, Bool_t useDriftMap){
+      fUseACorrMap=useAnodeMap;
+      fUseTCorrMap=useDriftMap;
     }
     Float_t GetMapACell(Int_t i,Int_t j) const {
       if(i<256) return fMapAW0->GetCellContent(i,j);
@@ -117,7 +122,6 @@ class AliITSCalibrationSDD : public AliITSCalibration {
       if(wing==0) fMapTW0=mapT;
       else fMapTW1=mapT;
     } 
-    static Int_t GetMapTimeNBin() {return fgkMapTimeNBin;} 
     
     virtual void SetDriftSpeed(Int_t wing, AliITSDriftSpeedArraySDD* arr){
       if(wing==0) fDrSpeed0=arr;
@@ -154,6 +158,7 @@ class AliITSCalibrationSDD : public AliITSCalibration {
     virtual void  SetJitterError(Double_t jitter=20) {((AliITSresponseSDD*)fResponse)->SetJitterError(jitter);}
     virtual Float_t GetJitterError() const {return ((AliITSresponseSDD*)fResponse)->JitterError();}
     virtual Float_t GetDriftPath(Float_t time, Float_t xAnode) const {return time*GetDriftSpeedAtAnode(xAnode);}
+    void GetCorrections(Float_t z, Float_t x, Float_t &devz, Float_t &devx, AliITSsegmentationSDD* seg);
     virtual Float_t GetThresholdAnode(Int_t anode,Int_t nsigma=3) const {
       return nsigma*fNoiseAfterEl[anode];}
 
@@ -170,7 +175,7 @@ class AliITSCalibrationSDD : public AliITSCalibration {
     static const Float_t fgkBaselineDefault; // default for fBaseline
     static const Float_t fgkMinValDefault; // default for fMinVal
     static const Float_t fgkGainDefault; //default for gain
-    static const Int_t fgkMapTimeNBin = 72; //map granularity along drift direction
+
     Int_t fDeadChips;                     // Number of dead chips
     Int_t fDeadChannels;                  // Number of dead channels
     Float_t fGain[fgkWings][fgkChips][fgkChannels];//Array for channel gains
@@ -183,6 +188,9 @@ class AliITSCalibrationSDD : public AliITSCalibration {
     TArrayI  fBadChannels; //Array with bad anodes number (0-512) 
 
     
+    Bool_t fUseACorrMap;    // flag for the use of correction maps (anode)
+    Bool_t fUseTCorrMap;    // flag for the use of correction maps (drift)
+
     AliITSMapSDD* fMapAW0;     //! map of residuals on anode coord. wing 0
     AliITSMapSDD* fMapAW1;     //! map of residuals on anode coord. wing 1
     AliITSMapSDD* fMapTW0;     //! map of residuals on time coord. wing 0
@@ -195,7 +203,7 @@ class AliITSCalibrationSDD : public AliITSCalibration {
     AliITSCalibrationSDD& operator=(const AliITSCalibrationSDD & /* source */); // ass. op.
 
 
-    ClassDef(AliITSCalibrationSDD,8) // SDD response 
+    ClassDef(AliITSCalibrationSDD,9) // SDD response 
     
     };
 #endif

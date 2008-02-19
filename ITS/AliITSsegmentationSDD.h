@@ -53,6 +53,10 @@ public AliITSsegmentation {
     virtual void    DetToLocal(Int_t ix,Int_t iz,Float_t &x,Float_t &z) const;
     //
     virtual Float_t GetAnodeFromLocal(Float_t x,Float_t z) const;
+    virtual Int_t   GetSideFromLocalX(Float_t xloc) const {
+      if(xloc>0) return 0;   // left side (channel 0) positive xloc
+      else return 1;         // right side (channel 1) negative xloc
+    }
     virtual Float_t GetLocalZFromAnode(Int_t nAnode) const;
     virtual Float_t GetLocalZFromAnode(Float_t zAnode) const;
     virtual Float_t GetDriftTimeFromTb(Int_t tb) const {
@@ -109,8 +113,8 @@ public AliITSsegmentation {
     static const Float_t fgkClockDefault; //Default value for the clock freq.
     static const Int_t fgkHalfNanodesDefault; //Default value for fNanodes/2
     static const Int_t fgkNsamplesDefault; //Default value for fNsamples
-    static const Float_t fgkCm2Micron;
-    static const Float_t fgkMicron2Cm;
+    static const Float_t fgkCm2Micron;  // conversion from cm to micron
+    static const Float_t fgkMicron2Cm;  // conversion from micron to cm
     ClassDef(AliITSsegmentationSDD,5) // SDD segmentation
 };
 

@@ -836,11 +836,14 @@ void AliITSClusterFinderSDD::ResolveClusters(){
                 }
                 clusterI.SetPeakPos( peakpos ); 
 		Float_t dp = cal->GetDriftPath(newiTimef,newAnodef);
-		Double_t driftPath = fSddLength - (Double_t)dp;
-                Double_t sign = ( wing == 1 ) ? -1. : 1.;
-		Double_t xcoord = driftPath*sign * 0.0001;
-		Double_t zcoord = anodePath * 0.0001;
-		CorrectPosition(zcoord,xcoord);
+		Float_t driftPath = fSddLength - (Double_t)dp;
+                Float_t sign = ( wing == 1 ) ? -1. : 1.;
+		Float_t xcoord = driftPath*sign * 0.0001;
+		Float_t zcoord = anodePath * 0.0001;
+		Float_t corrx=0, corrz=0;
+		cal->GetCorrections(zcoord,xcoord,corrz,corrx,GetSeg());
+		xcoord+=corrx;
+		zcoord+=corrz;
                 clusterI.SetX( xcoord );        
                 clusterI.SetZ( zcoord );
                 clusterI.SetAnode( newAnodef );
@@ -1034,27 +1037,4 @@ void AliITSClusterFinderSDD::PrintStatus() const{
     cout << "**************************************************" << endl;
 }
 
-//_________________________________________________________________________
-void AliITSClusterFinderSDD::CorrectPosition(Double_t &z, Double_t&y){
-  //correction of coordinates using the maps stored in the DB
 
-  AliITSCalibrationSDD* cal = (AliITSCalibrationSDD*)GetResp(fModule);
-  static const Int_t nbint = cal->GetMapTimeNBin();
-  static const Int_t nbina = cal->Chips()*cal->Channels();
-  Float_t stepa = (GetSeg()->Dpz(0))/10000.; //anode pitch in cm
-  Float_t stept = (GetSeg()->Dx()/cal->GetMapTimeNBin()/2.)/10.;
-
-  Int_t bint = TMath::Abs((Int_t)(y/stept));
-  if(y>=0) bint+=(Int_t)(nbint/2.);
-  if(bint>nbint) AliError("Wrong bin number!");
-
-  Int_t bina = TMath::Abs((Int_t)(z/stepa));
-  if(z>=0) bina+=(Int_t)(nbina/2.);
-  if(bina>nbina) AliError("Wrong bin number!");
-
-  Double_t devz = (Double_t)cal->GetMapACell(bina,bint)/10000.;
-  Double_t devx = (Double_t)cal->GetMapTCell(bina,bint)/10000.;
-  z+=devz;
-  y+=devx;
-
-}
