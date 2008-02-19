@@ -218,7 +218,7 @@ UInt_t AliTOFPreprocessor::ProcessOnlineDelays()
   if(fStoreRefData){
     //retrieving data at Run level
     TList* list = GetFileSources(kDAQ, "RUNLevel");
-    if (list)
+    if (list->GetEntries()!=0)
       {
 	AliInfo("The following sources produced files with the id RUNLevel");
 	list->Print();
@@ -262,7 +262,7 @@ UInt_t AliTOFPreprocessor::ProcessOnlineDelays()
 //Total files, with cumulative histos
   
   TList* listTot = GetFileSources(kDAQ, "DELAYS");
-  if (listTot)
+  if (listTot->GetEntries()!=0)
     {
       AliInfo("The following sources produced files with the id DELAYS");
       listTot->Print();
@@ -409,7 +409,7 @@ UInt_t AliTOFPreprocessor::ProcessPulserData()
   
   //retrieving Pulser data 
   TList* listPulser = GetFileSources(kDAQ, "PULSER");
-  if (listPulser)
+  if (listPulser->GetEntries()!=0)
     {
       AliInfo("The following sources produced files with the id PULSER");
       listPulser->Print();
@@ -555,7 +555,7 @@ UInt_t AliTOFPreprocessor::ProcessNoiseData()
   
   //retrieving Noise data 
   TList* listNoise = GetFileSources(kDAQ, "NOISE");
-  if (listNoise)
+  if (listNoise->GetEntries()!=0)
     {
       AliInfo("The following sources produced files with the id NOISE");
       listNoise->Print();
