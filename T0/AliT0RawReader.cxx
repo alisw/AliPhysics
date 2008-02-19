@@ -113,7 +113,7 @@ Bool_t  AliT0RawReader::Next()
    Int_t fNTRM = fParam->GetNumberOfTRMs();
    for ( Int_t k=0; k<110; k++) {
     koefhits[k]=0;
-    for ( Int_t jj=0; jj<5; jj++) {
+    for ( Int_t jj=0; jj<50; jj++) {
       fAllData[k][jj]=0;
      }
    }
@@ -188,7 +188,7 @@ Bool_t  AliT0RawReader::Next()
 		}
 		if(correct){
 		  hit=koefhits[koef];
-		  if(hit>5) {  
+		  if(hit>50) {  
 		    AliWarning(Form("Too many hits for %i channel  ! ",koef)); 
 		    break; 
 		  }

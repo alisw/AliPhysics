@@ -37,7 +37,7 @@
 #include <AliCDBStorage.h>  
 #include <TMath.h>
 #include <TSystem.h>
-#include <Riostream.h>
+//#include <Riostream.h>
 #include <TGeoManager.h>
 #include <TGeoPhysicalNode.h>
 #include <TGeoMatrix.h>
@@ -149,7 +149,7 @@ void AliT0Parameters::InitIfOnline()
 // for switching to this one should write
   // AliT0RawReader myrawreader(rawReader);
 //	myrawreader.SetOnlineMode(kTRUE);
-cout<<" AliT0Parameters::InitIfOnline() "<<endl;
+
   if (fIsInit) return;
    //standart configuration (used for simulation)
    //Int_t trm=0; Int_t tdc=0; Int_t chain=0; Int_t channel=0;

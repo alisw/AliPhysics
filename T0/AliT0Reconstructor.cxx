@@ -216,33 +216,40 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   // T0RecPoint writing 
   
   //Q->T-> coefficients !!!! should be measured!!!
-  Int_t allData[110][5];
+  Int_t allData[110][50];
   
   TArrayI * timeCFD = new TArrayI(24); 
   TArrayI * timeLED = new TArrayI(24); 
   TArrayI * chargeQT0 = new TArrayI(24); 
   TArrayI * chargeQT1 = new TArrayI(24); 
 
-   for (Int_t i=0; i<110; i++) {
-     allData[i][0]=0;
-   }
+  for (Int_t i0=0; i0<105; i0++)
+    {
+      for (Int_t j0=0; j0<50; j0++) allData[i0][j0]=0; 	
+    }
+  
 
-   AliT0RawReader myrawreader(rawReader);
-   if (!myrawreader.Next())
-     AliDebug(1,Form(" no raw data found!! %i", myrawreader.Next()));
-   for (Int_t i=0; i<110; i++) {
-     allData[i][0]=myrawreader.GetData(i,0);
-   }
+  AliDebug(10," before read data ");
+  AliT0RawReader myrawreader(rawReader);
+  if (!myrawreader.Next())
+    AliDebug(1,Form(" no raw data found!! %i", myrawreader.Next()));
+
+    for (Int_t i=0; i<105; i++) {
+      for (Int_t iHit=0; iHit<50; iHit++) 
+	{
+	  allData[i][iHit] = myrawreader.GetData(i,iHit);
+	}
+    }
   AliT0Calibrator *calib = new AliT0Calibrator(); 
-
+  
   //  Int_t mV2Mip = param->GetmV2Mip();     
   //mV2Mip = param->GetmV2Mip();     
   Float_t channelWidth = fParam->GetChannelWidth() ;  
 
   Int_t meanT0 = fParam->GetMeanT0();
  
-  for (Int_t in=0; in<24; in++)
-     {
+  for (Int_t in=0; in<24; in++)  
+    {
        timeLED->AddAt(allData[in+1][0],in);
        timeCFD->AddAt(allData[in+25][0],in);
        chargeQT1->AddAt(allData[in+57][0],in);
@@ -250,11 +257,11 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
        AliDebug(10, Form(" readed Raw %i %i %i %i %i", in, timeLED->At(in),timeCFD->At(in),chargeQT0->At(in),chargeQT1->At(in)));
      }
 
-  Float_t besttimeA=999999;
-  Float_t besttimeC=999999;
+  Float_t besttimeA=9999999;
+  Float_t besttimeC=9999999;
   Int_t pmtBestA=99999;
   Int_t pmtBestC=99999;
-  Float_t timeDiff=999999, meanTime=0;
+  Float_t timeDiff=9999999, meanTime=0;
 
   
   AliT0RecPoint* frecpoints= new AliT0RecPoint ();
@@ -265,7 +272,8 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   Float_t time[24], adc[24];
   for (Int_t ipmt=0; ipmt<24; ipmt++) {
     if(timeCFD->At(ipmt)>0 ){
-      Double_t qt0 = Double_t(chargeQT0->At(ipmt));
+      /* 
+     Double_t qt0 = Double_t(chargeQT0->At(ipmt));
       Double_t qt1 = Double_t(chargeQT1->At(ipmt));
       if((qt1-qt0)>0)  adc[ipmt] = TMath::Exp( Double_t (channelWidth*(qt1-qt0)/1000));
       //      time[ipmt] = channelWidth * (calib-> WalkCorrection( ipmt,qt1 , timeCFD->At(ipmt) ) ) ;
@@ -276,6 +284,17 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
       frecpoints->SetAmp(ipmt,adc[ipmt]);
       frecpoints->SetAmpLED(ipmt,qt);
     AliDebug(1,Form(" QTC %f mv,  QTC  %f MIPS time in chann %f time %f ",adc[ipmt], adc[ipmt]/50.,time[ipmt], time[ipmt]*channelWidth));
+      */
+      Float_t qt0 = Float_t(chargeQT0->At(ipmt));
+      Float_t qt1 = Float_t(chargeQT1->At(ipmt));
+      if((qt0-qt1)>0)  adc[ipmt] = qt0-qt1;
+      time[ipmt] = calib-> WalkCorrection( ipmt, adc[ipmt], timeCFD->At(ipmt) ) ;
+      Double_t sl = timeLED->At(ipmt) - time[ipmt];
+      Double_t qt=((TGraph*)fAmpLEDrec.At(ipmt))->Eval(sl);
+      frecpoints->SetTime(ipmt,time[ipmt]);
+      frecpoints->SetAmp(ipmt,adc[ipmt]);
+      frecpoints->SetAmpLED(ipmt,qt);
+      AliDebug(10,Form(" QTC %f , time in chann %f ",adc[ipmt] ,time[ipmt]));
      
     }
     else {
@@ -299,15 +318,16 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
         pmtBestA=ipmt;}
     }
   }
-  if(besttimeA !=999999)  frecpoints->SetTimeBestA(Int_t(besttimeA));
-  if( besttimeC != 999999 ) frecpoints->SetTimeBestC(Int_t(besttimeC));
+  if(besttimeA !=9999999)  frecpoints->SetTimeBestA(Int_t(besttimeA));
+  if( besttimeC != 9999999 ) frecpoints->SetTimeBestC(Int_t(besttimeC));
   AliDebug(1,Form(" besttimeA %f ps,  besttimeC %f ps",besttimeA, besttimeC));
   Float_t c = 0.0299792; // cm/ps
-  Float_t vertex = 0;
-  if(besttimeA !=999999 && besttimeC != 999999 ){
-    timeDiff = (besttimeC - besttimeA)*channelWidth;
-    meanTime = (meanT0 - (besttimeA + besttimeC)/2) * channelWidth;   
-    vertex = c*(timeDiff)/2. + (fdZonA - fdZonC)/2; //-(lenr-lenl))/2;
+  Float_t vertex = 99999;
+  if(besttimeA <9999999 && besttimeC < 9999999 ){
+    timeDiff = besttimeC - besttimeA;
+    //    meanTime = (meanT0 - (besttimeA + besttimeC)/2) * channelWidth;
+    meanTime =  (besttimeA + besttimeC)/2;  
+    vertex = c*(timeDiff)/2. + (fdZonA - fdZonC)/2; 
     AliDebug(1,Form("  timeDiff %f ps,  meanTime %f ps, vertex %f cm",timeDiff, meanTime,vertex ));
     frecpoints->SetVertex(vertex);
     frecpoints->SetMeanTime(Int_t(meanTime));

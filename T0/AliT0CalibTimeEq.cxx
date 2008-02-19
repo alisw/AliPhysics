@@ -29,6 +29,7 @@
 #include <TF1.h>
 #include <TSpectrum.h>
 #include <TProfile.h>
+#include "iostream.h"
 
 ClassImp(AliT0CalibTimeEq)
 
@@ -97,9 +98,11 @@ void  AliT0CalibTimeEq::Print(Option_t*) const
 
 
 //________________________________________________________________
-void AliT0CalibTimeEq::ComputeOnlineParams(char* name1, Int_t npeaks, Double_t sigma, const char* filePhys)
+void AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
 {
   // compute online equalized time
+  Int_t npeaks = 20;
+  Double_t sigma = 4.;
 
   TFile *gFile = TFile::Open(filePhys);
   Bool_t down=false;
@@ -109,12 +112,14 @@ void AliT0CalibTimeEq::ComputeOnlineParams(char* name1, Int_t npeaks, Double_t s
   Float_t p[24][3]={0.,0.,0.};
   for (Int_t i=0; i<24; i++)
   {
-    sprintf(buf1,name1);
-    sprintf(temp,"%i",i+1);
-    strcat (buf1,temp);
-    //strcat (buf1,name2);
+    sprintf(buf1,"CFD1-CFD%i",i+1);
     TH1F *cfd = (TH1F*) gFile->Get(buf1);
     printf(" i = %d buf1 = %s\n", i, buf1);
+    Double_t mean=cfd->GetMean();
+    SetTimeEq(i,mean);
+  }
+    /*
+
     TSpectrum *s = new TSpectrum(2*npeaks,1.);
     printf(" buf1 = %s cfd = %x\n", buf1, cfd);
     Int_t nfound = s->Search(cfd,sigma,"goff",0.2);
@@ -132,9 +137,12 @@ void AliT0CalibTimeEq::ComputeOnlineParams(char* name1, Int_t npeaks, Double_t s
       for(Int_t j =0; j<3; j++)
       {
         p[i][j] = g1->GetParameter(j);
-        SetCFDvalue(i, j, p[i][j]);
+	//      SetCFDvalue(i, j, p[i][j]);
       }
-
+        SetTimeEq(i,(p[i][2]));
+	cout<<" mean "<<p[i][2]<<endl;
+    */
+      /*
       SetCFDvalue(i, 3, hmin);
       SetCFDvalue(i, 4, hmax);
 
@@ -146,19 +154,12 @@ void AliT0CalibTimeEq::ComputeOnlineParams(char* name1, Int_t npeaks, Double_t s
       {
 	SetTimeEq(i,(p[i][2]-p[12][2]));
       }	
+      
     } 
   }
-  
+      */  
    gFile->Close();
    delete gFile;
-
-   for(int i=0;i<5;i++)
-     {
-      for(int j=0;j<24;j++)
-	{
-                printf("fCFDvalue[%d][%d]=%f\n",j,i,fCFDvalue[j][i]);
-        }
-     }
    printf("\n\n");
    for(int j=0;j<24;j++)
    {
