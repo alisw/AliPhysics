@@ -19,6 +19,7 @@
  ***************************************************************************/
 #include "UIQA.h"
 #include "AliTPCCalibCE.h"
+#include "AliTPCdataQA.h"
 #include <AmoreDA.h>
 
 ClassImp(amore::TPC::ui::UIQA)
@@ -71,24 +72,44 @@ void UIQA::SubscribeMonitorObjects() { // Before using any MonitorObject, a subs
  //subscription=sourceName+"CE";
  //Subscribe(subscription.c_str()); // Here you put a series of subscriptions where the string corresponds to the object name as published in the Publisher Module. As these names are internal to the QA framework, the recommended way of having consistency between AMORE and QA is to factor-out of QA the function that represents the histogram naming convention as a separate AliRoot class/function and use it from inside QA and AMORE.
  //...
- 
+  amore::core::String_t sourceName="TPCQA/", subscription; 
+  subscription=sourceName+"TPCRAW";
+  Subscribe(subscription.c_str());
+  subscription=sourceName+"hist";
+  Subscribe(subscription.c_str());
+  
 }
 
 void UIQA::Update() { // This is executed after getting the updated contents of the subscribed MonitorObjects. Notice that the output of moInt[i] and moString[i] varies with time for a specific i because on the dqmAgent the "quality" check fails or succeeds. This is the essence of automatic data quality checks in AMORE. Try to use the moString[i] on a text widget to alert the shifter, or -depending of the value of moInt[i], 0 or 1- make part of the screen change color...
  std::ostringstream stringStream;
- amore::da::AmoreDA amoreDA;
  // Example of accessing a normal TObject. The name is the name of the object in the QA framework
- //amore::core::MonitorObjectTObject* ptr=gSubscriber->At<amore::core::MOTObj>("CEDA/CE");
- //AliTPCCalibCE* hCalibCE=0;
- //if(ptr) {
- //hCalibCE=(AliTPCCalibCE*)ptr->Object();
- //}
+
+
+ //amore::core::MonitorObjectTObject* ptr=gSubscriber->At<amore::core::MOTObj>("TPCQA/TPCRAW");
+ amore::core::MonitorObjectTObject* ptr=gSubscriber->At<amore::core::MOTObj>("TPCQA/hist");
+ AliTPCdataQA *tpcqa=0;
+ printf("Pointer - %p\n",ptr);
+ if(ptr) {
+   ptr->Object()->Print();
+ }
+ 
+ ptr=gSubscriber->At<amore::core::MOTObj>("TPCQA/TPCRAW");
+ tpcqa=0;
+ printf("Pointer - %p\n",ptr);
+ if(ptr) {
+   tpcqa=(AliTPCdataQA*)ptr->Object();
+   printf("Pointertpcqa - %p\n",tpcqa);
+   tpcqa->Print();
+ }
+
+
  // End of access example
 
+ //amore::da::AmoreDA amoreDA;
  // hCalibCE->Dump();
- TObject *temp=0;
- amoreDA.Receive("CEDA/CE",temp);
- temp->Dump();
+ // TObject *temp=0;
+ //amoreDA.Receive("CEDA/CE",temp);
+ //temp->Dump();
 
 
 }

@@ -19,6 +19,7 @@
  ***************************************************************************/
 #include "PublisherQA.h"
 #include <AmoreDA.h>
+#include <AliLog.h>
 
 ClassImp(amore::TPC::publisher::PublisherQA)
 
@@ -39,6 +40,11 @@ PublisherQA::PublisherQA() : fqadm(new AliTPCQADataMakerRec) {
   // make instance of the TPCQADataMakerRec
   //
 
+  AliLog::SetClassDebugLevel("AliTPCRawStream",-5);
+  AliLog::SetClassDebugLevel("AliRawReaderDate",-5);
+  AliLog::SetClassDebugLevel("AliTPCAltroMapping",-5);
+  AliLog::SetModuleDebugLevel("RAW",-5);
+
 
 }
 
@@ -54,15 +60,20 @@ void PublisherQA::BookMonitorObjects() {
  fqadmList=fqadm->Init(AliQA::kRAWS, 0, cycleLength);
  TObjArrayIter* lIt=(TObjArrayIter*)fqadmList->MakeIterator();
  TNamed* obj;
- while((obj=(TNamed*)lIt->Next())) Publish(obj, obj->GetName());
-
+ TH1F* hist=new TH1F("hist", "hist", 100, 0, 100);
+ Publish(hist, "hist");
+ while((obj=(TNamed*)lIt->Next())) {
+   Publish(obj, obj->GetName());
+   obj->Dump();
+   printf("%s\n",obj->GetName());
+ }
 }
 
 void PublisherQA::StartOfCycle() {
  
  *moInt1=0;
  fqadm->StartOfCycle(AliQA::kRAWS);
-
+ 
 }
 
 void PublisherQA::EndOfCycle() {
