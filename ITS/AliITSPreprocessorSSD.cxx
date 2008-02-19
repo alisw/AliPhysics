@@ -55,7 +55,7 @@ UInt_t AliITSPreprocessorSSD::Process(TMap* /*dcsAliasMap*/)
  if(runType == "ELECTRONICS_CALIBRATION_RUN") {
 
   }
-  else if(runType == "PEDESTAL_RUN") {
+  else if(runType == "PEDESTAL") {
 
     TList* list = GetFileSources(kDAQ, "CALIBRATION");
     if (list && list->GetEntries() > 0)
