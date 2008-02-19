@@ -25,6 +25,8 @@
 #include <vector>
 
 class AliHLTOUT;
+class AliHLTOUTHandler;
+
 /**
  * @class AliRawReaderHLT
  * Handler of HLTOUT data for AliRawReader input.
@@ -132,7 +134,10 @@ class AliRawReaderHLT : public AliRawReader {
   /** instance of the HLTOUT handler */
   AliHLTOUT* fpHLTOUT; // !transient
 
-  ClassDef(AliRawReaderHLT, 1)
+  /** instance of the data handler providing the current data buffer */
+  AliHLTOUTHandler* fpDataHandler; // !transient
+
+  ClassDef(AliRawReaderHLT, 2)
 };
 
 #define ALIHLTREC_LIBRARY                   "libHLTrec.so"

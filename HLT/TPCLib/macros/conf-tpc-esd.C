@@ -33,7 +33,7 @@
     TString tracker;
     // tracker finder components
     tracker.Form("TR_%02d", slice);
-    AliHLTConfiguration trackerconf(tracker.Data(), "TPCSliceTracker", trackerInput.Data(), "pp-run bfield 0.5");
+    AliHLTConfiguration trackerconf(tracker.Data(), "TPCSliceTracker", trackerInput.Data(), "-pp-run -bfield 0.5");
 
     if (mergerInput.Length()>0) mergerInput+=" ";
     mergerInput+=tracker;

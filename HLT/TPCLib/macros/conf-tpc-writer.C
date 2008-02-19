@@ -34,7 +34,7 @@
     TString tracker;
     // tracker components
     tracker.Form("TR_%02d", slice);
-    AliHLTConfiguration trackerconf(tracker.Data(), "TPCSliceTracker", trackerInput.Data(), "pp-run bfield 0.5");
+    AliHLTConfiguration trackerconf(tracker.Data(), "TPCSliceTracker", trackerInput.Data(), "-pp-run -bfield 0.5");
 
     //add all trackers to writer input. Include if you would like all slice tracks written.
     //if (writerInput.Length()>0) writerInput+=" ";

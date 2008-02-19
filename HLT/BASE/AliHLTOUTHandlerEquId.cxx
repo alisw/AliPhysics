@@ -16,18 +16,19 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-/** @file   AliHLTOUTHandler.cxx
+/** @file   AliHLTOUTHandlerEquId.cxx
     @author Matthias Richter
     @date   
-    @brief  Base class implementation of HLTOUT handlers.
+    @brief  HLTOUT handler returning equipment id from data type and spec.
 */
 
-#include "AliHLTOUTHandler.h"
+#include "AliHLTOUTHandlerEquId.h"
+#include "AliHLTOUT.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
-ClassImp(AliHLTOUTHandler)
+ClassImp(AliHLTOUTHandlerEquId)
 
-AliHLTOUTHandler::AliHLTOUTHandler()
+AliHLTOUTHandlerEquId::AliHLTOUTHandlerEquId()
 { 
   // see header file for class documentation
   // or
@@ -36,20 +37,20 @@ AliHLTOUTHandler::AliHLTOUTHandler()
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 }
 
-AliHLTOUTHandler::~AliHLTOUTHandler()
+AliHLTOUTHandlerEquId::~AliHLTOUTHandlerEquId()
 {
   // see header file for class documentation
 }
 
-int AliHLTOUTHandler::GetProcessedData(const AliHLTUInt8_t* &pData)
+int AliHLTOUTHandlerEquId::ProcessData(AliHLTOUT* pData)
 {
   // see header file for class documentation
-  pData=NULL;
-  return 0;
-}
-
-int AliHLTOUTHandler::ReleaseProcessedData(const AliHLTUInt8_t* pData, int size)
-{
-  // see header file for class documentation
-  return 0;
+  if (!pData) return -EINVAL;
+  AliHLTComponentDataType dt=kAliHLTVoidDataType;
+  AliHLTUInt32_t spec=kAliHLTVoidDataSpec;
+  int iResult=pData->GetDataBlockDescription(dt, spec);
+  if (iResult>=0) {
+    iResult=(int)spec;
+  }
+  return iResult;
 }

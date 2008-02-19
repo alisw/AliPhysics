@@ -182,6 +182,14 @@ int AliHLTOUT::ReleaseDataBuffer(const AliHLTUInt8_t* pBuffer)
   return iResult;  
 }
 
+AliHLTOUTHandler* AliHLTOUT::GetHandler()
+{
+  // see header file for class documentation
+  AliHLTOUTHandler* pHandler=NULL;
+  pHandler=FindHandlerDesc(GetDataBlockIndex());
+  return pHandler;
+}
+
 int AliHLTOUT::AddBlockDescriptor(const AliHLTOUTBlockDescriptor desc)
 {
   // see header file for class documentation
@@ -225,7 +233,7 @@ int AliHLTOUT::InitHandlers()
     if ((iResult=GetDataBlockDescription(dt, spec))<0) break;
     for (AliHLTModuleAgent* pAgent=AliHLTModuleAgent::GetFirstAgent(); pAgent && iResult>=0; pAgent=AliHLTModuleAgent::GetNextAgent()) {
       AliHLTModuleAgent::AliHLTOUTHandlerDesc handlerDesc;
-      if (pAgent->GetHandlerDescription(dt, spec, &handlerDesc)>0) {
+      if (pAgent->GetHandlerDescription(dt, spec, handlerDesc)>0) {
 	AliHLTOUTHandlerListEntry entry(pAgent->GetOutputHandler(dt, spec), handlerDesc, pAgent, GetDataBlockIndex());
 	iResult=InsertHandler(entry);
 	remnants.pop_back();
@@ -273,41 +281,69 @@ int AliHLTOUT::InsertHandler(const AliHLTOUTHandlerListEntry &entry)
   return iResult;
 }
 
+AliHLTOUT::AliHLTOUTHandlerListEntry AliHLTOUT::FindHandlerDesc(AliHLTUInt32_t blockIndex)
+{
+  // see header file for class documentation
+  int iResult=0;
+  vector<AliHLTOUTHandlerListEntry>::iterator element=fDataHandlers.begin();
+  while (element!=fDataHandlers.end()) {
+    if (element->HasIndex(blockIndex)) {
+      return *element;
+    }
+    element++;
+  }
+  return AliHLTOUT::AliHLTOUTHandlerListEntry::fgkVoidHandlerListEntry;
+}
+
+AliHLTOUT::AliHLTOUTHandlerListEntry::AliHLTOUTHandlerListEntry()
+  :
+  fpHandler(NULL),
+  fpHandlerDesc(NULL),
+  fpAgent(NULL),
+  fBlocks()
+{
+  // see header file for class documentation
+}
+
 AliHLTOUT::AliHLTOUTHandlerListEntry::AliHLTOUTHandlerListEntry(AliHLTOUTHandler* pHandler, 
 								AliHLTModuleAgent::AliHLTOUTHandlerDesc& handlerDesc,
 								AliHLTModuleAgent* pAgent,
 								AliHLTUInt32_t index)
   :
   fpHandler(pHandler),
-  fHandlerDesc(handlerDesc),
+  fpHandlerDesc(new AliHLTModuleAgent::AliHLTOUTHandlerDesc),
   fpAgent(pAgent),
   fBlocks()
 {
   // see header file for class documentation
+  *fpHandlerDesc=handlerDesc;
   fBlocks.push_back(index);
 }
 
 AliHLTOUT::AliHLTOUTHandlerListEntry::AliHLTOUTHandlerListEntry(const AliHLTOUTHandlerListEntry& src)
   :
   fpHandler(src.fpHandler),
-  fHandlerDesc(src.fHandlerDesc),
+  fpHandlerDesc(new AliHLTModuleAgent::AliHLTOUTHandlerDesc),
   fpAgent(src.fpAgent),
   fBlocks()
 {
   // see header file for class documentation
+  *fpHandlerDesc=*src.fpHandlerDesc;
   fBlocks.assign(src.fBlocks.begin(), src.fBlocks.end());
 }
 
 AliHLTOUT::AliHLTOUTHandlerListEntry::~AliHLTOUTHandlerListEntry()
 {
   // see header file for class documentation
+  if (fpHandlerDesc) delete fpHandlerDesc;
+  fpHandlerDesc=NULL;
 }
 
 AliHLTOUT::AliHLTOUTHandlerListEntry& AliHLTOUT::AliHLTOUTHandlerListEntry::operator=(const AliHLTOUTHandlerListEntry& src)
 {
   // see header file for class documentation
   fpHandler=src.fpHandler;
-  fHandlerDesc=src.fHandlerDesc;
+  *fpHandlerDesc=*src.fpHandlerDesc;
   fpAgent=src.fpAgent;
   fBlocks.assign(src.fBlocks.begin(), src.fBlocks.end());
   return *this;
@@ -331,3 +367,5 @@ void AliHLTOUT::AliHLTOUTHandlerListEntry::AddIndex(AliHLTUInt32_t index)
   // see header file for class documentation
   fBlocks.push_back(index);
 }
+
+const AliHLTOUT::AliHLTOUTHandlerListEntry AliHLTOUT::AliHLTOUTHandlerListEntry::fgkVoidHandlerListEntry;

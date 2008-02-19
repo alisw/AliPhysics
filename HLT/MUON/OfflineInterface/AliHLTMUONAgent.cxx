@@ -40,7 +40,7 @@ AliHLTMUONAgent AliHLTMUONAgent::fgkInstance;
 ClassImp(AliHLTMUONAgent);
 
 
-AliHLTMUONAgent::AliHLTMUONAgent() : AliHLTModuleAgent()
+AliHLTMUONAgent::AliHLTMUONAgent() : AliHLTModuleAgent("MUON")
 {
 	///
 	/// Default constructor.

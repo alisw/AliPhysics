@@ -31,6 +31,8 @@
 #include "AliRawReaderHLT.h"
 #include "AliHLTOUTRawReader.h"
 #include "AliHLTModuleAgent.h"
+#include "AliHLTOUTHandler.h"
+#include "AliHLTOUTHandlerEquId.h"
 #include "AliLog.h"
 #include "AliDAQ.h"            // RAW, for detector names and equipment ids
 #include "TObjString.h"
@@ -50,7 +52,8 @@ AliRawReaderHLT::AliRawReaderHLT(AliRawReader* pRawreader, const char* options)
   fEquipmentId(-1),
   fbHaveHLTData(false),
   fDetectors(),
-  fpHLTOUT(NULL)
+  fpHLTOUT(NULL),
+  fpDataHandler(NULL)
 {
   // see header file for class documentation
   // or
@@ -64,6 +67,13 @@ AliRawReaderHLT::AliRawReaderHLT(AliRawReader* pRawreader, const char* options)
 AliRawReaderHLT::~AliRawReaderHLT()
 {
   // see header file for class documentation
+  if (fpHLTOUT) {
+    if (fpDataHandler) fpDataHandler->ReleaseProcessedData(fpData, fDataSize);
+    else fpHLTOUT->ReleaseDataBuffer(fpData);
+    fpDataHandler=NULL;
+    delete fpHLTOUT;
+    fpHLTOUT=NULL;
+  }
 }
 
 UInt_t AliRawReaderHLT::GetType() const
@@ -311,6 +321,15 @@ Bool_t   AliRawReaderHLT::Reset()
     }
     fbHaveHLTData=detector!=fDetectors.end();
   }
+
+  if (fpHLTOUT) {
+    if (fpDataHandler) fpDataHandler->ReleaseProcessedData(fpData, fDataSize);
+    else fpHLTOUT->ReleaseDataBuffer(fpData);
+    fpDataHandler=NULL;
+    delete fpHLTOUT;
+    fpHLTOUT=NULL;
+  }
+
   return result;
 }
 
@@ -415,17 +434,44 @@ Bool_t   AliRawReaderHLT::ReadNextHLTData()
       }
     }
   } else {
-    fpHLTOUT->ReleaseDataBuffer(fpData);
+    // first release the data buffer
+    if (fpDataHandler) fpDataHandler->ReleaseProcessedData(fpData, fDataSize);
+    else fpHLTOUT->ReleaseDataBuffer(fpData);
+    fpDataHandler=NULL;
     if (!(result=fpHLTOUT->SelectNextDataBlock()>=0)) {
       delete fpHLTOUT;
       fpHLTOUT=NULL;
     }
   }
   if (result) {
+    AliHLTComponentDataType dt=kAliHLTVoidDataType;
+    AliHLTUInt32_t spec=kAliHLTVoidDataSpec;
+    fpHLTOUT->GetDataBlockDescription(dt, spec);
     AliHLTUInt32_t size=0;
-    result=fpHLTOUT->GetDataBuffer(fpData, size)>=0;
-    fDataSize=(int)size;
-    fEquipmentId=-1;
+    AliHLTOUTHandler* pHandler=fpHLTOUT->GetHandler();
+    if (pHandler) {
+      if (dynamic_cast<AliHLTOUTHandlerEquId*>(pHandler)!=NULL) {
+	AliHLTOUT::AliHLTOUTLockGuard g(fpHLTOUT);
+	fEquipmentId=pHandler->ProcessData(fpHLTOUT);
+	fpData=NULL;
+	fDataSize=pHandler->GetProcessedData(fpData);
+	if (!fpData) {
+	  result=fpHLTOUT->GetDataBuffer(fpData, size)>=0;
+	  AliDebug(AliLog::kDebug, Form("forward data block from HLTOUT stream to equipment %d", fEquipmentId));
+	  fDataSize=(int)size;
+	} else {
+	  // remember the current handler in order to properly release the data buffer
+	  fpDataHandler=pHandler;
+	  AliDebug(AliLog::kDebug, Form("forward decoded data block provided by handler to equipment %d", fEquipmentId));
+	}
+      } else {
+	AliError(Form("handler is not of type AliHLTOUTHandlerEquId for block %x data type %s spec %#x; data block skipped",
+		      fpHLTOUT->GetDataBlockIndex(), AliHLTComponent::DataType2Text(dt).c_str(), spec));
+      }
+    } else {
+      AliWarning(Form("no data handler found for block %x data type %s spec %#x; data block skipped",
+		      fpHLTOUT->GetDataBlockIndex(), AliHLTComponent::DataType2Text(dt).c_str(), spec));
+    }
   } else {
     fpData=NULL;
     fDataSize=0;

@@ -43,6 +43,8 @@ AliHLTAgentSim gAliHLTAgentSim;
 ClassImp(AliHLTAgentSim)
 
 AliHLTAgentSim::AliHLTAgentSim()
+  :
+  AliHLTModuleAgent("sim")
 {
   // see header file for class documentation
   // or

@@ -45,6 +45,8 @@ const char* AliHLTAgentSample::fgkAliHLTAgentSampleOut="/tmp/hltout";
 ClassImp(AliHLTAgentSample)
 
 AliHLTAgentSample::AliHLTAgentSample()
+  :
+  AliHLTModuleAgent("Sample")
 {
   // see header file for class documentation
   // or

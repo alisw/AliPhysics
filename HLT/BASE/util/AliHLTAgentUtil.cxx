@@ -44,6 +44,8 @@ AliHLTAgentUtil gAliHLTAgentUtil;
 ClassImp(AliHLTAgentUtil)
 
 AliHLTAgentUtil::AliHLTAgentUtil()
+  :
+  AliHLTModuleAgent("Util")
 {
   // see header file for class documentation
   // or

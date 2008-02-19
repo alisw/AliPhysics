@@ -23,17 +23,23 @@ class TFile;
  * The RootFileWriter provides a stand alone component to write incoming
  * TObject like structures into a Root file. Furthermore it functions as
  * base class for customized writers.
- * @see AliHLTFileWriter for parameters
+ *
+ * Component ID: \b ROOTFileWriter <br>
+ * Library: \b libAliHLTUtil.so
+ *
+ * Mandatory arguments: <br>
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formating -->
+ *
+ * Optional arguments: <br>
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formating -->
+ *
+ * See AliHLTFileWriter for full list of arguments.
  */
 class AliHLTRootFileWriterComponent : public AliHLTFileWriter
 {
  public:
   /** standard constructor */
   AliHLTRootFileWriterComponent();
-  /** not a valid copy constructor, defined according to effective C++ style */
-  AliHLTRootFileWriterComponent(const AliHLTRootFileWriterComponent&);
-  /** not a valid assignment op, but defined according to effective C++ style */
-  AliHLTRootFileWriterComponent& operator=(const AliHLTRootFileWriterComponent&);
   /** destructor */
   virtual ~AliHLTRootFileWriterComponent();
 
@@ -50,10 +56,8 @@ class AliHLTRootFileWriterComponent : public AliHLTFileWriter
   virtual AliHLTComponent* Spawn() {return new AliHLTRootFileWriterComponent;}
 
  protected:
-  /**
-   * Close the writer.
-   * Cleanup and others.
-   */
+  // interface functions
+  int InitWriter();
   int CloseWriter();
 
   /**
@@ -112,6 +116,11 @@ class AliHLTRootFileWriterComponent : public AliHLTFileWriter
 
   /** the name of the current file */
   TFile* fCurrentFile; //! transient value
+private:
+  /** copy constructor prohibited */
+  AliHLTRootFileWriterComponent(const AliHLTRootFileWriterComponent&);
+  /** assignment operator prohibited */
+  AliHLTRootFileWriterComponent& operator=(const AliHLTRootFileWriterComponent&);
 
   ClassDef(AliHLTRootFileWriterComponent, 0)
 };

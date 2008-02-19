@@ -173,6 +173,16 @@ class AliHLTFileWriter : public AliHLTDataSink  {
   int CheckMode(Short_t mode) const;
 
   /**
+   * Get the currently set file extension.
+   */
+  TString GetExtension() {return fExtension;}
+
+  /**
+   * Set the file extension.
+   */
+  void SetExtension(const char* extension) {fExtension=extension!=NULL?extension:"";}
+
+  /**
    * Working modes of the writer
    * @internal
    */

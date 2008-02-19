@@ -24,6 +24,8 @@
 
 #include "AliHLTTPCAgent.h"
 #include "AliHLTConfiguration.h"
+#include "AliHLTTPCDefinitions.h"
+#include "AliHLTOUT.h"
 
 /** global instance for agent registration */
 AliHLTTPCAgent gAliHLTTPCAgent;
@@ -36,6 +38,10 @@ AliHLTTPCAgent gAliHLTTPCAgent;
 ClassImp(AliHLTTPCAgent)
 
 AliHLTTPCAgent::AliHLTTPCAgent()
+  :
+  AliHLTModuleAgent("TPC"),
+  fRawDataHandler(NULL),
+  fNofRawDataHandler(0)
 {
   // see header file for class documentation
   // or
@@ -123,4 +129,91 @@ int AliHLTTPCAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
   pHandler->AddComponent(new AliHLTTPCEsdWriterComponent::AliConverter);
 
   return 0;
+}
+
+int AliHLTTPCAgent::GetHandlerDescription(AliHLTComponentDataType dt,
+					  AliHLTUInt32_t spec,
+					  AliHLTOUTHandlerDesc& desc) const
+{
+  // see header file for class documentation
+  if (dt==(kAliHLTDataTypeDDLRaw|kAliHLTDataOriginTPC)) {
+    int slice=AliHLTTPCDefinitions::GetMinSliceNr(spec);
+    int part=AliHLTTPCDefinitions::GetMinPatchNr(spec);
+    if (slice==AliHLTTPCDefinitions::GetMaxSliceNr(spec) &&
+	part==AliHLTTPCDefinitions::GetMaxPatchNr(spec)) {
+      desc=AliHLTOUTHandlerDesc(kRawReader, dt, GetModuleId());
+      return 1;
+    } else {
+      HLTWarning("handler can not process merged data from multiple ddls:"
+		 " min slice %d, max slice %d, min part %d, max part %d",
+		 slice, AliHLTTPCDefinitions::GetMaxSliceNr(spec),
+		 part, AliHLTTPCDefinitions::GetMaxPatchNr(spec));
+      return 0;
+    }
+  }
+  return 0;
+}
+
+AliHLTOUTHandler* AliHLTTPCAgent::GetOutputHandler(AliHLTComponentDataType dt,
+						   AliHLTUInt32_t spec)
+{
+  // see header file for class documentation
+  if (dt==(kAliHLTDataTypeDDLRaw|kAliHLTDataOriginTPC)) {
+    if (!fRawDataHandler) {
+      fRawDataHandler=new AliHLTTPCAgent::AliHLTTPCRawDataHandler;
+    }
+    fNofRawDataHandler++;
+    return fRawDataHandler;
+  }
+  return NULL;
+}
+
+int AliHLTTPCAgent::DeleteOutputHandler(AliHLTOUTHandler* pInstance)
+{
+  // see header file for class documentation
+  if (pInstance==NULL) return -EINVAL;
+
+  if (pInstance==fRawDataHandler) {
+    if (--fNofRawDataHandler<=0) {
+      delete fRawDataHandler;
+      fRawDataHandler=NULL;
+    }
+  }
+  return 0;
+}
+
+AliHLTTPCAgent::AliHLTTPCRawDataHandler::AliHLTTPCRawDataHandler()
+{
+  // see header file for class documentation
+}
+
+AliHLTTPCAgent::AliHLTTPCRawDataHandler::~AliHLTTPCRawDataHandler()
+{
+  // see header file for class documentation
+}
+
+int AliHLTTPCAgent::AliHLTTPCRawDataHandler::ProcessData(AliHLTOUT* pData)
+{
+  // see header file for class documentation
+  if (!pData) return -EINVAL;
+  AliHLTComponentDataType dt=kAliHLTVoidDataType;
+  AliHLTUInt32_t spec=kAliHLTVoidDataSpec;
+  int iResult=pData->GetDataBlockDescription(dt, spec);
+  if (iResult>=0) {
+    int slice=AliHLTTPCDefinitions::GetMinSliceNr(spec);
+    int part=AliHLTTPCDefinitions::GetMinPatchNr(spec);
+    if (slice==AliHLTTPCDefinitions::GetMaxSliceNr(spec) &&
+	part==AliHLTTPCDefinitions::GetMaxPatchNr(spec)) {
+      iResult=768;
+      if (part>1) iResult+=72+4*slice+(part-2);
+      else iResult+=2*slice+part;
+    } else {
+      HLTError("handler can not process merged data from multiple ddls:"
+	       " min slice %d, max slice %d, min part %d, max part %d",
+	       slice, AliHLTTPCDefinitions::GetMaxSliceNr(spec),
+	       part, AliHLTTPCDefinitions::GetMaxPatchNr(spec));
+      iResult=-EBADMSG;
+    }
+  }
+  return iResult;
 }

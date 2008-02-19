@@ -26,6 +26,7 @@
 #include "AliHLTRootFileWriterComponent.h"
 #include "TFile.h"
 #include "TString.h"
+#include "TObjectTable.h" // for root object validity
 
 /** the global object for component registration */
 AliHLTRootFileWriterComponent gAliHLTRootFileWriterComponent;
@@ -49,26 +50,18 @@ AliHLTRootFileWriterComponent::AliHLTRootFileWriterComponent()
   SetMode(kConcatenateBlocks);
 }
 
-AliHLTRootFileWriterComponent::AliHLTRootFileWriterComponent(const AliHLTRootFileWriterComponent&)
-  :
-  AliHLTFileWriter(),
-  fEventID(kAliHLTVoidEventID),
-  fCurrentFile(NULL)
-{
-  // see header file for class documentation
-  HLTFatal("copy constructor untested");
-}
-
-AliHLTRootFileWriterComponent& AliHLTRootFileWriterComponent::operator=(const AliHLTRootFileWriterComponent&)
-{
-  // see header file for class documentation
-  HLTFatal("assignment operator untested");
-  return *this;
-}
-
 AliHLTRootFileWriterComponent::~AliHLTRootFileWriterComponent()
 {
   // see header file for class documentation
+}
+
+int AliHLTRootFileWriterComponent::InitWriter()
+{
+  // see header file for class documentation
+
+  // choose .root as default extension
+  if (GetExtension().IsNull()) SetExtension("root");
+  return 0;
 }
 
 int AliHLTRootFileWriterComponent::CloseWriter()

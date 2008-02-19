@@ -106,6 +106,11 @@ class AliHLTOUT : public AliHLTLogging {
   int ReleaseDataBuffer(const AliHLTUInt8_t* pBuffer);
 
   /**
+   * Get handler for the selected data block.
+   */
+  AliHLTOUTHandler* GetHandler();
+
+  /**
    * Locking guard for the AliHLTOUT object.
    * If the object is locked, the selection of data blocks can not be changed.
    */
@@ -254,8 +259,10 @@ class AliHLTOUT : public AliHLTLogging {
 
     ~AliHLTOUTHandlerListEntry();
 
+    static const AliHLTOUTHandlerListEntry fgkVoidHandlerListEntry;
+
     operator AliHLTOUTHandler*() const {return fpHandler;}
-    operator AliHLTModuleAgent::AliHLTOUTHandlerDesc&() {return fHandlerDesc;}
+    operator AliHLTModuleAgent::AliHLTOUTHandlerDesc&() {return *fpHandlerDesc;}
     operator AliHLTModuleAgent*() const {return fpAgent;}
 
     bool operator==(const AliHLTOUTHandlerListEntry& entry) const;
@@ -263,6 +270,8 @@ class AliHLTOUT : public AliHLTLogging {
     AliHLTUInt32_t operator[](int i) const;
 
     void AddIndex(AliHLTUInt32_t index);
+
+    bool HasIndex(AliHLTUInt32_t index);
 
   private:
     /** standard constructor prohibited */
@@ -272,7 +281,7 @@ class AliHLTOUT : public AliHLTLogging {
     AliHLTOUTHandler* fpHandler; //! transient
 
     /** pointer to handler description */
-    AliHLTModuleAgent::AliHLTOUTHandlerDesc& fHandlerDesc; //! transient
+    AliHLTModuleAgent::AliHLTOUTHandlerDesc* fpHandlerDesc; //! transient
 
     /** pointer to module agent */
     AliHLTModuleAgent* fpAgent; //! transient
@@ -280,7 +289,7 @@ class AliHLTOUT : public AliHLTLogging {
     /** list of block indexes */
     AliHLTOUTIndexList fBlocks; //!transient
   };
-
+  
   /**
    * Generate the index of the HLTOUT data.
    * Must be implemented by the child classes.
@@ -355,6 +364,11 @@ class AliHLTOUT : public AliHLTLogging {
    *         neg. error code if failed
    */
   int InsertHandler(const AliHLTOUTHandlerListEntry &entry);
+
+  /**
+   * Find handler description for a certain block index.
+   */
+  AliHLTOUTHandlerListEntry FindHandlerDesc(AliHLTUInt32_t blockIndex);
 
   /** data type for the current block search, set from @ref SelectFirstDataBlock */
   AliHLTComponentDataType fSearchDataType; //!transient

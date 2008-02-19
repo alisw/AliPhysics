@@ -12,6 +12,7 @@
 */
 
 #include "AliHLTModuleAgent.h"
+#include "AliHLTOUTHandlerEquId.h"
 
 /**
  * @class AliHLTTPCAgent
@@ -67,10 +68,69 @@ class AliHLTTPCAgent : public AliHLTModuleAgent {
    * @param pHandler  [in] instance of the component handler          
    */
   int RegisterComponents(AliHLTComponentHandler* pHandler) const;
+
+  /**
+   * Get handler decription for TPC data in the HLTOUT data stream.
+   * @param dt        [in] data type of the block
+   * @param spec      [in] specification of the block
+   * @param pDesc     [out] handler description
+   * @return 1 if the agent can provide a handler, 0 if not
+   */
+  int GetHandlerDescription(AliHLTComponentDataType dt,
+			    AliHLTUInt32_t spec,
+			    AliHLTOUTHandlerDesc& desc) const;
+
+  /**
+   * Get specific handler for TPC data in the HLTOUT data stream.
+   * @param dt        [in] data type of the block
+   * @param spec      [in] specification of the block
+   * @return pointer to handler
+   */
+  AliHLTOUTHandler* GetOutputHandler(AliHLTComponentDataType dt,
+				     AliHLTUInt32_t spec);
+
+  /**
+   * Delete an HLTOUT handler.
+   * @param pInstance      pointer to handler
+   */
+  int DeleteOutputHandler(AliHLTOUTHandler* pInstance);
+
+  /**
+   * The handler for TPC RAW data in the HLTOUT stream.
+   */
+  class AliHLTTPCRawDataHandler : public AliHLTOUTHandlerEquId {
+  public:
+    /** constructor */
+    AliHLTTPCRawDataHandler();
+    /** destructor */
+    ~AliHLTTPCRawDataHandler();
+
+    /**
+     * Process a data block.
+     * Decode specification and return equipment id of the data block.
+     * The data itsself i untouched.
+     * @return equipment id the block should be used for.
+     */
+    int ProcessData(AliHLTOUT* pData);
+
+  private:
+
+  };
+
  protected:
 
  private:
-  ClassDef(AliHLTTPCAgent, 0);
+  /** copy constructor prohibited */
+  AliHLTTPCAgent(const AliHLTTPCAgent&);
+  /** assignment operator prohibited */
+  AliHLTTPCAgent& operator=(const AliHLTTPCAgent&);
+
+  /** handler for TPC raw data in the HLTOUT stream */
+  AliHLTTPCRawDataHandler* fRawDataHandler; //!transient
+  /** nof requests for TPC raw data handler */
+  int fNofRawDataHandler; //!transient
+
+  ClassDef(AliHLTTPCAgent, 1);
 };
 
 #endif

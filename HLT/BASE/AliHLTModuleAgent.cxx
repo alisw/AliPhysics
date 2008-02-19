@@ -29,10 +29,11 @@
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTModuleAgent)
 
-AliHLTModuleAgent::AliHLTModuleAgent()
+AliHLTModuleAgent::AliHLTModuleAgent(const char* id)
   :
   fpNext(NULL),
-  fpComponentHandler(NULL)
+  fpComponentHandler(NULL),
+  fModuleId(id)
 {
   // see header file for class documentation
   // or
@@ -46,6 +47,12 @@ AliHLTModuleAgent::~AliHLTModuleAgent()
 {
   // see header file for function documentation
   Unregister(this);
+}
+
+const char* AliHLTModuleAgent::GetModuleId() const
+{
+  // see header file for function documentation
+  return fModuleId.Data();
 }
 
 void AliHLTModuleAgent::PrintStatus(const char* agent)
@@ -101,7 +108,7 @@ const char* AliHLTModuleAgent::GetRequiredComponentLibraries() const
 
 int AliHLTModuleAgent::GetHandlerDescription(AliHLTComponentDataType /*dt*/,
 					     AliHLTUInt32_t /*spec*/,
-					     AliHLTOUTHandlerDesc* /*pDesc*/) const
+					     AliHLTOUTHandlerDesc& /*desc*/) const
 {
   // default method, nothing to be done, child classes can overload
   return 0;

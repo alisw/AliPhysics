@@ -47,6 +47,8 @@ AliHLTCompAgent gAliHLTCompAgent;
 ClassImp(AliHLTCompAgent)
 
 AliHLTCompAgent::AliHLTCompAgent()
+  :
+  AliHLTModuleAgent("Comp")
 {
   // see header file for class documentation
   // or

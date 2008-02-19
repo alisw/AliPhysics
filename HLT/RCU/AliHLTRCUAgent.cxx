@@ -36,6 +36,8 @@ AliHLTRCUAgent gAliHLTRCUAgent;
 ClassImp(AliHLTRCUAgent)
 
 AliHLTRCUAgent::AliHLTRCUAgent()
+  :
+  AliHLTModuleAgent("RCU")
 {
   // see header file for class documentation
   // or

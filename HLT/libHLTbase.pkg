@@ -28,6 +28,7 @@ CLASS_HDRS:=  	AliHLTComponent.h \
 		AliHLTOUT.h \
 		AliHLTOUTHomerBuffer.h \
 		AliHLTOUTHandler.h \
+		AliHLTOUTHandlerEquId.h \
 		AliHLTMemoryFile.h \
 		AliHLTMessage.h
 

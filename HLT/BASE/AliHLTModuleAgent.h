@@ -110,9 +110,17 @@ class AliHLTModuleAgent : public TObject, public AliHLTLogging {
    * standard constructor. The agent is automatically registered in the
    * global agent manager
    */
-  AliHLTModuleAgent();
+  AliHLTModuleAgent(const char* id);
   /** destructor */
   virtual ~AliHLTModuleAgent();
+
+  /**
+   * Get module id.
+   * The module id is a string specifying the detector, or module. The
+   * library must follow the naming scheme \it libAliHLTModule.so, e.g.
+   * \it libAliHLTTPC.so if the module is 'TPC'
+   */
+  const char* GetModuleId() const;
 
   /**
    * Print status info.
@@ -252,6 +260,13 @@ class AliHLTModuleAgent : public TObject, public AliHLTLogging {
     AliHLTOUTHandlerDesc(AliHLTOUTHandlerType handlerType, AliHLTComponentDataType dt, const char* module) 
       : fHType(handlerType), fDt(dt), fModule(module) {}
 
+    AliHLTOUTHandlerDesc(const AliHLTOUTHandlerDesc& src) 
+      : fHType(src.fHType), fDt(src.fDt), fModule(src.fModule) {}
+
+    const AliHLTOUTHandlerDesc& operator=(const AliHLTOUTHandlerDesc& src) {
+      fHType=src.fHType; fDt=src.fDt; fModule=src.fModule;
+    }
+
     ~AliHLTOUTHandlerDesc() {}
 
   private:
@@ -267,12 +282,12 @@ class AliHLTModuleAgent : public TObject, public AliHLTLogging {
    * Get handler description for a data block.
    * @param dt        [in] data type of the block
    * @param spec      [in] specification of the block
-   * @param pDesc     [out] handler description
+   * @param desc      [out] handler description
    * @return 1 if the agent can provide a handler, 0 if not
    */
   virtual int GetHandlerDescription(AliHLTComponentDataType dt,
 				    AliHLTUInt32_t spec,
-				    AliHLTOUTHandlerDesc* pDesc) const;
+				    AliHLTOUTHandlerDesc& pDesc) const;
 
   /**
    * Get handler for a data block of the HLTOUT data.
@@ -332,6 +347,8 @@ class AliHLTModuleAgent : public TObject, public AliHLTLogging {
  protected:
 
  private:
+  /** standard constructor prohibited */
+  AliHLTModuleAgent();
   /** copy constructor prohibited */
   AliHLTModuleAgent(const AliHLTModuleAgent&);
   /** assignment operator prohibited */
@@ -361,10 +378,13 @@ class AliHLTModuleAgent : public TObject, public AliHLTLogging {
   /** number of agents */
   static int fCount;                                               //! transient
 
-  /* instance of the active component handler */
+  /** instance of the active component handler */
   AliHLTComponentHandler* fpComponentHandler;                      //! transient
 
-  ClassDef(AliHLTModuleAgent, 2);
+  /** id of the module */
+  TString fModuleId;                                               //! transient
+
+  ClassDef(AliHLTModuleAgent, 3);
 };
 
 #endif
