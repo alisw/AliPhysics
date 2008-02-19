@@ -1,4 +1,4 @@
- /**************************************************************************
+/**************************************************************************
  * Copyright(c) 2007-2009, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
@@ -346,14 +346,27 @@ Bool_t AliITSPlaneEffSSD::ReadFromCDB() {
 if(!fInitCDBCalled)
   {AliError("ReadFromCDB: CDB not inizialized. Call InitCDB first");
    return kFALSE;}
-//if(!AliCDBManager::Instance()->IsDefaultStorageSet()) {
-//    AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
-//  }
 AliCDBEntry *cdbEntry = AliCDBManager::Instance()->Get("ITS/PlaneEff/PlaneEffSSD",fRunNumber);
+if(!cdbEntry) return kFALSE;
 AliITSPlaneEffSSD* eff= (AliITSPlaneEffSSD*)cdbEntry->GetObject();
 if(this==eff) return kFALSE;
 if(fHis) CopyHistos(*eff); // If histos already exist then copy them to eff
 eff->Copy(*this);          // copy everything (statistics and histos) from eff to this
+return kTRUE;
+}
+//_____________________________________________________________________________
+Bool_t AliITSPlaneEffSSD::AddFromCDB(AliCDBId *cdbId) {
+AliCDBEntry *cdbEntry=0;
+if (!cdbId) {
+  if(!fInitCDBCalled)
+    {AliError("ReadFromCDB: CDB not inizialized. Call InitCDB first"); return kFALSE;}
+  cdbEntry = AliCDBManager::Instance()->Get("ITS/PlaneEff/PlaneEffSSD",fRunNumber);
+} else {
+  cdbEntry = AliCDBManager::Instance()->Get(*cdbId);
+}
+if(!cdbEntry) return kFALSE;
+AliITSPlaneEffSSD* eff= (AliITSPlaneEffSSD*)cdbEntry->GetObject();
+*this+=*eff;
 return kTRUE;
 }
 //_____________________________________________________________________________
@@ -444,12 +457,16 @@ return;
 }
 //__________________________________________________________
 Bool_t AliITSPlaneEffSSD::FillHistos(UInt_t key, Bool_t found,
-                                     Float_t tXZ[2], Float_t cXZ[2], Int_t ctXZ[2]) {
+                                 //    Float_t tXZ[2], Float_t cXZ[2], Int_t ctXZ[2]) {
+                                     Float_t *tr, Float_t *clu, Int_t *csize) {
 // this method fill the histograms
 // input: - key: unique key of the basic block
 //        - found: Boolean to asses whether a cluster has been associated to the track or not
-//        - tXZ[2] local X and Z coordinates of the track prediction
-//        - cXZ[2] local X and Z coordinates of the cluster associated to the track
+//        - tr[0],tr[1] local X and Z coordinates of the track prediction, respectively
+//        - tr[2],tr[3] error on local X and Z coordinates of the track prediction, respectively
+//        - clu[0],clu[1] local X and Z coordinates of the cluster associated to the track, respectively
+//        - clu[2],clu[3] error on local X and Z coordinates of the cluster associated to the track, respectively
+//        - csize[0][1] cluster size in X and Z, respectively
 // output: kTRUE if filling was succesfull kFALSE otherwise
 // side effects: updating of the histograms.
 //
@@ -463,12 +480,12 @@ Bool_t AliITSPlaneEffSSD::FillHistos(UInt_t key, Bool_t found,
   if(id>=kNHisto)
     {AliWarning("FillHistos: you want to fill a non-existing histos"); return kFALSE;}
   if(found) {
-    Float_t resx=tXZ[0]-cXZ[0];
-    Float_t resz=tXZ[1]-cXZ[1];
+    Float_t resx=tr[0]-clu[0];
+    Float_t resz=tr[1]-clu[1];
     fHisResX[id]->Fill(resx);
     fHisResZ[id]->Fill(resz);
     fHisResXZ[id]->Fill(resx,resz);
-    fHisClusterSize[id]->Fill((Double_t)ctXZ[0],(Double_t)ctXZ[1]);
+    fHisClusterSize[id]->Fill((Double_t)csize[0],(Double_t)csize[1]);
   }
   return kTRUE;
 }
@@ -522,6 +539,7 @@ Bool_t AliITSPlaneEffSSD::ReadHistosFromFile(TString filename) {
      AliWarning("ReadHistosFromFile: incorrect output filename!");
      return kFALSE;
   }
+  //char branchname[30];
 
   TH1F *h  = 0;
   TH2F *h2 = 0;

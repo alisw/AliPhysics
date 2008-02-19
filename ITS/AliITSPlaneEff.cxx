@@ -148,8 +148,8 @@ Double_t AliITSPlaneEff::ErrPlaneEff(Int_t nf,Int_t nt) const{
 if(nf<0 || nt<=0 || nt<nf) {
    AliInfo(Form("AliITSPlaneEff::ErrPlaneEff: nfound= %i, ntried= %i",nf,nt)); 
    return -1.;}
- Double_t err=TMath::Sqrt(nf*(1.-nf/nt));
- return err/=nt;
+ Double_t err=TMath::Sqrt((Double_t)nf*(1.-(Double_t)nf/(Double_t)nt));
+ return err/=(Double_t)nt;
 }
 //______________________________________________________________________
 Int_t AliITSPlaneEff::GetNTracksForGivenEff(Double_t eff, Double_t RelErr) const {

@@ -5123,6 +5123,7 @@ void AliITStrackerMI::UseTrackForPlaneEff(AliITStrackMI* track, Int_t ilayer) {
   if(key>fPlaneEff->Nblock()) return;
   Bool_t found=kFALSE;
   //if (ci>=0) {
+  Double_t chi2;
   while ((cl=layer.GetNextCluster(clidx))!=0) {
     idetc = cl->GetDetectorIndex();
     if(idet!=idetc) continue;
@@ -5131,7 +5132,8 @@ void AliITStrackerMI::UseTrackForPlaneEff(AliITStrackMI* track, Int_t ilayer) {
     if ( (tmp.GetZ()-cl->GetZ())*(tmp.GetZ()-cl->GetZ())*msz +
          (tmp.GetY()-cl->GetY())*(tmp.GetY()-cl->GetY())*msy   > 1. ) continue;
     // calculate track-clusters chi2
-    Double_t chi2 = GetPredictedChi2MI(&tmp,cl,ilayer); // note that this method change track tmp
+    chi2 = GetPredictedChi2MI(&tmp,cl,ilayer); // note that this method change track tmp
+                                               // in particular, the error associated to the cluster 
     //Double_t chi2 = tmp.GetPredictedChi(cl); // this method does not change track tmp
     // chi2 cut
     if (chi2 > AliITSReconstructor::GetRecoParam()->GetMaxChi2s(ilayer)) continue;
@@ -5143,20 +5145,59 @@ void AliITStrackerMI::UseTrackForPlaneEff(AliITStrackMI* track, Int_t ilayer) {
   if(!fPlaneEff->UpDatePlaneEff(found,key))
        AliWarning(Form("UseTrackForPlaneEff: cannot UpDate PlaneEff for key=%d",key));
   if(fPlaneEff->GetCreateHistos()&&  AliITSReconstructor::GetRecoParam()->GetHistoPlaneEff()) {
+    Float_t tr[4]={99999.,99999.,9999.,9999.};    // initialize to high values 
+    Float_t clu[4]={-99999.,-99999.,9999.,9999.}; // (in some cases GetCov fails) 
+    Int_t cltype[2]={-999,-999};
     Int_t ndet=AliITSgeomTGeo::GetNDetectors(ilayer+1); // layers from 1 to 6
     Int_t lad = Int_t(idet/ndet) + 1;
     Int_t hdet = idet - (lad-1)*ndet + 1;
-    Double_t xyzGlob[3],xyzLoc[3];
-    tmp.GetXYZ(xyzGlob);
-    AliITSgeomTGeo::GlobalToLocal(ilayer+1,lad,hdet,xyzGlob,xyzLoc);
-    Float_t tr[2]={xyzLoc[0],xyzLoc[2]};
-    Float_t clu[2]={-99999.,-99999.};
-    Int_t cltype[2]={-999,-999};
+    Double_t xyzGlob[3],xyzLoc[3],cv[21],exyzLoc[3],exyzGlob[3];
+    if(tmp.GetXYZ(xyzGlob)) {
+      if (AliITSgeomTGeo::GlobalToLocal(ilayer+1,lad,hdet,xyzGlob,xyzLoc)) {
+        tr[0]=xyzLoc[0];
+        tr[1]=xyzLoc[2];
+      }
+    }
+    if(tmp.GetCovarianceXYZPxPyPz(cv)) {
+      exyzGlob[0]=TMath::Sqrt(cv[0]);
+      exyzGlob[1]=TMath::Sqrt(cv[2]);
+      exyzGlob[2]=TMath::Sqrt(cv[5]);
+      if (AliITSgeomTGeo::GlobalToLocalVect(AliITSgeomTGeo::GetModuleIndex(ilayer+1,lad,hdet),exyzGlob,exyzLoc)) { 
+        tr[2]=TMath::Abs(exyzLoc[0]);
+        tr[3]=TMath::Abs(exyzLoc[2]);
+      }
+    }
     if (found){
       clu[0]=layer.GetCluster(ci)->GetDetLocalX();
       clu[1]=layer.GetCluster(ci)->GetDetLocalZ();
       cltype[0]=layer.GetCluster(ci)->GetNy();
       cltype[1]=layer.GetCluster(ci)->GetNz();
+     
+     // Without the following 6 lines you would retrieve the nominal error of a cluster (e.g. for the SPD:
+     //  X->50/sqrt(12)=14 micron   Z->450/sqrt(12)= 120 micron) 
+     // Within AliTrackerMI/AliTrackMI the error on the cluster is associated to the AliITStrackMI (fSigmaY,Z)
+     // It is computed properly by calling the method 
+     // AliITStrackerMI::GetPredictedChi2MI(AliITStrackMI* track, const AliITSRecPoint *cluster,Int_t layer)
+     // T
+     //Double_t x=0.5*(tmp.GetX()+layer.GetCluster(ci)->GetX()); // Take into account the mis-alignment
+      //if (tmp.PropagateTo(x,0.,0.)) {
+        chi2=GetPredictedChi2MI(&tmp,layer.GetCluster(ci),ilayer);
+        AliCluster c(*layer.GetCluster(ci));
+        c.SetSigmaY2(tmp.GetSigmaY(ilayer)*tmp.GetSigmaY(ilayer));
+        c.SetSigmaZ2(tmp.GetSigmaZ(ilayer)*tmp.GetSigmaZ(ilayer));
+        Float_t cov[6];
+        //if (layer.GetCluster(ci)->GetGlobalCov(cov))  // by using this, instead, you got nominal cluster errors
+        if (c.GetGlobalCov(cov)) 
+        {
+          exyzGlob[0]=TMath::Sqrt(cov[0]);
+          exyzGlob[1]=TMath::Sqrt(cov[3]);
+          exyzGlob[2]=TMath::Sqrt(cov[5]);
+          if (AliITSgeomTGeo::GlobalToLocalVect(AliITSgeomTGeo::GetModuleIndex(ilayer+1,lad,hdet),exyzGlob,exyzLoc)) {
+            clu[2]=TMath::Abs(exyzLoc[0]);  
+            clu[3]=TMath::Abs(exyzLoc[2]);  
+          }
+        }
+      //}
     }
     fPlaneEff->FillHistos(key,found,tr,clu,cltype);
   }

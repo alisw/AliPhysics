@@ -6,6 +6,7 @@
 #include <TH2I.h>
 #include <TProfile.h>
 #include "AliITSPlaneEff.h"
+#include "AliCDBId.h"
 
 ///////////////////////////////////////////
 //                                       //
@@ -41,7 +42,7 @@ class AliITSPlaneEffSDD :  public AliITSPlaneEff {
     // Methods to update the Plane efficiency (specific of the SDD segmentation) 
     Bool_t UpDatePlaneEff(const Bool_t Kfound, const UInt_t mod, 
                           const UInt_t chip, const UInt_t wing, const UInt_t subw=0);
-    virtual Bool_t UpDatePlaneEff(const Bool_t Kfound, const UInt_t key)
+    Bool_t UpDatePlaneEff(const Bool_t Kfound, const UInt_t key)
       {return UpDatePlaneEff(Kfound,GetModFromKey(key),GetChipFromKey(key),
                              GetWingFromKey(key),GetSubWingFromKey(key));};
     //
@@ -53,10 +54,6 @@ class AliITSPlaneEffSDD :  public AliITSPlaneEff {
     enum {kNAnode = 64};   // Number of channels/chip (i.e. anodes per chip)
     //enum {kNTimeBin = 174};   // granularity along drift direction (i.e. segmentation in r-phi)
 
-    enum {kNHisto = kNModule}; // The number of histograms: module by module.
-    enum {kNclu = 3};          // Build specific histos of residuals up to cluster size kNclu.
-                               // If you change them, then you must change implementation of
-                               // the method FillHistos.
 //
 //  Plane efficiency for active  detector (excluding dead/noisy channels)
 //  access to DB is needed
@@ -74,8 +71,8 @@ class AliITSPlaneEffSDD :  public AliITSPlaneEff {
     virtual Double_t GetFracBad(const UInt_t key) const;
     virtual Bool_t WriteIntoCDB() const;
     virtual Bool_t ReadFromCDB(); // this method reads Data Members (statistics) from DataBase
-    virtual Bool_t AddFromCDB()   // this method updates Data Members (statistics) from DataBase
-      {AliError("AddFromCDB: Still To be implemented"); return kFALSE;}
+    Bool_t AddFromCDB(AliCDBId *cdbId);   // this method updates Data Members (statistics) from DataBase
+    virtual Bool_t AddFromCDB()  {AliCDBId *cdbId=0; return  AddFromCDB(cdbId);}
     // method to locate a basic block from Detector Local coordinate (to be used in tracking)
     // see file cxx for numbering convention.
     // here idet runs from 0 to 83 for layer 2 and from 0 to 175 for layer 3
@@ -87,20 +84,51 @@ class AliITSPlaneEffSDD :  public AliITSPlaneEff {
     // method to set on/off the creation/updates of histograms (Histos are created/destroyed)
     void   SetCreateHistos(Bool_t his=kFALSE)
          {fHis=his; if(fHis) {DeleteHistos(); InitHistos();} else DeleteHistos(); return; }
-    Bool_t FillHistos(UInt_t key, Bool_t found, Float_t trackXZ[2], Float_t clusterXZ[2], Int_t ctXZ[2]);
-    Bool_t WriteHistosToFile(TString filename="PlaneEffSDDHistos.root",Option_t* option = "RECREATE");
-    Bool_t ReadHistosFromFile(TString filename="PlaneEffSDDHistos.root"); // histos must exist already !
+    //Bool_t FillHistos(UInt_t key, Bool_t found, Float_t trackXZ[2], Float_t clusterXZ[2], Int_t ctXZ[2]);
+    virtual Bool_t FillHistos(UInt_t key, Bool_t found, Float_t *track, Float_t *cluster, Int_t *ctype);
+    virtual Bool_t WriteHistosToFile(TString filename="PlaneEffSDDHistos.root",Option_t* option = "RECREATE");
+    virtual Bool_t ReadHistosFromFile(TString filename="PlaneEffSDDHistos.root"); // histos must exist already !
                                                                           // This method increases the
                                                                           // statistics of histos by adding
                                                                           // those of the input file.
+    UInt_t GetKey(const UInt_t mod, const UInt_t chip,           // unique key to locate the
+                  const UInt_t wing, const UInt_t subw=0) const; // basic block of the SDD
  protected:
     virtual void Copy(TObject &obj) const;
-    void CopyHistos(AliITSPlaneEffSDD& target) const; // copy only histograms to target
     Int_t GetMissingTracksForGivenEff(Double_t eff, Double_t RelErr, 
                                       UInt_t im, UInt_t ic, UInt_t iw,  UInt_t isw=0) const;
+    UInt_t GetModFromKey(const UInt_t key) const;
+    UInt_t GetChipFromKey(const UInt_t key) const;
+    UInt_t GetWingFromKey(const UInt_t key) const;
+    UInt_t GetSubWingFromKey(const UInt_t key) const;
+    // getters for chip and wing numbers, given the anode number [0,511]
+    UInt_t ChipFromAnode(const UInt_t anode) const; // return the chip number (from 0 to kNChip-1)
+    UInt_t WingFromAnode(const UInt_t anode) const; // return the wing number (from 0 to kNWing-1)
+    void   ChipAndWingFromAnode(const UInt_t anode,UInt_t& chip,UInt_t& wing) const;
+    // return the Subwing  (from 0 to kNSubWing-1) from the cell time bin in the range
+    // [0,ntb] and from the number of time bins
+    UInt_t SubWingFromTimeBin(const Int_t tb, const Int_t ntb) const;
+
+    void   ChipAndWingAndSubWingFromLocCoor(Float_t locx, Float_t locz,
+                                 UInt_t& chip, UInt_t& wing, UInt_t& subw) const;
+    //
+    void GetAllFromKey(const UInt_t key, UInt_t& mod, UInt_t& chip,
+                       UInt_t& wing, UInt_t& subw) const;
+    void GetBadInBlock(const UInt_t key, UInt_t& bad) const;
 // 
     Int_t fFound[kNModule*kNChip*kNWing*kNSubWing]; // number of associated clusters in a given block
     Int_t fTried[kNModule*kNChip*kNWing*kNSubWing]; // number of tracks used for efficiency evaluation
+
+ private:
+    enum {kNHisto = kNModule}; // The number of histograms: module by module.
+    enum {kNclu = 3};          // Build specific histos of residuals up to cluster size kNclu.
+                               // If you change them, then you must change implementation of
+                               // the method FillHistos.
+
+    virtual void InitHistos();     // create histos by allocating memory for them
+    virtual void DeleteHistos();   // deletete histos (memory is freed)
+    virtual void CopyHistos(AliITSPlaneEffSDD& target) const; // copy only histograms to target
+
     TH1F **fHisResX; //! histos with residual distribution (track-cluster) along local X (r-phi)
     TH1F **fHisResZ; //! histos with residual distribution (track-cluster) along local Z
     TH2F **fHisResXZ; //! 2-d histos with residual distribution (track-cluster) along local X and Z
@@ -111,29 +139,6 @@ class AliITSPlaneEffSDD :  public AliITSPlaneEff {
     TProfile **fProfResZvsX; //! TProfile of Z Residuals vs. X (of the cluster)
     TProfile **fProfClustSizeXvsX; //! TProfile of cluster_size_X vs. X (of the cluster)
     TProfile **fProfClustSizeZvsX; //! TProfile of cluster_size_X vs. X (of the cluster)
- private:
-    UInt_t GetKey(const UInt_t mod, const UInt_t chip,           // unique key to locate the 
-                  const UInt_t wing, const UInt_t subw=0) const; // basic block of the SDD
-    UInt_t GetModFromKey(const UInt_t key) const;
-    UInt_t GetChipFromKey(const UInt_t key) const;
-    UInt_t GetWingFromKey(const UInt_t key) const;
-    UInt_t GetSubWingFromKey(const UInt_t key) const;
-    // getters for chip and wing numbers, given the anode number [0,511]
-    UInt_t ChipFromAnode(const UInt_t anode) const; // return the chip number (from 0 to kNChip-1)
-    UInt_t WingFromAnode(const UInt_t anode) const; // return the wing number (from 0 to kNWing-1)
-    void   ChipAndWingFromAnode(const UInt_t anode,UInt_t& chip,UInt_t& wing) const; 
-    // return the Subwing  (from 0 to kNSubWing-1) from the cell time bin in the range 
-    // [0,ntb] and from the number of time bins 
-    UInt_t SubWingFromTimeBin(const Int_t tb, const Int_t ntb) const; 
-                                                  
-    void   ChipAndWingAndSubWingFromLocCoor(Float_t locx, Float_t locz, 
-                                 UInt_t& chip, UInt_t& wing, UInt_t& subw) const; 
-    //
-    void GetAllFromKey(const UInt_t key, UInt_t& mod, UInt_t& chip, 
-                       UInt_t& wing, UInt_t& subw) const;
-    void GetBadInBlock(const UInt_t key, UInt_t& bad) const;
-    void InitHistos();
-    void DeleteHistos();
 
     ClassDef(AliITSPlaneEffSDD,2) // SDD Plane Efficiency class
 };

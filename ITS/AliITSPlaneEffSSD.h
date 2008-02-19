@@ -6,6 +6,7 @@
 #include <TH1F.h>
 #include <TH2I.h>
 #include "AliITSPlaneEff.h"
+#include "AliCDBId.h"
 
 ///////////////////////////////////////////
 //                                       //
@@ -37,11 +38,6 @@ class AliITSPlaneEffSSD :  public AliITSPlaneEff {
     enum {kNChip = 6}; // The number of chips per side of a module (2 sides: 12 chips)
     enum {kNSide = 2}; // The number of sides of a module (p and n side)
     enum {kNStrip = 128}; // The number of strips per chip (in a module 2*768 strips)
-    //
-    enum {kNHisto = kNModule}; // The number of histograms: module by module.
-    //enum {kNclu = 3};          // Build specific histos of residuals up to cluster size kNclu.
-                               // If you change them, then you must change implementation of
-                               // the method FillHistos.
 //
 //  Plane efficiency for active  detector (excluding dead/noisy channels)
 //  access to DB is needed
@@ -53,8 +49,8 @@ class AliITSPlaneEffSSD :  public AliITSPlaneEff {
     virtual Double_t GetFracBad(const UInt_t mod) const;
     virtual Bool_t WriteIntoCDB() const;
     virtual Bool_t ReadFromCDB(); // this method reads Data Members (statistics) from DataBase
-    virtual Bool_t AddFromCDB()   // this method updates Data Members (statistics) from DataBase
-      {AliError("AddFromCDB: Still To be implemented"); return kFALSE;}
+    Bool_t AddFromCDB(AliCDBId *cdbId);   // this method updates Data Members (statistics) from DataBase
+    virtual Bool_t AddFromCDB() {AliCDBId *cdbId=0; return  AddFromCDB(cdbId);}
    // method to locate a basic block from Detector Local coordinate (to be used in tracking)
    // see file cxx for numbering convention.
    // here idet runs from 0 to 747 for layer 4 and from 0 to 949 for layer 5
@@ -64,35 +60,41 @@ class AliITSPlaneEffSSD :  public AliITSPlaneEff {
     Bool_t GetBlockBoundaries(const UInt_t key,Float_t& xmn,Float_t& xmx,Float_t& zmn,Float_t& zmx) const;
   // Methods for dealing with auxiliary histograms
     // method to set on/off the creation/updates of histograms (Histos are created/destroyed)
-    void   SetCreateHistos(Bool_t his=kFALSE)
+    virtual void   SetCreateHistos(Bool_t his=kFALSE)
          {fHis=his; if(fHis) {DeleteHistos(); InitHistos();} else DeleteHistos(); return; }
-    Bool_t FillHistos(UInt_t key, Bool_t found, Float_t trackXZ[2], Float_t clusterXZ[2], Int_t ctXZ[2]);
-    Bool_t WriteHistosToFile(TString filename="PlaneEffSSDHistos.root",Option_t* option = "RECREATE");
-    Bool_t ReadHistosFromFile(TString filename="PlaneEffSSDHistos.root"); // histos must exist already !
+    //Bool_t FillHistos(UInt_t key, Bool_t found, Float_t trackXZ[2], Float_t clusterXZ[2], Int_t ctXZ[2]);
+    virtual Bool_t FillHistos(UInt_t key, Bool_t found, Float_t *track, Float_t *cluster, Int_t *ctype);
+    virtual Bool_t WriteHistosToFile(TString filename="PlaneEffSSDHistos.root",Option_t* option = "RECREATE");
+    virtual Bool_t ReadHistosFromFile(TString filename="PlaneEffSSDHistos.root"); // histos must exist already !
                                                                           // This method increases the
                                                                           // statistics of histos by adding
                                                                           // those of the input file.
+    UInt_t GetKey(const UInt_t mod) const; // unique key to locate the basic
+                                           // block of the SSD (the module itself)
  protected:
     virtual void Copy(TObject &obj) const;
-    void CopyHistos(AliITSPlaneEffSSD& target) const; // copy only histograms to target
     Int_t GetMissingTracksForGivenEff(Double_t eff, Double_t RelErr, UInt_t im) const;
+    UInt_t GetModFromKey(const UInt_t key) const;
+    void GetBadInModule(const UInt_t mod, UInt_t& bad) const;
 
 // 
     Int_t fFound[kNModule];  // number of associated clusters in a given module
     Int_t fTried[kNModule];  // number of tracks used for module efficiency evaluation
 //
+ private:
+    enum {kNHisto = kNModule}; // The number of histograms: module by module.
+    //enum {kNclu = 3};          // Build specific histos of residuals up to cluster size kNclu.
+                               // If you change them, then you must change implementation of
+                               // the method FillHistos.
+    virtual void InitHistos();    // create histos by allocating memory for them
+    virtual void DeleteHistos();  // deletete histos (memory is freed)
+    void CopyHistos(AliITSPlaneEffSSD& target) const; // copy only histograms to target
+//
     TH1F **fHisResX; //! histos with residual distribution (track-cluster) along local X (r-phi)
     TH1F **fHisResZ; //! histos with residual distribution (track-cluster) along local Z
     TH2F **fHisResXZ; //! 2-d histos with residual distribution (track-cluster) along local X and Z
     TH2I **fHisClusterSize; //! histos with cluster-size distribution
- private:
-    UInt_t GetKey(const UInt_t mod) const; // unique key to locate the basic 
-                                           // block of the SSD (the module itself)
-    UInt_t GetModFromKey(const UInt_t key) const;
-    void GetBadInModule(const UInt_t mod, UInt_t& bad) const;
-    void InitHistos();
-    void DeleteHistos();
-
+//
     ClassDef(AliITSPlaneEffSSD,2) // SSD Plane Efficiency class
 };
 //
