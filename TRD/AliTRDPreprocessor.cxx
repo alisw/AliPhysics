@@ -93,12 +93,12 @@ UInt_t AliTRDPreprocessor::Process(TMap* dcsAliasMap)
   TString runType = GetRunType();
   Log(Form("runtype %s\n",runType.Data()));
   
-  if (runType=="PEDESTAL_RUN"){
+  if (runType=="PEDESTAL"){
     if(ExtractPedestals()) return 1;
     return 0;
   } 
 
-  if (runType=="PHYSICS"){
+  if ((runType=="PHYSICS") || (runType=="STANDALONE")){
     // DCS
     if(ProcessDCS(dcsAliasMap)) return 1;
     // HLT if On
@@ -125,7 +125,7 @@ Bool_t AliTRDPreprocessor::ProcessDCS()
   //
 
   TString runType = GetRunType();
-  if (runType == "PHYSICS") {
+  if ((runType == "PHYSICS") || (runType == "STANDALONE")) {
     return kTRUE;
   }
   return kFALSE;

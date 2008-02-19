@@ -63,7 +63,7 @@
 #include "AliTRDpadPlane.h"
 #include "AliTRDcluster.h"
 #include "AliTRDtrackV1.h"
-#include "AliTRDrawStreamTB.h"
+#include "AliTRDrawStreamBase.h"
 #include "AliRawReader.h"
 #include "AliRawReaderDate.h"
 #include "AliTRDgeometry.h"
@@ -130,6 +130,7 @@ AliTRDCalibraFillHisto::AliTRDCalibraFillHisto()
   ,fLinearFitterDebugOn(kFALSE)
   ,fRelativeScale(0)
   ,fThresholdClusterPRF2(15.0)
+  ,fLimitChargeIntegration(kFALSE)
   ,fCalibraMode(new AliTRDCalibraMode())
   ,fDebugStreamer(0)
   ,fDebugLevel(0)
@@ -192,6 +193,7 @@ AliTRDCalibraFillHisto::AliTRDCalibraFillHisto(const AliTRDCalibraFillHisto &c)
   ,fLinearFitterDebugOn(c.fLinearFitterDebugOn)
   ,fRelativeScale(c.fRelativeScale)
   ,fThresholdClusterPRF2(c.fThresholdClusterPRF2)
+  ,fLimitChargeIntegration(c.fLimitChargeIntegration)
   ,fCalibraMode(0x0)
   ,fDebugStreamer(0)
   ,fDebugLevel(c.fDebugLevel)
@@ -732,7 +734,7 @@ Bool_t AliTRDCalibraFillHisto::FindP1TrackPHtracklet(AliTRDtrack *t, Int_t index
   for(Int_t k = 0; k < npoints; k++){
     
     AliTRDcluster *cl                 = (AliTRDcluster *) t->GetCluster(k+index0);
-    if(!cl->IsInChamber()) continue;
+    if((fLimitChargeIntegration) && (!cl->IsInChamber())) continue;
     Double_t ycluster                 = cl->GetY();
     Int_t time                        = cl->GetPadTime();
     Double_t timeis                   = time/fSf;
@@ -881,7 +883,7 @@ Bool_t AliTRDCalibraFillHisto::FindP1TrackPHtrackletV1(const AliTRDseedV1 *track
   AliTRDcluster *cl                   = 0x0;
   for(int ic=0; ic<AliTRDseed::knTimebins; ic++){
     if(!(cl = tracklet->GetClusters(ic))) continue;
-    if(!cl->IsInChamber()) continue;
+    if((fLimitChargeIntegration) && (!cl->IsInChamber())) continue;
     
     Double_t ycluster                 = cl->GetY();
     Int_t time                        = cl->GetPadTime();
@@ -1795,8 +1797,8 @@ void AliTRDCalibraFillHisto::StoreInfoCHPHtrack(AliTRDcluster *cl, Double_t dqdl
   
 
   // Fill the fAmpTotal with the charge
-  if (fCH2dOn && cl->IsInChamber()) {
-    fAmpTotal[(Int_t) group[0]] += correction;
+  if (fCH2dOn) {
+    if((!fLimitChargeIntegration) || (cl->IsInChamber())) fAmpTotal[(Int_t) group[0]] += correction;
   }
 
   // Fill the fPHPlace and value
@@ -2093,10 +2095,10 @@ void AliTRDCalibraFillHisto::FillTheInfoOfTheTrackPH()
 // DAQ process functions
 /////////////////////////////////////////////////////////////////////////////////////////
 //_____________________________________________________________________
-Int_t AliTRDCalibraFillHisto::ProcessEventDAQ(AliTRDrawStreamTB *rawStream, Bool_t nocheck)
+Int_t AliTRDCalibraFillHisto::ProcessEventDAQ(AliTRDrawStreamBase *rawStream, Bool_t nocheck)
 {
   //
-  // Event Processing loop - AliTRDrawStreamTB
+  // Event Processing loop - AliTRDrawStreamBase
   // TestBeam 2007 version
   // 0 timebin problem
   // 1 no input
@@ -2261,10 +2263,10 @@ Int_t AliTRDCalibraFillHisto::ProcessEventDAQ(AliTRDrawStreamTB *rawStream, Bool
   
 }
 //_____________________________________________________________________
-Int_t AliTRDCalibraFillHisto::ProcessEventDAQV1(AliTRDrawStreamTB *rawStream, Bool_t nocheck)
+Int_t AliTRDCalibraFillHisto::ProcessEventDAQV1(AliTRDrawStreamBase *rawStream, Bool_t nocheck)
 {
   //
-  // Event Processing loop - AliTRDrawStreamTB
+  // Event Processing loop - AliTRDrawStreamBase
   // Use old AliTRDmcmtracklet code
   // 0 timebin problem
   // 1 no input
@@ -2442,7 +2444,7 @@ Int_t AliTRDCalibraFillHisto::ProcessEventDAQ(AliRawReader *rawReader, Bool_t no
   //  Testbeam 2007 version
   //
 
-  AliTRDrawStreamTB rawStream(rawReader);
+  AliTRDrawStreamBase rawStream(rawReader);
 
   rawReader->Select("TRD");
 
@@ -2484,7 +2486,7 @@ Int_t AliTRDCalibraFillHisto::ProcessEventDAQV1(AliRawReader *rawReader, Bool_t 
   //  use the old mcm traklet code
   //
 
-  AliTRDrawStreamTB rawStream(rawReader);
+  AliTRDrawStreamBase rawStream(rawReader);
 
   rawReader->Select("TRD");
 

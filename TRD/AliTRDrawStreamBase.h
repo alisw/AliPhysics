@@ -117,7 +117,9 @@ class AliTRDrawStreamBase : public TObject
   virtual Int_t    *GetSignals() const {TRD_NOIMP(); return 0;}
   virtual Int_t     GetADC() const {TRD_NOIMP(); return 0;}
   virtual Int_t     GetTimeBin() const {TRD_NOIMP(); return 0;}
-  
+
+  virtual Int_t     GetCommonAdditive() const {TRD_NOIMP(); return 0;}
+ 
   //----------------------------------------------------------
  
  protected:

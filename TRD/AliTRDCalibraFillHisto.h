@@ -39,7 +39,7 @@ class AliRawReader;
 class AliTRDCalibraMode;
 class AliTRDCalibraVector;
 class AliTRDCalibraVdriftLinearFit;
-class AliTRDrawStreamTB;
+class AliTRDrawStreamBase;
 class AliTRDcluster;
 class AliTRDtrackV1;
 class AliTRDtrack;
@@ -73,11 +73,11 @@ class AliTRDCalibraFillHisto : public TObject {
 	  Bool_t  UpdateHistogramsV1(AliTRDtrackV1 *t);
  
   // Process events DAQ
-	  Int_t   ProcessEventDAQ(AliTRDrawStreamTB *rawStream, Bool_t nocheck = kFALSE);
+	  Int_t   ProcessEventDAQ(AliTRDrawStreamBase *rawStream, Bool_t nocheck = kFALSE);
 	  Int_t   ProcessEventDAQ(AliRawReader *rawReader, Bool_t nocheck = kFALSE);
 	  Int_t   ProcessEventDAQ(eventHeaderStruct *event, Bool_t nocheck = kFALSE);
 
-	  Int_t   ProcessEventDAQV1(AliTRDrawStreamTB *rawStream, Bool_t nocheck = kFALSE);
+	  Int_t   ProcessEventDAQV1(AliTRDrawStreamBase *rawStream, Bool_t nocheck = kFALSE);
 	  Int_t   ProcessEventDAQV1(AliRawReader *rawReader, Bool_t nocheck = kFALSE);
 	  Int_t   ProcessEventDAQV1(eventHeaderStruct *event, Bool_t nocheck = kFALSE);
 
@@ -130,6 +130,7 @@ class AliTRDCalibraFillHisto : public TObject {
   // How to fill the 2D
           void     SetRelativeScale(Float_t relativeScale);                      
           void     SetThresholdClusterPRF2(Float_t thresholdClusterPRF2)     { fThresholdClusterPRF2 = thresholdClusterPRF2; }
+	  void     SetLimitChargeIntegration(Bool_t limitChargeIntegration)  { fLimitChargeIntegration = limitChargeIntegration; }
 	  void     SetNz(Int_t i, Short_t nz);
           void     SetNrphi(Int_t i, Short_t nrphi);
           void     SetProcent(Float_t procent)                               { fProcent              = procent;              }
@@ -142,6 +143,7 @@ class AliTRDCalibraFillHisto : public TObject {
   
           Float_t  GetRelativeScale() const                                  { return fRelativeScale;          }
           Float_t  GetThresholdClusterPRF2() const                           { return fThresholdClusterPRF2;   }
+	  Bool_t   GetLimitChargeIntegration() const                         { return fLimitChargeIntegration; }
 	  Float_t  GetProcent() const                                        { return fProcent;                }
           Short_t  GetDifference() const                                     { return fDifference;             }
           Short_t  GetNumberClusters() const                                 { return fNumberClusters;         }
@@ -175,6 +177,7 @@ AliTRDCalibraVector *GetCalibraVector() const                                { r
   // How to fill the 2D
           Float_t  fRelativeScale;          // Scale of the deposited charge
           Float_t  fThresholdClusterPRF2;   // Threshold on cluster pad signals
+          Bool_t   fLimitChargeIntegration; // Integration range for the gain calibration
   // Calibration mode
 	  AliTRDCalibraMode *fCalibraMode;  // Calibration mode
 
