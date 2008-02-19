@@ -345,11 +345,11 @@ void AliACORDE::AddAlignableVolumes() const
   // name with the corresponding volume path. Needs to be syncronized with
   // eventual changes in the geometry.
   // 
-  TString vpstr1 = "ALIC_1/ACORDE1_";
+  TString vpstr1 = "ALIC_1/ACORDE_";
   TString snstr1="ACORDE/Array";
   TString volpath, symname;
   
-  for(Int_t cnt=1; cnt<=3; cnt++){
+  for(Int_t cnt=1; cnt<=1; cnt++){
     volpath = vpstr1;
     volpath += cnt;
     symname = snstr1;
