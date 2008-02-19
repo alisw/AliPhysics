@@ -311,7 +311,7 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input,
       for(Int_t istrip=0; istrip<768; istrip++) { // P-side
 	Int_t signal = matrix[iadc][istrip];
 	pedestal = cal->GetPedestalP(istrip);
-	matrix[iadc][istrip]=signal-pedestal;
+	matrix[iadc][istrip]=signal-(Int_t)pedestal;
       }
       
       Float_t cmode=0;
@@ -319,7 +319,7 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input,
 	cmode=0;
 	for(Int_t n=20; n<108; n++) cmode+=matrix[iadc][l*128+n];
 	cmode/=88.;
-	for(Int_t n=0; n<128; n++) matrix[iadc][l*128+n]-=cmode;
+	for(Int_t n=0; n<128; n++) matrix[iadc][l*128+n]-=(Int_t)cmode;
 	
       }
       
@@ -412,14 +412,14 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input,
       for(Int_t istrip=768; istrip<1536; istrip++) { // P-side
 	Int_t signal = matrix[iadc][istrip];
 	pedestal = cal->GetPedestalN(1535-istrip);
-	matrix[iadc][istrip]=signal-pedestal;
+	matrix[iadc][istrip]=signal-(Int_t)pedestal;
       }	
 
       for(Int_t l=6; l<12; l++) {
 	Float_t cmode=0;
 	for(Int_t n=20; n<108; n++) cmode+=matrix[iadc][l*128+n];
 	cmode/=88.;
-	for(Int_t n=0; n<128; n++) matrix[iadc][l*128+n]-=cmode;
+	for(Int_t n=0; n<128; n++) matrix[iadc][l*128+n]-=(Int_t)cmode;
       }
 
       oldnoise = 0.;
