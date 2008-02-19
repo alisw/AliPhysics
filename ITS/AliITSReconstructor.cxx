@@ -44,8 +44,8 @@
 
 
 ClassImp(AliITSReconstructor)
-
-AliITSRecoParam *AliITSReconstructor::fgkRecoParam =0;  // reconstruction parameters
+AliITSRecoParam *AliITSReconstructor::fgRecoParamDefault = AliITSRecoParam::GetHighFluxParam();
+AliITSRecoParam *AliITSReconstructor::fgRecoParam =0;  // reconstruction parameters
 
 //___________________________________________________________________________
 AliITSReconstructor::AliITSReconstructor() : AliReconstructor(),
@@ -53,22 +53,22 @@ fItsPID(0),
 fDetTypeRec(0)
 {
   // Default constructor
-  if (!fgkRecoParam) {
-    AliError("The Reconstruction parameters nonitialized - Used default one");
-    fgkRecoParam = AliITSRecoParam::GetHighFluxParam();
+  if (!fgRecoParam) {
+    AliWarning("Using default reconstruction parameters");
+    fgRecoParam = fgRecoParamDefault;
   }
 }
  //___________________________________________________________________________
 AliITSReconstructor::~AliITSReconstructor(){
 // destructor
   delete fItsPID;
-  if(fgkRecoParam) delete fgkRecoParam;
+  if(!fgRecoParam && (fgRecoParam != fgRecoParamDefault)) delete fgRecoParam;
   if(fDetTypeRec) delete fDetTypeRec;
 } 
 //______________________________________________________________________
 AliITSReconstructor::AliITSReconstructor(const AliITSReconstructor &ob) :AliReconstructor(ob),
-									 fItsPID(ob.fItsPID),
-									 fDetTypeRec(ob.fDetTypeRec)
+fItsPID(ob.fItsPID),
+fDetTypeRec(ob.fDetTypeRec)
 
 {
   // Copy constructor

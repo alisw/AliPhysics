@@ -86,6 +86,14 @@ Int_t AliITSClusterFinderV2SPD::ClustersSPD(AliBin* bins, TClonesArray* digits,T
   
   //Cluster finder for SPD (from digits and from rawdata)
 
+  static AliITSRecoParam *repa = NULL;
+  if(!repa){
+    repa = (AliITSRecoParam*) AliITSReconstructor::GetRecoParam();
+    if(!repa){
+      repa = (AliITSRecoParam*) AliITSReconstructor::GetRecoParamDefault();
+      AliWarning("Using default AliITSRecoParam class");
+    }
+  }
   const TGeoHMatrix *mT2L=AliITSgeomTGeo::GetTracking2LocalMatrix(iModule);
   
   Int_t nclu=0;
@@ -156,7 +164,7 @@ Int_t AliITSClusterFinderV2SPD::ClustersSPD(AliBin* bins, TClonesArray* digits,T
     Int_t idz=3;
 
     // Switch the unfolding OFF/ON
-    if(!AliITSReconstructor::GetRecoParam()->GetUseUnfoldingInClusterFinderSPD()) {
+    if(!repa->GetUseUnfoldingInClusterFinderSPD()) {
       idy=ymax-ymin+1;
       idz=zmax-zmin+1;
     }
@@ -275,7 +283,7 @@ void AliITSClusterFinderV2SPD::FindClustersSPD(AliITSRawStream* input,
   delete [] binsSPDInit;
   delete [] binsSPD;
   
-  Info("FindClustersSPD", "found clusters in ITS SPD: %d", nClustersSPD);
+  AliDebug(1,Form("found clusters in ITS SPD: %d", nClustersSPD));
 }
 
 
@@ -306,7 +314,7 @@ void AliITSClusterFinderV2SPD::FindClustersSPD(TClonesArray *digits) {
   Int_t nClustersSPD = ClustersSPD(bins,digits,0,kMAXBIN,kNzBins,fModule,kFALSE); 
   delete [] bins;
 
-  Info("FindClustersSPD", "found clusters in ITS SPD: %d", nClustersSPD);
+  AliDebug(1,Form("found clusters in ITS SPD: %d", nClustersSPD));
 }
 
 

@@ -39,16 +39,19 @@ public:
 			       AliESDEvent* esd) const
   {FillESD((TTree*)NULL, clustersTree, esd);}
 
-  void SetRecoParam(AliITSRecoParam * param){ fgkRecoParam = param;}
-  static const AliITSRecoParam* GetRecoParam(){ return fgkRecoParam;}
+  void SetRecoParam(AliITSRecoParam * param){ fgRecoParam = param;}
+  static const AliITSRecoParam* GetRecoParam(){ return fgRecoParam;}
+  static const AliITSRecoParam* GetRecoParamDefault()
+                                { return fgRecoParamDefault;}
 
 private:
   //data
-  static AliITSRecoParam *fgkRecoParam; // reconstruction parameters
+  static AliITSRecoParam *fgRecoParamDefault; // def. reco. parameters
+  static AliITSRecoParam *fgRecoParam; // reconstruction parameters
   AliITSpidESD           *fItsPID;      // Pid for ITS
   AliITSDetTypeRec       *fDetTypeRec;  // reconstructor
 
-  ClassDef(AliITSReconstructor, 3)   // class for the ITS reconstruction
+  ClassDef(AliITSReconstructor, 4)   // class for the ITS reconstruction
 };
 
 #endif
