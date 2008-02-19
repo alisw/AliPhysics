@@ -32,8 +32,12 @@ public:
   
   virtual ~AliMUONSparseHisto();
   
+  /// Whether this histogram has underflow values 
+  /// (no way to know the number of underflow, though)
   Bool_t HasUnderflow() const { return TestBit(kUnderflow); }
   
+  /// Whether this histogram has overflow values  
+  /// (no way to know the number of underflow, though)
   Bool_t HasOverflow() const { return TestBit(kOverflow); }
   
   Int_t Fill(Double_t value);
@@ -59,6 +63,7 @@ public:
   /// Return min value of bincenter
   Double_t Xmin() const { return fXmin; }
   
+  /// Number of bits used to code the x-value of the histogram
   Int_t Nbits() const { return 12; }
   
 private:
@@ -77,6 +82,7 @@ private:
   
   void Expand();
   
+  /// Conversion factor to go from float to int value (for bin content)
   Double_t Factor() const { return fFactor; } 
   
 private:
