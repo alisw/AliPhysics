@@ -66,6 +66,10 @@ class AliHLTTRDCalibrationComponent : public AliHLTCalibrationProcessor
 	using AliHLTCalibrationProcessor::ShipDataToFXS;
 	
     private:
+	/** copy constructor prohibited */
+	AliHLTTRDCalibrationComponent(const AliHLTTRDCalibrationComponent&);
+	/** assignment operator prohibited */
+	AliHLTTRDCalibrationComponent& operator=(const AliHLTTRDCalibrationComponent&);
 
 	// The size of the output data produced, as a percentage of the input data's size.
 	// Can be greater than 100 (%)

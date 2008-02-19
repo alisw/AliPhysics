@@ -23,7 +23,7 @@ class AliHLTMUONEvent : public TObject
 public:
 
 	AliHLTMUONEvent(AliHLTEventID_t eventId = AliHLTEventID_t(-1))
-		: fEventId(eventId)
+	  : fEventId(eventId), fArray()
 	{
 		fArray.SetOwner(kTRUE);
 	}

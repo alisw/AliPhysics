@@ -59,6 +59,10 @@ class AliHLTTRDTrackerComponent : public AliHLTProcessor
 	using AliHLTProcessor::DoEvent;
 	
     private:
+	/** copy constructor prohibited */
+	AliHLTTRDTrackerComponent(const AliHLTTRDTrackerComponent&);
+	/** assignment operator prohibited */
+	AliHLTTRDTrackerComponent& operator=(const AliHLTTRDTrackerComponent&);
 
 	// The size of the output data produced, as a percentage of the input data's size.
 	// Can be greater than 100 (%)
