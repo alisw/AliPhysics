@@ -9,7 +9,7 @@
 #include <TTimeStamp.h>           //Initialize()
 #include <TF1.h>                  //Process()
 #include <TF2.h>                  //Process()
-//#include <TString.h>
+#include <TString.h>
 #include <TGraph.h>               //Process()
 #include <TMatrix.h>              //ProcPed()
 #include <TList.h>                //ProcPed()
@@ -45,13 +45,13 @@ UInt_t AliHMPIDPreprocessor::Process(TMap* pMap)
   if(! pMap) {
     Log("HMPID - ERROR - Not map of DCS aliases for HMPID - ");             return kTRUE;   // error in the DCS mapped aliases
   }   
-  if (runType == "PEDESTAL_RUN"){
+  if (runType == "CALIBRATION"){
     if (!ProcPed()){
     	Log("HMPID - ERROR - Pedestal processing failed!!");                return kTRUE;   // error in pedestal processing
     } else {
     	Log("HMPID - Pedestal processing successful!!");                    return kFALSE;  // ok for pedestals
     }
-  } else if ( runType == "PHYSICS" ){
+  } else if ( runType=="STANDALONE" || runType=="PHYSICS"){
     if (!ProcDcs(pMap)){
     	Log("HMPID - ERROR - DCS processing failed!!");                     return kTRUE;   // error in DCS processing
     } else {
