@@ -289,8 +289,8 @@ void AliAODEvent::ReadFromTree(TTree *tree)
 	  tree->SetBranchAddress(Form("%s.",bname.Data()),fAODObjects->GetObjectRef(el));
 	}
 	else{
-	  printf("%s %d AliAODEvent::ReadFromTree() No Branch found with Name %s or %s. \n",
-		 (char*)__FILE__,__LINE__,bname.Data(),bname.Data());
+	  printf("%s %d AliAODEvent::ReadFromTree() No Branch found with Name %s. \n",
+		 (char*)__FILE__,__LINE__,bname.Data());
 	}	
       }
     }
