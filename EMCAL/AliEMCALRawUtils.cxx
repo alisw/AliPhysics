@@ -83,15 +83,64 @@ Int_t    AliEMCALRawUtils::fgThreshold = 1;
 Int_t    AliEMCALRawUtils::fgDDLPerSuperModule = 2;  // 2 ddls per SuperModule
 
 AliEMCALRawUtils::AliEMCALRawUtils()
-  : fHighLowGainFactor(0.), fOption("") 
+  : fHighLowGainFactor(0.), fGeom(0), 
+    fOption("")
 {
   fHighLowGainFactor = 16. ;          // adjusted for a low gain range of 82 GeV (10 bits) 
+
+  //Get Mapping RCU files from the AliEMCALRecParam                                 
+  const TObjArray* maps = AliEMCALRecParam::GetMappings();
+  if(!maps) AliFatal("Cannot retrieve ALTRO mappings!!");
+
+  for(Int_t i = 0; i < 2; i++) {
+    fMapping[i] = (AliAltroMapping*)maps->At(i);
+  }
+
+
+  fGeom = AliEMCALGeometry::GetInstance();
+  if(!fGeom) {
+    fGeom = AliEMCALGeometry::GetInstance("","");
+    if(!fGeom) AliFatal(Form("Could not get geometry!!"));
+  }
+
 }
+
+//____________________________________________________________________________
+AliEMCALRawUtils::AliEMCALRawUtils(const AliEMCALRawUtils& rawU)
+  : TObject(),
+    fHighLowGainFactor(rawU.fHighLowGainFactor), 
+    fGeom(rawU.fGeom), 
+    fOption(rawU.fOption)
+{
+  //copy ctor
+  fMapping[0] = rawU.fMapping[0];
+  fMapping[1] = rawU.fMapping[1];
+}
+
+//____________________________________________________________________________
+AliEMCALRawUtils& AliEMCALRawUtils::operator =(const AliEMCALRawUtils &rawU)
+{
+  //assignment operator
+
+  if(this != &rawU) {
+    fHighLowGainFactor = rawU.fHighLowGainFactor;
+    fGeom = rawU.fGeom;
+    fOption = rawU.fOption;
+    fMapping[0] = rawU.fMapping[0];
+    fMapping[1] = rawU.fMapping[1];
+  }
+
+  return *this;
+
+}
+
 //____________________________________________________________________________
 AliEMCALRawUtils::~AliEMCALRawUtils() {
+
 }
+
 //____________________________________________________________________________
-void AliEMCALRawUtils::Digits2Raw(AliAltroMapping **mapping)
+void AliEMCALRawUtils::Digits2Raw()
 {
   // convert digits of the current event to raw data
   
@@ -107,14 +156,7 @@ void AliEMCALRawUtils::Digits2Raw(AliAltroMapping **mapping)
     Warning("Digits2Raw", "no digits found !");
     return;
   }
-    
-  // get the geometry
-  AliEMCALGeometry* geom = AliEMCALGeometry::GetInstance();
-  if (!geom) {
-    AliError(Form("No geometry found !"));
-    return;
-  }
-  
+
   static const Int_t nDDL = 12*2; // 12 SM hardcoded for now. Buffers allocated dynamically, when needed, so just need an upper limit here
   AliAltroBuffer* buffers[nDDL];
   for (Int_t i=0; i < nDDL; i++)
@@ -136,8 +178,8 @@ void AliEMCALRawUtils::Digits2Raw(AliAltroMapping **mapping)
     Int_t iphi = 0;
     Int_t ieta = 0;
     Int_t nModule = 0;
-    geom->GetCellIndex(digit->GetId(), nSM, nModule, nIphi, nIeta);
-    geom->GetCellPhiEtaIndexInSModule(nSM, nModule, nIphi, nIeta,iphi, ieta) ;
+    fGeom->GetCellIndex(digit->GetId(), nSM, nModule, nIphi, nIeta);
+    fGeom->GetCellPhiEtaIndexInSModule(nSM, nModule, nIphi, nIeta,iphi, ieta) ;
     
     //Check which is the RCU of the cell.
     Int_t iRCU = -111;
@@ -160,7 +202,7 @@ void AliEMCALRawUtils::Digits2Raw(AliAltroMapping **mapping)
     if (buffers[iDDL] == 0) {      
       // open new file and write dummy header
       TString fileName = AliDAQ::DdlFileName("EMCAL",iDDL);
-      buffers[iDDL] = new AliAltroBuffer(fileName.Data(),mapping[iRCU]);
+      buffers[iDDL] = new AliAltroBuffer(fileName.Data(),fMapping[iRCU]);
       buffers[iDDL]->WriteDataHeader(kTRUE, kFALSE);  //Dummy;
     }
     
@@ -189,21 +231,14 @@ void AliEMCALRawUtils::Digits2Raw(AliAltroMapping **mapping)
       delete buffers[i];
     }
   }
-//PH   mapping[0]->Delete();
-//PH   mapping[1]->Delete();
+
   loader->UnloadDigits();
 }
 
 //____________________________________________________________________________
-void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, 
-				  AliAltroMapping **mapping)
+void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr)
 {
-  // convert raw data of the current event to digits
-  AliEMCALGeometry * geom = AliEMCALGeometry::GetInstance();
-  if (!geom) {
-    AliError(Form("No geometry found !"));
-    return;
-  }
+  // convert raw data of the current event to digits                                                                                     
 
   digitsArr->Clear(); 
 
@@ -216,7 +251,7 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr,
     return;
   }
 
-  AliCaloRawStream in(reader,"EMCAL",mapping);
+  AliCaloRawStream in(reader,"EMCAL",fMapping);
   // Select EMCAL DDL's;
   reader->Select("EMCAL");
 
@@ -258,7 +293,7 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr,
   Int_t row = 0;
 
   while (readOk) { 
-    id =  geom->GetAbsCellIdFromCellIndexes(in.GetModule(), in.GetRow(), in.GetColumn()) ;
+    id =  fGeom->GetAbsCellIdFromCellIndexes(in.GetModule(), in.GetRow(), in.GetColumn()) ;
     lowGain = in.IsLowGain();
     Int_t maxTime = in.GetTime();  // timebins come in reverse order
     if (maxTime < 0 || maxTime >= GetRawFormatTimeBins()) {

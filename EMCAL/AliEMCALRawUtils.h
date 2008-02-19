@@ -37,14 +37,19 @@
 class TGraph;
 class TF1;
 class AliRawReader;
+class AliEMCALGeometry;
 
 class AliEMCALRawUtils : public TObject {
  public:
   AliEMCALRawUtils();
   virtual ~AliEMCALRawUtils();
 
-  void Digits2Raw(AliAltroMapping **mapping = NULL);
-  void Raw2Digits(AliRawReader *reader,TClonesArray *digitsArr, AliAltroMapping **mapping = NULL);
+  AliEMCALRawUtils(const AliEMCALRawUtils& rawUtils);  //copy ctor
+  AliEMCALRawUtils& operator =(const AliEMCALRawUtils& rawUtils);
+
+  void Digits2Raw();
+  void Raw2Digits(AliRawReader *reader,TClonesArray *digitsArr);
+
   void AddDigit(TClonesArray *digitsArr, Int_t id, Int_t lowGain, Int_t amp, Float_t time);
 
   // Signal shape parameters
@@ -78,6 +83,9 @@ class AliEMCALRawUtils : public TObject {
   static Double_t fgTimeBinWidth;       // maximum sampled time of the raw RO signal                             
   static Int_t fgThreshold;             // threshold
   static Int_t fgDDLPerSuperModule;     // number of DDL per SuperModule
+
+  AliEMCALGeometry* fGeom;         //geometry
+  AliAltroMapping*  fMapping[2];   //only two for now
 
   TString fOption;                      //! option passed from Reconstructor
 };

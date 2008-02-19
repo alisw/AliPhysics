@@ -80,7 +80,6 @@ class TFile;
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
 
-
 ClassImp(AliEMCAL)
 
 //____________________________________________________________________________
@@ -94,6 +93,7 @@ AliEMCAL::AliEMCAL()
   // Default ctor 
   fName = "EMCAL" ;
   InitConstants();
+
   // Should call  AliEMCALGeometry::GetInstance(EMCAL->GetTitle(),"") for getting EMCAL geometry
 }
 
@@ -280,20 +280,10 @@ void AliEMCAL::CreateMaterials()
 }
 //____________________________________________________________________________
 void AliEMCAL::Digits2Raw() {
-  static AliEMCALRawUtils rawUtil;
-  //Get Mapping RCU files from the AliEMCALRecParam                                                          
-  static AliCDBEntry* entry = AliCDBManager::Instance()->Get("EMCAL/Calib/Mapping");
-  const TObjArray* maps = 0x0;
-  if(entry)
-    maps = (TObjArray*)entry->GetObject();
 
-  if(!maps) AliFatal("Cannot retrieve ALTRO mappings!!");
+  static AliEMCALRawUtils rawUtils;
+  rawUtils.Digits2Raw();
 
-  AliAltroMapping * mapping[2] ; // For the moment only 2                                                    
-  for(Int_t i = 0; i < 2; i++) {
-    mapping[i] = (AliAltroMapping*)maps->At(i);
-  }
-  rawUtil.Digits2Raw(mapping);
 }
 //____________________________________________________________________________
 void AliEMCAL::Hits2SDigits()  

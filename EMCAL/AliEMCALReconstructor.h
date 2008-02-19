@@ -22,6 +22,8 @@ class AliEMCALSDigitizer ;
 class AliEMCALRecParam;
 class AliESDEvent ;
 class AliRawReader ;
+class AliEMCALRawUtils;
+class AliEMCALGeometry;
 
 // --- Standard library ---
 
@@ -65,8 +67,11 @@ private:
   
   Bool_t fDebug; //! verbosity controller
   static AliEMCALRecParam*   fgkRecParam; // reconstruction parameters for EMCAL
+  static AliEMCALRawUtils*   fgRawUtils;  // raw utilities class -
+					  // only need one per reco
+  AliEMCALGeometry         *fGeom;           // pointer to the EMCAL geometry
 
-  ClassDef(AliEMCALReconstructor,2)  // Reconstruction algorithm class (Base Class)
+  ClassDef(AliEMCALReconstructor,3)  // Reconstruction algorithm class (Base Class)
 
 }; 
 

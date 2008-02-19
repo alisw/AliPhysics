@@ -44,26 +44,34 @@
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
 #include "AliEMCALRecParam.h"
-// to be removed - it is here just because of geom
-#include "AliRun.h"
-#include "AliRunLoader.h"
+#include "AliEMCALGeometry.h"
+
 
 ClassImp(AliEMCALReconstructor)
 
 AliEMCALRecParam* AliEMCALReconstructor::fgkRecParam = 0;  // EMCAL rec. parameters
-
+AliEMCALRawUtils* AliEMCALReconstructor::fgRawUtils = 0;   // EMCAL raw utilities class
 //____________________________________________________________________________
 AliEMCALReconstructor::AliEMCALReconstructor() 
-  : fDebug(kFALSE) 
+  : fDebug(kFALSE),fGeom(0) 
 {
   // ctor
+  InitRecParam();
+
+  fgRawUtils = new AliEMCALRawUtils;
+  fGeom = AliEMCALGeometry::GetInstance();
+  if(!fGeom) {
+    fGeom = AliEMCALGeometry::GetInstance("","");
+    if(!fGeom) AliFatal(Form("Could not get geometry!"));
+  }
 
 } 
 
 //____________________________________________________________________________
 AliEMCALReconstructor::AliEMCALReconstructor(const AliEMCALReconstructor & rec)
   : AliReconstructor(rec),
-    fDebug(rec.fDebug)
+    fDebug(rec.fDebug),
+    fGeom(rec.fGeom)
 {
   //copy ctor
 }
@@ -72,7 +80,7 @@ AliEMCALReconstructor::AliEMCALReconstructor(const AliEMCALReconstructor & rec)
 AliEMCALReconstructor::~AliEMCALReconstructor()
 {
   // dtor
-
+  delete fGeom;
   AliCodeTimer::Instance()->Print();
 } 
 
@@ -105,7 +113,6 @@ void AliEMCALReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) 
 
   AliCodeTimerAuto("")
 
-  InitRecParam();
   AliEMCALClusterizerv1 clu;
   clu.SetInput(digitsTree);
   clu.SetOutput(clustersTree);
@@ -124,27 +131,15 @@ void AliEMCALReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
   // EMCAL digits.
   // Works on a single-event basis
 
-
-  AliCodeTimerAuto("")
-
   rawReader->Reset() ; 
 
   TClonesArray *digitsArr = new TClonesArray("AliEMCALDigit",100);
   Int_t bufsize = 32000;
   digitsTree->Branch("EMCAL", &digitsArr, bufsize);
 
-  //Get Mapping RCU files from the AliEMCALRecParam                                                          
-  const TObjArray* maps = AliEMCALRecParam::GetMappings();
-  if(!maps) AliFatal("Cannot retrieve ALTRO mappings!!");
-
-  AliAltroMapping * mapping[2] ; // For the moment only 2                                                    
-  for(Int_t i = 0; i < 2; i++) {
-    mapping[i] = (AliAltroMapping*)maps->At(i);
-  }
-
-  static AliEMCALRawUtils rawUtils;
-  rawUtils.SetOption(GetOption());
-  rawUtils.Raw2Digits(rawReader,digitsArr,mapping);
+  //must be done here because, in constructor, option is not yet known
+  fgRawUtils->SetOption(GetOption());
+  fgRawUtils->Raw2Digits(rawReader,digitsArr);
 
   digitsTree->Fill();
   digitsArr->Delete();
@@ -166,7 +161,6 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   //#########Calculate trigger and set trigger info###########
   //######################################################
 
-  AliCodeTimerStart(Form("JLK trigger info"));
   AliEMCALTrigger tr ;
   //   tr.SetPatchSize(1);//create 4x4 patches
   tr.Trigger();
@@ -175,13 +169,6 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   Float_t maxAmpnxn  = tr.GetnxnMaxAmplitude();
   Float_t ampOutOfPatch2x2  = tr.Get2x2AmpOutOfPatch() ;
   Float_t ampOutOfPatchnxn  = tr.GetnxnAmpOutOfPatch() ;
-
-  AliEMCALGeometry * geom = 0;
-  AliRunLoader *runLoader = AliRunLoader::GetRunLoader();
-  if (runLoader->GetAliRun() && runLoader->GetAliRun()->GetDetector("EMCAL"))
-    geom = dynamic_cast<AliEMCAL*>(runLoader->GetAliRun()->GetDetector("EMCAL"))->GetGeometry();
-  if (geom == 0) 
-    geom = AliEMCALGeometry::GetInstance(AliEMCALGeometry::GetDefaulGeometryName());
 
   Int_t iSM2x2      = tr.Get2x2SuperModule();
   Int_t iSMnxn      = tr.GetnxnSuperModule();
@@ -196,10 +183,10 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   TVector3    pos2x2(-1,-1,-1);
   TVector3    posnxn(-1,-1,-1);
 
-  Int_t iAbsId2x2 = geom->GetAbsCellIdFromCellIndexes( iSM2x2, iCellPhi2x2, iCellEta2x2) ;
-  Int_t iAbsIdnxn = geom->GetAbsCellIdFromCellIndexes( iSMnxn, iCellPhinxn, iCellEtanxn) ;
-  geom->GetGlobal(iAbsId2x2, pos2x2);
-  geom->GetGlobal(iAbsIdnxn, posnxn);
+  Int_t iAbsId2x2 = fGeom->GetAbsCellIdFromCellIndexes( iSM2x2, iCellPhi2x2, iCellEta2x2) ;
+  Int_t iAbsIdnxn = fGeom->GetAbsCellIdFromCellIndexes( iSMnxn, iCellPhinxn, iCellEtanxn) ;
+  fGeom->GetGlobal(iAbsId2x2, pos2x2);
+  fGeom->GetGlobal(iAbsIdnxn, posnxn);
   
   TArrayF triggerPosition(6);
   triggerPosition[0] = pos2x2(0) ;   
@@ -218,13 +205,9 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   esd->AddEMCALTriggerPosition(triggerPosition);
   esd->AddEMCALTriggerAmplitudes(triggerAmplitudes);
 
-  AliCodeTimerStop(Form("JLK trigger info"));
-
   //########################################
   //##############Fill CaloCells###############
   //########################################
-
-  AliCodeTimerStart(Form("JLK fill calocells"));
 
   TClonesArray *digits = new TClonesArray("AliEMCALDigit",1000);
   TBranch *branchdig = digitsTree->GetBranch("EMCAL");
@@ -250,8 +233,6 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   emcCells.SetNumberOfCells(idignew);
   emcCells.Sort();
 
-  AliCodeTimerStop(Form("JLK fill calocells"));
-
   //------------------------------------------------------------
   //-----------------CLUSTERS-----------------------------
   //------------------------------------------------------------
@@ -269,8 +250,6 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   //######################################################
   //Fill list of integers, each one is index of track to which the cluster belongs.
 
-  AliCodeTimerStart(Form("JLK track matching"));
-
   // step 1 - initialize array of matched track indexes
   Int_t *matchedTrack = new Int_t[nClusters];
   for (Int_t iclus = 0; iclus < nClusters; iclus++)
@@ -285,13 +264,9 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
     if(iemcalMatch >= 0) matchedTrack[iemcalMatch] = itrack;
   } 
 
-  AliCodeTimerStop(Form("JLK track matching"));
-
   //########################################
   //##############Fill CaloClusters############
   //########################################
-
-  AliCodeTimerStart(Form("JLK fill caloclusters"));
 
   esd->SetNumberOfEMCALClusters(nClusters);
   for (Int_t iClust = 0 ; iClust < nClusters ; iClust++) {
@@ -389,8 +364,6 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
    pid->RunPID(esd);
    delete pid;
 
-  AliCodeTimerStop(Form("JLK fill caloclusters"));
-  
 }
 
 
