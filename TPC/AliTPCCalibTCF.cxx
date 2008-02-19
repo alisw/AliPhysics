@@ -899,10 +899,10 @@ Int_t AliTPCCalibTCF::FitPulse(TNtuple *dataTuple, Double_t *coefZ, Double_t *co
    
     // TCF coefficients which are used for the equalisation step (stage)
     // ZERO/POLE Filter
-    coefZ[0] = exp(-1/valuePZ[2]);
-    coefZ[1] = exp(-1/valuePZ[3]);
-    coefP[0] = exp(-1/valuePZ[0]);
-    coefP[1] = exp(-1/valuePZ[1]);
+    coefZ[0] = TMath::Exp(-1/valuePZ[2]);
+    coefZ[1] = TMath::Exp(-1/valuePZ[3]);
+    coefP[0] = TMath::Exp(-1/valuePZ[0]);
+    coefP[1] = TMath::Exp(-1/valuePZ[1]);
    
     fitParam->~Double_t();
     valuePZ->~Double_t();
@@ -945,11 +945,11 @@ void AliTPCCalibTCF::FitFcn(Int_t &/*nPar*/, Double_t */*grad*/, Double_t &f, Do
     if (t<0) {
       sigFit = 0;
     } else {
-      Double_t f1 = 1/pow((4-ttp/par[3]),5)*(24*ttp*exp(4)*(exp(-t/par[3]) - exp(-4*t/ttp) * ( 1+t*(4-ttp/par[3])/ttp+pow(t*(4-ttp/par[3])/ttp,2)/2 + pow(t*(4-ttp/par[3])/ttp,3)/6 + pow(t*(4-ttp/par[3])/ttp,4)/24)));
+      Double_t f1 = 1/TMath::Power((4-ttp/par[3]),5)*(24*ttp*TMath::Exp(4)*(TMath::Exp(-t/par[3]) - TMath::Exp(-4*t/ttp) * ( 1+t*(4-ttp/par[3])/ttp+TMath::Power(t*(4-ttp/par[3])/ttp,2)/2 + TMath::Power(t*(4-ttp/par[3])/ttp,3)/6 + TMath::Power(t*(4-ttp/par[3])/ttp,4)/24)));
       
-      Double_t f2 = 1/pow((4-ttp/par[4]),5)*(24*ttp*exp(4)*(exp(-t/par[4]) - exp(-4*t/ttp) * ( 1+t*(4-ttp/par[4])/ttp+pow(t*(4-ttp/par[4])/ttp,2)/2 + pow(t*(4-ttp/par[4])/ttp,3)/6 + pow(t*(4-ttp/par[4])/ttp,4)/24)));
+      Double_t f2 = 1/TMath::Power((4-ttp/par[4]),5)*(24*ttp*TMath::Exp(4)*(TMath::Exp(-t/par[4]) - TMath::Exp(-4*t/ttp) * ( 1+t*(4-ttp/par[4])/ttp+TMath::Power(t*(4-ttp/par[4])/ttp,2)/2 + TMath::Power(t*(4-ttp/par[4])/ttp,3)/6 + TMath::Power(t*(4-ttp/par[4])/ttp,4)/24)));
       
-      Double_t f3 = 1/pow((4-ttp/par[5]),5)*(24*ttp*exp(4)*(exp(-t/par[5]) - exp(-4*t/ttp) * ( 1+t*(4-ttp/par[5])/ttp+pow(t*(4-ttp/par[5])/ttp,2)/2 + pow(t*(4-ttp/par[5])/ttp,3)/6 + pow(t*(4-ttp/par[5])/ttp,4)/24)));
+      Double_t f3 = 1/TMath::Power((4-ttp/par[5]),5)*(24*ttp*TMath::Exp(4)*(TMath::Exp(-t/par[5]) - TMath::Exp(-4*t/ttp) * ( 1+t*(4-ttp/par[5])/ttp+TMath::Power(t*(4-ttp/par[5])/ttp,2)/2 + TMath::Power(t*(4-ttp/par[5])/ttp,3)/6 + TMath::Power(t*(4-ttp/par[5])/ttp,4)/24)));
       
       sigFit = par[0]*f1 + par[1]*f2 +par[2]*f3;
     }
@@ -1355,8 +1355,8 @@ TNtuple *AliTPCCalibTCF::ApplyTCFilter(TH1F *hisIn, Double_t *coefZ, Double_t *c
   Int_t* valP = new Int_t[3];
   Int_t* valZ = new Int_t[3];
   for (Int_t i=0; i<3; i++) {
-    valP[i] = (Int_t)(coefP[i]*(pow(2,16)-1));
-    valZ[i] = (Int_t)(coefZ[i]*(pow(2,16)-1));
+    valP[i] = (Int_t)(coefP[i]*(TMath::Power(2,16)-1));
+    valZ[i] = (Int_t)(coefZ[i]*(TMath::Power(2,16)-1));
   }
     
   // discret ALTRO EMULATOR ____________________________
