@@ -253,18 +253,20 @@ void AliHMPIDCalib::FillHisto(Int_t histocnt,Int_t q)
  
 }//InitHisto()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPIDCalib::InitFile(Int_t ldcId)
+void AliHMPIDCalib::InitFile(Int_t inVal)
 {
   //
   //Initialize the ADC histo output file (one per LDC)
   //Arguments: LDC Id
   //Returns: none
   //
-  if(fWritePads==kFALSE) return;
-  fFile=new TFile(Form("HmpidPadsOnLdc%2d.root",ldcId),"RECREATE");
+  if(fWritePads==kFALSE ) return;
+  if(fLargeHisto==kFALSE) fFile=new TFile(Form("HmpidPadsOnLdc%2d.root",inVal),"RECREATE");
+  if(fLargeHisto==kTRUE)  fFile=new TFile(Form("Run%d_DDL%d.root",inVal,fSelectDDL),"RECREATE"); 
+  
 }//InitFile()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPIDCalib::CloseFile(Int_t /*ldcId*/)
+void AliHMPIDCalib::CloseFile()
 {
   //
   //Close the ADC histo output file (one per LDC)
@@ -291,14 +293,16 @@ void AliHMPIDCalib::FillPedestal(Int_t abspad,Int_t q)
   Int_t y2a[6]={5,3,1,0,2,4};
 
        nDDL=  2*AliHMPIDParam::A2C(abspad)+AliHMPIDParam::A2P(abspad)%2;              //DDL# 0..13
- // Int_t tmp=  1+AliHMPIDParam::A2P(abspad)/2*8+AliHMPIDParam::A2Y(abspad)/6;        //temp variable
-  Int_t tmp=   AliHMPIDParam::A2P(abspad)/2*8+AliHMPIDParam::A2Y(abspad)/6;           //temp variable
-//        row=   (AliHMPIDParam::A2P(abspad)%2)? 25-tmp:tmp;                          //row r=1..24
-        row=   (AliHMPIDParam::A2P(abspad)%2)? tmp:24-tmp;                            //row r=1..24
+  Int_t tmp=   1+AliHMPIDParam::A2P(abspad)/2*8+AliHMPIDParam::A2Y(abspad)/6;         //temp variable
+        row=   (AliHMPIDParam::A2P(abspad)%2)? tmp:25-tmp;                            //row r=1..24
         dil=  1+AliHMPIDParam::A2X(abspad)/8;                                         //DILOGIC 
         adr=y2a[AliHMPIDParam::A2Y(abspad)%6]+6*(AliHMPIDParam::A2X(abspad)%8);       //ADDRESS 0..47 
   //........... decoding done      
 
+//     if(row<1 || row > 24 || nDDL < 0 || nDDL > 13 || dil < 1 || dil > 10 || adr < 0 || adr >47) AliFatal(Form("ddl %d row %d dil %d adr %d",nDDL,row,dil,adr));
+            
+       
+        
      if(q>0) { 
         fsq[nDDL][row][dil][adr]+=q;
       fsq2[nDDL][row][dil][adr]+=q*q;
@@ -377,6 +381,16 @@ Bool_t AliHMPIDCalib::WriteErrors(Int_t nDDL, Char_t* name, Int_t nEv)
   
   for(Int_t  ierr=0; ierr <AliHMPIDRawStream::kSumErr; ierr++) outerr << Form("%2d\t",fErr[nDDL][ierr]); //write errors
                                                                outerr << Form("\n");                     //last break
+  /* write out pads with 0 charge read */
+  for(Int_t row = 1; row <= AliHMPIDRawStream::kNRows; row++){
+    for(Int_t dil = 1; dil <= AliHMPIDRawStream::kNDILOGICAdd; dil++){
+      for(Int_t pad = 0; pad < AliHMPIDRawStream::kNPadAdd; pad++){
+        if(fpedQ0[nDDL][row][dil][pad]>0) outerr<< Form("%2d %2d %2d %3d\n",row,dil,pad,fpedQ0[nDDL][row][dil][pad]);
+      }
+    }
+  } 
+                                                                                                                                                                                       
+                                                               
   outerr.close();                                                                                        //write error file
   return kTRUE;
     

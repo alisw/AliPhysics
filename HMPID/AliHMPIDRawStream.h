@@ -53,8 +53,8 @@ class AliHMPIDRawStream: public TObject {
     inline  Bool_t GetZeroSup(); 
     inline  Int_t  GetErrors(Int_t ddl,Int_t eType);                                                                                   //Get errors and occurance
     inline  Int_t  GetDDLNumber() { return fDDLNumber;} //return the number of DDL actually being decoded
-    inline  UInt_t  GetLDCNumber() { return fLDCNumber;} //return the number of LDC actually being decoded
-    inline  UInt_t  GetTimeStamp() { return fTimeStamp;} //return the time stamp of the event actually being decoded
+    inline  UInt_t GetLDCNumber() { return fLDCNumber;} //return the number of LDC actually being decoded
+    inline  UInt_t GetTimeStamp() { return fTimeStamp;} //return the time stamp of the event actually being decoded
 
   
         

@@ -34,14 +34,16 @@ public:
         Bool_t WriteErrors(Int_t nDDL, Char_t* name, Int_t nEv);            //number of the DDL, name of the output file and the number of events processed
          void InitHisto(Int_t q,Int_t histocnt,Char_t* name);               //Init the pad histograms
          void FillHisto(Int_t histocnt,Int_t q);                            //Fill the ADC histograms
-         void InitFile(Int_t nDDL);                                         //Init the ADC histo output file (one per LDC)
-         void CloseFile(Int_t nDDL);                                        //Close the file
+         void InitFile(Int_t inVal);                                        //Init the ADC histo output file (one per LDC or one per DDL)
+         void CloseFile();                                                  //Close the file
          void SetRunParams(ULong_t runNum,Int_t timeStamp, Int_t ldcId);    //Set Run Parameters such as Run Number, TimeStamp, LDCid 
   inline void SetSigCut(Int_t nSigCut) { fSigCut=nSigCut;}                  //Set Sigma Cuts from Setter
          void SetSigCutFromFile(Char_t* name);                              //Set Sigma Cuts from File
   inline void SetWriteHistoPads(Bool_t isOn) {fWritePads=isOn;}             //Set wether ADC histos of pads are written or not
   inline void SetWriteHistoPads(Bool_t isOn,Bool_t isLarge,Int_t nDDL) {fWritePads=isOn;fLargeHisto=isLarge;fSelectDDL=nDDL;}             //Set wether ADC histos of pads are written or not
   inline Bool_t GetWritePads()            {return fWritePads;}              //Set wether ADC histos of pads are written or not
+  inline Bool_t GetLargePads()            {return fLargeHisto;}             //Set wether ADC histos of pads are written or not
+  inline Bool_t GetSelectedDDL()          {return fSelectDDL;}              //Set wether ADC histos of pads are written or not
 protected: 
 
     Bool_t     *faddl;                                                         //check is ddl is filled

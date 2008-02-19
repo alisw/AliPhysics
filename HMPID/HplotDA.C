@@ -1,30 +1,36 @@
-/*
 #if !defined(__CINT__) || defined(__MAKECINT__)
-*/
+
 #include <Riostream.h>     
 
 #include <TSystem.h>
 #include <TCanvas.h>
+#include <TStyle.h>
 #include <TH2F.h>
 #include <TH1F.h>
 #include <TH1I.h>
 
 #include "AliHMPIDDigit.h"
 #include "AliHMPIDRawStream.h"
-/*
+
 #endif
-*/
+
 
 
 TH2F hgPedMapMean[14][6]; 
 TH2F hgPedMapSigma[14][6];
 TH1F hgPedMapMean1D[14][6]; 
 TH1F hgPedMapSigma1D[14][6]; 
-TH2F hgPedMapMeanSigma[14][6];
+TH1F hgPedMapSigma1Db[14][6]; 
+
 
 TH1I hgDdlErr[14];
+TH1I *hgtmp,*hgtmp2;
+
 
 Int_t fgRunNum;
+TFile *fgin[14];
+TFile *fgout=0x0;
+
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++      
 void Convert(Int_t ddl,Int_t r,Int_t d,Int_t a,Int_t &ch, Int_t &pc, Int_t &px, Int_t &py)
 {
@@ -38,22 +44,83 @@ void Convert(Int_t ddl,Int_t r,Int_t d,Int_t a,Int_t &ch, Int_t &pc, Int_t &px, 
         tmp=(ddl%2)?r-1:(24-r);   Int_t py=6*(tmp%8)+a2y[a%6];
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void ProcPed(Int_t nDDL)
+void PlotPedHisto(Char_t *tag,Int_t runNum, Int_t ddl=0,Int_t row=1,Int_t dil=1,Int_t pad=0)
+{
+ 
+  if( 0<=ddl && ddl<=13 && 1<=dil && dil<=10 && 1<=row && row<=24 && 0<=pad && pad<=47) 
+  { 
+ 
+  fgin[ddl]->cd();
+  
+  hgtmp=(TH1I*)(fgin[ddl]->Get(Form("hDDL_%d_Row_%d_Dil_%d_Pad_%d",ddl,row,dil,pad)))->Clone();
+  hgtmp2=(TH1I*)(fgin[ddl]->Get(Form("hDDL_%d_Row_%d_Dil_%d_Pad_%d",ddl,row,dil,pad)))->Clone();
+  
+  TCanvas *c1=new TCanvas(Form("hDDL%s_%d_Row_%d_Dil_%d_Pad_%d",tag,ddl,row,dil,pad),Form("hDDL%s_%d_Row_%d_Dil_%d_Pad_%d",tag,ddl,row,dil,pad));
+  
+  hgtmp->SetXTitle("ADC");
+  hgtmp->SetYTitle("Entries");
+  hgtmp->Draw();
+  hgtmp->SetAxisRange(0,350);
+  hgtmp->Draw("hist same");
+  hgtmp2->SetFillColor(5);
+  hgtmp2->Draw("hist same");
+  hgtmp->Draw("same");
+  
+  c1->SaveAs(Form("hDDL%s_%d_Row_%d_Dil_%d_Pad_%d.eps",tag,ddl,row,dil,pad));
+  c1->SaveAs(Form("hDDL%s_%d_Row_%d_Dil_%d_Pad_%d.gif",tag,ddl,row,dil,pad));
+  
+  if(fgout!=0x0) 
+  {
+    fgout->cd();
+    hgtmp2->Write();  
+  }
+  
+  hgtmp->Reset();
+  hgtmp2->Reset();
+  
+  }
+  else 
+  {
+   if( ddl < 0 || ddl > 13) {Printf("Not a valid DDL, exiting %d ...",ddl); } 
+   if( dil < 1 || dil > 10) {Printf("Not a valid DIL, exiting %d ...",dil); } 
+   if( row < 1 || row > 24) {Printf("Not a valid ROW, exiting %d ...",row); } 
+   if( pad < 0 || pad > 48) {Printf("Not a valid PAD, exiting %d ...",pad); } 
+  }   
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void PlotHisto1D(TH1& hin,Char_t* name)
+{
+  TCanvas *c1=new TCanvas("c1","c1");
+  hin.Draw();
+  c1->SaveAs(Form("%s.eps",name));
+  c1->SaveAs(Form("%s.gif",name));  
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void PlotHisto2D(TH2 &hin,Char_t* name,Char_t* opt)
+{
+ TCanvas *c1=new TCanvas("c1","c1");
+ hin.Draw(opt);
+ c1->SaveAs(Form("%s.eps",name));
+ c1->SaveAs(Form("%s.gif",name));  
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void ProcPed(Int_t nDDL,Int_t mode)
 {
 
     if(gSystem->IsFileInIncludePath(Form("./HmpidPedDdl%02i.txt",nDDL)))
           ifstream infile(Form("./HmpidPedDdl%02i.txt",nDDL));
     else return;
-    
+    if(mode==1) {
     for(Int_t ni=0;ni<6;ni++)
       {
         hgPedMapMean[nDDL][ni]  = new TH2F(Form("hPedMapMean_DDL%d_PC_%d" ,nDDL,ni),         Form("Pedestal: Mean, DDL(0-13): %d PC(0-5): %d;padx;pady" ,nDDL,ni),80,0,80,48,0,48);
         hgPedMapSigma[nDDL][ni] = new TH2F(Form("hPedMapSigma_DDL%d_PC_%d",nDDL,ni),         Form("Pedestal: Sigma, DDL(0-13): %d PC(0-5): %d;padx;pady",nDDL,ni),80,0,80,48,0,48);
         hgPedMapMean1D[nDDL][ni]  = new TH1F(Form("hPedMapMean1D_DDL%d_PC_%d" ,nDDL,ni),     Form("Pedestal: Mean, DDL(0-13): %d PC(0-5): %d;pad;Mean" ,nDDL,ni),3841,-0.5,3840.5);
         hgPedMapSigma1D[nDDL][ni]  = new TH1F(Form("hPedMapSigma1D_DDL%d_PC_%d" ,nDDL,ni),   Form("Pedestal: Sigma, DDL(0-13): %d PC(0-5): %d;pad;Sigma" ,nDDL,ni),3841,-0.5,3840.5);
-        hgPedMapMeanSigma[nDDL][ni] = new TH2F(Form("hPedMapMeanSigma_DDL%d_PC_%d" ,nDDL,ni),Form("Pedestal, DDL(0-13): %d PC(0-5): %d;Mean;Sigma"),300,0,300,50,0,5);
-       }
-      
+        hgPedMapSigma1Db[nDDL][ni]  = new TH1F(Form("hPedMapSigma1Db_DDL%d_PC_%d" ,nDDL,ni), Form("Pedestal: Sigma, DDL(0-13): %d PC(0-5): %d;pad;Sigma" ,nDDL,ni),3841,-0.5,3840.5);
+        hgPedMapSigma1Db[nDDL][ni]->SetMaximum(2.5);
+        }
+      }
     Int_t nSigCut,r,d,a,hard;  Float_t mean,sigma;
     Int_t ch=0,pc=0,px=0,py=0;
     Int_t cnt=0;
@@ -64,7 +131,7 @@ void ProcPed(Int_t nDDL)
     Int_t  nEv,nDdlEv;
     Int_t nBadEv;Float_t nBadEvPer;
     Printf("Start reading DDL: %d ...",nDDL);  
-    infile>>tName>>runNumber;
+    infile>>tName>>runNumber;fgRunNum=runNumber;
     infile>>tName>>ldcId;
     infile>>tName>>timeStamp;
     infile>>tName>>nEv;  
@@ -73,16 +140,29 @@ void ProcPed(Int_t nDDL)
     infile>>tName>>nBadEvPer;
     infile>>tName>>nSigCut;
     
-    Printf("RunNumber: %d, LdcId: %d TimeStamp: %d nEv: %d",runNumber,ldcId,timeStamp,nEv);
+    Printf("RunNumber: %d, LdcId: %d TimeStamp: %d nEv: %d",fgRunNum,ldcId,timeStamp,nEv);
     
     while(!infile.eof()){
       infile>>dec>>r>>d>>a>>mean>>sigma>>hex>>hard;
-      Convert(nDDL,r,d,a,ch,pc,px,py); 
-      hgPedMapMean[nDDL][pc].Fill(px,py,mean);  
-      hgPedMapSigma[nDDL][pc].Fill(px,py,sigma);
-      hgPedMapMean1D[nDDL][pc].Fill(cnt%3840,mean);
-      hgPedMapSigma1D[nDDL][pc].Fill(cnt%3840,sigma);
-      hgPedMapMeanSigma[nDDL][pc].Fill(mean,sigma);
+      switch(mode)
+      {
+      case 1:
+        Convert(nDDL,r,d,a,ch,pc,px,py); 
+        hgPedMapMean[nDDL][pc].Fill(px,py,mean);  
+        hgPedMapSigma[nDDL][pc].Fill(px,py,sigma);
+        hgPedMapMean1D[nDDL][pc].Fill(cnt%3840,mean);
+        hgPedMapSigma1D[nDDL][pc].Fill(cnt%3840,sigma);
+        hgPedMapSigma1Db[nDDL][pc].Fill(cnt%3840,sigma);
+      break;
+      case 2:
+        if(sigma>3 && sigma!=1000)  PlotPedHisto("Sigma",runNumber,nDDL,r,d,a);    
+      break;
+      case 3:
+        if(sigma==1000)  PlotPedHisto("NoEntry",runNumber,nDDL,r,d,a);    
+      break;
+      
+      }
+        
       cnt++;      
     }
   infile.close();
@@ -90,41 +170,57 @@ void ProcPed(Int_t nDDL)
   
   /* fill the overall histos */
   
-  fgRunNum=runNumber;    
-  gStyle->SetPalette(1);    
-  
-  TCanvas *cped = new TCanvas("cped","cped",800,800);     cped->Divide(2,2);
-  TCanvas *cped2 = new TCanvas("cped2","cped2",800,800);  cped2->Divide(2,2);
-  
-  for(Int_t npc=0;npc<6;npc++) {
-    if(hgPedMapMean[nDDL][npc].GetEntries()==0) continue;
-    cped->cd(1); hgPedMapMean[nDDL][npc].Draw("surf1");
-    cped->cd(2); hgPedMapSigma[nDDL][npc].Draw("surf1");
-    
-    cped->cd(3); hgPedMapMean[nDDL][npc].SetStats(0);hgPedMapMean[nDDL][npc].Draw("colz");
-    cped->cd(4); hgPedMapSigma[nDDL][npc].SetStats(0);hgPedMapSigma[nDDL][npc].Draw("colz");
-    cped->SaveAs(Form("PedMap1_DDL%d_PC_%d.eps",nDDL,npc));
-    cped->SaveAs(Form("PedMap1_DDL%d_PC_%d.gif",nDDL,npc));
-    //cped->SaveAs(Form("PedMap1_DDL%d_PC_%d.pdf",nDDL,npc));
-        
-    cped2->cd(1); hgPedMapMean1D[nDDL][npc].Draw();
-    cped2->cd(2); hgPedMapSigma1D[nDDL][npc].Draw();
-    cped2->cd(3); hgPedMapMeanSigma[nDDL][npc].Draw("colz");
-    cped2->SaveAs(Form("PedMap2_DDL%d_PC_%d.eps",nDDL,npc));           
-    cped2->SaveAs(Form("PedMap2_DDL%d_PC_%d.gif",nDDL,npc));           
-    //cped2->SaveAs(Form("PedMap2_DDL%d_PC_%d.pdf",nDDL,npc));           
-    
+  if(mode==1) 
+  {
+    for(Int_t npc=0;npc<6;npc++) 
+      {
+          /* plot pedestal mean values */
+         if(hgPedMapMean[nDDL][npc].GetEntries()!=0) {
+           hgPedMapMean[nDDL][npc].SetStats(0);
+           PlotHisto2D(hgPedMapMean[nDDL][npc],Form("Run%d_PedMeanA_DDL%d_PC%d",fgRunNum,nDDL,npc),"colz");
+           PlotHisto2D(hgPedMapMean[nDDL][npc],Form("Run%d_PedMeanB_DDL%d_PC%d",fgRunNum,nDDL,npc),"surf1");
+         }
+         /* plot pedestal sigma values */
+         if(hgPedMapSigma[nDDL][npc].GetEntries()!=0) {
+           hgPedMapSigma[nDDL][npc].SetStats(0);
+           PlotHisto2D(hgPedMapSigma[nDDL][npc],Form("Run%d_PedSigmaA_DDL%d_PC%d",fgRunNum,nDDL,npc),"colz");
+           PlotHisto2D(hgPedMapSigma[nDDL][npc],Form("Run%d_PedSigmaB_DDL%d_PC%d",fgRunNum,nDDL,npc),"surf1");
+         }
+         /* plot pedestal sigma values */
+         if(hgPedMapSigma[nDDL][npc].GetEntries()!=0) {
+           hgPedMapSigma[nDDL][npc].SetStats(0);
+           hgPedMapSigma[nDDL][npc].SetMaximum(2.5);
+           PlotHisto2D(hgPedMapSigma[nDDL][npc],Form("Run%d_PedSigmaC_DDL%d_PC%d",fgRunNum,nDDL,npc),"colz");
+           PlotHisto2D(hgPedMapSigma[nDDL][npc],Form("Run%d_PedSigmaD_DDL%d_PC%d",fgRunNum,nDDL,npc),"surf1");
+         }
+         /* plot pedestal mean values */
+         if(hgPedMapMean1D[nDDL][npc].GetEntries()!=0) {
+            hgPedMapMean1D[nDDL][npc].SetStats(0);
+           PlotHisto1D(hgPedMapMean1D[nDDL][npc],Form("Run%d_PedMean1DA_DDL%d_PC%d",fgRunNum,nDDL,npc));
+         }
+         /* plot pedestal sigma values */
+         if(hgPedMapSigma1D[nDDL][npc].GetEntries()!=0) {
+           hgPedMapSigma1D[nDDL][npc].SetStats(0);
+           PlotHisto1D(hgPedMapSigma1D[nDDL][npc],Form("Run%d_PedSigma1DA_DDL%d_PC%d",fgRunNum,nDDL,npc));
+         }
+         /* plot pedestal sigma values */
+         if(hgPedMapSigma1Db[nDDL][npc].GetEntries()!=0) {
+           hgPedMapSigma1Db[nDDL][npc].SetStats(0);
+           PlotHisto1D(hgPedMapSigma1D[nDDL][npc],Form("Run%d_PedSigma1DA_DDL%d_PC%d",fgRunNum,nDDL,npc));
+         }       
+      }  
   }
-    
+  
        
 }//ProcPed()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++      
-void ProcErr(Int_t nDDL)
+void ProcErr(Int_t nDDL,Int_t mode)
 {
   if(gSystem->IsFileInIncludePath(Form("./HmpidErrorsDdl%02i.txt",nDDL)))
           ifstream infile(Form("./HmpidErrorsDdl%02i.txt",nDDL));
     else return;
-    
+    if(mode==1)
+    {
     hgDdlErr[nDDL] = new TH1I(Form("hPedErr_DDL%d",nDDL),Form("DDL(%d) Decoding Errors",nDDL),AliHMPIDRawStream::kSumErr+1,-0.5,AliHMPIDRawStream::kSumErr+0.5);
      for(Int_t ilabel=0; ilabel< AliHMPIDRawStream::kSumErr; ilabel++) {
       hgDdlErr[nDDL].SetStats(0);
@@ -133,7 +229,7 @@ void ProcErr(Int_t nDDL)
       hgDdlErr[nDDL].SetYTitle("Error #");
      }
     hgDdlErr[nDDL].SetFillColor(5);
-
+  }  
     
     Int_t runNumber=-99999;
     Char_t tName[10];
@@ -141,8 +237,10 @@ void ProcErr(Int_t nDDL)
     Int_t  timeStamp;
     Int_t  nEv,nDdlEv;
     Int_t rerr;Int_t nBadEv;Float_t nBadEvPer;
+    Int_t row,dil,pad,nzero;
+    Int_t ch,pc,px,py;
     Printf("Start reading Error File DDL: %d ...",nDDL);  
-    infile>>tName>>runNumber;
+    infile>>tName>>runNumber;fgRunNum=runNumber;
     infile>>tName>>ldcId;
     infile>>tName>>timeStamp;
     infile>>tName>>nEv;
@@ -155,54 +253,114 @@ void ProcErr(Int_t nDDL)
        infile>>rerr;hgDdlErr[nDDL].SetBinContent(ierr+1,rerr);
      }
     
+    switch(mode)
+    {
+      case 1:          
+          TCanvas *cerr = new TCanvas("cped","cped");
+          cerr.cd();
+          hgDdlErr[nDDL]->Draw();
+          cerr->SaveAs(Form("PedError_DDL%d.eps",nDDL)); 
+          cerr->SaveAs(Form("PedError_DDL%d.gif",nDDL)); 
     
-    TCanvas *cerr = new TCanvas("cped","cped");
-    cerr.cd();
-    hgDdlErr[nDDL]->Draw();
-    cerr->SaveAs(Form("PedError_DDL%d.eps",nDDL)); 
-    cerr->SaveAs(Form("PedError_DDL%d.gif",nDDL)); 
-      
-}
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++      
-void PlotErrAllCh()
-{
-  
-  TCanvas *chmpid1= new TCanvas("chmpid1","chmpid1",1024,768);
-  TPaveLabel *pl = new TPaveLabel(1,16.3,24,17.5,Form("HMPID Pedestal values Run #: %d",fgRunNum),"br");
-   pl->SetFillColor(18);
-   pl->SetTextFont(32);
-   pl->SetTextColor(49);
-   pl->Draw();
-  chmpid1->Divide(6,9);
-  chmpid1->cd(1);
-  hgPedMapMean[0][0].Draw("colz");
-  
-  chmpid1->SaveAs(Form("hmpid_pedestal_run_%d.eps",fgRunNum));
-  
-  
-  TCanvas *chmpid3= new TCanvas("chmpid3","chmpid3",1280,960);
-           chmpid3->Divide(6,3);
-
-  /* chamber layout */        
-           
-          chmpid3->cd(1); hgDdlErr[12]->Draw(); chmpid3->cd(2); hgDdlErr[13]->Draw();  /* */ chmpid3->cd(3);  hgDdlErr[10]->Draw(); chmpid3->cd(4);  hgDdlErr[11]->Draw();  /* */ /* empty empty */
-          chmpid3->cd(7); hgDdlErr[8]->Draw();  chmpid3->cd(8); hgDdlErr[9]->Draw();  /* */  chmpid3->cd(9);  hgDdlErr[6]->Draw();  chmpid3->cd(10); hgDdlErr[7]->Draw();  /* */ chmpid3->cd(11); hgDdlErr[4]->Draw();  chmpid3->cd(12); hgDdlErr[5]->Draw(); 
-          /* empty empty */                                                           /* */  chmpid3->cd(15); hgDdlErr[2]->Draw();  chmpid3->cd(16); hgDdlErr[3]->Draw();  /* */ chmpid3->cd(17); hgDdlErr[0]->Draw();  chmpid3->cd(18); hgDdlErr[1]->Draw(); 
+        break;
         
-      chmpid3->SaveAs(Form("hmpid_pedestal_run_%d_errors.eps",fgRunNum));          
-      chmpid3->SaveAs(Form("hmpid_pedestal_run_%d_errors.gif",fgRunNum));          
+      case 2:
+        while(!infile.eof()){
+        infile>>dec>>row>>dil>>pad>>nzero; 
+        if( 0<=nDDL && nDDL<=13 && 1<=dil && dil<=10 && 1<=row && row<=24 && 0<=pad && pad<=47) 
+          { 
+           PlotPedHisto("ZeroQ",runNumber,nDDL,row,dil,pad);
+         }
+       } 
+        
+    break;
+      
+    default:
+        break;  
+    }
+   infile.close();     
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++      
-void HplotDA()
+void HplotDA(Int_t runNumber)
 {
-  for(Int_t i=0;i<14;i++) 
-  {
-   ProcPed(i);  
-   ProcErr(i);
+  gStyle->SetPalette(1);
+  fgRunNum=runNumber;
+  
+  Printf("********************************************************************");
+  Printf("********************** HplotDA *************************************");
+  Printf("***                                                              ***");
+  Printf("*** Choose from the following options:                           ***");
+  Printf("***                                                              ***");
+  Printf("*** 1.) Draw errors for all DDL                                  ***");
+  Printf("*** 2.) Draw pedestals for all DDL                               ***");
+  Printf("*** 3.) Draw ADC histo for pads with sigma > 3                   ***");
+  Printf("*** 4.) Draw ADC histo for pads with zero charge                 ***");
+  Printf("*** 5.) Draw ADC histo for pads with no valid charge             ***");
+  Printf("*** 6.) Run all                                                  ***");
+  Printf("***                                                              ***");
+  Printf("********************************************************************");
+  Printf("*** Please select: ");
+  
+  Int_t set=0;
+  cin>>set;
+  
+  
+ for(Int_t i=0;i<14;i++) 
+    {
+    switch(set){
+  
+    case 1:  
+     ProcErr(i,1);
+     break;
+     case 2:
+      ProcPed(i,1);  
+     break;
+     case 3:
+       fgin[i]=new TFile(Form("Run%d_DDL%d.root",runNumber,i),"read");
+       ProcPed(i,2);  
+       fgin[i]->Close();
+       break;
+     case 4:
+       fgin[i]=new TFile(Form("Run%d_DDL%d.root",runNumber,i),"read");
+       ProcErr(i,2);
+       fgin[i]->Close();
+     break;  
+     case 5:
+       fgin[i]=new TFile(Form("Run%d_DDL%d.root",runNumber,i),"read");
+       ProcPed(i,3);  
+       fgin[i]->Close();
+     break; 
+     case 6:
+      if(i==0) fgout=new TFile(Form("SummaryOfRun%d.root",fgRunNum),"recreate");
+  
+      ProcErr(i,1);
+      ProcPed(i,1);
+      fgin[i]=new TFile(Form("Run%d_DDL%d.root",runNumber,i),"read");
+      ProcPed(i,2);  
+      ProcErr(i,2);
+      ProcPed(i,3);  
+      fgin[i]->Close(); 
+       
+      if(i==13) {
+        
+        for(Int_t ipc=0;ipc<6;ipc++) 
+        {
+          hgPedMapMean[i][ipc].Write(); 
+          hgPedMapSigma[i][ipc].Write(); 
+          hgPedMapMean1D[i][ipc].Write(); 
+          hgPedMapSigma1D[i][ipc].Write(); 
+          hgPedMapSigma1Db[i][ipc].Write(); 
+        }
+        hgDdlErr[i].Write();
+      }
+     break;
+     default:
+         Printf("Not a valid selection bye-bye....");
+     break;
+    }
   }
-  
-  PlotErrAllCh();
-  
+ 
+  if(fgout!=0x0)fgout->Close();    
   
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++      

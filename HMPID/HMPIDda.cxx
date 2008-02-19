@@ -35,6 +35,7 @@ extern "C" {
 #include "TFile.h"
 #include "TROOT.h"
 #include "TObject.h"
+#include "TPluginManager.h"
 
 
 int main(int argc, char **argv){ 
@@ -43,13 +44,13 @@ int main(int argc, char **argv){
 
   /* log start of process */
   printf("HMPID DA program started\n");  
-/*
+
   gROOT->GetPluginManager()->AddHandler("TVirtualStreamerInfo",
                                         "*",
                                         "TStreamerInfo",
                                         "RIO",
                                         "TStreamerInfo()");
-  */
+  
   /* check that we got some arguments = list of files */
   if (argc<2) {
     printf("Wrong number of arguments\n");
@@ -83,6 +84,7 @@ int main(int argc, char **argv){
   pCal->SetWriteHistoPads(kFALSE);               //use this option for default production useage!!!
   //pCal->SetWriteHistoPads(kTRUE);              //only for expert debug
   //pCal->SetWriteHistoPads(kTRUE,kTRUE,13);     //DO NOT USE THIS OPTION!
+  
   
   /* init event counter */
   Int_t firstEvt=0;
@@ -134,11 +136,15 @@ int main(int argc, char **argv){
       /* use event - here, just write event id to result file */
       eventT=event->eventType;
 
-      if (eventT==PHYSICS_EVENT) {                                                //we use PHYSICS_EVENT for pedestal not CALIBRATION_EVENT
-	
+      if (eventT==PHYSICS_EVENT || eventT==CALIBRATION_EVENT  ) {                 //updated: 18/02/2008 based on http://alice-ecs.web.cern.ch/alice-ecs/runtypes_3.16.html
         runNum=(unsigned long)event->eventRunNb;                                  //assuming that only one run is processed at a time
         ldcId=(unsigned long)event->eventLdcId;
-        if(iEvtNcal==firstEvt && pCal->GetWritePads()==kTRUE) pCal->InitFile((Int_t)ldcId);    //The number for iEvtNcal should be the same as for the first value
+        if(iEvtNcal==firstEvt && pCal->GetWritePads()==kTRUE) 
+        {
+          if(pCal->GetLargePads()==kFALSE)  pCal->InitFile((Int_t)ldcId);    //The number for iEvtNcal should be the same as for the first value
+          else pCal->InitFile((Int_t)runNum);    //The number for iEvtNcal should be the same as for the first value
+        }
+        
         iEvtNcal++;        
 	AliRawReader *reader = new AliRawReaderDate((void*)event);
 	AliHMPIDRawStream stream(reader);
@@ -198,11 +204,7 @@ int main(int argc, char **argv){
     
   }//nDDL
 
-  if(pCal->GetWritePads()==kTRUE) {
-      pCal->CloseFile((Int_t)ldcId);  
-      status=daqDA_FES_storeFile(Form("HmpidPadsOnLdc%2d.root",ldcId),Form("HMPID_PADS_ON_LDC=%2d",ldcId));
-    }
-  
+  if(pCal->GetWritePads()==kTRUE) pCal->CloseFile();
   delete pCal;  
   if (status) return -1;
   

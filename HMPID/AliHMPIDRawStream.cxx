@@ -154,7 +154,7 @@ Bool_t AliHMPIDRawStream::Next()
   fPosition = 0;
   Bool_t status;
   Int_t  rawDataSize=0;        
-  if(fRawReader->GetType() == 7)  {                             //New: Select Physics events, Old: Raw data size is not 0 and not 47148 (pedestal)
+  if(fRawReader->GetType() == 7 || fRawReader->GetType() == 8 )  {           //New: Select Physics events, Old: Raw data size is not 0 and not 47148 (pedestal)
     fDDLNumber = fRawReader->GetDDLID();
     //if(fnDDLInStream[fDDLNumber]==-1) { fnDDLInStream[fDDLNumber]=0; fnDDLOutStream[fDDLNumber]=0; }//Printf("Setting DDL number: %d to fnDDLInStream[]= %d",fDDLNumber,fnDDLInStream[fDDLNumber]);}
     fnDDLInStream[fDDLNumber]=1; fnDDLOutStream[fDDLNumber]=0;
