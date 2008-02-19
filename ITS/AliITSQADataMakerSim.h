@@ -28,7 +28,7 @@ class AliITSQADataMakerSim: public AliQADataMakerSim {
 
 public:
   AliITSQADataMakerSim();          // ctor
-  AliITSQADataMakerSim(Int_t ldc, Bool_t kMode = kFALSE);
+  AliITSQADataMakerSim(Int_t /* ldc */, Bool_t /* kMode =  kFALSE */);
   AliITSQADataMakerSim(const AliITSQADataMakerSim& qadm);
   AliITSQADataMakerSim& operator = (const AliITSQADataMakerSim& qac);
   virtual void StartOfDetectorCycle() const;
