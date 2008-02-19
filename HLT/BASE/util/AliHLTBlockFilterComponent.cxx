@@ -155,12 +155,12 @@ int AliHLTBlockFilterComponent::DoDeinit()
   return iResult;
 }
 
-int AliHLTBlockFilterComponent::DoEvent( const AliHLTComponentEventData& evtData,
-					 const AliHLTComponentBlockData* blocks, 
+int AliHLTBlockFilterComponent::DoEvent( const AliHLTComponentEventData& /*evtData*/,
+					 const AliHLTComponentBlockData* /*blocks*/, 
 					 AliHLTComponentTriggerData& /*trigData*/,
 					 AliHLTUInt8_t* /*outputPtr*/, 
 					 AliHLTUInt32_t& size,
-					 AliHLTComponentBlockDataList& outputBlocks )
+					 AliHLTComponentBlockDataList& /*outputBlocks*/ )
 {
   // see header file for class documentation
   int iResult=0;

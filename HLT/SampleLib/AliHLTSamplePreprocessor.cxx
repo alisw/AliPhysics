@@ -51,9 +51,10 @@ AliHLTSamplePreprocessor::~AliHLTSamplePreprocessor()
   // see header file for function documentation
 }
 
-void AliHLTSamplePreprocessor::Initialize(Int_t run, UInt_t startTime, 
-				    UInt_t endTime)
+void AliHLTSamplePreprocessor::Initialize(Int_t /*run*/, UInt_t /*startTime*/, 
+					  UInt_t /*endTime*/)
 {
+  // see header file for function documentation
 }
 
 

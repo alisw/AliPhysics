@@ -105,6 +105,8 @@ const char* AliHLTTPCClusterFinderComponent::GetComponentID()
     return "TPCClusterFinderDecoder";
     break;
   }
+  HLTFatal("unknown digit reader type");
+  return "";
 }
 
 void AliHLTTPCClusterFinderComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
@@ -561,4 +563,5 @@ int AliHLTTPCClusterFinderComponent::Reconfigure(const char* cdbEntry, const cha
       HLTError("can not fetch object \"%s\" from CDB", path);
     }
   }
+  return 0;
 }

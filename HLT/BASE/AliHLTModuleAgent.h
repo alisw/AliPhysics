@@ -264,7 +264,7 @@ class AliHLTModuleAgent : public TObject, public AliHLTLogging {
       : fHType(src.fHType), fDt(src.fDt), fModule(src.fModule) {}
 
     const AliHLTOUTHandlerDesc& operator=(const AliHLTOUTHandlerDesc& src) {
-      fHType=src.fHType; fDt=src.fDt; fModule=src.fModule;
+      fHType=src.fHType; fDt=src.fDt; fModule=src.fModule; return *this;
     }
 
     ~AliHLTOUTHandlerDesc() {}

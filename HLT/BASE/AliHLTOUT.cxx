@@ -284,7 +284,6 @@ int AliHLTOUT::InsertHandler(const AliHLTOUTHandlerListEntry &entry)
 AliHLTOUT::AliHLTOUTHandlerListEntry AliHLTOUT::FindHandlerDesc(AliHLTUInt32_t blockIndex)
 {
   // see header file for class documentation
-  int iResult=0;
   vector<AliHLTOUTHandlerListEntry>::iterator element=fDataHandlers.begin();
   while (element!=fDataHandlers.end()) {
     if (element->HasIndex(blockIndex)) {
@@ -352,7 +351,7 @@ AliHLTOUT::AliHLTOUTHandlerListEntry& AliHLTOUT::AliHLTOUTHandlerListEntry::oper
 AliHLTUInt32_t AliHLTOUT::AliHLTOUTHandlerListEntry::operator[](int i) const
 {
   // see header file for class documentation
-  return fBlocks.size()>i?fBlocks[i]:AliHLTOUTInvalidIndex;
+  return (int)fBlocks.size()>i?fBlocks[i]:AliHLTOUTInvalidIndex;
 }
 
 bool AliHLTOUT::AliHLTOUTHandlerListEntry::operator==(const AliHLTOUTHandlerListEntry& entry) const

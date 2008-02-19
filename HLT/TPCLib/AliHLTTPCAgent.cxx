@@ -155,7 +155,7 @@ int AliHLTTPCAgent::GetHandlerDescription(AliHLTComponentDataType dt,
 }
 
 AliHLTOUTHandler* AliHLTTPCAgent::GetOutputHandler(AliHLTComponentDataType dt,
-						   AliHLTUInt32_t spec)
+						   AliHLTUInt32_t /*spec*/)
 {
   // see header file for class documentation
   if (dt==(kAliHLTDataTypeDDLRaw|kAliHLTDataOriginTPC)) {

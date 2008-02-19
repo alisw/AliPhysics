@@ -207,7 +207,7 @@ int AliHLTComponent::InitCDB(const char* cdbPath, AliHLTComponentHandler* pHandl
 {
   // see header file for function documentation
   int iResult=0;
-  if (cdbPath, pHandler) {
+  if (cdbPath && pHandler) {
   // I have to think about separating the library handling from the
   // component handler. Requiring the component hanlder here is not
   // the cleanest solution.

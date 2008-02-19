@@ -72,7 +72,6 @@ AliHLTTPCSliceTrackerComponent::AliHLTTPCSliceTrackerComponent()
   fBField(0.4),
   fnonvertextracking(kFALSE),
   fmainvertextracking(kTRUE),
-  fpInterMerger(NULL),
   fPhisegment(50),
   fEtasegment(100),
   fTrackletlength(3),
@@ -87,7 +86,8 @@ AliHLTTPCSliceTrackerComponent::AliHLTTPCSliceTrackerComponent()
   fTrackChi2Cut(50),
   fMaxdist(50),
   fMaxphi(0.1),
-  fMaxeta(0.1)
+  fMaxeta(0.1),
+  fpInterMerger(NULL)
 {
   // see header file for class documentation
   // or

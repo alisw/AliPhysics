@@ -48,7 +48,7 @@ int AliHLTOUTHandler::GetProcessedData(const AliHLTUInt8_t* &pData)
   return 0;
 }
 
-int AliHLTOUTHandler::ReleaseProcessedData(const AliHLTUInt8_t* pData, int size)
+int AliHLTOUTHandler::ReleaseProcessedData(const AliHLTUInt8_t* /*pData*/, int /*size*/)
 {
   // see header file for class documentation
   return 0;
