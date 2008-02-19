@@ -44,6 +44,7 @@ extern "C" {
 #include <TPluginManager.h>
 #include <TObjArray.h>
 #include <TString.h>
+#include <TFitter.h>
 
 int main(int argc, char **argv) {
   if (argc<2) {
@@ -70,6 +71,9 @@ int main(int argc, char **argv) {
   // prameters config files
   TString paramsFileName = Form("%s/standal_params.txt",configFilesDir);
   TString permNoisyFileName = Form("%s/perm_noisy.txt",configFilesDir);
+
+  TFitter *fitter = new TFitter(3);
+  TVirtualFitter::SetFitter(fitter);
 
   // This line is needed in case of a stand-alone application w/o
   // $ROOTSYS/etc/system.rootrc file
@@ -444,11 +448,17 @@ int main(int argc, char **argv) {
   }
 
   
-  // clean up scan objects (which also saves them)
+  // clean up scan objects (which also saves them) , check if something happened...
+    Bool_t somethingHappened = kFALSE;
   for (UInt_t eqId=0; eqId<20; eqId++) {
-    if (scanObj[eqId]!=NULL) delete scanObj[eqId];
+    if (scanObj[eqId]!=NULL) {
+      delete scanObj[eqId];
+      somethingHappened = kTRUE;
+    }
   }
-
+  if (!somethingHappened) {
+    printf("WARNING: No data processed. Are the calibration headers missing?\n");
+  }
 
 
 
@@ -638,7 +648,7 @@ int main(int argc, char **argv) {
     delete handlerPermNoisy;
   }
 
-
+  printf("Opening id list file\n");
   TString idsFXSFileName = Form("%s/FXSids_run_%d.txt",saveDirIdsToFXS,runNr);
   ofstream idsFXSfile;
   idsFXSfile.open(idsFXSFileName.Data());
@@ -647,6 +657,7 @@ int main(int argc, char **argv) {
 
   // send noisy data to FXS
   if (nrNoisyFilesProduced>0) {
+    printf("Preparing noisy files\n");
     // send a tared file of all new noisy maps
     TString command = Form("cd %s; tar -cf noisy_scan.tar *",saveDirNoisyToFXS);
     //    printf("\n\n%s\n\n",command.Data());
@@ -665,6 +676,7 @@ int main(int argc, char **argv) {
 
   // send dcs config files to FXS
   if (nrDCSconfigFilesProduced>0) {
+    printf("Preparing DCS config files\n");
     // send a tared file of all the dcsConfig text files
     TString command = Form("cd %s; tar -cf dcsConfig.tar *",saveDirDCSconfigToFXS);
     //    printf("\n\n%s\n\n",command.Data());
@@ -684,6 +696,7 @@ int main(int argc, char **argv) {
   // send reference data to FXS
   for (UInt_t eqId=0; eqId<20; eqId++) {
     if (bScanInit[eqId]) {
+      printf("Preparing reference data for eq %d\n",eqId);
       TString fileName = Form("%s/SPDcal_run_%d_eq_%d.root",saveDirRef,runNr,eqId);
       TString id = Form("SPD_ref_scan_%d",eqId);
 #ifndef SPD_DA_OFF
@@ -698,9 +711,19 @@ int main(int argc, char **argv) {
   }
 
 
+  printf("Preparing id list file\n");
   idsFXSfile.close();
+  TString id = "SPD_id_list";
+#ifndef SPD_DA_OFF
+  status = daqDA_FES_storeFile(idsFXSFileName.Data(),id.Data());
+  if (status!=0) {
+    printf("Failed to export file %s , status %d\n",idsFXSFileName.Data(),status);
+    return -1;
+  }
+#endif
 
 
+  printf("DA finished.\n");
 
   return 0;
 }
