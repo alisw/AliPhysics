@@ -36,8 +36,7 @@ ClassImp(AliTRDtrackingSector)
 
 //_____________________________________________________________________________
 AliTRDtrackingSector::AliTRDtrackingSector()
-  :fTimeBinsPerPlane(0)
-  ,fSector(-1)
+  :fSector(-1)
   ,fN(0)
   ,fGeom(0x0)
 {
@@ -51,9 +50,8 @@ AliTRDtrackingSector::AliTRDtrackingSector()
 }
 
 //_____________________________________________________________________________
-AliTRDtrackingSector::AliTRDtrackingSector(AliTRDgeometry *geo, Int_t gs, Int_t tb)
-  :fTimeBinsPerPlane(tb)
-  ,fSector(gs)
+AliTRDtrackingSector::AliTRDtrackingSector(AliTRDgeometry *geo, Int_t gs)
+  :fSector(gs)
   ,fN(0)
   ,fGeom(geo)
 {
@@ -70,8 +68,7 @@ AliTRDtrackingSector::AliTRDtrackingSector(AliTRDgeometry *geo, Int_t gs, Int_t 
 
 //_____________________________________________________________________________
 AliTRDtrackingSector::AliTRDtrackingSector(const AliTRDtrackingSector &/*t*/)
-  :fTimeBinsPerPlane(0)
-  ,fSector(-1)
+  :fSector(-1)
   ,fN(0)
   ,fGeom(0x0)
 {

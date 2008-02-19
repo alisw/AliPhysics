@@ -35,7 +35,7 @@ public:
 	};
 	
 	AliTRDtrackingSector();
-	AliTRDtrackingSector(AliTRDgeometry* geo, Int_t gs, Int_t tbs);
+	AliTRDtrackingSector(AliTRDgeometry* geo, Int_t gs);
 	AliTRDtrackingSector(const AliTRDtrackingSector &/*t*/);
 	virtual ~AliTRDtrackingSector();
 	
@@ -48,19 +48,13 @@ public:
 	AliTRDtrackingChamber* GetChamber(Int_t stack, Int_t plane, Bool_t build = kFALSE);
 	AliTRDtrackingChamber** GetStack(Int_t stack);
 	Int_t    GetSector() const {return fSector;}	
+
 	void     Init();
+	void     Print(Option_t *opt = 0x0);
 	
 	void     SetGeometry(AliTRDgeometry *geo) {fGeom = geo;}
 	 
-	// temporary ... some of this functions are obsolete
-	void Print(Option_t *opt = 0x0);
-// 	void     MapTimeBinLayers();
-// 	Int_t    Find(Double_t x) const; 
-// 	void     InsertLayer(AliTRDchamberTimeBin *pl);
-// 	Int_t    CookTimeBinIndex(Int_t plane, Int_t localTB) const;     
-	
 private:
-	UChar_t        fTimeBinsPerPlane; // no. of time bins
 	Char_t         fSector;           // Sector# in AliTRDgeometry
 	UChar_t        fN;                // Total number of chambers allocated
 	Char_t         fIndex[kNChambersSector]; // indexes of allocated chambers
@@ -68,6 +62,7 @@ private:
 	AliTRDgeometry *fGeom;            // Geometry
 	AliTRDtrackingChamber *fChamber[kNChambersSector];// chambers   
 	AliTRDtrackingChamber *fStack[kNplane]; //! temporary holding one stack
+
 	ClassDef(AliTRDtrackingSector, 1) // TRD tracker container for one sector
 };
 

@@ -65,7 +65,6 @@ class AliTRDseed : public TObject {
           Float_t  GetCC() const                            { return fCC;            }
           Float_t  GetChi2() const                          { return fChi2;          }
           Float_t  GetChi2Z() const                         { return fChi2Z;         }
-          Int_t    GetNTimeBins() const                   { return fgTimeBins; }
 
 				
           void     SetTilt(Float_t tilt)                    { fTilt        = tilt;   }
@@ -95,13 +94,11 @@ class AliTRDseed : public TObject {
           void     SetCC(Float_t cc)                        { fCC          = cc;     }
           void     SetChi2(Float_t chi2)                    { fChi2        = chi2;   }
           void     SetChi2Z(Float_t chi2z)                  { fChi2Z       = chi2z;  }
-  static  void     SetNTimeBins(Int_t nTB)                { fgTimeBins  = nTB; }
 
  protected:
 
           void     Copy(TObject &o) const;
           
-  static  Int_t          fgTimeBins;            //  Local copy of the total number of TB
           Float_t        fTilt;                 //  Tilting angle
           Float_t        fPadLength;            //  Pad length
           Float_t        fX0;                   //  X0 position

@@ -30,10 +30,9 @@
 #include "AliTRDcalibDB.h"
 #include "AliTRDcluster.h"
 #include "AliTRDtracker.h"
+#include "AliTRDtrackerV1.h"
 
 ClassImp(AliTRDseed)
-
-Int_t AliTRDseed::fgTimeBins = 0;
 
 //_____________________________________________________________________________
 AliTRDseed::AliTRDseed() 
@@ -222,7 +221,7 @@ void AliTRDseed::CookLabels()
   Int_t out[200];
   Int_t nlab = 0;
 
-  for (Int_t i = 0; i < fgTimeBins+1; i++) {
+  for (Int_t i = 0; i < AliTRDtrackerV1::GetNTimeBins()+1; i++) {
     if (!fClusters[i]) continue;
     for (Int_t ilab = 0; ilab < 3; ilab++) {
       if (fClusters[i]->GetLabel(ilab) >= 0) {
@@ -248,7 +247,7 @@ void AliTRDseed::UseClusters()
   // Use clusters
   //
 
-  for (Int_t i = 0; i < fgTimeBins+1; i++) {
+  for (Int_t i = 0; i < AliTRDtrackerV1::GetNTimeBins()+1; i++) {
     if (!fClusters[i]) continue;
     if (!(fClusters[i]->IsUsed())) fClusters[i]->Use();
   }
@@ -310,7 +309,7 @@ void AliTRDseed::Update()
   
   fN  = 0; 
   fN2 = 0;
-  for (Int_t i = 0; i < fgTimeBins; i++) {
+  for (Int_t i = 0; i < AliTRDtrackerV1::GetNTimeBins(); i++) {
     yres[i] = 10000.0;
     if (!fClusters[i]) continue;
     if(!fClusters[i]->IsInChamber()) continue;
@@ -346,22 +345,22 @@ void AliTRDseed::Update()
     // with maximal number of accepted clusters
     //
     fNChange = 1;
-    for (Int_t i = 0; i < fgTimeBins; i++) {
+    for (Int_t i = 0; i < AliTRDtrackerV1::GetNTimeBins(); i++) {
       cumul[i][0] = counts[0];
       cumul[i][1] = counts[1];
       if (TMath::Abs(fZ[i]-zouts[0]) < 2) counts[0]++;
       if (TMath::Abs(fZ[i]-zouts[2]) < 2) counts[1]++;
     }
     Int_t  maxcount = 0;
-    for (Int_t i = 0; i < fgTimeBins; i++) {
-      Int_t after  = cumul[fgTimeBins][0] - cumul[i][0];
+    for (Int_t i = 0; i < AliTRDtrackerV1::GetNTimeBins(); i++) {
+      Int_t after  = cumul[AliTRDtrackerV1::GetNTimeBins()][0] - cumul[i][0];
       Int_t before = cumul[i][1];
       if (after + before > maxcount) { 
 	maxcount  = after + before; 
 	breaktime = i;
 	mbefore   = kFALSE;
       }
-      after  = cumul[fgTimeBins-1][1] - cumul[i][1];
+      after  = cumul[AliTRDtrackerV1::GetNTimeBins()-1][1] - cumul[i][1];
       before = cumul[i][0];
       if (after + before > maxcount) { 
 	maxcount  = after + before; 
@@ -374,18 +373,18 @@ void AliTRDseed::Update()
 
   }
 
-  for (Int_t i = 0; i < fgTimeBins+1; i++) {
+  for (Int_t i = 0; i < AliTRDtrackerV1::GetNTimeBins()+1; i++) {
     if (i >  breaktime) allowedz[i] =   mbefore  ? zouts[2] : zouts[0];
     if (i <= breaktime) allowedz[i] = (!mbefore) ? zouts[2] : zouts[0];
   }  
 
-  if (((allowedz[0] > allowedz[fgTimeBins]) && (fZref[1] < 0)) ||
-      ((allowedz[0] < allowedz[fgTimeBins]) && (fZref[1] > 0))) {
+  if (((allowedz[0] > allowedz[AliTRDtrackerV1::GetNTimeBins()]) && (fZref[1] < 0)) ||
+      ((allowedz[0] < allowedz[AliTRDtrackerV1::GetNTimeBins()]) && (fZref[1] > 0))) {
     //
     // Tracklet z-direction not in correspondance with track z direction 
     //
     fNChange = 0;
-    for (Int_t i = 0; i < fgTimeBins+1; i++) {
+    for (Int_t i = 0; i < AliTRDtrackerV1::GetNTimeBins()+1; i++) {
       allowedz[i] = zouts[0];  // Only longest taken
     } 
   }
@@ -394,7 +393,7 @@ void AliTRDseed::Update()
     //
     // Cross pad -row tracklet  - take the step change into account
     //
-    for (Int_t i = 0; i < fgTimeBins+1; i++) {
+    for (Int_t i = 0; i < AliTRDtrackerV1::GetNTimeBins()+1; i++) {
       if (!fClusters[i]) continue; 
       if(!fClusters[i]->IsInChamber()) continue;
       if (TMath::Abs(fZ[i] - allowedz[i]) > 2) continue;
@@ -409,7 +408,7 @@ void AliTRDseed::Update()
   Double_t yres2[knTimebins];
   Double_t mean;
   Double_t sigma;
-  for (Int_t i = 0; i < fgTimeBins+1; i++) {
+  for (Int_t i = 0; i < AliTRDtrackerV1::GetNTimeBins()+1; i++) {
     if (!fClusters[i]) continue;
     if(!fClusters[i]->IsInChamber()) continue;
     if (TMath::Abs(fZ[i] - allowedz[i]) > 2) continue;
@@ -440,7 +439,7 @@ void AliTRDseed::Update()
   fMeanz = 0;
   fMPads = 0;
 
-  for (Int_t i = 0; i < fgTimeBins+1; i++) {
+  for (Int_t i = 0; i < AliTRDtrackerV1::GetNTimeBins()+1; i++) {
 
     fUsable[i] = kFALSE;
     if (!fClusters[i]) continue;
@@ -486,7 +485,7 @@ void AliTRDseed::Update()
   fYfitR[1]    = (sumw   * sumwxy - sumwx * sumwy)  / det;
   
   fSigmaY2 = 0;
-  for (Int_t i = 0; i < fgTimeBins+1; i++) {
+  for (Int_t i = 0; i < AliTRDtrackerV1::GetNTimeBins()+1; i++) {
     if (!fUsable[i]) continue;
     Float_t delta = yres[i] - fYfitR[0] - fYfitR[1] * fX[i];
     fSigmaY2 += delta*delta;
@@ -518,7 +517,7 @@ void AliTRDseed::UpdateUsed()
   //
 
   fNUsed = 0;
-  for (Int_t i = 0; i < fgTimeBins; i++) {
+  for (Int_t i = 0; i < AliTRDtrackerV1::GetNTimeBins(); i++) {
     if (!fClusters[i]) continue;
 		if(!fUsable[i]) continue;   
     if ((fClusters[i]->IsUsed())) fNUsed++;
@@ -547,7 +546,7 @@ Float_t AliTRDseed::FitRiemanTilt(AliTRDseed * cseed, Bool_t terror)
     if (!cseed[iLayer].IsOK()) continue;
     Double_t tilt = cseed[iLayer].fTilt;
 
-    for (Int_t itime = 0; itime < fgTimeBins+1; itime++) {
+    for (Int_t itime = 0; itime < AliTRDtrackerV1::GetNTimeBins()+1; itime++) {
 
       if (!cseed[iLayer].fUsable[itime]) continue;
       // x relative to the midle chamber

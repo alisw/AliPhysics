@@ -69,6 +69,7 @@ public:
   static TTreeSRedirector* DebugStreamer() {return fgDebugStreamer;}
   AliCluster*    GetCluster(Int_t index) const;
 	static void    GetExtrapolationConfig(Int_t iconfig, Int_t planes[2]);
+	static const Int_t   GetNTimeBins() {return fgNTimeBins;}
 	static void    GetSeedingConfig(Int_t iconfig, Int_t planes[4]);
 	static TLinearFitter *GetTiltedRiemanFitter();
 	static TLinearFitter *GetTiltedRiemanFitterConstraint();
@@ -95,9 +96,6 @@ protected:
 	Int_t          Clusters2TracksSM(Int_t sector, AliESDEvent *esd);
 	Int_t          Clusters2TracksStack(AliTRDtrackingChamber **stack, TClonesArray *esdTrackList);
 	void           CookLabel(AliKalmanTrack *pt, Float_t wrong) const;
-	AliTRDcluster* FindSeedingCluster(AliTRDtrackingChamber *chamber, AliTRDseedV1 *sfit) const;
-	Int_t          GetSeedingLayers(AliTRDtrackingChamber *chamber, Double_t *params);
-	void           GetMeanCLStack(AliTRDtrackingChamber *chamber, Int_t *planes, Double_t *params);
 	AliTRDseedV1*  GetTracklet(AliTRDtrackV1 *trk, Int_t plane, Int_t &idx);
 	Bool_t         GetTrackPoint(Int_t index, AliTrackPoint &p) const;	
 	Int_t          MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *sseed, Int_t *ipar);
@@ -119,7 +117,6 @@ private:
 	TClonesArray        *fClusters;                       // List of clusters
 	TClonesArray        *fTracklets;                      // List of tracklets
 	TClonesArray        *fTracks;                         // List of tracks
-  Int_t                    fTimeBinsPerPlane;              // Timebins per plane in track prolongation 
   
   // should go to the recoParam
   static const Double_t    fgkMaxChi2;                     // Max increment in track chi2 
@@ -129,15 +126,16 @@ private:
   static const Double_t    fgkMaxStep;                     // Maximal step for tracking  
 	
 	// stand alone tracking
-	static Double_t      fgTopologicQA[kNConfigs];         //  Topologic quality
+	static Double_t      fgTopologicQA[kNConfigs];        //  Topologic quality
 	Double_t             fTrackQuality[kMaxTracksStack];  //  Track quality 
 	Int_t                fSeedLayer[kMaxTracksStack];     //  Seed layer
 	Int_t                fSieveSeeding;                   //! Seeding iterator
 	
-	static TLinearFitter *fgTiltedRieman;                   //  Fitter for the tilted Rieman fit without vertex constriant
-	static TLinearFitter *fgTiltedRiemanConstrained;        //  Fitter for the tilted Rieman fit with vertex constraint	
-	static AliRieman     *fgRieman;                             //  Fitter for the untilted Rieman fit
-  static TTreeSRedirector *fgDebugStreamer;                 //!Debug streamer
+  static Int_t         fgNTimeBins;                     // Timebins per plane in track prolongation 
+	static TLinearFitter *fgTiltedRieman;                 //  Fitter for the tilted Rieman fit without vertex constriant
+	static TLinearFitter *fgTiltedRiemanConstrained;      //  Fitter for the tilted Rieman fit with vertex constraint	
+	static AliRieman     *fgRieman;                       //  Fitter for the untilted Rieman fit
+  static TTreeSRedirector *fgDebugStreamer;             //!Debug streamer
 
 	ClassDef(AliTRDtrackerV1, 2)                          //  TRD tracker development class
 

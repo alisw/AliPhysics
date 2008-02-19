@@ -104,7 +104,7 @@ Int_t AliTRDtrackingChamber::GetNClusters() const
 }	
 
 //_______________________________________________________
-Double_t AliTRDtrackingChamber::GetQuality(Int_t timeBins)
+Double_t AliTRDtrackingChamber::GetQuality()
 {
   //
   // Calculate chamber quality for seeding.
@@ -138,7 +138,7 @@ Double_t AliTRDtrackingChamber::GetQuality(Int_t timeBins)
 	
 	// calculate the deviation of the mean number of clusters from the
 	// closest integer values
-	Float_t nclMed = float(ncl-nused)/timeBins;
+	Float_t nclMed = float(ncl-nused)/AliTRDtrackerV1::GetNTimeBins();
 	Int_t ncli = Int_t(nclMed);
 	Float_t nclDev = TMath::Abs(nclMed - TMath::Max(ncli, 1));
 	nclDev -= (nclDev>.5) && ncli ? 1. : 0.;

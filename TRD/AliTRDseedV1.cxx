@@ -201,7 +201,7 @@ void AliTRDseedV1::CookdEdx(Int_t nslices)
 	Float_t clength = (/*.5 * */AliTRDgeometry::AmThick() + AliTRDgeometry::DrThick());
 
 	AliTRDcluster *cluster = 0x0;
-	for(int ic=0; ic<fgTimeBins; ic++){
+	for(int ic=0; ic<AliTRDtrackerV1::GetNTimeBins(); ic++){
 		if(!(cluster = fClusters[ic])) continue;
 		Float_t x = cluster->GetX();
 		
@@ -356,7 +356,7 @@ Bool_t	AliTRDseedV1::AttachClustersIter(AliTRDtrackingChamber *chamber, Float_t 
 		clusters.SetOwner(kTRUE);
 		AliTRDcluster *cc = 0x0;
 		Int_t det=-1, ncl, ncls = 0;
-		for (Int_t iTime = 0; iTime < fgTimeBins; iTime++) {
+		for (Int_t iTime = 0; iTime < AliTRDtrackerV1::GetNTimeBins(); iTime++) {
 			if(!(layer = chamber->GetTB(iTime))) continue;
 			if(!(ncl = Int_t(*layer))) continue;
 			for(int ic=0; ic<ncl; ic++){ 
@@ -391,7 +391,7 @@ Bool_t	AliTRDseedV1::AttachClustersIter(AliTRDtrackingChamber *chamber, Float_t 
 	// start seed update
 	for (Int_t iter = 0; iter < niter; iter++) {
 		ncl = 0;
-		for (Int_t iTime = 0; iTime < fgTimeBins; iTime++) {
+		for (Int_t iTime = 0; iTime < AliTRDtrackerV1::GetNTimeBins(); iTime++) {
 			if(!(layer = chamber->GetTB(iTime))) continue;
 			if(!Int_t(*layer)) continue;
 			
@@ -424,7 +424,7 @@ Bool_t	AliTRDseedV1::AttachClustersIter(AliTRDtrackingChamber *chamber, Float_t 
 		if(ncl>1){	
 			// calculate length of the time bin (calibration aware)
 			Int_t irp = 0; Float_t x[2]; Int_t tb[2];
-			for (Int_t iTime = 0; iTime < fgTimeBins; iTime++) {
+			for (Int_t iTime = 0; iTime < AliTRDtrackerV1::GetNTimeBins(); iTime++) {
 				if(!fClusters[iTime]) continue;
 				x[irp]  = fClusters[iTime]->GetX();
 				tb[irp] = iTime;
@@ -434,14 +434,14 @@ Bool_t	AliTRDseedV1::AttachClustersIter(AliTRDtrackingChamber *chamber, Float_t 
 			fdX = (x[1] - x[0]) / (tb[0] - tb[1]);
 	
 			// update X0 from the clusters (calibration/alignment aware)
-			for (Int_t iTime = 0; iTime < fgTimeBins; iTime++) {
+			for (Int_t iTime = 0; iTime < AliTRDtrackerV1::GetNTimeBins(); iTime++) {
 				if(!(layer = chamber->GetTB(iTime))) continue;
 				if(!layer->IsT0()) continue;
 				if(fClusters[iTime]){ 
 					fX0 = fClusters[iTime]->GetX();
 					break;
 				} else { // we have to infere the position of the anode wire from the other clusters
-					for (Int_t jTime = iTime+1; jTime < fgTimeBins; jTime++) {
+					for (Int_t jTime = iTime+1; jTime < AliTRDtrackerV1::GetNTimeBins(); jTime++) {
 						if(!fClusters[jTime]) continue;
 						fX0 = fClusters[jTime]->GetX() + fdX * (jTime - iTime);
 					}
@@ -453,7 +453,7 @@ Bool_t	AliTRDseedV1::AttachClustersIter(AliTRDtrackingChamber *chamber, Float_t 
 			// TODO
 			
 			// update x reference positions (calibration/alignment aware)
-			for (Int_t iTime = 0; iTime < fgTimeBins; iTime++) {
+			for (Int_t iTime = 0; iTime < AliTRDtrackerV1::GetNTimeBins(); iTime++) {
 				if(!fClusters[iTime]) continue;
 				fX[iTime] = fClusters[iTime]->GetX() - fX0;
 			} 
@@ -518,7 +518,7 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *chamber
 	// Do cluster projection
 	AliTRDchamberTimeBin *layer = 0x0;
 	Int_t nYclusters = 0; Bool_t kEXIT = kFALSE;
-	for (Int_t iTime = 0; iTime < fgTimeBins; iTime++) {
+	for (Int_t iTime = 0; iTime < AliTRDtrackerV1::GetNTimeBins(); iTime++) {
 		if(!(layer = chamber->GetTB(iTime))) continue;
 		if(!Int_t(*layer)) continue;
 		
@@ -571,7 +571,7 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *chamber
 	// Select only one cluster/TimeBin
 	Int_t lastCluster = 0;
 	fN2 = 0;
-	for (Int_t iTime = 0; iTime < fgTimeBins; iTime++) {
+	for (Int_t iTime = 0; iTime < AliTRDtrackerV1::GetNTimeBins(); iTime++) {
 		ncl = tboundary[iTime] - lastCluster;
 		if(!ncl) continue;
 		Int_t iptr = lastCluster;
@@ -596,7 +596,7 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *chamber
 	}
 	
 	// number of minimum numbers of clusters expected for the tracklet
-	Int_t kClmin = Int_t(AliTRDReconstructor::RecoParam()->GetFindableClusters()*fgTimeBins);
+	Int_t kClmin = Int_t(AliTRDReconstructor::RecoParam()->GetFindableClusters()*AliTRDtrackerV1::GetNTimeBins());
   if (fN2 < kClmin){
 		AliWarning(Form("Not enough clusters to fit the tracklet %d [%d].", fN2, kClmin));
     fN2 = 0;
@@ -605,7 +605,7 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *chamber
 
 	// update used clusters
 	fNUsed = 0;
-	for (Int_t iTime = 0; iTime < fgTimeBins; iTime++) {
+	for (Int_t iTime = 0; iTime < AliTRDtrackerV1::GetNTimeBins(); iTime++) {
 		if(!fClusters[iTime]) continue;
 		if((fClusters[iTime]->IsUsed())) fNUsed++;
 	}
@@ -646,7 +646,7 @@ Bool_t AliTRDseedV1::Fit()
 	      zout[2*knTimebins];//
 	
 	fN = 0;
-	for (Int_t iTime = 0; iTime < fgTimeBins; iTime++) {
+	for (Int_t iTime = 0; iTime < AliTRDtrackerV1::GetNTimeBins(); iTime++) {
     if (!fClusters[iTime]) continue;
     if (!fClusters[iTime]->IsInChamber()) continue;
     yres[iTime] = fY[iTime] - fYref[0] - (fYref[1] + anglecor) * fX[iTime] + fTilt * (fZ[iTime] - fZref[0]);
@@ -655,7 +655,7 @@ Bool_t AliTRDseedV1::Fit()
 	}
 
 	// calculate pad row boundary crosses
-	Int_t kClmin = Int_t(AliTRDReconstructor::RecoParam()->GetFindableClusters()*fgTimeBins);
+	Int_t kClmin = Int_t(AliTRDReconstructor::RecoParam()->GetFindableClusters()*AliTRDtrackerV1::GetNTimeBins());
 	Int_t nz = AliMathBase::Freq(fN, zint, zout, kFALSE);
   fZProb   = zout[0];
   if(nz <= 1) zout[3] = 0;
@@ -678,7 +678,7 @@ Bool_t AliTRDseedV1::Fit()
   fMPads = 0;
 	fMeanz = 0.;
 	// we will use only the clusters which are in the detector range
-	for(int iTime=0; iTime<fgTimeBins; iTime++){
+	for(int iTime=0; iTime<AliTRDtrackerV1::GetNTimeBins(); iTime++){
     fUsable[iTime] = kFALSE;
     if (!fClusters[iTime]) continue;
 		npads = fClusters[iTime]->GetNPads();
@@ -717,7 +717,7 @@ Bool_t AliTRDseedV1::Fit()
   fYfitR[1]    = (sumw   * sumwxy - sumwx * sumwy)  / det;
   
   fSigmaY2 = 0;
-  for (Int_t i = 0; i < fgTimeBins+1; i++) {
+  for (Int_t i = 0; i < AliTRDtrackerV1::GetNTimeBins()+1; i++) {
     if (!fUsable[i]) continue;
     Float_t delta = yres[i] - fYfitR[0] - fYfitR[1] * fX[i];
     fSigmaY2 += delta*delta;
@@ -744,14 +744,11 @@ void AliTRDseedV1::Print()
   // Printing the seedstatus
   //
 
-	AliTRDcalibDB *cal = AliTRDcalibDB::Instance();
-	Int_t nTimeBins = cal->GetNumberOfTimeBins();
-	
 	printf("Seed status :\n");
 	printf("  fTilt      = %f\n", fTilt);
 	printf("  fPadLength = %f\n", fPadLength);
 	printf("  fX0        = %f\n", fX0);
-	for(int ic=0; ic<nTimeBins; ic++) {
+	for(int ic=0; ic<AliTRDtrackerV1::GetNTimeBins(); ic++) {
           const Char_t *isUsable = fUsable[ic]?"Yes":"No";
 	  printf("  %d X[%f] Y[%f] Z[%f] Indexes[%d] clusters[%p] usable[%s]\n"
                 , ic

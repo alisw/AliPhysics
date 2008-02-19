@@ -36,7 +36,7 @@ public:
   void     Clear(const Option_t *opt = 0x0);
 	Int_t    GetDetector() const {return fDetector;}
 	Int_t    GetNClusters() const;
-	Double_t GetQuality(Int_t ntb);
+	Double_t GetQuality();
 	AliTRDchamberTimeBin *GetSeedingLayer(AliTRDgeometry *geo);
 	Float_t  GetX()        const {return fX0;}
 	AliTRDchamberTimeBin* GetTB(int tb) {return tb >= 0 && tb < kNTimeBins ? &fTB[tb] : 0x0;}

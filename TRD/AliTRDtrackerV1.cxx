@@ -80,6 +80,7 @@ Double_t AliTRDtrackerV1::fgTopologicQA[kNConfigs] = {
 		0.0786, 0.0786, 0.0579, 0.0579, 0.0474,
 		0.0474, 0.0408, 0.0335, 0.0335, 0.0335
 };
+Int_t AliTRDtrackerV1::fgNTimeBins = 0;
 TTreeSRedirector *AliTRDtrackerV1::fgDebugStreamer = 0x0;
 AliRieman* AliTRDtrackerV1::fgRieman = 0x0;
 TLinearFitter* AliTRDtrackerV1::fgTiltedRieman = 0x0;
@@ -92,7 +93,6 @@ AliTRDtrackerV1::AliTRDtrackerV1()
   ,fClusters(0x0)
   ,fTracklets(0x0)
   ,fTracks(0x0)
-  ,fTimeBinsPerPlane(0)
   ,fSieveSeeding(0)
 {
   //
@@ -101,9 +101,9 @@ AliTRDtrackerV1::AliTRDtrackerV1()
   if (!AliTRDcalibDB::Instance()) {
     AliFatal("Could not get calibration object");
   }
-  fTimeBinsPerPlane = AliTRDcalibDB::Instance()->GetNumberOfTimeBins();
+  fgNTimeBins = AliTRDcalibDB::Instance()->GetNumberOfTimeBins();
 
-	for (Int_t isector = 0; isector < AliTRDgeometry::kNsect; isector++) new(&fTrSec[isector]) AliTRDtrackingSector(fGeom, isector, fTimeBinsPerPlane);
+	for (Int_t isector = 0; isector < AliTRDgeometry::kNsect; isector++) new(&fTrSec[isector]) AliTRDtrackingSector(fGeom, isector);
   
   if(AliTRDReconstructor::StreamLevel() > 1){
 		TDirectory *savedir = gDirectory; 
@@ -252,7 +252,6 @@ Int_t AliTRDtrackerV1::PropagateBack(AliESDEvent *event)
 	Int_t   found    = 0;     // number of tracks found
 	Float_t foundMin = 20.0;
 	
-	AliTRDseed::SetNTimeBins(fTimeBinsPerPlane);
 	Int_t    nSeed   = event->GetNumberOfTracks();
 	if(!nSeed){
 		// run stand alone tracking
@@ -693,7 +692,7 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
 			
 				if(!(chamber = fTrSec[sector].GetChamber(stack, iplane))) continue;
 			
-				if(chamber->GetNClusters() < fTimeBinsPerPlane*AliTRDReconstructor::AliTRDReconstructor::RecoParam()->GetFindableClusters()) continue;
+				if(chamber->GetNClusters() < fgNTimeBins*AliTRDReconstructor::RecoParam()->GetFindableClusters()) continue;
 			
 				x = chamber->GetX();
 			
@@ -706,7 +705,7 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
 				if(!tracklet.AttachClustersIter(chamber, 1000.)) continue;
 				tracklet.Init(&t);
 	    	
-	    	if(tracklet.GetN() < fTimeBinsPerPlane * AliTRDReconstructor::RecoParam()->GetFindableClusters()) continue;
+	    	if(tracklet.GetN() < fgNTimeBins * AliTRDReconstructor::RecoParam()->GetFindableClusters()) continue;
 			
 				break;
 			}
@@ -760,7 +759,7 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
 		// Make backup of the track until is gold
 		// TO DO update quality check of the track.
 		// consider comparison with fTimeBinsRange
-		Float_t ratio0 = tracklet.GetN() / Float_t(fTimeBinsPerPlane);
+		Float_t ratio0 = tracklet.GetN() / Float_t(fgNTimeBins);
 		//Float_t ratio1 = Float_t(t.GetNumberOfClusters()+1) / Float_t(t.GetNExpected()+1);	
     //printf("tracklet.GetChi2() %f     [< 18.0]\n", tracklet.GetChi2()); 
 		//printf("ratio0    %f              [>   0.8]\n", ratio0);
@@ -892,9 +891,6 @@ Float_t AliTRDtrackerV1::FitTiltedRiemanConstraint(AliTRDseedV1 *tracklets, Doub
 // debug level 5
 //
 
-	AliTRDcalibDB *cal = AliTRDcalibDB::Instance();
-	Int_t nTimeBins = cal->GetNumberOfTimeBins();
-	
 	TLinearFitter *fitter = GetTiltedRiemanFitterConstraint();
 	fitter->StoreData(kTRUE);
 	fitter->ClearPoints();
@@ -904,7 +900,7 @@ Float_t AliTRDtrackerV1::FitTiltedRiemanConstraint(AliTRDseedV1 *tracklets, Doub
 	Int_t nPoints = 0;
   for(Int_t ipl = 0; ipl < AliTRDgeometry::kNplan; ipl++){
 		if(!tracklets[ipl].IsOK()) continue;
-		for(Int_t itb = 0; itb < nTimeBins; itb++){
+		for(Int_t itb = 0; itb < fgNTimeBins; itb++){
 			if(!tracklets[ipl].IsUsable(itb)) continue;
 			x = tracklets[ipl].GetX(itb) + tracklets[ipl].GetX0();
 			y = tracklets[ipl].GetY(itb);
@@ -982,10 +978,6 @@ Float_t AliTRDtrackerV1::FitTiltedRieman(AliTRDseedV1 *tracklets, Bool_t sigErro
 //
 // debug level 5
 //
-
-	AliTRDcalibDB *cal = AliTRDcalibDB::Instance();
-	Int_t nTimeBins = cal->GetNumberOfTimeBins();
-
 	TLinearFitter *fitter = GetTiltedRiemanFitter();
   fitter->StoreData(kTRUE);
 	fitter->ClearPoints();
@@ -1013,7 +1005,7 @@ Float_t AliTRDtrackerV1::FitTiltedRieman(AliTRDseedV1 *tracklets, Bool_t sigErro
 		if(!tracklets[ipl].IsOK()) continue;
 		dzMean += tracklets[ipl].GetZfitR(1);
 		dzcounter++;
-		for(Int_t itb = 0; itb < nTimeBins; itb++){
+		for(Int_t itb = 0; itb < fgNTimeBins; itb++){
 			if (!tracklets[ipl].IsUsable(itb)) continue;
 			x = tracklets[ipl].GetX(itb) + tracklets[ipl].GetX0();
 			y = tracklets[ipl].GetY(itb);
@@ -1441,7 +1433,7 @@ Int_t AliTRDtrackerV1::Clusters2TracksSM(Int_t sector, AliESDEvent *esd)
 		nChambers = 0;
 		for(int iplane=0; iplane<AliTRDgeometry::kNplan; iplane++){
 			if(!(chamber = stack[iplane])) continue;
-			if(chamber->GetNClusters() < fTimeBinsPerPlane * AliTRDReconstructor::RecoParam()->GetFindableClusters()) continue;
+			if(chamber->GetNClusters() < fgNTimeBins * AliTRDReconstructor::RecoParam()->GetFindableClusters()) continue;
 			nChambers++;
 			//AliInfo(Form("sector %d stack %d plane %d clusters %d", sector, istack, iplane, chamber->GetNClusters()));
 		}
@@ -1566,7 +1558,7 @@ Int_t AliTRDtrackerV1::Clusters2TracksStack(AliTRDtrackingChamber **stack, TClon
 					nlayers++;
 	
 					// Cooking label
-					for (Int_t itime = 0; itime < fTimeBinsPerPlane; itime++) {
+					for (Int_t itime = 0; itime < fgNTimeBins; itime++) {
 						if(!sseed[jseed].IsUsable(itime)) continue;
 						naccepted++;
 						Int_t tindex = 0, ilab = 0;
@@ -1792,7 +1784,7 @@ Double_t AliTRDtrackerV1::BuildSeedingConfigs(AliTRDtrackingChamber **stack, Int
 	AliTRDtrackingChamber *chamber = 0x0;
 	for(int iplane=0; iplane<kNPlanes; iplane++){
 		if(!(chamber = stack[iplane])) continue;
-		chamberQ[iplane] = (chamber = stack[iplane]) ?  chamber->GetQuality(fTimeBinsPerPlane) : 0.;
+		chamberQ[iplane] = (chamber = stack[iplane]) ?  chamber->GetQuality() : 0.;
 	}
 
 	Double_t tconfig[kNConfigs];
@@ -2348,8 +2340,6 @@ Double_t AliTRDtrackerV1::CookLikelihood(AliTRDseedV1 *cseed, Int_t planes[4]
   // (date). They have to be checked to assure consistency of estimation.
   //
  
-	AliTRDcalibDB *cal = AliTRDcalibDB::Instance();
-	Int_t nTimeBins = cal->GetNumberOfTimeBins();
 	// ratio of the total number of clusters/track which are expected to be found by the tracker.
 	Float_t fgFindable = AliTRDReconstructor::RecoParam()->GetFindableClusters();
 
@@ -2365,7 +2355,7 @@ Double_t AliTRDtrackerV1::CookLikelihood(AliTRDseedV1 *cseed, Int_t planes[4]
 	Double_t likechi2y  = 0.0000000001;
 	if (chi2[1] < 0.5) likechi2y += TMath::Exp(-TMath::Sqrt(chi2[1]) * 7.73);
 	Double_t likechi2z = TMath::Exp(-chi2[0] * 0.088) / TMath::Exp(-chi2[0] * 0.019);
-	Int_t enc = Int_t(fgFindable*4.*nTimeBins); 	// Expected Number Of Clusters, normally 72
+	Int_t enc = Int_t(fgFindable*4.*fgNTimeBins); 	// Expected Number Of Clusters, normally 72
 	Double_t likeN     = TMath::Exp(-(enc - nclusters) * 0.19);
 	
 	Double_t like      = likea * likechi2y * likechi2z * likeN;
@@ -2389,198 +2379,6 @@ Double_t AliTRDtrackerV1::CookLikelihood(AliTRDseedV1 *cseed, Int_t planes[4]
 	return like;
 }
 
-
-//___________________________________________________________________
-void AliTRDtrackerV1::GetMeanCLStack(AliTRDtrackingChamber *chamber, Int_t *planes, Double_t *params)
-{
-  //
-  // Determines the Mean number of clusters per layer.
-  // Needed to determine good Seeding Layers
-  //
-  // Parameters:
-  //    - Array of AliTRDchamberTimeBins
-  //    - Container for the params
-  //
-  // Detailed description
-  //
-  // Two Iterations:
-  // In the first Iteration the mean is calculted using all layers.
-  // After this, all layers outside the 1-sigma-region are rejected.
-  // Then the mean value and the standard-deviation are calculted a second
-  // time in order to select all layers in the 1-sigma-region as good-candidates.
-  //
-
-	Float_t mean = 0, stdev = 0;
-	Double_t ncl[kNTimeBins*kNSeedPlanes], mcl[kNTimeBins*kNSeedPlanes];
-	Int_t position = 0;
-	memset(ncl, 0, sizeof(Int_t)*kNTimeBins*kNSeedPlanes);
-	memset(mcl, 0, sizeof(Int_t)*kNTimeBins*kNSeedPlanes);
-	Int_t nused = 0;
-	AliTRDchamberTimeBin *layers = chamber->GetTB(0);
-	for(Int_t ipl = 0; ipl < kNSeedPlanes; ipl++){
-		for(Int_t ils = 0; ils < fTimeBinsPerPlane; ils++){
-			position = planes[ipl]*fTimeBinsPerPlane + ils;
-			ncl[ipl * fTimeBinsPerPlane + ils] = layers[position].GetNClusters();
-			nused = 0;
-			for(Int_t icl = 0; icl < ncl[ipl * fTimeBinsPerPlane + ils]; icl++)
-				if((layers[position].GetCluster(icl))->IsUsed()) nused++;
-			ncl[ipl * fTimeBinsPerPlane + ils] -= nused;
-		}
-	}
-	// Declaration of quartils:
-	//Double_t qvals[3] = {0.0, 0.0, 0.0};
-	//Double_t qprop[3] = {0.16667, 0.5, 0.83333};
-	// Iterations
-	Int_t counter;
-	Double_t *array;
-	Int_t *limit;
-	Int_t nLayers = fTimeBinsPerPlane * kNSeedPlanes;
-	for(Int_t iter = 0; iter < 2; iter++){
-		array = (iter == 0) ? &ncl[0] : &mcl[0];
-		limit = (iter == 0) ? &nLayers : &counter;
-		counter = 0;
-		if(iter == 1){
-			for(Int_t i = 0; i < fTimeBinsPerPlane *kNSeedPlanes; i++){
-				if((ncl[i] >  mean + stdev) || (ncl[i] <  mean - stdev)) continue; // Outside 1-sigma region
-// 				if((ncl[i] >  qvals[2]) || (ncl[i] <  qvals[0])) continue; // Outside 1-sigma region
-				if(ncl[i] == 0) continue;	                                         // 0-Layers also rejected
-				mcl[counter] = ncl[i];
-				counter++;
-			}
-		}
-		if(*limit == 0) break;
-		printf("Limit = %d\n", *limit);
-		//using quartils instead of mean and RMS 
-// 		TMath::Quantiles(*limit,3,array,qvals,qprop,kFALSE);
- 		mean = TMath::Median(*limit, array, 0x0);
- 		stdev  = TMath::RMS(*limit, array);
-	}
-// 	printf("Quantiles: 0.16667 = %3.3f, 0.5 = %3.3f, 0.83333 = %3.3f\n", qvals[0],qvals[1],qvals[2]);
-// 	memcpy(params,qvals,sizeof(Double_t)*3);
-	params[1] = (Double_t)TMath::Nint(mean);
-	params[0] = (Double_t)TMath::Nint(mean - stdev);
-	params[2] = (Double_t)TMath::Nint(mean + stdev);
-
-}
-
-//___________________________________________________________________
-Int_t AliTRDtrackerV1::GetSeedingLayers(AliTRDtrackingChamber *chamber, Double_t *params)
-{
-  //
-  // Algorithm to find optimal seeding layer
-  // Layers inside one sigma region (given by Quantiles) are sorted
-  // according to their difference.
-  // All layers outside are sorted according t
-  //
-  // Parameters:
-  //     - Array of AliTRDchamberTimeBins (in the current plane !!!)
-  //     - Container for the Indices of the seeding Layer candidates
-  //
-  // Output:
-  //     - Number of Layers inside the 1-sigma-region
-  //
-  // The optimal seeding layer should contain the mean number of
-  // custers in the layers in one chamber.
-  //
-
-	//printf("Params: %3.3f, %3.3f, %3.3f\n", params[0], params[1], params[2]);
-	const Int_t kMaxClustersLayer = AliTRDchamberTimeBin::kMaxClustersLayer;
-	Int_t ncl[kNTimeBins], indices[kNTimeBins], bins[kMaxClustersLayer];
-	memset(ncl, 0, sizeof(Int_t)*kNTimeBins);
-	memset(indices, 0, sizeof(Int_t)*kNTimeBins);
-	memset(bins, 0, sizeof(Int_t)*kMaxClustersLayer);
-	
-	AliTRDchamberTimeBin *layers = chamber->GetTB(0);
-	Int_t nused = 0;
-	for(Int_t ils = 0; ils < fTimeBinsPerPlane; ils++){
-		ncl[ils] = layers[ils].GetNClusters();
-		nused = 0;
-		for(Int_t icl = 0; icl < ncl[ils]; icl++)
-			if((layers[ils].GetCluster(icl))->IsUsed()) nused++;
-		ncl[ils] -= nused;
-	}
-	
-	Float_t mean = params[1];
-	for(Int_t ils = 0; ils < fTimeBinsPerPlane; ils++){
-		memmove(indices + bins[ncl[ils]+1] + 1, indices + bins[ncl[ils]+1], sizeof(Int_t)*(fTimeBinsPerPlane - ils));
-		indices[bins[ncl[ils]+1]] = ils;
-		for(Int_t i = ncl[ils]+1; i < kMaxClustersLayer; i++)
-			bins[i]++;
-	}
-	
-	//for(Int_t i = 0; i < nTimeBins; i++) printf("Bin %d = %d\n", i, bins[i]);
-	Int_t sbin = -1;
-	Int_t nElements;
-	Int_t position = 0;
-	TRandom *r = new TRandom();
-	Int_t iter = 0;
-	while(1){
-		while(sbin < (Int_t)params[0] || sbin > (Int_t)params[2]){
-			// Randomly selecting one bin
-			sbin = (Int_t)r->Poisson(mean);
-		}
-		printf("Bin = %d\n",sbin);
-		//Randomly selecting one Layer in the bin
-		nElements = bins[sbin + 1] - bins[sbin];
-		printf("nElements = %d\n", nElements);
-		if(iter == 5){
-			position = (Int_t)(gRandom->Rndm()*(fTimeBinsPerPlane-1));
-			break;
-		}
-		else if(nElements==0){
-			iter++;
-			continue;
-		}
-		position = (Int_t)(gRandom->Rndm()*(nElements-1)) + bins[sbin];
-		break;
-	}
-	delete r;
-	return indices[position];
-}
-
-//____________________________________________________________________
-AliTRDcluster *AliTRDtrackerV1::FindSeedingCluster(AliTRDtrackingChamber *chamber, AliTRDseedV1* reference) const
-{
-  //
-  // Finds a seeding Cluster for the extrapolation chamber.
-  //
-  // The seeding cluster should be as close as possible to the assumed
-  // track which is represented by a Rieman fit.
-  // Therefore the selecting criterion is the minimum distance between
-  // the best fitting cluster and the Reference which is derived from
-  // the AliTRDseed. Because all layers are assumed to be equally good
-  // a linear search is performed.
-  //
-  // Imput parameters: - layers: array of AliTRDchamberTimeBins (in one chamber!!!)
-  //                   - sfit: the reference
-  //
-  // Output:           - the best seeding cluster
-  //
-
-	
-	// distances as squared distances
-	Int_t index = 0;
-	Float_t ypos = 0.0, zpos = 0.0, distance = 0.0, nearestDistance =100000.0; 
-	ypos = reference->GetYref(0);
-	zpos = reference->GetZref(0);
-	AliTRDcluster *currentBest = 0x0, *temp = 0x0;
-	AliTRDchamberTimeBin *layers = chamber->GetTB(0);
-	for(Int_t ils = 0; ils < fTimeBinsPerPlane; ils++){
-		// Reference positions
-// 		ypos = reference->GetYat(layers[ils].GetX());
-// 		zpos = reference->GetZat(layers[ils].GetX());
-		index = layers[ils].SearchNearestCluster(ypos, zpos, AliTRDReconstructor::RecoParam()->GetRoad2y(), AliTRDReconstructor::RecoParam()->GetRoad2z());
-		if(index == -1) continue;
-		temp = layers[ils].GetCluster(index);
-		if(!temp) continue;
-		distance = (temp->GetY() - ypos) * (temp->GetY() - ypos) + (temp->GetZ() - zpos) * (temp->GetZ() - zpos);
-		if(distance < nearestDistance){
-			nearestDistance = distance;
-			currentBest = temp;
-		}
-	}
-	return currentBest;
-}
 
 
 //____________________________________________________________________
