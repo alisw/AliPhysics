@@ -40,6 +40,8 @@ public:
   { return new AliACORDETrigger(); }
 
   void  Digits2Raw ();
+  virtual Bool_t Raw2SDigits(AliRawReader*);
+
   virtual void SetCreateCavern(Bool_t b) {fCreateCavern = b;}
   virtual void SetITSGeometry(Bool_t b) {fITSGeometry = b;}
   virtual Bool_t GetCreateCavern() const {return fCreateCavern;}

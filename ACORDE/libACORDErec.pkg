@@ -1,8 +1,6 @@
-SRCS = 
-                                                                                
+SRCS = AliACORDERawStream.cxx
                                                                                
 HDRS:= $(SRCS:.cxx=.h)
-                                                                                
-                                                                                
+
 DHDR:=ACORDErecLinkDef.h
 

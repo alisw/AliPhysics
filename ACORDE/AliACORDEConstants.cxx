@@ -22,7 +22,7 @@
 // This class serves to group constants needed by ACORDE detector in 1
 // easily accessible place. All constants are public const static data 
 // members. The class is never instatiated.
-// Author: Arturo Fernandez, Enrique Gamez
+// Authors: Arturo Fernandez, Enrique Gamez, Mario Rodríguez Cahuantzi, Eleazar Cuautle(ICN-UNAM) 
 //         FCFM-UAP, Mexico.
 //
 ////////////////////////////////////////////////////////////////////////
@@ -59,7 +59,7 @@ const Float_t AliACORDEConstants::fgkModulePositionY[60] = {
   850, 850, 850, 850, 850, 850, 850, 850, 850, 850,
   850, 850, 850, 850, 850, 850, 850, 850, 850, 850,
   797, 797, 797, 797, 797, 797, 797, 797, 797, 797,
-  576, 576, 576, 576, 576, 609, 605, 582, 582, 582};
+  582, 582, 582, 582, 582, 609, 605, 582, 582, 582};
 const Float_t AliACORDEConstants::fgkModulePositionZ[60] = {
   450, 350, 250, 150, 50, -50, -120, -280, -350, -450,
   450, 350, 250, 150, 50, -50, -150, -250, -350, -450,

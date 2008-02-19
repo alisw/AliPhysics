@@ -41,11 +41,13 @@
 #include <TTree.h>
 #include <TVirtualMC.h>
 #include <TGeoManager.h>
+#include <TStopwatch.h>
 
 #include "AliACORDE.h"
 #include "AliMagF.h"
 #include "AliRun.h"
 #include "AliACORDERawData.h"
+#include "AliACORDERawStream.h"
 
 ClassImp(AliACORDE)
 
@@ -280,6 +282,59 @@ void AliACORDE::Digits2Raw()
   // 4. Write raw data
   AliACORDERawData rawdata;
   rawdata.WriteACORDERawData(Modules);
+}
+
+//_____________________________________________________________________________
+Bool_t AliACORDE::Raw2SDigits(AliRawReader* rawReader)
+{
+  //
+  // Reads the raw data stream and exracts the digits
+  //
+  // Input:
+  //         rawReader : pointer to the current AliRawReader
+  // Output:
+  //
+  // Created:      31 Jan 2008  Mario Sitta
+  //
+  TStopwatch timer;
+  timer.Start();
+
+  if(!fLoader) {
+    AliError("no ACORDE loader found");
+    return kFALSE;
+  }
+
+  TTree* treeD  = fLoader->TreeD();
+  if(!treeD) {
+      fLoader->MakeTree("D");
+      treeD = fLoader->TreeD();
+  }
+        
+  AliACORDEdigit  digit;
+  AliACORDEdigit* pdigit = &digit;
+  const Int_t kBufferSize = 4000;
+   
+  treeD->Branch("ACORDE", "AliACORDEdigit",  &pdigit, kBufferSize);
+
+  //  rawReader->Reset();
+  AliACORDERawStream* rawStream  = new AliACORDERawStream(rawReader);    
+     
+  if (!rawStream->Next()) return kFALSE; // No ACORDE data found
+  /*  
+  for(Int_t i=0; i<64; i++) {
+      new(pdigit) AliACORDEdigit(i, (Int_t)rawStream->GetADC(i), (Int_t)rawStream->GetTime(i)); 
+      treeD->Fill();
+  }
+  */ 
+  fLoader->WriteDigits("OVERWRITE");
+  fLoader->UnloadDigits();	
+	
+  delete rawStream;
+
+  timer.Stop();
+  timer.Print();
+
+  return kTRUE;
 }
 
 //_____________________________________________________________________________
