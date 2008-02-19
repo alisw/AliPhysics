@@ -45,7 +45,7 @@ AliITSQADataMakerSim::AliITSQADataMakerSim() :
 }
 
 //____________________________________________________________________________ 
-AliITSQADataMakerSim::AliITSQADataMakerSim(Int_t ldc, Bool_t kMode) :
+AliITSQADataMakerSim::AliITSQADataMakerSim(Int_t /*ldc */, Bool_t /*kMode */) :
   AliQADataMakerSim(AliQA::GetDetName(AliQA::kITS), "SDD Quality Assurance Data Maker")
 {
   //ctor used to discriminate OnLine-Offline analysis
