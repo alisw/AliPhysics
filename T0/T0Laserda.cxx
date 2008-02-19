@@ -43,7 +43,7 @@ Trigger types used: PHYSICS_EVENT
 #include "TF1.h"
 #include "TSpectrum.h"
 #include "TVirtualFitter.h"
-#include "TProfile.h"
+//#include "TProfile.h"
 int cqbx,cqby,clbx,clby,cbx;
 float cqlx,cqmx,cqly,cqmy,cllx,clmx,clly,clmy,clx,cmx;
 /* Main routine
@@ -189,18 +189,12 @@ int main(int argc, char **argv) {
       if(iev==1){
            printf("First event - %i\n",iev);
       }
-//      if((iev<10) || (iev>11000)){ 
-//           printf(" event number = %i \n",iev);
-//      }
-
 
       // Initalize raw-data reading and decoding
       AliRawReader *reader = new AliRawReaderDate((void*)event);
           
       // Enable the following two lines in case of real-data
-   //       reader->LoadEquipmentIdsMap("T0map.txt");
-    //     reader->RequireHeader(kFALSE);
-     // 	  reader->RequireHeader(kTRUE);
+      	  reader->RequireHeader(kTRUE);
       AliT0RawReader *start = new AliT0RawReader(reader, kTRUE);
 
       // Read raw data
@@ -247,7 +241,6 @@ int main(int argc, char **argv) {
                  hCFDvsLED[cc]->Fill(allData[cc+57][iHt]-allData[cc+45][iHt],allData[cc+45][iHt]-allData[0][0]+5000);
                 }
 	}
-
 	
      delete start;
 	start = 0x0;
@@ -255,8 +248,6 @@ int main(int argc, char **argv) {
       // End of fill histograms
 
     }
-
-
 
     /* free resources */
     free(event);
@@ -283,7 +274,7 @@ int main(int argc, char **argv) {
   status=0;
 
   /* export file to FXS */
-  if (daqDA_FES_storeFile(FILE_OUT, FILE_OUT)) {
+  if (daqDA_FES_storeFile(FILE_OUT, "LASER")) {
     status=-2;
   }
 

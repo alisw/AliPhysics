@@ -30,6 +30,12 @@ Preprocessor storing data to OCDB (T.Malkiewicz)
 Version 1.1  2006/10   
 Preliminary test version (T.Malkiewicz)
 */   
+// T0 preprocessor:
+// 1) takes data from DCS and passes it to the class AliTOFDataDCS 
+// for processing and writes the result to the Reference DB.
+// 2) takes data form DAQ (both from Laser Calibration and Physics runs), 
+// processes it, and stores either to OCDB or to Reference DB.
+
 
 #include "AliT0Preprocessor.h"
 #include "AliT0DataDCS.h"
@@ -46,17 +52,13 @@ Preliminary test version (T.Malkiewicz)
 #include <TNamed.h>
 #include "AliT0Dqclass.h"
 
-// T0 preprocessor:
-// 1) takes data from DCS and passes it to the class AliTOFDataDCS 
-// for processing and writes the result to the Reference DB.
-// 2) takes data form DAQ (both from Laser Calibration and Physics runs), 
-// processes it, and stores either to OCDB or to Reference DB.
-
 
 ClassImp(AliT0Preprocessor)
 
 //____________________________________________________
-AliT0Preprocessor::AliT0Preprocessor(AliShuttleInterface* shuttle) : AliPreprocessor("T00", shuttle), fData(0)
+AliT0Preprocessor::AliT0Preprocessor(AliShuttleInterface* shuttle) : 
+  AliPreprocessor("T00", shuttle), 
+  fData(0)
 {
   //constructor
 }
@@ -103,7 +105,7 @@ UInt_t AliT0Preprocessor::Process(TMap* dcsAliasMap )
         }
         else
         {
-	  
+	  /*
           resultDCSMap=fData->ProcessData(*dcsAliasMap);
           if(!resultDCSMap)
           {
@@ -112,26 +114,29 @@ UInt_t AliT0Preprocessor::Process(TMap* dcsAliasMap )
           }
           else
           {
+	    Float_t *meanScaler[24] = fData->GetScalerMean();
+	     	
             AliCDBMetaData metaDataDCS;
             metaDataDCS.SetBeamPeriod(0);
             metaDataDCS.SetResponsible("Tomasz Malkiewicz");
             metaDataDCS.SetComment("This preprocessor fills an AliTODataDCS object.");
             AliInfo("Storing DCS Data");
-            resultDCSStore = StoreReferenceData("Calib","DCSData", fData, &metaDataDCS);
+            resultDCSStore = Store("Calib","DCSData",meanScaler, &metaDataDCS);
             if (!resultDCSStore)
             {
               Log("Some problems occurred while storing DCS data results in ReferenceDB");
-              //return 2;// return error Code for processed DCS data not stored
+              return 2;// return error Code for processed DCS data not stored
             }
 
           }
+	  */
         }
 
         // processing DAQ
 
         TString runType = GetRunType();
 
-        if(runType == "T0_STANDALONE_LASER")
+        if(runType == "STANDALONE")
         {
           TList* list = GetFileSources(kDAQ, "LASER");
           if (list)
@@ -150,7 +155,6 @@ UInt_t AliT0Preprocessor::Process(TMap* dcsAliasMap )
                 metaData.SetBeamPeriod(0);
                 metaData.SetResponsible("Tomek&Michal");
                 metaData.SetComment("Walk correction from laser runs.");
-		//TObjArray* arrLaser = laser->GetfWalk();
 		resultLaser=Store("Calib","Slewing_Walk", laser, &metaData, 0, 1);
                 delete laser;
               }
@@ -184,7 +188,7 @@ UInt_t AliT0Preprocessor::Process(TMap* dcsAliasMap )
               {
                 AliT0CalibTimeEq *online = new AliT0CalibTimeEq();
                 online->Reset();
-                online->ComputeOnlineParams("CFD", 20, 4., filePhys);
+                online->ComputeOnlineParams(filePhys);
                 AliCDBMetaData metaData;
                 metaData.SetBeamPeriod(0);
                 metaData.SetResponsible("Tomek&Michal");

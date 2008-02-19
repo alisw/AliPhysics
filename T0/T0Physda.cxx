@@ -181,15 +181,11 @@ int main(int argc, char **argv) {
            printf("First event - %i\n",iev);
       }
 
-//      printf(" event number = %i \n",iev);
-
       // Initalize raw-data reading and decoding
       AliRawReader *reader = new AliRawReaderDate((void*)event);
           
       // Enable the following two lines in case of real-data
-   //       reader->LoadEquipmentIdsMap("T0map.txt");
-    //     reader->RequireHeader(kFALSE);
-     // 	  reader->RequireHeader(kTRUE);
+      	  reader->RequireHeader(kTRUE);
       AliT0RawReader *start = new AliT0RawReader(reader, kTRUE);
 
       // Read raw data
@@ -197,7 +193,6 @@ int main(int argc, char **argv) {
       for(Int_t i0=0;i0<105;i0++)
       	for(Int_t j0=0;j0<5;j0++)
 		allData[i0][j0] = 0;
- 
      
       if(start->Next())
       for (Int_t i=0; i<105; i++) {
@@ -224,15 +219,12 @@ int main(int argc, char **argv) {
 		}
 	}
 
-
      delete start;
 	start = 0x0;
      reader->Reset();
       // End of fill histograms
 
     }
-
-
 
     /* free resources */
     free(event);
@@ -258,7 +250,7 @@ int main(int argc, char **argv) {
   status=0;
 
   /* export file to FXS */
-  if (daqDA_FES_storeFile(FILE_OUT, FILE_OUT)) {
+  if (daqDA_FES_storeFile(FILE_OUT, "PHYSICS")) {
     status=-2;
   }
 
