@@ -35,7 +35,8 @@ TObjArray* AliEMCALRecParam::fgkMaps =0; //ALTRO mappings
 AliEMCALRecParam::AliEMCALRecParam():
   fClusteringThreshold(0.5),fW0(4.5),fMinECut(0.45), //clustering
   fTrkCutX(6.0), fTrkCutY(6.0), fTrkCutZ(6.0),  fTrkCutR(10.0),//track matching
-  fTrkCutAlphaMin(-50.0), fTrkCutAlphaMax(50.0), fTrkCutAngle(10000.0) //track matching
+  fTrkCutAlphaMin(-50.0), fTrkCutAlphaMax(50.0), fTrkCutAngle(10000.0), //track matching
+  fHighLowGainFactor(16.0), fOrderParameter(2), fTau(2.35), fNoiseThreshold(3), fNPedSamples(5) //raw signal
 {
   // default reco values
 
@@ -147,10 +148,6 @@ AliEMCALRecParam::AliEMCALRecParam():
   fPiZero10to60[5][0] =  0.002942;
   fPiZero10to60[5][1] = -3.976e-05;
 
-  //track matching
-
-
-
 }
 
 //-----------------------------------------------------------------------------
@@ -202,6 +199,9 @@ void AliEMCALRecParam::Print(Option_t *) const
   }
 
   printf("\n");
+
+  AliInfo(Form("Raw signal parameters: \n gain factor=%f, order=%d, tau=%f, noise threshold=%d, nped samples=%d \n",
+	       fHighLowGainFactor,fOrderParameter,fTau,fNoiseThreshold,fNPedSamples));
 
 }
 

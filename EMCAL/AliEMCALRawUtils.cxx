@@ -73,9 +73,7 @@
 ClassImp(AliEMCALRawUtils)
 
 // Signal shape parameters
-Int_t    AliEMCALRawUtils::fgOrder         = 2 ;      // Order of gamma function 
 Double_t AliEMCALRawUtils::fgTimeBinWidth  = 100E-9 ; // each sample is 100 ns
-Double_t AliEMCALRawUtils::fgTau         = 235E-9 ;   // 235 ns (from CERN testbeam; not very accurate)
 Double_t AliEMCALRawUtils::fgTimeTrigger = 1.5E-6 ;   // 15 time bins ~ 1.5 musec
 
 // some digitization constants
@@ -83,10 +81,17 @@ Int_t    AliEMCALRawUtils::fgThreshold = 1;
 Int_t    AliEMCALRawUtils::fgDDLPerSuperModule = 2;  // 2 ddls per SuperModule
 
 AliEMCALRawUtils::AliEMCALRawUtils()
-  : fHighLowGainFactor(0.), fGeom(0), 
-    fOption("")
+  : fHighLowGainFactor(0.), fOrder(0), fTau(0.), fNoiseThreshold(0),
+    fNPedSamples(0), fGeom(0), fOption("")
 {
+
+  //These are default parameters.  
+  //Can be re-set from without with setter functions
   fHighLowGainFactor = 16. ;          // adjusted for a low gain range of 82 GeV (10 bits) 
+  fOrder = 2;                         // order of gamma fn
+  fTau = 2.35;                        // in units of timebin, from CERN 2007 testbeam
+  fNoiseThreshold = 3;
+  fNPedSamples = 5;
 
   //Get Mapping RCU files from the AliEMCALRecParam                                 
   const TObjArray* maps = AliEMCALRecParam::GetMappings();
@@ -95,7 +100,6 @@ AliEMCALRawUtils::AliEMCALRawUtils()
   for(Int_t i = 0; i < 2; i++) {
     fMapping[i] = (AliAltroMapping*)maps->At(i);
   }
-
 
   fGeom = AliEMCALGeometry::GetInstance();
   if(!fGeom) {
@@ -109,6 +113,10 @@ AliEMCALRawUtils::AliEMCALRawUtils()
 AliEMCALRawUtils::AliEMCALRawUtils(const AliEMCALRawUtils& rawU)
   : TObject(),
     fHighLowGainFactor(rawU.fHighLowGainFactor), 
+    fOrder(rawU.fOrder),
+    fTau(rawU.fTau),
+    fNoiseThreshold(rawU.fNoiseThreshold),
+    fNPedSamples(rawU.fNPedSamples),
     fGeom(rawU.fGeom), 
     fOption(rawU.fOption)
 {
@@ -124,6 +132,10 @@ AliEMCALRawUtils& AliEMCALRawUtils::operator =(const AliEMCALRawUtils &rawU)
 
   if(this != &rawU) {
     fHighLowGainFactor = rawU.fHighLowGainFactor;
+    fOrder = rawU.fOrder;
+    fTau = rawU.fTau;
+    fNoiseThreshold = rawU.fNoiseThreshold;
+    fNPedSamples = rawU.fNPedSamples;
     fGeom = rawU.fGeom;
     fOption = rawU.fOption;
     fMapping[0] = rawU.fMapping[0];
@@ -268,11 +280,11 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr)
   //given raw signal being fit
 
   TF1 * signalF = new TF1("signal", RawResponseFunction, 0, GetRawFormatTimeBins(), 5);
-  signalF->SetParameters(10.,0.,2.35,2.,5.); //set all defaults once, just to be safe
+  signalF->SetParameters(10.,0.,fTau,fOrder,5.); //set all defaults once, just to be safe
   signalF->SetParNames("amp","t0","tau","N","ped");
-  signalF->SetParameter(2,2.35); // tau in units of time bin
+  signalF->SetParameter(2,fTau); // tau in units of time bin
   signalF->SetParLimits(2,2,-1);
-  signalF->SetParameter(3,2); // order
+  signalF->SetParameter(3,fOrder); // order
   signalF->SetParLimits(3,2,-1);
   
   Int_t id =  -1;
@@ -335,7 +347,7 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr)
       gSig->SetPoint(index, index, 0) ;  
     } 
     // Reset starting parameters for fit function
-    signalF->SetParameters(10.,0.,2.35,2.,5.); //reset all defaults just to be safe
+    signalF->SetParameters(10.,0.,fTau,fOrder,5.); //reset all defaults just to be safe
 
   }; // EMCAL entries loop
   
@@ -369,14 +381,14 @@ void AliEMCALRawUtils::AddDigit(TClonesArray *digitsArr, Int_t id, Int_t lowGain
     new((*digitsArr)[idigit]) AliEMCALDigit( -1, -1, id, amp, time, idigit) ;	
   }
   else { // a digit already exists, check range 
-         // (use high gain if signal < 800, otherwise low gain)
+         // (use high gain if signal < cut value, otherwise low gain)
     if (lowGain) { // new digit is low gain
-      if (digit->GetAmp() > 800) {  // use if stored digit is out of range
+      if (digit->GetAmp() > fgkOverflowCut) {  // use if stored digit is out of range
 	digit->SetAmp(Int_t(fHighLowGainFactor * amp));
 	digit->SetTime(time);
       }
     }
-    else if (amp < 800) { // new digit is high gain; use if not out of range
+    else if (amp < fgkOverflowCut) { // new digit is high gain; use if not out of range
       digit->SetAmp(amp);
       digit->SetTime(time);
     }
@@ -388,13 +400,11 @@ void AliEMCALRawUtils::FitRaw(TGraph * gSig, TF1* signalF, Float_t & amp, Float_
 {
   // Fits the raw signal time distribution; from AliEMCALGetter 
 
-  const Int_t kNoiseThreshold = 5;
-  const Int_t kNPedSamples = 5;
   amp = time = 0. ; 
   Double_t ped = 0;
   Int_t nPed = 0;
 
-  for (Int_t index = 0; index < kNPedSamples; index++) {
+  for (Int_t index = 0; index < fNPedSamples; index++) {
     Double_t ttime, signal;
     gSig->GetPoint(index, ttime, signal) ; 
     if (signal > 0) {
@@ -418,14 +428,14 @@ void AliEMCALRawUtils::FitRaw(TGraph * gSig, TF1* signalF, Float_t & amp, Float_
   Int_t tmin_after_sig = gSig->GetN();
   Int_t n_ped_after_sig = 0;
 
-  for (Int_t i=kNPedSamples; i < gSig->GetN(); i++) {
+  for (Int_t i=fNPedSamples; i < gSig->GetN(); i++) {
     Double_t ttime, signal;
     gSig->GetPoint(i, ttime, signal) ; 
     if (!max_found && signal > max) {
       i_max = i;
       max = signal;
     }
-    else if ( max > ped + kNoiseThreshold ) {
+    else if ( max > ped + fNoiseThreshold ) {
       max_found = 1;
       min_after_sig = signal;
       tmin_after_sig = i;
@@ -439,7 +449,7 @@ void AliEMCALRawUtils::FitRaw(TGraph * gSig, TF1* signalF, Float_t & amp, Float_
         max_fit = tmin_after_sig;
         break;
       }
-      if ( signal < ped + kNoiseThreshold)
+      if ( signal < ped + fNoiseThreshold)
         n_ped_after_sig++;
       if (n_ped_after_sig >= 5) {  // include 5 pedestal bins after peak
         max_fit = i;
@@ -448,7 +458,7 @@ void AliEMCALRawUtils::FitRaw(TGraph * gSig, TF1* signalF, Float_t & amp, Float_
     }
   }
 
-  if ( max - ped > kNoiseThreshold ) { // else its noise 
+  if ( max - ped > fNoiseThreshold ) { // else its noise 
     AliDebug(2,Form("Fitting max %d ped %d", max, ped));
     signalF->SetRange(0,max_fit);
 
@@ -505,7 +515,6 @@ const Double_t dtime, const Double_t damp, Int_t * adcH, Int_t * adcL) const
   // for a start time dtime and an amplitude damp given by digit, 
   // calculates the raw sampled response AliEMCAL::RawResponseFunction
 
-  const Int_t kRawSignalOverflow = 0x3FF ; 
   const Int_t pedVal = 32;
   Bool_t lowGain = kFALSE ; 
 
@@ -518,24 +527,24 @@ const Double_t dtime, const Double_t damp, Int_t * adcH, Int_t * adcL) const
   TF1 signalF("signal", RawResponseFunction, 0, GetRawFormatTimeMax(), 5);
   signalF.SetParameter(0, damp) ; 
   signalF.SetParameter(1, dtime + fgTimeTrigger) ; 
-  signalF.SetParameter(2, fgTau) ; 
-  signalF.SetParameter(3, fgOrder);
+  signalF.SetParameter(2, fTau) ; 
+  signalF.SetParameter(3, fOrder);
   signalF.SetParameter(4, pedVal);
 
   for (Int_t iTime = 0; iTime < GetRawFormatTimeBins(); iTime++) {
     Double_t time = iTime * GetRawFormatTimeBinWidth() ;
     Double_t signal = signalF.Eval(time) ;     
     adcH[iTime] =  static_cast<Int_t>(signal + 0.5) ;
-    if ( adcH[iTime] > kRawSignalOverflow ){  // larger than 10 bits 
-      adcH[iTime] = kRawSignalOverflow ;
+    if ( adcH[iTime] > fgkRawSignalOverflow ){  // larger than 10 bits 
+      adcH[iTime] = fgkRawSignalOverflow ;
       lowGain = kTRUE ; 
     }
 
     signal /= fHighLowGainFactor;
 
     adcL[iTime] =  static_cast<Int_t>(signal + 0.5) ;
-    if ( adcL[iTime] > kRawSignalOverflow)  // larger than 10 bits 
-      adcL[iTime] = kRawSignalOverflow ;
+    if ( adcL[iTime] > fgkRawSignalOverflow)  // larger than 10 bits 
+      adcL[iTime] = fgkRawSignalOverflow ;
   }
   return lowGain ; 
 }

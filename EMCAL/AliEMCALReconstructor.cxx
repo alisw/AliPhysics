@@ -139,6 +139,13 @@ void AliEMCALReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
 
   //must be done here because, in constructor, option is not yet known
   fgRawUtils->SetOption(GetOption());
+
+  fgRawUtils->SetRawFormatHighLowGainFactor(fgkRecParam->GetHighLowGainFactor());
+  fgRawUtils->SetRawFormatOrder(fgkRecParam->GetOrderParameter());
+  fgRawUtils->SetRawFormatTau(fgkRecParam->GetTau());
+  fgRawUtils->SetNoiseThreshold(fgkRecParam->GetNoiseThreshold());
+  fgRawUtils->SetNPedSamples(fgkRecParam->GetNPedSamples());
+
   fgRawUtils->Raw2Digits(rawReader,digitsArr);
 
   digitsTree->Fill();

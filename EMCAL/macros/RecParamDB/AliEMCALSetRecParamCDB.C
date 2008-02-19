@@ -176,6 +176,13 @@ void SetRecParam()
   
   recParamDB->SetPiZero10to60(5,0,  0.002942);
   recParamDB->SetPiZero10to60(5,1, -3.976e-05);
+
+  // raw signal fitting
+  recParamDB->SetHighLowGainFactor(16.);
+  recParamDB->SetOrderParameter(2);
+  recParamDB->SetTau(2.35);
+  recParamDB->SetNoiseThreshold(3);
+  recParamDB->SetNPedSamples(5);
   
   // Store calibration data into database
   

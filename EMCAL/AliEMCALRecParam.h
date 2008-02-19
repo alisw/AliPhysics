@@ -8,7 +8,10 @@
 //-----------------------------------------------------------------------------
 // Container of EMCAL reconstruction parameters
 // The purpose of this object is to store it to OCDB
-// and retrieve it in AliEMCALClusterizerv1, AliEMCALPID and AliEMCALTracker
+// and retrieve it in AliEMCALClusterizerv1, AliEMCALPID,
+// AliEMCALTracker and use it to configure AliEMCALRawUtils
+// 
+// 
 // Author: Yuri Kharlov
 //-----------------------------------------------------------------------------
 
@@ -60,6 +63,20 @@ public:
   Double_t GetTrkCutAlphaMax() const {return fTrkCutAlphaMax;}
   Double_t GetTrkCutAngle() const    {return fTrkCutAngle;}
 
+  //Raw signal fitting (Jenn)
+  /* raw signal setters */
+  void SetHighLowGainFactor(Double_t value) {fHighLowGainFactor = value;}
+  void SetOrderParameter(Int_t value)       {fOrderParameter = value;}
+  void SetTau(Double_t value)               {fTau = value;}
+  void SetNoiseThreshold(Int_t value)       {fNoiseThreshold = value;}
+  void SetNPedSamples(Int_t value)          {fNPedSamples = value;}
+  /* raw signal getters */
+  Double_t GetHighLowGainFactor() const {return fHighLowGainFactor;}
+  Int_t    GetOrderParameter()    const {return fOrderParameter;}
+  Double_t GetTau()               const {return fTau;}
+  Int_t    GetNoiseThreshold()    const {return fNoiseThreshold;}
+  Int_t    GetNPedSamples()       const {return fNPedSamples;}
+ 
   virtual void Print(Option_t * option="") const ;
 
   static const  TObjArray* GetMappings();
@@ -85,9 +102,16 @@ private:
   Double_t  fTrkCutAlphaMax;       // cut on 'alpha' parameter for track matching (min)
   Double_t  fTrkCutAngle;          // cut on relative angle between different track points for track matching
 
+  //Raw signal fitting parameters (Jenn)
+  Double_t fHighLowGainFactor;     //gain factor to convert between high and low gain
+  Int_t    fOrderParameter;        //order parameter for raw signal fit
+  Double_t fTau;                   //decay constant for raw signal fit
+  Int_t    fNoiseThreshold;        //threshold to consider signal or noise
+  Int_t    fNPedSamples;           //number of time samples to use in pedestal calculation
+
   static TObjArray* fgkMaps;       // ALTRO mappings for RCU0..RCUX
 
-  ClassDef(AliEMCALRecParam,3)   // Reconstruction parameters
+  ClassDef(AliEMCALRecParam,4)   // Reconstruction parameters
 
 } ;
 
