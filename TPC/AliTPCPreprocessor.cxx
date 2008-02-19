@@ -41,6 +41,8 @@ const TString kPedestalRunType = "PEDESTAL";  // pedestal run identifier
 const TString kPulserRunType = "PULSER";   // pulser run identifier
 const TString kPhysicsRunType = "PHYSICS";   // physics run identifier
 const TString kStandAloneRunType = "STANDALONE"; // standalone run identifier
+const TString kCosmicRunType = "COSMIC"; // cosmic run identifier
+const TString kLaserRunType = "LASER";   // laser run identifier
 const TString kDaqRunType = "DAQ"; // DAQ run identifier
 const TString kAmandaTemp = "tpc_PT_%d.Temperature"; // Amanda string for temperature entries
 //const Double_t kFitFraction = 0.7;                 // Fraction of DCS sensor fits required              
@@ -270,9 +272,10 @@ UInt_t AliTPCPreprocessor::Process(TMap* dcsAliasMap)
 
   // Central Electrode processing
 
-  if( runType == kPhysicsRunType || runType == kStandAloneRunType || 
-      runType == kDaqRunType ) {    
+//  if( runType == kPhysicsRunType || runType == kStandAloneRunType || 
+//      runType == kDaqRunType ) {    
 
+   if (true) {                 // do CE processing for all run types
     Int_t numSources = 1;
     Int_t ceSource[2] = {AliShuttleInterface::kDAQ,AliShuttleInterface::kHLT} ;
     TString source = fConfEnv->GetValue("CE","DAQ");
