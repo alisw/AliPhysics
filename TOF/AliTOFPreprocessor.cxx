@@ -150,7 +150,7 @@ Bool_t AliTOFPreprocessor::ProcessDCS(){
   TString runType = GetRunType();
   Log(Form("RunType %s",runType.Data()));
 
-  if ((runType == "PULSER_RUN")||(runType == "NOISE_RUN")) {
+  if (runType != "PHYSICS"){
     return kFALSE;
   }
 

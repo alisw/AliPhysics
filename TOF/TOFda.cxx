@@ -326,7 +326,7 @@ int main(int argc, char **argv) {
   status=0;
 
   /* export file to FXS */
-  if (daqDA_FES_storeFile(FILE_RUN, "RUN_LEVEL")) {
+  if (daqDA_FES_storeFile(FILE_RUN, "RUNLevel")) {
     status=-2;
   }
   if (daqDA_FES_storeFile(FILE_TOTAL, "DELAYS")) {
