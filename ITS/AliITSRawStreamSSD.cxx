@@ -439,10 +439,6 @@ Bool_t AliITSRawStreamSSD::Next()
     AliWarning(Form("Module ID = %d > %d (max)",relModuleID,kModulesPerDDL));
     return kFALSE;
   }
-  if(relModuleID < 0){
-    AliWarning(Form("Module ID = %d < 0",relModuleID));
-    return kFALSE;
-  }
   flag=0;
 
 
