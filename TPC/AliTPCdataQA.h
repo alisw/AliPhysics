@@ -5,7 +5,7 @@
 
 
 
-#include <TObject.h>
+#include <TH1F.h>
 #include <TObjArray.h>
 
 class TArrayF;
@@ -20,7 +20,7 @@ class AliTPCAltroMapping;
 class AliTPCCalPad; 
 struct eventHeaderStruct;
 
-class AliTPCdataQA : public TObject {
+class AliTPCdataQA : public TH1F {
 
 public:
   AliTPCdataQA();
@@ -83,8 +83,8 @@ private:
   AliTPCAltroMapping **fMapping;    //! Altro Mapping object
   //
   //
-  AliTPCCalPad * fPedestal;         // option to set pedestal cal object
-  AliTPCCalPad * fNoise;            // option to set noise cal object
+  AliTPCCalPad * fPedestal;         //! option to set pedestal cal object
+  AliTPCCalPad * fNoise;            //! option to set noise cal object
   AliTPCCalPad * fMaxCharge;        // max charge
   AliTPCCalPad * fMeanCharge;       // mean charge
   AliTPCCalPad * fNoThreshold;      // number of digits
@@ -92,7 +92,7 @@ private:
   AliTPCCalPad * fOverThreshold5;   // number of digits over threshold
   AliTPCCalPad * fOverThreshold10;  // number of digits over threshold
   AliTPCCalPad * fOverThreshold20;  // number of digits over threshold
-  AliTPCCalPad * fOverThreshold30;  // number of digits over threshold
+  AliTPCCalPad * fOverThreshold30;  //! number of digits over threshold
 
   Int_t   fEventCounter;            // event Counter
   Int_t   fSectorLast;              //! last sector with signal

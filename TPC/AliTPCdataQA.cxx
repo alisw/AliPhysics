@@ -51,8 +51,8 @@ using namespace std;
 
 ClassImp(AliTPCdataQA)
 
-AliTPCdataQA::AliTPCdataQA() : /*FOLD00*/
-  TObject(),
+AliTPCdataQA::AliTPCdataQA() : /*FOLD00*/  
+  TH1F("TPCRAW","TPCRAW",100,0,100),
   fFirstTimeBin(60),
   fLastTimeBin(1000),
   fAdcMin(1),
@@ -87,7 +87,7 @@ AliTPCdataQA::AliTPCdataQA() : /*FOLD00*/
 
 //_____________________________________________________________________
 AliTPCdataQA::AliTPCdataQA(const AliTPCdataQA &ped) : /*FOLD00*/
-  TObject(ped),
+  TH1F(ped),
   fFirstTimeBin(ped.GetFirstTimeBin()),
   fLastTimeBin(ped.GetLastTimeBin()),
   fAdcMin(ped.GetAdcMin()),

@@ -80,7 +80,20 @@ AliTPCQADataMakerRec::AliTPCQADataMakerRec() :
 
 //____________________________________________________________________________ 
 AliTPCQADataMakerRec::AliTPCQADataMakerRec(const AliTPCQADataMakerRec& qadm) :
-  AliQADataMakerRec()
+  AliQADataMakerRec(),
+  fHistESDclusters(0),  //! Clusters per ESD track
+  fHistESDratio(0),     //! Ratio of clusters to findables
+  fHistESDpt(0),        //! Pt spectrum
+  
+  fHistRawsOccupancy(0),//! Pad occupancy (1 entry per pad)
+  
+  fHistRecPointsQmaxShort(0), //! Qmax (short pads)
+  fHistRecPointsQmaxMedium(0),//! Qmax (medium pads)
+  fHistRecPointsQmaxLong(0),  //! Qmax (long pads)
+  fHistRecPointsQShort(0),    //! Q (short pads)
+  fHistRecPointsQMedium(0),   //! Q (medium pads)
+  fHistRecPointsQLong(0),     //! Q (long pads)
+  fHistRecPointsRow(0)       //! Row distribution
 {
   //copy ctor 
   // Does not copy the calibration object, instead InitRaws have to be
@@ -133,12 +146,13 @@ void AliTPCQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX task, TObjArray *
     fTPCdataQA->Analyse(); // 31/1-08 Analyse is now protected against
                            //         RAW data files with no TPC data
     
+    //Add2RawsList(fTPCdataQA, 0);
     // get the histograms and add them to the output
     // 31/8-08 Histogram is only added if the Calibration class 
     //         receives TPC data 
     if(fTPCdataQA->GetNoThreshold()) { 
       fHistRawsOccupancy = fTPCdataQA->GetNoThreshold()->MakeHisto1D(0, 1, -1);
-      Add2RawsList(fHistRawsOccupancy, 0);
+      //Add2RawsList(fHistRawsOccupancy, 1);
     }
   }
 
@@ -171,8 +185,12 @@ void AliTPCQADataMakerRec::InitESDs()
 //____________________________________________________________________________ 
 void AliTPCQADataMakerRec::InitRaws()
 {
+  //
+  // Adding the raw 
+  //
   fTPCdataQA = new AliTPCdataQA();
-  fTPCdataQA->SetRangeTime(0, 999); // take all 1000 time bins
+  fTPCdataQA->SetRangeTime(0, 999); // take all 1000 time bins 
+  Add2RawsList(fTPCdataQA, 0);
 }
 
 //____________________________________________________________________________ 
