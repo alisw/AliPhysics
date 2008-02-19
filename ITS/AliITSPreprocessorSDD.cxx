@@ -68,7 +68,7 @@ UInt_t AliITSPreprocessorSDD::Process(TMap* dcsAliasMap){
   md1->SetAliRootVersion("head 30 November 2007"); //root version
   md1->SetComment("This is a test");
 
-  if (runType == "PULSER_RUN"){
+  if (runType == "PULSER"){
     TObjArray calSDD(kNumberOfSDD);
     calSDD.SetOwner(kFALSE);
     Float_t baseline,rawnoise,cmn,corn,gain;
@@ -138,7 +138,7 @@ UInt_t AliITSPreprocessorSDD::Process(TMap* dcsAliasMap){
     }
     md1->SetObjectClassName("AliITSCalibration");
     retcode = Store("Calib","CalibSDD",&calSDD,md1, 0, kTRUE);
-  }else if(runType == "PHYSICS"){
+  }else if(runType == "PHYSICS" || runType== "INJECTOR"){
 
     TObjArray vdrift(2*kNumberOfSDD);
     vdrift.SetOwner(kFALSE);
