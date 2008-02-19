@@ -89,7 +89,25 @@ UInt_t AliITSPreprocessorSSD::Process(TMap* /*dcsAliasMap*/)
 	    if(!cal) {
 	    	Log("File does not contain expected data for the noise!");
 		delete list;
+		return 3;
 	    }	    
+
+	    //---------------------------------------
+	    // in case some module was not calibrated!
+	    for(Int_t i=0; i<fgkNumberOfSSD; i++) {
+	      AliITSNoiseSSD *calib = new AliITSNoiseSSD();
+	      calib->SetMod((UShort_t) i+500);
+	      calib->SetNNoiseP(768);
+	      calib->SetNNoiseN(768);
+	      // take a reasonable averaged value for the noise on P- and N-side strips
+	      for(Int_t j=0; j<768; j++) {
+		calib->AddNoiseP(j,2.);
+		calib->AddNoiseN(j,4.);
+	      }
+	      calib_array.AddAt(calib,i);
+	    }
+	    //-----------------------------------------
+
 	    Int_t nmod = cal->GetEntries();
 	    for(Int_t mod=0; mod<nmod; mod++) {
 	      AliITSNoiseSSD *calib = (AliITSNoiseSSD*) cal->At(mod);
@@ -97,11 +115,23 @@ UInt_t AliITSPreprocessorSSD::Process(TMap* /*dcsAliasMap*/)
 	      calib_array.AddAt(calib,calib->GetMod()-500);
 	    }
 
+
+	    //---------------------------------------
+	    // in case some module was not calibrated!
+	    for(Int_t i=0; i<fgkNumberOfSSD; i++) {
+	      AliITSBadChannelsSSD *badch = new AliITSBadChannelsSSD();
+	      badch->SetMod((UShort_t) i+500);
+	      badch_array.AddAt(badch,i);
+	    }
+	    //-----------------------------------------
+
+	    //-----------------------------------------
 	    TObjArray *bad; 
 	    f->GetObject("BadChannels;1", bad); 
 	    if(!bad) {
 	    	Log("File does not contain expected data for bad channels  !");
 		delete list;
+		return 4;
 	    }	    
 	    nmod = bad->GetEntries();
 	    for(Int_t mod=0; mod<nmod; mod++) {
@@ -110,11 +140,27 @@ UInt_t AliITSPreprocessorSSD::Process(TMap* /*dcsAliasMap*/)
 	      badch_array.AddAt(badch,badch->GetMod()-500);
 	    }
 
+	    //---------------------------------------
+	    // in case some module was not calibrated!
+	    for(Int_t i=0; i<fgkNumberOfSSD; i++) {
+	      AliITSPedestalSSD *pedel = new AliITSPedestalSSD();
+	      pedel->SetMod((UShort_t) i+500);
+	      pedel->SetNPedestalP(768);
+	      pedel->SetNPedestalN(768);
+	      for(Int_t j=0; j<768; j++) {
+		pedel->AddPedestalP(j,0.);
+		pedel->AddPedestalN(j,0.);
+	      }
+	      ped_array.AddAt(pedel,i);
+	    }
+	    //-----------------------------------------
+
 	    TObjArray *ped; 
 	    f->GetObject("Pedestal;1", ped); 
 	    if(!ped) {
 	    	Log("File does not contain expected data for the pedestals!");
 		delete list;
+		return 5;
 	    }	    
 	    nmod = ped->GetEntries();
 	    for(Int_t mod=0; mod<nmod; mod++) {
@@ -128,7 +174,7 @@ UInt_t AliITSPreprocessorSSD::Process(TMap* /*dcsAliasMap*/)
 	  } else {
 	  	Log("GetFile error!");
 		delete list;
-		return 3;
+		return 6;
 	  } // if filename
 	} // end iteration over LDCs
 	
@@ -136,7 +182,7 @@ UInt_t AliITSPreprocessorSSD::Process(TMap* /*dcsAliasMap*/)
       } else {
       	  Log("GetFileSources error!");
 	  if(list) delete list;
-	  return 4;
+	  return 7;
       } // if list
     
       //Now we have to store the final CDB file
