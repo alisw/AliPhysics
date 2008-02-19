@@ -29,7 +29,6 @@
 #include "AliLog.h"
 #include "AliT0Parameters.h"
 #include "AliT0Calibrator.h"
-//#include <TArrayI.h>
 #include <TGraph.h>
 #include <TH1F.h>
 
@@ -51,7 +50,6 @@ ClassImp(AliT0Calibrator)
     fTimeDelayCFD[i] = Int_t (param->GetTimeDelayCFD(i));
     TGraph* fu = param ->GetWalk(i);
     fWalk.AddAtAndExpand(fu,i);
-
   }
   
   //
@@ -96,7 +94,6 @@ Int_t  AliT0Calibrator::WalkCorrection(Int_t ipmt, Int_t qt, Int_t time)
   TH1F*hr=fu1->GetHistogram();
   Float_t maxValue=hr->GetMaximum(50);
   timeWalk = time + Int_t((maxValue-walk)/fChannelWidth) ;
-  
   timeEq= timeWalk - (fTimeDelayCFD[ipmt]-fTimeDelayCFD[0]);
   AliDebug(10,Form(" time before %i timeWalk %i ,  qt %i timeEq %i \n ",
 		  time,timeWalk, qt, timeEq ));
