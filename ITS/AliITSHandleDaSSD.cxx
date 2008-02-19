@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id:$ */
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////////////
 ///
@@ -273,7 +273,7 @@ Bool_t AliITSHandleDaSSD::Init(Char_t *rdfname, const Char_t *configfname)
 
 
 //______________________________________________________________________________
-Bool_t AliITSHandleDaSSD::ReadConfigurationFile(const Char_t *configfname) 
+Bool_t AliITSHandleDaSSD::ReadConfigurationFile(const Char_t * /* configfname */) 
 const {
 // Dowload configuration parameters from configuration file or database
   return kFALSE;
@@ -899,7 +899,7 @@ Bool_t AliITSHandleDaSSD::PrintModCalibrationData(const UChar_t ddlID, const UCh
    }
    *outputfile  << "DDL = " << (int)ddlID << ";  AD = " << (int)ad << ";  ADC = " << (int)adc << endl;
    for (Int_t strind = 0; strind < AliITSModuleDaSSD::GetStripsPerModuleConst(); strind++) {
-     if (strip = GetStrip(ddlID, ad, adc, strind)) {
+     if ( (strip = GetStrip(ddlID, ad, adc, strind)) ) {
        *outputfile << "Str = " << strind << ";  ped = " << strip->GetPedestal() 
                    << ";  noise = " << strip->GetNoiseCM() << endl;
      }
