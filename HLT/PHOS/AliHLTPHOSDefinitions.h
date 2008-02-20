@@ -15,6 +15,7 @@
 class AliHLTPHOSDefinitions
 {
 public:
+
   static const AliHLTComponentDataType fgkCellEnergyDataType;    /**<Reconstructed cell/crystal energies*/
   static const AliHLTComponentDataType fgkDDLPackedRawDataType;  /**<DDL raw data on the RCU data format*/
   static const AliHLTComponentDataType fgkCellEnergyHistogramDataType;  /**<Histogram for per cell/gain energy distribution*/
@@ -23,16 +24,16 @@ public:
   static const AliHLTComponentDataType fgkCellTimingHistogramDataType;  /**<Histogram for per cell/gain time distribution*/      
   static const AliHLTComponentDataType fgkCellTimingAverageDataType;  /**<Histogram for per cell/gain time distribution*/  
   static const AliHLTComponentDataType fgkCellChannelDataDataType;  /**<Time dependent signal from the readout channels*/  
-  static const AliHLTComponentDataType fgkAliHLTClusterDataType;  //Cluster data type
-  static const AliHLTComponentDataType fgkAliHLTRecPointDataType; //RecPoint data type
-  static const AliHLTComponentDataType fgkAliHLTHistDataType;     //hist data type
-  static const AliHLTComponentDataType fgkAliHLTSpectrumDataType; //spectrum data type
-  static const AliHLTComponentDataType fgkAliHLTDigitDataType; //Digit data type
-  static const AliHLTComponentDataType fgkAliHLTRootTreeDataType; //Root tree type
-  static const AliHLTComponentDataType fgkAliHLTBaselineDataType; //Baseline type
-  static const AliHLTComponentDataType fgkAliHLTMIPDataType; //"MIP" data type
-  static const AliHLTComponentDataType fgkAliHLTNoiseMapDataType; //Noise map data type
-  static const AliHLTComponentDataType fgkAliHLTSandboxDataType; //General data type
+  static const AliHLTComponentDataType fgkClusterDataType;  //Cluster data type
+  static const AliHLTComponentDataType fgkRecPointDataType; //RecPoint data type
+  static const AliHLTComponentDataType fgkHistDataType;     //hist data type
+  static const AliHLTComponentDataType fgkSpectrumDataType; //spectrum data type
+  static const AliHLTComponentDataType fgkDigitDataType; //Digit data type
+  static const AliHLTComponentDataType fgkRootTreeDataType; //Root tree type
+  static const AliHLTComponentDataType fgkBaselineDataType; //Baseline type
+  static const AliHLTComponentDataType fgkMIPDataType; //"MIP" data type
+  static const AliHLTComponentDataType fgkNoiseMapDataType; //Noise map data type
+  static const AliHLTComponentDataType fgkSandboxDataType; //General data type
   static const AliHLTComponentDataType fgkEmcCalibDataType; //Calibration data type
   static const AliHLTComponentDataType fgkCaloClusterDataType; //Calo cluster data type
 };

@@ -49,12 +49,14 @@ class AliHLTPHOSPhysicsAnalyzerSpectrum : public AliHLTPHOSPhysicsAnalyzer
 
   /** Copy constructor */
   AliHLTPHOSPhysicsAnalyzerSpectrum(const AliHLTPHOSPhysicsAnalyzerSpectrum &);
-  /*
+
+  /** Assignment */
   AliHLTPHOSPhysicsAnalyzerSpectrum & operator = (const AliHLTPHOSPhysicsAnalyzerSpectrum)
     {
+      //Assignment
       return *this; 
     }
-  */
+
 
   /** Destructor */
   virtual ~AliHLTPHOSPhysicsAnalyzerSpectrum();

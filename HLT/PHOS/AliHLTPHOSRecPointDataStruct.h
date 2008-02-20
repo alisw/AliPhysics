@@ -57,7 +57,7 @@ struct AliHLTPHOSRecPointDataStruct
   Float_t fZ;                                 //COMMENT
 
   /** Module number */
-  Float_t fModule;                            //COMMENT
+  Int_t fModule;                              //COMMENT
 
   /** The total energy of the rec point */
   Float_t fAmp;                               //COMMENT
@@ -81,7 +81,7 @@ struct AliHLTPHOSRecPointDataStruct
   Float_t fDistanceToBadChannel;              //COMMENT
 
   /** Array of digits in the rec point */
-  AliHLTPHOSDigitDataStruct fDigitsList[64];  //COMMENT
+  AliHLTPHOSDigitDataStruct fDigitsList[128];  //COMMENT
 
 };
 

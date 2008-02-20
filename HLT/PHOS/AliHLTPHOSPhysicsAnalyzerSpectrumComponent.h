@@ -62,12 +62,16 @@ class AliHLTPHOSPhysicsAnalyzerSpectrumComponent: public AliHLTPHOSProcessor // 
 
   /** Destructor */
   ~AliHLTPHOSPhysicsAnalyzerSpectrumComponent();
+  
+  /** Copy constructor */
+  AliHLTPHOSPhysicsAnalyzerSpectrumComponent(const AliHLTPHOSPhysicsAnalyzerSpectrumComponent &);
 
-  // PTH  AliHLTPHOSPhysicsAnalyzerSpectrumComponent(const AliHLTPHOSPhysicsAnalyzerSpectrumComponent &);
-  //  AliHLTPHOSPhysicsAnalyzerSpectrumComponent & operator = (const AliHLTPHOSPhysicsAnalyzerSpectrumComponent &)
-  //   {
-  //     return *this;
-  //  }
+  /** Assignment */
+  AliHLTPHOSPhysicsAnalyzerSpectrumComponent & operator = (const AliHLTPHOSPhysicsAnalyzerSpectrumComponent &)
+  {
+    // Assignment
+    return *this;
+  }
 
   /** interface function, see @ref AliHLTComponent for description */
   const char* GetComponentID();

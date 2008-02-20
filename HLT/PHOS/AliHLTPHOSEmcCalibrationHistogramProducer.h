@@ -58,6 +58,19 @@ class AliHLTPHOSEmcCalibrationHistogramProducer: public AliHLTPHOSBase
   /** Destructor */
   virtual ~AliHLTPHOSEmcCalibrationHistogramProducer();
 
+    /** Copy constructor */  
+  AliHLTPHOSEmcCalibrationHistogramProducer(const AliHLTPHOSEmcCalibrationHistogramProducer &) : AliHLTPHOSBase()
+  {
+    //Copy constructor not implemented
+  }
+  
+  /** Assignment */
+  AliHLTPHOSEmcCalibrationHistogramProducer & operator = (const AliHLTPHOSEmcCalibrationHistogramProducer)
+  {
+    //Assignment
+    return *this; 
+  }
+
   /** Reset the histograms */
   void Reset();
 

@@ -43,7 +43,9 @@ AliHLTPHOSClusterAnalyserComponent gAliHLTPHOSClusterAnalyserComponent;
 
 AliHLTPHOSClusterAnalyserComponent::AliHLTPHOSClusterAnalyserComponent(): 
 AliHLTPHOSProcessor(), 
-fClusterAnalyserPtr(0)
+fClusterAnalyserPtr(0),
+fDoDeconvolution(0),
+fDoCalculateMoments(0)
 {
   //See headerfile for documentation
 }
@@ -98,7 +100,7 @@ AliHLTPHOSClusterAnalyserComponent::GetOutputDataType()
 {
   //See headerfile for documentation
 
-  return AliHLTPHOSDefinitions::fgkAliHLTClusterDataType;
+  return AliHLTPHOSDefinitions::fgkClusterDataType;
 }
 
 void
@@ -129,9 +131,7 @@ AliHLTPHOSClusterAnalyserComponent::DoEvent(const AliHLTComponentEventData& evtD
   UInt_t tSize            = 0;
   UInt_t offset           = 0;
   UInt_t mysize           = 0;
-  Int_t nRecPoints        = 0;
-  Int_t nDigits           = 0;
-  Int_t j =0;
+  Int_t nClusters         = 0;
 
   AliHLTUInt8_t* outBPtr;
   outBPtr = outputPtr;
@@ -144,8 +144,8 @@ AliHLTPHOSClusterAnalyserComponent::DoEvent(const AliHLTComponentEventData& evtD
   fClusterAnalyserPtr->SetCaloClusterContainer((AliHLTPHOSCaloClusterContainerStruct*)outBPtr);
   for ( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
     {
-      iter = blocks+ndx;
-      if (iter->fDataType != AliHLTPHOSDefinitions::fgkAliHLTRecPointDataType)
+      iter = blocks+ndx; 
+      if (iter->fDataType != AliHLTPHOSDefinitions::fgkClusterDataType)
         {
           continue;
         }
@@ -161,15 +161,13 @@ AliHLTPHOSClusterAnalyserComponent::DoEvent(const AliHLTComponentEventData& evtD
 	{
 	  fClusterAnalyserPtr->CalculateRecPointMoments();
 	}
-      fClusterAnalyserPtr->CreateClusters();
-      
+      nClusters = fClusterAnalyserPtr->CreateClusters();
     }
 
-  mysize = 0;
+  mysize = 0; 
   offset = tSize;
-
   mysize += sizeof(AliHLTPHOSCaloClusterContainerStruct);
-  //cout << "Size of calo cluster container: " << mysize << endl;
+  
   AliHLTComponentBlockData bd;
   FillBlockData( bd );
   bd.fOffset = offset;
@@ -180,13 +178,22 @@ AliHLTPHOSClusterAnalyserComponent::DoEvent(const AliHLTComponentEventData& evtD
 
   tSize += mysize;
   outBPtr += mysize;
-
+ 
   if ( tSize > size )
     {
       Logging( kHLTLogFatal, "HLT::AliHLTPHOSClusterAnalyserComponent::DoEvent", "Too much data",
                "Data written over allowed buffer. Amount written: %lu, allowed amount: %lu."
                , tSize, size );
       return EMSGSIZE;
+    }
+
+  fPhosEventCount++; 
+  if(fPrintInfo == kTRUE)
+    {
+      if(fPhosEventCount%fPrintInfoFrequncy == 0)
+      	{
+	  cout << "Cluster analyser: # of clusters: " << nClusters << endl;
+	}  
     }
   
   return 0;
@@ -196,9 +203,11 @@ AliHLTPHOSClusterAnalyserComponent::DoEvent(const AliHLTComponentEventData& evtD
 int
 AliHLTPHOSClusterAnalyserComponent::DoInit(int argc, const char** argv )
 {
+
   //See headerfile for documentation
   
   fClusterAnalyserPtr = new AliHLTPHOSClusterAnalyser();
+  ScanArguments(argc, argv);
   for (int i = 0; i < argc; i++)
     {
       if(!strcmp("-dodeconvolution", argv[i]))

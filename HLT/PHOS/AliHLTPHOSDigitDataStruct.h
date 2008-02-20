@@ -63,26 +63,12 @@ struct AliHLTPHOSDigitDataStruct
   /** The gain */
   Int_t fGain;
   
-  /** The raw data */
-  Int_t fData[512];
-
   /** The crazyness */
   Int_t fCrazyness; 
 
   /** The baseline */
   Float_t fBaseline;
 
-  /** 
-   * Set the raw data 
-   * @param data is a pointer to the raw data 
-   */ 
-  void SetRawData(Int_t *data)
-  {
-    for(Int_t i = 0; i < 512; i++) //Fy på deg Øystein
-      {
-	fData[i] = data[i];
-      }
-  }
 };
 
 #endif

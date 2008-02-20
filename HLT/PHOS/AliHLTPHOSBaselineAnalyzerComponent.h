@@ -54,6 +54,31 @@ public:
 
   /** Destructor */ 
   virtual ~AliHLTPHOSBaselineAnalyzerComponent();
+
+  /** Copy constructor */
+  AliHLTPHOSBaselineAnalyzerComponent(const AliHLTPHOSBaselineAnalyzerComponent &) : 
+    AliHLTPHOSProcessor(),
+    fBaselineAnalyzerPtr(0),
+    fTreePtr(0),
+    fBaselineArrayPtr(0),
+    fEvCnt(0),
+    fWriteInterval(100),
+    fFillInterval(100),
+    fFilename(0),
+    fDirectory(0),
+    fHistPath(0),
+    fRunNb(0),
+    fCalculateAll(false)
+  {
+    //Copy constructor not implemented
+  }
+  
+  /** Assignment */
+  AliHLTPHOSBaselineAnalyzerComponent & operator = (const AliHLTPHOSBaselineAnalyzerComponent)
+    {
+      //Assignment
+      return *this; 
+    }
   
   /** interface function, see @ref AliHLTComponent for description */
   const char* GetComponentID();

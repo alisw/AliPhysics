@@ -50,6 +50,22 @@ public:
   
   /* Destructor */
   virtual ~AliHLTPHOSSanityInspector();
+
+  /** Copy constructor */  
+  AliHLTPHOSSanityInspector(const AliHLTPHOSSanityInspector &) : 
+    AliHLTPHOSBase(),
+    fMaxDifference(0)
+  {
+    //Copy constructor not implemented
+  }
+  
+  /** Assignment */
+  AliHLTPHOSSanityInspector & operator = (const AliHLTPHOSSanityInspector)
+  {
+    //Assignment
+    return *this; 
+  }
+  
   
   //  Int_t CheckInsanity(UInt_t* data, Int_t nSamples);
   

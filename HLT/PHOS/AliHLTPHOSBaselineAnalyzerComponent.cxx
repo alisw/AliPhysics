@@ -49,13 +49,15 @@ AliHLTPHOSBaselineAnalyzerComponent::AliHLTPHOSBaselineAnalyzerComponent() :
   AliHLTPHOSProcessor(),
   fBaselineAnalyzerPtr(0),
   fTreePtr(0),
+  fBaselineArrayPtr(0),
   fEvCnt(0),
   fWriteInterval(100),
   fFillInterval(100),
   fFilename(0),
   fDirectory(0),
   fHistPath(0),
-  fRunNb(0)
+  fRunNb(0),
+  fCalculateAll(false)
 {
    //See header file for documentation
 }
@@ -127,7 +129,7 @@ AliHLTComponentDataType
 AliHLTPHOSBaselineAnalyzerComponent::GetOutputDataType()
 {
  //See header file for documentation
-  return AliHLTPHOSDefinitions::fgkAliHLTBaselineDataType;
+  return AliHLTPHOSDefinitions::fgkBaselineDataType;
 }
 
 

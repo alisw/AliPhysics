@@ -74,12 +74,15 @@ AliHLTPHOSPhysicsAnalyzerSpectrumComponent::~AliHLTPHOSPhysicsAnalyzerSpectrumCo
       
 }
 
-// PTH AliHLTPHOSPhysicsAnalyzerSpectrumComponent::AliHLTPHOSPhysicsAnalyzerSpectrumComponent(const AliHLTPHOSPhysicsAnalyzerSpectrumComponent &):AliHLTProcessor(), fAnalyzerPtr(0), 
-//																	   fPeakFitter(0), fRootHistPtr(0), 
-//																	   fWriteInterval(0)
-//{
+AliHLTPHOSPhysicsAnalyzerSpectrumComponent::AliHLTPHOSPhysicsAnalyzerSpectrumComponent(const AliHLTPHOSPhysicsAnalyzerSpectrumComponent &) :
+  AliHLTPHOSProcessor(),
+  fAnalyzerPtr(0),
+  fPeakFitter(0), 
+  fRootHistPtr(0)
+  //fWriteInterval(0)
+{
   //Copy constructor not implemented 
-//}
+}
 
 Int_t
 AliHLTPHOSPhysicsAnalyzerSpectrumComponent::Deinit()
@@ -130,7 +133,7 @@ AliHLTComponentDataType
 AliHLTPHOSPhysicsAnalyzerSpectrumComponent::GetOutputDataType()
 {
   //  return AliHLTPHOSPhysicsDefinitions::fgkAliHLTSpectrumDataType;
-  return AliHLTPHOSDefinitions::fgkAliHLTSpectrumDataType;
+  return AliHLTPHOSDefinitions::fgkSpectrumDataType;
 }
 
 void
@@ -145,7 +148,7 @@ AliHLTPHOSPhysicsAnalyzerSpectrumComponent::GetOutputDataSize(unsigned long& con
 
 Int_t 
 AliHLTPHOSPhysicsAnalyzerSpectrumComponent::DoEvent(const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks,
-						    AliHLTComponentTriggerData& /*trigData*/, AliHLTUInt8_t* outputPtr, AliHLTUInt32_t& /*size*/,
+						    AliHLTComponentTriggerData& /*trigData*/, AliHLTUInt8_t* /*outputPtr*/, AliHLTUInt32_t& /*size*/,
 						    std::vector<AliHLTComponentBlockData>& /*outputBlocks*/)
 {
   //Do event
@@ -157,9 +160,9 @@ AliHLTPHOSPhysicsAnalyzerSpectrumComponent::DoEvent(const AliHLTComponentEventDa
     {
       iter = blocks+ndx;
       
-      if(iter->fDataType != AliHLTPHOSDefinitions::fgkAliHLTRecPointDataType)
+      if(iter->fDataType != AliHLTPHOSDefinitions::fgkRecPointDataType)
 	{
-	  cout << "Warning: data type is not fgkAliHLTClusterDataType " << endl;
+	  cout << "Warning: data type is not fgkRecPointDataType " << endl;
 	  continue;
 	}
       

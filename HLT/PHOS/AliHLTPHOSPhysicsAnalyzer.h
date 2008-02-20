@@ -60,12 +60,22 @@ class AliHLTPHOSPhysicsAnalyzer
   /** Destructor */
   virtual ~AliHLTPHOSPhysicsAnalyzer();
 
-  /*
-  AliHLTPHOSPhysicsAnalyzer(const AliHLTPHOSPhysicsAnalyzer & );
-  AliHLTPHOSPhysicsAnalyzer & operator = (const AliHLTPHOSPhysicsAnalyzer &) {return *this;}
-  */
-
-
+  /** Copy constructor */  
+  AliHLTPHOSPhysicsAnalyzer(const AliHLTPHOSPhysicsAnalyzer &):
+  fRecPointsPtr(0), 
+  fRootHistPtr(0), 
+  fPHOSRadius(0)
+  {
+    //Copy constructor not implemented
+  }
+  
+  /** Assignment */
+  AliHLTPHOSPhysicsAnalyzer & operator = (const AliHLTPHOSPhysicsAnalyzer &) 
+  {
+    //Assignement
+    return *this;
+  }
+  
   void SetHistogram(TH1F* histPtr) {fRootHistPtr = histPtr;}
 
   /** 

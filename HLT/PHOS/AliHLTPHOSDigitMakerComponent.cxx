@@ -1,4 +1,4 @@
-/**************************************************************************
+ /**************************************************************************
  * This file is property of and copyright by the ALICE HLT Project        *
  * All rights reserved.                                                   *
  *                                                                        *
@@ -45,7 +45,8 @@ AliHLTPHOSDigitMakerComponent gAliHLTPHOSDigitMakerComponent;
 
 AliHLTPHOSDigitMakerComponent::AliHLTPHOSDigitMakerComponent() :
   AliHLTPHOSProcessor(),
-  fDigitMakerPtr(0)
+  fDigitMakerPtr(0),
+  fDigitContainerPtr(0)
   //  fEvtCnt(0)
 {
   //see header file for documentation
@@ -91,7 +92,7 @@ AliHLTComponentDataType
 AliHLTPHOSDigitMakerComponent::GetOutputDataType()
 {
   //see header file for documentation
-  return AliHLTPHOSDefinitions::fgkAliHLTDigitDataType;
+  return AliHLTPHOSDefinitions::fgkDigitDataType;
 }
 
 
@@ -148,7 +149,7 @@ AliHLTPHOSDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtData, 
   FillBlockData( bd );
   bd.fOffset = offset;
   bd.fSize = mysize;
-  bd.fDataType = AliHLTPHOSDefinitions::fgkAliHLTDigitDataType;
+  bd.fDataType = AliHLTPHOSDefinitions::fgkDigitDataType;
   bd.fSpecification = specification;
   outputBlocks.push_back( bd );
        

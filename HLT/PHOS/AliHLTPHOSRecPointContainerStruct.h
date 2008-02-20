@@ -42,7 +42,7 @@ struct AliHLTPHOSRecPointContainerStruct
   UInt_t fNRecPoints; 
 
   /** Array of rec points in the container */
-  AliHLTPHOSRecPointDataStruct fRecPointArray[200];
+  AliHLTPHOSRecPointDataStruct fRecPointArray[100];
 
 };
 

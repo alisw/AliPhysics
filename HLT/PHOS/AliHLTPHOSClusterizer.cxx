@@ -72,6 +72,12 @@ AliHLTPHOSClusterizer::~AliHLTPHOSClusterizer()
   //See header file for documentation
 }
 
+void 
+AliHLTPHOSClusterizer::SetRecPointContainer(AliHLTPHOSRecPointContainerStruct* recPointContainerPtr)
+  { 
+    fRecPointContainerPtr = recPointContainerPtr; 
+    fRecPointContainerPtr->fNRecPoints = 0;
+  }
 
 void
 AliHLTPHOSClusterizer::SetRecoParameters(AliPHOSRecoParamEmc* params)
@@ -139,8 +145,6 @@ AliHLTPHOSClusterizer::ClusterizeEvent()
 
   AliHLTPHOSRecPointDataStruct *recPoint = 0;
 
-  //printf("Number of digits in event: %d\n", fDigitContainerPtr->fNDigits);
-
   //Clusterization starts
   for(i = 0; i < fDigitContainerPtr->fNDigits; i++)
     { 
@@ -154,6 +158,9 @@ AliHLTPHOSClusterizer::ClusterizeEvent()
       //printf("Got rec point above clustering threshold!\n");
       recPoint = &(fRecPointContainerPtr->fRecPointArray[nRecPoints]);
       recPoint->fAmp = 0;
+      //TODO!!!!!!!
+      recPoint->fModule = fDigitContainerPtr->fDigitDataStruct[i].fModule;
+      //TODO!!!!!!!
       //recPoint->
       recPoint->fDigitsList[fDigitsInCluster] =  fDigitContainerPtr->fDigitDataStruct[i];
       recPoint->fAmp += fDigitContainerPtr->fDigitDataStruct[i].fEnergy;

@@ -55,6 +55,24 @@ public:
   /** Destructor */
   virtual ~AliHLTPHOSESDMaker();
 
+  /** Copy constructor */  
+  AliHLTPHOSESDMaker(const AliHLTPHOSESDMaker &) : 
+    AliHLTPHOSBase(),
+    fNCaloClusters(0),
+    fCaloClustersPtr(0),
+    fESDEventPtr(0),
+    fCaloClusterContainerPtr(0)
+  {
+    //Copy constructor not implemented
+  }
+  
+  /** Assignment */
+  AliHLTPHOSESDMaker & operator = (const AliHLTPHOSESDMaker)
+  {
+    //Assignment
+    return *this; 
+  }
+
   /** 
    * Set the AliESDEvent object to be filled
    * @param is a pointer to the AliESDEvent
@@ -78,6 +96,13 @@ public:
    * @return
    */
   Int_t FillESDEvent();
+
+  /** 
+   * Fill the AliESDEvent object with clusters from a calo cluster container
+   * @param caloClusterContainerPtr is a pointer to a cluster container
+   * @return
+   */
+  Int_t FillESDEvent(AliHLTPHOSCaloClusterContainerStruct* caloClusterContainerPtr);
 
   /**
    * Reset the ESD and ESDCaloCluster array

@@ -15,8 +15,9 @@ AliHLTPHOSRcuCalibrationProcessorComponent gAliHLTPHOSRcuCalibrationProcessorCom
 
 AliHLTPHOSRcuCalibrationProcessorComponent::AliHLTPHOSRcuCalibrationProcessorComponent() :
   AliHLTCalibrationProcessor(),
+  fCalibDataPtr(0),
   fRcuCalibProcessorPtr(0),
-  fCalibDataPtr(0)
+  fShmPtr(0)
 {
 }
 
@@ -24,8 +25,11 @@ AliHLTPHOSRcuCalibrationProcessorComponent::~AliHLTPHOSRcuCalibrationProcessorCo
 {
 }
 
-AliHLTPHOSRcuCalibrationProcessorComponent::AliHLTPHOSRcuCalibrationProcessorComponent(const AliHLTPHOSRcuCalibrationProcessorComponent&) 
-  //  fHistogramProducer(0)
+AliHLTPHOSRcuCalibrationProcessorComponent::AliHLTPHOSRcuCalibrationProcessorComponent(const AliHLTPHOSRcuCalibrationProcessorComponent&) :
+  AliHLTCalibrationProcessor(),
+  fCalibDataPtr(0),
+  fRcuCalibProcessorPtr(0),
+  fShmPtr(0)
 {
   HLTFatal("copy constructor untested");
 }

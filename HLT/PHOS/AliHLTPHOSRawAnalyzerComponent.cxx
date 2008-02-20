@@ -22,9 +22,12 @@
 #include "AliHLTPHOSMapper.h"
 #include "AliHLTPHOSSanityInspector.h"
 #include "AliHLTPHOSBaseline.h"
+#include "AliHLTPHOSDigitContainerDataStruct.h"
+#include "AliHLTPHOSDigitMaker.h"
 #include "TFile.h"
 #include "TTree.h"
 #include "TClonesArray.h"
+#include "TH2F.h"
 #include  "AliAltroDecoder.h"    // decoder for altro payload
 #include  "AliAltroData.h"       // container for altro payload
 #include  "AliAltroBunch.h"      // container for altro bunches
@@ -35,11 +38,19 @@ AliHLTPHOSRawAnalyzerComponent::AliHLTPHOSRawAnalyzerComponent():AliHLTPHOSRcuPr
 								 fSendChannelData(kFALSE),
 								 fOutPtr(0), 
 								 fMapperPtr(0), 
+								 fSanityInspectorPtr(0),
 								 fUseBaselineSubtraction(false), 
 								 fDecoderPtr(0),  
 								 fAltroDataPtr(0),
-								 fAltroBunchPtr(0)   
-								 //								 fRawMemoryReader(0), fPHOSRawStream(0) 
+								 fAltroBunchPtr(0),
+								 fDoPushCellEnergies(false),
+								 fDoMakeDigits(false),
+								 fDigitMakerPtr(0),
+								 fDigitContainerPtr(0),
+								 fDoSelectiveReadOut(false),
+								 fSelectedChannelsList(0),
+								 fDoCheckDataSize(false)
+								 //fRawMemoryReader(0), fPHOSRawStream(0) 
 {
   //comment
   fMapperPtr = new AliHLTPHOSMapper();
@@ -47,10 +58,8 @@ AliHLTPHOSRawAnalyzerComponent::AliHLTPHOSRawAnalyzerComponent():AliHLTPHOSRcuPr
   fAltroBunchPtr = new AliAltroBunch();
   fDecoderPtr = new AliAltroDecoder();
   fSanityInspectorPtr = new AliHLTPHOSSanityInspector();
+  fSelectedChannelsList = new AliHLTUInt16_t[N_XCOLUMNS_RCU*N_ZROWS_RCU*N_GAINS];
 }
- 
-
-
 AliHLTPHOSRawAnalyzerComponent::~AliHLTPHOSRawAnalyzerComponent()
 {
   //comment
@@ -113,7 +122,6 @@ AliHLTPHOSRawAnalyzerComponent::GetComponentID()
   return "AliPhosTestRaw";
 }
 
-
 void
 AliHLTPHOSRawAnalyzerComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
 {
@@ -125,18 +133,28 @@ AliHLTPHOSRawAnalyzerComponent::GetInputDataTypes( vector<AliHLTComponentDataTyp
   }
 }
 
-
 AliHLTComponentDataType 
 AliHLTPHOSRawAnalyzerComponent::GetOutputDataType()
 {
   //comment
-  return AliHLTPHOSDefinitions::fgkCellEnergyDataType;
+  return kAliHLTMultipleDataType;
+  //  return AliHLTPHOSDefinitions::fgkDigitDataType;
 }
 
+int 
+AliHLTPHOSRawAnalyzerComponent::GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList)
+{
+  // Added by OD
+  // see header file for class documentation
+  tgtList.clear();
+  tgtList.push_back(AliHLTPHOSDefinitions::fgkCellEnergyDataType);
+  tgtList.push_back(AliHLTPHOSDefinitions::fgkDigitDataType);
+  tgtList.push_back(kAliHLTDataTypeHwAddr16);
+  return tgtList.size();
+}
 
 void
 AliHLTPHOSRawAnalyzerComponent::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier )
-
 {
   //comment
   constBase = 30;
@@ -154,6 +172,8 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
   UInt_t mysize            = 0;
   UInt_t tSize             = 0;
   Float_t baseline         = 0;
+  UInt_t digitCount        = 0;
+
   AliHLTUInt8_t* outBPtr;
   outBPtr = outputPtr;
   const AliHLTComponentBlockData* iter = NULL; 
@@ -161,11 +181,10 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
   Int_t *rawDataBufferPos = (Int_t *)outputPtr; 
 
   AliHLTPHOSValidCellDataStruct *validCellPtr = 0;
-  Int_t x = -1;
-  Int_t z = -1;
-  Int_t gain = -1;
 
   UInt_t nSamples = 0;
+
+  UInt_t nSelected = 0;
 
   UInt_t specification = 0;
 
@@ -182,13 +201,9 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
 	{
 	  continue; 
 	}
-      specification = specification|iter->fSpecification;
 
-      if( fPhosEventCount%100 == 0)
-	{
-	  cout << "event count = "<< fPhosEventCount <<endl;
-	} 
-    
+      specification = specification|iter->fSpecification;
+  
       fDecoderPtr->SetMemory(reinterpret_cast<UChar_t*>( iter->fPtr ), iter->fSize);
       fDecoderPtr->Decode();
       fOutPtr =  (AliHLTPHOSRcuCellEnergyDataStruct*)outBPtr;
@@ -202,34 +217,37 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
 	{
 	  
 	  nSamples = fAltroDataPtr->GetDataSize() - 2;
-	  if(nSamples != fNTotalSamples)
+	  if(fDoCheckDataSize)
 	    {
-	      cout << "Error, fDataSize = " << nSamples + 2 << endl;
-	      continue;
-	    }
-	  else
-	    {
-	      //	       cout << "Info, fDataSize = " << fAltroDataPtr->GetDataSize() << endl;
+	      if(nSamples != fNTotalSamples)
+		{
+		  //cout << "Error, fDataSize = " << nSamples + 2 << endl;
+		  //continue;
+		}
+	      else
+		{
+		  //cout << "Info, fDataSize = " << fAltroDataPtr->GetDataSize() << endl;
+		}
 	    }
 	 
 	  crazyness = fSanityInspectorPtr->CheckInsanity(fAltroDataPtr->GetData(), fAltroDataPtr->GetDataSize() - 2);
 	  fAnalyzerPtr->SetData(fAltroDataPtr->GetData());  
 	  fAnalyzerPtr->Evaluate(0, fAltroDataPtr->GetDataSize() -2);  
-	  	 
 
-	  validCellPtr = &(fOutPtr->fValidData
-			[fMapperPtr->fHw2geomapPtr[fAltroDataPtr->GetHadd()].fXCol]
-			[fMapperPtr->fHw2geomapPtr[fAltroDataPtr->GetHadd()].fZRow]
-			[fMapperPtr->fHw2geomapPtr[fAltroDataPtr->GetHadd()].fGain]);
-	  validCellPtr->fX = fMapperPtr->fHw2geomapPtr[fAltroDataPtr->GetHadd()].fXCol;
-	  validCellPtr->fZ = fMapperPtr->fHw2geomapPtr[fAltroDataPtr->GetHadd()].fZRow;
-	  validCellPtr->fGain = fMapperPtr->fHw2geomapPtr[fAltroDataPtr->GetHadd()].fGain;
+	  Int_t x = fMapperPtr->fHw2geomapPtr[fAltroDataPtr->GetHadd()].fXCol;
+	  Int_t z = fMapperPtr->fHw2geomapPtr[fAltroDataPtr->GetHadd()].fZRow;
+	  Int_t gain = fMapperPtr->fHw2geomapPtr[fAltroDataPtr->GetHadd()].fGain;	  
+	  validCellPtr = &(fOutPtr->fValidData[x][z][gain]);
+	  validCellPtr->fX = x;
+	  validCellPtr->fZ = z;
+	  validCellPtr->fGain = gain;
 
 	  if(fUseBaselineSubtraction)
 	    {
 	      baseline = fBaselines[validCellPtr->fX][validCellPtr->fZ][ validCellPtr->fGain];
 	    }
 	  baseline = 0;
+	  
 	  validCellPtr->fEnergy  = (float)fAnalyzerPtr->GetEnergy() - baseline;
 	  validCellPtr->fTime    = (float)fAnalyzerPtr->GetTiming();
 	  validCellPtr->fCrazyness = (int)crazyness;
@@ -237,33 +255,93 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
 	  validCellPtr->fID = tmpChannelCnt;
 	  validCellPtr->fData = rawDataBufferPos;
 	  const UInt_t *tmpData =  fAltroDataPtr->GetData();
-	  
-	  for(Int_t sample = 0; sample < nSamples; sample++)
+
+	  if(fDoPushCellEnergies)
 	    {
-	      (validCellPtr->fData)[sample] = tmpData[sample] - (int)baseline;
+	      for(UInt_t sample = 0; sample < nSamples; sample++)
+		{
+		  (validCellPtr->fData)[sample] = tmpData[sample] - (int)baseline;
+		}
+	    }
+	  if(fDoSelectiveReadOut)
+	    {
+	      if(validCellPtr->fEnergy > fSelectiveReadOutThresholds[x][z][gain])
+		{
+		  fSelectedChannelsList[nSelected] = (AliHLTUInt16_t)(fAltroDataPtr->GetHadd());
+		  nSelected++;
+		}
 	    }
 
 	  UInt_t tmpSize =  sizeof(Int_t)*(validCellPtr->fNSamples);
-	  mysize += sizeof(Int_t)*(validCellPtr->fNSamples);
+	  //	  mysize += sizeof(Int_t)*(validCellPtr->fNSamples);
 	  mysize += tmpSize;
+	  //	  mysize += tmpSize;
 	  rawDataBufferPos += tmpSize/sizeof(Int_t);
+
 	  tmpChannelCnt ++;
+
 	}
       
-      fOutPtr->fCnt  =  tmpChannelCnt;
+      fOutPtr->fCnt  = tmpChannelCnt;
       fOutPtr->fSize = mysize;
-
-      AliHLTComponentBlockData bd;
-      FillBlockData( bd );
-      bd.fOffset = offset;
-      bd.fSize = mysize;
-
-      bd.fDataType = AliHLTPHOSDefinitions::fgkCellEnergyDataType;
-      bd.fSpecification = specification;
-      outputBlocks.push_back( bd );
-
-      tSize += mysize;
-      outBPtr += mysize;
+      
+      if(fDoPushCellEnergies)
+	{
+	  AliHLTComponentBlockData bdCellEnergy;
+	  FillBlockData( bdCellEnergy );
+	  bdCellEnergy.fOffset = offset;
+	  bdCellEnergy.fSize = mysize;
+	  bdCellEnergy.fDataType = AliHLTPHOSDefinitions::fgkCellEnergyDataType;
+	  bdCellEnergy.fSpecification = specification;
+	  outputBlocks.push_back( bdCellEnergy );
+	  
+	  tSize += mysize;
+	  outBPtr += mysize;
+	}
+      
+      //Making Digits
+      if(fDoMakeDigits)
+	{
+	  Int_t digitSize = 0;
+	  fDigitMakerPtr->SetDigitContainerStruct((AliHLTPHOSDigitContainerDataStruct*)outBPtr);	  
+	  digitCount = fDigitMakerPtr->MakeDigits(fOutPtr);
+	  offset = tSize;
+	  digitSize += sizeof(AliHLTPHOSDigitContainerDataStruct);
+	  
+	  AliHLTComponentBlockData bdDigits;
+	  FillBlockData(bdDigits);
+	  bdDigits.fOffset = offset;
+	  bdDigits.fSize = mysize;
+	  bdDigits.fDataType = AliHLTPHOSDefinitions::fgkDigitDataType;
+	  bdDigits.fSpecification = specification;
+	  outputBlocks.push_back( bdDigits );
+	  
+	  tSize += digitSize;
+	  outBPtr += digitSize;
+	  fDigitMakerPtr->Reset();
+	}      
+                  
+      //Pushing selected channel addresses
+      if(fDoSelectiveReadOut)
+	{
+	  UInt_t hwAddSize = sizeof(AliHLTUInt16_t);
+	  offset = tSize;
+	  for(UInt_t n = 0; n < nSelected; n++)
+	    {
+	      ((AliHLTUInt16_t*)outBPtr)[n] = fSelectedChannelsList[n];
+	    }
+	  mysize = nSelected*hwAddSize;
+	  AliHLTComponentBlockData bdHwAdd;
+	  FillBlockData(bdHwAdd);
+	  bdHwAdd.fOffset = offset;
+	  bdHwAdd.fSize = mysize;
+	  bdHwAdd.fDataType = kAliHLTDataTypeHwAddr16;
+	  bdHwAdd.fSpecification = specification;
+	  outputBlocks.push_back( bdHwAdd );
+	  
+	  tSize += mysize;
+	  outBPtr += mysize;
+	}
       
       if( tSize > size )
       	{
@@ -283,7 +361,9 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
     {
       if(fPhosEventCount%fPrintInfoFrequncy == 0)
       	{
-	  cout <<"Analyzing event " <<  fPhosEventCount  << "for Equippment " << fkEquippmentID << endl; 
+	  cout << "Analyzing event " <<  fPhosEventCount  << " for Equippment " << fkEquippmentID << endl; 
+	  if(fDoSelectiveReadOut) cout << "# of selected channels: " << nSelected << endl;
+	  if(fDoMakeDigits) cout << "# of digits: " << digitCount << endl;
 	}  
     }
 
@@ -296,20 +376,51 @@ int
 AliHLTPHOSRawAnalyzerComponent::DoInit( int argc, const char** argv )
 {
   //See base class for documentation
-  cout <<"AliHLTPHOSRawAnalyzerComponent::DoInit( int argc, const char** argv ) "<< endl;
-
+  
   fSendChannelData = kFALSE;
   fPrintInfo = kFALSE;
   int iResult=0;
   TString argument="";
   iResult = ScanArguments(argc, argv);
 
+  int nSigmas = 3;
+  
+  fDigitMakerPtr = new AliHLTPHOSDigitMaker();
+  
   for(int i = 0; i < argc; i++)
     {
+      if(!strcmp("-rmsfilepath", argv[i]))
+	{
+	  fDigitMakerPtr->SetDigitThresholds(argv[i+1], nSigmas);
+	  SetSelectiveReadOutThresholds(argv[i+1], nSigmas);
+	}
       if(!strcmp("-baselinefile", argv[i]))
 	{
-	  cout << "Getting baselines from " << argv[i+1] << endl;
 	  SetBaselines(argv[i+1]);
+	}
+      if(!strcmp("-lowgainfactor", argv[i]))
+	{
+	  fDigitMakerPtr->SetGlobalLowGainFactor(atof(argv[i+1]));
+	}
+      if(!strcmp("-highgainfactor", argv[i]))
+	{
+	  fDigitMakerPtr->SetGlobalHighGainFactor(atof(argv[i+1]));
+	}
+      if(!strcmp("-selectivereadout", argv[i]))
+	{
+	  fDoSelectiveReadOut = true;
+	}
+      if(!strcmp("-makedigits", argv[i]))
+	{
+	  fDoMakeDigits = true;
+	}
+      if(!strcmp("-pushcellenergies", argv[i]))
+       	{
+	  fDoPushCellEnergies = true;
+ 	}
+      if(!strcmp("-checkdatasize", argv[i]))
+	{
+	  fDoCheckDataSize = true;
 	}
     }
 
@@ -336,9 +447,9 @@ AliHLTPHOSRawAnalyzerComponent::Reset(AliHLTPHOSRcuCellEnergyDataStruct* cellDat
   //comment
   //  for(unsigned int mod = 0; mod < N_MODULES; mod ++)
   //{
-  for(unsigned int x = 0; x < N_XCOLUMNS_MOD; x ++)
+  for(unsigned int x = 0; x < N_XCOLUMNS_RCU; x ++)
     {
-      for(unsigned int z = 0; z < N_ZROWS_MOD; z ++)
+      for(unsigned int z = 0; z < N_ZROWS_RCU; z ++)
 	{
 	  for(unsigned int gain = 0; gain < N_GAINS; gain ++ )
 	    {
@@ -384,11 +495,30 @@ AliHLTPHOSRawAnalyzerComponent::SetBaselines(const char* file)
 	  if((baseline->GetZ() < (Int_t)((fRcuZ + 1)*N_ZROWS_RCU)) && (baseline->GetZ() >= (Int_t)(fRcuZ*N_ZROWS_RCU)))
 	    {
 	      fBaselines[baseline->GetX() - fRcuX*N_XCOLUMNS_RCU][baseline->GetZ() - fRcuZ*N_ZROWS_RCU][baseline->GetGain()] = baseline->GetBaseline();
-	      //	      cout <<  fBaselines[baseline->GetX() - fRcuX*N_XCOLUMNS_RCU][baseline->GetZ() - fRcuZ*N_ZROWS_RCU][baseline->GetGain()] << endl;
 	    }
 	}
     }
   baselineFile->Close();
   delete baselineFile;
   baselineFile = 0;
+}
+
+void 
+AliHLTPHOSRawAnalyzerComponent::SetSelectiveReadOutThresholds(const char* filepath, Int_t nSigmas)
+{
+  //See header file for documentation
+
+  TFile *histFile = new TFile(filepath);
+  
+  TH2F *lgHist = (TH2F*)histFile->Get("RMSLGMapHist");
+  TH2F *hgHist = (TH2F*)histFile->Get("RMSHGMapHist");
+
+  for(UInt_t x = 0; x < N_XCOLUMNS_MOD; x++)
+    {
+      for(UInt_t z = 0; z < N_ZROWS_MOD; z++)
+	{
+	  fSelectiveReadOutThresholds[x][z][LOW_GAIN] = lgHist->GetBinContent(x, z) * nSigmas;
+	  fSelectiveReadOutThresholds[x][z][HIGH_GAIN] = hgHist->GetBinContent(x, z) * nSigmas;
+	}
+    }
 }

@@ -1,3 +1,4 @@
+
 /**************************************************************************
  * This file is property of and copyright by the ALICE HLT Project        * 
  * All rights reserved.                                                   *
@@ -53,6 +54,34 @@ public:
 
   /** Destructor */
   virtual ~AliHLTPHOSDigit();
+
+   /** Copy constructor */  
+  AliHLTPHOSDigit(const AliHLTPHOSDigit &) : 
+    TObject(),
+    AliHLTPHOSBase(),
+    fX(-1),
+    fZ(-1),
+    fAmplitude(-1),
+    fTime(-1),
+    fEnergy(-1),
+    fGain(-1),
+    fSamples(55),
+    fPreSamples(15),
+    fTotalSamples(70),
+    fDebugVar(-1),
+    fData(0),
+    fCrazyness(0),
+    fBaseline(0)
+  {
+    //Copy constructor not implemented
+  }
+  
+  /** Assignment */
+  AliHLTPHOSDigit & operator = (const AliHLTPHOSDigit)
+  {
+    //Assignment
+    return *this; 
+  }
 
   /** Set x */
   void SetX(Int_t x) { fX = x; }

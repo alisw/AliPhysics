@@ -28,6 +28,9 @@ AliHLTPHOSSharedMemoryInterface::AliHLTPHOSSharedMemoryInterface(): fCurrentChan
 								    fCellEnergiesPtr(0), 
 								    fIsSetMemory(false), 
 								    fMaxCnt(0),
+								    fCurrentX(0),
+								    fCurrentZ(0),
+								    fCurrentGain(0),
 								    fCurrentCnt(0), 
 								    fCharDataOffset(0), 
 								    fCharPtr(0), 
@@ -60,8 +63,8 @@ AliHLTPHOSSharedMemoryInterface::NextChannel()
      return fCurrentChannel;
     }
   */
-  // Added by OD
 
+  // Changed by OD
   if(fCurrentCnt < fMaxCnt)
     {
       for(Int_t x = 0; x < N_XCOLUMNS_MOD; x++)
@@ -71,15 +74,12 @@ AliHLTPHOSSharedMemoryInterface::NextChannel()
 	      for(Int_t gain = 0; gain < N_GAINS; gain++)
 		{
 		  fCurrentChannel =  &(fCellEnergiesPtr->fValidData[x][z][gain]);
-		  if(fCurrentChannel->fEnergy > 0)
+		  if(fCurrentChannel->fID == fCurrentCnt)
 		    {
-		      if(fCurrentChannel->fID == fCurrentCnt)
-			{
-			  fCurrentChannel->fData = fIntPtr; 
-			  fIntPtr +=  fCurrentChannel->fNSamples;
-			  fCurrentCnt ++;
-			  return fCurrentChannel;
-			}
+		      fCurrentChannel->fData = fIntPtr; 
+		      fIntPtr +=  fCurrentChannel->fNSamples;
+		      fCurrentCnt ++;
+		      return fCurrentChannel;
 		    }
      		}
 	    }

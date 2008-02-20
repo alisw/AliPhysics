@@ -57,6 +57,23 @@ class AliHLTPHOSClusterAnalyserComponent : public AliHLTPHOSProcessor
   /** Destructor */
   virtual ~AliHLTPHOSClusterAnalyserComponent();
 
+  /** Copy constructor */
+  AliHLTPHOSClusterAnalyserComponent(const AliHLTPHOSClusterAnalyserComponent &) : 
+    AliHLTPHOSProcessor(),
+    fClusterAnalyserPtr(0),
+    fDoDeconvolution(0),
+    fDoCalculateMoments(0)
+  {
+    //Copy constructor not implemented
+  }
+  
+  /** Assignment */
+  AliHLTPHOSClusterAnalyserComponent & operator = (const AliHLTPHOSClusterAnalyserComponent)
+    {
+      //Assignment
+      return *this; 
+    }
+  
   /** interface function, see @ref AliHLTComponent for description */
   const char* GetComponentID();
 

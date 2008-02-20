@@ -45,8 +45,16 @@ AliHLTPHOSBaselineAnalyzer::AliHLTPHOSBaselineAnalyzer() :
   AliHLTPHOSBase(),
   fSampleStart(5),
   fMaxCrazyDifference(0),	
-  fMaxSignal(0),    
+  fMaxSignal(0),  
+  fChannelCount(0),
   fTreePtr(0),
+  fBaselineArrayPtr(0),
+  fRMSHistogramPtr(0),
+  fRMSMapHighGainHistogramPtr(0),
+  fRMSMapLowGainHistogramPtr(0),
+  fFixedRMSHistogramPtr(0),
+  fFixedRMSMapHighGainHistogramPtr(0),
+  fFixedRMSMapLowGainHistogramPtr(0),
   fSanityInspector(0)	   
 {  
   //see headerfile for documentation
@@ -92,9 +100,9 @@ void
 AliHLTPHOSBaselineAnalyzer::CalculateRcuBaselines(AliHLTPHOSRcuCellEnergyDataStruct* rcuData)
 {
   //see headerfile for documentation
-  Int_t xOff = rcuData->fRcuX * N_XCOLUMNS_RCU;
-  Int_t zOff = rcuData->fRcuZ * N_ZROWS_RCU;
-  Float_t baseline = 0;
+  //Int_t xOff = rcuData->fRcuX * N_XCOLUMNS_RCU;
+  //Int_t zOff = rcuData->fRcuZ * N_ZROWS_RCU;
+  //Float_t baseline = 0;
 
   //TODO: fix this to comply with new format
   /*

@@ -65,7 +65,34 @@ public:
   
   /** Destructor */ 
   virtual ~AliHLTPHOSBaselineAnalyzer();
-
+  
+  /** Copy constructor */
+  AliHLTPHOSBaselineAnalyzer(const AliHLTPHOSBaselineAnalyzer &) : 
+    AliHLTPHOSBase(),
+    fSampleStart(5),
+    fMaxCrazyDifference(0),	
+    fMaxSignal(0),  
+    fChannelCount(0),
+    fTreePtr(0),
+    fBaselineArrayPtr(0),
+    fRMSHistogramPtr(0),
+    fRMSMapHighGainHistogramPtr(0),
+    fRMSMapLowGainHistogramPtr(0),
+    fFixedRMSHistogramPtr(0),
+    fFixedRMSMapHighGainHistogramPtr(0),
+    fFixedRMSMapLowGainHistogramPtr(0),
+    fSanityInspector(0)
+  {
+    //Copy constructor not implemented
+  }
+  
+  /** Assignment */
+  AliHLTPHOSBaselineAnalyzer & operator = (const AliHLTPHOSBaselineAnalyzer)
+    {
+      //Assignment
+      return *this; 
+    }
+    
   /** 
    * Calculate baselines for an RCU
    * @param rcuData is a pointer to energy and timing data from an RCU

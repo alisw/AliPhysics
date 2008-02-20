@@ -45,7 +45,10 @@ AliHLTPHOSDigit::AliHLTPHOSDigit() :
   fSamples(55),
   fPreSamples(15),
   fTotalSamples(70),
-  fDebugVar(-1)
+  fDebugVar(-1),
+  fData(0),
+  fCrazyness(0),
+  fBaseline(0)
 {
   //See header file for documentation
   //added by PT

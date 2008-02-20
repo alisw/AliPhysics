@@ -54,8 +54,24 @@ public:
   /** Constructor */
   AliHLTPHOSDigitMakerComponent();
 
-  /** Destructor */
+  /** Destructor */ 
   virtual ~AliHLTPHOSDigitMakerComponent();
+
+  /** Copy constructor */  
+  AliHLTPHOSDigitMakerComponent(const AliHLTPHOSDigitMakerComponent &) : 
+    AliHLTPHOSProcessor(),
+    fDigitMakerPtr(0),
+    fDigitContainerPtr(0)
+  {
+    //Copy constructor not implemented
+  }
+  
+  /** Assignment */
+  AliHLTPHOSDigitMakerComponent & operator = (const AliHLTPHOSDigitMakerComponent)
+  {
+    //Assignment
+    return *this; 
+  }
 
   /** interface function, see @ref AliHLTComponent for description */
   const char* GetComponentID();

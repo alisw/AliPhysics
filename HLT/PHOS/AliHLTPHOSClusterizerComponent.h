@@ -65,6 +65,26 @@ class AliHLTPHOSClusterizerComponent: public AliHLTPHOSProcessor
   /** Destructor */
   virtual ~AliHLTPHOSClusterizerComponent();
 
+  /** Copy constructor */  
+  AliHLTPHOSClusterizerComponent(const AliHLTPHOSClusterizerComponent &) : 
+    AliHLTPHOSProcessor(),
+    fAllDigitsPtr(0),
+    fClusterizerPtr(0),
+    fRecPointStructArrayPtr(0),
+    fDigitCount(0),
+    fModuleClusterizationMode(0),
+    fNoCrazyness(0)
+  {
+    //Copy constructor not implemented
+  }
+  
+  /** Assignment */
+  AliHLTPHOSClusterizerComponent & operator = (const AliHLTPHOSClusterizerComponent)
+  {
+    //Assignment
+    return *this; 
+  }
+
   /** interface function, see @ref AliHLTComponent for description */
   const char* GetComponentID();
 
@@ -78,10 +98,11 @@ class AliHLTPHOSClusterizerComponent: public AliHLTPHOSProcessor
   void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
 
   /** interface function, see @ref AliHLTComponent for description */
+  
   int DoEvent(const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks,
 		AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, AliHLTUInt32_t& size,
 		std::vector<AliHLTComponentBlockData>& outputBlocks);
-
+  // Int_t DoEvent( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData);
   /** interface function, see @ref AliHLTComponent for description */
   AliHLTComponent* Spawn();
   
@@ -107,11 +128,14 @@ protected:
   /** Number of digits in event */
   Int_t fDigitCount;              
 
+  /** If the clusterizer is doing clusterization of the whole module */
+  Bool_t fModuleClusterizationMode;                             //COMMENT
+
   /** If one should consider crazyness or not */                              
-  Bool_t fNoCrazyness;                                          
+  Bool_t fNoCrazyness;                                          //COMMENT
 
   /** interface function, see @ref AliHLTComponent for description */
-  static const AliHLTComponentDataType fgkInputDataTypes[];
+  static const AliHLTComponentDataType fgkInputDataTypes[];     //COMMENT
 };
 
 #endif

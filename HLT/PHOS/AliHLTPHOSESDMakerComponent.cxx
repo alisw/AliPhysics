@@ -131,7 +131,7 @@ AliHLTPHOSESDMakerComponent::GetOutputDataSize(unsigned long& constBase, double&
 }
  
 Int_t 
-AliHLTPHOSESDMakerComponent::DoEvent( const AliHLTComponentEventData& /*evtData*/, AliHLTComponentTriggerData& trigData ) 
+AliHLTPHOSESDMakerComponent::DoEvent( const AliHLTComponentEventData& /*evtData*/, AliHLTComponentTriggerData& /*trigData*/ ) 
 {
   // see header file for class documentation
  
@@ -141,23 +141,20 @@ AliHLTPHOSESDMakerComponent::DoEvent( const AliHLTComponentEventData& /*evtData*
   const AliHLTComponentBlockData* iter = 0;
 
   UInt_t specification = 0;
+
+  fESDMakerPtr->ResetESD();
+
+  fESDEventPtr = new AliESDEvent();
+  fESDEventPtr->CreateStdContent();
+  fESDMakerPtr->SetESDEvent(fESDEventPtr);
   
   for ( iter = GetFirstInputBlock(AliHLTPHOSDefinitions::fgkCaloClusterDataType); iter != 0; iter = GetNextInputBlock()) 
     {
       specification = specification|iter->fSpecification;
       caloClusterContainerPtr = reinterpret_cast<AliHLTPHOSCaloClusterContainerStruct*>(iter->fPtr);
-      fESDMakerPtr->SetCaloClusterContainer(caloClusterContainerPtr);
+      fESDMakerPtr->FillESDEvent(caloClusterContainerPtr);
+      //      fESDMakerPtr->SetCaloClusterContainer(caloClusterContainerPtr);
     }
-  fESDEventPtr = new AliESDEvent();
-  fESDEventPtr->CreateStdContent();
-  fESDMakerPtr->SetESDEvent(fESDEventPtr);
-  fESDMakerPtr->FillESDEvent();
-  
-  //  AliESDCaloCluster *cc = fESDEventPtr->GetCaloCluster(0);
-  /*if(cc)
-    {
-      cout << cc->E() << endl;
-      }*/
   
   PushBack(fESDEventPtr, kAliHLTDataTypeESDObject|kAliHLTDataOriginPHOS, specification);
  
@@ -167,6 +164,14 @@ AliHLTPHOSESDMakerComponent::DoEvent( const AliHLTComponentEventData& /*evtData*
       fESDEventPtr = 0;
     }
 
+  fPhosEventCount++; 
+  if(fPrintInfo == kTRUE)
+    {
+      if(fPhosEventCount%fPrintInfoFrequncy == 0)
+      	{
+	  cout << "Made ESD from event!" << endl;
+	}  
+    }
   return 0;
 }
 
@@ -176,14 +181,13 @@ AliHLTPHOSESDMakerComponent::DoInit(int argc, const char** argv )
 {
   //See headerfile for documentation
 
-  fESDEventPtr = new AliESDEvent();
-  fESDEventPtr->CreateStdContent();
   fESDMakerPtr = new AliHLTPHOSESDMaker();
-  fESDMakerPtr->SetESDEvent(fESDEventPtr);
+  //fESDMakerPtr->SetESDEvent(fESDEventPtr);
   //
+  ScanArguments(argc, argv);
   for (int i = 0; i < argc; i++)
     {
-     
+      
     }
 
   return 0;

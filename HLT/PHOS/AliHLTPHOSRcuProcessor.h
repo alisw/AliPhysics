@@ -13,7 +13,7 @@ class  AliHLTPHOSRcuProcessor : public AliHLTPHOSProcessor
   AliHLTPHOSRcuProcessor();
   virtual ~AliHLTPHOSRcuProcessor();
   const AliHLTUInt16_t  GetEquippmentID() const;
-  int ScanArguments(int argc, const char** argv);
+  virtual int ScanArguments(int argc, const char** argv);
   void SetEquippmentID(AliHLTUInt16_t id);
   void SetCoordinates(AliHLTUInt16_t equippmentID);
   const AliHLTUInt16_t fkEquippmentID;  /**<Equippment ID as defined by ALICE*/

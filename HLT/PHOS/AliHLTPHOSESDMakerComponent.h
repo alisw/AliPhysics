@@ -57,6 +57,23 @@ class AliHLTPHOSESDMakerComponent: public AliHLTPHOSProcessor
   /** Destructor */
   virtual ~AliHLTPHOSESDMakerComponent();
 
+  /** Copy constructor */  
+  AliHLTPHOSESDMakerComponent(const AliHLTPHOSESDMakerComponent &) : 
+    AliHLTPHOSProcessor(),
+    fESDMakerPtr(0),
+    fESDEventPtr(0)
+    
+  {
+    //Copy constructor not implemented
+  }
+  
+  /** Assignment */
+  AliHLTPHOSESDMakerComponent & operator = (const AliHLTPHOSESDMakerComponent)
+  {
+    //Assignment
+    return *this; 
+  }
+
   /** interface function, see @ref AliHLTComponent for description */
   const char* GetComponentID();
 

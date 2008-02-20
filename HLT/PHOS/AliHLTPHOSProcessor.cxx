@@ -20,7 +20,7 @@
 const AliHLTComponentDataType AliHLTPHOSProcessor::fgkInputDataTypes[]={kAliHLTVoidDataType,{0,"",""}}; //'zero' terminated array
 
 
-AliHLTPHOSProcessor::AliHLTPHOSProcessor():AliHLTProcessor(), AliHLTPHOSBase(), fModuleID(0), fPrintInfoFrequncy(1000), fRunNumber(0)
+AliHLTPHOSProcessor::AliHLTPHOSProcessor():AliHLTProcessor(), AliHLTPHOSBase(), fPhosEventCount(0), fModuleID(0), fPrintInfo(0), fPrintInfoFrequncy(1000), fRunNumber(0)
 {
   ScanRunNumberFromFile();
 }
@@ -52,4 +52,37 @@ AliHLTPHOSProcessor::ScanRunNumberFromFile()
     {
       cout << "ERROR, could not find file  " << tmpFileName <<endl;
     }
+}
+int
+AliHLTPHOSProcessor::ScanArguments(int argc, const char** argv)
+{
+  fPrintInfo = kFALSE;
+  int iResult=0;
+  TString argument="";
+
+  for(int i=0; i<argc && iResult>=0; i++) 
+    {
+      argument=argv[i];
+      
+      if (argument.IsNull()) 
+	{
+	  continue;
+	}
+                         
+    if (argument.CompareTo("-printinfo") == 0) 
+      {
+	if(i+1 <= argc)
+	  {
+	    argument=argv[i+1];
+	    fPrintInfoFrequncy = atoi(argv[i+1]);
+	    fPrintInfo = kTRUE;
+	  }
+	else
+	  {
+	    cout << "WARNING: asking for event info, but no update frequency is specified, option is ignored" << endl;
+	  }
+      }
+ 
+    }
+  return 0;
 }

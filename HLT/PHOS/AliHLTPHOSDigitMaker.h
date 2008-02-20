@@ -42,7 +42,6 @@
  * @ingroup alihlt_phos
  */
 
-class AliHLTPHOSDigit;
 class TClonesArray;
 class TTree;
 class AliHLTPHOSValidCellDataStruct;
@@ -62,6 +61,26 @@ public:
 
   /** Destructor */
   virtual ~AliHLTPHOSDigitMaker();
+
+  /** Copy constructor */  
+  AliHLTPHOSDigitMaker(const AliHLTPHOSDigitMaker &) : 
+    AliHLTPHOSBase(),
+    fCellDataPtr(0),
+    fDigitContainerStructPtr(0),
+    fDigitArrayPtr(0),
+    fDigitStructPtr(0),
+    fDigitCount(0)
+  {
+    //Copy constructor not implemented
+  }
+  
+  /** Assignment */
+  AliHLTPHOSDigitMaker & operator = (const AliHLTPHOSDigitMaker)
+  {
+    //Assignment
+    return *this; 
+  }
+
  
   // void SetValidCellData(AliHLTPHOSValidCellDataStruct *data) { fCellDataPtr = data; }
   //  void SetDigitContainerStruct(AliHLTPHOSDigitContainerStruct *container) 
@@ -127,9 +146,6 @@ private:
 
   /** Pointer to the digit TClonesArray */
   TClonesArray *fDigitArrayPtr;                                  //! transient
-
-  /** Pointer to a AliHLTPHOSDigit */
-  AliHLTPHOSDigit *fDigitPtr;                                    //! transient
 
   /** Pointer to a AliHLTPHOSDigitDataStruct */
   AliHLTPHOSDigitDataStruct *fDigitStructPtr;                    //! transient

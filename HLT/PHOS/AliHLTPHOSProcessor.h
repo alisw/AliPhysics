@@ -27,6 +27,7 @@ class AliHLTPHOSProcessor:public AliHLTProcessor, public AliHLTPHOSBase
 
  protected:
   void ScanRunNumberFromFile();
+  virtual int ScanArguments(int argc, const char** argv);
   int fPhosEventCount;                  /**<Global event counter for this component*/
   AliHLTUInt8_t  fModuleID;             /**<ID of the module this component read data from (0-4)*/
   Bool_t fPrintInfo;                    /**<wether or not to print debugg info to std out*/

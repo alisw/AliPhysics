@@ -58,6 +58,30 @@ public:
   /** Destructor */
   virtual ~AliHLTPHOSClusterAnalyser();
   
+  /** Copy constructor */
+  AliHLTPHOSClusterAnalyser(const AliHLTPHOSClusterAnalyser &) : 
+    AliHLTPHOSBase(),
+    fLogWeight(0),
+    fRecPointsPtr(0),
+    fCaloClustersPtr(0),
+    fPHOSGeometry(0),
+    fAnalyzerPtr(0),
+    fDoClusterFit(false),
+    fHaveCPVInfo(false),
+    fDoPID(false),
+    fHaveDistanceToBadChannel(false)
+    
+  {
+    //Copy constructor not implemented
+  }
+  
+  /** Assignment */
+  AliHLTPHOSClusterAnalyser & operator = (const AliHLTPHOSClusterAnalyser)
+    {
+      //Assignment
+      return *this; 
+    }
+  
   /**
    * Set the rec point container
    * @param recPointContainerPtr is a pointer to the rec points
@@ -68,7 +92,7 @@ public:
    * Set the calo cluster container
    * @param caloClusterContainerPtr is a pointer to the calo clusters
    */
-  void SetCaloClusterContainer(AliHLTPHOSCaloClusterContainerStruct *caloClusterContainerPtr) { fCaloClustersPtr = caloClusterContainerPtr; }
+  void SetCaloClusterContainer(AliHLTPHOSCaloClusterContainerStruct *caloClusterContainerPtr);
 
   /** 
    * Calculates the center of gravity for the reconstruction points in the container

@@ -38,16 +38,17 @@
 
 ClassImp(AliHLTPHOSPhysicsAnalyzer);
 
-AliHLTPHOSPhysicsAnalyzer::AliHLTPHOSPhysicsAnalyzer():fRecPointsPtr(0), fRootHistPtr(0), fPHOSRadius(0)
-						    
-						       
+AliHLTPHOSPhysicsAnalyzer::AliHLTPHOSPhysicsAnalyzer():
+  fRecPointsPtr(0), 
+  fRootHistPtr(0), 
+  fPHOSRadius(0)
 {
   //Constructor
   //See header file for documentation
   AliPHOSGeometry *geom=AliPHOSGeometry::GetInstance("noCPV");
 
   //  fPHOSRadius = geom->GetIPtoCrystalSurface();
-  fPHOSRadius = 1500;
+  fPHOSRadius = geom->GetIPtoCrystalSurface();
 
   for(UInt_t i = 0; i < N_MODULES; i++)
     {
@@ -85,7 +86,7 @@ AliHLTPHOSPhysicsAnalyzer::~AliHLTPHOSPhysicsAnalyzer()
 }
 
 void
-AliHLTPHOSPhysicsAnalyzer::LocalPosition(AliHLTPHOSRecPointDataStruct* recPointPtr, Float_t* locPositionPtr)
+AliHLTPHOSPhysicsAnalyzer::LocalPosition(AliHLTPHOSRecPointDataStruct* /*recPointPtr*/, Float_t* /*locPositionPtr*/)
 {
   //Get local position for a recPoint
 
@@ -100,17 +101,16 @@ AliHLTPHOSPhysicsAnalyzer::GlobalPosition(AliHLTPHOSRecPointDataStruct* recPoint
   //Get global position for a recPoint
   //See header file for documentation
   Float_t tempPosX = 0;
-
-  //  Int_t module = recPointPtr->fPHOSModule;
-
-  Int_t module = 2;
+ 
+  
+  Int_t module = recPointPtr->fModule;
 
   tempPosX = kCRYSTAL_SIZE*(recPointPtr->fX-N_XCOLUMNS_MOD/2) + kCRYSTAL_SIZE/2;
 
   positionPtr[0] = tempPosX*fRotParametersSin[module] + fPHOSRadius*fRotParametersCos[module];
 
   positionPtr[1] = tempPosX*fRotParametersCos[module] - fPHOSRadius*fRotParametersSin[module];
-
+ 
   positionPtr[2] = kCRYSTAL_SIZE*(recPointPtr->fZ-N_ZROWS_MOD/2) + kCRYSTAL_SIZE/2;
 
 }
@@ -120,9 +120,9 @@ AliHLTPHOSPhysicsAnalyzer::GlobalPosition(Float_t* locPositionPtr, Float_t* posi
 { 
   //Get global position from local postion and module number
   //See header file for documentation
-  positionPtr[0] = kCRYSTAL_SIZE*(locPositionPtr[0]-N_XCOLUMNS_MOD/2)*fRotParametersCos[module-1] + fPHOSRadius*fRotParametersSin[module-1];
+  positionPtr[0] = kCRYSTAL_SIZE*(locPositionPtr[0]-N_XCOLUMNS_MOD/2)*fRotParametersCos[module] + fPHOSRadius*fRotParametersSin[module];
 
-  positionPtr[1] = kCRYSTAL_SIZE*(locPositionPtr[0]-N_XCOLUMNS_MOD/2)*fRotParametersSin[module-1] - fPHOSRadius*fRotParametersCos[module-1];
+  positionPtr[1] = kCRYSTAL_SIZE*(locPositionPtr[0]-N_XCOLUMNS_MOD/2)*fRotParametersSin[module] - fPHOSRadius*fRotParametersCos[module];
   
   positionPtr[2] = kCRYSTAL_SIZE*(locPositionPtr[1]-N_ZROWS_MOD);
 

@@ -56,6 +56,27 @@ public:
    */
   virtual ~AliHLTPHOSBaseline();
 
+  /** Copy constructor */  
+  AliHLTPHOSBaseline(const AliHLTPHOSBaseline &) : 
+    TObject(),
+    fBaseline(-1),
+    fX(-1),
+    fZ(-1),
+    fGain(-1),
+    fEntries(0)
+  {
+    //Copy constructor not implemented
+  }
+  
+  /** Assignment */
+  AliHLTPHOSBaseline & operator = (const AliHLTPHOSBaseline)
+    
+    {
+      //Assignment
+      return *this; 
+    }
+  
+
   /**
    * Set the baseline
    * @param baseline is the baseline

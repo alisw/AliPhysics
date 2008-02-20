@@ -47,9 +47,12 @@ AliHLTPHOSClusterizerComponent gAliHLTPHOSClusterizerComponent;
 
 AliHLTPHOSClusterizerComponent::AliHLTPHOSClusterizerComponent(): 
   AliHLTPHOSProcessor(), 
+  fAllDigitsPtr(0),
   fClusterizerPtr(0),
-  fRecPointStructArrayPtr(0) 
-  //, fRecPointListPtr(0)
+  fRecPointStructArrayPtr(0),
+  fDigitCount(0),
+  fModuleClusterizationMode(false),
+  fNoCrazyness(0)
 {
   //See headerfile for documentation
 }
@@ -58,12 +61,12 @@ AliHLTPHOSClusterizerComponent::~AliHLTPHOSClusterizerComponent()
 {
   //See headerfile for documentation
 
-  if (fClusterizerPtr)
+  if(fClusterizerPtr)
     {
       delete fClusterizerPtr;
       fClusterizerPtr = 0;
     }
-  if (fRecPointStructArrayPtr)
+  if(fRecPointStructArrayPtr)
     {
       for (int i = 0; i < 1000; i++)
         {
@@ -72,7 +75,11 @@ AliHLTPHOSClusterizerComponent::~AliHLTPHOSClusterizerComponent()
       delete fRecPointStructArrayPtr;
       fRecPointStructArrayPtr = 0;
     }
-
+  if(fAllDigitsPtr)
+    {
+      delete fAllDigitsPtr;
+      fAllDigitsPtr = 0;
+    }
 }
 
 
@@ -115,22 +122,15 @@ AliHLTPHOSClusterizerComponent::GetComponentID()
 void
 AliHLTPHOSClusterizerComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
 {
-  //See headerfile for documentation
-
-  const AliHLTComponentDataType* pType=fgkInputDataTypes;
-  while (pType->fID!=0)
-    {
-      list.push_back(*pType);
-      pType++;
-    }
+  list.clear();
+  list.push_back(AliHLTPHOSDefinitions::fgkDigitDataType);
 }
 
 AliHLTComponentDataType
 AliHLTPHOSClusterizerComponent::GetOutputDataType()
 {
   //See headerfile for documentation
-
-  return AliHLTPHOSDefinitions::fgkAliHLTClusterDataType;
+  return AliHLTPHOSDefinitions::fgkClusterDataType;
 }
 
 void
@@ -138,14 +138,13 @@ AliHLTPHOSClusterizerComponent::GetOutputDataSize(unsigned long& constBase, doub
 
 {
   //See headerfile for documentation
-
   constBase = 30;
   inputMultiplier = 1;
 }
 
 int
 AliHLTPHOSClusterizerComponent::DoEvent(const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks,
-                                        AliHLTComponentTriggerData& /*trigData*/, AliHLTUInt8_t* outputPtr, AliHLTUInt32_t& size,
+                                        AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, AliHLTUInt32_t& size,
                                         std::vector<AliHLTComponentBlockData>& outputBlocks)
 {
   //See headerfile for documentation
@@ -154,7 +153,6 @@ AliHLTPHOSClusterizerComponent::DoEvent(const AliHLTComponentEventData& evtData,
   UInt_t offset           = 0;
   UInt_t mysize           = 0;
   Int_t nRecPoints        = 0;
-  Int_t nDigits           = 0;
   Int_t j =0;
 
   AliHLTUInt8_t* outBPtr;
@@ -166,54 +164,58 @@ AliHLTPHOSClusterizerComponent::DoEvent(const AliHLTComponentEventData& evtData,
 
   AliHLTPHOSDigitContainerDataStruct *digitContainerPtr = 0;
   fClusterizerPtr->SetRecPointContainer((AliHLTPHOSRecPointContainerStruct*)outBPtr);
-
+  
   for ( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
     {
       iter = blocks+ndx;
-      if (iter->fDataType != AliHLTPHOSDefinitions::fgkAliHLTDigitDataType)
+      if (iter->fDataType == AliHLTPHOSDefinitions::fgkDigitDataType)
         {
-	  //  cout << "Data type is not fgkAliHLTDigitDataTupe\n";
-          continue;
-        }
-      specification = specification|iter->fSpecification;
-      digitContainerPtr = reinterpret_cast<AliHLTPHOSDigitContainerDataStruct*>(iter->fPtr);
-      fClusterizerPtr->SetDigitContainer(digitContainerPtr);
-      
-      for (UInt_t i = 0; i < digitContainerPtr->fNDigits; i++)
-        {
-	  if(fNoCrazyness && digitContainerPtr->fDigitDataStruct[i].fCrazyness)
-	    continue;
-	    
-          fAllDigitsPtr->fDigitDataStruct[j].fX = digitContainerPtr->fDigitDataStruct[i].fX;
-          fAllDigitsPtr->fDigitDataStruct[j].fZ = digitContainerPtr->fDigitDataStruct[i].fZ;
-          fAllDigitsPtr->fDigitDataStruct[j].fAmplitude = digitContainerPtr->fDigitDataStruct[i].fAmplitude;
-          fAllDigitsPtr->fDigitDataStruct[j].fTime = digitContainerPtr->fDigitDataStruct[i].fTime;
-	  fAllDigitsPtr->fDigitDataStruct[j].fCrazyness = digitContainerPtr->fDigitDataStruct[i].fCrazyness;
-	  j++;
+	  specification = specification|iter->fSpecification;
+	  digitContainerPtr = reinterpret_cast<AliHLTPHOSDigitContainerDataStruct*>(iter->fPtr);
+	  if(fModuleClusterizationMode)
+	    {
+	      for (UInt_t i = 0; i < digitContainerPtr->fNDigits; i++)
+		{
+		  fAllDigitsPtr->fDigitDataStruct[j].fX = digitContainerPtr->fDigitDataStruct[i].fX;
+		  fAllDigitsPtr->fDigitDataStruct[j].fZ = digitContainerPtr->fDigitDataStruct[i].fZ;
+		  fAllDigitsPtr->fDigitDataStruct[j].fAmplitude = digitContainerPtr->fDigitDataStruct[i].fAmplitude;
+		  fAllDigitsPtr->fDigitDataStruct[j].fTime = digitContainerPtr->fDigitDataStruct[i].fTime;
+		  fAllDigitsPtr->fDigitDataStruct[j].fCrazyness = digitContainerPtr->fDigitDataStruct[i].fCrazyness;
+		  j++;
+		}
+	  
+	    }
 	}
     }
+  if(fModuleClusterizationMode && fAllDigitsPtr != 0)
+    {
+      fClusterizerPtr->SetDigitContainer(fAllDigitsPtr);
+    }
+  else if(digitContainerPtr != 0)
+    {
+      fClusterizerPtr->SetDigitContainer(digitContainerPtr);
+    }      
+  if(digitContainerPtr != 0)
+    {
+      nRecPoints = fClusterizerPtr->ClusterizeEvent();
+      
+      mysize = 0;
+      offset = tSize;
 
-  nRecPoints = fClusterizerPtr->ClusterizeEvent();
-  //cout << "Number of clusters found: " << nRecPoints << ", from a total of " << nDigits << " digits" << endl;
-
-  mysize = 0;
-  offset = tSize;
-
-  mysize += sizeof(AliHLTPHOSRecPointContainerStruct);
-
-  //cout << "Size of rec point container: " << mysize << endl;
-
-  AliHLTComponentBlockData bd;
-  FillBlockData( bd );
-  bd.fOffset = offset;
-  bd.fSize = mysize;
-  bd.fDataType = AliHLTPHOSDefinitions::fgkAliHLTRecPointDataType;
-  bd.fSpecification = specification;
-  outputBlocks.push_back( bd );
-
-  tSize += mysize;
-  outBPtr += mysize;
-
+      mysize += sizeof(AliHLTPHOSRecPointContainerStruct);
+      
+      AliHLTComponentBlockData bd;
+      FillBlockData( bd );
+      bd.fOffset = offset;
+      bd.fSize = mysize;
+      bd.fDataType = AliHLTPHOSDefinitions::fgkClusterDataType;
+      bd.fSpecification = specification;
+      outputBlocks.push_back( bd );
+      tSize += mysize;
+      outBPtr += mysize;
+  
+    }
+  
   if ( tSize > size )
     {
       Logging( kHLTLogFatal, "HLT::AliHLTPHOSClusterizerComponent::DoEvent", "Too much data",
@@ -223,6 +225,7 @@ AliHLTPHOSClusterizerComponent::DoEvent(const AliHLTComponentEventData& evtData,
     }
   
   return 0;
+
 
 }
 
@@ -236,27 +239,23 @@ AliHLTPHOSClusterizerComponent::DoInit(int argc, const char** argv )
   fClusterizerPtr->SetDigitContainer(fAllDigitsPtr);
   fNoCrazyness = false;
   //
-  
+
+  ScanArguments(argc, argv);
   for (int i = 0; i < argc; i++)
     {
       if(!strcmp("-digitthreshold", argv[i]))
 	{
 	  fClusterizerPtr->SetEmcMinEnergyThreshold(atof(argv[i+1]));
-	  cout << "Clusterizer: digit threshold is: " << argv[i+1] << endl;
 	}
       if(!strcmp("-recpointthreshold", argv[i]))
 	{
 	  fClusterizerPtr->SetEmcClusteringThreshold(atof(argv[i+1]));
-	  cout << "Clusterizer: rec point threshold is: " << argv[i+1] << endl;
+	}
+      if(!strcmp("-modulemode", argv[i]))
+	{
+	  fModuleClusterizationMode = true;
 	}
     }
-
-  
-  cout << "#######################################\n";
-  cout << "# Clusterizer component started with: # \n";
-  //  cout << "# --> Digit threshold:     " << fClusterizerPtr->GetThreshold() << " #\n";
-  //  cout << "# --> Cluster threshold:   " << fClusterizerPtr->GetClusterThreshold() << " #\n";
-  cout << "#######################################\n";
 
   return 0;
 }

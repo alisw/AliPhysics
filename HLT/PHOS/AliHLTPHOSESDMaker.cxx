@@ -52,8 +52,8 @@ AliHLTPHOSESDMaker::~AliHLTPHOSESDMaker()
   //See header file for documentation
   if(fCaloClustersPtr)
     {
-      delete fCaloClustersPtr;
-      fCaloClustersPtr = 0;
+      //fCaloClustersPtr->Delete();
+      //fCaloClustersPtr = 0;
     }
 }
 
@@ -65,7 +65,7 @@ AliHLTPHOSESDMaker::FillESDCaloClusters()
   AliESDCaloCluster *caloCluster = 0;
   AliHLTPHOSCaloClusterDataStruct* caloClusterStruct = 0;
 
-  for( Int_t i = 0; i < fCaloClusterContainerPtr->fNCaloClusters; i++)
+  for(UInt_t i = 0; i < fCaloClusterContainerPtr->fNCaloClusters; i++)
     {
       caloCluster = (AliESDCaloCluster*)fCaloClustersPtr->At(i + fNCaloClusters);
       caloClusterStruct = &(fCaloClusterContainerPtr->fCaloClusterArray[i]);
@@ -98,8 +98,7 @@ AliHLTPHOSESDMaker::FillESDEvent()
   
   AliESDCaloCluster *caloCluster = 0;
   AliHLTPHOSCaloClusterDataStruct* caloClusterStruct = 0;
-  
-  for( Int_t i = 0; i < fCaloClusterContainerPtr->fNCaloClusters; i++)
+  for(UInt_t i = 0; i < fCaloClusterContainerPtr->fNCaloClusters; i++)
     {
       //      caloCluster = (AliESDCaloCluster*)fCaloClustersPtr->New(i + fNCaloClusters);
       caloCluster = (AliESDCaloCluster*)fCaloClustersPtr->New(i);
@@ -129,11 +128,47 @@ AliHLTPHOSESDMaker::FillESDEvent()
   
   return 0;
 }
+Int_t
+AliHLTPHOSESDMaker::FillESDEvent(AliHLTPHOSCaloClusterContainerStruct* caloClusterContainerPtr)
+{
+  //See header file for documentation
+  
+  AliESDCaloCluster *caloCluster = 0;
+  AliHLTPHOSCaloClusterDataStruct* caloClusterStruct = 0;
+  
+  for(UInt_t i = 0; i < 1/*caloClusterContainerPtr->fNCaloClusters*/; i++)
+    {
+      //      caloCluster = (AliESDCaloCluster*)fCaloClustersPtr->New(i + fNCaloClusters);
+      //caloCluster = (AliESDCaloCluster*)fCaloClustersPtr->New(i + fNCaloClusters);
+      /*      caloClusterStruct = &(caloClusterContainerPtr->fCaloClusterArray[i]);
+      caloCluster->SetID(caloClusterStruct->fID);
+      caloCluster->SetClusterType(caloClusterStruct->fClusterType);
+      caloCluster->SetPosition((Float_t*)&caloClusterStruct->fGlobalPos[0]);
+      caloCluster->SetE(caloClusterStruct->fEnergy);
+      caloCluster->SetClusterDisp(caloClusterStruct->fDispersion);
+      caloCluster->SetClusterChi2(caloClusterStruct->fFitQuality);
+      caloCluster->SetPid((Float_t*)&caloClusterStruct->fPID[0]);
+      caloCluster->SetM20(caloClusterStruct->fM20);
+      caloCluster->SetM02(caloClusterStruct->fM02);
+      caloCluster->SetM11(caloClusterStruct->fM11);
+      caloCluster->SetNExMax(caloClusterStruct->fNExMax);
+      caloCluster->SetEmcCpvDistance(caloClusterStruct->fEmcCpvDistance);
+      caloCluster->SetDistanceToBadChannel(caloClusterStruct->fDistToBadChannel);
+      caloCluster->SetNCells(caloClusterStruct->fNCells);
+      caloCluster->SetCellsAbsId(caloClusterStruct->fCellsAbsId);
+      caloCluster->SetCellsAmplitudeFraction(caloClusterStruct->fCellsAmpFraction);
+      fESDEventPtr->AddCaloCluster(caloCluster);
+      //cout << caloCluster->E() << endl;*/
+      fNCaloClusters++;  
+    }
+  
+  return 0;
+}
 
 void 
 AliHLTPHOSESDMaker::ResetESD()
 {
   fNCaloClusters = 0;
-  fCaloClustersPtr->Delete();
+  // fCaloClustersPtr->Delete();
 }
 

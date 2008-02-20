@@ -51,12 +51,19 @@ AliHLTPHOSDigitMaker::AliHLTPHOSDigitMaker() :
   fCellDataPtr(0),
   fDigitContainerStructPtr(0),
   fDigitArrayPtr(0),
-  fDigitPtr(0),
   fDigitStructPtr(0),
   fDigitCount(0)
 {
   // See header file for documentation
-
+  for(UInt_t x = 0; x < N_XCOLUMNS_MOD; x++)
+    {
+      for(UInt_t z = 0; z < N_ZROWS_MOD; z++)
+	{
+	  fHighGainFactors[x][z] = 0.005;
+	  fLowGainFactors[x][z] = 0.08;
+	}
+    }
+  
 }
   
 AliHLTPHOSDigitMaker::~AliHLTPHOSDigitMaker() 
@@ -68,16 +75,15 @@ Int_t
 AliHLTPHOSDigitMaker::MakeDigits(AliHLTPHOSRcuCellEnergyDataStruct* rcuData)
 {
   //See header file for documentation
-  Int_t i = 0;
+  
   Int_t j = 0;
   Int_t xMod = -1;
   Int_t zMod = -1;
-  Int_t gain = -1;
   Float_t amplitude = 0;
  
-  for(Int_t x = 0; x < N_XCOLUMNS_RCU; x++)
+  for(UInt_t x = 0; x < N_XCOLUMNS_RCU; x++)
     {
-      for(Int_t z = 0; z < N_ZROWS_RCU; z++) 
+      for(UInt_t z = 0; z < N_ZROWS_RCU; z++) 
 	{
 	  fCellDataPtr = &(rcuData->fValidData[x][z][HIGH_GAIN]);
 	  xMod = x + rcuData->fRcuX * N_XCOLUMNS_RCU;
@@ -94,6 +100,7 @@ AliHLTPHOSDigitMaker::MakeDigits(AliHLTPHOSRcuCellEnergyDataStruct* rcuData)
 	      //TODO: fix time
 	      fDigitStructPtr->fTime = fCellDataPtr->fTime * 0.0000001;
 	      fDigitStructPtr->fCrazyness = fCellDataPtr->fCrazyness;
+	      fDigitStructPtr->fModule = rcuData->fModuleID;
 	      j++;
 	    }
 	  else if(amplitude >= MAX_BIN_VALUE)
@@ -110,6 +117,7 @@ AliHLTPHOSDigitMaker::MakeDigits(AliHLTPHOSRcuCellEnergyDataStruct* rcuData)
 		  //TODO: fix time
 		  fDigitStructPtr->fTime = fCellDataPtr->fTime  * 0.0000001;;
 		  fDigitStructPtr->fCrazyness = fCellDataPtr->fCrazyness;
+		  fDigitStructPtr->fModule = rcuData->fModuleID;
 		  j++;
 		}
 	    }
@@ -133,9 +141,9 @@ void
 AliHLTPHOSDigitMaker::SetGlobalHighGainFactor(Float_t factor)
 {
   //See header file for documentation
-  for(Int_t x = 0; x < N_XCOLUMNS_MOD; x++)
+  for(UInt_t x = 0; x < N_XCOLUMNS_MOD; x++)
     {
-      for(Int_t z = 0; z < N_ZROWS_MOD; z++)
+      for(UInt_t z = 0; z < N_ZROWS_MOD; z++)
 	{
 	  fHighGainFactors[x][z] = factor;
 	}
@@ -146,9 +154,9 @@ void
 AliHLTPHOSDigitMaker::SetGlobalLowGainFactor(Float_t factor)
 {
   //See header file for documentation
-  for(Int_t x = 0; x < N_XCOLUMNS_MOD; x++)
+  for(UInt_t x = 0; x < N_XCOLUMNS_MOD; x++)
     {
-      for(Int_t z = 0; z < N_ZROWS_MOD; z++)
+      for(UInt_t z = 0; z < N_ZROWS_MOD; z++)
 	{
 	  fLowGainFactors[x][z] = factor;
 	}
@@ -165,9 +173,9 @@ AliHLTPHOSDigitMaker::SetDigitThresholds(const char* filepath, Int_t nSigmas)
   TH2F *lgHist = (TH2F*)histFile->Get("RMSLGMapHist");
   TH2F *hgHist = (TH2F*)histFile->Get("RMSHGMapHist");
 
-  for(Int_t x = 0; x < N_XCOLUMNS_MOD; x++)
+  for(UInt_t x = 0; x < N_XCOLUMNS_MOD; x++)
     {
-      for(Int_t z = 0; z < N_ZROWS_MOD; z++)
+      for(UInt_t z = 0; z < N_ZROWS_MOD; z++)
 	{
 	  fDigitThresholds[x][z][LOW_GAIN] = lgHist->GetBinContent(x, z) * nSigmas;
 	  fDigitThresholds[x][z][HIGH_GAIN] = hgHist->GetBinContent(x, z) * nSigmas;

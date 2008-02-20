@@ -39,16 +39,17 @@ const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkCellAccumulatedEnergyDat
 const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkCellTimingHistogramDataType   = { sizeof(AliHLTComponentDataType),       {'T','I','M','E','H','I','S','T'},{'P','H','O','S'}};;    
 const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkCellTimingAverageDataType     = { sizeof(AliHLTComponentDataType),       {'T','I','M','E','A','V','E','R'},{'P','H','O','S'}};;
 const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkCellChannelDataDataType       = { sizeof(AliHLTComponentDataType),       {'C','H','A','N','D','A','T','A'},{'P','H','O','S'}};;
-const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkAliHLTClusterDataType         = { sizeof(AliHLTComponentDataType),       {'C','L','U','S','T','R','T','Y'},{'P','H','O','S'}};;
-const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkAliHLTRecPointDataType        = { sizeof(AliHLTComponentDataType),       {'R','E','C','P','T','T','Y','P'},{'P','H','O','S'}};;
-const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkAliHLTHistDataType            = { sizeof(AliHLTComponentDataType),       {'H','I','S','T','T','Y','P','E'},{'P','H','O','S'}};;
-const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkAliHLTSpectrumDataType        = { sizeof(AliHLTComponentDataType),       {'S','P','E','C','T','Y','P','E'},{'P','H','O','S'}};;
-const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkAliHLTRootTreeDataType        = { sizeof(AliHLTComponentDataType),       {'R','T','R','E','T','Y','P','E'},{'P','H','O','S'}};;
-const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkAliHLTBaselineDataType        = { sizeof(AliHLTComponentDataType),       {'B','A','S','L','T','Y','P','E'},{'P','H','O','S'}};;
-const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkAliHLTDigitDataType           = { sizeof(AliHLTComponentDataType),       {'D','I','G','I','T','Y','P','E'},{'P','H','O','S'}};;
-const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkAliHLTNoiseMapDataType        = { sizeof(AliHLTComponentDataType),       {'N','O','M','A','T','Y','P','E'},{'P','H','O','S'}};;
-const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkAliHLTMIPDataType             = { sizeof(AliHLTComponentDataType),       {'M','I','P','D','T','Y','P','E'},{'P','H','O','S'}};;
-const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkAliHLTSandboxDataType         = { sizeof(AliHLTComponentDataType),       {'S','A','B','X','T','Y','P','E'},{'P','H','O','S'}};;
+const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkClusterDataType               = { sizeof(AliHLTComponentDataType),       {'C','L','U','S','T','R','T','Y'},{'P','H','O','S'}};;
+const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkRecPointDataType              = { sizeof(AliHLTComponentDataType),       {'R','E','C','P','O','I','N','T'},{'P','H','O','S'}};;
+const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkHistDataType                  = { sizeof(AliHLTComponentDataType),       {'H','I','S','T','O','G','R','A'},{'P','H','O','S'}};;
+const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkSpectrumDataType              = { sizeof(AliHLTComponentDataType),       {'S','P','E','C','T','R','U','M'},{'P','H','O','S'}};;
+const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkRootTreeDataType              = { sizeof(AliHLTComponentDataType),       {'R','O','O','T','T','R','E','E'},{'P','H','O','S'}};;
+const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkBaselineDataType              = { sizeof(AliHLTComponentDataType),       {'B','A','S','E','L','I','N','E'},{'P','H','O','S'}};;
+const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkDigitDataType                 = { sizeof(AliHLTComponentDataType),       {'D','I','G','I','T','T','Y','P'},{'P','H','O','S'}};;
+const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkNoiseMapDataType              = { sizeof(AliHLTComponentDataType),       {'N','O','I','S','E','M','A','P'},{'P','H','O','S'}};;
+const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkMIPDataType                   = { sizeof(AliHLTComponentDataType),       {'M','I','P','D','T','Y','P','E'},{'P','H','O','S'}};;
+const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkSandboxDataType               = { sizeof(AliHLTComponentDataType),       {'S','A','N','D','B','O','X','T'},{'P','H','O','S'}};;
 const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkEmcCalibDataType              = { sizeof(AliHLTComponentDataType),       {'C','A','L','I','T','Y','P','E'},{'P','H','O','S'}};;
 const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkCaloClusterDataType           = { sizeof(AliHLTComponentDataType),       {'C','A','L','C','L','U','S','T'},{'P','H','O','S'}};;
+
 

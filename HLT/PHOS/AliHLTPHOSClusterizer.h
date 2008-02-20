@@ -65,19 +65,41 @@ public:
   
   /** Destructor */
   virtual ~AliHLTPHOSClusterizer();
-  
-  /*
-  AliHLTPHOSClusterizer(const AliHLTPHOSClusterizer &);
-  AliHLTPHOSClusterizer & operator = (const AliHLTPHOSClusterizer &) {return *this;}
-  */
 
+  /** Copy constructor */  
+  AliHLTPHOSClusterizer(const AliHLTPHOSClusterizer &) : 
+    AliHLTPHOSBase(),
+    fEmcClusteringThreshold(0),
+    fEmcMinEnergyThreshold(0),
+    fEmcTimeGate(0),
+    fLogWeight(0),
+    fDigitsInCluster(0),
+    fOnlineMode(true),
+    fDigitArrayPtr(0),
+    fEmcRecPointsPtr(0),
+    fDigitPtr(0),
+    fDigitContainerPtr(0),
+    fRecPointContainerPtr(0),
+    fPHOSGeometry(0),
+    fGetterPtr(0)
+  {
+    //Copy constructor not implemented
+  }
+  
+  /** Assignment */
+  AliHLTPHOSClusterizer & operator = (const AliHLTPHOSClusterizer)
+  {
+    //Assignment
+    return *this; 
+  }
+  
   /** Set digit container */
   void SetDigitContainer(AliHLTPHOSDigitContainerDataStruct* digitContainerPtr)
   { fDigitContainerPtr = digitContainerPtr; }
 
   /** Set rec point container */
-  void SetRecPointContainer(AliHLTPHOSRecPointContainerStruct *RecPointContainerPtr)
-  { fRecPointContainerPtr = RecPointContainerPtr; }
+  void SetRecPointContainer(AliHLTPHOSRecPointContainerStruct *recPointContainerPtr);
+
 
   /** Set reco parameters */
   void SetRecoParameters(AliPHOSRecoParamEmc* recoPars);
