@@ -226,7 +226,7 @@ int AliHLTOUT::InitHandlers()
   // see header file for class documentation
   int iResult=0;
   AliHLTOUTIndexList remnants;
-  for (iResult=SelectFirstDataBlock(kAliHLTAnyDataType, kAliHLTVoidDataSpec); iResult>=0; iResult=SelectNextDataBlock()) {
+  for (int havedata=SelectFirstDataBlock(kAliHLTAnyDataType, kAliHLTVoidDataSpec); havedata>=0; havedata=SelectNextDataBlock()) {
     remnants.push_back(GetDataBlockIndex());
     AliHLTComponentDataType dt=kAliHLTVoidDataType;
     AliHLTUInt32_t spec=kAliHLTVoidDataSpec;
@@ -276,7 +276,7 @@ int AliHLTOUT::InsertHandler(const AliHLTOUTHandlerListEntry &entry)
   if (element==fDataHandlers.end()) {
     fDataHandlers.push_back(entry);
   } else {
-    
+    element->AddIndex(const_cast<AliHLTOUTHandlerListEntry&>(entry));
   }
   return iResult;
 }
@@ -357,8 +357,19 @@ AliHLTUInt32_t AliHLTOUT::AliHLTOUTHandlerListEntry::operator[](int i) const
 bool AliHLTOUT::AliHLTOUTHandlerListEntry::operator==(const AliHLTOUTHandlerListEntry& entry) const
 {
   // see header file for class documentation
-  assert(0); // not yet implemented
-  return false;
+  if (entry.fpHandler!=fpHandler || fpHandler==NULL) return false;
+  assert(entry.fpAgent==fpAgent);
+  if (entry.fpAgent!=fpAgent) return false;
+  return true;
+}
+
+void AliHLTOUT::AliHLTOUTHandlerListEntry::AddIndex(AliHLTOUT::AliHLTOUTHandlerListEntry &desc)
+{
+  // see header file for class documentation
+  AliHLTOUTIndexList::iterator element;
+  for (element=desc.fBlocks.begin(); element!=desc.fBlocks.end(); element++) {
+    AddIndex(*element);
+  }  
 }
 
 void AliHLTOUT::AliHLTOUTHandlerListEntry::AddIndex(AliHLTUInt32_t index)
@@ -370,6 +381,10 @@ void AliHLTOUT::AliHLTOUTHandlerListEntry::AddIndex(AliHLTUInt32_t index)
 bool AliHLTOUT::AliHLTOUTHandlerListEntry::HasIndex(AliHLTUInt32_t index)
 {
   // see header file for class documentation
+  AliHLTOUTIndexList::iterator element;
+  for (element=fBlocks.begin(); element!=fBlocks.end(); element++) {
+    if (*element==index) return true;
+  }
   return false;
 }
 

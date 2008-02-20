@@ -19,6 +19,7 @@
                                                                           */
 
 #include "AliReconstructor.h"
+#include "AliHLTReconstructorBase.h"
 
 class AliHLTSystem;
 class AliRawReader;
@@ -53,7 +54,7 @@ class AliESDEvent;
  * For further information on the AliRoot reconstruction refer to the AliRoot
  * documentation, namely <tt>AliReconstruction</tt>.
  */
-class AliHLTReconstructor: public AliReconstructor {
+class AliHLTReconstructor: public AliReconstructor, public AliHLTReconstructorBase {
 public:
   AliHLTReconstructor();
   /** destructor */
@@ -102,9 +103,7 @@ private:
   /** assignment operator prohibited */
   AliHLTReconstructor& operator=(const AliHLTReconstructor& src);
 
-  AliHLTSystem* fpSystem; //! HLT steering object
-
-  ClassDef(AliHLTReconstructor, 3)   // class for the HLT reconstruction
+  ClassDef(AliHLTReconstructor, 4)   // class for the HLT reconstruction
 };
 
 typedef AliHLTReconstructor AliL3Reconstructor; // for backward compatibility

@@ -265,12 +265,31 @@ class AliHLTOUT : public AliHLTLogging {
     operator AliHLTModuleAgent::AliHLTOUTHandlerDesc&() {return *fpHandlerDesc;}
     operator AliHLTModuleAgent*() const {return fpAgent;}
 
+    /**
+     * Two list entries are considered to be equal if the handlers
+     * are equal.
+     */
     bool operator==(const AliHLTOUTHandlerListEntry& entry) const;
 
     AliHLTUInt32_t operator[](int i) const;
 
+    /**
+     * Add a block index to this descriptor.
+     * One descriptor can serve multiple blocks if the agent returns the
+     * same handler for all of the blocks. Instead of creating a new entry
+     * the block index ist just added
+     */
     void AddIndex(AliHLTUInt32_t index);
 
+    /**
+     * Add all indexes of the descriptor.
+     */
+    void AddIndex(AliHLTOUTHandlerListEntry &desc);
+
+    /**
+     * Check if an index is served by this descriptor.
+     * @return true if the index is in the table
+     */
     bool HasIndex(AliHLTUInt32_t index);
 
   private:

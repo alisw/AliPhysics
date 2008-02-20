@@ -32,7 +32,7 @@ ClassImp(AliHLTReconstructor)
 AliHLTReconstructor::AliHLTReconstructor()
   : 
   AliReconstructor(),
-  fpSystem(NULL)
+  AliHLTReconstructorBase()
 { 
   //constructor
 }
@@ -41,26 +41,25 @@ AliHLTReconstructor::~AliHLTReconstructor()
 { 
   //destructor
 
-  if (fpSystem) {
-    AliDebug(0, Form("delete HLT system: status %#x", fpSystem->GetStatusFlags()));
-    if (fpSystem->CheckStatus(AliHLTSystem::kReady)) {
+  AliHLTSystem* pSystem=GetInstance();
+  if (pSystem) {
+    AliDebug(0, Form("delete HLT system: status %#x", pSystem->GetStatusFlags()));
+    if (pSystem->CheckStatus(AliHLTSystem::kReady)) {
       // send specific 'event' to execute the stop sequence
-      fpSystem->Reconstruct(0, NULL, NULL);
+      pSystem->Reconstruct(0, NULL, NULL);
     }
-    delete fpSystem;
   }
-  fpSystem=NULL;
 }
 
 void AliHLTReconstructor::Init()
 {
   // init the reconstructor
-  if (!fpSystem) fpSystem=new AliHLTSystem;
-  if (!fpSystem) {
+  AliHLTSystem* pSystem=GetInstance();
+  if (!pSystem) {
     AliError("can not create AliHLTSystem object");
     return;
   }
-  if (fpSystem->CheckStatus(AliHLTSystem::kError)) {
+  if (pSystem->CheckStatus(AliHLTSystem::kError)) {
     AliError("HLT system in error state");
     return;
   }
@@ -79,17 +78,17 @@ void AliHLTReconstructor::Init()
       if (token.Contains("loglevel=")) {
 	TString param=token.ReplaceAll("loglevel=", "");
 	if (param.IsDigit()) {
-	  fpSystem->SetGlobalLoggingLevel((AliHLTComponentLogSeverity)param.Atoi());
+	  pSystem->SetGlobalLoggingLevel((AliHLTComponentLogSeverity)param.Atoi());
 	} else if (param.BeginsWith("0x") &&
 		   param.Replace(0,2,"",0).IsHex()) {
 	  int severity=0;
 	  sscanf(param.Data(),"%x", &severity);
-	  fpSystem->SetGlobalLoggingLevel((AliHLTComponentLogSeverity)severity);
+	  pSystem->SetGlobalLoggingLevel((AliHLTComponentLogSeverity)severity);
 	} else {
 	  AliWarning("wrong parameter for option \'loglevel=\', (hex) number expected");
 	}
       } else if (token.Contains("alilog=off")) {
-	fpSystem->SwitchAliLog(0);
+	pSystem->SwitchAliLog(0);
       } else if (token.BeginsWith("lib") && token.EndsWith(".so")) {
 	libs+=token;
 	libs+=" ";
@@ -102,18 +101,18 @@ void AliHLTReconstructor::Init()
   }
 
   if (!libs.IsNull() &&
-      (!fpSystem->CheckStatus(AliHLTSystem::kLibrariesLoaded)) &&
-      (fpSystem->LoadComponentLibraries(libs.Data())<0)) {
+      (!pSystem->CheckStatus(AliHLTSystem::kLibrariesLoaded)) &&
+      (pSystem->LoadComponentLibraries(libs.Data())<0)) {
     AliError("error while loading HLT libraries");
     return;
   }
 
-  if (!fpSystem->CheckStatus(AliHLTSystem::kReady)) {
+  if (!pSystem->CheckStatus(AliHLTSystem::kReady)) {
     typedef int (*AliHLTSystemSetOptions)(AliHLTSystem* pInstance, const char* options);
     gSystem->Load("libHLTinterface.so");
     AliHLTSystemSetOptions pFunc=(AliHLTSystemSetOptions)(gSystem->DynFindSymbol("libHLTinterface.so", "AliHLTSystemSetOptions"));
     if (pFunc) {
-      if ((pFunc)(fpSystem, option.Data())<0) {
+      if ((pFunc)(pSystem, option.Data())<0) {
       AliError("error setting options for HLT system");
       return;	
       }
@@ -121,7 +120,7 @@ void AliHLTReconstructor::Init()
       AliError(Form("version of HLT system does not support the options \'%s\'", option.Data()));
       return;
     }
-    if ((fpSystem->Configure())<0) {
+    if ((pSystem->Configure())<0) {
       AliError("error during HLT system configuration");
       return;
     }
@@ -149,17 +148,18 @@ void AliHLTReconstructor::FillESD(AliRawReader* rawReader, TTree* /*clustersTree
 {
   // reconstruct real data and fill ESD
   int iResult=0;
-  if (fpSystem) {
-    if (fpSystem->CheckStatus(AliHLTSystem::kError)) {
+  AliHLTSystem* pSystem=GetInstance();
+  if (pSystem) {
+    if (pSystem->CheckStatus(AliHLTSystem::kError)) {
       AliError("HLT system in error state");
       return;
     }
-    if (!fpSystem->CheckStatus(AliHLTSystem::kReady)) {
+    if (!pSystem->CheckStatus(AliHLTSystem::kReady)) {
       AliError("HLT system in wrong state");
       return;
     }
-    if ((iResult=fpSystem->Reconstruct(1, NULL, rawReader))>=0) {
-      fpSystem->FillESD(-1, NULL, esd);
+    if ((iResult=pSystem->Reconstruct(1, NULL, rawReader))>=0) {
+      pSystem->FillESD(-1, NULL, esd);
     }
   }
 }

@@ -72,7 +72,8 @@ int AliHLTOUTRawReader::GenerateIndex()
     while (fpRawreader->ReadNextData(pSrc) && pSrc!=NULL && iResult>=0) {
       AliHLTUInt32_t id=(fpRawreader->GetEquipmentId())<<fgkIdShift;
       int size=fpRawreader->GetDataSize();
-      AliHLTHOMERReader* pReader=fpManager->OpenReaderBuffer(pSrc, size);
+      int offset=sizeof(AliHLTOUT::AliHLTOUTEventHeader);
+      AliHLTHOMERReader* pReader=fpManager->OpenReaderBuffer(pSrc+offset, size-offset);
       if (pReader) {
 	iResult=ScanReader(pReader, id);
 	fpManager->DeleteReader(pReader);

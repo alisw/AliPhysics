@@ -33,6 +33,7 @@
 #include "AliHLTModuleAgent.h"
 #include "AliHLTOUTHandler.h"
 #include "AliHLTOUTHandlerEquId.h"
+#include "AliHLTSystem.h"
 #include "AliLog.h"
 #include "AliDAQ.h"            // RAW, for detector names and equipment ids
 #include "TObjString.h"
@@ -44,8 +45,10 @@ ClassImp(AliRawReaderHLT)
 AliRawReaderHLT::AliRawReaderHLT(AliRawReader* pRawreader, const char* options)
   :
   AliRawReader(),
+  AliHLTReconstructorBase(),
   fpParentReader(pRawreader),
   fOptions(),
+  fSystemOptions(),
   fpData(NULL),
   fDataSize(0),
   fOffset(0),
@@ -413,6 +416,9 @@ int AliRawReaderHLT::ScanOptions(const char* options)
       int detId=AliDAQ::DetectorID(argument.Data());
       if (detId>=0) {
 	fDetectors.push_back(detId);
+      } else {
+	if (!fSystemOptions.IsNull()) fSystemOptions+=" ";
+	fSystemOptions+=argument;
       }
     }
     delete pTokens;
@@ -428,6 +434,10 @@ Bool_t   AliRawReaderHLT::ReadNextHLTData()
   if (!fpHLTOUT) {
     fpHLTOUT=new AliHLTOUTRawReader(fpParentReader);
     if (result=(fpHLTOUT!=NULL)) {
+      AliHLTSystem* pSystem=GetInstance();
+      if (pSystem) {
+	pSystem->ScanOptions(fSystemOptions.Data());
+      }
       if (result=(fpHLTOUT->Init()>=0)) {
 	result=fpHLTOUT->SelectFirstDataBlock(kAliHLTAnyDataType, kAliHLTVoidDataSpec,
 					      AliHLTModuleAgent::kRawReader)>=0;

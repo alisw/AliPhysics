@@ -21,6 +21,7 @@
 
 #include "AliHLTDataTypes.h"
 #include "AliRawReader.h"      // RAW, base class
+#include "AliHLTReconstructorBase.h"
 #include "TString.h"
 #include <vector>
 
@@ -31,7 +32,7 @@ class AliHLTOUTHandler;
  * @class AliRawReaderHLT
  * Handler of HLTOUT data for AliRawReader input.
  */
-class AliRawReaderHLT : public AliRawReader {
+class AliRawReaderHLT : public AliRawReader, public AliHLTReconstructorBase {
  public:
   /** constructor */
   AliRawReaderHLT(AliRawReader* pParentReader, const char* options=NULL);
@@ -116,6 +117,9 @@ class AliRawReaderHLT : public AliRawReader {
   /** options */
   TString fOptions; //!transient
 
+  /** system options = options w/o detector strings */
+  TString fSystemOptions; //!transient
+
   /** current data set, either extracted from the HLT stream or parent raw reader */
   const AliHLTUInt8_t* fpData; // !transient
 
@@ -140,7 +144,7 @@ class AliRawReaderHLT : public AliRawReader {
   /** instance of the data handler providing the current data buffer */
   AliHLTOUTHandler* fpDataHandler; // !transient
 
-  ClassDef(AliRawReaderHLT, 2)
+  ClassDef(AliRawReaderHLT, 3)
 };
 
 #define ALIHLTREC_LIBRARY                   "libHLTrec.so"
