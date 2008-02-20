@@ -24,6 +24,7 @@
 
 #include <sstream>
 #include <iostream>
+#include "TString.h"
 #include "AliLog.h"
 #include "AliHLTLogging.h"
 #include "AliHLTDataTypes.h"
@@ -39,7 +40,43 @@ void LogNotification(AliLog::EType_t /*level*/, const char* /*message*/)
   // in case of the initialized callback we never want to redirect
   // HLT logging messages to AliLog (that would be a circular function call)
   hltlog.SwitchAliLog(0);
-  hltlog.Logging(kHLTLogInfo, "NotificationHandler", "AliLog", AliHLTLogging::fgLogstr.str().c_str());
+  AliHLTComponentLogSeverity level=kHLTLogNone;
+  int offset=2;
+  TString logstring(AliHLTLogging::fgLogstr.str().c_str());
+  if (logstring.Length()<2) return;
+  switch (logstring[0]) {
+  case 'D':
+    level=kHLTLogDebug;
+    break;
+  case 'I':
+    level=kHLTLogInfo;
+    break;
+  case 'W':
+    level=kHLTLogWarning;
+    break;
+  case 'E':
+    level=kHLTLogError;
+    break;
+  case 'F':
+    level=kHLTLogFatal;
+    break;
+  default:
+    level=kHLTLogInfo;
+    offset=0;
+  }
+  
+  TString origin=&logstring[offset];
+  TString message=origin;
+  int blank=origin.First(' ');
+  if (blank>0 && origin[blank-1]==':') {
+    origin.Remove(blank-1, origin.Length());
+    message.Remove(0, blank+1);
+  } else {
+    origin="";
+  }
+  message=message.Strip(TString::kTrailing, '\n');
+
+  hltlog.Logging(level, origin.Data(), "AliLog", message.Data());
   AliHLTLogging::fgLogstr.clear();
   string empty("");
   AliHLTLogging::fgLogstr.str(empty);
@@ -76,6 +113,9 @@ extern "C" int AliDynamicMessage(AliHLTComponentLogSeverity severity,
   case kHLTLogFatal:
     AliLog::Message(AliLog::kWarning, message, "HLT", originClass, originFunc, file, line);
     break;
+  case kHLTLogImportant:
+    AliLog::Message(AliLog::kInfo, message, "HLT", originClass, originFunc, file, line);
+    break;
   default:
     break;
   }
@@ -97,6 +137,7 @@ extern "C" int InitAliDynamicMessageCallback()
   AliLog* log=new AliLog;
   log->SetLogNotification(LogNotification);
   log->SetStreamOutput(&AliHLTLogging::fgLogstr);
+  log->SetPrintScope(true);
   return 0;
 #endif // NO_ALILOG_NOTIFICATION
   return -ENOSYS;

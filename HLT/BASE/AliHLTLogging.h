@@ -47,6 +47,7 @@ class AliHLTComponentHandler;
 #define HLTWarning( ... )   if (CheckFilter(kHLTLogWarning)) LoggingVarargs(kHLTLogWarning,   Class_Name() , FUNCTIONNAME() , __FILE__ , __LINE__ , __VA_ARGS__ )
 #define HLTError( ... )     if (CheckFilter(kHLTLogError))   LoggingVarargs(kHLTLogError,     Class_Name() , FUNCTIONNAME() , __FILE__ , __LINE__ , __VA_ARGS__ )
 #define HLTFatal( ... )     if (CheckFilter(kHLTLogFatal))   LoggingVarargs(kHLTLogFatal,     Class_Name() , FUNCTIONNAME() , __FILE__ , __LINE__ , __VA_ARGS__ )
+#define HLTImportant( ... ) if (CheckFilter(kHLTLogImportant))LoggingVarargs(kHLTLogImportant,Class_Name() , FUNCTIONNAME() , __FILE__ , __LINE__ , __VA_ARGS__ )
 
 // helper macro to set the keyword
 #define HLTLogKeyword(a)    AliHLTKeyword hltlogTmpkey(this, a)

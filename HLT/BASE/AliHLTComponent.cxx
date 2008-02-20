@@ -135,6 +135,7 @@ int AliHLTComponent::UnsetGlobalComponentHandler()
 int AliHLTComponent::Init( AliHLTComponentEnvironment* environ, void* environParam, int argc, const char** argv )
 {
   // see header file for function documentation
+  HLTLogKeyword(GetComponentID());
   int iResult=0;
   if (environ) {
     memcpy(&fEnvironment, environ, sizeof(AliHLTComponentEnvironment));
@@ -191,6 +192,7 @@ int AliHLTComponent::Init( AliHLTComponentEnvironment* environ, void* environPar
 int AliHLTComponent::Deinit()
 {
   // see header file for function documentation
+  HLTLogKeyword(GetComponentID());
   int iResult=0;
   iResult=DoDeinit();
   if (fpRunDesc) {
@@ -1127,6 +1129,7 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
 				   AliHLTComponentEventDoneData*& edd )
 {
   // see header file for function documentation
+  HLTLogKeyword(GetComponentID());
   ALIHLTCOMPONENT_BASE_STOPWATCH();
   int iResult=0;
   fCurrentEvent=evtData.fEventID;

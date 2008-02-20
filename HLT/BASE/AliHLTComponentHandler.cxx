@@ -116,9 +116,9 @@ int AliHLTComponentHandler::AnnounceVersion()
   HLTbaseCompileInfo(date, time);
   if (!date) date="unknown";
   if (!time) time="unknown";
-  HLTInfo("%s build on %s (%s)", PACKAGE_STRING, date, time);
+  HLTImportant("%s build on %s (%s)", PACKAGE_STRING, date, time);
 #else
-  HLTInfo("ALICE High Level Trigger build on %s (%s) (embedded AliRoot build)", __DATE__, __TIME__);
+  HLTImportant("ALICE High Level Trigger build on %s (%s) (embedded AliRoot build)", __DATE__, __TIME__);
 #endif
   return iResult;
 }
@@ -181,7 +181,7 @@ Int_t AliHLTComponentHandler::ScheduleRegister(AliHLTComponent* pSample)
   return iResult;
 }
 
-int AliHLTComponentHandler::CreateComponent(const char* componentID, void* pEnvParam, int argc, const char** argv, AliHLTComponent*& component )
+int AliHLTComponentHandler::CreateComponent(const char* componentID, void* pEnvParam, int argc, const char** argv, AliHLTComponent*& component, const char* cdbPath )
 {
   // see header file for class documentation
   int iResult=0;
@@ -191,6 +191,9 @@ int AliHLTComponentHandler::CreateComponent(const char* componentID, void* pEnvP
       component=pSample->Spawn();
       if (component) {
 	HLTDebug("component \"%s\" created (%p)", componentID, component);
+	if (cdbPath) {
+	  component->InitCDB(cdbPath, this);
+	}
 	if ((iResult=component->Init(&fEnvironment, pEnvParam, argc, argv))!=0) {
 	  HLTError("Initialization of component \"%s\" failed with error %d", componentID, iResult);
 	  delete component;
@@ -354,7 +357,7 @@ int AliHLTComponentHandler::LoadLibrary( const char* libraryPath, int bActivateA
       // create TString object to store library path and use pointer as handle 
       hLib.fName=new TString(libraryPath);
       hLib.fMode=fLibraryMode;
-      HLTInfo("library %s loaded (%s%s)", libraryPath, hLib.fMode==kStatic?"persistent, ":"", loadtype);
+      HLTImportant("library %s loaded (%s%s)", libraryPath, hLib.fMode==kStatic?"persistent, ":"", loadtype);
       fLibraryList.insert(fLibraryList.begin(), hLib);
       typedef void (*CompileInfo)( char*& date, char*& time);
       CompileInfo fctInfo=(CompileInfo)FindSymbol(libraryPath, "CompileInfo");
@@ -364,9 +367,9 @@ int AliHLTComponentHandler::LoadLibrary( const char* libraryPath, int bActivateA
 	(*fctInfo)(date, time);
 	if (!date) date="unknown";
 	if (!time) time="unknown";
-	HLTInfo("build on %s (%s)", date, time);
+	HLTImportant("build on %s (%s)", date, time);
       } else {
-	HLTInfo("no build info available (possible AliRoot embedded build)");
+	HLTImportant("no build info available (possible AliRoot embedded build)");
       }
 
       // static registration of components when library is loaded

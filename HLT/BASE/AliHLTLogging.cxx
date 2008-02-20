@@ -191,6 +191,9 @@ int AliHLTLogging::Message(void *param, AliHLTComponentLogSeverity severity,
   case kHLTLogFatal:
     strSeverity="fatal";
     break;
+  case kHLTLogImportant:
+    strSeverity="notify";
+    break;
   default:
     break;
   }

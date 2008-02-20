@@ -201,12 +201,16 @@ extern "C" {
     kHLTLogWarning   = 0x8,
     /** error messages */
     kHLTLogError     = 0x10,
-    /** fata error messages */
+    /** fatal error messages */
     kHLTLogFatal     = 0x20,
+    /** few important messages not to be filtered out.
+     * redirected to kHLTLogInfo in AliRoot
+     */
+    kHLTLogImportant = 0x40,
     /** special value to enable all messages */
-    kHLTLogAll       = 0x3f,
+    kHLTLogAll       = 0x7f,
     /** the default logging filter */
-    kHLTLogDefault   = 0x3d 
+    kHLTLogDefault   = 0x7d 
 };
 
   //////////////////////////////////////////////////////////////////////////

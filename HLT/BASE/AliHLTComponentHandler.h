@@ -179,10 +179,12 @@ class AliHLTComponentHandler : public AliHLTLogging {
    * @param argc         number of arguments in argv
    * @param argv         argument array like in main()
    * @param component    reference to receive the create component instance
+   * @param cdbPath      optional CDB path
    * @return component pointer in component, neg. error code if failed
    */
   int CreateComponent( const char* componentID, void* pEnvParam, 
-		       int argc, const char** argv, AliHLTComponent*& component );
+		       int argc, const char** argv, AliHLTComponent*& component,
+		       const char* cdbPath=NULL);
 
   /**
    * Create a component of the given name (ID).
