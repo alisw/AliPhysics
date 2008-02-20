@@ -13,5 +13,6 @@
 #pragma link C++ class  AliACORDELoader+;
 #pragma link C++ class  AliGenACORDE+;
 #pragma link C++ class  AliACORDECalibData+;
+#pragma link C++ class  AliACORDEPreprocessor+;
 
 #endif

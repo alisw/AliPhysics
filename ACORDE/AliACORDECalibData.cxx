@@ -17,11 +17,24 @@
 
 
 #include "AliACORDECalibData.h"
+#include "TList.h"
+#include "TCanvas.h"
 
 ClassImp(AliACORDECalibData)
 
+TH1D *fHits;
+  TH1D *fTHits;
+  TH1D *fMultiHits;
+  TH1D *fTMultiHits;
+
+
+
 //________________________________________________________________
-AliACORDECalibData::AliACORDECalibData()
+AliACORDECalibData::AliACORDECalibData():
+fHits(0),
+fTHits(0),
+fMultiHits(0),
+fTMultiHits(0)
 {
   
 }
@@ -58,7 +71,30 @@ AliACORDECalibData::AliACORDECalibData(const AliACORDECalibData& calibda) :
   fRates[t] = calibda.GetRate(t+1);
   }
 }
+//_______________________________________________________________
+void AliACORDECalibData::Draw()
+{
+ 
 
+  //fHits->Draw();
+
+
+
+  TCanvas *ch;
+  TString canvasHistoName="Histos";
+  ch=new TCanvas(canvasHistoName,canvasHistoName,20,20,600,600);
+  ch->Divide(2,2);
+  ch->cd(1);
+  fHits->Draw();
+  ch->cd(2);
+  fTHits->Draw();
+  ch->cd(3);
+  fMultiHits->Draw();
+  ch->cd(4);
+  fTMultiHits->Draw();
+
+ 
+}
 //________________________________________________________________
 AliACORDECalibData &AliACORDECalibData::operator =(const AliACORDECalibData& calibda)
 {
@@ -74,6 +110,19 @@ AliACORDECalibData &AliACORDECalibData::operator =(const AliACORDECalibData& cal
   }
   return *this;
 }
+//_______________________________________________________________
+/*void AliACORDECalibData::AddHisto(TH1D *fHist)
+{
+    
+
+
+ = (TH1D*)fHist->Clone("hnew");
+
+     
+   
+ 
+}
+*/
 
 //________________________________________________________________
 AliACORDECalibData::~AliACORDECalibData()
