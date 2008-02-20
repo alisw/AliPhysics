@@ -4,6 +4,13 @@
 
 
 
+
+
+
+
+
+
+
 include $(MODDIR)/hlt.conf
 
 CLASS_HDRS:=	\
