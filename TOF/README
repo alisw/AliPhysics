@@ -1,0 +1,174 @@
+    README file for ALICE Time Of Flight Detector Oflfine Code
+    ==========================================================
+
+Intorduction
+------------
+
+This is a short overview of the TOF code within the AliROOT framework.
+
+
+Structure
+---------
+
+There are 3 libraries build for the TOF. These are 
+
+* libTOFbase:
+  This contains the basic stuff, like data classes and managers. 
+
+* libTOFsim: 
+  This contains code used by the simulation only. This includes the
+  detector class, AliTOF, and its derivatives. It also contains the
+  code for building the geometry, as well as the (s)digitisers, raw
+  data writer, QA checker and data containers.
+
+* libTOFrec:
+  Code needed for the reconstruction. This includes the reconstruction
+  code itself, as well as cluster and track containers and QA checker.
+
+The content of these libraries is detailed more below. 
+
+libTOFbase:
+-----------
+
+Till today (February 6th 2008), it contains the following classes
+
+  AliTOFGeometry:
+	Manager of TOF geometry data. All code queries this manager
+	for geometry parameters, so that the data are always consistent. 
+  
+  AliTOFdigit
+  AliTOFrawData
+  AliTOFHitData
+  AliTOFHitDataBuffer
+	Base classes for digits and real digits. They are all data
+        classes that hold the TOT and TOF values for a single sensitive
+        TOF element.
+
+  AliTOFChannelOffline
+  AliTOFChannelOnline
+  AliTOFChannelOnlineStatus
+  AliTOFcalib
+  AliTOFDataDCS
+  AliTOFFormatDCS:
+	Calibration data classes.
+
+  AliTOFRawMap:
+	A map of (AliTOFrawData) indices.
+        The AliTOFRawStream class uses this map to store raw data
+        before making digits or clusters.
+
+  AliTOFDecoder
+  AliTOFRawStream:
+	Classes to read raw data files.
+
+  AliTOFAlignment:
+
+  AliTOFPreprocessor
+  AliTOFPreprocessorFDR:
+
+libTOFsim:
+----------
+
+Till today (February 6th 2008), it contains the following classes
+
+  AliTOF:
+	Manager for all TOF simulation code.
+
+  AliTOFv5T0
+  AliTOFv6T0:
+	Simulation drivers for the TOF detector.
+	AliTOFv5T0 corresponds to a simulation where services are not
+        completly described
+        AliTOFv6T0 contains a more detailed description of all TOF
+        detector components.
+
+  AliTOFhit
+  AliTOFhitT0:
+	Base classes for hits. They hold the geometrical and physical
+        informations of a single sensitive TOF element, like the ALICE
+        coordinates, the detector indices, i.e. 5 integer numbers
+        (sector, module, strip, par-row and pad numbers), the hit
+        coordinates in the pad reference system and the
+        time-of-flight measurement. Moreover, they hold also some
+        additional measurements, like the momentum components, the
+        energy loss in the sensitive TOF element and the track incident
+        angle on the pad. Only the AliTOFhitT0 object contains also
+        the track length measurement.
+
+  AliTOFSDigit:
+	Base classes for sdigits. They hold the TOF detector informations,
+        like the detector indices, i.e. 5 integer numbers
+        (sector, module, strip, par-row and pad numbers), the
+        time-of-flight and the time-over-threshold informations
+        according to the test beam results.
+	Each detector element can record more than one sdigit (but
+        not more than 3).
+
+  AliTOFSDigitizer
+  AliTOFDigitizer:
+	Base class for the (s)digitiser. AliTOFSDigitizer makes
+	summable digits (AliTOFSDigit) from hits, and AliTOFDigitizer
+        makes digits (quasi real data) from summable digits.
+
+  AliTOFHitMap
+	A map of (AliTOFSDigit) indices.
+        The AliTOFSDigitizer uses this map to store simulation data
+        (i.e. hits) before making sdigits.
+
+  AliTOFDigitMap:
+	A map of (AliTOFdigit) indices.
+        The AliDDLRawData uses this map to store the TOF digits indices
+        before making real digits (i.e. raw data).
+
+  AliTOFDDLRawData:
+	Base class for digit-to-raw_data transformation.
+        It makes raw data from digits: practically, it transforms the
+        5 detector indices (sector, module, strip, pad-row and pad numbers)
+	in hardware address, consisting of 5 induces (TOF readout
+        module, slot, chain, TDC and channel numbers).
+
+  AliTOFT0:
+
+  AliTOFTrigger:
+
+  AliTOFQAChecker
+  AliTOFQADataMakerSim
+
+
+libTOFrec:
+----------
+
+Till today (February 6th 2008), it contains the following classes
+
+  AliTOFRecoParam:
+
+  AliTOFReconstructor:
+
+  AliTOFcluster:
+	Reconstructed point in the TOF. These objects are made
+	AliTOFReconstructor. 
+
+  AliTOFClusterFinder:
+
+  AliTOFtrack:
+	Base classe for TOF tracks. It holds ...
+
+  AliTOFtracker
+  AliTOFtrackerMI
+  AliTOFtrackerV1:
+        
+
+  AliTOFpidESD:
+
+  AliTOFQADataMakerRec:
+
+
+Authors:
+--------
+
+       Annalisa De Caro      <decaro@sa.infn.it>
+
+----------------------------------------------------------------------
+Local Variables:
+	mode: text
+End:
