@@ -2,6 +2,8 @@
 # $Id$
 # package definition for the libAliHLTPHOS library
 
+
+
 include $(MODDIR)/hlt.conf
 
 CLASS_HDRS:=	\
