@@ -439,7 +439,7 @@ UInt_t AliTPCPreprocessor::ExtractPedestals(Int_t sourceFXS)
 	  break;
 	}
         AliTPCCalibPedestal *calPed;
-	f->GetObject("AliTPCCalibPedestal",calPed);
+	f->GetObject("tpcCalibPedestal",calPed);
         if ( !calPed ) {
 	  Log ("No pedestal calibration object in file.");
 	  result = 2;
@@ -540,7 +540,7 @@ UInt_t AliTPCPreprocessor::ExtractPulser(Int_t sourceFXS)
 	  break;
 	}
         AliTPCCalibPulser *calPulser;
-	f->GetObject("AliTPCCalibPulser",calPulser);
+	f->GetObject("tpcCalibPulser",calPulser);
         if ( !calPulser ) {
 	  Log ("No pulser calibration object in file.");
 	  result = 2;
@@ -655,7 +655,7 @@ UInt_t AliTPCPreprocessor::ExtractCE(Int_t sourceFXS)
 	  break;
 	}
         AliTPCCalibCE *calCE;
-	f->GetObject("AliTPCCalibCE",calCE);
+	f->GetObject("tpcCalibCE",calCE);
 
         //  replace entries for the sectors available in the present file
 

@@ -187,7 +187,7 @@ int main(int argc, char **argv) {
   printf ("%d events processed\n",nevents);
 
   TFile * fileTPC = new TFile (RESULT_FILE,"recreate");
-  calibPulser.Write("calibPulser");
+  calibPulser.Write("tpcCalibPulser");
   delete fileTPC;
   printf("Wrote %s\n",RESULT_FILE);
 

@@ -204,7 +204,7 @@ int main(int argc, char **argv) {
   printf ("%d physics/calibration events processed.\n",nevents);
 
   TFile *fileTPC = new TFile(RESULT_FILE, "recreate");
-  calibPedestal.Write("calibPedestal");
+  calibPedestal.Write("tpcCalibPedestal");
   delete fileTPC;
   printf("Wrote %s.\n",RESULT_FILE);
 
