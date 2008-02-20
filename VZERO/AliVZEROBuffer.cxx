@@ -101,74 +101,142 @@ void AliVZEROBuffer::WriteTriggerInfo(UInt_t trigger) {
 }
 
 //_____________________________________________________________________________
-void AliVZEROBuffer::WriteChannel(Int_t cell,Int_t ADC, Int_t Time){
-  // It writes VZERO digits as a raw data file. 
-  // Being called by AliVZERODDL.C
+void AliVZEROBuffer::WriteTriggerScalers() {
+  // The method writes the VZERO trigger scalers
+  // For the moment there is no way to simulate
+  // this, so we fill the necessary 16 words with 0
 
-  UInt_t data = 0;
-  // Information about previous 10 interaction
-  // Not available in the simulation...
-  for(Int_t i = 0; i < 5; i++)
-    f->WriteBuffer((char*)&data,sizeof(data));
-
-  // Now write the ADC charge for this channel
-  if (ADC < 0 || ADC > 1023) {
-    AliInfo(Form("ADC saturated: %d. Truncating to 1023",ADC));
-    ADC = 1023;
+  // First the general trigger scalers (16 of them)
+  for(Int_t i = 0; i < 16; i++) {
+      UInt_t data = 0;
+      f->WriteBuffer((char*)&data,sizeof(data));
   }
-  data = ADC | 0x400; // 'Interaction' flag
-  f->WriteBuffer((char*)&data,sizeof(data));
+}
 
+//_____________________________________________________________________________
+void AliVZEROBuffer::WriteBunchNumbers() {
+  // The method writes the Bunch Numbers corresponding 
+  // to the 10 Minimum Bias events
+  // For the moment there is no way to simulate
+  // this, so we fill the necessary 10 words with 0
+
+  // First the bunch crossing numbers
+  // for these 10 events
+  
+  for(Int_t i = 0; i < 10; i++) {
+      UInt_t data = 0;
+      f->WriteBuffer((char*)&data,sizeof(data));
+  }
+
+}
+
+//_____________________________________________________________________________
+void AliVZEROBuffer::WriteChannel(Int_t cell, UInt_t ADC, UInt_t Time){
+  // It writes VZERO charge information into a raw data file. 
+  // Being called by Digits2Raw
+  
+  UInt_t data = 0;
+  
+  if (ADC < 0 || ADC > 1023) {
+      AliInfo(Form("ADC saturated: %d. Truncating to 1023",ADC));
+      ADC = 1023;
+  }
+
+  if(cell%2 == 0)  
+  // Information about previous 10 interaction 
+  // Not available in the simulation...
+  // Even cell number -- skip  5 words
+    { for(Int_t i = 0; i < 5; i++)
+         { data = 0; 
+           f->WriteBuffer((char*)&data,sizeof(data)); }      
+      data = ADC | 0x400; 
+      f->WriteBuffer((char*)&data,sizeof(data)); }
+  else
+  // Information about previous 10 interaction 
+  // Odd cell number -- skip 4 words and shift ADC by 16 bits 
+    { for(Int_t i = 0; i < 4; i++)
+         { data = 0;
+           f->WriteBuffer((char*)&data,sizeof(data)); }       	   
+      data |= (ADC & 0x3ff) << 16;
+      f->WriteBuffer((char*)&data,sizeof(data)); }
+    
   data = 0;
   // Information about following 10 interaction
   // Not available in the simulation...
   for(Int_t i = 0; i < 5; i++)
-    f->WriteBuffer((char*)&data,sizeof(data));
-
-  // Now write the timing information
-  data = Time & 0xfff;
-  // The signal width is not available the digits!
-  // To be added soon
-  // data |= (width & 0x7f) << 12;
-  f->WriteBuffer((char*)&data,sizeof(data));
+      f->WriteBuffer((char*)&data,sizeof(data));     
 }
 
 //_____________________________________________________________________________
-void AliVZEROBuffer::WriteScalers() {
-  // The method writes the VZERO trigger scalers
-  // For the moment there is no way to simulate
-  // this, so we fill the necessary words with 0
+void AliVZEROBuffer::WriteBeamFlags() {
+  // The method writes information about
+  // the Beam-Beam and Beam-Gas flags i.e. 
+  // 6  words for the 4 channels 
+  // of half a CIU card
 
-  // First the general trigger scalers (16 of them)
-  for(Int_t i = 0; i < 16; i++) {
-    UInt_t data = 0;
-    f->WriteBuffer((char*)&data,sizeof(data));
-  }
 
-  // Then beam-beam and beam-gas scalers for
-  // each individual channel (4x64 words)
-  for(Int_t i = 0; i < 256; i++) {
+  for(Int_t i = 0; i < 6; i++) {
     UInt_t data = 0;
     f->WriteBuffer((char*)&data,sizeof(data));
   }
 }
+
 
 //_____________________________________________________________________________
 void AliVZEROBuffer::WriteMBInfo() {
   // The method writes information about
   // the 10 previous minimum-bias events
-
-  // First the bunch crossing numbers
-  // for these 10 events
-  for(Int_t i = 0; i < 10; i++) {
+  // i.e. channels charge for each of these
+  // 10 events (20 words for the 4 channels 
+  // of half a CIU card)
+    
+  for(Int_t i = 0; i < 20; i++) {
     UInt_t data = 0;
     f->WriteBuffer((char*)&data,sizeof(data));
   }
+}
 
-  // Then channels charge for each of these
-  // 10 events (5 words/channel)
-  for(Int_t i = 0; i < 320; i++) {
+
+//_____________________________________________________________________________
+void AliVZEROBuffer::WriteMBFlags() {
+  // The method writes information about
+  // the Minimum Bias flags
+  // 3 32-bits words for the 4 channels 
+  // of half a CIU card
+
+
+  for(Int_t i = 0; i < 3; i++) {
     UInt_t data = 0;
     f->WriteBuffer((char*)&data,sizeof(data));
   }
+}
+
+//_____________________________________________________________________________
+void AliVZEROBuffer::WriteBeamScalers() {
+  // The method writes the VZERO beam scalers
+  // For the moment there is no way to simulate
+  // this, so we fill the necessary words with 0
+
+  // Beam-beam and beam-gas scalers for
+  // 4 individual channel (4x4 words)
+  
+  for(Int_t i = 0; i < 16; i++) {
+    UInt_t data = 0;
+    f->WriteBuffer((char*)&data,sizeof(data));
+  }
+}
+
+//_____________________________________________________________________________
+void AliVZEROBuffer::WriteTiming(Int_t cell, UInt_t ADC, UInt_t Time){
+  // It writes the timing information into a raw data file. 
+  // Being called by Digits2Raw
+
+  UInt_t data = 0;
+
+  // Writes the timing information
+  data = Time & 0xfff;
+  // The signal width is not available the digits!
+  // To be added soon
+  // data |= (width & 0x7f) << 12;
+  f->WriteBuffer((char*)&data,sizeof(data));
 }
