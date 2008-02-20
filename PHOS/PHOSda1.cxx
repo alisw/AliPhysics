@@ -29,7 +29,7 @@ extern "C" {
 
 #include "AliRawReader.h"
 #include "AliRawReaderDate.h"
-#include "AliPHOSCalibHistoProducer.h"
+#include "AliPHOSDA1.h"
 #include "AliPHOSRawDecoderv1.h"
 #include "AliCaloAltroMapping.h"
 
