@@ -5,8 +5,9 @@
 * This program reads the DDL data file passed as argument using the monitoring  *
 * library.                                                                      *
 * It computes calibration parameters, populates local "./V0_Ped_Width_Gain.dat" *           
-* file and exports it to the FES                                                *
-*                                                                               *
+* file and exports it to the FES.                                               *
+* We have 128 channels instead of 64 as expected for V0 due to the two sets of  *
+* charge integrators which are used by the FEE ...                              *
 * The program reports about its processing progress.                            *
 *                                                                               *
 *********************************************************************************/
@@ -43,26 +44,26 @@ int main(int argc, char **argv) {
 
   Int_t    kHighCut = 50; // high cut on pedestal distribution - to be tuned
   Int_t    kLowCut  = 30; // low cut on signal distribution - to be tuned
-  Double_t ADCmean[64];
-  Double_t PEDmean[64];
-  Double_t PEDsigma[64];
+  Double_t ADCmean[128];
+  Double_t PEDmean[128];
+  Double_t PEDsigma[128];
   
 //___________________________________________________
 // Book HISTOGRAMS - dynamics of p-p collisions -
       
   char     ADCname[6]; 
   char     PEDname[6]; 
-  TH1F     *hADCname[64];
-  TH1F     *hPEDname[64];  
+  TH1F     *hADCname[128];
+  TH1F     *hPEDname[128];  
   
   char  texte[12];
-  for (Int_t i=0; i<64; i++) {
+  for (Int_t i=0; i<128; i++) {
        sprintf(ADCname,"hADC%d",i);
        sprintf(texte,"ADC cell%d",i);
-       hADCname[i]  = new TH1F(ADCname,texte,1024,0,2047);
+       hADCname[i]  = new TH1F(ADCname,texte,1024,0,1023);
        sprintf(PEDname,"hPED%d",i);
        sprintf(texte,"PED cell%d",i);
-       hPEDname[i]  = new TH1F(PEDname,texte,1024,0,2047);}
+       hPEDname[i]  = new TH1F(PEDname,texte,1024,0,1023);}
 //___________________________________________________ 
   
   
@@ -139,7 +140,7 @@ int main(int argc, char **argv) {
       
         case PHYSICS_EVENT:
              nevents_physics++;
-        
+ 	     
              fprintf(flog,"Run #%lu, event size: %lu, BC:%u, Orbit:%u, Period:%u\n",
                  (unsigned long)event->eventRunNb,
                  (unsigned long)event->eventSize,
@@ -148,14 +149,21 @@ int main(int argc, char **argv) {
                  EVENT_ID_GET_PERIOD(event->eventId) );
 		 
 	     AliRawReader *rawReader = new AliRawReaderDate((void*)event);
-             rawReader->RequireHeader(kFALSE);	 
-	     AliVZERORawStream* rawStream  = new AliVZERORawStream(rawReader);    
+  
+	     AliVZERORawStream* rawStream  = new AliVZERORawStream(rawReader); 
 	     rawStream->Next();	
 	     for(Int_t i=0; i<64; i++) {
-                hADCname[i]->Fill(rawStream->GetADC(i)); 
+	        if(!rawStream->GetIntegratorFlag(i,10))
+                   hADCname[i]->Fill(float(rawStream->GetADC(i)));       // even integrator - fills 0 to 63
+		else 
+		   hADCname[i+64]->Fill(float(rawStream->GetADC(i)));    // odd integrator  - fills 64 to 123
 		for(Int_t j=0; j<21; j++) {
 		    if(j==10) continue;
-                    hPEDname[i]->Fill(rawStream->GetPedestal(i,j)); }
+		    if(!rawStream->GetIntegratorFlag(i,j))
+                       { hPEDname[i]->Fill(float(rawStream->GetPedestal(i,j))); }     // even integrator
+		    else 
+		       { hPEDname[i+64]->Fill(float(rawStream->GetPedestal(i,j))); }  // odd integrator 
+		}
              }    
              delete rawStream;
              rawStream = 0x0;      
@@ -173,11 +181,11 @@ int main(int argc, char **argv) {
 //________________________________________________________________________
 //  Computes mean values, dumps them into the output text file
 	
-  for(Int_t i=0; i<64; i++) {
+  for(Int_t i=0; i<128; i++) {
       hPEDname[i]->GetXaxis()->SetRange(0,kHighCut);
       PEDmean[i]  = hPEDname[i]->GetMean(); 
       PEDsigma[i] = hPEDname[i]->GetRMS(); 
-      hADCname[i]->GetXaxis()->SetRange(kLowCut,2047);
+      hADCname[i]->GetXaxis()->SetRange(kLowCut,1023);
       ADCmean[i] = hADCname[i]->GetMean() ; 
       fprintf(fp," %.3f %.3f %.3f\n",PEDmean[i],PEDsigma[i],ADCmean[i]);
   } 
@@ -187,11 +195,13 @@ int main(int argc, char **argv) {
 
   TFile *histoFile = new TFile("VZERO_histos.root","RECREATE");
     
-  for (Int_t i=0; i<64; i++) {
+  for (Int_t i=0; i<128; i++) {
+       hADCname[i]->GetXaxis()->SetRange(0,1023);
        hADCname[i]->Write(); 
        hPEDname[i]->Write(); }
 
   histoFile->Close(); 
+  delete histoFile;
   
 //________________________________________________________________________
    
