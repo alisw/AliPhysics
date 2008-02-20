@@ -61,6 +61,8 @@ AliHLTPHOSTreeMaker::~AliHLTPHOSTreeMaker()
 Int_t
 AliHLTPHOSTreeMaker::MakeDigitArray(AliHLTPHOSDigitContainerDataStruct *digitContainer, Int_t nDigits)
 {
+  /*
+
   //See header file for documentation
   AliHLTPHOSDigit *digit = 0;
   AliHLTPHOSDigitDataStruct *digitStruct = 0;
@@ -79,6 +81,7 @@ AliHLTPHOSTreeMaker::MakeDigitArray(AliHLTPHOSDigitContainerDataStruct *digitCon
       digit->SetBaseline(digitStruct->fBaseline);
     }
   return digitContainer->fNDigits;
+  */
 }
 
 void
