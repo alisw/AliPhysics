@@ -264,84 +264,113 @@ void AliVZERO::Hits2Digits(){
 //_____________________________________________________________________________
 void AliVZERO::Digits2Raw()
 {
-  //
-  // Converts digits of the current event to raw data
-  //
-  AliVZERO *fVZERO = (AliVZERO*)gAlice->GetDetector("VZERO");
-  fLoader->LoadDigits();
-  TTree* digits = fLoader->TreeD();
-  if (!digits) {
-    Error("Digits2Raw", "no digits tree");
-    return;
-  }
-  TClonesArray * VZEROdigits = new TClonesArray("AliVZEROdigit",1000);
-  fVZERO->SetTreeAddress();  		
-  digits->GetBranch("VZERODigit")->SetAddress(&VZEROdigits); 
+   //
+   //  Converts digits of the current event to raw data
+   //
   
-  const char *fileName    = AliDAQ::DdlFileName("VZERO",0);
-  AliVZEROBuffer* buffer  = new AliVZEROBuffer(fileName);
+   AliVZERO *fVZERO = (AliVZERO*)gAlice->GetDetector("VZERO");
+   fLoader->LoadDigits();
+   TTree* digits = fLoader->TreeD();
+   if (!digits) {
+      Error("Digits2Raw", "no digits tree");
+      return;
+   }
+   TClonesArray * VZEROdigits = new TClonesArray("AliVZEROdigit",1000);
+   fVZERO->SetTreeAddress();  		
+   digits->GetBranch("VZERODigit")->SetAddress(&VZEROdigits); 
   
-  //  Verbose level
-  //  0: Silent
-  //  1: cout messages
-  //  2: txt files with digits 
-  //  BE CAREFUL, verbose level 2 MUST be used only for debugging and
-  //  it is highly suggested to use this mode only for debugging digits files
-  //  reasonably small, because otherwise the size of the txt files can reach
-  //  quickly several MB wasting time and disk space.
+   const char *fileName    = AliDAQ::DdlFileName("VZERO",0);
+   AliVZEROBuffer* buffer  = new AliVZEROBuffer(fileName);
   
-  ofstream ftxt;
-  buffer->SetVerbose(0);
-  Int_t verbose = buffer->GetVerbose();
+   //  Verbose level
+   //  0: Silent
+   //  1: cout messages
+   //  2: txt files with digits 
+   //  BE CAREFUL, verbose level 2 MUST be used only for debugging and
+   //  it is highly suggested to use this mode only for debugging digits files
+   //  reasonably small, because otherwise the size of the txt files can reach
+   //  quickly several MB wasting time and disk space.
+  
+   ofstream ftxt;
+   buffer->SetVerbose(0);
+   Int_t verbose = buffer->GetVerbose();
 
-  // Get Trigger information first
-  // Read trigger inputs from trigger-detector object
-  AliDataLoader * dataLoader = fLoader->GetDigitsDataLoader();
-  if( !dataLoader->IsFileOpen() ) 
-    dataLoader->OpenFile( "READ" );
-  AliTriggerDetector* trgdet = (AliTriggerDetector*)dataLoader->GetDirectory()->Get( "Trigger" );
-  UInt_t triggerInfo = 0;
-  if(trgdet) {
-    triggerInfo = trgdet->GetMask() & 0xffff;
-  }
-  else {
-    AliError(Form("There is no trigger object for %s",fLoader->GetName()));
-  }
-  buffer->WriteTriggerInfo((UInt_t)triggerInfo);
+   // Get Trigger information first
+   // Read trigger inputs from trigger-detector object
+   AliDataLoader * dataLoader = fLoader->GetDigitsDataLoader();
+   if( !dataLoader->IsFileOpen() ) 
+        dataLoader->OpenFile( "READ" );
+   AliTriggerDetector* trgdet = (AliTriggerDetector*)dataLoader->GetDirectory()->Get( "Trigger" );
+   UInt_t triggerInfo = 0;
+   if(trgdet) {
+      triggerInfo = trgdet->GetMask() & 0xffff;
+   }
+   else {
+      AliError(Form("There is no trigger object for %s",fLoader->GetName()));
+   }
 
-  // Now write the channel information: charge+time
-  // We assume here an ordered (by PMNumber) array of
-  // digits!!
-  Int_t nEntries = Int_t(digits->GetEntries());
-  for (Int_t i = 0; i < nEntries; i++) {
+   buffer->WriteTriggerInfo((UInt_t)triggerInfo); 
+   buffer->WriteTriggerScalers(); 
+   buffer->WriteBunchNumbers(); 
   
-    fVZERO->ResetDigits();
-    digits->GetEvent(i);
-    Int_t ndig = VZEROdigits->GetEntriesFast(); 
+   // Now retrieve the channel information: charge+time and 
+   // dump it into ADC and Time arrays
+   // We assume here an ordered (by PMNumber) array of
+   // digits!!
+
+   Int_t nEntries = Int_t(digits->GetEntries());
+   UInt_t ADC[64];
+   Int_t PMNumber[64];
+   UInt_t Time[64];
+  
+   for (Int_t i = 0; i < nEntries; i++) {
+     fVZERO->ResetDigits();
+     digits->GetEvent(i);
+     Int_t ndig = VZEROdigits->GetEntriesFast(); 
    
-    if(ndig == 0) continue;
-    if(verbose == 2) {ftxt.open("VZEROdigits.txt",ios::app);}
-    for(Int_t k=0; k<ndig; k++){
-        AliVZEROdigit* fVZERODigit = (AliVZEROdigit*) VZEROdigits->At(k);			
-	Int_t ADC       = fVZERODigit->ADC();
-	Int_t PMNumber  = fVZERODigit->PMNumber();
-	Int_t Time      = fVZERODigit->Time();
-        if(verbose == 1) { cout <<"DDL: "<<fileName<< "\tdigit number: "<< k<<"\tPM number: "
-	                    <<PMNumber<<"\tADC: "<< ADC << "\tTime: "<< Time << endl;} 
-	if(verbose == 2) {
-	    ftxt<<"DDL: "<<fileName<< "\tdigit number: "<< k<<"\tPM number: "
-	                   <<PMNumber<<"\tADC: "<< ADC << "\tTime: "<< Time << endl;	      
-	}
-        buffer->WriteChannel(PMNumber, ADC, Time);
-    }
-  if(verbose==2) ftxt.close();
-  }
+     if(ndig == 0) continue;
+     if(verbose == 2) {ftxt.open("VZEROdigits.txt",ios::app);}
+     for(Int_t k=0; k<ndig; k++){
+         AliVZEROdigit* fVZERODigit = (AliVZEROdigit*) VZEROdigits->At(k);			
+	 ADC[k]       = (UInt_t) fVZERODigit->ADC();
+	 PMNumber[k]  = fVZERODigit->PMNumber();
+	 Time[k]      = (UInt_t) fVZERODigit->Time();
+         if(verbose == 1) { cout <<"DDL: "<<fileName<< "\tdigit number: "<< k<<"\tPM number: "
+	                    <<PMNumber[k]<<"\tADC: "<< ADC[k] << "\tTime: "<< Time[k] << endl;} 
+	 if(verbose == 2) {
+	      ftxt<<"DDL: "<<fileName<< "\tdigit number: "<< k<<"\tPM number: "
+	                   <<PMNumber[k]<<"\tADC: "<< ADC[k] << "\tTime: "<< Time[k] << endl;}	      
+//	 printf("DDL: %s, channel: %d, PM: %d, ADC: %d, Time: %d \n", 
+//	            fileName,k,PMNumber[k],ADC[k],Time[k]); 
+     }        
+   if(verbose==2) ftxt.close();
+   }
 
-  buffer->WriteScalers();
-  buffer->WriteMBInfo();
+   // Now fill raw data
+          
+   for (Int_t  iCIU = 0; iCIU < 8; iCIU++) { 
+ 
+   // decoding of one Channel Interface Unit numbered iCIU - there are 8 channels per CIU (and 8 CIUs) :
+  
+      for(Int_t iChannel_Offset = iCIU*8; iChannel_Offset < (iCIU*8)+8; iChannel_Offset=iChannel_Offset+4) { 
+         for(Int_t iChannel = iChannel_Offset; iChannel < iChannel_Offset+4; iChannel++) {
+             buffer->WriteChannel(iChannel, ADC[iChannel], Time[iChannel]);       
+         }
+         buffer->WriteBeamFlags(); 
+         buffer->WriteMBInfo(); 
+         buffer->WriteMBFlags();   
+         buffer->WriteBeamScalers(); 
+      } 
+      for(Int_t kChannel = kChannel=0; kChannel < 8; kChannel++) {
+          buffer->WriteTiming(kChannel, ADC[kChannel], Time[kChannel]); 
+      }
 
+    // End of decoding of one CIU card
+    
+  } // end of decoding the eight CIUs
+     
   delete buffer;
-  fLoader->UnloadDigits();
+  fLoader->UnloadDigits();  
 }
 
 //_____________________________________________________________________________
