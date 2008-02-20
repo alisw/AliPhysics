@@ -44,7 +44,7 @@ PublisherQA::PublisherQA() : fqadm(new AliTPCQADataMakerRec) {
   AliLog::SetClassDebugLevel("AliRawReaderDate",-5);
   AliLog::SetClassDebugLevel("AliTPCAltroMapping",-5);
   AliLog::SetModuleDebugLevel("RAW",-5);
-
+  printf("PublisherQA::Constructor\n");
 
 }
 
@@ -54,18 +54,16 @@ PublisherQA::~PublisherQA() {
 }
 
 void PublisherQA::BookMonitorObjects() {
-    
+ printf("PublisherQA::BookMonitorObject\n");  
  Publish(moInt1, "moInt1", "My Integer MonitorObject 1");
  int cycleLength=0;
  fqadmList=fqadm->Init(AliQA::kRAWS, 0, cycleLength);
  TObjArrayIter* lIt=(TObjArrayIter*)fqadmList->MakeIterator();
  TNamed* obj;
- TH1F* hist=new TH1F("hist", "hist", 100, 0, 100);
- Publish(hist, "hist");
  while((obj=(TNamed*)lIt->Next())) {
-   Publish(obj, obj->GetName());
    obj->Dump();
    printf("%s\n",obj->GetName());
+   Publish(obj, obj->GetName());
  }
 }
 

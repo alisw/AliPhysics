@@ -18,9 +18,12 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 #include "UIQA.h"
-#include "AliTPCCalibCE.h"
+#include "AliTPCCalPad.h"
+#include "AliTPCdataQA.h"
 #include "AliTPCdataQA.h"
 #include <AmoreDA.h>
+#include <TROOT.h>
+#include <TStyle.h>
 
 ClassImp(amore::TPC::ui::UIQA)
 
@@ -54,15 +57,41 @@ void UIQA::Construct() { // The custom GUI is constructed here. gRootFrame is th
 
  fTab=new TGTab(amore::ui::gRootFrame);
  amore::ui::gRootFrame->AddFrame(fTab);
- TGCompositeFrame* tempFrame=fTab->AddTab("My Tab 1");
- fEC[0]=new TRootEmbeddedCanvas("fEC0", tempFrame, 800, 450);
+ //
+ TGCompositeFrame* tempFrame=fTab->AddTab("OverThreshold");
+ fEC[0]=new TRootEmbeddedCanvas("fEC0", tempFrame, 1000, 650);
  tempFrame->AddFrame(fEC[0]);
- fEC[0]->GetCanvas()->Divide(3, 3);
- tempFrame=fTab->AddTab("My Tab 2");
+ fEC[0]->GetCanvas()->Divide(3,3);
+ //
+ //
+ tempFrame=fTab->AddTab("Charge");
+ fEC[1]=new TRootEmbeddedCanvas("fEC1", tempFrame, 1000, 650);
+ tempFrame->AddFrame(fEC[1]);
+ fEC[1]->GetCanvas()->Divide(2,3);
+ 
+
  amore::ui::gRootFrame->MapSubwindows();
  amore::ui::gRootFrame->Resize();
  amore::ui::gRootFrame->MapWindow();
 
+ gROOT->SetStyle("Plain");
+ gStyle->SetFillColor(10);
+ gStyle->SetPadColor(10);
+ gStyle->SetCanvasColor(10);
+ gStyle->SetStatColor(10);
+ 
+ gStyle->SetPalette(1,0);
+ gStyle->SetNumberContours(30);
+ gStyle->SetOptFit(111);
+ 
+ gStyle->SetCanvasBorderMode(-1);
+ gStyle->SetCanvasBorderSize(1);
+ gStyle->SetCanvasColor(10);
+ 
+ gStyle->SetFrameFillColor(10);
+ gStyle->SetFrameBorderSize(1);
+ gStyle->SetFrameBorderMode(-1);
+ gStyle->SetFrameLineWidth(1.2);
 }
 
 void UIQA::SubscribeMonitorObjects() { // Before using any MonitorObject, a subscription should be made.
@@ -100,6 +129,60 @@ void UIQA::Update() { // This is executed after getting the updated contents of 
    tpcqa=(AliTPCdataQA*)ptr->Object();
    printf("Pointertpcqa - %p\n",tpcqa);
    tpcqa->Print();
+ }
+
+ if (!tpcqa) return;
+ //
+ // Over threshold
+ //
+
+ TCanvas *canvas  = fEC[0]->GetCanvas();
+ if (tpcqa->GetOverThreshold5()){
+   canvas->cd(1);
+   tpcqa->GetOverThreshold5()->MakeHisto1D()->Draw();
+   canvas->cd(2);
+   tpcqa->GetOverThreshold5()->MakeHisto2D(0)->Draw("colz");
+   canvas->cd(3);
+   tpcqa->GetOverThreshold5()->MakeHisto2D(1)->Draw("colz");
+ }
+ //
+ if (tpcqa->GetOverThreshold10()){
+   canvas->cd(4);
+   tpcqa->GetOverThreshold10()->MakeHisto1D()->Draw();
+   canvas->cd(5);
+   tpcqa->GetOverThreshold10()->MakeHisto2D(0)->Draw("colz");
+   canvas->cd(6);
+   tpcqa->GetOverThreshold10()->MakeHisto2D(1)->Draw("colz");
+ }
+
+ if (tpcqa->GetOverThreshold20()){
+   canvas->cd(7);
+   tpcqa->GetOverThreshold20()->MakeHisto1D()->Draw();
+   canvas->cd(8);
+   tpcqa->GetOverThreshold20()->MakeHisto2D(0)->Draw("colz");
+   canvas->cd(9);
+   tpcqa->GetOverThreshold20()->MakeHisto2D(1)->Draw("colz");
+ }
+
+ //
+ // Mean charge
+ //
+
+ canvas  = fEC[1]->GetCanvas();
+ if (tpcqa->GetMeanCharge()){
+   canvas->cd(1);
+   tpcqa->GetMeanCharge()->MakeHisto1D()->Draw();
+   canvas->cd(3);
+   tpcqa->GetMeanCharge()->MakeHisto2D(0)->Draw("colz");
+   canvas->cd(5);
+   tpcqa->GetMeanCharge()->MakeHisto2D(1)->Draw("colz");
+   //
+   canvas->cd(2);
+   tpcqa->GetMaxCharge()->MakeHisto1D()->Draw();
+   canvas->cd(4);
+   tpcqa->GetMaxCharge()->MakeHisto2D(0)->Draw("colz");
+   canvas->cd(6);
+   tpcqa->GetMaxCharge()->MakeHisto2D(1)->Draw("colz");
  }
 
 
