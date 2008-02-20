@@ -116,13 +116,13 @@ Bool_t resPedCal = kTRUE, resECal = kTRUE, resRecPar = kTRUE;
 // *****************************************************
 TString runType = GetRunType();
 printf("\n\t AliZDCPreprocessor -> runType detected %s\n\n",runType.Data());
-if(runType == "PEDESTAL_RUN"){
+if(runType == "STANDALONE_PEDESTAL"){
   TList* daqSources = GetFileSources(kDAQ, "PEDESTALS");
   if(!daqSources){
-    Log(Form("No source for PEDESTALS run %d !", fRun));
+    Log(Form("No source for STANDALONE_PEDESTAL run %d !", fRun));
     return 1;
   }
-  Log("\t List of sources for PEDESTALS");
+  Log("\t List of sources for STANDALONE_PEDESTAL");
   daqSources->Print();
   //
   TIter iter(daqSources);
@@ -186,13 +186,13 @@ if(runType == "PEDESTAL_RUN"){
 // *****************************************************
 // [b] EMD EVENTS -> Energy calibration and equalization
 // *****************************************************
-else if(runType == "PULSER_RUN"){
+else if(runType == "STANDALONE_EMD"){
   TList* daqSources = GetFileSources(kDAQ, "EMDCALIB");
   if(!daqSources){
-    AliError(Form("No sources for PULSER_RUN run %d !", fRun));
+    AliError(Form("No sources for STANDALONE_EMD run %d !", fRun));
     return 1;
   }
-  Log("\t List of sources for PULSER_RUN");
+  Log("\t List of sources for STANDALONE_EMD");
   daqSources->Print();
   //
   TIter iter2(daqSources);
