@@ -824,13 +824,13 @@ Bool_t AliReconstruction::Run(const char* input, Bool_t IsOnline)
       if (treeOld) {
 	esd->ReadFromTree(treeOld);
 	treeOld->GetEntry(iEvent);
+	tree->Fill();
       }
-      tree->Fill();
       if (hlttreeOld) {
 	esd->ReadFromTree(hlttreeOld);
 	hlttreeOld->GetEntry(iEvent);
+	hlttree->Fill();
       }
-      hlttree->Fill();
       continue;
     }
     
