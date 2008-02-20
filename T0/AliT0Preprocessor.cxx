@@ -105,7 +105,7 @@ UInt_t AliT0Preprocessor::Process(TMap* dcsAliasMap )
         }
         else
         {
-	  /*
+	 /* 
           resultDCSMap=fData->ProcessData(*dcsAliasMap);
           if(!resultDCSMap)
           {
@@ -114,14 +114,12 @@ UInt_t AliT0Preprocessor::Process(TMap* dcsAliasMap )
           }
           else
           {
-	    Float_t *meanScaler[24] = fData->GetScalerMean();
-	     	
             AliCDBMetaData metaDataDCS;
             metaDataDCS.SetBeamPeriod(0);
             metaDataDCS.SetResponsible("Tomasz Malkiewicz");
             metaDataDCS.SetComment("This preprocessor fills an AliTODataDCS object.");
             AliInfo("Storing DCS Data");
-            resultDCSStore = Store("Calib","DCSData",meanScaler, &metaDataDCS);
+            resultDCSStore = Store("Calib","DCSData",fData, &metaDataDCS);
             if (!resultDCSStore)
             {
               Log("Some problems occurred while storing DCS data results in ReferenceDB");

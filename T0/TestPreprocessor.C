@@ -17,11 +17,11 @@ void TestPreprocessor()
 
   shuttle->SetDCSInput(dcsAliasMap);
 
-  shuttle->SetInputRunType("T0_STANDALONE_LASER");
+  //shuttle->SetInputRunType("STANDALONE");
 
   shuttle->AddInputFile(AliTestShuttle::kDAQ, "T00", "LASER", "LDC0","daLaser.root");
  
-  //shuttle->SetInputRunType("PHYSICS");
+  shuttle->SetInputRunType("PHYSICS");
 
   shuttle->AddInputFile(AliTestShuttle::kDAQ, "T00", "PHYSICS", "LDC0", "daPhys.root");
 

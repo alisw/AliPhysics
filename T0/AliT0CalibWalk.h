@@ -22,7 +22,7 @@ class AliT0CalibWalk: public TNamed {
   virtual ~AliT0CalibWalk();
   
   
-  TGraph *GetWalk(Int_t ipmt )  const {return ((TGraph*)fWalk.At(ipmt));}
+  TGraph *GetWalk(Int_t ipmt )  const {return (TGraph*)fWalk.At(ipmt);}
   Float_t  GetWalkVal(Int_t ipmt, Float_t mv )  const {return ((TGraph*)fWalk.At(ipmt))->Eval(mv);}
   void SetWalk(Int_t ipmt) ;
   void MakeWalkCorrGraph(const char *laserFile);

@@ -101,22 +101,23 @@ void  AliT0CalibTimeEq::Print(Option_t*) const
 void AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
 {
   // compute online equalized time
-  Int_t npeaks = 20;
-  Double_t sigma = 4.;
+//  Int_t npeaks = 20;
+//  Double_t sigma = 4.;
 
   TFile *gFile = TFile::Open(filePhys);
-  Bool_t down=false;
-  Int_t index[20];
+//  Bool_t down=false;
+//  Int_t index[20];
   Char_t buf1[15];
-  Char_t temp[10];
-  Float_t p[24][3]={0.,0.,0.};
+//  Char_t temp[10];
+//  Float_t p[24][3]={0.,0.,0.};
   for (Int_t i=0; i<24; i++)
   {
-    sprintf(buf1,"CFD1-CFD%i",i+1);
+    sprintf(buf1,"CFD1-CFD%d",i+1);
     TH1F *cfd = (TH1F*) gFile->Get(buf1);
-    printf(" i = %d buf1 = %s\n", i, buf1);
+    //    printf(" i = %d buf1 = %s\n", i, buf1);
     Double_t mean=cfd->GetMean();
     SetTimeEq(i,mean);
+    delete cfd;
   }
     /*
 
