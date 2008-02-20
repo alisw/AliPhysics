@@ -17,7 +17,7 @@
 ///
 /// This is a class for reading the VZERO DDL raw data
 /// The format of the raw data corresponds to the one
-/// implemented in AliVZEROBuffer class.
+/// implemented in AliVZEROBuffer class. 
 ///
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -105,11 +105,11 @@ Bool_t AliVZERORawStream::Next()
 
   if (!fRawReader->ReadNextData(fData)) return kFALSE;
   if (fRawReader->GetDataSize() == 0) return kFALSE;
-
-  if (fRawReader->GetDataSize() != 5488) {
-      fRawReader->AddFatalErrorLog(kRawDataSizeErr,Form("size %d != 5488",fRawReader->GetDataSize()));
-      AliWarning(Form("Wrong VZERO raw data size: %d, expected 5488 bytes!",fRawReader->GetDataSize()));
-      return kFALSE;
+     
+  if (fRawReader->GetDataSize() != 5936) {
+     fRawReader->AddFatalErrorLog(kRawDataSizeErr,Form("size %d != 5936",fRawReader->GetDataSize()));
+     AliWarning(Form("Wrong VZERO raw data size: %d, expected 5936 bytes!",fRawReader->GetDataSize()));
+     return kFALSE;
   }
 
   fPosition = 0;
@@ -117,45 +117,76 @@ Bool_t AliVZERORawStream::Next()
   fTrigger = GetNextWord() & 0xffff;
   fTriggerMask = GetNextWord() & 0xffff;
 
-  for(Int_t iChannel = 0; iChannel < kNChannels; iChannel++) {
-    for(Int_t iEvOfInt = 0; iEvOfInt < kNEvOfInt; iEvOfInt++) {
-      UShort_t data = GetNextShort();
-      fADC[iChannel][iEvOfInt] = data & 0x3ff;
-      fIsInt[iChannel][iEvOfInt] = (data >> 10) & 0x1;
-      fIsBB[iChannel][iEvOfInt] = (data >> 11) & 0x1;
-      fIsBG[iChannel][iEvOfInt] = (data >> 12) & 0x1;
-    }
-    GetNextShort();
-
-    UInt_t time = GetNextWord();
-    fTime[iChannel] = time & 0xfff;
-    fWidth[iChannel] = (time >> 12) & 0x7f;
-  }
-
   for(Int_t iScaler = 0; iScaler < kNScalers; iScaler++)
-    fScalers[iScaler] = GetNextWord();
-
-  for(Int_t iChannel = 0; iChannel < kNChannels; iChannel++) {
-    fBBScalers[iChannel] = ((ULong64_t)GetNextWord()) << 32;
-    fBBScalers[iChannel] |= GetNextWord();
-
-    fBGScalers[iChannel] = ((ULong64_t)GetNextWord()) << 32;
-    fBGScalers[iChannel] |= GetNextWord();
-  }
+     fScalers[iScaler] = GetNextWord();
 
   for(Int_t iBunch = 0; iBunch < kNBunches; iBunch++)
-    fBunchNumbers[iBunch] = GetNextWord();
+     fBunchNumbers[iBunch] = GetNextWord();
+ 
+  for (Int_t  iCIU = 0; iCIU < 8; iCIU++) { 
+ 
+  // decoding of one Channel Interface Unit numbered iCIU - there are 8 channels per CIU (and 8 CIUs) :
   
-  for(Int_t iChannel = 0; iChannel < kNChannels; iChannel++) {
-    for(Int_t iBunch = 0; iBunch < kNBunches; iBunch++) {
-      UShort_t data = GetNextShort();
-      fChargeMB[iChannel][iBunch] = data & 0x3ff;
-      fIsIntMB[iChannel][iBunch] = (data >> 10) & 0x1;
-      fIsBBMB[iChannel][iBunch] = (data >> 11) & 0x1;
-      fIsBGMB[iChannel][iBunch] = (data >> 12) & 0x1;
-    }    
-  }
+    for (Int_t iChannel_Offset = iCIU*8; iChannel_Offset < (iCIU*8)+8; iChannel_Offset=iChannel_Offset+4) { 
+      for(Int_t iChannel = iChannel_Offset; iChannel < iChannel_Offset+4; iChannel++) {
+        for(Int_t iEvOfInt = 0; iEvOfInt < kNEvOfInt; iEvOfInt++) {
+          UShort_t data = GetNextShort();
+          fADC[iChannel][iEvOfInt] = data & 0x3ff;
+          fIsInt[iChannel][iEvOfInt] = (data >> 10) & 0x1;
+        }
+      }
+      for(Int_t iEvOfInt = 0; iEvOfInt < kNEvOfInt; iEvOfInt=iEvOfInt+2) {
+        UShort_t data = GetNextShort();
+        for(Int_t iChannel = iChannel_Offset; iChannel < iChannel_Offset+4; iChannel++) {          
+          fIsBB[iChannel][iEvOfInt] = (data >> 2*iChannel) & 0x1;
+          fIsBG[iChannel][iEvOfInt] = (data >> 2*iChannel+1) & 0x1;         
+          fIsBB[iChannel][iEvOfInt+1] = (data >> (8+ 2*iChannel)) & 0x1;
+          fIsBG[iChannel][iEvOfInt+1] = (data >> (8+ 2*iChannel+1)) & 0x1;
+        }
+      }
 
+      GetNextShort();
+
+      for(Int_t iChannel = iChannel_Offset; iChannel < iChannel_Offset+4; iChannel++) {
+        for(Int_t iBunch = 0; iBunch < kNBunches; iBunch++) {
+          UShort_t data = GetNextShort();
+          fChargeMB[iChannel][iBunch] = data & 0x3ff;
+          fIsIntMB[iChannel][iBunch] = (data >> 10) & 0x1;
+        } 
+      }
+   
+      for(Int_t iBunch = 0; iBunch < kNBunches; iBunch=iBunch+2) {
+        UShort_t data = GetNextShort();
+        for(Int_t iChannel = iChannel_Offset; iChannel < iChannel_Offset+4; iChannel++) {  
+          fIsBBMB[iChannel][iBunch] = (data >> 2*iBunch) & 0x1;
+          fIsBGMB[iChannel][iBunch] = (data >> 2*iBunch+1) & 0x1;
+          fIsBBMB[iChannel][iBunch+1] = (data >> (8+2*iBunch)) & 0x1;
+          fIsBGMB[iChannel][iBunch+1] = (data >> (8+2*iBunch+1)) & 0x1;	  
+        }
+      }
+  
+      GetNextShort();
+   
+      for(Int_t iChannel = iChannel_Offset; iChannel < iChannel_Offset+4; iChannel++) {
+        fBBScalers[iChannel] = ((ULong64_t)GetNextWord()) << 32;
+        fBBScalers[iChannel] |= GetNextWord();
+        fBGScalers[iChannel] = ((ULong64_t)GetNextWord()) << 32;
+        fBGScalers[iChannel] |= GetNextWord();
+      }
+
+    } 
+
+    for(Int_t iChannel = iCIU*8; iChannel < (iCIU*8) + 8; iChannel++) { 
+      UInt_t time = GetNextWord();
+      fTime[iChannel] = time & 0xfff;
+      fWidth[iChannel] = (time >> 12) & 0x7f;   // HPTDC used in pairing mode
+    }
+    
+    // End of decoding of one CIU card
+    // printf("Number of bytes used at end of reading CIU card number %d %d \n\n", iCIU+1, fPosition); 
+    
+  } // end of decoding the eight CIUs
+    
   return kTRUE;
 }
 
