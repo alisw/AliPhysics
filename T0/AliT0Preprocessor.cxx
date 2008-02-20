@@ -101,7 +101,7 @@ UInt_t AliT0Preprocessor::Process(TMap* dcsAliasMap )
         if(!dcsAliasMap)
         {
           Log("No DCS input data");
-          return 1;
+        //  return 1;
         }
         else
         {
@@ -128,6 +128,7 @@ UInt_t AliT0Preprocessor::Process(TMap* dcsAliasMap )
 
           }
 	  */
+	  Log("No DCS input data");
         }
 
         // processing DAQ
