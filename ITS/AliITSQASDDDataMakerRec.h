@@ -11,6 +11,8 @@
 //
 //  W. Ferrarese + P. Cerello Feb 2008
 
+/* $Id$ */
+
 #include "AliQA.h"
 #include "AliITSQADataMakerRec.h"
 class TObjArray;
@@ -59,7 +61,6 @@ private:
   Int_t   fRecsOffset;                     // number of histo booked when SDD start
   AliITSDDLModuleMapSDD  *fSDDDDLModuleMap;// SDD Detector configuration for the decoding
   TH2D *fModuleChargeMap[2*fgknSDDmodules];//module map
-  TH1D *fmonoD[2*fgknSDDmodules] ;         //histo used as support
  
   ClassDef(AliITSQASDDDataMakerRec,2)      // description 
 

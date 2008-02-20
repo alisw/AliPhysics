@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id: AliITSQADataMakerRec.cxx 23528 2008-01-24 23:46:36Z masera $ */
+/* $Id$ */
 
 //  *************************************************************
 //  Checks the quality assurance 
@@ -66,7 +66,6 @@ fSDDDDLModuleMap(0)
   }
   for(Int_t i=0;i<2*fgknSDDmodules;i++){
     fModuleChargeMap[i] = NULL;
-    fmonoD[i] = NULL;
   }
 }
 
@@ -90,11 +89,11 @@ fSDDDDLModuleMap(0)
 //____________________________________________________________________________ 
 AliITSQASDDDataMakerRec::~AliITSQASDDDataMakerRec(){
   // destructor
+
   for(Int_t i=0;i<2*fgknSDDmodules;i++){
     if(fModuleChargeMap[i]) delete fModuleChargeMap[i];
-    if(fmonoD[i]) delete fmonoD[i];
   }
-  if(fSDDDDLModuleMap) delete fSDDDDLModuleMap; 
+  
 }
 //__________________________________________________________________
 AliITSQASDDDataMakerRec& AliITSQASDDDataMakerRec::operator = (const AliITSQASDDDataMakerRec& qac )
@@ -289,10 +288,9 @@ void AliITSQASDDDataMakerRec::InitRaws()
 	fModuleChargeMap[index1] = new TH2D(hname[0],hname[1],256,-0.5,255.5,256,-0.5,255.5);
 	fModuleChargeMap[index1]->GetXaxis()->SetTitle("Time Bin");
 	fModuleChargeMap[index1]->GetYaxis()->SetTitle("Anode");
-	fAliITSQADataMakerRec->Add2RawsList(fModuleChargeMap[index1],indexlast1 + index1 + fRawsOffset);
+	fAliITSQADataMakerRec->Add2RawsList((new TH2D(*fModuleChargeMap[index1])),indexlast1 + index1 + fRawsOffset);
 	fSDDhRaws++;
-	fmonoD[index1] = new TH1D(hname[2],hname[2],256,-0.5,255.5);
-	index1++;	 
+       	index1++;	 
 	indexlast2 = indexlast1 + index1;
       }
     }
@@ -454,6 +452,7 @@ void AliITSQASDDDataMakerRec::MakeRaws(AliRawReader* rawReader)
   AliDebug(1,Form("Event completed, %d raw digits read",cnt));  
 
   if(fkOnline) {
+    TH1D *ptr = NULL;
     nBins = 256;
     for(moduleSDD=0; moduleSDD<fgknSDDmodules; moduleSDD++){
       if((moduleSDD >= 0 && moduleSDD < 36) || (moduleSDD >= 84 && moduleSDD < 180)) {
@@ -462,8 +461,8 @@ void AliITSQASDDDataMakerRec::MakeRaws(AliRawReader* rawReader)
 	  if(moduleSDD > 35) activeModule -= 48;
 	  index1 = activeModule * 2 + iside;
 	  if(fSDDhRaws > 39 + 2 * 132 + index1) {
-	    fmonoD[index1] = ((TH2D *) (fAliITSQADataMakerRec->GetRawsData(39+10 * 132 + index1 +fRawsOffset)))->ProjectionY();
-	    for(bin=0; bin<nBins; bin++) fAliITSQADataMakerRec->GetRawsData(index1+39 +fRawsOffset)->Fill(bin,fmonoD[index1]->GetBinContent(bin+1) );
+	    ptr = ((TH2D *) (fAliITSQADataMakerRec->GetRawsData(39+10 * 132 + index1 +fRawsOffset)))->ProjectionY();
+	    for(bin=0; bin<nBins; bin++) fAliITSQADataMakerRec->GetRawsData(index1+39 +fRawsOffset)->Fill(bin,ptr->GetBinContent(bin+1) );
 	  }  
 	}
       }
