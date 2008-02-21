@@ -137,11 +137,11 @@ void AliHMPIDDigit::Raw(UInt_t &w32,Int_t &ddl,Int_t &r,Int_t &d,Int_t &a)const
 //   Returns: none
   Int_t y2a[6]={5,3,1,0,2,4};
 
-                                    ddl=2*Ch()+Pc()%2;                    //DDL# 0..13
+  ddl=2*Ch()+Pc()%2;                    //DDL# 0..13
  // Int_t tmp=1+Pc()/2*8+PadPcY()/6;  r=(Pc()%2)? 25-tmp:tmp;               //row r=1..24
-    Int_t tmp=Pc()/2*8+PadPcY()/6;  r=(Pc()%2)? tmp:24-tmp;               //row r=1..24
-                                    d=1+PadPcX()/8;                       //DILOGIC# 1..10
-                                    a=y2a[PadPcY()%6]+6*(PadPcX()%8);     //ADDRESS 0..47        
+  Int_t tmp=1+Pc()/2*8+PadPcY()/6;  r=(Pc()%2)? tmp:25-tmp;               //row r=1..24
+  d=1+PadPcX()/8;                       //DILOGIC# 1..10
+  a=y2a[PadPcY()%6]+6*(PadPcX()%8);     //ADDRESS 0..47        
     
    /*
    Int_t a2y[6]={3,2,4,1,5,0};     //pady for a given padress (for single DILOGIC chip)
