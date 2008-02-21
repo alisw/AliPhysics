@@ -189,7 +189,7 @@ void AliTPCQADataMakerRec::InitRaws()
   // Adding the raw 
   //
   fTPCdataQA = new AliTPCdataQA();
-  fTPCdataQA->SetRangeTime(0, 999); // take all 1000 time bins 
+  fTPCdataQA->SetRangeTime(100, 920); // take all 1000 time bins 
   Add2RawsList(fTPCdataQA, 0);
 }
 

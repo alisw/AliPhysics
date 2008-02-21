@@ -1245,6 +1245,7 @@ void AliTPCCalibViewerGUI::Initialize(AliTPCCalibViewer *viewer) {
    
    // fill fListVariables, list of drawable variables:
    TObjArray* arr = fViewer->GetListOfVariables();
+   if (!arr) return;
    TIterator* iter = arr->MakeIterator();
    iter->Reset();
    TObjString* currentStr = 0;
@@ -1630,6 +1631,7 @@ void AliTPCCalibViewerGUI::DoDraw() {
    //
    
    // specify data to plot:
+  if (!GetDrawString()) return;
    TString desiredData(GetDrawString()->Data());
    // specify sector:
    TString sectorStr(GetSectorString()->Data());

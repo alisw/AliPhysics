@@ -1566,6 +1566,7 @@ TObjArray* AliTPCCalibViewer::GetListOfVariables(Bool_t printList) {
   //
    TObjArray* arr = new TObjArray();
    TObjString* str = 0;
+   if (!fTree) return 0;
    Int_t nentries = fTree->GetListOfBranches()->GetEntries();
    for (Int_t i = 0; i < nentries; i++) {
       str = new TObjString(fTree->GetListOfBranches()->At(i)->GetName());
