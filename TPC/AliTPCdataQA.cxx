@@ -45,6 +45,7 @@ using namespace std;
 //date
 #include "event.h"
 #include "AliTPCCalPad.h"
+#include "AliTPCPreprocessorOnline.h"
 
 //header file
 #include "AliTPCdataQA.h"
@@ -428,4 +429,22 @@ void AliTPCdataQA::Analyse()
   if (fOverThreshold10) fOverThreshold10->Multiply(normalization);  
   if (fOverThreshold20) fOverThreshold20->Multiply(normalization);  
   if (fOverThreshold30) fOverThreshold30->Multiply(normalization);  
+}
+
+
+void AliTPCdataQA::MakeTree(const char *fname){
+  //
+  // Export result to the tree -located in the file
+  // This file can be analyzed using AliTPCCalibViewer
+  // 
+  AliTPCdataQA *ped = this;
+  AliTPCPreprocessorOnline preprocesor;
+  if (ped->GetMaxCharge()) preprocesor.AddComponent(ped->GetMaxCharge());  
+  if (ped->GetMeanCharge()) preprocesor.AddComponent(ped->GetMeanCharge());  
+  if (ped->GetOverThreshold0()) preprocesor.AddComponent(ped->GetOverThreshold0());
+  if (ped->GetOverThreshold5()) preprocesor.AddComponent(ped->GetOverThreshold5());
+  if (ped->GetOverThreshold10()) preprocesor.AddComponent(ped->GetOverThreshold10());
+  if (ped->GetOverThreshold20()) preprocesor.AddComponent(ped->GetOverThreshold20());
+  if (ped->GetOverThreshold30()) preprocesor.AddComponent(ped->GetOverThreshold30());
+  preprocesor.DumpToFile(fname);  
 }

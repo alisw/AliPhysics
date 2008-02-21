@@ -29,6 +29,8 @@ public:
 
   AliTPCdataQA& operator = (const  AliTPCdataQA &source);
  void  DumpToFile(const Char_t *filename, const Char_t *dir="", const Bool_t append=kFALSE);
+ void MakeTree(const char *fname="QApad.root");
+
   //
   Bool_t ProcessEventFast(AliTPCRawStreamFast *rawStreamFast);
   Bool_t ProcessEventFast(AliRawReader        *rawReader);
