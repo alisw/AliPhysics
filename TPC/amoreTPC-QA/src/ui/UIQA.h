@@ -26,7 +26,9 @@
 #include <TGTab.h>
 #include <TGNumberEntry.h>
 #include <TGTextView.h>
-
+class AliTPCCalibViewerGUI;
+class AliTPCdataQA;
+class AliTPCCalPad;
 namespace amore {
 
 namespace TPC {
@@ -56,12 +58,15 @@ class UIQA : public amore::ui::VisualModule, public amore::TPC::common::Common {
  virtual void EndOfSession() {};
  
  protected:
- 
+ void MakeTree(AliTPCdataQA * qa);
+ AliTPCCalPad * GetNoise();
+ AliTPCCalPad * GetPedestal();
+ AliTPCCalPad * GetTime0();
  TGTab* fTab;
  TRootEmbeddedCanvas* fEC[10];
  TGNumberEntryField* fNEF[10];
  TGTextView* fTextView[10];
- 
+ AliTPCCalibViewerGUI *fViewerGUI;
  ClassDef(UIQA, 1);
 
 };

@@ -1,3 +1,31 @@
+How to use AMORE:
+
+login to the aldaqdqm04 
+user: tpc
+passwrod: ask responsible
+
+
+1. Check if you have data at given GDC
+eventDump  :@aldaqpc030
+
+2. Start agent
+   From GDC:
+ amoreAgent -aTPCQA -s :@aldaqpc030
+   Or From file:
+  amoreAgent -aTPCQA  -s data.raw
+
+3. start amore for TPC
+   amore  -dTPC -mUIQA
+
+
+
+
+
+
+
+
+
+
 AMORE AGENT config:
 
 
@@ -10,17 +38,10 @@ Please enter the default DATE datasource for this agent [:] : RAW
 Please enter the default AMORE PublisherModule for this agent [MyModule1] : AmoreTPCPublisher
 New amoreAgent was succesfully configured
 
-
-
-
 mysql:
 mysql -udaq -p
-
 use AMORE;
 show tables;
 select moname from CEDA;
-
-
-
 publisher:
 

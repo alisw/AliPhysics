@@ -18,13 +18,15 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 #include "UIQA.h"
-#include "AliTPCCalPad.h"
-#include "AliTPCdataQA.h"
-#include "AliTPCdataQA.h"
 #include <AmoreDA.h>
 #include <TROOT.h>
 #include <TStyle.h>
-
+#include "AliTPCCalPad.h"
+#include "AliTPCdataQA.h"
+#include "AliTPCCalibViewer.h"
+#include "AliTPCCalibViewerGUI.h"
+#include "AliTPCPreprocessorOnline.h"
+#include "AliCDBEntry.h"
 ClassImp(amore::TPC::ui::UIQA)
 
 #include <iostream>
@@ -58,7 +60,13 @@ void UIQA::Construct() { // The custom GUI is constructed here. gRootFrame is th
  fTab=new TGTab(amore::ui::gRootFrame);
  amore::ui::gRootFrame->AddFrame(fTab);
  //
- TGCompositeFrame* tempFrame=fTab->AddTab("OverThreshold");
+ //
+ TGCompositeFrame* tabCont1 =fTab->AddTab("Expert");
+ 
+ fViewerGUI = new AliTPCCalibViewerGUI(tabCont1, 1000, 600, 0);
+ tabCont1->AddFrame(fViewerGUI , new TGLayoutHints(kLHintsExpandX | kLHintsExpandY, 0, 0, 0, 0));
+ //
+  TGCompositeFrame* tempFrame=fTab->AddTab("OverThreshold");
  fEC[0]=new TRootEmbeddedCanvas("fEC0", tempFrame, 1000, 650);
  tempFrame->AddFrame(fEC[0]);
  fEC[0]->GetCanvas()->Divide(3,3);
@@ -68,6 +76,10 @@ void UIQA::Construct() { // The custom GUI is constructed here. gRootFrame is th
  fEC[1]=new TRootEmbeddedCanvas("fEC1", tempFrame, 1000, 650);
  tempFrame->AddFrame(fEC[1]);
  fEC[1]->GetCanvas()->Divide(2,3);
+ //
+ //
+
+
  
 
  amore::ui::gRootFrame->MapSubwindows();
@@ -91,7 +103,7 @@ void UIQA::Construct() { // The custom GUI is constructed here. gRootFrame is th
  gStyle->SetFrameFillColor(10);
  gStyle->SetFrameBorderSize(1);
  gStyle->SetFrameBorderMode(-1);
- gStyle->SetFrameLineWidth(1.2);
+ gStyle->SetFrameLineWidth(1.);
 }
 
 void UIQA::SubscribeMonitorObjects() { // Before using any MonitorObject, a subscription should be made.
@@ -184,7 +196,7 @@ void UIQA::Update() { // This is executed after getting the updated contents of 
    canvas->cd(6);
    tpcqa->GetMaxCharge()->MakeHisto2D(1)->Draw("colz");
  }
-
+ if (tpcqa) MakeTree(tpcqa);
 
  // End of access example
 
@@ -208,6 +220,82 @@ void UIQA::StartOfCycle() {
 void UIQA::EndOfCycle() {
 
 }
+
+
+  void UIQA::MakeTree(AliTPCdataQA* ped){
+    //
+    //
+    AliTPCPreprocessorOnline preprocesor;
+    if (ped->GetMaxCharge()) preprocesor.AddComponent(ped->GetMaxCharge());  
+    if (ped->GetMeanCharge()) preprocesor.AddComponent(ped->GetMeanCharge());  
+    if (ped->GetOverThreshold0()) preprocesor.AddComponent(ped->GetOverThreshold0());
+    if (ped->GetOverThreshold5()) preprocesor.AddComponent(ped->GetOverThreshold5());
+    if (ped->GetOverThreshold10()) preprocesor.AddComponent(ped->GetOverThreshold10());
+    if (ped->GetOverThreshold20()) preprocesor.AddComponent(ped->GetOverThreshold20());
+    if (ped->GetOverThreshold30()) preprocesor.AddComponent(ped->GetOverThreshold30());
+    AliTPCCalPad * noise = GetNoise();
+    if (noise)  preprocesor.AddComponent(noise);
+    AliTPCCalPad * pedestal = GetPedestal();
+      if (pedestal)  preprocesor.AddComponent(pedestal);
+    preprocesor.DumpToFile("CalibTree2.root");
+    delete noise;
+    delete pedestal;
+    //  /*CalibTree
+    AliTPCCalibViewer *viewer = fViewerGUI->GetViewer();
+    AliTPCCalibViewer *nviewer = new  AliTPCCalibViewer("CalibTree2.root", "calPads");
+    fViewerGUI->Initialize(nviewer);
+    //*/
+    //
+    //
+    //
+    
+  }
+
+  AliTPCCalPad *  UIQA::GetNoise(){
+    //
+    // GetNoise - if not in AmoreDB than from file
+    //
+    //amore::da::AmoreDA amoreDA;
+    // TObject *temp=0;
+    //amoreDA.Receive("PEDESTAL/NOISE",temp);
+    //temp->Dump();
+    // if (temp) return (AliTPCCalPad*) temp;
+    TDirectory * dir = gDirectory;
+    TFile *f = new TFile("$AMORE_SITE/PadNoise.root");
+    AliCDBEntry * entry = (AliCDBEntry*)f->Get("AliCDBEntry");
+    if (entry){
+      AliTPCCalPad * pad = ((AliTPCCalPad *)entry->GetObject()->Clone());
+      if (pad) {
+	pad->SetName("Noise");
+	pad->Print();
+      	return pad;
+      }
+    }
+    f->Close();
+    dir->cd();
+    return 0;
+  }
+
+  AliTPCCalPad *  UIQA::GetPedestal(){
+    //
+    //
+    TFile f("$AMORE_SITE/Pedestal.root");
+    AliCDBEntry * entry = (AliCDBEntry*)f.Get("AliCDBEntry");
+    if (entry){
+      AliTPCCalPad * pad = ((AliTPCCalPad *)entry->GetObject()->Clone());
+      if (pad) {
+	pad->SetName("Pedestals");
+	pad->Print();
+	return pad;
+      }
+    }
+    return 0;
+  }
+  AliTPCCalPad *  UIQA::GetTime0(){
+    return 0;
+  }
+
+
 
 };
 
