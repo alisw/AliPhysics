@@ -67,6 +67,11 @@ fRecsOffset(0) {
       fHistCounter += 1;
     }
   }//online flag
+  else {
+    for(Int_t i = 0; i < fgkSSDMODULES; i++) {
+      fHistSSDRawSignalModule[i]=NULL;
+    }
+  }
 }
 
 //____________________________________________________________________________ 
