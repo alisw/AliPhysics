@@ -68,142 +68,31 @@ AliPreprocessor("PHS",shuttle)
 UInt_t AliPHOSPreprocessor::Process(TMap* /*valueSet*/)
 {
   // process data retrieved by the Shuttle
-
-  // The fileName with the histograms which have been produced by
-  // AliPHOSCalibHistoProducer.
-  // It is a responsibility of the SHUTTLE framework to form the fileName
   
   TString runType = GetRunType();
   Log(Form("Run type: %s",runType.Data()));
 
-  if(runType=="LED") {
+  if(runType=="STANDALONE") {
     Bool_t ledOK = ProcessLEDRun();
     if(ledOK) return 0;
     else
       return 1;
   }
+  
+  if(runType=="PHYSICS") {
+    
+    Bool_t badmap_OK = FindBadChannelsEmc();
+    if(!badmap_OK) Log(Form("WARNING!! FindBadChannels() completed with BAD status!"));
+    
+    Bool_t calibEmc_OK = CalibrateEmc();
 
-  gRandom->SetSeed(0); //the seed is set to the current  machine clock!
-  AliPHOSEmcCalibData calibData;
-
-  TList* list = GetFileSources(kDAQ, "AMPLITUDES");
-  if(!list) {
-    Log("Sources list not found, exit.");
-    return 1;
+    if(calibEmc_OK && badmap_OK) return 0;
+    else
+      return 1;
   }
 
-  TIter iter(list);
-  TObjString *source;
-  
-  while ((source = dynamic_cast<TObjString *> (iter.Next()))) {
-    AliInfo(Form("found source %s", source->String().Data()));
-
-    TString fileName = GetFile(kDAQ, "AMPLITUDES", source->GetName());
-    AliInfo(Form("Got filename: %s",fileName.Data()));
-
-    TFile f(fileName);
-
-    if(!f.IsOpen()) {
-      Log(Form("File %s is not opened, something goes wrong!",fileName.Data()));
-      return 1;
-    }
-
-    const Int_t nMod=5; // 1:5 modules
-    const Int_t nCol=56; //1:56 columns in each module
-    const Int_t nRow=64; //1:64 rows in each module
-
-    Double_t coeff;
-    char hnam[80];
-    TH2F* h2=0;
-    TH1D* h1=0;
-    
-    //Get the reference histogram
-    //(author: Gustavo Conesa Balbastre)
-
-    TList * keylist = f.GetListOfKeys();
-    Int_t nkeys   = f.GetNkeys();
-    Bool_t ok = kFALSE;
-    TKey  *key;
-    Int_t ikey = 0;
-    Int_t counter = 0;
-    TH1D* hRef = 0;
-
-    //Check if the file contains any histogram
-    
-    if(nkeys< 2){
-      Log(Form("Not enough histograms (%d) for calibration.",nkeys));
-      return 1;
-    }
-    
-    while(!ok){
-      ikey = gRandom->Integer(nkeys);
-      key = (TKey*)keylist->At(ikey);
-      TObject* obj = f.Get(key->GetName());
-      TString cname(obj->ClassName());
-      if(cname == "TH2F") {
-	h2 = (TH2F*)obj;
-	TString htitl = h2->GetTitle();
-	if(htitl.Contains("and gain 1")) {
-	  hRef = h2->ProjectionX();
-	  hRef->SetBins(1000,0.,1000.); // to cut off saturation peak at 1023
-	  // Check if the reference histogram has too little statistics
-	  if(hRef->GetEntries()>2) ok=kTRUE;
-	  if(!ok && counter > nkeys){
-	    Log("No histogram with enough statistics for reference.");
-	    return 1;
-	  }
-	}
-      }
-      counter++;
-    }
-    
-    Log(Form("reference histogram %s, %.1f entries, mean=%.3f, rms=%.3f.",
-	     hRef->GetName(),hRef->GetEntries(),
-	     hRef->GetMean(),hRef->GetRMS()));
-
-    Double_t refMean=hRef->GetMean();
-    
-    // Calculates relative calibration coefficients for all non-zero channels
-    
-    for(Int_t mod=0; mod<nMod; mod++) {
-      for(Int_t col=0; col<nCol; col++) {
-	for(Int_t row=0; row<nRow; row++) {
-
-	  //High Gain to Low Gain ratio
-	  Float_t ratio = HG2LG(mod,row,col,&f);
-	  calibData.SetHighLowRatioEmc(mod+1,col+1,row+1,ratio);
-	  
-	  sprintf(hnam,"%d_%d_%d_1",mod,row,col); // high gain!
-	  h2 = (TH2F*)f.Get(hnam);
-
-	  //TODO: dead channels exclusion!
-	  if(h2) {
-	    h1 = h2->ProjectionX();
-	    h1->SetBins(1000,0.,1000.); // to cut off saturation peak at 1023
-	    coeff = h1->GetMean()/refMean;
-	    if(coeff>0)
-	      calibData.SetADCchannelEmc(mod+1,col+1,row+1,1./coeff);
-	    else 
-	      calibData.SetADCchannelEmc(mod+1,col+1,row+1,1.);
-	    AliInfo(Form("mod %d col %d row %d  coeff %f\n",mod,col,row,coeff));
-	  }
-	  else
-	    calibData.SetADCchannelEmc(mod+1,col+1,row+1,1.); 
-	}
-      }
-    }
-    
-    f.Close();
-  }
-  
-  //Store EMC calibration data
-  
-  AliCDBMetaData emcMetaData;
-  Bool_t emcOK = Store("Calib", "EmcGainPedestals", &calibData, &emcMetaData, 0, kTRUE); // valid from 0 to infinity);
-
-  if(emcOK) return 0;
-  else
-    return 1;
+  Log(Form("Unknown run type %s. Do nothing and return OK.",runType.Data()));
+  return 0;
 
 }
 
@@ -306,3 +195,227 @@ Float_t AliPHOSPreprocessor::HG2LG(Int_t mod, Int_t X, Int_t Z, TFile* f)
   return gaus1->GetParameter("Mean");
 
 }
+
+Bool_t AliPHOSPreprocessor::FindBadChannelsEmc()
+{
+  //Creates the bad channels map for PHOS EMC.
+
+  // The file fileName contains histograms which have been produced by DA2 detector algorithm.
+  // It is a responsibility of the SHUTTLE framework to form the fileName.
+
+  AliPHOSEmcBadChannelsMap badMap;
+
+  TList* list = GetFileSources(kDAQ, "BAD_CHANNELS");
+
+  if(!list) {
+    Log("Sources list for BAD_CHANNELS not found, exit.");
+    return kFALSE;
+  }
+
+  if(!list->GetEntries()) {
+    Log(Form("Got empty sources list. It seems DA2 did not produce any files!"));
+    return kFALSE;
+  }
+
+  TIter iter(list);
+  TObjString *source;
+  char hnam[80];
+  TH1F* h1=0;
+
+  const Float_t fQualityCut = 1.;
+  Int_t nGoods[5] = {0,0,0,0,0};
+  
+  while ((source = dynamic_cast<TObjString *> (iter.Next()))) {
+
+    AliInfo(Form("found source %s", source->String().Data()));
+
+    TString fileName = GetFile(kDAQ, "BAD_CHANNELS", source->GetName());
+    AliInfo(Form("Got filename: %s",fileName.Data()));
+
+    TFile f(fileName);
+
+    if(!f.IsOpen()) {
+      Log(Form("File %s is not opened, something goes wrong!",fileName.Data()));
+      return kFALSE;
+    }
+    
+    Log(Form("Begin check for bad channels."));
+    
+    for(Int_t mod=0; mod<5; mod++) {
+      for(Int_t iX=0; iX<64; iX++) {
+	for(Int_t iZ=0; iZ<56; iZ++) {
+
+	  sprintf(hnam,"%d_%d_%d_%d",mod,iX,iZ,1); // high gain	
+	  h1 = (TH1F*)f.Get(hnam);
+
+	  if(h1) {
+	    Double_t mean = h1->GetMean();
+	    
+	    if(mean)
+	      Log(Form("iX=%d iZ=%d gain=%d   mean=%.3f\n",iX,iZ,1,mean));
+
+	    if( mean>0 && mean<fQualityCut ) { 
+	      nGoods[mod]++; 
+	    }
+	    else
+	      badMap.SetBadChannel(mod+1,iZ+1,iX+1); //module, col,row
+	  }
+
+	}
+      }
+
+      if(nGoods[mod])
+	Log(Form("Module %d: %d good channels.",mod,nGoods[mod]));
+    }
+
+    
+  } // end of loop over sources
+  
+  // Store the bad channels map.
+  
+  AliCDBMetaData md;
+  md.SetResponsible("Boris Polishchuk");
+
+  // Data valid from current run fRun until being updated (validityInfinite=kTRUE)
+  Bool_t result = Store("Calib", "EmcBadChannels", &badMap, &md, fRun, kTRUE);
+  return result;
+
+}
+
+Bool_t AliPHOSPreprocessor::CalibrateEmc()
+{
+  // I.  Calculates the set of calibration coefficients to equalyze the mean energies deposited at high gain.
+  // II. Extracts High_Gain/Low_Gain ratio for each channel.
+
+  // The file fileName contains histograms which have been produced by DA1 detector algorithm.
+  // It is a responsibility of the SHUTTLE framework to form the fileName.
+
+  gRandom->SetSeed(0); //the seed is set to the current  machine clock!
+  AliPHOSEmcCalibData calibData;
+  
+  TList* list = GetFileSources(kDAQ, "AMPLITUDES");
+  
+  if(!list) {
+    Log("Sources list not found, exit.");
+    return 1;
+  }
+
+  if(!list->GetEntries()) {
+    Log(Form("Got empty sources list. It seems DA1 did not produce any files!"));
+    return kFALSE;
+  }
+
+  TIter iter(list);
+  TObjString *source;
+  
+  while ((source = dynamic_cast<TObjString *> (iter.Next()))) {
+    AliInfo(Form("found source %s", source->String().Data()));
+
+    TString fileName = GetFile(kDAQ, "AMPLITUDES", source->GetName());
+    AliInfo(Form("Got filename: %s",fileName.Data()));
+
+    TFile f(fileName);
+
+    if(!f.IsOpen()) {
+      Log(Form("File %s is not opened, something goes wrong!",fileName.Data()));
+      return 1;
+    }
+    
+    const Int_t nMod=5; // 1:5 modules
+    const Int_t nCol=56; //1:56 columns in each module
+    const Int_t nRow=64; //1:64 rows in each module
+
+    Double_t coeff;
+    char hnam[80];
+    TH2F* h2=0;
+    TH1D* h1=0;
+    
+    //Get the reference histogram
+    //(author: Gustavo Conesa Balbastre)
+
+    TList * keylist = f.GetListOfKeys();
+    Int_t nkeys   = f.GetNkeys();
+    Bool_t ok = kFALSE;
+    TKey  *key;
+    Int_t ikey = 0;
+    Int_t counter = 0;
+    TH1D* hRef = 0;
+
+    //Check if the file contains any histogram
+    
+    if(nkeys< 2){
+      Log(Form("Not enough histograms (%d) for calibration.",nkeys));
+      return 1;
+    }
+    
+    while(!ok){
+      ikey = gRandom->Integer(nkeys);
+      key = (TKey*)keylist->At(ikey);
+      TObject* obj = f.Get(key->GetName());
+      TString cname(obj->ClassName());
+      if(cname == "TH2F") {
+	h2 = (TH2F*)obj;
+	TString htitl = h2->GetTitle();
+	if(htitl.Contains("and gain 1")) {
+	  hRef = h2->ProjectionX();
+	  hRef->SetBins(1000,0.,1000.); // to cut off saturation peak at 1023
+	  // Check if the reference histogram has too little statistics
+	  if(hRef->GetEntries()>2) ok=kTRUE;
+	  if(!ok && counter > nkeys){
+	    Log("No histogram with enough statistics for reference.");
+	    return 1;
+	  }
+	}
+      }
+      counter++;
+    }
+    
+    Log(Form("reference histogram %s, %.1f entries, mean=%.3f, rms=%.3f.",
+	     hRef->GetName(),hRef->GetEntries(),
+	     hRef->GetMean(),hRef->GetRMS()));
+
+    Double_t refMean=hRef->GetMean();
+    
+    // Calculates relative calibration coefficients for all non-zero channels
+    
+    for(Int_t mod=0; mod<nMod; mod++) {
+      for(Int_t col=0; col<nCol; col++) {
+	for(Int_t row=0; row<nRow; row++) {
+
+	  //High Gain to Low Gain ratio
+	  Float_t ratio = HG2LG(mod,row,col,&f);
+	  calibData.SetHighLowRatioEmc(mod+1,col+1,row+1,ratio);
+	  
+	  sprintf(hnam,"%d_%d_%d_1",mod,row,col); // high gain!
+	  h2 = (TH2F*)f.Get(hnam);
+
+	  //TODO: dead channels exclusion!
+	  if(h2) {
+	    h1 = h2->ProjectionX();
+	    h1->SetBins(1000,0.,1000.); // to cut off saturation peak at 1023
+	    coeff = h1->GetMean()/refMean;
+	    if(coeff>0)
+	      calibData.SetADCchannelEmc(mod+1,col+1,row+1,1./coeff);
+	    else 
+	      calibData.SetADCchannelEmc(mod+1,col+1,row+1,1.);
+	    AliInfo(Form("mod %d col %d row %d  coeff %f\n",mod,col,row,coeff));
+	  }
+	  else
+	    calibData.SetADCchannelEmc(mod+1,col+1,row+1,1.); 
+	}
+      }
+    }
+    
+    f.Close();
+  }
+  
+  //Store EMC calibration data
+  
+  AliCDBMetaData emcMetaData;
+  Bool_t result = Store("Calib", "EmcGainPedestals", &calibData, &emcMetaData, 0, kTRUE); // valid from 0 to infinity);
+  return result;
+
+}
+
+     
+

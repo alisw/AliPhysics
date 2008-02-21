@@ -23,6 +23,8 @@ protected:
 
   virtual UInt_t Process(TMap* valueSet);
   Bool_t ProcessLEDRun();
+  Bool_t FindBadChannelsEmc();
+  Bool_t CalibrateEmc();
   Float_t HG2LG(Int_t module, Int_t X, Int_t Z, TFile* f);
 
   ClassDef(AliPHOSPreprocessor,1);
