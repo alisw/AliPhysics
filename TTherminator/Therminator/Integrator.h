@@ -96,6 +96,7 @@ class Integrator
   double mAlfa;
 
   Hypersurface *mFOHS;		/*MCH*/
+  TString mFOHSlocation;
 };
 
 #endif

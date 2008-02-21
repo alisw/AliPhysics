@@ -61,6 +61,7 @@ class TTherminator: public TGenerator {
   Integrator *fCalka; // Integrator class
   Event      *fEvent; // The therminator event
   ParticleDB *fPartDB;// Particle properties database
+  TString     fInputDir; // Name of directory with SHARE input files
 
   ClassDef(TTherminator,1) // Hijing parametrisation generator
 };

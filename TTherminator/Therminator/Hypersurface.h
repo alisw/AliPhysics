@@ -33,6 +33,7 @@ using namespace std;
 class Hypersurface {
   public:
     // constructor
+    Hypersurface(const char *dirname);
     Hypersurface(void);
     // destructor
     ~Hypersurface(void);

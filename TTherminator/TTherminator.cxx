@@ -119,6 +119,7 @@ void TTherminator::ReadParameters()
       exit(0);
     }
     sIntegrateSample = atoi(sRPInstance->getPar("NumberOfIntegrateSamples").Data());
+    fInputDir = sRPInstance->getPar("InputDirSHARE");
   }
   catch (STR tError) {
     PRINT_DEBUG_1("RunBFPW::ReadParameters - Caught exception " << tError);
@@ -157,7 +158,9 @@ void        TTherminator::Initialize(){
   TParticlePDG *tParticleType;
 
   //  AliWarning(Form("Reading particle types from particles.data"));
-  ifstream in("particles.data");
+
+  ifstream in((fInputDir+"/"+"particles.data").Data());
+  //  ifstream in("particles.data");
   
   int charge;
     

@@ -1,6 +1,8 @@
 // ALICE event generator based on the THERMINATOR model
 // It reads the test output of the model and puts it onto
 // the stack
+// It has an option to use the Lhyquid3D input freeze-out
+// hypersurface
 // Author: Adam.Kisiel@cern.ch
 
 #include <iostream>
@@ -239,7 +241,10 @@ void AliGenTherminator::ReadShareParticleTable()
   TParticlePDG *tParticleType;
 
   AliWarning(Form("Reading particle types from particles.data"));
-  ifstream in("particles.data");
+
+  TString aroot = gSystem->Getenv("ALICE_ROOT");
+  ifstream in((aroot+"/TTherminator/data/SHARE/particles.data").Data());
+  //  ifstream in("particles.data");
   
   int charge;
     
@@ -286,12 +291,14 @@ void AliGenTherminator::ReadShareParticleTable()
 void AliGenTherminator::CreateTherminatorInputFile()
 {
   // Create Therminator input file
+  const char *aroot = gSystem->Getenv("ALICE_ROOT");
   ofstream *ostr = new ofstream("therminator.in");
   (*ostr) << "NumberOfEvents = 1" << endl;
   (*ostr) << "Randomize = 1" << endl;
   (*ostr) << "TableType = SHARE" << endl;
-  (*ostr) << "InputDirSHARE = ." << endl;
+  (*ostr) << "InputDirSHARE = "<< aroot << "/TTherminator/data/SHARE" << endl;
   (*ostr) << "EventOutputFile = " << fFileName.Data() << endl;
+  (*ostr) << "FOHSLocation = " << fFOHSlocation.Data() << endl;
   (*ostr) << "FreezeOutModel = " << fFreezeOutModel.Data() << endl;
   (*ostr) << "BWVt = " << fBWVt << endl;
   (*ostr) << "Tau = " << fTau << endl;
@@ -309,4 +316,39 @@ void AliGenTherminator::SetModel(const char *model)
 {
   // Set the freeze-out model to use
   fFreezeOutModel = model;
+}
+
+void AliGenTherminator::SetLhyquidSet(const char *set)
+{
+  // Select one of pregenerated Lhyquid hypersurfaces
+  const char *aroot = gSystem->Getenv("ALICE_ROOT");
+  if (strstr(set, "LHC500C0005")) {
+    AliWarning(Form("AliGenTherminator: Selected default Lhyquid hypersurface"));
+    AliWarning(Form("  Pb-Pb collisions, centrality 0-5%"));
+    AliWarning(Form("  initial temperature at tau=1 fm in the center Ti=500 MeV"));
+    AliWarning(Form("  freeze-out criteria Tf=145 MeV"));
+    AliWarning(Form("  for details see $(ALICE_ROOT)/TTherminator/data/LHC500C0005/FO.txt"));
+    fFOHSlocation = aroot;
+    fFOHSlocation += "/TTherminator/data/LHC500C0005";
+  }
+  else if (strstr(set, "LHC500C2030")) {
+    AliWarning(Form("AliGenTherminator: Selected default Lhyquid hypersurface"));
+    AliWarning(Form("  Pb-Pb collisions, centrality 20-30%"));
+    AliWarning(Form("  initial temperature at tau=1 fm in the center Ti=500 MeV"));
+    AliWarning(Form("  freeze-out criteria Tf=145 MeV"));
+    AliWarning(Form("  for details see $(ALICE_ROOT)/TTherminator/data/LHC500C2030/FO.txt"));
+    fFOHSlocation = aroot;
+    fFOHSlocation += "/TTherminator/data/LHC500C2030";
+  }
+  else {
+    AliWarning(Form("Did not find Lhyquid set %s", set));
+    AliWarning(Form("Reverting to default: current directory"));
+    fFOHSlocation = "";
+  }
+}
+
+void AliGenTherminator::SetLhyquidInputDir(const char *inputdir)
+{
+  // Select Your own Lhyquid hypersurface
+  fFOHSlocation = inputdir;
 }

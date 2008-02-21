@@ -231,9 +231,24 @@ Event::ReadMultiplicities()
   
   tHash = mInteg->ParameterHash();
   
-  strcpy(tMultName, "fmultiplicity_");
-  strcat(tMultName, tHash);
-  strcat(tMultName, ".txt");
+  if (mFOHSlocation != "") {
+    strcpy(tMultName, mFOHSlocation.Data());
+    strcat(tMultName, "/");
+    strcat(tMultName, "fmultiplicity_");
+    strcat(tMultName, tHash);
+    strcat(tMultName, ".txt");
+    fin = new ifstream(tMultName);
+  }
+  else if (!((fin) && (fin->is_open()))) {
+    strcpy(tMultName, "fmultiplicity_");
+    strcat(tMultName, tHash);
+    strcat(tMultName, ".txt");
+    fin = new ifstream(tMultName);
+  }
+
+//   strcpy(tMultName, "fmultiplicity_");
+//   strcat(tMultName, tHash);
+//   strcat(tMultName, ".txt");
 
   fin = new ifstream(tMultName);
   if ((fin) && (fin->is_open())) {
@@ -353,6 +368,11 @@ Event::ReadParameters()
   catch (STR e) {
     PRINT_MESSAGE("Using default multiplicty distribution: Poissonian");
     mNegBin = 0;
+  }
+  try {
+    mFOHSlocation = sRPInstance->getPar("FOHSLocation");
+  }
+  catch (STR e) {
   }
 	
 }

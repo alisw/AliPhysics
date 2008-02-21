@@ -1,8 +1,15 @@
 #include "Hypersurface.h"
 
-Hypersurface::Hypersurface(void) {
+Hypersurface::Hypersurface(const char *dirname) {
 // Read FOHSI.txt file and init parameters
-  FName = "fohsi.txt";
+  char *dirfull;
+  dirfull = (char *) malloc(sizeof(char)*strlen(dirname) + 5);
+  sprintf(dirfull, "%s", dirname);
+  if (strlen(dirfull) > 0) 
+    if (dirfull[strlen(dirfull)-1] != '/')
+      strcat(dirfull, "/");
+  FName = (char *) malloc(sizeof(char)* strlen(dirfull)+ 50);
+  sprintf(FName,"%sFOHSI.txt", dirfull);
   HSFile = new ifstream;
   HSFile->open(FName);
   if(HSFile->is_open()) {
@@ -58,7 +65,8 @@ Hypersurface::Hypersurface(void) {
   delete HSFile;
 
   // Read FOHSa.txt file and fill array
-  FName = "FOHSa.txt";
+  sprintf(FName,"%sFOHSa.txt", dirfull);
+  //  FName = "FOHSa.txt";
   HSFile = new ifstream;
   HSFile->open(FName);
   if(HSFile->is_open()) {
@@ -74,7 +82,8 @@ Hypersurface::Hypersurface(void) {
   delete HSFile;
 
   // Read FOHSv.txt file and fill array
-  FName = "FOHSv.txt";
+  sprintf(FName,"%sFOHSv.txt", dirfull);
+  //  FName = "FOHSv.txt";
   HSFile = new ifstream;
   HSFile->open(FName);
   if(HSFile->is_open()) {
@@ -90,7 +99,8 @@ Hypersurface::Hypersurface(void) {
   delete HSFile;
 
   // Read FOHSd.txt file and fill array
-  FName = "FOHSd.txt";
+  sprintf(FName,"%sFOHSd.txt", dirfull);
+  //  FName = "FOHSd.txt";
   HSFile = new ifstream;
   HSFile->open(FName);
   if(HSFile->is_open()) {
@@ -106,7 +116,8 @@ Hypersurface::Hypersurface(void) {
   delete HSFile;
 
   // Read FOHSDpd.txt file and fill array
-  FName = "FOHSDpd.txt";
+  sprintf(FName,"%sFOHSDpd.txt", dirfull);
+  //  FName = "FOHSDpd.txt";
   HSFile = new ifstream;
   HSFile->open(FName);
   if(HSFile->is_open()) {
@@ -122,7 +133,8 @@ Hypersurface::Hypersurface(void) {
   delete HSFile;
 
   // Read FOHSDzd.txt file and fill array
-  FName = "FOHSDzd.txt";
+  sprintf(FName,"%sFOHSDzd.txt", dirfull);
+  //  FName = "FOHSDzd.txt";
   HSFile = new ifstream;
   HSFile->open(FName);
   if(HSFile->is_open()) {
@@ -136,7 +148,14 @@ Hypersurface::Hypersurface(void) {
     HSFile->close();
   }
   delete HSFile;
+  free (FName);
+  free (dirfull);
 }
+
+Hypersurface::Hypersurface(void) {
+  Hypersurface::Hypersurface("./");
+}
+
 
 Hypersurface::~Hypersurface(void) {
   for(i=0;i<Np;i++) {

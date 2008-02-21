@@ -43,6 +43,8 @@ class AliGenTherminator : public AliGenMC
   void SetBWDelay(Double_t bwd); 
 
   void SetModel(const char *model);
+  void SetLhyquidSet(const char *set);
+  void SetLhyquidInputDir(const char *inputdir);
   void ReadShareParticleTable();
 
  protected:
@@ -53,6 +55,7 @@ class AliGenTherminator : public AliGenMC
   TString  fFileName;          // FileName of the file with events
 
   TString  fFreezeOutModel;    // FreezeOut model to use
+  TString  fFOHSlocation;      // Directory where Lhyquid input files are
 
   // Parameters common for all models
   Double_t fTemperature;       // Freeze-out temperature [GeV/c]

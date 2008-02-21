@@ -49,7 +49,7 @@ Integrator::Integrator(int aNpart)
   //  mRandom->SetSeed2(41321, 8457);
   mRandom->SetSeed(41321);
 
-  mFOHS = new Hypersurface();				/*MCH*/
+  mFOHS = new Hypersurface(mFOHSlocation.Data());				/*MCH*/
 }
 
 double Integrator::CalcBE(double aX)
@@ -427,6 +427,7 @@ Integrator::ReadParameters()
     mMiu_i  = atof(sRPInstance->getPar("MiuI").Data());
     mMiu_s  = atof(sRPInstance->getPar("MiuS").Data());
     mMiu_b  = atof(sRPInstance->getPar("MiuB").Data());
+    mFOHSlocation = sRPInstance->getPar("FOHSLocation");
   }
   catch (STR tError) {
     PRINT_DEBUG_1("Integrator::ReadParameters - Caught exception " << tError);
@@ -531,18 +532,28 @@ Integrator::ReadMultInteg(ParticleDB *aDB)
   // Make or read table with propabilities
   int tK;
   char *tHash;
-  char  tIntName[100];
-  char  tMultName[100];
+  char  tIntName[1000];
+  char  tMultName[1000];
   ifstream *tFileIn = NULL;
   ofstream *tFileOut = NULL;
   
   tHash = ParameterHash();
   
-  strcpy(tIntName, "fintegrandmax_");
-  strcat(tIntName, tHash);
-  strcat(tIntName, ".txt");
+  if (mFOHSlocation != "") {
+    strcpy(tIntName, mFOHSlocation.Data());
+    strcat(tIntName, "/");
+    strcat(tIntName, "fintegrandmax_");
+    strcat(tIntName, tHash);
+    strcat(tIntName, ".txt");
+    tFileIn = new ifstream(tIntName);
+  }
+  else if (!((tFileIn) && (tFileIn->is_open()))) {
+    strcpy(tIntName, "fintegrandmax_");
+    strcat(tIntName, tHash);
+    strcat(tIntName, ".txt");
+    tFileIn = new ifstream(tIntName);
+  }
   
-  tFileIn = new ifstream(tIntName);
   if ((tFileIn) && (tFileIn->is_open())) {
     PRINT_MESSAGE("Reading Max Integrand values from " << tIntName);
 
@@ -583,9 +594,20 @@ Integrator::ReadMultInteg(ParticleDB *aDB)
   }
   
   // Calculate or read multiplicities
-  strcpy(tMultName, "fmultiplicity_");
-  strcat(tMultName, tHash);
-  strcat(tMultName, ".txt");
+  if (mFOHSlocation != "") {
+    strcpy(tMultName, mFOHSlocation.Data());
+    strcat(tMultName, "/");
+    strcat(tMultName, "fmultiplicity_");
+    strcat(tMultName, tHash);
+    strcat(tMultName, ".txt");
+    tFileIn = new ifstream(tMultName);
+  }
+  else if (!((tFileIn) && (tFileIn->is_open()))) {
+    strcpy(tMultName, "fmultiplicity_");
+    strcat(tMultName, tHash);
+    strcat(tMultName, ".txt");
+    tFileIn = new ifstream(tMultName);
+  }
 
   tFileIn = new ifstream(tMultName);
   if ((tFileIn) && (tFileIn->is_open())) {

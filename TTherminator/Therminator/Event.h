@@ -72,6 +72,7 @@ class Event
   ParticleListIter mCurIter;
   Int_t          mNegBin;
   Int_t          mScanStarted;
+  TString        mFOHSlocation;
 };
 
 
