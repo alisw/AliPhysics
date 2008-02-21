@@ -687,6 +687,20 @@ AliITStrackV2* AliITStrackerSA::FitTrack(AliITStrackSA* tr,Double_t *primaryVert
     }
   }
 
+  if(firstLay==-1 || secondLay==-1) {
+    for(Int_t i=0;i<AliITSgeomTGeo::GetNLayers();i++){
+      delete listlayer[i];
+      delete clind[i];
+      delete clmark[i];
+    }
+    delete [] listlayer;
+    delete [] clind;
+    delete [] clmark;
+    delete [] firstmod;
+    delete [] end;
+    return 0;
+  }
+
   TClonesArray* listSA = new TClonesArray("AliITStrackSA");
   TClonesArray &tri = *listSA;
   Int_t nlist=0;
@@ -776,7 +790,7 @@ AliITStrackV2* AliITStrackerSA::FitTrack(AliITStrackSA* tr,Double_t *primaryVert
 	      sy2 = arr2->GetSy();
 	      sz1 = arr1->GetSz();
 	      sz2 = arr2->GetSz();
-	      
+
 	      Int_t layer,ladder,detector;
 	      AliITSgeomTGeo::GetModuleId(module1,layer,ladder,detector);
 	      Float_t yclu1 = p1->GetY();
@@ -785,7 +799,8 @@ AliITStrackV2* AliITStrackerSA::FitTrack(AliITStrackSA* tr,Double_t *primaryVert
 	      Double_t tgl2 = (z2-z1)/TMath::Sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1));
 	      Double_t phi2 = TMath::ATan2((y2-y1),(x2-x1));
               AliITStrackSA* trac = new AliITStrackSA(layer,ladder,detector,yclu1,zclu1,phi2,tgl2,cv,1);
-                              
+
+
               if(cl5!=0) {
 		trac->AddClusterV2(5,(clind[5][l5] & 0x0fffffff)>>0);
 		trac->AddClusterMark(5,clmark[5][l5]);
@@ -810,7 +825,6 @@ AliITStrackV2* AliITStrackerSA::FitTrack(AliITStrackSA* tr,Double_t *primaryVert
 		trac->AddClusterV2(0,(clind[0][l0] & 0x0fffffff)>>0);
 		trac->AddClusterMark(0,clmark[0][l0]);
 	      }
-
 
               //fit with Kalman filter using AliITStrackerMI::RefitAt()
 	      AliITStrackMI* ot = new AliITStrackSA(*trac);
@@ -844,7 +858,7 @@ AliITStrackV2* AliITStrackerSA::FitTrack(AliITStrackSA* tr,Double_t *primaryVert
 
   delete [] end;
 
- 
+
 
   Int_t dim=fListOfTracks->GetEntries();
   if(dim==0){
@@ -1280,4 +1294,3 @@ void AliITStrackerSA::GetCoorErrors(AliITSRecPoint* cl,Float_t &sx,Float_t &sy, 
   sz = TMath::Sqrt(cl->GetSigmaZ2());
 */
 }
-
