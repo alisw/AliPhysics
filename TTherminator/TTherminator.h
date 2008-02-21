@@ -39,7 +39,7 @@
 #include "ParticleDB.h"
 #include "ParticleType.h"
 #include "DecayTable.h"
-#include "Event.h"
+#include "Therminator/Event.h"
 
 class TTherminator: public TGenerator {
  public:
