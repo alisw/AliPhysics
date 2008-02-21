@@ -54,11 +54,13 @@ Integrator::Integrator(int aNpart)
 
 double Integrator::CalcBE(double aX)
 {
+  if (aX>200.0) return 0.0;
   return 1.0/(TMath::Exp(aX)-1);
 }
 
 double Integrator::CalcFD(double aX)
 {
+  if (aX>200.0) return 0.0;
   return 1.0/(TMath::Exp(aX)+1);
 }
 
