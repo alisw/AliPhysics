@@ -86,10 +86,12 @@ int AliHLTOUTRawReader::GenerateIndex()
 }
 
 int AliHLTOUTRawReader::GetDataBuffer(AliHLTUInt32_t index, const AliHLTUInt8_t* &pBuffer, 
-					AliHLTUInt32_t& size)
+				      AliHLTUInt32_t& size)
 {
   // see header file for class documentation
   int iResult=0;
+  pBuffer=NULL;
+  size=0;
   if (fpManager) {
     Int_t id = Int_t(index>>fgkIdShift);
     AliHLTUInt32_t blockNo=index&((0x1<<fgkIdShift)-1);
@@ -106,7 +108,12 @@ int AliHLTOUTRawReader::GetDataBuffer(AliHLTUInt32_t index, const AliHLTUInt8_t*
       fpRawreader->SelectEquipment(-1, id, id);
       UChar_t* pSrc=NULL;
       if (fpRawreader->ReadNextData(pSrc) && pSrc!=NULL) {
-	fpCurrent=fpManager->OpenReaderBuffer(pSrc, size);
+	int srcSize=fpRawreader->GetDataSize();
+	int offset=sizeof(AliHLTOUT::AliHLTOUTEventHeader);
+	fpCurrent=fpManager->OpenReaderBuffer(pSrc+offset, srcSize-offset);
+	if (fpCurrent && fpCurrent->ReadNextEvent()!=0) {
+	  iResult=-ENODATA;
+	}
       } else {
 	iResult=-ENOSYS;
       }

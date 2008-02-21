@@ -163,7 +163,7 @@ int AliHLTOUT::GetDataBuffer(const AliHLTUInt8_t* &pBuffer, AliHLTUInt32_t& size
   pBuffer=NULL;
   size=0;
   if (fCurrent!=fBlockDescList.end()) {
-    if ((iResult=GetDataBuffer((*fCurrent).GetIndex(), pBuffer, size))>=0) {
+    if ((iResult=GetDataBuffer(fCurrent->GetIndex(), pBuffer, size))>=0) {
       fpBuffer=pBuffer;
     }
   }
@@ -230,12 +230,12 @@ int AliHLTOUT::InitHandlers()
     remnants.push_back(GetDataBlockIndex());
     AliHLTComponentDataType dt=kAliHLTVoidDataType;
     AliHLTUInt32_t spec=kAliHLTVoidDataSpec;
-    if ((iResult=GetDataBlockDescription(dt, spec))<0) break;
+    if (GetDataBlockDescription(dt, spec)<0) break;
     for (AliHLTModuleAgent* pAgent=AliHLTModuleAgent::GetFirstAgent(); pAgent && iResult>=0; pAgent=AliHLTModuleAgent::GetNextAgent()) {
       AliHLTModuleAgent::AliHLTOUTHandlerDesc handlerDesc;
       if (pAgent->GetHandlerDescription(dt, spec, handlerDesc)>0) {
 	AliHLTOUTHandlerListEntry entry(pAgent->GetOutputHandler(dt, spec), handlerDesc, pAgent, GetDataBlockIndex());
-	iResult=InsertHandler(entry);
+	InsertHandler(entry);
 	remnants.pop_back();
 	break;
       }

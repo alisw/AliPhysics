@@ -192,8 +192,20 @@ Int_t    AliRawReaderHLT::GetEquipmentId() const
 Bool_t   AliRawReaderHLT::ReadHeader()
 {
   // see header file for class documentation
-  Bool_t result=fpParentReader->ReadHeader();
-  fHeader=const_cast<AliRawDataHeader*>(fpParentReader->GetDataHeader());
+  Bool_t result=kFALSE;
+  while (fbHaveHLTData&=ReadNextHLTData()) {
+    // all internal data variables set
+    assert(fpData!=NULL);
+    fHeader=reinterpret_cast<AliRawDataHeader*>(const_cast<AliHLTUInt8_t*>(fpData));
+    if (result=IsSelected()) break;
+  }
+  if (!result) {
+    // first set the selection back to the original one
+    fpParentReader->SelectEquipment(fSelectEquipmentType, fSelectMinEquipmentId, fSelectMaxEquipmentId);
+
+    result=fpParentReader->ReadHeader();
+    fHeader=const_cast<AliRawDataHeader*>(fpParentReader->GetDataHeader());
+  }
   return result;
 }
 
@@ -205,18 +217,14 @@ Bool_t   AliRawReaderHLT::ReadNextData(UChar_t*& data)
   // whole data block either from the HLT stream or the parent raw reader.
   // Each call of ReadNextData directly jumps to the next data set.
   Bool_t result=kFALSE;
-  if (fbHaveHLTData&=ReadNextHLTData()) {
+  if (ReadHeader() && fpData!=NULL) {
     // all internal data variables set
-    assert(fpData!=NULL);
-    data=const_cast<AliHLTUInt8_t*>(fpData);
     result=kTRUE;
+    data=const_cast<AliHLTUInt8_t*>(fpData+sizeof(AliRawDataHeader));
   }
-  if (!result) {
+  if (kFALSE) { // this needs more thinking
     // no data in the HLT stream, read real data
     //AliInfo(Form("read from parent reader: min=%d max=%d", fSelectMinEquipmentId, fSelectMaxEquipmentId));
-
-    // first set the selection back to the original one
-    fpParentReader->SelectEquipment(fSelectEquipmentType, fSelectMinEquipmentId, fSelectMaxEquipmentId);
 
     // read data
     while (result=fpParentReader->ReadNextData(data)) {
@@ -448,6 +456,7 @@ Bool_t   AliRawReaderHLT::ReadNextHLTData()
     if (fpDataHandler) fpDataHandler->ReleaseProcessedData(fpData, fDataSize);
     else fpHLTOUT->ReleaseDataBuffer(fpData);
     fpDataHandler=NULL;
+    fpData=NULL;
     if (!(result=fpHLTOUT->SelectNextDataBlock()>=0)) {
       delete fpHLTOUT;
       fpHLTOUT=NULL;
@@ -474,6 +483,7 @@ Bool_t   AliRawReaderHLT::ReadNextHLTData()
 	  fpDataHandler=pHandler;
 	  AliDebug(AliLog::kDebug, Form("forward decoded data block provided by handler to equipment %d", fEquipmentId));
 	}
+	return kTRUE;
       } else {
 	AliError(Form("handler is not of type AliHLTOUTHandlerEquId for block %x data type %s spec %#x; data block skipped",
 		      fpHLTOUT->GetDataBlockIndex(), AliHLTComponent::DataType2Text(dt).c_str(), spec));
@@ -488,7 +498,7 @@ Bool_t   AliRawReaderHLT::ReadNextHLTData()
     fOffset=0;
     fEquipmentId=-1;
   }
-  return false;
+  return kFALSE;
 }
 
 Bool_t AliRawReaderHLT::IsHLTInput(int ddlid)
