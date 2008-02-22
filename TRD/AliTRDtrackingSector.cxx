@@ -95,7 +95,7 @@ void AliTRDtrackingSector::Init()
 //
 	
 	AliTRDtrackingChamber *tc = 0x0; int ic = 0; 
-	while((tc = fChamber[ic++])) tc->Build(fGeom);
+	while((ic<kNChambersSector) && (tc = fChamber[ic++])) tc->Build(fGeom);
 		
 	Int_t np;
 	for(int ip=0; ip<AliTRDgeometry::kNplan; ip++){
