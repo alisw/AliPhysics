@@ -1,8 +1,7 @@
 #-*- Mode: Makefile -*-
 
 ALIROOT/module.mk:	ALIROOT/binaliroot.pkg 
-ANALYSIS/module.mk:	ANALYSIS/libANALYSIS.pkg ANALYSIS/libAnalysisOld.pkg ANALYSIS/libANALYSISRL.pkg
-ANALYSIS/module.mk:	ANALYSIS/libAliengui.pkg ANALYSIS/binaliengui.pkg
+ANALYSIS/module.mk:	ANALYSIS/libANALYSIS.pkg ANALYSIS/libAnalysisOld.pkg ANALYSIS/libANALYSISRL.pkg ANALYSIS/libAliengui.pkg ANALYSIS/binaliengui.pkg
 ACORDE/module.mk:	ACORDE/libACORDEbase.pkg ACORDE/libACORDErec.pkg ACORDE/libACORDEsim.pkg
 EMCAL/module.mk:	EMCAL/libEMCALbase.pkg EMCAL/libEMCALsim.pkg EMCAL/libEMCALrec.pkg EMCAL/libEMCALjet.pkg
 EPEMGEN/module.mk:	EPEMGEN/libEPEMGEN.pkg
@@ -13,17 +12,13 @@ HBTAN/module.mk:	HBTAN/libHBTAN.pkg
 HBTP/module.mk:		HBTP/libHBTP.pkg
 HERWIG/module.mk:	HERWIG/libherwig.pkg
 HIJING/module.mk:	HIJING/libhijing.pkg
-HLT/module.mk:		HLT/libAliHLTITS.pkg  HLT/libAliHLTMUON.pkg   HLT/libAliHLTSample.pkg HLT/libHLTbase.pkg
-HLT/module.mk:		HLT/libAliHLTPHOS.pkg HLT/libAliHLTTPC.pkg    HLT/libAliHLTTRD.pkg    HLT/libAliHLTUtil.pkg
-HLT/module.mk:		HLT/libHLTinterface.pkg HLT/libAliHLTHOMER.pkg
+HLT/module.mk:		HLT/bindHLTdumpraw.pkg  HLT/libAliHLTRCU.pkg HLT/libHLTbase.pkg HLT/libAliHLTComp.pkg HLT/libAliHLTSample.pkg HLT/libHLTinterface.pkg HLT/libAliHLTHOMER.pkg HLT/libAliHLTTPC.pkg HLT/libHLTrec.pkg HLT/libAliHLTITS.pkg HLT/libAliHLTTRD.pkg HLT/libHLTshuttle.pkg HLT/libAliHLTMUON.pkg HLT/libAliHLTTrigger.pkg HLT/libHLTsim.pkg HLT/libAliHLTPHOS.pkg HLT/libAliHLTUtil.pkg
 ITS/module.mk:		ITS/libITSbase.pkg ITS/libITSsim.pkg ITS/libITSrec.pkg
 JETAN/module.mk:	JETAN/libJETAN.pkg JETAN/libJETANMC.pkg
 MEVSIM/module.mk:	MEVSIM/libmevsim.pkg
 MICROCERN/module.mk:	MICROCERN/libmicrocern.pkg
 MONITOR/module.mk:	MONITOR/libMONITOR.pkg MONITOR/binmonitorGDC.pkg MONITOR/binmonitorCheck.pkg MONITOR/binderoot.pkg
-MUON/module.mk:		MUON/libMUONbase.pkg MUON/libMUONmapping.pkg MUON/libMUONsim.pkg
-MUON/module.mk:		MUON/libMUONcalib.pkg MUON/libMUONraw.pkg MUON/libMUONtrigger.pkg
-MUON/module.mk:		MUON/libMUONevaluation.pkg MUON/libMUONrec.pkg MUON/libMUONgeometry.pkg MUON/libMUONshuttle.pkg
+MUON/module.mk:		MUON/binmchview.pkg MUON/libMUONgeometry.pkg MUON/libMUONshuttle.pkg MUON/libMUONbase.pkg MUON/libMUONgraphics.pkg  MUON/libMUONsim.pkg MUON/libMUONcalib.pkg MUON/libMUONmapping.pkg MUON/libMUONtrigger.pkg MUON/libMUONcore.pkg MUON/libMUONraw.pkg MUON/libMUONevaluation.pkg  MUON/libMUONrec.pkg
 LHC/module.mk:		LHC/libLHC.pkg
 LHAPDF/module.mk:	LHAPDF/liblhapdf.pkg
 PHOS/module.mk:		PHOS/libPHOSbase.pkg PHOS/libPHOSsim.pkg PHOS/libPHOSrec.pkg PHOS/libPHOSshuttle.pkg
@@ -44,16 +39,15 @@ THerwig/module.mk:	THerwig/libTHerwig.pkg
 THijing/module.mk:	THijing/libTHijing.pkg
 TMEVSIM/module.mk:	TMEVSIM/libTMEVSIM.pkg
 TOF/module.mk:		TOF/libTOFbase.pkg TOF/libTOFrec.pkg TOF/libTOFsim.pkg
-TPC/module.mk:		TPC/libTPCbase.pkg TPC/libTPCsim.pkg TPC/libTPCrec.pkg TPC/libTPCfast.pkg TPC/libTPCmon.pkg
+TPC/module.mk:		TPC/libTPCbase.pkg TPC/libTPCfast.pkg TPC/libTPCrec.pkg TPC/libTPCcalib.pkg TPC/libTPCmon.pkg TPC/libTPCsim.pkg
 TPHIC/module.mk:	TPHIC/libTPHIC.pkg
-TRD/module.mk:		TRD/libTRDbase.pkg TRD/libTRDsim.pkg TRD/libTRDrec.pkg TRD/libTRDfast.pkg
+TRD/module.mk:		TRD/libTRDbase.pkg TRD/libTRDgui.pkg TRD/libTRDsim.pkg TRD/libTRDfast.pkg TRD/libTRDrec.pkg
 VZERO/module.mk:	VZERO/libVZERObase.pkg VZERO/libVZEROsim.pkg VZERO/libVZEROrec.pkg
 ZDC/module.mk:		ZDC/libZDCbase.pkg ZDC/libZDCrec.pkg ZDC/libZDCsim.pkg
 EVE/module.mk:		EVE/libEveBase.pkg EVE/libEveDet.pkg EVE/libEveHLT.pkg EVE/binalieve.pkg
 PWG0/module.mk:		PWG0/libPWG0base.pkg  PWG0/libPWG0selectors.pkg PWG0/libPWG0dep.pkg
 PWG1/module.mk:		PWG1/libPWG1.pkg
-PWG2/module.mk:		PWG2/libPWG2.pkg PWG2/libPWG2ebye.pkg PWG2/libPWG2femtoscopy.pkg PWG2/libPWG2femtoscopyUser.pkg
-PWG2/module.mk:		PWG2/libPWG2flow.pkg PWG2/libPWG2resonances.pkg
+PWG2/module.mk:		PWG2/libPWG2.pkg PWG2/libPWG2femtoscopyUser.pkg PWG2/libPWG2AOD.pkg PWG2/libPWG2flow.pkg PWG2/libPWG2ebye.pkg PWG2/libPWG2resonances.pkg PWG2/libPWG2femtoscopy.pkg PWG2/libPWG2spectra.pkg
 PWG3/module.mk:		PWG3/libPWG3base.pkg PWG3/libPWG3.pkg
 PWG4/module.mk:		PWG4/libPWG4Gamma.pkg
 ESDCheck/module.mk:	ESDCheck/libAnalysisCheck.pkg 
@@ -71,9 +65,10 @@ $(LIBPATH)/libAOD.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT)
 $(LIBPATH)/libCDB.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT)
 $(LIBPATH)/libESD.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT)
 $(LIBPATH)/libRAWDatabase.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT)
-$(LIBPATH)/libRAWDatarec.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libRAWDatabase.$(SOEXT)
+$(LIBPATH)/libRAWDatarec.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libRAWDatabase.$(SOEXT) $(LIBPATH)/libESD.$(SOEXT)
 $(LIBPATH)/libSTEER.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libRAWDatabase.$(SOEXT) $(LIBPATH)/libRAWDatarec.$(SOEXT) $(LIBPATH)/libCDB.$(SOEXT) $(LIBPATH)/libAOD.$(SOEXT) $(LIBPATH)/libESD.$(SOEXT)
 $(LIBPATH)/libEVGEN.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libSTEER.$(SOEXT) $(LIBPATH)/libFASTSIM.$(SOEXT) $(LIBPATH)/libESD.$(SOEXT)
+$(LIBPATH)/libpythia6.$(SOEXT): $(LIBPATH)/libmicrocern.$(SOEXT) $(LIBPATH)/liblhapdf.$(SOEXT)
 $(LIBPATH)/libAliPytia6.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libSTEER.$(SOEXT) $(LIBPATH)/libFASTSIM.$(SOEXT) $(LIBPATH)/libpytia6.$(SOEXT) $(LIBPATH)/libEVGEN.$(SOEXT)
 $(LIBPATH)/libTHijing.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libSTEER.$(SOEXT) $(LIBPATH)/libhijing.$(SOEXT) $(LIBPATH)/libEVGEN.$(SOEXT)
 $(LIBPATH)/libSTRUCT.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libSTEER.$(SOEXT)
