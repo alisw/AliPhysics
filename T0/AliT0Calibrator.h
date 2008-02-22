@@ -22,7 +22,7 @@ class AliT0Calibrator: public TNamed
   virtual ~AliT0Calibrator() {};
   
 
-  Int_t WalkCorrection(Int_t ipmt, Int_t qt, Int_t time) ;
+  Int_t WalkCorrection(Int_t ipmt, Int_t qt, Int_t time, TString option="pdc") ;
   //  Int_t EquivalizeChannel(Int_t ipmt)  ;
  protected:
 

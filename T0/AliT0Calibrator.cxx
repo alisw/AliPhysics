@@ -84,7 +84,7 @@ AliT0Calibrator &AliT0Calibrator::operator=(const AliT0Calibrator &r)
 
 
 //____________________________________________________________________
-Int_t  AliT0Calibrator::WalkCorrection(Int_t ipmt, Int_t qt, Int_t time) 
+Int_t  AliT0Calibrator::WalkCorrection(Int_t ipmt, Int_t qt, Int_t time, TString option) 
 {
   //slewing correcion and equalizing channels
 
@@ -93,7 +93,10 @@ Int_t  AliT0Calibrator::WalkCorrection(Int_t ipmt, Int_t qt, Int_t time)
   Float_t walk=fu1->Eval(Float_t(qt));
   TH1F*hr=fu1->GetHistogram();
   Float_t maxValue=hr->GetMaximum(50);
-  timeWalk = time + Int_t((maxValue-walk)/fChannelWidth) ;
+  if (option == "pdc")
+    timeWalk = time + Int_t((maxValue-walk)/fChannelWidth) ;
+  if (option == "cosmic")
+    timeWalk = time + Int_t((maxValue-walk)) ;
   timeEq= timeWalk - (fTimeDelayCFD[ipmt]-fTimeDelayCFD[0]);
   AliDebug(10,Form(" time before %i timeWalk %i ,  qt %i timeEq %i \n ",
 		  time,timeWalk, qt, timeEq ));

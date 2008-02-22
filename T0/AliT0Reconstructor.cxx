@@ -67,7 +67,7 @@ AliT0Reconstructor::AliT0Reconstructor(const AliT0Reconstructor &r):
 					     fdZonC(0),
 					     fZposition(0),
 					     fParam(NULL),
-					     fAmpLEDrec()
+  fAmpLEDrec()
  {
   //
   // AliT0Reconstructor copy constructor
@@ -147,7 +147,7 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
       Double_t qt0 = Double_t(chargeQT0->At(ipmt));
       Double_t qt1 = Double_t(chargeQT1->At(ipmt));
       if((qt1-qt0)>0)  adc[ipmt] = TMath::Exp( Double_t (channelWidth*(qt1-qt0)/1000));
-      time[ipmt] = calib-> WalkCorrection( ipmt,Int_t(qt1) , timeCFD->At(ipmt) ) ;
+      time[ipmt] = calib-> WalkCorrection( ipmt,Int_t(qt1) , timeCFD->At(ipmt), "pdc" ) ;
       
       //LED
       Double_t sl = (timeLED->At(ipmt) - time[ipmt])*channelWidth;
@@ -223,6 +223,9 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   TArrayI * chargeQT0 = new TArrayI(24); 
   TArrayI * chargeQT1 = new TArrayI(24); 
 
+  TString option = GetOption(); 
+  printf(" !!!!!!!!! option %s\n", option.Data());
+
   for (Int_t i0=0; i0<105; i0++)
     {
       for (Int_t j0=0; j0<50; j0++) allData[i0][j0]=0; 	
@@ -272,37 +275,41 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   Float_t time[24], adc[24];
   for (Int_t ipmt=0; ipmt<24; ipmt++) {
     if(timeCFD->At(ipmt)>0 ){
-      /* 
-     Double_t qt0 = Double_t(chargeQT0->At(ipmt));
-      Double_t qt1 = Double_t(chargeQT1->At(ipmt));
-      if((qt1-qt0)>0)  adc[ipmt] = TMath::Exp( Double_t (channelWidth*(qt1-qt0)/1000));
-      //      time[ipmt] = channelWidth * (calib-> WalkCorrection( ipmt,qt1 , timeCFD->At(ipmt) ) ) ;
-      time[ipmt] = calib-> WalkCorrection( ipmt,Int_t(qt1) , timeCFD->At(ipmt) ) ;
-      Double_t sl = (timeLED->At(ipmt) - time[ipmt])*channelWidth;
-      Double_t qt=((TGraph*)fAmpLEDrec.At(ipmt))->Eval(sl/1000.);
-      frecpoints->SetTime(ipmt,time[ipmt]);
-      frecpoints->SetAmp(ipmt,adc[ipmt]);
-      frecpoints->SetAmpLED(ipmt,qt);
-    AliDebug(1,Form(" QTC %f mv,  QTC  %f MIPS time in chann %f time %f ",adc[ipmt], adc[ipmt]/50.,time[ipmt], time[ipmt]*channelWidth));
-      */
-      Float_t qt0 = Float_t(chargeQT0->At(ipmt));
-      Float_t qt1 = Float_t(chargeQT1->At(ipmt));
-      if((qt0-qt1)>0)  adc[ipmt] = qt0-qt1;
-      time[ipmt] = calib-> WalkCorrection( ipmt, adc[ipmt], timeCFD->At(ipmt) ) ;
-      Double_t sl = timeLED->At(ipmt) - time[ipmt];
-      Double_t qt=((TGraph*)fAmpLEDrec.At(ipmt))->Eval(sl);
-      frecpoints->SetTime(ipmt,time[ipmt]);
-      frecpoints->SetAmp(ipmt,adc[ipmt]);
-      frecpoints->SetAmpLED(ipmt,qt);
-      AliDebug(10,Form(" QTC %f , time in chann %f ",adc[ipmt] ,time[ipmt]));
      
+      if(option == "pdc"){
+	Double_t qt0 = Double_t(chargeQT0->At(ipmt));
+	Double_t qt1 = Double_t(chargeQT1->At(ipmt));
+	if((qt1-qt0)>0)  adc[ipmt] = TMath::Exp( Double_t (channelWidth*(qt1-qt0)/1000));
+	//      time[ipmt] = channelWidth * (calib-> WalkCorrection( ipmt,qt1 , timeCFD->At(ipmt) ) ) ;
+	time[ipmt] = calib-> WalkCorrection( ipmt,Int_t(qt1) , timeCFD->At(ipmt) ) ;
+	Double_t sl = (timeLED->At(ipmt) - time[ipmt])*channelWidth;
+	Double_t qt=((TGraph*)fAmpLEDrec.At(ipmt))->Eval(sl/1000.);
+	frecpoints->SetTime(ipmt,time[ipmt]);
+	frecpoints->SetAmp(ipmt,adc[ipmt]);
+	frecpoints->SetAmpLED(ipmt,qt);
+	AliDebug(1,Form(" QTC %f mv,  QTC  %f MIPS time in chann %f time %f ",adc[ipmt], adc[ipmt]/50.,time[ipmt], time[ipmt]*channelWidth));
+      }
+      if(option == "cosmic") {
+	Float_t qt0 = Float_t(chargeQT0->At(ipmt));
+	Float_t qt1 = Float_t(chargeQT1->At(ipmt));
+	if((qt0-qt1)>0)  adc[ipmt] = qt0-qt1;
+	time[ipmt] = calib-> WalkCorrection( ipmt, Int_t(adc[ipmt]), timeCFD->At(ipmt) ) ;
+	Double_t sl = timeLED->At(ipmt) - time[ipmt];
+	Double_t qt=((TGraph*)fAmpLEDrec.At(ipmt))->Eval(sl);
+	frecpoints->SetTime(ipmt,time[ipmt]);
+	frecpoints->SetAmp(ipmt,adc[ipmt]);
+	frecpoints->SetAmpLED(ipmt,qt);
+	AliDebug(10,Form(" QTC %i , time in chann %i led %i ",
+			 Int_t(adc[ipmt]) ,Int_t(time[ipmt]),Int_t( qt)));
+      }
+      
     }
     else {
       time[ipmt] = 0;
       adc[ipmt] = 0;
     }
   }
-
+  
   for (Int_t ipmt=0; ipmt<12; ipmt++){
     if(time[ipmt] > 1 ) {
       if(time[ipmt]<besttimeC){
@@ -324,9 +331,10 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   Float_t c = 0.0299792; // cm/ps
   Float_t vertex = 99999;
   if(besttimeA <9999999 && besttimeC < 9999999 ){
-    timeDiff = besttimeC - besttimeA;
-    //    meanTime = (meanT0 - (besttimeA + besttimeC)/2) * channelWidth;
-    meanTime =  (besttimeA + besttimeC)/2;  
+    timeDiff =( besttimeC - besttimeA) *channelWidth;
+    if(option == "pdc") 
+      meanTime = (meanT0 - (besttimeA + besttimeC)/2) * channelWidth;
+    if(option == "cosmic")   meanTime =  (besttimeA + besttimeC)/2;  
     vertex = c*(timeDiff)/2. + (fdZonA - fdZonC)/2; 
     AliDebug(1,Form("  timeDiff %f ps,  meanTime %f ps, vertex %f cm",timeDiff, meanTime,vertex ));
     frecpoints->SetVertex(vertex);
