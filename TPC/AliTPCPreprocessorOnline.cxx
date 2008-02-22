@@ -229,7 +229,10 @@ void AliTPCPreprocessorOnline::DumpToFile(const char* fileName){
    TIterator *iterator = fMap->MakeIterator();
    AliTPCCalPad *calPad = 0x0;
 //    while ((calibTracks = (AliTPCcalibTracks*)listIterator->Next()) ){
-   while (( calPad = (AliTPCCalPad*)fMap->GetValue(iterator->Next()) )) {
+   TObject * obj=0;
+   //   while (( calPad = (AliTPCCalPad*)fMap->GetValue(iterator->Next()) )) {
+   while ( ( obj = iterator->Next()) ) {
+     calPad = (AliTPCCalPad*)fMap->GetValue(obj);
       if (!calPad) continue;
       calPad = (AliTPCCalPad*)calPad;
       printf("adding the following element to the TObjList: %s \n", calPad->GetName());
