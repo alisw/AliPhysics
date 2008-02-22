@@ -21,14 +21,14 @@ class AliHMPIDCluster :public AliCluster3D
 public:
   enum EClusterStatus {kFrm,kCoG,kLo1,kUnf,kMax,kNot,kEdg,kSi1,kNoLoc,kAbn,kEmp=-1};      //status flags    
       AliHMPIDCluster():AliCluster3D(),
-                          fCh(-1),fSi(-1),fSt(kEmp),fBox(-1),fNlocMax(-1),fMaxQpad(-1),fMaxQ(-1),fQRaw(0),fQ(0),fErrQ(-1),fX(0),fErrX(-1),fY(0),fErrY(-1),fChi2(-1),fDigs(0) {} //empty ctor
+                          fCh(-1),fSi(-1),fSt(kEmp),fBox(-1),fNlocMax(-1),fMaxQpad(-1),fMaxQ(-1),fQRaw(0),fQ(0),fErrQ(-1),fXX(0),fErrX(-1),fYY(0),fErrY(-1),fChi2(-1),fDigs(0) {} //empty ctor
   
 
       AliHMPIDCluster(const AliHMPIDCluster &c):AliCluster3D(c),
                         fCh(c.fCh),fSi(c.fSi),fSt(c.fSt),fBox(c.fBox),fNlocMax(c.fNlocMax),fMaxQpad(c.fMaxQpad),fMaxQ(c.fMaxQ),fQRaw(c.fQRaw),
                         fQ (c.fQ ),fErrQ(c.fErrQ),
-                        fX (c.fX ),fErrX(c.fErrX),
-                        fY (c.fY ),fErrY(c.fErrY),fChi2(c.fChi2),fDigs(0)                  {}//copy ctor
+                        fXX (c.fXX ),fErrX(c.fErrX),
+                        fYY (c.fYY ),fErrY(c.fErrY),fChi2(c.fChi2),fDigs(0)                  {}//copy ctor
    virtual ~AliHMPIDCluster();//dtor   {if(fDigs) delete fDigs; fDigs=0;}
 //framework part                   
          void           Draw   (Option_t *opt=""                                  );                       //overloaded TObject::Print() to draw cluster in current canvas
@@ -50,22 +50,22 @@ public:
          Double_t       QRaw     (                                         )const{return fQRaw;                                  } //raw cluster charge in QDC channels 
          Double_t       Q        (                                         )const{return fQ;                                     } //given cluster charge in QDC channels 
          Double_t       Qe       (                                         )const{return fErrQ;                                  } //Error in cluster charge in QDC channels 
-         Double_t       X        (                                         )const{return fX;                                     } //cluster x position in LRS
+         Double_t       X        (                                         )const{return fXX;                                     } //cluster x position in LRS
          Double_t       Xe       (                                         )const{return fErrX;                                  } //cluster charge in QDC channels 
-         Double_t       Y        (                                         )const{return fY;                                     } //cluster y position in LRS 
+         Double_t       Y        (                                         )const{return fYY;                                     } //cluster y position in LRS 
          Double_t       Ye       (                                         )const{return fErrY;                                  } //cluster charge in QDC channels 
          Double_t       Chi2     (                                         )const{return fChi2;                                  } //chi2 of the fit
          void           DoCorrSin(Bool_t doCorrSin                         ){fgDoCorrSin=doCorrSin;}                                // Set sinoidal correction
-         void           SetX     (Double_t x                               ){fX=x;}                                                // Setter
-         void           SetY     (Double_t y                               ){fY=y;}                                                // Setter
+         void           SetX     (Double_t x                               ){fXX=x;}                                                // Setter
+         void           SetY     (Double_t y                               ){fYY=y;}                                                // Setter
          
 private:
 /*
   AliHMPIDCluster &operator=(const AliHMPIDCluster &c) {if(this == &c)return *this;AliCluster3D::operator=(c);          
                                                        fSi=c.fSi;  fSt=c.fSt; fCh=c.fCh; fBox=c.fBox;fNlocMax=c.fNlocMax;fMaxQpad=c.fMaxQpad; fMaxQ=c.fMaxQ;fQRaw=c.fQRaw;
                                                         fQ=c.fQ; fErrQ=c.fErrQ; 
-                                                        fX=c.fX; fErrX=c.fErrX;
-                                                        fY=c.fY; fErrY=c.fErrY; fChi2=c.fChi2;fDigs=c.fDigs ? new TObjArray(*c.fDigs):0; return *this;}
+                                                        fXX=c.fXX; fErrX=c.fErrX;
+                                                        fYY=c.fYY; fErrY=c.fErrY; fChi2=c.fChi2;fDigs=c.fDigs ? new TObjArray(*c.fDigs):0; return *this;}
 */
 protected:
   Int_t         fCh;          //chamber number
@@ -78,14 +78,14 @@ protected:
   Double_t      fQRaw;        //QDC value of the raw cluster
   Double_t      fQ;           //QDC value of the actual cluster
   Double_t      fErrQ;        //error on Q
-  Double_t      fX;           //local x postion, [cm]
+  Double_t      fXX;           //local x postion, [cm]
   Double_t      fErrX;        //error on x postion, [cm]
-  Double_t      fY;           //local y postion, [cm]
+  Double_t      fYY;           //local y postion, [cm]
   Double_t      fErrY;        //error on y postion, [cm]
   Double_t      fChi2;        //some estimator of the fit quality
   TObjArray    *fDigs;        //! list of digits forming this cluster
   static  Bool_t fgDoCorrSin; //flag to switch on/off correction for Sinusoidal to cluster reco
-  ClassDef(AliHMPIDCluster,7) //HMPID cluster class
+  ClassDef(AliHMPIDCluster,8) //HMPID cluster class
 };
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -109,7 +109,7 @@ void AliHMPIDCluster::Reset()
   fDigs=0; 
   fSt=kEmp;
   fQRaw=fQ=0;
-  fX=fY=0;
+  fXX=fYY=0;
   fCh=fSi=fBox=fNlocMax=fMaxQpad=-1;
   fMaxQ=fErrQ=fErrX=fErrY=fChi2=-1; //empty ctor
 }
@@ -122,8 +122,8 @@ Bool_t AliHMPIDCluster::IsInPc()
   Int_t pc = ((AliHMPIDDigit*)fDigs->At(0))->Pc();
  
   
-  if ( fX < AliHMPIDParam::MinPcX(pc) || fX > AliHMPIDParam::MaxPcX(pc) || 
-       fY < AliHMPIDParam::MinPcY(pc) || fY > AliHMPIDParam::MaxPcY(pc) ) return kFALSE;
+  if ( fXX < AliHMPIDParam::MinPcX(pc) || fXX > AliHMPIDParam::MaxPcX(pc) || 
+       fYY < AliHMPIDParam::MinPcY(pc) || fYY > AliHMPIDParam::MaxPcY(pc) ) return kFALSE;
   
   return kTRUE;
   

@@ -88,7 +88,7 @@ void AliHMPIDCluster::CoG()
 //   Returns: none
   Int_t minPadX=999,minPadY=999,maxPadX=-1,maxPadY=-1;      //for box finding  
   if(fDigs==0) return;                                      //no digits in this cluster
-  fX=fY=fQRaw=0;                                            //init summable parameters
+  fXX=fYY=fQRaw=0;                                            //init summable parameters
   Int_t maxQpad=-1,maxQ=-1;                                 //to calculate the pad with the highest charge
   AliHMPIDDigit *pDig=0x0;
   for(Int_t iDig=0;iDig<fDigs->GetEntriesFast();iDig++){    //digits loop
@@ -100,14 +100,14 @@ void AliHMPIDCluster::CoG()
     if(pDig->PadPcY() < minPadY) minPadY = pDig->PadPcY();  //                                                MinY   
     
     Float_t q=pDig->Q();                                    //get QDC 
-    fX += pDig->LorsX()*q;fY +=pDig->LorsY()*q;             //add digit center weighted by QDC
+    fXX += pDig->LorsX()*q;fYY +=pDig->LorsY()*q;             //add digit center weighted by QDC
     fQRaw+=q;                                               //increment total charge 
     if(q>maxQ) {maxQpad = pDig->Pad();maxQ=(Int_t)q;}       // to find pad with highest charge
   }//digits loop
   
   fBox=(maxPadX-minPadX+1)*100+maxPadY-minPadY+1;           // dimension of the box: format Xdim*100+Ydim
   
-  if ( fQRaw != 0 )   fX/=fQRaw;fY/=fQRaw;                  //final center of gravity
+  if ( fQRaw != 0 )   fXX/=fQRaw;fYY/=fQRaw;                  //final center of gravity
    
   if(fDigs->GetEntriesFast()>1&&fgDoCorrSin)CorrSin();       //correct it by sinoid   
   
@@ -118,7 +118,7 @@ void AliHMPIDCluster::CoG()
   fNlocMax=0;                                               // proper status from this method
   fSt=kCoG;
   
-  if(AliHMPIDParam::fgInstanceType) SetClusterParams(fX,fY,fCh);                              //need to fill the AliCluster3D part
+  if(AliHMPIDParam::fgInstanceType) SetClusterParams(fXX,fYY,fCh);                              //need to fill the AliCluster3D part
  
 }//CoG()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -128,9 +128,9 @@ void AliHMPIDCluster::CorrSin()
 // Arguments: none
 //   Returns: none
   Int_t pc,px,py;
-  AliHMPIDParam::Lors2Pad(fX,fY,pc,px,py);             //tmp digit to get it center
-  Float_t x=fX-AliHMPIDParam::LorsX(pc,px);                    //diff between cluster x and center of the pad contaning this cluster   
-  fX+=3.31267e-2*TMath::Sin(2*TMath::Pi()/0.8*x)-2.66575e-3*TMath::Sin(4*TMath::Pi()/0.8*x)+2.80553e-3*TMath::Sin(6*TMath::Pi()/0.8*x)+0.0070;
+  AliHMPIDParam::Lors2Pad(fXX,fYY,pc,px,py);             //tmp digit to get it center
+  Float_t x=fXX-AliHMPIDParam::LorsX(pc,px);                    //diff between cluster x and center of the pad contaning this cluster   
+  fXX+=3.31267e-2*TMath::Sin(2*TMath::Pi()/0.8*x)-2.66575e-3*TMath::Sin(4*TMath::Pi()/0.8*x)+2.80553e-3*TMath::Sin(6*TMath::Pi()/0.8*x)+0.0070;
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDCluster::Draw(Option_t*)
@@ -256,7 +256,7 @@ Int_t AliHMPIDCluster::Solve(TClonesArray *pCluLst,Bool_t isTryUnfold)
   Int_t iCluCnt=pCluLst->GetEntriesFast();                                               //get current number of clusters already stored in the list by previous operations
   if(isTryUnfold==kFALSE || Size()==1) {                                                 //if cluster contains single pad there is no way to improve the knowledge 
     fSt = (isTryUnfold)? kSi1: kNot;
-    if(AliHMPIDParam::fgInstanceType) SetClusterParams(fX,fY,fCh);  
+    if(AliHMPIDParam::fgInstanceType) SetClusterParams(fXX,fYY,fCh);  
     new ((*pCluLst)[iCluCnt++]) AliHMPIDCluster(*this);  //add this raw cluster 
     return 1;
   } 
@@ -318,8 +318,8 @@ Int_t AliHMPIDCluster::Solve(TClonesArray *pCluLst,Bool_t isTryUnfold)
 // case 1 -> no loc max found
  if ( fNlocMax == 0) {                                                                       // case of no local maxima found: pads with same charge...
    
-   ierflg = fitter->SetParameter(3*fNlocMax  ,Form("x%i",fNlocMax),fX,0.1,0,0);              // Init values taken from CoG() -> fX,fY,fQRaw
-   ierflg = fitter->SetParameter(3*fNlocMax+1,Form("y%i",fNlocMax),fY,0.1,0,0);              //
+   ierflg = fitter->SetParameter(3*fNlocMax  ,Form("x%i",fNlocMax),fXX,0.1,0,0);              // Init values taken from CoG() -> fXX,fYY,fQRaw
+   ierflg = fitter->SetParameter(3*fNlocMax+1,Form("y%i",fNlocMax),fYY,0.1,0,0);              //
    ierflg = fitter->SetParameter(3*fNlocMax+2,Form("q%i",fNlocMax),fQRaw,0.1,0,10000);       //
    
    fNlocMax = 1;
@@ -328,7 +328,7 @@ Int_t AliHMPIDCluster::Solve(TClonesArray *pCluLst,Bool_t isTryUnfold)
 
 // case 2 -> loc max found. Check # of loc maxima 
  if ( fNlocMax >= kMaxLocMax)  { 
- if(AliHMPIDParam::fgInstanceType) SetClusterParams(fX,fY,fCh);                                                           // if # of local maxima exceeds kMaxLocMax...
+ if(AliHMPIDParam::fgInstanceType) SetClusterParams(fXX,fYY,fCh);                                                           // if # of local maxima exceeds kMaxLocMax...
    fSt = kMax;   new ((*pCluLst)[iCluCnt++]) AliHMPIDCluster(*this);                      //...add this raw cluster  
    } else {                                                                               //or resonable number of local maxima to fit and user requested it
   // Now ready for minimization step
@@ -353,8 +353,8 @@ Int_t AliHMPIDCluster::Solve(TClonesArray *pCluLst,Bool_t isTryUnfold)
    Int_t nvpar, nparx;
   
    for(Int_t i=0;i<fNlocMax;i++){                                                        //store the local maxima parameters
-     fitter->GetParameter(3*i   ,sName,  fX, fErrX , dummy, dummy);                      // X
-     fitter->GetParameter(3*i+1 ,sName,  fY, fErrY , dummy, dummy);                      // Y
+     fitter->GetParameter(3*i   ,sName,  fXX, fErrX , dummy, dummy);                      // X
+     fitter->GetParameter(3*i+1 ,sName,  fYY, fErrY , dummy, dummy);                      // Y
      fitter->GetParameter(3*i+2 ,sName,  fQ, fErrQ , dummy, dummy);                      // Q
      fitter->GetStats(fChi2, edm, errdef, nvpar, nparx);                                 //get fit infos
       if(fSt!=kAbn) {         
@@ -363,7 +363,7 @@ Int_t AliHMPIDCluster::Solve(TClonesArray *pCluLst,Bool_t isTryUnfold)
         if ( !IsInPc()) fSt = kEdg;                                                      // if Out of Pc
         if(fSt==kNoLoc) fNlocMax=0;                                                      // if with no loc max (pads with same charge..)
       }
-      if(AliHMPIDParam::fgInstanceType) SetClusterParams(fX,fY,fCh);                                                      //need to fill the AliCluster3D part
+      if(AliHMPIDParam::fgInstanceType) SetClusterParams(fXX,fYY,fCh);                                                      //need to fill the AliCluster3D part
       new ((*pCluLst)[iCluCnt++]) AliHMPIDCluster(*this);	                         //add new unfolded cluster
       
    }
