@@ -30,6 +30,11 @@ AliGenPythiaEventHeader::AliGenPythiaEventHeader():
 {
 // Default Constructor
     for (Int_t i = 0; i < 4; i++) fZquench[i] = 0.;
+    for (Int_t i = 0; i < 4; i++)
+      for (Int_t j = 0; j < 10; j++) {
+	fJets[i][j] = 0.;
+	fUQJets[i][j] = 0.;
+      }
 }
 
 AliGenPythiaEventHeader::AliGenPythiaEventHeader(const char* name):
@@ -44,6 +49,11 @@ AliGenPythiaEventHeader::AliGenPythiaEventHeader(const char* name):
 {
 // Constructor
     for (Int_t i = 0; i < 4; i++) fZquench[i] = 0.;
+    for (Int_t i = 0; i < 4; i++)
+      for (Int_t j = 0; j < 10; j++) {
+	fJets[i][j] = 0.;
+	fUQJets[i][j] = 0.;
+      }
 }
 
 void AliGenPythiaEventHeader::AddJet(Float_t px, Float_t py, Float_t pz, Float_t e)
