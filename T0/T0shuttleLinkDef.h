@@ -8,5 +8,6 @@
 #pragma link C++ class  AliT0Preprocessor+;
 //#pragma link C++ class  AliT0CalibWalk+;
 #pragma link C++ class  AliT0DataDCS+;
+#pragma link C++ class  AliT0PreprocessorCosmic+;
 
 #endif

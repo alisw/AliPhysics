@@ -1,7 +1,7 @@
 #-*- Mode: Makefile -*-
 # $Id$
 
-SRCS = AliT0Preprocessor.cxx AliT0DataDCS.cxx 
+SRCS = AliT0Preprocessor.cxx AliT0DataDCS.cxx AliT0PreprocessorCosmic.cxx 
 # AliT0CalibWalk.cxx AliT0CalibTimeEq.cxx 
 HDRS:= $(SRCS:.cxx=.h)
 
