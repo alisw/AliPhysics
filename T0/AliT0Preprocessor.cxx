@@ -81,31 +81,32 @@ void AliT0Preprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTime)
 }
 //____________________________________________________
 
-UInt_t AliT0Preprocessor::Process(TMap* dcsAliasMap )
-{
-  // T0 preprocessor return codes:
-  // return=0 : all ok
-  // return=1 : no DCS input data 
-  // return=2 : failed to store DCS data
-  // return=3 : no Laser data (Walk correction)
-  // return=4 : failed to store OCDB time equalized data
-  // return=5 : no DAQ input for OCDB
-  // return=6 : failed to retrieve DAQ data from OCDB
-  // return=7 : failed to store T0 OCDB data
+Bool_t AliT0Preprocessor::ProcessDCS(){
+	// Check whether DCS should be processed or not...
+	TString runType = GetRunType();
+	Log(Form("ProcessDCS - RunType: %s",runType.Data()));
 
+	if((runType == "STANDALONE")||(runType == "PHYSICS")){
+		return kFALSE;
+	}else{
+	return kFALSE;
+	}
+}
+//____________________________________________________
+
+UInt_t AliT0Preprocessor::ProcessDCSDataPoints(TMap* dcsAliasMap){
+	// Fills data into AliT0DataDCS object
+	Log("Processing DCS DP");
 	Bool_t resultDCSMap=kFALSE;
 	Bool_t resultDCSStore=kFALSE;
-	Bool_t resultLaser=kFALSE;
-	Bool_t resultOnline=kFALSE;  
-     
+
         if(!dcsAliasMap)
         {
           Log("No DCS input data");
-        //  return 1;
+          return 1;
         }
         else
         {
-	 /* 
           resultDCSMap=fData->ProcessData(*dcsAliasMap);
           if(!resultDCSMap)
           {
@@ -125,21 +126,21 @@ UInt_t AliT0Preprocessor::Process(TMap* dcsAliasMap )
               Log("Some problems occurred while storing DCS data results in ReferenceDB");
               return 2;// return error Code for processed DCS data not stored
             }
-
           }
-	  */
-	  Log("No DCS input data");
         }
+	return 0;
+}
+//____________________________________________________
 
-        // processing DAQ
-
-        TString runType = GetRunType();
-
-        if(runType == "STANDALONE")
+UInt_t AliT0Preprocessor::ProcessLaser(){
+	// Processing data from DAQ Standalone run
+	Log("Processing Laser calibration");
+	
+	Bool_t resultLaser=kFALSE;
+	//processing DAQ
+        TList* list = GetFileSources(kDAQ, "LASER");
+        if (list)
         {
-          TList* list = GetFileSources(kDAQ, "LASER");
-          if (list)
-          {
             TIter iter(list);
             TObjString *source;
             while ((source = dynamic_cast<TObjString *> (iter.Next())))
@@ -172,11 +173,18 @@ UInt_t AliT0Preprocessor::Process(TMap* dcsAliasMap )
 	  	Log("No sources found for id LASER!");
 		return 1;
 	  }
-        }
-        else if(runType == "PHYSICS")
-        {
-          TList* listPhys = GetFileSources(kDAQ, "PHYSICS");
-          if (listPhys)
+	return 0;
+}
+//____________________________________________________
+
+UInt_t AliT0Preprocessor::ProcessPhysics(){
+	//Processing data from DAQ Physics run
+	Log("Processing Physics");
+
+	Bool_t resultOnline=kFALSE;  
+	//processing DAQ
+	TList* listPhys = GetFileSources(kDAQ, "PHYSICS");
+        if (listPhys)
           {
             TIter iter(listPhys);
             TObjString *sourcePhys;
@@ -210,7 +218,42 @@ UInt_t AliT0Preprocessor::Process(TMap* dcsAliasMap )
 	  	Log("No sources found for id PHYSICS!");
 		return 1;
 	  }
-        }
+	return 0;
+}
+//____________________________________________________
+
+UInt_t AliT0Preprocessor::Process(TMap* dcsAliasMap )
+{
+  // T0 preprocessor return codes:
+  // return=0 : all ok
+  // return=1 : no DCS input data 
+  // return=2 : failed to store DCS data
+  // return=3 : no Laser data (Walk correction)
+  // return=4 : failed to store OCDB time equalized data
+  // return=5 : no DAQ input for OCDB
+  // return=6 : failed to retrieve DAQ data from OCDB
+  // return=7 : failed to store T0 OCDB data
+	Bool_t dcsDP = ProcessDCS();
+	Log(Form("dcsDP = %d",dcsDP));	
+        TString runType = GetRunType();
+	Log(Form("RunType: %s",runType.Data()));
+	//processing
+ 	if(runType == "STANDALONE"){
+		Int_t iresultLaser = ProcessLaser();
+	 		if(dcsDP==1){
+			Int_t iresultDCS = ProcessDCSDataPoints(dcsAliasMap);
+			return iresultDCS;
+		}
+		return iresultLaser;
+	}
+       else if(runType == "PHYSICS"){
+	        Int_t iresultPhysics = ProcessPhysics();
+		if(dcsDP==1){
+			Int_t iresultDCS = ProcessDCSDataPoints(dcsAliasMap);
+			return iresultDCS;
+		}
+	        return iresultPhysics; 
+       }	
 
   return 0;
 }

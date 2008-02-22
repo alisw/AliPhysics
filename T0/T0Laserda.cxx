@@ -3,12 +3,12 @@ T0 DA for online calibration
 
 Contact: Michal.Oledzki@cern.ch
 Link: http://users.jyu.fi/~mioledzk/
-Run Type: T0_STANDALONE_LASER
+Run Type: STANDALONE
 DA Type: MON
 Number of events needed: 400000 
 Input Files: inLaser.dat, external parameters
 Output Files: daLaser.root, to be exported to the DAQ FXS
-Trigger types used: PHYSICS_EVENT
+Trigger types used: CALIBRATION_EVENT
 
 */
 
