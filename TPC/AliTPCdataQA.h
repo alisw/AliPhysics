@@ -64,18 +64,24 @@ public:
   Int_t GetLastTimeBin()  const { return fLastTimeBin;  }
   Int_t GetAdcMin()       const { return fAdcMin;       }
   Int_t GetAdcMax()       const { return fAdcMax;       }
-  void  SetRangeTime(Int_t tMin, Int_t tMax){ fFirstTimeBin=tMin; fLastTimeBin=tMax; }  // Set time bin range that is used for the pedestal calibration
+  void  SetRangeTime(Int_t tMin, Int_t tMax){ fFirstTimeBin=tMin; fLastTimeBin=tMax;}  // Set time bin range that is used for the pedestal calibration
   void  SetRangeAdc (Int_t aMin, Int_t aMax){ fAdcMin=aMin; fAdcMax=aMax; }  // Set adc range for the pedestal calibration
 
   void  SetOldRCUformat(Bool_t format=kTRUE) { fOldRCUformat = format; }
+
 
 private:
   void UpdateSignalHistograms(const Int_t icsector, const Int_t icRow,
 			      const Int_t icPad, const Int_t icTimeBin,
 			      const Float_t signal);  
+
+  void MakeArrays();                // create arrays for random data acces
+  void CleanArrays();               // clean arrays for random data acces
+  Float_t* GetExpandDigit(Int_t row, Int_t pad, Int_t time);  // get pointer to the digit
   
   Int_t fFirstTimeBin;              //  First Time bin needed for analysis
   Int_t fLastTimeBin;               //  Last Time bin needed for analysis
+  Int_t fMaxTime;                   //  Maximum number of time bins
   Int_t fAdcMin;                    //  min adc channel of pedestal value
   Int_t fAdcMax;                    //  max adc channel of pedestal value
   Bool_t  fOldRCUformat;            //! Should we use the old RCU format for data reading
@@ -103,6 +109,13 @@ private:
   Int_t   fTimeBinLast;             //! last time bin with signal
   Float_t fSignalLast;              //! last signal value
   Int_t   fNAboveThreshold;         //! number of signals above threshold
+  //
+  //  Expand buffer
+  //
+  Float_t** fAllBins;              //! array for digit using random access
+  Int_t**   fAllSigBins;           //! array of pointers to the indexes over threshold
+  Int_t*    fAllNSigBins;          //! 
+
 
 public:
   ClassDef(AliTPCdataQA, 1)  // Implementation of the TPC pedestal and noise calibration

@@ -56,6 +56,7 @@ AliTPCdataQA::AliTPCdataQA() : /*FOLD00*/
   TH1F("TPCRAW","TPCRAW",100,0,100),
   fFirstTimeBin(60),
   fLastTimeBin(1000),
+  fMaxTime(1100),
   fAdcMin(1),
   fAdcMax(100),
   fOldRCUformat(kTRUE),
@@ -91,6 +92,7 @@ AliTPCdataQA::AliTPCdataQA(const AliTPCdataQA &ped) : /*FOLD00*/
   TH1F(ped),
   fFirstTimeBin(ped.GetFirstTimeBin()),
   fLastTimeBin(ped.GetLastTimeBin()),
+  fMaxTime(ped.fMaxTime),
   fAdcMin(ped.GetAdcMin()),
   fAdcMax(ped.GetAdcMax()),
   fOldRCUformat(ped.fOldRCUformat),
@@ -416,7 +418,6 @@ void AliTPCdataQA::Analyse()
   }
 
   Int_t nTimeBins = fLastTimeBin - fFirstTimeBin +1;
-  
   cout << "EventCounter: " << fEventCounter << endl
        << "TimeBins: " << nTimeBins << endl;
 
@@ -447,4 +448,56 @@ void AliTPCdataQA::MakeTree(const char *fname){
   if (ped->GetOverThreshold20()) preprocesor.AddComponent(ped->GetOverThreshold20());
   if (ped->GetOverThreshold30()) preprocesor.AddComponent(ped->GetOverThreshold30());
   preprocesor.DumpToFile(fname);  
+}
+
+
+
+void AliTPCdataQA::MakeArrays(){
+  //
+  //
+  //
+  AliTPCROC * roc = AliTPCROC::Instance();
+  //
+  Int_t nRowsMax = roc->GetNRows(roc->GetNSector()-1);
+  Int_t nPadsMax = roc->GetNPads(roc->GetNSector()-1,nRowsMax-1);
+ 
+  fAllBins = new Float_t*[nRowsMax];
+  fAllSigBins = new Int_t*[nRowsMax];
+  fAllNSigBins = new Int_t[nRowsMax];
+  for (Int_t iRow = 0; iRow < nRowsMax; iRow++) {
+    //
+    Int_t maxBin = fMaxTime*(nPadsMax+6);  // add 3 virtual pads  before and 3 after
+    fAllBins[iRow] = new Float_t[maxBin];
+    memset(fAllBins[iRow],0,sizeof(Float_t)*maxBin);
+    fAllSigBins[iRow] = new Int_t[maxBin];
+    fAllNSigBins[iRow]=0;
+  }
+}
+
+
+void AliTPCdataQA::CleanArrays(){
+  //
+  //
+  //
+  AliTPCROC * roc = AliTPCROC::Instance();
+  //
+  Int_t nRowsMax = roc->GetNRows(roc->GetNSector()-1);
+  Int_t nPadsMax = roc->GetNPads(roc->GetNSector()-1,nRowsMax-1); 
+  for (Int_t iRow = 0; iRow < nRowsMax; iRow++) {
+    //
+    Int_t maxBin = fMaxTime*(nPadsMax+6);  // add 3 virtual pads  before and 3 after
+    memset(fAllBins[iRow],0,sizeof(Float_t)*maxBin);
+    fAllNSigBins[iRow]=0;
+  }
+}
+
+Float_t* AliTPCdataQA::GetExpandDigit(Int_t row, Int_t pad, Int_t time){
+  //
+  //
+  //
+  AliTPCROC * roc = AliTPCROC::Instance();
+  Int_t nRowsMax = roc->GetNRows(roc->GetNSector()-1);
+  if (row<0 || row>nRowsMax) return 0;
+  Int_t nPadsMax = roc->GetNPads(roc->GetNSector()-1,nRowsMax-1); 
+  
 }
