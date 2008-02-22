@@ -55,10 +55,16 @@ UIQA::~UIQA()
 {
 }
 
-void UIQA::Construct() { // The custom GUI is constructed here. gRootFrame is the container of the custom widgets.
+void UIQA::Construct() { 
 
+
+  // The custom GUI is constructed here. gRootFrame is the container of the custom widgets.
+  //
+  // Expert monitor - AliTPCCalibViewerGUI - fViewerGUI
+  //
  fTab=new TGTab(amore::ui::gRootFrame);
  amore::ui::gRootFrame->AddFrame(fTab);
+ //
  //
  //
  TGCompositeFrame* tabCont1 =fTab->AddTab("Expert");
@@ -109,8 +115,7 @@ void UIQA::Construct() { // The custom GUI is constructed here. gRootFrame is th
 void UIQA::SubscribeMonitorObjects() { // Before using any MonitorObject, a subscription should be made.
 
   //std::ostringstream stringStream;
- //amore::core::String_t sourceName="CEDA/", subscription; // The agent name acting as a source could be concatenated with all the objects it contains
- //subscription=sourceName+"CE";
+// The agent name acting as a source could be concatenated with all the objects it contains
  //Subscribe(subscription.c_str()); // Here you put a series of subscriptions where the string corresponds to the object name as published in the Publisher Module. As these names are internal to the QA framework, the recommended way of having consistency between AMORE and QA is to factor-out of QA the function that represents the histogram naming convention as a separate AliRoot class/function and use it from inside QA and AMORE.
  //...
   amore::core::String_t sourceName="TPCQA/", subscription; 
@@ -142,8 +147,15 @@ void UIQA::Update() { // This is executed after getting the updated contents of 
    printf("Pointertpcqa - %p\n",tpcqa);
    tpcqa->Print();
  }
-
+ //
  if (!tpcqa) return;
+
+ //
+ // Expert monitor part
+ //
+ if (tpcqa) MakeTree(tpcqa);
+ //
+ // Simple histograms
  //
  // Over threshold
  //
@@ -196,17 +208,8 @@ void UIQA::Update() { // This is executed after getting the updated contents of 
    canvas->cd(6);
    tpcqa->GetMaxCharge()->MakeHisto2D(1)->Draw("colz");
  }
- if (tpcqa) MakeTree(tpcqa);
 
  // End of access example
-
- //amore::da::AmoreDA amoreDA;
- // hCalibCE->Dump();
- // TObject *temp=0;
- //amoreDA.Receive("CEDA/CE",temp);
- //temp->Dump();
-
-
 }
 
 void UIQA::Process() {
@@ -224,7 +227,13 @@ void UIQA::EndOfCycle() {
 
   void UIQA::MakeTree(AliTPCdataQA* ped){
     //
+    // Prepare tree for expert monitor
     //
+
+    //
+    // QA part
+    //
+ 
     AliTPCPreprocessorOnline * preprocesor = new AliTPCPreprocessorOnline;
     if (ped->GetMaxCharge()) preprocesor->AddComponent(new AliTPCCalPad(*(ped->GetMaxCharge())));  
     if (ped->GetMeanCharge()) preprocesor->AddComponent(new AliTPCCalPad(*(ped->GetMeanCharge())));  
@@ -233,28 +242,47 @@ void UIQA::EndOfCycle() {
     if (ped->GetOverThreshold10()) preprocesor->AddComponent(new AliTPCCalPad(*(ped->GetOverThreshold10())));
     if (ped->GetOverThreshold20()) preprocesor->AddComponent(new AliTPCCalPad(*(ped->GetOverThreshold20())));
     if (ped->GetOverThreshold30()) preprocesor->AddComponent(new AliTPCCalPad(*(ped->GetOverThreshold30())));
+
+    //
+    // DA part
+    //
+
     AliTPCCalPad * noise = GetNoise();
     if (noise)  preprocesor->AddComponent(new AliTPCCalPad(*noise));
     AliTPCCalPad * pedestal = GetPedestal();
     if (pedestal)  preprocesor->AddComponent(new AliTPCCalPad(*pedestal));
+
+    //
+    // Make new tree
+    //
     char fname[10000];
     sprintf(fname,"QAtree%d.root",fCycle);
     preprocesor->DumpToFile(fname);
     fCycle++;
     delete noise;
     delete pedestal;
-    //  /*CalibTree
+
+    //
+    // Update viewer
+    //
+    // 
     AliTPCCalibViewer *viewer = fViewerGUI->GetViewer();
     AliTPCCalibViewer *nviewer = new  AliTPCCalibViewer(fname, "calPads");
-    fViewerGUI->Initialize(nviewer);
-    //*/
+    fViewerGUI->Initialize(nviewer);    
     //
     //
     //
   delete preprocesor;
   }
 
+
   AliTPCCalPad *  UIQA::GetNoise(){
+    //
+    // Get noise from DAs 
+    // For the moment only get calibration param form local file 
+    //  file is exepected to be in $AMORE_SITE directory
+    // 
+
     //
     // GetNoise - if not in AmoreDB than from file
     //
@@ -263,6 +291,8 @@ void UIQA::EndOfCycle() {
     //amoreDA.Receive("PEDESTAL/NOISE",temp);
     //temp->Dump();
     // if (temp) return (AliTPCCalPad*) temp;
+    //
+    //
     TDirectory * dir = gDirectory;
     TFile *f = new TFile("$AMORE_SITE/PadNoise.root");
     AliCDBEntry * entry = (AliCDBEntry*)f->Get("AliCDBEntry");

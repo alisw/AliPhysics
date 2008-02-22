@@ -54,6 +54,11 @@ PublisherQA::~PublisherQA() {
 }
 
 void PublisherQA::BookMonitorObjects() {
+  //
+  //  Called once at the beginning  after invocation of amoreAgent
+  //  all Data which should be accessible to clents has to be published here
+  //
+
  printf("PublisherQA::BookMonitorObject\n");  
  Publish(moInt1, "moInt1", "My Integer MonitorObject 1");
  int cycleLength=0;
