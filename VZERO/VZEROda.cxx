@@ -1,16 +1,29 @@
-/********************************************************************************
-*                                                                               *
-* VZERO Detector Algorithm used for extracting calibration parameters           *
-*                                                                               *
-* This program reads the DDL data file passed as argument using the monitoring  *
-* library.                                                                      *
-* It computes calibration parameters, populates local "./V0_Ped_Width_Gain.dat" *           
-* file and exports it to the FES.                                               *
-* We have 128 channels instead of 64 as expected for V0 due to the two sets of  *
-* charge integrators which are used by the FEE ...                              *
-* The program reports about its processing progress.                            *
-*                                                                               *
-*********************************************************************************/
+/*********************************************************************************
+- Contact:    Brigitte Cheynis     b.cheynis@ipnl.in2p3.fr
+- Link:       /afs/cern.ch/user/c/cheynis/public/run546.dat
+- Run Type:   PHYSICS
+- DA Type:    LDC
+- Number of events needed: >=100
+- Input Files:  raw_data_file_on_LDC
+- Output Files: local files  V00Log.txt, VZERO_Histos.root, V0_Ped_Width_Gain.dat
+                FXS file     V0_Ped_Width_Gain.dat
+- Trigger types used:
+**********************************************************************************/
+
+
+/**********************************************************************************
+*                                                                                 *
+* VZERO Detector Algorithm used for extracting calibration parameters             *
+*                                                                                 *
+* This program reads the DDL data file passed as argument using the monitoring    *
+* library.                                                                        *
+* It computes calibration parameters, populates local "./V0_Ped_Width_Gain.dat"   *            
+* file and exports it to the FES.                                                 *
+* We have 128 channels instead of 64 as expected for V0 due to the two sets of    *
+* charge integrators which are used by the FEE ...                                *
+* The program reports about its processing progress.                              *
+*                                                                                 *
+***********************************************************************************/
 
 // DATE
 #include "event.h"
@@ -28,7 +41,8 @@
 #include <stdlib.h>
 
 //ROOT
-
+#include "TROOT.h"
+#include "TPluginManager.h"
 #include <TFile.h>
 #include <TH1F.h>
 #include <TMath.h>
