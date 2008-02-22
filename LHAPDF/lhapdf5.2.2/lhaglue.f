@@ -146,7 +146,10 @@ C...v3.0  23-Jan-2004  HERWIG interface added
 C...
 C...interface to LHAPDF library
 
-      SUBROUTINE PDFSET(PARM,VALUE)
+      SUBROUTINE PDFSET(PARM,VALUE,
+     >     MSTU11,MSTP51,MSTP53,MSTP55,
+     >     QCDL4,QCDL5,
+     >     AXMIN,AXMAX,AQ2MIN,AQ2MAX)
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
@@ -158,14 +161,6 @@ c      character*172 LHANAMES(nmxset)
       common/LHASETS/LHANAMES,LHANUMBERS,LHAMEMBERS,nsets
       real*8 xxmin(nmxset),xxmax(nmxset),qq2min(nmxset),qq2max(nmxset)
       save xxmin,xxmax,qq2min,qq2max
-C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      SAVE /PYDAT1/
-      COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
-      SAVE /PYPARS/
-c... following 2 for earlier Pythia versions
-      COMMON/LUDAT1/MSTU5(200),PARU5(200),MSTJ5(200),PARJ5(200)
-      SAVE /LUDAT1/
 C...Interface to LHAPDFLIB.
 c      CHARACTER*172 LHANAME
       INTEGER LHASET, LHAMEMB
@@ -194,21 +189,15 @@ c      CHARACTER*132 LHAPATH
      >                 XMINNUP,XMAXNUP,Q2MINNUP,Q2MAXNUP,TOTNUP
       SAVE/LHAGLSTA/
 C...Interface to PDFLIB.
-      COMMON/W50511/ NPTYPEPDFL,NGROUPPDFL,NSETPDFL,MODEPDFL,
-     >               NFLPDFL,LOPDFL,TMASPDFL
-      SAVE /W50511/
-      DOUBLE PRECISION TMASPDFL
-C...Interface to PDFLIB.
-      COMMON/W50512/QCDL4,QCDL5
-      SAVE /W50512/
-      DOUBLE PRECISION QCDL4,QCDL5
-C...Interface to PDFLIB.
       COMMON/W50513/XMIN,XMAX,Q2MIN,Q2MAX
       SAVE /W50513/
       DOUBLE PRECISION XMIN,XMAX,Q2MIN,Q2MAX
 C...Local arrays and character variables (NOT USED here DB)
       CHARACTER*20 PARM(20)
       DOUBLE PRECISION VALUE(20)
+C...
+      DOUBLE PRECISION QCDL4,QCDL5
+      DOUBLE PRECISION AXMIN,AXMAX,AQ2MIN,AQ2MAX
       INTEGER LHAPATHLEN
       INTEGER LHAINPUT
       INTEGER LHASELECT
@@ -263,17 +252,13 @@ C...Init
          ENDIF
       ENDIF
       IF(PARM(1).EQ.'NPTYPE') THEN        !  PYTHIA
-         if(MSTP(181).ge.6) then
-           LHAPRINT = MSTU(11)
-         else
-           LHAPRINT = MSTU5(11)
-         endif
+         LHAPRINT = MSTU11
          IF(VALUE(1) .EQ. 1) THEN         !   nucleon
-           LHAINPUT = ABS(MSTP(51))
+           LHAINPUT = ABS(MSTP51)
          ELSEIF(VALUE(1) .EQ. 2) THEN     !   pion
-           LHAINPUT = ABS(MSTP(53))
+           LHAINPUT = ABS(MSTP53)
          ELSEIF(VALUE(1) .EQ. 3) THEN     !   photon
-           LHAINPUT = ABS(MSTP(55))
+           LHAINPUT = ABS(MSTP55)
          ENDIF
          IF(LHASILENT .NE. 1) 
      >    PRINT *,'==== PYTHIA WILL USE LHAPDF ===='
@@ -882,14 +867,12 @@ c           print *,'setting nset to:',iset
 
            IF(LHAPARM(17).EQ.'LHAPDF') THEN
            NPTYPEPDFL = 1      ! Proton PDFs
-           NFLPDFL = 4
            QCDLHA4 = QCDL4
            QCDLHA5 = QCDL5
            IF(LHASILENT .NE. 1) 
      >       WRITE(LHAPRINT,5159) QCDL4, QCDL5
            ELSE
              NPTYPEPDFL = 1      ! Proton PDFs
-             NFLPDFL = 4
              ALAMBDA = 0.192D0
              QCDLHA4 = ALAMBDA
              QCDLHA5 = ALAMBDA
@@ -898,6 +881,12 @@ c           print *,'setting nset to:',iset
              QCDL5 = ALAMBDA
            ENDIF
         ENDIF
+
+        AXMIN = XMIN
+        AXMAX = XMAX
+        AQ2MIN = Q2MIN
+        AQ2MAX = Q2MAX
+
 C...Formats for initialization information.
  5150 FORMAT(1X,'WRONG LHAPDF set number =',I12,' given! STOP EXE!')
  5151 FORMAT(1X,'==============================================')
@@ -954,9 +943,6 @@ C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
       include 'parmsetup.inc'
-C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      SAVE /PYDAT1/
 C...Interface to LHAPDFLIB.
       include 'pathsetup.inc'
 c      CHARACTER*172 LHANAME
@@ -1052,9 +1038,6 @@ C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
       include 'parmsetup.inc'
-C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      SAVE /PYDAT1/
 C...Interface to LHAPDFLIB.
       include 'pathsetup.inc'
 c      CHARACTER*172 LHANAME

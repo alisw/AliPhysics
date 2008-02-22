@@ -45,7 +45,8 @@ lhapdf5.2.2/wrapsasg.f \
 lhapdf5.2.2/wrapsmrspi.f \
 lhapdf5.2.2/wrapwhitg.f \
 lhapdf5.2.2/wrapzeus.f \
-lhapdf5.2.2/commons.f
+lhapdf5.2.2/commons.f \
+lhapdf5.2.2/lhaglue.f
 
 
 
