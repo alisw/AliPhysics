@@ -52,6 +52,7 @@ AliRawReaderHLT::AliRawReaderHLT(AliRawReader* pRawreader, const char* options)
   fpData(NULL),
   fDataSize(0),
   fOffset(0),
+  fPosition(0),
   fEquipmentId(-1),
   fbHaveHLTData(false),
   fDetectors(),
@@ -70,13 +71,7 @@ AliRawReaderHLT::AliRawReaderHLT(AliRawReader* pRawreader, const char* options)
 AliRawReaderHLT::~AliRawReaderHLT()
 {
   // see header file for class documentation
-  if (fpHLTOUT) {
-    if (fpDataHandler) fpDataHandler->ReleaseProcessedData(fpData, fDataSize);
-    else fpHLTOUT->ReleaseDataBuffer(fpData);
-    fpDataHandler=NULL;
-    delete fpHLTOUT;
-    fpHLTOUT=NULL;
-  }
+  ReleaseHLTData();
 }
 
 UInt_t AliRawReaderHLT::GetType() const
@@ -193,18 +188,33 @@ Bool_t   AliRawReaderHLT::ReadHeader()
 {
   // see header file for class documentation
   Bool_t result=kFALSE;
-  while (fbHaveHLTData&=ReadNextHLTData()) {
+  Bool_t firstParentCycle=fbHaveHLTData;
+  while (fbHaveHLTData=(fbHaveHLTData && ReadNextHLTData())) {
     // all internal data variables set
     assert(fpData!=NULL);
     fHeader=reinterpret_cast<AliRawDataHeader*>(const_cast<AliHLTUInt8_t*>(fpData));
+    fOffset=sizeof(AliRawDataHeader);
+    fPosition=fOffset;
     if (result=IsSelected()) break;
   }
-  if (!result) {
-    // first set the selection back to the original one
-    fpParentReader->SelectEquipment(fSelectEquipmentType, fSelectMinEquipmentId, fSelectMaxEquipmentId);
+  firstParentCycle&=!fbHaveHLTData; // true if it just changed from true to false
+  while (!result) {
+    if (firstParentCycle) {
+      firstParentCycle=kFALSE;
+      // reset and set the selection back to the original one
+      fpParentReader->Reset();
+      fpParentReader->SelectEquipment(fSelectEquipmentType, fSelectMinEquipmentId, fSelectMaxEquipmentId);
+    }
 
-    result=fpParentReader->ReadHeader();
+    if (!(result=fpParentReader->ReadHeader())) {
+      fHeader=NULL;
+      break;
+    }
     fHeader=const_cast<AliRawDataHeader*>(fpParentReader->GetDataHeader());
+
+    // filter out all equipment ids which should be taken from the HLT stream
+    int id=fpParentReader->GetEquipmentId();
+    if (result=!IsHLTInput(id)) break;
   }
   return result;
 }
@@ -216,36 +226,32 @@ Bool_t   AliRawReaderHLT::ReadNextData(UChar_t*& data)
   // this function is the backbone of the ReadNext functions, it gets the
   // whole data block either from the HLT stream or the parent raw reader.
   // Each call of ReadNextData directly jumps to the next data set.
-  Bool_t result=kFALSE;
-  if (ReadHeader() && fpData!=NULL) {
-    // all internal data variables set
-    result=kTRUE;
-    data=const_cast<AliHLTUInt8_t*>(fpData+sizeof(AliRawDataHeader));
-  }
-  if (kFALSE) { // this needs more thinking
-    // no data in the HLT stream, read real data
-    //AliInfo(Form("read from parent reader: min=%d max=%d", fSelectMinEquipmentId, fSelectMaxEquipmentId));
+  Bool_t result=kTRUE;
 
-    // read data
-    while (result=fpParentReader->ReadNextData(data)) {
-      // continue if the Equipment Id is supposed to be replaced by the HLT stream
-      // in that case we do not want to read it from the parent raw reader
-      if (!IsHLTInput(fpParentReader->GetEquipmentId())) break;
-    }
-
-    // set the header of this reader from the parent reader.
-    // This is necessary because of a few base class methods working directly
-    // on the header
-    fHeader=const_cast<AliRawDataHeader*>(fpParentReader->GetDataHeader());
-    if (result) {
-      fpData=data;
-      fDataSize=fpParentReader->GetDataSize();
+  // read new header if data already read
+  if (fPosition<fDataSize || (result=ReadHeader())) {
+    if (fpHLTOUT!=NULL) {
+      // all internal data variables set
+      result=kTRUE;
+      data=const_cast<AliHLTUInt8_t*>(fpData+sizeof(AliRawDataHeader));
     } else {
-      fpData=NULL;
-      fDataSize=0;
+      // no data in the HLT stream, read real data
+      //AliInfo(Form("read from parent reader: min=%d max=%d", fSelectMinEquipmentId, fSelectMaxEquipmentId));
+
+      // read data
+      result=fpParentReader->ReadNextData(data);
+      if (result) {
+	fpData=data;
+	fDataSize=fpParentReader->GetDataSize();
+      } else {
+	fpData=NULL;
+	fDataSize=0;
+      }
+
+      fEquipmentId=-1;
     }
-    fOffset=0;
-    fEquipmentId=-1;
+    fOffset=sizeof(AliRawDataHeader);
+    fPosition=fDataSize;
   }
   return result;
 }
@@ -315,31 +321,12 @@ Bool_t   AliRawReaderHLT::ReadNext(UChar_t* data, Int_t size)
 Bool_t   AliRawReaderHLT::Reset()
 {
   // see header file for class documentation
+  ReleaseHLTData();
   Bool_t result=fpParentReader->Reset();
-  fpData=NULL;
-  fDataSize=0;
-  fOffset=0;
   fEquipmentId=-1;
-  if (fbHaveHLTData=(fDetectors.size()>0)) {
-    vector<int>::iterator detector=fDetectors.begin();
-    for (; detector!=fDetectors.end(); detector++) {
-      int ddlOffset=AliDAQ::DdlIDOffset(*detector);
-      int nofDDLs=AliDAQ::NumberOfDdls(*detector);
-      if ((fSelectMinEquipmentId>=0 && fSelectMinEquipmentId>ddlOffset+nofDDLs) ||
-	  (fSelectMinEquipmentId>=0 && fSelectMaxEquipmentId<ddlOffset))
-	continue;
-      break;
-    }
-    fbHaveHLTData=detector!=fDetectors.end();
-  }
 
-  if (fpHLTOUT) {
-    if (fpDataHandler) fpDataHandler->ReleaseProcessedData(fpData, fDataSize);
-    else fpHLTOUT->ReleaseDataBuffer(fpData);
-    fpDataHandler=NULL;
-    delete fpHLTOUT;
-    fpHLTOUT=NULL;
-  }
+  // check if redirection is enabled for at least one detector in the selected range
+  fbHaveHLTData=EvaluateSelection();
 
   return result;
 }
@@ -368,6 +355,7 @@ void AliRawReaderHLT::Select(Int_t detectorID, Int_t minDDLID, Int_t maxDDLID)
   // see header file for class documentation
   AliRawReader::Select(detectorID, minDDLID, maxDDLID);
   fpParentReader->Select(detectorID, minDDLID, maxDDLID);
+  fbHaveHLTData=EvaluateSelection();
 }
 
 // most likely we do not need this method since the base class directly forwards
@@ -384,8 +372,9 @@ void AliRawReaderHLT::SelectEquipment(Int_t equipmentType, Int_t minEquipmentId,
   // see header file for class documentation
 
   //AliInfo(Form("equipmentType=%d, minEquipmentId=%d, maxEquipmentId=%d", equipmentType, minEquipmentId, maxEquipmentId));
-  AliRawReader::Select(equipmentType, minEquipmentId, maxEquipmentId);
-  fpParentReader->Select(equipmentType, minEquipmentId, maxEquipmentId);
+  AliRawReader::SelectEquipment(equipmentType, minEquipmentId, maxEquipmentId);
+  fpParentReader->SelectEquipment(equipmentType, minEquipmentId, maxEquipmentId);
+  fbHaveHLTData=EvaluateSelection();
 }
 
 void AliRawReaderHLT::SkipInvalid(Bool_t skip)
@@ -453,14 +442,8 @@ Bool_t   AliRawReaderHLT::ReadNextHLTData()
     }
   } else {
     // first release the data buffer
-    if (fpDataHandler) fpDataHandler->ReleaseProcessedData(fpData, fDataSize);
-    else fpHLTOUT->ReleaseDataBuffer(fpData);
-    fpDataHandler=NULL;
-    fpData=NULL;
-    if (!(result=fpHLTOUT->SelectNextDataBlock()>=0)) {
-      delete fpHLTOUT;
-      fpHLTOUT=NULL;
-    }
+    ReleaseHLTData(false /* keep HLTOUT instance */);
+    result=fpHLTOUT->SelectNextDataBlock()>=0;
   }
   if (result) {
     AliHLTComponentDataType dt=kAliHLTVoidDataType;
@@ -493,10 +476,7 @@ Bool_t   AliRawReaderHLT::ReadNextHLTData()
 		      fpHLTOUT->GetDataBlockIndex(), AliHLTComponent::DataType2Text(dt).c_str(), spec));
     }
   } else {
-    fpData=NULL;
-    fDataSize=0;
-    fOffset=0;
-    fEquipmentId=-1;
+    ReleaseHLTData();
   }
   return kFALSE;
 }
@@ -512,6 +492,46 @@ Bool_t AliRawReaderHLT::IsHLTInput(int ddlid)
       return kTRUE;
   }
   return kFALSE;
+}
+
+int AliRawReaderHLT::ReleaseHLTData(bool bReleaseHLTOUT)
+{
+  // see header file for class documentation
+  if (fpHLTOUT) {
+    if (fpDataHandler) fpDataHandler->ReleaseProcessedData(fpData, fDataSize);
+    else fpHLTOUT->ReleaseDataBuffer(fpData);
+    fpDataHandler=NULL;
+    if (bReleaseHLTOUT) {
+      delete fpHLTOUT;
+      fpHLTOUT=NULL;
+    }
+  }
+
+  fpData=NULL;
+  fDataSize=0;
+  fOffset=0;
+  fPosition=0;
+  fEquipmentId=-1;
+
+  return 0;
+}
+
+Bool_t AliRawReaderHLT::EvaluateSelection()
+{
+  // see header file for class documentation
+  Bool_t bHaveHLTData=kFALSE;
+  if (bHaveHLTData=(fDetectors.size()>0)) {
+    vector<int>::iterator detector=fDetectors.begin();
+    for (; detector!=fDetectors.end(); detector++) {
+      int ddlOffset=AliDAQ::DdlIDOffset(*detector);
+      int nofDDLs=AliDAQ::NumberOfDdls(*detector);
+      if ((fSelectMinEquipmentId<0 || fSelectMinEquipmentId<ddlOffset+nofDDLs) &&
+	  (fSelectMaxEquipmentId<0 || fSelectMaxEquipmentId>=ddlOffset))
+	break;
+    }
+    bHaveHLTData=detector!=fDetectors.end();
+  }
+  return bHaveHLTData;
 }
 
 AliRawReader* AliRawReaderHLTCreateInstance(AliRawReader* pParentReader, const char* options)

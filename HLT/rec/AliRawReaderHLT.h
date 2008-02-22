@@ -111,6 +111,25 @@ class AliRawReaderHLT : public AliRawReader, public AliHLTReconstructorBase {
    */
   Bool_t IsHLTInput(int ddlid);
 
+  /**
+   * Check if redirection is enabled for at least one detector in the
+   * selected range.
+   * Set the fbHaveHLTData variable
+   * @return true if data has to be read from the HLT stream.
+   */
+  Bool_t EvaluateSelection();
+
+  /**
+   * Release the current HLT data.
+   * Releases the current buffer of either the active HLTOUT data
+   * block handler or the HLTOUT instance. The latter implies a
+   * reset of the reader concerning the HLT data blocks.
+   * @param bReleaseHLTOUT   release HLTOUT instance if \em true
+   *                         only current data buffer if \em false
+   * @return neg. error code if failed
+   */
+  int ReleaseHLTData(bool bReleaseHLTOUT=true);
+
   /** the rawreader */
   AliRawReader* fpParentReader; //!transient
 
@@ -128,6 +147,9 @@ class AliRawReaderHLT : public AliRawReader, public AliHLTReconstructorBase {
 
   /** current stream offset in the data set */
   int fOffset; // !transient
+
+  /** current stream position for the ReadNextData function */
+  int fPosition; // !transient
 
   /** equipment id of the current data set, >0 indicates data set from HLT stream */
   int fEquipmentId; // !transient
