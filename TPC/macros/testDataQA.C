@@ -10,7 +10,13 @@
 
 
 void testDataQA(Char_t *fileName, Int_t maxevent=10)
-{
+{  
+  AliLog::SetClassDebugLevel("AliTPCRawStream",-5);
+  AliLog::SetClassDebugLevel("AliRawReaderDate",-5);
+  AliLog::SetClassDebugLevel("AliTPCAltroMapping",-5);
+  AliLog::SetModuleDebugLevel("RAW",-5);
+  AliLog::SetGlobalLogLevel(3);
+
    AliRawReaderRoot *rawReader = new AliRawReaderRoot(fileName);
    if ( !rawReader ) return;
    AliTPCdataQA *calib = new AliTPCdataQA; 
@@ -64,3 +70,20 @@ void testDataQA(Char_t *fileName, Int_t maxevent=10)
    AliTPCCalibViewerGUI::ShowGUI("CalibTree2.root");
 }
 
+AliTPCCalibViewerGUI * gui=0;
+
+void UpdateGUI(const char *fname="dataQA.root"){
+  //
+  //
+  //
+  TFile f2(fname);
+  AliTPCdataQA* ped = (AliTPCdataQA*)f2.Get("AliTPCdataQA");
+  ped->MakeTree("CalibTree.root");
+  if (!gui){
+    gui = (AliTPCCalibViewerGUI)AliTPCCalibViewerGUI::ShowGUI("CalibTree.root")->At(0);
+  }else{
+    gui->GetViewer();
+    AliTPCCalibViewer *nviewer = new  AliTPCCalibViewer("CalibTree.root", "calPads");
+    gui->Initialize(nviewer);
+  }
+}
