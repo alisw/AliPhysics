@@ -2099,6 +2099,26 @@ const char* AliShuttle::GetFile(Int_t system, const char* detector,
 			continue;
 		} 
 
+                if (fileSize.Length()>0)
+                {
+                        // compare filesize of local file with the one stored in the FXS DB
+			TString command=("stat --format=%s");
+			Int_t sizeComp = gSystem->Exec(Form("%s %s |grep %s 2>&1 > /dev/null",
+						command.Data(), localFileName.Data(),fileSize.Data()));
+
+			if ( sizeComp != 0)
+			{
+				Log(detector, Form("GetFileName - size of file %s does not match with local copy!",
+							filePath.Data()));
+				result = kFALSE;
+				continue;
+			}
+
+		} else {
+			Log(fCurrentDetector, Form("GetFile - size of file %s not set in %s database, skipping comparison",
+						filePath.Data(), GetSystemName(system)));
+                }
+
 		if (fileChecksum.Length()>0)
 		{
 			// compare md5sum of local file with the one stored in the FXS DB
