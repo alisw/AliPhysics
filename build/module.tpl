@@ -212,10 +212,10 @@ $(@PACKAGE@LIB):$(@PACKAGE@O) $(@PACKAGE@DO) @MODULE@/module.mk
 ifndef ALIQUIET
 	  @echo "***** Linking library $@ *****"
 endif
-	  \rm -f $(CURDIR)/$@ ;\
+	  \rm -f "$(CURDIR)"/$@ ;\
 	  cd $(@MODULE@DIRO) ;\
-	  $(SHLD) $(@PACKAGE@SOFLAGS) -o $(CURDIR)/$@ $(patsubst $(@MODULE@DIRO)/%,%,$(@PACKAGE@O) $(@PACKAGE@DO))  $(@PACKAGE@ELIBSDIR) $(@PACKAGE@ELIBS) $(SHLIB);\
-	  chmod a-w $(CURDIR)/$@ ;\
+	  $(SHLD) $(@PACKAGE@SOFLAGS) -o "$(CURDIR)"/$@ $(patsubst $(@MODULE@DIRO)/%,%,$(@PACKAGE@O) $(@PACKAGE@DO))  $(@PACKAGE@ELIBSDIR) $(@PACKAGE@ELIBS) $(SHLIB);\
+	  chmod a-w "$(CURDIR)"/$@ ;\
 	  cd $(ALICE_ROOT)
 endif
 
@@ -224,10 +224,10 @@ $(@PACKAGE@DLIB):$(@PACKAGE@O) $(@PACKAGE@DO) @MODULE@/module.mk
 ifndef ALIQUIET
 	  @echo "***** Linking library $@ *****"
 endif
-	  \rm -f $(CURDIR)/$@ ;\
+	  \rm -f "$(CURDIR)"/$@ ;\
 	  cd $(@MODULE@DIRO) ;\
-	  $(DYLD) $(@PACKAGE@DYFLAGS) -o $(CURDIR)/$@ $(patsubst $(@MODULE@DIRO)/%,%,$(@PACKAGE@O) $(@PACKAGE@DO))  $(@PACKAGE@ELIBSDIR) $(@PACKAGE@ELIBS) $(DYLIB);\
-	  chmod a-w $(CURDIR)/$@ ;\
+	  $(DYLD) $(@PACKAGE@DYFLAGS) -o "$(CURDIR)"/$@ $(patsubst $(@MODULE@DIRO)/%,%,$(@PACKAGE@O) $(@PACKAGE@DO))  $(@PACKAGE@ELIBSDIR) $(@PACKAGE@ELIBS) $(DYLIB);\
+	  chmod a-w "$(CURDIR)"/$@ ;\
 	  cd $(ALICE_ROOT) 
 endif
 
@@ -237,9 +237,9 @@ $(@PACKAGE@ALIB):$(@PACKAGE@O) $(@PACKAGE@DO) @MODULE@/module.mk
 ifndef ALIQUIET
 	  @echo "***** Linking static library $@ *****"
 endif
-	  \rm -f $(CURDIR)/$@ ;\
+	  \rm -f "$(CURDIR)"/$@ ;\
 	  cd $(@MODULE@DIRO) ;\
-	  $(ALLD) $(ALFLAGS) $(CURDIR)/$@ $(patsubst $(@MODULE@DIRO)/%,%,$(@PACKAGE@O) $(@PACKAGE@DO))  $(@PACKAGE@ELIBSDIR) $(@PACKAGE@ELIBS) $(ALLIB);\
+	  $(ALLD) $(ALFLAGS) "$(CURDIR)"/$@ $(patsubst $(@MODULE@DIRO)/%,%,$(@PACKAGE@O) $(@PACKAGE@DO))  $(@PACKAGE@ELIBSDIR) $(@PACKAGE@ELIBS) $(ALLIB);\
           cd $(ALICE_ROOT)
 
 
