@@ -51,12 +51,14 @@ const Float_t AliITSsegmentationSDD::fgkPitchDefault = 294.;
 const Float_t AliITSsegmentationSDD::fgkClockDefault = 40.;
 const Int_t AliITSsegmentationSDD::fgkHalfNanodesDefault = 256; 
 const Int_t AliITSsegmentationSDD::fgkNsamplesDefault = 256;
+const Int_t AliITSsegmentationSDD::fgkNchipsPerHybrid = 4;
+const Int_t AliITSsegmentationSDD::fgkNanodesPerChip = 64;
 const Float_t AliITSsegmentationSDD::fgkCm2Micron = 10000.;
 const Float_t AliITSsegmentationSDD::fgkMicron2Cm = 1.0E-04;
 ClassImp(AliITSsegmentationSDD)
 //----------------------------------------------------------------------
 AliITSsegmentationSDD::AliITSsegmentationSDD(AliITSgeom* geom):
-AliITSsegmentation(geom),
+AliITSsegmentation(),
 fNsamples(0),
 fNanodes(0),
 fPitch(0),
@@ -64,11 +66,7 @@ fTimeStep(0),
 fDriftSpeed(0),
 fSetDriftSpeed(0){
   // constructor
-   fDriftSpeed=AliITSresponseSDD::DefaultDriftSpeed();
-   fCorr=0;
-   SetDetSize(fgkDxDefault,fgkDzDefault,fgkDyDefault);
-   SetPadSize(fgkPitchDefault,fgkClockDefault);
-   SetNPads(fgkHalfNanodesDefault,fgkNsamplesDefault);
+  InitFromGeom(geom);
 }
 //______________________________________________________________________
 AliITSsegmentationSDD::AliITSsegmentationSDD() : AliITSsegmentation(),
@@ -79,10 +77,7 @@ fTimeStep(0),
 fDriftSpeed(0),
 fSetDriftSpeed(0){
   // Default constructor
-   fDriftSpeed=0;  
-   SetDetSize(fgkDxDefault,fgkDzDefault,fgkDyDefault);
-   SetPadSize(fgkPitchDefault,fgkClockDefault);
-   SetNPads(fgkHalfNanodesDefault,fgkNsamplesDefault);
+  Init();
 }
 
 //______________________________________________________________________
@@ -120,17 +115,27 @@ fSetDriftSpeed(0){
 
 //----------------------------------------------------------------------
 void AliITSsegmentationSDD::Init(){
-  // Standard initilisation routine
-
-   if(!fGeom) {
-     AliFatal("Pointer to ITS geometry class (AliITSgeom) is null\n");
-     return;
-   }
-   AliITSgeomSDD *gsdd = (AliITSgeomSDD *) (fGeom->GetShape(3,1,1));
-
-   fDz = 2.*fgkCm2Micron*gsdd->GetDz();
-   fDx = fgkCm2Micron*gsdd->GetDx();
-   fDy = 2.*fgkCm2Micron*gsdd->GetDy();
+// Standard initilisation routine
+   fDriftSpeed=AliITSresponseSDD::DefaultDriftSpeed();
+   fCorr=0;
+   SetDetSize(fgkDxDefault,fgkDzDefault,fgkDyDefault);
+   SetPadSize(fgkPitchDefault,fgkClockDefault);
+   SetNPads(fgkHalfNanodesDefault,fgkNsamplesDefault);
+}
+//----------------------------------------------------------------------
+void AliITSsegmentationSDD::InitFromGeom(AliITSgeom *geom){
+// Inizialization from geometry
+  Init();
+  if(!geom) {
+    AliFatal("Pointer to ITS geometry class (AliITSgeom) is null\n");
+    return;
+  }
+  AliITSgeomSDD *gsdd = (AliITSgeomSDD *) (geom->GetShape(3,1,1));
+  
+  fDz = 2.*fgkCm2Micron*gsdd->GetDz();
+  fDx = fgkCm2Micron*gsdd->GetDx();
+  fDy = 2.*fgkCm2Micron*gsdd->GetDy();
+ 
 }
 
 //----------------------------------------------------------------------
@@ -182,6 +187,35 @@ Float_t AliITSsegmentationSDD::GetLocalZFromAnode(Float_t zAnode) const{
     zloc=-(zAnode*fPitch-fDz/2)*fgkMicron2Cm;
   }
   return zloc;
+}
+//----------------------------------------------------------------------
+Int_t AliITSsegmentationSDD::GetChipFromChannel(Int_t ix, Int_t iz) const {
+  if(iz>=fNanodes  || iz<0 || ix>fNsamples){
+    AliError("Bad cell number");
+    return -1;
+  }
+  Int_t theChip=iz/fgkNanodesPerChip;
+  return theChip;
+}
+//----------------------------------------------------------------------
+Int_t AliITSsegmentationSDD::GetChipFromLocal(Float_t xloc, Float_t zloc) const {  
+  Float_t detsize=fDz*fgkMicron2Cm;
+  Float_t chipsize=detsize/(Float_t)fgkNchipsPerHybrid;
+  zloc+=detsize/2.;
+  if(zloc<-0.01 || zloc>detsize+0.01){ // 100 micron tolerance around edges
+    AliError("Z local value out of sensitive SDD area");
+    return -1;
+  }
+  Int_t iChip=int(zloc/chipsize);
+  if(zloc<0.) iChip=0;  
+  if(zloc>=detsize) iChip=fgkNchipsPerHybrid-1;
+  if(iChip>=fgkNchipsPerHybrid || iChip<0){ 
+    AliError(Form("Bad chip number %d",iChip));
+    return -1;
+  }
+  Int_t iSide=GetSideFromLocalX(xloc);
+  if(iSide==1) iChip=fgkNchipsPerHybrid-iChip+3;   // i.e. 7-iChip
+  return iChip;
 }
 //----------------------------------------------------------------------
 void AliITSsegmentationSDD::GetPadIxz(Float_t x,Float_t z,

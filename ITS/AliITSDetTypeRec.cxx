@@ -344,7 +344,7 @@ void AliITSDetTypeRec::SetDefaults(){
 
   for(Int_t dettype=0;dettype<fgkNdettypes;dettype++){
     if(dettype==0){
-      seg = new AliITSsegmentationSPD(GetITSgeom());
+      seg = new AliITSsegmentationSPD();
       SetSegmentationModel(dettype,seg);
       SetDigitClassName(dettype,"AliITSdigitSPD");
       SetClusterClassName(dettype,"AliITSRawClusterSPD");
@@ -352,7 +352,7 @@ void AliITSDetTypeRec::SetDefaults(){
     }
     if(dettype==1){
       AliITSCalibrationSDD* res=(AliITSCalibrationSDD*) GetCalibrationModel(GetITSgeom()->GetStartSDD()); 
-      seg = new AliITSsegmentationSDD(GetITSgeom());
+      seg = new AliITSsegmentationSDD();
       SetSegmentationModel(dettype,seg);
       const char *kopt = ((AliITSresponseSDD*)res->GetResponse())->ZeroSuppOption();
       if((!strstr(kopt,"2D"))&&(!strstr(kopt,"1D"))) SetDigitClassName(dettype,"AliITSdigit");
@@ -361,7 +361,7 @@ void AliITSDetTypeRec::SetDefaults(){
 
     }
     if(dettype==2){
-      AliITSsegmentationSSD* seg2 = new AliITSsegmentationSSD(GetITSgeom());
+      AliITSsegmentationSSD* seg2 = new AliITSsegmentationSSD();
       seg2->SetAngles(0.0075,0.0275); // strip angels rad P and N side.
       seg2->SetAnglesLay5(0.0075,0.0275); // strip angels rad P and N side.
       seg2->SetAnglesLay6(0.0275,0.0075); // strip angels rad P and N side.

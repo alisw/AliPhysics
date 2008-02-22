@@ -278,11 +278,11 @@ void AliITSDetTypeSim::SetDefaultSegmentation(Int_t idet){
     if(GetSegmentationModel(idet))
 	delete (AliITSsegmentation*)fSegmentation->At(idet);
     if(idet==0){
-	seg = new AliITSsegmentationSPD(GetITSgeom());
+	seg = new AliITSsegmentationSPD();
     }else if(idet==1){
-	seg = new AliITSsegmentationSDD(GetITSgeom());
+	seg = new AliITSsegmentationSDD();
     }else {
-	seg = new AliITSsegmentationSSD(GetITSgeom());
+	seg = new AliITSsegmentationSSD();
     }
     SetSegmentationModel(idet,seg);
 }

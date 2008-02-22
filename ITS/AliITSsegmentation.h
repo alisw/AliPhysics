@@ -31,26 +31,17 @@ public TObject {
     virtual Int_t   GetNPads() const = 0;
     // Set layer
     virtual void SetLayer(Int_t) {MayNotUse("SetLayer");}
+    // Number of Chips
+    virtual Int_t    GetNumberOfChips() const {MayNotUse("GetNumberOfChips"); return 0;}
+    // Chip number from local coordinates
+    virtual Int_t    GetChipFromLocal(Float_t, Float_t) const {MayNotUse("GetChipFromLocal"); return 0;}
+    // Chip number from channel number
+    virtual Int_t    GetChipFromChannel(Int_t, Int_t) const {MayNotUse("GetChipFromChannel"); return 0;}
+
     // Transform from real to cell coordinates
     virtual void    GetPadIxz(Float_t,Float_t,Int_t &,Int_t &) const = 0;
     // Transform from cell to real coordinates
     virtual void    GetPadCxz(Int_t,Int_t,Float_t &,Float_t &) const = 0;
-
-    // Transform from real global to local coordinates
-    void GetLocal(Int_t module,Float_t *g ,Float_t *l) const {
-      if(!fGeom) {
-	AliFatal("Pointer to ITS geometry class (AliITSgeom) is null\n");
-        return;
-      }
-      fGeom->GtoL(module,g,l);      
-    }
-    // Transform from real local to global coordinates
-    void GetGlobal(Int_t module,Float_t *l ,Float_t *g) const {
-      if(!fGeom) {
-	AliFatal("Pointer to ITS geometry class (AliITSgeom) is null\n");
-      }
-      fGeom->LtoG(module,l,g);
-    }
     // Local transformation of real local coordinates -
     virtual void    GetPadTxz(Float_t &,Float_t &) const = 0;
     // Transformation from Geant cm detector center local coordinates
@@ -59,13 +50,28 @@ public TObject {
     // Transformation from detector segmentation/cell coordiantes starting
     // from (0,0) to Geant cm detector center local coordinates.
     virtual void    DetToLocal(Int_t,Int_t,Float_t &,Float_t &) const = 0;
+
+    // Transform from real global to local coordinates
+    void GetLocal(Int_t module,Float_t *g ,Float_t *l, AliITSgeom *geom) const {
+      if(!geom) {
+	AliFatal("Pointer to ITS geometry class (AliITSgeom) is null\n");
+        return;
+      }
+      geom->GtoL(module,g,l);      
+    }
+    // Transform from real local to global coordinates
+    void GetGlobal(Int_t module,Float_t *l ,Float_t *g, AliITSgeom *geom) const {
+      if(!geom) {
+	AliFatal("Pointer to ITS geometry class (AliITSgeom) is null\n");
+      }
+      geom->LtoG(module,l,g);
+    }
+
     // Initialisation
     virtual void Init() = 0;
     //
     // Get member data
     //
-    // Detector type geometry
-    virtual AliITSgeom* Geometry() const {return fGeom;}
     // Detector length
     virtual Float_t Dx() const {return fDx;}
     // Detector width
@@ -114,7 +120,6 @@ public TObject {
     Float_t fDy;    //SPD:  Full thickness of the detector (y axis) -um 
                     //SDD: Full thickness of the detector (y axis) - microns
                     //SSD: Full thickness of the detector (y axis) -um 
-    AliITSgeom *fGeom;  //! pointer to the geometry class
     TF1*       fCorr;   // correction function
 
     ClassDef(AliITSsegmentation,2) //Segmentation virtual base class 

@@ -18,7 +18,6 @@ AliITSsegmentation::AliITSsegmentation():
 fDx(0),
 fDz(0),
 fDy(0),
-fGeom(0),
 fCorr(0){
   // Default constructor
  
@@ -28,10 +27,9 @@ AliITSsegmentation::AliITSsegmentation(AliITSgeom* geom):
 fDx(0),
 fDz(0),
 fDy(0),
-fGeom(0),
 fCorr(0){
   // Default constructor
-   fGeom=geom;
+  AliWarning(Form("AliITSgeom (%X) no longer needed in ITS segmentation. Use default constructor\n",geom))
 }
 
 
@@ -47,7 +45,6 @@ void AliITSsegmentation::Copy(TObject &obj) const {
   ((AliITSsegmentation& ) obj).fDz      = fDz;
   ((AliITSsegmentation& ) obj).fDx      = fDx;
   ((AliITSsegmentation& ) obj).fDy      = fDy;
-  ((AliITSsegmentation& ) obj).fGeom    = fGeom; // copy only the pointer
   if(fCorr){
     ((AliITSsegmentation& ) obj).fCorr    = new TF1(*fCorr); // make a proper copy
   }
@@ -70,7 +67,6 @@ AliITSsegmentation::AliITSsegmentation(const AliITSsegmentation &source):
 fDx(0),
 fDz(0),
 fDy(0),
-fGeom(0),
 fCorr(0){
     // copy constructor
   source.Copy(*this);

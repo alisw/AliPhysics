@@ -66,9 +66,15 @@ public AliITSsegmentation {
     virtual Float_t GetDriftTimeFromTb(Float_t xtb) const {
       return xtb*fTimeStep;
     }
-    //
+    virtual Int_t    GetNumberOfChips() const {
+      return fgkNchipsPerHybrid;
+    }
+    virtual Int_t    GetChipFromLocal(Float_t xloc, Float_t zloc) const;
+    virtual Int_t    GetChipFromChannel(Int_t ix, Int_t iz) const; 
+
     // Initialisation
     virtual void Init();
+    void InitFromGeom(AliITSgeom *geom);
     //
     // Get member data
     //
@@ -113,9 +119,11 @@ public AliITSsegmentation {
     static const Float_t fgkClockDefault; //Default value for the clock freq.
     static const Int_t fgkHalfNanodesDefault; //Default value for fNanodes/2
     static const Int_t fgkNsamplesDefault; //Default value for fNsamples
+    static const Int_t fgkNchipsPerHybrid;    //number of chips per hybrid
+    static const Int_t fgkNanodesPerChip;    //number of chips per hybrid
     static const Float_t fgkCm2Micron;  // conversion from cm to micron
     static const Float_t fgkMicron2Cm;  // conversion from micron to cm
-    ClassDef(AliITSsegmentationSDD,5) // SDD segmentation
+    ClassDef(AliITSsegmentationSDD,6) // SDD segmentation
 };
 
 #endif
