@@ -44,7 +44,7 @@ const TString kStandAloneRunType = "STANDALONE"; // standalone run identifier
 const TString kCosmicRunType = "COSMIC"; // cosmic run identifier
 const TString kLaserRunType = "LASER";   // laser run identifier
 const TString kDaqRunType = "DAQ"; // DAQ run identifier
-const TString kAmandaTemp = "tpc_PT_%d.Temperature"; // Amanda string for temperature entries
+const TString kAmandaTemp = "TPC_PT_%d_TEMPERATURE"; // Amanda string for temperature entries
 //const Double_t kFitFraction = 0.7;                 // Fraction of DCS sensor fits required              
 const Double_t kFitFraction = -1.0;          // Don't require minimum number of fits in commissioning run 
 

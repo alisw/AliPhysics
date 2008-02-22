@@ -147,7 +147,7 @@ void AliTPCGenDBTemp::MakeConfig(const char *file, Int_t firstRun, Int_t lastRun
    // Store Configuration file to OCDB
    //
 
-   TTree *tree = ReadListTree(file,amandaString);
+   TTree *tree = ReadListTree(file,"tempConf",amandaString);
    SetConfTree(tree);
    SetFirstRun(firstRun);
    SetLastRun(lastRun);
