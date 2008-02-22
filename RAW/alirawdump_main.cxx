@@ -168,10 +168,6 @@ static bool DumpEvent(const char *progname, AliRawEvent *rawEvent)
 	// TPC L1 trigger message is shifted by 2 bits??
 	UShort_t l1Message = cdh->GetL1TriggerMessage();
 	UShort_t l1MessageRef = cdhRef->GetL1TriggerMessage();
-	if (detID == 3) {
-	  l1Message = ((cdh->fWord2 >> 16) & 0x1F);
-	  l1MessageRef = cdhRef->GetL1TriggerMessage() & 0x1F;
-	}
 
 	if (l1Message != l1MessageRef)
 	  cout << "ERROR: CDH mismatch detected in L1TriggerMessage for detector " << AliDAQ::DetectorName(detID) << ": " << (Int_t)l1MessageRef << " ( " << (Int_t)cdhRef->GetL1TriggerMessage() << " ) " << " != " << (Int_t)l1Message << " ( " << (Int_t)cdh->GetL1TriggerMessage() << " )" << endl;
