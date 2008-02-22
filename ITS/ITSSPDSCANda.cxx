@@ -1,12 +1,12 @@
 /*
-- Contact: - henrik.tydesjo@cern.ch
-- Link: - http://tydes.home.cern.ch/tydes/doc/CalibrationOverview/CalibrationAlgorithms/
-- Run Type: - DAQ_MIN_TH_SCAN,DAQ_MEAN_TH_SCAN,DAQ_UNIFORMITY_SCAN,DAQ_NOISY_PIX_SCAN,DAQ_PIX_DELAY_SCAN,DAQ_FO_UNIF_SCAN
-- DA Type: - LDC
-- Number of events needed:
-- Input Files: - daq db config files: spd_standal_params,spd_perm_noisy ,  previous noisy lists: ./calibResults/ScanNoisy/* ,  raw data
-- Output Files: - Ref Data: ./calibResults/ScanReference/* ,  DCS update: ./calibResults/ScanDCSconfigToFXS/* ,  OCDB update: ./calibResults/ScanNoisyToFXS/* ,  persistent files: ./calibResults/ScanNoisy/*
-- Trigger types used: 
+Contact: henrik.tydesjo@cern.ch
+Link: tydes.home.cern.ch/tydes/doc/CalibrationOverview/CalibrationAlgorithms/
+Run Type: DAQ_MIN_TH_SCAN,DAQ_MEAN_TH_SCAN,DAQ_UNIFORMITY_SCAN,DAQ_NOISY_PIX_SCAN,DAQ_PIX_DELAY_SCAN,DAQ_FO_UNIF_SCAN
+DA Type: LDC
+Number of events needed: Depending on scan type
+Input Files: spd_standal_params,spd_perm_noisy ,  ./calibResults/ScanNoisy/* ,  raw data
+Output Files: ./calibResults/ScanReference/* ,  ./calibResults/ScanDCSconfigToFXS/* ,  ./calibResults/ScanNoisyToFXS/* ,  ./calibResults/ScanNoisy/*
+Trigger types used: PHYSICS
 */
 
 ////////////////////////////////////////////////////////////////////////////////
