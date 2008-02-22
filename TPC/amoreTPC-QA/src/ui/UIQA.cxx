@@ -47,7 +47,7 @@ using amore::subscriber::Subscribe;
 UIQA::UIQA() {
 
  Construct(); // Temporary but important!!! Do not forget to put this call in the constructor for the time being!
- 
+ fCycle=0; 
 }
 
 
@@ -225,30 +225,33 @@ void UIQA::EndOfCycle() {
   void UIQA::MakeTree(AliTPCdataQA* ped){
     //
     //
-    AliTPCPreprocessorOnline preprocesor;
-    if (ped->GetMaxCharge()) preprocesor.AddComponent(ped->GetMaxCharge());  
-    if (ped->GetMeanCharge()) preprocesor.AddComponent(ped->GetMeanCharge());  
-    if (ped->GetOverThreshold0()) preprocesor.AddComponent(ped->GetOverThreshold0());
-    if (ped->GetOverThreshold5()) preprocesor.AddComponent(ped->GetOverThreshold5());
-    if (ped->GetOverThreshold10()) preprocesor.AddComponent(ped->GetOverThreshold10());
-    if (ped->GetOverThreshold20()) preprocesor.AddComponent(ped->GetOverThreshold20());
-    if (ped->GetOverThreshold30()) preprocesor.AddComponent(ped->GetOverThreshold30());
+    AliTPCPreprocessorOnline * preprocesor = new AliTPCPreprocessorOnline;
+    if (ped->GetMaxCharge()) preprocesor->AddComponent(new AliTPCCalPad(*(ped->GetMaxCharge())));  
+    if (ped->GetMeanCharge()) preprocesor->AddComponent(new AliTPCCalPad(*(ped->GetMeanCharge())));  
+    if (ped->GetOverThreshold0()) preprocesor->AddComponent(new AliTPCCalPad(*(ped->GetOverThreshold0())));
+    if (ped->GetOverThreshold5()) preprocesor->AddComponent(new AliTPCCalPad(*(ped->GetOverThreshold5())));
+    if (ped->GetOverThreshold10()) preprocesor->AddComponent(new AliTPCCalPad(*(ped->GetOverThreshold10())));
+    if (ped->GetOverThreshold20()) preprocesor->AddComponent(new AliTPCCalPad(*(ped->GetOverThreshold20())));
+    if (ped->GetOverThreshold30()) preprocesor->AddComponent(new AliTPCCalPad(*(ped->GetOverThreshold30())));
     AliTPCCalPad * noise = GetNoise();
-    if (noise)  preprocesor.AddComponent(noise);
+    if (noise)  preprocesor->AddComponent(new AliTPCCalPad(*noise));
     AliTPCCalPad * pedestal = GetPedestal();
-      if (pedestal)  preprocesor.AddComponent(pedestal);
-    preprocesor.DumpToFile("CalibTree2.root");
+    if (pedestal)  preprocesor->AddComponent(new AliTPCCalPad(*pedestal));
+    char fname[10000];
+    sprintf(fname,"QAtree%d.root",fCycle);
+    preprocesor->DumpToFile(fname);
+    fCycle++;
     delete noise;
     delete pedestal;
     //  /*CalibTree
     AliTPCCalibViewer *viewer = fViewerGUI->GetViewer();
-    AliTPCCalibViewer *nviewer = new  AliTPCCalibViewer("CalibTree2.root", "calPads");
+    AliTPCCalibViewer *nviewer = new  AliTPCCalibViewer(fname, "calPads");
     fViewerGUI->Initialize(nviewer);
     //*/
     //
     //
     //
-    
+  delete preprocesor;
   }
 
   AliTPCCalPad *  UIQA::GetNoise(){

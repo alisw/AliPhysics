@@ -67,6 +67,7 @@ class UIQA : public amore::ui::VisualModule, public amore::TPC::common::Common {
  TGNumberEntryField* fNEF[10];
  TGTextView* fTextView[10];
  AliTPCCalibViewerGUI *fViewerGUI;
+ Int_t fCycle;
  ClassDef(UIQA, 1);
 
 };
