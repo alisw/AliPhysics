@@ -3044,7 +3044,7 @@ Bool_t AliShuttle::SendMail()
 		cc += Form("%s,", anAdmin->GetName());
 	}
 	if (cc.Length() > 0)
-	  cc.Remove(to.Length()-1);
+	  cc.Remove(cc.Length()-1);
 	AliDebug(2, Form("cc: %s",to.Data()));
 
 	TString subject = Form("%s Shuttle preprocessor FAILED in run %d (run type = %s)!",
@@ -3176,7 +3176,7 @@ Bool_t AliShuttle::SendMailToDCS()
 		cc += Form("%s,", anAdmin->GetName());
 	}
 	if (cc.Length() > 0)
-	  cc.Remove(to.Length()-1);
+	  cc.Remove(cc.Length()-1);
 	AliDebug(2, Form("cc: %s",to.Data()));
 
 	TString subject = Form("Retrieval of data points for %s FAILED in run %d !",
