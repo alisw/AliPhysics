@@ -22,7 +22,7 @@ endif
 	@echo "done"
 
 %.o:    %.cxx %.h
-	$(CXX) $(PACKCXXFLAGS)  -I$(ALICE_ROOT)/TPC  -I$(ALICE_ROOT)/STEER -c $< -o $@
+	$(CXX) $(PACKCXXFLAGS)  -I$(ALICE_ROOT)/TPC  -I$(ALICE_ROOT)/STEER -I$(ALICE_ROOT)/ANALYSIS -c $< -o $@
 
 clean:
 	@rm -f $(OBJS) *.so G__$(PACKAGE).*

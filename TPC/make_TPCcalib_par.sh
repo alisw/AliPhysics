@@ -29,7 +29,8 @@ cp $SRC/AliTPCCal*.cxx              $EDIR
 cp $SRC/AliTPCcal*.h                $EDIR
 cp $SRC/AliTPCcal*.cxx              $EDIR
 cp $SRC/AliTPCSel*.cxx              $EDIR
-cp $SRC/AliTPCSel*.h              $EDIR
+cp $SRC/AliTPCSel*.h                $EDIR
+cp $SRC/AliTPC*Ana*.*               $EDIR
 cp $SRC/TPCcalibLinkDef.h           $EDIR
 cp $SRC/Makefile.Calib              $EDIR/Makefile
 cp $SRC/Makefile.arch.Calib         $EDIR/Makefile.arch
