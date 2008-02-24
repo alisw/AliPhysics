@@ -1,3 +1,4 @@
+#-*- Mode: Makefile -*-
 # $Id$
 
 SRCS:= AliMUONPairLight.cxx \
@@ -9,10 +10,18 @@ SRCS:= AliMUONPairLight.cxx \
        AliMUONTriggerGUIbdmap.cxx \
        AliMUONTriggerGUIdimap.cxx \
        AliMUONTriggerGUIboard.cxx
-            
+
 HDRS:= $(SRCS:.cxx=.h)
 
 DHDR:= MUONevaluationLinkDef.h
 
 EINCLUDE:= RAW MUON/mapping
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+                         -lMUONmapping -lMUONtrigger \
+                         -lMUONgeometry -lMUONbase -lMUONsim -lMUONrec -lMUONcore \
+                         -lSTEER -lCDB -lESD -lSTEERBase \
+                         -L$(shell root-config --libdir) -lEG -lGui
+endif
 

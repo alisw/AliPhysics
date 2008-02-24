@@ -1,3 +1,4 @@
+#-*- Mode: Makefile -*-
 # $Id$
 
 SRCS:=  mapping/AliMpIntPair.cxx  \
@@ -16,10 +17,15 @@ SRCS:=  mapping/AliMpIntPair.cxx  \
         AliMUONCheckItemIterator.cxx \
         AliMUONVStore.cxx \
         AliMUONTreeManager.cxx \
-        AliMUONLogger.cxx \
-        
+        AliMUONLogger.cxx
+
 HDRS:= $(SRCS:.cxx=.h)
 
 DHDR:= MUONcoreLinkDef.h
 
 EINCLUDE:= RAW MUON/mapping
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+                         -lSTEERBase
+endif

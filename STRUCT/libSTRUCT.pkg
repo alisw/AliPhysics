@@ -1,14 +1,22 @@
+#-*- Mode: Makefile -*-
+
 SRCS=  	AliMAG.cxx      AliABSO.cxx       AliABSOv0.cxx \
-       	AliDIPO.cxx     AliDIPOv2.cxx     AliDIPOv3.cxx \
-       	AliFRAME.cxx    AliFRAMEv0.cxx    AliFRAMEv1.cxx AliFRAMEv2.cxx \
-       	AliHALL.cxx     AliHALLv3.cxx     \
+	AliDIPO.cxx     AliDIPOv2.cxx     AliDIPOv3.cxx \
+	AliFRAME.cxx    AliFRAMEv0.cxx    AliFRAMEv1.cxx AliFRAMEv2.cxx \
+	AliHALL.cxx     AliHALLv3.cxx     \
 	AliSHIL.cxx 	AliSHILv0.cxx AliSHILvF.cxx AliABSOv3.cxx\
-       	AliPIPE.cxx     AliPIPEv0.cxx AliPIPEv3.cxx \
-       	AliBODY.cxx     AliALIFE.cxx AliSHILv2.cxx AliSHILv3.cxx \
-       	AliFieldReader.cxx	
+	AliPIPE.cxx     AliPIPEv0.cxx AliPIPEv3.cxx \
+	AliBODY.cxx     AliALIFE.cxx AliSHILv2.cxx AliSHILv3.cxx \
+	AliFieldReader.cxx	
 
 
 HDRS= $(SRCS:.cxx=.h)
 
 DHDR:=STRUCTLinkDef.h
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+                         -lSTEER -lSTEERBase \
+                         -L$(shell root-config --libdir) -lVMC -lGeom
+endif
 

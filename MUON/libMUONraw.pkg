@@ -1,3 +1,4 @@
+#-*- Mode: Makefile -*-
 # $Id$
 
 SRCS:= AliMUONDDLTrigger.cxx \
@@ -15,7 +16,6 @@ SRCS:= AliMUONDDLTrigger.cxx \
        AliMUONRawStreamTrackerHP.cxx \
        AliMUONRawStreamTrigger.cxx \
        AliMUONRawStream.cxx
- 
 
 HDRS:= $(SRCS:.cxx=.h)
 
@@ -23,3 +23,9 @@ DHDR:= MUONrawLinkDef.h
 
 
 EINCLUDE := RAW MUON/mapping
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+                         -lMUONcore -lSTEERBase \
+                         -lRAWDatarec
+endif

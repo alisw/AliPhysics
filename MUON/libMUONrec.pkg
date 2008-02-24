@@ -1,3 +1,4 @@
+#-*- Mode: Makefile -*-
 # $Id$
 
 SRCS:= AliMUONReconstructor.cxx \
@@ -40,9 +41,18 @@ SRCS:= AliMUONReconstructor.cxx \
        AliMUONQAChecker.cxx \
        AliMUONClusterFinderPeakCOG.cxx \
        AliMUONClusterFinderPeakFit.cxx
-       
+
 HDRS:= $(SRCS:.cxx=.h)
 
 DHDR:= MUONrecLinkDef.h
 
 EINCLUDE := RAW MUON/mapping
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+                         -lMUONbase -lMUONmapping -lMUONcalib -lMUONtrigger \
+                         -lMUONgeometry -lMUONraw -lMUONcore \
+                         -lSTEER -lCDB -lESD -lSTEERBase \
+                         -lRAWDatasim -lRAWDatabase \
+                         -L$(shell root-config --libdir) -lMinuit -lVMC -lEG -lGeom 
+endif

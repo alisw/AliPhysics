@@ -1,3 +1,4 @@
+#-*- Mode: Makefile -*-
 # $Id$
 
 SRCS:=  AliMUONConstants.cxx \
@@ -23,10 +24,18 @@ SRCS:=  AliMUONConstants.cxx \
         AliMUONTriggerCircuit.cxx \
         AliMUONVTriggerStore.cxx \
         AliMUONTriggerStoreV1.cxx \
-        
+
 HDRS:= $(SRCS:.cxx=.h)
 
 DHDR:= MUONbaseLinkDef.h
 
 EINCLUDE:= RAW MUON/mapping
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+                         -lMUONmapping -lMUONcalib -lMUONtrigger \
+                         -lMUONgeometry -lMUONraw -lMUONcore \
+                         -lSTEER -lCDB -lESD -lSTEERBase \
+                         -lRAWDatasim -lRAWDatabase
+endif
 

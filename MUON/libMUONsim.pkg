@@ -1,3 +1,4 @@
+#-*- Mode: Makefile -*-
 # $Id$
 
 SRCS:= AliMUON.cxx \
@@ -27,9 +28,8 @@ SRCS:= AliMUON.cxx \
        AliMUONMCDataInterface.cxx \
        AliMUONPedestalEventGenerator.cxx \
        AliMUONGainEventGenerator.cxx \
-	   AliMUONQADataMakerSim.cxx 
+       AliMUONQADataMakerSim.cxx 
 
-                           
 HDRS:= $(SRCS:.cxx=.h)
 
 DHDR:= MUONsimLinkDef.h
@@ -37,3 +37,12 @@ DHDR:= MUONsimLinkDef.h
 EINCLUDE:= RAW MUON/mapping
 
 #PACKCXXFLAGS:= $(CXXFLAGS) -Wall
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+                         -lMUONbase -lMUONmapping -lMUONcalib -lMUONtrigger \
+                         -lMUONgeometry -lMUONraw -lMUONcore \
+                         -lSTEER -lCDB -lSTEERBase \
+                         -lRAWDatasim -lRAWDatabase \
+                         -L$(shell root-config --libdir) -lVMC -lEG -lGeom 
+endif

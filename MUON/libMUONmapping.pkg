@@ -1,3 +1,4 @@
+#-*- Mode: Makefile -*-
 # $Id$
 
 #
@@ -18,8 +19,8 @@ SRCS +=  \
 	 mapping/AliMpPadPair.cxx  \
 	 mapping/AliMpVIndexed.cxx  \
 	 mapping/AliMpVPadIterator.cxx  \
-	 mapping/AliMpVSegmentation.cxx  \
-   
+	 mapping/AliMpVSegmentation.cxx
+
 # Category motif
 #
 SRCS +=  \
@@ -32,7 +33,7 @@ SRCS +=  \
 	 mapping/AliMpMotifSpecial.cxx  \
 	 mapping/AliMpMotifType.cxx  \
 	 mapping/AliMpMotifTypePadIterator.cxx  \
-	 mapping/AliMpVMotif.cxx  \
+	 mapping/AliMpVMotif.cxx
 
 # Category sector
 #
@@ -67,8 +68,8 @@ SRCS +=  \
 	 mapping/AliMpSlatSegmentation.cxx  \
 	 mapping/AliMpPCBPadIterator.cxx  \
 	 mapping/AliMpSt345Reader.cxx  \
-   mapping/AliMpSlatMotifMap.cxx
-   
+	 mapping/AliMpSlatMotifMap.cxx
+
 # Category trigger
 #
 SRCS +=  \
@@ -96,8 +97,8 @@ SRCS +=  \
          mapping/AliMpBusPatch.cxx \
          mapping/AliMpDDL.cxx \
 	 mapping/AliMpDDLStore.cxx \
-	 mapping/AliMpCDB.cxx \
-	 
+	 mapping/AliMpCDB.cxx
+
 # Category graphics
 #
 SRCS +=  \
@@ -115,8 +116,13 @@ SRCS +=  \
          mapping/AliMpIteratorPainter.cxx
 
 HDRS  = $(SRCS:.cxx=.h)
-#HDRS  = $(SRCS:.cxx=.h)
- 
+
 DHDR := MUONmappingLinkDef.h
- 
+
 EINCLUDE:= RAW MUON/mapping
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+                         -lCDB -lSTEERBase -lMUONcore \
+                         -L$(shell root-config --libdir) -lGui
+endif

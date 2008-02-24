@@ -1,4 +1,5 @@
-# $Id$
+#-*- Mode: Makefile -*-
+# $Id: $
 
 SRCS:=  AliMUONVPainter.cxx \
   AliMUONPCBPainter.cxx \
@@ -34,10 +35,17 @@ SRCS:=  AliMUONVPainter.cxx \
   AliMUONMchViewApplication.cxx \
   AliMUONSparseHisto.cxx \
   AliMUONTrackerDataHistogrammer.cxx
-    
+
 HDRS:= $(SRCS:.cxx=.h) 
 
 DHDR:= MUONgraphicsLinkDef.h
 
 EINCLUDE:= RAW MUON/mapping
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+                         -lMUONbase -lMUONrec -lMUONmapping -lMUONgeometry -lMUONcalib -lMUONraw -lMUONcore \
+                         -lCDB -lRAWDatarec -lSTEERBase \
+                         -L$(shell root-config --libdir) -lThread -lGeom -lGui
+endif
 

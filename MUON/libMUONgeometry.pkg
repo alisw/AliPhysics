@@ -1,3 +1,4 @@
+#-*- Mode: Makefile -*-
 # $Id$
 #
 # The framework classes for geometry construction
@@ -15,9 +16,15 @@ SRCS  =  AliMUONGeometryConstituent.cxx \
 	 AliMUONGeometry.cxx \
 	 AliMUONVGeometryBuilder.cxx \
 	 AliMUONGeometryBuilder.cxx
-   
+
 HDRS =  $(SRCS:.cxx=.h) 
 
 EINCLUDE:= RAW MUON/mapping
 
 DHDR:= MUONgeometryLinkDef.h
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+                         -lSTEER -lMUONmapping  -lMUONcore -lSTEERBase \
+                         -L$(shell root-config --libdir) -lVMC -lGeom
+endif
