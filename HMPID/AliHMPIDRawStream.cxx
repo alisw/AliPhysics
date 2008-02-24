@@ -65,6 +65,9 @@ AliHMPIDRawStream::AliHMPIDRawStream(AliRawReader* rawReader) :
     for(Int_t ierr=0; ierr < kSumErr; ierr++) fNumOfErr[iddl][ierr]=0;               //reset errors  
   fRawReader->Reset();
   fRawReader->Select("HMPID");
+  
+  
+  
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 AliHMPIDRawStream::AliHMPIDRawStream() :
@@ -108,6 +111,19 @@ AliHMPIDRawStream::~AliHMPIDRawStream()
   // destructor
   //
   DelVars();
+  
+  
+  fDDLNumber=0;
+  fLDCNumber=0;
+  fTimeStamp=0;
+  fPosition=0;
+  fWord=0;
+  fZeroSup=0;
+  
+  for(Int_t i=0;i<kSumErr;i++) delete [] fNumOfErr[i]; 
+  delete [] fNumOfErr; 
+
+  if(fnDDLInStream) { delete [] fnDDLInStream; fnDDLInStream = 0x0; }
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDRawStream::Reset()
@@ -156,16 +172,15 @@ Bool_t AliHMPIDRawStream::Next()
   Int_t  rawDataSize=0;        
   if(fRawReader->GetType() == 7 || fRawReader->GetType() == 8 )  {           //New: Select Physics events, Old: Raw data size is not 0 and not 47148 (pedestal)
     fDDLNumber = fRawReader->GetDDLID();
-    //if(fnDDLInStream[fDDLNumber]==-1) { fnDDLInStream[fDDLNumber]=0; fnDDLOutStream[fDDLNumber]=0; }//Printf("Setting DDL number: %d to fnDDLInStream[]= %d",fDDLNumber,fnDDLInStream[fDDLNumber]);}
     fnDDLInStream[fDDLNumber]=1; fnDDLOutStream[fDDLNumber]=0;
-//    fnDDLInStream[fDDLNumber]++;
     
     fLDCNumber = fRawReader->GetLDCId();
     fTimeStamp = fRawReader->GetTimestamp();
     
     if(stDeb) Printf("DDL %i started to be decoded!",fDDLNumber); 
     rawDataSize=fRawReader->GetDataSize()/4;
-    InitVars(rawDataSize);
+    DelVars();                                        //We have to delete the variables initialized in the InitVars before recall IntiVars!!!
+    InitVars(rawDataSize);                            //To read the charge and pads we cannot delete before the status return
     
     status = ReadHMPIDRawData();
    
@@ -175,8 +190,11 @@ Bool_t AliHMPIDRawStream::Next()
 //      DumpData(fRawReader->GetDataSize());
     }
 //    stDeb=kFALSE;
-  }
+  
+   
+    }
     if(status==kTRUE) {fnDDLOutStream[fDDLNumber]++; }//Printf("fnDDLOutStream[%d]=%d",fDDLNumber,fnDDLOutStream[fDDLNumber]); } //Count the number of events when the DDL was succesfully decoded
+   
     return status;
  //   return kTRUE;
 }
@@ -187,7 +205,7 @@ void AliHMPIDRawStream::InitVars(Int_t n)
   //
   //
   fNPads = 0;
-  fCharge = new Int_t[n];
+  fCharge = new Int_t[n]; 
   fPad = new Int_t[n];
   //for debug purpose
   fPos = new Int_t[4*n+4];                     //reset debug
@@ -199,22 +217,14 @@ void AliHMPIDRawStream::DelVars()
   //
   //
   // 
-  fNPads = 0;
-  fDDLNumber=0;
-  fLDCNumber=0;
-  fTimeStamp=0;
-  fPosition=0;
-  fWord=0;
-  fZeroSup=0;
-  fiPos=0;
-  
-  if (fCharge)     { delete [] fCharge;    fCharge = 0x0;    }
+  //Clean the initvars!!!!!!!!
+  fNPads = 0; 
+  if (fCharge)     { delete [] fCharge;    fCharge = 0x0; }
   if (fPad)        { delete [] fPad;       fPad = 0x0;       }   
   if (fPos)        { delete [] fPos;       fPos = 0x0;       }     
-  for(Int_t i=0;i<kSumErr;i++) delete [] fNumOfErr[i]; 
-  delete [] fNumOfErr; 
-
-  if(fnDDLInStream) { delete [] fnDDLInStream; fnDDLInStream = 0x0; }
+ 
+  fiPos=0;
+  
      
 }    
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
