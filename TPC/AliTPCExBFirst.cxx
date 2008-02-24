@@ -13,11 +13,27 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-////
+//
 // This implementation AliTPCExB is using an aproximate calculation of the ExB
 // effect. Therefore the drift ODE is Taylor expanded and only the first
 // order part is taken.
-////
+//
+// 
+// The ExB correction map is stored in the calib DB
+// To test current version:
+/*
+  char *storage = "local://OCDBres"
+  Int_t RunNumber=0;
+  AliCDBManager::Instance()->SetDefaultStorage(storage);
+  AliCDBManager::Instance()->SetRun(RunNumber) 
+  AliTPCExBFirst * exb = AliTPCcalibDB::Instance()->GetExB();
+
+  //  exb->TestExB("exb.root");
+  // TFile f("exb.root");
+  //positions->Draw("drphi");
+*/
+
+
 
 #include "TMath.h"
 #include "AliFieldMap.h"
@@ -40,6 +56,7 @@ AliTPCExBFirst::AliTPCExBFirst()
   //
   // purely for I/O
   //
+  SetInstance(this);
 }
 
 AliTPCExBFirst::AliTPCExBFirst(const AliMagF *bField,
@@ -57,6 +74,7 @@ AliTPCExBFirst::AliTPCExBFirst(const AliMagF *bField,
   // number of its meshpoints can be supplied.
   //
   ConstructCommon(0,bField);
+  SetInstance(this);
 }
 
 AliTPCExBFirst::AliTPCExBFirst(const AliFieldMap *bFieldMap,
@@ -71,7 +89,7 @@ AliTPCExBFirst::AliTPCExBFirst(const AliFieldMap *bFieldMap,
   // The constructor. One has to supply a field map and an (initial)
   // drift velocity.
   //
-
+  SetInstance(this);
   fkXMin=bFieldMap->Xmin()
     -TMath::Ceil( (bFieldMap->Xmin()+250.0)/bFieldMap->DelX())
     *bFieldMap->DelX();
