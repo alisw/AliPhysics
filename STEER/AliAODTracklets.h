@@ -44,7 +44,7 @@ class AliAODTracklets : public TNamed
   AliAODTracklets(const AliAODTracklets& evt); 
   AliAODTracklets& operator=(const AliAODTracklets& evt);
 
-  ClassDef(AliAODTracklets, 1);
+  ClassDef(AliAODTracklets, 2);
 };
 
 Double32_t AliAODTracklets::GetTheta(Int_t i) const 
