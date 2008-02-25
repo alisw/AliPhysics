@@ -16,7 +16,7 @@
 /* $Id: runReconstruction.C 23207 2007-12-20 09:59:20Z ivana $ */
 
 /// \ingroup macros
-/// \file runReconstruction.C
+/// \file runDataReconstruction.C
 /// \brief Macro for running reconstruction
 ///
 /// Macro for running reconstruction on the cosmics run data.
