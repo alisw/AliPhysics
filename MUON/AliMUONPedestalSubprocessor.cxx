@@ -23,6 +23,7 @@
 #include "AliMUON2DStoreValidator.h"
 #include "AliMUONCalibParamNF.h"
 #include "AliMUONPreprocessor.h"
+#include "AliMUONTrackerIO.h"
 #include "AliMpConstants.h"
 #include "AliMpDDLStore.h"
 #include "TObjString.h"
@@ -90,11 +91,7 @@ AliMUONPedestalSubprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endT
   {
     TString fileName(Master()->GetFile(kSystem,kId,o->GetName()));
     Int_t ok = ReadFile(fileName.Data());
-    if (!ok)
-    {
-      Master()->Log(Form("Could not read file %s",fileName.Data()));
-    }
-    else
+    if (ok>0)
     {
       n += ok;
     }
@@ -176,45 +173,14 @@ AliMUONPedestalSubprocessor::ReadFile(const char* filename)
   
   Master()->Log(Form("Reading %s",sFilename.Data()));
   
-  std::ifstream in(sFilename.Data());
-  if (!in.good()) 
-  {
-    Master()->Log(Form("Could not open %s",sFilename.Data()));
-    return 0;
-  }
-  char line[1024];
-  Int_t busPatchID, manuID, manuChannel;
-  Float_t pedMean, pedSigma;
-  static const Int_t kNchannels(AliMpConstants::ManuNofChannels());
-  Int_t n(0);
+  Int_t n = AliMUONTrackerIO::ReadPedestals(sFilename.Data(),*fPedestals);
   
-  while ( in.getline(line,1024) )
+  switch (n)
   {
-    AliDebug(3,Form("line=%s",line));
-    if ( line[0] == '/' && line[1] == '/' ) continue;
-    std::istringstream sin(line);
-    sin >> busPatchID >> manuID >> manuChannel >> pedMean >> pedSigma;
-    Int_t detElemID = AliMpDDLStore::Instance()->GetDEfromBus(busPatchID);
-    AliDebug(3,Form("BUSPATCH %3d DETELEMID %4d MANU %3d CH %3d MEAN %7.2f SIGMA %7.2f",
-             busPatchID,detElemID,manuID,manuChannel,pedMean,pedSigma));
-    
-    AliMUONVCalibParam* ped = 
-      static_cast<AliMUONVCalibParam*>(fPedestals->FindObject(detElemID,manuID));
-    
-    if (!ped) 
-    {
-      ped = new AliMUONCalibParamNF(2,kNchannels,
-                                    detElemID,manuID,
-                                    AliMUONVCalibParam::InvalidFloatValue());  
-      fPedestals->Add(ped);
-    }
-    ped->SetValueAsFloat(manuChannel,0,pedMean);
-    ped->SetValueAsFloat(manuChannel,1,pedSigma);
-    ++n;
+    case -1:
+      Master()->Log(Form("Could not open %s",sFilename.Data()));
+      break;
   }
-  in.close();
-  
-  Master()->Log("File closed");
   
   return n;
 }

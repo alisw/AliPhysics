@@ -16,6 +16,10 @@
 #  include "AliMUONVSubprocessor.h"
 #endif
 
+#ifndef ROOT_TString
+#  include "TString.h"
+#endif
+
 class AliMUONVStore;
 class TObjArray;
 
@@ -38,8 +42,10 @@ private:
 
 private:
   AliMUONVStore* fGains; //!< Gains for the MUON TRK
+  Bool_t fSkip; //!< whether we should skip this run (because it's dummy)
+  TString fComment; //<! comment for OCDB entry
   
-  ClassDef(AliMUONGainSubprocessor,1) // A shuttle preprocessor for MUON TRK gains
+  ClassDef(AliMUONGainSubprocessor,2) // A shuttle preprocessor for MUON TRK gains
 };
 
 #endif

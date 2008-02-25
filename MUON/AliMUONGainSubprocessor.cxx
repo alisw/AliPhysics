@@ -24,6 +24,7 @@
 #include "AliMUONCalibParamNF.h"
 #include "AliMUONConstants.h"
 #include "AliMUONPreprocessor.h"
+#include "AliMUONTrackerIO.h"
 #include "AliMpConstants.h"
 #include "AliMpDDLStore.h"
 #include <Riostream.h>
@@ -59,7 +60,9 @@ AliMUONGainSubprocessor::AliMUONGainSubprocessor(AliMUONPreprocessor* master)
 : AliMUONVSubprocessor(master,
                        "Gains",
                        "Upload MUON Tracker Gains to OCDB"),
-fGains(0x0)
+fGains(0x0),
+fSkip(kFALSE),
+fComment("")
 {
   /// default ctor
 }
@@ -80,6 +83,9 @@ AliMUONGainSubprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTime)
   const Int_t kSystem = AliMUONPreprocessor::kDAQ;
   const char* kId = "GAINS";
   
+  fComment = "";
+  fSkip = kFALSE;
+  
   delete fGains;
   fGains = new AliMUON2DMap(kTRUE);
   
@@ -95,22 +101,31 @@ AliMUONGainSubprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTime)
   {
     TString fileName(Master()->GetFile(kSystem,kId,o->GetName()));
     Int_t ok = ReadFile(fileName.Data());
-    if (!ok)
-    {
-      Master()->Log(Form("Could not read file %s",fileName.Data()));
-    }
-    else
+    if (ok>0)
     {
       n += ok;
     }
+    else if ( ok == AliMUONTrackerIO::kDummyFile )
+    {
+      // not an interesting file.
+      fSkip = kTRUE;
+      break;
+    }
   }
   
-  if (!n)
+  if ( fSkip ) 
+  {
+    delete fGains;
+    fGains = 0x0;
+  }
+  
+  if (!n && !fSkip)
   {
     Master()->Log("Failed to read any Gains");
     delete fGains;
-    fGains = 0;
+    fGains = 0x0;
   }
+  
   delete sources;
 }
 
@@ -123,8 +138,15 @@ AliMUONGainSubprocessor::Process(TMap* /*dcsAliasMap*/)
   if (!fGains) 
   {
     // this is the only reason to fail for the moment : getting no Gain
-    // at all.
-    return 1;
+    // at all, except if the input file was a dummy one
+    if ( fSkip ) 
+    {
+      return 0;
+    }
+    else
+    {
+      return 1;
+    }
   }
     
   AliMUON2DStoreValidator validator;
@@ -176,55 +198,27 @@ AliMUONGainSubprocessor::ReadFile(const char* filename)
   ///                                                                         
   /// Return kFALSE if reading was not successfull.                           
   ///
-  
+
   TString sFilename(gSystem->ExpandPathName(filename));
   
   Master()->Log(Form("Reading %s",sFilename.Data()));
-  
-  std::ifstream in(sFilename.Data());
-  if (!in.good()) 
-  {
-    return 0;
-  }
-  char line[1024];
-  Int_t busPatchID, manuID, manuChannel;
-  Float_t a0, a1;
-  Int_t thres;
-  UInt_t qual;
-  const Int_t kSaturation(3000); // FIXME: how to get this number ?
-  
-  static const Int_t kNchannels(AliMpConstants::ManuNofChannels());
-  Int_t n(0);
-  
-  while ( in.getline(line,1024) )
-  {
-    if ( strlen(line) < 10 ) continue;
-    if ( line[0] == '/' && line[1] == '/' ) continue;
+    
+  Int_t n = AliMUONTrackerIO::ReadGains(sFilename.Data(),*fGains,fComment);
 
-    sscanf(line,"%d %d %d %f %f %d %x",&busPatchID,&manuID,&manuChannel,
-           &a0,&a1,&thres,&qual); 
-    AliDebug(3,Form("line=%s",line));
-    Int_t detElemID = AliMpDDLStore::Instance()->GetDEfromBus(busPatchID);
-    AliDebug(3,Form("BUSPATCH %3d DETELEMID %4d MANU %3d CH %3d A0 %7.2f "
-                    "A1 %e THRES %5d QUAL %x",
-                    busPatchID,detElemID,manuID,manuChannel,a0,a1,thres,qual));
-    if ( qual == 0 ) continue;
-    
-    AliMUONVCalibParam* gain = 
-      static_cast<AliMUONVCalibParam*>(fGains->FindObject(detElemID,manuID));
-    
-    if (!gain) 
-    {
-      gain = new AliMUONCalibParamNF(5,kNchannels,detElemID,manuID,0);
-      fGains->Add(gain);
-    }
-    gain->SetValueAsFloat(manuChannel,0,a0);
-    gain->SetValueAsFloat(manuChannel,1,a1);
-    gain->SetValueAsInt(manuChannel,2,thres);
-    gain->SetValueAsInt(manuChannel,3,qual);
-    gain->SetValueAsInt(manuChannel,4,kSaturation);
-    ++n;
+  switch (n)
+  {
+    case AliMUONTrackerIO::kCannotOpenFile:
+      Master()->Log(Form("Could not open %s",sFilename.Data()));
+      break;
+    case AliMUONTrackerIO::kFormatError:
+      Master()->Log(Form("File %s is not of the expected format",sFilename.Data()));
+      break;
+    case AliMUONTrackerIO::kDummyFile:
+      Master()->Log(Form("File %s is a dummy one. That's fine. I won't do anything then ;-)",sFilename.Data()));
+      break;
+    default:
+      break;
   }
-  in.close();
+  
   return n;
 }

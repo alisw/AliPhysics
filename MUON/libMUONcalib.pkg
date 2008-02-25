@@ -8,7 +8,8 @@ SRCS:=  AliMUONTriggerLut.cxx \
         AliMUONCalibParamNI.cxx \
         AliMUONTriggerEfficiencyCells.cxx\
         AliMUON2DStoreValidator.cxx \
-        AliMUONTriggerIO.cxx
+        AliMUONTriggerIO.cxx \
+        AliMUONTrackerIO.cxx
 
 HDRS:= $(SRCS:.cxx=.h)
 

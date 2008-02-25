@@ -15,9 +15,10 @@
 
 /* $Id$ */
 
-/*-------------------------------------------------------------------------------
-/* 14/12/07 New version: MUONTRKda.cxx,v 1.10
-/*-------------------------------------------------------------------------------
+/*
+-------------------------------------------------------------------------
+   2008-02-22 New version: MUONTRKda.cxx,v 1.11
+-------------------------------------------------------------------------
 
 Version for MUONTRKda MUON tracking
 (A. Baldisseri, J.-L. Charvet & Ch. Finck)
@@ -89,18 +90,22 @@ TH1F*  gPedMeanHisto  = 0x0;
 TH1F*  gPedSigmaHisto = 0x0;
 Char_t gHistoFileName[256];
 
-// used by makegain 
-Char_t gHistoFileName_gain[256]="MUONTRKda_gain_data.root";
+// used for computing gain parameters 
+Int_t nbpf1 = 6; // linear fit over nbf1 points
+
+//Char_t gHistoFileName_gain[256]="MUONTRKda_gain_data.root";
+Char_t gHistoFileName_gain[256]="MUONTRKda_gain.data";
 Char_t gRootFileName[256];
 Char_t gOutFolder[256]=".";
 Char_t filename[256];
 Char_t filenam[256]="MUONTRKda_gain"; 
-Char_t flatFile[256];
+Char_t flatFile[256]="";
 
-ofstream filcout;
+//ofstream filcout;
 
 TString flatOutputFile;
 TString logOutputFile;
+TString logOutputFile_comp;
 TString gCommand("ped");
 TTimeStamp date;
 
@@ -285,10 +290,38 @@ void MakePedStoreForGain(Int_t injCharge)
 
     TTree* tree = 0x0;
 
-    // compute and store pedestals
-    sprintf(flatFile,"%s/%s_%d_DAC_%d.ped",gOutFolder,filenam,gRunNumber,injCharge);
-    cout << "\nMUONTRKda : Flat file  generated             : " << flatFile << "\n";
-    MakePedStore(flatFile);
+    FILE *pfilew=0;
+    if (gCommand.Contains("gain") && !gCommand.Contains("comp")) {
+      if(flatOutputFile.IsNull())
+	{
+	  sprintf(filename,"%s_%d_DAC_%d.par",filenam,gRunNumber,injCharge);
+	  flatOutputFile=filename;
+	}
+      if(!flatOutputFile.IsNull())
+	{
+	  pfilew = fopen (flatOutputFile.Data(),"w");
+
+	  fprintf(pfilew,"//DUMMY FILE (to prevent Shuttle failure)\n");
+	  fprintf(pfilew,"//================================================\n");
+	  fprintf(pfilew,"//       MUONTRKda: Calibration run  \n");
+	  fprintf(pfilew,"//=================================================\n");
+	  fprintf(pfilew,"//   * Run           : %d \n",gRunNumber); 
+	  fprintf(pfilew,"//   * Date          : %s \n",date.AsString("l"));
+	  fprintf(pfilew,"//   * DAC           : %d \n",injCharge);
+	  fprintf(pfilew,"//-------------------------------------------------\n");
+	  fclose(pfilew);
+	}
+    }
+
+    if(gPrintLevel>=2)
+      {
+        // compute and store pedestals
+	sprintf(flatFile,"%s/%s_%d_DAC_%d.ped",gOutFolder,filenam,gRunNumber,injCharge);
+	cout << "\nMUONTRKda : Flat file  generated             : " << flatFile << "\n";
+	MakePedStore(flatFile);
+      }
+    else
+      MakePedStore();
     
     TString mode("UPDATE");
 
@@ -326,10 +359,16 @@ void MakePedStoreForGain(Int_t injCharge)
 // void MakeGainStore(TString flatOutputFile)
 void MakeGainStore()
 {
+    ofstream filcouc;
+
     Double_t goodA1Min =  0.5;
     Double_t goodA1Max =  2.;
+//     Double_t goodA1Min =  0.7;
+//     Double_t goodA1Max =  1.7;
     Double_t goodA2Min = -0.5E-03;
     Double_t goodA2Max =  1.E-03;
+
+    Int_t num_RUN[15],val_DAC[15];
 
     // open file mutrkgain.root
     // read again the pedestal for the calibration runs (9 runs ?)
@@ -356,9 +395,12 @@ void MakeGainStore()
       tree->SetBranchAddress("ped",&map[i]);
       tree->SetBranchAddress("run",&run[i]);
       tree->GetEvent(i);
-//       std::cout << map[i] << " " << run[i] << std::endl;
+//        std::cout << map[i] << " " << run[i] << std::endl;
     }
-    gRunNumber=(UInt_t)run[0]->GetFirst();
+//jlc_feb_08  modif:   gRunNumber=(UInt_t)run[0]->GetFirst();
+      gRunNumber=(UInt_t)run[nEntries-1]->GetFirst();
+//     sscanf(getenv("DATE_RUN_NUMBER"),"%d",&gRunNumber);
+
 
     // some print
     cout<<"\n ********  MUONTRKda for Gain computing (Run = " << gRunNumber << ")\n" << endl;
@@ -366,6 +408,8 @@ void MakeGainStore()
     cout << " Entries = " << nEntries << " DAC values \n" << endl; 
     for (Int_t i = 0; i < nEntries; ++i) {
       cout<< " Run = " << (Double_t)run[i]->GetFirst() << "    DAC = " << (Double_t)run[i]->GetSecond() << endl;
+      num_RUN[i]=(Double_t)run[i]->GetFirst();
+      val_DAC[i]=(Double_t)run[i]->GetSecond();
     }
     cout << "" << endl;
 
@@ -375,17 +419,16 @@ void MakeGainStore()
     Double_t injCharge[11];
     Double_t injChargeErr[11];
 
-// full print out 
+    // full print out 
 
     sprintf(filename,"%s/%s_%d.log",gOutFolder,filenam,gRunNumber);
-    logOutputFile=filename;
+    logOutputFile_comp=filename;
 
-    filcout.open(logOutputFile.Data());
-    filcout<<"//====================================================" << endl;
-    filcout<<"//        MUONTRKda for Gain computing (Run = " << gRunNumber << ")" << endl;
-    filcout<<"//====================================================" << endl;
-    filcout<<"//   * Date          : " << date.AsString("l") << "\n" << endl;
-
+    filcouc.open(logOutputFile_comp.Data());
+    filcouc<<"//====================================================" << endl;
+    filcouc<<"//        MUONTRKda for Gain computing (Run = " << gRunNumber << ")" << endl;
+    filcouc<<"//====================================================" << endl;
+    filcouc<<"//   * Date          : " << date.AsString("l") << "\n" << endl;
 
 
 
@@ -428,7 +471,7 @@ void MakeGainStore()
     {
       pfilew = fopen (flatOutputFile.Data(),"w");
 
-      fprintf(pfilew,"//=================================================\n");
+      fprintf(pfilew,"//================================================\n");
       fprintf(pfilew,"//  Calibration file calculated by MUONTRKda \n");
       fprintf(pfilew,"//=================================================\n");
       fprintf(pfilew,"//   * Run           : %d \n",gRunNumber); 
@@ -437,6 +480,13 @@ void MakeGainStore()
       fprintf(pfilew,"//   * # of MANUS    : %d \n",gNManu);
       fprintf(pfilew,"//   * # of channels : %d \n",gNChannel);
       fprintf(pfilew,"//-------------------------------------------------\n");
+      fprintf(pfilew,"//   %d DAC values \n",nEntries);
+      fprintf(pfilew,"//   RUN     DAC   \n");
+      fprintf(pfilew,"//-----------------\n");
+      for (Int_t i = 0; i < nEntries; ++i) {
+      tree->SetBranchAddress("run",&run[i]);
+	fprintf(pfilew,"//   %d    %d \n",num_RUN[i],val_DAC[i]);
+      }
       fprintf(pfilew,"//=======================================\n");
       fprintf(pfilew,"// BP MANU CH.   a1      a2     thres. Q\n");
       fprintf(pfilew,"//=======================================\n");
@@ -470,7 +520,7 @@ void MakeGainStore()
     Double_t chi2P2  = 0.;
     Double_t prChi2  = 0; 
     Double_t prChi2P2 =0;
-    Double_t a0,a1,a2;
+    Double_t a0=0.,a1=1.,a2=0.;
     Int_t busPatchId ;
     Int_t manuId     ;
     Int_t channelId ;
@@ -582,7 +632,8 @@ void MakeGainStore()
 
 	Int_t nInit = 1;
 	Int_t nbs   = nEntries - nInit;
-	Int_t nbpf1 = 6; // linear fit over nbf1 points
+// 	Int_t nbpf1 = 6; // define as global variable
+	if(nbs < nbpf1)nbpf1=nbs;
 
 	for (Int_t j = 0; j < nbs; ++j)
 	{
@@ -650,16 +701,16 @@ void MakeGainStore()
 	      // ------------- print out in log file
 // 	  if (busPatchId == 6 && manuId == 116 && ( channelId >= 17 && channelId <= 20) ) 
 // 	    {
-// 	      filcout << " \n ********! Print_out.: BP= " << busPatchId << " Manu_Id= " << manuId 
+// 	      filcouc << " \n ********! Print_out.: BP= " << busPatchId << " Manu_Id= " << manuId 
 // 			<< " Ch.= " << channelId << ":" << endl;
 
 // 	      for (Int_t j = 0; j < nbpf1; ++j)
-// 		{filcout << j << " " << x[j] << " " << xErr[j] << " " << y[j] << " " << yErr[j] << endl;}
-// 	      filcout << "  a0,a1 = " << a0 << " , " << a1 << " pr_chi2 = " <<  prChi2 << endl ;
+// 		{filcouc << j << " " << x[j] << " " << xErr[j] << " " << y[j] << " " << yErr[j] << endl;}
+// 	      filcouc << "  a0,a1 = " << a0 << " , " << a1 << " pr_chi2 = " <<  prChi2 << endl ;
 
 // 	      for (Int_t j = 0; j < nbpf2; ++j)
-// 		{filcout << j << " " << xp[j] << " " << xpErr[j] << " " << yp[j] << " " << ypErr[j] << endl;}
-// 	      filcout << "  a2 = " << par[0] << " pr_chi2_2 = " <<  prChi2P2 << endl;
+// 		{filcouc << j << " " << xp[j] << " " << xpErr[j] << " " << yp[j] << " " << ypErr[j] << endl;}
+// 	      filcouc << "  a2 = " << par[0] << " pr_chi2_2 = " <<  prChi2P2 << endl;
 	      
 // 	    }
 	// ------------------------------------------
@@ -668,14 +719,15 @@ void MakeGainStore()
 
 	  a2 = par[0];
 
+// 	  delete graphErr;
+
+	}
+
 	  par[0] = a0;
 	  par[1] = a1;
 	  par[2] = a2;
 	  par[3] = xLim;
 
-// 	  delete graphErr;
-
-	}
 
 	// Prints
 
@@ -760,11 +812,13 @@ void MakeGainStore()
 	// Plots
 
 	if(gPlotLevel){
-	  if(Q==0  and  nplot < 100)
+// 	  if(Q==0  and  nplot < 100)
 // 	  if(p1>1 && p2==0  and  nplot < 100)
 // 	  if(p1>1 && p2>1  and  nplot < 100)
+	  if(p1>=1 and p1<=2  and  nplot < 100)
 	    {
 	      nplot++;
+// 	      cout << " nplot = " << nplot << endl;
 	      TF1 *f2Calib = new TF1("f2Calib",funcCalib,0.,gkADCMax,NFITPARAMS);
 
 	      TGraphErrors *graphErr = new TGraphErrors(nEntries,pedMean,injCharge,pedSigma,injChargeErr);
@@ -802,22 +856,27 @@ void MakeGainStore()
     //OutPut
     if (gPrintLevel) 
     {
-      filcout << "\n List of problematic BusPatch and Manu " << endl;
-      filcout << " ========================================" << endl;
-      filcout << "        BP       Manu        Nb Channel  " << endl ;
-      filcout << " ========================================" << endl;
+      filcouc << "\n List of problematic BusPatch and Manu " << endl;
+      filcouc << " ========================================" << endl;
+      filcouc << "        BP       Manu        Nb Channel  " << endl ;
+      filcouc << " ========================================" << endl;
       for ( Int_t i = 0 ; i < num_tot_BP ; i++ )
 	{ for ( Int_t j = 0 ; j < num_tot_Manu ; j++ )
-	    if (bad_channel[i][j] != 0 ) filcout << "\t" << i << "\t " << j << "\t\t" << bad_channel[i][j] << endl;}
-      filcout << " ========================================" << endl;
+	    if (bad_channel[i][j] != 0 ) filcouc << "\t" << i << "\t " << j << "\t\t" << bad_channel[i][j] << endl;}
+      filcouc << " ========================================" << endl;
 
 
-      filcout << "\n Nb of channels in raw data     = " << nmanu*64 << " (" << nmanu << " Manu)" <<  endl;
-      filcout << "\n Nb of fully calibrated channel = " << nGoodChannel << " (" << goodA1Min << "<a1<" << goodA1Max 
+      filcouc << "\n Nb of channels in raw data = " << nmanu*64 << " (" << nmanu << " Manu)" <<  endl;
+      filcouc << "\n Nb of calibrated channel   = " << nGoodChannel << " (" << goodA1Min << "<a1<" << goodA1Max 
 	   << " and " << goodA2Min << "<a2<" << goodA2Max << ") " << endl;
-      filcout << "\n Nb of Bad channel              = " << nBadChannel << endl;
+      filcouc << "\n Nb of Bad channel          = " << nBadChannel << endl;
 
-      filcout << "\n Nb of Good a1 channels  = " << nGoodChannel_a1 << " (" << goodA1Min << "<a1<" << goodA1Max <<  ") " << endl;
+      filcouc << "\n Nb of Good a1 channels  = " << nGoodChannel_a1 << " (" << goodA1Min << "<a1<" << goodA1Max <<  ") " << endl;
+
+      cout << "\n Nb of channels in raw data = " << nmanu*64 << " (" << nmanu << " Manu)" <<  endl;
+      cout << " Nb of calibrated channel   = " << nGoodChannel << " (" << goodA1Min << "<a1<" << goodA1Max 
+	   << " and " << goodA2Min << "<a2<" << goodA2Max << ") " << endl;
+      cout << " Nb of Bad channel          = " << nBadChannel << endl;
 
       Double_t meanA1         = sumA1/(nGoodChannel_a1);
       Double_t meanProbChi2   = sumProbChi2/(nGoodChannel_a1);
@@ -825,14 +884,18 @@ void MakeGainStore()
       Double_t meanProbChi2P2 = sumProbChi2P2/(nGoodChannel);
 
       Double_t capaManu = 0.2; // pF
-      filcout << "\n linear fit   : <a1> = " << meanA1 << "\t  <gain>  = " <<  1./(meanA1*capaManu) 
+      filcouc << "\n linear fit   : <a1> = " << meanA1 << "\t  <gain>  = " <<  1./(meanA1*capaManu) 
 	   << " mV/fC (capa= " << capaManu << " pF)" << endl;
-      filcout <<   "        Prob(chi2)>  = " <<  meanProbChi2 << endl;
-      filcout << "\n parabolic fit: <a2> = " << meanA2  << endl;
-      filcout <<   "        Prob(chi2)>  = " <<  meanProbChi2P2 << "\n" << endl;
+      filcouc <<   "        Prob(chi2)>  = " <<  meanProbChi2 << endl;
+      filcouc << "\n parabolic fit: <a2> = " << meanA2  << endl;
+      filcouc <<   "        Prob(chi2)>  = " <<  meanProbChi2P2 << "\n" << endl;
 
+      cout << "\n  <gain>  = " <<  1./(meanA1*capaManu) 
+	   << " mV/fC (capa= " << capaManu << " pF)" 
+           <<  "  Prob(chi2)>  = " <<  meanProbChi2 << endl;
     }  
 
+    filcouc.close();
 
     return  ;
 
@@ -853,6 +916,8 @@ int main(Int_t argc, Char_t **argv)
 
     TFitter *minuitFit = new TFitter(NFITPARAMS);
     TVirtualFitter::SetFitter(minuitFit);
+
+    ofstream filcout;
 
     Int_t skipEvents = 0;
     Int_t maxEvents  = 1000000;
@@ -913,6 +978,10 @@ int main(Int_t argc, Char_t **argv)
 	  i++; 
 	  gPlotLevel=atoi(argv[i]);
 	  break;
+	case 'i' :
+	  i++; 
+	  nbpf1=atoi(argv[i]);
+	  break;
 	case 's' :
 	  i++; 
 	  skipEvents=atoi(argv[i]);
@@ -959,6 +1028,8 @@ int main(Int_t argc, Char_t **argv)
 	  printf("\n-b <output directory>     (default = %s)",gOutFolder);
 	  printf("\n-d <print level>          (default = %d)",gPrintLevel);
 	  printf("\n-g <plot level>           (default = %d)",gPlotLevel);
+	  printf("\n-i <nb linear points>     (default = %d)",nbpf1);
+
 	  printf("\n-l <DAC level>            (default = %d)",injCharge);
 	  printf("\n-m <max date events>      (default = %d)",MaxDateEvents);
 	  printf("\n-s <skip events>          (default = %d)",skipEvents);
@@ -1009,20 +1080,6 @@ int main(Int_t argc, Char_t **argv)
     }
   }
 
-
-  status = monitorSetDataSource(inputFile);
-  if (status) {
-    cerr << "ERROR : monitorSetDataSource status (hex) = " << hex << status
-	      << " " << monitorDecodeError(status) << endl;
-    return -1;
-  }
-  status = monitorDeclareMp("MUON Tracking monitoring");
-  if (status) {
-    cerr << "ERROR : monitorDeclareMp status (hex) = " << hex << status
-	      << " " << monitorDecodeError(status) << endl;
-    return -1;
-  }
-
   Int_t busPatchId;
   UShort_t manuId;  
   UChar_t channelId;
@@ -1034,13 +1091,28 @@ int main(Int_t argc, Char_t **argv)
   
   if (gCommand.CompareTo("comp") != 0)
     {
+
+      status = monitorSetDataSource(inputFile);
+      if (status) {
+	cerr << "ERROR : monitorSetDataSource status (hex) = " << hex << status
+	     << " " << monitorDecodeError(status) << endl;
+	return -1;
+      }
+      status = monitorDeclareMp("MUON Tracking monitoring");
+      if (status) {
+	cerr << "ERROR : monitorDeclareMp status (hex) = " << hex << status
+	     << " " << monitorDecodeError(status) << endl;
+	return -1;
+      }
+
+
       cout << "\nMUONTRKda : Reading data from file " << inputFile <<endl;
 
       while(1) 
 	{
 	  if (gNDateEvents >= MaxDateEvents) break;
 	  if (gNEvents >= maxEvents) break;
-	  if (gNEvents && gNEvents % 100 == 0) 	
+	  if (gNDateEvents>0 &&  gNDateEvents % 100 == 0) 	
 	    cout<<"Cumulated:  DATE events = " << gNDateEvents << "   Used events = " << gNEvents << endl;
 
 	  // check shutdown condition 
@@ -1098,30 +1170,12 @@ int main(Int_t argc, Char_t **argv)
 
 	  gNDateEvents++;
 
-
-
 	  if (eventType != PHYSICS_EVENT)
 	    continue; // for the moment
 
 	  // decoding MUON payload
-// 	  AliMUONRawStreamTracker* rawStream  = new AliMUONRawStreamTracker(rawReader);
 	  rawStream  = new AliMUONRawStreamTracker(rawReader);
           rawStream->DisableWarnings();
-
-// 	  // loops over DDL 
-// 	  rawStream->First();  // if GlitchError ? what we are doing ?
-// 	  while( (status = rawStream->Next(busPatchId, manuId, channelId, charge)) ) 
-// 	    {
-  
-// 	      if (gNEvents == 0) gNChannel++;
-            
-// 	      MakePed(busPatchId, (Int_t)manuId, (Int_t)channelId, (Int_t)charge);
-		  
-// 	    } // Next digit
-
-//           if (!rawStream->IsErrorMessage()) {
-//             gNEvents++;
-//           }
           
 	  // loops over DDL to find good events  (Alberto 11/12/07)
 	  rawStream->First();  // if GlitchError ? what we are doing ?
@@ -1155,44 +1209,33 @@ int main(Int_t argc, Char_t **argv)
 	  delete rawStream;
 
 	} // while (1)
-    }
 
 
 
-    if (gCommand.CompareTo("ped") == 0)
-      {
-	sprintf(flatFile,"MUONTRKda_ped_%d.ped",gRunNumber);
-	if(flatOutputFile.IsNull())flatOutputFile=flatFile;
-	MakePedStore(flatOutputFile);
-      }
+      if (gCommand.CompareTo("ped") == 0)
+	{
+	  sprintf(flatFile,"MUONTRKda_ped_%d.ped",gRunNumber);
+	  if(flatOutputFile.IsNull())flatOutputFile=flatFile;
+	  MakePedStore(flatOutputFile);
+	}
 
-  // option gain -> update root file with pedestal results
-  // gain + create -> recreate root file
-  // gain + comp -> update root file and compute gain parameters
+      // option gain -> update root file with pedestal results
+      // gain + create -> recreate root file
+      // gain + comp -> update root file and compute gain parameters
 
-    if (gCommand.Contains("gain")) 
-      {
-	MakePedStoreForGain(injCharge);
-      }
-  
-    if (gCommand.Contains("comp")) 
-      {
+      if (gCommand.Contains("gain")) 
+	{
+	  MakePedStoreForGain(injCharge);
+	}
+    
 
-// 	if(flatOutputFile.IsNull())flatOutputFile="MUONTRKda_gain.par";
-// 	MakeGainStore(flatOutputFile);
-	MakeGainStore();
-      }
-  
+      delete gPedestalStore;
 
-  delete gPedestalStore;
+      delete minuitFit;
+      TVirtualFitter::SetFitter(0);
 
-  delete minuitFit;
-  TVirtualFitter::SetFitter(0);
+      timers.Stop();
 
-  timers.Stop();
-
-  if (gCommand.CompareTo("comp") != 0)
-    {
       cout << "\nMUONTRKda : Nb of DATE events     = "         << gNDateEvents    << endl;
       cout << "MUONTRKda : Nb of Glitch errors   = "         << gGlitchErrors  << endl;
       cout << "MUONTRKda : Nb of Parity errors   = "         << gParityErrors  << endl;
@@ -1205,60 +1248,64 @@ int main(Int_t argc, Char_t **argv)
       filcout << "MUONTRKda : Nb of Padding errors  = "         << gPaddingErrors << endl;
       filcout << "MUONTRKda : Nb of events used     = "         << gNEvents        << endl;
 
-    }
+      cout << "\nMUONTRKda : Output logfile          : " << logOutputFile  << endl;
 
+      if (gCommand.CompareTo("ped") == 0)
+	{
+	  if (!(crocusConfigFile.IsNull()))
+	    cout << "MUONTRKda : CROCUS command file generated    : " << crocusOutputFile.Data() << endl;
+	  else
+	    cout << "MUONTRKda : WARNING no CROCUS command file generated" << endl;
 
-  cout << "\nMUONTRKda : Output logfile generated         : " << logOutputFile  << endl;
-
-  if (gCommand.CompareTo("ped") == 0)
-    {
-      if (!(crocusConfigFile.IsNull()))
-	cout << "MUONTRKda : CROCUS command file generated    : " << crocusOutputFile.Data() << endl;
+	  cout << "MUONTRKda : Pedestal Histo file              : " << gHistoFileName  << endl;
+	  cout << "MUONTRKda : Flat pedestal file  (to SHUTTLE) : " << flatOutputFile << endl;   
+	}
       else
-	cout << "MUONTRKda : WARNING no CROCUS command file generated" << endl;
-      cout << "MUONTRKda : Pedestal Histo file              : " << gHistoFileName  << endl;
-      cout << "MUONTRKda : Flat pedestal file  (to SHUTTLE) : " << flatOutputFile << endl;   
-    }
-  else
-    {
-      cout << "MUONTRKda : Data file for gain calculation   : " << gHistoFileName_gain  << endl;
+	{
+	  cout << "MUONTRKda : DAC data (root file)    : " << gHistoFileName_gain  << endl;
+	  cout << "MUONTRKda : Dummy file (to SHUTTLE) : " << flatOutputFile << endl;   
+	}
+
     }
 
-  if (gCommand.CompareTo("comp") == 0)
+  // Compute gain parameters
+
+
+  if (gCommand.Contains("comp")) 
     {
-      cout << "MUONTRKda : Root Histo. file generated       : " << gRootFileName  << endl;
-      cout << "MUONTRKda : Flat gain file (to SHUTTLE)      : " << flatOutputFile << endl;   
+      flatOutputFile="";
+
+      MakeGainStore();
+
+      cout << "\nMUONTRKda : Output logfile          : " << logOutputFile_comp  << endl;
+      cout << "MUONTRKda : Root Histo. file        : " << gRootFileName  << endl;
+      cout << "MUONTRKda : Gain file (to SHUTTLE)  : " << flatOutputFile << endl;   
     }
 
   
-
   // Store IN FES
 
-  if (gCommand.CompareTo("comp") == 0 || gCommand.CompareTo("ped") == 0)
+  printf("\n *****  STORE FILE in FES ****** \n");
+
+  // be sure that env variable DAQDALIB_PATH is set in script file
+  //       gSystem->Setenv("DAQDALIB_PATH", "$DATE_SITE/infoLogger");
+
+  if (!flatOutputFile.IsNull()) 
     {
-      printf("\n *****  STORE FILE in FES ****** \n");
-
-      // to be sure that env variable is set
-//       gSystem->Setenv("DAQDALIB_PATH", "$DATE_SITE/infoLogger");
-
-      if (!flatOutputFile.IsNull()) 
-	{
-
-	  //       flatOutputFile.Prepend("./");
-	if (gCommand.CompareTo("ped") == 0)
-	  status = daqDA_FES_storeFile(flatOutputFile.Data(),"PEDESTALS");
-        else 
-          status = daqDA_FES_storeFile(flatOutputFile.Data(),"GAINS");
+      if (gCommand.CompareTo("ped") == 0)
+	status = daqDA_FES_storeFile(flatOutputFile.Data(),"PEDESTALS");
+      else
+	status = daqDA_FES_storeFile(flatOutputFile.Data(),"GAINS");
 	  
-	if (status) 
-	    {
-	      printf(" Failed to export file : %d\n",status);
-	    }
-	  else if(gPrintLevel) printf("Export file: %s\n",flatOutputFile.Data());
+      if (status) 
+	{
+	  printf(" Failed to export file : %d\n",status);
 	}
+      else if(gPrintLevel) printf(" %s successfully exported to FES  \n",flatOutputFile.Data());
     }
 
   filcout.close();
+
   printf("\nExecution time : R:%7.2fs C:%7.2fs\n", timers.RealTime(), timers.CpuTime());
 
   return status;

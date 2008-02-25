@@ -20,6 +20,7 @@
 #pragma link C++ class AliMUONTriggerLut+;
 #pragma link C++ class AliMUON2DStoreValidator+;
 #pragma link C++ class AliMUONTriggerIO+;
+#pragma link C++ class AliMUONTrackerIO+;
 
 #endif
 
