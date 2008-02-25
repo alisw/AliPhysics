@@ -44,7 +44,11 @@
 
 #include "AliHLTHOMERReader.h"
 //#include <stdio.h>
+#ifdef __SUNPRO_CC
+#include <string.h>
+#else
 #include <cstring>
+#endif
 #include <cerrno>
 #include <netdb.h>
 extern int h_errno;
