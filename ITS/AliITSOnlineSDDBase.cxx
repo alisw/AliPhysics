@@ -25,6 +25,7 @@
 //                                                               //
 ///////////////////////////////////////////////////////////////////
 
+/*  $Id:$   */
 
 ClassImp(AliITSOnlineSDDBase)
 //______________________________________________________________________
@@ -131,8 +132,10 @@ void AliITSOnlineSDDBase::AddEvent(TH2F* hrawd){
 }
 //______________________________________________________________________
 Float_t AliITSOnlineSDDBase::GetMinimumBaseline() const {
+  // returns anode with minum baseline value in hybrid
   Float_t basMin=1008.;
   for(Int_t ian=0;ian<fgkNAnodes;ian++){
+    if(!fGoodAnode[ian]) continue;
     Float_t bas=GetAnodeBaseline(ian);
     if(bas>0 && bas < basMin) basMin=bas;
   }
@@ -163,6 +166,7 @@ void AliITSOnlineSDDBase::WriteToASCII(){
     Float_t bas=GetAnodeBaseline(ian);
     Int_t corr=(Int_t)(bas-basMin+0.5);
     if(corr>63) corr=63; // only 6 bits in jtag for correction
+    if(corr<0) corr=0; // avoid negative numbers
     fprintf(outf,"%d %d %11.6f %d %d %11.6f %11.6f %11.6f\n",ian,IsAnodeGood(ian),GetAnodeBaseline(ian),(Int_t)basMin,corr,GetAnodeRawNoise(ian),GetAnodeCommonMode(ian),corrnoise);
   }
   fclose(outf);  
