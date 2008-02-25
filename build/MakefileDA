@@ -92,7 +92,8 @@ ALIROOTALIBS+=$($(EXTRADAMODULE)ALIBS)
 endif
 
 DACONTACT=$(sort $(shell grep -i "Contact:" $(DASRC) | cut -d':' -f2))
-DALINKPAGE=$(sort $(shell grep -i "Link:" $(DASRC) | cut -d':' -f2))
+DALINKPAGE=$(sort $(subst Link:,,$(shell grep -i "Link:" $(DASRC))))
+DAREFRUN=$(sort $(shell grep -i "Reference Run:" $(DASRC) | cut -d':' -f2))
 DARUNTYPE=$(sort $(shell grep -i "Run Type:" $(DASRC) | cut -d':' -f2))
 DATYPE=$(sort $(shell grep -i "DA Type:" $(DASRC) | cut -d':' -f2))
 DANUMBEROFEVENTS=$(sort $(shell grep -i "Number of events needed:" $(DASRC) | cut -d':' -f2))
@@ -240,6 +241,7 @@ $(DASPECFILE): $(DATARGETDIR)
 	@echo "Runtime requires: date." >> $@
 	@echo "Contact: $(DACONTACT)" >> $@
 	@echo "Link: $(DALINKPAGE)" >> $@
+	@echo "Reference Run: $(DAREFRUN)" >> $@
 	@echo "Run type: $(DARUNTYPE)" >> $@
 	@echo "DA type: $(DATYPE)" >> $@
 	@echo "Number of events needed: $(DANUMBEROFEVENTS)" >> $@
