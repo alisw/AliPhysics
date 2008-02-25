@@ -1152,7 +1152,7 @@ Int_t AliHLTCOMPHuffmanAltro::CreateCodeTable()
     }
   
   // initialise leaves of the tree as list (= queue) ofAliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeDataStruct,
- AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeDataStruct HuffmanTreeList[filled];
+ AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeDataStruct * HuffmanTreeList = new AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeDataStruct[filled];
   
   // initialise first element
   HuffmanTreeList[0].fleafcontents = HuffmanArraySorted[0];
@@ -1200,6 +1200,8 @@ Int_t AliHLTCOMPHuffmanAltro::CreateCodeTable()
  AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeDataStruct* root = CreateHuffmanTree(HuffmanTreeList, lastelement, filled);
 
   // abort if root = NULL (error already produced in CreateHuffmanTree function)
+ delete [] HuffmanTreeList;
+
   if(root == NULL)
     {
       return 1;
