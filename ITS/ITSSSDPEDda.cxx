@@ -5,7 +5,7 @@
 - DA Type: LDC
 - Number of events needed: >=500
 - Input Files: ssdpeddaconfig, raw_data_file_on_LDC
-- Output Files: $DA_TEST_DIR/ssddaldc_<LDCID>_<RunID>.root, FXS_name=ITSSSDda_<LDCID>_<RunID>.root 
+- Output Files: ./ssddaldc_<LDCID>_<RunID>.root, FXS_name=ITSSSDda_<LDCID>_<RunID>.root 
                 local files are persistent over runs: data source
 - Trigger types used:
  **************************************************************************/
@@ -27,7 +27,7 @@ int main( int argc, char** argv )
   AliITSHandleDaSSD  *ssddaldc;
   TString             feefname, cmddbsave;
   Int_t               status;
-  Char_t             *dafname = NULL, *dadaqdir = NULL;
+  Char_t             *dafname = NULL;
 
 
    gROOT->GetPluginManager()->AddHandler("TVirtualStreamerInfo",
@@ -60,20 +60,13 @@ int main( int argc, char** argv )
     cerr << "Error: the call system(NULL) in main() returned NULL!" << endl;
     return -1;
   }
-  dadaqdir = getenv ("DA_TEST_DIR");
-  if (!dadaqdir) {
-    cerr << "Error: DA_TEST_DIR is not defined, DA data are not saved!" << endl;
-    delete ssddaldc;
-    daqDA_progressReport(100);
-    return 1;
-  }
-  dafname = dadaqdir;
+  dafname = ".";
   if (ssddaldc->SaveCalibrationSSDLDC(dafname)) {
     cout << "SSDDA data are saved in " << dafname << endl;
     status = daqDA_FES_storeFile(dafname, "DASSD_DB_results");
     if (status) fprintf(stderr, "Failed to export file : %d\n", status);
   } else cerr << "Error saving DA data to the file! Probably $DA_TEST_DIR defined incorrectly!" << endl;
-  feefname.Form("%s/ssddaldc_%i_%i.root", dadaqdir, ssddaldc->GetLdcId(), ssddaldc->GetRunId());
+  feefname.Form("%s/ssddaldc_%i_%i.root", ".", ssddaldc->GetLdcId(), ssddaldc->GetRunId());
   cout << "Saving feessdda data in " << feefname << endl;
   TFile *fileRun = new TFile (feefname.Data(),"RECREATE");
   if (fileRun->IsZombie()) {
