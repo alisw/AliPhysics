@@ -43,7 +43,7 @@ SRCS:=$(patsubst %,trigger/%,$(MODULE_SRCS))
 CINTHDRS:=$(patsubst %,trigger/%,$(CLASS_HDRS))
 HDRS:=$(patsubst %,trigger/%,$(MODULE_HDRS))
 DHDR:=$(patsubst %,trigger/%,$(MODULE_DHDR))
-CINTAUTOLINK:= $(shell test "x$(MODULE_DHDR)" = "x" &&! echo 1)
+CINTAUTOLINK:= $(shell test "x$(MODULE_DHDR)" = "x" && echo 1)
 
 EDEFINE      := ${HLTDEFS}
 PACKCXXFLAGS := ${HLTCXXFLAGS}

@@ -29,7 +29,7 @@ SRCS:=$(patsubst %,comp/%,$(MODULE_SRCS))
 CINTHDRS:=$(patsubst %,comp/%,$(CLASS_HDRS))
 HDRS:=$(patsubst %,comp/%,$(MODULE_HDRS))
 DHDR:=$(patsubst %,comp/%,$(MODULE_DHDR))
-CINTAUTOLINK:= $(shell test "x$(MODULE_DHDR)" = "x" &&! echo 1)
+CINTAUTOLINK:= $(shell test "x$(MODULE_DHDR)" = "x" && echo 1)
 
 EDEFINE      := ${HLTDEFS}
 PACKCXXFLAGS := ${HLTCXXFLAGS}
