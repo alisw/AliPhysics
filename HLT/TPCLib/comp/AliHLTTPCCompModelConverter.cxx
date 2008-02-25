@@ -578,7 +578,7 @@ unsigned long AliHLTTPCCompModelConverter::GetRemainingClustersOutputDataSize()
     return clusterCnt*sizeof(AliHLTTPCClusterModel);
 #else
     const Int_t nrows = AliHLTTPCTransform::GetNRows();
-    Int_t npoints[nrows];
+    Int_t * npoints = new Int_t[nrows];
     unsigned long dataWritten = 0;
 
     dataWritten += sizeof(AliHLTUInt32_t);
@@ -670,6 +670,7 @@ unsigned long AliHLTTPCCompModelConverter::GetRemainingClustersOutputDataSize()
 		}
 	    }
 	}
+    delete [] npoints;
     return dataWritten;
 #endif
     }
@@ -679,7 +680,7 @@ int AliHLTTPCCompModelConverter::GetRemainingClusters( AliHLTUInt8_t* const data
       // see header file for class documentation
       
       const Int_t nrows = AliHLTTPCTransform::GetNRows();
-      Int_t npoints[nrows];
+      Int_t * npoints = new Int_t[nrows];
       unsigned long dataWritten = 0;
       AliHLTUInt8_t* writePtr = data;
       
@@ -822,6 +823,7 @@ int AliHLTTPCCompModelConverter::GetRemainingClusters( AliHLTUInt8_t* const data
 	    }
 	}
       dataSize = dataWritten;
-      
+
+      delete [] npoints;
       return 0;
     }
