@@ -36,6 +36,7 @@
 #include "AliHLTMUONHitReconstructor.h"
 #include "AliHLTMUONRecHitsBlockStruct.h"
 #include <cstring>
+#include <strings.h>
 
 
 const int AliHLTMUONHitReconstructor::fgkDetectorId = 0xA00;
