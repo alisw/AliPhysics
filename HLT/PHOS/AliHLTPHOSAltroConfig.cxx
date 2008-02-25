@@ -18,7 +18,11 @@
 #include "AliHLTPHOSAltroConfig.h"
 #include <stdio.h>
 //#include <unistd.h>
+#ifndef __SUNPRO_CC
 #include <cstdlib>
+#else
+#include <stdlib.h>
+#endif
 
 
 AliHLTPHOSAltroConfig::AliHLTPHOSAltroConfig() : fNPresamples(900), 
