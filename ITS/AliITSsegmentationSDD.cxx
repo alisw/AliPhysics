@@ -44,6 +44,8 @@
 //                               Z                                         //
 /////////////////////////////////////////////////////////////////////////////
 
+/* $Id:$ */
+
 const Float_t AliITSsegmentationSDD::fgkDxDefault = 35085.;
 const Float_t AliITSsegmentationSDD::fgkDzDefault = 75264.;
 const Float_t AliITSsegmentationSDD::fgkDyDefault = 300.;
@@ -190,6 +192,7 @@ Float_t AliITSsegmentationSDD::GetLocalZFromAnode(Float_t zAnode) const{
 }
 //----------------------------------------------------------------------
 Int_t AliITSsegmentationSDD::GetChipFromChannel(Int_t ix, Int_t iz) const {
+  // returns chip number (in range 0-7) starting from channel number
   if(iz>=fNanodes  || iz<0 || ix>fNsamples){
     AliError("Bad cell number");
     return -1;
@@ -199,6 +202,7 @@ Int_t AliITSsegmentationSDD::GetChipFromChannel(Int_t ix, Int_t iz) const {
 }
 //----------------------------------------------------------------------
 Int_t AliITSsegmentationSDD::GetChipFromLocal(Float_t xloc, Float_t zloc) const {  
+  // returns chip number (in range 0-7) starting from local coordinates
   Float_t detsize=fDz*fgkMicron2Cm;
   Float_t chipsize=detsize/(Float_t)fgkNchipsPerHybrid;
   zloc+=detsize/2.;

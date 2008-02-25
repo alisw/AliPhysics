@@ -5,11 +5,14 @@
 #include "AliLog.h"
 #include "AliITSgeom.h"
 
-class TF1;
+/* $Id:$ */
+
 //----------------------------------------------
-//
-// ITS  segmentation virtual base class
-//
+//                                             -
+// ITS  segmentation virtual base class        -
+//                                             -
+//----------------------------------------------
+class TF1;
 class AliITSsegmentation :
 public TObject {
  public:
@@ -53,18 +56,13 @@ public TObject {
 
     // Transform from real global to local coordinates
     void GetLocal(Int_t module,Float_t *g ,Float_t *l, AliITSgeom *geom) const {
-      if(!geom) {
-	AliFatal("Pointer to ITS geometry class (AliITSgeom) is null\n");
-        return;
-      }
-      geom->GtoL(module,g,l);      
+      if(geom) geom->GtoL(module,g,l);
+      else AliFatal("Pointer to ITS geometry class (AliITSgeom) is null\n");
     }
     // Transform from real local to global coordinates
     void GetGlobal(Int_t module,Float_t *l ,Float_t *g, AliITSgeom *geom) const {
-      if(!geom) {
-	AliFatal("Pointer to ITS geometry class (AliITSgeom) is null\n");
-      }
-      geom->LtoG(module,l,g);
+      if(geom) geom->LtoG(module,l,g);
+      else AliFatal("Pointer to ITS geometry class (AliITSgeom) is null\n");
     }
 
     // Initialisation
