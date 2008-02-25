@@ -37,6 +37,7 @@ AliHLTPHOSRcuCalibrationProcessorComponent::AliHLTPHOSRcuCalibrationProcessorCom
 AliHLTPHOSRcuCalibrationProcessorComponent& AliHLTPHOSRcuCalibrationProcessorComponent::operator=(const AliHLTPHOSRcuCalibrationProcessorComponent&)
 {
   HLTFatal("assignement operator untested");
+  return *this;
 }
 
 const char* AliHLTPHOSRcuCalibrationProcessorComponent::GetComponentID()

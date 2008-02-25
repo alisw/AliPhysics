@@ -82,6 +82,7 @@ AliHLTPHOSTreeMaker::MakeDigitArray(AliHLTPHOSDigitContainerDataStruct *digitCon
     }
   return digitContainer->fNDigits;
   */
+  return 0;
 }
 
 void
