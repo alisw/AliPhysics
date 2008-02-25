@@ -124,6 +124,8 @@ void CreateAODfromKineTree(const char *inFileName,
     // Access to the header
     AliAODHeader *header = aod->GetHeader();
 
+    Double_t emEnergy[2] = {-999., -999.};
+
     // fill the header
     *header = AliAODHeader(aliHeader->GetRun(),
 			   0, // bunchX number
@@ -135,14 +137,15 @@ void CreateAODfromKineTree(const char *inFileName,
 			   -999, // mag. field
 			   -999., // muon mag. field
 			   -999., // centrality
-			   -999, // ZDCN1Energy
-			   -999, // ZDCP1Energy
-			   -999, // ZDCN2Energy
-			   -999, // ZDCP2Energy
-			   -999, // ZDCEMEnergy
+			   -999., // ZDCN1Energy
+			   -999., // ZDCP1Energy
+			   -999., // ZDCN2Energy
+			   -999., // ZDCP2Energy
+			   emEnergy, // emEnergy
 			   0, // TriggerMask
 			   0, // TriggerCluster
-			   0); // EventType
+			   0, // EventType
+			   ""); // title
   
     // Access to the AOD container of vertices
     TClonesArray &vertices = *(aod->GetVertices());
