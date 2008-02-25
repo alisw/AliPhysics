@@ -108,7 +108,8 @@ UInt_t AliITSPreprocessorSDD::Process(TMap* dcsAliasMap){
 	  FILE* basFil = fopen(inpFileName,"read");
 	  if (basFil == 0) {
 	    Log(Form("File %s not found.",inpFileName));
-	    return 2;
+	    cal->SetDead();
+	    continue;
 	  }
 	  fscanf(basFil,"%d %d %d\n",&im,&is,&isgoodmod);
 	  if(!isgoodmod) cal->SetDead();
@@ -138,7 +139,7 @@ UInt_t AliITSPreprocessorSDD::Process(TMap* dcsAliasMap){
     }
     md1->SetObjectClassName("AliITSCalibration");
     retcode = Store("Calib","CalibSDD",&calSDD,md1, 0, kTRUE);
-  }else if(runType == "PHYSICS" || runType== "INJECTOR"){
+  }else if(runType== "INJECTOR"){
 
     TObjArray vdrift(2*kNumberOfSDD);
     vdrift.SetOwner(kFALSE);
@@ -176,7 +177,10 @@ UInt_t AliITSPreprocessorSDD::Process(TMap* dcsAliasMap){
 	  FILE* injFil = fopen(inpFileName,"read");
 	  if (injFil == 0) {
 	    Log(Form("File %s not found.",inpFileName));
-	    return 2;
+	    AliITSDriftSpeedSDD *dsp=new AliITSDriftSpeedSDD();
+	    arr->AddDriftSpeed(dsp);
+	    vdrift.AddAt(arr,2*modID+isid);
+	    continue; 
 	  }
 	  fscanf(injFil,"%d",&polDeg);
 	  while (!feof(injFil)){
