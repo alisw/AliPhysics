@@ -108,11 +108,10 @@ UInt_t AliITSPreprocessorSDD::Process(TMap* dcsAliasMap){
 	  FILE* basFil = fopen(inpFileName,"read");
 	  if (basFil == 0) {
 	    Log(Form("File %s not found.",inpFileName));
-	    cal->SetDead();
-	    continue;
+	    return 2;
 	  }
 	  fscanf(basFil,"%d %d %d\n",&im,&is,&isgoodmod);
-	  if(!isgoodmod) cal->SetDead();
+	  if(!isgoodmod) cal->SetBad();
 	  for(Int_t ian=0;ian<(kNumberOfChannels/2);ian++){
 	    fscanf(basFil,"%d %d %f %d %d %f %f %f %f\n",&i,&isgoodan,&baseline,&basmin,&basoff,&rawnoise,&cmn,&corn,&gain);
 	    Int_t ich=ian;
@@ -124,9 +123,7 @@ UInt_t AliITSPreprocessorSDD::Process(TMap* dcsAliasMap){
 	    }
 	    cal->SetBaseline(ich,baseline);
 	    cal->SetNoiseAfterElectronics(ich,rawnoise);
-	    Int_t iChip=cal->GetChip(ich);
-	    Int_t iChInChip=cal->GetChipChannel(ich);
-	    cal->SetGain(gain,isid,iChip,iChInChip);
+	    cal->SetGain(ich,gain);
 	  }
 	  cal->SetDeadChannels(numOfBadChannels[modID]);
 	  for(Int_t ibad=0;ibad<numOfBadChannels[modID];ibad++){
@@ -139,7 +136,7 @@ UInt_t AliITSPreprocessorSDD::Process(TMap* dcsAliasMap){
     }
     md1->SetObjectClassName("AliITSCalibration");
     retcode = Store("Calib","CalibSDD",&calSDD,md1, 0, kTRUE);
-  }else if(runType== "INJECTOR"){
+  }else if(runType == "PHYSICS" || runType== "INJECTOR"){
 
     TObjArray vdrift(2*kNumberOfSDD);
     vdrift.SetOwner(kFALSE);
@@ -177,10 +174,7 @@ UInt_t AliITSPreprocessorSDD::Process(TMap* dcsAliasMap){
 	  FILE* injFil = fopen(inpFileName,"read");
 	  if (injFil == 0) {
 	    Log(Form("File %s not found.",inpFileName));
-	    AliITSDriftSpeedSDD *dsp=new AliITSDriftSpeedSDD();
-	    arr->AddDriftSpeed(dsp);
-	    vdrift.AddAt(arr,2*modID+isid);
-	    continue; 
+	    return 2;
 	  }
 	  fscanf(injFil,"%d",&polDeg);
 	  while (!feof(injFil)){

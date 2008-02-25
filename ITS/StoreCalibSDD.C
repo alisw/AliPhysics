@@ -11,7 +11,7 @@
 #include <TRandom3.h>
 #endif
 
-void StoreCalibSDD(Int_t firstRun=0,Int_t lastRun=9999999 ){
+void StoreCalibSDD(Int_t firstRun=0,Int_t lastRun=9999999, Int_t lastRunResp=999999999 ){
   ///////////////////////////////////////////////////////////////////////
   // Macro to generate and store the calibration files for SDD         //
   // Generates:                                                        //
@@ -48,7 +48,7 @@ void StoreCalibSDD(Int_t firstRun=0,Int_t lastRun=9999999 ){
 
 
 
-  AliCDBId idRespSDD("ITS/Calib/RespSDD",firstRun, lastRun);
+  AliCDBId idRespSDD("ITS/Calib/RespSDD",firstRun, lastRunResp);
   AliITSresponseSDD* rd = new AliITSresponseSDD();
   const Int_t nData = 209;
   Int_t anodeUp[209] = {0,36,0,12,20,32,0,0,12,76,28,8,16,0,0,0,8,0,0,0,20,4,0,0,0,0,0,0
@@ -68,10 +68,6 @@ void StoreCalibSDD(Int_t firstRun=0,Int_t lastRun=9999999 ){
 			  ,16,0,16,20,0,28,0,8,24,0,12,8,4,40,0,104,96,32,140,20,12,8,20,24,16,16,20
 			  ,8,140,96,0,32,20,44};
 
- 
-  Float_t drVelParam[4]={7.75,0.002344,-0.000009,0};
-  Float_t edrVelParam[4]={0,0,0,0};
-  Float_t drVel[4];
   TRandom3 *gran = new TRandom3();
   
   for(Int_t mod=0;mod<260;mod++){
@@ -89,7 +85,8 @@ void StoreCalibSDD(Int_t firstRun=0,Int_t lastRun=9999999 ){
 	for(Int_t iChan=0; iChan<64;iChan++){
 	  Float_t gain=gran->Gaus(chipgain,0.01);
 	  if(gain<0.1) gain=0.1;
-	  resd->SetGain(gain,iWing,iChip,iChan);
+	  Int_t ian=resd->GetAnodeNumber(iWing,iChip,iChan);
+	  resd->SetGain(ian,gain);
 	}
       }
     }
@@ -141,7 +138,8 @@ void StoreCalibSDD(Int_t firstRun=0,Int_t lastRun=9999999 ){
     Int_t nSeToBad = 0;
     for (Int_t i=0; i<4; i++){
       for(Int_t j=0;j<64;j++){
-	if (resd->Gain(0,i,j)<0.0001) nSeToBad++;
+	Int_t ian=resd->GetAnodeNumber(0,i,j);
+	if (resd->GetChannelGain(ian)<0.0001) nSeToBad++;
       }
     }
     while (nSeToBad<nBadDown) {
@@ -189,7 +187,8 @@ void StoreCalibSDD(Int_t firstRun=0,Int_t lastRun=9999999 ){
     nSeToBad = 0;
     for (Int_t i=0; i<4; i++){
       for(Int_t j=0;j<64;j++){
-	if (resd->Gain(1,i,j)<0.0001) nSeToBad++;
+	Int_t ian=resd->GetAnodeNumber(1,i,j);
+	if (resd->GetChannelGain(ian)<0.0001) nSeToBad++;
       }
     }
 
@@ -215,7 +214,8 @@ void StoreCalibSDD(Int_t firstRun=0,Int_t lastRun=9999999 ){
     */
 
 
-    if(mod==88) resd->SetDead();
+    if(mod==88) resd->SetBad();
+    if(mod==202) for(Int_t ichip=0;ichip<4;ichip++) resd->SetChipBad(ichip);
     respSDD.Add(resd);
     printf("Added module %d\n",mod);
   }

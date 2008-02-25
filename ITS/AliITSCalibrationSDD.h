@@ -55,21 +55,23 @@ class AliITSCalibrationSDD : public AliITSCalibration {
     void SetDeadChannels(Int_t ndead=0){fDeadChannels=ndead; fBadChannels.Set(ndead);}
     Int_t GetDeadChips() const { return fDeadChips; }
     Int_t GetDeadChannels() const { return fDeadChannels; }
-    Float_t Gain(Int_t wing,Int_t chip,Int_t ch)const 
-        {return fGain[wing][chip][ch]; }
-    Float_t GetChannelGain(Int_t anode) const;
-    virtual void SetGain(Double_t g,Int_t wing,Int_t chip, Int_t ch) 
-      {fGain[wing][chip][ch]=g;}
+    Float_t GetChannelGain(Int_t anode) const {return fGain[anode];}
+    virtual void SetGain(Int_t anode,Double_t g){fGain[anode]=g;}
+
     
     Int_t GetWing(Int_t anode) const{
       if(anode>=fgkChips*fgkChannels) return 1;
       else return 0;
     }
     Int_t GetChipChannel(Int_t anode) const {return anode%fgkChannels;}
-    Int_t GetChip(Int_t anode) const {
-      Int_t chip=anode/fgkChannels;
-      if(GetWing(anode)==1)chip-=fgkChips;
-      return chip;
+    Int_t GetChip(Int_t anode) const {return anode/fgkChannels;}
+    Int_t GetAnodeNumber(Int_t iwing, Int_t ichip03, Int_t ichan) const {
+      if(iwing>=2 || ichip03>=4 || ichan>=64) return -1;
+      else return iwing*fgkChips*fgkChannels+ichip03*fgkChannels+ichan;
+    }
+    Int_t GetAnodeNumber(Int_t ichip07, Int_t ichan) const {
+      if(ichip07>=8 || ichan>=64) return -1;
+      else return ichip07*fgkChannels+ichan;
     }
     
     void    PrintGains() const;
@@ -90,8 +92,17 @@ class AliITSCalibrationSDD : public AliITSCalibration {
     virtual void    SigmaSpread(Double_t & /* p1 */,Double_t & /* p2 */) const 
       {NotImplemented("SigmaSpread");}
 
-    void   SetDead() { fIsDead = kTRUE; };
-    Bool_t IsDead() const { return fIsDead; };
+    void   SetBad() { 
+      fIsBad = kTRUE; 
+      for(Int_t i=0;i<fgkChips*fgkWings;i++) fIsChipBad[i]=kTRUE;
+    }
+    virtual Bool_t IsBad() const { return fIsBad; }
+    void   SetChipBad(Int_t nChip) { 
+      fIsChipBad[nChip] = kTRUE; 
+    }
+    virtual Bool_t IsChipBad(Int_t nChip) const { 
+      return fIsChipBad[nChip]; 
+    }
     Int_t Wings()const{return fgkWings;}//Total number of SDD wings
     Int_t Chips() const{return fgkChips;} // Number of chips/module
     Int_t Channels() const{ return fgkChannels;}//Number of channels/chip
@@ -178,14 +189,15 @@ class AliITSCalibrationSDD : public AliITSCalibration {
 
     Int_t fDeadChips;                     // Number of dead chips
     Int_t fDeadChannels;                  // Number of dead channels
-    Float_t fGain[fgkWings][fgkChips][fgkChannels];//Array for channel gains
+    Float_t fGain[fgkWings*fgkChips*fgkChannels];           //Array for channel gains
     Float_t fNoise[fgkWings*fgkChips*fgkChannels];          // Noise array
     Float_t fBaseline[fgkWings*fgkChips*fgkChannels];       // Baseline array
     Float_t fNoiseAfterEl[fgkWings*fgkChips*fgkChannels];   // Noise after electronics
     Float_t fMinVal;        // Min value used in 2D zero-suppression algo
 
-    Bool_t   fIsDead;  // module is dead or alive ?
-    TArrayI  fBadChannels; //Array with bad anodes number (0-512) 
+    Bool_t   fIsBad;                         // module is dead or alive ?
+    Bool_t   fIsChipBad[fgkWings*fgkChips];  // chip is dead or alive ?
+    TArrayI  fBadChannels;                   //Array with bad anodes number (0-512) 
 
     
     Bool_t fUseACorrMap;    // flag for the use of correction maps (anode)
@@ -203,7 +215,7 @@ class AliITSCalibrationSDD : public AliITSCalibration {
     AliITSCalibrationSDD& operator=(const AliITSCalibrationSDD & /* source */); // ass. op.
 
 
-    ClassDef(AliITSCalibrationSDD,9) // SDD response 
+    ClassDef(AliITSCalibrationSDD,10) // SDD response 
     
     };
 #endif

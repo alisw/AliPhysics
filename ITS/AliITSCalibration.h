@@ -3,7 +3,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id:$ */
+/* $Id$ */
 
 //////////////////////////////////////////////
 // Base ITS calibration class               //
@@ -34,6 +34,11 @@ class AliITSCalibration : public TObject {
 
     // Destructor.
     virtual ~AliITSCalibration() {;}
+
+    // Check for dead modules anche chips
+    // Return 1 if the module/chip is dead, 0 if it is ok
+    virtual Bool_t IsBad() const {AliError("This method must be implemented in a derived class"); return kFALSE;}
+    virtual Bool_t IsChipBad(Int_t) const {AliError("This method must be implemented in a derived class"); return kFALSE;}
     //
     // Configuration methods
     //

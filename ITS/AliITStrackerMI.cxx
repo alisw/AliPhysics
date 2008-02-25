@@ -4890,7 +4890,7 @@ Int_t AliITStrackerMI::CheckDeadZone(/*AliITStrackMI *track,*/
     if(ilayer==3) idet += AliITSgeomTGeo::GetNLadders(3)*AliITSgeomTGeo::GetNDetectors(3);
     //printf("SDD det: %d\n",idet);
     AliITSCalibrationSDD *calibSDD = (AliITSCalibrationSDD*)sddEntry->At(idet);
-    if (calibSDD->IsDead()) return 2;
+    if (calibSDD->IsBad()) return 2;
   } else if (ilayer==4 || ilayer==5) { // SSD
   } else {
     Error("CheckDeadZone","Wrong layer number\n");

@@ -41,7 +41,7 @@ AliITSCalibration(),
 fDeadChips(0),
 fDeadChannels(0),
 fMinVal(fgkMinValDefault),
-fIsDead(kFALSE),
+fIsBad(kFALSE),
 fBadChannels(),
 fUseACorrMap(0),
 fUseTCorrMap(0),
@@ -58,12 +58,13 @@ fDrSpeed1(0)
   for(Int_t ian=0;ian<fgkWings*fgkChannels*fgkChips;ian++){
     fBaseline[ian]=fgkBaselineDefault;
     fNoise[ian]=fgkNoiseDefault;
+    fGain[ian]=1.;
     SetNoiseAfterElectronics(ian);
   }
   for(Int_t iw=0;iw<fgkWings;iw++){
     for(Int_t icp=0;icp<fgkChips;icp++){
-      for(Int_t ich=0;ich<fgkChannels;ich++)
-	fGain[iw][icp][ich]=1.;
+      Int_t chipindex=iw*fgkChips+icp;
+      fIsChipBad[chipindex]=kFALSE;
     }
   }
   SetThresholds(fgkMinValDefault,0.);
@@ -77,7 +78,7 @@ AliITSCalibration(),
 fDeadChips(0),
 fDeadChannels(0),
 fMinVal(fgkMinValDefault),
-fIsDead(kFALSE),
+fIsBad(kFALSE),
 fBadChannels(),
 fUseACorrMap(0),
 fUseTCorrMap(0),
@@ -93,13 +94,14 @@ fDrSpeed1(0)
   SetDeadChannels();
   for(Int_t ian=0;ian<fgkWings*fgkChannels*fgkChips;ian++){
     fBaseline[ian]=fgkBaselineDefault;
-      fNoise[ian]=fgkNoiseDefault;
-      SetNoiseAfterElectronics(ian);
+    fNoise[ian]=fgkNoiseDefault;
+    fGain[ian]=1.;
+    SetNoiseAfterElectronics(ian);
   }  
   for(Int_t iw=0;iw<fgkWings;iw++){
     for(Int_t icp=0;icp<fgkChips;icp++){
-      for(Int_t ich=0;ich<fgkChannels;ich++)
-	fGain[iw][icp][ich]=1.;
+      Int_t chipindex=iw*fgkChips+icp;
+      fIsChipBad[chipindex]=kFALSE;
     }
   }
 
@@ -139,22 +141,8 @@ void AliITSCalibrationSDD::SetBadChannel(Int_t i,Int_t anode){
   //Set bad anode (set gain=0 for these channels);
 
   if(anode<0 || anode >fgkChannels*fgkChips*fgkWings-1)AliError("Wrong anode number");
-  Int_t wing=0;
-  Int_t chip,channel;
-  chip=anode/fgkChannels;
-  channel=anode-(chip*fgkChannels);
-  if(anode>=fgkChips*fgkChannels) wing=1;
-  if(wing==1)chip-=fgkChips;
   fBadChannels[i]=anode;
-  fGain[wing][chip][channel]=0;
-}
-//______________________________________________________________________
-Float_t AliITSCalibrationSDD::GetChannelGain(Int_t anode) const{
-  // returns gain for givenanode
-  Int_t iWing=GetWing(anode);
-  Int_t iChip=GetChip(anode);
-  Int_t iChan=GetChipChannel(anode);
-  return fGain[iWing][iChip][iChan];
+  fGain[anode]=0;
 }
 //______________________________________________________________________
 void AliITSCalibrationSDD::GetCorrections(Float_t z, Float_t x, Float_t &devz, Float_t &devx, AliITSsegmentationSDD* seg){
@@ -172,91 +160,6 @@ void AliITSCalibrationSDD::GetCorrections(Float_t z, Float_t x, Float_t &devz, F
   }
   return;
 }
-/*
-//______________________________________________________________________
-void AliITSCalibrationSDD::SetDeadChannels(Int_t nchip, Int_t nchan){
-  // Set fGain to zero to simulate a random distribution of 
-  // dead modules, dead chips and single dead channels
-
-  for( Int_t m=0; m<fgkWings; m++ ) 
-    for( Int_t n=0; n<fgkChips; n++ ) 
-      for( Int_t p=0; p<fgkChannels; p++ ) 
-	fGain[m][n][p] = 1.;
-                 
-  //fDeadModules  = nmod;  
-  fDeadChips    = nchip;  
-  fDeadChannels = nchan; 
-  fBadChannels.Set(fDeadChannels);  
-  // nothing to do
-  //if( nmod == 0 && nchip == 0 && nchan == 0 ) return;
-
-  if( nchip == 0 && nchan == 0 ) return;
-  // if( nmod < 0 || nmod > fgkModules ) 
-  //  { 
-  //    cout << "Wrong number of dead modules: " << nmod << endl; 
-  //    return; 
-  //  }
-  
-  Int_t nmax = fgkWings*fgkChips; 
-  if( nchip < 0 || nchip > nmax ) 
-    { 
-      cout << "Wrong number of dead chips: " << nchip << endl; 
-      return; 
-    }
-  nmax = (fgkWings*fgkChips - nchip)*fgkChannels; 
-  if( nchan < 0 || nchan > nmax ) 
-    { 
-      cout << "Wrong number of dead channels: " << nchan << endl; 
-      return; 
-    }
-  
-  TRandom *gran = new TRandom();
-  //  cout << "chips" << endl;
-  Int_t * chip     = new Int_t[nchip];
-  Int_t i = 0;
-  while( i < nchip ) 
-    {
-      Int_t wing = (Int_t) (fgkWings*gran->Uniform() + 1.);
-      if( wing <=0 || wing > fgkWings ) Error("SetDeadChannels","Wrong wing");
-        
-      Int_t chi = (Int_t) (fgkChips*gran->Uniform() + 1.);
-      if( chi <=0 || chi > fgkChips ) Error("SetDeadChannels","Wrong chip:%d\n",chi);
-      i++;
-      chip[i-1] = chi; 
-      for( Int_t m=0; m<fgkChannels; m++ ) 
-	fGain[wing-1][chi-1][m] = 0.;
-    }
-
-  Int_t * channel      = new Int_t[nchan];
-  Int_t * channelChip = new Int_t[nchan];
-  i = 0;
-  while( i < nchan ) 
-    {
-      Int_t k; //loop variable
-      Int_t wing = (Int_t) (fgkWings*gran->Uniform() + 1.);
-      if( wing <=0 || wing > fgkWings ) Error("SetDeadChannels","Wrong wing:%d\n",wing);
-      Int_t chipp = (Int_t) (fgkChips*gran->Uniform() + 1.);
-      if( chipp <=0 || chipp > fgkChips ) Error("SetDeadChannels","Wrong chip:%d",chipp);
-      Int_t flagChip = 0;
-      for( k=0; k<nchip; k++) 
-	if( chipp == chip[k] ) { 
-	  flagChip = 1; break; }
-      if( flagChip == 1 ) continue;
-      i++;
-      channel[i-1] = (Int_t) (fgkChannels*gran->Uniform() + 1.); 
-      if( channel[i-1] <=0 || channel[i-1] > fgkChannels ) 
-	Error("SetDeadChannels","Wrong channel:%d\n",channel[i-1]);
-      channelChip[i-1] = chipp;
-      fGain[wing-1][chipp-1][channel[i-1]-1] = 0.;
-    }
-    
-  delete [] chip;
-  delete [] channel;
-  delete [] channelChip;
-}
-*/
-
-
 //______________________________________________________________________
 void AliITSCalibrationSDD::PrintGains() const{
   //
@@ -271,14 +174,9 @@ void AliITSCalibrationSDD::PrintGains() const{
   cout << "**************************************************" << endl;
 
   // Print SDD electronic gains
-  for(Int_t t=0; t<fgkWings;t++)
-    for(Int_t u=0; u<fgkChips;u++)
-      for(Int_t v=0; v<fgkChannels;v++)
-	{
-	  if( fGain[t][u][v] != 1.0 )
-	    cout << "Gain for wing: " << t+1 << ", Chip " << u+1 << 
-	      ", Channel " << v+1 << " = " << fGain[t][u][v] << endl;
-	}
+  for(Int_t ian=0; ian<fgkWings*fgkChips*fgkChannels;ian++){
+    printf("Gain for channel %d = %f\n",ian,fGain[ian]);
+  }
 }
 
 //______________________________________________________________________
