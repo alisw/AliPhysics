@@ -1114,8 +1114,8 @@ void AliCFGrid::SetExcludeOffEntriesInProj(Bool_t in)
   // or included, when performing projections.
   // For AliCFGrid implementation, only option = kTRUE is available
 
-  if(in){
-    AliInfo(Form("This option not available for AliCFGrid")); 
+  if(!in){
+    AliInfo(Form("This option is not available for AliCFGrid, Under/Overflows in hidden dimensions are always excluded")); 
     return;
   }
 
