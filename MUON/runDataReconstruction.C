@@ -37,7 +37,8 @@
 #endif
 
 // Data file, OCDB on Grid
-TString input="alien:///alice/data/2007/LHC07w/000014493/raw/07000014493001.10.root";
+#TString input="alien:///alice/data/2007/LHC07w/000014493/raw/07000014493001.10.root";
+TString input="alien:///alice/data/2008/LHC08a/000021931/raw/08000021931001.50.root";
 TString ocdbPath = "alien://folder=/alice/data/2008/LHC08a/OCDB";
 
 // Data file, OCDB locally
@@ -55,8 +56,9 @@ void runDataReconstruction(Int_t calib = 1)
 
   AliCDBManager* man = AliCDBManager::Instance();
   man->SetDefaultStorage(ocdbPath.Data());
-  man->SetSpecificStorage("MUON/Calib/Mapping","local://$ALICE_ROOT");
-  man->SetSpecificStorage("MUON/Calib/DDLStore","local://$ALICE_ROOT");
+  //man->SetSpecificStorage("MUON/Calib/Mapping","local://$ALICE_ROOT");
+  //man->SetSpecificStorage("MUON/Calib/DDLStore","local://$ALICE_ROOT");
+  man->SetSpecificStorage("MUON/Calib/Gains","local://$ALICE_ROOT");
 
   gRandom->SetSeed(seed);
   
