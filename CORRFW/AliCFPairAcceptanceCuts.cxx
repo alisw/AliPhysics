@@ -30,34 +30,37 @@ ClassImp(AliCFPairAcceptanceCuts)
 
 //______________________________
 AliCFPairAcceptanceCuts::AliCFPairAcceptanceCuts() : 
-  AliCFCutBase()
+  AliCFCutBase(),
+  fMCInfo(0x0),
+  fCutNeg(new AliCFAcceptanceCuts()),
+  fCutPos(new AliCFAcceptanceCuts())
 {
   //
-  //ctor
+  //Default Constructor
   //
-  fCutNeg = new AliCFAcceptanceCuts();
-  fCutPos = new AliCFAcceptanceCuts();
 }
 
 //______________________________
 AliCFPairAcceptanceCuts::AliCFPairAcceptanceCuts(const Char_t* name, const Char_t* title) : 
-  AliCFCutBase(name,title)
+  AliCFCutBase(name,title),
+  fMCInfo(0x0),
+  fCutNeg(new AliCFAcceptanceCuts(name,title)),
+  fCutPos(new AliCFAcceptanceCuts(name,title))
 {
   //
-  //ctor
+  //Named Constructor
   //
-  fCutNeg = new AliCFAcceptanceCuts(name,title);
-  fCutPos = new AliCFAcceptanceCuts(name,title);
 }
 
 //______________________________
 AliCFPairAcceptanceCuts::AliCFPairAcceptanceCuts(const AliCFPairAcceptanceCuts& c) : 
   AliCFCutBase(c),
+  fMCInfo(c.fMCInfo),
   fCutNeg(c.fCutNeg),
   fCutPos(c.fCutPos)
 {
   //
-  //copy ctor
+  //Copy Constructor
   //
 }
 
@@ -69,6 +72,7 @@ AliCFPairAcceptanceCuts& AliCFPairAcceptanceCuts::operator=(const AliCFPairAccep
   //
   if (this != &c) {
     AliCFCutBase::operator=(c) ;
+    fMCInfo = c.fMCInfo ;
     fCutNeg = c.fCutNeg ;
     fCutPos = c.fCutPos ;
   }

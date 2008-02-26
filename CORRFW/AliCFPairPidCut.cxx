@@ -26,23 +26,23 @@ ClassImp(AliCFPairPidCut)
 
 //__________________________________________________________________________________
 AliCFPairPidCut::AliCFPairPidCut() :
-  AliCFCutBase()
+  AliCFCutBase(),
+  fCutNeg(new AliCFTrackCutPid()),
+  fCutPos(new AliCFTrackCutPid())
 {
   //
   // Default constructor
   //
-  fCutNeg = new AliCFTrackCutPid();
-  fCutPos = new AliCFTrackCutPid();
 }
 //__________________________________________________________________________________
 AliCFPairPidCut::AliCFPairPidCut(const Char_t* name, const Char_t* title) :
-  AliCFCutBase(name,title)
+  AliCFCutBase(name,title),
+  fCutNeg(new AliCFTrackCutPid(name,title)),
+  fCutPos(new AliCFTrackCutPid(name,title))
 {
   //
   // Constructor
   //
-  fCutNeg = new AliCFTrackCutPid(name,title);
-  fCutPos = new AliCFTrackCutPid(name,title);
 }
 //__________________________________________________________________________________
 AliCFPairPidCut::AliCFPairPidCut(const AliCFPairPidCut& c) :

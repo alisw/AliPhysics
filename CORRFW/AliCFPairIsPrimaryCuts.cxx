@@ -28,23 +28,23 @@ ClassImp(AliCFPairIsPrimaryCuts)
 
 //__________________________________________________________________________________
 AliCFPairIsPrimaryCuts::AliCFPairIsPrimaryCuts() :
-  AliCFCutBase()
+  AliCFCutBase(),
+  fCutNeg(new AliCFTrackIsPrimaryCuts()),
+  fCutPos(new AliCFTrackIsPrimaryCuts())
 {
   //
   // Default constructor
   //
-  fCutNeg = new AliCFTrackIsPrimaryCuts();
-  fCutPos = new AliCFTrackIsPrimaryCuts();
 }
 //__________________________________________________________________________________
 AliCFPairIsPrimaryCuts::AliCFPairIsPrimaryCuts(Char_t* name, Char_t* title) :
-  AliCFCutBase(name,title)
+  AliCFCutBase(name,title),
+  fCutNeg(new AliCFTrackIsPrimaryCuts(name,title)),
+  fCutPos(new AliCFTrackIsPrimaryCuts(name,title))
 {
   //
-  // Constructor
+  // Named Constructor
   //
-  fCutNeg = new AliCFTrackIsPrimaryCuts(name,title);
-  fCutPos = new AliCFTrackIsPrimaryCuts(name,title);
 }
 //__________________________________________________________________________________
 AliCFPairIsPrimaryCuts::AliCFPairIsPrimaryCuts(const AliCFPairIsPrimaryCuts& c) :

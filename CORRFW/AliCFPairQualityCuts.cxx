@@ -27,23 +27,23 @@ ClassImp(AliCFPairQualityCuts)
 
 //__________________________________________________________________________________
 AliCFPairQualityCuts::AliCFPairQualityCuts() :
-  AliCFCutBase()
+  AliCFCutBase(),
+  fCutNeg(new AliCFTrackQualityCuts()),
+  fCutPos(new AliCFTrackQualityCuts())
 {
   //
   // Default constructor
   //
-  fCutNeg = new AliCFTrackQualityCuts();
-  fCutPos = new AliCFTrackQualityCuts();
 }
 //__________________________________________________________________________________
 AliCFPairQualityCuts::AliCFPairQualityCuts(Char_t* name, Char_t* title) :
-  AliCFCutBase(name,title)
+  AliCFCutBase(name,title),
+  fCutNeg(new AliCFTrackQualityCuts(name,title)),
+  fCutPos(new AliCFTrackQualityCuts(name,title))
 {
   //
-  // Constructor
+  // Named Constructor
   //
-  fCutNeg = new AliCFTrackQualityCuts(name,title);
-  fCutPos = new AliCFTrackQualityCuts(name,title);
 }
 //__________________________________________________________________________________
 AliCFPairQualityCuts::AliCFPairQualityCuts(const AliCFPairQualityCuts& c) :
