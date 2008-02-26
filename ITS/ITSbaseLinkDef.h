@@ -92,6 +92,9 @@
 #pragma link C++ class AliITSEventHeader+;
 #pragma link C++ class AliITSRawStreamSPDErrorLog+;
 
+#pragma link C++ class AliITSIntMap+;
+#pragma link C++ class AliITSIntMapNode+;
+#pragma link C++ class AliITSPedestalSSD+;
 
 
 #endif
