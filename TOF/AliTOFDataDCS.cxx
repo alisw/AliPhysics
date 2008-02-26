@@ -340,6 +340,13 @@ Bool_t AliTOFDataDCS::ProcessData(TMap& aliasMap){
   Float_t delta[2];
   Float_t timedelta[2];
 
+  AliInfo(Form(" timeMin = %f",timeMin));
+  AliInfo(Form(" timeMax = %f",timeMax));
+  if (timeMin==timeMax){
+	  AliError(Form(" start time = %i = end time = %i",fStartTime,fEndTime));
+	  return kFALSE;
+  }
+
   TObjArray *aliasArr;
   AliDCSValue* aValue;
   AliDCSValue* aValue1;
@@ -458,6 +465,8 @@ Bool_t AliTOFDataDCS::ProcessData(TMap& aliasMap){
 
     Int_t deltamin = (Int_t)(60/(timeMax-timeMin)*nentries);
     Int_t klast = nentries-deltamin;
+    AliInfo(Form(" deltamin = %i",deltamin));
+    AliInfo(Form(" klast = %i",klast));
       
     for (Int_t k=0;k<klast;k++){
       aValue = (AliDCSValue*) aliasArr->At(k);
