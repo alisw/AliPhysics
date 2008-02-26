@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
+/* $Id:$ */
 
 ///////////////////////////////////////////////////////////////////
 // Implementation of the class for SDD DCS data analysis         //
@@ -400,9 +400,9 @@ void AliITSDCSAnalyzerSDD::AnalyzeData(TMap* dcsMap)
 
                bitStatus = 0;
                if( valOK->GetBool() ) bitStatus += 1;        // 0. bit - _OK
-               if( valStTL->GetInt() == 1 ) bitStatus += 2;  // 1. bit - _TEMP_L_STATE
-               if( valStTR->GetInt() == 1 ) bitStatus += 4;  // 2. bit - _TEMP_R_STATE
-                        // Bit map is created
+               if( valStTL->GetInt() == 4 ) bitStatus += 2;  // 1. bit - _TEMP_L_STATE
+               if( valStTR->GetInt() == 4 ) bitStatus += 4;  // 2. bit - _TEMP_R_STATE
+                        // Bit map is created. *TEMP_*_STATE == 4 means "Thermometer is OK"
 
                if( lastBitStatus != bitStatus )
                {        // If the status bitmap is the same as last one, it would not be stored.
