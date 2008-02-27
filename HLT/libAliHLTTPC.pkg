@@ -44,6 +44,7 @@ CLASS_HDRS:=  	AliHLTTPCTransform.h \
 		AliHLTTPCSliceTrackerComponent.h \
 		AliHLTTPCGlobalMergerComponent.h \
 		AliHLTTPCEsdWriterComponent.h \
+		AliHLTTPCNoiseMapComponent.h \
 		tracking-ca/AliHLTTPCCACell.h \
 		tracking-ca/AliHLTTPCCADisplay.h \
 		tracking-ca/AliHLTTPCCAHit.h \

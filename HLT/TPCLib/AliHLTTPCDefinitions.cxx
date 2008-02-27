@@ -64,7 +64,8 @@ const AliHLTComponentDataType AliHLTTPCDefinitions::fgkCalibCEDataType =
   (AliHLTComponentDataType){sizeof(AliHLTComponentDataType),                          {'C','A','L','_','C','E',' ',' '},  kAliHLTDataOriginAny} | kAliHLTDataOriginTPC;
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkActivePadsDataType =	      								  	      
   (AliHLTComponentDataType){sizeof(AliHLTComponentDataType),                          {'A','C','T','I','V','P','A','D'},  kAliHLTDataOriginAny} | kAliHLTDataOriginTPC;
-
+const AliHLTComponentDataType AliHLTTPCDefinitions::fgkNoiseHistoDataType =
+  (AliHLTComponentDataType){sizeof(AliHLTComponentDataType),                          {'N','O','I','S','E','M','A','P'},  kAliHLTDataOriginAny} | kAliHLTDataOriginTPC;
 
 AliHLTTPCDefinitions::AliHLTTPCDefinitions()
 {

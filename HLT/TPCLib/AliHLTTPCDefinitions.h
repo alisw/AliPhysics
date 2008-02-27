@@ -97,7 +97,9 @@ public:
 
   /** active pads data type, Used for cosmics test december 2007 */
   static const AliHLTComponentDataType fgkActivePadsDataType;      // see above
- 
+
+  /** noise mapping histograms */
+  static const AliHLTComponentDataType fgkNoiseHistoDataType; // see above
 
   ClassDef(AliHLTTPCDefinitions, 1);
 
