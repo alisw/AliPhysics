@@ -35,6 +35,8 @@
 ClassImp(AliMUON2DMap)
 /// \endcond
 
+const Int_t AliMUON2DMap::fgkOptimalSizeForDEManu = 228;
+
 namespace
 {
   //___________________________________________________________________________
@@ -53,22 +55,23 @@ namespace
 //_____________________________________________________________________________
 AliMUON2DMap::AliMUON2DMap(Bool_t optimizeForDEManu) 
 : AliMUONVStore(), 
-  fMap(0x0),
+  fMap(new AliMpExMap(kTRUE)),
   fOptimizeForDEManu(optimizeForDEManu)
 {
   /// Default constructor.
-    Clear();
+  // hard-coded constant in order not to depend on mapping
+  // if this number ever change, it will not break the code, simply the
+  // automatic resizing will give a warning...
+  if ( fOptimizeForDEManu ) fMap->SetSize(fgkOptimalSizeForDEManu); 
 }
 
 //_____________________________________________________________________________
 AliMUON2DMap::AliMUON2DMap(const AliMUON2DMap& other)
 : AliMUONVStore(),
-fMap(0x0),
-fOptimizeForDEManu(kFALSE)
+  fMap(new AliMpExMap(*other.fMap)),
+  fOptimizeForDEManu(other.fOptimizeForDEManu)
 {
  /// Copy constructor.
-
- other.CopyTo(*this);
 }
 
 //_____________________________________________________________________________
@@ -76,8 +79,8 @@ AliMUON2DMap&
 AliMUON2DMap::operator=(const AliMUON2DMap& other)
 {
 /// Assignment operator
-
-  other.CopyTo(*this);
+  *fMap = *other.fMap;
+  fOptimizeForDEManu = other.fOptimizeForDEManu;
   return *this;
 }
 
@@ -86,7 +89,6 @@ AliMUON2DMap::~AliMUON2DMap()
 {
 /// Destructor. 
 /// We delete the map, which will delete the objects, as we're owner.
-
   delete fMap;
 }
 
@@ -99,21 +101,11 @@ AliMUON2DMap::Create() const
 }
 
 //_____________________________________________________________________________
-void
-AliMUON2DMap::CopyTo(AliMUON2DMap& dest) const
-{
-  /// Copy this into dest.
-
-  delete dest.fMap;
-  dest.fMap = new AliMpExMap(*fMap);
-  dest.fOptimizeForDEManu = fOptimizeForDEManu;
-}
-
-//_____________________________________________________________________________
 Bool_t
 AliMUON2DMap::Add(TObject* object)
 {
   /// Add object, using the decoding of uniqueID into two ints as the key
+  if (!object) return kFALSE;
   UInt_t uniqueID = object->GetUniqueID();
   Int_t j = ( uniqueID & 0xFFFF0000 ) >> 16;
   Int_t i = ( uniqueID & 0xFFFF);
@@ -125,10 +117,8 @@ TObject*
 AliMUON2DMap::FindObject(Int_t i, Int_t j) const
 {
   /// Return the value at position (i,j).
-
   AliMpExMap* m = static_cast<AliMpExMap*>(fMap->GetValue(i));
-  if (m) return m->GetValue(j);
-  return 0x0;
+  return m ? m->GetValue(j) : 0x0;
 }
 
 //_____________________________________________________________________________
@@ -137,11 +127,7 @@ AliMUON2DMap::CreateIterator() const
 {
   // Create and return an iterator on this map
   // Returned iterator must be deleted by user.
-  if ( fMap ) 
-  {
-    return new AliMUON2DMapIterator(fMap);
-  }
-  return 0x0;
+  return new AliMUON2DMapIterator(*fMap);
 }
 
 //_____________________________________________________________________________
@@ -150,28 +136,15 @@ AliMUON2DMap::CreateIterator(Int_t firstI, Int_t lastI) const
 {
   // Create and return an iterator on this map
   // Returned iterator must be deleted by user.
-  if ( fMap ) 
-  {
-    return new AliMUON2DMapIteratorByI(*fMap,firstI,lastI);
-  }
-  return 0x0;
+  return new AliMUON2DMapIteratorByI(*fMap,firstI,lastI);
 }
 
 //_____________________________________________________________________________
 void 
 AliMUON2DMap::Clear(Option_t*)
 {
-  /// Reset
-  delete fMap;
-
-  fMap = new AliMpExMap(kTRUE);
-
-  if ( fOptimizeForDEManu )
-  {
-    fMap->SetSize(228); // hard-coded constant in order not to depend on mapping
-    // if this number ever change, it will not break the code, simply the
-    // automatic resizing will give a warning...
-  }
+  /// Clear memory
+  fMap->Clear();
 }  
 
 //_____________________________________________________________________________
@@ -196,11 +169,7 @@ AliMUON2DMap::GetSize(Int_t i) const
 {
   /// Return the number of objects we hold
   AliMpExMap* m = static_cast<AliMpExMap*>(fMap->GetValue(i));
-  if (m)
-  {
-    return m->GetSize();
-  }
-  return 0;
+  return m ? m->GetSize() : 0;
 }
 
 //_____________________________________________________________________________
@@ -247,8 +216,4 @@ AliMUON2DMap::Set(Int_t i, Int_t j, TObject* object, Bool_t replace)
 
   return kTRUE;
 }
-
-
-
-
 

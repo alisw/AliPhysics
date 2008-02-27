@@ -43,7 +43,7 @@ private:
 private:
   AliMUONVStore* fGains; //!< Gains for the MUON TRK
   Bool_t fSkip; //!< whether we should skip this run (because it's dummy)
-  TString fComment; //<! comment for OCDB entry
+  TString fComment; //!< comment for OCDB entry
   
   ClassDef(AliMUONGainSubprocessor,2) // A shuttle preprocessor for MUON TRK gains
 };

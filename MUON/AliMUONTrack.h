@@ -31,16 +31,18 @@ class AliMUONTrack : public TObject
   AliMUONTrack (const AliMUONTrack& track); // copy constructor
   AliMUONTrack& operator=(const AliMUONTrack& track); // assignment operator
 
-
-  /// return array of track parameters at cluster
-  TClonesArray* GetTrackParamAtCluster() const {return fTrackParamAtCluster;}
+  TClonesArray* GetTrackParamAtCluster() const;
   void          AddTrackParamAtCluster(const AliMUONTrackParam &trackParam, AliMUONVCluster &cluster, Bool_t copy = kFALSE); 
   void          RemoveTrackParamAtCluster(AliMUONTrackParam *trackParam);
   void          UpdateTrackParamAtCluster();
   void          UpdateCovTrackParamAtCluster();
   
+  Bool_t IsValid();
+  
+  void TagRemovableClusters();
+  
   /// return the number of clusters attached to the track
-  Int_t GetNClusters() const {return fTrackParamAtCluster->GetEntriesFast();}
+  Int_t GetNClusters() const {return fTrackParamAtCluster ? fTrackParamAtCluster->GetEntriesFast() : 0;}
 
   /// return kTrue if the vertex must be used to constrain the fit, kFalse if not
   Bool_t FitWithVertex() const {return fFitWithVertex;}
@@ -131,7 +133,7 @@ class AliMUONTrack : public TObject
 
  private:
  
-  TClonesArray* fTrackParamAtCluster; ///< Track parameters at cluster
+  mutable TClonesArray* fTrackParamAtCluster; ///< Track parameters at cluster
   
   Bool_t   fFitWithVertex;   //!< kTRUE if using the vertex to constrain the fit, kFALSE if not
   Double_t fVertexErrXY2[2]; //!< Vertex resolution square used during the tracking procedure if required

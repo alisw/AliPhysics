@@ -28,7 +28,10 @@ public:
   virtual Bool_t Add(TObject* object);
   
   /// Add a track
-  virtual void Add(const AliMUONTrack& track) = 0;
+  virtual AliMUONTrack* Add(const AliMUONTrack& track) = 0;
+  
+  /// Remove a track from the store
+  virtual AliMUONTrack* Remove(AliMUONTrack& track) = 0;
   
   using AliMUONVStore::Create;
   

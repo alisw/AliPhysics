@@ -174,7 +174,7 @@ AliMpExMap::Copy(TObject& dest) const
   AliMpExMap& m = static_cast<AliMpExMap&>(dest);
   m.fKeys = fKeys;
   m.fMap.Delete();
-  m.fObjects.Delete();
+  m.fObjects.Clear();
   
   for ( Int_t i = 0; i <= fObjects.GetLast(); ++i ) 
   {
@@ -225,6 +225,16 @@ void AliMpExMap::AddKey(Long_t key)
 //
 // public methods
 //
+
+//_____________________________________________________________________________
+void AliMpExMap::Clear(Option_t* /*option*/)
+{
+/// Clear memory
+
+  fMap.Delete();
+  fObjects.Clear();
+  fKeys.Reset();
+}
 
 //_____________________________________________________________________________
 void AliMpExMap::Add(const AliMpIntPair& key, TObject* object)

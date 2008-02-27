@@ -34,6 +34,7 @@ class AliMpExMap : public TObject
     AliMpExMap& operator=(const AliMpExMap& rhs);
     virtual ~AliMpExMap();
     
+    
     // static methods
     // conversion between varius keys and Long_t
     //
@@ -41,6 +42,9 @@ class AliMpExMap : public TObject
     static Long_t  GetIndex(const TString& s);
     static AliMpIntPair  GetPair(Long_t index);
     static TString       GetString(Long_t index);
+
+    // methods from base class
+    virtual void Clear(Option_t* opt="");
 
     // set methods
     void Add(const AliMpIntPair& key, TObject* object);

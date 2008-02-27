@@ -37,15 +37,6 @@ class AliMUONVTrackReconstructor : public TObject {
   AliMUONVTrackReconstructor(AliMUONVClusterServer& clusterServer); // default Constructor
   virtual ~AliMUONVTrackReconstructor(); // Destructor
 
-  // Reconstructed tracks
-           /// Return number of reconstructed tracks
-  Int_t GetNRecTracks() const {return fNRecTracks;} // Number
-           /// Set number of reconstructed tracks
-  void SetNRecTracks(Int_t NRecTracks) {fNRecTracks = NRecTracks;}
-           /// Return array of reconstructed tracks
-  TClonesArray* GetRecTracksPtr() const {return fRecTracksPtr;} // Array
- 
-  // Functions
   void EventReconstruct(AliMUONVClusterStore& clusterStore,
                         AliMUONVTrackStore& trackStore);
   
@@ -76,10 +67,12 @@ class AliMUONVTrackReconstructor : public TObject {
   virtual void FollowTracks(AliMUONVClusterStore& clusterStore) = 0;
   /// Complement the reconstructed tracks
   virtual void ComplementTracks(const AliMUONVClusterStore& clusterStore) = 0;
-  /// Improve the reconstructed tracks
-  virtual void ImproveTracks() = 0;
-  /// Finalize the tracking results
-  virtual void Finalize() = 0;
+  void ImproveTracks();
+  /// Improve the given reconstructed track
+  virtual void ImproveTrack(AliMUONTrack &track) = 0;
+  void Finalize();
+  /// Finalize the given track
+  virtual void FinalizeTrack(AliMUONTrack &track) = 0;
   
   TClonesArray* MakeSegmentsInStation(const AliMUONVClusterStore& clusterStore, Int_t station);
 

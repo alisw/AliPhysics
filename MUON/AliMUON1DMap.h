@@ -45,11 +45,7 @@ public:
   virtual Int_t GetSize() const;
   
 private:
-   void CopyTo(AliMUON1DMap& to) const;
-  /** Set the object stored at i.
-    if replace=false and there's already an object there, returns kFALSE
-    */
-  virtual Bool_t Set(Int_t i, TObject* object, Bool_t replace);
+  virtual Bool_t Set(Int_t i, TObject* object);
   
 private:  
     

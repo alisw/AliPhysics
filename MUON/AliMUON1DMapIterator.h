@@ -28,7 +28,7 @@ class AliMpExMap;
 class AliMUON1DMapIterator : public TIterator
 {
 public:
-  AliMUON1DMapIterator(AliMpExMap& theMap);
+  AliMUON1DMapIterator(const AliMpExMap& theMap);
   AliMUON1DMapIterator(const AliMUON1DMapIterator&);
   AliMUON1DMapIterator& operator=(const AliMUON1DMapIterator& rhs);
   TIterator& operator=(const TIterator& iterator);  
@@ -43,8 +43,8 @@ public:
   virtual const TCollection* GetCollection() const { return 0x0; }
   
 private:
-  TExMapIter fIter; //!< iterator
-  Int_t fCurrentI; //!< current index in direction i 
+  const AliMpExMap* fkMap; ///< Top map we iterate upon
+  Int_t fCurrentI;         ///< Current position in fMap
   
   ClassDef(AliMUON1DMapIterator,0) // VDataIterator for 1D maps
 };

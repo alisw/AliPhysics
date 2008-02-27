@@ -40,7 +40,7 @@ AliMUON2DMapIteratorByI::AliMUON2DMapIteratorByI(const AliMpExMap& theMap,
                                                  Int_t firstI,
                                                  Int_t lastI)
 : TIterator(),
-fMap(&theMap),
+fkMap(&theMap),
 fIter2(0x0),
 fCurrentI(-1),
 fCurrentJ(-1),
@@ -54,7 +54,7 @@ fLastI(lastI)
 //_____________________________________________________________________________
 AliMUON2DMapIteratorByI::AliMUON2DMapIteratorByI(const AliMUON2DMapIteratorByI& rhs)
 :TIterator(rhs),
-fMap(rhs.fMap),
+fkMap(rhs.fkMap),
 fIter2(0x0),
 fCurrentI(rhs.fCurrentI),
 fCurrentJ(rhs.fCurrentJ),
@@ -72,7 +72,7 @@ AliMUON2DMapIteratorByI::operator=(const AliMUON2DMapIteratorByI& rhs)
   /// assignment operator
   if ( this != &rhs ) 
   {
-    fMap = rhs.fMap;
+    fkMap = rhs.fkMap;
     fIter2 = 0x0;
     if ( rhs.fIter2 ) fIter2 = new TExMapIter(*(rhs.fIter2));
     fCurrentI = rhs.fCurrentI;
@@ -88,10 +88,10 @@ TIterator&
 AliMUON2DMapIteratorByI::operator=(const TIterator& rhs)
 {
   /// overriden assigment operator (imposed by Root's declaration of TIterator ?)
-  if ( this != &rhs ) 
+  if ( this != &rhs && rhs.IsA() == AliMUON2DMapIteratorByI::Class() ) 
   {
     const AliMUON2DMapIteratorByI& rhs1 = static_cast<const AliMUON2DMapIteratorByI&>(rhs);
-    fMap = rhs1.fMap;
+    fkMap = rhs1.fkMap;
     fIter2 = 0x0;
     if ( rhs1.fIter2 ) fIter2 = new TExMapIter(*(rhs1.fIter2));
     fCurrentI = rhs1.fCurrentI;
@@ -150,7 +150,7 @@ AliMUON2DMapIteratorByI::Next()
     while ( !m && fCurrentI < fLastI ) 
     {
       ++fCurrentI;
-      m = static_cast<AliMpExMap*>(fMap->GetValue(fCurrentI));
+      m = static_cast<AliMpExMap*>(fkMap->GetValue(fCurrentI));
     }
     if (!m) return 0x0; // we are done
     fIter2 = new TExMapIter(m->GetIterator());
@@ -170,7 +170,7 @@ AliMUON2DMapIteratorByI::Reset()
   fCurrentI = fFirstI;
   AliMpExMap* m;
   
-  while ( !(  m = static_cast<AliMpExMap*>(fMap->GetValue(fCurrentI) ) ) && 
+  while ( !(  m = static_cast<AliMpExMap*>(fkMap->GetValue(fCurrentI) ) ) && 
           fCurrentI < fLastI )
   {
     ++fCurrentI;

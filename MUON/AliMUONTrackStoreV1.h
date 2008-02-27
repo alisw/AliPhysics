@@ -26,8 +26,10 @@ public:
   
   using AliMUONVTrackStore::Add;
   
-  virtual void Add(const AliMUONTrack& track);
+  virtual AliMUONTrack* Add(const AliMUONTrack& track);
 
+  virtual AliMUONTrack* Remove(AliMUONTrack& track);
+  
   /// Whether the Connect(TTree&) method is implemented
   virtual Bool_t CanConnect() const { return kTRUE; }
   

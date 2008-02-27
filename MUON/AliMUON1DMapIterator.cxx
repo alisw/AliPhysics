@@ -19,15 +19,12 @@
 /// \class AliMUON1DMapIterator
 /// Implementation of TIterator for 1Dmaps
 /// 
-/// A simple implementation of VDataIterator for 1Dmaps.
+/// A simple implementation of iterator for 1Dmaps.
 ///
 /// \author Laurent Aphecetche
 //-----------------------------------------------------------------------------
 
 #include "AliMUON1DMapIterator.h"
-#include "AliMpExMap.h"
-#include "AliLog.h"
-#include "AliMpIntPair.h"
 #include "AliMpExMap.h"
 
 /// \cond CLASSIMP
@@ -35,19 +32,18 @@ ClassImp(AliMUON1DMapIterator)
 /// \endcond
 
 //_____________________________________________________________________________
-AliMUON1DMapIterator::AliMUON1DMapIterator(AliMpExMap& theMap)
+AliMUON1DMapIterator::AliMUON1DMapIterator(const AliMpExMap& theMap)
 : TIterator(), 
-fIter(theMap.GetIterator()),
-fCurrentI(-1)
+  fkMap(&theMap),
+  fCurrentI(-1)
 {
   /// default ctor
-  Reset();
 }
 
 //_____________________________________________________________________________
 AliMUON1DMapIterator::AliMUON1DMapIterator(const AliMUON1DMapIterator& rhs)
 : TIterator(rhs),
-  fIter(rhs.fIter),
+  fkMap(rhs.fkMap),
   fCurrentI(rhs.fCurrentI)        
 {
     /// copy ctor
@@ -60,7 +56,7 @@ AliMUON1DMapIterator::operator=(const AliMUON1DMapIterator& rhs)
   /// assignment operator
   if ( this != &rhs )
   {
-    fIter = rhs.fIter;
+    fkMap = rhs.fkMap;
     fCurrentI = rhs.fCurrentI;
   }
   return *this;
@@ -75,7 +71,7 @@ AliMUON1DMapIterator::operator=(const TIterator& rhs)
   if ( this != &rhs && rhs.IsA() == AliMUON1DMapIterator::Class() )
   {
     const AliMUON1DMapIterator& rhs1 = static_cast<const AliMUON1DMapIterator&>(rhs);
-    fIter = rhs1.fIter;
+    fkMap = rhs1.fkMap;
     fCurrentI = rhs1.fCurrentI;
   }
   return *this;
@@ -93,11 +89,7 @@ TObject*
 AliMUON1DMapIterator::Next()
 {
   /// Return next object in iteration
-
-  Long_t key, value;
-  Bool_t ok = fIter.Next(key,value);
-  if (!ok) return 0x0;
-  return reinterpret_cast<TObject*>(value);
+  return (++fCurrentI < fkMap->GetSize()) ? fkMap->GetObjectFast(fCurrentI) : 0x0;
 }
 
 //_____________________________________________________________________________
@@ -105,5 +97,5 @@ void
 AliMUON1DMapIterator::Reset()
 {
   /// rewind the iterator
-  fIter.Reset();
+  fCurrentI = -1;
 }

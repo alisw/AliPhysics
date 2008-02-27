@@ -42,7 +42,7 @@ public:
   
   using AliMUONVClusterStore::Add;
   
-  virtual Bool_t Add(const AliMUONVCluster& Cluster);
+  virtual AliMUONVCluster* Add(const AliMUONVCluster& Cluster);
   virtual AliMUONVCluster* Add(Int_t chamberId, Int_t detElemId, Int_t clusterIndex);
 
   virtual AliMUONVCluster* Remove(AliMUONVCluster& cluster);

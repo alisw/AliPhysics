@@ -22,17 +22,17 @@ class AliMUONRecoParam : public AliDetectorRecoParam
   static AliMUONRecoParam *GetHighFluxParam();
   
   /// set the calibration mode
-  void SetCalibrationMode(Option_t* mode) { fCalibrationMode = mode; }
+  void SetCalibrationMode(Option_t* mode) { fCalibrationMode = mode; fCalibrationMode.ToUpper();}
   /// get the calibration mode
   Option_t* GetCalibrationMode() const { return fCalibrationMode.Data(); }
-    
+  
   /// set the clustering (pre-clustering) mode
-  void      SetClusteringMode(Option_t* mode) {fClusteringMode = mode;}
+  void      SetClusteringMode(Option_t* mode) {fClusteringMode = mode; fClusteringMode.ToUpper();}
   /// get the clustering (pre-clustering) mode
   Option_t* GetClusteringMode() const {return fClusteringMode.Data();}
   
   /// set the tracking mode
-  void      SetTrackingMode(Option_t* mode) {fTrackingMode = mode;}
+  void      SetTrackingMode(Option_t* mode) {fTrackingMode = mode; fTrackingMode.ToUpper();}
   /// get the tracking mode
   Option_t* GetTrackingMode() const {return fTrackingMode.Data();}
   

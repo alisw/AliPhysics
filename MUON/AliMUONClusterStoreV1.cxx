@@ -54,7 +54,6 @@ fClusters(new TObjArray(AliMpConstants::NofChambers()))
   for ( Int_t i = 0; i < fClusters->GetSize(); ++i )
   {
     TClonesArray* tca = new TClonesArray("AliMUONRawCluster",100);
-    tca->SetOwner(kTRUE);
     fClusters->AddAt(tca,i);
   }
   AliDebug(1,"");
@@ -96,7 +95,7 @@ AliMUONVCluster* AliMUONClusterStoreV1::CreateCluster(Int_t /*chamberId*/, Int_t
 }
 
 //_____________________________________________________________________________
-Bool_t 
+AliMUONVCluster* 
 AliMUONClusterStoreV1::Add(const AliMUONVCluster& vCluster)
 {
   /// Add a cluster to this store
@@ -113,10 +112,10 @@ AliMUONClusterStoreV1::Add(const AliMUONVCluster& vCluster)
   TClonesArray* array = ChamberClusters(iChamber);
   if (!array) 
   {
-    return kFALSE;
+    return 0x0;
   }
-  new((*array)[array->GetLast()+1]) AliMUONRawCluster(*cluster);
-  return kTRUE;
+  
+  return new((*array)[array->GetLast()+1]) AliMUONRawCluster(*cluster);
 }
 
 //_____________________________________________________________________________

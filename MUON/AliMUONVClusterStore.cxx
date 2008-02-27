@@ -52,8 +52,7 @@ AliMUONVClusterStore::Add(TObject* object)
   AliMUONVCluster* cluster = dynamic_cast<AliMUONVCluster*>(object);
   if (cluster)
   {
-    Add(*cluster);
-    return kTRUE;
+    return (Add(*cluster)) ? kTRUE : kFALSE;
   }
   return kFALSE;
 }

@@ -31,6 +31,7 @@ public:
   
   static Int_t ReadCapacitances(const char* filename, AliMUONVStore& capaStore);
   
+  /// Error code constants
   enum ErrorCode
   {
     kCannotOpenFile = -1, /// cannot open given file

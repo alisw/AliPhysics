@@ -354,6 +354,7 @@ Bool_t AliMUONTrackReconstructor::FollowTrackInStation(AliMUONTrack &trackCandid
   AliMUONTrack *newTrack = 0x0;
   AliMUONVCluster *clusterCh1, *clusterCh2;
   AliMUONTrackParam extrapTrackParam;
+  AliMUONTrackParam extrapTrackParamAtCh;
   AliMUONTrackParam extrapTrackParamAtCluster1;
   AliMUONTrackParam extrapTrackParamAtCluster2;
   AliMUONTrackParam bestTrackParamAtCluster1;
@@ -364,8 +365,9 @@ Bool_t AliMUONTrackReconstructor::FollowTrackInStation(AliMUONTrack &trackCandid
   for (Int_t i = 0; i < nClusters; i++) clusterCh1Used[i] = kFALSE;
   Int_t iCluster1;
   
-  // Get track parameters
-  AliMUONTrackParam extrapTrackParamAtCh(*(AliMUONTrackParam*)trackCandidate.GetTrackParamAtCluster()->First());
+  // Get track parameters according to the propagation direction
+  if (nextStation==4) extrapTrackParamAtCh = *(AliMUONTrackParam*)trackCandidate.GetTrackParamAtCluster()->Last();
+  else extrapTrackParamAtCh = *(AliMUONTrackParam*)trackCandidate.GetTrackParamAtCluster()->First();
   
   // Add MCS effect
   AliMUONTrackExtrap::AddMCSEffect(&extrapTrackParamAtCh,AliMUONConstants::ChamberThicknessInX0(),1.);
@@ -743,7 +745,6 @@ void AliMUONTrackReconstructor::UpdateTrack(AliMUONTrack &track, AliMUONTrackPar
   
   // Update TrackParamAtCluster
   track.AddTrackParamAtCluster(trackParamAtCluster,*cluster);
-  track.GetTrackParamAtCluster()->Sort();
   
 }
 
@@ -781,7 +782,6 @@ void AliMUONTrackReconstructor::UpdateTrack(AliMUONTrack &track, AliMUONTrackPar
   // Update TrackParamAtCluster
   track.AddTrackParamAtCluster(trackParamAtCluster1,*cluster1);
   track.AddTrackParamAtCluster(trackParamAtCluster2,*cluster2);
-  track.GetTrackParamAtCluster()->Sort();
   
 }
 
@@ -863,6 +863,7 @@ void AliMUONTrackReconstructor::Fit(AliMUONTrack &track, Bool_t includeMCS, Bool
   /// w/wo multiple Coulomb scattering according to "includeMCS".
   /// w/wo constraining the vertex according to "fitWithVertex".
   /// calculating or not the covariance matrix according to "calcCov".
+  AliDebug(1,"Enter Fit");
   
   Double_t benC, errorParam, invBenP, nonBenC, x, y;
   AliMUONTrackParam *trackParam;
@@ -917,7 +918,7 @@ void AliMUONTrackReconstructor::Fit(AliMUONTrack &track, Bool_t includeMCS, Bool
   // mandatory limits in Bending to avoid NaN values of parameters
   gMinuit->mnparm(2, "Y", trackParam->GetBendingCoor(), 0.10, -500.0, 500.0, status);
   gMinuit->mnparm(3, "BenS", trackParam->GetBendingSlope(), 0.001, -0.5, 0.5, status);
-  gMinuit->mnparm(4, "InvBenP", trackParam->GetInverseBendingMomentum(), 0.003, -0.4, 0.4, status);
+  gMinuit->mnparm(4, "InvBenP", trackParam->GetInverseBendingMomentum(), 0.003, -0.5, 0.5, status);
   
   // minimization
   gMinuit->mnexcm("MIGRAD", arg, 0, status);
@@ -1058,9 +1059,9 @@ void AliMUONTrackReconstructor::ComplementTracks(const AliMUONVClusterStore& clu
       
       // add new cluster if any
       if (foundOneCluster) {
-	UpdateTrack(*track,bestTrackParamAtCluster);
-	bestTrackParamAtCluster.SetAloneInChamber(kFALSE);
-	trackParam->SetAloneInChamber(kFALSE);
+	trackParam->SetRemovable(kTRUE);
+	bestTrackParamAtCluster.SetRemovable(kTRUE);
+	track->AddTrackParamAtCluster(bestTrackParamAtCluster,*(bestTrackParamAtCluster.GetClusterPtr()));
 	trackModified = kTRUE;
       }
       
@@ -1076,152 +1077,82 @@ void AliMUONTrackReconstructor::ComplementTracks(const AliMUONVClusterStore& clu
 }
 
   //__________________________________________________________________________
-void AliMUONTrackReconstructor::ImproveTracks()
+void AliMUONTrackReconstructor::ImproveTrack(AliMUONTrack &track)
 {
-  /// Improve tracks by removing clusters with local chi2 highter than the defined cut
+  /// Improve the given track by removing clusters with local chi2 highter than the defined cut
   /// Recompute track parameters and covariances at the remaining clusters
-  AliDebug(1,"Enter ImproveTracks");
+  AliDebug(1,"Enter ImproveTrack");
   
   Double_t localChi2, worstLocalChi2;
-  Int_t worstChamber, previousChamber;
-  AliMUONTrack *track, *nextTrack;
-  AliMUONTrackParam *trackParamAtCluster, *worstTrackParamAtCluster, *previousTrackParam, *nextTrackParam;
+  AliMUONTrackParam *trackParamAtCluster, *worstTrackParamAtCluster;
   Double_t sigmaCut2 = AliMUONReconstructor::GetRecoParam()->GetSigmaCutForImprovement() *
 		       AliMUONReconstructor::GetRecoParam()->GetSigmaCutForImprovement();
   
-  // Remove double track to improve only "good" tracks
-  RemoveDoubleTracks();
-  
-  track = (AliMUONTrack*) fRecTracksPtr->First();
-  while (track) {
+  while (!track.IsImproved()) {
     
-    // prepare next track in case the actual track is suppressed
-    nextTrack = (AliMUONTrack*) fRecTracksPtr->After(track);
+    // identify removable clusters
+    track.TagRemovableClusters();
     
-    while (!track->IsImproved()) {
+    // Update track parameters and covariances
+    track.UpdateCovTrackParamAtCluster();
+    
+    // Compute local chi2 of each clusters
+    track.ComputeLocalChi2(kTRUE);
+    
+    // Look for the cluster to remove
+    worstTrackParamAtCluster = NULL;
+    worstLocalChi2 = 0.;
+    trackParamAtCluster = (AliMUONTrackParam*) track.GetTrackParamAtCluster()->First();
+    while (trackParamAtCluster) {
       
-      // Update track parameters and covariances
-      track->UpdateCovTrackParamAtCluster();
-      
-      // Compute local chi2 of each clusters
-      track->ComputeLocalChi2(kTRUE);
-      
-      // Look for the cluster to remove
-      worstTrackParamAtCluster = NULL;
-      worstLocalChi2 = 0.;
-      trackParamAtCluster = (AliMUONTrackParam*) track->GetTrackParamAtCluster()->First();
-      while (trackParamAtCluster) {
-        
-        // Pick up cluster with the worst chi2
-        localChi2 = trackParamAtCluster->GetLocalChi2();
-        if (localChi2 > worstLocalChi2) {
-          worstLocalChi2 = localChi2;
-          worstTrackParamAtCluster = trackParamAtCluster;
-        }
-        
-      trackParamAtCluster = (AliMUONTrackParam*) track->GetTrackParamAtCluster()->After(trackParamAtCluster);
+      // Pick up cluster with the worst chi2
+      localChi2 = trackParamAtCluster->GetLocalChi2();
+      if (localChi2 > worstLocalChi2) {
+	worstLocalChi2 = localChi2;
+	worstTrackParamAtCluster = trackParamAtCluster;
       }
       
-      // Check if bad cluster found
-      if (!worstTrackParamAtCluster) {
-        track->SetImproved(kTRUE);
-        break;
-      }
-      
-      // Check whether the worst chi2 is under requirement or not
-      if (worstLocalChi2 < 2. * sigmaCut2) { // 2 because 2 quantities in chi2
-        track->SetImproved(kTRUE);
-        break;
-      }
-      
-      // if the worst cluster is not removable then remove the entire track
-      if (!worstTrackParamAtCluster->IsRemovable() && worstTrackParamAtCluster->IsAloneInChamber()) {
-	fRecTracksPtr->Remove(track);
-  	fNRecTracks--;
-        break;
-      }
-      
-      // Reset the second cluster in the same station as being not removable
-      // or reset the second cluster in the same chamber as being alone
-      worstChamber = worstTrackParamAtCluster->GetClusterPtr()->GetChamberId();
-      previousTrackParam = (AliMUONTrackParam*) track->GetTrackParamAtCluster()->Before(worstTrackParamAtCluster);
-      nextTrackParam = (AliMUONTrackParam*) track->GetTrackParamAtCluster()->After(worstTrackParamAtCluster);
-      if (worstTrackParamAtCluster->IsAloneInChamber()) { // Worst cluster removable and alone in chamber
-	
-	if (worstChamber%2 == 0) { // Modify flags in next chamber
-	  
-	  nextTrackParam->SetRemovable(kFALSE);
-	  if (!nextTrackParam->IsAloneInChamber()) // Make sure both clusters in second chamber are not removable anymore
-	    ((AliMUONTrackParam*) track->GetTrackParamAtCluster()->After(nextTrackParam))->SetRemovable(kFALSE);
-	  
-	} else { // Modify flags in previous chamber
-	  
-	  previousTrackParam->SetRemovable(kFALSE);
-	  if (!previousTrackParam->IsAloneInChamber()) // Make sure both clusters in second chamber are not removable anymore
-	    ((AliMUONTrackParam*) track->GetTrackParamAtCluster()->Before(previousTrackParam))->SetRemovable(kFALSE);
-	  
-	}
-	
-      } else { // Worst cluster not alone in its chamber
-        
-	if (previousTrackParam) previousChamber = previousTrackParam->GetClusterPtr()->GetChamberId();
-	else previousChamber = -1;
-	
-	if (previousChamber == worstChamber) { // the second cluster on the same chamber is the previous one
-	  
-	  previousTrackParam->SetAloneInChamber(kTRUE);
-	  // transfert the removability to the second cluster
-	  if (worstTrackParamAtCluster->IsRemovable()) previousTrackParam->SetRemovable(kTRUE);
-	  
-	} else { // the second cluster on the same chamber is the next one
-	  
-	  nextTrackParam->SetAloneInChamber(kTRUE);
-	  // transfert the removability to the second cluster
-	  if (worstTrackParamAtCluster->IsRemovable()) nextTrackParam->SetRemovable(kTRUE);
-	  
-	}
-	
-      }
-      
-      // Remove the worst cluster
-      track->RemoveTrackParamAtCluster(worstTrackParamAtCluster);
-      
-      // Re-fit the track:
-      // Take into account the multiple scattering
-      // Calculate the track parameter covariance matrix
-      Fit(*track, kTRUE, kFALSE, kTRUE);
-      
-      // Printout for debuging
-      if ((AliLog::GetDebugLevel("MUON","AliMUONTrackReconstructor") >= 1) || (AliLog::GetGlobalDebugLevel() >= 1)) {
-        cout << "ImproveTracks: track " << fRecTracksPtr->IndexOf(track)+1 << " improved " << endl;
-      }
-      
+    trackParamAtCluster = (AliMUONTrackParam*) track.GetTrackParamAtCluster()->After(trackParamAtCluster);
     }
     
-    track = nextTrack;
+    // Check if worst cluster found
+    if (!worstTrackParamAtCluster) {
+      AliWarning("Bad local chi2 values?");
+      break;
+    }
+    
+    // Check whether the worst chi2 is under requirement or not
+    if (worstLocalChi2 < 2. * sigmaCut2) { // 2 because 2 quantities in chi2
+      track.SetImproved(kTRUE);
+      break;
+    }
+    
+    // if the worst cluster is not removable then stop improvement
+    if (!worstTrackParamAtCluster->IsRemovable()) break;
+    
+    // Remove the worst cluster
+    track.RemoveTrackParamAtCluster(worstTrackParamAtCluster);
+    
+    // Re-fit the track:
+    // Take into account the multiple scattering
+    // Calculate the track parameter covariance matrix
+    Fit(track, kTRUE, kFALSE, kTRUE);
+    
+    // Printout for debuging
+    if ((AliLog::GetDebugLevel("MUON","AliMUONTrackReconstructor") >= 1) || (AliLog::GetGlobalDebugLevel() >= 1)) {
+      cout << "ImproveTracks: track " << fRecTracksPtr->IndexOf(&track)+1 << " improved " << endl;
+    }
+    
   }
-  
-  // compress the array in case of some tracks have been removed
-  fRecTracksPtr->Compress();
   
 }
 
   //__________________________________________________________________________
-void AliMUONTrackReconstructor::Finalize()
+void AliMUONTrackReconstructor::FinalizeTrack(AliMUONTrack &track)
 {
-  /// Recompute track parameters and covariances at each attached cluster from those at the first one
-  
-  AliMUONTrack *track;
-  
-  track = (AliMUONTrack*) fRecTracksPtr->First();
-  while (track) {
-    
-    // update track parameters if not already done
-    if (!track->IsImproved()) track->UpdateCovTrackParamAtCluster();
-    
-    track = (AliMUONTrack*) fRecTracksPtr->After(track);
-    
-  }
-  
+  /// Recompute track parameters and covariances at each attached cluster
+  /// from those at the first one, if not already done
+  AliDebug(1,"Enter FinalizeTrack");
+  if (!track.IsImproved()) track.UpdateCovTrackParamAtCluster();
 }
 

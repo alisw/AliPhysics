@@ -31,7 +31,7 @@ public:
   virtual Bool_t Add(TObject* object);
 
   /// Add a cluster object to the store
-  virtual Bool_t Add(const AliMUONVCluster& Cluster) = 0;
+  virtual AliMUONVCluster* Add(const AliMUONVCluster& Cluster) = 0;
   /// Create a new cluster with an unique ID and add it to the store
   virtual AliMUONVCluster* Add(Int_t chamberId, Int_t detElemId, Int_t clusterIndex) = 0;
 

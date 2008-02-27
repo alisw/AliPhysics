@@ -53,10 +53,11 @@ public:
   virtual Int_t GetSize(Int_t i) const;
 
 private:
-  void CopyTo(AliMUON2DMap& destination) const;
   Bool_t Set(Int_t i, Int_t j, TObject* object, Bool_t replace);
 
 private:
+  static const Int_t fgkOptimalSizeForDEManu; ///< Optimal size for DEManu
+
   AliMpExMap* fMap; ///< Our internal map (an AliMpExMap of AliMpExMaps)
   Bool_t fOptimizeForDEManu; ///< whether (i,j) pair is supposed to be (DetElemId,ManuId) (allow us to allocate right amount of memory, that's all it does.
   

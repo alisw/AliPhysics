@@ -40,7 +40,6 @@ AliMUONTrackStoreV1::AliMUONTrackStoreV1() : AliMUONVTrackStore(),
  fTracks(new TClonesArray("AliMUONTrack",10))
 {
    /// Ctor
-   fTracks->SetOwner(kTRUE);
 }
 
 //_____________________________________________________________________________
@@ -51,11 +50,21 @@ AliMUONTrackStoreV1::~AliMUONTrackStoreV1()
 }
 
 //_____________________________________________________________________________
-void 
+AliMUONTrack* 
 AliMUONTrackStoreV1::Add(const AliMUONTrack& track)
 {
   /// Add a track
-  new((*fTracks)[fTracks->GetLast()+1]) AliMUONTrack(track);
+  return new((*fTracks)[fTracks->GetLast()+1]) AliMUONTrack(track);
+}
+
+//_____________________________________________________________________________
+AliMUONTrack*
+AliMUONTrackStoreV1::Remove(AliMUONTrack& track)
+{
+  /// Remove a track from the store
+  AliMUONTrack* t = static_cast<AliMUONTrack*>(fTracks->Remove(&track));
+  if (t) fTracks->Compress();
+  return t;
 }
 
 //_____________________________________________________________________________

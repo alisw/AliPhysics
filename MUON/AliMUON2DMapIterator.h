@@ -22,7 +22,7 @@ class AliMpExMap;
 class AliMUON2DMapIterator : public TIterator
 {
 public:
-  AliMUON2DMapIterator(AliMpExMap* theMap);
+  AliMUON2DMapIterator(const AliMpExMap& theMap);
   AliMUON2DMapIterator(const AliMUON2DMapIterator& rhs);
   AliMUON2DMapIterator& operator=(const AliMUON2DMapIterator& rhs);
   TIterator& operator=(const TIterator& rhs);
@@ -41,7 +41,7 @@ private:
   AliMpExMap* Map(Int_t i) const;
   
 private:
-  AliMpExMap* fMap;        ///< Top map we iterate upon
+  const AliMpExMap* fkMap; ///< Top map we iterate upon
   AliMpExMap* fCurrentMap; ///< Current map (inside top map) we are iterating upon
   Int_t fI;                ///< Map(fI) is fCurrentMap  
   Int_t fJ;                ///< Current position in fCurrentMap

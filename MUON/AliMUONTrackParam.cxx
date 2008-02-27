@@ -49,7 +49,6 @@ AliMUONTrackParam::AliMUONTrackParam()
     fClusterPtr(0x0),
     fOwnCluster(kFALSE),
     fRemovable(kFALSE),
-    fAloneInChamber(kTRUE),
     fTrackChi2(0.),
     fLocalChi2(0.)
 {
@@ -70,7 +69,6 @@ AliMUONTrackParam::AliMUONTrackParam(const AliMUONTrackParam& theMUONTrackParam)
     fClusterPtr(0x0),
     fOwnCluster(theMUONTrackParam.fOwnCluster),
     fRemovable(theMUONTrackParam.fRemovable),
-    fAloneInChamber(theMUONTrackParam.fAloneInChamber),
     fTrackChi2(theMUONTrackParam.fTrackChi2),
     fLocalChi2(theMUONTrackParam.fLocalChi2)
 {
@@ -148,13 +146,12 @@ AliMUONTrackParam& AliMUONTrackParam::operator=(const AliMUONTrackParam& theMUON
     fSmoothCovariances = 0x0;
   }
   
+  if (fOwnCluster) delete fClusterPtr;
   fOwnCluster = theMUONTrackParam.fOwnCluster;
   if(fOwnCluster) fClusterPtr = static_cast<AliMUONVCluster*>(theMUONTrackParam.fClusterPtr->Clone());
   else fClusterPtr = theMUONTrackParam.fClusterPtr;
   
   fRemovable = theMUONTrackParam.fRemovable;
-  
-  fAloneInChamber = theMUONTrackParam.fAloneInChamber;
   
   fTrackChi2 = theMUONTrackParam.fTrackChi2;
   fLocalChi2 = theMUONTrackParam.fLocalChi2;

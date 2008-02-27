@@ -45,7 +45,7 @@ private:
   TObject* GetValue(TExMapIter& iter, Int_t& key) const;
   
 private:
-  const AliMpExMap* fMap; //!< map to iterate upon
+  const AliMpExMap* fkMap; //!< map to iterate upon
   TExMapIter* fIter2; //!< second iterator
   Int_t fCurrentI; //!< current index in direction i 
   Int_t fCurrentJ; //!< current index in direction j

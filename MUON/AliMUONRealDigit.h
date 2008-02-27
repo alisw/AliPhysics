@@ -67,11 +67,6 @@ public:
   /// Set the status map value
   virtual void SetStatusMap(UInt_t statusMap) { fStatusMap = statusMap; }
   
-  /// Whether this digit is real or virtual (a clustering detail...)
-  virtual Bool_t IsVirtual() const { return TestBit(kVirtual); }
-  /// Set the virtual status
-  virtual void SetVirtual(Bool_t value) { SetBit(kVirtual,value); }
-
   /// Set the ADC value (should be between 0 and 4095)
   virtual void SetADC(Int_t adc) { fADC = adc; }
   virtual void SetPadXY(Int_t padx, Int_t pady);
@@ -94,8 +89,7 @@ private:
   {
     kSaturated = BIT(20),  ///< to indicate that manas amplifier has saturated 
     kUsed = BIT(21),       ///< whether the digit is used (e.g. in a cluster)
-    kCalibrated = BIT(22), ///< whether the digit has been calibrated or not 
-    kVirtual = BIT(23)     ///< whether the digit is virtual or not (see AZ) 
+    kCalibrated = BIT(22)  ///< whether the digit has been calibrated or not 
   };
   
   ClassDef(AliMUONRealDigit,1) // Implementation of AliMUONVDigit

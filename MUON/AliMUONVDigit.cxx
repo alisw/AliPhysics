@@ -61,6 +61,7 @@ AliMUONVDigit::AliMUONVDigit(Int_t detElemId, Int_t eCardId,
 
 //_____________________________________________________________________________
 AliMUONVDigit::AliMUONVDigit()
+: TObject() 
 {
   /// Default ctor
 }

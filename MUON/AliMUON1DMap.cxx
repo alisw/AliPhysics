@@ -16,10 +16,10 @@
 // $Id$
 
 #include "AliMUON1DMap.h"
+#include "AliMUON1DMapIterator.h"
+#include "AliMpExMap.h"
 
 #include "AliLog.h"
-#include "AliMpExMap.h"
-#include "AliMUON1DMapIterator.h"
 
 //-----------------------------------------------------------------------------
 /// \class AliMUON1DMap
@@ -37,7 +37,7 @@ ClassImp(AliMUON1DMap)
 //_____________________________________________________________________________
 AliMUON1DMap::AliMUON1DMap(Int_t theSize)
 : AliMUONVStore(),
-  fMap(new AliMpExMap(true))
+  fMap(new AliMpExMap(kTRUE))
 {
 /// Default ctor
 
@@ -51,11 +51,9 @@ AliMUON1DMap::AliMUON1DMap(Int_t theSize)
 //_____________________________________________________________________________
 AliMUON1DMap::AliMUON1DMap(const AliMUON1DMap& other)
 : AliMUONVStore(),
-  fMap(0x0)
+  fMap(new AliMpExMap(*other.fMap))
 {
 /// Copy constructor
-
-  other.CopyTo(*this);
 }
 
 //_____________________________________________________________________________
@@ -63,16 +61,14 @@ AliMUON1DMap&
 AliMUON1DMap::operator=(const AliMUON1DMap& other)
 {
 /// Assignment operator
-
-  other.CopyTo(*this);
+  *fMap = *other.fMap;
   return *this;
 }
 
 //_____________________________________________________________________________
 AliMUON1DMap::~AliMUON1DMap()
 {
-/// dtor, we're the owner of our internal map.
-
+/// destructor
   delete fMap;
 }
 
@@ -82,8 +78,7 @@ AliMUON1DMap::Add(TObject* object)
 {
   /// Add an object to this, using uniqueID as the key
   if (!object) return kFALSE;
-  Set(object->GetUniqueID(),object,kFALSE);
-  return kTRUE;
+  return Set(object->GetUniqueID(),object);
 }
 
 //_____________________________________________________________________________
@@ -91,18 +86,7 @@ void
 AliMUON1DMap::Clear(Option_t*)
 {
   /// Reset
-  delete fMap;
-  fMap = 0x0;
-}
-
-//_____________________________________________________________________________
-void
-AliMUON1DMap::CopyTo(AliMUON1DMap& dest) const
-{
-/// Make a deep copy
-
-  delete dest.fMap;
-  dest.fMap = fMap;
+  fMap->Clear();
 }
 
 //_____________________________________________________________________________
@@ -118,7 +102,6 @@ TObject*
 AliMUON1DMap::FindObject(UInt_t i) const
 {
 /// Get the object located at index i, if it exists, and if i is correct.
-
   return fMap->GetValue(i);
 }
 
@@ -126,13 +109,9 @@ AliMUON1DMap::FindObject(UInt_t i) const
 TIterator*
 AliMUON1DMap::CreateIterator() const
 {
-  // Create and return an iterator on this map
-  // Returned iterator must be deleted by user.
-  if ( fMap ) 
-  {
-    return new AliMUON1DMapIterator(*fMap);
-  }
-  return 0x0;
+  /// Create and return an iterator on this map
+  /// Returned iterator must be deleted by user.
+  return new AliMUON1DMapIterator(*fMap);
 }
 
 //_____________________________________________________________________________
@@ -145,25 +124,19 @@ AliMUON1DMap::GetSize() const
 
 //_____________________________________________________________________________
 Bool_t 
-AliMUON1DMap::Set(Int_t i, TObject* object, Bool_t replace)
+AliMUON1DMap::Set(Int_t i, TObject* object)
 {
 /// Set the object located at i
-/// If replace=kFALSE and there's already an object at location i,
+/// If there's already an object at location i,
 /// this method fails and returns kFALSE, otherwise it returns kTRUE
-
+  
   TObject* o = FindObject(i);
-  if ( o && !replace )
+  if ( o )
   {
     AliError(Form("Object %p is already there for i=%d",o,i));
     return kFALSE;
   }
-  if ( replace ) 
-  {
-    delete o;
-  }
   fMap->Add(i,object);
   return kTRUE;
 }
-
-
 

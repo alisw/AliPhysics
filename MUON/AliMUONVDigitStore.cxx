@@ -100,7 +100,7 @@ AliMUONVDigitStore::Create(const char* digitstoreclassname)
   /// Create a concrete digitStore, given its classname
   
   TClass* classPtr = TClass::GetClass(digitstoreclassname);
-  if (!classPtr)
+  if (!classPtr || !classPtr->InheritsFrom("AliMUONVDigitStore"))
   {
     return 0x0;
   }
