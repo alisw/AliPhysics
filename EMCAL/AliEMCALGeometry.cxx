@@ -65,7 +65,7 @@ ClassImp(AliEMCALGeometry)
 // these initialisations are needed for a singleton
 AliEMCALGeometry  *AliEMCALGeometry::fgGeom      = 0;
 Bool_t             AliEMCALGeometry::fgInit      = kFALSE;
-Char_t*            AliEMCALGeometry::fgDefaultGeometryName = "SHISH_77_TRD1_2X2_FINAL_110DEG";
+Char_t*            AliEMCALGeometry::fgDefaultGeometryName = "SHISH_77_TRD1_2X2_FINAL_110DEG scTh=0.176 pbTh=0.144";
 //
 // Usage: 
 //        You can create the AliEMCALGeometry object independently from anything.
@@ -641,8 +641,8 @@ AliEMCALGeometry* AliEMCALGeometry::GetInstance(const Text_t* name,
       } // end if fgInit
     }else{
 	if ( strcmp(fgGeom->GetName(), name) != 0) {
-	  printf("\ncurrent geometry is %s : ", fgGeom->GetName());
-	  printf(" you cannot call %s ", name);  
+	  AliWarning(Form("\ncurrent geometry is %s : ", fgGeom->GetName())));
+	  AliFatal(Form(" you cannot call %s ", name));  
 	}else{
 	  rv = (AliEMCALGeometry *) fgGeom; 
 	} // end 

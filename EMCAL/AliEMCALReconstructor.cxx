@@ -46,6 +46,8 @@
 #include "AliEMCALRecParam.h"
 #include "AliEMCALGeometry.h"
 
+#include "AliRunLoader.h"
+#include "AliRun.h"
 
 ClassImp(AliEMCALReconstructor)
 
@@ -59,11 +61,18 @@ AliEMCALReconstructor::AliEMCALReconstructor()
   InitRecParam();
 
   fgRawUtils = new AliEMCALRawUtils;
-  fGeom = AliEMCALGeometry::GetInstance();
-  if(!fGeom) {
-    fGeom = AliEMCALGeometry::GetInstance("","");
-    if(!fGeom) AliFatal(Form("Could not get geometry!"));
+
+  //To make sure we match with the geometry in a simulation file,
+  //let's try to get it first.  If not, take the default geometry
+  AliRunLoader *rl = AliRunLoader::GetRunLoader();
+  if (rl->GetAliRun() && rl->GetAliRun()->GetDetector("EMCAL")) {
+    fGeom = dynamic_cast<AliEMCAL*>(rl->GetAliRun()->GetDetector("EMCAL"))->GetGeometry();
+  } else {
+    AliInfo(Form("Using default geometry in reconstruction"));
+    fGeom =  AliEMCALGeometry::GetInstance(AliEMCALGeometry::GetDefaulGeometryName());
   }
+
+  if(!fGeom) AliFatal(Form("Could not get geometry!"));
 
 } 
 
