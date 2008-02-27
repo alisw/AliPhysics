@@ -29,18 +29,24 @@ AliTPCvtpr::AliTPCvtpr()
 :fAdc(0),
   fTime(0),
   fPad(0),
-  fRow(0)
+  fRow(0),
+  fX(0),
+  fY(0),
+  fT(0)
 {
 //
 // constructor
 //
 }
 
-AliTPCvtpr::AliTPCvtpr(Short_t max,Short_t nt,Short_t np,Short_t nr)
+AliTPCvtpr::AliTPCvtpr(Short_t max,Short_t nt,Short_t np,Short_t nr,Double_t x,Double_t y,Double_t t)
 :fAdc(0),
-  fTime(0),
-  fPad(0),
-  fRow(0)
+ fTime(0),
+ fPad(0),
+ fRow(0),
+ fX(0),
+ fY(0),
+ fT(0)
 {
 //
 // another constructor
@@ -49,13 +55,19 @@ AliTPCvtpr::AliTPCvtpr(Short_t max,Short_t nt,Short_t np,Short_t nr)
   fTime=nt;
   fPad=np;
   fRow=nr;
+  fX=x;
+  fY=y;
+  fT=t;
 }
 
 AliTPCvtpr::AliTPCvtpr(const AliTPCvtpr & param)
 :fAdc(0),
-  fTime(0),
-  fPad(0),
-  fRow(0)
+ fTime(0),
+ fPad(0),
+ fRow(0),
+ fX(0),
+ fY(0),
+ fT(0)
 {
 //
 // copy constructor
@@ -64,6 +76,9 @@ AliTPCvtpr::AliTPCvtpr(const AliTPCvtpr & param)
   fTime = param.fTime;
   fPad  = param.fPad;
   fRow  = param.fRow;
+  fX = param.fX;
+  fY = param.fY;
+  fT = param.fT;
 }
 
 AliTPCvtpr::~AliTPCvtpr()
@@ -79,5 +94,9 @@ AliTPCvtpr & AliTPCvtpr::operator = (const AliTPCvtpr & param)
   fTime = param.fTime;
   fPad  = param.fPad;
   fRow  = param.fRow;
+  fX = param.fX;
+  fY = param.fY;
+  fT = param.fT;
+
   return (*this);
 }

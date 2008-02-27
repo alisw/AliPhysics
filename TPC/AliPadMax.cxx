@@ -47,7 +47,10 @@ AliPadMax::AliPadMax(AliTPCvtpr vtpr,
   fAdc  =  vtpr.GetAdc();
   fTime =  vtpr.GetTime();
   fPad  =  vtpr.GetPad();
-  fRow  =  vtpr.GetRow();           
+  fRow  =  vtpr.GetRow();    
+  fX  =  vtpr.GetX();  
+  fY  =  vtpr.GetY();  
+  fT  =  vtpr.GetT();  
 
   fBegin=beg;
   fEnd=end;
@@ -55,6 +58,7 @@ AliPadMax::AliPadMax(AliTPCvtpr vtpr,
 }
 
 AliPadMax::AliPadMax(Short_t max,Short_t nt,Short_t np,Short_t nr,
+		     Double_t x,Double_t y,Double_t t,
 		     Short_t beg,Short_t end,Short_t sum)
 :AliTPCvtpr(),
   fBegin(0),
@@ -64,7 +68,10 @@ AliPadMax::AliPadMax(Short_t max,Short_t nt,Short_t np,Short_t nr,
   fAdc  =  max;
   fTime =  nt;
   fPad  =  np;
-  fRow  =  nr;           
+  fRow  =  nr; 
+  fX  = x;
+  fY  = y;
+  fT  = t;
 
   fBegin=beg;
   fEnd=end;

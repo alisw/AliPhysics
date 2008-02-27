@@ -19,7 +19,7 @@ public:
   AliTPCvtpr();
   ~AliTPCvtpr();
 
-  AliTPCvtpr(Short_t max,Short_t nt,Short_t np,Short_t nr);
+  AliTPCvtpr(Short_t max,Short_t nt,Short_t np,Short_t nr,Double_t x,Double_t y,Double_t t);
   AliTPCvtpr(const AliTPCvtpr & param);
   AliTPCvtpr & operator = (const AliTPCvtpr & param);
 
@@ -28,25 +28,31 @@ public:
   void SetTime(Short_t q){fTime=q;}
   void SetPad(Short_t q){fPad=q;}
   void SetRow(Short_t q){fRow=q;}
-  void SetSector(Short_t sector){fSector=sector;}
-
+  void SetX(Double_t q){fX=q;}
+  void SetY(Double_t q){fY=q;}
+  void SetT(Double_t q){fT=q;}
 
   Short_t GetAdc(){return fAdc;}
   Short_t GetTime(){return fTime;}
   Short_t GetPad(){return fPad;}
   Short_t GetRow(){return fRow;}
-
+  Double_t GetX(){return fX;}
+  Double_t GetY(){return fY;}
+  Double_t GetT(){return fT;}
 
 protected:
   Short_t fAdc;
   Short_t fTime;
   Short_t fPad;
   Short_t fRow;
-  Short_t fSector;
+  Double_t fX;
+  Double_t fY;
+  Double_t fT;
+
 
 private:
 
-  ClassDef(AliTPCvtpr,2)  // TPC coordinate class
+  ClassDef(AliTPCvtpr,3)  // TPC coordinate class
 };
 
 #endif

@@ -21,6 +21,7 @@ public:
 	    Short_t beg,Short_t end,Short_t sum);
 
   AliPadMax(Short_t max,Short_t nt,Short_t np,Short_t nr,
+	    Double_t x,Double_t y,Double_t t,
 	    Short_t beg,Short_t end,Short_t sum);
 
 

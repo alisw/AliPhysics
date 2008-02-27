@@ -58,6 +58,24 @@ Int_t FindKrClustersRaw(const char *fileName="data.root"){
 
   clusters->SetParam(param);
 
+  //set cluster finder parameters (from data)
+  clusters->SetZeroSup(param->GetZeroSup());//zero suppression parameter
+  clusters->SetFirstBin(60);//first bin
+  clusters->SetLastBin(950);//last bin
+  clusters->SetMaxNoiseAbs(2);//maximal noise
+  clusters->SetMaxNoiseSigma(3);//maximal amount of sigma of noise
+
+  //set cluster finder parameters (from MC)
+  clusters->SetMinAdc(3);//signal threshold (everything below is treated as 0)
+  clusters->SetMinTimeBins(2);//number of neighbouring timebins
+  clusters->SetMaxPadRangeCm(2.5);//distance of the cluster center to the center of a pad (in cm)
+  clusters->SetMaxRowRangeCm(3.5);//distance of the cluster center to the center of a padrow (in cm)
+  clusters->SetMaxTimeRange(7);//distance of the cluster center to the max time bin on a pad (in tackts)
+  //ie. fabs(centerT - time)<7
+  clusters->SetValueToSize(3.5);//cut reduce peak at 0
+
+
+
 
   Int_t evtnr=0;
   while (reader->NextEvent()) {
@@ -69,7 +87,7 @@ Int_t FindKrClustersRaw(const char *fileName="data.root"){
 
     // if(evtnr++>5) break;
     cout<<"Evt = "<<evtnr<<endl;
-    clusters->finderIO(reader);
+    clusters->FinderIO(reader);
     evtnr++;
 
   }
