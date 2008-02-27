@@ -25,7 +25,7 @@ using namespace std;
 int main( int argc, char** argv )
 {
   AliITSHandleDaSSD  *ssddaldc;
-  TString             feefname, cmddbsave;
+  TString             feefname, fcdbsave;
   Int_t               status;
   Char_t             *dafname = NULL;
 
@@ -66,6 +66,7 @@ int main( int argc, char** argv )
     status = daqDA_FES_storeFile(dafname, "DASSD_DB_results");
     if (status) fprintf(stderr, "Failed to export file : %d\n", status);
   } else cerr << "Error saving DA data to the file! Probably $DA_TEST_DIR defined incorrectly!" << endl;
+
   feefname.Form("%s/ssddaldc_%i_%i.root", ".", ssddaldc->GetLdcId(), ssddaldc->GetRunId());
   cout << "Saving feessdda data in " << feefname << endl;
   TFile *fileRun = new TFile (feefname.Data(),"RECREATE");
@@ -79,15 +80,12 @@ int main( int argc, char** argv )
   fileRun->Close();
   delete fileRun;
 
-  if (getenv("DATE_DB_DIR")) {
-    cmddbsave.Form("$DATE_DB_DIR/daqDetDB_store ssddaldc_%i.root %s", ssddaldc->GetLdcId(), feefname.Data());
-    status = system(cmddbsave.Data());
-    if (status) fprintf(stderr, "Failed to export file to the detector db: %d, %s \n",status, cmddbsave.Data());
-    cmddbsave.Form("$DATE_DB_DIR/daqDetDB_store ssddaldc_%i_%i.root %s", 
-                                 ssddaldc->GetLdcId(), ssddaldc->GetRunId(), feefname.Data());
-    status = system(cmddbsave.Data());
-    if (status) fprintf(stderr, "Failed to export file to the detector db: %d, %s \n",status, cmddbsave.Data());
-  } else cerr << "Error main(): $DATE_DB_DIR is not defined!" << endl;
+  fcdbsave.Form("ssddaldc_%i.root", ssddaldc->GetLdcId());
+  status = daqDA_DB_storeFile(feefname.Data(), fcdbsave.Data());
+  if (status) fprintf(stderr, "Failed to export file %s to the detector db: %d, %s \n", feefname.Data(), status, fcdbsave.Data());
+  fcdbsave.Form("ssddaldc_%i_%i.root", ssddaldc->GetLdcId(), ssddaldc->GetRunId());
+  status = daqDA_DB_storeFile(feefname.Data(), fcdbsave.Data());
+  if (status) fprintf(stderr, "Failed to export file %s to the detector db: %d, %s \n", feefname.Data(), status, fcdbsave.Data());
 
   delete ssddaldc;
   daqDA_progressReport(100);

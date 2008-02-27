@@ -4444,6 +4444,7 @@ void AliITStrackerMI::BuildMaterialLUT(TString material) {
       point2[2] = z;
       AliTracker::MeanMaterialBudget(point1,point2,mparam);
       for(Int_t j=0;j<5;j++) param[j]+=mparam[j];
+      printf("%f %f %f %f %f %f %f %f %f\n",rmin[imat],rmax[imat],phi,z,mparam[0],mparam[1],mparam[2],mparam[3],mparam[4]); 
     }
     for(Int_t j=0;j<5;j++) param[j]/=(Float_t)n;
     if(imat<=5) {
