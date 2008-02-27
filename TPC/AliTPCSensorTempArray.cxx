@@ -70,13 +70,14 @@ AliTPCSensorTempArray::AliTPCSensorTempArray(UInt_t startTime, UInt_t endTime,
 }
 
 //_____________________________________________________________________________
-AliTPCSensorTempArray::AliTPCSensorTempArray(const char *fname) :
+AliTPCSensorTempArray::AliTPCSensorTempArray(const char *fname,
+                                          const TString& amandaString) :
                                                   AliDCSSensorArray()
 {
   //
   // AliTPCSensorTempArray constructor
   //
-  fSensors = AliTPCSensorTemp::ReadList(fname);
+  fSensors = AliTPCSensorTemp::ReadList(fname,amandaString);
   fSensors->BypassStreamer(kFALSE);
 }
 

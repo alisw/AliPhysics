@@ -76,13 +76,18 @@ AliTPCGenDBTemp& AliTPCGenDBTemp::operator= (const AliTPCGenDBTemp&  )
 void AliTPCGenDBTemp::MakeCalib(const char *fList, const char *fMap,
                              const TTimeStamp& startTime,
 			     const TTimeStamp& endTime,
-			     Int_t run )
+			     Int_t run, const TString& amandaString )
 {
    // The Terminate() function is the last function to be called during
    // a query. It always runs on the client, it can be used to present
    // the results graphically or save the results to file.
 
-   AliTPCSensorTempArray *temperature = new AliTPCSensorTempArray(fList);
+   AliTPCSensorTempArray *temperature=0;
+   if ( amandaString.Length()== 0 ) {
+    temperature = new AliTPCSensorTempArray(fList);
+   } else {
+    temperature = new AliTPCSensorTempArray(fList,amandaString);
+   }
    temperature->SetStartTime(startTime);
    temperature->SetEndTime(endTime);
    temperature->SetValCut(kValCut);

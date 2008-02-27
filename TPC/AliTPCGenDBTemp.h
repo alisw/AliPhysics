@@ -29,7 +29,8 @@ public:
   ~AliTPCGenDBTemp();
   void            MakeCalib(const char *file, const char *fMap,
                             const TTimeStamp& startTime,
-			    const TTimeStamp& endTime, Int_t run);
+			    const TTimeStamp& endTime, Int_t run,
+			    const TString& amandaString=0);
   void            MakeConfig(const char *file, Int_t firstRun, Int_t lastRun, 
                             const char *confDir, const TString& amandaString=0);
 

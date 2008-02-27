@@ -29,7 +29,8 @@ class AliTPCSensorTempArray : public AliDCSSensorArray {
  public:
   AliTPCSensorTempArray();
   AliTPCSensorTempArray(Int_t run);
-  AliTPCSensorTempArray(const char *fname);
+  AliTPCSensorTempArray(const char *fname,
+                        const TString& amandaString = kAmandaString);
   AliTPCSensorTempArray (UInt_t startTime, UInt_t endTime, TTree* confTree,
                          const TString& amandaString = kAmandaString);
   AliTPCSensorTempArray(const AliTPCSensorTempArray &c);
