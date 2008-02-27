@@ -511,7 +511,8 @@ AliTriggerConfiguration* AliTriggerConfiguration::LoadConfiguration( TString & c
 
    // Load the selected configuration
   TString filename;
-  if (configuration.EndsWith(".cfg")) {
+  if (configuration.EndsWith(".cfg") ||
+      configuration.EndsWith(".shuttle")) {
     filename = configuration;
   }
   else {
