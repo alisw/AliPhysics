@@ -9,9 +9,7 @@
 #pragma link off all functions;
 
 #pragma link C++ class  AliTRDcluster+;
-#pragma link C++ class  AliTRDclusterMI+;
 #pragma link C++ class  AliTRDclusterizer+;
-#pragma link C++ class  AliTRDclusterCorrection+;
 #pragma link C++ class  AliTRDtransform+;
 
 #pragma link C++ class  AliTRDtrack+;
