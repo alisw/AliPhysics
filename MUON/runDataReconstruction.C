@@ -58,7 +58,7 @@ void runDataReconstruction(Int_t calib = 1)
   man->SetDefaultStorage(ocdbPath.Data());
   //man->SetSpecificStorage("MUON/Calib/Mapping","local://$ALICE_ROOT");
   //man->SetSpecificStorage("MUON/Calib/DDLStore","local://$ALICE_ROOT");
-  man->SetSpecificStorage("MUON/Calib/Gains","local://$ALICE_ROOT");
+  //man->SetSpecificStorage("MUON/Calib/Gains","local://$ALICE_ROOT");
 
   gRandom->SetSeed(seed);
   
