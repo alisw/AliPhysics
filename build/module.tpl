@@ -147,10 +147,12 @@ endif
 @PACKAGE@ALIB:=$(LIBPATH)/lib@PACKAGE@.$(AEXT)
 
 #Add this to the modules libs
+ifeq ($(TYPE),lib)
 @MODULE@LIBS += $(@PACKAGE@LIB)
 @MODULE@ALIBS += $(@PACKAGE@ALIB)
 ifneq ($(DYEXT),)
 @MODULE@DLIBS += $(@PACKAGE@DLIB)
+endif
 endif
 
 #The actual binary file
