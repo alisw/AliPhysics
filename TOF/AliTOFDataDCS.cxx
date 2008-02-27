@@ -332,19 +332,18 @@ Bool_t AliTOFDataDCS::ProcessData(TMap& aliasMap){
 
   if(!(fAliasNames[0])) Init();
 
-  Float_t timeMin = (Float_t)fStartTime;
-  Float_t timeMax = (Float_t)fEndTime;
   Float_t val=0;
   Float_t val1=0;
   Float_t time=0; 
   Float_t delta[2];
   Float_t timedelta[2];
 
-  AliInfo(Form(" timeMin = %f",timeMin));
-  AliInfo(Form(" timeMax = %f",timeMax));
-  if (timeMin==timeMax){
-	  AliError(Form(" start time = %i = end time = %i",fStartTime,fEndTime));
-	  return kFALSE;
+  AliInfo(Form(" Start Time = %i",fStartTime));
+  AliInfo(Form(" End Time = %i",fEndTime));
+
+  if (fEndTime==fStartTime){
+    AliError(Form(" Run with null time length: start time = %i = end time = %i",fStartTime,fEndTime));
+    return kFALSE;
   }
 
   TObjArray *aliasArr;
@@ -463,10 +462,9 @@ Bool_t AliTOFDataDCS::ProcessData(TMap& aliasMap){
   
     //computing the most significant variations
 
-    Int_t deltamin = (Int_t)(60/(timeMax-timeMin)*nentries);
+    Float_t timeDiff = (Float_t)(fEndTime-fStartTime);
+    Int_t deltamin = (Int_t)(60/timeDiff*nentries); //sampling every minute
     Int_t klast = nentries-deltamin;
-    AliInfo(Form(" deltamin = %i",deltamin));
-    AliInfo(Form(" klast = %i",klast));
       
     for (Int_t k=0;k<klast;k++){
       aValue = (AliDCSValue*) aliasArr->At(k);
