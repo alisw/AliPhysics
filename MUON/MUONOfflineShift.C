@@ -21,7 +21,10 @@
 ///  
 /// Basic usage is : 
 ///
-/// MUONOfflineShift("path_to_raw_file","basename of output file")
+/// MUONOfflineShift("path_to_raw_file","basename of output file"); > log
+///
+/// (the redirection to an output log file is recommended as the output from
+/// this macro might be quite long...)
 ///
 /// This will read the raw data and process it several times, varying what's done :
 /// only decoding, decoding + zero-suppression, etc... (TBE)
@@ -59,7 +62,7 @@
 #endif
 
 //______________________________________________________________________________
-Int_t DataMakerReading(AliRawReader* rawReader, 
+Int_t DataMakerReading(const char* input,
                        TStopwatch& timer,
                        const char* cdbPath="",
                        const char* calibMode="",
@@ -73,7 +76,21 @@ Int_t DataMakerReading(AliRawReader* rawReader,
   /// - GAINCONSTANTCAPA : zero-suppression + gain, but with a single capa value for all channels
   /// - GAIN             : zero-suppression + gain w/ individual capacitance per channel.
   
-  rawReader->RewindEvents();
+  TString fileName(gSystem->ExpandPathName(input));
+  
+  AliRawReader* rawReader(0x0);
+  
+  // check extention to choose the rawdata file format
+  if (fileName.EndsWith(".root")) 
+  {
+    rawReader = new AliRawReaderRoot(fileName);
+  }
+  else if (!fileName.IsNull()) 
+  {
+    rawReader = new AliRawReaderDate(fileName); // DATE file
+  }
+  
+  if (!rawReader) return 0;
   
   AliMUONVTrackerDataMaker* dm(0x0);
   
@@ -194,7 +211,8 @@ void Occupancy(ostream& outfile)
 }
 
 //______________________________________________________________________________
-void MUONOfflineShift(const char* input, const char* outputBase,
+void MUONOfflineShift(const char* input="alien:///alice/data/2008/LHC08a/000021931/raw/08000021931001.50.root", 
+                      const char* outputBase="21931.001.50",
                       const char* ocdbPath="alien://folder=/alice/data/2008/LHC08a/OCDB")
 {
   /// Entry point of the macro. 
@@ -215,32 +233,23 @@ void MUONOfflineShift(const char* input, const char* outputBase,
   AliCDBManager::Instance()->SetRun(0);
   AliMpCDB::LoadDDLStore();
   
-  TString fileName(gSystem->ExpandPathName(input));
-  
-  AliRawReader* rawReader(0x0);
-  
-  // check extention to choose the rawdata file format
-  if (fileName.EndsWith(".root")) 
-  {
-    rawReader = new AliRawReaderRoot(fileName);
-  }
-  else if (!fileName.IsNull()) 
-  {
-    rawReader = new AliRawReaderDate(fileName); // DATE file
-  }
-  
-  if (!rawReader) return;
-  
+  TStopwatch timer1;
   TStopwatch timer2;
   TStopwatch timer3;
+  TStopwatch timer4;
   
-  Int_t n2 = DataMakerReading(rawReader,timer2);
+  Int_t n1 = DataMakerReading(input,timer1);
   
-  Int_t n3 = DataMakerReading(rawReader,timer3,ocdbPath);
-  
-  Print("DataMakerReading(RAW)",timer2,n2);
-  
-  Print("DataMakerReading(CAL)",timer3,n3);
+  Int_t n2 = DataMakerReading(input,timer2,ocdbPath,"NOGAIN",kTRUE);
+
+  Int_t n3 = DataMakerReading(input,timer3,ocdbPath,"GAINCONSTANTCAPA",kTRUE);
+
+  Int_t n4 = DataMakerReading(input,timer4,ocdbPath,"GAIN",kTRUE);
+
+  Print("DataMakerReading(HRAW)",timer1,n1);  
+  Print("DataMakerReading(HCALZ)",timer2,n2);
+  Print("DataMakerReading(HCALG)",timer3,n3);
+  Print("DataMakerReading(HCALC)",timer4,n4);
   
   AliMUONPainterRegistry* reg = AliMUONPainterRegistry::Instance();
   

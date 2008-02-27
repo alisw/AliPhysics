@@ -62,7 +62,7 @@ const Int_t AliMUONDigitCalibrator::fgkGain(2);
 AliMUONDigitCalibrator::AliMUONDigitCalibrator(const AliMUONCalibrationData& calib,
                                                const char* calibMode)
 : TObject(),
-fLogger(new AliMUONLogger(1000)),
+fLogger(new AliMUONLogger(20000)),
 fStatusMaker(0x0),
 fStatusMapMaker(0x0),
 fPedestals(0x0),
@@ -80,7 +80,7 @@ fCapacitances(0x0)
     fApplyGains = fgkNoGain;
     AliInfo("Will NOT apply gain correction");
   }
-  else if ( cMode = "GAINCONSTANTCAPA" ) 
+  else if ( cMode == "GAINCONSTANTCAPA" ) 
   {
     fApplyGains = fgkGainConstantCapa;
     AliInfo("Will apply gain correction, but with constant capacitance");
@@ -190,23 +190,34 @@ AliMUONDigitCalibrator::CalibrateDigit(AliMUONVDigit& digit)
 
     AliMUONVCalibParam* pedestal = static_cast<AliMUONVCalibParam*>
     (fPedestals->FindObject(digit.DetElemId(),digit.ManuId()));
-    
+
     if (!pedestal)
     {
-      AliFatal(Form("Got a null ped object for DE,manu=%d,%d",
-                    digit.DetElemId(),digit.ManuId()));
+      // no pedestal -> no charge
+      digit.SetCharge(0);
       
+      fLogger->Log(Form("Got a null pedestal object for DE,manu=%d,%d",
+                        digit.DetElemId(),digit.ManuId()));        
+      return;
     }
-
+    
+    
     AliMUONVCalibParam* gain = static_cast<AliMUONVCalibParam*>
         (fGains->FindObject(digit.DetElemId(),digit.ManuId()));
 
     if (!gain)
     {
-      AliFatal(Form("Got a null gain object for DE,manu=%d,%d",
-                    digit.DetElemId(),digit.ManuId()));        
+      if ( fApplyGains != fgkNoGain )
+      {
+        // no gain -> no charge
+        digit.SetCharge(0);
+
+        fLogger->Log(Form("Got a null gain object for DE,manu=%d,%d",
+                          digit.DetElemId(),digit.ManuId())); 
+        return;
+      }
     }
-    
+
     Int_t manuChannel = digit.ManuChannel();
     Float_t adc = digit.ADC();
     Float_t padc = adc-pedestal->ValueAsFloat(manuChannel,0);
@@ -225,7 +236,15 @@ AliMUONDigitCalibrator::CalibrateDigit(AliMUONVDigit& digit)
 
       AliMUONVCalibParam* param = static_cast<AliMUONVCalibParam*>(fCapacitances->FindObject(serialNumber));
       
-      capa = param->ValueAsFloat(digit.ManuChannel());
+      if ( param )
+      {
+        capa = param->ValueAsFloat(digit.ManuChannel());
+      }
+      else
+      {
+        fLogger->Log(Form("No capa found for serialNumber=%d",serialNumber));
+        capa = 0.0;
+      }
     }
     
     if ( padc > 3.0*pedestal->ValueAsFloat(manuChannel,1) ) 
@@ -249,9 +268,17 @@ AliMUONDigitCalibrator::CalibrateDigit(AliMUONVDigit& digit)
         charge = padc;
       }
     }
+    
     charge *= capa;
     digit.SetCharge(charge);
-    Int_t saturation = gain->ValueAsInt(manuChannel,4);
+    
+    Int_t saturation(3000);
+    
+    if ( gain )
+    {
+      saturation = gain->ValueAsInt(manuChannel,4);
+    }
+    
     if ( padc >= saturation )
     {
       digit.Saturated(kTRUE);
