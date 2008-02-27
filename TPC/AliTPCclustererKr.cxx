@@ -554,9 +554,9 @@ Int_t AliTPCclustererKr::FindClusterKrIO()
 //	if(abs(maxRow - (*mp2)->GetRow()) < fMaxRowRange && //3
 //         abs(maxPad - (*mp2)->GetPad()) < fMaxPadRange && //4
 	  
-	if(fabs(tmp->GetCenterX() - (*mp2)->GetX()) < fMaxPadRangeCm &&
-	   fabs(tmp->GetCenterY() - (*mp2)->GetY()) < fMaxRowRangeCm &&
-	   fabs(tmp->GetCenterT() - (*mp2)->GetT()) < fMaxTimeRange){//7
+	if(TMath::Abs(tmp->GetCenterX() - (*mp2)->GetX()) < fMaxPadRangeCm &&
+	   TMath::Abs(tmp->GetCenterY() - (*mp2)->GetY()) < fMaxRowRangeCm &&
+	   TMath::Abs(tmp->GetCenterT() - (*mp2)->GetT()) < fMaxTimeRange){//7
 	  
 	  clusterValue+=(*mp2)->GetSum();
 
