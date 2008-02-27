@@ -157,14 +157,11 @@ void AliGlobalQADataMaker::MakeESDs(AliESDEvent * event) {
 	Double_t y=track->Y();
 	GetESDsData(kTrk1)->Fill(y);
 
-	GetESDsData(kTrk2)->Fill(p);
-
-	if (track->IsOn(AliESDtrack::kITSrefit)) 
-	   GetESDsData(kTrk3)->Fill(p);
-
-        if (TMath::Abs(y)<0.9)
-	   if (track->IsOn(AliESDtrack::kTOFout))
-	      GetESDsData(kTrk4)->Fill(p);
+        if (TMath::Abs(y)<0.9) {
+	   GetESDsData(kTrk2)->Fill(p);
+	   if (track->IsOn(AliESDtrack::kITSrefit)) GetESDsData(kTrk3)->Fill(p);
+	   if (track->IsOn(AliESDtrack::kTOFout)) GetESDsData(kTrk4)->Fill(p);
+	}
       }
     }
 
@@ -189,9 +186,9 @@ void AliGlobalQADataMaker::MakeESDs(AliESDEvent * event) {
     }
   }
 
-  TH1 *tpc=GetESDsData(kTrk2);
-  TH1 *its=GetESDsData(kTrk3);
-  TH1 *tof=GetESDsData(kTrk4);
+  TH1 *tpc=GetESDsData(kTrk2); tpc->Sumw2();
+  TH1 *its=GetESDsData(kTrk3); its->Sumw2();
+  TH1 *tof=GetESDsData(kTrk4); tof->Sumw2();
   GetESDsData(kTrk5)->Divide(its,tpc,1,1.,"b");
   GetESDsData(kTrk6)->Divide(tof,tpc,1,1.,"b");
 
