@@ -641,8 +641,8 @@ AliEMCALGeometry* AliEMCALGeometry::GetInstance(const Text_t* name,
       } // end if fgInit
     }else{
 	if ( strcmp(fgGeom->GetName(), name) != 0) {
-	  AliWarning(Form("\ncurrent geometry is %s : ", fgGeom->GetName())));
-	  AliFatal(Form(" you cannot call %s ", name));  
+	  printf("\ncurrent geometry is %s : ", fgGeom->GetName());
+	  printf(" you cannot call %s ",name);  
 	}else{
 	  rv = (AliEMCALGeometry *) fgGeom; 
 	} // end 
