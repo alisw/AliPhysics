@@ -2443,8 +2443,8 @@ void AliTOFv6T0::StepManager()
 
     AliMC *mcApplication = (AliMC*)gAlice->GetMCApp();
 
-    //AddTrackReference(mcApplication->GetCurrentTrackNumber(), AliTrackReference::kTOF);
-    AddTrackReference(mcApplication->GetCurrentTrackNumber());
+    AddTrackReference(mcApplication->GetCurrentTrackNumber(), AliTrackReference::kTOF);
+    //AddTrackReference(mcApplication->GetCurrentTrackNumber());
 
     // getting information about hit volumes
     
