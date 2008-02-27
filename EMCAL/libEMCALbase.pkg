@@ -6,9 +6,7 @@ AliEMCALv1.cxx \
 AliEMCALv2.cxx \
 AliEMCALHit.cxx \
 AliEMCALLoader.cxx \
-AliEMCALShishKebabModule.cxx \
 AliEMCALShishKebabTrd1Module.cxx \
-AliEMCALGeometryOfflineTrd1.cxx \
 AliEMCALWsuCosmicRaySetUp.cxx \
 AliEMCALRecPoint.cxx \
 AliEMCALClusterizer.cxx \

@@ -11,9 +11,7 @@
 #pragma link C++ class AliEMCALv2+;
 #pragma link C++ class AliEMCALHit+;
 #pragma link C++ class AliEMCALLoader+;	
-#pragma link C++ class AliEMCALShishKebabModule+;
 #pragma link C++ class AliEMCALShishKebabTrd1Module+;
-#pragma link C++ class AliEMCALGeometryOfflineTrd1+;
 #pragma link C++ class AliEMCALWsuCosmicRaySetUp+;
 #pragma link C++ class AliEMCALRecPoint+;
 #pragma link C++ class AliEMCALClusterizer+;
