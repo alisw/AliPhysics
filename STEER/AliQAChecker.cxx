@@ -94,7 +94,7 @@ AliQAChecker::~AliQAChecker()
 
  TString detName(AliQA::GetDetName(det)) ; 
 
-  AliInfo(Form("Retrieving QA checker for %s", detName.Data())) ; 
+  AliDebug(1, Form("Retrieving QA checker for %s", detName.Data())) ; 
   TPluginManager* pluginManager = gROOT->GetPluginManager() ;
   TString qacName = "Ali" + detName + "QAChecker" ;
 
@@ -193,7 +193,7 @@ Bool_t AliQAChecker::Run(const char * fileName)
   TIter nextd(detKeyList) ; 
   TKey * detKey ; 
   while ( (detKey = dynamic_cast<TKey *>(nextd()) ) ) {
-    AliInfo(Form("Found %s", detKey->GetName())) ;
+    AliDebug(1, Form("Found %s", detKey->GetName())) ;
     //Check which detector
     TString detName ; 
     TString detNameQA(detKey->GetName()) ; 
@@ -268,9 +268,9 @@ Bool_t AliQAChecker::Run(AliQA::DETECTORINDEX det, AliQA::TASKINDEX task, TObjAr
 
   AliQACheckerBase * qac = GetDetQAChecker(det) ; 
   if (qac)
-    AliInfo(Form("QA checker found for %s", AliQA::GetDetName(det).Data())) ;
+    AliDebug(1, Form("QA checker found for %s", AliQA::GetDetName(det).Data())) ;
   if (!qac)
-	AliFatal(Form("QA checker not found for %s", AliQA::GetDetName(det).Data())) ; 
+	AliError(Form("QA checker not found for %s", AliQA::GetDetName(det).Data())) ; 
   
   AliQA::ALITASK index = AliQA::kNULLTASK ; 
   if ( task == AliQA::kRAWS ) 
