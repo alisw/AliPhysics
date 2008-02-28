@@ -346,9 +346,8 @@ void AliT0QADataMaker::MakeRaws( AliRawReader* rawReader)
       for (Int_t j0=0; j0<5; j0++) allData[i0][j0]=0;
     }
   //fills QA histos for RAW
-  AliT0RawReader *start = new AliT0RawReader(rawReader);
-  
-  while (rawReader->NextEvent()) {
+
+    AliT0RawReader *start = new AliT0RawReader(rawReader);  
     start->Next();
     for (Int_t i=0; i<105; i++) 
       for (Int_t iHit=0; iHit<5; iHit++)
@@ -380,9 +379,7 @@ void AliT0QADataMaker::MakeRaws( AliRawReader* rawReader)
 	}
       }
     }
-    
-  }
-  
+    delete start;
 }
 
 //____________________________________________________________________________
