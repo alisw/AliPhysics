@@ -1,0 +1,23 @@
+SRCS = AliAnalysisTaskSE.cxx
+
+CHECKALIEN = $(shell root-config --has-alien)
+ifeq (yes,$(CHECKALIEN))
+PACKCXXFLAGS := $(CXXFLAGS) -DWITHALIEN
+endif
+
+CHECKXML = $(shell root-config --has-xml)
+ifeq (yes,$(CHECKXML))
+PACKCXXFLAGS += $(CXXFLAGS) -DWITHXML
+CINTFLAGS += -DWITHXML
+SRCS += AliTagAnalysis.cxx AliXMLCollection.cxx
+endif
+       
+
+HDRS:= $(SRCS:.cxx=.h) 
+
+DHDR= ANALYSISaliceLinkDef.h
+
+EXPORT:=$(SRCS:.cxx=.h)
+
+
+
