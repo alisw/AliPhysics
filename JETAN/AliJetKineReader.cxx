@@ -68,7 +68,7 @@ void AliJetKineReader::OpenInputFiles()
 
 //____________________________________________________________________________
 
-Bool_t AliJetKineReader::FillMomentumArray(Int_t event)
+Bool_t AliJetKineReader::FillMomentumArray()
 {
   // Fill momentum array for event
     Int_t goodTrack = 0;
@@ -156,7 +156,7 @@ Bool_t AliJetKineReader::FillMomentumArray(Int_t event)
 // set the signal flags
     fSignalFlag.Set(goodTrack, sflag);
     fCutFlag.Set(goodTrack, cflag);
-    AliInfo(Form("\n In event %d, number of good tracks %d \n", event, goodTrack));
+    AliInfo(Form("\n Number of good tracks %d \n", goodTrack));
     
     delete[] sflag;
     delete[] cflag;

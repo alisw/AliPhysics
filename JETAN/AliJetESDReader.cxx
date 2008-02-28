@@ -149,7 +149,7 @@ void AliJetESDReader::SetInputEvent(TObject* esd, TObject* /*aod*/, TObject* /*m
 }
 
 //____________________________________________________________________________
-Bool_t AliJetESDReader::FillMomentumArray(Int_t /*event*/)
+Bool_t AliJetESDReader::FillMomentumArray()
 {
   // Fill momentum array
 

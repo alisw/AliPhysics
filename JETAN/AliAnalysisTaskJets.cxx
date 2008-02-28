@@ -41,12 +41,10 @@ ClassImp(AliAnalysisTaskJets)
 ////////////////////////////////////////////////////////////////////////
 
 AliAnalysisTaskJets::AliAnalysisTaskJets():
+    AliAnalysisTaskSE(),
     fDebug(0),
     fJetFinder(0x0),
     fTree(0x0),
-    fESD(0x0),
-    fAOD(0x0),
-    fTreeA(0x0),
     fHistos(0x0),
     fListOfHistos(0x0)
 {
@@ -54,33 +52,25 @@ AliAnalysisTaskJets::AliAnalysisTaskJets():
 }
 
 AliAnalysisTaskJets::AliAnalysisTaskJets(const char* name):
-    AliAnalysisTask(name, "AnalysisTaskJets"),
+    AliAnalysisTaskSE(name),
     fDebug(0),
     fJetFinder(0x0),
     fTree(0x0),
-    fESD(0x0),
-    fAOD(0x0),
-    fTreeA(0x0),
     fHistos(0x0),
     fListOfHistos(0x0)
 {
   // Default constructor
-    DefineInput (0, TChain::Class());
-    DefineOutput(0, TTree::Class());
     DefineOutput(1, TList::Class());
 }
 
-void AliAnalysisTaskJets::CreateOutputObjects()
+void AliAnalysisTaskJets::UserCreateOutputObjects()
 {
 // Create the output container
 //
-//  Default AOD
     if (fDebug > 1) printf("AnalysisTaskJets::CreateOutPutData() \n");
-    AliAODHandler* handler = (AliAODHandler*) ((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
-    
-    fAOD   = handler->GetAOD();
-    fTreeA = handler->GetTree();
-    fJetFinder->ConnectAOD(fAOD);
+//  Connec default AOD to jet finder
+
+    fJetFinder->ConnectAOD(AODEvent());
 //
 //  Histograms
     OpenFile(1);
@@ -103,42 +93,24 @@ void AliAnalysisTaskJets::Init()
     fJetFinder->WriteHeaders();
 }
 
-void AliAnalysisTaskJets::ConnectInputData(Option_t */*option*/)
-{
-// Connect the input data
-    if (fDebug > 1) printf("AnalysisTaskJets::ConnectInputData() \n");
-    AliESDInputHandler* esdH = (AliESDInputHandler*) ((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
-    fESD = esdH->GetEvent();
-    fTree = esdH->GetTree();
-    
     
 
-    AliMCEventHandler*    mcTruth = (AliMCEventHandler*) 
-	((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler());
-    
-    fJetFinder->GetReader()->SetInputEvent(fESD, fAOD, mcTruth);
-}
 
-void AliAnalysisTaskJets::Exec(Option_t */*option*/)
+
+void AliAnalysisTaskJets::UserExec(Option_t */*option*/)
 {
 // Execute analysis for current event
 //
-    AliMCEventHandler*    mctruth = (AliMCEventHandler*) 
-	((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler());
-    if (mctruth) {
-	AliStack* stack = mctruth->MCEvent()->Stack();
-	//printf("AliAnalysisTaskJets: Number of tracks on stack %5d\n", stack->GetNtrack());
-    }
     
-    Long64_t ientry = fTree->GetReadEntry();
-    if (fDebug > 1) printf("Analysing event # %5d\n", (Int_t) ientry);
-    fJetFinder->ProcessEvent(ientry);
+    if (MCEvent()) {
+	AliStack* stack = MCEvent()->Stack();
+    }
+    fJetFinder->GetReader()->SetInputEvent(InputEvent(), AODEvent(), MCEvent());
+    fJetFinder->ProcessEvent();
 
     // Fill control histos
-    fHistos->FillHistos(fAOD->GetJets());
-    
+    fHistos->FillHistos(AODEvent()->GetJets());
     // Post the data
-    PostData(0, fTreeA);
     PostData(1, fListOfHistos);
 }
 

@@ -22,7 +22,7 @@ class AliJetKineReader : public AliJetReader
   AliJetKineReader();
   virtual ~AliJetKineReader();
   // Setters
-  Bool_t  FillMomentumArray(Int_t event);
+  Bool_t  FillMomentumArray();
   void    OpenInputFiles();
   void    SetInputEvent(TObject* esd, TObject* aod, TObject* mc);
   // Fast Simulation

@@ -48,7 +48,7 @@ class AliJetReader : public TObject
   virtual Int_t               GetNumCandidateCut()   const {return fNumCandidateCut;}
   
   // Setters
-  virtual Bool_t FillMomentumArray(Int_t) {return kTRUE;}
+  virtual Bool_t FillMomentumArray() {return kTRUE;}
   virtual void   FillUnitArrayFromTPCTracks(Int_t) {}     // temporarily not used
   virtual void   FillUnitArrayFromEMCALHits() {}          // temporarily not used
   virtual void   FillUnitArrayFromEMCALDigits(Int_t) {}   // temporarily not used

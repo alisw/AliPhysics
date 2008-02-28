@@ -149,7 +149,7 @@ void AliJetFinder::Run()
 
   // loop over events
   for (Int_t i=nFirst;i<nLast;i++) {
-      fReader->FillMomentumArray(i);
+      fReader->FillMomentumArray();
       fLeading->FindLeading(fReader);
       fReader->GetGenJets(fGenJets);
 
@@ -204,15 +204,13 @@ void AliJetFinder::WriteHeaders()
 }
 
 
-Bool_t AliJetFinder::ProcessEvent(Long64_t entry)
+Bool_t AliJetFinder::ProcessEvent()
 {
 //
 // Process one event
 //
     Int_t debug  = fReader->GetReaderHeader()->GetDebug();
-    if (debug > 0) printf("<<<<< Processing Event %5d >>>>> \n", (Int_t) entry);
-    
-    Bool_t ok = fReader->FillMomentumArray(entry);
+    Bool_t ok = fReader->FillMomentumArray();
     if (!ok) return kFALSE;
 
     // Leading particles

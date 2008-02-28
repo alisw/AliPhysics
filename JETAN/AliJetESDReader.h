@@ -35,7 +35,7 @@ class AliJetESDReader : public AliJetReader
   Int_t   GetTrackSign() const {return fSign;}  // returns sign of the track
 
   // Setters
-  Bool_t FillMomentumArray(Int_t event); 
+  Bool_t FillMomentumArray(); 
   void   OpenInputFiles();
   void   InitUnitArray();
   void   CreateTasks();
