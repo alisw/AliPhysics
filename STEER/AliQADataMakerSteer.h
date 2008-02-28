@@ -38,12 +38,13 @@ public:
 	virtual ~AliQADataMakerSteer() ; 
     TObjArray * GetFromOCDB(AliQA::DETECTORINDEX det, AliQA::TASKINDEX task) const ; 
 	Bool_t  Merge(const Int_t runNumber = -1) const ;  
-    void    Reset() ;  
+    void    Reset(const Bool_t sameCycle = kFALSE) ;  
 	Bool_t  Run(const char * detectors, const AliQA::TASKINDEX taskIndex, const char * fileName = NULL) ; 
 	Bool_t  Run(const char * detectors, AliRawReader * rawReader) ; 
-	Bool_t  Run(const char * detectors, const char * filename) ;
+	TString Run(const char * detectors, const char * filename) ;
     Bool_t  Save2OCDB(const Int_t runNumber, const Int_t cycleNumber, const char * detectors = "ALL") const ; 
 	void    SetCycleLength(const AliQA::DETECTORINDEX det, const Int_t cycle) { fQACycles[det] = cycle ; }
+	void    SetNewCycle() { fCycleSame = kTRUE ; }
     void    SetRunLoader(AliRunLoader * rl) { fRunLoader = rl ; }
 
 private: 
@@ -60,6 +61,7 @@ private:
  
 	Bool_t			   fCycleSame ;                    //! true if 2 consecutive data making for a same detector   
     TString            fDetectors ;                    //! list of active detectors 
+    TString            fDetectorsW ;                   //! list of active detectors with QA implemented 
 	AliESDEvent *      fESD ;                          //! current ESD
 	TTree *            fESDTree ;                      //! current ESD Tree
 	Bool_t             fFirst ;                        //! to search the detector QA data maker only once
