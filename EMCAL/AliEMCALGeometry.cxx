@@ -1368,7 +1368,7 @@ Bool_t AliEMCALGeometry::IsFolder() const
 Double_t AliEMCALGeometry::GetPhiCenterOfSM(Int_t nsupmod) const
 {
   //returns center of supermodule in phi 
-  static int i = nsupmod/2;
+  int i = nsupmod/2;
   return fPhiCentersOfSM[i];
 
 }
