@@ -28,7 +28,7 @@
 
 #include <TRandom3.h>
 #include <TClonesArray.h>
-#include <TMath.h>
+#include <TClass.h>
 
 
 #include "AliLog.h"
@@ -56,12 +56,17 @@ AliITSMisalignMaker::AliITSMisalignMaker():
   fStrSector("/Sector"),
   fStrSensor("/Sensor")
 {
+  //
+  // defaul constructor
+  //
   fRnd.SetSeed(23472341);
 }
 //________________________________________________________________________
 Int_t AliITSMisalignMaker::AddAlignObj(char* name,Double_t dx,Double_t dy,Double_t dz,
 				Double_t dpsi,Double_t dtheta,Double_t dphi,Bool_t unif) {
-
+  //
+  // misalignment by symname
+  //
   Double_t vx,vy,vz,vpsi,vtheta,vphi;
 
   if(!unif) {
@@ -82,8 +87,8 @@ Int_t AliITSMisalignMaker::AddAlignObj(char* name,Double_t dx,Double_t dy,Double
 
   new(fAlobj[fInd]) AliAlignObjParams(name,0,vx,vy,vz,vpsi,vtheta,vphi,kFALSE);
 
-  AliAlignObjParams* its_alobj = (AliAlignObjParams*) fAlobj.UncheckedAt(fInd);
-  its_alobj->ApplyToGeometry();
+  AliAlignObjParams* itsalobj = (AliAlignObjParams*) fAlobj.UncheckedAt(fInd);
+  itsalobj->ApplyToGeometry();
 
   fInd++;
 
@@ -94,8 +99,9 @@ Int_t AliITSMisalignMaker::AddAlignObj(char* name,Double_t dx,Double_t dy,Double
 //________________________________________________________________________
 Int_t AliITSMisalignMaker::AddAlignObj(Int_t lay,Double_t dx,Double_t dy,Double_t dz,
 				 Double_t dpsi,Double_t dtheta,Double_t dphi,Bool_t unif) {
-  
+  //
   // misalignment at the level of ladders/modules
+  //
   lay+=1; // layers are numbered from 1 to 6 in AliGeomManager
 
   printf("LAYER %d  MODULES %d\n",lay,AliGeomManager::LayerSize(lay));
@@ -124,22 +130,25 @@ Int_t AliITSMisalignMaker::AddAlignObj(Int_t lay,Double_t dx,Double_t dy,Double_
     const char *symname = AliGeomManager::SymName(volid);
     
     new(fAlobj[fInd]) AliAlignObjParams(symname,volid,vx,vy,vz,vpsi,vtheta,vphi,kFALSE);
-    AliAlignObjParams* its_alobj = (AliAlignObjParams*) fAlobj.UncheckedAt(fInd);
-    its_alobj->ApplyToGeometry();
+    AliAlignObjParams* itsalobj = (AliAlignObjParams*) fAlobj.UncheckedAt(fInd);
+    itsalobj->ApplyToGeometry();
     fInd++; 
   }
 
   return kTRUE;
 }
 
-
 //________________________________________________________________________
 Int_t AliITSMisalignMaker::AddAlignObj(Int_t lay,Int_t ladd,Double_t dx,Double_t dy,Double_t dz,
-				 Double_t dpsi,Double_t dtheta,Double_t dphi,Bool_t unif) {
-
+				       Double_t dpsi,Double_t dtheta,Double_t dphi,
+				       Double_t xShift,Double_t yShift,Double_t zShift,
+				       Double_t psiShift,Double_t thetaShift,Double_t phiShift,
+				       Bool_t unif) {
+  //
   // misalignment at the level of half-staves/ladders (ladd=-1 means that all ladders are scanned)
-
+  //
   Double_t vx,vy,vz,vpsi,vtheta,vphi;
+  Double_t tr[3],rot[3];  
   
   Int_t laddMin = ladd;
   Int_t laddMax = laddMin+1;
@@ -170,10 +179,25 @@ Int_t AliITSMisalignMaker::AddAlignObj(Int_t lay,Int_t ladd,Double_t dx,Double_t
 	vphi = fRnd.Uniform(-dphi,dphi);
       }
 
-      TString name = GetHalfStaveLadderSymbName(lay,iLadd,iHalfStave);
-      new(fAlobj[fInd]) AliAlignObjParams(name.Data(),0,vx,vy,vz,vpsi,vtheta,vphi,kFALSE);
-      AliAlignObjParams* its_alobj = (AliAlignObjParams*) fAlobj.UncheckedAt(fInd);
-      its_alobj->ApplyToGeometry();
+      TString name(GetHalfStaveLadderSymbName(lay,iLadd,iHalfStave));
+
+      // first apply half-stave / ladder level misalignment
+      AliAlignObjParams aaop(name.Data(),0,vx,vy,vz,vpsi,vtheta,vphi,kFALSE); // set them as local
+      aaop.GetPars(tr,rot); // global
+
+      // then, apply layer-level misalignment (only for SDD and SSD)
+      if(lay>1) {
+	tr[0] += xShift;
+	tr[1] += yShift;
+	tr[2] += zShift;
+	rot[0] += psiShift;
+	rot[1] += thetaShift;
+	rot[2] += phiShift;
+      }
+      new(fAlobj[fInd]) AliAlignObjParams(name.Data(),0,tr[0],tr[1],tr[2],rot[0],rot[1],rot[2],kTRUE); // set them as global
+
+      AliAlignObjParams* itsalobj = (AliAlignObjParams*) fAlobj.UncheckedAt(fInd);
+      itsalobj->ApplyToGeometry();
       fInd++;
     }
   }
@@ -188,9 +212,10 @@ Int_t AliITSMisalignMaker::AddSectorAlignObj(Int_t sectMin,Int_t sectMax,
 				       Double_t dpsi,Double_t dtheta,Double_t dphi,
 				       Double_t xShift,Double_t yShift,Double_t zShift,
 				       Double_t psiShift,Double_t thetaShift,Double_t phiShift,Bool_t unif) {
-
+  //
   // misalignment at the level of SPD sectors and half-barrels
- 
+  // 
+
   if ((sectMin<1) || (sectMax>10)) return kFALSE;
   Double_t vx,vy,vz,vpsi,vtheta,vphi;
   Double_t tr[3],rot[3];  
@@ -214,7 +239,7 @@ Int_t AliITSMisalignMaker::AddSectorAlignObj(Int_t sectMin,Int_t sectMax,
       vphi = fRnd.Uniform(-dphi,dphi);
     }
 
-    TString name = GetSymbName(0);
+    TString name(GetSymbName(0));
     name += fStrSector;
     name += iSect;
 
@@ -232,8 +257,8 @@ Int_t AliITSMisalignMaker::AddSectorAlignObj(Int_t sectMin,Int_t sectMax,
 
     new(fAlobj[fInd]) AliAlignObjParams(name.Data(),0,tr[0],tr[1],tr[2],rot[0],rot[1],rot[2],kTRUE); // set them as global
 
-    AliAlignObjParams* its_alobj = (AliAlignObjParams*) fAlobj.UncheckedAt(fInd);
-    its_alobj->ApplyToGeometry();
+    AliAlignObjParams* itsalobj = (AliAlignObjParams*) fAlobj.UncheckedAt(fInd);
+    itsalobj->ApplyToGeometry();
     fInd++;
   }
   return kTRUE;
@@ -241,7 +266,9 @@ Int_t AliITSMisalignMaker::AddSectorAlignObj(Int_t sectMin,Int_t sectMax,
 
 //________________________________________________________________________
 Double_t AliITSMisalignMaker::GaussCut(Double_t mean,Double_t sigma,Double_t absMax) {
-
+  //
+  // random from gaussian with cut on tails
+  //
   Double_t val = fRnd.Gaus(mean,sigma);
   while (TMath::Abs(val)>absMax)
     val = fRnd.Gaus(mean,sigma);
@@ -249,9 +276,10 @@ Double_t AliITSMisalignMaker::GaussCut(Double_t mean,Double_t sigma,Double_t abs
 }
 
 //________________________________________________________________________
-TString AliITSMisalignMaker::GetSymbName(Int_t layer) const {
-
+const char* AliITSMisalignMaker::GetSymbName(Int_t layer) const {
+  //
   // be careful : SPD0 and SPD1 are not physically separated 
+  //
   TString name;
   switch (layer) {
   case 0:
@@ -262,15 +290,67 @@ TString AliITSMisalignMaker::GetSymbName(Int_t layer) const {
   case 5: name = fStrSSD; name += layer; break;
   default: AliFatal("Wrong layer index");
   }
-  return name;
+  return name.Data();
 }
 
 //________________________________________________________________________
-TString AliITSMisalignMaker::GetHalfStaveLadderSymbName(Int_t layer,Int_t ladd,Int_t halfStave) const {
+const char* AliITSMisalignMaker::GetSymbName(Int_t layer, Int_t ladder, Int_t det) const {
+  //
+  // symname from layer, ladder, detector
+  //
+  TString symname(GetHalfStaveLadderSymbName(layer,ladder,det));
+  if(layer<=2){
+    symname+="Ladder";
+  }else if(layer<=6){
+    symname+="Sensor";
+  }else{
+    AliError("Invalid layer!");
+    return 0;
+  }
+  symname+=det;
+  return symname.Data();
+}
 
+//________________________________________________________________________
+const char* AliITSMisalignMaker::GetSymbName(Int_t layer,Int_t ladd) const {
+  //
+  // Get logical names at the level of staves / ladders
+  //
+  TString name(GetSymbName(layer));
+  if (layer==0) { // SPD1
+
+    int sector = ladd/2;
+    name += fStrSector;
+    name += sector;
+    int stave = ladd-sector*2;
+    name += fStrStave;
+    name += stave;
+  }
+  else if (layer==1) { // SPD2
+
+    int sector = ladd/4;
+    name += fStrSector;
+    name += sector;
+    int stave = ladd-sector*4;
+    name += fStrStave;
+    name += stave;
+  }
+  else if (layer>=2 && layer<=5) { // SDD and SSD
+    name += fStrLadder;
+    name += ladd;
+  }
+  else {
+    AliFatal("Wrong layer index");
+  }
+  return name.Data();
+}
+
+//________________________________________________________________________
+const char* AliITSMisalignMaker::GetHalfStaveLadderSymbName(Int_t layer,Int_t ladd,Int_t halfStave) const {
+  //
   // Get logical names at the level of half-staves (SPD) or ladders (SDD and SSD)
-
-  TString name = GetSymbName(layer);
+  //
+  TString name(GetSymbName(layer));
   if (layer==0) { // SPD1
 
     int sector = ladd/2;
@@ -300,42 +380,115 @@ TString AliITSMisalignMaker::GetHalfStaveLadderSymbName(Int_t layer,Int_t ladd,I
   else {
     AliFatal("Wrong layer index");
   }
-  return name;
+  return name.Data();
 }
 
 //________________________________________________________________________
-TString AliITSMisalignMaker::GetSymbName(Int_t layer,Int_t ladd) const {
+const char* AliITSMisalignMaker::GetParentSymName(const char* symname) {
+  //
+  // symnane of parent volume
+  //
+  TString parent(symname);
+  // Give the symname of 
+  if(parent.BeginsWith('/')) parent.Remove(TString::kLeading,'/');
+  if(parent.EndsWith("/")) parent.Remove(TString::kTrailing,'/');
+  
+  if(!parent.CountChar('/')) AliErrorClass("Not a valid symbolic name");
 
-  // Get logical names at the level of staves / ladders
-
-  TString name = GetSymbName(layer);
-  if (layer==0) { // SPD1
-
-    int sector = ladd/2;
-    name += fStrSector;
-    name += sector;
-    int stave = ladd-sector*2;
-    name += fStrStave;
-    name += stave;
+  Int_t layer,level;
+  GetLayerAndLevel(symname,layer,level);
+  if(level==1) return "ITS";
+  
+  parent.Remove(parent.Last('/'));
+  
+  if((layer==0 || layer==1) && level==2){
+    parent.Remove(parent.Last('/'));
+    parent[7]='0';
   }
-  else if (layer==1) { // SPD2
-
-    int sector = ladd/4;
-    name += fStrSector;
-    name += sector;
-    int stave = ladd-sector*4;
-    name += fStrStave;
-    name += stave;
-  }
-  else if (layer>=2 && layer<=5) { // SDD and SSD
-    name += fStrLadder;
-    name += ladd;
-  }
-  else {
-    AliFatal("Wrong layer index");
-  }
-  return name;
+    
+  return parent.Data(); 
 }
+
+//________________________________________________________________________
+Bool_t AliITSMisalignMaker::GetLayerAndLevel(const char* symname, Int_t &layer, Int_t &level) {
+  //
+  // given the symbolic name set layer and level
+  //
+  const char* basename[6] = {"ITS/SPD0/Sector","ITS/SPD1/Sector","ITS/SDD2/Ladder","ITS/SDD3/Ladder","ITS/SSD4/Ladder","ITS/SSD5/Ladder"};
+  TString strSym(symname);
+  if(strSym=="ITS"){
+    level=0;
+    layer=-1;
+    return kTRUE;
+  }
+  Int_t i;
+  for(i=0; i<6; i++){
+    if(strSym.BeginsWith(basename[i])) break;
+  }
+
+  if(i>=6){
+    AliErrorClass(Form("%s is not a valid symbolic name for an ITS alignable volume",strSym.Data()));
+    return kFALSE;
+  }
+  
+  layer=i;
+  //The part above could be replaced by just
+  // TString seventh = strSym[7];
+  // layer = seventh.Atoi();
+  // if we don't need to check the validity of the symname
+  
+  level=1;
+  switch(layer){
+    case 0:
+    case 1:
+      if(strSym.Contains("Stave")) level=2;
+      if(strSym.Contains("Ladder")) level=3;
+      break;
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+      if(strSym.Contains("Sensor")) level=2;
+  }
+  
+  return kTRUE;
+}
+
+//________________________________________________________________________
+Int_t AliITSMisalignMaker::GetNSisters(const char* symname) {
+  //
+  // number of volumes on same level
+  //
+  Int_t layer,level;
+  if(!GetLayerAndLevel(symname,layer,level)) return -1;
+  if(level==0) return -1;
+  if(level==1) return GetNLadders(layer);
+  if(level==2) return GetNDetectors(layer);
+  AliErrorClass(Form("Invalid layer and level"));
+  return -1;
+}
+
+//________________________________________________________________________
+Int_t AliITSMisalignMaker::GetNDaughters(const char* symname) {
+  //
+  // number of daughter volumes
+  // 
+  Int_t layer,level;
+  if(!GetLayerAndLevel(symname,layer,level)) return -1;
+  if(level==0) {
+    Int_t nLadders = 0;
+    for(Int_t lay=0; lay<6; lay++) nLadders += GetNLadders(lay);
+    return nLadders;
+  }
+  if(level==1) return GetNDetectors(layer);
+  if(level==2){
+    AliWarningClass(Form("Volume %s is a sensitive volume and has no alignable dauthers",symname));
+    return -1;
+  }
+  AliErrorClass(Form("Invalid layer and level"));
+  return -1;
+}
+
 /*
 //________________________________________________________________________
 TString AliITSMisalignMaker::GetSymbName(Int_t layer,Int_t ladd,Int_t mod) const {
@@ -359,3 +512,4 @@ TString AliITSMisalignMaker::GetSymbName(Int_t layer,Int_t ladd,Int_t mod) const
   return name;
 }
 */
+
