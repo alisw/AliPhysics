@@ -96,21 +96,20 @@ void MakeITSResMisAlignment() {
   //=****************************************
   // misalignment at the level of SDD and SSD layers: source
   //=****************************************
-  /*
-  Float_t sddlayer_dx     = 0.0000; // ?
-  Float_t sddlayer_dy     = 0.0000; // ?
-  Float_t sddlayer_dz     = 0.0000; // ?
-  Float_t sddlayer_dpsi   = 0.0000; // ?
-  Float_t sddlayer_dtheta = 0.0000; // ?
-  Float_t sddlayer_dphi   = 0.0000;  // ?
+  Float_t sddlayer_dx     = 0.0000; 
+  Float_t sddlayer_dy     = 0.0000; 
+  Float_t sddlayer_dz     = 0.0000; 
+  Float_t sddlayer_dpsi   = 0.0000;
+  Float_t sddlayer_dtheta = 0.0000; 
+  Float_t sddlayer_dphi   = 0.0000;
 
-  Float_t ssdlayer_dx     = 0.0000; // ?
-  Float_t ssdlayer_dy     = 0.0000; // ?
-  Float_t ssdlayer_dz     = 0.0000; // ?
-  Float_t ssdlayer_dpsi   = 0.0000; // ?
-  Float_t ssdlayer_dtheta = 0.0000; // ?
-  Float_t ssdlayer_dphi   = 0.0000;  // ?
-  */
+  Float_t ssdlayer_dx     = 0.0000;
+  Float_t ssdlayer_dy     = 0.0000;
+  Float_t ssdlayer_dz     = 0.0000;
+  Float_t ssdlayer_dpsi   = 0.0000;
+  Float_t ssdlayer_dtheta = 0.0000;
+  Float_t ssdlayer_dphi   = 0.0000;
+  
 
   //=****************************************
   // misalignment at the level of half-staves (SPD) : source - S.Moretto
@@ -186,20 +185,20 @@ void MakeITSResMisAlignment() {
   Double_t vxbarrel,vybarrel,vzbarrel,vpsibarrel,vthetabarrel,vphibarrel;
 
   //   barrel
-  vxbarrel = alignMaker.GaussCut(0, spdbarrel_dx/3, spdbarrel_dx);
-  vybarrel = alignMaker.GaussCut(0, spdbarrel_dy/3, spdbarrel_dy);
-  vzbarrel = alignMaker.GaussCut(0, spdbarrel_dz/3, spdbarrel_dz);
-  vpsibarrel = alignMaker.GaussCut(0, spdbarrel_dpsi/3, spdbarrel_dpsi);
-  vthetabarrel = alignMaker.GaussCut(0, spdbarrel_dtheta/3, spdbarrel_dtheta);
-  vphibarrel = alignMaker.GaussCut(0, spdbarrel_dphi/3, spdbarrel_dphi);
+  vxbarrel = alignMaker.GaussCut(0,spdbarrel_dx/3,spdbarrel_dx);
+  vybarrel = alignMaker.GaussCut(0,spdbarrel_dy/3,spdbarrel_dy);
+  vzbarrel = alignMaker.GaussCut(0,spdbarrel_dz/3,spdbarrel_dz);
+  vpsibarrel = alignMaker.GaussCut(0,spdbarrel_dpsi/3,spdbarrel_dpsi);
+  vthetabarrel = alignMaker.GaussCut(0,spdbarrel_dtheta/3,spdbarrel_dtheta);
+  vphibarrel = alignMaker.GaussCut(0,spdbarrel_dphi/3,spdbarrel_dphi);
 
   //  top half-barrel
-  vx = alignMaker.GaussCut(0, spdhalfbarrel_dx/3, spdhalfbarrel_dx);
-  vy = alignMaker.GaussCut(0, spdhalfbarrel_dy/3, spdhalfbarrel_dy);
-  vz = alignMaker.GaussCut(0, spdhalfbarrel_dz/3, spdhalfbarrel_dz);
-  vpsi = alignMaker.GaussCut(0, spdhalfbarrel_dpsi/3, spdhalfbarrel_dpsi);
-  vtheta = alignMaker.GaussCut(0, spdhalfbarrel_dtheta/3, spdhalfbarrel_dtheta);
-  vphi = alignMaker.GaussCut(0, spdhalfbarrel_dphi/3, spdhalfbarrel_dphi);
+  vx = alignMaker.GaussCut(0,spdhalfbarrel_dx/3,spdhalfbarrel_dx);
+  vy = alignMaker.GaussCut(0,spdhalfbarrel_dy/3,spdhalfbarrel_dy);
+  vz = alignMaker.GaussCut(0,spdhalfbarrel_dz/3,spdhalfbarrel_dz);
+  vpsi = alignMaker.GaussCut(0,spdhalfbarrel_dpsi/3,spdhalfbarrel_dpsi);
+  vtheta = alignMaker.GaussCut(0,spdhalfbarrel_dtheta/3,spdhalfbarrel_dtheta);
+  vphi = alignMaker.GaussCut(0,spdhalfbarrel_dphi/3,spdhalfbarrel_dphi);
 
   vx += vxbarrel;
   vy += vybarrel;
@@ -208,17 +207,17 @@ void MakeITSResMisAlignment() {
   vtheta += vthetabarrel;
   vphi += vphibarrel;
 
-  alignMaker.AddSectorAlignObj(1, 5, spdsector_dx,spdsector_dy,spdsector_dz,
+  alignMaker.AddSectorAlignObj(1,5,spdsector_dx,spdsector_dy,spdsector_dz,
 			       spdsector_dpsi,spdsector_dtheta,spdsector_dphi,
 			       vx,vy,vz,vpsi,vtheta,vphi,unifspdsector);
 
   //  bottom half-barrel
-  vx = alignMaker.GaussCut(0, spdhalfbarrel_dx/3, spdhalfbarrel_dx);
-  vy = alignMaker.GaussCut(0, spdhalfbarrel_dy/3, spdhalfbarrel_dy);
-  vz = alignMaker.GaussCut(0, spdhalfbarrel_dz/3, spdhalfbarrel_dz);
-  vpsi = alignMaker.GaussCut(0, spdhalfbarrel_dpsi/3, spdhalfbarrel_dpsi);
-  vtheta = alignMaker.GaussCut(0, spdhalfbarrel_dtheta/3, spdhalfbarrel_dtheta);
-  vphi = alignMaker.GaussCut(0, spdhalfbarrel_dphi/3, spdhalfbarrel_dphi);
+  vx = alignMaker.GaussCut(0,spdhalfbarrel_dx/3,spdhalfbarrel_dx);
+  vy = alignMaker.GaussCut(0,spdhalfbarrel_dy/3,spdhalfbarrel_dy);
+  vz = alignMaker.GaussCut(0,spdhalfbarrel_dz/3,spdhalfbarrel_dz);
+  vpsi = alignMaker.GaussCut(0,spdhalfbarrel_dpsi/3,spdhalfbarrel_dpsi);
+  vtheta = alignMaker.GaussCut(0,spdhalfbarrel_dtheta/3,spdhalfbarrel_dtheta);
+  vphi = alignMaker.GaussCut(0,spdhalfbarrel_dphi/3,spdhalfbarrel_dphi);
 
   vx += vxbarrel;
   vy += vybarrel;
@@ -227,47 +226,36 @@ void MakeITSResMisAlignment() {
   vtheta += vthetabarrel;
   vphi += vphibarrel;
 
-  alignMaker.AddSectorAlignObj(6, 10, spdsector_dx,spdsector_dy,spdsector_dz,
+  alignMaker.AddSectorAlignObj(6,10,spdsector_dx,spdsector_dy,spdsector_dz,
 			       spdsector_dpsi,spdsector_dtheta,spdsector_dphi,
 			       vx,vy,vz,vpsi,vtheta,vphi,unifspdsector);
-
-
-  //=****************************************
-  // misalignment at the level of SDD and SSD layers
-  //=****************************************
-  /*   alignMaker.AddAlignObj("ITS/SDD2", sddlayer_dx,sddlayer_dy,sddlayer_dz, sddlayer_dpsi,sddlayer_dtheta,sddlayer_dphi);
-     alignMaker.AddAlignObj("ITS/SDD3", sddlayer_dx,sddlayer_dy,sddlayer_dz, sddlayer_dpsi,sddlayer_dtheta,sddlayer_dphi);
-     alignMaker.AddAlignObj("ITS/SSD4", ssdlayer_dx,ssdlayer_dy,ssdlayer_dz, ssdlayer_dpsi,ssdlayer_dtheta,ssdlayer_dphi);
-     alignMaker.AddAlignObj("ITS/SSD5", ssdlayer_dx,ssdlayer_dy,ssdlayer_dz, ssdlayer_dpsi,ssdlayer_dtheta,ssdlayer_dphi);  */
-  // still waiting for some changes in aliroot
-
 
 
   //=****************************************
   // misalignment at the level of half-staves (SPD)/ladders (SDD,SSD) :
   //=****************************************
 
-  alignMaker.AddAlignObj(0, -1,  spdhalfstave_dx,spdhalfstave_dy,spdhalfstave_dz, spdhalfstave_dpsi,spdhalfstave_dtheta,spdhalfstave_dphi,unifspdhalfstave); // all SPD1 half-staves
-  alignMaker.AddAlignObj(1, -1,  spdhalfstave_dx,spdhalfstave_dy,spdhalfstave_dz, spdhalfstave_dpsi,spdhalfstave_dtheta,spdhalfstave_dphi,unifspdhalfstave); // all SPD2 half-staves
+  alignMaker.AddAlignObj(0,-1,spdhalfstave_dx,spdhalfstave_dy,spdhalfstave_dz,spdhalfstave_dpsi,spdhalfstave_dtheta,spdhalfstave_dphi,0,0,0,0,0,0,unifspdhalfstave); // all SPD1 half-staves
+  alignMaker.AddAlignObj(1,-1,spdhalfstave_dx,spdhalfstave_dy,spdhalfstave_dz,spdhalfstave_dpsi,spdhalfstave_dtheta,spdhalfstave_dphi,0,0,0,0,0,0,unifspdhalfstave); // all SPD2 half-staves
 
-  alignMaker.AddAlignObj(2, -1,  sddladder_dx,sddladder_dy,sddladder_dz, sddladder_dpsi,sddladder_dtheta,sddladder_dphi,kFALSE); // all SDD1 ladders
-  alignMaker.AddAlignObj(3, -1,  sddladder_dx,sddladder_dy,sddladder_dz, sddladder_dpsi,sddladder_dtheta,sddladder_dphi,kFALSE); // all SDD2 ladders
+  alignMaker.AddAlignObj(2,-1,sddladder_dx,sddladder_dy,sddladder_dz,sddladder_dpsi,sddladder_dtheta,sddladder_dphi,0,0,0,0,0,0,kFALSE); // all SDD1 ladders
+  alignMaker.AddAlignObj(3,-1,sddladder_dx,sddladder_dy,sddladder_dz,sddladder_dpsi,sddladder_dtheta,sddladder_dphi,0,0,0,0,0,0,kFALSE); // all SDD2 ladders
 
-  alignMaker.AddAlignObj(4, -1,  ssdladder_dx,ssdladder_dy,ssdladder_dz, ssdladder_dpsi,ssdladder_dtheta,ssdladder_dphi,kFALSE); // all SSD1 ladders
-  alignMaker.AddAlignObj(5, -1,  ssdladder_dx,ssdladder_dy,ssdladder_dz, ssdladder_dpsi,ssdladder_dtheta,ssdladder_dphi,kFALSE); // all SSD2 ladders
+  alignMaker.AddAlignObj(4,-1,ssdladder_dx,ssdladder_dy,ssdladder_dz,ssdladder_dpsi,ssdladder_dtheta,ssdladder_dphi,0,0,0,0,0,0,kFALSE); // all SSD1 ladders
+  alignMaker.AddAlignObj(5,-1,ssdladder_dx,ssdladder_dy,ssdladder_dz,ssdladder_dpsi,ssdladder_dtheta,ssdladder_dphi,0,0,0,0,0,0,kFALSE); // all SSD2 ladders
 
   //=****************************************
-  // misalignment at the level of ladders (SPD)/modules (SDD, SSD) :
+  // misalignment at the level of ladders (SPD)/modules (SDD,SSD) :
   //=****************************************
 
-  alignMaker.AddAlignObj(0,  spdladder_dx,spdladder_dy,spdladder_dz, spdladder_dpsi,spdladder_dtheta,spdladder_dphi,kFALSE); // all SPD1 ladders
-  alignMaker.AddAlignObj(1,  spdladder_dx,spdladder_dy,spdladder_dz, spdladder_dpsi,spdladder_dtheta,spdladder_dphi,kFALSE); // all SPD2 ladders
+  alignMaker.AddAlignObj(0,spdladder_dx,spdladder_dy,spdladder_dz,spdladder_dpsi,spdladder_dtheta,spdladder_dphi,kFALSE); // all SPD1 ladders
+  alignMaker.AddAlignObj(1,spdladder_dx,spdladder_dy,spdladder_dz,spdladder_dpsi,spdladder_dtheta,spdladder_dphi,kFALSE); // all SPD2 ladders
 
-  alignMaker.AddAlignObj(2,  sddmodule_dx,sddmodule_dy,sddmodule_dz, sddmodule_dpsi,sddmodule_dtheta,sddmodule_dphi,kFALSE); // all SDD1 modules
-  alignMaker.AddAlignObj(3,  sddmodule_dx,sddmodule_dy,sddmodule_dz, sddmodule_dpsi,sddmodule_dtheta,sddmodule_dphi,kFALSE); // all SDD2 modules
+  alignMaker.AddAlignObj(2,sddmodule_dx,sddmodule_dy,sddmodule_dz,sddmodule_dpsi,sddmodule_dtheta,sddmodule_dphi,kFALSE); // all SDD1 modules
+  alignMaker.AddAlignObj(3,sddmodule_dx,sddmodule_dy,sddmodule_dz,sddmodule_dpsi,sddmodule_dtheta,sddmodule_dphi,kFALSE); // all SDD2 modules
 
-  alignMaker.AddAlignObj(4,  ssdmodule_dx,ssdmodule_dy,ssdmodule_dz, ssdmodule_dpsi,ssdmodule_dtheta,ssdmodule_dphi,kFALSE); // all SSD1 modules
-  alignMaker.AddAlignObj(5,  ssdmodule_dx,ssdmodule_dy,ssdmodule_dz, ssdmodule_dpsi,ssdmodule_dtheta,ssdmodule_dphi,kFALSE); // all SSD2 modules
+  alignMaker.AddAlignObj(4,ssdmodule_dx,ssdmodule_dy,ssdmodule_dz,ssdmodule_dpsi,ssdmodule_dtheta,ssdmodule_dphi,kFALSE); // all SSD1 modules
+  alignMaker.AddAlignObj(5,ssdmodule_dx,ssdmodule_dy,ssdmodule_dz,ssdmodule_dpsi,ssdmodule_dtheta,ssdmodule_dphi,kFALSE); // all SSD2 modules
 
 
 
@@ -279,7 +267,7 @@ void MakeITSResMisAlignment() {
       Error(macroname,"cannot open file for output\n");
       return;
     }
-    Info(macroname,"Saving alignment objects to the file %s", filename);
+    Info(macroname,"Saving alignment objects to the file %s",filename);
     f.cd();
     f.WriteObject(alignMaker.GetArray(),"ITSAlignObjs","kSingleKey");
     f.Close();
