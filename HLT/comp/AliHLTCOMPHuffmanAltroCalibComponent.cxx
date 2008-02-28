@@ -356,7 +356,10 @@ Int_t AliHLTCOMPHuffmanAltroCalibComponent::ShipDataToFXS( const AliHLTComponent
   huffmanrootfile->Close();
 
   // ** PushBack data to FXS ...
+  // currently specification has to be put in by command line argument!
+  Int_t dataspec = (Int_t) fSpecification;
 
+  fHuffmanData->SetOCDBSpecifications(fOrigin, dataspec);
   PushToFXS( (TObject*) fHuffmanData, "TPC", "HuffmanData" ) ;
   
   return 0;

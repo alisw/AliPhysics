@@ -82,6 +82,23 @@ public:
   */
   AliHLTCOMPHuffmanCodeData::AliHLTCOMPHuffmanCodeStruct* GetCodeTable(AliHLTCOMPHuffmanCodeData::AliHLTCOMPHuffmanCodeStruct* codetable);
 
+  /** set specifications for Huffman data to be recognised again in the Preprocessor before storing the data in the OCDB 
+   * @param origin string to detector origin
+   * @param dataspec integer to define data specification
+   * @return 0 upon success
+   **/
+  Int_t SetOCDBSpecifications(TString origin, Int_t dataspec);
+
+  /** get detector origin (used in Preprocessor of OCDB)
+   * @return fOrigin (TString)
+   **/
+  TString GetOrigin() {return fOrigin;}
+
+  /** get dataspec (i.e. table number from 1 to 6) (used in Preprocessor of OCDB)
+   * @return dataspec (Int_t)
+   **/
+  Int_t GetDataSpec() {return fDataSpec;}
+
 private:
 
   /** copy constructor prohibited */
@@ -94,6 +111,13 @@ private:
   AliHLTCOMPHuffmanOccurrenceData fOccurrenceTable[TIMEBINS]; // occurrence table for all ADC-values
   /** array of instances of HuffmanCodeData thtat contains complete Huffman code table */
   AliHLTCOMPHuffmanCodeData fCodeTable[TIMEBINS];             // Huffman translation table for all ADC-values
+
+ /** define detector where this data comes from **/
+  TString fOrigin;
+
+  /** define dataspecification where this data comes from **/
+  Int_t fDataSpec;
+    
     
   ClassDef(AliHLTCOMPHuffmanData, 1)
     

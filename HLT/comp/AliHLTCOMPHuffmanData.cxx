@@ -79,3 +79,13 @@ AliHLTCOMPHuffmanCodeData::AliHLTCOMPHuffmanCodeStruct* AliHLTCOMPHuffmanData::G
 
   return codetable;
 }
+
+Int_t AliHLTCOMPHuffmanData::SetOCDBSpecifications(TString origin, Int_t dataspec)
+{
+  // see header file for class documentation
+  fOrigin = origin;
+  fDataSpec = dataspec;
+
+  return 0;
+}
+
