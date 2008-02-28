@@ -21,7 +21,6 @@
 #pragma link C++ class  AliTRDpidESD+;
 
 #pragma link C++ class  AliTRDReconstructor+;
-#pragma link C++ class  AliTRDRecParam+;
 
 #pragma link C++ class  AliTRDrecoParam+;
 #pragma link C++ class  AliTRDseedV1+;

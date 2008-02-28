@@ -79,6 +79,8 @@ class AliTRDclusterizer : public TNamed {
 		                 , Float_t calGainFactorDetValue);
   virtual Double_t Unfold(Double_t eps, Int_t plane, Double_t *padSignal);
           Double_t GetCOG(Double_t signal[5]) const; 
+          void     FillLUT();
+          Double_t LUTposition(Int_t iplane, Double_t ampL, Double_t ampC, Double_t ampR) const;
 
   virtual void     ResetHelperIndexes(AliTRDSignalIndex *indexesIn);
 
@@ -96,7 +98,10 @@ class AliTRDclusterizer : public TNamed {
 
   AliTRDtransform     *fTransform;           //! Transforms the reconstructed space points
 
-  ClassDef(AliTRDclusterizer,5)              //  TRD clusterfinder
+  Int_t                fLUTbin;              //  Number of bins of the LUT
+  Double_t            *fLUT;                 //! The lookup table
+
+  ClassDef(AliTRDclusterizer,6)              //  TRD clusterfinder
 
 };
 

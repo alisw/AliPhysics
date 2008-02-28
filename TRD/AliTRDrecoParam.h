@@ -46,35 +46,55 @@ class AliTRDrecoParam : public AliDetectorRecoParam
 	Double_t GetPlaneQualityThreshold() const { return fkPlaneQualityThreshold; }
 
 	Double_t GetTrackLikelihood() const       { return fkTrackLikelihood;       }
+
+        Double_t GetClusMaxThresh() const         { return fClusMaxThresh;   };
+        Double_t GetClusSigThresh() const         { return fClusSigThresh;   };
+        Int_t    GetTCnexp() const                { return fTCnexp;          };
+        Bool_t   LUTOn() const                    { return fLUTOn;           };
+        Bool_t   TCOn() const                     { return fTCOn;            };
 	
 	static   AliTRDrecoParam *GetLowFluxParam();
         static   AliTRDrecoParam *GetHighFluxParam();
-	void     SetClusterSharing(Bool_t share = kTRUE) {fkClusterSharing = share;}
-	void     SetPIDMethod(Int_t pid=1)        { fkPIDMethod = pid ? 1 : 0;}
-	
+
+	void     SetClusterSharing(Bool_t share = kTRUE) { fkClusterSharing = share;  };
+	void     SetPIDMethod(Int_t pid = 1)             { fkPIDMethod = pid ? 1 : 0; };
+        void     SetLUT(Int_t lutOn = 1)                 { fLUTOn           = lutOn;  };
+        void     SetClusMaxThresh(Float_t thresh)        { fClusMaxThresh   = thresh; };
+        void     SetClusSigThresh(Float_t thresh)        { fClusSigThresh   = thresh; };
+        void     SetTailCancelation(Int_t tcOn = 1)      { fTCOn            = tcOn;   };
+        void     SetNexponential(Int_t nexp)             { fTCnexp          = nexp;   };
+
  private:
 
-	Bool_t   fkClusterSharing;        // Toggle cluster sharing
-	Int_t    fkPIDMethod;             // PID method selector 0(LQ) 1(NN)
-	Double_t fkMaxTheta;              // Maximum theta
-	Double_t fkMaxPhi;                // Maximum phi
+	// Tracking parameters
+	Bool_t    fkClusterSharing;        // Toggle cluster sharing
+	Int_t     fkPIDMethod;             // PID method selector 0(LQ) 1(NN)
+	Double_t  fkMaxTheta;              // Maximum theta
+	Double_t  fkMaxPhi;                // Maximum phi
 
-	Double_t fkRoad0y;                // Road for middle cluster
-	Double_t fkRoad0z;                // Road for middle cluster
+	Double_t  fkRoad0y;                // Road for middle cluster
+	Double_t  fkRoad0z;                // Road for middle cluster
 
-	Double_t fkRoad1y;                // Road in y for seeded cluster
-	Double_t fkRoad1z;                // Road in z for seeded cluster
+	Double_t  fkRoad1y;                // Road in y for seeded cluster
+	Double_t  fkRoad1z;                // Road in z for seeded cluster
 
-	Double_t fkRoad2y;                // Road in y for extrapolated cluster
-	Double_t fkRoad2z;                // Road in z for extrapolated cluster
+	Double_t  fkRoad2y;                // Road in y for extrapolated cluster
+	Double_t  fkRoad2z;                // Road in z for extrapolated cluster
 	
-	Double_t fkPlaneQualityThreshold; // Quality threshold
-	Double_t fkFindable;              // Ratio of clusters from a track in one chamber which are at minimum supposed to be found.
-	Double_t fkChi2Z;                 // Max chi2 on the z direction for seeding clusters fit
-	Double_t fkChi2Y;                 // Max chi2 on the y direction for seeding clusters Rieman fit
-	Double_t fkTrackLikelihood;       // Track likelihood for tracklets Rieman fit
+	Double_t  fkPlaneQualityThreshold; // Quality threshold
+	Double_t  fkFindable;              // Ratio of clusters from a track in one chamber which are at minimum supposed to be found.
+	Double_t  fkChi2Z;                 // Max chi2 on the z direction for seeding clusters fit
+	Double_t  fkChi2Y;                 // Max chi2 on the y direction for seeding clusters Rieman fit
+	Double_t  fkTrackLikelihood;       // Track likelihood for tracklets Rieman fit
 
-	ClassDef(AliTRDrecoParam, 1)      // Reconstruction parameters for TRD detector
+        // Clusterization parameter
+        Double_t  fClusMaxThresh;          // Threshold value for cluster maximum
+        Double_t  fClusSigThresh;          // Threshold value for cluster signal
+        Int_t     fLUTOn;                  // Switch for the lookup table method  
+        Int_t     fTCOn;                   // Switch for the tail cancelation
+        Int_t     fTCnexp;                 // Number of exponentials, digital filter
+  
+	ClassDef(AliTRDrecoParam, 2)       // Reconstruction parameters for TRD detector
 
 };
 #endif

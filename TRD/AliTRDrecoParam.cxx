@@ -47,6 +47,11 @@ AliTRDrecoParam::AliTRDrecoParam()
   ,fkChi2Z(30./*14.*//*12.5*/)
   ,fkChi2Y(.25)
   ,fkTrackLikelihood(-15.)
+  ,fClusMaxThresh(4.5)
+  ,fClusSigThresh(3.5)
+  ,fLUTOn(kTRUE)
+  ,fTCOn(kTRUE)
+  ,fTCnexp(1)
 {
   //
   // Default constructor
