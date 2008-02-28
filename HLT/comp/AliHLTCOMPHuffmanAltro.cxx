@@ -1704,7 +1704,7 @@ Int_t AliHLTCOMPHuffmanAltro::EntropyDecompression()
 	  ++idxoutwd;
 	}
 
-      for(int ii = 1; ii < fNrcuTrailerwords; ii++)
+      for(UInt_t ii = 1; ii < fNrcuTrailerwords; ii++)
 	{
 	  // write second trailer to output data
 	  if(bitpsoutwd + 32 < 65) // trailer fits in current line, append on the right

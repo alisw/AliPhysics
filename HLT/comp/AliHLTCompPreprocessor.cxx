@@ -52,14 +52,14 @@ AliHLTCompPreprocessor::~AliHLTCompPreprocessor()
   // see header file for function documentation
 }
 
-void AliHLTCompPreprocessor::Initialize(Int_t run, UInt_t startTime, 
-					UInt_t endTime)
+void AliHLTCompPreprocessor::Initialize(Int_t /*run*/, UInt_t /*startTime*/, 
+					UInt_t /*endTime*/)
 {
   // see header file for function documentation
 }
 
 
-UInt_t AliHLTCompPreprocessor::Process(TMap* dcsAliasMap)
+UInt_t AliHLTCompPreprocessor::Process(TMap* /*dcsAliasMap*/)
 {
   // see header file for function documentation
   UInt_t retVal = 0;
@@ -132,7 +132,8 @@ UInt_t AliHLTCompPreprocessor::GetHuffmanTables()
 	}
 	    
       TObject* huffmandata = (TObject*) currenthuffmanfile->Get("fHuffmanData");
-      AliHLTCOMPHuffmanData* currenthuffmandata = (AliHLTCOMPHuffmanData*) huffmandata;
+      // class object not needed since container uses TObjects!
+      //AliHLTCOMPHuffmanData* currenthuffmandata = (AliHLTCOMPHuffmanData*) huffmandata;
 
       // specifications necessary for sorting process
       TString detectororigin = "";//currenthuffmandata->GetOrigin();

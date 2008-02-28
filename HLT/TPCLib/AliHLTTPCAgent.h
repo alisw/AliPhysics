@@ -73,7 +73,7 @@ class AliHLTTPCAgent : public AliHLTModuleAgent {
    * Get handler decription for TPC data in the HLTOUT data stream.
    * @param dt        [in] data type of the block
    * @param spec      [in] specification of the block
-   * @param pDesc     [out] handler description
+   * @param desc      [out] handler description
    * @return 1 if the agent can provide a handler, 0 if not
    */
   int GetHandlerDescription(AliHLTComponentDataType dt,

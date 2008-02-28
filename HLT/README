@@ -237,6 +237,7 @@ For committing do:
  - 5. depending on where you changes are send the whole HLT module except the build
       sub-directories or your HLT sub- directory to
       Matthias.Richter@ift.uib.no
+      Please include a message/description for the check in
  - 6. you will get a notification when the code is committed, right after that
       you must either do another svn update or check out the complete module
       again in order to have the right SVN information. Please check that your

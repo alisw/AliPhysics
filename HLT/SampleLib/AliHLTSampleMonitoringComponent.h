@@ -36,13 +36,13 @@ class TH1F;
  *    in fact, the component ignores all incoming data blocks
  *
  * Output Data Types:
- * \it {ROOT_TH1,EXPL}                                              <br>
+ * \li {ROOT_TH1,EXPL}                                              <br>
  *     one histogram per data block, specification identifies the
  *     specific histogram.
- * \it {ROOTOBJA,EXPL}                                              <br>
+ * \li {ROOTOBJA,EXPL}                                              <br>
  *     the two histograms are added to a TOBjArray which is pushed
  *     to the output stream
- * \it {ROOTTREE,EXPL}                                              <br>
+ * \li {ROOTTREE,EXPL}                                              <br>
  *     the two histograms are added to a TTree which is pushed
  *     to the output stream
  *

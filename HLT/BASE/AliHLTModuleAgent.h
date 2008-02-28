@@ -117,8 +117,8 @@ class AliHLTModuleAgent : public TObject, public AliHLTLogging {
   /**
    * Get module id.
    * The module id is a string specifying the detector, or module. The
-   * library must follow the naming scheme \it libAliHLTModule.so, e.g.
-   * \it libAliHLTTPC.so if the module is 'TPC'
+   * library must follow the naming scheme \em libAliHLTModule.so, e.g.
+   * \em libAliHLTTPC.so if the module is 'TPC'
    */
   const char* GetModuleId() const;
 
@@ -287,7 +287,7 @@ class AliHLTModuleAgent : public TObject, public AliHLTLogging {
    */
   virtual int GetHandlerDescription(AliHLTComponentDataType dt,
 				    AliHLTUInt32_t spec,
-				    AliHLTOUTHandlerDesc& pDesc) const;
+				    AliHLTOUTHandlerDesc& desc) const;
 
   /**
    * Get handler for a data block of the HLTOUT data.

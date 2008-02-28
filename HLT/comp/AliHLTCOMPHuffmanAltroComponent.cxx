@@ -135,7 +135,7 @@ int AliHLTCOMPHuffmanAltroComponent::DoInit( int argc, const char** argv )
   
   
   Int_t i = 0;
-  Char_t* cpErr;
+  //Char_t* cpErr;
   
   while ( i < argc ) 
     {     
@@ -331,7 +331,7 @@ int AliHLTCOMPHuffmanAltroComponent::DoDeinit()
 
 int AliHLTCOMPHuffmanAltroComponent::DoEvent( const AliHLTComponentEventData& evtData, 
 					      const AliHLTComponentBlockData* blocks, 
-					      AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
+					      AliHLTComponentTriggerData& /*trigData*/, AliHLTUInt8_t* outputPtr, 
 					      AliHLTUInt32_t& size, 
 					      vector<AliHLTComponentBlockData>& outputBlocks )
 {

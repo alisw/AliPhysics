@@ -31,6 +31,9 @@ ClassImp(AliHLTCOMPHuffmanData)
 
 /** construction without any arguments (used for isolated tests) */
 AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanData()
+  :
+  fOrigin(kAliHLTVoidDataOrigin),
+  fDataSpec(0)
 {
   // see header file for class documentation
   // or

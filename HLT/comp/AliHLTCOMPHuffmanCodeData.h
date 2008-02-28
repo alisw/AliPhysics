@@ -42,7 +42,7 @@ public:
   {
     Int_t famplitude; // ADC-value
     AliHLTUInt64_t fhuffmancode; // maximal possible codelength: 64 bits
-    Int_t fvalidcodelength; // validcodelength needed as code is of variable length!!
+    UInt_t fvalidcodelength; // validcodelength needed as code is of variable length!!
   } AliHLTCOMPHuffmanCodeStruct;
   
   /** standard constructor */

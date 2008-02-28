@@ -34,8 +34,8 @@ ClassImp(AliHLTCOMPHuffmanAltroCalibComponent)
 AliHLTCOMPHuffmanAltroCalibComponent::AliHLTCOMPHuffmanAltroCalibComponent()
   :
   fHuffmanCompressor(NULL),
-  fHuffmanData(NULL),
   fOrigin(kAliHLTVoidDataOrigin),
+  fHuffmanData(NULL),
   fRunNumber(0),
   fSpecification(0),
   fTablePath(),

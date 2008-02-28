@@ -16,7 +16,7 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-/** @file   AliHLTReconstructionBase.cxx
+/** @file   AliHLTReconstructorBase.cxx
     @author Matthias Richter
     @date   
     @brief  Base class for HLT reconstruction classes.
