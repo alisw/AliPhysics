@@ -108,8 +108,8 @@ AliDCSSensorArray::AliDCSSensorArray(UInt_t startTime, UInt_t endTime,
   //
   fSensors = AliDCSSensor::ReadTree(confTree);
   fSensors->BypassStreamer(kFALSE);
-  fStartTime = TTimeStamp(startTime);
-  fEndTime   = TTimeStamp(endTime);
+  fStartTime = TTimeStamp((time_t)startTime);
+  fEndTime   = TTimeStamp((time_t)endTime);
 }
 
 
@@ -133,8 +133,8 @@ AliDCSSensorArray::AliDCSSensorArray(UInt_t startTime, UInt_t endTime,
   // AliDCSSensorArray constructor for Shuttle preprocessor
   //  (TClonesArray of AliDCSSensor objects)
   //
-  fStartTime = TTimeStamp(startTime);
-  fEndTime   = TTimeStamp(endTime);
+  fStartTime = TTimeStamp((time_t)startTime);
+  fEndTime   = TTimeStamp((time_t)endTime);
 }
 
 //_____________________________________________________________________________
@@ -213,7 +213,7 @@ void AliDCSSensorArray::MakeSplineFit(TMap *map, Bool_t keepMap)
     AliDCSSensor *entry = (AliDCSSensor*)fSensors->At(isensor);
     TString stringID = entry->GetStringID();
     TGraph *gr = (TGraph*)map->GetValue(stringID.Data());
-    if (!gr ) {
+    if (!gr || gr->GetN() == 0 ) {
       entry->SetFit(0);
       entry->SetGraph(0);
       AliWarning(Form("sensor %s: no input graph",stringID.Data()));
@@ -296,7 +296,9 @@ TGraph* AliDCSSensorArray::MakeGraph(TObjArray* valueSet){
   
   Float_t *x = new Float_t[nentries];
   Float_t *y = new Float_t[nentries];
-  Int_t time0=fStartTime.GetSec();
+  Int_t time0=0;
+  TTimeStamp firstTime(0);
+  TTimeStamp lastTime(0);
   Int_t out=0;
   Int_t skipped=0;
   AliDCSValue *val = (AliDCSValue *)valueSet->At(0);
@@ -308,6 +310,8 @@ TGraph* AliDCSSensorArray::MakeGraph(TObjArray* valueSet){
     if (!val) continue;
     if (time0==0){
       time0=val->GetTimeStamp();
+      firstTime= val->GetTimeStamp();
+      lastTime=val->GetTimeStamp();
     }
     switch ( type )
     { 
@@ -335,11 +339,13 @@ TGraph* AliDCSSensorArray::MakeGraph(TObjArray* valueSet){
       skipped=0;
     }					      
     if (val->GetTimeStamp()-time0>1000000) continue;
+    lastTime=val->GetTimeStamp();
     x[out] = (val->GetTimeStamp()-time0)/kSecInHour; // give times in fractions of hours 
     y[out] = val->GetFloat();
-    out++;
-    
+    out++;    
   }
+  SetStartTime(firstTime);
+  SetEndTime(lastTime);
   TGraph * graph = new TGraph(out,x,y);
   delete [] x;
   delete [] y;
@@ -399,7 +405,7 @@ AliDCSSensor* AliDCSSensorArray::GetSensor(Double_t x, Double_t y, Double_t z)
     return 0;
  }
 }
-
+//_____________________________________________________________________________
 AliDCSSensor* AliDCSSensorArray::GetSensorNum(Int_t ind)
 {
  //
@@ -408,6 +414,7 @@ AliDCSSensor* AliDCSSensorArray::GetSensorNum(Int_t ind)
  return (AliDCSSensor*)fSensors->At(ind);
 }
 
+//_____________________________________________________________________________
 void AliDCSSensorArray::RemoveSensorNum(Int_t ind)
 {
  //
@@ -417,6 +424,7 @@ void AliDCSSensorArray::RemoveSensorNum(Int_t ind)
   delete fSensors->RemoveAt(ind);
   fSensors->Compress();
 }
+//_____________________________________________________________________________
 void AliDCSSensorArray::RemoveSensor(Int_t IdDCS)
 {
  //
@@ -433,7 +441,32 @@ void AliDCSSensorArray::RemoveSensor(Int_t IdDCS)
   }
   fSensors->Compress();
 }
-
+//_____________________________________________________________________________
+TArrayI AliDCSSensorArray::OutsideThreshold(Double_t threshold, UInt_t timeSec, Bool_t below) const
+{
+ //
+ // Return sensors with values outside threshold at time defined by second
+ // parameter
+ // By default sensors with values below threshold are listed, if third
+ // parameter is set to kFALSE sensors with values above threshold are listed
+ //
+  Int_t nsensors = fSensors->GetEntries();
+  TArrayI array(nsensors);
+  Int_t outside=0;
+  for (Int_t isensor=0; isensor<nsensors; isensor++) { // loop over sensors
+    AliDCSSensor *entry = (AliDCSSensor*)fSensors->At(isensor);
+    Double_t val=entry->GetValue(timeSec);
+    if (below) {
+      if (val<threshold) array[outside++] = entry->GetIdDCS();
+    } else {
+      if (val>threshold) array[outside++] = entry->GetIdDCS();
+    }    
+  }
+  array.Set(outside);
+  return array;
+}
+ 
+//_____________________________________________________________________________
 Int_t AliDCSSensorArray::GetFirstIdDCS() const
 {
  //
@@ -446,6 +479,7 @@ Int_t AliDCSSensorArray::GetFirstIdDCS() const
  }
 }
 
+//_____________________________________________________________________________
 Int_t AliDCSSensorArray::GetLastIdDCS() const 
 {
  //
@@ -458,6 +492,7 @@ Int_t AliDCSSensorArray::GetLastIdDCS() const
     return 0;
  }
 }
+//_____________________________________________________________________________
 void AliDCSSensorArray::ClearGraph()
 {
   //
@@ -475,6 +510,7 @@ void AliDCSSensorArray::ClearGraph()
      sensor->SetGraph(0);
    }
 }
+//_____________________________________________________________________________
 void AliDCSSensorArray::ClearFit()
 {
   //
