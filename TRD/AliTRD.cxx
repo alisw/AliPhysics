@@ -57,7 +57,6 @@
 #include "AliTRDpoints.h"
 #include "AliTRDrawData.h"
 #include "AliTRDSimParam.h"
-#include "AliTRDRecParam.h"
 #include "AliTRDCommonParam.h"
 #include "AliTRDcalibDB.h"
 
