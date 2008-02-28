@@ -106,9 +106,10 @@ TObject * AliQADataMaker::GetData(TObjArray * list, const Int_t index)
 } 
 
 //____________________________________________________________________________
-void AliQADataMaker::Reset() 
+void AliQADataMaker::Reset(const Bool_t sameCycle) 
 { 
   // Resets defaut value of data members 
-  fCurrentCycle = -1 ;  
-  fCycleCounter = 0 ; 
+	if (!sameCycle) {
+		fCycleCounter = 0 ; 
+	}
 }

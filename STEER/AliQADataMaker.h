@@ -37,7 +37,7 @@ public:
 	
 	AliQADataMaker(const char * name="", const char * title="") ;          // ctor
 	AliQADataMaker(const AliQADataMaker& qadm) ;   
-//	AliQADataMaker& operator = (const AliQADataMaker& /*qadm*/) {;}
+	AliQADataMaker& operator = (const AliQADataMaker& /*qadm*/) {;}
 	virtual ~AliQADataMaker() {;} // dtor
   
 	virtual const Int_t Add2DigitsList(TH1 * hist, const Int_t index)    = 0 ; 
@@ -60,7 +60,7 @@ public:
 	virtual TObjArray * Init(AliQA::TASKINDEX, Int_t run, Int_t cycles = -1)                   = 0 ;
 	virtual void        Init(AliQA::TASKINDEX, TObjArray * list, Int_t run, Int_t cycles = -1) = 0 ;
 	const Bool_t        IsCycleDone() const { return fCycleCounter > fCycle ? kTRUE : kFALSE ; }
-	void                Reset() ; 	
+	void                Reset(const Bool_t sameCycle = kTRUE) ; 	
     void                SetCycle(Int_t nevts) { fCycle = nevts ; } 
 	virtual void        StartOfCycle(AliQA::TASKINDEX, const Bool_t sameCycle = kFALSE) = 0 ;
 
