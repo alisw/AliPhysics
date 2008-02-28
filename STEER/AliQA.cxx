@@ -293,8 +293,10 @@ TFile * AliQA::GetQADataFile(const char * fileName)
 TFile * AliQA::GetQAResultFile() 
 {
   // opens the file to store the  Quality Assurance Data Checker results
-   
-	if (!fgQAResultFile) { 
+	if (fgQAResultFile) 
+		fgQAResultFile->Close() ; 
+	fgQAResultFile = 0x0 ; 
+//	if (!fgQAResultFile) { 
 		TString dirName(fgQAResultDirName) ; 
 		if ( dirName.Contains(fkgLabLocalFile)) 
 			dirName.ReplaceAll(fkgLabLocalFile, "") ;
@@ -308,7 +310,7 @@ TFile * AliQA::GetQAResultFile()
 			opt = "NEW" ; 
 		}
 		fgQAResultFile = TFile::Open(fileName, opt) ;   
-	}
+//	}
 	
 	return fgQAResultFile ;
 }
@@ -494,6 +496,6 @@ void AliQA::ShowStatus(DETECTORINDEX det) const
   ULong_t esdStatus = status & 0x0f000 ;
   ULong_t anaStatus = status & 0xf0000 ;
 
-  AliInfo(Form("QA Status for %s raw =0x%x, sim=0x%x, rec=0x%x, esd=0x%x, ana=0x%x\n", GetDetName(det).Data(), rawStatus, simStatus, recStatus, esdStatus, anaStatus )) ;
+  AliInfo(Form("QA Status for %8s raw =0x%x, sim=0x%x, rec=0x%x, esd=0x%x, ana=0x%x\n", GetDetName(det).Data(), rawStatus, simStatus, recStatus, esdStatus, anaStatus )) ;
 }
 

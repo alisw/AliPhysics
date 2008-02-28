@@ -77,7 +77,7 @@ private:
 	virtual void         ShowStatus(DETECTORINDEX det) const ;
 	void                 ResetStatus(DETECTORINDEX det) { fQA[det] = 0 ; }
 	void                 Set(DETECTORINDEX det) { fDet = det ;}
-	void                 Set(ALITASK tsk) { fTask = tsk ; AliInfo(Form("Ready to set QA status in %s", GetAliTaskName(tsk) )) ; }
+	void                 Set(ALITASK tsk) { fTask = tsk ; AliDebug(1, Form("Ready to set QA status in %s", GetAliTaskName(tsk) )) ; }
 	void                 SetStatus(DETECTORINDEX det, UShort_t status) { fQA[det] = status ; }
 	void                 SetStatusBit(DETECTORINDEX det, ALITASK tsk, QABIT bit) ;
 
