@@ -15,9 +15,13 @@ via the framework. Then  aliroot takes this geometry.root file as
 a unique geometrical info of our apparatus during the generation 
 and the reconstruction and analysis (if needed)
 
+The macros MakeMUONZeroMisAlignment.C, MakeMUONResMisAlignment.C
+and MakeMUONFullMisAlignment.C generate the mis-alignment
+data (see more in the chapter \ref geometry_s4 below).
+
 The code can also generate the special geometry 
 data files, transform.dat and svmap.dat, via the macro  
-MUONGenerateGeometryData.C (see more in \ref geometry_s4 below).
+MUONGenerateGeometryData.C (see more in the chapter \ref geometry_s5 below).
 The svmap.dat data file have to be recreated each time the code 
 of the geometry is modified. The info (well updated) in this file 
 is needed during the simulation.
@@ -36,10 +40,10 @@ file.
 \see http://agenda.cern.ch/fullAgenda.php?ida=a05212
 
 <pre>
+AliMpCDB::LoadMpSegmentation2(); 
 gAlice->Init("$ALICE_ROOT/MUON/Config.C");
 gGeoManager->GetMasterVolume()->Draw();
 </pre>
-
 
 \section geometry_s3  How to check the overlaps with the Root geometrical modeler
 
@@ -47,9 +51,16 @@ gGeoManager->GetMasterVolume()->Draw();
 \see  http://agenda.cern.ch/fullAgenda.php?ida=a05212
 
 <pre>
+AliMpCDB::LoadMpSegmentation2(); 
 gAlice->Init("$ALICE_ROOT/MUON/Config.C");
 gGeoManager->CheckOverlaps();
 gGeoManager->PrintOverlaps();
+</pre>
+
+More extensive, but also more time consuming checking,
+can be performed in this way:
+<pre>
+gGeoManager->CheckGeometryFull();
 </pre>
 
 
@@ -94,7 +105,7 @@ etc.
 
 If the environment variable TOCDB is not set to "kTRUE",
 the misalignment data are generated in a local file:
-MUONFullMisalignment.root, etc.
+MUONfullMisalignment.root, etc.
 
 If the data are stored in CDB, the storage can be specified in 
 the environment variable STORAGE. The misalignment data are then
@@ -106,6 +117,18 @@ misalignment after all our alignment procedure has been applied.
 Full misalignment: Default is our current estimate of initial
 misalignment.
 
+The mis-alignment data can be then retrieved from a file
+and applied to ideal geometry in this way.
+
+<pre>
+TGeoManager::Import("geometry.root");
+TFile f("MUONfullMisalignment.root"); 
+TClonesArray* misAlignObjsArray = (TClonesArray*)f.Get("MUONAlignObjs");
+AliGeomManager::ApplyAlignObjsToGeom(*misAlignObjsArray);
+</pre>
+
+Mis-aligned geometry can be then inspected in the same
+way as described in the chapters \ref geometry_s2 and \ref geometry_s3. 
 
 \section geometry_s6 How to check the alignment software
 
