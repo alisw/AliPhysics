@@ -98,6 +98,7 @@ class AliTRDrawStreamTB : public AliTRDrawStreamBase
       
     Int_t               fADCindex; // index of current ADC (comment: 1 ADC is 1 pad)
     Int_t               fADCmax;   // number of ADCs fired
+    Int_t               fADCcount;   // number of ADCs fired from double checking bit
     Int_t               fMCMADCWords; // mcm words to expect
     Int_t               fSingleADCwords; // n of words per ADC
       
@@ -122,6 +123,7 @@ class AliTRDrawStreamTB : public AliTRDrawStreamBase
       , fADCchannel()      
       , fADCindex(0)
       , fADCmax(0)
+      , fADCcount(0)
       , fMCMADCWords(0)      
       , fSingleADCwords(0)
       , fCorrupted(0)      
@@ -147,6 +149,7 @@ class AliTRDrawStreamTB : public AliTRDrawStreamBase
       , fADCchannel()      
       , fADCindex(p.fADCindex)
       , fADCmax(p.fADCmax)
+      , fADCcount(p.fADCcount)
       , fMCMADCWords(p.fMCMADCWords)      
       , fSingleADCwords(p.fSingleADCwords)
       , fCorrupted(p.fCorrupted)      
@@ -480,6 +483,7 @@ class AliTRDrawStreamTB : public AliTRDrawStreamBase
   static void    SetDumpHead(UInt_t iv) {fgDumpHead = iv;}
   static void    DisableStackNumberChecker() {fgStackNumberChecker = kFALSE;}  // set false to cleanroom data 
   static void    DisableStackLinkNumberChecker() {fgStackLinkNumberChecker = kFALSE;}  
+  static void    DisableSkipData() {fgSkipData = kFALSE;} // keep reading next words even previous words were corrupted - debugging purpose  
 
   // this is a temporary solution!
   // baseline should come with the HC header word 2 (count from 0!)
@@ -507,7 +511,7 @@ class AliTRDrawStreamTB : public AliTRDrawStreamBase
   void MCMADCwordsWithTbins(UInt_t fTbins, struct AliTRDrawMCM *mcm) const;
   const char *DumpMCMinfo(const struct AliTRDrawMCM *mcm);
   const char *DumpMCMadcMask(const struct AliTRDrawMCM *mcm);
-  const unsigned long AdvancePseudoRandom(unsigned long *val); 
+  const unsigned long AdvancePseudoRandom(unsigned long *val) const; 
 
  protected:
 
@@ -524,7 +528,8 @@ class AliTRDrawStreamTB : public AliTRDrawStreamBase
   Bool_t DecodeHC();           // decode data in HC
 
   Bool_t DecodeADC();          // decode 10 ADC words
-  Bool_t DecodeADCTP1(unsigned long *randVal, int *endbits); // decode TP ADC words
+  Bool_t DecodeADCTP1(unsigned long *randVal, Int_t *endbits); // decode TP ADC words
+  Bool_t DecodeADCTP23(unsigned long *expected); // decode TP ADC words
 
   Bool_t DecodeHCheader();       // decode HC  header
   Bool_t SeekEndOfData();      // go to next end of raw data marker (actually 1 word after)
@@ -534,6 +539,7 @@ class AliTRDrawStreamTB : public AliTRDrawStreamBase
   Bool_t IsRowValid(); // check if row within the range
   Bool_t IsHCheaderOK(); // check if current hc header data make sense
   Bool_t IsMCMheaderOK(); // check if current mcm header data make sense
+  Bool_t IsMCMevCounterOK(); // check if event counter matches in current mcm header
     
   void   ResetCounters(); // reset some counters
   void   ResetIterators(); // needed for Next()
@@ -591,6 +597,7 @@ class AliTRDrawStreamTB : public AliTRDrawStreamBase
   static Bool_t fgDebugStreamFlag; // set on debug streamer
   static Bool_t fgStackNumberChecker; // decide if we check stack number insanity - set false to cleanroom data
   static Bool_t fgStackLinkNumberChecker; // decide if we check stack link number insanity - debuging purpose
+  static Bool_t fgSkipData; // decide if we skip corrupted data of given HC
   static TTreeSRedirector *fgDebugStreamer; //!Debug streamer
   static UInt_t fgStreamEventCounter; // event counter for debug streamer
   static UInt_t fgFirstEquipmentID; // first equipmentID for debug streamer
