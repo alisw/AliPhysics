@@ -95,6 +95,7 @@ void AliQADataMakerRec::EndOfCycle(AliQA::TASKINDEX task)
 		subDir->cd() ; 
 		list->Write() ;
 	}
+	fOutput->Close() ; 
 }
  
 //____________________________________________________________________________
@@ -177,14 +178,13 @@ void AliQADataMakerRec::Init(AliQA::TASKINDEX task, TObjArray * list, Int_t run,
 void AliQADataMakerRec::StartOfCycle(AliQA::TASKINDEX task, const Bool_t sameCycle) 
 { 
   // Finishes a cycle of QA data acquistion
- 
 	if ( !sameCycle || fCurrentCycle == -1) {
 		ResetCycle() ;
 		if (fOutput) 
 			fOutput->Close() ; 
 		fOutput = AliQA::GetQADataFile(GetName(), fRun, fCurrentCycle) ; 	
 	}	
-	AliInfo(Form(" Run %d Cycle %d task %s file %s", 
+	AliDebug(1, Form(" Run %d Cycle %d task %s file %s", 
 				 fRun, fCurrentCycle, AliQA::GetTaskName(task).Data(), fOutput->GetName() )) ;
 
 	fDetectorDir = fOutput->GetDirectory(GetDetectorDirName()) ; 
