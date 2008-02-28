@@ -292,13 +292,15 @@ UInt_t AliTOFPreprocessor::ProcessOnlineDelays()
 	      delete daqFile;
               return 7; //return error code for histograms not existing/junky
 	    }
+	    Int_t nNotStatistics = 0; // number of channel with not enough statistics
 	    for (Int_t ich=0;ich<kSize;ich++){
 	      TH1S *h1 = new TH1S("h1","h1",kNBins,kXBinmin-0.5,kNBins*1.+kXBinmin-0.5);
 	      for (Int_t ibin=0;ibin<kNBins;ibin++){
 		h1->SetBinContent(ibin+1,fh2->GetBinContent(ich+1,ibin+1));
 	      }
 	      if(h1->Integral()<fgkIntegralThr) {
-		Log(Form(" Not enough statistics for bin %i, skipping this channel",ich));
+		nNotStatistics++;
+		if (!fFDRFlag)  Log(Form(" Not enough statistics for bin %i, skipping this channel",ich));  // printing message only if not in FDR runs
 		delete h1;
 		h1=0x0;
 		continue;
@@ -342,6 +344,7 @@ UInt_t AliTOFPreprocessor::ProcessOnlineDelays()
 	    delete h1;
 	    h1=0x0;
 	    }
+	    if (nNotStatistics!=0) Log(Form("Too little statistics for %d channels!",nNotStatistics)); 
 	  }
 	  daqFile->Close();
 	  delete daqFile;
