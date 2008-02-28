@@ -345,11 +345,13 @@ Int_t AliITStrackerSA::FindTracks(AliESDEvent* event){
   for(Int_t i=0;i<AliITSgeomTGeo::GetNLayers();i++){
     firstmod[i]=AliITSgeomTGeo::GetModuleIndex(i+1,1,1);
     AliITSlayer &layer=fgLayers[i];
-    for(Int_t cli=0;cli<layer.GetNumberOfClusters();cli++){
-      AliITSRecPoint* cls = (AliITSRecPoint*)layer.GetCluster(cli);
-      if(cls->TestBit(kSAflag)==kTRUE) continue; //clusters used by TPC prol.
-      if(cls->GetQ()==0) continue; //fake clusters dead zones
-      nclusters[i]++;
+    if (!AliITSReconstructor::GetRecoParam()->GetLayersToSkip(i)) {
+      for(Int_t cli=0;cli<layer.GetNumberOfClusters();cli++){
+	AliITSRecPoint* cls = (AliITSRecPoint*)layer.GetCluster(cli);
+	if(cls->TestBit(kSAflag)==kTRUE) continue; //clusters used by TPC prol.
+	if(cls->GetQ()==0) continue; //fake clusters dead zones
+	nclusters[i]++;
+      }
     }
     dmar[i]=0;
     delete fCluLayer[i];
@@ -362,18 +364,20 @@ Int_t AliITStrackerSA::FindTracks(AliESDEvent* event){
     TClonesArray &clulay = *fCluLayer[ilay];
     TClonesArray &clucoo = *fCluCoord[ilay];
     AliITSlayer &layer=fgLayers[ilay];
-    for(Int_t cli=0;cli<layer.GetNumberOfClusters();cli++){
-      AliITSRecPoint* cls = (AliITSRecPoint*)layer.GetCluster(cli);
-      if(cls->TestBit(kSAflag)==kTRUE) continue;
-      if(cls->GetQ()==0) continue;
-      Double_t phi=0;Double_t lambda=0;
-      Float_t x=0;Float_t y=0;Float_t z=0;
-      Float_t sx=0;Float_t sy=0;Float_t sz=0;
-      GetCoorAngles(cls,phi,lambda,x,y,z,primaryVertex);
-      GetCoorErrors(cls,sx,sy,sz);
-      new (clulay[dmar[ilay]]) AliITSRecPoint(*cls);
-      new (clucoo[dmar[ilay]]) AliITSclusterTable(x,y,z,sx,sy,sz,phi,lambda,cli);
-      dmar[ilay]++;
+    if (!AliITSReconstructor::GetRecoParam()->GetLayersToSkip(ilay)) {
+      for(Int_t cli=0;cli<layer.GetNumberOfClusters();cli++){
+	AliITSRecPoint* cls = (AliITSRecPoint*)layer.GetCluster(cli);
+	if(cls->TestBit(kSAflag)==kTRUE) continue;
+	if(cls->GetQ()==0) continue;
+	Double_t phi=0;Double_t lambda=0;
+	Float_t x=0;Float_t y=0;Float_t z=0;
+	Float_t sx=0;Float_t sy=0;Float_t sz=0;
+	GetCoorAngles(cls,phi,lambda,x,y,z,primaryVertex);
+	GetCoorErrors(cls,sx,sy,sz);
+	new (clulay[dmar[ilay]]) AliITSRecPoint(*cls);
+	new (clucoo[dmar[ilay]]) AliITSclusterTable(x,y,z,sx,sy,sz,phi,lambda,cli);
+	dmar[ilay]++;
+      }
     }
   }
    
