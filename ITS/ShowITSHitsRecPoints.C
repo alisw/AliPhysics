@@ -16,7 +16,7 @@
 #include "AliRun.h"
 #endif
 
-Int_t ShowITSHitsRecPoints(Bool_t align=kFALSE
+Int_t ShowITSHitsRecPoints(Bool_t align=kFALSE,
 			   TString alignfile="ITSfullv11Misalignment.root")
 {
   ///////////////////////////////////////////////////////////////////////
@@ -325,7 +325,7 @@ Int_t ShowITSHitsRecPoints(Bool_t align=kFALSE
 }
 
 
-Int_t ShowITSHitsRecPointsNtuple(Bool_t align=kFALSE
+Int_t ShowITSHitsRecPointsNtuple(Bool_t align=kFALSE,
 				 TString alignfile="ITSfullv11Misalignment.root")
 {
   ///////////////////////////////////////////////////////////////////////
