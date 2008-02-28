@@ -38,7 +38,6 @@
 #include "AliTRDrawData.h"
 #include "AliTRDcalibDB.h"
 #include "AliTRDSimParam.h"
-#include "AliTRDCommonParam.h"
 #include "AliTRDcluster.h"
 
 #include "Cal/AliTRDCalROC.h"
