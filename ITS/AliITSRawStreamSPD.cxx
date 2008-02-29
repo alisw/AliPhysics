@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id:  $ */
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////////////
 ///
@@ -105,9 +105,12 @@ Bool_t AliITSRawStreamSPD::ReadNextShort() {
       return kFALSE;
     }
     fData = fDataChar3+(fDataChar4<<8);
-    if ((*fRawReader->GetEventId())!=fPrevEventId) { // if new event...
-      NewEvent();
-      fPrevEventId=(*fRawReader->GetEventId());
+    const UInt_t *intPtr = fRawReader->GetEventId();
+    if (intPtr!=0) {
+      if (*intPtr!=fPrevEventId) { // if new event...
+	NewEvent();
+	fPrevEventId=*intPtr;
+      }
     }
     fFirstWord=kFALSE;
   }
