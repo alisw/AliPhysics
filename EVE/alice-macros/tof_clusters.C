@@ -88,7 +88,6 @@ TEvePointSet* tof_clusters(TEveElement* cont=0, Float_t maxR=390)
   sprintf(tip,"N=%d", clusters->Size());
   clusters->SetTitle(tip);
 
-  using namespace Eve;
   gEve->AddElement(clusters, cont);
   gEve->Redraw3D();
 
