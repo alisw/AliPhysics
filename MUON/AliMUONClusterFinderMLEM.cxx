@@ -1406,8 +1406,12 @@ Int_t AliMUONClusterFinderMLEM::FindLocalMaxima(TObjArray *pixArray, Int_t *loca
 	localMax[nMax] = indx + j - 1; 
 	maxVal[nMax++] = fHistAnode->GetCellContent(j,i);
 	((AliMUONPad*)fSplitter->BinToPix(fHistAnode, j, i))->SetStatus(fgkMustKeep);
-	if (nMax > 99) AliFatal(" Too many local maxima !!!");
+	if (nMax > 99) break;
       }
+    }
+    if (nMax > 99) {
+      AliError(" Too many local maxima !!!");
+      break;
     }
   }
   if (fDebug) cout << " Local max: " << nMax << endl;

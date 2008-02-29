@@ -842,8 +842,12 @@ Int_t AliMUONClusterFinderPeakFit::FindLocalMaxima(TObjArray *pixArray, Int_t *l
       if (isLocalMax[indx+j-1] > 0) { 
 	localMax[nMax] = indx + j - 1; 
 	maxVal[nMax++] = fHistAnode->GetCellContent(j,i);
-	if (nMax > 99) AliFatal(" Too many local maxima !!!");
+	if (nMax > 99) break;
       }
+    }
+    if (nMax > 99) {
+      AliError(" Too many local maxima !!!");
+      break;
     }
   }
   if (fDebug) cout << " Local max: " << nMax << endl;
