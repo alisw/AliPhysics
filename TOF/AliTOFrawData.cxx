@@ -97,7 +97,7 @@ AliTOFrawData::AliTOFrawData(Int_t a, Int_t b, Int_t c, Int_t d, Int_t e,
 {
 
   // ctr
-  fTime = fLeading;
+  if (fTime==-1) fTime = fLeading;
 }
 
 //_____________________________________________________________________________
