@@ -15,6 +15,7 @@
 
 
 #include "AliPreprocessor.h"
+#include "AliITSDDLModuleMapSDD.h"
 
 
 class AliITSPreprocessorSDD : public AliPreprocessor { 
@@ -36,6 +37,10 @@ class AliITSPreprocessorSDD : public AliPreprocessor {
 
   
   virtual UInt_t Process(TMap* dcsAliasMap);
+  Bool_t ProcessPulser(AliITSDDLModuleMapSDD* ddlmap);
+  Bool_t ProcessInjector(AliITSDDLModuleMapSDD* ddlmap);
+  Bool_t ProcessDCSDataPoints(TMap* dcsAliasMap);
+
 
   static const TString fgkNameHistoPedestals; //name of ped. histo
   static const TString fgkNameHistoNoise;  //name of noise histo

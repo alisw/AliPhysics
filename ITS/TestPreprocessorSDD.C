@@ -64,18 +64,26 @@ void TestPreprocessorSDD(Char_t *optRunType="PULSER"){
     doCheck=kTRUE;
   }
   if(doCheck){
-    AliCDBEntry* chkEntry = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB())
-  			->Get(theDir, 7);
+    AliCDBEntry* chkEntry = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB())->Get(theDir, 7);
     if (!chkEntry){
-      printf("The file is not there. Something went wrong.\n");
-      return;
+      printf("The Calib file is not there. Something went wrong.\n");
+    }else{
+      chkEntry->PrintMetaData();
+      TObjArray* arr=(TObjArray*)chkEntry->GetObject();
+      arr->Inspect();
     }
   }
 
-  AliTestDataDCS* output = dynamic_cast<AliTestDataDCS*> (chkEntry->GetObject());
-  // If everything went fine, draw the result
-  if (output)
-    output->Inspect();
+  sprintf(theDir,"ITS/DCS/DataSDD");
+  AliCDBEntry* chkEntryDCS = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB())
+  			->Get(theDir, 7);
+  if (!chkEntryDCS){
+    printf("The DCS data points file is not there. Something went wrong.\n");
+  }else{
+    chkEntryDCS->PrintMetaData();
+    TObjArray* arrdcs=(TObjArray*)chkEntryDCS->GetObject();
+    arrdcs->Inspect();
+  }
 }
 
 
