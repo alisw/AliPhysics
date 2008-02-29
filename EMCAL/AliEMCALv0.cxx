@@ -1327,7 +1327,7 @@ void AliEMCALv0::AddAlignableVolumesInALICE() const
 
   TString volpath, symname;
 
-  Int_t nSMod = ((AliEMCALGeometry*)GetGeometry())->GetNumberOfSuperModules(); 
+  Int_t nSMod = GetGeometry()->GetNumberOfSuperModules(); 
   for (Int_t smodnum=0; smodnum < nSMod; smodnum++) {
     volpath = "ALIC_1/XEN1_1/SMOD_";
     volpath += (smodnum+1);
@@ -1351,8 +1351,8 @@ void AliEMCALv0::AddAlignableVolumesInALICE() const
     if (!gGeoManager->cd(path))
       AliFatal(Form("Volume path %s not valid!",path));
 
-    phi = GetGeometry()->GetPhiCenterOfSM(smodnum);
-    phiRad = phi*TMath::Pi()/180.;
+    phiRad = GetGeometry()->GetPhiCenterOfSM(smodnum);  //comes in radians, not degrees
+    phi = phiRad*180./TMath::Pi();             //need degrees for rot. matrix
     xpos = rpos * TMath::Cos(phiRad);
     ypos = rpos * TMath::Sin(phiRad);
     zpos = pars[2];
@@ -1389,7 +1389,6 @@ void AliEMCALv0::AddAlignableVolumesInALICE() const
     }
 
   }
-
 
 }
 
