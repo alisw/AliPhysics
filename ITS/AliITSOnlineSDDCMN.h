@@ -55,6 +55,8 @@ class AliITSOnlineSDDCMN : public AliITSOnlineSDD {
 
  private:
   Int_t fNEvents;                    // number of events
+  Int_t fLowThreshold;             // low threshold for zero supp.
+  Int_t fHighThreshold;            // high threshold for zero supp.
   Bool_t fGoodAnode[fgkNAnodes];     // anode quality: good(1) - bad (0)
   Float_t fBaseline[fgkNAnodes];     // array of anode baselines
   Int_t fEqBaseline[fgkNAnodes];     // array of anode baselines after equalization
@@ -66,6 +68,6 @@ class AliITSOnlineSDDCMN : public AliITSOnlineSDD {
   Float_t fMaxCorrNoise;             // Cut value for maximum corrected noise
   Float_t fNSigmaNoise;              // Cut value for corrected noise (n*sigma)
 
-  ClassDef(AliITSOnlineSDDCMN,2);
+  ClassDef(AliITSOnlineSDDCMN,3);
 };
 #endif

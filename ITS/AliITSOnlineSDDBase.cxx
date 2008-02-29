@@ -25,11 +25,13 @@
 //                                                               //
 ///////////////////////////////////////////////////////////////////
 
-/*  $Id:$   */
+/*  $Id$   */
+
+const Int_t AliITSOnlineSDDBase::fgkMaxCorr=63; // 6 but correction
 
 ClassImp(AliITSOnlineSDDBase)
 //______________________________________________________________________
-  AliITSOnlineSDDBase::AliITSOnlineSDDBase():AliITSOnlineSDD(),fNEvents(0),fMinBaseline(0.),fMaxBaseline(0.),fMinRawNoise(0.),fMaxRawNoise(0.),fNSigmaNoise(0.)
+  AliITSOnlineSDDBase::AliITSOnlineSDDBase():AliITSOnlineSDD(),fNEvents(0),fMinBaseline(0.),fMaxBaseline(0.),fMinRawNoise(0.),fMaxRawNoise(0.),fNSigmaNoise(0.),fGoldenBaseline(0.),fLowThrFact(0.),fHighThrFact(0.)
 {
   // default constructor
   Reset();
@@ -38,9 +40,11 @@ ClassImp(AliITSOnlineSDDBase)
   SetMinRawNoise();
   SetMaxRawNoise();
   SetNSigmaNoise();
+  SetGoldenBaselineValue();
+  SetZeroSuppThresholds();
 }
 //______________________________________________________________________
-  AliITSOnlineSDDBase::AliITSOnlineSDDBase(Int_t nddl, Int_t ncarlos, Int_t sid):AliITSOnlineSDD(nddl,ncarlos,sid),fNEvents(0),fMinBaseline(0.),fMaxBaseline(0.),fMinRawNoise(0.),fMaxRawNoise(0.),fNSigmaNoise(0.)
+AliITSOnlineSDDBase::AliITSOnlineSDDBase(Int_t nddl, Int_t ncarlos, Int_t sid):AliITSOnlineSDD(nddl,ncarlos,sid),fNEvents(0),fMinBaseline(0.),fMaxBaseline(0.),fMinRawNoise(0.),fMaxRawNoise(0.),fNSigmaNoise(0.),fGoldenBaseline(0.),fLowThrFact(0.),fHighThrFact(0.)
 {
   // default constructor
   Reset();
@@ -49,6 +53,8 @@ ClassImp(AliITSOnlineSDDBase)
   SetMinRawNoise();
   SetMaxRawNoise();
   SetNSigmaNoise();
+  SetGoldenBaselineValue();
+  SetZeroSuppThresholds();
 }
 //______________________________________________________________________
 AliITSOnlineSDDBase::~AliITSOnlineSDDBase(){
@@ -131,6 +137,18 @@ void AliITSOnlineSDDBase::AddEvent(TH2F* hrawd){
   delete [] cmnOdd;
 }
 //______________________________________________________________________
+void AliITSOnlineSDDBase::GetMinAndMaxBaseline(Float_t &basMin, Float_t &basMax) const {
+  // fills mininum and maximum baseline values
+  basMin=1008.;
+  basMax=0.;
+  for(Int_t ian=0;ian<fgkNAnodes;ian++){
+    if(!fGoodAnode[ian]) continue;
+    Float_t bas=GetAnodeBaseline(ian);
+    if(bas>0 && bas < basMin) basMin=bas;
+    if(bas>0 && bas > basMax) basMax=bas;
+  }
+}
+//______________________________________________________________________
 Float_t AliITSOnlineSDDBase::GetMinimumBaseline() const {
   // returns anode with minum baseline value in hybrid
   Float_t basMin=1008.;
@@ -158,16 +176,27 @@ Float_t AliITSOnlineSDDBase::CalcMeanRawNoise() const{
 void AliITSOnlineSDDBase::WriteToASCII(){
   //
   Char_t outfilnam[100];
-  Float_t basMin=GetMinimumBaseline();
+  Float_t basMin,basMax;
+  GetMinAndMaxBaseline(basMin,basMax);
+  Float_t finalVal=basMin;
+  if(basMin>fGoldenBaseline && basMax<fGoldenBaseline+fgkMaxCorr) finalVal=fGoldenBaseline;
+  if(basMax<basMin+fgkMaxCorr && basMax>fGoldenBaseline+fgkMaxCorr) finalVal=basMax-fgkMaxCorr;
+  
+  Float_t avNoise=CalcMeanRawNoise();
+  Int_t thrL=(Int_t)(finalVal+fLowThrFact*avNoise+0.5);
+  Int_t thrH=(Int_t)(finalVal+fHighThrFact*avNoise+0.5);
+
   sprintf(outfilnam,"SDDbase_step1_ddl%02dc%02d_sid%d.data",fDDL,fCarlos,fSide);
   FILE* outf=fopen(outfilnam,"w");
+  fprintf(outf,"%d\n",thrH);
+  fprintf(outf,"%d\n",thrL);
   Float_t corrnoise=2.;
   for(Int_t ian=0;ian<fgkNAnodes;ian++){
     Float_t bas=GetAnodeBaseline(ian);
-    Int_t corr=(Int_t)(bas-basMin+0.5);
-    if(corr>63) corr=63; // only 6 bits in jtag for correction
+    Int_t corr=(Int_t)(bas-finalVal+0.5);
+    if(corr>fgkMaxCorr) corr=fgkMaxCorr; // only 6 bits in jtag for correction
     if(corr<0) corr=0; // avoid negative numbers
-    fprintf(outf,"%d %d %11.6f %d %d %11.6f %11.6f %11.6f\n",ian,IsAnodeGood(ian),GetAnodeBaseline(ian),(Int_t)basMin,corr,GetAnodeRawNoise(ian),GetAnodeCommonMode(ian),corrnoise);
+    fprintf(outf,"%d %d %11.6f %d %d %11.6f %11.6f %11.6f\n",ian,IsAnodeGood(ian),GetAnodeBaseline(ian),(Int_t)finalVal,corr,GetAnodeRawNoise(ian),GetAnodeCommonMode(ian),corrnoise);
   }
   fclose(outf);  
 }

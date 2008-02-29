@@ -51,6 +51,8 @@ class AliITSOnlineSDDTP : public AliITSOnlineSDD {
  private:
   Int_t fNEvents[fgkNAnodes];      // number of TP events for given anode
   Float_t fDAC;                    // Pascal Test Pulse amplitude (DAC units)
+  Int_t fLowThreshold;           // low threshold for zero supp.
+  Int_t fHighThreshold;          // high threshold for zero supp.
   Bool_t fGoodAnode[fgkNAnodes];   // array of anode quality (1 good, 0 bad) 
   Float_t fBaseline[fgkNAnodes];   // array of anode baselines
   Int_t fEqBaseline[fgkNAnodes];   // array of anode baselines after equalization

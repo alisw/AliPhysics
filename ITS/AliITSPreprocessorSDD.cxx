@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
+/* $Id:$ */
 
 ///////////////////////////////////////////////////////////////////
 //                                                               //
@@ -84,6 +84,7 @@ Bool_t AliITSPreprocessorSDD::ProcessPulser(AliITSDDLModuleMapSDD* ddlmap){
   Char_t inpFileName[100];
   Float_t baseline,rawnoise,cmn,corn,gain;
   Int_t isgoodan,i,im,is,isgoodmod,basmin,basoff;
+  Int_t th,tl;
   Int_t numOfBadChannels[kNumberOfSDD];
   
   TList* sourceList = GetFileSources(kDAQ, "SDD_Calib");
@@ -123,6 +124,8 @@ Bool_t AliITSPreprocessorSDD::ProcessPulser(AliITSDDLModuleMapSDD* ddlmap){
 	  continue;
 	}
 	fscanf(basFil,"%d %d %d\n",&im,&is,&isgoodmod);
+	fscanf(basFil,"%d\n",&th);
+	fscanf(basFil,"%d\n",&tl);
 	if(!isgoodmod) cal->SetBad();
 	for(Int_t ian=0;ian<(kNumberOfChannels/2);ian++){
 	  fscanf(basFil,"%d %d %f %d %d %f %f %f %f\n",&i,&isgoodan,&baseline,&basmin,&basoff,&rawnoise,&cmn,&corn,&gain);

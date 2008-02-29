@@ -27,12 +27,18 @@ class AliITSOnlineSDDBase : public AliITSOnlineSDD {
   void SetMinRawNoise(Float_t ns=0.001){fMinRawNoise=ns;}
   void SetMaxRawNoise(Float_t ns=9.){fMaxRawNoise=ns;}
   void SetNSigmaNoise(Float_t ns=4.){fNSigmaNoise=ns;}
+  void SetGoldenBaselineValue(Float_t val=20.){fGoldenBaseline=val;}
+  void SetZeroSuppThresholds(Float_t vall=2.2,Float_t valh=4.){
+    fLowThrFact=vall;
+    fHighThrFact=valh;
+  }
 
   Bool_t IsAnodeGood(Int_t iAnode)const{ return fGoodAnode[iAnode];}
   Float_t GetAnodeBaseline(Int_t iAnode) const{
     if(fNEvents>0) return fSumBaseline[iAnode]/fNEvents;
     else return 0;
   }
+  void GetMinAndMaxBaseline(Float_t &basMin, Float_t &basMax) const;
   Float_t GetMinimumBaseline() const;
   Float_t GetAnodeRawNoise(Int_t iAnode) const{
     if(fNEvents>0) return TMath::Sqrt(fSumRawNoise[iAnode]/fNEvents-TMath::Power(GetAnodeBaseline(iAnode),2));
@@ -51,6 +57,8 @@ class AliITSOnlineSDDBase : public AliITSOnlineSDD {
  protected:
 
  private:
+  static const Int_t fgkMaxCorr;     // maximum baseline correction in AMBRA (=63)
+
   Int_t fNEvents;                    // number of events
   Bool_t fGoodAnode[fgkNAnodes];     // anode quality: good(1) - bad (0)
   Float_t fSumBaseline[fgkNAnodes];  // baseline summed over events
@@ -61,7 +69,10 @@ class AliITSOnlineSDDBase : public AliITSOnlineSDD {
   Float_t fMinRawNoise;              // Cut value for minimum noise
   Float_t fMaxRawNoise;              // Cut value for maximum noise
   Float_t fNSigmaNoise;              // Cut value for noise (n*sigma)
+  Float_t fGoldenBaseline;           // golden value for equalizing baselines
+  Float_t fLowThrFact;               // factor for low threshold
+  Float_t fHighThrFact;              // factor for high threshold
 
-  ClassDef(AliITSOnlineSDDBase,1);
+  ClassDef(AliITSOnlineSDDBase,2);
 };
 #endif

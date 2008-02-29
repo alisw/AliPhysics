@@ -30,7 +30,7 @@
 ClassImp(AliITSOnlineSDDTP)
 
 //______________________________________________________________________
-AliITSOnlineSDDTP::AliITSOnlineSDDTP():AliITSOnlineSDD(),fDAC(0.),fNSigmaGain(0.),fNSigmaNoise(0.)
+AliITSOnlineSDDTP::AliITSOnlineSDDTP():AliITSOnlineSDD(),fDAC(0.),fLowThreshold(0),fHighThreshold(0),fNSigmaGain(0.),fNSigmaNoise(0.)
 {
   // default constructor
   Reset();
@@ -38,7 +38,7 @@ AliITSOnlineSDDTP::AliITSOnlineSDDTP():AliITSOnlineSDD(),fDAC(0.),fNSigmaGain(0.
   SetNSigmaNoise();
 }
 //______________________________________________________________________
-AliITSOnlineSDDTP::AliITSOnlineSDDTP(Int_t nddl, Int_t ncarlos, Int_t sid, Float_t xDAC):AliITSOnlineSDD(nddl,ncarlos,sid),fDAC(xDAC),fNSigmaGain(0.),fNSigmaNoise(0.)
+AliITSOnlineSDDTP::AliITSOnlineSDDTP(Int_t nddl, Int_t ncarlos, Int_t sid, Float_t xDAC):AliITSOnlineSDD(nddl,ncarlos,sid),fDAC(xDAC),fLowThreshold(0),fHighThreshold(0),fNSigmaGain(0.),fNSigmaNoise(0.)
 {
   // standard constructor
   Reset();
@@ -93,7 +93,7 @@ void AliITSOnlineSDDTP::ReadBaselines(){
   sprintf(basfilnam,"SDDbase_step2_ddl%02dc%02d_sid%d.data",fDDL,fCarlos,fSide);
   FILE* basf=fopen(basfilnam,"r");
   if(basf==0){
-    AliWarning("Baselinefile not present, Set all baselines to 50\n");
+    AliWarning(Form("Baseline file not present (ddl %d  carlos %d side %d, Set all baselines to 50\n",fDDL,fCarlos,fSide));
     for(Int_t ian=0;ian<fgkNAnodes;ian++){ 
       fBaseline[ian]=50.;
       fEqBaseline[ian]=50;
@@ -102,6 +102,8 @@ void AliITSOnlineSDDTP::ReadBaselines(){
     }
     return;
   }
+  fscanf(basf,"%d\n",&fHighThreshold);
+  fscanf(basf,"%d\n",&fLowThreshold);
   Int_t n,ok,eqbase,offbase;
   Float_t base,rms,cmn,corrnoi;
   for(Int_t ian=0;ian<fgkNAnodes;ian++){
@@ -171,6 +173,8 @@ void AliITSOnlineSDDTP::WriteToASCII(){
   sprintf(outfilnam,"SDDbase_ddl%02dc%02d_sid%d.data",fDDL,fCarlos,fSide);
   FILE* outf=fopen(outfilnam,"w");
   fprintf(outf,"%d %d %d\n",fCarlos,fSide,IsModuleGood());
+  fprintf(outf,"%d\n",fHighThreshold);
+  fprintf(outf,"%d\n",fLowThreshold);
   for(Int_t ian=0;ian<fgkNAnodes;ian++){
     fprintf(outf,"%d %d %8.3f %d %d %8.3f %8.3f %8.3f %8.3f\n",ian,IsAnodeGood(ian),GetAnodeBaseline(ian),GetAnodeEqualizedBaseline(ian),GetAnodeBaselineOffset(ian),GetAnodeRawNoise(ian),GetAnodeCommonMode(ian),GetAnodeCorrNoise(ian),GetChannelGain(ian));
   }
