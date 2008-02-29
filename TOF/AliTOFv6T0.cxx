@@ -1030,13 +1030,13 @@ void AliTOFv6T0::MakeBackInBTOFvolumes(Float_t ytof) const
   for(Int_t isec=0; isec<fTOFGeometry->NSectors(); isec++) {
     if(fTOFSectors[isec]==-1)continue;
     sprintf(name, "BTOF%d",isec);
-    if (!fgkFEAwithMasks[isec])
-      gMC->Gspos("FAIC", 0, name, xcoor, ycoor, zcoor, idrotm[0], "ONLY");
+    if (fgkFEAwithMasks[isec])
+      gMC->Gspos("FAIA", 0, name, xcoor, ycoor, zcoor, idrotm[0], "ONLY");
     else {
       if (fTOFHoles && (isec==13 || isec==14 || isec==15))
 	gMC->Gspos("FAIB", 0, name, xcoor, ycoor, zcoor, idrotm[0], "ONLY");
       else
-	gMC->Gspos("FAIA", 0, name, xcoor, ycoor, zcoor, idrotm[0], "ONLY");
+	gMC->Gspos("FAIC", 0, name, xcoor, ycoor, zcoor, idrotm[0], "ONLY");
     }
   }
 
