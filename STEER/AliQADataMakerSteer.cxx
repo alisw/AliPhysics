@@ -133,7 +133,8 @@ Bool_t AliQADataMakerSteer::DoIt(const AliQA::TASKINDEX taskIndex, const char * 
     // Fill QA data in event loop 
 	for (UInt_t iEvent = 0 ; iEvent < fNumberOfEvents ; iEvent++) {
 		// Get the event
-		AliDebug(1, Form("processing event %d", iEvent));
+		if ( iEvent%10 == 0  ) 
+			AliInfo(Form("processing event %d", iEvent));
 		if ( taskIndex == AliQA::kRAWS ) {
 			if ( !fRawReader->NextEvent() )
 				break ;
@@ -220,7 +221,7 @@ Bool_t AliQADataMakerSteer::DoIt(const AliQA::TASKINDEX taskIndex, const char * 
 			} //data maker exist
 		} // detector loop
 	} // event loop	
-	// Save QA data for all detectors
+//	// Save QA data for all detectors
 	rv = Finish(taskIndex, mode) ;
 
 	return rv ; 
@@ -767,3 +768,4 @@ Bool_t AliQADataMakerSteer::SaveIt2OCDB(const Int_t runNumber, TFile * inputFile
 	}
 	return rv ; 
 }	
+
