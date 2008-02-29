@@ -101,6 +101,7 @@ void AliTracker::CookLabel(AliKalmanTrack *t, Float_t wrong) const {
   //This function "cooks" a track label. If label<0, this track is fake.
   //--------------------------------------------------------------------
   Int_t noc=t->GetNumberOfClusters();
+  if (noc<1) return;
   Int_t *lb=new Int_t[noc];
   Int_t *mx=new Int_t[noc];
   AliCluster **clusters=new AliCluster*[noc];
