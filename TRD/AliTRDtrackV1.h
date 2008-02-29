@@ -30,6 +30,7 @@ class AliTRDtrackV1 : public AliTRDtrack
                                                              return *this; }
 
 	Bool_t         CookPID();
+	Bool_t         CookLabel(Float_t wrong);
 	Float_t        GetMomentum(Int_t plane) const;
 	Double_t       GetPredictedChi2(const AliTRDseedV1 *tracklet) const;
         Double_t       GetPredictedChi2(const AliCluster* /*c*/) const                   { return 0.0; }

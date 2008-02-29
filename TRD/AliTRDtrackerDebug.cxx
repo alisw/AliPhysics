@@ -31,6 +31,9 @@
 #include "TTree.h"
 #include "TTreeStream.h"
 #include "TLinearFitter.h"
+#include "TGraph.h"
+#include "TCanvas.h"
+#include "TMath.h"
 
 #include "AliLog.h"
 #include "AliTRDgeometry.h"
@@ -38,8 +41,13 @@
 #include "AliTRDseedV1.h"
 #include "AliTRDseed.h"
 #include "AliTRDcluster.h"
+#include "AliTRDgeometry.h"
 
 ClassImp(AliTRDtrackerDebug)
+
+Int_t AliTRDtrackerDebug::fgEventNumber = 0;
+Int_t AliTRDtrackerDebug::fgTrackNumber = 0;
+Int_t AliTRDtrackerDebug::fgCandidateNumber = 0;
 
 //____________________________________________________
 AliTRDtrackerDebug::AliTRDtrackerDebug() : AliTRDtrackerV1()
@@ -76,7 +84,6 @@ void AliTRDtrackerDebug::Draw(const Option_t *)
 Bool_t AliTRDtrackerDebug::Init()
 {
 // steer linking data for various debug streams	
-	
 	fTrack = new AliTRDtrackV1();
 	fTree->SetBranchAddress("ncl", &fNClusters);
 	fTree->SetBranchAddress("track.", &fTrack);
@@ -306,6 +313,469 @@ void AliTRDtrackerDebug::ResidualsTrackletsTrack() const
 			<< "tgz="    << tgz
 			<< "dtgz="   << dtgz
 			<< "\n";
+	}
+}
+
+//____________________________________________________
+void AliTRDtrackerDebug::AnalyseFindable(Char_t *treename){
+//
+// Calculates the number of findable tracklets defined as the number of tracklets
+// per track candidate where the tan phi_tracklet is below 0.15 (maximum inclination
+// in y-direction.
+// 
+// Parameters:	-the treename (this method can be used for all trees which store the
+//				 tracklets
+// Output:		-void
+//
+// A new TTree containing the number of findable tracklets and the number of clusters
+// attached to the full track is stored to disk
+//
+	// Link the File
+	TFile *debfile = TFile::Open("TRD.TrackerDebug.root");
+	fTree = (TTree *)(debfile->Get(treename));
+	if(!fTree){
+		AliError(Form("Tree %s not found in file TRDdebug.root. Abborting!", treename));
+		debfile->Close();
+		return;
+	}
+	
+	AliTRDseedV1 *tracklets[kNPlanes];
+	for(Int_t iPlane = 0; iPlane < AliTRDtrackerV1::kNPlanes; iPlane++)
+		tracklets[iPlane] = 0x0;
+	for(Int_t iPlane = 0; iPlane < kNPlanes; iPlane++)
+		fTree->SetBranchAddress(Form("S%d.", iPlane), &tracklets[iPlane]);
+	fTree->SetBranchAddress("EventNumber", &fgEventNumber);
+	fTree->SetBranchAddress("CandidateNumber", &fgCandidateNumber);
+	
+	Int_t findable = 0, nClusters = 0;
+	Int_t nEntries = fTree->GetEntriesFast();
+	for(Int_t iEntry = 0; iEntry < nEntries; iEntry++){
+		printf("Entry %d\n", iEntry);
+		fTree->GetEntry(iEntry);
+		findable = 0;
+		nClusters = 0;
+		// Calculate Findable
+		for(Int_t iPlane = 0; iPlane < kNPlanes; iPlane++){
+			if (TMath::Abs(tracklets[iPlane]->GetYref(0) / tracklets[iPlane]->GetX0()) < 0.15) findable++;
+			if (!tracklets[iPlane]->IsOK()) continue;
+			nClusters += tracklets[iPlane]->GetN2();
+		}
+		
+		// Fill Histogramms
+		TTreeSRedirector &cstreamer = *fOutputStreamer;
+		cstreamer << "AnalyseFindable"
+			<< "EventNumber="		<< fgEventNumber
+			<< "CandidateNumber="	<< fgCandidateNumber
+			<< "Findable="			<< findable
+			<< "NClusters="			<< nClusters
+			<< "\n";
+	}
+}
+//____________________________________________________
+void AliTRDtrackerDebug::AnalyseTiltedRiemanFit(){
+//
+// Creating a Data Set for the method FitTiltedRieman containing usefull variables
+// Each variable can be addressed to tracks later. Data can be processed later.
+//
+// Parameters: -
+// Output:     -
+//
+// TODO: Match everything with Init and Process
+//
+	TFile *debfile = TFile::Open("TRD.TrackerDebug.root");
+	fTree = (TTree *)(debfile->Get("MakeSeeds2"));
+	if(!fTree) return;
+	Int_t nEntries = fTree->GetEntries();
+	TLinearFitter *tiltedRiemanFitter = 0x0;
+	fTree->SetBranchAddress("FitterT.", &tiltedRiemanFitter);
+	fTree->SetBranchAddress("EventNumber", &fgEventNumber);
+	fTree->SetBranchAddress("CandidateNumber", &fgCandidateNumber);
+	for(Int_t entry = 0; entry < nEntries; entry++){
+		fTree->GetEntry(entry);
+		Double_t a = tiltedRiemanFitter->GetParameter(0);
+		Double_t b = tiltedRiemanFitter->GetParameter(1);
+		Double_t c = tiltedRiemanFitter->GetParameter(2);
+		Double_t offset = tiltedRiemanFitter->GetParameter(3);
+		Double_t slope  = tiltedRiemanFitter->GetParameter(4);
+		Float_t radius = GetTrackRadius(a, b, c);
+		Float_t curvature = GetTrackCurvature(a, b, c);
+		Float_t dca = GetDCA(a, b, c);
+		TTreeSRedirector &cstreamer = *fOutputStreamer;
+		cstreamer << "AnalyseTiltedRiemanFit"
+		<< "EventNumber=" 		<< fgEventNumber
+		<< "CandidateNumber=" << fgCandidateNumber
+		<< "Radius="					<< radius
+		<< "Curvature="				<< curvature
+		<< "DCA="							<< dca
+		<< "Offset="					<< offset
+		<< "Slope="						<< slope
+		<< "\n";
+	}
+}
+
+//____________________________________________________
+Float_t AliTRDtrackerDebug::GetTrackRadius(Float_t a, Float_t b, Float_t c) const {
+//
+// Calculates the track radius using the parameters given by the tilted Rieman fit 
+//
+// Parameters: The three parameters from the Rieman fit
+// Output:     The track radius
+//
+	Float_t radius = 0;
+	if(1.0 + b*b - c*a > 0.0)
+		radius = TMath::Sqrt(1.0 + b*b - c*a )/a;
+	return radius;
+}
+
+//____________________________________________________
+Float_t AliTRDtrackerDebug::GetTrackCurvature(Float_t a, Float_t b, Float_t c) const {
+//
+// Calculates the track curvature using the parameters given by the linear fitter 
+//
+// Parameters:	the three parameters from the tilted Rieman fitter
+// Output:		the full track curvature
+//
+	Float_t curvature =  1.0 + b*b - c*a;
+	if (curvature > 0.0) 
+		curvature  =  a / TMath::Sqrt(curvature);
+	return curvature;
+}
+
+//____________________________________________________
+Float_t AliTRDtrackerDebug::GetDCA(Float_t a, Float_t b, Float_t c) const {
+//
+// Calculates the Distance to Clostest Approach for the Vertex using the paramters
+// given by the tilted Rieman fit 
+//
+// Parameters: the three parameters from the tilted Rieman fitter
+// Output:     the Distance to Closest Approach
+//
+	Float_t dca  =  0.0;
+	if (1.0 + b*b - c*a > 0.0) {
+		dca = -c / (TMath::Sqrt(1.0 + b*b - c*a) + TMath::Sqrt(1.0 + b*b));
+	}
+	return dca;
+}
+
+//____________________________________________________
+void AliTRDtrackerDebug::AnalyseMinMax()
+{
+//
+	TFile *debfile = TFile::Open("TRD.TrackerDebug.root");
+	if(!debfile){
+		AliError("File TRD.TrackerDebug.root not found!");
+		return; 
+	}
+	fTree = (TTree *)(debfile->Get("MakeSeeds0"));
+	if(!fTree){
+		AliError("Tree MakeSeeds0 not found in File TRD.TrackerDebug.root.");
+		return;
+	}
+	AliTRDseedV1 *cseed[4] = {0x0, 0x0, 0x0, 0x0};
+	AliTRDcluster *c[4] = {0x0, 0x0, 0x0, 0x0};
+	for(Int_t il = 0; il < 4; il++){
+		fTree->SetBranchAddress(Form("Seed%d.", il),	&cseed[il]);
+		fTree->SetBranchAddress(Form("c%d.",il), &c[il]);
+	}
+	fTree->SetBranchAddress("CandidateNumber",	&fgCandidateNumber);
+	fTree->SetBranchAddress("EventNumber",	&fgEventNumber);
+	Int_t entries = fTree->GetEntries();
+	for(Int_t ientry = 0; ientry < entries; ientry++){
+		fTree->GetEntry(ientry);
+		Float_t minmax[2] = { -100.0,  100.0 };
+		for (Int_t iLayer = 0; iLayer < 4; iLayer++) {
+			Float_t max = c[iLayer]->GetZ() + cseed[iLayer]->GetPadLength() * 0.5 + 1.0 - cseed[iLayer]->GetZref(0);
+			if (max < minmax[1]) minmax[1] = max;
+			Float_t min = c[iLayer]->GetZ()-cseed[iLayer]->GetPadLength() * 0.5 - 1.0 - cseed[iLayer]->GetZref(0);
+			if (min > minmax[0]) minmax[0] = min;
+		}
+		TTreeSRedirector &cstreamer = *fOutputStreamer;
+		cstreamer << "AnalyseMinMaxLayer"
+		<< "EventNumber="				<< fgEventNumber
+		<< "CandidateNumber="		<< fgCandidateNumber
+		<< "Min="								<< minmax[0]
+		<< "Max="								<< minmax[1]
+		<< "\n";
+	}
+}
+
+//____________________________________________________
+TCanvas* AliTRDtrackerDebug::PlotSeedingConfiguration(Char_t *direction, Int_t event, Int_t candidate){
+//
+// Plots the four seeding clusters, the helix fit and the reference Points for
+// a given combination consisting of eventnr. and candidatenr.
+//
+// Parameters: 	-direction (y or z)
+//				-Event Nr
+//            	-Candidate that has to be plotted
+//
+	const Float_t kxmin = 280;
+	const Float_t kxmax = 380;
+	const Float_t kxdelta = (kxmax - kxmin)/1000;
+	
+	if((strcmp(direction, "y") != 0) && (strcmp(direction, "z") != 0)){
+		AliError(Form("Direction %s does not exist. Abborting!", direction));
+		return 0x0;
+	}
+
+	TFile *debfile = TFile::Open("TRD.TrackerDebug.root");
+	if(!debfile){
+		AliError("File TRD.TrackerDebug.root not found!");
+		return 0x0; 
+	}
+	fTree = (TTree *)(debfile->Get("MakeSeeds0"));
+	if(!fTree){
+		AliError("Tree MakeSeeds0 not found in File TRD.TrackerDebug.root.");
+		return 0x0;
+	}
+	
+	TGraph *seedcl = new TGraph(4);
+	TGraph *seedRef = new TGraph(4);
+	TGraph *riemanFit = new TGraph(1000);
+	seedcl->SetMarkerStyle(20);
+	seedcl->SetMarkerColor(kRed);
+	seedRef->SetMarkerStyle(2);
+
+	AliTRDcluster *c[4] = {0x0, 0x0, 0x0, 0x0};
+	AliRieman *rim = 0x0;
+	Bool_t found = kFALSE;
+	for(Int_t il = 0; il < 4; il++) fTree->SetBranchAddress(Form("c%d.",il), &c[il]);
+	fTree->SetBranchAddress("EventNumber", &fgEventNumber);
+	fTree->SetBranchAddress("CandidateNumber", &fgCandidateNumber);
+	fTree->SetBranchAddress("RiemanFitter.", &rim);
+	Int_t entries = fTree->GetEntries();
+	for(Int_t entry = 0; entry < entries; entry++){
+		fTree->GetEntry(entry);
+		if(fgEventNumber < event) continue;
+		if(fgEventNumber > event) break;
+		// EventNumber matching: Do the same for the candidate number
+		if(fgCandidateNumber < candidate) continue;
+		if(fgCandidateNumber > candidate) break;
+		found = kTRUE;
+		Int_t nPoints = 0;
+		for(Int_t il = 0; il < 4; il++){
+			Float_t cluster = 0.0, reference = 0.0;
+			if(!strcmp(direction, "y")){
+				cluster = c[il]->GetY();
+				reference = rim->GetYat(c[il]->GetX());
+			}
+			else{
+				cluster = c[il]->GetZ();
+				reference = rim->GetZat(c[il]->GetX());
+			}
+			seedcl->SetPoint(nPoints, cluster, c[il]->GetX());
+			seedRef->SetPoint(nPoints, reference , c[il]->GetX());
+			nPoints++;
+		}
+		// evaluate the fitter Function numerically
+		nPoints = 0;
+		for(Int_t ipt = 0; ipt < 1000; ipt++){
+			Float_t x = kxmin + ipt * kxdelta;
+			Float_t point = 0.0;
+			if(!strcmp(direction, "y"))
+				point = rim->GetYat(x);
+			else
+				point = rim->GetZat(x);
+			riemanFit->SetPoint(nPoints++, point, x);
+		}
+		// We reached the End: break
+		break;
+	}
+	if(found){
+		seedcl->SetTitle(Form("Event %d, Candidate %d\n", fgEventNumber, fgCandidateNumber));
+		seedRef->SetTitle(Form("Event %d, Candidate %d\n", fgEventNumber, fgCandidateNumber));
+		riemanFit->SetTitle(Form("Event %d, Candidate %d\n", fgEventNumber, fgCandidateNumber));
+		TCanvas *c1 = new TCanvas();
+		seedcl->Draw("ap");
+		seedRef->Draw("psame");
+		riemanFit->Draw("lpsame");
+		return c1;
+	}
+	else{
+		AliError(Form("Combination consisting of event %d and candidate %d not found", event, candidate));
+		delete seedcl;
+		delete seedRef;
+		delete riemanFit;
+		return 0x0;
+	}
+}
+
+//____________________________________________________
+TCanvas* AliTRDtrackerDebug::PlotFullTrackFit(Int_t event, Int_t candidate, Int_t iteration, Char_t *direction){
+//
+// Plots the tracklets (clusters and reference in y direction) and the fitted function for several iterations
+// in the function ImproveSeedQuality (default is before ImproveSeedQuality)
+// 
+// Parameters: -Event Number
+//             -Candidate Number
+//             -Iteration Number in ImproveSeedQuality (default: -1 = before ImproveSeedQuality)
+//			   -direction (default: y)
+// Output:     -TCanvas (containing the Picture);
+//
+	const Float_t kxmin = 280;
+	const Float_t kxmax = 380;
+	const Float_t kxdelta = (kxmax - kxmin)/1000;
+	
+	if(strcmp(direction, "y") && strcmp(direction, "z")){
+		AliError(Form("Direction %s does not exist. Abborting!", direction));
+		return 0x0;
+	}
+
+	TFile *debfile = TFile::Open("TRD.TrackerDebug.root");
+	if(!debfile){
+		AliError("File TRD.TrackerDebug.root not found.");
+		return 0x0;
+	}
+	TString *treename = 0x0;
+	if(iteration > -1)
+		treename = new TString("ImproveSeedQuality");
+	else
+		treename = new TString("MakeSeeds1");
+	fTree = (TTree *)(debfile->Get(treename->Data()));
+	if(!fTree){
+		AliError(Form("Tree %s not found in File TRD.TrackerDebug.root.", treename->Data()));
+		delete treename;
+		return 0x0;
+	}
+	delete treename;
+
+	TGraph *fitfun = new TGraph(1000);
+	// Prepare containers
+	Float_t x0[AliTRDtrackerV1::kNPlanes],
+			refP[AliTRDtrackerV1::kNPlanes],
+			clx[AliTRDtrackerV1::kNPlanes * AliTRDtrackerV1::kNTimeBins],
+			clp[AliTRDtrackerV1::kNPlanes * AliTRDtrackerV1::kNTimeBins];
+	Int_t nLayers = 0, ncls = 0;
+	
+	TLinearFitter *fitter = 0x0;
+	AliTRDseedV1 *tracklet[6] = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
+	for(Int_t iLayer = 0; iLayer < 6; iLayer++)
+		fTree->SetBranchAddress(Form("S%d.", iLayer), &tracklet[iLayer]);
+	fTree->SetBranchAddress("FitterT.", &fitter);
+	fTree->SetBranchAddress("EventNumber", &fgEventNumber);
+	fTree->SetBranchAddress("CandidateNumber", &fgCandidateNumber);
+	
+	Int_t nEntries = fTree->GetEntriesFast();
+	Bool_t found = kFALSE;
+	for(Int_t entry = 0; entry < nEntries; entry++){
+		fTree->GetEntry(entry);
+		if(fgEventNumber < event) continue;
+		if(fgEventNumber > event) break;
+		// EventNumber matching: Do the same for the candidate number
+		if(fgCandidateNumber < candidate) continue;
+		if(fgCandidateNumber > candidate) break;
+		found = kTRUE;
+		
+		for(Int_t iLayer = 0; iLayer < 6; iLayer++){
+			if(!tracklet[iLayer]->IsOK()) continue;
+			x0[nLayers] = tracklet[iLayer]->GetX0();
+			if(!strcmp(direction, "y"))
+				refP[nLayers] = tracklet[iLayer]->GetYref(0);
+			else
+				refP[nLayers] = tracklet[iLayer]->GetZref(0);
+			nLayers++;
+			for(Int_t itb = 0; itb < 30; itb++){
+				if(!tracklet[iLayer]->IsUsable(itb)) continue;
+				AliTRDcluster *cl = tracklet[iLayer]->GetClusters(itb);
+				if(!strcmp(direction, "y"))
+					clp[ncls] = cl->GetY();
+				else
+					clp[ncls] = cl->GetZ();
+				clx[ncls] = cl->GetX();
+				ncls++;
+			}
+		}
+		// Add function derived by the tilted Rieman fit (Defined by the curvature)
+		Int_t nPoints = 0;
+		if(!strcmp(direction, "y")){
+			Double_t a = fitter->GetParameter(0);
+			Double_t b = fitter->GetParameter(1);
+			Double_t c = fitter->GetParameter(2);
+			Double_t curvature =  1.0 + b*b - c*a;
+			if (curvature > 0.0) {
+				curvature  =  a / TMath::Sqrt(curvature);
+			}
+			// Numerical evaluation of the function:
+			for(Int_t ipt = 0; ipt < 1000; ipt++){
+				Float_t x = kxmin + ipt * kxdelta;
+				Double_t res = (x * a + b);								// = (x - x0)/y0
+				res *= res;
+				res  = 1.0 - c * a + b * b - res;					// = (R^2 - (x - x0)^2)/y0^2
+				Double_t y = 0.;
+				if (res >= 0) {
+					res = TMath::Sqrt(res);
+					y    = (1.0 - res) / a;
+				}
+				fitfun->SetPoint(nPoints++, y, x);
+			}
+		}
+		else{
+			Double_t offset	= fitter->GetParameter(3);
+			Double_t slope	= fitter->GetParameter(4);	 
+			// calculate the reference x (defined as medium between layer 2 and layer 3)
+			// same procedure as in the tracker code
+			Float_t medx = 0, xref = 0;
+			Int_t startIndex = 5, nDistances = 0;
+			for(Int_t iLayer = 5; iLayer > 0; iLayer--){
+				if(tracklet[iLayer]->IsOK() && tracklet[iLayer - 1]->IsOK()){
+					medx += tracklet[iLayer]->GetX0() - tracklet[iLayer - 1]->GetX0();
+					startIndex = iLayer - 1;
+					nDistances++;
+				}
+			}
+			if(nDistances){
+				medx /= nDistances;
+			}
+			else{
+				Float_t xpos[2];	memset(xpos, 0, sizeof(Float_t) * 2);
+				Int_t ien = 0, idiff = 0;
+				for(Int_t iLayer = 5; iLayer > 0; iLayer--){
+					if(tracklet[iLayer]->IsOK()){
+						xpos[ien++] = tracklet[iLayer]->GetX0();
+						startIndex = iLayer;
+					}
+					if(ien)
+						idiff++;
+					if(ien >=2)
+						break;
+				}
+				medx = (xpos[0] - xpos[1])/idiff;
+			}
+			xref = tracklet[startIndex]->GetX0() + medx * (2.5 - startIndex) - 0.5 * (AliTRDgeometry::AmThick() + AliTRDgeometry::DrThick());
+
+			for(Int_t ipt = 0; ipt < 1000; ipt++){
+				Float_t x = kxmin + ipt * kxdelta;
+				Float_t z = offset + slope * (x - xref);
+				fitfun->SetPoint(nPoints++, z, x);
+			}
+		}
+		break;
+	}
+	if(found){
+		TGraph *trGraph		= new TGraph(ncls);
+		TGraph *refPoints	= new TGraph(nLayers);
+		trGraph->SetMarkerStyle(20);
+		trGraph->SetMarkerColor(kRed);
+		refPoints->SetMarkerStyle(21);
+		refPoints->SetMarkerColor(kBlue);
+		// fill the graphs
+		for(Int_t iLayer = 0; iLayer < nLayers; iLayer++)
+			refPoints->SetPoint(iLayer, refP[iLayer], x0[iLayer]);
+		for(Int_t icls = 0; icls < ncls; icls++)
+			trGraph->SetPoint(icls, clp[icls], clx[icls]);
+		TCanvas *c1 = new TCanvas();
+		trGraph->SetTitle(Form("Event %d, Candidate %d\n", fgEventNumber, fgCandidateNumber));
+		refPoints->SetTitle(Form("Event %d, Candidate %d\n", fgEventNumber, fgCandidateNumber));
+		fitfun->SetTitle(Form("Event %d, Candidate %d\n", fgEventNumber, fgCandidateNumber));
+		trGraph->Draw("ap");
+		refPoints->Draw("psame");
+		fitfun->Draw("lpsame");
+		return c1;
+	}
+	else{
+		AliError(Form("Combination consisting of event %d and candidate %d not found", event, candidate));
+		delete fitfun;
+		return 0x0;
 	}
 }
 

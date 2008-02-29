@@ -92,10 +92,9 @@ public:
 protected:
   Bool_t         AdjustSector(AliTRDtrackV1 *track); 
 	Double_t       BuildSeedingConfigs(AliTRDtrackingChamber **stack, Int_t *configs);
-	static Float_t CalculateChi2Z(AliTRDseedV1 *tracklets, Double_t offset, Double_t slope);
+	static Float_t CalculateChi2Z(AliTRDseedV1 *tracklets, Double_t offset, Double_t slope, Double_t xref);
 	Int_t          Clusters2TracksSM(Int_t sector, AliESDEvent *esd);
 	Int_t          Clusters2TracksStack(AliTRDtrackingChamber **stack, TClonesArray *esdTrackList);
-	void           CookLabel(AliKalmanTrack *pt, Float_t wrong) const;
 	AliTRDseedV1*  GetTracklet(AliTRDtrackV1 *trk, Int_t plane, Int_t &idx);
 	Bool_t         GetTrackPoint(Int_t index, AliTrackPoint &p) const;	
 	Int_t          MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *sseed, Int_t *ipar);
@@ -106,17 +105,22 @@ protected:
 private:
 	AliTRDtrackerV1(const AliTRDtrackerV1 &tracker);
 	AliTRDtrackerV1 &operator=(const AliTRDtrackerV1 &tracker);
-	Double_t       CookLikelihood(AliTRDseedV1 *cseed, Int_t planes[4], Double_t *chi2);
-	Double_t       CalculateTrackLikelihood(AliTRDseedV1 *tracklets, Double_t *chi2);
-	Int_t          ImproveSeedQuality(AliTRDtrackingChamber **stack, AliTRDseedV1 *tracklet);
+	Double_t       	CookLikelihood(AliTRDseedV1 *cseed, Int_t planes[4], Double_t *chi2);
+	Double_t       	CalculateTrackLikelihood(AliTRDseedV1 *tracklets, Double_t *chi2);
+	Int_t          	ImproveSeedQuality(AliTRDtrackingChamber **stack, AliTRDseedV1 *tracklet);
+	static void 	FitLeastSquare(Int_t nPoints, Float_t *x, Float_t *y, Float_t *errors, Float_t *fitparams);
+	static Float_t	CalculateReferenceX(AliTRDseedV1 *tracklets);
+	
+	Float_t     GetChi2Y(AliTRDseedV1 *tracklets) const;
+	Float_t     GetChi2Z(AliTRDseedV1 *tracklets) const;
 
 private:
   AliTRDgeometry          *fGeom;                          // Pointer to TRD geometry
   AliTRDtrackingSector    fTrSec[kTrackingSectors];       // Array of tracking sectors;    
 
-	TClonesArray        *fClusters;                       // List of clusters
-	TClonesArray        *fTracklets;                      // List of tracklets
-	TClonesArray        *fTracks;                         // List of tracks
+  TClonesArray        *fClusters;                       // List of clusters
+  TClonesArray        *fTracklets;                      // List of tracklets
+  TClonesArray        *fTracks;                         // List of tracks
   
   // should go to the recoParam
   static const Double_t    fgkMaxChi2;                     // Max increment in track chi2 
@@ -135,8 +139,9 @@ private:
 	static TLinearFitter *fgTiltedRieman;                 //  Fitter for the tilted Rieman fit without vertex constriant
 	static TLinearFitter *fgTiltedRiemanConstrained;      //  Fitter for the tilted Rieman fit with vertex constraint	
 	static AliRieman     *fgRieman;                       //  Fitter for the untilted Rieman fit
-  static TTreeSRedirector *fgDebugStreamer;             //!Debug streamer
-
+  
+	static TTreeSRedirector *fgDebugStreamer;             //!Debug streamer
+	
 	ClassDef(AliTRDtrackerV1, 2)                          //  TRD tracker development class
 
 };

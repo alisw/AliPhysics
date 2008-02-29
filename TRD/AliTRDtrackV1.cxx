@@ -144,6 +144,58 @@ AliTRDtrackV1::AliTRDtrackV1(AliTRDseedV1 *trklts, const Double_t p[5], const Do
 }
 
 //_______________________________________________________________
+Bool_t AliTRDtrackV1::CookLabel(Float_t wrong)
+{
+	// set MC label for this tracklet
+
+  Int_t s[kMAXCLUSTERSPERTRACK][2];
+  for (Int_t i = 0; i < kMAXCLUSTERSPERTRACK; i++) {
+    s[i][0] = -1;
+    s[i][1] =  0;
+  }
+
+  Bool_t labelAdded;
+	Int_t label;
+	AliTRDcluster *c    = 0x0;
+  for (Int_t ip = 0; ip < AliESDtrack::kNPlane; ip++) {
+		if(fTrackletIndex[ip] < 0) continue;
+		for (Int_t ic = 0; ic < AliTRDseed::knTimebins; ic++) {
+			if(!(c = fTracklet[ip].GetClusters(ic))) continue;
+			for (Int_t k = 0; k < 3; k++) { 
+				label      = c->GetLabel(k);
+				labelAdded = kFALSE; 
+				Int_t j = 0;
+				if (label >= 0) {
+					while ((!labelAdded) && (j < kMAXCLUSTERSPERTRACK)) {
+						if ((s[j][0] == label) || 
+								(s[j][1] ==     0)) {
+							s[j][0] = label; 
+							s[j][1]++; 
+							labelAdded = kTRUE;
+						}
+						j++;
+					}
+				}
+			}
+		}
+	}
+
+  Int_t max = 0;
+  label = -123456789;
+  for (Int_t i = 0; i < kMAXCLUSTERSPERTRACK; i++) {
+    if (s[i][1] <= max) continue;
+		max   = s[i][1]; 
+		label = s[i][0];
+  }
+
+  if ((1. - Float_t(max)/GetNumberOfClusters()) > wrong) label = -label;
+
+  SetLabel(label); 
+	
+	return kTRUE;
+}
+
+//_______________________________________________________________
 Bool_t AliTRDtrackV1::CookPID()
 {
   //
