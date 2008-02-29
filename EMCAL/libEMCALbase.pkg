@@ -22,7 +22,8 @@ AliEMCALRawUtils.cxx \
 AliEMCALPi0SelectionParam.cxx \
 AliEMCALCalibCoefs.cxx \
 AliEMCALCellInfo.cxx\
-AliCaloCalibPedestal.cxx
+AliCaloCalibPedestal.cxx\
+AliEMCALSurvey.cxx
 
 HDRS= $(SRCS:.cxx=.h) 
 

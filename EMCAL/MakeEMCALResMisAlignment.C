@@ -1,9 +1,16 @@
 void MakeEMCALResMisAlignment(){
   // Create TClonesArray of residual misalignment objects for EMCAL
   //
-  TClonesArray *array = new TClonesArray("AliAlignObjParams",10);
-  TClonesArray &alobj = *array;
   const char* macroname = "MakeEMCALResMisAlignment.C";
+  const AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance(AliEMCALGeometry::GetDefaulGeometryName(),"");
+  if(!geom) {
+    Error("MakeEMCALResMisAlignment","Cannot obtain AliEMCALGeometry singleton\n");
+    return;
+  }
+
+  TClonesArray *array = new TClonesArray("AliAlignObjParams",geom->GetNumberOfSuperModules());
+  TClonesArray &alobj = *array;
+
 
   // Activate CDB storage and load geometry from CDB
   AliCDBManager* cdb = AliCDBManager::Instance();
@@ -50,7 +57,7 @@ void MakeEMCALResMisAlignment(){
   // sigma translation = 1mm
   // sigma rotation = 0.1 degree
   TRandom *rnd   = new TRandom(4321);
-  Double_t sigmatr = 0.1; // max shift in cm w.r.t. local RS
+  Double_t sigmatr = 0.05; // max shift in cm w.r.t. local RS
   Double_t sigmarot = 0.1; // max rot in degrees w.r.t. local RS
 
   for(i=0; i<10; i++){
@@ -92,8 +99,8 @@ void MakeEMCALResMisAlignment(){
   }else{
     // save in CDB storage
     AliCDBMetaData* md = new AliCDBMetaData();
-    md->SetResponsible("Jennifer Clay");
-    md->SetComment("Residual misalignment for EMCAL, produced with sigmatr=0.05 and sigmarot=0.3 in the local RS");
+    md->SetResponsible("Jennifer Klay");
+    md->SetComment("Residual misalignment for EMCAL, produced with sigmatr=0.05 and sigmarot=0.1 in the local RS");
     md->SetAliRootVersion(gSystem->Getenv("ARVERSION"));
     AliCDBId id("EMCAL/Align/Data",0,AliCDBRunRange::Infinity());
     storage->Put(array,id,md);

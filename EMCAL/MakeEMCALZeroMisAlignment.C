@@ -1,10 +1,17 @@
 void MakeEMCALZeroMisAlignment(){
   // Create TClonesArray of zero misalignment objects for EMCAL
   //
-  TClonesArray *array = new TClonesArray("AliAlignObjParams",10);
-  TClonesArray &alobj = *array;
   const char* macroname = "MakeEMCALZeroMisAlignment.C";
+  const AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance(AliEMCALGeometry::GetDefaulGeometryName(),"");
+  if(!geom) {
+    Error("MakeEMCALZeroMisAlignment","Cannot obtain AliEMCALGeometry singleton\n");
+    return;
+  }
 
+  TClonesArray *array = new TClonesArray("AliAlignObjParams",geom->GetNumberOfSuperModules());
+  TClonesArray &alobj = *array;
+
+  /*
   Double_t dx=0., dy=0., dz=0., dpsi=0., dtheta=0., dphi=0.;
 
   const TString fbasepath = "EMCAL/FullSupermodule";
@@ -29,6 +36,10 @@ void MakeEMCALZeroMisAlignment(){
     pathstr+=(i+1);
     new(alobj[j++]) AliAlignObjParams(pathstr, volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
   }
+  */
+
+  AliEMCALSurvey emcalSurvey;
+  emcalSurvey.CreateNullObjects(alobj,geom);
 
   if( TString(gSystem->Getenv("TOCDB")) != TString("kTRUE") ){
     // save on file
@@ -58,7 +69,7 @@ void MakeEMCALZeroMisAlignment(){
       return;
     }
     AliCDBMetaData* md = new AliCDBMetaData();
-    md->SetResponsible("Jennifer Clay");
+    md->SetResponsible("Jennifer Klay");
     md->SetComment("Zero misalignment for EMCAL");
     md->SetAliRootVersion(gSystem->Getenv("ARVERSION"));
     AliCDBId id("EMCAL/Align/Data",0,AliCDBRunRange::Infinity());

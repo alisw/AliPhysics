@@ -33,4 +33,5 @@
 #pragma link C++ class AliEMCALCellIndexes+;
 //
 #pragma link C++ class AliCaloCalibPedestal+;
+#pragma link C++ class AliEMCALSurvey+;
 #endif
