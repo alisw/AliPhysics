@@ -81,7 +81,7 @@ Double_t AliDCSSensor::GetValue(UInt_t timeSec)
  //  timeSec given as offset from start-of-run measured in seconds
  //
  Bool_t inside;
- return Eval(TTimeStamp((time_t)(fStartTime+timeSec)),inside);
+ return Eval(TTimeStamp((time_t)(fStartTime+timeSec),0),inside);
 }
 //_____________________________________________________________________________
 Double_t AliDCSSensor::GetValue(TTimeStamp time) 

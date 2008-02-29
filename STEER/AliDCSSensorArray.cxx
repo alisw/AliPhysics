@@ -108,8 +108,8 @@ AliDCSSensorArray::AliDCSSensorArray(UInt_t startTime, UInt_t endTime,
   //
   fSensors = AliDCSSensor::ReadTree(confTree);
   fSensors->BypassStreamer(kFALSE);
-  fStartTime = TTimeStamp((time_t)startTime);
-  fEndTime   = TTimeStamp((time_t)endTime);
+  fStartTime = TTimeStamp((time_t)startTime,0);
+  fEndTime   = TTimeStamp((time_t)endTime,0);
 }
 
 
@@ -133,8 +133,8 @@ AliDCSSensorArray::AliDCSSensorArray(UInt_t startTime, UInt_t endTime,
   // AliDCSSensorArray constructor for Shuttle preprocessor
   //  (TClonesArray of AliDCSSensor objects)
   //
-  fStartTime = TTimeStamp((time_t)startTime);
-  fEndTime   = TTimeStamp((time_t)endTime);
+  fStartTime = TTimeStamp((time_t)startTime,0);
+  fEndTime   = TTimeStamp((time_t)endTime,0);
 }
 
 //_____________________________________________________________________________
@@ -213,7 +213,7 @@ void AliDCSSensorArray::MakeSplineFit(TMap *map, Bool_t keepMap)
     AliDCSSensor *entry = (AliDCSSensor*)fSensors->At(isensor);
     TString stringID = entry->GetStringID();
     TGraph *gr = (TGraph*)map->GetValue(stringID.Data());
-    if (!gr || gr->GetN() == 0 ) {
+    if (!gr ) {
       entry->SetFit(0);
       entry->SetGraph(0);
       AliWarning(Form("sensor %s: no input graph",stringID.Data()));
@@ -223,8 +223,6 @@ void AliDCSSensorArray::MakeSplineFit(TMap *map, Bool_t keepMap)
     fit->SetMinPoints(fMinGraph);
     fit->InitKnots(gr,fMinPoints,fIter,fMaxDelta);
     fit->SplineFit(fFitReq);
-    entry->SetStartTime(fStartTime);
-    entry->SetEndTime(fEndTime);
     fit->Cleanup();
     if (fit) {
       entry->SetFit(fit);
@@ -270,6 +268,15 @@ TMap* AliDCSSensorArray::ExtractDCS(TMap *dcsMap)
  //
  TMap *values = new TMap;
  TObjArray * valueSet;
+ //
+ // Keep global start/end times
+ //    to avoid extrapolations, the fits will only be valid from first 
+ //    measured point to last measured point. This is consistent with hardware,
+ //    as there would be a new measured point if the value changed.
+ 
+ TTimeStamp startTime=fStartTime;
+ TTimeStamp endTime=fEndTime;
+ 
  Int_t nsensors = fSensors->GetEntries();
  for ( Int_t isensor=0; isensor<nsensors; isensor++) {
    AliDCSSensor *entry = (AliDCSSensor*)fSensors->At(isensor);
@@ -278,10 +285,18 @@ TMap* AliDCSSensorArray::ExtractDCS(TMap *dcsMap)
    if ( pair ) {                            // only try to read values
                                             // if DCS object available
      valueSet = (TObjArray*)pair->Value();
-     TGraph *graph = MakeGraph(valueSet);
+     TGraph *graph = MakeGraph(valueSet);   // MakeGraph sets start/end time
+                                            // per sensor
      values->Add(new TObjString(stringID.Data()),graph);
+     entry->SetStartTime(fStartTime);
+     entry->SetEndTime(fEndTime);
    }
  }
+ // Reset global start/end time 
+ //    ..... yes, I know this won't get a prize for structured programming..:-)
+
+ fStartTime=startTime;
+ fEndTime=endTime;
  return values;
 }
 
@@ -344,8 +359,8 @@ TGraph* AliDCSSensorArray::MakeGraph(TObjArray* valueSet){
     y[out] = val->GetFloat();
     out++;    
   }
-  SetStartTime(firstTime);
-  SetEndTime(lastTime);
+  fStartTime=firstTime;
+  fEndTime=lastTime;
   TGraph * graph = new TGraph(out,x,y);
   delete [] x;
   delete [] y;
