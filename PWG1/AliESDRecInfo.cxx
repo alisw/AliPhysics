@@ -17,7 +17,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
 //  Time Projection Chamber                                                  //
-//  Comparison macro for reconstructed tracks - ESDs V0s                                     //
+//  Comparison macro for reconstructed tracks                                  //
 //  responsible: 
 //  marian.ivanov@cern.ch                                                    //
 //
@@ -33,6 +33,7 @@
 //ALIROOT includes
 //
 #include "AliESDtrack.h"
+#include "AliTracker.h"
 #include "AliTPCParam.h"
 #include "AliTrackReference.h"
 #include "AliTPCParamSR.h"
@@ -74,7 +75,8 @@ AliESDRecInfo::AliESDRecInfo():
   fTrackF(0),      // friend track
   fTPCtrack(0),        // tpc track
   fITStrack(0),        // its track
-  fTRDtrack(0)        // trd track  
+  fTRDtrack(0),        // trd track  
+  fTPCtrackAtVertex(0) // tpc track propagated to the vertex  
 {
   //
   //  default constructor
@@ -225,50 +227,19 @@ void  AliESDRecInfo::UpdatePoints(AliESDtrack*track)
 void AliESDRecInfo::Update(AliMCInfo* info,AliTPCParam * /*par*/, Bool_t reconstructed)
 {
   //
-  //
   //calculates derived variables
   //  
-  //
   UpdatePoints(fESDtrack);
-  fBestTOFmatch=1000;
-  AliTrackReference * ref = &(info->fTrackRef);
-  fTPCinR0[0] = info->fTrackRef.X();	
-  fTPCinR0[1] = info->fTrackRef.Y();	
-  fTPCinR0[2] = info->fTrackRef.Z();
-  fTPCinR0[3] = TMath::Sqrt(fTPCinR0[0]*fTPCinR0[0]+fTPCinR0[1]*fTPCinR0[1]);
-  fTPCinR0[4] = TMath::ATan2(fTPCinR0[1],fTPCinR0[0]);
+  UpdateStatus(info,reconstructed);
+  UpdateITS(info);
+  UpdateTPC(info);
+  UpdateTOF(info);
+}
+
+
+void  AliESDRecInfo::UpdateStatus(AliMCInfo* info, Bool_t reconstructed){
   //
-  fTPCinP0[0] = ref->Px();
-  fTPCinP0[1] = ref->Py();
-  fTPCinP0[2] = ref->Pz();
-  fTPCinP0[3] = ref->Pt();
-  fTPCinP0[4] = ref->P();
-  fDeltaP     = (ref->P()-info->fParticle.P())/info->fParticle.P();
-  //
-  //
-  if (fTPCinP0[3]>0.0000001){
-    //
-    fTPCAngle0[0] = TMath::ATan2(fTPCinP0[1],fTPCinP0[0]);
-    fTPCAngle0[1] = TMath::ATan(fTPCinP0[2]/fTPCinP0[3]);
-  }
-  //
-  //
-  fITSinP0[0]=info->fParticle.Px();
-  fITSinP0[1]=info->fParticle.Py();
-  fITSinP0[2]=info->fParticle.Pz();
-  fITSinP0[3]=info->fParticle.Pt();    
-  //
-  fITSinR0[0]=info->fParticle.Vx();
-  fITSinR0[1]=info->fParticle.Vy();
-  fITSinR0[2]=info->fParticle.Vz();
-  fITSinR0[3] = TMath::Sqrt(fITSinR0[0]*fITSinR0[0]+fITSinR0[1]*fITSinR0[1]);
-  fITSinR0[4] = TMath::ATan2(fITSinR0[1],fITSinR0[0]);
-  //
-  //
-  if (fITSinP0[3]>0.0000001){
-    fITSAngle0[0] = TMath::ATan2(fITSinP0[1],fITSinP0[0]);
-    fITSAngle0[1] = TMath::ATan(fITSinP0[2]/fITSinP0[3]);
-  }
+  // Interpret bit mask flags
   //
   for (Int_t i=0;i<4;i++) fStatus[i] =0;
   fReconstructed = kFALSE;
@@ -309,7 +280,6 @@ void AliESDRecInfo::Update(AliMCInfo* info,AliTPCParam * /*par*/, Bool_t reconst
       fStatus[0]=0;
     }      
   }
-
   //
   //
   if ((fESDtrack->GetStatus()&AliESDtrack::kTRDrefit)>0){
@@ -322,11 +292,14 @@ void AliESDRecInfo::Update(AliMCInfo* info,AliTPCParam * /*par*/, Bool_t reconst
   }
   if ((fESDtrack->GetStatus()&AliESDtrack::kTRDStop)>0){
     fStatus[2] =10;
-  }
+  }   
+}
 
+void AliESDRecInfo::UpdateTOF(AliMCInfo* info){
   //
-  //TOF 
-  // 
+  // Update TOF related comparison information
+  //
+  fBestTOFmatch=1000;
   if (((fESDtrack->GetStatus()&AliESDtrack::kTOFout)>0)){
     //
     // best tof match
@@ -352,8 +325,95 @@ void AliESDRecInfo::Update(AliMCInfo* info,AliTPCParam * /*par*/, Bool_t reconst
   }else{
     fStatus[3]=0;
   }
+}
 
 
+
+void AliESDRecInfo::UpdateITS(AliMCInfo* info){
+  //
+  // Update ITS related comparison information
+  //
+  fITSinP0[0]=info->fParticle.Px();
+  fITSinP0[1]=info->fParticle.Py();
+  fITSinP0[2]=info->fParticle.Pz();
+  fITSinP0[3]=info->fParticle.Pt();    
+  //
+  fITSinR0[0]=info->fParticle.Vx();
+  fITSinR0[1]=info->fParticle.Vy();
+  fITSinR0[2]=info->fParticle.Vz();
+  fITSinR0[3] = TMath::Sqrt(fITSinR0[0]*fITSinR0[0]+fITSinR0[1]*fITSinR0[1]);
+  fITSinR0[4] = TMath::ATan2(fITSinR0[1],fITSinR0[0]);
+  //
+  //
+  if (fITSinP0[3]>0.0000001){
+    fITSAngle0[0] = TMath::ATan2(fITSinP0[1],fITSinP0[0]);
+    fITSAngle0[1] = TMath::ATan(fITSinP0[2]/fITSinP0[3]);
+  }
+  if (fITSOn){
+    // ITS 
+    Double_t param[5],x;
+    fESDtrack->GetExternalParameters(x,param);   
+    //    fESDtrack->GetConstrainedExternalParameters(x,param);   
+    Double_t cov[15];
+    fESDtrack->GetExternalCovariance(cov);
+    //fESDtrack->GetConstrainedExternalCovariance(cov);
+    if (TMath::Abs(param[4])<0.0000000001) return;
+    
+    fESDtrack->GetXYZ(fITSinR1);
+    fESDtrack->GetPxPyPz(fITSinP1);
+    fITSinP1[3] = TMath::Sqrt(fITSinP1[0]*fITSinP1[0]+fITSinP1[1]*fITSinP1[1]);
+    //
+    fITSinR1[3] = TMath::Sqrt(fITSinR1[0]*fITSinR1[0]+fITSinR1[1]*fITSinR1[1]);
+    fITSinR1[4] = TMath::ATan2(fITSinR1[1],fITSinR1[0]);
+    //
+    //
+    if (fITSinP1[3]>0.0000001){
+      fITSAngle1[0] = TMath::ATan2(fITSinP1[1],fITSinP1[0]);
+      fITSAngle1[1] = TMath::ATan(fITSinP1[2]/fITSinP1[3]);  
+    }
+    //
+    //
+    fITSDelta[0] = (fITSinR0[4]-fITSinR1[4])*fITSinR1[3];  //delta rfi
+    fITSPools[0] = fITSDelta[0]/TMath::Sqrt(cov[0]);
+    fITSDelta[1] = (fITSinR0[2]-fITSinR1[2]);              //delta z
+    fITSPools[1] = fITSDelta[1]/TMath::Sqrt(cov[2]);
+    fITSDelta[2] = (fITSAngle0[0]-fITSAngle1[0]);
+    fITSPools[2] = fITSDelta[2]/TMath::Sqrt(cov[5]);
+    fITSDelta[3] = (TMath::Tan(fITSAngle0[1])-TMath::Tan(fITSAngle1[1]));
+    fITSPools[3] = fITSDelta[3]/TMath::Sqrt(cov[9]);
+    fITSDelta[4] = (fITSinP0[3]-fITSinP1[3]);    
+    Double_t sign = (param[4]>0) ? 1:-1; 
+    fSign = sign;
+    fITSPools[4] = sign*(1./fITSinP0[3]-1./fITSinP1[3])/TMath::Sqrt(cov[14]);
+  }
+}
+
+void AliESDRecInfo::UpdateTPC(AliMCInfo* info){
+  //
+  //
+  // Update TPC related information
+  //
+  AliTrackReference * ref = &(info->fTrackRef);
+  fTPCinR0[0] = info->fTrackRef.X();	
+  fTPCinR0[1] = info->fTrackRef.Y();	
+  fTPCinR0[2] = info->fTrackRef.Z();
+  fTPCinR0[3] = TMath::Sqrt(fTPCinR0[0]*fTPCinR0[0]+fTPCinR0[1]*fTPCinR0[1]);
+  fTPCinR0[4] = TMath::ATan2(fTPCinR0[1],fTPCinR0[0]);
+  //
+  fTPCinP0[0] = ref->Px();
+  fTPCinP0[1] = ref->Py();
+  fTPCinP0[2] = ref->Pz();
+  fTPCinP0[3] = ref->Pt();
+  fTPCinP0[4] = ref->P();
+  fDeltaP     = (ref->P()-info->fParticle.P())/info->fParticle.P();
+  //
+  //
+  if (fTPCinP0[3]>0.0000001){
+    //
+    fTPCAngle0[0] = TMath::ATan2(fTPCinP0[1],fTPCinP0[0]);
+    fTPCAngle0[1] = TMath::ATan(fTPCinP0[2]/fTPCinP0[3]);
+  }
+  //
   if (fStatus[1]>0 &&info->fNTPCRef>0&&TMath::Abs(fTPCinP0[3])>0.0001){
     //TPC
     fESDtrack->GetInnerXYZ(fTPCinR1);
@@ -386,44 +446,24 @@ void AliESDRecInfo::Update(AliMCInfo* info,AliTPCParam * /*par*/, Bool_t reconst
     fSign =sign;
     fTPCPools[4] = sign*(1./fTPCinP0[3]-1./fTPCinP1[3])/TMath::Sqrt(TMath::Abs(cov[14]));
   }
-  if (fITSOn){
-    // ITS 
-    Double_t param[5],x;
-    fESDtrack->GetExternalParameters(x,param);   
-    //    fESDtrack->GetConstrainedExternalParameters(x,param);   
-    Double_t cov[15];
-    fESDtrack->GetExternalCovariance(cov);
-    //fESDtrack->GetConstrainedExternalCovariance(cov);
-    if (TMath::Abs(param[4])<0.0000000001) return;
-
-    fESDtrack->GetXYZ(fITSinR1);
-    fESDtrack->GetPxPyPz(fITSinP1);
-    fITSinP1[3] = TMath::Sqrt(fITSinP1[0]*fITSinP1[0]+fITSinP1[1]*fITSinP1[1]);
-    //
-    fITSinR1[3] = TMath::Sqrt(fITSinR1[0]*fITSinR1[0]+fITSinR1[1]*fITSinR1[1]);
-    fITSinR1[4] = TMath::ATan2(fITSinR1[1],fITSinR1[0]);
-    //
-    //
-    if (fITSinP1[3]>0.0000001){
-      fITSAngle1[0] = TMath::ATan2(fITSinP1[1],fITSinP1[0]);
-      fITSAngle1[1] = TMath::ATan(fITSinP1[2]/fITSinP1[3]);  
-    }
-    //
-    //
-    fITSDelta[0] = (fITSinR0[4]-fITSinR1[4])*fITSinR1[3];  //delta rfi
-    fITSPools[0] = fITSDelta[0]/TMath::Sqrt(cov[0]);
-    fITSDelta[1] = (fITSinR0[2]-fITSinR1[2]);              //delta z
-    fITSPools[1] = fITSDelta[1]/TMath::Sqrt(cov[2]);
-    fITSDelta[2] = (fITSAngle0[0]-fITSAngle1[0]);
-    fITSPools[2] = fITSDelta[2]/TMath::Sqrt(cov[5]);
-    fITSDelta[3] = (TMath::Tan(fITSAngle0[1])-TMath::Tan(fITSAngle1[1]));
-    fITSPools[3] = fITSDelta[3]/TMath::Sqrt(cov[9]);
-    fITSDelta[4] = (fITSinP0[3]-fITSinP1[3]);    
-    Double_t sign = (param[4]>0) ? 1:-1; 
-    fSign = sign;
-    fITSPools[4] = sign*(1./fITSinP0[3]-1./fITSinP1[3])/TMath::Sqrt(cov[14]);    
-  }
-  
+  //
+  if (fESDtrack && fESDtrack->GetTPCInnerParam()){
+    AliExternalTrackParam *track = new AliExternalTrackParam(*fESDtrack->GetTPCInnerParam());
+    const Double_t kRadius  = 3;   // beam pipe radius
+    const Double_t kMaxStep = 5;   // max step
+    const Double_t kMaxD    = 123456;  // max distance to prim vertex
+    Double_t       fieldZ   = AliTracker::GetBz();  //
+    AliTracker::PropagateTrackTo(track,kRadius,info->GetMass(),kMaxStep,kTRUE);
+    AliTracker::PropagateTrackTo(track,0,info->GetMass(),0.5,kTRUE);
+    //track->RelateToVertex(fEvent->GetVertex(),fieldZ, kMaxD);
+    fTPCtrackAtVertex = track;
+  }else{
+    delete fTPCtrackAtVertex;
+    fTPCtrackAtVertex=0;
+  }  
 }
+
+
+
 
 
