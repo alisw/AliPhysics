@@ -516,9 +516,10 @@ Bool_t AliQADataMakerSteer::Merge(const Int_t runNumber) const
 	Int_t index = 0 ; 
 	while ( 1 ) {
 		in >> file[index] ; 
+		AliInfo(Form("index = %d file = %s", index, (file[index]).Data())) ; 
+		index++ ;
 		if ( !in.good() ) 
 			break ; 
-		index++ ;
 	}
 	
 	if ( index == 0 ) { 
@@ -530,7 +531,7 @@ Bool_t AliQADataMakerSteer::Merge(const Int_t runNumber) const
 	Int_t runIndexMax = 0 ; 
 	char stmp[10] ; 
 	sprintf(stmp, ".%s.", AliQA::GetQADataFileName()) ; 
-	for (Int_t ifile = 0 ; ifile < index-1 ; ifile++) {
+	for (Int_t ifile = 0 ; ifile < index ; ifile++) {
 		TString tmp(file[ifile]) ; 
 		tmp.ReplaceAll(".root", "") ; 
 		TString det = tmp(0, tmp.Index(".")) ; 
