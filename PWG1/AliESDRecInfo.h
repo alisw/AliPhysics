@@ -35,8 +35,13 @@ public:
   AliESDRecInfo();
   AliESDRecInfo(const AliESDRecInfo& recinfo);
   ~AliESDRecInfo();
-  void UpdatePoints(AliESDtrack* track);
   void Update(AliMCInfo* info,AliTPCParam * par, Bool_t reconstructed);
+  void UpdateStatus(AliMCInfo* info, Bool_t reconstructed);
+  void UpdatePoints(AliESDtrack* track);
+  void UpdateTPC(AliMCInfo* info);
+  void UpdateITS(AliMCInfo* info);
+  void UpdateTOF(AliMCInfo* info);
+  //
   void Reset();
   //
   void SetESDtrack(const AliESDtrack *track);
@@ -85,7 +90,7 @@ private:
   AliTPCseed *fTPCtrack;        // tpc track
   AliITStrackMI *fITStrack;        // its track
   AliTRDtrack   *fTRDtrack;        // trd track
-  
+  AliExternalTrackParam* fTPCtrackAtVertex; // TPC track propagated to the prim vertex
   ClassDef(AliESDRecInfo,2)  // container for 
 };
 
