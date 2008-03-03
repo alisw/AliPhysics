@@ -9,10 +9,10 @@
 // (amplitude,time, position,gain) from the raw stream 
 // provided by AliRawReader. See cxx source for use case.
 
-#include "AliRawReader.h"
 #include "AliCaloRawStream.h"
 
 class TArrayI;
+class AliRawReader;
 
 class AliPHOSRawDecoder {
 
@@ -29,14 +29,14 @@ public:
   void SetOldRCUFormat(Bool_t isOldRCU) {fCaloStream->SetOldRCUFormat(isOldRCU);}
   void SubtractPedestals(Bool_t subtract) {fPedSubtract=subtract;}
 
-  Double_t GetEnergy() { return fEnergy; }
-  Double_t GetTime() { return fTime; }
-  Double_t GetSampleQuality(){return fQuality ;}
-  Int_t GetModule() { return fModule; }
-  Int_t GetColumn() { return fColumn; }
-  Int_t GetRow() { return fRow; }
-  Bool_t IsLowGain() { return fLowGainFlag; }
-  Bool_t IsOverflow(){ return fOverflow ;}
+  const Double_t GetEnergy() const { return fEnergy; }
+  const Double_t GetTime() const { return fTime; }
+  const Double_t GetSampleQuality() const {return fQuality ;}
+  const Int_t GetModule() const { return fModule; }
+  const Int_t GetColumn() const { return fColumn; }
+  const Int_t GetRow() const { return fRow; }
+  const Bool_t IsLowGain() const { return fLowGainFlag; }
+  const Bool_t IsOverflow() const { return fOverflow ;}
 
   const AliRawReader* GetRawReader() const { return fRawReader; }
 
@@ -58,8 +58,8 @@ protected:
   Int_t fNewRow;       // row  of keeped sample
   Int_t fNewAmp ;      //Keeped amp
   Int_t fNewTime ;     //Time of keeped sample
-  Bool_t fLowGainFlag;
-  Bool_t fNewLowGainFlag;
+  Bool_t fLowGainFlag; //True if sample read from Low Gain
+  Bool_t fNewLowGainFlag; // fLowGainFlag of keeped sample
   Bool_t fOverflow ;   //Wether there was overflow
   TArrayI* fSamples;   // array of samples
   TArrayI* fTimes ;    // array of times corresponding to samples

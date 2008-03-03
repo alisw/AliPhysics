@@ -42,7 +42,8 @@
 
 // --- AliRoot header files ---
 #include "AliPHOSRawDecoder.h"
-#include <iostream.h>
+#include "AliRawReader.h"
+
 ClassImp(AliPHOSRawDecoder)
 
 //-----------------------------------------------------------------------------
@@ -149,7 +150,7 @@ Bool_t AliPHOSRawDecoder::NextDigit()
   Float_t pedMean = 0;
   Int_t   nPed = 0;
   Float_t baseLine = 1.0;
-  const Int_t nPreSamples = 10;
+  const Int_t kPreSamples = 10;
   
   fSamples->Reset();
   while ( in->Next() ) { 
@@ -202,7 +203,7 @@ Bool_t AliPHOSRawDecoder::NextDigit()
     } 
 
      //Calculate pedestal if necessary
-     if(fPedSubtract && in->GetTime() < nPreSamples) {
+     if(fPedSubtract && in->GetTime() < kPreSamples) {
        pedMean += in->GetSignal();
        nPed++;
      }
