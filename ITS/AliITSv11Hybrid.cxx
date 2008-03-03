@@ -1024,7 +1024,7 @@ void AliITSv11Hybrid::CreateGeometry() {
   CreateOldGeometry();
 
   TGeoVolume *vITS  = geoManager->GetVolume("ITSV");
-  TGeoVolume *vIS02 = geoManager->GetVolume("IS02");
+  TGeoVolume *vITSD = geoManager->GetVolume("ITSD");
 
 
   const Char_t *cvsDate="$Date$";
@@ -1042,8 +1042,8 @@ void AliITSv11Hybrid::CreateGeometry() {
   if (AliITSInitGeometry::SDDIsTGeoNative()) {
     fSDDgeom->Layer3(vITS);
     fSDDgeom->Layer4(vITS);
-    fSDDgeom->ForwardLayer3(vIS02);
-    fSDDgeom->ForwardLayer4(vIS02);
+    fSDDgeom->ForwardLayer3(vITSD);
+    fSDDgeom->ForwardLayer4(vITSD);
   }
   if (AliITSInitGeometry::SSDIsTGeoNative()) {
     fSSDgeom->Layer5(vITS);
@@ -1056,6 +1056,9 @@ void AliITSv11Hybrid::CreateGeometry() {
 
   if (AliITSInitGeometry::SPDshieldIsTGeoNative())
     fSupgeom->SPDCone(vITS);
+
+  if (AliITSInitGeometry::SDDconeIsTGeoNative())
+    fSupgeom->SDDCone(vITS);
 }
 
 //______________________________________________________________________
