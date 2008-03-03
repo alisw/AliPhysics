@@ -796,8 +796,8 @@ void AliITSv11GeometrySupport::SDDCone(TGeoVolume *moth,TGeoManager *mgr)
   const Int_t    kNHole3             =         6      ;
   const Double_t kHole4RMin          =     116.0*fgkmm;
   const Double_t kHole4DeltaR        =        15*fgkmm;
-  const Double_t kHole4Width         =        30*fgkmm;
-  const Int_t    kNHole4             =         3      ;
+  //  const Double_t kHole4Width         =        30*fgkmm;
+  // const Int_t    kNHole4             =         3      ;
 
   // Local variables
   Double_t x, y, z, t, dza, rmin, rmax;
