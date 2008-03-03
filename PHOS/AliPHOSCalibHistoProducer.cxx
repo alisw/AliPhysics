@@ -31,6 +31,7 @@
 #include "TH2F.h"
 #include "TFile.h"
 #include "AliPHOSRawDecoder.h"
+#include "AliRawReader.h"
 
 ClassImp(AliPHOSCalibHistoProducer)
 
