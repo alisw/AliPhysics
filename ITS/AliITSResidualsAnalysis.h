@@ -66,22 +66,25 @@ class AliITSResidualsAnalysis : public AliAlignmentTracks {
 
 
   enum ModulePhiZ{
-    fkPhiSPD1=20,
-    fkZSPD1=4,
-    fkPhiSPD2=40,
-    fkZSPD2=4,
-    fkPhiSDD1=14,
-    fkZSDD1=6,
-    fkPhiSDD2=22,
-    fkZSDD2=8,
-    fkPhiSSD1=34,
-    fkZSSD1=22,
-    fkPhiSSD2=38,
-    fkZSSD2=25
+    kPhiSPD1=20,
+    kZSPD1=4,
+    kPhiSPD2=40,
+    kZSPD2=4,
+    kPhiSDD1=14,
+    kZSDD1=6,
+    kPhiSDD2=22,
+    kZSDD2=8,
+    kPhiSSD1=34,
+    kZSSD1=22,
+    kPhiSSD2=38,
+    kZSSD2=25
   };
 
 
  protected:
+
+  AliITSResidualsAnalysis(const AliITSResidualsAnalysis& obj);
+  AliITSResidualsAnalysis& operator = (const AliITSResidualsAnalysis& obj);
     
   Int_t fnHist;    // number of histogram = number of alignable volumes considered
   Int_t fnPhi;     // coordinate of the volume (Phi)

@@ -38,9 +38,7 @@
 #include "TGeoMatrix.h"
 #include "TGeoManager.h"
 #include "TGeoPhysicalNode.h"
-#include "TMatrixDSym.h"
 #include "TMatrixDSymEigen.h"
-#include "TMatrixD.h"
 #include "TString.h"
 
 #include "AliAlignmentTracks.h"
@@ -375,6 +373,62 @@ AliITSResidualsAnalysis::AliITSResidualsAnalysis(TArrayI *volIDs,AliTrackPointAr
   SetFileNameGeometry(""); // Filename with the Geometry
 
 
+}
+
+//____________________________________________________________________________
+AliITSResidualsAnalysis::AliITSResidualsAnalysis(const AliITSResidualsAnalysis& obj):
+    AliAlignmentTracks(),
+    fnHist(0),
+    fnPhi(0),
+    fnZ(0),
+    fvolidsToBin(0),
+    fLastVolVolid(0), 
+    fCoordToBinTable(0),
+    fVolResHistRPHI(0),
+    fResHistZ(0),
+    fPullHistRPHI(0), 
+    fPullHistZ(0), 
+    fTrackDirPhi(0),
+    fTrackDirLambda(0),
+    fTrackDirLambda2(0),
+    fTrackDirAlpha(0),
+    fTrackDirPhiAll(0),
+    fTrackDirLambdaAll(0),
+    fTrackDirLambda2All(0),
+    fTrackDirAlphaAll(0),
+    fTrackDir(0), 
+    fTrackDirAll(0), 
+    fTrackDir2All(0),
+    fTrackDirXZAll(0), 
+    fResHistGlob(0),  
+    fhistCorrVol(0),
+    fVolNTracks(0),
+    fhEmpty(0),
+    fhistVolNptsUsed(0),
+    fhistVolUsed(0),
+    fSigmaVolZ(0),
+    fsingleLayer(0),
+    fWriteHist(0),
+    fpTrackVolIDs(0),
+    fVolVolids(0),
+    fVolUsed(0),         
+    fRealignObjFileIsOpen(kFALSE),
+    fClonesArray(0),
+    fAliTrackPoints("AliTrackPoints.root"),
+    fGeom("geometry.root")
+
+{
+  // copy constructor. This is not allowed.
+
+  AliFatal("Copy constructor not allowed\n");
+ 
+}
+
+//____________________________________________________________________________
+AliITSResidualsAnalysis& AliITSResidualsAnalysis::operator = (const AliITSResidualsAnalysis& obj) {
+  // assignment operator. This is not allowed
+  AliFatal("Assignment operator not allowed\n");
+  return *this;
 }
 
 //____________________________________________________________________________
@@ -1006,60 +1060,60 @@ Float_t** AliITSResidualsAnalysis::CheckSingleLayer(const TArrayI *volids)
   //Bool_t used=kFALSE;
   switch (iLayer) {
   case AliGeomManager::kSPD1:{
-    fnPhi=fkPhiSPD1;//fkPhiSPD1;
-    fnZ=fkZSPD1;//nZSPD1;
-    binningzphi[0]=new Float_t[fkPhiSPD1+1];
-    binningzphi[1]=new Float_t[fkZSPD1+1];
-    fCoordToBinTable=new Double_t**[fkPhiSPD1];
+    fnPhi=kPhiSPD1;//kPhiSPD1;
+    fnZ=kZSPD1;//nZSPD1;
+    binningzphi[0]=new Float_t[kPhiSPD1+1];
+    binningzphi[1]=new Float_t[kZSPD1+1];
+    fCoordToBinTable=new Double_t**[kPhiSPD1];
     for(Int_t j=0;j<fnPhi;j++){
-      fCoordToBinTable[j]=new Double_t*[fkZSPD1];
+      fCoordToBinTable[j]=new Double_t*[kZSPD1];
     }
   }; break;
   case AliGeomManager::kSPD2:{
-    fnPhi=fkPhiSPD2;//fkPhiSPD1;
-    fnZ=fkZSPD2;//nZSPD1;
-    binningzphi[0]=new Float_t[fkPhiSPD2+1];
-    binningzphi[1]=new Float_t[fkZSPD2+1];
-    fCoordToBinTable=new Double_t**[fkPhiSPD2];
+    fnPhi=kPhiSPD2;//kPhiSPD1;
+    fnZ=kZSPD2;//nZSPD1;
+    binningzphi[0]=new Float_t[kPhiSPD2+1];
+    binningzphi[1]=new Float_t[kZSPD2+1];
+    fCoordToBinTable=new Double_t**[kPhiSPD2];
     for(Int_t j=0;j<fnPhi;j++){
-      fCoordToBinTable[j]=new Double_t*[fkZSPD2];
+      fCoordToBinTable[j]=new Double_t*[kZSPD2];
     }
 
   }; break; case AliGeomManager::kSDD1:{
-    fnPhi=fkPhiSDD1;//fkPhiSPD1;
-    fnZ=fkZSDD1;//nZSPD1;
-    binningzphi[0]=new Float_t[fkPhiSDD1+1];
-    binningzphi[1]=new Float_t[fkZSDD1+1];
-    fCoordToBinTable=new Double_t**[fkPhiSDD1];
+    fnPhi=kPhiSDD1;//kPhiSPD1;
+    fnZ=kZSDD1;//nZSPD1;
+    binningzphi[0]=new Float_t[kPhiSDD1+1];
+    binningzphi[1]=new Float_t[kZSDD1+1];
+    fCoordToBinTable=new Double_t**[kPhiSDD1];
     for(Int_t j=0;j<fnPhi;j++){
-      fCoordToBinTable[j]=new Double_t*[fkZSDD1];
+      fCoordToBinTable[j]=new Double_t*[kZSDD1];
     }
   }; break; case AliGeomManager::kSDD2:{
-    fnPhi=fkPhiSDD2;//fkPhiSPD1;
-    fnZ=fkZSDD2;//nZSPD1;
-    binningzphi[0]=new Float_t[fkPhiSDD2+1];
-    binningzphi[1]=new Float_t[fkZSDD2+1];
-    fCoordToBinTable=new Double_t**[fkPhiSDD2];
+    fnPhi=kPhiSDD2;//kPhiSPD1;
+    fnZ=kZSDD2;//nZSPD1;
+    binningzphi[0]=new Float_t[kPhiSDD2+1];
+    binningzphi[1]=new Float_t[kZSDD2+1];
+    fCoordToBinTable=new Double_t**[kPhiSDD2];
     for(Int_t j=0;j<fnPhi;j++){
-      fCoordToBinTable[j]=new Double_t*[fkZSDD2];
+      fCoordToBinTable[j]=new Double_t*[kZSDD2];
     }
   }; break; case AliGeomManager::kSSD1:{
-    fnPhi=fkPhiSSD1;//fkPhiSPD1;
-    fnZ=fkZSSD1;//nZSPD1;
-    binningzphi[0]=new Float_t[fkPhiSSD1+1];
-    binningzphi[1]=new Float_t[fkZSSD1+1];
-    fCoordToBinTable=new Double_t**[fkPhiSSD1];
+    fnPhi=kPhiSSD1;//kPhiSPD1;
+    fnZ=kZSSD1;//nZSPD1;
+    binningzphi[0]=new Float_t[kPhiSSD1+1];
+    binningzphi[1]=new Float_t[kZSSD1+1];
+    fCoordToBinTable=new Double_t**[kPhiSSD1];
     for(Int_t j=0;j<fnPhi;j++){
-      fCoordToBinTable[j]=new Double_t*[fkZSSD1];
+      fCoordToBinTable[j]=new Double_t*[kZSSD1];
     }
   }; break; case AliGeomManager::kSSD2:{
-    fnPhi=fkPhiSSD2;//fkPhiSPD1;
-    fnZ=fkZSSD2;//nZSPD1;
-    binningzphi[0]=new Float_t[fkPhiSSD2+1];
-    binningzphi[1]=new Float_t[fkZSSD2+1];
-    fCoordToBinTable=new Double_t**[fkPhiSSD2];
+    fnPhi=kPhiSSD2;//kPhiSPD1;
+    fnZ=kZSSD2;//nZSPD1;
+    binningzphi[0]=new Float_t[kPhiSSD2+1];
+    binningzphi[1]=new Float_t[kZSSD2+1];
+    fCoordToBinTable=new Double_t**[kPhiSSD2];
     for(Int_t j=0;j<fnPhi;j++){
-      fCoordToBinTable[j]=new Double_t*[fkZSSD2];
+      fCoordToBinTable[j]=new Double_t*[kZSSD2];
     }
   }; break;
   
