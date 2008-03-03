@@ -224,7 +224,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   TArrayI * chargeQT1 = new TArrayI(24); 
 
   TString option = GetOption(); 
-  printf(" !!!!!!!!! option %s\n", option.Data());
+  AliDebug(1,Form("Option: %s\n", option.Data()));
 
   for (Int_t i0=0; i0<105; i0++)
     {
