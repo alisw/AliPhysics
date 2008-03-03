@@ -263,7 +263,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename,
   fInitCDBCalled(kFALSE),
   fSetRunNumberFromDataCalled(kFALSE),
   fRunQA(kTRUE),  
-  fRunGlobalQA(kFALSE),
+  fRunGlobalQA(kTRUE),
   fInLoopQA(kFALSE),
 
   fRunPlaneEff(kFALSE)
