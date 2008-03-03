@@ -11,6 +11,8 @@
   Produces the data needed to calculate the quality assurance. 
   All data must be mergeable objects.
   Y. Schutz CERN July 2007
+ x
+ x
 */
 
 
@@ -36,17 +38,17 @@ public:
 	virtual const Int_t Add2RecPointsList(TH1 * /*hist*/, const Int_t /*index*/) { return -1 ; } 
 	virtual const Int_t Add2RawsList(TH1 * /*hist*/, const Int_t /*index*/)      { return -1 ; }  
 	virtual const Int_t Add2SDigitsList(TH1 * hist, const Int_t index)   { return Add2List(hist, index, fSDigitsQAList) ; }
-	virtual void        Exec(AliQA::TASKINDEX, TObject * data) ;
-	virtual void        EndOfCycle(AliQA::TASKINDEX) ;
+	virtual void        Exec(AliQA::TASKINDEX task, TObject * data) ;
+	virtual void        EndOfCycle(AliQA::TASKINDEX task) ;
 	virtual TH1 *       GetDigitsData(const Int_t index)    { return dynamic_cast<TH1 *>(GetData(fDigitsQAList, index)) ; }
 	virtual TH1 *       GetESDsData(const Int_t /*index*/)      { return NULL ; }
 	virtual TH1 *       GetHitsData(const Int_t index)      { return dynamic_cast<TH1 *>(GetData(fHitsQAList, index)) ; }
 	virtual TH1 *       GetRecPointsData(const Int_t /*index*/) { return NULL ; }
 	virtual TH1 *       GetRawsData(const Int_t /*index*/)      { return NULL ; } 
 	virtual TH1 *       GetSDigitsData(const Int_t index)   { return dynamic_cast<TH1 *>(GetData(fSDigitsQAList, index)) ; }
-	virtual TObjArray * Init(AliQA::TASKINDEX, Int_t run, Int_t cycles = -1) ;
-	virtual void        Init(AliQA::TASKINDEX, TObjArray * list, Int_t run, Int_t cycles = -1) ;
-	virtual void        StartOfCycle(AliQA::TASKINDEX, const Bool_t sameCycle = kFALSE) ;
+	virtual TObjArray * Init(AliQA::TASKINDEX task, Int_t run, Int_t cycles = -1) ;
+	virtual void        Init(AliQA::TASKINDEX task, TObjArray * list, Int_t run, Int_t cycles = -1) ;
+	virtual void        StartOfCycle(AliQA::TASKINDEX task, const Bool_t sameCycle = kFALSE) ;
 
 protected: 
 	
@@ -77,3 +79,4 @@ protected:
 };
 
 #endif // AliQADataMakerSim_H
+

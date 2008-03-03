@@ -21,21 +21,23 @@
   Produces the data needed to calculate the quality assurance for Reconstruction
   All data must be mergeable objects.
   Y. Schutz CERN July 2007
+x
+x
 */
 
 // --- ROOT system ---
-#include <TSystem.h> 
+//#include <TSystem.h> 
 #include <TFile.h>
-#include <TList.h> 
+//#include <TList.h> 
 #include <TTree.h>
-#include <TClonesArray.h>
+//#include <TClonesArray.h>
 
 // --- Standard library ---
 
 // --- AliRoot header files ---
 #include "AliLog.h"
 #include "AliQADataMakerRec.h"
-#include "AliQAChecker.h"
+//#include "AliQAChecker.h"
 #include "AliESDEvent.h"
 #include "AliRawReader.h"
 
