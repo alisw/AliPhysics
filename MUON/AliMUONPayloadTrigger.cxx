@@ -111,7 +111,25 @@ Bool_t AliMUONPayloadTrigger::Decode(UInt_t *buffer)
     } else
       scalerEvent = kFALSE;
 //   }
-  
+
+// overwrite the event type in case
+// the raw-data contents contradicts with the
+// the header
+    if(scalerEvent &&
+       (buffer[index] == darcHeader->GetEndOfDarc()) &&
+       (buffer[index+darcHeader->GetDarcScalerLength()] != darcHeader->GetEndOfDarc())) {
+      // obviously not a scaler event
+      scalerEvent = kFALSE;
+      AliWarning("Overriding the event type obtained from the Darc header to physics event!");
+    }
+    if(!scalerEvent &&
+       (buffer[index] != darcHeader->GetEndOfDarc()) &&
+       (buffer[index+darcHeader->GetDarcScalerLength()] == darcHeader->GetEndOfDarc())) {
+      // obviously a scaler event
+      scalerEvent = kTRUE;
+      AliWarning("Overriding the event type obtained from the Darc header to software trigger event!");
+    }
+
   if(scalerEvent) {
     // 6 DARC scaler words
     memcpy(darcHeader->GetDarcScalers(), &buffer[index], darcHeader->GetDarcScalerLength()*4);
