@@ -107,7 +107,7 @@ void AliHMPIDCluster::CoG()
   
   fBox=(maxPadX-minPadX+1)*100+maxPadY-minPadY+1;           // dimension of the box: format Xdim*100+Ydim
   
-  if ( fQRaw != 0 )   fXX/=fQRaw;fYY/=fQRaw;                  //final center of gravity
+  if ( fQRaw != 0 ) {fXX/=fQRaw;fYY/=fQRaw;}                //final center of gravity
    
   if(fDigs->GetEntriesFast()>1&&fgDoCorrSin)CorrSin();       //correct it by sinoid   
   
