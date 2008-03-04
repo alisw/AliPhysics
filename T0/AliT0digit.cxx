@@ -40,7 +40,8 @@ ClassImp(AliT0digit)
 			    fTimeDiff(99999),
 			    fBestTimeA(99999),
 			    fBestTimeC (99999),
-			    fSumMult(0)
+			    fSumMult(0),
+			    fRefPoint(0)
 
 {
   //

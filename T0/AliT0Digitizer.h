@@ -43,7 +43,7 @@ private:
   TArrayI *fADC;         //! array of QTC signals (main amplitude)
   TArrayI *fADC0;        //! array of QTC signals (main amplitude)
   Int_t fSumMult;        // multiplicity
-  TObjArray fAmpLED;     //pmt registration effeicincy
+  TObjArray fAmpLED;     // amplitude time (CFD-LED) dependence
 
   AliT0Parameters  *fParam;           //pointer to T0 parameters class     
 
@@ -52,7 +52,7 @@ private:
   AliT0Digitizer& operator=(const AliT0Digitizer);
 
   
-    ClassDef(AliT0Digitizer,2)
+    ClassDef(AliT0Digitizer,3)
 };    
 
 typedef AliT0Digitizer AliSTARTDigitizer; // for backward compatibility

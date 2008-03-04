@@ -193,7 +193,7 @@ Double_t AliT0Align::ComputePosition()
 //_______________________________________________________________________
 void AliT0Align::CreateAlignObj(){
   //
-  TClonesArray *array = new TClonesArray("AliAlignObjParams",2);
+  //  TClonesArray *array = new TClonesArray("AliAlignObjParams",2);
   // TClonesArray &alobj = *array;
   
 

@@ -106,7 +106,7 @@ Bool_t  AliT0RawReader::Next()
   Int_t trm_chain_header =  0x00000000;
   Int_t  trm_chain_trailer =  0x10000000;
   
-  Int_t  filler =  0x70000000;
+  UInt_t  filler =  0x70000000;
   Bool_t correct=kTRUE;
   Int_t header;
 

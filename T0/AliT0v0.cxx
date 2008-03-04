@@ -49,12 +49,13 @@ ClassImp(AliT0v0)
 
 //--------------------------------------------------------------------
 AliT0v0::AliT0v0(const char *name, const char *title):
- AliT0(name,title)
+  AliT0(name,title),
+  fIdSens1(0)
 {
   //
   // Standart constructor for T0 Detector version 0
   //
-  fIdSens1=0;
+  //  fIdSens1=0;
 //  setBufferSize(128000);
 }
 //-------------------------------------------------------------------------
