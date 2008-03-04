@@ -57,7 +57,8 @@ AliFMDFlowEventPlane::AliFMDFlowEventPlane(UShort_t m)
     fCache(0), 
     fSum("sum", Form("#sumw#cos(%d#varphi) vs #sum#sin(%d#varphi)", m, m), 
 	 100, -1.1, 1.1, 100, -1.1, 1.1), 
-    fPsi("psi", Form("#Psi_{%d}", m), 80, 0, 2*TMath::Pi())
+    fPsi("psi", Form("#Psi_{%d}", m), 80, 0, 2*TMath::Pi()),
+    fScale(0)
 { 
   Clear(); 
   fSum.SetDirectory(0);
@@ -76,7 +77,8 @@ AliFMDFlowEventPlane::AliFMDFlowEventPlane(const AliFMDFlowEventPlane& o)
     fOrder(o.fOrder),
     fCache(-1), 
     fSum(o.fSum),
-    fPsi(o.fPsi)
+    fPsi(o.fPsi),
+    fScale(o.fScale)
 {
   // copy cosntructor 
   // Parameters 
@@ -99,6 +101,7 @@ AliFMDFlowEventPlane::operator=(const AliFMDFlowEventPlane& o)
   fSumCosMPhi = o.fSumCosMPhi;
   fOrder      = o.fOrder;
   fCache      = -1;
+  fScale      = o.fScale;
 
   fSum.Reset();
   fSum.Add(&o.fSum);

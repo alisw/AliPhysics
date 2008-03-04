@@ -11,11 +11,11 @@
 //____________________________________________________________________
 //
 // Utility class for analysing ESD data. 
-// This class does sharing and background correction 
+// This class does sharing and background correction.
+// It can form a base class for other things too.
 //
 #include <TObject.h>
-#include <TH2.h>
-#include <TH1.h>
+#include <TH2D.h>
 class TBrowser;
 
 /** Base class for analysing FMD ESD data */
@@ -83,7 +83,7 @@ protected:
   /** Name */
   Char_t   fName[6];	// Name 
   /** Background correction */
-  TH2*     fBg;	// Background correction 
+  TH2*     fBg;	        // Background correction 
   /** Lower cut */
   Float_t  fCut0;	// Lower cut 
   /** Higher cut */
@@ -93,22 +93,22 @@ protected:
   /** # of segments */
   Int_t    fNSeq;	// # of segments 
   /** Histogram of multiplicity before any cuts */ 
-  TH2D     fBareMult;
+  TH2D     fBareMult;   // Bare multiplicity
   /** Histogram of multiplicity after merging */ 
-  TH2D     fMergedMult;
+  TH2D     fMergedMult; // Multiplicity after merging shared hits
   /** Histogram of removed multiplicity */ 
-  TH2D     fRemovedMult;
+  TH2D     fRemovedMult;// Merged hits
   /** Histogram of background corrected */ 
-  TH2D     fMult;
+  TH2D     fMult;       // The multiplicity
+  /** Step histogram 1 */ 
+  TH2D     fStep1;      // Diagnostics step 1
   /** Step histogram 1 */
-  TH2D     fStep1;
+  TH2D     fStep2;      // Diagnostics step 2
   /** Step histogram 1 */
-  TH2D     fStep2;
-  /** Step histogram 1 */
-  TH2D     fStep3;
+  TH2D     fStep3;      // Diagnostics step 3
 
   /** Event counter */ 
-  Int_t    fNEvents;
+  Int_t    fNEvents;    // Event counter
   ClassDef(AliFMDAnaRing,1) // Analysis of ESD in a ring 
 };
 

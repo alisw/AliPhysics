@@ -16,21 +16,29 @@
 //
 // Utility class for analysing ESD data. 
 // This class does sharing and background correction 
+// It can form a base class for other things too.
+// This line is here to make the silly code checker happy!
+// This line is here to make the silly code checker happy!
 //
 #include "AliFMDAnaRing.h"
 #include <TH2.h>
 #include <TMath.h>
 #include <TBrowser.h>
 // #include <AliLog.h>
-
-namespace {
-  Int_t   ne   = 80;
-  Float_t emin = -3.7;
-  Float_t emax =  5.3;
-  Int_t   nm   = 100;
-  Int_t   mmin = -.5;
-  Int_t   mmax = 9.5;
-}
+#define ne    80
+#define emin  -3.7
+#define emax   5.3
+#define nm    100
+#define mmin  -.5
+#define mmax  9.5
+// namespace {
+//   Int_t   ne   = 80;
+//   Float_t emin = -3.7;
+//   Float_t emax =  5.3;
+//   Int_t   nm   = 100;
+//   Int_t   mmin = -.5;
+//   Int_t   mmax = 9.5;
+// }
 
 //____________________________________________________________________
 AliFMDAnaRing::AliFMDAnaRing()
@@ -40,7 +48,15 @@ AliFMDAnaRing::AliFMDAnaRing()
     fCut0(0), 
     fCut1(0), 
     fUseBgCor(kFALSE), 
-    fNSeq(0)
+    fNSeq(0),
+    fBareMult(),
+    fMergedMult(),
+    fRemovedMult(),
+    fMult(),
+    fStep1(),
+    fStep2(),
+    fStep3(),
+    fNEvents(0)
 {
   // Default constructor.  
   // Do not use.  
@@ -67,9 +83,11 @@ AliFMDAnaRing::AliFMDAnaRing(UShort_t det, Char_t ring,
 	  ne, emin, emax, fNSeq, 0, 2*TMath::Pi()), 
     fStep1(Form("step1_%d%c",fDet,fRing), "Step 1", nm,mmin,mmax,nm,mmin,mmax),
     fStep2(Form("step2_%d%c",fDet,fRing), "Step 2", nm,mmin,mmax,nm,mmin,mmax),
-    fStep3(Form("step3_%d%c",fDet,fRing), "Step 3", nm,mmin,mmax,nm,mmin,mmax)
+    fStep3(Form("step3_%d%c",fDet,fRing), "Step 3", nm,mmin,mmax,nm,mmin,mmax),
+    fNEvents(0)
 {
   // Constructor 
+  // 
   // Parameters
   //     det   Detector 
   //     ring  Ring 
@@ -108,7 +126,8 @@ AliFMDAnaRing::AliFMDAnaRing(UShort_t det, Char_t ring,
 
 //____________________________________________________________________
 AliFMDAnaRing::AliFMDAnaRing(const AliFMDAnaRing& o)
-  : fDet(o.fDet), 
+  : TObject(o),
+    fDet(o.fDet), 
     fRing(o.fRing), 
     fBg(o.fBg), 
     fCut0(o.fCut0), 
@@ -118,7 +137,11 @@ AliFMDAnaRing::AliFMDAnaRing(const AliFMDAnaRing& o)
     fBareMult(o.fBareMult),
     fMergedMult(o.fMergedMult),
     fRemovedMult(o.fRemovedMult),
-    fMult(o.fMult)
+    fMult(o.fMult), 
+    fStep1(o.fStep1),
+    fStep2(o.fStep2),
+    fStep3(o.fStep3),
+    fNEvents(o.fNEvents)
 {
   // Copy constructor.  
   // Do not use.  
@@ -146,6 +169,11 @@ AliFMDAnaRing&
 AliFMDAnaRing::operator=(const AliFMDAnaRing& o)
 {
   // Assignment operator 
+  // 
+  // Parameters: 
+  //   o   Object to assign from 
+  // Returns: 
+  //   Reference to this object. 
   this->fDet      = o.fDet;
   this->fRing     = o.fRing;
   this->fBg       = o.fBg;
@@ -215,6 +243,12 @@ AliFMDAnaRing::ProcessESD(Float_t phi, Float_t eta, Float_t& m1, Float_t m2)
 void
 AliFMDAnaRing::Finish()
 {
+  // Finish this task 
+  // 
+  // Parameters: 
+  //    none
+  // Returns: 
+  //    nothing
   Double_t de    = (fMult.GetXaxis()->GetXmax() - 
 		    fMult.GetXaxis()->GetXmin())/fMult.GetNbinsX(); 
   Double_t dp    = 2*TMath::Pi() / fNSeq;
@@ -229,6 +263,9 @@ Int_t
 AliFMDAnaRing::Color() const 
 { 
   // Get the ring specific color 
+  // 
+  // Returns:
+  //   The color of the current ring
   switch (fDet) { 
   case 1: return kGreen + 2; 
   case 2: return kRed  + (fRing == 'I' || fRing == 'i' ? 2 : -7);
@@ -240,6 +277,12 @@ AliFMDAnaRing::Color() const
 void
 AliFMDAnaRing::Browse(TBrowser* b) 
 {
+  // Browse this object
+  // 
+  // Parameters: 
+  //    b  Browser to use
+  // Returns: 
+  //    nothing
   b->Add(&fBareMult);
   b->Add(&fMergedMult);
   b->Add(&fRemovedMult);

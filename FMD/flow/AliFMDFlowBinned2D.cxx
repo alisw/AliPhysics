@@ -68,6 +68,7 @@ AliFMDFlowBinned2D::AliFMDFlowBinned2D(const char*           name,
   : TNamed(name, title),
     fXAxis(xaxis), 
     fYAxis(yaxis),
+    fBins(0),
     fSplitter(splitter)
 {
   // Constructor 
@@ -88,6 +89,7 @@ AliFMDFlowBinned2D::AliFMDFlowBinned2D(const AliFMDFlowBinned2D& o)
     TAttMarker(o),
     fXAxis(o.fXAxis), 
     fYAxis(o.fYAxis),
+    fBins(0),
     fSplitter(0)
 {
   // Copy constructor 

@@ -44,6 +44,9 @@ AliFMDFlowBin::AliFMDFlowBin(UShort_t order, UShort_t k)
     fHarmonic(order), 
     fSplit("ab_split", "Relative split in A,B sub-event", 2, 0, 2, 100, 0, 1),
     fPhi("phi", "Distribution of #varphi-#Psi", 40, 0, 2*TMath::Pi()), 
+    fNA(0),
+    fNB(0),
+    fN(0),
     fAB("psiAB", "Distribution of #Psi_{A} vs. #Psi_{B}", 
 	40, 0, 2*TMath::Pi()/fPsiA.Order(), 40, 0, 2*TMath::Pi()/fPsiA.Order())
 {
@@ -71,6 +74,9 @@ AliFMDFlowBin::AliFMDFlowBin(const AliFMDFlowBin& o)
     fHarmonic(o.fHarmonic),
     fSplit(o.fSplit), 
     fPhi(o.fPhi), 
+    fNA(o.fNA),
+    fNB(o.fNB),
+    fN(o.fN),
     fAB(o.fAB)
 {
   // Copy constructor 
@@ -104,6 +110,10 @@ AliFMDFlowBin::operator=(const AliFMDFlowBin& o)
   fResStar  = o.fResStar;
   fResTdr   = o.fResTdr;
   fHarmonic = o.fHarmonic;
+  fNA       = o.fNA;
+  fNB       = o.fNB;
+  fN        = o.fN;
+  
 
   fSplit.Reset();
   fSplit.Add(&(o.fSplit));

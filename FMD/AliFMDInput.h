@@ -268,6 +268,7 @@ protected:
       fHeader(0),
       fGeoManager(0),
       fTreeMask(0),
+      fRawFile(""),      
       fIsInit(kFALSE),
       fEventCount(0)
   {}

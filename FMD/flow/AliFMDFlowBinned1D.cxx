@@ -58,6 +58,7 @@ AliFMDFlowBinned1D::AliFMDFlowBinned1D(const char* name,
 				       AliFMDFlowSplitter* splitter) 
   : TNamed(name,title), 
     fXAxis(nxbins, xbins),
+    fN(0),
     fBins(0), 
     fSplitter(splitter)
 {
@@ -81,6 +82,7 @@ AliFMDFlowBinned1D::AliFMDFlowBinned1D(const char*           name,
 				       AliFMDFlowSplitter*   splitter)
   : TNamed(name,title), 
     fXAxis(xaxis), 
+    fN(0),
     fBins(0), 
     fSplitter(splitter)
 {
@@ -102,6 +104,8 @@ AliFMDFlowBinned1D::AliFMDFlowBinned1D(const AliFMDFlowBinned1D& o)
     TAttFill(o),
     TAttMarker(o),
     fXAxis(o.fXAxis), 
+    fN(0),
+    fBins(0),
     fSplitter(0)
 {
   // Copy constructor 

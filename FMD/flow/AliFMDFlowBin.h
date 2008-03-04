@@ -88,7 +88,21 @@ public:
     kCounts
   };
   /** Default Ctor - do not use */ 
-  AliFMDFlowBin() {}
+  AliFMDFlowBin() 
+    : fPsi(),
+      fPsiA(),
+      fPsiB(),
+      fRes(),
+      fResStar(),
+      fResTdr(),
+      fHarmonic(),
+      fSplit(),
+      fPhi(),
+      fNA(0),
+      fNB(0),
+      fN(0),
+      fAB()
+  {}
   /** Constructor 
       @param order Order of harmonic. 
       @param k     Factor of event plane order=k * m */
@@ -116,7 +130,7 @@ public:
   virtual void AddToEventPlane(Double_t phi, Double_t w=1, Bool_t a=kTRUE);
   /** Called to add a contribution to the harmonic. 
       @param phi The angle @f$ \varphi \in[0,2\pi]@f$
-      @param w   Weight of @a phi (only used in the calculation of
+      @param wp  Weight of @a phi (only used in the calculation of
                  the event plane). 
       @param wh  Weight if the @f$ \varphi@f$ observation */
   virtual void AddToHarmonic(Double_t phi, Double_t wp=1, Double_t wh=1);

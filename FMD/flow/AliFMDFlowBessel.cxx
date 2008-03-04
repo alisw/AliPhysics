@@ -48,7 +48,7 @@ namespace
     Double_t f1 = Envj(n1, a0) - mp;
     Int_t    nn = 0;
     for (UInt_t i = 0; i < 20; i++) { 
-      nn = n1 - (n1 - n0) / (1. - f0 / f1);
+      nn = Int_t(n1 - (n1 - n0) / (1. - f0 / f1));
       if (fabs(Double_t(nn - n1)) < 1) break;
       n0 = n1;
       f0 = f1;
@@ -338,7 +338,7 @@ AliFMDFlowBessel::Inu(Double_t n1, Double_t n2, Double_t x,
     // Double_t tbi[nt+1], tdi[nt+1];
 
     if (s1 < 0) { 
-      Ihalf(2 * n1, x, tbi, tdi);
+      Ihalf(Int_t(2 * n1), x, tbi, tdi);
       for (Int_t i = 0; i < l1 && i < Int_t(nt); i++) { 
 	bi[i] = tbi[i];
 	di[i] = tdi[i];
@@ -346,7 +346,7 @@ AliFMDFlowBessel::Inu(Double_t n1, Double_t n2, Double_t x,
     }
     if (s2 > 0) { 
       // std::cout << "Evaluating Ihalf(" << 2 * n2 << "," << x << ",...)";
-      Ihalf(2 * n2, x, tbi, tdi);
+      Ihalf(Int_t(2 * n2), x, tbi, tdi);
       for (Int_t i = l1; i <= 2 * Int_t(in2) && i < Int_t(nt); i++) { 
 	UInt_t j = i + l2 - l1;
 	bi[i] = tbi[j];
@@ -374,7 +374,7 @@ AliFMDFlowBessel::Inu(Double_t n1, Double_t n2, Double_t x,
     std::cerr << "Only got " << r << "/" << n << " values" 
 	      << std::endl;
   for (UInt_t i = 0; i < nt; i++) { 
-    UInt_t j = (i + n1 < 0 ? -n1-i : n1+i);
+    UInt_t j = UInt_t(i + n1 < 0 ? -n1-i : n1+i);
     bi[i]    = tbi[j];
     di[i]    = tdi[j];
   }

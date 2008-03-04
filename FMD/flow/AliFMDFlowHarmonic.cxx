@@ -176,7 +176,7 @@ AliFMDFlowHarmonic::Value(Double_t r, Double_t er2, Double_t& e2) const
 }
 //____________________________________________________________________
 void
-AliFMDFlowHarmonic::Print(Option_t* option) const 
+AliFMDFlowHarmonic::Print(Option_t* /*option*/) const 
 {
   Double_t e2, er2 = 1, r = 1;
   Double_t v = Value(r, er2, e2);

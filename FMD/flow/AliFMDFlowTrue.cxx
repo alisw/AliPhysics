@@ -32,7 +32,7 @@
 
 //====================================================================
 void 
-AliFMDFlowTrueBin::AddToHarmonic(Double_t phi, Double_t)
+AliFMDFlowTrueBin::AddToHarmonic(Double_t phi, Double_t, Double_t)
 {
   // Called to add a contribution to the harmonic. 
   // Parameters: 

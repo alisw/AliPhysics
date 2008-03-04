@@ -49,13 +49,14 @@ public:
   AliFMDFlowSplitter() {}
   /** Copy constructor 
       @param o Other splitter to copy from */
-  AliFMDFlowSplitter(const AliFMDFlowSplitter& o) {}
+  AliFMDFlowSplitter(const AliFMDFlowSplitter& o) : TObject(o) {}
+
   /** Destructor */
   virtual ~AliFMDFlowSplitter() {}
   /** Assignment operator  
       @param o Other splitter to assign from. 
       @return Reference to this object */
-  AliFMDFlowSplitter& operator=(const AliFMDFlowSplitter& o) { return *this; }
+  AliFMDFlowSplitter& operator=(const AliFMDFlowSplitter&);
   /** Called at the beginning of an event */
   virtual void Begin() {}
   /** Prepare for an event 
@@ -63,7 +64,7 @@ public:
       @param xs   List of bin variable 
       @param n    Number of entries in @a phis and @a n 
       @return true on success, false otherwise */ 
-  virtual void Event(Double_t* phis, Double_t* xs, ULong_t n) {}
+  virtual void Event(Double_t* phis, Double_t* xs, ULong_t n);
   /** Decide whether entry should go in A or B sub-event. 
       @param entry The entry number 
       @return true if this should go in sub-event A */
@@ -74,13 +75,21 @@ protected:
   /** Reference to axis object */
   ClassDef(AliFMDFlowSplitter,1) // Split events
 };
+inline AliFMDFlowSplitter& 
+AliFMDFlowSplitter::operator=(const AliFMDFlowSplitter& /*o*/)
+{ 
+  return *this;
+}
+inline void 
+AliFMDFlowSplitter::Event(Double_t*, Double_t*,ULong_t) 
+{}
 
 //____________________________________________________________________
 class AliFMDFlowShuffle : public AliFMDFlowSplitter
 {
 public:
   /** Constuctor */
-  AliFMDFlowShuffle() {}
+  AliFMDFlowShuffle() : fIdx(), fN(0) {}
   /** Prepare for an event 
       @param phis List of phis. 
       @param xs   List of bin variable 

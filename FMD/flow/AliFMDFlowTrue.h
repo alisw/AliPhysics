@@ -45,7 +45,7 @@ class AliFMDFlowTrueBin : public AliFMDFlowBin
 {
 public:
   /** Default constructor - do not use */
-  AliFMDFlowTrueBin() {}
+  AliFMDFlowTrueBin() : AliFMDFlowBin(), fPsiR(), fResReal() {}
   /** Constructor */ 
   AliFMDFlowTrueBin(UShort_t order) : 
     AliFMDFlowBin(order, 1), 
@@ -61,9 +61,11 @@ public:
   /** Add a contribution @f$ \cos(n(\varphi-\Psi_R))@f$ where   
       @f$ \Psi_R@f$ is the previously set, well-known event plane
       angle. 
-      @param w   Weight
+      @param wp  Weight of @a phi (only used in the calculation of
+                 the event plane). 
+      @param wh  Weight if the @f$ \varphi@f$ observation 
       @param phi @f$ \varphi@f$ */ 
-  void AddToHarmonic(Double_t phi, Double_t w);
+  void AddToHarmonic(Double_t phi, Double_t wp, Double_t wh=1);
   /** Get the value in this bin 
       @param t  Which type of correction
       @return the value of the harmonic */
