@@ -27,7 +27,7 @@
       esdTree->GetEntry(i);
       if(ev->GetAliESDOld())ev->CopyFromOldESD();
 */
-//   The AliESDInputHAndler does this automatically for you
+//   The AliESDInputHandler does this automatically for you
 //
 // Origin: Christian Klein-Boesing, CERN, Christian.Klein-Boesing@cern.ch
 //-----------------------------------------------------------------
@@ -419,7 +419,7 @@ void AliESDEvent::Print(Option_t *) const
   return;
 }
 
-void AliESDEvent::SetESDfriend(const AliESDfriend *ev) {
+void AliESDEvent::SetESDfriend(const AliESDfriend *ev) const {
   //
   // Attaches the complementary info to the ESD
   //
@@ -437,7 +437,7 @@ void AliESDEvent::SetESDfriend(const AliESDfriend *ev) {
   }
 }
 
-Bool_t  AliESDEvent::RemoveKink(Int_t rm) {
+Bool_t  AliESDEvent::RemoveKink(Int_t rm) const {
   // ---------------------------------------------------------
   // Remove a kink candidate and references to it from ESD,
   // if this candidate does not come from a reconstructed decay
@@ -449,7 +449,7 @@ Bool_t  AliESDEvent::RemoveKink(Int_t rm) {
   return kTRUE;
 }
 
-Bool_t  AliESDEvent::RemoveV0(Int_t rm) {
+Bool_t  AliESDEvent::RemoveV0(Int_t rm) const {
   // ---------------------------------------------------------
   // Remove a V0 candidate and references to it from ESD,
   // if this candidate does not come from a reconstructed decay
@@ -513,7 +513,7 @@ Bool_t  AliESDEvent::RemoveV0(Int_t rm) {
   return kTRUE;
 }
 
-Bool_t  AliESDEvent::RemoveTrack(Int_t rm) {
+Bool_t  AliESDEvent::RemoveTrack(Int_t rm) const {
   // ---------------------------------------------------------
   // Remove a track and references to it from ESD,
   // if this track does not come from a reconstructed decay
@@ -736,7 +736,7 @@ Int_t AliESDEvent::AddCaloCluster(const AliESDCaloCluster *c)
   }
 
 
-void  AliESDEvent::AddRawDataErrorLog(const AliRawDataErrorLog *log) {
+void  AliESDEvent::AddRawDataErrorLog(const AliRawDataErrorLog *log) const {
   TClonesArray &errlogs = *fErrorLogs;
   new(errlogs[errlogs.GetEntriesFast()])  AliRawDataErrorLog(*log);
 }
@@ -913,6 +913,9 @@ void AliESDEvent::CreateStdContent()
 }
 
 TObject* AliESDEvent::FindListObject(const char *name){
+//
+// Find object with name "name" in the list of branches
+//
   if(fESDObjects){
     return fESDObjects->FindObject(name);
   }
@@ -965,24 +968,26 @@ const void AliESDEvent::WriteToTree(TTree* tree) const {
 
   TString branchname;
   TIter next(fESDObjects);
-  const Int_t splitlevel = 99; // default value in TTree::Branch()
-  const Int_t bufsize = 32000; // default value in TTree::Branch()
+  const Int_t kSplitlevel = 99; // default value in TTree::Branch()
+  const Int_t kBufsize = 32000; // default value in TTree::Branch()
   TObject *obj = 0;
 
   while ((obj = next())) {
     branchname.Form("%s", obj->GetName());
-    if ((splitlevel > 1) &&  !obj->InheritsFrom(TClonesArray::Class())) {
+    if ((kSplitlevel > 1) &&  !obj->InheritsFrom(TClonesArray::Class())) {
       branchname += ".";
     }
     tree->Bronch(branchname, obj->ClassName(), fESDObjects->GetObjectRef(obj),
-		 bufsize, splitlevel - 1);
+		 kBufsize, kSplitlevel - 1);
   }
 
 }
 
 
 void AliESDEvent::ReadFromTree(TTree *tree){
-
+//
+// Connect the ESDEvent to a tree
+//
   if(!tree){
     Printf("%s %d AliESDEvent::ReadFromTree() Zero Pointer to Tree \n",(char*)__FILE__,__LINE__);
     return;

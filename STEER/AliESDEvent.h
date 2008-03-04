@@ -168,7 +168,7 @@ public:
   void SetVZEROData(AliESDVZERO * obj);
 
 
-  void SetESDfriend(const AliESDfriend *f);
+  void SetESDfriend(const AliESDfriend *f) const;
   void GetESDfriend(AliESDfriend *f) const;
 
 
@@ -192,9 +192,9 @@ public:
 
 
   Bool_t Clean(Float_t *cleanPars);
-  Bool_t RemoveKink(Int_t i);
-  Bool_t RemoveV0(Int_t i);
-  Bool_t RemoveTrack(Int_t i);
+  Bool_t RemoveKink(Int_t i)   const;
+  Bool_t RemoveV0(Int_t i)     const;
+  Bool_t RemoveTrack(Int_t i)  const;
 
   AliESDtrack *GetTrack(Int_t i) const {
     return (AliESDtrack *)fTracks->UncheckedAt(i);
@@ -271,7 +271,7 @@ public:
   AliRawDataErrorLog *GetErrorLog(Int_t i) const {
     return (AliRawDataErrorLog *)fErrorLogs->UncheckedAt(i);
   }
-  void  AddRawDataErrorLog(const AliRawDataErrorLog *log);
+  void  AddRawDataErrorLog(const AliRawDataErrorLog *log) const;
 
   Int_t GetNumberOfErrorLogs()   const {return fErrorLogs->GetEntriesFast();}
 
