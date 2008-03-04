@@ -317,7 +317,20 @@ void AliTPCcalibDB::Update(){
   AliCDBManager::Instance()->SetCacheFlag(cdbCache); // reset original CDB cache
   
 }
-AliTPCcalibDB::AliTPCcalibDB(const AliTPCcalibDB& org)
+AliTPCcalibDB::AliTPCcalibDB(const AliTPCcalibDB& ):
+  fRun(-1),
+  fTransform(0),
+  fExB(0),
+  fPadGainFactor(0),
+  fPadTime0(0),
+  fPadNoise(0),
+  fPedestals(0),
+  fTemperature(0),
+  fMapping(0),
+  fRecoParamArray(0),
+  fParam(0),
+  fClusterParam(0)
+
 {
   //
   // Copy constructor invalid -- singleton implementation
@@ -325,7 +338,7 @@ AliTPCcalibDB::AliTPCcalibDB(const AliTPCcalibDB& org)
    Error("copy constructor","invalid -- singleton implementation");
 }
 
-AliTPCcalibDB& AliTPCcalibDB::operator= (const AliTPCcalibDB& rhs)
+AliTPCcalibDB& AliTPCcalibDB::operator= (const AliTPCcalibDB& )
 {
 //
 // Singleton implementation - no assignment operator

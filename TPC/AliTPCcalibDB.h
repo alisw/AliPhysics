@@ -74,8 +74,8 @@ protected:
   static Bool_t       fgTerminated;  // termination control 
   ClassDef(AliTPCcalibDB, 0)
  private:
-   AliTPCcalibDB (const AliTPCcalibDB& org);
-   AliTPCcalibDB& operator= (const AliTPCcalibDB& rhs);
+   AliTPCcalibDB (const AliTPCcalibDB& );
+   AliTPCcalibDB& operator= (const AliTPCcalibDB& );
 };
 
 

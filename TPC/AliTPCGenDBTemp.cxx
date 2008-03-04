@@ -43,7 +43,7 @@ AliTPCGenDBTemp::AliTPCGenDBTemp(const char *defaultStorage, const char *specifi
 
 //______________________________________________________________________________________________
 
-AliTPCGenDBTemp::AliTPCGenDBTemp(const AliTPCGenDBTemp& org) : AliDCSGenDB(org)
+AliTPCGenDBTemp::AliTPCGenDBTemp(const AliTPCGenDBTemp& ) : AliDCSGenDB()
 {
 
 //

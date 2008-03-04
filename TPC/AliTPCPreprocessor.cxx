@@ -63,17 +63,15 @@ AliTPCPreprocessor::AliTPCPreprocessor(AliShuttleInterface* shuttle) :
   fROC = AliTPCROC::Instance();
 }
 //______________________________________________________________________________________________
-// AliTPCPreprocessor::AliTPCPreprocessor(const AliTPCPreprocessor& org) :
-//   AliPreprocessor(org),
-//   fConfEnv(0), fTemp(0), fHighVoltage(0), fConfigOK(kTRUE)
-// {
-//   // copy constructor not implemented
-//   //   -- missing underlying copy constructor in AliPreprocessor
-//
-//   Fatal("AliTPCPreprocessor", "copy constructor not implemented");
+ AliTPCPreprocessor::AliTPCPreprocessor(const AliTPCPreprocessor&  ) :
+   AliPreprocessor("TPC",0),
+   fConfEnv(0), fTemp(0), fHighVoltage(0), fConfigOK(kTRUE), fROC(0)
+ {
+
+   Fatal("AliTPCPreprocessor", "copy constructor not implemented");
 //
 // //  fTemp = new AliTPCSensorTempArray(*(org.fTemp));
-// }
+ }
 
 //______________________________________________________________________________________________
 AliTPCPreprocessor::~AliTPCPreprocessor()
@@ -102,8 +100,8 @@ void AliTPCPreprocessor::Initialize(Int_t run, UInt_t startTime,
   AliPreprocessor::Initialize(run, startTimeLocal, endTime);
 
 	AliInfo(Form("\n\tRun %d \n\tStartTime %s \n\tEndTime %s", run,
-		TTimeStamp(startTime).AsString(),
-		TTimeStamp(endTime).AsString()));
+		TTimeStamp((time_t)startTime,0).AsString(),
+		TTimeStamp((time_t)endTime,0).AsString()));
 
   // Preprocessor configuration
 

@@ -16,7 +16,7 @@ class AliTPCPreprocessor : public AliPreprocessor
 {
   public:
     AliTPCPreprocessor(AliShuttleInterface* shuttle);
-//    AliTPCPreprocessor(const AliTPCPreprocessor &org);
+    AliTPCPreprocessor(const AliTPCPreprocessor &);
     virtual ~AliTPCPreprocessor();
 
   protected:

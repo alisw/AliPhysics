@@ -45,8 +45,8 @@ public:
  
 
 private:
-  AliTPCGenDBTemp(const AliTPCGenDBTemp& org);
-  AliTPCGenDBTemp& operator= (const AliTPCGenDBTemp& org);
+  AliTPCGenDBTemp(const AliTPCGenDBTemp& );
+  AliTPCGenDBTemp& operator= (const AliTPCGenDBTemp& );
 
    ClassDef(AliTPCGenDBTemp,1)
 };
