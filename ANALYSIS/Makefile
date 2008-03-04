@@ -1,7 +1,9 @@
 
 include $(ROOTSYS)/test/Makefile.arch
 
-default-target: libANALYSIS.so
+PACKAGE = ANALYSIS
+
+default-target: lib$(PACKAGE).so
 
 ALICEINC      = -I.
 
@@ -18,6 +20,10 @@ ifneq ($(STEERBase_INCLUDE),)
    ALICEINC += -I../$(STEERBase_INCLUDE)
 endif
 
+ifneq ($(ANALYSIS_INCLUDE),)
+   ALICEINC += -I../$(ANALYSIS_INCLUDE)
+endif
+
 # only if no par file was loaded before
 ifeq ($(ALICEINC),-I.)
   ifneq ($(ALICE_ROOT),)
@@ -27,7 +33,6 @@ endif
 
 CXXFLAGS     += $(ALICEINC) -g
 
-PACKAGE = ANALYSIS
 include lib$(PACKAGE).pkg
 
 DHDR_ANALYSIS := $(DHDR)
