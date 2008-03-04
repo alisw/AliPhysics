@@ -233,6 +233,11 @@ public:
       @param max  Maximum of axis. 
       @return An array with the bin boundaries. */
   static TArrayF MakeLogScale(Int_t n, Double_t min, Double_t max);
+
+  /** Set the raw data input 
+      @param file File name - if empty, assume simulated raw. */
+  void SetRawFile(const char* file) { if (file) fRawFile = file; }
+     
 protected:
   /** Copy ctor 
       @param o Object to copy from  */
@@ -295,6 +300,7 @@ protected:
   AliHeader*    fHeader;     // Header 
   TGeoManager*  fGeoManager; // Geometry manager
   Int_t         fTreeMask;   // Which tree's to load
+  TString       fRawFile;    // Raw input file
   Bool_t        fIsInit;     // Have we been initialized 
   Int_t         fEventCount; // Event counter 
   ClassDef(AliFMDInput,0)  //Hits for detector FMD

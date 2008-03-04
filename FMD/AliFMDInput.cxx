@@ -35,6 +35,8 @@
 #include "AliRun.h"             // ALIRUN_H
 #include "AliStack.h"           // ALISTACK_H
 #include "AliRawReaderFile.h"   // ALIRAWREADERFILE_H
+#include "AliRawReaderRoot.h"   // ALIRAWREADERROOT_H
+#include "AliRawReaderDate.h"   // ALIRAWREADERDATE_H
 #include "AliFMD.h"             // ALIFMD_H
 #include "AliFMDHit.h"		// ALIFMDHIT_H
 #include "AliFMDDigit.h"	// ALIFMDDigit_H
@@ -94,6 +96,7 @@ AliFMDInput::AliFMDInput()
     fHeader(0),
     fGeoManager(0),
     fTreeMask(0), 
+    fRawFile(""),
     fIsInit(kFALSE),
     fEventCount(0)
 {
@@ -133,6 +136,7 @@ AliFMDInput::AliFMDInput(const char* gAliceFile)
     fHeader(0),
     fGeoManager(0),
     fTreeMask(0), 
+    fRawFile(""),
     fIsInit(kFALSE),
     fEventCount(0)
 {
@@ -219,7 +223,13 @@ AliFMDInput::Init()
   if (TESTBIT(fTreeMask, kRaw)) {
     AliInfo("Getting FMD raw data digits");
     fArrayA = new TClonesArray("AliFMDDigit");
-    fReader = new AliRawReaderFile(-1);
+    if (!fRawFile.IsNull() && fRawFile.EndsWith(".root")) 
+      fReader = new AliRawReaderRoot(fRawFile.Data());
+    else if (!fRawFile.IsNull() && fRawFile.EndsWith(".raw"))
+      fReader = new AliRawReaderDate(fRawFile.Data());
+    else
+      fReader = new AliRawReaderFile(-1);
+    
   }
   
   // Optionally, get the geometry 
