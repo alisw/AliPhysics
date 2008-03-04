@@ -355,7 +355,7 @@ void AliPHOSEmcRecPoint::ExecuteEvent(Int_t event, Int_t, Int_t) /*const*/
 }
 
 //____________________________________________________________________________
-void  AliPHOSEmcRecPoint::EvalDispersion(Float_t logWeight,TClonesArray * digits, TVector3 &vInc)
+void  AliPHOSEmcRecPoint::EvalDispersion(Float_t logWeight,TClonesArray * digits, TVector3 & /* vInc */)
 {
   // Calculates the dispersion of the shower at the origine of the RecPoint
   //DP: should we correct dispersion for non-perpendicular hit????????
@@ -491,7 +491,7 @@ void AliPHOSEmcRecPoint::EvalCoreEnergy(Float_t logWeight, TClonesArray * digits
 }
 
 //____________________________________________________________________________
-void  AliPHOSEmcRecPoint::EvalElipsAxis(Float_t logWeight,TClonesArray * digits, TVector3 &vInc)
+void  AliPHOSEmcRecPoint::EvalElipsAxis(Float_t logWeight,TClonesArray * digits, TVector3 & /* vInc */)
 {
   // Calculates the axis of the shower ellipsoid
 
@@ -570,7 +570,7 @@ void  AliPHOSEmcRecPoint::EvalElipsAxis(Float_t logWeight,TClonesArray * digits,
 }
 
 //____________________________________________________________________________
-void  AliPHOSEmcRecPoint::EvalMoments(Float_t logWeight,TClonesArray * digits, TVector3 &vInc)
+void  AliPHOSEmcRecPoint::EvalMoments(Float_t logWeight,TClonesArray * digits, TVector3 & /* vInc */)
 {
   // Calculate the shower moments in the eigen reference system
   // M2x, M2z, M3x, M4z

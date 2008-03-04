@@ -225,7 +225,7 @@ break;
   }
 }
 //____________________________________________________________________________
-void AliPHOSRecPoint::EvalAll(TClonesArray * digits) 
+void AliPHOSRecPoint::EvalAll(TClonesArray * /* digits */) 
 {
   //evaluates (if necessary) all RecPoint data members 
 

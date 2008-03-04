@@ -41,7 +41,7 @@ AliPHOSRecoParam::AliPHOSRecoParam() :
 }
 
 //-----------------------------------------------------------------------------
-AliPHOSRecoParam::AliPHOSRecoParam(const AliPHOSRecoParam& recoParam):
+AliPHOSRecoParam::AliPHOSRecoParam(const AliPHOSRecoParam& ):
   TNamed(),
   fClusteringThreshold(9999),
   fLocMaxCut(9999),

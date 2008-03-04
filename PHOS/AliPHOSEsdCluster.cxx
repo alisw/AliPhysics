@@ -79,7 +79,7 @@ void AliPHOSEsdCluster::Recalibrate(AliPHOSCalibData * calibData,AliESDCaloCells
        break ;
     }
     if(pos<phsCells->GetNumberOfCells()){
-      Double_t energy = phsCells->GetAmplitude(pos) ;
+//       Double_t energy = phsCells->GetAmplitude(pos) ;
       fCellsAmpFraction[i]*=calibData->GetADCchannelEmc (module,column,row);
     }
     else{

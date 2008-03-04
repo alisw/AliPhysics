@@ -54,6 +54,8 @@ AliPHOSGeometry::AliPHOSGeometry() :
 	            fAngle(0.f),
 	            fPHOSAngle(0),
 	            fIPtoUpperCPVsurface(0),
+		    fCrystalShift(0),
+		    fCryCellShift(0),
 	            fRotMatrixArray(0),
 	            fGeometryEMCA(0),
 	            fGeometryCPV(0),
@@ -71,6 +73,8 @@ AliPHOSGeometry::AliPHOSGeometry(const AliPHOSGeometry & rhs)
 		      fAngle(rhs.fAngle),
 		      fPHOSAngle(0),
 		      fIPtoUpperCPVsurface(rhs.fIPtoUpperCPVsurface),
+		      fCrystalShift(rhs.fCrystalShift),
+		      fCryCellShift(rhs.fCryCellShift),
 		      fRotMatrixArray(0),
 		      fGeometryEMCA(0),
 		      fGeometryCPV(0),
@@ -86,6 +90,8 @@ AliPHOSGeometry::AliPHOSGeometry(const Text_t* name, const Text_t* title)
 	            fAngle(0.f),
 	            fPHOSAngle(0),
 	            fIPtoUpperCPVsurface(0),
+		    fCrystalShift(0),
+		    fCryCellShift(0),
 	            fRotMatrixArray(0),
 	            fGeometryEMCA(0),
 	            fGeometryCPV(0),
@@ -275,7 +281,7 @@ Bool_t AliPHOSGeometry::AbsToRelNumbering(Int_t absId, Int_t * relid) const
   return rv ; 
 }
 //____________________________________________________________________________
-void AliPHOSGeometry::GetGlobal(const AliRecPoint* recPoint, TVector3 & gpos) const
+void AliPHOSGeometry::GetGlobal(const AliRecPoint* , TVector3 & ) const
 {
   AliFatal(Form("Please use GetGlobalPHOS(recPoint,gpos) instead of GetGlobal!"));
 }
