@@ -46,6 +46,20 @@ AliAnalysis::AliAnalysis(const char* name,const char* title):
  //ctor
 }
 /*********************************************************/
+AliAnalysis::AliAnalysis(const AliAnalysis& ana):
+ TTask(ana),
+ fEventCut(ana.fEventCut),
+ fCutOnSim(ana.fCutOnSim),
+ fCutOnRec(ana.fCutOnRec),
+ fPairCut(ana.fPairCut),
+ fkPass(ana.fkPass),
+ fkPass1(ana.fkPass1),
+ fkPass2(ana.fkPass2),
+ fkPassPairProp(ana.fkPassPairProp)
+{
+ //ctor
+}
+/*********************************************************/
 
 AliAnalysis::~AliAnalysis()
 {

@@ -73,7 +73,11 @@ class AliAnalysis: public TTask
     Bool_t PassTrack2(AliVAODParticle* /*part*/, AliVAODParticle* track) const {return fPairCut->GetSecondPartCut()->Rejected(track);}
     Bool_t PassPairPropTrack (AliAODPair* /*partpair*/, AliAODPair* trackpair) const {return fPairCut->PassPairProp((AliAODPair*)trackpair);}
 
+    AliAnalysis(const AliAnalysis&); 
+
   private:
+    AliAnalysis& operator=(const AliAnalysis&); // Not implemented
+
     ClassDef(AliAnalysis,1)
 };
 
