@@ -59,6 +59,7 @@ AliHBTPositionRandomizer::AliHBTPositionRandomizer():
 
 AliHBTPositionRandomizer::AliHBTPositionRandomizer(AliReader* reader):
  fReader(reader),
+ fDefaultRandomizer(0x0),
  fRandomizers(new TObjArray(fgkNumberOfPids)),
  fNPid(1),
  fPids(new Int_t[fgkNumberOfPids]),
@@ -77,6 +78,7 @@ AliHBTPositionRandomizer::AliHBTPositionRandomizer(AliReader* reader):
 AliHBTPositionRandomizer::AliHBTPositionRandomizer(const AliHBTPositionRandomizer& in):
  AliReader(in),
  fReader(),
+ fDefaultRandomizer(0x0),
  fRandomizers(0x0),
  fNPid(0),
  fPids(0x0),

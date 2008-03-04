@@ -37,7 +37,11 @@ ClassImp(AliHBTasCorrFctn)
 
      fNum(0x0),
      fDen(0x0),
-     fRat(0x0)
+     fRat(0x0),
+     fnbins(0),
+     fNumberOfIntervals(0),
+     fmaxXval(0),
+     fminXval(0)
 
 {
 //ctor
@@ -50,7 +54,11 @@ AliHBTasCorrFctn::AliHBTasCorrFctn(const char* name, const char* title, Int_t nb
 
      fNum(new TObjArray()),
      fDen(new TObjArray()),
-     fRat(new TObjArray())
+     fRat(new TObjArray()),
+     fnbins(0),
+     fNumberOfIntervals(0),
+     fmaxXval(0),
+     fminXval(0)
 {
      SetParams(nbins,maxXval, minXval);
 }
@@ -63,7 +71,12 @@ AliHBTasCorrFctn::AliHBTasCorrFctn(const AliHBTasCorrFctn& in):
 
      fNum((in.fNum)?(TObjArray*)in.fNum->Clone():0x0),
      fDen((in.fDen)?(TObjArray*)in.fDen->Clone():0x0),
-     fRat((in.fRat)?(TObjArray*)in.fRat->Clone():0x0)
+     fRat((in.fRat)?(TObjArray*)in.fRat->Clone():0x0),
+     fnbins(in.fnbins),
+     fNumberOfIntervals(in.fNumberOfIntervals),
+     fmaxXval(in.fmaxXval),
+     fminXval(in.fminXval)
+
  {
 //ctor
 }

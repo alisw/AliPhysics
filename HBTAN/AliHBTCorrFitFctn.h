@@ -42,7 +42,10 @@ class AliHBTCorrFitFctn: public AliHBTOnePairFctn1D
    Int_t    fNMaxPairsNormArea;//number of pairs in normalization area
    Float_t  fNormRangeMin;
    Float_t  fNormRangeMax;
-  public:
+  private:
+   AliHBTCorrFitFctn(const AliHBTCorrFitFctn&); // Not implemented
+   AliHBTCorrFitFctn& operator=(const AliHBTCorrFitFctn&); // Not implemented
+
    ClassDef(AliHBTCorrFitFctn,1)
 };
 

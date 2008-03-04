@@ -60,6 +60,8 @@ private:
      Int_t fNumberOfIntervals;   //number of intervals
      double fmaxXval; //max histogram's X value 
      double fminXval; //min histogram's X value
+
+     AliHBTasCorrFctn& operator=(const AliHBTasCorrFctn&); // Not implemented
      
      ClassDef(AliHBTasCorrFctn,1)
 };

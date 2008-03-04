@@ -66,6 +66,7 @@ class AliHBTCorrectOSLCorrelFctn: public AliHBTOnePairFctn3D, public AliHBTCorre
     Double_t fRLongSq;
     
   private:
+    AliHBTCorrectOSLCorrelFctn& operator=(const AliHBTCorrectOSLCorrelFctn&); // Not implemented
   
     ClassDef(AliHBTCorrectOSLCorrelFctn,1)
 };

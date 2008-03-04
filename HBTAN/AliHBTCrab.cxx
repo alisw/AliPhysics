@@ -55,10 +55,19 @@ void AliHBTCrab::Set()
 }
 //===================================================================
 
-AliHBTCrab::AliHBTCrab():
-fBreitWigner(kFALSE),
-fReducedMom(kTRUE),
-fMaxMomentum(100.0)
+AliHBTCrab::AliHBTCrab() :
+  fBreitWigner(kFALSE),
+  fReducedMom(kTRUE),
+  fMaxMomentum(100.0),
+  fPid1(0),
+  fPid2(0),
+  fMass1(0),
+  fMass2(0),
+  fInteractionWsym(0),
+  fInteractionWanti(0),
+  fInteractionWnosym(0),
+  fInteractionDelk(0),
+  fInteractionNkmax(0)
 {
   //ctor
   if(fgCrab)
@@ -68,11 +77,20 @@ fMaxMomentum(100.0)
 }
 //===================================================================
 
-AliHBTCrab::AliHBTCrab(const AliHBTCrab &/*source*/):
-AliHBTWeights(),
-fBreitWigner(kFALSE),
-fReducedMom(kTRUE),
-fMaxMomentum(100.0)
+AliHBTCrab::AliHBTCrab(const AliHBTCrab &/*source*/) :
+  AliHBTWeights(),
+  fBreitWigner(kFALSE),
+  fReducedMom(kTRUE),
+  fMaxMomentum(100.0),
+  fPid1(0),
+  fPid2(0),
+  fMass1(0),
+  fMass2(0),
+  fInteractionWsym(0),
+  fInteractionWanti(0),
+  fInteractionWnosym(0),
+  fInteractionDelk(0),
+  fInteractionNkmax(0)
 {
   //ctor
 }

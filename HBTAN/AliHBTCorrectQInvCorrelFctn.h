@@ -112,6 +112,8 @@ class AliHBTCorrectQInvCorrelFctn: public AliHBTOnePairFctn1D, public AliHBTCorr
     Float_t  fLambdaConvergenceTreshold;//fLambdaConvergenceTreshold
     
   private:
+    AliHBTCorrectQInvCorrelFctn& operator=(const AliHBTCorrectQInvCorrelFctn&); // Not implemented
+
     ClassDef(AliHBTCorrectQInvCorrelFctn,1)
 };
 

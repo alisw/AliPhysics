@@ -38,7 +38,7 @@ class TList;
 class AliHBTAnalysisStavinskyMixing: public AliHBTAnalysis
  {
    public:
-     AliHBTAnalysisStavinskyMixing(){};
+     AliHBTAnalysisStavinskyMixing(): fProcEvent(NULL) {};
      virtual ~AliHBTAnalysisStavinskyMixing() {}
 
      

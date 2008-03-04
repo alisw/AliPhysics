@@ -18,15 +18,6 @@ class AliHBTWeightsPID: public TObject
  {
  public:
    AliHBTWeightsPID();
-   AliHBTWeightsPID(const AliHBTWeightsPID &source):TObject(source) {
-     //Copy ctor needed by the coding conventions but not used
-     Fatal("AliHBTWeightsPID","copy ctor not implemented");
-   }
-   AliHBTWeightsPID & operator=(const AliHBTWeightsPID &/*source*/) {
-     //Assignment operator needed by the coding conventions but not used
-     Fatal("AliHBTWeightsPID","assignment operator not implemented");
-     return * this;
-   }
    virtual ~AliHBTWeightsPID(){;}
    static AliHBTWeightsPID* Instance();
    
@@ -52,6 +43,10 @@ class AliHBTWeightsPID: public TObject
    TF1 *fEffic3polTOF;//comment?
    TF1 *fEffic4polTOF;//comment?
    
+ private:
+   AliHBTWeightsPID(const AliHBTWeightsPID &source); // Not implemented
+   AliHBTWeightsPID & operator=(const AliHBTWeightsPID &/*source*/); // Not implemented
+
    ClassDef(AliHBTWeightsPID,2)
  };
 

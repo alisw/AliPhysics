@@ -195,7 +195,8 @@ AliHBTMonOneParticleFctn1D::AliHBTMonOneParticleFctn1D():
  }
 /******************************************************************/
 
-AliHBTMonOneParticleFctn1D::AliHBTMonOneParticleFctn1D(Int_t nbins, Double_t maxXval, Double_t minXval)
+AliHBTMonOneParticleFctn1D::AliHBTMonOneParticleFctn1D(Int_t nbins, Double_t maxXval, Double_t minXval) :
+  fResult(0)
  {
    //ctor
    TString numstr = fName + " Result";  //title and name of the 
@@ -205,8 +206,10 @@ AliHBTMonOneParticleFctn1D::AliHBTMonOneParticleFctn1D(Int_t nbins, Double_t max
  }
 
 AliHBTMonOneParticleFctn1D::AliHBTMonOneParticleFctn1D(const Char_t *name, const Char_t *title,
-                    Int_t nbins, Double_t maxXval, Double_t minXval)
-	:AliHBTMonOneParticleFctn(name,title)
+						       Int_t nbins, Double_t maxXval, Double_t minXval) :
+  AliHBTMonOneParticleFctn(name,title),
+  fResult(0)
+
 {
   //ctor
    TString numstr = fName + " Result";  //title and name of the 
@@ -237,8 +240,8 @@ void AliHBTMonOneParticleFctn1D::Process(AliVAODParticle* particle)
 ClassImp( AliHBTMonOneParticleFctn2D )
 
 AliHBTMonOneParticleFctn2D::AliHBTMonOneParticleFctn2D(Int_t nXbins, Double_t maxXval, Double_t minXval , 
-                    Int_t nYbins, Double_t maxYval, Double_t minYval)
-
+						       Int_t nYbins, Double_t maxYval, Double_t minYval) :
+   fResult(0)
 {
   //ctor
    TString numstr = fName + " Result";  //title and name of the 
@@ -278,8 +281,8 @@ ClassImp( AliHBTMonOneParticleFctn3D)
 AliHBTMonOneParticleFctn3D::
 AliHBTMonOneParticleFctn3D(Int_t nXbins, Double_t maxXval, Double_t minXval, 
                     Int_t nYbins, Double_t maxYval, Double_t minYval, 
-                    Int_t nZbins, Double_t maxZval, Double_t minZval)
-
+                    Int_t nZbins, Double_t maxZval, Double_t minZval) :
+   fResult(0)
 {
   //ctor
    TString numstr = fName + " Result";  //title and name of the 
@@ -309,7 +312,8 @@ AliHBTMonOneParticleFctn3D::~AliHBTMonOneParticleFctn3D()
 ClassImp( AliHBTMonTwoParticleFctn1D)
 
 AliHBTMonTwoParticleFctn1D::
-AliHBTMonTwoParticleFctn1D(Int_t nbins, Double_t maxval, Double_t minval)
+AliHBTMonTwoParticleFctn1D(Int_t nbins, Double_t maxval, Double_t minval) :
+  fResult(0)
  {
    //ctor
    TString numstr = fName + " Result";  //title and name of the 
@@ -324,7 +328,8 @@ AliHBTMonTwoParticleFctn1D(Int_t nbins, Double_t maxval, Double_t minval)
 AliHBTMonTwoParticleFctn1D::
 AliHBTMonTwoParticleFctn1D(const Char_t* name, const Char_t* title,
                     Int_t nbins, Double_t maxval, Double_t minval)
-	:AliHBTMonTwoParticleFctn(name,title)
+  :AliHBTMonTwoParticleFctn(name,title),
+   fResult(0)
  {
    //ctor
    TString numstr = fName + " Result";  //title and name of the 
@@ -364,8 +369,8 @@ ClassImp( AliHBTMonTwoParticleFctn2D)
 
 AliHBTMonTwoParticleFctn2D::
 AliHBTMonTwoParticleFctn2D(Int_t nXbins, Double_t maxXval, Double_t minXval , 
-                    Int_t nYbins, Double_t maxYval, Double_t minYval)
-
+			   Int_t nYbins, Double_t maxYval, Double_t minYval) :
+   fResult(0)
 {
   //ctor
    TString numstr = fName + " Result";  //title and name of the 

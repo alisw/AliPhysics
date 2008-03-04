@@ -132,6 +132,8 @@ AliHBTCorrectQInvCorrelFctn::AliHBTCorrectQInvCorrelFctn(const char* name,const 
   fSmearedDenom(0x0),
   fR2(0.0),
   fLambda(0.0),
+  fFittedR(0),
+  fFittedLambda(0),
   fRConvergenceTreshold(0.3),
   fLambdaConvergenceTreshold(0.05)
 {
@@ -151,6 +153,8 @@ AliHBTCorrectQInvCorrelFctn::AliHBTCorrectQInvCorrelFctn(TH1D* measqinv,const ch
   fSmearedDenom(0x0),
   fR2(0.0),
   fLambda(0.0),
+  fFittedR(0),
+  fFittedLambda(0),
   fRConvergenceTreshold(0.3),
   fLambdaConvergenceTreshold(0.05)
 {
@@ -169,6 +173,8 @@ AliHBTCorrectQInvCorrelFctn::AliHBTCorrectQInvCorrelFctn(const char* name, const
   fSmearedDenom(0x0),
   fR2(0.0),
   fLambda(0.0),
+  fFittedR(0),
+  fFittedLambda(0),
   fRConvergenceTreshold(0.3),
   fLambdaConvergenceTreshold(0.05)
 {
@@ -185,6 +191,8 @@ AliHBTCorrectQInvCorrelFctn::AliHBTCorrectQInvCorrelFctn(const AliHBTCorrectQInv
   fSmearedDenom(0x0),
   fR2(0.0),
   fLambda(0.0),
+  fFittedR(0),
+  fFittedLambda(0),
   fRConvergenceTreshold(0),
   fLambdaConvergenceTreshold(0)
 {

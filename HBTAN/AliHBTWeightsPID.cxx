@@ -18,7 +18,22 @@ ClassImp(AliHBTWeightsPID)
  
 AliHBTWeightsPID* AliHBTWeightsPID::fgWeightsPID=NULL; 
 
-AliHBTWeightsPID::AliHBTWeightsPID()
+AliHBTWeightsPID::AliHBTWeightsPID() :
+  fEfficTPC1(0),
+  fEfficTPC2(0),
+  fEfficTOF1(0),
+  fEfficTOF2(0),
+  fPtK(0),
+  fPtKefftpc(0),
+  fPtKefftpcboth(0),
+  fEffic1pol(0),
+  fEffic2pol(0),
+  fEffic3pol(0),
+  fEffic4pol(0),
+  fEffic1polTOF(0),
+  fEffic2polTOF(0),
+  fEffic3polTOF(0),
+  fEffic4polTOF(0)
 {
   //ctor
   //initial parameters of model

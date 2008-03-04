@@ -323,7 +323,10 @@ AliHBTFunction1D::AliHBTFunction1D(const Char_t *name, const Char_t *title,
 /******************************************************************/
 
 AliHBTFunction1D::AliHBTFunction1D(const AliHBTFunction1D& source):
- AliHBTFunction(source)
+  AliHBTFunction(source),
+  fNumerator(0x0),
+  fDenominator(0x0),
+  fNBinsToScale(0x0)
 {
 // Copy constructor needed by the coding conventions byt not used
   Fatal("AliHBTFunction1D(const AliHBTFunction1D&)","Cpy ctor not usable.");
@@ -501,7 +504,11 @@ AliHBTFunction2D::AliHBTFunction2D(const Char_t *name, const Char_t *title,
 }	  
 /******************************************************************/
 AliHBTFunction2D::AliHBTFunction2D(const AliHBTFunction2D & source):
- AliHBTFunction(source)
+  AliHBTFunction(source),
+  fNumerator(0x0),
+  fDenominator(0x0),
+  fNBinsToScaleX(0x0), 
+  fNBinsToScaleY(0x0)
 {
 // Copy constructor needed by the coding conventions byt not used
   Fatal("AliHBTFunction2D(const AliHBTFunction2D&)","Cpy ctor not usable.");
@@ -711,7 +718,12 @@ AliHBTFunction3D::AliHBTFunction3D(const Char_t *name, const Char_t *title,
 /******************************************************************/
 
 AliHBTFunction3D::AliHBTFunction3D(const AliHBTFunction3D& source):
- AliHBTFunction(source)
+  AliHBTFunction(source),
+  fNumerator(0x0),
+  fDenominator(0x0),
+  fNBinsToScaleX(0x0), 
+  fNBinsToScaleY(0x0),
+  fNBinsToScaleZ(0x0)
 {
 // Copy constructor needed by the coding conventions byt not used
   Fatal("AliHBTFunction3D(const AliHBTFunction3D&)","Cpy ctor not usable.");

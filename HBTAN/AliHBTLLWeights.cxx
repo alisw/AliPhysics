@@ -192,6 +192,7 @@ AliHBTLLWeights::AliHBTLLWeights():
  fRandomPosition(kNone),
  fRadius(0.0),
  fOneMinusLambda(0.0),
+ fApproximationModel(0),
  fPID1(0),
  fPID2(0),
  fSigma(0.0)
@@ -214,6 +215,7 @@ AliHBTLLWeights::AliHBTLLWeights(const AliHBTLLWeights &/*source*/):
  fRandomPosition(kNone),
  fRadius(0.0),
  fOneMinusLambda(0.0),
+ fApproximationModel(0),
  fPID1(0),
  fPID2(0),
  fSigma(0.0)

@@ -125,7 +125,7 @@ class AliHBTRndmGaussBall: public AliHBTRndm
 class AliHBTRndmCyllSurf: public AliHBTRndm
 {
   public:
-   AliHBTRndmCyllSurf():fR(0.0){}
+   AliHBTRndmCyllSurf():fR(0.0), fL(0){}
    AliHBTRndmCyllSurf(Float_t r, Float_t l):fR(r),fL(l){}
    virtual ~AliHBTRndmCyllSurf(){}
    
