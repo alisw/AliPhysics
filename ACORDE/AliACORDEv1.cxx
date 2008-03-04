@@ -39,9 +39,9 @@
 #include <TGeoMatrix.h>
 #include <TGeometry.h>
 #include <TMath.h>
-#include <TNode.h>
+//#include <TNode.h>
 #include <TTUBE.h>
-#include <TVirtualMC.h>
+//#include <TVirtualMC.h>
 #include <TString.h>
 #include <TSystem.h>
 
@@ -51,7 +51,7 @@
 #include "TGeoManager.h"
 #include "TGeoVolume.h"
 #include "TGeoPcon.h"
-#include "TGeoTube.h"
+//#include "TGeoTube.h"
 #include "TGeoPgon.h"
 #include "TGeoTrd1.h"
 #include "TGeoCompositeShape.h"
@@ -63,7 +63,7 @@
 #include <TLorentzVector.h>
 #include <TVirtualMC.h>
 #include <TPDGCode.h>
-#include <TGeometry.h>
+//#include <TGeometry.h>
 #include <TBRIK.h>
 #include <TNode.h>
  
@@ -135,7 +135,7 @@ void AliACORDEv1::CreateCavern()
 
 	//---> define some media
 
-	TGeoMedium *Vacuum = new TGeoMedium("Vacuum",1, matVacuum);
+	TGeoMedium *vacuum = new TGeoMedium("Vacuum",1, matVacuum);
 
 	//---> define the measures
 
@@ -145,8 +145,8 @@ void AliACORDEv1::CreateCavern()
 
 	//---> define the box for the mother volume
 
-	TGeoVolume *ACORDE = acorde->MakeBox("ACORDE", Vacuum, dx1, dy1, dz1);
-	acorde->SetTopVolume(ACORDE);
+	TGeoVolume *aCORDE = acorde->MakeBox("ACORDE", vacuum, dx1, dy1, dz1);
+	acorde->SetTopVolume(aCORDE);
 
 	//---> create shafts&molasse
 
@@ -157,6 +157,10 @@ void AliACORDEv1::CreateCavern()
 void AliACORDEv1::CreateShafts()
 {
 
+	//---> This shaft is composes by an open tube down in the hall
+	//---> and a cilinder above the level of the celling
+	//---> Every structure relative to the shaft will be put into this volume
+
 
 	TGeoManager *acorde = new TGeoManager("ACORDE2007", "Geometry of ACORDE");	
 
@@ -166,14 +170,11 @@ void AliACORDEv1::CreateShafts()
 
 	//---> define some media
 
-	TGeoMedium *Vacuum = new TGeoMedium("Vacuum",1, matVacuum);
+	TGeoMedium *vacuum = new TGeoMedium("Vacuum",1, matVacuum);
 	TGeoMaterial *matAl = new TGeoMaterial("Al", 26.98,13,2.7);
-	TGeoMedium *Al = new TGeoMedium("Root Material",2, matAl);
+	TGeoMedium *al = new TGeoMedium("Root Material",2, matAl);
 	
-	//---> This shaft is composes by an open tube down in the hall
-	//---> and a cilinder above the level of the celling
-	//---> Every structure relative to the shaft will be put into this volume
-
+	
 	//---> Access to shafts
 	//---> define the Matrix Rotation&other variables
 
@@ -201,20 +202,20 @@ void AliACORDEv1::CreateShafts()
 
 	//---> define the cilinders to hold the main structure in the shaft
 
-	TGeoVolume *O = acorde->MakeBox("O", Vacuum, 25., 25., 5.);
-	TGeoVolume *CSF1 = acorde->MakeTubs("CSF1",Al,ptube[0],ptube[1],ptube[2],ptube[3],ptube[4]);
-	TGeoVolume *CSF2 = acorde->MakeTubs("CSF2",Al,ptubs[0],ptubs[1],ptubs[2],ptubs[3],ptubs[4]);
-	O->AddNode(CSF1, 1);
-	CSF1->AddNode(CSF2,1,tr2);
+	TGeoVolume *o = acorde->MakeBox("O", vacuum, 25., 25., 5.);
+	TGeoVolume *cSF1 = acorde->MakeTubs("CSF1",al,ptube[0],ptube[1],ptube[2],ptube[3],ptube[4]);
+	TGeoVolume *cSF2 = acorde->MakeTubs("CSF2",al,ptubs[0],ptubs[1],ptubs[2],ptubs[3],ptubs[4]);
+	o->AddNode(cSF1, 1);
+	cSF1->AddNode(cSF2,1,tr2);
 
 	//---> definition of the other part of the shaft
 
   	ptube[0] = ptubs[0]; // Inner radius
 	ptube[1] = ptubs[1]; // Outer radius
 	ptube[2] = 5150/2 - ptubs[2]; // Half lenght
-	TGeoVolume *CSF3 = acorde->MakeTubs("CSF3",Al,ptubs[0],ptubs[1],ptubs[2],ptubs[3],ptubs[4]);
+	TGeoVolume *cSF3 = acorde->MakeTubs("CSF3",al,ptubs[0],ptubs[1],ptubs[2],ptubs[3],ptubs[4]);
 	TGeoTranslation *tr3 = new TGeoTranslation(0,0,5150/2-ptube[2]);
-	CSF1->AddNode(CSF3,1,tr3);
+	cSF1->AddNode(cSF3,1,tr3);
 
 	//---> define concrete walls along the shaft (next to the elevator)
 	
@@ -222,70 +223,70 @@ void AliACORDEv1::CreateShafts()
 	pbox[0]=480/2;
 	pbox[1]=120/2;
 	pbox[2]=5150/2;
-	TGeoVolume *CSW1 = acorde->MakeBox("CSW1",Vacuum,pbox[0],pbox[1],pbox[2]);
+	TGeoVolume *cSW1 = acorde->MakeBox("CSW1",vacuum,pbox[0],pbox[1],pbox[2]);
 	TGeoTranslation *br1 = new TGeoTranslation(820+pbox[0],150+pbox[1],0);
-	TGeoTranslation *br1_a = new TGeoTranslation(820+pbox[0],-300-pbox[1],0);
-	CSF1->AddNode(CSW1,1,br1);
-	CSF1->AddNode(CSW1,1,br1_a);
+	TGeoTranslation *br1a = new TGeoTranslation(820+pbox[0],-300-pbox[1],0);
+	cSF1->AddNode(cSW1,1,br1);
+	cSF1->AddNode(cSW1,1,br1a);
 
 	pbox[0] = 120/2;  // Half length in X
 	pbox[1] = 750/2;  // Half length in Y
 	pbox[2] = 5150/2; // Half length in Z
-	TGeoVolume *CSW2 = acorde->MakeBox("CSW2",Vacuum,pbox[0],pbox[1],pbox[2]);
+	TGeoVolume *cSW2 = acorde->MakeBox("CSW2",vacuum,pbox[0],pbox[1],pbox[2]);
 	TGeoTranslation *br2 = new TGeoTranslation(820-60,150+pbox[1],0);
-	CSF1->AddNode(CSW2,1,br2);
+	cSF1->AddNode(cSW2,1,br2);
 
 
 	pbox[0] = 120/2;  // Half length in X
 	pbox[1] = 600/2;  // Half lenght in Y
 	pbox[2] = 5150/2; // Half length in Z
-	TGeoVolume *CSW3 = acorde->MakeBox("CSW3",Vacuum,pbox[0],pbox[1],pbox[2]);
+	TGeoVolume *cSW3 = acorde->MakeBox("CSW3",vacuum,pbox[0],pbox[1],pbox[2]);
 	TGeoTranslation *br3 = new TGeoTranslation(820-60,-300-pbox[1],0);
-	CSF1->AddNode(CSW3,1,br3);
+	cSF1->AddNode(cSW3,1,br3);
 
 	pbox[0] = 400/2;  // Half length in X
 	pbox[1] = 2300/2;  // Half lenght in Y
 	pbox[2] = 300/2; // Half length in Z
-	TGeoVolume *CSW4 = acorde->MakeBox("CSW4",Vacuum,pbox[0],pbox[1],pbox[2]);
+	TGeoVolume *cSW4 = acorde->MakeBox("CSW4",vacuum,pbox[0],pbox[1],pbox[2]);
 	TGeoTranslation *br4 = new TGeoTranslation(pbox[1]-pbox[0],0,3000-5150/2-pbox[2]);
-	CSF1->AddNode(CSW4,1,br4);
+	cSF1->AddNode(cSW4,1,br4);
 
 
 	pbox[0] = 1400/2;  // Half length in X
 	pbox[1] = 2300/2;  // Half lenght in Y
 	pbox[2] = 170/2; // Half length in Z
-	TGeoVolume *CSW5 = acorde->MakeBox("CSW5",Vacuum,pbox[0],pbox[1],pbox[2]);
+	TGeoVolume *cSW5 = acorde->MakeBox("CSW5",vacuum,pbox[0],pbox[1],pbox[2]);
 	TGeoTranslation *br5 = new TGeoTranslation(0,0,3000-5150/2-130);
-	CSF1->AddNode(CSW5,1,br5);
+	cSF1->AddNode(cSW5,1,br5);
 
 
 	pbox[0] = 170/2;  // Half length in X
 	pbox[1] = 2300/2;  // Half lenght in Y
 	pbox[2] = 300/2; // Half length in Z
-	TGeoVolume *CSW6 = acorde->MakeBox("CSW6",Vacuum,pbox[0],pbox[1],pbox[2]);
+	TGeoVolume *cSW6 = acorde->MakeBox("CSW6",vacuum,pbox[0],pbox[1],pbox[2]);
 	TGeoTranslation *br6 = new TGeoTranslation(-1400/2-pbox[0],0,3000-5150/2-pbox[2]);
-	CSF1->AddNode(CSW6,1,br6);
+	cSF1->AddNode(cSW6,1,br6);
 
 
 	pbox[0] = 100/2;  // Half length in X
 	pbox[1] = 2300/2;  // Half lenght in Y
 	pbox[2] = 450/2; // Half length in Z
-	TGeoVolume *CSW7 = acorde->MakeBox("CSW7",Vacuum,pbox[0],pbox[1],pbox[2]);
+	TGeoVolume *cSW7 = acorde->MakeBox("CSW7",vacuum,pbox[0],pbox[1],pbox[2]);
 	TGeoTranslation *br7 = new TGeoTranslation(-1400/2-170-pbox[0],0,3000-5150/2+pbox[2]);
-	CSF1->AddNode(CSW7,1,br7);
+	cSF1->AddNode(cSW7,1,br7);
 
 
 	pbox[0] = 300/2;  // Half length in X
 	pbox[1] = 2300/2;  // Half lenght in Y
 	pbox[2] = 170/2; // Half length in Z
-	TGeoVolume *CSW8 = acorde->MakeBox("CSW8",Vacuum,pbox[0],pbox[1],pbox[2]);
+	TGeoVolume *cSW8 = acorde->MakeBox("CSW8",vacuum,pbox[0],pbox[1],pbox[2]);
 	TGeoTranslation *br8 = new TGeoTranslation(-2300/2+pbox[0],0,2500-5150/2);
-	CSF1->AddNode(CSW8,1,br8);
+	cSF1->AddNode(cSW8,1,br8);
 
 	//---> put the shaft into the mother volume
 
 	TGeoCombiTrans *br = new TGeoCombiTrans(0,AliACORDEConstants::Instance()->Depth()-5150/2,2300,rot1);
-	CSF1->AddNode(CSF1,1,br);
+	cSF1->AddNode(cSF1,1,br);
 
 
 	//---> PM25 Access Shafts
@@ -293,9 +294,9 @@ void AliACORDEv1::CreateShafts()
 	ptube[0]=910/2;
 	ptube[1]=ptube[0]+100;
 	ptube[2]=(5150-1166)/2;
-	TGeoVolume *CSF4 = acorde->MakeTubs("CSF4",Vacuum,pbox[0],pbox[1],pbox[2],360,360);
+	TGeoVolume *cSF4 = acorde->MakeTubs("CSF4",vacuum,pbox[0],pbox[1],pbox[2],360,360);
 	TGeoCombiTrans *tr4 = new TGeoCombiTrans(2100,AliACORDEConstants::Instance()->Depth()-ptube[2],0,rot1);
-	CSF4->AddNode(CSF4,1,tr4);
+	cSF4->AddNode(cSF4,1,tr4);
 
 
 	//---> PGC2 Access shaft
@@ -303,9 +304,9 @@ void AliACORDEv1::CreateShafts()
 	ptube[0]=1100/2;
 	ptube[1]=ptube[0]+100;
 	ptube[2]=(5150-690)/2;
-	TGeoVolume *CSF5 = acorde->MakeTubs("CSF5",Vacuum,pbox[0],pbox[1],pbox[2],360,360);
+	TGeoVolume *cSF5 = acorde->MakeTubs("CSF5",vacuum,pbox[0],pbox[1],pbox[2],360,360);
 	TGeoCombiTrans *tr5 = new TGeoCombiTrans(-375,AliACORDEConstants::Instance()->Depth()-ptube[2],-1900-2987.7,rot1);
-	CSF5->AddNode(CSF5,1,tr5);
+	cSF5->AddNode(cSF5,1,tr5);
 
 }
 
@@ -313,14 +314,14 @@ void AliACORDEv1::CreateShafts()
 void AliACORDEv1::CreateMolasse()
 
 {
-
+	// create a big molasse for ACORDE detector
 	TGeoManager *acorde = new TGeoManager("ACORDE2007", "Geometry of ACORDE");	
 
 	//---> define some media
-
+	
 
 	TGeoMaterial *matAl = new TGeoMaterial("Al", 26.98,13,2.7);
-	TGeoMedium *Vacuum = new TGeoMedium("Root Material",2, matAl);
+	TGeoMedium *vacuum = new TGeoMedium("Root Material",2, matAl);
 
 	Float_t px24radius = 2300/2;
 	Float_t px24X = 0;
@@ -339,7 +340,7 @@ void AliACORDEv1::CreateMolasse()
 	pbox[0] = AliACORDEConstants::Instance()->Depth()*TMath::Tan(67.5*kDegrad);
 	pbox[1] = AliACORDEConstants::Instance()->Depth()/2;
 	pbox[2] = pbox[0];
-	TGeoVolume *CM01 = acorde->MakeBox("CM01", Vacuum, pbox[0],pbox[1],pbox[2]);
+	TGeoVolume *cM01 = acorde->MakeBox("CM01", vacuum, pbox[0],pbox[1],pbox[2]);
 
 	//---> Now put the molasse exactly above the hall. OK
 	//---> Above the ceiling
@@ -350,9 +351,9 @@ void AliACORDEv1::CreateMolasse()
 	ptubs[2] = 1900/2 + px24radius;
 	ptubs[3] = 0;
 	ptubs[4] = 180;
-	TGeoVolume *CM02 = acorde->MakeTubs("CM02",Vacuum,ptubs[0],ptubs[1],ptubs[2],ptubs[3],ptubs[4]);
+	TGeoVolume *cM02 = acorde->MakeTubs("CM02",vacuum,ptubs[0],ptubs[1],ptubs[2],ptubs[3],ptubs[4]);
 	TGeoTranslation *tr2 = new TGeoTranslation(0,500-AliACORDEConstants::Instance()->Depth()/2,ptubs[2]-1900);
-	CM01->AddNode(CM02,1,tr2);
+	cM01->AddNode(cM02,1,tr2);
 
 
 	//---> Molasse around the RB24/26 Wall. OK
@@ -362,9 +363,9 @@ void AliACORDEv1::CreateMolasse()
 	ptubs[2] = 2987.7/2 - 1100/4 - concreteWidth/2;
 	ptubs[3] = 0;
 	ptubs[4] = 180;
-	TGeoVolume *CM03 = acorde->MakeTubs("CM03",Vacuum,ptubs[0],ptubs[1],ptubs[2],ptubs[3],ptubs[4]);
+	TGeoVolume *cM03 = acorde->MakeTubs("CM03",vacuum,ptubs[0],ptubs[1],ptubs[2],ptubs[3],ptubs[4]);
 	TGeoTranslation *tr3 = new TGeoTranslation(70,40-AliACORDEConstants::Instance()->Depth()/2,-ptubs[2]-1900);
-	CM01->AddNode(CM03,1,tr3);
+	cM01->AddNode(cM03,1,tr3);
 
 
 	//---> A big block above the RB24/26 wall. OK
@@ -372,9 +373,10 @@ void AliACORDEv1::CreateMolasse()
 	pbox[0] = AliACORDEConstants::Instance()->Depth()*TMath::Tan(67.5*kDegrad);
 	pbox[1] = (AliACORDEConstants::Instance()->Depth() - 220 - 1600)/2;
 	pbox[2] = 2987.7/2 - 1100/4 - concreteWidth/2;
-	TGeoVolume *CM04 = acorde->MakeBox("CM04", Vacuum, pbox[0],pbox[1],pbox[2]);
+	TGeoVolume *cM04 = acorde->MakeBox("CM04", vacuum, pbox[0],pbox[1],pbox[2]);
 	TGeoTranslation *tr4 = new TGeoTranslation(0,AliACORDEConstants::Instance()->Depth()/2-pbox[1],-1900-pbox[2]);
-	CM01->AddNode(CM04,1,tr4);
+	cM01->AddNode(cM04,1,tr4);
+
 
 
 
@@ -382,11 +384,11 @@ void AliACORDEv1::CreateMolasse()
 
 	pbox[0] = (AliACORDEConstants::Instance()->Depth()*TMath::Tan(67.5*kDegrad)-ptubs[0])/2;
 	pbox[1] = AliACORDEConstants::Instance()->Depth()/2 - pbox[1];
-	TGeoVolume *CM17 = acorde->MakeBox("CM17", Vacuum, pbox[0],pbox[1],pbox[2]);
+	TGeoVolume *cM17 = acorde->MakeBox("CM17", vacuum, pbox[0],pbox[1],pbox[2]);
 	TGeoTranslation *tr17 = new TGeoTranslation(AliACORDEConstants::Instance()->Depth()*TMath::Tan(67.5*kDegrad) - pbox[0],-AliACORDEConstants::Instance()->Depth()/2 + pbox[1],-1900 - pbox[2]);
-	TGeoTranslation *tr17_a = new TGeoTranslation(-AliACORDEConstants::Instance()->Depth()*TMath::Tan(67.5*kDegrad)+ pbox[0],-AliACORDEConstants::Instance()->Depth()/2 + pbox[1], -1900 - pbox[2]);
-	CM01->AddNode(CM17,1,tr17);
-	CM01->AddNode(CM17,2,tr17_a);
+	TGeoTranslation *tr17a = new TGeoTranslation(-AliACORDEConstants::Instance()->Depth()*TMath::Tan(67.5*kDegrad)+ pbox[0],-AliACORDEConstants::Instance()->Depth()/2 + pbox[1], -1900 - pbox[2]);
+	cM01->AddNode(cM17,1,tr17);
+	cM01->AddNode(cM17,2,tr17a);
 
 
 	//---> And a big block of molasse above the hall up to the surface. OK
@@ -394,18 +396,18 @@ void AliACORDEv1::CreateMolasse()
 	pbox[0] = pm25X - pm25radius;
 	pbox[1] = (AliACORDEConstants::Instance()->Depth()-500-1170)/2;
 	pbox[2] = (1900 + 1150)/2;
-	TGeoVolume *CM05 = acorde->MakeBox("CM05", Vacuum, pbox[0],pbox[1],pbox[2]);
+	TGeoVolume *cM05 = acorde->MakeBox("CM05", vacuum, pbox[0],pbox[1],pbox[2]);
 	TGeoTranslation *tr5 = new TGeoTranslation(0,AliACORDEConstants::Instance()->Depth()/2-pbox[1], pbox[2]-1900);
-	CM01->AddNode(CM05,1,tr5);
+	cM01->AddNode(cM05,1,tr5);
 
 
 	//---> Small blocks of molasse betwen the blocks CMO2, CMO5 and PM25. Ok
 
 	pbox[0] = (pm25X - pm25radius - 1170)/2;
 	pbox[1] = 1000;
-	TGeoVolume *CM16 = acorde->MakeBox("CM16", Vacuum, pbox[0],pbox[1],pbox[2]);
+	TGeoVolume *cM16 = acorde->MakeBox("CM16", vacuum, pbox[0],pbox[1],pbox[2]);
 	TGeoTranslation *tr16 = new TGeoTranslation(1170 + pbox[0], -AliACORDEConstants::Instance()->Depth()/2+pbox[1], pbox[2] - 1900);
-	CM01->AddNode(CM16,1,tr16);
+	cM01->AddNode(cM16,1,tr16);
 
 
 	//---> Molasse around the shafts.
@@ -419,9 +421,9 @@ void AliACORDEv1::CreateMolasse()
 	ptubs[2] = (2300 - (5150 - AliACORDEConstants::Instance()->Depth()))/2;
 	ptubs[3] = 180 + kRaddeg*TMath::ASin(1070/ptubs[0]);
 	ptubs[4] = 180 -  kRaddeg*TMath::ASin(1070/ptubs[0]);
-	TGeoVolume *CM06 = acorde->MakeTubs("CM06", Vacuum,ptubs[0],ptubs[1],ptubs[2],ptubs[3],ptubs[4]);
+	TGeoVolume *cM06 = acorde->MakeTubs("CM06", vacuum,ptubs[0],ptubs[1],ptubs[2],ptubs[3],ptubs[4]);
 	TGeoTranslation *tr6 = new TGeoTranslation(px24X, ptubs[2] - AliACORDEConstants::Instance()->Depth()/2, px24Z);
-	CM01->AddNode(CM06,1,tr6);
+	cM01->AddNode(cM06,1,tr6);
 
 
 	//---> Around the PX24, the closed section. OK
@@ -430,9 +432,9 @@ void AliACORDEv1::CreateMolasse()
 	ptube[0] = px24radius + concreteWidth;
 	ptube[1] = ptube[0] + 1000;
 	ptube[2] = (5150 - 2300)/2;
-	TGeoVolume *CM07 = acorde->MakeTubs("CM07", Vacuum,ptube[0],ptube[1],ptubs[2],ptube[3],ptube[4]);
+	TGeoVolume *cM07 = acorde->MakeTubs("CM07", vacuum,ptube[0],ptube[1],ptubs[2],ptube[3],ptube[4]);
 	TGeoTranslation *tr7 = new TGeoTranslation(px24X, AliACORDEConstants::Instance()->Depth()/2-ptube[2], px24Z);
-	CM01->AddNode(CM07,1,tr7);
+	cM01->AddNode(cM07,1,tr7);
 
 
 	//---> Around PM25. OK
@@ -440,9 +442,9 @@ void AliACORDEv1::CreateMolasse()
 	ptube[0] = pm25radius + concreteWidth;
 	ptube[1] = ptube[0] + 400;
 	ptube[2] = AliACORDEConstants::Instance()->Depth()/2;
-	TGeoVolume *CM08 = acorde->MakeTubs("CM08", Vacuum,ptube[0],ptube[1],ptube[2],ptube[3],ptube[4]);
+	TGeoVolume *cM08 = acorde->MakeTubs("CM08", vacuum,ptube[0],ptube[1],ptube[2],ptube[3],ptube[4]);
 	TGeoCombiTrans *tr8 = new TGeoCombiTrans(pm25X, 0, pm25Z,rot2);
-	CM01->AddNode(CM08,1,tr8);
+	cM01->AddNode(cM08,1,tr8);
 
 
 	//---> On both sides of the PM25 along the HALL.
@@ -450,14 +452,14 @@ void AliACORDEv1::CreateMolasse()
 	pbox[0] = (2100 + pm25radius - 1170)/2;
 	pbox[1] = AliACORDEConstants::Instance()->Depth()/2;
 	pbox[2] = (3*px24radius - pm25radius)/2;
-	TGeoVolume *CM18 = acorde->MakeBox("CM18",Vacuum,pbox[0],pbox[1],pbox[2]);
+	TGeoVolume *cM18 = acorde->MakeBox("CM18",vacuum,pbox[0],pbox[1],pbox[2]);
 	TGeoTranslation *tr18 = new TGeoTranslation(2100, 0, pbox[2] + pm25radius);
-	CM01->AddNode(CM18,1,tr18);
+	cM01->AddNode(cM18,1,tr18);
   
   	pbox[2] = (1900 - pm25radius)/2;
-	TGeoVolume *CM19 = acorde->MakeBox("CM19",Vacuum,pbox[0],pbox[1],pbox[2]);
+	TGeoVolume *cM19 = acorde->MakeBox("CM19",vacuum,pbox[0],pbox[1],pbox[2]);
 	TGeoTranslation *tr19 = new TGeoTranslation(2100, 0, -pbox[2] - pm25radius);
-  	CM01->AddNode(CM19,1,tr19);
+  	cM01->AddNode(cM19,1,tr19);
 
 
 	//---> Around the PGC2. OK
@@ -465,20 +467,20 @@ void AliACORDEv1::CreateMolasse()
 	ptube[0] = pgc2radius + concreteWidth;
 	ptube[1] = 2987.7 - 740;
 	ptube[2] = AliACORDEConstants::Instance()->Depth()/2;
-	TGeoVolume *CM09 = acorde->MakeTubs("CM09",Vacuum,ptube[0],ptube[1],ptube[2],ptube[3],ptube[4]);
+	TGeoVolume *cM09 = acorde->MakeTubs("CM09",vacuum,ptube[0],ptube[1],ptube[2],ptube[3],ptube[4]);
 	TGeoCombiTrans *tr09 = new TGeoCombiTrans(pgc2X, 0, pgc2Z,rot2);
-	CM01->AddNode(CM09,1,tr09);
+	cM01->AddNode(cM09,1,tr09);
 
 	//---> On both sides of the PGC2.OK
 
 	pbox[0] = (AliACORDEConstants::Instance()->Depth()*TMath::Tan(67.5*kDegrad)-1100 - 375)/2;
 	pbox[1] = AliACORDEConstants::Instance()->Depth()/2;
 	pbox[2] = pgc2radius + concreteWidth;
-	TGeoVolume *CM10 = acorde->MakeBox("CM10",Vacuum,pbox[0],pbox[1],pbox[2]);
+	TGeoVolume *cM10 = acorde->MakeBox("CM10",vacuum,pbox[0],pbox[1],pbox[2]);
 	TGeoTranslation *tr10 = new TGeoTranslation(AliACORDEConstants::Instance()->Depth()*TMath::Tan(67.5*kDegrad) - pbox[0], 0, pgc2Z);
-	TGeoTranslation *tr10_a = new TGeoTranslation(-AliACORDEConstants::Instance()->Depth()*TMath::Tan(67.5*kDegrad) + pbox[0], 0, pgc2Z);
-	CM01->AddNode(CM10,1,tr10);
-	CM01->AddNode(CM10,2,tr10_a);
+	TGeoTranslation *tr10a = new TGeoTranslation(-AliACORDEConstants::Instance()->Depth()*TMath::Tan(67.5*kDegrad) + pbox[0], 0, pgc2Z);
+	cM01->AddNode(cM10,1,tr10);
+	cM01->AddNode(cM10,2,tr10a);
 
 
 	//---> big block of molasse behind the PX24. OK
@@ -486,9 +488,9 @@ void AliACORDEv1::CreateMolasse()
 	pbox[0] = AliACORDEConstants::Instance()->Depth()*TMath::Tan(67.5*kDegrad);
 	pbox[1] = AliACORDEConstants::Instance()->Depth()/2;
 	pbox[2] = (pbox[0] - (2300 + 1150 + 100))/2;
-	TGeoVolume *CM12 = acorde->MakeBox("CM12",Vacuum,pbox[0],pbox[1],pbox[2]);
+	TGeoVolume *cM12 = acorde->MakeBox("CM12",vacuum,pbox[0],pbox[1],pbox[2]);
 	TGeoTranslation *tr12 = new TGeoTranslation(px24X, 0, px24Z + px24radius + concreteWidth + pbox[2]);	
-	CM01->AddNode(CM12,1,tr12);
+	cM01->AddNode(cM12,1,tr12);
 
 
 	//---> big block of molasse in the opposite side of the PM25. OK
@@ -496,9 +498,9 @@ void AliACORDEv1::CreateMolasse()
 	pbox[0] = (AliACORDEConstants::Instance()->Depth()*TMath::Tan(67.5*kDegrad)-1150)/2;
 	pbox[1] = AliACORDEConstants::Instance()->Depth()/2;
 	pbox[2] = (1900 + 2300 + 1150)/2;
-	TGeoVolume *CM13 = acorde->MakeBox("CM13",Vacuum,pbox[0],pbox[1],pbox[2]);
+	TGeoVolume *cM13 = acorde->MakeBox("CM13",vacuum,pbox[0],pbox[1],pbox[2]);
 	TGeoTranslation *tr13 = new TGeoTranslation(-1150 - pbox[0], 0, pbox[2] - 1900);	
-	CM01->AddNode(CM13,1,tr13);
+	cM01->AddNode(cM13,1,tr13);
  
 
 	//---> big block of molasse behind the PM25. OK
@@ -506,9 +508,9 @@ void AliACORDEv1::CreateMolasse()
 	pbox[0] = (AliACORDEConstants::Instance()->Depth()*TMath::Tan(67.5*kDegrad)-(2100 + 910/2 + 100))/2;
 	pbox[1] = AliACORDEConstants::Instance()->Depth()/2;
 	pbox[2] = (1900 + 2300 + 1150)/2;
-	TGeoVolume *CM14 = acorde->MakeBox("CM14",Vacuum,pbox[0],pbox[1],pbox[2]);
+	TGeoVolume *cM14 = acorde->MakeBox("CM14",vacuum,pbox[0],pbox[1],pbox[2]);
 	TGeoTranslation *tr14 = new TGeoTranslation(pm25X + pm25radius + concreteWidth + pbox[0], 0, pbox[2] - 1900);
-	CM01->AddNode(CM14,1,tr14);
+	cM01->AddNode(cM14,1,tr14);
 
 
 	//---> big block of molasse behind the PGC2. OK
@@ -516,11 +518,11 @@ void AliACORDEv1::CreateMolasse()
 	pbox[0] = AliACORDEConstants::Instance()->Depth()*TMath::Tan(67.5*kDegrad);
 	pbox[1] = AliACORDEConstants::Instance()->Depth()/2;
 	pbox[2] = (pbox[0] - (2987.7 + 1900 + 1100/2 + 100))/2;
-	TGeoVolume *CM15 = acorde->MakeBox("CM15",Vacuum,pbox[0],pbox[1],pbox[2]);
+	TGeoVolume *cM15 = acorde->MakeBox("CM15",vacuum,pbox[0],pbox[1],pbox[2]);
 	TGeoTranslation *tr15 = new TGeoTranslation(0, 0, -pbox[0] + pbox[2]);
-	TGeoTranslation *tr15_a = new TGeoTranslation(0,AliACORDEConstants::Instance()->Depth()/2,0);
-	CM01->AddNode(CM15,1,tr15);
-	CM01->AddNode(CM01,1,tr15_a);
+	TGeoTranslation *tr15a = new TGeoTranslation(0,AliACORDEConstants::Instance()->Depth()/2,0);
+	cM01->AddNode(cM15,1,tr15);
+	cM01->AddNode(cM01,1,tr15a);
 
 }
 
@@ -566,7 +568,7 @@ void AliACORDEv1::CreateAcorde()
 	//*** Support & Bars***
 
 	TGeoMaterial *matAl = new TGeoMaterial("Al", 26.98,13,2.7);
-	TGeoMedium *Al = new TGeoMedium("Al",2, matAl);
+	TGeoMedium *al = new TGeoMedium("Al",2, matAl);
 
 	//*** Scintillators ***
 
@@ -580,18 +582,18 @@ void AliACORDEv1::CreateAcorde()
 	
 	//Define a FULL-ACORDE-VOLUME
 
-	TGeoVolume *ACORDE = new TGeoVolumeAssembly("ACORDE");
+	TGeoVolume *aCORDE = new TGeoVolumeAssembly("ACORDE");
 
 
 	// Define 6 master volumes for ACORDE
 	
-	TGeoVolume *in_face = new TGeoVolumeAssembly("ACORDE_1");
-	TGeoVolume *up_face = new TGeoVolumeAssembly("ACORDE_2");
-	TGeoVolume *out_face = new TGeoVolumeAssembly("ACORDE_3");
+	TGeoVolume *inFace = new TGeoVolumeAssembly("ACORDE_1");
+	TGeoVolume *upFace = new TGeoVolumeAssembly("ACORDE_2");
+	TGeoVolume *outFace = new TGeoVolumeAssembly("ACORDE_3");
 
-	TGeoVolume *in_facem = new TGeoVolumeAssembly("ACORDE_4");
-	TGeoVolume *up_facem = new TGeoVolumeAssembly("ACORDE_5");
-	TGeoVolume *out_facem = new TGeoVolumeAssembly("ACORDE_6");
+	TGeoVolume *inFacem = new TGeoVolumeAssembly("ACORDE_4");
+	TGeoVolume *upFacem = new TGeoVolumeAssembly("ACORDE_5");
+	TGeoVolume *outFacem = new TGeoVolumeAssembly("ACORDE_6");
 
 
 	// Define global variables
@@ -600,7 +602,7 @@ void AliACORDEv1::CreateAcorde()
 	Int_t count;
 	Float_t dy=10;//-->displacement of the support and bars of ACORDE
 	Float_t dy2=66.5;//-->displacement of the support and bars of ACORDE
-	Float_t placed_at;
+	Float_t placedAt;
 	Float_t small=0.05;
 
 	// Define the position of support and bars for the sides faces
@@ -636,26 +638,26 @@ void AliACORDEv1::CreateAcorde()
 
 	TGeoBBox *acorde1 = new TGeoBBox("acorde1",box[0],box[1],26/20+2);
 	TGeoBBox *acorde10 = new TGeoBBox("acorde10",26/20,box[1],box[2]+3);
-	TGeoVolume *ACORDE1_a = new TGeoVolume("ACORDE1_a",acorde1,Al);
-	TGeoVolume *ACORDE10 = new TGeoVolume("ACORDE10",acorde10,Al);
+	TGeoVolume *aCORDE1qa = new TGeoVolume("ACORDE1_a",acorde1,al);
+	TGeoVolume *aCORDE10 = new TGeoVolume("ACORDE10",acorde10,al);
 
 	//*** Scintillators ***
 
 	TGeoBBox *acorde2 = new TGeoBBox("acorde2",pbox[0],pbox[1],pbox[2]);
-	TGeoVolume *ACORDE2 = new TGeoVolume("ACORDE2",acorde2,med6);
+	TGeoVolume *aCORDE2 = new TGeoVolume("ACORDE2",acorde2,med6);
 
 
 	// Here I define & construct a Master Volume ("ACORDE_MODULE") for one Module in ACORDE
 
 	TGeoVolume *module = new TGeoVolumeAssembly("ACORDE_MODULE");
-	module->AddNode(ACORDE1_a,1,new TGeoTranslation("aco1",0,0,13));
-	module->AddNode(ACORDE1_a,2,new TGeoTranslation("aco10",0,0,-13));
-	module->AddNode(ACORDE10,3,new TGeoTranslation("aco10",293/2+5,0,0));
-	module->AddNode(ACORDE10,4,new TGeoTranslation("aco10",-293/2-5,0,0));
-        placed_at = pbox[1]+constants->ProfileThickness()-constants->ModuleHeight()/2+small;
-	module->AddNode(ACORDE2,5,new TGeoTranslation("aco2",placed_at,0,0));
-        placed_at = placed_at + 2.0*pbox[1]+small;
-	module->AddNode(ACORDE2,6,new TGeoTranslation("aco2",placed_at,-1,0));
+	module->AddNode(aCORDE1qa,1,new TGeoTranslation("aco1",0,0,13));
+	module->AddNode(aCORDE1qa,2,new TGeoTranslation("aco10",0,0,-13));
+	module->AddNode(aCORDE10,3,new TGeoTranslation("aco10",293/2+5,0,0));
+	module->AddNode(aCORDE10,4,new TGeoTranslation("aco10",-293/2-5,0,0));
+        placedAt = pbox[1]+constants->ProfileThickness()-constants->ModuleHeight()/2+small;
+	module->AddNode(aCORDE2,5,new TGeoTranslation("aco2",placedAt,0,0));
+        placedAt = placedAt + 2.0*pbox[1]+small;
+	module->AddNode(aCORDE2,6,new TGeoTranslation("aco2",placedAt,-1,0));
 	Float_t w1 = 8;
 
 	
@@ -670,7 +672,7 @@ void AliACORDEv1::CreateAcorde()
 		Float_t posy = constants->ModulePositionY(i-1);
 		Float_t posz = constants->ModulePositionZ(i-1);	
 
-		in_facem->AddNode(module,i-1,
+		inFacem->AddNode(module,i-1,
 			new TGeoCombiTrans("aco01",posx,posy-w1,posz,idrotm232));
 		count++;
 
@@ -682,7 +684,7 @@ void AliACORDEv1::CreateAcorde()
 		Float_t posy = constants->ModulePositionY(i-1);
 		Float_t posz = constants->ModulePositionZ(i-1);	
 
-		in_facem->AddNode(module,i-1,
+		inFacem->AddNode(module,i-1,
 			new TGeoCombiTrans("aco01",posx,posy-w1,posz,idrotm232));
 	}
 
@@ -694,7 +696,7 @@ void AliACORDEv1::CreateAcorde()
 		Float_t posy = constants->ModulePositionY(i-1);
 		Float_t posz = constants->ModulePositionZ(i-1);	
 
-		up_facem->AddNode(module,i-1,new TGeoTranslation("aco01",posx,posy,posz));
+		upFacem->AddNode(module,i-1,new TGeoTranslation("aco01",posx,posy,posz));
 		count++;
 	}
 
@@ -706,7 +708,7 @@ void AliACORDEv1::CreateAcorde()
 		Float_t posy = constants->ModulePositionY(i-1);
 		Float_t posz = constants->ModulePositionZ(i-1);	
 
-		out_facem->AddNode(module,i-1,
+		outFacem->AddNode(module,i-1,
 			new TGeoCombiTrans("aco01",posx,posy-w1,posz,idrotm231));
 		count++;
 	}
@@ -719,10 +721,10 @@ void AliACORDEv1::CreateAcorde()
 		Float_t posy = constants->ModulePositionY(i-1);
 		Float_t posz = constants->ModulePositionZ(i-1);	
 	if ((i==57) || (i==56))
-		 out_facem->AddNode(module,i-1,
+		 outFacem->AddNode(module,i-1,
 					new TGeoCombiTrans("aco01",posx,posy-w1,posz-w1,idrotm231));
 	else
-		out_facem->AddNode(module,i-1,
+		outFacem->AddNode(module,i-1,
 			new TGeoCombiTrans("aco01",posx,posy-w1,posz,idrotm231));
 		count++;
 	}
@@ -732,22 +734,22 @@ void AliACORDEv1::CreateAcorde()
 
 	if (GetITSGeometry()) {
 
-		up_facem->AddNode(module,71,new TGeoTranslation("its1",
+		upFacem->AddNode(module,71,new TGeoTranslation("its1",
 				constants->ExtraModulePositionX(),
 				constants->ExtraModulePositionY(),
 				constants->ExtraModulePositionZ(0)));
 
-		up_facem->AddNode(module,72,new TGeoTranslation("its2",
+		upFacem->AddNode(module,72,new TGeoTranslation("its2",
 				constants->ExtraModulePositionX(),
 				constants->ExtraModulePositionY(),
 				constants->ExtraModulePositionZ(1)));
 
-		up_facem->AddNode(module,73,new TGeoTranslation("its3",
+		upFacem->AddNode(module,73,new TGeoTranslation("its3",
 				constants->ExtraModulePositionX(),
 				constants->ExtraModulePositionY(),
 				constants->ExtraModulePositionZ(2)));
 
-		up_facem->AddNode(module,74,new TGeoTranslation("its4",
+		upFacem->AddNode(module,74,new TGeoTranslation("its4",
 				constants->ExtraModulePositionX(),
 				constants->ExtraModulePositionY(),
 				constants->ExtraModulePositionZ(3)));
@@ -757,22 +759,22 @@ void AliACORDEv1::CreateAcorde()
 	else {
 
 
-		up_facem->AddNode(module,61,new TGeoTranslation("its1",
+		upFacem->AddNode(module,61,new TGeoTranslation("its1",
 				constants->ModulePositionX(0),
 				constants->ModulePositionY(0),
 				constants->ModulePositionZ(0)));
 
-		up_facem->AddNode(module,62,new TGeoTranslation("its2",
+		upFacem->AddNode(module,62,new TGeoTranslation("its2",
 				constants->ModulePositionX(9),
 				constants->ModulePositionY(9),
 				constants->ModulePositionZ(9)));
 
-		up_facem->AddNode(module,63,new TGeoTranslation("its3",
+		upFacem->AddNode(module,63,new TGeoTranslation("its3",
 				constants->ModulePositionX(50),
 				constants->ModulePositionY(50),
 				constants->ModulePositionZ(50)));
 
-		up_facem->AddNode(module,64,new TGeoTranslation("its4",
+		upFacem->AddNode(module,64,new TGeoTranslation("its4",
 				constants->ModulePositionX(59),
 				constants->ModulePositionY(59),
 				constants->ModulePositionZ(59)));
@@ -792,7 +794,7 @@ void AliACORDEv1::CreateAcorde()
 	Float_t z1 = 21 ;
 	TGeoBBox *acorde00 = new TGeoBBox("acorde00",box[0],box[1],box[2]);
 
-	TGeoVolume *ACORDE00 = new TGeoVolume("ACORDE00",acorde00,Al);
+	TGeoVolume *aCORDE00 = new TGeoVolume("ACORDE00",acorde00,al);
 
 	count=25;
 	for (Int_t ma=20;ma<=24;ma++)
@@ -802,25 +804,25 @@ void AliACORDEv1::CreateAcorde()
 					constants->ModulePositionY(ma)-box[1]-z1,
 					constants->ModulePositionZ(ma));
 
-		up_face->AddNode(ACORDE00,count,aco00);
+		upFace->AddNode(aCORDE00,count,aco00);
 
-		TGeoTranslation *aco00_1=new TGeoTranslation("aco00_1",
+		TGeoTranslation *aco00q1=new TGeoTranslation("aco00q1",
 					-(constants->ModulePositionX(ma)-0.5*293+dy2),
 					constants->ModulePositionY(ma)-box[1]-z1,
 					constants->ModulePositionZ(ma));
-		up_face->AddNode(ACORDE00,count+1,aco00_1);
+		upFace->AddNode(aCORDE00,count+1,aco00q1);
 
-		TGeoTranslation *aco00_2=new TGeoTranslation("aco00_2",
+		TGeoTranslation *aco00q2=new TGeoTranslation("aco00q2",
 					constants->ModulePositionX(ma)+0.5*293-dy2,
 					constants->ModulePositionY(ma)-box[1]-z1,
 					constants->ModulePositionZ(ma));
-		up_face->AddNode(ACORDE00,count+2,aco00_2);
+		upFace->AddNode(aCORDE00,count+2,aco00q2);
 
-		TGeoTranslation *aco00_3=new TGeoTranslation("aco00_3",
+		TGeoTranslation *aco00q3=new TGeoTranslation("aco00q3",
 					-(constants->ModulePositionX(ma)+0.5*293-dy2),
 					constants->ModulePositionY(ma)-box[1]-z1,
 					constants->ModulePositionZ(ma));
-		up_face->AddNode(ACORDE00,count+3,aco00_3);
+		upFace->AddNode(aCORDE00,count+3,aco00q3);
 		count=count+4;
 
 		ma++;
@@ -833,25 +835,25 @@ void AliACORDEv1::CreateAcorde()
 					constants->ModulePositionX(ma)-0.5*293+dy2,
 					constants->ModulePositionY(ma)-box[1]-z1,
 					constants->ModulePositionZ(ma));
-		up_face->AddNode(ACORDE00,count,aco00);
+		upFace->AddNode(aCORDE00,count,aco00);
 
-		TGeoTranslation *aco00_1=new TGeoTranslation("aco00_1",
+		TGeoTranslation *aco00q1=new TGeoTranslation("aco00q1",
 					-(constants->ModulePositionX(ma)-0.5*293+dy2),
 					constants->ModulePositionY(ma)-box[1]-z1,
 					constants->ModulePositionZ(ma));
-		up_face->AddNode(ACORDE00,count+1,aco00_1);
+		upFace->AddNode(aCORDE00,count+1,aco00q1);
 
-		TGeoTranslation *aco00_2=new TGeoTranslation("aco00_2",
+		TGeoTranslation *aco00q2=new TGeoTranslation("aco00q2",
 					constants->ModulePositionX(ma)+0.5*293-dy2,
 					constants->ModulePositionY(ma)-box[1]-z1,
 					constants->ModulePositionZ(ma));
-		up_face->AddNode(ACORDE00,count+2,aco00_2);
+		upFace->AddNode(aCORDE00,count+2,aco00q2);
 
-		TGeoTranslation *aco00_3=new TGeoTranslation("aco00_3",
+		TGeoTranslation *aco00q3=new TGeoTranslation("aco00q3",
 					-(constants->ModulePositionX(ma)+0.5*293-dy2),
 					constants->ModulePositionY(ma)-box[1]-z1,
 					constants->ModulePositionZ(ma));
-		up_face->AddNode(ACORDE00,count+3,aco00_3);
+		upFace->AddNode(aCORDE00,count+3,aco00q3);
 		count=count+4;
 		ma++;
 	}
@@ -872,10 +874,10 @@ void AliACORDEv1::CreateAcorde()
 				constants->ModulePositionX(27)-0.5*293,
 				constants->ModulePositionY(27)-box[1]-z1,
 				constants->ModulePositionZ(28)-40);
-	up_face->AddNode(ACORDE00,57,c1);
-	up_face->AddNode(ACORDE00,58,c2);
-	up_face->AddNode(ACORDE00,59,c3);
-	up_face->AddNode(ACORDE00,60,c4);
+	upFace->AddNode(aCORDE00,57,c1);
+	upFace->AddNode(aCORDE00,58,c2);
+	upFace->AddNode(aCORDE00,59,c3);
+	upFace->AddNode(aCORDE00,60,c4);
 
 
 	// Construct Bars for lateral supports (up-face)
@@ -884,50 +886,50 @@ void AliACORDEv1::CreateAcorde()
 				constants->ModulePositionX(20)+0.5*293-dy,
 				constants->ModulePositionY(20)-box[1]-z1,
 				constants->ModulePositionZ(20)-40);
-	up_face->AddNode(ACORDE00,61,aco00);
+	upFace->AddNode(aCORDE00,61,aco00);
 
-	TGeoTranslation *aco00_1=new TGeoTranslation("aco00_1",
+	TGeoTranslation *aco00q1=new TGeoTranslation("aco00q1",
 				constants->ModulePositionX(23)+0.5*293-dy,
 				constants->ModulePositionY(23)-box[1]-z1,
 				constants->ModulePositionZ(23)-40);
-	up_face->AddNode(ACORDE00,62,aco00_1);
+	upFace->AddNode(aCORDE00,62,aco00q1);
 
-	TGeoTranslation *aco00_2=new TGeoTranslation("aco00_2",
+	TGeoTranslation *aco00q2=new TGeoTranslation("aco00q2",
 				constants->ModulePositionX(24)+0.5*293-dy,
 				constants->ModulePositionY(24)-box[1]-z1,
 				constants->ModulePositionZ(25)-40);
-	up_face->AddNode(ACORDE00,63,aco00_2);
+	upFace->AddNode(aCORDE00,63,aco00q2);
 
-	TGeoTranslation *aco00_3=new TGeoTranslation("aco00_3",
+	TGeoTranslation *aco00q3=new TGeoTranslation("aco00q3",
 				constants->ModulePositionX(27)+0.5*293-dy,
 				constants->ModulePositionY(27)-box[1]-z1,
 				constants->ModulePositionZ(28)-40);
-	up_face->AddNode(ACORDE00,64,aco00_3);
+	upFace->AddNode(aCORDE00,64,aco00q3);
 
 
 	TGeoTranslation *aco01=new TGeoTranslation("aco01",
 				constants->ModulePositionX(30)-0.5*293+dy,
 				constants->ModulePositionY(30)-box[1]-z1,
 				constants->ModulePositionZ(30)-40);
-	up_face->AddNode(ACORDE00,65,aco01);
+	upFace->AddNode(aCORDE00,65,aco01);
 
-	TGeoTranslation *aco01_1=new TGeoTranslation("aco01_1",
+	TGeoTranslation *aco01q1=new TGeoTranslation("aco01q1",
 				constants->ModulePositionX(33)-0.5*293+dy,
 				constants->ModulePositionY(33)-box[1]-z1,
 				constants->ModulePositionZ(33)-40);
-	up_face->AddNode(ACORDE00,66,aco01_1);
+	upFace->AddNode(aCORDE00,66,aco01q1);
 
-	TGeoTranslation *aco01_2=new TGeoTranslation("aco01_2",
+	TGeoTranslation *aco01q2=new TGeoTranslation("aco01q2",
 				constants->ModulePositionX(34)-0.5*293+dy,
 				constants->ModulePositionY(34)-box[1]-z1,
 				constants->ModulePositionZ(35)-40);
-	up_face->AddNode(ACORDE00,67,aco01_2);
+	upFace->AddNode(aCORDE00,67,aco01q2);
 
-	TGeoTranslation *aco01_3=new TGeoTranslation("aco01_3",
+	TGeoTranslation *aco01q3=new TGeoTranslation("aco01q3",
 				constants->ModulePositionX(37)-0.5*293+dy,
 				constants->ModulePositionY(37)-box[1]-z1,
 				constants->ModulePositionZ(38)-40);
-	up_face->AddNode(ACORDE00,68,aco01_3);
+	upFace->AddNode(aCORDE00,68,aco01q3);
 
 
 
@@ -946,20 +948,20 @@ void AliACORDEv1::CreateAcorde()
 
 	TGeoBBox *acorde7 = new TGeoBBox("acorde7",box[0],box[1],box[2]);
 
-	TGeoVolume *ACORDE7 = new TGeoVolume("ACORDE7",acorde7,Al);
+	TGeoVolume *aCORDE7 = new TGeoVolume("ACORDE7",acorde7,al);
 
 	TGeoCombiTrans *aco7 = new TGeoCombiTrans("aco7",posx,posy,posz-4*dy,idrotm231);
-	TGeoCombiTrans *aco7_1 = new TGeoCombiTrans("aco7_1",posx,posy,
+	TGeoCombiTrans *aco7q1 = new TGeoCombiTrans("aco7q1",posx,posy,
 					constants->ModulePositionZ(3)-4*dy,idrotm231);
-	TGeoCombiTrans *aco7_2 = new TGeoCombiTrans("aco7_2",posx,posy,
+	TGeoCombiTrans *aco7q2 = new TGeoCombiTrans("aco7q2",posx,posy,
 					constants->ModulePositionZ(5)-4*dy,idrotm231);
-	TGeoCombiTrans *aco7_3 = new TGeoCombiTrans("aco7_3",posx,posy,
+	TGeoCombiTrans *aco7q3 = new TGeoCombiTrans("aco7q3",posx,posy,
 					constants->ModulePositionZ(8)-4*dy,idrotm231);
 
-	in_face->AddNode(ACORDE7,20,aco7);
-	in_face->AddNode(ACORDE7,21,aco7_1);
-	in_face->AddNode(ACORDE7,22,aco7_2);
-	in_face->AddNode(ACORDE7,23,aco7_3);
+	inFace->AddNode(aCORDE7,20,aco7);
+	inFace->AddNode(aCORDE7,21,aco7q1);
+	inFace->AddNode(aCORDE7,22,aco7q2);
+	inFace->AddNode(aCORDE7,23,aco7q3);
 
 
 	count=24;
@@ -971,10 +973,10 @@ void AliACORDEv1::CreateAcorde()
 		Float_t posz=constants->ModulePositionZ(dy);
 		Float_t posx2=constants->ModulePositionX(dy)-0.27*293*0.7071-56*0.7071-18+des;
 		Float_t posy2=constants->ModulePositionY(dy)+0.27*293*0.7071-56*0.7071+3-des-q1;
-		TGeoCombiTrans *aco7_4 = new TGeoCombiTrans("aco7_4",posx1,posy1,posz,idrotm231);
-		TGeoCombiTrans *aco7_5 = new TGeoCombiTrans("aco7_5",posx2,posy2,posz,idrotm231);
-		in_face->AddNode(ACORDE7,count,aco7_4);
-		in_face->AddNode(ACORDE7,count+1,aco7_5);
+		TGeoCombiTrans *aco7q4 = new TGeoCombiTrans("aco7q4",posx1,posy1,posz,idrotm231);
+		TGeoCombiTrans *aco7q5 = new TGeoCombiTrans("aco7q5",posx2,posy2,posz,idrotm231);
+		inFace->AddNode(aCORDE7,count,aco7q4);
+		inFace->AddNode(aCORDE7,count+1,aco7q5);
 		count=count+2;
 		dy++;
 	}	
@@ -989,30 +991,30 @@ void AliACORDEv1::CreateAcorde()
 		Float_t posz=constants->ModulePositionZ(dy+10);
 		Float_t posx2=constants->ModulePositionX(dy)-0.27*293*0.7071-56*0.7071-18+des;
 		Float_t posy2=constants->ModulePositionY(dy)+0.27*293*0.7071-56*0.7071+3-des-q1;
-		TGeoCombiTrans *aco7_6 = new TGeoCombiTrans("aco7_6",posx1,posy1,posz,idrotm231);
-		TGeoCombiTrans *aco7_7 = new TGeoCombiTrans("aco7_7",posx2,posy2,posz,idrotm231);
-		in_face->AddNode(ACORDE7,count,aco7_6);
-		in_face->AddNode(ACORDE7,count+1,aco7_7);
+		TGeoCombiTrans *aco7q6 = new TGeoCombiTrans("aco7q6",posx1,posy1,posz,idrotm231);
+		TGeoCombiTrans *aco7q7 = new TGeoCombiTrans("aco7q7",posx2,posy2,posz,idrotm231);
+		inFace->AddNode(aCORDE7,count,aco7q6);
+		inFace->AddNode(aCORDE7,count+1,aco7q7);
 		count=count+2;
 		dy++;
 	}	
 
 
 
-	Float_t posx_1=constants->ModulePositionX(10)+0.5*293*0.7071-56*0.7071-18;
-	Float_t posy_1=constants->ModulePositionY(10)-0.5*293*0.7071-56*0.7071+3-q1;
-	Float_t posz_1=constants->ModulePositionZ(10);
-	TGeoCombiTrans *aco7_8 = new TGeoCombiTrans("aco7_8",posx_1,posy_1,posz_1-4*dy,idrotm231);
-	TGeoCombiTrans *aco7_9 = new TGeoCombiTrans("aco7_9",posx_1,posy_1,
+	Float_t posxq1=constants->ModulePositionX(10)+0.5*293*0.7071-56*0.7071-18;
+	Float_t posyq1=constants->ModulePositionY(10)-0.5*293*0.7071-56*0.7071+3-q1;
+	Float_t poszq1=constants->ModulePositionZ(10);
+	TGeoCombiTrans *aco7q8 = new TGeoCombiTrans("aco7q8",posxq1,posyq1,poszq1-4*dy,idrotm231);
+	TGeoCombiTrans *aco7q9 = new TGeoCombiTrans("aco7q9",posxq1,posyq1,
 					constants->ModulePositionZ(13)-4*dy,idrotm231);
-	TGeoCombiTrans *aco7_10 = new TGeoCombiTrans("aco7_10",posx_1,posy_1,
+	TGeoCombiTrans *aco7q10 = new TGeoCombiTrans("aco7q10",posxq1,posyq1,
 					constants->ModulePositionZ(15)-4*dy,idrotm231);
-	TGeoCombiTrans *aco7_11 = new TGeoCombiTrans("aco7_11",posx_1,posy_1,
+	TGeoCombiTrans *aco7q11 = new TGeoCombiTrans("aco7q11",posxq1,posyq1,
 					constants->ModulePositionZ(18)-4*dy,idrotm231);
-	in_face->AddNode(ACORDE7,44,aco7_8);
-	in_face->AddNode(ACORDE7,45,aco7_9);
-	in_face->AddNode(ACORDE7,46,aco7_10);
-	in_face->AddNode(ACORDE7,47,aco7_11);
+	inFace->AddNode(aCORDE7,44,aco7q8);
+	inFace->AddNode(aCORDE7,45,aco7q9);
+	inFace->AddNode(aCORDE7,46,aco7q10);
+	inFace->AddNode(aCORDE7,47,aco7q11);
 
 
 	count=48;
@@ -1027,10 +1029,10 @@ void AliACORDEv1::CreateAcorde()
 		Float_t posy2=constants->ModulePositionY(dy)+0.27*293*0.7071-56*0.7071+3-des-1.5-0.8;
 		TGeoRotation *rot1 = new TGeoRotation();
 		rot1->RotateZ(70);
-		TGeoCombiTrans *aco7_12 = new TGeoCombiTrans("aco7_12",posx1,posy1,posz,idrotm231);
-		TGeoCombiTrans *aco7_13 = new TGeoCombiTrans("aco7_13",posx2+15,posy2-10,posz,rot1);
-		in_face->AddNode(ACORDE7,count,aco7_12);
-		in_face->AddNode(ACORDE7,count+1,aco7_13);// bars 25 grades
+		TGeoCombiTrans *aco7q12 = new TGeoCombiTrans("aco7q12",posx1,posy1,posz,idrotm231);
+		TGeoCombiTrans *aco7q13 = new TGeoCombiTrans("aco7q13",posx2+15,posy2-10,posz,rot1);
+		inFace->AddNode(aCORDE7,count,aco7q12);
+		inFace->AddNode(aCORDE7,count+1,aco7q13);// bars 25 grades
 		count=count+2;
 		dy++;
 	}
@@ -1048,10 +1050,10 @@ void AliACORDEv1::CreateAcorde()
 		Float_t posy2=constants->ModulePositionY(dy)+0.27*293*0.7071-56*0.7071+3-des-1.5-q1-0.8;
 		TGeoRotation *rot1 = new TGeoRotation();
 		rot1->RotateZ(70);
-		TGeoCombiTrans *aco7_14 = new TGeoCombiTrans("aco7_14",posx1,posy1,posz,idrotm231);
-		TGeoCombiTrans *aco7_15 = new TGeoCombiTrans("aco7_15",posx2+15,posy2-10,posz,rot1);
-		in_face->AddNode(ACORDE7,count,aco7_14);
-		in_face->AddNode(ACORDE7,count+1,aco7_15);// bars 25 grades
+		TGeoCombiTrans *aco7q14 = new TGeoCombiTrans("aco7q14",posx1,posy1,posz,idrotm231);
+		TGeoCombiTrans *aco7q15 = new TGeoCombiTrans("aco7q15",posx2+15,posy2-10,posz,rot1);
+		inFace->AddNode(aCORDE7,count,aco7q14);
+		inFace->AddNode(aCORDE7,count+1,aco7q15);// bars 25 grades
 		count=count+2;
 		dy++;
 	}
@@ -1064,36 +1066,36 @@ void AliACORDEv1::CreateAcorde()
 	box[1]=5;
 	box[2]=5;
 	Float_t s1=2.5;
-	Float_t posx_a=constants->ModulePositionX(50)-0.5*293*0.7071+56*0.7071+18;
-	Float_t posy_a=constants->ModulePositionY(50)-0.5*293*0.7071-56*0.7071+3-s1;
-	Float_t posz_a=constants->ModulePositionZ(50);
-	TGeoCombiTrans *aco7_16 = new TGeoCombiTrans("aco7_16",
-					posx_a,posy_a,posz_a-4*dy,idrotm232);
-	TGeoCombiTrans *aco7_17 = new TGeoCombiTrans("aco7_17",
-					posx_a,posy_a,
+	Float_t posxqa=constants->ModulePositionX(50)-0.5*293*0.7071+56*0.7071+18;
+	Float_t posyqa=constants->ModulePositionY(50)-0.5*293*0.7071-56*0.7071+3-s1;
+	Float_t poszqa=constants->ModulePositionZ(50);
+	TGeoCombiTrans *aco7q16 = new TGeoCombiTrans("aco7q16",
+					posxqa,posyqa,poszqa-4*dy,idrotm232);
+	TGeoCombiTrans *aco7q17 = new TGeoCombiTrans("aco7q17",
+					posxqa,posyqa,
 					constants->ModulePositionZ(43)-4*dy,idrotm232);
-	TGeoCombiTrans *aco7_18 = new TGeoCombiTrans("aco7_18",posx_a,posy_a,
+	TGeoCombiTrans *aco7q18 = new TGeoCombiTrans("aco7q18",posxqa,posyqa,
 					constants->ModulePositionZ(55)-4*dy,idrotm232);
-	TGeoCombiTrans *aco7_19 = new TGeoCombiTrans("aco7_19",posx_a,posy_a,
+	TGeoCombiTrans *aco7q19 = new TGeoCombiTrans("aco7q19",posxqa,posyqa,
 					constants->ModulePositionZ(58)-4*dy,idrotm232);
-	TGeoCombiTrans *aco7_20 = new TGeoCombiTrans("aco7_20",
+	TGeoCombiTrans *aco7q20 = new TGeoCombiTrans("aco7q20",
 					constants->ModulePositionX(50)-0.1*293*0.7071
 					+56*0.7071+18-des,
 					constants->ModulePositionY
 					(50)-0.1*293*0.7071-56*0.7071+3-des-s1,
 					constants->ModulePositionZ(45),idrotm232);
-	TGeoCombiTrans *aco7_21 = new TGeoCombiTrans("aco7_21",
+	TGeoCombiTrans *aco7q21 = new TGeoCombiTrans("aco7q21",
 					constants->ModulePositionX(50)+0.27*293*0.7071
 					+56*0.7071+18-des,
 					constants->ModulePositionY(50)
 					+0.27*293*0.7071-56*0.7071+3-des-s1,
 					constants->ModulePositionZ(45),idrotm232);
-	out_face->AddNode(ACORDE7,19,aco7_16);
-	out_face->AddNode(ACORDE7,20,aco7_17);
-	out_face->AddNode(ACORDE7,21,aco7_18);
-	out_face->AddNode(ACORDE7,22,aco7_19);
-	out_face->AddNode(ACORDE7,23,aco7_20);
-	out_face->AddNode(ACORDE7,24,aco7_21);
+	outFace->AddNode(aCORDE7,19,aco7q16);
+	outFace->AddNode(aCORDE7,20,aco7q17);
+	outFace->AddNode(aCORDE7,21,aco7q18);
+	outFace->AddNode(aCORDE7,22,aco7q19);
+	outFace->AddNode(aCORDE7,23,aco7q20);
+	outFace->AddNode(aCORDE7,24,aco7q21);
 
 
 	count=25;
@@ -1105,10 +1107,10 @@ void AliACORDEv1::CreateAcorde()
 		Float_t posz=constants->ModulePositionZ(dy);
 		Float_t posx2=constants->ModulePositionX(dy)+0.27*293*0.7071+56*0.7071+18-des;
 		Float_t posy2=constants->ModulePositionY(dy)+0.27*293*0.7071-56*0.7071+3-des-s1;
-		TGeoCombiTrans *aco7_22 = new TGeoCombiTrans("aco7_22",posx1,posy1,posz,idrotm232);
-		TGeoCombiTrans *aco7_23 = new TGeoCombiTrans("aco7_23",posx2,posy2,posz,idrotm232);
-		out_face->AddNode(ACORDE7,count,aco7_22);
-		out_face->AddNode(ACORDE7,count+1,aco7_23);
+		TGeoCombiTrans *aco7q22 = new TGeoCombiTrans("aco7q22",posx1,posy1,posz,idrotm232);
+		TGeoCombiTrans *aco7q23 = new TGeoCombiTrans("aco7q23",posx2,posy2,posz,idrotm232);
+		outFace->AddNode(aCORDE7,count,aco7q22);
+		outFace->AddNode(aCORDE7,count+1,aco7q23);
 		count=count+2;
 		dy++;
 	}
@@ -1123,32 +1125,32 @@ void AliACORDEv1::CreateAcorde()
 		Float_t posz=constants->ModulePositionZ(dy-10);
 		Float_t posx2=constants->ModulePositionX(dy)+0.27*293*0.7071+56*0.7071+18-des;
 		Float_t posy2=constants->ModulePositionY(dy)+0.27*293*0.7071-56*0.7071+3-des-s1;
-		TGeoCombiTrans *aco7_24 = new TGeoCombiTrans("aco7_24",posx1,posy1,posz,idrotm232);
-		TGeoCombiTrans *aco7_25 = new TGeoCombiTrans("aco7_25",posx2,posy2,posz,idrotm232);
-		out_face->AddNode(ACORDE7,count,aco7_24);
-		out_face->AddNode(ACORDE7,count+1,aco7_25);
+		TGeoCombiTrans *aco7q24 = new TGeoCombiTrans("aco7q24",posx1,posy1,posz,idrotm232);
+		TGeoCombiTrans *aco7q25 = new TGeoCombiTrans("aco7q25",posx2,posy2,posz,idrotm232);
+		outFace->AddNode(aCORDE7,count,aco7q24);
+		outFace->AddNode(aCORDE7,count+1,aco7q25);
 		count=count+2;
 		dy++;
 	}
 
 
-	Float_t posx_b=constants->ModulePositionX(40)-0.5*293*0.7071+56*0.7071+18;
-	Float_t posy_b=constants->ModulePositionY(40)-0.5*293*0.7071-56*0.7071+3-s1;
-	Float_t posz_b=constants->ModulePositionZ(40);
-	TGeoCombiTrans *aco7_26 = new TGeoCombiTrans("aco7_26",
-					posx_b,posy_b,posz_b-4*dy,idrotm232);
-	TGeoCombiTrans *aco7_27 = new TGeoCombiTrans("aco7_27",
-					posx_b,posy_b,
+	Float_t posxqb=constants->ModulePositionX(40)-0.5*293*0.7071+56*0.7071+18;
+	Float_t posyqb=constants->ModulePositionY(40)-0.5*293*0.7071-56*0.7071+3-s1;
+	Float_t poszqb=constants->ModulePositionZ(40);
+	TGeoCombiTrans *aco7q26 = new TGeoCombiTrans("aco7q26",
+					posxqb,posyqb,poszqb-4*dy,idrotm232);
+	TGeoCombiTrans *aco7q27 = new TGeoCombiTrans("aco7q27",
+					posxqb,posyqb,
 					constants->ModulePositionZ(43)-4*dy,idrotm232);
-	TGeoCombiTrans *aco7_28 = new TGeoCombiTrans("aco7_28",
-					posx_b,posy_b,
+	TGeoCombiTrans *aco7q28 = new TGeoCombiTrans("aco7q28",
+					posxqb,posyqb,
 					constants->ModulePositionZ(45)-4*dy,idrotm232);
-	TGeoCombiTrans *aco7_29 = new TGeoCombiTrans("aco7_29",posx_b,posy_b,
+	TGeoCombiTrans *aco7q29 = new TGeoCombiTrans("aco7q29",posxqb,posyqb,
 					constants->ModulePositionZ(48)-4*dy,idrotm232);
-	out_face->AddNode(ACORDE7,41,aco7_26);
-	out_face->AddNode(ACORDE7,42,aco7_27);
-	out_face->AddNode(ACORDE7,43,aco7_28);
-	out_face->AddNode(ACORDE7,44,aco7_29);
+	outFace->AddNode(aCORDE7,41,aco7q26);
+	outFace->AddNode(aCORDE7,42,aco7q27);
+	outFace->AddNode(aCORDE7,43,aco7q28);
+	outFace->AddNode(aCORDE7,44,aco7q29);
 
 	count=45;
 	for(Int_t dy=40;dy<=44;dy++)
@@ -1161,10 +1163,10 @@ void AliACORDEv1::CreateAcorde()
 		Float_t posy2=constants->ModulePositionY(dy)+0.27*293*0.7071-56*0.7071+3-des-s1;
 		TGeoRotation *rot1 = new TGeoRotation();
 		rot1->RotateZ(105);
-		TGeoCombiTrans *aco7_30 = new TGeoCombiTrans("aco7_30",posx1,posy1,posz,idrotm232);
-		TGeoCombiTrans *aco7_31 = new TGeoCombiTrans("aco7_31",posx2-15,posy2-10,posz,rot1);
-		out_face->AddNode(ACORDE7,count,aco7_30);
-		out_face->AddNode(ACORDE7,count+1,aco7_31);// bars 25 grades
+		TGeoCombiTrans *aco7q30 = new TGeoCombiTrans("aco7q30",posx1,posy1,posz,idrotm232);
+		TGeoCombiTrans *aco7q31 = new TGeoCombiTrans("aco7q31",posx2-15,posy2-10,posz,rot1);
+		outFace->AddNode(aCORDE7,count,aco7q30);
+		outFace->AddNode(aCORDE7,count+1,aco7q31);// bars 25 grades
 		count=count+2;
 		dy++;
 	}
@@ -1181,10 +1183,10 @@ void AliACORDEv1::CreateAcorde()
 		Float_t posy2=constants->ModulePositionY(dy)+0.27*293*0.7071-56*0.7071+3-des-s1;
 		TGeoRotation *rot1 = new TGeoRotation();
 		rot1->RotateZ(105);
-		TGeoCombiTrans *aco7_32 = new TGeoCombiTrans("aco7_32",posx1,posy1,posz,idrotm232);
-		TGeoCombiTrans *aco7_33 = new TGeoCombiTrans("aco7_33",posx2-15,posy2-10,posz,rot1);
-		out_face->AddNode(ACORDE7,count,aco7_32);
-		out_face->AddNode(ACORDE7,count+1,aco7_33);// bars 25 grades
+		TGeoCombiTrans *aco7q32 = new TGeoCombiTrans("aco7q32",posx1,posy1,posz,idrotm232);
+		TGeoCombiTrans *aco7q33 = new TGeoCombiTrans("aco7q33",posx2-15,posy2-10,posz,rot1);
+		outFace->AddNode(aCORDE7,count,aco7q32);
+		outFace->AddNode(aCORDE7,count+1,aco7q33);// bars 25 grades
 		count=count+2;
 		dy++;
 	}
@@ -1205,9 +1207,9 @@ void AliACORDEv1::CreateAcorde()
 	Float_t posy1=constants->ModulePositionY(0)-0.5*293*0.7071-box[1]-18-2+sm;
 	Float_t posz1=constants->ModulePositionZ(0);
 
-	TGeoBBox *acorde7_1 = new TGeoBBox("acorde7_1",box[0],box[1],box[2]);
+	TGeoBBox *acorde7q1 = new TGeoBBox("acorde7q1",box[0],box[1],box[2]);
 
-	TGeoVolume *ACORDE7_1 = new TGeoVolume("ACORDE7_1",acorde7_1,Al);
+	TGeoVolume *aCORDE7q1 = new TGeoVolume("ACORDE7_1",acorde7q1,al);
 	TGeoTranslation *aco71 = new TGeoTranslation("aco71",posx1,posy1,posz1-4*dy);
 	TGeoTranslation *aco72 = new TGeoTranslation("aco72",posx1,posy1,
 					constants->ModulePositionZ(3)-4*dy);
@@ -1215,10 +1217,10 @@ void AliACORDEv1::CreateAcorde()
 					constants->ModulePositionZ(5)-4*dy);
 	TGeoTranslation *aco74 = new TGeoTranslation("aco74",posx1,posy1,
 					constants->ModulePositionZ(8)-4*dy);
-	in_face->AddNode(ACORDE7_1,67,aco71);
-	in_face->AddNode(ACORDE7_1,68,aco72);
-	in_face->AddNode(ACORDE7_1,69,aco73);
-	in_face->AddNode(ACORDE7_1,70,aco74);
+	inFace->AddNode(aCORDE7q1,67,aco71);
+	inFace->AddNode(aCORDE7q1,68,aco72);
+	inFace->AddNode(aCORDE7q1,69,aco73);
+	inFace->AddNode(aCORDE7q1,70,aco74);
 
 
 	count=71;
@@ -1232,8 +1234,8 @@ void AliACORDEv1::CreateAcorde()
 		Float_t dyy2=constants->ModulePositionY(dy)+0.27*293*0.7071-box[1]-18-2-des+sm;
 		TGeoTranslation *aco75=new TGeoTranslation("aco75",posx1,posy1,posz1);
 		TGeoTranslation *aco76=new TGeoTranslation("aco76",dyx2,dyy2,posz1);
-		in_face->AddNode(ACORDE7_1,count,aco75);
-		in_face->AddNode(ACORDE7_1,count+1,aco76);
+		inFace->AddNode(aCORDE7q1,count,aco75);
+		inFace->AddNode(aCORDE7q1,count+1,aco76);
 		count=count+2;
 		dy++;
 	}
@@ -1250,28 +1252,28 @@ void AliACORDEv1::CreateAcorde()
 		Float_t dyy2=constants->ModulePositionY(dy)+0.27*293*0.7071-box[1]-18-2-des+sm;
 		TGeoTranslation *aco75=new TGeoTranslation("aco75",posx1,posy1,posz1);
 		TGeoTranslation *aco76=new TGeoTranslation("aco76",dyx2,dyy2,posz1);
-		in_face->AddNode(ACORDE7_1,count,aco75);
-		in_face->AddNode(ACORDE7_1,count+1,aco76);
+		inFace->AddNode(aCORDE7q1,count,aco75);
+		inFace->AddNode(aCORDE7q1,count+1,aco76);
 		count=count+2;
 		dy++;
 	}
 
 
-	Float_t posx1_1=constants->ModulePositionX(10)+0.5*293*0.7071-4*box[0]-8+re;
-	Float_t posy1_1=constants->ModulePositionY(10)-0.5*293*0.7071-box[1]-18-2+sm;
-	Float_t posz1_1=constants->ModulePositionZ(10);
-	TGeoTranslation *aco77=new TGeoTranslation("aco77",posx1_1,posy1_1,posz1_1-4*dy);
-	TGeoTranslation *aco78=new TGeoTranslation("aco78",posx1_1,posy1_1,
+	Float_t posx1q1=constants->ModulePositionX(10)+0.5*293*0.7071-4*box[0]-8+re;
+	Float_t posy1q1=constants->ModulePositionY(10)-0.5*293*0.7071-box[1]-18-2+sm;
+	Float_t posz1q1=constants->ModulePositionZ(10);
+	TGeoTranslation *aco77=new TGeoTranslation("aco77",posx1q1,posy1q1,posz1q1-4*dy);
+	TGeoTranslation *aco78=new TGeoTranslation("aco78",posx1q1,posy1q1,
 					constants->ModulePositionZ(13)-4*dy);
 
-	TGeoTranslation *aco79=new TGeoTranslation("aco79",posx1_1,posy1_1,
+	TGeoTranslation *aco79=new TGeoTranslation("aco79",posx1q1,posy1q1,
 					constants->ModulePositionZ(15)-4*dy);
-	TGeoTranslation *aco710=new TGeoTranslation("aco710",posx1_1,posy1_1,
+	TGeoTranslation *aco710=new TGeoTranslation("aco710",posx1q1,posy1q1,
 					constants->ModulePositionZ(18)-4*dy);
-	in_face->AddNode(ACORDE7_1,91,aco77);
-	in_face->AddNode(ACORDE7_1,92,aco78);
-	in_face->AddNode(ACORDE7_1,93,aco79);
-	in_face->AddNode(ACORDE7_1,94,aco710);
+	inFace->AddNode(aCORDE7q1,91,aco77);
+	inFace->AddNode(aCORDE7q1,92,aco78);
+	inFace->AddNode(aCORDE7q1,93,aco79);
+	inFace->AddNode(aCORDE7q1,94,aco710);
 
 	count=95;
 	for(Int_t dy=10;dy<=14;dy++)
@@ -1284,8 +1286,8 @@ void AliACORDEv1::CreateAcorde()
 		Float_t dyy2=constants->ModulePositionY(dy)+0.27*293*0.7071-box[1]-18-5-des+sm;
 		TGeoTranslation *aco711=new TGeoTranslation("aco711",posx1,posy1,posz1);
 		TGeoTranslation *aco712=new TGeoTranslation("aco712",dyx2,dyy2,posz1);
-		in_face->AddNode(ACORDE7_1,count,aco711);
-		in_face->AddNode(ACORDE7_1,count+1,aco712);
+		inFace->AddNode(aCORDE7q1,count,aco711);
+		inFace->AddNode(aCORDE7q1,count+1,aco712);
 		count=count+2;
 		dy++;
 	}
@@ -1303,23 +1305,23 @@ void AliACORDEv1::CreateAcorde()
 		Float_t dyy2=constants->ModulePositionY(dy)+0.27*293*0.7071-box[1]-18-5-des;
 		TGeoTranslation *aco713=new TGeoTranslation("aco713",posx1,posy1,posz1);
 		TGeoTranslation *aco714=new TGeoTranslation("aco714",dyx2,dyy2,posz1);
-		in_face->AddNode(ACORDE7_1,count,aco713);
-		in_face->AddNode(ACORDE7_1,count+1,aco714);
+		inFace->AddNode(aCORDE7q1,count,aco713);
+		inFace->AddNode(aCORDE7q1,count+1,aco714);
 		count=count+2;
 		dy++;
 	}
 
 		//*** Out-Face ***
 
-	Float_t posx1_a=constants->ModulePositionX(50)-0.5*293*0.7071+4*box[0]+8-re-1;
-	Float_t posy1_a=constants->ModulePositionY(50)-0.5*293*0.7071-box[1]-18-2+sm-2.5;
-	Float_t posz1_a=constants->ModulePositionZ(50);
-	TGeoTranslation *aco715=new TGeoTranslation("aco715",posx1_a,posy1_a,posz1_a-4*dy);
-	TGeoTranslation *aco716=new TGeoTranslation("aco716",posx1_a,posy1_a,
+	Float_t posx1qa=constants->ModulePositionX(50)-0.5*293*0.7071+4*box[0]+8-re-1;
+	Float_t posy1qa=constants->ModulePositionY(50)-0.5*293*0.7071-box[1]-18-2+sm-2.5;
+	Float_t posz1qa=constants->ModulePositionZ(50);
+	TGeoTranslation *aco715=new TGeoTranslation("aco715",posx1qa,posy1qa,posz1qa-4*dy);
+	TGeoTranslation *aco716=new TGeoTranslation("aco716",posx1qa,posy1qa,
 				constants->ModulePositionZ(43)-4*dy);
-	TGeoTranslation *aco717=new TGeoTranslation("aco717",posx1_a,posy1_a,
+	TGeoTranslation *aco717=new TGeoTranslation("aco717",posx1qa,posy1qa,
 				constants->ModulePositionZ(55)-4*dy);
-	TGeoTranslation *aco718=new TGeoTranslation("aco718",posx1_a,posy1_a,
+	TGeoTranslation *aco718=new TGeoTranslation("aco718",posx1qa,posy1qa,
 				constants->ModulePositionZ(58)-4*dy);
 	TGeoTranslation *aco719=new TGeoTranslation("aco719",
 				constants->ModulePositionX(50)-0.1*293*0.7071+4*box[0]+8-des-re-1,		
@@ -1331,12 +1333,12 @@ void AliACORDEv1::CreateAcorde()
 				constants->ModulePositionZ(45));
 
 
-	out_face->AddNode(ACORDE7_1,115,aco715);
-	out_face->AddNode(ACORDE7_1,116,aco716);
-	out_face->AddNode(ACORDE7_1,117,aco717);
-	out_face->AddNode(ACORDE7_1,118,aco718);
-	out_face->AddNode(ACORDE7_1,119,aco719);
-	out_face->AddNode(ACORDE7_1,120,aco720);
+	outFace->AddNode(aCORDE7q1,115,aco715);
+	outFace->AddNode(aCORDE7q1,116,aco716);
+	outFace->AddNode(aCORDE7q1,117,aco717);
+	outFace->AddNode(aCORDE7q1,118,aco718);
+	outFace->AddNode(aCORDE7q1,119,aco719);
+	outFace->AddNode(aCORDE7q1,120,aco720);
 
 
 
@@ -1352,8 +1354,8 @@ void AliACORDEv1::CreateAcorde()
 		Float_t dyy2=constants->ModulePositionY(dy)+0.27*293*0.7071-box[1]-18-2-des+sm-2.5;
 		TGeoTranslation *aco721=new TGeoTranslation("aco721",posx1,posy1,posz1);
 		TGeoTranslation *aco722=new TGeoTranslation("aco722",dyx2,dyy2,posz1);
-		out_face->AddNode(ACORDE7_1,count,aco721);
-		out_face->AddNode(ACORDE7_1,count+1,aco722);
+		outFace->AddNode(aCORDE7q1,count,aco721);
+		outFace->AddNode(aCORDE7q1,count+1,aco722);
 		count=count+2;
 		dy++;
 	}
@@ -1371,27 +1373,27 @@ void AliACORDEv1::CreateAcorde()
 		Float_t dyy2=constants->ModulePositionY(dy)+0.27*293*0.7071-box[1]-18-2-des+sm-2.5;
 		TGeoTranslation *aco723=new TGeoTranslation("aco723",posx1,posy1,posz1);
 		TGeoTranslation *aco724=new TGeoTranslation("aco724",dyx2,dyy2,posz1);
-		out_face->AddNode(ACORDE7_1,count,aco723);
-		out_face->AddNode(ACORDE7_1,count+1,aco724);
+		outFace->AddNode(aCORDE7q1,count,aco723);
+		outFace->AddNode(aCORDE7q1,count+1,aco724);
 		count=count+2;
 		dy++;
 	}
 
 
-	Float_t posx1_b=constants->ModulePositionX(40)-0.5*293*0.7071+4*box[0]+5;
-	Float_t posy1_b=constants->ModulePositionY(40)-0.5*293*0.7071-box[1]-18-2;
-	Float_t posz1_b=constants->ModulePositionZ(40);
-	TGeoTranslation *aco725=new TGeoTranslation("aco725",posx1_b,posy1_b,posz1_b-4*dy);
-	TGeoTranslation *aco726=new TGeoTranslation("aco726",posx1_b,posy1_b,
+	Float_t posx1qb=constants->ModulePositionX(40)-0.5*293*0.7071+4*box[0]+5;
+	Float_t posy1qb=constants->ModulePositionY(40)-0.5*293*0.7071-box[1]-18-2;
+	Float_t posz1qb=constants->ModulePositionZ(40);
+	TGeoTranslation *aco725=new TGeoTranslation("aco725",posx1qb,posy1qb,posz1qb-4*dy);
+	TGeoTranslation *aco726=new TGeoTranslation("aco726",posx1qb,posy1qb,
 				constants->ModulePositionZ(43)-4*dy);
-	TGeoTranslation *aco727=new TGeoTranslation("aco727",posx1_b,posy1_b,
+	TGeoTranslation *aco727=new TGeoTranslation("aco727",posx1qb,posy1qb,
 				constants->ModulePositionZ(45)-4*dy);
-	TGeoTranslation *aco728=new TGeoTranslation("aco728",posx1_b,posy1_b,
+	TGeoTranslation *aco728=new TGeoTranslation("aco728",posx1qb,posy1qb,
 				constants->ModulePositionZ(48)-4*dy);
-	out_face->AddNode(ACORDE7_1,85,aco725);
-	out_face->AddNode(ACORDE7_1,86,aco726);
-	out_face->AddNode(ACORDE7_1,87,aco727);
-	out_face->AddNode(ACORDE7_1,88,aco728);
+	outFace->AddNode(aCORDE7q1,85,aco725);
+	outFace->AddNode(aCORDE7q1,86,aco726);
+	outFace->AddNode(aCORDE7q1,87,aco727);
+	outFace->AddNode(aCORDE7q1,88,aco728);
 
 
 
@@ -1406,8 +1408,8 @@ void AliACORDEv1::CreateAcorde()
 		Float_t dyy2=constants->ModulePositionY(dy)+0.27*293*0.7071-box[1]-18-5-des+sm-2.5+3;
 		TGeoTranslation *aco729=new TGeoTranslation("aco729",posx1,posy1,posz1);
 		TGeoTranslation *aco730=new TGeoTranslation("aco730",dyx2,dyy2,posz1);
-		out_face->AddNode(ACORDE7_1,count,aco729);
-		out_face->AddNode(ACORDE7_1,count+1,aco730);
+		outFace->AddNode(aCORDE7q1,count,aco729);
+		outFace->AddNode(aCORDE7q1,count+1,aco730);
 		count=count+2;
 		dy++;
 	}
@@ -1425,8 +1427,8 @@ void AliACORDEv1::CreateAcorde()
 		Float_t dyy2=constants->ModulePositionY(dy)+0.27*293*0.7071-box[1]-18-5-des+sm-2.5+3;
 		TGeoTranslation *aco729=new TGeoTranslation("aco729",posx1,posy1,posz1);
 		TGeoTranslation *aco730=new TGeoTranslation("aco730",dyx2,dyy2,posz1);
-		out_face->AddNode(ACORDE7_1,count,aco729);
-		out_face->AddNode(ACORDE7_1,count+1,aco730);
+		outFace->AddNode(aCORDE7q1,count,aco729);
+		outFace->AddNode(aCORDE7q1,count+1,aco730);
 		count=count+2;
 		dy++;
 	}
@@ -1477,51 +1479,51 @@ void AliACORDEv1::CreateAcorde()
 	TGeoVolume *support = new TGeoVolumeAssembly("ACORDE_SUPPORT");
 
 	TGeoBBox *acorde8 = new TGeoBBox("acorde8",box[0],box[1],box[2]);
-	TGeoVolume *ACORDE8 = new TGeoVolume("ACORDE8",acorde8,Al);
+	TGeoVolume *aCORDE8 = new TGeoVolume("ACORDE8",acorde8,al);
 
 	TGeoBBox *acorde9 = new TGeoBBox("acorde9",tbox[0],tbox[1],tbox[2]);
-	TGeoVolume *ACORDE9 = new TGeoVolume("ACORDE9",acorde9,Al);
+	TGeoVolume *aCORDE9 = new TGeoVolume("ACORDE9",acorde9,al);
 
-	support->AddNode(ACORDE8,1,new TGeoTranslation(0,-5,0));
-	support->AddNode(ACORDE8,2,new TGeoTranslation(0,-dy1,0));
-	support->AddNode(ACORDE9,3,new TGeoTranslation(0,-tbox[1]-5.5,0));
+	support->AddNode(aCORDE8,1,new TGeoTranslation(0,-5,0));
+	support->AddNode(aCORDE8,2,new TGeoTranslation(0,-dy1,0));
+	support->AddNode(aCORDE9,3,new TGeoTranslation(0,-tbox[1]-5.5,0));
 
 
 	// Put "support" on Up-Face
 
-	up_face->AddNode(support,69,new TGeoTranslation("aco8",sx,sy,sz));
-	up_face->AddNode(support,70,new TGeoTranslation("aco8_2",sx2,sy2,sz));
-	up_face->AddNode(support,71,new TGeoTranslation("aco8_4",sx4,sy4,sz));
-	up_face->AddNode(support,72,new TGeoTranslation("aco8_6",sx5,sy5,sz));
-	up_face->AddNode(support,73,new TGeoTranslation("aco8_2",-sx2,sy2,sz));
-	up_face->AddNode(support,74,new TGeoTranslation("aco8_4",-sx4,sy4,sz));
-	up_face->AddNode(support,75,new TGeoTranslation("aco8_6",-sx5,sy5,sz));
+	upFace->AddNode(support,69,new TGeoTranslation("aco8",sx,sy,sz));
+	upFace->AddNode(support,70,new TGeoTranslation("aco8_2",sx2,sy2,sz));
+	upFace->AddNode(support,71,new TGeoTranslation("aco8_4",sx4,sy4,sz));
+	upFace->AddNode(support,72,new TGeoTranslation("aco8_6",sx5,sy5,sz));
+	upFace->AddNode(support,73,new TGeoTranslation("aco8_2",-sx2,sy2,sz));
+	upFace->AddNode(support,74,new TGeoTranslation("aco8_4",-sx4,sy4,sz));
+	upFace->AddNode(support,75,new TGeoTranslation("aco8_6",-sx5,sy5,sz));
 
 	// Put "support" on In-Face
 	Float_t ms = 1.3;
-	in_face->AddNode(support,121,new TGeoCombiTrans("aco8_81",dyx,dyy+ms,dyz,idrotm232));
-	in_face->AddNode(support,122,new TGeoCombiTrans("aco8_121",dyx1+des,ms+dyy1-des,dyz,idrotm232));
-	in_face->AddNode(support,123,new TGeoCombiTrans("aco8_161",dyx2+des,ms+dyy2-des,dyz,idrotm232));
-	in_face->AddNode(support,124,new TGeoCombiTrans("aco8_82",dx1,ms+dy11,dyz,idrotm232));
-	in_face->AddNode(support,125,new TGeoCombiTrans("aco8_122",dyx11+des,ms+dyy11-des,dyz,idrotm232));
-	in_face->AddNode(support,126,new TGeoCombiTrans("aco8_162",dyx21+des,ms+dyy21-des,dyz,idrotm232));
+	inFace->AddNode(support,121,new TGeoCombiTrans("aco8_81",dyx,dyy+ms,dyz,idrotm232));
+	inFace->AddNode(support,122,new TGeoCombiTrans("aco8_121",dyx1+des,ms+dyy1-des,dyz,idrotm232));
+	inFace->AddNode(support,123,new TGeoCombiTrans("aco8_161",dyx2+des,ms+dyy2-des,dyz,idrotm232));
+	inFace->AddNode(support,124,new TGeoCombiTrans("aco8_82",dx1,ms+dy11,dyz,idrotm232));
+	inFace->AddNode(support,125,new TGeoCombiTrans("aco8_122",dyx11+des,ms+dyy11-des,dyz,idrotm232));
+	inFace->AddNode(support,126,new TGeoCombiTrans("aco8_162",dyx21+des,ms+dyy21-des,dyz,idrotm232));
 
 	// Put "support" on Out-Face
 
-	out_face->AddNode(support,121,new TGeoCombiTrans("aco8_81",-dyx,dyy+ms,dyz,idrotm231));
-	out_face->AddNode(support,122,new TGeoCombiTrans("aco8_121",-dyx1-des,ms+dyy1-des,dyz,idrotm231));
-	out_face->AddNode(support,123,new TGeoCombiTrans("aco8_161",-dyx2-des,ms+dyy2-des,dyz,idrotm231));
-	out_face->AddNode(support,124,new TGeoCombiTrans("aco8_82",-dx1,dy11+ms,dyz,idrotm231));
-	out_face->AddNode(support,125,new TGeoCombiTrans("aco8_122",-dyx11-des,ms+dyy11-des,dyz,idrotm231));
-	out_face->AddNode(support,126,new TGeoCombiTrans("aco8_162",-dyx21-des,ms+dyy21-des,dyz,idrotm231));
+	outFace->AddNode(support,121,new TGeoCombiTrans("aco8_81",-dyx,dyy+ms,dyz,idrotm231));
+	outFace->AddNode(support,122,new TGeoCombiTrans("aco8_121",-dyx1-des,ms+dyy1-des,dyz,idrotm231));
+	outFace->AddNode(support,123,new TGeoCombiTrans("aco8_161",-dyx2-des,ms+dyy2-des,dyz,idrotm231));
+	outFace->AddNode(support,124,new TGeoCombiTrans("aco8_82",-dx1,dy11+ms,dyz,idrotm231));
+	outFace->AddNode(support,125,new TGeoCombiTrans("aco8_122",-dyx11-des,ms+dyy11-des,dyz,idrotm231));
+	outFace->AddNode(support,126,new TGeoCombiTrans("aco8_162",-dyx21-des,ms+dyy21-des,dyz,idrotm231));
 	
-	ACORDE->AddNode(in_face,1);//---> volume of supports & bars in-face
-	ACORDE->AddNode(up_face,2);//---> volume of supports & bars up-face
-	ACORDE->AddNode(out_face,3);//---> volume of supports & bars out-face
-	ACORDE->AddNode(in_facem,4);//---> volume of modules in-face
-	ACORDE->AddNode(up_facem,5);//---> volume of modules up-face
-	ACORDE->AddNode(out_facem,6);//---> volume of modules out-face
-	alice->AddNode(ACORDE,1);//---> put volume of ACORDE over ALICE's volume
+	aCORDE->AddNode(inFace,1);//---> volume of supports & bars in-face
+	aCORDE->AddNode(upFace,2);//---> volume of supports & bars up-face
+	aCORDE->AddNode(outFace,3);//---> volume of supports & bars out-face
+	aCORDE->AddNode(inFacem,4);//---> volume of modules in-face
+	aCORDE->AddNode(upFacem,5);//---> volume of modules up-face
+	aCORDE->AddNode(outFacem,6);//---> volume of modules out-face
+	alice->AddNode(aCORDE,1);//---> put volume of ACORDE over ALICE's volume
 
 
 
@@ -1613,6 +1615,8 @@ void AliACORDEv1::StepManager()
       // [8] = energy 
       // [9] = energy loss
       hits[0]  = (Float_t ) gMC->TrackPid(); 
+
+
       hits[1] = pos[0]; printf("PosX %f \n",hits[1]);
       hits[2] = pos[1]; printf("PosY %f \n",hits[2]);
       hits[3] = pos[2]; printf("PosZ %f \n",hits[3]);
@@ -1645,6 +1649,7 @@ void AliACORDEv1::StepManager()
       AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(),vol, hits);
     }
   } 
+
 
 
 }
