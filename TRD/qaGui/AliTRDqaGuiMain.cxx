@@ -69,12 +69,14 @@ AliTRDqaGuiMain::AliTRDqaGuiMain(TGWindow *parent) :
   fGStack    = new AliTRDqaGuiClustersStack(fGTabPanel);
   fGESDs[0]  = new AliTRDqaGuiESDs(fGTabPanel,0);
   fGESDs[1]  = new AliTRDqaGuiESDs(fGTabPanel,1);
+  fGESDs[2]  = new AliTRDqaGuiESDs(fGTabPanel,2);
   
   fGTabPanel->AddTab("Clusters", fGDet);
   fGTabPanel->AddTab("Clusters - Super Module", fGSM);
   fGTabPanel->AddTab("Clusters - Stack", fGStack);
   fGTabPanel->AddTab("ESDs (1)", fGESDs[0]);
   fGTabPanel->AddTab("ESDs (2)", fGESDs[1]);
+  fGTabPanel->AddTab("ESDs (3)", fGESDs[2]);
 
   AddFrame(fGTabPanel);
   
@@ -96,6 +98,7 @@ void AliTRDqaGuiMain::SetQAFile(const char *file) {
   fGStack->SetQAFile(file);
   fGESDs[0]->SetQAFile(file);
   fGESDs[1]->SetQAFile(file);
+  fGESDs[2]->SetQAFile(file);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

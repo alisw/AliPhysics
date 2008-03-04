@@ -99,12 +99,12 @@ AliTRDqaGuiBlackSM::AliTRDqaGuiBlackSM(TGWindow *parent)
   fGSelect->Resize(100, fGPrev->GetHeight());
   fGSelect->Select(fIdx,0);
 
-  const char *textTypes[5] = {
-    "pedestals", "noise", "pedestalDist", "noiseDist", "signal"
+  const char *textTypes[7] = {
+    "pedestals", "noise", "pedestalDist", "noiseDist", "signal", "entries", "entriesDist"
   };
   
   fGSelectType = new TGComboBox(fGPanel);
-  for(int i=0; i<5; i++) fGSelectType->AddEntry(textTypes[i], i);
+  for(int i=0; i<7; i++) fGSelectType->AddEntry(textTypes[i], i);
   fGSelectType->Resize(100, fGPrev->GetHeight());
   fGSelectType->Select(fIdxType, 0);
 
@@ -155,9 +155,9 @@ void AliTRDqaGuiBlackSM::SetQAFile(const char *filename) {
   // Set the file with histograms
   //
  
-  const char *names[5] = {"ped", "noise", "pedDist", "noiseDist", "signal"};
-  const char *opt[5] = {"col", "col", "", "", ""};
-  const Int_t kLogy[5] = {0, 0, 1, 1, 0};
+  const char *names[7] = {"ped", "noise", "pedDist", "noiseDist", "signal", "entries", "entriesDist"};
+  const char *opt[7] = {"col", "col", "", "", "", "colz", ""};
+  const Int_t kLogy[7] = {0, 0, 1, 1, 1, 0, 1};
 
   fFileName = filename;
  
@@ -181,6 +181,11 @@ void AliTRDqaGuiBlackSM::SetQAFile(const char *filename) {
     fCanvasList[pos]->GetCanvas()->SetLogy(kLogy[fIdxType]);
 
     if (fHistList[i]) fHistList[i]->Draw(opt[fIdxType]);
+
+    if (fHistList[i] && (fIdxType == 5)) {
+      fHistList[i]->SetMinimum(0);
+      fHistList[i]->SetMaximum(2);
+    }
 
     if ( fHistList[i] && (fIdxType == 0)  && fSetRangePed) {
       fHistList[i]->SetMinimum(fRangePed[0]);

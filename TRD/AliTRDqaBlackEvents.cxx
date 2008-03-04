@@ -6,7 +6,7 @@
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
  * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the abovÅe copyright notice appears in all   *
+ * withount fee, provided that the abovÅe copyright notice appears in all   *
  * copies and that both the copyright notice and this permission notice   *
  * appear in the supporting documentation. The authors make no claims     *
  * about the suitability of this software for any purpose. It is          *
@@ -47,6 +47,8 @@ AliTRDqaBlackEvents::AliTRDqaBlackEvents()
   :TObject() 
   ,fMinNoise(0.5)
   ,fMaxNoise(2) 
+  ,fFitType(0)
+  ,fnEvents(0)
 {
   //
   // Constructor 
@@ -60,6 +62,8 @@ AliTRDqaBlackEvents::AliTRDqaBlackEvents(const AliTRDqaBlackEvents &qa)
   :TObject(qa) 
   ,fMinNoise(0.5)
   ,fMaxNoise(2) 
+  ,fFitType(0)
+  ,fnEvents(0)
 {
   //
   // Copy constructor 
@@ -78,14 +82,19 @@ void AliTRDqaBlackEvents::Init()
   //TFile *file = new 
   //Info("Init", "Statring");
 
+  fnEvents = 0;
+
   for(Int_t i=0; i<540; i++) {
+    fNPoint[i]  = new TH2D(Form("entries_%d", i), "",  16, -0.5, 15.5, 144, -0.5, 143.5);
     fData[i]    = new TH3D(Form("data_%d", i), "", 16, -0.5, 15.5, 144, -0.5, 143.5, 50, -0.5, 49.5);
-    fChPed[i]   = new TH2D(Form("ped_%d", i), "", 16, -0.5, 15.5, 150, -0.5, 149.5);
+    fChPed[i]   = new TH2D(Form("ped_%d", i), "", 16, -0.5, 15.5, 144, -0.5, 143.5);
     fChNoise[i] = new TH2D(Form("noise_%d", i), "", 16, -0.5, 15.5, 144, -0.5, 143.5);
-    fPed[i]     = new TH1D(Form("pedDist_%d", i), ";pedestals", 100, 0, 20);
-    fNoise[i]   = new TH1D(Form("noiseDist_%d", i), ";noise", 100, 0, 5); 
-    fSignal[i]  = new TH1D(Form("signal_%d", i), "", 100, -0.5, 99.5);
+    fPed[i]     = new TH1D(Form("pedDist_%d", i), ";pedestals (ADC counts)", 100, 5, 15);
+    fNoise[i]   = new TH1D(Form("noiseDist_%d", i), ";noise (ADC counts)", 100, 0, 5); 
+    fSignal[i]  = new TH1D(Form("signal_%d", i), "signal (ADC counts)", 100, -0.5, 99.5);
   }
+
+  fOccupancy = new TH1D("occupancy", "", 20, -0.5, 19.5);
 
   //Info("Init", "Done");
 }
@@ -114,22 +123,49 @@ Int_t AliTRDqaBlackEvents::AddEvent(AliTRDrawStreamTB *data)
   // Add an event
   //
 
+  
+  Char_t isUsed[540][16][144]; 
+  for(Int_t i=0; i<540; i++)
+    for(Int_t j=0; j<16; j++)
+      for(Int_t k=0; k<144; k++)
+  	isUsed[i][j][k] = 0;
+ 
   Int_t nb = 0;
   while (data->Next()) {
 
     Int_t det = data->GetDet();
+    Int_t row = data->GetRow();
+    Int_t col = data->GetCol();
     Int_t *sig = data->GetSignals();
     nb++;
 
-    if (det<0 || det>=540) continue;
+    //printf("det = %d\n", det);
     
-    for(Int_t k=0; k<30; k++) {
+    if (det<0 || det>=540) continue;
+    isUsed[det][row][col]++;
+
+    // if (!isUsed[det][data->GetRow()][data->GetCol()]) {
+    //  isUsed[det][data->GetRow()][data->GetCol()] = 1;
+    //  continue;
+    // }
+
+    fNPoint[det]->Fill(row, col);
+    
+    for(Int_t k=0; k<30; k++) { /// to be corrected
       fSignal[det]->Fill(sig[k]);
-      //if(sig[k]>13) printf("timebin: %d  signal: %d\n",k,sig[k]); 
-      fData[det]->Fill(data->GetRow(), data->GetCol(), sig[k]);
+      fData[det]->Fill(row, col, sig[k]);
     }
   }
+  
+  for(Int_t i=0; i<540; i++) {
+    if (i != 0 && i != 8) continue;
+    for(Int_t j=0; j<16; j++)
+      for(Int_t k=0; k<144; k++)
+  	fOccupancy->Fill(isUsed[i][j][k]);
+  }
 
+  
+  fnEvents++;
   return nb;
 }
 
@@ -148,9 +184,9 @@ void AliTRDqaBlackEvents::Process(const char *filename)
   fit->SetParameters(1e3, 10, 1);
     
   for(Int_t i=0; i<540; i++) {
-   
+    
     map[i] = 0;
-    if (fData[i]->GetSum() < 100) continue;
+    if (fData[i]->GetSum() < 10) continue;
     map[i] = 1;
 
     Info("process", "processing chamber %d", i);
@@ -170,11 +206,20 @@ void AliTRDqaBlackEvents::Process(const char *filename)
 	
 	Int_t bin = fChPed[i]->FindBin(j, k);
 
-	if (hist->GetSum() > 10) {
-	  hist->Fit(fit, "q0", "goff", 0, 20);
-	  TF1 *f = hist->GetFunction("fit");
-	  Double_t ped = TMath::Abs(f->GetParameter(1));
-	  Double_t noise = TMath::Abs(f->GetParameter(2));
+	if (hist->GetSum() > 1) {
+	  
+	  Double_t ped = 0, noise = 0;
+
+	  if (fFitType == 0) {
+	    fit->SetParameters(1e3, 10, 1);
+	    hist->Fit(fit, "q0", "goff", 0, 20);
+	    TF1 *f = hist->GetFunction("fit");
+	    ped = TMath::Abs(f->GetParameter(1));
+	    noise = TMath::Abs(f->GetParameter(2));
+	  } else {
+	    ped = hist->GetMean();
+	    noise = hist->GetRMS();
+	  }
 
 	  fChPed[i]->SetBinContent(bin, ped);
 	  fChNoise[i]->SetBinContent(bin, noise);
@@ -183,8 +228,8 @@ void AliTRDqaBlackEvents::Process(const char *filename)
 	  fNoise[i]->Fill(noise);
 
 	} else {
-	  fChPed[i]->SetBinContent(bin, 10);
-	  fChNoise[i]->SetBinContent(bin, 1);
+	  fChPed[i]->SetBinContent(bin, 0);
+	  fChNoise[i]->SetBinContent(bin, 0);
 	}
 	
 	//delete hist;
@@ -192,15 +237,52 @@ void AliTRDqaBlackEvents::Process(const char *filename)
     }
   }
 
+  // normalize number of entries histos
+
+  
+  Int_t max = 0;
+  for(Int_t i=0; i<540; i++) { 
+    if (!map[i]) continue;
+    for(Int_t j=0; j<fNPoint[i]->GetXaxis()->GetNbins(); j++) {
+      for(Int_t k=0; k<fNPoint[i]->GetYaxis()->GetNbins(); k++) {
+	Int_t dataBin = fNPoint[i]->FindBin(j, k);
+	Double_t v = fNPoint[i]->GetBinContent(dataBin);
+	if (v > max) max = (Int_t)v;
+      }
+    }
+  }
+  
+  for(Int_t i=0; i<540; i++) {
+    
+    if (!map[i]) continue;
+    
+    fNPointDist[i] = new TH1D(Form("entriesDist_%d", i), ";number of events", max+2, -0.5, max+1.5);
+    
+    for(Int_t j=0; j<fNPoint[i]->GetXaxis()->GetNbins(); j++) {
+      for(Int_t k=0; k<fNPoint[i]->GetYaxis()->GetNbins(); k++) {
+	Int_t dataBin = fNPoint[i]->FindBin(j, k);
+	Double_t v = fNPoint[i]->GetBinContent(dataBin);
+	//if (v > fnEvents) printf("N = %d V = %lf\n", fnEvents, v);
+	fNPointDist[i]->Fill(v); 
+      }
+    }
+    
+    fNPoint[i]->Scale(1./fnEvents);
+  }
+  
+  
   TFile *file = new TFile(filename, "UPDATE");
   for(Int_t i=0; i<540; i++) {
     if (!map[i]) continue; 
     fChPed[i]->Write();
     fChNoise[i]->Write();
+    fNPoint[i]->Write();
+    fNPointDist[i]->Write();
     fPed[i]->Write();
     fNoise[i]->Write();
     fSignal[i]->Write();
   }
+  fOccupancy->Write();
   file->Close();
   delete file;
 }

@@ -52,11 +52,11 @@ AliTRDqaGuiMainBlack::AliTRDqaGuiMainBlack(TGWindow *parent) :
   fGChamber->SetRangeNoise(0.5, 2);
 
   fGSM->SetRangePed(8, 11);
-  fGSM->SetRangeNoise(0.5, 2);
+  fGSM->SetRangeNoise(0.5, 3);
 
   fGTabPanel->AddTab("Super Module", fGSM);
   fGTabPanel->AddTab("Chamber", fGChamber);
-
+   
   AddFrame(fGTabPanel);
   
   SetWindowName("TRD QA -- Black Events");

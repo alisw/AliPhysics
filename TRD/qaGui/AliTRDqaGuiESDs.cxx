@@ -39,7 +39,7 @@ ClassImp(AliTRDqaGuiESDs)
 //////////////////////////////////////////////////////////////////////////////////
 
 
-const Int_t AliTRDqaGuiESDs::fgkLogList[12] = {1,1,0,0,0,0,1,1,1,1,1,1};
+const Int_t AliTRDqaGuiESDs::fgkLogList[18] = {1,1,0,0,0,0,1,1,1,1,1,1,1,1,1,0,0,0};
 
 //////////////////////////////////////////////////////////////////////////////////
 AliTRDqaGuiESDs::AliTRDqaGuiESDs(TGWindow *parent, Int_t page) 
@@ -66,9 +66,17 @@ AliTRDqaGuiESDs::AliTRDqaGuiESDs(TGWindow *parent, Int_t page)
   fNameList[10] = "pidQuality";
   fNameList[11] = "chi2";
   
+  fNameList[12] = "pid0";
+  fNameList[13] = "pid2";
+  fNameList[14] = "pid4";
+  fNameList[15] = "tracksStack";
+  fNameList[16] = "electronStack";
+  fNameList[17] = "elRatioStack";
+
+
 
   for(Int_t i=0; i<6; i++) {
-    fCanvasList[i] = new TRootEmbeddedCanvas(fNameList[i], this, 320, 320);
+    fCanvasList[i] = new TRootEmbeddedCanvas(fNameList[i+6*fPage], this, 320, 320);
     AddFrame(fCanvasList[i]);
     fCanvasList[i]->GetCanvas()->SetRightMargin(0.05);
     //TGToolTip *tip = new TGToolTip(this,fCanvasList[i], Form("Wal sie na ryja %d", i),1000);

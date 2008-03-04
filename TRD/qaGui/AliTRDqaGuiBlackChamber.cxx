@@ -54,7 +54,8 @@ const Int_t AliTRDqaGuiBlackChamber::fgknChamber = 30;
 //////////////////////////////////////////////////////////////////////////////////
 
 AliTRDqaGuiBlackChamber::AliTRDqaGuiBlackChamber() 
-  : fSetRangePed(0),
+  : fView(0),
+    fSetRangePed(0),
     fSetRangeNoise(0),
     fIdxSM(0),
     fIdxChamber(0),
@@ -73,8 +74,9 @@ AliTRDqaGuiBlackChamber::AliTRDqaGuiBlackChamber()
 
 //////////////////////////////////////////////////////////////////////////////////
 
-AliTRDqaGuiBlackChamber::AliTRDqaGuiBlackChamber(TGWindow *parent) 
+AliTRDqaGuiBlackChamber::AliTRDqaGuiBlackChamber(TGWindow *parent)
   : TGCompositeFrame(parent, 720, 500), 
+    fView(0),
     fSetRangePed(0),
     fSetRangeNoise(0),
     fIdxSM(0),
@@ -94,10 +96,9 @@ AliTRDqaGuiBlackChamber::AliTRDqaGuiBlackChamber(TGWindow *parent)
   // main constructor
   // 
   
-  // steering panel 
+   // steering panel 
   
   SetLayoutManager(new TGVerticalLayout(this));
-
   fGPanel = new TGHorizontalFrame(this);
 
   // fGLabel = new TGLabel(fGPanel, "Current Chamber: ");
@@ -117,6 +118,14 @@ AliTRDqaGuiBlackChamber::AliTRDqaGuiBlackChamber(TGWindow *parent)
   fGSelectChamber->Resize(100, fGPrevSM->GetHeight());
   fGSelectChamber->Select(fIdxChamber);
 
+  // vew
+  fGSelectView = new TGComboBox(fGPanel);
+  fGSelectView->AddEntry("pedestals",0);
+  fGSelectView->AddEntry("entiries", 1);
+  fGSelectView->Resize(150, fGPrevSM->GetHeight());
+  fGSelectView->Select(0);
+
+
   //fGPlay = new TGTextButton(fGPanel, "PLAY");
 
   TGLayoutHints *hint = new TGLayoutHints(kLHintsNormal, 5, 5, 5, 5);
@@ -131,6 +140,7 @@ AliTRDqaGuiBlackChamber::AliTRDqaGuiBlackChamber(TGWindow *parent)
   fGPanel->AddFrame(fGNextChamber, hint);
   fGPanel->AddFrame(fGNextSM, hint);
 
+  fGPanel->AddFrame(fGSelectView, hint);
   //fGPanel->AddFrame(fGPlay, hint);
 
   AddFrame(fGPanel);
@@ -144,6 +154,8 @@ AliTRDqaGuiBlackChamber::AliTRDqaGuiBlackChamber(TGWindow *parent)
   fGSelectSM->Connect("Selected(Int_t)", "AliTRDqaGuiBlackChamber", this, "SelectSM(Int_t)");
   fGSelectChamber->Connect("Selected(Int_t)", "AliTRDqaGuiBlackChamber", this, "SelectChamber(Int_t)");
   
+  fGSelectView->Connect("Selected(Int_t)", "AliTRDqaGuiBlackChamber", this, "SelectView(Int_t)");
+
   //fGPlay->Connect("Clicked()", "AliTRDqaGuiBlackChamber", this, "Play()");
 
   // histograms
@@ -196,9 +208,13 @@ void AliTRDqaGuiBlackChamber::SetQAFile(const char *filename) {
   //
 
 
-  const char *names[5] = {"ped", "noise", "pedDist", "noiseDist", "signal"};
-  const char *opt[5] = {"colz", "colz", "", "", ""};
-  const Int_t kLogy[5] = {0, 0, 1, 1, 0};
+  //const char *names[5] = {"ped", "noise", "pedDist", "noiseDist", "signal"};
+  const char *names[10] = {
+    "ped", "noise", "pedDist", "noiseDist", "signal",
+    "entries", "", "entriesDist", "", ""
+  };
+  const char *opt[10] = {"colz", "colz", "", "", "", "colz", "colz", "", "", ""};
+  const Int_t kLogy[10] = {0, 0, 1, 1, 1, 0, 0, 1, 1,1};
   
   strcpy(fFileName, filename);
  
@@ -214,27 +230,35 @@ void AliTRDqaGuiBlackChamber::SetQAFile(const char *filename) {
   for(Int_t i=0; i<5; i++) {
 
     Int_t index = fIdxSM * 30 + fIdxChamber;
-    const char *nn = Form("%s_%d", names[i], index);
+    const char *nn = Form("%s_%d", names[i+5*fView], index);
     //printf("%s\n", nn);
     fHistList[i] = (TH1*)file->Get(nn); //Form("%s_$d", names[fIdxType], index));
     if (!fHistList[i]) continue;
-    
-    if ( (i == 0)  && fSetRangePed) {
+
+    if ( (fView == 1) && (i == 0)) {
+      fHistList[i]->SetMinimum(0);
+      fHistList[i]->SetMaximum(2);
+    }
+
+    if ( (fView == 0) && (i == 0)  && fSetRangePed) {
       fHistList[i]->SetMinimum(fRangePed[0]);
       fHistList[i]->SetMaximum(fRangePed[1]);
     }
     
-    if ( (i == 1) && fSetRangeNoise) {
+    if ( (fView == 0) && (i == 1) && fSetRangeNoise) {
       fHistList[i]->SetMinimum(fRangeNoise[0]);
       fHistList[i]->SetMaximum(fRangeNoise[1]);
     }
 
 
     fCanvasList[i]->GetCanvas()->cd();
-    fCanvasList[i]->GetCanvas()->SetLogy(kLogy[i]);
-    if (fHistList[i]) fHistList[i]->Draw(opt[i]);
-    fCanvasList[i]->GetCanvas()->Update();
+    fCanvasList[i]->GetCanvas()->SetLogy(kLogy[i+5*fView]);
+    if (fHistList[i]) fHistList[i]->Draw(opt[i+5*fView]);
+    //fCanvasList[i]->GetCanvas()->Update();
   }
+  
+  for(Int_t i=0; i<5; i++)
+    fCanvasList[i]->GetCanvas()->Update();
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -263,4 +287,15 @@ void AliTRDqaGuiBlackChamber::SetSM(Int_t idxSM) {
   SetQAFile(fFileName);
 }
 
+//////////////////////////////////////////////////////////////////////////////////
+
+void AliTRDqaGuiBlackChamber::SetView(Int_t idxView) {
+  //
+  // sets active view
+  //
+  
+  fView = idxView;
+  fGSelectView->Select(idxView);
+  SetQAFile(fFileName);
+}
 //////////////////////////////////////////////////////////////////////////////////

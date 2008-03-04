@@ -41,6 +41,7 @@ class AliTRDqaGuiBlackChamber : public TGCompositeFrame {
   void SetQAFile(const char *filename);
   void SetSM(Int_t idxSM);
   void SetChamber(Int_t idxChamber);
+  void SetView(Int_t idxView);
 
   void SetRangePed(Double_t min, Double_t max) {
     fSetRangePed = 1;
@@ -64,10 +65,12 @@ class AliTRDqaGuiBlackChamber : public TGCompositeFrame {
   
   void SelectChamber(Int_t idx) {SetChamber(idx);} // *SLOT*
   void SelectSM(Int_t idx) {SetSM(idx);}       // *SLOT*
-  // void SelectView(Int_t idx) {SetView(idx);}   // *SLOT*
+  void SelectView(Int_t idx) {SetView(idx);}   // *SLOT*
 
 
  protected:
+  
+  Int_t fView;
   
   static const Int_t fgknSM;       // number of supermodules
   static const Int_t fgknChamber;  // number of chamberd (30)
@@ -96,8 +99,8 @@ class AliTRDqaGuiBlackChamber : public TGCompositeFrame {
   // steering panel
   // TGLabel      *fGLabel;
   TGComboBox   *fGSelectSM;             // selector for Super Module
-  TGComboBox   *fGSelectChamber;        // selectro for Chamber 
-  //TGComboBox   *fGSelectView;
+  TGComboBox   *fGSelectChamber;        // selector for Chamber 
+  TGComboBox   *fGSelectView;           // select view
 
   TGTextButton *fGPrevSM;        // button
   TGTextButton *fGPrevChamber;   // button

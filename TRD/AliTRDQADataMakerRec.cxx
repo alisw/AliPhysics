@@ -91,7 +91,7 @@ void AliTRDQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX task, TObjArray *
   //TStopwatch watch;
   //watch.Start();
   
-  //AliInfo(Form("Fitting RecPoints %d", task))
+  AliInfo("End of TRD cycle");
   
   if (task == AliQA::kRECPOINTS) {
     
@@ -104,7 +104,7 @@ void AliTRDQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX task, TObjArray *
       Int_t sm = i/30;
       Int_t det = i%30;
 
-      TH2D *detMap = (TH2D*)list->At(51);
+      TH2D *detMap = (TH2D*)list->At(87);
       Int_t bin = detMap->FindBin(sm, det);
       detMap->SetBinContent(bin, v);
     }
@@ -231,6 +231,12 @@ void AliTRDQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX task, TObjArray *
 	//ratio->Divide(histD);
       }
     }
+
+    // ratio for the fraction of electrons per stack
+    TH1D *histN = (TH1D*)list->At(33);
+    TH1D *histD = (TH1D*)list->At(32);
+    TH1D *ratio = (TH1D*)list->At(34);
+    BuildRatio(ratio, histN, histD);
   }
 
   
@@ -245,7 +251,8 @@ void AliTRDQADataMakerRec::InitESDs()
   // Create ESDs histograms in ESDs subdir
   //
 
-  const Int_t kNhist = 27;
+  const Int_t kNhist = 36+5;
+
   TH1 *hist[kNhist];
   Int_t histoCounter = -1 ;
 
@@ -262,9 +269,9 @@ void AliTRDQADataMakerRec::InitESDs()
     hist[++histoCounter] = new TH1D(Form("qaTRD_esd_trdz%s", suf[i]), ";z (cm)", 200, -400, 400); 
   }
 
-  hist[++histoCounter] = new TH1D("qaTRD_esd_clsTRDo", "TRDo;number of clusters", 130, -0.5, 129.5);;
-  hist[++histoCounter] = new TH1D("qaTRD_esd_clsTRDr", "TRDr;number of clusters", 130, -0.5, 129.5);;
-  hist[++histoCounter] = new TH1D("qaTRD_esd_clsTRDz", "TRDz;number of clusters", 130, -0.5, 129.5);;
+  hist[++histoCounter] = new TH1D("qaTRD_esd_clsTRDo", "TRDo;number of clusters", 180, -0.5, 179.5);;
+  hist[++histoCounter] = new TH1D("qaTRD_esd_clsTRDr", "TRDr;number of clusters", 180, -0.5, 179.5);;
+  hist[++histoCounter] = new TH1D("qaTRD_esd_clsTRDz", "TRDz;number of clusters", 180, -0.5, 179.5);;
   //hist[++histoCounter] = new TH1D("qaTRD_esd_clsRatio", ";cluster ratio", 100, 0., 1.3);;
 
   hist[++histoCounter] = new TH2D("qaTRD_esd_sigMom", ";momentum (GeV/c);signal", 100, 0, 5, 200, 0, 1e3);
@@ -282,7 +289,27 @@ void AliTRDQADataMakerRec::InitESDs()
 				    200, -400, 400);
   }
 
-  for(Int_t i=0; i<=histoCounter; i++) {
+  // 27 - 31
+  hist[27] = new TH1D("qaTRD_esd_quality", ";quality", 120, 0, 12);
+  hist[28] = new TH1D("qaTRD_esd_budget", ";NN", 110, -1000, 100);
+  hist[29] = new TH1D("qaTRD_esd_chi2", ";chi2", 200, 0, 100);
+  hist[30] = new TH1D("qaTRD_esd_timeBin", ";time bin", 7, -0.5, 6.5);
+  hist[31] = new TH1D("qaTRD_esd_pidQuality", "pid Quality", 7, -0.5, 6.5);
+
+  // stack by stack electron identyfication
+  hist[32] = new TH1D("qaTRD_esd_tracksStack", "number of all tracks;stack", 90, -0.5, 89.5);
+  hist[33] = new TH1D("qaTRD_esd_electronStack", "number of electron tracks;stack", 90, -0.5, 89.5);
+  hist[34] = new TH1D("qaTRD_esd_elRatioStack", "fraction of electron tracks;stack", 90, -0.5, 89.5);
+  hist[35] = new TH1D("qaTRD_esd_thetaOut", ";tan(theta);", 100, -1, 1);
+  
+  const char *partType[5] = {"Electron", "Muon", "Pion", "Kaon", "Proton"}; 
+
+  for(Int_t i=0; i<AliPID::kSPECIES; i++)
+    hist[36+i] = new TH1D(Form("qaTRD_esd_pid%d",i),
+			  Form("%s;probability",partType[i]), 100, 0, 1);
+ 
+
+  for(Int_t i=0; i<kNhist; i++) {
     //hist[i]->Sumw2();
     Add2ESDsList(hist[i], i);
   }
@@ -296,7 +323,7 @@ void AliTRDQADataMakerRec::InitRecPoints()
   // Create Reconstructed Points histograms in RecPoints subdir
   //
 
-  const Int_t kNhist = 14 + 18 + 18 + 2;
+  const Int_t kNhist = 14 + 4 * 18 + 2;
   TH1 *hist[kNhist];
 
   hist[0] = new TH1D("qaTRD_recPoints_det", ";Detector ID of the cluster", 540, -0.5, 539.5);
@@ -313,14 +340,14 @@ void AliTRDQADataMakerRec::InitRecPoints()
   hist[9] = new TH1D("qaTRD_recPoints_nCls", ";number of clusters", 500, -0.5, 499.5);
 
   hist[10] = new TH3D("qaTRD_recPoints_sigTime", ";chamber;time bin;signal", 
-		      540, -0.5, 539.5, 35, -0.5, 34.5, 100, 0, 200);
+		      540, -0.5, 539.5, 35, -0.5, 34.5, 200, -0.5, 199.5);
   hist[11] = new TProfile("qaTRD_recPoints_prf", ";distance;center of gravity"
                          , 120, -0.6, 0.6, -1.2, 1.2, "");
 
   hist[12] = new TH1D("qaTRD_recPoints_ampMPV", ";amplitude MPV", 200, 0, 200);
   hist[13] = new TH1D("qaTRD_recPoints_ampSigma", ";amplitude Sigma", 200, 0, 200); 
   
-  // chamber bu chamber
+  // chamber by chamber
   for(Int_t i=0; i<18; i++) {
     hist[14+i] = new TH2D(Form("qaTRD_recPoints_sigTime_sm%d",i), Form("sm%d;det;time bin"), 
 			30, -0.5, 29.5, 35, -0.5, 34.5);
@@ -333,19 +360,32 @@ void AliTRDQADataMakerRec::InitRecPoints()
     hist[14+18+i] = new TH1D(Form("qaTRD_recPoints_sigTimeShape_sm%d", i), 
 			     Form("sm%d;time bin;signal"),
 			     35, -0.5, 34.5);
-    
+
     hist[14+18+i]->SetMaximum(120);    
   }
 
-  hist[50] = new TH1D("qaTRD_recPoints_signal", ";amplitude", 200, -0.5, 199.5);
-  hist[51] = new TH2D("qaTRD_recPoints_detMap", ";sm;chamber", 18, -0.5, 17.5, 30, -0.5, 29.5);
+  // str = 50
+  for(Int_t i=0; i<18; i++) {
+    hist[50+i] = new TH1D(Form("qaTRD_recPoints_nCls_sm%d",i),
+			  Form("sm%d;time bin;number of clusters",i),
+			  35, -0.5, 34.5);
+  }
+
+  // str = 68
+  for(Int_t i=0; i<18; i++) {
+    hist[68+i] = new TH1D(Form("qaTRD_recPoints_totalCharge_sm%d", i),
+			  Form("sm%d;time bin;total charge", i),
+			  35, -0.5, 34.5);
+  }
+
+  hist[86] = new TH1D("qaTRD_recPoints_signal", ";amplitude", 200, -0.5, 199.5);
+  hist[87] = new TH2D("qaTRD_recPoints_detMap", ";sm;chamber", 18, -0.5, 17.5, 30, -0.5, 29.5);
 
 
   for(Int_t i=0; i<kNhist; i++) {
     //hist[i]->Sumw2();
     Add2RecPointsList(hist[i], i);
   }
-
 }
 
 //____________________________________________________________________________ 
@@ -409,7 +449,7 @@ void AliTRDQADataMakerRec::MakeESDs(AliESDEvent * esd)
 
     // .. in the acceptance
     Int_t sector = GetSector(paramOut->GetAlpha());
-    GetESDsData(1)->Fill(sector);
+    Int_t stack = GetStack(paramOut);
 
     UInt_t u = 1;
     UInt_t status = track->GetStatus();
@@ -438,7 +478,7 @@ void AliTRDQADataMakerRec::MakeESDs(AliESDEvent * esd)
 
     // clusters
     for(Int_t b=0; b<3; b++) 
-      if (bit[3+b]) GetESDsData(b+15)->Fill(track->GetTRDncls());
+      if (bit[3+b]) GetESDsData(b+15)->Fill(track->GetTRDncls0());
 
     // refitted only
     if (!bit[4]) continue;
@@ -446,8 +486,40 @@ void AliTRDQADataMakerRec::MakeESDs(AliESDEvent * esd)
     //fQuality->Fill(track->GetTRDQuality());
     //fBudget->Fill(track->GetTRDBudget());
     //fSignal->Fill(track->GetTRDsignal());
-	
+
+    GetESDsData(1)->Fill(sector);
     GetESDsData(18)->Fill(track->GetP(), track->GetTRDsignal());
+
+    GetESDsData(27)->Fill(track->GetTRDQuality());
+    GetESDsData(28)->Fill(track->GetTRDBudget());
+    GetESDsData(29)->Fill(track->GetTRDchi2());
+    GetESDsData(30)->Fill(track->GetTRDTimBin(0));
+    GetESDsData(31)->Fill(track->GetTRDpidQuality());
+    
+    // probabilities
+    if (status & AliESDtrack::kTRDpid) {
+      for(Int_t i=0; i<AliPID::kSPECIES; i++) 
+	GetESDsData(36+i)->Fill(track->GetTRDpid(i));
+    }
+
+    // probabilities uniformity
+    if (track->GetTRDpidQuality() < 6) continue;
+    GetESDsData(35)->Fill(paramOut->GetZ()/paramOut->GetX());
+    
+    Int_t idx = 5 * sector + stack;
+    GetESDsData(32)->Fill(idx); // all tracks
+    if (track->GetTRDpid(AliPID::kElectron) > 0.9) 
+      GetESDsData(33)->Fill(idx); // electrons only
+
+    
+
+    /*
+    hist[27] = new TH1D("qaTRD_esd_quality", ";quality", 120, 0, 12);
+    hist[28] = new TH1D("qaTRD_esd_budget", ";NN", 110, -1000, 100);
+    hist[29] = new TH1D("qaTRD_esd_chi2", ";chi2", 300, 0, 100);
+    hist[30] = new TH1D("qaTRD_esd_timeBin", 7, -0.5, 6.5);
+    hist[31] = new TH1D("qaTRD_esd_pidQuality", 7, -0.5, 6.5);
+    */
 
     /*
     // PID only
@@ -488,16 +560,32 @@ void AliTRDQADataMakerRec::MakeESDs(AliESDEvent * esd)
 }
 
 //______________________________________________________________________________
-Int_t AliTRDQADataMakerRec::GetSector(const Double_t alpha) const 
+Int_t AliTRDQADataMakerRec::GetSector(Double_t alpha) const 
 {
   //
   // Gets the sector number 
   //
 
   Double_t size = TMath::DegToRad() * 20.; // shall use TRDgeo
-  Int_t sector = (Int_t)((alpha + TMath::Pi())/size);
+  if (alpha < 0) alpha += 2*TMath::Pi();
+  Int_t sector = (Int_t)(alpha/size);
   return sector;
 
+}
+//______________________________________________________________________________
+
+Int_t AliTRDQADataMakerRec::GetStack(const AliExternalTrackParam *paramOut) const
+{
+  //
+  // calculates the stack the track is in
+  //
+  
+  const Double_t L = -0.9;
+  const Double_t W = (2*L)/5;
+
+  Double_t tan = paramOut->GetZ() / paramOut->GetX();
+  Double_t pos = (tan - L) / W;
+  return (Int_t) pos;
 }
 
 //______________________________________________________________________________
@@ -566,6 +654,8 @@ void AliTRDQADataMakerRec::MakeRaws(AliRawReader* rawReader)
     GetRawsData(3)->Fill(sm);
     GetRawsData(4+sm)->Fill(index);
   }
+
+  delete raw;
 }
 
 //____________________________________________________________________________
@@ -609,7 +699,7 @@ void AliTRDQADataMakerRec::MakeRecPoints(TTree * clustersTree)
       Int_t iDet = c->GetDetector();
       nDet[iDet]++;
       GetRecPointsData(0)->Fill(iDet);
-      GetRecPointsData(50)->Fill(c->GetQ());
+      GetRecPointsData(86)->Fill(c->GetQ());
       GetRecPointsData(1)->Fill(iDet, c->GetQ());
       GetRecPointsData(2)->Fill(c->GetNPads());
       if (c->GetNPads() < 6)
@@ -620,6 +710,10 @@ void AliTRDQADataMakerRec::MakeRecPoints(TTree * clustersTree)
       GetRecPointsData(8)->Fill(c->GetPadTime());
 
       ((TH3D*)GetRecPointsData(10))->Fill(iDet, c->GetPadTime(), c->GetQ());
+      
+      Int_t iSM = iDet / 30;
+      GetRecPointsData(50+iSM)->Fill(c->GetPadTime());
+      GetRecPointsData(68+iSM)->Fill(c->GetPadTime(), c->GetQ());
 
       // PRF for 2pad
       //if (c->GetNPads() == 2) {

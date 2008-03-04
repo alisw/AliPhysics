@@ -39,8 +39,8 @@ class AliTRDqaGuiESDs : public TGCompositeFrame {
  protected:
 
   Int_t fPage;                          // histogram set
-  const char *fNameList[12];            // list of histograms
-  static const Int_t fgkLogList[12];    // flag for log scale
+  const char *fNameList[18];            // list of histograms
+  static const Int_t fgkLogList[18];    // flag for log scale
  
   TRootEmbeddedCanvas *fCanvasList[6];  // canvas list
   TH1D *fHistList[6];                   // and histograms

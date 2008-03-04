@@ -42,20 +42,28 @@ class AliTRDqaBlackEvents : public TObject {
   TH2D *GetChamberNoise(Int_t det) {return fChNoise[det];}
   
   void SetNoiseLevel(Double_t min, Double_t max) {fMinNoise = min; fMaxNoise = max;}
+  void SetFitMethod(Int_t fit) {fFitType = fit;} 
 
   void DrawChamber(const char *filename, Int_t det, Int_t w=700, Int_t h=400);
   //void ScanChamber(const char *filename, Int_t first, Int_t last);
   void DrawSm(const char *filename, Int_t sm, Int_t w=900, Int_t h=700);
 
  private:
+  
+  Int_t fnEvents;         // number of events processed
+  
+  TH1D *fOccupancy;       // how many times is a pad present in data
 
-  TH1D *fPed[540];      // Some histograms
-  TH1D *fNoise[540];    // Some histograms
-  TH2D *fChPed[540];    // Some histograms
-  TH2D *fChNoise[540];  // Some histograms
-  TH3D *fData[540];     // Some histograms
-  TH1D *fSignal[540];   // Some histograms
+  TH1D *fPed[540];        // reconstructed pedestals distribution (on hist per chamber)
+  TH1D *fNoise[540];      // reconstructed noise distribution (on hist per chamber)
+  TH1D *fNPointDist[540]; // distributin of the number of points
+  TH2D *fChPed[540];      // Some histograms
+  TH2D *fChNoise[540];    // Some histograms
+  TH2D *fNPoint[540];     // number of data points
+  TH3D *fData[540];       // Some histograms
+  TH1D *fSignal[540];     // Some histograms
 
+  Int_t fFitType;
   Double_t fMinNoise;   // Minimum noise
   Double_t fMaxNoise;   // Maximum noise
 
