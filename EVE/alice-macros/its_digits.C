@@ -23,12 +23,8 @@ void its_digits(Int_t mode=63)
   AliEveITSDigitsInfo* di = new AliEveITSDigitsInfo();
   di->SetTree(dt);
   di->Dump();
-  // Could initialize AliEveITSModule statics (?)
-
-  AliITSgeom* g = di->fGeom;
 
   gStyle->SetPalette(1, 0);
-  // Initialize palettes (?)
 
   gEve->DisableRedraw();
 

@@ -53,12 +53,8 @@ void its_raw(const char *input = "rawdata.root",
   di->Dump();
 
   delete rawReader;
-  // Could initialize AliEveITSModule statics (?)
-
-  AliITSgeom* g = di->fGeom;
 
   gStyle->SetPalette(1, 0);
-  // Initialize palettes (?)
 
   gEve->DisableRedraw();
 

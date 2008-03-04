@@ -15,7 +15,7 @@
 
 #include <AliITS.h>
 #include <AliITSInitGeometry.h>
-#include <AliITSgeom.h>
+#include <AliITSgeomTGeo.h>
 #include <AliITSsegmentationSPD.h>
 #include <AliITSsegmentationSDD.h>
 #include <AliITSsegmentationSSD.h>
@@ -33,6 +33,7 @@
 #include <AliITSRawStreamSDD.h>
 #include <AliITSRawStreamSSD.h>
 
+#include <TGeoMatrix.h>
 #include <TMath.h>
 #include <TVector3.h>
 
@@ -69,7 +70,6 @@ AliEveITSDigitsInfo::AliEveITSDigitsInfo() :
   TEveRefCnt(),
   fSPDmap(), fSDDmap(), fSSDmap(),
   fTree (0),
-  fGeom (0),
   fSegSPD     (0), fSegSDD     (0), fSegSSD     (0),
   fDDLMapSDD  (0),
   fSPDMinVal  (0), fSSDMinVal  (0), fSDDMinVal  (0),
@@ -90,8 +90,6 @@ void AliEveITSDigitsInfo::InitInternals()
   static const TEveException eH("AliEveITSDigitsInfo::InitInternals ");
 
   AliEveEventManager::AssertGeometry();
-  AliITSInitGeometry initGeom;
-  fGeom = initGeom.CreateAliITSgeom();
 
   SetITSSegmentation();
 
@@ -174,7 +172,6 @@ AliEveITSDigitsInfo:: ~AliEveITSDigitsInfo()
     delete j->second;
   delete fDDLMapSDD;
   delete fSegSPD; delete fSegSDD; delete fSegSSD;
-  delete fGeom;
   delete fTree;
 }
 
@@ -288,7 +285,7 @@ void AliEveITSDigitsInfo::SetITSSegmentation()
   // data-structures.
 
   // SPD
-  fSegSPD = new AliITSsegmentationSPD(fGeom);
+  fSegSPD = new AliITSsegmentationSPD();
 
   Int_t m;
   Float_t fNzSPD=160;
@@ -311,12 +308,12 @@ void AliEveITSDigitsInfo::SetITSSegmentation()
   }
 
   // SDD
-  fSegSDD = new AliITSsegmentationSDD(fGeom);
+  fSegSDD = new AliITSsegmentationSDD();
   // !!!! Set default drift speed, eventually need to get it from CDB.
   fSegSDD->SetDriftSpeed(7.3);
 
   // SSD
-  fSegSSD = new AliITSsegmentationSSD(fGeom);
+  fSegSSD = new AliITSsegmentationSSD();
 }
 
 /******************************************************************************/
@@ -404,39 +401,32 @@ void AliEveITSDigitsInfo::GetModuleIDs(AliEveITSModuleSelection* sel,
   {
     case 0:
       idx0 = 0;
-      idx1 = fGeom->GetLastSPD();
+      idx1 = AliITSgeomTGeo::GetModuleIndex(3, 1, 1) - 1;
       break;
     case 1:
-      idx0 = fGeom->GetLastSPD()+1;
-      idx1 = fGeom->GetLastSDD();
+      idx0 = AliITSgeomTGeo::GetModuleIndex(3, 1, 1);
+      idx1 = AliITSgeomTGeo::GetModuleIndex(5, 1, 1) - 1;
       break;
     case 2:
-      idx0 = fGeom->GetLastSDD()+1;
-      idx1 = fGeom->GetLastSSD();
+      idx0 = AliITSgeomTGeo::GetModuleIndex(5, 1, 1);
+      idx1 = AliITSgeomTGeo::GetNModules() - 1;
       break;
     default:
       idx1 = 0;
-      idx1 = fGeom->GetLastSSD();
+      idx1 = AliITSgeomTGeo::GetNModules() - 1;
       break;
   }
 
-  TVector3 v;
-  Double_t x[9];
-  Int_t lay, lad, det;
+  TVector3  v;
   TEveTrans mx;
-  for (Int_t id = idx0; id<idx1; ++id)
+  Int_t     lay, lad, det;
+  for (Int_t id = idx0; id < idx1; ++id)
   {
-    fGeom->GetModuleId(id, lay, lad, det);
+    AliITSgeomTGeo::GetModuleId(id, lay, lad, det);
     if (sel->GetLayer() == lay || sel->GetLayer() == -1)
     {
       // check data from matrix
-      mx.UnitTrans();
-      fGeom->GetRotMatrix(id, x);
-      mx.SetBaseVec(1, x[0], x[3], x[6]);
-      mx.SetBaseVec(2, x[1], x[4], x[7]);
-      mx.SetBaseVec(3, x[2], x[5], x[8]);
-      fGeom->GetTrans(id, x);
-      mx.SetBaseVec(4, x);
+      mx.SetFrom(*AliITSgeomTGeo::GetMatrix(id));
       mx.GetPos(v);
       if (v.Phi()   <= sel->GetMaxPhi()   && v.Phi()   >= sel->GetMinPhi()   &&
 	  v.Theta() <= sel->GetMaxTheta() && v.Theta() >= sel->GetMinTheta())
@@ -455,7 +445,9 @@ void AliEveITSDigitsInfo::Print(Option_t* ) const
 
   printf("*********************************************************\n");
   printf("SPD module dimension (%f,%f)\n",           fSegSPD->Dx()*0.0001, fSegSPD->Dz()*0.0001);
-  printf("SPD first,last module:: %d,%d\n",          fGeom->GetStartSPD(), fGeom->GetLastSPD() );
+  printf("SPD first,last module: %d, %d\n",
+	 AliITSgeomTGeo::GetModuleIndex(1,1,1), 
+	 AliITSgeomTGeo::GetModuleIndex(3,1,1) - 1);
   printf("SPD num cells per module (x::%d,z::%d)\n", fSegSPD->Npx(), fSegSPD->Npz());
   Int_t iz = 0, ix = 0;
   printf("SPD dimesion of (%d,%d) in pixel(%f,%f)\n",   ix, iz, fSegSPD->Dpx(ix), fSegSPD->Dpz(iz));
@@ -464,14 +456,18 @@ void AliEveITSDigitsInfo::Print(Option_t* ) const
 
   printf("*********************************************************\n");
   printf("SDD module dimension (%f,%f)\n",           fSegSDD->Dx()*0.0001, fSegSDD->Dz()*0.0001);
-  printf("SDD first,last module:: %d,%d\n",          fGeom->GetStartSDD(), fGeom->GetLastSDD());
+  printf("SDD first,last module: %d, %d\n",
+	 AliITSgeomTGeo::GetModuleIndex(3,1,1),
+	 AliITSgeomTGeo::GetModuleIndex(5,1,1) - 1);
   printf("SDD num cells per module (x::%d,z::%d)\n", fSegSDD->Npx(), fSegSDD->Npz());
   printf("SDD dimesion of pixel are (%f,%f)\n",      fSegSDD->Dpx(1)*0.001, fSegSDD->Dpz(1)*0.001);
 
   Float_t ap, an;
   printf("*********************************************************\n");
   printf("SSD module dimension (%f,%f)\n",  fSegSSD->Dx()*0.0001, fSegSSD->Dz()*0.0001);
-  printf("SSD first,last module:: %d,%d\n", fGeom->GetStartSSD(), fGeom->GetLastSSD() );
+  printf("SSD first, last module: %d, %d\n",
+	 AliITSgeomTGeo::GetModuleIndex(5,1,1),
+	 AliITSgeomTGeo::GetNModules() - 1);
   printf("SSD strips in module %d\n",       fSegSSD->Npx());
   printf("SSD strip sizes are (%f,%f)\n",   fSegSSD->Dpx(1), fSegSSD->Dpz(1));
   fSegSSD->SetLayer(5);  fSegSSD->Angles(ap,an);

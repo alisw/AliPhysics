@@ -9,7 +9,7 @@
 
 #include "AliEveITSModule.h"
 
-#include <AliITSgeom.h>
+#include <AliITSgeomTGeo.h>
 #include <AliITSsegmentationSPD.h>
 #include <AliITSsegmentationSDD.h>
 #include <AliITSsegmentationSSD.h>
@@ -141,12 +141,15 @@ void AliEveITSModule::SetID(Int_t gid, Bool_t trans)
 
   static const TEveException eH("AliEveITSModule::SetID ");
 
-  if(fInfo == 0)
+  if (fInfo == 0)
     throw(eH + "AliEveITSDigitsInfo not set.");
 
-  if (gid < fInfo->fGeom->GetStartSPD() || gid > fInfo->fGeom->GetLastSSD())
+  if (gid < AliITSgeomTGeo::GetModuleIndex(1,1,1) ||
+      gid > AliITSgeomTGeo::GetNModules() - 1)
+  {
     throw(eH + Form("%d is not valid. ID range from %d to %d", gid,
-		    fInfo->fGeom->GetStartSPD(), fInfo->fGeom->GetLastSSD()));
+		    firstSPD, lastSSD ));
+  }
 
   fID = gid;
 
@@ -163,13 +166,13 @@ void AliEveITSModule::SetID(Int_t gid, Bool_t trans)
     fgSSDPalette->IncRefCount();
   }
 
-  fInfo->fGeom->GetModuleId(fID, fLayer, fLadder, fDet);
+  AliITSgeomTGeo::GetModuleId(fID, fLayer, fLadder, fDet);
   TString strLadder = "Ladder";
   TString strSensor = "Sensor";
   TString symname;
   Int_t   id, nsector, nstave, nladder, rest;
 
-  if (fID <= fInfo->fGeom->GetLastSPD())
+  if (fID <= (AliITSgeomTGeo::GetModuleIndex(3,1,1) - 1))
   {
     // SPD
 
@@ -200,7 +203,7 @@ void AliEveITSModule::SetID(Int_t gid, Bool_t trans)
     fDy = fInfo->fSegSPD->Dy()*0.00005;
 
   }
-  else if (fID <= fInfo->fGeom->GetLastSDD())
+  else if (fID <= (AliITSgeomTGeo::GetModuleIndex(5,1,1) - 1))
   {
     // SDD
 
@@ -368,31 +371,18 @@ void AliEveITSModule::SetTrans()
   // Set transformation matrix based on module id (use geometry to
   // retrieve this information).
 
-  Double_t x[9];
-  fHMTrans.UnitTrans();
-
-  // !!!! Here should use AliITSgeomTGeo ... but can i be sure
-  // the geometry has been loaded?
-
-  // column major
-  fInfo->fGeom->GetRotMatrix(fID, x);
-  fHMTrans.SetBaseVec(1, x[0], x[3], x[6]);
-  fHMTrans.SetBaseVec(2, x[1], x[4], x[7]);
-  fHMTrans.SetBaseVec(3, x[2], x[5], x[8]);
-  // translation
-  fInfo->fGeom->GetTrans(fID, x);
-  fHMTrans.SetBaseVec(4, x);
+  fHMTrans.SetFrom(*AliITSgeomTGeo::GetMatrix(fID));
 }
 
 /******************************************************************************/
 
 void AliEveITSModule::DigitSelected(Int_t idx)
 {
-  // Override control-click from TEveQuadSet.
+  // Override secondary select (alt-click) from TEveQuadSet.
 
-  DigitBase_t* qb   = GetDigit(idx);
-  TObject* obj   = qb->fId.GetObject();
-  AliITSdigit* d = dynamic_cast<AliITSdigit*>(obj);
+  DigitBase_t *qb  = GetDigit(idx);
+  TObject     *obj = qb->fId.GetObject();
+  AliITSdigit *d   = dynamic_cast<AliITSdigit*>(obj);
   printf("AliEveITSModule::QuadSelected "); Print();
   printf("  idx=%d, value=%d, obj=0x%lx, digit=0x%lx\n",
 	 idx, qb->fValue, (ULong_t)obj, (ULong_t)d);

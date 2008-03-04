@@ -19,7 +19,7 @@
 #include <TClonesArray.h>
 #include <TTree.h>
 
-class AliITSgeom;
+//class AliITSgeom;
 class AliITSsegmentationSPD;
 class AliITSsegmentationSDD;
 class AliITSsegmentationSSD;
@@ -87,7 +87,6 @@ protected:
 public:
   TTree*                   fTree;         // Tree from which the digits are read.
 
-  AliITSgeom*              fGeom;         // Provides mapping from module-id to transforamtion-matrix.
   AliITSsegmentationSPD*   fSegSPD;       // Segmentation of SPD.
   AliITSsegmentationSDD*   fSegSDD;       // Segmentation of SDD.
   AliITSsegmentationSSD*   fSegSSD;       // Segmentation of SSD.
