@@ -49,10 +49,10 @@ class TGToolBar;
 ClassImp(AliAlienBrowser)
 
 //___________________________________________________________________________
-AliAlienBrowser::AliAlienBrowser(const TGWindow* p, UInt_t w, UInt_t h, TGFrame* frame, const char* classToConnect, EBrowseType type) : TGCanvas(p, w, h), fFrame(frame), fBrowseType(type) {
+AliAlienBrowser::AliAlienBrowser(const TGWindow* p, UInt_t w, UInt_t h, TGFrame* frame, const char* classToConnect, EBrowseType type) : TGCanvas(p, w, h), fFrame(frame),   fListTree(new TGListTree(this, kHorizontalFrame)), fBrowseType(type) {
   // Constructor.
   
-  fListTree = new TGListTree(this, kHorizontalFrame);   
+
   //   fListTree->Associate(this);
   fListTree->Connect("DoubleClicked(TGListTreeItem*,Int_t)", classToConnect,frame, "OnDoubleClick(TGListTreeItem*,Int_t)");
   

@@ -31,7 +31,7 @@
 ClassImp(AliTagFrame)
 
 //___________________________________________________________________________
-AliTagFrame::AliTagFrame(const TGWindow *p, const TGWindow *main, UInt_t w, UInt_t h, UInt_t options, const char* tagName, Int_t tagId, ETagRangeType range)
+    AliTagFrame::AliTagFrame(const TGWindow *p, const TGWindow *main, UInt_t w, UInt_t h, UInt_t options, const char* tagName, Int_t /*tagId*/, ETagRangeType range)
   : TGTransientFrame(p, main, w, h, options), 
     fMin(0), fMax(0), fRange(range),
     fEntry1(0), fEntry2(0),

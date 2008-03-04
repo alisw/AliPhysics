@@ -71,9 +71,11 @@ AliSelectorFrame::AliSelectorFrame(const TGWindow *main, UInt_t w, UInt_t h, Ali
 }
 
 //___________________________________________________________________________
-AliSelectorFrame::AliSelectorFrame(const AliSelectorFrame&):
+AliSelectorFrame::AliSelectorFrame(const AliSelectorFrame& frame):
+  TGHorizontalFrame(), 
   fVFrame1(0),
   fVFrame2(0),
+  fLabel1(0),
   fTextSelector(0),
   fButtonSelect(0),
   fButtonRun(0),

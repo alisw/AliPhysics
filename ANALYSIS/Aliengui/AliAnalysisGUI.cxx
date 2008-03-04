@@ -314,7 +314,7 @@ void AliAnalysisGUI::AddStatusBar() {
 }
 
 //___________________________________________________________________________
-Bool_t AliAnalysisGUI::LogIn(const char * server, const char *username) {
+Bool_t AliAnalysisGUI::LogIn(const char * server, const char */*username*/) {
   // Log in to AliEn
   
   //   fAlien = TGrid::Connect(server, username); 
