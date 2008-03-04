@@ -32,12 +32,12 @@ public:
 	AliQADataMakerRec& operator = (const AliQADataMakerRec& qadm) ;
 	virtual ~AliQADataMakerRec() {;} // dtor
   
- 	virtual const Int_t Add2DigitsList(TH1 * /*hist*/, const Int_t /*index*/)    { return -1 ; } 
-	virtual const Int_t Add2ESDsList(TH1 * hist, const Int_t index)  { return Add2List(hist, index, fESDsQAList) ; }
-	virtual const Int_t Add2HitsList(TH1 * /*hist*/, const Int_t /*index*/)       { return -1 ; }  
-	virtual const Int_t Add2RecPointsList(TH1 * hist, const Int_t index)  { return Add2List(hist, index, fRecPointsQAList) ; }
-	virtual const Int_t Add2RawsList(TH1 * hist, const Int_t index)  { return Add2List(hist, index, fRawsQAList) ; }
-	virtual const Int_t Add2SDigitsList(TH1 * /*hist*/, const Int_t /*index*/)   { return -1 ; } 
+ 	virtual Int_t Add2DigitsList(TH1 * /*hist*/, const Int_t /*index*/)    { return -1 ; } 
+	virtual Int_t Add2ESDsList(TH1 * hist, const Int_t index)  { return Add2List(hist, index, fESDsQAList) ; }
+	virtual Int_t Add2HitsList(TH1 * /*hist*/, const Int_t /*index*/)       { return -1 ; }  
+	virtual Int_t Add2RecPointsList(TH1 * hist, const Int_t index)  { return Add2List(hist, index, fRecPointsQAList) ; }
+	virtual Int_t Add2RawsList(TH1 * hist, const Int_t index)  { return Add2List(hist, index, fRawsQAList) ; }
+	virtual Int_t Add2SDigitsList(TH1 * /*hist*/, const Int_t /*index*/)   { return -1 ; } 
 	virtual void        Exec(AliQA::TASKINDEX task, TObject * data) ;
 	virtual void        EndOfCycle(AliQA::TASKINDEX task) ;
 	virtual TH1 *       GetDigitsData(const Int_t /*index*/)    { return NULL ; } 

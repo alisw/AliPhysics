@@ -37,15 +37,14 @@ public:
 	
 	AliQADataMaker(const char * name="", const char * title="") ;          // ctor
 	AliQADataMaker(const AliQADataMaker& qadm) ;   
-	AliQADataMaker& operator = (const AliQADataMaker& /*qadm*/) {;}
-	virtual ~AliQADataMaker() {;} // dtor
+	virtual ~AliQADataMaker() {} // dtor
   
-	virtual const Int_t Add2DigitsList(TH1 * hist, const Int_t index)          = 0 ; 
-	virtual const Int_t Add2ESDsList(TH1 * hist, const Int_t index)            = 0 ; 
-	virtual const Int_t Add2HitsList(TH1 * hist, const Int_t index)            = 0 ; 
-	virtual const Int_t Add2RecPointsList(TH1 * hist, const Int_t index)       = 0 ; 
-	virtual const Int_t Add2RawsList(TH1 * hist, const Int_t index)            = 0 ; 
-	virtual const Int_t Add2SDigitsList(TH1 * hist, const Int_t index)         = 0 ; 
+	virtual Int_t Add2DigitsList(TH1 * hist, const Int_t index)          = 0 ; 
+	virtual Int_t Add2ESDsList(TH1 * hist, const Int_t index)            = 0 ; 
+	virtual Int_t Add2HitsList(TH1 * hist, const Int_t index)            = 0 ; 
+	virtual Int_t Add2RecPointsList(TH1 * hist, const Int_t index)       = 0 ; 
+	virtual Int_t Add2RawsList(TH1 * hist, const Int_t index)            = 0 ; 
+	virtual Int_t Add2SDigitsList(TH1 * hist, const Int_t index)         = 0 ; 
 	virtual void        Exec(AliQA::TASKINDEX, TObject * data)                 = 0 ;
 	virtual void        EndOfCycle(AliQA::TASKINDEX)                           = 0 ;
 	void                Finish() const ; 
@@ -98,6 +97,10 @@ protected:
 	Int_t          fCycle ;           //! length (# events) of the QA data acquisition cycle  
 	Int_t          fCycleCounter ;    //! cycle counter
 	Int_t          fRun ;             //! run number
+
+private:
+	AliQADataMaker& operator = (const AliQADataMaker& /*qadm*/); // Not implemented
+
   
  ClassDef(AliQADataMaker,1)  // description 
 
