@@ -21,7 +21,6 @@ class AliTRDQATask : public AliAnalysisTask {
 
 public:
   AliTRDQATask(const char *name);
-  AliTRDQATask(AliTRDQATask& trd) { new AliTRDQATask(trd.GetName());}
   virtual ~AliTRDQATask() {}
    
   virtual void Exec(Option_t * opt = "");
@@ -99,6 +98,8 @@ private:
   TH1D *fTpcPID[6];      // Pid TPC
   TH2D *fTpcSigMomPID[6];// Pid TPC
       
+  AliTRDQATask(const AliTRDQATask&); // Not implemented
+  AliTRDQATask& operator=(const AliTRDQATask&); // Not implemented
   
   ClassDef(AliTRDQATask, 0); // a TRD analysis task 
 };

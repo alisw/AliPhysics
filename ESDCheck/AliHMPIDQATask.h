@@ -39,6 +39,9 @@ private:
   TH2F * fhHMPIDDifXY ;  //!
   TH2F * fhHMPIDSigP ;   //!
   TH1F * fhHMPIDProb[5] ;//!
+
+  AliHMPIDQATask(const AliHMPIDQATask&); // Not implemented
+  AliHMPIDQATask& operator=(const AliHMPIDQATask&); // Not implemented
   
   ClassDef(AliHMPIDQATask, 0); // a HMPID photon analysis task 
 };

@@ -44,6 +44,9 @@ private:
   TH1D * fhFMD2o ;//! 
   TH1D * fhFMD3i ;//! 
   TH1D * fhFMD3o ;//! 
+
+  AliFMDQATask(const AliFMDQATask&); // Not implemented
+  AliFMDQATask& operator=(const AliFMDQATask&); // Not implemented
   
   ClassDef(AliFMDQATask, 0); // a FMD photon analysis task 
 };

@@ -38,6 +38,7 @@ AliFMDQATask::AliFMDQATask(const char *name) :
   AliAnalysisTask(name,""),  
   fChain(0),
   fESD(0), 
+  fOutputContainer(0),
   fhFMD1i(0),
   fhFMD2i(0), 
   fhFMD2o(0), 

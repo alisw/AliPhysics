@@ -32,6 +32,9 @@ private:
   
   TObjArray * fOutputContainer ; //! output data container
 
+  AliAnalysisTaskPt(const AliAnalysisTaskPt&); // Not implemented
+  AliAnalysisTaskPt& operator=(const AliAnalysisTaskPt&); // Not implemented
+
   ClassDef(AliAnalysisTaskPt, 0); // example of analysis
 };
 #endif // ALIANALYSISTASKPT_H

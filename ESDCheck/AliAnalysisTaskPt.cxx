@@ -36,8 +36,10 @@
 //________________________________________________________________________
 AliAnalysisTaskPt::AliAnalysisTaskPt(const char *name) :
   AliAnalysisTask(name,""),  
+  fChain(0),
   fESD(0), 
-  fhPt(0) 
+  fhPt(0),
+  fOutputContainer(0)
 {
   // Constructor.
   // Input slot #0 works with an Ntuple

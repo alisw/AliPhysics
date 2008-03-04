@@ -48,7 +48,24 @@
 AliTRDQATask::AliTRDQATask(const char *name) : 
   AliAnalysisTask(name,""),  
   fChain(0),
-  fESD(0)
+  fESD(0),
+  fOutputContainer(0),
+  fConfSM(0),
+  fNTracks(0),
+  fEventSize(0),
+  fTrackStatus(0),
+  fParIn(0),
+  fParOut(0),
+  fKinkIndex(0),
+  fXIn(0),
+  fXOut(0),
+  fSectorTRD(0),
+  fTime(0),
+  fBudget(0),
+  fQuality(0),
+  fSignal(0),
+  fTrdSigMom(0),
+  fTpcSigMom(0)
 {
   // Constructor.
   // Input slot #0 works with an Ntuple

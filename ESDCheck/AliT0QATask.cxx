@@ -39,6 +39,7 @@ AliT0QATask::AliT0QATask(const char *name) :
   AliAnalysisTask(name,""),  
   fChain(0),
   fESD(0), 
+  fOutputContainer(0),
   fhT01(0),
   fhT02(0),
   fhT03(0)

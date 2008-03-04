@@ -45,6 +45,8 @@ AliMUONQATask::AliMUONQATask(const char *name) :
   AliAnalysisTask(name,""),  
   fChain(0),
   fESD(0), 
+  fOutputContainer(0),
+  fV1(),
   fnTrackTrig(0), 
   ftracktot(0),
   fnevents(0),

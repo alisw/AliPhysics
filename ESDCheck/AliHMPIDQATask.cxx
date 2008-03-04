@@ -42,6 +42,7 @@ AliHMPIDQATask::AliHMPIDQATask(const char *name) :
   AliAnalysisTask(name,""),  
   fChain(0),
   fESD(0), 
+  fOutputContainer(0),
   fhHMPIDCkovP(0),
   fhHMPIDMipXY(0),
   fhHMPIDDifXY(0),

@@ -44,6 +44,8 @@ AliPHOSQATask::AliPHOSQATask(const char *name) :
   AliAnalysisTask(name,""),  
   fChain(0),
   fESD(0), 
+  fOutputContainer(0),
+  fhPHOSPos(0),
   fhPHOS(0),
   fhPHOSEnergy(0),
   fhPHOSDigits(0),

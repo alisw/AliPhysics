@@ -37,6 +37,9 @@ private:
   TH1F * fhT01;
   TH1F * fhT02;
   TH1F * fhT03;   
+
+  AliT0QATask(const AliT0QATask&);  // Not implemented
+  AliT0QATask& operator=(const AliT0QATask&);  // Not implemented
   
   ClassDef(AliT0QATask, 0); // a T0 photon analysis task 
 };

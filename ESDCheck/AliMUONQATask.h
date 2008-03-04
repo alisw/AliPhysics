@@ -69,6 +69,9 @@ private:
   TH1F * fhChi2   ;      //! Track Chi Square by d.o.f.
   TH1F * fhChi2match ;  //! Chi2 of trigger/track matching 
 
+  AliMUONQATask(const AliMUONQATask&); // Not implemented
+  AliMUONQATask& operator=(const AliMUONQATask&); // Not implemented
+
   ClassDef(AliMUONQATask, 0); // a MUON photon analysis task 
 };
 #endif // ALIMUONQATASK_H
