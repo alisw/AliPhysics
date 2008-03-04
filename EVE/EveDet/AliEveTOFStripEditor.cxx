@@ -30,7 +30,9 @@ ClassImp(AliEveTOFStripEditor)
 AliEveTOFStripEditor::AliEveTOFStripEditor(const TGWindow *p, Int_t width, Int_t height,
 	     UInt_t options, Pixel_t back) :
   TGedFrame(p, width, height, options | kVerticalFrame, back),
-  fM(0)
+  fM         (0),
+  fThreshold (0),
+  fMaxVal    (0)
   // Initialize widget pointers to 0
 {
   MakeTitle("AliEveTOFStrip");

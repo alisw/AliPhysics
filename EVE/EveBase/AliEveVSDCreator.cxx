@@ -298,7 +298,7 @@ void AliEveVSDCreator::ConvertKinematics()
 
   fTreeK->Branch("K", "TEveMCTrack",  &fpK, fBuffSize);
 
-  printf("sizeofvmc = %d\n", vmc.size());
+  printf("sizeofvmc = %d\n", (Int_t) vmc.size());
   for(std::vector<TEveMCTrack>::iterator k=vmc.begin(); k!=vmc.end(); ++k) {
     TEveMCTrack& mct = *k;
     fK = mct;

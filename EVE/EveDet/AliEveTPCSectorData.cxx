@@ -208,7 +208,7 @@ void AliEveTPCSectorData::Print(Option_t* /*opt*/) const
   // Print summary information.
 
   printf("AliEveTPCSectorData sector=%d, NPadsFilled=%d, NBlocks=%d, BlockPos=%d\n",
-	 fSectorID, fNPadsFilled, fBlocks.size(), fBlockPos);
+	 fSectorID, fNPadsFilled, (Int_t) fBlocks.size(), fBlockPos);
 }
 
 /******************************************************************************/
