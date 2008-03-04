@@ -40,17 +40,17 @@ class AliXMLCollection : public TGridCollection {
   void SetCollectionName(const char* name) {fCollectionName = name;}
   
   //____________________________________________________//
-  const char* GetCollectionName() {return fCollectionName.Data();}
+  const char* GetCollectionName() const {return fCollectionName.Data();}
 
   //____________________________________________________//
   void        Reset();
   TMap       *Next();
   Bool_t      Remove(TMap *map);
-  const char *GetTURL(const char *name) const;
-  const char *GetLFN(const char *name) const;
-  const char *GetGUID(const char *name) const;
+  const char *GetTURL(const char *name);
+  const char *GetLFN(const char *name);
+  const char *GetGUID(const char *name);
   TEntryList *GetEventList(const char *filename) const;
-  Bool_t      OverlapCollection(AliXMLCollection * comparator);
+  Bool_t      OverlapCollection(TGridCollection * comparator);
 
   static AliXMLCollection *Open(const char *localcollectionfile);
 

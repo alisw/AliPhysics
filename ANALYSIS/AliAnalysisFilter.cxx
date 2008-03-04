@@ -48,12 +48,22 @@ AliAnalysisFilter::AliAnalysisFilter(const char* name, const char* title):
 }
 
 AliAnalysisFilter::AliAnalysisFilter(const AliAnalysisFilter& obj):
-    TNamed(obj)
+    TNamed(obj),
+    fCuts(0)
 {
 // Copy constructor
+    fCuts = obj.fCuts;
 }
 
 
+AliAnalysisFilter& AliAnalysisFilter::operator=(const AliAnalysisFilter& other)
+{
+// Assignment
+    TNamed::operator=(other);
+    fCuts = other.fCuts;
+    return *this;
+   }
+   
 UInt_t AliAnalysisFilter::IsSelected(TObject* obj)
 {
     //

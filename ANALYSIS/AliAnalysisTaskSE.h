@@ -19,6 +19,8 @@ class AliAnalysisTaskSE : public AliAnalysisTask
  public:
     AliAnalysisTaskSE();
     AliAnalysisTaskSE(const char* name);
+    AliAnalysisTaskSE(const AliAnalysisTaskSE& obj);
+    AliAnalysisTaskSE& operator=(const AliAnalysisTaskSE& other);
     virtual ~AliAnalysisTaskSE() {;}
     // Implementation of interface methods
     virtual void ConnectInputData(Option_t *option = "");
@@ -28,7 +30,7 @@ class AliAnalysisTaskSE : public AliAnalysisTask
     virtual void Init() {;}
     // To be implemented by user
     virtual void UserCreateOutputObjects()  {;}
-    virtual void UserExec(Option_t* option) {;}
+    virtual void UserExec(Option_t* /*option*/) {;}
     
     // Getters
     virtual AliVEvent*   InputEvent()  {return fInputEvent;}

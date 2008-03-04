@@ -20,7 +20,8 @@ class AliAnalysisFilter : public TNamed
  public:
     AliAnalysisFilter();
     AliAnalysisFilter(const char* name, const char* title = "AnalysisFilter");
-    AliAnalysisFilter(const AliAnalysisFilter& obj);  
+    AliAnalysisFilter(const AliAnalysisFilter& obj);
+    AliAnalysisFilter& operator=(const AliAnalysisFilter& other);
     virtual ~AliAnalysisFilter() {;}
     virtual UInt_t IsSelected(TObject* obj);
     virtual void AddCuts(AliAnalysisCuts* cuts);

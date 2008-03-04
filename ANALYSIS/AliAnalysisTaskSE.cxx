@@ -63,6 +63,34 @@ AliAnalysisTaskSE::AliAnalysisTaskSE(const char* name):
     DefineOutput(0,  TTree::Class());
 }
 
+AliAnalysisTaskSE::AliAnalysisTaskSE(const AliAnalysisTaskSE& obj):
+    AliAnalysisTask(obj),
+    fDebug(0),
+    fInputEvent(0x0),
+    fOutputAOD(0x0),
+    fMCEvent(0x0),
+    fTreeA(0x0)
+{
+// Copy constructor
+    fDebug      = obj.fDebug;
+    fInputEvent = obj.fInputEvent;
+    fOutputAOD  = obj.fOutputAOD;
+    fMCEvent    = obj.fMCEvent;
+    fTreeA      = obj.fTreeA;    
+}
+
+
+AliAnalysisTaskSE& AliAnalysisTaskSE::operator=(const AliAnalysisTaskSE& other)
+{
+// Assignment
+    AliAnalysisTask::operator=(other);
+    fDebug      = other.fDebug;
+    fInputEvent = other.fInputEvent;
+    fOutputAOD  = other.fOutputAOD;
+    fMCEvent    = other.fMCEvent;
+    fTreeA      = other.fTreeA;    
+    return *this;
+}
 
 
 void AliAnalysisTaskSE::ConnectInputData(Option_t* /*option*/)

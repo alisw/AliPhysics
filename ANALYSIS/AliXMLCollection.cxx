@@ -34,7 +34,6 @@
 #include "AliXMLCollection.h"
 
 ClassImp(AliXMLCollection)
-
 //___________________________________________________________________________
   AliXMLCollection::AliXMLCollection() :
     TGridCollection(),
@@ -48,15 +47,22 @@ ClassImp(AliXMLCollection)
 }
 
 //___________________________________________________________________________
-AliXMLCollection::AliXMLCollection(const char *localcollectionfile) {
+AliXMLCollection::AliXMLCollection(const char *localcollectionfile) :
+    TGridCollection(),
+    fXmlFile(localcollectionfile),
+    fEventList(0),
+    fEventListIter(0),
+    fCurrent(0),
+    fCollectionName(),
+    fout()
+ {
    // Create Alien event collection, by reading collection for the specified
    // file.
 
-   fXmlFile = localcollectionfile;
    fEventList = new TList();
    fEventList->SetOwner(kTRUE);
    fEventListIter = new TIter(fEventList);
-   fCurrent = 0;
+
    if (localcollectionfile!=0) {
      ParseXML();
    }
@@ -66,7 +72,12 @@ AliXMLCollection::AliXMLCollection(const char *localcollectionfile) {
 AliXMLCollection::AliXMLCollection(const AliXMLCollection& collection):
   TGridCollection(collection),
   fXmlFile(collection.fXmlFile),
-  fCollectionName(collection.fCollectionName) {
+  fEventList(0),
+  fEventListIter(0),
+  fCurrent(0),
+  fCollectionName(collection.fCollectionName),
+  fout()
+{
   //copy constructor
 
   if (collection.fEventList) fEventList = new TList();
@@ -167,7 +178,7 @@ TMap *AliXMLCollection::Next() {
 }
 
 //___________________________________________________________________________
-const char *AliXMLCollection::GetTURL(const char* filename) const {
+const char *AliXMLCollection::GetTURL(const char* filename) {
   // Get a file's transport URL (TURL). Returns 0 in case of error.
   
   if (fCurrent) {
@@ -183,7 +194,7 @@ const char *AliXMLCollection::GetTURL(const char* filename) const {
 }
 
 //___________________________________________________________________________
-const char *AliXMLCollection::GetGUID(const char* filename) const {
+const char *AliXMLCollection::GetGUID(const char* filename) {
   // Get a file's transport UID. Returns 0 in case of error.
   
   if (fCurrent) {
@@ -225,7 +236,7 @@ Bool_t AliXMLCollection::Remove(TMap * map) {
 }
 
 //___________________________________________________________________________
-const char *AliXMLCollection::GetLFN(const char* ) const {
+const char *AliXMLCollection::GetLFN(const char* ) {
   // Get a file's LFN. Returns 0 in case of error.
   
   if (fCurrent) {
@@ -241,7 +252,7 @@ const char *AliXMLCollection::GetLFN(const char* ) const {
 }
 
 //__________________________________________________________________________
-Bool_t AliXMLCollection::OverlapCollection(AliXMLCollection * comparator) {
+Bool_t AliXMLCollection::OverlapCollection(TGridCollection * comparator) {
   // return kTRUE if comparator overlaps with this
   if ((!comparator)) return kFALSE;
   
