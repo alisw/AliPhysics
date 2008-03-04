@@ -25,10 +25,11 @@ public:
   AliTOFQAChecker& operator = (const AliTOFQAChecker& qac) ;
   virtual ~AliTOFQAChecker() {;} // dtor
 
-private:
+ protected:
 
-  const Double_t  Check(TList * list) ;
-  Double_t Check() const {return 0.;} ;
+  virtual const Double_t Check(TObjArray * list) ;
+  virtual const Double_t Check() {return 0.;} ;
+
   
   ClassDef(AliTOFQAChecker,2)  // description 
 
