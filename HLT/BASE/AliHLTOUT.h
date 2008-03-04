@@ -150,14 +150,16 @@ class AliHLTOUT : public AliHLTLogging {
 
   // definitions from ALICE internal notes ALICE-INT-2002-010 and
   // ALICE-INT-2006-XXX
-  /** the 32bit word in the CDH containing the status flags */
-  static const unsigned char fgkCDHStatusWord; //! see above
-  /** start of the flags in word fgkCDHStatusWord */
-  static const unsigned char fgkCDHStatusFlagsOffset; //! see above
-  /** bit indicating HLT decision in the HLTOUT*/
-  static const unsigned char fgkCDHFlagsHLTDecision; //! see above
-  /** bit indicating HLT payload in the HLTOUT*/
-  static const unsigned char fgkCDHFlagsHLTPayload; //! see above
+  enum {
+    /** the 32bit word in the CDH containing the status flags */
+    kCDHStatusWord=4, //! see above
+    /** start of the flags in word fgkCDHStatusWord */
+    kCDHStatusFlagsOffset=12, //! see above
+    /** bit indicating HLT decision in the HLTOUT*/
+    kCDHFlagsHLTDecision=6, //! see above
+    /** bit indicating HLT payload in the HLTOUT*/
+    kCDHFlagsHLTPayload=7 //! see above
+  };
 
   /**
    * Block descriptor.
@@ -183,7 +185,7 @@ class AliHLTOUT : public AliHLTLogging {
     AliHLTUInt32_t          fIndex; //!transient
   };
 
-  enum AliHLTOUTByteOrder_t {
+  enum AliHLTOUTByteOrder {
     /** no data block selected */
     kInvalidByteOrder=-1,
     kUnknownByteOrder=0,
@@ -191,7 +193,7 @@ class AliHLTOUT : public AliHLTLogging {
     kBigEndian
   };
 
-  enum AliHLTOUTDataType_t {
+  enum AliHLTOUTDataType {
     kUint64 = 0,
     kUint32 = 1,
     kUint16 = 2,
@@ -203,12 +205,12 @@ class AliHLTOUT : public AliHLTLogging {
   /**
    * Check byte order of selected block
    */
-  AliHLTOUTByteOrder_t CheckByteOrder();
+  AliHLTOUTByteOrder CheckByteOrder();
 
   /**
    * Check alignment of selected block
    */
-  int CheckAlignment(AliHLTOUT::AliHLTOUTDataType_t type);
+  int CheckAlignment(AliHLTOUT::AliHLTOUTDataType type);
 
  protected:
   /**
@@ -259,10 +261,10 @@ class AliHLTOUT : public AliHLTLogging {
 
     ~AliHLTOUTHandlerListEntry();
 
-    static const AliHLTOUTHandlerListEntry fgkVoidHandlerListEntry;
+    static const AliHLTOUTHandlerListEntry fgkVoidHandlerListEntry; //! initializer
 
     operator AliHLTOUTHandler*() const {return fpHandler;}
-    operator AliHLTModuleAgent::AliHLTOUTHandlerDesc&() {return *fpHandlerDesc;}
+    operator AliHLTModuleAgent::AliHLTOUTHandlerDesc&() const {return *fpHandlerDesc;}
     operator AliHLTModuleAgent*() const {return fpAgent;}
 
     /**
@@ -334,12 +336,12 @@ class AliHLTOUT : public AliHLTLogging {
   /**
    * Check byte order of data block
    */
-  virtual AliHLTOUTByteOrder_t CheckBlockByteOrder(AliHLTUInt32_t index)=0;
+  virtual AliHLTOUTByteOrder CheckBlockByteOrder(AliHLTUInt32_t index)=0;
 
   /**
    * Check alignment of data block
    */
-  virtual int CheckBlockAlignment(AliHLTUInt32_t index, AliHLTOUT::AliHLTOUTDataType_t type)=0;
+  virtual int CheckBlockAlignment(AliHLTUInt32_t index, AliHLTOUT::AliHLTOUTDataType type)=0;
 
   /**
    * Select the data block of data type and specification of the previous
@@ -398,17 +400,20 @@ class AliHLTOUT : public AliHLTLogging {
   /** instance flags: locked, collecting, ... */
   unsigned int fFlags; //!transient
 
+  typedef vector<AliHLTOUTHandlerListEntry> AliHLTOUTHandlerListEntryVector;
+  typedef vector<AliHLTOUTBlockDescriptor>  AliHLTOUTBlockDescriptorVector;
+
   /** list of block descriptors */
-  vector<AliHLTOUTBlockDescriptor> fBlockDescList; //!transient
+  AliHLTOUTBlockDescriptorVector fBlockDescList; //!transient
 
   /** current position in the list */
-  vector<AliHLTOUTBlockDescriptor>::iterator fCurrent; //!transient
+  AliHLTOUTBlockDescriptorVector::iterator fCurrent; //!transient
 
   /** data buffer under processing */
   const AliHLTUInt8_t* fpBuffer; //!transient
 
   /** list of AliHLTOUTHandlers */
-  vector<AliHLTOUTHandlerListEntry> fDataHandlers; // !transient
+  AliHLTOUTHandlerListEntryVector fDataHandlers; // !transient
 
   ClassDef(AliHLTOUT, 1)
 };

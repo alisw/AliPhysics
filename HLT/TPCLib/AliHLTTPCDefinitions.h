@@ -3,16 +3,17 @@
 
 #ifndef ALIHLTTPCDEFINITIONS_H
 #define ALIHLTTPCDEFINITIONS_H
-/* This file is property of and copyright by the ALICE HLT Project        * 
- * ALICE Experiment at CERN, All rights reserved.                         *
- * See cxx source for full Copyright notice                               */
-
-/* AliHLTTPCDefinitions
- */
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
 
 #include "AliHLTDataTypes.h"
 #include "Rtypes.h"
 
+/**
+ * @class AliHLTTPCDefinitions
+ * Data type definitions for the libAliHLTTPC library.
+ */
 class AliHLTTPCDefinitions
 {
 public:

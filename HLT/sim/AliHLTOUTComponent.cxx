@@ -19,7 +19,8 @@
 /** @file   AliHLTOUTComponent.cxx
     @author Matthias Richter
     @date   
-    @brief  The HLTOUT data sink component similar to HLTOUT nodes */
+    @brief  The HLTOUT data sink component similar to HLTOUT nodes
+*/
 
 // see header file for class documentation
 // or
@@ -32,7 +33,7 @@ using namespace std;
 #endif
 
 #include <cassert>
-#include <iostream>
+//#include <iostream>
 #include "AliHLTOUTComponent.h"
 #include "AliHLTOUT.h"
 #include "AliHLTHOMERLibManager.h"
@@ -188,7 +189,7 @@ int AliHLTOUTComponent::DumpEvent( const AliHLTComponentEventData& evtData,
       homerDescriptor.SetSubType2(static_cast<homer_uint64>(blocks[n].fSpecification));
       homerDescriptor.SetBlockSize(blocks[n].fSize);
       int writerNo=ShuffleWriters(fWriters, blocks[n].fSize);
-      assert(writerNo>=0 && writerNo<fWriters.size());
+      assert(writerNo>=0 && writerNo<(int)fWriters.size());
       // I'm puzzled by the different headers, buffers etc. used in the
       // HOMER writer/data. In additional, there is no type check as there
       // are void pointers used and names mixed.
@@ -301,7 +302,7 @@ int AliHLTOUTComponent::FillOutputBuffer(int eventNo, AliHLTMonitoringWriter* pW
       pWriter->Copy(&fBuffer[sizeof(AliRawDataHeader)+sizeof(AliHLTOUT::AliHLTOUTEventHeader)], 0, 0, 0, 0);
       pHLTH->fLength=pWriter->GetTotalMemorySize();
       // set status bit to indicate HLT payload
-      pCDH->fStatusMiniEventID|=0x1<<(AliHLTOUT::fgkCDHStatusFlagsOffset+AliHLTOUT::fgkCDHFlagsHLTPayload);
+      pCDH->fStatusMiniEventID|=0x1<<(AliHLTOUT::kCDHStatusFlagsOffset+AliHLTOUT::kCDHFlagsHLTPayload);
     }
     pHLTH->fLength+=sizeof(AliHLTOUT::AliHLTOUTEventHeader);
     pHLTH->fEventID=eventNo;

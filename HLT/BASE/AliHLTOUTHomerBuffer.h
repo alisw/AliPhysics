@@ -69,12 +69,12 @@ class AliHLTOUTHomerBuffer : public AliHLTOUT {
   /**
    * Check byte order of data block
    */
-  virtual AliHLTOUTByteOrder_t CheckBlockByteOrder(AliHLTUInt32_t index);
+  virtual AliHLTOUTByteOrder CheckBlockByteOrder(AliHLTUInt32_t index);
 
   /**
    * Check alignment of data block
    */
-  virtual int CheckBlockAlignment(AliHLTUInt32_t index, AliHLTOUT::AliHLTOUTDataType_t type);
+  virtual int CheckBlockAlignment(AliHLTUInt32_t index, AliHLTOUT::AliHLTOUTDataType type);
 
   /** data buffer */
   const AliHLTUInt8_t* fpBuffer; //! transient

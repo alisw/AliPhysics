@@ -207,7 +207,7 @@ void AliHLTTPCConfMapper::SetPointers()
 
   Int_t volumeIndex;
   Int_t localcounter=0;
-  assert(fHit.size()>=fClustersUnused);
+  assert((int)fHit.size()>=fClustersUnused);
   for(Int_t j=0; j<fClustersUnused; j++)
     {
       AliHLTTPCConfMapPoint *thisHit = &(fHit[j]);

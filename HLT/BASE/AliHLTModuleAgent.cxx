@@ -23,6 +23,12 @@
     @note   The class is used in Offline (AliRoot) context
 */
 
+// see header file for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+
 #include "AliHLTModuleAgent.h"
 #include "AliHLTOUTHandler.h"
 
@@ -60,7 +66,7 @@ void AliHLTModuleAgent::PrintStatus(const char* agent)
   // see header file for function documentation
   AliHLTLogging log;
  if (agent) {
-   AliHLTModuleAgent* pCurrent=fAnchor;
+   AliHLTModuleAgent* pCurrent=fgAnchor;
    while (pCurrent!=NULL && strcmp(pCurrent->GetName(), agent)!=0) pCurrent=pCurrent->fpNext;
    if (pCurrent) {
      log.Logging(kHLTLogInfo, "AliHLTModuleAgent::PrintStatus", "module agents", 
@@ -70,7 +76,7 @@ void AliHLTModuleAgent::PrintStatus(const char* agent)
 		 "agent %s not found", agent);
    }
   } else {
-   AliHLTModuleAgent* pCurrent=fAnchor;
+   AliHLTModuleAgent* pCurrent=fgAnchor;
    log.Logging(kHLTLogInfo, "AliHLT", "", "-----------------------");
    log.Logging(kHLTLogInfo, "AliHLT", "", "available module agents");
    if (pCurrent==NULL)
@@ -141,6 +147,7 @@ int AliHLTModuleAgent::DeleteOutputHandler(AliHLTOUTHandler* pInstance)
 
 int AliHLTModuleAgent::ActivateComponentHandler(AliHLTComponentHandler* pHandler)
 {
+  // see header file for function documentation
   int iResult=0;
   if (pHandler==NULL) {
     if (fpComponentHandler!=NULL) {
@@ -175,22 +182,22 @@ AliHLTModulePreprocessor* AliHLTModuleAgent::GetPreprocessor()
   return NULL;
 }
 
-AliHLTModuleAgent* AliHLTModuleAgent::fAnchor=NULL;
-AliHLTModuleAgent* AliHLTModuleAgent::fCurrent=NULL;
-int AliHLTModuleAgent::fCount=0;
+AliHLTModuleAgent* AliHLTModuleAgent::fgAnchor=NULL;
+AliHLTModuleAgent* AliHLTModuleAgent::fgCurrent=NULL;
+int AliHLTModuleAgent::fgCount=0;
 
 AliHLTModuleAgent* AliHLTModuleAgent::GetFirstAgent()
 {
   // see header file for function documentation
-  fCurrent=fAnchor;
-  return fAnchor;
+  fgCurrent=fgAnchor;
+  return fgAnchor;
 }
 
 AliHLTModuleAgent* AliHLTModuleAgent::GetNextAgent()
 {
   // see header file for function documentation
-  if (fCurrent!=NULL) fCurrent=fCurrent->fpNext;
-  return fCurrent;
+  if (fgCurrent!=NULL) fgCurrent=fgCurrent->fpNext;
+  return fgCurrent;
 }
 
 int AliHLTModuleAgent::Register(AliHLTModuleAgent* pAgent)
@@ -198,14 +205,14 @@ int AliHLTModuleAgent::Register(AliHLTModuleAgent* pAgent)
   // see header file for function documentation
   AliHLTLogging log;
   if (!pAgent) return -EINVAL;
-  if (fAnchor==NULL) {
-    fAnchor=pAgent;
+  if (fgAnchor==NULL) {
+    fgAnchor=pAgent;
   } else {
-    pAgent->fpNext=fAnchor;
-    fAnchor=pAgent;
+    pAgent->fpNext=fgAnchor;
+    fgAnchor=pAgent;
   }
   //  log.Logging(kHLTLogDebug, "AliHLTModuleAgent::Register", "", "module agent %p registered", pAgent);
-  fCount++;
+  fgCount++;
   return 0;	
 }
 
@@ -214,21 +221,21 @@ int AliHLTModuleAgent::Unregister(AliHLTModuleAgent* pAgent)
   // see header file for function documentation
   AliHLTLogging log;
   if (!pAgent) return -EINVAL;
-  fCurrent=NULL;
+  fgCurrent=NULL;
   AliHLTModuleAgent* prev=NULL;
-  AliHLTModuleAgent* handler=fAnchor;
+  AliHLTModuleAgent* handler=fgAnchor;
   while (handler!=NULL && handler!=pAgent) {
     prev=handler;
     handler=handler->fpNext;
   }
   if (handler) {
     if (prev==NULL) {
-      fAnchor=handler->fpNext;
+      fgAnchor=handler->fpNext;
     } else {
       prev->fpNext=handler->fpNext;
     }
     //log.Logging(kHLTLogDebug, "AliHLTModuleAgent::Unregister", "", "module agent %p removed", pAgent);
-    fCount--;
+    fgCount--;
   }
   return 0;
 }

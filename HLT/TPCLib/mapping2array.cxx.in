@@ -10,10 +10,8 @@ using namespace std;
 int main(){
     ifstream inFile[6];
     ofstream outFile;
-    int ofile;
-   
     
-    char * mappingpath="@TPC_PAD_MAPPING_PATH@/";
+    //char * mappingpath="@TPC_PAD_MAPPING_PATH@/";
     char * mappingfiles[6]= {"@TPC_PAD_MAPPING_PATH@/Patch0.data",
 			     "@TPC_PAD_MAPPING_PATH@/Patch1.data",
 			     "@TPC_PAD_MAPPING_PATH@/Patch2.data",

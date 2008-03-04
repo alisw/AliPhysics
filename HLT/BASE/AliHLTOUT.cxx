@@ -51,14 +51,6 @@ AliHLTOUT::AliHLTOUT()
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 }
 
-// definitions from ALICE internal note ALICE-INT-2002-010
-const unsigned char AliHLTOUT::fgkCDHStatusWord=4;
-const unsigned char AliHLTOUT::fgkCDHStatusFlagsOffset=12;
-
-// definitions from ALICE internal note ALICE-INT-2006-XXX
-const unsigned char AliHLTOUT::fgkCDHFlagsHLTDecision=6;
-const unsigned char AliHLTOUT::fgkCDHFlagsHLTPayload=7;
-
 AliHLTOUT::~AliHLTOUT()
 {
   // see header file for class documentation
@@ -116,7 +108,7 @@ int AliHLTOUT::FindAndSelectDataBlock()
       iResult=fCurrent->GetIndex();
       // TODO: check the byte order on the current system and the byte order of the
       // data block, print warning when missmatch and user did not check
-      //AliHLTOUTByteOrder_t blockBO=CheckByteOrder();
+      //AliHLTOUTByteOrder blockBO=CheckByteOrder();
       CheckByteOrder();
       /*
 	if (blockBO!=fByteOrder) {
@@ -199,18 +191,18 @@ int AliHLTOUT::AddBlockDescriptor(const AliHLTOUTBlockDescriptor desc)
   return iResult;  
 }
 
-AliHLTOUT::AliHLTOUTByteOrder_t AliHLTOUT::CheckByteOrder()
+AliHLTOUT::AliHLTOUTByteOrder AliHLTOUT::CheckByteOrder()
 {
   // see header file for class documentation
   if (fCurrent!=fBlockDescList.end()) {
     SetStatusFlag(kByteOrderChecked);
-    AliHLTOUT::AliHLTOUTByteOrder_t order=CheckBlockByteOrder((*fCurrent).GetIndex());
+    AliHLTOUT::AliHLTOUTByteOrder order=CheckBlockByteOrder((*fCurrent).GetIndex());
     return order;
   }
   return kInvalidByteOrder;
 }
 
-int AliHLTOUT::CheckAlignment(AliHLTOUT::AliHLTOUTDataType_t type)
+int AliHLTOUT::CheckAlignment(AliHLTOUT::AliHLTOUTDataType type)
 {
   // see header file for class documentation
   if (fCurrent!=fBlockDescList.end()) {
@@ -243,7 +235,7 @@ int AliHLTOUT::InitHandlers()
   }
   if (remnants.size()>0) {
     HLTWarning("no handlers found for %d data blocks out of %d", remnants.size(), GetNofDataBlocks());
-    vector<AliHLTOUTBlockDescriptor>::iterator block=fBlockDescList.begin();
+    AliHLTOUTBlockDescriptorVector::iterator block=fBlockDescList.begin();
     for (AliHLTOUTIndexList::iterator element=remnants.begin(); element!=remnants.end(); element++) {
       for (int trials=0; trials<2; trials++) {
 	do {
@@ -268,7 +260,7 @@ int AliHLTOUT::InsertHandler(const AliHLTOUTHandlerListEntry &entry)
 {
   // see header file for class documentation
   int iResult=0;
-  vector<AliHLTOUTHandlerListEntry>::iterator element=fDataHandlers.begin();
+  AliHLTOUTHandlerListEntryVector::iterator element=fDataHandlers.begin();
   while (element!=fDataHandlers.end()) {
     if (entry==(*element)) break;
     element++;
@@ -284,7 +276,7 @@ int AliHLTOUT::InsertHandler(const AliHLTOUTHandlerListEntry &entry)
 AliHLTOUT::AliHLTOUTHandlerListEntry AliHLTOUT::FindHandlerDesc(AliHLTUInt32_t blockIndex)
 {
   // see header file for class documentation
-  vector<AliHLTOUTHandlerListEntry>::iterator element=fDataHandlers.begin();
+  AliHLTOUTHandlerListEntryVector::iterator element=fDataHandlers.begin();
   while (element!=fDataHandlers.end()) {
     if (element->HasIndex(blockIndex)) {
       return *element;

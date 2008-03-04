@@ -80,7 +80,7 @@ private:
   Int_t fNMaxPads; //!transient
   Int_t fNTimeBins; //!transient
 
-  Int_t *fData;
+  Int_t *fData; //!transient
   //#endif // ENABLE_PAD_SORTING
 
   Bool_t fOldRCUFormat; //!transient

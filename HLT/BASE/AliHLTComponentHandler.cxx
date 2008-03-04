@@ -319,19 +319,25 @@ int AliHLTComponentHandler::LoadLibrary( const char* libraryPath, int bActivateA
     const char* loadtype="";
 #ifdef HAVE_DLFCN_H
     // use interface to the dynamic linking loader
-    try {
+
+    // exeption does not help in Root context, the Root exeption
+    // handler always catches the exeption before. Have to find out
+    // how exeptions can be used in Root
+    /*try*/ {
       hLib.fHandle=dlopen(libraryPath, RTLD_NOW);
       loadtype="dlopen";
     }
+    /*
     catch (...) {
       // error message printed further down
       loadtype="dlopen exeption";
     }
+    */
 #else
     // use ROOT dynamic loader
     // check if the library was already loaded, as Load returns
     // 'failure' if the library was already loaded
-    try {
+    /*try*/ {
     AliHLTLibHandle* pLib=FindLibrary(libraryPath);
     if (pLib) {
 	int* pRootHandle=reinterpret_cast<int*>(pLib->fHandle);
@@ -348,10 +354,12 @@ int AliHLTComponentHandler::LoadLibrary( const char* libraryPath, int bActivateA
     }
     loadtype="gSystem";
     }
+    /*
     catch (...) {
       // error message printed further down
       loadtype="gSystem exeption";
     }
+    */
 #endif //HAVE_DLFCN_H
     if (hLib.fHandle!=NULL) {
       // create TString object to store library path and use pointer as handle 
@@ -429,12 +437,18 @@ int AliHLTComponentHandler::UnloadLibrary(AliHLTComponentHandler::AliHLTLibHandl
   TString* pName=reinterpret_cast<TString*>(handle.fName);
   if (handle.fMode!=kStatic) {
 #ifdef HAVE_DLFCN_H
-  try {
+  // exeption does not help in Root context, the Root exeption
+  // handler always catches the exeption before. Have to find out
+  // how exeptions can be used in Root
+
+  /*try*/ {
     dlclose(handle.fHandle);
   }
+  /*
   catch (...) {
     HLTError("exeption caught during dlclose of library %s", pName!=NULL?pName->Data():"");
   }
+  */
 #else
   int* pCount=reinterpret_cast<int*>(handle.fHandle);
   if (--(*pCount)==0) {
@@ -579,12 +593,17 @@ int AliHLTComponentHandler::DeleteOwnedComponents()
   AliHLTComponentPList::iterator element=fOwnedComponents.begin();
   while (element!=fOwnedComponents.end()) {
     //DeregisterComponent((*element)->GetComponentID());
-    try {
+    // exeption does not help in Root context, the Root exeption
+    // handler always catches the exeption before. Have to find out
+    // how exeptions can be used in Root
+    /*try*/ {
       delete *element;
     }
+    /*
     catch (...) {
       HLTError("delete managed sample %p", *element);
     }
+    */
     fOwnedComponents.erase(element);
     element=fOwnedComponents.begin();
   }

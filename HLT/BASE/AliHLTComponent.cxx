@@ -817,7 +817,7 @@ const AliHLTComponentBlockData* AliHLTComponent::GetInputBlock(int index)
 {
   // see header file for function documentation
   ALIHLTCOMPONENT_BASE_STOPWATCH();
-  assert( 0 <= index and index < fCurrentEventData.fBlockCnt );
+  assert( 0 <= index and index < (int)fCurrentEventData.fBlockCnt );
   return &fpInputBlocks[index];
 }
 

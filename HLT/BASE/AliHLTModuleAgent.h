@@ -271,11 +271,11 @@ class AliHLTModuleAgent : public TObject, public AliHLTLogging {
 
   private:
     /** type of the handler */
-    AliHLTOUTHandlerType    fHType;
+    AliHLTOUTHandlerType    fHType;                          //!transient
     /** data type treated by the handler */
-    AliHLTComponentDataType fDt;
+    AliHLTComponentDataType fDt;                             //!transient
     /** class or chain name */
-    TString                 fModule;
+    TString                 fModule;                         //!transient
   };
 
   /**
@@ -367,16 +367,16 @@ class AliHLTModuleAgent : public TObject, public AliHLTLogging {
   static int Unregister(AliHLTModuleAgent* pAgent);
 
   /** the list of active agents */
-  static AliHLTModuleAgent* fAnchor;                               //! transient
+  static AliHLTModuleAgent* fgAnchor;                               //! transient
 
   /** next element in the list */
   AliHLTModuleAgent* fpNext;                                       //! transient
 
   /** the current object link (list position) */
-  static AliHLTModuleAgent* fCurrent;                              //! transient
+  static AliHLTModuleAgent* fgCurrent;                              //! transient
 
   /** number of agents */
-  static int fCount;                                               //! transient
+  static int fgCount;                                               //! transient
 
   /** instance of the active component handler */
   AliHLTComponentHandler* fpComponentHandler;                      //! transient

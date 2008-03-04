@@ -99,15 +99,15 @@ int AliHLTOUTHomerBuffer::GetDataBuffer(AliHLTUInt32_t index, const AliHLTUInt8_
   return iResult;
 }
 
-AliHLTOUT::AliHLTOUTByteOrder_t AliHLTOUTHomerBuffer::CheckBlockByteOrder(AliHLTUInt32_t index)
+AliHLTOUT::AliHLTOUTByteOrder AliHLTOUTHomerBuffer::CheckBlockByteOrder(AliHLTUInt32_t index)
 {
   if (fpReader) {
-    return static_cast<AliHLTOUTByteOrder_t>(fpReader->GetBlockByteOrder(index));
+    return static_cast<AliHLTOUTByteOrder>(fpReader->GetBlockByteOrder(index));
   }
   return kInvalidByteOrder;
 }
 
-int AliHLTOUTHomerBuffer::CheckBlockAlignment(AliHLTUInt32_t index, AliHLTOUT::AliHLTOUTDataType_t type)
+int AliHLTOUTHomerBuffer::CheckBlockAlignment(AliHLTUInt32_t index, AliHLTOUT::AliHLTOUTDataType type)
 {
   if (fpReader) {
     return fpReader->GetBlockTypeAlignment(index, static_cast<homer_uint8>(type));

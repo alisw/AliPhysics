@@ -43,19 +43,19 @@ ClassImp(AliHLTTPCDigitReaderPacked)
 
 AliHLTTPCDigitReaderPacked::AliHLTTPCDigitReaderPacked()
   :
+  fRawMemoryReader(NULL),
+  fTPCRawStream(NULL),
   //#if ENABLE_PAD_SORTING
   fCurrentRow(0),
   fCurrentPad(0),
   fCurrentBin(-1),
-  fNRows(0),
   fRowOffset(0),
+  fNRows(0),
   fNMaxRows(0),
   fNMaxPads(0),
   fNTimeBins(0),
   fData(NULL),
   //#endif // ENABLE_PAD_SORTING  
-  fRawMemoryReader(NULL),
-  fTPCRawStream(NULL),
   fOldRCUFormat(kFALSE),
   fUnsorted(kFALSE)
 {
