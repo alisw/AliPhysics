@@ -353,6 +353,33 @@ void AliAnalysisManager::PackOutput(TList *target)
       while ((output=(AliAnalysisDataContainer*)next())) {
          if (output->GetData() && !output->IsSpecialOutput()) {
             if (output->GetProducer()->IsPostEventLoop()) continue;
+
+            const char *filename = output->GetFileName();
+            if (!(strcmp(filename, "default"))) {
+               if (fOutputEventHandler) filename = fOutputEventHandler->GetOutputFileName();
+            }      
+            if (strlen(filename)) {
+               TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject(filename);
+               TDirectory *opwd = gDirectory;
+               if (file) file->cd();
+               else      file = new TFile(filename, "RECREATE");
+               if (file->IsZombie()) continue;
+               // Clear file list to release object ownership to user.
+               // Save data to file, then close.
+               file->Clear();
+               output->GetData()->Write();
+               file->Close();
+               // Set null directory to histograms and trees.
+               TMethodCall callEnv;
+               if (output->GetData()->IsA())
+                  callEnv.InitWithPrototype(output->GetData()->IsA(), "SetDirectory", "TDirectory*");
+               if (callEnv.IsValid()) {
+                  callEnv.SetParam(Long_t(0));
+                  callEnv.Execute(output->GetData());
+               }
+               // Restore current directory
+               if (opwd) opwd->cd();
+            }   
             AliAnalysisDataWrapper *wrap = output->ExportData();
             // Output wrappers must delete data after merging (AG 13/11/07)
             wrap->SetDeleteData(kTRUE);
@@ -375,6 +402,12 @@ void AliAnalysisManager::PackOutput(TList *target)
                remote += Form("%s_%d_", gSystem->HostName(), gid);
                remote += output->GetFileName();
                TFile::Cp(output->GetFileName(), remote.Data());
+            } else {
+            // No special location specified-> use TProofFile as merging utility
+               char line[256];
+               sprintf(line, "((TList*)0x%lx)->Add(new TProofFile(\"%s\"));",
+                       (ULong_t)target, output->GetFileName());
+               gROOT->ProcessLine(line);
             }
          }      
       }
@@ -416,8 +449,7 @@ void AliAnalysisManager::ImportWrappers(TList *source)
 //______________________________________________________________________________
 void AliAnalysisManager::UnpackOutput(TList *source)
 {
-  // Called by AliAnalysisSelector::Terminate. Output containers should
-  // be in source in the same order as in fOutputs.
+  // Called by AliAnalysisSelector::Terminate only on the client.
    if (fDebug > 1) {
       cout << "->AliAnalysisManager::UnpackOutput()" << endl;
    }   

@@ -47,6 +47,7 @@
 
 #include <TClass.h>
 #include <TTree.h>
+#include <TH1.h>
 #include <TROOT.h>
 
 #include "AliAnalysisDataContainer.h"
@@ -412,39 +413,11 @@ Long64_t AliAnalysisDataWrapper::Merge(TCollection *list)
 {
 // Merge a list of containers with this one. Containers in the list must have
 // data of the same type.
+   if (TH1::AddDirectoryStatus()) TH1::AddDirectory(kFALSE);
    if (!fData) return 0;
    if (!list || list->IsEmpty()) return 1;
 
    TMethodCall callEnv;
-   if (fData->InheritsFrom(TSeqCollection::Class())) {
-//      printf("Collection wrapper %s 0x%lx (owner=%d) merge with:\n", GetName(), (ULong_t)this, TObject::TestBit(kDeleteData));
-      TSeqCollection *coll = (TSeqCollection*)fData;
-      if (coll->IsEmpty()) return 0;
-      Int_t nentries = coll->GetEntries();
-      AliAnalysisDataWrapper *top, *crt;
-      TIter next(list);
-      TSeqCollection *collcrt = 0;
-      TList *list1 = 0;
-      // Loop entries of the collection attached to this wrapper.
-      for (Int_t i=0; i<nentries; i++) {
-         list1 = new TList();
-         top = new AliAnalysisDataWrapper(coll->At(i));
-         next.Reset();
-         // Loop wrappers coming in the 'to merge with' list
-         while ((crt=(AliAnalysisDataWrapper*)next())) {
-//            printf("  %s 0x%lx (owner=%d)\n", crt->GetName(), (ULong_t)crt, crt->TestBit(AliAnalysisDataWrapper::kDeleteData));
-            collcrt = (TSeqCollection*)crt->Data();
-            list1->Add(new AliAnalysisDataWrapper(collcrt->At(i)));
-         }
-         // Now merge 'top' wrapper with 'list1'. This may go recursively.
-         top->Merge(list1);
-         delete top;
-         list1->Delete();
-         delete list1;
-      }
-      return nentries;
-   }   
-   
    if (fData->IsA())
       callEnv.InitWithPrototype(fData->IsA(), "Merge", "TCollection*");
    if (!callEnv.IsValid()) {
@@ -457,11 +430,11 @@ Long64_t AliAnalysisDataWrapper::Merge(TCollection *list)
    // Make a list where to temporary store the data to be merged.
    TList *collectionData = new TList();
    Int_t count = 0; // object counter
-//   printf("Wrapper %s 0x%lx (owner=%d) merged with:\n", GetName(), (ULong_t)this, TObject::TestBit(kDeleteData));
+   // printf("Wrapper %s 0x%lx (data=%s) merged with:\n", GetName(), (ULong_t)this, fData->ClassName());
    while ((cont=(AliAnalysisDataWrapper*)next1())) {
-//      printf("   %s 0x%lx (owner=%d)\n", cont->GetName(), (ULong_t)cont, cont->TestBit(AliAnalysisDataWrapper::kDeleteData));
       TObject *data = cont->Data();
       if (!data) continue;
+      // printf("   - %s 0x%lx (data=%s)\n", cont->GetName(), (ULong_t)cont, data->ClassName());
       collectionData->Add(data);
       count++;
    }
