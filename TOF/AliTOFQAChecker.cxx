@@ -25,7 +25,7 @@
 /////////////////////////////////////////////////////////////////////
 
 #include "TH1.h"
-#include "TList.h"
+#include "TObjArray.h"
 
 #include "AliLog.h"
 //#include "AliQA.h"
@@ -45,7 +45,7 @@ AliTOFQAChecker& AliTOFQAChecker::operator = (const AliTOFQAChecker& qac )
 }
 
 //____________________________________________________________________________
-const Double_t AliTOFQAChecker::Check(TList * list) 
+const Double_t AliTOFQAChecker::Check(TObjArray * list) 
 {
 
   // Super-basic check on the QA histograms on the input list: 
