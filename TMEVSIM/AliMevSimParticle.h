@@ -14,11 +14,6 @@
 
 class AliMevSimParticle :public TMevSimPartTypeParams {
 
- protected:
-  
-  PDG_t fPdg;
-  TMevSimConverter *fConv;
-
  public:
   
   ///////////////////////////////////////////////////////////////////////////////////////
@@ -37,6 +32,16 @@ class AliMevSimParticle :public TMevSimPartTypeParams {
   
   ///////////////////////////////////////////////////////////////////////////////////////
   
+ protected:
+  
+  PDG_t fPdg;
+  TMevSimConverter *fConv;
+
+ private:
+
+  AliMevSimParticle(const AliMevSimParticle&); // Not implemented
+  AliMevSimParticle& operator=(const AliMevSimParticle&); // Not implemented
+
   ClassDef(AliMevSimParticle,1)  
     
   ///////////////////////////////////////////////////////////////////////////////////////

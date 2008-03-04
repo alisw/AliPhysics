@@ -23,24 +23,29 @@ ClassImp(AliMevSimParticle)
    
 ///////////////////////////////////////////////////////////////////////////////////////
 
-AliMevSimParticle::AliMevSimParticle()
-  : TMevSimPartTypeParams() {
-  fConv = 0;
+AliMevSimParticle::AliMevSimParticle() : 
+  TMevSimPartTypeParams(),
+  fPdg(),
+  fConv(0)
+{
+
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
 AliMevSimParticle::AliMevSimParticle(PDG_t pdg, Int_t multmean, Int_t multvc, 
 		  Float_t tempmean, Float_t tempstdev, Float_t sigmamean,
-		  Float_t sigmastdev, Float_t expvelmean, Float_t expvelstdev)
+				     Float_t sigmastdev, Float_t expvelmean, Float_t expvelstdev) :
 
-  : TMevSimPartTypeParams(0, multmean, multvc, tempmean, tempstdev, 
-			  sigmamean, sigmastdev, expvelmean, expvelstdev)  {
+  TMevSimPartTypeParams(0, multmean, multvc, tempmean, tempstdev, 
+			sigmamean, sigmastdev, expvelmean, expvelstdev),
+
+  fPdg(pdg),
+  fConv(new TMevSimConverter())
+{
 
 
   // Calculate geant ID from pdg
-  fConv = new TMevSimConverter();
-  fPdg = pdg;
   if (fConv) fGPid = fConv->IdFromPDG(pdg);  
 
 }

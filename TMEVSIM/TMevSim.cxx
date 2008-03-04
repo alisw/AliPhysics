@@ -418,7 +418,33 @@ extern "C" void type_of_call multgen();
 TMevSim::TMevSim(Int_t nEvents, Int_t modelType, Int_t reacPlaneCntrl,
 	   Float_t psiRMean, Float_t psiRStDev, Float_t multFacMean, Float_t multFacStDev,
 	   Float_t ptCutMin, Float_t ptCutMax, Float_t etaCutMin, Float_t etaCutMax, 
-	   Float_t phiCutMin, Float_t phiCutMax, Int_t irand) : TGenerator("MevSim", "MevSim")
+	   Float_t phiCutMin, Float_t phiCutMax, Int_t irand) : 
+  TGenerator("MevSim", "MevSim"),
+  fNEvents(nEvents),
+  fModelType(modelType),
+  fReacPlaneCntrl(reacPlaneCntrl),
+  fPsiRMean(psiRMean),
+  fPsiRStDev(psiRStDev),
+  fMultFacMean(multFacMean),
+  fMultFacStDev(multFacStDev),
+  fPtCutMin(ptCutMin),
+  fPtCutMax(ptCutMax),
+  fEtaCutMin(etaCutMin),
+  fEtaCutMax(etaCutMax),
+  fPhiCutMin(phiCutMin),
+  fPhiCutMax(phiCutMax),
+  fNStDevMult(3),
+  fNStDevTemp(3),
+  fNStDevSigma(3),
+  fNStDevExpVel(3),
+  fNStdDevPSIr(3),
+  fNStDevVn(3),
+  fNStDevMultFac(3),
+  fNIntegPts(100),
+  fNScanPts(100),
+  firand(irand),
+  fParticleTypeParameters(new TClonesArray("TMevSimPartTypeParams",10)),
+  fNPDGCodes(0)
 {
 // TMevSim constructor: initializes all the event-wide variables of MevSim with
 // user supplied values, or with the default ones (declared in the header file).
@@ -428,25 +454,6 @@ TMevSim::TMevSim(Int_t nEvents, Int_t modelType, Int_t reacPlaneCntrl,
 // event will be stored in POUT COMMON, and therefore only one event can be 
 // accessible at a time. 
  
-   fNEvents = nEvents;
-   fModelType = modelType;
-   fReacPlaneCntrl = reacPlaneCntrl;
-   fPsiRMean = psiRMean;
-   fPsiRStDev = psiRStDev;
-   fMultFacMean = multFacMean;
-   fMultFacStDev = multFacStDev;
-   fPtCutMin = ptCutMin;
-   fPtCutMax = ptCutMax;
-   fEtaCutMin = etaCutMin;
-   fEtaCutMax = etaCutMax;
-   fPhiCutMin = phiCutMin;
-   fPhiCutMax = phiCutMax;
-   fNStDevMult = fNStDevTemp = fNStDevSigma = fNStDevExpVel = fNStdDevPSIr = fNStDevVn = fNStDevMultFac = 3.0;
-   fNIntegPts = 100;
-   fNScanPts = 100;
-   firand = irand;
-   fParticleTypeParameters = new TClonesArray("TMevSimPartTypeParams",10);
-   fNPDGCodes = 0;
    DefineParticles();
 }
 //______________________________________________________________________________
@@ -462,10 +469,35 @@ TMevSim::~TMevSim()
   }
 }
 //______________________________________________________________________________
-TMevSim::TMevSim(TMevSim& mevsim) : TGenerator(mevsim) {
-// The copy constructor
-   
-   *this = mevsim;
+TMevSim::TMevSim(TMevSim& mevsim) : 
+  TGenerator(mevsim),
+  fNEvents(mevsim.fNEvents),
+  fModelType(mevsim.fModelType),
+  fReacPlaneCntrl(mevsim.fReacPlaneCntrl),
+  fPsiRMean(mevsim.fPsiRMean),
+  fPsiRStDev(mevsim.fPsiRStDev),
+  fMultFacMean(mevsim.fMultFacMean),
+  fMultFacStDev(mevsim.fMultFacStDev),
+  fPtCutMin(mevsim.fPtCutMin),
+  fPtCutMax(mevsim.fPtCutMax),
+  fEtaCutMin(mevsim.fEtaCutMin),
+  fEtaCutMax(mevsim.fEtaCutMax),
+  fPhiCutMin(mevsim.fPhiCutMin),
+  fPhiCutMax(mevsim.fPhiCutMax),
+  fNStDevMult(mevsim.fNStDevMult),
+  fNStDevTemp(mevsim.fNStDevTemp),
+  fNStDevSigma(mevsim.fNStDevSigma),
+  fNStDevExpVel(mevsim.fNStDevExpVel),
+  fNStdDevPSIr(mevsim.fNStdDevPSIr),
+  fNStDevVn(mevsim.fNStDevVn),
+  fNStDevMultFac(mevsim.fNStDevMultFac),
+  fNIntegPts(mevsim.fNIntegPts),
+  fNScanPts(mevsim.fNScanPts),
+  firand(mevsim.firand),
+  fParticleTypeParameters(mevsim.fParticleTypeParameters),
+  fNPDGCodes(mevsim.fNPDGCodes)
+{
+  // The copy constructor
 }
 //______________________________________________________________________________
 
@@ -473,38 +505,41 @@ TMevSim& TMevSim::operator=(const TMevSim& mevsim) {
 // An assignment operator: initializes all the event-wide variables of MevSim with
 // the ones from a copied object. It also copies the parameters specific to
 // each particle species.
-   
-   fNEvents = mevsim.GetNEvents();
-   fModelType = mevsim.GetModelType();
-   fReacPlaneCntrl = mevsim.GetReacPlaneCntrl();
-   fPsiRMean = mevsim.GetPsiRMean();
-   fPsiRStDev = mevsim.GetPsiRStDev();
-   fMultFacMean = mevsim.GetMultFacMean();
-   fMultFacStDev = mevsim.GetMultFacStDev();
-   fPtCutMin = mevsim.GetPtCutMin();
-   fPtCutMax = mevsim.GetPtCutMax();
-   fEtaCutMin = mevsim.GetEtaCutMin();
-   fEtaCutMax = mevsim.GetEtaCutMax();
-   fPhiCutMin = mevsim.GetPhiCutMin();
-   fPhiCutMax = mevsim.GetPhiCutMax();
-   fNStDevMult = mevsim.GetNStDevMult();
-   fNStDevTemp = mevsim.GetNStDevTemp();
-   fNStDevSigma =GetNStDevSigma();
-   fNStDevExpVel = mevsim.GetNStDevExpVel();
-   fNStdDevPSIr = mevsim.GetNStDevPSIr(); 
-   fNStDevVn =  mevsim.GetNStDevVn();
-   fNStDevMultFac =  mevsim.GetNStDevMultFac();
-   fNIntegPts = mevsim.GetNintegPts();
-   fNScanPts = mevsim.GetNScanPts();
-   firand = mevsim.firand;
-   fParticleTypeParameters = new TClonesArray("TMevSimPartTypeParams",mevsim.GetNPidTypes());
-   for (int i=0; i< mevsim.GetNPidTypes(); i++) 
-     {	
-	TMevSimPartTypeParams *temp = 0;
-	mevsim.GetPartTypeParamsByIndex(i,temp);
-	fParticleTypeParameters->AddLast(temp);
-     }
-   DefineParticles();
+  
+   if(this != &mevsim) {
+     TGenerator::operator=(mevsim);
+     fNEvents = mevsim.GetNEvents();
+     fModelType = mevsim.GetModelType();
+     fReacPlaneCntrl = mevsim.GetReacPlaneCntrl();
+     fPsiRMean = mevsim.GetPsiRMean();
+     fPsiRStDev = mevsim.GetPsiRStDev();
+     fMultFacMean = mevsim.GetMultFacMean();
+     fMultFacStDev = mevsim.GetMultFacStDev();
+     fPtCutMin = mevsim.GetPtCutMin();
+     fPtCutMax = mevsim.GetPtCutMax();
+     fEtaCutMin = mevsim.GetEtaCutMin();
+     fEtaCutMax = mevsim.GetEtaCutMax();
+     fPhiCutMin = mevsim.GetPhiCutMin();
+     fPhiCutMax = mevsim.GetPhiCutMax();
+     fNStDevMult = mevsim.GetNStDevMult();
+     fNStDevTemp = mevsim.GetNStDevTemp();
+     fNStDevSigma =GetNStDevSigma();
+     fNStDevExpVel = mevsim.GetNStDevExpVel();
+     fNStdDevPSIr = mevsim.GetNStDevPSIr(); 
+     fNStDevVn =  mevsim.GetNStDevVn();
+     fNStDevMultFac =  mevsim.GetNStDevMultFac();
+     fNIntegPts = mevsim.GetNintegPts();
+     fNScanPts = mevsim.GetNScanPts();
+     firand = mevsim.firand;
+     fParticleTypeParameters = new TClonesArray("TMevSimPartTypeParams",mevsim.GetNPidTypes());
+     for (int i=0; i< mevsim.GetNPidTypes(); i++) 
+       {	
+	 TMevSimPartTypeParams *temp = 0;
+	 mevsim.GetPartTypeParamsByIndex(i,temp);
+	 fParticleTypeParameters->AddLast(temp);
+       }
+     DefineParticles();
+   }
    return (*this);
 }
 //______________________________________________________________________________

@@ -21,7 +21,16 @@ ClassImp(TMevSimPartTypeParams)
 
   
 //______________________________________________________________________________
-  TMevSimPartTypeParams::TMevSimPartTypeParams() 
+TMevSimPartTypeParams::TMevSimPartTypeParams() :
+   fGPid(0),
+   fMultMean(0),
+   fMultVarianceControl(0),
+   fTempMean(0),
+   fTempStDev(0),
+   fSigmaMean(0),
+   fSigmaStDev(0),
+   fExpVelMean(0),
+   fExpVelStDev(0)
 { 
 // Default constructor
   
@@ -35,21 +44,21 @@ ClassImp(TMevSimPartTypeParams)
 //__________________________________________________________________________
 TMevSimPartTypeParams::TMevSimPartTypeParams(Int_t agpid, Int_t amultmean, Int_t amultvc, 
                                              Float_t atempmean, Float_t atempstdev, Float_t asigmamean,
-                                             Float_t asigmastdev, Float_t aexpvelmean, Float_t aexpvelstdev) 
+                                             Float_t asigmastdev, Float_t aexpvelmean, Float_t aexpvelstdev) :
+   fGPid(agpid),
+   fMultMean(amultmean),
+   fMultVarianceControl(amultvc),
+   fTempMean(atempmean),
+   fTempStDev(atempstdev),
+   fSigmaMean(asigmamean),
+   fSigmaStDev(asigmastdev),
+   fExpVelMean(aexpvelmean),
+   fExpVelStDev(aexpvelstdev)
 {
 // Construct the particle type parametrs class. Use the values provide
 // by the user to initialize the internal variables. For the meaning of
 // the parametrs see the TMevSim class documentation.
    
-   fGPid = agpid;
-   fMultMean = amultmean;
-   fMultVarianceControl = amultvc;
-   fTempMean = atempmean;
-   fTempStDev = atempstdev;
-   fSigmaMean = asigmamean;
-   fSigmaStDev = asigmastdev;
-   fExpVelMean = aexpvelmean;
-   fExpVelStDev = aexpvelstdev;
    for (Int_t i = 0; i < 4; i++)
      for (Int_t j = 0; j < NFLOWTERMS; j++) {
 	fVnMean[j][i] = 0.0;
@@ -65,18 +74,20 @@ TMevSimPartTypeParams::~TMevSimPartTypeParams()
 }
 
 //______________________________________________________________________________
-TMevSimPartTypeParams::TMevSimPartTypeParams (const TMevSimPartTypeParams& pars) : TObject(pars) {
+TMevSimPartTypeParams::TMevSimPartTypeParams (const TMevSimPartTypeParams& pars) : 
+   TObject(pars),
+   fGPid(pars.fGPid),
+   fMultMean(pars.fMultMean),
+   fMultVarianceControl(pars.fMultVarianceControl),
+   fTempMean(pars.fTempMean),
+   fTempStDev(pars.fTempStDev),
+   fSigmaMean(pars.fSigmaMean),
+   fSigmaStDev(pars.fSigmaStDev),
+   fExpVelMean(pars.fExpVelMean),
+   fExpVelStDev(pars.fExpVelStDev)
+{
 // The copy constructor
   
-   this->fGPid = pars.GetGPid();
-   this->fMultMean = pars.GetMultMean();
-   this->fMultVarianceControl = pars.GetMultVarianceControl();
-   this->fTempMean = pars.GetTempMean();
-   this->fTempStDev = pars.GetTempStDev();
-   this->fSigmaMean = pars.GetSigmaMean();
-   this->fSigmaStDev = pars.GetSigmaStDev();
-   this->fExpVelMean = pars.GetExpVelMean();
-   this->fExpVelStDev = pars.GetExpVelStDev();
    for (Int_t i = 0; i < 4; i++)
      for (Int_t j = 0; j < NFLOWTERMS; j++) {
        this->fVnMean[j][i] = pars.GetVnMeanComponent(j, i);
@@ -85,23 +96,27 @@ TMevSimPartTypeParams::TMevSimPartTypeParams (const TMevSimPartTypeParams& pars)
 }
 
 //______________________________________________________________________________
-TMevSimPartTypeParams& TMevSimPartTypeParams::operator=(const TMevSimPartTypeParams& pars) {
+TMevSimPartTypeParams& TMevSimPartTypeParams::operator=(const TMevSimPartTypeParams& pars) 
+{
 // The assignment operator
-   
-   this->fGPid = pars.GetGPid();
-   this->fMultMean = pars.GetMultMean();
-   this->fMultVarianceControl = pars.GetMultVarianceControl();
-   this->fTempMean = pars.GetTempMean();
-   this->fTempStDev = pars.GetTempStDev();
-   this->fSigmaMean = pars.GetSigmaMean();
-   this->fSigmaStDev = pars.GetSigmaStDev();
-   this->fExpVelMean = pars.GetExpVelMean();
-   this->fExpVelStDev = pars.GetExpVelStDev();
-   for (Int_t i = 0; i < 4; i++)
-     for (Int_t j = 0; j < NFLOWTERMS; j++) {
-       this->fVnMean[j][i] = GetVnMeanComponent(j, i);
-       this->fVnStDev[j][i] = GetVnStDevComponent(j, i);
-     }
+
+   if(this != &pars) {
+     TObject::operator=(pars);
+     fGPid = pars.fGPid;
+     fMultMean = pars.fMultMean;
+     fMultVarianceControl = pars.fMultVarianceControl;
+     fTempMean = pars.fTempMean;
+     fTempStDev = pars.fTempStDev;
+     fSigmaMean = pars.fSigmaMean;
+     fSigmaStDev = pars.fSigmaStDev;
+     fExpVelMean = pars.fExpVelMean;
+     fExpVelStDev = pars.fExpVelStDev;
+     for (Int_t i = 0; i < 4; i++)
+       for (Int_t j = 0; j < NFLOWTERMS; j++) {
+	 fVnMean[j][i] = GetVnMeanComponent(j, i);
+	 fVnStDev[j][i] = GetVnStDevComponent(j, i);
+       }
+   }
    return (*this);
 }
 

@@ -38,24 +38,26 @@ static TRandom * gAliRandom;
 ClassImp(AliGenMevSim)
 
 //____________________________________________________________________________
-AliGenMevSim::AliGenMevSim() : AliGenerator(-1) 
+AliGenMevSim::AliGenMevSim() : 
+  AliGenerator(-1),
+  fMevSim(new TMevSim()),
+  fConfig(new AliMevSimConfig())
 {
   //
   // Default ctor
   //
-  fConfig = new AliMevSimConfig();
-  fMevSim = new TMevSim();
   gAliRandom = fRandom;
   
 }
 //____________________________________________________________________________
-AliGenMevSim::AliGenMevSim(AliMevSimConfig *config): AliGenerator(-1) 
+AliGenMevSim::AliGenMevSim(AliMevSimConfig *config): 
+  AliGenerator(-1),
+  fMevSim(new TMevSim()),
+  fConfig(config)
 {
   //
   // Standard ctor
   //
-  fConfig = config;
-  fMevSim = new TMevSim(); 
   gAliRandom = fRandom;
 }
 

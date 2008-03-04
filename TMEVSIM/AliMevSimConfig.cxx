@@ -92,14 +92,46 @@ ClassImp(AliMevSimConfig)
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-AliMevSimConfig::AliMevSimConfig() {
+AliMevSimConfig::AliMevSimConfig() :
+  fModelType(0),
+  fReacPlaneCntrl(0),
+  fPsiRMean(0),
+  fPsiRStDev(0),
+  fMultFacMean(0),
+  fMultFacStDev(0),
+  fNStDevMult(0),
+  fNStDevTemp(0),
+  fNStDevSigma(0),
+  fNStDevExpVel(0),
+  fNStdDevPSIr(0),
+  fNStDevVn(0),
+  fNStDevMultFac(0),
+  fNIntegPts(0),
+  fNScanPts(0)
+{
 //def ctor
   Init();
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-AliMevSimConfig::AliMevSimConfig(Int_t modelType) {
+AliMevSimConfig::AliMevSimConfig(Int_t modelType) :
+  fModelType(0),
+  fReacPlaneCntrl(0),
+  fPsiRMean(0),
+  fPsiRStDev(0),
+  fMultFacMean(0),
+  fMultFacStDev(0),
+  fNStDevMult(0),
+  fNStDevTemp(0),
+  fNStDevSigma(0),
+  fNStDevExpVel(0),
+  fNStdDevPSIr(0),
+  fNStDevVn(0),
+  fNStDevMultFac(0),
+  fNIntegPts(0),
+  fNScanPts(0)
+{
 //ctor
   Init();
   SetModelType(modelType);
