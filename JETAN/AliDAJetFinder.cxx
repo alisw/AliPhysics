@@ -1,3 +1,4 @@
+
 //  **************************************************************************
 //  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 //  *                                                                        *
@@ -47,8 +48,7 @@ AliDAJetFinder::AliDAJetFinder():
 	fPy(0x0),
 	fXEta(0x0),
 	fXPhi(0x0),
-	fNin(0),
-	fHeader(0x0)
+	fNin(0)
 {
 	// Constructor
 }
@@ -57,7 +57,6 @@ AliDAJetFinder::AliDAJetFinder():
 AliDAJetFinder::~AliDAJetFinder()
 {
 	// Destructor
-        delete fHeader;
 	delete fPyx;
 	delete fY;
 	delete fPx;
@@ -99,7 +98,10 @@ void AliDAJetFinder::InitDetAnn(Double_t &dEtSum)
 	fBeta=0.1;
 	TClonesArray *lvArray = fReader->GetMomentumArray();
 	fNin = lvArray->GetEntries();
-	fNclustMax= fHeader->GetFixedCl() ? fHeader->GetNclustMax() : TMath::Max((Int_t)TMath::Sqrt(fNin),5);
+	fNclustMax= ((AliDAJetHeader*)fHeader)->GetFixedCl() ? 
+	    ((AliDAJetHeader*)fHeader)->GetNclustMax() 
+	    : 
+	    TMath::Max((Int_t)TMath::Sqrt(fNin),5);
 	fXEta=new Double_t[fNin]; fXPhi=new Double_t[fNin];
 	fPx = new TVectorD(fNin);
 	for (Int_t iIn=0; iIn<fNin; iIn++){
@@ -151,7 +153,7 @@ void AliDAJetFinder::Annealing(Int_t nk)
 	TMatrixD *ry = new TMatrixD(2,nk);
 	Double_t Dist(TVectorD,TVectorD);
 
-	Double_t df[2]={fHeader->GetEtaCut(),pi};
+	Double_t df[2]={((AliDAJetHeader*)fHeader)->GetEtaCut(),pi};
 	TVectorD vPart(2);
 	Double_t *m = new Double_t[nk];
 	Double_t chi,chi1;
@@ -368,7 +370,7 @@ void AliDAJetFinder::StoreJets(Int_t nk,Int_t *xx)
 {
 //evaluate significant clusters properties
 	const Double_t pi=TMath::Pi();
-	Double_t dMeanDist=TMath::Sqrt(4*fHeader->GetEtaCut()*pi/fNin);
+	Double_t dMeanDist=TMath::Sqrt(4*((AliDAJetHeader*)fHeader)->GetEtaCut()*pi/fNin);
 	Bool_t   *isJet = new Bool_t[nk];
 	Double_t *etNoBg= new Double_t[nk];
 	Double_t *dDeltaEta=new Double_t[nk];
@@ -394,7 +396,7 @@ void AliDAJetFinder::StoreJets(Int_t nk,Int_t *xx)
 		etDens[iClust]=(*fY)(3,iClust)/surf[iClust];
 	}
 
-	if (fHeader->GetSelJets()){
+	if (((AliDAJetHeader*)fHeader)->GetSelJets()){
 		for (Int_t iClust=0; iClust<nk; iClust++){
 			if (!isJet[iClust]){
 				Double_t etDensMed=0.;
@@ -417,7 +419,7 @@ void AliDAJetFinder::StoreJets(Int_t nk,Int_t *xx)
 		for (Int_t iClust=0; iClust<nk; iClust++){
 			if (isJet[iClust]){
 				Double_t etDensMed=0;
-				Double_t extSurf=4*fHeader->GetEtaCut()*pi;
+				Double_t extSurf=4*((AliDAJetHeader*)fHeader)->GetEtaCut()*pi;
 				for (Int_t iClust1=0; iClust1<nk; iClust1++){
 					if (!isJet[iClust1]) etDensMed+=(*fY)(3,iClust1);
 					else extSurf-=surf[iClust1];

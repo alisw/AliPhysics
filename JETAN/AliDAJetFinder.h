@@ -21,8 +21,6 @@ public:
     virtual  ~AliDAJetFinder();
     
     void FindJets      ();
-    void SetJetHeader  (AliDAJetHeader *h) {fHeader = h;}
-    
  private:
     void InitDetAnn    (Double_t &dEtSum);
     void Annealing     (Int_t nk);
@@ -50,9 +48,6 @@ protected:
     Double_t  *fXEta;					// input data eta coordinate
     Double_t  *fXPhi;					// input data phi coordinate
     Int_t      fNin;					// number of input data
-     
-    AliDAJetHeader *fHeader;                            // the header  
-    
     ClassDef(AliDAJetFinder,1)
 };// 
 #endif

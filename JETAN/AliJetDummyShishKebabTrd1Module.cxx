@@ -110,7 +110,8 @@ AliJetDummyShishKebabTrd1Module::AliJetDummyShishKebabTrd1Module(const AliJetDum
     fOK2(mod.fOK2),
     fOB(mod.fOB),
     fOB1(mod.fOB1),
-    fOB2(mod.fOB2)
+    fOB2(mod.fOB2),
+    fDebug(mod.fDebug)
 {
   //copy ctor
   for (Int_t i=0; i<3; i++) fOK3X3[i] = mod.fOK3X3[i];

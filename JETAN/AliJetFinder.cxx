@@ -209,7 +209,6 @@ Bool_t AliJetFinder::ProcessEvent()
 //
 // Process one event
 //
-    Int_t debug  = fReader->GetReaderHeader()->GetDebug();
     Bool_t ok = fReader->FillMomentumArray();
     if (!ok) return kFALSE;
 

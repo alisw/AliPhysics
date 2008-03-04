@@ -50,6 +50,9 @@ class AliJetESDReader : public AliJetReader
  private:
   void SetEMCALGeometry();
   void InitParameters();
+  AliJetESDReader(const AliJetESDReader &det);
+  AliJetESDReader &operator=(const AliJetESDReader &det);
+
  protected:
   AliJetDummyGeo             *fGeom;             //! EMCAL Geometry 
   TChain                     *fChain;            //! chain for reconstructed tracks

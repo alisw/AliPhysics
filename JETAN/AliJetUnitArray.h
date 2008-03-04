@@ -84,6 +84,9 @@ class AliJetUnitArray : public TObject
   Bool_t operator>  ( AliJetUnitArray unit1) const;
   Bool_t operator<  ( AliJetUnitArray unit1) const;
   Bool_t operator== ( AliJetUnitArray unit1) const;
+ private:
+  AliJetUnitArray(const AliJetUnitArray &det);
+  AliJetUnitArray &operator=(const AliJetUnitArray &det);
 
  protected:
   Float_t         fUnitEnergy;                          // Energy of the unit 

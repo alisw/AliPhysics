@@ -26,7 +26,8 @@ ClassImp(AliJetAODReaderHeader)
 //____________________________________________________________________________
 AliJetAODReaderHeader::AliJetAODReaderHeader():
   AliJetReaderHeader("AliJetAODReaderHeader"), 
-  fNaod(0)
+  fNaod(0),
+  fTestFilterMask(0)
 {
   // Default constructor  
 }

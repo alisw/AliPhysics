@@ -58,6 +58,9 @@ class AliJetFillUnitArrayEMCalDigits : public TTask
   void          Exec(Option_t*);
   Float_t       EtaToTheta(Float_t arg);
  private:
+  AliJetFillUnitArrayEMCalDigits(const AliJetFillUnitArrayEMCalDigits &det);
+  AliJetFillUnitArrayEMCalDigits &operator=(const AliJetFillUnitArrayEMCalDigits &det);
+
   void InitParameters();
 
  protected:

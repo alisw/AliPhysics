@@ -102,9 +102,6 @@ void AliAnalysisTaskJets::UserExec(Option_t */*option*/)
 // Execute analysis for current event
 //
     
-    if (MCEvent()) {
-	AliStack* stack = MCEvent()->Stack();
-    }
     fJetFinder->GetReader()->SetInputEvent(InputEvent(), AODEvent(), MCEvent());
     fJetFinder->ProcessEvent();
 

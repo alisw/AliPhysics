@@ -37,7 +37,6 @@
 ClassImp(AliJetReader)
 
 ////////////////////////////////////////////////////////////////////////
-
 AliJetReader::AliJetReader():
   // Constructor
   fChain(0), 
@@ -53,9 +52,9 @@ AliJetReader::AliJetReader():
   fUnitArrayNoCuts(new TClonesArray("AliJetUnitArray",60000)),
   fArrayInitialised(0),
   fFillUAFromTracks(new AliJetFillUnitArrayTracks()), 
-  fFillUAFromEMCalDigits(new AliJetFillUnitArrayEMCalDigits())
-  //  fHadronCorrector(0),
-  //  fHCorrection(0)
+  fFillUAFromEMCalDigits(new AliJetFillUnitArrayEMCalDigits()),
+  fNumCandidate(0),
+  fNumCandidateCut(0)
 {
   // Default constructor
   fSignalFlag = TArrayI();

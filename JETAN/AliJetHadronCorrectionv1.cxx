@@ -109,9 +109,15 @@ void AliJetHadronCorrectionv1::SetGeometry(TString name,Double_t fs)
 	
 }	
 
+AliJetHadronCorrectionv1::AliJetHadronCorrectionv1() 
+    :AliJetHadronCorrection(), 
+     fSamplingFraction(0)
+{
+}
 	
 AliJetHadronCorrectionv1::AliJetHadronCorrectionv1(const char *name,const char *title) 
-                           :AliJetHadronCorrection(name, title)
+    :AliJetHadronCorrection(name, title), 
+     fSamplingFraction(0)
 {
   fgHadrCorr = this;
 }

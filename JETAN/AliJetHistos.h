@@ -16,9 +16,11 @@ class AliJetHistos : public TObject {
 
   void AddHistosToList(TList *list);
   void FillHistos(TClonesArray *jets);
-
- protected:
+  
+ private:
   void SetProperties(TH1* h,const char* x, const char* y) const;
+  AliJetHistos(const AliJetHistos &det);
+  AliJetHistos &operator=(const AliJetHistos &det);
  private:
 
   TH1I *fNJetsH;   // distribution of number of jets

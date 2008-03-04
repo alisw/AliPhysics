@@ -83,7 +83,9 @@ class AliJetDummyGeo : public TObject
   Bool_t  GetPhiBoundariesOfSMGap(Int_t nPhiSec, Double_t &phiMin, Double_t &phiMax) const;
   void    GetTransformationForSM();
   Float_t GetSampling() const {return fSampling;}
-
+ private:
+  AliJetDummyGeo &operator=(const AliJetDummyGeo &det);
+  
  protected:
   Float_t fArm1EtaMin;			// Minimum pseudorapidity position of EMCAL in Eta
   Float_t fArm1EtaMax; 			// Maximum pseudorapidity position of EMCAL in Eta

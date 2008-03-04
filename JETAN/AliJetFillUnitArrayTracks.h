@@ -65,6 +65,9 @@ class AliJetFillUnitArrayTracks : public TTask
   Int_t         GetMult()          const {return fNTracks;}
   Int_t         GetMultCut()       const {return fNTracksCut;}
   void          Exec(Option_t*);
+ private:
+  AliJetFillUnitArrayTracks(const AliJetFillUnitArrayTracks &det);
+  AliJetFillUnitArrayTracks &operator=(const AliJetFillUnitArrayTracks &det);
 
  protected:
   Int_t   fNumUnits;      // Number of units in the unit object array (same as num towers in EMCAL)

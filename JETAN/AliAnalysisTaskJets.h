@@ -25,6 +25,9 @@ class AliAnalysisTaskJets : public AliAnalysisTaskSE
     virtual void UserExec(Option_t *option);
     virtual void Terminate(Option_t *option);
     virtual void SetDebugLevel(Int_t level) {fDebug = level;}
+ private:
+  AliAnalysisTaskJets(const AliAnalysisTaskJets &det);
+  AliAnalysisTaskJets &operator=(const AliAnalysisTaskJets &det);
     
  private:
     Int_t         fDebug;        //  Debug flag

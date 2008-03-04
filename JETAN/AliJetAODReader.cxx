@@ -122,7 +122,7 @@ void AliJetAODReader::ConnectTree(TTree* tree, TObject* /*data*/) {
 
 //____________________________________________________________________________
 
-Bool_t AliJetAODReader::FillMomentumArray(Int_t /*event*/)
+Bool_t AliJetAODReader::FillMomentumArray()
 {
   // Clear momentum array
   ClearArray();

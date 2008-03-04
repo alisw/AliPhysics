@@ -117,8 +117,6 @@ class AliJetDummyShishKebabTrd1Module : public TNamed {
   // 3X3 case - Nov 9,2006
   TVector2 fOK3X3[3];
   Int_t    fDebug;
-
-  // public:
   ClassDef(AliJetDummyShishKebabTrd1Module,1) // TRD1 Shish-Kebab module 
 };
 

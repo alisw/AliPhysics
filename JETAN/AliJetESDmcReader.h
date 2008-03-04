@@ -20,9 +20,13 @@ class AliJetESDmcReader : public AliJetESDReader
   AliJetESDmcReader();
   virtual ~AliJetESDmcReader();
   // Setters
-  Bool_t FillMomentumArray(Int_t event); 
-  void   OpenInputFiles();
-   
+  Bool_t FillMomentumArray(Int_t event);
+  Bool_t FillMomentumArray() {return kTRUE;}
+    void   OpenInputFiles();
+ private:
+  AliJetESDmcReader(const AliJetESDmcReader &det);
+  AliJetESDmcReader &operator=(const AliJetESDmcReader &det);
+
  protected:
   TChain*    fChainMC;   // chain for mc information
   AliHeader* fAliHeader; //! Event header

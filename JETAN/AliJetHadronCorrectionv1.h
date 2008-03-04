@@ -17,7 +17,7 @@ class AliJetDummyGeo;
 class AliJetHadronCorrectionv1 : public AliJetHadronCorrection 
 {
  public:
-    AliJetHadronCorrectionv1(){;}
+    AliJetHadronCorrectionv1();
     static  AliJetHadronCorrectionv1* Instance();
     virtual Double_t GetEnergy(Double_t pmom, Double_t eta, Int_t gid); 
     Double_t GetEnergy(Double_t pmom, Double_t eta) {return GetEnergy(pmom,eta,7);}

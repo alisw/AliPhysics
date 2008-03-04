@@ -16,9 +16,13 @@ class AliJetMCReader : public AliJetESDReader
     AliJetMCReader();
     virtual ~AliJetMCReader();
     Bool_t FillMomentumArray(Int_t event);
+    Bool_t FillMomentumArray() {return kTRUE;}
+ private:
+  AliJetMCReader(const AliJetMCReader &det);
+  AliJetMCReader &operator=(const AliJetMCReader &det);
     
  protected:
-    TChain* fChainMC;// Input chain
+    TChain* fChainMC; // Input chain
     ClassDef(AliJetMCReader,1)
 };
  

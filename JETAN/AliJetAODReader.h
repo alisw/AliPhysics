@@ -24,10 +24,13 @@ class AliJetAODReader : public AliJetReader
 
   TRefArray*   GetReferences() const {return fRef;}
 
-  Bool_t FillMomentumArray(Int_t event); 
+  Bool_t FillMomentumArray(); 
   void   OpenInputFiles();
   void   ConnectTree(TTree* tree, TObject* data);
   void   SetInputEvent(TObject* /*esd*/, TObject* aod, TObject* /*mc*/) {fAOD = (AliAODEvent*) aod;}
+ private:
+  AliJetAODReader(const AliJetAODReader &det);
+  AliJetAODReader &operator=(const AliJetAODReader &det);
 
  private:
   TChain                     *fChain;  //! chain for reconstructed tracks

@@ -23,6 +23,7 @@ class AliJetGrid : public TNamed {
   AliJetGrid();
   AliJetGrid(Int_t nphi,Int_t neta,Double_t phiMin,Double_t etaMin,Double_t phiMax,Double_t etaMax);
   AliJetGrid(const AliJetGrid& grid);
+  AliJetGrid& operator=(const AliJetGrid& other);
   virtual ~AliJetGrid();
 
   // Getter
