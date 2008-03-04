@@ -79,7 +79,11 @@ ClassImp(AliGenEpEmv1)
 
 //------------------------------------------------------------
 
-AliGenEpEmv1::AliGenEpEmv1()
+AliGenEpEmv1::AliGenEpEmv1():
+  fMass(0),
+  fEpEmGen(0),
+  fDebug(0),
+  fEvent(0)
 {
   // Default constructor
   // Avoid zero pt
