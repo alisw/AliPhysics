@@ -144,8 +144,9 @@ void AliEveITSModule::SetID(Int_t gid, Bool_t trans)
   if (fInfo == 0)
     throw(eH + "AliEveITSDigitsInfo not set.");
 
-  if (gid < AliITSgeomTGeo::GetModuleIndex(1,1,1) ||
-      gid > AliITSgeomTGeo::GetNModules() - 1)
+  Int_t firstSPD = AliITSgeomTGeo::GetModuleIndex(1,1,1);
+  Int_t lastSSD  = AliITSgeomTGeo::GetNModules() - 1;
+  if (gid < firstSPD || gid > lastSSD)
   {
     throw(eH + Form("%d is not valid. ID range from %d to %d", gid,
 		    firstSPD, lastSSD ));
