@@ -21,7 +21,12 @@ class AliHMPIDCluster :public AliCluster3D
 public:
   enum EClusterStatus {kFrm,kCoG,kLo1,kUnf,kMax,kNot,kEdg,kSi1,kNoLoc,kAbn,kEmp=-1};      //status flags    
       AliHMPIDCluster():AliCluster3D(),
-                          fCh(-1),fSi(-1),fSt(kEmp),fBox(-1),fNlocMax(-1),fMaxQpad(-1),fMaxQ(-1),fQRaw(0),fQ(0),fErrQ(-1),fXX(0),fErrX(-1),fYY(0),fErrY(-1),fChi2(-1),fDigs(0) {} //empty ctor
+                          fCh(-1),fSi(-1),fSt(kEmp),fBox(-1),fNlocMax(-1),fMaxQpad(-1),fMaxQ(-1),fQRaw(0),
+                          fQ(0),fErrQ(-1),fXX(0),fErrX(-1),fYY(0),fErrY(-1),fChi2(-1),fDigs(0) 
+      {
+        AliHMPIDParam *pParam=AliHMPIDParam::Instance();
+        fParam = pParam;
+      }//ctor
   
 
       AliHMPIDCluster(const AliHMPIDCluster &c):AliCluster3D(c),
@@ -33,7 +38,7 @@ public:
 //framework part                   
          void           Draw   (Option_t *opt=""                                  );                       //overloaded TObject::Print() to draw cluster in current canvas
          void           Print  (Option_t *opt=""                                  )const;                  //overloaded TObject::Print() to print cluster info
-  static void           FitFunc(Int_t &iNpars, Double_t* /*deriv*/, Double_t &chi2, Double_t *par, Int_t iflag);//fit function to be used by MINUIT
+  static void           FitFunc(Int_t &iNpars, Double_t* deriv, Double_t &chi2, Double_t *par, Int_t iflag);//fit function to be used by MINUIT
 //private part  
          Int_t          Box      (                                         )const{return fBox;                                  }  //Dimension of the cluster
          void           CoG      (                                         );                                                      //calculates center of gravity
@@ -59,14 +64,6 @@ public:
          void           SetX     (Double_t x                               ){fXX=x;}                                                // Setter
          void           SetY     (Double_t y                               ){fYY=y;}                                                // Setter
          
-private:
-/*
-  AliHMPIDCluster &operator=(const AliHMPIDCluster &c) {if(this == &c)return *this;AliCluster3D::operator=(c);          
-                                                       fSi=c.fSi;  fSt=c.fSt; fCh=c.fCh; fBox=c.fBox;fNlocMax=c.fNlocMax;fMaxQpad=c.fMaxQpad; fMaxQ=c.fMaxQ;fQRaw=c.fQRaw;
-                                                        fQ=c.fQ; fErrQ=c.fErrQ; 
-                                                        fXX=c.fXX; fErrX=c.fErrX;
-                                                        fYY=c.fYY; fErrY=c.fErrY; fChi2=c.fChi2;fDigs=c.fDigs ? new TObjArray(*c.fDigs):0; return *this;}
-*/
 protected:
   Int_t         fCh;          //chamber number
   Int_t         fSi;          //size of the formed cluster from which this cluster deduced
@@ -85,6 +82,20 @@ protected:
   Double_t      fChi2;        //some estimator of the fit quality
   TObjArray    *fDigs;        //! list of digits forming this cluster
   static  Bool_t fgDoCorrSin; //flag to switch on/off correction for Sinusoidal to cluster reco
+  AliHMPIDParam *fParam;      // Pointer to AliHMPIDParam
+  
+private:
+/*
+  AliHMPIDCluster &operator=(const AliHMPIDCluster &c) {if(this == &c)return *this;AliCluster3D::operator=(c);          
+                                                       fSi=c.fSi;  fSt=c.fSt; fCh=c.fCh; fBox=c.fBox;fNlocMax=c.fNlocMax;fMaxQpad=c.fMaxQpad; fMaxQ=c.fMaxQ;fQRaw=c.fQRaw;
+                                                        fQ=c.fQ; fErrQ=c.fErrQ; 
+                                                        fXX=c.fXX; fErrX=c.fErrX;
+                                                        fYY=c.fYY; fErrY=c.fErrY; fChi2=c.fChi2;fDigs=c.fDigs ? new TObjArray(*c.fDigs):0; return *this;}
+*/
+//  AliHMPIDCluster(const AliHMPIDCluster& c);              //dummy copy constructor
+  AliHMPIDCluster &operator=(const AliHMPIDCluster& c);   //dummy assignment operator
+      
+  
   ClassDef(AliHMPIDCluster,8) //HMPID cluster class
 };
 

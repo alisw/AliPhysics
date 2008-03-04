@@ -54,7 +54,6 @@ public:
   inline void    Raw(UInt_t &w32,Int_t &ddl,Int_t &r,Int_t &d,Int_t &a)const;
   inline Bool_t  Set         (Int_t c,Int_t p,Int_t x,Int_t y,Int_t tid=0);                                                            //manual creation 
          void    SetQ        (Float_t q                      )     {fQ=q;}                                                             //manual creation 
-         void    SetNsig     (Int_t sigmas                   )     {AliHMPIDParam::fgSigmas=sigmas;}                                                  //set n sigmas 
 
  
 protected:                                                                   //AliDigit has fTracks[3]

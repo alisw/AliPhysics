@@ -35,9 +35,9 @@ class AliHMPIDRawStream: public TObject {
             void     DelVars();
     
 	    Int_t GetDDLNumber()  const { return fDDLNumber; }                                                                          // Provide current DDL number
-   static  inline Int_t GetPad(Int_t ddl,Int_t row,Int_t dil,Int_t pad);                                                                 //
-   static  inline Int_t GetNDDL()     { return kNDDL;}                                 //return the number of max # of DDLs
-   static  inline Int_t GetNErrors()  { return kSumErr;}                               //return the number of max # of Error Types
+   static  inline Int_t GetPad(Int_t ddl,Int_t row,Int_t dil,Int_t pad);                                                                 //get absolute pad number
+   static  Int_t GetNDDL()     { return kNDDL;}                                 //return the number of max # of DDLs
+   static  Int_t GetNErrors()  { return kSumErr;}                               //return the number of max # of Error Types
 
   	    Int_t   GetNPads()         const { return fNPads;}                         //Get number of pads present in the stream
             Int_t*  GetPadArray()      const { return fPad;}                           //Get pad array from stream decoded
@@ -52,9 +52,9 @@ class AliHMPIDRawStream: public TObject {
     inline  Bool_t SetZeroSup (Bool_t isSup);
     inline  Bool_t GetZeroSup(); 
     inline  Int_t  GetErrors(Int_t ddl,Int_t eType);                                                                                   //Get errors and occurance
-    inline  Int_t  GetDDLNumber() { return fDDLNumber;} //return the number of DDL actually being decoded
-    inline  UInt_t GetLDCNumber() { return fLDCNumber;} //return the number of LDC actually being decoded
-    inline  UInt_t GetTimeStamp() { return fTimeStamp;} //return the time stamp of the event actually being decoded
+    Int_t  GetDDLNumber() { return fDDLNumber;} //return the number of DDL actually being decoded
+    UInt_t GetLDCNumber() { return fLDCNumber;} //return the number of LDC actually being decoded
+    UInt_t GetTimeStamp() { return fTimeStamp;} //return the time stamp of the event actually being decoded
 
   
         

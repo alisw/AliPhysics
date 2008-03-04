@@ -37,6 +37,13 @@
 #include "AliHMPIDParam.h"
 #include "AliHMPIDRawStream.h"
 #include "AliLog.h"
+
+//
+// HMPID AliHMPIDQADataMakerSim base class
+// for QA of simulation
+// here also errors are calculated
+//.
+
 ClassImp(AliHMPIDQADataMakerSim)
            
 //____________________________________________________________________________ 

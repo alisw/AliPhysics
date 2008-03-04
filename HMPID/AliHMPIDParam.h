@@ -56,8 +56,8 @@ public:
 
   static Bool_t  IsOverTh    (Float_t q                      )     {return q >= fgSigmas;                            }  //is digit over threshold?
   
-  Double_t GetRefIdx         (                               )     {return fRadNmean;                                }  //refractive index of freon
-  Bool_t  GetInstType (                               )     {return fgInstanceType;                            }  //return if the instance is from geom or ideal                        
+  Double_t GetRefIdx         (                               )const{return fRadNmean;                                }  //refractive index of freon
+  Bool_t  GetInstType        (                               )const{return fgInstanceType;                            }  //return if the instance is from geom or ideal                        
   
   inline static Bool_t IsInDead(Float_t x,Float_t y        );                                                           //is the point in dead area?
   static Bool_t  IsInside    (Float_t x,Float_t y,Float_t d=0)     {return  x>-d&&y>-d&&x<fgkMaxPcX[kMaxPc]+d&&y<fgkMaxPcY[kMaxPc]+d; } //is point inside chamber boundaries?
@@ -89,8 +89,9 @@ public:
   void     Norm        (Int_t c,Double_t *n                                 )const{Double_t l[3]={0,0,1};fM[c]->LocalToMasterVect(l,n);        }//norm
   void     Point       (Int_t c,Double_t *p,Int_t plane                     )const{Lors2Mars(c,0,0,p,plane);}      //point of given chamber plane
 
-  void     SetRefIdx   (Double_t refRadIdx                                  ) {fRadNmean = refRadIdx;}             //set refractive index of freon
-    
+  void     SetRefIdx      (Double_t refRadIdx                                  ) {fRadNmean = refRadIdx;}             //set refractive index of freon
+  void     SetSigmas      (Int_t sigmas                                        ) {fgSigmas = sigmas;}                 //set sigma cut    
+  void     SetInstanceType(Bool_t inst                                         ) {fgInstanceType = inst;}             //kTRUE if from geomatry kFALSE if from ideal geometry
   //For PID
   Double_t SigLoc      (Double_t trkTheta,Double_t trkPhi,Double_t ckovTh,Double_t ckovPh,Double_t beta);//error due to cathode segmetation
   Double_t SigGeom     (Double_t trkTheta,Double_t trkPhi,Double_t ckovTh,Double_t ckovPh,Double_t beta);//error due to unknown photon origin
@@ -100,16 +101,16 @@ public:
   enum EPlaneId {kPc,kRad,kAnod};            //3 planes in chamber 
   enum ETrackingFlags {kMipDistCut=-9,kMipQdcCut=-5,kNoPhotAccept=-11};     //flags for Reconstruction
 
-  static Int_t    fgSigmas;   //sigma Cut
-  static Bool_t   fgInstanceType;             //kTRUE if from geomatry kFALSE if from ideal geometry
-  
 protected:
   static /*const*/ Float_t fgkMinPcX[6];                                                           //limits PC
   static /*const*/ Float_t fgkMinPcY[6];                                                           //limits PC
   static /*const*/ Float_t fgkMaxPcX[6];                                                           //limits PC
   static /*const*/ Float_t fgkMaxPcY[6]; 
 
-  static Float_t fgCellX, fgCellY, fgPcX, fgPcY, fgAllX, fgAllY;
+  static Int_t    fgSigmas;                                                                        //sigma Cut
+  static Bool_t   fgInstanceType;                                                                  //kTRUE if from geomatry kFALSE if from ideal geometry
+
+  static Float_t fgCellX, fgCellY, fgPcX, fgPcY, fgAllX, fgAllY;                                   //definition of HMPID geometric parameters 
          AliHMPIDParam(Bool_t noGeo);             //default ctor is protected to enforce it to be singleton
 
   static AliHMPIDParam *fgInstance;   //static pointer  to instance of AliHMPIDParam singleton

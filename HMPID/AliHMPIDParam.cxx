@@ -41,7 +41,6 @@ Float_t AliHMPIDParam::fgPcY=0;
 Float_t AliHMPIDParam::fgAllX=0;
 Float_t AliHMPIDParam::fgAllY=0;
 
-Int_t AliHMPIDParam::fgSigmas=4;
 Bool_t AliHMPIDParam::fgInstanceType=kTRUE;  
 
 AliHMPIDParam* AliHMPIDParam::fgInstance=0x0;        //singleton pointer               
@@ -51,6 +50,8 @@ AliHMPIDParam::AliHMPIDParam(Bool_t noGeo=kFALSE):TNamed("HmpidParam","default v
 // Here all the intitializition is taken place when AliHMPIDParam::Instance() is invoked for the first time.
 // In particular, matrices to be used for LORS<->MARS trasnformations are initialized from TGeo structure.    
 // Note that TGeoManager should be already initialized from geometry.root file  
+
+  fgSigmas=4;
 
   fRadNmean = MeanIdxRad(); //initialization of the running ref. index of freon
   

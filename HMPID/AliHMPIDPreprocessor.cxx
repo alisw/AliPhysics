@@ -24,6 +24,10 @@ ClassImp(AliHMPIDPreprocessor)
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDPreprocessor::Initialize(Int_t run, UInt_t startTime,UInt_t endTime)
 {
+// Initialize the parameter coming from AliPreprocessor
+//  run -> run number
+// startTime -> starting time 
+// endTime   -> ending time
   AliPreprocessor::Initialize(run, startTime, endTime);
   
   AliInfo(Form("HMPID started for Run %d \n\tStartTime %s \n\t  EndTime %s", run,TTimeStamp(startTime).AsString(),TTimeStamp(endTime).AsString()));

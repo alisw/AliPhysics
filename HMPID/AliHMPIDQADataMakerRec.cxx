@@ -37,6 +37,13 @@
 #include "AliHMPIDParam.h"
 #include "AliHMPIDRawStream.h"
 #include "AliLog.h"
+
+//
+// HMPID AliHMPIDQADataMakerRec base class
+// for QA of reconstruction
+// here also errors are calculated
+//.
+
 ClassImp(AliHMPIDQADataMakerRec)
            
 //____________________________________________________________________________ 
@@ -89,16 +96,16 @@ void AliHMPIDQADataMakerRec::InitRaws()
 //
 // Booking QA histo for Raw data
 //
-  const Int_t nerr = (Int_t)AliHMPIDRawStream::kSumErr+1;
+  const Int_t kNerr = (Int_t)AliHMPIDRawStream::kSumErr+1;
   TH1F *hqPad[14], *hSumErr[14];
 
   for(Int_t iddl =0; iddl<AliHMPIDRawStream::kNDDL; iddl++) {
     hqPad[iddl] = new TH1F(Form("hqPadDDL%i",iddl), Form("Pad Q Entries at DDL %i",iddl), 500,0,5000);
     Add2RawsList(hqPad[iddl],iddl);
-    hSumErr[iddl] = new TH1F(Form("SumErrDDL%i",iddl), Form("Error summary for ddl %i",iddl), 2*nerr,0,2*nerr);
+    hSumErr[iddl] = new TH1F(Form("SumErrDDL%i",iddl), Form("Error summary for ddl %i",iddl), 2*kNerr,0,2*kNerr);
     hSumErr[iddl]->SetYTitle("%");
     
-    for(Int_t ilabel=0; ilabel< nerr; ilabel++) {
+    for(Int_t ilabel=0; ilabel< kNerr; ilabel++) {
       hSumErr[iddl]->GetXaxis()->CenterLabels(kTRUE);
       //hSumErr[iddl]->GetXaxis()->SetBinLabel((2*ilabel+1),Form("%i  %s",ilabel+1,hnames[ilabel]));
       hSumErr[iddl]->GetXaxis()->SetBinLabel((2*ilabel+1),Form("%i  %s",ilabel+1,AliHMPIDRawStream::GetErrName(ilabel)));
@@ -150,9 +157,9 @@ void AliHMPIDQADataMakerRec::MakeRaws(AliRawReader *rawReader)
 
        for(Int_t iErr =1; iErr<(Int_t)AliHMPIDRawStream::kSumErr; iErr++){
  
-         Int_t NumOfErr = stream.GetErrors(ddl,iErr);
+         Int_t numOfErr = stream.GetErrors(ddl,iErr);
 
-         GetRawsData(ddl+14)->Fill(iErr,NumOfErr);
+         GetRawsData(ddl+14)->Fill(iErr,numOfErr);
        }
      }
    stream.Delete();
