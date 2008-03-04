@@ -121,8 +121,11 @@ void AliGenTherminator::Generate()
     p[2] = iparticle->Pz();
     mass = TDatabasePDG::Instance()->GetParticle(kf)->Mass();
     energy = sqrt(mass*mass + p[0]*p[0] + p[1]*p[1] + p[2]*p[2]);
-    origin[0] = origin0[0]+iparticle->Vx();
-    origin[1] = origin0[1]+iparticle->Vy();
+    
+    Double_t vphi = TMath::ATan2(iparticle->Vy(), iparticle->Vx());
+    Double_t vrho = TMath::Hypot(iparticle->Vx(), iparticle->Vy());
+    origin[0] = origin0[0]+vrho*TMath::Cos(vphi + evrot);
+    origin[1] = origin0[1]+vrho*TMath::Sin(vphi + evrot);
     origin[2] = origin0[2]+iparticle->Vz();
 	      
     imo = -1;
