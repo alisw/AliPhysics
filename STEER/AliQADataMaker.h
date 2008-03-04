@@ -6,12 +6,12 @@
 
 /* $Id$ */
 
-/*
-  Base Class:
-  Produces the data needed to calculate the quality assurance. 
-  All data must be mergeable objects.
-  Y. Schutz CERN July 2007
-*/
+//
+//  Base Class:
+//  Produces the data needed to calculate the quality assurance. 
+//  All data must be mergeable objects.
+//  Y. Schutz CERN July 2007
+//
 
 
 // --- ROOT system ---

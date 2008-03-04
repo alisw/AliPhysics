@@ -16,11 +16,11 @@
 
 /* $Id$ */
 
-/*
-  Base class for detectors quality assurance checkers 
-  Compares Data made by QADataMakers with reference data
-  Y. Schutz CERN August 2007
-*/
+//
+//  Base class for detectors quality assurance checkers 
+//  Compares Data made by QADataMakers with reference data
+//  Y. Schutz CERN August 2007
+//
 
 // --- ROOT system ---
 #include <TClass.h>

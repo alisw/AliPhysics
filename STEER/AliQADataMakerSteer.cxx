@@ -14,6 +14,19 @@
  **************************************************************************/
 
 /* $Id$ */
+///////////////////////////////////////////////////////////////////////////////
+//                                                                           //
+// class for running the QA makers                                           //
+//                                                                           //
+//   AliQADataMakerSteer qas;                                                //
+//   qas.Run(AliQA::kRAWS, rawROOTFileName);                                 //
+//   qas.Run(AliQA::kHITS);                                                  //
+//   qas.Run(AliQA::kSDIGITS);                                               //
+//   qas.Run(AliQA::kDIGITS);                                                //
+//   qas.Run(AliQA::kRECPOINTS);                                             //
+//   qas.Run(AliQA::kESDS);                                                  //
+//                                                                           //
+///////////////////////////////////////////////////////////////////////////////
 
 #include <TKey.h>
 #include <TFile.h>

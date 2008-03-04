@@ -1,20 +1,17 @@
-#ifndef AliQADataMakerREC_H
-#define AliQADataMakerREC_H
+#ifndef ALIQADATAMAKERREC_H
+#define ALIQADATAMAKERREC_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
 
 /* $Id$ */
 
-/*
-  Base Class:
-  Produces the data needed to calculate the quality assurance. 
-  All data must be mergeable objects.
-  Y. Schutz CERN July 2007
-x
-x
-*/
-
+//
+//  Base Class:
+//  Produces the data needed to calculate the quality assurance. 
+//  All data must be mergeable objects.
+//  Y. Schutz CERN July 2007
+//
 
 // --- ROOT system ---
 
@@ -81,4 +78,4 @@ protected:
 
 };
 
-#endif // AliQADataMakerRec_H
+#endif // ALIQADATAMAKERREC_H

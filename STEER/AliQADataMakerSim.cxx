@@ -16,19 +16,15 @@
 
 /* $Id$ */
 
-/*
-  Base Class
-  Produces the data needed to calculate the quality assurance. 
-  All data must be mergeable objects.
-  Y. Schutz CERN July 2007
- x
- x
-*/
+//
+//  Base Class
+//  Produces the data needed to calculate the quality assurance. 
+//  All data must be mergeable objects.
+//  Y. Schutz CERN July 2007
+//
 
 // --- ROOT system ---
-//#include <TSystem.h> 
 #include <TFile.h>
-//#include <TList.h> 
 #include <TTree.h>
 #include <TClonesArray.h>
 
@@ -37,7 +33,6 @@
 // --- AliRoot header files ---
 #include "AliLog.h"
 #include "AliQADataMakerSim.h"
-//#include "AliQAChecker.h"
 
 ClassImp(AliQADataMakerSim)
              
