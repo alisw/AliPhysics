@@ -20,7 +20,7 @@
 TString ClassName() { return "rawqa" ; } 
 
 //________________________________qa______________________________________
-void rawqa(const Int_t runNumber, const char* year = "08") 
+void rawqa(const Int_t runNumber, const UInt_t kMaxFiles = 10, const char* year = "08") 
 {	
 
 	AliLog::SetGlobalDebugLevel(0) ; 
@@ -39,7 +39,6 @@ void rawqa(const Int_t runNumber, const char* year = "08")
 
 	// find the files associated to this run
 	TGridResult * result = 0x0 ; 
-	const UInt_t kMaxFiles = 10 ; 
 	Bool_t local = kFALSE ; 
 	if (grid) { // get the list of files from AliEn directly 
 	  TString baseDir; 
@@ -71,6 +70,7 @@ void rawqa(const Int_t runNumber, const char* year = "08")
 	TString detectors  = ""; 
 	TString detectorsW = ""; 
 	UShort_t file = 0 ; 
+        UShort_t filesProcessed = 0 ; 
 	for ( file = 0 ; file < kMaxFiles ; file++) {
 		TString fileName ; 
 		if ( local) {
@@ -82,6 +82,7 @@ void rawqa(const Int_t runNumber, const char* year = "08")
 		        break ;
 		if ( fileName.Contains("tag") )
 			continue; 
+                filesProcessed++ ;
 		char input[200] ; 
 		if (local) 
 			sprintf(input, "%s", fileName.Data()) ; 
@@ -129,7 +130,7 @@ void rawqa(const Int_t runNumber, const char* year = "08")
 	AliInfo(Form("\n\n********** Summary for run %d **********", runNumber)) ; 
 	printf("     detectors present in the run        : %s\n", detectors.Data()) ; 
 	printf("     detectors present in the run with QA: %s\n", detectorsW.Data()) ; 
-	printf("     number of files processed           : %d\n", file) ; 
+	printf("     number of files processed           : %d\n", filesProcessed) ; 
 	TFile * qaResult = TFile::Open(AliQA::GetQAResultFileName()) ; 
 	AliQA * qa = dynamic_cast<AliQA *>(qaResult->Get("QA")) ; 
 	for (Int_t index = 0 ; index < AliQA::kNDET ; index++)
