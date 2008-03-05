@@ -27,8 +27,8 @@ CLIBCOPT      =
 CLIBFOPT      = $(CLIBDEFS)
 
 # Compiler flags
-CXXFLAGS       = $(OPT) -Wall -pipe -Woverloaded-virtual -D_DLL
-CXXFLAGSNO     = $(NOOPT) -Wall -pipe -Woverloaded-virtual -D_DLL
+CXXFLAGS       = $(OPT) -Wall -pipe -Woverloaded-virtual -Weffc++ -D_DLL
+CXXFLAGSNO     = $(NOOPT) -Wall -pipe -Woverloaded-virtual -Weffc++ -D_DLL
 CFLAGS	       = $(OPT) -Wall -D_DLL
 FFLAGS         = $(CLIBFOPT) $(FOPT) -fno-second-underscore
 # rmkdepend flags for building dependencies of FORTRAN files
