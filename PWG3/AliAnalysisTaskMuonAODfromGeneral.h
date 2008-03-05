@@ -17,7 +17,7 @@
 
 class AliAnalysisTaskMuonAODfromGeneral : public AliAnalysisTask {
  public:
-  AliAnalysisTaskMuonAODfromGeneral() : AliAnalysisTask(), fOrgAOD(0), fNewAOD(0), ft(0), fBeamEnergy(0) {}
+  AliAnalysisTaskMuonAODfromGeneral() : AliAnalysisTask(), fInfos(0), fDimuons(0), fChain(0), fOrgAOD(0), fNewAOD(0), ft(0), fBeamEnergy(0) {}
   AliAnalysisTaskMuonAODfromGeneral(const char *name, Double_t BeamEnergy);
   virtual ~AliAnalysisTaskMuonAODfromGeneral() {}
   
