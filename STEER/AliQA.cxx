@@ -62,7 +62,7 @@ const TString AliQA::fkgLabAliEnOCDB     = "alien://" ;
 const TString AliQA::fkgRefFileName      = "QA.root" ; 
 const TString AliQA::fkgQAOCDBDirName    = "QA"  ; 
 const TString AliQA::fkgRefOCDBDirName   = "Ref"  ; 
-const TString AliQA::fkgQARefOCDBDefault = "local://$ALICE_ROOT"  ; 
+const TString AliQA::fkgQARefOCDBDefault = "alien://folder=/alice/"  ; 
 //____________________________________________________________________________
 AliQA::AliQA() : 
   TNamed("", ""), 
@@ -431,19 +431,22 @@ void AliQA::Set(QABIT bit)
 //_____________________________________________________________________________
 void AliQA::SetQARefStorage(const char * name)
 {
-  // Set the root directory where the QA reference data are stored
+	// Set the root directory where the QA reference data are stored
 
-  fgQARefDirName = name ; 
-  if (	fgQARefDirName.Contains(fkgLabLocalFile) )
-	 fgQARefFileName =  fkgRefFileName ; 
-  else if (	fgQARefDirName.Contains(fkgLabLocalOCDB) )
-	  fgQARefFileName =  fkgQAOCDBDirName ; 
+	fgQARefDirName = name ; 
+	if ( fgQARefDirName.Contains(fkgLabLocalFile) )
+		fgQARefFileName =  fkgRefFileName ; 
+	else if ( fgQARefDirName.Contains(fkgLabLocalOCDB) )
+		fgQARefFileName =  fkgQAOCDBDirName ; 
+	else if ( fgQARefDirName.Contains(fkgLabAliEnOCDB) )
+		fgQARefFileName =  fkgQAOCDBDirName ; 
+
   else {
 	  printf("ERROR: %s is an invalid storage definition\n", name) ; 
 	  fgQARefDirName  = "" ; 
 	  fgQARefFileName = "" ; 
   }	
-	TString tmp(fgQARefDirName + fgQARefFileName) ;
+	TString tmp(fgQARefDirName) ; // + fgQARefFileName) ;
 	printf("AliQA::SetQARefDir: QA references are in  %s\n", tmp.Data() ) ;
 }
 

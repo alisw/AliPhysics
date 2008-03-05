@@ -63,9 +63,9 @@ void rawqa(const Int_t runNumber, const UInt_t kMaxFiles = 10, const char* year 
 		in.open("tempo.txt", ifstream::in) ; 
 
 	AliCDBManager* man = AliCDBManager::Instance();
-	man->SetDefaultStorage("alien://folder=/alice/data/2008/LHC08a/OCDB/"); // AliQA::GetQARefDefaultStorage()
-	AliQA::SetQARefStorage("local://../TestCDB") ; 
-	man->SetSpecificStorage(Form("%s/*", AliQA::GetQAOCDBDirName()), AliQA::GetQARefStorage());
+	man->SetDefaultStorage(AliQA::GetQARefDefaultStorage()) ; 
+	AliQA::SetQARefStorage("alien://folder=/alice/QA/2008") ; 
+	man->SetSpecificStorage(Form("%s/20%s/*", AliQA::GetQAOCDBDirName(), year),AliQA::GetQARefStorage());
 	AliQADataMakerSteer qas ; 
 	TString detectors  = ""; 
 	TString detectorsW = ""; 
