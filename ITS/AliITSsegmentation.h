@@ -5,7 +5,7 @@
 #include "AliLog.h"
 #include "AliITSgeom.h"
 
-/* $Id:$ */
+/* $Id$ */
 
 //----------------------------------------------
 //                                             -
@@ -113,7 +113,7 @@ public TObject {
                     //SDD: Drift distance of the 1/2detector (x axis)-microns
                     //SSD: Full length of the detector (x axis)- microns
     Float_t fDz;    //SPD: Full length of the detector (z axis)- microns
-                    //SDD: Length of half-detector (z axis) - microns
+                    //SDD: Full Length of the detector (z axis) - microns
                     //SSD: Full width of the detector (z axis)- microns
     Float_t fDy;    //SPD:  Full thickness of the detector (y axis) -um 
                     //SDD: Full thickness of the detector (y axis) - microns

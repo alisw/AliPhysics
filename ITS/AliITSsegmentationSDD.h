@@ -13,7 +13,7 @@ public AliITSsegmentation {
  public:
 
 
-    AliITSsegmentationSDD();
+    AliITSsegmentationSDD(Option_t *opt="");
     AliITSsegmentationSDD(const AliITSsegmentationSDD &source);
     AliITSsegmentationSDD& operator=(const AliITSsegmentationSDD &source);
     AliITSsegmentationSDD(AliITSgeom *gm);

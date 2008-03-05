@@ -9,7 +9,7 @@ class AliITSsegmentationSSD :
 public AliITSsegmentation {
  public:
 
-    AliITSsegmentationSSD();
+    AliITSsegmentationSSD(Option_t *opt="");
     AliITSsegmentationSSD(AliITSgeom *gm);
     AliITSsegmentationSSD(const AliITSsegmentationSSD &source);
     virtual ~AliITSsegmentationSSD(){}

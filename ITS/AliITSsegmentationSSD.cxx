@@ -17,6 +17,9 @@
 
 #include <Riostream.h>
 #include <TMath.h>
+#include <TGeoManager.h>
+#include <TGeoVolume.h>
+#include <TGeoBBox.h>
 #include "AliITSsegmentationSSD.h"
 
 //////////////////////////////////////////////////////
@@ -31,7 +34,7 @@ const Float_t AliITSsegmentationSSD::fgkPitchDefault = 95.;
 const Int_t AliITSsegmentationSSD::fgkNstripsDefault = 768;
 
 ClassImp(AliITSsegmentationSSD)
-AliITSsegmentationSSD::AliITSsegmentationSSD(): AliITSsegmentation(),
+AliITSsegmentationSSD::AliITSsegmentationSSD(Option_t *opt): AliITSsegmentation(),
 fNstrips(0),
 fStereoP(0),
 fStereoN(0),
@@ -42,6 +45,25 @@ fStereoPl6(0),
 fStereoNl6(0),
 fLayer(0){
     // default constructor
+    SetDetSize(fgkDxDefault,fgkDzDefault,fgkDyDefault);
+    SetPadSize(fgkPitchDefault,0.);
+    SetNPads(fgkNstripsDefault,0);
+    SetAngles();
+  if(strstr(opt,"TGeo")){
+    if(!gGeoManager){
+      AliError("Geometry is not initialized\n");
+      return;
+    }
+    TGeoVolume *v=NULL;
+    v = gGeoManager->GetVolume("ITSssdSensitivL5");
+    if(!v){
+      AliWarning("TGeo volumeITSssdSensitivL5  not found (hint: use v11Hybrid geometry)\n Using hardwired default values"); 
+    }
+    else {
+      TGeoBBox *s=(TGeoBBox*)v->GetShape();
+      SetDetSize(s->GetDX()*20000.,s->GetDZ()*20000.,s->GetDY()*20000.);
+    }
+  }
 }
 //----------------------------------------------------------------------
 AliITSsegmentationSSD::AliITSsegmentationSSD(AliITSgeom *geom):
@@ -56,12 +78,10 @@ fStereoPl6(0),
 fStereoNl6(0),
 fLayer(0){
     // constuctor
-    fCorr = 0;
     SetDetSize(fgkDxDefault,fgkDzDefault,fgkDyDefault);
     SetPadSize(fgkPitchDefault,0.);
     SetNPads(fgkNstripsDefault,0);
     SetAngles();
-    fLayer = 0;
 }
 //______________________________________________________________________
 void AliITSsegmentationSSD::Copy(TObject &obj) const {

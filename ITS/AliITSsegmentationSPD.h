@@ -12,7 +12,7 @@ class AliITSsegmentationSPD :
 public AliITSsegmentation {
  public:
 
-    AliITSsegmentationSPD();
+    AliITSsegmentationSPD(Option_t *opt="" );
     AliITSsegmentationSPD(AliITSgeom *gm);
     AliITSsegmentationSPD(const AliITSsegmentationSPD &source);
     virtual ~AliITSsegmentationSPD(){}
