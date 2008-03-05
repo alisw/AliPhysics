@@ -62,12 +62,13 @@ AliAODTracklets& AliAODTracklets::operator=(const AliAODTracklets& tracklet)
     if(&tracklet == this) return *this;
     TNamed::operator=(tracklet);
     fNTracks = tracklet.fNTracks;
-        for (Int_t i = 0; i < fNTracks; i++) {
+    for (Int_t i = 0; i < fNTracks; i++) {
 	fTheta[i]    = tracklet.fTheta[i];
 	fPhi[i]      = tracklet.fPhi[i];
 	fDeltaPhi[i] = tracklet.fDeltaPhi[i];
 	fLabels[i]   = tracklet.fLabels[i];
     }
+    return *this;
 }
 
 void AliAODTracklets::CreateContainer(Int_t nTracks)

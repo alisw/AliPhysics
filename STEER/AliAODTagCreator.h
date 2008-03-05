@@ -51,8 +51,8 @@ class AliAODTagCreator : public AliTagCreator {
   void CreateTag(TFile* file, const char *guid, const char *md5, const char *turl, Long64_t size, Int_t Counter);
   void CreateTag(TFile* file, const char *filepath, Int_t Counter);
  private:
-  AliAODTagCreator(const AliAODTagCreator& handler);             
-  AliAODTagCreator& operator=(const AliAODTagCreator& handler);    
+  AliAODTagCreator(const AliAODTagCreator& creator);             
+  AliAODTagCreator& operator=(const AliAODTagCreator& creator);    
  private:
   TChain *fChain; //chain of esd files
 
