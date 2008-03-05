@@ -24,7 +24,7 @@ class AliInputEventHandler : public AliVEventHandler {
     virtual void         SetOutputFileName(char* /*fname*/) {;}
     virtual char        *GetOutputFileName()                          {return 0;}
     virtual Bool_t       Init(Option_t* /*opt*/)                      {return kTRUE;}
-    virtual Bool_t       Init(TTree* /*tree*/, Option_t* /*opt*/) {return kTRUE;}
+    virtual Bool_t       Init(TTree* /*tree*/, Option_t* /*opt*/)     {return kTRUE;}
     virtual Bool_t       BeginEvent(Long64_t /*entry*/)               {return kTRUE;}
     virtual Bool_t       Notify() { return AliVEventHandler::Notify(); };
     virtual Bool_t       Notify(const char */*path*/)                 {return kTRUE;}
@@ -36,6 +36,9 @@ class AliInputEventHandler : public AliVEventHandler {
      // Getters
     virtual AliVEvent   *GetEvent() const                             {return 0;}
     virtual TTree       *GetTree( ) const                             {return fTree;}
+ private:
+    AliInputEventHandler(const AliInputEventHandler& handler);             
+    AliInputEventHandler& operator=(const AliInputEventHandler& handler);  
  protected:
     TTree        *fTree;    //! Pointer to the tree
     ClassDef(AliInputEventHandler, 1);

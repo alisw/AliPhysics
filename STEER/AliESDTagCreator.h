@@ -56,6 +56,8 @@ class AliESDTagCreator : public AliTagCreator {
 
  private:
   void SwitchOffBranches() const;
+  AliESDTagCreator(const AliESDTagCreator& handler);             
+  AliESDTagCreator& operator=(const AliESDTagCreator& handler);
   
   TChain *fChain; //chain of esd files
   TList  *fGUIDList; //TList of guid TObjString

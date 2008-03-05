@@ -58,6 +58,8 @@ public:
     void        DrawCheck(Int_t i, Int_t search=0);
 private:
     Bool_t      OpenFile(Int_t i);
+    AliMCEventHandler(const AliMCEventHandler& handler);             
+    AliMCEventHandler& operator=(const AliMCEventHandler& handler);  
 private:
     AliMCEvent       *fMCEvent;          //! MC Event
     TFile            *fFileE;            //! File with TreeE

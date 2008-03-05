@@ -49,7 +49,7 @@ private:
   UInt_t       fTimeStamp;         // Time stamp
   UInt_t       fEventType;         // Type of Event
   UInt_t       fPeriodNumber;      // Period Number
-  Int_t        fEventNumberInFile; // running Event count in the file
+  Int_t        fEventNumberInFile; // Running Event count in the file
   UShort_t     fBunchCrossNumber;  // Bunch Crossing Number
   UChar_t      fTriggerCluster;    // Trigger cluster (mask)
   

@@ -30,6 +30,8 @@ class AliESDInputHandler : public AliInputEventHandler {
  private:
     void SwitchOffBranches() const;
     void SwitchOnBranches()  const;
+    AliESDInputHandler(const AliESDInputHandler& handler);             
+    AliESDInputHandler& operator=(const AliESDInputHandler& handler);  
  private:
     AliESDEvent    *fEvent;      //! Pointer to the event
     TString         fBranches;   //List of branches to be switched off (separated by space)
