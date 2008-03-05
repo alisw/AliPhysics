@@ -27,7 +27,6 @@ public:
  private:
     AliMagFMapsV1(const AliMagFMapsV1& maps);             
     AliMagFMapsV1& operator=(const AliMagFMapsV1& maps);
-    AliMagFMaps&   operator=(const AliMagFMaps& maps);  
  protected:
     AliMagFCheb* fMeasuredMap;    //! Measured part of the field map
     ClassDef(AliMagFMapsV1, 0)    // Class for all Alice MagField using three Maps with Constant Mesh + measured L3 region
