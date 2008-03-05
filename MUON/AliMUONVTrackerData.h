@@ -25,6 +25,7 @@
 
 class AliMUONSparseHisto;
 class AliMUONVStore;
+class TCollection;
 
 class AliMUONVTrackerData : public TNamed
 {
@@ -35,8 +36,8 @@ public:
   AliMUONVTrackerData(const char* name="",const char* title="", Bool_t runnable=kTRUE);
   virtual ~AliMUONVTrackerData();
   
-  /// Add values for one full store
-  virtual Bool_t Add(const AliMUONVStore& store) = 0;
+  /// Add values (accumulated over numberOfEvents events) for one full store
+  virtual Bool_t Add(const AliMUONVStore& store, Int_t numberOfEvents=1) = 0;
 
   /// Get the value for a given buspatch and given dimension
   virtual Double_t BusPatch(Int_t busPatchId, Int_t dim=0) const = 0;
@@ -133,6 +134,9 @@ public:
   /// Get sparse histogram for a given channel
   virtual AliMUONSparseHisto* GetChannelSparseHisto(Int_t detElemId, Int_t manuId, 
                                                     Int_t manuChannel, Int_t dim=0) const = 0;
+
+  /// To allow merging of different objects
+  virtual Long64_t Merge(TCollection* list) = 0;
 
 private:
   /// not implemented

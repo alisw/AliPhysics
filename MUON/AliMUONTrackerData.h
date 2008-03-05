@@ -29,7 +29,7 @@ public:
                      Bool_t runnable=kTRUE);
   virtual ~AliMUONTrackerData();
 
-  virtual Bool_t Add(const AliMUONVStore& channelValues);
+  virtual Bool_t Add(const AliMUONVStore& channelValues, Int_t numberOfEvents=1);
   
   virtual Double_t BusPatch(Int_t busPatchId, Int_t dim=0) const;
 
@@ -133,13 +133,16 @@ private:
   /// Whether we have histograms for a given dimension, or not
   virtual Bool_t IsHistogrammed(Int_t dim) const { return ( fHistogramming[dim] > 0 ); }
 
+  /// To allow merging of different objects
+  virtual Long64_t Merge(TCollection* list);
+
 private:
   /// Not implemented
   AliMUONTrackerData(const AliMUONTrackerData& rhs);
   /// Not implemented
   AliMUONTrackerData& operator=(const AliMUONTrackerData& rhs);
   
-  AliMUONVCalibParam* CreateDouble(const AliMUONVCalibParam& param) const;
+  AliMUONVCalibParam* CreateDouble(const AliMUONVCalibParam& param, Int_t detElemId, Int_t manuId) const;
 
   Int_t GetParts(AliMUONVCalibParam* external,
                  AliMUONVCalibParam*& chamber,

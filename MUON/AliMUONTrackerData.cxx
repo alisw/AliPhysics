@@ -104,20 +104,20 @@ AliMUONTrackerData::~AliMUONTrackerData()
 
 //_____________________________________________________________________________
 Bool_t
-AliMUONTrackerData::Add(const AliMUONVStore& store)
+AliMUONTrackerData::Add(const AliMUONVStore& store, Int_t numberOfEvents)
 {
   /// Add the given external store to our internal store
   
   AliCodeTimerAuto(GetName());
     
-  ++fNevents;
+  fNevents += numberOfEvents;
   NumberOfEventsChanged();
   
   if (!fChannelValues)
   {
-    fChannelValues = store.Create();
-    fManuValues = store.Create();
-    fPCBValues = store.Create();
+    fChannelValues = new AliMUON2DMap(kTRUE);
+    fManuValues = new AliMUON2DMap(kTRUE);
+    fPCBValues = new AliMUON2DMap(kFALSE);
     fBusPatchValues = new AliMUON1DMap;
     fDEValues = new AliMUON1DMap;
     fChamberValues = new AliMUON1DArray;
@@ -140,6 +140,8 @@ AliMUONTrackerData::Add(const AliMUONVStore& store)
     AliMpDetElement* mpde;
     
     Int_t manuId = GetParts(external,chamber,de,busPatch,pcb,manu,channel,mpde);
+    
+    if ( manuId < 0 ) continue;
     
     Int_t detElemId = mpde->GetId();
     
@@ -380,7 +382,7 @@ AliMUONTrackerData::ChannelParam(Int_t detElemId, Int_t manuId,
   
   if (!param && external && fChannelValues)
   {
-    param = CreateDouble(*external);
+    param = CreateDouble(*external,detElemId,manuId);
     fChannelValues->Add(param);
   }
   
@@ -415,7 +417,8 @@ AliMUONTrackerData::Count(Int_t detElemId, Int_t manuId,
 
 //_____________________________________________________________________________
 AliMUONVCalibParam*
-AliMUONTrackerData::CreateDouble(const AliMUONVCalibParam& param) const
+AliMUONTrackerData::CreateDouble(const AliMUONVCalibParam& param, 
+                                 Int_t detElemId, Int_t manuId) const
 {
   /// Create a double version of VCalibParam, for internal use
   
@@ -423,13 +426,19 @@ AliMUONTrackerData::CreateDouble(const AliMUONVCalibParam& param) const
   
   AliMUONVCalibParam* c = new AliMUONCalibParamND(Dimension(),
                                                   param.Size(),
-                                                  param.ID0(),
-                                                  param.ID1(),
+                                                  detElemId,
+                                                  manuId,
                                                   0.0);
+  
+  AliMpDetElement* de = AliMpDDLStore::Instance()->GetDetElement(detElemId,manuId);
   
   for ( Int_t i = 0; i < c->Size(); ++i ) 
   {
-    c->SetValueAsDouble(i,IndexOfNumberDimension(),1.0);
+    Double_t value(0.0);
+    
+    if ( de->IsConnectedChannel(manuId,i) ) value = 1.0;
+      
+    c->SetValueAsDouble(i,IndexOfNumberDimension(),value);
   }
   
   return c;
@@ -604,14 +613,34 @@ AliMUONTrackerData::GetParts(AliMUONVCalibParam* external,
  
   AliMpDDLStore* ddlStore = AliMpDDLStore::Instance();
   
-  Int_t detElemId = external->ID0();
+  Int_t detElemId;
+  Int_t manuId;
   
-  Int_t chamberId = AliMpDEManager::GetChamberId(detElemId);
-  
-  Int_t manuId = external->ID1();
-  
+  if ( external->ID1() <= 0 ) 
+  {
+    // we get a manu serial number
+    Int_t serial = external->ID0();
+    AliMpIntPair pair = ddlStore->GetDetElemIdManu(serial);
+    detElemId = pair.GetFirst();
+    manuId = pair.GetSecond();
+    if ( !detElemId ) 
+    {
+      AliError(Form("DE %d manuId %d from serial %d is not correct !",
+                    detElemId,manuId,serial));
+      return -1;
+    }
+  }
+  else
+  {
+    // we get a (de,manu) pair
+    detElemId = external->ID0();
+    manuId = external->ID1();
+  }
+
   mpde = ddlStore->GetDetElement(detElemId);
-  
+
+  Int_t chamberId = AliMpDEManager::GetChamberId(detElemId);
+    
   Int_t busPatchId = ddlStore->GetBusPatchId(detElemId,manuId);
   
   Int_t pcbIndex = -1;
@@ -729,6 +758,17 @@ AliMUONTrackerData::CreateManuParam(Int_t detElemId, Int_t manuId) const
   manu->SetValueAsDouble(0,IndexOfNumberDimension(),de->NofChannelsInManu(manuId));
   
   return manu;
+}
+
+//_____________________________________________________________________________
+Long64_t
+AliMUONTrackerData::Merge(TCollection* li)
+{
+  /// Merge all tracker data objects from li into a single one.
+  
+  AliError("Not implemented yet");
+  
+  return 0;
 }
 
 //_____________________________________________________________________________
