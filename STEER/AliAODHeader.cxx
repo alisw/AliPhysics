@@ -278,7 +278,7 @@ void AliAODHeader::Print(Option_t* /*option*/) const
 
   if (fQTheta) {
     for (UInt_t i = 0; i<(UInt_t)fNQTheta; i++) {
-      printf("QTheta[%d]              : %d\n", i, GetQTheta(i));
+      printf("QTheta[%d]              : %13.3e\n", i, GetQTheta(i));
     }
   }
 

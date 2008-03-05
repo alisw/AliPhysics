@@ -429,7 +429,6 @@ void AliAODTrack::Print(Option_t* /* option */) const
   printf("       phi = %f\n", Phi());
   printf("  chi2/NDF = %f\n", Chi2perNDF());
   printf("    charge = %d\n", Charge());
-  printf(" PID object: %p\n", PID());
 }
 
 void AliAODTrack::SetMatchTrigger(Int_t MatchTrigger){
@@ -587,11 +586,12 @@ Bool_t AliAODTrack::PropagateTo(Double_t xk, Double_t b) {
 
   //f = F - 1
    
-  Double_t f02=    dx/(r1*r1*r1);            Double_t cc=crv/fP4;
+  //Double_t f02=    dx/(r1*r1*r1);            
+  Double_t cc=crv/fP4;
   Double_t f04=0.5*dx*dx/(r1*r1*r1);         f04*=cc;
-  Double_t f12=    dx*fP3*f1/(r1*r1*r1);
+  //Double_t f12=    dx*fP3*f1/(r1*r1*r1);
   Double_t f14=0.5*dx*dx*fP3*f1/(r1*r1*r1);  f14*=cc;
-  Double_t f13=    dx/r1;
+  //Double_t f13=    dx/r1;
   Double_t f24=    dx;                       f24*=cc;
   
   /* covariance matrix to be fixed!

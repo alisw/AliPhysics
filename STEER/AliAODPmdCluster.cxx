@@ -40,7 +40,7 @@ AliAODPmdCluster::AliAODPmdCluster(Int_t id,
 				   Double_t x[3],
 				   Double_t pid[9],
 				   Char_t ttype,
-				   UInt_t selectInfo,
+				   UInt_t /*selectInfo*/,
 				   AliAODPmdCluster* assoc) :
   AliAODCluster(id, nLabel, label, energy, x, pid, ttype),
   fAssocCluster(assoc)
@@ -56,7 +56,7 @@ AliAODPmdCluster::AliAODPmdCluster(Int_t id,
 				   Float_t x[3],
 				   Float_t pid[9],
 				   Char_t ttype,
-				   UInt_t selectInfo,
+				   UInt_t /*selectInfo*/,
 				   AliAODPmdCluster* assoc) :
   AliAODCluster(id, nLabel, label, energy, x, pid, ttype),
   fAssocCluster(assoc)
