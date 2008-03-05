@@ -1,3 +1,4 @@
+
 //-*- Mode: C++ -*-
 // @(#) $Id$
 
@@ -56,6 +57,8 @@ class AliHLTHOMERWriter;
  * The manager does not not provide methods to create a HOMER reader on
  * basis of shared memory. This is most likely a depricated functionality,
  * although kept for the sake of completeness.
+ *
+ * @ingroup alihlt_homer
  */
 class AliHLTHOMERLibManager {
  public:

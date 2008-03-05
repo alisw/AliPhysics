@@ -157,7 +157,7 @@ Int_t AliHLTTriggerSelectiveReadoutComponent::DoInit( int argc, const char** arg
 
       Int_t jj = 0;
       
-      for ( jj ; ( jj < fkNThreshold ) && ( ( ii + jj ) < argc ); jj++ ) {
+      for ( jj = 0; ( jj < fkNThreshold ) && ( ( ii + jj ) < argc ); jj++ ) {
 	
 	parameter = argv[ii+jj];  
 	parameter.Remove( TString::kLeading, ' ' );
@@ -206,7 +206,7 @@ Int_t AliHLTTriggerSelectiveReadoutComponent::DoDeinit() {
   return 0;
 }
 
-Int_t AliHLTTriggerSelectiveReadoutComponent::DoEvent( const AliHLTComponentEventData& /*evtData*/, AliHLTComponentTriggerData& trigData ) {
+Int_t AliHLTTriggerSelectiveReadoutComponent::DoEvent( const AliHLTComponentEventData& /*evtData*/, AliHLTComponentTriggerData& /*trigData*/ ) {
   // see header file for class documentation
 
   // ** No readout list for SOR and EOR event

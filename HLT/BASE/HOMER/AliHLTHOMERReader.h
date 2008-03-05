@@ -31,6 +31,8 @@
  * Used for dynamic generation of HOMER readers and dynamic loading of
  * the libAliHLTHOMER library.
  * @see AliHLTHOMERLibManager
+ * 
+ * @ingroup alihlt_homer
  */
 class AliHLTMonitoringReader
     {

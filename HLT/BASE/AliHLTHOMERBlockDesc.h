@@ -82,10 +82,10 @@ public:
   /** Returns if block contains a TObject
    * @return           Returns kTRUE if block contains a TObject, kFALSE otherwise.
    */
-  Bool_t IsTObject() { return fIsTObject;} 
+  Bool_t IsTObject()              { return fIsTObject;} 
 
   /** Returns Pointer to TObject */
-  TObject* GetTObject();
+  TObject* GetTObject()           { return fTObject;   }
 
   /*
    * ---------------------------------------------------------------------------------
@@ -96,60 +96,60 @@ public:
   /** Returns if block contains a raw data, fClassName is not set in this case.
    * @return           Returns kTRUE if block contains raw data, kFALSE otherwise.
    */
-  Bool_t IsRawData() { return fIsRawData;} 
+  Bool_t IsRawData()              { return fIsRawData;} 
 
   /** Get pointer to data 
    * @return           Pointer to data
    */
-  void* GetData() { return fData; }
+  void* GetData()                 { return fData; }
 
   /** Get size of data 
    * @return           Size of data
    */
-  ULong_t GetSize() { return fSize; }
+  ULong_t GetSize()               { return fSize; }
 
   /** Get detector of this block 
    * @return           Detector name
    */
-  TString GetDetector() { return fDetector; }
+  TString GetDetector()           { return fDetector; }
   
   /** Get HLT data type of this block 
    * @return           HLT data type
    */
-  TString GetDataType() { return fDataType; }
+  TString GetDataType()           { return fDataType; }
   
   /** Get HLT specification of this block 
    * @return           HLT specification
    */
-  ULong_t GetSpecification() { return fSpecification; }
+  ULong_t GetSpecification()      { return fSpecification; }
 
   /** Get class name of this block 
    * @return           class name
    */
-  TString GetClassName() { return fClassName; }
+  TString GetClassName()          { return fClassName; }
 
   /** Get sub detector of this block 
    * @return           subdetector
    */
-  TString GetSubDetector() { return fSubDetector; }
+  TString GetSubDetector()        { return fSubDetector; }
 
   /** Get sub sub detector of this block
    * @return           subsubdetector
    */
-  TString GetSubSubDetector() { return fSubSubDetector; }
+  TString GetSubSubDetector()     { return fSubSubDetector; }
 
   /** Returns kTRUE if HLT specification indicates a subdetector range
    * @return           kTRUE if subdetector range
    */
-  Bool_t HasSubDetectorRange() { return fHasSubDetectorRange; }
+  Bool_t HasSubDetectorRange()    { return fHasSubDetectorRange; }
 
   /** Returns kTRUE if HLT specification indicates a subsubdetector range
    * @return           kTRUE if subsubdetector range
    */
   Bool_t HasSubSubDetectorRange() { return fHasSubSubDetectorRange; }
 
-
 private:
+
   /** copy constructor prohibited */
   AliHLTHOMERBlockDesc(const AliHLTHOMERBlockDesc&);
 
@@ -170,6 +170,7 @@ private:
    * @return           fIsRawData
    */
   Bool_t CheckIfRawData();
+
   /*
    * ---------------------------------------------------------------------------------
    *                            Members - private
@@ -177,37 +178,40 @@ private:
    */
 
   /** Pointer to data of the block */
-  void* fData;                 //! transient
+  void* fData;                      //! transient
 	      
   /** Size of data */
-  ULong_t fSize;               // see above
+  ULong_t fSize;                    // see above
 
   /** States if block contains a TObject */
-  Bool_t fIsTObject;           // see above
+  Bool_t fIsTObject;                // see above
 
   /** States if block contains a raw data */
-  Bool_t fIsRawData;           // see above
+  Bool_t fIsRawData;                // see above
 
-  /** AliHTMessage object containg a TObject */
-  AliHLTMessage* fMessage;     //! transient
+  /** @ref AliHTMessage object containg a TObject */
+  AliHLTMessage* fMessage;          //! transient
+
+  /** TObject extracted out of @see AliHLTMessage */
+  TObject* fTObject;                //! transient
 
   /** Class Name of the block */
-  TString fClassName;          // see above
+  TString fClassName;               // see above
 
   /** Detector Name, e.g. PHOS */
-  TString fDetector;           // see above
+  TString fDetector;                // see above
 
   /** SubDetector Name e.g. MODULE */
-  TString fSubDetector;        // see above
+  TString fSubDetector;             // see above
 
   /** SubSubDetector Name e.g. PARTITION */
-  TString fSubSubDetector;     // see above
+  TString fSubSubDetector;          // see above
 
   /** HLT Specification */
-  ULong_t fSpecification;      // see above
+  ULong_t fSpecification;           // see above
 
   /** HLT DataType */
-  TString fDataType;           // see above 
+  TString fDataType;                // see above 
 
   /** States id block has a subdetector range */
   Bool_t fHasSubDetectorRange;      // see above

@@ -18,6 +18,12 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
+/**
+ * @defgroup alihlt_homer HOMER handling for AliROOT
+ * This section describes the handling of HOMER Sources, Blocks 
+ * and the HOMER Reader inside the HLT and AliROOT
+ */
+
 #include "TString.h"
 #include "TNamed.h"
 
@@ -57,13 +63,13 @@ public:
   /** Checks if Source is selected to readout 
    * @return           returns state, either kTRUE or kFALSE
   */
-  Bool_t IsSelected() { return fSelected; }
+  Bool_t IsSelected()           { return fSelected; }
 
   /** Select this source */
-  void Select() { fSelected = kTRUE; }
+  void Select()                 { fSelected = kTRUE; }
 
   /** Deselect this source */
-  void Deselect() { fSelected = kFALSE; }
+  void Deselect()               { fSelected = kFALSE; }
 
   // -- SETTER --
 
@@ -71,13 +77,13 @@ public:
    * @param hostname   hostname of the source
    * @param port       port of the source
    */
-   void SetHostnamePort( TString hostname, Int_t port ) { fHostname = hostname; fPort = port; }
+   void SetHostnamePort( TString hostname, Int_t port )   { fHostname = hostname; fPort = port; }
 
   /** Set name/obj name of this source 
    *  @param s1        source name
    *  @param s2        source class name, default is ""
    */
-  void SetSourceName( TString s1, TString s2="" ) { fSourceName = s1; fClassName = s2; }
+  void SetSourceName( TString s1, TString s2="" )         { fSourceName = s1; fClassName = s2; }
 
   /** Set detector, sub detector and sub sub detector of this source 
    *  @param s1        detector name
@@ -90,39 +96,39 @@ public:
    *  @param ul        HLT specification
    *  @param s         HLT data type
    */
-  void SetSourceType( ULong_t ul, TString s ) { fSpecification = ul, fDataType = s; }
-
+  void SetSourceType( ULong_t ul, TString s )             { fSpecification = ul, fDataType = s; }
+ 
   // -- GETTER --
 
   /** Get node name of this source 
    * @return           hostname
    */
-  TString GetHostname() { return fHostname; }
+  TString GetHostname()       { return fHostname; }
 
   /** Get node name of this source 
    * @return           port
    */
-  Int_t GetPort() { return fPort; }
+  Int_t GetPort()             { return fPort; }
 
   /** Get name of this source 
    * @return           name
    */
-  TString GetSourceName() { return fSourceName; }
+  TString GetSourceName()     { return fSourceName; }
 
   /** Get object name of this source
    * @return           class name
    */
-  TString GetClassName() { return fClassName; }
+  TString GetClassName()      { return fClassName; }
 
   /** Get detector of this source 
    * @return           detector
    */
-  TString GetDetector() { return fDetector; }
+  TString GetDetector()       { return fDetector; }
 
   /** Get sub detector of this source 
    * @return           subdetector
    */
-  TString GetSubDetector() { return fSubDetector; }
+  TString GetSubDetector()    { return fSubDetector; }
 
   /** Get sub sub detector of this source 
    * @return           subsubdetector
@@ -132,12 +138,12 @@ public:
   /** Get HLT data type of this source
    * @return           HLT data type
    */
-  TString GetDataType() { return fDataType; }
+  TString GetDataType()       { return fDataType; }
 
   /** Get HLT specification of this source
    * @return           HLT specification
    */
-  ULong_t GetSpecification() { return fSpecification; }
+  ULong_t GetSpecification()  { return fSpecification; }
 
 
 private:

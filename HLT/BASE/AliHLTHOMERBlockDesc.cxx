@@ -45,6 +45,7 @@ AliHLTHOMERBlockDesc::AliHLTHOMERBlockDesc() :
   fIsTObject(kFALSE),
   fIsRawData(kFALSE),
   fMessage(NULL),
+  fTObject(NULL),
   fClassName(),
   fDetector(),
   fSubDetector(),
@@ -68,6 +69,7 @@ AliHLTHOMERBlockDesc::AliHLTHOMERBlockDesc( void * data, ULong_t size, TString o
   fIsTObject(kFALSE),
   fIsRawData(kFALSE),
   fMessage(NULL),
+  fTObject(NULL),
   fClassName(),
   fDetector(origin),
   fSubDetector(),
@@ -90,6 +92,7 @@ AliHLTHOMERBlockDesc::~AliHLTHOMERBlockDesc() {
   if ( fMessage != NULL )
     delete fMessage;
   fMessage = NULL;
+
 }
 
 //##################################################################################
@@ -228,7 +231,11 @@ Bool_t AliHLTHOMERBlockDesc::CheckIfTObject() {
   if ( fMessage->What() == kMESS_OBJECT ) {
     fClassName = fMessage->GetClass()->GetName();
     fIsTObject = kTRUE;
+    
+    fTObject = fMessage->ReadObject( fMessage->GetClass() );
   }
+  
+  fMessage->Reset();
 
   return fIsTObject;
 }
@@ -242,16 +249,4 @@ Bool_t AliHLTHOMERBlockDesc::CheckIfRawData() {
 
   return fIsRawData;
 }
- 
-//##################################################################################
-TObject* AliHLTHOMERBlockDesc::GetTObject() {
-  // see header file for class documentation
-  
-  if ( fMessage ) {
-    TObject* obj = fMessage->ReadObject( fMessage->GetClass() );
-    fMessage->Reset();
-    return obj;
-  }
- else
-   return NULL;
-}
+

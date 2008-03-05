@@ -52,6 +52,8 @@
 /**
  * @class AliHLTMonitoringWriter
  * A pure virtual interface definition for HLT monitoring writers.
+ * 
+ * @ingroup alihlt_homer
  */
 class AliHLTMonitoringWriter
     {

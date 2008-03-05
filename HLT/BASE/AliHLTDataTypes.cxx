@@ -111,11 +111,38 @@ const AliHLTComponentDataType kAliHLTDataTypeHwAddr16 = (AliHLTComponentDataType
   kAliHLTDataOriginAny
 };
 
+/** Event statistics */
+const AliHLTComponentDataType kAliHLTDataTypeEventStatistics = (AliHLTComponentDataType) {
+  sizeof(AliHLTComponentDataType),
+  kAliHLTEventStatisticsDataTypeID,
+  kAliHLTDataOriginAny
+};
+
+/** Event summary */
+const AliHLTComponentDataType kAliHLTDataTypeEventSummary = (AliHLTComponentDataType) {
+  sizeof(AliHLTComponentDataType),
+  kAliHLTEventSummaryDataTypeID,
+  kAliHLTDataOriginAny
+}|kAliHLTDataOriginOut;
+
+/** Run statistics */
+const AliHLTComponentDataType kAliHLTDataTypeRunStatistics = (AliHLTComponentDataType) {
+  sizeof(AliHLTComponentDataType),
+  kAliHLTRunStatisticsDataTypeID,
+  kAliHLTDataOriginAny
+};
+
+/** Run summary */
+const AliHLTComponentDataType kAliHLTDataTypeRunSummary = (AliHLTComponentDataType) {
+  sizeof(AliHLTComponentDataType),
+  kAliHLTRunSummaryDataTypeID,
+  kAliHLTDataOriginAny
+}|kAliHLTDataOriginOut;
 
 
 //////////////////////////////////////////////////////////////////////////
 //
-// Data urigin variables, to be used with the operator|
+// Data origin variables, to be used with the operator|
 //
 // AliHLTComponentDataType dt;
 // dt = kAliHLTDataTypeDDLRaw | gkAliHLTDataOriginTPC;

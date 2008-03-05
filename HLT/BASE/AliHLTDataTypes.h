@@ -148,6 +148,30 @@ const int kAliHLTComponentDataTypefIDsize=8;
  */
 # define kAliHLTHwAddr16DataTypeID     {'H','W','A','D','D','R','1','6'}
 
+/** Event Statistics
+ * - event statistics for given detectors
+ * - varying origin
+ */
+# define kAliHLTEventStatisticsDataTypeID     {'E','V','_','S','T','A','T','I'}
+
+/** Event Summary
+ * - event summary
+ * - origin : kAliHLTDataOriginOut ( HLT )
+ */
+# define kAliHLTEventSummaryDataTypeID        {'E','V','_','S','U','M','M','A'}
+
+/** Run Statistics
+ * - run statistics for given detectors
+ * - varying origin
+ */
+# define kAliHLTRunStatisticsDataTypeID       {'R','U','N','S','T','A','T','I'}
+
+/** Run Summary
+ * - run summary
+ * - origin : kAliHLTDataOriginOut ( HLT )
+ */
+# define kAliHLTRunSummaryDataTypeID          {'R','U','N','S','U','M','M','A'}
+
 using namespace std;
 
 extern "C" {
@@ -316,13 +340,16 @@ extern "C" {
   //////////////////////////////////////////////////////////////////////////
 
   /** field size of fAttribute */
-  static const int gkAliHLTBlockDAttributeCount = 8;
+  const int gkAliHLTBlockDAttributeCount = 8;
 
   /** field size of fCommonHeader */
-  static const int gkAliHLTCommonHeaderCount = 8;
+   const int gkAliHLTCommonHeaderCount = 8;
 
   /** size of the DDL list */
-  static const int gkAliHLTDDLListSize = 30;
+  const int gkAliHLTDDLListSize = 30;
+
+  /** Number of Trigger Classes of CTP in CDH */
+  const int gkNCTPTriggerClasses = 50;
 
   /**
    * @struct AliHLTEventDDL
@@ -368,27 +395,27 @@ extern "C" {
   //////////////////////////////////////////////////////////////////////////
 
   /** Unknown eventType specification */
-  static const AliHLTUInt32_t gkAliEventTypeUnknown = ~(AliHLTUInt32_t)0;
+  const AliHLTUInt32_t gkAliEventTypeUnknown = ~(AliHLTUInt32_t)0;
   /** SOR eventType specification */ 
-  static const AliHLTUInt32_t gkAliEventTypeStartOfRun=1;
+  const AliHLTUInt32_t gkAliEventTypeStartOfRun=1;
   /** Data eventType specification */
-  static const AliHLTUInt32_t gkAliEventTypeData=2;
+  const AliHLTUInt32_t gkAliEventTypeData=2;
   /** EOR eventType specification */ 
-  static const AliHLTUInt32_t gkAliEventTypeEndOfRun=4;
+  const AliHLTUInt32_t gkAliEventTypeEndOfRun=4;
   /** Corrupt eventType specification */
-  static const AliHLTUInt32_t gkAliEventTypeCorruptID=8;
+  const AliHLTUInt32_t gkAliEventTypeCorruptID=8;
   /** Calibration eventType specification */ 
-  static const AliHLTUInt32_t gkAliEventTypeCalibration=16;
+  const AliHLTUInt32_t gkAliEventTypeCalibration=16;
   /** DataReplay eventType specification */
-  static const AliHLTUInt32_t gkAliEventTypeDataReplay=32;
+  const AliHLTUInt32_t gkAliEventTypeDataReplay=32;
   /** Configuration eventType specification */
-  static const AliHLTUInt32_t gkAliEventTypeConfiguration=34;
+  const AliHLTUInt32_t gkAliEventTypeConfiguration=34;
   /** Update DCS eventType specification */
-  static const AliHLTUInt32_t gkAliEventTypeReadPreprocessor=35;
+  const AliHLTUInt32_t gkAliEventTypeReadPreprocessor=35;
   /** Tick eventType specification */ 
-  static const AliHLTUInt32_t gkAliEventTypeTick=64;
+  const AliHLTUInt32_t gkAliEventTypeTick=64;
   /** Max eventType specification */ 
-  static const AliHLTUInt32_t gkAliEventTypeMax=64;
+  const AliHLTUInt32_t gkAliEventTypeMax=64;
 
   //////////////////////////////////////////////////////////////////////////
   //
@@ -462,15 +489,27 @@ extern "C" {
   /** 16 bit Hardware address selection data specification, origin is 'any' */
   extern const AliHLTComponentDataType kAliHLTDataTypeHwAddr16;
 
+  /** Event statistics */
+  extern const AliHLTComponentDataType kAliHLTDataTypeEventStatistics;
+
+  /** Event summary */
+  extern const AliHLTComponentDataType kAliHLTDataTypeEventSummary;
+
+  /** Event statistics */
+  extern const AliHLTComponentDataType kAliHLTDataTypeRunStatistics;
+
+  /** Event summary */
+  extern const AliHLTComponentDataType kAliHLTDataTypeRunSummary;
+
   //////////////////////////////////////////////////////////////////////////
   //
   // FXS subscriber meta information
   //
   //////////////////////////////////////////////////////////////////////////
 
-  static const int gkAliHLTFXSHeaderfOriginSize = 4;
-  static const int gkAliHLTFXSHeaderfFileIDSize = 128;
-  static const int gkAliHLTFXSHeaderfDDLNumberSize = 64;
+  const int gkAliHLTFXSHeaderfOriginSize = 4;
+  const int gkAliHLTFXSHeaderfFileIDSize = 128;
+  const int gkAliHLTFXSHeaderfDDLNumberSize = 64;
 
   /** Header in front of the data payload, in order to sent data to the FXS. */
   struct AliHLTFXSHeader

@@ -30,7 +30,11 @@ CLASS_HDRS:=  	AliHLTComponent.h \
 		AliHLTOUTHandler.h \
 		AliHLTOUTHandlerEquId.h \
 		AliHLTMemoryFile.h \
-		AliHLTMessage.h
+		AliHLTMessage.h \
+		AliHLTEventStatistics.h \
+                AliHLTRunStatistics.h
+
+
 
 MODULE_SRCS= 	AliHLT_C_Component_WrapperInterface.cxx \
 		AliHLTDataTypes.cxx \
