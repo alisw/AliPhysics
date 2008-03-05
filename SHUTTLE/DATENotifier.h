@@ -17,6 +17,7 @@ public:
 	void errorHandler(int severity, int code, char *msg);
 private:
 	DATENotifier(const DATENotifier& other);
+	DATENotifier& operator = (const DATENotifier& other);
 };
 
 #endif

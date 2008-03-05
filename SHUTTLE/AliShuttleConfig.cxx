@@ -186,6 +186,7 @@ some docs added
 #include <TLDAPResult.h>
 #include <TLDAPEntry.h>
 #include <TLDAPAttribute.h>
+#include <TKey.h>
 
 
 AliShuttleConfig::AliShuttleDCSConfigHolder::AliShuttleDCSConfigHolder(const TLDAPEntry* entry):
@@ -266,6 +267,127 @@ fIsValid(kFALSE)
 	fIsValid = kTRUE;
 }
 
+//______________________________________________________________________________________________
+AliShuttleConfig::AliShuttleConfig(const AliShuttleConfig & other):
+	TObject(),
+	fConfigHost(other.fConfigHost),
+	fDAQlbHost(other.fDAQlbHost),
+	fDAQlbPort(other.fDAQlbPort),
+	fDAQlbUser(other.fDAQlbUser),
+	fDAQlbPass(other.fDAQlbPass),
+	fDAQlbDB(other.fDAQlbDB),
+	fDAQlbTable(other.fDAQlbTable),
+	fShuttlelbTable(other.fShuttlelbTable),
+	fRunTypelbTable(other.fRunTypelbTable),
+	fMaxRetries(other.fMaxRetries),
+	fPPTimeOut(other.fPPTimeOut),
+	fDCSTimeOut(other.fDCSTimeOut),
+	fDCSRetries(other.fDCSRetries),
+	fPPMaxMem(other.fPPMaxMem),
+	fMonitorHost(other.fMonitorHost),
+	fMonitorTable(other.fMonitorTable),
+	fTriggerWait(other.fTriggerWait),
+	fRunMode(other.fRunMode),
+	fDetectorMap(),
+	fDetectorList(other.fDetectorList),
+	fShuttleInstanceHost(other.fShuttleInstanceHost),
+	fProcessedDetectors(other.fProcessedDetectors),
+	fKeepDCSMap(other.fKeepDCSMap),
+	fKeepTempFolder(other.fKeepTempFolder),
+	fSendMail(other.fSendMail),
+	fProcessAll(other.fProcessAll),
+	fIsValid(other.fIsValid)
+{
+	//
+	// copy ctor
+	//
+	for (Int_t i = 0; i<3; i++){
+		fFXSHost[i]=other.fFXSHost[i];
+		fFXSPort[i]=other.fFXSPort[i];
+		fFXSUser[i]=other.fFXSUser[i];
+		fFXSPass[i]=other.fFXSPass[i];
+		fFXSdbHost[i]=other.fFXSdbHost[i];
+		fFXSdbPort[i]=other.fFXSdbPort[i];
+		fFXSdbUser[i]=other.fFXSdbUser[i];
+		fFXSdbPass[i]=other.fFXSdbPass[i];
+		fFXSdbName[i]=other.fFXSdbName[i];
+		fFXSdbTable[i]=other.fFXSdbTable[i];
+	}
+	for (Int_t i = 0; i<5; i++){
+		fAdmin[i] = new TObjArray();
+		fAdmin[i]->AddAt(other.fAdmin[i]->At(i),i);
+	}
+
+	TIter iter((other.fDetectorMap).GetTable());
+	TPair* aPair = 0;
+	
+	while ((aPair = (TPair*) iter.Next())) {
+		AliShuttleDetConfigHolder *holder =(AliShuttleDetConfigHolder *)aPair->Value();
+		TKey *key = (TKey*)aPair->Key();
+		fDetectorMap.Add(key,holder);
+	}
+
+
+} 
+//_____________________________________________________________________________________________		
+AliShuttleConfig& AliShuttleConfig::operator=(const AliShuttleConfig &other) 
+{
+	//
+	//assignment operator
+	//
+	this->fConfigHost=other.fConfigHost;
+	this->fDAQlbHost=other.fDAQlbHost;
+	this->fDAQlbPort=other.fDAQlbPort;
+	this->fDAQlbUser=other.fDAQlbUser;
+	this->fDAQlbPass=other.fDAQlbPass;
+	this->fDAQlbDB=other.fDAQlbDB;
+	this->fDAQlbTable=other.fDAQlbTable;
+	this->fShuttlelbTable=other.fShuttlelbTable;
+	this->fRunTypelbTable=other.fRunTypelbTable;
+	this->fMaxRetries=other.fMaxRetries;
+	this->fPPTimeOut=other.fPPTimeOut;
+	this->fDCSTimeOut=other.fDCSTimeOut;
+	this->fDCSRetries=other.fDCSRetries;
+	this->fPPMaxMem=other.fPPMaxMem;
+	this->fMonitorHost=other.fMonitorHost;
+	this->fMonitorTable=other.fMonitorTable;
+	this->fTriggerWait=other.fTriggerWait;
+	this->fRunMode=other.fRunMode;
+	this->fDetectorList=other.fDetectorList;
+	this->fShuttleInstanceHost=other.fShuttleInstanceHost;
+	this->fProcessedDetectors=other.fProcessedDetectors;
+	this->fKeepDCSMap=other.fKeepDCSMap;
+	this->fKeepTempFolder=other.fKeepTempFolder;
+	this->fSendMail=other.fSendMail;
+	this->fProcessAll=other.fProcessAll;
+	this->fIsValid=other.fIsValid;
+	for (Int_t i = 0; i<3; i++){
+		this->fFXSHost[i]=other.fFXSHost[i];
+		this->fFXSPort[i]=other.fFXSPort[i];
+		this->fFXSUser[i]=other.fFXSUser[i];
+		this->fFXSPass[i]=other.fFXSPass[i];
+		this->fFXSdbHost[i]=other.fFXSdbHost[i];
+		this->fFXSdbPort[i]=other.fFXSdbPort[i];
+		this->fFXSdbUser[i]=other.fFXSdbUser[i];
+		this->fFXSdbPass[i]=other.fFXSdbPass[i];
+		this->fFXSdbName[i]=other.fFXSdbName[i];
+		this->fFXSdbTable[i]=other.fFXSdbTable[i];
+	}
+	for (Int_t i = 0; i<5; i++){
+		this->fAdmin[i] = new TObjArray();
+		this->fAdmin[i]->AddAt(other.fAdmin[i]->At(i),i);
+	}
+
+	TIter iter((other.fDetectorMap).GetTable());
+	TPair* aPair = 0;
+	
+	while ((aPair = (TPair*) iter.Next())) {
+		AliShuttleDetConfigHolder *holder =(AliShuttleDetConfigHolder *)aPair->Value();
+		TKey *key = (TKey*)aPair->Key();
+		this->fDetectorMap.Add(key,holder);
+	}
+	return *this;
+} 
 //______________________________________________________________________________________________
 void AliShuttleConfig::AliShuttleDCSConfigHolder::ExpandAndAdd(TObjArray* target, const char* entry)
 {
@@ -538,6 +660,7 @@ AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 	fMaxRetries(0), 
 	fPPTimeOut(0), 
 	fDCSTimeOut(0), 
+	fDCSRetries(0), 
 	fPPMaxMem(0), 
 	fMonitorHost(""), 
 	fMonitorTable(""), 

@@ -27,6 +27,8 @@ public:
 			const char* binddn = 0, const char* password = 0,
 			const char* basedn = "o=alice,dc=cern,dc=ch");
 	virtual ~AliShuttleConfig();
+	AliShuttleConfig(const AliShuttleConfig & other);
+	AliShuttleConfig& operator= (const AliShuttleConfig& other);
 
 	Bool_t IsValid() const {return fIsValid;};
 
@@ -220,7 +222,7 @@ private:
 	TMap fDetectorMap; 		// Map of the detector-by-detector configuration
 	TObjArray fDetectorList; 	// List of detectors with valid configuration
 	
-	TObjArray *fAdmin[4]; 		// Array of system administrators' email addresses (DAQ, DCS, HLT, Global, Amanda)
+	TObjArray *fAdmin[5]; 		// Array of system administrators' email addresses (DAQ, DCS, HLT, Global, Amanda)
 
 	TString fShuttleInstanceHost; 	// Instance of the SHUTTLE
 	TObjArray fProcessedDetectors; 	// list of the detector to be processed by this machine
