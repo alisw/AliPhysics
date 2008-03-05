@@ -15,6 +15,8 @@ struct AliRawDataHeader {
     fROIHigh(0)
   {}
 
+  virtual ~AliRawDataHeader() {}
+
   UShort_t  GetEventID1() const
     {
       return (UShort_t)( fWord2 & 0xFFF );

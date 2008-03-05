@@ -102,7 +102,7 @@ void  AliRecoParam::RegisterRecoParam(AliDetectorRecoParam* param){
   fRecoParamArray->AddLast(param);
 }
 
-TObjArray * AliRecoParam::GetRecoParam(const char * detType, Int_t *eventType){
+TObjArray * AliRecoParam::GetRecoParam(const char * detType, Int_t */*eventType*/){
   //
   // Get the list of Reconstruction parameters for given detector
   // and event type

@@ -50,6 +50,9 @@ class AliGRPPreprocessor: public AliPreprocessor {
   static const char* fgkDCSDataPoints[12]; //! names of dcs dps
   AliDCSSensorArray *fPressure; //pressure array
 
+  AliGRPPreprocessor(const AliGRPPreprocessor&); // Not implemented
+  AliGRPPreprocessor& operator=(const AliGRPPreprocessor&); // Not implemented
+
   ClassDef(AliGRPPreprocessor, 0);
 };
 

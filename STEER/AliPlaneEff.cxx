@@ -79,7 +79,7 @@ AliPlaneEff&  AliPlaneEff::operator=(const AliPlaneEff &source){
     return *this;
 }
 //_____________________________________________________________
-void AliPlaneEff::Copy(TObject &obj) const {
+void AliPlaneEff::Copy(TObject &/*obj*/) const {
   // copy this to obj
 /*  ((AliPlaneEff& ) obj).fRunNumber		= fRunNumber;
   ((AliPlaneEff& ) obj).fCDBUri		= fCDBUri;

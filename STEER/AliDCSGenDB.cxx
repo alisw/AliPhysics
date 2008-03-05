@@ -106,7 +106,7 @@ AliDCSGenDB::~AliDCSGenDB(){
 }
 
 //______________________________________________________________________________________________
-AliDCSGenDB& AliDCSGenDB::operator= (const AliDCSGenDB& org )
+AliDCSGenDB& AliDCSGenDB::operator= (const AliDCSGenDB& /*org*/ )
 {
  //
  // assignment operator
@@ -199,7 +199,7 @@ void AliDCSGenDB::Init(Int_t run, const char *configDir,
    fStorLoc = man->GetStorage(fSpecificStorage);
    if (!fStorLoc)    return;
 
-   Bool_t cdbCache = AliCDBManager::Instance()->GetCacheFlag(); // save cache status
+   /*Bool_t cdbCache = */AliCDBManager::Instance()->GetCacheFlag(); // save cache status
    AliCDBManager::Instance()->SetCacheFlag(kTRUE); // activate CDB cache
    
 

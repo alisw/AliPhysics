@@ -24,9 +24,15 @@ class AliRecoParam : public TNamed
   virtual void        Print(Option_t *option="") const;
   TObjArray * GetRecoParam(const char * detType, Int_t *eventType=0);  
   void        RegisterRecoParam(AliDetectorRecoParam* param);
+
 protected:
   TObjArray *fRecoParamArray;   //array with registerd reconstruction parameters
   static AliRecoParam* fgInstance; // Reconstruction parameters instance
+
+private:
+  AliRecoParam(const AliRecoParam&); // Not implemented
+  AliRecoParam& operator=(const AliRecoParam&); // Not implemented
+
   ClassDef(AliRecoParam, 1)
 };
 

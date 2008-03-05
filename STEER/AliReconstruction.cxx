@@ -319,9 +319,11 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fLoadAlignFromCDB(rec.fLoadAlignFromCDB),
   fLoadAlignData(rec.fLoadAlignData),
   fESDPar(rec.fESDPar),
+  fUseHLTData(rec.fUseHLTData),
 
   fRunLoader(NULL),
   fRawReader(NULL),
+  fParentRawReader(NULL),
 
   fVertexer(NULL),
   fDiamondProfile(NULL),

@@ -80,7 +80,7 @@ Double_t AliDCSSensor::GetValue(UInt_t timeSec)
  // Get temperature value for actual sensor
  //  timeSec given as offset from start-of-run measured in seconds
  //
- Bool_t inside;
+ Bool_t inside=kTRUE;
  return Eval(TTimeStamp((time_t)(fStartTime+timeSec),0),inside);
 }
 //_____________________________________________________________________________
@@ -89,7 +89,7 @@ Double_t AliDCSSensor::GetValue(TTimeStamp time)
  // Get temperature value for actual sensor
  //  time given as absolute TTimeStamp
  //
- Bool_t inside;
+ Bool_t inside=kTRUE;
  return Eval(time, inside);
 }
 

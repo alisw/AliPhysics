@@ -34,7 +34,7 @@ public:
     virtual void    SetL3ConstField(Float_t bsol, Int_t flag = 0)
 	{fL3Option = flag; fSolenoidUser = bsol;}
     
-    virtual AliMagFMaps & operator=(const AliMagFMaps &magf)
+    AliMagFMaps & operator=(const AliMagFMaps &magf)
       {magf.Copy(*this); return *this;}
 
 protected:

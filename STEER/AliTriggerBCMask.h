@@ -32,7 +32,7 @@ public:
   enum {kNBytesPerBCMask = 446}; // Number of bytes to store the 3565 bits of BC mask
 
 private:
-                   void   CreateMask(TString &mask) {} 
+                void   CreateMask(TString &/*mask*/) {} 
 
                 UChar_t   fBCMask[kNBytesPerBCMask];         // Bunch cross mask (3565 bit)
 

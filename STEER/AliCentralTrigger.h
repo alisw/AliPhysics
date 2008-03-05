@@ -57,7 +57,8 @@ protected:
 
 private:
                 Bool_t    IsSelected( TString detName, TString& detectors ) const;
-		AliCentralTrigger( const AliCentralTrigger& ctp );
+		AliCentralTrigger( const AliCentralTrigger& ctp ); // Implemented
+		AliCentralTrigger& operator=( const AliCentralTrigger& ctp ); // Not implemented
 
    ClassDef( AliCentralTrigger, 3 )  // class for running the Central Trigger Processor
 };

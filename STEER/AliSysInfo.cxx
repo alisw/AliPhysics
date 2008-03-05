@@ -121,8 +121,8 @@ void AliSysInfo::AddStamp(const char *sname, Int_t id0, Int_t id1, Int_t id2){
   gSystem->GetCpuInfo(&cpuInfo, 10);
   gSystem->GetMemInfo(&memInfo);
   gSystem->GetProcInfo(&procInfo);
-  procInfo.fMemVirtual*=0.001;  //size in MBy
-  procInfo.fMemResident*=0.001;  //size in MBy
+  procInfo.fMemVirtual/=1024;  //size in MBy
+  procInfo.fMemResident/=1024;  //size in MBy
 
   const char * hname = gSystem->HostName();
 
