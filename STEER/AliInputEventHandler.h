@@ -11,8 +11,9 @@
 //-------------------------------------------------------------------------
 
 #include "AliVEventHandler.h"
+#include <TTree.h>
 
-class TTree;
+
 class AliVEvent;
 
 class AliInputEventHandler : public AliVEventHandler {
@@ -36,6 +37,7 @@ class AliInputEventHandler : public AliVEventHandler {
      // Getters
     virtual AliVEvent   *GetEvent() const                             {return 0;}
     virtual TTree       *GetTree( ) const                             {return fTree;}
+    virtual Long64_t     GetReadEntry() const                         {return fTree->GetReadEntry();}
  private:
     AliInputEventHandler(const AliInputEventHandler& handler);             
     AliInputEventHandler& operator=(const AliInputEventHandler& handler);  
