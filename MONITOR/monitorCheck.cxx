@@ -49,9 +49,10 @@ private:
 
 //_____________________________________________________________________________
 AliGDCInterruptHandler::AliGDCInterruptHandler() : 
-  TSignalHandler(kSigInterrupt, kFALSE) 
+  TSignalHandler(kSigInterrupt, kFALSE),
+  fStop(kFALSE)  
 {
-  fStop = kFALSE;
+
 }
 
 

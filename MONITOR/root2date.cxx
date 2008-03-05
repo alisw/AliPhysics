@@ -47,7 +47,7 @@ int Root2Date(AliRawEvent *gdcRootEvent, unsigned char *gdcDateEvent, char *ddlD
      char ddlFileName[256];
      sprintf(ddlFileName,"%s/%s",ddlDir,AliDAQ::DdlFileName(detId,ddlIndex));
      FILE *ddlFile;
-     if(ddlFile=fopen(ddlFileName, "wb")) {
+     if((ddlFile=fopen(ddlFileName, "wb"))) {
        fwrite(p, chunkSize, 1, ddlFile);
      }
      fclose(ddlFile);
