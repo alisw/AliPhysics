@@ -36,8 +36,8 @@
  *
  * This is the base class.
  *
- * Currently implemented detecor classes<BR/>
- * * @see AliHLTTPCRunStatistics<BR/>
+ * Currently implemented detecor classes <br>
+ * * @see AliHLTTPCRunStatistics <br>
  *
  * @ingroup alihlt_run_statistics alihlt_trigger
  */

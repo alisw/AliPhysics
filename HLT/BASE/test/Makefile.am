@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.20 2007/10/19 13:04:52 richterm Exp $
+# $Id$
 # Makefile template Alice HLT framework test programs
 
 AM_CPPFLAGS			= -I$(top_srcdir)/BASE

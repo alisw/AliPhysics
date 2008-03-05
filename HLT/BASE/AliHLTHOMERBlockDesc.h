@@ -189,7 +189,7 @@ private:
   /** States if block contains a raw data */
   Bool_t fIsRawData;                // see above
 
-  /** @ref AliHTMessage object containg a TObject */
+  /** AliHTMessage object containg a TObject */
   AliHLTMessage* fMessage;          //! transient
 
   /** TObject extracted out of @see AliHLTMessage */

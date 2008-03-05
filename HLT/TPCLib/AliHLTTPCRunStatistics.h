@@ -7,7 +7,7 @@
  * ALICE Experiment at CERN, All rights reserved.                         *
  * See cxx source for full Copyright notice                               */
 
-/** @file   AliHLTTPCRunStatistics.cxx
+/** @file   AliHLTTPCRunStatistics.h
     @author Jochen Thaeder
     @date   
     @brief  TPC class for event statistics, derived from @see AliHLTRunStatistics

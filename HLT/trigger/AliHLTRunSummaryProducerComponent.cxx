@@ -16,7 +16,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/** @file   AliHLTRunSummaryProducerComponent.h
+/** @file   AliHLTRunSummaryProducerComponent.cxx
     @author Jochen Thaeder
     @date   
     @brief  Produces a run summary as @see AliHLTRunSummary

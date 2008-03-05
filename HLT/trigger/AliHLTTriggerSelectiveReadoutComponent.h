@@ -34,9 +34,9 @@
  * forwarded and Bit for this readout partition in ReadoutList will be set for DAQ readout.
  *
  * The component has the following component arguments:
- * -detector <TPC |PHOS|TRD |MUON>  : Select Detector for discarding raw data, use 4 Char_t origin format.
+ * -detector \em TPC |\em PHOS|\em TRD | \em MUON  : Select Detector for discarding raw data, use 4 Char_t origin format.
  * -enableThreshold <size>          : Enables threshold on size ( default is kFALSE )
- * -threshold < Int_t threshold[6]> : Size threshold in Byte for different patches for TPC -> This will be disappear later on, will be taken from xCDB entry.
+ * -threshold  Int_t threshold[6] : Size threshold in Byte for different patches for TPC -> This will be disappear later on, will be taken from xCDB entry.
  *
  * @ingroup alihlt_trigger
  */

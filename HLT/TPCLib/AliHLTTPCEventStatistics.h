@@ -7,7 +7,7 @@
  * ALICE Experiment at CERN, All rights reserved.                         *
  * See cxx source for full Copyright notice                               */
 
-/** @file   AliHLTTPCEventStatistics.cxx
+/** @file   AliHLTTPCEventStatistics.h
     @author Jochen Thaeder
     @date   
     @brief  TPC class for event statistics, derived from @see AliHLTEventStatistics
@@ -25,7 +25,7 @@
 #include "AliHLTEventStatistics.h"
 
 /**
- * @class  AliHLTEventStatistics
+ * @class  AliHLTTPCEventStatistics
  * @brief  TPC class for event statistics, derived from @see AliHLTEventStatistics
  *
  * The event statistic classes hold information about certain characteristica 

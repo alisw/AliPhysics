@@ -73,12 +73,12 @@ public:
 
   // ------------------------------------------------------------------------------------------
   /** Process event summary data block 
-   *  @param  ptr to @see AliHLTEventSummary
+   *  @param  eventSummary to @see AliHLTEventSummary
    */
   void ProcessEventSummary( AliHLTEventSummary* eventSummary );
 
   /** Process trigger data block 
-   *  @param  ptr to @see AliHLTComponentTriggerData
+   *  @param  trigData to @see AliHLTComponentTriggerData
    */
   void ProcessTriggerData( AliHLTComponentTriggerData& trigData );
 
