@@ -8,5 +8,7 @@ SRCS=  Ali3Vector.cxx Ali4Vector.cxx AliBoost.cxx AliCalcluster.cxx \
 
 HDRS= $(SRCS:.cxx=.h)
 
-
 DHDR:=RALICELinkDef.h
+
+PACKCXXFLAGS:=$(filter-out -Weffc++,$(CXXFLAGS))
+PACKDCXXFLAGS:=$(filter-out -Weffc++,$(CXXFLAGSNO))
