@@ -10,6 +10,7 @@
 class AliVEvent;
 class AliAODEvent;
 class AliMCEvent;
+class AliInputEventHandler;
 class TTree;
 
 
@@ -37,12 +38,15 @@ class AliAnalysisTaskSE : public AliAnalysisTask
     virtual AliAODEvent* AODEvent()    {return fOutputAOD;}
     virtual TTree*       OutputTree()  {return fTreeA;}
     virtual AliMCEvent*  MCEvent()     {return fMCEvent;}
- protected:
-    Int_t         fDebug;        //  Debug flag
-    AliVEvent*    fInputEvent;   //! VEvent Input
-    AliAODEvent*  fOutputAOD;    //! AOD out 
-    AliMCEvent*   fMCEvent;      //! MC
-    TTree*        fTreeA;        //  AOD output Tree
+    virtual Long64_t     Entry()       {return fEntry;}
+  protected:
+    Int_t                 fDebug;           //  Debug flag
+    Int_t                 fEntry;           //  Current entry in the chain
+    AliVEvent*            fInputEvent;      //! VEvent Input
+    AliInputEventHandler* fInputHandler;    //! Input Handler
+    AliAODEvent*          fOutputAOD;       //! AOD out 
+    AliMCEvent*           fMCEvent;         //! MC
+    TTree*                fTreeA;           //  AOD output Tree
     ClassDef(AliAnalysisTaskSE, 1); // Analysis task for standard jet analysis
 };
  

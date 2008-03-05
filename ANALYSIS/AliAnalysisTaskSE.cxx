@@ -42,7 +42,9 @@ ClassImp(AliAnalysisTaskSE)
 AliAnalysisTaskSE::AliAnalysisTaskSE():
     AliAnalysisTask(),
     fDebug(0),
+    fEntry(0),
     fInputEvent(0x0),
+    fInputHandler(0x0),
     fOutputAOD(0x0),
     fMCEvent(0x0),
     fTreeA(0x0)
@@ -53,7 +55,9 @@ AliAnalysisTaskSE::AliAnalysisTaskSE():
 AliAnalysisTaskSE::AliAnalysisTaskSE(const char* name):
     AliAnalysisTask(name, "AnalysisTaskSE"),
     fDebug(0),
+    fEntry(0),
     fInputEvent(0x0),
+    fInputHandler(0x0),
     fOutputAOD(0x0),
     fMCEvent(0x0),
     fTreeA(0x0)
@@ -66,17 +70,21 @@ AliAnalysisTaskSE::AliAnalysisTaskSE(const char* name):
 AliAnalysisTaskSE::AliAnalysisTaskSE(const AliAnalysisTaskSE& obj):
     AliAnalysisTask(obj),
     fDebug(0),
+    fEntry(0),
     fInputEvent(0x0),
+    fInputHandler(0x0),
     fOutputAOD(0x0),
     fMCEvent(0x0),
     fTreeA(0x0)
 {
 // Copy constructor
-    fDebug      = obj.fDebug;
-    fInputEvent = obj.fInputEvent;
-    fOutputAOD  = obj.fOutputAOD;
-    fMCEvent    = obj.fMCEvent;
-    fTreeA      = obj.fTreeA;    
+    fDebug        = obj.fDebug;
+    fEntry        = obj.fEntry;
+    fInputEvent   = obj.fInputEvent;
+    fInputHandler = obj.fInputHandler;
+    fOutputAOD    = obj.fOutputAOD;
+    fMCEvent      = obj.fMCEvent;
+    fTreeA        = obj.fTreeA;    
 }
 
 
@@ -84,11 +92,13 @@ AliAnalysisTaskSE& AliAnalysisTaskSE::operator=(const AliAnalysisTaskSE& other)
 {
 // Assignment
     AliAnalysisTask::operator=(other);
-    fDebug      = other.fDebug;
-    fInputEvent = other.fInputEvent;
-    fOutputAOD  = other.fOutputAOD;
-    fMCEvent    = other.fMCEvent;
-    fTreeA      = other.fTreeA;    
+    fDebug        = other.fDebug;
+    fEntry        = other.fEntry;
+    fInputEvent   = other.fInputEvent;
+    fInputHandler = other.fInputHandler;
+    fOutputAOD    = other.fOutputAOD;
+    fMCEvent      = other.fMCEvent;
+    fTreeA        = other.fTreeA;    
     return *this;
 }
 
@@ -100,9 +110,9 @@ void AliAnalysisTaskSE::ConnectInputData(Option_t* /*option*/)
 //
 //  ESD
 //
-    AliInputEventHandler* handler = (AliInputEventHandler*) 
+    AliInputEventHandler* fInputHandler = (AliInputEventHandler*) 
 	((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
-    if (handler) fInputEvent = handler->GetEvent();
+    if (fInputHandler) fInputEvent = fInputHandler->GetEvent();
 //
 //  Monte Carlo
 //
@@ -130,7 +140,7 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
 {
 //
 // Exec analysis of one event
-    PostData(0, fTreeA);
+    fEntry = fInputHandler->GetReadEntry();
     UserExec(option);
 }
 
