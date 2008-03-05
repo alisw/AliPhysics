@@ -35,6 +35,10 @@ class AliFlowAnalysis: public AliAnalysis
     
   private:
     AliAODParticleCut* fPartCut;//Particle Cut
+
+    AliFlowAnalysis(const AliFlowAnalysis&); // Not implemented
+    AliFlowAnalysis& operator=(const AliFlowAnalysis&); // Not implemented
+
     ClassDef(AliFlowAnalysis,1)
 };
 

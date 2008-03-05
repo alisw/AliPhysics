@@ -29,6 +29,9 @@ class AliReaderESDTree: public AliReaderESD
     TTree*        fTree;// tree pointer
     
    private:
+    AliReaderESDTree(const AliReaderESDTree&); // Not implemented
+    AliReaderESDTree& operator=(const AliReaderESDTree&); // Not implemented
+
     ClassDef(AliReaderESDTree,1)
  };
 

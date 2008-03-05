@@ -75,6 +75,8 @@ class AliReaderAOD: public AliReader
     AliAOD*       fSimBuffer;//!buffer array that tree is read to
     AliAOD*       fRecBuffer;//!
     
+    AliReaderAOD(const AliReaderAOD&); // Not implemented
+    AliReaderAOD& operator=(const AliReaderAOD&); // Not implemented
     
     ClassDef(AliReaderAOD,1)
 };

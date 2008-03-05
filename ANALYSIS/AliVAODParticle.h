@@ -24,8 +24,7 @@ public:
   virtual ~AliVAODParticle(){}
 
   AliVAODParticle(const AliVAODParticle& in);
-  virtual AliVAODParticle& operator=(const AliVAODParticle& in); 
-   
+  AliVAODParticle& operator=(const AliVAODParticle& in);   
 
   // kinematics
   virtual Double_t         Mass() const = 0;

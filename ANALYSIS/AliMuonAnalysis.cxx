@@ -31,7 +31,17 @@
 ClassImp(AliMuonAnalysis)
 
 AliMuonAnalysis::AliMuonAnalysis():
- fPartCut(0x0)
+  fHistoFile(0x0),
+  fHPtMuon(0x0),
+  fHPtMuonPlus(0x0),
+  fHPtMuonMinus(0x0),
+  fHPMuon(0x0),
+  fHInvMassAll(0x0),
+  fHRapMuon(0x0),
+  fHRapResonance(0x0),
+  fHPtResonance(0x0),
+  fHInvMassAllvsPt(0x0),
+  fPartCut(0x0)
 {
  //ctor
 }

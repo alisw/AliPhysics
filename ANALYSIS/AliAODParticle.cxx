@@ -185,93 +185,44 @@ void AliAODParticle::Clear(Option_t*)
 }
 //______________________________________________________________________________
 
-AliVAODParticle& AliAODParticle::operator=(const AliVAODParticle& in)
-{
-//operator=
-//  Info("operator=(const AliVAODParticle& in)","AliAODParticle");
-  
-  if (&in == this) return *this;
-
-  delete [] fPids;
-  delete [] fPidProb;
-  fPids = 0x0;
-  fPidProb = 0x0;
-  fNPids = 0;
-
-  Int_t npids = in.GetNumberOfPids();
-  for (Int_t i = 0; i < npids; i++)
-   {
-     SetPIDprobability(in.GetNthPid(i),in.GetNthPidProb(i));
-   }
-   
-  SetPdgCode(in.GetPdgCode(),in.GetPidProb());
-
-  SetUID(in.GetUID());
-
-  fCalcMass = in.Mass();
-  
-  fPx = in.Px();
-  fPy = in.Py();
-  fPz = in.Pz();
-  fE = in.E(); 
-  fVx = in.Vx();
-  fVy = in.Vy();
-  fVz = in.Vz();
-  fVt = in.T();
-  
-  delete fTPCTrackPoints;
-  AliTrackPoints* tpts = in.GetTPCTrackPoints();
-  fTPCTrackPoints = (tpts)?(AliTrackPoints*)tpts->Clone():0x0;
-
-  delete fITSTrackPoints;
-  tpts = in.GetITSTrackPoints();  
-  fITSTrackPoints = (tpts)?(AliTrackPoints*)tpts->Clone():0x0;
-  
-  delete fClusterMap;
-  AliClusterMap* incmap = in.GetClusterMap();
-  fClusterMap =  (incmap)?(AliClusterMap*)incmap->Clone():0x0;
-  
-  return *this;
-}
-//______________________________________________________________________________
-
 AliAODParticle& AliAODParticle::operator=(const AliAODParticle& in)
 {
 //assigment operator
 //  Info("operator=(const AliAODParticle& in)","AliAODParticle");
-  if (&in == this) return *this;
-  fNPids = in.fNPids;
-  delete [] fPids;
-  delete [] fPidProb;
-  fPids = new Int_t[fNPids];
-  fPidProb = new Float_t[fNPids];
-  for (Int_t i = 0; i < fNPids;i++)
-   {
-     fPids[i]    = in.fPids[i];
-     fPidProb[i] = in.fPidProb[i];
-   }
-   
-  fPdgIdx = in.fPdgIdx; 
-  fIdxInEvent = in.fIdxInEvent;  
-  fCalcMass = in.GetCalcMass();
-  fPx = in.Px();
-  fPy = in.Py();
-  fPz = in.Pz();
-  fE = in.E(); 
-  fVx = in.Vx();
-  fVy = in.Vy();
-  fVz = in.Vz();
-  fVt = in.T();
-  
-  delete fTPCTrackPoints;
-  fTPCTrackPoints = (in.fTPCTrackPoints)?(AliTrackPoints*)in.fTPCTrackPoints->Clone():0x0;
-
-  delete fITSTrackPoints;
-  fITSTrackPoints = (in.fITSTrackPoints)?(AliTrackPoints*)in.fITSTrackPoints->Clone():0x0;
-  
-  delete fClusterMap;
-  fClusterMap =  (in.fClusterMap)?(AliClusterMap*)in.fClusterMap->Clone():0x0;
-  
+  if (&in != this) {
+    AliVAODParticle::operator=(in);
+    fNPids = in.fNPids;
+    delete [] fPids;
+    delete [] fPidProb;
+    fPids = new Int_t[fNPids];
+    fPidProb = new Float_t[fNPids];
+    for (Int_t i = 0; i < fNPids;i++)
+      {
+	fPids[i]    = in.fPids[i];
+	fPidProb[i] = in.fPidProb[i];
+      }
+    
+    fPdgIdx = in.fPdgIdx; 
+    fIdxInEvent = in.fIdxInEvent;  
+    fCalcMass = in.GetCalcMass();
+    fPx = in.Px();
+    fPy = in.Py();
+    fPz = in.Pz();
+    fE = in.E(); 
+    fVx = in.Vx();
+    fVy = in.Vy();
+    fVz = in.Vz();
+    fVt = in.T();
+    
+    delete fTPCTrackPoints;
+    fTPCTrackPoints = (in.fTPCTrackPoints)?(AliTrackPoints*)in.fTPCTrackPoints->Clone():0x0;
+    
+    delete fITSTrackPoints;
+    fITSTrackPoints = (in.fITSTrackPoints)?(AliTrackPoints*)in.fITSTrackPoints->Clone():0x0;
+    
+    delete fClusterMap;
+    fClusterMap =  (in.fClusterMap)?(AliClusterMap*)in.fClusterMap->Clone():0x0;
+  }
   return *this;
 }
 //______________________________________________________________________________

@@ -147,6 +147,9 @@ class AliReaderESD: public AliReader
     Float_t       fTPCC44Max;//C44 (4th diagonal element of covariance matrix) max value
     
   private:
+    AliReaderESD(const AliReaderESD&); // Not implemented
+    AliReaderESD& operator=(const AliReaderESD&); // Not implemented
+
     ClassDef(AliReaderESD,1)
 };
 

@@ -89,6 +89,9 @@ class AliAnalysisTrackCuts : public TObject
   Int_t fFlagbz;  //Flag that shows if the bz cut was imposed
  
   TObjArray *fAcceptedParticleList; //List of accepted particles after quality cuts  
+
+  AliAnalysisTrackCuts(const AliAnalysisTrackCuts&); // Not implemented
+  AliAnalysisTrackCuts& operator=(const AliAnalysisTrackCuts&); // Not implemented
   
   ClassDef(AliAnalysisTrackCuts, 2)
 } ;

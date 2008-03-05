@@ -44,8 +44,10 @@ class AliAODRun: public TObject
   protected:
     TObjArray* fEvents;//!Array containig AliAODs
   private:
-    
-  public:
+
+    AliAODRun(const AliAODRun&); // Not implemented    
+    AliAODRun& operator=(const AliAODRun&); // Not implemented    
+
     ClassDef(AliAODRun,1)
  };
  

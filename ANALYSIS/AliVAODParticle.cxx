@@ -59,10 +59,10 @@ AliVAODParticle::AliVAODParticle(const AliVAODParticle& in):
 //______________________________________________________________________________
 
 
-AliVAODParticle& AliVAODParticle::operator=(const AliVAODParticle& /*in*/)
+AliVAODParticle& AliVAODParticle::operator=(const AliVAODParticle& in)
 {
 //assigment operator
-  Info("operator=(const AliVAODParticle& in)","Implement opertator= in your particle!!!");
-  return *this;
+  if(this!=&in) {
+  } return *this;
 }
 

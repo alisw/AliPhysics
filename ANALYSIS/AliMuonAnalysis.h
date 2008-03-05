@@ -53,6 +53,10 @@ class AliMuonAnalysis: public AliAnalysis
     TH2F *fHInvMassAllvsPt;    // Invariant mass vs Pt distribution
 
     AliAODParticleCut* fPartCut;//Particle Cut
+
+    AliMuonAnalysis(const AliMuonAnalysis&); // Not implemented
+    AliMuonAnalysis& operator=(const AliMuonAnalysis&); // Not implemented
+
     ClassDef(AliMuonAnalysis,1)
 };
 
