@@ -1,7 +1,10 @@
 #define AliAnalysisTaskMuonAODfromGeneral_cxx
 
 // 19 Nov 2007
-// Class implementation for the specific dimuon AOD generation from a general AOD
+// Class implementation for the specific muon AOD generation
+// Extracts only muon tracks from a general AOD and builds dimuons
+// Livio Bianchi, Universita' di Torino
+
 
 #include "TTree.h"
 #include "TROOT.h"
@@ -11,6 +14,7 @@
 #include "TRandom.h"
 
 #include "AliAODEvent.h"
+#include "AliAnalysisTask.h"
 #include "AliAnalysisTaskMuonAODfromGeneral.h"
 #include "AliAODHandler.h"
 #include "AliAnalysisManager.h"
@@ -171,17 +175,12 @@ void AliAnalysisTaskMuonAODfromGeneral::Exec(Option_t *) {
   }
   
   fInfos->SetBeamEnergy(fBeamEnergy);
-  fInfos->ev=fNewAOD;
-  fInfos->ei=fInfos;
-  fInfos->he=header;
-  fInfos->tr=fNewAOD->GetTracks();
-  fInfos->di=fDimuons;
-  fInfos->fMUON_Single_LPt_L0=0;
-  fInfos->fMUON_Single_HPt_L0=1;
-  fInfos->fMUON_Like_LPt_L0=2; 
-  fInfos->fMUON_Like_HPt_L0=3;  
-  fInfos->fMUON_Unlike_LPt_L0=4;
-  fInfos->fMUON_Unlike_HPt_L0=5;
+  fInfos->SetEv(fNewAOD);
+  fInfos->SetEi(fInfos);
+  fInfos->SetHe(header);
+  fInfos->SetTr(fNewAOD->GetTracks());
+  fInfos->SetDi(fDimuons);
+  fInfos->SelectTriggerBits(0,1,2,3,4,5);
   if(ExistMuon) ft->Fill();
   ncall++;
 
