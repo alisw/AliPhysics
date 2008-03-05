@@ -30,6 +30,7 @@
 #include "AliAODFmdCluster.h"
 
 class TTree;
+class TFolder;
 
 class AliAODEvent : public AliVEvent {
 
@@ -51,8 +52,8 @@ class AliAODEvent : public AliVEvent {
   AliAODEvent();
   virtual ~AliAODEvent();
 
-  //AliAODEvent(const AliAODEvent& aodevent);  // not implemented
-  //AliAODEvent& operator=(const AliAODEvent& aodevent);  // not implemented
+  AliAODEvent(const AliAODEvent& aodevent);             
+  AliAODEvent& operator=(const AliAODEvent& aodevent);  
 
   void          AddObject(TObject *obj);
   void          RemoveObject(TObject *obj);
@@ -159,6 +160,7 @@ class AliAODEvent : public AliVEvent {
   void    CreateStdContent();
   void    SetStdNames();
   void    GetStdContent();
+  void    CreateStdFolders();
   void    ResetStd(Int_t trkArrSize = 0, 
 		   Int_t vtxArrSize = 0, 
 		   Int_t v0ArrSize = 0, 
@@ -174,8 +176,9 @@ class AliAODEvent : public AliVEvent {
 
  private :
 
-  TList *fAODObjects; //  list of AODObjects
-  
+  TList   *fAODObjects; //  list of AODObjects
+  TFolder *fAODFolder;  //  folder structure of branches
+ 
   // standard content
   AliAODHeader    *fHeader;       //! event information
   TClonesArray    *fTracks;       //! charged tracks
@@ -191,7 +194,7 @@ class AliAODEvent : public AliVEvent {
 
   static const char* fAODListName[kAODListN]; //!
 
-  ClassDef(AliAODEvent,3);
+  ClassDef(AliAODEvent, 4);
 };
 
 #endif

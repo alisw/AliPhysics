@@ -23,6 +23,8 @@ class AliAODCaloCells : public TNamed
 
   AliAODCaloCells();
   AliAODCaloCells(const char* name, const char* title, AODCells_t ttype=kUndef);
+  AliAODCaloCells(const AliAODCaloCells& cells); 
+  AliAODCaloCells& operator=(const AliAODCaloCells& cells);
   
   virtual ~AliAODCaloCells();
   
@@ -48,9 +50,6 @@ class AliAODCaloCells : public TNamed
   Bool_t      fIsSorted;     //! true if cell arrays are sorted by index
   Char_t      fType;         // Cell type
   
- private:
-  AliAODCaloCells(const AliAODCaloCells& tow); 
-  AliAODCaloCells& operator=(const AliAODCaloCells& tow);
   
   ClassDef(AliAODCaloCells, 1);
 };

@@ -34,6 +34,38 @@ AliAODCaloCells::AliAODCaloCells(const char* name, const char* title, AODCells_t
   // TNamed constructor
 }
 
+AliAODCaloCells::AliAODCaloCells(const AliAODCaloCells& cells) :
+    TNamed(cells),
+    fNCells(cells.fNCells),
+    fCellNumber(0),
+    fAmplitude(0),
+    fIsSorted(cells.fIsSorted),
+    fType(cells.fType)
+{
+// Copy constructor
+
+    fCellNumber = new Short_t[fNCells];
+    fAmplitude =  new Double32_t[fNCells];
+
+    for (Int_t i = 0; i < fNCells; i++) {
+	fCellNumber[i]    = cells.fCellNumber[i];
+	fAmplitude[i]     = cells.fAmplitude[i];
+    }
+}
+
+AliAODCaloCells& AliAODCaloCells::operator=(const AliAODCaloCells& cells)
+{
+// Assignment operator
+    if(&cells == this) return *this;
+    TNamed::operator=(cells);
+    fNCells = cells.fNCells;
+    for (Int_t i = 0; i < fNCells; i++) {
+	fCellNumber[i]    = cells.fCellNumber[i];
+	fAmplitude[i]     = cells.fAmplitude[i];
+    }
+    return *this;
+}
+
 AliAODCaloCells::~AliAODCaloCells()
 {
   // destructor

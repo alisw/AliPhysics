@@ -35,6 +35,41 @@ AliAODTracklets::AliAODTracklets(const char* name, const char* title) : TNamed(n
   // TNamed constructor
 }
 
+AliAODTracklets::AliAODTracklets(const AliAODTracklets& tracklet) :
+    TNamed(tracklet),
+    fNTracks(tracklet.fNTracks),
+    fTheta(0),
+    fPhi(0),
+    fDeltaPhi(0),
+    fLabels(0)
+{
+// Copy constructor
+    fTheta = new Double32_t[fNTracks];
+    fPhi = new Double32_t[fNTracks];
+    fDeltaPhi = new Double32_t[fNTracks];
+    fLabels = new Int_t[fNTracks];
+    for (Int_t i = 0; i < fNTracks; i++) {
+	fTheta[i]    = tracklet.fTheta[i];
+	fPhi[i]      = tracklet.fPhi[i];
+	fDeltaPhi[i] = tracklet.fDeltaPhi[i];
+	fLabels[i]   = tracklet.fLabels[i];
+    }
+}
+
+AliAODTracklets& AliAODTracklets::operator=(const AliAODTracklets& tracklet)
+{
+// Assignment operator
+    if(&tracklet == this) return *this;
+    TNamed::operator=(tracklet);
+    fNTracks = tracklet.fNTracks;
+        for (Int_t i = 0; i < fNTracks; i++) {
+	fTheta[i]    = tracklet.fTheta[i];
+	fPhi[i]      = tracklet.fPhi[i];
+	fDeltaPhi[i] = tracklet.fDeltaPhi[i];
+	fLabels[i]   = tracklet.fLabels[i];
+    }
+}
+
 void AliAODTracklets::CreateContainer(Int_t nTracks)
 {
   // function that creates container to store tracklets
@@ -53,6 +88,7 @@ void AliAODTracklets::CreateContainer(Int_t nTracks)
   fDeltaPhi = new Double32_t[fNTracks];
   fLabels = new Int_t[fNTracks];
 }
+
 
 AliAODTracklets::~AliAODTracklets()
 {

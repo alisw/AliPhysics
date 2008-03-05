@@ -19,6 +19,8 @@ class AliAODTracklets : public TNamed
  public:
   AliAODTracklets();
   AliAODTracklets(const char* name, const char* title);
+  AliAODTracklets(const AliAODTracklets& evt); 
+  AliAODTracklets& operator=(const AliAODTracklets& evt);
 
   virtual ~AliAODTracklets();
 
@@ -40,9 +42,6 @@ class AliAODTracklets : public TNamed
   Double32_t *fDeltaPhi;     //[fNTracks] array with delta phi values
   Int_t      *fLabels;       //[fNTracks] array with labels of tracklets
 
- private:
-  AliAODTracklets(const AliAODTracklets& evt); 
-  AliAODTracklets& operator=(const AliAODTracklets& evt);
 
   ClassDef(AliAODTracklets, 2);
 };

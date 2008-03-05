@@ -20,7 +20,9 @@
 //     Author: Markus Oldenburg, CERN
 //-------------------------------------------------------------------------
 
+#include <TROOT.h>
 #include <TTree.h>
+#include <TFolder.h>
 
 #include "AliAODEvent.h"
 #include "AliAODHeader.h"
@@ -45,6 +47,7 @@ ClassImp(AliAODEvent)
 AliAODEvent::AliAODEvent() :
   AliVEvent(),
   fAODObjects(new TList()),
+  fAODFolder(0),
   fHeader(0),
   fTracks(0),
   fVertices(0),
@@ -61,10 +64,84 @@ AliAODEvent::AliAODEvent() :
 }
 
 //______________________________________________________________________________
+AliAODEvent::AliAODEvent(const AliAODEvent& aod):
+  AliVEvent(aod),
+  fAODObjects(new TList()),
+  fAODFolder(new TFolder()),
+  fHeader(new AliAODHeader(*aod.fHeader)),
+  fTracks(new TClonesArray(*aod.fTracks)),
+  fVertices(new TClonesArray(*aod.fVertices)),
+  fV0s(new TClonesArray(*aod.fV0s)),
+  fTracklets(new AliAODTracklets(*aod.fTracklets)),
+  fJets(new TClonesArray(*aod.fJets)),
+  fEmcalCells(new AliAODCaloCells(*aod.fEmcalCells)),
+  fPhosCells(new AliAODCaloCells(*aod.fPhosCells)),
+  fCaloClusters(new TClonesArray(*aod.fCaloClusters)),
+  fFmdClusters(new TClonesArray(*aod.fFmdClusters)),
+  fPmdClusters(new TClonesArray(*aod.fPmdClusters))
+{
+  // Copy constructor
+  AddObject(fHeader);
+  AddObject(fTracks);
+  AddObject(fVertices);
+  AddObject(fV0s);
+  AddObject(fTracklets);
+  AddObject(fJets);
+  AddObject(fEmcalCells);
+  AddObject(fPhosCells);
+  AddObject(fCaloClusters);
+  AddObject(fFmdClusters);
+  AddObject(fPmdClusters);
+
+  GetStdContent();
+}
+
+//______________________________________________________________________________
+AliAODEvent & AliAODEvent::operator=(const AliAODEvent& aod) {
+
+    // Assignment operator
+
+    if(&aod == this) return *this;
+    AliVEvent::operator=(aod);
+
+    fAODObjects      = new TList();
+    fAODFolder       = new TFolder();
+    fHeader          = new AliAODHeader(*aod.fHeader);
+    fTracks          = new TClonesArray(*aod.fTracks);
+    fVertices        = new TClonesArray(*aod.fVertices);
+    fV0s             = new TClonesArray(*aod.fV0s);
+    fTracklets       = new AliAODTracklets(*aod.fTracklets);
+    fJets            = new TClonesArray(*aod.fJets);
+    fEmcalCells      = new AliAODCaloCells(*aod.fEmcalCells);
+    fPhosCells       = new AliAODCaloCells(*aod.fPhosCells);
+    fCaloClusters    = new TClonesArray(*aod.fCaloClusters);
+    fFmdClusters     = new TClonesArray(*aod.fFmdClusters);
+    fPmdClusters     = new TClonesArray(*aod.fPmdClusters);
+    
+    fAODObjects = new TList();
+    
+    AddObject(fHeader);
+    AddObject(fTracks);
+    AddObject(fVertices);
+    AddObject(fV0s);
+    AddObject(fTracklets);
+    AddObject(fJets);
+    AddObject(fEmcalCells);
+    AddObject(fPhosCells);
+    AddObject(fCaloClusters);
+    AddObject(fFmdClusters);
+    AddObject(fPmdClusters);
+    GetStdContent();
+    return *this;
+}
+
+
+//______________________________________________________________________________
 AliAODEvent::~AliAODEvent() 
 {
 // destructor
     delete fAODObjects;
+    delete fAODFolder;
 }
 
 //______________________________________________________________________________
@@ -115,7 +192,7 @@ void AliAODEvent::CreateStdContent()
 
   // read back pointers
   GetStdContent();
-
+  CreateStdFolders();
   return;
 }
 
@@ -138,6 +215,25 @@ void AliAODEvent::SetStdNames()
   else{
     printf("%s:%d SetStdNames() Wrong number of Std Entries \n",(char*)__FILE__,__LINE__);
   }
+} 
+
+void AliAODEvent::CreateStdFolders()
+{
+    // Create the standard folder structure
+    fAODFolder = gROOT->GetRootFolder()->AddFolder("AOD", "AOD");
+    if(fAODObjects->GetEntries()==kAODListN){
+	for(int i = 0;i < fAODObjects->GetEntries();i++){
+	    TObject *fObj = fAODObjects->At(i);
+	    if(fObj->InheritsFrom("TClonesArray")){
+		fAODFolder->AddFolder(fAODListName[i], fAODListName[i], (TCollection*) fObj);
+	    } else {
+		fAODFolder->AddFolder(fAODListName[i], fAODListName[i], 0);
+	    }
+	}
+    }
+    else{
+	printf("%s:%d CreateStdFolders() Wrong number of Std Entries \n",(char*)__FILE__,__LINE__);
+    }
 } 
 
 //______________________________________________________________________________
