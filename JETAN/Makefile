@@ -12,6 +12,7 @@ ifneq ($(ESD_INCLUDE),)
    ALICEINC += -I../$(AOD_INCLUDE)
    ALICEINC += -I../$(STEERBase_INCLUDE)
    ALICEINC += -I../$(ANALYSIS_INCLUDE)
+   ALICEINC += -I../$(ANALYSISalice_INCLUDE)
  else
     ifneq ($(ALICE_ROOT),)
        ALICEINC += -I$(ALICE_ROOT)/include
