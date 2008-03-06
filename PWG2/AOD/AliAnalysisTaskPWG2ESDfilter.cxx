@@ -62,6 +62,49 @@ AliAnalysisTaskPWG2ESDfilter::AliAnalysisTaskPWG2ESDfilter(const char* name):
     DefineOutput(0, TTree::Class());
 }
 
+AliAnalysisTaskPWG2ESDfilter::AliAnalysisTaskPWG2ESDfilter(const AliAnalysisTaskPWG2ESDfilter &task):
+  AliAnalysisTask(),
+  fDebug(0),
+  fTree(0x0),
+  fESD(0x0),
+  fAOD(0x0),
+  fTreeA(0x0),
+  fTrackFilter(0x0),
+  fKinkFilter(0x0),
+  fV0Filter(0x0),
+  fPWG2AODTracks(0x0)
+{
+  // Copy
+  fDebug = task.fDebug;
+  fTree = task.fTree;
+  fESD = task.fESD;
+  fAOD =  task.fAOD;
+  fTreeA = task.fTreeA;
+  fTrackFilter = task.fTrackFilter;
+  fKinkFilter = task.fKinkFilter;
+  fV0Filter = task.fV0Filter;
+  fPWG2AODTracks = task.fPWG2AODTracks;
+}
+
+AliAnalysisTaskPWG2ESDfilter& AliAnalysisTaskPWG2ESDfilter::operator=(const AliAnalysisTaskPWG2ESDfilter &task)
+{
+  // Assignment
+  if (&task == this) return *this;
+  TTask::operator=(task);
+
+  fDebug = task.fDebug;
+  fTree = task.fTree;
+  fESD = task.fESD;
+  fAOD =  task.fAOD;
+  fTreeA = task.fTreeA;
+  fTrackFilter = task.fTrackFilter;
+  fKinkFilter = task.fKinkFilter;
+  fV0Filter = task.fV0Filter;
+  fPWG2AODTracks = task.fPWG2AODTracks;
+
+  return *this;
+}
+
 void AliAnalysisTaskPWG2ESDfilter::CreateOutputObjects()
 {
 // Create the output container
@@ -80,7 +123,8 @@ void AliAnalysisTaskPWG2ESDfilter::CreateOutputObjects()
 
     fAOD->AddObject(fPWG2AODTracks);
 
-    TBranch *newBranch = fTreeA->Branch(name, &fPWG2AODTracks);
+    //    TBranch *newBranch = fTreeA->Branch(name, &fPWG2AODTracks);
+    fTreeA->Branch(name, &fPWG2AODTracks);
     fTreeA->GetUserInfo()->Add(fPWG2AODTracks);
 
     // --- END PWG2 specific ---
@@ -176,8 +220,8 @@ void AliAnalysisTaskPWG2ESDfilter::Exec(Option_t */*option*/)
     header->SetRefMultiplicity(nTracks);
     header->SetRefMultiplicityPos(nPosTracks);
     header->SetRefMultiplicityNeg(nTracks - nPosTracks);
-//
-//    
+
+    
     Int_t nV0s      = fESD->GetNumberOfV0s();
     Int_t nCascades = fESD->GetNumberOfCascades();
     Int_t nKinks    = fESD->GetNumberOfKinks();
