@@ -824,6 +824,7 @@ AC_CONFIG_FILES([Makefile
 		 TPCLib/mapping2array.cxx
 		 TPCLib/OnlineDisplay/Makefile
 		 RCU/Makefile
+		 RCU/test/Makefile
 		 PHOS/Makefile
 		 TRD/Makefile
 		 MUON/Makefile
