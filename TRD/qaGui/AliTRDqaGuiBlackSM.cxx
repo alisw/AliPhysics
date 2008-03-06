@@ -99,12 +99,12 @@ AliTRDqaGuiBlackSM::AliTRDqaGuiBlackSM(TGWindow *parent)
   fGSelect->Resize(100, fGPrev->GetHeight());
   fGSelect->Select(fIdx,0);
 
-  const char *textTypes[7] = {
-    "pedestals", "noise", "pedestalDist", "noiseDist", "signal", "entries", "entriesDist"
+  const char *textTypes[8] = {
+    "pedestals", "noise", "pedestalDist", "noiseDist", "signal", "entries", "entriesDist", "entriesRM"
   };
   
   fGSelectType = new TGComboBox(fGPanel);
-  for(int i=0; i<7; i++) fGSelectType->AddEntry(textTypes[i], i);
+  for(int i=0; i<8; i++) fGSelectType->AddEntry(textTypes[i], i);
   fGSelectType->Resize(100, fGPrev->GetHeight());
   fGSelectType->Select(fIdxType, 0);
 
@@ -155,9 +155,9 @@ void AliTRDqaGuiBlackSM::SetQAFile(const char *filename) {
   // Set the file with histograms
   //
  
-  const char *names[7] = {"ped", "noise", "pedDist", "noiseDist", "signal", "entries", "entriesDist"};
-  const char *opt[7] = {"col", "col", "", "", "", "colz", ""};
-  const Int_t kLogy[7] = {0, 0, 1, 1, 1, 0, 1};
+  const char *names[8] = {"ped", "noise", "pedDist", "noiseDist", "signal", "entries", "entriesDist", "entriesRM"};
+  const char *opt[8] = {"col", "col", "", "", "", "colz", "", "col"};
+  const Int_t kLogy[8] = {0, 0, 1, 1, 1, 0, 1, 0};
 
   fFileName = filename;
  

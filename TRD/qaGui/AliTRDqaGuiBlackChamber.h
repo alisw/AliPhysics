@@ -36,6 +36,7 @@ class AliTRDqaGuiBlackChamber : public TGCompositeFrame {
   AliTRDqaGuiBlackChamber();
   AliTRDqaGuiBlackChamber(TGWindow *parent);
   AliTRDqaGuiBlackChamber& operator = (const AliTRDqaGuiBlackChamber& /*g*/) { return *this; };
+  AliTRDqaGuiBlackChamber(const AliTRDqaGuiBlackChamber &);
   ~AliTRDqaGuiBlackChamber() {};
   
   void SetQAFile(const char *filename);

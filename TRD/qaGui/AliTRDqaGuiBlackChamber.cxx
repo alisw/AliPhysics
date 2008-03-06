@@ -65,8 +65,9 @@ AliTRDqaGuiBlackChamber::AliTRDqaGuiBlackChamber()
     fGCanvasDown(0),
     fGSelectSM(0),
     fGSelectChamber(0),
+    fGSelectView(0),
     fGPrevSM(0),
-    fGPrevChamber(0),
+    fGPrevChamber(0), 
     fGNextSM(0),
     fGNextChamber(0)
 {
@@ -87,6 +88,7 @@ AliTRDqaGuiBlackChamber::AliTRDqaGuiBlackChamber(TGWindow *parent)
     fGCanvasDown(0),
     fGSelectSM(0),
     fGSelectChamber(0),
+    fGSelectView(0),
     fGPrevSM(0),
     fGPrevChamber(0),
     fGNextSM(0),
@@ -211,7 +213,7 @@ void AliTRDqaGuiBlackChamber::SetQAFile(const char *filename) {
   //const char *names[5] = {"ped", "noise", "pedDist", "noiseDist", "signal"};
   const char *names[10] = {
     "ped", "noise", "pedDist", "noiseDist", "signal",
-    "entries", "", "entriesDist", "", ""
+    "entries", "entriesRM", "entriesDist", "", ""
   };
   const char *opt[10] = {"colz", "colz", "", "", "", "colz", "colz", "", "", ""};
   const Int_t kLogy[10] = {0, 0, 1, 1, 1, 0, 0, 1, 1,1};

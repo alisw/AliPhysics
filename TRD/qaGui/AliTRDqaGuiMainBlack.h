@@ -32,6 +32,7 @@ class AliTRDqaGuiMainBlack : public TGMainFrame {
 
   AliTRDqaGuiMainBlack(TGWindow *parent);
   AliTRDqaGuiMainBlack& operator = (const AliTRDqaGuiMainBlack& /*g*/) { return *this; };
+  AliTRDqaGuiMainBlack(const AliTRDqaGuiMainBlack &);
   ~AliTRDqaGuiMainBlack() {}
 
   void SetQAFile(const char *file);

@@ -35,6 +35,7 @@ class AliTRDqaGuiMain : public TGMainFrame {
   AliTRDqaGuiMain();
   AliTRDqaGuiMain(TGWindow *parent);
   AliTRDqaGuiMain& operator = (const AliTRDqaGuiMain& /*g*/) { return *this; };
+  AliTRDqaGuiMain (const AliTRDqaGuiMain&);
   ~AliTRDqaGuiMain() {}
 
   void SetQAFile(const char *file);

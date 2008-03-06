@@ -37,8 +37,11 @@ ClassImp(AliTRDqaGuiMainBlack)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-AliTRDqaGuiMainBlack::AliTRDqaGuiMainBlack(TGWindow *parent) :
-  TGMainFrame(parent, 400, 400) 
+AliTRDqaGuiMainBlack::AliTRDqaGuiMainBlack(TGWindow *parent) 
+: TGMainFrame(parent, 400, 400),
+  fGTabPanel(0),
+  fGSM(0),
+  fGChamber(0)
 {
   //
   // Main constructor

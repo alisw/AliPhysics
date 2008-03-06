@@ -35,6 +35,7 @@ class AliTRDqaGuiClustersSM : public TGCompositeFrame {
   AliTRDqaGuiClustersSM();
   AliTRDqaGuiClustersSM(TGWindow *parent);
   AliTRDqaGuiClustersSM& operator = (const AliTRDqaGuiClustersSM& /*g*/) { return *this; };
+  AliTRDqaGuiClustersSM(const AliTRDqaGuiClustersSM&);
   ~AliTRDqaGuiClustersSM() {}
   
   void SetQAFile(const char *filename);

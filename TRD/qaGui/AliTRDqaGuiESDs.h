@@ -31,6 +31,7 @@ class AliTRDqaGuiESDs : public TGCompositeFrame {
   AliTRDqaGuiESDs():TGCompositeFrame(),fPage(0) {}
   AliTRDqaGuiESDs(TGWindow *parent, Int_t page);
   AliTRDqaGuiESDs& operator = (const AliTRDqaGuiESDs& /*g*/) { return *this; };
+  AliTRDqaGuiESDs(const AliTRDqaGuiESDs &);
   ~AliTRDqaGuiESDs() {}
 
   void SetPage(Int_t page) {fPage = page;}
