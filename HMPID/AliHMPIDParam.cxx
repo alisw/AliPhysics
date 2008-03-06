@@ -103,7 +103,7 @@ AliHMPIDParam::AliHMPIDParam(Bool_t noGeo=kFALSE):TNamed("HmpidParam","default v
         IdealPosition(i,fM[i]);
       } else {
         TGeoPhysicalNode *pnode = pne->GetPhysicalNode();
-        if(pnode) fM[i]=pnode->GetMatrix();
+        if(pnode) fM[i]=new TGeoHMatrix(*(pnode->GetMatrix()));
         else {
           fM[i]=new TGeoHMatrix;
           IdealPosition(i,fM[i]);

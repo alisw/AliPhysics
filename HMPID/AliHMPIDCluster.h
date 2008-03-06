@@ -82,7 +82,7 @@ protected:
   Double_t      fChi2;        //some estimator of the fit quality
   TObjArray    *fDigs;        //! list of digits forming this cluster
   static  Bool_t fgDoCorrSin; //flag to switch on/off correction for Sinusoidal to cluster reco
-  AliHMPIDParam *fParam;      // Pointer to AliHMPIDParam
+  AliHMPIDParam *fParam;      //!Pointer to AliHMPIDParam
   
 private:
 /*
@@ -96,7 +96,7 @@ private:
   AliHMPIDCluster &operator=(const AliHMPIDCluster& c);   //dummy assignment operator
       
   
-  ClassDef(AliHMPIDCluster,8) //HMPID cluster class
+  ClassDef(AliHMPIDCluster,9) //HMPID cluster class
 };
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
