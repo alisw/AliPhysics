@@ -1243,8 +1243,8 @@ Int_t AliHLTCOMPHuffmanAltro::CreateCodeTable()
   //  }
   
   // findout maximal and minimal codelength and print them out
-    Int_t maxcodelength = fTranslationTable[0].fvalidcodelength;
-    Int_t mincodelength = TIMEBINS;
+    UInt_t maxcodelength = fTranslationTable[0].fvalidcodelength;
+    UInt_t mincodelength = TIMEBINS;
 
     for (Int_t kk = 0; kk < TIMEBINS; kk++)
       {

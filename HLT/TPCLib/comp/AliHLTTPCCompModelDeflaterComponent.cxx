@@ -36,9 +36,9 @@ AliHLTTPCCompModelDeflaterComponent gAliHLTTPCCompClusterModelDeflaterComponent;
 ClassImp(AliHLTTPCCompModelDeflaterComponent);
     
 AliHLTTPCCompModelDeflaterComponent::AliHLTTPCCompModelDeflaterComponent():
-  fForwardIfUncompressed(true),
   fModelDeflater(),
-  fConverter()
+  fConverter(),
+  fForwardIfUncompressed(true)
     {
       // see header file for class documentation
     }

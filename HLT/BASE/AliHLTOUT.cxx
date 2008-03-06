@@ -76,7 +76,7 @@ int AliHLTOUT::GetNofDataBlocks()
 }
 
 int AliHLTOUT::SelectFirstDataBlock(AliHLTComponentDataType dt, AliHLTUInt32_t spec,
-				    AliHLTModuleAgent::AliHLTOUTHandlerType handlerType)
+				    AliHLTModuleAgent::AliHLTOUTHandlerType /*handlerType*/)
 {
   // see header file for class documentation
   if (CheckStatusFlag(kLocked)) return -EPERM;

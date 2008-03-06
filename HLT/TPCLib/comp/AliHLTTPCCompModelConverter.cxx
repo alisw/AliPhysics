@@ -53,8 +53,8 @@ AliHLTTPCCompModelConverter::AliHLTTPCCompModelConverter():
 AliHLTTPCCompModelConverter::AliHLTTPCCompModelConverter(AliHLTTPCCompModelAnalysis* modelanalysis):
   fInputTrackArray(),
   fOutputTrackArray("AliHLTTPCModelTrack"),
-  fMinHits(0),
-  fModelAnalysisInstance(modelanalysis)
+  fModelAnalysisInstance(modelanalysis),
+  fMinHits(0)
     {
       // see header file for class documentation
       for ( UInt_t slice=0; slice<36; slice++ )

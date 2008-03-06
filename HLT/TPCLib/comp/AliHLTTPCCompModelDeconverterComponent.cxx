@@ -44,7 +44,8 @@ AliHLTTPCCompModelDeconverterComponent gAliHLTTPCCompClusterModelDeconverterComp
 ClassImp(AliHLTTPCCompModelDeconverterComponent)
     
 AliHLTTPCCompModelDeconverterComponent::AliHLTTPCCompModelDeconverterComponent():
-    fOutputTracks(kTRUE)
+  fDeconverter(),
+  fOutputTracks(kTRUE)
     {
       // see header file for class documentation
     }

@@ -96,7 +96,7 @@ AliHLTComponent* AliHLTTPCCompDumpComponent::Spawn()
     {
       // see header file for class documentation
       return new AliHLTTPCCompDumpComponent;
-    };
+    }
 
 void AliHLTTPCCompDumpComponent::InitBitDataInput( AliHLTUInt8_t* input, UInt_t inputSize )
     {
@@ -106,7 +106,7 @@ void AliHLTTPCCompDumpComponent::InitBitDataInput( AliHLTUInt8_t* input, UInt_t 
       fBitDataCurrentInput = fBitDataCurrentInputStart = input;
       fBitDataCurrentInputEnd = input+inputSize;
       fBitDataCurrentWord = *fBitDataCurrentInput;
-    };
+    }
 
  bool AliHLTTPCCompDumpComponent::InputBit( AliHLTUInt8_t & value )
     {
@@ -126,7 +126,7 @@ void AliHLTTPCCompDumpComponent::InitBitDataInput( AliHLTUInt8_t* input, UInt_t 
 	    }
 	}
       return true;
-    };
+    }
 
 bool AliHLTTPCCompDumpComponent::InputBits( AliHLTUInt8_t & value, UInt_t const & bitCount )
     {
@@ -141,7 +141,7 @@ bool AliHLTTPCCompDumpComponent::InputBits( AliHLTUInt8_t & value, UInt_t const 
 	return false;
       value = (AliHLTUInt8_t)( temp & (AliHLTUInt64_t)0xFFFFFFFFULL );
       return true;
-    };
+    }
 
 bool AliHLTTPCCompDumpComponent::InputBits( AliHLTUInt16_t & value, UInt_t const & bitCount )
    {
@@ -156,7 +156,22 @@ bool AliHLTTPCCompDumpComponent::InputBits( AliHLTUInt16_t & value, UInt_t const
        return false;
      value = (AliHLTUInt16_t)( temp & (AliHLTUInt64_t)0xFFFFFFFFULL );
      return true;
-   };
+   }
+
+bool AliHLTTPCCompDumpComponent::InputBits( AliHLTUInt32_t & value, UInt_t const & bitCount )
+   {
+     // see header file for class documentation
+     if ( bitCount>32 ) 	 
+       { 	 
+	 HLTFatal( "Internal error: Attempt to write more than 32 bits (%u)", (unsigned)bitCount ); 	 
+	 return false; 	 
+       } 	 
+     AliHLTUInt64_t temp; 	 
+     if ( !InputBits( temp, bitCount ) ) 	 
+       return false; 	 
+     value = (AliHLTUInt32_t)( temp & (AliHLTUInt64_t)0xFFFFFFFFULL ); 	 
+     return true; 	 
+   }
 
 bool AliHLTTPCCompDumpComponent::InputBits( Int_t & value, UInt_t const & bitCount )
    {
@@ -171,7 +186,7 @@ bool AliHLTTPCCompDumpComponent::InputBits( Int_t & value, UInt_t const & bitCou
        return false;
      value = (Int_t)( temp & (AliHLTUInt64_t)0xFFFFFFFFULL );
      return true;
-   };
+   }
 
 bool AliHLTTPCCompDumpComponent::InputBits( AliHLTUInt64_t & value, UInt_t const & bitCount )
    {
@@ -207,7 +222,7 @@ bool AliHLTTPCCompDumpComponent::InputBits( AliHLTUInt64_t & value, UInt_t const
 	 bitsToRead -= curBitCount;
        }
      return true;
-   };
+   }
 
 void AliHLTTPCCompDumpComponent::Pad8Bits()
    {
@@ -220,7 +235,7 @@ void AliHLTTPCCompDumpComponent::Pad8Bits()
 	 fBitDataCurrentWord = *fBitDataCurrentInput;
 	 fBitDataCurrentPosInWord = 7;
        }
-   };
+   }
 
 bool AliHLTTPCCompDumpComponent::InputBytes( AliHLTUInt8_t* data, UInt_t const & byteCount )
    {
@@ -236,7 +251,7 @@ bool AliHLTTPCCompDumpComponent::InputBytes( AliHLTUInt8_t* data, UInt_t const &
 	 fBitDataCurrentPosInWord = 7;
        }
      return true;
-   };
+   }
 
 int AliHLTTPCCompDumpComponent::DoInit( int argc, const char** argv )
     {

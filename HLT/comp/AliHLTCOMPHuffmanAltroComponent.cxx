@@ -40,13 +40,12 @@ AliHLTCOMPHuffmanAltroComponent::AliHLTCOMPHuffmanAltroComponent(bool compressio
   fHuffmanCompressor(NULL),
   fCompressionSwitch(compression),
   fTrainingMode(kFALSE),
-  fHuffmanData(NULL),
   fOrigin(kAliHLTVoidDataOrigin),
   fRunNumber(0),
   fDataSpec(0),
   fTablePath(),
-  fNrcuTrailerwords(0)
- 
+  fNrcuTrailerwords(0),
+  fHuffmanData(NULL) 
 {
    // see header file for class documentation
   // or

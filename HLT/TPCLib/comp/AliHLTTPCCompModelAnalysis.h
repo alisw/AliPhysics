@@ -73,7 +73,7 @@ public:
   Bool_t GetfTrackAnalysis() {return fTrackAnalysis;};
 
   /** fill track arrays with track data from original and secondary tracking 
-   * @param firsttracklets      pointer to track array to be filled
+   * @param tracklets           pointer to track array to be filled
    * @param fillingfirsttracks  boolean to decide which track array is to be filled (1 for first, 0 for second)
    * @return 0 upon success
    */
@@ -141,7 +141,7 @@ private:
   Bool_t GetTrashTrackPythiaInfo(AliHLTTPCTrack* discardedtrack);
 
   /** compare information of a cluster not assigned to any track with its Pythia information
-   * @param discarded cluster  pointer to discarded cluster
+   * @param discardedcluster  pointer to discarded cluster
    * @return 0 upon correct decision (cluster not assigned to any track is true in Pythia, i.e. cluster = noise cluster)
    * @return 1 upon wrong decision (cluster wrongly discarded, i.e. it belongs to a valuable track according to Pythia)
    */
