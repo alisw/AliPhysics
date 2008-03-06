@@ -30,7 +30,6 @@
 #include "AliLog.h"
 #include "AliFieldMap.h"
 #include "AliMagFMapsV1.h"
-#include "AliMagFCheb.h"
 
 ClassImp(AliMagFMapsV1)
     
@@ -73,6 +72,17 @@ AliMagFMapsV1::AliMagFMapsV1(const char *name, const char *title, Int_t integ,
     
     file->Close();
     delete file;
+}
+
+
+//_______________________________________________________________________
+AliMagFMapsV1::AliMagFMapsV1(const AliMagFMapsV1 &magf):
+  fMeasuredMap(0)
+{
+  //
+  // Copy constructor
+  //
+  magf.Copy(*this);
 }
 
 //_______________________________________________________________________
@@ -123,3 +133,10 @@ Float_t AliMagFMapsV1::SolenoidField() const
 	return fSolenoid;
 }
 
+void AliMagFMapsV1::Copy(TObject &fm) const
+{
+  // dummy since the base class constructor is dummy
+  AliMagFMaps::Copy(fm);
+  AliMagFMapsV1* fmp = (AliMagFMapsV1*) &fm;
+  fmp->SetMeasuredMap(fMeasuredMap);
+}
