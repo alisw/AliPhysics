@@ -47,7 +47,6 @@ public:
   void GetInputDataTypes( AliHLTComponentDataTypeList& list );
 
   AliHLTComponentDataType GetOutputDataType();
-  Int_t GetOutputDataTypes( AliHLTComponentDataTypeList& tgtList );
 
   virtual void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier );
   AliHLTComponent* Spawn();

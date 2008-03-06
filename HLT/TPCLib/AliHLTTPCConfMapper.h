@@ -7,7 +7,7 @@
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTAltroEncoder.h
+/** @file   AliHLTTPCConfMapper.h
     @author Anders Vestbo, Matthias Richter
     @date   Conformal mapping base class.
     @brief  

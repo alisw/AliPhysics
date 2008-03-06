@@ -188,7 +188,7 @@ Int_t AliHLTTPCEventStatisticsProducerComponent::DoDeinit() {
 }
 
 // ------------------------------------------------------------------------------------------
-Int_t AliHLTTPCEventStatisticsProducerComponent::DoEvent( const AliHLTComponentEventData& /*evtData*/, AliHLTComponentTriggerData& trigData ) {
+Int_t AliHLTTPCEventStatisticsProducerComponent::DoEvent( const AliHLTComponentEventData& /*evtData*/, AliHLTComponentTriggerData& /*trigData*/ ) {
   // see header file for class documentation
 
   const AliHLTComponentBlockData* iter = NULL;
@@ -286,7 +286,7 @@ void AliHLTTPCEventStatisticsProducerComponent::InitializeEvent() {
 }
 
 // -- **********************************************************************************************
-void AliHLTTPCEventStatisticsProducerComponent::AddClusters( void* ptr , AliHLTUInt32_t size, Int_t slice, Int_t patch ) {
+void AliHLTTPCEventStatisticsProducerComponent::AddClusters( void* ptr , AliHLTUInt32_t /*size*/, Int_t slice, Int_t patch ) {
   // see header file for class documentation
 
   const AliHLTTPCClusterData* clusterData = (const AliHLTTPCClusterData*) ptr;
@@ -300,7 +300,7 @@ void AliHLTTPCEventStatisticsProducerComponent::AddClusters( void* ptr , AliHLTU
 }
 
 // -- **********************************************************************************************
-void AliHLTTPCEventStatisticsProducerComponent::AddTracks( void* ptr , AliHLTUInt32_t size, Int_t slice ) {
+void AliHLTTPCEventStatisticsProducerComponent::AddTracks( void* ptr , AliHLTUInt32_t /*size*/, Int_t slice ) {
   // see header file for class documentation
 
   const AliHLTTPCTrackletData* trackData = (const AliHLTTPCTrackletData*) ptr;

@@ -18,7 +18,7 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-/** @file   AliHLTAltroEncoder.cxx
+/** @file   AliHLTTPCConfMapper.cxx
     @author Anders Vestbo, Matthias Richter
     @date   Conformal mapping base class.
     @brief  

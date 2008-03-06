@@ -97,7 +97,7 @@ AliHLTComponent* AliHLTEventSummaryProducerComponent::Spawn() {
 
 
 // ------------------------------------------------------------------------------------------
-Int_t AliHLTEventSummaryProducerComponent::DoInit( int argc, const char** argv ) {
+Int_t AliHLTEventSummaryProducerComponent::DoInit( int /*argc*/, const char** /*argv*/ ) {
   // see header file for class documentation
 
   Int_t iResult = 0;

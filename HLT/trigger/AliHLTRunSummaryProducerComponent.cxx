@@ -99,7 +99,7 @@ AliHLTComponent* AliHLTRunSummaryProducerComponent::Spawn() {
 
 
 // ------------------------------------------------------------------------------------------
-Int_t AliHLTRunSummaryProducerComponent::DoInit( int argc, const char** argv ) {
+Int_t AliHLTRunSummaryProducerComponent::DoInit( int /*argc*/, const char** /*argv*/ ) {
   // see header file for class documentation
 
   Int_t iResult = 0;
