@@ -13,6 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id:$ */
 #include <TGeoManager.h>
 #include <TGeoVolume.h>
 #include <TGeoBBox.h>
@@ -30,39 +31,36 @@ ClassImp(AliITSsegmentationSPD)
 fNpx(0),
 fNpz(0){
   // Default constructor
-  for(Int_t k=0; k<256; k++){
-    fCellSizeX[k] = 0.;
-    fCellSizeZ[k] = 0.;
-  }
 
+  // Initialization to default values
+  Init();
+
+  // Initialization of detector dimensions from TGeo
   if(strstr(opt,"TGeo")){
     if(!gGeoManager){
-      AliError("Geometry is not initialized\n");
+      AliError("Geometry is not initialized\n Using hardwired default values");
       return;
     }
     TGeoVolume *v=NULL;
     v = gGeoManager->GetVolume("ITSSPDlay1-sensor");
     if(!v){
       AliWarning("TGeo volume ITSSPDlay1-sensor not found (hint: use v11Hybrid geometry)\n Using hardwired default values");
-      SetDetSize(12800,69600,200); 
     }
     else {
       TGeoBBox *s=(TGeoBBox*)v->GetShape();
       SetDetSize(s->GetDX()*20000.,s->GetDZ()*20000.,s->GetDY()*20000.);
     }
-    Float_t bx[256],bz[280];
-    Int_t i;
-    SetNPads(256,160);  // Number of Bins in x and z
-    for(i=000;i<256;i++) bx[i] =  50.0; // in x all are 50 microns.
-    for(i=000;i<160;i++) bz[i] = 425.0; // most are 425 microns except below
-    for(i=160;i<280;i++) bz[i] =   0.0; // Outside of detector.
-    bz[ 31] = bz[ 32] = 625.0; // first chip boundry
-    bz[ 63] = bz[ 64] = 625.0; // first chip boundry
-    bz[ 95] = bz[ 96] = 625.0; // first chip boundry
-    bz[127] = bz[128] = 625.0; // first chip boundry
-    bz[160] = 425.0; // Set so that there is no zero pixel size for fNz.
-    SetBinSize(bx,bz); // Based on AliITSgeomSPD for now.
   }
+}
+
+//______________________________________________________________________
+AliITSsegmentationSPD::AliITSsegmentationSPD(AliITSgeom *gm):
+AliITSsegmentation(gm),
+fNpx(0),
+fNpz(0){
+  // Constructor
+   fCorr=0;
+   Init(); 
 }
 
 //_____________________________________________________________________________
@@ -219,15 +217,7 @@ Float_t AliITSsegmentationSPD::ZpitchFromCol(Int_t col) const {
     }
     return pitchz;
 }
-//______________________________________________________________________
-AliITSsegmentationSPD::AliITSsegmentationSPD(AliITSgeom *gm):
-AliITSsegmentation(gm),
-fNpx(0),
-fNpz(0){
-  // Constructor
-   fCorr=0;
-   Init(); 
-}
+
 //______________________________________________________________________
 void AliITSsegmentationSPD::Copy(TObject &obj) const {
   // protected method. copy this to obj
@@ -289,24 +279,24 @@ void AliITSsegmentationSPD::Init300(){
 
 //------------------------------
 void AliITSsegmentationSPD::Init(){
-// Initialize infromation for 6 read out chip 425X50 micron pixel SPD 
-// detectors. This chip is 150 microns thick by 1.28 cm in x by 8.375 cm
-// long. It has 256  50 micron pixels in x and 197 mostly 425 micron size
-// pixels in z. The two pixels between each readout chip are 625 microns long.
+  // Initialize infromation for 6 read out chip 425X50 micron pixel SPD 
+  // detectors. This chip is 150 microns thick by 1.28 cm in x by 8.375 cm
+  // long. It has 256  50 micron pixels in x and 197 mostly 425 micron size
+  // pixels in z. The two pixels between each readout chip are 625 microns long.
 
-    //const Float_t kconv=10000.;
-    Int_t i;
-    fNpx = 256; // The number of X pixel Cell same as in fCellSizeX array size
-    fNpz = 192; // The number of Z pixel Cell same as in fCellSizeZ array size
-    for(i=0;i<fNpx;i++) fCellSizeX[i] = 50.0; // microns all the same
-    for(i=0;i<280;i++) fCellSizeZ[i] = ZpitchFromCol(i); // microns
-//    for(i=fNpz;i<280;i++) fCellSizeZ[i] = 0.0; // zero out rest of array
-    fDx = 0;
-    for(i=0;i<fNpx;i++) fDx += fCellSizeX[i];
-    fDz = 0;
-    for(i=0;i<fNpz;i++) fDz += fCellSizeZ[i];
-    fDy = 300.0; //microns  SPD sensitive layer thickness
-    //printf(" AliITSsegmentationSPD - Init: fNpx fNpz fDx fDz %d %d %f %f\n",fNpx, fNpz, fDx, fDz);
+  Float_t bx[256],bz[280];
+  Int_t i;
+  SetNPads(256,160);  // Number of Bins in x and z
+  for(i=000;i<256;i++) bx[i] =  50.0; // in x all are 50 microns.
+  for(i=000;i<160;i++) bz[i] = 425.0; // most are 425 microns except below
+  for(i=160;i<280;i++) bz[i] =   0.0; // Outside of detector.
+  bz[ 31] = bz[ 32] = 625.0; // first chip boundary
+  bz[ 63] = bz[ 64] = 625.0; // first chip boundary
+  bz[ 95] = bz[ 96] = 625.0; // first chip boundary
+  bz[127] = bz[128] = 625.0; // first chip boundary
+  bz[160] = 425.0; // Set so that there is no zero pixel size for fNz.
+  SetBinSize(bx,bz); 
+  SetDetSize(12800,69600,200);  // full lengths (x,z,y) in microns 
 
 }
 //------------------------------
