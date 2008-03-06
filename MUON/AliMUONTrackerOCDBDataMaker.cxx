@@ -41,7 +41,6 @@ AliMUONTrackerOCDBDataMaker::AliMUONTrackerOCDBDataMaker(const char* ocdbPath,
                                                            const char* type)
 : AliMUONVTrackerDataMaker(),
   fIsValid(kTRUE),
-  fIsOwner(kTRUE),
   fData(0x0),
   fSource(Form("%s-%010d-%s",ocdbPath,runNumber,type))
 {
@@ -54,17 +53,18 @@ AliMUONTrackerOCDBDataMaker::AliMUONTrackerOCDBDataMaker(const char* ocdbPath,
     
     TString stype(type);
     stype.ToUpper();
+    Bool_t isSingleEvent(kTRUE);
     
     if ( stype == "PEDESTALS" )
     {
-      fData = new AliMUONTrackerData(Form("PED%d",runNumber),"Pedestals",2,kFALSE);
+      fData = new AliMUONTrackerData(Form("PED%d",runNumber),"Pedestals",2,isSingleEvent);
       fData->SetDimensionName(0,"Mean");
       fData->SetDimensionName(1,"Sigma");
       store = AliMUONCalibrationData::CreatePedestals(runNumber);
     }
     else if ( stype == "GAINS" ) 
     {
-      fData = new AliMUONTrackerData(Form("GAIN%d",runNumber),"Gains",5,kFALSE);
+      fData = new AliMUONTrackerData(Form("GAIN%d",runNumber),"Gains",5,isSingleEvent);
       fData->SetDimensionName(0,"a1");
       fData->SetDimensionName(1,"a2");
       fData->SetDimensionName(2,"thres");
@@ -74,7 +74,7 @@ AliMUONTrackerOCDBDataMaker::AliMUONTrackerOCDBDataMaker(const char* ocdbPath,
     }
     else if ( stype == "CAPACITANCES" )
     {
-      fData = new AliMUONTrackerData(Form("CAPA%d",runNumber),"Capacitances",2,kFALSE);
+      fData = new AliMUONTrackerData(Form("CAPA%d",runNumber),"Capacitances",2,isSingleEvent);
       fData->SetDimensionName(0,"Capa");
       fData->SetDimensionName(1,"Injection gain");
       store = AliMUONCalibrationData::CreateCapacitances(runNumber);
@@ -98,5 +98,15 @@ AliMUONTrackerOCDBDataMaker::AliMUONTrackerOCDBDataMaker(const char* ocdbPath,
 AliMUONTrackerOCDBDataMaker::~AliMUONTrackerOCDBDataMaker()
 {
   /// dtor
-  if ( fIsOwner) delete fData;
+  delete fData;
 }
+
+//_____________________________________________________________________________
+Long64_t 
+AliMUONTrackerOCDBDataMaker::Merge(TCollection*)
+{
+  /// Merge
+  AliError("Not implemented. Does it have sense ?");
+  return 0;
+}
+

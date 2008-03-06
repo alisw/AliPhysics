@@ -17,7 +17,10 @@
 
 #include "AliMUONTrackerRawDataMaker.h"
 
+#include "AliCDBManager.h"
+#include "AliCDBStorage.h"
 #include "AliCodeTimer.h"
+#include "AliLog.h"
 #include "AliLog.h"
 #include "AliMUON2DMap.h"
 #include "AliMUONCalibParamND.h"
@@ -25,17 +28,15 @@
 #include "AliMUONDigitCalibrator.h"
 #include "AliMUONDigitMaker.h"
 #include "AliMUONDigitStoreV2R.h"
+#include "AliMUONRawStreamTracker.h"
+#include "AliMUONRawStreamTrackerHP.h"
 #include "AliMUONTrackerData.h"
 #include "AliMUONVDigit.h"
 #include "AliMUONVDigitStore.h"
 #include "AliMpDDLStore.h"
-#include "AliCDBManager.h"
-#include "AliCDBStorage.h"
 #include "AliRawEventHeaderBase.h"
 #include "AliRawReader.h"
-#include "AliLog.h"
 #include <Riostream.h>
-#include "AliMUONRawStreamTracker.h"
 
 ///\class AliMUONTrackerRawDataMaker
 ///
@@ -50,31 +51,39 @@ ClassImp(AliMUONTrackerRawDataMaker)
 Int_t AliMUONTrackerRawDataMaker::fgkCounter(0);
 
 //_____________________________________________________________________________
-AliMUONTrackerRawDataMaker::AliMUONTrackerRawDataMaker(AliRawReader* reader, Bool_t histogram)
+AliMUONTrackerRawDataMaker::AliMUONTrackerRawDataMaker(AliRawReader* reader, 
+                                                       Bool_t histogram,
+                                                       Bool_t useHPdecoder)
 : AliMUONVTrackerDataMaker(),
   fRawReader(reader),
   fAccumulatedData(0x0),
   fOneEventData(new AliMUON2DMap(true)),
-  fIsOwner(kTRUE),
   fSource("unspecified"),
   fIsRunning(kFALSE),
-  fNumberOfEvents(0)
+  fNumberOfEvents(0),
+  fRunNumber(0),
+  fIsEventByEvent(kFALSE),
+  fUseHPDecoder(useHPdecoder)
 {
   /// Ctor
-  reader->NextEvent(); // to be sure to get run number available
-  
-  Int_t runNumber = reader->GetRunNumber();
-  
+    
+  if (fRawReader)
+  {
+    fRawReader->NextEvent(); // to be sure to get run number available
+    fRunNumber = fRawReader->GetRunNumber();
+    fRawReader->RewindEvents();
+  }
+    
   TString name;
   
-  if (!runNumber)
+  if (!fRunNumber)
   {
     ++fgkCounter;    
     name = Form("%sRAW(%d)",(histogram?"H":""),fgkCounter);
   }
   else
   {
-    name = Form("%sRAW%d",(histogram?"H":""),runNumber);
+    name = Form("%sRAW%d",(histogram?"H":""),fRunNumber);
   }
   
   fAccumulatedData = new AliMUONTrackerData(name.Data(),"charge values",1);
@@ -83,8 +92,6 @@ AliMUONTrackerRawDataMaker::AliMUONTrackerRawDataMaker(AliRawReader* reader, Boo
   {
     fAccumulatedData->MakeHistogramForDimension(0,kTRUE);
   }
-  
-  reader->RewindEvents();
 }
 
 //_____________________________________________________________________________
@@ -92,7 +99,28 @@ AliMUONTrackerRawDataMaker::~AliMUONTrackerRawDataMaker()
 {
   /// dtor
   delete fOneEventData;
-  if ( fIsOwner ) delete fAccumulatedData;
+  delete fAccumulatedData;
+  delete fRawReader;
+}
+
+//_____________________________________________________________________________
+Long64_t
+AliMUONTrackerRawDataMaker::Merge(TCollection*)
+{
+  /// Merge objects in collection
+  
+//  AliRawReader* fRawReader; //!< reader of the data (owner)
+//  AliMUONVTrackerData* fAccumulatedData; ///< data (owner)
+//  AliMUONVStore* fOneEventData; ///< data for one event (owner)
+//  TString fSource; ///< where the data comes from
+//  Bool_t fIsRunning; ///< whether we are running or are paused
+//  Int_t fNumberOfEvents; ///< number of events seen
+//  Int_t fRunNumber; ///< run number of the data
+//  Bool_t fIsEventByEvent; ///< we only keep one event's data (no accumulation)
+//  Bool_t fUseHPDecoder; ///< whether to use high performance decoder or not (false by default)
+
+  AliError("Not implemented yet");
+  return 0;
 }
 
 //_____________________________________________________________________________
@@ -128,7 +156,16 @@ AliMUONTrackerRawDataMaker::NextEvent()
 
   ++nphysics;
 
-  AliMUONVRawStreamTracker* stream = new AliMUONRawStreamTracker(fRawReader);
+  AliMUONVRawStreamTracker* stream = 0x0;
+  
+  if ( fUseHPDecoder ) 
+  {
+    stream = new AliMUONRawStreamTrackerHP(fRawReader);
+  }
+  else
+  {
+    stream = new AliMUONRawStreamTracker(fRawReader);
+  }
     
   stream->First();
     

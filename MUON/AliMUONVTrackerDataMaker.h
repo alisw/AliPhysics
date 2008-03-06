@@ -17,6 +17,7 @@
 #endif
 
 class AliMUONVTrackerData;
+class TCollection;
 
 class AliMUONVTrackerDataMaker : public TObject
 {
@@ -36,6 +37,12 @@ public:
   /// Whether we are running (must be false if IsRunnable is false)
   virtual Bool_t IsRunning() const = 0;
   
+  /// Whether we're only handling event-by-event data (i.e. no accumulation)
+  virtual Bool_t IsEventByEvent() const { return kFALSE; }
+  
+  /// Set event-by-event mode
+  virtual void SetEventByEvent(Bool_t /*flag*/) { }
+  
   /// Set the running state (no effect if not runnable)
   virtual void SetRunning(Bool_t flag) = 0;
   
@@ -45,9 +52,6 @@ public:
   /// Rewind events (no effect if not runnable)
   virtual void Rewind() = 0;
   
-  /// Whether we're owner of our data
-  virtual void SetOwner(Bool_t flag) = 0; 
-  
   /// Set our source URI
   virtual void SetSource(const char* source) = 0;
   
@@ -56,6 +60,9 @@ public:
 
   /// Get the number of events we have seen (but not necessarily used...)
   virtual Int_t NumberOfEvents() const = 0;
+  
+  /// Merge
+  virtual Long64_t Merge(TCollection* list) = 0;
   
   ClassDef(AliMUONVTrackerDataMaker,1) // Producer of AliMUONVTrackerData
 };

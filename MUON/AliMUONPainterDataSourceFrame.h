@@ -37,9 +37,9 @@ public:
 
   void CreateRawDataSource();
   
-  void DataReaderWasRegistered(AliMUONVTrackerDataMaker* reader);
+  void DataMakerWasRegistered(AliMUONVTrackerDataMaker* reader);
   
-  void DataReaderWasUnregistered(AliMUONVTrackerDataMaker* reader);
+  void DataMakerWasUnregistered(AliMUONVTrackerDataMaker* reader);
 
   void HistogramButtonClicked();
   

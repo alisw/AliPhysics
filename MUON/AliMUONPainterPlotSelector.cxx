@@ -142,7 +142,7 @@ AliMUONPainterPlotSelector::CreateDimensionButtons(const char* dataSourceName)
   
   AliDebug(1,Form("Creating dimension buttons for dataSource %s",dataSourceName));
   
-  AliMUONVTrackerData* data = AliMUONPainterRegistry::Instance()->FindDataSource(dataSourceName);
+  AliMUONVTrackerData* data = AliMUONPainterRegistry::Instance()->DataSource(dataSourceName);
 
   TGButtonGroup* bg = new TGButtonGroup(this,0,3,5,0,dataSourceName);
   
@@ -246,14 +246,14 @@ AliMUONPainterPlotSelector::NumberOfEventsChanged()
 
   // find first the sender of the signal
   
-  AliMUONVTrackerData* data = reinterpret_cast<AliMUONVTrackerData*>(gTQSender);
-  
-  TGButton* button = AliMUONPainterInterfaceHelper::FindButtonByUserData(*fDataSourceNames,data);
-  
-  if (button)
-  {
-    button->SetToolTipText(Form("%d events",data->NumberOfEvents()),250);
-  }
+//  AliMUONVTrackerData* data = reinterpret_cast<AliMUONVTrackerData*>(gTQSender);
+//  
+//  TGButton* button = AliMUONPainterInterfaceHelper::FindButtonByUserData(*fDataSourceNames,data);
+//  
+//  if (button)
+//  {
+//    button->SetToolTipText(Form("%d events",data->NumberOfEvents()),250);
+//  }
 }
 
 //_____________________________________________________________________________
@@ -262,29 +262,33 @@ AliMUONPainterPlotSelector::DataSourceWasUnregistered(AliMUONVTrackerData* data)
 {
   /// A data source has been unregistered : remove it from the interface
   
-  AliDebug(1,Form("Unregistering %s",data->GetName()));
+  TGButton* button = AliMUONPainterInterfaceHelper::FindButtonByUserData(*fDataSourceNames,data);
 
-  TGButton* button = AliMUONPainterInterfaceHelper::FindButtonByName(*fDataSourceNames,
-                                                                     data->GetName());
-  AliMUONVTrackerData* check = reinterpret_cast<AliMUONVTrackerData*>(button->GetUserData());
-  if ( !button || check != data )
+  TGButton* bd = AliMUONPainterInterfaceHelper::FindDownButton(*fDataSourceNames);
+
+  if ( bd == button ) 
   {
-    AliError("Something is seriously wrong. Please check");
-    return;
+    // selected data source is the one we are removing...
+    // revert to "none" before actually removing it.
+    SourceButtonWasClicked(1);
   }
   
-  fDataSourceNames->Remove(button);
-  delete button;
-  button->DestroyWindow();
+  AliMUONPainterInterfaceHelper::RemoveButton(*fDataSourceNames,button);
+
+  // do not forget to re-connect things
+  fDataSourceNames->Connect("Clicked(Int_t)","AliMUONPainterPlotSelector",
+                            this,
+                            "SourceButtonWasClicked(Int_t)");
   
-  fDataSourceNames->Show();
-  
+
   TObject* o = fDimensionButtonMap->Remove(new TObjString(data->GetName()));
   
   if (!o)
   {
     AliError("Remove failed. Please check");    
   }
+
+  fDataSourceNames->Show();
   
   Layout();
 }

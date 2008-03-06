@@ -64,6 +64,8 @@ public:
   
   static void Unselect(TGButtonGroup& bg, const TString& buttonName, Bool_t emit=kFALSE);
     
+  static void RemoveButton(TGButtonGroup& bg, TGButton* button);
+  
   ClassDef(AliMUONPainterInterfaceHelper,1) // Helper class for TGButtonGroup manipulation
 };
 

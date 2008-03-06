@@ -37,7 +37,9 @@ public:
   using AliMUONVStore::FindObject;
   
   virtual TObject* FindObject(UInt_t i) const;
-  
+
+  virtual TObject* FindObject(Int_t i, Int_t j) const;
+
   virtual TIterator* CreateIterator() const;
   
   using AliMUONVStore::GetSize;

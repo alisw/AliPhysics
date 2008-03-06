@@ -17,9 +17,14 @@
 
 #include "AliMUONPainterDataSourceItem.h"
 
+#include "AliMUONPainterEnv.h"
+#include "AliMUONPainterHelper.h"
+#include "AliMUONPainterRegistry.h"
 #include "AliMUONVTrackerDataMaker.h"
 #include "AliMUONVTrackerData.h"
 #include "AliLog.h"
+#include <TFile.h>
+#include <TGFileDialog.h>
 #include <TGLabel.h>
 #include <TGButton.h>
 #include <TSystem.h>
@@ -54,6 +59,11 @@ namespace
     while ( ok ) 
     {
       ok = reader->NextEvent();
+      if ( reader->IsZombie() ) 
+      {
+        AliMUONPainterRegistry::Instance()->DeleteZombies();
+        return 0x0;
+      }
       if ( !reader->IsRunning() ) gSystem->Sleep(1000);
     }
     
@@ -66,58 +76,86 @@ namespace
 //_____________________________________________________________________________
 AliMUONPainterDataSourceItem::AliMUONPainterDataSourceItem(const TGWindow* p,
                                                            UInt_t w, UInt_t h,
-                                                           AliMUONVTrackerDataMaker* reader)
+                                                           AliMUONVTrackerDataMaker* maker)
 : TGCompositeFrame(p,w,h,kHorizontalFrame),
-  fDataReader(reader),
-  fSourceName(new TGLabel(this,reader->Data()->Name())),
-  fSource(new TGLabel(this,reader->Source().Data())),
+  fDataMaker(maker),
+  fSourceName(new TGLabel(this,maker->Data()->Name())),
+  fSource(new TGLabel(this,maker->Source().Data())),
   fNumberOfEvents(new TGLabel(this,Form("%10d",0))),
-  fRun(new TGTextButton(this,"Run")),
-  fStop(new TGTextButton(this,"Stop")),
-  fRewind(new TGTextButton(this,"Rewind")),
-  fRemove(0x0),//new TGTextButton(this,"Remove")),
+  fRun(0x0),
+  fStop(0x0),
+  fRewind(0x0),
+  fRemove(new TGTextButton(this,"Remove")),
+  fSave(new TGTextButton(this,"Save")),
+  fSaveAs(new TGTextButton(this,"Save As...")),
   fThread(0x0),
   fShouldReset(kFALSE)
 {
     /// ctor
+ 
+    SetCleanup(kDeepCleanup);
     
     Update();
-    
-    fRun->SetEnabled(reader->Data()->IsRunnable());
-    fRun->Connect("Clicked()",
-                  "AliMUONPainterDataSourceItem",
-                  this,
-                  "Run()");
-    
-    fStop->SetEnabled(kFALSE);
-    fStop->Connect("Clicked()",
-                   "AliMUONPainterDataSourceItem",
-                   this,
-                   "Stop()");
-    
-    fRewind->SetEnabled(kFALSE);
-    fRewind->Connect("Clicked()",
-                     "AliMUONPainterDataSourceItem",
-                     this,
-                     "Rewind()");
-    
-//    fRemove->Connect("Clicked()",
-//                     "AliMUONPainterDataSourceItem",
-//                     this,
-//                     "Remove()");
     
     AddFrame(fSourceName, new TGLayoutHints(kLHintsNormal | kLHintsCenterY,5,5,5,5));
     AddFrame(fSource,new TGLayoutHints(kLHintsExpandX | kLHintsCenterY,5,5,5,5));
     AddFrame(fNumberOfEvents,new TGLayoutHints(kLHintsNormal | kLHintsCenterY,5,5,5,5));
-    AddFrame(fRun,new TGLayoutHints(kLHintsCenterY | kLHintsCenterY,5,5,5,5));
-    AddFrame(fStop,new TGLayoutHints(kLHintsCenterY | kLHintsCenterY,5,5,5,5));
-    AddFrame(fRewind,new TGLayoutHints(kLHintsCenterY | kLHintsCenterY,5,5,5,5));    
-//    AddFrame(fRemove,new TGLayoutHints(kLHintsCenterY | kLHintsCenterY,5,5,5,5));    
-    
-    reader->Data()->Connect("NumberOfEventsChanged()",
+
+    if ( fDataMaker->IsRunnable() ) 
+    {
+      fRun = new TGTextButton(this,"Run");
+      fStop = new TGTextButton(this,"Stop");
+      fRewind = new TGTextButton(this,"Rewind");
+      
+      fRun->SetEnabled(!maker->Data()->IsSingleEvent());
+      fRun->Connect("Clicked()",
+                    "AliMUONPainterDataSourceItem",
+                    this,
+                    "Run()");
+      
+      fStop->SetEnabled(kFALSE);
+      fStop->Connect("Clicked()",
+                     "AliMUONPainterDataSourceItem",
+                     this,
+                     "Stop()");
+      
+      fRewind->SetEnabled(kFALSE);
+      fRewind->Connect("Clicked()",
+                       "AliMUONPainterDataSourceItem",
+                       this,
+                       "Rewind()");
+      
+      AddFrame(fRun,new TGLayoutHints(kLHintsCenterY | kLHintsCenterY,5,5,5,5));
+      AddFrame(fStop,new TGLayoutHints(kLHintsCenterY | kLHintsCenterY,5,5,5,5));
+      AddFrame(fRewind,new TGLayoutHints(kLHintsCenterY | kLHintsCenterY,5,5,5,5));    
+    }
+
+    AddFrame(fRemove,new TGLayoutHints(kLHintsCenterY | kLHintsCenterY,5,5,5,5));    
+
+    AddFrame(fSave,new TGLayoutHints(kLHintsCenterY | kLHintsCenterY,5,5,5,5));    
+
+    AddFrame(fSaveAs,new TGLayoutHints(kLHintsCenterY | kLHintsCenterY,5,5,5,5));    
+
+    maker->Data()->Connect("NumberOfEventsChanged()",
                             "AliMUONPainterDataSourceItem",
                             this,
                             "Update()");
+    
+    fRemove->Connect("Clicked()",
+                     "AliMUONPainterDataSourceItem",
+                     this,
+                     "Remove()");
+    
+    fSave->Connect("Clicked()",
+                   "AliMUONPainterDataSourceItem",
+                   this,
+                   "Save()");
+
+    fSaveAs->Connect("Clicked()",
+                   "AliMUONPainterDataSourceItem",
+                   this,
+                   "SaveWithDialog()");
+    
     Resize();
 }
 
@@ -135,7 +173,10 @@ void
 AliMUONPainterDataSourceItem::EnableRun() 
 { 
   /// Enable run button
-  fRun->SetEnabled(kTRUE); 
+  if ( fRun ) 
+  {
+    fRun->SetEnabled(kTRUE); 
+  }
 }
   
 //_____________________________________________________________________________
@@ -143,15 +184,28 @@ void
 AliMUONPainterDataSourceItem::DisableRun() 
 { 
   /// Disable run button
-  fRun->SetEnabled(kFALSE); 
+  if ( fRun )
+  {
+    fRun->SetEnabled(kFALSE); 
+  }
 }
+
+//_____________________________________________________________________________
+void
+AliMUONPainterDataSourceItem::Remove()
+{
+  /// Remove
   
+  MakeZombie();
+  AliMUONPainterRegistry::Instance()->Unregister(fDataMaker);
+}
+
 //_____________________________________________________________________________
 void
 AliMUONPainterDataSourceItem::Reset()
 {
   /// Reset the data
-  fDataReader->Data()->Clear();
+  fDataMaker->Data()->Clear();
 }
 
 //_____________________________________________________________________________
@@ -168,11 +222,14 @@ AliMUONPainterDataSourceItem::Rewind()
   delete fThread;
   fThread = 0x0;
   
-  fRun->SetEnabled(kTRUE);
-  fStop->SetEnabled(kFALSE);
-  fRewind->SetEnabled(kFALSE);
+  if ( fRun && fStop && fRewind ) 
+  {
+    fRun->SetEnabled(kTRUE);
+    fStop->SetEnabled(kFALSE);
+    fRewind->SetEnabled(kFALSE);
+  }
   
-  fDataReader->Rewind();
+  fDataMaker->Rewind();
   
   fShouldReset = kTRUE;
 }
@@ -191,20 +248,80 @@ AliMUONPainterDataSourceItem::Run()
     fShouldReset = kFALSE;
   }
   
-//  fRemove->SetEnabled(kFALSE);
+  fRemove->SetEnabled(kFALSE);
   
   if (!fThread)
   {
     fParams[0] = (Long_t)(this);
-    fParams[1] = (Long_t)(fDataReader);
+    fParams[1] = (Long_t)(fDataMaker);
     fThread = new TThread(RunFunction,(void*)(&fParams[0]));
     fThread->Run();
   }
   
-  fDataReader->SetRunning(kTRUE);
+  fDataMaker->SetRunning(kTRUE);
   
-  fRun->SetEnabled(kFALSE);
-  fStop->SetEnabled(kTRUE);
+  if ( fRun && fStop )
+  {
+    fRun->SetEnabled(kFALSE);
+    fStop->SetEnabled(kTRUE);
+  }
+}
+
+//_____________________________________________________________________________
+void
+AliMUONPainterDataSourceItem::Save(const char* filename)
+{
+  /// Save the data maker
+  
+  TFile* f = TFile::Open(filename,"RECREATE");
+  
+  fDataMaker->Write();
+  
+  f->Write();
+  f->Close();
+  
+  delete f;
+}
+
+//_____________________________________________________________________________
+void
+AliMUONPainterDataSourceItem::Save()
+{
+  /// Save the data maker (filename is fixed)
+  
+  TString dname(fDataMaker->Data()->GetName());
+  dname.ToLower();
+  
+  TString outputDir(AliMUONPainterHelper::Instance()->Env()->String("LastSaveDir","."));
+
+  TString filename(Form("%s/mchview.%s.root",gSystem->ExpandPathName(outputDir.Data()),dname.Data()));
+  
+  Save(filename.Data());
+}
+
+//_____________________________________________________________________________
+void
+AliMUONPainterDataSourceItem::SaveWithDialog()
+{
+  /// Save the data maker (filename given by dialog)
+  
+  TGFileInfo fileInfo;
+  
+//  fileInfo.fFileTypes = fgkFileTypes;
+  
+  delete[] fileInfo.fIniDir;
+  
+  AliMUONPainterEnv* env = AliMUONPainterHelper::Instance()->Env();
+  
+  fileInfo.fIniDir = StrDup(env->String("LastSaveDir","."));
+  
+  new TGFileDialog(gClient->GetRoot(),gClient->GetRoot(),
+                   kFDSave,&fileInfo);
+  
+  env->Set("LastSaveDir",fileInfo.fIniDir);
+  env->Save();  
+  
+  Save(fileInfo.fFilename);  
 }
 
 //_____________________________________________________________________________
@@ -215,12 +332,15 @@ AliMUONPainterDataSourceItem::Stop()
   
   StopRunning();
   
-  fDataReader->SetRunning(kFALSE);
+  fDataMaker->SetRunning(kFALSE);
   
-  fStop->SetEnabled(kFALSE);
-  fRun->SetEnabled(kTRUE);
-
-  //  fRemove->SetEnabled(kTRUE);
+  if ( fStop && fRun ) 
+  {
+    fStop->SetEnabled(kFALSE);
+    fRun->SetEnabled(kTRUE);
+  }
+  
+  fRemove->SetEnabled(kTRUE);
 }
 
 //_____________________________________________________________________________
@@ -229,7 +349,7 @@ AliMUONPainterDataSourceItem::Update()
 {
   /// Update ourselves
   
-  fNumberOfEvents->SetText(Form("%10d",fDataReader->Data()->NumberOfEvents()));
+  fNumberOfEvents->SetText(Form("%10d",fDataMaker->Data()->NumberOfEvents()));
 }
 
 //_____________________________________________________________________________

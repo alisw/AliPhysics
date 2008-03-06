@@ -17,8 +17,11 @@
 
 #include "AliMUONManuPadPainter.h"
 
+#include "AliLog.h"
+#include "AliMUONPainterGroup.h"
 #include "AliMUONPainterHelper.h"
 #include "AliMUONPainterPadStore.h"
+#include "AliMUONTrackerDataHistogrammer.h"
 #include "AliMUONVCalibParam.h"
 #include "AliMUONVDigit.h"
 #include "AliMUONVTrackerData.h"
@@ -29,10 +32,11 @@
 #include "AliMpPad.h"
 #include "AliMpSegmentation.h"
 #include "AliMpVSegmentation.h"
-#include "AliLog.h"
-#include <float.h>
+#include <TCanvas.h>
+#include <TH1.h>
 #include <TVirtualPad.h>
 #include <TVirtualX.h>
+#include <float.h>
 
 ///\class AliMUONManuPadPainter
 ///
@@ -165,6 +169,33 @@ AliMUONManuPadPainter::Describe(const AliMUONVTrackerData& data, Int_t dataIndex
   {
     return "invalid";
   }
+}
+
+//_____________________________________________________________________________
+void 
+AliMUONManuPadPainter::DrawHistogramClone(Double_t* values) const
+{
+  /// Draw histogram for pad at (values[0],values[1])
+  
+  if ( !values ) return;
+
+  AliMUONPainterGroup* group = Master()->PlotterGroup();
+  
+  if ( !group ) return; // no data to histogram in this painter
+    
+  AliMpPad pad = PadByPosition(values[0],values[1]);
+  
+  AliMUONVTrackerData* data = group->Data();
+  
+  AliMUONTrackerDataHistogrammer tdh(*data,0,-1);
+
+  fHistogram = tdh.CreateChannelHisto(fDetElemId, fManuId,
+                                      pad.GetLocation().GetSecond());
+  if (fHistogram) 
+  {
+    new TCanvas();
+    fHistogram->Draw();
+  }  
 }
 
 //_____________________________________________________________________________

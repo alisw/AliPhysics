@@ -59,9 +59,6 @@ public:
   
   void Rewind();
   
-  /// Tell if we are owner of our data or not
-  void SetOwner(Bool_t flag) { fIsOwner = flag; }
-  
   /// Get our source URI
   virtual TString Source() const { return fSource.Data(); }
   
@@ -74,6 +71,8 @@ public:
   /// Number of events seen
     Int_t NumberOfEvents() const { return fNumberOfEvents; }
 
+  virtual Long64_t Merge(TCollection* list);
+  
 private:
   /// Not implemented
   AliMUONTrackerCalibratedDataMaker(const AliMUONTrackerCalibratedDataMaker& rhs);
@@ -83,21 +82,20 @@ private:
   Bool_t ConvertDigits();
   
 private:
-  AliRawReader* fRawReader; ///< reader of the data (owner)
-  AliMUONVTrackerData* fAccumulatedData; ///< data (owner if fIsOwner==kTRUE)
+  AliRawReader* fRawReader; //!< reader of the data (owner)
+  AliMUONVTrackerData* fAccumulatedData; ///< data (owner)
   AliMUONVStore* fOneEventData; ///< data for one event (owner)
-  Bool_t fIsOwner; ///< whether we are owner of our data or not
   TString fSource; ///< where the data comes from
   Bool_t fIsRunning; ///< whether we are running or are paused
   AliMUONDigitMaker* fDigitMaker; ///< digit maker
-  AliMUONDigitCalibrator* fDigitCalibrator; ///< digit calibrator (if calibrating data)
+  AliMUONDigitCalibrator* fDigitCalibrator; //!< digit calibrator (if calibrating data)
   AliMUONCalibrationData* fCalibrationData; ///< calibration data (if calibrating data)  
   AliMUONVDigitStore* fDigitStore; ///< digit store (if calibrating data)
   TString fCDBPath; ///< OCDB path (if calibrating data)
   Int_t fNumberOfEvents; ///< number of events seen
   static Int_t fgkCounter; ///< to count the number of instances
   
-  ClassDef(AliMUONTrackerCalibratedDataMaker,1) // Producer of calibrated AliMUONVTrackerData from raw data
+  ClassDef(AliMUONTrackerCalibratedDataMaker,2) // Producer of calibrated AliMUONVTrackerData from raw data
 };
 
 #endif

@@ -106,6 +106,17 @@ AliMUON1DMap::FindObject(UInt_t i) const
 }
 
 //_____________________________________________________________________________
+TObject* 
+AliMUON1DMap::FindObject(Int_t i, Int_t j) const
+{
+  /// Get the object located at index (i,j), if it exists, and if i,j is correct.
+  
+  UInt_t uid = ( ( ( j & 0xFFFF ) << 16 ) | ( i & 0xFFFF ) );
+  
+  return fMap->GetValue(uid);
+}
+
+//_____________________________________________________________________________
 TIterator*
 AliMUON1DMap::CreateIterator() const
 {

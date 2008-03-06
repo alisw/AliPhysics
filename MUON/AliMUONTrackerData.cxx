@@ -57,20 +57,20 @@ const Int_t AliMUONTrackerData::fgkVirtualExtraDimension = 1;
 //_____________________________________________________________________________
 AliMUONTrackerData::AliMUONTrackerData(const char* name, const char* title,
                                        Int_t dimension,
-                                       Bool_t runnable)
+                                       Bool_t issingleevent)
 : AliMUONVTrackerData(name,title),
+fIsSingleEvent(issingleevent),
 fChannelValues(0x0),
 fManuValues(0x0),
 fBusPatchValues(0x0),
 fDEValues(0x0),
 fChamberValues(0x0),
 fPCBValues(0x0),
-fDimension(dimension*2+fgkExtraDimension),
+fDimension(External2Internal(dimension)+fgkExtraDimension),
 fNevents(0x0),
 fDimensionNames(new TObjArray(fDimension+fgkVirtualExtraDimension)),
 fExternalDimensionNames(new TObjArray(dimension)),
 fExternalDimension(dimension),
-fIsRunnable(runnable),
 fHistogramming(new Int_t[fExternalDimension]),
 fChannelHistos(0x0),
 fXmin(0.0),
@@ -104,28 +104,56 @@ AliMUONTrackerData::~AliMUONTrackerData()
 
 //_____________________________________________________________________________
 Bool_t
-AliMUONTrackerData::Add(const AliMUONVStore& store, Int_t numberOfEvents)
+AliMUONTrackerData::Add(const AliMUONVStore& store)
 {
   /// Add the given external store to our internal store
   
   AliCodeTimerAuto(GetName());
     
-  fNevents += numberOfEvents;
+  if ( IsSingleEvent() && fNevents == 1 ) 
+  {
+    AliError(Form("%s is supposed to be single event only",GetName()));
+    return kFALSE;
+  }
+  
+  ++fNevents;
+  
   NumberOfEventsChanged();
   
   if (!fChannelValues)
   {
+    Int_t numberOfBusPatches(0);
+    Int_t numberOfDEs(0);
+    
+    // get number of bus patches and number of detection element
+    // to initialize fBusPatchValues and fDEValues below
+    
+    TExMapIter it(AliMpDDLStore::Instance()->GetBusPatchesIterator());
+    Long_t key,value;
+    while ( it.Next(key,value) ) ++numberOfBusPatches;
+    AliMpDEIterator deIt;
+    deIt.First();
+    while (!deIt.IsDone())
+    {
+      ++numberOfDEs;
+      deIt.Next();
+    }
+    
     fChannelValues = new AliMUON2DMap(kTRUE);
     fManuValues = new AliMUON2DMap(kTRUE);
     fPCBValues = new AliMUON2DMap(kFALSE);
-    fBusPatchValues = new AliMUON1DMap;
-    fDEValues = new AliMUON1DMap;
+    fBusPatchValues = new AliMUON1DMap(numberOfBusPatches);
+    fDEValues = new AliMUON1DMap(numberOfDEs);
     fChamberValues = new AliMUON1DArray;
   }
   
   TIter next(store.CreateIterator());
   AliMUONVCalibParam* external;
   
+  Int_t nk(2);
+  
+  if ( IsSingleEvent() ) nk = 1;
+
   while ( ( external = static_cast<AliMUONVCalibParam*>(next()) ) )
   {
     if ( external->Dimension() != ExternalDimension() )
@@ -180,7 +208,7 @@ AliMUONTrackerData::Add(const AliMUONVStore& store, Int_t numberOfEvents)
             FillChannel(detElemId,manuId,i,j,vext);
           }
           
-          for ( Int_t k = 0; k < 2; ++k ) 
+          for ( Int_t k = 0; k < nk; ++k ) 
           {
             channel->SetValueAsDoubleFast(i,ix+k,channel->ValueAsDoubleFast(i,ix+k)+value[k]);
 
@@ -519,6 +547,14 @@ AliMUONTrackerData::DimensionName(Int_t dim) const
 }
 
 //_____________________________________________________________________________
+Int_t 
+AliMUONTrackerData::External2Internal(Int_t index) const 
+{
+  /// From external to internal dimension
+  return IsSingleEvent() ? index : index*2;
+}
+
+//_____________________________________________________________________________
 TString 
 AliMUONTrackerData::ExternalDimensionName(Int_t dim) const
 {
@@ -835,7 +871,7 @@ AliMUONTrackerData::Print(Option_t* wildcard, Option_t* opt) const
   
   TNamed::Print(opt);
   
-  if ( fIsRunnable ) 
+  if ( !fIsSingleEvent ) 
   {
     cout << " Nevents=" << fNevents << endl;
   }
@@ -899,13 +935,20 @@ AliMUONTrackerData::SetDimensionName(Int_t index, const char* name)
   
   Int_t ix = External2Internal(index);
   
-  const char* prefix[] = { "mean", "sigma" };
-  
-  for ( Int_t i = 0; i < 2; ++i ) 
+  if ( !IsSingleEvent() ) 
   {
-    Int_t j = ix+i;
+    const char* prefix[] = { "mean", "sigma" };
+  
+    for ( Int_t i = 0; i < 2; ++i ) 
+    {
+      Int_t j = ix+i;
     
-    SetInternalDimensionName(j,Form("%s of %s",prefix[i],name));
+      SetInternalDimensionName(j,Form("%s of %s",prefix[i],name));
+    }
+  }
+  else
+  {
+    SetInternalDimensionName(index,name);
   }
   
   SetExternalDimensionName(index,name);
@@ -994,7 +1037,7 @@ AliMUONTrackerData::Value(const AliMUONVCalibParam& param, Int_t i, Int_t dim) c
   
   if ( value >= AliMUONVCalibParam::InvalidFloatValue() ) return AliMUONVCalibParam::InvalidFloatValue();
   
-  if ( TMath::Even(dim) ) 
+  if ( TMath::Even(dim) || IsSingleEvent() ) 
   {
     return value/occ;
   }
@@ -1002,9 +1045,16 @@ AliMUONTrackerData::Value(const AliMUONVCalibParam& param, Int_t i, Int_t dim) c
   {
     Double_t n = occ;
     
-    Double_t mean = param.ValueAsDouble(i,dim-1)/n;
+    if ( n > 1.0 ) 
+    {
+      Double_t mean = param.ValueAsDouble(i,dim-1)/n;
     
-    return  TMath::Sqrt(TMath::Abs((value-n*mean*mean)/(n-1.0)));
+      return TMath::Sqrt(TMath::Abs((value-n*mean*mean)/(n-1.0)));
+    }
+    else
+    {
+      return 0.0;
+    }
   }
   
   AliError("Why am I here ?");

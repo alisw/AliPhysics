@@ -152,7 +152,7 @@ TObject*
 AliMUONVStore::FindObject(Int_t, Int_t) const
 {
   /// Find an object using 2 identifiers
-  AliError("Not implemented");
+  AliError("(Int_t,Int_t) : Not implemented");
   return 0;
 }
 

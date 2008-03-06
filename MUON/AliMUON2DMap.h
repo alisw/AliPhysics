@@ -45,6 +45,8 @@ public:
   
   virtual TObject* FindObject(Int_t i, Int_t j) const;
 
+  virtual TObject* FindObject(UInt_t uid) const;
+
   /// Whether our internal storage is optimize to store (detection element id, manu id)  
   Bool_t IsOptimizedForDEManu() const { return fOptimizeForDEManu; }
   

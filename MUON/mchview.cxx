@@ -39,7 +39,7 @@ Int_t Usage()
   /// Printout available options of the program
   cout << "mchview " << endl;
   cout << "  --version : shows the current version of the program" << endl;
-  cout << "  --use filename.root : reuse a previously saved (from this program) root file" << endl;
+  cout << "  --use filename.root : reuse a previously saved (from this program) root file. Several --use can be used ;-)" << endl;
   return -1;
 }
 
@@ -56,7 +56,7 @@ int main(int argc, char** argv)
   
   Int_t nok(0);
   
-  TString fileToOpen;
+  TObjArray filesToOpen;
   
   for ( Int_t i = 0; i <= args.GetLast(); ++i ) 
   {
@@ -69,7 +69,7 @@ int main(int argc, char** argv)
     }
     if ( a == "--use" && i < args.GetLast() )
     {
-      fileToOpen = static_cast<TObjString*>(args.At(i+1))->String();
+      filesToOpen.Add(args.At(i+1));
       ++i;
       nok += 2;
     }
@@ -106,7 +106,12 @@ int main(int argc, char** argv)
    
   AliCodeTimer::Instance()->Print();
 
-  if ( fileToOpen.Length() > 0 ) theApp->Open(fileToOpen);
+  TIter next(&filesToOpen);
+  TObjString* s;
+  while ( ( s = static_cast<TObjString*>(next()) ) )
+  {
+    theApp->Open(s->String().Data());
+  }
   
   // --- Start the event loop ---
   theApp->Run(kTRUE);

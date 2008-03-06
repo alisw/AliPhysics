@@ -156,10 +156,17 @@ AliMUONPainterInterfaceHelper::Dump(const TGButtonGroup& bg)
   for ( Int_t i = ButtonStartingId(); i < bg.GetCount() + ButtonStartingId(); ++i ) 
   {
     TGTextButton* button = static_cast<TGTextButton*>(bg.GetButton(i));
-    cout << Form("i %2d button %s id %d wid %d ON %d",
+    if ( button ) 
+    {
+      cout << Form("i %2d button %s id %d wid %d ON %d",
                  i,button->GetTitle(),button->GetId(),
                  button->WidgetId(),
                  button->IsOn()) << endl;
+    }
+    else
+    {
+      cout << Form("i %2d button = 0x0",i) << endl;
+    }
   }
 }
 
@@ -173,9 +180,17 @@ AliMUONPainterInterfaceHelper::FindButtonByName(const TGButtonGroup& bg,
   for ( Int_t i = ButtonStartingId(); i < ButtonStartingId() + bg.GetCount(); ++i )
   {
     TGTextButton* button = static_cast<TGTextButton*>(bg.GetButton(i));
-    if ( name == button->GetTitle() )
+    if (!button)
     {
-      return button;
+      AliErrorClass(Form("(%s) : Something wrong",name.Data()));
+      Dump(bg);
+    }
+    else
+    {
+      if ( name == button->GetTitle() )
+      {
+        return button;
+      }
     }
   }
   return 0x0;
@@ -315,3 +330,36 @@ AliMUONPainterInterfaceHelper::Unselect(TGButtonGroup& bg,
   }  
 }
 
+//_____________________________________________________________________________
+void
+AliMUONPainterInterfaceHelper::RemoveButton(TGButtonGroup& bg,
+                                            TGButton* button)
+{
+  /// Remove a button
+  
+  // need to redo it from scratch in order not the leave holes in the
+  // id numbering
+  
+  TGButtonGroup bgtmp(bg.GetParent(),bg.GetTitle());
+  
+  Int_t id(ButtonStartingId());
+  
+  for ( Int_t i = ButtonStartingId(); i < ButtonStartingId() + bg.GetCount(); ++i ) 
+  {
+    TGTextButton* b = static_cast<TGTextButton*>(bg.GetButton(i));
+
+    if ( b != button ) 
+    {
+      TGButton* bc = new TGRadioButton(&bgtmp,b->GetTitle(),id);
+      ++id;
+      bc->SetUserData(b->GetUserData());
+      bc->SetOn(b->IsOn());
+    }    
+  }    
+
+  ClearButtons(bg);
+
+  Copy(bgtmp,bg);
+  
+  bg.Show();
+}

@@ -24,25 +24,27 @@ class TH1;
 class AliMUONTrackerDataHistogrammer : public TObject
 {
 public:
-  AliMUONTrackerDataHistogrammer(const AliMUONVTrackerData& data, Int_t dim);
+  AliMUONTrackerDataHistogrammer(const AliMUONVTrackerData& data, 
+                                 Int_t externalDim,
+                                 Int_t internalDim=-1);
   virtual ~AliMUONTrackerDataHistogrammer();
   
-  static TH1* CreateHisto(const AliMUONVPainter& painter);
-  
-  TH1* CreateBusPatchHisto(Int_t busPatchId) const;
-  
-  TH1* CreateChamberHisto(Int_t chamberId) const;
-  
+  static TH1* CreateHisto(const AliMUONVPainter& painter, 
+                          Int_t externalDim,
+                          Int_t internalDim);
+
   TH1* CreateChannelHisto(Int_t detElemId, Int_t manuId, 
                           Int_t manuChannel) const;
-  
-  TH1* CreateDEHisto(Int_t detElemId) const;
-  
-  TH1* CreateManuHisto(Int_t detElemId, Int_t manuId) const;
+    
+  Bool_t IsInternalMode() const { return fInternalDim >=0; }
   
 private:
 
-  TH1* CreateHisto(const char* name) const;
+  TH1* CreateManuHisto(Int_t detElemId, Int_t manuId, Int_t nbins, Double_t xmin, Double_t xmax) const;
+  
+  TH1* CreateHisto(const char* basename, Int_t nbins, Double_t xmin, Double_t xmax) const;
+  
+  void GetDataRange(const TObjArray& manuList, Double_t& xmin, Double_t& xmax) const;
   
   void Add(TH1& h, const AliMUONSparseHisto& sh) const;
   
@@ -54,9 +56,10 @@ private:
   
 private:
   const AliMUONVTrackerData& fData; ///< data we'll histogram 
-  Int_t fDim; ///< dimension we'll histogram
+  Int_t fExternalDim; ///< (external) dimension we'll histogram
+  Int_t fInternalDim; ///< (internal) dimension we'll make histogram for
   
-  ClassDef(AliMUONTrackerDataHistogrammer,1) // Make histograms from VTrackerData
+  ClassDef(AliMUONTrackerDataHistogrammer,2) // Make histograms from VTrackerData
 };
 
 #endif

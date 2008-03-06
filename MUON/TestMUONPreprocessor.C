@@ -71,12 +71,12 @@
 #include "TRandom.h"
 #endif
 
-void TestMUONPreprocessor(Int_t runNumber=80, const char* runType="PEDESTAL")
+void TestMUONPreprocessor(Int_t runNumber=80, const char* runType="CALIBRATION")
 {
   // runType can be :
   //
   // PEDESTAL -> pedestals
-  // ELECTRONICS_CALIBRATION -> gains
+  // CALIBRATION -> gains
   // PHYSICS -> HV
   // GMS
   
@@ -119,15 +119,24 @@ void TestMUONPreprocessor(Int_t runNumber=80, const char* runType="PEDESTAL")
   // AddInputFile(<system>, <detector>, <id>, <source>, <local-file>)
   // In this example we add 4 files originating from different LDCs but with the same id (PEDESTALS)
 
-  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","PEDESTALS","LDC0","$ALICE_ROOT/MUON/data/LDC0.ped");
-  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","PEDESTALS","LDC1","$ALICE_ROOT/MUON/data/LDC1.ped");
-  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","PEDESTALS","LDC2","$ALICE_ROOT/MUON/data/LDC2.ped");
-  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","PEDESTALS","LDC3","$ALICE_ROOT/MUON/data/LDC3.ped");
+//  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","PEDESTALS","LDC0","$ALICE_ROOT/MUON/data/LDC0.ped");
+//  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","PEDESTALS","LDC1","$ALICE_ROOT/MUON/data/LDC1.ped");
+//  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","PEDESTALS","LDC2","$ALICE_ROOT/MUON/data/LDC2.ped");
+//  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","PEDESTALS","LDC3","$ALICE_ROOT/MUON/data/LDC3.ped");
+
+  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","PEDESTALS","LDC0","$HOME/Alice/Online/GAINRUN/raw.81.LDC0.ped");
+  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","PEDESTALS","LDC1","$HOME/Alice/Online/GAINRUN/raw.81.LDC1.ped");
+  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","PEDESTALS","LDC2","$HOME/Alice/Online/GAINRUN/raw.81.LDC2.ped");
+//  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","PEDESTALS","LDC3","$HOME/Alice/Online/GAINRUN/raw.81.LDC3.ped");
   
-  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","GAINS","LDC0","$ALICE_ROOT/MUON/data/LDC0.gain");
-  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","GAINS","LDC1","$ALICE_ROOT/MUON/data/LDC1.gain");
-  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","GAINS","LDC2","$ALICE_ROOT/MUON/data/LDC2.gain");
-  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","GAINS","LDC3","$ALICE_ROOT/MUON/data/LDC3.gain");
+//  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","GAINS","LDC0","$HOME/Desktop/Jean-Luc Charvet/run000001191_MCH_ldc-MTRK-S1-0_GAINS");
+
+//  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","GAINS","LDC0","$HOME/Desktop/Jean-Luc Charvet/run000001183_MCH_ldc-MTRK-S1-0_GAINS");
+
+  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","GAINS","LDC0","$HOME/Alice/Online/GAINRUN/LDC0.gain");
+//  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","GAINS","LDC1","$ALICE_ROOT/MUON/data/LDC1.gain");
+//  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","GAINS","LDC2","$ALICE_ROOT/MUON/data/LDC2.gain");
+//  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","GAINS","LDC3","$ALICE_ROOT/MUON/data/LDC3.gain");
   
   // and GMS file
   shuttle->AddInputFile(AliTestShuttle::kDCS,"MCH","GMS","GMS","$ALICE_ROOT/MUON/data/GMS.root");

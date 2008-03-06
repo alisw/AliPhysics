@@ -64,9 +64,9 @@ AliMUONPainterDataSourceFrame::AliMUONPainterDataSourceFrame(const TGWindow* p, 
   fRawSelector21(new TGCompositeFrame(fRawSelector2,w,h,kHorizontalFrame)),
   fRawSelector22(new TGCompositeFrame(fRawSelector2,w,h,kHorizontalFrame)),
   fRawSelector23(new TGCompositeFrame(fRawSelector2,w,h,kHorizontalFrame)),
-  fCalibrateNoGain(new TGCheckButton(fRawSelector22,"Zero suppress")),
-  fCalibrateGainConstantCapa(new TGCheckButton(fRawSelector22,"Zero suppress + gain (capa cste)")),
-  fCalibrateGain(new TGCheckButton(fRawSelector22,"Full calib (zero suppress + gain with capa)")),
+  fCalibrateNoGain(new TGCheckButton(fRawSelector22,"Ped subraction")),
+  fCalibrateGainConstantCapa(new TGCheckButton(fRawSelector22,"Ped subraction + gain (capa cste)")),
+  fCalibrateGain(new TGCheckButton(fRawSelector22,"Full calib (Ped subraction + gain with capa)")),
   fHistogramButton(new TGCheckButton(fRawSelector23,"Histogram")),
   fHistoMin(new TGNumberEntry(fRawSelector23,0)),
   fHistoMax(new TGNumberEntry(fRawSelector23,4096)),
@@ -84,15 +84,15 @@ AliMUONPainterDataSourceFrame::AliMUONPainterDataSourceFrame(const TGWindow* p, 
   
     AliMUONPainterRegistry* reg = AliMUONPainterRegistry::Instance();
     
-    reg->Connect("DataReaderWasRegistered(AliMUONVTrackerDataMaker*)",
+    reg->Connect("DataMakerWasRegistered(AliMUONVTrackerDataMaker*)",
                  "AliMUONPainterDataSourceFrame",
                  this,
-                 "DataReaderWasRegistered(AliMUONVTrackerDataMaker*)");
+                 "DataMakerWasRegistered(AliMUONVTrackerDataMaker*)");
     
-    reg->Connect("DataReaderWasUnregistered(AliMUONVTrackerDataMaker*)",
+    reg->Connect("DataMakerWasUnregistered(AliMUONVTrackerDataMaker*)",
                  "AliMUONPainterDataSourceFrame",
                  this,
-                 "DataReaderWasUnregistered(AliMUONVTrackerDataMaker*)");
+                 "DataMakerWasUnregistered(AliMUONVTrackerDataMaker*)");
     
     fItems->SetOwner(kFALSE);
     
@@ -491,7 +491,7 @@ AliMUONPainterDataSourceFrame::CreateRawDataSource(const TString& uri)
 
 //_____________________________________________________________________________
 void 
-AliMUONPainterDataSourceFrame::DataReaderWasRegistered(AliMUONVTrackerDataMaker* reader)
+AliMUONPainterDataSourceFrame::DataMakerWasRegistered(AliMUONVTrackerDataMaker* reader)
 {
   /// Update ourselves as a new data reader was created
   
@@ -517,12 +517,33 @@ AliMUONPainterDataSourceFrame::DataReaderWasRegistered(AliMUONVTrackerDataMaker*
 
 //_____________________________________________________________________________
 void 
-AliMUONPainterDataSourceFrame::DataReaderWasUnregistered(AliMUONVTrackerDataMaker* /*reader*/)
+AliMUONPainterDataSourceFrame::DataMakerWasUnregistered(AliMUONVTrackerDataMaker* maker)
 {
-  /// Update ourselves as a new data reader was deleted
+  /// Update ourselves as a data reader was deleted
   
-  // here we should find which (if any) datasourceitem has this reader, and remove it
+  AliMUONPainterDataSourceItem* theItem(0x0);
   
+  TIter next(fItems);
+  AliMUONPainterDataSourceItem* item;
+  
+  while ( ( item = static_cast<AliMUONPainterDataSourceItem*>(next()) ) && !theItem )
+  {
+    if ( item->DataMaker() == maker ) 
+    {
+      theItem = item;
+    }
+  }
+  
+  if  (!theItem) return;
+  
+  fDataReaders->RemoveFrame(theItem);
+  fItems->Remove(theItem);
+  theItem->DestroyWindow();
+  delete theItem;
+  
+  fDataReaders->MapSubwindows();
+  fDataReaders->Resize();
+
 }
 
 //_____________________________________________________________________________
@@ -540,12 +561,19 @@ AliMUONPainterDataSourceFrame::OpenFileDialog()
     0,0 };
   
   fileInfo.fFileTypes = fileTypes;
+  delete[] fileInfo.fIniDir;
+
+  AliMUONPainterEnv* env = AliMUONPainterHelper::Instance()->Env();
+  
+  fileInfo.fIniDir = StrDup(env->String("LastOpenDir","."));
   
   new TGFileDialog(gClient->GetRoot(),gClient->GetRoot(),
                    kFDOpen,&fileInfo);
   
-  
   fFilePath->SetText(gSystem->ExpandPathName(Form("%s",fileInfo.fFilename)));
+  
+  env->Set("LastOpenDir",fileInfo.fIniDir);
+  env->Save();  
 }
 
 

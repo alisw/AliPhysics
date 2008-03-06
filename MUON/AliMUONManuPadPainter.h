@@ -51,7 +51,11 @@ public:
                    Double_t max);
   
   void PaintOutline(Int_t color=-1, Int_t width=-1, Double_t x=FLT_MAX, Double_t y=FLT_MAX);
-  
+
+  Bool_t CanBeDetached() const { return kFALSE; }
+
+  virtual void DrawHistogramClone(Double_t* values=0x0) const;
+
 private:
     
   void BackupStyle();

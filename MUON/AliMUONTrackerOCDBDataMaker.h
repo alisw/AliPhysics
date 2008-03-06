@@ -48,9 +48,6 @@ public:
   /// N/A
   virtual void Rewind() { }
   
-  /// Whether we're owner of our data
-  virtual void SetOwner(Bool_t flag) { fIsOwner = flag; }
-  
   /// Set our source URI
   virtual void SetSource(const char* source) { fSource = source; }
   
@@ -60,6 +57,8 @@ public:
   /// Number of events is always 1
     Int_t NumberOfEvents() const { return 1; }
 
+  virtual Long64_t Merge(TCollection* li);
+  
 private:
   /// Not implemented
   AliMUONTrackerOCDBDataMaker(const AliMUONTrackerOCDBDataMaker& rhs);
@@ -68,11 +67,10 @@ private:
   
 private:
   Bool_t fIsValid; ///< whether we have valid data
-  Bool_t fIsOwner; ///< whether or not we're the owner of our data
   AliMUONVTrackerData* fData; ///< our data
   TString fSource; ///< our source
   
-  ClassDef(AliMUONTrackerOCDBDataMaker,1) // Producer of AliMUONVTrackerData from OCDB
+  ClassDef(AliMUONTrackerOCDBDataMaker,2) // Producer of AliMUONVTrackerData from OCDB
 };
 
 #endif

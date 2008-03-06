@@ -500,7 +500,7 @@ AliMUONPainterHelper::Instance()
   
   AliMUONPainterEnv env;
   
-  TString fileName(gSystem->ExpandPathName(env.String("PadStoreFileName","padstore.root")));
+  TString fileName(gSystem->ExpandPathName(env.String("PadStoreFileName","$HOME/padstore.root")));
 
   if ( gSystem->AccessPathName(fileName.Data(),kFileExists) ) // mind the strange return value of that method...   
   {
@@ -523,6 +523,7 @@ AliMUONPainterHelper::Instance()
     fgInstance->GenerateDefaultMatrices();
     fgInstance->Modified(kTRUE);
     fgInstance->fEnv = new AliMUONPainterEnv;
+    fgInstance->fEnv->Set("PadStoreFileName",fileName.Data());
     fgInstance->Save();
     
   }
@@ -734,7 +735,9 @@ AliMUONPainterHelper::Save()
 
   fgInstance->Print();
   
-  TString fileName(gSystem->ExpandPathName(fgInstance->Env()->String("PadStoreFileName","padstore.root")));
+  fgInstance->Env()->Save();
+  
+  TString fileName(gSystem->ExpandPathName(fgInstance->Env()->String("PadStoreFileName")));
 
   AliInfo(Form("Saving to %s",fileName.Data()));
           

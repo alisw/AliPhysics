@@ -283,7 +283,10 @@ AliMUONPainterMatrixFrame::DataRangeWasChanged(Double_t* range)
 
   fPainterMatrix->SetDataRange(range[0],range[1]);
   
-  Update();
+  if ( !fColorSlider->IsLocked() )
+  {
+    Update();
+  }
 }
 
 //_____________________________________________________________________________
@@ -523,6 +526,12 @@ void
 AliMUONPainterMatrixFrame::UpdateDataRange()
 {
   /// Update the data range
+
+  if ( fColorSlider->IsLocked() ) 
+  {
+    fColorSlider->SetRange(0,0,kTRUE);
+    return;
+  }
   
   Double_t min, max;
 

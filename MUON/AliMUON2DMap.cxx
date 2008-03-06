@@ -114,6 +114,17 @@ AliMUON2DMap::Add(TObject* object)
 
 //_____________________________________________________________________________
 TObject* 
+AliMUON2DMap::FindObject(UInt_t uid) const
+{
+  /// Return the value at position uid
+  
+  Int_t j = ( uid & 0xFFFF0000 ) >> 16;
+  Int_t i = ( uid & 0xFFFF);
+  return FindObject(i,j);
+}
+
+//_____________________________________________________________________________
+TObject* 
 AliMUON2DMap::FindObject(Int_t i, Int_t j) const
 {
   /// Return the value at position (i,j).

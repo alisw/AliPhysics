@@ -37,6 +37,7 @@
 #include "AliMUONCalibParamNF.h"
 #include "AliMUONCalibParamNI.h"
 #include "AliMUONConstants.h"
+#include "AliMUONTrackerIO.h"
 #include "AliMUONTriggerEfficiencyCells.h"
 #include "AliMUONTriggerLut.h"
 #include "AliMUONVStore.h"
@@ -453,52 +454,7 @@ AliMUONCDB::MakeCapacitanceStore(AliMUONVStore& capaStore, const char* file)
 {
   /// Read the capacitance values from file and append them to the capaStore
   
-  AliCodeTimerAuto(Form("file=%s",file));
-  
-  ifstream in(gSystem->ExpandPathName(file));
-  if (in.bad()) return 0;
-  
-  Int_t ngenerated(0);
-  
-  char line[1024];
-  Int_t serialNumber(-1);
-  AliMUONVCalibParam* param(0x0);
-  
-  while ( in.getline(line,1024,'\n') )
-  {
-    if ( isdigit(line[0]) ) 
-    {
-      serialNumber = atoi(line);
-      param = static_cast<AliMUONVCalibParam*>(capaStore.FindObject(serialNumber));
-      if (param)
-      {
-        AliError(Form("serialNumber %d appears several times !",serialNumber));
-        capaStore.Clear();
-        break;
-      }
-      param = new AliMUONCalibParamNF(2,AliMpConstants::ManuNofChannels(),serialNumber,0,1.0);
-      Bool_t ok = capaStore.Add(param);
-      if (!ok)
-      {
-        AliError(Form("Could not set serialNumber=%d",serialNumber));
-        continue;
-      }      
-      continue;
-    }
-    Int_t channel;
-    Float_t capaValue;
-    Float_t injectionGain;
-    sscanf(line,"%d %f %f",&channel,&capaValue,&injectionGain);
-    AliDebug(1,Form("SerialNumber %10d Channel %3d Capa %f injectionGain %f",
-                    serialNumber,channel,capaValue,injectionGain));
-    param->SetValueAsFloat(channel,0,capaValue);
-    param->SetValueAsFloat(channel,1,injectionGain);
-    ++ngenerated;
-  }
-  
-  in.close();
-  
-  return ngenerated;
+  return AliMUONTrackerIO::ReadCapacitances(file,capaStore);
 }
 
 //_____________________________________________________________________________

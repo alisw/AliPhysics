@@ -78,9 +78,9 @@ The short name of the data source is as follow :
 - RAW# : raw data for run #
 - RAW(#) : raw data for simulated run (where run number is always 0, so # here is the number of such data sources opened at the same time)
 - HRAW# (or HRAW(#)) : as above, but with histogramming turned on
-- (H)CALZ# (or (H)CALZ(#)): as above, but for data where zero-suppression has been done (and no gain correction whatsoever)
-- (H)CALG# : for data where zero-suppression and gain correction has been applied (but no channel-per-channel capacitance correction done)
-- (H)CALC# : for data where zero-suppression and full gain correction (including channel-dependent capacitance correction) applied
+- (H)CALZ# (or (H)CALZ(#)): as above, but for data where pedestal subtraction has been done (and no gain correction whatsoever)
+- (H)CALG# : for data where pedestal subtraction and gain correction has been applied (but no channel-per-channel capacitance correction done)
+- (H)CALC# : for data where pedestal subtraction and full gain correction (including channel-dependent capacitance correction) applied
 
 Note that all the file paths can be local ones or alien ones, if you have a correctly installed alien, and you use a short wrapped to call the \em mchview program.
 For instance :

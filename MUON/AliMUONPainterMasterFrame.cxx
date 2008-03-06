@@ -284,23 +284,26 @@ void
 AliMUONPainterMasterFrame::Clicked(AliMUONVPainter* painter, Double_t* values)
 {
   /// A given painter was (singly) clicked
-  
-  AliDebug(1,Form("%s x %7.3f y %7.3f",painter->GetName(),values[0],values[1]));
 
-  AliCodeTimerAuto("")
+  if ( painter->CanBeDetached() )
+  {
+    fPainterMatrixFrame->MouseLeave(painter);
   
-  fPainterMatrixFrame->MouseLeave(painter);
+    AliMUONPainterMatrix* matrix = new AliMUONPainterMatrix(painter->Name().Data());
+
+    AliMUONVPainter* p = painter->Detach();
+
+    p->SetResponder(1);
+
+    matrix->Adopt(p);
   
-  AliMUONPainterMatrix* matrix = new AliMUONPainterMatrix(painter->Name().Data());
-
-  AliMUONVPainter* p = painter->Detach();
-
-  p->SetResponder(1);
-
-  matrix->Adopt(p);
-  
-  AddPainterMatrix(matrix);
-  ShowPainterMatrix(matrix);
+    AddPainterMatrix(matrix);
+    ShowPainterMatrix(matrix);
+  }
+  else
+  {
+    painter->DrawHistogram(values);
+  }
 }
 
 //_____________________________________________________________________________
@@ -308,6 +311,8 @@ void
 AliMUONPainterMasterFrame::ShiftClicked(AliMUONVPainter* painter, Double_t*)
 {
   /// A given painter was shift-clicked
+  
+  if ( !painter->CanBeDetached() ) return;
   
   AliMUONPainterMatrix* currentMatrix = fPainterMatrixFrame->Matrix();
   
@@ -317,8 +322,7 @@ AliMUONPainterMasterFrame::ShiftClicked(AliMUONVPainter* painter, Double_t*)
   
   TString newName = AliMUONPainterMatrix::NameIt(basename.Data(),a);
   
-  AliMUONPainterMatrix* matrix = 
-    AliMUONPainterRegistry::Instance()->FindPainterMatrix(newName.Data());
+  AliMUONPainterMatrix* matrix = AliMUONPainterRegistry::Instance()->PainterMatrix(newName.Data());
   
   if (!matrix)
   {
@@ -342,16 +346,16 @@ AliMUONPainterMasterFrame::ShiftClicked(AliMUONVPainter* painter, Double_t*)
     
     a1.SetCathodeAndPlaneDisabled(kTRUE);
     a2.SetCathodeAndPlaneDisabled(kTRUE);
-
+    
     AliMUONVPainter* p1 = AliMUONVPainter::CreatePainter(painter->ClassName(),
                                                          a1,
                                                          painter->ID0(),
                                                          painter->ID1());
     
     AliMUONVPainter* p2 = AliMUONVPainter::CreatePainter(painter->ClassName(),
-                                                        a2,
-                                                        painter->ID0(),
-                                                        painter->ID1());
+                                                         a2,
+                                                         painter->ID0(),
+                                                         painter->ID1());
     
     if (!p1 || !p2)
     {
@@ -375,7 +379,7 @@ AliMUONPainterMasterFrame::ShiftClicked(AliMUONVPainter* painter, Double_t*)
     Int_t ny(1);
     
     AliMpArea area(painter->Area());
-
+    
     if ( area.Dimensions().X() > 1.2*area.Dimensions().Y() ) 
     {
       nx = 1;
@@ -436,12 +440,13 @@ AliMUONPainterMasterFrame::MakeTopPainterMatrix(UInt_t w, UInt_t h)
 
   AliMUONAttPainter att;
   
-  att.SetCathode(kTRUE,kFALSE);
+  att.SetPlane(kTRUE,kFALSE);
+//  att.SetCathode(kTRUE,kFALSE);
   att.SetViewPoint(kTRUE,kFALSE);
     
   TString name = AliMUONPainterMatrix::NameIt("Tracker",att);
   
-  AliMUONPainterMatrix* painterMatrix = AliMUONPainterRegistry::Instance()->FindPainterMatrix(name);
+  AliMUONPainterMatrix* painterMatrix = AliMUONPainterRegistry::Instance()->PainterMatrix(name);
   
   if (!painterMatrix)
   {
@@ -498,8 +503,7 @@ AliMUONPainterMasterFrame::AttributesChanged(AliMUONAttPainter* newValues)
   
   TString newName = AliMUONPainterMatrix::NameIt(currentMatrix->Basename(),a);
   
-  AliMUONPainterMatrix* matrix = 
-    AliMUONPainterRegistry::Instance()->FindPainterMatrix(newName.Data());
+  AliMUONPainterMatrix* matrix = AliMUONPainterRegistry::Instance()->PainterMatrix(newName.Data());
 
   if (!matrix)
   {

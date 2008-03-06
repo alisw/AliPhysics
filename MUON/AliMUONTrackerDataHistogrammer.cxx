@@ -17,6 +17,7 @@
 
 #include "AliMUONTrackerDataHistogrammer.h"
 
+#include "AliLog.h"
 #include "AliMUONPainterGroup.h"
 #include "AliMUONSparseHisto.h"
 #include "AliMUONVPainter.h"
@@ -27,8 +28,10 @@
 #include "AliMpDEIterator.h"
 #include "AliMpDetElement.h"
 #include "AliMpManuUID.h"
+#include <TClass.h>
 #include <TH1.h>
 #include <TObjArray.h>
+#include <TROOT.h>
 
 ///\class AliMUONTrackerDataHistogrammer
 ///
@@ -44,10 +47,12 @@ ClassImp(AliMUONTrackerDataHistogrammer)
 
 //_____________________________________________________________________________
 AliMUONTrackerDataHistogrammer::AliMUONTrackerDataHistogrammer(const AliMUONVTrackerData& data,
-                                                               Int_t dim)
+                                                               Int_t externalDim,
+                                                               Int_t internalDim)
 : TObject(),
 fData(data),
-fDim(dim)
+fExternalDim(externalDim),
+fInternalDim(internalDim)
 {
   /// ctor
 }
@@ -126,83 +131,46 @@ AliMUONTrackerDataHistogrammer::AddManuHisto(TH1& h, Int_t detElemId, Int_t manu
     {
       if ( fData.HasChannel(detElemId,manuId,i) )
       {
-        AliMUONSparseHisto* sh = fData.GetChannelSparseHisto(detElemId,manuId,i);
+        if ( IsInternalMode() ) 
+        {
+          h.Fill(fData.Channel(detElemId,manuId,i,fInternalDim));
+        }
+        else
+        {
+          AliMUONSparseHisto* sh = fData.GetChannelSparseHisto(detElemId,manuId,i);
         
-        if ( sh ) 
-        {      
-          Add(h,*sh);
+          if ( sh ) 
+          {       
+            Add(h,*sh);
+          }
         }
       }
     }
   }
 }
 
-
 //_____________________________________________________________________________
 TH1*
-AliMUONTrackerDataHistogrammer::CreateBusPatchHisto(Int_t busPatchId) const
-{
-  /// Create histogram of a given bus patch. Note that in order
-  /// to keep memory footprint as low as possible, you should delete
-  /// the returned pointer as soon as possible...
-  
-  TH1* h(0x0);
-  
-  if ( fData.HasBusPatch(busPatchId) && fData.IsHistogrammed(fDim)) 
-  {
-    h = CreateHisto(Form("BP%04d_%d",busPatchId,fDim));
-    if ( h ) AddBusPatchHisto(*h,busPatchId);
-  }
-  
-  return h;
-}  
-
-
-//_____________________________________________________________________________
-TH1*
-AliMUONTrackerDataHistogrammer::CreateChamberHisto(Int_t chamberId) const
-{
-  /// Create histogram of a given chamber. Note that in order
-  /// to keep memory footprint as low as possible, you should delete
-  /// the returned pointer as soon as possible...
-  
-  TH1* h(0x0);
-  
-  if ( fData.HasChamber(chamberId) && fData.IsHistogrammed(fDim))
-  {
-    h = CreateHisto(Form("CHAMBER%02d_%d",chamberId,fDim));
-    if ( h ) 
-    {
-      AliMpDEIterator it;
-      it.First(chamberId);
-      while ( !it.IsDone() )
-      {
-        Int_t detElemId = it.CurrentDEId();
-        AddDEHisto(*h,detElemId);
-        it.Next();
-      }
-    }
-  }
-  
-  return h;
-}
-
-//_____________________________________________________________________________
-TH1*
-AliMUONTrackerDataHistogrammer::CreateChannelHisto(Int_t detElemId, Int_t manuId, 
+AliMUONTrackerDataHistogrammer::CreateChannelHisto(Int_t detElemId, 
+                                                   Int_t manuId, 
                                                    Int_t manuChannel) const
 {
   /// Create histogram of a given channel. Note that in order
   /// to keep memory footprint as low as possible, you should delete
   /// the returned pointer as soon as possible...
   
-  if ( fData.HasChannel(detElemId, manuId, manuChannel) && fData.IsHistogrammed(fDim) )
+  if ( fData.HasChannel(detElemId, manuId, manuChannel) && fData.IsHistogrammed(fExternalDim) )
   {
     AliMUONSparseHisto* sh = fData.GetChannelSparseHisto(detElemId,manuId,manuChannel);
     
     if ( sh ) 
     {
-      TH1* h = CreateHisto(Form("DE%04dMANU%04dCH%02d_%d",detElemId,manuId,manuChannel,fDim));
+      Int_t nbins((1<<sh->Nbits()));
+      Double_t xmin,xmax;
+      fData.HistogramRange(xmin,xmax);
+      
+      TH1* h = CreateHisto(Form("DE%04dMANU%04dCH%02d",detElemId,manuId,manuChannel),
+                           nbins,xmin,xmax);
       if (h ) 
       {
         Add(*h,*sh);
@@ -215,26 +183,28 @@ AliMUONTrackerDataHistogrammer::CreateChannelHisto(Int_t detElemId, Int_t manuId
 
 //_____________________________________________________________________________
 TH1*
-AliMUONTrackerDataHistogrammer::CreateDEHisto(Int_t detElemId) const
+AliMUONTrackerDataHistogrammer::CreateHisto(const char* name,
+                                            Int_t nbins,
+                                            Double_t xmin,
+                                            Double_t xmax) const
 {
-  /// Create histogram of a given detection element. Note that in order
-  /// to keep memory footprint as low as possible, you should delete
-  /// the returned pointer as soon as possible...
+  /// Create a single histogram
   
-  TH1* h(0x0);
+  TH1* h(0);
   
-  if ( fData.HasDetectionElement(detElemId) && fData.IsHistogrammed(fDim) ) 
+  if ( xmin < xmax ) 
   {
-    h = CreateHisto(Form("DE%04d-%d",detElemId,fDim));
-    if (h) AddDEHisto(*h,detElemId);
+    h = new TH1F(name,name,nbins,xmin,xmax);
+    h->SetDirectory(gROOT);
   }
-  
   return h;
 }
 
 //_____________________________________________________________________________
 TH1* 
-AliMUONTrackerDataHistogrammer::CreateHisto(const AliMUONVPainter& painter)
+AliMUONTrackerDataHistogrammer::CreateHisto(const AliMUONVPainter& painter, 
+                                                    Int_t externalDim,
+                                                    Int_t internalDim)
 {
   /// Create an histogram, from given dim of given data, 
   /// for all the channels handled by painter
@@ -244,27 +214,76 @@ AliMUONTrackerDataHistogrammer::CreateHisto(const AliMUONVPainter& painter)
   if ( !group ) return 0x0; // no data to histogram in this painter
   
   AliMUONVTrackerData* data = group->Data();
-  Int_t dim = data->InternalToExternal(group->DataIndex());
   
-  AliMUONTrackerDataHistogrammer tdh(*data,dim);
+  if ( externalDim >= data->ExternalDimension() )
+  {
+    AliErrorClass(Form("externalDim %d is out of bounds",externalDim));
+    return 0x0;
+  }
+
+  if ( internalDim >= data->NumberOfDimensions() )
+  {
+    AliErrorClass(Form("internalDim %d is out of bounds",internalDim));
+    return 0x0;
+  }
+  
+  if ( internalDim < 0 && externalDim < 0 ) 
+  {
+    AliErrorClass("Both internal and external dim are < 0 !!!");
+    return 0x0;
+  }
+  
+  AliMUONTrackerDataHistogrammer tdh(*data,externalDim,internalDim);
 
   TObjArray manuArray;
   
   painter.FillManuList(manuArray);
-  
+
   AliMpManuUID* mid;
   TIter next(&manuArray);
+
+  TString basename(Form("%s-%s",painter.PathName().Data(),painter.Attributes().GetName()));
+  TString ext;
+  Int_t nbins((1<<12));
+  Double_t xmin(0.0);
+  Double_t xmax(0.0);
   
-  TH1* histo = tdh.CreateHisto(Form("%s-%s",painter.PathName().Data(),painter.Attributes().GetName()));
-  
-  while ( ( mid = static_cast<AliMpManuUID*>(next()) ) )
+  if ( !tdh.IsInternalMode() ) 
   {
-    TH1* h = tdh.CreateManuHisto(mid->DetElemId(),mid->ManuId());
-    if ( h ) 
+    data->HistogramRange(xmin,xmax);
+    
+    xmin -= 0.5;
+    xmax -= 0.5;
+    
+    ext = data->ExternalDimensionName(externalDim).Data();
+  }
+  else
+  {
+    tdh.GetDataRange(manuArray,xmin,xmax);
+    ext = data->DimensionName(internalDim).Data();
+    nbins = 100;
+  }
+  
+  TString name(Form("%s-%s",basename.Data(),ext.Data()));
+
+  TH1* histo = tdh.CreateHisto(name.Data(),nbins,xmin,xmax);
+
+  if ( histo ) 
+  {
+    while ( ( mid = static_cast<AliMpManuUID*>(next()) ) )
     {
-      histo->Add(h);
+      TH1* h = tdh.CreateManuHisto(mid->DetElemId(),mid->ManuId(),nbins,xmin,xmax);
+      if ( h ) 
+      {
+        histo->Add(h);
+      }
+      delete h;
     }
-    delete h;
+  }
+  else
+  {
+    AliErrorClass(Form("Could not create histo for painter %s external dim %d internal dim %d",
+                       painter.PathName().Data(),externalDim,internalDim));
   }
   
   return histo;
@@ -272,33 +291,10 @@ AliMUONTrackerDataHistogrammer::CreateHisto(const AliMUONVPainter& painter)
 
 //_____________________________________________________________________________
 TH1*
-AliMUONTrackerDataHistogrammer::CreateHisto(const char* name) const
-{
-  /// Create a single histogram
-
-  Double_t xmin, xmax;
-  
-  fData.HistogramRange(xmin,xmax);
-  
-  TH1* h(0x0);
-  
-  if ( xmin != xmax ) 
-  {
-    h = new TH1I(name,Form("Data=%s Dim=%s",
-                              fData.GetName(),
-                              fData.ExternalDimensionName(fDim).Data()),
-                    (1<<12),
-                    xmin-0.5,
-                    xmax-0.5);
-    h->SetDirectory(0);
-  }
-  return h;
-}
-
-
-//_____________________________________________________________________________
-TH1*
-AliMUONTrackerDataHistogrammer::CreateManuHisto(Int_t detElemId, Int_t manuId) const
+AliMUONTrackerDataHistogrammer::CreateManuHisto(Int_t detElemId, Int_t manuId,
+                                                Int_t nbins,
+                                                Double_t xmin,
+                                                Double_t xmax) const
 {
   /// Create histogram of a given manu. Note that in order
   /// to keep memory footprint as low as possible, you should delete
@@ -306,12 +302,53 @@ AliMUONTrackerDataHistogrammer::CreateManuHisto(Int_t detElemId, Int_t manuId) c
   
   TH1* h(0x0);
   
-  if ( fData.HasManu(detElemId, manuId) && fData.IsHistogrammed(fDim) ) 
+  if ( !fData.HasManu(detElemId,manuId) ) return 0x0;
+  
+  if ( ( fExternalDim >= 0 && fData.IsHistogrammed(fExternalDim) ) ||
+       ( fInternalDim >= 0 && fInternalDim < fData.NumberOfDimensions() ) )
   {
-    h = CreateHisto(Form("DE%04dMANU%04d_%d",detElemId,manuId,fDim));
+    h = CreateHisto(Form("DE%04dMANU%04d",detElemId,manuId),
+                    nbins,xmin,xmax);
     if ( h ) AddManuHisto(*h,detElemId,manuId);
   }
   
   return h;
+}
+
+//_____________________________________________________________________________
+void
+AliMUONTrackerDataHistogrammer::GetDataRange(const TObjArray& manuArray, 
+                                             Double_t& xmin, Double_t& xmax) const
+{
+  /// Get data range (in case of InternalMode() only) spanned by the manus in
+  /// manuArray
+  
+  xmin = FLT_MAX;
+  xmax = -FLT_MAX;
+  
+  if (!IsInternalMode())
+  {
+    AliError("Cannot use this method for external mode !");
+  }
+
+  AliMpManuUID* mid;
+  TIter next(&manuArray);
+  
+  while ( ( mid = static_cast<AliMpManuUID*>(next()) ) )
+  {
+    Int_t detElemId = mid->DetElemId();
+    Int_t manuId = mid->ManuId();
+    
+    for ( Int_t i = 0; i < AliMpConstants::ManuNofChannels(); ++i ) 
+    {
+      if ( fData.HasChannel(detElemId,manuId,i) ) 
+      {
+        Double_t value = fData.Channel(detElemId,manuId,i,fInternalDim);
+        xmin = TMath::Min(xmin,value);
+        xmax = TMath::Max(xmax,value);
+      }
+    }
+  }
+
 }
 

@@ -857,6 +857,11 @@ AliMUONVPainter::SetData(const char* pattern, AliMUONVTrackerData* data,
     CreateGroups();
   }
   
+  if ( data ) 
+  {
+    data->Connect("Destroyed()",ClassName(),this,Form("SetData(=\"%s\",0x0,-1)",pattern));
+  }
+  
   TIter next(fPainterGroups);
   TObjString* str;
   
@@ -893,7 +898,8 @@ AliMUONVPainter::SetData(const char* pattern, AliMUONVTrackerData* data,
   {
     TList* l = p->IsA()->GetMenuList();
   
-    l->Clear();
+//    l->Clear();
+    l->Delete();
   
     if ( group ) 
     {
@@ -904,39 +910,73 @@ AliMUONVPainter::SetData(const char* pattern, AliMUONVTrackerData* data,
         {
           // Add histo drawing to the popup menu
           TClassMenuItem* n = new TClassMenuItem(TClassMenuItem::kPopupUserFunction,p->IsA(),
-                                                 "Draw histogram","DrawHistogram",p,"",-1,kTRUE);
-          l->AddFirst(n);
+                                                 "Draw histogram","DrawHistogram0",p,"",-1,kTRUE);
+          l->Add(n);
           
           n = new TClassMenuItem(TClassMenuItem::kPopupUserFunction,p->IsA(),
-                                 "Draw histogram clone","DrawHistogramClone",p,"",-1,kTRUE);
-          l->AddFirst(n);
-          
-          
+                                 "Draw histogram clone","DrawHistogramClone0",p,"",-1,kTRUE);
+          l->Add(n);
         }
+        
       }
+      
+      for ( Int_t i = 0; i < data->ExternalDimension()*2; ++i ) 
+      {
+        TClassMenuItem* n = new TClassMenuItem(TClassMenuItem::kPopupUserFunction,p->IsA(),
+                                               Form("Draw %s clone",data->DimensionName(i).Data()),
+                                               Form("DrawInternalHistogramClone%d",i),p,"",-1,kTRUE);
+        l->Add(n);
+      } 
     }
   }
 }
 
 //_____________________________________________________________________________
 void
-AliMUONVPainter::DrawHistogram() const
+AliMUONVPainter::DrawInternalHistogram(Int_t dim) const
+{
+  /// Draw histogram (and delete the previous one)
+  
+  delete fHistogram;
+  fHistogram = 0x0;
+  
+  DrawInternalHistogramClone(dim);
+}
+
+//_____________________________________________________________________________
+void
+AliMUONVPainter::DrawInternalHistogramClone(Int_t dim) const
+{
+  /// Draw histogram 
+  
+  fHistogram = AliMUONTrackerDataHistogrammer::CreateHisto(*this,-1,dim);
+  
+  if (fHistogram) 
+  {
+    new TCanvas();
+    fHistogram->Draw();
+  }
+}
+
+//_____________________________________________________________________________
+void
+AliMUONVPainter::DrawHistogram(Double_t* values) const
 {
   /// Draw histogram (and delete the previous one)
 
   delete fHistogram;
   fHistogram = 0x0;
   
-  DrawHistogramClone();
+  DrawHistogramClone(values);
 }
 
 //_____________________________________________________________________________
 void
-AliMUONVPainter::DrawHistogramClone() const
+AliMUONVPainter::DrawHistogramClone(Double_t*) const
 {
   /// Draw histogram 
   
-  fHistogram = AliMUONTrackerDataHistogrammer::CreateHisto(*this);
+  fHistogram = AliMUONTrackerDataHistogrammer::CreateHisto(*this,0,-1);
   
   if (fHistogram) 
   {

@@ -58,7 +58,6 @@ AliMUONTrackerCalibratedDataMaker::AliMUONTrackerCalibratedDataMaker(AliRawReade
   fRawReader(reader),
   fAccumulatedData(0x0),
   fOneEventData(new AliMUON2DMap(true)),
-  fIsOwner(kTRUE),
   fSource("unspecified"),
   fIsRunning(kFALSE),
   fDigitMaker(0x0),
@@ -66,12 +65,18 @@ AliMUONTrackerCalibratedDataMaker::AliMUONTrackerCalibratedDataMaker(AliRawReade
   fCalibrationData(0x0),
   fDigitStore(0x0), 
   fCDBPath(cdbpath),
-  fNumberOfEvents(0){
+  fNumberOfEvents(0)
+{
   /// Ctor
-  reader->NextEvent(); // to be sure to get run number available
-  
-  Int_t runNumber = reader->GetRunNumber();
-  
+
+    Int_t runNumber(0);
+    
+  if ( fRawReader ) 
+  {
+    reader->NextEvent(); // to be sure to get run number available
+    runNumber = reader->GetRunNumber();
+  }
+    
   ++fgkCounter;
   
   Bool_t calibrate = ( fCDBPath.Length() > 0 );
@@ -110,7 +115,7 @@ AliMUONTrackerCalibratedDataMaker::AliMUONTrackerCalibratedDataMaker(AliRawReade
     AliInfo(Form("Will histogram between %e and %e",xmin,xmax));
   }
   
-  reader->RewindEvents();
+  if  (fRawReader) fRawReader->RewindEvents();
 
   fDigitMaker = new AliMUONDigitMaker;
   fDigitMaker->SetMakeTriggerDigits(kFALSE);
@@ -154,12 +159,21 @@ AliMUONTrackerCalibratedDataMaker::~AliMUONTrackerCalibratedDataMaker()
 {
   /// dtor
   delete fOneEventData;
-  if ( fIsOwner ) delete fAccumulatedData;
+  delete fAccumulatedData;
   delete fRawReader;
   delete fDigitStore;
   delete fCalibrationData;
   delete fDigitMaker;
   delete fDigitCalibrator;
+}
+
+//_____________________________________________________________________________
+Long64_t 
+AliMUONTrackerCalibratedDataMaker::Merge(TCollection*)
+{
+  /// Merge
+  AliError("Not implemented yet");
+  return 0;
 }
 
 //_____________________________________________________________________________

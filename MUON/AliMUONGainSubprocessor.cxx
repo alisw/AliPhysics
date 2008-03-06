@@ -178,7 +178,8 @@ AliMUONGainSubprocessor::Process(TMap* /*dcsAliasMap*/)
   AliCDBMetaData metaData;
 	metaData.SetBeamPeriod(0);
 	metaData.SetResponsible("MUON TRK");
-	metaData.SetComment("Computed by AliMUONGainSubprocessor $Id$");
+	metaData.SetComment(Form("Computed by AliMUONGainSubprocessor "
+                           "$Id$ ; %s",fComment.Data()));
   
   Bool_t validToInfinity = kTRUE;
 	Bool_t result = Master()->Store("Calib", "Gains", fGains, &metaData, 0, validToInfinity);

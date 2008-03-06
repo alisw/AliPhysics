@@ -31,11 +31,12 @@ class AliMUONVTrackerData : public TNamed, public TQObject
 {
 public:
   
-  AliMUONVTrackerData(const char* name="",const char* title="", Bool_t runnable=kTRUE);
+  AliMUONVTrackerData(const char* name="",const char* title="", 
+                      Bool_t issingleevent=kFALSE);
   virtual ~AliMUONVTrackerData();
   
-  /// Add values (accumulated over numberOfEvents events) for one full store
-  virtual Bool_t Add(const AliMUONVStore& store, Int_t numberOfEvents=1) = 0;
+  /// Add values for one event from one full store
+  virtual Bool_t Add(const AliMUONVStore& store) = 0;
 
   /// Get the value for a given buspatch and given dimension
   virtual Double_t BusPatch(Int_t busPatchId, Int_t dim=0) const = 0;
@@ -80,8 +81,8 @@ public:
   /// Whether we have data for a given PCB
   virtual Bool_t HasPCB(Int_t detElemId, Int_t pcbIndex) const = 0;
   
-  /// Whether we are runnable (e.g. can handle several events)
-  virtual Bool_t IsRunnable() const = 0;
+  /// Whether we deal with only one event at a time
+  virtual Bool_t IsSingleEvent() const = 0;
   
   /// Get the value for a given manu and given dimension
   virtual Double_t Manu(Int_t detElemId, Int_t manuId, Int_t dim=0) const = 0;

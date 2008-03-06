@@ -31,37 +31,35 @@ class AliMUONPainterRegistry : public TObject, public TQObject
 public:
   virtual ~AliMUONPainterRegistry();
 
-  AliMUONVTrackerDataMaker* DataReader(Int_t i) const;
+  AliMUONVTrackerDataMaker* DataMaker(Int_t i) const;
 
   AliMUONVTrackerData* DataSource(Int_t i) const;
+  
+  AliMUONVTrackerData* DataSource(const char* name) const;
   
   void DataSourceWasRegistered(AliMUONVTrackerData* data); // *SIGNAL*
   
   void DataSourceWasUnregistered(AliMUONVTrackerData* data); // *SIGNAL*
 
-  void DataReaderWasRegistered(AliMUONVTrackerDataMaker* reader); // *SIGNAL*
+  void DataMakerWasRegistered(AliMUONVTrackerDataMaker* reader); // *SIGNAL*
   
-  void DataReaderWasUnregistered(AliMUONVTrackerDataMaker* reader); // *SIGNAL*
+  void DataMakerWasUnregistered(AliMUONVTrackerDataMaker* reader); // *SIGNAL*
   
-  AliMUONVTrackerData* FindDataSource(const char* name) const;
-
   Int_t FindIndexOf(AliMUONPainterMatrix* group) const;
-  
-  Int_t FindIndexOf(AliMUONVTrackerData* data) const;
-  
-  AliMUONPainterMatrix* FindPainterMatrix(const char* groupName) const;
   
   void HistoryMenuActivated(Int_t i);
   
   static AliMUONPainterRegistry* Instance();
   
-  Int_t NumberOfDataReaders() const;
+  Int_t NumberOfDataMakers() const;
 
-  Int_t NumberOfDataSources() const;
+  Int_t NumberOfDataSources() const { return NumberOfDataMakers(); }
 
   Int_t NumberOfPainterMatrices() const;
 
   AliMUONPainterMatrix* PainterMatrix(Int_t i) const;
+  
+  AliMUONPainterMatrix* PainterMatrix(const char* groupName) const;
   
   void AddToHistory(AliMUONPainterMatrix* group);
     
@@ -75,8 +73,6 @@ public:
   
   Int_t Register(AliMUONPainterMatrix* group);
   
-  void Register(AliMUONVTrackerData* data);
-
   void Register(AliMUONVTrackerDataMaker* reader);
 
   /// Set the menu bar where to put the history menu
@@ -84,10 +80,10 @@ public:
   
   Bool_t Unregister(AliMUONPainterMatrix* group);
   
-  Bool_t Unregister(AliMUONVTrackerData* data);
-
   Bool_t Unregister(AliMUONVTrackerDataMaker* reader);
 
+  void DeleteZombies();
+  
 private:
   /// Not implemented
   AliMUONPainterRegistry();
@@ -98,14 +94,14 @@ private:
   
 private:
   static AliMUONPainterRegistry* fgInstance; ///< unique instance
-  TObjArray* fDataSources; ///< data sources
   TObjArray* fPainterMatrices; ///< painter matrices
-  TObjArray* fDataReaders; ///< data readers
+  TObjArray* fDataMakers; ///< data makers
   TGPopupMenu* fHistoryMenu; ///< history menu
   TGMenuBar* fMenuBar; ///< Menu bar where to put the history menu
   Int_t fHistoryCounter; ///< index to get back history menu items
+  TObjArray* fZombies; ///< data readers to be deleted
   
-  ClassDef(AliMUONPainterRegistry,1) // Registry for AliMUONVPainter related stuff
+  ClassDef(AliMUONPainterRegistry,3) // Registry for AliMUONVPainter related stuff
 };
 
 #endif

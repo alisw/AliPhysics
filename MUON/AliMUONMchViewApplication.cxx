@@ -4,10 +4,14 @@
 #include "AliCodeTimer.h"
 #include "AliLog.h"
 #include "AliMUONPainterDataSourceFrame.h"
+#include "AliMUONPainterEnv.h"
 #include "AliMUONPainterHelper.h"
 #include "AliMUONPainterMasterFrame.h"
 #include "AliMUONPainterRegistry.h"
+#include "AliMUONTrackerDataCompareDialog.h"
+#include "AliMUONTrackerDataWrapper.h"
 #include "AliMUONVTrackerData.h"
+#include "AliMUONVTrackerDataMaker.h"
 #include <Riostream.h>
 #include <TCanvas.h>
 #include <TEnv.h>
@@ -16,8 +20,11 @@
 #include <TGFileDialog.h>
 #include <TGMenu.h>
 #include <TGTab.h>
+#include <TGTextView.h>
+#include <TGrid.h>
 #include <TKey.h>
 #include <TList.h>
+#include <TRegexp.h>
 #include <TString.h>
 #include <TSystem.h>
 
@@ -35,6 +42,8 @@ const Int_t AliMUONMchViewApplication::fgkFILESAVEAS(1);
 const Int_t AliMUONMchViewApplication::fgkFILEOPEN(2);
 const Int_t AliMUONMchViewApplication::fgkFILEEXIT(3);
 const Int_t AliMUONMchViewApplication::fgkFILEPRINTAS(4);
+const Int_t AliMUONMchViewApplication::fgkABOUT(5);
+const Int_t AliMUONMchViewApplication::fgkCOMPAREDATA(6);
 
 const char* AliMUONMchViewApplication::fgkFileTypes[] = { 
   "ROOT files",    "*.root", 
@@ -121,6 +130,29 @@ AliMUONMchViewApplication::~AliMUONMchViewApplication()
 
 //______________________________________________________________________________
 void
+AliMUONMchViewApplication::CompareData()
+{
+  /// Launch compare data dialog
+  TGTransientFrame* t = new AliMUONTrackerDataCompareDialog(gClient->GetRoot(),
+                                                            gClient->GetRoot(),
+                                                            400,400);
+
+  t->MapSubwindows();
+  t->Resize();
+  t->MapWindow();
+  t->CenterOnParent();
+  
+  // set names
+  
+  t->SetWindowName("mchview compare data tool");
+  t->SetIconName("mchview compare data tool");
+  
+  t->MapRaised();
+  
+}
+
+//______________________________________________________________________________
+void
 AliMUONMchViewApplication::CreateMenuBar(UInt_t w)
 {
   /// Create the application menu bar
@@ -132,17 +164,22 @@ AliMUONMchViewApplication::CreateMenuBar(UInt_t w)
   file->AddEntry("&Print As...",fgkFILEPRINTAS);
   file->AddEntry("&Exit",fgkFILEEXIT);
   
-  file->Connect("Activated(Int_t)","AliMUONMchViewApplication",this,"HandleMenu(Int_t)");
-  
   TGMenuBar* bar = new TGMenuBar(fMainFrame,w);
   
+  TGPopupMenu* tools = new TGPopupMenu(gClient->GetRoot());
+  tools->AddEntry("&Compare data",fgkCOMPAREDATA);
+  
   TGPopupMenu* about = new TGPopupMenu(gClient->GetRoot());  
-  about->AddLabel(FullVersion());
+  about->AddEntry(FullVersion(),fgkABOUT);
 
+  file->Connect("Activated(Int_t)","AliMUONMchViewApplication",this,"HandleMenu(Int_t)");
+  about->Connect("Activated(Int_t)","AliMUONMchViewApplication",this,"HandleMenu(Int_t)");
+  tools->Connect("Activated(Int_t)","AliMUONMchViewApplication",this,"HandleMenu(Int_t)");
+  
   bar->AddPopup("&File",file,new TGLayoutHints(kLHintsLeft|kLHintsTop));
+  bar->AddPopup("&Tools",tools,new TGLayoutHints(kLHintsLeft|kLHintsTop));
   bar->AddPopup("&About",about,new TGLayoutHints(kLHintsRight|kLHintsTop));
   
-
   fMainFrame->AddFrame(bar,new TGLayoutHints(kLHintsLeft|kLHintsExpandX));
   
   AliMUONPainterRegistry::Instance()->SetMenuBar(bar);
@@ -168,6 +205,12 @@ AliMUONMchViewApplication::HandleMenu(Int_t i)
     case fgkFILEPRINTAS:
       PrintAs();
       break;
+    case fgkABOUT:
+      ReleaseNotes();
+      break;
+    case fgkCOMPAREDATA:
+      CompareData();
+      break;
     default:
       break;
     }
@@ -183,9 +226,18 @@ AliMUONMchViewApplication::Open()
   
   fileInfo.fFileTypes = fgkFileTypes;
   
+  delete[] fileInfo.fIniDir;
+  
+  AliMUONPainterEnv* env = AliMUONPainterHelper::Instance()->Env();
+  
+  fileInfo.fIniDir = StrDup(env->String("LastOpenDir","."));
+  
   new TGFileDialog(gClient->GetRoot(),gClient->GetRoot(),
                    kFDOpen,&fileInfo);
-  
+
+  env->Set("LastOpenDir",fileInfo.fIniDir);
+  env->Save();  
+    
   Open(gSystem->ExpandPathName(Form("%s",fileInfo.fFilename)));
 }  
 
@@ -193,11 +245,22 @@ AliMUONMchViewApplication::Open()
 void
 AliMUONMchViewApplication::Open(const char* filename)
 {
-  /// Open a given file containing saved VTrackerData objects
+  /// Open a given file containing saved VTrackerDataMaker objects
   
-  TFile f(filename);
+  TString sfilename(gSystem->ExpandPathName(filename));
   
-  TList* keys = f.GetListOfKeys();
+  if ( sfilename.Contains(TRegexp("^alien")) )
+  {
+    // insure we've initialized the grid...
+    if (!gGrid)
+    {
+      TGrid::Connect("alien://");
+    }
+  }
+  
+  TFile* f = TFile::Open(filename);
+  
+  TList* keys = f->GetListOfKeys();
   TIter next(keys);
   
   TKey* k;
@@ -205,16 +268,31 @@ AliMUONMchViewApplication::Open(const char* filename)
   while ( ( k = static_cast<TKey*>(next()) ) )
   {
     TObject* object = k->ReadObj();
+
+    if ( object->InheritsFrom("AliMUONVTrackerDataMaker") )
+    {
+      AliMUONVTrackerDataMaker* maker = dynamic_cast<AliMUONVTrackerDataMaker*>(object);
+      if ( maker ) 
+      {
+        AliMUONPainterRegistry::Instance()->Register(maker);
+      }
+    }
     
     if ( object->InheritsFrom("AliMUONVTrackerData") )
     {
-      AliMUONVTrackerData* data = static_cast<AliMUONVTrackerData*>(object);
+      // this is for backward compatibility. Early versions of mchview 
+      // wrote VTrackerData objects, and not VTrackerDataMaker ones.
+      
+      AliMUONVTrackerData* data = dynamic_cast<AliMUONVTrackerData*>(object);
       if ( data ) 
       {
-        AliMUONPainterRegistry::Instance()->Register(data);
+        AliMUONVTrackerDataMaker* maker = new AliMUONTrackerDataWrapper(data);
+        AliMUONPainterRegistry::Instance()->Register(maker);
       }
     }
   }
+  
+  delete f;
 } 
 
 
@@ -230,6 +308,64 @@ AliMUONMchViewApplication::PrintAs()
                    kFDSave,&fileInfo);
   
   fPainterMasterFrame->SaveAs(gSystem->ExpandPathName(Form("%s",fileInfo.fFilename)));
+}
+
+//______________________________________________________________________________
+void
+AliMUONMchViewApplication::ReleaseNotes()
+{
+  /// Display release notes
+  
+  UInt_t width = 600;
+  UInt_t height = 400;
+  
+  TGTransientFrame* t = new TGTransientFrame(gClient->GetRoot(),gClient->GetRoot(),width,height);
+  
+  TGTextView* rn = new TGTextView(t);
+  
+  rn->AddLine("0.93");
+  rn->AddLine("");
+  rn->AddLine("New features");
+  rn->AddLine("");
+  rn->AddLine("- Adding a Lock button under the color slider to lock the range shown");
+  rn->AddLine("  when switching between views");
+  rn->AddLine("- Default display now shows bending plane (instead of cathode 0 before)");
+  rn->AddLine("- If pad is responder and there's some histo for that pad, ");
+  rn->AddLine("  clicking on it will display an histo");
+  rn->AddLine("- Right-click on a painter will now display several histogram options");
+  rn->AddLine("  (e.g. raw charge as before, but also simple distributions of mean");
+  rn->AddLine("  and sigma");
+  rn->AddLine("- In the Data Sources Tab, each data source can now be removed and saved");
+  rn->AddLine("- There's a new Tool menu which allow to produce a TrackerData from two others");
+  rn->AddLine("  in order to compare data.");
+  rn->AddLine("  - The --use option can now reference alien files");
+  rn->AddLine("");    
+  rn->AddLine("Bug fixes");
+  rn->AddLine("");    
+  rn->AddLine("- Can now read Capacitances from OCDB");
+    
+  rn->Resize(width,height);
+  
+  t->AddFrame(rn, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+  
+  t->MapSubwindows();
+  t->Resize();
+  t->MapWindow();
+  t->CenterOnParent();
+    
+  // set names
+  
+  t->SetWindowName("mchview release notes");
+  t->SetIconName("mchview release notes");
+  
+//  t->SetMWMHints(kMWMDecorAll | kMWMDecorResizeH  | kMWMDecorMaximize |
+//              kMWMDecorMinimize | kMWMDecorMenu,
+//              kMWMFuncAll  | kMWMFuncResize    | kMWMFuncMaximize |
+//              kMWMFuncMinimize,
+//              kMWMInputModeless);
+  
+  t->MapRaised();
+//  gClient->WaitFor(t);
 }
 
 //______________________________________________________________________________
@@ -250,16 +386,16 @@ AliMUONMchViewApplication::Save()
 void
 AliMUONMchViewApplication::Save(const char* filename)
 {
-  /// Save VTrackerData objects into file of given name
+  /// Save VTrackerDataMaker objects into file of given name
   
   AliMUONPainterRegistry* reg = AliMUONPainterRegistry::Instance();
 
   TFile f(filename,"RECREATE");
   
-  for ( Int_t i = 0; i < reg->NumberOfDataSources(); ++i )
+  for ( Int_t i = 0; i < reg->NumberOfDataMakers(); ++i )
   {
-    AliMUONVTrackerData* data = reg->DataSource(i);
-    data->Write();
+    AliMUONVTrackerDataMaker* maker = reg->DataMaker(i);
+    maker->Write();
   }
   
   f.Close();

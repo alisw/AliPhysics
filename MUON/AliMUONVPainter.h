@@ -71,6 +71,8 @@ public:
   
   AliMUONVPainter* Detach() const;
   
+  virtual Bool_t CanBeDetached() const { return kTRUE; }
+  
   /// Whether we are valid or not
   virtual Bool_t IsValid() const { return fIsValid; }
   
@@ -211,19 +213,42 @@ public:
 
   AliMUONVPainter* Master() const;
   
-  virtual void DrawHistogram() const;
+  virtual void DrawHistogram(Double_t* values=0x0) const;
 
-  virtual void DrawHistogramClone() const;
+  /// To avoid getting a popup asking for the parameter in the GUI...
+  void DrawHistogram0() const { DrawHistogram(0x0); }
+  void DrawHistogramClone0() const { DrawHistogramClone(0x0); }
 
-  /// Append (i.e. don't have the right the clear the array !) our list of manus to manuList
+  virtual void DrawHistogramClone(Double_t* values=0x0) const;
+  
+  virtual void DrawInternalHistogram(Int_t dim) const;
+
+  virtual void DrawInternalHistogramClone(Int_t dim) const;
+
+  /// Append (i.e. don't have the right to clear the array !) our list of manus to manuList
   virtual void FillManuList(TObjArray& manuList) const;
+  
+  /// following kind of stupid lines, because I don't know how to
+  /// pass parameters to TClassMenuItem for context menu (don't even
+  /// know if that's possible at all)
+  
+  void DrawInternalHistogramClone0() { DrawInternalHistogramClone(0); }
+  void DrawInternalHistogramClone1() { DrawInternalHistogramClone(1); }
+  void DrawInternalHistogramClone2() { DrawInternalHistogramClone(2); }
+  void DrawInternalHistogramClone3() { DrawInternalHistogramClone(3); }
+  void DrawInternalHistogramClone4() { DrawInternalHistogramClone(4); }
+  void DrawInternalHistogramClone5() { DrawInternalHistogramClone(5); }
+  void DrawInternalHistogramClone6() { DrawInternalHistogramClone(6); }
+  void DrawInternalHistogramClone7() { DrawInternalHistogramClone(7); }
+  void DrawInternalHistogramClone8() { DrawInternalHistogramClone(8); }
+  void DrawInternalHistogramClone9() { DrawInternalHistogramClone(9); }
   
 protected:
     
   virtual TCollection* Children() const;
 
 private:
-
+  
     void FlatList(TList& list);
 
   AliMUONPainterGroup* CreateGroup(const char* type, Int_t depth);

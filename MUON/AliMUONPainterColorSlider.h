@@ -17,6 +17,7 @@
 #endif
 
 class TGNumberEntry;
+class TGTextButton;
 
 class AliMUONPainterColorSlider : public TGCompositeFrame
 {
@@ -27,8 +28,12 @@ public:
   void DataRangeAutoRequested(); // *SIGNAL*
 
   void DataRangeWasChanged(Double_t* range); // *SIGNAL*
+
+  void LockButtonWasClicked(); 
   
   void SetRange(Double_t min, Double_t max, Bool_t emit=kTRUE);
+  
+  Bool_t IsLocked() const;
   
 private:
   /// Not implemented
@@ -41,8 +46,10 @@ private:
   TGNumberEntry* fEntryMax; ///< textbox for max value to be represented
   Double_t fMin; ///< min value to be represented
   Double_t fMax; ///< max value to be represented
+  TGTextButton* fAutoButton; ///< to toggle data range computation
+  TGTextButton* fLockButton; ///< to toggle locking of range
   
-  ClassDef(AliMUONPainterColorSlider,1) // A painter color palette
+  ClassDef(AliMUONPainterColorSlider,2) // A painter color palette
 };
 
 #endif

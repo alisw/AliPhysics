@@ -26,10 +26,10 @@ class AliMUONTrackerData : public AliMUONVTrackerData
 public:
   AliMUONTrackerData(const char* name="", const char* title="", 
                      Int_t dimension=0,
-                     Bool_t runnable=kTRUE);
+                     Bool_t issingleevent=kFALSE);
   virtual ~AliMUONTrackerData();
 
-  virtual Bool_t Add(const AliMUONVStore& channelValues, Int_t numberOfEvents=1);
+  virtual Bool_t Add(const AliMUONVStore& channelValues);
   
   virtual Double_t BusPatch(Int_t busPatchId, Int_t dim=0) const;
 
@@ -59,7 +59,7 @@ public:
   virtual Bool_t HasPCB(Int_t detElemId, Int_t pcbIndex) const;
   
   /// Whether we can be run
-  virtual Bool_t IsRunnable() const { return fIsRunnable; }
+  virtual Bool_t IsSingleEvent() const { return fIsSingleEvent; }
   
   virtual Double_t Manu(Int_t detElemId, Int_t manuId, Int_t dim=0) const;
       
@@ -154,7 +154,7 @@ private:
                  AliMpDetElement*& mpde);
 
   /// Convert from external to internal index
-  Int_t External2Internal(Int_t index) const { return index*2; }
+  Int_t External2Internal(Int_t index) const;
 
   void SetInternalDimensionName(Int_t index, const char* value);  
 
@@ -167,6 +167,7 @@ private:
     
 private:
     
+  Bool_t fIsSingleEvent; ///< whether we can deal with more than one event
   AliMUONVStore* fChannelValues; ///< the channel store
   AliMUONVStore* fManuValues; ///< the manu store
   AliMUONVStore* fBusPatchValues; ///< the bus patch store
@@ -178,7 +179,6 @@ private:
   TObjArray* fDimensionNames; ///< the names of the (internal) dimensions
   TObjArray* fExternalDimensionNames; ///< the names of the external (i.e. original) dimensions
   Int_t fExternalDimension; ///< number of interface values per item 
-  Bool_t fIsRunnable; ///< whether we can deal with more than one event
   /// whether we should histogram the dimension(s)
   Int_t* fHistogramming; //[fExternalDimension] whether we should histogram the dimension(s)
   AliMUONVStore* fChannelHistos; ///< the channel histograms
@@ -187,7 +187,7 @@ private:
   static const Int_t fgkExtraDimension; ///< to hold extra information
   static const Int_t fgkVirtualExtraDimension; ///< to give access to information not stored, but computed on the fly
   
-  ClassDef(AliMUONTrackerData,3) // Implementation of AliMUONVTrackerData
+  ClassDef(AliMUONTrackerData,4) // Implementation of AliMUONVTrackerData
 };
 
 #endif

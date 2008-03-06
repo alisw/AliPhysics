@@ -26,7 +26,7 @@ class AliMUONPainterDataSourceItem : public TGCompositeFrame
 {
 public:
   AliMUONPainterDataSourceItem(const TGWindow* p, UInt_t w, UInt_t h, 
-                               AliMUONVTrackerDataMaker* reader);
+                               AliMUONVTrackerDataMaker* maker);
   virtual ~AliMUONPainterDataSourceItem();
   
   void Run();
@@ -35,14 +35,14 @@ public:
   
   void Rewind();
   
-//void Remove(); //*SIGNAL*
+  void Remove();
   
   void Update();
   
   void Reset();
   
   /// Return data source reader
-  AliMUONVTrackerDataMaker* DataMaker() const { return fDataReader; }
+  AliMUONVTrackerDataMaker* DataMaker() const { return fDataMaker; }
   
   void EnableRun();
   
@@ -52,13 +52,20 @@ public:
 
   void StopRunning(); //*SIGNAL*
 
+  void Save();
+  
+  void SaveWithDialog();
+  
 private:
+    
+    void Save(const char* filename);
+  
   /// Not implemented
   AliMUONPainterDataSourceItem(const AliMUONPainterDataSourceItem& rhs);
   /// Not implemented
   AliMUONPainterDataSourceItem& operator=(const AliMUONPainterDataSourceItem& rhs);
   
-  AliMUONVTrackerDataMaker* fDataReader; ///< data source reader (not owner)  
+  AliMUONVTrackerDataMaker* fDataMaker; ///< data source reader (not owner)  
   TGLabel* fSourceName; ///< the (short) name of the data source
   TGLabel* fSource; ///< the full uri of the data source
   TGLabel* fNumberOfEvents; ///< number of evts this source has seen so far
@@ -66,13 +73,14 @@ private:
   TGTextButton* fStop; ///< button to stop running over the source
   TGTextButton* fRewind; ///< button to rewind events for the source
   TGTextButton* fRemove; ///< button to remove the source
-
+  TGTextButton* fSave; ///< button to save the source (filename is fixed)
+  TGTextButton* fSaveAs; ///< button to save as... 
   TThread* fThread; ///< thread used to actually loop over the data
   Long_t fParams[2]; ///< used in conjunction with fThread
   
   Bool_t fShouldReset; ///< whether we should reset or not...
   
-  ClassDef(AliMUONPainterDataSourceItem,1) // Data source widget
+  ClassDef(AliMUONPainterDataSourceItem,3) // Data source widget
 };
 
 #endif

@@ -26,7 +26,9 @@ class AliMUONVTrackerData;
 class AliMUONTrackerRawDataMaker : public AliMUONVTrackerDataMaker
 {
 public:
-  AliMUONTrackerRawDataMaker(AliRawReader* reader = 0x0, Bool_t histogram=kFALSE);
+  AliMUONTrackerRawDataMaker(AliRawReader* reader = 0x0,
+                             Bool_t histogram=kFALSE,
+                             Bool_t useHPdecoder=kFALSE);
   virtual ~AliMUONTrackerRawDataMaker();
   
   /// Whether we have a valid raw reader
@@ -35,8 +37,14 @@ public:
   /// Our data
   AliMUONVTrackerData* Data() const { return fAccumulatedData; }
   
-  /// We can be run
-  virtual Bool_t IsRunnable() const { return kTRUE; }
+  /// Whether we're only handling event-by-event data (i.e. no accumulation)
+  virtual Bool_t IsEventByEvent() const { return fIsEventByEvent; }
+  
+  /// Set event-by-event mode
+  virtual void SetEventByEvent(Bool_t flag) { fIsEventByEvent = flag; }
+  
+  /// We can be run if we have a reader
+  virtual Bool_t IsRunnable() const { return IsValid(); }
   
   /// Whether we are running or not
   virtual Bool_t IsRunning() const { return fIsRunning; }
@@ -50,9 +58,6 @@ public:
   
   void Rewind();
   
-  /// Tell if we are owner of our data or not
-  void SetOwner(Bool_t flag) { fIsOwner = flag; }
-  
   /// Get our source URI
   virtual TString Source() const { return fSource.Data(); }
   
@@ -62,6 +67,8 @@ public:
   /// Number of events seen
   Int_t NumberOfEvents() const { return fNumberOfEvents; }
 
+  Long64_t Merge(TCollection* li);
+  
 private:
   /// Not implemented
   AliMUONTrackerRawDataMaker(const AliMUONTrackerRawDataMaker& rhs);
@@ -69,16 +76,18 @@ private:
   AliMUONTrackerRawDataMaker& operator=(const AliMUONTrackerRawDataMaker& rhs);
   
 private:
-  AliRawReader* fRawReader; ///< reader of the data (owner)
-  AliMUONVTrackerData* fAccumulatedData; ///< data (owner if fIsOwner==kTRUE)
+  AliRawReader* fRawReader; //!< reader of the data (owner)
+  AliMUONVTrackerData* fAccumulatedData; ///< data (owner)
   AliMUONVStore* fOneEventData; ///< data for one event (owner)
-  Bool_t fIsOwner; ///< whether we are owner of our data or not
   TString fSource; ///< where the data comes from
   Bool_t fIsRunning; ///< whether we are running or are paused
   Int_t fNumberOfEvents; ///< number of events seen
+  Int_t fRunNumber; ///< run number of the data
+  Bool_t fIsEventByEvent; ///< we only keep one event's data (no accumulation)
+  Bool_t fUseHPDecoder; ///< whether to use high performance decoder or not (false by default)
   static Int_t fgkCounter; ///< to count the number of instances
   
-  ClassDef(AliMUONTrackerRawDataMaker,2) // Producer of AliMUONVTrackerData from raw data
+  ClassDef(AliMUONTrackerRawDataMaker,3) // Producer of AliMUONVTrackerData from raw data
 };
 
 #endif
