@@ -1,16 +1,27 @@
 // @(#) $Id$
 // Original: AliHLTConfMapper.cxx,v 1.26 2005/06/14 10:55:21 cvetan Exp $
 
-/** \class AliHLTTPCConfMapper
-<pre>
-//_____________________________________________________________
-// AliHLTTPCConfMapper
-//
-// Conformal mapping base class
-//
-// Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
-// Copyright &copy ALICE HLT Group
-</pre>
+//**************************************************************************
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//*                                                                        *
+//* Primary Authors: Anders Vestbo, maintained by
+//*                  Matthias Richter <Matthias.Richter@ift.uib.no>        *
+//*                  for The ALICE HLT Project.                            *
+//*                                                                        *
+//* Permission to use, copy, modify and distribute this software and its   *
+//* documentation strictly for non-commercial purposes is hereby granted   *
+//* without fee, provided that the above copyright notice appears in all   *
+//* copies and that both the copyright notice and this permission notice   *
+//* appear in the supporting documentation. The authors make no claims     *
+//* about the suitability of this software for any purpose. It is          *
+//* provided "as is" without express or implied warranty.                  *
+//**************************************************************************
+
+/** @file   AliHLTAltroEncoder.cxx
+    @author Anders Vestbo, Matthias Richter
+    @date   Conformal mapping base class.
+    @brief  
 */
 
 #include <cassert>
@@ -829,9 +840,9 @@ Double_t AliHLTTPCConfMapper::TrackletAngle(AliHLTTPCConfMapTrack *track,Int_t n
   if(n<3)
     return 0;
   
-  Double_t x1[2];
-  Double_t x2[2];
-  Double_t x3[2];
+  Double_t x1[2]={0,0};
+  Double_t x2[2]={0,0};
+  Double_t x3[2]={0,0};
   Double_t angle1,angle2;
   Int_t counter=0;
   for(track->StartLoop(); track->LoopDone(); track->GetNextHit())

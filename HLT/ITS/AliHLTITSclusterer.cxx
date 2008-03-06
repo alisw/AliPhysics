@@ -1,3 +1,5 @@
+// $Id$
+
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -33,9 +35,11 @@
 
 ClassImp(AliHLTITSclusterer)
 
-AliHLTITSclusterer::AliHLTITSclusterer(const Char_t *geom):AliITSclustererV2(geom)
+AliHLTITSclusterer::AliHLTITSclusterer(const Char_t *geom)
+  :
+  AliITSclustererV2(geom),
+  fNModule(AliITSgeomTGeo::GetNModules())  
 {
-fNModule = AliITSgeomTGeo::GetNModules();
 }
 
 void AliHLTITSclusterer::Digits2Clusters(AliRawReader* rawReader,TTree *cTree)

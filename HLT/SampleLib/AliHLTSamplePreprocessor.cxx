@@ -58,7 +58,7 @@ void AliHLTSamplePreprocessor::Initialize(Int_t /*run*/, UInt_t /*startTime*/,
 }
 
 
-UInt_t AliHLTSamplePreprocessor::Process(TMap* dcsAliasMap)
+UInt_t AliHLTSamplePreprocessor::Process(TMap* /*dcsAliasMap*/)
 {
   // see header file for function documentation
   UInt_t retVal = 0;

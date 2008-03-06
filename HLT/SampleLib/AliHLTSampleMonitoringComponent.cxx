@@ -143,7 +143,7 @@ int AliHLTSampleMonitoringComponent::DoDeinit()
   return 0;
 }
 
-int AliHLTSampleMonitoringComponent::DoEvent( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& /*trigData*/)
+int AliHLTSampleMonitoringComponent::DoEvent( const AliHLTComponentEventData& /*evtData*/, AliHLTComponentTriggerData& /*trigData*/)
 {
   // see header file for class documentation
 
@@ -226,7 +226,7 @@ int AliHLTSampleMonitoringComponent::Configure(const char* arguments)
   return iResult;
 }
 
-int AliHLTSampleMonitoringComponent::Reconfigure(const char* cdbEntry, const char* chainId)
+int AliHLTSampleMonitoringComponent::Reconfigure(const char* cdbEntry, const char* /*chainId*/)
 {
   // see header file for class documentation
   int iResult=0;

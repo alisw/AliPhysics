@@ -449,7 +449,7 @@ AC_ARG_ENABLE(strict,
       [disable coding convention checks ])],
   [],[enable_strict=yes])
 if test "x$enable_strict" = "xyes" ; then
-   CPPFLAGS="$CPPFLAGS -Weffc++ -Wall"
+   CPPFLAGS="$CPPFLAGS -W -Weffc++ -Wall"
 fi
 AC_MSG_RESULT([$enable_strict])
 
@@ -519,7 +519,7 @@ if test "x$enable_tpc" = "xyes" ; then
   AC_DEFINE(HLT_TPC)
 fi
 AM_CONDITIONAL(EN_HLT_TPC, test x$enable_tpc = xyes)
-AC_MSG_CHECKING([whether to compile tpc library])
+AC_MSG_CHECKING([whether to compile TPC library])
 AC_MSG_RESULT([$enable_module])
 AC_SUBST([ALITPC_LIBS])
 
@@ -565,7 +565,7 @@ if test "x$enable_rcu" = "xyes" ; then
   AC_DEFINE(HLT_RCU)
 fi
 AM_CONDITIONAL(EN_HLT_RCU, test x$enable_rcu = xyes)
-AC_MSG_CHECKING([whether to compile rcu library])
+AC_MSG_CHECKING([whether to compile RCU library])
 AC_MSG_RESULT([$enable_module])
 AC_SUBST([ALIRCU_LIBS])
 
@@ -615,7 +615,7 @@ if test "x$enable_phos" = "xyes" ; then
   ALIPHOS_LIBS=$ALIHLTMODULE_LIBS
 fi
 AM_CONDITIONAL(EN_HLT_PHOS, test x$enable_phos = xyes)
-AC_MSG_CHECKING([whether to compile phos library])
+AC_MSG_CHECKING([whether to compile PHOS library])
 AC_MSG_RESULT([$enable_module])
 AC_SUBST([ALIPHOS_LIBS])
 
@@ -657,7 +657,7 @@ if test "x$enable_trd" = "xyes" ; then
   ALITRD_LIBS=$ALIHLTMODULE_LIBS
 fi
 AM_CONDITIONAL(EN_HLT_TRD, test x$enable_trd = xyes)
-AC_MSG_CHECKING([whether to compile trd library])
+AC_MSG_CHECKING([whether to compile TRD library])
 AC_MSG_RESULT([$enable_module])
 AC_SUBST([ALITRD_LIBS])
 
@@ -686,9 +686,65 @@ if test "x$enable_muon" = "xyes" ; then
   ALIMUON_LIBS=$ALIHLTMODULE_LIBS
 fi
 AM_CONDITIONAL(EN_HLT_MUON, test x$enable_muon = xyes)
-AC_MSG_CHECKING([whether to compile muon library])
+AC_MSG_CHECKING([whether to compile MUON library])
 AC_MSG_RESULT([$enable_module])
 AC_SUBST([ALIMUON_LIBS])
+
+dnl ------------------------------------------------------------------
+AH_TEMPLATE([HLT_TRIGGER],[hlt trigger library])
+
+ALITRIGGER_LIBS=
+CHECK_HLTMODULE([trigger],
+		[], [$ALIROOT_CPPFLAGS],
+		[], [-L$ROOTLIBDIR], [$ROOTLIBS $ADD_ROOTLIBS],
+		[], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS], 
+		[$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS])
+
+if test "x$enable_module" = "xmissheader"; then
+  enable_module="no...header.missing"
+  enable_trigger="no...header.missing"
+elif test "x$enable_module" = "xforce"; then
+  enable_trigger="yes"
+else
+  enable_trigger=$enable_module
+fi
+
+if test "x$enable_trigger" = "xyes" ; then 
+  AC_DEFINE(HLT_TRIGGER)
+  ALITRIGGER_LIBS=$ALIHLTMODULE_LIBS
+fi
+AM_CONDITIONAL(EN_HLT_TRIGGER, test x$enable_trigger = xyes)
+AC_MSG_CHECKING([whether to compile Trigger library])
+AC_MSG_RESULT([$enable_module])
+AC_SUBST([ALITRIGGER_LIBS])
+
+dnl ------------------------------------------------------------------
+AH_TEMPLATE([HLT_ITS],[hlt its library])
+
+ALIITS_LIBS=
+CHECK_HLTMODULE([its],
+		[], [$ALIROOT_CPPFLAGS],
+		[], [-L$ROOTLIBDIR], [$ROOTLIBS $ADD_ROOTLIBS],
+		[], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS], 
+		[$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS])
+
+if test "x$enable_module" = "xmissheader"; then
+  enable_module="no...header.missing"
+  enable_its="no...header.missing"
+elif test "x$enable_module" = "xforce"; then
+  enable_its="yes"
+else
+  enable_its=$enable_module
+fi
+
+if test "x$enable_its" = "xyes" ; then 
+  AC_DEFINE(HLT_ITS)
+  ALIITS_LIBS=$ALIHLTMODULE_LIBS
+fi
+AM_CONDITIONAL(EN_HLT_ITS, test x$enable_its = xyes)
+AC_MSG_CHECKING([whether to compile ITS library])
+AC_MSG_RESULT([$enable_module])
+AC_SUBST([ALIITS_LIBS])
 
 dnl ------------------------------------------------------------------
 AH_TEMPLATE([HLT_COMP],[hlt comp library])
@@ -829,6 +885,7 @@ AC_CONFIG_FILES([Makefile
 		 TRD/Makefile
 		 MUON/Makefile
 		 trigger/Makefile
+		 ITS/Makefile
 		 comp/Makefile
 		 doc/Makefile
 		 doc/doxygen.conf

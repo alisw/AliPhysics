@@ -1,5 +1,8 @@
-#ifndef ALIL3ITSCLUSTERER_H
-#define ALIL3ITSCLUSTERER_H
+//-*- Mode: C++ -*-
+// $Id$
+
+#ifndef ALIHLTITSCLUSTERER_H
+#define ALIHLTITSCLUSTERER_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -20,7 +23,7 @@ class AliRawReader;
 //-------------------------------------------------------------------------
 class AliHLTITSclusterer : public AliITSclustererV2 {
 public:
-  AliHLTITSclusterer():AliITSclustererV2(){fNModule = 0;}
+  AliHLTITSclusterer():AliITSclustererV2(), fNModule(0) {}
   AliHLTITSclusterer(const Char_t *geom);
 
   void Digits2Clusters(AliRawReader* rawReader,TTree *cTree);

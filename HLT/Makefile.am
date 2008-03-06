@@ -30,9 +30,13 @@ if EN_HLT_COMP
 COMP_DIR=comp
 endif
 
-#if EN_HLT_TRIGGER
+if EN_HLT_TRIGGER
 TRIGGER_DIR=trigger
-#endif
+endif
+
+if EN_HLT_ITS
+ITS_DIR=ITS
+endif
 
 SUBDIRS 		= BASE \
 			  sim \
@@ -46,6 +50,7 @@ SUBDIRS 		= BASE \
 			  $(MUON_DIR) \
 			  $(COMP_DIR) \
                           $(TRIGGER_DIR) \
+                          $(ITS_DIR) \
 			  doc
 
 EXTRA_DIST		= libHLTbase.pkg \

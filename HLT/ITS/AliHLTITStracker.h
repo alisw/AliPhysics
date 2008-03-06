@@ -1,5 +1,8 @@
-#ifndef ALIL3ITSTRACKER_H
-#define ALIL3ITSTRACKER_H
+//-*- Mode: C++ -*-
+// $Id$
+
+#ifndef ALIHLTITSTRACKER_H
+#define ALIHLTITSTRACKER_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 

@@ -3,12 +3,15 @@
 
 #ifndef ALIHLTTPCCONFMAPPER_H
 #define ALIHLTTPCCONFMAPPER_H
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
 
-//
-//Conformal mapping base class
-//
-// Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
-//*-- Copyright &copy ALICE HLT Group
+/** @file   AliHLTAltroEncoder.h
+    @author Anders Vestbo, Matthias Richter
+    @date   Conformal mapping base class.
+    @brief  
+*/
 
 #include <vector>
 
@@ -19,6 +22,10 @@ class AliHLTTPCTrackArray;
 class AliHLTTPCSpacePointData;
 
 
+/** 
+ * @class AliHLTTPCConfMapper
+ * Conformal mapping base class.
+ */
 class AliHLTTPCConfMapper {
 
  public:
