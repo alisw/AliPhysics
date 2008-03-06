@@ -95,6 +95,7 @@ ClassImp(AliMUONVPainter)
 //_____________________________________________________________________________
 AliMUONVPainter::AliMUONVPainter(const char* type)
 : TObject(), 
+  TQObject(),
   fName(""),
   fPathName(""),
   fType(type),
@@ -120,6 +121,7 @@ AliMUONVPainter::AliMUONVPainter(const char* type)
 //_____________________________________________________________________________
 AliMUONVPainter::AliMUONVPainter(const AliMUONVPainter& rhs)
 : TObject(rhs),
+TQObject(),
 fName(""),
 fPathName(""),
 fType(""),

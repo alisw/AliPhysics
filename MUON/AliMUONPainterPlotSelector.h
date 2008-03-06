@@ -15,9 +15,6 @@
 #ifndef ROOT_TGFrame
 #  include "TGFrame.h"
 #endif
-#ifndef ROOT_RQ_OBJECT
-# include <RQ_OBJECT.h>
-#endif
 #ifndef ROOT_TString
 #  include "TString.h"
 #endif
@@ -29,8 +26,6 @@ class TMap;
 
 class AliMUONPainterPlotSelector : public TGCompositeFrame
 {
-  RQ_OBJECT("AliMUONPainterPlotSelector")
-  
 public:
   AliMUONPainterPlotSelector(const TGWindow* window, UInt_t w=1, UInt_t h=1);
   virtual ~AliMUONPainterPlotSelector();

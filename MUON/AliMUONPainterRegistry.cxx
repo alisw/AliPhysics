@@ -42,7 +42,7 @@ ClassImp(AliMUONPainterRegistry)
 AliMUONPainterRegistry* AliMUONPainterRegistry::fgInstance(0x0);
 
 //_____________________________________________________________________________
-AliMUONPainterRegistry::AliMUONPainterRegistry() : TObject(),
+AliMUONPainterRegistry::AliMUONPainterRegistry() : TObject(), TQObject(),
 fDataSources(new TObjArray),
 fPainterMatrices(new TObjArray),
 fDataReaders(new TObjArray),

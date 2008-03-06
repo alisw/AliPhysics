@@ -55,9 +55,19 @@ AliMUONQADataMakerSim::AliMUONQADataMakerSim() :
 
 //____________________________________________________________________________ 
 AliMUONQADataMakerSim::AliMUONQADataMakerSim(const AliMUONQADataMakerSim& qadm) :
-    AliQADataMakerSim()
+    AliQADataMakerSim(),
+  fHitStore(0x0),
+  fDigitStore(0x0)
 {
-    ///copy ctor 
+    ///copy ctor
+    if ( qadm.fHitStore ) 
+    {
+      fHitStore = static_cast<AliMUONVHitStore*>(qadm.fHitStore->Clone());
+    }
+    if ( qadm.fDigitStore ) 
+    {
+      fDigitStore = static_cast<AliMUONVDigitStore*>(qadm.fDigitStore->Clone());
+    }
     SetName((const char*)qadm.GetName()) ; 
     SetTitle((const char*)qadm.GetTitle()); 
 }

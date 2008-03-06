@@ -762,7 +762,7 @@ AliMUONTrackerData::CreateManuParam(Int_t detElemId, Int_t manuId) const
 
 //_____________________________________________________________________________
 Long64_t
-AliMUONTrackerData::Merge(TCollection* li)
+AliMUONTrackerData::Merge(TCollection*)
 {
   /// Merge all tracker data objects from li into a single one.
   

@@ -38,7 +38,7 @@ ClassImp(AliMUONVTrackerData)
 //_____________________________________________________________________________
 AliMUONVTrackerData::AliMUONVTrackerData(const char* name, const char* title,
                                          Bool_t)
-: TNamed(name,title)
+: TNamed(name,title), TQObject()
 {
   /// ctor
 }

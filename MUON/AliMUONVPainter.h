@@ -16,8 +16,8 @@
 #ifndef ALIMUONATTPAINTER_H
 #  include "AliMUONAttPainter.h"
 #endif
-#ifndef ROOT_RQ_OBJECT
-#  include <RQ_OBJECT.h>
+#ifndef ROOT_TQObject
+#  include <TQObject.h>
 #endif
 #ifndef ROOT_TString
 #  include "TString.h"
@@ -41,10 +41,8 @@ class TMap;
 class TObjArray;
 class TVirtualPad;
 
-class AliMUONVPainter : public TObject
+class AliMUONVPainter : public TObject, public TQObject
 {
-  RQ_OBJECT("AliMUONVPainter")
-
 public:  
 
   AliMUONVPainter(const char* type="");
@@ -258,9 +256,9 @@ private:
   Bool_t fIsValid; ///< whether we were properly initialized
   
 protected:
-  mutable TH1* fHistogram; ///< histogram
+  mutable TH1* fHistogram; //!< histogram
   
-  ClassDef(AliMUONVPainter,2) // Base class of a graphical object for MUON spectrometer
+  ClassDef(AliMUONVPainter,3) // Base class of a graphical object for MUON spectrometer
 };
 
 #endif

@@ -91,6 +91,7 @@ AliMpDEVisu::AliMpDEVisu(UInt_t w, UInt_t h)
   fCurrentDetElem(100),
   fCurrentDEName(),
   fSegmentation(),
+  fDDLStore(0x0),
   fZoomMode(false)
 {
 /// Standard constructor

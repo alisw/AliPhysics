@@ -15,17 +15,12 @@
 #ifndef ROOT_TRint
 #   include <TRint.h>
 #endif
-#ifndef ROOT_RQ_OBJECT
-#   include <RQ_OBJECT.h>
-#endif
 
 class AliMUONPainterMasterFrame;
 class TGMainFrame;
 
 class AliMUONMchViewApplication : public TRint
 {
-  RQ_OBJECT("AliMUONMchViewApplication")
-
 public:
   AliMUONMchViewApplication(const char* name, int* argc, char** argv, 
                             Float_t wfraction, Float_t hfraction);
@@ -34,10 +29,10 @@ public:
   void HandleMenu(Int_t i);
 
   /// Return the version number of the mchview application
-  static const char* Version() { return "0.92"; }
+  static const char* Version() { return "0.92a"; }
   
   /// Return the SVN revision  and version number of the mchview application
-  static const char* FullVersion() { return Form("mchview Version %s ($Revision$)",Version()); }
+  static const char* FullVersion() { return Form("mchview Version %s ($Id$)",Version()); }
   
   void Open(const char* filename);
 

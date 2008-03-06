@@ -15,9 +15,6 @@
 #ifndef ROOT_TGFrame
 #  include "TGFrame.h"
 #endif
-#ifndef ROOT_RQ_OBJECT
-#   include <RQ_OBJECT.h>
-#endif
 #include <float.h>
 
 class AliMUONPainterColorSlider;
@@ -34,8 +31,6 @@ class TRootEmbeddedCanvas;
 
 class AliMUONPainterMatrixFrame : public TGCompositeFrame
 {
-  RQ_OBJECT("AliMUONPainterMatrixFrame")
-  
 public:
   AliMUONPainterMatrixFrame(const TGWindow* window, UInt_t w, UInt_t h);
   virtual ~AliMUONPainterMatrixFrame();

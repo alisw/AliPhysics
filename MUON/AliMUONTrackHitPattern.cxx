@@ -90,6 +90,8 @@ AliMUONTrackHitPattern::AliMUONTrackHitPattern(const AliMUONGeometryTransformer&
     : TObject(),
       fTransformer(transformer),
       fDigitMaker(digitMaker),
+      fDeltaZ(0.0),
+      fTrigCovariance(0x0),
       fkMaxDistance(99999.)
 {
     /// Default constructor

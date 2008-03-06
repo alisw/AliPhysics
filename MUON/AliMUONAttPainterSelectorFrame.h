@@ -15,9 +15,6 @@
 #ifndef ROOT_TGFrame
 #  include "TGFrame.h"
 #endif
-#ifndef ROOT_RQ_OBJECT
-#   include <RQ_OBJECT.h>
-#endif
 #ifndef ALIMUONATTPAINTER_H
 #  include "AliMUONAttPainter.h"
 #endif
@@ -26,8 +23,6 @@ class TGButtonGroup;
 
 class AliMUONAttPainterSelectorFrame : public TGHorizontalFrame
 {
-  RQ_OBJECT("AliMUONAttPainterSelectorFrame")
-  
 public:
   AliMUONAttPainterSelectorFrame(TGWindow* p=0x0, UInt_t w=1, UInt_t h=1);
   virtual ~AliMUONAttPainterSelectorFrame();

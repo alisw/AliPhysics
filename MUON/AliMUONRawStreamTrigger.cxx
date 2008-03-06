@@ -63,7 +63,9 @@ AliMUONRawStreamTrigger::AliMUONRawStreamTrigger()
     fCurrentLocalStruct(0x0),
     fCurrentLocalStructIndex(0),
     fLocalStructRead(kFALSE),
-    fDDL(0)
+    fDDL(0),
+    fNextDDL(kFALSE),
+    fEnableErrorLogger(kFALSE)
 {
   ///
   /// create an object to read MUON raw digits
@@ -85,7 +87,9 @@ AliMUONRawStreamTrigger::AliMUONRawStreamTrigger(AliRawReader* rawReader)
     fCurrentLocalStruct(0x0),
     fCurrentLocalStructIndex(0),
     fLocalStructRead(kFALSE),
-    fDDL(0)
+    fDDL(0),
+    fNextDDL(kFALSE),
+    fEnableErrorLogger(kFALSE)
 {
   ///
   /// ctor with AliRawReader as argument

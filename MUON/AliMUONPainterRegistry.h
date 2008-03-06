@@ -15,8 +15,8 @@
 #ifndef ROOT_TObject
 #  include "TObject.h"
 #endif
-#ifndef ROOT_RQ_OBJECT
-#  include <RQ_OBJECT.h>
+#ifndef ROOT_TQObject
+#  include <TQObject.h>
 #endif
 
 class TGPopupMenu;
@@ -26,10 +26,8 @@ class AliMUONVTrackerDataMaker;
 class AliMUONPainterMatrix;
 class TGMenuBar;
 
-class AliMUONPainterRegistry : public TObject
+class AliMUONPainterRegistry : public TObject, public TQObject
 {
-  RQ_OBJECT("AliMUONPainterRegistry")
-  
 public:
   virtual ~AliMUONPainterRegistry();
 

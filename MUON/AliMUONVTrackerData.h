@@ -19,18 +19,16 @@
 #ifndef ROOT_TString
 #  include "TString.h"
 #endif
-#ifndef ROOT_RQ_OBJECT
-#   include <RQ_OBJECT.h>
+#ifndef ROOT_TQObject
+#   include <TQObject.h>
 #endif
 
 class AliMUONSparseHisto;
 class AliMUONVStore;
 class TCollection;
 
-class AliMUONVTrackerData : public TNamed
+class AliMUONVTrackerData : public TNamed, public TQObject
 {
-  RQ_OBJECT("AliMUONVTrackerData")
-  
 public:
   
   AliMUONVTrackerData(const char* name="",const char* title="", Bool_t runnable=kTRUE);
@@ -144,7 +142,7 @@ private:
   /// not implemented
   AliMUONVTrackerData& operator=(const AliMUONVTrackerData& rhs);
   
-  ClassDef(AliMUONVTrackerData,1) // Base class of MUON data that can be represented graphically
+  ClassDef(AliMUONVTrackerData,2) // Base class of MUON data that can be represented graphically
 };
 
 #endif
