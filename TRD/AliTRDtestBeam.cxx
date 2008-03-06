@@ -500,7 +500,10 @@ AliTRDrawStreamTB *AliTRDtestBeam::GetTRDrawStream()
   reader->SetEquipmentID(1024);
   reader->ReadHeader();
   //AliTRDrawStreamTB::RawBufferMissAligned(kTRUE);
-  //AliTRDrawStreamTB::SupressWarnings(kTRUE);
+
+  AliTRDrawStreamTB::SetNoErrorWarning();
+  AliTRDrawStreamTB::SetExtraWordsFix();
+  AliTRDrawStreamTB::AllowCorruptedData();
  
   AliTRDrawStreamTB *tb = new AliTRDrawStreamTB(reader); 
   //tb->Init();

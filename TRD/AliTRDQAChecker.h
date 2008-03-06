@@ -17,6 +17,7 @@ class TFile ;
 class TH1F ; 
 class TH1I ; 
 class TList ;
+class TObjArray;
 
 // --- Standard library ---
 
@@ -34,6 +35,7 @@ public:
 
   virtual const Double_t Check() {return 1.0;}
   virtual const Double_t Check(TList * /*list*/) {return 1.0;}
+  virtual const Double_t Check(TObjArray * /*list*/) {return 1.0;}
 
 private:
   

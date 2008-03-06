@@ -376,7 +376,6 @@ void AliTRDQADataMaker::MakeESDs(AliESDEvent * esd)
 
     // .. in the acceptance
     Int_t sector = GetSector(paramOut->GetAlpha());
-    GetESDsData(1)->Fill(sector);
 
     UInt_t u = 1;
     UInt_t status = track->GetStatus();
@@ -415,6 +414,7 @@ void AliTRDQADataMaker::MakeESDs(AliESDEvent * esd)
     //fSignal->Fill(track->GetTRDsignal());
 	
     GetESDsData(18)->Fill(track->GetP(), track->GetTRDsignal());
+    GetESDsData(1)->Fill(sector);
 
     /*
     // PID only

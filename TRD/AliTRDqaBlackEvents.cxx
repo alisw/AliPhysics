@@ -6,7 +6,7 @@
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
  * documentation strictly for non-commercial purposes is hereby granted   *
- * withount fee, provided that the abovÅe copyright notice appears in all   *
+ * withount fee, provided that the abovÅ�e copyright notice appears in all   *
  * copies and that both the copyright notice and this permission notice   *
  * appear in the supporting documentation. The authors make no claims     *
  * about the suitability of this software for any purpose. It is          *
@@ -45,10 +45,11 @@ ClassImp(AliTRDqaBlackEvents)
 
 AliTRDqaBlackEvents::AliTRDqaBlackEvents() 
   :TObject() 
+  ,fnEvents(0)
+  ,fOccupancy(0)
+  ,fFitType(0)
   ,fMinNoise(0.5)
   ,fMaxNoise(2) 
-  ,fFitType(0)
-  ,fnEvents(0)
 {
   //
   // Constructor 
@@ -60,10 +61,11 @@ AliTRDqaBlackEvents::AliTRDqaBlackEvents()
 
 AliTRDqaBlackEvents::AliTRDqaBlackEvents(const AliTRDqaBlackEvents &qa) 
   :TObject(qa) 
+  ,fnEvents(0)
+  ,fOccupancy(0)
+  ,fFitType(0)
   ,fMinNoise(0.5)
   ,fMaxNoise(2) 
-  ,fFitType(0)
-  ,fnEvents(0)
 {
   //
   // Copy constructor 
@@ -90,8 +92,9 @@ void AliTRDqaBlackEvents::Init()
     fChPed[i]   = new TH2D(Form("ped_%d", i), "", 16, -0.5, 15.5, 144, -0.5, 143.5);
     fChNoise[i] = new TH2D(Form("noise_%d", i), "", 16, -0.5, 15.5, 144, -0.5, 143.5);
     fPed[i]     = new TH1D(Form("pedDist_%d", i), ";pedestals (ADC counts)", 100, 5, 15);
-    fNoise[i]   = new TH1D(Form("noiseDist_%d", i), ";noise (ADC counts)", 100, 0, 5); 
-    fSignal[i]  = new TH1D(Form("signal_%d", i), "signal (ADC counts)", 100, -0.5, 99.5);
+    fNoise[i]   = new TH1D(Form("noiseDist_%d", i), ";noise (ADC counts)", 100, 0, 5);
+    fSignal[i]  = new TH1D(Form("signal_%d", i), ";signal (ADC counts)", 100, -0.5, 99.5);
+    fnEntriesRM[i] = new TH2D(Form("entriesRM_%d", i), ";ROB,MCM", 8, -0.5, 7.5, 16, -0.5, 15.5);
   }
 
   fOccupancy = new TH1D("occupancy", "", 20, -0.5, 19.5);
@@ -131,18 +134,30 @@ Int_t AliTRDqaBlackEvents::AddEvent(AliTRDrawStreamTB *data)
   	isUsed[i][j][k] = 0;
  
   Int_t nb = 0;
+  Int_t rob_last = -1;
+  Int_t mcm_last = -1;
+
   while (data->Next()) {
 
     Int_t det = data->GetDet();
     Int_t row = data->GetRow();
     Int_t col = data->GetCol();
+    Int_t rob = data->GetROB();
+    Int_t mcm = data->GetMCM();
     Int_t *sig = data->GetSignals();
     nb++;
 
     //printf("det = %d\n", det);
     
     if (det<0 || det>=540) continue;
+
     isUsed[det][row][col]++;
+
+    if ((rob_last != rob) || (mcm_last != mcm)) {
+      rob_last = rob;
+      mcm_last = mcm;
+      fnEntriesRM[det]->Fill(rob,mcm);
+    }
 
     // if (!isUsed[det][data->GetRow()][data->GetCol()]) {
     //  isUsed[det][data->GetRow()][data->GetCol()] = 1;
@@ -237,8 +252,9 @@ void AliTRDqaBlackEvents::Process(const char *filename)
     }
   }
 
-  // normalize number of entries histos
+  Info("Process", "Number of events = %d", fnEvents);
 
+  // normalize number of entries histos
   
   Int_t max = 0;
   for(Int_t i=0; i<540; i++) { 
@@ -270,7 +286,10 @@ void AliTRDqaBlackEvents::Process(const char *filename)
     fNPoint[i]->Scale(1./fnEvents);
   }
   
-  
+  for(Int_t i=0; i<540; i++) {
+    fnEntriesRM[i]->SetMaximum(fnEvents * 1.5);
+  }
+
   TFile *file = new TFile(filename, "UPDATE");
   for(Int_t i=0; i<540; i++) {
     if (!map[i]) continue; 
@@ -281,6 +300,7 @@ void AliTRDqaBlackEvents::Process(const char *filename)
     fPed[i]->Write();
     fNoise[i]->Write();
     fSignal[i]->Write();
+    fnEntriesRM[i]->Write();
   }
   fOccupancy->Write();
   file->Close();

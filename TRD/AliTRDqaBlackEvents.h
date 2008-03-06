@@ -50,8 +50,7 @@ class AliTRDqaBlackEvents : public TObject {
 
  private:
   
-  Int_t fnEvents;         // number of events processed
-  
+  Int_t fnEvents;         // number of events processed  
   TH1D *fOccupancy;       // how many times is a pad present in data
 
   TH1D *fPed[540];        // reconstructed pedestals distribution (on hist per chamber)
@@ -62,8 +61,11 @@ class AliTRDqaBlackEvents : public TObject {
   TH2D *fNPoint[540];     // number of data points
   TH3D *fData[540];       // Some histograms
   TH1D *fSignal[540];     // Some histograms
+  TH2D *fnEntriesRM[540];     // number of entries for ROB - MCM
+  TH1D *fnEntriesRMDist[540]; // distribtion of number of entries per ROB-MCM
 
-  Int_t fFitType;
+  Int_t    fFitType;
+
   Double_t fMinNoise;   // Minimum noise
   Double_t fMaxNoise;   // Maximum noise
 
