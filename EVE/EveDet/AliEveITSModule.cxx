@@ -73,14 +73,17 @@ AliEveITSModule::~AliEveITSModule()
 
 void AliEveITSModule::InitStatics(AliEveITSDigitsInfo* info)
 {
-  // Initialize static variables,
+  // Initialize static variables.
+  //
+  // Warning all sensor sizes are in microns, here we transform them
+  // to cm. In Eve half-lengths/widths are used, hence another 1/2.
 
   if (fgStaticInitDone) return;
   fgStaticInitDone = kTRUE;
 
   {
     Float_t dx = info->fSegSPD->Dx()*0.00005;
-    Float_t dz = 3.50;
+    Float_t dz = info->fSegSPD->Dz()*0.00005;
 
     fgSPDFrameBox = new TEveFrameBox();
     fgSPDFrameBox->SetAAQuadXZ(-dx, 0, -dz, 2*dx, 2*dz);

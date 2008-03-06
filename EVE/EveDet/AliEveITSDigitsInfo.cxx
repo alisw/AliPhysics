@@ -285,7 +285,7 @@ void AliEveITSDigitsInfo::SetITSSegmentation()
   // data-structures.
 
   // SPD
-  fSegSPD = new AliITSsegmentationSPD();
+  fSegSPD = new AliITSsegmentationSPD("TGeo");
 
   Int_t m;
   Float_t fNzSPD=160;
@@ -308,12 +308,12 @@ void AliEveITSDigitsInfo::SetITSSegmentation()
   }
 
   // SDD
-  fSegSDD = new AliITSsegmentationSDD();
+  fSegSDD = new AliITSsegmentationSDD("TGeo");
   // !!!! Set default drift speed, eventually need to get it from CDB.
   fSegSDD->SetDriftSpeed(7.3);
 
   // SSD
-  fSegSSD = new AliITSsegmentationSSD();
+  fSegSSD = new AliITSsegmentationSSD("TGeo");
 }
 
 /******************************************************************************/
