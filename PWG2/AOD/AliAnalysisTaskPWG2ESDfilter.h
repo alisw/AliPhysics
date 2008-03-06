@@ -25,7 +25,10 @@ class AliAnalysisTaskPWG2ESDfilter : public AliAnalysisTask
  public:
     AliAnalysisTaskPWG2ESDfilter();
     AliAnalysisTaskPWG2ESDfilter(const char* name);
+    AliAnalysisTaskPWG2ESDfilter(const AliAnalysisTaskPWG2ESDfilter &task); 
     virtual ~AliAnalysisTaskPWG2ESDfilter() {;}
+
+    AliAnalysisTaskPWG2ESDfilter& operator=(const AliAnalysisTaskPWG2ESDfilter &task);
     // Implementation of interface methods
     virtual void ConnectInputData(Option_t *option = "");
     virtual void CreateOutputObjects();
