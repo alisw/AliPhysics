@@ -1,19 +1,20 @@
 // $Id$
 
-/**************************************************************************
- * TPCCompModelDeconverterright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Authors: Timm Steinbeck <timm@kip.uni-heidelberg.de>                   *
- *          for The ALICE Off-line Project.                               *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+//**************************************************************************
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//*                                                                        *
+//* Primary Authors: Timm Steinbeck <timm@kip.uni-heidelberg.de>           *
+//*                  for The ALICE HLT Project.                            *
+//*                                                                        *
+//* Permission to use, copy, modify and distribute this software and its   *
+//* documentation strictly for non-commercial purposes is hereby granted   *
+//* without fee, provided that the above copyright notice appears in all   *
+//* copies and that both the copyright notice and this permission notice   *
+//* appear in the supporting documentation. The authors make no claims     *
+//* about the suitability of this software for any purpose. It is          *
+//* provided "as is" without express or implied warranty.                  *
+//**************************************************************************
 
 /** @file   AliHLTTPCCompModelDeconverterComponent.cxx
     @author Timm Steinbeck
@@ -28,6 +29,14 @@ using namespace std;
 #include "AliHLTTPCDefinitions.h"
 #include <stdlib.h>
 #include <errno.h>
+
+/**
+ * An implementiation of a deconverter component that 
+ * deconverts the tracks and clusters from the Vestbo-model
+ * into the standard HLT cluster track format again 
+ * in order to evaluate the loss of the model 
+ * due to the Vestbo-compression 
+ */
 
 // this is a global object used for automatic component registration, do not use this
 AliHLTTPCCompModelDeconverterComponent gAliHLTTPCCompClusterModelDeconverterComponent;
@@ -84,7 +93,7 @@ int AliHLTTPCCompModelDeconverterComponent::DoInit( int argc, const char** argv 
     {
       // see header file for class documentation
       Int_t i = 0;
-      Char_t* cpErr;
+      //Char_t* cpErr;
       
       while ( i < argc )
 	{      

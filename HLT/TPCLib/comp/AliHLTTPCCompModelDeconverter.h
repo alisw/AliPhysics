@@ -3,8 +3,9 @@
 
 #ifndef ALIHLTTPCCOMPMODELDECONVERTER_H
 #define ALIHLTTPCCOMPMODELDECONVERTER_H
-/* TPCCompModelDeconverterright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full TPCCompModelDeconverterright notice                               */
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
 
 /** @file   AliHLTTPCCompModelDeconverter.h
     @author Timm Steinbeck
@@ -22,7 +23,7 @@
  *
  * An implementiation of a copy component that just copies its input data
  * to debug a components input data
- * @ingroup alihlt_tutorial
+ * @ingroup alihlt_tpc
  */
 class AliHLTTPCCompModelDeconverter: public AliHLTLogging
     {

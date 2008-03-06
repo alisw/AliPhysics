@@ -1,24 +1,28 @@
 // $Id$
 
-/**************************************************************************
- * TPCCompDumpright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Authors: Timm Steinbeck <timm@kip.uni-heidelberg.de>                   *
- *          for The ALICE Off-line Project.                               *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+//**************************************************************************
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//*                                                                        *
+//* Primary Authors: Timm Steinbeck <timm@kip.uni-heidelberg.de>           *
+//*                  for The ALICE HLT Project.                            *
+//*                                                                        *
+//* Permission to use, copy, modify and distribute this software and its   *
+//* documentation strictly for non-commercial purposes is hereby granted   *
+//* without fee, provided that the above copyright notice appears in all   *
+//* copies and that both the copyright notice and this permission notice   *
+//* appear in the supporting documentation. The authors make no claims     *
+//* about the suitability of this software for any purpose. It is          *
+//* provided "as is" without express or implied warranty.                  *
+//**************************************************************************
 
 /** @file   AliHLTTPCCompDumpComponent.cxx
     @author Timm Steinbeck
     @date   10-08-2006
-    @brief  A copy processing component for the HLT. */
+    @brief  A copy processing component for the HLT
+            that writes the results of the Vestbo compression
+            components to humanly readable files 
+*/
 
 #if __GNUC__ >= 3
 using namespace std;
@@ -55,13 +59,13 @@ AliHLTTPCCompDumpComponent::~AliHLTTPCCompDumpComponent()
       // see header file for class documentation
     }
 
-const char* AliHLTTPCCompDumpComponent::GetComponentID()
+const char* AliHLTTPCCompDumpComponent::GetComponentID() 
     {
       // see header file for class documentation
     return "TPCCompDump"; // The ID of this component
     }
 
-void AliHLTTPCCompDumpComponent::GetInputDataTypes( vector<AliHLTComponent_DataType>& list)
+void AliHLTTPCCompDumpComponent::GetInputDataTypes( vector<AliHLTComponent_DataType>& list) 
     {
       // see header file for class documentation
       list.clear(); // We do not have any requirements for our input data type(s).
@@ -78,7 +82,7 @@ AliHLTComponent_DataType AliHLTTPCCompDumpComponent::GetOutputDataType()
       return AliHLTTPCDefinitions::fgkClusterTracksModelDataType;
     }
 
-void AliHLTTPCCompDumpComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
+void AliHLTTPCCompDumpComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier ) 
     {
       // see header file for class documentation
       constBase = 0;
@@ -93,6 +97,146 @@ AliHLTComponent* AliHLTTPCCompDumpComponent::Spawn()
       // see header file for class documentation
       return new AliHLTTPCCompDumpComponent;
     };
+
+void AliHLTTPCCompDumpComponent::InitBitDataInput( AliHLTUInt8_t* input, UInt_t inputSize )
+    {
+      // see header file for class documentation
+      fBitDataCurrentWord = 0;
+      fBitDataCurrentPosInWord = 7;
+      fBitDataCurrentInput = fBitDataCurrentInputStart = input;
+      fBitDataCurrentInputEnd = input+inputSize;
+      fBitDataCurrentWord = *fBitDataCurrentInput;
+    };
+
+ bool AliHLTTPCCompDumpComponent::InputBit( AliHLTUInt8_t & value )
+    {
+      // see header file for class documentation
+      if ( fBitDataCurrentInput>=fBitDataCurrentInputEnd )
+	return false;
+      value = (fBitDataCurrentWord >> fBitDataCurrentPosInWord) & 1;
+      if ( fBitDataCurrentPosInWord )
+	fBitDataCurrentPosInWord--;
+      else
+	{
+	  fBitDataCurrentInput++;
+	  if ( fBitDataCurrentInput<fBitDataCurrentInputEnd )
+	    {
+	      fBitDataCurrentWord = *fBitDataCurrentInput;
+	      fBitDataCurrentPosInWord = 7;
+	    }
+	}
+      return true;
+    };
+
+bool AliHLTTPCCompDumpComponent::InputBits( AliHLTUInt8_t & value, UInt_t const & bitCount )
+    {
+      // see header file for class documentation
+      if ( bitCount>8 )
+	{
+	  HLTFatal( "Internal error: Attempt to write more than 32 bits (%u)", (unsigned)bitCount );
+	  return false;
+	}
+      AliHLTUInt64_t temp;
+      if ( !InputBits( temp, bitCount ) )
+	return false;
+      value = (AliHLTUInt8_t)( temp & (AliHLTUInt64_t)0xFFFFFFFFULL );
+      return true;
+    };
+
+bool AliHLTTPCCompDumpComponent::InputBits( AliHLTUInt16_t & value, UInt_t const & bitCount )
+   {
+     // see header file for class documentation
+     if ( bitCount>16 )
+       {
+	 HLTFatal( "Internal error: Attempt to write more than 32 bits (%u)", (unsigned)bitCount );
+	 return false;
+       }
+     AliHLTUInt64_t temp;
+     if ( !InputBits( temp, bitCount ) )
+       return false;
+     value = (AliHLTUInt16_t)( temp & (AliHLTUInt64_t)0xFFFFFFFFULL );
+     return true;
+   };
+
+bool AliHLTTPCCompDumpComponent::InputBits( Int_t & value, UInt_t const & bitCount )
+   {
+     // see header file for class documentation
+     if ( bitCount>32 )
+       {
+	 HLTFatal( "Internal error: Attempt to write more than 32 bits (%u)", (unsigned)bitCount );
+	 return false;
+       }
+     AliHLTUInt64_t temp;
+     if ( !InputBits( temp, bitCount ) )
+       return false;
+     value = (Int_t)( temp & (AliHLTUInt64_t)0xFFFFFFFFULL );
+     return true;
+   };
+
+bool AliHLTTPCCompDumpComponent::InputBits( AliHLTUInt64_t & value, UInt_t const & bitCount )
+   {
+     // see header file for class documentation
+     if ( bitCount>64 )
+       {
+	 HLTFatal( "Internal error: Attempt to write more than 64 bits (%u)", (unsigned)bitCount );
+	 return false;
+       }
+     UInt_t bitsToRead=bitCount;
+     UInt_t curBitCount;
+     value = 0;
+     while ( bitsToRead>0 )
+       {
+	 if ( fBitDataCurrentInput>=fBitDataCurrentInputEnd )
+	   return false;
+	 if ( bitsToRead >= fBitDataCurrentPosInWord+1 )
+	   curBitCount = fBitDataCurrentPosInWord+1;
+	 else
+	   curBitCount = bitsToRead;
+	 value = (value << curBitCount) | ( (fBitDataCurrentWord >> (fBitDataCurrentPosInWord-curBitCount+1)) & ((1 << curBitCount)-1) );
+	 if ( fBitDataCurrentPosInWord < curBitCount )
+	   {
+	     fBitDataCurrentInput++;
+	     if ( fBitDataCurrentInput<fBitDataCurrentInputEnd )
+	       {
+		 fBitDataCurrentWord = *fBitDataCurrentInput;
+		 fBitDataCurrentPosInWord = 7;
+	       }
+	   }
+	 else
+	   fBitDataCurrentPosInWord -= curBitCount;
+	 bitsToRead -= curBitCount;
+       }
+     return true;
+   };
+
+void AliHLTTPCCompDumpComponent::Pad8Bits()
+   {
+     // see header file for class documentation
+     if ( fBitDataCurrentPosInWord == 7 )
+       return;
+     fBitDataCurrentInput++;
+     if ( fBitDataCurrentInput<fBitDataCurrentInputEnd )
+       {
+	 fBitDataCurrentWord = *fBitDataCurrentInput;
+	 fBitDataCurrentPosInWord = 7;
+       }
+   };
+
+bool AliHLTTPCCompDumpComponent::InputBytes( AliHLTUInt8_t* data, UInt_t const & byteCount )
+   {
+     // see header file for class documentation
+     Pad8Bits();
+     if ( fBitDataCurrentInput+byteCount>fBitDataCurrentInputEnd )
+       return false;
+     memcpy( data, fBitDataCurrentInput, byteCount );
+     fBitDataCurrentInput += byteCount;
+     if ( fBitDataCurrentInput<fBitDataCurrentInputEnd )
+       {
+	 fBitDataCurrentWord = *fBitDataCurrentInput;
+	 fBitDataCurrentPosInWord = 7;
+       }
+     return true;
+   };
 
 int AliHLTTPCCompDumpComponent::DoInit( int argc, const char** argv )
     {

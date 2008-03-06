@@ -3,8 +3,9 @@
 
 #ifndef ALIHLTTPCCOMPMODELINFLATERCOMPONENT_H
 #define ALIHLTTPCCOMPMODELINFLATERCOMPONENT_H
-/* TPCCompModelInflaterright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full TPCCompModelInflaterright notice                               */
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
 
 /** @file   AliHLTTPCCompModelInflaterComponent.h
     @author Timm Steinbeck
@@ -20,9 +21,12 @@
  * @class AliHLTTPCCompModelInflaterComponent
  * @brief A dummy HLT processing component. 
  *
- * An implementiation of a copy component that just copies its input data
- * to debug a components input data
- * @ingroup alihlt_tutorial
+ * An implementiation of an inflater component 
+ * to process the inflation after the 
+ * Vestbo compression which is then followed by the
+ * deconversion component to retrieve the original
+ * standard cluster track format of the input data
+ * @ingroup alihlt_tpc
  */
 class AliHLTTPCCompModelInflaterComponent : public AliHLTProcessor
     {
@@ -94,7 +98,7 @@ class AliHLTTPCCompModelInflaterComponent : public AliHLTProcessor
 		   AliHLTUInt32_t& size, vector<AliHLTComponent_BlockData>& outputBlocks );
       
       /** member variable for instance of model inflater class */
-      AliHLTTPCCompModelInflater fModelInflater;
+      AliHLTTPCCompModelInflater fModelInflater; // member variable for instance of model inflater class
       
     private:
 

@@ -3,8 +3,9 @@
 
 #ifndef ALIHLTTPCCOMPMODELDEFLATERCOMPONENT_H
 #define ALIHLTTPCCOMPMODELDEFLATERCOMPONENT_H
-/* TPCCompModelDeflaterright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full TPCCompModelDeflaterright notice                               */
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
 
 /** @file   AliHLTTPCCompModelDeflaterComponent.h
     @author Timm Steinbeck
@@ -20,9 +21,12 @@
  * @class AliHLTTPCCompModelDeflaterComponent
  * @brief A dummy HLT processing component. 
  *
- * An implementiation of a copy component that just copies its input data
- * to debug a components input data
- * @ingroup alihlt_tutorial
+ * An implementiation of a deflater component that 
+ * compresses the data previously converted with the
+ * converting component. 
+ * 
+ * 
+ * @ingroup alihlt_tpc
  */
 class AliHLTTPCCompModelDeflaterComponent : public AliHLTProcessor
     {
@@ -94,12 +98,12 @@ class AliHLTTPCCompModelDeflaterComponent : public AliHLTProcessor
 		   AliHLTUInt32_t& size, vector<AliHLTComponent_BlockData>& outputBlocks );
       
       /** member variable for instance of model deflater class */
-      AliHLTTPCCompModelDeflater fModelDeflater;
+      AliHLTTPCCompModelDeflater fModelDeflater; // member variable for instance of model deflater class 
       /** member variable for instance of model converter class */
-      AliHLTTPCCompModelConverter fConverter;
+      AliHLTTPCCompModelConverter fConverter; // member variable for instance of model converter class
       
       /** member variable for forwarding if uncompressed */
-      bool fForwardIfUncompressed;
+      bool fForwardIfUncompressed; // member variable for forwarding if uncompressed
       
     private:
 

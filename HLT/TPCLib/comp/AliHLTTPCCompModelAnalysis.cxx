@@ -1,19 +1,20 @@
 // $Id$
 
-/**************************************************************************
- * TPCCompModelAnalysisright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Authors: J. Wagner <jwagner@cern.ch>                                   *
- *          for The ALICE Off-line Project.                               *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+//**************************************************************************
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//*                                                                        *
+//* Primary Authors: J. Wagner <jwagner@cern.ch>                           *
+//*                  for The ALICE HLT Project.                            *
+//*                                                                        *
+//* Permission to use, copy, modify and distribute this software and its   *
+//* documentation strictly for non-commercial purposes is hereby granted   *
+//* without fee, provided that the above copyright notice appears in all   *
+//* copies and that both the copyright notice and this permission notice   *
+//* appear in the supporting documentation. The authors make no claims     *
+//* about the suitability of this software for any purpose. It is          *
+//* provided "as is" without express or implied warranty.                  *
+//**************************************************************************
 
 /** @file   AliHLTTPCCompModelAnalysis.cxx
     @author J. Wagner jwagner@cern.ch
@@ -184,6 +185,32 @@ Int_t AliHLTTPCCompModelAnalysis::SetTracks(AliHLTTPCTrackletData* tracklets, Bo
     }
 
   return 0;
+}
+
+Int_t AliHLTTPCCompModelAnalysis::SetClusters(AliHLTTPCClusterData* clusters, UInt_t slice, UInt_t patch, Bool_t fillingfirstclusters)
+{
+  // see header file for class documentation
+  if(fillingfirstclusters == 1)
+    {
+      if ( slice>=36 || patch>=6 )
+	return EINVAL;
+      if ( fOriginalClusters[slice][patch] )
+	return EBUSY;
+      fOriginalClusters[slice][patch] = clusters;
+
+      //HLTDebug( "Filling %u clusters in first array", (unsigned)clusters->fSpacePointCnt);
+    }
+  else
+    {
+      if ( slice>=36 || patch>=6 )
+	return EINVAL;
+      if ( fSecondaryClusters[slice][patch] )
+	return EBUSY;
+      fSecondaryClusters[slice][patch] = clusters;
+
+      //HLTDebug( "Filling %u clusters in second array", (unsigned)clusters->fSpacePointCnt);
+    }
+      return 0;
 }
 
 Int_t AliHLTTPCCompModelAnalysis::CompareTracks()
@@ -361,6 +388,242 @@ Int_t AliHLTTPCCompModelAnalysis::CompareTracks()
       HLTWarning("Warning! Possible inconsistency in second track array: Number of compared and unmatched tracks not equal to total number of tracks!");
     };
   
+  return 0;
+}
+
+Int_t AliHLTTPCCompModelAnalysis::CompareClusters(Bool_t relativedifferences)
+{
+
+  Int_t totaloriginal = 0;
+  Int_t totalsecondary = 0;
+  Int_t usedclusters = 0;
+  Int_t comparedclusters = 0;
+  Int_t notcomparedclusters = 0;
+
+  // create graphs out of differences and leave loop
+  TFile* clustergraphrootfile;
+  if(!fGraphFileName.IsNull())
+    {
+      clustergraphrootfile = new TFile(fGraphFileName, "recreate");
+    }
+
+  // specifications of histograms
+  Double_t clusterdifffxmin, clusterdifffxmax;
+  Double_t clusterdifffymin, clusterdifffymax;
+  Double_t clusterdifffzmin, clusterdifffzmax;
+  Int_t clusterdifffxbins, clusterdifffybins, clusterdifffzbins;
+
+  Double_t clusterdifffsigmay2min, clusterdifffsigmay2max;
+  Double_t clusterdifffsigmaz2min, clusterdifffsigmaz2max;
+  Int_t clusterdifffsigmay2bins, clusterdifffsigmaz2bins;
+
+  if (!relativedifferences) // not tested yet!
+    {
+      clusterdifffxmin = -1;
+      clusterdifffxmax = +1;
+      clusterdifffxbins = (Int_t) ((clusterdifffxmax - clusterdifffxmin)/0.0001);
+  
+      clusterdifffymin = -1;
+      clusterdifffymax = +1;
+      clusterdifffybins = (Int_t) ((clusterdifffymax - clusterdifffymin)/0.0001);
+  
+      clusterdifffzmin = -1;
+      clusterdifffzmax = +1;
+      clusterdifffzbins = (Int_t) ((clusterdifffzmax - clusterdifffzmin)/0.0001);
+  
+      clusterdifffsigmay2min = -1;
+      clusterdifffsigmay2max = +1;
+      clusterdifffsigmay2bins = (Int_t) ((clusterdifffsigmay2max - clusterdifffsigmay2min)/0.0001);
+  
+      clusterdifffsigmaz2min = -1;
+      clusterdifffsigmaz2max = +1;
+      clusterdifffsigmaz2bins = (Int_t) ((clusterdifffsigmaz2max - clusterdifffsigmaz2min)/0.0001);
+    }
+  else
+    {
+      clusterdifffxmin = -1;
+      clusterdifffxmax = +1;
+      clusterdifffxbins = (Int_t) ((clusterdifffxmax - clusterdifffxmin)/0.0001);
+  
+      clusterdifffymin = -1;
+      clusterdifffymax = +1;
+      clusterdifffybins = (Int_t) ((clusterdifffymax - clusterdifffymin)/0.0001);
+  
+      clusterdifffzmin = -1;
+      clusterdifffzmax = +1;
+      clusterdifffzbins = (Int_t) ((clusterdifffzmax - clusterdifffzmin)/0.0001);
+  
+      clusterdifffsigmay2min = -1;
+      clusterdifffsigmay2max = +1;
+      clusterdifffsigmay2bins = (Int_t) ((clusterdifffsigmay2max - clusterdifffsigmay2min)/0.0001);
+  
+      clusterdifffsigmaz2min = -1;
+      clusterdifffsigmaz2max = +1;
+      clusterdifffsigmaz2bins = (Int_t) ((clusterdifffsigmaz2max - clusterdifffsigmaz2min)/0.0001);
+    }
+  
+  // intialise histogramms
+  TH1F* clusterfxhisto = new TH1F("Differences of x (original - secondary) clusters", "Differences of x (original - secondary) clusters", clusterdifffxbins, clusterdifffxmin, clusterdifffxmax);
+  TH1F* clusterfyhisto = new TH1F("Differences of y (original - secondary) clusters", "Differences of y (original - secondary) clusters", clusterdifffybins, clusterdifffymin, clusterdifffymax);
+  TH1F* clusterfzhisto = new TH1F("Differences of z (original - secondary) clusters", "Differences of z (original - secondary) clusters", clusterdifffzbins, clusterdifffzmin, clusterdifffzmax);
+  TH1F* clusterfsigmay2histo = new TH1F("Differences of sigmay2 (original - secondary) clusters", "Differences of sigmay2 (original - secondary) clusters", clusterdifffsigmay2bins, clusterdifffsigmay2min, clusterdifffsigmay2max);
+  TH1F* clusterfsigmaz2histo = new TH1F("Differences of sigmaz2 (original - secondary) clusters", "Differences of sigmaz2 (original - secondary) clusters", clusterdifffsigmaz2bins, clusterdifffsigmaz2min, clusterdifffsigmaz2max);
+  
+
+  // see headerfile for class documentation
+  // compare for each slice and patch the clusters in the original cluster array
+  // to the ones of the secondary cluster array
+  for(Int_t slicecntr = 0; slicecntr < 36; slicecntr++)
+    {
+      for (Int_t patchcntr = 0; patchcntr < 6; patchcntr++)
+	{
+	  if(!fOriginalClusters[slicecntr][patchcntr])
+	    {
+	      // HLTDebug("No original clusters for slice %d patch %d", slicecntr, patchcntr);
+	      continue;
+	    }
+
+	  if(!fSecondaryClusters[slicecntr][patchcntr])
+	    {
+	      //HLTDebug("No secondary clusters for slice %d patch %d", slicecntr, patchcntr);
+	      continue;
+	    }
+
+	  for ( unsigned long ii=0; ii<fOriginalClusters[slicecntr][patchcntr]->fSpacePointCnt; ii++ )
+	    {
+	      ++totaloriginal;
+
+	      // search matching secondary cluster by charge and padrow, 
+	      // fill histograms if cluster has been used in tracking process
+	      Int_t found = 0;
+	     
+	      for(unsigned long jj=0; jj<fSecondaryClusters[slicecntr][patchcntr]->fSpacePointCnt; jj++)
+		{
+		  // if fTrackN != -1 -> draw histograms out of used clusters
+		  // if fTrackN == -1 -> draw histograms out of unused clusters
+		  if (fSecondaryClusters[slicecntr][patchcntr]->fSpacePoints[jj].fTrackN == -1)
+		    {
+		      if((fOriginalClusters[slicecntr][patchcntr]->fSpacePoints[ii].fCharge == fSecondaryClusters[slicecntr][patchcntr]->fSpacePoints[jj].fCharge) && (fOriginalClusters[slicecntr][patchcntr]->fSpacePoints[ii].fPadRow == fSecondaryClusters[slicecntr][patchcntr]->fSpacePoints[jj].fPadRow) )
+			{
+			  
+			  if (relativedifferences == 1)
+			    {
+			      // check whether first entries in cluster array are zero
+			      if(fOriginalClusters[slicecntr][patchcntr]->fSpacePoints[ii].fX == 0)
+				{
+				  HLTWarning("Warning! x value of original cluster is zero, relative differences cannot be calculated!");
+				};
+
+			      if(fOriginalClusters[slicecntr][patchcntr]->fSpacePoints[ii].fY == 0)
+				{
+				  HLTWarning("Warning! y value of original cluster is zero, relative differences cannot be calculated!");
+				};
+
+			      if(fOriginalClusters[slicecntr][patchcntr]->fSpacePoints[ii].fZ == 0)
+				{
+				  HLTWarning("Warning! z value of original cluster is zero, relative differences cannot be calculated!");
+				};
+
+			      if(fOriginalClusters[slicecntr][patchcntr]->fSpacePoints[ii].fSigmaY2 == 0)
+				{
+				  HLTWarning("Warning! sigmay2 value of original cluster is zero, relative differences cannot be calculated!");
+				};
+
+			      if(fOriginalClusters[slicecntr][patchcntr]->fSpacePoints[ii].fSigmaZ2 == 0)
+				{
+				  HLTWarning("Warning! sigmaz2 value of original cluster is zero, relative differences cannot be calculated!");
+				};
+
+			      // fill relative differences in histograms
+			      clusterfxhisto->Fill((fOriginalClusters[slicecntr][patchcntr]->fSpacePoints[ii].fX - fSecondaryClusters[slicecntr][patchcntr]->fSpacePoints[jj].fX)/fOriginalClusters[slicecntr][patchcntr]->fSpacePoints[ii].fX,1);
+			      clusterfyhisto->Fill((fOriginalClusters[slicecntr][patchcntr]->fSpacePoints[ii].fY - fSecondaryClusters[slicecntr][patchcntr]->fSpacePoints[jj].fY)/fOriginalClusters[slicecntr][patchcntr]->fSpacePoints[ii].fY,1);
+			      clusterfzhisto->Fill((fOriginalClusters[slicecntr][patchcntr]->fSpacePoints[ii].fZ - fSecondaryClusters[slicecntr][patchcntr]->fSpacePoints[jj].fZ)/fOriginalClusters[slicecntr][patchcntr]->fSpacePoints[ii].fZ,1);
+			      clusterfsigmay2histo->Fill((fOriginalClusters[slicecntr][patchcntr]->fSpacePoints[ii].fSigmaY2 - fSecondaryClusters[slicecntr][patchcntr]->fSpacePoints[jj].fSigmaY2)/fOriginalClusters[slicecntr][patchcntr]->fSpacePoints[ii].fSigmaY2,1);
+			      clusterfsigmaz2histo->Fill((fOriginalClusters[slicecntr][patchcntr]->fSpacePoints[ii].fSigmaZ2 - fSecondaryClusters[slicecntr][patchcntr]->fSpacePoints[jj].fSigmaZ2)/fOriginalClusters[slicecntr][patchcntr]->fSpacePoints[ii].fSigmaZ2,1);
+			    }
+			  else
+			    {
+			      // fill absolute differences histograms
+			      clusterfxhisto->Fill((fOriginalClusters[slicecntr][patchcntr]->fSpacePoints[ii].fX - fSecondaryClusters[slicecntr][patchcntr]->fSpacePoints[jj].fX),1);
+			      clusterfyhisto->Fill((fOriginalClusters[slicecntr][patchcntr]->fSpacePoints[ii].fY - fSecondaryClusters[slicecntr][patchcntr]->fSpacePoints[jj].fY),1);
+			      clusterfzhisto->Fill((fOriginalClusters[slicecntr][patchcntr]->fSpacePoints[ii].fZ - fSecondaryClusters[slicecntr][patchcntr]->fSpacePoints[jj].fZ),1);
+			      clusterfsigmay2histo->Fill((fOriginalClusters[slicecntr][patchcntr]->fSpacePoints[ii].fSigmaY2 - fSecondaryClusters[slicecntr][patchcntr]->fSpacePoints[jj].fSigmaY2),1);
+			      clusterfsigmaz2histo->Fill((fOriginalClusters[slicecntr][patchcntr]->fSpacePoints[ii].fSigmaZ2 - fSecondaryClusters[slicecntr][patchcntr]->fSpacePoints[jj].fSigmaZ2),1);
+			    }
+			      
+			  found = 1;
+			  ++comparedclusters;
+			  break;
+			}
+		    }
+		}
+	      
+	      if(found == 0)
+		{
+		  ++notcomparedclusters;
+		}
+
+	    }
+	}
+    }
+
+  // write graphs to rootfile
+ if(!fGraphFileName.IsNull())
+    {
+      clustergraphrootfile->WriteObject(clusterfxhisto, "clusterfxhistogram");
+      clustergraphrootfile->WriteObject(clusterfyhisto, "clusterfyhistogram");
+      clustergraphrootfile->WriteObject(clusterfzhisto, "clusterfzhistogram");
+      clustergraphrootfile->WriteObject(clusterfsigmay2histo, "clusterfsigmay2histogram");
+      clustergraphrootfile->WriteObject(clusterfsigmaz2histo, "clusterfsigmaz2histogram");
+      clustergraphrootfile->Close();
+    }
+  
+  // count clusters used for tracking
+  for (Int_t slicecount=0; slicecount<36; slicecount++)
+    {
+      for(Int_t patchcount=0; patchcount<6; patchcount++)
+	{
+
+	  if(!fSecondaryClusters[slicecount][patchcount])
+	    {
+	      //HLTDebug("No secondary clusters for slice %d patch %d", slicecntr, patchcntr);
+	      continue;
+	    }
+
+	  for(Int_t count=0; count < fSecondaryClusters[slicecount][patchcount]->fSpacePointCnt; count++)
+	    {
+
+	      ++totalsecondary;
+
+	      if(fSecondaryClusters[slicecount][patchcount]->fSpacePoints[count].fTrackN != -1)
+		{
+		  ++usedclusters;
+		};
+	    }
+	}
+    }
+  
+  // Display results of cluster analysis
+  HLTInfo("Number of original clusters: %d", totaloriginal);
+  HLTInfo("Number of 2ndary clusters: %d", totalsecondary);
+  HLTInfo("Number of 2ndary clusters used for tracking: %d", usedclusters);
+  HLTInfo("Number of compared (tracked) original clusters: %d", comparedclusters);
+  HLTInfo("Number of uncompared (tracked) original clusters: %d", notcomparedclusters);
+
+  //////////////////////////////////////////////////////
+  FILE* clusterfile = fopen("/afsuser/jwagner/TrackerTest_25092007/cosmics/fullanalysis/clusteranalysis.out", "a");
+
+  fprintf(clusterfile, "%d \t %d \t %d \t %d \t %d \t %d \n", totaloriginal, totalsecondary, usedclusters, comparedclusters, notcomparedclusters, totaloriginal-comparedclusters-notcomparedclusters);
+
+  fclose(clusterfile);
+  ////////////////////////////////////////////////////////
+
+  // consistency check
+  if(comparedclusters + notcomparedclusters != totaloriginal)
+    {
+      HLTWarning("Possible inconsistency: number of compared clusters %d + number of not compared clusters %d not equal to total number of original clusters %d", comparedclusters, notcomparedclusters, totaloriginal);
+    }
+
   return 0;
 }
 
@@ -600,7 +863,7 @@ Int_t AliHLTTPCCompModelAnalysis::CreateGraphs(Bool_t relativedifferences)
       diffclustermax = +50;
       diffclusterbins = (Int_t) ((diffclustermax - diffclustermin)/1);
 
-#if 0
+      //#if 0
       diffpterrmin = -1;
       diffpterrmax = 1;
       diffpterrbins = (Int_t) ((diffpterrmax - diffpterrmin)/1);
@@ -612,7 +875,7 @@ Int_t AliHLTTPCCompModelAnalysis::CreateGraphs(Bool_t relativedifferences)
       difftglerrmin = -1;
       difftglerrmax = 1;
       difftglerrbins = (Int_t) ((difftglerrmax - difftglerrmin)/1);
-#endif
+      //#endif
 
     }
   else
@@ -657,7 +920,7 @@ Int_t AliHLTTPCCompModelAnalysis::CreateGraphs(Bool_t relativedifferences)
       diffclustermax = +1;
       diffclusterbins = (Int_t) ((diffclustermax - diffclustermin)/0.0001);
 
-#if 0
+      //#if 0
       diffpterrmin = -1;
       diffpterrmax = 1;
       diffpterrbins = (Int_t) ((diffpterrmax - diffpterrmin)/0.0001);
@@ -669,7 +932,7 @@ Int_t AliHLTTPCCompModelAnalysis::CreateGraphs(Bool_t relativedifferences)
       difftglerrmin = -1;
       difftglerrmax = 1;
       difftglerrbins = (Int_t) ((difftglerrmax - difftglerrmin)/0.0001);
-#endif
+      //#endif
     }
 
   // intialise histogramms
@@ -684,13 +947,19 @@ Int_t AliHLTTPCCompModelAnalysis::CreateGraphs(Bool_t relativedifferences)
  TH1F* tglhisto = new TH1F("Differences of tgl (original - secondary) track", "Differences of tgl (original - secondary) track", difftglbins, difftglmin, difftglmax);
  TH1F* clusterhisto = new TH1F("Differences of asserted clusters (original - secondary) track", "Differences of asserted clusters (original - secondary) track", diffclusterbins, diffclustermin, diffclustermax);
 
-#if 0
+ //#if 0
  // commented out since pterr is zero for every track!
  TH1F* pterrhisto = new TH1F("Differences of pt error (original - secondary) track", "Differences of pt error (original - secondary) track", diffpterrbins, diffpterrmin, diffpterrmax);
  TH1F* psierrhisto = new TH1F("Differences of psi error (original - secondary) track", "Differences of psi error (original - secondary) track", diffpsierrbins, diffpsierrmin, diffpsierrmax);
  TH1F* tglerrhisto = new TH1F("Differences of tgl error (original - secondary) track", "Differences of tgl error (original - secondary) track", difftglerrbins, difftglerrmin, difftglerrmax);
 
-#endif
+ //#endif
+
+ // initialise histograms for tracking efficiency against pt
+ // relative p_t resolution: 1.2% -> take 0.1GeV * 1.2 % --> binsize 0.001 sufficient to grant correct resolution for low pt
+ TH1F* firsttracks = new TH1F("pt occurrence original", "Occurrence of pt in original tracks", 10000, 0, 10);
+ TH1F* matchedtrackeff = new TH1F("matchedtreffeff", "Occurrence of 2ndary tracks with good pt", 10000, 0, 10);
+ TH1F* trackeff = new TH1F("tracking efficiency vs. pt", "Tracking efficiency vs. pt", 10000, 0, 10);
 
  // evaluate quality of fit:
  TH1I* matchinghisto = new TH1I("Matching indicator (5 - 10)", "Matching indicator (5 - 10)", 11, 0, 11);
@@ -703,8 +972,57 @@ Int_t AliHLTTPCCompModelAnalysis::CreateGraphs(Bool_t relativedifferences)
 	  // matching track
 	  trackmatchingpointer = tracklistpointer->matchingtrack;
 
+	  // fill histograms for trackingefficiency vs. pt
+	  firsttracks->Fill(tracklistpointer->track.GetPt(),1);
+	  
+	  if(abs(tracklistpointer->track.GetPt()-trackmatchingpointer->track.GetPt()) < 0.012*tracklistpointer->track.GetPt())
+	    {
+	      matchedtrackeff->Fill(tracklistpointer->track.GetPt(),1);
+	    }
+
+	  //tracklistpointer = tracklistpointer->next; // only efficiency is considered...
+	  //continue; // only efficiency is considered...
+
 	  if(relativedifferences == 1) // fill histogram with relative differences
 	    {
+
+	      // check if first track parameters are not zero!
+	      if (tracklistpointer->track.GetFirstPointX()==0)
+		{
+		  HLTWarning("Warning! First x of original track is zero, relative differences cannot be calculated!");
+		};
+	      if (tracklistpointer->track.GetFirstPointY()==0)
+		{
+		  HLTWarning("Warning! First y of original track is zero, relative differences cannot be calculated!");
+		};
+	      if (tracklistpointer->track.GetFirstPointZ()==0)
+		{
+		  HLTWarning("Warning! First z of original track is zero, relative differences cannot be calculated!");
+		};
+	      if (tracklistpointer->track.GetLastPointX()==0)
+		{
+		  HLTWarning("Warning! Last x of original track is zero, relative differences cannot be calculated!");
+		};
+	      if (tracklistpointer->track.GetLastPointY()==0)
+		{
+		  HLTWarning("Warning! Last y of original track is zero, relative differences cannot be calculated!");
+		};
+	      if (tracklistpointer->track.GetLastPointZ()==0)
+		{
+		  HLTWarning("Warning! Last z of original track is zero, relative differences cannot be calculated!");
+		};
+	      if (tracklistpointer->track.GetPt()==0)
+		{
+		  HLTWarning("Warning! Pt of original track is zero, relative differences cannot be calculated!");
+		};
+	      if (tracklistpointer->track.GetPsi()==0)
+		{
+		  HLTWarning("Warning! Psi of original track is zero, relative differences cannot be calculated!");
+		};
+	      if (tracklistpointer->track.GetTgl()==0)
+		{
+		  HLTWarning("Warning! Tgl of original track is zero, relative differences cannot be calculated!");
+		};
 	      firstxhisto->Fill((tracklistpointer->track.GetFirstPointX()-trackmatchingpointer->track.GetFirstPointX())/tracklistpointer->track.GetFirstPointX(),1);
 	      firstyhisto->Fill((tracklistpointer->track.GetFirstPointY()-trackmatchingpointer->track.GetFirstPointY())/tracklistpointer->track.GetFirstPointY(),1);
 	      firstzhisto->Fill((tracklistpointer->track.GetFirstPointZ()-trackmatchingpointer->track.GetFirstPointZ())/tracklistpointer->track.GetFirstPointZ(),1);
@@ -716,15 +1034,15 @@ Int_t AliHLTTPCCompModelAnalysis::CreateGraphs(Bool_t relativedifferences)
 	      tglhisto->Fill((tracklistpointer->track.GetTgl()-trackmatchingpointer->track.GetTgl())/tracklistpointer->track.GetTgl(),1);
 	      clusterhisto->Fill((tracklistpointer->track.GetNHits()-trackmatchingpointer->track.GetNHits())/tracklistpointer->track.GetNHits(),1);
 
-#if 0
+	      //#if 0
 	      pterrhisto->Fill((tracklistpointer->track.GetPterr()-trackmatchingpointer->track.GetPterr())/tracklistpointer->track.GetPterr(),1);
 	      psierrhisto->Fill((tracklistpointer->track.GetPsierr()-trackmatchingpointer->track.GetPsierr())/tracklistpointer->track.GetPsierr(),1);
 	      tglerrhisto->Fill((tracklistpointer->track.GetTglerr()-trackmatchingpointer->track.GetTglerr())/tracklistpointer->track.GetTglerr(),1);
 
-	      HLTInfo("Pterr: 1st:%f  2nd:%f   value:%f",tracklistpointer->track.GetPterr(),trackmatchingpointer->track.GetPterr(),(tracklistpointer->track.GetPterr()-trackmatchingpointer->track.GetPterr())/tracklistpointer->track.GetPterr());
-	      HLTInfo("Psierr: 1st:%f  2nd:%f   value:%f",tracklistpointer->track.GetPsierr(),trackmatchingpointer->track.GetPsierr(),(tracklistpointer->track.GetPsierr()-trackmatchingpointer->track.GetPsierr())/tracklistpointer->track.GetPsierr());
-	      HLTInfo("Tglerr: 1st:%f  2nd:%f   value:%f",tracklistpointer->track.GetTglerr(),trackmatchingpointer->track.GetTglerr(),(tracklistpointer->track.GetTglerr()-trackmatchingpointer->track.GetTglerr())/tracklistpointer->track.GetTglerr());
-#endif
+	      //HLTInfo("Pterr: 1st:%f  2nd:%f   value:%f",tracklistpointer->track.GetPterr(),trackmatchingpointer->track.GetPterr(),(tracklistpointer->track.GetPterr()-trackmatchingpointer->track.GetPterr())/tracklistpointer->track.GetPterr());
+	      //HLTInfo("Psierr: 1st:%f  2nd:%f   value:%f",tracklistpointer->track.GetPsierr(),trackmatchingpointer->track.GetPsierr(),(tracklistpointer->track.GetPsierr()-trackmatchingpointer->track.GetPsierr())/tracklistpointer->track.GetPsierr());
+	      //HLTInfo("Tglerr: 1st:%f  2nd:%f   value:%f",tracklistpointer->track.GetTglerr(),trackmatchingpointer->track.GetTglerr(),(tracklistpointer->track.GetTglerr()-trackmatchingpointer->track.GetTglerr())/tracklistpointer->track.GetTglerr());
+	      //#endif
 	    }
 	  else // otherwise fill histogram with absolute differences
 	    {
@@ -738,12 +1056,12 @@ Int_t AliHLTTPCCompModelAnalysis::CreateGraphs(Bool_t relativedifferences)
 	      psihisto->Fill(tracklistpointer->track.GetPsi()-trackmatchingpointer->track.GetPsi(),1);
 	      tglhisto->Fill(tracklistpointer->track.GetTgl()-trackmatchingpointer->track.GetTgl(),1);
 	      clusterhisto->Fill(tracklistpointer->track.GetNHits()-trackmatchingpointer->track.GetNHits(),1);
-#if 0
+	      //#if 0
 	      // commented out since pterr is always zero for every track!
 	      pterrhisto->Fill(tracklistpointer->track.GetPterr()-trackmatchingpointer->track.GetPterr(),1);
 	      psierrhisto->Fill(tracklistpointer->track.GetPsierr()-trackmatchingpointer->track.GetPsierr(),1);
 	      tglerrhisto->Fill(tracklistpointer->track.GetTglerr()-trackmatchingpointer->track.GetTglerr(),1);
-#endif
+	      //#endif
 	    }
 
 	  // fill histogram that determines the quality of the fit
@@ -753,11 +1071,12 @@ Int_t AliHLTTPCCompModelAnalysis::CreateGraphs(Bool_t relativedifferences)
       tracklistpointer = tracklistpointer->next;
     }
 
+  trackeff->Divide(matchedtrackeff, firsttracks,1,1,"");
+
   // write histograms to root file specified in command line argument -graphs <filename>.ROOT
   if(!fGraphFileName.IsNull())
     {
-      TFile* graphrootfile = new TFile(fGraphFileName, "recreate");
-
+      TFile* graphrootfile = new TFile(fGraphFileName, "update");
        graphrootfile->WriteObject(firstxhisto,"firstxhistogram");
       //firstxhisto->Write();
       graphrootfile->WriteObject(firstyhisto,"firstyhistogram");
@@ -780,7 +1099,10 @@ Int_t AliHLTTPCCompModelAnalysis::CreateGraphs(Bool_t relativedifferences)
       //clusterhisto->Write();
       graphrootfile->WriteObject(matchinghisto,"matchinghistogram");
       //matchinghisto->Write();
-#if 0
+      graphrootfile->WriteObject(firsttracks, "firsttrackeff");
+      graphrootfile->WriteObject(matchedtrackeff, "secondtrackeff");
+      graphrootfile->WriteObject(trackeff, "trackingefficiency");
+
       // errors in tracking (commented out since pterr is always 0 for every track!)
       graphrootfile->WriteObject(pterrhisto, "pterrhistogram");
       //pterrhisto->Write();
@@ -788,7 +1110,6 @@ Int_t AliHLTTPCCompModelAnalysis::CreateGraphs(Bool_t relativedifferences)
       //psierrhisto->Write();
       graphrootfile->WriteObject(tglerrhisto, "tglerrhistogram");
       //tglerrhisto->Write();
-#endif
       graphrootfile->Close();
     }
   else
@@ -931,6 +1252,14 @@ Int_t AliHLTTPCCompModelAnalysis::DisplayModelResults()
 Int_t AliHLTTPCCompModelAnalysis::DisplayTrackResults()
 {
   // see header file for class documentation
+  HLTInfo("---------------CLUSTER ANALYSIS---------------");
+  if(CompareClusters(1) != 0)
+    { 
+      return EINVAL;
+    }
+
+  return 0; // exit after cluster analysis has been done
+ 
   // start with comparison
   if(CompareTracks() != 0)
     {
@@ -950,6 +1279,7 @@ Int_t AliHLTTPCCompModelAnalysis::DisplayTrackResults()
     }
   
   // print out number of compared tracks
+  HLTInfo("---------------TRACK ANALYSIS---------------");
   HLTInfo("---------------ORIGINAL TRACKS: %d ---------------", fFirstTrackArray.GetNTracks());
   HLTInfo("Number of tracks with pt < 0.1 GeV: %d", fFirstTrashTracks);
   HLTInfo("Number of matched tracks with pt < 0.1 GeV: %d", fMatchedFirstTrashTracks);
@@ -984,8 +1314,8 @@ Int_t AliHLTTPCCompModelAnalysis::DisplayTrackResults()
 
   //////////////////////////////////////////////////////////////////////
   // additional files temporarily necessary for output information
-  FILE* infofile = fopen("/afsuser/jwagner/TrackerTest_25092007/cosmics/fullanalysis08012008/trackingefficiency.out","a");
-  FILE* info2file = fopen("/afsuser/jwagner/TrackerTest_25092007/cosmics/fullanalysis08012008/parameters.out", "a");
+  FILE* infofile = fopen("/afsuser/jwagner/TrackerTest_25092007/pp-ca/fullanalysis08012008/trackingefficiency.out","a");
+  FILE* info2file = fopen("/afsuser/jwagner/TrackerTest_25092007/pp-ca/fullanalysis08012008/parameters.out", "a");
 
   // consistent = 0 if tracks and second tracks match perfectly, i.e. no doubly assigned tracks,etc.
   Int_t consistentfirst = fFirstTrackArray.GetNTracks() - fTotalComparedTracks - fFirstUnmatchedTracks;
@@ -1110,7 +1440,7 @@ Int_t AliHLTTPCCompModelAnalysis::DisplayTrackResults()
 	  HLTInfo(" Last x: %9.6f \t  last y: %9.6f \t  last z: %9.6f", listprintpointer->track.GetLastPointX(),listprintpointer->track.GetLastPointY(),listprintpointer->track.GetLastPointZ());
 	  HLTInfo("     Pt: %9.6f \t     Psi: %9.6f \t     Tgl: %9.6f", listprintpointer->track.GetPt(), listprintpointer->track.GetPsi(), listprintpointer->track.GetTgl());
 	  HLTInfo("--------------");
-#endif 
+#endif
 	  // print these results to file
 	  if(!fDumpFileName.IsNull())
 	    {

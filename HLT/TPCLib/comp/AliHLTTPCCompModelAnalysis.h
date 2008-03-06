@@ -3,8 +3,9 @@
 
 #ifndef ALIHLTTPCCOMPMODELANALYSIS_H
 #define ALIHLTTPCCOMPMODELANALYSIS_H
-/* TPCCompModelAnalysisright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full TPCCompModelAnalysisright notice                               */
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
 
 /** @file   AliHLTTPCCompModelAnalysis.h
     @author J. Wagner
@@ -27,7 +28,7 @@
  * An implementiation of a class that is used to analyse the 
  * loss due to the conversion / compression in the Vestbo-model
  * resolution change due to Vestbo-model on tracking performance
- * @ingroup alihlt_tutorial
+ * @ingroup alihlt_tpc
  */
 class AliHLTTPCCompModelAnalysis: public AliHLTLogging
 {
@@ -72,11 +73,20 @@ public:
   Bool_t GetfTrackAnalysis() {return fTrackAnalysis;};
 
   /** fill track arrays with track data from original and secondary tracking 
-   * @param tracklets           pointer to track array to be filled
+   * @param firsttracklets      pointer to track array to be filled
    * @param fillingfirsttracks  boolean to decide which track array is to be filled (1 for first, 0 for second)
    * @return 0 upon success
    */
   Int_t SetTracks(AliHLTTPCTrackletData* tracklets, Bool_t fillingfirsttracks);
+
+  /** fill cluster arrays with cluster data from original and secondary clusters 
+   * @param clusters              pointer to cluster data array to be filled
+   * @param slice                 slice number where clusters come from
+   * @param patch                 patch number where clusters come from
+   * @param fillingfirstclusters  boolean to decide which track array is to be filled (1 for first, 0 for second)
+   * @return 0 upon success
+   */
+  Int_t SetClusters(AliHLTTPCClusterData* clusters, UInt_t slice, UInt_t patch, Bool_t fillingfirstclusters);
 
  /** store discarded tracks in model analysis to be displayed in @ref DisplayModelResults(),
   * uses @ref GetTrashTrackPythiaInfo
@@ -95,10 +105,6 @@ public:
   Int_t MarkTrashCluster(AliHLTTPCClusterData *discardedcluster, UInt_t slice, UInt_t patch);
  
 private:
-  /** copy constructor prohibited */
-  AliHLTTPCCompModelAnalysis(const AliHLTTPCCompModelAnalysis&);
-  /** assignment operator prohibited */
-  AliHLTTPCCompModelAnalysis& operator=(const AliHLTTPCCompModelAnalysis&);
 
   /** private function to display results from model loss analysis
    * @return 0 upon success
@@ -115,6 +121,12 @@ private:
   */
   Int_t CompareTracks();
 
+  /** compare clusters for all tracks and create graphs out of the differences 
+   *  function used in @ref DisplayTrackResults()
+   * @return 0 upon success
+   */
+  Int_t CompareClusters(Bool_t relativedifferences = 1);
+
   /** get Pythia information about tracks in track comparison
    * @param comparabletrack track to look for pythia information
    * @return pythiatrack    track information from pythia lookup
@@ -129,7 +141,7 @@ private:
   Bool_t GetTrashTrackPythiaInfo(AliHLTTPCTrack* discardedtrack);
 
   /** compare information of a cluster not assigned to any track with its Pythia information
-   * @param discardedcluster  pointer to discarded cluster
+   * @param discarded cluster  pointer to discarded cluster
    * @return 0 upon correct decision (cluster not assigned to any track is true in Pythia, i.e. cluster = noise cluster)
    * @return 1 upon wrong decision (cluster wrongly discarded, i.e. it belongs to a valuable track according to Pythia)
    */
@@ -149,7 +161,7 @@ private:
    */
   Int_t ComparePythiaTrackInfo(AliHLTTPCTrackList* firsttracklistelement, AliHLTTPCTrackList* secondtracklistelement);
 
-  /** if -graphfile 'filename'.root is given as input parameter, histrograms are created
+  /** if -graphfile <filename>.root is given as input parameter, histrograms are created
    * @param relativedifferences boolean to decide whether to plot histograms 
    *                            with relative differences in track paramters (1) or not (0), 1 by default
    * @return 0 upon success
@@ -174,6 +186,10 @@ private:
   AliHLTTPCTrackList* fFirstTrackList;
   /** pointer to first element of second track list containing tracks and their pythia information */
   AliHLTTPCTrackList* fSecondTrackList;
+  /** array of original clusters for deviation analysis to secondary clusters */
+  AliHLTTPCClusterData* fOriginalClusters[36][6];
+  /** array of secondary clusters for deviation analysis to origin clusters */
+  AliHLTTPCClusterData* fSecondaryClusters[36][6];
   /** number of tracks with pt < 0.1GeV in first array */
   Int_t fFirstTrashTracks;
   /** number of tracks with pt < 0.1GeV in second array */

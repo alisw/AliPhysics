@@ -1,19 +1,20 @@
 // $Id$
 
-/**************************************************************************
- * TPCCompModelDeflaterright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Authors: Timm Steinbeck <timm@kip.uni-heidelberg.de>                   *
- *          for The ALICE Off-line Project.                               *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+//**************************************************************************
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//*                                                                        *
+//* Primary Authors: Timm Steinbeck <timm@kip.uni-heidelberg.de>           *
+//*                  for The ALICE HLT Project.                            *
+//*                                                                        *
+//* Permission to use, copy, modify and distribute this software and its   *
+//* documentation strictly for non-commercial purposes is hereby granted   *
+//* without fee, provided that the above copyright notice appears in all   *
+//* copies and that both the copyright notice and this permission notice   *
+//* appear in the supporting documentation. The authors make no claims     *
+//* about the suitability of this software for any purpose. It is          *
+//* provided "as is" without express or implied warranty.                  *
+//**************************************************************************
 
 /** @file   AliHLTTPCCompModelDeflater.cxx
     @author Timm Steinbeck
@@ -47,6 +48,139 @@ AliHLTTPCCompModelDeflater::~AliHLTTPCCompModelDeflater()
     {
       // see header file for class documentation
     }
+
+void AliHLTTPCCompModelDeflater::InitBitDataOutput( AliHLTUInt8_t* output, UInt_t outputSize )
+   {
+     // see header file for class documenation
+     fBitDataCurrentWord = 0;
+     fBitDataCurrentPosInWord = 7;
+     fBitDataCurrentOutput = fBitDataCurrentOutputStart = output;
+     fBitDataCurrentOutputEnd = output+outputSize;
+   }
+
+AliHLTUInt8_t AliHLTTPCCompModelDeflater::GetCurrentOutputByte( Int_t offset ) const
+   {
+     // see header file for class documentation
+     if ( !offset )
+       return fBitDataCurrentWord;
+     else
+       return *(fBitDataCurrentOutput+offset);
+   }
+
+bool AliHLTTPCCompModelDeflater::OutputBit( AliHLTUInt32_t const & value )
+   {
+     // see header file for class documentation
+     if ( fBitDataCurrentOutput>=fBitDataCurrentOutputEnd )
+       return false;
+     fBitDataCurrentWord |= (value & 1) << fBitDataCurrentPosInWord;
+     if ( fBitDataCurrentPosInWord )
+       fBitDataCurrentPosInWord--;
+     else
+       {
+	 *fBitDataCurrentOutput = fBitDataCurrentWord;
+	 fBitDataCurrentPosInWord = 7;
+	 fBitDataCurrentOutput++;
+	 fBitDataCurrentWord = 0;
+       }
+     return true;
+   }
+   
+bool AliHLTTPCCompModelDeflater::OutputBits( AliHLTUInt64_t const & value, UInt_t const & bitCount )
+   {
+     // see header file for class documentation
+     if ( bitCount>64 )
+       {
+	 HLTFatal( "Internal error: Attempt to write more than 64 bits (%u)", (unsigned)bitCount );
+	 return false;
+       }
+     UInt_t bitsToWrite=bitCount;
+     UInt_t curBitCount;
+     while ( bitsToWrite>0 )
+       {
+	 if ( fBitDataCurrentOutput>=fBitDataCurrentOutputEnd )
+	   return false;
+#if 1
+	 if ( bitsToWrite >= fBitDataCurrentPosInWord+1 )
+	   curBitCount = fBitDataCurrentPosInWord+1;
+	 else
+	   curBitCount = bitsToWrite;
+	 fBitDataCurrentWord |= ( (value >> (bitsToWrite-curBitCount)) & ((1<<curBitCount)-1) ) << (fBitDataCurrentPosInWord+1-curBitCount);
+	 if ( fBitDataCurrentPosInWord < curBitCount )
+	   {
+	     *fBitDataCurrentOutput = fBitDataCurrentWord;
+	     fBitDataCurrentPosInWord = 7;
+	     fBitDataCurrentOutput++;
+	     fBitDataCurrentWord = 0;
+	   }
+	 else
+	   fBitDataCurrentPosInWord -= curBitCount;
+	 bitsToWrite -= curBitCount;
+	 
+#else
+	 AliHLTUInt8_t curValue;
+	 if ( bitsToWrite>=8 )
+	   {
+	     curBitCount=8;
+	     curValue = (value >> bitsToWrite-8) & 0xFF;
+	     bitsToWrite -= 8;
+	   }
+	 else
+	   {
+	     curBitCount=bitsToWrite;
+	     curValue = value & ( (1<<bitsToWrite)-1 );
+	     bitsToWrite = 0;
+	   }
+	 if ( fBitDataCurrentPosInWord+1>curBitCount )
+	   {
+	     fBitDataCurrentWord |= curValue << (fBitDataCurrentPosInWord-curBitCount+1);
+	     fBitDataCurrentPosInWord -= curBitCount;
+	   }
+	    else if ( fBitDataCurrentPosInWord+1==curBitCount )
+	      {
+		fBitDataCurrentWord |= curValue;
+		*fBitDataCurrentOutput = fBitDataCurrentWord;
+		fBitDataCurrentPosInWord = 7;
+		fBitDataCurrentOutput++;
+		fBitDataCurrentWord = 0;
+	      }
+	    else
+	      {
+		const UInt_t first = fBitDataCurrentPosInWord+1; // Number of bits for first block
+		const UInt_t second = curBitCount-first; // Number of bits for second block
+		fBitDataCurrentWord |= ( curValue >> second ) & ((1<<first)-1);
+		*fBitDataCurrentOutput = fBitDataCurrentWord;
+		fBitDataCurrentOutput++;
+		if ( fBitDataCurrentOutput>=fBitDataCurrentOutputEnd )
+		  return false;
+		fBitDataCurrentWord = curValue & ((1<<second)-1) << (8-second);
+		fBitDataCurrentPosInWord = 7-second;
+	      }
+#endif
+       }
+     return true;
+   }
+
+void AliHLTTPCCompModelDeflater::Pad8Bits()
+   {
+     // see header file for class documenation
+     if ( fBitDataCurrentPosInWord==7 )
+       return;
+     *fBitDataCurrentOutput = fBitDataCurrentWord;
+     fBitDataCurrentPosInWord = 7;
+     fBitDataCurrentOutput++;
+     fBitDataCurrentWord = 0;
+   }
+
+bool AliHLTTPCCompModelDeflater::OutputBytes( AliHLTUInt8_t const * data, UInt_t const & byteCount )
+   {
+     // see header file for class documenation
+     Pad8Bits();
+     if ( fBitDataCurrentOutput+byteCount>fBitDataCurrentOutputEnd )
+       return false;
+     memcpy( fBitDataCurrentOutput, data, byteCount );
+     fBitDataCurrentOutput += byteCount;
+     return true;
+   }
 
 int AliHLTTPCCompModelDeflater::CompressTracks( AliHLTUInt8_t* inData, UInt_t const& inputSize, AliHLTUInt8_t* output, UInt_t& outputSize )
     {

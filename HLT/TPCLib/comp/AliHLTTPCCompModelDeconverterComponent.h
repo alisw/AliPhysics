@@ -3,8 +3,9 @@
 
 #ifndef ALIHLTTPCCOMPMODELDECONVERTERCOMPONENT_H
 #define ALIHLTTPCCOMPMODELDECONVERTERCOMPONENT_H
-/* TPCCompModelDeconverterright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full TPCCompModelDeconverterright notice                               */
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
 
 /** @file   AliHLTTPCCompModelDeconverterComponent.h
     @author Timm Steinbeck
@@ -19,9 +20,12 @@
  * @class AliHLTTPCCompModelDeconverterComponent
  * @brief A dummy HLT processing component. 
  *
- * An implementiation of a copy component that just copies its input data
- * to debug a components input data
- * @ingroup alihlt_tutorial
+ * An implementiation of a deconverter component that 
+ * deconverts the tracks and clusters from the Vestbo-model
+ * into the standard HLT cluster track format again 
+ * in order to evaluate the loss of the model 
+ * due to the Vestbo-compression 
+ * @ingroup alihlt_tpc
  */
 class AliHLTTPCCompModelDeconverterComponent : public AliHLTProcessor
     {
@@ -93,9 +97,9 @@ class AliHLTTPCCompModelDeconverterComponent : public AliHLTProcessor
 		   AliHLTUInt32_t& size, vector<AliHLTComponent_BlockData>& outputBlocks );
       
       /** member variable for instance of deconverter class */
-      AliHLTTPCCompModelDeconverter fDeconverter;
+      AliHLTTPCCompModelDeconverter fDeconverter; // member variable for instance of deconverter class
       /** memeber varible for output tracks */
-      bool fOutputTracks;
+      bool fOutputTracks; // memeber varible for output track 
 
     private:
 

@@ -3,8 +3,9 @@
 
 #ifndef ALIHLTTPCCOMPMODELCONVERTERCOMPONENT_H
 #define ALIHLTTPCCOMPMODELCONVERTERCOMPONENT_H
-/* TPCCompModelConverterright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full TPCCompModelConverterright notice                               */
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
 
 /** @file   AliHLTTPCCompModelConverterComponent.h
     @author Timm Steinbeck
@@ -21,9 +22,12 @@
  * @class AliHLTTPCCompModelConverterComponent
  * @brief A dummy HLT processing component. 
  *
- * An implementiation of a copy component that just copies its input data
- * to debug a components input data
- * @ingroup alihlt_tutorial
+ * An implementiation of a converter component that
+ * takes in clusters and tracks in the standard HLT format
+ * and converts them into the Vestbo-format
+ * such that the Vestbo compression can then be 
+ * applied to these tracks and clusters
+ * @ingroup alihlt_tpc
  */
 class AliHLTTPCCompModelConverterComponent : public AliHLTProcessor
 {
@@ -94,14 +98,14 @@ protected:
 	       AliHLTUInt32_t& size, vector<AliHLTComponent_BlockData>& outputBlocks );
   
   /** pointer to model converter instance */
-  AliHLTTPCCompModelConverter* fConverter;
+  AliHLTTPCCompModelConverter* fConverter; // pointer to model converter instance 
   /** pointer to model analysis instance */
-  AliHLTTPCCompModelAnalysis* fModelAnalysisInstance;
+  AliHLTTPCCompModelAnalysis* fModelAnalysisInstance; // pointer to model analysis instance
   /** filename (including path) where to write model analysis results 
       if set by command line argument -dumptofile result-folder/results */
-  TString fDumpFileName;
+  TString fDumpFileName; // filename (including path) 
   /** root file name for graphs from track comparison */
-  TString fGraphFileName;
+  TString fGraphFileName; // root file name for graphs
   
 private:
   /** copy constructor prohibited */
