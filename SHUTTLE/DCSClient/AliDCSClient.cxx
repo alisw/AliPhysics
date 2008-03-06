@@ -107,6 +107,7 @@ some more descriptions added
 #include <TMap.h>
 #include <TObjString.h>
 #include <TSystem.h>
+#include <TTimeStamp.h>
 
 ClassImp(AliDCSClient)
 
@@ -149,23 +150,27 @@ Bool_t AliDCSClient::Connect()
 	
 	Close();
 	
-	Int_t tries = 0;	
+	Int_t tries = 0;
+	Int_t sleeptime=300;
+	
 	while (tries < fRetries) 
 	{
 		fSocket = new TSocket(fHost, fPort);
-		if (fSocket->IsValid()) 
+			
+		if (fSocket && fSocket->IsValid()) 
 		{
-			AliDebug(1, Form("Connected to %s:%d", fHost.Data(), fPort));
+			AliDebug(1, Form("%s  *** Connected to %s:%d", TTimeStamp(time(0)).AsString("s"), fHost.Data(), fPort));
 			fSocket->SetOption(kNoBlock, 1);
 			return kTRUE;
 		}
 
-		AliDebug(1, Form("Connection timeout! tries <%d> ...", tries));
+		AliError(Form("%d *** Connection to AMANDA server failed! Tried <%d> times ...", tries+1));
+		if(tries<fRetries-1) AliInfo(Form("%d *** Waiting %d seconds before next retry.", sleeptime));
 
 		delete fSocket;
 		fSocket = NULL;
 
-		gSystem->Sleep(fTimeout);
+		gSystem->Sleep(sleeptime);
 		tries ++;
 	}
 	
@@ -182,7 +187,7 @@ Int_t AliDCSClient::SendBuffer(const char* buffer, Int_t size)
 
         while (sentSize < size && tries < fRetries) {
 
-                Int_t sResult = fSocket->Select(TSocket::kWrite, fTimeout);
+                Int_t sResult = fSocket->Select(TSocket::kWrite, fTimeout*1000); //timeout for TSocket::Select is in msec
 
                 if (sResult == 0) {
 			AliDebug(1, Form("Timeout! tries <%d> ...", tries));
@@ -224,9 +229,10 @@ Int_t AliDCSClient::ReceiveBuffer(char* buffer, Int_t size)
 
         while (receivedSize < size && tries < fRetries) {
 
-                Int_t sResult = fSocket->Select(TSocket::kRead, fTimeout);
+                Int_t sResult = fSocket->Select(TSocket::kRead, fTimeout*1000); //timeout for TSocket::Select is in msec
 
                 if (sResult == 0) {
+			AliDebug(1, Form("Time when timing out: %s   Timeout value: %d seconds",TTimeStamp(time(0)).AsString("s"),fTimeout));
                         AliDebug(1, Form("Timeout! tries <%d> ...", tries));
                         tries ++;
                         continue;
@@ -627,6 +633,7 @@ void AliDCSClient::Close()
 	//
 
 	if (fSocket) {
+		AliDebug(1, Form("%s  *** Closing connection to %s:%d", TTimeStamp(time(0)).AsString("s"), fHost.Data(), fPort));
 		fSocket->Close();
 		delete fSocket;
 		fSocket = 0;

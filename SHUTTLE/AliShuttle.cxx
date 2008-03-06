@@ -1575,7 +1575,7 @@ Bool_t AliShuttle::ProcessCurrentDetector()
 					
 					if (!SendMailToDCS())
 						Log("SHUTTLE", Form("ProcessCurrentDetector - "
-							"Could not send mail to DCS experts!"));
+								    "Could not send mail to DCS experts!"));
 
 					delete dcsMap;
 					return kFALSE;
@@ -1597,7 +1597,7 @@ Bool_t AliShuttle::ProcessCurrentDetector()
 					
 					if (!SendMailToDCS())
 						Log("SHUTTLE", Form("ProcessCurrentDetector - "
-							"Could not send mail to DCS experts!"));
+								    "Could not send mail to DCS experts!"));
 					
 					if (aliasMap) delete aliasMap;
 					delete dcsMap;
@@ -2102,11 +2102,10 @@ const char* AliShuttle::GetFile(Int_t system, const char* detector,
                 if (fileSize.Length()>0)
                 {
                         // compare filesize of local file with the one stored in the FXS DB
-			TString command=("stat --format=%s");
-			Int_t sizeComp = gSystem->Exec(Form("%s %s |grep %s 2>&1 > /dev/null",
-						command.Data(), localFileName.Data(),fileSize.Data()));
+			Long_t id,size,flags,mtime;
+			Int_t sizeComp = gSystem->GetPathInfo(localFileName.Data(),&id,&size,&flags,&mtime);
 
-			if ( sizeComp != 0)
+			if ( sizeComp != 0 || size != fileSize.Atoi())
 			{
 				Log(detector, Form("GetFileName - size of file %s does not match with local copy!",
 							filePath.Data()));
@@ -2122,6 +2121,7 @@ const char* AliShuttle::GetFile(Int_t system, const char* detector,
 		if (fileChecksum.Length()>0)
 		{
 			// compare md5sum of local file with the one stored in the FXS DB
+			if(fileChecksum.Contains(' ')) fileChecksum.Resize(fileChecksum.First(' '));
 			Int_t md5Comp = gSystem->Exec(Form("md5sum %s |grep %s 2>&1 > /dev/null",
 						localFileName.Data(), fileChecksum.Data()));
 
