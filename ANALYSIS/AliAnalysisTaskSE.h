@@ -34,11 +34,13 @@ class AliAnalysisTaskSE : public AliAnalysisTask
     virtual void UserExec(Option_t* /*option*/) {;}
     
     // Getters
+    virtual Int_t        DebugLevel()  {return fDebug;     }
     virtual AliVEvent*   InputEvent()  {return fInputEvent;}
-    virtual AliAODEvent* AODEvent()    {return fOutputAOD;}
-    virtual TTree*       OutputTree()  {return fTreeA;}
-    virtual AliMCEvent*  MCEvent()     {return fMCEvent;}
-    virtual Long64_t     Entry()       {return fEntry;}
+    virtual AliAODEvent* AODEvent()    {return fOutputAOD; }
+    virtual TTree*       OutputTree()  {return fTreeA;     }
+    virtual AliMCEvent*  MCEvent()     {return fMCEvent;   }
+    virtual Long64_t     Entry()       {return fEntry;     }
+    virtual const char*  CurrentFileName();
   protected:
     Int_t                 fDebug;           //  Debug flag
     Int_t                 fEntry;           //  Current entry in the chain

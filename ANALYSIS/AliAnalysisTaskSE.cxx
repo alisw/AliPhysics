@@ -33,6 +33,7 @@
 #include "AliInputEventHandler.h"
 #include "AliMCEvent.h"
 #include "AliStack.h"
+#include "AliLog.h"
 
 
 ClassImp(AliAnalysisTaskSE)
@@ -112,7 +113,12 @@ void AliAnalysisTaskSE::ConnectInputData(Option_t* /*option*/)
 //
     AliInputEventHandler* fInputHandler = (AliInputEventHandler*) 
 	((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
-    if (fInputHandler) fInputEvent = fInputHandler->GetEvent();
+    if (fInputHandler) {
+	fInputEvent = fInputHandler->GetEvent();
+    } else {
+	AliError("No Input Event Handler connected") ; 
+	return ; 
+    }
 //
 //  Monte Carlo
 //
@@ -141,8 +147,15 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
 //
 // Exec analysis of one event
     fEntry = fInputHandler->GetReadEntry();
+    if ( !((Entry()-1)%100) && fDebug > 0) 
+	AliInfo(Form("%s ----> Processing event # %lld", CurrentFileName(), Entry()));
+// Call the user analysis    
     UserExec(option);
 }
 
-
+const char* AliAnalysisTaskSE::CurrentFileName()
+{
+// Returns the current file name    
+    return fInputHandler->GetTree()->GetCurrentFile()->GetName();
+}
 
