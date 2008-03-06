@@ -349,7 +349,7 @@ Bool_t AliHMPIDRawStream::ReadDilogic(Int_t &cntDilogic)
     
     if(charge==0) 
     {
-      AliWarning(Form("If PEDESTAL run -> WARNING: ZERO charge is read from DDL: %d row: %d dil: %d pad: %d",fDDLNumber,row,dilogic,pad));
+      AliDebug(1,Form("If PEDESTAL run -> WARNING: ZERO charge is read from DDL: %d row: %d dil: %d pad: %d",fDDLNumber,row,dilogic,pad));
       fNumOfErr[fDDLNumber][kPedQZero]++;
     }
     
