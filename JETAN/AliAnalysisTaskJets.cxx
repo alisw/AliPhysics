@@ -42,7 +42,6 @@ ClassImp(AliAnalysisTaskJets)
 
 AliAnalysisTaskJets::AliAnalysisTaskJets():
     AliAnalysisTaskSE(),
-    fDebug(0),
     fJetFinder(0x0),
     fTree(0x0),
     fHistos(0x0),
@@ -53,7 +52,6 @@ AliAnalysisTaskJets::AliAnalysisTaskJets():
 
 AliAnalysisTaskJets::AliAnalysisTaskJets(const char* name):
     AliAnalysisTaskSE(name),
-    fDebug(0),
     fJetFinder(0x0),
     fTree(0x0),
     fHistos(0x0),
