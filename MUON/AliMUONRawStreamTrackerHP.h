@@ -52,13 +52,7 @@ public:
 				UShort_t& adc);
 	
 	/// Returns the next batch of decoded channel data.
-	const AliBusPatch* Next()
-	{
-		do {
-			if (fCurrentBusPatch != fDecoder.GetHandler().EndOfBusPatch()) return fCurrentBusPatch++;
-		} while (NextDDL());
-		return NULL;
-	}
+	const AliBusPatch* Next();
 	
 	/// Return maximum number of blocks per DDL allowed.
 	virtual Int_t GetMaxBlock() const { return (Int_t) fDecoder.MaxBlocks(); }
@@ -158,7 +152,7 @@ public:
 		Int_t   GetEventId2()       const {assert(fHeader != NULL); return fHeader->fEventId2;}
 	
 		/// Return the header's raw data.
-		const AliMUONBlockHeaderStruct* GetHeader() {return fHeader;}
+		const AliMUONBlockHeaderStruct* GetHeader() const {return fHeader;}
 		
 		/// Return the next block header.
 		const AliBlockHeader* Next() const { return fNext; }
@@ -246,7 +240,7 @@ public:
 		Int_t   GetErrorWord()      const {assert(fHeader != NULL); return fHeader->fErrorWord;}
 	
 		/// Return raw data of header
-		const AliMUONDSPHeaderStruct* GetHeader() {return fHeader;}
+		const AliMUONDSPHeaderStruct* GetHeader() const { return fHeader; }
 		
 		/// Return the parent block header.
 		const AliBlockHeader* GetBlockHeader() const { return fBlock; }
@@ -333,7 +327,7 @@ public:
 		Int_t   GetBusPatchId()  const {assert(fHeader != NULL); return fHeader->fBusPatchId;}
 
 		/// Return raw data of header
-		const AliMUONBusPatchHeaderStruct* GetHeader() {return fHeader;}
+		const AliMUONBusPatchHeaderStruct* GetHeader() const {return fHeader;}
 		/// Return raw digit data
 		const UInt_t* GetData()  const {return fData;}
 		/// Returns the number of raw data words within this bus patch.
@@ -342,35 +336,35 @@ public:
 		/// Returns the parity bit of the n'th raw data word.
 		Char_t GetParity(UInt_t n) const
 		{
-			assert( fHeader != NULL and n < fHeader->fLength );
+			assert( fHeader != NULL && n < fHeader->fLength );
 			return (Char_t)(fData[n] >> 31) &  0x1;
 		}
 		
 		/// Returns the MANU ID of the n'th raw data word.
 		UShort_t GetManuId(UInt_t n) const
 		{
-			assert( fHeader != NULL and n < fHeader->fLength );
+			assert( fHeader != NULL && n < fHeader->fLength );
 			return (UShort_t)(fData[n] >> 18) &  0x7FF;
 		}
 		
 		/// Returns the channel ID of the n'th raw data word.
 		UChar_t GetChannelId(UInt_t n) const
 		{
-			assert( fHeader != NULL and n < fHeader->fLength );
+			assert( fHeader != NULL && n < fHeader->fLength );
 			return (Char_t)(fData[n] >> 12) & 0x3F;
 		}
 		
 		/// Returns the charge/signal of the n'th raw data word.
 		UShort_t GetCharge(UInt_t n) const
 		{
-			assert( fHeader != NULL and n < fHeader->fLength );
+			assert( fHeader != NULL && n < fHeader->fLength );
 			return (UShort_t)(fData[n] & 0xFFF);
 		}
 		
 		/// Returns the n'th raw data word.
 		UInt_t GetData(UInt_t n) const
 		{
-			assert( fHeader != NULL and n < fHeader->fLength );
+			assert( fHeader != NULL && n < fHeader->fLength );
 			return fData[n];
 		}
 		
@@ -378,7 +372,7 @@ public:
 		/// and kFALSE otherwise.
 		Bool_t IsParityOk(UInt_t n) const
 		{
-			assert( fHeader != NULL and n < fHeader->fLength );
+			assert( fHeader != NULL && n < fHeader->fLength );
 			return fParityOk[n];
 		}
 		
@@ -386,7 +380,7 @@ public:
 		/// is returned if the data word's parity was OK and kFALSE otherwise.
 		Bool_t GetData(UInt_t n, UShort_t& manuId, UChar_t& channelId, UShort_t& adc) const
 		{
-			assert( fHeader != NULL and n < fHeader->fLength );
+			assert( fHeader != NULL && n < fHeader->fLength );
 			AliMUONTrackerDDLDecoderEventHandler::UnpackADC(fData[n], manuId, channelId, adc);
 			return fParityOk[n];
 		}
@@ -548,35 +542,17 @@ private:
 		/// New block handler is called by the decoder whenever a new block
 		/// structure is found. We just mark the new block and increment the
 		/// internal counter.
-		void OnNewBlock(const AliMUONBlockHeaderStruct* header, const void* /*data*/)
-		{
-			assert( fBlockCount < (UInt_t)fRawStream->GetMaxBlock() and header != NULL );
-			if (fBlockCount > 0) fCurrentBlock->SetNext(fCurrentBlock+1);  // Link the block unless it is the first one.
-			*(++fCurrentBlock) = AliBlockHeader(fCurrentDSP+1, header);
-			fBlockCount++;
-		}
+		void OnNewBlock(const AliMUONBlockHeaderStruct* header, const void* /*data*/);
 		
 		/// New DSP handler is called by the decoder whenever a new DSP
 		/// structure is found. We just mark the DSP and increment the
 		/// appropriate counters.
-		void OnNewDSP(const AliMUONDSPHeaderStruct* header, const void* /*data*/)
-		{
-			assert( fCurrentBlock->GetDspCount() < (UInt_t)fRawStream->GetMaxDsp() and header != NULL );
-			if (fCurrentBlock->GetDspCount() > 0) fCurrentDSP->SetNext(fCurrentDSP+1); // Link the DSP unless it is the first one.
-			*(++fCurrentDSP) = AliDspHeader(fCurrentBlock, fCurrentBusPatch+1, header);
-			fCurrentBlock->IncDspCount();
-		}
+		void OnNewDSP(const AliMUONDSPHeaderStruct* header, const void* /*data*/);
 		
 		/// New bus patch handler.
 		/// This is called by the high performance decoder when a new bus patch
 		/// is found within the DDL payload.
-		void OnNewBusPatch(const AliMUONBusPatchHeaderStruct* header, const void* data)
-		{
-			assert( fCurrentDSP->GetBusPatchCount() < (UInt_t)fRawStream->GetMaxBus() and header != NULL and data != NULL );
-			if (fCurrentDSP->GetBusPatchCount() > 0) fCurrentBusPatch->SetNext(fCurrentBusPatch+1); // Link the bus patch unless it is the first one.
-			*(++fCurrentBusPatch) = AliBusPatch(fCurrentDSP, header, reinterpret_cast<const UInt_t*>(data), fCurrentParityOkFlag+1);
-			fCurrentDSP->IncBusPatchCount();
-		}
+		void OnNewBusPatch(const AliMUONBusPatchHeaderStruct* header, const void* data);
 		
 		/// Raw data word handler.
 		void OnData(UInt_t /*data*/, bool parityError)
@@ -627,6 +603,72 @@ private:
 
 	ClassDef(AliMUONRawStreamTrackerHP, 0) // High performance decoder for reading MUON raw digits from tracking chamber DDL data.
 };
+
+////////////////////////////////////////////////////////////////////////////////
+
+inline const AliMUONRawStreamTrackerHP::AliBusPatch* AliMUONRawStreamTrackerHP::Next()
+{
+	/// Returns the next batch of decoded channel data.
+	do {
+		if (fCurrentBusPatch != fDecoder.GetHandler().EndOfBusPatch())
+			return fCurrentBusPatch++;
+	} while (NextDDL());
+	return NULL;
+}
+
+inline void AliMUONRawStreamTrackerHP::AliDecoderEventHandler::OnNewBlock(
+		const AliMUONBlockHeaderStruct* header, const void* /*data*/
+	)
+{
+	/// New block handler is called by the decoder whenever a new block
+	/// structure is found. We just mark the new block and increment the
+	/// internal counter.
+
+	assert( header != NULL );
+	assert( fBlockCount < (UInt_t)fRawStream->GetMaxBlock() );
+	// Link the block unless it is the first one.
+	if (fBlockCount > 0) fCurrentBlock->SetNext(fCurrentBlock+1);
+	*(++fCurrentBlock) = AliBlockHeader(fCurrentDSP+1, header);
+	fBlockCount++;
+}
+
+inline void AliMUONRawStreamTrackerHP::AliDecoderEventHandler::OnNewDSP(
+		const AliMUONDSPHeaderStruct* header, const void* /*data*/
+	)
+{
+	/// New DSP handler is called by the decoder whenever a new DSP
+	/// structure is found. We just mark the DSP and increment the
+	/// appropriate counters.
+	
+	assert( header != NULL );
+	assert( fCurrentBlock->GetDspCount() < (UInt_t)fRawStream->GetMaxDsp() );
+	// Link the DSP unless it is the first one.
+	if (fCurrentBlock->GetDspCount() > 0) fCurrentDSP->SetNext(fCurrentDSP+1);
+	*(++fCurrentDSP) = AliDspHeader(fCurrentBlock, fCurrentBusPatch+1, header);
+	fCurrentBlock->IncDspCount();
+}
+
+inline void AliMUONRawStreamTrackerHP::AliDecoderEventHandler::OnNewBusPatch(
+		const AliMUONBusPatchHeaderStruct* header, const void* data
+	)
+{
+	/// New bus patch handler.
+	/// This is called by the high performance decoder when a new bus patch
+	/// is found within the DDL payload.
+
+	assert( header != NULL );
+	assert( data != NULL );
+	assert( fCurrentDSP->GetBusPatchCount() < (UInt_t)fRawStream->GetMaxBus() );
+	// Link the bus patch unless it is the first one. 
+	if (fCurrentDSP->GetBusPatchCount() > 0) fCurrentBusPatch->SetNext(fCurrentBusPatch+1);
+	*(++fCurrentBusPatch) = AliBusPatch(
+			fCurrentDSP,
+			header,
+			reinterpret_cast<const UInt_t*>(data),
+			fCurrentParityOkFlag+1
+		);
+	fCurrentDSP->IncBusPatchCount();
+}
 
 #endif  // ALIMUONRAWSTREAMTRACKERHP_H
 

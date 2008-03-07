@@ -241,7 +241,7 @@ Bool_t AliMUONRawStreamTrackerHP::NextDDL()
 	}
 
 	fDDL++; // Remember to increment index to next DDL.
-	return result;
+	return kTRUE;
 }
 
 
@@ -587,7 +587,7 @@ void AliMUONRawStreamTrackerHP::AliDecoderEventHandler::OnError(
 		message = Form(
 			"%s (At byte %d in DDL.)",
 			ErrorCodeToMessage(error),
-			(unsigned long)location - (unsigned long)fBufferStart
+			(unsigned long)location - (unsigned long)fBufferStart + sizeof(AliRawDataHeader)
 		);
 		fRawStream->GetReader()->AddMajorErrorLog(error, message);
 		break;
