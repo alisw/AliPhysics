@@ -77,6 +77,7 @@ AliMagFMapsV1::AliMagFMapsV1(const char *name, const char *title, Int_t integ,
 
 //_______________________________________________________________________
 AliMagFMapsV1::AliMagFMapsV1(const AliMagFMapsV1 &magf):
+  AliMagFMaps(magf),
   fMeasuredMap(0)
 {
   //
