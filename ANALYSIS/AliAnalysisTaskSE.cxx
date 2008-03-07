@@ -86,6 +86,7 @@ AliAnalysisTaskSE::AliAnalysisTaskSE(const AliAnalysisTaskSE& obj):
     fOutputAOD    = obj.fOutputAOD;
     fMCEvent      = obj.fMCEvent;
     fTreeA        = obj.fTreeA;    
+    printf("Constructor (3) \n");
 }
 
 
@@ -111,7 +112,7 @@ void AliAnalysisTaskSE::ConnectInputData(Option_t* /*option*/)
 //
 //  ESD
 //
-    AliInputEventHandler* fInputHandler = (AliInputEventHandler*) 
+    fInputHandler = (AliInputEventHandler*) 
 	((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
     if (fInputHandler) {
 	fInputEvent = fInputHandler->GetEvent();
@@ -146,6 +147,7 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
 {
 //
 // Exec analysis of one event
+    if (fDebug > 1) printf("AliAnalysisTaskSE::Exec() \n");
     fEntry = fInputHandler->GetReadEntry();
     if ( !((Entry()-1)%100) && fDebug > 0) 
 	AliInfo(Form("%s ----> Processing event # %lld", CurrentFileName(), Entry()));
