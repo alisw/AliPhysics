@@ -1,17 +1,17 @@
 /**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+*                                                                        *
+* Author: The ALICE Off-line Project.                                    *
+* Contributors are mentioned in the code where appropriate.              *
+*                                                                        *
+* Permission to use, copy, modify and distribute this software and its   *
+* documentation strictly for non-commercial purposes is hereby granted   *
+* without fee, provided that the above copyright notice appears in all   *
+* copies and that both the copyright notice and this permission notice   *
+* appear in the supporting documentation. The authors make no claims     *
+* about the suitability of this software for any purpose. It is          *
+* provided "as is" without express or implied warranty.                  *
+**************************************************************************/
 
 /* $Id: TestRecPoints.C 23207 2007-12-20 09:59:20Z ivana $ */
 
@@ -61,6 +61,7 @@
 #include "AliMUONSimpleClusterServer.h"
 #include "AliMUONGeometryTransformer.h"
 #include "AliMUONVDigitStore.h"
+#include "AliMUONDigitStoreV2R.h"
 #include "AliMUONVCluster.h"
 
 #endif
@@ -76,52 +77,52 @@ Int_t GetPlane(Int_t ch, Int_t cath){return kNcathodes * ch + cath;}
 void ClusterSize(TList&, AliMUONVDigit*, Int_t&, Int_t);
 
 // Main Method
-void TestRecPoints(TString baseDir=".", TString outDir=".", Int_t whatToTest=kTrackTrig, Int_t runNumber=0, TString cdbStorage="local://$ALICE_ROOT")
+void TestRecPoints(TString baseDir=".", TString outDir=".", Float_t adcCut = 10., Int_t whatToTest=kTrackTrig, Int_t runNumber=0, TString cdbStorage="local://$ALICE_ROOT")
 {
   const Int_t kNplanes = kNtrigChambers * kNcathodes;
   const Int_t kNslats = 18;
-
+  
   TList histoListTrig;
-
+  
   TH1F* trigStripMult[kNplanes];
   TH1F* trigClusterSize[kNplanes];
   TH1F* trigClusterMult[kNplanes];
   TString histoName, histoTitle;
-
+  
   if(whatToTest!=kOnlyTracker){
     for(Int_t ch=0; ch<kNtrigChambers; ch++){
       for(Int_t cath=0; cath<kNcathodes; cath++){
-	Int_t iplane = GetPlane(ch, cath);
-	histoName = "stripMult";
-	histoName.Append(Form("Ch%iCath%i",ch,cath));
-	histoTitle = Form("Strip multiplicity Ch %i Cathode %i", ch, cath);
-	trigStripMult[iplane] = new TH1F(histoName.Data(), histoTitle.Data(), kNslats, 0.-0.5, (Float_t)kNslats - 0.5);
-	trigStripMult[iplane]->SetXTitle("slat");
-	histoListTrig.Add(trigStripMult[iplane]);
-
-	histoName = "clusterSize";
-	histoName.Append(Form("Ch%iCath%i",ch,cath));
-	histoTitle = Form("Cluster size Ch %i Cathode %i", ch, cath);
-	trigClusterSize[iplane] = new TH1F(histoName.Data(), histoTitle.Data(), 10, 0.-0.5, (Float_t)10 - 0.5);
-	trigClusterSize[iplane]->SetXTitle("cluster size");
-	histoListTrig.Add(trigClusterSize[iplane]);
-
-	histoName = "clusterMult";
-	histoName.Append(Form("Ch%iCath%i",ch,cath));
-	histoTitle = Form("Cluster multiplicity Ch %i Cathode %i", ch, cath);
-	trigClusterMult[iplane] = new TH1F(histoName.Data(), histoTitle.Data(), kNslats, 0.-0.5, (Float_t)kNslats - 0.5);
-	trigClusterMult[iplane]->SetXTitle("slat");
-	histoListTrig.Add(trigClusterMult[iplane]);
+        Int_t iplane = GetPlane(ch, cath);
+        histoName = "stripMult";
+        histoName.Append(Form("Ch%iCath%i",ch,cath));
+        histoTitle = Form("Strip multiplicity Ch %i Cathode %i", ch, cath);
+        trigStripMult[iplane] = new TH1F(histoName.Data(), histoTitle.Data(), kNslats, 0.-0.5, (Float_t)kNslats - 0.5);
+        trigStripMult[iplane]->SetXTitle("slat");
+        histoListTrig.Add(trigStripMult[iplane]);
+        
+        histoName = "clusterSize";
+        histoName.Append(Form("Ch%iCath%i",ch,cath));
+        histoTitle = Form("Cluster size Ch %i Cathode %i", ch, cath);
+        trigClusterSize[iplane] = new TH1F(histoName.Data(), histoTitle.Data(), 10, 0.-0.5, (Float_t)10 - 0.5);
+        trigClusterSize[iplane]->SetXTitle("cluster size");
+        histoListTrig.Add(trigClusterSize[iplane]);
+        
+        histoName = "clusterMult";
+        histoName.Append(Form("Ch%iCath%i",ch,cath));
+        histoTitle = Form("Cluster multiplicity Ch %i Cathode %i", ch, cath);
+        trigClusterMult[iplane] = new TH1F(histoName.Data(), histoTitle.Data(), kNslats, 0.-0.5, (Float_t)kNslats - 0.5);
+        trigClusterMult[iplane]->SetXTitle("slat");
+        histoListTrig.Add(trigClusterMult[iplane]);
       }
     }
   }
-
+  
   const Int_t kMaxDetElem = 26;
   TList histoListTrack;
   TH1F* trackClusterSize[kNtrackChambers];
   TH1F* trackClusterMult[kNtrackChambers];
   TH1F* trackClusterYield[kNtrackChambers];
-
+  
   if(whatToTest!=kOnlyTrigger){
     for(Int_t ch=0; ch<kNtrackChambers; ch++){
       histoName = "clusterSize";
@@ -130,14 +131,14 @@ void TestRecPoints(TString baseDir=".", TString outDir=".", Int_t whatToTest=kTr
       trackClusterSize[ch] = new TH1F(histoName.Data(), histoTitle.Data(), kMaxDetElem, 0.-0.5, (Float_t)kMaxDetElem - 0.5);
       trackClusterSize[ch]->SetXTitle("cluster size");
       histoListTrack.Add(trackClusterSize[ch]);
-
+      
       histoName = "clusterMult";
       histoName.Append(Form("Ch%i",ch));
       histoTitle = Form("Cluster multiplicity vs. Charge Ch %i", ch);
       trackClusterMult[ch] = new TH1F(histoName.Data(), histoTitle.Data(), 200, 0, 15000.);
-      trackClusterMult[ch]->SetXTitle("Charge (pC)");
+      trackClusterMult[ch]->SetXTitle("Charge (ADC)");
       histoListTrack.Add(trackClusterMult[ch]);
-
+      
       histoName = "clusterYield";
       histoName.Append(Form("Ch%i",ch));
       histoTitle = Form("Cluster yield vs. DetElem Ch %i", ch);
@@ -147,7 +148,7 @@ void TestRecPoints(TString baseDir=".", TString outDir=".", Int_t whatToTest=kTr
     }
   }
   
-
+  
   // Creating Run Loader and opening RecPoints
   TString filename = baseDir.Data();
   filename.Append("/galice.root");
@@ -156,36 +157,37 @@ void TestRecPoints(TString baseDir=".", TString outDir=".", Int_t whatToTest=kTr
     printf(">>> Error : Error Opening %s file \n",filename.Data());
     return;
   }
-
+  
   // Loading MUON subsystem
   AliLoader* MUONLoader = RunLoader->GetDetectorLoader("MUON");
   if(whatToTest!=kOnlyTracker)  MUONLoader->LoadRecPoints("READ");
   if(whatToTest!=kOnlyTrigger)  MUONLoader->LoadDigits("READ");
-
+  
   TTree *treeR = 0x0, *treeD = 0x0;
   AliMUONVTriggerStore* trigStore = 0x0;
   AliMUONLocalTrigger* locTrg = 0x0;
-
+  
   AliMUONVDigitStore* digitStoreTrack = 0x0;
+  AliMUONDigitStoreV2R digitStoreTrackCut;
   AliMUONVCluster* cluster = 0x0;
-
+  
   // Load segmentation
   AliCDBManager::Instance()->SetDefaultStorage(cdbStorage.Data());
   AliCDBManager::Instance()->SetRun(runNumber);
-    
+  
   AliMpCDB::LoadDDLStore();
-
+  
   AliMUONGeometryTransformer* transformer = 0x0;
- 
-
+  
+  
   AliMUONClusterStoreV2 clusterStore;
   AliMUONVClusterFinder* clusterFinder = 0x0;
   
   AliMUONSimpleClusterServer* clusterServer = 0x0;
-
+  
   Int_t firstChamber(0);
   Int_t lastChamber(9);
-
+  
   if(whatToTest!=kOnlyTrigger){
     // Import TGeo geometry
     TString geoFilename = baseDir.Data();
@@ -193,8 +195,8 @@ void TestRecPoints(TString baseDir=".", TString outDir=".", Int_t whatToTest=kTr
     if ( ! AliGeomManager::GetGeometry() ) {
       AliGeomManager::LoadGeometry(geoFilename);
       if (! AliGeomManager::GetGeometry() ) {
-	printf(">>> Error : getting geometry from file %s failed\n", geoFilename.Data());
-	return;
+        printf(">>> Error : getting geometry from file %s failed\n", geoFilename.Data());
+        return;
       }
     }
     transformer = new AliMUONGeometryTransformer();
@@ -203,20 +205,20 @@ void TestRecPoints(TString baseDir=".", TString outDir=".", Int_t whatToTest=kTr
     clusterFinder = new AliMUONClusterFinderMLEM(kFALSE,new AliMUONPreClusterFinder);
     clusterServer = new AliMUONSimpleClusterServer(*clusterFinder,*transformer);
   }
-
+  
   AliMUONDigitStoreV1 digitStore;
   AliMUONVDigit* mDigit;
-
+  
   Int_t clusterSize;
-
+  
   AliMUONDigitMaker digitMaker;
   TList digitsList[kNplanes];
-
+  
   Int_t nevents = RunLoader->GetNumberOfEvents();
   Int_t analysisFrac = nevents/10+1;
-
+  
   printf("\nNumber of events = %i\n\n",nevents);
-
+  
   for(Int_t ievent=0; ievent<nevents; ievent++){
     if(ievent%analysisFrac==0) printf("Analysing event = %i\n",ievent);
     RunLoader->GetEvent(ievent);
@@ -224,84 +226,96 @@ void TestRecPoints(TString baseDir=".", TString outDir=".", Int_t whatToTest=kTr
       digitStore.Clear();
       treeR = MUONLoader->TreeR();
       trigStore = AliMUONVTriggerStore::Create(*treeR);
-
+      
       if ( trigStore == 0x0 ) continue;
       trigStore->Clear();
       trigStore->Connect(*treeR);
       treeR->GetEvent(0);
-
+      
       TIter nextLocal(trigStore->CreateLocalIterator());
       while ( (locTrg = static_cast<AliMUONLocalTrigger*>( nextLocal() )) != NULL )
       {
-	TArrayS xyPattern[2];
-	locTrg->GetXPattern(xyPattern[0]);
-	locTrg->GetYPattern(xyPattern[1]);
-
-	Int_t nBoard = locTrg->LoCircuit();
-	digitMaker.TriggerDigits(nBoard, xyPattern, digitStore);
+        TArrayS xyPattern[2];
+        locTrg->GetXPattern(xyPattern[0]);
+        locTrg->GetYPattern(xyPattern[1]);
+        
+        Int_t nBoard = locTrg->LoCircuit();
+        digitMaker.TriggerDigits(nBoard, xyPattern, digitStore);
       }
-
+      
       TIter next(digitStore.CreateIterator());
-
+      
       while ( ( mDigit = static_cast<AliMUONVDigit*>(next()) ) )
       {
-	Int_t detElemId = mDigit->DetElemId();
-	Int_t ch = detElemId/100 - 11;
-	Int_t cathode = mDigit->Cathode();
-	Int_t slat = detElemId%100;
-	Int_t iplane = GetPlane(ch, cathode);
-	trigStripMult[iplane]->Fill(slat);
-	digitsList[iplane].Add(mDigit);
+        Int_t detElemId = mDigit->DetElemId();
+        Int_t ch = detElemId/100 - 11;
+        Int_t cathode = mDigit->Cathode();
+        Int_t slat = detElemId%100;
+        Int_t iplane = GetPlane(ch, cathode);
+        trigStripMult[iplane]->Fill(slat);
+        digitsList[iplane].Add(mDigit);
       } // loop on digits
-
+      
       for(Int_t iplane=0; iplane<kNplanes; iplane++){
-	while(digitsList[iplane].GetEntries()){
-	  clusterSize=1;
-	  mDigit = (AliMUONVDigit*)digitsList[iplane].At(0);
-	  digitsList[iplane].Remove(mDigit);
-	  ClusterSize(digitsList[iplane],mDigit,clusterSize,1);
-	  //if(clusterSize>1) printf("Cluster size = %i\n\n",clusterSize);
-	  trigClusterSize[iplane]->Fill(clusterSize);
-
-	  Int_t detElemId = mDigit->DetElemId();
-	  Int_t slat = detElemId%100;
-	  trigClusterMult[iplane]->Fill(slat);
-	} // loop o sorted digits
+        while(digitsList[iplane].GetEntries()){
+          clusterSize=1;
+          mDigit = (AliMUONVDigit*)digitsList[iplane].At(0);
+          digitsList[iplane].Remove(mDigit);
+          ClusterSize(digitsList[iplane],mDigit,clusterSize,1);
+          //if(clusterSize>1) printf("Cluster size = %i\n\n",clusterSize);
+          trigClusterSize[iplane]->Fill(clusterSize);
+          
+          Int_t detElemId = mDigit->DetElemId();
+          Int_t slat = detElemId%100;
+          trigClusterMult[iplane]->Fill(slat);
+        } // loop o sorted digits
       } // loop on planes
     } // trigger part
-
+    
     if(whatToTest!=kOnlyTrigger){
       clusterStore.Clear();
       treeD = MUONLoader->TreeD();
       digitStoreTrack = AliMUONVDigitStore::Create(*treeD);
-
+      
       if ( digitStoreTrack == 0x0 ) continue;
       digitStoreTrack->Clear();
+      digitStoreTrackCut.Clear();
       digitStoreTrack->Connect(*treeD);
       treeD->GetEvent(0);
-      clusterServer->UseDigitStore(*digitStoreTrack);
-
+      
+      // Cut low charge channels (pedestal subtraction)
+      TIter nextDigitTrack(digitStoreTrack->CreateIterator());
+      while ( ( mDigit = static_cast<AliMUONVDigit*>(nextDigitTrack()) ) )
+      {
+        //printf("Digit class = %s",mDigit->ClassName());
+        Float_t charge = mDigit->Charge();
+        if(charge<adcCut) continue;
+        digitStoreTrackCut.Add(*mDigit, AliMUONVDigitStore::kDeny);
+      } // loop on digits
+      
+      clusterServer->UseDigitStore(digitStoreTrackCut);
+      
       for (Int_t ch = firstChamber; ch <= lastChamber; ++ch ){
-	clusterServer->Clusterize(ch, clusterStore, AliMpArea());
+        clusterServer->Clusterize(ch, clusterStore, AliMpArea());
       }
-
+      
       TIter next(clusterStore.CreateIterator());
       while ( ( cluster = static_cast<AliMUONVCluster*>(next()) ) )
       {
-	Float_t charge = cluster->GetCharge();
-	if(charge==0.) continue;
-	Int_t ch = cluster->GetChamberId();
-	Int_t npads = cluster->GetNDigits();
-	Int_t detElemId = cluster->GetDetElemId()%100;
-	//printf("charge = %f   pads = %i   detElemId = %i\n",charge,npads,detElemId);
-
-	trackClusterSize[ch]->Fill(npads);
-	trackClusterMult[ch]->Fill(charge);
-	trackClusterYield[ch]->Fill(detElemId);      
+        Float_t charge = cluster->GetCharge();
+        if(charge==0.) continue;
+        Int_t ch = cluster->GetChamberId();
+        Int_t npads = cluster->GetNDigits();
+        Int_t detElemId = cluster->GetDetElemId()%100;
+        //printf("charge = %f   pads = %i   detElemId = %i\n",charge,npads,detElemId);
+        
+        trackClusterSize[ch]->Fill(npads);
+        trackClusterMult[ch]->Fill(charge);
+        trackClusterYield[ch]->Fill(detElemId);      
       } // loop on clusters
     } // tracker part
   } // loop on events
-
+  
   MUONLoader->UnloadRecPoints();
   MUONLoader->UnloadDigits();
   RunLoader->UnloadAll();
