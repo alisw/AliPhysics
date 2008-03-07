@@ -63,7 +63,7 @@ int main( int argc, char** argv )
   dafname = ".";
   if (ssddaldc->SaveCalibrationSSDLDC(dafname)) {
     cout << "SSDDA data are saved in " << dafname << endl;
-    status = daqDA_FES_storeFile(dafname, "DASSD_DB_results");
+    status = daqDA_FES_storeFile(dafname, "CALIBRATION");
     if (status) fprintf(stderr, "Failed to export file : %d\n", status);
   } else cerr << "Error saving DA data to the file! Probably $DA_TEST_DIR defined incorrectly!" << endl;
 
