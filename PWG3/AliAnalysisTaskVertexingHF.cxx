@@ -40,8 +40,8 @@ AliAnalysisTaskVertexingHF::AliAnalysisTaskVertexingHF(const char *name) :
 AliAnalysisTask(name,""), 
 fESD(0), 
 fChain(0), 
-vHF(0), 
-mTrees(0)
+fVHF(0), 
+fTrees(0)
 {
   //Constructor
 
@@ -72,22 +72,22 @@ void AliAnalysisTaskVertexingHF::CreateOutputObjects()
   //Implementation of AliAnalysisTask::CreateOutputObjects
   //4 output trees (D0 in 2-prongs, J/Psi to e+e-, 3-prongs (D+, Ds, /\c), D0 in 4-prongs)
 
-  mTrees = new TTree[4];
+  fTrees = new TTree[4];
   AliAODRecoDecayHF2Prong *rd2=0;
   AliAODRecoDecayHF3Prong *rd3=0;
   AliAODRecoDecayHF4Prong *rd4=0;
-  mTrees[0].SetName("NameD0toKpi");
-  mTrees[0].SetTitle("TitleD0toKpi");
-  mTrees[1].SetName("NameJPSItoEle");
-  mTrees[1].SetTitle("TitleJPSItoEle");
-  mTrees[2].SetName("NameCharmto3Prong");
-  mTrees[2].SetTitle("TitleCharmto3Prong");
-  mTrees[3].SetName("NameD0to4Prong");
-  mTrees[3].SetTitle("TitleD0to4Prong");
-  mTrees[0].Branch("D0toKpi","AliAODRecoDecayHF2Prong",&rd2);
-  mTrees[1].Branch("JPSItoEle","AliAODRecoDecayHF2Prong",&rd2);
-  mTrees[2].Branch("Charmto3Prong","AliAODRecoDecayHF3Prong",&rd3);
-  mTrees[3].Branch("D0to4Prong","AliAODRecoDecayHF4Prong",&rd4);
+  fTrees[0].SetName("NameD0toKpi");
+  fTrees[0].SetTitle("TitleD0toKpi");
+  fTrees[1].SetName("NameJPSItoEle");
+  fTrees[1].SetTitle("TitleJPSItoEle");
+  fTrees[2].SetName("NameCharmto3Prong");
+  fTrees[2].SetTitle("TitleCharmto3Prong");
+  fTrees[3].SetName("NameD0to4Prong");
+  fTrees[3].SetTitle("TitleD0to4Prong");
+  fTrees[0].Branch("D0toKpi","AliAODRecoDecayHF2Prong",&rd2);
+  fTrees[1].Branch("JPSItoEle","AliAODRecoDecayHF2Prong",&rd2);
+  fTrees[2].Branch("Charmto3Prong","AliAODRecoDecayHF3Prong",&rd3);
+  fTrees[3].Branch("D0to4Prong","AliAODRecoDecayHF4Prong",&rd4);
 
   return;
 }
@@ -98,8 +98,8 @@ void AliAnalysisTaskVertexingHF::LocalInit()
 
   gROOT->LoadMacro("ConfigVertexingHF.C");
 
-  vHF = (AliAnalysisVertexingHF*)gROOT->ProcessLine("ConfigVertexingHF()");  
-  vHF->PrintStatus();
+  fVHF = (AliAnalysisVertexingHF*)gROOT->ProcessLine("ConfigVertexingHF()");  
+  fVHF->PrintStatus();
 
   return;
 }
@@ -113,13 +113,13 @@ void AliAnalysisTaskVertexingHF::Exec(Option_t *)
   if (fESD->GetAliESDOld()) fESD->CopyFromOldESD();
   
   //Heavy flavor vertexing :
-  vHF->FindCandidates(fESD,mTrees);
+  fVHF->FindCandidates(fESD,fTrees);
   
   //Post final data. It will be written to a file with option "RECREATE"
-  PostData(0, &mTrees[0]);
-  PostData(1, &mTrees[1]);
-  PostData(2, &mTrees[2]);
-  PostData(3, &mTrees[3]);
+  PostData(0, &fTrees[0]);
+  PostData(1, &fTrees[1]);
+  PostData(2, &fTrees[2]);
+  PostData(3, &fTrees[3]);
 
   return;
 }      
