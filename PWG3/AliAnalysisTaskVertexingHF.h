@@ -24,10 +24,13 @@ class AliAnalysisTaskVertexingHF : public AliAnalysisTask
 {
  public:
 
-  AliAnalysisTaskVertexingHF() : AliAnalysisTask(), fESD(0), fChain(0), vHF(0), mTrees(0) {}
+  AliAnalysisTaskVertexingHF() : AliAnalysisTask(), fESD(0), fChain(0), fVHF(0), fTrees(0) {}
   AliAnalysisTaskVertexingHF(const char *name);
-  
-  virtual void   ConnectInputData(Option_t *);
+
+  AliAnalysisTaskVertexingHF(const AliAnalysisTaskVertexingHF &source);
+  AliAnalysisTaskVertexingHF& operator=(const AliAnalysisTaskVertexingHF& source); 
+
+  virtual void   ConnectInputData(Option_t *); 
   virtual void   CreateOutputObjects();
   virtual void   Exec(Option_t *option);
   virtual void   Terminate(Option_t *);
@@ -37,8 +40,8 @@ class AliAnalysisTaskVertexingHF : public AliAnalysisTask
 
   AliESDEvent            *fESD;   //ESD
   TChain                 *fChain; //Chain
-  AliAnalysisVertexingHF *vHF;    //Vertexer heavy flavour
-  TTree                  *mTrees; //Output trees (D0 in 2-prongs, J/Psi to e+e-, 3-prongs (D+, Ds, Lc), D0 in 4-prongs)
+  AliAnalysisVertexingHF *fVHF;    //Vertexer heavy flavour
+  TTree                  *fTrees; //Output trees (D0 in 2-prongs, J/Psi to e+e-, 3-prongs (D+, Ds, Lc), D0 in 4-prongs)
   
   ClassDef(AliAnalysisTaskVertexingHF,1); //AliAnalysisTask for the reconstruction of heavy-flavour decay candidates
 };
