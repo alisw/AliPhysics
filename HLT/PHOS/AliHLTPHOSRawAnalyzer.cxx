@@ -19,7 +19,16 @@
 //using std::cout;
 //using std::endl;
 
-AliHLTPHOSRawAnalyzer:: AliHLTPHOSRawAnalyzer(): AliHLTPHOSBase(), fIntDataPtr(0), fSampleFrequency(10), fTau(2), fDTof(99999), fDAmpl(99999)
+AliHLTPHOSRawAnalyzer:: AliHLTPHOSRawAnalyzer(): AliHLTPHOSBase(), 
+						 fFloatDataPtr(0), 
+						 fIntDataPtr(0), 
+						 fSampleFrequency(10),
+						 fDTofGuess(-1),
+						 fDAmplGuess(-1),
+						 fTau(2), 
+						 fDTof(99999), 
+						 fDAmpl(99999),
+						 fStartIndex(0) 
 {
  fIntDataPtr = new UInt_t[1008];
 }
@@ -36,7 +45,16 @@ AliHLTPHOSRawAnalyzer::~AliHLTPHOSRawAnalyzer()
 * @param dtaPtr Data array for wich a subarray will be taken to perform the fit
 * @param fs the sampling frequency in entities of MHz. Needed in order to calculate physical time
 **/
-AliHLTPHOSRawAnalyzer::AliHLTPHOSRawAnalyzer(double * /*dtaPtr*/, double fs): AliHLTPHOSBase(), fIntDataPtr(0), fSampleFrequency(10), fTau(2), fDTof(99999), fDAmpl(99999), fStartIndex(0)
+AliHLTPHOSRawAnalyzer::AliHLTPHOSRawAnalyzer(double * /*dtaPtr*/, double fs): AliHLTPHOSBase(), 
+									      fFloatDataPtr(0), 
+									      fIntDataPtr(0), 
+									      fSampleFrequency(10),
+									      fDTofGuess(-1),
+									      fDAmplGuess(-1),
+									      fTau(2), 
+									      fDTof(99999), 
+									      fDAmpl(99999),
+									      fStartIndex(0) 
 {
   fSampleFrequency = fs;
 } //end  

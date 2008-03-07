@@ -55,9 +55,9 @@ AliHLTPHOSDigitMaker::AliHLTPHOSDigitMaker() :
   fDigitCount(0)
 {
   // See header file for documentation
-  for(UInt_t x = 0; x < N_XCOLUMNS_MOD; x++)
+  for(int x = 0; x < N_XCOLUMNS_MOD; x++)
     {
-      for(UInt_t z = 0; z < N_ZROWS_MOD; z++)
+      for(int z = 0; z < N_ZROWS_MOD; z++)
 	{
 	  fHighGainFactors[x][z] = 0.005;
 	  fLowGainFactors[x][z] = 0.08;
@@ -81,9 +81,9 @@ AliHLTPHOSDigitMaker::MakeDigits(AliHLTPHOSRcuCellEnergyDataStruct* rcuData)
   Int_t zMod = -1;
   Float_t amplitude = 0;
  
-  for(UInt_t x = 0; x < N_XCOLUMNS_RCU; x++)
+  for(int x = 0; x < N_XCOLUMNS_RCU; x++)
     {
-      for(UInt_t z = 0; z < N_ZROWS_RCU; z++) 
+      for(int z = 0; z < N_ZROWS_RCU; z++) 
 	{
 	  fCellDataPtr = &(rcuData->fValidData[x][z][HIGH_GAIN]);
 	  xMod = x + rcuData->fRcuX * N_XCOLUMNS_RCU;
@@ -141,9 +141,9 @@ void
 AliHLTPHOSDigitMaker::SetGlobalHighGainFactor(Float_t factor)
 {
   //See header file for documentation
-  for(UInt_t x = 0; x < N_XCOLUMNS_MOD; x++)
+  for(int x = 0; x < N_XCOLUMNS_MOD; x++)
     {
-      for(UInt_t z = 0; z < N_ZROWS_MOD; z++)
+      for(int z = 0; z < N_ZROWS_MOD; z++)
 	{
 	  fHighGainFactors[x][z] = factor;
 	}
@@ -154,9 +154,9 @@ void
 AliHLTPHOSDigitMaker::SetGlobalLowGainFactor(Float_t factor)
 {
   //See header file for documentation
-  for(UInt_t x = 0; x < N_XCOLUMNS_MOD; x++)
+  for(int x = 0; x < N_XCOLUMNS_MOD; x++)
     {
-      for(UInt_t z = 0; z < N_ZROWS_MOD; z++)
+      for(int z = 0; z < N_ZROWS_MOD; z++)
 	{
 	  fLowGainFactors[x][z] = factor;
 	}
@@ -173,9 +173,9 @@ AliHLTPHOSDigitMaker::SetDigitThresholds(const char* filepath, Int_t nSigmas)
   TH2F *lgHist = (TH2F*)histFile->Get("RMSLGMapHist");
   TH2F *hgHist = (TH2F*)histFile->Get("RMSHGMapHist");
 
-  for(UInt_t x = 0; x < N_XCOLUMNS_MOD; x++)
+  for(int x = 0; x < N_XCOLUMNS_MOD; x++)
     {
-      for(UInt_t z = 0; z < N_ZROWS_MOD; z++)
+      for(int z = 0; z < N_ZROWS_MOD; z++)
 	{
 	  fDigitThresholds[x][z][LOW_GAIN] = lgHist->GetBinContent(x, z) * nSigmas;
 	  fDigitThresholds[x][z][HIGH_GAIN] = hgHist->GetBinContent(x, z) * nSigmas;

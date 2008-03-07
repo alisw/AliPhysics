@@ -98,7 +98,7 @@ class AliHLTPHOSPhysicsAnalyzerSpectrumComponent: public AliHLTPHOSProcessor // 
   AliHLTComponent* Spawn();
 
  protected:
-
+  using AliHLTProcessor::DoEvent;
   /** interface function, see @ref AliHLTComponent for description */
   Int_t DoInit(int argc, const char** argv);
 

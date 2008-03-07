@@ -14,10 +14,8 @@ public:
 
   /** constructor */
   AliHLTPHOSRcuCalibrationProcessorComponent();
-  /** not a valid copy constructor, defined according to effective C++ style */
-  AliHLTPHOSRcuCalibrationProcessorComponent(const AliHLTPHOSRcuCalibrationProcessorComponent&);
-  /** not a valid assignment op, but defined according to effective C++ style */
-  AliHLTPHOSRcuCalibrationProcessorComponent& operator=(const AliHLTPHOSRcuCalibrationProcessorComponent&);
+
+ 
   /** destructor */
   virtual ~AliHLTPHOSRcuCalibrationProcessorComponent();
       
@@ -46,13 +44,18 @@ protected:
   Int_t DeinitCalibration();
 
   /** Process the data in the calibration component. */
+  using  AliHLTCalibrationProcessor::ProcessCalibration;
   Int_t ProcessCalibration( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData );
 
   /** Ship the data to the FXS at end of run or eventmodulo. */
+  using AliHLTCalibrationProcessor::ShipDataToFXS; 
   Int_t ShipDataToFXS( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData );
 
 private:
-
+  /** not a valid copy constructor, defined according to effective C++ style */
+  AliHLTPHOSRcuCalibrationProcessorComponent(const AliHLTPHOSRcuCalibrationProcessorComponent&);
+  /** not a valid assignment op, but defined according to effective C++ style */
+  AliHLTPHOSRcuCalibrationProcessorComponent& operator=(const AliHLTPHOSRcuCalibrationProcessorComponent&);
   TObjArray* fCalibDataPtr;                                  //! transient
   AliHLTPHOSRcuCalibrationProcessor* fRcuCalibProcessorPtr;   /**<Pointer to a phos histoproducer object*/
   AliHLTPHOSSharedMemoryInterface *fShmPtr; // Interface to read altro channel data from shared memory

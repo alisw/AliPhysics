@@ -39,6 +39,10 @@ class AliHLTPHOSMapper : public AliHLTPHOSBase
 
   fAltromap *fHw2geomapPtr; //pointer to structure holding information about geometrical address 
 
+ private:
+  AliHLTPHOSMapper(const AliHLTPHOSMapper & );
+  AliHLTPHOSMapper & operator = (const AliHLTPHOSMapper &);
+
 };
 
 #endif

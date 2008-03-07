@@ -37,6 +37,9 @@ class AliHLTPHOSRawAnalyzerComponent: public AliHLTPHOSRcuProcessor
 		     AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks ); 
 
  private:
+  AliHLTPHOSRawAnalyzerComponent(const AliHLTPHOSRawAnalyzerComponent & );
+  AliHLTPHOSRawAnalyzerComponent & operator = (const AliHLTPHOSRawAnalyzerComponent &);
+
   void Reset(AliHLTPHOSRcuCellEnergyDataStruct* cellDataPtr);
   void ResetDataPtr(int startindex = 0, int sampleCnt = 0);
   void SetBaselines(const char* baselineFile); 

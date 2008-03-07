@@ -148,9 +148,9 @@ AliHLTPHOSBaselineAnalyzerComponent::DoEvent(const AliHLTComponentEventData& evt
 {
    //Do event
      
-  //UInt_t tSize            = 0;
-  //UInt_t offset           = 0; 
-  //UInt_t mysize           = 0;
+  //int tSize            = 0;
+  //int offset           = 0; 
+  //int mysize           = 0;
   //Int_t index             = 0;
   
   //Int_t fileCount = 0;
@@ -306,13 +306,13 @@ AliHLTPHOSBaselineAnalyzerComponent::CalculateAll()
 
   Float_t tmpBaselines[N_XCOLUMNS_MOD][N_ZROWS_MOD][N_GAINS][2];
   
-  for(UInt_t x = 0; x < N_XCOLUMNS_MOD; x++)
+  for(int x = 0; x < N_XCOLUMNS_MOD; x++)
     {
-      for(UInt_t z = 0; z < N_ZROWS_MOD; z++)
+      for(int z = 0; z < N_ZROWS_MOD; z++)
 	{
-	  for(UInt_t gain = 0; gain < N_GAINS; gain++)
+	  for(int gain = 0; gain < N_GAINS; gain++)
 	    {
-	      for(UInt_t d = 0; d < 2; d++)
+	      for(int d = 0; d < 2; d++)
 		{
 		  tmpBaselines[x][z][gain][d] = 0;
 		}

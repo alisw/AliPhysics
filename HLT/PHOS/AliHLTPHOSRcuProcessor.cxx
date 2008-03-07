@@ -18,7 +18,12 @@
 #include "AliHLTPHOSRcuProcessor.h"
 
 AliHLTPHOSRcuProcessor::AliHLTPHOSRcuProcessor():AliHLTPHOSProcessor(), 
-						 fkEquippmentID(0)
+						 fkEquippmentID(0),
+						 fRcuX(0), 
+						 fRcuZ(0),
+						 fRcuZOffset(0),
+						 fRcuXOffset(0),
+						 fIsSetEquippmentID(kFALSE)    
 {
   //  cout << "AliHLTPHOSRcuProcessor::AliHLTPHOSRcuProcessor() "<< endl;
 }

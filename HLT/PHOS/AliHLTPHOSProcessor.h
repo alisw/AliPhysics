@@ -23,7 +23,8 @@ class AliHLTPHOSProcessor:public AliHLTProcessor, public AliHLTPHOSBase
   virtual AliHLTComponentDataType GetOutputDataType() =0;
   virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier) =0;
   virtual AliHLTComponent* Spawn() = 0; 
-
+ 
+  using  AliHLTProcessor::DoEvent;
 
  protected:
   void ScanRunNumberFromFile();

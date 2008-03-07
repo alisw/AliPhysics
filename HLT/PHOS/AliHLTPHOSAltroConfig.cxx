@@ -26,7 +26,8 @@
 
 
 AliHLTPHOSAltroConfig::AliHLTPHOSAltroConfig() : fNPresamples(900), 
-						 fNSamples(15), 
+						 fNSamples(15),
+						 fNTotalSamples(fNPresamples + fNSamples),
 						 fIsAltroZeroSupressed(false),
 						 fIsAltroBaselineSubtraction(false)
 

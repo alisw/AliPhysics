@@ -40,16 +40,16 @@ class AliHLTPHOSRcuCalibrationProcessor : public AliHLTPHOSBase
   void SetHistoOutDir(char *outDir);
   void FillEnergy(AliHLTUInt8_t x, AliHLTUInt8_t z,  AliHLTUInt8_t gain, float energy);
   void FillTime(AliHLTUInt8_t x,   AliHLTUInt8_t z,  AliHLTUInt8_t gain, float time); 
-
   void FillLiveChannels(Int_t data[], int size, Int_t x, Int_t z, Int_t gain);
   void FillLiveChannelHistograms();
-
   void Reset();
   void WriteAllHistograms(char opt[] = "update");
 
  protected:
  
  private:
+  AliHLTPHOSRcuCalibrationProcessor(const  AliHLTPHOSRcuCalibrationProcessor & );
+  AliHLTPHOSRcuCalibrationProcessor & operator = (const  AliHLTPHOSRcuCalibrationProcessor &);
   void SetDefaultHistoOutDir(); 
   void ScanTimeString(char *timeString);
 

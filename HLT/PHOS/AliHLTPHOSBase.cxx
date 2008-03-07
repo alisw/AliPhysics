@@ -22,7 +22,9 @@
 
 
 AliHLTPHOSBase::AliHLTPHOSBase(): AliHLTPHOSConfig(),  
-				  AliHLTPHOSAltroConfig()
+				  AliHLTPHOSAltroConfig(),
+				  fConfigPtr(0),
+				  fAltroConfigPtr(0)
 {
 
 }

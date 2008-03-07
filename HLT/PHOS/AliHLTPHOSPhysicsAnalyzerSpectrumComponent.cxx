@@ -78,8 +78,8 @@ AliHLTPHOSPhysicsAnalyzerSpectrumComponent::AliHLTPHOSPhysicsAnalyzerSpectrumCom
   AliHLTPHOSProcessor(),
   fAnalyzerPtr(0),
   fPeakFitter(0), 
-  fRootHistPtr(0)
-  //fWriteInterval(0)
+  fRootHistPtr(0),
+  fWriteInterval(0)
 {
   //Copy constructor not implemented 
 }
@@ -162,7 +162,7 @@ AliHLTPHOSPhysicsAnalyzerSpectrumComponent::DoEvent(const AliHLTComponentEventDa
       
       if(iter->fDataType != AliHLTPHOSDefinitions::fgkRecPointDataType)
 	{
-	  cout << "Warning: data type is not fgkRecPointDataType " << endl;
+	  //cout << "Warning: data type is not fgkRecPointDataType " << endl;
 	  continue;
 	}
       
@@ -182,7 +182,7 @@ AliHLTPHOSPhysicsAnalyzerSpectrumComponent::DoEvent(const AliHLTComponentEventDa
 
   if(fgCount%100==0) 
   {
-    cout << "fgCount: " << fgCount << endl;
+    //cout << "fgCount: " << fgCount << endl;
   }
   
   return 0;

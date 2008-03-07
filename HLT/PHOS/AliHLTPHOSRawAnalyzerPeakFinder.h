@@ -62,8 +62,12 @@ class AliHLTPHOSRawAnalyzerPeakFinder : public AliHLTPHOSRawAnalyzer
 * @param length the number of samples to use starting from index 
 **/
   virtual void Evaluate(Int_t start = 0, Int_t length = 100);
+ 
  private:
-  Double_t   *fTVectorPtr;  //[1008]        /**<Peakfinder vector for TOF reconstruction*/
+ AliHLTPHOSRawAnalyzerPeakFinder(const AliHLTPHOSRawAnalyzerPeakFinder & );
+ AliHLTPHOSRawAnalyzerPeakFinder & operator = (const AliHLTPHOSRawAnalyzerPeakFinder &);
+
+ Double_t   *fTVectorPtr;  //[1008]        /**<Peakfinder vector for TOF reconstruction*/
   Double_t   *fAVectorPtr;  //[1008]        /**<Peakfinder vector for Energy reconstruction*/  
   Int_t       fTVectorSize;
   Int_t       fAVectorSize;

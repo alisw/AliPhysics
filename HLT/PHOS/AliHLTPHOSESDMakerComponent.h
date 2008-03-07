@@ -58,8 +58,8 @@ class AliHLTPHOSESDMakerComponent: public AliHLTPHOSProcessor
   virtual ~AliHLTPHOSESDMakerComponent();
 
   /** Copy constructor */  
-  AliHLTPHOSESDMakerComponent(const AliHLTPHOSESDMakerComponent &) : 
-    AliHLTPHOSProcessor(),
+ AliHLTPHOSESDMakerComponent(const AliHLTPHOSESDMakerComponent &) : 
+  AliHLTPHOSProcessor(),
     fESDMakerPtr(0),
     fESDEventPtr(0)
     
@@ -87,6 +87,7 @@ class AliHLTPHOSESDMakerComponent: public AliHLTPHOSProcessor
   void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
 
   /** interface function, see @ref AliHLTComponent for description */
+  using AliHLTPHOSProcessor::DoEvent;
   Int_t DoEvent( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData);
 
   /** interface function, see @ref AliHLTComponent for description */

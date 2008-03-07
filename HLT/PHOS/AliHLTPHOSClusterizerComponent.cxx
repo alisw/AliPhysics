@@ -148,7 +148,10 @@ AliHLTPHOSClusterizerComponent::DoEvent(const AliHLTComponentEventData& evtData,
                                         std::vector<AliHLTComponentBlockData>& outputBlocks)
 {
   //See headerfile for documentation
-
+  AliHLTComponentTriggerData &trDta = trigData;  
+  trDta.fDataSize++;
+  trDta.fDataSize--; //shutting up the compiler, we dont use trigData now but will do in near future 
+  
   UInt_t tSize            = 0;
   UInt_t offset           = 0;
   UInt_t mysize           = 0;

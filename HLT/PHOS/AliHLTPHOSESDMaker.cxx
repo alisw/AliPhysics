@@ -132,9 +132,12 @@ Int_t
 AliHLTPHOSESDMaker::FillESDEvent(AliHLTPHOSCaloClusterContainerStruct* caloClusterContainerPtr)
 {
   //See header file for documentation
+
+  caloClusterContainerPtr--;
+  caloClusterContainerPtr++;
   
-  AliESDCaloCluster *caloCluster = 0;
-  AliHLTPHOSCaloClusterDataStruct* caloClusterStruct = 0;
+  //  AliESDCaloCluster *caloCluster = 0;
+  //  AliHLTPHOSCaloClusterDataStruct* caloClusterStruct = 0;
   
   for(UInt_t i = 0; i < 1/*caloClusterContainerPtr->fNCaloClusters*/; i++)
     {

@@ -41,11 +41,10 @@ const AliHLTComponentDataType AliHLTPHOSClusterAnalyserComponent::fgkInputDataTy
 AliHLTPHOSClusterAnalyserComponent gAliHLTPHOSClusterAnalyserComponent;
 
 
-AliHLTPHOSClusterAnalyserComponent::AliHLTPHOSClusterAnalyserComponent(): 
-AliHLTPHOSProcessor(), 
-fClusterAnalyserPtr(0),
-fDoDeconvolution(0),
-fDoCalculateMoments(0)
+AliHLTPHOSClusterAnalyserComponent::AliHLTPHOSClusterAnalyserComponent(): AliHLTPHOSProcessor(), 
+									  fClusterAnalyserPtr(0),
+									  fDoDeconvolution(0),
+									  fDoCalculateMoments(0)
 {
   //See headerfile for documentation
 }

@@ -29,8 +29,11 @@ AliHLTPHOSRcuHistogramProducerComponent gAliHLTPHOSRcuHistogramProducerComponent
 * and it fills the histograms with amplitudes per channel.               * 
 * Usage example see in PHOS/macros/Shuttle/AliPHOSCalibHistoProducer.C   *
 **************************************************************************/
-AliHLTPHOSRcuHistogramProducerComponent:: AliHLTPHOSRcuHistogramProducerComponent() :
-  AliHLTPHOSRcuProcessor(), fHistoWriteFrequency(100), fRcuHistoProducerPtr(0), fOutPtr(NULL)
+AliHLTPHOSRcuHistogramProducerComponent:: AliHLTPHOSRcuHistogramProducerComponent() : AliHLTPHOSRcuProcessor(), 
+										      fHistoWriteFrequency(100), 
+										      fRcuHistoProducerPtr(0), 
+										      fOutPtr(0),
+										      fShmPtr(0)
 {
   fShmPtr = new AliHLTPHOSSharedMemoryInterface();
  //Default constructor
@@ -97,6 +100,14 @@ int  AliHLTPHOSRcuHistogramProducerComponent::DoEvent( const AliHLTComponentEven
 					      AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks )
 {
   //See html documentation of base class
+ 
+  // trigData++;
+  // trigData--; //shutting up the compiler, we dont use trigData now but will do in near future
+
+  AliHLTComponentTriggerData &trDta = trigData;  
+  trDta.fDataSize++;
+  trDta.fDataSize--; //shutting up the compiler, we dont use trigData now but will do in near future
+
   AliHLTPHOSValidCellDataStruct *currentChannel =0;
   unsigned long ndx       = 0;
   UInt_t offset           = 0; 
@@ -133,11 +144,11 @@ int  AliHLTPHOSRcuHistogramProducerComponent::DoEvent( const AliHLTComponentEven
   fOutPtr->fRcuX     = fRcuX;
   fOutPtr->fRcuZ     = fRcuZ;
 
-  for(unsigned int x=0; x < N_XCOLUMNS_RCU; x ++)
+  for(int x=0; x < N_XCOLUMNS_RCU; x ++)
     {
-      for(unsigned int z=0; z < N_ZROWS_RCU; z ++)
+      for(int z=0; z < N_ZROWS_RCU; z ++)
 	{
-	  for(unsigned int gain =0;  gain < N_GAINS; gain ++)
+	  for(int gain =0;  gain < N_GAINS; gain ++)
 	    {
 	      fOutPtr->fAccumulatedEnergies[x][z][gain] = innPtr.fAccumulatedEnergies[x][z][gain];
 	      fOutPtr->fHits[x][z][gain] = innPtr.fHits[x][z][gain];

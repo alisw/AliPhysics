@@ -34,6 +34,9 @@ class  AliHLTPHOSSharedMemoryInterface
   void Reset();
 
  private:
+   AliHLTPHOSSharedMemoryInterface(const  AliHLTPHOSSharedMemoryInterface & );
+   AliHLTPHOSSharedMemoryInterface & operator = (const  AliHLTPHOSSharedMemoryInterface &);
+
   void PingPongPointer();
   AliHLTPHOSValidCellDataStruct *fCurrentChannel;
   AliHLTPHOSRcuCellEnergyDataStruct *fCellEnergiesPtr ;

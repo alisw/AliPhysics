@@ -58,21 +58,10 @@ class AliHLTPHOSClusterAnalyserComponent : public AliHLTPHOSProcessor
   virtual ~AliHLTPHOSClusterAnalyserComponent();
 
   /** Copy constructor */
-  AliHLTPHOSClusterAnalyserComponent(const AliHLTPHOSClusterAnalyserComponent &) : 
-    AliHLTPHOSProcessor(),
-    fClusterAnalyserPtr(0),
-    fDoDeconvolution(0),
-    fDoCalculateMoments(0)
-  {
-    //Copy constructor not implemented
-  }
+  /// AliHLTPHOSClusterAnalyserComponent(const AliHLTPHOSClusterAnalyserComponent &);
   
   /** Assignment */
-  AliHLTPHOSClusterAnalyserComponent & operator = (const AliHLTPHOSClusterAnalyserComponent)
-    {
-      //Assignment
-      return *this; 
-    }
+  //AliHLTPHOSClusterAnalyserComponent & operator = (const AliHLTPHOSClusterAnalyserComponent);
   
   /** interface function, see @ref AliHLTComponent for description */
   const char* GetComponentID();
@@ -87,6 +76,7 @@ class AliHLTPHOSClusterAnalyserComponent : public AliHLTPHOSProcessor
   void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
 
   /** interface function, see @ref AliHLTComponent for description */
+  using AliHLTPHOSProcessor::DoEvent;
   int DoEvent(const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks,
 		AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, AliHLTUInt32_t& size,
 		std::vector<AliHLTComponentBlockData>& outputBlocks);
@@ -103,15 +93,18 @@ protected:
   int Deinit();
 
 private:
-
-  AliHLTPHOSClusterAnalyser* fClusterAnalyserPtr;
-  
-  Bool_t fDoDeconvolution;
-  Bool_t fDoCalculateMoments;
-
-  static const AliHLTComponentDataType fgkInputDataTypes[];
-  
-  
+  /** Copy constructor */
+ AliHLTPHOSClusterAnalyserComponent(const AliHLTPHOSClusterAnalyserComponent &);
+ /** Assignment */
+ AliHLTPHOSClusterAnalyserComponent & operator = (const AliHLTPHOSClusterAnalyserComponent);
+ 
+ AliHLTPHOSClusterAnalyser* fClusterAnalyserPtr;
+ 
+ Bool_t fDoDeconvolution;
+ Bool_t fDoCalculateMoments;
+ 
+ static const AliHLTComponentDataType fgkInputDataTypes[];
+   
 };
 
 #endif

@@ -35,40 +35,38 @@ using  namespace std;
 **************************************************************************/
 
 
-AliHLTPHOSRcuHistogramProducer:: AliHLTPHOSRcuHistogramProducer():  AliHLTPHOSBase(), fModuleID(0), fRcuX(0), fRcuZ(0)
-
-//AliHLTPHOSRcuHistogramProducer:: AliHLTPHOSRcuHistogramProducer():  AliHLTPHOSRcuProcessor(), fModuleID(0), fRcuX(0), fRcuZ(0)
+AliHLTPHOSRcuHistogramProducer:: AliHLTPHOSRcuHistogramProducer():  AliHLTPHOSBase(), 
+								    fCellAccEnergy(), 
+								    fModuleID(0), 
+								    fRcuX(0), 
+								    fRcuZ(0)
 {
   //Default constructor
   cout << "WARNING: You cannot invoke the AliHLTPHOSRcuHistogramProducer without arguments" << endl;
   cout << "Usage AliHLTPHOSRcuHistogramProducer(ModuleID, X. Z)" << endl;
 } 
 
-//AliHLTPHOSRcuHistogramProducer::AliHLTPHOSRcuHistogramProducer(AliHLTUInt8_t moduleID, AliHLTUInt8_t rcuX, AliHLTUInt8_t rcuZ)
-AliHLTPHOSRcuHistogramProducer::AliHLTPHOSRcuHistogramProducer(AliHLTUInt8_t moduleID, AliHLTUInt8_t rcuX, AliHLTUInt8_t rcuZ)
+
+AliHLTPHOSRcuHistogramProducer::AliHLTPHOSRcuHistogramProducer(AliHLTUInt8_t moduleID, AliHLTUInt8_t rcuX, AliHLTUInt8_t rcuZ): AliHLTPHOSBase(), 
+																fCellAccEnergy(), 
+																fModuleID(moduleID), 
+																fRcuX(rcuX), 
+																fRcuZ(rcuZ)
 {
   //Se header file for documentation
-  //  char *tmp = getenv("ALIHLT_BASEDIR");
   char *tmp = getenv("HOME");
-
   if(tmp == 0)
     {
       cout << "ERROR, environment vriable HOME is not set" << endl;
-
     }
-  
   else
     {
       //  sprintf(fHistoOutDir,"%s/rundir/output/histograms",tmp);
       sprintf(fHistoOutDir,"%s/rundir/output/histograms/",tmp);
     }
-  
-
-  SetModuleID(moduleID);
-  SetRcuX(rcuX); 
-  SetRcuZ(rcuZ); 
   Init();
 }
+
 
 AliHLTPHOSRcuHistogramProducer::~ AliHLTPHOSRcuHistogramProducer()
 {
@@ -116,40 +114,31 @@ AliHLTPHOSRcuHistogramProducer::Init()
   char tmpHistoName[256];
   int geomx;
   int geomz;
-    
 
-  for(unsigned int gain=0; gain< N_GAINS; gain++)
+  for(int gain=0; gain< N_GAINS; gain++)
     {
       sprintf(tmpHistoName, "DeadChanneMap_Module%d_rcuz%d_rcux%d_gain%d",(int)fModuleID,  fRcuZ, fRcuX, gain);
       //    fDeadChannelMapHistogramPtrs[gain] = new TH2D( tmpHistoName, tmpHistoName, N_BINS, XBIN_LOW, XBIN_UP);
-
-          
       fDeadChannelMapHistogramPtrs[gain] = new TH2D(tmpHistoName, tmpHistoName,  
 				      N_XCOLUMNS_RCU , 0, N_XCOLUMNS_RCU , 
 				      N_ZROWS_RCU,         0, N_ZROWS_RCU);
       fDeadChannelMapHistogramPtrs[gain]->Reset(); 
       //     fgCalibHistPtr[gain]->GetXaxis()->SetRange(128, 128 + 64);
-      
-
     }
 
-
-
-  for(unsigned int x = 0; x < N_XCOLUMNS_RCU; x ++)
+  for(int x = 0; x < N_XCOLUMNS_RCU; x ++)
     {
-      for(unsigned int z = 0; z < N_ZROWS_RCU; z ++)
+      for(int z = 0; z < N_ZROWS_RCU; z ++)
 	{
-	  for(unsigned int gain = 0; gain < N_GAINS; gain ++)
+	  for(int gain = 0; gain < N_GAINS; gain ++)
 	    {
 	      geomx = x + N_XCOLUMNS_RCU*fRcuX;
 	      geomz = z + N_ZROWS_RCU*fRcuZ;
-
 	      fEnergyAverageValues[x][z][gain] = 0; 
 	      fAccumulatedValues[x][z][gain]   = 0;
 	      fTimingAverageValues[x][z][gain] = 0; 
 	      fHits[x][z][gain]                = 0;
 	      fDeadChannelMap[x][z][gain]      = 0;
-
 	      sprintf(tmpHistoName, "Edistribution_%d_%d_%d_%d",(int)fModuleID,  geomx, geomz, gain);
 	      //	      fEnergyHistogramPtrs[x][z][gain] = 0;
 	      fEnergyHistogramPtrs[x][z][gain] = new TH1F( tmpHistoName, tmpHistoName, N_BINS, XBIN_LOW, XBIN_UP);
@@ -174,7 +163,7 @@ AliHLTPHOSRcuHistogramProducer::Init()
 }
 
 
-
+/*
 void 
 AliHLTPHOSRcuHistogramProducer::SetRcuX(AliHLTUInt8_t X)
 {
@@ -182,8 +171,6 @@ AliHLTPHOSRcuHistogramProducer::SetRcuX(AliHLTUInt8_t X)
   fRcuX = X; 
   fCellAccEnergy.fRcuX = X;
 }
-
-
 
 void 
 AliHLTPHOSRcuHistogramProducer::SetRcuZ(AliHLTUInt8_t Z)
@@ -193,16 +180,13 @@ AliHLTPHOSRcuHistogramProducer::SetRcuZ(AliHLTUInt8_t Z)
   fCellAccEnergy.fRcuZ = Z;
 }
 
-
-
-
 void 
 AliHLTPHOSRcuHistogramProducer::SetModuleID(AliHLTUInt8_t moduleID)
 {
   //See header file for documentation
  fModuleID = moduleID;
 }
-
+*/
 
 void 
 AliHLTPHOSRcuHistogramProducer::FillEnergy(AliHLTUInt8_t x, AliHLTUInt8_t z,  AliHLTUInt8_t gain, float energy)
@@ -257,11 +241,11 @@ void
 AliHLTPHOSRcuHistogramProducer::FillLiveChannelHistograms()
 {
   //comment
-  for(unsigned int x = 0; x <  N_XCOLUMNS_RCU; x ++)
+  for(int x = 0; x <  N_XCOLUMNS_RCU; x ++)
     {
-      for(unsigned int z = 0; z < N_ZROWS_RCU; z ++)
+      for(int z = 0; z < N_ZROWS_RCU; z ++)
 	{
-	  for(unsigned int gain = 0; gain < N_GAINS; gain ++)
+	  for(int gain = 0; gain < N_GAINS; gain ++)
 	    {
 	      fDeadChannelMapHistogramPtrs[gain]->SetBinContent(x ,z , fCellAccEnergy.fDeadChannelMap[x][z][gain]);
 	    }
@@ -270,15 +254,16 @@ AliHLTPHOSRcuHistogramProducer::FillLiveChannelHistograms()
 
 }
 
+
 void
 AliHLTPHOSRcuHistogramProducer::Reset()
 {
   //See header file for documentation
-  for(unsigned int x = 0; x < N_XCOLUMNS_RCU; x ++)
+  for(int x = 0; x < N_XCOLUMNS_RCU; x ++)
     {
-      for(unsigned int z = 0; z < N_ZROWS_RCU; z ++)
+      for(int z = 0; z < N_ZROWS_RCU; z ++)
 	{
-	  for(unsigned int gain = 0; gain < N_GAINS; gain ++)
+	  for(int gain = 0; gain < N_GAINS; gain ++)
 	    {
 	      fEnergyAverageValues[x][z][gain] = 0; 
 	      fAccumulatedValues[x][z][gain]   = 0;
@@ -289,7 +274,7 @@ AliHLTPHOSRcuHistogramProducer::Reset()
 	} 
     }
   
-  for(unsigned int i = 0; i <ALTRO_MAX_SAMPLES;  i++)
+  for(int i = 0; i <ALTRO_MAX_SAMPLES;  i++)
     {
       fTmpChannelData[i] = 0;
     }
@@ -358,11 +343,11 @@ AliHLTPHOSRcuHistogramProducer::WriteAllHistograms(char *opt)
 
   cout <<"printing histograms"<< endl;
 
-  for(unsigned int x = 0; x <  N_XCOLUMNS_RCU; x ++)
+  for(int x = 0; x <  N_XCOLUMNS_RCU; x ++)
     {
-      for(unsigned int z = 0; z < N_ZROWS_RCU; z ++)
+      for(int z = 0; z < N_ZROWS_RCU; z ++)
 	{
-	  for(unsigned int gain = 0; gain < N_GAINS; gain ++)
+	  for(int gain = 0; gain < N_GAINS; gain ++)
 	    {
 	      //     cout << "the number of entries is " <<fEnergyHistogramPtrs[x][z][gain]->GetEntries()<< endl;
 	      fEnergyHistogramPtrs[x][z][gain]->Write();

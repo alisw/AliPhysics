@@ -35,8 +35,11 @@ using  namespace std;
 **************************************************************************/
 
 
-AliHLTPHOSRcuCalibrationProcessor:: AliHLTPHOSRcuCalibrationProcessor():  AliHLTPHOSBase(), fModuleID(0), fRcuX(0), fRcuZ(0)
-
+AliHLTPHOSRcuCalibrationProcessor:: AliHLTPHOSRcuCalibrationProcessor():  AliHLTPHOSBase(), 
+									  fCellAccEnergy(),
+									  fModuleID(0), 
+									  fRcuX(0), 
+									  fRcuZ(0)
 //AliHLTPHOSRcuCalibrationProcessor:: AliHLTPHOSRcuCalibrationProcessor():  AliHLTPHOSRcuProcessor(), fModuleID(0), fRcuX(0), fRcuZ(0)
 {
   //Default constructor
@@ -45,7 +48,12 @@ AliHLTPHOSRcuCalibrationProcessor:: AliHLTPHOSRcuCalibrationProcessor():  AliHLT
 } 
 
 //AliHLTPHOSRcuCalibrationProcessor::AliHLTPHOSRcuCalibrationProcessor(AliHLTUInt8_t moduleID, AliHLTUInt8_t rcuX, AliHLTUInt8_t rcuZ)
-AliHLTPHOSRcuCalibrationProcessor::AliHLTPHOSRcuCalibrationProcessor(AliHLTUInt8_t moduleID, AliHLTUInt8_t rcuX, AliHLTUInt8_t rcuZ)
+AliHLTPHOSRcuCalibrationProcessor::AliHLTPHOSRcuCalibrationProcessor(AliHLTUInt8_t moduleID, AliHLTUInt8_t rcuX, AliHLTUInt8_t rcuZ):AliHLTPHOSBase(),
+																     fCellAccEnergy(),
+																     fModuleID(moduleID), 
+																     fRcuX(rcuX), 
+																     fRcuZ(rcuZ)
+
 {
   //Se header file for documentation
   //  char *tmp = getenv("ALIHLT_BASEDIR");
@@ -64,9 +72,9 @@ AliHLTPHOSRcuCalibrationProcessor::AliHLTPHOSRcuCalibrationProcessor(AliHLTUInt8
     }
   
 
-  SetModuleID(moduleID);
-  SetRcuX(rcuX); 
-  SetRcuZ(rcuZ); 
+  //  SetModuleID(moduleID);
+  //  SetRcuX(rcuX); 
+  //  SetRcuZ(rcuZ); 
   Init();
 }
 
@@ -118,7 +126,7 @@ AliHLTPHOSRcuCalibrationProcessor::Init()
   int geomz;
     
 
-  for(unsigned int gain=0; gain< N_GAINS; gain++)
+  for(int gain=0; gain< N_GAINS; gain++)
     {
       sprintf(tmpHistoName, "DeadChanneMap_Module%d_rcuz%d_rcux%d_gain%d",(int)fModuleID,  fRcuZ, fRcuX, gain);
       //    fDeadChannelMapHistogramPtrs[gain] = new TH2D( tmpHistoName, tmpHistoName, N_BINS, XBIN_LOW, XBIN_UP);
@@ -135,11 +143,11 @@ AliHLTPHOSRcuCalibrationProcessor::Init()
 
 
 
-  for(unsigned int x = 0; x < N_XCOLUMNS_RCU; x ++)
+  for(int x = 0; x < N_XCOLUMNS_RCU; x ++)
     {
-      for(unsigned int z = 0; z < N_ZROWS_RCU; z ++)
+      for(int z = 0; z < N_ZROWS_RCU; z ++)
 	{
-	  for(unsigned int gain = 0; gain < N_GAINS; gain ++)
+	  for(int gain = 0; gain < N_GAINS; gain ++)
 	    {
 	      geomx = x + N_XCOLUMNS_RCU*fRcuX;
 	      geomz = z + N_ZROWS_RCU*fRcuZ;
@@ -232,7 +240,7 @@ void
 AliHLTPHOSRcuCalibrationProcessor::FillLiveChannels(Int_t data[], int size,  Int_t x, Int_t z, Int_t gain)
 {
   //comment
-  for(Int_t i = 0; i < size; i++)
+  for(int i = 0; i < size; i++)
     {
       if(data[i] > THRESHOLD)
 	{
@@ -257,11 +265,11 @@ void
 AliHLTPHOSRcuCalibrationProcessor::FillLiveChannelHistograms()
 {
   //comment
-  for(unsigned int x = 0; x <  N_XCOLUMNS_RCU; x ++)
+  for(int x = 0; x <  N_XCOLUMNS_RCU; x ++)
     {
-      for(unsigned int z = 0; z < N_ZROWS_RCU; z ++)
+      for(int z = 0; z < N_ZROWS_RCU; z ++)
 	{
-	  for(unsigned int gain = 0; gain < N_GAINS; gain ++)
+	  for(int gain = 0; gain < N_GAINS; gain ++)
 	    {
 	      fDeadChannelMapHistogramPtrs[gain]->SetBinContent(x ,z , fCellAccEnergy.fDeadChannelMap[x][z][gain]);
 	    }
@@ -274,11 +282,11 @@ void
 AliHLTPHOSRcuCalibrationProcessor::Reset()
 {
   //See header file for documentation
-  for(unsigned int x = 0; x < N_XCOLUMNS_RCU; x ++)
+  for(int x = 0; x < N_XCOLUMNS_RCU; x ++)
     {
-      for(unsigned int z = 0; z < N_ZROWS_RCU; z ++)
+      for(int z = 0; z < N_ZROWS_RCU; z ++)
 	{
-	  for(unsigned int gain = 0; gain < N_GAINS; gain ++)
+	  for(int gain = 0; gain < N_GAINS; gain ++)
 	    {
 	      fEnergyAverageValues[x][z][gain] = 0; 
 	      fAccumulatedValues[x][z][gain]   = 0;
@@ -289,7 +297,7 @@ AliHLTPHOSRcuCalibrationProcessor::Reset()
 	} 
     }
   
-  for(unsigned int i = 0; i <ALTRO_MAX_SAMPLES;  i++)
+  for(int i = 0; i <ALTRO_MAX_SAMPLES;  i++)
     {
       fTmpChannelData[i] = 0;
     }
@@ -358,11 +366,11 @@ AliHLTPHOSRcuCalibrationProcessor::WriteAllHistograms(char *opt)
 
   cout <<"printing histograms"<< endl;
 
-  for(unsigned int x = 0; x <  N_XCOLUMNS_RCU; x ++)
+  for(int x = 0; x <  N_XCOLUMNS_RCU; x ++)
     {
-      for(unsigned int z = 0; z < N_ZROWS_RCU; z ++)
+      for(int z = 0; z < N_ZROWS_RCU; z ++)
 	{
-	  for(unsigned int gain = 0; gain < N_GAINS; gain ++)
+	  for(int gain = 0; gain < N_GAINS; gain ++)
 	    {
 	      //     cout << "the number of entries is " <<fEnergyHistogramPtrs[x][z][gain]->GetEntries()<< endl;
 	      fEnergyHistogramPtrs[x][z][gain]->Write();
@@ -379,8 +387,6 @@ AliHLTPHOSRcuCalibrationProcessor::WriteAllHistograms(char *opt)
   if(!deadHistoFile_gain0) return;
   if(!deadHistoFile_gain0->IsOpen()) return;
   fDeadChannelMapHistogramPtrs[0]->Write();
-
-
   //HIGH GAIN
   //  TFile *deadHistoFile_gain1 =  new TFile(tmpDeadFileName_gain1,"update");
   TFile *deadHistoFile_gain1 =  new TFile(tmpDeadFileName_gain1, opt);
@@ -401,11 +407,9 @@ AliHLTPHOSRcuCalibrationProcessor::ScanTimeString(char *timeString)
   //comment
   time_t timePtr;
   tm *tmPtr;
-  //  char *timeString;
   time(&timePtr); 
   tmPtr=localtime(&timePtr);
   timeString=asctime(tmPtr);
-  //  char tShort [strlen(timeString)+1];
   char day[10];
   char month[10];
   int date;
@@ -413,11 +417,5 @@ AliHLTPHOSRcuCalibrationProcessor::ScanTimeString(char *timeString)
   int min;
   int sec;
   int year;
-  //char sDate[5];
-  //char sHour[5];
-  //char sMin[5];
-  //char sSec[5];
-  //char sYear[10];
   sscanf(timeString, "%s %s %d %d:%d:%d %d\n", day, month, &date, &hour, &min, &sec, &year);
-  
 }

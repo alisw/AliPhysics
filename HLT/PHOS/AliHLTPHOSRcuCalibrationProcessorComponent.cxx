@@ -19,12 +19,17 @@ AliHLTPHOSRcuCalibrationProcessorComponent::AliHLTPHOSRcuCalibrationProcessorCom
   fRcuCalibProcessorPtr(0),
   fShmPtr(0)
 {
+
 }
+
 
 AliHLTPHOSRcuCalibrationProcessorComponent::~AliHLTPHOSRcuCalibrationProcessorComponent() 
 {
+
 }
 
+
+/*
 AliHLTPHOSRcuCalibrationProcessorComponent::AliHLTPHOSRcuCalibrationProcessorComponent(const AliHLTPHOSRcuCalibrationProcessorComponent&) :
   AliHLTCalibrationProcessor(),
   fCalibDataPtr(0),
@@ -33,17 +38,19 @@ AliHLTPHOSRcuCalibrationProcessorComponent::AliHLTPHOSRcuCalibrationProcessorCom
 {
   HLTFatal("copy constructor untested");
 }
+*/
 
+ /*
 AliHLTPHOSRcuCalibrationProcessorComponent& AliHLTPHOSRcuCalibrationProcessorComponent::operator=(const AliHLTPHOSRcuCalibrationProcessorComponent&)
 {
   HLTFatal("assignement operator untested");
-  return *this;
 }
 
 const char* AliHLTPHOSRcuCalibrationProcessorComponent::GetComponentID()
 {
   return "PhosRcuCalibrationProcessor";
 }
+*/
 
 void AliHLTPHOSRcuCalibrationProcessorComponent::GetInputDataTypes(vector<AliHLTComponentDataType>& list)
 {
@@ -77,6 +84,11 @@ AliHLTComponent* AliHLTPHOSRcuCalibrationProcessorComponent::Spawn()
 
 Int_t AliHLTPHOSRcuCalibrationProcessorComponent::ScanArgument( Int_t argc, const char** argv)
 {
+  const char **c = argv;
+  Int_t t= argc;
+  c++;
+  t++;
+
   return 0;
 }
 
@@ -95,17 +107,14 @@ Int_t AliHLTPHOSRcuCalibrationProcessorComponent::DeinitCalibration()
 
 Int_t AliHLTPHOSRcuCalibrationProcessorComponent::ProcessCalibration(const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData)
 {
+  const  AliHLTComponentEventData eDta  = evtData;
+  AliHLTComponentTriggerData  tDta =  trigData;
 
   UInt_t specification = 0;
-
   const AliHLTComponentBlockData* iter = 0;
-
   iter = GetFirstInputBlock( kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTPC);
-
   AliHLTPHOSRcuCellEnergyDataStruct* cellDataPtr = 0;
-
   AliHLTPHOSValidCellDataStruct* currentChannel = 0;
-  
   int totalSamples = 1;
 
   while(iter != 0)

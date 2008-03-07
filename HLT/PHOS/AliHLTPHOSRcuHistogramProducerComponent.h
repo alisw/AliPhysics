@@ -38,7 +38,8 @@ class AliHLTPHOSRcuHistogramProducerComponent:public AliHLTPHOSRcuProcessor
   using AliHLTPHOSRcuProcessor::DoEvent;
 
  private:
-
+  AliHLTPHOSRcuHistogramProducerComponent(const AliHLTPHOSRcuHistogramProducerComponent &);
+  AliHLTPHOSRcuHistogramProducerComponent & operator = (const AliHLTPHOSRcuHistogramProducerComponent &);
   int fHistoWriteFrequency;
   AliHLTPHOSRcuHistogramProducer* fRcuHistoProducerPtr;   /**<Pointer to a phos histoproducer object*/
   AliHLTPHOSRcuCellAccumulatedEnergyDataStruct*  fOutPtr; /**<Pointer to outputbuffer to write results from the component into shared memory*/

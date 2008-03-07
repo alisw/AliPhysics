@@ -182,8 +182,9 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
 
   AliHLTPHOSValidCellDataStruct *validCellPtr = 0;
 
-  UInt_t nSamples = 0;
-
+  //  UInt_t nSamples = 0;
+  Int_t nSamples = 0;
+ 
   UInt_t nSelected = 0;
 
   UInt_t specification = 0;
@@ -258,7 +259,7 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
 
 	  if(fDoPushCellEnergies)
 	    {
-	      for(UInt_t sample = 0; sample < nSamples; sample++)
+	      for(int sample = 0; sample < nSamples; sample++)
 		{
 		  (validCellPtr->fData)[sample] = tmpData[sample] - (int)baseline;
 		}
@@ -447,11 +448,11 @@ AliHLTPHOSRawAnalyzerComponent::Reset(AliHLTPHOSRcuCellEnergyDataStruct* cellDat
   //comment
   //  for(unsigned int mod = 0; mod < N_MODULES; mod ++)
   //{
-  for(unsigned int x = 0; x < N_XCOLUMNS_RCU; x ++)
+  for(int x = 0; x < N_XCOLUMNS_RCU; x ++)
     {
-      for(unsigned int z = 0; z < N_ZROWS_RCU; z ++)
+      for(int z = 0; z < N_ZROWS_RCU; z ++)
 	{
-	  for(unsigned int gain = 0; gain < N_GAINS; gain ++ )
+	  for(int gain = 0; gain < N_GAINS; gain ++ )
 	    {
 	      //fMaxValues[mod][row][col][gain] = 0;
 	      cellDataPtr->fValidData[x][z][gain].fEnergy = 0;
@@ -513,9 +514,9 @@ AliHLTPHOSRawAnalyzerComponent::SetSelectiveReadOutThresholds(const char* filepa
   TH2F *lgHist = (TH2F*)histFile->Get("RMSLGMapHist");
   TH2F *hgHist = (TH2F*)histFile->Get("RMSHGMapHist");
 
-  for(UInt_t x = 0; x < N_XCOLUMNS_MOD; x++)
+  for(int x = 0; x < N_XCOLUMNS_MOD; x++)
     {
-      for(UInt_t z = 0; z < N_ZROWS_MOD; z++)
+      for(int z = 0; z < N_ZROWS_MOD; z++)
 	{
 	  fSelectiveReadOutThresholds[x][z][LOW_GAIN] = lgHist->GetBinContent(x, z) * nSigmas;
 	  fSelectiveReadOutThresholds[x][z][HIGH_GAIN] = hgHist->GetBinContent(x, z) * nSigmas;

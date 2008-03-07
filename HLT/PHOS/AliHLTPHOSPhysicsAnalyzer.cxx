@@ -50,10 +50,9 @@ AliHLTPHOSPhysicsAnalyzer::AliHLTPHOSPhysicsAnalyzer():
   //  fPHOSRadius = geom->GetIPtoCrystalSurface();
   fPHOSRadius = geom->GetIPtoCrystalSurface();
 
-  for(UInt_t i = 0; i < N_MODULES; i++)
+  for(int i = 0; i < N_MODULES; i++)
     {
       fRotParametersCos[i] = cos((geom->GetPHOSAngle(i+1))*2*TMath::Pi()/360);
-
       fRotParametersSin[i] = sin((geom->GetPHOSAngle(i+1))*2*TMath::Pi()/360);
     }
 }

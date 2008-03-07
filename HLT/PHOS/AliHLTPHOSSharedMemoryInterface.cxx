@@ -24,21 +24,19 @@
 #include <iostream>
 
 
-AliHLTPHOSSharedMemoryInterface::AliHLTPHOSSharedMemoryInterface(): fCurrentChannel(0), 
-								    fCellEnergiesPtr(0), 
-								    fIsSetMemory(false), 
+AliHLTPHOSSharedMemoryInterface::AliHLTPHOSSharedMemoryInterface(): fCurrentChannel(0),
+								    fCellEnergiesPtr(0),
+								    fIsSetMemory(false),
 								    fMaxCnt(0),
+								    fCurrentCnt(0),
 								    fCurrentX(0),
 								    fCurrentZ(0),
 								    fCurrentGain(0),
-								    fCurrentCnt(0), 
-								    fCharDataOffset(0), 
-								    fCharPtr(0), 
+								    fCharDataOffset(0),
+								    fCharPtr(0),
 								    fIntPtr(0)
-								  
- 
 {
- fCharDataOffset = sizeof(AliHLTPHOSRcuCellEnergyDataStruct);
+  fCharDataOffset = sizeof(AliHLTPHOSRcuCellEnergyDataStruct);
 }
 
 
@@ -90,6 +88,8 @@ AliHLTPHOSSharedMemoryInterface::NextChannel()
       Reset();
       return 0;
     }
+
+  return 0;
 }
 
 
