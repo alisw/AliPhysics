@@ -290,6 +290,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	AliDebug(1,Form(" QTC %f mv,  QTC  %f MIPS time in chann %f time %f ",adc[ipmt], adc[ipmt]/50.,time[ipmt], time[ipmt]*channelWidth));
       }
       if(option == "cosmic") {
+	if(ipmt == 15) continue; //skip crashed PMT
 	Float_t qt0 = Float_t(chargeQT0->At(ipmt));
 	Float_t qt1 = Float_t(chargeQT1->At(ipmt));
 	if((qt0-qt1)>0)  adc[ipmt] = qt0-qt1;
