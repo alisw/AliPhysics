@@ -33,6 +33,9 @@ public:
   void ExecEvent(Int_t event, Int_t x, Int_t y, TObject *selected);
 
 private:
+  AliHLTTPCDisplayFront (const AliHLTTPCDisplayFront&);
+  AliHLTTPCDisplayFront& operator=(const AliHLTTPCDisplayFront&);
+
   AliHLTTPCDisplayMain* fDisplay;
   TCanvas * fCanvas;
   

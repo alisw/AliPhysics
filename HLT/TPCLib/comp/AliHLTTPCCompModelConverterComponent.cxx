@@ -236,7 +236,9 @@ int AliHLTTPCCompModelConverterComponent::DoEvent( const AliHLTComponent_EventDa
       AliHLTUInt8_t minSlice=0xFF, maxSlice=0xFF, minPatch=0xFF, maxPatch=0xFF;
       for ( unsigned long n = 0; n < evtData.fBlockCnt; n++ )
 	{
-	  AliHLTUInt8_t slice, patch;
+	  AliHLTUInt8_t slice = 0;
+	  AliHLTUInt8_t patch = 0;
+
 	  if ( blocks[n].fDataType == AliHLTTPCDefinitions::fgkClustersDataType ||
 	       blocks[n].fDataType == AliHLTTPCDefinitions::fgkTracksDataType )
 	    {

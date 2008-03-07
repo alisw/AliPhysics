@@ -178,7 +178,8 @@ int AliHLTTPCCompModelDeflaterComponent::DoEvent( const AliHLTComponent_EventDat
 	      }
 	    continue;
 	    }
-	  AliHLTUInt8_t slice, patch;
+	  AliHLTUInt8_t slice = 0;
+	  AliHLTUInt8_t patch = 0;
 	  if ( blocks[n].fDataType == AliHLTTPCDefinitions::fgkClustersDataType ||
 	       blocks[n].fDataType == AliHLTTPCDefinitions::fgkTracksDataType )
 	    {

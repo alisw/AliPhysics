@@ -45,14 +45,20 @@ using namespace std;
 ClassImp(AliHLTTPCDisplayFront)
 
 //____________________________________________________________________________________________________
-AliHLTTPCDisplayFront::AliHLTTPCDisplayFront(AliHLTTPCDisplayMain* display) {
+  AliHLTTPCDisplayFront::AliHLTTPCDisplayFront(AliHLTTPCDisplayMain* display) : 
+    fDisplay(display),
+    fCanvas(NULL),
+    fHistfront(NULL),
+    fHistfrontcl(NULL),
+    fNTimes( display->GetNTimeBins() ),
+    fBinX(),
+    fBinY(),
+    fTmpEvent(0) {
     // constructor
-    fDisplay = display;
 
-    fNTimes = display->GetNTimeBins();
-    
     fBinY[0] = 0;
     fBinY[1] = AliHLTTPCTransform::GetNRows() - 1;
+
 #if TESTCODE    
     fBinX[0] = (-4) * AliHLTTPCTransform::GetNPads(fBinY[1]);      
     fBinX[1] = (4) * AliHLTTPCTransform::GetNPads(fBinY[1]);
@@ -61,13 +67,8 @@ AliHLTTPCDisplayFront::AliHLTTPCDisplayFront(AliHLTTPCDisplayMain* display) {
     fBinX[0] = 0;      
     fBinX[1] = AliHLTTPCTransform::GetNPads(fBinY[1]);
 #endif    
-    fTmpEvent = 0;    
     
-    Int_t fBinningFaktor = 4 ;
-    
-
-
-
+    //   Int_t fBinningFaktor = 4 ;
  
 #if TESTCODE
     fHistfront = new TH2F("fHistfront","FrontView of selected slice;Pad #;Padrow #",Bins,fBinX[0],fBinX[1],fBinY[1]+1,fBinY[0],fBinY[1]);
@@ -111,8 +112,8 @@ void AliHLTTPCDisplayFront::Fill() {
   Int_t timeSwitch = fDisplay->GetFrontDataSwitch();
 
   // --- TEST CODE beginn
-  Int_t fBinning = 8; // == 1/0.125
-  Int_t fBinningFaktor = 4; // binning / 2 because of width half
+  // Int_t fBinning = 8; // == 1/0.125
+  // Int_t fBinningFaktor = 4; // binning / 2 because of width half
 
 #if TESTCODE
     // use sum
@@ -335,7 +336,7 @@ void AliHLTTPCDisplayFront::Draw(){
 }
 
 //____________________________________________________________________________________________________
-void AliHLTTPCDisplayFront::ExecEvent(Int_t event, Int_t px, Int_t py, TObject *selected){
+void AliHLTTPCDisplayFront::ExecEvent(Int_t event, Int_t/*px*/, Int_t /*py*/, TObject *selected){
    // Saves the Zoom Position of the Histogram 
 
    // - Mouse down on Axis : StartPoint of Range

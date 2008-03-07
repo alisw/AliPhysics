@@ -214,7 +214,7 @@ Int_t AliHLTTPCEventStatisticsProducerComponent::DoEvent( const AliHLTComponentE
 
     HLTDebug ( "Input Data - TPC cluster - Slice/Patch: %d/%d.", slice, patch );
 
-    AddClusters( iter->fPtr , iter->fSize, (Int_t) slice, (Int_t) patch );
+    AddClusters( iter->fPtr, (Int_t) slice, (Int_t) patch );
   } // for ( iter = GetFirstInputBlock(AliHLTTPCDefinitions::fgkClustersDataType); iter != NULL; iter = GetNextInputBlock() ) {
   
 
@@ -230,7 +230,7 @@ Int_t AliHLTTPCEventStatisticsProducerComponent::DoEvent( const AliHLTComponentE
     AliHLTUInt8_t slice = AliHLTTPCDefinitions::GetMinSliceNr( *iter );
     HLTDebug ( "Input Data - TPC track segments - Slice: %d.", slice );
 
-    AddTracks( iter->fPtr , iter->fSize, (Int_t) slice );
+    AddTracks( iter->fPtr, (Int_t) slice );
   } //   for ( iter = GetFirstInputBlock(AliHLTTPCDefinitions::fgkTrackSegmentsDataType); iter != NULL; iter = GetNextInputBlock() ) {
   
   //
@@ -244,7 +244,7 @@ Int_t AliHLTTPCEventStatisticsProducerComponent::DoEvent( const AliHLTComponentE
     
     HLTDebug ( "Input Data - TPC track segments." );
 
-    AddTracks( iter->fPtr , iter->fSize );
+    AddTracks( iter->fPtr );
   } //   for ( iter = GetFirstInputBlock(AliHLTTPCDefinitions::fgkTracksDataType); iter != NULL; iter = GetNextInputBlock() ) {
   
 
@@ -286,13 +286,20 @@ void AliHLTTPCEventStatisticsProducerComponent::InitializeEvent() {
 }
 
 // -- **********************************************************************************************
-void AliHLTTPCEventStatisticsProducerComponent::AddClusters( void* ptr , AliHLTUInt32_t /*size*/, Int_t slice, Int_t patch ) {
+void AliHLTTPCEventStatisticsProducerComponent::AddClusters( void* ptr, Int_t slice, Int_t patch ) {
   // see header file for class documentation
 
   const AliHLTTPCClusterData* clusterData = (const AliHLTTPCClusterData*) ptr;
 
+  // these 2 variables have been introduced to avoid warning: unused variable in production compile
+  Int_t sliceAntiWarning = slice;
+  Int_t patchAntiWarning = patch;
+
   Int_t nSpacepoint = (Int_t) clusterData->fSpacePointCnt;
-  HLTDebug( "%d Clusters found for slice %u - patch %u\n", nSpacepoint, slice, patch );
+  HLTDebug( "%d Clusters found for slice %u - patch %u\n", nSpacepoint, sliceAntiWarning, patchAntiWarning );
+
+  sliceAntiWarning = 0;
+  patchAntiWarning = 0;
 
   // ** Add to event statistics
   fEvStat->AddNTotalCluster( nSpacepoint );
@@ -300,7 +307,7 @@ void AliHLTTPCEventStatisticsProducerComponent::AddClusters( void* ptr , AliHLTU
 }
 
 // -- **********************************************************************************************
-void AliHLTTPCEventStatisticsProducerComponent::AddTracks( void* ptr , AliHLTUInt32_t /*size*/, Int_t slice ) {
+void AliHLTTPCEventStatisticsProducerComponent::AddTracks( void* ptr, Int_t slice ) {
   // see header file for class documentation
 
   const AliHLTTPCTrackletData* trackData = (const AliHLTTPCTrackletData*) ptr;

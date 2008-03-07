@@ -48,17 +48,25 @@ using namespace std;
 ClassImp(AliHLTTPCDisplayPadRow)
 
 //____________________________________________________________________________________________________
-AliHLTTPCDisplayPadRow::AliHLTTPCDisplayPadRow(AliHLTTPCDisplayMain* display) {
+  AliHLTTPCDisplayPadRow::AliHLTTPCDisplayPadRow(AliHLTTPCDisplayMain* display) :
+    fDisplay(NULL),
+    fHistrawcl(NULL),
+    fHistraw(NULL),
+    fcolorbin(),
+    fbinct(),
+    fpmarr(),
+    fNTimes( AliHLTTPCTransform::GetNTimeBins() ),
+    fBinX(),
+    fBinY(),
+    fTmpEvent(0) {
+
     // constructor
     fDisplay = display;
 
-    fNTimes = AliHLTTPCTransform::GetNTimeBins();
-    
     fBinX[0] = 0;      
     fBinX[1] = fDisplay->GetNPads(); 
     fBinY[0] = 0;
     fBinY[1] = fNTimes -1;
-    fTmpEvent = 0;         
 
     for (Int_t ii = 0;ii < 20; ii++)
       fpmarr[ii] = 0;
@@ -117,11 +125,11 @@ void AliHLTTPCDisplayPadRow::Fill(){
 #if defined(HAVE_TPC_MAPPING)
     AliHLTTPCDigitReaderRaw digitReader(0);
 
-    bool readValue = true;
-    Int_t rowOffset = 0;
+    //    bool readValue = true;
+    //Int_t rowOffset = 0;
     
     Int_t padRow = fDisplay->GetPadRow();
-    Int_t slice = fDisplay->GetSlicePadRow();
+    //Int_t slice = fDisplay->GetSlicePadRow();
 
 #if 0
     // Initialize RAW DATA
@@ -347,7 +355,7 @@ void AliHLTTPCDisplayPadRow::Draw3D(){
 }
 
 //____________________________________________________________________________________________________
-void AliHLTTPCDisplayPadRow::ExecEvent(Int_t event, Int_t px, Int_t py, TObject *selected){
+void AliHLTTPCDisplayPadRow::ExecEvent(Int_t event, Int_t /*px*/, Int_t /*py*/, TObject *selected){
    // Saves the Zoom Position of the Histogram 
 
    // - Mouse down on Axis : StartPoint of Range

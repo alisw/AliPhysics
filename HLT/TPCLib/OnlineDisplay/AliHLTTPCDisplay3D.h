@@ -49,6 +49,10 @@ class AliHLTTPCDisplay3D : public AliHLTLogging {
 
 // ---------------------------------------------------
  private:
+  AliHLTTPCDisplay3D (const AliHLTTPCDisplay3D&);
+  AliHLTTPCDisplay3D& operator=(const AliHLTTPCDisplay3D&);
+
+
     void LoadGeometrie(Char_t *gfile);
 
     AliHLTTPCDisplayMain* fDisplay;

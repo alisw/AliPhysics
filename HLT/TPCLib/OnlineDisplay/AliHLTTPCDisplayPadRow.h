@@ -34,6 +34,9 @@ class AliHLTTPCDisplayPadRow : public AliHLTLogging  {
     void ExecEvent(Int_t event, Int_t x, Int_t y, TObject *selected);
 
  private:
+    AliHLTTPCDisplayPadRow (const AliHLTTPCDisplayPadRow&);
+    AliHLTTPCDisplayPadRow& operator=(const AliHLTTPCDisplayPadRow&);
+
     AliHLTTPCDisplayMain* fDisplay;
 
     TH1F *fHistrawcl;              // histogram for cluster in padrow

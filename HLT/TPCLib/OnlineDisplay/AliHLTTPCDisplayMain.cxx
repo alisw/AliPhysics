@@ -72,105 +72,94 @@ const Char_t* padrowID = "KPWR_LDD";   // DDL_RWPK
 ClassImp(AliHLTTPCDisplayMain)
 
 //____________________________________________________________________________________________________
-AliHLTTPCDisplayMain::AliHLTTPCDisplayMain(void* pt2GUI, void (*pt2Function)(void*, Int_t)) {
+  AliHLTTPCDisplayMain::AliHLTTPCDisplayMain(void* pt2GUI, void (*pt2Function)(void*, Int_t)) : 
+    fPt2Gui(pt2GUI),
+    fPadCallback(pt2Function),
+    fReader(NULL),
+    fTrackParam(),
+    fCanvasArray(NULL),
+    fWorkerArray(NULL),
+    fgNTimeBins(1024),  //  446 or 1024
+    fRawReaderMode(0),
+    fZeroSuppressionThreshold (10),
+    fOccupancyLimit(1.0),
+    fBField(0.4),
+    fNTimeBins(1024),
+    fEventID(0),
+    fConnect(kFALSE),
+    fExistsRawData(kFALSE),
+    fExistsClusterData(kFALSE),
+    fExistsTrackData(kFALSE),
+    fDisplayCharge(NULL),
+    fDisplayPadRow(NULL),
+    fDisplayPad(NULL),
+    fDisplay3D(NULL),
+    fDisplayResiduals(NULL),
+    fDisplayFront(NULL),
+    fCanvasCharge(NULL),
+    fCanvasPadRow(NULL),
+    fCanvasPad(NULL),
+    fCanvas3D(NULL),
+    fCanvasResiduals(NULL),
+    fCanvasFront(NULL),
+    fCanvasHits_S(NULL),
+    fCanvasQ_Track(NULL),
+    fCanvasQ_S(NULL),
+    fCanvasPadRow_Pad(NULL),
+    fTracksPerSlice(),
+    fClusters(),
+    fTracks(NULL),
+    fNcl(),
+    fMinSlice(0),
+    fMaxSlice(35),
+    fSlicePair(kFALSE),
+    fSliceArray(),
+    fSelectCluster(),
+    fZeroSuppression( kTRUE ),
+    fPad(-1),
+    fNPads( AliHLTTPCTransform::GetNPads(0) ),
+    fPadRow(0),
+    fSlicePadRow(0),
+    fSplitPadRow(kFALSE),
+    fFrontDataSwitch(2),
+    fTimeBinMin(0),
+    fTimeBinMax(1024),
+    fSplitFront(kFALSE),
+    fSelectTrackSwitch(kFALSE),
+    fSelectTrack(-1),
+    fSelectTrackSlice(0),
+    fCutHits(0),
+    fCutPt(0.),
+    fCutPsi(0.),
+    fCutLambda(0.),
+    fCut_S(0.),
+    fCutPadrow(159),
+    fKeepView(kTRUE),
+    fTheta(90.),
+    fPhi(0.),
+    fBackColor(1),
+    fLineColor(0),
+    fSwitch3DCluster(kFALSE),
+    fSwitch3DTracks(kFALSE),
+    fSwitch3DPadRow(kFALSE),
+    fSwitch3DGeometry(kTRUE),
+    fSwitch3DRaw(0) {
   //constructor
 
   AliHLTLogging::SetGlobalLoggingLevel(kHLTLogError);
 
   fCanvasArray = new TCanvas* [nCanvasTypes];
   fWorkerArray = new void* [nWorkerTypes]; 
-
-  // set N of TimeBins
-  fgNTimeBins = 1024;   //  446 or 1024
-
-  fRawReaderMode = 0;
-  fZeroSuppressionThreshold = 10;
-  fOccupancyLimit = 1.0;
-  fBField = 0.4;
-  fNTimeBins = 1024;
-
-  //callback handler
-  fPt2Gui = pt2GUI;
-  fPadCallback = pt2Function;
-	
-  fReader = NULL;
-  
-  fConnect = kFALSE;
-  fEventID = 0;
-
-  fDisplayCharge = NULL; 
-  fDisplayPadRow = NULL;
-  fDisplayPad = NULL;
-  fDisplay3D = NULL;
-  fDisplayResiduals = NULL;
-  fDisplayFront = NULL;
-
-  fCanvasCharge = NULL;
-  fCanvasPadRow = NULL;
-  fCanvasPad = NULL;
-  fCanvas3D = NULL;
-  fCanvasResiduals = NULL;
-  fCanvasFront = NULL;
-  fCanvasHits_S = NULL;
-  fCanvasQ_Track = NULL;
-  fCanvasQ_S = NULL;
-  fCanvasPadRow_Pad = NULL;
-
-
-  fExistsRawData = kFALSE;
-  fExistsClusterData = kFALSE;
-  fExistsTrackData = kFALSE;
-
+       
   memset(fClusters,0,36*6*sizeof(AliHLTTPCSpacePointData*));
   memset(fNcl, 0, 36*6*sizeof(UInt_t)); 
 
   fTracks = NULL;
 
-  fZeroSuppression = kTRUE;
-  fNPads = AliHLTTPCTransform::GetNPads(0);
-  fPad = -1;
-  fPadRow = 0;
-  fSlicePadRow = 0; 
-  fSplitPadRow = kFALSE;
-  
-  fFrontDataSwitch = 2;
-  fTimeBinMin = 0;
   fTimeBinMax = GetNTimeBins() -1;
-  fSplitFront = kFALSE;
-    
-  fSelectTrack = -1;
-  fSelectTrackSlice = 0;
-  fSelectTrackSwitch = kFALSE;
   
-  fSelectCluster = 0;
-
-  fMinSlice = 0;
-  fMaxSlice = 35;
-  fSlicePair = kFALSE;
-
   SetSliceArray();
   
-  fTheta = 90.;
-  fPhi = 0.;
-
-  fBackColor = 1;
-  fLineColor = 0;
-  fKeepView = kTRUE;
-
-  fSwitch3DCluster = kFALSE;
-  fSwitch3DTracks = kFALSE;
-  fSwitch3DPadRow = kFALSE;
-  fSwitch3DGeometry = kTRUE;
-  fSwitch3DRaw = 0;
-
-  fCutHits = 0;
-  fCutPt = 0.;
-  fCutPsi = 0.;
-  fCutLambda = 0.;
-  fCut_S = 0.;
-  fCutPadrow = 159;
-  
-
   fTrackParam.kappa = 0.;
   fTrackParam.nHits = 0;
   fTrackParam.charge = 0;
@@ -1044,7 +1033,7 @@ Int_t AliHLTTPCDisplayMain::GetGlobalTrack(Int_t slice){
 //----------------------------------------------------------------------------------------------------
 //                 EVENTS
 //____________________________________________________________________________________________________
-void AliHLTTPCDisplayMain::ExecPadEvent(Int_t event, Int_t px, Int_t py, TObject *selected){
+void AliHLTTPCDisplayMain::ExecPadEvent(Int_t event, Int_t px, Int_t /*py*/, TObject *selected){
    TCanvas *c = (TCanvas *) gTQSender;
 
    if (event == 11 &&selected->InheritsFrom("TH2F")) {

@@ -80,14 +80,14 @@ public:
    * @param slice Slice
    * @param patch Patch
    */
-  void AddClusters( void* ptr, AliHLTUInt32_t size, Int_t slice, Int_t patch );
+  void AddClusters( void* ptr, Int_t slice, Int_t patch );
 
   /** Add new tracks block
    * @param ptr   Pointer to data block
    * @param size  Size of data block
    * @param slice Slice, default is -1 for GlobalMerger tracks
    */
-  void AddTracks( void* ptr, AliHLTUInt32_t size, Int_t slice=-1 );     
+  void AddTracks( void* ptr, Int_t slice=-1 );     
 
   /** Process even -> get process statistics */
   void ProcessEvent();                          

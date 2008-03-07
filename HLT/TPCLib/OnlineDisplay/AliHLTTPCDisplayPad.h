@@ -37,6 +37,9 @@ class AliHLTTPCDisplayPad : public AliHLTLogging {
 
    
  private:
+    AliHLTTPCDisplayPad (const AliHLTTPCDisplayPad&);
+    AliHLTTPCDisplayPad& operator=(const AliHLTTPCDisplayPad&);
+
     AliHLTTPCDisplayMain* fDisplay;
 
     TH1F *fHistpad1;               // histogram for pad in padrow

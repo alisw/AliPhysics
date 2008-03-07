@@ -38,6 +38,18 @@ public:
   /** type needed to build list with discarded tracks or tracks to compare */
   struct AliHLTTPCTrackList
   {
+    AliHLTTPCTrackList() : 
+      track(),
+      pythiatrack(),
+      wronglydiscarded(kFALSE),
+      matchingindicator(0),
+      next(NULL),
+      matchingtrack(NULL)
+    {}
+
+    AliHLTTPCTrackList (const AliHLTTPCTrackList&);
+    AliHLTTPCTrackList& operator= (const AliHLTTPCTrackList&);
+
     AliHLTTPCTrack track;       // store information of found discarded track   
     AliHLTTPCTrack pythiatrack; // store pythia information about this found discarded track
     Bool_t wronglydiscarded;    // flag to mark if track and pythia track information match together
@@ -105,6 +117,11 @@ public:
   Int_t MarkTrashCluster(AliHLTTPCClusterData *discardedcluster, UInt_t slice, UInt_t patch);
  
 private:
+  /** copy constructor prohibited */
+  AliHLTTPCCompModelAnalysis (const AliHLTTPCCompModelAnalysis&); 
+
+  /** assignment operator prohibited */
+  AliHLTTPCCompModelAnalysis& operator= (const AliHLTTPCCompModelAnalysis&);
 
   /** private function to display results from model loss analysis
    * @return 0 upon success

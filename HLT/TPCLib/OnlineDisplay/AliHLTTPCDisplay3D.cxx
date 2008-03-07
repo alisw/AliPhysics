@@ -90,11 +90,12 @@ using namespace std;
 ClassImp(AliHLTTPCDisplay3D)
 
 //____________________________________________________________________________________________________
-AliHLTTPCDisplay3D::AliHLTTPCDisplay3D(AliHLTTPCDisplayMain* display, Char_t* gfile ) {
+  AliHLTTPCDisplay3D::AliHLTTPCDisplay3D(AliHLTTPCDisplayMain* display, Char_t* gfile ) :
+    fTrackParam(),
+    fDisplay(display),
+    fGeom(NULL) {
     // constructor
-    fDisplay = display;
-    
-    fGeom = NULL;
+
     LoadGeometrie(gfile);
 }
 

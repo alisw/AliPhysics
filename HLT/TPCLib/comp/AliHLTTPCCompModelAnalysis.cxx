@@ -401,7 +401,7 @@ Int_t AliHLTTPCCompModelAnalysis::CompareClusters(Bool_t relativedifferences)
   Int_t notcomparedclusters = 0;
 
   // create graphs out of differences and leave loop
-  TFile* clustergraphrootfile;
+  TFile* clustergraphrootfile = NULL;
   if(!fGraphFileName.IsNull())
     {
       clustergraphrootfile = new TFile(fGraphFileName, "recreate");
@@ -590,7 +590,7 @@ Int_t AliHLTTPCCompModelAnalysis::CompareClusters(Bool_t relativedifferences)
 	      continue;
 	    }
 
-	  for(Int_t count=0; count < fSecondaryClusters[slicecount][patchcount]->fSpacePointCnt; count++)
+	  for(Int_t count=0; count < (Int_t) fSecondaryClusters[slicecount][patchcount]->fSpacePointCnt; count++)
 	    {
 
 	      ++totalsecondary;
@@ -675,7 +675,7 @@ Int_t AliHLTTPCCompModelAnalysis::MarkTrashCluster(AliHLTTPCClusterData *discard
   return 0;
 }
 
-Bool_t AliHLTTPCCompModelAnalysis::GetTrashTrackPythiaInfo(AliHLTTPCTrack* discardedtrack)
+Bool_t AliHLTTPCCompModelAnalysis::GetTrashTrackPythiaInfo(AliHLTTPCTrack* /*discardedtrack*/ )
 {
   // see header file for class documentation
   // store information from pythia in current track list entry
@@ -684,7 +684,7 @@ Bool_t AliHLTTPCCompModelAnalysis::GetTrashTrackPythiaInfo(AliHLTTPCTrack* disca
   return 0;
 }
 
-Bool_t AliHLTTPCCompModelAnalysis::GetClusterPythiaInfo(AliHLTTPCClusterData* discardedcluster)
+Bool_t AliHLTTPCCompModelAnalysis::GetClusterPythiaInfo(AliHLTTPCClusterData* /*discardedcluster*/)
 {
   // see header file for class documentation
   // Pythia information can be

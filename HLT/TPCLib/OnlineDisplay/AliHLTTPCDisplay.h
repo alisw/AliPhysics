@@ -28,7 +28,7 @@ class AliHLTTPCTrackArray;
 class AliHLTTPCDisplay : public TObject, public AliHLTLogging {
 
  public:
-    AliHLTTPCDisplay(Char_t *gfile="$(ALIHLT_BASEDIR)/geo/alice.geom") {InitDisplay(gfile);}
+    AliHLTTPCDisplay(Char_t *gfile="$(ALIHLT_BASEDIR)/geo/alice.geom");
     virtual ~AliHLTTPCDisplay();
 
     void InitDisplay(Char_t *gfile);
@@ -142,8 +142,8 @@ class AliHLTTPCDisplay : public TObject, public AliHLTLogging {
     Bool_t LoadGeometrie(Char_t *gfile);
     void SetSliceArray();
 
-    AliHLTTPCDisplay(const AliHLTTPCDisplay &/*d*/):TObject(){;}
-    AliHLTTPCDisplay& operator=(const AliHLTTPCDisplay &/*d*/){return *this;}
+  AliHLTTPCDisplay(const AliHLTTPCDisplay &/*d*/); //:TObject(){;}
+  AliHLTTPCDisplay& operator=(const AliHLTTPCDisplay &/*d*/);//{return *this;}
     
     AliHLTTPCSpacePointData *fClusters[36][6]; 
     AliHLTTPCTrackArray *fTracks; 

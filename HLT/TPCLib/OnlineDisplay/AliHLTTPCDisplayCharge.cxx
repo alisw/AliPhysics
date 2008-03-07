@@ -46,14 +46,15 @@ using namespace std;
 ClassImp(AliHLTTPCDisplayCharge)
 
 //____________________________________________________________________________________________________
-AliHLTTPCDisplayCharge::AliHLTTPCDisplayCharge(AliHLTTPCDisplayMain* display) {
+  AliHLTTPCDisplayCharge::AliHLTTPCDisplayCharge(AliHLTTPCDisplayMain* display) :
+    fDisplay(display),
+    fHistcharge(NULL),
+    fMaxCharge(0),
+    fTmpEvent(0)  {
     // constructor
-    fDisplay = display;
 
     fBinX[0] = 0;      
     fBinX[1] = 1; 
-    fTmpEvent = 0;         
-    fMaxCharge = 0;
 
     fHistcharge = new TH1F ("fHistcharge","Cluster distribution per charge;charge;#cluster",5000,0,30000);
     fHistcharge->SetTitleSize(0.03);
@@ -145,7 +146,7 @@ void AliHLTTPCDisplayCharge::Draw(){
 }
 
 //____________________________________________________________________________________________________
-void AliHLTTPCDisplayCharge::ExecEvent(Int_t event, Int_t px, Int_t py, TObject *selected){
+void AliHLTTPCDisplayCharge::ExecEvent(Int_t event, Int_t /*px*/, Int_t /*py*/, TObject *selected){
    // Saves the Zoom Position of the Histogram 
 
    // - Mouse down on Axis : StartPoint of Range

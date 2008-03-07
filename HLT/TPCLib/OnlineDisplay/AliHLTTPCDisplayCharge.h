@@ -31,6 +31,9 @@ class AliHLTTPCDisplayCharge : public AliHLTLogging {
     void ExecEvent(Int_t event, Int_t x, Int_t y, TObject *selected);
 
  private:
+    AliHLTTPCDisplayCharge (const AliHLTTPCDisplayCharge&);
+    AliHLTTPCDisplayCharge& operator=(const AliHLTTPCDisplayCharge&);
+
     AliHLTTPCDisplayMain* fDisplay;
 
     TH1F *fHistcharge;             // histogram for clustercharge

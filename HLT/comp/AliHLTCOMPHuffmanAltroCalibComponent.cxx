@@ -34,8 +34,8 @@ ClassImp(AliHLTCOMPHuffmanAltroCalibComponent)
 AliHLTCOMPHuffmanAltroCalibComponent::AliHLTCOMPHuffmanAltroCalibComponent()
   :
   fHuffmanCompressor(NULL),
-  fOrigin(kAliHLTVoidDataOrigin),
   fHuffmanData(NULL),
+  fOrigin(kAliHLTVoidDataOrigin),
   fRunNumber(0),
   fSpecification(0),
   fTablePath(),
@@ -264,7 +264,7 @@ Int_t AliHLTCOMPHuffmanAltroCalibComponent::DeinitCalibration() {
 }
 
 /** function to do the calibration */
-Int_t AliHLTCOMPHuffmanAltroCalibComponent::ProcessCalibration( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData ) {
+Int_t AliHLTCOMPHuffmanAltroCalibComponent::ProcessCalibration( const AliHLTComponentEventData& /*evtData*/, AliHLTComponentTriggerData& /*trigData*/ ) {
   // see header file for class documentation
  
   const AliHLTComponentBlockData* iter = NULL;
@@ -330,7 +330,7 @@ Int_t AliHLTCOMPHuffmanAltroCalibComponent::ProcessCalibration( const AliHLTComp
 } // Int_t AliHLTCOMPHuffmanAltroCalibComponent::ProcessCalibration( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData ) {
 
 
-Int_t AliHLTCOMPHuffmanAltroCalibComponent::ShipDataToFXS( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData ) {
+Int_t AliHLTCOMPHuffmanAltroCalibComponent::ShipDataToFXS( const AliHLTComponentEventData& /*evtData*/, AliHLTComponentTriggerData& /*trigData*/ ) {
   // see header file for class documentation
 
   // create code from training table

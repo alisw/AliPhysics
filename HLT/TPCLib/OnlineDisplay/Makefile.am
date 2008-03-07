@@ -46,7 +46,8 @@ CLASS_HDRS			= AliHLTTPCDisplayMain.h  \
 pkginclude_HEADERS		= $(CLASS_HDRS)
 
 # version info for the library
-libAliHLTTPCDisplay_la_LIBADD	= @HOMER_INBUILT_LIB@
+libAliHLTTPCDisplay_la_LIBADD	= @HOMER_INBUILT_LIB@ \
+				  $(top_builddir)/TPCLib/libAliHLTTPC.la
 libAliHLTTPCDisplay_la_LDFLAGS	= -L@ROOTLIBDIR@ \
 				  @ROOTLIBS@ \
 				  @ALIROOT_LDFLAGS@ \

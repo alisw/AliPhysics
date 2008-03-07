@@ -29,6 +29,9 @@ class AliHLTTPCDisplayResiduals {
     void Fill();
     void Save();
  private:
+    AliHLTTPCDisplayResiduals (const AliHLTTPCDisplayResiduals&);
+    AliHLTTPCDisplayResiduals& operator=(const AliHLTTPCDisplayResiduals&);
+
     AliHLTTPCDisplayMain* fDisplay;
 
     TH1F *fHistallresidualsY;          // histogram for all Y residuals

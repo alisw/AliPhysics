@@ -183,7 +183,7 @@ void AliHLTRunSummaryProducerComponent::ProcessTriggerData( AliHLTComponentTrigg
     if ( triggerClasses & 0x1 )
       fRunSummary->AddTriggerClass( ndx );
     
-    triggerClasses >> 1;
+    triggerClasses = triggerClasses >> 1;
   }
 
 }

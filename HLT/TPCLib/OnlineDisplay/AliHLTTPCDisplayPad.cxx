@@ -43,15 +43,18 @@ using namespace std;
 ClassImp(AliHLTTPCDisplayPad)
 
 //____________________________________________________________________________________________________
-AliHLTTPCDisplayPad::AliHLTTPCDisplayPad(AliHLTTPCDisplayMain* display) {
+  AliHLTTPCDisplayPad::AliHLTTPCDisplayPad(AliHLTTPCDisplayMain* display) :
+    fDisplay(display),
+    fHistpad1(NULL),
+    fHistpad2(NULL),
+    fHistpad3(NULL),
+    fNTimes(  AliHLTTPCTransform::GetNTimeBins() ),
+    fBinX(),
+    fTmpEvent(0) {
     // constructor
-    fDisplay = display;
-
-    fNTimes = AliHLTTPCTransform::GetNTimeBins();
 
     fBinX[0] = 0;      
     fBinX[1] = fNTimes -1; 
-    fTmpEvent = 0;    
 
     fHistpad1 = new TH1F ("fHistpad1","Selected Pad -1;Timebin #",fNTimes,0,fNTimes-1);
     fHistpad2 = new TH1F ("fHistpad2","Selected Pad;Timebin #",fNTimes,0,fNTimes-1); 
@@ -196,7 +199,7 @@ void AliHLTTPCDisplayPad::Draw(){
 }
 
 //____________________________________________________________________________________________________
-void AliHLTTPCDisplayPad::ExecEvent(Int_t event, Int_t px, Int_t py, TObject *selected){
+void AliHLTTPCDisplayPad::ExecEvent(Int_t event, Int_t /*px*/, Int_t /*py*/, TObject *selected){
    // Saves the Zoom Position of the Histogram 
 
    // - Mouse down on Axis : StartPoint of Range

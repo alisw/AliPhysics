@@ -60,13 +60,19 @@ using namespace std;
 ClassImp(AliHLTTPCDisplayResiduals)
 
 //____________________________________________________________________________________________________
-AliHLTTPCDisplayResiduals::AliHLTTPCDisplayResiduals(AliHLTTPCDisplayMain* display) {
+  AliHLTTPCDisplayResiduals::AliHLTTPCDisplayResiduals(AliHLTTPCDisplayMain* display):
+    fDisplay(NULL),
+    fHistallresidualsY(NULL),
+    fHistallresidualsZ(NULL),
+    fHistHits_S(NULL),
+    fHistQ_Track(NULL),
+    fHistQ_S(NULL),
+    fGraphresidualsY(NULL),
+    fGraphresidualsZ(NULL),
+    fGraphresidualsYLength(NULL) {
+
     // constructor
     fDisplay = display;
-
-    fGraphresidualsY = NULL;
-    fGraphresidualsZ = NULL;
-    fGraphresidualsYLength = NULL;
 
     fHistallresidualsY = new TH1F ("fHistallresidualsY","Y Residuals of all tracks in selected slices;residuals",5000,-100,100);
     fHistallresidualsZ = new TH1F ("fHistallresidualsZ","Z Residuals of all tracks in selected slices;residuals",5000,-100,100);

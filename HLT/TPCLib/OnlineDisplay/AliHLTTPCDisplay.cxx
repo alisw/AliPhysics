@@ -79,30 +79,63 @@
 using namespace std;
 #endif
 
-ClassImp(AliHLTTPCDisplay)
+ClassImp(AliHLTTPCDisplay);
+
+AliHLTTPCDisplay::AliHLTTPCDisplay( Char_t * gfile ) :
+  fTrackParam(),
+  fClusters(),
+  fTracks(),
+  fNcl(),
+  fHistrawcl(NULL),
+  fHistraw(NULL),
+  fHistpad1(NULL),
+  fHistpad2(NULL),
+  fHistpad3(NULL),
+  fHistallresidualsY(NULL),
+  fHistallresidualsZ(NULL),
+  fHistcharge(NULL),
+  fGraphresidualsY(NULL),
+  fGraphresidualsZ(NULL),
+  fGraphresidualsYLength(NULL),
+  fGraphresidualsZLength(NULL),
+  fGeom(NULL),
+  fBackColor(1),
+  fLineColor(0),
+  fKeepView(kFALSE),
+  fPad(-1),
+  fPadRow(0),
+  fSlicePadRow(0),
+  fNPads(0),
+  fNTimes(0),
+  fMinHits(0),
+  fPtThreshold(0),
+  fSelectTrackSwitch(kFALSE),
+  fSelectTrack(-1),
+  fSelectTrackSlice(0),
+  fSelectCluster(0),
+  fMinSlice(0),
+  fMaxSlice(25),
+  fSlicePair(kFALSE),
+  fSliceArray(),
+  fDrawGeo(kFALSE),
+  fcolorbin(),
+  fbinct(),
+  fpmarr(),
+  fSwitch3DCluster(kFALSE),
+  fSwitch3DTracks(kFALSE),
+  fSwitch3DPadRow(kFALSE),
+  fSwitch3DGeometry(kFALSE) 
+{
+  // constructor    
+  InitDisplay(gfile);
+}
 
 // #############################################################################
 void AliHLTTPCDisplay::InitDisplay(Char_t *gfile) {
     //constructor
     memset(fClusters,0,36*6*sizeof(AliHLTTPCSpacePointData*));
     memset(fNcl, 0, 36*6*sizeof(UInt_t)); 
-
-    fTracks = NULL;
-    fHistrawcl = NULL;
-    fHistraw = NULL;
-    fHistpad1 = NULL;
-    fHistpad2 = NULL;
-    fHistpad3 = NULL;
-    fHistallresidualsY = NULL;   
-    fHistallresidualsZ = NULL;
-    fHistcharge = NULL;
-    fGraphresidualsY = NULL;
-    fGraphresidualsZ = NULL;
-    fGraphresidualsYLength = NULL;
-    fGraphresidualsZLength = NULL;
-
-
-    fGeom = NULL;
+   
 // ---------------------------------------------------
 // In order to be backward compatible
 // ---------------------------------------------------
@@ -110,34 +143,11 @@ void AliHLTTPCDisplay::InitDisplay(Char_t *gfile) {
     //fc1 = NULL;
 #endif 
 // ---------------------------------------------------
-    fNPads = 0;
-    fNTimes = 0;
-    fMinHits = 0;
-    fPtThreshold = 0.;
-    fPad = -1;
-    fPadRow = 0;
-    fSlicePadRow = 0; 
-    fSelectTrack = -1;
-    fSelectTrackSlice = 0;
-    fSelectTrackSwitch = kFALSE;
-    fSelectCluster = 0;
-
-    fMinSlice = 0;
-    fMaxSlice = 35;
-    fSlicePair = kFALSE;
-
+   
     SetSliceArray();
-
-    fBackColor = 1; 
-    fLineColor = 0;
-    fKeepView = kFALSE;
-
-    fSwitch3DCluster = kFALSE;
-    fSwitch3DTracks = kFALSE;
-    fSwitch3DPadRow = kFALSE;
-    fSwitch3DGeometry = kFALSE;
-
+   
     AliHLTTPCTransform::SetBField(0.4);
+    
     LoadGeometrie(gfile);
 }
 

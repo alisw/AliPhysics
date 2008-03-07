@@ -99,7 +99,7 @@ AliHLTComponent* AliHLTTPCRunStatisticsProducerComponent::Spawn() {
 }
  
 // ------------------------------------------------------------------------------------------
-Int_t AliHLTTPCRunStatisticsProducerComponent::DoInit( int argc, const char** argv ) {
+Int_t AliHLTTPCRunStatisticsProducerComponent::DoInit( int /*argc*/, const char** /*argv*/ ) {
   // see header file for class documentation
 
   Int_t iResult = 0;
@@ -124,7 +124,8 @@ Int_t AliHLTTPCRunStatisticsProducerComponent::DoDeinit() {
 }
 
 // ------------------------------------------------------------------------------------------
-Int_t AliHLTTPCRunStatisticsProducerComponent::DoEvent( const AliHLTComponentEventData& /*evtData*/, AliHLTComponentTriggerData& trigData ) {
+Int_t AliHLTTPCRunStatisticsProducerComponent::DoEvent( const AliHLTComponentEventData& /*evtData*/,
+							AliHLTComponentTriggerData& /*trigData*/ ) {
   // see header file for class documentation
 
   // ** Process EventStatistics Block
