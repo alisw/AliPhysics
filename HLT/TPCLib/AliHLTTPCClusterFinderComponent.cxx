@@ -73,7 +73,6 @@ AliHLTTPCClusterFinderComponent::AliHLTTPCClusterFinderComponent(int mode)
   fModeSwitch(mode),
   fUnsorted(0),
   fPatch(0),
-  fPadArray(NULL),
   fGetActivePads(0)
 {
   // see header file for class documentation
@@ -451,23 +450,6 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& ev
 	fClusterFinder->SetUnsorted(fUnsorted);
 	fClusterFinder->SetPatch(patch);
       }
-      /*      if(fUnsorted){
-	      if(fPadArray==NULL){
-	      fClusterFinder->SetUnsorted(fUnsorted);
-	      //fPadArray = new AliHLTTPCPadArray(patch);
-	      //fPadArray->InitializeVector(fModeSwitch);
-	      }
-	      else if(fPadArray->GetPatch()!=patch||fPadArray->GetPatch()==-1){
-	      if (GetEventCount()<3) {
-	      HLTWarning("pad array not initialized for data of specification 0x%08x, block skipped", iter->fSpecification);
-	      } else if ((GetEventCount()%5000)==0) { // assuming 0.5 to 1kHz this gives a message rate of 0.1 to 0.5 Hz
-	      HLTWarning("reminder: pad array not initialized for data of specification 0x%08x", iter->fSpecification);
-	      }
-	      continue;
-	      }
-	      }
-      */
-      
 
       outPtr = (AliHLTTPCClusterData*)outBPtr;
 
@@ -477,7 +459,7 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& ev
       fClusterFinder->SetOutputArray( (AliHLTTPCSpacePointData*)outPtr->fSpacePoints );
 	
       if(fUnsorted){
-	fClusterFinder->ReadDataUnsorted(iter->fPtr, iter->fSize, fModeSwitch);
+	fClusterFinder->ReadDataUnsorted(iter->fPtr, iter->fSize);
 
 	fClusterFinder->FindClusters();
       }
@@ -507,28 +489,6 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& ev
       outBPtr += mysize;
       outPtr = (AliHLTTPCClusterData*)outBPtr;
 	
-      /*      if(fGetActivePads){
-	      AliHLTTPCPadArray::AliHLTTPCActivePads* outPtrActive;
-	      UInt_t activePadsSize, activePadsN = 0;
-	      outPtrActive = (AliHLTTPCPadArray::AliHLTTPCActivePads*)outBPtr;
-	      offset=tSize;
-	      Int_t maxActivePads = (size-tSize)/sizeof(AliHLTTPCPadArray::AliHLTTPCActivePads);
-	      activePadsSize= fClusterFinder->GetActivePads((AliHLTTPCPadArray::AliHLTTPCActivePads*)outPtrActive,maxActivePads)*sizeof(AliHLTTPCPadArray::AliHLTTPCActivePads);
- 	
-	      AliHLTComponentBlockData bdActive;
-	      FillBlockData( bdActive );
-	      bdActive.fOffset = offset;
-	      bdActive.fSize = activePadsSize;
-	      bdActive.fSpecification = iter->fSpecification;
-	      bdActive.fDataType = AliHLTTPCDefinitions::fgkActivePadsDataType;
-	      outputBlocks.push_back( bdActive );
- 	
-	      tSize+=activePadsSize;
-	      outBPtr += activePadsSize;
-	      outPtrActive = (AliHLTTPCPadArray::AliHLTTPCActivePads*)outBPtr;
-	      }
-      */
- 
 
       if ( tSize > size )
 	{

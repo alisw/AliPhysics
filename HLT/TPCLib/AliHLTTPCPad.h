@@ -26,7 +26,6 @@
 
 typedef Int_t AliHLTTPCSignal_t;
 
-#define DebugHisto 0
 
 /**
  * @class AliHLTTPCPad
@@ -47,9 +46,9 @@ public:
 
   /** 
    * Constructor
-   * @param mode  mode determines if one need the raw data(not quite true at the moment but will be)
+   * @param dummy  dummy determines if one need the raw data. If a dummy number is given, the pad object will be initialized without using memory for raw data
    */
-  AliHLTTPCPad(Int_t mode);
+  AliHLTTPCPad(Int_t dummy);
 
   /** 
    * Constructor
@@ -66,10 +65,10 @@ public:
   struct AliClusterData
   {
     UInt_t fTotalCharge;   //tot charge of cluster
-    UInt_t fPad;       //pad value
-    UInt_t fTime;      //time value
-    ULong64_t fPad2;   //for error in XY direction
-    ULong64_t fTime2;  //for error in Z  direction
+    UInt_t fPad;           //pad value
+    UInt_t fTime;          //time value
+    ULong64_t fPad2;       //for error in XY direction
+    ULong64_t fTime2;      //for error in Z  direction
     UInt_t fMean;          //mean in time
     UInt_t fFlags;         //different flags
     UInt_t fChargeFalling; //for deconvolution
@@ -90,11 +89,13 @@ public:
 
   /**
    * Get the row number.
+   * @return Row number
    */
   Int_t GetRowNumber() const {return fRowNo;}
 
   /**
-   * Get the pad number.
+   * Get the pad number on the row.
+   * @return Pad number on row
    */
   Int_t GetPadNumber() const {return fPadNo;}
 
@@ -257,20 +258,28 @@ public:
    */
   Int_t GetSize() const {return fNofBins;}
   
+  /*
+   * Clears the vector of cluster candidates.
+   */
   void ClearCandidates();
 
   /**
    * Set the data array to -1
    */
   void SetDataToDefault();
+
   /**
    * Stores the signal in the data array, stores the timebin number of the signal,
    * and increments a counter.
+   * @param bin       Timebin nuber of signal
+   * @param signal    Size of signal 
    */
   void SetDataSignal(Int_t bin,Int_t signal);
 
   /**
    * Returns the signal in the specified bin
+   * @param bin       Timebin number
+   * @return          Signal in the given timebin
    */
   Int_t GetDataSignal(Int_t bin) const;
 
@@ -285,24 +294,45 @@ public:
    * The method is checked with 2006 cosmics data, and it looks good.
    * If you want to use the threshold approach you HAVE to set nSigma=-1 and threshold>0. For example: If you want all signals 
    * 30 adc counts above threshold you should call the function like this: ZeroSuppress(-1,30)
-   * @param nRMS            Specify nRMS threshold
-   * @param threshold       Specify what adc threshold above average (remember to give nRMS=-1 if you want to use this approach)
-   * @param reqMinPoint     Required minimum number of points to do zerosuppression default AliHLTTPCTransform::GetNTimeBins/2 (1024/2).
-   * @param beginTime       Lowest timebin value. Gating grid causes some problems in the first timebins.
-   * @param endTime         Highest timebin value.
+   * @param nRMS               Specify nRMS threshold
+   * @param threshold          Specify what adc threshold above average (remember to give nRMS=-1 if you want to use this approach)
+   * @param reqMinPoint        Required minimum number of points to do zerosuppression default AliHLTTPCTransform::GetNTimeBins/2 (1024/2).
+   * @param beginTime          Lowest timebin value. Gating grid causes some problems in the first timebins.
+   * @param endTime            Highest timebin value.
+   * @param timebinsLeft       Timebins to include left of the signals above threshold (to include tails)
+   * @param timebinsRight      Timebins to include right of the signals above threshold (to include tails)
+   * @param valueBelowAverage  The number of adc-counts below the average value. (sometimes there can be useful to also add some signals below average for your signals, especially when there is a lot of noise) It means that more of the tails of the signal is added.
    */
   void ZeroSuppress(Double_t nRMS,Int_t threshold,Int_t reqMinPoint,Int_t beginTime,Int_t endTime,Int_t timebinsLeft, Int_t timebinsRight, Int_t valueBelowAverage);
   
-
+  /**
+   * Returns the next signal which survived the ZeroSuppression 
+   * @param time            Refernence to timebin number
+   * @param signal          Refernence to signal
+   * @return                True if there are more signals
+  */
   Bool_t GetNextGoodSignal(Int_t &time,Int_t &signal);
 
+  /**
+   * Bool method which returns the timein number of the first signal and number of consecutive signals, used together with GetPointer(bin) to access data 
+   * @param time            Refernence to timebin number
+   * @param bunchSize       Refernence to number of consecutive signals
+   * @return                True if there are more signals
+  */
+  Bool_t GetNextGoodSignal(Int_t &time,Int_t &bunchSize,Int_t dummy);
+
+  /**
+   * Returns number of signals added
+   * @return                Number of signals
+   */
   UInt_t GetNAddedSignals(){return fSizeOfSignalPositionArray;}
 
   /**
-   * Finds the cluster candidate. If atleast two signals in the data array are neighbours
-   * they are stored in a cluster candidate vector.
+   * Returns the pointer to the first data signal
+   * @param bin             Timebin number
+   * @return                pointer to data signal in bin
    */
-  void FindClusterCandidates();
+  UInt_t* GetPointer(Int_t bin){return (UInt_t*)&fDataSignals[bin];  }
 
   /**
    * Adds cluster candidate to the fClusterCandidates.
@@ -323,8 +353,6 @@ public:
    * Set the nSigma threshold
    */
   void SetNSigmaThreshold(Double_t i){fNSigmaThreshold=i;}
-
-  void SaveHistograms();
 
   /**
    * Vector of cluster candidates
@@ -395,17 +423,19 @@ public:
    * Array containing info on which bins have signals
    */
   Int_t *fSignalPositionArray;                                     //! transient
+
+  /** Size of signals in fSignalPositionArray */
   Int_t fSizeOfSignalPositionArray;                                //! transient
 
+  /** Number of good signals sent (good signals is signals surviving ZeroSuppression) */
   Int_t fNGoodSignalsSent;
   
+  /** Number of sigma threshold for the ZeroSuppression */
   Double_t fNSigmaThreshold;                                       //! transient
+
+  /** Signal threshold for the ZeroSuppression */
   Double_t fSignalThreshold;                                       //! transient
 
-  TH1F *fDebugHistoBeforeZS;                                       //! transient
-  TH1F *fDebugHistoAfterZS;                                        //! transient
-  
-  Int_t fModeSwitch;                                               //! transient
-  ClassDef(AliHLTTPCPad, 4)
+  ClassDef(AliHLTTPCPad, 5)
 };
 #endif // ALIHLTTPCPAD_H

@@ -75,12 +75,9 @@ AliHLTTPCPad::AliHLTTPCPad()
   fDataSignals(NULL),
   fSignalPositionArray(NULL),
   fSizeOfSignalPositionArray(0),
-  fNSigmaThreshold(0),
-  fSignalThreshold(0),
-  fModeSwitch(0),
   fNGoodSignalsSent(0),
-  fDebugHistoBeforeZS(NULL),
-  fDebugHistoAfterZS(NULL)
+  fNSigmaThreshold(0),
+  fSignalThreshold(0)
 {
   // see header file for class documentation
   // or
@@ -91,16 +88,16 @@ AliHLTTPCPad::AliHLTTPCPad()
   fDataSignals= new AliHLTTPCSignal_t[AliHLTTPCTransform::GetNTimeBins()];
   memset( fDataSignals, 0xFF, sizeof(Int_t)*(AliHLTTPCTransform::GetNTimeBins()));
   
-  fSignalPositionArray= new AliHLTTPCSignal_t[AliHLTTPCTransform::GetNTimeBins()];
+  fSignalPositionArray= new Int_t[AliHLTTPCTransform::GetNTimeBins()];
   memset( fSignalPositionArray, 0xFF, sizeof(Int_t)*(AliHLTTPCTransform::GetNTimeBins()));
   fSizeOfSignalPositionArray=0;
 
 }
 
-AliHLTTPCPad::AliHLTTPCPad(Int_t mode)
+AliHLTTPCPad::AliHLTTPCPad(Int_t dummy)
   :
-  fClusterCandidates(0),
-  fUsedClusterCandidates(0),
+  fClusterCandidates(),
+  fUsedClusterCandidates(),
   fRowNo(-1),
   fPadNo(-1),
   fThreshold(0),
@@ -120,18 +117,16 @@ AliHLTTPCPad::AliHLTTPCPad(Int_t mode)
   fDataSignals(NULL),
   fSignalPositionArray(NULL),
   fSizeOfSignalPositionArray(0),
-  fNSigmaThreshold(0),
-  fSignalThreshold(0),
-  fModeSwitch(mode),
   fNGoodSignalsSent(0),
-  fDebugHistoBeforeZS(NULL),
-  fDebugHistoAfterZS(NULL)
+  fNSigmaThreshold(0),
+  fSignalThreshold(0)
 {
   // see header file for class documentation
   // or
   // refer to README to build package
   // or
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+  dummy=0;//to get rid of warning until things are cleaned up better
 }
 
 AliHLTTPCPad::AliHLTTPCPad(Int_t offset, Int_t nofBins)
@@ -157,12 +152,9 @@ AliHLTTPCPad::AliHLTTPCPad(Int_t offset, Int_t nofBins)
   fDataSignals(NULL),
   fSignalPositionArray(NULL),
   fSizeOfSignalPositionArray(0),
-  fNSigmaThreshold(0),
-  fSignalThreshold(0),
-  fModeSwitch(0),
   fNGoodSignalsSent(0),
-  fDebugHistoBeforeZS(NULL),
-  fDebugHistoAfterZS(NULL)
+  fNSigmaThreshold(0),
+  fSignalThreshold(0)
 {
   // see header file for class documentation
 }
@@ -178,17 +170,9 @@ AliHLTTPCPad::~AliHLTTPCPad()
     delete [] fDataSignals;
     fDataSignals=NULL;
   }
-  if (fSignalPositionArray) {
+  if (fSignalPositionArray!=NULL) {
     delete [] fSignalPositionArray;
     fSignalPositionArray=NULL;
-  }
-  if(fDebugHistoBeforeZS){
-    delete fDebugHistoBeforeZS;
-    fDebugHistoBeforeZS=NULL;
-  }
-  if(fDebugHistoAfterZS){
-    delete fDebugHistoAfterZS;
-    fDebugHistoAfterZS=NULL;
   }
 }
 
@@ -197,15 +181,6 @@ Int_t AliHLTTPCPad::SetID(Int_t rowno, Int_t padno)
   // see header file for class documentation
   fRowNo=rowno;
   fPadNo=padno;
-
-#if DebugHisto
-  char *nameBefore;
-  sprintf(nameBefore,"beforeRow%dPad%d",fRowNo,fPadNo);
-  char *nameAfter;
-  sprintf(nameAfter,"afterRow%dPad%d",fRowNo,fPadNo);
-  fDebugHistoBeforeZS = new TH1F(nameBefore,nameBefore,1024,0,1024);
-  fDebugHistoAfterZS = new TH1F(nameAfter,nameAfter,1024,0,1024);
-#endif
 
   return 0;
 }
@@ -508,9 +483,9 @@ void AliHLTTPCPad::PrintRawData()
   // see header file for class documentation
   for(Int_t bin=0;bin<AliHLTTPCTransform::GetNTimeBins();bin++){
     if(GetDataSignal(bin)>0)
-      cout<<fRowNo<<"\t"<<fPadNo<<"\t"<<bin<<"\t"<<GetDataSignal(bin)<<endl;;
+      //This cout should be here since using logging produces output that is much more difficult to read
+	cout<<fRowNo<<"\t"<<fPadNo<<"\t"<<bin<<"\t"<<GetDataSignal(bin)<<endl;
   }
-  //  cout<<"bins: "<<AliHLTTPCTransform::GetNTimeBins()<<endl;
 }
 
 void AliHLTTPCPad::ClearCandidates(){
@@ -521,12 +496,13 @@ void AliHLTTPCPad::ClearCandidates(){
 void AliHLTTPCPad::SetDataToDefault()
 {
   // see header file for class documentation
-  if(fDataSignals && fSignalPositionArray){
+  //  if(fDataSignals && fSignalPositionArray){
     for(Int_t i =0;i<fSizeOfSignalPositionArray;i++){
       fDataSignals[fSignalPositionArray[i]]=-1;
     }
     fSizeOfSignalPositionArray=0;
-  }
+    fNGoodSignalsSent = 0;
+    //  }
 }
 
 void AliHLTTPCPad::SetDataSignal(Int_t bin,Int_t signal)
@@ -535,23 +511,36 @@ void AliHLTTPCPad::SetDataSignal(Int_t bin,Int_t signal)
   fDataSignals[bin]=signal;
   fSignalPositionArray[fSizeOfSignalPositionArray]=bin;
   fSizeOfSignalPositionArray++;
-#if DebugHisto 
-  fDebugHistoBeforeZS->Fill(bin,signal);
-#endif
 }
 
-Bool_t AliHLTTPCPad::GetNextGoodSignal(Int_t &time, Int_t &signal ){
-  /*  for(Int_t i=70;i<900;i++){
-    if(fDataSignals[i]>0){
-      printf("Signals which are good: Bin: %d Signal: %d\n",i,fDataSignals[i]);
-    }
-    }*/
+Bool_t AliHLTTPCPad::GetNextGoodSignal(Int_t &time, Int_t &signal){
   if(fNGoodSignalsSent<fSizeOfSignalPositionArray&&fSizeOfSignalPositionArray>0){
     time = fSignalPositionArray[fNGoodSignalsSent];
     signal = GetDataSignal(time);
-    //    printf("GoodSignal: Row: %d Pad: %d time %d  signal %d  signalsSent: %d\n",fRowNo,fPadNo,fSignalPositionArray[fNGoodSignalsSent],GetDataSignal(time), fNGoodSignalsSent);
+
     fNGoodSignalsSent++;
     return kTRUE;
+  }
+  return kFALSE;
+}
+
+Bool_t AliHLTTPCPad::GetNextGoodSignal(Int_t &time,Int_t &bunchSize,Int_t dummy){
+  dummy=0;//to get rid of warning until things are cleaned up better
+  if(fNGoodSignalsSent<fSizeOfSignalPositionArray&&fSizeOfSignalPositionArray>0){
+    time = fSignalPositionArray[fNGoodSignalsSent];
+    bunchSize=1;
+    fNGoodSignalsSent++;
+    while(fNGoodSignalsSent<fSizeOfSignalPositionArray){
+      if(fDataSignals[time+bunchSize+1]>0){
+	bunchSize++;
+	fNGoodSignalsSent++;
+      }
+      else{
+	break;
+      }
+    }
+    fNGoodSignalsSent++;
+   return kTRUE;
   }
   return kFALSE;
 }
@@ -613,10 +602,9 @@ void AliHLTTPCPad::ZeroSuppress(Double_t nRMS, Int_t threshold, Int_t reqMinPoin
     HLTInfo("No signals added for this pad, zerosuppression aborted: pad %d row %d",fPadNo,fRowNo);
     return;
   }
-  // HLTInfo("sumNAdded=%d    nAdded=%d pad %d ",sumNAdded,nAdded,fPadNo);
+
   Double_t averageValue=(Double_t)sumNAdded/nAdded;//true average for threshold approach, average of signals squared for rms approach
  
-  //  Double_t rms=0;
   if(useRMS){
     //Calculate the RMS
     if(averageValue>0){
@@ -630,14 +618,12 @@ void AliHLTTPCPad::ZeroSuppress(Double_t nRMS, Int_t threshold, Int_t reqMinPoin
     fThresholdUsed = (Int_t)(averageValue + threshold); 
   }
 
-  averageValue = 55.3;
-  // Do zero suppression on the adc values within [beginTime,endTime]
+  // Do zero suppression on the adc values within [beginTime,endTime](add the good values)
   for(Int_t i=beginTime;i<endTime;i++){
     if(fDataSignals[i]>fThresholdUsed){
-      //  HLTInfo("Signal Larger in pad %d time %d signal %d  ,   threshold: %d  averageValue %e",fPadNo,i,fDataSignals[i],fThresholdUsed, averageValue);
       Int_t firstSignalTime=i;
       for(Int_t left=1;left<timebinsLeft;left++){//looking 5 to the left of the signal to add tail
-	if(fDataSignals[i-left]-averageValue+valueUnderAverage>0&&i-left>=beginTime){
+	if(fDataSignals[i-left]-averageValue+valueUnderAverage>0 && i-left>=beginTime){
 	  firstSignalTime--;
 	}
 	else{
@@ -645,6 +631,9 @@ void AliHLTTPCPad::ZeroSuppress(Double_t nRMS, Int_t threshold, Int_t reqMinPoin
 	}
       }
       Int_t lastSignalTime=i;
+      while(fDataSignals[lastSignalTime+1]>fThresholdUsed && lastSignalTime+1<endTime){
+	lastSignalTime++;
+      }
       for(Int_t right=1;right<timebinsRight;right++){//looking 5 to the left of the signal to add tail
 	if(fDataSignals[i+right]-averageValue+valueUnderAverage>0&&i+right<endTime){
 	  lastSignalTime++;
@@ -653,26 +642,28 @@ void AliHLTTPCPad::ZeroSuppress(Double_t nRMS, Int_t threshold, Int_t reqMinPoin
 	  break;
 	}	
       }
+      
       for(Int_t t=firstSignalTime;t<lastSignalTime;t++){
-	//	cout<<"Row: "<<fRowNo<<" Pad: "<<fPadNo<<"   Adding to tmebin: "<<t<<" signal: "<<(AliHLTTPCSignal_t)(fDataSignals[t]-averageValue + valueUnderAverage)<<endl;
 	fDataSignals[t]=(AliHLTTPCSignal_t)(fDataSignals[t]-averageValue + valueUnderAverage);
-	//	cout<<"Adding to signalPosition array bin number: "<<fSizeOfSignalPositionArray<<"    timebin number: "<<t<<endl;
 	fSignalPositionArray[fSizeOfSignalPositionArray]=t;
 	fSizeOfSignalPositionArray++;
-	//	cout<<"Number of signals added so far: "<<fSizeOfSignalPositionArray<<"     firstSignalTimeBin: "<<firstSignalTime<<"     lastSignalTimeBin: "<<lastSignalTime<<endl;
-	/*	if(fRowNo==29&&fPadNo==58){
-	  cout<<"Signal added: Row: "<<fRowNo<<" Pad: "<<fPadNo<<"  Time: "<<t<<" signal: "<<fDataSignals[t]<<"  #signals: "<<fSizeOfSignalPositionArray<<endl;
-	}
-	*/
-#if DebugHisto
-      fDebugHistoAfterZS->Fill(t,fDataSignals[t]);
-#endif
       }
       i+=lastSignalTime;
     }
-    else{
-      fDataSignals[i]=-1;
+  }
+  //reset the rest of the data
+  Int_t counterSize=fSizeOfSignalPositionArray;
+
+  for(Int_t d=endTime;d>=beginTime;d--){
+    if(d==fSignalPositionArray[counterSize-1]&&counterSize-1>=0){
+      counterSize--;
     }
+    else{
+      fDataSignals[d]=-1;
+    }
+  }
+  if(fDataSignals[beginTime+1]<1){
+    fDataSignals[beginTime]=0;
   }
 }
 
@@ -680,148 +671,3 @@ void AliHLTTPCPad::AddClusterCandidate(AliHLTTPCClusters candidate){
   fClusterCandidates.push_back(candidate);
   fUsedClusterCandidates.push_back(0);
 }
-
-void AliHLTTPCPad::SaveHistograms(){
-#if DebugHisto
-  if(fSizeOfSignalPositionArray==0){
-    return;
-  }
-  char* filename;
-  sprintf(filename,"/afsuser/kenneth/SimpleComponentWrapper/histos/HistogramsRow%dPad%d.root",fRowNo,fPadNo);
-  TFile file(filename,"RECREATE");
-  fDebugHistoBeforeZS->Write();
-  fDebugHistoAfterZS->Write();
-  file.Close();
-#endif
-}
-
-void AliHLTTPCPad::FindClusterCandidates()
-{
-  // see header file for class documentation
-  /*
-  if(fSizeOfSignalPositionArray<2){
-    return;
-  }
-
-  if(fNSigmaThreshold>0){
-    ZeroSuppress(fNSigmaThreshold);
-  }
-  else if(fSignalThreshold>0){
-    ZeroSuppress((Double_t)0,(Int_t)fSignalThreshold);
-  }
-  UInt_t seqcharge=0;
-  UInt_t seqaverage=0;
-  UInt_t seqerror=0;
-  vector<Int_t> tmpPos;
-  vector<Int_t> tmpSig;
-  UInt_t isFalling=0;
-
-  for(Int_t pos=fSizeOfSignalPositionArray-2;pos>=0;pos--){
-    if(fSignalPositionArray[pos]==fSignalPositionArray[pos+1]+1){
-      seqcharge+=fDataSignals[fSignalPositionArray[pos+1]];	
-      seqaverage += fSignalPositionArray[pos+1]*fDataSignals[fSignalPositionArray[pos+1]];
-      seqerror += fSignalPositionArray[pos+1]*fSignalPositionArray[pos+1]*fDataSignals[fSignalPositionArray[pos+1]];
-	  
-      tmpPos.push_back(fSignalPositionArray[pos+1]);
-      tmpSig.push_back(fDataSignals[fSignalPositionArray[pos+1]]);
-
-      if(fDataSignals[fSignalPositionArray[pos+1]]>fDataSignals[fSignalPositionArray[pos]]){
-	isFalling=1;
-      }
-      if(fDataSignals[fSignalPositionArray[pos+1]]<fDataSignals[fSignalPositionArray[pos]]&&isFalling){
-	Int_t seqmean=0;
-	seqmean = seqaverage/seqcharge;
-	
-	//Calculate mean in pad direction:
-	Int_t padmean = seqcharge*fPadNo;
-	Int_t paderror = fPadNo*padmean;
-	AliHLTTPCClusters candidate;
-	candidate.fTotalCharge   = seqcharge;
-	candidate.fPad       = padmean;
-	candidate.fPad2      = paderror;
-	candidate.fTime      = seqaverage;
-	candidate.fTime2     = seqerror;
-	candidate.fMean          = seqmean;
-	candidate.fLastMergedPad = fPadNo;
-	fClusterCandidates.push_back(candidate);
-	fUsedClusterCandidates.push_back(0);
-	isFalling=0;
-	seqcharge=0;
-	seqaverage=0;
-	seqerror=0;
-
-	tmpPos.clear();
-	tmpSig.clear();
-
-	continue;
-      }
-	 
-      if(pos<1){
-	seqcharge+=fDataSignals[fSignalPositionArray[0]];	
-	seqaverage += fSignalPositionArray[0]*fDataSignals[fSignalPositionArray[0]];
-	seqerror += fSignalPositionArray[0]*fSignalPositionArray[0]*fDataSignals[fSignalPositionArray[0]];
-	tmpPos.push_back(fSignalPositionArray[0]);
-	tmpSig.push_back(fDataSignals[fSignalPositionArray[0]]);
-	  
-	//Calculate mean of sequence:
-	Int_t seqmean=0;
-	seqmean = seqaverage/seqcharge;
-	  
-	//Calculate mean in pad direction:
-	Int_t padmean = seqcharge*fPadNo;
-	Int_t paderror = fPadNo*padmean;
-	AliHLTTPCClusters candidate;
-	candidate.fTotalCharge   = seqcharge;
-	candidate.fPad       = padmean;
-	candidate.fPad2      = paderror;
-	candidate.fTime      = seqaverage;
-	candidate.fTime2     = seqerror;
-	candidate.fMean          = seqmean;
-	candidate.fLastMergedPad = fPadNo;
-	fClusterCandidates.push_back(candidate);
-	fUsedClusterCandidates.push_back(0);
-	isFalling=0;
-	seqcharge=0;
-	seqaverage=0;
-	seqerror=0;
-
-	tmpPos.clear();
-	tmpSig.clear();
-      }
-    }
-    else if(seqcharge>0){
-      seqcharge+=fDataSignals[fSignalPositionArray[pos+1]];	
-      seqaverage += fSignalPositionArray[pos+1]*fDataSignals[fSignalPositionArray[pos+1]];
-      seqerror += fSignalPositionArray[pos+1]*fSignalPositionArray[pos+1]*fDataSignals[fSignalPositionArray[pos+1]];
-      tmpPos.push_back(fSignalPositionArray[pos+1]);
-      tmpSig.push_back(fDataSignals[fSignalPositionArray[pos+1]]);
-
-      //Calculate mean of sequence:
-      Int_t seqmean=0;
-      seqmean = seqaverage/seqcharge;
-	
-      //Calculate mean in pad direction:
-      Int_t padmean = seqcharge*fPadNo;
-      Int_t paderror = fPadNo*padmean;
-      AliHLTTPCClusters candidate;
-      candidate.fTotalCharge   = seqcharge;
-      candidate.fPad       = padmean;
-      candidate.fPad2      = paderror;
-      candidate.fTime      = seqaverage;
-      candidate.fTime2     = seqerror;
-      candidate.fMean          = seqmean;
-      candidate.fLastMergedPad = fPadNo;
-      fClusterCandidates.push_back(candidate);
-      fUsedClusterCandidates.push_back(0);
-      isFalling=0;
-      seqcharge=0;
-      seqaverage=0;
-      seqerror=0;
-
-      tmpPos.clear();
-      tmpSig.clear();
-    }
-  }
-  */
-}
-

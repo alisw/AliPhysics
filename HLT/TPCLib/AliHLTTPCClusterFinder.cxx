@@ -34,7 +34,6 @@
 #include "AliHLTTPCSpacePointData.h"
 #include "AliHLTTPCMemHandler.h"
 #include "AliHLTTPCPad.h"
-#include "AliHLTTPCPadArray.h"
 #include <sys/time.h>
 
 #if __GNUC__ >= 3
@@ -143,14 +142,12 @@ AliHLTTPCClusterFinder::AliHLTTPCClusterFinder()
   fXYErr(0.2),
   fZErr(0.3),
   fOccupancyLimit(1.0),
-  fPadArray(NULL),
   fUnsorted(0),
-  fActivePads(),
-  fNumberOfPadsInRow(NULL),
-  fNumberOfRows(0),
+  fVectorInitialized(kFALSE),
   fRowPadVector(),
   fClusters(),
-  fVectorInitialized(kFALSE),
+  fNumberOfPadsInRow(NULL),
+  fNumberOfRows(0),
   fRowOfFirstCandidate(0)
 {
   //constructor  
@@ -197,10 +194,10 @@ void AliHLTTPCClusterFinder::InitializePadArray(){
 
   memset( fNumberOfPadsInRow, 0, sizeof(Int_t)*(fNumberOfRows));
 
-  for(Int_t i=0;i<fNumberOfRows;i++){
+  for(UInt_t i=0;i<fNumberOfRows;i++){
     fNumberOfPadsInRow[i]=AliHLTTPCTransform::GetNPads(i+fFirstRow);
     AliHLTTPCPadVector tmpRow;
-    for(Int_t j=0;j<fNumberOfPadsInRow[i];j++){
+    for(UInt_t j=0;j<fNumberOfPadsInRow[i];j++){
       AliHLTTPCPad *tmpPad = new AliHLTTPCPad(2);
       tmpPad->SetID(i,j);
       tmpRow.push_back(tmpPad);
@@ -213,8 +210,8 @@ void AliHLTTPCClusterFinder::InitializePadArray(){
 Int_t AliHLTTPCClusterFinder::DeInitializePadArray()
 {
   // see header file for class documentation
-  for(Int_t i=0;i<fNumberOfRows;i++){
-    for(Int_t j=0;j<fNumberOfPadsInRow[i];j++){
+  for(UInt_t i=0;i<fNumberOfRows;i++){
+    for(UInt_t j=0;j<fNumberOfPadsInRow[i];j++){
       delete fRowPadVector[i][j];
       fRowPadVector[i][j]=NULL;
     }
@@ -259,7 +256,6 @@ void AliHLTTPCClusterFinder::ProcessDigits()
   AliHLTTPCSignal_t charge=0;
 
   fNClusters = 0;
-  fActivePads.clear();
 
   // initialize block for reading packed data
   iResult=fDigitReader->InitBlock(fPtr,fSize,fFirstRow,fLastRow,fCurrentPatch,fCurrentSlice);
@@ -381,16 +377,6 @@ void AliHLTTPCClusterFinder::ProcessDigits()
 	  }
 	}
       }
-
-      /*      if (fActivePads.size()==0 ||
-	      fActivePads.back().fRow!=fCurrentRow-rowOffset ||
-	      fActivePads.back().fPad!=pad) {
-	      AliHLTTPCPadArray::AliHLTTPCActivePads entry;
-	      entry.fRow=fCurrentRow-rowOffset;
-	      entry.fPad=pad;
-	      fActivePads.push_back(entry);      
-	      }
-      */
       if (pCurrentPad) {
 	Float_t occupancy=pCurrentPad->GetOccupancy();
 	//HLTDebug("pad %d occupancy level: %f", pCurrentPad->GetPadNumber(), occupancy);
@@ -757,13 +743,7 @@ void AliHLTTPCClusterFinder::GetTrackID(Int_t pad,Int_t time,Int_t *trackID)
 
 //----------------------------------Methods for the new unsorted way of reading the data --------------------------------
 
-void AliHLTTPCClusterFinder::SetPadArray(AliHLTTPCPadArray * padArray)
-{
-  // see header file for function documentation
-  fPadArray=padArray;
-}
-
-void AliHLTTPCClusterFinder::ReadDataUnsorted(void* ptr,unsigned long size, Int_t mode)
+void AliHLTTPCClusterFinder::ReadDataUnsorted(void* ptr,unsigned long size)
 {
   //set input pointer
   fPtr = (UChar_t*)ptr;
@@ -810,7 +790,7 @@ void AliHLTTPCClusterFinder::ReadDataUnsorted(void* ptr,unsigned long size, Int_
 
 Bool_t AliHLTTPCClusterFinder::ComparePads(AliHLTTPCPad *nextPad,AliHLTTPCClusters* cluster,Int_t nextPadToRead){
   //Checking if we have a match on the next pad
-  for(Int_t candidateNumber=0;candidateNumber<nextPad->fClusterCandidates.size();candidateNumber++){
+  for(UInt_t candidateNumber=0;candidateNumber<nextPad->fClusterCandidates.size();candidateNumber++){
     AliHLTTPCClusters *candidate =&nextPad->fClusterCandidates[candidateNumber]; 
     if(cluster->fMean-candidate->fMean==1 || candidate->fMean-cluster->fMean==1 || cluster->fMean-candidate->fMean==0){
       cluster->fMean=candidate->fMean;
@@ -824,7 +804,7 @@ Bool_t AliHLTTPCClusterFinder::ComparePads(AliHLTTPCPad *nextPad,AliHLTTPCCluste
       //setting the matched pad to used
       nextPad->fUsedClusterCandidates[candidateNumber]=1;
       nextPadToRead++;
-      if(nextPadToRead<fNumberOfPadsInRow[fRowOfFirstCandidate]){
+      if(nextPadToRead<(Int_t)fNumberOfPadsInRow[fRowOfFirstCandidate]){
 	nextPad=fRowPadVector[fRowOfFirstCandidate][nextPadToRead];
 	ComparePads(nextPad,cluster,nextPadToRead);
       }
@@ -844,9 +824,9 @@ void AliHLTTPCClusterFinder::FindClusters()
   // see header file for function documentation
 
   AliHLTTPCClusters* tmpCandidate=NULL;
-  for(Int_t row=0;row<fNumberOfRows;row++){
+  for(UInt_t row=0;row<fNumberOfRows;row++){
     fRowOfFirstCandidate=row;
-    for(Int_t pad=0;pad<fNumberOfPadsInRow[row]-1;pad++){
+    for(UInt_t pad=0;pad<fNumberOfPadsInRow[row]-1;pad++){
       AliHLTTPCPad *tmpPad=fRowPadVector[row][pad];
       for(size_t candidate=0;candidate<tmpPad->fClusterCandidates.size();candidate++){
 	if(tmpPad->fUsedClusterCandidates[candidate]){
@@ -902,25 +882,6 @@ void AliHLTTPCClusterFinder::PrintClusters()
   }
 }
 
-/*
-
-Int_t AliHLTTPCClusterFinder::GetActivePads(AliHLTTPCPadArray::AliHLTTPCActivePads* activePads,Int_t maxActivePads)
-{
-  // see header file for function documentation
-  Int_t iResult=0;
-  if (fPadArray) {
-    iResult=fPadArray->GetActivePads((AliHLTTPCPadArray::AliHLTTPCActivePads*)activePads , maxActivePads);
-  } else if ((iResult=fActivePads.size())>0) {
-    if (iResult>maxActivePads) {
-      HLTWarning("target array (%d) not big enough to receive %d active pad descriptors", maxActivePads, iResult);
-      iResult=maxActivePads;
-    }
-    memcpy(activePads, &fActivePads[0], iResult*sizeof(AliHLTTPCPadArray::AliHLTTPCActivePads));
-  }
-
-  return iResult;
-}
-*/
 void AliHLTTPCClusterFinder::WriteClusters(Int_t nclusters,AliHLTTPCClusters *list)//This is used when using the AliHLTTPCClusters class for cluster data
 {
   //write cluster to output pointer

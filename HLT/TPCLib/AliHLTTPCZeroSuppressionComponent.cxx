@@ -33,12 +33,12 @@ using namespace std;
 #include "AliHLTTPCDigitReaderDecoder.h"
 #include "AliHLTTPCTransform.h"
 #include "AliHLTTPCDefinitions.h"
-#include "AliHLTTPCPad.h"
 #include "AliHLTTPCDigitData.h"
 #include <cstdlib>
 #include <cerrno>
 #include "TString.h"
 #include <sys/time.h>
+
 
 AliHLTTPCZeroSuppressionComponent gAliHLTTPCZeroSuppressionComponent;
 
@@ -47,25 +47,27 @@ ClassImp(AliHLTTPCZeroSuppressionComponent)
 
 AliHLTTPCZeroSuppressionComponent::AliHLTTPCZeroSuppressionComponent()
     :
-    fNTimeBins(0),
-    fStartTimeBin(0),
-    fEndTimeBin(AliHLTTPCTransform::GetNTimeBins()),
-    fNRMSThreshold(0),
-    fSignalThreshold(0),
-    fMinimumNumberOfSignals(AliHLTTPCTransform::GetNTimeBins()/2),
-    fOldRCUFormat(0),
-    fSortPads(0),
-    fRowPadVector(),
     fDigitReader(NULL),
-    fVectorInitialized(kFALSE),
+    fRowPadVector(),
     fNumberOfPadsInRow(NULL),
     fNumberOfRows(0),
     fCurrentPatch(0),
     fFirstRow(0),
     fLastRow(0),
+    fStartTimeBin(0),
+    fEndTimeBin(AliHLTTPCTransform::GetNTimeBins()),
+    fNTimeBins(0),
+    fNRMSThreshold(0),
+    fSignalThreshold(0),
+    fMinimumNumberOfSignals(AliHLTTPCTransform::GetNTimeBins()/2),
+    fOldRCUFormat(0),
+    fSortPads(0),
+    fVectorInitialized(kFALSE),
     fValueBelowAverage(5),
     fLeftTimeBin(5),
-    fRightTimeBin(5)
+    fRightTimeBin(5),
+    fGetActivePads(kFALSE),
+    fHwAddressList()
 {
   // see header file for class documentation
   // or
@@ -124,7 +126,7 @@ void AliHLTTPCZeroSuppressionComponent::GetOutputDataSize( unsigned long& constB
 {
   // see header file for class documentation
   constBase=0;
-  inputMultiplier=1.0;
+  inputMultiplier=2.0;
 }
 
 AliHLTComponent* AliHLTTPCZeroSuppressionComponent::Spawn()
@@ -188,7 +190,9 @@ int AliHLTTPCZeroSuppressionComponent::DoInit( int argc, const char** argv )
 
     // -- last timebin
     if ( !strcmp( argv[i], "end-timebin" ) ) {
-      fEndTimeBin = strtoul( argv[i+1], &cpErr ,0);
+      if(strtoul( argv[i+1], &cpErr ,0)<=(UInt_t)AliHLTTPCTransform::GetNTimeBins()){
+	fEndTimeBin = strtoul( argv[i+1], &cpErr ,0);
+      }
       if ( *cpErr ) {
 	HLTError("Cannot convert end-timebin specifier '%s'.", argv[i+1]);
 	return EINVAL;
@@ -271,6 +275,8 @@ int AliHLTTPCZeroSuppressionComponent::DoInit( int argc, const char** argv )
   HLTDebug("using AliHLTTPCDigitReaderDecoder");
   fDigitReader = new AliHLTTPCDigitReaderDecoder();
 
+  fHwAddressList.clear();
+
   return 0;
 }
 
@@ -293,14 +299,12 @@ Int_t AliHLTTPCZeroSuppressionComponent::DeInitializePadArray()
     }
     fRowPadVector.clear();
   }
-  
   return 1;
 } 
 
 void AliHLTTPCZeroSuppressionComponent::InitializePadArray(){
   // see header file for class documentation
-  //  HLTInfo("InitializingPadArray");
-  if(fCurrentPatch>5||fCurrentPatch<0){
+  if(fCurrentPatch>5){
     HLTFatal("Patch is not set");
     return;
   }
@@ -309,7 +313,7 @@ void AliHLTTPCZeroSuppressionComponent::InitializePadArray(){
   fLastRow = AliHLTTPCTransform::GetLastRow(fCurrentPatch);
 
   fNumberOfRows=fLastRow-fFirstRow+1;
-  fNumberOfPadsInRow= new UInt_t[fNumberOfRows];
+  fNumberOfPadsInRow= new Int_t[fNumberOfRows];
 
   memset( fNumberOfPadsInRow, 0, sizeof(Int_t)*(fNumberOfRows));
 
@@ -335,13 +339,16 @@ int AliHLTTPCZeroSuppressionComponent::DoEvent( const AliHLTComponentEventData& 
 {
   // see header file for class documentation
 
-  //  HLTInfo("Entering DoEvent in ZeroSuppression");
+  //  HLTInfo("Entered DoEvent in AliHLTTPCZeroSuppressionComponent");
 
   //  == init iter (pointer to datablock)
   const AliHLTComponentBlockData* iter = NULL;
   unsigned long ndx;
   //  HLTInfo("Number of blocks: ",evtData.fBlockCnt);
 
+  Bool_t wasInput = 0;
+
+  fHwAddressList.clear();
   //reading the data
   for ( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
     {
@@ -364,6 +371,7 @@ int AliHLTTPCZeroSuppressionComponent::DoEvent( const AliHLTComponentEventData& 
 	continue;
       }
 
+      wasInput = 1;
 
       UInt_t slice = AliHLTTPCDefinitions::GetMinSliceNr( *iter );
       UInt_t patch = AliHLTTPCDefinitions::GetMinPatchNr( *iter );
@@ -377,25 +385,25 @@ int AliHLTTPCZeroSuppressionComponent::DoEvent( const AliHLTComponentEventData& 
 
       //Here the reading of the data and the zerosuppression takes place
       while(fDigitReader->NextChannel()){//Pad
-	UInt_t row=(UInt_t)fDigitReader->GetRow();
-	UInt_t pad=(UInt_t)fDigitReader->GetPad();
+	Int_t row=fDigitReader->GetRow();
+	Int_t pad=fDigitReader->GetPad();
 	if(row==1000 || pad==1000){
 	  continue;
 	}
-	if(row>=fNumberOfRows){
+	if(row>=fNumberOfRows||row<0){
 	  continue;
 	}
-	else if(pad>=fNumberOfPadsInRow[row]){
+	else if(pad>=fNumberOfPadsInRow[row]||pad<0){
 	    continue;
 	}  
-	   AliHLTTPCPad *tmpPad = fRowPadVector[row][pad];
 	
-	//seg fault in here!!!!!!!!!!!!!
-
+	AliHLTTPCPad *tmpPad = fRowPadVector[row][pad];
+	tmpPad->SetDataToDefault();
+	
 	//reading data to pad
 	while(fDigitReader->NextBunch()){
 	  const UInt_t *bunchData= fDigitReader->GetSignals();
-	  UInt_t time=fDigitReader->GetTime();
+	  Int_t time=fDigitReader->GetTime();
 	  for(Int_t i=0;i<fDigitReader->GetBunchSize();i++){
 	    if(bunchData[i]>0){// disregarding 0 data.
 	      if(time+i>=fStartTimeBin && time+i<=fEndTimeBin){
@@ -404,12 +412,15 @@ int AliHLTTPCZeroSuppressionComponent::DoEvent( const AliHLTComponentEventData& 
 	    }
 	  }
 	}
-	if(tmpPad->GetNAddedSignals()>=fMinimumNumberOfSignals){
+	if(tmpPad->GetNAddedSignals()>=(UInt_t)fMinimumNumberOfSignals){
+	  fHwAddressList.push_back(fDigitReader->GetAltroBlockHWaddr());
 	  tmpPad->ZeroSuppress(fNRMSThreshold, fSignalThreshold, fMinimumNumberOfSignals, fStartTimeBin, fEndTimeBin, fLeftTimeBin, fRightTimeBin, fValueBelowAverage);
 	}
       }
     }
   Int_t nAdded=0;
+
+  HLTDebug("Max numberof signals: %d",size/sizeof(Int_t));
 
   //writing to output
   AliHLTUInt8_t* outBPtr;
@@ -429,10 +440,9 @@ int AliHLTTPCZeroSuppressionComponent::DoEvent( const AliHLTComponentEventData& 
       AliHLTTPCPad * zeroSuppressedPad= fRowPadVector[row][pad];
       Int_t currentTime=0;
       Int_t bunchSize=0;
-      Int_t signal=0;
       Bool_t newPad=kTRUE;
       UInt_t *nBunches=NULL;
-      while(zeroSuppressedPad->GetNextGoodSignal(currentTime, bunchSize)){
+      while(zeroSuppressedPad->GetNextGoodSignal(currentTime, bunchSize,0)){
 	if(newPad){
    	  (*numberOfChannels)++;
 	  
@@ -474,18 +484,25 @@ int AliHLTTPCZeroSuppressionComponent::DoEvent( const AliHLTComponentEventData& 
 	  blockOutputSize += sizeof(UInt_t);
 	}
       }
+      zeroSuppressedPad->SetDataToDefault();
     }
   }
 
-  AliHLTComponentBlockData bd;
-  FillBlockData( bd );
-  bd.fOffset = outputSize-blockOutputSize;
-  bd.fSize = blockOutputSize;
-  bd.fSpecification = iter->fSpecification;
-  Logging( kHLTLogDebug, "HLT::TPCZeroSuppressionComponent::DoEvent", "Event received", 
-	   "Event 0x%08LX (%Lu) output data block %lu of %lu bytes at offset %lu",
-	   evtData.fEventID, evtData.fEventID, ndx, blockOutputSize, outputSize-blockOutputSize );
-  outputBlocks.push_back( bd );
+  if( wasInput ){
+
+    AliHLTComponentBlockData bd;
+    FillBlockData( bd );
+    bd.fOffset = outputSize-blockOutputSize;
+    bd.fSize = blockOutputSize;
+    bd.fSpecification = iter->fSpecification;
+    Logging( kHLTLogDebug, "HLT::TPCZeroSuppressionComponent::DoEvent", "Event received", 
+	     "Event 0x%08LX (%Lu) output data block %lu of %lu bytes at offset %lu",
+	     evtData.fEventID, evtData.fEventID, ndx, blockOutputSize, outputSize-blockOutputSize );
+    outputBlocks.push_back( bd );
+  }
+  else{
+    size=0;
+  }
   
   return 0;
 }

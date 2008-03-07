@@ -69,7 +69,7 @@ AliHLTTPCDigitReaderDecoder::~AliHLTTPCDigitReaderDecoder()
   }
 }
 
-int AliHLTTPCDigitReaderDecoder::InitBlock(void* ptr,unsigned long size, Int_t patch, Int_t slice)
+int AliHLTTPCDigitReaderDecoder::InitBlock(void* ptr,unsigned long size, Int_t patch, Int_t /*slice*/)
 {
   // see header file for class documentation
   //  HLTDebug("Initializing block in decoder");

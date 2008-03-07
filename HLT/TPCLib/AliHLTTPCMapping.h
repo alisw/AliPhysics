@@ -46,14 +46,14 @@ public:
    * @param HWAddress    The hardware address of the given pad
    * @return Pad number of given HWAddress
    */
-  UInt_t GetPad(UInt_t HWAddress);
+  UInt_t GetPad(UInt_t HWAddress) const;
 
   /**
    * Get the row number belonging to hardware address.
    * @param HWAddress    The hardware address of the given pad you are on.
    * @return Row number of hardware address (Pad).
    */
-  UInt_t GetRow(UInt_t HWAddress);
+  UInt_t GetRow(UInt_t HWAddress) const;
 
  private:
   /** standard constructor prohibited, pad no always required */
@@ -64,55 +64,68 @@ public:
   AliHLTTPCMapping& operator=(const AliHLTTPCMapping&);
   
   //Flags to check if mapping is done for the six patches
-  static Bool_t fMapping0IsDone;
-  static Bool_t fMapping1IsDone;
-  static Bool_t fMapping2IsDone;
-  static Bool_t fMapping3IsDone;
-  static Bool_t fMapping4IsDone;
-  static Bool_t fMapping5IsDone;
+  /** flag to check if mapping is done for patch 0 */
+  static Bool_t fgMapping0IsDone;
+  /** flag to check if mapping is done for patch 1 */
+  static Bool_t fgMapping1IsDone;
+  /** flag to check if mapping is done for patch 2 */
+  static Bool_t fgMapping2IsDone;
+  /** flag to check if mapping is done for patch 3 */
+  static Bool_t fgMapping3IsDone;
+  /** flag to check if mapping is done for patch 4 */
+  static Bool_t fgMapping4IsDone;
+  /** flag to check if mapping is done for patch 5 */
+  static Bool_t fgMapping5IsDone;
 
 
   /** size of mapping arrays */
-  static const Int_t fgkMapping0Size=3200;                         // see above
+  static const UInt_t fgkMapping0Size=3200;                          // see above
   /** size of mapping array for patch 1 */
-  static const Int_t fgkMapping1Size=3584;                         // see above
+  static const UInt_t fgkMapping1Size=3584;                          // see above
   /** size of mapping array for patch 2 */
-  static const Int_t fgkMapping2Size=3200;                         // see above
+  static const UInt_t fgkMapping2Size=3200;                          // see above
   /** size of mapping array for patch 3 */
-  static const Int_t fgkMapping3Size=3328;                         // see above
+  static const UInt_t fgkMapping3Size=3328;                          // see above
   /** size of mapping array for patch 4 */
-  static const Int_t fgkMapping4Size=3328;                         // see above
+  static const UInt_t fgkMapping4Size=3328;                          // see above
   /** size of mapping array for patch 5 */
-  static const Int_t fgkMapping5Size=3328;                         // see above
+  static const UInt_t fgkMapping5Size=3328;                          // see above
 
-  /** mapping arrays for patch 0 */
+  /** row mapping array for patch 0 */
   static UInt_t fgRowMapping0[fgkMapping0Size];                      // see above
+  /** pad mapping array for patch 0 */
   static UInt_t fgPadMapping0[fgkMapping0Size];                      // see above
-  /** mapping arrays for patch 1 */
+  /** row mapping array for patch 1 */
   static UInt_t fgRowMapping1[fgkMapping1Size];                      // see above
+  /** pad mapping array for patch 1 */
   static UInt_t fgPadMapping1[fgkMapping1Size];                      // see above
-  /** mapping arrays for patch 2 */
+  /** row mapping array for patch 2 */
   static UInt_t fgRowMapping2[fgkMapping2Size];                      // see above
+  /** pad mapping array for patch 2 */
   static UInt_t fgPadMapping2[fgkMapping2Size];                      // see above
-  /** mapping arrays for patch 3 */
+  /** row mapping array for patch 3 */
   static UInt_t fgRowMapping3[fgkMapping3Size];                      // see above
+  /** pad mapping array for patch 3 */
   static UInt_t fgPadMapping3[fgkMapping3Size];                      // see above
-  /** mapping arrays for patch 4 */
+  /** row mapping array for patch 4 */
   static UInt_t fgRowMapping4[fgkMapping4Size];                      // see above
+  /** pad mapping array for patch 4 */
   static UInt_t fgPadMapping4[fgkMapping4Size];                      // see above
-  /** mapping arrays for patch 5 */
+  /** row mapping array for patch 5 */
   static UInt_t fgRowMapping5[fgkMapping5Size];                      // see above
+  /** pad mapping array for patch 5 */
   static UInt_t fgPadMapping5[fgkMapping5Size];                      // see above
 
-  /** current mapping array */
-  UInt_t *fCurrentRowMapping;                                     //!transient
-  UInt_t *fCurrentPadMapping;                                     //!transient
+  /** current row mapping array */
+  UInt_t *fCurrentRowMapping;                                        //!transient
+  /** current pad mapping array */
+  UInt_t *fCurrentPadMapping;                                        //!transient
 
   /** Number of hardware adresses */
-  UInt_t fNHWAdd;                                                 // see above
+  UInt_t fNHWAdd;                                                    // see above
 
   /** Maximum number of hardware addresses */
-  UInt_t fMaxHWAdd;                                               // see above
+  UInt_t fMaxHWAdd;                                                  // see above
 
   ClassDef(AliHLTTPCMapping, 0)
 };

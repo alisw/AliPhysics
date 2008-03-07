@@ -172,7 +172,7 @@ int AliHLTTPCDigitDumpComponent::CloseWriter()
 }
 
 int AliHLTTPCDigitDumpComponent::DumpEvent( const AliHLTComponentEventData& evtData,
-					    const AliHLTComponentBlockData* blocks, 
+					    const AliHLTComponentBlockData* /*blocks*/, 
 					    AliHLTComponentTriggerData& /*trigData*/ )
 {
   // see header file for class documentation

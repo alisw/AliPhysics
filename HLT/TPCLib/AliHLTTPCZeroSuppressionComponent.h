@@ -22,6 +22,7 @@
 
 #include "AliHLTProcessor.h"
 #include "AliHLTTPCPad.h"
+#include "AliHLTDataTypes.h"
 
 class AliHLTTPCDigitReader;
 
@@ -89,42 +90,78 @@ class AliHLTTPCZeroSuppressionComponent : public AliHLTProcessor
 
     private:
 
-	/** copy constructor prohibited */
-	AliHLTTPCZeroSuppressionComponent(const AliHLTTPCZeroSuppressionComponent&);
+      /** copy constructor prohibited */
+      AliHLTTPCZeroSuppressionComponent(const AliHLTTPCZeroSuppressionComponent&);
 	
-	/** assignment operator prohibited */
-	AliHLTTPCZeroSuppressionComponent& operator=(const AliHLTTPCZeroSuppressionComponent&);
+      /** assignment operator prohibited */
+      AliHLTTPCZeroSuppressionComponent& operator=(const AliHLTTPCZeroSuppressionComponent&);
 	
-	/** the reader object for data decoding */
-	AliHLTTPCDigitReader* fDigitReader;                                               //!transient
-	
-	
-      typedef vector<AliHLTTPCPad*> AliHLTTPCPadVector;
+      /** the reader object for data decoding */
+      AliHLTTPCDigitReader* fDigitReader;                              //!transient
 
+      /** Vector of pointers to pad objects */
+      typedef vector<AliHLTTPCPad*> AliHLTTPCPadVector;
+      
+      /** 2D vector of pointers to pad objects (vector of vectors)*/
       vector<AliHLTTPCPadVector> fRowPadVector;                        //! transient
       
-      UInt_t* fNumberOfPadsInRow;                                      //! transient
+      /** Array containing number of pads in the different rows */
+      Int_t* fNumberOfPadsInRow;                                      //! transient
       
-      UInt_t fNumberOfRows;                                            //! transient
+      /** Number of rows the patch has */
+      Int_t fNumberOfRows;                                            //! transient
 
+      /** Current patch number */
       UInt_t fCurrentPatch;                                            //! transient
+
+      /** First row in patch */
       UInt_t fFirstRow;                                                //! transient
+
+      /** Last row in patch */
       UInt_t fLastRow;                                                 //! transient
       
+      /** First timebin to include in zerosuppression */
+      Int_t fStartTimeBin;                                             //! transient
 
-      Int_t fStartTimeBin;                                            //! transient
-      Int_t fEndTimeBin;                                              //! transient
-      Int_t fNTimeBins;                                               //! transient
-      Double_t fNRMSThreshold;                                           //! transient
-      Int_t fSignalThreshold;                                         //! transient
-      Int_t fMinimumNumberOfSignals;                                  //! transient
+      /** Lasr timebin to include in zerosuppression */
+      Int_t fEndTimeBin;                                               //! transient
+
+      /** Number of timebins */
+      Int_t fNTimeBins;                                                //! transient
+
+      /** Number of RMS the signal has to be larger than */
+      Double_t fNRMSThreshold;                                         //! transient
+
+      /** Signal threshold (signal has to be greater than average + this number) */
+      Int_t fSignalThreshold;                                          //! transient
+
+      /** Minimum number of signals to do zerosuppression */
+      Int_t fMinimumNumberOfSignals;                                   //! transient
+
+      /** OldRCUFormat flag */
       UInt_t fOldRCUFormat;                                            //! transient
+
+      /** Sort pads flag */
       Bool_t fSortPads;                                                //! transient
+
+      /** Flag to check if the 2d vector is initialized */
       Bool_t fVectorInitialized;                                       //! transient
 
+      /** Value below average (useful for noisy pads to get the tails of a signal) */
       Int_t fValueBelowAverage;                                        //! transient
+
+      /** Number of timebins to look left(decreasing time direction) for tails */
       Int_t fLeftTimeBin;                                              //! transient
+
+      /** Number of timebins to look right(increasing time direction) for tails */
       Int_t fRightTimeBin;                                             //! transient
+
+      /** Flag to switch on active pads selection */
+      Bool_t fGetActivePads;                                           //! transient
+
+      /** Vector of active pad hardware addresses */
+      vector<Int_t> fHwAddressList;                                    //! transient
+
       ClassDef(AliHLTTPCZeroSuppressionComponent, 0)  
     };
 #endif

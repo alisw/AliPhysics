@@ -37,10 +37,10 @@ ClassImp(AliHLTTPCMapping)
 
 AliHLTTPCMapping::AliHLTTPCMapping(UInt_t patch)
   :
-  fNHWAdd(0),
-  fMaxHWAdd(0),
   fCurrentRowMapping(NULL),
-  fCurrentPadMapping(NULL)
+  fCurrentPadMapping(NULL),
+  fNHWAdd(0),
+  fMaxHWAdd(0)
 {
   // see header file for class documentation
   // or
@@ -50,7 +50,7 @@ AliHLTTPCMapping::AliHLTTPCMapping(UInt_t patch)
 
   switch(patch){
   case 0:
-    if(!fMapping0IsDone){
+    if(!fgMapping0IsDone){
       memset(fgRowMapping0, 0, fgkMapping0Size*sizeof(UInt_t));
       memset(fgPadMapping0, 0, fgkMapping0Size*sizeof(UInt_t));
       InitializeMap(patch);
@@ -59,7 +59,7 @@ AliHLTTPCMapping::AliHLTTPCMapping(UInt_t patch)
     fCurrentPadMapping=fgPadMapping0;
     break;
   case 1:
-    if(!fMapping1IsDone){
+    if(!fgMapping1IsDone){
       memset(fgRowMapping1, 0, fgkMapping1Size*sizeof(UInt_t));
       memset(fgPadMapping1, 0, fgkMapping1Size*sizeof(UInt_t));
       InitializeMap(patch);
@@ -68,7 +68,7 @@ AliHLTTPCMapping::AliHLTTPCMapping(UInt_t patch)
     fCurrentPadMapping=fgPadMapping1;
     break;
   case 2:
-    if(!fMapping2IsDone){
+    if(!fgMapping2IsDone){
       memset(fgRowMapping2, 0, fgkMapping2Size*sizeof(UInt_t));
       memset(fgPadMapping2, 0, fgkMapping2Size*sizeof(UInt_t));
       InitializeMap(patch);
@@ -77,7 +77,7 @@ AliHLTTPCMapping::AliHLTTPCMapping(UInt_t patch)
     fCurrentPadMapping=fgPadMapping2;
     break;
   case 3:
-    if(!fMapping3IsDone){
+    if(!fgMapping3IsDone){
       memset(fgRowMapping3, 0, fgkMapping3Size*sizeof(UInt_t));
       memset(fgPadMapping3, 0, fgkMapping3Size*sizeof(UInt_t));
       InitializeMap(patch);
@@ -86,7 +86,7 @@ AliHLTTPCMapping::AliHLTTPCMapping(UInt_t patch)
     fCurrentPadMapping=fgPadMapping3;
     break;
   case 4:
-    if(!fMapping4IsDone){
+    if(!fgMapping4IsDone){
       memset(fgRowMapping4, 0, fgkMapping4Size*sizeof(UInt_t));
       memset(fgPadMapping4, 0, fgkMapping4Size*sizeof(UInt_t));
       InitializeMap(patch);
@@ -95,7 +95,7 @@ AliHLTTPCMapping::AliHLTTPCMapping(UInt_t patch)
     fCurrentPadMapping=fgPadMapping4;
     break;
   case 5:
-    if(!fMapping5IsDone){
+    if(!fgMapping5IsDone){
       memset(fgRowMapping5, 0, fgkMapping5Size*sizeof(UInt_t));
       memset(fgPadMapping5, 0, fgkMapping5Size*sizeof(UInt_t));
       InitializeMap(patch);
@@ -106,12 +106,12 @@ AliHLTTPCMapping::AliHLTTPCMapping(UInt_t patch)
   }
 }
 
-Bool_t AliHLTTPCMapping::fMapping0IsDone=kFALSE;
-Bool_t AliHLTTPCMapping::fMapping1IsDone=kFALSE;
-Bool_t AliHLTTPCMapping::fMapping2IsDone=kFALSE;
-Bool_t AliHLTTPCMapping::fMapping3IsDone=kFALSE;
-Bool_t AliHLTTPCMapping::fMapping4IsDone=kFALSE;
-Bool_t AliHLTTPCMapping::fMapping5IsDone=kFALSE;
+Bool_t AliHLTTPCMapping::fgMapping0IsDone=kFALSE;
+Bool_t AliHLTTPCMapping::fgMapping1IsDone=kFALSE;
+Bool_t AliHLTTPCMapping::fgMapping2IsDone=kFALSE;
+Bool_t AliHLTTPCMapping::fgMapping3IsDone=kFALSE;
+Bool_t AliHLTTPCMapping::fgMapping4IsDone=kFALSE;
+Bool_t AliHLTTPCMapping::fgMapping5IsDone=kFALSE;
 UInt_t AliHLTTPCMapping::fgRowMapping0[fgkMapping0Size];
 UInt_t AliHLTTPCMapping::fgPadMapping0[fgkMapping0Size];
 UInt_t AliHLTTPCMapping::fgRowMapping1[fgkMapping1Size];
@@ -188,7 +188,7 @@ void AliHLTTPCMapping::InitializeMap(UInt_t patch)
 	    fgRowMapping0[hwAdd]=row-fNRowsToSubtract;
 	    fgPadMapping0[hwAdd]=pad;
 	  }
-	  fMapping0IsDone=kTRUE;
+	  fgMapping0IsDone=kTRUE;
 	  break;
 	case 1:
 	  if(fgkMapping1Size<fMaxHWAdd){
@@ -203,7 +203,7 @@ void AliHLTTPCMapping::InitializeMap(UInt_t patch)
 	    fgRowMapping1[hwAdd]=row-fNRowsToSubtract;
 	    fgPadMapping1[hwAdd]=pad;
 	  }
-	  fMapping1IsDone=kTRUE;
+	  fgMapping1IsDone=kTRUE;
 	  break;
 	case 2:
 	  if(fgkMapping2Size<fMaxHWAdd){
@@ -218,7 +218,7 @@ void AliHLTTPCMapping::InitializeMap(UInt_t patch)
 	    fgRowMapping2[hwAdd]=row-fNRowsToSubtract;
 	    fgPadMapping2[hwAdd]=pad;
 	  }
-	  fMapping2IsDone=kTRUE;
+	  fgMapping2IsDone=kTRUE;
 	  break;
 	case 3:
 	  if(fgkMapping3Size<fMaxHWAdd){
@@ -233,7 +233,7 @@ void AliHLTTPCMapping::InitializeMap(UInt_t patch)
 	    fgRowMapping3[hwAdd]=row-fNRowsToSubtract;
 	    fgPadMapping3[hwAdd]=pad;
 	  }
-	  fMapping3IsDone=kTRUE;
+	  fgMapping3IsDone=kTRUE;
 	  break;
 	case 4:
 	  if(fgkMapping4Size<fMaxHWAdd){
@@ -248,7 +248,7 @@ void AliHLTTPCMapping::InitializeMap(UInt_t patch)
 	    fgRowMapping4[hwAdd]=row-fNRowsToSubtract;
 	    fgPadMapping4[(UInt_t)hwAdd]=(UInt_t)pad;
 	  }
-	  fMapping4IsDone=kTRUE;
+	  fgMapping4IsDone=kTRUE;
 	  break;
 	case 5:
 	  if(fgkMapping5Size<fMaxHWAdd){
@@ -263,7 +263,7 @@ void AliHLTTPCMapping::InitializeMap(UInt_t patch)
 	    fgRowMapping5[hwAdd]=row-fNRowsToSubtract;
 	    fgPadMapping5[hwAdd]=pad;
 	  }
-	  fMapping5IsDone=kTRUE;
+	  fgMapping5IsDone=kTRUE;
 	  break;
 	}
       }
@@ -272,7 +272,7 @@ void AliHLTTPCMapping::InitializeMap(UInt_t patch)
   inFile.close();
 }
 
-UInt_t AliHLTTPCMapping::GetRow(UInt_t hwadd)
+UInt_t AliHLTTPCMapping::GetRow(UInt_t hwadd) const
 {
   // see header file for class documentation
   assert(fCurrentRowMapping);
@@ -282,7 +282,7 @@ UInt_t AliHLTTPCMapping::GetRow(UInt_t hwadd)
   return fCurrentRowMapping[hwadd];
 }
 
-UInt_t AliHLTTPCMapping::GetPad(UInt_t hwadd)
+UInt_t AliHLTTPCMapping::GetPad(UInt_t hwadd) const
 {
   // see header file for class documentation
   assert(fCurrentPadMapping);

@@ -36,7 +36,6 @@ CLASS_HDRS:=  	AliHLTTPCTransform.h \
 		AliHLTTPCGlobalMerger.h \
 		AliHLTTPCInterMerger.h \
 		AliHLTTPCPad.h \
-		AliHLTTPCPadArray.h \
 		AliHLTTPCDefinitions.h \
 		AliHLTTPCRawDataUnpackerComponent.h \
 		AliHLTTPCClusterFinderComponent.h \

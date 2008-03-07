@@ -22,7 +22,6 @@
 #include "AliHLTProcessor.h"
 
 class AliHLTTPCClusterFinder;
-class AliHLTTPCPadArray;
 class AliHLTTPCDigitReader;
 
 /**
@@ -117,41 +116,35 @@ class AliHLTTPCClusterFinderComponent : public AliHLTProcessor
 	AliHLTTPCDigitReader* fReader;                                               //!transient
 
 	bool fClusterDeconv; //!transient
-      float fXYClusterError; //!transient
-      float fZClusterError; //!transient
-      /**
-       * switch to indicated the reader
-       * use fModeSwitch = 0 for packed inputtype "gkDDLPackedRawDataType"
-       * use fModeSwitch = 1 for unpacked inputtype "gkUnpackedRawDataType"
-       * use fModeSwitch = 2 for packed inputtype "gkDDLPackedRawDataType" with new digit reader
-       */
-      Int_t fModeSwitch;                                                           // see above
+	float fXYClusterError; //!transient
+	float fZClusterError; //!transient
+	/**
+	 * switch to indicated the reader
+	 * use fModeSwitch = 0 for packed inputtype "gkDDLPackedRawDataType"
+	 * use fModeSwitch = 1 for unpacked inputtype "gkUnpackedRawDataType"
+	 * use fModeSwitch = 2 for packed inputtype "gkDDLPackedRawDataType" with new digit reader
+	 */
+	Int_t fModeSwitch;                                                           // see above
       
-      /*
-       * Reads the data the new unsorted way if true
-       *
-       */
-      Int_t fUnsorted;                                                               //!transient
+	/*
+	 * Reads the data the new unsorted way if true
+	 *
+	 */
+	Int_t fUnsorted;                                                               //!transient
 
-      /*
-       * Patch number to be read, currently given as component argument,
-       * will be changed later.
-       */
-      Int_t fPatch;                                                                  //!transient
+	/*
+	 * Patch number to be read, currently given as component argument,
+	 * will be changed later.
+	 */
+	Int_t fPatch;                                                                  //!transient
 
-      /*
-       * Switch to specify if one ship out a list of active pads.
-       * Used for the 2007 December run. 
-       */
-      Int_t fGetActivePads;                                                          //!transient
+	/*
+	 * Switch to specify if one ship out a list of active pads.
+	 * Used for the 2007 December run. 
+	 */
+	Int_t fGetActivePads;                                                          //!transient
 
-      /*
-       * Pointer to a PadArray object containing a double array of all the pads in
-       * the current patch.
-       */
-      AliHLTTPCPadArray * fPadArray;                                                 //!transient
+	ClassDef(AliHLTTPCClusterFinderComponent, 3)
 
-      ClassDef(AliHLTTPCClusterFinderComponent, 2)
-
-    };
+};
 #endif

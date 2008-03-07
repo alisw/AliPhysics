@@ -87,7 +87,7 @@ void AliHLTTPCDigitReader::SetUnsorted(Bool_t /*unsorted*/)
   HLTWarning("common sorting functionality has not yet been implemented");
 }
 
-bool AliHLTTPCDigitReader::Next(int type)
+bool AliHLTTPCDigitReader::Next(int /*type*/)
 {
   // see header file for class documentation
   if (!CheckFlag(kLocked)) return NextSignal();

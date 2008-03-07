@@ -22,7 +22,7 @@
 
 
 #include "AliHLTLogging.h"
-#include "AliHLTTPCPadArray.h"
+#include "AliHLTTPCPad.h"
 class AliHLTTPCSpacePointData;
 class AliHLTTPCDigitReader;
 
@@ -74,10 +74,8 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
   Int_t GetNumberOfClusters() const {return fNClusters;}
 
   //----------------------------------Methods for the new unsorted way of reading data ----------
-  void SetPadArray(AliHLTTPCPadArray *padArray);
-  void ReadDataUnsorted(void* ptr,unsigned long size, Int_t mode);
+  void ReadDataUnsorted(void* ptr,unsigned long size);
   void FindClusters();
-  //  Int_t GetActivePads(AliHLTTPCPadArray::AliHLTTPCActivePads* activePads,Int_t maxActivePads);
   void WriteClusters(Int_t nclusters,AliHLTTPCClusters *list);
   void SetUnsorted(Int_t unsorted){fUnsorted=unsorted;}
   void SetPatch(Int_t patch){fCurrentPatch=patch;}
@@ -120,8 +118,6 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
   
   Float_t fOccupancyLimit; // Occupancy Limit
 
-  AliHLTTPCPadArray * fPadArray; //! transient
-
   Int_t fUnsorted;       // enable for processing of unsorted digit data
   Bool_t fVectorInitialized;
 
@@ -137,8 +133,6 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
   
   UInt_t fRowOfFirstCandidate;
 
-  /** list of active pads if PadArray is not used */
-  vector<AliHLTTPCPadArray::AliHLTTPCActivePads> fActivePads; //!transient
 
 #ifdef do_mc
   void GetTrackID(Int_t pad,Int_t time,Int_t *trackID);
