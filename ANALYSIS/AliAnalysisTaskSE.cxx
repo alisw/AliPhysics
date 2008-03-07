@@ -153,6 +153,8 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
 	AliInfo(Form("%s ----> Processing event # %lld", CurrentFileName(), Entry()));
 // Call the user analysis    
     UserExec(option);
+    PostData(0, fTreeA);
+    
 }
 
 const char* AliAnalysisTaskSE::CurrentFileName()
