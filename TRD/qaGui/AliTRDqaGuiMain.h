@@ -47,7 +47,7 @@ class AliTRDqaGuiMain : public TGMainFrame {
   AliTRDqaGuiClusters       *fGDet;   // panel with clusers
   AliTRDqaGuiClustersSM     *fGSM;    // panel with clusers
   AliTRDqaGuiClustersStack  *fGStack; // panel with clusers
-  AliTRDqaGuiESDs *fGESDs[3];         // panel with ESDs
+  AliTRDqaGuiESDs *fGESDs[4];         // panel with ESDs
 
   ClassDef(AliTRDqaGuiMain,1) //
 };

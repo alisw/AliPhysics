@@ -251,7 +251,7 @@ void AliTRDQADataMakerRec::InitESDs()
   // Create ESDs histograms in ESDs subdir
   //
 
-  const Int_t kNhist = 36+5;
+  const Int_t kNhist = 36+5+4;
 
   TH1 *hist[kNhist];
   Int_t histoCounter = -1 ;
@@ -308,6 +308,27 @@ void AliTRDQADataMakerRec::InitESDs()
     hist[36+i] = new TH1D(Form("qaTRD_esd_pid%d",i),
 			  Form("%s;probability",partType[i]), 100, 0, 1);
  
+  // dE/dX vs momentum in three regions
+  const char *zoneName[4] = {"total charge", "ampilification range", "plateau", "TR range"};
+ 
+  // prepare the scale from 0.1 to 10 GeV
+  Double_t scalex[101];
+  Double_t dd = (TMath::Log(10) - TMath::Log(0.5)) / 100.;
+  for(Int_t ix=0; ix<101; ix++) {
+    scalex[ix] = 0.5 * TMath::Exp(dd * ix);
+  }
+
+  Double_t scaley[101];
+  for(Int_t iy=0; iy<101; iy++) {
+    scaley[iy] = iy * (3e3/100.);
+  }
+    
+
+  for(Int_t i=0; i<4; i++) {
+    hist[41+i] = new TH2D(Form("qaTRD_esd_signalPzone_%d",i), 
+			  Form("%s;momentum (GeV/c);singal (a.u.)", zoneName[i]),
+			  100, scalex, 100, scaley);
+  }
 
   for(Int_t i=0; i<kNhist; i++) {
     //hist[i]->Sumw2();
@@ -496,6 +517,16 @@ void AliTRDQADataMakerRec::MakeESDs(AliESDEvent * esd)
     GetESDsData(30)->Fill(track->GetTRDTimBin(0));
     GetESDsData(31)->Fill(track->GetTRDpidQuality());
     
+    
+    // dedx
+    for(Int_t i=0; i<4; i++) {
+      Double_t dedx = 0;
+      for(Int_t j=0; j<6; j++) {
+	dedx += track->GetTRDsignals(j, i-1);
+      }
+      GetESDsData(41+i)->Fill(paramOut->GetP(), dedx/6.);
+    }
+
     // probabilities
     if (status & AliESDtrack::kTRDpid) {
       for(Int_t i=0; i<AliPID::kSPECIES; i++) 

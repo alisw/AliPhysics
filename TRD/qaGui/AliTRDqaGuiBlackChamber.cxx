@@ -210,6 +210,7 @@ void AliTRDqaGuiBlackChamber::SetQAFile(const char *filename) {
   //
 
 
+
   //const char *names[5] = {"ped", "noise", "pedDist", "noiseDist", "signal"};
   const char *names[10] = {
     "ped", "noise", "pedDist", "noiseDist", "signal",

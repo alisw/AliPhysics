@@ -504,7 +504,7 @@ AliTRDrawStreamTB *AliTRDtestBeam::GetTRDrawStream()
   AliTRDrawStreamTB::SetNoErrorWarning();
   AliTRDrawStreamTB::SetExtraWordsFix();
   AliTRDrawStreamTB::AllowCorruptedData();
- 
+  
   AliTRDrawStreamTB *tb = new AliTRDrawStreamTB(reader); 
   //tb->Init();
   return tb;

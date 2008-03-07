@@ -39,7 +39,12 @@ ClassImp(AliTRDqaGuiESDs)
 //////////////////////////////////////////////////////////////////////////////////
 
 
-const Int_t AliTRDqaGuiESDs::fgkLogList[18] = {1,1,0,0,0,0,1,1,1,1,1,1,1,1,1,0,0,0};
+const Int_t AliTRDqaGuiESDs::fgkLogList[24] = {
+  1,1,0,0,0,0,
+  1,1,1,1,1,1,
+  1,1,1,0,0,0,
+  0,0,0,0,0,0
+};
 
 //////////////////////////////////////////////////////////////////////////////////
 AliTRDqaGuiESDs::AliTRDqaGuiESDs(TGWindow *parent, Int_t page) 
@@ -72,8 +77,13 @@ AliTRDqaGuiESDs::AliTRDqaGuiESDs(TGWindow *parent, Int_t page)
   fNameList[15] = "tracksStack";
   fNameList[16] = "electronStack";
   fNameList[17] = "elRatioStack";
-
-
+  
+  fNameList[18] = "signalPzone_0";
+  fNameList[19] = "signalPzone_1";
+  fNameList[20] = "signalPzone_2";
+  fNameList[21] = "signalPzone_3";
+  fNameList[22] = "";
+  fNameList[23] = "";
 
   for(Int_t i=0; i<6; i++) {
     fCanvasList[i] = new TRootEmbeddedCanvas(fNameList[i+6*fPage], this, 320, 320);
@@ -86,7 +96,6 @@ AliTRDqaGuiESDs::AliTRDqaGuiESDs(TGWindow *parent, Int_t page)
   for(Int_t i=0; i<6; i++) {
     fHistList[i] = 0;
   }
-
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -109,8 +118,16 @@ void AliTRDqaGuiESDs::SetQAFile(const char *filename) {
   for(int i=0; i<6; i++) {
     fHistList[i] = (TH1D*)gDirectory->Get(Form("qaTRD_esd_%s", fNameList[i+fPage*6]));
     fCanvasList[i]->GetCanvas()->cd();
-    gPad->SetLogy(fgkLogList[i+6*fPage]);
-    if (fHistList[i]) fHistList[i]->Draw();
+ 
+    if (fPage == 3) {
+      if (fHistList[i]) fHistList[i]->Draw("colz");
+      gPad->SetLogz(1);
+      gPad->SetLogx(1);
+    } else {
+      gPad->SetLogy(fgkLogList[i+6*fPage]);
+      if (fHistList[i]) fHistList[i]->Draw();
+    }
+
     fCanvasList[i]->GetCanvas()->Update();
   }
 }
