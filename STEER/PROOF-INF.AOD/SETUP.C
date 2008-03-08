@@ -1,6 +1,15 @@
 void SETUP()
 {
-   // Load the ESD library
+   // Load some ROOT libraries
+
+   gSystem->Load("libVMC");
+   gSystem->Load("libNet");
+   gSystem->Load("libTree");
+
+   // Load libSTEERBase, AOD depends on it
+   gSystem->Load("libSTEERBase");
+
+   // Load the AOD library
    gSystem->Load("libAOD");
 
    // Set the include paths

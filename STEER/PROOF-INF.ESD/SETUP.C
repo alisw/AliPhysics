@@ -1,9 +1,13 @@
 void SETUP()
 {
    // Load some ROOT libraries
-   gSystem->Load("libEG");
-   gSystem->Load("libGeom");
-   gSystem->Load("libProof");
+
+   gSystem->Load("libVMC");
+   gSystem->Load("libNet");
+   gSystem->Load("libTree");
+
+   // Load libSTEERBase, ESD depends on it
+   gSystem->Load("libSTEERBase");
 
    // Load the ESD library
    gSystem->Load("libESD");

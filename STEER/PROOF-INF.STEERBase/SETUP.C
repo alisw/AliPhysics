@@ -1,8 +1,11 @@
 void SETUP()
 {
-   // Load the STEERBase library
+   // Load some Root libraries needed by STEERBase
    gSystem->Load("libVMC");
-   gSystem->Load("libPhysics");
+   gSystem->Load("libNet");
+   gSystem->Load("libTree");
+
+   // Load the STEERBase library
    gSystem->Load("libSTEERBase");
 
    // Set the include paths
