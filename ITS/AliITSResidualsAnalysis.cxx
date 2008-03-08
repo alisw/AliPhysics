@@ -376,7 +376,7 @@ AliITSResidualsAnalysis::AliITSResidualsAnalysis(TArrayI *volIDs,AliTrackPointAr
 }
 
 //____________________________________________________________________________
-AliITSResidualsAnalysis::AliITSResidualsAnalysis(const AliITSResidualsAnalysis& obj):
+AliITSResidualsAnalysis::AliITSResidualsAnalysis(const AliITSResidualsAnalysis& /* obj */):
     AliAlignmentTracks(),
     fnHist(0),
     fnPhi(0),
@@ -425,7 +425,7 @@ AliITSResidualsAnalysis::AliITSResidualsAnalysis(const AliITSResidualsAnalysis& 
 }
 
 //____________________________________________________________________________
-AliITSResidualsAnalysis& AliITSResidualsAnalysis::operator = (const AliITSResidualsAnalysis& obj) {
+AliITSResidualsAnalysis& AliITSResidualsAnalysis::operator = (const AliITSResidualsAnalysis& /* obj */) {
   // assignment operator. This is not allowed
   AliFatal("Assignment operator not allowed\n");
   return *this;

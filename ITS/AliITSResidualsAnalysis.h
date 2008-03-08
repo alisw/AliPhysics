@@ -32,8 +32,7 @@ class AliITSResidualsAnalysis : public AliAlignmentTracks {
   AliITSResidualsAnalysis();  
   AliITSResidualsAnalysis(const TString aliTrackPoints,const TString geom);
   AliITSResidualsAnalysis(const TArrayI *volIDs);
-   AliITSResidualsAnalysis(TArrayI *volIDs,AliTrackPointArray **tracksClustArray,AliTrackPointArray **tracksFitPointsArray);
-  //AliITSResidualsAnalysis(const AliITSResidualsAnalysis &res);
+  AliITSResidualsAnalysis(TArrayI *volIDs,AliTrackPointArray **tracksClustArray,AliTrackPointArray **tracksFitPointsArray);
   ~AliITSResidualsAnalysis();
 
 
@@ -83,7 +82,7 @@ class AliITSResidualsAnalysis : public AliAlignmentTracks {
 
  protected:
 
-  AliITSResidualsAnalysis(const AliITSResidualsAnalysis& obj);
+  AliITSResidualsAnalysis(const AliITSResidualsAnalysis& /* obj */);
   AliITSResidualsAnalysis& operator = (const AliITSResidualsAnalysis& obj);
     
   Int_t fnHist;    // number of histogram = number of alignable volumes considered

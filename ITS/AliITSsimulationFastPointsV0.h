@@ -18,8 +18,8 @@ public:
   AliITSsimulationFastPointsV0(const char *dataType); // standard constructor
   AliITSsimulationFastPointsV0(const AliITSsimulationFastPointsV0 &rec);
   AliITSsimulationFastPointsV0 & operator=(const AliITSsimulationFastPointsV0 &);  
-  virtual AliITSsimulation& operator=(const AliITSsimulation &)
-    {return *this;};
+  //  virtual AliITSsimulation& operator=(const AliITSsimulation &)
+  //   {return *this;};
 
   virtual ~AliITSsimulationFastPointsV0(); 
   void CreateFastRecPoints(AliITSmodule *mod,Int_t module,TRandom *rndm,

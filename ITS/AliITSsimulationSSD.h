@@ -26,7 +26,7 @@ class AliITSsimulationSSD: public AliITSsimulation {
     AliITSsimulationSSD(const AliITSsimulationSSD &source); // copy constructor
     // operator =
     AliITSsimulationSSD& operator=(const AliITSsimulationSSD &source);
-    virtual AliITSsimulation& operator=(const AliITSsimulation &source);
+    //    virtual AliITSsimulation& operator=(const AliITSsimulation &source);
     //Standard Constructor
     AliITSsimulationSSD(AliITSDetTypeSim* dettyp);
     //Destructor

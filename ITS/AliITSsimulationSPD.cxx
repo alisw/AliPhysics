@@ -14,7 +14,7 @@
  **************************************************************************/
 
 /*
-$Id:$
+$Id$
 */
 
 #include <Riostream.h>
@@ -210,6 +210,7 @@ AliITSsimulationSPD&  AliITSsimulationSPD::operator=(const
     fTanLorAng = s.fTanLorAng;
     return *this;
 }
+/*
 //______________________________________________________________________
 AliITSsimulation&  AliITSsimulationSPD::operator=(const 
                                            AliITSsimulation &s){
@@ -227,6 +228,7 @@ AliITSsimulation&  AliITSsimulationSPD::operator=(const
 
     return *this;
 }
+*/
 //______________________________________________________________________
 void AliITSsimulationSPD::InitSimulationModule(Int_t module, Int_t event){
     //  This function creates maps to build the list of tracks for each

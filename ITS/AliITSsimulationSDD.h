@@ -38,7 +38,7 @@ class AliITSsimulationSDD : public AliITSsimulation {
     virtual ~AliITSsimulationSDD(); // Destructor
     // = operator
     AliITSsimulationSDD& operator=(const AliITSsimulationSDD &source);
-    virtual AliITSsimulation& operator=(const AliITSsimulation &source);
+    //    virtual AliITSsimulation& operator=(const AliITSsimulation &source);
     // Initilize variables for this simulation
     void Init();
 

@@ -310,7 +310,7 @@ istream &operator>>(istream &is,AliITSgeomSSD175 &r){
     r.Read(&is);
     return is;
 }
-AliITSgeomSSD& AliITSgeomSSD175::operator=(const AliITSgeomSSD &source) {
+AliITSgeomSSD175& AliITSgeomSSD175::operator=(const AliITSgeomSSD175 &source) {
 ////////////////////////////////////////////////////////////////////////
 //    assignment operator
 ////////////////////////////////////////////////////////////////////////
@@ -369,6 +369,7 @@ AliITSgeomSSD275and75::AliITSgeomSSD275and75(Int_t npar,Float_t *par) :
     delete [] leA;
     delete [] leC;
 }
+
 //________________________________________________________________________
 ostream &operator<<(ostream &os,AliITSgeomSSD275and75 &p){
 ////////////////////////////////////////////////////////////////////////
@@ -387,7 +388,7 @@ istream &operator>>(istream &is,AliITSgeomSSD275and75 &r){
     r.Read(&is);
     return is;
 }
-AliITSgeomSSD& AliITSgeomSSD275and75::operator=(const AliITSgeomSSD &source) {
+AliITSgeomSSD275and75& AliITSgeomSSD275and75::operator=(const AliITSgeomSSD275and75 &source) {
 ////////////////////////////////////////////////////////////////////////
 //    assignment operator
 ////////////////////////////////////////////////////////////////////////
@@ -464,7 +465,7 @@ istream &operator>>(istream &is,AliITSgeomSSD75and275 &r){
     r.Read(&is);
     return is;
 }
-AliITSgeomSSD& AliITSgeomSSD75and275::operator=(const AliITSgeomSSD &source) {
+AliITSgeomSSD75and275& AliITSgeomSSD75and275::operator=(const AliITSgeomSSD75and275 &source) {
 ////////////////////////////////////////////////////////////////////////
 //    assignment operator
 ////////////////////////////////////////////////////////////////////////

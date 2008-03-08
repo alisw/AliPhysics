@@ -25,7 +25,7 @@ class AliITSgeomSSD : public TObject {
 		  Int_t np,Float_t *p,Int_t nn,Float_t *n); // Constructor
     virtual ~AliITSgeomSSD(); // Destructor
     AliITSgeomSSD(const AliITSgeomSSD &source);// copy constructor
-    virtual AliITSgeomSSD& operator=(const AliITSgeomSSD &source); // = opt.
+    AliITSgeomSSD& operator=(const AliITSgeomSSD &source); // = opt.
     void ResetSSD(const Float_t *box,Float_t ap,Float_t an,
 		  Int_t np,Float_t *p,Int_t nn,Float_t *n); // Filler
     virtual TShape *GetShape() const {return new TBRIK(fName.Data(),
@@ -111,7 +111,7 @@ class AliITSgeomSSD175 : public AliITSgeomSSD {
 
  public:
     AliITSgeomSSD175();
-    virtual AliITSgeomSSD& operator=(const AliITSgeomSSD &source);
+    AliITSgeomSSD175& operator=(const AliITSgeomSSD175 &source);
 
     // This clas now has version 0 so that it will not be written to a root
     // file. This is good since there are no longer any data members to this
@@ -144,7 +144,7 @@ class AliITSgeomSSD275and75 : public AliITSgeomSSD {
  public:
     AliITSgeomSSD275and75();
     AliITSgeomSSD275and75(Int_t npar,Float_t *par);
-    virtual AliITSgeomSSD& operator=(const AliITSgeomSSD &source);
+    AliITSgeomSSD275and75& operator=(const AliITSgeomSSD275and75 &source);
 
  // This clas now has version 0 so that it will not be
     // This clas now has version 0 so that it will not be written to a root
@@ -177,7 +177,7 @@ class AliITSgeomSSD75and275 : public AliITSgeomSSD {
  public:
     AliITSgeomSSD75and275();
     AliITSgeomSSD75and275(Int_t npar,Float_t *par);
-    virtual AliITSgeomSSD& operator=(const AliITSgeomSSD &source);
+    virtual AliITSgeomSSD75and275& operator=(const AliITSgeomSSD75and275 &source);
 
  // This clas now has version 0 so that it will not be
     // This clas now has version 0 so that it will not be written to a root

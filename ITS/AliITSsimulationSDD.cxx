@@ -192,6 +192,7 @@ AliITSsimulationSDD& AliITSsimulationSDD::operator=(const AliITSsimulationSDD &s
           "AliITSsimulationSDD Using default creater instead");
     return *this ;
 }
+/*
 //______________________________________________________________________
 AliITSsimulation& AliITSsimulationSDD::operator=(const AliITSsimulation &src){
     // Assignment operator to satify Coding roules only.
@@ -201,7 +202,7 @@ AliITSsimulation& AliITSsimulationSDD::operator=(const AliITSsimulation &src){
           "AliITSsimulationSDD Using default creater instead");
     return *this ;
 }
-
+*/
 //______________________________________________________________________
 AliITSsimulationSDD::AliITSsimulationSDD(AliITSDetTypeSim* dettyp):
 AliITSsimulation(dettyp),

@@ -25,7 +25,7 @@ class AliITSPlaneEffSDD :  public AliITSPlaneEff {
     AliITSPlaneEffSDD(const AliITSPlaneEffSDD &source);
     // ass. operator
     AliITSPlaneEffSDD& operator=(const AliITSPlaneEffSDD &s);
-    virtual AliITSPlaneEff& operator=(const AliITSPlaneEff &source);
+    //    virtual AliITSPlaneEff& operator=(const AliITSPlaneEff &source);
     // Simple way to add another class (i.e. statistics). 
     AliITSPlaneEffSDD& operator +=( const AliITSPlaneEffSDD &add);
     // Getters for average Plane efficiency (icluding dead/noisy)

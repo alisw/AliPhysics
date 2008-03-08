@@ -70,7 +70,7 @@ AliITSQADataMakerSim& AliITSQADataMakerSim::operator = (const AliITSQADataMakerS
 }
 
 //____________________________________________________________________________ 
-void AliITSQADataMakerSim::StartOfDetectorCycle() const
+void AliITSQADataMakerSim::StartOfDetectorCycle()
 {
   //Detector specific actions at start of cycle
   AliDebug(1,"AliITSQADM::Start of ITS Cycle\n");

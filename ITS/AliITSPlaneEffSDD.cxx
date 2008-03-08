@@ -209,6 +209,7 @@ void AliITSPlaneEffSDD::CopyHistos(AliITSPlaneEffSDD &target) const {
   }
 return;
 }
+/* Commented out by M.Masera 8/3/08
 //______________________________________________________________________
 AliITSPlaneEff&  AliITSPlaneEffSDD::operator=(const
                                            AliITSPlaneEff &s){
@@ -224,6 +225,7 @@ AliITSPlaneEff&  AliITSPlaneEffSDD::operator=(const
     AliError("operator=: Not allowed to make a =, use default creater instead");
     return *this;
 }
+*/
 //_______________________________________________________________________
 Int_t AliITSPlaneEffSDD::GetMissingTracksForGivenEff(Double_t eff, Double_t RelErr,
           UInt_t im, UInt_t ic, UInt_t iw, UInt_t is) const {

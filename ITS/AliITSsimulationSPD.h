@@ -4,7 +4,7 @@
 /* Copyright(c) 2007-2009, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id:$ */
+/* $Id$ */
 
 ////////////////////////////////////////////////////////////
 // Simulation class for SPD                               //
@@ -31,7 +31,7 @@ class AliITSsimulationSPD : public AliITSsimulation {
     AliITSsimulationSPD(const AliITSsimulationSPD &source); 
      // ass. operator
     AliITSsimulationSPD& operator=(const AliITSsimulationSPD &s);
-    virtual AliITSsimulation& operator=(const AliITSsimulation &source);
+    //    virtual AliITSsimulation& operator=(const AliITSsimulation &source);
     // Initilizes the variables
     void Init();
 

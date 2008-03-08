@@ -41,7 +41,7 @@ class AliITSsimulation : public TObject {
     // copy constructor. See detector specific implementation.
     AliITSsimulation(const AliITSsimulation &source);
     // Assignment opporator. See detector specific implementation.
-    virtual AliITSsimulation& operator=(const AliITSsimulation &source);
+    AliITSsimulation& operator=(const AliITSsimulation &source);
     // Initialize simulation
     virtual void Init() {};
 

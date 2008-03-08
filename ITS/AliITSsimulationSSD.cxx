@@ -113,6 +113,7 @@ AliITSsimulationSSD& AliITSsimulationSSD::operator=(
   this->fDriftVel[1] = s.fDriftVel[1];
   return *this;
 }
+/*
 //______________________________________________________________________
 AliITSsimulation& AliITSsimulationSSD::operator=(
                                          const AliITSsimulation &s){
@@ -124,6 +125,7 @@ AliITSsimulation& AliITSsimulationSSD::operator=(
   
   return *this;
 }
+*/
 //______________________________________________________________________
 AliITSsimulationSSD::AliITSsimulationSSD(const AliITSsimulationSSD &source):
     AliITSsimulation(source),

@@ -419,7 +419,7 @@ void AliITSAlignMille::SetCurrentModule(Int_t index) {
   }
 }
 
-void AliITSAlignMille::Print() {
+void AliITSAlignMille::Print(Option_t* /* opt */) const {
   ///
   printf("*** AliMillepede for ITS ***\n");
   printf("    number of defined modules: %d\n",fNModules);

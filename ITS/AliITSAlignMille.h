@@ -46,7 +46,7 @@ public:
     { fGeometryFileName = filename; }
   const Char_t* GetGeometryFileName() {return fGeometryFileName.Data();}
   void      PrintCurrentModuleInfo();
-  void      Print();
+  virtual void Print(Option_t* /* opt */) const;
   
   // fitting methods
   void      SetMinNPtsPerTrack(Int_t pts=3) {fMinNPtsPerTrack=pts;}

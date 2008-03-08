@@ -29,7 +29,7 @@ class AliITSPlaneEff : public AliPlaneEff {
     // copy constructor. See detector specific implementation.
     AliITSPlaneEff(const AliITSPlaneEff &source);
     // Assignment operator. See detector specific implementation.
-    virtual AliITSPlaneEff& operator=(const AliITSPlaneEff &source);
+    AliITSPlaneEff& operator=(const AliITSPlaneEff &source);
     // Simple way to add another class (i.e. statistics). 
     //AliITSPlaneEff& operator +=( const AliITSPlaneEff &){return *this};
     // Average Plane efficiency (including dead/noisy)
