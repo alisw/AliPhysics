@@ -140,6 +140,7 @@ private:
 
 	AliShuttleLogbookEntry* fLogbookEntry;   //! current Shuttle logbook entry
 	TString fCurrentDetector; // current detector
+	Bool_t fFirstProcessing;  // processing this detector the first time in this run
 
 	TSQLServer *fServer[4]; 	// pointer to the three FXS + Run & Shuttle logbook servers
 	Bool_t fFXSCalled[3];		// FXS call status

@@ -77,6 +77,7 @@ fTimeout(timeout), fRetries(retries),
 fPreprocessorMap(),
 fLogbookEntry(0),
 fCurrentDetector(),
+fFirstProcessing(0),
 fStatusEntry(0),
 fMonitoringMutex(0),
 fLastActionTime(0),
@@ -999,7 +1000,8 @@ Bool_t AliShuttle::ContinueProcessing()
 	// checks if the processing should be continued
 	// if yes it returns kTRUE and updates the AliShuttleStatus with nextStatus
 
-	if (!fConfig->HostProcessDetector(fCurrentDetector)) return kFALSE;
+	if (!fConfig->HostProcessDetector(fCurrentDetector))
+		return kFALSE;
 
 	AliPreprocessor* aPreprocessor =
 		dynamic_cast<AliPreprocessor*> (fPreprocessorMap.GetValue(fCurrentDetector));
@@ -1040,12 +1042,16 @@ Bool_t AliShuttle::ContinueProcessing()
 		}
 	}
 
+	// Is the subdetector processed first time for this run?
+	fFirstProcessing = kFALSE;
+
 	AliShuttleStatus* status = ReadShuttleStatus();
 	if (!status) {
 		// first time
 		Log("SHUTTLE", Form("ContinueProcessing - %s: Processing first time",
 				fCurrentDetector.Data()));
 		status = new AliShuttleStatus(AliShuttleStatus::kStarted);
+		fFirstProcessing = kTRUE;
 		return WriteShuttleStatus(status);
 	}
 
@@ -1103,10 +1109,10 @@ Bool_t AliShuttle::ContinueProcessing()
 		
 		// Send mail to detector expert!
 		Log("SHUTTLE", Form("ContinueProcessing - Sending mail to %s expert...", 
-					fCurrentDetector.Data()));
+				    fCurrentDetector.Data()));
 		if (!SendMail())
 			Log("SHUTTLE", Form("ContinueProcessing - Could not send mail to %s expert",
-					fCurrentDetector.Data()));
+					    fCurrentDetector.Data()));
 
 	} else {
 		Log("SHUTTLE", Form("ContinueProcessing - %s: restarting. "
@@ -2102,10 +2108,10 @@ const char* AliShuttle::GetFile(Int_t system, const char* detector,
                 if (fileSize.Length()>0)
                 {
                         // compare filesize of local file with the one stored in the FXS DB
-			Long_t id,size,flags,mtime;
-			Int_t sizeComp = gSystem->GetPathInfo(localFileName.Data(),&id,&size,&flags,&mtime);
+			Long_t size = -1;
+			Int_t sizeComp = gSystem->GetPathInfo(localFileName.Data(), 0, &size, 0, 0);
 
-			if ( sizeComp != 0 || size != fileSize.Atoi())
+			if (sizeComp != 0 || size != fileSize.Atoi())
 			{
 				Log(detector, Form("GetFileName - size of file %s does not match with local copy!",
 							filePath.Data()));
@@ -2992,7 +2998,8 @@ Bool_t AliShuttle::SendMail()
 	if (fTestMode != kNone)
 		return kTRUE;
 		
-	if (!fConfig->SendMail()) return kTRUE;
+	if (!fConfig->SendMail()) 
+		return kTRUE;
 
 	TString to="";
 	TIter iterExperts(fConfig->GetResponsibles(fCurrentDetector));
@@ -3124,7 +3131,11 @@ Bool_t AliShuttle::SendMailToDCS()
 	if (fTestMode != kNone)
 		return kTRUE;
 
-	if (!fConfig->SendMail()) return kTRUE;
+	if (!fConfig->SendMail()) 
+		return kTRUE;
+
+	if (!fFirstProcessing)
+		return kTRUE;
 
 	void* dir = gSystem->OpenDirectory(GetShuttleLogDir());
 	if (dir == NULL)

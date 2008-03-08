@@ -11,4 +11,4 @@ objectClass: dcsConfig
 dcsHost: alidcsamanda.cern.ch
 dcsPort: 1337
 multiSplit: 4000
-dcsAlias: ACO_HV_MODULE[00..59]
+dcsAlias: ACO_HV_MODULE[00..59]_VMON

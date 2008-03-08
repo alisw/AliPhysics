@@ -1,3 +1,9 @@
+dn: det=TPC,o=shuttle_prod,dc=cern,dc=ch
+objectClass: detectorConfig
+det: TPC
+strictRunOrder: 0
+responsible: Haavard.Helstrup@cern.ch
+
 dn: dcsHost=alidcsamanda.cern.ch,det=TPC,o=shuttle_prod,dc=cern,dc=ch
 objectClass: dcsConfig
 dcsHost: alidcsamanda.cern.ch
