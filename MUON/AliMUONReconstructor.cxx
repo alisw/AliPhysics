@@ -281,6 +281,11 @@ AliMUONReconstructor::CreateDigitMaker() const
     useFastDecoder = kTRUE;
   }
   fDigitMaker = new AliMUONDigitMaker(enableErrorLogging, useFastDecoder);
+  option.ToUpper();
+  if ( option.Contains("SAVEDIGITS" ))
+    {
+      fDigitMaker->SetMakeTriggerDigits(kTRUE);
+    }
 }
 
 //_____________________________________________________________________________
