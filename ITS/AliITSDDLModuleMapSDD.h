@@ -26,11 +26,15 @@ class AliITSDDLModuleMapSDD : public TObject {
   void SetDefaultMap();
   void SetDec07part1Map();
   void SetDec07part2Map();
+  void SetFeb08Map();
   void SetDDLMapElement(Int_t iDDL, Int_t iChan, Int_t iMod){fDDLModuleMap[iDDL][iChan]=iMod;}
   void SetDDLMap(AliITSDDLModuleMapSDD* ddlmap);
   void ReadDDLModuleMap(Char_t *ddlmapfile);
 
   Int_t GetModuleNumber(UInt_t iDDL, UInt_t iChan) const {return fDDLModuleMap[iDDL][iChan];}
+  static Int_t GetNDDLs(){return kDDLsNumber;}
+  static Int_t GetNModPerDDL(){return kModulesPerDDL;}
+
 
   void PrintDDLMap() const ;
 
