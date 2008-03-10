@@ -93,6 +93,7 @@ public:
   const TClonesArray * GetTRDReferences() const { return fTRDReferences;}  
   const TClonesArray * GetITSReferences() const { return fITSReferences;}  
   const TClonesArray * GetTOFReferences() const { return fTOFReferences;}  
+  void CalcTPCrows(TClonesArray *arrayTR);
 private:
   AliTrackReference  fTrackRef;      // track reference saved in the output tree
   AliTrackReference  fTrackRefOut;   // decay track reference saved in the output tree
@@ -109,9 +110,15 @@ private:
   Float_t fDecayCoord[3];            // position of particle decay
   Double_t fVDist[4];                //distance of the particle vertex from primary vertex
   Bool_t fTPCdecay;                  //indicates decay in TPC
+  //
+  // TPC row information using digits
   Int_t fRowsWithDigitsInn;          // number of rows with digits in the inner sectors
   Int_t fRowsWithDigits;             // number of rows with digits in the outer sectors
   Int_t fRowsTrackLength;            // last - first row with digit
+  //
+  // TPC track refernce information
+  Float_t fTPCtrackLength;           // distance between first and last track reference
+  //
   Float_t fPrim;                     // theoretical dedx in tpc according particle momenta and mass
   AliTPCdigitRow fTPCRow;                  // information about digits row pattern
   Int_t fNTPCRef;                    // tpc references counter

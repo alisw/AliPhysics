@@ -6,27 +6,24 @@
 
 
 //////////////////////////////////////////////////////////////////////////////
-//                          Class AliGenInfo                               //
+//                          Class AliGenInfoMaker                           //
 //   collect together MC info for comparison purposes - effieciency studies and so on//                                                                 //
 //   marian.ivanov@cern.ch                                                  //
 //////////////////////////////////////////////////////////////////////////////
 
 
 
-////////////////////////////////////////////////////////////////////////
-//
-// Start of implementation of the class AliTPCdigitRow
-//
-////////////////////////////////////////////////////////////////////////
 
 #include <TParticle.h>
+#include "AliAnalysisTask.h"
 #include "AliTrackReference.h"
 
 class TFile;
 class AliRunLoader;
 class AliStack;
 class AliTPCParam;
-
+class AliMCEventHandler;
+class AliMCInfo;
 
 ////////////////////////////////////////////////////////////////////////
 // 
@@ -34,24 +31,29 @@ class AliTPCParam;
 //
 ////////////////////////////////////////////////////////////////////////
 
-class AliGenInfoMaker {
+class AliGenInfoMaker : public TObject {
 
 public:
   AliGenInfoMaker();
-  AliGenInfoMaker(const char * fnGalice, const char* fnRes    ="genTracks.root",
-		   Int_t nEvents=1, Int_t firstEvent=0);
   virtual ~AliGenInfoMaker();
-  Int_t Exec();
-  Int_t Exec(Int_t nEvents, Int_t firstEventNr);
+  // 
+  //
+  AliGenInfoMaker(const char * fnGalice, const char* fnRes,
+		   Int_t nEvents=1, Int_t firstEvent=0);
+  //event by event function - used in the analysis task
+  Int_t ProcessEvent(AliMCEventHandler* mcinfo);
+
+  Int_t ProcessEvent();   // process event
+  Int_t TreeKLoop();      // process kinamatics
+  Int_t TreeTRLoop();     // process track refereces
+  Int_t TreeDLoop();      // process digits tree
+  Int_t BuildKinkInfo();  // build information about MC kinks
+  Int_t BuildV0Info();    // build information about MC kinks
+  //
+  //
+  Int_t Exec();  
   void CreateTreeGenTracks();
   void CloseOutputFile();
-  Int_t TreeKLoop();
-  Int_t TreeTRLoop();
-  Int_t TreeTRLoopNew(); 
-  Int_t TreeDLoop();
-  Int_t BuildKinkInfo();  // build information about MC kinks
-  Int_t BuildV0Info();  // build information about MC kinks
-  Int_t BuildHitLines();  // build information about MC kinks
   void SetFirstEventNr(Int_t i) {fFirstEventNr = i;}
   void SetNEvents(Int_t i) {fNEvents = i;}
   void SetDebug(Int_t level) {fDebug = level;}
@@ -59,14 +61,19 @@ public:
   Int_t CloseIOEvent();
   Int_t CloseIO();
   Int_t SetIO();
+
+protected:
+  AliMCInfo * MakeInfo(UInt_t i);
+  AliMCInfo * GetInfo(UInt_t i) const {return (i<fNParticles)? fGenInfo[i]:0;}
   Float_t TR2LocalX(AliTrackReference *trackRef,
 		    AliTPCParam *paramTPC) const;
-  AliMCInfo * GetInfo(UInt_t i) const {return (i<fNParticles)? fGenInfo[i]:0;}
-  AliMCInfo * MakeInfo(UInt_t i);
-
-private:
   AliTPCParam * GetTPCParam();
   Float_t TPCBetheBloch(Float_t bg);
+  //
+  TObjArray *fGenTracksArray;  //clones array with filtered particles
+  TObjArray *fGenKinkArray;    //clones array with filtered Kinks
+  TObjArray *fGenV0Array;      //clones array with filtered V0s
+  //
   Int_t  fDebug;                   //! debug flag  
   Int_t  fEventNr;                 //! current event number
   Int_t  fLabel;                   //! track label
@@ -76,7 +83,6 @@ private:
   TTree *fTreeGenTracks;          //! output tree with generated tracks
   TTree *fTreeKinks;             //!  output tree with Kinks
   TTree *fTreeV0;                //!  output tree with V0
-  TTree *fTreeHitLines;          //! tree with hit lines
   char   fFnRes[1000];             //! output file name with stored tracks
   TFile *fFileGenTracks;          //! output file with stored fTreeGenTracks
   //
@@ -89,8 +95,7 @@ private:
   Int_t   fNInfos;                  //! number of tracks with infos
   //
   AliTPCParam* fParamTPC;         //! AliTPCParam
-  Float_t  fVPrim[3];             //! primary vertex position
-                                  // the fVDist[3] contains size of the 3-vector
+  Float_t  fVPrim[3];             //! primary vertex position                                  // the fVDist[3] contains size of the 3-vector
   // cuts
   //
   Double_t fTPCPtCut; // do not store particles with generated pT less than this

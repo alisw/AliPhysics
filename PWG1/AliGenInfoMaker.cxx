@@ -22,6 +22,10 @@ Origin: marian.ivanov@cern.ch
 Generate complex MC information - used for Comparison later on
 How to use it?
 
+
+---Usage outside of the analysis framework
+
+gSystem->Load("libANALYSIS.so")
 gSystem->Load("libPWG1.so")
 AliGenInfoMaker *t = new AliGenInfoMaker("galice.root","genTracks.root",0,0)
 t->Exec();
@@ -36,29 +40,21 @@ t->Exec();
 #include "Rtypes.h"
 #include "TFile.h"
 #include "TTree.h"
-//#include "TChain.h"
-//#include "TCut.h"
-//#include "TString.h"
 #include "TStopwatch.h"
 #include "TParticle.h"
-//#include "TSystem.h"
-//#include "TCanvas.h"
-//#include "TGeometry.h"
-//#include "TPolyLine3D.h"
 
 //ALIROOT includes
+#include "AliMCEvent.h"
+#include "AliMCEventHandler.h"
+
 #include "AliRun.h"
 #include "AliStack.h"
 #include "AliSimDigits.h"
 #include "AliTPCParam.h"
 #include "AliTPC.h"
 #include "AliTPCLoader.h"
-//#include "AliDetector.h"
 #include "AliTrackReference.h"
 #include "AliTPCParamSR.h"
-#include "AliTracker.h"
-//#include "AliMagF.h"
-//#include "AliHelix.h"
 #include "AliTrackPointArray.h"
 
 #endif
@@ -78,7 +74,10 @@ ClassImp(AliGenInfoMaker)
 
   
 ////////////////////////////////////////////////////////////////////////
-AliGenInfoMaker::AliGenInfoMaker():
+AliGenInfoMaker::AliGenInfoMaker(): 
+  fGenTracksArray(0),          //clones array with filtered particles
+  fGenKinkArray(0),            //clones array with filtered Kinks
+  fGenV0Array(0),              //clones array with filtered V0s
   fDebug(0),                   //! debug flag  
   fEventNr(0),                 //! current event number
   fLabel(0),                   //! track label
@@ -88,7 +87,6 @@ AliGenInfoMaker::AliGenInfoMaker():
   fTreeGenTracks(0),           //! output tree with generated tracks
   fTreeKinks(0),               //!  output tree with Kinks
   fTreeV0(0),                  //!  output tree with V0
-  fTreeHitLines(0),            //! tree with hit lines
   fFileGenTracks(0),           //! output file with stored fTreeGenTracks
   fLoader(0),                  //! pointer to the run loader
   fTreeD(0),                   //! current tree with digits
@@ -97,16 +95,23 @@ AliGenInfoMaker::AliGenInfoMaker():
   fGenInfo(0),                 //! array with pointers to gen info
   fNInfos(0),                  //! number of tracks with infos
   fParamTPC(0),                //! AliTPCParam
-  fTPCPtCut(0.03),            
-  fITSPtCut(0.1),  
-  fTRDPtCut(0.1), 
-  fTOFPtCut(0.1)
-{   
+  fTPCPtCut(0.1),              //  TPC pt cut            
+  fITSPtCut(0.1),              //  ITS pt cut
+  fTRDPtCut(0.1),              //  TRD pt cut
+  fTOFPtCut(0.1)               //  TOF pt cut
+{    
+  sprintf(fFnRes,"%s","genTracks.root");
 }
+
+
+
 
 ////////////////////////////////////////////////////////////////////////
 AliGenInfoMaker::AliGenInfoMaker(const char * fnGalice, const char* fnRes,
 				 Int_t nEvents, Int_t firstEvent):
+  fGenTracksArray(0),          //clones array with filtered particles
+  fGenKinkArray(0),            //clones array with filtered Kinks
+  fGenV0Array(0),              //clones array with filtered V0s
   fDebug(0),                   //! debug flag  
   fEventNr(0),                 //! current event number
   fLabel(0),                   //! track label
@@ -116,7 +121,6 @@ AliGenInfoMaker::AliGenInfoMaker(const char * fnGalice, const char* fnRes,
   fTreeGenTracks(0),           //! output tree with generated tracks
   fTreeKinks(0),               //!  output tree with Kinks
   fTreeV0(0),                  //!  output tree with V0
-  fTreeHitLines(0),            //! tree with hit lines
   fFileGenTracks(0),           //! output file with stored fTreeGenTracks
   fLoader(0),                  //! pointer to the run loader
   fTreeD(0),                   //! current tree with digits
@@ -125,11 +129,10 @@ AliGenInfoMaker::AliGenInfoMaker(const char * fnGalice, const char* fnRes,
   fGenInfo(0),                 //! array with pointers to gen info
   fNInfos(0),                  //! number of tracks with infos
   fParamTPC(0),                //! AliTPCParam 
-  fTPCPtCut(0.03),  
+  fTPCPtCut(0.1),  
   fITSPtCut(0.1),  
   fTRDPtCut(0.1), 
   fTOFPtCut(0.1)
-
 {
   //
   // 
@@ -138,6 +141,8 @@ AliGenInfoMaker::AliGenInfoMaker(const char * fnGalice, const char* fnRes,
   fEventNr = firstEvent;
   fNEvents = nEvents;
   sprintf(fFnRes,"%s",fnRes);
+  //
+  //
   //
   fLoader = AliRunLoader::Open(fnGalice);
   if (gAlice){
@@ -154,7 +159,7 @@ AliGenInfoMaker::AliGenInfoMaker(const char * fnGalice, const char* fnRes,
     fNEvents=nall;
     fFirstEventNr=0;
   }    
-
+  
   if (nall<=0){
     cerr<<"no events available"<<endl;
     fEventNr = 0;
@@ -164,8 +169,23 @@ AliGenInfoMaker::AliGenInfoMaker(const char * fnGalice, const char* fnRes,
     fEventNr = nall-firstEvent;
     cerr<<"restricted number of events availaible"<<endl;
   }
-  AliMagF * magf = gAlice->Field();
-  AliTracker::SetFieldMap(magf,0);
+}
+
+
+
+
+////////////////////////////////////////////////////////////////////////
+AliGenInfoMaker::~AliGenInfoMaker()
+{
+  //
+  // Destructor
+  //
+  
+  if (fLoader){
+    fLoader->UnloadgAlice();
+    gAlice = 0;
+    delete fLoader;
+  }
 }
 
 
@@ -184,19 +204,69 @@ AliMCInfo * AliGenInfoMaker::MakeInfo(UInt_t i)
     return 0;  
 }
 
-////////////////////////////////////////////////////////////////////////
-AliGenInfoMaker::~AliGenInfoMaker()
-{
+
+Int_t  AliGenInfoMaker::ProcessEvent(AliMCEventHandler* mcinfo){
   //
-  // Destructor
+  // Process MC info from the task
   //
-  
-  if (fLoader){
-    fLoader->UnloadgAlice();
-    gAlice = 0;
-    delete fLoader;
+  if (!fParamTPC) {
+    SetIO();
+    fParamTPC = GetTPCParam();
   }
+  fStack  = mcinfo->MCEvent()->Stack();
+  fTreeTR = mcinfo->TreeTR();
+  fTreeD  = 0;
+  // array with preprocessedprocessed information
+  fGenTracksArray = new TObjArray;
+  fGenKinkArray   = new TObjArray;
+  fGenV0Array     = new TObjArray;
+  //
+  ProcessEvent();
+  fEventNr++;
+  return 0;
 }
+
+
+
+Int_t AliGenInfoMaker::ProcessEvent(){
+  //
+  // Process Event 
+  //
+  fNParticles = fStack->GetNtrack();
+  //
+  fGenInfo = new AliMCInfo*[fNParticles];
+  for (UInt_t i = 0; i<fNParticles; i++) {
+    fGenInfo[i]=0; 
+  }
+  //
+  cout<<"Start to process event "<<fEventNr<<endl;
+  cout<<"\tfNParticles = "<<fNParticles<<endl;
+  if (fDebug>2) cout<<"\n\n\n\tStart loop over TreeTR"<<endl;
+  if (TreeTRLoop()>0) return 1;
+  //
+  if (fDebug>2) cout<<"\n\n\n\tStart loop over TreeD"<<endl;
+  if (TreeDLoop()>0) return 1;
+  //
+  if (fDebug>2) cout<<"\n\n\n\tStart loop over TreeK"<<endl;
+  if (TreeKLoop()>0) return 1;
+  if (fDebug>2) cout<<"\tEnd loop over TreeK"<<endl;
+  //
+  //  if (BuildKinkInfo()>0) return 1;
+  if (BuildV0Info()>0) return 1;
+  if (fDebug>2) cout<<"\tEnd loop over TreeK"<<endl;
+  //
+  for (UInt_t i = 0; i<fNParticles; i++) {
+    if (fGenInfo[i]) delete fGenInfo[i]; 
+  }
+  delete []fGenInfo;
+  return 0;
+}
+
+
+
+
+
+
 
 Int_t  AliGenInfoMaker::SetIO()
 {
@@ -205,7 +275,6 @@ Int_t  AliGenInfoMaker::SetIO()
   //
   CreateTreeGenTracks();
   if (!fTreeGenTracks) return 1;
-  //  AliTracker::SetFieldFactor(); 
  
   fParamTPC = GetTPCParam();
   //
@@ -256,19 +325,6 @@ Int_t AliGenInfoMaker::CloseIO()
 
 
 ////////////////////////////////////////////////////////////////////////
-Int_t AliGenInfoMaker::Exec(Int_t nEvents, Int_t firstEventNr)
-{
-  //
-  // Execute action for 
-  // nEvents
-  // firstEventNr - first event number
-  //
-  fNEvents = nEvents;
-  fFirstEventNr = firstEventNr;
-  return Exec();
-}
-
-////////////////////////////////////////////////////////////////////////
 Int_t AliGenInfoMaker::Exec()  
 {
   //
@@ -280,50 +336,25 @@ Int_t AliGenInfoMaker::Exec()
   Int_t status =SetIO();
   if (status>0) return status;
   //
-
   for (fEventNr = fFirstEventNr; fEventNr < fFirstEventNr+fNEvents;
        fEventNr++) {
     SetIO(fEventNr);
-    fNParticles = fStack->GetNtrack();
-    //
-    fGenInfo = new AliMCInfo*[fNParticles];
-    for (UInt_t i = 0; i<fNParticles; i++) {
-      fGenInfo[i]=0; 
-    }
-    //
-    cout<<"Start to process event "<<fEventNr<<endl;
-    cout<<"\tfNParticles = "<<fNParticles<<endl;
-    if (fDebug>2) cout<<"\n\n\n\tStart loop over TreeTR"<<endl;
-    if (TreeTRLoop()>0) return 1;
-    //
-    if (fDebug>2) cout<<"\n\n\n\tStart loop over TreeD"<<endl;
-    if (TreeDLoop()>0) return 1;
-    //
-    if (fDebug>2) cout<<"\n\n\n\tStart loop over TreeK"<<endl;
-    if (TreeKLoop()>0) return 1;
-    if (fDebug>2) cout<<"\tEnd loop over TreeK"<<endl;
-    //
-    if (BuildKinkInfo()>0) return 1;
-    if (BuildV0Info()>0) return 1;
-    //if (BuildHitLines()>0) return 1;
-    if (fDebug>2) cout<<"\tEnd loop over TreeK"<<endl;
-    //
-    for (UInt_t i = 0; i<fNParticles; i++) {
-      if (fGenInfo[i]) delete fGenInfo[i]; 
-    }
-    delete []fGenInfo;
+    ProcessEvent();
     CloseIOEvent();
   }
   //
   CloseIO();
   CloseOutputFile();
-
   cerr<<"Exec finished"<<endl;
-
   timer.Stop();
   timer.Print();
   return 0;
 }
+
+
+
+
+
 
 ////////////////////////////////////////////////////////////////////////
 void AliGenInfoMaker::CreateTreeGenTracks() 
@@ -352,21 +383,14 @@ void AliGenInfoMaker::CreateTreeGenTracks()
   delete v0info;
   //
   //
-  AliTrackPointArray * points0 = new AliTrackPointArray;  
-  AliTrackPointArray * points1 = new AliTrackPointArray;  
-  AliTrackPointArray * points2 = new AliTrackPointArray;  
-  fTreeHitLines = new TTree("HitLines","HitLines");
-  fTreeHitLines->Branch("TPC.","AliTrackPointArray",&points0,32000,10);
-  fTreeHitLines->Branch("TRD.","AliTrackPointArray",&points1,32000,10);
-  fTreeHitLines->Branch("ITS.","AliTrackPointArray",&points2,32000,10);
-  Int_t label=0;
-  fTreeHitLines->Branch("Label",&label,"label/I");
   //
   fTreeGenTracks->AutoSave();
   fTreeKinks->AutoSave();
   fTreeV0->AutoSave();
-  fTreeHitLines->AutoSave();
 }
+
+
+
 ////////////////////////////////////////////////////////////////////////
 void AliGenInfoMaker::CloseOutputFile() 
 {
@@ -410,12 +434,12 @@ Int_t AliGenInfoMaker::TreeKLoop()
   // not all generators give primary vertex position. Take the vertex
   // of the particle 0 as primary vertex.
   TDatabasePDG  pdg; //get pdg table  
-  //thank you very much root for this
-  TBranch * br = fTreeGenTracks->GetBranch("MC");
+
   TParticle *particle = stack->ParticleFromTreeK(0);
   fVPrim[0] = particle->Vx();
   fVPrim[1] = particle->Vy();
   fVPrim[2] = particle->Vz();
+  Int_t accepted =0;
   for (UInt_t iParticle = 0; iParticle < fNParticles; iParticle++) {
     // load only particles with TR
     AliMCInfo * info = GetInfo(iParticle);
@@ -436,11 +460,26 @@ Int_t AliGenInfoMaker::TreeKLoop()
     ppdg = pdg.GetParticle(ipdg);   	   
     info->fEventNr = fEventNr;
     info->Update();
+    if (fGenTracksArray){
+      fGenTracksArray->AddLast(info->Clone());
+    }
+    accepted++;
+  }
+  //
+  // write the results to the tree - if specified
+  //
+  TBranch * br = fTreeGenTracks->GetBranch("MC");
+  for (UInt_t iParticle = 0; iParticle < fNParticles; iParticle++) {
+    // load only particles with TR
+    AliMCInfo * info = GetInfo(iParticle);
+    if (!info) continue;
     //////////////////////////////////////////////////////////////////////    
     br->SetAddress(&info);    
     fTreeGenTracks->Fill();    
   }
   fTreeGenTracks->AutoSave();
+  //
+  //
   if (fDebug > 2) cerr<<"end of TreeKLoop"<<endl;
   return 0;
 }
@@ -474,7 +513,6 @@ Int_t  AliGenInfoMaker::BuildKinkInfo()
     AliMCInfo * info = GetInfo(iParticle);
     if (!info) continue;
     if (info->fCharge==0) continue;  
-    if (info->fTRdecay.P()<0.13) continue;  //momenta cut 
     if (info->fTRdecay.R()>500)  continue;  //R cut - decay outside barrel
     TParticle & particle = info->fParticle;
     Int_t first = particle.GetDaughter(0);
@@ -501,17 +539,8 @@ Int_t  AliGenInfoMaker::BuildKinkInfo()
       br->SetAddress(&kinkinfo);    
       fTreeKinks->Fill();
     }
-    /*
-    if (dinfo){
-      kinkinfo->fMCm = (*info);
-      kinkinfo->GetPlus() = (*dinfo);
-      kinkinfo->Update();
-      br->SetAddress(&kinkinfo);    
-      fTreeKinks->Fill();
-    }
-    */
   }
-  fTreeGenTracks->AutoSave();
+  fTreeKinks->AutoSave();
   if (fDebug > 2) cerr<<"end of Kink Loop"<<endl;
   return 0;
 }
@@ -530,10 +559,7 @@ Int_t  AliGenInfoMaker::BuildV0Info()
     cout<<"There are "<<fNParticles<<" primary and secondary particles in event "
 	<<fEventNr<<endl;
   }  
-  //  Int_t  ipdg = 0;
-  //TParticlePDG *ppdg = 0;
-  // not all generators give primary vertex position. Take the vertex
-  // of the particle 0 as primary vertex.
+  //
   TDatabasePDG  pdg; //get pdg table  
   //thank you very much root for this
   TBranch * br = fTreeV0->GetBranch("MC");
@@ -541,32 +567,26 @@ Int_t  AliGenInfoMaker::BuildV0Info()
   AliGenV0Info * v0info = new AliGenV0Info;
   //
   //
-  for (UInt_t iParticle = 0; iParticle < fNParticles; iParticle++) {
-    // load only particles with TR
-    AliMCInfo * info = GetInfo(iParticle);
-    if (!info) continue;
-    if (info->fCharge==0) continue;  
+  for (UInt_t iParticle = 0; iParticle < fNParticles; iParticle++) {    
+    TParticle * mParticle = fStack->Particle(iParticle);
+    if (!mParticle) continue;
+    if (mParticle->GetPDG()==0) continue;
+    if (mParticle->GetPDG()->Charge()!=0) continue;  //only neutral particle
     //
+    Int_t first = mParticle->GetDaughter(0);
+    Int_t last  = mParticle->GetDaughter(1);
+    if (first-last==0) continue;
     //
-    TParticle & particle = info->fParticle;
-    Int_t mother = particle.GetMother(0);
-    if (mother <=0) continue;
-    //
-    TParticle * motherparticle = stack->Particle(mother);
-    if (!motherparticle) continue;
-    //
-    Int_t last = motherparticle->GetDaughter(1);
-    if (last==(int)iParticle) continue;
-    AliMCInfo * info2 =  info;
-    AliMCInfo * dinfo =  GetInfo(last);
-    if (!dinfo) continue;
-    if (!dinfo->fParticle.GetPDG()) continue;
-    if (!info2->fParticle.GetPDG()) continue;
-    if (dinfo){
-      v0info->SetInfoP(*info);
-      v0info->SetInfoM(*dinfo);
-      v0info->SetMother(*motherparticle);
+    AliMCInfo * info0 = GetInfo(first);
+    AliMCInfo * info1 = GetInfo(first+1);
+    if (info0 && info1){
+      if (info0->GetPdg()==0) continue;
+      if (info1->GetPdg()==0) continue;
+      v0info->SetInfoP(*info0);
+      v0info->SetInfoM(*info1);
+      v0info->SetMother(*mParticle);
       v0info->Update(fVPrim);
+      if (fGenV0Array) fGenV0Array->AddLast(v0info);
       br->SetAddress(&v0info);    
       fTreeV0->Fill();
     }
@@ -579,87 +599,6 @@ Int_t  AliGenInfoMaker::BuildV0Info()
 
 
 
-////////////////////////////////////////////////////////////////////////
-Int_t AliGenInfoMaker::BuildHitLines()
-{
-
-//
-// open the file with treeK
-// loop over all entries there and save information about some tracks
-//
-
-  AliStack * stack = fStack;
-  if (!stack) {cerr<<"Stack was not found!\n"; return 1;}
-  
-  if (fDebug > 0) {
-    cout<<"There are "<<fNParticles<<" primary and secondary particles in event "
-	<<fEventNr<<endl;
-  }  
-//   Int_t  ipdg = 0;
-//   // TParticlePDG *ppdg = 0;
-//   // not all generators give primary vertex position. Take the vertex
-//   // of the particle 0 as primary vertex.
-//   TDatabasePDG  pdg; //get pdg table  
-//   //thank you very much root for this
-//   AliTrackPointArray *tpcp = new AliTrackPointArray;
-//   AliTrackPointArray *trdp = new AliTrackPointArray;
-//   AliTrackPointArray *itsp = new AliTrackPointArray;
-//   Int_t label =0;
-//   //
-//   TBranch * brtpc = fTreeHitLines->GetBranch("TPC.");
-//   TBranch * brtrd = fTreeHitLines->GetBranch("TRD.");  
-//   TBranch * brits = fTreeHitLines->GetBranch("ITS.");
-//   TBranch * brlabel = fTreeHitLines->GetBranch("Label");
-//   brlabel->SetAddress(&label);
-//   brtpc->SetAddress(&tpcp);
-//   brtrd->SetAddress(&trdp);
-//   brits->SetAddress(&itsp);
-//   //
-//   AliDetector *dtpc = gAlice->GetDetector("TPC");
-//   AliDetector *dtrd = gAlice->GetDetector("TRD");
-//   AliDetector *dits = gAlice->GetDetector("ITS");
- 
-//   for (UInt_t iParticle = 0; iParticle < fNParticles; iParticle++) {
-//     // load only particles with TR
-//     AliMCInfo * info = GetInfo(iParticle);
-//     if (!info) continue;
-//     Int_t primpart = info->fPrimPart;
-//     ipdg = info->fParticle.GetPdgCode();
-//     label = iParticle;
-//     //
-//     gAlice->ResetHits();
-//     tpcp->Reset();
-//     itsp->Reset();
-//     trdp->Reset();
-//     tpcp->fLabel1 = ipdg;
-//     trdp->fLabel1 = ipdg;
-//     itsp->fLabel1 = ipdg;
-//     if (dtpc->TreeH()->GetEvent(primpart)){
-//       dtpc->LoadPoints(primpart);
-//       tpcp->Reset(dtpc,iParticle);
-//     }
-//     if (dtrd->TreeH()->GetEvent(primpart)){
-//       dtrd->LoadPoints(primpart);
-//       trdp->Reset(dtrd,iParticle);
-//     }
-//     if (dits->TreeH()->GetEvent(primpart)){
-//       dits->LoadPoints(primpart);
-//       itsp->Reset(dits,iParticle);
-//     }    
-//     //    
-//     fTreeHitLines->Fill();
-//     dtpc->ResetPoints();
-//     dtrd->ResetPoints();
-//     dits->ResetPoints();
-//   }
-//   delete tpcp;
-//   delete trdp;
-//   delete itsp;
-//   fTreeHitLines->AutoSave();
-//   if (fDebug > 2) cerr<<"end of TreeKLoop"<<endl;
-  return 0;
-}
-
 
 ////////////////////////////////////////////////////////////////////////
 Int_t AliGenInfoMaker::TreeDLoop()
@@ -668,7 +607,7 @@ Int_t AliGenInfoMaker::TreeDLoop()
   // open the file with treeD
   // loop over all entries there and save information about some tracks
   //
-  
+  if (!fTreeD) return 0;
   Int_t nInnerSector = fParamTPC->GetNInnerSector();
   Int_t rowShift = 0;
   Int_t zero=fParamTPC->GetZeroSup()+6;  
@@ -723,144 +662,10 @@ Int_t AliGenInfoMaker::TreeDLoop()
 }
 
 
+
+
 ////////////////////////////////////////////////////////////////////////
 Int_t AliGenInfoMaker::TreeTRLoop()
-{
-  //
-  // loop over TrackReferences and store the first one for each track
-  //  
-  TTree * treeTR = fTreeTR;
-  Int_t nPrimaries = (Int_t) treeTR->GetEntries();
-  if (fDebug > 1) cout<<"There are "<<nPrimaries<<" entries in TreeTR"<<endl;
-  //
-  //
-  //track references for TPC
-  TClonesArray* tpcArrayTR = new TClonesArray("AliTrackReference");
-  TClonesArray* itsArrayTR = new TClonesArray("AliTrackReference");
-  TClonesArray* trdArrayTR = new TClonesArray("AliTrackReference");
-  TClonesArray* tofArrayTR = new TClonesArray("AliTrackReference");
-  TClonesArray* runArrayTR = new TClonesArray("AliTrackReference");
-  //
-  if (treeTR->GetBranch("TPC"))    treeTR->GetBranch("TPC")->SetAddress(&tpcArrayTR);
-  if (treeTR->GetBranch("ITS"))    treeTR->GetBranch("ITS")->SetAddress(&itsArrayTR);
-  if (treeTR->GetBranch("TRD"))    treeTR->GetBranch("TRD")->SetAddress(&trdArrayTR);
-  if (treeTR->GetBranch("TOF"))    treeTR->GetBranch("TOF")->SetAddress(&tofArrayTR);
-  if (treeTR->GetBranch("AliRun")) treeTR->GetBranch("AliRun")->SetAddress(&runArrayTR);
-  //
-  //
-  //
-  for (Int_t iPrimPart = 0; iPrimPart<nPrimaries; iPrimPart++) {
-    treeTR->GetEntry(iPrimPart);
-    //
-    // Loop over TPC references
-    //
-    for (Int_t iTrackRef = 0; iTrackRef < tpcArrayTR->GetEntriesFast(); iTrackRef++) {
-      AliTrackReference *trackRef = (AliTrackReference*)tpcArrayTR->At(iTrackRef);            
-      //
-      if (trackRef->TestBit(BIT(2))){  
-	//if decay 
-	if (trackRef->P()<fTPCPtCut) continue;
-	Int_t label = trackRef->GetTrack(); 
-	AliMCInfo * info = GetInfo(label);
-	if (!info) info = MakeInfo(label);
-	info->fTRdecay = *trackRef;      
-      }
-      //
-      if (trackRef->P()<fTPCPtCut) continue;
-      Int_t label = trackRef->GetTrack();      
-      AliMCInfo * info = GetInfo(label);
-      if (!info) info = MakeInfo(label);
-      if (!info) continue;
-      info->fPrimPart =  iPrimPart;
-      TClonesArray & arr = *(info->fTPCReferences);
-      new (arr[arr.GetEntriesFast()]) AliTrackReference(*trackRef);     
-    }
-    //
-    // Loop over ITS references
-    //
-    for (Int_t iTrackRef = 0; iTrackRef < itsArrayTR->GetEntriesFast(); iTrackRef++) {
-      AliTrackReference *trackRef = (AliTrackReference*)itsArrayTR->At(iTrackRef);            
-      // 
-      //
-      if (trackRef->P()<fTPCPtCut) continue;
-      Int_t label = trackRef->GetTrack();      
-      AliMCInfo * info = GetInfo(label);
-      if ( (!info) && trackRef->Pt()<fITSPtCut) continue;
-      if (!info) info = MakeInfo(label);
-      if (!info) continue;
-      info->fPrimPart =  iPrimPart;
-      TClonesArray & arr = *(info->fITSReferences);
-      new (arr[arr.GetEntriesFast()]) AliTrackReference(*trackRef);     
-    }
-    //
-    // Loop over TRD references
-    //
-    for (Int_t iTrackRef = 0; iTrackRef < trdArrayTR->GetEntriesFast(); iTrackRef++) {
-      AliTrackReference *trackRef = (AliTrackReference*)trdArrayTR->At(iTrackRef);            
-      //
-      if (trackRef->P()<fTRDPtCut) continue;
-      Int_t label = trackRef->GetTrack();      
-      AliMCInfo * info = GetInfo(label);
-      if ( (!info) && trackRef->Pt()<fTRDPtCut) continue;
-      if (!info) info = MakeInfo(label);
-      if (!info) continue;
-      info->fPrimPart =  iPrimPart;
-      TClonesArray & arr = *(info->fTRDReferences);
-      new (arr[arr.GetEntriesFast()]) AliTrackReference(*trackRef);     
-    }
-    //
-    // Loop over TOF references
-    //
-    for (Int_t iTrackRef = 0; iTrackRef < tofArrayTR->GetEntriesFast(); iTrackRef++) {
-      AliTrackReference *trackRef = (AliTrackReference*)tofArrayTR->At(iTrackRef);            
-      Int_t label = trackRef->GetTrack();      
-      AliMCInfo * info = GetInfo(label);
-      if (!info){
-	if (trackRef->Pt()<fTPCPtCut) continue;
-	if ( (!info) && trackRef->Pt()<fTOFPtCut) continue;
-      }
-      if (!info) info = MakeInfo(label);
-      if (!info) continue;
-      info->fPrimPart =  iPrimPart;
-      TClonesArray & arr = *(info->fTOFReferences);
-      new (arr[arr.GetEntriesFast()]) AliTrackReference(*trackRef);     
-    }
-    //
-    //
-    // get dacay position
-    //
-    for (Int_t iTrackRef = 0; iTrackRef < runArrayTR->GetEntriesFast(); iTrackRef++) {
-      AliTrackReference *trackRef = (AliTrackReference*)runArrayTR->At(iTrackRef);      
-      //
-      Int_t label = trackRef->GetTrack();
-      AliMCInfo * info = GetInfo(label);
-      if (!info) continue;
-      if (!trackRef->TestBit(BIT(2))) continue;  //if not decay
-      //      if (TMath::Abs(trackRef.X());
-      info->fTRdecay = *trackRef;      
-    }
-  }
-  //
-  tpcArrayTR->Delete();
-  delete  tpcArrayTR;
-  trdArrayTR->Delete();
-  delete  trdArrayTR;
-  tofArrayTR->Delete();
-  delete  tofArrayTR;
-  itsArrayTR->Delete();
-  delete  itsArrayTR;
-  runArrayTR->Delete();
-  delete  runArrayTR;
-  //
-  return TreeTRLoopNew();
-}
-
-
-
-
-
-////////////////////////////////////////////////////////////////////////
-Int_t AliGenInfoMaker::TreeTRLoopNew()
 {
   //
   // loop over TrackReferences and store the first one for each track
@@ -880,11 +685,14 @@ Int_t AliGenInfoMaker::TreeTRLoopNew()
   for (Int_t ipart = 0; ipart<fStack->GetNtrack(); ipart++) {
     TParticle * part = fStack->Particle(ipart);
     if (!part) continue;
+    if (part->GetPDG()==0) continue;
+    if (part->GetPDG()->Charge()==0) continue;
+    
     if (part->Pt()<fITSPtCut) continue;
     if (part->R()>250.) continue;
     if (TMath::Abs(part->Vz())>250.) continue;
-    if (TMath::Abs(part->Pz()/part->Pt())>2.5) continue; 
-    MakeInfo(ipart);
+    if (TMath::Abs(part->Pz()/part->Pt())>2.5) continue;     
+    AliMCInfo * info = MakeInfo(ipart); 
   }
   //
   //
@@ -898,6 +706,8 @@ Int_t AliGenInfoMaker::TreeTRLoopNew()
       AliTrackReference *trackRef = (AliTrackReference*)runArrayTR->At(iTrackRef);      
       //
       Int_t label = trackRef->GetTrack();
+      AliMCInfo * cinfo = GetInfo(label);
+      if (cinfo) cinfo->CalcTPCrows(runArrayTR);
       //
       // TPC
       //
@@ -906,7 +716,9 @@ Int_t AliGenInfoMaker::TreeTRLoopNew()
 	Int_t label = trackRef->GetTrack();      
 	AliMCInfo * info = GetInfo(label);
 	if (!info && trackRef->Pt()<fTPCPtCut) continue;
-	if (!info) info = MakeInfo(label);
+	if (!info) {
+	  info = MakeInfo(label);
+	}
 	if (!info) continue;
 	info->fPrimPart =  iPrimPart;
 	TClonesArray & arr = *(info->fTPCReferences);
@@ -961,10 +773,8 @@ Int_t AliGenInfoMaker::TreeTRLoopNew()
 	//
 	AliMCInfo * info = GetInfo(label);
 	if (!info) continue;
-	//if (!trackRef->TestBit(BIT(2))) continue;  //if not decay
 	info->fTRdecay = *trackRef;      	
       }
-      
     }
   }
   //

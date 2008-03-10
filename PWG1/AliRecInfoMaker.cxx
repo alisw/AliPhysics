@@ -141,6 +141,7 @@ TProfile prof("prof","prof",10,0.5,5);
 #include "TTree.h"
 #include "TStopwatch.h"
 #include "TVector3.h"
+#include "TGeoManager.h"
 //#include "Getline.h"
 //
 //ALIROOT includes
@@ -274,6 +275,8 @@ AliRecInfoMaker::AliRecInfoMaker(const char* fnGenTracks,
   }
   AliMagF * magf = gAlice->Field();
   AliTracker::SetFieldMap(magf,0);
+  TGeoManager::Import("geometry.root");
+
 
 }
 
@@ -422,7 +425,7 @@ Int_t AliRecInfoMaker::Exec()
 
     if (fDebug>2) cout<<"\tStart loop over tree genTracks"<<endl;
     if (TreeGenLoop(eventNr)>0) return 1;
-    BuildKinkInfo0(eventNr);
+    //BuildKinkInfo0(eventNr);
     //BuildV0Info(eventNr); // no V0 info for a moment
     fRecArray->Delete();
 
@@ -700,7 +703,8 @@ Int_t AliRecInfoMaker::TreeGenLoop(Int_t eventNr)
     fTreeGenTracks->GetEntry(entry);
     entry++;
     if (eventNr < fMCInfo->fEventNr) continue;
-    if (eventNr > fMCInfo->fEventNr) continue;;
+    if (eventNr > fMCInfo->fEventNr) continue;
+    if (fMCInfo->GetCharge()==0) continue;
     //
     fNextTreeGenEntryToRead = entry-1;
     if (fDebug > 2 && fMCInfo->fLabel < 10) {

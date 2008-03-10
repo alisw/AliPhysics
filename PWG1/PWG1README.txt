@@ -12,7 +12,7 @@ t->Exec();
 
 1. Build the reconstructed info tree
 
-
+gSystem->Load("libANALYSIS.so");
 gSystem->Load("libPWG1.so");
 //
 AliRecInfoMaker *t2 = new AliRecInfoMaker("genTracks.root","cmpESDTracks.root","galice.root",0,0);
@@ -21,14 +21,17 @@ t2->Exec();
 
 
 2. Make a chain of the information tree
+gSystem->Load("libANALYSIS.so");
 
 gSystem->Load("libPWG1.so");
 
 //GSI example
 .x ~/rootlogon.C
-.L /u/miranov/macroxrdproof64/AliXRDPROOFtoolkit.cxx+
+ gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros")
+  gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+")
+
  AliXRDPROOFtoolkit tool;
- TChain * chain = tool.MakeChain("pp.txt","ESDcmpTracks",0,1000)
+ TChain * chain = tool.MakeChain("cmp.txt","ESDcmpTracks",0,1000)
  chain->Lookup();
  .L $ALICE_ROOT/PWG1/AliComparisonSelector.cxx+
 

@@ -75,6 +75,7 @@ AliMCInfo::AliMCInfo():
   fRowsWithDigitsInn(0),
   fRowsWithDigits(0),
   fRowsTrackLength(0),
+  fTPCtrackLength(-1),
   fPrim(0),
   fTPCRow(), 
   fNTPCRef(0),                    // tpc references counter
@@ -114,6 +115,7 @@ AliMCInfo::AliMCInfo(const AliMCInfo& info):
   fRowsWithDigitsInn(info.fRowsWithDigitsInn),
   fRowsWithDigits(info.fRowsWithDigits),
   fRowsTrackLength(info.fRowsTrackLength),
+  fTPCtrackLength(info.fTPCtrackLength),
   fPrim(info.fPrim),
   fTPCRow(info.fTPCRow), 
   fNTPCRef(info.fNTPCRef),                    // tpc references counter
@@ -165,29 +167,6 @@ void AliMCInfo::Update()
   //
   //
   fMCtracks =1;
-  if (!fTPCReferences) {
-    fNTPCRef =0;
-    return;
-  }
-  Float_t direction=1;
-  //Float_t rlast=0;
-  fNTPCRef = fTPCReferences->GetEntriesFast();
-  fNITSRef = fITSReferences->GetEntriesFast();
-  fNTRDRef = fTRDReferences->GetEntriesFast();
-  fNTOFRef = fTOFReferences->GetEntriesFast();
-  
-  for (Int_t iref =0;iref<fTPCReferences->GetEntriesFast();iref++){
-    AliTrackReference * ref = (AliTrackReference *) fTPCReferences->At(iref);
-    //Float_t r = (ref->X()*ref->X()+ref->Y()*ref->Y());
-    Float_t newdirection = ref->X()*ref->Px()+ref->Y()*ref->Py(); //inside or outside
-    if (iref==0) direction = newdirection;
-    if ( newdirection*direction<0){
-      //changed direction
-      direction = newdirection;
-      fMCtracks+=1;
-    }
-    //rlast=r;			    
-  }
   //
   // decay info
   fTPCdecay=kFALSE;
@@ -353,3 +332,56 @@ Float_t AliMCInfo::TPCBetheBloch(Float_t bg)
   return ((Float_t)((kp2-aa-bb)*kp1/aa));
 }
 
+
+void AliMCInfo::CalcTPCrows(TClonesArray * runArrayTR){
+  //
+  // Calculates the numebr of the track references for detectors
+  // In case of changing direction - curling tracks - the counter is not increasing
+  //
+  // Rough calculation 
+  // of the first and last point in the TPC  
+  //
+  fNTPCRef = 0;
+  fNITSRef = 0;
+  fNTRDRef = 0;
+  fNTOFRef = 0;  
+  Float_t tpcminRadius=250;
+  Float_t tpcmaxRadius=80;
+  Float_t dir=0;
+  Int_t nover=0;
+  
+  for (Int_t iTrackRef = 0; iTrackRef < runArrayTR->GetEntriesFast(); iTrackRef++) {
+    //
+    AliTrackReference *ref = (AliTrackReference*)runArrayTR->At(iTrackRef);  
+    Float_t newdirection = (ref->X()*ref->Px()+ref->Y()*ref->Py()>0)? 1.:-1.; //inside or outside
+    if (dir*newdirection<0.5) {
+      nover++;
+      dir = newdirection;
+    }
+    //
+    if (ref->DetectorId()== AliTrackReference::kTRD){
+      tpcmaxRadius =250;
+      fNTRDRef++;
+    }
+    if (ref->DetectorId()== AliTrackReference::kITS){
+      fNITSRef++;
+      tpcminRadius =90;
+    }
+    if (ref->DetectorId()== AliTrackReference::kITS){
+      fNTOFRef++;
+      tpcmaxRadius =250;
+    }
+    //
+    if (ref->DetectorId()== AliTrackReference::kTPC){
+      fNTPCRef++;
+      if (ref->R()>tpcmaxRadius) tpcmaxRadius = ref->R();
+      if (ref->R()<tpcminRadius) tpcminRadius = ref->R();
+    }
+    if (ref->DetectorId()== AliTrackReference::kDisappeared){
+      if (TMath::Abs(ref->Z())<250 && TMath::Abs(ref->R()<250))
+	tpcmaxRadius = ref->R();
+    }
+  }
+  fTPCtrackLength = tpcmaxRadius-tpcminRadius;
+  fMCtracks=nover;
+}
