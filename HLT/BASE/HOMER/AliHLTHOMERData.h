@@ -124,33 +124,31 @@ typedef int key_t;
 //typedef homer_uint64 AliEventID_t;
 
 
+#define kAttribute_8b_StartOffset     0
+#define kByteOrderAttribute_8b_Offset kAttribute_8b_StartOffset+0
+#define kVersionAttribute_8b_Offset   kAttribute_8b_StartOffset+1
+#define kAlignment_8b_StartOffset     24
+#define kUInt64Alignment_8b_Offset    kAlignment_8b_StartOffset+0
+#define kUInt32Alignment_8b_Offset    kAlignment_8b_StartOffset+1
+#define kUInt16Alignment_8b_Offset    kAlignment_8b_StartOffset+2
+#define kUInt8Alignment_8b_Offset     kAlignment_8b_StartOffset+3
+#define kDoubleAlignment_8b_Offset    kAlignment_8b_StartOffset+4
+#define kFloatAlignment_8b_Offset     kAlignment_8b_StartOffset+5
 
-const unsigned kAttribute_8b_StartOffset = 0;
-const unsigned kByteOrderAttribute_8b_Offset = kAttribute_8b_StartOffset+0;
-const unsigned kVersionAttribute_8b_Offset = kAttribute_8b_StartOffset+1;
-const unsigned kAlignment_8b_StartOffset = 24;
-const unsigned kUInt64Alignment_8b_Offset = kAlignment_8b_StartOffset+0;
-const unsigned kUInt32Alignment_8b_Offset = kAlignment_8b_StartOffset+1;
-const unsigned kUInt16Alignment_8b_Offset = kAlignment_8b_StartOffset+2;
-const unsigned kUInt8Alignment_8b_Offset = kAlignment_8b_StartOffset+3;
-const unsigned kDoubleAlignment_8b_Offset = kAlignment_8b_StartOffset+4;
-const unsigned kFloatAlignment_8b_Offset = kAlignment_8b_StartOffset+5;
 
-
-const unsigned kID_64b_Offset = 1;
-const unsigned kLength_64b_Offset = 2;
-const unsigned kType_64b_Offset = 4;
-const unsigned kSubType1_64b_Offset = 5;
-const unsigned kSubType2_64b_Offset = 6;
-const unsigned kBirth_s_64b_Offset = 7;
-const unsigned kBirth_us_64b_Offset = 8;
-const unsigned kProducerNode_64b_Offset = 9;
-const unsigned kOffset_64b_Offset = 10;
-const unsigned kSize_64b_Offset = 11;
-const unsigned kStatusFlags_64b_Offset = 12;
-const unsigned kEnd_64b_Offset = 13;
-const unsigned kCount_64b_Words = kEnd_64b_Offset;
-
+#define kID_64b_Offset           1
+#define kLength_64b_Offset       2
+#define kType_64b_Offset         4
+#define kSubType1_64b_Offset     5
+#define kSubType2_64b_Offset     6
+#define kBirth_s_64b_Offset      7
+#define kBirth_us_64b_Offset     8
+#define kProducerNode_64b_Offset 9
+#define kOffset_64b_Offset      10
+#define kSize_64b_Offset        11
+#define kStatusFlags_64b_Offset 12
+#define kEnd_64b_Offset         13
+#define kCount_64b_Words        kEnd_64b_Offset
 
 // Possible values for fAttributes[kByteOrderAttribute]
 /* Keep this consistent with BCLNetworkData.hpp kLittleEndian/kBigEndian and AliHLTSubEventDataDescriptor.hpp */

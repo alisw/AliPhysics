@@ -345,6 +345,7 @@ AliHLTHOMERReader::AliHLTHOMERReader( const void* pBuffer, int size )
     else
 	{
 	fDataSourceCnt++;
+	fShmDataSourceCnt++;
 	fDataSources[0].fNdx = 0;
 	}
     }
@@ -847,7 +848,7 @@ int AliHLTHOMERReader::ReadNextEvent( bool useTimeout, unsigned long timeout )
 	    {
 	    fErrorConnection = n;
 	    fConnectionStatus=57;//EBADSLT;
-	    return fConnectionStatus;
+	    return ret;
 	    }
 	}
     fCurrentEventID = eventID;
@@ -1213,15 +1214,23 @@ int AliHLTHOMERReader::ParseSourceData( DataSource& source )
     if ( source.fData )
 	{
 	homer_uint8 sourceByteOrder = ((homer_uint8*)source.fData)[ kByteOrderAttribute_8b_Offset ];
+	if (sourceByteOrder!=kHOMERLittleEndianByteOrder && sourceByteOrder!=kHOMERBigEndianByteOrder) return EBADMSG;
 	homer_uint64 blockCnt = Swap( kHOMERNativeByteOrder, sourceByteOrder, ((homer_uint64*)source.fData)[ kSubType2_64b_Offset ] );
+	// block count is not related to size of the data in the way the
+	// following condition implies. But we can at least limit the block
+	// count for the case the data is corrupted
+	if (blockCnt>source.fDataSize) return EBADMSG;
 	int ret=ReAllocBlocks( fMaxBlockCnt+blockCnt );
 	if ( ret )
 	    return ret;
 	homer_uint64 descrOffset = Swap( kHOMERNativeByteOrder, sourceByteOrder, ((homer_uint64*)source.fData)[ kOffset_64b_Offset ] );
 	for ( homer_uint64 n = 0; n < blockCnt && fBlockCnt < fMaxBlockCnt; n++, fBlockCnt++ )
 	    {
+	    if (descrOffset+kLength_64b_Offset>=source.fDataSize) return EBADMSG;
 	    homer_uint8* descr = ((homer_uint8*)source.fData)+descrOffset;
 	    unsigned descrLen = Swap( kHOMERNativeByteOrder, sourceByteOrder, ((homer_uint64*)descr)[ kLength_64b_Offset ] );
+	    if (descrOffset+descrLen>=source.fDataSize) return EBADMSG;
+	    if (Swap( kHOMERNativeByteOrder, sourceByteOrder, ((homer_uint64*)descr)[ kID_64b_Offset ] ) != HOMER_BLOCK_DESCRIPTOR_TYPEID) return ENOKEY;
 	    fBlocks[fBlockCnt].fSource = source.fNdx;
 	    fBlocks[fBlockCnt].fData = ((homer_uint8*)source.fData) + Swap( kHOMERNativeByteOrder, sourceByteOrder, ((homer_uint64*)descr)[ kOffset_64b_Offset ] );
 	    fBlocks[fBlockCnt].fLength = Swap( kHOMERNativeByteOrder, sourceByteOrder, ((homer_uint64*)descr)[ kSize_64b_Offset ] );
