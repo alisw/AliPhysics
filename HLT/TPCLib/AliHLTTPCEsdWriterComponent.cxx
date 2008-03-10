@@ -81,6 +81,7 @@ void AliHLTTPCEsdWriterComponent::AliWriter::GetInputDataTypes(AliHLTComponentDa
 {
   // see header file for class documentation
   list.push_back(AliHLTTPCDefinitions::fgkTrackSegmentsDataType);
+  list.push_back(AliHLTTPCDefinitions::fgkTracksDataType);
 }
 
 int AliHLTTPCEsdWriterComponent::AliWriter::InitWriter()
@@ -259,6 +260,7 @@ void AliHLTTPCEsdWriterComponent::AliConverter::GetInputDataTypes(AliHLTComponen
 {
   // see header file for class documentation
   list.push_back(AliHLTTPCDefinitions::fgkTrackSegmentsDataType);
+  list.push_back(AliHLTTPCDefinitions::fgkTracksDataType);
 }
 
 AliHLTComponentDataType AliHLTTPCEsdWriterComponent::AliConverter::GetOutputDataType()

@@ -53,6 +53,7 @@ using namespace std;
 /** HLT default component libraries */
 const char* AliHLTSystem::fgkHLTDefaultLibs[]= {
   "libAliHLTUtil.so", 
+  "libAliHLTRCU.so", 
   "libAliHLTTPC.so", 
   //  "libAliHLTSample.so",
   //"libAliHLTPHOS.so",
@@ -558,7 +559,7 @@ int AliHLTSystem::ProcessTasks(Int_t eventNo)
   }
 
   if (iResult>=0) {
-    HLTInfo("Event %d successfully finished (%d)", eventNo, iResult);
+    HLTImportant("Event %d successfully finished (%d)", eventNo, iResult);
     iResult=0;
   } else {
     HLTError("Processing of event %d failed (%d)", eventNo, iResult);
@@ -920,7 +921,7 @@ int AliHLTSystem::BuildTaskListsFromReconstructionChains(AliRawReader* rawReader
   TString chains;
   if (fChains.Length()>0) {
     chains=fChains;
-    HLTInfo("custom reconstruction chain: %s", chains.Data());
+    HLTImportant("custom reconstruction chain: %s", chains.Data());
   } else {
     AliHLTModuleAgent* pAgent=AliHLTModuleAgent::GetFirstAgent();
     while ((pAgent || fChains.Length()>0) && iResult>=0) {

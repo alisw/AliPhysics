@@ -57,6 +57,7 @@ EXTRA_DIST		= libHLTbase.pkg \
 			  libHLTinterface.pkg \
 			  libHLTsim.pkg \
 			  libHLTrec.pkg \
+			  libHLTshuttle.pkg \
 			  libAliHLTHOMER.pkg \
 			  libAliHLTUtil.pkg \
 			  libAliHLTSample.pkg \
@@ -66,6 +67,10 @@ EXTRA_DIST		= libHLTbase.pkg \
 			  libAliHLTMUON.pkg \
 			  libAliHLTComp.pkg \
 			  libAliHLTTrigger.pkg \
+			  libAliHLTRCU.pkg \
+			  libAliHLTITS.pkg \
+			  exa/sample-component1.C \
+			  exa/monitoring.C \
 			  hlt.conf
 
 DIST_SUBDIRS		= $(SUBDIRS)

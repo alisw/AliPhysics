@@ -8,6 +8,10 @@
  * The chain to be run is defined by the macro given to the parameter
  * 'config='
  *
+ * The makro asumes the data to be already simulated. If it should run
+ * within the initial simulation, comment the corresponding functions
+ * below (SetRunGeneration etc.)
+ *
  * Matthias.Richter@ift.uib.no
  */
 {
@@ -26,7 +30,7 @@
   sim.SetMakeTrigger("");
 
   // set the options for the HLT simulation
-  //sim.SetRunHLT("libAliHLTTPC.so loglevel=0x3c config=conf-tpc-writer.C chains=sink1");
-  sim.SetRunHLT("libAliHLTTPC.so loglevel=0x3c config=conf-tpc-esd.C chains=sink1");
+  //sim.SetRunHLT("libAliHLTUtil.so libAliHLTTPC.so loglevel=0x7c config=conf-tpc-writer.C chains=sink1");
+  sim.SetRunHLT("libAliHLTUtil.so libAliHLTTPC.so loglevel=0x7c config=conf-tpc-esd.C chains=sink1");
   sim.Run();
 }
