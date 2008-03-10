@@ -37,9 +37,11 @@ SRCS= FEMTOSCOPY/AliFemto/AliFemtoSimpleAnalysis.cxx \
       FEMTOSCOPY/AliFemto/AliFemtoCutMonitorParticleYPt.cxx \
       FEMTOSCOPY/AliFemto/AliFemtoKTPairCut.cxx \
       FEMTOSCOPY/AliFemto/AliFemtoCorrFctnNonIdDR.cxx \
+      FEMTOSCOPY/AliFemto/AliFemtoCorrFctn3DSpherical.cxx \
       FEMTOSCOPY/AliFemto/AliFemtoEventReaderAOD.cxx \
       FEMTOSCOPY/AliFemto/AliFemtoEventReaderAODChain.cxx \
-      FEMTOSCOPY/AliFemto/AliFemtoAODTrackCut.cxx
+      FEMTOSCOPY/AliFemto/AliFemtoAODTrackCut.cxx \
+      FEMTOSCOPY/AliFemto/AliFemtoCutMonitor.cxx
       
 
 HDRS= $(SRCS:.cxx=.h) 

@@ -11,6 +11,9 @@ SRCS= FEMTOSCOPY/AliFemtoUser/AliFemtoQPairCut.cxx \
       FEMTOSCOPY/AliFemtoUser/AliFemtoModelGausRinvFreezeOutGenerator.cxx \
       FEMTOSCOPY/AliFemtoUser/AliFemtoEventReaderESDKine.cxx \
       FEMTOSCOPY/AliFemtoUser/AliFemtoModelCorrFctnTrueQ.cxx \
+      FEMTOSCOPY/AliFemtoUser/AliFemtoModelCorrFctnNonIdDR.cxx \
+      FEMTOSCOPY/AliFemtoUser/AliFemtoModelCorrFctn3DSpherical.cxx \
+      FEMTOSCOPY/AliFemtoUser/AliFemtoModelCorrFctn3DLCMSSpherical.cxx \
       FEMTOSCOPY/AliFemtoUser/AliFemtoCutMonitorParticleMomRes.cxx
 
 HDRS= $(SRCS:.cxx=.h) 
