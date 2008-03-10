@@ -59,6 +59,8 @@ public:
   AliMCInfo();
   ~AliMCInfo();   
   AliMCInfo(const AliMCInfo& info);
+  AliMCInfo& operator=(const AliMCInfo& info);
+  //
   void Update();
   Int_t     GetEventNr() const   {return fEventNr;}
   const AliTrackReference&  GetTrackRef() const {return fTrackRef;}

@@ -22,8 +22,12 @@ class TGraph;
 class AliComparisonDraw : public TNamed {
 public :
   AliComparisonDraw(); 
+  //
+  AliComparisonDraw(const AliComparisonDraw& recinfo); 
+  AliComparisonDraw& operator=(const AliComparisonDraw& info);
+
   ~AliComparisonDraw();
-  virtual Bool_t    IsFolder(){return kTRUE;}
+  virtual Bool_t    IsFolder() const {return kTRUE;}
   void      InitHisto();
   void      Process(AliMCInfo* infoMC, AliESDRecInfo *infoRC);
   

@@ -692,7 +692,8 @@ Int_t AliGenInfoMaker::TreeTRLoop()
     if (part->R()>250.) continue;
     if (TMath::Abs(part->Vz())>250.) continue;
     if (TMath::Abs(part->Pz()/part->Pt())>2.5) continue;     
-    AliMCInfo * info = MakeInfo(ipart); 
+    //AliMCInfo * info = ;
+    MakeInfo(ipart); 
   }
   //
   //

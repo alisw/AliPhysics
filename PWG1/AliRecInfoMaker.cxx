@@ -224,9 +224,55 @@ void  AliRecInfoMaker::MakeAliases(TTree * tree)
 
 ////////////////////////////////////////////////////////////////////////
 AliRecInfoMaker::AliRecInfoMaker(const char* fnGenTracks,
-		   const char* fnCmp,
-		   const char* fnGalice,
-		   Int_t nEvents, Int_t firstEvent)
+				 const char* fnCmp,
+				 const char* fnGalice,
+				 Int_t nEvents, Int_t firstEvent):
+  
+  fEventNr(0),                 //! current event number
+  fNEvents(0),                 //! number of events to process
+  fFirstEventNr(0),            //! first event to process
+  fFileCmp(0),                //! output file with cmp tracks
+  fTreeCmp(0),                //! output tree with cmp tracks
+  fTreeCmpKinks(0),                //! output tree with cmp Kinks
+  fTreeCmpV0(0),                //! output tree with cmp V0
+  //
+  fFileGenTracks(0),                //! input files with generated tracks   
+  fTreeGenTracks(0),           //! tree with generated tracks
+  fTreeGenKinks(0),            // tree with gen kinks
+  fTreeGenV0(0),            // tree with gen V0
+  //
+  fLoader(0),         //! pointer to the run loader
+  //
+  fIndexRecTracks(0),         //! index of particle label in the TreeT_ESD
+  fFakeRecTracks(0),          //! number of fake tracks
+  fMultiRecTracks(0),         //! number of multiple reconstructions
+  //
+  fIndexRecKinks(0),         //! index of particle label in treeesd
+  fMultiRecKinks(0),         //! number of multiple reconstructions
+  fSignedKinks(0),           //! indicator that kink was not fake
+  //
+  fIndexRecV0(0),         //! index of particle label in treeesd
+  fMultiRecV0(0),         //! number of multiple reconstructions
+  fSignedV0(0),                //! indicator that kink was not fake
+  //
+  fRecArray(0),           // container with rec infos
+  fEvent(0),             //!event
+  fESDfriend(0),              //!event friend
+  //
+  fParamTPC(0),         //! AliTPCParam
+  fNParticles(0),              //! number of particles in the input tree genTracks
+  fDebug(0),                   //! debug flag  
+  fNextTreeGenEntryToRead(0),    //! last entry already read from genTracks tree
+  fNextKinkToRead(0),            //! last entry already read from genKinks tree
+  fNextV0ToRead(0),            //! last entry already read from genV0 tree
+  //
+  fMCInfo(0),           //! MC information writen per particle
+  fGenKinkInfo(0),      //! MC information writen per Kink
+  fGenV0Info(0),      //! MC information writen per Kink
+  fRecInfo(0),          //! Rec. information writen per particle
+  fFriend(0),          //! friend track
+  fRecKinkInfo(0),    //! reconstructed kink info
+  fRecV0Info(0)    //! reconstructed kink info
 {
   // AliRecInfoMaker - connencts the MC information with reconstructed information
   // fnGenTracks  - file with MC to be created before using AliGenInfoMaker
@@ -279,6 +325,61 @@ AliRecInfoMaker::AliRecInfoMaker(const char* fnGenTracks,
 
 
 }
+////////////////////////////////////////////////////////////////////////
+AliRecInfoMaker::AliRecInfoMaker(const AliRecInfoMaker& /*info*/):
+  
+  fEventNr(0),                 //! current event number
+  fNEvents(0),                 //! number of events to process
+  fFirstEventNr(0),            //! first event to process
+  fFileCmp(0),                //! output file with cmp tracks
+  fTreeCmp(0),                //! output tree with cmp tracks
+  fTreeCmpKinks(0),                //! output tree with cmp Kinks
+  fTreeCmpV0(0),                //! output tree with cmp V0
+  //
+  fFileGenTracks(0),                //! input files with generated tracks   
+  fTreeGenTracks(0),           //! tree with generated tracks
+  fTreeGenKinks(0),            // tree with gen kinks
+  fTreeGenV0(0),            // tree with gen V0
+  //
+  fLoader(0),         //! pointer to the run loader
+  //
+  fIndexRecTracks(0),         //! index of particle label in the TreeT_ESD
+  fFakeRecTracks(0),          //! number of fake tracks
+  fMultiRecTracks(0),         //! number of multiple reconstructions
+  //
+  fIndexRecKinks(0),         //! index of particle label in treeesd
+  fMultiRecKinks(0),         //! number of multiple reconstructions
+  fSignedKinks(0),           //! indicator that kink was not fake
+  //
+  fIndexRecV0(0),         //! index of particle label in treeesd
+  fMultiRecV0(0),         //! number of multiple reconstructions
+  fSignedV0(0),                //! indicator that kink was not fake
+  //
+  fRecArray(0),           // container with rec infos
+  fEvent(0),             //!event
+  fESDfriend(0),              //!event friend
+  //
+  fParamTPC(0),         //! AliTPCParam
+  fNParticles(0),              //! number of particles in the input tree genTracks
+  fDebug(0),                   //! debug flag  
+  fNextTreeGenEntryToRead(0),    //! last entry already read from genTracks tree
+  fNextKinkToRead(0),            //! last entry already read from genKinks tree
+  fNextV0ToRead(0),            //! last entry already read from genV0 tree
+  //
+  fMCInfo(0),           //! MC information writen per particle
+  fGenKinkInfo(0),      //! MC information writen per Kink
+  fGenV0Info(0),      //! MC information writen per Kink
+  fRecInfo(0),          //! Rec. information writen per particle
+  fFriend(0),          //! friend track
+  fRecKinkInfo(0),    //! reconstructed kink info
+  fRecV0Info(0)    //! reconstructed kink info
+{
+  //
+  // Dummy copu constructor
+  //
+}
+
+
 
 
 ////////////////////////////////////////////////////////////////////////

@@ -31,8 +31,15 @@ ClassImp(AliGenInfoTask)
 
 //________________________________________________________________________
 AliGenInfoTask::AliGenInfoTask() : 
-  AliAnalysisTask(), fGenMaker(0),
-  fESD(0), fESDfriend(0), fListOfHists(0)
+  AliAnalysisTask(), 
+  fGenMaker(0),
+  fDebug(0),
+  fESD(0), 
+  fESDfriend(0), 
+  fListOfHists(0),
+  fMaxTracks(0),      // Max tracks in histogram
+  hESDTracks(0) ,     //! N ESD tracks
+  hGoodTracks(0)     //! GOOD tracks
 {
   //
   // Default constructor (should not be used)
@@ -41,13 +48,37 @@ AliGenInfoTask::AliGenInfoTask() :
   SetMaxTracks();
 }
 
+AliGenInfoTask::AliGenInfoTask(const AliGenInfoTask& /*info*/) : 
+  AliAnalysisTask(), 
+  fGenMaker(0),
+  fDebug(0),
+  fESD(0), 
+  fESDfriend(0), 
+  fListOfHists(0),
+  fMaxTracks(0),      // Max tracks in histogram
+  hESDTracks(0) ,     //! N ESD tracks
+  hGoodTracks(0)     //! GOOD tracks
+{
+  //
+  // Default constructor 
+  //
+  fDebug = 0;
+  SetMaxTracks();
+}
+
+
+
 //________________________________________________________________________
 AliGenInfoTask::AliGenInfoTask(const char *name) : 
   AliAnalysisTask(name, "AliGenInfoTask"), 
-  fGenMaker(0),
+  fGenMaker(0), 
+  fDebug(0),
   fESD(0), 
   fESDfriend(0), 
-  fListOfHists(0)
+  fListOfHists(0),
+  fMaxTracks(0),      // Max tracks in histogram
+  hESDTracks(0) ,     //! N ESD tracks
+  hGoodTracks(0)     //! GOOD tracks
 {
   //
   // Normal constructor

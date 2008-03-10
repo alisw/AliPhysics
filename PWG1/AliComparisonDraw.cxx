@@ -98,6 +98,69 @@ AliComparisonDraw::AliComparisonDraw():
   InitHisto();
 }
 
+AliComparisonDraw::AliComparisonDraw(const AliComparisonDraw& draw):
+  TNamed(draw.GetName(),draw.GetTitle()),
+  fEffTPCPt(draw.fEffTPCPt),      // TPC efficiency as function of Pt (tan+-1)
+  fEffTPCPtMC(draw.fEffTPCPtMC),    // MC -TPC efficiency as function of Pt (tan+-1)
+  fEffTPCPtF(draw.fEffTPCPtF),     // efficiency for findable tracks
+  //
+  fEffTPCTan(draw.fEffTPCTan),   // TPC efficiency as function of Tan (pt>0.15
+  fEffTPCTanMC(draw.fEffTPCTanMC), // MC -TPC efficiency as function of Tan (pt>0.15)
+  fEffTPCTanF(draw.fEffTPCTanF),  // efficiency for findable tracks Tan (pt>0.15)
+  //
+  fEffTPCPtTan(draw.fEffTPCPtTan),    // TPC efficiency as function of Pt and tan
+  fEffTPCPtTanMC(draw.fEffTPCPtTanMC),  // MC -TPC efficiency as function of Pt and tan
+  fEffTPCPtTanF(draw.fEffTPCPtTanF),  // TPC efficiency as function of Pt and tan
+  //
+  // dEdx resolution
+  //
+  fTPCSignalNormTan(draw.fTPCSignalNormTan), // tpc signal normalized to the mean signal - MC
+  fTPCSignalNormSPhi(draw.fTPCSignalNormSPhi),   // tpc signal normalized to the mean signal - MC
+  fTPCSignalNormTPhi(draw.fTPCSignalNormTPhi),   // tpc signal normalized to the mean signal - MC
+  //
+  fTPCSignalNormTanSPhi(draw.fTPCSignalNormTanSPhi),   // tpc signal normalized to the mean signal - MC
+  fTPCSignalNormTanTPhi(draw.fTPCSignalNormTanTPhi),   // tpc signal normalized to the mean signal - MC
+  fTPCSignalNormTanSPt(draw.fTPCSignalNormTanSPt),   // tpc signal normalized to the mean signal - MC
+  //
+  //
+  fPtResolLPT(draw.fPtResolLPT),        // pt resolution - low pt
+  fPtResolHPT(draw.fPtResolHPT),        // pt resolution - high pt 
+  fPtPullLPT(draw.fPtPullLPT),         // pt resolution - low pt
+  fPtPullHPT(draw.fPtPullHPT),         // pt resolution - high pt 
+  //
+  // Resolution constrained param
+  //
+  fCPhiResolTan(draw.fCPhiResolTan),   // angular resolution -  constrained
+  fCTanResolTan(draw.fCTanResolTan),   // angular resolution -  constrained
+  fCPtResolTan(draw.fCPtResolTan),    // pt resolution      -  constrained
+  fCPhiPullTan(draw.fCPhiPullTan),   // angular resolution -  constrained
+  fCTanPullTan(draw.fCTanPullTan),   // angular resolution -  constrained
+  fCPtPullTan(draw.fCPtPullTan),    // pt resolution      -  constrained
+  //
+  // DCA resolution
+  //
+  fD0TanSPtB1(draw.fD0TanSPtB1),   // distance to vertex y  
+  fD1TanSPtB1(draw.fD1TanSPtB1),   // distance to vertex z  
+  fD0TanSPtL1(draw.fD0TanSPtL1),   // distance to vertex y  
+  fD1TanSPtL1(draw.fD1TanSPtL1)   // distance to vertex z  
+{
+  //
+  // copy constructor
+  //
+}
+
+AliComparisonDraw& AliComparisonDraw::operator=(const AliComparisonDraw& info){
+  //
+  // assignment operator
+  //
+  delete this;
+  new (this) AliComparisonDraw(info);
+  return *this;  
+}
+
+
+
+
 AliComparisonDraw::~AliComparisonDraw(){
   //
   //
@@ -503,7 +566,8 @@ void AliComparisonDraw::MakePlots(){
   AliComparisonDraw * comp=this;
 
   TFile *fp = new TFile("picutures.root","recreate");
-  TH1F *hiss=0, *hism=0;
+  TH1F *hiss=0;
+  //TH1F *hism=0;
   TGraph2D * gr=0, gr2=0;
   TGraph * gr0 = 0;
   TCanvas * c = new TCanvas("Phi resol Tan","Phi resol Tan");

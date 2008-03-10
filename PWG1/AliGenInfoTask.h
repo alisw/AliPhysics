@@ -29,6 +29,9 @@ class AliGenInfoTask : public AliAnalysisTask {
   virtual void   SetMaxTracks(Int_t max=10) {fMaxTracks = max;}
   
  protected:
+  AliGenInfoTask(const AliGenInfoTask& /*info*/);
+  AliGenInfoTask& operator=(const AliGenInfoTask& /*info*/) { return *this;}
+
   virtual Int_t FillTrackHistograms(Int_t nTracks, AliESDtrack* track, 
 				    AliESDfriendTrack* friendTrack, 
 				    AliTPCseed* seed);
