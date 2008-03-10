@@ -57,6 +57,8 @@ AliPHOSEsdCluster::~AliPHOSEsdCluster()
 //____________________________________________________________________________
 void AliPHOSEsdCluster::Recalibrate(AliPHOSCalibData * calibData,AliESDCaloCells *phsCells){
   //If not done yet, apply recalibration coefficients to energies list
+  //NOTE that after recalibration fCellsAmpFraction contains not FRACTION but FULL energy 
+  
   if(fRecalibrated)
    return ;
   
@@ -73,18 +75,8 @@ void AliPHOSEsdCluster::Recalibrate(AliPHOSCalibData * calibData,AliESDCaloCells
     Int_t   module = relId[0];
     Int_t   column = relId[3];
     Int_t   row    = relId[2];
-    Short_t pos ;
-    for(pos=0 ; pos<phsCells->GetNumberOfCells(); pos++){ 
-     if(fCellsAbsId[i]==phsCells->GetCellNumber(pos))
-       break ;
-    }
-    if(pos<phsCells->GetNumberOfCells()){
-//       Double_t energy = phsCells->GetAmplitude(pos) ;
-      fCellsAmpFraction[i]*=calibData->GetADCchannelEmc (module,column,row);
-    }
-    else{
-      AliFatal(Form("Digit %d is not in Cell List\n",fDigitIndex->At(i))) ;
-    }
+    Double_t energy = phsCells->GetCellAmplitude(fCellsAbsId[i]) ;
+    fCellsAmpFraction[i]*=energy*calibData->GetADCchannelEmc(module,column,row);
   }
   fRecalibrated=kTRUE; 
 }
