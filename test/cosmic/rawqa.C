@@ -72,7 +72,7 @@ void rawqa(const Int_t runNumber, Int_t maxFiles = 10, const char* year = "08")
 	AliCDBManager* man = AliCDBManager::Instance();
 	man->SetDefaultStorage(kDefaultOCDBStorage) ;  
 	AliQA::SetQARefStorage("alien://folder=/alice/QA/2008/") ; 
-	man->SetSpecificStorage(Form("*", AliQA::GetQAOCDBDirName(), year),AliQA::GetQARefStorage());
+	man->SetSpecificStorage("*", AliQA::GetQARefStorage());
 	AliQADataMakerSteer qas ; 
 	TString detectors  = ""; 
 	TString detectorsW = ""; 
