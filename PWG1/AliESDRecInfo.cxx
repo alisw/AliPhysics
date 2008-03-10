@@ -85,7 +85,22 @@ AliESDRecInfo::AliESDRecInfo():
 
 
 AliESDRecInfo::AliESDRecInfo(const AliESDRecInfo& recinfo):
-  TObject()
+  TObject(),
+  fITSOn(0),           // ITS refitted inward
+  fTRDOn(0),           // ITS refitted inward
+  fDeltaP(0),          //delta of momenta
+  fSign(0),           // sign
+  fReconstructed(0),         //flag if track was reconstructed
+  fFake(0),             // fake track
+  fMultiple(0),         // number of reconstructions
+  fTPCOn(0),           // TPC refitted inward
+  fBestTOFmatch(0),        //best matching between times
+  fESDtrack(0),        // esd track
+  fTrackF(0),      // friend track
+  fTPCtrack(0),        // tpc track
+  fITStrack(0),        // its track
+  fTRDtrack(0),        // trd track  
+  fTPCtrackAtVertex(0) // tpc track propagated to the vertex  
 {
   //
   //
@@ -94,6 +109,17 @@ AliESDRecInfo::AliESDRecInfo(const AliESDRecInfo& recinfo):
   fESDtrack=0; fTrackF=0; fTPCtrack=0;fITStrack=0;fTRDtrack=0;
   SetESDtrack(recinfo.GetESDtrack());
 }
+
+
+AliESDRecInfo& AliESDRecInfo::operator=(const AliESDRecInfo& info) { 
+  //
+  // Assignment operator
+  //
+  delete this;
+  new (this) AliESDRecInfo(info);
+  return *this;
+}
+
 
 
 AliESDRecInfo::~AliESDRecInfo()
@@ -446,13 +472,16 @@ void AliESDRecInfo::UpdateTPC(AliMCInfo* info){
     fSign =sign;
     fTPCPools[4] = sign*(1./fTPCinP0[3]-1./fTPCinP1[3])/TMath::Sqrt(TMath::Abs(cov[14]));
   }
+
+  // Track propagated to the vertex during tracking - paramaters in ESD
+
   //
   if (fESDtrack && fESDtrack->GetTPCInnerParam()){
     AliExternalTrackParam *track = new AliExternalTrackParam(*fESDtrack->GetTPCInnerParam());
     const Double_t kRadius  = 3;   // beam pipe radius
     const Double_t kMaxStep = 5;   // max step
-    const Double_t kMaxD    = 123456;  // max distance to prim vertex
-    Double_t       fieldZ   = AliTracker::GetBz();  //
+    //const Double_t kMaxD    = 123456;  // max distance to prim vertex
+    //Double_t       fieldZ   = AliTracker::GetBz();  //
     AliTracker::PropagateTrackTo(track,kRadius,info->GetMass(),kMaxStep,kTRUE);
     AliTracker::PropagateTrackTo(track,0,info->GetMass(),0.5,kTRUE);
     //track->RelateToVertex(fEvent->GetVertex(),fieldZ, kMaxD);

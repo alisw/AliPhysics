@@ -63,6 +63,8 @@ public:
 		    AliTPCParam *paramTPC);
   static AliTPCParam * GetTPCParam();
 private:
+  AliRecInfoMaker(const AliRecInfoMaker& /*info*/);
+  AliRecInfoMaker& operator=(const AliRecInfoMaker& /*info*/) {return *this;}
 
   Int_t fEventNr;                 //! current event number
   Int_t fNEvents;                 //! number of events to process

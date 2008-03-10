@@ -63,7 +63,29 @@ ClassImp(AliESDRecKinkInfo)
 
 
 
-
+AliESDRecKinkInfo::AliESDRecKinkInfo():
+  fT1(),      //track1
+  fT2(),      //track2  
+  fKink(),    //kink
+  fDist1(0),    //info about closest distance according closest MC - linear DCA
+  fDist2(0),    //info about closest distance parabolic DCA
+  fInvMass(0),  //reconstructed invariant mass -
+  //
+  fRr(0),       // rec position of the vertex 
+  fMinR(0),     // minimum radius in rphi intersection
+  fDistMinR(0), // distance at minimal radius
+  fPointAngleFi(0), //point angle fi
+  fPointAngleTh(0), //point angle theta
+  fPointAngle(0),   //point angle full
+  fStatus(0),       //status -tracks 
+  fRecStatus(0),    //kink -status- 0 - not found  1-good -  fake
+  fMultiple(0),     // how many times was kink reconstructed
+  fKinkMultiple(0) // how many times was kink reconstructed
+{
+  //
+  // Default constructor
+  //
+}
 
 ////
 void  AliESDRecKinkInfo::Update()

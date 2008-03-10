@@ -63,6 +63,9 @@ public:
   Int_t SetIO();
 
 protected:
+  AliGenInfoMaker(const AliGenInfoMaker& /*info*/);
+  AliGenInfoMaker& operator=(const AliGenInfoMaker& /*info*/) { return *this;}
+
   AliMCInfo * MakeInfo(UInt_t i);
   AliMCInfo * GetInfo(UInt_t i) const {return (i<fNParticles)? fGenInfo[i]:0;}
   Float_t TR2LocalX(AliTrackReference *trackRef,

@@ -21,6 +21,7 @@
 class AliESDRecKinkInfo: public TObject {
 friend class  AliRecInfoMaker;
 public:
+ AliESDRecKinkInfo();
   void Update();
 protected:
   AliESDRecInfo  fT1;      //track1

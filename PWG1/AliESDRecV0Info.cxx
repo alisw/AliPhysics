@@ -64,7 +64,31 @@
 ClassImp(AliESDRecV0Info)
 
 
-
+AliESDRecV0Info:: AliESDRecV0Info():
+  TObject(),
+  fT1(),      //track1
+  fT2(),      //track2  
+  fDist1(0),    //info about closest distance according closest MC - linear DCA
+  fDist2(0),    //info about closest distance parabolic DCA
+  fInvMass(0),  //reconstructed invariant mass -
+  //
+  fDistMinR(0), // distance at minimal radius
+  fRr(0),       // rec position of the vertex 
+  fPointAngleFi(0), //point angle fi
+  fPointAngleTh(0), //point angle theta
+  fPointAngle(0),   //point angle full
+  fV0Status(0),       // status of the kink
+  fV0tpc(0),           // Vo information from reconsturction according TPC
+  fV0its(0),           // Vo information from reconsturction according ITS
+  fV0rec(0),           // V0 information form the reconstruction
+  fMultiple(0),     // how man times V0 was recostructed 
+  fV0Multiple(0),   // how man times was V0 reconstucted
+  fRecStatus(0)    // status form the reconstuction
+{
+  //
+  // default constructor
+  //
+}
 
 
 void  AliESDRecV0Info::Update(Float_t vertex[3])

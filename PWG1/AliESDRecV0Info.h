@@ -19,6 +19,7 @@
 class AliESDRecV0Info: public TObject {
   friend class  AliRecInfoMaker;
 public:
+  AliESDRecV0Info();
   void Update(Float_t vertex[3]);
 protected:
   AliESDRecInfo  fT1;      //track1

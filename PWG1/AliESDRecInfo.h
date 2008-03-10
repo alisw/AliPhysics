@@ -33,7 +33,8 @@ class AliESDRecInfo: public TObject {
 
 public:
   AliESDRecInfo();
-  AliESDRecInfo(const AliESDRecInfo& recinfo);
+  AliESDRecInfo(const AliESDRecInfo& recinfo); 
+  AliESDRecInfo& operator=(const AliESDRecInfo& info);
   ~AliESDRecInfo();
   void Update(AliMCInfo* info,AliTPCParam * par, Bool_t reconstructed);
   void UpdateStatus(AliMCInfo* info, Bool_t reconstructed);
