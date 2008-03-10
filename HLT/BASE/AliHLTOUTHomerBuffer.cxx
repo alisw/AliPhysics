@@ -151,7 +151,7 @@ int AliHLTOUTHomerBuffer::ScanReader(AliHLTMonitoringReader* pReader, AliHLTUInt
     if (iResult==EBADMSG) {
       HLTWarning("Format error in data block");
       iResult*=-1;
-    } else if (iResult==ENOKEY) {
+    } else if (iResult==126/*ENOKEY*/) {
       HLTWarning("Format error in data block: can not find HOMER block descriptor id");
       iResult*=-1;
     } else {
