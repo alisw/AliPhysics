@@ -264,9 +264,14 @@ Int_t AliHLTCOMPHuffmanAltroCalibComponent::DeinitCalibration() {
 }
 
 /** function to do the calibration */
-Int_t AliHLTCOMPHuffmanAltroCalibComponent::ProcessCalibration( const AliHLTComponentEventData& /*evtData*/, AliHLTComponentTriggerData& /*trigData*/ ) {
+Int_t AliHLTCOMPHuffmanAltroCalibComponent::ProcessCalibration( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& /*trigData*/ ) {
   // see header file for class documentation
  
+  if (evtData.fEventID==0) {
+    // this is only to avoid missing parameter warning when compiling for non
+    // debug. The parameter is used in the HLTDebug message only.
+  }
+
   const AliHLTComponentBlockData* iter = NULL;
 
   //AliHLTUInt8_t slice, patch;
