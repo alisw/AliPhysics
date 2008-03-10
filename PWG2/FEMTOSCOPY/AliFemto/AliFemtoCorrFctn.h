@@ -24,8 +24,8 @@ public:
   virtual void AddRealPair(AliFemtoPair* aPair);
   virtual void AddMixedPair(AliFemtoPair* aPir);
 
-  virtual void EventBegin(const AliFemtoEvent* aEvent) { /* no-op */ }
-  virtual void EventEnd(const AliFemtoEvent* aEvent) { /* no-op */ }
+  virtual void EventBegin(const AliFemtoEvent* aEvent);
+  virtual void EventEnd(const AliFemtoEvent* aEvent);
   virtual void Finish() = 0;
 
   virtual TList* GetOutputList() = 0;
@@ -45,9 +45,12 @@ protected:
 inline void AliFemtoCorrFctn::AddRealPair(AliFemtoPair*) { cout << "Not implemented" << endl; }
 inline void AliFemtoCorrFctn::AddMixedPair(AliFemtoPair*) { cout << "Not implemented" << endl; }
 
-inline AliFemtoCorrFctn::AliFemtoCorrFctn(const AliFemtoCorrFctn& c):fyAnalysis(0) {}
+inline AliFemtoCorrFctn::AliFemtoCorrFctn(const AliFemtoCorrFctn& /* c */):fyAnalysis(0) {}
 inline AliFemtoCorrFctn::AliFemtoCorrFctn(): fyAnalysis(0) {/* no-op */}
 inline void AliFemtoCorrFctn::SetAnalysis(AliFemtoAnalysis* analysis) { fyAnalysis = analysis; }
 inline AliFemtoCorrFctn& AliFemtoCorrFctn::operator=(const AliFemtoCorrFctn& aCorrFctn) { if (this == &aCorrFctn) return *this; fyAnalysis = aCorrFctn.fyAnalysis; return *this; }
+
+inline void AliFemtoCorrFctn::EventBegin(const AliFemtoEvent* /* aEvent */) { /* no-op */ }
+inline void AliFemtoCorrFctn::EventEnd(const AliFemtoEvent* /* aEvent */) { /* no-op */ }
 
 #endif

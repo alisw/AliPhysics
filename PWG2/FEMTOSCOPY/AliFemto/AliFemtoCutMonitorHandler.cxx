@@ -252,7 +252,7 @@ TList *AliFemtoCutMonitorHandler::GetOutputList()
 {
   TList *tOutputList = new TList();
 
-  for (int ipass=0; ipass<fPassColl->size(); ipass++) {
+  for (unsigned int ipass=0; ipass<fPassColl->size(); ipass++) {
     TList *tLp = PassMonitor(ipass)->GetOutputList();
 
     TIter nextLp(tLp);
@@ -263,7 +263,7 @@ TList *AliFemtoCutMonitorHandler::GetOutputList()
     delete tLp;
   }
 
-  for (int ipass=0; ipass<fFailColl->size(); ipass++) {
+  for (unsigned int ipass=0; ipass<fFailColl->size(); ipass++) {
     TList *tLf = FailMonitor(ipass)->GetOutputList();
 
     TIter nextLf(tLf);

@@ -401,7 +401,7 @@ inline T AliFmThreeVector<T>::mag2() const
 template<class T>
 inline T AliFmThreeVector<T>::operator() (size_t i) const
 {
-    if (0 <=i && i <= 2)  return (&mX1)[i];
+    if (i <= 2)  return (&mX1)[i];
 #ifndef ST_NO_EXCEPTIONS
     throw out_of_range("AliFmThreeVector<T>::operator(): bad index");
 #else
@@ -413,7 +413,7 @@ inline T AliFmThreeVector<T>::operator() (size_t i) const
 template<class T>
 inline T& AliFmThreeVector<T>::operator() (size_t i) 
 {
-    if (0 <=i && i <= 2)  return (&mX1)[i];
+    if (i <= 2)  return (&mX1)[i];
 #ifndef ST_NO_EXCEPTIONS
     throw out_of_range("AliFmThreeVector<T>::operator(): bad index");
 #else
@@ -425,7 +425,7 @@ inline T& AliFmThreeVector<T>::operator() (size_t i)
 template<class T>
 inline T AliFmThreeVector<T>::operator[] (size_t i) const
 {
-    if (0 <=i && i <= 2)  return (&mX1)[i];
+    if (i <= 2)  return (&mX1)[i];
 #ifndef ST_NO_EXCEPTIONS
       throw out_of_range("AliFmThreeVector<T>::operator[]: bad index"); 
 #else
@@ -437,7 +437,7 @@ inline T AliFmThreeVector<T>::operator[] (size_t i) const
 template<class T>
 inline T &AliFmThreeVector<T>::operator[] (size_t i) 
 {
-    if (0 <=i && i <= 2)  return (&mX1)[i];
+    if (i <= 2)  return (&mX1)[i];
 #ifndef ST_NO_EXCEPTIONS
       throw out_of_range("AliFmThreeVector<T>::operator[]: bad index"); 
 #else

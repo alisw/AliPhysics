@@ -15,7 +15,7 @@ class AliFemtoModelFreezeOutGenerator
 {
  public:
   AliFemtoModelFreezeOutGenerator();
-  AliFemtoModelFreezeOutGenerator(AliFemtoModelFreezeOutGenerator &aModel);
+  AliFemtoModelFreezeOutGenerator(const AliFemtoModelFreezeOutGenerator &aModel);
   
   AliFemtoModelFreezeOutGenerator& operator=(const AliFemtoModelFreezeOutGenerator& aGen);
   

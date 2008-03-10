@@ -24,6 +24,7 @@ AliFemtoModelGausLCMSFreezeOutGenerator::AliFemtoModelGausLCMSFreezeOutGenerator
 
 //_______________________
 AliFemtoModelGausLCMSFreezeOutGenerator::AliFemtoModelGausLCMSFreezeOutGenerator(const AliFemtoModelGausLCMSFreezeOutGenerator &aModel):
+  AliFemtoModelFreezeOutGenerator(aModel),
   fSizeOut(0), fSizeSide(0), fSizeLong(0)
 {
   // Copy constructor

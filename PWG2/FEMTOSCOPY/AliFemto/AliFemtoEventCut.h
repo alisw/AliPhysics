@@ -39,7 +39,7 @@ protected:
 #endif
 };
 
-inline AliFemtoEventCut::AliFemtoEventCut(const AliFemtoEventCut& c) : AliFemtoCutMonitorHandler(), fyAnalysis(0) { }
+inline AliFemtoEventCut::AliFemtoEventCut(const AliFemtoEventCut& /* c */) : AliFemtoCutMonitorHandler(), fyAnalysis(0) { }
 inline void AliFemtoEventCut::SetAnalysis(AliFemtoAnalysis* analysis) { fyAnalysis = analysis; }
 inline AliFemtoEventCut::AliFemtoEventCut(): AliFemtoCutMonitorHandler(), fyAnalysis(0){}                // default constructor. - Users should write their own
 inline AliFemtoEventCut& AliFemtoEventCut::operator=(const AliFemtoEventCut& aCut) { if (this == &aCut) return *this; fyAnalysis = aCut.fyAnalysis; return *this; }

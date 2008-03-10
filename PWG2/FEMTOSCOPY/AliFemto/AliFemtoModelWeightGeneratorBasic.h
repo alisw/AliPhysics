@@ -22,7 +22,7 @@ class AliFemtoModelWeightGeneratorBasic : public AliFemtoModelWeightGenerator
 
   virtual void     SetPairType(Int_t aPairType);
   virtual void     SetPairTypeFromPair(AliFemtoPair *aPair);
-  virtual Int_t    GetPairType();
+  virtual Int_t    GetPairType() const; 
 
   virtual AliFemtoModelWeightGenerator* Clone() const;
  protected:

@@ -5,8 +5,8 @@
 /// Authors: Adam Kisiel kisiel@mps.ohio-state.edu                           ///
 ///                                                                          ///
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef AliFemtoModelGausLCMSFreezeOutGenerator_hh
-#define AliFemtoModelGausLCMSFreezeOutGenerator_hh
+#ifndef ALIFEMTOMODELGAUSLCMSFREEZEOUTGENERATOR_H
+#define ALIFEMTOMODELGAUSLCMSFREEZEOUTGENERATOR_H
 
 #include "AliFemtoModelFreezeOutGenerator.h"
 
@@ -31,9 +31,9 @@ class AliFemtoModelGausLCMSFreezeOutGenerator : public AliFemtoModelFreezeOutGen
   virtual AliFemtoModelFreezeOutGenerator* Clone() const;
 
  protected:
-  Double_t fSizeOut;
-  Double_t fSizeSide;
-  Double_t fSizeLong;
+  Double_t fSizeOut;  // Size of the source in the out direction
+  Double_t fSizeSide; // Size of the source in the side direction
+  Double_t fSizeLong; // Size of the source in the long direction
 
  private:
   AliFemtoModelFreezeOutGenerator* GetGenerator() const;

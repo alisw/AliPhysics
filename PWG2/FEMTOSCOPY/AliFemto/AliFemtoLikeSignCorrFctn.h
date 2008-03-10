@@ -14,7 +14,7 @@ class AliFemtoLikeSignCorrFctn : public AliFemtoCorrFctn {
   friend class AliFemtoLikeSignAnalysis;
 
 public:
-  AliFemtoLikeSignCorrFctn(){/* no-op */};
+  AliFemtoLikeSignCorrFctn():AliFemtoCorrFctn() {/* no-op */};
   AliFemtoLikeSignCorrFctn(const AliFemtoLikeSignCorrFctn& aCorrFctn);
   virtual ~AliFemtoLikeSignCorrFctn(){/* no-op */};
 
@@ -27,6 +27,6 @@ public:
   // the following allows "back-pointing" from the CorrFctn to the "parent" Analysis
 };
 //________________________________________
-inline AliFemtoLikeSignCorrFctn::AliFemtoLikeSignCorrFctn(const AliFemtoLikeSignCorrFctn& c) { fyAnalysis =0; }
+inline AliFemtoLikeSignCorrFctn::AliFemtoLikeSignCorrFctn(const AliFemtoLikeSignCorrFctn& /* c */):AliFemtoCorrFctn() { fyAnalysis =0; }
 
 #endif

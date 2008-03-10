@@ -73,7 +73,7 @@ bool AliFemtoKTPairCut::Pass(const AliFemtoPair* pair){
 AliFemtoString AliFemtoKTPairCut::Report(){
   // Prepare a report from the execution
   string stemp = "AliFemtoKT Pair Cut \n";  char ctemp[100];
-  sprintf(ctemp,"Accept pair with kT in range %lf , %lf",fKTMin,fKTMax);
+  sprintf(ctemp,"Accept pair with kT in range %f , %f",fKTMin,fKTMax);
   stemp += ctemp;
   AliFemtoString returnThis = stemp;
   return returnThis;}
@@ -84,9 +84,9 @@ TList *AliFemtoKTPairCut::ListSettings()
   // return a list of settings in a writable form
   TList *tListSetttings =  new TList();
   char buf[200];
-  snprintf(buf, 200, "AliFemtoKTPairCut.ktmax=%lf", fKTMax);
+  snprintf(buf, 200, "AliFemtoKTPairCut.ktmax=%f", fKTMax);
   tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoKTPairCut.ktmin=%lf", fKTMin);
+  snprintf(buf, 200, "AliFemtoKTPairCut.ktmin=%f", fKTMin);
   tListSetttings->AddLast(new TObjString(buf));
 
   return tListSetttings;

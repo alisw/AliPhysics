@@ -32,8 +32,8 @@ public:
 
   virtual AliFemtoString Report() =0;    // user-written method to return string describing cuts
   virtual TList *ListSettings() =0;
-  virtual void EventBegin(const AliFemtoEvent* aEvent) { /* no-op */ }
-  virtual void EventEnd(const AliFemtoEvent* aEvent) { /* no-op */ }
+  virtual void EventBegin(const AliFemtoEvent* aEvent);
+  virtual void EventEnd(const AliFemtoEvent* aEvent);
   virtual AliFemtoPairCut* Clone() { return 0;}
 
   // the following allows "back-pointing" from the CorrFctn to the "parent" Analysis
@@ -49,9 +49,13 @@ protected:
 };
 
 
-inline AliFemtoPairCut::AliFemtoPairCut(const AliFemtoPairCut& c) :  AliFemtoCutMonitorHandler(), fyAnalysis(0) {  }
+inline AliFemtoPairCut::AliFemtoPairCut(const AliFemtoPairCut& /* c */) :  AliFemtoCutMonitorHandler(), fyAnalysis(0) {  }
 inline void AliFemtoPairCut::SetAnalysis(AliFemtoAnalysis* analysis) { fyAnalysis = analysis; }
 inline AliFemtoPairCut::AliFemtoPairCut(): AliFemtoCutMonitorHandler(), fyAnalysis(0) {}   // default constructor. - Users should write their own
 inline AliFemtoPairCut& AliFemtoPairCut::operator=(const AliFemtoPairCut &aCut) { if (this == &aCut) return *this; fyAnalysis = aCut.fyAnalysis; return *this; }
 
+inline void AliFemtoPairCut::EventBegin(const AliFemtoEvent* /* aEvent */ ) 
+{ /* no-op */ }
+inline void AliFemtoPairCut::EventEnd(const AliFemtoEvent* /* aEvent */ ) 
+{ /* no-op */ }
 #endif

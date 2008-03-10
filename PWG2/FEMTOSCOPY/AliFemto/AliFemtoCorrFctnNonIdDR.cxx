@@ -77,6 +77,7 @@ AliFemtoCorrFctnNonIdDR::AliFemtoCorrFctnNonIdDR(char* title, const int& nbins, 
 
 //____________________________
 AliFemtoCorrFctnNonIdDR::AliFemtoCorrFctnNonIdDR(const AliFemtoCorrFctnNonIdDR& aCorrFctn) :
+  AliFemtoCorrFctn(),
   fNumOutP(0), 
   fNumOutN(0),  
   fNumSideP(0), 

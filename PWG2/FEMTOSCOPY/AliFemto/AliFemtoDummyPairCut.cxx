@@ -74,7 +74,7 @@ AliFemtoDummyPairCut::~AliFemtoDummyPairCut(){
   /* no-op */
 }
 //__________________
-bool AliFemtoDummyPairCut::Pass(const AliFemtoPair* pair){
+bool AliFemtoDummyPairCut::Pass(const AliFemtoPair* /* pair */){
   // Pass all pairs
   bool temp = true;
   temp ? fNPairsPassed++ : fNPairsFailed++;

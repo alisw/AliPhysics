@@ -40,9 +40,9 @@ class AliFemtoEventReader {
   virtual int WriteHbtEvent(AliFemtoEvent*){cout << "No WriteHbtEvent implemented\n"; return (0);}
 
   // these next two are optional but would make sense for, e.g., opening and closing a file
-  virtual int Init(const char* ReadWrite, AliFemtoString& Message){cout << "do-nothing AliFemtoEventReader::Init()\n"; return(0);}
+  virtual int Init(const char* ReadWrite, AliFemtoString& Message);
   virtual void Finish(){/*no-op*/};
-
+  
   int Status() const {return fReaderStatus;} // AliFemtoManager looks at this for guidance if it gets null pointer from ReturnHbtEvent
 
   virtual void SetEventCut(AliFemtoEventCut* ecut);
@@ -78,6 +78,7 @@ protected:
 #endif
 };
 
+inline int Init(const char* /* ReadWrite */, AliFemtoString& /* Message */){cout << "do-nothing AliFemtoEventReader::Init()\n"; return(0);}
 
 #endif
 

@@ -16,7 +16,7 @@ AliFemtoModelFreezeOutGenerator::AliFemtoModelFreezeOutGenerator():
   fRandom(0) 
 { /* no-op */ }
 //____________________________
-AliFemtoModelFreezeOutGenerator::AliFemtoModelFreezeOutGenerator(AliFemtoModelFreezeOutGenerator &aModel): 
+AliFemtoModelFreezeOutGenerator::AliFemtoModelFreezeOutGenerator(const AliFemtoModelFreezeOutGenerator &/* aModel */): 
   fRandom(0)
 {/* no-op */}
 //____________________________

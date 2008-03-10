@@ -174,7 +174,7 @@ void     AliFemtoModelWeightGeneratorBasic::SetPairTypeFromPair(AliFemtoPair *aP
   AliFemtoModelWeightGenerator::SetPairTypeFromPair(aPair);
 }
 //________________________
-Int_t    AliFemtoModelWeightGeneratorBasic::GetPairType()
+Int_t    AliFemtoModelWeightGeneratorBasic::GetPairType() const
 {
   return AliFemtoModelWeightGenerator::GetPairType();
 }
