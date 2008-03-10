@@ -135,6 +135,7 @@ AliFemtoBPLCMS3DCorrFctn::AliFemtoBPLCMS3DCorrFctn(char* title, const int& nbins
 }
 
 AliFemtoBPLCMS3DCorrFctn::AliFemtoBPLCMS3DCorrFctn(const AliFemtoBPLCMS3DCorrFctn& aCorrFctn) :
+  AliFemtoCorrFctn(),
   fIDNumHisto(0),
   fIDDenHisto(0),
   fIDRatHisto(0),

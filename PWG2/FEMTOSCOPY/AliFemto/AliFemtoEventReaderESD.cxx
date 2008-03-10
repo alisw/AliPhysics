@@ -79,6 +79,7 @@ AliFemtoEventReaderESD::AliFemtoEventReaderESD():
 }
 
 AliFemtoEventReaderESD::AliFemtoEventReaderESD(const AliFemtoEventReaderESD &aReader) :
+  AliFemtoEventReader(aReader),
   fInputFile(" "),
   fFileName(" "),
   fConstrained(true),

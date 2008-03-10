@@ -138,7 +138,7 @@ inline AliFmPhysicalHelixD& AliFemtoParticle::Helix() {return fHelix;}
 //inline int AliFemtoParticle::NumberOfHits() const {return fNhits;}
 //by marek chojnacki to could compile 
 
-inline unsigned long AliFemtoParticle::TopologyMap(const int word) const {return 1;}
+inline unsigned long AliFemtoParticle::TopologyMap(const int /* word */) const {return 1;}
 inline int AliFemtoParticle::NumberOfHits() const {return 1;}
 
 inline AliFemtoV0* AliFemtoParticle::V0() const { return fV0; }

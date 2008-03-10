@@ -17,6 +17,7 @@
     
 //_______________________
 AliFemtoModelCorrFctn::AliFemtoModelCorrFctn(): 
+  AliFemtoCorrFctn(),
   fManager(0),
   fNumeratorTrue(0),
   fNumeratorFake(0),
@@ -33,6 +34,7 @@ AliFemtoModelCorrFctn::AliFemtoModelCorrFctn():
 }
 //_______________________
 AliFemtoModelCorrFctn::AliFemtoModelCorrFctn(const char *title, Int_t aNbins, Double_t aQinvLo, Double_t aQinvHi):
+  AliFemtoCorrFctn(),
   fManager(0),
   fNumeratorTrue(0),
   fNumeratorFake(0),
@@ -53,6 +55,7 @@ AliFemtoModelCorrFctn::AliFemtoModelCorrFctn(const char *title, Int_t aNbins, Do
 }
 //_______________________
 AliFemtoModelCorrFctn::AliFemtoModelCorrFctn(const AliFemtoModelCorrFctn& aCorrFctn) :
+  AliFemtoCorrFctn(),
   fManager(0),
   fNumeratorTrue(0),
   fNumeratorFake(0),
@@ -127,12 +130,12 @@ void AliFemtoModelCorrFctn::AddMixedPair(AliFemtoPair* aPair)
   fDenominator->Fill(aPair->QInv(), 1.0);
 }
 //_______________________
-void AliFemtoModelCorrFctn::EventBegin(const AliFemtoEvent* aEvent)
+void AliFemtoModelCorrFctn::EventBegin(const AliFemtoEvent* /* aEvent */)
 {
   /* Do nothing */
 }
 //_______________________
-void AliFemtoModelCorrFctn::EventEnd(const AliFemtoEvent* aEvent)
+void AliFemtoModelCorrFctn::EventEnd(const AliFemtoEvent* /* aEvent */)
 {
   /* Do nothing */
 }

@@ -33,17 +33,17 @@ using namespace std;
 //____________________________
 //constructor with 0 parameters , look at default settings 
 AliFemtoEventReaderAOD::AliFemtoEventReaderAOD():
-  fInputFile(" "),
-  fFileName(" "),
   fNumberofEvent(0),
   fCurEvent(0),
-  fTree(0x0),
-  fAodFile(0x0),
   fEvent(0x0),
   fAllTrue(160),
   fAllFalse(160),
   fFilterBit(0),
-  fPWG2AODTracks(0x0)
+  fPWG2AODTracks(0x0),
+  fInputFile(" "),
+  fFileName(" "),
+  fTree(0x0),
+  fAodFile(0x0)
 {
   // default constructor
   fAllTrue.ResetAllBits(kTRUE);
@@ -51,17 +51,18 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD():
 }
 
 AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aReader) :
-  fInputFile(" "),
-  fFileName(" "),
+  AliFemtoEventReader(),
   fNumberofEvent(0),
   fCurEvent(0),
-  fTree(0x0),
-  fAodFile(0x0),
   fEvent(0x0),
   fAllTrue(160),
   fAllFalse(160),
   fFilterBit(0),
-  fPWG2AODTracks(0x0)
+  fPWG2AODTracks(0x0),
+  fInputFile(" "),
+  fFileName(" "),
+  fTree(0x0),
+  fAodFile(0x0)
 {
   // copy constructor
   fInputFile = aReader.fInputFile;

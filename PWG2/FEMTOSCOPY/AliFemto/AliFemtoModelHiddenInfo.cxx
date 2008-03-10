@@ -18,6 +18,7 @@ AliFemtoModelHiddenInfo::AliFemtoModelHiddenInfo() :
 }
 //_____________________________________________
 AliFemtoModelHiddenInfo::AliFemtoModelHiddenInfo(const AliFemtoModelHiddenInfo &aInfo) :
+  AliFemtoHiddenInfo(aInfo),
   fTrueMomentum(0),
   fEmissionPoint(0),
   fPDGPid(0),

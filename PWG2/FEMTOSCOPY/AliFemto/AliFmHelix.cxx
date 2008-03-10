@@ -364,7 +364,7 @@ pair<double, double> AliFmHelix::PathLength(double r) const
 	return(tvalue);
 }
 
-pair<double, double> AliFmHelix::PathLength(double r, double x, double y, bool scanPeriods)
+pair<double, double> AliFmHelix::PathLength(double r, double x, double y, bool /* scanPeriods */)
 {
   // path length
 	double x0 = fOrigin.x();

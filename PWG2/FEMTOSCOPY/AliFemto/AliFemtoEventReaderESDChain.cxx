@@ -50,6 +50,7 @@ AliFemtoEventReaderESDChain::AliFemtoEventReaderESDChain():
 
 //__________________
 AliFemtoEventReaderESDChain::AliFemtoEventReaderESDChain(const AliFemtoEventReaderESDChain& aReader):
+  AliFemtoEventReader(aReader),
   fFileName(" "),
   fConstrained(true),
   fNumberofEvent(0),

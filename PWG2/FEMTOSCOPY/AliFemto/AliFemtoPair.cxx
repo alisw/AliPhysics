@@ -468,7 +468,7 @@ double AliFemtoPair::QLongPf() const
 }
 
 //___________________________________
-double AliFemtoPair::QOutBf(double beta) const
+double AliFemtoPair::QOutBf(double /* beta */) const
 {
   // relative momentum out component
  return(this->QOutCMS());
@@ -476,7 +476,7 @@ double AliFemtoPair::QOutBf(double beta) const
 
 //___________________________________
 
-double AliFemtoPair::QSideBf(double beta) const
+double AliFemtoPair::QSideBf(double /* beta */) const
 {
   // relative momentum side component 
  return(this->QSideCMS());

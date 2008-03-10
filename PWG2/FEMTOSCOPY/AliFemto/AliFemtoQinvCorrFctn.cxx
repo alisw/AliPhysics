@@ -49,6 +49,7 @@ AliFemtoQinvCorrFctn::AliFemtoQinvCorrFctn(char* title, const int& nbins, const 
 
 //____________________________
 AliFemtoQinvCorrFctn::AliFemtoQinvCorrFctn(const AliFemtoQinvCorrFctn& aCorrFctn) :
+  AliFemtoCorrFctn(),
   fNumerator(0),
   fDenominator(0),
   fRatio(0)
