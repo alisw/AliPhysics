@@ -108,28 +108,28 @@ TList *AliFemtoQPairCut::ListSettings()
   // return a list of settings in a writable form
   TList *tListSetttings = new TList();
   char buf[200];
-  snprintf(buf, 200, "AliFemtoQPairCut.qout.maximum=%lf", fQout[0]);
+  snprintf(buf, 200, "AliFemtoQPairCut.qout.maximum=%f", fQout[0]);
   tListSetttings->AddLast(new TObjString(buf));
 
-  snprintf(buf, 200, "AliFemtoQPairCut.qout.minimum=%lf", fQout[1]);
+  snprintf(buf, 200, "AliFemtoQPairCut.qout.minimum=%f", fQout[1]);
   tListSetttings->AddLast(new TObjString(buf));
 
-  snprintf(buf, 200, "AliFemtoQPairCut.qside.maximum=%lf", fQside[0]);
+  snprintf(buf, 200, "AliFemtoQPairCut.qside.maximum=%f", fQside[0]);
   tListSetttings->AddLast(new TObjString(buf));
 
-  snprintf(buf, 200, "AliFemtoQPairCut.qside.minimum=%lf", fQside[1]);
+  snprintf(buf, 200, "AliFemtoQPairCut.qside.minimum=%f", fQside[1]);
   tListSetttings->AddLast(new TObjString(buf));
 
-  snprintf(buf, 200, "AliFemtoQPairCut.qlong.maximum=%lf", fQlong[0]);
+  snprintf(buf, 200, "AliFemtoQPairCut.qlong.maximum=%f", fQlong[0]);
   tListSetttings->AddLast(new TObjString(buf));
 
-  snprintf(buf, 200, "AliFemtoQPairCut.qlong.minimum=%lf", fQlong[1]);
+  snprintf(buf, 200, "AliFemtoQPairCut.qlong.minimum=%f", fQlong[1]);
   tListSetttings->AddLast(new TObjString(buf));
 
-  snprintf(buf, 200, "AliFemtoQPairCut.qinv.maximum=%lf", fQinv[0]);
+  snprintf(buf, 200, "AliFemtoQPairCut.qinv.maximum=%f", fQinv[0]);
   tListSetttings->AddLast(new TObjString(buf));
 
-  snprintf(buf, 200, "AliFemtoQPairCut.qinv.minimum=%lf", fQinv[1]);
+  snprintf(buf, 200, "AliFemtoQPairCut.qinv.minimum=%f", fQinv[1]);
   tListSetttings->AddLast(new TObjString(buf));
 
   return tListSetttings;

@@ -87,6 +87,7 @@ AliFemtoESDTrackCut::AliFemtoESDTrackCut() :
     fLabel(0),
     fStatus(0),
     fminTPCclsF(0),
+    fminTPCncls(0),
     fminITScls(0),
     fMaxITSchiNdof(1000.0),
     fMaxTPCchiNdof(1000.0),
@@ -306,50 +307,50 @@ TList *AliFemtoESDTrackCut::ListSettings()
   // return a list of settings in a writable form
   TList *tListSetttings = new TList();
   char buf[200];
-  snprintf(buf, 200, "AliFemtoESDTrackCut.mass=%lf", this->Mass());
+  snprintf(buf, 200, "AliFemtoESDTrackCut.mass=%f", this->Mass());
   tListSetttings->AddLast(new TObjString(buf));
 
   snprintf(buf, 200, "AliFemtoESDTrackCut.charge=%i", fCharge);
   tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoESDTrackCut.pidprobpion.minimum=%lf", fPidProbPion[0]);
+  snprintf(buf, 200, "AliFemtoESDTrackCut.pidprobpion.minimum=%f", fPidProbPion[0]);
   tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoESDTrackCut.pidprobpion.maximum=%lf", fPidProbPion[1]);
+  snprintf(buf, 200, "AliFemtoESDTrackCut.pidprobpion.maximum=%f", fPidProbPion[1]);
   tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoESDTrackCut.pidprobkaon.minimum=%lf", fPidProbKaon[0]);
+  snprintf(buf, 200, "AliFemtoESDTrackCut.pidprobkaon.minimum=%f", fPidProbKaon[0]);
   tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoESDTrackCut.pidprobkaon.maximum=%lf", fPidProbKaon[1]);
+  snprintf(buf, 200, "AliFemtoESDTrackCut.pidprobkaon.maximum=%f", fPidProbKaon[1]);
   tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoESDTrackCut.pidprobproton.minimum=%lf", fPidProbProton[0]);
+  snprintf(buf, 200, "AliFemtoESDTrackCut.pidprobproton.minimum=%f", fPidProbProton[0]);
   tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoESDTrackCut.pidprobproton.maximum=%lf", fPidProbProton[1]);
+  snprintf(buf, 200, "AliFemtoESDTrackCut.pidprobproton.maximum=%f", fPidProbProton[1]);
   tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoESDTrackCut.pidprobelectron.minimum=%lf", fPidProbElectron[0]);
+  snprintf(buf, 200, "AliFemtoESDTrackCut.pidprobelectron.minimum=%f", fPidProbElectron[0]);
   tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoESDTrackCut.pidprobelectron.maximum=%lf", fPidProbElectron[1]);
+  snprintf(buf, 200, "AliFemtoESDTrackCut.pidprobelectron.maximum=%f", fPidProbElectron[1]);
   tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoESDTrackCut.pidprobMuon.minimum=%lf", fPidProbMuon[0]);
+  snprintf(buf, 200, "AliFemtoESDTrackCut.pidprobMuon.minimum=%f", fPidProbMuon[0]);
   tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoESDTrackCut.pidprobMuon.maximum=%lf", fPidProbMuon[1]);
+  snprintf(buf, 200, "AliFemtoESDTrackCut.pidprobMuon.maximum=%f", fPidProbMuon[1]);
   tListSetttings->AddLast(new TObjString(buf));
   snprintf(buf, 200, "AliFemtoESDTrackCut.minimumtpcclusters=%i", fminTPCclsF);
   tListSetttings->AddLast(new TObjString(buf));
   snprintf(buf, 200, "AliFemtoESDTrackCut.minimumitsclusters=%i", fminTPCclsF);
   tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoESDTrackCut.pt.minimum=%lf", fPt[0]);
+  snprintf(buf, 200, "AliFemtoESDTrackCut.pt.minimum=%f", fPt[0]);
   tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoESDTrackCut.pt.maximum=%lf", fPt[1]);
+  snprintf(buf, 200, "AliFemtoESDTrackCut.pt.maximum=%f", fPt[1]);
   tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoESDTrackCut.rapidity.minimum=%lf", fRapidity[0]);
+  snprintf(buf, 200, "AliFemtoESDTrackCut.rapidity.minimum=%f", fRapidity[0]);
   tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoESDTrackCut.rapidity.maximum=%lf", fRapidity[1]);
+  snprintf(buf, 200, "AliFemtoESDTrackCut.rapidity.maximum=%f", fRapidity[1]);
   tListSetttings->AddLast(new TObjString(buf));
   snprintf(buf, 200, "AliFemtoESDTrackCut.removekinks=%i", fRemoveKinks);
   tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoESDTrackCut.maxitschindof=%lf", fMaxITSchiNdof);
+  snprintf(buf, 200, "AliFemtoESDTrackCut.maxitschindof=%f", fMaxITSchiNdof);
   tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoESDTrackCut.maxtpcchindof=%lf", fMaxTPCchiNdof);
+  snprintf(buf, 200, "AliFemtoESDTrackCut.maxtpcchindof=%f", fMaxTPCchiNdof);
   tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoESDTrackCut.maxsigmatovertex=%lf", fMaxSigmaToVertex);
+  snprintf(buf, 200, "AliFemtoESDTrackCut.maxsigmatovertex=%f", fMaxSigmaToVertex);
   tListSetttings->AddLast(new TObjString(buf));
   if (fMostProbable) {
     if (fMostProbable == 2)

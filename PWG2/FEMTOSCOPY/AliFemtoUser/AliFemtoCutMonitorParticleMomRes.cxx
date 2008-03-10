@@ -60,6 +60,7 @@ AliFemtoCutMonitorParticleMomRes::AliFemtoCutMonitorParticleMomRes(const char *a
 }
 
 AliFemtoCutMonitorParticleMomRes::AliFemtoCutMonitorParticleMomRes(const AliFemtoCutMonitorParticleMomRes &aCut):
+  AliFemtoCutMonitor(),
   fMomRes3D(0),
   fMomResXvsP(0),
   fMomResYvsP(0),
@@ -132,6 +133,7 @@ AliFemtoString AliFemtoCutMonitorParticleMomRes::Report(){
 
 void AliFemtoCutMonitorParticleMomRes::Fill(const AliFemtoTrack* aTrack)
 {
+  // Fill momentum resolution histograms for the particle
   AliFemtoModelHiddenInfo *tInf = ( AliFemtoModelHiddenInfo *) aTrack->GetHiddenInfo();
   fMomRes3D->Fill(tInf->GetTrueMomentum()->x() - aTrack->P().x(),
 		  tInf->GetTrueMomentum()->y() - aTrack->P().y(),
@@ -165,6 +167,7 @@ void AliFemtoCutMonitorParticleMomRes::Write()
 
 TList *AliFemtoCutMonitorParticleMomRes::GetOutputList()
 {
+  // Get the list of histograms to write
   TList *tOutputList = new TList();
   tOutputList->Add(fMomRes3D);
   tOutputList->Add(fMomResXvsP);

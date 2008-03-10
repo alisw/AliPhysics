@@ -55,8 +55,8 @@ class AliFemtoEventReaderESDKine : public AliFemtoEventReader
 
   AliFemtoEventReaderESDKine& operator=(const AliFemtoEventReaderESDKine& aReader);
 
-  AliFemtoEvent* ReturnHbtEvent();
-  AliFemtoString Report() const;
+  virtual AliFemtoEvent* ReturnHbtEvent();
+  virtual AliFemtoString Report();
   //void SetFileName(const char* fileName);
   void SetInputFile(const char* inputFile);
   void SetConstrained(const bool constrained);

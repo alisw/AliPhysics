@@ -72,7 +72,7 @@ bool AliFemtoShareQualityTPCEntranceSepPairCut::Pass(const AliFemtoPair* pair){
 AliFemtoString AliFemtoShareQualityTPCEntranceSepPairCut::Report(){
   // Prepare a report from the execution
   string stemp = "AliFemtoShareQualityTPCEntranceSep Pair Cut - remove shared and split pairs and pairs with small separation at the entrance to the TPC\n";  char ctemp[100];
-  sprintf(ctemp,"Accept pair with TPC entrance separation more that %lf",fDTPCMin);
+  sprintf(ctemp,"Accept pair with TPC entrance separation more that %f",fDTPCMin);
   stemp += ctemp;
   sprintf(ctemp,"Number of pairs which passed:\t%ld  Number which failed:\t%ld\n",fNPairsPassed,fNPairsFailed);
   stemp += ctemp;
@@ -85,7 +85,7 @@ TList *AliFemtoShareQualityTPCEntranceSepPairCut::ListSettings()
   // return a list of settings in a writable form
   TList *tListSetttings =  AliFemtoShareQualityPairCut::ListSettings();
   char buf[200];
-  snprintf(buf, 200, "AliFemtoShareQualityTPCEntranceSepPairCut.tpcentsepmin=%lf", fDTPCMin);
+  snprintf(buf, 200, "AliFemtoShareQualityTPCEntranceSepPairCut.tpcentsepmin=%f", fDTPCMin);
   tListSetttings->AddLast(new TObjString(buf));
 
   return tListSetttings;

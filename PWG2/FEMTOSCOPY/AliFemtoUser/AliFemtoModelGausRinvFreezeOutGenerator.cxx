@@ -24,6 +24,7 @@ AliFemtoModelGausRinvFreezeOutGenerator::AliFemtoModelGausRinvFreezeOutGenerator
 
 //_______________________
 AliFemtoModelGausRinvFreezeOutGenerator::AliFemtoModelGausRinvFreezeOutGenerator(const AliFemtoModelGausRinvFreezeOutGenerator &aModel):
+  AliFemtoModelFreezeOutGenerator(),
   fSizeInv(0)
 {
   // Copy constructor

@@ -72,7 +72,7 @@ bool AliFemtoShareQualityKTPairCut::Pass(const AliFemtoPair* pair){
 AliFemtoString AliFemtoShareQualityKTPairCut::Report(){
   // Prepare a report from execution
   string stemp = "AliFemtoShareQuality Pair Cut - remove shared and split pairs\n";  char ctemp[100];
-  sprintf(ctemp,"Accept pair with kT in range %lf , %lf",fKTMin,fKTMax);
+  sprintf(ctemp,"Accept pair with kT in range %f , %f",fKTMin,fKTMax);
   stemp += ctemp;
   sprintf(ctemp,"Number of pairs which passed:\t%ld  Number which failed:\t%ld\n",fNPairsPassed,fNPairsFailed);
   stemp += ctemp;
@@ -85,9 +85,9 @@ TList *AliFemtoShareQualityKTPairCut::ListSettings()
   // return a list of settings in a writable form
   TList *tListSetttings =  AliFemtoShareQualityPairCut::ListSettings();
   char buf[200];
-  snprintf(buf, 200, "AliFemtoShareQualityKTPairCut.ktmax=%lf", fKTMax);
+  snprintf(buf, 200, "AliFemtoShareQualityKTPairCut.ktmax=%f", fKTMax);
   tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoShareQualityKTPairCut.ktmin=%lf", fKTMin);
+  snprintf(buf, 200, "AliFemtoShareQualityKTPairCut.ktmin=%f", fKTMin);
   tListSetttings->AddLast(new TObjString(buf));
 
   return tListSetttings;

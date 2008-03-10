@@ -142,8 +142,8 @@ TList *AliFemtoShareQualityPairCut::ListSettings()
   // return a list of settings in a writable form
   TList *tListSetttings = new TList();
   char buf[200];
-  snprintf(buf, 200, "AliFemtoShareQualityPairCut.sharequalitymax=%lf", fShareQualityMax);
-  snprintf(buf, 200, "AliFemtoShareQualityPairCut.sharefractionmax=%lf", fShareFractionMax);
+  snprintf(buf, 200, "AliFemtoShareQualityPairCut.sharequalitymax=%f", fShareQualityMax);
+  snprintf(buf, 200, "AliFemtoShareQualityPairCut.sharefractionmax=%f", fShareFractionMax);
   tListSetttings->AddLast(new TObjString(buf));
 
   return tListSetttings;
