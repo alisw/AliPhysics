@@ -229,12 +229,12 @@ class AliHLTOUT : public AliHLTLogging {
   /**
    * Helper function to byte swap a 64 bit value.
    */
-  static AliHLTUInt64_t Swap(AliHLTUInt64_t src);
+  static AliHLTUInt64_t Swap64(AliHLTUInt64_t src);
 
   /**
    * Helper function to byte swap a 32 bit value.
    */
-  static AliHLTUInt32_t Swap(AliHLTUInt32_t src);
+  static AliHLTUInt32_t Swap32(AliHLTUInt32_t src);
 
  protected:
   /**

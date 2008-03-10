@@ -402,7 +402,7 @@ bool AliHLTOUT::AliHLTOUTHandlerListEntry::HasIndex(AliHLTUInt32_t index)
 
 const AliHLTOUT::AliHLTOUTHandlerListEntry AliHLTOUT::AliHLTOUTHandlerListEntry::fgkVoidHandlerListEntry;
 
-AliHLTUInt64_t AliHLTOUT::Swap(AliHLTUInt64_t src)
+AliHLTUInt64_t AliHLTOUT::Swap64(AliHLTUInt64_t src)
 {
   // see header file for class documentation
   return ((src & 0xFFULL) << 56) | 
@@ -415,7 +415,7 @@ AliHLTUInt64_t AliHLTOUT::Swap(AliHLTUInt64_t src)
     ((src & 0xFF00000000000000ULL) >> 56);
 }
 
-AliHLTUInt32_t AliHLTOUT::Swap(AliHLTUInt32_t src)
+AliHLTUInt32_t AliHLTOUT::Swap32(AliHLTUInt32_t src)
 {
   // see header file for class documentation
   return ((src & 0xFFULL) << 24) | 
