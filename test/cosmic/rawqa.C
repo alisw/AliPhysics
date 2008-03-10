@@ -27,8 +27,8 @@ void rawqa(const Int_t runNumber, Int_t maxFiles = 10, const char* year = "08")
 	
 	UInt_t maxEvents = 99999 ;
 	if ( maxFiles < 0 ) {
-		maxFiles = 99 ; 
 		maxEvents = TMath::Abs(maxFiles) ; 
+		maxFiles = 99 ; 
 	}
 	AliLog::SetGlobalDebugLevel(0) ; 
 	// connect to the grid 
@@ -101,6 +101,7 @@ void rawqa(const Int_t runNumber, Int_t maxFiles = 10, const char* year = "08")
 		AliRawReader * rawReader = new AliRawReaderRoot(input);
 		while ( rawReader->NextEvent() ) {
 			man->SetRun(rawReader->GetRunNumber());
+			AliLog::Flush();
 			UChar_t * data ; 
 			while (rawReader->ReadNextData(data)) {
 				Int_t detID = rawReader->GetDetectorID();
@@ -121,18 +122,21 @@ void rawqa(const Int_t runNumber, Int_t maxFiles = 10, const char* year = "08")
 			if ( !detectors.IsNull() )
 				break ; 
 		}
-		delete rawReader;
+		AliInfo(Form("Current = %d Max = %d", qas.GetCurrentEvent(), maxEvents)) ; 
+		AliLog::Flush();
 		if ( qas.GetCurrentEvent() > maxEvents) 
 			break ;
 		// TEMPORARY REMOVAL OF TRD!!!
 		detectors.ReplaceAll("TRD", "") ;
 		// TEMPORARY REMOVAL OF TRD!!!
 		if ( !detectors.IsNull() ) {
-		  detectorsW = qas.Run(detectors, rawReader) ;
-		  qas.Reset() ;
+			qas.SetMaxEvents(maxEvents) ; 	
+			detectorsW = qas.Run(detectors, rawReader) ;
+			qas.Reset() ;
 		} else {
-		  AliError("No valid detectors found") ; 
+			AliError("No valid detectors found") ; 
 		} 
+		delete rawReader ;
 	}
 	AliLog::Flush();
 	qas.Merge(runNumber) ; 

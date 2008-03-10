@@ -36,7 +36,7 @@ public:
 	AliQADataMakerSteer(const AliQADataMakerSteer & qas) ; 
 	AliQADataMakerSteer & operator = (const AliQADataMakerSteer & qas) ; 
 	virtual ~AliQADataMakerSteer() ; 
-	UInt_t   GetCurrentEvent() { return fCurrentEvent ; }
+	UInt_t   GetCurrentEvent() const { return fCurrentEvent ; }
     TObjArray * GetFromOCDB(AliQA::DETECTORINDEX det, AliQA::TASKINDEX task) const ; 
 	Bool_t  Merge(const Int_t runNumber = -1) const ;  
     void    Reset(const Bool_t sameCycle = kFALSE) ;  
@@ -45,6 +45,7 @@ public:
 	TString Run(const char * detectors, const char * filename) ;
     Bool_t  Save2OCDB(const Int_t runNumber, const Int_t cycleNumber, const char * detectors = "ALL") const ; 
 	void    SetCycleLength(const AliQA::DETECTORINDEX det, const Int_t cycle) { fQACycles[det] = cycle ; }
+	void    SetMaxEvents(UInt_t max) { fMaxEvents = max ; }      
 	void    SetNewCycle() { fCycleSame = kTRUE ; }
     void    SetRunLoader(AliRunLoader * rl) { fRunLoader = rl ; }
 
@@ -68,8 +69,9 @@ private:
 	TTree *            fESDTree ;                      //! current ESD Tree
 	Bool_t             fFirst ;                        //! to search the detector QA data maker only once
 	TString            fGAliceFileName ;               //! name of the galice file
-	UInt_t             fRunNumber ;                    //! current run number
+	Int_t              fMaxEvents ;                    //! number of events to process
 	Long64_t           fNumberOfEvents ;               //! number of events in the run 
+	UInt_t             fRunNumber ;                    //! current run number
 	AliRawReader     * fRawReader ;                    //! current raw reader object 
 	Bool_t             fRawReaderDelete ;              //! tells if the rawReader has been created by this
 	AliRunLoader *     fRunLoader ;                    //! current run loader object

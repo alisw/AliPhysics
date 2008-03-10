@@ -67,13 +67,15 @@ AliQADataMakerSteer::AliQADataMakerSteer(const char* gAliceFilename, const char 
 	fESDTree(NULL),
 	fFirst(kTRUE),  
 	fGAliceFileName(gAliceFilename), 
-	fRunNumber(0), 
+    fMaxEvents(0),        
 	fNumberOfEvents(999999), 
+    fRunNumber(0), 
 	fRawReader(NULL), 
 	fRawReaderDelete(kTRUE), 
 	fRunLoader(NULL)  
 {
 	// default ctor
+	fMaxEvents = fNumberOfEvents ; 
 	for (UInt_t iDet = 0; iDet < fgkNDetectors; iDet++) {
 		if (IsSelected(AliQA::GetDetName(iDet))) {
 			fLoader[iDet]      = NULL ;
@@ -94,8 +96,9 @@ AliQADataMakerSteer::AliQADataMakerSteer(const AliQADataMakerSteer & qas) :
 	fESDTree(NULL), 
 	fFirst(qas.fFirst),  
 	fGAliceFileName(qas.fGAliceFileName), 
-	fRunNumber(qas.fRunNumber), 
+    fMaxEvents(qas.fMaxEvents),        
 	fNumberOfEvents(qas.fNumberOfEvents), 
+    fRunNumber(qas.fRunNumber), 
 	fRawReader(NULL), 
 	fRawReaderDelete(kTRUE), 
 	fRunLoader(NULL)  
@@ -146,7 +149,7 @@ Bool_t AliQADataMakerSteer::DoIt(const AliQA::TASKINDEX taskIndex, const char * 
 
 	Bool_t rv = kFALSE ;
     // Fill QA data in event loop 
-	for (UInt_t iEvent = 0 ; iEvent < fNumberOfEvents ; iEvent++) {
+	for (UInt_t iEvent = 0 ; iEvent < (UInt_t)fMaxEvents ; iEvent++) {
 		fCurrentEvent++ ; 
 		// Get the event
 		if ( iEvent%10 == 0  ) 
@@ -387,7 +390,9 @@ Bool_t AliQADataMakerSteer::Init(const AliQA::TASKINDEX taskIndex, const char * 
 		AliCDBManager::Instance()->SetRun(fRunNumber) ; 
 		fRawReader->RewindEvents();
 		fNumberOfEvents = 999999 ;
-	} else if (taskIndex == AliQA::kESDS) {
+		if ( fMaxEvents < 0 ) 
+			fMaxEvents = fNumberOfEvents ; 
+		} else if (taskIndex == AliQA::kESDS) {
 		if (!gSystem->AccessPathName("AliESDs.root")) { // AliESDs.root exists
 			TFile * esdFile = TFile::Open("AliESDs.root") ;
 			fESDTree = dynamic_cast<TTree *> (esdFile->Get("esdTree")) ; 
@@ -400,6 +405,8 @@ Bool_t AliQADataMakerSteer::Init(const AliQA::TASKINDEX taskIndex, const char * 
 				fESDTree->GetEntry(0) ; 
 				fRunNumber = fESD->GetRunNumber() ; 
 				fNumberOfEvents = fESDTree->GetEntries() ;
+				if ( fMaxEvents < 0 ) 
+					fMaxEvents = fNumberOfEvents ; 
 			}
 		} else {
 			AliError("AliESDs.root not found") ; 
@@ -410,6 +417,9 @@ Bool_t AliQADataMakerSteer::Init(const AliQA::TASKINDEX taskIndex, const char * 
 			AliWarning("No Run Loader not found") ; 
 		} else {
 			fNumberOfEvents = fRunLoader->GetNumberOfEvents() ;
+			if ( fMaxEvents < 0 ) 
+				fMaxEvents = fNumberOfEvents ; 
+
 		}
 	}
 		// Initialize all QA data makers for all detectors
