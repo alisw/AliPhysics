@@ -269,6 +269,10 @@ class AliHLTModuleAgent : public TObject, public AliHLTLogging {
 
     ~AliHLTOUTHandlerDesc() {}
 
+    bool operator==(const AliHLTOUTHandlerType handlerType) const {
+      return fHType==handlerType;
+    }
+
   private:
     /** type of the handler */
     AliHLTOUTHandlerType    fHType;                          //!transient

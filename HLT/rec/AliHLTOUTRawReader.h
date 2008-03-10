@@ -58,6 +58,17 @@ class AliHLTOUTRawReader : public AliHLTOUTHomerBuffer {
   int GetDataBuffer(AliHLTUInt32_t index, const AliHLTUInt8_t* &pBuffer, 
 		    AliHLTUInt32_t& size);
 
+  /**
+   * Open HOMER reader for the data buffer.
+   * The function expects the data buffer including all headers (CDH
+   * and HLTOUT header). The offset for the HLT payload is determined from
+   * the headers and the optional HLT decision data.
+   * @param pSrc    data buffer
+   * @param size    size of the buffer in byte
+   * @return instance of HOMER reader
+   */
+  AliHLTHOMERReader* OpenReader(UChar_t* pSrc, unsigned int size);
+
   /** the rawreader */
   AliRawReader* fpRawreader; //!transient
 

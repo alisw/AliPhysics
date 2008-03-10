@@ -62,18 +62,26 @@ AliHLTOUTRawReader::~AliHLTOUTRawReader()
 int AliHLTOUTRawReader::GenerateIndex()
 {
   // see header file for class documentation
-  // step through all HLT ddls, create HOMER reader and
+  // step through all HLT ddls, create HOMER readers and
   // scan data block
   int iResult=0;
   if (fpRawreader && fpManager) {
     fpRawreader->Reset();
-    fpRawreader->Select("HLT");
+    // there was a bug in AliDAQ returning the wrong equipment id
+    // for the HLT links. It has been fixed in the trunk on Feb 5th 2008
+    // and from v4-10-Release (Rev-02). For the moment we select directly
+    // to support older AliRoot versions
+    //fpRawreader->Select("HLT");
+    fpRawreader->SelectEquipment(0,7680, 7689);
     UChar_t* pSrc=NULL;
     while (fpRawreader->ReadNextData(pSrc) && pSrc!=NULL && iResult>=0) {
-      AliHLTUInt32_t id=(fpRawreader->GetEquipmentId())<<fgkIdShift;
-      int size=fpRawreader->GetDataSize();
-      int offset=sizeof(AliHLTOUT::AliHLTOUTEventHeader);
-      AliHLTHOMERReader* pReader=fpManager->OpenReaderBuffer(pSrc+offset, size-offset);
+      AliHLTUInt32_t id=(fpRawreader->GetEquipmentId());
+      unsigned int size=fpRawreader->GetDataSize();
+
+      AliHLTHOMERReader* pReader=OpenReader(pSrc, size);
+
+      // we use the equipment id to identify the different homer blocks 
+      id<<=fgkIdShift;
       if (pReader) {
 	iResult=ScanReader(pReader, id);
 	fpManager->DeleteReader(pReader);
@@ -109,8 +117,7 @@ int AliHLTOUTRawReader::GetDataBuffer(AliHLTUInt32_t index, const AliHLTUInt8_t*
       UChar_t* pSrc=NULL;
       if (fpRawreader->ReadNextData(pSrc) && pSrc!=NULL) {
 	int srcSize=fpRawreader->GetDataSize();
-	int offset=sizeof(AliHLTOUT::AliHLTOUTEventHeader);
-	fpCurrent=fpManager->OpenReaderBuffer(pSrc+offset, srcSize-offset);
+	fpCurrent=OpenReader(pSrc, srcSize);
 	if (fpCurrent && fpCurrent->ReadNextEvent()!=0) {
 	  iResult=-ENODATA;
 	}
@@ -132,4 +139,57 @@ int AliHLTOUTRawReader::GetDataBuffer(AliHLTUInt32_t index, const AliHLTUInt8_t*
     iResult=-ENODEV;
   }
   return iResult;
+}
+
+AliHLTHOMERReader* AliHLTOUTRawReader::OpenReader(UChar_t* pSrc, unsigned int size)
+{
+  // see header file for class documentation
+  unsigned int offset=sizeof(AliHLTOUTEventHeader);
+  const AliRawDataHeader* pCDH=fpRawreader->GetDataHeader();
+  AliHLTUInt32_t id=(fpRawreader->GetEquipmentId());
+  AliHLTUInt32_t statusFlags=pCDH->GetStatus();
+  AliHLTOUTEventHeader* pHLTHeader=reinterpret_cast<AliHLTOUTEventHeader*>(pSrc);
+
+  // consistency check for the block size
+  if (pHLTHeader->fLength!=size) {
+    HLTWarning("can not treat HLT data block %d: size missmatch, header %d, but buffer is %d", id, pHLTHeader->fLength, size);
+    return NULL;
+  }
+
+  // determine the offset of the homer block
+  // the HLT header is mandatory, HLT decision and HLT
+  // payload are optional. HLT decision is always before HLT
+  // payload if existent.
+  if (statusFlags&(0x1<<kCDHFlagsHLTDecision)) {
+    // the block contains HLT decision data, this is just
+    // skipped here
+    AliHLTUInt32_t* pDecisionLen=reinterpret_cast<AliHLTUInt32_t*>(pSrc+offset);
+    if ((*pDecisionLen)*sizeof(AliHLTUInt32_t)+offset<size) {
+      // the first 32bit word specifies the number of 32bit words in the
+      // decision block -> +1 for this length word
+      offset+=((*pDecisionLen)+1)*sizeof(AliHLTUInt32_t);
+    } else {
+      HLTWarning("size missmatch: HLT decision block bigger than total block length, skipping ...");
+      return NULL;
+    }
+  }
+
+  // check if there is payload
+  if (!(statusFlags&(0x1<<kCDHFlagsHLTPayload))) return NULL;
+
+  // continue if there is no data left in the buffer
+  if (offset>=size) {
+    HLTWarning("no HLT payload available, but bit is set, skipping ...");
+    return NULL;
+  }
+
+  // check for the HOME descriptor type id
+  AliHLTUInt64_t* pHomerDesc=reinterpret_cast<AliHLTUInt64_t*>(pSrc+offset);
+  if (*(pHomerDesc+kID_64b_Offset) != HOMER_BLOCK_DESCRIPTOR_TYPEID && 
+      Swap(*(pHomerDesc+kID_64b_Offset)) != HOMER_BLOCK_DESCRIPTOR_TYPEID) {
+    HLTWarning("format error: can not find HOMER block descriptor typid, skipping this data block");
+    return NULL;
+  }
+
+  return fpManager->OpenReaderBuffer(pSrc+offset, size-offset);
 }

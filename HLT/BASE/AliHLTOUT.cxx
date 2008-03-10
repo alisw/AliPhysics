@@ -38,11 +38,13 @@ AliHLTOUT::AliHLTOUT()
   :
   fSearchDataType(kAliHLTVoidDataType),
   fSearchSpecification(kAliHLTVoidDataSpec),
+  fSearchHandlerType(AliHLTModuleAgent::kUnknownOutput),
   fFlags(0),
   fBlockDescList(),
   fCurrent(fBlockDescList.begin()),
   fpBuffer(NULL),
-  fDataHandlers()
+  fDataHandlers(),
+  fbVerbose(true)
 {
   // see header file for class documentation
   // or
@@ -76,14 +78,14 @@ int AliHLTOUT::GetNofDataBlocks()
 }
 
 int AliHLTOUT::SelectFirstDataBlock(AliHLTComponentDataType dt, AliHLTUInt32_t spec,
-				    AliHLTModuleAgent::AliHLTOUTHandlerType /*handlerType*/)
+				    AliHLTModuleAgent::AliHLTOUTHandlerType handlerType)
 {
   // see header file for class documentation
   if (CheckStatusFlag(kLocked)) return -EPERM;
   fCurrent=fBlockDescList.begin();
   fSearchDataType=dt;
   fSearchSpecification=spec;
-  //fSearchHandlerType=handlerType;
+  fSearchHandlerType=handlerType;
   return FindAndSelectDataBlock();
 }
 
@@ -103,8 +105,8 @@ int AliHLTOUT::FindAndSelectDataBlock()
   int iResult=-ENOENT;
   while (fCurrent!=fBlockDescList.end() && iResult==-ENOENT) {
     if ((*fCurrent)==fSearchDataType &&
-	fSearchSpecification==kAliHLTVoidDataSpec || (*fCurrent)==fSearchSpecification &&
-	1/*fSearchHandlerType==AliHLTModuleAgent::kUnknownOutput*/) {
+	(fSearchSpecification==kAliHLTVoidDataSpec || (*fCurrent)==fSearchSpecification) &&
+	(fSearchHandlerType==AliHLTModuleAgent::kUnknownOutput || FindHandlerDesc(fCurrent->GetIndex())==fSearchHandlerType)) {
       iResult=fCurrent->GetIndex();
       // TODO: check the byte order on the current system and the byte order of the
       // data block, print warning when missmatch and user did not check
@@ -218,7 +220,9 @@ int AliHLTOUT::InitHandlers()
   // see header file for class documentation
   int iResult=0;
   AliHLTOUTIndexList remnants;
+  int iCount=0;
   for (int havedata=SelectFirstDataBlock(kAliHLTAnyDataType, kAliHLTVoidDataSpec); havedata>=0; havedata=SelectNextDataBlock()) {
+    iCount++;
     remnants.push_back(GetDataBlockIndex());
     AliHLTComponentDataType dt=kAliHLTVoidDataType;
     AliHLTUInt32_t spec=kAliHLTVoidDataSpec;
@@ -233,8 +237,16 @@ int AliHLTOUT::InitHandlers()
       }
     }
   }
+
+  // warning if some of the data blocks are not selected by the kAliHLTAnyDataType
+  // criterion
+  if (GetNofDataBlocks()>iCount) {
+    HLTWarning("incomplete data type in %d out of %d data block(s)", GetNofDataBlocks()-iCount, iCount);
+  }
+
+  // warning if handler not found
   if (remnants.size()>0) {
-    HLTWarning("no handlers found for %d data blocks out of %d", remnants.size(), GetNofDataBlocks());
+    HLTWarning("no handlers found for %d data blocks out of %d", remnants.size(), iCount);
     AliHLTOUTBlockDescriptorVector::iterator block=fBlockDescList.begin();
     for (AliHLTOUTIndexList::iterator element=remnants.begin(); element!=remnants.end(); element++) {
       for (int trials=0; trials<2; trials++) {
@@ -273,7 +285,7 @@ int AliHLTOUT::InsertHandler(const AliHLTOUTHandlerListEntry &entry)
   return iResult;
 }
 
-AliHLTOUT::AliHLTOUTHandlerListEntry AliHLTOUT::FindHandlerDesc(AliHLTUInt32_t blockIndex)
+const AliHLTOUT::AliHLTOUTHandlerListEntry& AliHLTOUT::FindHandlerDesc(AliHLTUInt32_t blockIndex)
 {
   // see header file for class documentation
   AliHLTOUTHandlerListEntryVector::iterator element=fDataHandlers.begin();
@@ -283,7 +295,7 @@ AliHLTOUT::AliHLTOUTHandlerListEntry AliHLTOUT::FindHandlerDesc(AliHLTUInt32_t b
     }
     element++;
   }
-  return AliHLTOUT::AliHLTOUTHandlerListEntry::fgkVoidHandlerListEntry;
+  return const_cast<AliHLTOUT::AliHLTOUTHandlerListEntry&>(AliHLTOUT::AliHLTOUTHandlerListEntry::fgkVoidHandlerListEntry);
 }
 
 AliHLTOUT::AliHLTOUTHandlerListEntry::AliHLTOUTHandlerListEntry()
@@ -334,7 +346,8 @@ AliHLTOUT::AliHLTOUTHandlerListEntry& AliHLTOUT::AliHLTOUTHandlerListEntry::oper
 {
   // see header file for class documentation
   fpHandler=src.fpHandler;
-  *fpHandlerDesc=*src.fpHandlerDesc;
+  if (src.fpHandlerDesc)
+    *fpHandlerDesc=*src.fpHandlerDesc;
   fpAgent=src.fpAgent;
   fBlocks.assign(src.fBlocks.begin(), src.fBlocks.end());
   return *this;
@@ -353,6 +366,13 @@ bool AliHLTOUT::AliHLTOUTHandlerListEntry::operator==(const AliHLTOUTHandlerList
   assert(entry.fpAgent==fpAgent);
   if (entry.fpAgent!=fpAgent) return false;
   return true;
+}
+
+bool AliHLTOUT::AliHLTOUTHandlerListEntry::operator==(const AliHLTModuleAgent::AliHLTOUTHandlerType handlerType) const
+{
+  // see header file for class documentation
+  if (!fpHandlerDesc) return false;
+  return *fpHandlerDesc==handlerType;
 }
 
 void AliHLTOUT::AliHLTOUTHandlerListEntry::AddIndex(AliHLTOUT::AliHLTOUTHandlerListEntry &desc)
@@ -381,3 +401,25 @@ bool AliHLTOUT::AliHLTOUTHandlerListEntry::HasIndex(AliHLTUInt32_t index)
 }
 
 const AliHLTOUT::AliHLTOUTHandlerListEntry AliHLTOUT::AliHLTOUTHandlerListEntry::fgkVoidHandlerListEntry;
+
+AliHLTUInt64_t AliHLTOUT::Swap(AliHLTUInt64_t src)
+{
+  // see header file for class documentation
+  return ((src & 0xFFULL) << 56) | 
+    ((src & 0xFF00ULL) << 40) | 
+    ((src & 0xFF0000ULL) << 24) | 
+    ((src & 0xFF000000ULL) << 8) | 
+    ((src & 0xFF00000000ULL) >> 8) | 
+    ((src & 0xFF0000000000ULL) >> 24) | 
+    ((src & 0xFF000000000000ULL) >>  40) | 
+    ((src & 0xFF00000000000000ULL) >> 56);
+}
+
+AliHLTUInt32_t AliHLTOUT::Swap(AliHLTUInt32_t src)
+{
+  // see header file for class documentation
+  return ((src & 0xFFULL) << 24) | 
+    ((src & 0xFF00ULL) << 8) | 
+    ((src & 0xFF0000ULL) >> 8) | 
+    ((src & 0xFF000000ULL) >> 24);
+}

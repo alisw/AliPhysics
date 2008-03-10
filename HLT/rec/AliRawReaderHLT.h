@@ -163,10 +163,13 @@ class AliRawReaderHLT : public AliRawReader, public AliHLTReconstructorBase {
   /** instance of the HLTOUT handler */
   AliHLTOUT* fpHLTOUT; // !transient
 
+  /** start reading HLTOUT from beginning */
+  bool fbReadFirst; //!transient
+
   /** instance of the data handler providing the current data buffer */
   AliHLTOUTHandler* fpDataHandler; // !transient
 
-  ClassDef(AliRawReaderHLT, 3)
+  ClassDef(AliRawReaderHLT, 4)
 };
 
 #define ALIHLTREC_LIBRARY                   "libHLTrec.so"

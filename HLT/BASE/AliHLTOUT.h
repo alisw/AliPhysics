@@ -148,6 +148,20 @@ class AliHLTOUT : public AliHLTLogging {
     AliHLTUInt64_t fEventID; //! see above
   };
 
+  enum {
+    /// versions 1 of the HLT header
+    kVersion1 = 1,
+    /// versions 2 of the HLT header
+    kVersion2 = 2
+  };
+
+  enum {
+    /// size of HLT decision in data format version 1: 29x4
+    kSizeDecisionVersion1 = 116,
+    /// size of HLT decision in data format version 2: 30x4
+    kSizeDecisionVersion2 = 120
+  };
+
   // definitions from ALICE internal notes ALICE-INT-2002-010 and
   // ALICE-INT-2006-XXX
   enum {
@@ -212,6 +226,16 @@ class AliHLTOUT : public AliHLTLogging {
    */
   int CheckAlignment(AliHLTOUT::AliHLTOUTDataType type);
 
+  /**
+   * Helper function to byte swap a 64 bit value.
+   */
+  static AliHLTUInt64_t Swap(AliHLTUInt64_t src);
+
+  /**
+   * Helper function to byte swap a 32 bit value.
+   */
+  static AliHLTUInt32_t Swap(AliHLTUInt32_t src);
+
  protected:
   /**
    * Add a block descriptor.
@@ -221,6 +245,16 @@ class AliHLTOUT : public AliHLTLogging {
    * @return 0 if success, -EPERM if access denied
    */
   int AddBlockDescriptor(const AliHLTOUTBlockDescriptor desc);
+
+  /**
+   * Print output or suppress.
+   */
+  bool BeVerbose() {return fbVerbose;}
+
+  /**
+   * Switch output.
+   */
+  void SwitchVerbosity(bool verbose) {fbVerbose=verbose;}
 
  private:
   /** copy constructor prohibited */
@@ -264,6 +298,11 @@ class AliHLTOUT : public AliHLTLogging {
     static const AliHLTOUTHandlerListEntry fgkVoidHandlerListEntry; //! initializer
 
     operator AliHLTOUTHandler*() const {return fpHandler;}
+
+    // please note that fpHandlerDesc is really a pointer and is created
+    // in the constructor. Thats why it is dereferenced here. The pointer
+    // type is on purpose, even though it is a bit confusing with the 
+    // argument by reference in the AliHLTOUTHandlerListEntry constructor.
     operator AliHLTModuleAgent::AliHLTOUTHandlerDesc&() const {return *fpHandlerDesc;}
     operator AliHLTModuleAgent*() const {return fpAgent;}
 
@@ -272,6 +311,8 @@ class AliHLTOUT : public AliHLTLogging {
      * are equal.
      */
     bool operator==(const AliHLTOUTHandlerListEntry& entry) const;
+
+    bool operator==(const AliHLTModuleAgent::AliHLTOUTHandlerType handlerType) const;
 
     AliHLTUInt32_t operator[](int i) const;
 
@@ -389,13 +430,16 @@ class AliHLTOUT : public AliHLTLogging {
   /**
    * Find handler description for a certain block index.
    */
-  AliHLTOUTHandlerListEntry FindHandlerDesc(AliHLTUInt32_t blockIndex);
+  const AliHLTOUTHandlerListEntry& FindHandlerDesc(AliHLTUInt32_t blockIndex);
 
   /** data type for the current block search, set from @ref SelectFirstDataBlock */
   AliHLTComponentDataType fSearchDataType; //!transient
 
   /** data specification for the current block search */
   AliHLTUInt32_t fSearchSpecification; //!transient
+
+  /** handler type for the current block search */
+  AliHLTModuleAgent::AliHLTOUTHandlerType fSearchHandlerType; // !transient
 
   /** instance flags: locked, collecting, ... */
   unsigned int fFlags; //!transient
@@ -415,6 +459,9 @@ class AliHLTOUT : public AliHLTLogging {
   /** list of AliHLTOUTHandlers */
   AliHLTOUTHandlerListEntryVector fDataHandlers; // !transient
 
-  ClassDef(AliHLTOUT, 1)
+  /** verbose or silent output */
+  bool fbVerbose; //!transient
+
+  ClassDef(AliHLTOUT, 2)
 };
 #endif

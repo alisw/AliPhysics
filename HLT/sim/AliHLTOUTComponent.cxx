@@ -51,7 +51,7 @@ AliHLTOUTComponent::AliHLTOUTComponent()
   AliHLTOfflineDataSink(),
   fWriters(),
   fNofDDLs(10),
-  fIdFirstDDL(4864), // 0x13<<8
+  fIdFirstDDL(7680), // 0x1e<<8
   fWriteDigits(kTRUE),
   fWriteRaw(kTRUE),
   fBuffer(),
@@ -66,8 +66,11 @@ AliHLTOUTComponent::AliHLTOUTComponent()
   // I guess DDL definitions should never change any more
   assert(fNofDDLs==AliDAQ::NumberOfDdls("HLT"));
   fNofDDLs=AliDAQ::NumberOfDdls("HLT");
+  
+  /* AliDAQ::DdlIDOffset returns wrong offset for HLT links
   assert(fIdFirstDDL==AliDAQ::DdlIDOffset("HLT"));
   fIdFirstDDL=AliDAQ::DdlIDOffset("HLT");
+  */
 }
 
 AliHLTOUTComponent::~AliHLTOUTComponent()
@@ -184,9 +187,18 @@ int AliHLTOUTComponent::DumpEvent( const AliHLTComponentEventData& evtData,
     for (int n=0; n<(int)evtData.fBlockCnt; n++ ) {
       memset( homerHeader, 0, sizeof(homer_uint64)*kCount_64b_Words );
       homerDescriptor.Initialize();
-      homerDescriptor.SetType(*(reinterpret_cast<const homer_uint64*>(blocks[n].fDataType.fID)));
-      homerDescriptor.SetSubType1(*(reinterpret_cast<const homer_uint32*>(blocks[n].fDataType.fOrigin)));
-      homerDescriptor.SetSubType2(static_cast<homer_uint64>(blocks[n].fSpecification));
+      // for some traditional reason the TCPDumpSubscriber swaps the bytes
+      // of the data type id and data type origin. Actually I do not understand
+      // the corresponding code line
+      // homerBlock.SetType( blocks[n].fDataType.fID );
+      // this compiles in the PubSub framework and in addition does a byte swap
+      homer_uint64 id=0;
+      homer_uint64 origin=0;
+      memcpy(&id, blocks[n].fDataType.fID, sizeof(homer_uint64));
+      memcpy(((AliHLTUInt8_t*)&origin)+sizeof(homer_uint32), blocks[n].fDataType.fOrigin, sizeof(homer_uint32));
+      homerDescriptor.SetType(AliHLTOUT::Swap(id));
+      homerDescriptor.SetSubType1(AliHLTOUT::Swap(origin));
+      homerDescriptor.SetSubType2(blocks[n].fSpecification);
       homerDescriptor.SetBlockSize(blocks[n].fSize);
       int writerNo=ShuffleWriters(fWriters, blocks[n].fSize);
       assert(writerNo>=0 && writerNo<(int)fWriters.size());
@@ -296,7 +308,7 @@ int AliHLTOUTComponent::FillOutputBuffer(int eventNo, AliHLTMonitoringWriter* pW
     AliHLTOUT::AliHLTOUTEventHeader* pHLTH=reinterpret_cast<AliHLTOUT::AliHLTOUTEventHeader*>(&fBuffer[sizeof(AliRawDataHeader)]);
     memset(pCDH, 0, sizeof(AliRawDataHeader));
     memset(pHLTH, 0, sizeof(AliHLTOUT::AliHLTOUTEventHeader));
-    pHLTH->fVersion=1;
+
     if (pWriter) {
       // copy payload
       pWriter->Copy(&fBuffer[sizeof(AliRawDataHeader)+sizeof(AliHLTOUT::AliHLTOUTEventHeader)], 0, 0, 0, 0);
@@ -306,8 +318,11 @@ int AliHLTOUTComponent::FillOutputBuffer(int eventNo, AliHLTMonitoringWriter* pW
     }
     pHLTH->fLength+=sizeof(AliHLTOUT::AliHLTOUTEventHeader);
     pHLTH->fEventID=eventNo;
+    // version does not really matter since we do not add decision data
+    pHLTH->fVersion=AliHLTOUT::kVersion1;
 
     pCDH->fSize=sizeof(AliRawDataHeader)+pHLTH->fLength;
+    pCDH->fStatusMiniEventID|=0x1<<(AliHLTOUT::kCDHStatusFlagsOffset + AliHLTOUT::kCDHFlagsHLTPayload);
     
     pBuffer=&fBuffer[0];
     iResult=(int)bufferSize;

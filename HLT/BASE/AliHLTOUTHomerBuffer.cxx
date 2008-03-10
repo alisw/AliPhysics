@@ -119,7 +119,7 @@ int AliHLTOUTHomerBuffer::ScanReader(AliHLTMonitoringReader* pReader, AliHLTUInt
 {
   // see header file for class documentation
   int iResult=0;
-  if (pReader && pReader->ReadNextEvent()==0) {
+  if (pReader && (iResult=pReader->ReadNextEvent())==0) {
     AliHLTUInt32_t nofBlocks=pReader->GetBlockCnt();
     AliHLTUInt32_t tmp1=0x1;
     AliHLTUInt32_t tmp2=offset;
@@ -142,13 +142,21 @@ int AliHLTOUTHomerBuffer::ScanReader(AliHLTMonitoringReader* pReader, AliHLTUInt
       homer_uint32 origin=pReader->GetBlockDataOrigin( i );
       homer_uint32 spec=pReader->GetBlockDataSpec( i );
       AliHLTComponentDataType dt;
-      AliHLTComponent::SetDataType(dt, id, origin);
+      AliHLTComponent::SetDataType(dt, Swap(id), Swap(origin));
       AliHLTOUTBlockDescriptor desc(dt, spec, offset|i);
       HLTDebug("adding block %d: %s %#x", i, AliHLTComponent::DataType2Text(dt).c_str(), spec);
       iResult=AddBlockDescriptor(desc);
     }
   } else {
-    iResult=-ENODEV;
+    if (iResult==EBADMSG) {
+      HLTWarning("Format error in data block");
+      iResult*=-1;
+    } else if (iResult==ENOKEY) {
+      HLTWarning("Format error in data block: can not find HOMER block descriptor id");
+      iResult*=-1;
+    } else {
+      iResult=-ENODEV;
+    }
   }
   return iResult;
 }

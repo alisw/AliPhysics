@@ -57,6 +57,7 @@ AliRawReaderHLT::AliRawReaderHLT(AliRawReader* pRawreader, const char* options)
   fbHaveHLTData(false),
   fDetectors(),
   fpHLTOUT(NULL),
+  fbReadFirst(true),
   fpDataHandler(NULL)
 {
   // see header file for class documentation
@@ -230,7 +231,7 @@ Bool_t   AliRawReaderHLT::ReadNextData(UChar_t*& data)
 
   // read new header if data already read
   if (fPosition<fDataSize || (result=ReadHeader())) {
-    if (fpHLTOUT!=NULL) {
+    if (fbHaveHLTData && fpHLTOUT!=NULL) {
       // all internal data variables set
       result=kTRUE;
       data=const_cast<AliHLTUInt8_t*>(fpData+sizeof(AliRawDataHeader));
@@ -321,12 +322,15 @@ Bool_t   AliRawReaderHLT::ReadNext(UChar_t* data, Int_t size)
 Bool_t   AliRawReaderHLT::Reset()
 {
   // see header file for class documentation
-  ReleaseHLTData();
+  ReleaseHLTData(false/* keep HLTOUT instance */);
   Bool_t result=fpParentReader->Reset();
   fEquipmentId=-1;
 
   // check if redirection is enabled for at least one detector in the selected range
   fbHaveHLTData=EvaluateSelection();
+
+  // start reading HLTOUT data blocks from the beginning
+  fbReadFirst=true;
 
   return result;
 }
@@ -334,6 +338,9 @@ Bool_t   AliRawReaderHLT::Reset()
 Bool_t   AliRawReaderHLT::NextEvent()
 {
   // see header file for class documentation
+
+  ReleaseHLTData();
+
   Bool_t result=fpParentReader->NextEvent();
   if (result) {
     fEventNumber++;
@@ -428,7 +435,8 @@ Bool_t   AliRawReaderHLT::ReadNextHLTData()
 {
   // see header file for class documentation
   bool result=kTRUE;
-  if (!fpHLTOUT) {
+  if (fbReadFirst || !fpHLTOUT) {
+    if (!fpHLTOUT) {
     fpHLTOUT=new AliHLTOUTRawReader(fpParentReader);
     if (result=(fpHLTOUT!=NULL)) {
       AliHLTSystem* pSystem=GetInstance();
@@ -436,10 +444,14 @@ Bool_t   AliRawReaderHLT::ReadNextHLTData()
 	pSystem->ScanOptions(fSystemOptions.Data());
       }
       if (result=(fpHLTOUT->Init()>=0)) {
-	result=fpHLTOUT->SelectFirstDataBlock(kAliHLTAnyDataType, kAliHLTVoidDataSpec,
-					      AliHLTModuleAgent::kRawReader)>=0;
       }
     }
+    }
+    if (result) {
+      result=fpHLTOUT->SelectFirstDataBlock(kAliHLTAnyDataType, kAliHLTVoidDataSpec,
+					    AliHLTModuleAgent::kRawReader)>=0;
+    }
+    fbReadFirst=false;
   } else {
     // first release the data buffer
     ReleaseHLTData(false /* keep HLTOUT instance */);
@@ -459,6 +471,7 @@ Bool_t   AliRawReaderHLT::ReadNextHLTData()
 	fDataSize=pHandler->GetProcessedData(fpData);
 	if (!fpData) {
 	  result=fpHLTOUT->GetDataBuffer(fpData, size)>=0;
+	  fpDataHandler=NULL;
 	  AliDebug(AliLog::kDebug, Form("forward data block from HLTOUT stream to equipment %d", fEquipmentId));
 	  fDataSize=(int)size;
 	} else {
@@ -476,7 +489,7 @@ Bool_t   AliRawReaderHLT::ReadNextHLTData()
 		      fpHLTOUT->GetDataBlockIndex(), AliHLTComponent::DataType2Text(dt).c_str(), spec));
     }
   } else {
-    ReleaseHLTData();
+    ReleaseHLTData(false /* keep HLTOUT instance */);
   }
   return kFALSE;
 }
