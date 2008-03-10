@@ -9,9 +9,11 @@
 
 void MUON_geom()
 {
-  TString dataPath = TString(gEvent->GetTitle());
-  dataPath.Append("/geometry.root");
-  gGeoManager = gEve->GetGeometry(dataPath.Data());
+
+  gGeoManager = gEve->GetGeometry("$REVESYS/alice-data/alice_fullgeo.root");
+
+  TEveElementList* list = new TEveElementList("DiMUON");
+  gEve->AddGlobalElement(list);
 
   TGeoNode *node1 = gGeoManager->GetTopVolume()->FindNode("DDIP_1");
   TGeoNode *node2 = gGeoManager->GetTopVolume()->FindNode("YOUT1_1");
@@ -19,15 +21,18 @@ void MUON_geom()
 
   TEveGeoTopNode* re1 = new TEveGeoTopNode(gGeoManager,node1);
   re1->UseNodeTrans();
-  gEve->AddGlobalElement(re1);
+  gEve->AddGlobalElement(re1,list);
 
   TEveGeoTopNode* re2 = new TEveGeoTopNode(gGeoManager,node2);
   re2->UseNodeTrans();
-  gEve->AddGlobalElement(re2);
+  gEve->AddGlobalElement(re2,list);
 
   TEveGeoTopNode* re3 = new TEveGeoTopNode(gGeoManager,node3);
   re3->UseNodeTrans();
-  gEve->AddGlobalElement(re3);
+  gEve->AddGlobalElement(re3,list);
 
-  gEve->Redraw3D(kTRUE);
+  gEve->Redraw3D();
+
+  printf("MUON_geom.C done\n");
+
 }

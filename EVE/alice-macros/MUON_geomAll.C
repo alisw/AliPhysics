@@ -9,9 +9,8 @@
 
 void MUON_geomAll()
 {
-  TString dataPath = TString(gEvent->GetTitle());
-  dataPath.Append("/geometry.root");
-  gGeoManager = gEve->GetGeometry(dataPath.Data());
+
+  gGeoManager = gEve->GetGeometry("$REVESYS/alice-data/alice_fullgeo.root");
 
   TEveGeoTopNode* topn_re = new TEveGeoTopNode
     (gGeoManager, gGeoManager->GetTopNode());
