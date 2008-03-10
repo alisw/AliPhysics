@@ -223,7 +223,7 @@ void AliAlignmentTracks::ProcessESD(Bool_t onlyITS,
 	    Double_t p[3]; track->GetDirection(p);
 	    TVector3 pvec(p[0],p[1],p[2]);
 	    Double_t rot[9]; AliGeomManager::GetOrigRotation(volId,rot);
-	    TVector3 normvec(rot[1],-rot[0],0.);
+	    TVector3 normvec(rot[1],rot[4],rot[7]);
 	    Double_t angle = pvec.Angle(normvec);
 	    if(angle>0.5*TMath::Pi()) angle = TMath::Pi()-angle;
 	    angle = 0.5*TMath::Pi()-angle;
@@ -383,7 +383,7 @@ void AliAlignmentTracks::ProcessESDCosmics(Bool_t onlyITS,
 	  Double_t p[3]; track1->GetDirection(p);
 	  TVector3 pvec(p[0],p[1],p[2]);
 	  Double_t rot[9]; AliGeomManager::GetOrigRotation(volId,rot);
-	  TVector3 normvec(rot[1],-rot[0],0.);
+	  TVector3 normvec(rot[1],rot[4],rot[7]);
 	  Double_t angle = pvec.Angle(normvec);
 	  if(angle>0.5*TMath::Pi()) angle = TMath::Pi()-angle;
 	  angle = 0.5*TMath::Pi()-angle;
@@ -407,7 +407,7 @@ void AliAlignmentTracks::ProcessESDCosmics(Bool_t onlyITS,
 	  Double_t p[3]; track2->GetDirection(p);
 	  TVector3 pvec(p[0],p[1],p[2]);
 	  Double_t rot[9]; AliGeomManager::GetOrigRotation(volId,rot);
-	  TVector3 normvec(rot[1],-rot[0],0.);
+	  TVector3 normvec(rot[1],rot[4],rot[7]);
 	  Double_t angle = pvec.Angle(normvec);
 	  if(angle>0.5*TMath::Pi()) angle = TMath::Pi()-angle;
 	  angle = 0.5*TMath::Pi()-angle;
