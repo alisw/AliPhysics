@@ -130,7 +130,7 @@ void AliGenInfoTask::Exec(Option_t *) {
     cout << "AliGenInfoTask::Exec()" << endl;
 
   if (fESD) {
-    AliHelix::SetBz(fESD->GetMagneticField());
+    //    AliHelix::SetBz(fESD->GetMagneticField());   // Enable after commit of AliHelix
   }
   
   // Monte carlo info
