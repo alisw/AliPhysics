@@ -41,7 +41,7 @@ int Root2Date(AliRawEvent *gdcRootEvent, unsigned char *gdcDateEvent, char *ddlD
    }
    memcpy(p, aliEquipment->GetRawData()->GetBuffer(), chunkSize=aliEquipment->GetRawData()->GetSize()); // Write Equipment payload (including CDH)
    // Write ddl files if requested by the user
-   if (ddlDir) {
+   if (ddlDir && aliEquipmentHeader->GetEquipmentSize()) {
      Int_t ddlIndex;
      Int_t detId = AliDAQ::DetectorIDFromDdlID(aliEquipmentHeader->GetId(),ddlIndex);
      char ddlFileName[256];
