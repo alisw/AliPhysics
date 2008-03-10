@@ -66,7 +66,8 @@ inline AliFemtoShareQualityPairCut::AliFemtoShareQualityPairCut(const AliFemtoSh
   fNPairsPassed(0),
   fNPairsFailed(0),
   fShareQualityMax(1.0),
-  fShareFractionMax(1.0)// no cut
+  fShareFractionMax(1.0),
+  fRemoveSameLabel(0)// no cut
 { /* no-op */ }
 
 inline AliFemtoPairCut* AliFemtoShareQualityPairCut::Clone() { AliFemtoShareQualityPairCut* c = new AliFemtoShareQualityPairCut(*this); return c;}

@@ -16,6 +16,7 @@ ClassImp(AliFemtoShareQualityCorrFctn)
 
 //____________________________
 AliFemtoShareQualityCorrFctn::AliFemtoShareQualityCorrFctn(char* title, const int& nbins, const float& QinvLo, const float& QinvHi):
+  AliFemtoCorrFctn(),
   fShareNumerator(0),
   fShareDenominator(0),
   fQualityNumerator(0),
@@ -58,6 +59,7 @@ AliFemtoShareQualityCorrFctn::AliFemtoShareQualityCorrFctn(char* title, const in
 
 //____________________________
 AliFemtoShareQualityCorrFctn::AliFemtoShareQualityCorrFctn(const AliFemtoShareQualityCorrFctn& aCorrFctn) :
+  AliFemtoCorrFctn(),
   fShareNumerator(0),
   fShareDenominator(0),
   fQualityNumerator(0),

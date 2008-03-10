@@ -4,8 +4,8 @@
 /// the difference between reconstructed and true momentum    ///
 ///                                                                          ///
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef AliFemtoCutMonitorParticleMomRes_hh
-#define AliFemtoCutMonitorParticleMomRes_hh
+#ifndef AliFemtoCutMonitorParticleMomRes_H
+#define AliFemtoCutMonitorParticleMomRes_H
 
 class AliFemtoEvent;
 class AliFemtoTrack;

@@ -17,6 +17,7 @@ ClassImp(AliFemtoChi2CorrFctn)
 
 //____________________________
 AliFemtoChi2CorrFctn::AliFemtoChi2CorrFctn(char* title, const int& nbins, const float& QinvLo, const float& QinvHi):
+  AliFemtoCorrFctn(),
   fChi2ITSSUMNumerator(0),
   fChi2ITSSUMDenominator(0),
   fChi2TPCSUMNumerator(0),
@@ -83,6 +84,7 @@ AliFemtoChi2CorrFctn::AliFemtoChi2CorrFctn(char* title, const int& nbins, const 
 
 //____________________________
 AliFemtoChi2CorrFctn::AliFemtoChi2CorrFctn(const AliFemtoChi2CorrFctn& aCorrFctn) :
+  AliFemtoCorrFctn(),
   fChi2ITSSUMNumerator(0),
   fChi2ITSSUMDenominator(0),
   fChi2TPCSUMNumerator(0),

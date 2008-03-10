@@ -38,6 +38,7 @@ AliFemtoTPCInnerCorrFctn::AliFemtoTPCInnerCorrFctn(char* title, const int& nbins
 
 //____________________________
 AliFemtoTPCInnerCorrFctn::AliFemtoTPCInnerCorrFctn(const AliFemtoTPCInnerCorrFctn& aCorrFctn) :
+  AliFemtoCorrFctn(),
   fDTPCNumerator(0),
   fDTPCDenominator(0)
 {

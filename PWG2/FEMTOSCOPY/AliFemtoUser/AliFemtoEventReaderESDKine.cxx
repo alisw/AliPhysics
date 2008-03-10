@@ -79,6 +79,7 @@ AliFemtoEventReaderESDKine::AliFemtoEventReaderESDKine():
 }
 
 AliFemtoEventReaderESDKine::AliFemtoEventReaderESDKine(const AliFemtoEventReaderESDKine &aReader) :
+  AliFemtoEventReader(),
   fInputFile(" "),
   fFileName(" "),
   fConstrained(true),
@@ -131,7 +132,7 @@ AliFemtoEventReaderESDKine& AliFemtoEventReaderESDKine::operator=(const AliFemto
   return *this;
 }
 //__________________
-AliFemtoString AliFemtoEventReaderESDKine::Report() const
+AliFemtoString AliFemtoEventReaderESDKine::Report()
 {
   // create reader report
   AliFemtoString temp = "\n This is the AliFemtoEventReaderESDKine\n";

@@ -64,6 +64,7 @@ class AliFemtoESDTrackCut : public AliFemtoTrackCut
   float             fPidProbMuon[2];     // bounds for muon probability 
   bool              fLabel;              // if true label<0 will not pass throught 
   long              fStatus;             // staus flag
+
   short             fminTPCclsF;         // min number of findable clusters in the TPC
   short             fminTPCncls;         // min number of clusters in the TPC
   int               fminITScls;          // min number of clusters assigned in the ITS 
