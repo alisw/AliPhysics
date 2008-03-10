@@ -28,6 +28,7 @@
 #include "AliMUONVDigitStore.h"
 #include "AliMUONTrackParam.h"
 #include "AliMUONTrack.h"
+#include "AliMUONESDInterface.h"
 #include "AliESDMuonTrack.h"
 #include "AliESDEvent.h"
 #include "TTree.h"
@@ -268,6 +269,7 @@ void AliEveMUONData::LoadRecPointsFromESD(Char_t *fileName)
   AliMUONVCluster *cluster;
   AliMUONTrackParam *trackParam;
   AliESDMuonTrack *esdTrack;
+  AliMUONTrack muonTrack;
   Int_t detElemId, chamber, nTrackParam;
   Double_t clsX, clsY, clsZ, charge;
   
@@ -280,7 +282,7 @@ void AliEveMUONData::LoadRecPointsFromESD(Char_t *fileName)
   for (Int_t iTrack = 0; iTrack < nTracks; iTrack++) {
     esdTrack = esdEvent->GetMuonTrack(iTrack);
     if (!esdTrack->ClustersStored()) continue;
-    AliMUONTrack muonTrack(*esdTrack);
+    AliMUONESDInterface::ESDToMUON(*esdTrack,muonTrack);
     nTrackParam = muonTrack.GetTrackParamAtCluster()->GetEntries();
     for(Int_t iCluster = 0; iCluster < nTrackParam; iCluster++) {
       trackParam = (AliMUONTrackParam *) muonTrack.GetTrackParamAtCluster()->At(iCluster);

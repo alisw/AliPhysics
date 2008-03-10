@@ -25,6 +25,7 @@
 #include <AliMUONTriggerTrack.h>
 #include <AliMUONTrackParam.h>
 #include <AliMUONConstants.h>
+#include <AliMUONESDInterface.h>
 
 #include <TClonesArray.h>
 #include <TMath.h>
@@ -785,7 +786,7 @@ void AliEveMUONTrack::MakeESDTrack(AliESDMuonTrack *mtrack)
 
   fTrack = new AliMUONTrack();
   AliMUONTrackParam trackParam;
-  trackParam.GetParamFrom(*mtrack);
+  AliMUONESDInterface::GetParamAtVertex(*mtrack, trackParam);
   fTrack->SetTrackParamAtVertex(&trackParam);
   fTrack->SetMatchTrigger(mtrack->GetMatchTrigger());
 

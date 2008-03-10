@@ -40,7 +40,8 @@ SRCS:= AliMUONReconstructor.cxx \
        AliMUONQADataMakerRec.cxx \
        AliMUONQAChecker.cxx \
        AliMUONClusterFinderPeakCOG.cxx \
-       AliMUONClusterFinderPeakFit.cxx
+       AliMUONClusterFinderPeakFit.cxx \
+       AliMUONESDInterface.cxx
 
 HDRS:= $(SRCS:.cxx=.h)
 

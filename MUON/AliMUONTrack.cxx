@@ -23,14 +23,13 @@
 
 #include "AliMUONTrack.h"
 
-#include "AliMUONRawClusterV2.h" 
+#include "AliMUONVCluster.h"
+#include "AliMUONVClusterStore.h"
 #include "AliMUONObjectPair.h"
 #include "AliMUONConstants.h"
 #include "AliMUONTrackExtrap.h"
 
 #include "AliLog.h"
-#include "AliESDMuonTrack.h"
-#include "AliESDMuonCluster.h"
 
 #include <TMath.h>
 #include <TMatrixD.h>
@@ -188,106 +187,6 @@ AliMUONTrack::AliMUONTrack(AliMUONObjectPair *segment)
   // Add track parameters at clusters
   AddTrackParamAtCluster(trackParamAtFirstCluster,*firstCluster);
   AddTrackParamAtCluster(trackParamAtLastCluster,*lastCluster);
-  
-}
-
-//__________________________________________________________________________
-AliMUONTrack::AliMUONTrack(AliESDMuonTrack &esdTrack)
-  : TObject(),
-    fTrackParamAtCluster(new TClonesArray("AliMUONTrackParam",10)),
-    fFitWithVertex(kFALSE),
-    fVertexErrXY2(),
-    fFitWithMCS(kFALSE),
-    fClusterWeightsNonBending(0x0),
-    fClusterWeightsBending(0x0),
-    fGlobalChi2(esdTrack.GetChi2()),
-    fImproved(kFALSE),
-    fMatchTrigger(esdTrack.GetMatchTrigger()),
-    floTrgNum(-1),
-    fChi2MatchTrigger(esdTrack.GetChi2MatchTrigger()),
-    fTrackID(0),
-    fTrackParamAtVertex(new AliMUONTrackParam()),
-    fHitsPatternInTrigCh(esdTrack.GetHitsPatternInTrigCh()),
-    fLocalTrigger(0)
-{
-  /// Constructor from ESD muon track
-  /// Compute track parameters and covariances at each cluster if available
-  /// or store parameters and covariances at first (fake) cluster only if not
-  
-  fTrackParamAtCluster->SetOwner(kTRUE);
-  
-  fVertexErrXY2[0] = 0.;
-  fVertexErrXY2[1] = 0.;
-  
-  // global info
-  SetLocalTrigger(esdTrack.LoCircuit(), esdTrack.LoStripX(), esdTrack.LoStripY(),
-		  esdTrack.LoDev(), esdTrack.LoLpt(), esdTrack.LoHpt());
-  
-  // track parameters at vertex
-  fTrackParamAtVertex->GetParamFrom(esdTrack);
-  
-  // track parameters at first cluster
-  AliMUONTrackParam param;
-  param.GetParamFromUncorrected(esdTrack);
-  param.GetCovFrom(esdTrack);
-  
-  // fill fTrackParamAtCluster with track parameters at each cluster if available
-  if(esdTrack.ClustersStored()) {
-    
-    // loop over ESD clusters
-    AliESDMuonCluster *esdCluster = (AliESDMuonCluster*) esdTrack.GetClusters().First();
-    while (esdCluster) {
-      
-      // copy cluster information
-      AliMUONRawClusterV2 cluster(*esdCluster);
-      
-      // only set the Z parameter to avoid error in the AddTrackParamAtCluster(...) method
-      param.SetZ(cluster.GetZ());
-      
-      // add common track parameters at current cluster
-      AddTrackParamAtCluster(param, cluster, kTRUE);
-      
-      esdCluster = (AliESDMuonCluster*) esdTrack.GetClusters().After(esdCluster);
-    }
-    
-    // sort array of track parameters at clusters
-    fTrackParamAtCluster->Sort();
-    
-    // check that parameters stored in ESD are parameters at the most upstream cluster
-    // (convert Z position values to Float_t because of Double32_t in ESD track)
-    AliMUONTrackParam *firstTrackParam = (AliMUONTrackParam*) fTrackParamAtCluster->First();
-    if (((Float_t)firstTrackParam->GetZ()) != ((Float_t)esdTrack.GetZUncorrected())) {
-      
-      AliError("track parameters are not given at the most upstream stored cluster");
-      fTrackParamAtCluster->Clear("C");
-      
-    } else {
-      
-      // Compute track parameters and covariances at each cluster from info at the first one
-      UpdateCovTrackParamAtCluster();
-      
-    }
-    
-  }
-  
-  // fill fTrackParamAtCluster with track parameters at first (fake) cluster
-  // if first cluster not found or clusters not available
-  if (GetNClusters() == 0) {
-    
-    // get number of the first hit chamber (according to the MUONClusterMap if not empty)
-    Int_t firstCh = 0;
-    if (esdTrack.GetMuonClusterMap() != 0) while (!esdTrack.IsInMuonClusterMap(firstCh)) firstCh++;
-    else firstCh = AliMUONConstants::ChamberNumber(param.GetZ());
-    
-    // produce fake cluster at this chamber
-    AliMUONRawClusterV2 fakeCluster(firstCh, 0, 0);
-    fakeCluster.SetXYZ(param.GetNonBendingCoor(), param.GetBendingCoor(), param.GetZ());
-    fakeCluster.SetErrXY(0., 0.);
-    
-    // add track parameters at first (fake) cluster
-    AddTrackParamAtCluster(param, fakeCluster, kTRUE);
-    
-  }
   
 }
 

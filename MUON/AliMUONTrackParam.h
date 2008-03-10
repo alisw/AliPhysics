@@ -18,7 +18,6 @@
 #include <TMatrixD.h>
 
 class AliMUONVCluster;
-class AliESDMuonTrack;
 
 class AliMUONTrackParam : public TObject 
 {
@@ -28,16 +27,6 @@ class AliMUONTrackParam : public TObject
   
   AliMUONTrackParam(const AliMUONTrackParam& theMUONTrackParam);
   AliMUONTrackParam& operator=(const  AliMUONTrackParam& theMUONTrackParam);
-
-  void GetParamFrom(const AliESDMuonTrack& esdMuonTrack);
-  void SetParamFor(AliESDMuonTrack& esdMuonTrack) const;
-  void GetParamFromDCA(const AliESDMuonTrack& esdMuonTrack);
-  void SetParamForDCA(AliESDMuonTrack& esdMuonTrack) const;
-  void GetParamFromUncorrected(const AliESDMuonTrack& esdMuonTrack);
-  void SetParamForUncorrected(AliESDMuonTrack& esdMuonTrack) const;
-  
-  void GetCovFrom(const AliESDMuonTrack& esdMuonTrack);
-  void SetCovFor(AliESDMuonTrack& esdMuonTrack) const;
 
   // Get and Set methods for data
 	/// return Z coordinate (cm)

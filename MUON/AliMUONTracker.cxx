@@ -48,12 +48,11 @@
 #include "AliMUONTriggerTrackStoreV1.h"
 #include "AliMUONClusterStoreV2.h"
 #include "AliMUONVTriggerStore.h"
+#include "AliMUONESDInterface.h"
 
 #include "AliESDEvent.h"
-#include "AliESDMuonTrack.h"
-#include "AliESDMuonCluster.h"
-#include "AliESDMuonPad.h"
 #include "AliESDVertex.h"
+#include "AliESDMuonTrack.h"
 #include "AliLog.h"
 #include "AliCodeTimer.h"
 
@@ -198,105 +197,36 @@ void AliMUONTracker::FillESD(AliMUONVTrackStore& trackStore, AliESDEvent* esd) c
   AliDebug(1,"");
   AliCodeTimerAuto("")
   
-  // Random number to decide whether to save additional cluster info or not for the current event
-  Double_t rand = 0.;
-  if (AliMUONReconstructor::GetRecoParam()->SaveFullClusterInESD()) rand = gRandom->Uniform(0.,100.);
+  AliMUONTrack* track;
+  AliESDMuonTrack esdTrack;
+  Double_t vertex[3] = {0., 0., 0.};
+  TIter next(trackStore.CreateIterator());
   
-  // Get vertex 
-  Double_t vertex[3] = {0};
-  Double_t errXVtx = 0., errYVtx = 0.;
+  // get ITS vertex
   const AliESDVertex* esdVert = esd->GetVertex(); 
-  if (esdVert->GetNContributors()) 
-  {
+  if (esdVert->GetNContributors()) {
     esdVert->GetXYZ(vertex);
-    errXVtx = esdVert->GetXRes();
-    errYVtx = esdVert->GetYRes();
     AliDebug(1,Form("found vertex (%e,%e,%e)",vertex[0],vertex[1],vertex[2]));
   }
   
-  AliMUONTrack* track;
-  AliMUONVCluster* cluster;
-  AliMUONVDigit* digit;
-  TIter next(trackStore.CreateIterator());
-  
-  while ( ( track = static_cast<AliMUONTrack*>(next()) ) )
-  {
-    AliMUONTrackParam* trackParam = static_cast<AliMUONTrackParam*>((track->GetTrackParamAtCluster())->First());
+  // fill ESD event including all info in ESD cluster if required and only for the given fraction of events
+  if (AliMUONReconstructor::GetRecoParam()->SaveFullClusterInESD() && 
+      gRandom->Uniform(100.) <= AliMUONReconstructor::GetRecoParam()->GetPercentOfFullClusterInESD()) {
     
-    // new ESD muon track
-    AliESDMuonTrack esdTrack;
-    
-    /// Extrapolate to vertex (which is set to (0,0,0) if not available, see above)
-    AliMUONTrackParam trackParamAtVtx(*trackParam);
-    AliMUONTrackExtrap::ExtrapToVertex(&trackParamAtVtx, vertex[0], vertex[1], vertex[2], errXVtx, errYVtx);
-    
-    /// Extrapolate to vertex plan (which is set to z=0 if not available, see above)
-    AliMUONTrackParam trackParamAtDCA(*trackParam);
-    AliMUONTrackExtrap::ExtrapToVertexWithoutBranson(&trackParamAtDCA, vertex[2]);
-    
-    // at first station
-    trackParam->SetParamForUncorrected(esdTrack);
-    trackParam->SetCovFor(esdTrack);
-    
-    // at vertex
-    trackParamAtVtx.SetParamFor(esdTrack);
-    
-    // at Distance of Closest Approach
-    trackParamAtDCA.SetParamForDCA(esdTrack);
-    
-    // global info
-    esdTrack.SetChi2(track->GetGlobalChi2());
-    esdTrack.SetNHit(track->GetNClusters());
-    esdTrack.SetLocalTrigger(track->GetLocalTrigger());
-    esdTrack.SetChi2MatchTrigger(track->GetChi2MatchTrigger());
-    esdTrack.SetHitsPatternInTrigCh(track->GetHitsPatternInTrigCh());
-    
-    // muon cluster info
-    while (trackParam) {
-      cluster = trackParam->GetClusterPtr();
-      
-      // new ESD muon cluster
-      AliESDMuonCluster esdCluster;
-      
-      // fill minimum info in ESD cluster
-      esdCluster.SetUniqueID(cluster->GetUniqueID());
-      esdCluster.SetXYZ(cluster->GetX(), cluster->GetY(), cluster->GetZ());
-      esdCluster.SetErrXY(cluster->GetErrX(), cluster->GetErrY());
-      
-      // fill additional info in ESD cluster if required and only for a fraction of events
-      if (AliMUONReconstructor::GetRecoParam()->SaveFullClusterInESD() && 
-	  rand <= AliMUONReconstructor::GetRecoParam()->GetPercentOfFullClusterInESD()) {
-	
-	esdCluster.SetCharge(cluster->GetCharge());
-	esdCluster.SetChi2(cluster->GetChi2());
-	
-	// fill ESD pad with digit info
-	for (Int_t i=0; i<cluster->GetNDigits(); i++) {
-	  digit = fDigitStore.FindObject(cluster->GetDigitId(i));
-	  
-	  // new ESD muon pad
-	  AliESDMuonPad esdPad;
-	  
-	  esdPad.SetUniqueID(digit->GetUniqueID());
-	  esdPad.SetADC(digit->ADC());
-	  esdPad.SetCharge(digit->Charge());
-	  
-	  // add pad info in ESD cluster
-	  esdCluster.AddPad(esdPad);
-	}
-	
-      }
-      
-      // add cluster info in ESD track
-      esdTrack.AddCluster(esdCluster);
-      esdTrack.AddInMuonClusterMap(cluster->GetChamberId());
-      
-      trackParam = static_cast<AliMUONTrackParam*>(track->GetTrackParamAtCluster()->After(trackParam));
+    while ( ( track = static_cast<AliMUONTrack*>(next()) ) ) {
+      AliMUONESDInterface::MUONToESD(*track, esdTrack, vertex, &fDigitStore);
+      esd->AddMuonTrack(&esdTrack);
     }
     
-    // storing ESD MUON Track into ESD Event 
-    esd->AddMuonTrack(&esdTrack);
-  } // end of loop on tracks
+  } else {
+    
+    while ( ( track = static_cast<AliMUONTrack*>(next()) ) ) {
+      AliMUONESDInterface::MUONToESD(*track, esdTrack, vertex);
+      esd->AddMuonTrack(&esdTrack);
+    }
+    
+  }
+  
 }
 
 //_____________________________________________________________________________

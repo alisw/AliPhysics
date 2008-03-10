@@ -43,9 +43,10 @@
 #include "AliMUONTrackExtrap.h"
 #include "AliMUONTrackParam.h"
 #include "AliMUONGeometryTransformer.h"
+#include "AliMUONESDInterface.h"
+
 #include "AliESDEvent.h"
 #include "AliESDMuonTrack.h"
-
 #include "AliMagFMaps.h"
 #include "AliTracker.h"
 #include "AliCDBManager.h"
@@ -205,7 +206,8 @@ void MUONAlignment(Int_t nEvents = 100000, char* geoFilename = "geometry.root", 
 	fInvBenMom->Fill(invBenMom);
 	fBenMom->Fill(1./invBenMom);
 	if (TMath::Abs(invBenMom)<=1.04) {
-	  AliMUONTrack track(*esdTrack);
+	  AliMUONTrack track;
+	  AliMUONESDInterface::ESDToMUON(*esdTrack, track);
 	  alig->ProcessTrack(&track);
 	  alig->LocalFit(iTrackOk++,trackParams,0);
 	}

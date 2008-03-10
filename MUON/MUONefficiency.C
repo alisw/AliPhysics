@@ -35,7 +35,7 @@
 // MUON includes
 #include "AliMUONTrackParam.h"
 #include "AliMUONTrackExtrap.h"
-#include "AliESDMuonTrack.h"
+#include "AliMUONESDInterface.h"
 
 // STEER includes
 #include "AliRun.h"
@@ -48,6 +48,7 @@
 #include "AliESDVertex.h"
 #include "AliTracker.h"
 #include "AliCDBManager.h"
+#include "AliESDMuonTrack.h"
 
 // ROOT includes
 #include "TTree.h"
@@ -353,13 +354,13 @@ Bool_t MUONefficiency( char* filename = "galice.root", char* geoFilename = "geom
 
       // extrapolate to vertex if required and available
       if (ExtrapToVertex > 0 && Vertex->GetNContributors()) {
-        trackParam.GetParamFromUncorrected(*muonTrack);
+	AliMUONESDInterface::GetParamAtFirstCluster(*muonTrack, trackParam);
 	AliMUONTrackExtrap::ExtrapToVertex(&trackParam, fXVertex, fYVertex, fZVertex, errXVtx, errYVtx);
-	trackParam.SetParamFor(*muonTrack); // put the new parameters in this copy of AliESDMuonTrack
+	AliMUONESDInterface::SetParamAtVertex(trackParam, *muonTrack); // put the new parameters in this copy of AliESDMuonTrack
       } else if ((ExtrapToVertex > 0 && !Vertex->GetNContributors()) || ExtrapToVertex == 0){
-        trackParam.GetParamFromUncorrected(*muonTrack);
+	AliMUONESDInterface::GetParamAtFirstCluster(*muonTrack, trackParam);
 	AliMUONTrackExtrap::ExtrapToVertex(&trackParam, 0., 0., 0., 0., 0.);
-	trackParam.SetParamFor(*muonTrack); // put the new parameters in this copy of AliESDMuonTrack
+	AliMUONESDInterface::SetParamAtVertex(trackParam, *muonTrack); // put the new parameters in this copy of AliESDMuonTrack
       }
 
       // Trigger
@@ -416,13 +417,13 @@ Bool_t MUONefficiency( char* filename = "galice.root", char* geoFilename = "geom
           
 	  // extrapolate to vertex if required and available
 	  if (ExtrapToVertex > 0 && Vertex->GetNContributors()) {
-	    trackParam.GetParamFromUncorrected(*muonTrack2);
+	    AliMUONESDInterface::GetParamAtFirstCluster(*muonTrack2, trackParam);
 	    AliMUONTrackExtrap::ExtrapToVertex(&trackParam, fXVertex, fYVertex, fZVertex, errXVtx, errYVtx);
-	    trackParam.SetParamFor(*muonTrack2); // put the new parameters in this copy of AliESDMuonTrack
+	    AliMUONESDInterface::SetParamAtVertex(trackParam, *muonTrack2); // put the new parameters in this copy of AliESDMuonTrack
 	  } else if ((ExtrapToVertex > 0 && !Vertex->GetNContributors()) || ExtrapToVertex == 0){
-            trackParam.GetParamFromUncorrected(*muonTrack2);
+	    AliMUONESDInterface::GetParamAtFirstCluster(*muonTrack2, trackParam);
 	    AliMUONTrackExtrap::ExtrapToVertex(&trackParam, 0., 0., 0., 0., 0.);
-	    trackParam.SetParamFor(*muonTrack2); // put the new parameters in this copy of AliESDMuonTrack
+	    AliMUONESDInterface::SetParamAtVertex(trackParam, *muonTrack2); // put the new parameters in this copy of AliESDMuonTrack
 	  }
 
 	  track2Trigger = muonTrack2->GetMatchTrigger();

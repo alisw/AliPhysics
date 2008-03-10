@@ -51,6 +51,8 @@
 #pragma link C++ class AliMUONVClusterServer+;
 #pragma link C++ class AliMUONSimpleClusterServer+;
 
+#pragma link C++ class AliMUONESDInterface+;
+
 // calibration
 #pragma link C++ class AliMUONDigitCalibrator+;
 #pragma link C++ class AliMUONPadStatusMaker+;

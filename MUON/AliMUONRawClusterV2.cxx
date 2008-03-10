@@ -27,8 +27,6 @@
 #include "AliMUONRawClusterV2.h"
 #include "AliMUONConstants.h"
 
-#include "AliESDMuonCluster.h"
-#include "AliESDMuonPad.h"
 #include "AliLog.h"
 
 #include <TClonesArray.h>
@@ -69,29 +67,6 @@ AliMUONRawClusterV2::AliMUONRawClusterV2(Int_t chamberId, Int_t detElemId, Int_t
     fDigitsId(0x0)
 {
   /// Constructor
-}
-
-//____________________________________________________
-AliMUONRawClusterV2::AliMUONRawClusterV2(const AliESDMuonCluster& cluster)
-: AliMUONVCluster(cluster),
-  fX(cluster.GetX()),
-  fY(cluster.GetY()),
-  fZ(cluster.GetZ()),
-  fErrX2(cluster.GetErrX2()),
-  fErrY2(cluster.GetErrY2()),
-  fQ(cluster.GetCharge()),
-  fChi2(cluster.GetChi2()),
-  fNDigits(cluster.GetNPads()),
-  fDigitsId(0x0)
-
-{
-  /// Copy constructor
-  
-  if (cluster.PadsStored()) {
-    fDigitsId = new UInt_t[fNDigits];
-    for (Int_t i=0; i<fNDigits; i++)
-      fDigitsId[i] = ((AliESDMuonPad*)cluster.GetPads().UncheckedAt(i))->GetUniqueID();
-  }
 }
 
 //____________________________________________________
@@ -150,18 +125,10 @@ AliMUONRawClusterV2 & AliMUONRawClusterV2::operator=(const AliMUONRawClusterV2& 
 //____________________________________________________
 void AliMUONRawClusterV2::Clear(Option_t*)
 {
-  /// Reset this cluster, in particular the internal arrays are deleted.
-  
-  fX = FLT_MAX;
-  fY = FLT_MAX;
-  fZ = FLT_MAX;
-  fErrX2 = AliMUONConstants::DefaultNonBendingReso2();
-  fErrY2 = AliMUONConstants::DefaultBendingReso2();
-  fQ = 0.;
-  fChi2 = 0.;
-  fNDigits = 0;
+  /// clear memory
   delete [] fDigitsId;
   fDigitsId = 0x0;
+  fNDigits = 0;
 }
 
 //____________________________________________________

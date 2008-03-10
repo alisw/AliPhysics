@@ -28,12 +28,17 @@
 // ESD data. This is necessary since the track objects that are actually created
 // during offline reconstruction are no longer stored to disk.
 //  - Artur Szostak <artursz@iafrica.com>
+// 25 Jan 2008:
+// Use the new ESDInterface to create MUON objects from ESD data
+// - Philippe Pillot
 
 #include "AliMUONRecoCheck.h"
-#include "AliMUONRawClusterV2.h"
 #include "AliMUONTrack.h"
+#include "AliMUONVTrackStore.h"
+#include "AliMUONVCluster.h"
+#include "AliMUONVClusterStore.h"
 #include "AliMUONConstants.h"
-#include "AliMUONTrackStoreV1.h"
+#include "AliMUONESDInterface.h"
 
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
@@ -179,20 +184,12 @@ AliMUONVTrackStore* AliMUONRecoCheck::ReconstructibleTracks(Int_t event)
 void AliMUONRecoCheck::MakeReconstructedTracks()
 {
   /// Make reconstructed tracks
-  fRecoTrackStore = new AliMUONTrackStoreV1();
+  if (!(fRecoTrackStore = AliMUONESDInterface::NewTrackStore())) return;
   
-  Int_t nTracks = Int_t(fESDEvent->GetNumberOfMuonTracks());
-  
-  // loop over all reconstructed tracks
-  for (Int_t iTrack = 0; iTrack < nTracks; iTrack++) {
-    AliESDMuonTrack* esdTrack = fESDEvent->GetMuonTrack(iTrack);
-    
-    // copy ESD MUON track into standard MUON track
-    AliMUONTrack track(*esdTrack);
-    
-    // add track to the store
-    fRecoTrackStore->Add(track);
-  }
+  // loop over all reconstructed tracks and add them to the store
+  Int_t nTracks = (Int_t) fESDEvent->GetNumberOfMuonTracks();
+  for (Int_t iTrack = 0; iTrack < nTracks; iTrack++)
+    AliMUONESDInterface::Add(*(fESDEvent->GetMuonTrack(iTrack)), *fRecoTrackStore);
   
 }
 
@@ -200,12 +197,16 @@ void AliMUONRecoCheck::MakeReconstructedTracks()
 void AliMUONRecoCheck::MakeTrackRefs()
 {
   /// Make reconstructible tracks
-  AliMUONVTrackStore *tmpTrackRefStore = new AliMUONTrackStoreV1();
+  AliMUONVTrackStore *tmpTrackRefStore = AliMUONESDInterface::NewTrackStore();
+  if (!tmpTrackRefStore) return;
   
   Double_t x, y, z, pX, pY, pZ, bendingSlope, nonBendingSlope, inverseBendingMomentum;
   TParticle* particle;
   TClonesArray* trackRefs;
   Int_t nTrackRef = fMCEventHandler->MCEvent()->GetNumberOfTracks();
+  AliMUONVClusterStore* cStore = AliMUONESDInterface::NewClusterStore();
+  if (!cStore) return;
+  AliMUONVCluster* hit = cStore->CreateCluster(0,0,0);
   
   // loop over simulated tracks
   for (Int_t iTrackRef  = 0; iTrackRef < nTrackRef; ++iTrackRef) {
@@ -240,9 +241,9 @@ void AliMUONRecoCheck::MakeTrackRefs()
       if (chamberId < 0 || chamberId >= AliMUONConstants::NTrackingCh()) continue;
       
       // set hit parameters
-      AliMUONRawClusterV2 hit(chamberId, 0, 0);
-      hit.SetXYZ(x,y,z);
-      hit.SetErrXY(0.,0.);
+      hit->SetUniqueID(AliMUONVCluster::BuildUniqueID(chamberId, 0, 0));
+      hit->SetXYZ(x,y,z);
+      hit->SetErrXY(0.,0.);
       
       // compute track parameters at hit
       Double_t bendingSlope = 0;
@@ -266,7 +267,7 @@ void AliMUONRecoCheck::MakeTrackRefs()
       trackParam.SetInverseBendingMomentum(inverseBendingMomentum);
       
       // add track parameters at current hit to the track
-      track.AddTrackParamAtCluster(trackParam,hit,kTRUE);
+      track.AddTrackParamAtCluster(trackParam, *hit, kTRUE);
     }
     
     // if none of the track hits was in MUON, goto the next track
@@ -304,14 +305,15 @@ void AliMUONRecoCheck::MakeTrackRefs()
     // add track parameters at vertex
     track.SetTrackParamAtVertex(&trackParamAtVertex);
     
-    // sort trackParamAtCluster and store the track
-    track.GetTrackParamAtCluster()->Sort();
+    // store the track
     track.SetTrackID(iTrackRef);
     tmpTrackRefStore->Add(track);
   }
   
   CleanMuonTrackRef(tmpTrackRefStore);
   
+  delete hit;
+  delete cStore;
   delete tmpTrackRefStore;
 }
 
@@ -321,11 +323,14 @@ void AliMUONRecoCheck::CleanMuonTrackRef(const AliMUONVTrackStore *tmpTrackRefSt
   /// Re-calculate hits parameters because two AliTrackReferences are recorded for
   /// each chamber (one when particle is entering + one when particle is leaving 
   /// the sensitive volume) 
-  fTrackRefStore = new AliMUONTrackStoreV1();
+  if (!(fTrackRefStore = AliMUONESDInterface::NewTrackStore())) return;
   
   Double_t maxGasGap = 1.; // cm 
   Double_t x, y, z, pX, pY, pZ, x1, y1, z1, pX1, pY1, pZ1, z2;
   Double_t bendingSlope,nonBendingSlope,inverseBendingMomentum;
+  AliMUONVClusterStore* cStore = AliMUONESDInterface::NewClusterStore();
+  if (!cStore) return;
+  AliMUONVCluster* hit = cStore->CreateCluster(0,0,0);
   
   // create iterator
   TIter next(tmpTrackRefStore->CreateIterator());
@@ -399,9 +404,9 @@ void AliMUONRecoCheck::CleanMuonTrackRef(const AliMUONVTrackStore *tmpTrackRefSt
       inverseBendingMomentum *= trackParam1->GetCharge();
       
       // set hit parameters
-      AliMUONRawClusterV2 hit(trackParam1->GetClusterPtr()->GetChamberId(), 0, 0);
-      hit.SetXYZ(x,y,z);
-      hit.SetErrXY(0.,0.);
+      hit->SetUniqueID(AliMUONVCluster::BuildUniqueID(trackParam1->GetClusterPtr()->GetChamberId(), 0, 0));
+      hit->SetXYZ(x,y,z);
+      hit->SetErrXY(0.,0.);
       
       // set new track parameters at new hit
       AliMUONTrackParam trackParam;
@@ -413,25 +418,26 @@ void AliMUONRecoCheck::CleanMuonTrackRef(const AliMUONVTrackStore *tmpTrackRefSt
       trackParam.SetInverseBendingMomentum(inverseBendingMomentum);
       
       // add track parameters at current hit to the track
-      newTrack.AddTrackParamAtCluster(trackParam,hit,kTRUE);
+      newTrack.AddTrackParamAtCluster(trackParam, *hit, kTRUE);
       
       iHit1++;
     }
     
-    newTrack.GetTrackParamAtCluster()->Sort();
     newTrack.SetTrackID(track->GetTrackID());
     newTrack.SetTrackParamAtVertex(track->GetTrackParamAtVertex());
     fTrackRefStore->Add(newTrack);
     
   }
   
+  delete hit;
+  delete cStore;
 }
 
 //_____________________________________________________________________________
 void AliMUONRecoCheck::MakeReconstructibleTracks()
 {
   /// Isolate the reconstructible tracks
-  fRecoTrackRefStore = new AliMUONTrackStoreV1();
+  if (!(fRecoTrackRefStore = AliMUONESDInterface::NewTrackStore())) return;
   
   // create iterator on trackRef
   TIter next(fTrackRefStore->CreateIterator());

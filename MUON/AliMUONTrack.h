@@ -19,14 +19,12 @@
 
 class AliMUONVCluster;
 class AliMUONObjectPair;
-class AliESDMuonTrack;
 
 class AliMUONTrack : public TObject 
 {
  public:
   AliMUONTrack(); // Default constructor
   AliMUONTrack(AliMUONObjectPair *segment); // Constructor from a segment
-  AliMUONTrack(AliESDMuonTrack& esdTrack); // Constructor from an ESD muon track
   virtual ~AliMUONTrack(); // Destructor
   AliMUONTrack (const AliMUONTrack& track); // copy constructor
   AliMUONTrack& operator=(const AliMUONTrack& track); // assignment operator

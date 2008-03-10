@@ -15,13 +15,10 @@
 
 #include <TObject.h>
 
-class AliESDMuonCluster;
-
 class AliMUONVCluster : public TObject {
  public:
   AliMUONVCluster(); // Constructor
   AliMUONVCluster(Int_t chamberId, Int_t detElemId, Int_t clusterIndex);
-  AliMUONVCluster(const AliESDMuonCluster& cluster);
   virtual ~AliMUONVCluster(); // Destructor
   
            /// Clear method (used by TClonesArray)
