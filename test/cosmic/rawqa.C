@@ -23,6 +23,7 @@ TString ClassName() { return "rawqa" ; }
 void rawqa(const Int_t runNumber, const UInt_t kMaxFiles = 10, const char* year = "08") 
 {	
 
+        const char * kDefaultOCDBStorage = Form("alien://folder=/alice/data/20%s/LHC%sa/OCDB/", year, year) ; 
 	AliLog::SetGlobalDebugLevel(0) ; 
 	// connect to the grid 
 	TGrid * grid = 0x0 ; 
@@ -63,7 +64,7 @@ void rawqa(const Int_t runNumber, const UInt_t kMaxFiles = 10, const char* year 
 		in.open("tempo.txt", ifstream::in) ; 
 
 	AliCDBManager* man = AliCDBManager::Instance();
-	man->SetDefaultStorage(AliQA::GetQARefDefaultStorage()) ; 
+	man->SetDefaultStorage(kDefaultOCDBStorage) ;  
 	AliQA::SetQARefStorage("alien://folder=/alice/QA/2008") ; 
 	man->SetSpecificStorage(Form("%s/20%s/*", AliQA::GetQAOCDBDirName(), year),AliQA::GetQARefStorage());
 	AliQADataMakerSteer qas ; 

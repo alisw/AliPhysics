@@ -59,6 +59,7 @@ ClassImp(AliQADataMakerSteer)
 //_____________________________________________________________________________
 AliQADataMakerSteer::AliQADataMakerSteer(const char* gAliceFilename, const char * name, const char * title) :
 	TNamed(name, title), 
+	fCurrentEvent(0),  
 	fCycleSame(kFALSE),
 	fDetectors("ALL"), 
 	fDetectorsW("ALL"), 
@@ -85,6 +86,7 @@ AliQADataMakerSteer::AliQADataMakerSteer(const char* gAliceFilename, const char 
 //_____________________________________________________________________________
 AliQADataMakerSteer::AliQADataMakerSteer(const AliQADataMakerSteer & qas) : 
 	TNamed(qas), 
+	fCurrentEvent(qas.fCurrentEvent),  
 	fCycleSame(kFALSE),
 	fDetectors(qas.fDetectors), 
 	fDetectorsW(qas.fDetectorsW), 
@@ -145,6 +147,7 @@ Bool_t AliQADataMakerSteer::DoIt(const AliQA::TASKINDEX taskIndex, const char * 
 	Bool_t rv = kFALSE ;
     // Fill QA data in event loop 
 	for (UInt_t iEvent = 0 ; iEvent < fNumberOfEvents ; iEvent++) {
+		fCurrentEvent++ ; 
 		// Get the event
 		if ( iEvent%10 == 0  ) 
 			AliInfo(Form("processing event %d", iEvent));
