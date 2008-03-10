@@ -14,7 +14,7 @@
  **************************************************************************/
 
 /*
- $Id:$
+ $Id$
 */
 
 ////////////////////////////////////////////////////////////////////////
@@ -46,6 +46,7 @@
 #include "AliITSCalibrationSDD.h"
 #include "AliITSMapSDD.h"
 #include "AliITSDriftSpeedArraySDD.h"
+#include "AliITSDriftSpeedSDD.h"
 #include "AliITSCalibrationSSD.h"
 #include "AliITSNoiseSSD.h"
 #include "AliITSGainSSD.h"
@@ -504,26 +505,31 @@ Bool_t AliITSDetTypeRec::GetCalibration() {
     cal->SetResponse((AliITSresponse*)pSPD);
     SetCalibrationModel(i, cal);
   }
-  for (Int_t i=0; i<fNMod[1]; i++) {
-    cal = (AliITSCalibration*) calSDD->At(i);
-    cal->SetResponse((AliITSresponse*)pSDD);
-    Int_t i0=2*i;
-    Int_t i1=1+2*i;
-    AliITSDriftSpeedArraySDD* arr0 = (AliITSDriftSpeedArraySDD*) drSp->At(i0);
-    AliITSMapSDD* ma0 = (AliITSMapSDD*)mapAn->At(i0);
-    AliITSMapSDD* mt0 = (AliITSMapSDD*)mapT->At(i0);
-    AliITSDriftSpeedArraySDD* arr1 = (AliITSDriftSpeedArraySDD*) drSp->At(i1);
-    AliITSMapSDD* ma1 = (AliITSMapSDD*)mapAn->At(i1);
-    AliITSMapSDD* mt1 = (AliITSMapSDD*)mapT->At(i1);
-    cal->SetDriftSpeed(0,arr0);
-    cal->SetDriftSpeed(1,arr1);
-    cal->SetMapA(0,ma0);
-    cal->SetMapA(1,ma1);
-    cal->SetMapT(0,mt0);
-    cal->SetMapT(1,mt1);
-    fDDLMapSDD->SetDDLMap(ddlsdd);
-    Int_t iMod = i + fNMod[0];
-    SetCalibrationModel(iMod, cal);
+
+  fDDLMapSDD->SetDDLMap(ddlsdd);
+  for(Int_t iddl=0; iddl<AliITSDDLModuleMapSDD::GetNDDLs(); iddl++){
+    for(Int_t icar=0; icar<AliITSDDLModuleMapSDD::GetNModPerDDL();icar++){
+      Int_t iMod=fDDLMapSDD->GetModuleNumber(iddl,icar);
+      if(iMod==-1) continue;
+      Int_t i=iMod-fNMod[0];
+      cal = (AliITSCalibration*) calSDD->At(i);
+      cal->SetResponse((AliITSresponse*)pSDD);
+      Int_t i0=2*i;
+      Int_t i1=1+2*i;
+      AliITSDriftSpeedArraySDD* arr0 = (AliITSDriftSpeedArraySDD*) drSp->At(i0);
+      AliITSMapSDD* ma0 = (AliITSMapSDD*)mapAn->At(i0);
+      AliITSMapSDD* mt0 = (AliITSMapSDD*)mapT->At(i0);
+      AliITSDriftSpeedArraySDD* arr1 = (AliITSDriftSpeedArraySDD*) drSp->At(i1);
+      AliITSMapSDD* ma1 = (AliITSMapSDD*)mapAn->At(i1);
+      AliITSMapSDD* mt1 = (AliITSMapSDD*)mapT->At(i1);
+      cal->SetDriftSpeed(0,arr0);
+      cal->SetDriftSpeed(1,arr1);
+      cal->SetMapA(0,ma0);
+      cal->SetMapA(1,ma1);
+      cal->SetMapT(0,mt0);
+      cal->SetMapT(1,mt1);
+      SetCalibrationModel(iMod, cal);
+    }
   }
   for (Int_t i=0; i<fNMod[2]; i++) {
 
