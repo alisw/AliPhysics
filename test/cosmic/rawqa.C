@@ -5,6 +5,7 @@
 #include <TFile.h>
 #include <TGrid.h>
 #include <TGridResult.h>
+#include <TMath.h>
 #include <TROOT.h>
 #include <TString.h>
 #include <TSystem.h>
@@ -20,10 +21,15 @@
 TString ClassName() { return "rawqa" ; } 
 
 //________________________________qa______________________________________
-void rawqa(const Int_t runNumber, const UInt_t kMaxFiles = 10, const char* year = "08") 
+void rawqa(const Int_t runNumber, Int_t maxFiles = 10, const char* year = "08") 
 {	
-
-        const char * kDefaultOCDBStorage = Form("alien://folder=/alice/data/20%s/LHC%sa/OCDB/", year, year) ; 
+	const char * kDefaultOCDBStorage = Form("alien://folder=/alice/data/20%s/LHC%sa/OCDB/", year, year) ; 
+	
+	UInt_t maxEvents = 99999 ;
+	if ( maxFiles < 0 ) {
+		maxFiles = 99 ; 
+		maxEvents = TMath::Abs(maxFiles) ; 
+	}
 	AliLog::SetGlobalDebugLevel(0) ; 
 	// connect to the grid 
 	TGrid * grid = 0x0 ; 
@@ -49,7 +55,7 @@ void rawqa(const Int_t runNumber, const UInt_t kMaxFiles = 10, const char* year 
 	  TString collectionFile(pattern) ; 
 	  collectionFile.Append(".xml") ; 
 	  if ( gSystem->AccessPathName(collectionFile) == 0 ) { // get the list of files from an a-priori created collection file
-	    TAlienCollection collection(collectionFile.Data(), kMaxFiles) ; 
+	    TAlienCollection collection(collectionFile.Data(), maxFiles) ; 
 	    result = collection.GetGridResult("", 0, 0); 
 	  } else { // get the list of files from the local current directory 
 	    local = kTRUE ; 
@@ -71,8 +77,8 @@ void rawqa(const Int_t runNumber, const UInt_t kMaxFiles = 10, const char* year 
 	TString detectors  = ""; 
 	TString detectorsW = ""; 
 	UShort_t file = 0 ; 
-        UShort_t filesProcessed = 0 ; 
-	for ( file = 0 ; file < kMaxFiles ; file++) {
+	UShort_t filesProcessed = 0 ; 
+	for ( file = 0 ; file < maxFiles ; file++) {
 		TString fileName ; 
 		if ( local) {
 			in >> fileName ;
@@ -93,27 +99,33 @@ void rawqa(const Int_t runNumber, const UInt_t kMaxFiles = 10, const char* year 
 		AliLog::Flush();
 		// check which detectors are present 
 		AliRawReader * rawReader = new AliRawReaderRoot(input);
-		rawReader->NextEvent() ; 
-		man->SetRun(rawReader->GetRunNumber());
-		UChar_t * data ; 
-		while (rawReader->ReadNextData(data)) {
-			Int_t detID = rawReader->GetDetectorID();
-			if (detID < 0 || detID >= AliDAQ::kNDetectors) {
-			  AliError("Wrong detector ID! Skipping payload...");
-			  continue;
+		while ( rawReader->NextEvent() ) {
+			man->SetRun(rawReader->GetRunNumber());
+			UChar_t * data ; 
+			while (rawReader->ReadNextData(data)) {
+				Int_t detID = rawReader->GetDetectorID();
+				if (detID < 0 || detID >= AliDAQ::kNDetectors) {
+					AliError("Wrong detector ID! Skipping payload...");
+					continue;
+				}
+				detIn[detID] = kTRUE ; 
 			}
-			detIn[detID] = kTRUE ; 
-		}
-		for (Int_t detID = 0; detID < AliDAQ::kNDetectors ; detID++) {
-			if (detIn[detID]) {
-				if ( ! detectors.Contains(detNameOff[detID]) ) {
-					detectors.Append(detNameOff[detID]) ;
-					detectors.Append(" ") ;
+			for (Int_t detID = 0; detID < AliDAQ::kNDetectors ; detID++) {
+				if (detIn[detID]) {
+					if ( ! detectors.Contains(detNameOff[detID]) ) {
+						detectors.Append(detNameOff[detID]) ;
+						detectors.Append(" ") ;
+					}
 				}
 			}
+			if ( !detectors.IsNull() )
+				break ; 
 		}
+		delete rawReader;
+		if ( qas.GetCurrentEvent() > maxEvents) 
+			break ;
 		// TEMPORARY REMOVAL OF TRD!!!
-		detectors.ReplaceAll("TRD","");
+		detectors.ReplaceAll("TRD", "") ;
 		// TEMPORARY REMOVAL OF TRD!!!
 		if ( !detectors.IsNull() ) {
 		  detectorsW = qas.Run(detectors, rawReader) ;
@@ -121,7 +133,6 @@ void rawqa(const Int_t runNumber, const UInt_t kMaxFiles = 10, const char* year 
 		} else {
 		  AliError("No valid detectors found") ; 
 		} 
-		delete rawReader;
 	}
 	AliLog::Flush();
 	qas.Merge(runNumber) ; 
