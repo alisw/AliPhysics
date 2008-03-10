@@ -52,7 +52,11 @@ ClassImp(AliZDCDigitizer)
 
 
 //____________________________________________________________________________
-AliZDCDigitizer::AliZDCDigitizer()
+AliZDCDigitizer::AliZDCDigitizer() :
+  fIsCalibration(0), 
+  fPedData(0), 
+  fCalibData(0),
+  fRecParam(0)
 {
 // Default constructor    
 
@@ -60,14 +64,13 @@ AliZDCDigitizer::AliZDCDigitizer()
 
 //____________________________________________________________________________
 AliZDCDigitizer::AliZDCDigitizer(AliRunDigitizer* manager):
-  AliDigitizer(manager)
+  AliDigitizer(manager),
+  fIsCalibration(0), //By default the simulation doesn't create calib. data
+  fPedData(GetPedData()), 
+  fCalibData(GetCalibData()),
+  fRecParam(GetRecParam())
 {
-  fIsCalibration=0; //By default the simulation doesn't create calib. data
-//  fIsCalibration=1; //To create pedestal calib. data
   // Get calibration data
-  fPedData = GetPedData(); 
-  fCalibData = GetCalibData(); 
-  fRecParam = GetRecParam(); 
   if(fIsCalibration!=0) printf("\n\t AliZDCDigitizer -> Creating calibration data (pedestals)\n");
 
 }
@@ -76,13 +79,17 @@ AliZDCDigitizer::AliZDCDigitizer(AliRunDigitizer* manager):
 AliZDCDigitizer::~AliZDCDigitizer()
 {
 // Destructor
-
+// Not implemented
 }
 
 
 //____________________________________________________________________________
 AliZDCDigitizer::AliZDCDigitizer(const AliZDCDigitizer &digitizer):
-  AliDigitizer()
+  AliDigitizer(),
+  fIsCalibration(digitizer.fIsCalibration),
+  fPedData(digitizer.fPedData),
+  fCalibData(digitizer.fCalibData),
+  fRecParam(digitizer.fRecParam)
 {
   // Copy constructor
 
@@ -92,10 +99,6 @@ AliZDCDigitizer::AliZDCDigitizer(const AliZDCDigitizer &digitizer):
      }
   }
   for(Int_t i=0; i<2; i++) fADCRes[i] = digitizer.fADCRes[i];
-  fIsCalibration = digitizer.fIsCalibration;
-  fPedData = digitizer.fPedData;
-  fCalibData = digitizer.fCalibData;
-  fRecParam = digitizer.fRecParam;
 
 }
 

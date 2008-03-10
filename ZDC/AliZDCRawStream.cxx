@@ -50,16 +50,16 @@ AliZDCRawStream::AliZDCRawStream(AliRawReader* rawReader) :
 
 //_____________________________________________________________________________
 AliZDCRawStream::AliZDCRawStream(const AliZDCRawStream& stream) :
-  TObject(stream)
+  TObject(stream),
+  fRawADC(stream.GetADCRaw()),
+  fADCModule(stream.GetADCModule()),	 
+  fADCChannel(stream.GetADCChannel()),	 
+  fADCValue(stream.GetADCValue()),	 
+  fADCGain(stream.GetADCGain()),
+  fIsADCDataWord(stream.IsADCDataWord()) 
 {
   // Copy constructor
-  fRawADC = stream.GetADCRaw();	 
   for(Int_t j=0; j<2; j++) fSector[j] = stream.GetSector(j);	 
-  fADCModule = stream.GetADCModule();	 
-  fADCChannel = stream.GetADCChannel();	 
-  fADCValue = stream.GetADCValue();	 
-  fADCGain = stream.GetADCGain();	 
-  fIsADCDataWord = stream.IsADCDataWord(); 
     
 }
 

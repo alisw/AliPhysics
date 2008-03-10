@@ -40,34 +40,42 @@ ClassImp(AliGenZDC)
  
 //_____________________________________________________________________________
 AliGenZDC::AliGenZDC()
-   :AliGenerator()
+   :AliGenerator(),
+  fIpart(0),
+  fCosx(0),  	
+  fCosy(0),  	
+  fCosz(0),  	
+  fPseudoRapidity(0),		
+  fFermiflag(0),	
+  fBeamDiv(0),	
+  fBeamCrossAngle(0),
+  fBeamCrossPlane(0),
+  fDebugOpt(0)
 {
   //
   // Default constructor
   //
-  fIpart = 0;
 }
 
 //_____________________________________________________________________________
 AliGenZDC::AliGenZDC(Int_t npart)
-   :AliGenerator(npart)
+   :AliGenerator(npart),
+  fIpart(kNeutron),
+  fCosx(0.),  	
+  fCosy(0.),  	
+  fCosz(1.),  	
+  fPseudoRapidity(0.),		
+  fFermiflag(1),	
+  fBeamDiv(0.000032),	
+  fBeamCrossAngle(0.0001),
+  fBeamCrossPlane(2),
+  fDebugOpt(0)
 {
   //
   // Standard constructor
   //
   fName = "AliGenZDC";
   fTitle = "Generation of Test Particles for ZDCs";
-  fIpart = kNeutron;
-  fCosx  = 0.;
-  fCosy  = 0.;
-  fCosz  = 1.;
-  fPseudoRapidity = 0.;
-  
-  fFermiflag = 1;
-  // LHC values for beam divergence and crossing angle
-  fBeamDiv = 0.000032;
-  fBeamCrossAngle = 0.0001;
-  fBeamCrossPlane = 2;
   
   Int_t i, j;
   for(i=0; i<201; i++){
@@ -75,7 +83,6 @@ AliGenZDC::AliGenZDC(Int_t npart)
      fProbintn[i] = 0;
   }
   for(j=0; j<3; j++) fPp[i] = 0;
-  fDebugOpt = 0;
 }
 
 //_____________________________________________________________________________

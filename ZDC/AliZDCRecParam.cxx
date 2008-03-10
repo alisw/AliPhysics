@@ -29,7 +29,17 @@ ClassImp(AliZDCRecParam)
 
 //________________________________________________________________
 AliZDCRecParam::AliZDCRecParam():
-TNamed()
+TNamed(),
+fZEMEndValue(0),
+fZEMCutFraction(0),
+fDZEMSup(0),
+fDZEMInf(0),
+fEZN1MaxValue(0),
+fEZP1MaxValue(0),
+fEZDC1MaxValue(0),
+fEZN2MaxValue(0),
+fEZP2MaxValue(0),
+fEZDC2MaxValue(0)
 {
   Reset();
 }
@@ -58,17 +68,22 @@ fEZDC2MaxValue(0)
 
 //________________________________________________________________
 AliZDCRecParam::AliZDCRecParam(const AliZDCRecParam& calibda) :
-  TNamed(calibda)
+TNamed(calibda),
+fZEMEndValue(calibda.GetZEMEndValue()),  
+fZEMCutFraction(calibda.GetZEMCutFraction()),
+fDZEMSup(calibda.GetDZEMSup()),
+fDZEMInf(calibda.GetDZEMInf()),
+fEZN1MaxValue(0),
+fEZP1MaxValue(0),
+fEZDC1MaxValue(0),
+fEZN2MaxValue(0),
+fEZP2MaxValue(0),
+fEZDC2MaxValue(0)
 {
   // Copy constructor
   SetName(calibda.GetName());
   SetTitle(calibda.GetName());
   Reset();
-  //
-  fZEMEndValue    = calibda.GetZEMEndValue();   
-  fZEMCutFraction = calibda.GetZEMCutFraction();
-  fDZEMSup	  = calibda.GetDZEMSup();
-  fDZEMInf	  = calibda.GetDZEMInf();
 }
 
 //________________________________________________________________

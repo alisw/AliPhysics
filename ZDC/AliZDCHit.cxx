@@ -67,20 +67,20 @@ AliZDCHit::AliZDCHit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits) :
   
 //_____________________________________________________________________________
 AliZDCHit::AliZDCHit(const AliZDCHit &oldhit) :
-  AliHit(0,oldhit.GetTrack())
+  AliHit(0,oldhit.GetTrack()),
+  fPrimKinEn(oldhit.GetPrimKinEn()),
+  fXImpact(oldhit.GetXImpact()),  
+  fYImpact(oldhit.GetYImpact()),  
+  fSFlag(oldhit.GetSFlag()),
+  fLightPMQ(oldhit.GetLightPMQ()), 
+  fLightPMC(oldhit.GetLightPMC()),
+  fEnergy(oldhit.GetEnergy())
 {
   // Copy constructor
   fX = oldhit.X();
   fY = oldhit.Y();
   fZ = oldhit.Z();
   for(Int_t i=0; i<2; i++) fVolume[i] = oldhit.GetVolume(i);
-  fPrimKinEn = oldhit.GetPrimKinEn();
-  fXImpact = oldhit.GetXImpact();  
-  fYImpact = oldhit.GetYImpact();  
-  fSFlag = oldhit.GetSFlag();    
-  fLightPMQ = oldhit.GetLightPMQ(); 
-  fLightPMC = oldhit.GetLightPMC(); 
-  fEnergy = oldhit.GetEnergy();   
 }
   
   

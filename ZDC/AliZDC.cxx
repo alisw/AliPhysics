@@ -60,10 +60,11 @@ ClassImp(AliZDC)
 //_____________________________________________________________________________
 AliZDC::AliZDC() :
   AliDetector(),
-  fNoShower  (0),
+  fNoShower(0),
   fPedCalib(0),
   fCalibData(0),
-  fRecParam(0)
+  fRecParam(0),
+  fZDCCalibFName("")
 {
   //
   // Default constructor for the Zero Degree Calorimeter base class
@@ -83,7 +84,8 @@ AliZDC::AliZDC(const char *name, const char *title) :
   fNoShower  (0),
   fPedCalib(0),
   fCalibData(0),
-  fRecParam(0)
+  fRecParam(0),
+  fZDCCalibFName("")
 {
   //
   // Standard constructor for the Zero Degree Calorimeter base class
@@ -120,14 +122,14 @@ AliZDC::~AliZDC()
 
 //_____________________________________________________________________________
 AliZDC::AliZDC(const AliZDC& ZDC) :
-  AliDetector("ZDC","ZDC")
+AliDetector("ZDC","ZDC"),
+fNoShower(ZDC.fNoShower),
+fPedCalib(ZDC.fPedCalib),
+fCalibData(ZDC.fCalibData),
+fRecParam(ZDC.fRecParam),
+fZDCCalibFName(ZDC.fZDCCalibFName)
 {
   // copy constructor
-    fNoShower = ZDC.fNoShower;
-    fPedCalib = ZDC.fPedCalib;
-    fCalibData = ZDC.fCalibData;
-    fRecParam = ZDC.fRecParam;
-    fZDCCalibFName = ZDC.fZDCCalibFName;
 }
 
 //_____________________________________________________________________________

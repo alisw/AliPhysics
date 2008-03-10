@@ -36,33 +36,33 @@ int comp(const void *i,const void *j) {return *(int *)i - *(int *)j;}
 
 
 //_____________________________________________________________________________
-AliZDCFragment::AliZDCFragment()
+AliZDCFragment::AliZDCFragment():
+  fB(0)
 {
   //
   // Default constructor
   //
-  fB = 0;
 }
 
 //_____________________________________________________________________________
 AliZDCFragment::AliZDCFragment(Float_t b)
-     : TNamed(" "," ")
+     : TNamed(" "," "),
+  fB(b),
+  fZbAverage(0),
+  fNimf(0),
+  fZmax(0),
+  fTau(0),
+  fNalpha(0),
+  fZtot(0),
+  fNtot(0)
 {
   //
   // Standard constructor
   //
-  fB = b;
-  fZbAverage = 0;
-  fNimf = 0;
-  fZmax = 0;
-  fTau = 0;
   for(Int_t i=0; i<=99; i++){
      fZZ[i] = 0;
      fNN[i] = 0;
   }
-  fNalpha = 0;
-  fZtot = 0;
-  fNtot = 0;
   
 }
 

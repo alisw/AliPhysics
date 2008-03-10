@@ -115,8 +115,20 @@ AliZDCReco::AliZDCReco(Float_t* ezn1, Float_t* ezp1, Float_t* ezn2, Float_t* ezp
 
 //______________________________________________________________________________
 AliZDCReco::AliZDCReco(const AliZDCReco &oldreco) :
-
-  TObject()
+TObject(),
+fNDetSpecNLeft(oldreco.GetNDetSpecNLeft()),
+fNDetSpecPLeft(oldreco.GetNDetSpecPLeft()),
+fNDetSpecNRight(oldreco.GetNDetSpecNRight()),        
+fNDetSpecPRight(oldreco.GetNDetSpecPRight()),       
+fNTrueSpecNLeft(oldreco.GetNTrueSpecNLeft()), 	
+fNTrueSpecPLeft(oldreco.GetNTrueSpecPLeft()), 	
+fNTrueSpecLeft(oldreco.GetNTrueSpecLeft()),
+fNTrueSpecNRight(oldreco.GetNTrueSpecNRight()),	
+fNTrueSpecPRight(oldreco.GetNTrueSpecPRight()),	
+fNTrueSpecRight(oldreco.GetNTrueSpecRight()),  	
+fNPartLeft(oldreco.GetNPartLeft()),		       
+fNPartRight(oldreco.GetNPartRight()),  		       
+fImpPar(oldreco.GetImpPar())      
 {
   // Copy constructor
 
@@ -148,20 +160,6 @@ AliZDCReco::AliZDCReco(const AliZDCReco &oldreco) :
   fPMRef1[1] = oldreco.GetPMRef1LRsignal();
   fPMRef2[0] = oldreco.GetPMRef2HRsignal();
   fPMRef2[1] = oldreco.GetPMRef2LRsignal();
-  //   
-  fNDetSpecNLeft = oldreco.GetNDetSpecNLeft();	
-  fNDetSpecPLeft = oldreco.GetNDetSpecPLeft();	
-  fNDetSpecNRight = oldreco.GetNDetSpecNRight();	
-  fNDetSpecPRight = oldreco.GetNDetSpecPRight();	
-  fNTrueSpecNLeft = oldreco.GetNTrueSpecNLeft();	  
-  fNTrueSpecPLeft = oldreco.GetNTrueSpecPLeft();	  
-  fNTrueSpecLeft = oldreco.GetNTrueSpecLeft();	  
-  fNTrueSpecNRight = oldreco.GetNTrueSpecNRight();	  
-  fNTrueSpecPRight = oldreco.GetNTrueSpecPRight();	  
-  fNTrueSpecRight = oldreco.GetNTrueSpecRight();	  
-  fNPartLeft = oldreco.GetNPartLeft();			 
-  fNPartRight = oldreco.GetNPartRight();			 
-  fImpPar = oldreco.GetImpPar();			 
 }
 
 //______________________________________________________________________________

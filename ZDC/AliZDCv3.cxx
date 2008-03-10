@@ -58,7 +58,6 @@ AliZDCv3::AliZDCv3() :
   fMedSensZEM(0),
   fMedSensGR(0),
   fMedSensPI(0),
-  fMedSensTDI(0), 
   fNalfan(0),
   fNalfap(0),
   fNben(0),  
@@ -81,7 +80,7 @@ AliZDCv3::AliZDCv3() :
 }
  
 //_____________________________________________________________________________
-AliZDCv3::AliZDCv3(const char *name, const char *title): 
+AliZDCv3::AliZDCv3(const char *name, const char *title) : 
   AliZDC(name,title),
   fMedSensF1(0),
   fMedSensF2(0),
@@ -90,7 +89,6 @@ AliZDCv3::AliZDCv3(const char *name, const char *title):
   fMedSensZEM(0),
   fMedSensGR(0),
   fMedSensPI(0),
-  fMedSensTDI(0), 
   fNalfan(90),
   fNalfap(90),
   fNben(18),  
@@ -103,8 +101,7 @@ AliZDCv3::AliZDCv3(const char *name, const char *title):
   fpLostD1A(0), 
   fpLostTDI(0), 
   fpDetectedA(0),
-  fnDetectedA(0)
-  
+  fnDetectedA(0)  
 {
   //
   // Standard constructor for Zero Degree Calorimeter 

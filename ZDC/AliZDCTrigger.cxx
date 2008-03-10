@@ -33,24 +33,25 @@
 ClassImp(AliZDCTrigger)
 
 //________________________________________________________________
-AliZDCTrigger::AliZDCTrigger() : AliTriggerDetector() 
+AliZDCTrigger::AliZDCTrigger() : 
+   AliTriggerDetector(), 
+   fZDCLeftMinCut(0),
+   fZDCRightMinCut(0),
+   fZEMMinCut(0),
+   fZDCLeftMBCut(0),
+   fZDCRightMBCut(0),
+   fZDCLeftCentrCut(0),
+   fZDCRightCentrCut(0),
+   fZDCLeftSemiCentrCut(0),
+   fZDCRightSemiCentrCut(0),
+   fZEMCentrCut(0)
 {  
    // Constructor
    SetName("ZDC");
    CreateInputs();
    //
-   SetZDCLeftMinCut(0);
-   SetZDCRightMinCut(0);
-   SetZEMMinCut(0);
    SetZDCLeftEMDCuts(0,0);
    SetZDCRightEMDCuts(0,0);
-   SetZDCLeftMBCut(0);
-   SetZDCRightMBCut(0);
-   SetZDCLeftCentrCut(0);
-   SetZDCRightCentrCut(0);
-   SetZDCLeftSemiCentrCut(0);
-   SetZDCRightSemiCentrCut(0);
-   SetZEMCentrCut(0);
 
 }
 
