@@ -18,5 +18,6 @@
 //
 #pragma link C++ class AliRecInfoMaker+;
 #pragma link C++ class AliComparisonDraw+;
+#pragma link C++ class AliGenInfoTask+;
 
 #endif

@@ -121,29 +121,33 @@ void AliGenV0Info::Update(Float_t vertex[3])
   //
   //
   Double_t x1[3],p1[3];
-  TParticle& pdaughter = fMCd.GetParticle();
-  x1[0] = pdaughter.Vx();      
-  x1[1] = pdaughter.Vy();
-  x1[2] = pdaughter.Vz();
-  p1[0] = pdaughter.Px();
-  p1[1] = pdaughter.Py();
-  p1[2] = pdaughter.Pz();
-  Double_t sign = (pdaughter.GetPDG()->Charge()>0)? -1:1;
+  TParticle& part0 = fMCd.GetParticle();
+  x1[0] = part0.Vx();      
+  x1[1] = part0.Vy();
+  x1[2] = part0.Vz();
+  p1[0] = part0.Px();
+  p1[1] = part0.Py();
+  p1[2] = part0.Pz();
+  if (part0.GetPDG()==0) return;
+
+  Double_t sign = (part0.GetPDG()->Charge()>0)? -1:1;
   AliHelix dhelix1(x1,p1,sign);
   //
   //
   Double_t x2[3],p2[3];            
   //
-  TParticle& pmother = fMCm.GetParticle();
-  x2[0] = pmother.Vx();      
-  x2[1] = pmother.Vy();      
-  x2[2] = pmother.Vz();      
-  p2[0] = pmother.Px();
-  p2[1] = pmother.Py();
-  p2[2] = pmother.Pz();
+  TParticle& part1 = fMCm.GetParticle();
+  if (part1.GetPDG()==0) return;
+  x2[0] = part1.Vx();      
+  x2[1] = part1.Vy();      
+  x2[2] = part1.Vz();      
+  p2[0] = part1.Px();
+  p2[1] = part1.Py();
+  p2[2] = part1.Pz();
   //
   //
-  sign = (pmother.GetPDG()->Charge()>0) ? -1:1;
+  if (part1.GetPDG()==0) return;
+  sign = (part1.GetPDG()->Charge()>0) ? -1:1;
   AliHelix mhelix(x2,p2,sign);
   
   //

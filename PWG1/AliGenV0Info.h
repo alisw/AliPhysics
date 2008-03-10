@@ -13,12 +13,6 @@
 
 
 
-////////////////////////////////////////////////////////////////////////
-//
-// Start of implementation of the class AliTPCdigitRow
-//
-////////////////////////////////////////////////////////////////////////
-
 #include <TParticle.h>
 #include "AliMCInfo.h"
 
@@ -42,20 +36,6 @@ public:
   const Double_t*  GetMCPdr() const {return fMCPdr;}
   const Double_t*  GetMCPd()  const {return fMCPd;}
   const Double_t*  GetMCX()  const {return fMCX;}
-  //  const Double_t    fMCXr;
-  //
-//   Double_t     fMCPm[3];    
-//   Double_t     fMCAngle[3]; 
-//   Double_t     fMCRr;       
-//   Double_t     fMCR;       
-//   Int_t        fPdg[2];   
-//   Int_t        fLab[2];   
-//   //
-//   Double_t       fInvMass;  
-//   Float_t        fPointAngleFi;
-//   Float_t        fPointAngleTh;
-//   Float_t        fPointAngle;  
-
   void SetInfoP(AliMCInfo &plus) {fMCd=plus;}
   void SetInfoM(AliMCInfo &minus){fMCm=minus;}
   void SetMother(TParticle&mother){fMotherP=mother;}
