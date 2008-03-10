@@ -15,7 +15,10 @@ struct AliRawDataHeader {
     fROIHigh(0)
   {}
 
-  virtual ~AliRawDataHeader() {}
+  // Adding virtual destructor breaks
+  // C++ struct backward compatibility
+  // Do not uncomment the line below!!!
+  //  virtual ~AliRawDataHeader() {}
 
   UShort_t  GetEventID1() const
     {
