@@ -60,7 +60,7 @@ AliZDCv2::AliZDCv2() :
   fMedSensZEM(0),
   fMedSensGR(0),
   fMedSensPI(0),
-  fMedSensTDI(0), 
+  fMedSensTDI(0),
   fNalfan(0),
   fNalfap(0),
   fNben(0),  
@@ -68,6 +68,7 @@ AliZDCv2::AliZDCv2() :
   fZEMLength(0),
   fpLostIT(0), 
   fpLostD1(0), 
+  fpLostTDI(0),
   fpDetected(0),
   fnDetected(0)
 {
@@ -87,15 +88,17 @@ AliZDCv2::AliZDCv2(const char *name, const char *title)
   fMedSensZEM(0),
   fMedSensGR(0),
   fMedSensPI(0),
-  fMedSensTDI(0), 
+  fMedSensTDI(0),
   fNalfan(90),
   fNalfap(90),
   fNben(18),  
   fNbep(28), 
   fpLostIT(0), 
   fpLostD1(0), 
+  fpLostTDI(0),
   fpDetected(0),
   fnDetected(0)
+
 
 {
   //
@@ -176,7 +179,7 @@ AliZDCv2::AliZDCv2(const char *name, const char *title)
   Int_t   kDivZEM[3] = {92, 0, 20}; 		// Divisions for EM detector
   Float_t kDimZEM0 = 2*kDivZEM[2]*(kDimZEMPb+kDimZEMAir+kFibRadZEM*(TMath::Sqrt(2.)));
   fZEMLength = kDimZEM0;
-  
+
 }
  
 //_____________________________________________________________________________
