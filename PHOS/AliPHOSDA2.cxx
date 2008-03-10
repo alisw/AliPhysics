@@ -196,7 +196,7 @@ void AliPHOSDA2::UpdateHistoFile()
 	if(hist1) { 
 	  hist1->Write(hist1->GetName(),TObject::kWriteDelete);
 	  Double_t mean = hist1->GetMean();
-	  fMaps[iGain]->Fill(iX,iZ,mean);
+	  fMaps[iGain]->SetBinContent(iX+1,iZ+1,mean);
 	}
       } 
 
