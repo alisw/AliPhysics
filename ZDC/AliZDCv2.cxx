@@ -93,6 +93,7 @@ AliZDCv2::AliZDCv2(const char *name, const char *title)
   fNalfap(90),
   fNben(18),  
   fNbep(28), 
+  fZEMLength(0),
   fpLostIT(0), 
   fpLostD1(0), 
   fpLostTDI(0),

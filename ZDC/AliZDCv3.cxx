@@ -95,6 +95,7 @@ AliZDCv3::AliZDCv3(const char *name, const char *title) :
   fNalfap(90),
   fNben(18),  
   fNbep(28), 
+  fZEMLength(0),
   fpLostITC(0), 
   fpLostD1C(0), 
   fpDetectedC(0),
