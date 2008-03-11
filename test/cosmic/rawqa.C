@@ -78,7 +78,11 @@ void rawqa(const Int_t runNumber, Int_t maxFiles = 10, const char* year = "08")
 	TString detectorsW = ""; 
 	UShort_t file = 0 ; 
 	UShort_t filesProcessed = 0 ; 
+	UShort_t eventsProcessed = 0 ; 
 	for ( file = 0 ; file < maxFiles ; file++) {
+		if ( qas.GetCurrentEvent() >= maxEvents) 
+			break ;
+
 		TString fileName ; 
 		if ( local) {
 			in >> fileName ;
@@ -122,10 +126,6 @@ void rawqa(const Int_t runNumber, Int_t maxFiles = 10, const char* year = "08")
 			if ( !detectors.IsNull() )
 				break ; 
 		}
-		AliInfo(Form("Current = %d Max = %d", qas.GetCurrentEvent(), maxEvents)) ; 
-		AliLog::Flush();
-		if ( qas.GetCurrentEvent() > maxEvents) 
-			break ;
 		// TEMPORARY REMOVAL OF TRD!!!
 		detectors.ReplaceAll("TRD", "") ;
 		// TEMPORARY REMOVAL OF TRD!!!
@@ -137,6 +137,7 @@ void rawqa(const Int_t runNumber, Int_t maxFiles = 10, const char* year = "08")
 			AliError("No valid detectors found") ; 
 		} 
 		delete rawReader ;
+		eventsProcessed += qas.GetCurrentEvent() ; 
 	}
 	AliLog::Flush();
 	qas.Merge(runNumber) ; 
@@ -146,10 +147,14 @@ void rawqa(const Int_t runNumber, Int_t maxFiles = 10, const char* year = "08")
 	AliInfo(Form("\n\n********** Summary for run %d **********", runNumber)) ; 
 	printf("     detectors present in the run        : %s\n", detectors.Data()) ; 
 	printf("     detectors present in the run with QA: %s\n", detectorsW.Data()) ; 
-	printf("     number of files processed           : %d\n", filesProcessed) ; 
+	printf("     number of files/events processed           : %d/%d\n", filesProcessed, eventsProcessed) ; 
 	TFile * qaResult = TFile::Open(AliQA::GetQAResultFileName()) ; 
-	AliQA * qa = dynamic_cast<AliQA *>(qaResult->Get("QA")) ; 
-	for (Int_t index = 0 ; index < AliQA::kNDET ; index++)
-		if (detectorsW.Contains(AliQA::GetDetName(AliQA::DETECTORINDEX(index)))) 
-			qa->ShowStatus(AliQA::DETECTORINDEX(index)) ;
+	if ( qaResult ) {
+		AliQA * qa = dynamic_cast<AliQA *>(qaResult->Get("QA")) ; 
+		for (Int_t index = 0 ; index < AliQA::kNDET ; index++)
+			if (detectorsW.Contains(AliQA::GetDetName(AliQA::DETECTORINDEX(index)))) 
+				qa->ShowStatus(AliQA::DETECTORINDEX(index)) ;
+	} else {
+		AliError(Form("%s has not been produced !", AliQA::GetQAResultFileName())) ; 
+	}
 }
