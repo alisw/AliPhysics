@@ -28,7 +28,9 @@ public:
     kStoreStarted,
     kStoreError,
     kDone, // final
-    kFailed  // final
+    kFailed,  // final
+    kStoreDelayed,
+    kFXSError
   };
 
   AliShuttleStatus();

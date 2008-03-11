@@ -136,6 +136,8 @@ const char* AliShuttleStatus::GetStatusName(Status status)
     case kStoreError: return "StoreError";
     case kDone: return "Done";
     case kFailed: return "Failed";
+    case kStoreDelayed: return "StoreDelayed";
+    case kFXSError: return "FXSError";
   }
 
   return 0;

@@ -108,7 +108,7 @@ private:
 				AliCDBMetaData* metaData, Int_t validityStart = 0, Bool_t validityInfinite = kFALSE);
 
 	Bool_t StoreOCDB();
-	Bool_t StoreOCDB(const TString& uri);
+	Int_t StoreOCDB(const TString& uri);
 	Bool_t CopyFileLocally(const char* localFile, const TString& target);
 	Bool_t CopyFilesToGrid(const char* type);
 	void CleanLocalStorage(const TString& uri);

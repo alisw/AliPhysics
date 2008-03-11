@@ -253,6 +253,8 @@ Bool_t AliShuttle::StoreOCDB()
 	// Then calls StoreRefFilesToGrid to store reference files. 
 	//
 	
+	UpdateShuttleStatus(AliShuttleStatus::kStoreStarted);
+				
 	if (fTestMode & kErrorGrid)
 	{
 		Log("SHUTTLE", "StoreOCDB - In TESTMODE - Simulating error while storing in the Grid");
@@ -261,10 +263,10 @@ Bool_t AliShuttle::StoreOCDB()
 	}
 	
 	Log("SHUTTLE","StoreOCDB - Storing OCDB data ...");
-	Bool_t resultCDB = StoreOCDB(fgkMainCDB);
+	Int_t resultCDB = StoreOCDB(fgkMainCDB);
 
 	Log("SHUTTLE","StoreOCDB - Storing reference data ...");
-	Bool_t resultRef = StoreOCDB(fgkMainRefStorage);
+	Int_t resultRef = StoreOCDB(fgkMainRefStorage);
 	
 	Log("SHUTTLE","StoreOCDB - Storing reference files ...");
 	Bool_t resultRefFiles = CopyFilesToGrid("reference");
@@ -276,19 +278,56 @@ Bool_t AliShuttle::StoreOCDB()
 		resultMetadata = CopyFilesToGrid("metadata");
 	}
 	
-	return resultCDB && resultRef && resultRefFiles && resultMetadata;
+	Int_t storeResult = 0;
+	
+	if (resultCDB < 0 || resultRef < 0 || resultRefFiles == kFALSE || resultMetadata == kFALSE)
+		storeResult = -1;
+	else if (resultCDB > 0 || resultRef > 0)
+		storeResult = 1;
+		
+	if (storeResult < 0)
+	{
+		Log("SHUTTLE", 
+			Form("\t\t\t****** run %d - %s: STORAGE ERROR ******",
+				GetCurrentRun(), fCurrentDetector.Data()));
+		UpdateShuttleStatus(AliShuttleStatus::kStoreError);
+	} 
+	else if (storeResult > 0)
+	{
+		Log("SHUTTLE", 
+			Form("\t\t\t****** run %d - %s: STORAGE DELAYED ******",
+				GetCurrentRun(), fCurrentDetector.Data()));
+		UpdateShuttleStatus(AliShuttleStatus::kStoreDelayed);
+	}
+	else if (storeResult == 0) 
+	{
+		Log("SHUTTLE", 
+			Form("\t\t\t****** run %d - %s: DONE ******",
+				GetCurrentRun(), fCurrentDetector.Data()));
+		UpdateShuttleStatus(AliShuttleStatus::kDone);
+		UpdateShuttleLogbook(fCurrentDetector, "DONE");
+	}
+
+	return (storeResult == 0);
 }
 
 //______________________________________________________________________________________________
-Bool_t AliShuttle::StoreOCDB(const TString& gridURI)
+Int_t AliShuttle::StoreOCDB(const TString& gridURI)
 {
 	//
 	// Called by StoreOCDB(), performs actual storage to the main OCDB and reference storages (Grid)
+	//
+	// Return code:
+	//   -2 initialization error
+	//   -1 storage error
+	//   0  success
+	//   1  storage delayed (e.g. previous unprocessed runs)
 	//
 
 	TObjArray* gridIds=0;
 
 	Bool_t result = kTRUE;
+	Bool_t delayed = kFALSE;
 
 	const char* type = 0;
 	TString localURI;
@@ -300,7 +339,7 @@ Bool_t AliShuttle::StoreOCDB(const TString& gridURI)
 		localURI = fgkLocalRefStorage;
 	} else {
 		AliError(Form("Invalid storage URI: %s", gridURI.Data()));
-		return kFALSE;
+		return -2;
 	}
 
 	AliCDBManager* man = AliCDBManager::Instance();
@@ -309,7 +348,7 @@ Bool_t AliShuttle::StoreOCDB(const TString& gridURI)
 	if(!gridSto) {
 		Log("SHUTTLE",
 			Form("StoreOCDB - cannot activate main %s storage", type));
-		return kFALSE;
+		return -2;
 	}
 
 	gridIds = gridSto->GetQueryCDBList();
@@ -319,7 +358,7 @@ Bool_t AliShuttle::StoreOCDB(const TString& gridURI)
 	if(!localSto) {
 		Log("SHUTTLE",
 			Form("StoreOCDB - cannot activate local %s storage", type));
-		return kFALSE;
+		return -2;
 	}
 	AliCDBPath aPath(GetOfflineDetName(fCurrentDetector.Data()),"*","*");
 	// Local objects were stored with current run as Grid version!
@@ -343,7 +382,10 @@ Bool_t AliShuttle::StoreOCDB(const TString& gridURI)
 			Log("SHUTTLE", Form("StoreOCDB - %s: object %s has validity infinite but "
 						"there are previous unprocessed runs!",
 						fCurrentDetector.Data(), aLocId.GetPath().Data()));
-			result = kFALSE;
+			Log(fCurrentDetector.Data(), Form("StoreOCDB - %s: object %s has validity infinite but "
+						"there are previous unprocessed runs!",
+						fCurrentDetector.Data(), aLocId.GetPath().Data()));
+			delayed = kTRUE;
 			continue;
 		}
 
@@ -396,7 +438,17 @@ Bool_t AliShuttle::StoreOCDB(const TString& gridURI)
 	}
 	localEntries->Clear();
 
-	return result;
+	Int_t returnCode = 0;
+	
+	if (result == kFALSE)
+		returnCode = -1;
+	else if (delayed != kFALSE)
+		returnCode =  1;
+
+	Log("SHUTTLE", Form("StoreOCDB - Returning with %d (result = %d, delayed = %d)", returnCode, result, delayed));
+	Log(fCurrentDetector.Data(), Form("StoreOCDB - Returning with %d (result = %d, delayed = %d)", returnCode, result, delayed));
+	
+	return returnCode;
 }
 
 //______________________________________________________________________________________________
@@ -1014,7 +1066,7 @@ Bool_t AliShuttle::ContinueProcessing()
 	AliShuttleLogbookEntry::Status entryStatus =
 		fLogbookEntry->GetDetectorStatus(fCurrentDetector);
 
-	if(entryStatus != AliShuttleLogbookEntry::kUnprocessed) {
+	if (entryStatus != AliShuttleLogbookEntry::kUnprocessed) {
 		Log("SHUTTLE", Form("ContinueProcessing - %s is %s",
 				fCurrentDetector.Data(),
 				fLogbookEntry->GetDetectorStatusName(entryStatus)));
@@ -1067,24 +1119,12 @@ Bool_t AliShuttle::ContinueProcessing()
 		return kFALSE;
 	}
 
-	if (status->GetStatus() == AliShuttleStatus::kStoreStarted || status->GetStatus() == AliShuttleStatus::kStoreError) {
+	if (status->GetStatus() == AliShuttleStatus::kStoreStarted || status->GetStatus() == AliShuttleStatus::kStoreDelayed ||status->GetStatus() == AliShuttleStatus::kStoreError) {
 		Log("SHUTTLE",
 			Form("ContinueProcessing - %s: Grid storage of one or more "
 				"objects failed. Trying again now",
 				fCurrentDetector.Data()));
-		UpdateShuttleStatus(AliShuttleStatus::kStoreStarted);
-		if (StoreOCDB()){
-			Log("SHUTTLE", Form("ContinueProcessing - %s: all objects "
-				"successfully stored into main storage",
-				fCurrentDetector.Data()));
-			UpdateShuttleStatus(AliShuttleStatus::kDone);
-			UpdateShuttleLogbook(fCurrentDetector, "DONE");
-		} else {
-			Log("SHUTTLE",
-				Form("ContinueProcessing - %s: Grid storage failed again",
-					fCurrentDetector.Data()));
-			UpdateShuttleStatus(AliShuttleStatus::kStoreError);
-		}
+		StoreOCDB();
 		return kFALSE;
 	}
 
@@ -1231,7 +1271,8 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 	{
 		fCurrentDetector = aDetector->String();
 
-		if (ContinueProcessing() == kFALSE) continue;
+		if (ContinueProcessing() == kFALSE) 
+			continue;
 		
 		if (first)
 		{
@@ -1422,22 +1463,10 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 							fCurrentDetector.Data()));
 
 				// Transfer the data from local storage to main storage (Grid)
-				UpdateShuttleStatus(AliShuttleStatus::kStoreStarted);
 				if (StoreOCDB() == kFALSE)
-				{
-					Log("SHUTTLE", 
-						Form("\t\t\t****** run %d - %s: STORAGE ERROR ******",
-							GetCurrentRun(), aDetector->GetName()));
-					UpdateShuttleStatus(AliShuttleStatus::kStoreError);
 					success = kFALSE;
-				} else {
-					Log("SHUTTLE", 
-						Form("\t\t\t****** run %d - %s: DONE ******",
-							GetCurrentRun(), aDetector->GetName()));
-					UpdateShuttleStatus(AliShuttleStatus::kDone);
-					UpdateShuttleLogbook(fCurrentDetector, "DONE");
-				}
-			} else 
+			} 
+			else 
 			{
 				Log("SHUTTLE", 
 					Form("\t\t\t****** run %d - %s: PP ERROR ******",
