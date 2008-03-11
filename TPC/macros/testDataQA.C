@@ -10,80 +10,89 @@
 
 
 void testDataQA(Char_t *fileName, Int_t maxevent=10)
-{  
-  AliLog::SetClassDebugLevel("AliTPCRawStream",-5);
-  AliLog::SetClassDebugLevel("AliRawReaderDate",-5);
-  AliLog::SetClassDebugLevel("AliTPCAltroMapping",-5);
-  AliLog::SetModuleDebugLevel("RAW",-5);
-  AliLog::SetGlobalLogLevel(3);
-
+{
    AliRawReaderRoot *rawReader = new AliRawReaderRoot(fileName);
    if ( !rawReader ) return;
-   AliTPCdataQA *calib = new AliTPCdataQA; 
-   calib->SetRangeTime(200,800);
-   AliTPCCalibPulser *calibPulser = new AliTPCCalibPulser; 
-   calibPulser->SetRangeTime(5,300);
+   AliTPCdataQA *calib     = new AliTPCdataQA; 
+   AliTPCdataQA *calibFast = new AliTPCdataQA; 
+   calib->SetRangeTime(1,1000);
+   calibFast->SetRangeTime(1,1000);
    printf("Processing data\n");
    Int_t event=0;
    while (rawReader->NextEvent()){
      calib->ProcessEvent(rawReader);
      rawReader->Reset();
-     calibPulser->ProcessEvent(rawReader);
-     printf("Processing event\t%d\n",event);
+     calibFast->ProcessEventFast(rawReader);
      event++;
+     // if you wann to check the handling of Analyse updates uncomment this
+//      if(gRandom->Rndm()<0.3) {
+//        calib->Analyse();
+//        calibFast->Analyse();
+//      }
      if (event>maxevent) break;
    }
-   calibPulser->Analyse();
-   TFile f("dataQA.root","recreate");
-   calibPulser->Write("Pulser");
-   calib->Write("AliTPCdataQA");
-   delete rawReader;
-   delete calib;
-   delete calibPulser;
+   calib->Analyse();
+   calibFast->Analyse();
 
-   f.Close();
+   TFile file1("dataQATestAnalyse.root","recreate");
+   calib->Write("AliTPCdataQA");
+   calibFast->Write("AliTPCdataQAFast");
+   delete rawReader;
+   //   delete calib;
+   delete calibFast;
+
+   file1.Close();
    //
-   TFile f2("dataQA.root");
-   AliTPCdataQA* ped = (AliTPCdataQA*)f2.Get("AliTPCdataQA");
-   AliTPCCalibPulser* pedPulser = (AliTPCCalibPulser*)f2.Get("Pulser");
+   TFile file2("dataQATestAnalyse.root");
+   AliTPCdataQA* cal = (AliTPCdataQA*)file2.Get("AliTPCdataQA");
+   AliTPCdataQA* calFast = (AliTPCdataQA*)file2.Get("AliTPCdataQAFast");
    
    AliTPCPreprocessorOnline preprocesor;
-   preprocesor.AddComponent(ped->GetMaxCharge());
-   preprocesor.AddComponent(ped->GetOverThreshold0());
-   preprocesor.AddComponent(ped->GetOverThreshold5());
-   preprocesor.AddComponent(ped->GetOverThreshold10());
-   preprocesor.AddComponent(ped->GetOverThreshold20());
-   preprocesor.AddComponent(ped->GetOverThreshold30());
+   preprocesor.AddComponent(cal->GetNoThreshold());
+   preprocesor.AddComponent(cal->GetOverThreshold10());
+   preprocesor.AddComponent(cal->GetOverThreshold20());
+   preprocesor.AddComponent(cal->GetOverThreshold30());
+   preprocesor.AddComponent(cal->GetNLocalMaxima());
+   preprocesor.AddComponent(cal->GetMeanCharge());
+   preprocesor.AddComponent(cal->GetMaxCharge());
+   preprocesor.AddComponent(cal->GetNTimeBins());
+   preprocesor.AddComponent(cal->GetNPads());
+   preprocesor.AddComponent(cal->GetTimePosition());
+
+   AliTPCCalPad* calPadNoThr= new AliTPCCalPad(*calFast->GetNoThreshold());
+   AliTPCCalPad* calPadThr10= new AliTPCCalPad(*calFast->GetOverThreshold10());
+   AliTPCCalPad* calPadThr20= new AliTPCCalPad(*calFast->GetOverThreshold20());
+   AliTPCCalPad* calPadThr30= new AliTPCCalPad(*calFast->GetOverThreshold30());
+   AliTPCCalPad* calNLocal  = new AliTPCCalPad(*calFast->GetNLocalMaxima());
+   AliTPCCalPad* calPadMean = new AliTPCCalPad(*calFast->GetMeanCharge());
+   AliTPCCalPad* calPadMax  = new AliTPCCalPad(*calFast->GetMaxCharge());
+   AliTPCCalPad* calNTime   = new AliTPCCalPad(*calFast->GetNTimeBins());
+   AliTPCCalPad* calNPad    = new AliTPCCalPad(*calFast->GetNPads());
+   AliTPCCalPad* calTimePos = new AliTPCCalPad(*calFast->GetTimePosition());
    //
-   AliTPCCalPad * pad0 = new AliTPCCalPad(pedPulser->GetCalPadT0());
-   AliTPCCalPad * pad1 = new AliTPCCalPad(pedPulser->GetCalPadQ());
-   AliTPCCalPad * pad2 = new AliTPCCalPad(pedPulser->GetCalPadRMS());
-   pad0->SetName("PulserT0");
-   pad1->SetName("PulserQ");
-   pad2->SetName("PulserRMS");
+   calPadNoThr ->SetName(Form("%sFast", calPadNoThr->GetName()));
+   calPadThr10 ->SetName(Form("%sFast", calPadThr10->GetName()));
+   calPadThr20 ->SetName(Form("%sFast", calPadThr20->GetName()));
+   calPadThr30 ->SetName(Form("%sFast", calPadThr30->GetName()));
+   calNLocal   ->SetName(Form("%sFast", calNLocal  ->GetName()));
+   calPadMean  ->SetName(Form("%sFast", calPadMean ->GetName()));
+   calPadMax   ->SetName(Form("%sFast", calPadMax  ->GetName()));
+   calNTime    ->SetName(Form("%sFast", calNTime   ->GetName()));
+   calNPad     ->SetName(Form("%sFast", calNPad    ->GetName()));
+   calTimePos  ->SetName(Form("%sFast", calTimePos ->GetName()));
+
+   preprocesor.AddComponent(calPadNoThr );
+   preprocesor.AddComponent(calPadThr10 );
+   preprocesor.AddComponent(calPadThr20 );
+   preprocesor.AddComponent(calPadThr30 );
+   preprocesor.AddComponent(calNLocal   );
+   preprocesor.AddComponent(calPadMean  );
+   preprocesor.AddComponent(calPadMax   );
+   preprocesor.AddComponent(calNTime    );
+   preprocesor.AddComponent(calNPad     );
+   preprocesor.AddComponent(calTimePos  );
    
-   preprocesor.AddComponent(pad0);
-   preprocesor.AddComponent(pad1);
-   preprocesor.AddComponent(pad2);
-   
-   preprocesor.DumpToFile("CalibTree2.root");
-   AliTPCCalibViewerGUI::ShowGUI("CalibTree2.root");
+   preprocesor.DumpToFile("CalibTreeTestAnalyse.root");
+   AliTPCCalibViewerGUI::ShowGUI("CalibTreeTestAnalyse.root");
 }
 
-AliTPCCalibViewerGUI * gui=0;
-
-void UpdateGUI(const char *fname="dataQA.root"){
-  //
-  //
-  //
-  TFile f2(fname);
-  AliTPCdataQA* ped = (AliTPCdataQA*)f2.Get("AliTPCdataQA");
-  ped->MakeTree("CalibTree.root");
-  if (!gui){
-    gui = (AliTPCCalibViewerGUI)AliTPCCalibViewerGUI::ShowGUI("CalibTree.root")->At(0);
-  }else{
-    gui->GetViewer();
-    AliTPCCalibViewer *nviewer = new  AliTPCCalibViewer("CalibTree.root", "calPads");
-    gui->Initialize(nviewer);
-  }
-}

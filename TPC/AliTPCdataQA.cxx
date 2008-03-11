@@ -16,6 +16,45 @@
 
 /* $Id$ */
 
+/*
+  February 2008
+
+  The code has been heavily modified so that now the RAW data is
+  "expanded" for each sector and stored in a big signal array. Then a
+  simple version of the code in AliTPCclustererMI is used to identify
+  the local maxima and these are then used for QA. This gives a better
+  estimate of the charge (both max and total) and also limits the
+  effect of noise.
+
+  Implementation:
+
+  In Update the RAW signals >= 3 ADC channels are stored in the arrays.
+  
+  There are 3 arrays:
+  Float_t** fAllBins       2d array [row][bin(pad, time)] ADC signal
+  Int_t**   fAllSigBins    2d array [row][signal#] bin(with signal)
+  Int_t*    fAllNSigBins;  1d array [row] Nsignals
+
+  This is done sector by sector.
+
+  When data from a new sector is encountered, the method
+  FindLocalMaxima is called on the data from the previous sector, and
+  the calibration/data objects are updated with the "cluster"
+  info. Finally the arrays are cleared.
+
+  The requirements for a local maxima is:
+  Charge in bin is >= 5 ADC channels.
+  Charge in bin is larger than all the 8 neighboring bins.
+  At least one of the two pad neighbors has a signal.
+  At least one of the two time neighbors has a signal.
+
+  Before accessing the data it is expected that the Analyse method is
+  called. This normalizes some of the data objects to per event or per
+  cluster. 
+  If more data is passed to the class after Analyse has been called
+  the normalization is reversed and Analyse has to be called again.
+*/
+
 
 // stl includes
 #include <iostream>
@@ -31,6 +70,7 @@ using namespace std;
 #include <TRandom.h>
 #include <TDirectory.h>
 #include <TFile.h>
+#include <TError.h>
 //AliRoot includes
 #include "AliRawReader.h"
 #include "AliRawReaderRoot.h"
@@ -56,34 +96,34 @@ AliTPCdataQA::AliTPCdataQA() : /*FOLD00*/
   TH1F("TPCRAW","TPCRAW",100,0,100),
   fFirstTimeBin(60),
   fLastTimeBin(1000),
-  fMaxTime(1100),
   fAdcMin(1),
   fAdcMax(100),
   fOldRCUformat(kTRUE),
-  fROC(AliTPCROC::Instance()),
   fMapping(NULL),
   fPedestal(0),
   fNoise(0),
+  fNLocalMaxima(0),
   fMaxCharge(0),
   fMeanCharge(0),
   fNoThreshold(0),
-  fOverThreshold0(0),
-  fOverThreshold5(0),
   fOverThreshold10(0),
   fOverThreshold20(0),
   fOverThreshold30(0),
-  fEventCounter(0)
+  fNTimeBins(0),
+  fNPads(0),
+  fTimePosition(0),
+  fEventCounter(0),
+  fIsAnalysed(kFALSE),
+  fAllBins(0),
+  fAllSigBins(0),
+  fAllNSigBins(0),
+  fRowsMax(0),
+  fPadsMax(0),
+  fTimeBinsMax(0)
 {
   //
   // default constructor
   //
-
-  fSectorLast  = -1;
-  fRowLast     =  0;
-  fPadLast     =  0;
-  fTimeBinLast =  0;
-  fSignalLast  =  0;
-  fNAboveThreshold = 0;
 }
 
 
@@ -92,17 +132,54 @@ AliTPCdataQA::AliTPCdataQA(const AliTPCdataQA &ped) : /*FOLD00*/
   TH1F(ped),
   fFirstTimeBin(ped.GetFirstTimeBin()),
   fLastTimeBin(ped.GetLastTimeBin()),
-  fMaxTime(ped.fMaxTime),
   fAdcMin(ped.GetAdcMin()),
   fAdcMax(ped.GetAdcMax()),
-  fOldRCUformat(ped.fOldRCUformat),
-  fROC(AliTPCROC::Instance()),
-  fMapping(NULL)
+  fOldRCUformat(ped.GetOldRCUformat()),
+  fMapping(NULL),
+  fPedestal(0),
+  fNoise(0),
+  fNLocalMaxima(0),
+  fMaxCharge(0),
+  fMeanCharge(0),
+  fNoThreshold(0),
+  fOverThreshold10(0),
+  fOverThreshold20(0),
+  fOverThreshold30(0),
+  fNTimeBins(0),
+  fNPads(0),
+  fTimePosition(0),
+  fEventCounter(ped.GetEventCounter()),
+  fIsAnalysed(ped.GetIsAnalysed()),
+  fAllBins(0),
+  fAllSigBins(0),
+  fAllNSigBins(0),
+  fRowsMax(0),
+  fPadsMax(0),
+  fTimeBinsMax(0)
 {
   //
   // copy constructor
   //
- 
+  if(ped.GetNLocalMaxima())
+    fNLocalMaxima  = new AliTPCCalPad(*ped.GetNLocalMaxima());
+  if(ped.GetMaxCharge())
+    fMaxCharge      = new AliTPCCalPad(*ped.GetMaxCharge());
+  if(ped.GetMeanCharge())
+    fMeanCharge     = new AliTPCCalPad(*ped.GetMeanCharge());
+  if(ped.GetNoThreshold())
+    fNoThreshold  = new AliTPCCalPad(*ped.GetNoThreshold());
+  if(ped.GetNTimeBins())
+    fNTimeBins  = new AliTPCCalPad(*ped.GetNTimeBins());
+  if(ped.GetNPads())
+    fNPads  = new AliTPCCalPad(*ped.GetNPads());
+  if(ped.GetTimePosition())
+    fTimePosition  = new AliTPCCalPad(*ped.GetTimePosition());
+  if(ped.GetOverThreshold10())
+    fOverThreshold10  = new AliTPCCalPad(*ped.GetOverThreshold10());
+  if(ped.GetOverThreshold20())
+    fOverThreshold20  = new AliTPCCalPad(*ped.GetOverThreshold20());
+  if(ped.GetOverThreshold30())
+    fOverThreshold30  = new AliTPCCalPad(*ped.GetOverThreshold30());
 }
 
 
@@ -127,11 +204,28 @@ AliTPCdataQA::~AliTPCdataQA() /*FOLD00*/
   //
 
   // do not delete fMapping, because we do not own it.
+  // do not delete fMapping, because we do not own it.
+  // do not delete fNoise and fPedestal, because we do not own them.
 
+  delete fNLocalMaxima;
+  delete fMaxCharge;
+  delete fMeanCharge;
+  delete fNoThreshold;
+  delete fNTimeBins;
+  delete fNPads;
+  delete fTimePosition;
+  delete fOverThreshold10;
+  delete fOverThreshold20;
+  delete fOverThreshold30;
+
+  for (Int_t iRow = 0; iRow < fRowsMax; iRow++) {
+    delete [] fAllBins[iRow];
+    delete [] fAllSigBins[iRow];
+  }  
+  delete [] fAllBins;
+  delete [] fAllSigBins;
+  delete [] fAllNSigBins;
 }
-
-
-
 
 //_____________________________________________________________________
 Bool_t AliTPCdataQA::ProcessEventFast(AliTPCRawStreamFast *rawStreamFast)
@@ -140,26 +234,39 @@ Bool_t AliTPCdataQA::ProcessEventFast(AliTPCRawStreamFast *rawStreamFast)
   // Event Processing loop - AliTPCRawStream
   //
   Bool_t withInput = kFALSE;
+  Int_t nSignals = 0;
+  Int_t lastSector = -1;
 
   while ( rawStreamFast->NextDDL() ){
       while ( rawStreamFast->NextChannel() ){
-	  Int_t isector  = rawStreamFast->GetSector();                       //  current sector
-	  Int_t iRow     = rawStreamFast->GetRow();                          //  current row
-	  Int_t iPad     = rawStreamFast->GetPad();                          //  current pad
 
-	  while ( rawStreamFast->NextBunch() ){
-	    Int_t startTbin = (Int_t)rawStreamFast->GetStartTimeBin();
-	    Int_t endTbin = (Int_t)rawStreamFast->GetEndTimeBin();
-
-	      for (Int_t iTimeBin = startTbin; iTimeBin < endTbin; iTimeBin++){
-		  Float_t signal=(Float_t)rawStreamFast->GetSignals()[iTimeBin-startTbin];
-		  Update(isector,iRow,iPad,iTimeBin+1,signal);
-		  withInput = kTRUE;
-	      }
+	Int_t iSector  = rawStreamFast->GetSector(); //  current sector
+	Int_t iRow     = rawStreamFast->GetRow();    //  current row
+	Int_t iPad     = rawStreamFast->GetPad();    //  current pad
+	// Call local maxima finder if the data is in a new sector
+	if(iSector != lastSector) {
+	  
+	  if(nSignals>0)
+	    FindLocalMaxima(lastSector);
+	  
+	  CleanArrays();
+	  lastSector = iSector;
+	  nSignals = 0;
+	}
+	
+	while ( rawStreamFast->NextBunch() ){
+	  Int_t startTbin = (Int_t)rawStreamFast->GetStartTimeBin();
+	  Int_t endTbin = (Int_t)rawStreamFast->GetEndTimeBin();
+	  
+	  for (Int_t iTimeBin = startTbin; iTimeBin < endTbin; iTimeBin++){
+	    Float_t signal = rawStreamFast->GetSignals()[iTimeBin-startTbin];
+	    nSignals += Update(iSector,iRow,iPad,iTimeBin+1,signal);
+	    withInput = kTRUE;
 	  }
+	}
       }
   }
-
+  
   return withInput;
 }
 //_____________________________________________________________________
@@ -168,7 +275,6 @@ Bool_t AliTPCdataQA::ProcessEventFast(AliRawReader *rawReader)
   //
   //  Event processing loop - AliRawReader
   //
-  fSectorLast  = -1;
   AliTPCRawStreamFast *rawStreamFast = new AliTPCRawStreamFast(rawReader, (AliAltroMapping**)fMapping);
   Bool_t res=ProcessEventFast(rawStreamFast);
   if(res)
@@ -189,6 +295,8 @@ Bool_t AliTPCdataQA::ProcessEvent(AliTPCRawStream *rawStream)
   rawStream->SetOldRCUFormat(fOldRCUformat);
 
   Bool_t withInput = kFALSE;
+  Int_t nSignals = 0;
+  Int_t lastSector = -1;
 
   while (rawStream->Next()) {
 
@@ -197,9 +305,23 @@ Bool_t AliTPCdataQA::ProcessEvent(AliTPCRawStream *rawStream)
     Int_t iPad     = rawStream->GetPad();         //  current pad
     Int_t iTimeBin = rawStream->GetTime();        //  current time bin
     Float_t signal = rawStream->GetSignal();      //  current ADC signal
+
+    // Call local maxima finder if the data is in a new sector
+    if(iSector != lastSector) {
+      
+      if(nSignals>0)
+	FindLocalMaxima(lastSector);
+      
+      CleanArrays();
+      lastSector = iSector;
+      nSignals = 0;
+    }
     
-    Update(iSector,iRow,iPad,iTimeBin,signal);
-    withInput = kTRUE;
+    // Sometimes iRow==-1 if there is problems to read the data
+    if(iRow>=0) {
+      nSignals += Update(iSector,iRow,iPad,iTimeBin,signal);
+      withInput = kTRUE;
+    }
   }
 
   return withInput;
@@ -214,7 +336,6 @@ Bool_t AliTPCdataQA::ProcessEvent(AliRawReader *rawReader)
   //
 
   // if fMapping is NULL the rawstream will crate its own mapping
-  fSectorLast  = -1;
   AliTPCRawStream rawStream(rawReader, (AliAltroMapping**)fMapping);
   rawReader->Select("TPC");
   Bool_t res =  ProcessEvent(&rawStream);
@@ -271,135 +392,234 @@ void AliTPCdataQA::DumpToFile(const Char_t *filename, const Char_t *dir, Bool_t 
 
 
 //_____________________________________________________________________
-Int_t AliTPCdataQA::Update(const Int_t icsector, /*FOLD00*/
-				  const Int_t icRow,
-				  const Int_t icPad,
-				  const Int_t icTimeBin,
-				  const Float_t csignal)
+Int_t AliTPCdataQA::Update(const Int_t iSector, /*FOLD00*/
+			   const Int_t iRow,
+			   const Int_t iPad,
+			   const Int_t iTimeBin,
+			   Float_t signal)
 {
   //
   // Signal filling method
   //
-  if (icTimeBin<fFirstTimeBin) return 0;
-  if (icTimeBin>fLastTimeBin) return 0;
-
+  
+  //
+  // Define the calibration objects the first time Update is called
+  // NB! This has to be done first even if the data is rejected by the time 
+  // cut to make sure that the objects are available in Analyse
+  //
+  if (!fNLocalMaxima) fNLocalMaxima = new AliTPCCalPad("NLocalMaxima","NLocalMaxima");
   if (!fMaxCharge) fMaxCharge = new AliTPCCalPad("MaxCharge","MaxCharge");
   if (!fMeanCharge) fMeanCharge = new AliTPCCalPad("MeanCharge","MeanCharge");
   if (!fNoThreshold) fNoThreshold = new AliTPCCalPad("NoThreshold","NoThreshold");
-  if (!fOverThreshold0) fOverThreshold0 = new AliTPCCalPad("OverThreshold0","OverThreshold0");
-  if (!fOverThreshold5) fOverThreshold5 = new AliTPCCalPad("OverThreshold5","OverThreshold5");
+  if (!fNTimeBins) fNTimeBins = new AliTPCCalPad("NTimeBins","NTimeBins");
+  if (!fNPads) fNPads = new AliTPCCalPad("NPads","NPads");
+  if (!fTimePosition) fTimePosition = new AliTPCCalPad("TimePosition","TimePosition");
   if (!fOverThreshold10) fOverThreshold10 = new AliTPCCalPad("OverThreshold10","OverThreshold10");
   if (!fOverThreshold20) fOverThreshold20 = new AliTPCCalPad("OverThreshold20","OverThreshold20");
   if (!fOverThreshold30) fOverThreshold30 = new AliTPCCalPad("OverThreshold30","OverThreshold30");
+  // Make the arrays for expanding the data
+
+  if (!fAllBins)
+    MakeArrays();
+
   //
+  // If Analyse has been previously called we need now to denormalize the data
+  // as more data is coming
+  //
+  if(fIsAnalysed == kTRUE) {
+    
+    const Int_t nTimeBins = fLastTimeBin - fFirstTimeBin +1;
+    const Float_t denormalization = Float_t(fEventCounter * nTimeBins);
+    fNoThreshold->Multiply(denormalization);  
+    
+    fMeanCharge->Multiply(fNLocalMaxima);
+    fMaxCharge->Multiply(fNLocalMaxima);
+    fNTimeBins->Multiply(fNLocalMaxima);
+    fNPads->Multiply(fNLocalMaxima);
+    fTimePosition->Multiply(fNLocalMaxima);
+    fIsAnalysed = kFALSE;
+  }
 
-  Int_t signal = Int_t(csignal);
-
+  //
+  // TimeBin cut
+  //
+  if (iTimeBin<fFirstTimeBin) return 0;
+  if (iTimeBin>fLastTimeBin) return 0;
+  
   // if pedestal calibrations are loaded subtract pedestals
   if(fPedestal) {
 
-    Int_t pedestal = Int_t(fPedestal->GetCalROC(icsector)->GetValue(icRow, icPad));
-    if(pedestal<10 || pedestal>90)
+    Float_t ped = fPedestal->GetCalROC(iSector)->GetValue(iRow, iPad);
+    // Don't use data from pads where pedestals are abnormally small or large
+    if(ped<10 || ped>90)
       return 0;
-    signal -= pedestal;
+    signal -= ped;
   }
-
-
-  if (signal >= 0) {
-    
-    Float_t count = fNoThreshold->GetCalROC(icsector)->GetValue(icRow, icPad);
-    fNoThreshold->GetCalROC(icsector)->SetValue(icRow, icPad,count+1);
-  }
-
+  
+  // In fNoThreshold we fill all data to estimate the ZS volume
+  Float_t count = fNoThreshold->GetCalROC(iSector)->GetValue(iRow, iPad);
+  fNoThreshold->GetCalROC(iSector)->SetValue(iRow, iPad,count+1);
+  
   // Require at least 3 ADC channels
-  if (signal < 3)
+  if (signal < 3.0)
     return 0;
 
   // if noise calibrations are loaded require at least 3*sigmaNoise
   if(fNoise) {
-  
-    Float_t noise = fNoise->GetCalROC(icsector)->GetValue(icRow, icPad);
-
-    if(signal<noise*3)
+    
+    Float_t noise = fNoise->GetCalROC(iSector)->GetValue(iRow, iPad);
+    
+    if(signal < noise*3.0)
       return 0;
   }
-  //
-  // this signal is ok - now see if the previous signal was connected
-  // this is a bit ugly since the standard decoder goes down in time bins
-  // (10, 9, 8..) while the fast HLT decoder goes up in time bins (1, 2, 3..) 
-  //
-  if(fSectorLast==icsector && fRowLast==icRow && fPadLast==icPad &&
-     fTimeBinLast==icTimeBin+1 || fTimeBinLast==icTimeBin-1)
-    fNAboveThreshold++;
-  else
-    fNAboveThreshold = 1;
-    
-  if(fNAboveThreshold==2) {
-    
-    //
-    // This is the only special case, because before we did not know if we
-    // should store the information
-    //
-    UpdateSignalHistograms(fSectorLast, fRowLast, fPadLast, fTimeBinLast,
-			 fSignalLast);
-  }
-  
-  // keep the information for the next signal
-  fSectorLast  = icsector;
-  fRowLast     = icRow;
-  fPadLast     = icPad;
-  fTimeBinLast = icTimeBin;
-  fSignalLast  = signal;
-  
-  if(fNAboveThreshold==1) // we don't know if this information should be stored
-    return 1;
-  
-  UpdateSignalHistograms(fSectorLast, fRowLast, fPadLast, fTimeBinLast,
-		       fSignalLast);
 
-  return 1;
+  //
+  // This signal is ok and we store it in the cluster map
+  //
+
+  SetExpandDigit(iRow, iPad, iTimeBin, signal);
+  
+  return 1; // signal was accepted
 }
+
 //_____________________________________________________________________
-void AliTPCdataQA::UpdateSignalHistograms(const Int_t icsector, /*FOLD00*/
-					const Int_t icRow,
-					const Int_t icPad,
-					const Int_t icTimeBin,
-					const Float_t signal)
+void AliTPCdataQA::FindLocalMaxima(const Int_t iSector)
 {
   //
-  // Signal filling method
+  // This method is called after the data from each sector has been
+  // exapanded into an array
+  // Loop over the signals and identify local maxima and fill the
+  // calibration objects with the information
   //
+
+  Int_t nLocalMaxima = 0;
+  const Int_t maxTimeBin = fTimeBinsMax+4; // Used to step between neighboring pads 
+                                           // Because we have tha pad-time data in a 
+                                           // 1d array
+
+  for (Int_t iRow = 0; iRow < fRowsMax; iRow++) {
+
+    Float_t* allBins = fAllBins[iRow];
+    Int_t* sigBins   = fAllSigBins[iRow];
+    const Int_t nSigBins   = fAllNSigBins[iRow];
+    
+    for (Int_t iSig = 0; iSig < nSigBins; iSig++) {
+
+      Int_t bin  = sigBins[iSig];
+      Float_t *b = &allBins[bin];
+
+      //
+      // Now we check if this is a local maximum
+      //
+
+      Float_t qMax = b[0];
+
+      // First check that the charge is bigger than the threshold
+      if (qMax<5) 
+	continue;
+      
+      // Require at least one neighboring pad with signal
+      if (b[-maxTimeBin]+b[maxTimeBin]<=0) continue;
+
+      // Require at least one neighboring time bin with signal
+      if (b[-1]+b[1]<=0) continue;
+      
+      //
+      // Check that this is a local maximum
+      // Note that the checking is done so that if 2 charges has the same
+      // qMax then only 1 cluster is generated 
+      // (that is why there is BOTH > and >=)
+      //
+      if (b[-maxTimeBin]   >= qMax) continue;
+      if (b[-1  ]          >= qMax) continue; 
+      if (b[+maxTimeBin]   > qMax)  continue; 
+      if (b[+1  ]          > qMax)  continue; 
+      if (b[-maxTimeBin-1] >= qMax) continue;
+      if (b[+maxTimeBin-1] >= qMax) continue; 
+      if (b[+maxTimeBin+1] > qMax)  continue; 
+      if (b[-maxTimeBin+1] >= qMax) continue;
+      
+      //
+      // Now we accept the local maximum and fill the calibration/data objects
+      //
+      nLocalMaxima++;
+
+      Int_t iPad, iTimeBin;
+      GetPadAndTimeBin(bin, iPad, iTimeBin);
+      
+      Float_t count = fNLocalMaxima->GetCalROC(iSector)->GetValue(iRow, iPad);
+      fNLocalMaxima->GetCalROC(iSector)->SetValue(iRow, iPad, count+1);
+
+      count = fTimePosition->GetCalROC(iSector)->GetValue(iRow, iPad);
+      fTimePosition->GetCalROC(iSector)->SetValue(iRow, iPad, count+iTimeBin);
+      
+      Float_t charge = fMaxCharge->GetCalROC(iSector)->GetValue(iRow, iPad);
+      fMaxCharge->GetCalROC(iSector)->SetValue(iRow, iPad, charge + qMax);
+      
+      if(qMax>=10) {
+	count = fOverThreshold10->GetCalROC(iSector)->GetValue(iRow, iPad);
+	fOverThreshold10->GetCalROC(iSector)->SetValue(iRow, iPad, count+1);
+      }
+      if(qMax>=20) {
+	count = fOverThreshold20->GetCalROC(iSector)->GetValue(iRow, iPad);
+	fOverThreshold20->GetCalROC(iSector)->SetValue(iRow, iPad, count+1);
+      }
+      if(qMax>=30) {
+	count = fOverThreshold30->GetCalROC(iSector)->GetValue(iRow, iPad);
+	fOverThreshold30->GetCalROC(iSector)->SetValue(iRow, iPad, count+1);
+      }
+
+      //
+      // Calculate the total charge as the sum over the region:
+      //
+      //    o o o o o
+      //    o i i i o
+      //    o i C i o
+      //    o i i i o
+      //    o o o o o
+      //
+      // with qmax at the center C.
+      //
+      // The inner charge (i) we always add, but we only add the outer
+      // charge (o) if the neighboring inner bin (i) has a signal.
+      //
+      Int_t minP = 0, maxP = 0, minT = 0, maxT = 0;
+      Float_t qTot = qMax;
+      for(Int_t i = -1; i<=1; i++) {
+	for(Int_t j = -1; j<=1; j++) {
+	  
+	  if(i==0 && j==0)
+	    continue;
+	  
+	  Float_t charge = GetQ(b, i, j, maxTimeBin, minT, maxT, minP, maxP);
+	  qTot += charge;
+	  if(charge>0) {
+	    // see if the next neighbor is also above threshold
+	    if(i*j==0) {
+	      qTot += GetQ(b, 2*i, 2*j, maxTimeBin, minT, maxT, minP, maxP); 
+	    } else {
+	      // we are in a diagonal corner
+	      qTot += GetQ(b,   i, 2*j, maxTimeBin, minT, maxT, minP, maxP); 
+	      qTot += GetQ(b, 2*i,   j, maxTimeBin, minT, maxT, minP, maxP); 
+	      qTot += GetQ(b, 2*i, 2*j, maxTimeBin, minT, maxT, minP, maxP); 
+	    }
+	  }
+	}
+      }
+      
+      charge = fMeanCharge->GetCalROC(iSector)->GetValue(iRow, iPad);
+      fMeanCharge->GetCalROC(iSector)->SetValue(iRow, iPad, charge + qTot);
+      
+      count = fNTimeBins->GetCalROC(iSector)->GetValue(iRow, iPad);
+      fNTimeBins->GetCalROC(iSector)->SetValue(iRow, iPad, count + maxT-minT+1);
+      
+      count = fNPads->GetCalROC(iSector)->GetValue(iRow, iPad);
+      fNPads->GetCalROC(iSector)->SetValue(iRow, iPad, count + maxP-minP+1);
+      
+    } // end loop over signals
+  } // end loop over rows
   
-  {
-    Float_t charge = fMeanCharge->GetCalROC(icsector)->GetValue(icRow, icPad);
-    fMeanCharge->GetCalROC(icsector)->SetValue(icRow, icPad, charge + signal);
-  }
-  
-  if (signal>fMaxCharge->GetCalROC(icsector)->GetValue(icRow, icPad)){
-    fMaxCharge->GetCalROC(icsector)->SetValue(icRow, icPad,signal);
-  }
-  
-  if (signal>0){
-    Float_t count = fOverThreshold0->GetCalROC(icsector)->GetValue(icRow, icPad);
-    fOverThreshold0->GetCalROC(icsector)->SetValue(icRow, icPad,count+1);
-  };
-  //
-  if (signal>5){
-    Float_t count = fOverThreshold5->GetCalROC(icsector)->GetValue(icRow, icPad);
-    fOverThreshold5->GetCalROC(icsector)->SetValue(icRow, icPad,count+1);
-  };
-  if (signal>10){
-    Float_t count = fOverThreshold10->GetCalROC(icsector)->GetValue(icRow, icPad);
-    fOverThreshold10->GetCalROC(icsector)->SetValue(icRow, icPad,count+1);
-  };
-  if (signal>20){
-    Float_t count = fOverThreshold20->GetCalROC(icsector)->GetValue(icRow, icPad);
-    fOverThreshold20->GetCalROC(icsector)->SetValue(icRow, icPad,count+1);
-  };
-  if (signal>30){
-    Float_t count = fOverThreshold30->GetCalROC(icsector)->GetValue(icRow, icPad);
-    fOverThreshold30->GetCalROC(icsector)->SetValue(icRow, icPad,count+1);
-  };  
+  //  cout << "Number of local maximas found: " << nLocalMaxima << endl;
 }
 
 //_____________________________________________________________________
@@ -411,93 +631,162 @@ void AliTPCdataQA::Analyse()
   
   cout << "Analyse called" << endl;
 
-  if(fEventCounter==0) {
-
-    cout << "EventCounter == 0, Cannot analyse" << endl;
+  if(fIsAnalysed == kTRUE) {
+    
+    cout << "No new data since Analyse was called last time" << endl;
     return;
   }
 
+  if(fEventCounter==0) {
+    
+    cout << "EventCounter == 0, Cannot analyse" << endl;
+    return;
+  }
+  
   Int_t nTimeBins = fLastTimeBin - fFirstTimeBin +1;
   cout << "EventCounter: " << fEventCounter << endl
        << "TimeBins: " << nTimeBins << endl;
 
-  if (fMeanCharge && fNoThreshold) fMeanCharge->Divide(fNoThreshold);
-
   Float_t normalization = 1.0 / Float_t(fEventCounter * nTimeBins);
-  if (fNoThreshold)     fNoThreshold->Multiply(normalization);  
-  if (fOverThreshold0)  fOverThreshold0->Multiply(normalization);  
-  if (fOverThreshold5)  fOverThreshold5->Multiply(normalization);  
-  if (fOverThreshold10) fOverThreshold10->Multiply(normalization);  
-  if (fOverThreshold20) fOverThreshold20->Multiply(normalization);  
-  if (fOverThreshold30) fOverThreshold30->Multiply(normalization);  
+  fNoThreshold->Multiply(normalization);  
+  
+  fMeanCharge->Divide(fNLocalMaxima);
+  fMaxCharge->Divide(fNLocalMaxima);
+  fNTimeBins->Divide(fNLocalMaxima);
+  fNPads->Divide(fNLocalMaxima);
+  fTimePosition->Divide(fNLocalMaxima);
+
+  fIsAnalysed = kTRUE;
 }
 
 
+//_____________________________________________________________________
 void AliTPCdataQA::MakeTree(const char *fname){
   //
   // Export result to the tree -located in the file
   // This file can be analyzed using AliTPCCalibViewer
   // 
-  AliTPCdataQA *ped = this;
   AliTPCPreprocessorOnline preprocesor;
-  if (ped->GetMaxCharge()) preprocesor.AddComponent(ped->GetMaxCharge());  
-  if (ped->GetMeanCharge()) preprocesor.AddComponent(ped->GetMeanCharge());  
-  if (ped->GetOverThreshold0()) preprocesor.AddComponent(ped->GetOverThreshold0());
-  if (ped->GetOverThreshold5()) preprocesor.AddComponent(ped->GetOverThreshold5());
-  if (ped->GetOverThreshold10()) preprocesor.AddComponent(ped->GetOverThreshold10());
-  if (ped->GetOverThreshold20()) preprocesor.AddComponent(ped->GetOverThreshold20());
-  if (ped->GetOverThreshold30()) preprocesor.AddComponent(ped->GetOverThreshold30());
+
+  if (fNLocalMaxima) preprocesor.AddComponent(fNLocalMaxima);
+  if (fMaxCharge) preprocesor.AddComponent(fMaxCharge);  
+  if (fMeanCharge) preprocesor.AddComponent(fMeanCharge);  
+  if (fNoThreshold) preprocesor.AddComponent(fNoThreshold);
+  if (fNTimeBins) preprocesor.AddComponent(fNTimeBins);
+  if (fNPads) preprocesor.AddComponent(fNPads);
+  if (fTimePosition) preprocesor.AddComponent(fTimePosition);
+  if (fOverThreshold10) preprocesor.AddComponent(fOverThreshold10);
+  if (fOverThreshold20) preprocesor.AddComponent(fOverThreshold20);
+  if (fOverThreshold30) preprocesor.AddComponent(fOverThreshold30);
+
   preprocesor.DumpToFile(fname);  
 }
 
 
-
+//_____________________________________________________________________
 void AliTPCdataQA::MakeArrays(){
   //
-  //
+  // The arrays for expanding the raw data are defined and 
+  // som parameters are intialised
   //
   AliTPCROC * roc = AliTPCROC::Instance();
   //
-  Int_t nRowsMax = roc->GetNRows(roc->GetNSector()-1);
-  Int_t nPadsMax = roc->GetNPads(roc->GetNSector()-1,nRowsMax-1);
+  // To make the array big enough for all sectors we take 
+  // the dimensions from the outer row of an OROC (the last sector)
+  //
+  fRowsMax     = roc->GetNRows(roc->GetNSector()-1);
+  fPadsMax     = roc->GetNPads(roc->GetNSector()-1,fRowsMax-1);
+  fTimeBinsMax = fLastTimeBin - fFirstTimeBin +1; 
+
+  //
+  // Since we have added 2 pads (TimeBins) before and after the real pads (TimeBins) 
+  // to make sure that we can always query the exanded table even when the 
+  // max is on the edge
+  //
+
  
-  fAllBins = new Float_t*[nRowsMax];
-  fAllSigBins = new Int_t*[nRowsMax];
-  fAllNSigBins = new Int_t[nRowsMax];
-  for (Int_t iRow = 0; iRow < nRowsMax; iRow++) {
+  fAllBins = new Float_t*[fRowsMax];
+  fAllSigBins = new Int_t*[fRowsMax];
+  fAllNSigBins = new Int_t[fRowsMax];
+
+  for (Int_t iRow = 0; iRow < fRowsMax; iRow++) {
     //
-    Int_t maxBin = fMaxTime*(nPadsMax+6);  // add 3 virtual pads  before and 3 after
+    Int_t maxBin = (fTimeBinsMax+4)*(fPadsMax+4);  
     fAllBins[iRow] = new Float_t[maxBin];
-    memset(fAllBins[iRow],0,sizeof(Float_t)*maxBin);
+    memset(fAllBins[iRow],0,sizeof(Float_t)*maxBin); // set all values to 0
     fAllSigBins[iRow] = new Int_t[maxBin];
-    fAllNSigBins[iRow]=0;
+    fAllNSigBins[iRow] = 0;
   }
 }
 
 
+//_____________________________________________________________________
 void AliTPCdataQA::CleanArrays(){
   //
   //
   //
-  AliTPCROC * roc = AliTPCROC::Instance();
-  //
-  Int_t nRowsMax = roc->GetNRows(roc->GetNSector()-1);
-  Int_t nPadsMax = roc->GetNPads(roc->GetNSector()-1,nRowsMax-1); 
-  for (Int_t iRow = 0; iRow < nRowsMax; iRow++) {
+
+  for (Int_t iRow = 0; iRow < fRowsMax; iRow++) {
     //
-    Int_t maxBin = fMaxTime*(nPadsMax+6);  // add 3 virtual pads  before and 3 after
+    Int_t maxBin = (fTimeBinsMax+4)*(fPadsMax+4); 
     memset(fAllBins[iRow],0,sizeof(Float_t)*maxBin);
     fAllNSigBins[iRow]=0;
   }
 }
 
-Float_t* AliTPCdataQA::GetExpandDigit(Int_t row, Int_t pad, Int_t time){
+//_____________________________________________________________________
+void AliTPCdataQA::GetPadAndTimeBin(Int_t bin, Int_t& iPad, Int_t& iTimeBin){
   //
+  // Return pad and timebin for a given bin
   //
-  //
-  AliTPCROC * roc = AliTPCROC::Instance();
-  Int_t nRowsMax = roc->GetNRows(roc->GetNSector()-1);
-  if (row<0 || row>nRowsMax) return 0;
-  Int_t nPadsMax = roc->GetNPads(roc->GetNSector()-1,nRowsMax-1); 
   
+  //  Int_t bin = iPad*(fTimeBinsMax+4)+iTimeBin;
+  iTimeBin  = bin%(fTimeBinsMax+4);
+  iPad      = (bin-iTimeBin)/(fTimeBinsMax+4);
+
+  iPad     -= 2;
+  iTimeBin -= 2;
+  iTimeBin += fFirstTimeBin;
+
+  R__ASSERT(iPad>=0 && iPad<=fPadsMax);
+  R__ASSERT(iTimeBin>=fFirstTimeBin && iTimeBin<=fLastTimeBin);
+}
+
+//_____________________________________________________________________
+void AliTPCdataQA::SetExpandDigit(const Int_t iRow, Int_t iPad, 
+				  Int_t iTimeBin, const Float_t signal) 
+{
+  //
+  // 
+  //
+  R__ASSERT(iRow>=0 && iRow<fRowsMax);
+  R__ASSERT(iPad>=0 && iPad<=fPadsMax);
+  R__ASSERT(iTimeBin>=fFirstTimeBin && iTimeBin<=fLastTimeBin);
+  
+  iTimeBin -= fFirstTimeBin;
+  iPad     += 2;
+  iTimeBin += 2;
+  
+  Int_t bin = iPad*(fTimeBinsMax+4)+iTimeBin;
+  fAllBins[iRow][bin] = signal;
+  fAllSigBins[iRow][fAllNSigBins[iRow]] = bin;
+  fAllNSigBins[iRow]++;
+}
+
+Float_t AliTPCdataQA::GetQ(const Float_t* adcArray, const Int_t time, 
+			   const Int_t pad, const Int_t maxTimeBins, 
+			   Int_t& timeMin, Int_t& timeMax, 
+			   Int_t& padMin,  Int_t& padMax) 
+{
+  //
+  // This methods return the charge in the bin time+pad*maxTimeBins
+  // If the charge is above 0 it also updates the padMin, padMax, timeMin
+  // and timeMax if necessary
+  //
+  Float_t charge = adcArray[time + pad*maxTimeBins];
+  if(charge > 0) {
+    timeMin = TMath::Min(time, timeMin); timeMax = TMath::Max(time, timeMax);
+    padMin = TMath::Min(pad, padMin); padMax = TMath::Max(pad, padMax);
+  }
+  return charge; 
 }
