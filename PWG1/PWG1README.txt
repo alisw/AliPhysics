@@ -4,7 +4,7 @@ How to make a comparison using MC information:
 
 
 0. Build the MC info tree
-
+gSystem->Load("libANALYSIS.so");
 gSystem->Load("libPWG1.so")
 AliGenInfoMaker *t = new AliGenInfoMaker("galice.root","genTracks.root",0,0)
 t->Exec();

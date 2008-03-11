@@ -75,8 +75,7 @@ AliESDRecInfo::AliESDRecInfo():
   fTrackF(0),      // friend track
   fTPCtrack(0),        // tpc track
   fITStrack(0),        // its track
-  fTRDtrack(0),        // trd track  
-  fTPCtrackAtVertex(0) // tpc track propagated to the vertex  
+  fTRDtrack(0)        // trd track  
 {
   //
   //  default constructor
@@ -99,8 +98,7 @@ AliESDRecInfo::AliESDRecInfo(const AliESDRecInfo& recinfo):
   fTrackF(0),      // friend track
   fTPCtrack(0),        // tpc track
   fITStrack(0),        // its track
-  fTRDtrack(0),        // trd track  
-  fTPCtrackAtVertex(0) // tpc track propagated to the vertex  
+  fTRDtrack(0)        // trd track  
 {
   //
   //
@@ -115,7 +113,7 @@ AliESDRecInfo& AliESDRecInfo::operator=(const AliESDRecInfo& info) {
   //
   // Assignment operator
   //
-  delete this;
+  this->~AliESDRecInfo();
   new (this) AliESDRecInfo(info);
   return *this;
 }
@@ -472,24 +470,6 @@ void AliESDRecInfo::UpdateTPC(AliMCInfo* info){
     fSign =sign;
     fTPCPools[4] = sign*(1./fTPCinP0[3]-1./fTPCinP1[3])/TMath::Sqrt(TMath::Abs(cov[14]));
   }
-
-  // Track propagated to the vertex during tracking - paramaters in ESD
-
-  //
-  if (fESDtrack && fESDtrack->GetTPCInnerParam()){
-    AliExternalTrackParam *track = new AliExternalTrackParam(*fESDtrack->GetTPCInnerParam());
-    const Double_t kRadius  = 3;   // beam pipe radius
-    const Double_t kMaxStep = 5;   // max step
-    //const Double_t kMaxD    = 123456;  // max distance to prim vertex
-    //Double_t       fieldZ   = AliTracker::GetBz();  //
-    AliTracker::PropagateTrackTo(track,kRadius,info->GetMass(),kMaxStep,kTRUE);
-    AliTracker::PropagateTrackTo(track,0,info->GetMass(),0.5,kTRUE);
-    //track->RelateToVertex(fEvent->GetVertex(),fieldZ, kMaxD);
-    fTPCtrackAtVertex = track;
-  }else{
-    delete fTPCtrackAtVertex;
-    fTPCtrackAtVertex=0;
-  }  
 }
 
 
