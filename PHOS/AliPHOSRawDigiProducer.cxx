@@ -269,7 +269,7 @@ void AliPHOSRawDigiProducer::CleanDigits(TClonesArray * digits)
     if(isBadMap){ //check bad map now
       Int_t relid[4] ;
       fGeom->AbsToRelNumbering(digit->GetId(), relid) ; 
-      if(fgCalibData->IsBadChannelEmc(relid[0],relid[2],relid[3])){
+      if(fgCalibData->IsBadChannelEmc(relid[0],relid[3],relid[2])){
 	digits->RemoveAt(i) ;
       }
     }
