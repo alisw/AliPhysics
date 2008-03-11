@@ -147,7 +147,7 @@ void rawqa(const Int_t runNumber, Int_t maxFiles = 10, const char* year = "08")
 	AliInfo(Form("\n\n********** Summary for run %d **********", runNumber)) ; 
 	printf("     detectors present in the run        : %s\n", detectors.Data()) ; 
 	printf("     detectors present in the run with QA: %s\n", detectorsW.Data()) ; 
-	printf("     number of files/events processed           : %d/%d\n", filesProcessed, eventsProcessed) ; 
+	printf("     number of files/events processed    : %d/%d\n", filesProcessed, eventsProcessed) ; 
 	TFile * qaResult = TFile::Open(AliQA::GetQAResultFileName()) ; 
 	if ( qaResult ) {
 		AliQA * qa = dynamic_cast<AliQA *>(qaResult->Get("QA")) ; 
