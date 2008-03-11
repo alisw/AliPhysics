@@ -19,13 +19,16 @@
 #include "AliHLTPHOSBase.h"
 #include "AliHLTPHOSConfig.h"
 #include "AliHLTPHOSAltroConfig.h"
+//#include "AliHLTLogging.h"
 
 
 AliHLTPHOSBase::AliHLTPHOSBase(): AliHLTPHOSConfig(),  
 				  AliHLTPHOSAltroConfig(),
 				  fConfigPtr(0),
-				  fAltroConfigPtr(0)
+				  fAltroConfigPtr(0),
+				  fLogPtr(0)
 {
+  fLogPtr = new  AliHLTLogging();
 
 }
 
@@ -41,17 +44,18 @@ AliHLTPHOSBase::CheckFile(const char *fileName, const char *opt) const
 {
   //returns true if the file specified by "fileName exists  and has acceees rights specified  by "opt", 
   //returns false if it doesnt exist, or it exists, but doesnt have the access right specified by "opt"
-
   FILE *fp = fopen(fileName, opt);
 
   if(fp == 0)
     {
-      cout <<"Error: from" << typeid(*this).name()  <<"could not open file: "<< fileName <<endl; 
+      
       return false;
-     }
+ 
+    }
   else
     {
       fclose(fp); 
       return true;
     }
 }
+

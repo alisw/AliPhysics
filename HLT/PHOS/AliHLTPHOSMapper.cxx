@@ -25,9 +25,10 @@
 #include "AliHLTPHOSMapper.h"
 
 
-AliHLTPHOSMapper::AliHLTPHOSMapper() : AliHLTPHOSBase(), fHw2geomapPtr(0)
+AliHLTPHOSMapper::AliHLTPHOSMapper() : AliHLTPHOSBase(), 
+				       fHw2geomapPtr(0),
+				       fIsInitializedMapping(false)
 {
-  //  printf("\nCreating new mapper\n");
   InitAltroMapping(); 
 }
 
@@ -43,7 +44,7 @@ AliHLTPHOSMapper::InitAltroMapping()
 {
   // Loads mapping between Altro addresses and geometrical addresses from file
 
-  char filename[256];
+  //  char filename[256];
   char *base =  getenv("ALICE_ROOT");
   int nChannels = 0;
   int maxaddr = 0;
@@ -54,16 +55,13 @@ AliHLTPHOSMapper::InitAltroMapping()
 
   if(base !=0)
     {
-      sprintf(filename,"%s/PHOS/mapping/RCU0.data", base);
-
-      FILE *fp = fopen(filename, "r");
+      sprintf(fFilepath,"%s/PHOS/mapping/RCU0.data", base);
+      
+      FILE *fp = fopen(fFilepath, "r");
       if(fp != 0)
 	{
-	  cout << "mapping file found" << endl;
 	  fscanf(fp, "%d", &nChannels);
 	  fscanf(fp, "%d", &maxaddr);
-	  printf("nChannels = %d", nChannels);
-	  printf("maxaddr = %d", maxaddr);
 	  fHw2geomapPtr = new fAltromap[maxaddr +1]; 
 
 	  for(int i=0; i< maxaddr + 1 ; i ++)
@@ -80,18 +78,30 @@ AliHLTPHOSMapper::InitAltroMapping()
 	      fHw2geomapPtr[tmpHwaddr].fZRow   = tmpZRow;
 	      fHw2geomapPtr[tmpHwaddr].fGain  = tmpGain;
 	    }
-	  
+	  fIsInitializedMapping = true;	  
+	  fclose(fp);
 	}
       else
 	{
-	  cout << "ERROR could not find mapping file" << endl;
+	  fIsInitializedMapping = false;	  
 	}
-
     }
   else
     {
-      printf("AliHLTPHOSMapper::InitAltroMapping(), ERROR environment ALICE_ROOT is not set, cannot find mapping file");
+      fIsInitializedMapping = false;
     }
-
 } 
 
+
+bool 
+AliHLTPHOSMapper::GetIsInitializedMapping()
+{
+  return  fIsInitializedMapping;
+}
+
+
+char* 
+AliHLTPHOSMapper::GetFilePath()
+{
+  return  fFilepath;
+}

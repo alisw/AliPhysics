@@ -14,6 +14,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+
 #include "AliHLTPHOSRawAnalyzerChiSquareFit.h"
 #include <iostream>
 
@@ -35,7 +36,8 @@ AliHLTPHOSRawAnalyzerChiSquareFit::AliHLTPHOSRawAnalyzerChiSquareFit(const AliHL
  **/
 AliHLTPHOSRawAnalyzerChiSquareFit::AliHLTPHOSRawAnalyzerChiSquareFit():AliHLTPHOSRawAnalyzer()
 {
-  cout <<"You cannot invoke the Fitter without arguments"<<endl;;
+ 
+
 }
 
 

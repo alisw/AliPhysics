@@ -16,6 +16,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+
+
 #include "AliHLTPHOSRawAnalyzer.h"
 #include "AliHLTPHOSRawAnalyzerComponent.h"
 #include "AliHLTPHOSRcuCellEnergyDataStruct.h"
@@ -34,26 +36,26 @@
 
 
 AliHLTPHOSRawAnalyzerComponent::AliHLTPHOSRawAnalyzerComponent():AliHLTPHOSRcuProcessor(), 
-								 fAnalyzerPtr(0), 
-								 fSendChannelData(kFALSE),
-								 fOutPtr(0), 
-								 fMapperPtr(0), 
-								 fSanityInspectorPtr(0),
-								 fUseBaselineSubtraction(false), 
-								 fDecoderPtr(0),  
-								 fAltroDataPtr(0),
-								 fAltroBunchPtr(0),
-								 fDoPushCellEnergies(false),
-								 fDoMakeDigits(false),
-								 fDigitMakerPtr(0),
-								 fDigitContainerPtr(0),
-								 fDoSelectiveReadOut(false),
-								 fSelectedChannelsList(0),
-								 fDoCheckDataSize(false)
-								 //fRawMemoryReader(0), fPHOSRawStream(0) 
+                                                                 fAnalyzerPtr(0), 
+                                                                 fSendChannelData(kFALSE),
+                                                                 fOutPtr(0), 
+                                                                 fMapperPtr(0), 
+                                                                 fSanityInspectorPtr(0),
+                                                                 fUseBaselineSubtraction(false), 
+                                                                 fDecoderPtr(0),  
+                                                                 fAltroDataPtr(0),
+                                                                 fAltroBunchPtr(0),
+                                                                 fDoPushCellEnergies(true),
+                                                                 fDoMakeDigits(false),
+                                                                 fDigitMakerPtr(0),
+                                                                 fDigitContainerPtr(0),
+                                                                 fDoSelectiveReadOut(false),
+                                                                 fSelectedChannelsList(0),
+                                                                 fDoCheckDataSize(false)
+                                                                 //fRawMemoryReader(0), fPHOSRawStream(0) 
 {
   //comment
-  fMapperPtr = new AliHLTPHOSMapper();
+  // fMapperPtr = new AliHLTPHOSMapper();
   fAltroDataPtr = new AliAltroData();
   fAltroBunchPtr = new AliAltroBunch();
   fDecoderPtr = new AliAltroDecoder();
@@ -86,6 +88,7 @@ AliHLTPHOSRawAnalyzerComponent::~AliHLTPHOSRawAnalyzerComponent()
 }
 
 
+
 int 
 AliHLTPHOSRawAnalyzerComponent::Deinit()
 {
@@ -113,6 +116,7 @@ AliHLTPHOSRawAnalyzerComponent::Deinit()
   Logging(kHLTLogInfo, "HLT", "PHOS", ",AliHLTPHOSRawAnalyzerComponen Deinit");
   return 0;
 }
+
 
 
 const char* 
@@ -173,20 +177,14 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
   UInt_t tSize             = 0;
   Float_t baseline         = 0;
   UInt_t digitCount        = 0;
-
   AliHLTUInt8_t* outBPtr;
   outBPtr = outputPtr;
   const AliHLTComponentBlockData* iter = NULL; 
   unsigned long ndx;
   Int_t *rawDataBufferPos = (Int_t *)outputPtr; 
-
   AliHLTPHOSValidCellDataStruct *validCellPtr = 0;
-
-  //  UInt_t nSamples = 0;
   Int_t nSamples = 0;
- 
   UInt_t nSelected = 0;
-
   UInt_t specification = 0;
 
   for( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
@@ -204,7 +202,6 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
 	}
 
       specification = specification|iter->fSpecification;
-  
       fDecoderPtr->SetMemory(reinterpret_cast<UChar_t*>( iter->fPtr ), iter->fSize);
       fDecoderPtr->Decode();
       fOutPtr =  (AliHLTPHOSRcuCellEnergyDataStruct*)outBPtr;
@@ -216,18 +213,12 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
 
       while( fDecoderPtr->NextChannel(fAltroDataPtr) == true )
 	{
-	  
 	  nSamples = fAltroDataPtr->GetDataSize() - 2;
 	  if(fDoCheckDataSize)
 	    {
 	      if(nSamples != fNTotalSamples)
 		{
-		  //cout << "Error, fDataSize = " << nSamples + 2 << endl;
-		  //continue;
-		}
-	      else
-		{
-		  //cout << "Info, fDataSize = " << fAltroDataPtr->GetDataSize() << endl;
+		  Logging( kHLTLogError, __FILE__ , "Wrong number of samples", "Expected  %lu samples (assuming non zero supressed data) but recieved %lu", fNTotalSamples,  nSamples); 
 		}
 	    }
 	 
@@ -274,13 +265,9 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
 	    }
 
 	  UInt_t tmpSize =  sizeof(Int_t)*(validCellPtr->fNSamples);
-	  //	  mysize += sizeof(Int_t)*(validCellPtr->fNSamples);
 	  mysize += tmpSize;
-	  //	  mysize += tmpSize;
 	  rawDataBufferPos += tmpSize/sizeof(Int_t);
-
 	  tmpChannelCnt ++;
-
 	}
       
       fOutPtr->fCnt  = tmpChannelCnt;
@@ -339,6 +326,7 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
 	  bdHwAdd.fDataType = kAliHLTDataTypeHwAddr16;
 	  bdHwAdd.fSpecification = specification;
 	  outputBlocks.push_back( bdHwAdd );
+
 	  
 	  tSize += mysize;
 	  outBPtr += mysize;
@@ -346,8 +334,6 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
       
       if( tSize > size )
       	{
-	  cout <<"kHLTLogFatal, HLT::AliHLTPHOSRawAnalyzerComponent::DoEvent Too much dataData written over allowed buffer. Amount written:"
-	       << tSize << " allowed" << size << endl;
       	  Logging( kHLTLogFatal, "HLT::AliHLTPHOSRawAnalyzerComponent::DoEvent", "Too much data",
       		   "Data written over allowed buffer. Amount written: %lu, allowed amount: %lu."
       		   , tSize, size );
@@ -362,9 +348,7 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
     {
       if(fPhosEventCount%fPrintInfoFrequncy == 0)
       	{
-	  cout << "Analyzing event " <<  fPhosEventCount  << " for Equippment " << fkEquippmentID << endl; 
-	  if(fDoSelectiveReadOut) cout << "# of selected channels: " << nSelected << endl;
-	  if(fDoMakeDigits) cout << "# of digits: " << digitCount << endl;
+	  Logging(kHLTLogBenchmark, __FILE__ , IntToChar(  __LINE__ ) , "Analyzing event %lu", fPhosEventCount);
 	}  
     }
 
@@ -375,13 +359,20 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
 
 int
 AliHLTPHOSRawAnalyzerComponent::DoInit( int argc, const char** argv )
-{
+{ 
   //See base class for documentation
-  
   fSendChannelData = kFALSE;
   fPrintInfo = kFALSE;
   int iResult=0;
   TString argument="";
+  fMapperPtr = new AliHLTPHOSMapper();
+ 
+  if(fMapperPtr->GetIsInitializedMapping() == false)
+    {
+      Logging(kHLTLogFatal, __FILE__ , IntToChar(  __LINE__ ) , "AliHLTPHOSMapper::Could not initial mapping from file %s, aborting", fMapperPtr->GetFilePath());
+      return -4;
+    }
+
   iResult = ScanArguments(argc, argv);
 
   int nSigmas = 3;
@@ -427,15 +418,13 @@ AliHLTPHOSRawAnalyzerComponent::DoInit( int argc, const char** argv )
 
   if(fIsSetEquippmentID == kFALSE)
     {
-      cout << "The argument equippmentID is not set: set it with a component argumet like this: -equippmentID  <number>" << endl;
-      Logging( kHLTLogFatal, "HLT::AliHLTPHOSRcuHistogramProducerComponent::DoInt( int argc, const char** argv )", "Missing argument",
+      Logging( kHLTLogFatal, __FILE__, "Missing argument",
 	       "The argument equippmentID is not set: set it with a component argumet like this: -equippmentID  <number>");
       iResult = -3; 
     }
   else
     {
       iResult = 0; 
-      //      fRawMemoryReader->SetEquipmentID(fkEquippmentID);
     }
 
   return iResult;
@@ -450,6 +439,7 @@ AliHLTPHOSRawAnalyzerComponent::Reset(AliHLTPHOSRcuCellEnergyDataStruct* cellDat
   //{
   for(int x = 0; x < N_XCOLUMNS_RCU; x ++)
     {
+
       for(int z = 0; z < N_ZROWS_RCU; z ++)
 	{
 	  for(int gain = 0; gain < N_GAINS; gain ++ )
@@ -508,9 +498,7 @@ void
 AliHLTPHOSRawAnalyzerComponent::SetSelectiveReadOutThresholds(const char* filepath, Int_t nSigmas)
 {
   //See header file for documentation
-
   TFile *histFile = new TFile(filepath);
-  
   TH2F *lgHist = (TH2F*)histFile->Get("RMSLGMapHist");
   TH2F *hgHist = (TH2F*)histFile->Get("RMSHGMapHist");
 

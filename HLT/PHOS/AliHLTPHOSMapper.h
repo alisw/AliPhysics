@@ -30,6 +30,8 @@ class AliHLTPHOSMapper : public AliHLTPHOSBase
   AliHLTPHOSMapper();
   virtual ~AliHLTPHOSMapper();
   void InitAltroMapping(); 
+  bool GetIsInitializedMapping();
+  char* GetFilePath();
 
   struct fAltromap{ 
     int fZRow; // Coordinate in Z direction (beam direction) relatve too one RCU
@@ -38,8 +40,11 @@ class AliHLTPHOSMapper : public AliHLTPHOSBase
   };
 
   fAltromap *fHw2geomapPtr; //pointer to structure holding information about geometrical address 
+  
+  char fFilepath[1024];
 
  private:
+  bool fIsInitializedMapping;
   AliHLTPHOSMapper(const AliHLTPHOSMapper & );
   AliHLTPHOSMapper & operator = (const AliHLTPHOSMapper &);
 

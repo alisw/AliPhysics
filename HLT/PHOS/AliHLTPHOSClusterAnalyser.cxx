@@ -72,19 +72,13 @@ Int_t
 AliHLTPHOSClusterAnalyser::CalculateCenterOfGravity()
 {
   //see header file for documentation
- 
   Float_t wtot = 0.;
- 
-  //Int_t relid[4];
-
   Float_t x = 0.;
   Float_t z = 0.;
   Float_t xi = 0.;
   Float_t zi = 0.;
-
   AliHLTPHOSRecPointDataStruct *recPoint = 0;
   AliHLTPHOSDigitDataStruct *digit = 0;
-
   //AliPHOSGeometry * phosgeom =  AliPHOSGeometry::GetInstance() ;
 
   UInt_t iDigit = 0;
@@ -176,12 +170,11 @@ AliHLTPHOSClusterAnalyser::CreateClusters()
       caloClusterPtr->fGlobalPos[2] = globalPos[2];
 
       caloClusterPtr->fNCells = recPointPtr->fMultiplicity;
-      //cout << "fNCells = " << caloClusterPtr->fNCells << endl;
+  
       for(UInt_t j = 0; j < caloClusterPtr->fNCells; j++)
 	{
 	  digitPtr = &(recPointPtr->fDigitsList[j]);
 	  //fPHOSGeometry->RelPosToAbsId((Int_t)(recPointPtr->fModule + 1), (double)(digitPtr->fX), (double)(digitPtr->fZ), id);
-	  //cout << id << endl;
 	  caloClusterPtr->fCellsAbsId[j] = id;
 	  caloClusterPtr->fCellsAmpFraction[j] = digitPtr->fAmplitude/recPointPtr->fAmp;
 	}
@@ -231,7 +224,7 @@ AliHLTPHOSClusterAnalyser::CreateClusters()
       caloClusterPtr->fClusterType = '\0';
     }
   fCaloClustersPtr->fNCaloClusters = fRecPointsPtr->fNRecPoints;
-  //cout << fCaloClustersPtr->fNCaloClusters << endl;
+
  
   return fCaloClustersPtr->fNCaloClusters;
 

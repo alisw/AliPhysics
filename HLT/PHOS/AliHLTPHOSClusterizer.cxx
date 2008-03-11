@@ -127,7 +127,7 @@ AliHLTPHOSClusterizer::GetNEvents()
   //see header file for documentation
   if(fOnlineMode)
     {
-      printf("Number of events not available in online mode!\n");
+      //     Logging(kHLTLogWarning, __FILE__ , "information not available" , "GetNEvents()  Number of events not available in online mod");
       return -1;
     }
   return fGetterPtr->MaxEvent();
@@ -141,8 +141,6 @@ AliHLTPHOSClusterizer::ClusterizeEvent()
   Int_t nRecPoints = 0;
   UInt_t i = 0;
 
-  //printf("Starting clusterisation of event.\n");
-
   AliHLTPHOSRecPointDataStruct *recPoint = 0;
 
   //Clusterization starts
@@ -150,12 +148,10 @@ AliHLTPHOSClusterizer::ClusterizeEvent()
     { 
       
       fDigitsInCluster = 0;
-      //printf("Digit energy: %f\n", fDigitContainerPtr->fDigitDataStruct[i].fEnergy);
       if(fDigitContainerPtr->fDigitDataStruct[i].fEnergy < fEmcClusteringThreshold)
 	{
 	  continue;
 	}
-      //printf("Got rec point above clustering threshold!\n");
       recPoint = &(fRecPointContainerPtr->fRecPointArray[nRecPoints]);
       recPoint->fAmp = 0;
       //TODO!!!!!!!
@@ -216,26 +212,16 @@ AliHLTPHOSClusterizer::AreNeighbours(AliHLTPHOSDigitDataStruct* digit1,
 
   if ( (digit1->fModule == digit2->fModule) /*&& (coord1[1]==coord2[1])*/ ) // inside the same PHOS module
     { 
-
       Int_t rowdiff = TMath::Abs( digit1->fZ - digit2->fZ );  
       Int_t coldiff = TMath::Abs( digit1->fX - digit2->fX ); 
-
-      //cout << "x1: " << digit1->fX << " x2: " << digit2->fX << " z1: " << digit1->fZ << " z2: " << digit2->fZ << 
-      //" t1: " << digit1->fTime << " t2: " << digit1->fTime << " --> ";
           
       if (( coldiff <= 1 )  && ( rowdiff <= 1 ))
 	{
 	  if(TMath::Abs(digit1->fTime - digit2->fTime ) < fEmcTimeGate)
 	    {
-	      //cout << "OK\n";
 	      return 1; 
 	    }
-	  //  cout << "Time difference\n";
 	}
-      //else 
-      //{
-      //  cout << "Space difference\n";
-      //}
     }
   return 0;
 }
@@ -244,11 +230,7 @@ void
 AliHLTPHOSClusterizer::CalculateCenterOfGravity()
 {
   //see header file for documentation
- 
   Float_t wtot = 0.;
- 
-  //Int_t relid[4];
-
   Float_t x = 0.;
   Float_t z = 0.;
   Float_t xi = 0.;
@@ -256,9 +238,6 @@ AliHLTPHOSClusterizer::CalculateCenterOfGravity()
 
   AliHLTPHOSRecPointDataStruct *recPoint = 0;
   AliHLTPHOSDigitDataStruct *digit = 0;
-
-  //AliPHOSGeometry * phosgeom =  AliPHOSGeometry::GetInstance() ;
-
   UInt_t iDigit = 0;
   UInt_t iRecPoint = 0;
 

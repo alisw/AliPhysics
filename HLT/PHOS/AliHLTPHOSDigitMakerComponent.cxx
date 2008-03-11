@@ -130,7 +130,7 @@ AliHLTPHOSDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtData, 
       
       if(iter->fDataType != AliHLTPHOSDefinitions::fgkCellEnergyDataType)
 	{
-	  //cout << "Warning: data type is not fgkCellEnergyDataType " << endl;
+	  Logging(kHLTLogWarning, __FILE__ , "wrong datatype" , "data is not of type fgkCellEnergyDataType as expected");
 	  continue;
 
 	}
@@ -155,24 +155,19 @@ AliHLTPHOSDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtData, 
        
   tSize += mysize;
   outBPtr += mysize;
-  //cout << "Size of digit container: " << mysize << endl;
+
+
   if( tSize > size )
     {
-      Logging( kHLTLogFatal, "HLT::AliHLTPHOSDigitMakerComponent::DoEvent", "Too much data",
-	       "Data written over allowed buffer. Amount written: %lu, allowed amount: %lu."
-	       , tSize, size );
+      Logging( kHLTLogFatal, "HLT::AliHLTPHOSDigitMakerComponent::DoEvent", "Too much data", "Data written over allowed buffer. Amount written: %lu, allowed amount: %lu.", tSize, size );
       return EMSGSIZE;
     }
       
   fDigitMakerPtr->Reset();
-  
-  
-
 
   if(fPhosEventCount % 500 == 0)
     {
-      cout << "Event #: " << fPhosEventCount << endl;
-      cout << "  - Number of digits found: " << digitCount << endl;
+      Logging(kHLTLogInfo, __FILE__ , "evens analyzed" , "Event #: %d -number of digits found %d", fPhosEventCount, digitCount); 
     }
   
   return 0;
@@ -195,12 +190,10 @@ AliHLTPHOSDigitMakerComponent::DoInit(int argc, const char** argv )
       if(!strcmp("-lowgainfactor", argv[i]))
 	{
 	  fDigitMakerPtr->SetGlobalLowGainFactor(atof(argv[i+1]));
-	  cout << atof(argv[i+1]) << endl;
 	}
       if(!strcmp("-highgainfactor", argv[i]))
 	{
 	  fDigitMakerPtr->SetGlobalHighGainFactor(atof(argv[i+1]));
-	  cout << atof(argv[i+1]) << endl;
 	}
     }
  

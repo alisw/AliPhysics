@@ -63,17 +63,16 @@ AliHLTPHOSRcuProcessor::ScanArguments(int argc, const char** argv)
 	{
 	  continue;
 	}
-                         
+                        
     if (argument.CompareTo("-equipmentID") == 0) 
 	{
 	  cout << "AliHLTPHOSProcessor:DoInit  argument = -equipmentID   "  <<endl;  
 	  if(i+1 <= argc)
 	    {
 	      SetEquippmentID((AliHLTUInt16_t)atoi(argv[i+1]));
-	      cout << "AliHLTPHOSRawAnalyzerComponent:DoInit  setting equippment ID to  " << fkEquippmentID <<endl;
+	      Logging(kHLTLogInfo, __FILE__ , "Init info", "  setting equippment ID to  %lu ", fkEquippmentID); 
 	      SetCoordinates(fkEquippmentID);
 	      fIsSetEquippmentID = kTRUE;
-	      cout << " fIsSetEquippmentID = kTRUE"<< endl;
 	    }
 	  else
 	    {
@@ -92,11 +91,12 @@ AliHLTPHOSRcuProcessor::ScanArguments(int argc, const char** argv)
 	    argument=argv[i+1];
 	    fPrintInfoFrequncy = atoi(argv[i+1]);
 	    fPrintInfo = kTRUE;
-	    cout << "AliHLTPHOSRawAnalyzerComponent::DoIni  setting printinfo = kTRUE, with update frequency every  "<< fPrintInfoFrequncy << "th event" <<endl; 
+	    Logging(kHLTLogInfo, __FILE__ , "Info output", " setting printinfo = kTRUE, with update frequency every %lu th event ", fPrintInfoFrequncy);
 	  }
 	else
 	  {
-	    cout << "WARNING: asking for event info, but no update frequency is specified, option is ignored" << endl;
+	    //	    cout << "WARNING: asking for event info, but no update frequency is specified, option is ignored" << endl;
+	    Logging(kHLTLogWarning, __FILE__ , "Invalid request", " asking for event info, but no update frequency is specified, request  ignored");
 	  }
       }
  
@@ -145,13 +145,13 @@ AliHLTPHOSRcuProcessor::SetCoordinates(AliHLTUInt16_t /*equippmentID*/)
   fRcuZOffset =  N_ZROWS_RCU*fRcuZ;
   fRcuXOffset =  N_XCOLUMNS_RCU*fRcuX;
 
-  cout <<"********InitInfo************"<< endl;
-  cout <<"AliHLTPHOSRawAnalyzerComponent::SetCoordinate casted"<< endl;
-  cout <<"Equpippment ID =\t"<< fkEquippmentID <<endl;
-  cout <<"Module ID =\t"<<  (int)fModuleID<<endl;
-  cout <<"RCUX =\t\t" << (int)fRcuX << endl;
-  cout <<"RCUZ =\t\t" << (int)fRcuZ << endl;
-  cout <<"RcuZOffset = \t" <<  (int)fRcuZOffset << endl;
-  cout <<"RcuXOffset = \t" <<  (int)fRcuXOffset << endl << endl;
+//   cout <<"********InitInfo************"<< endl;
+//   cout <<"AliHLTPHOSRawAnalyzerComponent::SetCoordinate casted"<< endl;
+//   cout <<"Equpippment ID =\t"<< fkEquippmentID <<endl;
+//   cout <<"Module ID =\t"<<  (int)fModuleID<<endl;
+//   cout <<"RCUX =\t\t" << (int)fRcuX << endl;
+//   cout <<"RCUZ =\t\t" << (int)fRcuZ << endl;
+//   cout <<"RcuZOffset = \t" <<  (int)fRcuZOffset << endl;
+//   cout <<"RcuXOffset = \t" <<  (int)fRcuXOffset << endl << endl;
 
 }

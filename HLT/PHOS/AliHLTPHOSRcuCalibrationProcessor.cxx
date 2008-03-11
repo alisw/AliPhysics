@@ -40,11 +40,10 @@ AliHLTPHOSRcuCalibrationProcessor:: AliHLTPHOSRcuCalibrationProcessor():  AliHLT
 									  fModuleID(0), 
 									  fRcuX(0), 
 									  fRcuZ(0)
-//AliHLTPHOSRcuCalibrationProcessor:: AliHLTPHOSRcuCalibrationProcessor():  AliHLTPHOSRcuProcessor(), fModuleID(0), fRcuX(0), fRcuZ(0)
 {
   //Default constructor
-  cout << "WARNING: You cannot invoke the AliHLTPHOSRcuCalibrationProcessor without arguments" << endl;
-  cout << "Usage AliHLTPHOSRcuCalibrationProcessor(ModuleID, X. Z)" << endl;
+  //  cout << "WARNING: You cannot invoke the AliHLTPHOSRcuCalibrationProcessor without arguments" << endl;
+  //  cout << "Usage AliHLTPHOSRcuCalibrationProcessor(ModuleID, X. Z)" << endl;
 } 
 
 //AliHLTPHOSRcuCalibrationProcessor::AliHLTPHOSRcuCalibrationProcessor(AliHLTUInt8_t moduleID, AliHLTUInt8_t rcuX, AliHLTUInt8_t rcuZ)
@@ -56,25 +55,18 @@ AliHLTPHOSRcuCalibrationProcessor::AliHLTPHOSRcuCalibrationProcessor(AliHLTUInt8
 
 {
   //Se header file for documentation
-  //  char *tmp = getenv("ALIHLT_BASEDIR");
   char *tmp = getenv("HOME");
 
   if(tmp == 0)
     {
-      cout << "ERROR, environment vriable HOME is not set" << endl;
-
+      //      cout << "ERROR, environment vriable HOME is not set" << endl;
     }
-  
   else
     {
       //  sprintf(fHistoOutDir,"%s/rundir/output/histograms",tmp);
       sprintf(fHistoOutDir,"%s/rundir/output/histograms/",tmp);
     }
   
-
-  //  SetModuleID(moduleID);
-  //  SetRcuX(rcuX); 
-  //  SetRcuZ(rcuZ); 
   Init();
 }
 
@@ -102,17 +94,17 @@ AliHLTPHOSRcuCalibrationProcessor::SetDefaultHistoOutDir()
   
   if(fp == 0)
     {
-      cout << "ERROR, directory =" << fHistoOutDir << "  Doesnt exist, or you don have write permissions to the directory" << endl;
-      cout << "WARNING: Histograms will not bew written to files at end of run unless a valid directory is set" << endl;
-      cout << "INFO, You must either" << endl;
-      cout << "1) Create the directory " << fHistoOutDir <<  "Manually" <<endl;
-      cout << "OR "<< endl;
-      cout << "2) Se a valid output directory with the function AliHLTPHOSRcuCalibrationProcessor::SetHistoOutDir(*char outdir) "<< endl;
+//       cout << "ERROR, directory =" << fHistoOutDir << "  Doesnt exist, or you don have write permissions to the directory" << endl;
+//       cout << "WARNING: Histograms will not bew written to files at end of run unless a valid directory is set" << endl;
+//       cout << "INFO, You must either" << endl;
+//       cout << "1) Create the directory " << fHistoOutDir <<  "Manually" <<endl;
+//       cout << "OR "<< endl;
+//       cout << "2) Se a valid output directory with the function AliHLTPHOSRcuCalibrationProcessor::SetHistoOutDir(*char outdir) "<< endl;
    }
   else
     {
-      cout << "INFO: Output ddirectory for Histograms was set tot" << fHistoOutDir << endl;
-      cout << "INFO: if you want another output directory use the AliHLTPHOSRcuCalibrationProcessor::SetHistoOutDir(*char outdir)" << endl;
+      //      cout << "INFO: Output ddirectory for Histograms was set tot" << fHistoOutDir << endl;
+      //      cout << "INFO: if you want another output directory use the AliHLTPHOSRcuCalibrationProcessor::SetHistoOutDir(*char outdir)" << endl;
     }
 
 } 
@@ -124,24 +116,15 @@ AliHLTPHOSRcuCalibrationProcessor::Init()
   char tmpHistoName[256];
   int geomx;
   int geomz;
-    
 
   for(int gain=0; gain< N_GAINS; gain++)
     {
       sprintf(tmpHistoName, "DeadChanneMap_Module%d_rcuz%d_rcux%d_gain%d",(int)fModuleID,  fRcuZ, fRcuX, gain);
-      //    fDeadChannelMapHistogramPtrs[gain] = new TH2D( tmpHistoName, tmpHistoName, N_BINS, XBIN_LOW, XBIN_UP);
-
-          
       fDeadChannelMapHistogramPtrs[gain] = new TH2D(tmpHistoName, tmpHistoName,  
 				      N_XCOLUMNS_RCU , 0, N_XCOLUMNS_RCU , 
 				      N_ZROWS_RCU,         0, N_ZROWS_RCU);
       fDeadChannelMapHistogramPtrs[gain]->Reset(); 
-      //     fgCalibHistPtr[gain]->GetXaxis()->SetRange(128, 128 + 64);
-      
-
     }
-
-
 
   for(int x = 0; x < N_XCOLUMNS_RCU; x ++)
     {
@@ -157,18 +140,9 @@ AliHLTPHOSRcuCalibrationProcessor::Init()
 	      fTimingAverageValues[x][z][gain] = 0; 
 	      fHits[x][z][gain]                = 0;
 	      fDeadChannelMap[x][z][gain]      = 0;
-
 	      sprintf(tmpHistoName, "Edistribution_%d_%d_%d_%d",(int)fModuleID,  geomx, geomz, gain);
-	      //	      fEnergyHistogramPtrs[x][z][gain] = 0;
 	      fEnergyHistogramPtrs[x][z][gain] = new TH1F( tmpHistoName, tmpHistoName, N_BINS, XBIN_LOW, XBIN_UP);
 	      sprintf(tmpHistoName, "TOFdistribution_module%d_x%d_z%d_gain%d", (int)fModuleID,  geomx, geomz, gain);
-	      
-	      //	      fTimingHistogramPtrs[x][z][gain] = 0;
-	      
-	      //	      sprintf(tmpHistoName, "DeadChanneMap_%d_%d_%d_%d",(int)fModuleID,  geomx, geomz, gain);
-	      //	      fDeadChannelMapHistogramPtrs[x][z][gain] = new TH1D( tmpHistoName, tmpHistoName, N_BINS, XBIN_LOW, XBIN_UP);
-
-
 	      fTimingHistogramPtrs[x][z][gain] = new TH1F(tmpHistoName , tmpHistoName, N_BINS, XBIN_LOW, XBIN_UP);
 	      fCellAccEnergy.fAccumulatedEnergies[x][z][gain] = 0;
 	      fCellAccEnergy.fHits[x][z][gain] = 0;
@@ -181,35 +155,6 @@ AliHLTPHOSRcuCalibrationProcessor::Init()
     } 
 }
 
-
-
-void 
-AliHLTPHOSRcuCalibrationProcessor::SetRcuX(AliHLTUInt8_t X)
-{
-  //See header file for documentation
-  fRcuX = X; 
-  fCellAccEnergy.fRcuX = X;
-}
-
-
-
-void 
-AliHLTPHOSRcuCalibrationProcessor::SetRcuZ(AliHLTUInt8_t Z)
-{
-  //See header file for documentation
-  fRcuZ = Z; 
-  fCellAccEnergy.fRcuZ = Z;
-}
-
-
-
-
-void 
-AliHLTPHOSRcuCalibrationProcessor::SetModuleID(AliHLTUInt8_t moduleID)
-{
-  //See header file for documentation
- fModuleID = moduleID;
-}
 
 
 void 
@@ -308,19 +253,13 @@ void
 AliHLTPHOSRcuCalibrationProcessor::WriteAllHistograms(char *opt)
 {
   //comment
-  printf("\nAliHLTPHOSRcuCalibrationProcessor::WriteAllHistogram, opt = %s\n", opt);
-
   FillLiveChannelHistograms();
-  //  cout <<<< endl;
-
   int runNumber = 0;
   char tmpEFileName[256];
   char tmpDeadFileName_gain0[256];
   char tmpDeadFileName_gain1[256]; 
- // char *tmpRundir = getenv("HOME");
   char runNumberFile[256]; 
   char timeString[256];
-
   ResetArray(runNumberFile, 256);
   ResetArray(tmpEFileName, 256);
   ResetArray(timeString, 256);
@@ -332,8 +271,8 @@ AliHLTPHOSRcuCalibrationProcessor::WriteAllHistograms(char *opt)
   if(fp == 0)
     {
       ScanTimeString(timeString);  
-      cout << "WARNING, could not find file "<< runNumberFile  <<endl;
-      cout <<"Filename will be stamped with data and time instead " << endl;
+      //      cout << "WARNING, could not find file "<< runNumberFile  <<endl;
+      //      cout <<"Filename will be stamped with data and time instead " << endl;
       sprintf(tmpEFileName, "%s/Energy/EnergyHistograms_%s_mod%d_rcuZ%d_rcuX%d.root", fHistoOutDir, timeString, (int)fModuleID, (int)fRcuZ, (int)fRcuZ);
       sprintf(tmpDeadFileName_gain0, "%s/DeadMap/DeadChannelHistograms_%s_mod%d_rcuZ%d_rcuX%d_LG.root", fHistoOutDir, timeString, (int)fModuleID, (int)fRcuZ, (int)fRcuZ); 
       sprintf(tmpDeadFileName_gain1, "%s/DeadMap/DeadChannelHistograms_%s_mod%d_rcuZ%d_rcuX%d_HG.root", fHistoOutDir, timeString, (int)fModuleID, (int)fRcuZ, (int)fRcuZ); 
@@ -347,24 +286,12 @@ AliHLTPHOSRcuCalibrationProcessor::WriteAllHistograms(char *opt)
       fclose(fp);
     }
 
-  //  cout << "tmpEFileName = "<< tmpEFileName <<endl;
-  //  cout << "tmpDeadFileName_gain0 (low gain)   = " << tmpDeadFileName_gain0 <<endl;
-  //  cout << "tmpDeadFileName_gain1 (high gain)  = " << tmpDeadFileName_gain1 <<endl;
-
-  //  sprintf(tmpEFileName,"/home/aliphoshlt/rundir/outdata/calibHisto_%d_%d_%d.root", (int)fModuleID, (int)fRcuX, (int)fRcuZ);
-
-
-  //  TFile *energyHistoFile =  new TFile(tmpEFileName,"update");
-  //  TFile *energyHistoFile =  new TFile(tmpEFileName,"recreate");
-  //  TFile *energyHistoFile =  new TFile(tmpEFileName,"recreate");
-
-  cout << "tmpEFileName = "<< tmpEFileName  << endl;
 
   TFile *energyHistoFile =  new TFile(tmpEFileName, opt);
   if(!energyHistoFile) return;
   if(!energyHistoFile->IsOpen()) return;
 
-  cout <<"printing histograms"<< endl;
+  //  cout <<"printing histograms"<< endl;
 
   for(int x = 0; x <  N_XCOLUMNS_RCU; x ++)
     {
@@ -372,7 +299,6 @@ AliHLTPHOSRcuCalibrationProcessor::WriteAllHistograms(char *opt)
 	{
 	  for(int gain = 0; gain < N_GAINS; gain ++)
 	    {
-	      //     cout << "the number of entries is " <<fEnergyHistogramPtrs[x][z][gain]->GetEntries()<< endl;
 	      fEnergyHistogramPtrs[x][z][gain]->Write();
 	    }
 	} 
@@ -381,24 +307,19 @@ AliHLTPHOSRcuCalibrationProcessor::WriteAllHistograms(char *opt)
 
 
   //LOW GAIN
-  //TFile *deadHistoFile_gain0 =  new TFile(tmpDeadFileName_gain0,"update");
   TFile *deadHistoFile_gain0 =  new TFile(tmpDeadFileName_gain0, opt);
 
   if(!deadHistoFile_gain0) return;
   if(!deadHistoFile_gain0->IsOpen()) return;
   fDeadChannelMapHistogramPtrs[0]->Write();
   //HIGH GAIN
-  //  TFile *deadHistoFile_gain1 =  new TFile(tmpDeadFileName_gain1,"update");
   TFile *deadHistoFile_gain1 =  new TFile(tmpDeadFileName_gain1, opt);
   if(!deadHistoFile_gain1) return;
   if(!deadHistoFile_gain1->IsOpen()) return;
   fDeadChannelMapHistogramPtrs[1]->Write();
-
-
   deadHistoFile_gain0->Close();
   deadHistoFile_gain1->Close(); 
-
-  cout << "printing histograms, finished"<< endl;
+  //  cout << "printing histograms, finished"<< endl;
 }
 
 void

@@ -180,9 +180,7 @@ AliHLTPHOSClusterAnalyserComponent::DoEvent(const AliHLTComponentEventData& evtD
  
   if ( tSize > size )
     {
-      Logging( kHLTLogFatal, "HLT::AliHLTPHOSClusterAnalyserComponent::DoEvent", "Too much data",
-               "Data written over allowed buffer. Amount written: %lu, allowed amount: %lu."
-               , tSize, size );
+      Logging( kHLTLogFatal, "HLT::AliHLTPHOSClusterAnalyserComponent::DoEvent", "Too much data","Data written over allowed buffer. Amount written: %lu, allowed amount: %lu.", tSize, size );
       return EMSGSIZE;
     }
 
@@ -191,7 +189,7 @@ AliHLTPHOSClusterAnalyserComponent::DoEvent(const AliHLTComponentEventData& evtD
     {
       if(fPhosEventCount%fPrintInfoFrequncy == 0)
       	{
-	  cout << "Cluster analyser: # of clusters: " << nClusters << endl;
+	  Logging( kHLTLogInfo, __FILE__ , "Clusters analyzed",  "Has analyzed  %lu  for this event",  nClusters);
 	}  
     }
   

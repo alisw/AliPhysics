@@ -14,10 +14,7 @@
  **************************************************************************/
 
 #include "AliHLTPHOSRawAnalyzer.h"
-//#include <iostream>
 
-//using std::cout;
-//using std::endl;
 
 AliHLTPHOSRawAnalyzer:: AliHLTPHOSRawAnalyzer(): AliHLTPHOSBase(), 
 						 fFloatDataPtr(0), 
@@ -71,7 +68,7 @@ AliHLTPHOSRawAnalyzer::AliHLTPHOSRawAnalyzer(double * /*dtaPtr*/, double fs): Al
 void 
 AliHLTPHOSRawAnalyzer::BaselineCorrection(double * /*dataPtr*/, int /*N*/)
 {
-  cout << "Baseline correction not yet implemeted" << endl;
+
 } //end BaselineCorrection
 
 
@@ -84,8 +81,7 @@ AliHLTPHOSRawAnalyzer::BaselineCorrection(double * /*dataPtr*/, int /*N*/)
 void 
 AliHLTPHOSRawAnalyzer::BaselineCorrection(double * /*dataPtr*/, double baselineValue)
 {
-  printf("\nbaselineValue = %f\n", baselineValue);
-  cout << "Baseline correction not yet implemeted" << endl;
+
 } //end BaslineCorrection
 
 
@@ -140,7 +136,7 @@ AliHLTPHOSRawAnalyzer::SetSampleFreq(double freq)
 int 
 AliHLTPHOSRawAnalyzer::FindStartIndex(double /*treshold*/)
 {
-  cout << "Find Start index not yet implemented" << endl;
+  // cout << "Find Start index not yet implemented" << endl;
   return 0;
 } //end FindStartIndex
 
@@ -152,7 +148,7 @@ AliHLTPHOSRawAnalyzer::FindStartIndex(double /*treshold*/)
 void 
 AliHLTPHOSRawAnalyzer::MakeInitialGuess()
 {
-  cout << "Make initial guess not yet implemeted" << endl;
+  //  cout << "Make initial guess not yet implemeted" << endl;
 }
 
 
@@ -164,7 +160,7 @@ AliHLTPHOSRawAnalyzer::MakeInitialGuess()
 void 
 AliHLTPHOSRawAnalyzer::MakeInitialGuess(int /*treshold*/)
 {
-  cout << "Make initial guess not yet implemeted" << endl;  
+  //  cout << "Make initial guess not yet implemeted" << endl;  
 }
 
 
@@ -179,7 +175,7 @@ AliHLTPHOSRawAnalyzer::SetStartIndex(int index)
 void 
 AliHLTPHOSRawAnalyzer::SetTVector(Double_t * /*tVector*/, Int_t /*size*/)
 {
-  cout <<"ERROR: AliHLTPHOSRawAnalyzer::SetTVector:  You cannot set the peakfindervector here, must be set in derived class peakfinder"<<endl;
+  //  cout <<"ERROR: AliHLTPHOSRawAnalyzer::SetTVector:  You cannot set the peakfindervector here, must be set in derived class peakfinder"<<endl;
 }
 
 
@@ -187,25 +183,7 @@ AliHLTPHOSRawAnalyzer::SetTVector(Double_t * /*tVector*/, Int_t /*size*/)
 void
 AliHLTPHOSRawAnalyzer::SetAVector(Double_t * /*aVector*/, Int_t /*size*/)
 {
- cout <<"ERROR: AliHLTPHOSRawAnalyzer::SetAVector:  You cannot set the peakfindervector here, must be set in derived class peakfinder"<<endl;
+  // cout <<"ERROR: AliHLTPHOSRawAnalyzer::SetAVector:  You cannot set the peakfindervector here, must be set in derived class peakfinder"<<endl;
 }
 
-/*
-UInt_t
-AliHLTPHOSRawAnalyzer::GetMaxValue(UInt_t *dta, Int_t size) const
-{
 
-  Double_t tmpMax = 0;
-
-  for(int i = 0; i < size; i++)
-    {
-      if(dta[i] > tmpMax)
-	{
-	  tmpMax = dta[i];
-	}
-    }
-  
-  return tmpMax;
-
-}
-*/

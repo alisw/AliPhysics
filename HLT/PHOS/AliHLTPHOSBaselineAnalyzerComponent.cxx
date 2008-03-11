@@ -3,7 +3,7 @@
  * This file is property of and copyright by the ALICE HLT Project        * 
  * All rights reserved.                                                   *
  *                                                                        *
- * Primary Authors: Oystein Djuvsland                                                      *
+ * Primary Authors: Oystein Djuvsland                                     *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
  * documentation strictly for non-commercial purposes is hereby granted   *
@@ -45,19 +45,18 @@ const AliHLTComponentDataType AliHLTPHOSBaselineAnalyzerComponent::fgkInputDataT
 
 AliHLTPHOSBaselineAnalyzerComponent gAliHLTPHOSBaselineAnalyzerComponent;
 
-AliHLTPHOSBaselineAnalyzerComponent::AliHLTPHOSBaselineAnalyzerComponent() :
-  AliHLTPHOSProcessor(),
-  fBaselineAnalyzerPtr(0),
-  fTreePtr(0),
-  fBaselineArrayPtr(0),
-  fEvCnt(0),
-  fWriteInterval(100),
-  fFillInterval(100),
-  fFilename(0),
-  fDirectory(0),
-  fHistPath(0),
-  fRunNb(0),
-  fCalculateAll(false)
+AliHLTPHOSBaselineAnalyzerComponent::AliHLTPHOSBaselineAnalyzerComponent() :AliHLTPHOSProcessor(),
+									    fBaselineAnalyzerPtr(0),
+									    fTreePtr(0),
+									    fBaselineArrayPtr(0),
+									    fEvCnt(0),
+									    fWriteInterval(100),
+									    fFillInterval(100),
+									    fFilename(0),
+									    fDirectory(0),
+									    fHistPath(0),
+									    fRunNb(0),
+									    fCalculateAll(false)
 {
    //See header file for documentation
 }
@@ -74,15 +73,30 @@ AliHLTPHOSBaselineAnalyzerComponent::Deinit()
 {
   //See header file for documentation
   fBaselineAnalyzerPtr->CalculateChannelsBaselineRMS();
-  char filename [50];
-  cout << "Writing files...";
+  char filename [256];
   sprintf(filename, "%s/run%d_baselineTree_%d.root", fDirectory, fRunNb,fEvCnt/fWriteInterval);
-  fBaselineAnalyzerPtr->WriteAccumulatedBaselines(filename);
+  
+  if( CheckFileLog( __FILE__ ,  filename,  "w") == true)
+    {
+      fBaselineAnalyzerPtr->WriteAccumulatedBaselines(filename);
+      DoneWritingLog( __FILE__  , filename);
+    }
+
   sprintf(filename, "%s/run%d_channelHistograms.root", fHistPath, fRunNb);
-  fBaselineAnalyzerPtr->WriteChannelHistograms(filename);
+  
+  if( CheckFileLog( __FILE__ ,  filename,  "w") == true)
+    {
+      fBaselineAnalyzerPtr->WriteChannelHistograms(filename);
+      DoneWritingLog( __FILE__  , filename);
+    }
+
   sprintf(filename, "%s/run%d_RMSHistogram.root", fHistPath, fRunNb);
-  fBaselineAnalyzerPtr->WriteRMSHistogram(filename);
-  cout << "Done!\n";
+
+  if( CheckFileLog( __FILE__ ,  filename,  "w") == true)
+    {
+      fBaselineAnalyzerPtr->WriteRMSHistogram(filename);
+      DoneWritingLog( __FILE__  , filename);
+    }
 
   if(fCalculateAll)
     {
@@ -95,7 +109,6 @@ AliHLTPHOSBaselineAnalyzerComponent::Deinit()
     }
   if(fTreePtr)
     {
-      //      delete fTreePtr;
       fTreePtr = 0;
     }
   if(fFilename)
@@ -109,12 +122,11 @@ AliHLTPHOSBaselineAnalyzerComponent::Deinit()
 const char*
 AliHLTPHOSBaselineAnalyzerComponent::GetComponentID()
 {
- //See header file for documentation
+  //See header file for documentation
   return "PhosBaselineAnalyzer";
 }
 
 void
-
 AliHLTPHOSBaselineAnalyzerComponent::GetInputDataTypes(vector<AliHLTComponentDataType>& list)
 { 
  //Get datatypes for input
@@ -136,7 +148,7 @@ AliHLTPHOSBaselineAnalyzerComponent::GetOutputDataType()
 void 
 AliHLTPHOSBaselineAnalyzerComponent::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier)
 {
- //See header file for documentation
+  //See header file for documentation
   constBase = 30;
   inputMultiplier = 1;
 }
@@ -146,18 +158,6 @@ AliHLTPHOSBaselineAnalyzerComponent::DoEvent(const AliHLTComponentEventData& evt
 					AliHLTComponentTriggerData& /*trigData*/, AliHLTUInt8_t* outputPtr, AliHLTUInt32_t& /*size*/,  //TODO: I think that not setting the size explicitly to zero when returning from this method may be a subtle bug in this component. Please check.
 					std::vector<AliHLTComponentBlockData>& /*outputBlocks*/)
 {
-   //Do event
-     
-  //int tSize            = 0;
-  //int offset           = 0; 
-  //int mysize           = 0;
-  //Int_t index             = 0;
-  
-  //Int_t fileCount = 0;
-  //Int_t digitCount = 0;
-  //char filename [50];
-
-
   AliHLTUInt8_t* outBPtr;
   outBPtr = outputPtr;
   const AliHLTComponentBlockData* iter = 0; 
@@ -169,7 +169,7 @@ AliHLTPHOSBaselineAnalyzerComponent::DoEvent(const AliHLTComponentEventData& evt
       
       if(iter->fDataType != AliHLTPHOSDefinitions::fgkCellEnergyDataType)
 	{
-	  //	  cout << "Warning: data type is not fgkCellEnergyDataType " << endl;
+	  Logging(kHLTLogWarning, __FILE__ , "wrong datatype" , "dat is not of type fgkCellEnergyDataType");
 	  continue;
 
 	}
@@ -180,10 +180,6 @@ AliHLTPHOSBaselineAnalyzerComponent::DoEvent(const AliHLTComponentEventData& evt
 
   //PushBack(fDigitArrayPtr, kAliHLTAnyDataType, (AliHLTUInt32_t)0);
   
-   if(fEvCnt % 10 == 0)
-    {
-      cout << "Event #: " << fEvCnt << endl;
-    }
 
   if(fEvCnt % fFillInterval == 0)
     {
@@ -191,55 +187,41 @@ AliHLTPHOSBaselineAnalyzerComponent::DoEvent(const AliHLTComponentEventData& evt
     }
   if(fEvCnt % fWriteInterval == 0)
     {
-      char filename [50];
-      cout << "Writing file...";
+      char filename [256];
       sprintf(filename, "%s/run%d_baselineTree_%d.root", fDirectory, fRunNb,fEvCnt/fWriteInterval - 1);
-      fBaselineAnalyzerPtr->WriteAccumulatedBaselines(filename);
-      cout << "Done!\n";
-      delete fTreePtr;
-      fTreePtr = new TTree("baselineTree", "Baselines");
-      fBaselineAnalyzerPtr->SetRootObjects(fTreePtr, fBaselineArrayPtr);
+      //:CheckFileLog(const char *origin,   const char *filename,  const char opt)
+      if( (CheckFileLog( __FILE__ , filename,  "w") == true))
+	{
+	  fBaselineAnalyzerPtr->WriteAccumulatedBaselines(filename);
+	  delete fTreePtr;
+	  fTreePtr = new TTree("baselineTree", "Baselines");
+	  fBaselineAnalyzerPtr->SetRootObjects(fTreePtr, fBaselineArrayPtr);
+	  DoneWritingLog( __FILE__ , filename);
+	}
+      
+      return 0;
     }
-  
-  return 0;
 }
-
 
 int
 AliHLTPHOSBaselineAnalyzerComponent::DoInit(int argc, const char** argv )
 {
   //See header file for documentation
-  
   Bool_t pathSet = false;
   Bool_t histPathSet = false;
   Bool_t nSamplesSet = false;
-  
-  
   fFilename = new char[50];
   fDirectory = new char[50];
   fHistPath = new char[50];
-  
 
+  /*
   fstream runNbFile;
-  //char dir [10];
-  
-  //Int_t newRunNb;
   runNbFile.open("/opt/HLT-public/rundir/runNumber.txt");
   runNbFile >> fRunNb;
   runNbFile.close();
-  /*  newRunNb = fRunNb + 1;
-  runNbFile.open("/opt/HLT-public/rundir/runNumber.txt");
-  runNbFile << newRunNb;
-  runNbFile.close();*/
-  
-  //  sprintf(dir, "//tmp//phoshlt//aldaqpc019//hlt//data//baselines//run%d", fRunNb);
-  // if(mkdir(dir, 0777))
-  //{
-  //  cerr << "WARNING! Could not create directory!\n";
-  //}
-  
+  */
+
   fBaselineAnalyzerPtr = new AliHLTPHOSBaselineAnalyzer();
-    
   fTreePtr = new TTree("baselineTree", "Baselines");
   fBaselineArrayPtr = new TClonesArray("AliHLTPHOSBaseline",N_XCOLUMNS_MOD*N_ZROWS_MOD*N_GAINS);
   fBaselineAnalyzerPtr->SetRootObjects(fTreePtr, fBaselineArrayPtr);
@@ -277,25 +259,28 @@ AliHLTPHOSBaselineAnalyzerComponent::DoInit(int argc, const char** argv )
   
   fWriteInterval = 100;
   fFillInterval = 100;
-  if(fCalculateAll)
-    cout << "Path to total baseline file: " << fFilename << endl;
-  cout << endl << "Run number is: " << fRunNb  << "  -- Check that this is correct!!!\n";
+
+  if(fCalculateAll) 
+    {
+      CalculateAll();
+    }
+    
 
   return 0;
 }
+ 
 
-AliHLTComponent*
-AliHLTPHOSBaselineAnalyzerComponent::Spawn()
+ AliHLTComponent*
+   AliHLTPHOSBaselineAnalyzerComponent::Spawn()
+ {
+   //See header file for documentation
+   return new AliHLTPHOSBaselineAnalyzerComponent();
+ }
+ 
+ void 
+   AliHLTPHOSBaselineAnalyzerComponent::CalculateAll()
 {
- //See header file for documentation
-  return new AliHLTPHOSBaselineAnalyzerComponent();
-}
-
-void 
-AliHLTPHOSBaselineAnalyzerComponent::CalculateAll()
-{
- //See header file for documentation
-  cout << "Calculating total baselines... \n";
+  //See header file for documentation
   AliHLTPHOSBaseline *baselineObject = 0;
   TChain* chain = new TChain("baselineTree");
   TTree* totalTree = new TTree("baselineTree", "Baselines");
@@ -321,11 +306,9 @@ AliHLTPHOSBaselineAnalyzerComponent::CalculateAll()
     }
 
   sprintf(filepath, "%s/run%d*", fDirectory, fRunNb);
-  cout << "Adding files from: " << filepath << endl;
+  Logging(kHLTLogInfo, __FILE__ , "Adding files" , "Adding files from %s", filepath);
   chain->Add(filepath);
-
-  cout << "Gives a total number of " << chain->GetEntries() << " events.\n";
-
+  Logging(kHLTLogInfo, __FILE__ , "Adding files  " , "Gives a total number of %d file",chain->GetEntries());
   chain->SetBranchAddress("Baselines", &baselineArray);
   totalTree->Branch("Baselines", &totalBaselineArray);
 
@@ -371,15 +354,9 @@ AliHLTPHOSBaselineAnalyzerComponent::CalculateAll()
 	      baselineObject->SetGain(gain);
 	      if( tmpBaselines[x][z][gain][1] == 0)
 	      {
-		cout << "Warning! Number of entries for x: " << x << " - z: " << z << " - gain: " << gain << " = 0\n" 
-		    << "Setting baseline to 40\n\n";
+		Logging(kHLTLogWarning, __FILE__ , "zero entries", " for x:= %d, z=%d, gain = %d, Setting baseline to 40", x, z, gain);	
 		baselineObject->SetBaseline(40);
 		continue;
-	      }
-	      if( tmpBaselines[x][z][gain][1] == 0)
-	      {
-		cout << "Warning! Number of entries for x: " << x << " - z: " << z << " - gain: " << gain << " = " 
-		     << tmpBaselines[x][z][gain][1] << endl;
 	      }
 	      baselineObject->SetEntries( Int_t(tmpBaselines[x][z][gain][1]) );
 	      n++;
@@ -389,10 +366,13 @@ AliHLTPHOSBaselineAnalyzerComponent::CalculateAll()
 
   totalTree->Fill();
  
-  cout << "Writing to: " << fFilename << endl;
-  TFile *outfile = new TFile(fFilename,"recreate");
-  totalTree->Write();
-  outfile->Close();
-  cout << "Done!\n";
 
+  if(CheckFileLog(__FILE__, fFilename, "w") == true)
+    {
+      TFile *outfile = new TFile(fFilename,"recreate");
+      totalTree->Write();
+      outfile->Close();
+      DoneWritingLog(__FILE__ , fFilename);
+      delete outfile;
+    }
 }

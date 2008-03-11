@@ -205,6 +205,7 @@ AliHLTPHOSBaselineAnalyzer::CalculateChannelsBaselineRMS()
 }    
  
 
+
 void 
 AliHLTPHOSBaselineAnalyzer::SetRootObjects(TTree *tree, TClonesArray *baselineArray)
 {
@@ -279,13 +280,12 @@ AliHLTPHOSBaselineAnalyzer::WriteRMSHistogram(const Char_t* filename)
   fRMSHistogramPtr->Write();
   fRMSMapHighGainHistogramPtr->Write();
   fRMSMapLowGainHistogramPtr->Write();
-
   fFixedRMSHistogramPtr->Write();
   fFixedRMSMapHighGainHistogramPtr->Write();
   fFixedRMSMapLowGainHistogramPtr->Write();
-  
   file->Close();
 }
+
 
 void 
 AliHLTPHOSBaselineAnalyzer::ResetBaselines()
@@ -302,6 +302,7 @@ AliHLTPHOSBaselineAnalyzer::ResetBaselines()
 	}
     }
 }
+
 
 void 
 AliHLTPHOSBaselineAnalyzer::ResetChannelCount()

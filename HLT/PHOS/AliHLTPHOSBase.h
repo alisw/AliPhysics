@@ -26,6 +26,7 @@
 #include "AliHLTPHOSConstants.h"
 #include "AliHLTPHOSConfig.h"
 #include "AliHLTPHOSAltroConfig.h"
+#include "AliHLTLogging.h"
 
 using namespace PhosHLTConst;
 using namespace std;
@@ -92,6 +93,8 @@ protected:
   AliHLTPHOSConfig *fAltroConfigPtr;   // object holding Altro configuration data
 
 private:
+  AliHLTLogging *fLogPtr;
+
   AliHLTPHOSBase(const AliHLTPHOSBase & );
   AliHLTPHOSBase & operator = (const AliHLTPHOSBase &);
 };

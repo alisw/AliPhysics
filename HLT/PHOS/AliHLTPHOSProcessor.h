@@ -23,7 +23,14 @@ class AliHLTPHOSProcessor:public AliHLTProcessor, public AliHLTPHOSBase
   virtual AliHLTComponentDataType GetOutputDataType() =0;
   virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier) =0;
   virtual AliHLTComponent* Spawn() = 0; 
- 
+  char lineNumber[256];
+  const char *IntToChar(int number);
+  /*
+   *Check file and write messages to AliLog system
+   */
+  bool CheckFileLog(const char *origin, const char *filename, const char *opt);
+  void DoneWritingLog(const char *origin, const char *filename);
+
   using  AliHLTProcessor::DoEvent;
 
  protected:
@@ -35,6 +42,9 @@ class AliHLTPHOSProcessor:public AliHLTProcessor, public AliHLTPHOSBase
   int fPrintInfoFrequncy;               /**<Defines the update frequency for information printet to std out*/
   static const AliHLTComponentDataType fgkInputDataTypes[]; /**<List of  datatypes that can be given to this component*/
   int fRunNumber;
+  char fFilepath[1024];
+  char fMessage[1024];
+
  private:
   AliHLTPHOSProcessor(const AliHLTPHOSProcessor & );
   AliHLTPHOSProcessor & operator = (const AliHLTPHOSProcessor &);

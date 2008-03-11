@@ -13,13 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-
 #include "AliHLTPHOSRawAnalyzerCrude.h"
-//#include <iostream>
-
-
-//using std::cout;
-//using std::endl;
 
 //ClassImp(AliHLTPHOSRawAnalyzerCrude) 
 
@@ -71,18 +65,11 @@ AliHLTPHOSRawAnalyzerCrude::Evaluate(int start, int length)
 
   for(int i=start; i<length; i++)
     {
-      //      if(fFloatDataPtr[i] >  tmpAmplitudeMax)
-      //	{
-      //	  tmpAmplitudeMax = fFloatDataPtr[i];
-      //	  tmpTime = i;		     
-      //	}
-
       if(fIntDataPtr[i] >  tmpAmplitudeMax && i > 5)
 	{
 	  tmpAmplitudeMax = fIntDataPtr[i];
 	  tmpTime = i;		     
 	}
-
     }
 	
   fDAmpl = tmpAmplitudeMax;

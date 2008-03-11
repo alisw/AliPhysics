@@ -34,9 +34,6 @@ class AliHLTPHOSRcuCalibrationProcessor : public AliHLTPHOSBase
   virtual ~AliHLTPHOSRcuCalibrationProcessor();
   const AliHLTPHOSRcuCellAccumulatedEnergyDataStruct& GetCellAccumulatedEnergies(); 
   void Init();
-  void SetRcuX(AliHLTUInt8_t X);
-  void SetRcuZ(AliHLTUInt8_t Z);
-  void SetModuleID(AliHLTUInt8_t moduleID); 
   void SetHistoOutDir(char *outDir);
   void FillEnergy(AliHLTUInt8_t x, AliHLTUInt8_t z,  AliHLTUInt8_t gain, float energy);
   void FillTime(AliHLTUInt8_t x,   AliHLTUInt8_t z,  AliHLTUInt8_t gain, float time); 
@@ -52,10 +49,8 @@ class AliHLTPHOSRcuCalibrationProcessor : public AliHLTPHOSBase
   AliHLTPHOSRcuCalibrationProcessor & operator = (const  AliHLTPHOSRcuCalibrationProcessor &);
   void SetDefaultHistoOutDir(); 
   void ScanTimeString(char *timeString);
-
   AliHLTPHOSRcuCalibrationProcessor();
   char fHistoOutDir[512];
-
 
   TH1F *fEnergyHistogramPtrs[N_XCOLUMNS_RCU][N_ZROWS_RCU][N_GAINS];    /**<Array to store energy distribution per channel for one rcu*/
   TH1F *fTimingHistogramPtrs[N_XCOLUMNS_RCU][N_ZROWS_RCU][N_GAINS];    /**<Array to store timing distribution per channel for one rcu*/

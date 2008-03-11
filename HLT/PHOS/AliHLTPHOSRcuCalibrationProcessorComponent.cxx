@@ -65,10 +65,12 @@ void AliHLTPHOSRcuCalibrationProcessorComponent::GetInputDataTypes(vector<AliHLT
   */
 }
 
+
 AliHLTComponentDataType AliHLTPHOSRcuCalibrationProcessorComponent::GetOutputDataType()
 {
   return AliHLTPHOSDefinitions::fgkEmcCalibDataType;
 }
+
                                      
 void AliHLTPHOSRcuCalibrationProcessorComponent::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier)
 {
@@ -76,13 +78,23 @@ void AliHLTPHOSRcuCalibrationProcessorComponent::GetOutputDataSize(unsigned long
   inputMultiplier = 2;
 }
 
-AliHLTComponent* AliHLTPHOSRcuCalibrationProcessorComponent::Spawn()
+
+AliHLTComponent* 
+AliHLTPHOSRcuCalibrationProcessorComponent::Spawn()
 {
   return new AliHLTPHOSRcuCalibrationProcessorComponent();
 }
 
 
-Int_t AliHLTPHOSRcuCalibrationProcessorComponent::ScanArgument( Int_t argc, const char** argv)
+const char* 
+AliHLTPHOSRcuCalibrationProcessorComponent::GetComponentID()
+{
+  return "PhosCalibrationProcessor";
+}
+
+
+Int_t 
+AliHLTPHOSRcuCalibrationProcessorComponent::ScanArgument( Int_t argc, const char** argv)
 {
   const char **c = argv;
   Int_t t= argc;

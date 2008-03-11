@@ -103,8 +103,7 @@ AliHLTPHOSESDMaker::FillESDEvent()
       //      caloCluster = (AliESDCaloCluster*)fCaloClustersPtr->New(i + fNCaloClusters);
       caloCluster = (AliESDCaloCluster*)fCaloClustersPtr->New(i);
       caloClusterStruct = &(fCaloClusterContainerPtr->fCaloClusterArray[i]);
-      //cout << caloCluster << endl;
-      //cout << "Cells = " << caloClusterStruct->fNCells << endl;
+
       caloCluster->SetID(caloClusterStruct->fID);
       caloCluster->SetClusterType(caloClusterStruct->fClusterType);
       caloCluster->SetPosition((Float_t*)&caloClusterStruct->fGlobalPos[0]);
@@ -122,7 +121,6 @@ AliHLTPHOSESDMaker::FillESDEvent()
       caloCluster->SetCellsAbsId(caloClusterStruct->fCellsAbsId);
       caloCluster->SetCellsAmplitudeFraction(caloClusterStruct->fCellsAmpFraction);
       fESDEventPtr->AddCaloCluster(caloCluster);
-      //cout << caloCluster->E() << endl;
       fNCaloClusters++;  
     }
   
@@ -161,7 +159,7 @@ AliHLTPHOSESDMaker::FillESDEvent(AliHLTPHOSCaloClusterContainerStruct* caloClust
       caloCluster->SetCellsAbsId(caloClusterStruct->fCellsAbsId);
       caloCluster->SetCellsAmplitudeFraction(caloClusterStruct->fCellsAmpFraction);
       fESDEventPtr->AddCaloCluster(caloCluster);
-      //cout << caloCluster->E() << endl;*/
+       */
       fNCaloClusters++;  
     }
   

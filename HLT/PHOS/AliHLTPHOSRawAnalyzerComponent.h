@@ -15,6 +15,7 @@ class AliAltroBunch;        // container for altro bunches
 class AliHLTPHOSDigitMaker;
 class AliHLTPHOSDigitContainerDataStruct;
 
+
 class AliHLTPHOSRawAnalyzerComponent: public AliHLTPHOSRcuProcessor
 {
  public:

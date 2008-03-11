@@ -12,6 +12,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+
 #include <iostream>
 
 #include "AliHLTPHOSESDMakerComponent.h"
@@ -169,7 +170,7 @@ AliHLTPHOSESDMakerComponent::DoEvent( const AliHLTComponentEventData& /*evtData*
     {
       if(fPhosEventCount%fPrintInfoFrequncy == 0)
       	{
-	  cout << "Made ESD from event!" << endl;
+	  Logging(kHLTLogInfo, __FILE__ , "writing data" , "Made ESD from event %lu",  fPhosEventCount);
 	}  
     }
   return 0;

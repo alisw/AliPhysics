@@ -96,7 +96,6 @@ AliHLTPHOSDigitMaker::MakeDigits(AliHLTPHOSRcuCellEnergyDataStruct* rcuData)
 	      fDigitStructPtr->fZ = zMod;
 	      fDigitStructPtr->fAmplitude = amplitude;
 	      fDigitStructPtr->fEnergy = amplitude * fHighGainFactors[xMod][zMod];
-	      //	      cout << "Amplitude in GeVs: " << fDigitStructPtr->fEnergy << endl;
 	      //TODO: fix time
 	      fDigitStructPtr->fTime = fCellDataPtr->fTime * 0.0000001;
 	      fDigitStructPtr->fCrazyness = fCellDataPtr->fCrazyness;
@@ -167,7 +166,6 @@ void
 AliHLTPHOSDigitMaker::SetDigitThresholds(const char* filepath, Int_t nSigmas)
 {
   //See header file for documentation
-
   TFile *histFile = new TFile(filepath);
   
   TH2F *lgHist = (TH2F*)histFile->Get("RMSLGMapHist");

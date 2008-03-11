@@ -66,7 +66,7 @@ int
 AliHLTPHOSTreeMakerComponent::Deinit()
 {
   //See header file for documentation
-  cout << "Writing file...";
+  //  cout << "Writing file...";
   char filename [50];
 
   sprintf(filename, "%s/run%d_digitTree_%d.root", fDirectory, fRunNumber,(fPhosEventCount/fWriteInterval));
@@ -75,7 +75,7 @@ AliHLTPHOSTreeMakerComponent::Deinit()
   fDigitTreePtr->Write();
   delete outfile;
   outfile = 0;
-  cout << "Done!\n";
+  //  cout << "Done!\n";
   if(fDigitTreePtr) 
     {
       delete fDigitTreePtr;
@@ -189,7 +189,7 @@ AliHLTPHOSTreeMakerComponent::DoInit ( int argc, const char** argv )
     }
 
   fTreeMakerPtr->SetDigitTree(fDigitTreePtr);
-  cout << endl << "Run number is: " <<  fRunNumber  << "  -- Check that this is correct!!!\n" << endl;
+  //  cout << endl << "Run number is: " <<  fRunNumber  << "  -- Check that this is correct!!!\n" << endl;
 
   // fRunNumber
 
@@ -209,7 +209,7 @@ void
 AliHLTPHOSTreeMakerComponent::Write()
 {
   //See header file for documentation
-  cout << "Writing file...";
+  //  cout << "Writing file...";
   char filename [256];
 
   sprintf(filename, "%s/run%d_digitTree_%d.root", fDirectory, fRunNumber,(fPhosEventCount/fWriteInterval - 1));
@@ -218,7 +218,7 @@ AliHLTPHOSTreeMakerComponent::Write()
   fDigitTreePtr->Write();
   delete outfile;
   outfile = 0;
-  cout << "Done!\n";
+  //  cout << "Done!\n";
 }
 
 void

@@ -21,6 +21,7 @@
 #include "unistd.h"
 #include <time.h>
 
+
 #define THRESHOLD 30
 
 using  namespace std;
@@ -42,8 +43,8 @@ AliHLTPHOSRcuHistogramProducer:: AliHLTPHOSRcuHistogramProducer():  AliHLTPHOSBa
 								    fRcuZ(0)
 {
   //Default constructor
-  cout << "WARNING: You cannot invoke the AliHLTPHOSRcuHistogramProducer without arguments" << endl;
-  cout << "Usage AliHLTPHOSRcuHistogramProducer(ModuleID, X. Z)" << endl;
+  //  cout << "WARNING: You cannot invoke the AliHLTPHOSRcuHistogramProducer without arguments" << endl;
+  //  cout << "Usage AliHLTPHOSRcuHistogramProducer(ModuleID, X. Z)" << endl;
 } 
 
 
@@ -57,7 +58,7 @@ AliHLTPHOSRcuHistogramProducer::AliHLTPHOSRcuHistogramProducer(AliHLTUInt8_t mod
   char *tmp = getenv("HOME");
   if(tmp == 0)
     {
-      cout << "ERROR, environment vriable HOME is not set" << endl;
+      //      cout << "ERROR, environment vriable HOME is not set" << endl;
     }
   else
     {
@@ -92,17 +93,17 @@ AliHLTPHOSRcuHistogramProducer::SetDefaultHistoOutDir()
   
   if(fp == 0)
     {
-      cout << "ERROR, directory =" << fHistoOutDir << "  Doesnt exist, or you don have write permissions to the directory" << endl;
-      cout << "WARNING: Histograms will not bew written to files at end of run unless a valid directory is set" << endl;
-      cout << "INFO, You must either" << endl;
-      cout << "1) Create the directory " << fHistoOutDir <<  "Manually" <<endl;
-      cout << "OR "<< endl;
-      cout << "2) Se a valid output directory with the function AliHLTPHOSRcuHistogramProducer::SetHistoOutDir(*char outdir) "<< endl;
+//       cout << "ERROR, directory =" << fHistoOutDir << "  Doesnt exist, or you don have write permissions to the directory" << endl;
+//       cout << "WARNING: Histograms will not bew written to files at end of run unless a valid directory is set" << endl;
+//       cout << "INFO, You must either" << endl;
+//       cout << "1) Create the directory " << fHistoOutDir <<  "Manually" <<endl;
+//       cout << "OR "<< endl;
+//       cout << "2)  Se a valid output directory with the function AliHLTPHOSRcuHistogramProducer::SetHistoOutDir(*char outdir) "<< endl;
    }
   else
     {
-      cout << "INFO: Output ddirectory for Histograms was set tot" << fHistoOutDir << endl;
-      cout << "INFO: if you want another output directory use the AliHLTPHOSRcuHistogramProducer::SetHistoOutDir(*char outdir)" << endl;
+      //      cout << "INFO: Output ddirectory for Histograms was set tot" << fHistoOutDir << endl;
+      //      cout << "INFO: if you want another output directory use the AliHLTPHOSRcuHistogramProducer::SetHistoOutDir(*char outdir)" << endl;
     }
 
 } 
@@ -163,30 +164,6 @@ AliHLTPHOSRcuHistogramProducer::Init()
 }
 
 
-/*
-void 
-AliHLTPHOSRcuHistogramProducer::SetRcuX(AliHLTUInt8_t X)
-{
-  //See header file for documentation
-  fRcuX = X; 
-  fCellAccEnergy.fRcuX = X;
-}
-
-void 
-AliHLTPHOSRcuHistogramProducer::SetRcuZ(AliHLTUInt8_t Z)
-{
-  //See header file for documentation
-  fRcuZ = Z; 
-  fCellAccEnergy.fRcuZ = Z;
-}
-
-void 
-AliHLTPHOSRcuHistogramProducer::SetModuleID(AliHLTUInt8_t moduleID)
-{
-  //See header file for documentation
- fModuleID = moduleID;
-}
-*/
 
 void 
 AliHLTPHOSRcuHistogramProducer::FillEnergy(AliHLTUInt8_t x, AliHLTUInt8_t z,  AliHLTUInt8_t gain, float energy)
@@ -309,8 +286,8 @@ AliHLTPHOSRcuHistogramProducer::WriteAllHistograms(char *opt)
   if(fp == 0)
     {
       ScanTimeString(timeString);  
-      cout << "WARNING, could not find file "<< runNumberFile  <<endl;
-      cout <<"Filename will be stamped with data and time instead " << endl;
+      //      cout << "WARNING, could not find file "<< runNumberFile  <<endl;
+      //      cout <<"Filename will be stamped with data and time instead " << endl;
       sprintf(tmpEFileName, "%s/Energy/EnergyHistograms_%s_mod%d_rcuZ%d_rcuX%d.root", fHistoOutDir, timeString, (int)fModuleID, (int)fRcuZ, (int)fRcuZ);
       sprintf(tmpDeadFileName_gain0, "%s/DeadMap/DeadChannelHistograms_%s_mod%d_rcuZ%d_rcuX%d_LG.root", fHistoOutDir, timeString, (int)fModuleID, (int)fRcuZ, (int)fRcuZ); 
       sprintf(tmpDeadFileName_gain1, "%s/DeadMap/DeadChannelHistograms_%s_mod%d_rcuZ%d_rcuX%d_HG.root", fHistoOutDir, timeString, (int)fModuleID, (int)fRcuZ, (int)fRcuZ); 
@@ -324,24 +301,13 @@ AliHLTPHOSRcuHistogramProducer::WriteAllHistograms(char *opt)
       fclose(fp);
     }
 
-  //  cout << "tmpEFileName = "<< tmpEFileName <<endl;
-  //  cout << "tmpDeadFileName_gain0 (low gain)   = " << tmpDeadFileName_gain0 <<endl;
-  //  cout << "tmpDeadFileName_gain1 (high gain)  = " << tmpDeadFileName_gain1 <<endl;
-
-  //  sprintf(tmpEFileName,"/home/aliphoshlt/rundir/outdata/calibHisto_%d_%d_%d.root", (int)fModuleID, (int)fRcuX, (int)fRcuZ);
-
-
-  //  TFile *energyHistoFile =  new TFile(tmpEFileName,"update");
-  //  TFile *energyHistoFile =  new TFile(tmpEFileName,"recreate");
-  //  TFile *energyHistoFile =  new TFile(tmpEFileName,"recreate");
-
-  cout << "tmpEFileName = "<< tmpEFileName  << endl;
+  //  cout << "tmpEFileName = "<< tmpEFileName  << endl;
 
   TFile *energyHistoFile =  new TFile(tmpEFileName, opt);
   if(!energyHistoFile) return;
   if(!energyHistoFile->IsOpen()) return;
 
-  cout <<"printing histograms"<< endl;
+  //  cout <<"printing histograms"<< endl;
 
   for(int x = 0; x <  N_XCOLUMNS_RCU; x ++)
     {
@@ -376,8 +342,8 @@ AliHLTPHOSRcuHistogramProducer::WriteAllHistograms(char *opt)
 
   deadHistoFile_gain0->Close();
   deadHistoFile_gain1->Close(); 
-
-  cout << "printing histograms, finished"<< endl;
+  
+  //  cout << "printing histograms, finished"<< endl;
 }
 
 void
@@ -386,11 +352,9 @@ AliHLTPHOSRcuHistogramProducer::ScanTimeString(char *timeString)
   //comment
   time_t timePtr;
   tm *tmPtr;
-  //  char *timeString;
   time(&timePtr); 
   tmPtr=localtime(&timePtr);
   timeString=asctime(tmPtr);
-  //  char tShort [strlen(timeString)+1];
   char day[10];
   char month[10];
   int date;
@@ -398,11 +362,6 @@ AliHLTPHOSRcuHistogramProducer::ScanTimeString(char *timeString)
   int min;
   int sec;
   int year;
-  //char sDate[5];
-  //char sHour[5];
-  //char sMin[5];
-  //char sSec[5];
-  //char sYear[10];
   sscanf(timeString, "%s %s %d %d:%d:%d %d\n", day, month, &date, &hour, &min, &sec, &year);
   
 }

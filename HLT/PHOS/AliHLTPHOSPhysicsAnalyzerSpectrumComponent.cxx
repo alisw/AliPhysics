@@ -40,12 +40,11 @@ UInt_t AliHLTPHOSPhysicsAnalyzerSpectrumComponent::fgCount = 0;
 
 AliHLTPHOSPhysicsAnalyzerSpectrumComponent gAliHLTPHOSPhysicsAnalyzerSpectrumComponent;
 
-// removed by PTH AliHLTPHOSPhysicsAnalyzerSpectrumComponent::AliHLTPHOSPhysicsAnalyzerSpectrumComponent():AliHLTPHOSBase(), AliHLTProcessor(), fAnalyzerPtr(0), 
-//											 fPeakFitter(0), fRootHistPtr(0),
-//											 fWriteInterval(0)
 							 
-AliHLTPHOSPhysicsAnalyzerSpectrumComponent::AliHLTPHOSPhysicsAnalyzerSpectrumComponent():AliHLTPHOSProcessor(), fAnalyzerPtr(0), // added by PTH 
-											 fPeakFitter(0), fRootHistPtr(0),
+AliHLTPHOSPhysicsAnalyzerSpectrumComponent::AliHLTPHOSPhysicsAnalyzerSpectrumComponent():AliHLTPHOSProcessor(), 
+											 fAnalyzerPtr(0),
+											 fPeakFitter(0), 
+											 fRootHistPtr(0),
 											 fWriteInterval(0)
 {
   //Constructor
@@ -162,7 +161,7 @@ AliHLTPHOSPhysicsAnalyzerSpectrumComponent::DoEvent(const AliHLTComponentEventDa
       
       if(iter->fDataType != AliHLTPHOSDefinitions::fgkRecPointDataType)
 	{
-	  //cout << "Warning: data type is not fgkRecPointDataType " << endl;
+	  Logging(kHLTLogWarning, __FILE__ , "wrong datatype" , "Dataytp is not :fgkRecPointDataType as expected");  
 	  continue;
 	}
       
@@ -170,7 +169,6 @@ AliHLTPHOSPhysicsAnalyzerSpectrumComponent::DoEvent(const AliHLTComponentEventDa
       
     } 
   
-  //fAnalyzerPtr->Analyze(fRecPointArrayPtr, ndx);
 
   if(fgCount%fWriteInterval == 0 && fgCount != 0)
     {
@@ -182,52 +180,13 @@ AliHLTPHOSPhysicsAnalyzerSpectrumComponent::DoEvent(const AliHLTComponentEventDa
 
   if(fgCount%100==0) 
   {
-    //cout << "fgCount: " << fgCount << endl;
+
   }
   
   return 0;
   
 }
 
-
-//int 
-//AliHLTPHOSPhysicsAnalyzerSpectrumComponent::DoEvent(const AliHLTComponentEventData &/*evtData*/, AliHLTComponentTriggerData &/*trigData*/) 	
-/*
-{
-  const AliHLTComponentBlockData* iter = NULL; 
-  int ndx = 0;
-  //int nBlocks = GetNumberOfInputBlocks();
-
-  // PTH  if((iter = GetFirstInputBlock(AliHLTPHOSPhysicsDefinitions::fgkAliHLTClusterDataType)))
-  if((iter = GetFirstInputBlock(AliHLTPHOSDefinitions::fgkAliHLTClusterDataType)))
-    {
-    fClusterArrayPtr[ndx] = reinterpret_cast<AliHLTPHOSClusterDataStruct*>(iter->fPtr);
-    }
-
-  while((iter = GetNextInputBlock()))
-    {
-      ndx++;
-      fClusterArrayPtr[ndx] = reinterpret_cast<AliHLTPHOSClusterDataStruct*>(iter->fPtr);
-    }
-  
-  fAnalyzerPtr->Analyze(fClusterArrayPtr, ndx);
-  
-  if(fgCount%fWriteInterval == 0 && fgCount != 0)
-    {
-      PushBack(fRootHistPtr, kAliHLTAnyDataType, (AliHLTUInt32_t)0);
-    }
-  
-  fgCount++; 
-
-  if(fgCount%100==0) 
-    {
-      //printf("fgCount: %d\n\n", fgCount);
-      cout << "fgCount: " << fgCount << endl;
-    }
-  
-  return 0;
-}
-*/
 
 
 Int_t
