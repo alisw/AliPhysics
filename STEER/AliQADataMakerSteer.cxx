@@ -262,7 +262,7 @@ Bool_t AliQADataMakerSteer::Finish(const AliQA::TASKINDEX taskIndex, const char 
 }
 
 //_____________________________________________________________________________
-TObjArray * AliQADataMakerSteer::GetFromOCDB(AliQA::DETECTORINDEX det, AliQA::TASKINDEX task) const 
+TObjArray * AliQADataMakerSteer::GetFromOCDB(AliQA::DETECTORINDEX det, AliQA::TASKINDEX task, const char * year) const 
 {
 	// Retrieve the list of QA data for a given detector and a given task 
 	TObjArray * rv = NULL ;
@@ -273,7 +273,10 @@ TObjArray * AliQADataMakerSteer::GetFromOCDB(AliQA::DETECTORINDEX det, AliQA::TA
 	}	
 	AliCDBManager* man = AliCDBManager::Instance() ; 
 	if ( ! man->IsDefaultStorageSet() ) {
-		man->SetDefaultStorage(AliQA::GetQARefDefaultStorage()) ; 
+		TString tmp(AliQA::GetQARefDefaultStorage()) ; 
+		tmp.Append(year) ; 
+		tmp.Append("/") ; 
+		man->SetDefaultStorage(tmp.Data()) ; 		
 		man->SetSpecificStorage(Form("%s/*", AliQA::GetQAOCDBDirName()), AliQA::GetQARefStorage()) ;
 	}
 	char detOCDBDir[10] ; 
@@ -681,7 +684,7 @@ TString AliQADataMakerSteer::Run(const char * detectors, const AliQA::TASKINDEX 
 }
 
 //_____________________________________________________________________________
-Bool_t AliQADataMakerSteer::Save2OCDB(const Int_t runNumber, const Int_t cycleNumber, const char * detectors) const
+Bool_t AliQADataMakerSteer::Save2OCDB(const Int_t runNumber, const char * year, const Int_t cycleNumber, const char * detectors) const
 {
 	// take the locasl QA data merge into a single file and save in OCDB 
 	Bool_t rv = kTRUE ; 
@@ -704,14 +707,14 @@ Bool_t AliQADataMakerSteer::Save2OCDB(const Int_t runNumber, const Int_t cycleNu
 		char inputFileName[20] ; 
 		sprintf(inputFileName, "Merged.%s.%d.root", AliQA::GetQADataFileName(), runNumber) ; 
 		inputFile = TFile::Open(inputFileName) ; 
-		rv = SaveIt2OCDB(runNumber, inputFile) ; 
+		rv = SaveIt2OCDB(runNumber, inputFile, year) ; 
 	} else {
 		for (Int_t index = 0; index < AliQA::kNDET; index++) {
 			if (sdet.Contains(AliQA::GetDetName(index))) {
 				char inputFileName[20] ; 
 				sprintf(inputFileName, "%s.%s.%d.%d.root", AliQA::GetDetName(index), AliQA::GetQADataFileName(), runNumber, cycleNumber) ; 
 				inputFile = TFile::Open(inputFileName) ; 			
-				rv *= SaveIt2OCDB(runNumber, inputFile) ; 
+				rv *= SaveIt2OCDB(runNumber, inputFile, year) ; 
 			}
 		}
 	}
@@ -719,29 +722,36 @@ Bool_t AliQADataMakerSteer::Save2OCDB(const Int_t runNumber, const Int_t cycleNu
 }
 
 //_____________________________________________________________________________
-Bool_t AliQADataMakerSteer::SaveIt2OCDB(const Int_t runNumber, TFile * inputFile) const
+Bool_t AliQADataMakerSteer::SaveIt2OCDB(const Int_t runNumber, TFile * inputFile, const char * year) const
 {
 	// reads the TH1 from file and adds it to appropriate list before saving to OCDB
 	Bool_t rv = kTRUE ;
 	AliInfo(Form("Saving TH1s in %s to %s", inputFile->GetName(), AliQA::GetQARefStorage())) ; 
 	AliCDBManager* man = AliCDBManager::Instance() ; 
 	if ( ! man->IsDefaultStorageSet() ) {
-		man->SetDefaultStorage(AliQA::GetQARefDefaultStorage()) ; 
-		man->SetSpecificStorage(Form("%s/*", AliQA::GetQAOCDBDirName()), AliQA::GetQARefStorage()) ; 
+		TString tmp(AliQA::GetQARefDefaultStorage()) ; 
+		tmp.Append(year) ; 
+		tmp.Append("?user=alidaq") ; 
+		man->SetDefaultStorage(tmp.Data()) ; 
+		man->SetSpecificStorage("*", AliQA::GetQARefStorage()) ; 
 	}
 	if(man->GetRun() < 0) 
 		man->SetRun(runNumber);
+
+	AliCDBMetaData mdr ;
+	mdr.SetResponsible("yves schutz");
 
 	for ( Int_t detIndex = 0 ; detIndex < AliQA::kNDET ; detIndex++) {
 		TDirectory * detDir = inputFile->GetDirectory(AliQA::GetDetName(detIndex)) ; 
 		if ( detDir ) {
 			AliInfo(Form("Entering %s", detDir->GetName())) ;
 			char detOCDBDir[20] ;
-			sprintf(detOCDBDir, "%s/%s/%s", AliQA::GetQAOCDBDirName(), AliQA::GetDetName(detIndex), AliQA::GetRefOCDBDirName()) ; 
-			AliCDBId idr(detOCDBDir, runNumber, 999999999)  ;
+			sprintf(detOCDBDir, "%s/%s/%s", AliQA::GetDetName(detIndex), AliQA::GetRefOCDBDirName(), AliQA::GetRefDataDirName()) ; 
+			AliCDBId idr(detOCDBDir, runNumber, AliCDBRunRange::Infinity())  ;
 			TList * listDetQAD = new TList() ;
 			char listName[20] ; 
 			sprintf(listName, "%s QA data Reference", AliQA::GetDetName(detIndex)) ; 
+			mdr.SetComment("HMPID QA stuff");
 			listDetQAD->SetName(listName) ; 
 			TList * taskList = detDir->GetListOfKeys() ; 
 			TIter nextTask(taskList) ; 
@@ -764,7 +774,6 @@ Bool_t AliQADataMakerSteer::SaveIt2OCDB(const Int_t runNumber, TFile * inputFile
 					}
 				}
 			}
-			AliCDBMetaData mdr ;
 			man->Put(listDetQAD, idr, &mdr) ;
 		}
 	}
