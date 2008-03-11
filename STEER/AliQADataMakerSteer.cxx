@@ -629,7 +629,7 @@ Bool_t AliQADataMakerSteer::Run(const char * detectors, AliRawReader * rawReader
 	fRawReaderDelete = kFALSE ; 
 	fCycleSame       = kTRUE ; 
 	fDetectors       = detectors ; 
-
+	fRunNumber       = fRawReader->GetRunNumber() ; 
 	// Initialize all QA data makers for all detectors
 	for (UInt_t iDet = 0; iDet < fgkNDetectors ; iDet++) {
 		if (IsSelected(AliQA::GetDetName(iDet))) {
