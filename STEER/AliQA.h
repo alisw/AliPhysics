@@ -58,6 +58,7 @@ public:
 	static const char  *   GetQARefStorage() { return fgQARefDirName.Data() ; }
 	static const char  *   GetQAOCDBDirName() { return fkgQAOCDBDirName.Data() ; }
 	static const char  *   GetRefOCDBDirName() { return fkgRefOCDBDirName.Data() ; }
+	static const char  *   GetRefDataDirName() { return fkgRefDataDirName.Data() ; }
 	const Bool_t           IsSet(DETECTORINDEX det, ALITASK tsk, QABIT bit) const ;
 	void                   Set(QABIT bit) ;
 	static void			   SetQAResultDirName(const char * name) ; 
@@ -102,6 +103,7 @@ private:
 	static const TString fkgRefFileName     ; //! name of Reference File Name 
 	static const TString fkgQAOCDBDirName   ; //! name of Reference directory name in OCDB  	
 	static const TString fkgRefOCDBDirName  ; //! name of Reference directory name in OCDB  	
+	static const TString fkgRefDataDirName  ; //! name of Reference directory name in OCDB for data  	
 	static const TString fkgQARefOCDBDefault; //! default storage for QA in OCDB 
 
  ClassDef(AliQA,1)  //ALICE Quality Assurance Object
