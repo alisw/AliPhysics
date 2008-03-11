@@ -88,6 +88,8 @@ AliESDRecV0Info:: AliESDRecV0Info():
   //
   // default constructor
   //
+  fV0tpc = new AliV0();
+  fV0its = new AliV0();
 }
 
 

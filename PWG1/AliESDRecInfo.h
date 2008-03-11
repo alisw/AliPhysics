@@ -91,7 +91,6 @@ private:
   AliTPCseed *fTPCtrack;        // tpc track
   AliITStrackMI *fITStrack;        // its track
   AliTRDtrack   *fTRDtrack;        // trd track
-  AliExternalTrackParam* fTPCtrackAtVertex; // TPC track propagated to the prim vertex
   ClassDef(AliESDRecInfo,2)  // container for 
 };
 

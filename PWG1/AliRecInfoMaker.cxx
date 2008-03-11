@@ -527,7 +527,7 @@ Int_t AliRecInfoMaker::Exec()
     if (fDebug>2) cout<<"\tStart loop over tree genTracks"<<endl;
     if (TreeGenLoop(eventNr)>0) return 1;
     //BuildKinkInfo0(eventNr);
-    //BuildV0Info(eventNr); // no V0 info for a moment
+    BuildV0Info(eventNr); // no V0 info for a moment
     fRecArray->Delete();
 
     if (fDebug>2) cout<<"\tEnd loop over tree genTracks"<<endl;
@@ -1145,21 +1145,27 @@ Int_t AliRecInfoMaker::BuildV0Info(Int_t eventNr)
     if (fMultiRecV0[label]>0 || fMultiRecV0[label2]>0){
 
       //      for (Int_t j=0;j<TMath::Min(fMultiRecV0s[label],100);j++){
-     //  for (Int_t j=TMath::Min(fMultiRecV0[label],Short_t(20))-1;j>=0;j--){
-// 	Int_t index = fIndexRecV0[label*20+j];
-// 	if (index<0) continue;
-// 	AliV0 *v0MI2  = (AliV0*)fEvent->GetV0(index);
-// 	if (TMath::Abs(v0MI2->GetLabel(0))==label &&TMath::Abs(v0MI2->GetLabel(1))==label2) {
-// 	  v0MI =v0MI2;
-// 	  fRecV0Info->fV0Multiple++;
-// 	  fSignedV0[index]=1;
-// 	}
-// 	if (TMath::Abs(v0MI2->GetLabel(1))==label &&TMath::Abs(v0MI2->GetLabel(0))==label2) {
-// 	  v0MI =v0MI2;
-// 	  fRecV0Info->fV0Multiple++;
-// 	  fSignedV0[index]=1;
-// 	}
-//       }
+      for (Int_t j=TMath::Min(fMultiRecV0[label],Short_t(20))-1;j>=0;j--){
+	Int_t index = fIndexRecV0[label*20+j];
+	if (index<0) continue;
+	AliV0 *v0MI2  = (AliV0*)fEvent->GetV0(index);
+	// get track labels
+	AliESDtrack * trackn = fEvent->GetTrack((v0MI2->GetNindex()));
+	AliESDtrack * trackp = fEvent->GetTrack((v0MI2->GetPindex()));
+	Int_t vlabeln = (trackn==0) ? -1 : trackn->GetLabel(); 
+	Int_t vlabelp = (trackp==0) ? -1 : trackp->GetLabel(); 
+	//
+	if (TMath::Abs(vlabeln)==label &&TMath::Abs(vlabelp)==label2) {
+	  v0MI =v0MI2;
+	  fRecV0Info->fV0Multiple++;
+	  fSignedV0[index]=1;
+	}
+	if (TMath::Abs(vlabelp)==label &&TMath::Abs(vlabeln)==label2) {
+	  v0MI =v0MI2;
+	  fRecV0Info->fV0Multiple++;
+	  fSignedV0[index]=1;
+	}
+      }
     }
     if (v0MI){
       fRecV0Info->fV0rec = v0MI;
@@ -1170,28 +1176,28 @@ Int_t AliRecInfoMaker::BuildV0Info(Int_t eventNr)
   }
   //
   // write fake v0s
-
-  Int_t nV0MIs = fEvent->GetNumberOfV0s();
-  for (Int_t i=0;i<nV0MIs;i++){
-    if (fSignedV0[i]==0){
-      AliV0 *v0MI  = (AliV0*)fEvent->GetV0(i);
-      if (!v0MI) continue;
-      //
-      fRecV0Info->fV0rec = v0MI;
-      fRecV0Info->fV0Status  =-10;
-      fRecV0Info->fRecStatus =-2;
-      //
- //      AliESDRecInfo*  fRecInfo1 = (AliESDRecInfo*)fRecArray->At(TMath::Abs(v0MI->GetLabel(0)));
+  //
+ //  Int_t nV0MIs = fEvent->GetNumberOfV0s();
+//   for (Int_t i=0;i<nV0MIs;i++){
+//     if (fSignedV0[i]==0){
+//       AliV0 *v0MI  = (AliV0*)fEvent->GetV0(i);
+//       if (!v0MI) continue;
+//       //
+//       fRecV0Info->fV0rec = v0MI;
+//       fRecV0Info->fV0Status  =-10;
+//       fRecV0Info->fRecStatus =-2;
+//       //
+//       AliESDRecInfo*  fRecInfo1 = (AliESDRecInfo*)fRecArray->At(TMath::Abs(v0MI->GetLabel(0)));
 //       AliESDRecInfo*  fRecInfo2 = (AliESDRecInfo*)fRecArray->At(TMath::Abs(v0MI->GetLabel(1)));
 //       if (fRecInfo1 && fRecInfo2){
 // 	fRecV0Info->fT1 = (*fRecInfo1);
 // 	fRecV0Info->fT2 = (*fRecInfo2);
 // 	fRecV0Info->fRecStatus =-1;
 //       }
-      fRecV0Info->Update(vertex);
-      fTreeCmpV0->Fill();
-    }
-  }
+//       fRecV0Info->Update(vertex);
+//       fTreeCmpV0->Fill();
+//     }
+//   }
 
 
 

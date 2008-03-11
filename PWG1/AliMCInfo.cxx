@@ -141,7 +141,7 @@ AliMCInfo& AliMCInfo::operator=(const AliMCInfo& info) {
   //
   // Assignment operator
   //
-  delete this;
+  this->~AliMCInfo();
   new (this) AliMCInfo(info);
   return *this;
 }
