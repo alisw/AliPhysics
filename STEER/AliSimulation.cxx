@@ -1716,14 +1716,18 @@ Bool_t AliSimulation::RunQA()
 	AliQADataMakerSteer qas ; 
     qas.SetRunLoader(gAlice->GetRunLoader()) ;
 
-	Bool_t rv =  qas.Run("ALL", AliQA::kHITS) ; 
+	TString detectorsw("") ;  
+	Bool_t rv = kTRUE ; 
+	detectorsw =  qas.Run("ALL", AliQA::kHITS) ; 
 //	qas.Reset() ; 
-	rv *= qas.Run(fMakeSDigits.Data(), AliQA::kSDIGITS) ;   
+	detectorsw += qas.Run(fMakeSDigits.Data(), AliQA::kSDIGITS) ;   
 //	qas.Reset() ; 
-	rv *= qas.Run(fMakeDigits.Data(), AliQA::kDIGITS) ; 	
+	detectorsw += qas.Run(fMakeDigits.Data(), AliQA::kDIGITS) ; 	
 //	qas.Reset() ; 
-	rv *= qas.Run(fMakeDigitsFromHits.Data(), AliQA::kDIGITS) ; 
-
+	detectorsw += qas.Run(fMakeDigitsFromHits.Data(), AliQA::kDIGITS) ; 
+	
+	if ( detectorsw.IsNull() ) 
+		rv = kFALSE ; 
 	return rv ; 
 }
 

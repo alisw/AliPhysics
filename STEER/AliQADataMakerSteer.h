@@ -40,8 +40,8 @@ public:
     TObjArray * GetFromOCDB(AliQA::DETECTORINDEX det, AliQA::TASKINDEX task) const ; 
 	Bool_t  Merge(const Int_t runNumber = -1) const ;  
     void    Reset(const Bool_t sameCycle = kFALSE) ;  
-	Bool_t  Run(const char * detectors, const AliQA::TASKINDEX taskIndex, const char * fileName = NULL) ; 
-	Bool_t  Run(const char * detectors, AliRawReader * rawReader) ; 
+	TString Run(const char * detectors, const AliQA::TASKINDEX taskIndex, const char * fileName = NULL) ; 
+	TString Run(const char * detectors, AliRawReader * rawReader) ; 
 	TString Run(const char * detectors, const char * filename) ;
     Bool_t  Save2OCDB(const Int_t runNumber, const Int_t cycleNumber, const char * detectors = "ALL") const ; 
 	void    SetCycleLength(const AliQA::DETECTORINDEX det, const Int_t cycle) { fQACycles[det] = cycle ; }

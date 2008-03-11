@@ -542,10 +542,10 @@ Bool_t AliQADataMakerSteer::Merge(const Int_t runNumber) const
 	Int_t index = 0 ; 
 	while ( 1 ) {
 		in >> file[index] ; 
-		AliInfo(Form("index = %d file = %s", index, (file[index]).Data())) ; 
-		index++ ;
 		if ( !in.good() ) 
 			break ; 
+		AliInfo(Form("index = %d file = %s", index, (file[index]).Data())) ; 
+		index++ ;
 	}
 	
 	if ( index == 0 ) { 
@@ -622,69 +622,44 @@ void AliQADataMakerSteer::Reset(const Bool_t sameCycle)
 }
 
 //_____________________________________________________________________________
-Bool_t AliQADataMakerSteer::Run(const char * detectors, AliRawReader * rawReader) 
+TString AliQADataMakerSteer::Run(const char * detectors, AliRawReader * rawReader) 
 {
 	//Runs all the QA data Maker for Raws only
+
 	fRawReader       = rawReader ; 		
-	fRawReaderDelete = kFALSE ; 
-	fCycleSame       = kTRUE ; 
 	fDetectors       = detectors ; 
-	fRunNumber       = fRawReader->GetRunNumber() ; 
-	// Initialize all QA data makers for all detectors
-	for (UInt_t iDet = 0; iDet < fgkNDetectors ; iDet++) {
-		if (IsSelected(AliQA::GetDetName(iDet))) {
-			AliQADataMaker * qadm = GetQADataMaker(iDet, "rec") ;
-			if (!qadm) {
-				AliWarning(Form("AliQADataMaker not found for %s", AliQA::GetDetName(iDet))) ; 
-			} else {
-				AliInfo(Form("Data Maker found for %s", qadm->GetName())) ; 
-				qadm->Init(AliQA::kRAWS, fRunNumber, GetQACycles(iDet)) ;
-				qadm->StartOfCycle(AliQA::kRAWS, fCycleSame) ;
-			}
-		}
-	} 
-	fFirst = kFALSE ;
-		
-	return DoIt(AliQA::kRAWS, "rec") ; 
+	fDetectorsW      = detectors ; 
+
+	if ( !Init(AliQA::kRAWS, "rec") ) 
+		return kFALSE ; 
+	fRawReaderDelete = kFALSE ; 
+
+	DoIt(AliQA::kRAWS, "rec") ; 
+	return 	fDetectorsW ;
 }
 
 //_____________________________________________________________________________
 TString AliQADataMakerSteer::Run(const char * detectors, const char * fileName) 
 {
 	//Runs all the QA data Maker for Raws only
-	//fCycleSame       = kTRUE ; 
+ 
 	fDetectors       = detectors ; 
-	fDetectorsW      = detectors ; 
-	
+	fDetectorsW      = detectors ; 	
 	
 	if ( !Init(AliQA::kRAWS, "rec", fileName) ) 
 		return kFALSE ; 
 
-	// Initialize all QA data makers for all detectors
-	//for (UInt_t iDet = 0; iDet < fgkNDetectors ; iDet++) {
-//		if (IsSelected(AliQA::GetDetName(iDet))) {
-//			AliQADataMaker * qadm = GetQADataMaker(iDet, "rec") ;
-//			if (!qadm) {
-//				AliWarning(Form("AliQADataMaker not found for %s", AliQA::GetDetName(iDet))) ; 
-//			} else {
-//				AliInfo(Form("Data Maker found for %s", qadm->GetName())) ; 
-//				qadm->Init(AliQA::kRAWS, fRunNumber, GetQACycles(iDet)) ;
-//				qadm->StartOfCycle(AliQA::kRAWS, fCycleSame) ;
-//			}
-//		}
-//	} 
-	fFirst = kFALSE ;
 	DoIt(AliQA::kRAWS, "rec") ; 
 	return 	fDetectorsW ;
 }
 
 //_____________________________________________________________________________
-Bool_t AliQADataMakerSteer::Run(const char * detectors, const AliQA::TASKINDEX taskIndex, const  char * fileName )
+TString AliQADataMakerSteer::Run(const char * detectors, const AliQA::TASKINDEX taskIndex, const  char * fileName )
 {
 	// Runs all the QA data Maker for every detector
 
-	Bool_t rv  = kFALSE ;
-	fDetectors = detectors ; 
+	fDetectors  = detectors ; 
+	fDetectorsW = detectors ; 
 
 	char * mode ; 
 	if ( (taskIndex == AliQA::kHITS) || (taskIndex == AliQA::kSDIGITS) || (taskIndex == AliQA::kDIGITS) ) 
@@ -693,15 +668,15 @@ Bool_t AliQADataMakerSteer::Run(const char * detectors, const AliQA::TASKINDEX t
 		mode = "rec" ; 
 	else {
 		AliError(Form("%s not implemented", AliQA::GetTaskName(taskIndex).Data())) ; 
-		return rv ;
+		return "" ;
 	}
 
 	if ( !Init(taskIndex, mode, fileName) ) 
 		return kFALSE ; 
 
-	rv = DoIt(taskIndex, mode) ;
+	DoIt(taskIndex, mode) ;
 	
-	return rv ;   
+	return fDetectorsW ;
 
 }
 
