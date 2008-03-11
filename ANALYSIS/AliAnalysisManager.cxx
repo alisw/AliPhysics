@@ -413,6 +413,10 @@ void AliAnalysisManager::PackOutput(TList *target)
             }
          }      
       }
+      // Cleanup tasks on each slave
+      TIter nexttask(fTasks);
+      AliAnalysisTask *task;
+      while ((task=(AliAnalysisTask*)nexttask())) task->Cleanup();
    } 
    if (fDebug > 1) {
       printf("<-AliAnalysisManager::PackOutput: output list contains %d containers\n", target->GetSize());

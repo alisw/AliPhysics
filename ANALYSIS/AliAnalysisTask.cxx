@@ -401,6 +401,12 @@ void AliAnalysisTask::EnableBranch(Int_t islot, const char *bname) const
    }
    AliAnalysisDataSlot::EnableBranch(bname, tree);
 }
+
+//______________________________________________________________________________
+void AliAnalysisTask::Cleanup()
+{
+// Cleanup method that is called only in proof mode in SlaveTerminate phase.
+}
       
 //______________________________________________________________________________
 void AliAnalysisTask::ConnectInputData(Option_t *)

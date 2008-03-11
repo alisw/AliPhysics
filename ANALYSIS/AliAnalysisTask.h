@@ -48,7 +48,6 @@ class AliAnalysisTask : public TTask {
   //=== CALL IN THE CONSTRUCTOR OF DERIVED CLASS TO DEFINE INPUTS/OUTPUTS ===
   void                      DefineInput(Int_t islot, TClass *type);
   void                      DefineOutput(Int_t islot, TClass *type);
-  //=====================================================================
   
   //=====================================================================
   // === OVERLOAD THIS TO CONNECT TREE BRANCHES AT INPUT SLOTS. YOU
@@ -87,8 +86,11 @@ public:
   virtual void              CreateOutputObjects();
   // === OVERLOAD THIS IF YOU NEED TO INITIALIZE YOUR CLASS ON THE CLIENT
   virtual void              LocalInit();
-  // === OVERLOAD THIS IF YOU NEED TO TREAT INPUT FILE CHANGE
+  // === OVERLOAD THIS IF YOU NEED TO TREAT INPUT FILE/TREE CHANGE
   virtual Bool_t            Notify();
+  //=====================================================================
+  // Optional cleanup method to be called only in PROOF in SlaveTerminate phase
+  virtual void              Cleanup();
   // Conect inputs/outputs to data containers (by AliAnalysisModule)
   Bool_t                    ConnectInput(Int_t islot, AliAnalysisDataContainer *cont);
   Bool_t                    ConnectOutput(Int_t islot, AliAnalysisDataContainer *cont);
