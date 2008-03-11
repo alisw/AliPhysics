@@ -19,26 +19,32 @@ Part of the reconstruction, but not really steered by AliMUONReconstructor, is t
 that end up in the ESD (Event Summary Data), AliESDs.root file. @ref AliMUONVTrackReconstructor "More..."
 
 
-\section rec_s1 How to tune muon track reconstruction
+\section rec_s1 How to tune the muon reconstruction
 
-Several options and adjustable parameters are available for both Kalman and Original
-tracking algorithms (hard coded for the moment in AliMUONVTrackReconstructor.cxx):
-- *fgkSigmaToCutForTracking* : quality cut used to select new clusters to be
-  attached to the track candidate and to select good tracks.
-- *fgkMakeTrackCandidatesFast* : if this flag is set to 'true', the track candidates
-  are made assuming linear propagation between stations 4 and 5.
-- *fgkTrackAllTracks* : according to the value of this flag, in case that several
-  new clusters pass the quality cut, either we consider all the possibilities
-  (duplicating tracks) or we attach only the best cluster.
-- *fgkRecoverTracks* : if this flag is set to 'true', we try to recover the tracks
-  lost during the tracking by removing the worst of the 2 clusters attached in the
-  previous station.
-- *fgkImproveTracks* : if this flag is set to 'true', we try to improve the quality
-  of the tracks at the end of the tracking by removing clusters that do not pass
-  new quality cut (within the limit that we must keep at least one cluster per
-  the station).
-- *fgkSigmaToCutForImprovement* : quality cut used when we try to improve the
-  quality of the tracks.
+Several options and adjustable parameters allow to tune the entire reconstruction.
+These can be changed by adding the following lines in the reconstruction macro (@ref runReconstruction.C) :
+
+<pre>
+  AliMUONRecoParam *muonRecoParam = AliMUONRecoParam::GetLow(High)FluxParam();
+  muonRecoParam->Use...();
+  muonRecoParam->Set...();
+  ...
+  AliRecoParam::Instance()->RegisterRecoParam(muonRecoParam);
+</pre>
+
+Have a look at @ref AliMUONRecoParam for the complete list
+of options/parameters with their purpose.
+
+
+\section rec_s2 How to convert MUON digit/cluster/track into ESD pad/cluster/track and vice versa
+
+The class @ref AliMUONESDInterface is doing the job.
+There are 2 ways of using this class:
+1) using the static methods to convert the objects one by one (and possibly put them
+   into the provided store).
+2) loading an entire ESDEvent and using the getters and/or the iterators
+   to access the corresponding MUON objects.
+Note: You can change (via static method) the type of the store this class is using.
 
 This chapter is defined in the READMErec.txt file.
 
