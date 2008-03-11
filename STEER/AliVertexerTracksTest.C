@@ -1,17 +1,19 @@
-void AliVertexerTracksTest(Double_t nSigma=3.,
+void AliVertexerTracksTest(TString outname="AliVertexerTracksTest.root",
+			   Bool_t tpconly=kTRUE,
 			   Bool_t useMeanVtx=kFALSE,
-			   Int_t itsin=1,
+			   Double_t nSigma=3.,
 			   Int_t itsrefit=1,
 			   Double_t maxd0z0=0.5,
 			   Int_t minitscls=5,
 			   Int_t mintracks=1,
-			   TString outname="AliVertexerTracksTest.root",
 			   Bool_t onlyfit=kFALSE) {
 //------------------------------------------------------------------------
 // Run vertex reconstruction and store results in histos and ntuple
 //------------------------------------------------------------------------
 // WITHOUT Kinematics.root
 //
+  AliGeomManager::LoadGeometry("geometry.root");
+
   if (gAlice) {
     delete gAlice->GetRunLoader();
     delete gAlice; 
@@ -93,8 +95,7 @@ void AliVertexerTracksTest(Double_t nSigma=3.,
   if(!useMeanVtx) vertexer->SetConstraintOff();
   if(onlyfit) vertexer->SetOnlyFitter();
   vertexer->SetNSigmad0(nSigma);
-  if(!itsrefit) vertexer->SetITSrefitNotRequired();
-  if(!itsin) vertexer->SetITSNotRequired();
+  if(!itsrefit || tpconly) vertexer->SetITSrefitNotRequired();
   vertexer->SetMinTracks(mintracks);
   vertexer->SetMinITSClusters(minitscls);
   vertexer->SetMaxd0z0(maxd0z0);
@@ -102,11 +103,11 @@ void AliVertexerTracksTest(Double_t nSigma=3.,
   //----------------------------------------------------------
  
 
-  if(gSystem->AccessPathName("AliESDs.root",kFileExists)) {
-    printf("AliESDs.root not found!\n"); 
+  if(gSystem->AccessPathName("AliESDs_itstpc.root",kFileExists)) {
+    printf("AliESDs_itstpc.root not found!\n"); 
     return;
   }
-  TFile *fin = TFile::Open("AliESDs.root");
+  TFile *fin = TFile::Open("AliESDs_itstpc.root");
   AliESDEvent *esd = new AliESDEvent();
   TTree *esdTree = (TTree*)fin->Get("esdTree");
   if(!esdTree) return;
@@ -119,12 +120,12 @@ void AliVertexerTracksTest(Double_t nSigma=3.,
   for(Int_t iev=0; iev<events; iev++) { //LOOP ON EVENTS
     printf("-------------- EVENT   %d --------------------\n",iev);
 
-    diffX=99999;
-    diffY=99999;
-    diffZ=99999;
-    diffXerr=99999;
-    diffYerr=99999;
-    diffZerr=99999;
+    diffX=999999;
+    diffY=999999;
+    diffZ=999999;
+    diffXerr=999999;
+    diffYerr=999999;
+    diffZerr=999999;
     nc=0;
 
     //=================================================
@@ -178,7 +179,35 @@ void AliVertexerTracksTest(Double_t nSigma=3.,
     }
     
     // VERTEX    
-    AliESDVertex *vertex = (AliESDVertex*)vertexer->FindPrimaryVertex(esd);
+    AliESDVertex *vertex = 0;
+    if(!tpconly) {
+      vertex = (AliESDVertex*)vertexer->FindPrimaryVertex(esd);
+    } else {
+      TObjArray trkArrayOrig(ntracks);
+      UShort_t *idOrig = new UShort_t[ntracks];
+      const Double_t kRadius  = 2.8; //something less than the beam pipe radius
+      const Double_t kMaxStep = 5;   //max step over the material
+      Bool_t ok;
+      Int_t nTrksOrig=0;
+      for(Int_t i=0; i<ntracks; i++) {
+	AliESDtrack *esdt = esd->GetTrack(i);
+	AliExternalTrackParam *tpcTrack =
+	  (AliExternalTrackParam *)esdt->GetTPCInnerParam();
+	ok = kFALSE;
+	if (tpcTrack)
+	  ok = AliTracker::
+	    PropagateTrackTo(tpcTrack,kRadius,esdt->GetMass(),kRadius,kTRUE);
+	if (ok) {
+	  trkArrayOrig.AddLast(tpcTrack);
+	  idOrig[nTrksOrig]=(UShort_t)esdt->GetID();
+	  nTrksOrig++;
+	}
+      }
+      
+      vertex = (AliESDVertex*)vertexer->FindPrimaryVertex(&trkArrayOrig,idOrig);
+      delete [] idOrig;
+    }
+
 
     nc = (Int_t)vertex->GetNContributors();
     if(nc>=2) chi2red = vertex->GetChi2toNDF(); 
@@ -434,18 +463,25 @@ Int_t GetBinZ(Float_t z) {
   return 14;
 }
 //----------------------------------------------------------------------------
-void PlotVtxRes(TString inname="AliVertexerTracksTest.root") {
+void PlotVtxRes(TString inname="AliVertexerTracksTest.root",
+		Bool_t tpconly=kFALSE) {
   //---------------------------------------------------------------------
   // Plot efficiency, resolutions, pulls 
   // [at least 10k pp events are needed]
   //---------------------------------------------------------------------
 
-  Float_t zMCmin=0.;
-  Float_t zMCmax=20.;
-  Float_t ncminforzshift=1.;
-
   gStyle->SetOptStat(0);
   gStyle->SetOptFit(10001);
+
+  Float_t zMCmin=0.;
+  Float_t zMCmax=15.;
+  Float_t ncminforzshift=1.;
+  Float_t maxdiffx = 1e3;
+  Float_t rangefactor=1.;
+  if(tpconly) {
+    maxdiffx *= 1e2;
+    rangefactor = 15.;
+  }
 
   Int_t   nEvVtx=0;
   Int_t   nEvNoVtx=0;
@@ -458,15 +494,15 @@ void PlotVtxRes(TString inname="AliVertexerTracksTest.root") {
   //
   // HISTOGRAMS
   //
-  TH1F *hdx = new TH1F("hdx","",50,-600,600);
+  TH1F *hdx = new TH1F("hdx","",50,-600*rangefactor,600*rangefactor);
   hdx->SetXTitle("#Delta x [#mu m]");
   hdx->SetYTitle("events");
   //
-  TH1F *hdy = new TH1F("hdy","",50,-600,600);
+  TH1F *hdy = new TH1F("hdy","",50,-600*rangefactor,600*rangefactor);
   hdy->SetXTitle("#Delta y [#mu m]");
   hdy->SetYTitle("events");
   //
-  TH1F *hdz = new TH1F("hdz","",200,-600,600);
+  TH1F *hdz = new TH1F("hdz","",200,-600*rangefactor,600*rangefactor);
   hdz->SetXTitle("#Delta z [#mu m]");
   hdz->SetYTitle("events");
   //
@@ -558,24 +594,24 @@ void PlotVtxRes(TString inname="AliVertexerTracksTest.root") {
   //
   // OTHER HISTOGRAMS
   //
-  TH1F *hdx0 = new TH1F("hdx0","x resolution - bin 0",50,-500,500);
-  TH1F *hdx1 = new TH1F("hdx1","x resolution - bin 1",50,-500,500);
-  TH1F *hdx2 = new TH1F("hdx2","x resolution - bin 2",50,-500,500);
-  TH1F *hdx3 = new TH1F("hdx3","x resolution - bin 3",50,-400,400);
-  TH1F *hdx4 = new TH1F("hdx4","x resolution - bin 4",50,-300,300);
-  TH1F *hdx5 = new TH1F("hdx5","x resolution - bin 5",50,-300,300);
-  TH1F *hdy0 = new TH1F("hdy0","y resolution - bin 0",50,-500,500);
-  TH1F *hdy1 = new TH1F("hdy1","y resolution - bin 1",50,-500,500);
-  TH1F *hdy2 = new TH1F("hdy2","y resolution - bin 2",50,-500,500);
-  TH1F *hdy3 = new TH1F("hdy3","y resolution - bin 3",50,-400,400);
-  TH1F *hdy4 = new TH1F("hdy4","y resolution - bin 4",50,-300,300);
-  TH1F *hdy5 = new TH1F("hdy5","y resolution - bin 5",50,-300,300);
-  TH1F *hdz0 = new TH1F("hdz0","z resolution - bin 0",50,-1000,1000);
-  TH1F *hdz1 = new TH1F("hdz1","z resolution - bin 1",50,-800,800);
-  TH1F *hdz2 = new TH1F("hdz2","z resolution - bin 2",50,-800,800);
-  TH1F *hdz3 = new TH1F("hdz3","z resolution - bin 3",50,-600,600);
-  TH1F *hdz4 = new TH1F("hdz4","z resolution - bin 4",50,-500,500);
-  TH1F *hdz5 = new TH1F("hdz5","z resolution - bin 5",50,-500,500);
+  TH1F *hdx0 = new TH1F("hdx0","x resolution - bin 0",50,-500*rangefactor,500*rangefactor);
+  TH1F *hdx1 = new TH1F("hdx1","x resolution - bin 1",50,-500*rangefactor,500*rangefactor);
+  TH1F *hdx2 = new TH1F("hdx2","x resolution - bin 2",50,-500*rangefactor,500*rangefactor);
+  TH1F *hdx3 = new TH1F("hdx3","x resolution - bin 3",50,-400*rangefactor,400*rangefactor);
+  TH1F *hdx4 = new TH1F("hdx4","x resolution - bin 4",50,-300*rangefactor,300*rangefactor);
+  TH1F *hdx5 = new TH1F("hdx5","x resolution - bin 5",50,-300*rangefactor,300*rangefactor);
+  TH1F *hdy0 = new TH1F("hdy0","y resolution - bin 0",50,-500*rangefactor,500*rangefactor);
+  TH1F *hdy1 = new TH1F("hdy1","y resolution - bin 1",50,-500*rangefactor,500*rangefactor);
+  TH1F *hdy2 = new TH1F("hdy2","y resolution - bin 2",50,-500*rangefactor,500*rangefactor);
+  TH1F *hdy3 = new TH1F("hdy3","y resolution - bin 3",50,-400*rangefactor,400*rangefactor);
+  TH1F *hdy4 = new TH1F("hdy4","y resolution - bin 4",50,-300*rangefactor,300*rangefactor);
+  TH1F *hdy5 = new TH1F("hdy5","y resolution - bin 5",50,-300*rangefactor,300*rangefactor);
+  TH1F *hdz0 = new TH1F("hdz0","z resolution - bin 0",50,-1000*rangefactor,1000*rangefactor);
+  TH1F *hdz1 = new TH1F("hdz1","z resolution - bin 1",50,-800*rangefactor,800*rangefactor);
+  TH1F *hdz2 = new TH1F("hdz2","z resolution - bin 2",50,-800*rangefactor,800*rangefactor);
+  TH1F *hdz3 = new TH1F("hdz3","z resolution - bin 3",50,-600*rangefactor,600*rangefactor);
+  TH1F *hdz4 = new TH1F("hdz4","z resolution - bin 4",50,-500*rangefactor,500*rangefactor);
+  TH1F *hdz5 = new TH1F("hdz5","z resolution - bin 5",50,-500*rangefactor,500*rangefactor);
   //
   TH1F *hdz_z = NULL; hdz_z = new TH1F[15];
   for(Int_t l=0;l<15;l++) hdz_z[l] = *hdz;
@@ -624,7 +660,7 @@ void PlotVtxRes(TString inname="AliVertexerTracksTest.root") {
   for(Int_t i=0; i<entries; i++) {
     nbytes += nt->GetEvent(i);
     // only triggered events
-    if(triggered<0.5) continue;
+    //    if(triggered<0.5) continue;
     // consider only events with zMCmin<|zMC|<zMCmax
     if(TMath::Abs(zMC)<zMCmin || TMath::Abs(zMC)>zMCmax) continue;
     //
@@ -636,7 +672,7 @@ void PlotVtxRes(TString inname="AliVertexerTracksTest.root") {
     hntrackletsVSzMC->Fill(zMC,ntracklets);
     hnitstracksVSzMC->Fill(zMC,nTrks);
     hnitstracks5or6VSzMC->Fill(zMC,nTrks5or6);
-    if(TMath::Abs(diffX) < 1000.) { // vtx found - closer than 1 mm
+    if(TMath::Abs(diffX) < maxdiffx) { // vtx found - closer than maxdiffx micron
       nEvVtx++;
       mult2[bin] += ntracklets;
       vtx[bin]++;
@@ -1097,7 +1133,7 @@ void PlotVtxRes(TString inname="AliVertexerTracksTest.root") {
 
   // res VS ntracklets
   TCanvas *c6 = new TCanvas("c6","c6",0,0,600,500);
-  TH2F *fr6 = new TH2F("fr6","",2,0,80,2,0,240); 
+  TH2F *fr6 = new TH2F("fr6","",2,0,80,2,0,240*rangefactor); 
   fr6->SetXTitle("SPD tracklets");
   fr6->SetYTitle("#sigma [#mu m]");
   fr6->Draw();
@@ -1157,7 +1193,7 @@ void PlotVtxRes(TString inname="AliVertexerTracksTest.root") {
     ezmc[l]=1.;
   }
   TCanvas *zzz = new TCanvas("zzz","zzz",0,0,600,500);
-  TH2F *fr9 = new TH2F("fr9","",2,-15,15,2,-50,50); 
+  TH2F *fr9 = new TH2F("fr9","",2,-15,15,2,-50*rangefactor,50*rangefactor); 
   fr9->SetXTitle("z_{true} [cm]");
   fr9->SetYTitle("<z_{rec} - z_{true}> [#mu m]");
   fr9->Draw();
@@ -1874,3 +1910,4 @@ void AliComputeVtxMeanFromTree(TString file="AliESDVertices.root",
   return;
 }
 //---------------------------------------------------------------------------
+

@@ -253,6 +253,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename,
 
   fVertexer(NULL),
   fDiamondProfile(NULL),
+  fDiamondProfileTPC(NULL),
   fMeanVertexConstraint(kTRUE),
 
   fGRPList(NULL),
@@ -327,6 +328,7 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
 
   fVertexer(NULL),
   fDiamondProfile(NULL),
+  fDiamondProfileTPC(NULL),
   fMeanVertexConstraint(rec.fMeanVertexConstraint),
 
   fGRPList(NULL),
@@ -773,6 +775,16 @@ Bool_t AliReconstruction::Run(const char* input, Bool_t IsOnline)
   	AliError("No diamond profile found in OCDB!");
   }
 
+  entry = 0;
+  entry = AliCDBManager::Instance()
+  	->Get("GRP/Calib/MeanVertexTPC");
+	
+  if(entry) {
+  	fDiamondProfileTPC = dynamic_cast<AliESDVertex*> (entry->GetObject());  
+  } else {
+  	AliError("No diamond profile found in OCDB!");
+  }
+
   AliVertexerTracks tVertexer(AliTracker::GetBz());
   if(fDiamondProfile && fMeanVertexConstraint) tVertexer.SetVtxStart(fDiamondProfile);
 
@@ -973,6 +985,9 @@ Bool_t AliReconstruction::Run(const char* input, Bool_t IsOnline)
       if (tpcTrack)
 	ok = AliTracker::
 	  PropagateTrackTo(tpcTrack,kRadius,track->GetMass(),kMaxStep,kTRUE);
+
+
+
       if (ok) {
 	Int_t n=trkArray.GetEntriesFast();
         selectedIdx[n]=track->GetID();
@@ -999,6 +1014,12 @@ Bool_t AliReconstruction::Run(const char* input, Bool_t IsOnline)
     }
     if (fRunVertexFinderTracks) {
        // TPC + ITS primary vertex
+       tVertexer.SetITSrefitRequired();
+       if(fDiamondProfile && fMeanVertexConstraint) {
+	 tVertexer.SetVtxStart(fDiamondProfile);
+       } else {
+	 tVertexer.SetConstraintOff();
+       }
        AliESDVertex *pvtx=tVertexer.FindPrimaryVertex(esd);
        if (pvtx) {
           if (pvtx->GetStatus()) {
@@ -1011,6 +1032,12 @@ Bool_t AliReconstruction::Run(const char* input, Bool_t IsOnline)
        }
 
        // TPC-only primary vertex
+       tVertexer.SetITSrefitNotRequired();
+       if(fDiamondProfileTPC && fMeanVertexConstraint) {
+	 tVertexer.SetVtxStart(fDiamondProfileTPC);
+       } else {
+	 tVertexer.SetConstraintOff();
+       }
        pvtx=tVertexer.FindPrimaryVertex(&trkArray,selectedIdx);
        if (pvtx) {
           if (pvtx->GetStatus()) {
@@ -2076,6 +2103,8 @@ void AliReconstruction::CleanUp(TFile* file, TFile* fileOld)
   if(!(AliCDBManager::Instance()->GetCacheFlag())) {
   	delete fDiamondProfile;
   	fDiamondProfile = NULL;
+  	delete fDiamondProfileTPC;
+  	fDiamondProfileTPC = NULL;
 	delete fGRPList;
 	fGRPList = NULL;
   }

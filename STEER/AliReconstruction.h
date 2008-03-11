@@ -83,6 +83,7 @@ public:
   void SetWriteAOD(Bool_t flag=kTRUE){fWriteAOD=flag;}
   void SetFillTriggerESD(Bool_t flag=kTRUE){fFillTriggerESD=flag;}
   void SetDiamondProfile(AliESDVertex *dp) {fDiamondProfile=dp;}
+  void SetDiamondProfileTPC(AliESDVertex *dp) {fDiamondProfileTPC=dp;}
   void SetMeanVertexConstraint(Bool_t flag=kTRUE){fMeanVertexConstraint=flag;}
 		   
   void SetCleanESD(Bool_t flag=kTRUE){fCleanESD=flag;}
@@ -213,6 +214,7 @@ private:
   AliVertexer*   fVertexer;                //! vertexer for ITS
   AliTracker*    fTracker[fgkNDetectors];  //! trackers
   AliESDVertex*  fDiamondProfile;          // (x,y) diamond profile for AliVertexerTracks
+  AliESDVertex*  fDiamondProfileTPC;       // (x,y) diamond profile from TPC for AliVertexerTracks
   Bool_t         fMeanVertexConstraint; // use fDiamondProfile in AliVertexerTracks
 
   TList*         fGRPList;            // TList from the GRP/GRP/Data CDB folder
@@ -233,7 +235,7 @@ private:
   // Plane Efficiency Evaluation
   Bool_t         fRunPlaneEff ;      // Evaluate Plane Efficiency
 
-  ClassDef(AliReconstruction, 20)      // class for running the reconstruction
+  ClassDef(AliReconstruction, 21)      // class for running the reconstruction
 };
 
 #endif

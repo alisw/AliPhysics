@@ -112,7 +112,7 @@ class AliVertexerTracks : public TObject {
   Double_t  fDCAcut;          // maximum DCA between 2 tracks used for vertex
   Int_t     fAlgo;            // option for vertex finding algorythm
   Double_t  fNSigma;          // number of sigmas for d0 cut in PrepareTracks()
-  Double_t  fMaxd0z0;         // value [mm] for sqrt(d0d0+z0z0) cut 
+  Double_t  fMaxd0z0;         // value for sqrt(d0d0+z0z0) cut 
                               // in PrepareTracks(1) if fConstraint=kFALSE
   Bool_t    fITSrefit;        // if kTRUE (default), use only kITSrefit tracks
                               // if kFALSE, use all tracks (also TPC only)
@@ -140,3 +140,4 @@ class AliVertexerTracks : public TObject {
 };
 
 #endif
+

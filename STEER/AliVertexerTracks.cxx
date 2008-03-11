@@ -199,6 +199,7 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(TObjArray *trkArrayOrig,
 
   // read tracks from ESD
   Int_t nTrksOrig = (Int_t)trkArrayOrig->GetEntriesFast();
+  if(fDebug) printf("Initial number of tracks: %d\n",nTrksOrig);
   if(nTrksOrig<=0) {
     if(fDebug) printf("TooFewTracks\n");
     TooFewTracks();
@@ -516,11 +517,11 @@ Int_t AliVertexerTracks::PrepareTracks(TObjArray &trkArrayOrig,
   Int_t nTrksOrig = (Int_t)trkArrayOrig.GetEntriesFast();
   Int_t nTrksSel = 0;
   Double_t maxd0rphi; 
-  Double_t maxd0z0 = fMaxd0z0; // default is 5 mm  
+  Double_t maxd0z0 = (fITSrefit ? fMaxd0z0 : 10.*fMaxd0z0);
   Double_t sigmaCurr[3];
   Double_t normdistx,normdisty;
   Double_t d0z0[2],covd0z0[3]; 
-  Double_t sigma;
+  Double_t sigmad0;
   Double_t field = GetFieldkG();
 
   AliESDVertex *initVertex = new AliESDVertex(fNominalPos,fNominalCov,1,1);
@@ -533,12 +534,13 @@ Int_t AliVertexerTracks::PrepareTracks(TObjArray &trkArrayOrig,
     track = new AliExternalTrackParam(*(AliExternalTrackParam*)trkArrayOrig.At(i));
     // only TPC tracks in |eta|<0.9
     if(!fITSrefit && TMath::Abs(track->GetTgl())>1.) {
+      if(fDebug) printf(" rejecting track with tgl = %f\n",track->GetTgl());
       delete track;
       continue;
     }
 
     // propagate track to vertex
-    if(optImpParCut<=1 || fOnlyFitter) { // optImpParCut==1 or 0
+    if(optImpParCut<2 || fOnlyFitter) { // optImpParCut==1 or 0
       track->PropagateToDCA(initVertex,field,100.,d0z0,covd0z0);
     } else {              // optImpParCut==2
       fCurrentVertex->GetSigmaXYZ(sigmaCurr);
@@ -552,21 +554,26 @@ Int_t AliVertexerTracks::PrepareTracks(TObjArray &trkArrayOrig,
       }
     }
 
-    sigma = TMath::Sqrt(covd0z0[0]);
-    maxd0rphi = fNSigma*sigma;
+    sigmad0 = TMath::Sqrt(covd0z0[0]);
+    maxd0rphi = fNSigma*sigmad0;
     if(optImpParCut==1) maxd0rphi *= 5.;
+    //sigmad0z0 = TMath::Sqrt(covd0z0[0]+covd0z0[2]); // for future improvement
+    //maxd0z0 = 10.*fNSigma*sigmad0z0;
 
     if(fDebug) printf("trk %d; id %d; |d0| = %f;  d0 cut = %f; |z0| = %f; |d0|oplus|z0| = %f; d0z0 cut = %f\n",i,(Int_t)idOrig[i],TMath::Abs(d0z0[0]),maxd0rphi,TMath::Abs(d0z0[1]),TMath::Sqrt(d0z0[0]*d0z0[0]+d0z0[1]*d0z0[1]),maxd0z0);
 
-    // during iterations 1 and 2, if fConstraint=kFALSE,
+    // if fConstraint=kFALSE, during iterations 1 and 2 ||
+    // if fConstraint=kTRUE, during iteration 2,
     // select tracks with d0oplusz0 < maxd0z0
-    if(optImpParCut>=1 && !fConstraint && nTrksOrig>=3 && 
-       fVert.GetNContributors()>0) {
-      if(TMath::Sqrt(d0z0[0]*d0z0[0]+d0z0[1]*d0z0[1]) > maxd0z0) { 
+    if((!fConstraint && optImpParCut>0 && fVert.GetNContributors()>0) ||
+       ( fConstraint && optImpParCut==2)) {
+      if(nTrksOrig>=3 && 
+	 TMath::Sqrt(d0z0[0]*d0z0[0]+d0z0[1]*d0z0[1])>maxd0z0) { 
 	if(fDebug) printf("     rejected\n");
 	delete track; continue; 
       }
     }
+    
 
     // select tracks with d0rphi < maxd0rphi
     if(optImpParCut>0 && TMath::Abs(d0z0[0])>maxd0rphi) { 
@@ -1388,3 +1395,4 @@ AliESDVertex* AliVertexerTracks::VertexForSelectedESDTracks(TObjArray *trkArray,
   return fCurrentVertex;
 }
 //--------------------------------------------------------------------------
+
