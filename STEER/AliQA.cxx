@@ -62,7 +62,8 @@ const TString AliQA::fkgLabAliEnOCDB     = "alien://" ;
 const TString AliQA::fkgRefFileName      = "QA.root" ; 
 const TString AliQA::fkgQAOCDBDirName    = "QA"  ; 
 const TString AliQA::fkgRefOCDBDirName   = "Ref"  ; 
-const TString AliQA::fkgQARefOCDBDefault = "alien://folder=/alice/"  ; 
+const TString AliQA::fkgRefDataDirName   = "Data"  ; 
+const TString AliQA::fkgQARefOCDBDefault = "alien://folder=/alice/QA/20"  ; 
 //____________________________________________________________________________
 AliQA::AliQA() : 
   TNamed("", ""), 
