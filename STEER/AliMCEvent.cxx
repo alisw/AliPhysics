@@ -154,13 +154,12 @@ Int_t AliMCEvent::GetParticleAndTR(Int_t i, TParticle*& particle, TClonesArray*&
 void AliMCEvent::Clean()
 {
     // Clean-up before new trees are connected
-    
     if (fHeader) {
 	delete fHeader;
 	fHeader = 0;
     }
-    
-    delete fStack;
+
+    delete fStack; fStack = 0;
 
     // Clear TR
     if (fTRBuffer) {
@@ -173,10 +172,11 @@ void AliMCEvent::Clean()
 void AliMCEvent::FinishEvent()
 {
   // Clean-up after event
-  fStack->Reset(0);
-  fMCParticles->Delete();
-  fMCParticleMap->Delete();
-  fTrackReferences->Clear();
+  //    
+    fStack->Reset(0);
+    fMCParticles->Delete();
+    fMCParticleMap->Delete();
+    fTrackReferences->Delete();
 }
 
 
