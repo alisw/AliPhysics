@@ -78,6 +78,7 @@ fPreprocessorMap(),
 fLogbookEntry(0),
 fCurrentDetector(),
 fFirstProcessing(0),
+fFXSError(kFALSE),
 fStatusEntry(0),
 fMonitoringMutex(0),
 fLastActionTime(0),
@@ -1160,7 +1161,8 @@ Bool_t AliShuttle::ContinueProcessing()
 				status->GetStatusName(), status->GetCount()));
 		Bool_t increaseCount = kTRUE;
 		if (status->GetStatus() == AliShuttleStatus::kDCSError || 
-			status->GetStatus() == AliShuttleStatus::kDCSStarted)
+		    status->GetStatus() == AliShuttleStatus::kDCSStarted ||
+		    status->GetStatus() == AliShuttleStatus::kFXSError)
 				increaseCount = kFALSE;
 				
 		UpdateShuttleStatus(AliShuttleStatus::kStarted, increaseCount);
@@ -1673,7 +1675,16 @@ Bool_t AliShuttle::ProcessCurrentDetector()
 	// DCS Archive DB processing successful. Call Preprocessor!
 	UpdateShuttleStatus(AliShuttleStatus::kPPStarted);
 
+	fFXSError = kFALSE; // this variable is kTRUE after ::Process if an FXS error occured
+	
 	UInt_t returnValue = aPreprocessor->Process(dcsMap);
+	
+	if (fFXSError) {
+		UpdateShuttleStatus(AliShuttleStatus::kFXSError);
+		dcsMap->DeleteAll();
+		delete dcsMap;
+		return kFALSE;
+	}
 
 	if (returnValue > 0) // Preprocessor error!
 	{
@@ -2029,6 +2040,7 @@ const char* AliShuttle::GetFile(Int_t system, const char* detector,
 	if (!Connect(system))
 	{
 		Log(detector, Form("GetFile - Couldn't connect to %s FXS database", GetSystemName(system)));
+		fFXSError = kTRUE;
 		return 0;
 	}
 
@@ -2051,7 +2063,6 @@ const char* AliShuttle::GetFile(Int_t system, const char* detector,
 	else if (system == kHLT)
 	{
 		whereClause += Form(" and DDLnumbers=\"%s\"", source);
-		nFields = 3;
 	}
 
 	TString sqlQuery = Form("%s %s", sqlQueryStart.Data(), whereClause.Data());
@@ -2062,15 +2073,16 @@ const char* AliShuttle::GetFile(Int_t system, const char* detector,
 	TSQLResult* aResult = 0;
 	aResult = dynamic_cast<TSQLResult*> (fServer[system]->Query(sqlQuery));
 	if (!aResult) {
-		Log(detector, Form("GetFileName - Can't execute SQL query to %s database for: id = %s, source = %s",
+		Log(detector, Form("GetFile - Can't execute SQL query to %s database for: id = %s, source = %s",
 				GetSystemName(system), id, sourceName.Data()));
+		fFXSError = kTRUE;
 		return 0;
 	}
 
-	if(aResult->GetRowCount() == 0)
+	if (aResult->GetRowCount() == 0)
 	{
 		Log(detector,
-			Form("GetFileName - No entry in %s FXS db for: id = %s, source = %s",
+			Form("GetFile - No entry in %s FXS db for: id = %s, source = %s",
 				GetSystemName(system), id, sourceName.Data()));
 		delete aResult;
 		return 0;
@@ -2078,8 +2090,9 @@ const char* AliShuttle::GetFile(Int_t system, const char* detector,
 
 	if (aResult->GetRowCount() > 1) {
 		Log(detector,
-			Form("GetFileName - More than one entry in %s FXS db for: id = %s, source = %s",
+			Form("GetFile - More than one entry in %s FXS db for: id = %s, source = %s",
 				GetSystemName(system), id, sourceName.Data()));
+		fFXSError = kTRUE;
 		delete aResult;
 		return 0;
 	}
@@ -2088,6 +2101,7 @@ const char* AliShuttle::GetFile(Int_t system, const char* detector,
 		Log(detector,
 			Form("GetFileName - Wrong field count in %s FXS db for: id = %s, source = %s",
 				GetSystemName(system), id, sourceName.Data()));
+		fFXSError = kTRUE;
 		delete aResult;
 		return 0;
 	}
@@ -2095,8 +2109,9 @@ const char* AliShuttle::GetFile(Int_t system, const char* detector,
 	TSQLRow* aRow = dynamic_cast<TSQLRow*> (aResult->Next());
 
 	if (!aRow){
-		Log(detector, Form("GetFileName - Empty set result in %s FXS db from query: id = %s, source = %s",
+		Log(detector, Form("GetFile - Empty set result in %s FXS db from query: id = %s, source = %s",
 				GetSystemName(system), id, sourceName.Data()));
+		fFXSError = kTRUE;
 		delete aResult;
 		return 0;
 	}
@@ -2124,12 +2139,12 @@ const char* AliShuttle::GetFile(Int_t system, const char* detector,
 	Bool_t result = kFALSE;
 
 	// copy!! if successful TSystem::Exec returns 0
-	while(nRetries++ < maxRetries) {
+	while (nRetries++ < maxRetries) {
 		AliDebug(2, Form("Trying to copy file. Retry # %d", nRetries));
 		result = RetrieveFile(system, filePath.Data(), localFileName.Data());
-		if(!result)
+		if (!result)
 		{
-			Log(detector, Form("GetFileName - Copy of file %s from %s FXS failed",
+			Log(detector, Form("GetFile - Copy of file %s from %s FXS failed",
 					filePath.Data(), GetSystemName(system)));
 			continue;
 		} 
@@ -2142,7 +2157,7 @@ const char* AliShuttle::GetFile(Int_t system, const char* detector,
 
 			if (sizeComp != 0 || size != fileSize.Atoi())
 			{
-				Log(detector, Form("GetFileName - size of file %s does not match with local copy!",
+				Log(detector, Form("GetFile - size of file %s does not match with local copy!",
 							filePath.Data()));
 				result = kFALSE;
 				continue;
@@ -2162,7 +2177,7 @@ const char* AliShuttle::GetFile(Int_t system, const char* detector,
 
 			if (md5Comp != 0)
 			{
-				Log(detector, Form("GetFileName - md5sum of file %s does not match with local copy!",
+				Log(detector, Form("GetFile - md5sum of file %s does not match with local copy!",
 							filePath.Data()));
 				result = kFALSE;
 				continue;
@@ -2174,7 +2189,11 @@ const char* AliShuttle::GetFile(Int_t system, const char* detector,
 		if (result) break;
 	}
 
-	if(!result) return 0;
+	if (!result) 
+	{
+		fFXSError = kTRUE;
+		return 0;
+	}
 
 	fFXSCalled[system]=kTRUE;
 	TObjString *fileParams = new TObjString(Form("%s#!?!#%s", id, sourceName.Data()));
@@ -2280,6 +2299,7 @@ TList* AliShuttle::GetFileSources(Int_t system, const char* detector, const char
 	if (!Connect(system))
 	{
 		Log(detector, Form("GetFileSources - Couldn't connect to %s FXS database", GetSystemName(system)));
+		fFXSError = kTRUE;
 		return NULL;
 	}
 
@@ -2307,6 +2327,7 @@ TList* AliShuttle::GetFileSources(Int_t system, const char* detector, const char
 	if (!aResult) {
 		Log(detector, Form("GetFileSources - Can't execute SQL query to %s database for id: %s",
 				GetSystemName(system), id));
+		fFXSError = kTRUE;
 		return 0;
 	}
 

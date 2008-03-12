@@ -145,6 +145,7 @@ private:
 	TSQLServer *fServer[4]; 	// pointer to the three FXS + Run & Shuttle logbook servers
 	Bool_t fFXSCalled[3];		// FXS call status
 	TList  fFXSlist[3];		// List of files retrieved from each FXS
+	Bool_t fFXSError;		// Bool to keep track of any FXS errors
 
 	AliCDBEntry* fStatusEntry; // last CDB entry containing a AliShuttleStatus retrieved
 
