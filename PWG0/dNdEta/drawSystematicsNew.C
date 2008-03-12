@@ -470,7 +470,7 @@ void vertexShift()
   canvas->SaveAs(Form("%s.eps", canvas->GetName()));
 }
 
-void CompareRawTrackPlots(const char* fileName1, const char* fileName2, Float_t ptCut = 0.0)
+void CompareRawTrackPlots(const char* fileName1, const char* fileName2, Float_t ptCut = 0.0, Int_t multCut = 1)
 {
   loadlibs();
 
@@ -487,16 +487,19 @@ void CompareRawTrackPlots(const char* fileName1, const char* fileName2, Float_t 
   TH3* track1 = fdNdEtaAnalysis->GetData()->GetTrackCorrection()->GetMeasuredHistogram()->Clone("track1");
   TH3* track2 = fdNdEtaAnalysis2->GetData()->GetTrackCorrection()->GetMeasuredHistogram()->Clone("track2");
 
-  // normalize to number of events;
   TH2* event1 = fdNdEtaAnalysis->GetData()->GetEventCorrection()->GetMeasuredHistogram();
   TH2* event2 = fdNdEtaAnalysis2->GetData()->GetEventCorrection()->GetMeasuredHistogram();
-  Int_t event1Count = event1->Integral();
-  Int_t event2Count = event2->Integral();
-  track1->Scale(1.0 / event1Count);
-  track2->Scale(1.0 / event2Count);
+  Int_t event1Count = event1->Integral(event1->GetXaxis()->FindBin(-9.9), event1->GetXaxis()->FindBin(9.9), multCut, event1->GetNbinsY() + 1);
+  Int_t event2Count = event2->Integral(event2->GetXaxis()->FindBin(-9.9), event2->GetXaxis()->FindBin(9.9), multCut, event1->GetNbinsY() + 1);
 
   Float_t nTrack1 = track1->Integral(track1->GetXaxis()->FindBin(-9.9), track1->GetXaxis()->FindBin(9.9), track1->GetYaxis()->FindBin(-0.79), track1->GetYaxis()->FindBin(0.79), track1->GetZaxis()->FindBin(ptCut), track1->GetZaxis()->GetNbins());
   Float_t nTrack2 = track2->Integral(track2->GetXaxis()->FindBin(-9.9), track2->GetXaxis()->FindBin(9.9), track2->GetYaxis()->FindBin(-0.79), track2->GetYaxis()->FindBin(0.79), track2->GetZaxis()->FindBin(ptCut), track2->GetZaxis()->GetNbins());
+
+  Printf("%d tracks in %d events in first sample; %d tracks in %d events in second sample", (Int_t) nTrack1, event1Count, (Int_t) nTrack2, event2Count);
+
+  // normalize to number of events;
+  nTrack1 /= event1Count;
+  nTrack2 /= event2Count;
 
   Printf("There are %.2f tracks/event in the first sample and %.2f tracks/event in the second sample. %.2f %% difference (with pt cut at %.2f GeV/c)", nTrack1, nTrack2, 100.0 * (nTrack1 - nTrack2) / nTrack1, ptCut);
 
@@ -528,6 +531,27 @@ void CompareRawTrackPlots(const char* fileName1, const char* fileName2, Float_t 
     new TCanvas; pt->DrawCopy();
     gPad->SetGridx(); gPad->SetGridy();
   }
+
+  event1_x = event1->ProjectionX("event1_x");
+  event1_y = event1->ProjectionY("event1_y");
+  event2_x = event2->ProjectionX("event2_x");
+  event2_y = event2->ProjectionY("event2_y");
+
+  new TCanvas; event1_x->DrawCopy(); event2_x->SetLineColor(2); event2_x->DrawCopy("SAME"); 
+
+  event1_x->Divide(event2_x);
+  event1_y->Divide(event2_y);
+
+  new TCanvas; event1_x->DrawCopy();
+  new TCanvas; event1_y->DrawCopy();
+
+  event1->Divide(event2);
+  new TCanvas;
+  event1->Draw("COLZ");
+  event1->SetMinimum(0.5);
+  event1->SetMaximum(2);
+
+
 }
 
 void MagnitudeOfCorrection(const char* fileName, const char* dirName = "dndeta", Float_t ptCut = 0.3)

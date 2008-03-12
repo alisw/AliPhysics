@@ -33,15 +33,6 @@ void runCorrection(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug =
   // Create the analysis manager
   mgr = new AliAnalysisManager;
 
-  // selection of esd tracks
-  gROOT->ProcessLine(".L CreateCuts.C");
-  AliESDtrackCuts* esdTrackCuts = CreateTrackCuts();
-  if (!esdTrackCuts)
-  {
-    printf("ERROR: esdTrackCuts could not be created\n");
-    return;
-  }
-
   TString taskName("AlidNdEtaCorrectionTask.cxx+");
   if (aDebug)
     taskName += "+g";

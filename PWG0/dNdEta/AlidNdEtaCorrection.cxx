@@ -364,8 +364,8 @@ Float_t AlidNdEtaCorrection::GetMeasuredFraction(CorrectionType correctionType, 
 
   Int_t ptBin = ptProj->FindBin(ptCutOff);
   //printf("GetMeasuredFraction: bin range %d %d\n", ptBin, ptProj->GetNbinsX());
-  Float_t abovePtCut = ptProj->Integral(ptBin, ptProj->GetNbinsX());
-  Float_t all = ptProj->Integral();
+  Float_t abovePtCut = ptProj->Integral(ptBin, ptProj->GetNbinsX()+1);
+  Float_t all = ptProj->Integral(1, ptProj->GetNbinsX()+1);
 
   if (all == 0)
     return -1;

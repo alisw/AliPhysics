@@ -48,7 +48,7 @@ AliCorrection::AliCorrection(const Char_t* name, const Char_t* title, AliPWG0Hel
   } 
   else if (analysisMode == AliPWG0Helper::kSPD)
   {
-    static Float_t binLimitsPtTmp[] = {-0.5, 0.5};
+    static Float_t binLimitsPtTmp[] = {-0.5, 100.0};
     binLimitsPt = (Float_t*) binLimitsPtTmp;
     nBinsPt = 1;
   }

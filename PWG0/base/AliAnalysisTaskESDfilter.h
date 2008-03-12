@@ -34,6 +34,9 @@ class AliAnalysisTaskESDfilter : public AliAnalysisTask
     virtual void SetDebugLevel(Int_t level) {fDebug = level;}
     
  private:
+    AliAnalysisTaskESDfilter(const AliAnalysisTaskESDfilter&);
+    AliAnalysisTaskESDfilter& operator=(const AliAnalysisTaskESDfilter&);
+
     Int_t              fDebug;       //  Debug flag
     TTree*             fTree;        //! chained files
     AliESDEvent*       fESD;         //! ESD
