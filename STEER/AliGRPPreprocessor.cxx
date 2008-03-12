@@ -1,4 +1,4 @@
-/**************************************************************************
+**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
@@ -352,7 +352,7 @@ UInt_t AliGRPPreprocessor::ProcessDcsFxs() {
     // Get the CTP run configuration
     TList* list = GetFileSources(kDCS,"CTP_runconfig");  
     if (!list) {
-      Log("No CTP runconfig file: connection problems with DAQ FXS logbook!");
+      Log("No CTP runconfig file: connection problems with DCS FXS logbook!");
       return 1;
     }
   
