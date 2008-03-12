@@ -10,7 +10,7 @@ class AliESDEvent;
 class TTree;
 class AliAODEvent;
 class AliJetHistos;
-class TClonesArray;
+
 
 
 class AliAnalysisTaskJets : public AliAnalysisTaskSE
@@ -34,8 +34,6 @@ class AliAnalysisTaskJets : public AliAnalysisTaskSE
     TTree*        fTree;         //! The input tree
     AliJetHistos* fHistos;       //  Histogram manager class
     TList*        fListOfHistos; //  Output list of histograms
-    TClonesArray* fNewJets;
-    
     ClassDef(AliAnalysisTaskJets, 2); // Analysis task for standard jet analysis
 };
  

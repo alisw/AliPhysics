@@ -29,7 +29,6 @@
 #include "AliESDEvent.h"
 #include "AliESD.h"
 #include "AliAODEvent.h"
-#include "AliAODJet.h"
 #include "AliAODHandler.h"
 #include "AliMCEventHandler.h"
 #include "AliESDInputHandler.h"
@@ -76,9 +75,6 @@ void AliAnalysisTaskJets::UserCreateOutputObjects()
     fListOfHistos = new TList();
     fHistos       = new AliJetHistos();
     fHistos->AddHistosToList(fListOfHistos);
-
-    fNewJets      = new TClonesArray("AliAODJet", 1000);
-//    AliAnalysisTaskSE::AddAODBranch("NewJets", "TClonesArray", &fNewJets);
 }
 
 void AliAnalysisTaskJets::Init()
