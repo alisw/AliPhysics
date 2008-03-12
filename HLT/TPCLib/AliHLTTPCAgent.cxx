@@ -117,6 +117,10 @@ const char* AliHLTTPCAgent::GetReconstructionChains(AliRawReader* /*rawReader*/,
 const char* AliHLTTPCAgent::GetRequiredComponentLibraries() const
 {
   // see header file for class documentation
+
+  // actually, the TPC library has dependencies to Util and RCU
+  // so the two has to be loaded anyhow before we get here
+  //return "libAliHLTUtil.so libAliHLTRCU.so";
   return NULL;
 }
 

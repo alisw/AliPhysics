@@ -23,7 +23,7 @@ endif
 lib_LTLIBRARIES			=  libAliHLTTPC.la
 
 # version info for the library
-LIBRARY_VERSION			= '5:0:2'
+LIBRARY_VERSION			= '6:0:3'
 
 # MODDIR is set by the AliRoot build system and denotes the topdir
 # of the module, we must set it since the package definition libAliHLTTPC.pkg
@@ -46,7 +46,8 @@ libAliHLTTPC_la_SOURCES		= $(MODULE_SRCS)
 pkginclude_HEADERS		= $(MODULE_HDRS)
 
 # linker flags
-libAliHLTTPC_la_LIBADD		= $(top_builddir)/BASE/util/libAliHLTUtil.la
+libAliHLTTPC_la_LIBADD		= $(top_builddir)/BASE/util/libAliHLTUtil.la \
+				  $(top_builddir)/RCU/libAliHLTRCU.la
 libAliHLTTPC_la_LDFLAGS		= -L@ROOTLIBDIR@ \
 				  @ROOTLIBS@ \
 				  @ALIROOT_LDFLAGS@ \
