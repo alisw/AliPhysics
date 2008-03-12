@@ -157,12 +157,19 @@ void AliESDRecInfo::SetESDtrack(const AliESDtrack *track){
   //
   if (fESDtrack) delete fESDtrack;
   fESDtrack = (AliESDtrack*)track->Clone();
-  if (0 &&track->GetFriendTrack()){
+  if (track->GetFriendTrack()){
     if (fTrackF) delete fTrackF;
     fTrackF = (AliESDfriendTrack*)track->GetFriendTrack()->Clone();
-    if (fTrackF->GetCalibObject(0)){
-      if (fTPCtrack) delete fTPCtrack;
-      fTPCtrack = (AliTPCseed*)fTrackF->GetCalibObject(0)->Clone();
+    Int_t icalib=0;
+    TObject *cobject=0;
+    //
+    while (fTrackF->GetCalibObject(icalib)){
+      cobject=fTrackF->GetCalibObject(icalib);
+      if (dynamic_cast<AliTPCseed*>(cobject)){
+	if (fTPCtrack) delete fTPCtrack;
+	fTPCtrack = (AliTPCseed*)(dynamic_cast<AliTPCseed*>(cobject))->Clone();
+      }
+      icalib++;
     }
   }
   
