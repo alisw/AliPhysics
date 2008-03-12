@@ -14,7 +14,7 @@
  **************************************************************************/
 
 //-----------------------------------------------------------------------
-// Example of task running on AliEn (CAF?)
+// Example of task (running locally, on AliEn and CAF),
 // which provides standard way of calculating acceptance and efficiency
 // between different steps of the procedure.
 // The ouptut of the task is a AliCFContainer from which the efficiencies
@@ -54,7 +54,7 @@ AliCFSingleTrackTask::AliCFSingleTrackTask() :
   fQAHistList(0x0),
   fHistEventsProcessed(0x0)
 {
-//Defual ctor
+//Default ctor
 }
 //___________________________________________________________________________
 AliCFSingleTrackTask::AliCFSingleTrackTask(const Char_t* name) :
@@ -213,52 +213,52 @@ void AliCFSingleTrackTask::Terminate(Option_t*)
   Info("Terminate","");
   AliAnalysisTask::Terminate();
 
+  //draw some example plots....
 
-  Double_t max1 = fCFManager->GetParticleContainer()->ShowProjection(0,0)->GetMaximum();
-  Double_t max2 = fCFManager->GetParticleContainer()->ShowProjection(1,0)->GetMaximum();
+  AliCFContainer *cont= dynamic_cast<AliCFContainer*> (GetOutputData(1));
 
-  fCFManager->GetParticleContainer()->ShowProjection(0,0)->GetYaxis()->SetRangeUser(0,max1*1.2);
-  fCFManager->GetParticleContainer()->ShowProjection(0,1)->GetYaxis()->SetRangeUser(0,max1*1.2);
-  fCFManager->GetParticleContainer()->ShowProjection(0,2)->GetYaxis()->SetRangeUser(0,max1*1.2);
-  fCFManager->GetParticleContainer()->ShowProjection(0,3)->GetYaxis()->SetRangeUser(0,max1*1.2);
+  Double_t max1 = cont->ShowProjection(0,0)->GetMaximum();
+  Double_t max2 = cont->ShowProjection(1,0)->GetMaximum();
 
-  fCFManager->GetParticleContainer()->ShowProjection(1,0)->GetYaxis()->SetRangeUser(0,max2*1.2);
-  fCFManager->GetParticleContainer()->ShowProjection(1,1)->GetYaxis()->SetRangeUser(0,max2*1.2);
-  fCFManager->GetParticleContainer()->ShowProjection(1,2)->GetYaxis()->SetRangeUser(0,max2*1.2);
-  fCFManager->GetParticleContainer()->ShowProjection(1,3)->GetYaxis()->SetRangeUser(0,max2*1.2);
+  cont->ShowProjection(0,0)->GetYaxis()->SetRangeUser(0,max1*1.2);
+  cont->ShowProjection(0,1)->GetYaxis()->SetRangeUser(0,max1*1.2);
+  cont->ShowProjection(0,2)->GetYaxis()->SetRangeUser(0,max1*1.2);
+  cont->ShowProjection(0,3)->GetYaxis()->SetRangeUser(0,max1*1.2);
 
-  fCFManager->GetParticleContainer()->ShowProjection(0,0)->SetMarkerStyle(23) ;
-  fCFManager->GetParticleContainer()->ShowProjection(0,1)->SetMarkerStyle(24) ;
-  fCFManager->GetParticleContainer()->ShowProjection(0,2)->SetMarkerStyle(25) ;
-  fCFManager->GetParticleContainer()->ShowProjection(0,3)->SetMarkerStyle(26) ;
+  cont->ShowProjection(1,0)->GetYaxis()->SetRangeUser(0,max2*1.2);
+  cont->ShowProjection(1,1)->GetYaxis()->SetRangeUser(0,max2*1.2);
+  cont->ShowProjection(1,2)->GetYaxis()->SetRangeUser(0,max2*1.2);
+  cont->ShowProjection(1,3)->GetYaxis()->SetRangeUser(0,max2*1.2);
 
-  fCFManager->GetParticleContainer()->ShowProjection(1,0)->SetMarkerStyle(23) ;
-  fCFManager->GetParticleContainer()->ShowProjection(1,1)->SetMarkerStyle(24) ;
-  fCFManager->GetParticleContainer()->ShowProjection(1,2)->SetMarkerStyle(25) ;
-  fCFManager->GetParticleContainer()->ShowProjection(1,3)->SetMarkerStyle(26) ;
+  cont->ShowProjection(0,0)->SetMarkerStyle(23) ;
+  cont->ShowProjection(0,1)->SetMarkerStyle(24) ;
+  cont->ShowProjection(0,2)->SetMarkerStyle(25) ;
+  cont->ShowProjection(0,3)->SetMarkerStyle(26) ;
+
+  cont->ShowProjection(1,0)->SetMarkerStyle(23) ;
+  cont->ShowProjection(1,1)->SetMarkerStyle(24) ;
+  cont->ShowProjection(1,2)->SetMarkerStyle(25) ;
+  cont->ShowProjection(1,3)->SetMarkerStyle(26) ;
 
   TCanvas * c =new TCanvas("c","",1400,800);
   c->Divide(4,2);
 
-//   TCanvas * c1 =new TCanvas("c1","",600,400);
   c->cd(1);
-  fCFManager->GetParticleContainer()->ShowProjection(0,0)->Draw("p");
+  cont->ShowProjection(0,0)->Draw("p");
   c->cd(2);
-  fCFManager->GetParticleContainer()->ShowProjection(0,1)->Draw("p");
+  cont->ShowProjection(0,1)->Draw("p");
   c->cd(3);
-  fCFManager->GetParticleContainer()->ShowProjection(0,2)->Draw("p");
+  cont->ShowProjection(0,2)->Draw("p");
   c->cd(4);
-  fCFManager->GetParticleContainer()->ShowProjection(0,3)->Draw("p");
-
-//   TCanvas * c2 =new TCanvas("c2","",600,400);
+  cont->ShowProjection(0,3)->Draw("p");
   c->cd(5);
-  fCFManager->GetParticleContainer()->ShowProjection(1,0)->Draw("p");
+  cont->ShowProjection(1,0)->Draw("p");
   c->cd(6);
-  fCFManager->GetParticleContainer()->ShowProjection(1,1)->Draw("p");
+  cont->ShowProjection(1,1)->Draw("p");
   c->cd(7);
-  fCFManager->GetParticleContainer()->ShowProjection(1,2)->Draw("p");
+  cont->ShowProjection(1,2)->Draw("p");
   c->cd(8);
-  fCFManager->GetParticleContainer()->ShowProjection(1,3)->Draw("p");
+  cont->ShowProjection(1,3)->Draw("p");
 
   c->SaveAs("plots.eps");
 
