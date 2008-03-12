@@ -20,8 +20,9 @@ class AliACORDERawStream : public TObject {
  public:
 
   AliACORDERawStream(AliRawReader*);
+  AliACORDERawStream(const AliACORDERawStream &r); 
   virtual ~AliACORDERawStream();
-//  AliACORDERawStream &operator=(const AliACORDERawStream &r);
+  AliACORDERawStream &operator=(const AliACORDERawStream &r);
 
   virtual void    Reset();
   virtual Bool_t  Next();
