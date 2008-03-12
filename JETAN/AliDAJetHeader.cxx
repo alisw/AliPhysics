@@ -33,8 +33,9 @@ AliDAJetHeader::AliDAJetHeader():
 	fEtaCut(.9),
 	fChgOnly(kTRUE),
 	fSelectJets(kTRUE),
-	fNclustMax(14),
-	fFixedCl(kFALSE)
+	fNclustMax(16),
+	fFixedCl(kFALSE),
+	fEtMin(10.)
 {
     // Constructor
 }
