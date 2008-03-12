@@ -659,7 +659,7 @@ void AliTRDQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 
   //AliTRDrawStreamBase::SetRawStreamVersion("TB");
   AliTRDrawStreamBase *raw = AliTRDrawStreamBase::GetRawStream(rawReader);
-  AliInfo(Form("Stream version: %s", raw->IsA()->GetName()));
+  AliDebug(2,Form("Stream version: %s", raw->IsA()->GetName()));
 
   while (raw->Next()) {
 
