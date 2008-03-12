@@ -11,12 +11,13 @@
 #include <TSystem.h>
 
 #include "AliCDBManager.h"
+#include "AliDAQ.h"
 #include "AliLog.h"
 #include "AliQA.h"
 #include "AliQADataMakerSteer.h"
 #include "AliRawReader.h"
 #include "AliRawReaderRoot.h"
-#include "AliDAQ.h"
+#include "AliTRDrawStreamBase.h"
 
 TString ClassName() { return "rawqa" ; } 
 
@@ -103,6 +104,7 @@ void rawqa(const Int_t runNumber, Int_t maxFiles = 10, const char* year = "08")
 		AliLog::Flush();
 		// check which detectors are present 
 		AliRawReader * rawReader = new AliRawReaderRoot(input);
+		AliTRDrawStreamBase::SetRawStreamVersion("TB");
 		while ( rawReader->NextEvent() ) {
 			man->SetRun(rawReader->GetRunNumber());
 			AliLog::Flush();
@@ -126,9 +128,6 @@ void rawqa(const Int_t runNumber, Int_t maxFiles = 10, const char* year = "08")
 			if ( !detectors.IsNull() )
 				break ; 
 		}
-		// TEMPORARY REMOVAL OF TRD!!!
-		detectors.ReplaceAll("TRD", "") ;
-		// TEMPORARY REMOVAL OF TRD!!!
 		if ( !detectors.IsNull() ) {
 			qas.SetMaxEvents(maxEvents) ; 	
 			detectorsW = qas.Run(detectors, rawReader) ;
