@@ -186,7 +186,7 @@ AliHLTHOMERReader* AliHLTOUTRawReader::OpenReader(UChar_t* pSrc, unsigned int si
   // check for the HOME descriptor type id
   AliHLTUInt64_t* pHomerDesc=reinterpret_cast<AliHLTUInt64_t*>(pSrc+offset);
   if (*(pHomerDesc+kID_64b_Offset) != HOMER_BLOCK_DESCRIPTOR_TYPEID && 
-      Swap64(*(pHomerDesc+kID_64b_Offset)) != HOMER_BLOCK_DESCRIPTOR_TYPEID) {
+      ByteSwap64(*(pHomerDesc+kID_64b_Offset)) != HOMER_BLOCK_DESCRIPTOR_TYPEID) {
     HLTWarning("format error: can not find HOMER block descriptor typid, skipping this data block");
     return NULL;
   }

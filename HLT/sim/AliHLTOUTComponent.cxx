@@ -196,8 +196,8 @@ int AliHLTOUTComponent::DumpEvent( const AliHLTComponentEventData& evtData,
       homer_uint64 origin=0;
       memcpy(&id, blocks[n].fDataType.fID, sizeof(homer_uint64));
       memcpy(((AliHLTUInt8_t*)&origin)+sizeof(homer_uint32), blocks[n].fDataType.fOrigin, sizeof(homer_uint32));
-      homerDescriptor.SetType(AliHLTOUT::Swap64(id));
-      homerDescriptor.SetSubType1(AliHLTOUT::Swap32(origin));
+      homerDescriptor.SetType(AliHLTOUT::ByteSwap64(id));
+      homerDescriptor.SetSubType1(AliHLTOUT::ByteSwap32(origin));
       homerDescriptor.SetSubType2(blocks[n].fSpecification);
       homerDescriptor.SetBlockSize(blocks[n].fSize);
       int writerNo=ShuffleWriters(fWriters, blocks[n].fSize);
