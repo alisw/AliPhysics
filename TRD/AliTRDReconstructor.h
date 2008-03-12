@@ -42,6 +42,7 @@ class AliTRDReconstructor: public AliReconstructor
 
   static  void             SetSeedingOn(Bool_t seeding)          { fgkSeedingOn  = seeding; }  
   static  void             SetStreamLevel(Int_t level)           { fgStreamLevel = level;   }
+  static  void             SetRecoParam(AliTRDrecoParam *reco)   { fgRecoParam   = reco;    }
 
   static  Bool_t           SeedingOn()                           { return fgkSeedingOn;     }
   static  Int_t            StreamLevel()                         { return fgStreamLevel;    }

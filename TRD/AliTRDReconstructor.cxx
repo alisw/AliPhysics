@@ -83,6 +83,9 @@ void AliTRDReconstructor::Reconstruct(AliRawReader *rawReader
 
   AliInfo("Reconstruct TRD clusters from RAW data [RawReader -> Cluster TTree]");
 
+	// TODO move it to rec.C. check TPC
+ 	fgRecoParam = AliTRDrecoParam::GetLowFluxParam();
+
   rawReader->Reset();
   rawReader->Select("TRD");
 
@@ -103,6 +106,9 @@ void AliTRDReconstructor::Reconstruct(TTree *digitsTree
   //
 
   AliInfo("Reconstruct TRD clusters from Digits [Digit TTree -> Cluster TTree]");
+
+	// TODO move it to rec.C. check TPC
+ 	fgRecoParam = AliTRDrecoParam::GetLowFluxParam();
 
   AliTRDclusterizer clusterer("clusterer","TRD clusterizer");
   clusterer.OpenOutput(clusterTree);

@@ -614,6 +614,12 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
   // There is no ADC threshold anymore, and simParam should not be used in clusterizer. KO
   Float_t adcThreshold   = 0; 
 
+  if (!AliTRDReconstructor::RecoParam())
+    {
+      AliError("RecoParam does not exist\n");
+      return kFALSE;
+    }
+
   // Threshold value for the maximum
   Float_t maxThresh      = AliTRDReconstructor::RecoParam()->GetClusMaxThresh();
   // Threshold value for the digit signal

@@ -659,7 +659,7 @@ AliTRDrawStreamTB::NextChamber(AliTRDdigitsManager *digitsManager)
 
   // Loop through the digits
   Int_t lastdet = -1;
-  Int_t det    = -1;
+  Int_t det     = -1;
   //   Int_t returnDet = -1;
   Int_t it = 0;
   while (Next()) 
@@ -693,9 +693,12 @@ AliTRDrawStreamTB::NextChamber(AliTRDdigitsManager *digitsManager)
 
 	  // Add a container for the digits of this detector
 	  digits = (AliTRDdataArrayS *) digitsManager->GetDigits(det);
-	  track0 = (AliTRDdataArrayI *) digitsManager->GetDictionary(det,0);
-	  track1 = (AliTRDdataArrayI *) digitsManager->GetDictionary(det,1);
-	  track2 = (AliTRDdataArrayI *) digitsManager->GetDictionary(det,2);
+          if (digitsManager->UsesDictionaries()) 
+            {
+	      track0 = (AliTRDdataArrayI *) digitsManager->GetDictionary(det,0);
+	      track1 = (AliTRDdataArrayI *) digitsManager->GetDictionary(det,1);
+	      track2 = (AliTRDdataArrayI *) digitsManager->GetDictionary(det,2);
+	    }
 
 	  if (!digits)
 	    {
@@ -719,9 +722,12 @@ AliTRDrawStreamTB::NextChamber(AliTRDdigitsManager *digitsManager)
 	  if (digits->GetNtime() == 0) 
 	    {
 	      digits->Allocate(rowMax, colMax, ntbins);
-	      track0->Allocate(rowMax, colMax, ntbins);
-	      track1->Allocate(rowMax, colMax, ntbins);
-	      track2->Allocate(rowMax, colMax, ntbins);
+              if (digitsManager->UsesDictionaries()) 
+                {
+	          track0->Allocate(rowMax, colMax, ntbins);
+	          track1->Allocate(rowMax, colMax, ntbins);
+	          track2->Allocate(rowMax, colMax, ntbins);
+		}
 	    }
 
 	  indexes = digitsManager->GetIndexes(det);
@@ -741,9 +747,12 @@ AliTRDrawStreamTB::NextChamber(AliTRDdigitsManager *digitsManager)
 	      digits->SetDataUnchecked(GetRow(), GetCol(), it, GetSignals()[it]);
 	      
 	      indexes->AddIndexTBin(GetRow(), GetCol(), it);
-	      track0->SetDataUnchecked(GetRow(), GetCol(), it, 0);
-	      track1->SetDataUnchecked(GetRow(), GetCol(), it, 0);
-	      track2->SetDataUnchecked(GetRow(), GetCol(), it, 0);
+              if (digitsManager->UsesDictionaries()) 
+                {
+	          track0->SetDataUnchecked(GetRow(), GetCol(), it, 0);
+	          track1->SetDataUnchecked(GetRow(), GetCol(), it, 0);
+	          track2->SetDataUnchecked(GetRow(), GetCol(), it, 0);
+		}
 	    }
 	} // tbins
     }// while Next()
