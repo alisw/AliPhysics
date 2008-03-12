@@ -10,6 +10,7 @@ class AliESDEvent;
 class TTree;
 class AliAODEvent;
 class AliJetHistos;
+class TClonesArray;
 
 
 class AliAnalysisTaskJets : public AliAnalysisTaskSE
@@ -24,17 +25,17 @@ class AliAnalysisTaskJets : public AliAnalysisTaskSE
     virtual void LocalInit() {Init();}
     virtual void UserExec(Option_t *option);
     virtual void Terminate(Option_t *option);
-    virtual void SetDebugLevel(Int_t level) {fDebug = level;}
  private:
   AliAnalysisTaskJets(const AliAnalysisTaskJets &det);
   AliAnalysisTaskJets &operator=(const AliAnalysisTaskJets &det);
     
  private:
-    Int_t         fDebug;        //  Debug flag
     AliJetFinder* fJetFinder;    //  Pointer to the jet finder 
     TTree*        fTree;         //! The input tree
     AliJetHistos* fHistos;       //  Histogram manager class
     TList*        fListOfHistos; //  Output list of histograms
+    TClonesArray* fNewJets;
+    
     ClassDef(AliAnalysisTaskJets, 2); // Analysis task for standard jet analysis
 };
  

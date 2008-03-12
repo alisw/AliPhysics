@@ -426,6 +426,10 @@ void AliDAJetFinder::StoreJets(Int_t nk,Int_t *xx)
 				}
 				etDensMed/=extSurf;
 				etNoBg[iClust]=(*fY)(3,iClust)-etDensMed*surf[iClust];
+				if (etNoBg[iClust]<((AliDAJetHeader*)fHeader)->GetEtMin()){
+					isJet[iClust]=kFALSE;
+					iClust=-1;
+				}
 			}
 		}
 	} else {
