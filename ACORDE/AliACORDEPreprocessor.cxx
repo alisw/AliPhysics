@@ -93,7 +93,7 @@ UInt_t AliACORDEPreprocessor::Process(TMap* /*dcsAliasMap*/)
    {
 
    Log("RunType is not STANDALONE_PULSER, nothing to do");
-   return 1;
+   return 0;
 
    }
 
