@@ -47,9 +47,29 @@ AliACORDERawStream::AliACORDERawStream(AliRawReader* rawReader) :
 }
 
 //_____________________________________________________________________________
+AliACORDERawStream::AliACORDERawStream(const AliACORDERawStream &r) :
+  TObject(),
+  fRawReader(r.fRawReader),
+  fPosition(-1),
+  fData(NULL),
+  fDataSize(0)
+{
+  // Simple copy constructor
+  ((AliACORDERawStream &) r).Copy(*this);
+}
+
+//_____________________________________________________________________________
 AliACORDERawStream::~AliACORDERawStream()
 {
   // Default destructor
+}
+
+//_____________________________________________________________________________
+AliACORDERawStream &AliACORDERawStream::operator=(const AliACORDERawStream &r)
+{
+  // Simple operator=
+  if (this != &r)  ((AliACORDERawStream &) r).Copy(*this);
+  return *this;
 }
 
 //_____________________________________________________________________________
