@@ -115,9 +115,9 @@ class AliMultiplicityCorrection : public TNamed {
     static Int_t UnfoldWithBayesian(TH1* correlation, TH1* aEfficiency, TH1* measured, TH1* initialConditions, TH1* aResult, Float_t regPar, Int_t nIterations);
     static Int_t UnfoldWithMinuit(TH1* correlation, TH1* aEfficiency, TH1* measured, TH1* initialConditions, TH1* result, Bool_t check);
 
-    TH1* fCurrentESD;         //! static variable to be accessed by MINUIT
-    TH1* fCurrentCorrelation; //! static variable to be accessed by MINUIT
-    TH1* fCurrentEfficiency;  //! static variable to be accessed by MINUIT
+    TH1* fCurrentESD;         //! current input esd
+    TH1* fCurrentCorrelation; //! current correlation
+    TH1* fCurrentEfficiency;  //! current efficiency
 
     // static variable to be accessed by MINUIT
     static TMatrixD* fgCorrelationMatrix;            //! contains fCurrentCorrelation in matrix form

@@ -258,8 +258,6 @@ void dNdEta(Bool_t onlyESD = kFALSE, Bool_t save = kTRUE)
   TH1* histESDMBVtxNoPt = (TH1*) file->Get("dndetaTrVtx/dNdEta");
   TH1* histESDMBTracksNoPt = (TH1*) file->Get("dndetaTracks/dNdEta");
 
-  TH1* histESDNoEvCorr = (TH1*) file->Get("dndeta/dNdEta_noteventcorrected");
-
   Prepare1DPlot(histESD);
   Prepare1DPlot(histESDMB);
   Prepare1DPlot(histESDMBVtx);
@@ -269,8 +267,6 @@ void dNdEta(Bool_t onlyESD = kFALSE, Bool_t save = kTRUE)
   Prepare1DPlot(histESDMBVtxNoPt);
   Prepare1DPlot(histESDMBTracksNoPt);
 
-  Prepare1DPlot(histESDNoEvCorr);
-  
   histESD->SetLineWidth(0);
   histESDMB->SetLineWidth(0);
   histESDMBVtx->SetLineWidth(0);
@@ -292,8 +288,6 @@ void dNdEta(Bool_t onlyESD = kFALSE, Bool_t save = kTRUE)
   histESDMBVtxNoPt->SetMarkerColor(3);
   histESDMBTracksNoPt->SetMarkerColor(4);
 
-  histESDNoEvCorr->SetMarkerColor(6);
-
   histESD->SetMarkerStyle(20);
   histESDMB->SetMarkerStyle(21);
   histESDMBVtx->SetMarkerStyle(22);
@@ -303,8 +297,6 @@ void dNdEta(Bool_t onlyESD = kFALSE, Bool_t save = kTRUE)
   histESDMBVtxNoPt->SetMarkerStyle(22);
   histESDMBTracksNoPt->SetMarkerStyle(23);
   
-  histESDNoEvCorr->SetMarkerStyle(29);
-
   TH2F* dummy = new TH2F("dummy", "", 100, -1.5, 1.5, 1000, 0, histESDMBVtx->GetMaximum() * 1.1);
   Prepare1DPlot(dummy);
   dummy->SetStats(kFALSE);
@@ -353,9 +345,6 @@ void dNdEta(Bool_t onlyESD = kFALSE, Bool_t save = kTRUE)
   fdNdEtaAnalysis->Finish(0, 0.3, AlidNdEtaCorrection::kNone);
   TH1* histMCPtCut = (TH1*) fdNdEtaAnalysis->GetdNdEtaHistogram(0)->Clone("histMCPtCut");
 
-  fdNdEtaAnalysis2->Finish(0, 0.3, AlidNdEtaCorrection::kNone, 1);
-  TH1* histMCPtCutNoEvCorr = (TH1*) fdNdEtaAnalysis2->GetdNdEtaHistogram(0)->Clone("histMCPtCutNoEvCorr");
-
   fdNdEtaAnalysis = new dNdEtaAnalysis("dndetaTr", "dndetaTr");
   fdNdEtaAnalysis->LoadHistograms();
   fdNdEtaAnalysis->Finish(0, 0.3, AlidNdEtaCorrection::kNone);
@@ -363,12 +352,12 @@ void dNdEta(Bool_t onlyESD = kFALSE, Bool_t save = kTRUE)
 
   fdNdEtaAnalysis = new dNdEtaAnalysis("dndetaTrVtx", "dndetaTrVtx");
   fdNdEtaAnalysis->LoadHistograms();
-  fdNdEtaAnalysis->Finish(0, 0.3, AlidNdEtaCorrection::kNone, 1);
+  fdNdEtaAnalysis->Finish(0, 0.3, AlidNdEtaCorrection::kNone);
   TH1* histMCTrVtxPtCut = fdNdEtaAnalysis->GetdNdEtaHistogram(0);
 
   fdNdEtaAnalysis = new dNdEtaAnalysis("dndetaTracks", "dndetaTracks");
   fdNdEtaAnalysis->LoadHistograms();
-  fdNdEtaAnalysis->Finish(0, 0.3, AlidNdEtaCorrection::kNone, 1);
+  fdNdEtaAnalysis->Finish(0, 0.3, AlidNdEtaCorrection::kNone);
   TH1* histMCTracksPtCut = fdNdEtaAnalysis->GetdNdEtaHistogram(0);
 
   TCanvas* canvas2 = new TCanvas("dNdEta2", "dNdEta2", 500, 500);
@@ -378,7 +367,6 @@ void dNdEta(Bool_t onlyESD = kFALSE, Bool_t save = kTRUE)
   Prepare1DPlot(histMCTrVtx);
 
   Prepare1DPlot(histMCPtCut);
-  Prepare1DPlot(histMCPtCutNoEvCorr);
   Prepare1DPlot(histMCTrPtCut);
   Prepare1DPlot(histMCTrVtxPtCut);
   if (histMCTracksPtCut)
@@ -393,7 +381,6 @@ void dNdEta(Bool_t onlyESD = kFALSE, Bool_t save = kTRUE)
   histMCTrVtxPtCut->SetLineColor(3);
   if (histMCTracksPtCut)
     histMCTracksPtCut->SetLineColor(4);
-  histMCPtCutNoEvCorr->SetLineColor(6);
 
   TH2* dummy2 = (TH2F*) dummy->Clone("dummy2");
   Prepare1DPlot(dummy2);
@@ -410,9 +397,7 @@ void dNdEta(Bool_t onlyESD = kFALSE, Bool_t save = kTRUE)
   histESDMBNoPt->Draw("SAME");
   histESDMBVtxNoPt->Draw("SAME");
   histESDMBTracksNoPt->Draw("SAME");
-  histESDNoEvCorr->Draw("SAME");
   histMCPtCut->Draw("SAME");
-  histMCPtCutNoEvCorr->Draw("SAME");
   histMCTrPtCut->Draw("SAME");
   histMCTrVtxPtCut->Draw("SAME");
   if (histMCTracksPtCut)

@@ -65,6 +65,8 @@ void run(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFALSE, B
   if (mc)
     task->SetReadMC();
 
+  //task->SetUseMCVertex();
+
   mgr->AddTask(task);
 
   if (mc) {

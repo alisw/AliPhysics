@@ -329,6 +329,8 @@ void AlidNdEtaTask::Exec(Option_t*)
   {
     // control hist
     fMult->Fill(inputCount);
+    fdNdEtaAnalysisESD->FillTriggeredEvent(inputCount);
+
     if (vtxESD)
     {
       // control hist

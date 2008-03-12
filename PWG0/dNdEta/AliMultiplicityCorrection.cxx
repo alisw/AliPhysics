@@ -136,7 +136,15 @@ AliMultiplicityCorrection::AliMultiplicityCorrection() :
 
 //____________________________________________________________________
 AliMultiplicityCorrection::AliMultiplicityCorrection(const Char_t* name, const Char_t* title) :
-  TNamed(name, title), fLastChi2MC(0), fLastChi2MCLimit(0), fLastChi2Residuals(0), fRatioAverage(0)
+  TNamed(name, title),
+  fCurrentESD(0),
+  fCurrentCorrelation(0),
+  fCurrentEfficiency(0),
+  fLastBinLimit(0),
+  fLastChi2MC(0),
+  fLastChi2MCLimit(0),
+  fLastChi2Residuals(0),
+  fRatioAverage(0)
 {
   //
   // named constructor

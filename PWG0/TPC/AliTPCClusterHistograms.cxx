@@ -34,10 +34,14 @@ ClassImp(AliTPCClusterHistograms)
 //____________________________________________________________________
 AliTPCClusterHistograms::AliTPCClusterHistograms() 
   : TNamed(),
-  fhQmaxVsRow(0),          
+  fTimeStart(0),
+  fTimeStop(0),
+  fhQmaxVsRow(0),
   fhQtotVsRow(0),          
   fhQtotProfileVsRow(0),   
   fhQmaxProfileVsRow(0),
+  fhQtotVsDistanceToEdge(0),
+  fhQtotProfileVsDistanceToEdge(0),
   fhNClustersYVsRow(0),
   fhNClustersZVsRow(0),
   fhSigmaYVsRow(0),        
@@ -61,8 +65,15 @@ AliTPCClusterHistograms::AliTPCClusterHistograms()
   fhTrackMeanQtotPerClusterVsTheta(0),
   fhMeanNTracksVsTime(),
   fhNEventsVsTime(),
+  fDetector(0),
   fIsIROC(kFALSE),
-  fEdgeSuppression(kFALSE)
+  fEdgeSuppression(kFALSE),
+  fNClustersInEvent(0),
+  fQtotInEvent(0),
+  fMaxQtotInEvent(0),
+  fKeepEvent(0),
+  fWhyKeepEvent(),
+  fCommentToHistograms()
 {
   // default constructor
 }
@@ -70,11 +81,15 @@ AliTPCClusterHistograms::AliTPCClusterHistograms()
 //____________________________________________________________________
 AliTPCClusterHistograms::AliTPCClusterHistograms(Int_t detector, const Char_t* comment, Int_t timeStart, Int_t timeStop, Bool_t edgeSuppression)
   : TNamed(),
-  fhQmaxVsRow(0),          
+  fTimeStart(0),
+  fTimeStop(0),
+  fhQmaxVsRow(0),
   fhQtotVsRow(0),          
   fhQtotProfileVsRow(0),   
   fhQmaxProfileVsRow(0),
-  fhNClustersYVsRow(0),  
+  fhQtotVsDistanceToEdge(0),
+  fhQtotProfileVsDistanceToEdge(0),
+  fhNClustersYVsRow(0),
   fhNClustersZVsRow(0),
   fhSigmaYVsRow(0),        
   fhSigmaZVsRow(0),          			
@@ -95,10 +110,17 @@ AliTPCClusterHistograms::AliTPCClusterHistograms(Int_t detector, const Char_t* c
   fhTrackQtotPerClusterVsTheta(0),
   fhTrackMeanQtotPerClusterVsPhi(0),
   fhTrackMeanQtotPerClusterVsTheta(0),
-  fhMeanNTracksVsTime(0),
-  fhNEventsVsTime(0),
+  fhMeanNTracksVsTime(),
+  fhNEventsVsTime(),
+  fDetector(0),
   fIsIROC(kFALSE),
-  fEdgeSuppression(edgeSuppression)
+  fEdgeSuppression(edgeSuppression),
+  fNClustersInEvent(0),
+  fQtotInEvent(0),
+  fMaxQtotInEvent(0),
+  fKeepEvent(0),
+  fWhyKeepEvent(),
+  fCommentToHistograms()
 {
   // constructor 
   
@@ -213,7 +235,47 @@ AliTPCClusterHistograms::AliTPCClusterHistograms(Int_t detector, const Char_t* c
 }
 
 //____________________________________________________________________
-AliTPCClusterHistograms::AliTPCClusterHistograms(const AliTPCClusterHistograms& c) : TNamed(c)
+AliTPCClusterHistograms::AliTPCClusterHistograms(const AliTPCClusterHistograms& c) : TNamed(c),
+  fTimeStart(0),
+  fTimeStop(0),
+  fhQmaxVsRow(0),
+  fhQtotVsRow(0),          
+  fhQtotProfileVsRow(0),   
+  fhQmaxProfileVsRow(0),
+  fhQtotVsDistanceToEdge(0),
+  fhQtotProfileVsDistanceToEdge(0),
+  fhNClustersYVsRow(0),
+  fhNClustersZVsRow(0),
+  fhSigmaYVsRow(0),        
+  fhSigmaZVsRow(0),          			
+  fhQmaxProfileYVsRow(0), 
+  fhQtotProfileYVsRow(0),
+  fhSigmaYProfileYVsRow(0),
+  fhSigmaZProfileYVsRow(0),
+  fhQmaxProfileZVsRow(0), 
+  fhQtotProfileZVsRow(0),
+  fhSigmaYProfileZVsRow(0),
+  fhSigmaZProfileZVsRow(0),
+  fhMeanQtotVsTime(0),  
+  fhQtotVsTime(0),
+  fhMeanNClustersVsTime(0),    
+  fhNClustersVsTime(0),        
+  fhTrackQtotPerCluster(0),
+  fhTrackQtotPerClusterVsPhi(0),
+  fhTrackQtotPerClusterVsTheta(0),
+  fhTrackMeanQtotPerClusterVsPhi(0),
+  fhTrackMeanQtotPerClusterVsTheta(0),
+  fhMeanNTracksVsTime(),
+  fhNEventsVsTime(),
+  fDetector(0),
+  fIsIROC(kFALSE),
+  fEdgeSuppression(kFALSE),
+  fNClustersInEvent(0),
+  fQtotInEvent(0),
+  fMaxQtotInEvent(0),
+  fKeepEvent(0),
+  fWhyKeepEvent(),
+  fCommentToHistograms()
 {
   // copy constructor
   ((AliTPCClusterHistograms &)c).Copy(*this);
