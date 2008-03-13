@@ -1828,7 +1828,7 @@ Double_t AliTRDtrackerV1::BuildSeedingConfigs(AliTRDtrackingChamber **stack, Int
 		for(int iplane=0; iplane<4; iplane++) tconfig[iconf] *= chamberQ[planes[iplane]]; 
 	}
 	
-	TMath::Sort(kNConfigs, tconfig, configs, kTRUE);
+	TMath::Sort((Int_t)kNConfigs, tconfig, configs, kTRUE);
 // 	AliInfo(Form("q[%d] = %f", configs[0], tconfig[configs[0]]));
 // 	AliInfo(Form("q[%d] = %f", configs[1], tconfig[configs[1]]));
 // 	AliInfo(Form("q[%d] = %f", configs[2], tconfig[configs[2]]));

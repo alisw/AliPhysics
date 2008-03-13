@@ -180,7 +180,7 @@ void AliPMDClusteringV1::DoClust(Int_t idet, Int_t ismn,
   delete [] cellenergy;
 
   Int_t iord1[kNMX];
-  TMath::Sort(kNMX,edepcell,iord1);// order the data
+  TMath::Sort((Int_t)kNMX,edepcell,iord1);// order the data
   cutoff = fCutoff;                // cutoff to discard cells
   ave  = 0.;
   nmx1 = -1;

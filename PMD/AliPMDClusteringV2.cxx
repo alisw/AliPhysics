@@ -145,7 +145,7 @@ void AliPMDClusteringV2::DoClust(Int_t idet, Int_t ismn,
     }
 
   Int_t iord1[kNMX];
-  TMath::Sort(kNMX,edepcell,iord1);// order the data
+  TMath::Sort((Int_t)kNMX,edepcell,iord1);// order the data
   cutoff = fCutoff; // cutoff used to discard cells having ener. dep.
   ave  = 0.;
   nmx1 = -1;
