@@ -23,7 +23,7 @@
 //   Still to be done:                                                 //
 // --Implement methods to merge cells                                  //
 // --Interpolate among bins in a range                                 // 
-// This implementation will be aventually replaced  byAliCFGridSparse  //
+// This implementation will be eventually replaced by AliCFGridSparse  //
 //---------------------------------------------------------------------//
 //
 //
@@ -168,7 +168,7 @@ Float_t AliCFGrid::GetElement(Double_t *var) const
   Int_t ovfl=0;  
   for(Int_t i=0;i<fNVar;i++){
     Int_t nbins=fNVarBins[i]+1;
-    Float_t *bins=new Float_t[nbins];
+    Double_t *bins=new Double_t[nbins];
     for(Int_t ibin =0;ibin<nbins;ibin++){
      bins[ibin] = fVarBinLimits[ibin+fOffset[i]];
     }
@@ -236,7 +236,7 @@ Float_t AliCFGrid::GetElementError(Double_t *var) const
   Int_t ovfl=0;  
   for(Int_t i=0;i<fNVar;i++){
     Int_t nbins=fNVarBins[i]+1;
-    Float_t *bins=new Float_t[nbins];
+    Double_t *bins=new Double_t[nbins];
     for(Int_t ibin =0;ibin<nbins;ibin++){
      bins[ibin] = fVarBinLimits[ibin+fOffset[i]];
     }
@@ -299,7 +299,7 @@ void AliCFGrid::SetElement(Double_t *var, Float_t val)
   Int_t ovfl=0;  
   for(Int_t i=0;i<fNVar;i++){
     Int_t nbins=fNVarBins[i]+1;
-    Float_t *bins=new Float_t[nbins];
+    Double_t *bins=new Double_t[nbins];
     for(Int_t ibin =0;ibin<nbins;ibin++){
      bins[ibin] = fVarBinLimits[ibin+fOffset[i]];
     }
@@ -362,7 +362,7 @@ void AliCFGrid::SetElementError(Double_t *var, Float_t val)
   Int_t ovfl=0;  
   for(Int_t i=0;i<fNVar;i++){
     Int_t nbins=fNVarBins[i]+1;
-    Float_t *bins=new Float_t[nbins];
+    Double_t *bins=new Double_t[nbins];
     for(Int_t ibin =0;ibin<nbins;ibin++){
      bins[ibin] = fVarBinLimits[ibin+fOffset[i]];
     }
@@ -415,7 +415,7 @@ void AliCFGrid::Fill(Double_t *var, Double_t weight)
 
   for(Int_t i=0;i<fNVar;i++){
     Int_t nbins=fNVarBins[i]+1;
-    Float_t *bins=new Float_t[nbins];
+    Double_t *bins=new Double_t[nbins];
     for(Int_t ibin =0;ibin<nbins;ibin++){
      bins[ibin] = fVarBinLimits[ibin+fOffset[i]];
     }
@@ -767,10 +767,10 @@ TH1D *AliCFGrid::Slice(Int_t ivar, Double_t *varMin, Double_t* varMax) const
   //Find out the min and max bins
 
   for(Int_t i=0;i<fNVar;i++){
-    Float_t xmin=varMin[i]; // the min values  
-    Float_t xmax=varMax[i]; // the min values  
+    Double_t xmin=varMin[i]; // the min values  
+    Double_t xmax=varMax[i]; // the max values  
     Int_t nbins=fNVarBins[i]+1;
-    Float_t *bins=new Float_t[nbins];
+    Double_t *bins=new Double_t[nbins];
     for(Int_t ibin =0;ibin<nbins;ibin++){
      bins[ibin] = fVarBinLimits[ibin+fOffset[i]];
     }
@@ -786,6 +786,8 @@ TH1D *AliCFGrid::Slice(Int_t ivar, Double_t *varMin, Double_t* varMax) const
   Int_t *index= new Int_t[fNVar];
   Int_t ielmin=GetBinIndex(indexMin);
   Int_t ielmax=GetBinIndex(indexMax);
+
+
   for(Int_t iel=ielmin;iel<=ielmax;iel++){
     GetBinIndex(iel,index);
     Bool_t isIn=kTRUE;
@@ -797,6 +799,8 @@ TH1D *AliCFGrid::Slice(Int_t ivar, Double_t *varMin, Double_t* varMax) const
   }
 
   delete [] index;
+  delete [] indexMin;
+  delete [] indexMax;
 
 
   for(Int_t ibin =0;ibin<nbins;ibin++){
@@ -1068,7 +1072,7 @@ void AliCFGrid::Rebin(const Int_t* group)
   for(Int_t i=0;i<fNVar;i++){
     if(group[i]!=1)AliInfo(Form(" merging bins along dimension %i in groups of %i bins", i,group[i]));
   }
-  AliInfo(Form("This method was so far not implemented for AliCFGrid, but it is available in AliCFGridSparse"));
+  AliInfo(Form("This method was so far not implemented for AliCFGrid, but it is available for AliCFGridSparse"));
 
 }
 //____________________________________________________________________

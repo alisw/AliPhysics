@@ -175,7 +175,7 @@ Double_t AliCFEffGrid::GetAverage(Double_t *varMin, Double_t* varMax ) const
     Double_t xmin=varMin[i]; // the min values  
     Double_t xmax=varMax[i]; // the max values  
     Int_t nbins=fNVarBins[i]+1;
-    Float_t *bins=new Float_t[nbins];
+    Double_t *bins=new Double_t[nbins];
     for(Int_t ibin =0;ibin<nbins;ibin++){
       bins[ibin] = fVarBinLimits[ibin+fOffset[i]];
     }
