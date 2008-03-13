@@ -67,6 +67,10 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(TClonesArray *digits) {
   bins[0]=new AliBin[kMaxBin];
   bins[1]=new AliBin[kMaxBin];
   AliITSCalibrationSDD* cal = (AliITSCalibrationSDD*)GetResp(fModule);
+  if(cal==0){
+    AliError(Form("Calibration object not present for SDD module %d\n",fModule));
+    return;
+  }
   AliITSresponseSDD* res  = (AliITSresponseSDD*)cal->GetResponse();
   const char *option=res->ZeroSuppOption();
   AliITSdigitSDD *d=0;
@@ -84,18 +88,20 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(TClonesArray *digits) {
        else charge=0;
      }
 
-     if(gain>0) charge/=gain;
-     if(charge<cal->GetThresholdAnode(d->GetCoord1())) continue;
-     Int_t q=(Int_t)(charge+0.5);
-     if (z <= nAnodes){
-       bins[0][y*nzBins+z].SetQ(q);
-       bins[0][y*nzBins+z].SetMask(1);
-       bins[0][y*nzBins+z].SetIndex(i);
-     } else {
-       z-=nAnodes;
-       bins[1][y*nzBins+z].SetQ(q);
-       bins[1][y*nzBins+z].SetMask(1);
-       bins[1][y*nzBins+z].SetIndex(i);
+     if(gain>0.){ // Bad channels have gain=0.
+       charge/=gain;
+       if(charge<cal->GetThresholdAnode(d->GetCoord1())) continue;
+       Int_t q=(Int_t)(charge+0.5);
+       if (z <= nAnodes){
+	 bins[0][y*nzBins+z].SetQ(q);
+	 bins[0][y*nzBins+z].SetMask(1);
+	 bins[0][y*nzBins+z].SetIndex(i);
+       } else {
+	 z-=nAnodes;
+	 bins[1][y*nzBins+z].SetQ(q);
+	 bins[1][y*nzBins+z].SetMask(1);
+	 bins[1][y*nzBins+z].SetIndex(i);
+       }
      }
   }
   
@@ -115,6 +121,10 @@ FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins,
 
   const TGeoHMatrix *mT2L=AliITSgeomTGeo::GetTracking2LocalMatrix(fModule);
   AliITSCalibrationSDD* cal = (AliITSCalibrationSDD*)GetResp(fModule);
+  if(cal==0){
+    AliError(Form("Calibration object not present for SDD module %d\n",fModule));
+    return;
+  }
   Int_t ncl=0; 
   TClonesArray &cl=*clusters;
   for (Int_t s=0; s<2; s++)
@@ -307,6 +317,10 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(AliITSRawStream* input,
 	continue;
       }
       AliITSCalibrationSDD* cal = (AliITSCalibrationSDD*)GetResp(iModule);    
+      if(cal==0){
+	AliError(Form("Calibration object not present for SDD module %d\n",iModule));
+	continue;
+      }
       AliITSresponseSDD* res  = (AliITSresponseSDD*)cal->GetResponse();
       const char *option=res->ZeroSuppOption();
       Float_t charge=input->GetSignal();
@@ -317,19 +331,20 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(AliITSRawStream* input,
 	if(charge>baseline) charge-=baseline;
 	else charge=0;
       }
-      if(gain>0) charge/=gain;
-      if(charge>=cal->GetThresholdAnode(chan)) {
-	Int_t q=(Int_t)(charge+0.5);
-	Int_t iz = input->GetCoord1();
-	Int_t itb = input->GetCoord2();
-	Int_t index = (itb+1) * nzBins + (iz+1);
-	if(index<kMaxBin){
-	  ddlbins[iHybrid][index].SetQ(q);
-	  ddlbins[iHybrid][index].SetMask(1);
-	  ddlbins[iHybrid][index].SetIndex(index);
-
-	}else{
-	  AliWarning(Form("Invalid SDD cell: Anode=%d   TimeBin=%d",iz,itb));	  
+      if(gain>0.){ // Bad channels have gain=0
+	charge/=gain;
+	if(charge>=cal->GetThresholdAnode(chan)) {
+	  Int_t q=(Int_t)(charge+0.5);
+	  Int_t iz = input->GetCoord1();
+	  Int_t itb = input->GetCoord2();
+	  Int_t index = (itb+1) * nzBins + (iz+1);
+	  if(index<kMaxBin){
+	    ddlbins[iHybrid][index].SetQ(q);
+	    ddlbins[iHybrid][index].SetMask(1);
+	    ddlbins[iHybrid][index].SetIndex(index);
+	  }else{
+	    AliWarning(Form("Invalid SDD cell: Anode=%d   TimeBin=%d",iz,itb));	  
+	  }
 	}
       }
     }
