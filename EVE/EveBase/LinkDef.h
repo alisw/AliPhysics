@@ -23,6 +23,9 @@
 #pragma link C++ class AliEveTrackFitter+;
 #pragma link C++ class AliEveTrackFitterEditor+;
 
+#pragma link C++ class AliEveCosmicRayFitter+;
+#pragma link C++ class AliEveCosmicRayFitterEditor+;
+
 // AliEveJetPlane
 #pragma link C++ class AliEveJetPlane+;
 #pragma link C++ class AliEveJetPlaneGL+;
