@@ -371,7 +371,7 @@ Bool_t AliHMPIDRawStream::CheckSegment()
     UInt_t segWord = GetWord();          
     if ((segWord >> 20) != statusSegWord) {
       fRawReader->AddMajorErrorLog(kBadSegWordErr);
-      AliWarning(Form("Wrong segment word signature: %x, expected 0xab0!",(segWord >> 20)));
+      AliDebug(1,Form("Wrong segment word signature: %x, expected 0xab0!",(segWord >> 20)));
       fNumOfErr[kBadSegWordErr]++;
       return kTRUE;
     }
@@ -379,7 +379,7 @@ Bool_t AliHMPIDRawStream::CheckSegment()
   UInt_t segMarker = (fWord >> kbit20) & 0xfff;
   if (segMarker != markSegment ) {
     //fRawReader->AddMajorErrorLog(kWrongSegErr,Form("Segment marker %0X wrong (expected %0X) at %i in word %0X!",segMarker,markSegment,fPosition,fWord));
-    AliWarning(Form("Segment marker %X wrong (expected %0X)! at %i in word %0X!",segMarker,markSegment,fPosition,fWord));
+    AliDebug(1,Form("Segment marker %X wrong (expected %0X)! at %i in word %0X!",segMarker,markSegment,fPosition,fWord));
     fNumOfErr[fDDLNumber][kWrongSegErr]++;
     return kFALSE;
   }
@@ -387,7 +387,7 @@ Bool_t AliHMPIDRawStream::CheckSegment()
   UInt_t segAddress = fWord & 0xff;
   if (segAddress<1 ||segAddress>3) {
     //fRawReader->AddMajorErrorLog(kWrongSegErr,Form("Segment address %d not in the valid range [1-3] at %i in word %0X",segAddress,fPosition,fWord));
-    AliWarning(Form("Segment address %d not in the valid range [1-3]",segAddress));
+    AliDebug(1,Form("Segment address %d not in the valid range [1-3]",segAddress));
     fNumOfErr[fDDLNumber][kWrongSegErr]++;
     return kFALSE;
   }
@@ -404,7 +404,7 @@ Bool_t AliHMPIDRawStream::CheckRow(UInt_t row)
   if(row>=1 && row <=kNRows) return kTRUE;
   
   //fRawReader->AddMajorErrorLog(kWrongRowErr,Form("row %d",row));
-  AliWarning(Form("Wrong row index: %d, expected (1 -> %d) word %0X at %i...",row,kNRows,fWord,fPosition));
+  AliDebug(1,Form("Wrong row index: %d, expected (1 -> %d) word %0X at %i...",row,kNRows,fWord,fPosition));
   fNumOfErr[fDDLNumber][kWrongRowErr]++;
   return kFALSE;
 }
@@ -417,7 +417,7 @@ Bool_t AliHMPIDRawStream::CheckDilogic(UInt_t dilogic)
   if (dilogic>= 1 && dilogic <=kNDILOGICAdd) return kTRUE;
 
   //fRawReader->AddMajorErrorLog(kWrongDilogicErr,Form("dil %d",dilogic));
-  AliWarning(Form("Wrong DILOGIC index: %d, expected (1 -> %d)!",dilogic,kNDILOGICAdd));
+  AliDebug(1,Form("Wrong DILOGIC index: %d, expected (1 -> %d)!",dilogic,kNDILOGICAdd));
   fNumOfErr[fDDLNumber][kWrongDilogicErr]++;
   //dilogic = iDILOGIC;
   return kFALSE;
@@ -431,7 +431,7 @@ Bool_t AliHMPIDRawStream::CheckPad(UInt_t pad)
   if (pad < kNPadAdd) return kTRUE;
   
   //fRawReader->AddMajorErrorLog(kWrongPadErr,Form("pad %d",pad));
-  AliWarning(Form("Wrong pad index: %d, expected (0 -> %d)!",pad,kNPadAdd));
+  AliDebug(1,Form("Wrong pad index: %d, expected (0 -> %d)!",pad,kNPadAdd));
   fNumOfErr[fDDLNumber][kWrongPadErr]++;
   return kFALSE;
 }    
@@ -443,7 +443,7 @@ Bool_t AliHMPIDRawStream::CheckEoE(Int_t &nDil)
   //            kTRUE  if all OK
   if (!((fWord >> kbit27) & 0x1)) {                                                //check 27th bit in EoE. It must be 1!
     //fRawReader->AddMajorErrorLog(kEoEFlagErr);
-    AliWarning(Form("Missing end-of-event flag! (%08X) at %i",fWord,fPosition));
+    AliDebug(1,Form("Missing end-of-event flag! (%08X) at %i",fWord,fPosition));
     fNumOfErr[fDDLNumber][kEoEFlagErr]++;
     return kFALSE;
   }
@@ -451,14 +451,14 @@ Bool_t AliHMPIDRawStream::CheckEoE(Int_t &nDil)
   if(nDil < 0 || nDil > 48 ) { 
 
     //fRawReader->AddMajorErrorLog(kEoESizeErr,Form("EoE size=%d",nDil));
-    AliWarning(Form("Wrong end-of-event word-count: %08X",fWord));
+    AliDebug(1,Form("Wrong end-of-event word-count: %08X",fWord));
     fNumOfErr[fDDLNumber][kEoESizeErr]++;
     return kFALSE;
   }
 //  UInt_t da = (eOfEvent >> 18) & 0xf;
 //  if (cntData!=0 && da != dilogic) {
 //    fRawReader->AddMajorErrorLog(kEoEDILOGICErr,Form("eoe dil %d != %d",da,dilogic));
-//    AliWarning(Form("Wrong DILOGIC address found in end-of-event: %d, expected %d!",da,dilogic));
+//    AliDebug(1,Form("Wrong DILOGIC address found in end-of-event: %d, expected %d!",da,dilogic));
 //    fNumOfErr[kEoEDILOGICErr]++;
 //    return kFALSE;  AliQAChecker::Instance()->Run(AliQA::kHMPID, task, obj) ;  
 
@@ -466,7 +466,7 @@ Bool_t AliHMPIDRawStream::CheckEoE(Int_t &nDil)
 //  UInt_t ca = (eOfEvent >> 22) & 0x1f;
 //  if (cntData!=0 &&  ca != row) {
 //    fRawReader->AddMajorErrorLog(kEoERowErr,Form("eoe row %d != %d",ca,row));
-//    AliWarning(Form("Wrong row index found in end-of-event: %d, expected %d!",ca,row));
+//    AliDebug(1,Form("Wrong row index found in end-of-event: %d, expected %d!",ca,row));
 //    fNumOfErr[kEoERowErr]++;
 //    return kFALSE;
 //  }
@@ -485,7 +485,7 @@ Bool_t AliHMPIDRawStream::CheckRowMarker()
   
   if(rowControlWord != statusControlRow) {
     //fRawReader->AddMajorErrorLog(kRowMarkerErr);
-    AliWarning(Form("Wrong row marker %x expected 0x32a8!",rowControlWord));
+    AliDebug(1,Form("Wrong row marker %x expected 0x32a8!",rowControlWord));
               fNumOfErr[fDDLNumber][kRowMarkerErr]++;
               return kFALSE;
    }
@@ -494,7 +494,7 @@ Bool_t AliHMPIDRawStream::CheckRowMarker()
   
   if (wordsInRow > nMAXwordsInRow) {
     //fRawReader->AddMajorErrorLog(kRowMarkerSizeErr);
-    AliWarning(Form(" FATAL: Number of words %x in a row exceeds the expected value: 0x1EA !",wordsInRow));
+    AliDebug(1,Form(" FATAL: Number of words %x in a row exceeds the expected value: 0x1EA !",wordsInRow));
     fNumOfErr[fDDLNumber][kRowMarkerSizeErr]++;
     return kFALSE;
   }
@@ -518,7 +518,7 @@ Bool_t AliHMPIDRawStream::GetWord(Int_t n,EDirection dir)
   if(fPosition==-4) return kTRUE;
   
   if(fPosition<0 || fPosition > fRawReader->GetDataSize()) {
-    AliWarning(Form("fPosition out of boundaries %i",fPosition));
+    AliDebug(1,Form("fPosition out of boundaries %i",fPosition));
     return kFALSE;
   }
     
