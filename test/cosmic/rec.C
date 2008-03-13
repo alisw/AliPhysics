@@ -140,8 +140,8 @@ void rec(Int_t runNumber = 0, const char* year = "08", const char *localFileName
   //  rec.SetRunLocalReconstruction("ALL");
   //  rec.SetRunTracking("ALL");
   //  rec.SetFillESD("ALL");
-  // Disable vertex finder for the moment
-  rec.SetRunVertexFinder(kFALSE);
+  // Enable vertex finder - it is needed for cosmic track reco
+  rec.SetRunVertexFinder(kTRUE);
 
   // To be enabled if some equipment IDs are not set correctly by DAQ
   //  rec.SetEquipmentIdMap("EquipmentIdMap.data");
