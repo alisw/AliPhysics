@@ -29,8 +29,9 @@
  *   4       Component configuration and DCS update events added
  *           gkAliHLTDDLListSize set from 29 to 30 according to new PubSub
  *           specs
+ *   5       Data types for Run and Event summary, and for monitoring added
  */
-#define ALIHLT_DATA_TYPES_VERSION 4
+#define ALIHLT_DATA_TYPES_VERSION 5
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -171,6 +172,37 @@ const int kAliHLTComponentDataTypefIDsize=8;
  * - origin : kAliHLTDataOriginOut ( HLT )
  */
 # define kAliHLTRunSummaryDataTypeID          {'R','U','N','S','U','M','M','A'}
+
+/** general ROOT TObject
+ * - a general TObject exported from the HLT analysis
+ * - varying origin
+ */
+#define kAliHLTTObjectDataTypeID              {'R','O','O','T','T','O','B','J'}
+
+/** ROOT TObjArray
+ * - a TObjArray exported from the HLT analysis
+ * - varying origin
+ */
+#define kAliHLTTObjArrayDataTypeID            {'R','O','O','T','O','B','A','R'}
+
+/** ROOT TTree
+ * - a TTree object exported from the HLT analysis
+ * - varying origin
+ */
+#define kAliHLTTTreeDataTypeID                {'R','O','O','T','T','R','E','E'}
+
+/** ROOT histogram
+ * - a histogram object exported from the HLT analysis
+ * - class derives from TH1 (directly or indirectly) and inherits all common functionality
+ * - varying origin
+ */
+#define kAliHLTHistogramDataTypeID            {'R','O','O','T','H','I','S','T'}
+
+/** ROOT TNtuple
+ * - a TNtupl object exported from the HLT analysis
+ * - varying origin
+ */
+#define kAliHLTTNtupleDataTypeID              {'R','O','O','T','T','U','P','L'}
 
 using namespace std;
 
@@ -500,6 +532,27 @@ extern "C" {
 
   /** Event summary */
   extern const AliHLTComponentDataType kAliHLTDataTypeRunSummary;
+
+  //////////////////////////////////////////////////////////////////////////
+  //
+  // Data Types for Monitoring objects
+  //
+  //////////////////////////////////////////////////////////////////////////
+
+  /** general ROOT TObject */
+  extern const AliHLTComponentDataType kAliHLTDataTypeTObject;            // {ROOTTOBJ,"***"}
+									  		
+  /** ROOT TObjArray */							  		
+  extern const AliHLTComponentDataType kAliHLTDataTypeTObjArray;	  // {ROOTOBAR,"***"}
+									  		
+  /** ROOT TTree */							  		
+  extern const AliHLTComponentDataType kAliHLTDataTypeTTree;		  // {ROOTTREE,"***"}
+									  		
+  /** ROOT TH1 (can be used for all histograms, they derive from TH1) */  		
+  extern const AliHLTComponentDataType kAliHLTDataTypeHistogram;	  // {ROOTHIST,"***"}
+									  		
+  /** ROOT TNtuple */							  		
+  extern const AliHLTComponentDataType kAliHLTDataTypeTNtuple;		  // {ROOTTUPL,"***"}
 
   //////////////////////////////////////////////////////////////////////////
   //

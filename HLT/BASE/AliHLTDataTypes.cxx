@@ -139,6 +139,40 @@ const AliHLTComponentDataType kAliHLTDataTypeRunSummary = (AliHLTComponentDataTy
   kAliHLTDataOriginAny
 }|kAliHLTDataOriginOut;
 
+/** general ROOT TObject */
+const AliHLTComponentDataType kAliHLTDataTypeTObject = (AliHLTComponentDataType) {
+  sizeof(AliHLTComponentDataType),
+  kAliHLTTObjectDataTypeID,
+  kAliHLTDataOriginAny
+};
+
+/** ROOT TObjArray */
+const AliHLTComponentDataType kAliHLTDataTypeTObjArray = (AliHLTComponentDataType) {
+  sizeof(AliHLTComponentDataType),
+  kAliHLTTObjArrayDataTypeID,
+  kAliHLTDataOriginAny
+};
+
+/** ROOT TTree */
+const AliHLTComponentDataType kAliHLTDataTypeTTree = (AliHLTComponentDataType) {
+  sizeof(AliHLTComponentDataType),
+  kAliHLTTTreeDataTypeID,
+  kAliHLTDataOriginAny
+};
+
+/** ROOT TH1 (can be used for all histograms, they derive from TH1) */
+const AliHLTComponentDataType kAliHLTDataTypeHistogram = (AliHLTComponentDataType) {
+  sizeof(AliHLTComponentDataType),
+  kAliHLTHistogramDataTypeID,
+  kAliHLTDataOriginAny
+};
+
+/** ROOT TNtuple */
+const AliHLTComponentDataType kAliHLTDataTypeTNtuple = (AliHLTComponentDataType) {
+  sizeof(AliHLTComponentDataType),
+  kAliHLTTNtupleDataTypeID,
+  kAliHLTDataOriginAny
+};
 
 //////////////////////////////////////////////////////////////////////////
 //
