@@ -7,17 +7,9 @@
 // to the detector parts, e.g. entrance and exit points.                 //
 //                                                                       //
 ///////////////////////////////////////////////////////////////////////////
+#include "AliFemtoKink.h"
 #include "AliFemtoParticle.h"
-//#include "math_constants.h"
-#ifdef __CC5__
-  #include <math.h>
-#else
-  #include <cmath>
-#endif
-
-
-#include "TMath.h"
-using namespace TMath;
+#include "AliFemtoXi.h"
 
 double AliFemtoParticle::fgPrimPimPar0= 9.05632e-01;
 double AliFemtoParticle::fgPrimPimPar1= -2.26737e-01;
