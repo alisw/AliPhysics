@@ -213,7 +213,7 @@ Bool_t AliMpCDB::WriteMpSegmentation(Bool_t readData)
   cdbData->SetResponsible("Dimuon Offline project");
   cdbData->SetComment("MUON mapping");
   cdbData->SetAliRootVersion(gSystem->Getenv("ARVERSION"));
-  AliCDBId id("MUON/Calib/Mapping", 0, 9999999); 
+  AliCDBId id("MUON/Calib/Mapping", 0, AliCDBRunRange::Infinity()); 
 
   if ( readData ) {
     AliMpSegmentation::ReadData(false);
@@ -238,7 +238,7 @@ Bool_t AliMpCDB::WriteDDLStore(Bool_t readData)
   cdbData->SetResponsible("Dimuon Offline project");
   cdbData->SetComment("MUON DDL store");
   cdbData->SetAliRootVersion(gSystem->Getenv("ARVERSION"));
-  AliCDBId id("MUON/Calib/DDLStore", 0, 9999999); 
+  AliCDBId id("MUON/Calib/DDLStore", 0, AliCDBRunRange::Infinity()); 
 
   if ( readData ) {
     AliMpSegmentation::ReadData(false);
