@@ -142,8 +142,12 @@ void AliAnalysisTaskSE::CreateOutputObjects()
     AliAODHandler* handler = (AliAODHandler*) 
          ((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
     
-    fOutputAOD   = handler->GetAOD();
-    fTreeA = handler->GetTree();
+    if (handler) {
+	fOutputAOD   = handler->GetAOD();
+	fTreeA = handler->GetTree();
+    } else {
+	AliWarning("No AOD Event Handler connected.") ; 
+    }
     UserCreateOutputObjects();
 }
 
