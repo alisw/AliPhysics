@@ -151,6 +151,7 @@ void rec(Int_t runNumber = 0, const char* year = "08", const char *localFileName
   rec.SetOption("MUON","SAVEDIGITS");
   rec.SetOption("TPC","OldRCUFormat");
   rec.SetOption("PHOS","OldRCUFormat");
+  rec.SetOption("T0","cosmic");
 
   // To be enabled when CTP readout starts
   rec.SetFillTriggerESD(kFALSE);
