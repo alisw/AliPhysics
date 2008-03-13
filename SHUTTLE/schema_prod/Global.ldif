@@ -21,10 +21,8 @@ keepDCSMap: 1
 keepTempFolder: 1
 dcsTimeOut: 1100
 sendMail: 1
-shuttleAdmin: alberto.colla@cern.ch
 shuttleAdmin: chiara.zampolli@cern.ch
 shuttleAdmin: raffaele.grosso@cern.ch
-amandaAdmin: Jan.Fiete.Grosse-Oetringhaus@cern.ch
 amandaAdmin: svetozar.kapusta@cern.ch
 nDCSretries: 5
 

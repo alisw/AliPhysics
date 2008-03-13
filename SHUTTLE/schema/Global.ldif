@@ -17,8 +17,6 @@ monitorHost: aliendb1.cern.ch
 monitorTable: SHUTTLE
 mode: test
 triggerWait: 100
-shuttleAdmin: alberto.colla@cern.ch
-shuttleAdmin: Jan.Fiete.Grosse-Oetringhaus@cern.ch
 shuttleAdmin: chiara.zampolli@cern.ch
 shuttleAdmin: raffaele.grosso@cern.ch
 sendMail: 1
