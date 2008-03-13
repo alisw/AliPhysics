@@ -54,19 +54,12 @@ AliHLTPHOSAltroConfig::AliHLTPHOSAltroConfig() : fNPresamples(900),
 	}
       else
 	{
-	  
 	  fscanf(fp, "N_SAMPLES %d\n", &tmpNSamples); 
 	  fscanf(fp, "N_PRE_SAMPLES %d\n", &tmpNPreSamples);
 	  fNSamples = tmpNSamples;
 	  fNPresamples = tmpNPreSamples;
-          //fNTotalSamples;
  	  fNTotalSamples = fNSamples + fNPresamples;
- 	  //printf("\nNSamples scanned from file is %d\n", tmpNSamples);
-	  //printf("\nNPreSamples scanned from file is %d\n", tmpNPreSamples); 
- 	  //printf("\nTotalSamplesSamples was set to  %d\n", fNTotalSamples); 
-	  //PrintAltroDefaultValues(); 
 	  fclose(fp);
-	  
 	}
 
     }
@@ -84,7 +77,7 @@ AliHLTPHOSAltroConfig::~AliHLTPHOSAltroConfig()
 }
 
 void 
-AliHLTPHOSAltroConfig:: PrintAltroDefaultValues()
+AliHLTPHOSAltroConfig:: PrintAltroDefaultValues() const
 {
   //comment
   printf("\n AliHLTPHOSAltroConfig Default  Values\n");
@@ -114,28 +107,29 @@ AliHLTPHOSAltroConfig:: PrintAltroDefaultValues()
 
 
 void 
-AliHLTPHOSAltroConfig::SetNPresSamples(int presamples)
+AliHLTPHOSAltroConfig::SetNPresSamples(const int presamples)
 {
   //comment
   fNPresamples =  presamples;
 }
 
 void 
-AliHLTPHOSAltroConfig::SetNSamples(int samples)
+AliHLTPHOSAltroConfig::SetNSamples(const int samples)
 {
   //comment
   fNSamples = samples;
 }
 
 void 
-AliHLTPHOSAltroConfig::SetAltroZeroSupression(bool isZeroSupressed)
+AliHLTPHOSAltroConfig::SetAltroZeroSupression(const bool isZeroSupressed)
 {
   //comment
   fIsAltroZeroSupressed = isZeroSupressed;
 }
 
+
 void 
-AliHLTPHOSAltroConfig::SetAltroBaselineSubtraction(bool isAltroBaselineSubtraction)
+AliHLTPHOSAltroConfig::SetAltroBaselineSubtraction(const bool isAltroBaselineSubtraction)
 {
   //comment
   fIsAltroBaselineSubtraction = isAltroBaselineSubtraction;

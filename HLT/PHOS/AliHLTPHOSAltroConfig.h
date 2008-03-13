@@ -19,23 +19,21 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-
-
 class  AliHLTPHOSAltroConfig
 {
 public:
   AliHLTPHOSAltroConfig();
   virtual ~AliHLTPHOSAltroConfig();
-  void SetNPresSamples(int presamples);
-  void SetNSamples(int samples);
-  void SetAltroZeroSupression(bool isZerosupressed);
-  void SetAltroBaselineSubtraction(bool isAltroBaselineSubtraction);
+  void SetNPresSamples(const int presamples);
+  void SetNSamples(const int samples);
+  void SetAltroZeroSupression(const bool isZerosupressed);
+  void SetAltroBaselineSubtraction(const bool isAltroBaselineSubtraction);
   //  void SetSoftwareBaselineSubtraction(bool isSoftwareBaselineSubtraction);
-  int  GetNPresSamples(){return  fNPresamples;}; 
-  int  GetNSamples(){return  fNSamples;}; 
-  bool GetIsAltroZroSupresses(){return   fIsAltroZeroSupressed;}; 
-  bool GetIsAltroBaselineSubtraction(){return fIsAltroBaselineSubtraction;};
-  void PrintAltroDefaultValues();
+  int  GetNPresSamples() const {return  fNPresamples;}; 
+  int  GetNSamples() const {return  fNSamples;}; 
+  bool GetIsAltroZroSupresses() const {return   fIsAltroZeroSupressed;}; 
+  bool GetIsAltroBaselineSubtraction() const {return fIsAltroBaselineSubtraction;};
+  void PrintAltroDefaultValues() const;
 
 protected:
   //Altro Config

@@ -201,6 +201,8 @@ AliHLTPHOSBaselineAnalyzerComponent::DoEvent(const AliHLTComponentEventData& evt
       
       return 0;
     }
+  
+  return 0;
 }
 
 int

@@ -79,7 +79,7 @@ AliHLTPHOSRawAnalyzer::BaselineCorrection(double * /*dataPtr*/, int /*N*/)
 * @param baselineValue the basline value to subtract..
 **/
 void 
-AliHLTPHOSRawAnalyzer::BaselineCorrection(double * /*dataPtr*/, double baselineValue)
+AliHLTPHOSRawAnalyzer::BaselineCorrection(double * /*dataPtr*/, double /*baselineValue*/)
 {
 
 } //end BaslineCorrection
