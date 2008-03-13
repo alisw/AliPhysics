@@ -256,9 +256,9 @@ void AliMCEventHandler::ResetIO()
     delete fTreeE; fTreeE = 0;
 
 // Reset files
-    if (fFileE)  {delete fFileE;  fFileE  = 0;}
-    if (fFileK)  {delete fFileK;  fFileK  = 0;}
-    if (fFileTR) {delete fFileTR; fFileTR = 0;}
+    if (fFileE)  {fFileE->Close();  delete fFileE;  fFileE  = 0;}
+    if (fFileK)  {fFileK->Close();  delete fFileK;  fFileK  = 0;}
+    if (fFileTR) {fFileTR->Close(); delete fFileTR; fFileTR = 0;}
     fExtension="";
 }
 
