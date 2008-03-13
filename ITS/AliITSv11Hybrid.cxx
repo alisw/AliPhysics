@@ -336,22 +336,25 @@ void AliITSv11Hybrid::SetT2Lmatrix(const char *name, Double_t yShift,
   if (yRot180) {
     al = TMath::ATan2(rotMatrix[1],-rotMatrix[0]);
   }
+  Double_t xShift = gtrans[0]*TMath::Cos(al)+gtrans[1]*TMath::Sin(al);
+  Double_t zShift = -gtrans[2];
 
   TGeoHMatrix *matLtoT = new TGeoHMatrix;
-  matLtoT->SetDx( gtrans[0]*TMath::Cos(al)+gtrans[1]*TMath::Sin(al) ); // translation
+  matLtoT->SetDx( xShift ); // translation
   matLtoT->SetDy( yShift );
-  matLtoT->SetDz(-gtrans[2]);
+  matLtoT->SetDz( zShift );
   rotMatrix[0]= 0;  rotMatrix[1]= 1;  rotMatrix[2]= 0; // + rotation
   rotMatrix[3]= 1;  rotMatrix[4]= 0;  rotMatrix[5]= 0;
   rotMatrix[6]= 0;  rotMatrix[7]= 0;  rotMatrix[8]=-1;
   if (yFlip) rotMatrix[3] = -1;  // flipping in y  (for SPD1)
 
   if (yRot180) { // rotation of pi around the axis perpendicular to the wafer
+    if (yFlip) matLtoT->SetDx( -xShift ); // flipping in y  (for SPD1)
     matLtoT->SetDy( -yShift );
+    matLtoT->SetDz( -zShift );
+    rotMatrix[8]=1;
     rotMatrix[3] = -1;
     if (yFlip) rotMatrix[3] = 1;  // flipping in y  (for SPD1)
-    matLtoT->SetDz(gtrans[2]);
-    rotMatrix[8]=1;
   }
 
   TGeoRotation rot;
@@ -5976,4 +5979,3 @@ void AliITSv11Hybrid::StepManager(){
 
     return;
 }
-
