@@ -511,7 +511,7 @@ Bool_t AliITSDetTypeRec::GetCalibration() {
     for(Int_t icar=0; icar<AliITSDDLModuleMapSDD::GetNModPerDDL();icar++){
       Int_t iMod=fDDLMapSDD->GetModuleNumber(iddl,icar);
       if(iMod==-1) continue;
-      Int_t i=iMod-fNMod[0];
+      Int_t i=iMod - fgkDefaultNModulesSPD;
       cal = (AliITSCalibration*) calSDD->At(i);
       cal->SetResponse((AliITSresponse*)pSDD);
       Int_t i0=2*i;
@@ -545,7 +545,7 @@ Bool_t AliITSDetTypeRec::GetCalibration() {
     AliITSBadChannelsSSD *bad = (AliITSBadChannelsSSD*) (badchannelsSSD->At(i));
     calibSSD->SetBadChannels(bad);
 
-    Int_t iMod = i + fNMod[0] + fNMod[1];
+    Int_t iMod = i + fgkDefaultNModulesSPD + fgkDefaultNModulesSDD;
     SetCalibrationModel(iMod, calibSSD);
  }
 
