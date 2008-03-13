@@ -38,7 +38,7 @@ public:
     virtual char*        GetOutputFileName() {return 0;}
     virtual void         SetInputPath(char* fname); 
     virtual void         SetInputTree(TTree* /*tree*/) {;}
-    virtual TString*     GetInputPath() {return fPathName;}
+    virtual TString*     GetInputPath() const {return fPathName;}
     virtual Bool_t       Init(Option_t* opt);
     virtual Bool_t       InitIO(Option_t* opt) {return Init(opt);};
     virtual Bool_t       Init(TTree* /*tree*/, Option_t* /*opt*/) {return kTRUE;}
@@ -52,8 +52,9 @@ public:
     virtual Bool_t       GetEvent(Int_t iev);
     virtual void         SetReadTR(Bool_t flag) { fReadTR = flag; }
     //
-    AliMCEvent* MCEvent() {return fMCEvent;}
-    TTree*      TreeTR() {return fTreeTR;}
+    AliMCEvent* MCEvent() const {return fMCEvent;} 
+    TTree*      TreeTR()  const {return fTreeTR;}
+    TTree*      TreeK()   const {return fTreeK;}
     Int_t       GetParticleAndTR(Int_t i, TParticle*& particle, TClonesArray*& trefs);
     void        DrawCheck(Int_t i, Int_t search=0);
 private:
