@@ -214,14 +214,18 @@ void AliEMCALSurvey::InitSuperModuleData(const Double_t *xReal, const Double_t *
     }
 
   }
-  
+
   AliEMCALSuperModuleCoords *realSM = new AliEMCALSuperModuleCoords[fNSuperModule];
   for (Int_t smodnum = 0; smodnum < geom->GetNumberOfSuperModules(); ++smodnum) {
     AliEMCALSuperModuleCoords &smc = realSM[smodnum];
+    zpos = pars[2];
     smc.fX1 = xReal[smodnum];  //x and y match
     smc.fY1 = yReal[smodnum];  //x and y match
-    smc.fZ1 = zReal[smodnum]/2.;  //z measured is along end, need to
-			          //convert to middle of SM
+    if(smodnum%2==0) {
+      smc.fZ1 = zReal[smodnum]-zpos;  //z measured is along end,
+    } else {                          //convert to middle of SM
+      smc.fZ1 = zReal[smodnum]+zpos;
+    }
   }
   
   fSuperModuleData = new AliEMCALSuperModuleDelta[fNSuperModule];
