@@ -170,7 +170,7 @@ void AliRsnReader::Identify(AliRsnDaughter &track)
 			Double_t *prob = GetPIDprobabilities(track);
 			if (!prob) track.SetPDG(0);
 			Int_t idx[AliPID::kSPECIES];
-			TMath::Sort(AliPID::kSPECIES, prob, idx);
+			TMath::Sort(static_cast<Int_t>(AliPID::kSPECIES), prob, idx);
 			Int_t imax = idx[0];
 			Double_t maxprob = prob[imax];
 			if (maxprob >= fProbThreshold) {
