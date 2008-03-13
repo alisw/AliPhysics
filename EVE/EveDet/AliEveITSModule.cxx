@@ -18,6 +18,8 @@
 #include <AliITSdigitSDD.h>
 #include <AliITSdigitSSD.h>
 
+#include <TEveTrans.h>
+#include <TClonesArray.h>
 #include <TStyle.h>
 
 
@@ -142,16 +144,16 @@ void AliEveITSModule::SetID(Int_t gid, Bool_t trans)
 {
   // Set detector id.
 
-  static const TEveException eH("AliEveITSModule::SetID ");
+  static const TEveException kEH("AliEveITSModule::SetID ");
 
   if (fInfo == 0)
-    throw(eH + "AliEveITSDigitsInfo not set.");
+    throw(kEH + "AliEveITSDigitsInfo not set.");
 
   Int_t firstSPD = AliITSgeomTGeo::GetModuleIndex(1,1,1);
   Int_t lastSSD  = AliITSgeomTGeo::GetNModules() - 1;
   if (gid < firstSPD || gid > lastSSD)
   {
-    throw(eH + Form("%d is not valid. ID range from %d to %d", gid,
+    throw(kEH + Form("%d is not valid. ID range from %d to %d", gid,
 		    firstSPD, lastSSD ));
   }
 
@@ -267,6 +269,7 @@ void AliEveITSModule::SetID(Int_t gid, Bool_t trans)
 
   LoadQuads();
   ComputeBBox();
+  InitMainTrans();
   if (trans)
     SetTrans();
 }
@@ -375,7 +378,7 @@ void AliEveITSModule::SetTrans()
   // Set transformation matrix based on module id (use geometry to
   // retrieve this information).
 
-  fHMTrans.SetFrom(*AliITSgeomTGeo::GetMatrix(fID));
+  fMainTrans->SetFrom(*AliITSgeomTGeo::GetMatrix(fID));
 }
 
 /******************************************************************************/

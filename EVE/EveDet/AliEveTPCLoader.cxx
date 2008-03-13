@@ -19,6 +19,10 @@
 
 #include <TSystem.h>
 
+//==============================================================================
+//==============================================================================
+// AliEveTPCLoader
+//==============================================================================
 
 //______________________________________________________________________________
 //
@@ -101,10 +105,10 @@ void AliEveTPCLoader::OpenFile()
   // First event is loaded and all sectors for which the data-exists
   // are created.
 
-  static const TEveException eH("AliEveTPCLoader::OpenFile ");
+  static const TEveException kEH("AliEveTPCLoader::OpenFile ");
 
   if (gSystem->AccessPathName(fFile, kReadPermission))
-      throw(eH + "can not read '" + fFile + "'.");
+      throw(kEH + "can not read '" + fFile + "'.");
 
   fData->DeleteAllSectors();
 
@@ -126,10 +130,10 @@ void AliEveTPCLoader::LoadEvent()
 {
   // Load an event.
 
-  static const TEveException eH("AliEveTPCLoader::LoadEvent ");
+  static const TEveException kEH("AliEveTPCLoader::LoadEvent ");
 
   if (fReader == 0)
-    throw(eH + "data file not opened.");
+    throw(kEH + "data file not opened.");
 
   printf("Now loading event %d\n", fEvent);
   fReader->Reset();
@@ -147,23 +151,23 @@ void AliEveTPCLoader::NextEvent(Bool_t rewindOnEnd)
   // When the last event is reached and rewindOnEnd is true, the file
   // is rewound back to the first event. Otherwise an exception is thrown.
 
-  static const TEveException eH("AliEveTPCLoader::NextEvent ");
+  static const TEveException kEH("AliEveTPCLoader::NextEvent ");
 
   if (fReader == 0)
-    throw(eH + "data file not opened.");
+    throw(kEH + "data file not opened.");
 
   if (fReader->NextEvent() == kTRUE) {
     ++fEvent;
   } else {
     if (fEvent == -1)
-      throw(eH + "no events available.");
+      throw(kEH + "no events available.");
     if (rewindOnEnd) {
       printf("Reached end of stream (event=%d), rewinding to first event.\n", fEvent);
       fReader->RewindEvents();
       fReader->NextEvent();
       fEvent = 0;
     } else {
-      throw(eH + "last event reached.");
+      throw(kEH + "last event reached.");
     }
   }
 }
@@ -172,10 +176,10 @@ void AliEveTPCLoader::GotoEvent(Int_t event)
 {
   // Go to specified event.
 
-  static const TEveException eH("AliEveTPCLoader::GotoEvent ");
+  static const TEveException kEH("AliEveTPCLoader::GotoEvent ");
 
   if (fReader == 0)
-    throw(eH + "data file not opened.");
+    throw(kEH + "data file not opened.");
 
   if (event == fEvent)
     return;

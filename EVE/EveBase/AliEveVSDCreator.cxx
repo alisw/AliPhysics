@@ -9,31 +9,25 @@
 
 #include "AliEveVSDCreator.h"
 
-#include <TEveTreeTools.h>
-
 #include <AliStack.h>
 #include <AliITSLoader.h>
 #include <AliTPCTrackHitsV2.h>
 #include <AliPDG.h>
 #include <AliHit.h>
-#include <AliSimDigits.h>
-#include <AliKalmanTrack.h>
 #include <AliESDEvent.h>
 #include <AliESDv0.h>
 #include <AliTPCclusterMI.h>
 #include <AliTPCClustersRow.h>
-#include <AliITS.h>
 #include <AliITSclusterV2.h>
-#include <AliTrackReference.h>
 #include <AliESDkink.h>
 #include <AliESDtrack.h>
 
 #include <AliRun.h>
+#include <AliRunLoader.h>
 #include <AliTPCParam.h>
 
 #include <TSystem.h>
 #include <TFile.h>
-#include <TError.h>
 
 //______________________________________________________________________________
 //
@@ -92,7 +86,7 @@ void AliEveVSDCreator::CreateVSD(const Text_t* dataDir, Int_t event,
   //
   // Needs to be extended to support conversion of multiple events.
 
-  static const TEveException eH("AliEveVSDCreator::CreateVSD ");
+  static const TEveException kEH("AliEveVSDCreator::CreateVSD ");
 
   fDataDir = dataDir;
   fEvent   = event;
@@ -100,22 +94,22 @@ void AliEveVSDCreator::CreateVSD(const Text_t* dataDir, Int_t event,
   string galiceFile (Form("%s/galice.root", fDataDir.Data()));
 
   if(fDebugLevel > 0)
-    printf("%s opening %s \n", eH.Data(), galiceFile.c_str());
+    printf("%s opening %s \n", kEH.Data(), galiceFile.c_str());
 
   if(gSystem->AccessPathName(galiceFile.c_str(), kReadPermission)) {
-    throw(eH + "Can not read file '" + galiceFile + "'.");
+    throw(kEH + "Can not read file '" + galiceFile + "'.");
   }
   fRunLoader = AliRunLoader::Open(galiceFile.c_str());
   if(fRunLoader == 0)
-    throw(eH + "AliRunLoader::Open failed.");
+    throw(kEH + "AliRunLoader::Open failed.");
 
   fRunLoader->LoadgAlice();
   Int_t status = fRunLoader->GetEvent(fEvent);
   if(status)
-    throw(eH + Form("GetEvent(%d) failed, exit code %s.", fEvent, status));
+    throw(kEH + Form("GetEvent(%d) failed, exit code %s.", fEvent, status));
 
   if(fDebugLevel > 0)
-    printf("%s open seems ok. Now loading sim data.\n", eH.Data());
+    printf("%s open seems ok. Now loading sim data.\n", kEH.Data());
 
   fRunLoader->LoadHeader();
   fRunLoader->LoadKinematics();
@@ -125,18 +119,18 @@ void AliEveVSDCreator::CreateVSD(const Text_t* dataDir, Int_t event,
   // GledNS::PushFD();
 
   if(fDebugLevel > 0)
-    printf("%s opening output TEveVSD.\n", eH.Data());
+    printf("%s opening output TEveVSD.\n", kEH.Data());
 
   TFile* file = TFile::Open(vsdFile, "RECREATE", "ALICE VisualizationDataSummary");
   fDirectory = new TDirectoryFile("Event0", "");
 
   if(fDebugLevel > 0)
-    printf("%s creating trees now ...\n", eH.Data());
+    printf("%s creating trees now ...\n", kEH.Data());
 
   CreateTrees();
 
   if(fDebugLevel > 0)
-    printf("%s trees created, closing files.\n", eH.Data());
+    printf("%s trees created, closing files.\n", kEH.Data());
 
   file->Write();
   file->Close();
@@ -163,7 +157,7 @@ void AliEveVSDCreator::CreateVSD(const Text_t* dataDir, Int_t event,
   fRunLoader = 0;
 
   if(fDebugLevel > 0)
-    printf("%s all done.\n", eH.Data());
+    printf("%s all done.\n", kEH.Data());
 }
 
 void AliEveVSDCreator::CreateTrees()
@@ -172,32 +166,32 @@ void AliEveVSDCreator::CreateTrees()
   // ConvertXyzz() functions.
   // Exceptions from individual functions are displayed as warnings.
 
-  static const TEveException eH("AliEveVSDCreator::CreateTrees ");
+  static const TEveException kEH("AliEveVSDCreator::CreateTrees ");
 
   if (fDirectory == 0)
-    throw(eH + "output directory not set.");
+    throw(kEH + "output directory not set.");
 
   try {
     if (fDebugLevel > 1)
-      printf("%sConvertKinematics.\n", eH.Data());
+      printf("%sConvertKinematics.\n", kEH.Data());
     ConvertKinematics();
-  } catch(TEveException& exc) { Warning(eH, exc); }
+  } catch(TEveException& exc) { Warning(kEH, exc); }
 
   try {
     if (fDebugLevel > 1)
-      printf("%sConvertHits.\n", eH.Data());
+      printf("%sConvertHits.\n", kEH.Data());
     ConvertHits();
-  } catch(TEveException& exc) { Warning(eH, exc); }
+  } catch(TEveException& exc) { Warning(kEH, exc); }
 
   try {
     if (fDebugLevel > 1)
-      printf("%sConvertClusters.\n", eH.Data());
+      printf("%sConvertClusters.\n", kEH.Data());
     ConvertClusters();
-  } catch(TEveException& exc) { Warning(eH, exc); }
+  } catch(TEveException& exc) { Warning(kEH, exc); }
 
   try {
     if (fDebugLevel > 1)
-      printf("%sConvertRecTracks.\n", eH.Data());
+      printf("%sConvertRecTracks.\n", kEH.Data());
     ConvertRecTracks();
   } catch(TEveException& exc) {
     Warning(exc, "skipping AliEveV0 extraction.");
@@ -206,23 +200,23 @@ void AliEveVSDCreator::CreateTrees()
 
   try {
     if (fDebugLevel > 1)
-      printf("%sConvertV0.\n", eH.Data());
+      printf("%sConvertV0.\n", kEH.Data());
     ConvertV0();
-  } catch(TEveException& exc) { Warning(eH, exc); }
+  } catch(TEveException& exc) { Warning(kEH, exc); }
 
   try {
     if (fDebugLevel > 1)
-      printf("%sConvertKinks.\n", eH.Data());
+      printf("%sConvertKinks.\n", kEH.Data());
     ConvertKinks();
-  } catch(TEveException& exc) { Warning(eH, exc); }
+  } catch(TEveException& exc) { Warning(kEH, exc); }
 
 end_esd_processing:
 
   try {
     if (fDebugLevel > 1)
-      printf("%sConvertGenInfo.\n", eH.Data());
+      printf("%sConvertGenInfo.\n", kEH.Data());
     ConvertGenInfo();
-  } catch(TEveException& exc) { Warning(eH, exc); }
+  } catch(TEveException& exc) { Warning(kEH, exc); }
 
   return;
 }
@@ -236,14 +230,14 @@ void AliEveVSDCreator::ConvertKinematics()
   // Convert kinematics.
   // Track references are not stored, they should be.
 
-  static const TEveException eH("AliEveVSDCreator::ConvertKinematics ");
+  static const TEveException kEH("AliEveVSDCreator::ConvertKinematics ");
 
   if(fTreeK != 0)
-    throw (eH + "kinematics already converted");
+    throw (kEH + "kinematics already converted");
 
   AliStack* stack = fRunLoader->Stack();
   if(stack == 0)
-    throw(eH + "stack is null.");
+    throw(kEH + "stack is null.");
 
   fDirectory->cd();
   fTreeK = new TTree("Kinematics", "TParticles sorted by Label");
@@ -262,7 +256,7 @@ void AliEveVSDCreator::ConvertKinematics()
   TTree* fTreeTR =  fRunLoader->TreeTR();
 
   if(fTreeTR == 0) {
-    Warning(eH, "no TrackRefs; some data will not be available.");
+    Warning(kEH, "no TrackRefs; some data will not be available.");
   } else {
     TClonesArray* RunArrayTR = 0;
     fTreeTR->SetBranchAddress("AliRun", &RunArrayTR);
@@ -328,14 +322,14 @@ void AliEveVSDCreator::ConvertKinematics()
 
 namespace {
 
-  struct Detector
+  struct Detector_t
   {
-    const char*   name;
-    const char*   hitbranch;
-    unsigned char detidx;
+    const char*   fName;      // Detector name.
+    const char*   fHitbranch; // Name of branch containing hits.
+    unsigned char fDetidx;    // Index identifying the detector internally.
   };
 
-  Detector detects[] = {
+  Detector_t fgDetectors[] = {
     { "ITS",  "AliITShit",         0 },
     { "TPC",  "AliTPCTrackHitsV2", 1 },
     { "TRD",  "AliTRDhit",         2 },
@@ -353,10 +347,10 @@ void AliEveVSDCreator::ConvertHits()
   // TPC hits are handled specially as they are compressed - only mayor
   // hits are stored
 
-  static const TEveException eH("AliEveVSDCreator::ConvertHits ");
+  static const TEveException kEH("AliEveVSDCreator::ConvertHits ");
 
   if (fTreeH != 0)
-    throw(eH + "hits already converted.");
+    throw(kEH + "hits already converted.");
 
   fDirectory->cd();
   fTreeH =  new TTree("Hits", "Combined detector hits.");
@@ -370,18 +364,18 @@ void AliEveVSDCreator::ConvertHits()
 
   int l=0;
   // load hits from the rest of detectors
-  while (detects[l].name != 0)
+  while (fgDetectors[l].fName != 0)
   {
-    Detector& det = detects[l++];
+    Detector_t& det = fgDetectors[l++];
 
-    switch(det.detidx)
+    switch(det.fDetidx)
     {
       case 1:
       {
 	Int_t count = 0;
-	TTree* treeh = fRunLoader->GetTreeH(det.name, false);
+	TTree* treeh = fRunLoader->GetTreeH(det.fName, false);
 	if(treeh == 0) {
-	  Warning(eH, Form("no hits for %s.", det.name));
+	  Warning(kEH, Form("no hits for %s.", det.fName));
 	  continue;
 	}
 	AliTPCTrackHitsV2 hv2, *hv2p = &hv2;
@@ -398,7 +392,7 @@ void AliEveVSDCreator::ConvertHits()
 	    x1 = ah->X(); y1 = ah->Y(); z1 = ah->Z();
 	    if ((x-x1)*(x-x1) + (y-y1)*(y-y1) + (z-z1)*(z-z1) > tpcSqrRes)
 	    {
-	      fH.fDetId    = det.detidx;
+	      fH.fDetId    = det.fDetidx;
 	      fH.fSubdetId = 0;
 	      fH.fLabel    = ah->Track();
 	      fH.fEvaLabel = evaIdx;
@@ -415,13 +409,13 @@ void AliEveVSDCreator::ConvertHits()
       }
       default:
       {
-	TTree* treeh = fRunLoader->GetTreeH(det.name, false);
+	TTree* treeh = fRunLoader->GetTreeH(det.fName, false);
 	if (treeh == 0) {
-	  Warning(eH, Form("no hits for %s.", det.name));
+	  Warning(kEH, Form("no hits for %s.", det.fName));
 	  continue;
 	}
-	TClonesArray *arr = new TClonesArray(det.hitbranch);
-	treeh->SetBranchAddress(det.name, &arr);
+	TClonesArray *arr = new TClonesArray(det.fHitbranch);
+	treeh->SetBranchAddress(det.fName, &arr);
 	Int_t np = treeh->GetEntries();
 	// in TreeH files hits are grouped in clones arrays
 	// each eva particle has its own clone array
@@ -435,12 +429,12 @@ void AliEveVSDCreator::ConvertHits()
 	  for (Int_t j = 0; j < nh; ++j)
 	  {
 	    AliHit* aliHit = (AliHit*)arr->UncheckedAt(j);
-	    fH.fDetId    = det.detidx;
+	    fH.fDetId    = det.fDetidx;
 	    fH.fSubdetId = 0;
 	    fH.fLabel     = aliHit->GetTrack();
 	    fH.fEvaLabel = evaIdx;
 	    fH.fV.Set(aliHit->X(), aliHit->Y(), aliHit->Z());
-	    if (det.detidx == 2)
+	    if (det.fDetidx == 2)
 	    {
 	      x1=aliHit->X();y1=aliHit->Y();z1=aliHit->Z();
 	      if ((x-x1)*(x-x1)+(y-y1)*(y-y1)+(z-z1)*(z-z1) < trdSqrRes) continue;
@@ -478,10 +472,10 @@ void AliEveVSDCreator::ConvertClusters()
   // It should be possible now to do this in a general manner (with
   // the alignment framework).
 
-  static const TEveException eH("AliEveVSDCreator::ConvertClusters ");
+  static const TEveException kEH("AliEveVSDCreator::ConvertClusters ");
 
   if(fTreeC != 0)
-    throw(eH + "clusters already converted.");
+    throw(kEH + "clusters already converted.");
 
   fDirectory->cd();
   fTreeC =  new TTree("Clusters", "rec clusters");
@@ -489,11 +483,11 @@ void AliEveVSDCreator::ConvertClusters()
 
   try {
     ConvertITSClusters();
-  } catch(TEveException& exc) { Warning(eH, exc); }
+  } catch(TEveException& exc) { Warning(kEH, exc); }
 
   try {
     ConvertTPCClusters();
-  } catch(TEveException& exc) { Warning(eH, exc); }
+  } catch(TEveException& exc) { Warning(kEH, exc); }
 }
 
 /******************************************************************************/
@@ -502,23 +496,23 @@ void AliEveVSDCreator::ConvertTPCClusters()
 {
   // Convert TPC clusters and transform them to global coordinates.
 
-  static const TEveException eH("AliEveVSDCreator::ConvertTPCClusters ");
+  static const TEveException kEH("AliEveVSDCreator::ConvertTPCClusters ");
 
   auto_ptr<TFile> f
     ( TFile::Open(Form("%s/TPC.RecPoints.root", fDataDir.Data())) );
   if (!f.get())
-    throw(eH + "can not open 'TPC.RecPoints.root' file.");
+    throw(kEH + "can not open 'TPC.RecPoints.root' file.");
 
   auto_ptr<TDirectory> d
     ( (TDirectory*) f->Get(Form("Event%d", fEvent)) );
   if (!d.get())
-    throw(eH + Form("event directory '%d' not found.", 0));
+    throw(kEH + Form("event directory '%d' not found.", 0));
 
   auto_ptr<TTree> tree( (TTree*) d->Get("TreeR") );
   if (!tree.get())
-    throw(eH + "'TreeR' not found.");
+    throw(kEH + "'TreeR' not found.");
 
-  auto_ptr<AliTPCParam> par( GetTpcParam(eH) );
+  auto_ptr<AliTPCParam> par( GetTpcParam(kEH) );
 
   AliTPCClustersRow  clrow, *clrowp = &clrow;
   AliTPCclusterMI   *cl;
@@ -590,30 +584,30 @@ void AliEveVSDCreator::ConvertITSClusters()
 {
   // Convert ITS clusters and transform them to global coordinates.
 
-  static const TEveException eH("AliEveVSDCreator::ConvertITSClusters ");
+  static const TEveException kEH("AliEveVSDCreator::ConvertITSClusters ");
 
   auto_ptr<TFile> f
     ( TFile::Open(Form("%s/ITS.RecPoints.root", fDataDir.Data())) );
   if (!f.get())
-    throw(eH + "can not open 'ITS.RecPoints.root' file.");
+    throw(kEH + "can not open 'ITS.RecPoints.root' file.");
 
   auto_ptr<TDirectory> d
     ( (TDirectory*) f->Get(Form("Event%d", fEvent)) );
   if (!d.get())
-    throw(eH + Form("event directory '%d' not found.", 0));
+    throw(kEH + Form("event directory '%d' not found.", 0));
 
   auto_ptr<TTree> tree( (TTree*) d->Get("TreeR") );
   if (!tree.get())
-    throw(eH + "'TreeR' not found.");
+    throw(kEH + "'TreeR' not found.");
 
   // 
-  AliITSLoader* ITSld =  (AliITSLoader*) fRunLoader->GetLoader("ITSLoader");
-  AliITSgeom* geom = ITSld->GetITSgeom();
+  AliITSLoader *itsLd = (AliITSLoader*) fRunLoader->GetLoader("ITSLoader");
+  AliITSgeom   *geom  = itsLd->GetITSgeom();
 
   //printf("alice ITS geom %p \n",geom );
 
   if (!geom)
-    throw(eH + "can not find ITS geometry");
+    throw(kEH + "can not find ITS geometry");
 
   TClonesArray *arr = new TClonesArray("AliITSclusterV2");
   tree->SetBranchAddress("Clusters", &arr);
@@ -677,10 +671,10 @@ void AliEveVSDCreator::ConvertRecTracks()
 {
   // Convert reconstructed tracks.
 
-  static const TEveException eH("AliEveVSDCreator::ConvertRecTracks ");
+  static const TEveException kEH("AliEveVSDCreator::ConvertRecTracks ");
 
   if (fTreeR != 0)
-    throw(eH + "tracks already converted.");
+    throw(kEH + "tracks already converted.");
 
   fDirectory->cd();
   fTreeR =  new TTree("RecTracks", "rec tracks");
@@ -689,11 +683,11 @@ void AliEveVSDCreator::ConvertRecTracks()
 
   TFile f(Form("%s/AliESDs.root", fDataDir.Data()));
   if (!f.IsOpen())
-    throw(eH + "no AliESDs.root file.");
+    throw(kEH + "no AliESDs.root file.");
 
   TTree* tree = (TTree*) f.Get("esdTree");
   if (tree == 0)
-    throw(eH + "no esdTree.");
+    throw(kEH + "no esdTree.");
 
 
   AliESDEvent *esdEvent = new AliESDEvent();
@@ -703,19 +697,19 @@ void AliEveVSDCreator::ConvertRecTracks()
 
 
   // reconstructed tracks
-  AliESDtrack* esd_t;
+  AliESDtrack* esdTrack;
   Double_t     dbuf[3];
   for (Int_t n = 0; n < esdEvent->GetNumberOfTracks(); ++n)
   {
-    esd_t = esdEvent->GetTrack(n);
+    esdTrack = esdEvent->GetTrack(n);
 
-    fR.fLabel  = esd_t->GetLabel();
-    fR.fStatus = (Int_t) esd_t->GetStatus();
-    fR.fSign   = (Int_t) esd_t->GetSign();
-    esd_t->GetXYZ(dbuf);    fR.fV.Set(dbuf);
-    esd_t->GetPxPyPz(dbuf); fR.fP.Set(dbuf);
-    Double_t ep = esd_t->GetP();
-    fR.fBeta = ep/TMath::Sqrt(ep*ep + TMath::C()*TMath::C()*esd_t->GetMass()*esd_t->GetMass());
+    fR.fLabel  = esdTrack->GetLabel();
+    fR.fStatus = (Int_t) esdTrack->GetStatus();
+    fR.fSign   = (Int_t) esdTrack->GetSign();
+    esdTrack->GetXYZ(dbuf);    fR.fV.Set(dbuf);
+    esdTrack->GetPxPyPz(dbuf); fR.fP.Set(dbuf);
+    Double_t ep = esdTrack->GetP();
+    fR.fBeta = ep/TMath::Sqrt(ep*ep + TMath::C()*TMath::C()*esdTrack->GetMass()*esdTrack->GetMass());
     fTreeR->Fill();
   }
   fTreeR->BuildIndex("label");
@@ -728,10 +722,10 @@ void AliEveVSDCreator::ConvertV0()
 {
   // Convert reconstructed V0s.
 
-  static const TEveException eH("AliEveVSDCreator::ConvertV0 ");
+  static const TEveException kEH("AliEveVSDCreator::ConvertV0 ");
 
   if(fTreeV0 != 0)
-    throw(eH + "AliEveV0 already converted.");
+    throw(kEH + "AliEveV0 already converted.");
 
   fDirectory->cd();
   fTreeV0 =  new TTree("AliEveV0", "AliEveV0 points");
@@ -740,12 +734,12 @@ void AliEveVSDCreator::ConvertV0()
 
   TFile f(Form("%s/AliESDs.root", fDataDir.Data()));
   if (!f.IsOpen()){
-    throw(eH + "no AliESDs.root file.");
+    throw(kEH + "no AliESDs.root file.");
   }
 
   TTree* tree = (TTree*) f.Get("esdTree");
   if (tree == 0)
-    throw(eH + "no esdTree.");
+    throw(kEH + "no esdTree.");
 
   AliESDEvent *esdEvent= new AliESDEvent();
   esdEvent->ReadFromTree(tree);
@@ -805,10 +799,10 @@ void AliEveVSDCreator::ConvertKinks()
 {
   // Convert reconstructed kinks.
 
-  static const TEveException eH("AliEveVSDCreator::ConvertKinks ");
+  static const TEveException kEH("AliEveVSDCreator::ConvertKinks ");
 
   if (fTreeKK != 0)
-    throw(eH + "Kinks already converted.");
+    throw(kEH + "Kinks already converted.");
 
   fDirectory->cd();
   fTreeKK =  new TTree("Kinks", "ESD Kinks");
@@ -817,12 +811,12 @@ void AliEveVSDCreator::ConvertKinks()
 
   TFile f(Form("%s/AliESDs.root", fDataDir.Data()));
   if (!f.IsOpen()){
-    throw(eH + "no AliESDs.root file.");
+    throw(kEH + "no AliESDs.root file.");
   }
 
   TTree* tree = (TTree*) f.Get("esdTree");
   if (tree == 0)
-    throw(eH + "no esdTree.");
+    throw(kEH + "no esdTree.");
 
 
   AliESDEvent *esdEvent= new AliESDEvent();
@@ -875,10 +869,10 @@ void AliEveVSDCreator::ConvertGenInfo()
   // Build simulation-reconstruction cross-reference table.
   // In a rather poor state at the moment.
 
-  static const TEveException eH("AliEveVSDCreator::ConvertGenInfo ");
+  static const TEveException kEH("AliEveVSDCreator::ConvertGenInfo ");
 
   if(fTreeGI != 0)
-    throw(eH + "GI already converted.");
+    throw(kEH + "GI already converted.");
 
   fDirectory->cd();
   fTreeGI = new TTree("TEveMCRecCrossRef", "Objects prepared for cross querry");

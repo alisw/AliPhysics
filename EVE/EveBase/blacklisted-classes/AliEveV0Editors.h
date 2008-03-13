@@ -18,8 +18,8 @@ It allows to select the v0 as a function of some useful parameters.
 Ludovic Gaudichet (gaudichet@to.infn.it)
 ************************************************************************/
 
-#ifndef ALIEVE_V0Editors_H
-#define ALIEVE_V0Editors_H
+#ifndef AliEveV0Editors_H
+#define AliEveV0Editors_H
 
 #include <TGedFrame.h>
 

@@ -7,8 +7,8 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-#ifndef ALIEVE_TPCSectorVizEditor_H
-#define ALIEVE_TPCSectorVizEditor_H
+#ifndef AliEveTPCSectorVizEditor_H
+#define AliEveTPCSectorVizEditor_H
 
 #include <TGedFrame.h>
 
@@ -22,8 +22,12 @@ class TEveGValuator;
 class TEveGDoubleValuator;
 class TEveTransSubEditor;
 
-
 class AliEveTPCSectorViz;
+
+//------------------------------------------------------------------------------
+// AliEveTPCSectorVizEditor
+//
+// Editor for AliEveTPCSectorViz.
 
 class AliEveTPCSectorVizEditor : public TGedFrame
 {
@@ -50,7 +54,7 @@ protected:
 public:
   AliEveTPCSectorVizEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30,
 		     UInt_t options=kChildFrame, Pixel_t back=GetDefaultFrameBackground());
-  ~AliEveTPCSectorVizEditor() {}
+  virtual ~AliEveTPCSectorVizEditor() {}
 
   virtual void SetModel(TObject* obj);
 
@@ -67,6 +71,6 @@ public:
   void DoTime();
 
   ClassDef(AliEveTPCSectorVizEditor, 0); // Editor for AliEveTPCSectorViz.
-}; // endclass AliEveTPCSectorVizEditor
+};
 
 #endif

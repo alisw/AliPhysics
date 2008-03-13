@@ -7,21 +7,16 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-#ifndef ALIEVE_JetPlaneEditor_H
-#define ALIEVE_JetPlaneEditor_H
+#ifndef AliEveJetPlaneEditor_H
+#define AliEveJetPlaneEditor_H
 
 #include <TGedFrame.h>
-#include <RQ_OBJECT.h>
 
 class TGButton;
 class TGCheckButton;
 class TGNumberEntry;
 class TGColorSelect;
-
 class TEveGValuator;
-
-
-// class TEveGValuator;
 
 class AliEveJetPlane;
 

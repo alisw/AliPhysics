@@ -8,7 +8,6 @@
  **************************************************************************/
 
 #include "AliEveEventManager.h"
-#include <TEveUtil.h>
 #include <TEveManager.h>
 
 #include <AliRunLoader.h>
@@ -22,14 +21,14 @@
 
 #include <TFile.h>
 #include <TTree.h>
-#include <TError.h>
-
-#include <TROOT.h>
 #include <TSystem.h>
 
+//==============================================================================
+//==============================================================================
+// AliEveEventManager
+//==============================================================================
 
 //______________________________________________________________________________
-// AliEveEventManager
 //
 // Provide interface for loading and navigating standard AliRoot data
 // (AliRunLoader) and ESDs.
@@ -37,10 +36,13 @@
 // Missing support for raw-data. For now this is handled individually
 // by each sub-detector.
 //
+// Also provides interface to magnetic-field and geometry. Mostly
+// intended as wrappers over standard AliRoot functionality for
+// convenient use from visualizateion macros.
 
 ClassImp(AliEveEventManager)
 
-AliEveEventManager* gEvent = 0;
+AliEveEventManager* gAliEveEvent = 0;
 
 Bool_t AliEveEventManager::fgAssertRunLoader = kFALSE;
 Bool_t AliEveEventManager::fgAssertESD       = kFALSE;
@@ -75,6 +77,15 @@ AliEveEventManager::AliEveEventManager(TString path, Int_t ev) :
   if (ev >= 0) GotoEvent(ev);
 }
 
+AliEveEventManager::~AliEveEventManager()
+{
+  // Destructor.
+
+  // Somewhat unclear what to do here.
+  // In principle should close all data sources and deregister from
+  // TEveManager.
+}
+
 /******************************************************************************/
 
 void AliEveEventManager::Open()
@@ -85,7 +96,7 @@ void AliEveEventManager::Open()
   // Global data-members fgAssertRunLoader and fgAssertESD can be set
   // to throw exceptions instead.
 
-  static const TEveException eH("AliEveEventManager::Open ");
+  static const TEveException kEH("AliEveEventManager::Open ");
 
   gSystem->ExpandPathName(fPath);
   if (fPath[0] != '/')
@@ -93,17 +104,17 @@ void AliEveEventManager::Open()
 
   Int_t runNo = -1;
 
-  TString ga_path(Form("%s/galice.root", fPath.Data()));
-  if (gSystem->AccessPathName(ga_path, kReadPermission) == kFALSE)
+  TString gaPath(Form("%s/galice.root", fPath.Data()));
+  if (gSystem->AccessPathName(gaPath, kReadPermission) == kFALSE)
   {
-    fRunLoader = AliRunLoader::Open(ga_path);
+    fRunLoader = AliRunLoader::Open(gaPath);
     if (fRunLoader)
     {
-      TString alice_path = fPath + "/";
-      fRunLoader->SetDirName(alice_path);
+      TString alicePath = fPath + "/";
+      fRunLoader->SetDirName(alicePath);
 
       if (fRunLoader->LoadgAlice() != 0)
-	Warning(eH, "failed loading gAlice via run-loader.");
+	Warning(kEH, "failed loading gAlice via run-loader.");
 
       if (fRunLoader->LoadHeader() == 0)
       {
@@ -111,33 +122,33 @@ void AliEveEventManager::Open()
       }
       else
       {
-	Warning(eH, "failed loading run-loader's header.");
+	Warning(kEH, "failed loading run-loader's header.");
 	delete fRunLoader;
 	fRunLoader = 0;
       }
     }
     else // run-loader open failed
     {
-      Warning(eH, "failed opening ALICE run-loader from '%s'.", ga_path.Data());
+      Warning(kEH, "failed opening ALICE run-loader from '%s'.", gaPath.Data());
     }
   }
   else // galice not readable
   {
-    Warning(eH, "can not read '%s'.", ga_path.Data());
+    Warning(kEH, "can not read '%s'.", gaPath.Data());
   }
   if (fRunLoader == 0)
   {
     if (fgAssertRunLoader)
-      throw(eH + "Bootstraping of run-loader failed. Its precence was requested.");
+      throw(kEH + "Bootstraping of run-loader failed. Its precence was requested.");
     else
-      Warning(eH, "Bootstraping of run-loader failed.");
+      Warning(kEH, "Bootstraping of run-loader failed.");
   }
 
 
-  TString esd_path(Form("%s/AliESDs.root", fPath.Data()));
-  if (gSystem->AccessPathName(esd_path, kReadPermission) == kFALSE)
+  TString esdPath(Form("%s/AliESDs.root", fPath.Data()));
+  if (gSystem->AccessPathName(esdPath, kReadPermission) == kFALSE)
   {
-    fESDFile = new TFile(esd_path);
+    fESDFile = new TFile(esdPath);
     if (fESDFile->IsZombie() == kFALSE)
     {
       fESD = new AliESDEvent();
@@ -159,37 +170,37 @@ void AliEveEventManager::Open()
       else // esdtree == 0
       {
 	delete fESDFile; fESDFile = 0;
-	Warning(eH, "failed getting the esdTree.");
+	Warning(kEH, "failed getting the esdTree.");
       }
     }
     else // esd tfile is zombie
     {
       delete fESDFile; fESDFile = 0;
-      Warning(eH, "failed opening ESD from '%s'.", esd_path.Data());
+      Warning(kEH, "failed opening ESD from '%s'.", esdPath.Data());
     }
   }
   else // esd not readable
   {
-    Warning(eH, "can not read ESD file '%s'.", esd_path.Data());
+    Warning(kEH, "can not read ESD file '%s'.", esdPath.Data());
   }
   if (fESDTree == 0)
   {
     if (fgAssertESD)
     {
-      throw(eH + "ESD not initialized. Its precence was requested.");
+      throw(kEH + "ESD not initialized. Its precence was requested.");
     } else {
-      Warning(eH, "ESD not initialized.");
+      Warning(kEH, "ESD not initialized.");
     }
   }
 
   if (runNo < 0)
-    throw(eH + "invalid run number.");
+    throw(kEH + "invalid run number.");
 
   {
     AliCDBManager* cdb = AliCDBManager::Instance();
     cdb->SetDefaultStorage(fgCdbUri);
     if (cdb->IsDefaultStorageSet() == kFALSE)
-      throw(eH + "CDB initialization failed.");
+      throw(kEH + "CDB initialization failed.");
     cdb->SetRun(runNo);
   }
 
@@ -206,7 +217,7 @@ void AliEveEventManager::GotoEvent(Int_t event)
   // AfterNewEventLoaded() is called. This executes commands that
   // were registered via TEveEventManager::AddNewEventCommand().
 
-  static const TEveException eH("AliEveEventManager::GotoEvent ");
+  static const TEveException kEH("AliEveEventManager::GotoEvent ");
 
   Int_t maxEvent = 0;
   if (fRunLoader)
@@ -214,10 +225,10 @@ void AliEveEventManager::GotoEvent(Int_t event)
   else if (fESDTree)
     maxEvent = fESDTree->GetEntries() - 1;
   else
-    throw(eH + "neither RunLoader nor ESD loaded.");
+    throw(kEH + "neither RunLoader nor ESD loaded.");
 
   if (event < 0 || event > maxEvent)
-    throw(eH + Form("event %d not present, available range [%d, %d].",
+    throw(kEH + Form("event %d not present, available range [%d, %d].",
 		    event, 0, maxEvent));
 
   TEveManager::TRedrawDisabler rd(gEve);
@@ -233,12 +244,12 @@ void AliEveEventManager::GotoEvent(Int_t event)
 
   if (fRunLoader) {
     if (fRunLoader->GetEvent(fEventId) != 0)
-      throw(eH + "failed getting required event.");
+      throw(kEH + "failed getting required event.");
   }
 
   if (fESDTree) {
     if (fESDTree->GetEntry(fEventId) <= 0)
-      throw(eH + "failed getting required event from ESD.");
+      throw(kEH + "failed getting required event from ESD.");
 
     if (fESDfriendExists)
       fESD->SetESDfriend(fESDfriend);
@@ -273,13 +284,13 @@ AliRunLoader* AliEveEventManager::AssertRunLoader()
   // Throws exception in case run-loader is not available.
   // Static utility for macros.
 
-  static const TEveException eH("AliEveEventManager::AssertRunLoader ");
+  static const TEveException kEH("AliEveEventManager::AssertRunLoader ");
 
-  if (gEvent == 0)
-    throw(eH + "ALICE event not ready.");
-  if (gEvent->fRunLoader == 0)
-    throw(eH + "AliRunLoader not initialised.");
-  return gEvent->fRunLoader;
+  if (gAliEveEvent == 0)
+    throw(kEH + "ALICE event not ready.");
+  if (gAliEveEvent->fRunLoader == 0)
+    throw(kEH + "AliRunLoader not initialised.");
+  return gAliEveEvent->fRunLoader;
 }
 
 AliESDEvent* AliEveEventManager::AssertESD()
@@ -288,13 +299,13 @@ AliESDEvent* AliEveEventManager::AssertESD()
   // Throws exception in case ESD is not available.
   // Static utility for macros.
 
-  static const TEveException eH("AliEveEventManager::AssertESD ");
+  static const TEveException kEH("AliEveEventManager::AssertESD ");
 
-  if (gEvent == 0)
-    throw(eH + "ALICE event not ready.");
-  if (gEvent->fESD == 0)
-    throw(eH + "AliESD not initialised.");
-  return gEvent->fESD;
+  if (gAliEveEvent == 0)
+    throw(kEH + "ALICE event not ready.");
+  if (gAliEveEvent->fESD == 0)
+    throw(kEH + "AliESD not initialised.");
+  return gAliEveEvent->fESD;
 }
 
 AliESDfriend* AliEveEventManager::AssertESDfriend()
@@ -303,13 +314,13 @@ AliESDfriend* AliEveEventManager::AssertESDfriend()
   // Throws exception in case ESDfriend-loader is not available.
   // Static utility for macros.
 
-  static const TEveException eH("AliEveEventManager::AssertESDfriend ");
+  static const TEveException kEH("AliEveEventManager::AssertESDfriend ");
 
-  if (gEvent == 0)
-    throw(eH + "ALICE event not ready.");
-  if (gEvent->fESDfriend == 0)
-    throw(eH + "AliESDfriend not initialised.");
-  return gEvent->fESDfriend;
+  if (gAliEveEvent == 0)
+    throw(kEH + "ALICE event not ready.");
+  if (gAliEveEvent->fESDfriend == 0)
+    throw(kEH + "AliESDfriend not initialised.");
+  return gAliEveEvent->fESDfriend;
 }
 
 AliMagF* AliEveEventManager::AssertMagField()
@@ -320,8 +331,8 @@ AliMagF* AliEveEventManager::AssertMagField()
 
   if (fgMagField == 0)
   {
-    if (gEvent && gEvent->fRunLoader && gEvent->fRunLoader->GetAliRun())
-      fgMagField = gEvent->fRunLoader->GetAliRun()->Field();
+    if (gAliEveEvent && gAliEveEvent->fRunLoader && gAliEveEvent->fRunLoader->GetAliRun())
+      fgMagField = gAliEveEvent->fRunLoader->GetAliRun()->Field();
     else
       fgMagField = new AliMagFMaps("Maps","Maps", 1, 1., 10., AliMagFMaps::k5kG);
   }
@@ -338,7 +349,7 @@ TGeoManager* AliEveEventManager::AssertGeometry()
 
   // !!!! Should we set gGeoManager here?
 
-  static const TEveException eH("AliEveEventManager::AssertGeometry ");
+  static const TEveException kEH("AliEveEventManager::AssertGeometry ");
 
   if (AliGeomManager::GetGeometry() == 0)
   {
@@ -346,12 +357,12 @@ TGeoManager* AliEveEventManager::AssertGeometry()
     AliGeomManager::LoadGeometry();
     if ( ! AliGeomManager::GetGeometry())
     {
-      throw(eH + "can not load geometry.");
+      throw(kEH + "can not load geometry.");
     }
     if ( ! AliGeomManager::ApplyAlignObjsFromCDB("ITS TPC TRD TOF PHOS HMPID EMCAL MUON FMD ZDC PMD T0 VZERO ACORDE"))
     {
-      ::Warning(eH, "mismatch of alignable volumes. Proceeding.");
-      // throw(eH + "could not apply align objs.");
+      ::Warning(kEH, "mismatch of alignable volumes. Proceeding.");
+      // throw(kEH + "could not apply align objs.");
     }
   }
 

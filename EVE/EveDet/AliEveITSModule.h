@@ -6,8 +6,8 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
-#ifndef ALIEVE_ITSModule_H
-#define ALIEVE_ITSModule_H
+#ifndef AliEveITSModule_H
+#define AliEveITSModule_H
 
 #include <TEveQuadSet.h>
 

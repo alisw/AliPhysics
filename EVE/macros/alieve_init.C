@@ -34,9 +34,9 @@ void alieve_init(const Text_t* path   = ".", Int_t event=0,
     AliEveEventManager::SetCdbUri(cdburi);
     AliEveEventManager::SetAssertElements(assert_runloader, assert_esd);
     printf("Opening event %d from '%s' ...", event, path); fflush(stdout);
-    gEvent = new AliEveEventManager(path, event);
+    gAliEveEvent = new AliEveEventManager(path, event);
     printf(" done.\n");
-    gEve->AddEvent(gEvent);
+    gEve->AddEvent(gAliEveEvent);
   }
 }
 

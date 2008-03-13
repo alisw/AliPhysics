@@ -6,8 +6,8 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
-#ifndef ALIEVE_Cascade_H
-#define ALIEVE_Cascade_H
+#ifndef AliEveCascade_H
+#define AliEveCascade_H
 
 /***********************************************************************
 *  This code defines the reconstructed cascades visualized with EVE

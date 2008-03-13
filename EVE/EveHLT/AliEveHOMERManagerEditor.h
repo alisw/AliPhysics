@@ -7,8 +7,8 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-#ifndef ALIEVE_AliEVEHOMERManagerEditor_H
-#define ALIEVE_AliEVEHOMERManagerEditor_H
+#ifndef AliEveAliEVEHOMERManagerEditor_H
+#define AliEveAliEVEHOMERManagerEditor_H
 
 #include <TGedFrame.h>
 

@@ -190,32 +190,13 @@ void AliEveTOFStrip::LoadQuads()
 /* ************************************************************ */
 void AliEveTOFStrip::SetTrans()
 {
-
-  fHMTrans.UnitTrans();
-
   //Int_t det[5] = {fSector, fPlate, fStrip, -1, -1};
   Char_t path[100];
   //fTOFgeometry->GetVolumePath(det,path);
   fTOFgeometry->GetVolumePath(fSector, fPlate, fStrip, path);
 
   fGeoManager->cd(path);
-  TGeoHMatrix global = *fGeoManager->GetCurrentMatrix();
-  Double_t *rotMat = global.GetRotationMatrix();
-
-  /*
-  // ok till 19 April 2007
-  fHMTrans.SetBaseVec(1, rotMat[0], rotMat[1], rotMat[2]);
-  fHMTrans.SetBaseVec(2, rotMat[3], rotMat[4], rotMat[5]);
-  fHMTrans.SetBaseVec(3, rotMat[6], rotMat[7], rotMat[8]);
-  */
-
-  fHMTrans.SetBaseVec(1, rotMat[0], rotMat[3], rotMat[6]);
-  fHMTrans.SetBaseVec(2, rotMat[1], rotMat[4], rotMat[7]);
-  fHMTrans.SetBaseVec(3, rotMat[2], rotMat[5], rotMat[8]);
-
-  Double_t *tr = global.GetTranslation();
-  fHMTrans.SetBaseVec(4, tr);
-
+  SetTransMatrix(*fGeoManager->GetCurrentMatrix());
 }
 
 /******************************************************************************/

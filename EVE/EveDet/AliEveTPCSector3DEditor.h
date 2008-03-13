@@ -7,10 +7,10 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-#ifndef ALIEVE_TPCSector3DEditor_H
-#define ALIEVE_TPCSector3DEditor_H
+#ifndef AliEveTPCSector3DEditor_H
+#define AliEveTPCSector3DEditor_H
 
-#include <EveDet/AliEveTPCSector2DEditor.h>
+#include <TGedFrame.h>
 
 class TGCheckButton;
 class TGNumberEntry;
@@ -19,8 +19,13 @@ class TGColorSelect;
 class TEveGValuator;
 class TEveGDoubleValuator;
 
-
 class AliEveTPCSector3D;
+
+//------------------------------------------------------------------------------
+// AliEveTPCSector3DEditor
+//
+// Editor for AliEveTPCSector3D.
+//
 
 class AliEveTPCSector3DEditor : public TGedFrame
 {

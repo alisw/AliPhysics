@@ -7,22 +7,26 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-#ifndef ALIEVE_TPCSectorViz_H
-#define ALIEVE_TPCSectorViz_H
+#ifndef AliEveTPCSectorViz_H
+#define AliEveTPCSectorViz_H
 
 #include <TEveElement.h>
-#include <TEveTrans.h>
 
 #include <TNamed.h>
 #include <TAtt3D.h>
 #include <TAttBBox.h>
-
 
 class AliEveTPCData; class AliEveTPCSectorData;
 
 class AliEveTPCSectorVizEditor;
 class AliEveTPCSector2D;  class AliEveTPCSector2DEditor;  class AliEveTPCSector2DGL;
 class AliEveTPCSector3D;  class AliEveTPCSector3DEditor;  class AliEveTPCSector3DGL;
+
+//------------------------------------------------------------------------------
+// AliEveTPCSectorViz
+//
+// Base-class for visualization of data for one TPC sector.
+//
 
 class AliEveTPCSectorViz : public TEveElement,
 			   public TNamed,
@@ -55,7 +59,6 @@ protected:
 
   Color_t           fFrameColor; //  Color of the frame, the main color.
   Bool_t            fRnrFrame;   //  Render frame.
-  TEveTrans         fHMTrans;    //  Transformation matrix.
   Bool_t            fAutoTrans;  //  Automatically calculate transformation based on sector id.
   UInt_t            fRTS;        //! Rendering TimeStamp
 
@@ -73,13 +76,13 @@ public:
 
   virtual void CopyVizParams(const AliEveTPCSectorViz& v);
 
-  virtual UInt_t IncRTS()           { return ++fRTS; }
-  virtual Bool_t CanEditMainColor() { return kTRUE; }
+  virtual UInt_t IncRTS() { return ++fRTS; }
+  virtual Bool_t CanEditMainColor() const { return kTRUE; }
 
   void SetDataSource(AliEveTPCData* data);
   void SetSectorID(Int_t id);
 
-  AliEveTPCData*       GetData()     const { return fTPCData; }
+  AliEveTPCData* GetData()     const { return fTPCData; }
   Int_t          GetSectorID() const { return fSectorID; }
   AliEveTPCSectorData* GetSectorData() const;
 
@@ -98,12 +101,12 @@ public:
   virtual void SetRnrFrame(Bool_t rf) { fRnrFrame = rf;  IncRTS(); }
   void SetAutoTrans(Bool_t t);
 
-  TEveTrans& RefHMTrans() { return fHMTrans; }
-  void SetUseTrans(Bool_t t) { fHMTrans.SetUseTrans(t); }
+  void SetUseTrans(Bool_t t);
 
   ClassDef(AliEveTPCSectorViz, 1); // Base-class for visualization of data for one TPC sector.
-}; // endclass AliEveTPCSectorViz
+};
 
+//------------------------------------------------------------------------------
 
 inline UChar_t* AliEveTPCSectorViz::ColorFromArray(Int_t val) const
 {

@@ -16,14 +16,22 @@
 ClassImp(AliEveHOMERSource)
 
 AliEveHOMERSource::AliEveHOMERSource(const Text_t* n, const Text_t* t) :
-  TEveElement(),
-  TNamed(n, t),
-  fSource(0)
+  TEveElement (),
+  TNamed      (n, t),
+  fSrcId      (0),
+  fSrcState   (0)
 {}
 
-AliEveHOMERSource::AliEveHOMERSource(AliHLTHOMERSourceDesc* src, const Text_t* n, const Text_t* t) :
-  TEveElement(),
-  TNamed(n, t),
-  fSource(src)
-{}
+/******************************************************************************/
 
+//______________________________________________________________________________
+void AliEveHOMERSource::SetRnrState(Bool_t rnr)
+{
+   // Set render state of this element and of its children to the same
+   // value.
+
+  if (fSrcState)
+    fSrcState->fState = rnr;
+
+  TEveElement::SetRnrState(rnr);
+}

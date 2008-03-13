@@ -16,7 +16,6 @@
 #include <TGLRnrCtx.h>
 #include <TGLSelectRecord.h>
 
-
 //______________________________________________________________________________
 //
 // GL renderer for AliEveTPCSector3D.
@@ -104,7 +103,6 @@ void AliEveTPCSector3DGL::DirectDraw(TGLRnrCtx & rnrCtx) const
 
   glPushAttrib(GL_CURRENT_BIT | GL_POINT_BIT | GL_ENABLE_BIT);
   glDisable(GL_LIGHTING);
-  UChar_t col[4];
 
   if(hasData && fSector->fPointSetOn)
   {
@@ -121,8 +119,7 @@ void AliEveTPCSector3DGL::DirectDraw(TGLRnrCtx & rnrCtx) const
       TEvePointSet* ps = psa.GetBin(b);
       if(ps->Size() > 0)
       {
-	TEveUtil::TEveUtil::ColorFromIdx(ps->GetMarkerColor(), col);
-	glColor4ubv(col);
+	TGLUtil::Color(ps->GetMarkerColor());
 
         if (rnrCtx.SecSelection()) glLoadName(b + 1);
 	glVertexPointer(3, GL_FLOAT, 0, ps->GetP());
@@ -135,8 +132,7 @@ void AliEveTPCSector3DGL::DirectDraw(TGLRnrCtx & rnrCtx) const
 
   if(fSector->fRnrFrame && ! rnrCtx.SecSelection())
   {
-    TEveUtil::TEveUtil::ColorFromIdx(fSector->fFrameColor, col);
-    glColor4ubv(col);
+    TGLUtil::Color(fSector->fFrameColor);
 
     if(fSector->fRnrInn)
       DrawSegmentFrame(AliEveTPCSectorData::GetInnSeg(),  0, 2);

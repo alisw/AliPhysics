@@ -9,34 +9,27 @@
 
 #include "AliEvePMDModuleEditor.h"
 #include <EveDet/AliEvePMDModule.h>
-#include <TEveGedEditor.h>
 
 #include <TVirtualPad.h>
-#include <TColor.h>
+#include <TH1F.h>
 
 #include <TGLabel.h>
 #include <TG3DLine.h>
 #include <TGButton.h>
-#include <TGNumberEntry.h>
-#include <TGColorSelect.h>
-#include <TGDoubleSlider.h>
 
-#include <TCanvas.h>
-#include <TGLViewer.h>
-#include <TEveManager.h>
-
-
-#include <TH1F.h>
-
+//==============================================================================
+//==============================================================================
+// AliEvePMDModuleEditor
+//==============================================================================
 
 //______________________________________________________________________________
-// AliEvePMDModuleEditor
 //
+// GUI editor for AliEvePMDModule.
 
 ClassImp(AliEvePMDModuleEditor)
 
 AliEvePMDModuleEditor::AliEvePMDModuleEditor(const TGWindow *p, Int_t width, Int_t height,
-				 UInt_t options, Pixel_t back) :
+                                             UInt_t options, Pixel_t back) :
   TGedFrame(p, width, height, options | kVerticalFrame, back),
   fM(0),
   fInfoFrame(0),
@@ -46,8 +39,9 @@ AliEvePMDModuleEditor::AliEvePMDModuleEditor(const TGWindow *p, Int_t width, Int
   fInfoLabel3(0),
   fInfoLabel4(0),
   fInfoLabel5(0)
-  // Initialize widget pointers to 0
 {
+  // Constructor.
+
   MakeTitle("AliEvePMDModule");
 
   CreateInfoFrame();
@@ -55,6 +49,8 @@ AliEvePMDModuleEditor::AliEvePMDModuleEditor(const TGWindow *p, Int_t width, Int
 
 void AliEvePMDModuleEditor::CreateInfoFrame()
 {
+  // Create frame holding information.
+
   fInfoFrame = CreateEditorTabSubFrame("Info");
 
   TGCompositeFrame *title1 = new TGCompositeFrame(fInfoFrame, 145, 10,
@@ -120,16 +116,13 @@ void AliEvePMDModuleEditor::CreateInfoFrame()
   }
 }
 
-AliEvePMDModuleEditor::~AliEvePMDModuleEditor()
-{}
-
 /******************************************************************************/
 
 void AliEvePMDModuleEditor::SetModel(TObject* obj)
 {
-  fM = dynamic_cast<AliEvePMDModule*>(obj);
+  // Set model object.
 
-  // Set values of widgets
+  fM = dynamic_cast<AliEvePMDModule*>(obj);
 
   fInfoLabel0->SetText(Form("Cells hit per Module : %d", fM->GetNPads()));
   fInfoLabel1->SetText(Form("ADC       per Module : %d", fM->GetAdc()));
@@ -141,6 +134,8 @@ void AliEvePMDModuleEditor::SetModel(TObject* obj)
 
 void AliEvePMDModuleEditor::DisplayHistos()
 {
+  // Slot for displaying histograms with module data.
+
   fM->GetHisto()->Draw();
   gPad->Modified();
   gPad->Update();

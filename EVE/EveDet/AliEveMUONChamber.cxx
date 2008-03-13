@@ -15,10 +15,7 @@
 #include <TBuffer3DTypes.h>
 #include <TVirtualPad.h>
 #include <TVirtualViewer3D.h>
-
 #include <TStyle.h>
-#include <TColor.h>
-#include <TMath.h>
 
 
 //______________________________________________________________________________
@@ -248,26 +245,27 @@ void AliEveMUONChamber::ClearColorArray()
 //______________________________________________________________________________
 void AliEveMUONChamber::SetDataSource(AliEveMUONData* data)
 {
+  // Set source of data.
 
   if (data == fMUONData) return;
   if(fMUONData) fMUONData->DecRefCount();
   fMUONData = data;
   if(fMUONData) fMUONData->IncRefCount();
   IncRTS();
-
 }
 
 //______________________________________________________________________________
 AliEveMUONChamberData* AliEveMUONChamber::GetChamberData() const
 {
+  // Return source of data.
 
   return fMUONData ? fMUONData->GetChamberData(fChamberID) : 0;
-
 }
 
 //______________________________________________________________________________
 void AliEveMUONChamber::UpdateQuads()
 {
+  // Update digit representation.
 
   fQuadSet1.Reset(TEveQuadSet::kQT_RectangleXY, kTRUE, 32);
   fQuadSet2.Reset(TEveQuadSet::kQT_RectangleXY, kTRUE, 32);
@@ -361,12 +359,12 @@ void AliEveMUONChamber::UpdateQuads()
 //______________________________________________________________________________
 void AliEveMUONChamber::SetChamberID(Int_t id)
 {
+  // Set id of chamber to display.
 
   if (id <  0) id = 0;
   if (id > 13) id = 13;
 
   fChamberID = id;
   IncRTS();
-
 }
 

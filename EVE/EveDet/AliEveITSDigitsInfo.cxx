@@ -10,9 +10,6 @@
 #include "AliEveITSDigitsInfo.h"
 #include <EveBase/AliEveEventManager.h>
 
-#include <TEveTreeTools.h>
-#include <TEveTrans.h>
-
 #include <AliITS.h>
 #include <AliITSInitGeometry.h>
 #include <AliITSgeomTGeo.h>
@@ -34,8 +31,16 @@
 #include <AliITSRawStreamSSD.h>
 
 #include <TGeoMatrix.h>
+#include <TEveTrans.h>
+//#include <TClonesArray.h>
+
 #include <TMath.h>
 #include <TVector3.h>
+
+//==============================================================================
+//==============================================================================
+// AliEveITSModuleSelection
+//==============================================================================
 
 //______________________________________________________________________________
 //
@@ -55,6 +60,11 @@ AliEveITSModuleSelection::AliEveITSModuleSelection():
   // Constructor.
 }
 
+
+//==============================================================================
+//==============================================================================
+// AliEveITSDigitsInfo
+//==============================================================================
 
 //______________________________________________________________________________
 //
@@ -87,7 +97,7 @@ void AliEveITSDigitsInfo::InitInternals()
   // module-id to transformation-matrix mapping and segmentation
   // classes and data-structures.
 
-  static const TEveException eH("AliEveITSDigitsInfo::InitInternals ");
+  static const TEveException kEH("AliEveITSDigitsInfo::InitInternals ");
 
   AliEveEventManager::AssertGeometry();
 

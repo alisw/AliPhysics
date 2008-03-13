@@ -6,8 +6,8 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
-#ifndef ALIEVE_MUONTrack_H
-#define ALIEVE_MUONTrack_H
+#ifndef AliEveMUONTrack_H
+#define AliEveMUONTrack_H
 
 #include <TEveTrack.h>
 
@@ -47,11 +47,11 @@ class AliEveMUONTrack: public TEveTrack
 			  Double_t* vect, Double_t* vout);
   Int_t ColorIndex(Float_t val);
 
-  Bool_t IsMUONTrack()        { return fIsMUONTrack;  };
-  Bool_t IsMUONTriggerTrack() { return fIsMUONTrack;  };
-  Bool_t IsESDTrack()         { return fIsESDTrack;   };
-  Bool_t IsMCTrack()          { return fIsMCTrack;    };
-  Bool_t IsRefTrack()         { return fIsRefTrack;   };
+  Bool_t IsMUONTrack()        const { return fIsMUONTrack; }
+  Bool_t IsMUONTriggerTrack() const { return fIsMUONTrack; }
+  Bool_t IsESDTrack()         const { return fIsESDTrack;  }
+  Bool_t IsMCTrack()          const { return fIsMCTrack;   }
+  Bool_t IsRefTrack()         const { return fIsRefTrack;  }
 
   void PrintMCTrackInfo();
   void PrintMUONTrackInfo();
@@ -72,10 +72,9 @@ class AliEveMUONTrack: public TEveTrack
   Bool_t        fIsMCTrack;          // track from Kinematics.root
   Bool_t        fIsRefTrack;         // track from TrackRefs.root
 
-  static AliMagF      *fFieldMap;    // pointer to the magnetic field map
+  static AliMagF      *fgFieldMap;    // pointer to the magnetic field map
 
   ClassDef(AliEveMUONTrack, 1);    // Produce TEveUtil:TEveTrack from AliMUONTrack
-
 };
 
 #endif

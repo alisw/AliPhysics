@@ -8,7 +8,9 @@
  **************************************************************************/
 
 #include "AliEveJetPlane.h"
-#include <TString.h>
+
+#include <TEveTrans.h>
+
 #include <TBuffer3D.h>
 #include <TBuffer3DTypes.h>
 #include <TVirtualPad.h>
@@ -17,6 +19,8 @@
 //______________________________________________________________________________
 //
 // Show jets and tracks in eta-phi plane.
+//
+// 
 
 ClassImp(AliEveJetPlane)
 
@@ -46,7 +50,6 @@ AliEveJetPlane::AliEveJetPlane(Int_t iev) :
 
   fGridColor(5),
 
-  fHMTrans(),
   fJets(),
   fTracks(),
 
@@ -61,6 +64,7 @@ AliEveJetPlane::AliEveJetPlane(Int_t iev) :
   fSelectionFlag (1)
 {
   SetMainColorPtr(&fGridColor);
+  InitMainTrans();
 }
 
 /******************************************************************************/
@@ -103,7 +107,7 @@ void AliEveJetPlane::Paint(Option_t* /*option*/)
   buff.fID           = this;
   buff.fColor        = fGridColor;
   buff.fTransparency = 0;
-  fHMTrans.SetBuffer3D(buff);
+  if (HasMainTrans()) RefMainTrans().SetBuffer3D(buff);
   buff.SetSectionsValid(TBuffer3D::kCore);
 
   Int_t reqSections = gPad->GetViewer3D()->AddObject(buff);

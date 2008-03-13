@@ -1,4 +1,4 @@
-// $Id$
+
 // Main authors: Matevz Tadel & Alja Mrak-Tadel & Bogdan Vulpescu: 2006, 2007
 
 /**************************************************************************
@@ -15,7 +15,6 @@
 #include <AliMagFMaps.h>
 #include <AliLog.h>
 #include <AliESDMuonTrack.h>
-#include <AliTrackReference.h>
 #include <AliESDEvent.h>
 #include <AliESDVertex.h>
 #include <AliRunLoader.h>
@@ -28,8 +27,6 @@
 #include <AliMUONESDInterface.h>
 
 #include <TClonesArray.h>
-#include <TMath.h>
-#include <TMatrixD.h>
 #include <TStyle.h>
 #include <TROOT.h>
 #include <TParticle.h>
@@ -37,14 +34,17 @@
 
 #include <Riostream.h>
 
+//==============================================================================
+// AliEveMUONTrack
+//==============================================================================
+//==============================================================================
 
 //______________________________________________________________________________
-// AliEveMUONTrack
 // Produce TEveUtil:TEveTrack from AliMUONTrack with dipole field model
 
 ClassImp(AliEveMUONTrack)
 
-AliMagF* AliEveMUONTrack::fFieldMap = 0;
+AliMagF* AliEveMUONTrack::fgFieldMap = 0;
 
 //______________________________________________________________________________
 AliEveMUONTrack::AliEveMUONTrack(TEveRecTrack* t, TEveTrackPropagator* rs) :
@@ -62,8 +62,8 @@ AliEveMUONTrack::AliEveMUONTrack(TEveRecTrack* t, TEveTrackPropagator* rs) :
   // constructor
   //
 
-  fFieldMap = AliEveEventManager::AssertMagField();
-
+  if (fgFieldMap == 0)
+    fgFieldMap = AliEveEventManager::AssertMagField();
 }
 
 //______________________________________________________________________________
@@ -136,7 +136,7 @@ void AliEveMUONTrack::PrintMUONTrackInfo()
   // information about the reconstructed/reference track; at hits and at vertex
   //
 
-  Double_t RADDEG = 180.0/TMath::Pi();
+  Double_t radDeg = 180.0/TMath::Pi();
 
   Int_t nparam;
   Float_t pt, bc, nbc, zc;
@@ -189,10 +189,10 @@ void AliEveMUONTrack::PrintMUONTrackInfo()
       mtp->GetInverseBendingMomentum() << "    " <<
 
       setw(8) << setprecision(3) <<
-      mtp->GetBendingSlope()*RADDEG << "       " <<
+      mtp->GetBendingSlope()*radDeg << "       " <<
 
       setw(8) << setprecision(3) <<
-      mtp->GetNonBendingSlope()*RADDEG << "    " <<
+      mtp->GetNonBendingSlope()*radDeg << "    " <<
 
       setw(8) << setprecision(4) <<
       mtp->GetBendingCoor() << "       " <<
@@ -238,10 +238,10 @@ void AliEveMUONTrack::PrintMUONTrackInfo()
     mtp->GetInverseBendingMomentum() << "    " <<
 
     setw(8) << setprecision(3) <<
-    mtp->GetBendingSlope()*RADDEG << "       " <<
+    mtp->GetBendingSlope()*radDeg << "       " <<
 
     setw(8) << setprecision(3) <<
-    mtp->GetNonBendingSlope()*RADDEG << "    " <<
+    mtp->GetNonBendingSlope()*radDeg << "    " <<
 
     setw(8) << setprecision(4) <<
     bc << "       " <<
@@ -282,7 +282,7 @@ void AliEveMUONTrack::PrintMUONTriggerTrackInfo()
   // information about the trigger track
   //
 
-  // Double_t RADDEG = 180.0/TMath::Pi();
+  // Double_t radDeg = 180.0/TMath::Pi();
 
 }
 
@@ -293,7 +293,7 @@ void AliEveMUONTrack::PrintESDTrackInfo()
   // information about the reconstructed ESD track at vertex
   //
 
-  Double_t RADDEG = 180.0/TMath::Pi();
+  Double_t radDeg = 180.0/TMath::Pi();
   Float_t pt;
 
   AliMUONTrackParam *mtp = (AliMUONTrackParam*)fTrack->GetTrackParamAtVertex();
@@ -309,10 +309,10 @@ void AliEveMUONTrack::PrintESDTrackInfo()
     mtp->GetInverseBendingMomentum() << "    " <<
 
     setw(8) << setprecision(3) <<
-    mtp->GetBendingSlope()*RADDEG << "       " <<
+    mtp->GetBendingSlope()*radDeg << "       " <<
 
     setw(8) << setprecision(3) <<
-    mtp->GetNonBendingSlope()*RADDEG << "     " <<
+    mtp->GetNonBendingSlope()*radDeg << "     " <<
 
     setw(8) << setprecision(4) <<
     mtp->GetBendingCoor() << "       " <<
@@ -973,8 +973,8 @@ void AliEveMUONTrack::GetField(Double_t *position, Double_t *field)
 
   x[0] = position[0]; x[1] = position[1]; x[2] = position[2];
 
-  if (fFieldMap) {
-    fFieldMap->Field(x,b);
+  if (fgFieldMap) {
+    fgFieldMap->Field(x,b);
   }
   else {
     AliWarning("No field map");

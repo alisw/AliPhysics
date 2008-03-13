@@ -50,7 +50,7 @@ void emcal_digits()
     q->SetDefWidth (geom->GetPhiTileSize());
     q->SetDefHeight(geom->GetEtaTileSize());
 
-    q->RefHMTrans().SetFrom(*node->GetDaughter(sm)->GetMatrix());
+    q->RefMainTrans().SetFrom(*node->GetDaughter(sm)->GetMatrix());
 
     q->SetFrame(sm < 10 ? frame_big : frame_sml);
     q->SetPalette(pal);

@@ -64,12 +64,13 @@ void process_tpc_clusters(AliHLTHOMERBlockDesc* b);
 //****************************************************************************
 void homer_display()
 {
-  homerM = new AliEveHOMERManager("/local/home/hlt/TPC-SCC1-Generate.xml");
-  //  homerM = new AliEveHOMERManager("/local/home/hlt/sampleConfig2.xml");
+  //  homerM = new AliEveHOMERManager("/local/home/hlt/TPC-SCC1-Generate.xml");
+  homerM = new AliEveHOMERManager("./sampleConfig.xml");
 
   gEve->AddToListTree(homerM, kTRUE);
 
   homerM->CreateHOMERSourcesList();
+  
   //  homerM->SelectRawTPC();
   homerM->SelectClusterTPC();
   homerM->SelectESDTPC();

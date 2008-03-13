@@ -17,9 +17,9 @@
 #include <TGButton.h>
 #include <TGComboBox.h>
 #include <TGListBox.h>
-#include <TGListTree.h>
-#include <TGString.h>
-#include <TGToolTip.h>
+//#include <TGListTree.h>
+//#include <TGString.h>
+//#include <TGToolTip.h>
 #include <TClonesArray.h>
 
 #include "AliLog.h"
@@ -31,44 +31,32 @@ ClassImp(AliEveTRDLoaderManagerEditor)
 /////////        AliEveTRDLoaderManager      //////////////
 ///////////////////////////////////////////////////////////
 
-
 //______________________________________________________________________________
 AliEveTRDLoaderManager::AliEveTRDLoaderManager(const Text_t* n, const Text_t* t) :
   TEveElementList(n, t)
 {
-  // Constructor. Noop.
-}
-
-//______________________________________________________________________________
-AliEveTRDLoaderManager::~AliEveTRDLoaderManager()
-{
-  // Destructor. Noop.
+  // Constructor.
 }
 
 //______________________________________________________________________________
 void AliEveTRDLoaderManager::Add(Int_t type, const Text_t *name, const Text_t *title)
 {
-  //Info("Add()", Form("type %d, name %s, title %s", type, name, title));
+  // Add something.
+
   AliEveTRDLoader *trdl = 0x0;
   switch(type){
     case 0:
-      //fChildren.push_back(new AliEveTRDLoaderSim(name, title));
-      gEve->AddElement(trdl = new AliEveTRDLoaderSim(name, title), this);
-      ((AliEveTRDLoaderSim*)trdl)->FindListTreeItem(gEve->GetListTree())->SetTipText(title);
+      AddElement(new AliEveTRDLoaderSim(name, title));
       break;
     case 1:
     case 2:
     case 3:
-      //fChildren.push_back(new AliEveTRDLoader(name, title));
-      gEve->AddElement(trdl = new AliEveTRDLoader(name, title), this);
-      trdl->FindListTreeItem(gEve->GetListTree())->SetTipText(title);
+      AddElement(trdl = new AliEveTRDLoader(name, title));
       trdl->SetDataType((AliEveTRDLoader::TRDDataTypes)type);
       break;
     case 4:
     case 5:
-      //fChildren.push_back(new AliEveTRDLoaderRaw(name, title));
-      gEve->AddElement(trdl = new AliEveTRDLoaderRaw(name, title), this);
-      ((AliEveTRDLoaderRaw*)trdl)->FindListTreeItem(gEve->GetListTree())->SetTipText(title);
+      AddElement(trdl = new AliEveTRDLoaderRaw(name, title));
       trdl->SetDataType((AliEveTRDLoader::TRDDataTypes)type);
       break;
   }
@@ -77,10 +65,11 @@ void AliEveTRDLoaderManager::Add(Int_t type, const Text_t *name, const Text_t *t
 }
 
 
-
 //______________________________________________________________________________
 void AliEveTRDLoaderManager::Paint(Option_t *option)
 {
+  // Paint object.
+
   List_i ichmb = fChildren.begin();
   while(ichmb != fChildren.end()){
     (dynamic_cast<AliEveTRDLoader*>(*ichmb))->Paint(option);
@@ -91,6 +80,8 @@ void AliEveTRDLoaderManager::Paint(Option_t *option)
 //______________________________________________________________________________
 void AliEveTRDLoaderManager::Remove(Int_t entry)
 {
+  // Remove something.
+
   //printf("AliEveTRDLoaderManager::Remove(%d)\n", entry);
   List_i it = fChildren.begin();
   for(int i=0; i<entry; i++) it++;
@@ -109,6 +100,8 @@ AliEveTRDLoaderManagerEditor(const TGWindow* p, Int_t width, Int_t height,
   TGedFrame(p, width, height, options | kVerticalFrame, back),
   fM(0), fSelector(0), fAdd(0), fRemoveButton(0), fGroupFrame(0), fRemove(0)
 {
+  // Constructor.
+
   MakeTitle("AliEveTRDLoaderManager");
 
   // control frame - always there
@@ -141,16 +134,12 @@ AliEveTRDLoaderManagerEditor(const TGWindow* p, Int_t width, Int_t height,
   fRemove     = 0;
 }
 
-//______________________________________________________________________________
-AliEveTRDLoaderManagerEditor::~AliEveTRDLoaderManagerEditor()
-{
-
-}
-
 
 //______________________________________________________________________________
 void AliEveTRDLoaderManagerEditor::Add()
 {
+  // Slot to add something.
+
   TGTextLBEntry *entry = (TGTextLBEntry*)fSelector->GetSelectedEntry();
   if(!entry){
     AliWarning("Select first the loader type that you want to use from the drop down list.");
@@ -228,6 +217,8 @@ void AliEveTRDLoaderManagerEditor::Add()
 //______________________________________________________________________________
 void AliEveTRDLoaderManagerEditor::Remove(Int_t entry)
 {
+  // Slot to remove something.
+
   TIterator *it = fGroupFrame->GetList()->MakeIterator();
   int ientry = 0;
   while(/*TGFrame *f=(TGFrame*)*/it->Next()){
@@ -250,6 +241,8 @@ void AliEveTRDLoaderManagerEditor::Remove(Int_t entry)
 //______________________________________________________________________________
 void AliEveTRDLoaderManagerEditor::SetModel(TObject* obj)
 {
+  // Set model object.
+
   fM = dynamic_cast<AliEveTRDLoaderManager*>(obj);
 }
 

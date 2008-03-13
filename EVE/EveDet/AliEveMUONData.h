@@ -6,8 +6,8 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
-#ifndef ALIEVE_MUONData_H
-#define ALIEVE_MUONData_H
+#ifndef AliEveMUONData_H
+#define AliEveMUONData_H
 
 #include <TEveUtil.h>
 
@@ -57,8 +57,8 @@ class AliEveMUONData : public TObject, public TEveRefCnt
   void DeleteAllChambers();
 
   void  RegisterTrack(Int_t track);
-  Int_t GetNTrackList() { return fNTrackList; }
-  Int_t GetTrack(Int_t index);
+  Int_t GetNTrackList() const { return fNTrackList; }
+  Int_t GetTrack(Int_t index) const;
 
   AliEveMUONChamberData* GetChamberData(Int_t chamber);
 

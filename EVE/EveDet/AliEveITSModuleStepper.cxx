@@ -14,24 +14,25 @@
 #include <TEveManager.h>
 #include <TEveGedEditor.h>
 #include <TEveGridStepper.h>
-#include <TEveGLText.h>
 #include <TEveTrans.h>
 
-#include <TObject.h>
 #include <TMath.h>
 
 #include <TBuffer3D.h>
-#include <TBuffer3DTypes.h>
 #include <TVirtualPad.h>
-#include <TVirtualViewer3D.h>
 
 #include <TGLRnrCtx.h>
 #include <TGLSelectRecord.h>
 #include <TGLText.h>
-// #include <FTFont.h>
+#include <TGLUtil.h>
+#include <TGLIncludes.h>
 #include <TGLAxis.h>
 #include <TGLViewer.h>
 
+//==============================================================================
+//==============================================================================
+// AliEveITSModuleStepper
+//==============================================================================
 
 //______________________________________________________________________________
 //
@@ -124,11 +125,11 @@ void AliEveITSModuleStepper::Capacity()
   // to store as many modules as required by the grid-stepper
   // configuration.
 
-  Int_t N = fStepper->GetNx()*fStepper->GetNy();
-  if (N != GetNChildren())
+  Int_t n = fStepper->GetNx()*fStepper->GetNy();
+  if (n != GetNChildren())
   {
     DestroyElements();
-    for (Int_t m=0; m<N; m++)
+    for (Int_t m=0; m<n; ++m)
     {
       AddElement(new AliEveITSScaledModule(m, fDigitsInfo, fScaleInfo));
     }
@@ -215,7 +216,7 @@ void AliEveITSModuleStepper::DisplayTheta(Float_t min, Float_t max)
 
 /******************************************************************************/
 
-Int_t AliEveITSModuleStepper::GetCurrentPage()
+Int_t AliEveITSModuleStepper::GetCurrentPage() const
 {
   // Get number of current page.
 
@@ -253,7 +254,7 @@ void  AliEveITSModuleStepper::Apply()
     {
       AliEveITSScaledModule* mod = dynamic_cast<AliEveITSScaledModule*>(*childit);
       mod->SetID(fIDs[idx], kFALSE);
-      TEveTrans& tr = mod->RefHMTrans();
+      TEveTrans& tr = mod->RefMainTrans();
       tr.UnitTrans();
       tr.RotateLF(3,2,TMath::PiOver2());
       tr.RotateLF(1,3,TMath::PiOver2());
@@ -413,12 +414,11 @@ void AliEveITSModuleStepper::RenderFrame(Float_t dx, Float_t dy, Int_t id)
 
   glPushAttrib(GL_ENABLE_BIT | GL_POLYGON_BIT);
   glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-  UChar_t color[4];
+
   if (fWActive == id)
-    TEveUtil::TEveUtil::ColorFromIdx(fWActiveCol, color);
+    TGLUtil::Color(fWActiveCol);
   else
-    TEveUtil:: TEveUtil::ColorFromIdx(fWCol, color);
-  glColor4ubv(color);
+    TGLUtil::Color(fWCol);
 
   glBegin(GL_QUADS);
   glVertex2f(0, 0);   glVertex2f(dx, 0);
@@ -435,12 +435,10 @@ void AliEveITSModuleStepper::RenderSymbol(Float_t dx, Float_t dy, Int_t id)
 
   glLoadName(id);
 
-  UChar_t color[4];
   if (fWActive == id)
-    TEveUtil::TEveUtil::ColorFromIdx(fWActiveCol, color);
+    TGLUtil::Color(fWActiveCol);
   else
-    TEveUtil::TEveUtil::ColorFromIdx(fWCol, color);
-  glColor4ubv(color);
+    TGLUtil::Color(fWCol);
 
   Float_t xs = dx/4, ys = dy/4;
   if(id == 0) {
@@ -512,7 +510,7 @@ void AliEveITSModuleStepper::RenderPalette(Float_t dx, Float_t x, Float_t y)
   AliEveITSModule* qs = dynamic_cast<AliEveITSModule*>(*BeginChildren());
   TEveRGBAPalette* p = qs->GetPalette();
   glBegin(GL_QUAD_STRIP);
-  glColor4ubv(p->ColorFromValue(p->GetMinVal()));
+  TGLUtil::Color4ubv(p->ColorFromValue(p->GetMinVal()));
   glVertex2f(0, 0);
   glVertex2f(0, y);
   if (p->GetMaxVal() > p->GetMinVal() + 1)
@@ -521,13 +519,13 @@ void AliEveITSModuleStepper::RenderPalette(Float_t dx, Float_t x, Float_t y)
     Float_t x0 = xs;
     for(Int_t i=p->GetMinVal() + 1; i<p->GetMaxVal(); i++)
     {
-      glColor4ubv(p->ColorFromValue(i));
+      TGLUtil::Color4ubv(p->ColorFromValue(i));
       glVertex2f(x0, 0);
       glVertex2f(x0, y);
       x0+=xs;
     }
   }
-  glColor4ubv(p->ColorFromValue(p->GetMaxVal()));
+  TGLUtil::Color4ubv(p->ColorFromValue(p->GetMaxVal()));
   glVertex2f(dx, 0);
   glVertex2f(dx, y);
   glEnd();
@@ -553,17 +551,17 @@ void AliEveITSModuleStepper::RenderMenu()
 
   // transparent bar
   Float_t a=0.3;
-  glColor4f(a, a, a, a);
-  Float_t H = 1.9*wh*(1+ 2*fWOff);
+  TGLUtil::Color4f(a, a, a, a);
+  Float_t h = 1.9*wh*(1+ 2*fWOff);
   if(1) {
     glBegin(GL_QUADS);
-    glVertex3f(-1, -1,   0.1); glVertex3f(-1, -1+H, 0.1);
-    glVertex3f(1 , -1+H, 0.1); glVertex3f( 1, -1  , 0.1);
+    glVertex3f(-1, -1,   0.1); glVertex3f(-1, -1+h, 0.1);
+    glVertex3f(1 , -1+h, 0.1); glVertex3f( 1, -1  , 0.1);
     glEnd();
   }
 
-  Float_t y_base = -1 + wh*0.35;
-  glTranslatef(-1, y_base, 0.);
+  Float_t yBase = -1 + wh*0.35;
+  glTranslatef(-1, yBase, 0.);
   glPushName(0);
   // pager
   glPushMatrix();
@@ -655,7 +653,7 @@ void AliEveITSModuleStepper::RenderCellIDs()
     if(idx < fIDs.size())
     {
       AliEveITSScaledModule* mod = dynamic_cast<AliEveITSScaledModule*>(*childit);
-      TEveTrans& tr = mod->RefHMTrans();
+      TEveTrans& tr = mod->RefMainTrans();
       TString name = Form("%d",mod->GetID());
       tr.GetPos(x,y,z);
       x += fStepper->GetDx()*0.5;

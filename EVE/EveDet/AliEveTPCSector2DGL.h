@@ -7,17 +7,21 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-#ifndef ALIEVE_TPCSector2DGL_H
-#define ALIEVE_TPCSector2DGL_H
+#ifndef AliEveTPCSector2DGL_H
+#define AliEveTPCSector2DGL_H
 
 #include <TGLObject.h>
-
-#include <EveDet/AliEveTPCSector2D.h>
-#include <EveDet/AliEveTPCSectorData.h>
-
 class TGLViewer;
 class TGLScene;
 
+#include <EveDet/AliEveTPCSectorData.h>
+class AliEveTPCSector2D;
+
+//------------------------------------------------------------------------------
+// AliEveTPCSector2DGL
+//
+// GL renderer for AliEveTPCSector2D.
+//
 
 class AliEveTPCSector2DGL : public TGLObject
 {
@@ -27,7 +31,7 @@ class AliEveTPCSector2DGL : public TGLObject
 protected:
   virtual void DirectDraw(TGLRnrCtx & rnrCtx) const;
 
-  void LoadPadrow(AliEveTPCSectorData::RowIterator& iter, Int_t row, Int_t off) const;
+  void LoadPadrow(AliEveTPCSectorData::RowIterator& iter, Int_t row, Int_t colOff) const;
   void CreateTexture() const;
 
   void DisplayTexture(const AliEveTPCSectorData::SegmentInfo& seg,
@@ -47,6 +51,10 @@ protected:
   mutable UInt_t                  fTexture;    // Texture id.
   mutable UInt_t                  fRTS;        // Render time-stamp.
 
+  static const Int_t fgkTextureWidth;     // Width of the texture.
+  static const Int_t fgkTextureHeight;    // Height of the texture.
+  static const Int_t fgkTextureByteSize;  // Size of the texture in bytes.
+
 public:
   AliEveTPCSector2DGL();
   virtual ~AliEveTPCSector2DGL();
@@ -60,11 +68,7 @@ public:
   static void TraceStepsUp  (const AliEveTPCSectorData::SegmentInfo& s);
   static void TraceStepsDown(const AliEveTPCSectorData::SegmentInfo& s);
 
-  static const Int_t fgkTextureWidth;     // Width of the texture.
-  static const Int_t fgkTextureHeight;    // Height of the texture.
-  static const Int_t fgkTextureByteSize;  // Size of the texture in bytes.
-
-  ClassDef(AliEveTPCSector2DGL, 0); // GL renderer for TPCSector2D.
+  ClassDef(AliEveTPCSector2DGL, 0); // GL renderer for AliEveTPCSector2D.
 };
 
 

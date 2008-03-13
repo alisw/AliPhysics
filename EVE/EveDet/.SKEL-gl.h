@@ -1,7 +1,7 @@
 // $Header$
 
-#ifndef ALIEVE_CLASS_H
-#define ALIEVE_CLASS_H
+#ifndef AliEveCLASS_H
+#define AliEveCLASS_H
 
 #include <TGLObject.h>
 

@@ -12,8 +12,8 @@
 #include "TCanvas.h"
 #include "TGraph.h"
 #include "TGraphErrors.h"
+#include "TQObject.h"
 
-#include "AliCluster.h"
 #include "AliRieman.h"
 #include "AliExternalTrackParam.h"
 
@@ -23,19 +23,24 @@
 #include <TEveManager.h>
 
 
-//______________________________________________________________________________
+//==============================================================================
+//==============================================================================
 // AliEveTrackFitter
+//==============================================================================
+
+//______________________________________________________________________________
 //
 // AliEveTrackFitter is an interface to TEvePointSet allowing AliRieman fit.
-// It builds a list of points by listening to selection signal of any object of type
-// TEvePointSet. After selection the list is feeded to AliRieman fitter,
-// which returns helix parameters visualized with TEveTrack.
+// It builds a list of points by listening to selection signal of any
+// object of type TEvePointSet. After selection the list is feeded to
+// AliRieman fitter, which returns helix parameters visualized with
+// TEveTrack.
 //
 
 ClassImp(AliEveTrackFitter)
 
-AliEveTrackFitter::AliEveTrackFitter(const Text_t* name, Int_t n_points) :
-    TEvePointSet   (name, n_points),
+AliEveTrackFitter::AliEveTrackFitter(const Text_t* name, Int_t nPoints) :
+    TEvePointSet   (name, nPoints),
 
     fAlpha         (0),
     fRieman        (0),
@@ -53,11 +58,11 @@ AliEveTrackFitter::AliEveTrackFitter(const Text_t* name, Int_t n_points) :
   SetOwnIds(kFALSE);
 
   fTrackList = new TEveTrackList("Tracks");
+  fTrackList->IncDenyDestroy();
   fTrackList->SetLineWidth(2);
   fTrackList->SetLineColor(8);
-  fTrackList->IncDenyDestroy();
   fTrackList->GetPropagator()->SetEditPathMarks(kTRUE);
-  gEve->AddElement(fTrackList, this);
+  AddElement(fTrackList);
   UpdateItems();
 
   fGraphPicked = new TGraph();
@@ -75,23 +80,39 @@ AliEveTrackFitter::~AliEveTrackFitter()
 {
   // Destructor.
 
-  if(fRieman) delete fRieman;
+  if (fRieman) delete fRieman;
 
   fTrackList->DecDenyDestroy();
-  delete fTrackList;
 }
 
 /******************************************************************************/
+
+void AliEveTrackFitter::DestroyElements()
+{
+  // Virtual method of base class TEveElement.
+  // Preserves TEveTrackList object for fitted helices.
+
+  TEveElement::DestroyElements();
+
+  // fTrackList is destroyed because DenyDestroy is set.
+  gEve->AddElement(fTrackList, this);
+  fTrackList->DestroyElements();
+
+  UpdateItems();
+}
+
+/******************************************************************************/
+
 void AliEveTrackFitter::Start()
 {
   // Clear existing point selection and maintain connection to the
   // TEvePointSet signal.
 
   Reset();
-  if(fConnected == kFALSE)
+  if (fConnected == kFALSE)
   {
-    TQObject::Connect("TEvePointSet", "PointCtrlClicked(TEvePointSet*,Int_t)",
-		      "AliEveTrackFitter", this, "AddFitPoint(TEvePointSet*,Int_t)");
+    TQObject::Connect("TEvePointSet", "PointSelected(Int_t)",
+		      "AliEveTrackFitter", this, "AddFitPoint(Int_t)");
     fConnected = kTRUE;
   }
 }
@@ -100,48 +121,49 @@ void AliEveTrackFitter::Stop()
 {
   // Stop adding points for the fit.
 
-  if(fConnected)
+  if (fConnected)
   {
-    TQObject::Disconnect("TEvePointSet", "AddFitPoint(TEvePointSet*,Int_t)");
+    TQObject::Disconnect("TEvePointSet", "AddFitPoint(Int_t)");
     fConnected = kFALSE;
   }
 }
 
-void AliEveTrackFitter::Reset(Int_t n, Int_t ids)
+void AliEveTrackFitter::Reset(Int_t nPoints, Int_t nIntIds)
 {
   // Reset selection.
 
-  if(fRieman) fRieman->Reset();
-  TEvePointSet::Reset(n, ids);
+  if (fRieman) fRieman->Reset();
+  TEvePointSet::Reset(nPoints, nIntIds);
   fSPMap.clear();
 }
 
 /******************************************************************************/
 
-void AliEveTrackFitter::AddFitPoint(TEvePointSet* ps, Int_t n)
+void AliEveTrackFitter::AddFitPoint(Int_t pointId)
 {
   // Add or remove given point depending if exists in the map.
 
   Float_t x, y, z;
 
-  PointMap_t::iterator g = fSPMap.find(Point_t(ps, n));
-  if(g != fSPMap.end())
+  TEvePointSet* ps = dynamic_cast<TEvePointSet*>((TQObject*) gTQSender);
+
+  PointMap_t::iterator g = fSPMap.find(Point_t(ps, pointId));
+  if (g != fSPMap.end())
   {
     Int_t idx = g->second;
-    if(idx != fLastPoint)
+    if (idx != fLastPoint)
     {
       GetPoint(fLastPoint, x, y, z);
       SetPoint(idx, x, y, z);
     }
     fSPMap.erase(g);
-    fLastPoint--;
+    --fLastPoint;
   }
   else
   {
-    fSPMap[Point_t(ps, n)] = Size();
-    ps->GetPoint(n, x, y, z);
+    fSPMap[Point_t(ps, pointId)] = Size();
+    ps->GetPoint(pointId, x, y, z);
     SetNextPoint(x, y, z);
-    SetPointId(ps->GetPointId(n));
   }
 
   ResetBBox();
@@ -156,7 +178,7 @@ void AliEveTrackFitter::FitTrack()
 
   using namespace TMath;
 
-  if(fRieman) delete fRieman;
+  if (fRieman) delete fRieman;
   fRieman = new AliRieman(Size());
 
   Float_t x, y, z;
@@ -190,58 +212,46 @@ void AliEveTrackFitter::FitTrack()
   // curvature to pt
   param[4] /= TEveTrackPropagator::fgDefMagField*TEveTrackPropagator::fgkB2C;
   // sign in tang
-  if(param[4] < 0) param[3] *= -1;
+  if (param[4] < 0) param[3] *= -1;
   AliExternalTrackParam trackParam(r, fAlpha, param, cov);
   trackParam.Print();
 
   // make track
-  Double_t AliEveV0[3];
-  trackParam.GetXYZAt(r, TEveTrackPropagator::fgDefMagField, AliEveV0);
-  Double_t P0[3];
-  trackParam.GetPxPyPzAt(r, TEveTrackPropagator::fgDefMagField, P0);
+  Double_t v0[3];
+  trackParam.GetXYZAt(r, TEveTrackPropagator::fgDefMagField, v0);
+  Double_t p0[3];
+  trackParam.GetPxPyPzAt(r, TEveTrackPropagator::fgDefMagField, p0);
   TEveRecTrack rc;
-  rc.fV.Set(AliEveV0);
-  rc.fP.Set(P0);
+  rc.fV.Set(v0);
+  rc.fP.Set(p0);
   rc.fSign = trackParam.Charge();
 
   TEveTrack* track = new TEveTrack(&rc, fTrackList->GetPropagator());
   track->SetName(Form("track %f", fAlpha));
-  TEvePathMark* pm = new TEvePathMark(TEvePathMark::kDaughter);
-  for(Int_t i=0; i==fLastPoint; i++)
+  for(Int_t i=0; i<=fLastPoint; ++i)
   {
+    TEvePathMark pm(TEvePathMark::kDaughter);
     GetPoint(i, x, y, z);
-    pm->fV.Set(x, y, z);
-    pm->fP.Set(P0);
+    pm.fV.Set(x, y, z);
+    pm.fP.Set(p0);
     track->AddPathMark(pm);
   }
   track->MakeTrack();
   track->SetAttLineAttMarker(fTrackList);
-  gEve->AddElement(track, fTrackList);
+  fTrackList->AddElement(track);
 }
 
 
 /******************************************************************************/
-void AliEveTrackFitter::DestroyElements()
-{
-  // Virtual method of base class TEveElement.
-  // Preserves TEveTrackPropagator object for fitted helices.
 
-  TEveElement::DestroyElements();
-
-  gEve->AddElement(fTrackList, this);
-  fTrackList->DestroyElements();
-  UpdateItems();
-}
-
-/******************************************************************************/
 void AliEveTrackFitter::DrawDebugGraph()
 {
   // Draw graph of picked points and helix points.
 
-  static const TEveException eH("AliEveTrackFitter::DrawRiemanGraph ");
+  static const TEveException kEH("AliEveTrackFitter::DrawRiemanGraph ");
 
-  if(fRieman == 0)
-    throw(eH + "fitter not set.");
+  if (fRieman == 0)
+    throw(kEH + "fitter not set.");
 
   Int_t nR = fRieman->GetN();
   fGraphPicked->Set(nR);

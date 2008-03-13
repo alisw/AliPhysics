@@ -9,7 +9,6 @@
 
 void MUON_geom()
 {
-
   gGeoManager = gEve->GetGeometry("$REVESYS/alice-data/alice_fullgeo.root");
 
   TEveElementList* list = new TEveElementList("DiMUON");

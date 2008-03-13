@@ -100,7 +100,7 @@ TEveStraightLineSet* ESDvertex_lineset(AliESDVertex* v, const Text_t* name)
 
   // centre marker
   ls->AddMarker(0, 0.5);
-  ls->RefHMTrans().SetPos(x);
+  ls->RefMainTrans().SetPos(x);
   return ls;
 }
 

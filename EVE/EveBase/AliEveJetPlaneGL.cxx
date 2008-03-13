@@ -10,7 +10,6 @@
 #include "AliEveJetPlaneGL.h"
 #include "AliEveJetPlane.h"
 
-#include <TGLRnrCtx.h>
 #include <TGLSelectRecord.h>
 #include <TGLIncludes.h>
 
@@ -21,6 +20,10 @@
 #include <TStyle.h>
 #include <TROOT.h>
 
+//==============================================================================
+//==============================================================================
+// AliEveJetPlaneGL
+//==============================================================================
 
 //______________________________________________________________________________
 //
@@ -71,10 +74,10 @@ void AliEveJetPlaneGL::DirectDraw(TGLRnrCtx & /*rnrCtx*/) const
   // Show frame for Eta-Phi coordinates
 
   glBegin(GL_LINE_LOOP);
-  glVertex3f( minEta, minPhi, 0);
-  glVertex3f( maxEta, minPhi, 0);
-  glVertex3f( maxEta, maxPhi, 0);
-  glVertex3f( minEta, maxPhi, 0);
+  glVertex3f(minEta, minPhi, 0);
+  glVertex3f(maxEta, minPhi, 0);
+  glVertex3f(maxEta, maxPhi, 0);
+  glVertex3f(minEta, maxPhi, 0);
   glEnd();
 
   // Show grid in Eta-Phi coordinates
@@ -82,7 +85,7 @@ void AliEveJetPlaneGL::DirectDraw(TGLRnrCtx & /*rnrCtx*/) const
   dPhi = (maxPhi-minPhi)/(fM->fNPhiDiv - 1);
   dEta = (maxEta-minEta)/(fM->fNEtaDiv - 1);
 
-  for (int count=1; count < fM->fNPhiDiv-1; count++)
+  for (Int_t count = 1; count < fM->fNPhiDiv-1; ++count)
   {
     phiCoord = minPhi + count*dPhi;
     glBegin(GL_LINES);
@@ -91,19 +94,19 @@ void AliEveJetPlaneGL::DirectDraw(TGLRnrCtx & /*rnrCtx*/) const
     glEnd();
   }
 
-  for (int count=1; count < fM->fNEtaDiv-1; count++)
+  for (Int_t count = 1; count < fM->fNEtaDiv-1; ++count)
   {
     etaCoord = minEta + count*dEta;
     glBegin(GL_LINES);
-    glVertex3f( etaCoord, minPhi, 0);
-    glVertex3f( etaCoord, maxPhi, 0);
+    glVertex3f(etaCoord, minPhi, 0);
+    glVertex3f(etaCoord, maxPhi, 0);
     glEnd();
   }
 
   // Show axis tick marks and labels
 
   {
-    TGLCapabilitySwitch lights_off(GL_LIGHTING, false);
+    TGLCapabilitySwitch lightsOff(GL_LIGHTING, false);
 
     TGLAxis ap;
     ap.SetLineColor(fM->fGridColor);

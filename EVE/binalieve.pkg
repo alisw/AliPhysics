@@ -5,8 +5,10 @@ $(BINPATH)/alieve: $(EveBaseLIB) $(EveDetLIB) $(EveHLTLIB)
 
 EINCLUDE :=
 ELIBSDIR :=
+
 ELIBS    := EveBase EveDet EveHLT \
-  MUONevaluation MUONgeometry MUONrec MUONsim MUONbase MUONtrigger MUONraw MUONcalib MUONmapping MUONcore \
+  MUONbase MUONevaluation MUONmapping MUONshuttle MUONcalib MUONgeometry \
+  MUONraw MUONsim MUONcore MUONgraphics MUONrec MUONtrigger \
   TPCbase TPCsim TPCrec TPCfast \
   ITSbase ITSsim ITSrec PMDbase PMDsim PMDrec TRDbase \
   TRDsim TRDrec TRDfast \

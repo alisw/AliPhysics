@@ -6,11 +6,11 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
-#ifndef ALIEVE_TRDLoader_H
-#define ALIEVE_TRDLoader_H
+#ifndef AliEveTRDLoader_H
+#define AliEveTRDLoader_H
 
 ////////////////////////////////////////////////////////////////////////
-//                                                                      // - ALIEVE implementation -
+// - ALIEVE implementation -
 // Loader for the TRD detector - base class
 //    - AliEveTRDLoader - loader of TRD data (simulation + measured)
 //    - AliEveTRDLoaderEditor - UI
@@ -55,7 +55,8 @@ public:
 
 public:
   AliEveTRDLoader(const Text_t* n="AliEveTRDLoader", const Text_t* t=0);
-  ~AliEveTRDLoader();
+  virtual ~AliEveTRDLoader() {}
+
   virtual void 		Paint(Option_t *option="");
   virtual void		SetDataType(TRDDataTypes type);
 
@@ -76,11 +77,10 @@ protected:
   TString	fDir;             // data directory
   Int_t		fEvent;           // current event to be displayed
 
-
   AliTRDv1			*fTRD; // the TRD detector
   AliTRDgeometry		*fGeo; // the TRD geometry
 
-  ClassDef(AliEveTRDLoader, 1); // Alieve Loader class for the TRD detector
+  ClassDef(AliEveTRDLoader, 1); // Alieve Loader class for the TRD detector.
 };
 
 
@@ -93,7 +93,7 @@ private:
 public:
   AliEveTRDLoaderEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30,
 			UInt_t options=kChildFrame, Pixel_t back=GetDefaultFrameBackground());
-  ~AliEveTRDLoaderEditor();
+  virtual ~AliEveTRDLoaderEditor() {}
 
   virtual void	AddChambers();
   virtual void	FileOpen();
@@ -102,12 +102,12 @@ public:
   virtual void	SetModel(TObject* obj);
 
 protected:
-  AliEveTRDLoader	*fM;
-  TGTextEntry		*fFile;
-  TEveGValuator		*fEvent;
-  TEveGValuator		*fSMNumber, *fStackNumber, *fPlaneNumber;
+  AliEveTRDLoader	*fM;     // Model object.
+  TGTextEntry		*fFile;  // File name weed.
+  TEveGValuator		*fEvent; // Event no weed.
+  TEveGValuator		*fSMNumber, *fStackNumber, *fPlaneNumber; // Detector id weeds.
 
-  ClassDef(AliEveTRDLoaderEditor,1); // Editor for AliEveTRDLoader
+  ClassDef(AliEveTRDLoaderEditor,1); // Editor for AliEveTRDLoader.
 };
 
 #endif

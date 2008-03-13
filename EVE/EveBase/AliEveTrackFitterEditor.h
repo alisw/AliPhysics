@@ -7,15 +7,14 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-#ifndef ALIEVE_TrackFitterEditor_H
-#define ALIEVE_TrackFitterEditor_H
+#ifndef AliEveTrackFitterEditor_H
+#define AliEveTrackFitterEditor_H
 
 #include <TGedFrame.h>
 
 class TGCheckButton;
 class TGNumberEntry;
 class TGColorSelect;
-
 
 class AliEveTrackFitter;
 

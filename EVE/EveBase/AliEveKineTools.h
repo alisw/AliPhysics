@@ -7,8 +7,8 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-#ifndef ALIEVE_KineTools_H
-#define ALIEVE_KineTools_H
+#ifndef AliEveKineTools_H
+#define AliEveKineTools_H
 
 #include <TEveUtil.h>
 #include <TObject.h>

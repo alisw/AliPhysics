@@ -9,7 +9,6 @@
 
 void MUON_geomAll()
 {
-
   gGeoManager = gEve->GetGeometry("$REVESYS/alice-data/alice_fullgeo.root");
 
   TEveGeoTopNode* topn_re = new TEveGeoTopNode

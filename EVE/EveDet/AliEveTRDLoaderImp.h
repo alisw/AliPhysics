@@ -6,11 +6,11 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
-#ifndef ALIEVE_TRDLoaderImp_H
-#define ALIEVE_TRDLoaderImp_H
+#ifndef AliEveTRDLoaderImp_H
+#define AliEveTRDLoaderImp_H
 
 ////////////////////////////////////////////////////////////////////////
-//                                                                    //
+//
 // Single event loader for the TRD detector
 //    - AliEveTRDLoaderSim - loader for simulations based on gAlice
 //    - AliEveTRDLoaderRaw - loader for raw data
@@ -35,7 +35,7 @@ private:
   AliEveTRDLoaderSim& operator=(const AliEveTRDLoaderSim&); // Not implemented
 public:
   AliEveTRDLoaderSim(const Text_t* n="AliEveTRDLoaderSim", const Text_t* t=0);
-  ~AliEveTRDLoaderSim();
+  virtual ~AliEveTRDLoaderSim() {}
 
   Bool_t	GoToEvent(int ev);
   Bool_t	LoadHits(TTree *tH);
@@ -56,7 +56,7 @@ private:
 
 public:
   AliEveTRDLoaderRaw(const Text_t* n="AliEveTRDLoaderRaw", const Text_t* t=0);
-  ~AliEveTRDLoaderRaw();
+  virtual ~AliEveTRDLoaderRaw() {}
 
   Bool_t	GoToEvent(int ev);
   Bool_t 	LoadEvent();
@@ -67,11 +67,11 @@ private:
   void NextEvent(Bool_t rewindOnEnd=kTRUE);
 
 private:
-  AliRawReaderDate	*fRawDateReader;
-  AliRawReaderRoot	*fRawRootReader;
-  AliTRDrawData		*fRaw;
-  Bool_t		 fDataRoot;
-  Int_t			 fEventOld;
+  AliRawReaderDate	*fRawDateReader; // raw data reader
+  AliRawReaderRoot	*fRawRootReader; // raw root reader
+  AliTRDrawData		*fRaw;           // raw data
+  Bool_t		 fDataRoot;      // data in root format
+  Int_t			 fEventOld;      // old event
 
   ClassDef(AliEveTRDLoaderRaw, 1); // Alieve loader for the TRD detector (raw)
 };
@@ -86,14 +86,14 @@ private:
 public:
   AliEveTRDLoaderSimEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30,
 			   UInt_t options=kChildFrame, Pixel_t back=GetDefaultFrameBackground());
-  ~AliEveTRDLoaderSimEditor();
+  virtual ~AliEveTRDLoaderSimEditor() {}
 
   virtual void	SetModel(TObject* obj);
   virtual void	Toggle(Int_t id);
 
 protected:
-  AliEveTRDLoaderSim  *fM;
-  TGCheckButton       *fLoadHits, *fLoadDigits, *fLoadClusters, *fLoadTracks;
+  AliEveTRDLoaderSim  *fM; // Model object.
+  TGCheckButton       *fLoadHits, *fLoadDigits, *fLoadClusters, *fLoadTracks; // What data to load.
 
   ClassDef(AliEveTRDLoaderSimEditor,1); // Editor for AliEveTRDLoaderSim
 };

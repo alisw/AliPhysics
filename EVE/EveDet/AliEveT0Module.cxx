@@ -19,18 +19,17 @@
 
 #include <AliT0digit.h>
 #include <AliRawReader.h>
-#include <AliRawReaderFile.h>
-#include <AliRawReaderDate.h>
 #include <AliRawReaderRoot.h>
 #include <AliT0RawReader.h>
-#include <AliCDBManager.h>
 #include <AliCDBStorage.h>
 
+#include <TEveTrans.h>
+#include <TEveManager.h>
+#include <TTree.h>
 #include <TArrayI.h>
 #include <TStyle.h>
 #include <TMath.h>
 #include <TRandom.h>
-#include <TEveManager.h>
 
 
 ClassImp(AliEveT0Module)
@@ -42,17 +41,14 @@ AliEveT0Module::AliEveT0Module(const Text_t* n, Int_t sigType, AliT0digit *digit
   //
   // Default constructor
   //
-
 }
 
 /******************************************************************************/
-AliEveT0Module::~AliEveT0Module()
-{
-
-}
 
 void AliEveT0Module::LoadRaw(TString fileName, Int_t ievt)
 {
+  // Load raw-data from file.
+
   AliT0digit *digits = 0;
   AliRawReader *reader = new AliRawReaderRoot(fileName,ievt);
   reader->LoadEquipmentIdsMap("T0map.txt");
@@ -63,10 +59,12 @@ void AliEveT0Module::LoadRaw(TString fileName, Int_t ievt)
   //  cout<<ievt<<endl;
   TEveRGBAPalette* rawPalette  = new TEveRGBAPalette(0, 3000);
   rawPalette->SetLimits(1, 3000); // Set proper raw time range.
-  TEveQuadSet* raw_a = new AliEveT0Module("T0_RAW_A", 2,digits, start); raw_a->SetPalette(rawPalette);
-  raw_a->Reset(TEveQuadSet::kQT_HexagonXY, kFALSE, 32);
-  TEveQuadSet* raw_c = new AliEveT0Module("T0_RAW_C", 3,digits, start); raw_c->SetPalette(rawPalette);
-  raw_c->Reset(TEveQuadSet::kQT_HexagonXY, kFALSE, 32);
+  TEveQuadSet* rawA = new AliEveT0Module("T0_RAW_A", 2, digits, start);
+  rawA->SetPalette(rawPalette);
+  rawA->Reset(TEveQuadSet::kQT_HexagonXY, kFALSE, 32);
+  TEveQuadSet* rawC = new AliEveT0Module("T0_RAW_C", 3, digits, start);
+  rawC->SetPalette(rawPalette);
+  rawC->Reset(TEveQuadSet::kQT_HexagonXY, kFALSE, 32);
   Float_t angle  = 2 * TMath::Pi() / 12;
   start->Next();
   for (Int_t i=0; i<110; i++)
@@ -74,45 +72,50 @@ void AliEveT0Module::LoadRaw(TString fileName, Int_t ievt)
     for (Int_t iHit=0; iHit<5; iHit++)
     {
       allData[i][iHit]= start->GetData(i,iHit);
-      if (allData[i][iHit] != 0)  cout<<"event"<<ievt<<" i "<< i<<" "<<allData[i][iHit] - allData[0][0]<<endl;
+      if (allData[i][iHit] != 0) {
+        using namespace std;
+        cout <<"event"<< ievt <<" i "<< i <<" "<< allData[i][iHit] - allData[0][0] <<endl;
+      }
     }
   }
   for (Int_t i=0; i<12; i++)
   {
     Float_t x = 6.5 * TMath::Sin(i * angle);
     Float_t y = 6.5 * TMath::Cos(i * angle);
-    raw_a->AddHexagon(x, y, r.Uniform(-0.1, 0.1), 1.0);
-    raw_a->QuadValue(start->GetData(i+37,0)-start->GetData(0,0));
-    raw_c->AddHexagon(x, y, r.Uniform(-0.1, 0.1), 1.0);
-    raw_c->QuadValue(start->GetData(i+25,0)-start->GetData(0,0));
+    rawA->AddHexagon(x, y, r.Uniform(-0.1, 0.1), 1.0);
+    rawA->QuadValue(start->GetData(i+37,0)-start->GetData(0,0));
+    rawC->AddHexagon(x, y, r.Uniform(-0.1, 0.1), 1.0);
+    rawC->QuadValue(start->GetData(i+25,0)-start->GetData(0,0));
   }
 
+  rawA->RefitPlex();
+  rawC->RefitPlex();
 
-  raw_a->RefitPlex();
-  raw_c->RefitPlex();
+  TEveTrans& taA = rawA->RefMainTrans();
+  taA.SetPos(0, 0, 373);
+  TEveTrans& tcC = rawC->RefMainTrans();
+  tcC.SetPos(0, 0, -69.7);
 
-  TEveTrans& ta_a = raw_a->RefHMTrans();
-  ta_a.SetPos(0, 0, 373);
-  TEveTrans& tc_c = raw_c->RefHMTrans();
-  tc_c.SetPos(0, 0, -69.7);
-
-  gEve->AddElement(raw_a);
-  gEve->AddElement(raw_c);
+  gEve->AddElement(rawA);
+  gEve->AddElement(rawC);
   gEve->Redraw3D();
 }
 
 /******************************************************************************/
+
 void AliEveT0Module::MakeModules(AliT0digit *digits)
 {
-  TRandom r(0);
-  TArrayI ADC(24);
-  TArrayI TDC(24);
+  // Make modules for digits.
 
-  digits->GetQT1(ADC);
-  digits->GetTimeCFD(TDC);
+  TRandom r(0);
+  TArrayI adc(24);
+  TArrayI tdc(24);
+
+  digits->GetQT1(adc);
+  digits->GetTimeCFD(tdc);
   //    printf("%3d\n",besttimeright);
   for (Int_t i=0;i<24; i++){
-    printf("%3d %3d\n  ",ADC[i], TDC[i]);
+    printf("%3d %3d\n  ",adc[i], tdc[i]);
   }
 
   TEveRGBAPalette* adcPalette  = new TEveRGBAPalette(5, 1024);
@@ -132,26 +135,24 @@ void AliEveT0Module::MakeModules(AliT0digit *digits)
   qat->Reset(TEveQuadSet::kQT_HexagonXY, kFALSE, 32);
   qct->Reset(TEveQuadSet::kQT_HexagonXY, kFALSE, 32);
 
-
-
   for (Int_t i=0; i<12; i++) {
     Float_t x = 6.5 * TMath::Sin(i * angle);
     Float_t y = 6.5 * TMath::Cos(i * angle);
 
     qa->AddHexagon(x, y, r.Uniform(-0.1, 0.1), 1.0);
-    qa->QuadValue(ADC[i+12]);
+    qa->QuadValue(adc[i+12]);
     //    qa->QuadId(new TNamed(Form("PMT   with idx=%d", i), "PMT's aplitude in side A."));
 
     qat->AddHexagon(x, y, r.Uniform(-0.1, 0.1), 1.0);
-    qat->QuadValue(TDC[i+12]);
+    qat->QuadValue(tdc[i+12]);
     //    qat->QuadId(new TNamed(Form("Quad with idx=%d", i), "PMT's time in side A."));
 
     qc->AddHexagon(x, y, r.Uniform(-0.1, 0.1), 1.0);
-    qc->QuadValue(ADC[i]);
+    qc->QuadValue(adc[i]);
     // qc->QuadId(new TNamed(Form("Quad with idx=%d", i), "PMT's amplitude in side C."));
 
     qct->AddHexagon(x, y, r.Uniform(-0.1, 0.1), 1.0);
-    qct->QuadValue(TDC[i]);
+    qct->QuadValue(tdc[i]);
     // qct->QuadId(new TNamed(Form("Quad with idx=%d", i), "PMT's time in side C."));
   }
 
@@ -160,14 +161,14 @@ void AliEveT0Module::MakeModules(AliT0digit *digits)
   qat->RefitPlex();
   qct->RefitPlex();
 
-  TEveTrans& ta = qa->RefHMTrans();
+  TEveTrans& ta = qa->RefMainTrans();
   ta.SetPos(0, 0, 373);
-  TEveTrans& tc = qc->RefHMTrans();
+  TEveTrans& tc = qc->RefMainTrans();
   tc.SetPos(0, 0, -69.7);
 
-  TEveTrans& tat = qat->RefHMTrans();
+  TEveTrans& tat = qat->RefMainTrans();
   tat.SetPos(0, 0, 373);
-  TEveTrans& tct = qct->RefHMTrans();
+  TEveTrans& tct = qct->RefMainTrans();
   tct.SetPos(0, 0, -69.7);
 
   gEve->AddElement(qa);

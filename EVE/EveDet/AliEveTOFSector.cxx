@@ -8,11 +8,11 @@
  **************************************************************************/
 #include "AliEveTOFSector.h"
 
-#include <TEveManager.h>
-
 #include <AliTOFdigit.h>
 #include <AliTOFGeometry.h>
 
+#include <TEveTrans.h>
+#include <TEveManager.h>
 #include <TStyle.h>
 
 Bool_t           AliEveTOFSector::fgStaticInitDone    = kFALSE;
@@ -324,7 +324,8 @@ void AliEveTOFSector::LoadQuads()
 /* ************************************************************ */
 void AliEveTOFSector::SetTrans()
 {
-  fHMTrans.UnitTrans();
+  InitMainTrans();
+  TEveTrans& t = RefMainTrans();
 
   //Int_t det[5] = {fSector, -1, -1, -1, -1};
   Char_t path[100];
@@ -339,11 +340,10 @@ void AliEveTOFSector::SetTrans()
   Double_t *rotMat = global.GetRotationMatrix();
   Double_t *tr = global.GetTranslation();
 
-  fHMTrans.SetBaseVec(1, rotMat[0], rotMat[3], rotMat[6]);
-  fHMTrans.SetBaseVec(2, rotMat[1], rotMat[4], rotMat[7]);
-  fHMTrans.SetBaseVec(3, rotMat[2], rotMat[5], rotMat[8]);
-
-  fHMTrans.SetBaseVec(4, tr);
+  t.SetBaseVec(1, rotMat[0], rotMat[3], rotMat[6]);
+  t.SetBaseVec(2, rotMat[1], rotMat[4], rotMat[7]);
+  t.SetBaseVec(3, rotMat[2], rotMat[5], rotMat[8]);
+  t.SetBaseVec(4, tr);
 }
 
 //-----------------------------------------------------

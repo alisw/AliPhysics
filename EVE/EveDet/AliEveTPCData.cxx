@@ -16,6 +16,10 @@
 #include <AliTPCRawStream.h>
 #include <TTree.h>
 
+//==============================================================================
+//==============================================================================
+// AliEveTPCData
+//==============================================================================
 
 //______________________________________________________________________________
 //
@@ -170,7 +174,7 @@ void AliEveTPCData::LoadRaw(AliTPCRawStream& input, Bool_t spawnSectors, Bool_t 
   // via CreateSector() are loaded.
   // If spawnSectors is true sectors are created if data for them is encountered.
 
-  static const TEveException eH("AliEveTPCData::LoadRaw ");
+  static const TEveException kEH("AliEveTPCData::LoadRaw ");
 
   Int_t   sector = -1, row = -1, pad = -1, rowOffset = 0;
   Short_t time,  signal;
@@ -209,7 +213,7 @@ void AliEveTPCData::LoadRaw(AliTPCRawStream& input, Bool_t spawnSectors, Bool_t 
 
       if (pad >= AliEveTPCSectorData::GetNPadsInRow(row)) {
 	if (warn) {
-	  Warning(eH.Data(), "pad out of range (row=%d, pad=%d, maxpad=%d).",
+	  Warning(kEH.Data(), "pad out of range (row=%d, pad=%d, maxpad=%d).",
 		  row, pad, AliEveTPCSectorData::GetNPadsInRow(row));
 	}
 	continue;
@@ -232,7 +236,7 @@ void AliEveTPCData::LoadRaw(AliTPCRawStream& input, Bool_t spawnSectors, Bool_t 
     if (time >= lastTime) {
       if (lastTimeWarn == kFALSE) {
 	if (warn)
-	  Warning(eH.Data(), "time out of order (row=%d, pad=%d, time=%d, lastTime=%d).",
+	  Warning(kEH.Data(), "time out of order (row=%d, pad=%d, time=%d, lastTime=%d).",
 		  row, pad, time, lastTime);
         lastTimeWarn = kTRUE;
       }

@@ -6,6 +6,7 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
+
 //-*- Mode: C++ -*-
 #ifndef ALIEVEHOMERMANGER_H
 #define ALIEVEHOMERMANGER_H
@@ -297,58 +298,57 @@ private:
 
   // == XML parser ==
 
-  /** XML input file */
-  TString fXMLFile;                               // see above
+  /** 	 */
+  TString fXMLFile;                               // XML input file
 
-  /** XML parser into DOM model */
-  TDOMParser* fXMLParser;                         //! transient
+  /**  */
+  TDOMParser* fXMLParser;                         //! XML parser into DOM model
 
-  /** Root node of parsed config file */
-  TXMLNode * fRootNode;                           //! transient
+  /**  */
+  TXMLNode * fRootNode;                           //! Root node of parsed config file
 
   // == sources ==
 
-  /** List to HOMER sources */
-  TList * fSourceList;                            //! transient
+  /**  */
+  TList * fSourceList;                            //! List to HOMER sources
 
   // == connection ==
 
 
-  /** Pointer to HOMER reader */
-  AliHLTHOMERReader* fReader;                     //! transient
+  /**  */
+  AliHLTHOMERReader* fReader;                     //! Pointer to HOMER reader
 
   // == blocks ==
 
-  /** List to HOMER blocks */
-  TList * fBlockList;                             //! transient
+  /**  */
+  TList * fBlockList;                             //! List to HOMER blocks
 
   // == events ==
 
-  /** Number of blockes in current event */
-  ULong_t fNBlks;                                 // see above
+  /**  */
+  ULong_t fNBlks;                                 // Number of blockes in current event
 
-  /** EventID of current event */
-  ULong64_t fEventID;                             // see above
+  /**  */
+  ULong64_t fEventID;                             // EventID of current event
 
-  /** Current block in current event */
-  ULong_t fCurrentBlk;                            // see above
+  /**  */
+  ULong_t fCurrentBlk;                            // Current block in current event
 
   // == states ==
 
-  /** Shows connection status */
-  Bool_t fConnected;                              // see above
+  /**  */
+  Bool_t fConnected;                              // Shows connection status
 
-  /** Indicates, if a sources have changes,
-   *  so that one has to reconnect .
+  /**  .
    */
-  Bool_t fStateHasChanged;                        // see above
+  Bool_t fStateHasChanged;                        // Indicates, if a sources have changes, so that one has to reconnect.
 
 
   //----
 
-  AliTPCPreprocessorOnline* fTPCPre;
+  AliTPCPreprocessorOnline* fTPCPre;              // Preprocessor for TPC calibration.
 
-  ClassDef( AliEveHOMERManager, 0 )
+  ClassDef(AliEveHOMERManager, 0); // Manage connections to HLT data-sources.
 };
 
 #endif

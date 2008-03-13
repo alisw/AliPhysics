@@ -7,18 +7,23 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-#ifndef ALIEVE_TPCLoader_H
-#define ALIEVE_TPCLoader_H
+#ifndef AliEveTPCLoader_H
+#define AliEveTPCLoader_H
 
 #include <TEveElement.h>
 #include <vector>
 
 class AliRawReaderRoot;
 
-
 class AliEveTPCData;
 class AliEveTPCSector2D;
 class AliEveTPCSector3D;
+
+//------------------------------------------------------------------------------
+// AliEveTPCLoader
+//
+// GUI front-end for loading and displaying of TPC data in a stand-alone mode.
+//
 
 class AliEveTPCLoader : public TEveElementList
 {

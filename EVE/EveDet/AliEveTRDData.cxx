@@ -10,7 +10,6 @@
 #include "AliEveTRDData.h"
 #include "AliEveTRDModuleImp.h"
 
-#include "AliLog.h"
 #include "AliTRDhit.h"
 #include "AliTRDcluster.h"
 #include "AliTRDcalibDB.h"
@@ -29,11 +28,14 @@ ClassImp(AliEveTRDClusters)
 //______________________________________________________________________________
 AliEveTRDDigits::AliEveTRDDigits(AliEveTRDChamber *p) :
   TEveQuadSet("digits", ""), fParent(p), fBoxes(), fData()
-{}
+{
+  // Constructor.
+}
 
 //______________________________________________________________________________
 void AliEveTRDDigits::SetData(AliTRDdigitsManager *digits)
 {
+  // Set data source.
 
   fData.Allocate(fParent->fRowMax, fParent->fColMax, fParent->fTimeMax);
   //	digits->Expand();
@@ -134,6 +136,8 @@ void AliEveTRDDigits::ComputeRepresentation()
 //______________________________________________________________________________
 void AliEveTRDDigits::Paint(Option_t *option)
 {
+  // Paint the object.
+
   if(fParent->GetDigitsBox()) fBoxes.Paint(option);
   else TEveQuadSet::Paint(option);
 }
@@ -141,6 +145,8 @@ void AliEveTRDDigits::Paint(Option_t *option)
 //______________________________________________________________________________
 void AliEveTRDDigits::Reset()
 {
+  // Reset raw and visual data.
+
   TEveQuadSet::Reset(TEveQuadSet::kQT_FreeQuad, kTRUE, 64);
   // MT fBoxes.fBoxes.clear();
   fData.Reset();
@@ -153,11 +159,15 @@ void AliEveTRDDigits::Reset()
 //______________________________________________________________________________
 AliEveTRDHits::AliEveTRDHits(AliEveTRDChamber *p) :
   TEvePointSet("hits", 20), fParent(p)
-{}
+{
+  // Constructor.
+}
 
 //______________________________________________________________________________
 void AliEveTRDHits::PointSelected(Int_t n)
 {
+  // Handle an individual point selection from GL.
+
   fParent->SpawnEditor();
   AliTRDhit *h = dynamic_cast<AliTRDhit*>(GetPointId(n));
   printf("\nDetector             : %d\n", h->GetDetector());
@@ -170,16 +180,20 @@ void AliEveTRDHits::PointSelected(Int_t n)
 
 
 ///////////////////////////////////////////////////////////
-/////////////   AliEveTRDHits               /////////////////////
+/////////////   AliEveTRDHits         /////////////////////
 ///////////////////////////////////////////////////////////
 
 //______________________________________________________________________________
 AliEveTRDClusters::AliEveTRDClusters(AliEveTRDChamber *p):AliEveTRDHits(p)
-{}
+{
+  // Constructor.
+}
 
 //______________________________________________________________________________
 void AliEveTRDClusters::PointSelected(Int_t n)
 {
+  // Handle an individual point selection from GL.
+
   fParent->SpawnEditor();
   AliTRDcluster *c = dynamic_cast<AliTRDcluster*>(GetPointId(n));
   printf("\nDetector             : %d\n", c->GetDetector());
@@ -200,22 +214,22 @@ void AliEveTRDClusters::PointSelected(Int_t n)
 }
 
 ///////////////////////////////////////////////////////////
-/////////////   AliEveTRDHitsEditor         /////////////////////
+////////////   AliEveTRDHitsEditor      ///////////////////
 ///////////////////////////////////////////////////////////
 AliEveTRDHitsEditor::AliEveTRDHitsEditor(const TGWindow* p, Int_t width, Int_t height,
 					 UInt_t options, Pixel_t back) :
   TGedFrame(p, width, height, options, back),
   fM(0)
 {
+  // Constructor.
+
   MakeTitle("TRD Hits");
-
 }
-
-AliEveTRDHitsEditor::~AliEveTRDHitsEditor()
-{}
 
 void AliEveTRDHitsEditor::SetModel(TObject* obj)
 {
+  // Set model object.
+
   fM = dynamic_cast<AliEveTRDHits*>(obj);
 
   // 	Float_t x, y, z;
@@ -233,15 +247,15 @@ AliEveTRDDigitsEditor::AliEveTRDDigitsEditor(const TGWindow* p, Int_t width, Int
   TGedFrame(p, width, height, options, back),
   fM(0)
 {
+  // Constructor.
+
   MakeTitle("TRD Digits");
-
 }
-
-AliEveTRDDigitsEditor::~AliEveTRDDigitsEditor()
-{}
 
 void AliEveTRDDigitsEditor::SetModel(TObject* obj)
 {
+  // Set model object.
+
   fM = dynamic_cast<AliEveTRDDigits*>(obj);
   fM->fParent->SpawnEditor();
 

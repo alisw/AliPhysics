@@ -7,12 +7,17 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-#ifndef ALIEVE_AliEVEHOMERSourceList_H
-#define ALIEVE_AliEVEHOMERSourceList_H
+#ifndef AliEveAliEVEHOMERSourceList_H
+#define AliEveAliEVEHOMERSourceList_H
 
 #include <TEveElement.h>
 
 #include <TObject.h>
+
+#include <map>
+
+class AliEveHOMERManager;
+class AliEveHOMERSourceMap;
 
 class AliEveHOMERSourceList : public TEveElementList
 {
@@ -21,13 +26,29 @@ private:
   AliEveHOMERSourceList& operator=(const AliEveHOMERSourceList&); // Not implemented
 
 protected:
+  //SourceMap_t       fByType;
+  //ESourceGrouping_e fView;
+  //Bool_t            fDefaultState;
+
+  AliEveHOMERManager   *fManager;
+  AliEveHOMERSourceMap *fSrcMap;
 
 public:
   AliEveHOMERSourceList(const Text_t* n="HOMER Source List", const Text_t* t="");
-  virtual ~AliEveHOMERSourceList() {}
+  virtual ~AliEveHOMERSourceList();
 
-  void SelectAll();   // *MENU*
-  void DeselectAll(); // *MENU*
+  // void InitMap(TList* srcHandles, ESourceGrouping_e
+
+  AliEveHOMERManager* GetManager() const { return fManager; }
+  void SetManager(AliEveHOMERManager* m) { fManager = m; }
+
+  void CreateByDet();  // *MENU*
+  void CreateByType(); // *MENU*
+
+  void RebuildSourceReps();
+
+  //void SelectAll();   // *MENU*
+  //void DeselectAll(); // *MENU*
 
   ClassDef(AliEveHOMERSourceList, 1);
 }; // endclass AliEveHOMERSourceList

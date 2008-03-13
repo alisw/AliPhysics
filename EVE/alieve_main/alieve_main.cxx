@@ -20,19 +20,19 @@
 
 int main(int argc, char **argv)
 {
-  static const TEveException eH("alieve::main");
+  static const TEveException kEH("alieve::main");
 
   if (gSystem->Getenv("REVESYS") == 0) {
     if (gSystem->Getenv("ALICE_ROOT") != 0) {
-      Info(eH.Data(), "setting REVESYS from ALICE_ROOT.");
+      Info(kEH.Data(), "setting REVESYS from ALICE_ROOT.");
       gSystem->Setenv("REVESYS", Form("%s/EVE", gSystem->Getenv("ALICE_ROOT")));
     } else {
-      Error(eH.Data(), "REVESYS not defined, neither is ALICE_ROOT.");
+      Error(kEH.Data(), "REVESYS not defined, neither is ALICE_ROOT.");
       gSystem->Exit(1);
     }
   }
   if (gSystem->AccessPathName(gSystem->Getenv("REVESYS")) == kTRUE) {
-    Error(eH.Data(), "REVESYS '%s' does not exist.", gSystem->Getenv("REVESYS"));
+    Error(kEH.Data(), "REVESYS '%s' does not exist.", gSystem->Getenv("REVESYS"));
     gSystem->Exit(1);
   }
 

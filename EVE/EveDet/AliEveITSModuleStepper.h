@@ -7,14 +7,13 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-#ifndef ALIEVE_ITSModuleStepper_H
-#define ALIEVE_ITSModuleStepper_H
-
-#include <TNamed.h>
-#include <TGLOverlay.h>
+#ifndef AliEveITSModuleStepper_H
+#define AliEveITSModuleStepper_H
 
 #include <TEveElement.h>
 #include <TEveGridStepper.h>
+
+#include <TGLOverlay.h>
 
 #include <vector>
 
@@ -66,7 +65,7 @@ protected:
   Float_t                 fWHeight;     // 
   Float_t                 fWOff;        // Offset relative to widget size.
   Color_t                 fWCol;        // 
-  Int_t                   fWActiveCol;  // 
+  Color_t                 fWActiveCol;  // 
   Color_t                 fFontCol;     // 
 
   // wrappers
@@ -103,7 +102,7 @@ public:
   TEveGridStepper*  GetStepper()                   { return fStepper; }
   void              SetStepper(TEveGridStepper* s) { fStepper = s; Apply(); }
 
-  Int_t    GetCurrentPage();
+  Int_t    GetCurrentPage() const;
   Int_t    GetPages();
   void     Start();
   void     Next();
@@ -113,7 +112,7 @@ public:
   void     Capacity();
 
   // getters/setters
-  Color_t  GetWColor()           { return fWCol; }
+  Color_t  GetWColor() const     { return fWCol; }
   void     SetWColor(Color_t c)  { fWCol = c;    }
   TGLText* GetFont()             { return fText; }
   void     SetGLText(TGLText* t) { fText = t;    }

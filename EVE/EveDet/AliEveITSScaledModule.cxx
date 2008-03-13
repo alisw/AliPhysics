@@ -9,7 +9,6 @@
 
 #include "AliEveITSScaledModule.h"
 
-#include <AliITSgeom.h>
 #include <AliITSsegmentationSPD.h>
 #include <AliITSsegmentationSDD.h>
 #include <AliITSsegmentationSSD.h>
@@ -19,16 +18,22 @@
 #include <AliITSdigitSSD.h>
 
 #include <TMath.h>
+#include <TClonesArray.h>
+
+//==============================================================================
+//==============================================================================
+// AliEveDigitScaleInfo
+//==============================================================================
 
 //______________________________________________________________________________
-// AliEveDigitScaleInfo
 //
+// Encapsulates current state of scaling and agglomeration.
 
 ClassImp(AliEveDigitScaleInfo)
 
 AliEveDigitScaleInfo::AliEveDigitScaleInfo():
   fScale(1),
-  fStatType (kST_Average),
+  fStatType (kSTAverage),
   fSyncPalette(kFALSE)
 {
 }
@@ -57,40 +62,41 @@ void AliEveDigitScaleInfo::StatTypeChanged(Int_t t)
   while (i != fBackRefs.end())
   {
     sm = dynamic_cast<AliEveITSScaledModule*>(*i);
-    if(sm) sm->SetQuadValues();
+    if (sm) sm->SetQuadValues();
     ++i;
   }
 }
 
 //______________________________________________________________________________
-// ScaledDigit
+// ScaledDigit_t
 //
 
-AliEveITSScaledModule::ScaledDigit::ScaledDigit() :
+AliEveITSScaledModule::ScaledDigit_t::ScaledDigit_t() :
   TObject(),
-  N(0),
-  sum(0), sqr_sum(0),
-  min_i(-1), min_j(-1), max_i(-1), max_j(-1)
+  fN(0),
+  fSum(0), fSqrSum(0),
+  fMinI(-1), fMinJ(-1), fMaxI(-1), fMaxJ(-1)
 {
 }
 
-AliEveITSScaledModule::ScaledDigit::ScaledDigit(Int_t di, Int_t dj) :
+AliEveITSScaledModule::ScaledDigit_t::ScaledDigit_t(Int_t di, Int_t dj) :
   TObject(),
-  N(0),
-  sum(0), sqr_sum(0),
-  min_i(di), min_j(dj), max_i(di), max_j(dj)
+  fN(0),
+  fSum(0), fSqrSum(0),
+  fMinI(di), fMinJ(dj), fMaxI(di), fMaxJ(dj)
 {
 }
 
-void AliEveITSScaledModule::ScaledDigit::Dump() const
+void AliEveITSScaledModule::ScaledDigit_t::Dump() const
 {
-  printf("N %d, sum %f, sqr_sum %f",N, sum, sqr_sum);
+  printf("N %d, sum %f, sqr_sum %f", fN, fSum, fSqrSum);
 }
 
 
-//______________________________________________________________________________
-
+//==============================================================================
+//==============================================================================
 // AliEveITSScaledModule
+//==============================================================================
 
 //______________________________________________________________________________
 //
@@ -140,7 +146,7 @@ void AliEveITSScaledModule::LoadQuads()
   digits  = fInfo->GetDigits(fID, fDetID);
   ndigits = digits->GetEntriesFast();
 
-  ScaledDigit* sd;
+  ScaledDigit_t* sd;
   Int_t scale = fScaleInfo->GetScale() -1;
   switch(fDetID)
   {
@@ -175,26 +181,26 @@ void AliEveITSScaledModule::LoadQuads()
           z = dpz*(i) - fDz;
           x = dpx*(j) - fDx;
           AddQuad(x, z, dpx, dpz);
-          sd = new ScaledDigit(c1, c2);
+          sd = new ScaledDigit_t(c1, c2);
 	  QuadId(sd);
 	}
         else
 	{
-	  sd = dynamic_cast<ScaledDigit*>(GetId(miter->second));
-          if(c1 < sd->min_i)
-	    sd->min_i = c1;
-	  else if( c1 > sd->max_i)
-            sd->max_i = c1;
+	  sd = dynamic_cast<ScaledDigit_t*>(GetId(miter->second));
+          if(c1 < sd->fMinI)
+	    sd->fMinI = c1;
+	  else if( c1 > sd->fMaxI)
+            sd->fMaxI = c1;
 
-          if(c2 < sd->min_j)
-	    sd->min_j = c2;
-	  else if( c2 > sd->max_j)
-	    sd->max_j = c2;
+          if(c2 < sd->fMinJ)
+	    sd->fMinJ = c2;
+	  else if( c2 > sd->fMaxJ)
+	    sd->fMaxJ = c2;
 	}
 
-	sd->N++;
-	sd->sum  += od->GetSignal();
-	sd->sqr_sum += od->GetSignal()*od->GetSignal();
+	sd->fN++;
+	sd->fSum  += od->GetSignal();
+	sd->fSqrSum += od->GetSignal()*od->GetSignal();
       }
       break;
     }
@@ -231,25 +237,25 @@ void AliEveITSScaledModule::LoadQuads()
 	  z = dpz*(i) - fDz;
 	  x = dpx*(j) - fDx;
 	  AddQuad(x, z, dpx, dpz);
-	  sd = new ScaledDigit(od->GetCoord1(),od->GetCoord2());
+	  sd = new ScaledDigit_t(od->GetCoord1(),od->GetCoord2());
 	  QuadId(sd);
 	}
 	else
 	{
-	  sd = dynamic_cast<ScaledDigit*>(GetId(miter->second));
-	  if(c1 < sd->min_i)
-	    sd->min_i = c1;
-	  else if( c1 > sd->max_i)
-	    sd->max_i = c1;
+	  sd = dynamic_cast<ScaledDigit_t*>(GetId(miter->second));
+	  if(c1 < sd->fMinI)
+	    sd->fMinI = c1;
+	  else if( c1 > sd->fMaxI)
+	    sd->fMaxI = c1;
 
-	  if(c2 < sd->min_j)
-	    sd->min_j = c2;
-	  else if( c2 > sd->max_j)
-	    sd->max_j = c2;
+	  if(c2 < sd->fMinJ)
+	    sd->fMinJ = c2;
+	  else if( c2 > sd->fMaxJ)
+	    sd->fMaxJ = c2;
 	}
-	sd->N++;
-	sd->sum  += od->GetSignal();
-	sd->sqr_sum += od->GetSignal()*od->GetSignal();
+	sd->fN++;
+	sd->fSum  += od->GetSignal();
+	sd->fSqrSum += od->GetSignal()*od->GetSignal();
       }
       break;
     }
@@ -282,7 +288,7 @@ void AliEveITSScaledModule::LoadQuads()
 	id = j*i;
 
 	miter = dmap.find(id);
-	ScaledDigit* sd;
+	ScaledDigit_t* sd;
 	if(miter == dmap.end())
 	{
 	  // printf("orig digit %d,%d scaled %d,%d \n",od->GetCoord1(),od->GetCoord2(),i,j);
@@ -292,25 +298,25 @@ void AliEveITSScaledModule::LoadQuads()
 	  Float_t a = ( od->GetCoord1() == 1) ? ap : an;
 	  AddLine(x-a, -fDz, 2*a, 2*fDz);
 
-	  sd = new ScaledDigit(c1, c2);
+	  sd = new ScaledDigit_t(c1, c2);
 	  QuadId(sd);
 	}
 	else
 	{
-	  sd = dynamic_cast<ScaledDigit*>(GetId(miter->second));
-	  if(c1 < sd->min_i)
-	    sd->min_i = c1;
-	  else if( c1 > sd->max_i)
-	    sd->max_i = c1;
+	  sd = dynamic_cast<ScaledDigit_t*>(GetId(miter->second));
+	  if(c1 < sd->fMinI)
+	    sd->fMinI = c1;
+	  else if( c1 > sd->fMaxI)
+	    sd->fMaxI = c1;
 
-	  if(c2 < sd->min_j)
-	    sd->min_j = c2;
-	  else if( c2 > sd->max_j)
-	    sd->max_j = c2;
+	  if(c2 < sd->fMinJ)
+	    sd->fMinJ = c2;
+	  else if( c2 > sd->fMaxJ)
+	    sd->fMaxJ = c2;
 	}
-	sd->N++;
-	sd->sum  += od->GetSignal();
-	sd->sqr_sum += od->GetSignal()*od->GetSignal();
+	sd->fN++;
+	sd->fSum  += od->GetSignal();
+	sd->fSqrSum += od->GetSignal()*od->GetSignal();
       } // for digits
       break;
     } // end case 2
@@ -326,23 +332,23 @@ void AliEveITSScaledModule::SetQuadValues()
 {
   if(fScaleInfo->GetSyncPalette()) SyncPalette();
 
-  Int_t N = fPlex.Size();
-  for (Int_t i = 0 ; i< N; i++)
+  Int_t num = fPlex.Size();
+  for (Int_t i = 0 ; i < num; i++)
   {
-    ScaledDigit* sd = dynamic_cast<ScaledDigit*>(GetId(i));
+    ScaledDigit_t* sd = dynamic_cast<ScaledDigit_t*>(GetId(i));
     Int_t v = 0;
     switch(fScaleInfo->GetStatType())
     {
       using namespace TMath;
 
-      case AliEveDigitScaleInfo::kST_Occup:
-	v = Nint((100.0*sd->N) / (fNCx*fNCz));
+      case AliEveDigitScaleInfo::kSTOccup:
+	v = Nint((100.0*sd->fN) / (fNCx*fNCz));
 	break;
-      case AliEveDigitScaleInfo::kST_Average:
-	v = Nint((Double_t) sd->sum / sd->N);
+      case AliEveDigitScaleInfo::kSTAverage:
+	v = Nint((Double_t) sd->fSum / sd->fN);
 	break;
-      case AliEveDigitScaleInfo::kST_Rms:
-	v = Nint(Sqrt(sd->sqr_sum) / sd->N);
+      case AliEveDigitScaleInfo::kSTRms:
+	v = Nint(Sqrt(sd->fSqrSum) / sd->fN);
 	break;
     }
     DigitBase_t* qb = GetDigit(i);
@@ -355,7 +361,7 @@ void AliEveITSScaledModule::SetQuadValues()
 void AliEveITSScaledModule::SyncPalette()
 {
   // printf("AliEveITSScaledModule::SyncPalette()\n");
-  if(fScaleInfo->GetStatType() == AliEveDigitScaleInfo::kST_Occup)
+  if(fScaleInfo->GetStatType() == AliEveDigitScaleInfo::kSTOccup)
   {
     // SPD
     AliEveITSModule::fgSPDPalette->SetLimits(0, 100);
@@ -371,18 +377,18 @@ void AliEveITSScaledModule::SyncPalette()
   }
   else
   {
-    AliEveITSDigitsInfo& DI = *fInfo;
+    AliEveITSDigitsInfo& di = *fInfo;
     // SPD
-    AliEveITSModule::fgSPDPalette->SetLimits(0, DI.fSPDHighLim);
-    AliEveITSModule::fgSPDPalette->SetMinMax(DI.fSPDMinVal, DI.fSPDMaxVal);
+    AliEveITSModule::fgSPDPalette->SetLimits(0, di.fSPDHighLim);
+    AliEveITSModule::fgSPDPalette->SetMinMax(di.fSPDMinVal, di.fSPDMaxVal);
 
     // SDD
-    AliEveITSModule::fgSDDPalette->SetLimits(0, DI.fSDDHighLim);
-    AliEveITSModule::fgSDDPalette->SetMinMax(DI.fSDDMinVal, DI.fSDDMaxVal);
+    AliEveITSModule::fgSDDPalette->SetLimits(0, di.fSDDHighLim);
+    AliEveITSModule::fgSDDPalette->SetMinMax(di.fSDDMinVal, di.fSDDMaxVal);
 
     // SSD
-    AliEveITSModule::fgSSDPalette->SetLimits(0, DI.fSSDHighLim);
-    AliEveITSModule::fgSSDPalette->SetMinMax(DI.fSSDMinVal, DI.fSSDMaxVal);
+    AliEveITSModule::fgSSDPalette->SetLimits(0, di.fSSDHighLim);
+    AliEveITSModule::fgSSDPalette->SetMinMax(di.fSSDMinVal, di.fSSDMaxVal);
   }
 
   fScaleInfo->SetSyncPalette(kFALSE);
@@ -390,10 +396,10 @@ void AliEveITSScaledModule::SyncPalette()
 
 /******************************************************************************/
 
-void AliEveITSScaledModule::GetScaleData(Int_t& cnx, Int_t& cnz, Int_t& total)
+void AliEveITSScaledModule::GetScaleData(Int_t& cnx, Int_t& cnz, Int_t& total) const
 {
-  cnx =fNx;
-  cnz =fNz;
+  cnx   = fNx;
+  cnz   = fNz;
   total = cnx*cnz;
 }
 
@@ -406,19 +412,19 @@ void  AliEveITSScaledModule::DigitSelected(Int_t idx)
 
   DigitBase_t* qb  = GetDigit(idx);
   TObject* obj  = qb->fId.GetObject();
-  ScaledDigit* sd = dynamic_cast<ScaledDigit*>(obj);
+  ScaledDigit_t* sd = dynamic_cast<ScaledDigit_t*>(obj);
   TClonesArray *digits = fInfo->GetDigits(fID, fDetID);
   Int_t ndigits = digits->GetEntriesFast();
 
-  printf("%d digits in cell scaleX = %d,  scaleZ = %d \n", sd->N, fNCx, fNCz);
+  printf("%d digits in cell scaleX = %d,  scaleZ = %d \n", sd->fN, fNCx, fNCz);
 
   Int_t il = 0;
   for(Int_t k=0; k<ndigits; k++)
   {
     AliITSdigit *d = (AliITSdigit*) digits->UncheckedAt(k);
 
-    if(d->GetCoord1()>=sd->min_i && d->GetCoord1()<=sd->max_i &&
-       d->GetCoord2()>=sd->min_j && d->GetCoord2()<=sd->max_j)
+    if(d->GetCoord1()>=sd->fMinI && d->GetCoord1()<=sd->fMaxI &&
+       d->GetCoord2()>=sd->fMinJ && d->GetCoord2()<=sd->fMaxJ)
     {
       printf("%3d, %3d: %3d", d->GetCoord1(), d->GetCoord2(), d->GetSignal());
       printf(" | ");

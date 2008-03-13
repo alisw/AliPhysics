@@ -7,8 +7,8 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-#ifndef ALIEVE_TPCLoaderEditor_H
-#define ALIEVE_TPCLoaderEditor_H
+#ifndef AliEveTPCLoaderEditor_H
+#define AliEveTPCLoaderEditor_H
 
 #include <TGedFrame.h>
 
@@ -20,8 +20,13 @@ class TGTextEntry;
 
 class TEveGValuator;
 
-
 class AliEveTPCLoader;
+
+//------------------------------------------------------------------------------
+// AliEveTPCLoaderEditor
+//
+// GUI editor for AliEveTPCLoader.
+//
 
 class AliEveTPCLoaderEditor : public TGedFrame
 {
@@ -50,7 +55,7 @@ protected:
 public:
   AliEveTPCLoaderEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30,
                         UInt_t options=kChildFrame, Pixel_t back=GetDefaultFrameBackground());
-  ~AliEveTPCLoaderEditor() {}
+  virtual ~AliEveTPCLoaderEditor() {}
 
   virtual void SetModel(TObject* obj);
 
@@ -71,6 +76,6 @@ public:
   void DoDeleteSectors3D();
 
   ClassDef(AliEveTPCLoaderEditor, 0); // Editor for AliEveTPCLoader.
-}; // endclass AliEveTPCLoaderEditor
+};
 
 #endif

@@ -7,8 +7,8 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-#ifndef ALIEVE_TRDModule_H
-#define ALIEVE_TRDModule_H
+#ifndef AliEveTRDModule_H
+#define AliEveTRDModule_H
 
 /////////////////////////////////////////////////////////////////////////
 //
@@ -20,13 +20,8 @@
 // by A.Bercuci (A.Bercuci@gsi.de)   Fri Oct 27 2006
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef ROOT_TNamed
 #include <TNamed.h>
-#endif
-
-#ifndef ROOT_TGedFrame
 #include <TGedFrame.h>
-#endif
 
 class TObject;
 class TGWindow;
@@ -49,26 +44,26 @@ public:
   AliEveTRDModule(const char *typ="XXX", Int_t id=0);
   virtual ~AliEveTRDModule() {}
 
-  virtual Bool_t GetDigitsBox(){return fDigitsBox;}
-  virtual Bool_t GetDigitsLog(){return fDigitsLog;}
-  virtual UShort_t GetDigitsThreshold(){return fDigitsThreshold;}
-  virtual Int_t	GetID(){return fDet;}
+  virtual Bool_t GetDigitsBox() const {return fDigitsBox;}
+  virtual Bool_t GetDigitsLog() const {return fDigitsLog;}
+  virtual UShort_t GetDigitsThreshold() const {return fDigitsThreshold;}
+  virtual Int_t	GetID() const {return fDet;}
   virtual void	Paint(Option_t* option="")=0;
   virtual void	Reset()=0;
 
 protected:
   // UI section
-  Bool_t	fLoadHits, fRnrHits;
-  Bool_t	fLoadDigits, fRnrDigits, fDigitsLog, fDigitsBox;
-  Bool_t	fDigitsNeedRecompute;
+  Bool_t	fLoadHits, fRnrHits, fLoadDigits;   // What to load.
+  Bool_t	fRnrDigits, fDigitsLog, fDigitsBox; // What to show.
+  Bool_t	fDigitsNeedRecompute;               // Need to recompute digits.
 
-  Bool_t	fLoadRecPoints, fRnrRecPoints;
-  Bool_t	fLoadTracklets, fRnrTracklets;
+  Bool_t	fLoadRecPoints, fRnrRecPoints; // What to do with recpoints.
+  Bool_t	fLoadTracklets, fRnrTracklets; // What to do with tracklets.
 
   Int_t         fDet;             // detector number
   UShort_t	fDigitsThreshold; // digits threshold
 
-  ClassDef(AliEveTRDModule,1); // Structure holder for TRD chamber
+  ClassDef(AliEveTRDModule,1); // Structure holder for TRD chamber.
 };
 
 
@@ -81,7 +76,7 @@ private:
 public:
   AliEveTRDModuleEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30,
 			UInt_t options=kChildFrame, Pixel_t back=GetDefaultFrameBackground());
-  ~AliEveTRDModuleEditor();
+  virtual ~AliEveTRDModuleEditor() {}
 
   virtual void SetModel(TObject* obj);
 
@@ -92,18 +87,18 @@ public:
   void	UpdateHits(Pixel_t);
 
 protected:
-  AliEveTRDModule* fM;
+  AliEveTRDModule* fM; // Model object.
 
 private:
-  TGCheckButton *fDisplayHits;
-  TGColorSelect *fHitsColor;
-  TGCheckButton *fDisplayDigits, *fToggleLog, *fToggleBox, *fThreshold;
-  TGNumberEntry	*fThresValue;
-  TGCheckButton *fDisplayClusters;
-  TGColorSelect *fClustersColor;
-  TGCheckButton *fDisplayTracks;
+  TGCheckButton *fDisplayHits; // Hit control.
+  TGColorSelect *fHitsColor;   // Hit color.
+  TGCheckButton *fDisplayDigits, *fToggleLog, *fToggleBox, *fThreshold; // Display toggles.
+  TGNumberEntry	*fThresValue;       // Threshold weed.
+  TGCheckButton *fDisplayClusters;  // Cluster control.
+  TGColorSelect *fClustersColor;    // Cluster color.
+  TGCheckButton *fDisplayTracks;    // Track control.
 
-  ClassDef(AliEveTRDModuleEditor,1); // Editor for AliEveTRDModule
+  ClassDef(AliEveTRDModuleEditor,1); // Editor for AliEveTRDModule.
 };
 
 #endif

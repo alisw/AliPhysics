@@ -14,8 +14,8 @@ Ludovic Gaudichet (gaudichet@to.infn.it)
 ************************************************************************/
 
 
-#ifndef ALIEVE_CascadeEditors_H
-#define ALIEVE_CascadeEditors_H
+#ifndef AliEveCascadeEditors_H
+#define AliEveCascadeEditors_H
 
 #include <TGedFrame.h>
 

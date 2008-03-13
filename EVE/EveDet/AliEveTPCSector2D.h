@@ -7,14 +7,18 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-#ifndef ALIEVE_TPCSector2D_H
-#define ALIEVE_TPCSector2D_H
+#ifndef AliEveTPCSector2D_H
+#define AliEveTPCSector2D_H
 
 #include "AliEveTPCSectorViz.h"
 
-
 class AliEveTPCSector2DEditor;
 class AliEveTPCSector2DGL;
+
+//------------------------------------------------------------------------------
+// AliEveTPCSector2D
+//
+// Visualization of TPC raw-data in 2D.
 
 class AliEveTPCSector2D : public AliEveTPCSectorViz
 {

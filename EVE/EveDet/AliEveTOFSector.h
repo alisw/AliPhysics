@@ -6,8 +6,8 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
-#ifndef ALIEVE_TOFSector_H
-#define ALIEVE_TOFSector_H
+#ifndef AliEveTOFSector_H
+#define AliEveTOFSector_H
 
 #include <TEveQuadSet.h>
 #include <TEveElement.h>

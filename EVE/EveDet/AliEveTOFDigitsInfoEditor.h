@@ -7,8 +7,8 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-#ifndef ALIEVE_TOFDigitsInfoEditor_H
-#define ALIEVE_TOFDigitsInfoEditor_H
+#ifndef AliEveTOFDigitsInfoEditor_H
+#define AliEveTOFDigitsInfoEditor_H
 
 #include <TGedFrame.h>
 

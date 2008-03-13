@@ -11,8 +11,8 @@ class TEveProjectionManager;
 class TEveGeoShape;
 class TEveUtil;
 
-TEveProjectionManager  * proj = 0;
-TEveGeoShape * geom = 0;
+TEveProjectionManager  *proj = 0;
+TEveGeoShape *geom = 0;
 
 void NLT_trackcount_init()
 {
@@ -37,17 +37,25 @@ void NLT_trackcount_init()
   TEveTrackCounter* g_trkcnt = new TEveTrackCounter("Primary Counter");
   gEve->AddToListTree(g_trkcnt, kFALSE);
 
-  TEveProjectionManager* p = new TEveProjectionManager; proj = p;
-  gEve->AddToListTree(p, kTRUE);
+  TEveProjectionManager* pm = new TEveProjectionManager(); 
+  proj = pm;
+  gEve->AddToListTree(proj, kTRUE);
   gEve->AddElement(proj, ns);
+  
+  TEveProjectionAxes* axes = new TEveProjectionAxes(proj);
+  axes->SetText("Projected Track-Count");
+  axes->SetFontFile("comicbd");
+  axes->SetFontSize(20);
+  gEve->AddElement(axes, ns);
+  gEve->AddToListTree(axes, kTRUE);
 
   // geometry
   TEveGeoShape* gg = geom_gentle();
   geom = gg;
 
   // event
-  gEvent->AddNewEventCommand("on_new_event();");
-  gEvent->GotoEvent(0);
+  gAliEveEvent->AddNewEventCommand("on_new_event();");
+  gAliEveEvent->GotoEvent(0);
 
   gEve->Redraw3D(kTRUE);
 }
@@ -77,7 +85,7 @@ void on_new_event()
   Int_t count = 1;
   TEveTrackCounter* g_trkcnt = TEveTrackCounter::fgInstance;
   g_trkcnt->Reset();
-  g_trkcnt->SetEventId(gEvent->GetEventId());
+  g_trkcnt->SetEventId(gAliEveEvent->GetEventId());
   TEveElement::List_i i = cont->BeginChildren();
   while (i != cont->EndChildren()) {
     TEveTrackList* l = dynamic_cast<TEveTrackList*>(*i);

@@ -7,16 +7,15 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-#ifndef ALIEVE_VSDCreator_H
-#define ALIEVE_VSDCreator_H
+#ifndef AliEveVSDCreator_H
+#define AliEveVSDCreator_H
 
 #include <TEveVSD.h>
 
-class AliTPCParam;
-class AliRunLoader;
-
 #include <map>
 
+class AliTPCParam;
+class AliRunLoader;
 
 class AliEveVSDCreator : public TEveVSD
 {

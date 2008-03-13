@@ -6,8 +6,8 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
-#ifndef ALIEVE_MUONChamberEditor_H
-#define ALIEVE_MUONChamberEditor_H
+#ifndef AliEveMUONChamberEditor_H
+#define AliEveMUONChamberEditor_H
 
 #include <TGedFrame.h>
 
@@ -24,12 +24,10 @@ class AliEveMUONChamber;
 
 class AliEveMUONChamberEditor : public TGedFrame
 {
-private:
   AliEveMUONChamberEditor(const AliEveMUONChamberEditor&);            // Not implemented
   AliEveMUONChamberEditor& operator=(const AliEveMUONChamberEditor&); // Not implemented
 
 protected:
-
   AliEveMUONChamber* fM; // fModel dynamic-casted to AliEveMUONChamberEditor
 
   TEveGValuator *fThreshold;   // digit ADC min
@@ -38,7 +36,6 @@ protected:
   TEveGValuator *fHitSize;     // hit point size
 
  public:
-
   AliEveMUONChamberEditor(const TGWindow* p = 0,
 		    Int_t width = 170, Int_t height = 30,
 		    UInt_t options = kChildFrame,

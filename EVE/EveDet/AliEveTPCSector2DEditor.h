@@ -7,16 +7,21 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-#ifndef ALIEVE_TPCSector2DEditor_H
-#define ALIEVE_TPCSector2DEditor_H
+#ifndef AliEveTPCSector2DEditor_H
+#define AliEveTPCSector2DEditor_H
 
 #include <TGedFrame.h>
 
 class TGCheckButton;
 class TGComboBox;
 
-
 class AliEveTPCSector2D;
+
+//------------------------------------------------------------------------------
+// AliEveTPCSector2DEditor
+//
+// GUI editor for AliEveTPCSector2D.
+//
 
 class AliEveTPCSector2DEditor : public TGedFrame
 {
@@ -36,7 +41,7 @@ protected:
 public:
   AliEveTPCSector2DEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30,
 		    UInt_t options=kChildFrame, Pixel_t back=GetDefaultFrameBackground());
-  ~AliEveTPCSector2DEditor() {}
+  virtual ~AliEveTPCSector2DEditor() {}
 
   virtual void SetModel(TObject* obj);
 
@@ -49,6 +54,6 @@ public:
   void DoPickMode(Int_t mode);
 
   ClassDef(AliEveTPCSector2DEditor, 0); // Editor for AliEveTPCSector2D.
-}; // endclass AliEveTPCSector2DEditor
+};
 
 #endif

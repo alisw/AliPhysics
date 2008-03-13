@@ -8,6 +8,8 @@
  **************************************************************************/
 
 #include "AliEveHOMERSourceList.h"
+#include "AliEveHOMERSourceMap.h"
+#include "AliEveHOMERManager.h"
 
 //______________________________________________________________________________
 // AliEveHOMERSourceList
@@ -16,11 +18,65 @@
 ClassImp(AliEveHOMERSourceList)
 
 AliEveHOMERSourceList::AliEveHOMERSourceList(const Text_t* n, const Text_t* t) :
-  TEveElementList(n, t)
+  TEveElementList(n, t),
+  fManager (0),
+  fSrcMap  (0)
 {
 
 }
 
+AliEveHOMERSourceList::~AliEveHOMERSourceList()
+{
+  // !!!!! delete maps
+}
+
+/******************************************************************************/
+
+void AliEveHOMERSourceList::CreateByDet()
+{
+  delete fSrcMap;
+  fSrcMap = AliEveHOMERSourceMap::Create(AliEveHOMERSourceMap::kSG_ByDet);
+  RebuildSourceReps();
+}
+
+void AliEveHOMERSourceList::CreateByType()
+{
+  delete fSrcMap;
+  fSrcMap = AliEveHOMERSourceMap::Create(AliEveHOMERSourceMap::kSG_ByType);
+  RebuildSourceReps();
+}
+
+void AliEveHOMERSourceList::RebuildSourceReps()
+{
+  DestroyElements();
+  // !!!! if fManager ?
+  // ???? fManager->CreateHOMERSourcesList();
+  TList* srcList = fManager->GetSourceList();
+  fSrcMap->FillMap(srcList, 1);
+
+  List_t parentStack;
+  parentStack.push_back(this);
+  Int_t parentLvl = 1;
+  for (AliEveHOMERSourceMap::iterator i=fSrcMap->begin(); i!=fSrcMap->end(); ++i)
+  {
+    while (parentLvl > i.level()) { parentStack.pop_back(); --parentLvl; }
+
+    AliEveHOMERSource* src = new AliEveHOMERSource(i.description());
+    src->SetSource(&i.id(), &i.state());
+
+    parentStack.back()->AddElement(src);
+
+    parentStack.push_back(src); ++parentLvl;
+
+    printf("%*s%s [state=%d, handle=0x%lx] {ssdet='%s'}\n", 4*i.level(), "",
+	   i.description().Data(), i.state().fState,
+	   (ULong_t) i.state().fHandle,
+	   i.id().fSSDet.Data());
+  }
+}
+
+/******************************************************************************/
+/*
 void AliEveHOMERSourceList::SelectAll()
 {
   EnableListElements(kTRUE, kTRUE);
@@ -30,3 +86,4 @@ void AliEveHOMERSourceList::DeselectAll()
 {
   DisableListElements (kFALSE, kFALSE);
 }
+*/

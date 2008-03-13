@@ -6,6 +6,7 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
+
 #include "AliEveTRDModule.h"
 #include "AliEveTRDModuleImp.h"
 
@@ -13,12 +14,8 @@
 #include "TGColorSelect.h"
 #include "TGNumberEntry.h"
 #include "TG3DLine.h"
-//#include "TColor.h"
-//#include "TMath.h"
 
 #include "TEveManager.h"
-#include "TEveTrack.h"
-
 
 ClassImp(AliEveTRDModule)
 ClassImp(AliEveTRDModuleEditor)
@@ -47,8 +44,6 @@ AliEveTRDModule::AliEveTRDModule(const char *typ, Int_t det) :
   // Constructor.
 }
 
-
-
 ///////////////////////////////////////////////////////////
 //////////   AliEveTRDModuleEditor       //////////////////
 ///////////////////////////////////////////////////////////
@@ -66,6 +61,8 @@ AliEveTRDModuleEditor::AliEveTRDModuleEditor(const TGWindow* p, Int_t width, Int
   fClustersColor(0),
   fDisplayTracks(0)
 {
+  // Constructor.
+
   MakeTitle("TRD Detector");
 
   // "Hits" group frame
@@ -78,9 +75,9 @@ AliEveTRDModuleEditor::AliEveTRDModuleEditor(const TGWindow* p, Int_t width, Int
 			"AliEveTRDModuleEditor", this, "UpdateChamber()");
 
   // color select widget
-  ULong_t ColPar1;
-  gClient->GetColorByName("#ff00ff", ColPar1);
-  fHitsColor = new TGColorSelect(fGroupFrame615, ColPar1, -1);
+  ULong_t lColPar1;
+  gClient->GetColorByName("#ff00ff", lColPar1);
+  fHitsColor = new TGColorSelect(fGroupFrame615, lColPar1, -1);
 
   fGroupFrame615->AddFrame(fHitsColor, new TGLayoutHints(kLHintsLeft | kLHintsCenterX | kLHintsTop | kLHintsCenterY,2,2,2,2));
   fHitsColor->Connect("ColorSelected(Pixel_t)",
@@ -141,9 +138,9 @@ AliEveTRDModuleEditor::AliEveTRDModuleEditor(const TGWindow* p, Int_t width, Int
 			    "AliEveTRDModuleEditor", this, "UpdateChamber()");
 
   // color select widget
-  ULong_t ColPar2;
-  gClient->GetColorByName("#ff00ff", ColPar2);
-  fClustersColor = new TGColorSelect(fGroupFrame649, ColPar2, -1);
+  ULong_t lColPar2;
+  gClient->GetColorByName("#ff00ff", lColPar2);
+  fClustersColor = new TGColorSelect(fGroupFrame649, lColPar2, -1);
 
   fGroupFrame649->AddFrame(fClustersColor, new TGLayoutHints(kLHintsLeft | kLHintsCenterX | kLHintsTop | kLHintsCenterY,2,2,2,2));
   fClustersColor->Connect("ColorSelected(Pixel_t)",
@@ -166,15 +163,12 @@ AliEveTRDModuleEditor::AliEveTRDModuleEditor(const TGWindow* p, Int_t width, Int
 }
 
 //______________________________________________________________________________
-AliEveTRDModuleEditor::~AliEveTRDModuleEditor()
-{}
-
-//______________________________________________________________________________
 void AliEveTRDModuleEditor::SetModel(TObject* obj)
 {
-  // Takes care to update UI state according to model state
+  // Set model object.
 
   fM = dynamic_cast<AliEveTRDModule*>(obj);
+
   if(AliEveTRDNode *node = dynamic_cast<AliEveTRDNode*>(fM)) node->UpdateNode();
 
   fDisplayHits->SetEnabled(fM->fLoadHits);
@@ -205,6 +199,8 @@ void AliEveTRDModuleEditor::SetModel(TObject* obj)
 //______________________________________________________________________________
 void AliEveTRDModuleEditor::ModifyDigitsView()
 {
+  // Slor to modify digit view.
+
   fM->fDigitsNeedRecompute = kTRUE;
   UpdateChamber();
 }
@@ -212,6 +208,8 @@ void AliEveTRDModuleEditor::ModifyDigitsView()
 //______________________________________________________________________________
 void AliEveTRDModuleEditor::SetThreshold(Long_t tres)
 {
+  // Slot for SetThreshold.
+
   if(!fM->fLoadDigits) return;
 
   fM->fDigitsThreshold = (tres == 0) ? (int)fThresValue->GetNumber():tres;

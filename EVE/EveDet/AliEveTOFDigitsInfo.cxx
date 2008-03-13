@@ -48,7 +48,7 @@ AliEveTOFDigitsInfo:: ~AliEveTOFDigitsInfo()
 
 void AliEveTOFDigitsInfo::SetTree(TTree* tree)
 {
-  static const TEveException eH("AliEveTOFDigitsInfo::SetTree ");
+  static const TEveException kEH("AliEveTOFDigitsInfo::SetTree ");
   
   if(fGeom == 0) {
     fGeom = new AliTOFGeometry();

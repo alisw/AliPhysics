@@ -12,21 +12,19 @@
 
 #include <TEveGValuators.h>
 
-#include <TVirtualPad.h>
-#include <TColor.h>
-#include <TROOT.h>
-#include <TGLabel.h>
 #include <TGButton.h>
 #include <TGNumberEntry.h>
-#include <TGColorSelect.h>
-#include <TGDoubleSlider.h>
 #include <TGFrame.h>
 #include <TGTab.h>
 
+//==============================================================================
+//==============================================================================
+// AliEveJetPlaneEditor
+//==============================================================================
 
 //______________________________________________________________________________
-// AliEveJetPlaneEditor
 //
+// GUI editor for AliEveJetPlane class.
 
 AliEveJetPlaneEditor::StaticDataWindow* AliEveJetPlaneEditor::fgStaticWindow = 0;
 
@@ -175,12 +173,15 @@ void AliEveJetPlaneEditor::DoStaticDataWindow()
 }
 
 
-/******************************************************************************/
-/******************************************************************************/
+//==============================================================================
+//==============================================================================
+// AliEveJetPlaneEditor::StaticDataWindow
+//==============================================================================
 
 //______________________________________________________________________________
 //
 // Common settings for all AliEveJetPlane objects.
+// Used as a pop-up from AliEveJetPlaneEditor.
 
 ClassImp(AliEveJetPlaneEditor::StaticDataWindow)
 

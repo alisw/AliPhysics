@@ -10,7 +10,12 @@
 #include "AliEveTPCSectorData.h"
 #include <AliTPCParamSR.h>
 
-#include <string.h>
+#include <set>
+
+//==============================================================================
+//==============================================================================
+// AliEveTPCSectorData
+//==============================================================================
 
 //______________________________________________________________________________
 //
@@ -55,11 +60,13 @@ void AliEveTPCSectorData::InitStatics()
   fgRowBegs  = new Int_t[fgNAllRows + 1];
 
   Int_t row = 0;
-  for (Int_t i=0; i<fgParam->GetNRowLow(); ++i, ++row) {
+  for (Int_t i=0; i<fgParam->GetNRowLow(); ++i, ++row)
+  {
     fgRowBegs[row] = fgNAllPads;
     fgNAllPads += fgParam->GetNPadsLow(i);
   }
-  for (Int_t i=0; i<fgParam->GetNRowUp(); ++i, ++row) {
+  for (Int_t i=0; i<fgParam->GetNRowUp(); ++i, ++row)
+  {
     fgRowBegs[row] = fgNAllPads;
     fgNAllPads += fgParam->GetNPadsUp(i);
   }
@@ -100,8 +107,10 @@ void AliEveTPCSectorData::InitStatics()
   Int_t k, npads;
   // Inn
   k=0, npads = fgParam->GetNPadsLow(0);
-  for (int row = 0; row < fgInnSeg.fNRows; ++row) {
-    if (fgParam->GetNPadsLow(row) > npads) {
+  for (int row = 0; row < fgInnSeg.fNRows; ++row)
+  {
+    if (fgParam->GetNPadsLow(row) > npads)
+    {
       npads = fgParam->GetNPadsLow(row);
       fgInnSeg.fYStep[k] = row*fgInnSeg.fPadHeight + fgInnSeg.fRLow;
       k++;
@@ -110,8 +119,10 @@ void AliEveTPCSectorData::InitStatics()
   fgInnSeg.fNYSteps = k;
   // Out1 seg
   k=0; npads = fgParam->GetNPadsUp(0);
-  for (int row = 0; row < fgOut1Seg.fNRows; ++row) {
-    if (fgParam->GetNPadsUp(row) > npads) {
+  for (int row = 0; row < fgOut1Seg.fNRows; ++row)
+  {
+    if (fgParam->GetNPadsUp(row) > npads)
+    {
       npads = fgParam->GetNPadsUp(row);
       fgOut1Seg.fYStep[k] = row*fgOut1Seg.fPadHeight + fgOut1Seg.fRLow ;
       k++;
@@ -120,8 +131,10 @@ void AliEveTPCSectorData::InitStatics()
   fgOut1Seg.fNYSteps = k;
   // Out2 seg
   k=0; npads = fgParam->GetNPadsUp(fgOut1Seg.fNRows);
-  for (int row = fgOut1Seg.fNRows; row < fgParam->GetNRowUp() ;row++ ) {
-    if (fgParam->GetNPadsUp(row) > npads) {
+  for (int row = fgOut1Seg.fNRows; row < fgParam->GetNRowUp() ;row++ )
+  {
+    if (fgParam->GetNPadsUp(row) > npads)
+    {
       npads = fgParam->GetNPadsUp(row);
       fgOut2Seg.fYStep[k] = (row - fgOut1Seg.fNRows)*fgOut2Seg.fPadHeight + fgOut2Seg.fRLow ;
       k++;
@@ -134,7 +147,7 @@ Int_t AliEveTPCSectorData::GetNPadsInRow(Int_t row)
 {
   // Return number of pads in given row.
 
-  if(row < 0 || row >= fgNAllRows) return 0;
+  if (row < 0 || row >= fgNAllRows) return 0;
   return fgRowBegs[row + 1] - fgRowBegs[row];
 }
 
@@ -145,7 +158,7 @@ const AliEveTPCSectorData::SegmentInfo& AliEveTPCSectorData::GetSeg(Int_t seg)
 
   static const SegmentInfo null;
 
-  if(seg < 0 || seg > 2)
+  if (seg < 0 || seg > 2)
     return null;
   else
     return *fgSegInfoPtrs[seg];
@@ -159,25 +172,25 @@ void AliEveTPCSectorData::NewBlock()
 {
   // Create new data-block. Position is set to the beginning.
 
-  fBlocks.push_back(new Short_t[fBlockSize]);
+  fBlocks.push_back(new Short_t[fkBlockSize]);
   fBlockPos = 0;
 }
 
 /******************************************************************************/
 
 AliEveTPCSectorData::AliEveTPCSectorData(Int_t sector, Int_t bsize) :
-  fSectorID(sector), fNPadsFilled(0), fPads(),
-  fBlockSize(bsize), fBlockPos(0),    fBlocks(),
+  fSectorID(sector),  fNPadsFilled(0), fPads(),
+  fkBlockSize(bsize), fBlockPos(0),    fBlocks(),
   fCurrentRow(0), fCurrentPad(0), fCurrentPos(0), fCurrentStep(0),
   fPadRowHackSet(0)
 {
   // Constructor.
 
-  if(fgParam == 0) InitStatics();
+  if (fgParam == 0) InitStatics();
 
   fPads.assign(fgNAllPads, PadData());
   fBlocks.reserve(16);
-  fBlockPos = fBlockSize; // Enforce creation of a new block.
+  fBlockPos = fkBlockSize; // Enforce creation of a new block.
 }
 
 
@@ -185,7 +198,7 @@ AliEveTPCSectorData::~AliEveTPCSectorData()
 {
   // Destructor.
 
-  for(std::vector<Short_t*>::iterator b=fBlocks.begin(); b!=fBlocks.end(); ++b)
+  for (std::vector<Short_t*>::iterator b=fBlocks.begin(); b!=fBlocks.end(); ++b)
     delete [] *b;
   DeletePadRowHack();
 }
@@ -195,10 +208,10 @@ void AliEveTPCSectorData::DropData()
   // Drop data, deallocate data-blocks.
 
   fPads.assign(fgNAllPads, PadData());
-  for(std::vector<Short_t*>::iterator b=fBlocks.begin(); b!=fBlocks.end(); ++b)
+  for (std::vector<Short_t*>::iterator b=fBlocks.begin(); b!=fBlocks.end(); ++b)
     delete [] *b;
   fBlocks.clear();
-  fBlockPos = fBlockSize; // Enforce creation of a new block.
+  fBlockPos = fkBlockSize; // Enforce creation of a new block.
 }
 
 /******************************************************************************/
@@ -219,7 +232,7 @@ void AliEveTPCSectorData::BeginPad(Int_t row, Int_t pad, Bool_t reverseTime)
 
   fCurrentRow = row;
   fCurrentPad = pad;
-  if(reverseTime) {
+  if (reverseTime) {
     fCurrentPos  = 2046;
     fCurrentStep = -2;
   } else {
@@ -255,7 +268,7 @@ void AliEveTPCSectorData::EndPad(Bool_t autoPedestal, Short_t threshold)
     Short_t array[1024];
     Short_t* val;
     val = beg + 1;
-    while(val <= end) {
+    while (val <= end) {
       array[(val-beg)/2] = *val;
       val += 2;
     }
@@ -287,7 +300,7 @@ void AliEveTPCSectorData::EndPad(Bool_t autoPedestal, Short_t threshold)
     Short_t  t    = spos[0];
     while (true) {
       rpos += 2;
-      if(rpos >= end || *rpos > t + 1 || t == 0)
+      if (rpos >= end || *rpos > t + 1 || t == 0)
 	break;
       ++t;
     }
@@ -311,7 +324,7 @@ void AliEveTPCSectorData::EndPad(Bool_t autoPedestal, Short_t threshold)
   // Copy buffer to storage, set PadData
   if (wpos > beg) {
     Short_t len = wpos - beg;
-    if (len > fBlockSize - fBlockPos)
+    if (len > fkBlockSize - fBlockPos)
       NewBlock();
     Short_t *dest = fBlocks.back() + fBlockPos;
     memcpy(dest, beg, len*sizeof(Short_t));
@@ -326,24 +339,24 @@ void AliEveTPCSectorData::EndPad(Bool_t autoPedestal, Short_t threshold)
 
 /******************************************************************************/
 
-const AliEveTPCSectorData::PadData& AliEveTPCSectorData::GetPadData(Int_t padAddr)
+const AliEveTPCSectorData::PadData& AliEveTPCSectorData::GetPadData(Int_t padAddr) const
 {
   // Get pad-data reference by absolute index.
 
-  static const PadData null;
+  static const PadData kNull;
 
-  if(padAddr < 0 || padAddr >= fgNAllPads) return null;
+  if (padAddr < 0 || padAddr >= fgNAllPads) return kNull;
   return fPads[padAddr];
 }
 
-const AliEveTPCSectorData::PadData& AliEveTPCSectorData::GetPadData(Int_t row, Int_t pad)
+const AliEveTPCSectorData::PadData& AliEveTPCSectorData::GetPadData(Int_t row, Int_t pad) const
 {
   // Get pad-data reference by row and pad number.
 
-  static const PadData null;
+  static const PadData kNull;
 
   Int_t np = GetNPadsInRow(row);
-  if(np == 0 || pad < 0 || pad >= np) return null;
+  if (np == 0 || pad < 0 || pad >= np) return kNull;
   return GetPadData(fgRowBegs[row] + pad);
 }
 
@@ -366,7 +379,7 @@ AliEveTPCSectorData::RowIterator AliEveTPCSectorData::MakeRowIterator(Int_t row,
   // Get row iterator.
 
   Short_t npads = GetNPadsInRow(row);
-  if(npads > 0)
+  if (npads > 0)
     return RowIterator(&fPads[fgRowBegs[row]], npads, thr);
   else
     return RowIterator(0, 0);
@@ -381,7 +394,7 @@ void AliEveTPCSectorData::PadData::Print(Option_t* /*opt*/)
   // Print summary information.
 
   printf("addr=%p, len=%hd>\n", (void*)fData, fLength);
-  for(Int_t i=0; i<fLength; ++i)
+  for (Int_t i=0; i<fLength; ++i)
     printf("  %3d %hd\n", i, fData[i]);
 }
 
@@ -438,7 +451,7 @@ void AliEveTPCSectorData::PadIterator::Reset(const PadData& pd)
 
 void AliEveTPCSectorData::PadIterator::Test()
 {
-  while(Next())
+  while (Next())
     printf("  %3d %d\n", fTime, fSignal);
 }
 
@@ -535,7 +548,7 @@ void AliEveTPCSectorData::RemovePadRowHack(Int_t r, Int_t p)
   if (fPadRowHackSet == 0) return;
   std::set<PadRowHack>*hs = static_cast<std::set<PadRowHack>*>(fPadRowHackSet);
   std::set<PadRowHack>::iterator i = hs->find(PadRowHack(r,p));
-  if(i != hs->end()) hs->erase(i);
+  if (i != hs->end()) hs->erase(i);
 }
 
 void AliEveTPCSectorData::DeletePadRowHack()

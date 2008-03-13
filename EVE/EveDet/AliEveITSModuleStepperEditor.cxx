@@ -13,14 +13,11 @@
 #include <TEveManager.h>
 
 #include <TVirtualPad.h>
-#include <TColor.h>
 
-#include <TGLabel.h>
-#include <TGButton.h>
-#include <TGNumberEntry.h>
-#include <TGColorSelect.h>
-#include <TGDoubleSlider.h>
-
+//==============================================================================
+//==============================================================================
+// AliEveITSModuleStepperEditor
+//==============================================================================
 
 //______________________________________________________________________________
 //

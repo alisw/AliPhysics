@@ -50,7 +50,11 @@
 #include "AliTPCCalibCE.h"
 #include "AliTPCPreprocessorOnline.h"
 #include "AliTPCCalROC.h"
-// ------------
+
+//______________________________________________________________________________
+//
+// Manage connections to HLT data-sources.
+
 ClassImp(AliEveHOMERManager)
 
 /*
@@ -191,6 +195,7 @@ Int_t AliEveHOMERManager::CreateHOMERSourcesList() {
   // -- New SourceList has been created --> All Sources are new --> State has changed
   fStateHasChanged = kTRUE;
 
+  /*
   TIter next(fSourceList);
   AliHLTHOMERSourceDesc* src = 0;
   while ((src = (AliHLTHOMERSourceDesc*) next())) {
@@ -201,6 +206,7 @@ Int_t AliEveHOMERManager::CreateHOMERSourcesList() {
        "Title?\nNot.");
     AddElement(re);
   }
+  */
 
   if ( iResult ) {
     AliWarning( Form("There have been errors, while creating the sources list.") );
@@ -745,7 +751,7 @@ Int_t AliEveHOMERManager::NextEvent(){
   // -- Create BlockList
   CreateBlockList();
 
-    return iResult;
+  return iResult;
 }
 
 //##################################################################################

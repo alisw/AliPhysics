@@ -16,23 +16,23 @@
 #include "TSystem.h"
 #include "TFile.h"
 #include "TTree.h"
-#include "TString.h"
+//#include "TString.h"
 #include "TObjString.h"
 #include "TObjArray.h"
 
 #include <TGLabel.h>
 #include <TGButton.h>
 #include <TGTextEntry.h>
-#include <TGNumberEntry.h>
+//#include <TGNumberEntry.h>
 #include <TGFileDialog.h>
-#include <TGListTree.h>
-#include <TGToolTip.h>
+//#include <TGListTree.h>
+//#include <TGToolTip.h>
 
 #include "AliLog.h"
 #include "AliCDBManager.h"
 
-#include "AliTRDv1.h"
-#include "AliTRDhit.h"
+//#include "AliTRDv1.h"
+//#include "AliTRDhit.h"
 #include "AliTRDcluster.h"
 #include "AliTRDmcmTracklet.h"
 #include "AliTRDdigitsManager.h"
@@ -61,38 +61,39 @@ AliEveTRDLoader::AliEveTRDLoader(const Text_t* n, const Text_t* t) :
   fTRD          (0x0),
   fGeo          (new AliTRDgeometry())
 {
+  // Constructor.
+
   AliCDBManager *fCDBManager=AliCDBManager::Instance();
   fCDBManager->SetDefaultStorage("local://$ALICE_ROOT");
   fCDBManager->SetRun(0);
 }
 
 //______________________________________________________________________________
-AliEveTRDLoader::~AliEveTRDLoader()
+namespace
 {
-  // if(fChambers) {fChambers->clear(); delete fChambers;}
-}
-
-//______________________________________________________________________________
 template<class T>
 class ID
 {
 public:
-  ID( int value ) : id(value) {}
+  ID(int value) : fkId(value) {}
   bool operator()(const T &t) const {
-    return ((dynamic_cast<AliEveTRDModule*>(t))->GetID() == id);
+    return ((dynamic_cast<AliEveTRDModule*>(t))->GetID() == fkId);
   }
 private:
-  const int id;
+  const int fkId;
 };
+}
 
 void AliEveTRDLoader::AddChambers(int sm, int stk, int ly)
 {
-  Int_t ism_start = (sm == -1) ?  0 : sm;
-  Int_t ism_stop  = (sm == -1) ? 18 : sm+1;
-  Int_t istk_start= (stk == -1)?  0 : stk;
-  Int_t istk_stop = (stk == -1)?  5 : stk+1;
-  Int_t ily_start = (ly == -1) ?  0 : ly;
-  Int_t ily_stop  = (ly == -1) ?  6 : ly+1;
+  // Add specified chambers.
+
+  Int_t ismStart = (sm == -1) ?  0 : sm;
+  Int_t ismStop  = (sm == -1) ? 18 : sm+1;
+  Int_t istkStart= (stk == -1)?  0 : stk;
+  Int_t istkStop = (stk == -1)?  5 : stk+1;
+  Int_t ilyStart = (ly == -1) ?  0 : ly;
+  Int_t ilyStop  = (ly == -1) ?  6 : ly+1;
 
   List_i ichmb;
   ichmb = fChildren.begin();
@@ -101,35 +102,36 @@ void AliEveTRDLoader::AddChambers(int sm, int stk, int ly)
     ichmb++;
   }
 
-  AliEveTRDNode *SM=0x0, *STK=0x0;
-  AliEveTRDChamber *CHMB = 0x0;
+  AliEveTRDNode *lSM=0x0, *lSTK=0x0;
+  AliEveTRDChamber *lCHMB = 0x0;
   int det;
-  for(int ism=ism_start; ism<ism_stop; ism++){
+  for (int ism=ismStart; ism<ismStop; ism++){
     ichmb = find_if(fChildren.begin(), fChildren.end(), ID<TEveElement*>(ism));
-    if(ichmb != fChildren.end()){
-      SM = (AliEveTRDNode*)(*ichmb);
-      SM->SetRnrSelf(kTRUE);
-    }else{
-      gEve->AddElement(SM = new AliEveTRDNode("SM", ism), this);
-      SM->FindListTreeItem(gEve->GetListTree())->SetTipText(Form("Supermodule %2d", ism));
+    if (ichmb != fChildren.end()) {
+      lSM = (AliEveTRDNode*)(*ichmb);
+      lSM->SetRnrSelf(kTRUE);
+    } else {
+      AddElement(lSM = new AliEveTRDNode("SM", ism));
+      lSM->SetElementTitle(Form("Supermodule %2d", ism));
     }
-    for(int istk=istk_start; istk<istk_stop; istk++){
-      ichmb = find_if(SM->begin(), SM->end(), ID<TEveElement*>(istk));
-      if(ichmb != SM->end()){
-        STK = (AliEveTRDNode*)(*ichmb);
-        STK->SetRnrSelf(kTRUE);
-      }else{
-        gEve->AddElement(STK = new AliEveTRDNode("Stack", istk), SM);
-        STK->FindListTreeItem(gEve->GetListTree())->SetTipText(Form("SM %2d Stack %1d", ism, istk));
+    for (int istk=istkStart; istk<istkStop; istk++) {
+      ichmb = find_if(lSM->begin(), lSM->end(), ID<TEveElement*>(istk));
+      if (ichmb != lSM->end()) {
+        lSTK = (AliEveTRDNode*)(*ichmb);
+        lSTK->SetRnrSelf(kTRUE);
+      } else {
+        lSM->AddElement(lSTK = new AliEveTRDNode("Stack", istk));
+        lSTK->SetElementTitle(Form("SM %2d Stack %1d", ism, istk));
       }
-      for(int ily=ily_start; ily<ily_stop; ily++){
+      for (int ily=ilyStart; ily<ilyStop; ily++) {
         det = fGeo->GetDetector(ily, istk, ism);
-        ichmb = find_if(STK->begin(), STK->end(), ID<TEveElement*>(det));
-        if(ichmb != STK->end()) (*ichmb)->SetRnrSelf(kTRUE);
-        else{
-          gEve->AddElement(CHMB = new AliEveTRDChamber(det), STK);
-          CHMB->SetGeometry(fGeo);
-          CHMB->FindListTreeItem(gEve->GetListTree())->SetTipText(Form("SM %2d Stack %1d Layer %1d", ism, istk, ily));
+        ichmb = find_if(lSTK->begin(), lSTK->end(), ID<TEveElement*>(det));
+        if(ichmb != lSTK->end()) {
+          (*ichmb)->SetRnrSelf(kTRUE);
+        } else {
+          lSTK->AddElement(lCHMB = new AliEveTRDChamber(det));
+          lCHMB->SetGeometry(fGeo);
+          lCHMB->SetElementTitle(Form("SM %2d Stack %1d Layer %1d", ism, istk, ily));
         }
       }
     }
@@ -140,6 +142,8 @@ void AliEveTRDLoader::AddChambers(int sm, int stk, int ly)
 //______________________________________________________________________________
 AliEveTRDChamber* AliEveTRDLoader::GetChamber(int d)
 {
+  // Get given chamber.
+
   List_i ism, istack, ichmb;
 
   ism = find_if(fChildren.begin(), fChildren.end(), ID<TEveElement*>(fGeo->GetSector(d)));
@@ -154,6 +158,8 @@ AliEveTRDChamber* AliEveTRDLoader::GetChamber(int d)
 //______________________________________________________________________________
 Bool_t AliEveTRDLoader::GoToEvent(int ev)
 {
+  // Go to given event.
+
   if(!fChildren.size()){
     AliWarning("Please select first the chamber that you want to monitor from \"Chamber(s) selector\".");
     return kFALSE;
@@ -196,6 +202,8 @@ Bool_t AliEveTRDLoader::GoToEvent(int ev)
 //______________________________________________________________________________
 Bool_t AliEveTRDLoader::LoadClusters(TTree *tC)
 {
+  // Load clusters.
+
   AliInfo("Loading ...");
   if(!fChildren.size()) return kTRUE;
 
@@ -218,6 +226,8 @@ Bool_t AliEveTRDLoader::LoadClusters(TTree *tC)
 //______________________________________________________________________________
 Bool_t AliEveTRDLoader::LoadDigits(TTree *tD)
 {
+  // Load digits.
+
   AliInfo("Loading ...");
 
   if(!fChildren.size()) return kTRUE;
@@ -239,6 +249,8 @@ Bool_t AliEveTRDLoader::LoadDigits(TTree *tD)
 //______________________________________________________________________________
 Bool_t AliEveTRDLoader::LoadTracklets(TTree *tT)
 {
+  // Load tracklets.
+
   AliInfo("Loading ...");
   if(!fChildren.size()) return kTRUE;
 
@@ -260,6 +272,8 @@ Bool_t AliEveTRDLoader::LoadTracklets(TTree *tT)
 //______________________________________________________________________________
 Bool_t AliEveTRDLoader::Open(const char *filename, const char *dir)
 {
+  // Open given file in given directory.
+
   fFilename = filename;
   fDir = dir;
   Int_t count = 0;
@@ -298,11 +312,11 @@ Bool_t AliEveTRDLoader::Open(const char *filename, const char *dir)
   return kTRUE;
 }
 
-
-
 //______________________________________________________________________________
 void AliEveTRDLoader::Paint(Option_t *option)
 {
+  // Paint object.
+
   List_i ichmb = fChildren.begin();
   while(ichmb != fChildren.end()){
     (dynamic_cast<AliEveTRDModule*>(*ichmb))->Paint(option);
@@ -313,6 +327,8 @@ void AliEveTRDLoader::Paint(Option_t *option)
 //______________________________________________________________________________
 void AliEveTRDLoader::SetDataType(TRDDataTypes type)
 {
+  // Set type of data.
+
   fLoadHits     = kFALSE;
   fLoadDigits   = kFALSE;
   fLoadClusters = kFALSE;
@@ -330,6 +346,8 @@ void AliEveTRDLoader::SetDataType(TRDDataTypes type)
 //______________________________________________________________________________
 void AliEveTRDLoader::Unload()
 {
+  // Unload module data.
+
   List_i ichmb = fChildren.begin();
   while(ichmb != fChildren.end()){
     (dynamic_cast<AliEveTRDModule*>(*ichmb))->Reset();
@@ -348,6 +366,8 @@ AliEveTRDLoaderEditor::AliEveTRDLoaderEditor(const TGWindow* p, Int_t width, Int
   fM(0), fFile(0), fEvent(0),
   fSMNumber(0), fStackNumber(0), fPlaneNumber(0)
 {
+  // Constructor.
+
   MakeTitle("AliEveTRDLoader");
 
   Int_t labelW = 42;
@@ -435,12 +455,9 @@ AliEveTRDLoaderEditor::AliEveTRDLoaderEditor(const TGWindow* p, Int_t width, Int
 }
 
 //______________________________________________________________________________
-AliEveTRDLoaderEditor::~AliEveTRDLoaderEditor()
-{}
-
-//______________________________________________________________________________
 void AliEveTRDLoaderEditor::SetModel(TObject* obj)
 {
+  // Set model object.
 
   fM = dynamic_cast<AliEveTRDLoader*>(obj);
 
@@ -467,6 +484,8 @@ void AliEveTRDLoaderEditor::SetModel(TObject* obj)
 //______________________________________________________________________________
 void AliEveTRDLoaderEditor::AddChambers()
 {
+  // Slot to add chambers.
+
   fM->fSM    = (int)fSMNumber->GetEntry()->GetNumber();
   fM->fStack = (int)fStackNumber->GetEntry()->GetNumber();
   fM->fLy    = (int)fPlaneNumber->GetEntry()->GetNumber();
@@ -476,6 +495,8 @@ void AliEveTRDLoaderEditor::AddChambers()
 //______________________________________________________________________________
 void AliEveTRDLoaderEditor::FileOpen()
 {
+  // Slot for opening of file.
+
   TGFileInfo fi;
   fi.fIniDir    = StrDup(gSystem->DirName (fM->fFilename.Data()));
   fi.fFilename  = StrDup(gSystem->BaseName(fM->fFilename.Data()));
@@ -494,5 +515,7 @@ void AliEveTRDLoaderEditor::FileOpen()
 
 void AliEveTRDLoaderEditor::Load()
 {
+  // Slot for loading of event.
+
   fM->GoToEvent(fM->fEvent);
 }

@@ -9,7 +9,7 @@
 
 void geom_vzero()
 {
-  static const TEveException eH("geom_vzero() ");
+  static const TEveException kEH("geom_vzero() ");
 
   gGeoManager = gEve->GetGeometry("$REVESYS/alice-data/alice_fullgeo.root");
 
@@ -21,14 +21,14 @@ void geom_vzero()
 
   TGeoNode* mnode = gGeoManager->GetTopVolume()->FindNode("VZERO_1");
   if (!mnode) {
-    Error(eH, "mother node not found.");
+    Error(kEH, "mother node not found.");
     return;
   }
 
   node = mnode->GetVolume()->FindNode("V0RI_1");
   printf("opofoih %p\n", node);
   if (!node) {
-    Error(eH, "V0R not found.");
+    Error(kEH, "V0R not found.");
     return;
   }
   re = new TEveGeoTopNode(gGeoManager, node);
@@ -37,7 +37,7 @@ void geom_vzero()
 
   node = mnode->GetVolume()->FindNode("V0LE_1");
   if (!node) {
-    Error(eH, "V0L not found.");
+    Error(kEH, "V0L not found.");
     return;
   }
   re = new TEveGeoTopNode(gGeoManager, node);

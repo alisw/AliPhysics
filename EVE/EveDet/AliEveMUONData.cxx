@@ -17,8 +17,6 @@
 #include <AliRawReaderDate.h>
 #include <AliRawReaderRoot.h>
 
-#include <AliLog.h>
-
 #include <AliMUONDigitMaker.h>
 #include <AliMUONHit.h>
 #include <AliMUONVCluster.h>
@@ -34,7 +32,6 @@
 #include "TTree.h"
 #include "TString.h"
 #include "TClonesArray.h"
-#include "TList.h"
 #include "TFile.h"
 
 
@@ -273,8 +270,8 @@ void AliEveMUONData::LoadRecPointsFromESD(Char_t *fileName)
   Int_t detElemId, chamber, nTrackParam;
   Double_t clsX, clsY, clsZ, charge;
   
-  if (esdTree->GetEvent(gEvent->GetEventId()) <= 0) {
-    cout << "fails to read ESD object for event " << gEvent->GetEventId() << endl;
+  if (esdTree->GetEvent(gAliEveEvent->GetEventId()) <= 0) {
+    cout << "fails to read ESD object for event " << gAliEveEvent->GetEventId() << endl;
     return;
   }
     
@@ -405,7 +402,7 @@ void AliEveMUONData::LoadRaw(TString fileName)
   Int_t iEvent = 0;
   while (fgRawReader->NextEvent())
   {
-    if (iEvent != gEvent->GetEventId())
+    if (iEvent != gAliEveEvent->GetEventId())
     {
       iEvent++;
       continue;
@@ -441,11 +438,10 @@ void AliEveMUONData::LoadRaw(TString fileName)
 	fChambers[chamber]->RegisterDigit(detElemId,cathode,ix,iy,adc);
       }
   }
-
 }
 
 //______________________________________________________________________________
-Int_t AliEveMUONData::GetTrack(Int_t index)
+Int_t AliEveMUONData::GetTrack(Int_t index) const
 {
   //
   // return track stack number for "index"-th track with hits in the chambers
@@ -456,7 +452,6 @@ Int_t AliEveMUONData::GetTrack(Int_t index)
   } else {
     return -1;
   }
-
 }
 
 //______________________________________________________________________________
@@ -471,5 +466,4 @@ AliEveMUONChamberData* AliEveMUONData::GetChamberData(Int_t chamber)
   //if (fChambers[chamber] == 0) CreateChamber(chamber);
 
   return fChambers[chamber];
-
 }

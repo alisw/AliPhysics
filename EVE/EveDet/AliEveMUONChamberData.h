@@ -6,22 +6,19 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
-#ifndef ALIEVE_MUONChamberData_H
-#define ALIEVE_MUONChamberData_H
-
-#include <TEveUtil.h>
+#ifndef AliEveMUONChamberData_H
+#define AliEveMUONChamberData_H
 
 #include <TObject.h>
 
 class AliMUONGeometryTransformer;
 
-
 class AliEveMUONChamberData : public TObject
 {
-private:
   AliEveMUONChamberData(const AliEveMUONChamberData&);            // Not implemented
   AliEveMUONChamberData& operator=(const AliEveMUONChamberData&); // Not implemented
 
+private:
   static AliMUONGeometryTransformer* fgTransformer;   // geometry transformer
 
 protected:
@@ -52,10 +49,10 @@ public:
 
   Float_t* GetFrameCoord(Int_t detElemId) { return fFrameCoord[detElemId]; };
 
-  Int_t    GetNDetElem()  { return fNDetElem;    };
-  Int_t    GetNDigits()   { return fNDigits/7;   };
-  Int_t    GetNClusters() { return fNClusters/5; };
-  Int_t    GetNHits()     { return fNHits/3;     };
+  Int_t    GetNDetElem()  const { return fNDetElem;    };
+  Int_t    GetNDigits()   const { return fNDigits/7;   };
+  Int_t    GetNClusters() const { return fNClusters/5; };
+  Int_t    GetNHits()     const { return fNHits/3;     };
 
   Float_t* GetDigitBuffer(Int_t pos)   { return &fDigitBuffer[7*pos];   };
   Float_t* GetClusterBuffer(Int_t pos) { return &fClusterBuffer[5*pos]; };

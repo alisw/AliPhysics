@@ -16,8 +16,8 @@
 // by A.Bercuci (A.Bercuci@gsi.de)   Fri Oct 27 2006
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef ALIEVE_TRDData_H
-#define ALIEVE_TRDData_H
+#ifndef AliEveTRDData_H
+#define AliEveTRDData_H
 
 #include <TEveQuadSet.h>
 #include <TEveBoxSet.h>
@@ -25,12 +25,10 @@
 
 #include <TGedFrame.h>
 
-
 #include "AliTRDdataArrayI.h"
 
 class AliTRDdigitsManager;
 class AliEveTRDChamber;
-
 
 class AliEveTRDHits : public TEvePointSet
 {
@@ -44,7 +42,7 @@ public:
   void PointSelected(Int_t n);
 
 protected:
-  AliEveTRDChamber *fParent;
+  AliEveTRDChamber *fParent; // Chaber holding the hits.
 
   ClassDef(AliEveTRDHits,1); // Base class for TRD hits visualisation
 };
@@ -59,14 +57,14 @@ private:
 public:
   AliEveTRDHitsEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30,
 		      UInt_t options=kChildFrame, Pixel_t back=GetDefaultFrameBackground());
-  ~AliEveTRDHitsEditor();
+  virtual ~AliEveTRDHitsEditor() {}
 
   virtual void SetModel(TObject* obj);
 
 protected:
-  AliEveTRDHits* fM;
+  AliEveTRDHits* fM; // Model object.
 
-  ClassDef(AliEveTRDHitsEditor,1); // Editor for AliEveTRDHits
+  ClassDef(AliEveTRDHitsEditor,1); // Editor for AliEveTRDHits.
 };
 
 
@@ -90,8 +88,8 @@ protected:
   AliEveTRDChamber *fParent;
 
 private:
-  TEveBoxSet		fBoxes;
-  AliTRDdataArrayI	fData;
+  TEveBoxSet		fBoxes; // Boxset for didigit representation.
+  AliTRDdataArrayI	fData;  // Raw-data array.
 
   ClassDef(AliEveTRDDigits,1); // Digits visualisation for TRD
 };
@@ -106,12 +104,12 @@ private:
 public:
   AliEveTRDDigitsEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30,
 			UInt_t options=kChildFrame, Pixel_t back=GetDefaultFrameBackground());
-  ~AliEveTRDDigitsEditor();
+  virtual ~AliEveTRDDigitsEditor() {}
 
   virtual void SetModel(TObject* obj);
 
 protected:
-  AliEveTRDDigits* fM;
+  AliEveTRDDigits* fM; // Model object.
 
   ClassDef(AliEveTRDDigitsEditor,1); // Editor for AliEveTRDDigits
 };

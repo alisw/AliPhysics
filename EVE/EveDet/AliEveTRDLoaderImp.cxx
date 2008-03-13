@@ -12,7 +12,7 @@
 
 #include <TEveManager.h>
 
-#include "TFile.h"
+//#include "TFile.h"
 #include "TTree.h"
 
 #include <TGButton.h>
@@ -20,14 +20,14 @@
 #include "AliLog.h"
 #include "AliRun.h"
 #include "AliRunLoader.h"
-#include "AliLoader.h"
+//#include "AliLoader.h"
 #include "AliTRDrawData.h"
 #include "AliRawReaderRoot.h"
 #include "AliRawReaderDate.h"
 
 #include "AliTRDv1.h"
 #include "AliTRDhit.h"
-#include "AliTRDdigitsManager.h"
+//#include "AliTRDdigitsManager.h"
 
 ClassImp(AliEveTRDLoaderSim)
 ClassImp(AliEveTRDLoaderRaw)
@@ -43,15 +43,15 @@ ClassImp(AliEveTRDLoaderSimEditor)
 AliEveTRDLoaderSim::AliEveTRDLoaderSim(const Text_t* n, const Text_t* t) :
   AliEveTRDLoader(n, t),
   fRunLoader(0)
-{}
-
-//______________________________________________________________________________
-AliEveTRDLoaderSim::~AliEveTRDLoaderSim()
-{}
+{
+  // Constructor.
+}
 
 //______________________________________________________________________________
 Bool_t	AliEveTRDLoaderSim::GoToEvent(int ev)
 {
+  // Go to given event.
+
   if(!fChildren.size()){
     AliWarning("Please select first the chamber that you want to monitor from \"Chamber(s) selector\".");
     return kFALSE;
@@ -107,6 +107,8 @@ Bool_t	AliEveTRDLoaderSim::GoToEvent(int ev)
 //______________________________________________________________________________
 Bool_t	AliEveTRDLoaderSim::LoadHits(TTree *tH)
 {
+  // Load hits.
+
   Info("LoadHits()", "Loading ...");
   if(!fChildren.size()) return kTRUE;
 
@@ -135,8 +137,7 @@ Bool_t	AliEveTRDLoaderSim::LoadHits(TTree *tH)
 //______________________________________________________________________________
 Bool_t	AliEveTRDLoaderSim::Open(const char *filename, const char *dir)
 {
-  //Info("Open()", "");
-
+  // Open file in given dir.
 
   fFilename = filename;
   fDir = dir;
@@ -167,7 +168,6 @@ Bool_t	AliEveTRDLoaderSim::Open(const char *filename, const char *dir)
 }
 
 
-
 ///////////////////////////////////////////////////////////
 /////////////   AliEveTRDLoaderRaw    /////////////////////
 ///////////////////////////////////////////////////////////
@@ -181,21 +181,18 @@ AliEveTRDLoaderRaw::AliEveTRDLoaderRaw(const Text_t* n, const Text_t* t) :
   fRaw           (0),
   fDataRoot      (kTRUE),
   fEventOld      (-1)
-{}
-
-//______________________________________________________________________________
-AliEveTRDLoaderRaw::~AliEveTRDLoaderRaw()
-{}
-
+{
+  // Constructor.
+}
 
 //______________________________________________________________________________
 Bool_t  AliEveTRDLoaderRaw::Open(const char *filename, const char *dir)
 {
-  //	Info("Open()", Form("Open %s/%s", dir, filename));
+  // Open file in gvenn dir.
+
   fFilename = filename;
   fDir = dir;
   fDir += "/";
-
 
   if(fRaw) delete fRaw;
   fRaw = new AliTRDrawData();
@@ -214,19 +211,23 @@ Bool_t  AliEveTRDLoaderRaw::Open(const char *filename, const char *dir)
 //______________________________________________________________________________
 void AliEveTRDLoaderRaw::SetDataType(TRDDataTypes type)
 {
+  // Set data type.
+
   fDataRoot = (type == kRawRoot) ? kTRUE : kFALSE;
 }
 
 //______________________________________________________________________________
 Bool_t AliEveTRDLoaderRaw::GoToEvent(int ev)
 {
+  // Go to given event.
+
   if(!fChildren.size()){
     AliWarning("Please select first the chamber that you want to monitor from \"Chamber(s) selector\".");
     return kFALSE;
   }
 
-  static const TEveException eH("AliEveTRDLoader::GotoEvent ");
-  if(fRawRootReader == 0x0) throw(eH + "data file not opened.");
+  static const TEveException kEH("AliEveTRDLoader::GotoEvent ");
+  if(fRawRootReader == 0x0) throw(kEH + "data file not opened.");
 
 
   if(ev == fEventOld) return kTRUE;
@@ -240,17 +241,19 @@ Bool_t AliEveTRDLoaderRaw::GoToEvent(int ev)
   do NextEvent(); while(fEventOld != ev && !(checkEnd == kTRUE && fEventOld == 0));
   LoadEvent();
   gEve->Redraw3D();
-  //gEve->EnableRedraw();
+
   return kTRUE;
 }
 
 //______________________________________________________________________________
 Bool_t AliEveTRDLoaderRaw::LoadEvent()
 {
+  // Load event.
+
   Info("LoadEvent()", "Loading ...");
 
-  static const TEveException eH("AliEveTRDLoader::LoadEvent ");
-  if(fRawRootReader == 0x0) throw(eH + "data file not opened.");
+  static const TEveException kEH("AliEveTRDLoader::LoadEvent ");
+  if(fRawRootReader == 0x0) throw(kEH + "data file not opened.");
 
 
   fRawRootReader->Reset();
@@ -269,19 +272,21 @@ Bool_t AliEveTRDLoaderRaw::LoadEvent()
 //______________________________________________________________________________
 void AliEveTRDLoaderRaw::NextEvent(Bool_t rewindOnEnd)
 {
-  static const TEveException eH("AliEveTRDLoader::NextEvent ");
-  if(fRawRootReader == 0x0) throw(eH + "data file not opened.");
+  // Go to next event.
+
+  static const TEveException kEH("AliEveTRDLoader::NextEvent ");
+  if(fRawRootReader == 0x0) throw(kEH + "data file not opened.");
 
 
   if(fRawRootReader->NextEvent() == kTRUE) ++fEventOld;
   else {
-    if(fEventOld == -1) throw(eH + "no events available.");
+    if(fEventOld == -1) throw(kEH + "no events available.");
     if(rewindOnEnd) {
       Warning("NextEvent()", Form("Reached end of stream (event=%d), rewinding to first event.", fEventOld));
       fRawRootReader->RewindEvents();
       fRawRootReader->NextEvent();
       fEventOld = 0;
-    } else throw(eH + "last event reached.");
+    } else throw(kEH + "last event reached.");
   }
 }
 
@@ -297,6 +302,8 @@ AliEveTRDLoaderSimEditor::AliEveTRDLoaderSimEditor(const TGWindow* p, Int_t widt
   TGedFrame(p, width, height, options | kVerticalFrame, back),
   fM(0), fLoadHits(0), fLoadDigits(0), fLoadClusters(0), fLoadTracks(0)
 {
+  // Constructor.
+
   MakeTitle("AliEveTRDLoaderSim");
 
   // "Data selector" group frame
@@ -323,21 +330,15 @@ AliEveTRDLoaderSimEditor::AliEveTRDLoaderSimEditor(const TGWindow* p, Int_t widt
 }
 
 //______________________________________________________________________________
-AliEveTRDLoaderSimEditor::~AliEveTRDLoaderSimEditor()
-{}
-
-//______________________________________________________________________________
 void AliEveTRDLoaderSimEditor::SetModel(TObject* obj)
 {
+  // Set model object.
+
   fM = dynamic_cast<AliEveTRDLoaderSim*>(obj);
 
   Bool_t kFile = kTRUE;
   if(fM->fFilename.CompareTo("") == 0) kFile = kFALSE;
 
-  /*	printf("\thits      %s\n", fM->fLoadHits ? "true" : "false");
-    printf("\tdigits    %s\n", fM->fLoadDigits ? "true" : "false");
-    printf("\tclusters  %s\n", fM->fLoadClusters ? "true" : "false");
-    printf("\ttracklets %s\n", fM->fLoadTracks ? "true" : "false");*/
   fLoadHits->SetEnabled(kFile);
   if(kFile) fLoadHits->SetState(fM->fLoadHits ? kButtonDown : kButtonUp);
   fLoadDigits->SetEnabled(kFile);
@@ -351,6 +352,8 @@ void AliEveTRDLoaderSimEditor::SetModel(TObject* obj)
 //______________________________________________________________________________
 void AliEveTRDLoaderSimEditor::Toggle(Int_t id)
 {
+  // Toggle given button id.
+
   switch(id){
     case 0:
       fM->fLoadHits = fLoadHits->IsDown() ? kTRUE : kFALSE;
@@ -366,19 +369,3 @@ void AliEveTRDLoaderSimEditor::Toggle(Int_t id)
       break;
   }
 }
-
-///////////////////////////////////////////////////////////
-/////////////   TRDLoaderRawEditor    /////////////////////
-///////////////////////////////////////////////////////////
-
-// //________________________________________________________
-// TRDLoaderRawEditor::TRDLoaderRawEditor(const TGWindow* p, Int_t width, Int_t height, UInt_t options, Pixel_t back) : TGedFrame(p, width, height, options | kVerticalFrame, back)
-// {
-// 	MakeTitle("AliEveTRDLoaderRaw");
-// }
-//
-// void	TRDLoaderRawEditor::SetModel(TObject* obj)
-// {
-// 	Info("SetModel()", "");
-// 	fM = dynamic_cast<AliEveTRDLoaderRaw*>(obj);
-// }

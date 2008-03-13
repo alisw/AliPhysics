@@ -11,11 +11,15 @@
 
 #include <EveDet/AliEveTPCData.h>
 #include <EveDet/AliEveTPCSectorData.h>
-#include <AliTPCParam.h>
 
+#include <TEveTrans.h>
 #include <TStyle.h>
-#include <TColor.h>
+#include <TMath.h>
 
+//==============================================================================
+//==============================================================================
+// AliEveTPCSectorViz
+//==============================================================================
 
 //______________________________________________________________________________
 //
@@ -44,13 +48,14 @@ AliEveTPCSectorViz::AliEveTPCSectorViz(const Text_t* n, const Text_t* t) :
 
   fFrameColor ((Color_t) 4),
   fRnrFrame   (kTRUE),
-  fHMTrans    (),
   fAutoTrans  (kFALSE),
   fRTS        (1),
 
   fColorArray (0)
 {
   // Constructor.
+
+   InitMainTrans();
 }
 
 AliEveTPCSectorViz::~AliEveTPCSectorViz()
@@ -136,9 +141,8 @@ void AliEveTPCSectorViz::SetAutoTrans(Bool_t trans)
   // The position is calculated immediately.
 
   fAutoTrans = trans;
-  if (fAutoTrans) {
-    fHMTrans.UnitTrans();
-
+  if (fAutoTrans)
+  {
     using namespace TMath;
     Float_t c = Cos((fSectorID + 0.5)*20*Pi()/180 - PiOver2());
     Float_t s = Sin((fSectorID + 0.5)*20*Pi()/180 - PiOver2());
@@ -150,14 +154,18 @@ void AliEveTPCSectorViz::SetAutoTrans(Bool_t trans)
     }
 
     // column major
-    fHMTrans[0]  = -c;
-    fHMTrans[1]  = -s;
-    fHMTrans[4]  = -s;
-    fHMTrans[5]  =  c;
-    fHMTrans[10] =  d;
-    fHMTrans[14] =  z;
-    fHMTrans[15] =  1;
+    InitMainTrans();
+    TEveTrans& t = RefMainTrans();
+    t[0]  = -c;  t[1]  = -s;
+    t[4]  = -s;  t[5]  =  c;
+    t[10] =  d;  t[14] =  z;
   }
+}
+void AliEveTPCSectorViz::SetUseTrans(Bool_t t)
+{
+  // Set flag spcifying if transformation matrix should be applied.
+
+  RefMainTrans().SetUseTrans(t);
 }
 
 /******************************************************************************/

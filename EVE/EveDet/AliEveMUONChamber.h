@@ -6,8 +6,8 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
-#ifndef ALIEVE_MUONChamber_H
-#define ALIEVE_MUONChamber_H
+#ifndef AliEveMUONChamber_H
+#define AliEveMUONChamber_H
 
 #include <TEveElement.h>
 #include <TEveQuadSet.h>
@@ -31,7 +31,6 @@ class AliEveMUONChamber : public TEveElement,
   friend class AliEveMUONChamberGL;
   friend class AliEveMUONChamberEditor;
 
-private:
   AliEveMUONChamber(const AliEveMUONChamber&);            // Not implemented
   AliEveMUONChamber& operator=(const AliEveMUONChamber&); // Not implemented
 
@@ -62,14 +61,13 @@ protected:
   Int_t    ColorIndex(Int_t val) const;
 
 public:
-
   AliEveMUONChamber(Int_t id, const Text_t* n = "AliEveMUONChamber", const Text_t* t = 0);
   virtual ~AliEveMUONChamber();
 
   virtual void   ComputeBBox();
   virtual void   Paint(Option_t* option = "");
   virtual UInt_t IncRTS()     { return ++fRTS; };
-  virtual Bool_t CanEditMainColor() { return kTRUE; }
+  virtual Bool_t CanEditMainColor() const { return kTRUE; }
 
   void SetDataSource(AliEveMUONData *data);
   void SetChamberID(Int_t id);

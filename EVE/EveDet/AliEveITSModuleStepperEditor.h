@@ -7,8 +7,8 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-#ifndef ALIEVE_ITSModuleStepperEditor_H
-#define ALIEVE_ITSModuleStepperEditor_H
+#ifndef AliEveITSModuleStepperEditor_H
+#define AliEveITSModuleStepperEditor_H
 
 #include <TGedFrame.h>
 

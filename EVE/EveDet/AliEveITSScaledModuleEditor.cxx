@@ -9,21 +9,18 @@
 
 #include "AliEveITSScaledModuleEditor.h"
 #include <EveDet/AliEveITSScaledModule.h>
-#include <TEveTransEditor.h>
-#include <TEveGValuators.h>
 
 #include <TVirtualPad.h>
-#include <TColor.h>
-#include <TMath.h>
-
 #include <TGedEditor.h>
 #include <TGLabel.h>
 #include <TG3DLine.h>
-#include <TGButton.h>
 #include <TGNumberEntry.h>
-#include <TGColorSelect.h>
 #include <TGComboBox.h>
 
+//==============================================================================
+//==============================================================================
+// AliEveITSScaledModuleEditor
+//==============================================================================
 
 //______________________________________________________________________________
 //

@@ -7,8 +7,8 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-#ifndef ALIEVE_TRDModuleImp_H
-#define ALIEVE_TRDModuleImp_H
+#ifndef AliEveTRDModuleImp_H
+#define AliEveTRDModuleImp_H
 
 /////////////////////////////////////////////////////////////////////////
 //

@@ -12,16 +12,19 @@
 #include "AliPMDdigit.h"
 #include "AliPMDddldata.h"
 
-#include <TClonesArray.h>
+#include <TEveTrans.h>
 
+#include <TClonesArray.h>
+#include <TTree.h>
+#include <TH1F.h>
 
 const Float_t AliEvePMDModule::fgkRad        = 0.25;
 const Float_t AliEvePMDModule::fgkSqRoot3    = 1.732050808;
 const Float_t AliEvePMDModule::fgkZpos       = 0.;
-Int_t         AliEvePMDModule::fPreTotPads   = 0;
-Int_t         AliEvePMDModule::fCpvTotPads   = 0;
-Int_t         AliEvePMDModule::fPreTotAdc    = 0;
-Int_t         AliEvePMDModule::fCpvTotAdc    = 0;
+Int_t         AliEvePMDModule::fgPreTotPads  = 0;
+Int_t         AliEvePMDModule::fgCpvTotPads  = 0;
+Int_t         AliEvePMDModule::fgPreTotAdc   = 0;
+Int_t         AliEvePMDModule::fgCpvTotAdc   = 0;
 
 
 //______________________________________________________________________________
@@ -39,11 +42,21 @@ AliEvePMDModule::AliEvePMDModule():
   fNPads(0),
   fAdc(0)
 {
-
+  // Constructor.
 }
+
+AliEvePMDModule::~AliEvePMDModule()
+{
+  // Destructor.
+
+  delete fH1;
+}
+
 // -------------------------------------------------------------------- //
 void AliEvePMDModule::DisplayInit(Int_t ism)
 {
+  // Initialize display parameters for module ism.
+
   TString smodule = "Module";
   smodule+= ism;
 
@@ -71,6 +84,8 @@ void AliEvePMDModule::DisplayInit(Int_t ism)
 
 void AliEvePMDModule::DisplayDigitsData(Int_t ism, TTree *pmdt)
 {
+  // Populate internal structures with data from pmdt for module ism.
+
   DisplayInit(ism);
 
   Int_t det, smn, irow, icol, adc;
@@ -124,13 +139,13 @@ void AliEvePMDModule::DisplayDigitsData(Int_t ism, TTree *pmdt)
 
       if (det == 0)
 	{
-	  fPreTotAdc += (Int_t) adc;
-	  ++fPreTotPads;
+	  fgPreTotAdc += (Int_t) adc;
+	  ++fgPreTotPads;
 	}
       if (det == 1)
 	{
-	  fCpvTotAdc += (Int_t) adc;
-	  ++fCpvTotPads;
+	  fgCpvTotAdc += (Int_t) adc;
+	  ++fgCpvTotPads;
 	}
       fH1->Fill((Float_t)adc);
 
@@ -138,7 +153,7 @@ void AliEvePMDModule::DisplayDigitsData(Int_t ism, TTree *pmdt)
 
   RefitPlex();
 
-  fHMTrans.SetPos(fX, fY, fZ);
+  RefMainTrans().SetPos(fX, fY, fZ);
 
   delete digits;
 }
@@ -147,6 +162,8 @@ void AliEvePMDModule::DisplayDigitsData(Int_t ism, TTree *pmdt)
 
 void AliEvePMDModule::DisplayRawData(Int_t ism, TObjArray *ddlcont)
 {
+  // Populate internal structures with data from ddlcont for module ism.
+
   DisplayInit(ism);
 
   if (ism > 23) ism -= 24;
@@ -195,13 +212,13 @@ void AliEvePMDModule::DisplayRawData(Int_t ism, TObjArray *ddlcont)
 
       if (det == 0)
 	{
-	  fPreTotAdc += (Int_t) adc;
-	  ++fPreTotPads;
+	  fgPreTotAdc += (Int_t) adc;
+	  ++fgPreTotPads;
 	}
       if (det == 1)
 	{
-	  fCpvTotAdc += (Int_t) adc;
-	  ++fCpvTotPads;
+	  fgCpvTotAdc += (Int_t) adc;
+	  ++fgCpvTotPads;
 	}
 
       fH1->Fill((Float_t) adc);
@@ -209,7 +226,7 @@ void AliEvePMDModule::DisplayRawData(Int_t ism, TObjArray *ddlcont)
 
   RefitPlex();
 
-  fHMTrans.SetPos(fX, fY, fZ);
+  RefMainTrans().SetPos(fX, fY, fZ);
 
 }
 
@@ -307,8 +324,10 @@ void AliEvePMDModule::RectGeomCellPos(Int_t ism, Int_t xpad, Int_t ypad,
 // -------------------------------------------------------------------- //
 
 void AliEvePMDModule::GenerateBox(Int_t ism, Float_t &xism, Float_t &yism,
-			    Float_t &dxism, Float_t &dyism)
+                                  Float_t &dxism, Float_t &dyism)
 {
+  // Generate bounding-box.
+
   const Float_t kDia     = 0.50;
 
   const Double_t kXcorner[24] =
@@ -379,6 +398,8 @@ void AliEvePMDModule::GenerateBox(Int_t ism, Float_t &xism, Float_t &yism,
 
 void AliEvePMDModule::SetPosition(Float_t x, Float_t y, Float_t z)
 {
+  // Set position of module.
+
   fX = x;
   fY = y;
   fZ = z;

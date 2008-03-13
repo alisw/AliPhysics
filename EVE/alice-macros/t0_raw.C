@@ -10,7 +10,7 @@
 void t0_raw()
 {
   AliRunLoader* rl =  AliEveEventManager::AssertRunLoader();
-  Int_t ievt = gEvent->GetEventId();
+  Int_t ievt = gAliEveEvent->GetEventId();
     cout<<ievt<<endl;
 
   gStyle->SetPalette(1, 0);

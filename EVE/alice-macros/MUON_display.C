@@ -34,29 +34,29 @@ void MUON_display(Bool_t fromRaw = kFALSE, Bool_t showTracks = kTRUE)
   TTree* ct = 0;
   TTree* ht = 0;
 
-  if (gEvent == 0) {
+  if (gAliEveEvent == 0) {
     printf("No alieve event: use alieve_init(...) \n");
     return;
   }
 
-  if (g_currentEvent == gEvent->GetEventId()) {
+  if (g_currentEvent == gAliEveEvent->GetEventId()) {
     if (g_fromRaw == fromRaw) {
       printf("Same event... \n");
       return;
     } else {
       if (g_fromRaw) {
 	printf("Same event with digits.\n");
-	gEvent->GotoEvent(g_currentEvent);
+	gAliEveEvent->GotoEvent(g_currentEvent);
       } else {
 	printf("Same event with raw.\n");
-	gEvent->GotoEvent(g_currentEvent);
+	gAliEveEvent->GotoEvent(g_currentEvent);
       }
     }
   }
 
   g_fromRaw = fromRaw;
 
-  TString dataPath = TString(gEvent->GetTitle());
+  TString dataPath = TString(gAliEveEvent->GetTitle());
   dataPath.Append("/rawmuon.root");
 
   AliRunLoader* rl =  AliEveEventManager::AssertRunLoader();
@@ -83,7 +83,7 @@ void MUON_display(Bool_t fromRaw = kFALSE, Bool_t showTracks = kTRUE)
   rl->LoadRecPoints("MUON");
   ct = rl->GetTreeR("MUON", false);
 
-  TString esdDataPath = TString(gEvent->GetTitle());
+  TString esdDataPath = TString(gAliEveEvent->GetTitle());
   esdDataPath.Append("/AliESDs.root");
   g_muon_data->LoadRecPointsFromESD(esdDataPath.Data());
 
@@ -91,7 +91,7 @@ void MUON_display(Bool_t fromRaw = kFALSE, Bool_t showTracks = kTRUE)
   ht = rl->GetTreeH("MUON", false);
   g_muon_data->LoadHits(ht);
 
-  g_muon_last_event = gEvent;
+  g_muon_last_event = gAliEveEvent;
 
   g_currentEvent = g_muon_last_event->GetEventId();
 
@@ -262,13 +262,13 @@ void MUON_ESD_tracks()
 //______________________________________________________________________________
 void MUON_Ref_tracks()
 {
-  TString dataPathESD = TString(gEvent->GetTitle());
+  TString dataPathESD = TString(gAliEveEvent->GetTitle());
   dataPathESD.Append("/AliESDs.root");
-  TString dataPathSIM = TString(gEvent->GetTitle());
+  TString dataPathSIM = TString(gAliEveEvent->GetTitle());
   dataPathSIM.Append("/");
 
   AliMUONRecoCheck recoCheck(dataPathESD.Data(),dataPathSIM.Data());
-  AliMUONVTrackStore* trackRefStore = recoCheck.ReconstructibleTracks(gEvent->GetEventId());
+  AliMUONVTrackStore* trackRefStore = recoCheck.ReconstructibleTracks(gAliEveEvent->GetEventId());
   TIter next(trackRefStore->CreateIterator());
   AliMUONTrack* trackRef;
 

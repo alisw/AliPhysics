@@ -6,8 +6,8 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
-#ifndef ALIEVE_T0Module_H
-#define ALIEVE_T0Module_H
+#ifndef AliEveT0Module_H
+#define AliEveT0Module_H
 
 //////////////////////////////////////////////////////////////////////////
 //                                                                      //
@@ -15,22 +15,21 @@
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
-
 #include <TEveQuadSet.h>
-#include <AliT0digit.h>
-#include <AliT0RawReader.h>
 
+class AliT0digit;
+class AliT0RawReader;
+class TTree;
 
 class AliEveT0Module : public TEveQuadSet
 {
-
+private:
   AliEveT0Module(const AliEveT0Module&);
   AliEveT0Module& operator=(const AliEveT0Module&);
 
 public:
-
   AliEveT0Module(const Text_t* n="AliEveT0Module", Int_t sigType=0, AliT0digit *digits=0,AliT0RawReader *start=0);
-  virtual ~AliEveT0Module();
+  virtual ~AliEveT0Module() {}
 
   virtual void DigitSelected(Int_t idx);
 
@@ -40,20 +39,10 @@ public:
 
 protected:
   Int_t           fSigType; // 0 ~ ADC, 1 ~ TDC
-  AliT0digit     *fDigits;
-  AliT0RawReader *fStart;
+  AliT0digit     *fDigits;  // Digits.
+  AliT0RawReader *fStart;   // Reader.
 
-   ClassDef(AliEveT0Module,1);
+  ClassDef(AliEveT0Module, 0);
 };
-
-/*
- class T0ModuleTDC : public AliEveT0Module
- {
- public:
-   // constructor
-
-    virtual void QuadSelected(Int_t idx);
- };
-*/
 
 #endif

@@ -7,8 +7,8 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-#ifndef ALIEVE_TPCSector3D_H
-#define ALIEVE_TPCSector3D_H
+#ifndef AliEveTPCSector3D_H
+#define AliEveTPCSector3D_H
 
 #include <EveDet/AliEveTPCSectorViz.h>
 #include <EveDet/AliEveTPCSectorData.h>
@@ -16,6 +16,10 @@
 #include <TEveBoxSet.h>
 #include <TEvePointSet.h>
 
+//------------------------------------------------------------------------------
+// AliEveTPCSector3D
+//
+// Visualization of TPC raw-data in 3D.
 
 class AliEveTPCSector3D : public AliEveTPCSectorViz
 {

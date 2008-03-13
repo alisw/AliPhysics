@@ -10,12 +10,9 @@
 #include "AliEveTPCSector2D.h"
 #include "AliEveTPCSector3D.h"
 
-#include <EveDet/AliEveTPCData.h>
 #include <EveDet/AliEveTPCSectorData.h>
 
-#include <TEveManager.h>
-
-#include <AliTPCParam.h>
+#include <TEveTrans.h>
 
 #include <TBuffer3D.h>
 #include <TBuffer3DTypes.h>
@@ -26,10 +23,12 @@
 #include <TH2S.h>
 #include <TVirtualPad.h>
 
-using namespace std;
+//==============================================================================
+//==============================================================================
+// AliEveTPCSector2D
+//==============================================================================
 
 //______________________________________________________________________________
-// AliEveTPCSector2D
 //
 // Displays TPC raw-data in 2D.
 //
@@ -70,8 +69,8 @@ void AliEveTPCSector2D::MakeSector3D()
   s->SetSectorID(fSectorID);
   s->SetAutoTrans(fAutoTrans);
   s->CopyVizParams(*this);
-  gEve->AddElement(s, this);
-  gEve->Redraw3D();
+  AddElement(s);
+  ElementChanged(kFALSE, kTRUE);
 }
 
 /******************************************************************************/
@@ -170,7 +169,7 @@ void AliEveTPCSector2D::Paint(Option_t* )
   buffer.fID           = this;
   buffer.fColor        = 1;
   buffer.fTransparency = 0;
-  fHMTrans.SetBuffer3D(buffer);
+  if (HasMainTrans()) RefMainTrans().SetBuffer3D(buffer);
   buffer.SetSectionsValid(TBuffer3D::kCore);
 
   Int_t reqSections = gPad->GetViewer3D()->AddObject(buffer);

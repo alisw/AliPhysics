@@ -7,10 +7,8 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-#ifndef ALIEVE_TPCSectorData_H
-#define ALIEVE_TPCSectorData_H
-
-#include <TEveUtil.h>
+#ifndef AliEveTPCSectorData_H
+#define AliEveTPCSectorData_H
 
 #include <TObject.h>
 
@@ -18,6 +16,12 @@
 
 class AliTPCParam;
 
+//------------------------------------------------------------------------------
+// AliEveTPCSectorData
+//
+// Constainer for pad-data of a single TPC sector.
+//  Also stores relevant geometry information in static data-members.
+//
 
 class AliEveTPCSectorData : public TObject
 {
@@ -166,7 +170,7 @@ protected:
   std::vector<PadData>  fPads;          // Vector of pad-data.
 
   // Blocks of pad-data.
-  const Int_t           fBlockSize;     // Size of pad-data block.
+  const Int_t           fkBlockSize;    // Size of pad-data block.
   Int_t                 fBlockPos;      // Position in current block.
   std::vector<Short_t*> fBlocks;        // Vector of blocks.
 
@@ -180,7 +184,7 @@ protected:
   Int_t   fCurrentPos;          // Current position in pad-buffer.
   Int_t   fCurrentStep;         // Step, can be -2 or +2, depending on fill direction.
 
-  Int_t PadIndex(Int_t row, Int_t pad) { return fgRowBegs[row] + pad; }
+  Int_t PadIndex(Int_t row, Int_t pad) const { return fgRowBegs[row] + pad; }
 
 public:
   AliEveTPCSectorData(Int_t sector, Int_t bsize=65536);
@@ -194,8 +198,8 @@ public:
   void RegisterData(Short_t time, Short_t signal);
   void EndPad(Bool_t autoPedestal=kFALSE, Short_t threshold=0);
 
-  const PadData& GetPadData(Int_t padAddr);
-  const PadData& GetPadData(Int_t row, Int_t pad);
+  const PadData& GetPadData(Int_t padAddr) const;
+  const PadData& GetPadData(Int_t row, Int_t pad) const;
 
   PadIterator MakePadIterator(Int_t padAddr, Short_t thr=0);
   PadIterator MakePadIterator(Int_t row, Int_t pad, Short_t thr=0);

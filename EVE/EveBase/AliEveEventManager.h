@@ -7,8 +7,8 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-#ifndef ALIEVE_EventAlieve_H
-#define ALIEVE_EventAlieve_H
+#ifndef AliEveEventManaget_H
+#define AliEveEventManager_H
 
 #include <TEveEventManager.h>
 
@@ -21,6 +21,14 @@ class AliMagF;
 class TFile;
 class TTree;
 class TGeoManager;
+
+//==============================================================================
+//
+// AliEveEventManager
+//
+// Interface to ALICE event-data (RunLoader, ESD), magnetic field and
+// geometry.
+//
 
 
 class AliEveEventManager : public TEveEventManager
@@ -54,6 +62,8 @@ public:
 
   AliEveEventManager();
   AliEveEventManager(TString path, Int_t ev=0);
+  virtual ~AliEveEventManager();
+
 
   virtual void Open();
   virtual void GotoEvent(Int_t event);
@@ -80,6 +90,6 @@ public:
   ClassDef(AliEveEventManager, 1);
 }; // endclass AliEveEventManager
 
-extern AliEveEventManager* gEvent;
+extern AliEveEventManager* gAliEveEvent;
 
 #endif

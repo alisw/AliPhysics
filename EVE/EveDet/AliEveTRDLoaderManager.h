@@ -7,8 +7,8 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-#ifndef ALIEVE_TRDLoaderManager_H
-#define ALIEVE_TRDLoaderManager_H
+#ifndef AliEveTRDLoaderManager_H
+#define AliEveTRDLoaderManager_H
 
 ////////////////////////////////////////////////////////////////////////
 //
@@ -33,12 +33,14 @@ class TClonesArray;
 class AliEveTRDLoaderManager : public TEveElementList
 {
   friend class AliEveTRDLoaderManagerEditor;
-private:
+
   AliEveTRDLoaderManager(const AliEveTRDLoaderManager&);            // Not implemented
   AliEveTRDLoaderManager& operator=(const AliEveTRDLoaderManager&); // Not implemented
+
 public:
   AliEveTRDLoaderManager(const Text_t* name="AliEveTRDLoader", const Text_t* title=0x0);
-  ~AliEveTRDLoaderManager();
+  virtual ~AliEveTRDLoaderManager() {}
+
   void 	Paint(Option_t *option);
 
 protected:
@@ -54,25 +56,26 @@ class AliEveTRDLoaderManagerEditor : public TGedFrame
 private:
   AliEveTRDLoaderManagerEditor(const AliEveTRDLoaderManagerEditor&);            // Not implemented
   AliEveTRDLoaderManagerEditor& operator=(const AliEveTRDLoaderManagerEditor&); // Not implemented
+
 public:
   AliEveTRDLoaderManagerEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30,
 			       UInt_t options=kChildFrame, Pixel_t back=GetDefaultFrameBackground());
-  ~AliEveTRDLoaderManagerEditor();
+  virtual ~AliEveTRDLoaderManagerEditor() {}
 
   virtual void	Add();
   virtual void	Remove(Int_t entry);
   virtual void	SetModel(TObject* obj);
 
 protected:
-  AliEveTRDLoaderManager* fM;
+  AliEveTRDLoaderManager* fM; // Model object.
 
 private:
-  TGComboBox	*fSelector;
-  TGTextButton	*fAdd, *fRemoveButton;
-  TGGroupFrame 	*fGroupFrame;
-  TClonesArray	*fRemove;
+  TGComboBox	*fSelector;            // Selector weed.
+  TGTextButton	*fAdd, *fRemoveButton; // Add/remove button.
+  TGGroupFrame 	*fGroupFrame;          // Frame.
+  TClonesArray	*fRemove;              // Remove array.
 
-  ClassDef(AliEveTRDLoaderManagerEditor, 1); // Editor for AliEveTRDLoaderManager
+  ClassDef(AliEveTRDLoaderManagerEditor, 1); // Editor for AliEveTRDLoaderManager.
 };
 
 #endif

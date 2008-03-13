@@ -15,7 +15,7 @@ AliEveEventManager *g_tpc_last_event = 0;
 
 void tpc_digits(Int_t mode=1)
 {
-  if (g_tpc_data == 0 || g_tpc_last_event != gEvent)
+  if (g_tpc_data == 0 || g_tpc_last_event != gAliEveEvent)
   {
     AliRunLoader* rl =  AliEveEventManager::AssertRunLoader();
     rl->LoadDigits("TPC");
@@ -24,7 +24,7 @@ void tpc_digits(Int_t mode=1)
     g_tpc_data = new AliEveTPCData;
     g_tpc_data->LoadDigits(dt, kTRUE); // Create all present sectors.
 
-    g_tpc_last_event = gEvent;
+    g_tpc_last_event = gAliEveEvent;
   }
 
   // Viewport limits.
@@ -153,7 +153,7 @@ void tpc_digits_2drange(Int_t start, Int_t end)
   if (start <  0)  start = 0;
   if (end   > 35)  end   = 35;
 
-  if (g_tpc_data == 0 || g_tpc_last_event != gEvent) {
+  if (g_tpc_data == 0 || g_tpc_last_event != gAliEveEvent) {
     AliRunLoader* rl =  AliEveEventManager::AssertRunLoader();
     rl->LoadDigits("TPC");
     TTree* dt = rl->GetTreeD("TPC", false);
@@ -161,7 +161,7 @@ void tpc_digits_2drange(Int_t start, Int_t end)
     g_tpc_data = new AliEveTPCData;
     g_tpc_data->LoadDigits(dt, kTRUE); // Create all present sectors.
 
-    g_tpc_last_event = gEvent;
+    g_tpc_last_event = gAliEveEvent;
   }
 
   gStyle->SetPalette(1, 0);

@@ -7,17 +7,13 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-#ifndef ALIEVE_PMDModule_H
-#define ALIEVE_PMDModule_H
+#ifndef AliEvePMDModule_H
+#define AliEvePMDModule_H
 
-#include <TEveUtil.h>
 #include <TEveQuadSet.h>
 
-#include <TObject.h>
-#include <TObjArray.h>
-#include <TTree.h>
-#include <TH1F.h>
-
+class TH1F;
+class TTree;
 
 class AliEvePMDModule : public TEveQuadSet
 {
@@ -31,32 +27,32 @@ private:
 		   Float_t &dxism, Float_t &dyism);
 
 protected:
-  TH1F*                fH1;
-  Float_t              fX, fY, fZ;
-  Int_t                fNPads;
-  Int_t                fAdc;
+  TH1F*        fH1;         // histogram
+  Float_t      fX, fY, fZ;  // coordinates
+  Int_t        fNPads;      // number of pads
+  Int_t        fAdc;        // ad count
 
-  static const Float_t fgkRad;
-  static const Float_t fgkSqRoot3;
-  static const Float_t fgkZpos;
+  static const Float_t fgkRad;      // fooconst
+  static const Float_t fgkSqRoot3;  // fooconst
+  static const Float_t fgkZpos;     // position of PMD
 
-  static Int_t         fPreTotPads;
-  static Int_t         fCpvTotPads;
-  static Int_t         fPreTotAdc;
-  static Int_t         fCpvTotAdc;
-
+  static Int_t fgPreTotPads; // total pre pads
+  static Int_t fgCpvTotPads; // total cpv pads
+  static Int_t fgPreTotAdc;  // total pre signal
+  static Int_t fgCpvTotAdc;  // total cpv signal
 
 public:
   AliEvePMDModule();
-  virtual ~AliEvePMDModule() { delete fH1; }
+  virtual ~AliEvePMDModule();
 
-  Int_t GetPRETotPads() const { return fPreTotPads; }
-  Int_t GetCPVTotPads() const { return fCpvTotPads; }
+  static Int_t GetPRETotPads() { return fgPreTotPads; }
+  static Int_t GetCPVTotPads() { return fgCpvTotPads; }
+  static Int_t GetPRETotAdc()  { return fgPreTotAdc;  }
+  static Int_t GetCPVTotAdc()  { return fgCpvTotAdc;  }
+
   Int_t GetNPads()      const { return fNPads; }
-  Int_t GetPRETotAdc()  const { return fPreTotAdc; }
-  Int_t GetCPVTotAdc()  const { return fCpvTotAdc; }
-  Int_t GetAdc()        const { return fAdc; }
-  TH1F *GetHisto()      const { return fH1;}
+  Int_t GetAdc()        const { return fAdc;   }
+  TH1F *GetHisto()      const { return fH1;    }
 
   void DisplayInit(Int_t ism);
   void DisplayDigitsData(Int_t ism, TTree *pmdt);

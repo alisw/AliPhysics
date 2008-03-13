@@ -1,7 +1,7 @@
 // $Header$
 
-#ifndef REVE_CLASS_H
-#define REVE_CLASS_H
+#ifndef AliEveCLASS_H
+#define AliEveCLASS_H
 
 #include <TGedFrame.h>
 

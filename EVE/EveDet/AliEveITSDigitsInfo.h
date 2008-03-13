@@ -7,17 +7,17 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-#ifndef ALIEVE_ITSDigitsInfo_H
-#define ALIEVE_ITSDigitsInfo_H
+#ifndef AliEveITSDigitsInfo_H
+#define AliEveITSDigitsInfo_H
 
 #include <TEveUtil.h>
+#include <TObject.h>
 
 #include <map>
 #include <vector>
 
-#include <TObject.h>
-#include <TClonesArray.h>
-#include <TTree.h>
+class TClonesArray;
+class TTree;
 
 //class AliITSgeom;
 class AliITSsegmentationSPD;
@@ -69,10 +69,10 @@ public:
 
 class AliEveITSDigitsInfo : public TObject, public TEveRefCnt
 {
+private:
   AliEveITSDigitsInfo(const AliEveITSDigitsInfo&);            // Not implemented
   AliEveITSDigitsInfo& operator=(const AliEveITSDigitsInfo&); // Not implemented
 
-private:
   Float_t fSPDZCoord[192];                // Precalculated z-coordinates for positions of digits.
 
   void InitInternals();
@@ -117,7 +117,7 @@ public:
 
   TClonesArray* GetDigits(Int_t moduleID, Int_t detector);
 
-  void GetSPDLocalZ(Int_t j, Float_t& z);
+  void GetSPDLocalZ(Int_t j, Float_t& z) const;
 
   void GetModuleIDs(AliEveITSModuleSelection* sel, std::vector<UInt_t>& ids);
 
@@ -127,7 +127,7 @@ public:
 }; // endclass AliEveITSDigitsInfo
 
 
-inline void AliEveITSDigitsInfo::GetSPDLocalZ(Int_t j, Float_t& z)
+inline void AliEveITSDigitsInfo::GetSPDLocalZ(Int_t j, Float_t& z) const
 {
   z = fSPDZCoord[j];
 }

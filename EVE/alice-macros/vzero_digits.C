@@ -87,8 +87,8 @@ void vzero_digits()
     }
   }
 
-  modL->RefHMTrans().SetPos(0, 0, 324);
-  modR->RefHMTrans().SetPos(0, 0, -84);
+  modL->RefMainTrans().SetPos(0, 0, 324);
+  modR->RefMainTrans().SetPos(0, 0, -84);
 
   gEve->AddElement(modL);
   gEve->AddElement(modR);

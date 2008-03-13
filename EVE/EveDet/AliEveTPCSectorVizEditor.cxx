@@ -14,12 +14,9 @@
 #include <TEveTransEditor.h>
 
 #include <TVirtualPad.h>
-#include <TColor.h>
 
-#include <TGLabel.h>
 #include <TGButton.h>
 #include <TGNumberEntry.h>
-#include <TGColorSelect.h>
 #include <TGSlider.h>
 #include <TGDoubleSlider.h>
 
@@ -129,7 +126,7 @@ void AliEveTPCSectorVizEditor::SetModel(TObject* obj)
 
   fM = dynamic_cast<AliEveTPCSectorViz*>(obj);
 
-  fHMTrans->SetModel(&fM->fHMTrans);
+  fHMTrans->SetModel(fM->PtrMainTrans());
 
   fSectorID->SetValue(fM->fSectorID);
   fAutoTrans->SetState(fM->fAutoTrans  ? kButtonDown : kButtonUp);

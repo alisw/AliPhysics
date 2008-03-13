@@ -20,8 +20,8 @@ void trackcount_init()
   TEveTrackCounter* g_trkcnt = new TEveTrackCounter("Primary Counter");
   gEve->AddGlobalElement(g_trkcnt);
 
-  gEvent->AddNewEventCommand("on_new_event();");
-  gEvent->GotoEvent(0);
+  gAliEveEvent->AddNewEventCommand("on_new_event();");
+  gAliEveEvent->GotoEvent(0);
 
   gEve->Redraw3D(kTRUE);
 }
@@ -47,7 +47,7 @@ void on_new_event()
   Int_t count = 1;
   TEveTrackCounter* g_trkcnt = TEveTrackCounter::fgInstance;
   g_trkcnt->Reset();
-  g_trkcnt->SetEventId(gEvent->GetEventId());
+  g_trkcnt->SetEventId(gAliEveEvent->GetEventId());
   TEveElement::List_i i = cont->BeginChildren();
   while (i != cont->EndChildren()) {
     TEveTrackList* l = dynamic_cast<TEveTrackList*>(*i);

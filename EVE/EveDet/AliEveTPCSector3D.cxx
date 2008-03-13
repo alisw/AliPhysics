@@ -10,14 +10,19 @@
 #include "AliEveTPCSector3D.h"
 #include <EveDet/AliEveTPCSectorData.h>
 
+#include <TEveTrans.h>
+
 #include <TBuffer3D.h>
 #include <TBuffer3DTypes.h>
 #include <TVirtualPad.h>
 #include <TVirtualViewer3D.h>
 
 #include <TStyle.h>
-#include <TColor.h>
 
+//==============================================================================
+//==============================================================================
+// AliEveTPCSector3D
+//==============================================================================
 
 //______________________________________________________________________________
 //
@@ -93,7 +98,7 @@ void AliEveTPCSector3D::Paint(Option_t* /*option*/)
   buffer.fID           = this;
   buffer.fColor        = 1;
   buffer.fTransparency = 0;
-  fHMTrans.SetBuffer3D(buffer);
+  if (HasMainTrans()) RefMainTrans().SetBuffer3D(buffer);
   buffer.SetSectionsValid(TBuffer3D::kCore);
 
   Int_t reqSections = gPad->GetViewer3D()->AddObject(buffer);
@@ -191,7 +196,7 @@ void AliEveTPCSector3D::SetupPointSetArray()
     fPointSetOn = kTRUE;
     fPointSetMaxVal = fThreshold + (Int_t) TMath::Nint(fPointFrac*(fMaxVal - fThreshold));
     // printf("SetupPointSetArray frac=%f nbins=%d psmv=%d (%d,%d)\n", fPointFrac, nBins, fPointSetMaxVal, fThreshold, fMaxVal);
-    fPointSetArray.InitBins("", nBins, fThreshold, fPointSetMaxVal, kFALSE);
+    fPointSetArray.InitBins("", nBins, fThreshold, fPointSetMaxVal);
     for (Int_t b=0; b<nBins; ++b) {
       fPointSetArray.GetBin(b)->SetMarkerColor(gStyle->GetColorPalette(b));
     }

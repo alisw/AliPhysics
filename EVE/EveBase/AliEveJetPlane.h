@@ -7,12 +7,10 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-#ifndef ALIEVE_JetPlane_H
-#define ALIEVE_JetPlane_H
+#ifndef AliEveJetPlane_H
+#define AliEveJetPlane_H
 
-#include <TEveUtil.h>
 #include <TEveElement.h>
-#include <TEveTrans.h>
 
 #include <TAtt3D.h>
 #include <TAttBBox.h>
@@ -22,6 +20,11 @@
 
 #include <vector>
 
+//==============================================================================
+// 
+// AliEveJetPlane
+//
+// Class for display of jets and tracks in eta-phi plane.
 
 class AliEveJetPlane : public TEveElementList,
 		       public TAtt3D,
@@ -47,8 +50,6 @@ protected:
   Float_t fEnergyColorScale;  // Multiplier for energy color.
 
   Color_t fGridColor; // Color of coordinate grid.
-
-  TEveTrans  fHMTrans;// Transformation matrix.
 
   std::vector<AliAODJet>   fJets;   // Jets to display.
   std::vector<AliAODTrack> fTracks; // Tracks to display.
@@ -113,17 +114,10 @@ public:
 
   void    SetSelectionFlag(Int_t s) { fSelectionFlag = s;}
 
-  virtual Bool_t  CanEditMainColor()   { return kTRUE; }
-
-  virtual Bool_t  CanEditMainHMTrans() { return kTRUE; }
-  virtual TEveTrans* PtrMainHMTrans()  { return &fHMTrans; }
+  virtual Bool_t  CanEditMainColor()const { return kTRUE; }
 
   virtual void ComputeBBox();
   virtual void Paint(Option_t* option = "");
-
-  TEveTrans& RefHMTrans()                    { return fHMTrans; }
-  void SetTransMatrix(Double_t* carr)        { fHMTrans.SetFrom(carr); }
-  void SetTransMatrix(const TGeoMatrix& mat) { fHMTrans.SetFrom(mat);  }
 
   ClassDef(AliEveJetPlane, 1); // Show jets and tracks in eta-phi plane.
 }; // endclass AliEveJetPlane

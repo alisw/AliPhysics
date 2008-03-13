@@ -10,23 +10,17 @@
 #include "AliEveTRDModuleImp.h"
 #include "AliEveTRDData.h"
 
-#include "TMath.h"
 #include <TGListTree.h>
 
 #include "TEveManager.h"
 #include "TEveTrack.h"
 
 #include "AliLog.h"
-#include "AliRun.h"
-#include "AliTRDv1.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDCommonParam.h"
 #include "AliTRDpadPlane.h"
-#include "AliTRDdigit.h"
 #include "AliTRDhit.h"
 #include "AliTRDcluster.h"
-#include "AliTRDcalibDB.h"
-#include "AliTRDdataArrayI.h"
 #include "AliTRDmcmTracklet.h"
 
 ClassImp(AliEveTRDChamber)
@@ -36,11 +30,14 @@ ClassImp(AliEveTRDNode)
 AliEveTRDNode::AliEveTRDNode(const char *typ, Int_t det) :
   TEveElement(), AliEveTRDModule(typ, det)
 {
+  // Xonstructor.
 }
 
 //______________________________________________________________________________
 void AliEveTRDNode::Paint(Option_t* option)
 {
+  // Paint object.
+
   List_i iter = fChildren.begin();
   while(iter != fChildren.end()){
     (dynamic_cast<AliEveTRDModule*>(*iter))->Paint(option);
@@ -51,6 +48,8 @@ void AliEveTRDNode::Paint(Option_t* option)
 //______________________________________________________________________________
 void AliEveTRDNode::Reset()
 {
+  // Reset.
+
   List_i iter = fChildren.begin();
   while(iter != fChildren.end()){
     (dynamic_cast<AliEveTRDModule*>(*iter))->Reset();
@@ -61,6 +60,8 @@ void AliEveTRDNode::Reset()
 //______________________________________________________________________________
 void AliEveTRDNode::Collapse()
 {
+  // Collapse.
+
   TGListTree *list = gEve->GetListTree();
   AliEveTRDNode *node = 0x0;
   List_i iter = fChildren.begin();
@@ -74,6 +75,8 @@ void AliEveTRDNode::Collapse()
 //______________________________________________________________________________
 void AliEveTRDNode::Expand()
 {
+  // Expand.
+
   TGListTree *list = gEve->GetListTree();
   AliEveTRDNode *node = 0x0;
   List_i iter = fChildren.begin();
@@ -87,6 +90,8 @@ void AliEveTRDNode::Expand()
 //______________________________________________________________________________
 void AliEveTRDNode::EnableListElements()
 {
+  // Enable list elements.
+
   SetRnrSelf(kTRUE);
   AliEveTRDNode *node = 0x0;
   AliEveTRDChamber *chmb = 0x0;
@@ -105,6 +110,8 @@ void AliEveTRDNode::EnableListElements()
 //______________________________________________________________________________
 void AliEveTRDNode::DisableListElements()
 {
+  // Disable list elements.
+
   SetRnrSelf(kFALSE);
   AliEveTRDNode *node = 0x0;
   AliEveTRDChamber *chmb = 0x0;
@@ -123,6 +130,8 @@ void AliEveTRDNode::DisableListElements()
 //______________________________________________________________________________
 void AliEveTRDNode::UpdateLeaves()
 {
+  // Update leaves.
+
   AliEveTRDModule *module;
   List_i iter = fChildren.begin();
   while(iter != fChildren.end()){
@@ -152,6 +161,8 @@ void AliEveTRDNode::UpdateLeaves()
 //______________________________________________________________________________
 void AliEveTRDNode::UpdateNode()
 {
+  // Update node.
+
   // Info("UpdateNode()", Form("%s", GetName()));
   AliEveTRDNode *node = 0x0;
   List_i iter = fChildren.begin();
@@ -226,6 +237,8 @@ AliEveTRDChamber::AliEveTRDChamber(Int_t det) :
 //______________________________________________________________________________
 Int_t AliEveTRDChamber::GetSM() const
 {
+  // Get supermodule.
+
   if(!fGeo){
     AliWarning("Fail. No TRD geometry defined.");
     return -1;
@@ -236,6 +249,8 @@ Int_t AliEveTRDChamber::GetSM() const
 //______________________________________________________________________________
 Int_t AliEveTRDChamber::GetSTK() const
 {
+  // Get stack.
+
   if(!fGeo){
     AliWarning("Fail. No TRD geometry defined.");
     return -1;
@@ -361,7 +376,8 @@ void AliEveTRDChamber::LoadTracklets(TObjArray *tracks)
 //____________________________________________________
 void AliEveTRDChamber::Paint(Option_t* option)
 {
-  /* Info("Paint()", Form("%s", GetName()));*/
+  // Paint object.
+
   if(!fRnrSelf) return;
   if(fDigits && fRnrDigits){
     if(fDigitsNeedRecompute){
@@ -380,6 +396,8 @@ void AliEveTRDChamber::Paint(Option_t* option)
 //______________________________________________________________________________
 void AliEveTRDChamber::Reset()
 {
+  // Reset.
+
   if(fHits){
     fHits->Reset();
     fLoadHits = kFALSE;
@@ -401,6 +419,8 @@ void AliEveTRDChamber::Reset()
 //______________________________________________________________________________
 void AliEveTRDChamber::SetGeometry(AliTRDgeometry *geo)
 {
+  // Set geometry.
+
   fGeo = geo;
 
   fPla = fGeo->GetPlane(fDet);

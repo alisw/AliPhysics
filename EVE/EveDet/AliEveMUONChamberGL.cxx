@@ -7,16 +7,11 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-#include <Riostream.h>
-
-#include <TMath.h>
-
 #include "AliEveMUONChamberGL.h"
 
 #include <EveDet/AliEveMUONChamber.h>
 #include <EveDet/AliEveMUONChamberData.h>
 
-#include <TEveQuadSetGL.h>
 #include <TGLRnrCtx.h>
 #include <TGLIncludes.h>
 
@@ -120,8 +115,6 @@ void AliEveMUONChamberGL::DrawQuads(TGLRnrCtx& rnrCtx) const
   glPushAttrib(GL_ENABLE_BIT | GL_POLYGON_BIT);
 
   glDisable(GL_LIGHTING);
-  glColorMaterial(GL_FRONT_AND_BACK, GL_DIFFUSE);
-  glEnable(GL_COLOR_MATERIAL);
   glDisable(GL_CULL_FACE);
 
   //Float_t c[4]; glGetFloatv(GL_CURRENT_COLOR, c);
@@ -152,7 +145,7 @@ void AliEveMUONChamberGL::DrawPoints() const
   glDisable(GL_LIGHTING);
   glLineWidth(1.0);
 
-  glColor3f(1.0,1.0,1.0);
+  TGLUtil::Color3f(1.0,1.0,1.0);
 
   glBegin(GL_LINES);
 
@@ -212,13 +205,7 @@ void AliEveMUONChamberGL::DrawChamberFrame() const
   Float_t *frameCoord;
   Float_t xOrig, yOrig, xRad, yRad, x, y, z;
 
-  UChar_t pix[4];
-  pix[0] = 255;
-  pix[1] =   0;
-  pix[2] =   0;
-  pix[3] = 255;
-
-  glColor4ubv(pix);
+  TGLUtil::Color4ub(255, 0, 0, 255);
 
   for (Int_t id = 0; id < nDetElem; id++) {
 

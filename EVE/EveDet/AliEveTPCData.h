@@ -7,8 +7,8 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-#ifndef ALIEVE_TPCData_H
-#define ALIEVE_TPCData_H
+#ifndef AliEveTPCData_H
+#define AliEveTPCData_H
 
 #include <TEveUtil.h>
 
@@ -20,11 +20,19 @@ class TTree;
 class AliTPCRawStream;
 class AliTPCRawStreamOld;
 
-
 class AliEveTPCSectorData;
+
+//------------------------------------------------------------------------------
+// AliEveTPCData
+//
+// Container for TPC data for all sectors.
 
 class AliEveTPCData : public TObject, public TEveRefCnt
 {
+private:
+  AliEveTPCData(const AliEveTPCData&);            // Not implemented
+  AliEveTPCData& operator=(const AliEveTPCData&); // Not implemented
+
 protected:
   std::vector<AliEveTPCSectorData*>  fSectors; // Vector of sector-data.
   Int_t                      fSectorBlockSize; // Block-size of sector-data.

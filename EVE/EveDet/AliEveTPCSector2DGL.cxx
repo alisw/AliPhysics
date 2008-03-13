@@ -9,7 +9,7 @@
 
 #include "AliEveTPCSector2DGL.h"
 
-#include <EveDet/AliEveTPCData.h>
+#include <EveDet/AliEveTPCSector2D.h>
 
 #include <TGLRnrCtx.h>
 #include <TGLSelectRecord.h>
@@ -17,7 +17,7 @@
 
 //______________________________________________________________________________
 //
-// GL renderer for TPCSector2D.
+// GL renderer for AliEveTPCSector2D.
 
 ClassImp(AliEveTPCSector2DGL)
 
@@ -106,8 +106,6 @@ void AliEveTPCSector2DGL::DirectDraw(TGLRnrCtx& rnrCtx) const
                GL_COLOR_BUFFER_BIT | GL_ENABLE_BIT       | GL_POLYGON_BIT);
 
   glDisable(GL_LIGHTING);
-  glColorMaterial(GL_FRONT_AND_BACK, GL_DIFFUSE);
-  glEnable(GL_COLOR_MATERIAL);
   glDisable(GL_CULL_FACE);
 
   // Display digits
@@ -162,7 +160,7 @@ void AliEveTPCSector2DGL::DirectDraw(TGLRnrCtx& rnrCtx) const
 /******************************************************************************/
 
 void AliEveTPCSector2DGL::LoadPadrow(AliEveTPCSectorData::RowIterator& iter,
-                                     Int_t row, Int_t col_off) const
+                                     Int_t row, Int_t colOff) const
 {
   // Load data for one pad-row into the texture.
 
@@ -173,7 +171,7 @@ void AliEveTPCSector2DGL::LoadPadrow(AliEveTPCSectorData::RowIterator& iter,
   Int_t    maxTime = fSector->fMaxTime;
   Bool_t   halfBorderTime = ((maxTime - minTime) % 2 == 0);
 
-  UChar_t* img_pos = GetRowCol(row, col_off);
+  UChar_t* imgPos = GetRowCol(row, colOff);
   while (iter.NextPad()) {
     padVal = 0;
 
@@ -201,8 +199,8 @@ void AliEveTPCSector2DGL::LoadPadrow(AliEveTPCSectorData::RowIterator& iter,
     }
     padVal = TMath::Min(padVal, fSector->fMaxVal);
     if(padVal > fSector->fThreshold)
-      fSector->ColorFromArray(padVal, img_pos);
-    img_pos += 4;
+      fSector->ColorFromArray(padVal, imgPos);
+    imgPos += 4;
   }
 }
 
@@ -231,11 +229,13 @@ void AliEveTPCSector2DGL::CreateTexture() const
   fSector->SetupColorArray();
 
   // Loop over 3 main segments
-  for (Int_t sId = 0; sId <= 2; ++sId) {
-    if(isOn[sId] == kFALSE)
+  for (Int_t sId = 0; sId <= 2; ++sId)
+  {
+    if (isOn[sId] == kFALSE)
       continue;
     const AliEveTPCSectorData::SegmentInfo& sInfo = AliEveTPCSectorData::GetSeg(sId);
-    for (Int_t row=sInfo.GetFirstRow(); row<=sInfo.GetLastRow(); ++row) {
+    for (Int_t row = sInfo.GetFirstRow(); row <= sInfo.GetLastRow(); ++row)
+    {
       AliEveTPCSectorData::RowIterator i = fSectorData->MakeRowIterator(row);
       Int_t offset = (sInfo.GetNMaxPads() - AliEveTPCSectorData::GetNPadsInRow(row))/2;
       LoadPadrow(i, row + rowOff[sId], offset + colOff[sId]);
@@ -286,28 +286,31 @@ void AliEveTPCSector2DGL::DisplayQuads(const AliEveTPCSectorData::SegmentInfo& s
 {
   // Display segment data by rendering one quad per pad.
 
-  Float_t y_d, y_u;
-  Float_t x_off, x;
+  Float_t yD, yU;
+  Float_t xOff, x;
   Float_t padW = seg.GetPadWidth();
   Float_t padH = seg.GetPadHeight();
 
   glBegin(GL_QUADS);
-  for (Int_t row=0; row<seg.GetNRows(); row++) {
-    y_d = seg.GetRLow() + row*padH;
-    y_u = y_d + padH;
-    x_off = -seg.GetNMaxPads()*padW/2;
+  for (Int_t row = 0; row < seg.GetNRows(); row++)
+  {
+    yD = seg.GetRLow() + row*padH;
+    yU = yD + padH;
+    xOff = -seg.GetNMaxPads()*padW/2;
     Int_t tpcRow = row + seg.GetFirstRow();
     Int_t deltaPad = (seg.GetNMaxPads() - AliEveTPCSectorData::GetNPadsInRow(tpcRow))/2;
     Int_t   maxPad = seg.GetNMaxPads() - deltaPad;
     UChar_t   *pix = GetRowCol(row + startRow, startCol + deltaPad);
-    for (Int_t pad=deltaPad; pad<maxPad; pad++, pix+=4) {
-      x = x_off + pad*padW;
-      if (pix[3] != 0) {
-        glColor4ubv(pix);
-        glVertex2f(x+padW, y_d);
-        glVertex2f(x,      y_d);
-        glVertex2f(x,      y_u);
-        glVertex2f(x+padW, y_u);
+    for (Int_t pad = deltaPad; pad < maxPad; pad++, pix+=4)
+    {
+      x = xOff + pad*padW;
+      if (pix[3] != 0)
+      {
+        TGLUtil::Color4ubv(pix);
+        glVertex2f(x+padW, yD);
+        glVertex2f(x,      yD);
+        glVertex2f(x,      yU);
+        glVertex2f(x+padW, yU);
       }
     }
   }
@@ -320,31 +323,34 @@ void AliEveTPCSector2DGL::DisplayNamedQuads(const AliEveTPCSectorData::SegmentIn
   // Display segmen data as one quad per pad.
   // Tag the rows and pads for selection.
 
-  Float_t y_d, y_u;
-  Float_t x_off, x;
+  Float_t yD, yU;
+  Float_t xOff, x;
   Float_t padW = seg.GetPadWidth();
   Float_t padH = seg.GetPadHeight();
 
   glPushName(0);
-  for (Int_t row=0; row<seg.GetNRows(); row++) {
-    y_d = seg.GetRLow() + row*padH;
-    y_u = y_d + padH;
-    x_off = -seg.GetNMaxPads()*padW/2;
+  for (Int_t row = 0; row < seg.GetNRows(); row++)
+  {
+    yD = seg.GetRLow() + row*padH;
+    yU = yD + padH;
+    xOff = -seg.GetNMaxPads()*padW/2;
     Int_t tpcRow = row + seg.GetFirstRow();
     glLoadName(tpcRow);
     Int_t deltaPad = (seg.GetNMaxPads() - AliEveTPCSectorData::GetNPadsInRow(tpcRow))/2;
     Int_t   maxPad = seg.GetNMaxPads() - deltaPad;
     UChar_t   *pix = GetRowCol(row + startRow, startCol + deltaPad);
     glPushName(0);
-    for (Int_t pad=deltaPad; pad<maxPad; pad++, pix+=4) {
-      x = x_off + pad*padW;
-      if (pix[3] != 0 || fSector->fPickEmpty) {
+    for (Int_t pad = deltaPad; pad < maxPad; pad++, pix+=4) 
+    {
+      x = xOff + pad*padW;
+      if (pix[3] != 0 || fSector->fPickEmpty)
+      {
 	glLoadName(pad - deltaPad);
 	glBegin(GL_QUADS);
-        glVertex2f(x+padW, y_d);
-        glVertex2f(x,      y_d);
-        glVertex2f(x,      y_u);
-        glVertex2f(x+padW, y_u);
+        glVertex2f(x+padW, yD);
+        glVertex2f(x,      yD);
+        glVertex2f(x,      yU);
+        glVertex2f(x+padW, yU);
 	glEnd();
       }
     }
@@ -364,7 +370,8 @@ void AliEveTPCSector2DGL::TraceStepsUp(const AliEveTPCSectorData::SegmentInfo& s
   Float_t x = -(s.GetNMaxPads()*1.0/2 - s.GetNYSteps())*s.GetPadWidth();
   Float_t y  = s.GetRLow();
   glVertex2f(x, y);
-  for (Int_t i=0; i<s.GetNYSteps(); ++i) {
+  for (Int_t i = 0; i < s.GetNYSteps(); ++i)
+  {
     y = s.GetYStep(i);
     glVertex2f(x, y);
     x -= s.GetPadWidth();
@@ -381,7 +388,8 @@ void AliEveTPCSector2DGL::TraceStepsDown(const AliEveTPCSectorData::SegmentInfo&
   Float_t x = s.GetNMaxPads()*s.GetPadWidth()/2;
   Float_t y = s.GetRLow() + s.GetNRows()*s.GetPadHeight();
   glVertex2f(x, y);
-  for (Int_t i=s.GetNYSteps() - 1; i>=0; --i) {
+  for (Int_t i = s.GetNYSteps() - 1; i >= 0; --i)
+  {
     y =  s.GetYStep(i);
     glVertex2f(x, y);
     x -= s.GetPadWidth();
@@ -396,23 +404,24 @@ void AliEveTPCSector2DGL::DisplayFrame() const
   // Display frame of the sector.
   // Each segment's frame is drawn only if its data is drawn, too.
 
-  UChar_t col[4];
-  TEveUtil::TEveUtil::ColorFromIdx(fSector->fFrameColor, col);
-  glColor4ubv(col);
+  TGLUtil::Color(fSector->fFrameColor);
 
-  if(fSector->fRnrInn) {
+  if(fSector->fRnrInn)
+  {
     glBegin(GL_POLYGON);
     TraceStepsUp  (AliEveTPCSectorData::GetInnSeg());
     TraceStepsDown(AliEveTPCSectorData::GetInnSeg());
     glEnd();
   }
-  if(fSector->fRnrOut1) {
+  if(fSector->fRnrOut1)
+  {
     glBegin(GL_POLYGON);
     TraceStepsUp  (AliEveTPCSectorData::GetOut1Seg());
     TraceStepsDown(AliEveTPCSectorData::GetOut1Seg());
     glEnd();
   }
-  if(fSector->fRnrOut2) {
+  if(fSector->fRnrOut2)
+  {
     glBegin(GL_POLYGON);
     TraceStepsUp  (AliEveTPCSectorData::GetOut2Seg());
     TraceStepsDown(AliEveTPCSectorData::GetOut2Seg());

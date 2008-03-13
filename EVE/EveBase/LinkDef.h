@@ -13,7 +13,7 @@
 
 // AliEveEventManager
 #pragma link C++ class  AliEveEventManager+;
-#pragma link C++ global gEvent;
+#pragma link C++ global gAliEveEvent;
 
 #pragma link C++ class AliEveKineTools+;
 

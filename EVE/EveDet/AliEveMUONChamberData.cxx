@@ -14,14 +14,9 @@
 #include <mapping/AliMpSectorSegmentation.h>
 #include <mapping/AliMpSector.h>
 #include <mapping/AliMpPad.h>
-#include <mapping/AliMpStationType.h>
-#include <mapping/AliMpDEManager.h>
 #include <mapping/AliMpSegmentation.h>
 
-#include <TMath.h>
 #include <TVector2.h>
-
-#include <Riostream.h>
 
 #include <EveBase/AliEveEventManager.h>
 
@@ -49,7 +44,7 @@ AliEveMUONChamberData::AliEveMUONChamberData(Int_t chamber) :
   // constructor
   //
 
-  AliEveEventManager *event = gEvent;
+  AliEveEventManager *event = gAliEveEvent;
 
   TString dataPath = TString(event->GetTitle());
   dataPath.Append("/geometry.root");

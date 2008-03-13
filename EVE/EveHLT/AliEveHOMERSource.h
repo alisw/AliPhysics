@@ -7,8 +7,8 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-#ifndef ALIEVE_AliEVEHOMERSource_H
-#define ALIEVE_AliEVEHOMERSource_H
+#ifndef AliEveAliEVEHOMERSource_H
+#define AliEveAliEVEHOMERSource_H
 
 #include <TEveElement.h>
 
@@ -17,22 +17,72 @@
 class AliHLTHOMERSourceDesc;
 
 class AliEveHOMERSource : public TEveElement,
-  public TNamed
+			  public TNamed
 {
 private:
   AliEveHOMERSource(const AliEveHOMERSource&);            // Not implemented
   AliEveHOMERSource& operator=(const AliEveHOMERSource&); // Not implemented
 
+public:
+  struct SourceId
+  {
+    TString fDet, fSDet, fSSDet, fType;
+
+    struct CmpByDet
+    {
+      bool operator()(const SourceId& s1, const SourceId& s2)
+      {
+	Int_t r;
+	if ((r = s1.fDet  .CompareTo(s2.fDet)  )) return r < 0;
+	if ((r = s1.fSDet .CompareTo(s2.fSDet) )) return r < 0;
+	if ((r = s1.fSSDet.CompareTo(s2.fSSDet))) return r < 0;
+	if ((r = s1.fType .CompareTo(s2.fType) )) return r < 0;
+	return false;
+      }
+    };
+
+    struct CmpByType
+    {
+      bool operator()(const SourceId& s1, const SourceId& s2)
+      {
+	Int_t r;
+	if ((r = s1.fType .CompareTo(s2.fType) )) return r < 0;
+	if ((r = s1.fDet  .CompareTo(s2.fDet)  )) return r < 0;
+	if ((r = s1.fSDet .CompareTo(s2.fSDet) )) return r < 0;
+	if ((r = s1.fSSDet.CompareTo(s2.fSSDet))) return r < 0;
+	return false;
+      }
+    };
+
+  };
+
+  struct SourceState
+  {
+    Bool_t                  fState;
+    AliHLTHOMERSourceDesc  *fHandle;
+
+    SourceState() : fState(kFALSE), fHandle(0) {}
+    SourceState(Bool_t state) : fState(state), fHandle(0) {}
+  };
+
 protected:
-  AliHLTHOMERSourceDesc *fSource;
+  const SourceId    *fSrcId;
+        SourceState *fSrcState;
 
 public:
   AliEveHOMERSource(const Text_t* n="HOMER Source", const Text_t* t="");
-  AliEveHOMERSource(AliHLTHOMERSourceDesc* src, const Text_t* n="HOMER Source", const Text_t* t="");
   virtual ~AliEveHOMERSource() {}
 
-  AliHLTHOMERSourceDesc* GetSource() const   { return fSource; }
-  void SetSource(AliHLTHOMERSourceDesc* src) { fSource = src; }
+  const SourceId* GetSourceId() const  { return fSrcId; }
+  void SetSourceId(const SourceId* id) { fSrcId = id; }
+
+  SourceState* GetSourceState() const  { return fSrcState; }
+  void SetSourceState(SourceState* st) { fSrcState = st; TEveElement::SetRnrState(st->fState); }
+
+  void SetSource(const SourceId* id, SourceState* st) { fSrcId = id; fSrcState = st; TEveElement::SetRnrState(st->fState); }
+
+  virtual Bool_t SingleRnrState() const { return kTRUE; }
+  virtual void   SetRnrState(Bool_t rnr);
 
   ClassDef(AliEveHOMERSource, 1);
 }; // endclass AliEveHOMERSource

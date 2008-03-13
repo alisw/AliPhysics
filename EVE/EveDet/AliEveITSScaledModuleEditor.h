@@ -7,11 +7,10 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-#ifndef ALIEVE_ITSScaledModuleEditor_H
-#define ALIEVE_ITSScaledModuleEditor_H
+#ifndef AliEveITSScaledModuleEditor_H
+#define AliEveITSScaledModuleEditor_H
 
 #include <TGedFrame.h>
-#include <TEveRGBAPaletteEditor.h>
 
 class TGNumberEntry;
 class TGColorSelect;
@@ -20,7 +19,6 @@ class TGComboBox;
 class TEveGValuator;
 class TEveGDoubleValuator;
 class TEveRGBAPalette;
-
 
 class AliEveDigitScaleInfo;
 class AliEveITSScaledModule;

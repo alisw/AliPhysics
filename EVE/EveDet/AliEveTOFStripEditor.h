@@ -7,8 +7,8 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-#ifndef ALIEVE_TOFStripEditor_H
-#define ALIEVE_TOFStripEditor_H
+#ifndef AliEveTOFStripEditor_H
+#define AliEveTOFStripEditor_H
 
 #include <TGedFrame.h>
 

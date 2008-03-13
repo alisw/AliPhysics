@@ -7,8 +7,8 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-#ifndef ALIEVE_TPCSector3DGL_H
-#define ALIEVE_TPCSector3DGL_H
+#ifndef AliEveTPCSector3DGL_H
+#define AliEveTPCSector3DGL_H
 
 #include <TGLObject.h>
 
@@ -16,8 +16,13 @@
 
 class TEveBoxSetGL;
 
-
 class AliEveTPCSector3D;
+
+//------------------------------------------------------------------------------
+// AliEveTPCSector3DGL
+//
+// GL renderer for AliEveTPCSector3D.
+//
 
 class AliEveTPCSector3DGL : public TGLObject
 {
@@ -50,6 +55,6 @@ public:
   virtual void   ProcessSelection(TGLRnrCtx & rnrCtx, TGLSelectRecord & rec);
 
   ClassDef(AliEveTPCSector3DGL, 0); // GL renderer for AliEveTPCSector3D.
-}; // endclass AliEveTPCSector3DGL
+};
 
 #endif

@@ -194,22 +194,20 @@ void AliEveTPCLoaderEditor::SetModel(TObject* obj)
 /******************************************************************************/
 /******************************************************************************/
 
-namespace {
-const char *tpcfiletypes[] = {
-   "Root files",  "*.root",
-   "All files",   "*.*",
-    0,               0
-};
-}
-
 void AliEveTPCLoaderEditor::FileSelect()
 {
   // Slot for FileSelect.
 
+  static const char *kTPCFileTypes[] = {
+   "Root files",  "*.root",
+   "All files",   "*.*",
+    0,               0
+};
+
   TGFileInfo fi;
   fi.fIniDir    = StrDup(gSystem->DirName (fM->fFile));
   fi.fFilename  = StrDup(gSystem->BaseName(fM->fFile));
-  fi.fFileTypes = tpcfiletypes;
+  fi.fFileTypes = kTPCFileTypes;
 
   new TGFileDialog(fClient->GetRoot(), gEve->GetMainWindow(), kFDOpen, &fi);
   if (!fi.fFilename)

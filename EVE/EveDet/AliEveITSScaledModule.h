@@ -7,8 +7,8 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-#ifndef ALIEVE_ITSScaledModule_H
-#define ALIEVE_ITSScaledModule_H
+#ifndef AliEveITSScaledModule_H
+#define AliEveITSScaledModule_H
 
 #include <TEveUtil.h>
 #include <EveDet/AliEveITSModule.h>
@@ -23,7 +23,7 @@
 class AliEveDigitScaleInfo : public TQObject, public TEveRefBackPtr
 {
 public:
-  enum StatType_e { kST_Occup, kST_Average, kST_Rms };
+  enum StatType_e { kSTOccup, kSTAverage, kSTRms };
 
   // Bool_t           fAutoUpdatePalette;
 private:
@@ -65,23 +65,23 @@ class AliEveITSScaledModule : public AliEveITSModule
   friend class ITSSDSubEditor;
 
 public:
-  struct ScaledDigit : public TObject
+  struct ScaledDigit_t : public TObject
   {
   public:
-    Int_t N;
-    Float_t sum;
-    Float_t sqr_sum;
-    Int_t min_i,min_j;
-    Int_t max_i,max_j;
+    Int_t   fN;
+    Float_t fSum;
+    Float_t fSqrSum;
+    Int_t   fMinI, fMinJ;
+    Int_t   fMaxI, fMaxJ;
 
-    ScaledDigit();
-    ScaledDigit(Int_t di, Int_t dj);
+    ScaledDigit_t();
+    ScaledDigit_t(Int_t di, Int_t dj);
 
     void Dump() const;
   };
 
 private:
-  std::map<Int_t, ScaledDigit> fDigitsMap;
+  std::map<Int_t, ScaledDigit_t> fDigitsMap;
 
   AliEveITSScaledModule(const AliEveITSScaledModule&);            // Not implemented
   AliEveITSScaledModule& operator=(const AliEveITSScaledModule&); // Not implemented
@@ -106,7 +106,7 @@ public:
 
   void         SyncPalette();
 
-  void         GetScaleData(Int_t& cnx, Int_t& cnz, Int_t& total);
+  void         GetScaleData(Int_t& cnx, Int_t& cnz, Int_t& total) const;
   AliEveDigitScaleInfo*  GetScaleInfo() { return fScaleInfo; }
 
   ClassDef(AliEveITSScaledModule, 1); // Visualization of an ITS module with digits aggregated on a grid of pre-defined size.

@@ -7,16 +7,21 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-#ifndef ALIEVE_JetPlaneGL_H
-#define ALIEVE_JetPlaneGL_H
+#ifndef AliEveJetPlaneGL_H
+#define AliEveJetPlaneGL_H
 
 #include <TGLObject.h>
 
 class TGLViewer;
 class TGLScene;
 
-
 class AliEveJetPlane;
+
+//==============================================================================
+//
+// AliEveJetPlaneGL
+//
+// GL rendering code for AliEveJetPlane class.
 
 class AliEveJetPlaneGL : public TGLObject
 {

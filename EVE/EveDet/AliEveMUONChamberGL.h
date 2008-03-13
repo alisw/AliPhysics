@@ -6,8 +6,8 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
-#ifndef ALIEVE_MUONChamberGL_H
-#define ALIEVE_MUONChamberGL_H
+#ifndef AliEveMUONChamberGL_H
+#define AliEveMUONChamberGL_H
 
 #include <TGLObject.h>
 #include <TEveQuadSetGL.h>
@@ -19,12 +19,10 @@ class AliEveMUONChamber;
 
 class AliEveMUONChamberGL : public TGLObject
 {
-
   AliEveMUONChamberGL(const AliEveMUONChamberGL&);            // Not implemented
   AliEveMUONChamberGL& operator=(const AliEveMUONChamberGL&); // Not implemented
 
  protected:
-
   virtual void DirectDraw(TGLRnrCtx & rnrCtx) const;
   void DrawChamberFrame() const;
   void DrawQuads(TGLRnrCtx& rnrCtx) const;
@@ -37,7 +35,6 @@ class AliEveMUONChamberGL : public TGLObject
   mutable UInt_t           fRTS;     // render time stamp
 
  public:
-
   AliEveMUONChamberGL();
   virtual ~AliEveMUONChamberGL();
 
