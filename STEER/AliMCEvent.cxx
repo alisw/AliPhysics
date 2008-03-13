@@ -65,7 +65,7 @@ AliMCEvent::AliMCEvent(const AliMCEvent& mcEvnt) :
     fTmpTreeTR(0),
     fTmpFileTR(0),
     fNprimaries(-1),
-    fNparticles(-1) 
+    fNparticles(-1)
 { 
 // Copy constructor
 }
@@ -105,12 +105,12 @@ void AliMCEvent::ConnectTreeK (TTree* tree)
  
     // This is a cache for the TParticles converted to MCParticles on user request
     if (fMCParticleMap) {
-	fMCParticleMap->Delete();
+	fMCParticleMap->Clear();
 	fMCParticles->Delete();
-	if (fNparticles>0) fMCParticleMap->Expand(fNparticles);}
+	if (fNparticles>0) fMCParticleMap->Expand(fNparticles);
+    }
     else
 	fMCParticleMap = new TRefArray(fNparticles);
-
 }
 
 void AliMCEvent::ConnectTreeTR (TTree* tree)
@@ -176,7 +176,7 @@ void AliMCEvent::FinishEvent()
   //    
     fStack->Reset(0);
     fMCParticles->Delete();
-    fMCParticleMap->Delete();
+    fMCParticleMap->Clear();
     fTRBuffer->Delete();
     fTrackReferences->Delete();
 }
