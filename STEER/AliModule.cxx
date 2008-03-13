@@ -57,6 +57,8 @@
 
 ClassImp(AliModule)
  
+Float_t AliModule::fgDensityFactor = 1.0;
+ 
 //_______________________________________________________________________
 AliModule::AliModule():
   fEuclidMaterial(""),
@@ -221,7 +223,9 @@ void AliModule::AliMaterial(Int_t imat, const char* name, Float_t a,
     kmat = mat->GetUniqueID();
     (*fIdmate)[imat]=kmat;
   }else{
-    gMC->Material(kmat, uniquename.Data(), a, z, dens, radl, absl, buf, nwbuf);
+    if (fgDensityFactor != 1.0)
+      AliWarning(Form("Material density multiplied by %.2f!", fgDensityFactor));
+    gMC->Material(kmat, uniquename.Data(), a, z, dens * fgDensityFactor, radl, absl, buf, nwbuf);
     (*fIdmate)[imat]=kmat;
   }
 }
@@ -287,7 +291,9 @@ void AliModule::AliMixture(Int_t imat, const char *name, Float_t *a,
     kmat = mat->GetUniqueID();
     (*fIdmate)[imat]=kmat;
   }else{
-    gMC->Mixture(kmat, uniquename.Data(), a, z, dens, nlmat, wmat);
+    if (fgDensityFactor != 1.0)
+      AliWarning(Form("Material density multiplied by %.2f!", fgDensityFactor));
+    gMC->Mixture(kmat, uniquename.Data(), a, z, dens * fgDensityFactor, nlmat, wmat);
     (*fIdmate)[imat]=kmat;
   }
 } 

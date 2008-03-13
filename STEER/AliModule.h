@@ -153,6 +153,9 @@ public:
 // Quality Assurance methods
   virtual void CheckQA()    { ; }
   
+  static void SetDensityFactor(Float_t density) { fgDensityFactor = density; }
+  static Float_t GetDensityFactor() { return fgDensityFactor; }
+  
 protected:      
 
   // Data members
@@ -175,10 +178,12 @@ protected:
 
   AliRunLoader* fRunLoader;   //!local pointer to run loader
 
+  static Float_t fgDensityFactor; //! factor that is multiplied to all material densities (ONLY for systematic studies)
+
  private:
   AliModule(const AliModule &mod);
   AliModule& operator=(const AliModule &mod);
 
-  ClassDef(AliModule,7)  //Base class for ALICE Modules
+  ClassDef(AliModule,8)  //Base class for ALICE Modules
 };
 #endif
