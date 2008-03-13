@@ -31,7 +31,6 @@ class AliAnalysisTaskJets : public AliAnalysisTaskSE
     
  private:
     AliJetFinder* fJetFinder;    //  Pointer to the jet finder 
-    TTree*        fTree;         //! The input tree
     AliJetHistos* fHistos;       //  Histogram manager class
     TList*        fListOfHistos; //  Output list of histograms
     ClassDef(AliAnalysisTaskJets, 2); // Analysis task for standard jet analysis
