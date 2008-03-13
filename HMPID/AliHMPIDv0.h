@@ -8,6 +8,8 @@
 //.
 #include "AliHMPID.h"
 
+class TGeoManager;
+
 class AliHMPIDv0 : public AliHMPID 
 {    
 public:

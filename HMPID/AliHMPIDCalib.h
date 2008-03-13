@@ -12,13 +12,12 @@
 //#include <TTree.h>
 #include <TH1.h>
 #include <TH2.h>
-#include <TH1S.h>
+//#include <TH1S.h>
 #include <TMath.h>
 #include <TFile.h>
 #include "AliHMPIDParam.h"
 #include "AliHMPIDRawStream.h"
 
-class TH1I;
 class TFile;
 class AliHMPIDCalib: public TObject { 
 

@@ -19,12 +19,7 @@ class AliHMPIDParam :public TNamed
 {
 public:
 //ctor&dtor    
-  virtual        ~AliHMPIDParam() {
-    if (fgInstance){
-      for(Int_t i=0;i<7;i++){ delete fM[i]; fM[i] = 0x0;}
-      fgInstance=0;
-    }
-  }
+  virtual        ~AliHMPIDParam() {if (fgInstance){for(Int_t i=0;i<7;i++){delete fM[i];fM[i] = 0x0;};fgInstance=0;}}
   
   void     Print(Option_t *opt="") const;                                         //print current parametrization
          

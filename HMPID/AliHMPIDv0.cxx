@@ -15,8 +15,6 @@
 
 #include "AliHMPIDv0.h"
 
-#include <TGeoManager.h>
-
 ClassImp(AliHMPIDv0)
 
 void AliHMPIDv0::StepManager()

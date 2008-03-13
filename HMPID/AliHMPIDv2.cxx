@@ -29,7 +29,6 @@
 #include <AliMC.h>            //StepManager()      
 #include <AliRun.h>           //CreateMaterials()    
 #include <AliMagF.h>          //CreateMaterials()
-#include <TGeoManager.h>      //CreateGeometry()
 #include <TF1.h>              //DefineOpticalProperties()
 #include <TF2.h>              //DefineOpticalProperties()
 #include <TLorentzVector.h>   //IsLostByFresnel() 

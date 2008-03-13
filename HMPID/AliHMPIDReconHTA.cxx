@@ -587,6 +587,11 @@ void AliHMPIDReconHTA::InitDatabase()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDReconHTA::FillZeroChan(TH2I *deconv)const
 {
+  //If fills eventually channel without entries
+  //inthe histo "database" jyst interpolating the neighboring cells
+  // Arguments: histogram pointer of the database
+  //   Returns: none
+  //
   Int_t nbinx = deconv->GetNbinsX();
   Int_t nbiny = deconv->GetNbinsY();
   for(Int_t i = 0;i<nbinx;i++) {

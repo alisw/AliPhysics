@@ -38,7 +38,7 @@
 #include "AliHMPIDRawStream.h"
 #include "AliLog.h"
 
-//
+//.
 // HMPID AliHMPIDQADataMakerRec base class
 // for QA of reconstruction
 // here also errors are calculated

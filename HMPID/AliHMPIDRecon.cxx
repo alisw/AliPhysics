@@ -66,7 +66,7 @@ void AliHMPIDRecon::InitVars(Int_t n)
 //
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPIDRecon::DeleteVars()
+void AliHMPIDRecon::DeleteVars()const
 {
 //..
 //Delete variables

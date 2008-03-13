@@ -27,7 +27,7 @@ public :
     virtual ~AliHMPIDRecon() {;} //dtor
 
   void     InitVars     (Int_t n);                                                                 //init space for variables
-  void     DeleteVars   ();                                                                        //delete variables
+  void     DeleteVars   ()const;                                                                        //delete variables
   void     CkovAngle    (AliESDtrack *pTrk,TClonesArray *pCluLst,Double_t nmean, Double_t qthre);  //reconstructed Theta Cerenkov
   Bool_t   FindPhotCkov (Double_t cluX,Double_t cluY,Double_t &thetaCer,Double_t &phiCer    );     //find ckov angle for single photon candidate
   Double_t FindRingCkov (Int_t iNclus                                                       );     //best ckov for ring formed by found photon candidates
@@ -41,11 +41,11 @@ public :
   TVector2 TraceForward (TVector3 dirCkov                                                   )const;//tracing forward a photon from (x,y) to PC
   void     Lors2Trs     (TVector3 dirCkov,Double_t &thetaCer,Double_t &phiCer               )const;//LORS to TRS 
   void     Trs2Lors     (TVector3 dirCkov,Double_t &thetaCer,Double_t &phiCer               )const;//TRS to LORS
-  TVector2 GetMip       (                                                                   ) 
+  TVector2 GetMip       (                                                                   )const 
                         {return fMipPos;}                                                          //mip coordinates
-  Double_t GetRingArea  (                                                                   )
+  Double_t GetRingArea  (                                                                   )const
                         {return fRingArea;}                                                        //area of the current ring in cm^2 
-  Double_t GetRingAcc   (                                                                   )
+  Double_t GetRingAcc   (                                                                   )const
                         {return fRingAcc;}                                                         //portion of the ring ([0,1]) accepted by geometry.To scale n. of photons 
   void     SetTrack     (Double_t xRad,Double_t yRad,Double_t theta,Double_t phi            )
                                 {fTrkDir.SetMagThetaPhi(1,theta,phi);  fTrkPos.Set(xRad,yRad);}    //set track parameter at RAD

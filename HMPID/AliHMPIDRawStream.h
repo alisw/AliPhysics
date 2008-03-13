@@ -13,7 +13,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <TObject.h>
-#include <TRandom.h>
 #include "AliHMPIDParam.h"
 #include <AliBitPacking.h>
 #include <AliFstream.h>
@@ -34,7 +33,6 @@ class AliHMPIDRawStream: public TObject {
             void     InitVars(Int_t n);
             void     DelVars();
     
-	    Int_t GetDDLNumber()  const { return fDDLNumber; }                                                                          // Provide current DDL number
    static  inline Int_t GetPad(Int_t ddl,Int_t row,Int_t dil,Int_t pad);                                                                 //get absolute pad number
    static  Int_t GetNDDL()     { return kNDDL;}                                 //return the number of max # of DDLs
    static  Int_t GetNErrors()  { return kSumErr;}                               //return the number of max # of Error Types
@@ -50,11 +48,11 @@ class AliHMPIDRawStream: public TObject {
 
     static inline  Char_t* GetErrName(Int_t eType);      
     inline  Bool_t SetZeroSup (Bool_t isSup);
-    inline  Bool_t GetZeroSup(); 
-    inline  Int_t  GetErrors(Int_t ddl,Int_t eType);                                                                                   //Get errors and occurance
-    Int_t  GetDDLNumber() { return fDDLNumber;} //return the number of DDL actually being decoded
-    UInt_t GetLDCNumber() { return fLDCNumber;} //return the number of LDC actually being decoded
-    UInt_t GetTimeStamp() { return fTimeStamp;} //return the time stamp of the event actually being decoded
+    inline  Bool_t GetZeroSup()const; 
+    inline  Int_t  GetErrors(Int_t ddl,Int_t eType)const;                                                                                   //Get errors and occurance
+    Int_t  GetDDLNumber() const{ return fDDLNumber;} //return the number of DDL actually being decoded
+    UInt_t GetLDCNumber() const{ return fLDCNumber;} //return the number of LDC actually being decoded
+    UInt_t GetTimeStamp() const{ return fTimeStamp;} //return the time stamp of the event actually being decoded
 
   
         
@@ -266,7 +264,7 @@ Bool_t AliHMPIDRawStream::SetZeroSup (Bool_t isSup)
   return fZeroSup;
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++     
-Bool_t AliHMPIDRawStream::GetZeroSup()
+Bool_t AliHMPIDRawStream::GetZeroSup()const
 {
   if(fZeroSup==kTRUE) return kTRUE;
   else                return kFALSE;
@@ -365,7 +363,7 @@ void AliHMPIDRawStream::WriteRaw(TObjArray *pDigAll)
   }//chambers loop
 }//WriteRaw()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Int_t AliHMPIDRawStream::GetErrors(Int_t ddl,Int_t eType)
+Int_t AliHMPIDRawStream::GetErrors(Int_t ddl,Int_t eType)const
 {
 // Return the number of errors for a given error tye during raw data reading
 // Arguments: errorType

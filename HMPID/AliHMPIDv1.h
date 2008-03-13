@@ -9,6 +9,8 @@
 #include "AliHMPID.h"             //base class 
 #include "AliHMPIDDigitizer.h"    //CreateDigitizer()
 
+class TGeoManager;
+
 class AliHMPIDv1 : public AliHMPID //TObject-TNamed-AliModule-AliDetector-AliHMPID-AliHMPIDv0
 {
 public:
