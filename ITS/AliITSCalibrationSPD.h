@@ -74,6 +74,8 @@ class AliITSCalibrationSPD :  public AliITSCalibration {
     
     void   AddBad(UInt_t col, UInt_t row);
     Int_t  GetNrBad() const {return fNrBad;}
+    Int_t  GetNrBadInChip(Int_t chip) const ;
+    Int_t  GetNrBadInColumn(Int_t col) const ;
     Int_t  GetBadColAt(UInt_t index); //returns -1 if out of bounds
     Int_t  GetBadRowAt(UInt_t index); //returns -1 if out of bounds
     void   ClearBad() {fBadChannels.Reset(); fNrBad=0;}
@@ -82,6 +84,8 @@ class AliITSCalibrationSPD :  public AliITSCalibration {
     void   SetBadList(TArrayI badlist) {fBadChannels=badlist;}
     void   SetNrBad(UInt_t nr) {fNrBad=nr;}
     virtual Bool_t IsBad() const {return (GetNrBad()==256*160);};
+    virtual Bool_t IsChipBad(Int_t chip) const {return (GetNrBadInChip(chip)==256*32);};
+    Bool_t  IsColumnBad(Int_t col) const {return (GetNrBadInColumn(col)==256);};
 
  protected:
     // static const Double_t fgkDiffCoeffDefault; //default for fDiffCoeff

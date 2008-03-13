@@ -95,3 +95,23 @@ Bool_t AliITSCalibrationSPD::IsPixelBad(Int_t col, Int_t row) const {
   }
   return false;
 }
+//___________________________________________________________________________
+Int_t  AliITSCalibrationSPD::GetNrBadInColumn(Int_t col) const {
+ //
+ // Count n. of bad in a given column: col. range [0,159]
+ //
+ if(col<0 || col>159) {AliWarning("GetNrBadInColumn: wrong column number"); return -1;}
+ Int_t bad=0;
+ for (UInt_t i=0; i<fNrBad; i++) if (fBadChannels.At(i*2)==col) bad++;
+ return bad;
+}
+//___________________________________________________________________________
+Int_t  AliITSCalibrationSPD::GetNrBadInChip(Int_t chip) const {
+ //
+ // Count n. of bad in a given chip: chip range [0,4]
+ //
+ if(chip<0 || chip>4) {AliWarning("GetNrBadInChip: wrong chip number"); return -1;}
+ Int_t bad=0;
+ for (Int_t col=32*chip; col<32*(chip+1); col++) bad+=GetNrBadInColumn(col);
+ return bad;
+}
