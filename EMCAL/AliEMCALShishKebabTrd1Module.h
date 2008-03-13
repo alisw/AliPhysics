@@ -56,8 +56,10 @@ class AliEMCALShishKebabTrd1Module : public TNamed {
   }
   void GetCenterOfCellInLocalCoordinateofSM_3X3(Int_t ieta, Double_t &xr, Double_t &zr) const
   { // 3X3 case - Nov 9,2006
-    ieta = ieta<0? ieta=0 : ieta; // check index
-    ieta = ieta>2? ieta=2 : ieta;
+    if(ieta < 0) ieta = 0;
+    if(ieta > 2) ieta = 2;
+    //    ieta = ieta<0? ieta=0 : ieta; // check index
+    //ieta = ieta>2? ieta=2 : ieta;
     xr   = fOK3X3[2-ieta].Y();
     zr   = fOK3X3[2-ieta].X();
   }

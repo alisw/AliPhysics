@@ -15,6 +15,7 @@
 
 // Aug 1, 2007; Corr. Sep 05
 // cellInfo -> AliEMCALCellIndexes - Oct 15, 2007
+
 class AliEMCALCellIndexes : public TObject { 
   // See AliEMCALGeometry
   // Indexes information
@@ -47,6 +48,7 @@ class TObjArray;
 class AliEMCALCellInfo : public TNamed {
  public:
   AliEMCALCellInfo(); // default constractor
+  AliEMCALCellInfo(const AliEMCALCellInfo& info); //copy constructor
   AliEMCALCellInfo(const char* name, const Int_t nrow);
   virtual ~AliEMCALCellInfo();
 

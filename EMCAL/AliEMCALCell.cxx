@@ -53,14 +53,30 @@ typedef  AliEMCALHistoUtilities u;
 
 ClassImp(AliEMCALCell)
 
+//______________________________________________________________
 AliEMCALCell::AliEMCALCell() : 
 TFolder(), 
  fParent(0),fLh(0),
 fAbsId(0),fSupMod(0),fModule(0),fPhi(0),fEta(0),fPhiCell(0),fEtaCell(0),fCcIn(0),fCcOut(0),
 fFun(0)
 {
+  //default ctor
 }
 
+//______________________________________________________________
+AliEMCALCell::AliEMCALCell(const AliEMCALCell& cell) : 
+  TFolder(cell.GetName(),cell.GetTitle()), 
+  fParent(cell.fParent),fLh(cell.fLh),
+  fAbsId(cell.fAbsId),fSupMod(cell.fSupMod),
+  fModule(cell.fModule),fPhi(cell.fPhi),
+  fEta(cell.fEta),fPhiCell(cell.fPhiCell),
+  fEtaCell(cell.fEtaCell),fCcIn(cell.fCcIn),
+  fCcOut(cell.fCcOut),fFun(cell.fFun)
+{
+  //copy ctor
+}
+
+//______________________________________________________________
 AliEMCALCell::AliEMCALCell(const Int_t absId, const char* title) : 
   TFolder(Form("Cell%4.4i",absId),title), 
  fParent(0),fLh(0),
@@ -74,12 +90,13 @@ fFun(0)
 
 } 
 
+//______________________________________________________________
 AliEMCALCell::~AliEMCALCell()
 {
   // dtor
 }
-//-------------------------------------------------------------------------------------
 
+//-------------------------------------------------------------------------------------
 void AliEMCALCell::SetCCfromDB(AliEMCALCalibData *ccDb)
 {
   // Oct 15, 2007
@@ -92,6 +109,7 @@ void AliEMCALCell::SetCCfromDB(AliEMCALCalibData *ccDb)
   u::AddToNameAndTitle(h, 0, Form(", cc %5.2f MeV", fCcIn*1.e+3));
 }
 
+//______________________________________________________________
 void AliEMCALCell::SetCCfromCCTable(AliEMCALCalibCoefs *t)
 {
   // Oct 15, 2007
@@ -114,17 +132,20 @@ void AliEMCALCell::SetCCfromCCTable(AliEMCALCalibCoefs *t)
   u::AddToNameAndTitle(h, 0, Form(", cc %5.2f MeV", fCcIn*1.e+3));
 }
 
+//______________________________________________________________
 void AliEMCALCell::FillEffMass(const Double_t mgg)
 {
   u::FillH1(GetHists(), 0, mgg);
 }
 
+//______________________________________________________________
 void AliEMCALCell::FillCellNtuple(TNtuple *nt)
 {
   if(nt==0) return;
   nt->Fill(fAbsId,fSupMod,fModule,fPhi,fEta,fPhiCell,fEtaCell,fCcIn,fCcOut);
 }
 
+//______________________________________________________________
 void AliEMCALCell::FitHist(TH1* h, const char* name, const char* opt)
 {
   // Oct 15, 2007
@@ -182,6 +203,7 @@ void AliEMCALCell::FitHist(TH1* h, const char* name, const char* opt)
   printf("<I> AliEMCALCell::FitHist : |%s| is ended \n\n", h->GetName());
 }
 
+//______________________________________________________________
 void AliEMCALCell::FitEffMassHist(const char* opt)
 {
   // Oct 15, 2007
@@ -209,6 +231,7 @@ void AliEMCALCell::FitEffMassHist(const char* opt)
   printf(" %s | fCcIn %6.5f -> % 6.5f <- fCcOut \n", GetTitle(), fCcIn , fCcOut);
 }
 
+//______________________________________________________________
 void AliEMCALCell::PrintInfo()
 {
   // Oct 15, 2007
@@ -221,6 +244,7 @@ void AliEMCALCell::PrintInfo()
   // if(f) f->Dump();
 }
 
+//______________________________________________________________
 TList* AliEMCALCell::BookHists()
 {
   // Oct 15, 2007

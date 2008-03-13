@@ -32,29 +32,43 @@
  
 ClassImp(AliEMCALCellIndexes) 
 
+// ------------------------------------------------------------------------------
 AliEMCALCellIndexes::AliEMCALCellIndexes() : fAbsId(-1), fNSupMod(-1), fNModule(-1), fNIphi(-1), 
 fNIeta(-1), fIPhi(-1), fIEta(-1), fIPhim(-1), fIEtam(-1)   
 {
 }
 
-ClassImp(AliEMCALCellInfo)
-// ------------------------------------------------------------------------------
 
+ClassImp(AliEMCALCellInfo)
+
+// ------------------------------------------------------------------------------
 AliEMCALCellInfo::AliEMCALCellInfo() : TNamed("",""), fTable(0), fCurrentInd(0)
 {
+  //default constructor
 }
 
+// ------------------------------------------------------------------------------
+AliEMCALCellInfo::AliEMCALCellInfo(const AliEMCALCellInfo& info) 
+  : TNamed(info.GetName(),info.GetTitle()), 
+    fTable(info.fTable), fCurrentInd(info.fCurrentInd)
+{
+  //copy constructor
+}
+
+// ------------------------------------------------------------------------------
 AliEMCALCellInfo::AliEMCALCellInfo(const char* name, const Int_t nrow) : TNamed(name,"table of cell information") , fTable(0), fCurrentInd(0)
 {
   fTable = new TObjArray(nrow);
 }
 
+// ------------------------------------------------------------------------------
 void AliEMCALCellInfo::AddAt(AliEMCALCellIndexes* r)
 {
   (*fTable)[fCurrentInd] = new AliEMCALCellIndexes(*r);
   fCurrentInd++;
 }
 
+// ------------------------------------------------------------------------------
 AliEMCALCellInfo::~AliEMCALCellInfo()
 {
   if(fTable) {
@@ -63,12 +77,14 @@ AliEMCALCellInfo::~AliEMCALCellInfo()
   }
 }
 
+// ------------------------------------------------------------------------------
 AliEMCALCellIndexes* AliEMCALCellInfo::GetTable(Int_t i) const
 {
   // Oct 16, 2007
   return (AliEMCALCellIndexes*)fTable->At(i);
 }
 
+// ------------------------------------------------------------------------------
 void AliEMCALCellInfo::PrintTable(int ind1, int ind2) const
 {
   // Oct 16, 2007
@@ -85,7 +101,7 @@ void AliEMCALCellInfo::PrintTable(int ind1, int ind2) const
   }
 }
 
-
+// ------------------------------------------------------------------------------
 AliEMCALCellInfo *AliEMCALCellInfo::GetTableForGeometry(const char* geoName)
 {
   // Oct 16, 2007
@@ -94,6 +110,7 @@ AliEMCALCellInfo *AliEMCALCellInfo::GetTableForGeometry(const char* geoName)
   return GetTableForGeometry(g);
 }
 
+// ------------------------------------------------------------------------------
 AliEMCALCellInfo *AliEMCALCellInfo::GetTableForGeometry(AliEMCALGeometry *g)
 {
   // Oct 16, 2007

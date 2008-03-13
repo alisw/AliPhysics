@@ -73,13 +73,28 @@ ClassImp(AliEMCALFolder)
 
 //AliEMCALGeometry* AliEMCALFolder::fGeometry = 0;
 
+//_____________________________________________________________
 AliEMCALFolder::AliEMCALFolder() : 
   TFolder(), 
   fCounter(0), fGeometry(0), fNumOfCell(0), fLhists(0), fLofCells(0),fPi0SelPar(0),fCalibData(0),
   fCellNtuple(0),fLobj(0)
 {
+  //default constructor
 }
 
+//_____________________________________________________________
+AliEMCALFolder::AliEMCALFolder(const AliEMCALFolder& folder) : 
+  TFolder(folder.GetName(),folder.GetTitle()), 
+  fCounter(folder.fCounter), 
+  fGeometry(folder.fGeometry), fNumOfCell(folder.fNumOfCell), 
+  fLhists(folder.fLhists), fLofCells(folder.fLofCells),
+  fPi0SelPar(folder.fPi0SelPar),fCalibData(folder.fCalibData),
+  fCellNtuple(folder.fCellNtuple),fLobj(folder.fLobj)
+{
+  //copy constructor
+}
+
+//_____________________________________________________________
 AliEMCALFolder::AliEMCALFolder(const char* name, const char* title, Bool_t putToBrowser) : 
   TFolder(name,title),
   fCounter(-1), fGeometry(0), fNumOfCell(0), fLhists(0), fLofCells(0),fPi0SelPar(0),fCalibData(0),
@@ -88,6 +103,7 @@ AliEMCALFolder::AliEMCALFolder(const char* name, const char* title, Bool_t putTo
   Init(putToBrowser);
 }
 
+//_____________________________________________________________
 AliEMCALFolder::AliEMCALFolder(const Int_t it, const char* title, Bool_t putToBrowser) : 
   TFolder(Form("%s_%2.2i", AliEMCALFolder::fgkBaseFolderName.Data(),it),title),
   fCounter(it), fGeometry(0), fNumOfCell(0), fLhists(0), fLofCells(0),fPi0SelPar(0),fCalibData(0),
@@ -96,11 +112,13 @@ AliEMCALFolder::AliEMCALFolder(const Int_t it, const char* title, Bool_t putToBr
   Init(putToBrowser);
 }
 
+//_____________________________________________________________
 AliEMCALFolder::~AliEMCALFolder()
 {
   // dtor
 }
 
+//_____________________________________________________________
 void AliEMCALFolder::Init(Bool_t putToBrowser)
 {
   // Initialize all data structure
@@ -142,6 +160,7 @@ void AliEMCALFolder::Init(Bool_t putToBrowser)
   if(putToBrowser) gROOT->GetListOfBrowsables()->Add(this); // for testing purpuse
 } 
 
+//_____________________________________________________________
 AliEMCALSuperModule* AliEMCALFolder::GetSuperModule(const Int_t nm)
 {
   // Oct 15, 2007
@@ -153,13 +172,14 @@ AliEMCALSuperModule* AliEMCALFolder::GetSuperModule(const Int_t nm)
   return sm;
 }
 
-
+//_____________________________________________________________
 AliEMCALCell* AliEMCALFolder::GetCell(const Int_t absId)
 { // May 30, 2007
   if(absId<0 || absId >= fNumOfCell) return 0;
   else return fLofCells[absId];
 }  
 
+//_____________________________________________________________
 void  AliEMCALFolder::SetCell(AliEMCALCell *cell, const Int_t absId) 
 {
   // Oct 15, 2007
@@ -168,6 +188,7 @@ void  AliEMCALFolder::SetCell(AliEMCALCell *cell, const Int_t absId)
   }
 }  
 
+//_____________________________________________________________
 AliEMCALPi0SelectionParRec* AliEMCALFolder::GetPi0SelectionParRow(Int_t nrow)
 {
   // Oct 15, 2007
@@ -178,6 +199,7 @@ AliEMCALPi0SelectionParRec* AliEMCALFolder::GetPi0SelectionParRow(Int_t nrow)
   return r;
 }
 
+//_____________________________________________________________
 void AliEMCALFolder::FillPi0Candidate(const Double_t mgg, AliESDCaloCluster* cl1, AliESDCaloCluster* cl2)
 {
   // Oct 15, 2007
@@ -223,6 +245,7 @@ void AliEMCALFolder::FillPi0Candidate(const Double_t mgg, AliESDCaloCluster* cl1
   }
 }
 
+//_____________________________________________________________
 void AliEMCALFolder::FillPi0Candidate(const Double_t mgg, Int_t absIdMax, Int_t nm)
 {
   // Jun 08
@@ -270,6 +293,7 @@ void AliEMCALFolder::FillPi0Candidate(const Double_t mgg, Int_t absIdMax, Int_t 
   cell->FillEffMass(mgg);
 }
 
+//_____________________________________________________________
 void AliEMCALFolder::FitAllSMs()
 { // Jun 14, 2007
   // Only first SM now - should be changed in the future 
@@ -297,6 +321,7 @@ void AliEMCALFolder::FitAllSMs()
    Add(ccOut);
 }
 
+//_____________________________________________________________
 AliEMCALCalibCoefs* AliEMCALFolder::GetCCTable(const char* name) const
 {
   // Oct 15, 2007
@@ -305,6 +330,7 @@ AliEMCALCalibCoefs* AliEMCALFolder::GetCCTable(const char* name) const
   else    return 0;
 }
 
+//_____________________________________________________________
 Int_t AliEMCALFolder::GetSMNumber(AliESDCaloCluster* cl)
 {
   // Oct 15, 2007
@@ -318,6 +344,7 @@ Int_t AliEMCALFolder::GetSMNumber(AliESDCaloCluster* cl)
 }
 
 // Recalibration staf - Jun 18,2007
+//_____________________________________________________________
 AliEMCALRecPoint* AliEMCALFolder::GetRecPoint(AliESDCaloCluster *cl, AliEMCALCalibCoefs *tOld,AliEMCALCalibCoefs *tNew,
 TList *l, Double_t deff, Double_t w0, Double_t phiSlope)
 {
@@ -394,6 +421,7 @@ TList *l, Double_t deff, Double_t w0, Double_t phiSlope)
   return rp;
 }
 
+//_____________________________________________________________
 void  AliEMCALFolder::Save(const char *fn, const char *opt)
 { 
   //
@@ -413,6 +441,7 @@ void  AliEMCALFolder::Save(const char *fn, const char *opt)
   if(fn || opt);
 }
 
+//_____________________________________________________________
 AliEMCALFolder* AliEMCALFolder::ReadFolder(const char *fn, const char *opt)
 { 
   //
@@ -440,7 +469,7 @@ AliEMCALFolder* AliEMCALFolder::ReadFolder(const char *fn, const char *opt)
   return emcal;
 }
 
-
+//_____________________________________________________________
 void  AliEMCALFolder::InitAfterRead()
 { 
   // Oct 15, 2007
@@ -450,6 +479,7 @@ void  AliEMCALFolder::InitAfterRead()
   }
 }
 
+//_____________________________________________________________
 void AliEMCALFolder::DrawQA(const int nsm)
 { 
   //
@@ -498,6 +528,7 @@ void AliEMCALFolder::DrawQA(const int nsm)
   c->Update();
 }
 
+//_____________________________________________________________
 TList* AliEMCALFolder::BookHists()
 {
   // Oct 15, 2007
@@ -513,6 +544,7 @@ TList* AliEMCALFolder::BookHists()
   return l;
 }
 
+//_____________________________________________________________
 void AliEMCALFolder::CreateCellNtuple()
 {
   // Jun 28, 2007
@@ -546,6 +578,7 @@ void AliEMCALFolder::CreateCellNtuple()
   fLobj->Add(fCellNtuple); 
 }
 
+//_____________________________________________________________
 void AliEMCALFolder::CreateAndFillAdditionalHists()
 {
   // Oct 15, 2007
@@ -580,10 +613,10 @@ void AliEMCALFolder::CreateAndFillAdditionalHists()
   h1->SetTitle("CC distribution after #pi^{0} calibration");
   h1->SetXTitle("  MeV  ");
   h1->SetYTitle("  N  ");
-  TLatex *lat1 = u::Lat(Form("rel.width = %4.2f%%", 
-  100.*h1->GetRMS()/ h1->GetMean()), 16.5, 100., 12, 0.045);
-  TLatex *lat2 = u::Lat(Form("rel.width = %4.2f%% (from fit)", 
-			     100.*g->GetParameter(2)/ g->GetParameter(1)), 16.5, 70., 12, 0.045);
+  //  TLatex *lat1 = u::Lat(Form("rel.width = %4.2f%%", 
+  //100.*h1->GetRMS()/ h1->GetMean()), 16.5, 100., 12, 0.045);
+  //TLatex *lat2 = u::Lat(Form("rel.width = %4.2f%% (from fit)", 
+  //		     100.*g->GetParameter(2)/ g->GetParameter(1)), 16.5, 70., 12, 0.045);
 
   if(0) {
     TH1 *h2 = (TH1*)fLhists->At(2);
@@ -628,6 +661,7 @@ void AliEMCALFolder::CreateAndFillAdditionalHists()
   c->Update();
 }
 
+//_____________________________________________________________
 void AliEMCALFolder::TestSMStruct()
 {
   // testing May 22, 2007

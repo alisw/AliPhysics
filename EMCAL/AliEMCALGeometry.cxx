@@ -307,18 +307,6 @@ void AliEMCALGeometry::Init(void){
             if(fGeoName.Contains("HUGE")) fNECLayers *= 3; // 28-oct-05 for analysing leakage    
           }
 	}
-      } else if(fGeoName.Contains("TRD2")) {       // 30-jan-05
-        fSteelFrontThick = 0.0;         // 11-mar-05
-        fIPDistance+= fSteelFrontThick; // 1-feb-05 - compensate absence of steel plate
-        fTrd1Angle  = 1.64;             // 1.3->1.64
-        fTrd2AngleY = fTrd1Angle;       //  symmetric case now
-        fEmptySpace    = 0.2; // 2 mm
-        fTubsR         = fIPDistance; // 31-jan-05 - as for Fred case
-
-        fPhiModuleSize  = fTubsR*2.*TMath::Tan(fTrd2AngleY*TMath::DegToRad()/2.);
-        fPhiModuleSize -= fEmptySpace/2.; // 11-mar-05  
-        fEtaModuleSize  = fPhiModuleSize; // 20-may-05 
-        fTubsTurnAngle  = 3.;
       }
       fNPHIdiv = fNETAdiv  = 2;   // 13-oct-04 - division again
       if(fGeoName.Contains("3X3")) {   // 23-nov-04
@@ -356,9 +344,6 @@ void AliEMCALGeometry::Init(void){
     // 30-sep-04
     if(fGeoName.Contains("TRD")) {
       f2Trd1Dx2 = fEtaModuleSize + 2.*fLongModuleSize*TMath::Tan(fTrd1Angle*TMath::DegToRad()/2.);
-      if(fGeoName.Contains("TRD2")) {  // 27-jan-05
-        f2Trd2Dy2 = fPhiModuleSize + 2.*fLongModuleSize*TMath::Tan(fTrd2AngleY*TMath::DegToRad()/2.);
-      }
     }
   } else Fatal("Init", "%s is an undefined geometry!", fGeoName.Data()) ; 
 
@@ -455,13 +440,7 @@ void AliEMCALGeometry::PrintGeometry()
   if(fGeoName.Contains("TRD")) {
     printf(" fTrd1Angle %7.4f\n", fTrd1Angle);
     printf(" f2Trd1Dx2  %7.4f\n",  f2Trd1Dx2);
-    if(fGeoName.Contains("TRD2")) {
-      printf(" fTrd2AngleY     %7.4f\n", fTrd2AngleY);
-      printf(" f2Trd2Dy2       %7.4f\n", f2Trd2Dy2);
-      printf(" fTubsR          %7.2f cm\n", fTubsR);
-      printf(" fTubsTurnAngle  %7.4f\n", fTubsTurnAngle);
-      printf(" fEmptySpace     %7.4f cm\n", fEmptySpace);
-    } else if(fGeoName.Contains("TRD1")){
+    if(fGeoName.Contains("TRD1")){
       printf("SM dimensions(TRD1) : dx %7.2f dy %7.2f dz %7.2f (SMOD, BOX)\n", 
       fParSM[0],fParSM[1],fParSM[2]);
       printf(" fPhiGapForSM  %7.4f cm (%7.4f <- phi size in degree)\n",  
@@ -1352,7 +1331,7 @@ AliEMCALShishKebabTrd1Module* AliEMCALGeometry::GetShishKebabModule(Int_t neta) 
   return trd1;
 }
 
-void AliEMCALGeometry::Browse(TBrowser* b) const
+void AliEMCALGeometry::Browse(TBrowser* b)
 {
   //Browse the modules
   if(fShishKebabTrd1Modules) b->Add(fShishKebabTrd1Modules);

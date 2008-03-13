@@ -29,7 +29,6 @@
 #include <TNode.h>
 #include <TBRIK.h>
 #include <TTRD1.h>
-#include <TTRD2.h>
 #include <TTRAP.h>
 #include <TPGON.h>
 #include <TTUBS.h>
@@ -116,7 +115,7 @@ void AliEMCALv0::BuildGeometry()
     TNode * top = gAlice->GetGeometry()->GetNode("alice") ; // See AliceGeom/Nodes
     TNode * envelopNode = 0;
     char *envn = "Envelop1";
-    if(!gn.Contains("SHISH") || gn.Contains("TRD2")){
+    if(!gn.Contains("SHISH")){
       new TTUBS(envn, "Tubs that contains arm 1", "void", 
 	      geom->GetEnvelop(0) -10, // rmin 
 	      geom->GetEnvelop(1) +40 ,// rmax
@@ -321,18 +320,7 @@ void AliEMCALv0::CreateGeometry()
     // Create the EMCAL Mother Volume (a polygone) within which to place the Detector and named XEN1 
 
     Float_t envelopA[10];
-    if(gn.Contains("TRD2")) { // TUBS
-       envelopA[0] = geom->GetEnvelop(0) - 10.; // rmin 
-       envelopA[1] = geom->GetEnvelop(1) + 12.; // rmax
-       //       envelopA[2] = geom->ZFromEtaR(geom->GetEnvelop(1), geom->GetArm1EtaMin());
-       envelopA[2] = 390.; // 6-feb-05
-       envelopA[3] = geom->GetArm1PhiMin();
-       envelopA[4] = geom->GetArm1PhiMax();
-       gMC->Gsvolu("XEN1", "TUBS", fIdTmedArr[kIdAIR], envelopA, 5) ;   // Tubs filled with air 
-       fEnvelop1.Set(5, envelopA);
-    // Position the EMCAL Mother Volume (XEN1) in Alice (ALIC)  
-       gMC->Gspos("XEN1", 1, "ALIC", 0.0, 0.0, 0.0, fIdRotm, "ONLY") ;
-    } else if(gn.Contains("TRD1") && gn.Contains("WSUC") ) { // TRD1 for WSUC facility
+    if(gn.Contains("TRD1") && gn.Contains("WSUC") ) { // TRD1 for WSUC facility
       // 17-may-05 - just BOX
       envelopA[0] = 26;
       envelopA[1] = 15;
@@ -374,7 +362,7 @@ void AliEMCALv0::CreateGeometry()
     }
 
     if(gn.Contains("SHISH")){
-      // COMPACT, TWIST, TRD2 or TRD1
+      // COMPACT, TWIST, or TRD1
       AliDebug(2,Form("Shish-Kebab geometry : %s", GetTitle())); 
       CreateShishKebabGeometry();
     }
@@ -412,7 +400,7 @@ void AliEMCALv0::Init(void)
 // 24-aug-04 by PAI
 void AliEMCALv0::CreateShishKebabGeometry()
 {  
-  // TWIST, TRD1 and TRD2 
+  // TWIST, TRD1
   AliEMCALGeometry * g = GetGeometry(); 
   TString gn(g->GetName()); gn.ToUpper(); 
   // see AliModule::fFIdTmedArr
@@ -535,9 +523,6 @@ void AliEMCALv0::CreateShishKebabGeometry()
     } else if(g->GetNPHIdiv()==4 && g->GetNETAdiv()==4) {
       Trd1Tower4X4();
     }
-  } else if(gn.Contains("TRD2")) {    // TRD2 - 14-jan-05
-    //    Scm0InTrd2(g, fParEMOD, parSCM0); // First dessin 
-    PbmoInTrd2(g, fParEMOD, parSCM0); // Second design 
   }
 }
 
@@ -545,11 +530,10 @@ void AliEMCALv0::CreateSmod(const char* mother)
 { 
   // 18-may-05; mother="XEN1"; 
   // child="SMOD" from first to 10th, "SM10" (11th and 12th) (TRD1 case)
-  // child="SMON" and "SMOP"("TRD2" case)
   AliEMCALGeometry * g = GetGeometry(); 
   TString gn(g->GetName()); gn.ToUpper();
 
-  Double_t par[3], parTubs[5], xpos=0., ypos=0., zpos=0., rpos=0., dphi=0., phi=0.0, phiRad=0.;
+  Double_t par[3], xpos=0., ypos=0., zpos=0., rpos=0., dphi=0., phi=0.0, phiRad=0.;
   Double_t par1C = 0.;
   //  ===== define Super Module from air - 14x30 module ==== ;
   fSampleWidth = double(g->GetECPbRadThick()+g->GetECScintThick());
@@ -566,21 +550,7 @@ void AliEMCALv0::CreateSmod(const char* mother)
     AliDebug(2,Form(" rpos %8.2f : dphi %6.1f degree \n", rpos, dphi));
   }
 
-  if (gn.Contains("TRD2")) { // tubs - 27-jan-05
-    parTubs[0] = g->GetTubsR();                       // rmin
-    parTubs[1] = parTubs[0] + g->GetShellThickness(); // rmax ?? 
-    parTubs[2] = 380./2.;                             // DZ half length in z; 11-oct-04 - for 26 division
-    parTubs[3] = -dphi/2.;                            // PHI1 starting angle of the segment;
-    parTubs[4] = +dphi/2.;                            // PHI2 ending angle of the segment;
-
-    gMC->Gsvolu("SMOP", "TUBS", fIdTmedArr[kIdAIR], parTubs, 5); // pozitive Z
-    gMC->Gsvolu("SMON", "TUBS", fIdTmedArr[kIdAIR], parTubs, 5); // negative Z
-
-    AliDebug(2,Form(" SMOP,N ** TUBS **\n")); 
-    AliDebug(2,Form("tmed %i | Rmin %7.2f Rmax %7.2f dz %7.2f phi1,2 (%7.2f,%7.2f)\n", 
-		    fIdTmedArr[kIdAIR], parTubs[0],parTubs[1],parTubs[2], parTubs[3],parTubs[4]));
-    // have to add 1 cm plastic before EMOD - time solution 
-  } else if(gn.Contains("WSUC")) {
+  if(gn.Contains("WSUC")) {
     par[0] = g->GetPhiModuleSize()*g->GetNPhi()/2.; 
     par[1] = g->GetShellThickness()/2.;
     par[2] = g->GetEtaModuleSize()*g->GetNZ()/2. + 5; 
@@ -630,50 +600,8 @@ void AliEMCALv0::CreateSmod(const char* mother)
   if(gn.Contains("TEST")) {nphism = 1;} // just only 2 super modules;
 
   // Turn whole super module
-  int turnSupMod = 1; // should be ONE; for testing = 0
   for(int i=i0; i<nphism; i++) {
-    if (gn.Contains("TRD2")) {      // tubs - 27-jan-05
-      if(i==i0) {
-        printf("** TRD2 ** ");
-        if(turnSupMod==1) printf(" No 3 degree rotation !!! ");
-        printf("\n");
-      }
-      Double_t phic=0., phicRad=0.; // phi angle of arc center
-      phic    = g->GetArm1PhiMin() + dphi*(2*i+1)/2.; //
-      phicRad = phic*TMath::DegToRad();
-      phi     = phic - g->GetTubsTurnAngle();
-      phiRad  = phi*TMath::DegToRad();
-      if(turnSupMod==1) {
-        TVector2  vc;     // position of super module center
-        vc.SetMagPhi(parTubs[0], phicRad);
-        TVector2  vcTurn; // position of super module center with turn
-        vcTurn.SetMagPhi(parTubs[0], phiRad);
-        TVector2 vcShift = vc - vcTurn;
-        phic = phi;
-
-        xpos = vcShift.X();
-        ypos = vcShift.Y();
-      } else { // 1-mar-05 ; just for testing - no turn od SMOD; looks good
-        xpos = ypos = 0.0;
-      }
-      zpos = parTubs[2];
-      AliMatrix(fIdRotm, 90.0, phic, 90.0, 90.0+phic, 0.0, 0.0);
-
-      gMC->Gspos("SMOP", ++nr, mother, xpos, ypos, zpos, fIdRotm, "ONLY") ;
-      printf("SMOP %2i | %2i fIdRotm %3i phi %6.1f(%5.3f) xpos %7.2f ypos %7.2f zpos %7.2f \n", 
-      i, nr, fIdRotm, phic, phicRad, xpos, ypos, zpos);
-      printf(" phiy(90+phic)  %6.1f \n", 90. + phic);
-
-      if(!gn.Contains("TEST1") && g->GetNumberOfSuperModules() > 1){
-	//        double  phiy = 90. + phic + 180.;
-	//        if(phiy>=360.) phiy -= 360.;
-	//        printf(" phiy  %6.1f \n", phiy);
-	//        AliMatrix(fIdRotm, 90.0, phic, 90.0, phiy, 180.0, 0.0);
-        gMC->Gspos("SMON", nr, mother, xpos, ypos, -zpos, fIdRotm, "ONLY") ;
-        printf("SMON %2i | %2i fIdRotm %3i phi %6.1f(%5.3f) xpos %7.2f ypos %7.2f zpos %7.2f \n", 
-        i, nr, fIdRotm, phic, phicRad, xpos, ypos, -zpos);
-      }
-    } else if(gn.Contains("WSUC")) {
+    if(gn.Contains("WSUC")) {
       xpos = ypos = zpos = 0.0;
       fIdRotm = 0;
       gMC->Gspos("SMOD", 1, mother, xpos, ypos, zpos, fIdRotm, "ONLY") ;
@@ -728,10 +656,9 @@ void AliEMCALv0::CreateEmod(const char* mother, const char* child)
   AliEMCALGeometry * g = GetGeometry(); 
   TString gn(g->GetName()); gn.ToUpper(); 
   // Module definition
-  Double_t par[10], parTubs[5], xpos=0., ypos=0., zpos=0., rpos=0.;
+  Double_t par[10], xpos=0., ypos=0., zpos=0.;
   Double_t parSCPA[5], zposSCPA=0.; // passive SC - 13-MAY-05, TRD1 case
   Double_t trd1Angle = g->GetTrd1Angle()*TMath::DegToRad(), tanTrd1 = TMath::Tan(trd1Angle/2.);
-  Double_t tanTrd2y  = TMath::Tan(g->GetTrd2AngleY()*TMath::DegToRad()/2.);
   int nr=0;
   fIdRotm=0;
   if(!gn.Contains("TRD")) { // standard module
@@ -757,13 +684,6 @@ void AliEMCALv0::CreateEmod(const char* mother, const char* child)
         gMC->Gspos ("SCPA", ++nr, child, 0.0, 0.0, zposSCPA, 0, "ONLY");
       }
     }
-  } else if (gn.Contains("TRD2")){ // TRD2 as for TRD1 - 27-jan-05
-    fParEMOD[0] = g->GetEtaModuleSize()/2.;   // dx1
-    fParEMOD[1] = g->Get2Trd1Dx2()/2.;        // dx2
-    fParEMOD[2] = g->GetPhiModuleSize()/2.;   // dy1
-    fParEMOD[3] = fParEMOD[2] + tanTrd2y*g->GetLongModuleSize();// dy2
-    fParEMOD[4] = g->GetLongModuleSize()/2.;  // dz
-    gMC->Gsvolu(child, "TRD2", fIdTmedArr[kIdSTEEL], fParEMOD, 5);
   }
 
   nr   = 0;
@@ -791,9 +711,9 @@ void AliEMCALv0::CreateEmod(const char* mother, const char* child)
 	//        printf(" %3i(%2i,2i) xpos %7.2f ypos %7.2f zpos %7.2f \n", nr,iy,iz, xpos, ypos, zpos);
       }
     }    
-  } else if(gn.Contains("TRD")) { // 30-sep-04; 27-jan-05 - as for TRD1 as for TRD2
+  } else if(gn.Contains("TRD")) { // 30-sep-04; 27-jan-05 - as for TRD1
     // X->Z(0, 0); Y->Y(90, 90); Z->X(90, 0)
-    AliEMCALShishKebabTrd1Module *mod=0, *mTmp; // current module
+    AliEMCALShishKebabTrd1Module *mod=0; // current module
 
     for(int iz=0; iz<g->GetNZ(); iz++) {
       Double_t  angle=90., phiOK=0;
@@ -836,49 +756,6 @@ void AliEMCALv0::CreateEmod(const char* mother, const char* child)
           }
           printf("\n");
         }
-      } else if(gn.Contains("TRD2")){ // 1-feb-05 - TRD2;  curve in phi
-        double angEtaRow = 0.;
-	double theta1=0.,phi1=0., theta2=0.,phi2=0., theta3=0.,phi3=0.;
-        angle=90.;
-        if(iz==0) {
-          mod   = new AliEMCALShishKebabTrd1Module();
-        } else {
-          mTmp  = new AliEMCALShishKebabTrd1Module(*mod);
-          mod   = mTmp;
-          angle = mod->GetThetaInDegree();
-        }
-
-        fShishKebabModules->Add(mod);
-        phiOK = mod->GetCenterOfModule().Phi()*180./TMath::Pi(); 
-	AliDebug(2,Form(" %i | theta | %6.3f - %6.3f = %6.3f\n", iz+1, angle, phiOK, angle-phiOK));
-
-        zpos = mod->GetPosZ() - parTubs[2];
-        rpos = parTubs[0] + mod->GetPosXfromR();
-
-        angle     = mod->GetThetaInDegree();
-        Double_t stepAngle = (parTubs[4] -  parTubs[3])/g->GetNPhi(); // 11-mar-04
-	for(int iy=0; iy<g->GetNPhi(); iy++) {
-          angEtaRow = parTubs[3] + stepAngle*(0.5+double(iy));
-	  //          angEtaRow = 0;
-          theta1  = 90. +  angle; phi1 = angEtaRow;      // x' ~-z;
-          theta2  = 90.;          phi2 = 90. + angEtaRow;// y' ~ y;
-          theta3  = angle;        phi3 = angEtaRow;      // z' ~ x;
-          if(phi3 < 0.0) phi3 += 360.; 
-          AliMatrix(fIdRotm, theta1,phi1, theta2,phi2, theta3,phi3);
-
-          xpos = rpos * TMath::Cos(angEtaRow*TMath::DegToRad());
-          ypos = rpos * TMath::Sin(angEtaRow*TMath::DegToRad());
-          gMC->Gspos(child, ++nr, "SMOP", xpos, ypos, zpos, fIdRotm, "ONLY") ;
-	  // SMON; 
-	  phi1    = 180 + angEtaRow;
-	  theta3  = 180.-theta3;  phi3 = angEtaRow;
-          AliMatrix(fIdRotm, theta1,phi1, theta2,phi2, theta3,phi3);
-          gMC->Gspos(child,  nr, "SMON", xpos, ypos, -zpos, fIdRotm, "ONLY") ;
-          if(AliDebugLevel()>=2) {
-	    printf(" angEtaRow(phi) %7.2f |  angle(eta) %7.2f \n",  angEtaRow, angle);
-	    printf("iy=%2i xpos %7.2f ypos %7.2f zpos %7.2f fIdRotm %i\n", iy, xpos, ypos, zpos, fIdRotm);
-          }
-        } // for(int iy=0; iy<g->GetNPhi(); iy++)
       }
     } 
   } else {

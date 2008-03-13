@@ -26,10 +26,18 @@ class AliEMCALCell : public TFolder {
 
  public:
   
-  AliEMCALCell(); 
+  AliEMCALCell(); //default ctor
+  AliEMCALCell(const AliEMCALCell& cell); //copy ctor
   AliEMCALCell(const Int_t absId, const char* title="EMCAL cell");
 
   virtual ~AliEMCALCell();
+
+  AliEMCALCell & operator = (const AliEMCALCell  & /*rvalue*/) {
+    // assignement operator requested by coding convention but not
+    // needed                           
+    Fatal("operator =", "not implemented");
+    return *this;
+  };
 
   void SetCCfromDB(AliEMCALCalibData *ccDb);  // obsolete
   void SetCCfromCCTable(AliEMCALCalibCoefs *t);

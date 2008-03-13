@@ -53,7 +53,7 @@ public:
   static Char_t* GetDefaulGeometryName() {return fgDefaultGeometryName;}
   void PrintGeometry();                                           //*MENU*  
   void PrintCellIndexes(Int_t absId=0, int pri=0, char *tit="");  //*MENU*
-  virtual void Browse(TBrowser* b) const ;
+  virtual void Browse(TBrowser* b);
   virtual Bool_t  IsFolder() const;
 
   void GetCellPhiEtaIndexInSModuleFromTRUIndex(Int_t itru, Int_t iphitru, Int_t ietatru, Int_t &ietaSM, Int_t &iphiSM) const ; // Tranforms Eta-Phi Cell index in TRU into Eta-Phi index in Super Module

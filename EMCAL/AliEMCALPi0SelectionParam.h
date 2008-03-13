@@ -41,6 +41,7 @@ class  AliEMCALPi0SelectionParRec :  public TObject{
 class AliEMCALPi0SelectionParam : public TNamed {
  public:
   AliEMCALPi0SelectionParam(); // default constractor
+  AliEMCALPi0SelectionParam(const AliEMCALPi0SelectionParam& param);
   AliEMCALPi0SelectionParam(const char* name, const Int_t nrow);
   virtual ~AliEMCALPi0SelectionParam();
 

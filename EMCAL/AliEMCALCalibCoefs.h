@@ -42,6 +42,7 @@ class AliEMCALCalibCoefs : public TNamed {
   enum EEmcalCalibType {kMC, kEQUALIZATION, kMIP, kPI0}; // type of EMCAL calibrations 
 
   AliEMCALCalibCoefs(); // default constractor
+  AliEMCALCalibCoefs(const AliEMCALCalibCoefs& coefs); // copy constractor
   AliEMCALCalibCoefs(const char* name, const Int_t nrow);
   virtual ~AliEMCALCalibCoefs();
 

@@ -44,10 +44,18 @@ class AliEMCALFolder : public TFolder {
  public:
   
   AliEMCALFolder(); 
+  AliEMCALFolder(const AliEMCALFolder& folder); //copy constructor
   AliEMCALFolder(const char* name, const char* title="Top EMCAL folder", Bool_t putToBrowser=kFALSE);
   AliEMCALFolder(const Int_t it, const char* title="Top EMCAL folder", Bool_t putToBrowser=kFALSE);
 
   virtual ~AliEMCALFolder();
+
+  AliEMCALFolder & operator = (const AliEMCALFolder  & /*rvalue*/) {
+    // assignement operator requested by coding convention but not
+    // needed                           
+    Fatal("operator =", "not implemented");
+    return *this;
+  };
 
   void Init(Bool_t putToBrowser=kFALSE);
   // Get methods

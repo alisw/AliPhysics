@@ -35,25 +35,38 @@
 #include "AliEMCALPi0SelectionParam.h"
 
 ClassImp(AliEMCALPi0SelectionParRec)
+//_________________________________________________________________________
 AliEMCALPi0SelectionParRec::AliEMCALPi0SelectionParRec() : 
 fEOfRpMin(0.3), fEOfRpMax(30.), fMassGGMin(0.03), fMassGGMax(0.28), fMomPi0Min(1.8), fMomPi0Max(12.)
 {
   // Default constructor 
 }
-//_________________________________________________________________________
+
+
+
 
 ClassImp(AliEMCALPi0SelectionParam)
+//_________________________________________________________________________
 AliEMCALPi0SelectionParam::AliEMCALPi0SelectionParam() : TNamed("",""), fTable(0), fCurrentInd(0)
 {
   // Default constructor 
 }
 
+//_________________________________________________________________________
+AliEMCALPi0SelectionParam::AliEMCALPi0SelectionParam(const AliEMCALPi0SelectionParam& param) 
+  : TNamed(param), fTable(param.fTable), fCurrentInd(param.fCurrentInd)
+{
+  // Copy constructor 
+}
+
+//_________________________________________________________________________
 AliEMCALPi0SelectionParam::AliEMCALPi0SelectionParam(const char* name, const Int_t nrow) : TNamed(name,"table of cell information") , fTable(0), fCurrentInd(0)
 {
   // Oct 16, 2007
   fTable = new TObjArray(nrow);
 }
 
+//_________________________________________________________________________
 void AliEMCALPi0SelectionParam::AddAt(AliEMCALPi0SelectionParRec* r)
 {
   // Oct 16, 2007
@@ -61,6 +74,7 @@ void AliEMCALPi0SelectionParam::AddAt(AliEMCALPi0SelectionParRec* r)
   fCurrentInd++;
 }
 
+//_________________________________________________________________________
 AliEMCALPi0SelectionParam::~AliEMCALPi0SelectionParam()
 {
   // Oct 16, 2007
@@ -70,12 +84,14 @@ AliEMCALPi0SelectionParam::~AliEMCALPi0SelectionParam()
   }
 }
 
+//_________________________________________________________________________
 AliEMCALPi0SelectionParRec* AliEMCALPi0SelectionParam::GetTable(Int_t i) const
 {
   // Oct 16, 2007
   return (AliEMCALPi0SelectionParRec*)fTable->At(i);
 }
 
+//_________________________________________________________________________
 void AliEMCALPi0SelectionParam::PrintTable()
 {
   // Oct 16, 2007
@@ -83,6 +99,7 @@ void AliEMCALPi0SelectionParam::PrintTable()
   for(int i=0; i<GetNRows(); i++) PrintTable(i);
 }
 
+//_________________________________________________________________________
 void AliEMCALPi0SelectionParam::PrintTable(const Int_t i)
 {
   // Oct 16, 2007
@@ -91,6 +108,7 @@ void AliEMCALPi0SelectionParam::PrintTable(const Int_t i)
   PrintRec(GetTable(i));
 }
 
+//_________________________________________________________________________
 void AliEMCALPi0SelectionParam::PrintRec(AliEMCALPi0SelectionParRec* r)
 {
   // Oct 16, 2007
@@ -99,6 +117,8 @@ void AliEMCALPi0SelectionParam::PrintRec(AliEMCALPi0SelectionParRec* r)
   printf(" gamma,gamma mass window %7.2f -> %7.2f \n", r->fMassGGMin, r->fMassGGMax);
   printf(" pi0   momentum   window %7.2f -> %7.2f \n", r->fMomPi0Min, r->fMomPi0Max);
 }
+
+//_________________________________________________________________________
 // Set 1;
 AliEMCALPi0SelectionParam* AliEMCALPi0SelectionParam::Set1()
 {

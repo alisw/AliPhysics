@@ -48,31 +48,44 @@
 #include <TString.h>
 
 ClassImp(AliEMCALCalibCoef) 
-
+// ----------------------------------------------------------------------
 AliEMCALCalibCoef::AliEMCALCalibCoef() : fAbsId(-1), fCc(-1), fECc(-1)
 { 
   // default constructor
 }
+
+// ----------------------------------------------------------------------
 AliEMCALCalibCoef::AliEMCALCalibCoef(const Int_t id, const Double_t c, const Double_t ec) :
 fAbsId(id), fCc(c), fECc(ec)
 {
   // Oct 16, 2007
 }
-// ----------------------------------------------------------------------
+
 
 ClassImp(AliEMCALCalibCoefs)
 
+// ----------------------------------------------------------------------
 AliEMCALCalibCoefs::AliEMCALCalibCoefs() : TNamed("",""), fTable(0), fCurrentInd(0), fCalibMethod(0)
 {
   // default constructor
 }
 
+// ----------------------------------------------------------------------
+AliEMCALCalibCoefs::AliEMCALCalibCoefs(const AliEMCALCalibCoefs& coefs) 
+  : TNamed(coefs), fTable(coefs.fTable), 
+    fCurrentInd(coefs.fCurrentInd), fCalibMethod(coefs.fCalibMethod)
+{
+  // copy constructor
+}
+
+// ----------------------------------------------------------------------
 AliEMCALCalibCoefs::AliEMCALCalibCoefs(const char* name, const Int_t nrow) : TNamed(name,"table of cell information") , fTable(0), fCurrentInd(0), fCalibMethod(0)
 {
   // Oct 16, 2007
   fTable = new TObjArray(nrow);
 }
 
+// ----------------------------------------------------------------------
 void AliEMCALCalibCoefs::AddAt(AliEMCALCalibCoef* r)
 {
   // Oct 16, 2007
@@ -80,6 +93,7 @@ void AliEMCALCalibCoefs::AddAt(AliEMCALCalibCoef* r)
   fCurrentInd++;
 }
 
+// ----------------------------------------------------------------------
 AliEMCALCalibCoefs::~AliEMCALCalibCoefs()
 {
   // Destructor
@@ -89,13 +103,14 @@ AliEMCALCalibCoefs::~AliEMCALCalibCoefs()
   }
 }
 
+// ----------------------------------------------------------------------
 AliEMCALCalibCoef* AliEMCALCalibCoefs::GetTable(Int_t i) const
 {
   // Oct 16, 2007
   return (AliEMCALCalibCoef*)fTable->At(i);
 }
 
-
+// ----------------------------------------------------------------------
 // Get initial Calib Data from DB
 AliEMCALCalibCoefs* AliEMCALCalibCoefs::GetCalibTableFromDb(const char *tn, AliEMCALCalibData **calData)
 { 
@@ -142,6 +157,7 @@ AliEMCALCalibCoefs* AliEMCALCalibCoefs::GetCalibTableFromDb(const char *tn, AliE
   return tab;
 }
 
+// ----------------------------------------------------------------------
 TH1F* AliEMCALCalibCoefs::GetHistOfCalibTableFromDb(const char *tn)
 {
   // First SM only
@@ -161,6 +177,7 @@ TH1F* AliEMCALCalibCoefs::GetHistOfCalibTableFromDb(const char *tn)
   return h;
 }
 
+// ----------------------------------------------------------------------
 AliEMCALCalibData* AliEMCALCalibCoefs::GetCalibTableForDb(const AliEMCALCalibCoefs *tab, const char* dbLocation,
 const char* coment)
 {
@@ -213,6 +230,7 @@ const char* coment)
   return caldata;
 }
 
+// ----------------------------------------------------------------------
 AliEMCALCalibCoef *AliEMCALCalibCoefs::GetRow(const int absId)
 {
   // Oct 16, 2007
@@ -224,6 +242,7 @@ AliEMCALCalibCoef *AliEMCALCalibCoefs::GetRow(const int absId)
   return 0;
 }
 
+// ----------------------------------------------------------------------
 void AliEMCALCalibCoefs::PrintTable()
 {
   // Oct 16, 2007
@@ -231,6 +250,7 @@ void AliEMCALCalibCoefs::PrintTable()
   for(int i=0; i<fTable->GetSize(); i++) PrintTable(i);
 }
 
+// ----------------------------------------------------------------------
 void AliEMCALCalibCoefs::PrintTable(const Int_t i)
 {
   // Oct 16, 2007
@@ -239,6 +259,7 @@ void AliEMCALCalibCoefs::PrintTable(const Int_t i)
   PrintRec(GetTable(i));
 }
 
+// ----------------------------------------------------------------------
 void AliEMCALCalibCoefs::PrintRec(AliEMCALCalibCoef* r)
 {
   // Oct 16, 2007
