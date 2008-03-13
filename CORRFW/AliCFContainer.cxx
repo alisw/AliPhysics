@@ -157,6 +157,10 @@ void AliCFContainer::Fill(Double_t *var, Int_t istep, Double_t weight)
   // Fills the grid at selection step istep for a set of values of the 
   // input variables, with a given weight (by default w=1)
   //
+  if(istep >= fNStep || istep < 0){
+    AliError("Non-existent selection step, grid was not filled");
+    return;
+  }
   fGrid[istep]->Fill(var,weight);
 }
 //___________________________________________________________________
@@ -165,6 +169,10 @@ TH1D *AliCFContainer::ShowProjection(Int_t ivar, Int_t istep) const
   //
   // returns 1-D projection along variable ivar at selection step istep
   //
+  if(istep >= fNStep || istep < 0){
+    AliError("Non-existent selection step, return NULL");
+    return 0x0;
+  }
   fGrid[istep]->SetExcludeOffEntriesInProj(fExclOffEntriesInProj);
   return fGrid[istep]->Project(ivar);
 }
@@ -174,6 +182,10 @@ TH2D *AliCFContainer::ShowProjection(Int_t ivar1, Int_t ivar2, Int_t istep) cons
   //
   // returns 2-D projection along variables ivar1,ivar2 at selection step istep
   //
+  if(istep >= fNStep || istep < 0){
+    AliError("Non-existent selection step, return NULL");
+    return 0x0;
+  }
   fGrid[istep]->SetExcludeOffEntriesInProj(fExclOffEntriesInProj);
   return fGrid[istep]->Project(ivar1,ivar2);
 }
@@ -184,6 +196,10 @@ TH3D *AliCFContainer::ShowProjection(Int_t ivar1, Int_t ivar2, Int_t ivar3, Int_
   // returns 3-D projection along variables ivar1,ivar2,ivar3 
   // at selection step istep
   //
+  if(istep >= fNStep || istep < 0){
+    AliError("Non-existent selection step, return NULL");
+    return 0x0;
+  }
   fGrid[istep]->SetExcludeOffEntriesInProj(fExclOffEntriesInProj);
   return fGrid[istep]->Project(ivar1,ivar2,ivar3);
 }
@@ -193,6 +209,10 @@ TH1D *AliCFContainer::ShowSlice(Int_t ivar, Double_t *varMin, Double_t* varMax, 
   //
   // Make a slice along variable ivar at selection level istep in range [varMin,varMax]
   //
+  if(istep >= fNStep || istep < 0){
+    AliError("Non-existent selection step, return NULL");
+    return 0x0;
+  }
   return (TH1D*)fGrid[istep]->Slice(ivar,varMin,varMax);
 }
 //____________________________________________________________________
@@ -229,11 +249,14 @@ void AliCFContainer::Add(AliCFContainer* aContainerToAdd, Double_t c)
   //
   //add the content of container aContainerToAdd to the current one
   //
-
-  if(aContainerToAdd->GetNStep()!=fNStep)AliError("Different number of steps, cannot add the containers");
-  if(aContainerToAdd->GetNVar()!=fNVar)AliError("Different number of variables, cannot add the containers");
-  if(aContainerToAdd->GetNDim()!=fNDim)AliError("Different number of dimensions, cannot add the containers!");
-  
+  if( (aContainerToAdd->GetNStep()!=fNStep)
+      ||
+      (aContainerToAdd->GetNVar()!=fNVar)
+      ||
+      (aContainerToAdd->GetNDim()!=fNDim)){
+    AliError("Different number of steps/sensitive variables/grid elements: cannot add the containers");
+    return;
+  }
   for(Int_t istep=0;istep<fNStep;istep++){
     fGrid[istep]->Add(aContainerToAdd->GetGrid(istep),c);
   }
@@ -243,49 +266,77 @@ Float_t AliCFContainer::GetOverFlows( Int_t ivar, Int_t istep) const {
   //
   // Get overflows in variable var at selection level istep
   //
+  if(istep >= fNStep || istep < 0){
+    AliError("Non-existent selection step, return -1");
+    return -1.;
+  }
   return fGrid[istep]->GetOverFlows(ivar);
 } 
 //____________________________________________________________________
 Float_t AliCFContainer::GetUnderFlows( Int_t ivar, Int_t istep) const {
   //
-  // Get overflows in variable var at selection level istep
+  // Get underflows in variable var at selection level istep
   //
+  if(istep >= fNStep || istep < 0){
+    AliError("Non-existent selection step, return -1");
+    return -1.;
+  }
   return fGrid[istep]->GetUnderFlows(ivar);
 } 
 //____________________________________________________________________
 Float_t AliCFContainer::GetEntries( Int_t istep) const {
   //
-  // Get overflows in variable var at selection level istep
+  // Get total entries in variable var at selection level istep
   //
+  if(istep >= fNStep || istep < 0){
+    AliError("Non-existent selection step, return -1");
+    return -1.;
+  }
   return fGrid[istep]->GetEntries();
 } 
 //____________________________________________________________________
 Int_t AliCFContainer::GetEmptyBins( Int_t istep) const {
   //
-  // Get overflows in variable var at selection level istep
+  // Get empty bins in variable var at selection level istep
   //
+  if(istep >= fNStep || istep < 0){
+    AliError("Non-existent selection step, return -1");
+    return -1;
+  }
   return fGrid[istep]->GetEmptyBins();
 } 
 //____________________________________________________________________
 Int_t AliCFContainer::GetEmptyBins( Int_t istep, Double_t *varMin, Double_t* varMax) const {
   //
-  // Get overflows in variable var at selection level istep
+  // Get empty bins in a range in variable var at selection level istep
   //
+  if(istep >= fNStep || istep < 0){
+    AliError("Non-existent selection step, return -1");
+    return -1;
+  }
   return fGrid[istep]->GetEmptyBins(varMin,varMax);
 } 
 //_____________________________________________________________________
 Double_t AliCFContainer::GetIntegral( Int_t istep) const 
 {
   //
-  // Get Integral at selection level istep
+  // Get Integral over the grid at selection level istep
   //
+  if(istep >= fNStep || istep < 0){
+    AliError("Non-existent selection step, return -1");
+    return -1.;
+  }
   return fGrid[istep]->GetIntegral();
 }
 //_____________________________________________________________________
 Double_t AliCFContainer::GetIntegral( Int_t istep, Double_t *varMin, Double_t* varMax ) const 
 {
   //
-  // Get Integral at selection level istep
+  // Get Integral over the grid in a range at selection level istep
   //
+  if(istep >= fNStep || istep < 0){
+    AliError("Non-existent selection step, return -1");
+    return -1.;
+  }
   return fGrid[istep]->GetIntegral(varMin,varMax);
 }
