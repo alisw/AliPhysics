@@ -6,7 +6,6 @@
 #include <TGeoManager.h>
 #include <TH1.h>
 #include <TInterpreter.h>
-#include "AliCDBManager.h"
 #include "AliGeomManager.h"
 #include "AliHeader.h"
 #include "AliITS.h"
@@ -26,16 +25,6 @@ Int_t ShowITSRecPoints(){
 
   if (gClassTable->GetID("AliRun") < 0) {
     gInterpreter->ExecuteMacro("loadlibs.C");
-  }
-  // Set OCDB if needed
-  AliCDBManager* man = AliCDBManager::Instance();
-  if (!man->IsDefaultStorageSet()) {
-    printf("Setting a local default storage and run number 0\n");
-    man->SetDefaultStorage("local://$ALICE_ROOT");
-    man->SetRun(0);
-  }
-  else {
-    printf("Using deafult storage \n");
   }
  
   // retrives geometry 
@@ -66,7 +55,6 @@ Int_t ShowITSRecPoints(){
   Float_t cluglo[3]={0.,0.,0.}; 
   AliITSDetTypeRec* detTypeRec = new AliITSDetTypeRec();
   detTypeRec->SetITSgeom(geom);
-  detTypeRec->SetDefaults();
 
   Int_t modmin=geom->GetStartDet(0);
   Int_t modmax=geom->GetLastDet(2);
