@@ -79,8 +79,9 @@ AliMCParticle::~AliMCParticle()
   // fParticle should be handled by the user
   // AliStack in case of AliMCEventHandler
   if(fTrackReferences){
-    delete fTrackReferences;
-    fTrackReferences = 0;
+      fTrackReferences->Delete();
+      delete fTrackReferences;
+      fTrackReferences = 0;
   }
 }
 
