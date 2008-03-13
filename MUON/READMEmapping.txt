@@ -11,17 +11,56 @@ chamber segmentations an later on also to hold the description of the
 top level connections of detection elements, including information
 about DDLs, bus patches and also trigger configuration.
 
+\section mapping_s0  Mapping in OCDB
+  
+The mapping is everywhere in the MUON code loaded from
+OCDB. In case the mapping data files are changed, the mapping
+in OCDB has to be regenerated in this way:
+
+<pre>
+$> cd $ALICE_ROOT/MUON
+$> rm Calib/Mapping/Run0_9999999_v0_s0.root 
+$> rm Calib/DDLStore/Run0_9999999_v0_s0.root 
+$> aliroot
+root [0] AliMpDDLStore::ReadData(); 
+root [1] AliMpCDB::WriteMpSegmentation(); 
+root [2] AliMpCDB::WriteDDLStore(); 
+</pre>
+
+Note that mapping has to be loaded from OCDB almost each time
+when using MUON classes; the loading of mapping depends on
+the CBD manager state (the current run number, storage ...).
+The standard way of loading mapping expects the CDB manager
+in a state well defined beforehand; this way is used in
+the MUON code:
+
+<pre>
+if ( ! AliMpCDB::LoadDDLStore() ) {
+  AliFatal("Could not access mapping from OCDB !");
+}
+</pre>
+
+In the interactive Root session, in case the CDB manager state is 
+not defined, you can load mapping from the local OCDB files in this 
+way:
+<pre>
+root [0] AliMpCDB::LoadDDLStore2();
+</pre>
+
+
 \section mapping_s1  Graphical User Interface
   
 To use the GUI to plot DE segmentation run:
 
-<pre>
+<pre> 
+AliMpCDB::LoadDDLStore2();
 new AliMpDEVisu();
 </pre>
 
 or
 
 <pre>
+AliMpCDB::LoadDDLStore2();
 new AliMpDEVisu(w, h);
 </pre>
 
@@ -214,7 +253,7 @@ The DDL id is needed for the rawdata generation only.
 To generate this file, the macro MUONGenerateBusPatch.C could be used.
 
 
-\subsection mapping_s3_sub7  BusPatchSpecial.dat
+\subsection mapping_s3_sub8  BusPatchSpecial.dat
 
 Lines starting with # are comments.
 
@@ -233,7 +272,21 @@ the manus filled with a standard procedure (using the DetElemIdToBusPatch.dat
 file) are replaced with the list of manus in this file.
 
 
-\subsection mapping_s3_sub9  crate.dat
+\subsection mapping_s3_sub9  BusPatchLength.dat
+
+Lines starting with # are comments.
+
+Contains the list of bus patches and their cable length in meters
+
+<pre>
+# DDL 0
+  1  3
+  2  3
+...
+</pre>
+
+
+\subsection mapping_s3_sub10  crate.dat
   
 Muon trigger electronics configuration file (decoded in class 
 AliMUONTriggerCrateStore) directly copy/paste from the ALICE PRR 
