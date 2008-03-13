@@ -172,6 +172,6 @@ const char* AliAnalysisTaskSE::CurrentFileName()
       return fInputHandler->GetTree()->GetCurrentFile()->GetName();
     else if( fMCEvent )
       return ((AliMCEventHandler*) ((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler()))->TreeK()->GetCurrentFile()->GetName();
-    else "";
+    else return "";
 }
 
