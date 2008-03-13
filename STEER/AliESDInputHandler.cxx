@@ -23,6 +23,7 @@
 #include <TTree.h>
 #include <TString.h>
 #include <TObjString.h>
+#include <TProcessID.h>
 
 #include "AliESDInputHandler.h"
 #include "AliESDEvent.h"
@@ -36,7 +37,8 @@ AliESDInputHandler::AliESDInputHandler() :
   AliInputEventHandler(),
   fEvent(0x0),
   fBranches(""),
-  fBranchesOn("")
+  fBranchesOn(""),
+  fNObjCount(0)
 {
   // default constructor
 }
@@ -82,11 +84,14 @@ Bool_t AliESDInputHandler::BeginEvent(Long64_t /*entry*/)
 	((AliESDEvent*)fEvent)->CopyFromOldESD();
 	old->Reset();
   }
+  fNObjCount = TProcessID::GetObjectCount();
+
   return kTRUE;
 }
 
 Bool_t  AliESDInputHandler::FinishEvent(){
   if(fEvent)fEvent->Reset();
+  TProcessID::SetObjectCount(fNObjCount);
   return kTRUE;
 } 
 
