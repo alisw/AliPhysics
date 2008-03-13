@@ -113,19 +113,23 @@ void AliAnalysisTaskSE::ConnectInputData(Option_t* /*option*/)
 //  ESD
 //
     fInputHandler = (AliInputEventHandler*) 
-	((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
-    if (fInputHandler) {
-	fInputEvent = fInputHandler->GetEvent();
-    } else {
-	AliError("No Input Event Handler connected") ; 
-	return ; 
-    }
+         ((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
 //
 //  Monte Carlo
 //
     AliMCEventHandler*    mcH = 0;
     mcH = (AliMCEventHandler*) ((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler());
     if (mcH) fMCEvent = mcH->MCEvent();
+    
+    
+    if (fInputHandler) {
+         fInputEvent = fInputHandler->GetEvent();
+    } else if( fMCEvent ) {
+         AliWarning("No Input Event Handler connected, only MC Truth Event Handler") ; 
+    } else {
+         AliError("No Input Event Handler connected") ; 
+         return ; 
+    }
 }
 
 void AliAnalysisTaskSE::CreateOutputObjects()
@@ -136,7 +140,7 @@ void AliAnalysisTaskSE::CreateOutputObjects()
     if (fDebug > 1) printf("AnalysisTaskSE::CreateOutPutData() \n");
 
     AliAODHandler* handler = (AliAODHandler*) 
-	((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
+         ((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
     
     fOutputAOD   = handler->GetAOD();
     fTreeA = handler->GetTree();
@@ -147,10 +151,14 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
 {
 //
 // Exec analysis of one event
-    if (fDebug > 1) printf("AliAnalysisTaskSE::Exec() \n");
-    fEntry = fInputHandler->GetReadEntry();
+    if (fDebug > 1) AliInfo("AliAnalysisTaskSE::Exec() \n");
+    if( fInputHandler ) 
+       fEntry = fInputHandler->GetReadEntry();
+    else if( fMCEvent )
+       fEntry = fMCEvent->Header()->GetEvent(); 
     if ( !((Entry()-1)%100) && fDebug > 0) 
-	AliInfo(Form("%s ----> Processing event # %lld", CurrentFileName(), Entry()));
+         AliInfo(Form("%s ----> Processing event # %lld", CurrentFileName(), Entry()));
+         
 // Call the user analysis    
     UserExec(option);
     PostData(0, fTreeA);
@@ -160,6 +168,10 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
 const char* AliAnalysisTaskSE::CurrentFileName()
 {
 // Returns the current file name    
-    return fInputHandler->GetTree()->GetCurrentFile()->GetName();
+    if( fInputHandler )
+      return fInputHandler->GetTree()->GetCurrentFile()->GetName();
+    else if( fMCEvent )
+      return ((AliMCEventHandler*) ((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler()))->TreeK()->GetCurrentFile()->GetName();
+    else "";
 }
 
