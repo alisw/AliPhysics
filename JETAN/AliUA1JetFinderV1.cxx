@@ -162,7 +162,7 @@ void AliUA1JetFinderV1::FindJets()
   // add jets to list
   Int_t* idxjets = new Int_t[nj];
   Int_t nselectj = 0;
-  printf("Found %d jets \n", nj);
+//  printf("Found %d jets \n", nj);
   
   for(Int_t kj=0; kj<nj; kj++){
      if ((etaJet[kj] > (header->GetJetEtaMax())) ||
@@ -175,7 +175,7 @@ void AliUA1JetFinderV1::FindJets()
       en = TMath::Sqrt(px * px + py * py + pz * pz);
       fJets->AddJet(px, py, pz, en);
       AliAODJet jet(px, py, pz, en);
-      jet.Print("");
+      //jet.Print("");
       
       AddJet(jet);
       
