@@ -1,26 +1,30 @@
-void RawReconstruction(TString file="2006run2211.root")
+void Rec(TString file="raw.root")
 {
-  // Script to reconstruct raw data from the PHOS beam test July-August 2006
-  // Raw data are available in /castor/cern.ch/alice/testbeam/phos/2006/2006run*.raw
-  // and has to be converted to root format
-  // Author: Boris Polichtchouk, August 2006
+  // Reconstruction of RAW data from the input file raw.root
+  // Boris Polichtchouk, 13 Mar 2008
 
-  //   AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
-  //   AliCDBManager::Instance()->SetSpecificStorage("PHOS/*","local://CalibDB");
+  //AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+  //AliCDBManager::Instance()->SetSpecificStorage("PHOS/*","local://BadMap");
 
-  // Set reconstruction parameters other then the default ones
-  //   AliPHOSRecoParam* recEmc = new AliPHOSRecoParamEmc();
-  //   recEmc->SetMinE(0.05);
-  //   AliPHOSReconstructor::SetRecoParamEmc(recEmc);
-  
   AliReconstruction rec ;
-  rec.SetOption("PHOS","OldRCUFormat");
-  rec.SetRunTracking("PHOS") ;
+  rec.SetRunTracking("") ;
   rec.SetRunVertexFinder(kFALSE) ; 
   rec.SetRunLocalReconstruction("PHOS") ;
-  rec.SetFillESD("PHOS") ; 
+  rec.SetFillESD("PHOS") ;
+
+  //Set rec. parameters different from the default ones.
+  AliPHOSRecoParam* recEmc = new AliPHOSRecoParamEmc();
+  recEmc->SetSubtractPedestals(kTRUE);
+  recEmc->SetMinE(0.01);                     //Minimal Digit energy
+  recEmc->SetClusteringThreshold(0.02);      //Minimal cluster seed energy
+  recEmc->SetDecoderVersion("v1");           //Comment out to choose Max-Ped version
+  recEmc->SetOldRCUFormat(kTRUE);
+
+  AliPHOSReconstructor::SetRecoParamEmc(recEmc);
 
   rec.SetInput(file.Data());  // read RAW data
+  rec.SetNumberOfEventsPerFile(5000);	
   rec.Run();
+
 
 }
