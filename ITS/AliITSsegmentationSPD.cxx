@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id:$ */
+/* $Id$ */
 #include <TGeoManager.h>
 #include <TGeoVolume.h>
 #include <TGeoBBox.h>
@@ -24,6 +24,8 @@
 // pixels                                           //
 //                                                  //
 //////////////////////////////////////////////////////
+const Int_t AliITSsegmentationSPD::fgkNchipsPerModule = 5;
+const Int_t AliITSsegmentationSPD::fgkNcolumnsPerChip = 32;
 ClassImp(AliITSsegmentationSPD)
 
 //_____________________________________________________________________________
@@ -279,10 +281,13 @@ void AliITSsegmentationSPD::Init300(){
 
 //------------------------------
 void AliITSsegmentationSPD::Init(){
-  // Initialize infromation for 6 read out chip 425X50 micron pixel SPD 
-  // detectors. This chip is 150 microns thick by 1.28 cm in x by 8.375 cm
-  // long. It has 256  50 micron pixels in x and 197 mostly 425 micron size
-  // pixels in z. The two pixels between each readout chip are 625 microns long.
+// Initialize information for 5 read out chip 425X50 micron pixel SPD 
+// detectors (ladder).
+// Each readout chip is 150 micron thick.
+// The ladder sensor is 200 micron thick by 1.28 cm in x by 6.96 cm in z.
+// It has 256 50 micron pixels in x and 160 mostly 425 micron pixels in z.
+// The two pixels at boundary between two adjacent readout chips are 
+// 625 micron long.
 
   Float_t bx[256],bz[280];
   Int_t i;
@@ -511,3 +516,24 @@ void AliITSsegmentationSPD::CellBoundries(Int_t ix,Int_t iz,
     zu = z;
     return; // Found x and z, return.
 }
+//----------------------------------------------------------------------
+Int_t AliITSsegmentationSPD::GetChipFromChannel(Int_t, Int_t iz) const {
+  // returns chip number (in range 0-4) starting from channel number
+  if(iz>=fNpz  || iz<0 ){
+    AliWarning("Bad cell number");
+    return -1;
+  }
+  Int_t theChip=iz/fgkNcolumnsPerChip;
+  return theChip;
+}
+//----------------------------------------------------------------------
+Int_t AliITSsegmentationSPD::GetChipFromLocal(Float_t, Float_t zloc) const {
+  // returns chip number (in range 0-4) starting from local coordinates
+  Int_t ix0,iz;
+  if (!LocalToDet(0,zloc,ix0,iz)) {
+    AliWarning("Bad local coordinate");
+    return -1;
+  } 
+  return GetChipFromChannel(ix0,iz);
+}
+//----------------------------------------------------------------------

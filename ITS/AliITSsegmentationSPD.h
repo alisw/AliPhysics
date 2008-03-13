@@ -45,6 +45,10 @@ public AliITSsegmentation {
     virtual void CellBoundries(Int_t ix,Int_t iz,Double_t &xl,Double_t &xu,
 			       Double_t &zl,Double_t &zu) const;
     //
+    virtual Int_t    GetNumberOfChips() const {return fgkNchipsPerModule;}
+    virtual Int_t    GetChipFromLocal(Float_t, Float_t zloc) const;
+    virtual Int_t    GetChipFromChannel(Int_t, Int_t iz) const;
+    //
     // Initialisation
     virtual void Init();
     virtual void Init300();
@@ -75,6 +79,8 @@ public AliITSsegmentation {
     Int_t   fNpz;           // Number of pixels in z
     Float_t fCellSizeX[256];// Size for each pixel in x -microns
     Float_t fCellSizeZ[280];// Size for each pixel in z -microns
+    static const Int_t fgkNchipsPerModule;    //number of chips per ladder (5)
+    static const Int_t fgkNcolumnsPerChip;    //number of columns per chip (32)
 
  private:
 
@@ -85,7 +91,7 @@ public AliITSsegmentation {
     Float_t ZFromCol(Int_t col) const;
     Float_t ZpitchFromCol(Int_t col) const;
 
-  ClassDef(AliITSsegmentationSPD,2) //Segmentation class for SPD 
+  ClassDef(AliITSsegmentationSPD,3) //Segmentation class for SPD 
 
 };
 
