@@ -2,44 +2,53 @@ void rec(Int_t runNumber = 0, const char* year = "08", const char *localFileName
 {
   // Offline shifter reconstruction macro
 
-  cout << "Going to run the reconstruction for run: " << runNumber << endl;
+  TString filename;
 
-  // connect to the grid 
-  TGrid * grid = 0x0 ; 
-  grid = TGrid::Connect("alien://") ; 
+  if (!localFileName) {
+
+    cout << "Going to run the reconstruction for run: " << runNumber << endl;
+
+    // connect to the grid 
+    TGrid * grid = 0x0 ; 
+    grid = TGrid::Connect("alien://") ; 
 		
-  // make the file name pattern year and run number
-  TString pattern;
-  pattern.Form("%9d",runNumber);
-  pattern.ReplaceAll(" ", "0") ; 
-  pattern.Prepend(year);
-  pattern.Append("*0.root");
+    // make the file name pattern year and run number
+    TString pattern;
+    pattern.Form("%9d",runNumber);
+    pattern.ReplaceAll(" ", "0") ; 
+    pattern.Prepend(year);
+    pattern.Append("*0.root");
 
-  // find the files associated to this run
-  // get the list of files from AliEn directly 
-  TString baseDir; 
-  baseDir.Form("/alice/data/20%s/",year);
+    // find the files associated to this run
+    // get the list of files from AliEn directly 
+    TString baseDir; 
+    baseDir.Form("/alice/data/20%s/",year);
 
-  cout << "Looking for raw-data files with pattern " << pattern << " in folder " << baseDir << endl;
+    cout << "Looking for raw-data files with pattern " << pattern << " in folder " << baseDir << endl;
 
-  TGridResult *result = grid->Query(baseDir, pattern);
+    TGridResult *result = grid->Query(baseDir, pattern);
 
-  TList *fileList = result->GetFileInfoList();
+    TList *fileList = result->GetFileInfoList();
 
-  cout << fileList->GetEntries() << " raw-data files found" << endl;
-  if ( fileList->GetEntries() == 0) {
-    cout << "Exiting..." << endl;
-    return;
+    cout << fileList->GetEntries() << " raw-data files found" << endl;
+    if ( fileList->GetEntries() == 0) {
+      cout << "Exiting..." << endl;
+      return;
+    }
+
+    // Take the first (or last?) file...
+    TFileInfo *fi =  (TFileInfo *)fileList->At(0); 
+    //  TFileInfo *fi =  (TFileInfo *)fileList->At(fileList->GetEntries()-1); 
+
+    cout << "Getting the file:" << fi->GetCurrentUrl()->GetUrl() << endl;
+    fi->Dump();
+
+    filename = fi->GetCurrentUrl()->GetUrl();
   }
-
-  // Take the first (or last?) file...
-  TFileInfo *fi =  (TFileInfo *)fileList->At(0); 
-  //  TFileInfo *fi =  (TFileInfo *)fileList->At(fileList->GetEntries()-1); 
-
-  cout << "Getting the file:" << fi->GetCurrentUrl()->GetUrl() << endl;
-  fi->Dump();
-
-  TString filename(fi->GetCurrentUrl()->GetUrl());
+  else {
+    // In case of local raw-data file...
+    filename = localFileName;
+  }
 
   AliLog::Flush();
 
@@ -54,12 +63,12 @@ void rec(Int_t runNumber = 0, const char* year = "08", const char *localFileName
   //  man->SetDefaultStorage("local://LocalCDB");
   man->SetDefaultStorage("alien://folder=/alice/data/2008/LHC08a/OCDB/");
   
-  // Files that we can not read from alien...
-  man->SetSpecificStorage("ITS/Calib/MapsAnodeSDD","local://$ALICE_ROOT");
-  man->SetSpecificStorage("ITS/Calib/MapsTimeSDD","local://$ALICE_ROOT");
-  man->SetSpecificStorage("TPC/Calib/ExB","local://$ALICE_ROOT");
+  // Files that we can not read from alien...solved
+  //  man->SetSpecificStorage("ITS/Calib/MapsAnodeSDD","local://$ALICE_ROOT");
+  //  man->SetSpecificStorage("ITS/Calib/MapsTimeSDD","local://$ALICE_ROOT");
+  //  man->SetSpecificStorage("TPC/Calib/ExB","local://$ALICE_ROOT");
 
-  // Objects not found if using LHC07w database
+  // Objects not found if using LHC07w database...solved
   //  man->SetSpecificStorage("ITS/Calib/MapsAnodeSDD","local:///afs/cern.ch/user/c/cheshkov/public/OCDB");
   // man->SetSpecificStorage("GRP/GRP/Data","local://$ALICE_ROOT");
   // man->SetSpecificStorage("ITS/Calib/DDLMapSDD","local://$ALICE_ROOT");
@@ -87,6 +96,9 @@ void rec(Int_t runNumber = 0, const char* year = "08", const char *localFileName
   tpcRecoParam->Dump();
   AliTPCReconstructor::SetRecoParam(tpcRecoParam);
   AliTPCReconstructor::SetStreamLevel(1);
+
+  // TRD setting
+  AliTRDrawStreamBase::SetRawStreamVersion("TB");
 
   // PHOS settings
   AliPHOSRecoParam* recEmc = new AliPHOSRecoParamEmc();
