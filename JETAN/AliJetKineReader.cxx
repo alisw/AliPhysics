@@ -44,7 +44,7 @@ ClassImp(AliJetKineReader)
 AliJetKineReader::AliJetKineReader():
     AliJetReader(),  
     fAliHeader(0),
-    fMCEventHandler(0),
+    fMCEvent(0),
     fGenJets(0)
 {
   // Default constructor
@@ -79,7 +79,7 @@ Bool_t AliJetKineReader::FillMomentumArray()
   
     ClearArray();
     // Get the stack
-    AliStack* stack = fMCEventHandler->MCEvent()->Stack();
+    AliStack* stack = fMCEvent->Stack();
     // Number of primaries
     Int_t nt = stack->GetNprimary();
       
@@ -87,7 +87,7 @@ Bool_t AliJetKineReader::FillMomentumArray()
     Double_t ptMin = ((AliJetKineReaderHeader*) fReaderHeader)->GetPtCut();
     Float_t etaMin = fReaderHeader->GetFiducialEtaMin();
     Float_t etaMax = fReaderHeader->GetFiducialEtaMax();  
-    fAliHeader = fMCEventHandler->MCEvent()->Header();
+    fAliHeader = fMCEvent->Header();
       
     
     TLorentzVector p4;
@@ -156,7 +156,7 @@ Bool_t AliJetKineReader::FillMomentumArray()
 // set the signal flags
     fSignalFlag.Set(goodTrack, sflag);
     fCutFlag.Set(goodTrack, cflag);
-    AliInfo(Form("\n Number of good tracks %d \n", goodTrack));
+    AliInfo(Form(" Number of good tracks %d \n", goodTrack));
     
     delete[] sflag;
     delete[] cflag;
@@ -251,5 +251,5 @@ TClonesArray*  AliJetKineReader::GetGeneratedJets()
 void AliJetKineReader::SetInputEvent(TObject* /*esd*/, TObject* /*aod*/, TObject* mc)
 {
     // Connect the input event
-    fMCEventHandler = (AliMCEventHandler*) mc;
+    fMCEvent = (AliMCEvent*) mc;
 }

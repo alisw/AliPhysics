@@ -12,7 +12,7 @@
 
 class AliRunLoader;
 class AliHeader;
-class AliMCEventHandler;
+class AliMCEvent;
 class TClonesArray;
 
 
@@ -37,7 +37,7 @@ class AliJetKineReader : public AliJetReader
   AliJetKineReader& operator = (const AliJetKineReader& rkr);
 
   AliHeader          *fAliHeader;       //! Header
-  AliMCEventHandler  *fMCEventHandler;  //! Monte Carlo Event Handler
+  AliMCEvent         *fMCEvent;  //! Monte Carlo Event Handler
   TClonesArray       *fGenJets;         //! List of generated jets
   ClassDef(AliJetKineReader,1)
 };
