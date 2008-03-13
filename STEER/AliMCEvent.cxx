@@ -105,7 +105,8 @@ void AliMCEvent::ConnectTreeK (TTree* tree)
  
     // This is a cache for the TParticles converted to MCParticles on user request
     if (fMCParticleMap) {
-	fMCParticleMap->Clear();
+	fMCParticleMap->Delete();
+	fMCParticles->Delete();
 	if (fNparticles>0) fMCParticleMap->Expand(fNparticles);}
     else
 	fMCParticleMap = new TRefArray(fNparticles);
@@ -163,7 +164,7 @@ void AliMCEvent::Clean()
 
     // Clear TR
     if (fTRBuffer) {
-	fTRBuffer->Clear();
+	fTRBuffer->Delete();
 	delete fTRBuffer;
 	fTRBuffer = 0;
     }
@@ -176,6 +177,7 @@ void AliMCEvent::FinishEvent()
     fStack->Reset(0);
     fMCParticles->Delete();
     fMCParticleMap->Delete();
+    fTRBuffer->Delete();
     fTrackReferences->Delete();
 }
 
@@ -374,7 +376,7 @@ void AliMCEvent::ReorderAndExpandTreeTR()
 		    } // hits
 		} // branches
 		fTmpTreeTR->Fill();
-		fTRBuffer->Clear();
+		fTRBuffer->Delete();
 		ifills++;
 	    } // daughters
 	} // has hits
@@ -411,7 +413,7 @@ void AliMCEvent::ReorderAndExpandTreeTR()
 	} // entries
 	it++;
 	fTmpTreeTR->Fill();
-	fTRBuffer->Clear();
+	fTRBuffer->Delete();
 	ifills++;
     } // tracks
     // Check
