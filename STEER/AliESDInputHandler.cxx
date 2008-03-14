@@ -52,7 +52,7 @@ AliESDInputHandler::~AliESDInputHandler()
 
 //______________________________________________________________________________
 AliESDInputHandler::AliESDInputHandler(const char* name, const char* title):
-    AliInputEventHandler(name, title), fEvent(0x0), fBranches(""), fBranchesOn("")
+  AliInputEventHandler(name, title), fEvent(0x0), fBranches(""), fBranchesOn(""),fNObjCount(0)
 {
 }
 
