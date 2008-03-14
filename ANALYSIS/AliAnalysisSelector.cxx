@@ -21,7 +21,8 @@
 // AliAnalysisManager to handle analysis.
 //==============================================================================
 
-#include "Riostream.h"
+#include <Riostream.h>
+#include <TProcessID.h>
 
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTask.h"
@@ -116,8 +117,10 @@ Bool_t AliAnalysisSelector::Process(Long64_t entry)
    if (fAnalysis->GetDebugLevel() >1 ) {
       cout << "->AliAnalysisSelector::Process()" << endl;
    }
+   Int_t nobjCount = TProcessID::GetObjectCount();
    fAnalysis->GetEntry(entry);
    fAnalysis->ExecAnalysis();
+   TProcessID::SetObjectCount(nobjCount);
    if (fAnalysis->GetDebugLevel() >1 ) {
       cout << "<-AliAnalysisSelector::Process()" << endl;
    }   
