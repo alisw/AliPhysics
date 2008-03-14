@@ -16,6 +16,7 @@
 /* $Id$ */
 
 #include "AliESDtrack.h"
+#include "AliTracker.h"
 
 #include "AliTRDtrackV1.h"
 #include "AliTRDcluster.h"
@@ -351,6 +352,11 @@ Bool_t  AliTRDtrackV1::Update(AliTRDseedV1 *trklt, Double_t chisq)
 
   if(!AliExternalTrackParam::Update(p, cov)) return kFALSE;
 	//Print();
+
+	AliTRDcluster *c = 0x0;
+	Int_t ic = 0; while(!(c = trklt->GetClusters(ic))) ic++;
+	AliTracker::FillResiduals(this, p, cov, c->GetVolumeId());
+
 
   // Register info to track
 //   Int_t n      = GetNumberOfClusters();
