@@ -26,6 +26,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliTRDrecoParam.h"
+#include "AliTRDrawStreamBase.h"
 
 ClassImp(AliTRDrecoParam)
 
@@ -52,6 +53,7 @@ AliTRDrecoParam::AliTRDrecoParam()
   ,fLUTOn(kTRUE)
   ,fTCOn(kTRUE)
   ,fTCnexp(1)
+  ,fADCbaseline(0.0)
 {
   //
   // Default constructor
@@ -78,5 +80,19 @@ AliTRDrecoParam *AliTRDrecoParam::GetHighFluxParam()
   //
 
   return new AliTRDrecoParam();
+
+}
+
+//______________________________________________________________
+AliTRDrecoParam *AliTRDrecoParam::GetCosmicTestParam()
+{
+  //
+  // Parameters for the cosmics data
+  //
+
+  AliTRDrawStreamBase::SetRawStreamVersion("TB");
+  AliTRDrecoParam *par = new AliTRDrecoParam();
+  par->SetADCbaseline(10.0);
+  return par;
 
 }

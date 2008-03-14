@@ -52,9 +52,12 @@ class AliTRDrecoParam : public AliDetectorRecoParam
         Int_t    GetTCnexp() const                { return fTCnexp;          };
         Bool_t   LUTOn() const                    { return fLUTOn;           };
         Bool_t   TCOn() const                     { return fTCOn;            };
-	
+
+        Double_t GetADCbaseline() const           { return fADCbaseline;     };
+
 	static   AliTRDrecoParam *GetLowFluxParam();
         static   AliTRDrecoParam *GetHighFluxParam();
+        static   AliTRDrecoParam *GetCosmicTestParam();
 
 	void     SetClusterSharing(Bool_t share = kTRUE) { fkClusterSharing = share;  };
 	void     SetPIDMethod(Int_t pid = 1)             { fkPIDMethod = pid ? 1 : 0; };
@@ -63,6 +66,7 @@ class AliTRDrecoParam : public AliDetectorRecoParam
         void     SetClusSigThresh(Float_t thresh)        { fClusSigThresh   = thresh; };
         void     SetTailCancelation(Int_t tcOn = 1)      { fTCOn            = tcOn;   };
         void     SetNexponential(Int_t nexp)             { fTCnexp          = nexp;   };
+        void     SetADCbaseline(Double_t base)           { fADCbaseline     = base;   };
 
  private:
 
@@ -94,7 +98,10 @@ class AliTRDrecoParam : public AliDetectorRecoParam
         Int_t     fTCOn;                   // Switch for the tail cancelation
         Int_t     fTCnexp;                 // Number of exponentials, digital filter
   
-	ClassDef(AliTRDrecoParam, 2)       // Reconstruction parameters for TRD detector
+	// ADC parameter
+        Double_t  fADCbaseline;            // ADC baseline to be subtracted
+
+	ClassDef(AliTRDrecoParam, 3)       // Reconstruction parameters for TRD detector
 
 };
 #endif
