@@ -38,7 +38,7 @@ class AliTOFPreprocessor : public AliPreprocessor
     UInt_t ProcessOnlineDelays();
     UInt_t ProcessPulserData();
     UInt_t ProcessNoiseData();
-    UInt_t ProcessHWData(); // dummy, for the time being
+    UInt_t ProcessFEEData(); // dummy, for the time being
 
     static const Int_t fgkBinRangeAve;    // number of bins where to 
                                           // calculate the mean
@@ -51,6 +51,7 @@ class AliTOFPreprocessor : public AliPreprocessor
                                           // for delays  
     TObjArray *fCal;                      // TOF Calibration object
     TObjArray *fCalStatus;                // TOF Calibration object from pulser/noise
+    TObjArray *fFEEStatus;                // TOF Calibration object from FEE
     Int_t fNChannels;                     // number of TOF channels
     Bool_t fStoreRefData;                 // Flag to decide storage of Ref Data
     Bool_t fFDRFlag;                      // Flag for FDR runs 

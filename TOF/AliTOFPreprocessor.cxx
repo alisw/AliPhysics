@@ -37,6 +37,7 @@
 #include "AliTOFDataDCS.h"
 #include "AliTOFGeometry.h"
 #include "AliTOFPreprocessor.h"
+#include "AliTOFFEEReader.h"
 
 //class TF1;
 //class AliDCSValue;
@@ -66,6 +67,10 @@
 // return=12: failed to store Reference Data for Noise
 // return=13: failed to retrieve Noise data 
 // return=14: failed to store Noise map in OCDB
+// return=15: failed to retrieve FEE data from FXS
+// return=16: failed to retrieve FEE data from OCDB
+// return=17: failed to store FEE data in OCDB
+// return=18: failed to store FEE reference data in OCDB
 
 ClassImp(AliTOFPreprocessor)
 
@@ -81,6 +86,7 @@ AliTOFPreprocessor::AliTOFPreprocessor(AliShuttleInterface* shuttle) :
   fh2(0),
   fCal(0),
   fCalStatus(0),
+  fFEEStatus(0),
   fNChannels(0),
   fStoreRefData(kTRUE),
   fFDRFlag(kTRUE)
@@ -111,6 +117,10 @@ AliTOFPreprocessor::~AliTOFPreprocessor()
     delete fCalStatus;
     fCalStatus = 0;
   }
+  if (fFEEStatus){
+    delete fFEEStatus;
+    fFEEStatus = 0;
+  }
 }
 
 //______________________________________________________________________________
@@ -140,6 +150,12 @@ void AliTOFPreprocessor::Initialize(Int_t run, UInt_t startTime,
 	for (Int_t ich = 0; ich<fNChannels; ich ++){
 	  AliTOFChannelOnlineStatus * calChOnlineStatus = new AliTOFChannelOnlineStatus();
 	  fCalStatus->AddAt(calChOnlineStatus,ich);
+	}
+	fFEEStatus = new TObjArray(fNChannels);
+	fFEEStatus->SetOwner();
+	for (Int_t ich = 0; ich<fNChannels; ich ++){
+	  AliTOFChannelOnlineStatus * calChOnlineStatus = new AliTOFChannelOnlineStatus();
+	  fFEEStatus->AddAt(calChOnlineStatus,ich);
 	}
 }
 //_____________________________________________________________________________
@@ -441,6 +457,13 @@ UInt_t AliTOFPreprocessor::ProcessPulserData()
 	  Int_t nread=0;
 	  Int_t nreadNotEmpty=0;
 	  for (Int_t ientry=1;ientry<=h1->GetNbinsX();ientry++){
+
+	    /* check whether channel has been read out during current run.
+	     * if the status is bad it means it has not been read out.
+	     * in this case skip channel in order to not affect the mean */ 
+	    if (((AliTOFChannelOnlineStatus *)fFEEStatus->At(ientry-1))->GetStatus() == AliTOFChannelOnlineStatus::kTOFHWBad)
+	      continue;
+
 	    if (h1->GetBinContent(ientry)==-1) continue;
 	    else {
 	      if (h1->GetBinContent(ientry)>0) {
@@ -458,6 +481,14 @@ UInt_t AliTOFPreprocessor::ProcessPulserData()
 	    if (h1->GetBinContent(ich+1)==-1) continue;
 	    AliDebug(1,Form(" channel %i ",ich));
 	    AliDebug(1,Form(" channel status before pulser = %i",(Int_t)chSt->GetStatus()));
+
+	    /* check whether channel has been read out during current run.
+	     * if the status is bad it means it has not been read out.
+	     * in this case skip channel in order to leave its status 
+	     * unchanged */
+	    if (((AliTOFChannelOnlineStatus *)fFEEStatus->At(ich))->GetStatus() == AliTOFChannelOnlineStatus::kTOFHWBad)
+	      continue;
+	    
 	    if (h1->GetBinContent(ich+1)<0.05*mean){
 	      chSt->SetStatus(chSt->GetStatus()|AliTOFChannelOnlineStatus::kTOFPulserBad);  // bad status for pulser
 	      AliDebug(1,Form(" channel status after pulser = %i",(Int_t)chSt->GetStatus()));
@@ -494,7 +525,7 @@ UInt_t AliTOFPreprocessor::ProcessPulserData()
   metaData.SetResponsible("Chiara Zampolli");
   metaData.SetComment("This preprocessor fills a TObjArray object for Pulser data.");
   AliInfo("Storing Calibration Data from Pulser Run");
-  resultPulser = Store("Calib","PulserData",fCalStatus, &metaData,0,kTRUE);
+  resultPulser = Store("Calib","Pulser",fCalStatus, &metaData,0,kTRUE);
   if(!resultPulser){
     Log("Some problems occurred while storing online object resulting from Pulser data processing");
     return 11;//return error code for problems in storing Pulser data 
@@ -509,7 +540,7 @@ UInt_t AliTOFPreprocessor::ProcessPulserData()
     sprintf(comment,"This preprocessor stores the result of the pulser run");
     metaDataHisto.SetComment(comment);
     AliInfo("Storing Reference Data");
-    resultPulserRef = StoreReferenceData("Calib","Pulser",htofPulser, &metaDataHisto);
+    resultPulserRef = StoreReferenceData("Calib","PulserData",htofPulser, &metaDataHisto);
     if (!resultPulserRef){
       Log("some problems occurred::No Reference Data for pulser stored, TOF exiting from Shuttle");
       return 9;//return error code for failure in storing Ref Data 
@@ -588,6 +619,14 @@ UInt_t AliTOFPreprocessor::ProcessNoiseData()
 	    if (h1->GetBinContent(ich+1)==-1) continue;
 	    AliDebug(1,Form( " channel %i",ich));
 	    AliDebug(1,Form( " channel status before noise = %i",(Int_t)chSt->GetStatus()));
+
+	    /* check whether channel has been read out during current run.
+	     * if the status is bad it means it has not been read out.
+	     * in this case skip channel in order to leave its status 
+	     * unchanged */
+	    if (((AliTOFChannelOnlineStatus *)fFEEStatus->At(ich))->GetStatus() == AliTOFChannelOnlineStatus::kTOFHWBad)
+	      continue;
+
 	    if (h1->GetBinContent(ich+1)>=1){  // setting limit for noise to 1 kHz
 	      chSt->SetStatus(chSt->GetStatus()|AliTOFChannelOnlineStatus::kTOFNoiseBad);  // bad status for noise
 	      AliDebug(1,Form( " channel status after noise = %i",(Int_t)chSt->GetStatus()));
@@ -626,7 +665,7 @@ UInt_t AliTOFPreprocessor::ProcessNoiseData()
   metaData.SetResponsible("Chiara Zampolli");
   metaData.SetComment("This preprocessor fills a TObjArray object for Noise data.");
   AliInfo("Storing Calibration Data from Noise Run");
-  resultNoise = Store("Calib","NoiseData",fCalStatus, &metaData,0,kTRUE);
+  resultNoise = Store("Calib","Noise",fCalStatus, &metaData,0,kTRUE);
   if(!resultNoise){
     Log("Some problems occurred while storing online object resulting from Noise data processing");
     return 14;//return error code for problems in storing Noise data 
@@ -641,7 +680,7 @@ UInt_t AliTOFPreprocessor::ProcessNoiseData()
     sprintf(comment,"This preprocessor stores the result of the noise run, TOF exiting from Shuttle ");
     metaDataHisto.SetComment(comment);
     AliInfo("Storing Reference Data");
-    resultNoiseRef = StoreReferenceData("Calib","Noise",htofNoise, &metaDataHisto);
+    resultNoiseRef = StoreReferenceData("Calib","NoiseData",htofNoise, &metaDataHisto);
     if (!resultNoiseRef){
       Log("some problems occurred::No Reference Data for noise stored");
       return 12;//return error code for failure in storing Ref Data 
@@ -652,12 +691,111 @@ UInt_t AliTOFPreprocessor::ProcessNoiseData()
 }
 //_____________________________________________________________________________
 
-UInt_t AliTOFPreprocessor::ProcessHWData()
+UInt_t AliTOFPreprocessor::ProcessFEEData()
 {
   // Processing Pulser Run data for TOF channel status
   // dummy for the time being
 
-  Log("Processing HW");
+  Log("Processing FEE");
+
+  Bool_t updateOCDB = kFALSE;
+  AliTOFFEEReader feeReader;
+  AliTOFChannelOnlineStatus *currentChannel = NULL, *storedChannel = NULL;
+  TObjArray *currentFEE = fFEEStatus;
+  
+  TH1C hCurrentFEE("hCurrentFEE","histo with current FEE channel status", fNChannels, 0, fNChannels);
+  
+  /* load current TOF FEE config from DCS FXS, parse, 
+   * fill current FEE histogram and set FEE status */
+  
+  const char * nameFile = GetFile(kDCS,"TofFeeMap",""); 
+  AliInfo(Form("nameFile = %s",nameFile));
+  if (nameFile == NULL) {
+	  return 15;
+  } 
+  feeReader.LoadFEEConfig(nameFile);
+  feeReader.ParseFEEConfig();
+  /* loop over channels */
+  for (Int_t iChannel = 0; iChannel < fNChannels; iChannel++) {
+    currentChannel = (AliTOFChannelOnlineStatus *)currentFEE->At(iChannel);
+    if (!currentChannel)
+      continue;
+    /* channel enabled. set FEE channel status ok */
+    if (feeReader.IsChannelEnabled(iChannel)) {
+      currentChannel->SetStatus(AliTOFChannelOnlineStatus::kTOFHWOk);
+      hCurrentFEE.SetBinContent(iChannel + 1, 1);
+    }
+    /* channel disabled. set FEE channel status bad */
+    else {
+      currentChannel->SetStatus(AliTOFChannelOnlineStatus::kTOFHWBad);
+    }
+  }
+  
+  /* load stored TOF FEE from OCDB and compare it with current FEE.
+   * if stored FEE is different from current FEE set update flag.
+   * if there is no stored FEE in OCDB set update flag */
+  
+  AliCDBEntry *cdbEntry = GetFromOCDB("Calib","FEE");
+  /* no CDB entry found. set update flag */
+  if (cdbEntry == NULL) {
+    updateOCDB = kTRUE;
+  }
+  /* CDB entry OK. loop over channels */
+  else {
+    TObjArray *storedFEE = (TObjArray *)cdbEntry->GetObject();
+    for (Int_t iChannel = 0; iChannel < fNChannels; iChannel++){
+      currentChannel = (AliTOFChannelOnlineStatus *)currentFEE->At(iChannel);
+      storedChannel = (AliTOFChannelOnlineStatus *)storedFEE->At(iChannel);
+      /* compare current FEE channel status with stored one 
+       * if different set update flag and break loop */
+      if (currentChannel->GetStatus() != storedChannel->GetStatus()) {
+	updateOCDB = kTRUE;
+	break;
+      }
+    }
+  }
+
+  /* check whether we don't have to store reference data.
+   * in this case we return without errors. */
+  if (fStoreRefData) {
+	  /* store reference data */
+	  AliCDBMetaData metaDataHisto;
+	  metaDataHisto.SetBeamPeriod(0);
+	  metaDataHisto.SetResponsible("Roberto Preghenella");
+	  metaDataHisto.SetComment("This preprocessor stores the FEE referece data of the current run.");
+	  AliInfo("Storing FEE reference data");
+	  /* store FEE reference data */
+	  if (!StoreReferenceData("Calib", "FEEData", &hCurrentFEE, &metaDataHisto)) {
+		  /* failed */
+		  Log("problems while storing FEE reference data");
+		  return 18; /* error return code for problems while storing FEE reference data */
+	  }
+  }
+
+  /* check whether we don't need to update OCDB.
+   * in this case we can return without errors and
+   * the current FEE is stored in the fFEEStatus TObjArray. */
+  if (!updateOCDB) {
+    AliInfo("TOF FEE config has not changed. Do not overwrite stored file.");
+    return 0; /* return ok */
+  }
+
+  /* update the OCDB with the current FEE since even 
+   * a little difference has been detected. */
+
+  AliCDBMetaData metaData;
+  metaData.SetBeamPeriod(0);
+  metaData.SetResponsible("Roberto Preghenella");
+  metaData.SetComment("This preprocessor fills a TObjArray object for FEE data.");
+  AliInfo("Storing FEE data from current run");
+  /* store FEE data */
+  if (!Store("Calib", "FEE", fFEEStatus, &metaData, 0, kTRUE)) {
+    /* failed */
+    Log("problems while storing FEE data object");
+    return 17; /* return error code for problems  while storing FEE data */
+  }
+
+  /* everything fine. return */
 
   return 0;
 
@@ -677,6 +815,11 @@ UInt_t AliTOFPreprocessor::Process(TMap* dcsAliasMap)
   //*((TString*) (0x0)) = "bla";
 
   // processing 
+
+  /* always process FEE data */
+  Int_t iresultFEE = ProcessFEEData();
+  if (iresultFEE != 0)
+    return iresultFEE;
 
   if (runType == "PULSER") {
     Int_t iresultPulser = ProcessPulserData();

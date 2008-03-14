@@ -13,7 +13,7 @@ $Id$
 extern TBenchmark *gBenchmark;
 void TOFPreprocessor(Char_t * RunType="PHYSICS")
 {
-  gSystem->Load("$ALICE/SHUTTLE/TestShuttle/libTestShuttle.so");
+  gSystem->Load("$ALICE_ROOT/SHUTTLE/TestShuttle/libTestShuttle.so");
 
   //AliLog::SetClassDebugLevel("AliTOFPreprocessor",1);
   // initialize location of CDB
@@ -34,6 +34,7 @@ void TOFPreprocessor(Char_t * RunType="PHYSICS")
   // processing files. for the time being, the files are local.
   shuttle->AddInputFile(AliTestShuttle::kDAQ, "TOF", "DELAYS", "MON", "$ALICE_ROOT/TOF/ShuttleInput/Total.root");
   shuttle->AddInputFile(AliTestShuttle::kDAQ, "TOF", "RUNLevel", "MON", "$ALICE_ROOT/TOF/ShuttleInput/Partial.root");
+  shuttle->AddInputFile(AliTestShuttle::kDCS, "TOF", "TofFeeMap", "", "$ALICE_ROOT/TOF/ShuttleInput/TOFFEE.20080310.164003.4001");
   char filename[100];
   char LDCname[5];
 
@@ -283,6 +284,7 @@ TMap* CreateDCSAliasMap()
     */
     // gauss generation of values 
     for (int timeStamp=0;timeStamp<1000;timeStamp+=10){
+    //for (int timeStamp=0;timeStamp<1;timeStamp++){
       Float_t gaussvalue = (Float_t) (random.Gaus(tent,sigma));
       if (TMath::Abs(gaussvalue-tent)>sigma){
 	AliDCSValue* dcsVal = new AliDCSValue(gaussvalue, timeStamp);
