@@ -735,7 +735,7 @@ TGraph * TStatToolkit::MakeStat1D(TH3 * his, Int_t delta1, Int_t type){
 
 
 
-TString* TStatToolkit::FitPlane(TTree *tree, const char* drawCommand, const char* formula, const char* cuts, Double_t & chi2, Int_t &npoints, TVectorD &fitParam, TMatrixD &covMatrix, Int_t start, Int_t stop){
+TString* TStatToolkit::FitPlane(TTree *tree, const char* drawCommand, const char* formula, const char* cuts, Double_t & chi2, Int_t &npoints, TVectorD &fitParam, TMatrixD &covMatrix, Float_t frac, Int_t start, Int_t stop){
    //
    // fit an arbitrary function, specified by formula into the data, specified by drawCommand and cuts
    // returns chi2, fitParam and covMatrix
@@ -779,6 +779,9 @@ TString* TStatToolkit::FitPlane(TTree *tree, const char* drawCommand, const char
    }
 
    fitter->Eval();
+   if (frac>0.5 && frac<1){
+     fitter->EvalRobust(frac);
+   }
    fitter->GetParameters(fitParam);
    fitter->GetCovarianceMatrix(covMatrix);
    chi2 = fitter->GetChisquare();
