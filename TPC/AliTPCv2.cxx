@@ -1335,7 +1335,6 @@ void AliTPCv2::StepManager()
         betaGamma = TMath::Max(betaGamma,(Float_t)7.e-3); // protection against too small bg
         pp=kprim*BetheBloch(betaGamma); 
    
-        if(TMath::Abs(charge) > 1.) pp *= (charge*charge);
     }
   
     Double_t rnd = gMC->GetRandom()->Rndm();
