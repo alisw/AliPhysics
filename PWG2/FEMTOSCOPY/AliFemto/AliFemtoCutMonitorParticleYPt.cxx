@@ -19,6 +19,7 @@ AliFemtoCutMonitorParticleYPt::AliFemtoCutMonitorParticleYPt():
 }
 
 AliFemtoCutMonitorParticleYPt::AliFemtoCutMonitorParticleYPt(const char *aName, float aMass):
+  AliFemtoCutMonitor(),
   fYPt(0),
   fMass(aMass)
 {
@@ -29,6 +30,7 @@ AliFemtoCutMonitorParticleYPt::AliFemtoCutMonitorParticleYPt(const char *aName, 
 }
 
 AliFemtoCutMonitorParticleYPt::AliFemtoCutMonitorParticleYPt(const AliFemtoCutMonitorParticleYPt &aCut):
+  AliFemtoCutMonitor(),
   fYPt(0),
   fMass(0.13957)
 {

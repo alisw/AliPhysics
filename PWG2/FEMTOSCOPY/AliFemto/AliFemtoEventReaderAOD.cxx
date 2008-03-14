@@ -217,7 +217,7 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
   tEvent->SetZDCN2Energy(fEvent->GetZDCN2Energy());
   tEvent->SetZDCP2Energy(fEvent->GetZDCP2Energy());
   tEvent->SetZDCEMEnergy(fEvent->GetZDCEMEnergy(0));
-  tEvent->SetZDCParticipants(-1);
+  tEvent->SetZDCParticipants(0);
   tEvent->SetTriggerMask(fEvent->GetTriggerMask());
   tEvent->SetTriggerCluster(fEvent->GetTriggerCluster());
 	
