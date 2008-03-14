@@ -1062,6 +1062,9 @@ void AliITSv11Hybrid::CreateGeometry() {
 
   if (AliITSInitGeometry::SDDconeIsTGeoNative())
     fSupgeom->SDDCone(vITS);
+
+  if (AliITSInitGeometry::SSDconeIsTGeoNative())
+    fSupgeom->SSDCone(vITS);
 }
 
 //______________________________________________________________________
@@ -5979,3 +5982,4 @@ void AliITSv11Hybrid::StepManager(){
 
     return;
 }
+

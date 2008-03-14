@@ -765,14 +765,14 @@ void AliITSv11GeometrySupport::SDDCone(TGeoVolume *moth,TGeoManager *mgr)
   // Dimensions of the Cone
   const Double_t kConeROutMin        = (540.0/2)*fgkmm;
   const Double_t kConeROutMax        = (560.0/2)*fgkmm;
-  const Double_t kConeRCurv          =      15.0*fgkmm; // Radius of curvature
+  const Double_t kConeRCurv          =      10.0*fgkmm; // Radius of curvature
   const Double_t kConeRinMin         = (210.0/2)*fgkmm;
   const Double_t kConeRinMax         = (216.0/2)*fgkmm;
   const Double_t kConeRinCylinder    = (231.0/2)*fgkmm;
-  const Double_t kConeZCylinder      =     186.0*fgkmm;
+  const Double_t kConeZCylinder      =     192.0*fgkmm;
   const Double_t kConeZOuterMilled   =      23.0*fgkmm;
   const Double_t kConeDZin           =      15.0*fgkmm; // ???
-  const Double_t kConeThickness      =      10.5*fgkmm; // Rohacell + Carb.Fib.
+  const Double_t kConeThickness      =      10.0*fgkmm; // Rohacell + Carb.Fib.
   const Double_t kConeTheta          =      45.0*fgkDegree; // SDD cone angle
   const Double_t kSinConeTheta       =
                                      TMath::Sin(kConeTheta*TMath::DegToRad());
@@ -784,8 +784,7 @@ void AliITSv11GeometrySupport::SDDCone(TGeoVolume *moth,TGeoManager *mgr)
   const Double_t kConeCFThickness       = 1.5*fgkmm; // Carbon fiber thickness
   // Dimensions of the Cone Holes
   const Double_t kHole1RMin          = (450.0/2)*fgkmm;
-//  const Double_t kHole1RMax          = (528.0/2)*fgkmm;
-  const Double_t kHole1RMax          = (527.4/2)*fgkmm; // ??? No overlaps !
+  const Double_t kHole1RMax          = (530.0/2)*fgkmm;
   const Double_t kHole2RMin          = (280.0/2)*fgkmm;
   const Double_t kHole2RMax          = (375.0/2)*fgkmm;
   const Double_t kHole1Phi           =      25.0*fgkDegree;
@@ -796,15 +795,12 @@ void AliITSv11GeometrySupport::SDDCone(TGeoVolume *moth,TGeoManager *mgr)
   const Int_t    kNHole3             =         6      ;
   const Double_t kHole4RMin          =     116.0*fgkmm;
   const Double_t kHole4DeltaR        =        15*fgkmm;
-  //  const Double_t kHole4Width         =        30*fgkmm;
-  // const Int_t    kNHole4             =         3      ;
+  const Double_t kHole4Width         =        30*fgkmm;
+  //  const Int_t    kNHole4             =         3      ;
 
   // Local variables
   Double_t x, y, z, t, dza, rmin, rmax;
 
-
-  // The master volume which holds everything
-  TGeoVolumeAssembly *vM = new TGeoVolumeAssembly("ITSsddCone");
 
   // Recover the needed materials
   TGeoMedium *medSDDcf  = mgr->GetMedium("ITS_SDD C (M55J)$");
@@ -1155,6 +1151,8 @@ void AliITSv11GeometrySupport::SDDCone(TGeoVolume *moth,TGeoManager *mgr)
   hole3shape->Z(3)    = ZFromRmaxpCone(coneshape,4,kConeTheta,
 				       hole3shape->GetRmax(3));
 
+  holePhi = (kHole4Width/kHole4RMin)*TMath::RadToDeg();
+
   TGeoPcon *hole4shape = new TGeoPcon(-holePhi/2., holePhi, 4);
 
   hole4shape->Rmin(0) = kHole4RMin + kHole4DeltaR;
@@ -1274,1017 +1272,704 @@ void AliITSv11GeometrySupport::SDDCone(TGeoVolume *moth,TGeoManager *mgr)
     cfcone->AddNode(hole4, i+1, new TGeoRotation("", phiH, 0, 0));
   }
 */
-  // Add all volumes in the assembly
-  vM->AddNode(cfcylinder,1,0);
+  // Finally put everything in the mother volume
+  moth->AddNode(cfcylinder,1,0);
 
   z = coneshape->Z(9);
-  vM->AddNode(cfcone,1,new TGeoTranslation(0, 0, -z - kCylinderHalfLength));
-  vM->AddNode(cfcone,2,new TGeoCombiTrans (0, 0,  z + kCylinderHalfLength,
-		       new TGeoRotation("", 0, 180, 0)                   ));
+  moth->AddNode(cfcone,1,new TGeoTranslation(0, 0, -z - kCylinderHalfLength));
+  moth->AddNode(cfcone,2,new TGeoCombiTrans (0, 0,  z + kCylinderHalfLength,
+			 new TGeoRotation("", 0, 180, 0)                   ));
 
-  // Some debugging if requested
-  if(GetDebug(1)){
-    vM->PrintNodes();
-    vM->InspectShape();
-  }
-
-  // Finally put the entire shield in the mother volume
-  moth->AddNode(vM,1,0);
 
   return;
 }
 
 //______________________________________________________________________
-void AliITSv11GeometrySupport::SSDCone(TGeoVolume *moth,TGeoManager *mgr){
-    // Define the detail SSD support cone geometry.
-    // Inputs:
-    //   TGeoVolume  *moth  The mother volume to place this object.
-    //   TGeoManager *mgr   A pointer to the Geo-Manager default gGeoManager
-    // Outputs:
-    //  none.
-    // Return:
-    //  none.
-    //
-    Int_t i,j;
-    Double_t t,t0,dt,x,y,z,vl[3],vg[3],x0,y0,rmin,rmax;
-    TGeoMedium *medSSDcf  = 0; // SSD support cone Carbon Fiber materal number.
-    TGeoMedium *medSSDfs  = 0; // SSD support cone inserto stesalite 4411w.
-    TGeoMedium *medSSDfo  = 0; // SSD support cone foam, Rohacell 50A.
-    TGeoMedium *medSSDss  = 0; // SSD support cone screw material,Stainless
-    TGeoMedium *medSSDair = 0; // SSD support cone Air
-    TGeoMedium *medSSDal  = 0; // SSD support cone SDD mounting bracket Al
-    medSSDcf = mgr->GetMedium("ITSssdCarbonFiber");
-    medSSDfs = mgr->GetMedium("ITSssdStaselite4411w");
-    medSSDfo = mgr->GetMedium("ITSssdRohacell50A");
-    medSSDss = mgr->GetMedium("ITSssdStainlessSteal");
-    medSSDair= mgr->GetMedium("ITSssdAir");
-    medSSDal = mgr->GetMedium("ITSssdAl");
-    //
-    // SSD Central cylinder/Thermal Sheald.
-    const Double_t kcylZlength     = 1140.0*fgkmm; //
-    const Double_t kcylZFoamlength = 1020.0*fgkmm; //
-    const Double_t kcylROuter      = 0.5*595.0*fgkmm; //
-    const Double_t kcylRInner      = 0.5*560.5*fgkmm; //
-    const Double_t kcylCthick      = 0.64*fgkmm; //
-    const Double_t kcylFoamThick   = 5.0*fgkmm; //
-    const Double_t kcylRholes      = 0.5*570.0*fgkmm;
-    const Double_t kcylZM6         = 6.0*fgkmm; //
-    const Double_t kcylRM6         = 0.5*6.0*fgkmm;
-    const Double_t kcylPhi0M6      = 4.5*fgkDegree;
-    const Int_t    kcylNM6         = 40;
-    const Double_t kcylZPin        = 10.0*fgkmm;
-    const Double_t kcylRPin        = 0.5*4.0*fgkmm;
-    const Double_t kcylPhi0Pin     = (90.0+4.5)*fgkDegree;
-    const Int_t    kcylNPin        = 2;
-    //
-    TGeoPcon *sCA,*sCB;
-    TGeoTube *sCC,*sCD,*sCE;
-    //
-    //Begin_Html
-    /*
-      <img src="picts/ITS/file_name.gif">
-      <P>
-      <FONT FACE'"TIMES">
-      ITS SSD centreal support and thermal sheal cylinder.
-      </FONT>
-      </P>
-     */
-    //End_Html
-    //
-    sCC = new TGeoTube("ITS SSD Thermal Centeral Rohacell CylinderCC",
-                       kcylROuter-kcylCthick-kcylFoamThick,
-                       kcylROuter-kcylCthick,0.5*kcylZFoamlength);
-    sCA = new TGeoPcon("ITS SSD Thermal Centeral Carbon Fiber CylinderCA",
-                       0.0,360.0,6);
-    sCB = new TGeoPcon("ITS SSD Thermal Centeral Stesalite CylinderCB",
-                       0.0,360.0,6);
-    sCA->Z(0)    = -0.5*kcylZlength;
-    sCA->Rmin(0) = kcylRInner;
-    sCA->Rmax(0) = kcylROuter;
-    sCA->Z(1)    = sCA->GetZ(0) + kcylZM6;
-    sCA->Rmin(1) = sCA->GetRmin(0);
-    sCA->Rmax(1) = sCA->GetRmax(0);
-    sCA->Z(2)    = -0.5*kcylZFoamlength;
-    sCA->Rmin(2) = kcylROuter - 2.0*kcylCthick-kcylFoamThick;
-    sCA->Rmax(2) = sCA->GetRmax(0);
-    sCA->Z(3)    = -sCA->GetZ(2);
-    sCA->Rmin(3) = sCA->GetRmin(2);
-    sCA->Rmax(3) = sCA->GetRmax(2);
-    sCA->Z(4)    = -sCA->GetZ(1);
-    sCA->Rmin(4) = sCA->GetRmin(1);
-    sCA->Rmax(4) = sCA->GetRmax(1);
-    sCA->Z(5)    = -sCA->GetZ(0);
-    sCA->Rmin(5) = sCA->GetRmin(0);
-    sCA->Rmax(5) = sCA->GetRmax(0);
-    //
-    sCB->Z(0)    = sCA->GetZ(0);
-    sCB->Rmin(0) = sCA->GetRmin(0) + kcylCthick;
-    sCB->Rmax(0) = sCA->GetRmax(0) - kcylCthick;
-    sCB->Z(1)    = sCA->GetZ(1);
-    sCB->Rmin(1) = sCA->GetRmin(1) + kcylCthick;
-    sCB->Rmax(1) = sCA->GetRmax(1) - kcylCthick;
-    sCB->Z(2)    = sCA->GetZ(2);
-    sCB->Rmin(2) = sCA->GetRmin(2) + kcylCthick;
-    sCB->Rmax(2) = sCA->GetRmax(2) - kcylCthick;
-    sCB->Z(3)    = sCA->GetZ(3);
-    sCB->Rmin(3) = sCA->GetRmin(3) + kcylCthick;
-    sCB->Rmax(3) = sCA->GetRmax(3) - kcylCthick;
-    sCB->Z(4)    = sCA->GetZ(4);
-    sCB->Rmin(4) = sCA->GetRmin(4) + kcylCthick;
-    sCB->Rmax(4) = sCA->GetRmax(4) - kcylCthick;
-    sCB->Z(5)    = sCA->GetZ(5);
-    sCB->Rmin(5) = sCA->GetRmin(5) + kcylCthick;
-    sCB->Rmax(5) = sCA->GetRmax(5) - kcylCthick;
-    //
-    sCD = new TGeoTube("ITS SSD Thermal Centeral Cylinder M6 screwCD",
-                      0.0,kcylRM6,0.5*kcylZM6);
-    sCE = new TGeoTube("ITS SSD Thermal Centeral Cylinder PinCE",
-                      0.0,kcylRPin,0.5*kcylZPin);
-    //
-    if(GetDebug(1)){
-        sCA->InspectShape();
-        sCB->InspectShape();
-        sCC->InspectShape();
-        sCD->InspectShape();
-        sCE->InspectShape();
-    } // end if GetDegut()
-    TGeoVolume *vCA,*vCB,*vCC,*vCD,*vCE;
-    vCA = new TGeoVolume("ITSssdCentCylCA",sCA,medSSDcf);
-    vCA->SetVisibility(kTRUE);
-    vCA->SetLineColor(4); // blue
-    vCA->SetLineWidth(1);
-    vCA->SetFillColor(vCA->GetLineColor());
-    vCA->SetFillStyle(4000); // 0% transparent
-    vCB = new TGeoVolume("ITSssdCentCylCB",sCB,medSSDfs);
-    vCB->SetVisibility(kTRUE);
-    vCB->SetLineColor(2); // red
-    vCB->SetLineWidth(1);
-    vCB->SetFillColor(vCB->GetLineColor());
-    vCB->SetFillStyle(4050); // 50% transparent
-    vCC = new TGeoVolume("ITSssdCentCylCC",sCC,medSSDfo);
-    vCC->SetVisibility(kTRUE);
-    vCC->SetLineColor(3); // green
-    vCC->SetLineWidth(1);
-    vCC->SetFillColor(vCC->GetLineColor());
-    vCC->SetFillStyle(4050); // 50% transparent
-    vCD = new TGeoVolume("ITSssdCentCylCD",sCD,medSSDss);
-    vCD->SetVisibility(kTRUE);
-    vCD->SetLineColor(1); // black
-    vCD->SetLineWidth(1);
-    vCD->SetFillColor(vCD->GetLineColor());
-    vCD->SetFillStyle(4000); // 0% transparent
-    vCE = new TGeoVolume("ITSssdCentCylCE",sCE,medSSDss);
-    vCE->SetVisibility(kTRUE);
-    vCE->SetLineColor(1); // black
-    vCE->SetLineWidth(1);
-    vCE->SetFillColor(vCE->GetLineColor());
-    vCE->SetFillStyle(4000); // 0% transparent
-    // Insert Bolt and Pins in both the Cone and Cylinder at the same time.
-    vCB->AddNode(vCC,1,0);
-    vCA->AddNode(vCB,1,0);
-    moth->AddNode(vCA,1,0);
-    if(GetDebug(1)){
-        vCA->PrintNodes();
-        vCB->PrintNodes();
-        vCC->PrintNodes();
-        vCD->PrintNodes();
-        vCE->PrintNodes();
-    } // end if
-    //
-    // SSD Cone
-    // Data from Drawings ALR 0743/2E "Supporto Globale Settore SSD" and 
-    // ALR 0743/2A "Supporto Generale Settore SSD".
-    //
-    const Double_t kconThick            = 13.0*fgkmm; // Thickness of Cone.
-    const Double_t kconCthick           = 0.75*fgkmm; // Car. finber thickness
-    const Double_t kconRCurv0           = 10.0*fgkmm; // Radius of curvature.
-    const Double_t kconRCurv1           = 25.0*fgkmm; // Radius of curvature.
-    const Double_t kconT                = 39.0*fgkDegree; // angle of SSD cone.
-    const Double_t kconZOuterRing       = 47.0*fgkmm;
-    const Double_t kconZOuterRingMill   = kconZOuterRing-5.0*fgkmm;
-    const Double_t kconZToCylinder      = 170.0*fgkmm;
-    const Double_t kconZLengthMill      = 171.5*fgkmm;
-    const Double_t kconZLength          = 176.5*fgkmm-
-                                          (kconZOuterRing-kconZOuterRingMill);
-    //const Double_t kconZInnerRing       = 161.5*fgkmm-
-    //                                     (kconZOuterRing-kconZOuterRingMill);
-    const Double_t kconZOuterRingInside = 30.25*fgkmm-
-                                          (kconZOuterRing-kconZOuterRingMill);
-    const Double_t kconZDisplacement    = kconZToCylinder + 0.5*kcylZlength;
-    const Double_t kconROuterMax        = 0.5*985.0*fgkmm;
-    const Double_t kconROuterMin        = 0.5*945.0*fgkmm;
-    const Double_t kconRCylOuterMill    = 0.5*597.0*fgkmm;
-    const Double_t kconRInnerMin        = 0.5*562.0*fgkmm;
-    //const Double_t kconRCentCurv0       = 0.5*927.0*fgkmm;
-    const Double_t kconRCentCurv1       = 0.5*593.0*fgkmm;
-    const Double_t kconRCentCurv2       = 0.5*578.0*fgkmm;
-    // Foam core.
-    const Double_t kconRohacellL0       = 112.3*fgkmm;
-    const Double_t kconRohacellL1       = 58.4*fgkmm;
-    // Screws and pins in outer SSD cone ring
-    const Double_t kconROutHoles        = 0.5*965.0*fgkmm;
-    const Double_t kconRScrewM5by12     = 0.5*5.0*fgkmm;
-    const Double_t kconLScrewM5by12     = 0.5*12.0*fgkmm;
-    const Int_t    kconNScrewM5by12     = 2;
-    const Double_t kconRPinO6           = 0.5*6.0*fgkmm;
-    const Double_t kconLPinO6           = 0.5*10.0*fgkmm;
-    const Int_t    kconNPinO6           = 3;
-    const Int_t    kconNRailScrews      = 4;
-    const Int_t    kconNRailPins        = 2;
-    const Int_t    kconNmounts          = 4;
-    const Double_t kconMountPhi0        = 9.0*fgkDegree; // degrees
-    //
-    const Double_t kconCableHoleROut    = 0.5*920.0*fgkmm;
-    const Double_t kconCableHoleRinner  = 0.5*800.0*fgkmm;
-    const Double_t kconCableHoleWidth   = 200.0*fgkmm;
-    const Double_t kconCableHoleAngle   = 42.0*fgkDegree;
-    //const Double_t kconCableHolePhi0    = 90.0/4.0*fgkDegree;
-    //const Int_t    kconNCableHoles      = 8;
-    const Double_t kconCoolHoleWidth    = 40.0*fgkmm;
-    const Double_t kconCoolHoleHight    = 30.0*fgkmm;
-    const Double_t kconCoolHoleRmin     = 350.0*fgkmm;
-    //const Double_t kconCoolHolephi0     = 90.0/4.0*fgkDegree;
-    //const Int_t    kconNCoolHoles       = 8;
-    const Double_t kconMountHoleWidth   = 20.0*fgkmm;
-    const Double_t kconMountHoleHight   = 20.0*fgkmm;
-    const Double_t kconMountHoleRmin    = 317.5*fgkmm;
-    //const Double_t kconMountHolephi0    = 0.0*fgkDegree;
-    //const Int_t    kconNMountHoles      = 6;
-    // SSD cone Wings with holes.
-    const Double_t kconWingRmax         = 527.5*fgkmm;
-    const Double_t kconWingWidth        = 70.0*fgkmm;
-    const Double_t kconWingThick        = 10.0*fgkmm;
-    const Double_t kconWingPhi0         = 45.0*fgkDegree;
-    //const Int_t    kconNWings           = 4;
-    // SSD-SDD Thermal/Mechanical cylinder mounts
-    const Double_t kconRM6Head          = 0.5*8.0*fgkmm;
-    const Double_t kconZM6Head          = 8.5*fgkmm;
-    //
-    // SSD-SDD Mounting bracket
-    const Double_t ksupPRmin            = 0.5*539.0*fgkmm;// see SDD RoutMin
-    const Double_t ksupPRmax            = 0.5*585.0*fgkmm;
-    const Double_t ksupPZ               = 4.0*fgkmm;
-    const Double_t ksupPPhi1            = (-0.5*70.*fgkmm/ksupPRmax)*fgkRadian;
-    const Double_t ksupPPhi2            = -ksupPPhi1;
-    //
-    const Double_t kSinkconTc           = SinD(kconT);
-    const Double_t kCoskconTc           = CosD(kconT);
-    //
-    TGeoPcon *sA0,*sB0,*sC0,*sF0,*sQ;
-    TGeoConeSeg *sAh1,*sBh1;
-    TGeoArb8 *sAh2,*sBh2;
-    TGeoBBox *sAh3,*sBh3,*sAh4,*sBh4;
-    TGeoConeSeg *sG,*sH;
-    TGeoTubeSeg *sT;
-    TGeoTube *sD,*sE,*sR,*sS;
-    TGeoCompositeShape *sA,*sB,*sC,*sF;
-    //
-    // Lets start with the upper left outer carbon fiber surface.
-    // Between za[2],rmaxa[2] and za[4],rmaxa[4] there is a curved section
-    // given by rmaxa = rmaxa[2]-r*Sind(t) for 0<=t<=kconT and 
-    // za = za[2] + r*Cosd(t) for 0<=t<=kconT. Simularly between za[1],rmina[1
-    // and za[3],rmina[3] there is a curve section given by
-    // rmina = rmina[1]-r*Sind(t) for 0<=t<=kconT and za = za[1]+r&Sind(t)
-    // for t<=0<=kconT. These curves have been replaced by straight lines
-    // between the equivelent points for simplicity.
-    // Poly-cone Volume sA0. Top part of SSD cone Carbon Fiber.
-    sA0 = new TGeoPcon("ITSssdSuportConeCarbonFiberSurfaceA0",0.0,360.0,15);
-    sA0->Z(0)    = 0.0;
-    sA0->Rmin(0) = kconROuterMin;
-    sA0->Rmax(0) = kconROuterMax;
-    sA0->Z(1)    = kconZOuterRingInside-kconRCurv0;
-    sA0->Rmin(1) = sA0->GetRmin(0);
-    sA0->Rmax(1) = sA0->GetRmax(0);
-    sA0->Z(2)    = kconZOuterRingInside;
-    sA0->Rmin(2) = sA0->GetRmin(1)-kconRCurv0;
-    sA0->Rmax(2) = sA0->GetRmax(0);
-    sA0->Z(3)    = sA0->GetZ(2);
-    sA0->Rmin(3) = -1000; // See Below
-    sA0->Rmax(3) = sA0->GetRmax(0);
-    sA0->Z(4)    = kconZOuterRingMill-kconRCurv0;
-    sA0->Rmin(4) = -1000; // See Below
-    sA0->Rmax(4) = sA0->GetRmax(0);
-    sA0->Z(5)    = kconZOuterRingMill;
-    sA0->Rmin(5) = -1000; // See Below
-    sA0->Rmax(5) = sA0->GetRmax(4) - kconRCurv0;
-    sA0->Z(6)    = sA0->GetZ(5);
-    sA0->Rmin(6) = -1000; // See Below
-    sA0->Rmax(6) = -1000; // See Below
-    sA0->Z(7)    = sA0->GetZ(6)+kconRCurv0*(1.-kCoskconTc);
-    sA0->Rmin(7) = -1000; // See Below
-    sA0->Rmax(7) = -1000; // See Below
-    sA0->Z(8)    = -1000; // See Below
-    sA0->Rmin(8) = kconRCentCurv2+kconRCurv1*kSinkconTc; // See Below
-    sA0->Rmax(8) = -1000; // See Below
-    sA0->Z(9)    = -1000; // See Below
-    sA0->Rmin(9) = kconRCentCurv2;
-    sA0->Rmax(9) = -1000; // See Below
-    sA0->Z(10)   = -1000; // See Below
-    sA0->Rmin(10)= kconRInnerMin;
-    sA0->Rmax(10)= -1000; // See Below
-    sA0->Z(11)   = kconZLengthMill-kconRCurv0*(1.0-kCoskconTc);
-    sA0->Rmin(11)= sA0->GetRmin(10);
-    sA0->Rmax(11)= kconRCentCurv1+kconRCurv0*kSinkconTc;
-    sA0->Z(12)   = kconZToCylinder;
-    sA0->Rmin(12)= sA0->GetRmin(10);
-    sA0->Rmax(12)= -1000; // See Below
-    sA0->Z(13)   = sA0->GetZ(12);
-    sA0->Rmin(13)= kconRCylOuterMill;
-    sA0->Rmax(13)= -1000; // See Below
-    z            = kconZLengthMill;
-    rmin         = kconRCentCurv1;
-    rmax         = rmin;
-    sA0->Z(14)   = -1000; // See Below
-    sA0->Rmin(14)= sA0->GetRmin(13);
-    sA0->Rmax(14)= sA0->GetRmin(14);
-    // Compute values undefined above
-    sA0->Z(14)   = Xfrom2Points(sA0->GetZ(11),sA0->GetRmax(11),z,rmax,
-                               sA0->GetRmax(14));
-    sA0->Z(8)    = ZFromRmaxpCone(sA0,11,90.-kconT,sA0->GetRmin(8),-kconThick);
-    sA0->Rmax(8) = RmaxFromZpCone(sA0,11,90.-kconT,sA0->GetZ(8),0.0);
-    sA0->Z(9)    = sA0->GetZ(8)+kconRCurv1*(1.-kCoskconTc);
-    sA0->Z(10)   = sA0->GetZ(9);
-    sA0->Rmin(3) = RminFromZpCone(sA0,8,90.-kconT,sA0->GetZ(3),0.0);
-    sA0->Rmin(4) = RminFromZpCone(sA0,3,90.-kconT,sA0->GetZ(4),0.0);
-    sA0->Rmin(5) = RminFromZpCone(sA0,3,90.-kconT,sA0->GetZ(5),0.0);
-    sA0->Rmin(7) = RminFromZpCone(sA0,3,90.-kconT,sA0->GetZ(7),0.0);
-    sA0->Rmax(7) = RmaxFromZpCone(sA0,11,90.-kconT,sA0->GetZ(7),0.0);
-    sA0->Rmin(6) = sA0->GetRmin(5);
-    sA0->Rmax(6) = RmaxFromZpCone(sA0,11,90.-kconT,sA0->GetZ(7),0.0);
-    sA0->Rmax(9) = RmaxFromZpCone(sA0,11,90.-kconT,sA0->GetZ(9),0.0);
-    sA0->Rmax(10)= sA0->GetRmax(9);
-    t = TanD(270.+kconT);
-    sA0->Rmax(12)= RmaxFrom2Points(sA0,11,14,sA0->GetZ(12));
-    sA0->Rmax(13)= sA0->GetRmax(12);
-    //
-    // Poly-cone Volume B. Stesalite inside volume sA0.
-    // Now lets define the Inserto Stesalite 4411w material volume.
-    // Poly-cone Volume sA0. Top part of SSD cone Carbon Fiber.
-    sB0 = new TGeoPcon("ITSssdSuportConeStaseliteB0",0.0,360.0,15);
-    //
-    sB0->Z(0)    = sA0->GetZ(0);
-    sB0->Rmin(0) = sA0->GetRmin(0) + kconCthick;
-    sB0->Rmax(0) = sA0->GetRmax(0) - kconCthick;
-    //printf("A0#%d ",1);
-    InsidePoint(sA0,0,1,2,kconCthick,sB0,1,kFALSE); // Rmin
-    sB0->Rmax(1) = sB0->Rmax(0);
-    //printf("A0#%d ",2);
-    InsidePoint(sA0,1,2,3,kconCthick,sB0,2,kFALSE); // Rmin
-    sB0->Rmax(2) = sB0->Rmax(0);
-    //printf("A0#%d ",3);
-    InsidePoint(sA0,2,3,9,kconCthick,sB0,3,kFALSE);
-    sB0->Rmax(3) = sB0->Rmax(0);
-    //printf("A0#%d ",4);
-    InsidePoint(sA0,0,4,5,kconCthick,sB0,4,kTRUE); // Rmax
-    sB0->Rmin(4) = -1000.; // see Bellow
-    //printf("A0#%d ",5);
-    InsidePoint(sA0,4,5,6,kconCthick,sB0,5,kTRUE); // Rmax
-    sB0->Rmin(5) = -1000.; // see Bellow
-    //printf("A0#%d ",6);
-    InsidePoint(sA0,5,6,7,kconCthick,sB0,6,kTRUE); // Rmax
-    sB0->Rmin(6) = -1000.; // see Bellow
-    //printf("A0#%d ",7);
-    InsidePoint(sA0,6,7,11,kconCthick,sB0,7,kTRUE); // Rmax
-    sB0->Rmin(7) = -1000.; // see Bellow
-    //printf("A0#%d ",8);
-    InsidePoint(sA0,3,8,9,kconCthick,sB0,8,kFALSE); // Rmin
-    sB0->Rmax(8) = -1000.; // see Bellow
-    //printf("A0#%d ",9);
-    InsidePoint(sA0,8,9,10,kconCthick,sB0,9,kFALSE); // Rmin
-    sB0->Rmax(9) = -1000.; // see Bellow
-    sB0->Z(10)   = sA0->GetZ(10) + kconCthick;
-    sB0->Rmin(10)= sA0->GetRmin(10);
-    sB0->Rmax(10)= -1000.; // see Bellow
-    //printf("A0#%d ",11);
-    InsidePoint(sA0,7,11,14,kconCthick,sB0,11,kTRUE); // Rmax
-    sB0->Rmin(11)= sA0->GetRmin(10);
-    sB0->Z(12)    = sA0->GetZ(12);
-    sB0->Rmin(12)= sA0->GetRmin(12);
-    sB0->Rmax(12)= -1000.; // see Bellow
-    sB0->Z(13)   = sA0->GetZ(13);
-    sB0->Rmin(13)= sA0->GetRmin(13);
-    sB0->Rmax(13)= -1000.; // see Bellow
-    sB0->Z(14)   = sA0->GetZ(14) - kconCthick;
-    sB0->Rmin(14)= sA0->GetRmin(14);
-    sB0->Rmax(14)= sB0->Rmin(14); // Close?
-    sB0->Rmin(4) = RminFrom2Points(sB0,3,8,sB0->GetZ(4));
-    sB0->Rmin(5) = RminFrom2Points(sB0,3,8,sB0->GetZ(5));
-    sB0->Rmin(6) = sB0->GetRmin(5);
-    sB0->Rmin(7) = RminFrom2Points(sB0,3,8,sB0->GetZ(7));
-    sB0->Rmax(8) = RmaxFrom2Points(sB0,7,11,sB0->GetZ(8));
-    sB0->Rmax(9) = RmaxFrom2Points(sB0,7,11,sB0->GetZ(9));
-    sB0->Rmax(10)= sB0->GetRmax(9);
-    sB0->Rmax(12)= RmaxFrom2Points(sB0,11,14,sB0->GetZ(12));
-    sB0->Rmax(13)= RmaxFrom2Points(sB0,11,14,sB0->GetZ(13));
-    //
-    // Poly-cone Volume sC0. Foam inside volume sA0.
-    // Now lets define the Rohacell foam material volume.
-    sC0 = new TGeoPcon("ITSssdSuportConeRohacellC0",0.0,360.0,4);
-    sC0->Z(1)    = sB0->GetZ(7);
-    sC0->Rmax(1) = sB0->GetRmax(7);
-    sC0->Rmin(1) = RminFrom2Points(sB0,3,8,sC0->GetZ(1));
-    sC0->Rmin(0) = sC0->GetRmax(1);
-    sC0->Rmax(0) = sC0->GetRmin(0);
-    sC0->Z(0)    = Zfrom2MinPoints(sB0,3,8,sC0->Rmin(0));
-    t = kconThick-2.0*kconCthick;
-    sC0->Rmax(3) = sC0->GetRmax(0)-kCoskconTc*TMath::Sqrt(
-                             kconRohacellL0*kconRohacellL0-t*t)+t*kSinkconTc;
-    sC0->Rmin(3) = sC0->GetRmax(3);
-    sC0->Z(3)    = ZFromRmaxpCone(sB0,11,90.-kconT,sC0->GetRmax(3),0.0);;
-    sC0->Rmin(2) = sC0->GetRmin(3);
-    sC0->Z(2)    = ZFromRminpCone(sB0,3,90.-kconT,sC0->GetRmin(2),0.0);
-    sC0->Rmax(2) = RmaxFromZpCone(sB0,11,90.0-kconT,sC0->GetZ(2),0.0);
-    //
-    // Poly-cone Volume sF0.  Second Foam inside volume sA0.
-    // Now lets define the Rohacell foam material volume.
-    sF0 = new TGeoPcon("ITSssdSuportConeRohacellCF0",0.0,360.0,4);
-    sF0->Z(2)    = sB0->GetZ(8);
-    sF0->Rmin(2) = sB0->GetRmin(8);
-    sF0->Rmax(2) = sB0->GetRmax(8);
-    sF0->Z(0)    = sF0->GetZ(2)-kconRohacellL1*kSinkconTc;
-    sF0->Rmin(0) = sF0->GetRmin(2)+kconRohacellL1*kCoskconTc;
-    sF0->Rmax(0) = sF0->GetRmin(0);
-    sF0->Z(1)    = ZFromRmaxpCone(sB0,11,90.-kconT,sF0->GetRmax(0),0.0);;
-    sF0->Rmax(1) = sF0->GetRmax(0);
-    sF0->Rmin(1) = RminFrom2Points(sB0,3,8,sF0->GetZ(1));
-    sF0->Rmax(3) = sF0->GetRmin(2)+(kconThick-2.0*kconCthick)*kCoskconTc;
-    sF0->Rmin(3) = sF0->GetRmax(3);
-    sF0->Z(3)    = ZFromRmaxpCone(sB0,11,90.-kconT,sF0->GetRmax(3),0.0);
-    // Holes for Cables to pass Through is created by the intersection
-    // between a cone segment and an Arb8, One for the volume sA0 and a
-    // larger one for the volumes sB0 and sC0, so that the surface is covered
-    // in carbon figer (volume sA0).
-    sAh1 = new TGeoConeSeg("ITSssdCableHoleAh1",
-                           0.5*kconZLength,kconCableHoleRinner,
-                           kconCableHoleROut,kconCableHoleRinner,
-                           kconCableHoleROut,
-                           90.-(0.5*kconCableHoleWidth/
-                                kconCableHoleROut)*fgkRadian,
-                           90.+(0.5*kconCableHoleWidth/
-                                kconCableHoleROut)*fgkRadian);
-    sBh1 = new TGeoConeSeg("ITSssdCableHoleBh1",0.5*kconZLength,
-                           kconCableHoleRinner-kconCthick,
-                           kconCableHoleROut+kconCthick,
-                           kconCableHoleRinner-kconCthick,
-                           kconCableHoleROut+kconCthick,
-                           90.-(((0.5*kconCableHoleWidth+kconCthick)/
-                                 (kconCableHoleROut+kconCthick)))*fgkRadian,
-                           90.+(((0.5*kconCableHoleWidth+kconCthick)/
-                                 (kconCableHoleROut+kconCthick)))*fgkRadian);
-    x0 = sAh1->GetRmax1()*CosD(sAh1->GetPhi2());
-    y0 = sAh1->GetRmax1()*SinD(sAh1->GetPhi2());
-    sAh2 = new TGeoArb8("ITSssdCableHoleAh2",0.5*kconZLength);
-    y  = sAh1->GetRmax1();
-    x  = x0+(y-y0)/TanD(90.0+kconCableHoleAngle);
-    sAh2->SetVertex(0,x,y);
-    y  = sAh1->GetRmin1()*SinD(sAh1->GetPhi2());
-    x  = x0+(y-y0)/TanD(90.0+kconCableHoleAngle);
-    sAh2->SetVertex(3,x,y);
-    x0 = sAh1->GetRmax1()*CosD(sAh1->GetPhi1());
-    y0 = sAh1->GetRmax1()*SinD(sAh1->GetPhi1());
-    y  = sAh1->GetRmax1();
-    x  = x0+(y-y0)/TanD(90.0-kconCableHoleAngle);
-    sAh2->SetVertex(1,x,y);
-    y  = sAh1->GetRmin1()*SinD(sAh1->GetPhi1());
-    x  = x0+(y-y0)/TanD(90.0-kconCableHoleAngle);
-    sAh2->SetVertex(2,x,y);
-    //
-    x0 = sBh1->GetRmax1()*CosD(sBh1->GetPhi2());
-    y0 = sBh1->GetRmax1()*SinD(sBh1->GetPhi2());
-    sBh2 = new TGeoArb8("ITSssdCableHoleBh2",0.5*kconZLength);
-    y  = sBh1->GetRmax1();
-    x  = x0+(y-y0)/TanD(90.0+kconCableHoleAngle);
-    sBh2->SetVertex(0,x,y);
-    y  = sBh1->GetRmin1()*SinD(sBh1->GetPhi2());
-    x  = x0+(y-y0)/TanD(90.0+kconCableHoleAngle);
-    sBh2->SetVertex(3,x,y);
-    x0 = sBh1->GetRmax1()*CosD(sBh1->GetPhi1());
-    y0 = sBh1->GetRmax1()*SinD(sBh1->GetPhi1());
-    y  = sBh1->GetRmax1();
-    x  = x0+(y-y0)/TanD(90.0-kconCableHoleAngle);
-    sBh2->SetVertex(1,x,y);
-    y  = sBh1->GetRmin1()*SinD(sBh1->GetPhi1());
-    x  = x0+(y-y0)/TanD(90.0-kconCableHoleAngle);
-    sBh2->SetVertex(2,x,y);
-    for(i=0;i<4;i++){ // define points at +dz
-        sAh2->SetVertex(i+4,(sAh2->GetVertices())[2*i],
-                           (sAh2->GetVertices())[1+2*i]);
-        sBh2->SetVertex(i+4,(sBh2->GetVertices())[2*i],
-                           (sBh2->GetVertices())[1+2*i]);
-    } // end for i
-    sAh3 = new TGeoBBox("ITSssdCoolingHoleAh3",0.5*kconCoolHoleWidth,
-                        0.5*kconCoolHoleHight,kconZLength);
-    sBh3 = new TGeoBBox("ITSssdCoolingHoleBh3",
-                        0.5*kconCoolHoleWidth+kconCthick,
-                        0.5*kconCoolHoleHight+kconCthick,kconZLength);
-    sAh4 = new TGeoBBox("ITSssdMountingPostHoleAh4",0.5*kconMountHoleWidth,
-                        0.5*kconMountHoleHight,0.5*kconZLength);
-    z = sF0->GetZ(0)-sF0->GetZ(sF0->GetNz()-1);
-    if(z<0.0) z = -z;
-    sBh4 = new TGeoBBox("ITSssdMountingPostHoleBh4",
-                        0.5*kconMountHoleWidth+kconCthick,
-                        0.5*kconMountHoleHight+kconCthick,0.5*z);
-    // SSD Cone Wings
-    sG = new TGeoConeSeg("ITSssdWingCarbonFiberSurfaceG",
-                         0.5*kconWingThick,kconROuterMax-kconCthick,
-                         kconWingRmax,kconROuterMax-kconCthick,kconWingRmax,
-                      kconWingPhi0-(0.5*kconWingWidth/kconWingRmax)*fgkRadian,
-                      kconWingPhi0+(0.5*kconWingWidth/kconWingRmax)*fgkRadian);
-    sH = new TGeoConeSeg("ITSssdWingStaseliteH",
-                         0.5*kconWingThick-kconCthick,kconROuterMax-kconCthick,
-                         kconWingRmax-kconCthick,
-                         kconROuterMax-kconCthick,
-                         kconWingRmax-kconCthick,
-                         kconWingPhi0-((0.5*kconWingWidth-kconCthick)/
-                                       (kconWingRmax-kconCthick))*fgkRadian,
-                         kconWingPhi0+((0.5*kconWingWidth-kconCthick)/
-                                       (kconWingRmax-kconCthick))*fgkRadian);
-    // SDD support plate, SSD side.
-    //Poly-cone Volume sT.
-    sT = new TGeoTubeSeg("ITSssdsddMountingBracketT",ksupPRmin,ksupPRmax,
-                         0.5*ksupPZ,ksupPPhi1,ksupPPhi2);
-    //
-    TGeoRotation *rotZ225 =new TGeoRotation("ITSssdConeZ225", 0.0,0.0, 22.5);
-    rotZ225->RegisterYourself();
-    TGeoRotation *rotZ675 =new TGeoRotation("ITSssdConeZ675", 0.0,0.0, 67.5);
-    rotZ675->RegisterYourself();
-    TGeoRotation *rotZ90  =new TGeoRotation("ITSssdConeZ90",  0.0,0.0, 90.0);
-    rotZ90->RegisterYourself();
-    TGeoRotation *rotZ1125=new TGeoRotation("ITSssdConeZ1125",0.0,0.0,112.5);
-    rotZ1125->RegisterYourself();
-    TGeoRotation *rotZ1575=new TGeoRotation("ITSssdConeZ1575",0.0,0.0,157.5);
-    rotZ1575->RegisterYourself();
-    TGeoRotation *rotZ180 =new TGeoRotation("ITSssdConeZ180", 0.0,0.0,180.0);
-    rotZ180->RegisterYourself();
-    TGeoRotation *rotZ2025=new TGeoRotation("ITSssdConeZ2025",0.0,0.0,202.5);
-    rotZ2025->RegisterYourself();
-    TGeoRotation *rotZ2475=new TGeoRotation("ITSssdConeZ2475",0.0,0.0,247.5);
-    rotZ2475->RegisterYourself();
-    TGeoRotation *rotZ270 =new TGeoRotation("ITSssdConeZ270", 0.0,0.0,270.0);
-    rotZ270->RegisterYourself();
-    TGeoRotation *rotZ2925=new TGeoRotation("ITSssdConeZ2925",0.0,0.0,292.5);
-    rotZ2925->RegisterYourself();
-    TGeoRotation *rotZ3375=new TGeoRotation("ITSssdConeZ3375",0.0,0.0,337.5);
-    rotZ3375->RegisterYourself();
-    //
-    vl[0] = 0.0;vl[1] = kconCoolHoleRmin+0.5*kconCoolHoleHight;vl[2] = 0.0;
-    rotZ225->LocalToMaster(vl,vg);
-    TGeoCombiTrans *rotranA225  = new TGeoCombiTrans("ITSssdConeTZ225",vg[0],
-                                                     vg[1],vg[2],rotZ225);
-    rotranA225->RegisterYourself();
-    rotZ675->LocalToMaster(vl,vg);
-    TGeoCombiTrans *rotranA675  = new TGeoCombiTrans("ITSssdConeTZ675", vg[0],
-                                                     vg[1],vg[2],rotZ675);
-    rotranA675->RegisterYourself();
-    rotZ1125->LocalToMaster(vl,vg);
-    TGeoCombiTrans *rotranA1125 = new TGeoCombiTrans("ITSssdConeTZ1125",vg[0],
-                                                     vg[1],vg[2],rotZ1125);
-    rotranA1125->RegisterYourself();
-    rotZ1575->LocalToMaster(vl,vg);
-    TGeoCombiTrans *rotranA1575 = new TGeoCombiTrans("ITSssdConeTZ1575",vg[0],
-                                                     vg[1],vg[2],rotZ1575);
-    rotranA1575->RegisterYourself();
-    rotZ2025->LocalToMaster(vl,vg);
-    TGeoCombiTrans *rotranA2025 = new TGeoCombiTrans("ITSssdConeTZ2025",vg[0],
-                                                     vg[1],vg[2],rotZ2025);
-    rotranA2025->RegisterYourself();
-    rotZ2475->LocalToMaster(vl,vg);
-    TGeoCombiTrans *rotranA2475 = new TGeoCombiTrans("ITSssdConeTZ2475",vg[0],
-                                                     vg[1],vg[2],rotZ2475);
-    rotranA2475->RegisterYourself();
-    rotZ2925->LocalToMaster(vl,vg);
-    TGeoCombiTrans *rotranA2925 = new TGeoCombiTrans("ITSssdConeTZ2925",vg[0],
-                                                     vg[1],vg[2],rotZ2925);
-    rotranA2925->RegisterYourself();
-    rotZ3375->LocalToMaster(vl,vg);
-    TGeoCombiTrans *rotranA3375 = new TGeoCombiTrans("ITSssdConeTZ3375",vg[0],
-                                                     vg[1],vg[2],rotZ3375);
-    rotranA3375->RegisterYourself();
-    TGeoRotation *rotZ30  = new TGeoRotation("ITSssdConeZ30", 0.0,0.0, 30.0);
-    TGeoRotation *rotZ60  = new TGeoRotation("ITSssdConeZ60", 0.0,0.0, 60.0);
-    //TGeoRotation *rotZ120 = new TGeoRotation("ITSssdConeZ120",0.0,0.0,120.0);
-    TGeoRotation *rotZ150 = new TGeoRotation("ITSssdConeZ150",0.0,0.0,150.0);
-    TGeoRotation *rotZ210 = new TGeoRotation("ITSssdConeZ210",0.0,0.0,210.0);
-    //TGeoRotation *rotZ240 = new TGeoRotation("ITSssdConeZ240",0.0,0.0,240.0);
-    TGeoRotation *rotZ300 = new TGeoRotation("ITSssdConeZ300",0.0,0.0,300.0);
-    TGeoRotation *rotZ330 = new TGeoRotation("ITSssdConeZ330",0.0,0.0,330.0);
-    vl[0] = kconMountHoleRmin+0.5*kconMountHoleHight; vl[1] = 0.0; vl[2] = 0.0;
-    for(i=0;i<sF0->GetNz();i++) vl[2] += sF0->GetZ(i);
-    vl[2] /= (Double_t)(sF0->GetNz());
-    rotZ30->LocalToMaster(vl,vg);
-    TGeoCombiTrans *rotranA30 = new TGeoCombiTrans("ITSssdConeTZ30",vg[0],
-                                                      vg[1],vg[2],rotZ30);
-    rotranA30->RegisterYourself();
-    rotZ90->LocalToMaster(vl,vg);
-    TGeoCombiTrans *rotranA90  = new TGeoCombiTrans("ITSssdConeTZ90", vg[0],
-                                                     vg[1],vg[2],rotZ90);
-    rotranA90->RegisterYourself();
-    rotZ150->LocalToMaster(vl,vg);
-    TGeoCombiTrans *rotranA150 = new TGeoCombiTrans("ITSssdConeTZ150",vg[0],
-                                                     vg[1],vg[2],rotZ150);
-    rotranA150->RegisterYourself();
-    rotZ210->LocalToMaster(vl,vg);
-    TGeoCombiTrans *rotranA210 = new TGeoCombiTrans("ITSssdConeTZ210",vg[0],
-                                                     vg[1],vg[2],rotZ210);
-    rotranA210->RegisterYourself();
-    rotZ270->LocalToMaster(vl,vg);
-    TGeoCombiTrans *rotranA270 = new TGeoCombiTrans("ITSssdConeTZ270",vg[0],
-                                                     vg[1],vg[2],rotZ270);
-    rotranA270->RegisterYourself();
-    rotZ330->LocalToMaster(vl,vg);
-    TGeoCombiTrans *rotranA330 = new TGeoCombiTrans("ITSssdConeTZ330",vg[0],
-                                                     vg[1],vg[2],rotZ330);
-    rotranA330->RegisterYourself();
-    vl[0] = 0.0; vl[1] = 0.0; vl[2] = sA0->GetZ(10)+sT->GetDz();
-    rotZ60->LocalToMaster(vl,vg);
-    TGeoCombiTrans *rotranBrTZ60  = new TGeoCombiTrans("ITSssdConeBrTZ60",
-                                                  vg[0],vg[1],vg[2],rotZ60);
-    rotranBrTZ60->RegisterYourself();
-    TGeoCombiTrans *rotranBrTZ180 = new TGeoCombiTrans("ITSssdConeBrTZ180",
-                                                  vg[0],vg[1],vg[2],rotZ180);
-    rotranBrTZ180->RegisterYourself();
-    TGeoCombiTrans *rotranBrTZ300 = new TGeoCombiTrans("ITSssdConeBrTZ300",
-                                                  vg[0],vg[1],vg[2],rotZ300);
-    rotranBrTZ300->RegisterYourself();
-    if(GetDebug(1)){
-        rotZ225->Print();
-        rotZ675->Print();
-        rotZ90->Print();
-        rotZ1125->Print();
-        rotZ1575->Print();
-        rotZ180->Print();
-        rotZ2025->Print();
-        rotZ2475->Print();
-        rotZ270->Print();
-        rotZ2925->Print();
-        rotZ3375->Print();
-        rotranA225->Print();
-        rotranA675->Print();
-        rotranA1125->Print();
-        rotranA1575->Print();
-        rotranA2025->Print();
-        rotranA2475->Print();
-        rotranA2925->Print();
-        rotranA3375->Print();
-        rotZ60->Print();
-        rotZ300->Print();
-        rotranA30->Print();
-        rotranA90->Print();
-        rotranA150->Print();
-        rotranA210->Print();
-        rotranA270->Print();
-        rotranA330->Print();
-        rotranBrTZ60->Print();
-        rotranBrTZ180->Print();
-        rotranBrTZ300->Print();
-    } // end if GetDebug(1)
-    sA = new TGeoCompositeShape("ITSssdSuportConeCarbonFiberSurfaceA",
-        "(((((((((((((((((((((((((((("
-        "ITSssdSuportConeCarbonFiberSurfaceA0 +"
-        "ITSssdWingCarbonFiberSurfaceG) +"
-        "ITSssdWingCarbonFiberSurfaceG:ITSssdConeZ90) +"
-        "ITSssdWingCarbonFiberSurfaceG:ITSssdConeZ180) +"
-        "ITSssdWingCarbonFiberSurfaceG:ITSssdConeZ270) -"
-        "(ITSssdCableHoleAh1:ITSssdConeZ225*ITSssdCableHoleAh2:ITSssdConeZ225)) -"
-        "(ITSssdCableHoleAh1:ITSssdConeZ675*ITSssdCableHoleAh2:ITSssdConeZ675)) -"
-        "(ITSssdCableHoleAh1:ITSssdConeZ1125*ITSssdCableHoleAh2:ITSssdConeZ1125)) -"
-        "(ITSssdCableHoleAh1:ITSssdConeZ1575*ITSssdCableHoleAh2:ITSssdConeZ1575)) -"
-        "(ITSssdCableHoleAh1:ITSssdConeZ2025*ITSssdCableHoleAh2:ITSssdConeZ2025)) -"
-        "(ITSssdCableHoleAh1:ITSssdConeZ2475*ITSssdCableHoleAh2:ITSssdConeZ2475)) -"
-        "(ITSssdCableHoleAh1:ITSssdConeZ2925*ITSssdCableHoleAh2:ITSssdConeZ2925)) -"
-        "(ITSssdCableHoleAh1:ITSssdConeZ3375*ITSssdCableHoleAh2:ITSssdConeZ3375)) -"
-        "ITSssdCoolingHoleAh3:ITSssdConeTZ225) -"
-        "ITSssdCoolingHoleAh3:ITSssdConeTZ675) -"
-        "ITSssdCoolingHoleAh3:ITSssdConeTZ1125) -"
-        "ITSssdCoolingHoleAh3:ITSssdConeTZ1575) -"
-        "ITSssdCoolingHoleAh3:ITSssdConeTZ2025) -"
-        "ITSssdCoolingHoleAh3:ITSssdConeTZ2475) -"
-        "ITSssdCoolingHoleAh3:ITSssdConeTZ2925) -"
-        "ITSssdCoolingHoleAh3:ITSssdConeTZ3375) -"
-        "ITSssdMountingPostHoleAh4:ITSssdConeTZ30) -"
-        "ITSssdMountingPostHoleAh4:ITSssdConeTZ90) -"
-        "ITSssdMountingPostHoleAh4:ITSssdConeTZ150) -"
-        "ITSssdMountingPostHoleAh4:ITSssdConeTZ210) -"
-        "ITSssdMountingPostHoleAh4:ITSssdConeTZ270) -"
-        "ITSssdMountingPostHoleAh4:ITSssdConeTZ330) -"
-        "ITSssdsddMountingBracketT:ITSssdConeBrTZ60) -"
-        "ITSssdsddMountingBracketT:ITSssdConeBrTZ180) -"
-        "ITSssdsddMountingBracketT:ITSssdConeBrTZ300"
-        );
-    sB = new TGeoCompositeShape("ITSssdSuportConeStaseliteB",
-        "(((((((((((((((((((((((((((("
-        "ITSssdSuportConeStaseliteB0 +"
-        "ITSssdWingStaseliteH) +"
-        "ITSssdWingStaseliteH:ITSssdConeZ90) +"
-        "ITSssdWingStaseliteH:ITSssdConeZ180) +"
-        "ITSssdWingStaseliteH:ITSssdConeZ270) -"
-        "(ITSssdCableHoleBh1:ITSssdConeZ225*ITSssdCableHoleBh2:ITSssdConeZ225)) -"
-        "(ITSssdCableHoleBh1:ITSssdConeZ675*ITSssdCableHoleBh2:ITSssdConeZ675)) -"
-        "(ITSssdCableHoleBh1:ITSssdConeZ1125*ITSssdCableHoleBh2:ITSssdConeZ1125)) -"
-        "(ITSssdCableHoleBh1:ITSssdConeZ1575*ITSssdCableHoleBh2:ITSssdConeZ1575)) -"
-        "(ITSssdCableHoleBh1:ITSssdConeZ2025*ITSssdCableHoleBh2:ITSssdConeZ2025)) -"
-        "(ITSssdCableHoleBh1:ITSssdConeZ2475*ITSssdCableHoleBh2:ITSssdConeZ2475)) -"
-        "(ITSssdCableHoleBh1:ITSssdConeZ2925*ITSssdCableHoleBh2:ITSssdConeZ2925)) -"
-        "(ITSssdCableHoleBh1:ITSssdConeZ3375*ITSssdCableHoleBh2:ITSssdConeZ3375)) -"
-        "ITSssdCoolingHoleBh3:ITSssdConeTZ225) -"
-        "ITSssdCoolingHoleBh3:ITSssdConeTZ675) -"
-        "ITSssdCoolingHoleBh3:ITSssdConeTZ1125) -"
-        "ITSssdCoolingHoleBh3:ITSssdConeTZ1575) -"
-        "ITSssdCoolingHoleBh3:ITSssdConeTZ2025) -"
-        "ITSssdCoolingHoleBh3:ITSssdConeTZ2475) -"
-        "ITSssdCoolingHoleBh3:ITSssdConeTZ2925) -"
-        "ITSssdCoolingHoleBh3:ITSssdConeTZ3375) -"
-        "ITSssdMountingPostHoleBh4:ITSssdConeTZ30) -"
-        "ITSssdMountingPostHoleBh4:ITSssdConeTZ90) -"
-        "ITSssdMountingPostHoleBh4:ITSssdConeTZ150) -"
-        "ITSssdMountingPostHoleBh4:ITSssdConeTZ210) -"
-        "ITSssdMountingPostHoleBh4:ITSssdConeTZ270) -"
-        "ITSssdMountingPostHoleBh4:ITSssdConeTZ330) -"
-        "ITSssdsddMountingBracketT:ITSssdConeBrTZ60) -"
-        "ITSssdsddMountingBracketT:ITSssdConeBrTZ180) -"
-        "ITSssdsddMountingBracketT:ITSssdConeBrTZ300"
-        );
-    sC = new TGeoCompositeShape("ITSssdSuportConeRohacellC",
-      "((((((("
-      "ITSssdSuportConeRohacellC0 -"
-      "ITSssdCableHoleBh1:ITSssdConeZ225*ITSssdCableHoleBh2:ITSssdConeZ225) -"
-      "ITSssdCableHoleBh1:ITSssdConeZ675*ITSssdCableHoleBh2:ITSssdConeZ675) -"
-      "ITSssdCableHoleBh1:ITSssdConeZ1125*ITSssdCableHoleBh2:ITSssdConeZ1125) -"
-      "ITSssdCableHoleBh1:ITSssdConeZ1575*ITSssdCableHoleBh2:ITSssdConeZ1575) -"
-      "ITSssdCableHoleBh1:ITSssdConeZ2025*ITSssdCableHoleBh2:ITSssdConeZ2025) -"
-      "ITSssdCableHoleBh1:ITSssdConeZ2475*ITSssdCableHoleBh2:ITSssdConeZ2475) -"
-      "ITSssdCableHoleBh1:ITSssdConeZ2925*ITSssdCableHoleBh2:ITSssdConeZ2925) -"
-      "ITSssdCableHoleBh1:ITSssdConeZ3375*ITSssdCableHoleBh2:ITSssdConeZ3375 "
-        );
-    sF = new TGeoCompositeShape("ITSssdSuportConeRohacellCF",
-        "((((("
-        "ITSssdSuportConeRohacellCF0 -"
-        "ITSssdMountingPostHoleBh4:ITSssdConeTZ30) -"
-        "ITSssdMountingPostHoleBh4:ITSssdConeTZ90) -"
-        "ITSssdMountingPostHoleBh4:ITSssdConeTZ150) -"
-        "ITSssdMountingPostHoleBh4:ITSssdConeTZ210) -"
-        "ITSssdMountingPostHoleBh4:ITSssdConeTZ270) -"
-        "ITSssdMountingPostHoleBh4:ITSssdConeTZ330"
-        );
-    //
-    // In volume SCB, th Inserto Stesalite 4411w material volume, there
-    // are a number of Stainless steel screw and pin studs which will be
-    // filled with screws/studs.
-    sD = new TGeoTube("ITS Screw+stud used to mount things to the SSD "
-                      "support cone",
-                      0.0,kconRScrewM5by12,kconLScrewM5by12);
-    sE = new TGeoTube("ITS pin used to mount things to the "
-                      "SSD support cone",0.0,kconRPinO6,kconLPinO6);
-    // Bolt heads holding the SSD-SDD tube to the SSD cone.
-    // Bolt -- PolyCone
-    //Poly-cone Volume sQ.
-    sQ = new TGeoPcon("ITS SSD Thermal sheald M6 screw headQ",0.0,360.0,4);
-    sQ->Z(0)    = sA0->GetZ(12);
-    sQ->Rmin(0) = 0.0;
-    sQ->Rmax(0) = kcylRM6;
-    sQ->Z(1)    = sA0->GetZ(10) + kconZM6Head;
-    sQ->Rmin(1) = 0.0;
-    sQ->Rmax(1) = kcylRM6;
-    sQ->Z(2)    = sQ->GetZ(1);
-    sQ->Rmin(2) = 0.0;
-    sQ->Rmax(2) = kconRM6Head;
-    sQ->Z(3)    = sA0->GetZ(10)+ksupPZ;
-    sQ->Rmin(3) = 0.0;
-    sQ->Rmax(3) = kconRM6Head;
-    // air infront of bolt (stasolit Volume K) -- Tube
-    sR = new TGeoTube("ITS Air in front of bolt (in stasolit)R",
-                      sQ->GetRmin(3),sQ->GetRmax(3),0.5*(ksupPZ-kconCthick));
-    // air infront of bolt (carbon fiber volume I) -- Tube
-    sS = new TGeoTube("ITS Air in front of Stainless Steal Screw end, M6S",
-                      sQ->GetRmin(3),sQ->GetRmax(3),0.5*kconCthick);
-    //
-    if(GetDebug(1)){
-        sA0->InspectShape();
-        sB0->InspectShape();
-        sC0->InspectShape();
-        sF0->InspectShape();
-        sQ->InspectShape();
-        sAh1->InspectShape();
-        sBh1->InspectShape();
-        sAh2->InspectShape();
-        sBh2->InspectShape();
-        sAh3->InspectShape();
-        sBh3->InspectShape();
-        sAh4->InspectShape();
-        sBh4->InspectShape();
-        sG->InspectShape();
-        sH->InspectShape();
-        sT->InspectShape();
-        sD->InspectShape();
-        sE->InspectShape();
-        sR->InspectShape();
-        sS->InspectShape();
-        sA->InspectShape();
-        sB->InspectShape();
-        sC->InspectShape();
-        sF->InspectShape();
-    } // end if GetDebug(1)
-    TGeoVolume *vA,*vB,*vC,*vD,*vE,*vF,*vQ,*vR,*vS,*vT;
-    //
-    vA = new TGeoVolume("ITSssdConeA",sA,medSSDcf); // Carbon Fiber
-    vA->SetVisibility(kTRUE);
-    vA->SetLineColor(4); // blue
-    vA->SetLineWidth(1);
-    vA->SetFillColor(vA->GetLineColor());
-    vA->SetFillStyle(4050); // 50% transparent
-    vB = new TGeoVolume("ITSssdConeB",sB,medSSDfs); // Staselite
-    vB->SetVisibility(kTRUE);
-    vB->SetLineColor(2); // red
-    vB->SetLineWidth(1);
-    vB->SetFillColor(vB->GetLineColor());
-    vB->SetFillStyle(4050); // 50% transparent
-    vC = new TGeoVolume("ITSssdConeC",sC,medSSDfo); // Rohacell
-    vC->SetVisibility(kTRUE);
-    vC->SetLineColor(3); // green
-    vC->SetLineWidth(1);
-    vC->SetFillColor(vC->GetLineColor());
-    vC->SetFillStyle(4050); // 50% transparent
-    vF = new TGeoVolume("ITSssdConeF",sF,medSSDfo); // Rohacell;
-    vF->SetVisibility(kTRUE);
-    vF->SetLineColor(3); // green
-    vF->SetLineWidth(1);
-    vF->SetFillColor(vF->GetLineColor());
-    vF->SetFillStyle(4050); // 50% transparent
-    vD = new TGeoVolume("ITSssdConeD",sD,medSSDss);
-    vD->SetVisibility(kTRUE);
-    vD->SetLineColor(1); // black
-    vD->SetLineWidth(1);
-    vD->SetFillColor(vD->GetLineColor());
-    vD->SetFillStyle(4000); // 0% transparent
-    vE = new TGeoVolume("ITSssdConeE",sE,medSSDss);
-    vE->SetVisibility(kTRUE);
-    vE->SetLineColor(1); // black
-    vE->SetLineWidth(1);
-    vE->SetFillColor(vE->GetLineColor());
-    vE->SetFillStyle(4000); // 0% transparent
-    vQ = new TGeoVolume("ITSssdConeQ",sQ,medSSDss);
-    vQ->SetVisibility(kTRUE);
-    vQ->SetLineColor(1); // black
-    vQ->SetLineWidth(1);
-    vQ->SetFillColor(vQ->GetLineColor());
-    vQ->SetFillStyle(4000); // 0% transparent
-    vR = new TGeoVolume("ITSssdConeR",sR,medSSDair);
-    vR->SetVisibility(kTRUE);
-    vR->SetLineColor(5); // yellow
-    vR->SetLineWidth(1);
-    vR->SetFillColor(vR->GetLineColor());
-    vR->SetFillStyle(4090); // 90% transparent
-    vS = new TGeoVolume("ITSssdConeS",sS,medSSDair);
-    vS->SetVisibility(kTRUE);
-    vS->SetLineColor(5); // yellow
-    vS->SetLineWidth(1);
-    vS->SetFillColor(vS->GetLineColor());
-    vS->SetFillStyle(4090); // 90% transparent
-    vT = new TGeoVolume("ITSssdsddMountingBracket",sT,medSSDal);
-    vT->SetVisibility(kTRUE);
-    vT->SetLineColor(5); // yellow
-    vT->SetLineWidth(1);
-    vT->SetFillColor(vT->GetLineColor());
-    vT->SetFillStyle(4000); // 0% transparent
-    //
-    TGeoCombiTrans *rotran;
-    TGeoTranslation *tran;
-    tran = new TGeoTranslation("ITSssdConeTrans",0.0,0.0,-kconZDisplacement);
-    TGeoRotation *rotY180 = new TGeoRotation("",0.0,180.0,0.0);
-    TGeoCombiTrans *flip  = new TGeoCombiTrans("ITSssdConeFlip",
-                                           0.0,0.0,kconZDisplacement,rotY180);
-    //delete rotY180;// rot not explicity used in AddNode functions.
-    //
-    //
-    //
-    //
-    vA->AddNode(vB,1,0);
-    vB->AddNode(vC,1,0);
-    vB->AddNode(vF,1,0);
-    moth->AddNode(vA,1,tran); // RB24 side
-    moth->AddNode(vA,2,flip); // RB26 side (Absorber)
-    //
-    //
-    //
-    // Insert Bolt and Pins in both the Cone and Cylinder at the same time.
-    Int_t nCopyCDv=0,nCopyCEv=0,nCopyQv=0,nCopyvR=0,nCopySv=0,nCopyTv=0;
-    Int_t nCopyvD=0,nCopyvE=0;
-    z = sCB->GetZ(0)+sCD->GetDz(); // sCB->GetZ(0)<0!
-    dt = (360.0/((Double_t)kcylNPin));
-    for(i=0;i<kcylNPin;i++){
-        t = ((Double_t)i)*dt;
-        x = kcylRholes*CosD(t+kcylPhi0Pin);
-        y = kcylRholes*SinD(t+kcylPhi0Pin);
-        tran = new TGeoTranslation("",x,y,z);
-        vCB->AddNode(vCD,++nCopyCDv,tran);
-        tran = new TGeoTranslation("",x,y,-z);
-        vCB->AddNode(vCD,++nCopyCDv,tran);
-    } // end for i
-    dt = (360.0/((Double_t)kcylNM6));
-    for(i=0;i<kcylNM6;i++){
-        t = ((Double_t)i)*dt;
-        x = kcylRholes*CosD(t+kcylPhi0M6);
-        y = kcylRholes*SinD(t+kcylPhi0M6);
-        z = sCB->GetZ(0)+sCE->GetDz(); // sCB->GetZ()<0!
-        tran = new TGeoTranslation("",x,y,z);
-        vCB->AddNode(vCE,++nCopyCEv,tran);
-        tran = new TGeoTranslation("",x,y,-z);
-        vCB->AddNode(vCE,++nCopyCEv,tran);
-        tran = new TGeoTranslation("",x,y,0.0);
-        vB->AddNode(vQ,++nCopyQv,tran);
-        if(!((t<rotranBrTZ60->GetRotation()->GetPhiRotation()+sT->GetPhi2()&&
-             t>rotranBrTZ60->GetRotation()->GetPhiRotation()-sT->GetPhi1())||
-            (t<rotranBrTZ180->GetRotation()->GetPhiRotation()+sT->GetPhi2()&&
-             t>rotranBrTZ180->GetRotation()->GetPhiRotation()-sT->GetPhi1())||
-            (t<rotranBrTZ300->GetRotation()->GetPhiRotation()+sT->GetPhi2()&&
-             t>rotranBrTZ300->GetRotation()->GetPhiRotation()-sT->GetPhi1()))){
-            // If not at an angle where the bracket sT is located.
-            tran = new TGeoTranslation("",x,y,sB0->GetZ(10)-sR->GetDz());
-            vB->AddNode(vR,++nCopyvR,tran);
-            tran = new TGeoTranslation("",x,y,sA0->GetZ(10)-sS->GetDz());
-            vA->AddNode(vS,++nCopySv,tran);
-        } // end if
-    } // end for i
-    // Add the mounting brackets to the RB24 side only.
-    vl[0] = 0.0;
-    vl[1] = 0.0;
-    vl[2] = sA0->GetZ(10)+kconZDisplacement-sT->GetDz();
-    rotZ60->LocalToMaster(vl,vg);
-    rotran = new TGeoCombiTrans("",vg[0],vg[1],vg[2],rotZ60);
-    moth->AddNode(vT,++nCopyTv,rotran);
-    rotZ180->LocalToMaster(vl,vg);
-    rotran = new TGeoCombiTrans("",vg[0],vg[1],vg[2],rotZ180);
-    moth->AddNode(vT,++nCopyTv,rotran);
-    rotZ300->LocalToMaster(vl,vg);
-    rotran = new TGeoCombiTrans("",vg[0],vg[1],vg[2],rotZ300);
-    moth->AddNode(vT,++nCopyTv,rotran);
-    //
-    Double_t da[] = {-3.5,-1.5,1.5,3.5};
-    for(i=0;i<2;i++){ // Mounting for ITS-TPC bracket or ITS-Rails
-        t0 = 180.*((Double_t)i);
-        for(j=-kconNScrewM5by12/2;j<=kconNScrewM5by12/2;j++)if(j!=0){
-                    //screws per ITS-TPC brkt
-            t = t0 + 5.0*((Double_t)j);
-            tran = new TGeoTranslation("",kconROutHoles*CosD(t),
-                                          kconROutHoles*SinD(t),
-                                          sB0->GetZ(0)+sE->GetDz());
-            vB->AddNode(vE,++nCopyvE,tran);
-        } // end or j
-        for(j=-kconNPinO6/2;j<=kconNPinO6/2;j++){ // pins per ITS-TPC bracket
-            t = t0 + 3.0*((Double_t)j);
-            tran = new TGeoTranslation("",kconROutHoles*CosD(t),
-                                          kconROutHoles*SinD(t),
-                                          sB0->GetZ(0)+sD->GetDz());
-            vB->AddNode(vD,++nCopyvD,tran);
-        } // end or j
-        t0 = (-5.5+191.*((Double_t)i));
-        for(j=0;j<kconNRailScrews;j++){ // screws per ITS-rail bracket
-            t = t0+da[j];
-            tran = new TGeoTranslation("",kconROutHoles*CosD(t),
-                                          kconROutHoles*SinD(t),
-                                          sB0->GetZ(0)+sE->GetDz());
-            vB->AddNode(vE,++nCopyvE,tran);
-        } // end or j
-        t0 = (95.5+191.*((Double_t)i));
-        for(j=-kconNRailPins/2;j<=kconNRailPins/2;j++)if(j!=0){ 
-             // pins per ITS-rail bracket
-            t = t0+(5.5*((Double_t)j));
-            tran = new TGeoTranslation("",kconROutHoles*CosD(t),
-                                          kconROutHoles*SinD(t),
-                                          sB0->GetZ(0)+sD->GetDz());
-            vB->AddNode(vD,++nCopyvD,tran);
-        } // end or j
-    } // end for i
-    for(i=0;i<kconNmounts;i++){ 
-                // mounting points for SPD-cone+Beam-pipe support
-        t0 = (45.0+((Double_t)i)*360./((Double_t)kconNmounts));
-        for(j=-1;j<=1;j++)if(j!=0){ // 2 screws per bracket
-            t = t0+((Double_t)j)*0.5*kconMountPhi0;
-            tran = new TGeoTranslation("",kconROutHoles*CosD(t),
-                                          kconROutHoles*SinD(t),
-                                          sB0->GetZ(0)+sD->GetDz());
-            vB->AddNode(vD,++nCopyvD,tran);
-        } // end for j
-        for(j=0;j<1;j++){ // 1 pin per bracket
-            t = t0;
-            tran = new TGeoTranslation("",kconROutHoles*CosD(t),
-                                          kconROutHoles*SinD(t),
-                                          sB0->GetZ(0)+sD->GetDz());
-            vB->AddNode(vE,++nCopyvE,tran);
-        } // end for j
-    } // end for i
-    if(GetDebug(1)){
-        vA->PrintNodes();
-        vB->PrintNodes();
-        vC->PrintNodes();
-        vD->PrintNodes();
-        vE->PrintNodes();
-        vF->PrintNodes();
-        vQ->PrintNodes();
-        vR->PrintNodes();
-        vS->PrintNodes();
-        vT->PrintNodes();
-    } // end if
+void AliITSv11GeometrySupport::SSDCone(TGeoVolume *moth,TGeoManager *mgr)
+{
+//
+// Creates the SSD support cone and cylinder geometry. as a
+// volume assembly and adds it to the mother volume
+// (part of this code is taken or anyway inspired to SSDCone method
+// of AliITSv11GeometrySupport.cxx,v 1.9 2007/06/06)
+//
+// Input:
+//         moth : the TGeoVolume owing the volume structure
+//         mgr  : the GeoManager (default gGeoManager)
+// Output:
+//
+// Created:         ???       Bjorn S. Nilsen
+// Updated:      08 Mar 2008  Mario Sitta
+//
+// Technical data are taken from:  "ITS Supporto Generale" (technical
+// drawings ALR3-0743/1, ALR3-0743/1A and ALR3-0743/1B), "Supporto Generale
+// Settore SSD" (technical drawings ALR3-0743/2A and ALR3-0743/2E), private
+// communication with B. Giraudo
+
+  // Dimensions of the Central cylinder and flanges
+  const Double_t kCylinderHalfLength   = (1144.0/2) *fgkmm;
+  const Double_t kCylinderOuterRadius  = ( 595.0/2) *fgkmm;
+  const Double_t kCylinderThickness    =        0.6 *fgkmm;
+  const Double_t kFoamHalfLength       = (1020.0/2) *fgkmm;
+  const Double_t kFoamThickness        =        5.0 *fgkmm;
+  const Double_t kFlangeHalfLength     =
+                                      (kCylinderHalfLength-kFoamHalfLength)/2.;
+  const Double_t kFlangeInnerRadius    = ( 563.0/2) *fgkmm;
+  // Dimensions of the Cone
+  const Double_t kConeROuterMin        = ( 945.0/2) *fgkmm;
+  const Double_t kConeROuterMax        = ( 985.0/2) *fgkmm;
+  const Double_t kConeRInnerMin        = ( 564.0/2) *fgkmm;
+  const Double_t kConeRCurv1           =       10.0 *fgkmm;
+  const Double_t kConeRCurv2           =       25.0 *fgkmm;
+  const Double_t kConeCent1RCurv2      = ( 578.0/2) *fgkmm;
+  const Double_t kConeCent2RCurv2      = ( 593.0/2) *fgkmm;
+  const Double_t kConeZOuterRing       =       47.0 *fgkmm;
+  const Double_t kConeZOuterRingInside =       30.25*fgkmm;
+  const Double_t kConeZInnerRing       =      161.5 *fgkmm;
+  const Double_t kConeZLength          =      176.5 *fgkmm;
+  const Double_t kConeZPosition        = kConeZLength + kCylinderHalfLength;
+  const Double_t kConeThickness        =       13.0 *fgkmm; // Cone thickness
+  const Double_t kConeTheta            =       39.0 *fgkDegree; // Cone angle
+  const Double_t kSinConeTheta         =
+                                      TMath::Sin(kConeTheta*TMath::DegToRad());
+  const Double_t kCosConeTheta         =
+                                      TMath::Cos(kConeTheta*TMath::DegToRad());
+  // Dimensions of the Foam cores
+  const Double_t kConeFoam1Length      =      112.3 *fgkmm;
+  const Double_t kConeFoam2Length      =       58.4 *fgkmm;
+  // Dimensions of the Cone Holes
+  const Double_t kCoolingHoleWidth     =       40.0 *fgkmm;
+  const Double_t kCoolingHoleHight     =       30.0 *fgkmm;
+  const Double_t kCoolingHoleRmin      =      350.0 *fgkmm;
+  const Double_t kCoolingHolePhi       =       45.0 *fgkDegree;
+  const Double_t kMountingHoleWidth    =       20.0 *fgkmm;
+  const Double_t kMountingHoleHight    =       20.0 *fgkmm;
+  const Double_t kMountingHoleRmin     =      317.5 *fgkmm;
+  const Double_t kMountingHolePhi      =       60.0 *fgkDegree;
+  const Double_t kCableHoleRin         = ( 800.0/2) *fgkmm;
+  const Double_t kCableHoleRout        = ( 920.0/2) *fgkmm;
+  const Double_t kCableHoleWidth       =      200.0 *fgkmm;
+//  const Double_t kCableHoleAngle       =       42.0 *fgkDegree;
+  // Dimensions of the Cone Wings
+  const Double_t kWingRmax             =      527.5 *fgkmm;
+  const Double_t kWingWidth            =       70.0 *fgkmm;
+  const Double_t kWingHalfThick        = (  10.0/2) *fgkmm;
+  const Double_t kThetaWing            =       45.0 *fgkDegree;
+  // Dimensions of the SSD-SDD Mounting Brackets
+  const Double_t kBracketRmin          = ( 540.0/2) *fgkmm;// See SDD ROutMin
+  const Double_t kBracketRmax          = ( 585.0/2) *fgkmm;
+  const Double_t kBracketHalfLength    = (   4.0/2) *fgkmm;
+  const Double_t kBracketPhi           = (70.*fgkmm/kBracketRmax)*fgkRadian;
+  // Common data
+  const Double_t kCFThickness          =        0.75*fgkmm; //Carb. fib. thick.
+
+
+  // Local variables
+  Double_t rmin1, rmin2, rmax, z;
+
+  //
+  //Begin_Html
+  /*
+    <img src="picts/ITS/file_name.gif">
+    <P>
+    <FONT FACE'"TIMES">
+    ITS SSD central support and thermal shield cylinder.
+    </FONT>
+    </P>
+  */
+  //End_Html
+  //
+
+  // Central cylinder with its internal foam and the lateral flanges:
+  // a carbon fiber Pcon which contains a rohacell Tube and two
+  // stesalite Cone's
+  TGeoPcon *externalcylshape = new TGeoPcon(0,360,4);
+
+  rmax  = kCylinderOuterRadius;
+  rmin1 = kFlangeInnerRadius - kCylinderThickness;
+  rmin2 = rmax - 2*kCylinderThickness - kFoamThickness;
+  externalcylshape->DefineSection(0,-kCylinderHalfLength,rmin1,rmax);
+  externalcylshape->DefineSection(1,-kFoamHalfLength    ,rmin2,rmax);
+  externalcylshape->DefineSection(2, kFoamHalfLength    ,rmin2,rmax);
+  externalcylshape->DefineSection(3, kCylinderHalfLength,rmin1,rmax);
+
+  rmax  = kCylinderOuterRadius - kCylinderThickness;
+  rmin1 = rmax - kFoamThickness;
+  TGeoTube *foamshape = new TGeoTube(rmin1,rmax,kFoamHalfLength);
+
+  rmax  = kCylinderOuterRadius - kCylinderThickness;
+  rmin1 = rmax - kFoamThickness;
+  rmin2 = kFlangeInnerRadius;
+  TGeoCone *flangeshape = new TGeoCone(kFlangeHalfLength,
+				       rmin1,rmax,rmin2,rmax);
+
+
+  // We have the shapes: now create the real volumes
+
+  TGeoMedium *medSSDcf  = mgr->GetMedium("ITS_SSD C (M55J)$");
+  TGeoMedium *medSSDair = mgr->GetMedium("ITS_SSD AIR$");
+  TGeoMedium *medSSDste = mgr->GetMedium("ITS_G10FR4$"); // stesalite
+  TGeoMedium *medSSDroh = mgr->GetMedium("ITS_ROHACELL$");
+  TGeoMedium *medSSDal  = mgr->GetMedium("ITS_ALUMINUM$");
+
+  TGeoVolume *cfcylinder = new TGeoVolume("SSDexternalcylinder",
+					   externalcylshape,medSSDcf);
+  cfcylinder->SetVisibility(kTRUE);
+  cfcylinder->SetLineColor(4); // blue
+  cfcylinder->SetLineWidth(1);
+  cfcylinder->SetFillColor(cfcylinder->GetLineColor());
+  cfcylinder->SetFillStyle(4000); // 0% transparent
+
+  TGeoVolume *foamcylinder = new TGeoVolume("SSDfoamcylinder",
+					    foamshape,medSSDroh);
+  foamcylinder->SetVisibility(kTRUE);
+  foamcylinder->SetLineColor(3); // green
+  foamcylinder->SetLineWidth(1);
+  foamcylinder->SetFillColor(foamcylinder->GetLineColor());
+  foamcylinder->SetFillStyle(4050); // 50% transparent
+
+  TGeoVolume *flangecylinder = new TGeoVolume("SSDflangecylinder",
+					      flangeshape,medSSDste);
+  flangecylinder->SetVisibility(kTRUE);
+  flangecylinder->SetLineColor(2); // red
+  flangecylinder->SetLineWidth(1);
+  flangecylinder->SetFillColor(flangecylinder->GetLineColor());
+  flangecylinder->SetFillStyle(4050); // 50% transparent
+
+  // Mount up the cylinder
+  cfcylinder->AddNode(foamcylinder,1,0);
+  cfcylinder->AddNode(flangecylinder,1,
+	      new TGeoTranslation(0, 0, kFoamHalfLength+kFlangeHalfLength));
+  cfcylinder->AddNode(flangecylinder,2,new TGeoCombiTrans(
+              0, 0, -kFoamHalfLength-kFlangeHalfLength,
+	      new TGeoRotation("",0,180,0)     ) );
+
+
+  // The whole Cone as an assembly
+  TGeoVolumeAssembly *vC = new TGeoVolumeAssembly("ITSssdCone");
+
+
+  // SSD Support Cone with its internal inserts: a carbon fiber Pcon
+  // with holes which contains a stesalite Pcon which on turn contains a
+  // rohacell Pcon
+  TGeoPcon *coneshape = new TGeoPcon(0.0, 360.0, 12);
+
+  coneshape->Z(0)     = 0.0;
+  coneshape->Rmin(0)  = kConeROuterMin;
+  coneshape->Rmax(0)  = kConeROuterMax;
+
+  coneshape->Z(1)     = kConeZOuterRingInside - kConeRCurv1;
+  coneshape->Rmin(1)  = coneshape->GetRmin(0);
+  coneshape->Rmax(1)  = coneshape->GetRmax(0);
+
+  coneshape->Z(2)     = kConeZOuterRingInside;
+  coneshape->Rmin(2)  = coneshape->GetRmin(1) - kConeRCurv1;
+  coneshape->Rmax(2)  = coneshape->GetRmax(0);
+
+  coneshape->Z(3)     = coneshape->GetZ(2);
+  coneshape->Rmax(3)  = coneshape->GetRmax(0);
+
+  coneshape->Z(4)     = kConeZOuterRing - kConeRCurv1;
+  coneshape->Rmax(4)  = coneshape->GetRmax(0);
+
+  coneshape->Z(5)     = kConeZOuterRing;
+  coneshape->Rmax(5)  = coneshape->GetRmax(4) - kConeRCurv1;
+
+  coneshape->Z(6)     = coneshape->GetZ(5);
+
+  RadiusOfCurvature(kConeRCurv2,90.0,kConeZInnerRing,kConeCent1RCurv2,
+		    90.0-kConeTheta,z,rmin1);
+  coneshape->Z(7)     = z;
+  coneshape->Rmin(7)  = rmin1;
+
+  coneshape->Rmin(3)  = RminFromZpCone(coneshape,7,90.-kConeTheta,
+				       coneshape->GetZ(3));
+
+  coneshape->Rmin(4)  = RminFrom2Points(coneshape,3,7,coneshape->GetZ(4));
+
+  coneshape->Rmin(5)  = RminFrom2Points(coneshape,3,7,coneshape->GetZ(5));
+
+  coneshape->Rmin(6) = coneshape->GetRmin(5);
+
+  coneshape->Z(8)     = kConeZInnerRing;
+  coneshape->Rmin(8)  = kConeCent1RCurv2;
+
+  coneshape->Z(9)     = coneshape->GetZ(8);
+  coneshape->Rmin(9)  = kConeRInnerMin;
+
+  RadiusOfCurvature(kConeRCurv2,90.0,kConeZLength,kConeCent2RCurv2,
+		    90.0-kConeTheta,z,rmax);
+
+  coneshape->Z(10)    = z;
+  coneshape->Rmin(10) = coneshape->GetRmin(9);
+  coneshape->Rmax(10) = rmax;
+
+  coneshape->Rmax(6)  = RmaxFromZpCone(coneshape,10,90.-kConeTheta,
+				       coneshape->GetZ(6));
+
+  coneshape->Rmax(7)  = RmaxFrom2Points(coneshape,6,10,coneshape->GetZ(7));
+
+  coneshape->Rmax(8)  = RmaxFrom2Points(coneshape,6,10,coneshape->GetZ(8));
+
+  coneshape->Rmax(9)  = coneshape->GetRmax(8);
+
+  coneshape->Z(11)    = kConeZLength;
+  coneshape->Rmin(11) = coneshape->GetRmin(10);
+  coneshape->Rmax(11) = kConeCent2RCurv2;
+
+  // SSD Cone Insert: another Pcon
+  Double_t x0, y0, x1, y1, x2, y2;
+  TGeoPcon *coneinsertshape = new TGeoPcon(0.0,360.0,12);
+
+  coneinsertshape->Z(0)     = coneshape->GetZ(0) + kCFThickness;
+  coneinsertshape->Rmin(0)  = coneshape->GetRmin(0) + kCFThickness;
+  coneinsertshape->Rmax(0)  = coneshape->GetRmax(0) - kCFThickness;
+
+  x0 = coneshape->GetZ(0); y0 = coneshape->GetRmin(0);
+  x1 = coneshape->GetZ(1); y1 = coneshape->GetRmin(1);
+  x2 = coneshape->GetZ(2); y2 = coneshape->GetRmin(2);
+  InsidePoint(x0, y0, x1, y1, x2, y2,  kCFThickness, z, rmin1);
+  coneinsertshape->Z(1)     = z;
+  coneinsertshape->Rmin(1)  = rmin1;
+  coneinsertshape->Rmax(1)  = coneinsertshape->GetRmax(0);
+
+  x0 = coneshape->GetZ(1); y0 = coneshape->GetRmin(1);
+  x1 = coneshape->GetZ(2); y1 = coneshape->GetRmin(2);
+  x2 = coneshape->GetZ(3); y2 = coneshape->GetRmin(3);
+  InsidePoint(x0, y0, x1, y1, x2, y2,  kCFThickness, z, rmin1);
+  coneinsertshape->Z(2)     = z;
+  coneinsertshape->Rmin(2)  = rmin1;
+  coneinsertshape->Rmax(2)  = coneinsertshape->GetRmax(1);
+
+  x0 = coneshape->GetZ(2); y0 = coneshape->GetRmin(2);
+  x1 = coneshape->GetZ(3); y1 = coneshape->GetRmin(3);
+  x2 = coneshape->GetZ(4); y2 = coneshape->GetRmin(4);
+  InsidePoint(x0, y0, x1, y1, x2, y2,  kCFThickness, z, rmin1);
+  coneinsertshape->Z(3)     = z;
+  coneinsertshape->Rmin(3)  = rmin1;
+  coneinsertshape->Rmax(3)  = coneinsertshape->GetRmax(2);
+
+  x0 = coneshape->GetZ(3); y0 = coneshape->GetRmax(3);
+  x1 = coneshape->GetZ(4); y1 = coneshape->GetRmax(4);
+  x2 = coneshape->GetZ(5); y2 = coneshape->GetRmax(5);
+  InsidePoint(x0, y0, x1, y1, x2, y2, -kCFThickness, z, rmax);
+  coneinsertshape->Z(4)     = z;
+  coneinsertshape->Rmax(4)  = rmax;
+
+  x0 = coneshape->GetZ(4); y0 = coneshape->GetRmax(4);
+  x1 = coneshape->GetZ(5); y1 = coneshape->GetRmax(5);
+  x2 = coneshape->GetZ(6); y2 = coneshape->GetRmax(6);
+  InsidePoint(x0, y0, x1, y1, x2, y2, -kCFThickness, z, rmax);
+  coneinsertshape->Z(5)     = z;
+  coneinsertshape->Rmax(5)  = rmax;
+
+  x0 = coneshape->GetZ(5); y0 = coneshape->GetRmax(5);
+  x1 = coneshape->GetZ(6); y1 = coneshape->GetRmax(6);
+  x2 = coneshape->GetZ(7); y2 = coneshape->GetRmax(7);
+  InsidePoint(x0, y0, x1, y1, x2, y2, -kCFThickness, z, rmax);
+  coneinsertshape->Z(6)     = z;
+  coneinsertshape->Rmax(6)  = rmax;
+
+  x0 = coneshape->GetZ(6); y0 = coneshape->GetRmin(6);
+  x1 = coneshape->GetZ(7); y1 = coneshape->GetRmin(7);
+  x2 = coneshape->GetZ(8); y2 = coneshape->GetRmin(8);
+  InsidePoint(x0, y0, x1, y1, x2, y2,  kCFThickness, z, rmin1);
+  coneinsertshape->Z(7)     = z;
+  coneinsertshape->Rmin(7)  = rmin1;
+
+  coneinsertshape->Rmin(4)  = RminFrom2Points(coneinsertshape,3,7,
+					      coneinsertshape->GetZ(4));
+
+  coneinsertshape->Rmin(5)  = RminFrom2Points(coneinsertshape,3,7,
+					      coneinsertshape->GetZ(5));
+
+  coneinsertshape->Rmin(6)  = coneinsertshape->GetRmin(5);
+
+  x0 = coneshape->GetZ(7); y0 = coneshape->GetRmin(7);
+  x1 = coneshape->GetZ(8); y1 = coneshape->GetRmin(8);
+  x2 = coneshape->GetZ(9); y2 = coneshape->GetRmin(9);
+  InsidePoint(x0, y0, x1, y1, x2, y2,  kCFThickness, z, rmin1);
+  coneinsertshape->Z(8)     = z;
+  coneinsertshape->Rmin(8)  = rmin1;
+
+  x0 = coneshape->GetZ( 8); y0 = coneshape->GetRmin( 8);
+  x1 = coneshape->GetZ( 9); y1 = coneshape->GetRmin( 9);
+  x2 = coneshape->GetZ(10); y2 = coneshape->GetRmin(10);
+  InsidePoint(x0, y0, x1, y1, x2, y2,  kCFThickness, z, rmin1);
+  coneinsertshape->Z(9)     = z;
+  coneinsertshape->Rmin(9)  = rmin1;
+
+  x0 = coneshape->GetZ( 9); y0 = coneshape->GetRmax( 9);
+  x1 = coneshape->GetZ(10); y1 = coneshape->GetRmax(10);
+  x2 = coneshape->GetZ(11); y2 = coneshape->GetRmax(11);
+  InsidePoint(x0, y0, x1, y1, x2, y2, -kCFThickness, z, rmax);
+  coneinsertshape->Z(10)    = z;
+  coneinsertshape->Rmax(10) = rmax;
+  coneinsertshape->Rmin(10) = coneinsertshape->GetRmin(9);
+
+  coneinsertshape->Rmax(7)  = RmaxFrom2Points(coneinsertshape,6,10,
+					      coneinsertshape->GetZ(7));
+
+  coneinsertshape->Rmax(8)  = RmaxFrom2Points(coneinsertshape,6,10,
+					      coneinsertshape->GetZ(8));
+
+  coneinsertshape->Rmax(9)  = coneinsertshape->GetRmax(8);
+
+  x0 = coneshape->GetZ(10); y0 = coneshape->GetRmax(10);
+  x1 = coneshape->GetZ(11); y1 = coneshape->GetRmax(11);
+  x2 = coneshape->GetZ(11); y2 = coneshape->GetRmin(11);
+  InsidePoint(x0, y0, x1, y1, x2, y2, -kCFThickness, z, rmax);
+  coneinsertshape->Z(11)    = z;
+  coneinsertshape->Rmax(11) = rmax;
+  coneinsertshape->Rmin(11) = coneinsertshape->GetRmin(10);
+
+  // SSD Cone Foams: two other Pcon's
+  TGeoPcon *conefoam1shape = new TGeoPcon(0.0, 360.0, 4);
+
+  conefoam1shape->Z(0)    = coneinsertshape->GetZ(3);
+  conefoam1shape->Rmin(0) = coneinsertshape->GetRmin(3);
+  conefoam1shape->Rmax(0) = conefoam1shape->GetRmin(0);
+
+  conefoam1shape->Rmax(1) = conefoam1shape->GetRmax(0);
+  conefoam1shape->Z(1)    = ZFromRmaxpCone(coneinsertshape,7,90.-kConeTheta,
+					   conefoam1shape->GetRmax(1));
+  conefoam1shape->Rmin(1) = RminFromZpCone(coneinsertshape,3,90.-kConeTheta,
+					   conefoam1shape->GetZ(1));
+
+  Double_t t = kConeThickness - 2*kCFThickness;
+  conefoam1shape->Rmin(2) = conefoam1shape->GetRmax(0) -
+                           (kConeFoam1Length*kCosConeTheta - t*kSinConeTheta);
+  conefoam1shape->Z(2)    = ZFromRminpCone(coneinsertshape,3,90.-kConeTheta,
+					   conefoam1shape->GetRmin(2));
+  conefoam1shape->Rmax(2) = RmaxFromZpCone(coneinsertshape,7,90.-kConeTheta,
+					   conefoam1shape->GetZ(2));
+
+  conefoam1shape->Rmin(3) = conefoam1shape->GetRmin(2);
+  conefoam1shape->Rmax(3) = conefoam1shape->GetRmin(3);
+  conefoam1shape->Z(3)    = ZFromRmaxpCone(coneinsertshape,7,90.-kConeTheta,
+					   conefoam1shape->GetRmax(3));
+
+  TGeoPcon *conefoam2shape = new TGeoPcon(0.0, 360.0, 4);
+
+  conefoam2shape->Z(3)    = coneinsertshape->GetZ(10);
+  conefoam2shape->Rmin(3) = coneinsertshape->GetRmax(10);
+  conefoam2shape->Rmax(3) = conefoam2shape->GetRmin(3);
+
+  conefoam2shape->Rmin(2) = conefoam2shape->GetRmin(3);
+  conefoam2shape->Z(2)    = ZFromRminpCone(coneinsertshape,3,90.-kConeTheta,
+					   conefoam2shape->GetRmin(2));
+  conefoam2shape->Rmax(2) = RmaxFromZpCone(coneinsertshape,7,90.-kConeTheta,
+					   conefoam2shape->GetZ(2));
+
+  conefoam2shape->Rmin(0) = conefoam2shape->GetRmax(2) +
+                           (kConeFoam2Length*kCosConeTheta - t*kSinConeTheta);
+  conefoam2shape->Rmax(0) = conefoam2shape->GetRmin(0);
+  conefoam2shape->Z(0)    = ZFromRminpCone(coneinsertshape,3,90.-kConeTheta,
+					   conefoam2shape->GetRmin(0));
+
+  conefoam2shape->Rmax(1) = conefoam2shape->GetRmax(0);
+  conefoam2shape->Z(1)    = ZFromRmaxpCone(coneinsertshape,7,90.-kConeTheta,
+					   conefoam2shape->GetRmax(1));
+  conefoam2shape->Rmin(1) = RminFromZpCone(coneinsertshape,3,90.-kConeTheta,
+					   conefoam2shape->GetZ(1));
+
+  // SSD Cone Holes: Pcon's
+  Double_t holePhi;
+  holePhi = (kCoolingHoleWidth/kCoolingHoleRmin)*TMath::RadToDeg();
+
+  TGeoPcon *coolingholeshape = new TGeoPcon(-holePhi/2., holePhi, 4);
+
+  coolingholeshape->Rmin(0) = kCoolingHoleRmin + kCoolingHoleHight;
+  coolingholeshape->Rmax(0) = coolingholeshape->GetRmin(0);
+  coolingholeshape->Z(0)    = ZFromRminpCone(coneshape,3,90.-kConeTheta,
+					     coolingholeshape->GetRmin(0));
+
+  coolingholeshape->Rmax(1) = coolingholeshape->GetRmax(0);
+  coolingholeshape->Z(1)    = ZFromRmaxpCone(coneshape,7,90.-kConeTheta,
+					     coolingholeshape->GetRmax(1));
+  coolingholeshape->Rmin(1) = RminFromZpCone(coneshape,3,90.-kConeTheta,
+					     coolingholeshape->GetZ(1));
+
+  coolingholeshape->Rmin(2) = kCoolingHoleRmin;
+  coolingholeshape->Z(2)    = ZFromRminpCone(coneshape,3,90.-kConeTheta,
+					     coolingholeshape->GetRmin(2));
+  coolingholeshape->Rmax(2) = RmaxFromZpCone(coneshape,7,90.-kConeTheta,
+					     coolingholeshape->GetZ(2));
+
+  coolingholeshape->Rmin(3) = coolingholeshape->GetRmin(2);
+  coolingholeshape->Rmax(3) = coolingholeshape->GetRmin(3);
+  coolingholeshape->Z(3)    = ZFromRmaxpCone(coneshape,7,90.-kConeTheta,
+					     coolingholeshape->GetRmax(3));
+
+  // This is really weird: a single mountinghole volume gives an overlap
+  // with coneinsert (why doesn't coolinghole ?), so three contiguous
+  // volumes are created: one to be put in coneinsert and two in the cone
+  // carbon fiber envelope
+  holePhi = (kMountingHoleWidth/kMountingHoleRmin)*TMath::RadToDeg();
+
+  TGeoPcon *mountingholeshape = new TGeoPcon(-holePhi/2., holePhi, 4);
+
+  mountingholeshape->Rmin(0) = kMountingHoleRmin + kMountingHoleHight;
+  mountingholeshape->Rmax(0) = mountingholeshape->GetRmin(0);
+  mountingholeshape->Z(0)    = ZFromRminpCone(coneinsertshape,3,90.-kConeTheta,
+					      mountingholeshape->GetRmin(0));
+
+  mountingholeshape->Rmin(1) = kMountingHoleRmin;
+  mountingholeshape->Rmax(1) = mountingholeshape->GetRmax(0);
+  mountingholeshape->Z(1)    = ZFromRminpCone(coneinsertshape,3,90.-kConeTheta,
+					      mountingholeshape->GetRmin(1));
+
+  mountingholeshape->Rmin(2) = mountingholeshape->GetRmin(1);
+  mountingholeshape->Rmax(2) = mountingholeshape->GetRmax(1);
+  mountingholeshape->Z(2)    = ZFromRmaxpCone(coneinsertshape,7,90.-kConeTheta,
+					      mountingholeshape->GetRmax(2));
+
+  mountingholeshape->Rmin(3) = mountingholeshape->GetRmin(2);
+  mountingholeshape->Rmax(3) = mountingholeshape->GetRmin(3);
+  mountingholeshape->Z(3)    = ZFromRmaxpCone(coneinsertshape,7,90.-kConeTheta,
+					      mountingholeshape->GetRmax(3));
+
+  TGeoPcon *mountinghole2shape = new TGeoPcon(-holePhi/2., holePhi, 4);
+
+  mountinghole2shape->Rmin(0) = kMountingHoleRmin + kMountingHoleHight;
+  mountinghole2shape->Rmax(0) = mountingholeshape->GetRmin(0);
+  mountinghole2shape->Z(0)    = ZFromRminpCone(coneshape,3,90.-kConeTheta,
+					       mountinghole2shape->GetRmin(0));
+
+  mountinghole2shape->Rmax(1) = mountinghole2shape->GetRmax(0);
+  mountinghole2shape->Z(1)    = mountingholeshape->Z(0);
+  mountinghole2shape->Rmin(1) = RminFromZpCone(coneshape,3,90.-kConeTheta,
+					       mountinghole2shape->GetZ(1));
+
+  mountinghole2shape->Rmin(2) = kMountingHoleRmin;
+  mountinghole2shape->Z(2)    = ZFromRminpCone(coneshape,3,90.-kConeTheta,
+					       mountinghole2shape->GetRmin(2));
+  mountinghole2shape->Rmax(2) = RminFromZpCone(coneinsertshape,3,90.-kConeTheta,
+					       mountinghole2shape->GetZ(2));
+
+  mountinghole2shape->Rmin(3) = mountinghole2shape->Rmin(2);
+  mountinghole2shape->Rmax(3) = mountinghole2shape->Rmin(3);
+  mountinghole2shape->Z(3)    = mountingholeshape->Z(1);
+
+  TGeoPcon *mountinghole3shape = new TGeoPcon(-holePhi/2., holePhi, 4);
+
+  mountinghole3shape->Rmin(0) = kMountingHoleRmin + kMountingHoleHight;
+  mountinghole3shape->Rmax(0) = mountingholeshape->GetRmin(0);
+  mountinghole3shape->Z(0)    = mountingholeshape->GetZ(2);
+
+  mountinghole3shape->Rmax(1) = mountinghole3shape->GetRmax(0);
+  mountinghole3shape->Z(1)    = ZFromRmaxpCone(coneshape,7,90.-kConeTheta,
+					       mountinghole3shape->GetRmax(1));
+  mountinghole3shape->Rmin(1) = RmaxFromZpCone(coneinsertshape,7,90.-kConeTheta,
+					       mountinghole3shape->GetZ(1));
+
+  mountinghole3shape->Rmin(2) = kMountingHoleRmin;
+  mountinghole3shape->Z(2)    = mountingholeshape->Z(3);
+  mountinghole3shape->Rmax(2) = RmaxFromZpCone(coneshape,7,90.-kConeTheta,
+					       mountinghole3shape->GetZ(2));
+
+  mountinghole3shape->Rmin(3) = mountinghole3shape->Rmin(2);
+  mountinghole3shape->Rmax(3) = mountinghole3shape->Rmin(3);
+  mountinghole3shape->Z(3)    = ZFromRmaxpCone(coneshape,7,90.-kConeTheta,
+					       mountinghole3shape->GetRmax(3));
+
+  // The Cable Hole is even more complicated, a Composite Shape
+  // is unavoidable here (gosh!)
+  TGeoPcon *coneshapecopy = new TGeoPcon("conecopy",0.0, 360.0, 12);
+
+  for (Int_t i=0; i<12; i++) {
+    coneshapecopy->Rmin(i) = coneshape->GetRmin(i);
+    coneshapecopy->Rmax(i) = coneshape->GetRmax(i);
+    coneshapecopy->Z(i)    = coneshape->GetZ(i);
+  }
+
+  holePhi = (kCableHoleWidth/kCableHoleRout)*TMath::RadToDeg();
+  TGeoConeSeg *chCS = new TGeoConeSeg("chCS", 0.5*kConeZLength,
+				      kCableHoleRin, kCableHoleRout,
+				      kCableHoleRin, kCableHoleRout,
+				      -0.5*holePhi, 0.5*holePhi);
+
+  TGeoCompositeShape *cableholeshape = new TGeoCompositeShape(
+					   "SSDCableHoleShape",
+					   "conecopy*chCS");
+
+  if(GetDebug(1)){
+    chCS->InspectShape();
+    cableholeshape->InspectShape();
+  }
+
+  // SSD Cone Wings: Tube and TubeSeg shapes
+  Double_t angleWideWing, angleWideWingThickness;
+  angleWideWing = (kWingWidth/kWingRmax)*TMath::RadToDeg();
+  angleWideWingThickness = (kCFThickness/kWingRmax)*TMath::RadToDeg();
+
+  TGeoTubeSeg *wingshape = new TGeoTubeSeg(kConeROuterMax, kWingRmax,
+					   kWingHalfThick,
+					   0, angleWideWing);
+
+  TGeoTubeSeg *winginsertshape = new TGeoTubeSeg(kConeROuterMax,
+				 kWingRmax-kCFThickness,
+				 kWingHalfThick-kCFThickness,
+				 angleWideWingThickness,
+				 angleWideWing-angleWideWingThickness);
+
+  // SDD support plate, SSD side (Mounting Bracket): a TubeSeg
+  TGeoTubeSeg *bracketshape = new TGeoTubeSeg(kBracketRmin, kBracketRmax,
+                            kBracketHalfLength, -kBracketPhi/2, kBracketPhi/2);
+
+
+  // We have the shapes: now create the real volumes
+
+  TGeoVolume *cfcone = new TGeoVolume("SSDCarbonFiberCone",
+				      coneshape,medSSDcf);
+  cfcone->SetVisibility(kTRUE);
+  cfcone->SetLineColor(4); // Blue
+  cfcone->SetLineWidth(1);
+  cfcone->SetFillColor(cfcone->GetLineColor());
+  cfcone->SetFillStyle(4000); // 0% transparent
+
+  TGeoVolume *cfconeinsert = new TGeoVolume("SSDCarbonFiberConeInsert",
+					    coneinsertshape,medSSDste);
+  cfconeinsert->SetVisibility(kTRUE);
+  cfconeinsert->SetLineColor(2); // Red
+  cfconeinsert->SetLineWidth(1);
+  cfconeinsert->SetFillColor(cfconeinsert->GetLineColor());
+  cfconeinsert->SetFillStyle(4050); // 50% transparent
+
+  TGeoVolume *cfconefoam1 = new TGeoVolume("SSDCarbonFiberConeFoam1",
+					    conefoam1shape,medSSDroh);
+  cfconefoam1->SetVisibility(kTRUE);
+  cfconefoam1->SetLineColor(3); // Green
+  cfconefoam1->SetLineWidth(1);
+  cfconefoam1->SetFillColor(cfconefoam1->GetLineColor());
+  cfconefoam1->SetFillStyle(4050); // 50% transparent
+
+  TGeoVolume *cfconefoam2 = new TGeoVolume("SSDCarbonFiberConeFoam2",
+					    conefoam2shape,medSSDroh);
+  cfconefoam2->SetVisibility(kTRUE);
+  cfconefoam2->SetLineColor(3); // Green
+  cfconefoam2->SetLineWidth(1);
+  cfconefoam2->SetFillColor(cfconefoam2->GetLineColor());
+  cfconefoam2->SetFillStyle(4050); // 50% transparent
+
+  TGeoVolume *coolinghole = new TGeoVolume("SSDCoolingHole",
+					   coolingholeshape,medSSDair);
+  coolinghole->SetVisibility(kTRUE);
+  coolinghole->SetLineColor(5); // Yellow
+  coolinghole->SetLineWidth(1);
+  coolinghole->SetFillColor(coolinghole->GetLineColor());
+  coolinghole->SetFillStyle(4090); // 90% transparent
+
+  TGeoVolume *mountinghole = new TGeoVolume("SSDMountingHole",
+					    mountingholeshape,medSSDair);
+  mountinghole->SetVisibility(kTRUE);
+  mountinghole->SetLineColor(5); // Yellow
+  mountinghole->SetLineWidth(1);
+  mountinghole->SetFillColor(mountinghole->GetLineColor());
+  mountinghole->SetFillStyle(4090); // 90% transparent
+
+  TGeoVolume *mountinghole2 = new TGeoVolume("SSDMountingHole2",
+					     mountinghole2shape,medSSDair);
+  mountinghole2->SetVisibility(kTRUE);
+  mountinghole2->SetLineColor(5); // Yellow
+  mountinghole2->SetLineWidth(1);
+  mountinghole2->SetFillColor(mountinghole2->GetLineColor());
+  mountinghole2->SetFillStyle(4090); // 90% transparent
+
+  TGeoVolume *mountinghole3 = new TGeoVolume("SSDMountingHole3",
+					     mountinghole3shape,medSSDair);
+  mountinghole3->SetVisibility(kTRUE);
+  mountinghole3->SetLineColor(5); // Yellow
+  mountinghole3->SetLineWidth(1);
+  mountinghole3->SetFillColor(mountinghole3->GetLineColor());
+  mountinghole3->SetFillStyle(4090); // 90% transparent
+
+  TGeoVolume *wing = new TGeoVolume("SSDWing",wingshape,medSSDcf);
+  wing->SetVisibility(kTRUE);
+  wing->SetLineColor(4); // Blue
+  wing->SetLineWidth(1);
+  wing->SetFillColor(wing->GetLineColor());
+  wing->SetFillStyle(4000); // 0% transparent
+
+  TGeoVolume *cablehole = new TGeoVolume("SSDCableHole",
+					 cableholeshape,medSSDair);
+  cablehole->SetVisibility(kTRUE);
+  cablehole->SetLineColor(5); // Yellow
+  cablehole->SetLineWidth(1);
+  cablehole->SetFillColor(cablehole->GetLineColor());
+  cablehole->SetFillStyle(4090); // 90% transparent
+
+  TGeoVolume *winginsert = new TGeoVolume("SSDWingInsert",
+					  winginsertshape,medSSDste);
+  winginsert->SetVisibility(kTRUE);
+  winginsert->SetLineColor(2); // Red
+  winginsert->SetLineWidth(1);
+  winginsert->SetFillColor(winginsert->GetLineColor());
+  winginsert->SetFillStyle(4050); // 50% transparent
+
+  TGeoVolume *bracket = new TGeoVolume("SSDMountingBracket",
+				       bracketshape,medSSDal);
+  bracket->SetVisibility(kTRUE);
+  bracket->SetLineColor(6); // Purple
+  bracket->SetLineWidth(1);
+  bracket->SetFillColor(bracket->GetLineColor());
+  bracket->SetFillStyle(4000); // 0% transparent
+
+  // Mount up a cone
+  for (Int_t i=0; i<(Int_t)(360./kMountingHolePhi); i++) {
+    Double_t phiH = i*kMountingHolePhi + 0.5*kMountingHolePhi;
+    cfconefoam2->AddNode(mountinghole,i+1, new TGeoRotation("", phiH, 0, 0));
+  }
+
+  cfconeinsert->AddNode(cfconefoam1,1,0);
+  cfconeinsert->AddNode(cfconefoam2,1,0);
+
+  cfcone->AddNode(cfconeinsert,1,0);
+
+  for (Int_t i=0; i<(Int_t)(360./kCoolingHolePhi); i++) {
+    Double_t phiH = i*kCoolingHolePhi + 0.5*kCoolingHolePhi;
+    cfcone->AddNode(coolinghole,i+1, new TGeoRotation("", phiH, 0, 0));
+    cfcone->AddNodeOverlap(cablehole,i+1, new TGeoRotation("", phiH, 0, 0));
+  }
+
+  for (Int_t i=0; i<(Int_t)(360./kMountingHolePhi); i++) {
+    Double_t phiH = i*kMountingHolePhi + 0.5*kMountingHolePhi;
+    cfcone->AddNode(mountinghole2,i+1, new TGeoRotation("", phiH, 0, 0));
+    cfcone->AddNode(mountinghole3,i+1, new TGeoRotation("", phiH, 0, 0));
+  }
+
+  wing->AddNode(winginsert,1,0);
+
+  // Add all volumes in the Cone assembly
+  vC->AddNode(cfcone,1,new TGeoTranslation(0,0,-kConeZPosition));
+
+  for (Int_t i=0; i<4; i++) {
+    Double_t thetaW = kThetaWing + 90.*i;
+    vC->AddNode(wing, i+1, new TGeoCombiTrans(0, 0, -kConeZPosition, 
+			   new TGeoRotation("",thetaW,180,0)));
+  }
+
+  Double_t zBracket = kConeZPosition - coneshape->GetZ(9) +
+                      bracketshape->GetDz();
+  for (Int_t i=0; i<3; i++) {
+    Double_t thetaB = 60 + 120.*i;
+    vC->AddNode(bracket, i+1, new TGeoCombiTrans(0, 0, -zBracket,
+			      new TGeoRotation("",thetaB,0,0)));
+  }
+
+  // Finally put everything in the mother volume
+  moth->AddNode(cfcylinder,1,0);
+
+  moth->AddNode(vC, 1, 0 );
+  moth->AddNode(vC, 2, new TGeoRotation("",180, 180, 0) );
+
+  // Some debugging if requested
+  if(GetDebug(1)){
+    vC->PrintNodes();
+    vC->InspectShape();
+  }
+
+  return;
 }
 
 //______________________________________________________________________
