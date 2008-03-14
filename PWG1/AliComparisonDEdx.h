@@ -1,0 +1,85 @@
+#ifndef ALICOMPARISONDEdx_H
+#define ALICOMPARISONDEdx_H
+
+//------------------------------------------------------------------------------
+// Class to keep information from comparison of 
+// reconstructed and MC particle tracks (TPC dE/dx).   
+// 
+// Author: J.Otwinowski 04/02/2008 
+//------------------------------------------------------------------------------
+
+class TFile;
+class AliMCInfo;
+class AliESDRecInfo;
+class AliESDEvent; 
+class AliESD;
+class AliESDfriend;
+class AliRecInfoCuts;
+class AliMCInfoCuts;
+class TH1I;
+class TH3F;
+class TH3;
+class TProfile;
+class TProfile2D;
+class TGraph2D;
+class TGraph; 
+
+#include "TNamed.h"
+
+class AliComparisonDEdx : public TNamed {
+public :
+  AliComparisonDEdx(); 
+  ~AliComparisonDEdx();
+  void      InitHisto();
+  void      InitCuts();
+  void      Exec(AliMCInfo* infoMC, AliESDRecInfo *infoRC);
+  void      Process(AliMCInfo* infoMC, AliESDRecInfo *infoRC);
+
+  // Selection cuts
+  void SetAliRecInfoCuts(AliRecInfoCuts* cuts=0) {fCutsRC = cuts;}
+  void SetAliMCInfoCuts(AliMCInfoCuts* cuts=0)   {fCutsMC = cuts;} 
+
+  void SetMCPtMin(const Float_t cuts=0) {fMCPtMin = cuts;} 
+  void SetMCAbsTanThetaMax(const Float_t cuts=1e99) {fMCAbsTanThetaMax = cuts;} 
+  void SetMCPdgCode(const Int_t cuts=0) {fMCPdgCode = cuts;} 
+
+  AliRecInfoCuts*  GetAliRecInfoCuts() const {return fCutsRC;}      
+  AliMCInfoCuts*   GetAliMCInfoCuts()  const {return fCutsMC;}     
+  Float_t GetMCPtMin() const {return fMCPtMin;}
+  Float_t GetMCAbsTanThetaMax() const {return fMCAbsTanThetaMax;}
+  Int_t GetMCPdgCode() const {return fMCPdgCode;} 
+
+  static TH1F*     MakeResol(TH2F * his, Int_t integ, Bool_t type); 
+
+  // Merge output objects (needed by PROOF) 
+  virtual Long64_t Merge(TCollection* list);
+
+  // Analyse output histograms
+  void Analyse();
+
+private:
+
+  // TPC dE/dx 
+  TH2F* fTPCSignalNormTan;    //-> TPC signal normalized to the calculated MC signal 
+  TH2F* fTPCSignalNormSPhi;   //-> TPC signal normalized to the calculated MC signal
+  TH2F* fTPCSignalNormTPhi;   //-> TPC signal normalized to the calculated MC signal
+  //
+  TH3F* fTPCSignalNormTanSPhi;   //-> TPC signal normalized to the calculated MC signal
+  TH3F* fTPCSignalNormTanTPhi;   //-> TPC signal normalized to the calculated MC signal
+  TH3F* fTPCSignalNormTanSPt;    //-> TPC signal normalized to the calculated MC signal
+  
+  // Selection cuts
+  AliRecInfoCuts*  fCutsRC; // selection cuts for reconstructed tracks
+  AliMCInfoCuts*   fCutsMC; // selection cuts for MC tracks
+
+  Float_t fMCPtMin;               // min. MC pt cut
+  Float_t fMCAbsTanThetaMax;      // max. MC abs[tan(theta)] cut
+  Int_t fMCPdgCode;               // selected particle with Pdg code
+
+  AliComparisonDEdx(const AliComparisonDEdx&); // not implemented
+  AliComparisonDEdx& operator=(const AliComparisonDEdx&); // not implemented
+
+  ClassDef(AliComparisonDEdx,1);
+};
+
+#endif

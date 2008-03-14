@@ -1,0 +1,358 @@
+//------------------------------------------------------------------------------
+// Implementation of AliComparisonRes class. It keeps information from 
+// comparison of reconstructed and MC particle tracks. In addtion, 
+// it keeps selection cuts used during comparison. The comparison 
+// information is stored in the ROOT histograms. Analysis of these 
+// histograms can be done by using Analyse() class function. The result of 
+// the analysis (histograms) are stored in the output picture_res.root file.
+//  
+// Author: J.Otwinowski 04/02/2008 
+//------------------------------------------------------------------------------
+
+/*
+  //after running analysis, read the file, and get component
+  gSystem->Load("libPWG1.so");
+  TFile f("Output.root");
+  AliComparisonRes * comp = (AliComparisonRes*)f.Get("AliComparisonRes");
+
+  // analyse comparison data (output stored in pictures_res.root)
+  comp->Analyse();
+  
+  // paramtetrisation of the TPC track length (for information only) 
+  TF1 fl("fl","((min(250./(abs(x+0.000001)),250)-90))",0,2);  // TPC track length function
+  TF1 fl2("fl2","[0]/((min(250./(abs(x+0.000001)),250)-90))^[1]",0,2);
+  fl2.SetParameter(1,1);
+  fl2.SetParameter(0,1);
+*/
+
+#include <iostream>
+
+#include "TFile.h"
+#include "TCint.h"
+#include "TH3F.h"
+#include "TH2F.h"
+#include "TF1.h"
+#include "TProfile.h"
+#include "TProfile2D.h"
+#include "TGraph2D.h"
+#include "TCanvas.h"
+#include "TGraph.h"
+
+#include "AliESDEvent.h"   
+#include "AliESD.h"
+#include "AliESDfriend.h"
+#include "AliESDfriendTrack.h"
+#include "AliRecInfoCuts.h" 
+#include "AliMCInfoCuts.h" 
+#include "AliLog.h" 
+
+#include "AliMathBase.h"
+#include "AliTreeDraw.h" 
+
+#include "AliMCInfo.h" 
+#include "AliESDRecInfo.h" 
+#include "AliComparisonRes.h" 
+
+using namespace std;
+
+ClassImp(AliComparisonRes)
+
+//_____________________________________________________________________________
+AliComparisonRes::AliComparisonRes():
+  TNamed("AliComparisonRes","AliComparisonRes"),
+
+  // Resolution 
+  fPtResolLPT(0),        // pt resolution - low pt
+  fPtResolHPT(0),        // pt resolution - high pt 
+  fPtPullLPT(0),         // pt resolution - low pt
+  fPtPullHPT(0),         // pt resolution - high pt 
+  //
+  // Resolution constrained param
+  //
+  fCPhiResolTan(0),  // angular resolution -  constrained
+  fCTanResolTan(0),  // angular resolution -  constrained
+  fCPtResolTan(0),   // pt resolution      -  constrained
+  fCPhiPullTan(0),   // angular resolution -  constrained
+  fCTanPullTan(0),   // angular resolution -  constrained
+  fCPtPullTan(0),    // pt resolution      -  constrained
+ 
+  // Cuts 
+  fCutsRC(0),  
+  fCutsMC(0)  
+{
+  InitHisto();
+  InitCuts();
+}
+
+//_____________________________________________________________________________
+AliComparisonRes::~AliComparisonRes(){
+  
+  // Resolution histograms
+  if(fPtResolLPT) delete  fPtResolLPT; fPtResolLPT=0;     
+  if(fPtResolHPT) delete  fPtResolHPT; fPtResolHPT=0;    
+  if(fPtPullLPT)  delete  fPtPullLPT;  fPtPullLPT=0;    
+  if(fPtPullHPT)  delete  fPtPullHPT;  fPtPullHPT=0;   
+
+  // Resolution histograms (constrained param)
+  if(fCPhiResolTan) delete fCPhiResolTan; fCPhiResolTan=0;
+  if(fCTanResolTan) delete fCTanResolTan; fCTanResolTan=0;
+  if(fCPtResolTan)  delete fCPtResolTan;  fCPtResolTan=0; 
+  if(fCPhiPullTan)  delete fCPhiPullTan;  fCPhiPullTan=0;
+  if(fCTanPullTan)  delete fCTanPullTan;  fCTanPullTan=0;
+  if(fCPtPullTan)   delete fCPtPullTan;   fCPtPullTan=0;
+}
+
+//_____________________________________________________________________________
+void AliComparisonRes::InitHisto(){
+
+  // Init histograms
+  fCPhiResolTan = new TH2F("CPhiResolTan","CPhiResolTan",50, -2,2,200,-0.025,0.025);   
+  fCPhiResolTan->SetXTitle("tan(#theta)");
+  fCPhiResolTan->SetYTitle("#Delta#phi");
+
+  fCTanResolTan = new TH2F("CTanResolTan","CTanResolTan",50, -2,2,200,-0.025,0.025);
+  fCTanResolTan->SetXTitle("tan(#theta)");
+  fCTanResolTan->SetYTitle("#Delta#theta");
+
+  fCPtResolTan=new TH2F("CPtResol","CPtResol",50, -2,2,200,-0.2,0.2);    
+  fCPtResolTan->SetXTitle("Tan(#theta)");
+  fCPtResolTan->SetYTitle("#Deltap_{t}/p_{t}");
+
+  fCPhiPullTan = new TH2F("CPhiPullTan","CPhiPullTan",50, -2,2,200,-5,5);   
+  fCPhiPullTan->SetXTitle("Tan(#theta)");
+  fCPhiPullTan->SetYTitle("#Delta#phi/#Sigma");
+
+  fCTanPullTan = new TH2F("CTanPullTan","CTanPullTan",50, -2,2,200,-5,5);
+  fCTanPullTan->SetXTitle("Tan(#theta)");
+  fCTanPullTan->SetYTitle("#Delta#theta/#Sigma");
+
+  fCPtPullTan=new TH2F("CPtPull","CPtPull",50, -2,2,200,-5,5);    
+  fCPtPullTan->SetXTitle("Tan(#theta)");
+  fCPtPullTan->SetYTitle("(1/mcp_{t}-1/p_{t})/#Sigma");
+
+  fPtResolLPT = new TH2F("Pt_resol_lpt","pt resol",10, 0.1,3,200,-0.2,0.2);
+  fPtResolLPT->SetXTitle("p_{t}");
+  fPtResolLPT->SetYTitle("#Deltap_{t}/p_{t}");
+
+  fPtResolHPT = new TH2F("Pt_resol_hpt","pt resol",10, 2,100,200,-0.3,0.3);  
+  fPtResolHPT->SetXTitle("p_{t}");
+  fPtResolHPT->SetYTitle("#Deltap_{t}/p_{t}");
+
+  fPtPullLPT = new TH2F("Pt_pull_lpt","pt pool",10, 0.1,3,200,-6,6);
+  fPtPullLPT->SetXTitle("p_{t}");
+  fPtPullLPT->SetYTitle("#Deltap_{t}/#Sigma");
+
+  fPtPullHPT = new TH2F("Pt_pull_hpt","pt pool",10, 2,100,200,-6,6);  
+  fPtPullHPT->SetXTitle("p_{t}");
+  fPtPullHPT->SetYTitle("#Deltap_{t}/#Sigma");
+}
+
+//_____________________________________________________________________________
+void AliComparisonRes::InitCuts()
+{
+
+ /*
+    fCutsRC = new AliRecInfoCuts();
+  if(fCutsRC) {
+    fCutsRC->SetPtRange(0.15,200.0);
+    fCutsRC->SetMaxAbsTanTheta(1.0);
+    fCutsRC->SetMinNClustersTPC(10);
+    fCutsRC->SetMinTPCsignalN(50);
+  } else {
+    AliDebug(AliLog::kError, "ERROR: Cannot create AliRecInfoCuts object");
+    return;
+  }
+
+  fCutsMC = new AliMCInfoCuts();
+  if(fCutsMC) {
+    fCutsMC->SetMinRowsWithDigits(50);
+    fCutsMC->SetMaxR(0.1);
+    fCutsMC->SetMaxVz(10.);
+    fCutsMC->SetRangeTPCSignal(0.5,1.4);
+  } else {
+  AliDebug(AliLog::kError, "ERROR: Cannot AliMCInfoCuts object");
+  return;
+  }
+ */
+  // Init cuts 
+  if(!fCutsMC) 
+    AliDebug(AliLog::kError, "ERROR: Cannot find AliMCInfoCuts object");
+  if(!fCutsRC) 
+    AliDebug(AliLog::kError, "ERROR: Cannot find AliRecInfoCuts object");
+}
+
+//_____________________________________________________________________________
+void AliComparisonRes::Process(AliMCInfo* infoMC, AliESDRecInfo *infoRC)
+{
+  // Fill resolution comparison information 
+
+  Float_t mcpt = infoMC->GetParticle().Pt();
+  Bool_t isPrim = infoMC->GetParticle().R() < fCutsMC->GetMaxR() && 
+                  TMath::Abs(infoMC->GetParticle().Vz()) < fCutsMC->GetMaxVz() ;
+
+  // Check selection cuts
+  if (fCutsMC->IsPdgParticle(TMath::Abs(infoMC->GetParticle().GetPdgCode())) == kFALSE) return; 
+  if (!isPrim) return;
+  if (infoRC->GetStatus(1)==0) return;
+  if (!infoRC->GetESDtrack()) return;  
+  if (infoRC->GetESDtrack()->GetTPCNcls()<fCutsRC->GetMinNClustersTPC()) return;
+  
+  Float_t deltaPt= (mcpt-infoRC->GetESDtrack()->Pt())/mcpt;  
+  Float_t pullPt= (1/mcpt-infoRC->GetESDtrack()->OneOverPt())/TMath::Sqrt(infoRC->GetESDtrack()->GetSigma1Pt2());  
+
+  // Fill histograms
+  fPtResolLPT->Fill(mcpt,deltaPt);
+  fPtResolHPT->Fill(mcpt,deltaPt);
+  fPtPullLPT->Fill(mcpt,pullPt);
+  fPtPullHPT->Fill(mcpt,pullPt);  
+}
+
+Long64_t AliComparisonRes::Merge(TCollection* list) 
+{
+  // Merge list of objects (needed by PROOF)
+
+  if (!list)
+  return 0;
+
+  if (list->IsEmpty())
+  return 1;
+
+  TIterator* iter = list->MakeIterator();
+  TObject* obj = 0;
+
+  // collection of generated histograms
+  Int_t count=0;
+  while((obj = iter->Next()) != 0) 
+  {
+  AliComparisonRes* entry = dynamic_cast<AliComparisonRes*>(obj);
+  if (entry == 0) { 
+    Error("Add","Attempt to add object of class: %s to a %s",
+	obj->ClassName(),this->ClassName());
+    return -1;
+  }
+
+  fPtResolLPT->Add(entry->fPtResolLPT);
+  fPtResolHPT->Add(entry->fPtResolHPT);
+  fPtPullLPT->Add(entry->fPtPullLPT);
+  fPtPullHPT->Add(entry->fPtPullHPT);
+
+  // Resolution histograms (constrained param)
+  fCPhiResolTan->Add(entry->fCPhiResolTan);
+  fCTanResolTan->Add(entry->fCTanResolTan);
+  fCPtResolTan->Add(entry->fCPtResolTan);
+  fCPhiPullTan->Add(entry->fCPhiPullTan);
+  fCTanPullTan->Add(entry->fCTanPullTan);
+  fCPtPullTan->Add(entry->fCPtPullTan);
+
+  count++;
+  }
+
+return count;
+}
+
+
+
+
+
+//_____________________________________________________________________________
+void AliComparisonRes::ProcessConstrained(AliMCInfo* infoMC, AliESDRecInfo *infoRC)
+{
+  // Fill resolution comparison information (constarained parameters) 
+  
+  Float_t mcpt = infoMC->GetParticle().Pt();
+  Float_t tantheta = TMath::Tan(infoMC->GetParticle().Theta()-TMath::Pi()*0.5);
+  Bool_t isPrim = infoMC->GetParticle().R()<fCutsMC->GetMaxR() && TMath::Abs(infoMC->GetParticle().Vz())<fCutsMC->GetMaxVz();
+  
+  // Check selection cuts
+  if (fCutsMC->IsPdgParticle(TMath::Abs(infoMC->GetParticle().GetPdgCode())) == kFALSE) return; 
+  if (!isPrim) return;
+  if (infoRC->GetStatus(1)!=3) return;
+  if (!infoRC->GetESDtrack()) return;  
+  if (infoRC->GetESDtrack()->GetTPCNcls()<fCutsRC->GetMinNClustersTPC()) return;
+  if (!infoRC->GetESDtrack()->GetConstrainedParam()) return;
+  
+  // constrained parameters resolution
+  const AliExternalTrackParam * cparam = infoRC->GetESDtrack()->GetConstrainedParam();
+  Float_t deltaCPt= (mcpt-cparam->Pt())/mcpt;  
+  Float_t pullCPt= (1/mcpt-cparam->OneOverPt())/
+    TMath::Sqrt(cparam->GetSigma1Pt2());          
+  Float_t deltaPhi = TMath::ATan2(cparam->Py(),cparam->Px())-
+    TMath::ATan2(infoMC->GetParticle().Py(),infoMC->GetParticle().Px());
+  Float_t pullPhi = deltaPhi/TMath::Sqrt(cparam->GetSigmaSnp2()); 
+
+  Float_t deltaTan = TMath::ATan2(cparam->Pz(),cparam->Pt())-TMath::ATan2(infoMC->GetParticle().Pz(),infoMC->GetParticle().Pt());
+  Float_t pullTan = deltaPhi/TMath::Sqrt(cparam->GetSigmaSnp2()); 
+
+  // Fill histograms
+  fCPtResolTan->Fill(tantheta,deltaCPt);
+  fCPtPullTan->Fill(tantheta,pullCPt);
+  fCPhiResolTan->Fill(tantheta,deltaPhi);
+  fCPhiPullTan->Fill(tantheta,pullPhi);
+  fCTanResolTan->Fill(tantheta,deltaTan);
+  fCTanPullTan->Fill(tantheta,pullTan);
+}
+ 
+//_____________________________________________________________________________
+void AliComparisonRes::Exec(AliMCInfo* infoMC, AliESDRecInfo *infoRC){
+  
+  // Process comparison information 
+  Process(infoMC,infoRC);
+  ProcessConstrained(infoMC,infoRC);
+
+}
+
+//_____________________________________________________________________________
+TH1F* AliComparisonRes::MakeResol(TH2F * his, Int_t integ, Bool_t type){
+  // Create resolution histograms
+ 
+  TH1F *hisr, *hism;
+  if (!gPad) new TCanvas;
+  hisr = AliTreeDraw::CreateResHistoI(his,&hism,integ);
+  if (type) return hism;
+  else 
+    return hisr;
+}
+
+//_____________________________________________________________________________
+void AliComparisonRes::Analyse(){
+  // Analyse comparison information and store output histograms 
+  // in the "pictures_res.root" file 
+  
+  AliComparisonRes * comp=this;
+  TH1F *hiss=0;
+
+  TFile *fp = new TFile("pictures_res.root","recreate");
+  fp->cd();
+
+  TCanvas * c = new TCanvas("Phi resol Tan","Phi resol Tan");
+  c->cd();
+  //
+  hiss = comp->MakeResol(comp->fCPtResolTan,1,0);
+  hiss->SetXTitle("Tan(#theta)");
+  hiss->SetYTitle("#sigmap_{t}/p_{t}");
+  hiss->Draw(); 
+  hiss->Write("CptResolTan");
+  //
+  hiss = comp->MakeResol(comp->fCPhiResolTan,1,0);
+  hiss->SetXTitle("Tan(#theta)");
+  hiss->SetYTitle("#sigma#phi (rad)");
+  hiss->Draw();
+  hiss->Write("PhiResolTan");
+  //
+  hiss = comp->MakeResol(comp->fCTanResolTan,1,0);
+  hiss->SetXTitle("Tan(#theta)");
+  hiss->SetYTitle("#sigma#theta (rad)");
+  hiss->Draw();
+  hiss->Write("ThetaResolTan");
+  //
+  hiss = comp->MakeResol(comp->fCPtPullTan,1,0);
+  hiss->SetXTitle("Tan(#theta)");
+  hiss->SetYTitle("1/mcp_{t}-1/p_{t}/#Sigma(1/p_{t})");
+  hiss->Draw();
+  hiss->Write("CptPullTan");
+
+  fp->Close();
+}
+
+
+
