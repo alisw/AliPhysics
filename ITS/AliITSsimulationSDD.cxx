@@ -750,10 +750,7 @@ void AliITSsimulationSDD::ChargeToSignal(Int_t mod,Bool_t bAddNoise, Bool_t bAdd
     noise = res->GetNoise(i);
     gain = res->GetChannelGain(i);
     if(res->IsBad()) gain=0.;
-    if( res->IsChipBad(res->GetChip(i)) ){ 
-      printf("Chip bad mod %d  chip %d anode %d\n",mod,res->GetChip(i),i);
-      gain=0.;
-    }
+    if( res->IsChipBad(res->GetChip(i)) )gain=0.;
     for(k=0; k<fScaleSize*fMaxNofSamples; k++) {
       fInZR[k]  = fHitMap2->GetSignal(i,k);
       if(bAddGain) fInZR[k]*=gain;
