@@ -88,6 +88,7 @@ public:
 	void           UnloadClusters();
   
   static Int_t   Freq(Int_t n, const Int_t *inlist, Int_t *outlist, Bool_t down); // to be removed 
+  static void    FitLeastSquare(Int_t nPoints, Float_t *x, Float_t *y, Float_t *errors, Float_t *fitparams);
 
 protected:
   Bool_t         AdjustSector(AliTRDtrackV1 *track); 
@@ -108,7 +109,6 @@ private:
 	Double_t       	CookLikelihood(AliTRDseedV1 *cseed, Int_t planes[4], Double_t *chi2);
 	Double_t       	CalculateTrackLikelihood(AliTRDseedV1 *tracklets, Double_t *chi2);
 	Int_t          	ImproveSeedQuality(AliTRDtrackingChamber **stack, AliTRDseedV1 *tracklet);
-	static void 	FitLeastSquare(Int_t nPoints, Float_t *x, Float_t *y, Float_t *errors, Float_t *fitparams);
 	static Float_t	CalculateReferenceX(AliTRDseedV1 *tracklets);
 	
 	Float_t     GetChi2Y(AliTRDseedV1 *tracklets) const;

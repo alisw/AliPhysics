@@ -48,35 +48,38 @@ class AliTRDseedV1 : public AliTRDseed
                                  , AliTRDcluster *c=0x0);
 	Bool_t	AttachClusters(AliTRDtrackingChamber *chamber, Bool_t kZcorr = kFALSE);
 	void    CookdEdx(Int_t nslices);
+	void    Draw(Option_t* o = "");
 	Bool_t  Fit();
 
-	       void      Init(AliTRDtrack *track);
+	void      Init(AliTRDtrack *track);
 	inline void      Init(const AliRieman *fit);
-	
+	Bool_t    IsOwner() const          { return TestBit(1);}
+	Bool_t    IsRowCross() const       { return TestBit(2);}
+
 	inline Float_t   GetChi2Z(const Float_t z = 999.) const;
 	inline Float_t   GetChi2Y(const Float_t y = 999.) const;
-	       void      GetCovAt(Double_t x, Double_t *cov) const;
-	       Float_t*  GetdEdx() {return &fdEdx[0];}
-	       Float_t   GetdQdl(Int_t ic) const;
-	       Double_t  GetMomentum() const {return fMom;}
-	       Int_t     GetN() const {return fN2;}
-	       Float_t   GetQuality(Bool_t kZcorr) const;
-	       Int_t     GetPlane() const                       { return fPlane;    }
-	       Double_t* GetProbability();
-	       Double_t  GetSnp() const {return fSnp;}
-	       Double_t  GetTgl() const {return fTgl;}
-	       Double_t  GetYat(Double_t x) const {return fYfitR[0] + fYfitR[1] * (x - fX0);}
-	       Double_t  GetZat(Double_t x) const {return fZfitR[0] + fZfitR[1] * (x - fX0);}
-				 
-	       Bool_t    IsOwner() const {return fOwner;}
-         void      Print(Option_t * /*o*/) const          { }
-	       void      Print();
-	       
-	       void      SetMomentum(Double_t mom) {fMom = mom;}
-	       void      SetOwner(Bool_t own = kTRUE);
-	       void      SetPlane(Int_t p)                      { fPlane     = p;   }
-	       void      SetSnp(Double_t snp) {fSnp = snp;}
-	       void      SetTgl(Double_t tgl) {fTgl = tgl;}
+	void      GetCovAt(Double_t x, Double_t *cov) const;
+	Double_t* GetCrossXYZ() { return &fCross[0];}
+	Double_t  GetCrossSz2() const { return fCross[3];}
+	Float_t*  GetdEdx() {return &fdEdx[0];}
+	Float_t   GetdQdl(Int_t ic) const;
+	Double_t  GetMomentum() const {return fMom;}
+	Int_t     GetN() const {return fN2;}
+	Float_t   GetQuality(Bool_t kZcorr) const;
+	Int_t     GetPlane() const         { return fPlane;    }
+	Double_t* GetProbability();
+	Double_t  GetSnp() const           { return fSnp;}
+	Double_t  GetTgl() const           { return fTgl;}
+	Double_t  GetYat(Double_t x) const { return fYfitR[0] + fYfitR[1] * (x - fX0);}
+	Double_t  GetZat(Double_t x) const { return fZfitR[0] + fZfitR[1] * (x - fX0);}
+	
+	void      Print(Option_t *o = "") const;
+	
+	void      SetMomentum(Double_t mom) {fMom = mom;}
+	void      SetOwner(Bool_t own = kTRUE);
+	void      SetPlane(Int_t p)                      { fPlane     = p;   }
+	void      SetSnp(Double_t snp) {fSnp = snp;}
+	void      SetTgl(Double_t tgl) {fTgl = tgl;}
 
  protected:
 
@@ -85,12 +88,12 @@ class AliTRDseedV1 : public AliTRDseed
  private:
 
 	Int_t            fPlane;                  //  TRD plane
-	Bool_t           fOwner;                  //  Toggle ownership of clusters
 	Float_t          fMom;                    //  Momentum estimate for tracklet [GeV/c]
 	Float_t          fSnp;                    // sin of track with respect to x direction in XY plane	
 	Float_t          fTgl;                    // tg of track with respect to x direction in XZ plane 	
 	Float_t          fdX;                     // length of time bin
 	Float_t          fdEdx[knSlices];         //  dE/dx measurements for tracklet
+	Double_t         fCross[4];            // spatial parameters of the pad row crossing
 	Double_t         fProb[AliPID::kSPECIES]; //  PID probabilities
 
 	ClassDef(AliTRDseedV1, 1)                 //  New TRD seed 
@@ -123,4 +126,5 @@ inline void AliTRDseedV1::Init(const AliRieman *rieman)
 }
 
 #endif
+
 

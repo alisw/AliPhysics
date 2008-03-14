@@ -51,7 +51,6 @@ ClassImp(AliTRDseedV1)
 AliTRDseedV1::AliTRDseedV1(Int_t plane) 
   :AliTRDseed()
   ,fPlane(plane)
-  ,fOwner(kFALSE)
   ,fMom(0.)
   ,fSnp(0.)
   ,fTgl(0.)
@@ -68,7 +67,6 @@ AliTRDseedV1::AliTRDseedV1(Int_t plane)
 AliTRDseedV1::AliTRDseedV1(const AliTRDseedV1 &ref)
   :AliTRDseed((AliTRDseed&)ref)
   ,fPlane(ref.fPlane)
-  ,fOwner(kFALSE)
   ,fMom(ref.fMom)
   ,fSnp(ref.fSnp)
   ,fTgl(ref.fTgl)
@@ -79,7 +77,6 @@ AliTRDseedV1::AliTRDseedV1(const AliTRDseedV1 &ref)
   //
 
 	//AliInfo("");
-	if(ref.fOwner) SetOwner();
 	for(int islice=0; islice < knSlices; islice++) fdEdx[islice] = ref.fdEdx[islice];
 	for(int ispec=0; ispec<AliPID::kSPECIES; ispec++) fProb[ispec] = ref.fProb[ispec];
 }
@@ -109,7 +106,7 @@ AliTRDseedV1::~AliTRDseedV1()
 
 	//AliInfo(Form("fOwner[%s]", fOwner?"YES":"NO"));
 
-	if(fOwner) 
+	if(IsOwner()) 
 		for(int itb=0; itb<knTimebins; itb++){
 			if(!fClusters[itb]) continue; 
 			//AliInfo(Form("deleting c %p @ %d", fClusters[itb], itb));
@@ -321,16 +318,16 @@ void AliTRDseedV1::SetOwner(Bool_t own)
 			if(!fClusters[ic]) continue;
 			fClusters[ic] = new AliTRDcluster(*fClusters[ic]);
 		}
-		fOwner = kTRUE;
+		SetBit(1);
 	} else {
-		if(fOwner){
+		if(IsOwner()){
 			for(int ic=0; ic<knTimebins; ic++){
 				if(!fClusters[ic]) continue;
 				delete fClusters[ic];
 				//fClusters[ic] = tracker->GetClusters(index) TODO
 			}
 		}
-		fOwner = kFALSE;
+		SetBit(1, kFALSE);
 	}
 }
 
@@ -636,109 +633,121 @@ Bool_t AliTRDseedV1::Fit()
   // 3. Do a Least Square Fit to the data
   //
 
-	//Float_t  sigmaexp  = 0.05 + TMath::Abs(fYref[1] * 0.25); // Expected r.m.s in y direction
-  Float_t  ycrosscor = fPadLength * fTilt * 0.5; // Y correction for crossing
-  Float_t  anglecor = fTilt * fZref[1];  // Correction to the angle
+	const Int_t kClmin = 8;
+	const Int_t kNtb = AliTRDtrackerV1::GetNTimeBins();
 
-	// calculate residuals
-	Float_t yres[knTimebins]; // y (r-phi) residuals
-	Int_t zint[knTimebins],   // Histograming of the z coordinate
-	      zout[2*knTimebins];//
+	// convertion factor from square to gauss distribution for sigma
+	Double_t convert = 1./TMath::Sqrt(12.);
+
+	// book cluster information
+	Float_t xc[knTimebins+1], yc[knTimebins], zc[knTimebins+1], sy[knTimebins], sz[knTimebins+1];
+	Int_t zRow[knTimebins];
+	AliTRDcluster *c = 0x0;
+	Int_t nc = 0;
+	for (Int_t ic=0; ic<kNtb; ic++) {
+		zRow[ic] = -1;
+		xc[ic]  = -1.;
+		yc[ic]  = 999.;
+		zc[ic]  = 999.;
+		sy[ic]  = 0.;
+		sz[ic]  = 0.;
+		if(!(c = fClusters[ic])) continue;
+		if(!c->IsInChamber()) continue;
+		Float_t w = 1.;
+		if(c->GetNPads()>4) w = .5;
+		if(c->GetNPads()>5) w = .2;
+		zRow[nc] = c->GetPadRow();
+		xc[nc]   = fX0 - c->GetX();
+		yc[nc]   = c->GetY();
+		zc[nc]   = c->GetZ();
+		sy[ic]   = w; // all clusters have the same sigma
+		sz[ic]   = fPadLength*convert;
+		nc++;
+	}
+  // to few clusters
+	if (nc < kClmin) return kFALSE; 
 	
-	fN = 0;
-	for (Int_t iTime = 0; iTime < AliTRDtrackerV1::GetNTimeBins(); iTime++) {
-    if (!fClusters[iTime]) continue;
-    if (!fClusters[iTime]->IsInChamber()) continue;
-    yres[iTime] = fY[iTime] - fYref[0] - (fYref[1] + anglecor) * fX[iTime] + fTilt * (fZ[iTime] - fZref[0]);
-		zint[fN] = Int_t(fZ[iTime]);
-		fN++;
+
+	Int_t zN[2*35];
+  Int_t nz = AliTRDtrackerV1::Freq(nc, zRow, zN, kFALSE);
+	// more than one pad row crossing
+	if(nz>2) return kFALSE; 
+	
+	// estimate reference parameter at average x
+	Double_t y0 = fYref[0];
+	Double_t dydx = fYref[1]; 
+	Double_t dzdx = fZref[1];
+	zc[nc]  = fZref[0];
+
+	// determine z offset of the fit
+	Int_t nchanges = 0, nCross = 0;
+	if(nz==2){ // tracklet is crossing pad row
+		// Find the break time allowing one chage on pad-rows
+		// with maximal number of accepted clusters
+		Int_t padRef = zRow[0];
+		for (Int_t ic=1; ic<nc; ic++) {
+			if(zRow[ic] == padRef) continue;
+			
+			// debug
+			if(zRow[ic-1] == zRow[ic]){
+				printf("ERROR in pad row change!!!\n");
+			}
+		
+			// evaluate parameters of the crossing point
+			Float_t sx = (xc[ic-1] - xc[ic])*convert;
+			xc[nc] = .5 * (xc[ic-1] + xc[ic]);
+			zc[nc] = .5 * (zc[ic-1] + zc[ic]);
+			sz[nc] = TMath::Max(dzdx * sx, .01);
+			dzdx   = zc[ic-1] > zc[ic] ? 1. : -1.;
+			padRef = zRow[ic];
+			nCross = ic;
+			nchanges++;
+		}
 	}
 
-	// calculate pad row boundary crosses
-	Int_t kClmin = Int_t(AliTRDReconstructor::RecoParam()->GetFindableClusters()*AliTRDtrackerV1::GetNTimeBins());
-	Int_t nz = AliMathBase::Freq(fN, zint, zout, kFALSE);
-  fZProb   = zout[0];
-  if(nz <= 1) zout[3] = 0;
-  if(zout[1] + zout[3] < kClmin) {
-		AliWarning(Form("Not enough clusters to fit the cross boundary tracklet %d [%d].", zout[1]+zout[3], kClmin));
+	// condition on nCross and reset nchanges TODO
+
+	Float_t par[5];
+	if(nchanges==1){
+		if(dzdx * fZref[1] < 0.){
+			AliInfo("tracklet direction does not correspond to the track direction. TODO.");
+		}
+		SetBit(2, kTRUE); // mark pad row crossing
+		fCross[0] = xc[nc]; fCross[2] = zc[nc]; fCross[3] = sz[nc]; 
+		AliTRDtrackerV1::FitLeastSquare(nc+1, xc, zc, sz, par);
+		dzdx = fZref[1]; // we don't trust par[1] ??;
+		zc[nc] = par[0]; 
+	} else if(nchanges > 1){ // debug
+		AliInfo("ERROR in n changes!!!");
 		return kFALSE;
 	}
-  // Z distance bigger than pad - length
-  if (TMath::Abs(zout[0]-zout[2]) > fPadLength) zout[3]=0;
- 
 
-  Double_t sumw   = 0., 
-		sumwx  = 0.,
-		sumwx2 = 0.,
-		sumwy  = 0.,
-		sumwxy = 0.,
-		sumwz  = 0.,
-		sumwxz = 0.;
-	Int_t npads;
-  fMPads = 0;
-	fMeanz = 0.;
-	// we will use only the clusters which are in the detector range
-	for(int iTime=0; iTime<AliTRDtrackerV1::GetNTimeBins(); iTime++){
-    fUsable[iTime] = kFALSE;
-    if (!fClusters[iTime]) continue;
-		npads = fClusters[iTime]->GetNPads();
-
-		fUsable[iTime] = kTRUE;
-    fN2++;
-    fMPads += npads;
-    Float_t weight = 1.0;
-    if(npads > 5) weight = 0.2;
-    else if(npads > 4) weight = 0.5;
-    sumw   += weight; 
-    sumwx  += fX[iTime] * weight;
-    sumwx2 += fX[iTime] * fX[iTime] * weight;
-    sumwy  += weight * yres[iTime];
-    sumwxy += weight * yres[iTime] * fX[iTime];
-    sumwz  += weight * fZ[iTime];    
-    sumwxz += weight * fZ[iTime] * fX[iTime];
+	
+	// estimate deviation from reference direction
+	dzdx *= fTilt;
+	for (Int_t ic=0; ic<nc; ic++) {
+		yc[ic] -= y0 + xc[ic]*(dydx + dzdx) + fTilt * (zc[ic] - zc[nc]);
 	}
-  if (fN2 < kClmin){
-		AliWarning(Form("Not enough clusters to fit the tracklet %d [%d].", fN2, kClmin));
-    fN2 = 0;
-    return kFALSE;
-  }
-  fMeanz = sumwz / sumw;
-	fNChange = 0;
+	AliTRDtrackerV1::FitLeastSquare(nc, xc, yc, sy, par);
+	fYfit[0] = y0+par[0]; 
+	fYfit[1] = dydx+par[1];
+	if(nchanges) fCross[1] = fYfit[0] + fCross[0] * fYfit[1];
 
-	// Tracklet on boundary
-  Float_t correction = 0;
-  if (fNChange > 0) {
-    if (fMeanz < fZProb) correction =  ycrosscor;
-    if (fMeanz > fZProb) correction = -ycrosscor;
-  }
-
-  Double_t det = sumw * sumwx2 - sumwx * sumwx;
-  fYfitR[0]    = (sumwx2 * sumwy  - sumwx * sumwxy) / det;
-  fYfitR[1]    = (sumw   * sumwxy - sumwx * sumwy)  / det;
-  
-  fSigmaY2 = 0;
-  for (Int_t i = 0; i < AliTRDtrackerV1::GetNTimeBins()+1; i++) {
-    if (!fUsable[i]) continue;
-    Float_t delta = yres[i] - fYfitR[0] - fYfitR[1] * fX[i];
-    fSigmaY2 += delta*delta;
-  }
-  fSigmaY2 = TMath::Sqrt(fSigmaY2 / Float_t(fN2-2));
-  
-  fZfitR[0]  = (sumwx2 * sumwz  - sumwx * sumwxz) / det;
-  fZfitR[1]  = (sumw   * sumwxz - sumwx * sumwz)  / det;
-  fZfit[0]   = (sumwx2 * sumwz  - sumwx * sumwxz) / det;
-  fZfit[1]   = (sumw   * sumwxz - sumwx * sumwz)  / det;
-  fYfitR[0] += fYref[0] + correction;
-  fYfitR[1] += fYref[1];
-  fYfit[0]   = fYfitR[0];
-  fYfit[1]   = fYfitR[1];
+// 	printf("\nnz = %d\n", nz);
+// 	for(int ic=0; ic<35; ic++) printf("%d row[%d]\n", ic, zRow[ic]);	
+// 
+// 	for(int ic=0; ic<nz; ic++) printf("%d n[%d]\n", ic, zN[ic]);	
 
 	return kTRUE;
 }
 
+//___________________________________________________________________
+void AliTRDseedV1::Draw(Option_t*)
+{
+}
 
 //___________________________________________________________________
-void AliTRDseedV1::Print()
+void AliTRDseedV1::Print(Option_t*) const
 {
   //
   // Printing the seedstatus
@@ -782,5 +791,5 @@ void AliTRDseedV1::Print()
 	printf("  fCC     =%f\n",fCC);      
 	printf("  fChi2   =%f\n", fChi2);  
 	printf("  fChi2Z  =%f\n", fChi2Z);
-
 }
+
