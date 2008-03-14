@@ -9,10 +9,17 @@ SRCS:= 	AliTreeDraw.cxx \
 	AliESDRecKinkInfo.cxx \
 	AliRecInfoMaker.cxx \
 	AliComparisonDraw.cxx \
-	AliGenInfoTask.cxx
+	AliRecInfoCuts.cxx \
+	AliMCInfoCuts.cxx \
+	AliComparisonTask.cxx \
+	AliComparisonRes.cxx \
+	AliComparisonEff.cxx \
+	AliComparisonDEdx.cxx \
+	AliComparisonDCA.cxx
+
  
 HDRS:= $(SRCS:.cxx=.h)
 
 DHDR:= PWG1LinkDef.h
 
-EINCLUDE:= STEER TPC ITS TRD ANALYSIS
+EINCLUDE:= STEER TPC ITS TRD PWG0
