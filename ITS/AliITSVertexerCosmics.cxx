@@ -20,6 +20,7 @@
 #include "AliITSLoader.h"
 #include "AliITSgeomTGeo.h"
 #include "AliITSRecPoint.h"
+#include "AliITSReconstructor.h"
 #include "AliITSVertexerCosmics.h"
 #include "AliStrLine.h"
 
@@ -69,6 +70,14 @@ fMinDist2Vtxs(0)
   SetMaxVtxRadius(3,23.5);
   SetMaxVtxRadius(4,37.5);
   SetMaxVtxRadius(5,42.5);
+  /*
+  SetMaxVtxRadius(0,5.5);
+  SetMaxVtxRadius(1,8.5);
+  SetMaxVtxRadius(2,18.5);
+  SetMaxVtxRadius(3,28.5);
+  SetMaxVtxRadius(4,39.5);
+  SetMaxVtxRadius(5,48.5);
+  */
   SetMaxDistOnOuterLayer();
   SetMinDist2Vtxs();
 }
@@ -90,10 +99,18 @@ AliESDVertex* AliITSVertexerCosmics::FindVertexForCurrentEvent(Int_t evnumber)
 
   Int_t lay,lad,det; 
 
+  Double_t pos[3]={0.,0.,0.};
+  Double_t err[3]={100.,100.,100.};
+  Int_t ncontributors = -1;
+
   // Search for innermost layer with at least two clusters 
   // on two different modules
-  Int_t ilayer=0;
+  Int_t ilayer=0,ilayer2=0;
   while(ilayer<6) {
+    if(AliITSReconstructor::GetRecoParam()->GetLayersToSkip(ilayer)) {
+      ilayer++;
+      continue;
+    }
     Int_t nHitModules=0;
     for(Int_t imodule=fFirst[ilayer]; imodule<=fLast[ilayer]; imodule++) {
       rpTree->GetEvent(imodule);
@@ -105,11 +122,30 @@ AliESDVertex* AliITSVertexerCosmics::FindVertexForCurrentEvent(Int_t evnumber)
     if(nHitModules>=2) break;
     ilayer++;
   }
-  printf("Building tracklets on layer %d\n",ilayer);
+
+  ilayer2=ilayer+1;
+  while(ilayer2<6) {
+    if(!AliITSReconstructor::GetRecoParam()->GetLayersToSkip(ilayer2)) break;
+    ilayer2++;
+  }
+
+  //if(ilayer==1 && ilayer2>5 && !AliITSReconstructor::GetRecoParam()->GetLayersToSkip(0)) {ilayer=0; ilayer2=1;}
+
+  if(ilayer>4 || ilayer2>5) {
+    AliWarning("Not enough clusters");
+    delete recpoints;
+    itsLoader->UnloadRecPoints();
+    fCurrentVertex = new AliESDVertex(pos,err,"cosmics");
+    fCurrentVertex->SetTitle("cosmics fake vertex (failed)");
+    fCurrentVertex->SetNContributors(ncontributors);
+    return fCurrentVertex;
+  }
+
 
   const Int_t arrSize = 1000;
   Float_t xclInnLay[arrSize],yclInnLay[arrSize],zclInnLay[arrSize],modclInnLay[arrSize];
   Float_t e2xclInnLay[arrSize],e2yclInnLay[arrSize],e2zclInnLay[arrSize];
+  Float_t e2xclOutLay[arrSize],e2yclOutLay[arrSize],e2zclOutLay[arrSize];
   Int_t nclInnLayStored=0;
   Float_t xclOutLay[arrSize],yclOutLay[arrSize],zclOutLay[arrSize],modclOutLay[arrSize];
   Int_t nclOutLayStored=0;
@@ -117,18 +153,16 @@ AliESDVertex* AliITSVertexerCosmics::FindVertexForCurrentEvent(Int_t evnumber)
 
   Float_t gc[3],gcov[5];
 
-  Float_t x[arrSize],y[arrSize],z[arrSize],e2x[arrSize],e2y[arrSize],e2z[arrSize];
+  Float_t matchOutLayValue;
+  Float_t distxyInnLay,distxyInnLayBest=0.;
   Double_t p1[3],p2[3],p3[3];
-  Int_t nvtxs;
-  Bool_t good,matchtoOutLay;
-  Float_t xvtx,yvtx,zvtx,rvtx;
 
-  Double_t pos[3]={0.,0.,0.};
-  Double_t err[3]={100.,100.,100.};
-  Int_t ncontributors = -1;
+  Float_t xvtx,yvtx,zvtx,rvtx;
+  Int_t i1InnLayBest=-1,i2InnLayBest=-1;
+
 
   // Collect clusters in the selected layer and the outer one
-  for(Int_t imodule=fFirst[ilayer]; imodule<=fLast[ilayer+1]; imodule++) {
+  for(Int_t imodule=fFirst[ilayer]; imodule<=fLast[ilayer2]; imodule++) {
     rpTree->GetEvent(imodule);
     AliITSgeomTGeo::GetModuleId(imodule,lay,lad,det);
     lay -= 1; // AliITSgeomTGeo gives layer from 1 to 6, we want 0 to 5
@@ -150,10 +184,14 @@ AliESDVertex* AliITSVertexerCosmics::FindVertexForCurrentEvent(Int_t evnumber)
 	modclInnLay[nclInnLayStored]=imodule;
 	nclInnLayStored++;
       }
-      if(lay==ilayer+1) { // store OutLay clusters
+      if(lay==ilayer2) { // store OutLay clusters
 	xclOutLay[nclOutLayStored]=gc[0];
 	yclOutLay[nclOutLayStored]=gc[1];
 	zclOutLay[nclOutLayStored]=gc[2];
+	rp->GetGlobalCov(gcov);
+	e2xclOutLay[nclOutLayStored]=gcov[0];
+	e2yclOutLay[nclOutLayStored]=gcov[3];
+	e2zclOutLay[nclOutLayStored]=gcov[5];
 	modclOutLay[nclOutLayStored]=imodule;
 	nclOutLayStored++;
       }
@@ -170,64 +208,116 @@ AliESDVertex* AliITSVertexerCosmics::FindVertexForCurrentEvent(Int_t evnumber)
     }// end clusters in a module
   }// end modules
 
+
+  Int_t i1InnLay,i2InnLay,iOutLay;
+
   // build fake vertices
-  nvtxs=0;
+  printf("Building tracklets on layer %d\n",ilayer);
+
   // InnLay - first cluster
-  for(Int_t i1InnLay=0; i1InnLay<nclInnLayStored; i1InnLay++) { 
+  for(i1InnLay=0; i1InnLay<nclInnLayStored; i1InnLay++) { 
     p1[0]=xclInnLay[i1InnLay]; 
     p1[1]=yclInnLay[i1InnLay]; 
     p1[2]=zclInnLay[i1InnLay];
     // InnLay - second cluster
-    for(Int_t i2InnLay=i1InnLay+1; i2InnLay<nclInnLayStored; i2InnLay++) { 
+    for(i2InnLay=i1InnLay+1; i2InnLay<nclInnLayStored; i2InnLay++) { 
       if(modclInnLay[i1InnLay]==modclInnLay[i2InnLay]) continue;
       p2[0]=xclInnLay[i2InnLay]; 
       p2[1]=yclInnLay[i2InnLay]; 
       p2[2]=zclInnLay[i2InnLay];
       // look for point on OutLay
-      AliStrLine InnLayline(p1,p2,kTRUE);
-      matchtoOutLay = kFALSE;
-      for(Int_t iOutLay=0; iOutLay<nclOutLayStored; iOutLay++) {
+      AliStrLine innLayline(p1,p2,kTRUE);
+      for(iOutLay=0; iOutLay<nclOutLayStored; iOutLay++) {
 	p3[0]=xclOutLay[iOutLay]; 
 	p3[1]=yclOutLay[iOutLay]; 
 	p3[2]=zclOutLay[iOutLay];
-	//printf(" %f\n",InnLayline.GetDistFromPoint(p3));
-	if(InnLayline.GetDistFromPoint(p3)<fMaxDistOnOuterLayer) 
-	  { matchtoOutLay = kTRUE; break; }
-      }
-      if(!matchtoOutLay) continue;
-      xvtx = 0.5*(xclInnLay[i1InnLay]+xclInnLay[i2InnLay]);
-      yvtx = 0.5*(yclInnLay[i1InnLay]+yclInnLay[i2InnLay]);
-      zvtx = 0.5*(zclInnLay[i1InnLay]+zclInnLay[i2InnLay]);
-      rvtx = TMath::Sqrt(xvtx*xvtx+yvtx*yvtx);
-      if(rvtx>fMaxVtxRadius[ilayer]) continue;
-      good = kTRUE;
-      for(Int_t iv=0; iv<nvtxs; iv++) {
-	if(TMath::Sqrt((xvtx- x[iv])*(xvtx- x[iv])+
-		       (yvtx- y[iv])*(yvtx- y[iv])+
-		       (zvtx- z[iv])*(zvtx- z[iv])) < fMinDist2Vtxs) 
-	  good = kFALSE;
-      }
-      if(good) {
-	x[nvtxs]=xvtx;
-	y[nvtxs]=yvtx;
-	z[nvtxs]=zvtx;
-	e2x[nvtxs]=0.25*(e2xclInnLay[i1InnLay]+e2xclInnLay[i2InnLay]);
-	e2y[nvtxs]=0.25*(e2yclInnLay[i1InnLay]+e2yclInnLay[i2InnLay]);
-	e2z[nvtxs]=0.25*(e2zclInnLay[i1InnLay]+e2zclInnLay[i2InnLay]);
-	nvtxs++;
+	//printf(" %f\n",innLayline.GetDistFromPoint(p3));
+	matchOutLayValue=innLayline.GetDistFromPoint(p3);
+	distxyInnLay = (p1[0]-p2[0])*(p1[0]-p2[0])+(p1[1]-p2[1])*(p1[1]-p2[1]);
+	if(matchOutLayValue<fMaxDistOnOuterLayer &&
+	   distxyInnLay>distxyInnLayBest) { 
+	  distxyInnLayBest=distxyInnLay;
+	  i1InnLayBest=i1InnLay;
+	  i2InnLayBest=i2InnLay;
+	}
       }
     } // InnLay - second cluster
   } // InnLay - first cluster
 
-  if(nvtxs) { 
-    ncontributors = ilayer;
-    pos[0]=x[0]; 
-    pos[1]=y[0]; 
-    pos[2]=z[0];
-    err[0]=TMath::Sqrt(e2x[0]); 
-    err[1]=TMath::Sqrt(e2y[0]); 
-    err[2]=TMath::Sqrt(e2z[0]);
+  if(i1InnLayBest>-1 && i2InnLayBest>-1) { 
+    xvtx = 0.5*(xclInnLay[i1InnLayBest]+xclInnLay[i2InnLayBest]);
+    yvtx = 0.5*(yclInnLay[i1InnLayBest]+yclInnLay[i2InnLayBest]);
+    zvtx = 0.5*(zclInnLay[i1InnLayBest]+zclInnLay[i2InnLayBest]);
+    rvtx = TMath::Sqrt(xvtx*xvtx+yvtx*yvtx);
+    if(rvtx<fMaxVtxRadius[ilayer]) {
+      ncontributors = ilayer;
+      pos[0] = xvtx;
+      pos[1] = yvtx;
+      pos[2] = zvtx;
+      err[0]=TMath::Sqrt(0.25*(e2xclInnLay[i1InnLayBest]+e2xclInnLay[i2InnLayBest])); 
+      err[1]=TMath::Sqrt(0.25*(e2yclInnLay[i1InnLayBest]+e2yclInnLay[i2InnLayBest])); 
+      err[2]=TMath::Sqrt(0.25*(e2zclInnLay[i1InnLayBest]+e2zclInnLay[i2InnLayBest]));
+    }
+    /*
+    fCurrentVertex = new AliESDVertex(pos,err,"cosmics");
+    fCurrentVertex->SetTitle("cosmics fake vertex");
+    fCurrentVertex->SetNContributors(ncontributors);
+    delete recpoints;
+    itsLoader->UnloadRecPoints();
+    return fCurrentVertex;
+    */
   }
+
+  /*
+  if(i1InnLayBest==-1 && i2InnLayBest==-1) {
+    // give a try exchanging InnLay and OutLay
+    // OutLay - first cluster
+    for(i1InnLay=0; i1InnLay<nclOutLayStored; i1InnLay++) { 
+      p1[0]=xclOutLay[i1InnLay]; 
+      p1[1]=yclOutLay[i1InnLay]; 
+      p1[2]=zclOutLay[i1InnLay];
+      // OutLay - second cluster
+      for(i2InnLay=i1InnLay+1; i2InnLay<nclOutLayStored; i2InnLay++) { 
+	if(modclOutLay[i1InnLay]==modclOutLay[i2InnLay]) continue;
+	p2[0]=xclOutLay[i2InnLay]; 
+	p2[1]=yclOutLay[i2InnLay]; 
+	p2[2]=zclOutLay[i2InnLay];
+	// look for point on InnLay
+	AliStrLine outLayline(p1,p2,kTRUE);
+	for(iOutLay=0; iOutLay<nclInnLayStored; iOutLay++) {
+	  p3[0]=xclInnLay[iOutLay]; 
+	  p3[1]=yclInnLay[iOutLay]; 
+	  p3[2]=zclInnLay[iOutLay];
+	  //printf(" %f\n",InnLayline.GetDistFromPoint(p3));
+	  matchOutLayValue=outLayline.GetDistFromPoint(p3);
+	  distxyInnLay = (p1[0]-p2[0])*(p1[0]-p2[0])+(p1[1]-p2[1])*(p1[1]-p2[1]);
+	  if(matchOutLayValue<fMaxDistOnOuterLayer &&
+	     distxyInnLay>distxyInnLayBest) { 
+	    distxyInnLayBest=distxyInnLay;
+	    i1InnLayBest=i1InnLay;
+	    i2InnLayBest=i2InnLay;
+	  }
+	}
+      } // OutLay - second cluster
+    } // OutLay - first cluster
+  }
+
+  if(i1InnLayBest>-1 && i2InnLayBest>-1) { 
+    xvtx = 0.5*(xclOutLay[i1InnLayBest]+xclOutLay[i2InnLayBest]);
+    yvtx = 0.5*(yclOutLay[i1InnLayBest]+yclOutLay[i2InnLayBest]);
+    zvtx = 0.5*(zclOutLay[i1InnLayBest]+zclOutLay[i2InnLayBest]);
+    rvtx = TMath::Sqrt(xvtx*xvtx+yvtx*yvtx);
+    if(rvtx<fMaxVtxRadius[ilayer]) {
+      ncontributors = ilayer2;
+      pos[0] = xvtx;
+      pos[1] = yvtx;
+      pos[2] = zvtx;
+      err[0]=TMath::Sqrt(0.25*(e2xclOutLay[i1InnLayBest]+e2xclOutLay[i2InnLayBest])); 
+      err[1]=TMath::Sqrt(0.25*(e2yclOutLay[i1InnLayBest]+e2yclOutLay[i2InnLayBest])); 
+      err[2]=TMath::Sqrt(0.25*(e2zclOutLay[i1InnLayBest]+e2zclOutLay[i2InnLayBest]));
+    }
+  }
+  */
 
   fCurrentVertex = new AliESDVertex(pos,err,"cosmics");
   fCurrentVertex->SetTitle("cosmics fake vertex");
