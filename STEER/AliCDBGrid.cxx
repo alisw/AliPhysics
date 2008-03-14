@@ -420,14 +420,16 @@ AliCDBId* AliCDBGrid::GetEntryId(const AliCDBId& queryId) {
 		AliDebug(2,Form("pattern: %s", pattern.Data()));
 
 		TGridResult *res = gGrid->Query(fDBFolder, pattern, filter, "");
-		AliCDBId validFileId;
-		for(int i=0; i<res->GetEntries(); i++){
-			TString filename = res->GetKey(i, "lfn");
-			if(filename == "") continue;
-			if(FilenameToId(filename, validFileId))
-					validFileIds.AddLast(validFileId.Clone());
-		}
-		delete res;
+		if (res) {
+			AliCDBId validFileId;
+			for(int i=0; i<res->GetEntries(); i++){
+				TString filename = res->GetKey(i, "lfn");
+				if(filename == "") continue;
+				if(FilenameToId(filename, validFileId))
+						validFileIds.AddLast(validFileId.Clone());
+			}
+			delete res;
+		}	
 		dataId = GetId(validFileIds, selectedId);
 	}
 
