@@ -50,7 +50,10 @@ AlidNdEtaCorrectionTask::AlidNdEtaCorrectionTask(const char* opt) :
   fVertexProfile(0),
   fVertexShiftNorm(0),
   fSigmaVertexTracks(0),
-  fSigmaVertexPrim(0)
+  fSigmaVertexPrim(0),
+  fMultAll(0),
+  fMultTr(0),
+  fMultVtx(0)
 {
   //
   // Constructor. Initialization of pointers
@@ -62,6 +65,9 @@ AlidNdEtaCorrectionTask::AlidNdEtaCorrectionTask(const char* opt) :
 
   for (Int_t i=0; i<2; i++)
     fdNdEtaCorrectionProcessType[i] = 0;
+  
+  for (Int_t i=0; i<3; i++)
+    fDeltaPhi[i] = 0;
 }
 
 AlidNdEtaCorrectionTask::~AlidNdEtaCorrectionTask()
@@ -173,6 +179,13 @@ void AlidNdEtaCorrectionTask::CreateOutputObjects()
   fVertexCorrelation = new TH2F("fVertexCorrelation", "fVertexCorrelation;MC z-vtx;ESD z-vtx", 80, -20, 20, 80, -20, 20);
   fVertexProfile = new TProfile("fVertexProfile", "fVertexProfile;MC z-vtx;MC z-vtx - ESD z-vtx", 40, -20, 20);
   fVertexShiftNorm = new TH1F("fVertexShiftNorm", "fVertexShiftNorm;(MC z-vtx - ESD z-vtx) / #sigma_{ESD z-vtx};Entries", 200, -100, 100);
+  
+  fMultAll = new TH1F("fMultAll", "fMultAll", 500, -0.5, 499.5);
+  fMultVtx = new TH1F("fMultVtx", "fMultVtx", 500, -0.5, 499.5);
+  fMultTr = new TH1F("fMultTr", "fMultTr", 500, -0.5, 499.5);
+
+  for (Int_t i=0; i<3; i++)
+    fDeltaPhi[i] = new TH1F(Form("fDeltaPhi_%d", i), ";#Delta phi;Entries", 200, -0.5, 0.5);
 }
 
 void AlidNdEtaCorrectionTask::Exec(Option_t*)
@@ -254,6 +267,7 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
   Int_t* labelArr = 0;
   Float_t* etaArr = 0;
   Float_t* ptArr = 0;
+  Float_t* deltaPhiArr = 0;
   if (fAnalysisMode == AliPWG0Helper::kSPD)
   {
     // get tracklets
@@ -267,19 +281,27 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
     labelArr = new Int_t[mult->GetNumberOfTracklets()];
     etaArr = new Float_t[mult->GetNumberOfTracklets()];
     ptArr = new Float_t[mult->GetNumberOfTracklets()];
+    deltaPhiArr = new Float_t[mult->GetNumberOfTracklets()];
 
     // get multiplicity from ITS tracklets
     for (Int_t i=0; i<mult->GetNumberOfTracklets(); ++i)
     {
       //printf("%d %f %f %f\n", i, mult->GetTheta(i), mult->GetPhi(i), mult->GetDeltaPhi(i));
 
-      // This removes non-tracklets in PDC06 data. Very bad solution. New solution is implemented for newer data. Keeping this for compatibility.
-      if (mult->GetDeltaPhi(i) < -1000)
-        continue;
+      Float_t deltaPhi = mult->GetDeltaPhi(i);
+      // prevent values to be shifted by 2 Pi()
+      if (deltaPhi < -TMath::Pi())
+        deltaPhi += TMath::Pi() * 2;
+      if (deltaPhi > TMath::Pi())
+        deltaPhi -= TMath::Pi() * 2;
+
+      if (TMath::Abs(deltaPhi) > 1)
+        printf("WARNING: Very high Delta Phi: %d %f %f %f\n", i, mult->GetTheta(i), mult->GetPhi(i), deltaPhi);
 
       etaArr[inputCount] = mult->GetEta(i);
       labelArr[inputCount] = mult->GetLabel(i);
       ptArr[inputCount] = 0; // no pt for tracklets
+      deltaPhiArr[inputCount] = deltaPhi;
       ++inputCount;
     }
   }
@@ -300,6 +322,7 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
     labelArr = new Int_t[nGoodTracks];
     etaArr = new Float_t[nGoodTracks];
     ptArr = new Float_t[nGoodTracks];
+    deltaPhiArr = new Float_t[nGoodTracks];
 
     // loop over esd tracks
     for (Int_t i=0; i<nGoodTracks; i++)
@@ -314,6 +337,7 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
       etaArr[inputCount] = esdTrack->Eta();
       labelArr[inputCount] = TMath::Abs(esdTrack->GetLabel());
       ptArr[inputCount] = esdTrack->Pt();
+      deltaPhiArr[inputCount] = 0; // no delta phi for tracks
       ++inputCount;
     }
 
@@ -331,6 +355,7 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
 
   // loop over mc particles
   Int_t nPrim  = stack->GetNprimary();
+  Int_t nAccepted = 0;
 
   for (Int_t iMc = 0; iMc < nPrim; ++iMc)
   {
@@ -369,6 +394,16 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
     if (eventTriggered)
       if (eventVertex)
         fdNdEtaAnalysisMC->FillTrack(vtxMC[2], eta, pt);
+
+    if (TMath::Abs(eta) < 1 && pt > 0.2)
+      nAccepted++;
+  }
+
+  fMultAll->Fill(nAccepted);
+  if (eventTriggered) {
+    fMultTr->Fill(nAccepted);
+    if (eventVertex)
+      fMultVtx->Fill(nAccepted);
   }
 
   for (Int_t i=0; i<inputCount; ++i)
@@ -378,6 +413,7 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
     if (label < 0)
     {
       Printf("WARNING: cannot find corresponding mc part for track(let) %d with label %d.", i, label);
+      fDeltaPhi[2]->Fill(deltaPhiArr[i]);
       continue;
     }
 
@@ -414,6 +450,13 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
         if (processType==94)
           fdNdEtaCorrectionProcessType[2]->FillTrackedParticle(vtxMC[2], particle->Eta(), particle->Pt());
       }
+
+      if (stack->IsPhysicalPrimary(label))
+      {
+        fDeltaPhi[0]->Fill(deltaPhiArr[i]);
+      }
+      else
+        fDeltaPhi[1]->Fill(deltaPhiArr[i]);
     }
   }
 
@@ -444,6 +487,7 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
   delete[] etaArr;
   delete[] labelArr;
   delete[] ptArr;
+  delete[] deltaPhiArr;
 
   // fills the fSigmaVertex histogram (systematic study)
   if (fSigmaVertexTracks)
@@ -547,6 +591,18 @@ void AlidNdEtaCorrectionTask::Terminate(Option_t *)
     fVertexProfile->Write();
   if (fVertexShiftNorm)
     fVertexShiftNorm->Write();
+  if (fMultAll)
+    fMultAll->Write();
+
+  if (fMultTr)
+    fMultTr->Write();
+  
+  if (fMultVtx)
+    fMultVtx->Write();
+
+  for (Int_t i=0; i<3; ++i)
+    if (fDeltaPhi[i])
+      fDeltaPhi[i]->Write();
 
   fout->Write();
   fout->Close();

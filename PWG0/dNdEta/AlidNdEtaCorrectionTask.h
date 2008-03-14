@@ -60,6 +60,12 @@ class AlidNdEtaCorrectionTask : public AliAnalysisTask {
     TH1F* fSigmaVertexPrim;                      //! (accepted primaries) vs (n of sigma to vertex cut)
                                                  // enable with option: sigma-vertex
 
+    TH1F* fMultAll; //! primary particles  in |eta| < 1 and pT > 0.2 in all events
+    TH1F* fMultTr; //! primary particles  in |eta| < 1 and pT > 0.2 in triggered events
+    TH1F* fMultVtx; //! primary particles  in |eta| < 1 and pT > 0.2 in triggered events with vertex
+
+    TH1F* fDeltaPhi[3]; //! delta phi of primaries, secondaries, other (= unclear cases)
+
     AlidNdEtaCorrection* fdNdEtaCorrectionProcessType[3]; //! correction for specific process type (ND, SD, DD)
                                                           // enable with option: process-types
 
