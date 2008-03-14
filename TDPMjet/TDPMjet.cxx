@@ -58,6 +58,7 @@
 # define dt_rndmst dt_rndmst_
 # define dt_rndmin dt_rndmin_
 # define dt_rndmou dt_rndmou_
+# define dpmjet_openinp dpmjet_openinp_
 # define type_of_call
 #else
 # define dt_dtuini DT_DTUINI
@@ -69,6 +70,7 @@
 # define dt_rndmst DT_RNDMST
 # define dt_rndmin DT_RNDMIN
 # define dt_rndmou DT_RNDMOU
+# define dpmjet_openinp DPMJET_OPENINP
 # define type_of_call _stdcall
 #endif
 
@@ -84,6 +86,7 @@ extern "C" void   type_of_call dt_rndm(Int_t &);
 extern "C" void   type_of_call dt_rndmst(Int_t &, Int_t &, Int_t &, Int_t &);
 extern "C" void   type_of_call dt_rndmin(Int_t &, Int_t &, Int_t &, Int_t &, Int_t &, Int_t &);
 extern "C" void   type_of_call dt_rndmou(Int_t &, Int_t &, Int_t &, Int_t &, Int_t &, Int_t &);
+extern "C" void   type_of_call dpmjet_openinp();
 
 #else
 
@@ -281,6 +284,8 @@ void TDPMjet::Initialize()
     fprintf(out, "START            1.0       0.0\n");
     fprintf(out, "STOP\n");
     fclose(out);
+    dpmjet_openinp();
+
 //
 //  Call DPMJET initialisation
     Int_t iemu = 0; // No emulsion (default)
