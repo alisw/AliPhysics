@@ -30,7 +30,7 @@ public:
   void Update(Float_t vertex[3]);       
   AliMCInfo &  GetPlus()      {return fMCd;}
   AliMCInfo &  GetMinus()     {return fMCm;}
-  TParticle &  GetMopther()   {return fMotherP;}
+  TParticle &  GetMother()   {return fMotherP;}
   Double_t    GetMCDist1() const { return fMCDist1;}
   Double_t    GetMCDist2() const {return fMCDist2;}  
   const Double_t*  GetMCPdr() const {return fMCPdr;}

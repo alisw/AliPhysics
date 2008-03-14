@@ -50,6 +50,8 @@
 #include "AliESDkink.h"
 #include "AliESDv0.h"
 #include "AliV0.h"
+#include "AliKFParticle.h"
+#include "AliKFVertex.h"
 //
 #include "AliTreeDraw.h"
 #include "AliMCInfo.h"
@@ -66,30 +68,47 @@ ClassImp(AliESDRecV0Info)
 
 AliESDRecV0Info:: AliESDRecV0Info():
   TObject(),
-  fT1(),      //track1
-  fT2(),      //track2  
-  fDist1(0),    //info about closest distance according closest MC - linear DCA
-  fDist2(0),    //info about closest distance parabolic DCA
-  fInvMass(0),  //reconstructed invariant mass -
+  fT1(),               //track1
+  fT2(),               //track2  
+  fDist1(0),           //info about closest distance according closest MC - linear DCA
+  fDist2(0),           //info about closest distance parabolic DCA
+  fInvMass(0),         //reconstructed invariant mass -
   //
-  fDistMinR(0), // distance at minimal radius
-  fRr(0),       // rec position of the vertex 
-  fPointAngleFi(0), //point angle fi
-  fPointAngleTh(0), //point angle theta
-  fPointAngle(0),   //point angle full
-  fV0Status(0),       // status of the kink
+  fDistMinR(0),        // distance at minimal radius
+  fRr(0),              // rec position of the vertex 
+  fPointAngleFi(0),    //point angle fi
+  fPointAngleTh(0),    //point angle theta
+  fPointAngle(0),      //point angle full
+  fV0Status(0),        // status of the kink
   fV0tpc(0),           // Vo information from reconsturction according TPC
   fV0its(0),           // Vo information from reconsturction according ITS
   fV0rec(0),           // V0 information form the reconstruction
-  fMultiple(0),     // how man times V0 was recostructed 
-  fV0Multiple(0),   // how man times was V0 reconstucted
-  fRecStatus(0)    // status form the reconstuction
+  fV0recOff(0),        // V0 information form the reconstruction - OFFLINE
+  fMultiple(0),        // how man times V0 was recostructed 
+  fRecStatus(0),       // status form the reconstuction
+  fV0MultipleOn(0),    // how man times was V0 reconstucted
+  fV0MultipleOff(0),   // how man times was V0 reconstucted
+  //
+  fKFrecChi2NC(0),     //  ONLINE V0 finder non constrained chi2  
+  fKFrecChi2C(0),      //  ONLINE V0 finder   constrained chi2 - prim vertex  
+  fKFrecChi2CM(0),     //  ONLINE V0 finder   constrained chi2 - prim vertex+mass 
+  fKFRecNC(0),         //  non constrained  
+  fKFRecC(0),          //  constrained vertex
+  fKFRecCM(0),         //  constrained vertex+mass
+  fKFrecOffChi2NC(0),  // OFFLINE V0 finder - non constrained chi2  
+  fKFrecOffChi2C(0),   // OFFLINE V0 finder -     constrained chi2 - prim vertex  
+  fKFrecOffChi2CM(0),  // OFFLINE V0 finder -     constrained chi2 - prim vertex+mass
+  fKFOffRecNC(0),      //  non constrained  
+  fKFOffRecC(0),       //  constrained vertex
+  fKFOffRecCM(0)       //  constrained vertex+mass
 {
   //
   // default constructor
   //
-  fV0tpc = new AliV0();
-  fV0its = new AliV0();
+  fV0tpc    = new AliV0();
+  fV0its    = new AliV0();
+  fV0rec    = new AliV0();
+  fV0recOff = new AliV0();
 }
 
 
@@ -242,4 +261,97 @@ void  AliESDRecV0Info::Update(Float_t vertex[3])
     fPointAngle   = (v[0]*p[0]+v[1]*p[1]+v[2]*p[2])/(vnorm3*pnorm3);
   }
 }
+
+void  AliESDRecV0Info::UpdateKF(const AliESDVertex &vertex, Int_t pdg0, Int_t pdg1, Float_t mass){
+  //
+  // Calculate properties of V0 vertex using different type of constraints 
+  //
+  fKFrecChi2NC=0;     //  ONLINE V0 finder non constrained chi2  
+  fKFrecChi2C=0;      //  ONLINE V0 finder   constrained chi2 - prim vertex  
+  fKFrecChi2CM=0;     //  ONLINE V0 finder   constrained chi2 - prim vertex+mass 
+  if (fKFRecNC) {delete fKFRecNC; fKFRecNC=0;}
+  if (fKFRecC)  {delete fKFRecC;  fKFRecC=0;}
+  if (fKFRecCM) {delete fKFRecCM; fKFRecCM=0;}
+  //
+  fKFrecOffChi2NC=0;  // OFFLINE V0 finder - non constrained chi2  
+  fKFrecOffChi2C=0;   // OFFLINE V0 finder -     constrained chi2 - prim vertex  
+  fKFrecOffChi2CM=0;  // OFFLINE V0 finder -     constrained chi2 - prim vertex+mass
+  if (fKFOffRecNC) {delete fKFOffRecNC; fKFOffRecNC=0;}
+  if (fKFOffRecC)  {delete fKFOffRecC;  fKFOffRecC=0;}
+  if (fKFOffRecCM) {delete fKFOffRecCM; fKFOffRecCM=0;}
+  if (fV0Status==0) return; //
+  //
+  AliKFVertex primVtx(vertex);
+  //
+  if (fV0rec && 
+      TMath::Abs(fV0rec->GetParamN()->GetSigmaY2())>0.000000001&&
+      TMath::Abs(fV0rec->GetParamP()->GetSigmaY2())>0.000000001
+      ){
+    //
+    Double_t x, y, z;
+    AliKFParticle p1( *(fV0rec->GetParamN()), pdg0 );
+    AliKFParticle p2( *(fV0rec->GetParamP()), pdg1 );
+    //
+    fKFRecNC  = new AliKFParticle;
+    fV0rec->GetXYZ(x,y,z);
+    fKFRecNC->SetVtxGuess(x,y,z);
+    *(fKFRecNC)+=p1;
+    *(fKFRecNC)+=p2;
+    fKFrecChi2NC =fKFRecNC->GetChi2() ;
+    //
+    fKFRecC  = new AliKFParticle;
+    fV0rec->GetXYZ(x,y,z);
+    fKFRecC->SetVtxGuess(x,y,z);
+    *(fKFRecC)+=p1;
+    *(fKFRecC)+=p2;
+    fKFRecC->SetProductionVertex(primVtx);
+    fKFrecChi2C =fKFRecC->GetChi2();
+    //
+    fKFRecCM  = new AliKFParticle;
+    fV0rec->GetXYZ(x,y,z);
+    fKFRecCM->SetVtxGuess(x,y,z);
+    *(fKFRecCM)+=p1;
+    *(fKFRecCM)+=p2;
+    fKFRecCM->SetProductionVertex(primVtx);
+    fKFRecCM->SetMassConstraint(mass);
+    fKFrecChi2CM =fKFRecCM->GetChi2();    
+  }
+
+  if (fV0recOff && 
+      TMath::Abs(fV0recOff->GetParamN()->GetSigmaY2())>0.000000001&&
+      TMath::Abs(fV0recOff->GetParamP()->GetSigmaY2())>0.000000001
+      ){
+    //
+    Double_t x, y, z;
+    AliKFParticle p1( *(fV0recOff->GetParamN()), pdg0 );
+    AliKFParticle p2( *(fV0recOff->GetParamP()), pdg1 );
+    //
+    fKFOffRecNC  = new AliKFParticle;
+    fV0recOff->GetXYZ(x,y,z);
+    fKFOffRecNC->SetVtxGuess(x,y,z);
+    *(fKFOffRecNC)+=p1;
+    *(fKFOffRecNC)+=p2;
+    fKFrecOffChi2NC =fKFOffRecNC->GetChi2() ;
+    //
+    fKFOffRecC  = new AliKFParticle;
+    fV0recOff->GetXYZ(x,y,z);
+    fKFOffRecC->SetVtxGuess(x,y,z);
+    *(fKFOffRecC)+=p1;
+    *(fKFOffRecC)+=p2;
+    fKFOffRecC->SetProductionVertex(primVtx);
+    fKFrecOffChi2C =fKFOffRecC->GetChi2();
+    //
+    fKFOffRecCM  = new AliKFParticle;
+    fV0recOff->GetXYZ(x,y,z);
+    fKFOffRecCM->SetVtxGuess(x,y,z);
+    *(fKFOffRecCM)+=p1;
+    *(fKFOffRecCM)+=p2;
+    fKFOffRecCM->SetProductionVertex(primVtx);
+    fKFOffRecCM->SetMassConstraint(mass);
+    fKFrecOffChi2CM =fKFOffRecCM->GetChi2();    
+  }
+
+
+}
+
 

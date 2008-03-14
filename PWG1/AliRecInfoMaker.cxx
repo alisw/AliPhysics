@@ -749,27 +749,34 @@ Int_t AliRecInfoMaker::TreeTLoop()
   }  
   // --sort reconstructed V0
   //
-//   AliV0 * v0MI=0;
-//   for (Int_t iEntry=0; iEntry<nV0MIs;iEntry++){
-//     v0MI = (AliV0*)fEvent->GetV0(iEntry);
-//     if (!v0MI) continue;
-//     //
-//     Int_t label0 = TMath::Abs(v0MI->GetLabel(0));
-//     Int_t label1 = TMath::Abs(v0MI->GetLabel(1));
-//     //
-//     for (Int_t i=0;i<2;i++){
-//       Int_t absLabel =  TMath::Abs(v0MI->GetLabel(i));
-//       if (absLabel < fNParticles) {
-// 	if (fMultiRecV0[absLabel]>0){
-// 	  if (fMultiRecV0[absLabel]<20)
-// 	    fIndexRecV0[absLabel*20+fMultiRecV0[absLabel]] =  iEntry; 	
-// 	}
-// 	else      
-// 	  fIndexRecV0[absLabel*20] =  iEntry;
-// 	fMultiRecV0[absLabel]++;
-//       }
-//     }
-//   }  
+  AliV0 * v0MI=0;
+  for (Int_t iEntry=0; iEntry<nV0MIs;iEntry++){
+    v0MI = (AliV0*)fEvent->GetV0(iEntry);
+    if (!v0MI) continue;
+    //
+    //
+    //
+    //Int_t label0 = TMath::Abs(v0MI->GetLabel(0));
+    //Int_t label1 = TMath::Abs(v0MI->GetLabel(1));
+    AliESDtrack * trackn = fEvent->GetTrack((v0MI->GetNindex()));
+    AliESDtrack * trackp = fEvent->GetTrack((v0MI->GetPindex()));
+    Int_t labels[2]={-1,-1};
+    labels[0] = (trackn==0) ? -1 : trackn->GetLabel(); 
+    labels[1] = (trackp==0) ? -1 : trackp->GetLabel(); 
+    //
+    for (Int_t i=0;i<2;i++){
+      Int_t absLabel =  labels[i];
+      if (absLabel < fNParticles) {
+	if (fMultiRecV0[absLabel]>0){
+	  if (fMultiRecV0[absLabel]<20)
+	    fIndexRecV0[absLabel*20+fMultiRecV0[absLabel]] =  iEntry; 	
+	}
+	else      
+	  fIndexRecV0[absLabel*20] =  iEntry;
+	fMultiRecV0[absLabel]++;
+      }
+    }
+  }  
 
 
   printf("Time spended in TreeTLoop\n");
@@ -1046,6 +1053,8 @@ Int_t AliRecInfoMaker::BuildV0Info(Int_t eventNr)
 // loop over all entries for a given event, find corresponding 
 // rec. track and store in the fTreeCmp
 //
+  static TDatabasePDG pdgtable;
+
   TStopwatch timer;
   timer.Start();
   Int_t entry = fNextV0ToRead;
@@ -1123,6 +1132,9 @@ Int_t AliRecInfoMaker::BuildV0Info(Int_t eventNr)
 	  fRecV0Info->fV0its->Update(vertex);
 	}
       }
+      //
+      // ????
+      // 
       if (TMath::Abs(fGenV0Info->GetMinus().fPdg)==11 &&TMath::Abs(fGenV0Info->GetPlus().fPdg)==11){
 	if (fRecV0Info->fDist2>10){
 	  fRecV0Info->Update(vertex);
@@ -1138,9 +1150,11 @@ Int_t AliRecInfoMaker::BuildV0Info(Int_t eventNr)
     Int_t label =  TMath::Min(fGenV0Info->GetMinus().fLabel,fGenV0Info->GetPlus().fLabel);
     Int_t label2 = TMath::Max(fGenV0Info->GetMinus().fLabel,fGenV0Info->GetPlus().fLabel);    
     AliV0 *v0MI=0;
+    AliV0 *v0MIOff=0;
     fRecV0Info->fRecStatus   =0;
     fRecV0Info->fMultiple    = fMultiRecV0[label];
-    fRecV0Info->fV0Multiple=0;
+    fRecV0Info->fV0MultipleOn=0;
+    fRecV0Info->fV0MultipleOff=0;
     //
     if (fMultiRecV0[label]>0 || fMultiRecV0[label2]>0){
 
@@ -1156,48 +1170,73 @@ Int_t AliRecInfoMaker::BuildV0Info(Int_t eventNr)
 	Int_t vlabelp = (trackp==0) ? -1 : trackp->GetLabel(); 
 	//
 	if (TMath::Abs(vlabeln)==label &&TMath::Abs(vlabelp)==label2) {
-	  v0MI =v0MI2;
-	  fRecV0Info->fV0Multiple++;
+	  if (v0MI2->GetOnFlyStatus()) {
+	    v0MI =v0MI2;
+	    fRecV0Info->fV0MultipleOn++;
+	  }else  {
+	    v0MIOff = v0MI2;
+	    fRecV0Info->fV0MultipleOff++;
+	  }
 	  fSignedV0[index]=1;
 	}
 	if (TMath::Abs(vlabelp)==label &&TMath::Abs(vlabeln)==label2) {
-	  v0MI =v0MI2;
-	  fRecV0Info->fV0Multiple++;
+	  if (v0MI2->GetOnFlyStatus()){
+	    v0MI =v0MI2;
+	    fRecV0Info->fV0MultipleOn++;
+	  }else  {
+	    v0MIOff = v0MI2;
+	    fRecV0Info->fV0MultipleOff++;
+	  }
 	  fSignedV0[index]=1;
 	}
       }
     }
     if (v0MI){
-      fRecV0Info->fV0rec = v0MI;
+      new (fRecV0Info->fV0rec) AliV0(*v0MI);
       fRecV0Info->fRecStatus=1;
     }
-
+    if (v0MIOff){
+      new (fRecV0Info->fV0recOff) AliV0(*v0MIOff);
+      fRecV0Info->fRecStatus=1;
+    }
+    Int_t mpdg = fGenV0Info->GetMother().GetPdgCode();
+    Float_t mass = ( pdgtable.GetParticle(mpdg)==0) ? 0 :pdgtable.GetParticle(mpdg)->Mass();
+    fRecV0Info->UpdateKF(*esdvertex,
+			 fGenV0Info->GetPlus().GetPdg(),
+			 fGenV0Info->GetMinus().GetPdg(),
+			 mass);
     fTreeCmpV0->Fill();
   }
   //
   // write fake v0s
   //
- //  Int_t nV0MIs = fEvent->GetNumberOfV0s();
-//   for (Int_t i=0;i<nV0MIs;i++){
-//     if (fSignedV0[i]==0){
-//       AliV0 *v0MI  = (AliV0*)fEvent->GetV0(i);
-//       if (!v0MI) continue;
-//       //
-//       fRecV0Info->fV0rec = v0MI;
-//       fRecV0Info->fV0Status  =-10;
-//       fRecV0Info->fRecStatus =-2;
-//       //
-//       AliESDRecInfo*  fRecInfo1 = (AliESDRecInfo*)fRecArray->At(TMath::Abs(v0MI->GetLabel(0)));
-//       AliESDRecInfo*  fRecInfo2 = (AliESDRecInfo*)fRecArray->At(TMath::Abs(v0MI->GetLabel(1)));
-//       if (fRecInfo1 && fRecInfo2){
-// 	fRecV0Info->fT1 = (*fRecInfo1);
-// 	fRecV0Info->fT2 = (*fRecInfo2);
-// 	fRecV0Info->fRecStatus =-1;
-//       }
-//       fRecV0Info->Update(vertex);
-//       fTreeCmpV0->Fill();
-//     }
-//   }
+  Int_t nV0MIs = fEvent->GetNumberOfV0s();
+  for (Int_t i=0;i<nV0MIs;i++){
+    if (fSignedV0[i]==0){
+      AliV0 *v0MI  = (AliV0*)fEvent->GetV0(i);
+      if (!v0MI) continue;
+      //
+      new (fRecV0Info->fV0rec) AliV0(*v0MI);
+      fRecV0Info->fV0Status  =-10;
+      fRecV0Info->fRecStatus =-2;
+      //
+      AliESDtrack * trackn = fEvent->GetTrack((v0MI->GetNindex()));
+      AliESDtrack * trackp = fEvent->GetTrack((v0MI->GetPindex()));
+      Int_t vlabeln = (trackn==0) ? -1 : trackn->GetLabel(); 
+      Int_t vlabelp = (trackp==0) ? -1 : trackp->GetLabel(); 
+
+      AliESDRecInfo*  fRecInfo1 = (AliESDRecInfo*)fRecArray->At(TMath::Abs(vlabeln));
+      AliESDRecInfo*  fRecInfo2 = (AliESDRecInfo*)fRecArray->At(TMath::Abs(vlabelp));
+      if (fRecInfo1 && fRecInfo2){
+	fRecV0Info->fT1 = (*fRecInfo1);
+	fRecV0Info->fT2 = (*fRecInfo2);
+	fRecV0Info->fRecStatus =-1;
+      }
+      fRecV0Info->Update(vertex);
+      fRecV0Info->UpdateKF(*esdvertex,211,211,0.49767);
+      fTreeCmpV0->Fill();
+    }
+  }
 
 
 
