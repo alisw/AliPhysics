@@ -18,7 +18,7 @@ class AliITSgeom;
 //                                                //
 ////////////////////////////////////////////////////
 
-/* $Id$ */
+/* $Id:$ */
 
 class AliITSPlaneEff : public AliPlaneEff {
  public:
@@ -79,7 +79,8 @@ class AliITSPlaneEff : public AliPlaneEff {
     virtual void   SetCreateHistos(Bool_t)
       {AliError("This method must be implemented in a derived class"); return; }
     virtual Bool_t GetCreateHistos() const {return fHis;};
-    virtual Bool_t FillHistos(UInt_t, Bool_t, Float_t[2], Float_t[2], Int_t[2])
+    //virtual Bool_t FillHistos(UInt_t, Bool_t, Float_t[2], Float_t[2], Int_t[2])
+    virtual Bool_t FillHistos(UInt_t, Bool_t, Float_t*, Float_t*, Int_t*)
       {AliError("This method must be implemented in a derived class"); return kFALSE; }
     virtual Bool_t WriteHistosToFile(TString ,Option_t*)
       {AliError("This method must be implemented in a derived class"); return kFALSE; }

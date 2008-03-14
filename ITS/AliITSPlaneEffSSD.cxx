@@ -22,7 +22,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 
-/*  $Id$ */
+/*  $Id:$ */
 
 #include <TMath.h>
 #include <TH1F.h>
@@ -387,7 +387,7 @@ if(ilay==5 && (idet<0 || idet>949))
    return key;}
 
 UInt_t mod=idet;
-if(ilay==1) mod+=748;
+if(ilay==5) mod+=748;
 key=GetKey(mod);
 return key;
 }

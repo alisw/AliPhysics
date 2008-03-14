@@ -15,7 +15,7 @@
 // Origin: Giuseppe.Bruno@ba.infn.it     //
 ///////////////////////////////////////////
 
-/* $Id$ */
+/* $Id:$ */
   
 class AliITSPlaneEffSPD :  public AliITSPlaneEff {
  public:
@@ -25,7 +25,6 @@ class AliITSPlaneEffSPD :  public AliITSPlaneEff {
     AliITSPlaneEffSPD(const AliITSPlaneEffSPD &source);
     // ass. operator
     AliITSPlaneEffSPD& operator=(const AliITSPlaneEffSPD &s);
-    //    AliITSPlaneEff& operator=(const AliITSPlaneEff &source);
     // Simple way to add another class (i.e. statistics). 
     AliITSPlaneEffSPD& operator +=( const AliITSPlaneEffSPD &add);
     // Getters for average Plane efficiency (including dead/noisy)

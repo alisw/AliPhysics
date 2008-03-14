@@ -23,7 +23,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 
-/* $Id$ */
+/* $Id:$ */
 
 #include <TMath.h>
 #include <TH1F.h>
@@ -48,12 +48,17 @@ AliITSPlaneEffSDD::AliITSPlaneEffSDD():
   fHisResZ(0),
   fHisResXZ(0),
   fHisClusterSize(0),
-  fHisResXclu(0),
+  fProfResXvsCluSizeX(0),
+  //fHisResXclu(0),
   fHisResZclu(0),
   fProfResXvsX(0),
   fProfResZvsX(0),
   fProfClustSizeXvsX(0),
-  fProfClustSizeZvsX(0){
+  fProfClustSizeZvsX(0),
+  fHisTrackErrX(0),
+  fHisTrackErrZ(0),
+  fHisClusErrX(0),
+  fHisClusErrZ(0){
   for (UInt_t i=0; i<kNModule*kNChip*kNWing*kNSubWing; i++){
     fFound[i]=0;
     fTried[i]=0;
@@ -79,12 +84,17 @@ fHisResX(0),
 fHisResZ(0),
 fHisResXZ(0),
 fHisClusterSize(0),
-fHisResXclu(0),
+fProfResXvsCluSizeX(0),
+//fHisResXclu(0),
 fHisResZclu(0),
 fProfResXvsX(0),
 fProfResZvsX(0),
 fProfClustSizeXvsX(0),
-fProfClustSizeZvsX(0)
+fProfClustSizeZvsX(0),
+fHisTrackErrX(0),
+fHisTrackErrZ(0),
+fHisClusErrX(0),
+fHisClusErrZ(0)
 {
     //     Copy Constructor
     // Inputs:
@@ -105,14 +115,19 @@ fProfClustSizeZvsX(0)
       s.fHisResZ[i]->Copy(*fHisResZ[i]);
       s.fHisResXZ[i]->Copy(*fHisResXZ[i]);
       s.fHisClusterSize[i]->Copy(*fHisClusterSize[i]);
+      s.fProfResXvsCluSizeX[i]->Copy(*fProfResXvsCluSizeX[i]);
       for(Int_t clu=0; clu<kNclu; clu++) {  // clu=0 --> cluster size 1
-        s.fHisResXclu[i][clu]->Copy(*fHisResXclu[i][clu]);
+        //s.fHisResXclu[i][clu]->Copy(*fHisResXclu[i][clu]);
         s.fHisResZclu[i][clu]->Copy(*fHisResZclu[i][clu]);
       }
      s.fProfResXvsX[i]->Copy(*fProfResXvsX[i]);
      s.fProfResZvsX[i]->Copy(*fProfResZvsX[i]);
      s.fProfClustSizeXvsX[i]->Copy(*fProfClustSizeXvsX[i]);
      s.fProfClustSizeZvsX[i]->Copy(*fProfClustSizeZvsX[i]);
+     s.fHisTrackErrX[i]->Copy(*fHisTrackErrX[i]);
+     s.fHisTrackErrZ[i]->Copy(*fHisTrackErrZ[i]);
+     s.fHisClusErrX[i]->Copy(*fHisClusErrX[i]);
+     s.fHisClusErrZ[i]->Copy(*fHisClusErrZ[i]);
    }
  }
 }
@@ -135,14 +150,19 @@ AliITSPlaneEffSDD& AliITSPlaneEffSDD::operator+=(const AliITSPlaneEffSDD &add){
         fHisResZ[i]->Add(add.fHisResZ[i]);
         fHisResXZ[i]->Add(add.fHisResXZ[i]);
         fHisClusterSize[i]->Add(add.fHisClusterSize[i]);
+        fProfResXvsCluSizeX[i]->Add(add.fProfResXvsCluSizeX[i]);
         for(Int_t clu=0; clu<kNclu; clu++) {  // clu=0 --> cluster size 1
-          fHisResXclu[i][clu]->Add(add.fHisResXclu[i][clu]);
+          //fHisResXclu[i][clu]->Add(add.fHisResXclu[i][clu]);
           fHisResZclu[i][clu]->Add(add.fHisResZclu[i][clu]);
         }
        fProfResXvsX[i]->Add(add.fProfResXvsX[i]);
        fProfResZvsX[i]->Add(add.fProfResZvsX[i]);
        fProfClustSizeXvsX[i]->Add(add.fProfClustSizeXvsX[i]);
        fProfClustSizeZvsX[i]->Add(add.fProfClustSizeZvsX[i]);
+       fHisTrackErrX[i]->Add(add.fHisTrackErrX[i]);
+       fHisTrackErrZ[i]->Add(add.fHisTrackErrZ[i]);
+       fHisClusErrX[i]->Add(add.fHisClusErrX[i]);
+       fHisClusErrZ[i]->Add(add.fHisClusErrZ[i]);
       }
     }
     return *this;
@@ -183,28 +203,38 @@ void AliITSPlaneEffSDD::CopyHistos(AliITSPlaneEffSDD &target) const {
     target.fHisResZ=new TH1F*[kNHisto];
     target.fHisResXZ=new TH2F*[kNHisto];
     target.fHisClusterSize=new TH2I*[kNHisto];
-    target.fHisResXclu=new TH1F**[kNHisto];
+    target.fProfResXvsCluSizeX=new TProfile*[kNHisto];
+    //target.fHisResXclu=new TH1F**[kNHisto];
     target.fHisResZclu=new TH1F**[kNHisto];
     target.fProfResXvsX=new TProfile*[kNHisto];
     target.fProfResZvsX=new TProfile*[kNHisto];
     target.fProfClustSizeXvsX=new TProfile*[kNHisto];
     target.fProfClustSizeZvsX=new TProfile*[kNHisto];
+    target.fHisTrackErrX=new TH1F*[kNHisto];
+    target.fHisTrackErrZ=new TH1F*[kNHisto];
+    target.fHisClusErrX=new TH1F*[kNHisto];
+    target.fHisClusErrZ=new TH1F*[kNHisto];
 
     for(Int_t i=0; i<kNHisto; i++) {
       target.fHisResX[i] = new TH1F(*fHisResX[i]);
       target.fHisResZ[i] = new TH1F(*fHisResZ[i]);
       target.fHisResXZ[i] = new TH2F(*fHisResXZ[i]);
       target.fHisClusterSize[i] = new TH2I(*fHisClusterSize[i]);
-      target.fHisResXclu[i]=new TH1F*[kNclu];
+      target.fProfResXvsCluSizeX[i] = new TProfile(*fProfResXvsCluSizeX[i]);
+      //target.fHisResXclu[i]=new TH1F*[kNclu];
       target.fHisResZclu[i]=new TH1F*[kNclu];
       for(Int_t clu=0; clu<kNclu; clu++) {  // clu=0 --> cluster size 1
-        target.fHisResXclu[i][clu] = new TH1F(*fHisResXclu[i][clu]);
+        //target.fHisResXclu[i][clu] = new TH1F(*fHisResXclu[i][clu]);
         target.fHisResZclu[i][clu] = new TH1F(*fHisResZclu[i][clu]);
       }
       target.fProfResXvsX[i]=new TProfile(*fProfResXvsX[i]);
       target.fProfResZvsX[i]=new TProfile(*fProfResZvsX[i]);
       target.fProfClustSizeXvsX[i]=new TProfile(*fProfClustSizeXvsX[i]);
       target.fProfClustSizeZvsX[i]=new TProfile(*fProfClustSizeZvsX[i]);
+      target.fHisTrackErrX[i] = new TH1F(*fHisTrackErrX[i]);
+      target.fHisTrackErrZ[i] = new TH1F(*fHisTrackErrZ[i]);
+      target.fHisClusErrX[i] = new TH1F(*fHisClusErrX[i]);
+      target.fHisClusErrZ[i] = new TH1F(*fHisClusErrZ[i]);
     }
   }
 return;
@@ -513,6 +543,25 @@ UInt_t AliITSPlaneEffSDD::GetKeyFromDetLocCoord(Int_t ilay, Int_t idet,
                                                 Float_t locx, Float_t locz) const {
 // method to locate a basic block from Detector Local coordinate (to be used in tracking)
 //
+// From AliITSsegmentationSDD rev. 24315 2008-03-05: 
+//                            ^x_loc 
+//                            |
+//   _________________________|0_________________________ 
+//  |0 1 ..      |            |.           |         255| (anode numbers)
+//  |            |            |.           |            |
+//  |            |            |.           |            |    CHANNEL (i.e. WING) = 1
+//  |   chip=0   |   chip=1   |.  chip=2   |   chip=3   |  
+//  |            |            |.           |            |
+//  |____________|____________|256_________|____________|______\  local z (cm)
+//  |            |            |.           |            |      /
+//  |            |            |.           |            |
+//  |   chip=7   |   chip=6   |.  chip=5   |   chip=4   |    CHANNEL (i.e. WING) = 0
+//  |            |            |.           |            |  
+//  |            |            |.           |            |
+//  |____________|____________|0___________|____________| 
+//   511 510 ...               ^              .. 257 256 (anode numbers)
+//                             |_ (time bins)
+//
 // If kNSubWing = 1, i.e. no sub-wing subdivision, then the numbering scheme of the 
 // unique key is the following, e.g. for the first detector (idet=0,  ilayer=2)
 //
@@ -522,53 +571,57 @@ UInt_t AliITSPlaneEffSDD::GetKeyFromDetLocCoord(Int_t ilay, Int_t idet,
 //  |            |            |            |            |
 //  |            |            |            |            |
 //  |            |            |            |            |
-//  |   key=1    |   key=3    |   key=5    |   key=7    |
+//  |   key=0    |   key=2    |   key=4    |   key=6    |
 //  |            |            |            |            |
 //  |____________|____________|____________|____________|_0_____\  local z (cm)
 //  |            |            |            |            |       /
 //  |            |            |            |            |
-//  |   key=0    |   key=2    |   key=4    |   key=6    |
+//  |   key=7    |   key=5    |   key=3    |   key=1    |
 //  |            |            |            |            |
 //  |            |            |            |            |
 //  |____________|____________|____________|____________| -3.5085
 //-3.7632     -1.8816         0          1.1186      3.7632 
 //
-// for the second detector (idet=2, ilay=2), first key is 8 (bottom-left), 
-// last one is 15 (upper-right), and so on. 
+// for the second detector (idet=2, ilay=2), the same as above but +8: first one 8 (bottom-left), 
+// last one is 15 (lower-left), and so on. 
 //
-// If subwing division has been applied, then you count in each wing, starting from 
-// the one with negative local ,  from the anode side (outer part) towards the 
-// cathod strip (center). 
-//                    first column: 
-//                      bottom wing   (from below): 0,1,..,kNSubWing-1, 
-//                      upper wing    (from up):    kNSubWing, ... , 2*kNSubWing-1
-//                    2nd column  
-//                      bottom wing   (from below): 2*kNSubWing, .. , 3*kNSubWing-1
-//                      upper wing    (from up):    3*kNSubWing, ... ,4*kNSubWing-1
-//                      ... 
-//                    4nd (last) column :   
-//                      bottom wing   (from below): 6*kNSubWing, .. , 7*kNSubWing-1
-//                      upper wing    (from up):    7*kNSubWing, ... ,8*kNSubWing-1
-//
-// E.g. kNSubWing=2.
+// If subwing division has been applied, then you count as in the schemes below 
+// E.g. kNSubWing=2. (It was much simpler with old AliITSsegmentation numbering!)
 //
 //			      ^x_loc (cm)
 //		              |   
 //   _________________________|__________________________ 3.5085
 //  |            |            |            |            |
-//  |   key=2    |   key=6    |   key=10   |   key=14   |
-//  |____________|____________|____________|____________|
+//  |   key=0    |   key=4    |   key=8    |   key=12   |
+//  |____________|____________|____________|____________| 1.75425
 //  |            |            |            |            |
-//  |   key=3    |   key=7    |   key=11   |   key=15   |
+//  |   key=1    |   key=5    |   key=9    |   key=13   |
 //  |____________|____________|____________|____________|_0_____\  local z (cm)
 //  |            |            |            |            |       /
-//  |   key=1    |   key=5    |   key=9    |   key=13   |
-//  |____________|____________|____________|____________|
+//  |   key=15   |   key=11   |   key=7    |   key=3    |
+//  |____________|____________|____________|____________| -1.75425
 //  |            |            |            |            |
-//  |   key=0    |   key=4    |   key=8    |   key=12   |
+//  |   key=14   |   key=10   |   key=6    |   key=2    |
 //  |____________|____________|____________|____________| -3.5085
 //-3.7632     -1.8816         0          1.1186      3.7632 
 //
+// E.g. kNSubWing=3
+//                            ^x_loc (cm)
+//                            |
+//   _________________________|__________________________ 3.5085
+//  |     0      |     6      |     12     |     18     |
+//  |____________|____________|____________|____________| 2.339
+//  |     1      |     7      |     13     |     19     |
+//  |____________|____________|____________|____________| 1.1695
+//  |     2      |     8      |     14     |     20     |
+//  |____________|____________|____________|____________|_0_____\  local z (cm)
+//  |     23     |     17     |     11     |     5      |       /
+//  |____________|____________|____________|____________| -1.1695
+//  |   key=22   |   key=16   |   key=10   |   key=4    |
+//  |____________|____________|____________|____________| -2.339
+//  |    21      |    15      |     9      |     3      |
+//  |____________|____________|____________|____________| -3.5085
+//-3.7632     -1.8816         0          1.1186      3.7632
 //___________________________________________________________________________
 //
 UInt_t key=999999;
@@ -591,9 +644,9 @@ return key;
 //_____________________________________________________________________________
 void AliITSPlaneEffSDD::ChipAndWingAndSubWingFromLocCoor(Float_t xloc, Float_t zloc, 
                                 UInt_t& chip, UInt_t& wing, UInt_t& subw) const {
-AliITSgeom* geom=NULL;
+//AliITSgeom* geom=NULL;
 //AliITSsegmentationSDD* sdd=new AliITSsegmentationSDD(geom);
-AliITSsegmentationSDD sdd=AliITSsegmentationSDD(geom);
+AliITSsegmentationSDD sdd;
 sdd.SetDriftSpeed(sdd.GetDriftSpeed()); // this only for setting fSetDriftSpeed=kTRUE !!!
 Int_t ix,iz;
 Int_t ntb;
@@ -613,7 +666,7 @@ if(sdd.LocalToDet(xloc,zloc,ix,iz)) {
   wing=99; 
   subw=9;
 }
-delete geom;
+//delete geom;
 }
 //__________________________________________________________________________________
 UInt_t AliITSPlaneEffSDD::SubWingFromTimeBin(const Int_t tb, const Int_t ntb) const {
@@ -643,13 +696,13 @@ Bool_t AliITSPlaneEffSDD::GetBlockBoundaries(const UInt_t key, Float_t& xmn,Floa
 //                            ^x_loc (cm)
 //     for all: subw=0        |
 //   _________________________|__________________________ 3.5085
-//  |   wing=1   |   wing=1   |   wing=1   |   wing=1   |
-//  |   chip=0   |   chip=1   |   chip=2   |   chip=3   |
-//  |   key=1    |   key=3    |   key=5    |   key=7    |
-//  |____________|____________|____________|____________|_0_____\  local z (cm)
-//  |   wing=0   |   wing=0   |   wing=0   |   wing=0   |       /
+//  |   wing=0   |   wing=0   |   wing=0   |   wing=0   |
 //  |   chip=0   |   chip=1   |   chip=2   |   chip=3   |
 //  |   key=0    |   key=2    |   key=4    |   key=6    |
+//  |____________|____________|____________|____________|_0_____\  local z (cm)
+//  |   wing=1   |   wing=1   |   wing=1   |   wing=1   |       /
+//  |   chip=3   |   chip=2   |   chip=1   |   chip=0   |
+//  |   key=7    |   key=5    |   key=3    |   key=1    |
 //  |____________|____________|____________|____________| -3.5085
 //-3.7632     -1.8816         0          1.1186      3.7632
 //
@@ -658,37 +711,39 @@ Bool_t AliITSPlaneEffSDD::GetBlockBoundaries(const UInt_t key, Float_t& xmn,Floa
 //                            |
 //   _________________________|__________________________ 3.5085
 //  |   chip=0   |   chip=1   |   chip=2   |   chip=3   |
-//  |   key=2    |   key=6    |   key=10   |   key=14   | subw=0
-//  |____________|____________|____________|____________|        wing=1
-//  |   chip=0   |   chip=1   |   chip=2   |   chip=3   | subw=1
-//  |   key=3    |   key=7    |   key=11   |   key=15   |
-//  |____________|____________|____________|____________|_0________\  local z (cm)
-//  |   chip=0   |   chip=1   |   chip=2   |   chip=3   |          /
-//  |   key=1    |   key=5    |   key=9    |   key=13   | subw=1
+//  |   key=0    |   key=4    |   key=8    |   key=12   | subw=0
 //  |____________|____________|____________|____________|        wing=0
-//  |   chip=0   |   chip=1   |   chip=2   |   chip=3   | subw=0  
-//  |   key=0    |   key=4    |   key=8    |   key=12   | 
+//  |   chip=0   |   chip=1   |   chip=2   |   chip=3   | subw=1
+//  |   key=1    |   key=5    |   key=9    |   key=13   |
+//  |____________|____________|____________|____________|_0________\  local z (cm)
+//  |   chip=3   |   chip=2   |   chip=1   |   chip=0   |          /
+//  |   key=15   |   key=11   |   key=7    |   key=3    | subw=1
+//  |____________|____________|____________|____________|        wing=1
+//  |   chip=3   |   chip=2   |   chip=1   |   chip=0   | subw=0  
+//  |   key=14   |   key=10   |   key=6    |   key=2    | 
 //  |____________|____________|____________|____________| -3.5085
 //-3.7632     -1.8816         0          1.1186      3.7632
 //
 if(key>=kNModule*kNChip*kNWing*kNSubWing)
   {AliWarning("GetBlockBoundaries: you asked for a non existing key"); return kFALSE;}
-//
+// as it is now it is consistent with new AliITSsegmentationSDD numbering !
 const Float_t kDxDefault = 35085.; // For Plane Eff. purpouses, default values
 const Float_t kDzDefault = 75264.; // are precise enough !!!
 const Float_t kconv = 1.0E-04;  //converts microns to cm.
 UInt_t chip=GetChipFromKey(key);
 UInt_t wing=GetWingFromKey(key);
 UInt_t subw=GetSubWingFromKey(key);
-zmn=kconv*(kDzDefault/kNChip*chip-0.5*kDzDefault);
-zmx=kconv*(kDzDefault/kNChip*(chip+1)-0.5*kDzDefault);
-if(wing==0) { // count from below
-xmn=kconv*(kDxDefault/kNSubWing*subw-kDxDefault);
-xmx=kconv*(kDxDefault/kNSubWing*(subw+1)-kDxDefault);
+if(wing==1) { // count x from below, z from right
+  xmn=kconv*(kDxDefault/kNSubWing*subw-kDxDefault);
+  xmx=kconv*(kDxDefault/kNSubWing*(subw+1)-kDxDefault);
+  zmn=kconv*(kDzDefault*0.5-kDzDefault/kNChip*(chip+1));
+  zmx=kconv*(kDzDefault*0.5-kDzDefault/kNChip*chip);
 }
-else if(wing==1) { // count from top
-xmx=kconv*(kDxDefault-kDxDefault/kNSubWing*subw);
-xmn=kconv*(kDxDefault-kDxDefault/kNSubWing*(subw+1));
+else if(wing==0) { // count x from top, z from left
+  xmx=kconv*(kDxDefault-kDxDefault/kNSubWing*subw);
+  xmn=kconv*(kDxDefault-kDxDefault/kNSubWing*(subw+1));
+  zmn=kconv*(kDzDefault/kNChip*chip-0.5*kDzDefault);
+  zmx=kconv*(kDzDefault/kNChip*(chip+1)-0.5*kDzDefault);
 }
 else {AliError("GetBlockBoundaries: you got wrong n. of wing"); return kFALSE;}
 return kTRUE;
@@ -701,42 +756,52 @@ void AliITSPlaneEffSDD::InitHistos() {
   TString histnameResZ="HistResZ_mod_";
   TString histnameResXZ="HistResXZ_mod_";
   TString histnameClusterType="HistClusterType_mod_";
-  TString histnameResXclu="HistResX_mod_";
+//  TString histnameResXclu="HistResX_mod_";
+  TString profnameResXvsCluSizeX="ProfResXvsCluSizeX_mod_";
   TString histnameResZclu="HistResZ_mod_";
   TString profnameResXvsX="ProfResXvsX_mod_";
   TString profnameResZvsX="ProfResZvsX_mod_";
   TString profnameClustSizeXvsX="ProfClustSizeXvsX_mod_";
   TString profnameClustSizeZvsX="ProfClustSizeZvsX_mod_";
+  TString histnameTrackErrX="HistTrackErrX_mod_";
+  TString histnameTrackErrZ="HistTrackErrZ_mod_";
+  TString histnameClusErrX="HistClusErrX_mod_";
+  TString histnameClusErrZ="HistClusErrZ_mod_";
 //
   fHisResX=new TH1F*[kNHisto];
   fHisResZ=new TH1F*[kNHisto];
   fHisResXZ=new TH2F*[kNHisto];
   fHisClusterSize=new TH2I*[kNHisto];
-  fHisResXclu=new TH1F**[kNHisto];
+  fProfResXvsCluSizeX=new TProfile*[kNHisto];
+  //fHisResXclu=new TH1F**[kNHisto];
   fHisResZclu=new TH1F**[kNHisto];
   fProfResXvsX=new TProfile*[kNHisto];
   fProfResZvsX=new TProfile*[kNHisto];
   fProfClustSizeXvsX=new TProfile*[kNHisto];
   fProfClustSizeZvsX=new TProfile*[kNHisto];
+  fHisTrackErrX=new TH1F*[kNHisto];
+  fHisTrackErrZ=new TH1F*[kNHisto];
+  fHisClusErrX=new TH1F*[kNHisto];
+  fHisClusErrZ=new TH1F*[kNHisto];
 
   for (Int_t nhist=0;nhist<kNHisto;nhist++){
     aux=histnameResX;
     aux+=nhist;
-    fHisResX[nhist]=new TH1F("histname","histname",1500,-0.15,0.15); // +- 1500 micron; 1 bin=2 micron
+    fHisResX[nhist]=new TH1F("histname","histname",1500,-0.30,0.30); // +- 3000 micron; 1 bin=4 micron
     fHisResX[nhist]->SetName(aux.Data());
     fHisResX[nhist]->SetTitle(aux.Data());
 
     aux=histnameResZ;
     aux+=nhist;
-    fHisResZ[nhist]=new TH1F("histname","histname",500,-0.05,0.05); // +-500 micron; 1 bin=2 micron
+    fHisResZ[nhist]=new TH1F("histname","histname",500,-0.15,0.15); // +-1500 micron; 1 bin=6 micron
     fHisResZ[nhist]->SetName(aux.Data());
     fHisResZ[nhist]->SetTitle(aux.Data());
 
     aux=histnameResXZ;
     aux+=nhist;
-    fHisResXZ[nhist]=new TH2F("histname","histname",50,-0.1,0.1,30,-0.03,0.03); // binning:
-                                                                                   // 40 micron in x; 
-                                                                                   // 20 micron in z; 
+    fHisResXZ[nhist]=new TH2F("histname","histname",50,-0.2,0.2,30,-0.12,0.12); // binning:
+                                                                                   // 80 micron in x; 
+                                                                                   // 80 micron in z; 
     fHisResXZ[nhist]->SetName(aux.Data());
     fHisResXZ[nhist]->SetTitle(aux.Data());
 
@@ -746,49 +811,79 @@ void AliITSPlaneEffSDD::InitHistos() {
     fHisClusterSize[nhist]->SetName(aux.Data());
     fHisClusterSize[nhist]->SetTitle(aux.Data());
 
-    fHisResXclu[nhist]=new TH1F*[kNclu];
+    aux=profnameResXvsCluSizeX;
+    aux+=nhist;
+    fProfResXvsCluSizeX[nhist]=new TProfile("histname","histname",10,0.5,10.5);
+    fProfResXvsCluSizeX[nhist]->SetName(aux.Data());
+    fProfResXvsCluSizeX[nhist]->SetTitle(aux.Data());
+
+//    fHisResXclu[nhist]=new TH1F*[kNclu];
     fHisResZclu[nhist]=new TH1F*[kNclu];
     for(Int_t clu=0; clu<kNclu; clu++) {  // clu=0 --> cluster size 1
-      aux=histnameResXclu;
+      /*aux=histnameResXclu;
       aux+=nhist;
       aux+="_clu_";
       aux+=clu+1; // clu=0 --> cluster size 1
       fHisResXclu[nhist][clu]=new TH1F("histname","histname",1500,-0.15,0.15);// +- 1500 micron; 1 bin=2 micron
       fHisResXclu[nhist][clu]->SetName(aux.Data());
-      fHisResXclu[nhist][clu]->SetTitle(aux.Data());
+      fHisResXclu[nhist][clu]->SetTitle(aux.Data());*/
 
       aux=histnameResZclu;
       aux+=nhist;
       aux+="_clu_";
       aux+=clu+1; // clu=0 --> cluster size 1
-      fHisResZclu[nhist][clu]=new TH1F("histname","histname",500,-0.05,0.05); // +-500 micron; 1 bin=2 micron
+      fHisResZclu[nhist][clu]=new TH1F("histname","histname",500,-0.15,0.15); // +-1500 micron; 1 bin=6 micron
       fHisResZclu[nhist][clu]->SetName(aux.Data());
       fHisResZclu[nhist][clu]->SetTitle(aux.Data());
     }
 
     aux=profnameResXvsX;
     aux+=nhist;
-    fProfResXvsX[nhist]=new TProfile("histname","histname",140,-3.5,-3.5);
+    fProfResXvsX[nhist]=new TProfile("histname","histname",140,-3.5,3.5);
     fProfResXvsX[nhist]->SetName(aux.Data());
     fProfResXvsX[nhist]->SetTitle(aux.Data());
 
     aux=profnameResZvsX;
     aux+=nhist;
-    fProfResZvsX[nhist]=new TProfile("histname","histname",140,-3.5,-3.5);
+    fProfResZvsX[nhist]=new TProfile("histname","histname",140,-3.5,3.5);
     fProfResZvsX[nhist]->SetName(aux.Data());
     fProfResZvsX[nhist]->SetTitle(aux.Data());
 
     aux=profnameClustSizeXvsX;
     aux+=nhist;
-    fProfClustSizeXvsX[nhist]=new TProfile("histname","histname",140,-3.5,-3.5);
+    fProfClustSizeXvsX[nhist]=new TProfile("histname","histname",140,-3.5,3.5);
     fProfClustSizeXvsX[nhist]->SetName(aux.Data());
     fProfClustSizeXvsX[nhist]->SetTitle(aux.Data());
 
     aux=profnameClustSizeZvsX;
     aux+=nhist;
-    fProfClustSizeZvsX[nhist]=new TProfile("histname","histname",140,-3.5,-3.5);
+    fProfClustSizeZvsX[nhist]=new TProfile("histname","histname",140,-3.5,3.5);
     fProfClustSizeZvsX[nhist]->SetName(aux.Data());
     fProfClustSizeZvsX[nhist]->SetTitle(aux.Data());
+
+    aux=histnameTrackErrX;
+    aux+=nhist;
+    fHisTrackErrX[nhist]=new TH1F("histname","histname",200,0.,0.16); // 0-1600 micron; 1 bin=8 micron
+    fHisTrackErrX[nhist]->SetName(aux.Data());
+    fHisTrackErrX[nhist]->SetTitle(aux.Data());
+
+    aux=histnameTrackErrZ;
+    aux+=nhist;
+    fHisTrackErrZ[nhist]=new TH1F("histname","histname",200,0.,0.32); // 0-3200 micron; 1 bin=16 micron
+    fHisTrackErrZ[nhist]->SetName(aux.Data());
+    fHisTrackErrZ[nhist]->SetTitle(aux.Data());
+
+    aux=histnameClusErrX;
+    aux+=nhist;
+    fHisClusErrX[nhist]=new TH1F("histname","histname",200,0.,0.04); //  0-400 micron; 1 bin=2 micron
+    fHisClusErrX[nhist]->SetName(aux.Data());
+    fHisClusErrX[nhist]->SetTitle(aux.Data());
+
+    aux=histnameClusErrZ;
+    aux+=nhist;
+    fHisClusErrZ[nhist]=new TH1F("histname","histname",200,0.,0.16); //  0-1600 micron; 1 bin=8 micron
+    fHisClusErrZ[nhist]->SetName(aux.Data());
+    fHisClusErrZ[nhist]->SetTitle(aux.Data());
 
   }
 return;
@@ -811,14 +906,18 @@ void AliITSPlaneEffSDD::DeleteHistos() {
     for (Int_t i=0; i<kNHisto; i++ ) delete fHisClusterSize[i];
     delete [] fHisClusterSize; fHisClusterSize=0;
   }
-  if(fHisResXclu) {
+  if(fProfResXvsCluSizeX) {
+    for (Int_t i=0; i<kNHisto; i++ ) delete fProfResXvsCluSizeX[i];
+    delete [] fProfResXvsCluSizeX; fProfResXvsCluSizeX=0;
+  }
+  /*if(fHisResXclu) {
     for (Int_t i=0; i<kNHisto; i++ ) {
       for (Int_t clu=0; clu<kNclu; clu++) if (fHisResXclu[i][clu]) delete fHisResXclu[i][clu];
       delete [] fHisResXclu[i];
     }
     delete [] fHisResXclu;
     fHisResXclu = 0;
-  }
+  }*/
   if(fHisResZclu) {
     for (Int_t i=0; i<kNHisto; i++ ) {
       for (Int_t clu=0; clu<kNclu; clu++) if (fHisResZclu[i][clu]) delete fHisResZclu[i][clu];
@@ -842,6 +941,22 @@ void AliITSPlaneEffSDD::DeleteHistos() {
   if(fProfClustSizeZvsX) {
     for (Int_t i=0; i<kNHisto; i++ ) delete fProfClustSizeZvsX[i];
     delete [] fProfClustSizeZvsX; fProfClustSizeZvsX=0;
+  }
+  if(fHisTrackErrX) {
+    for (Int_t i=0; i<kNHisto; i++ ) delete fHisTrackErrX[i];
+    delete [] fHisTrackErrX; fHisTrackErrX=0;
+  }
+  if(fHisTrackErrZ) {
+    for (Int_t i=0; i<kNHisto; i++ ) delete fHisTrackErrZ[i];
+    delete [] fHisTrackErrZ; fHisTrackErrZ=0;
+  }
+  if(fHisClusErrX) {
+    for (Int_t i=0; i<kNHisto; i++ ) delete fHisClusErrX[i];
+    delete [] fHisClusErrX; fHisClusErrX=0;
+  }
+  if(fHisClusErrZ) {
+    for (Int_t i=0; i<kNHisto; i++ ) delete fHisClusErrZ[i];
+    delete [] fHisClusErrZ; fHisClusErrZ=0;
   }
 
 return;
@@ -877,13 +992,18 @@ Bool_t AliITSPlaneEffSDD::FillHistos(UInt_t key, Bool_t found,
     fHisResZ[id]->Fill(resz);
     fHisResXZ[id]->Fill(resx,resz);
     fHisClusterSize[id]->Fill((Double_t)csize[0],(Double_t)csize[1]);
-    if(csize[0]>0 &&  csize[0]<=kNclu) fHisResXclu[id][csize[0]-1]->Fill(resx);
+    fProfResXvsCluSizeX[id]->Fill((Double_t)csize[0],resx);
+    //if(csize[0]>0 &&  csize[0]<=kNclu) fHisResXclu[id][csize[0]-1]->Fill(resx);
     if(csize[1]>0 &&  csize[1]<=kNclu) fHisResZclu[id][csize[1]-1]->Fill(resz);
     fProfResXvsX[id]->Fill(clu[0],resx);
     fProfResZvsX[id]->Fill(clu[0],resz);
     fProfClustSizeXvsX[id]->Fill(clu[0],(Double_t)csize[0]);
     fProfClustSizeZvsX[id]->Fill(clu[0],(Double_t)csize[1]);
   }
+  fHisTrackErrX[id]->Fill(tr[2]);
+  fHisTrackErrZ[id]->Fill(tr[3]);
+  fHisClusErrX[id]->Fill(clu[2]);
+  fHisClusErrZ[id]->Fill(clu[3]);
   return kTRUE;
 }
 //__________________________________________________________
@@ -903,30 +1023,39 @@ Bool_t AliITSPlaneEffSDD::WriteHistosToFile(TString filename, Option_t* option) 
   TH1F *histZ,*histX;
   TH2F *histXZ;
   TH2I *histClusterType;
-  TH1F *histXclu[kNclu];
+  TProfile *profileResXvsCluSizeX;
+  //TH1F *histXclu[kNclu];
   TH1F *histZclu[kNclu];
   TProfile *profileResXvsX, *profileResZvsX, *profileClSizXvsX, *profileClSizZvsX;
+  TH1F *histTrErrZ,*histTrErrX;
+  TH1F *histClErrZ,*histClErrX;
 
   histZ=new TH1F();
   histX=new TH1F();
   histXZ=new TH2F();
   histClusterType=new TH2I();
+  profileResXvsCluSizeX=new TProfile();
   for(Int_t clu=0;clu<kNclu;clu++) {
-    histXclu[clu]=new TH1F();
+    //histXclu[clu]=new TH1F();
     histZclu[clu]=new TH1F();
   }
   profileResXvsX=new TProfile();
   profileResZvsX=new TProfile();
   profileClSizXvsX=new TProfile();
   profileClSizZvsX=new TProfile();
+  histTrErrX=new TH1F();
+  histTrErrZ=new TH1F();
+  histClErrX=new TH1F();
+  histClErrZ=new TH1F();
 
   SDDTree->Branch("histX","TH1F",&histX,128000,0);
   SDDTree->Branch("histZ","TH1F",&histZ,128000,0);
   SDDTree->Branch("histXZ","TH2F",&histXZ,128000,0);
   SDDTree->Branch("histClusterType","TH2I",&histClusterType,128000,0);
+  SDDTree->Branch("profileResXvsCluSizeX","TProfile",&profileResXvsCluSizeX,128000,0);
   for(Int_t clu=0;clu<kNclu;clu++) {
-    sprintf(branchname,"histXclu_%d",clu+1);
-    SDDTree->Branch(branchname,"TH1F",&histXclu[clu],128000,0);
+    //sprintf(branchname,"histXclu_%d",clu+1);
+    //SDDTree->Branch(branchname,"TH1F",&histXclu[clu],128000,0);
     sprintf(branchname,"histZclu_%d",clu+1);
     SDDTree->Branch(branchname,"TH1F",&histZclu[clu],128000,0);
   }
@@ -934,20 +1063,29 @@ Bool_t AliITSPlaneEffSDD::WriteHistosToFile(TString filename, Option_t* option) 
   SDDTree->Branch("profileResZvsX","TProfile",&profileResZvsX,128000,0);
   SDDTree->Branch("profileClSizXvsX","TProfile",&profileClSizXvsX,128000,0);
   SDDTree->Branch("profileClSizZvsX","TProfile",&profileClSizZvsX,128000,0);
+  SDDTree->Branch("histTrErrX","TH1F",&histTrErrX,128000,0);
+  SDDTree->Branch("histTrErrZ","TH1F",&histTrErrZ,128000,0);
+  SDDTree->Branch("histClErrX","TH1F",&histClErrX,128000,0);
+  SDDTree->Branch("histClErrZ","TH1F",&histClErrZ,128000,0);
 
   for(Int_t j=0;j<kNHisto;j++){
     histX=fHisResX[j];
     histZ=fHisResZ[j];
     histXZ=fHisResXZ[j];
     histClusterType=fHisClusterSize[j];
+    profileResXvsCluSizeX=fProfResXvsCluSizeX[j];
     for(Int_t clu=0;clu<kNclu;clu++) {
-      histXclu[clu]=fHisResXclu[j][clu];
+      //histXclu[clu]=fHisResXclu[j][clu];
       histZclu[clu]=fHisResZclu[j][clu];
     }
     profileResXvsX=fProfResXvsX[j];
     profileResZvsX=fProfResZvsX[j];
     profileClSizXvsX=fProfClustSizeXvsX[j];
     profileClSizZvsX=fProfClustSizeZvsX[j];
+    histTrErrX=fHisTrackErrX[j];
+    histTrErrZ=fHisTrackErrZ[j];
+    histClErrX=fHisClusErrX[j];
+    histClErrZ=fHisClusErrZ[j];
 
     SDDTree->Fill();
   }
@@ -985,11 +1123,12 @@ Bool_t AliITSPlaneEffSDD::ReadHistosFromFile(TString filename) {
   TBranch *histZ = (TBranch*) tree->GetBranch("histZ");
   TBranch *histXZ = (TBranch*) tree->GetBranch("histXZ");
   TBranch *histClusterType = (TBranch*) tree->GetBranch("histClusterType");
-   
-  TBranch *histXclu[kNclu], *histZclu[kNclu];
+  TBranch *profileResXvsCluSizeX = (TBranch*) tree->GetBranch("profileResXvsCluSizeX");
+  //TBranch *histXclu[kNclu], *histZclu[kNclu];
+  TBranch *histZclu[kNclu];
   for(Int_t clu=0; clu<kNclu; clu++) {
-    sprintf(branchname,"histXclu_%d",clu+1);
-    histXclu[clu]= (TBranch*) tree->GetBranch(branchname);
+    //sprintf(branchname,"histXclu_%d",clu+1);
+    //histXclu[clu]= (TBranch*) tree->GetBranch(branchname);
     sprintf(branchname,"histZclu_%d",clu+1);
     histZclu[clu]= (TBranch*) tree->GetBranch(branchname);
   }
@@ -997,6 +1136,10 @@ Bool_t AliITSPlaneEffSDD::ReadHistosFromFile(TString filename) {
   TBranch *profileResZvsX = (TBranch*) tree->GetBranch("profileResZvsX");
   TBranch *profileClSizXvsX = (TBranch*) tree->GetBranch("profileClSizXvsX");
   TBranch *profileClSizZvsX = (TBranch*) tree->GetBranch("profileClSizZvsX");
+  TBranch *histTrErrX = (TBranch*) tree->GetBranch("histTrErrX");
+  TBranch *histTrErrZ = (TBranch*) tree->GetBranch("histTrErrZ");
+  TBranch *histClErrX = (TBranch*) tree->GetBranch("histClErrX");
+  TBranch *histClErrZ = (TBranch*) tree->GetBranch("histClErrZ");
 
   gROOT->cd();
 
@@ -1040,9 +1183,19 @@ Bool_t AliITSPlaneEffSDD::ReadHistosFromFile(TString filename) {
     fHisClusterSize[j]->Add(h2i);
   }
 
+  nevent = (Int_t)profileResXvsCluSizeX->GetEntries();
+  if(nevent!=kNHisto)
+    {AliWarning("ReadHistosFromFile: trying to read too many or too few histos!"); return kFALSE;}
+  profileResXvsCluSizeX->SetAddress(&p);
+  for(Int_t j=0;j<kNHisto;j++){
+    delete p; p=0;
+    profileResXvsCluSizeX->GetEntry(j);
+    fProfResXvsCluSizeX[j]->Add(p);
+  }
+
   for(Int_t clu=0; clu<kNclu; clu++) {
 
-    nevent = (Int_t)histXclu[clu]->GetEntries();
+    /*nevent = (Int_t)histXclu[clu]->GetEntries();
     if(nevent!=kNHisto)
       {AliWarning("ReadHistosFromFile: trying to read too many or too few histos!"); return kFALSE;}
     histXclu[clu]->SetAddress(&h);
@@ -1050,7 +1203,7 @@ Bool_t AliITSPlaneEffSDD::ReadHistosFromFile(TString filename) {
       delete h; h=0;
       histXclu[clu]->GetEntry(j);
       fHisResXclu[j][clu]->Add(h);
-    }
+    }*/
 
    nevent = (Int_t)histZclu[clu]->GetEntries();
     if(nevent!=kNHisto)
@@ -1101,6 +1254,46 @@ Bool_t AliITSPlaneEffSDD::ReadHistosFromFile(TString filename) {
     delete p; p=0;
     profileClSizZvsX->GetEntry(j);
     fProfClustSizeZvsX[j]->Add(p);
+  }
+
+  nevent = (Int_t)histTrErrX->GetEntries();
+  if(nevent!=kNHisto)
+    {AliWarning("ReadHistosFromFile: trying to read too many or too few histos!"); return kFALSE;}
+  histTrErrX->SetAddress(&h);
+  for(Int_t j=0;j<kNHisto;j++){
+    delete h; h=0;
+    histTrErrX->GetEntry(j);
+    fHisTrackErrX[j]->Add(h);
+  }
+
+  nevent = (Int_t)histTrErrZ->GetEntries();
+  if(nevent!=kNHisto)
+    {AliWarning("ReadHistosFromFile: trying to read too many or too few histos!"); return kFALSE;}
+  histTrErrZ->SetAddress(&h);
+  for(Int_t j=0;j<kNHisto;j++){
+    delete h; h=0;
+    histTrErrZ->GetEntry(j);
+    fHisTrackErrZ[j]->Add(h);
+  }
+
+  nevent = (Int_t)histClErrX->GetEntries();
+  if(nevent!=kNHisto)
+    {AliWarning("ReadHistosFromFile: trying to read too many or too few histos!"); return kFALSE;}
+  histClErrX->SetAddress(&h);
+  for(Int_t j=0;j<kNHisto;j++){
+    delete h; h=0;
+    histClErrX->GetEntry(j);
+    fHisClusErrX[j]->Add(h);
+  }
+
+  nevent = (Int_t)histClErrZ->GetEntries();
+  if(nevent!=kNHisto)
+    {AliWarning("ReadHistosFromFile: trying to read too many or too few histos!"); return kFALSE;}
+  histClErrZ->SetAddress(&h);
+  for(Int_t j=0;j<kNHisto;j++){
+    delete h; h=0;
+    histClErrZ->GetEntry(j);
+    fHisClusErrZ[j]->Add(h);
   }
 
   delete h;   h=0;

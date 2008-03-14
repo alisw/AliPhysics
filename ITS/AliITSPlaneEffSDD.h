@@ -15,7 +15,7 @@
 // Origin: Giuseppe.Bruno@ba.infn.it     //
 ///////////////////////////////////////////
 
-/* $Id$ */
+/* $Id:$ */
   
 class AliITSPlaneEffSDD :  public AliITSPlaneEff {
  public:
@@ -25,7 +25,6 @@ class AliITSPlaneEffSDD :  public AliITSPlaneEff {
     AliITSPlaneEffSDD(const AliITSPlaneEffSDD &source);
     // ass. operator
     AliITSPlaneEffSDD& operator=(const AliITSPlaneEffSDD &s);
-    //    virtual AliITSPlaneEff& operator=(const AliITSPlaneEff &source);
     // Simple way to add another class (i.e. statistics). 
     AliITSPlaneEffSDD& operator +=( const AliITSPlaneEffSDD &add);
     // Getters for average Plane efficiency (icluding dead/noisy)
@@ -39,6 +38,9 @@ class AliITSPlaneEffSDD :  public AliITSPlaneEff {
     Double_t ErrPlaneEff(const UInt_t key) const 
        {return ErrPlaneEff(GetModFromKey(key),GetChipFromKey(key),
                            GetWingFromKey(key),GetSubWingFromKey(key));};
+    // Getters for fFound[] and fTried[]
+    Int_t GetFound(const UInt_t key) const;
+    Int_t GetTried(const UInt_t key) const;
     // Methods to update the Plane efficiency (specific of the SDD segmentation) 
     Bool_t UpDatePlaneEff(const Bool_t Kfound, const UInt_t mod, 
                           const UInt_t chip, const UInt_t wing, const UInt_t subw=0);
@@ -93,6 +95,8 @@ class AliITSPlaneEffSDD :  public AliITSPlaneEff {
                                                                           // those of the input file.
     UInt_t GetKey(const UInt_t mod, const UInt_t chip,           // unique key to locate the
                   const UInt_t wing, const UInt_t subw=0) const; // basic block of the SDD
+    // return chip [0,3] and wing [0,1] from the "absolute" chip number [0,7] as defined in AliITSsegmentationSDD
+    void ChipAndWingFromChip07(const Int_t chip07, UInt_t& chip,  UInt_t& wing) const;
  protected:
     virtual void Copy(TObject &obj) const;
     Int_t GetMissingTracksForGivenEff(Double_t eff, Double_t RelErr, 
@@ -133,17 +137,38 @@ class AliITSPlaneEffSDD :  public AliITSPlaneEff {
     TH1F **fHisResZ; //! histos with residual distribution (track-cluster) along local Z
     TH2F **fHisResXZ; //! 2-d histos with residual distribution (track-cluster) along local X and Z
     TH2I **fHisClusterSize; //! histos with cluster-size distribution
-    TH1F ***fHisResXclu; //! histos with residual distribution along local X (r-phi) for cluster type
+    //TH1F ***fHisResXclu; //! histos with residual distribution along local X (r-phi) for cluster type
+    TProfile **fProfResXvsCluSizeX; //! TProfile of X Residuals vs. cluster size in X 
     TH1F ***fHisResZclu; //! histos with residual distribution along local Z for cluster type
     TProfile **fProfResXvsX; //! TProfile of X Residuals vs. X (of the cluster)
     TProfile **fProfResZvsX; //! TProfile of Z Residuals vs. X (of the cluster)
     TProfile **fProfClustSizeXvsX; //! TProfile of cluster_size_X vs. X (of the cluster)
     TProfile **fProfClustSizeZvsX; //! TProfile of cluster_size_X vs. X (of the cluster)
+    TH1F **fHisTrackErrX; //! histos with track prediction error on Local X
+    TH1F **fHisTrackErrZ; //! histos with track prediction error on Local Z
+    TH1F **fHisClusErrX; //! histos with Local_X cluster error
+    TH1F **fHisClusErrZ; //! histos with Local_Z cluster error
 
     ClassDef(AliITSPlaneEffSDD,2) // SDD Plane Efficiency class
 };
 //
 inline UInt_t AliITSPlaneEffSDD::Nblock() const {return kNModule*kNChip*kNWing*kNSubWing;}
+
+inline Int_t AliITSPlaneEffSDD::GetFound(const UInt_t key) const {
+ if(key>=kNModule*kNChip*kNWing*kNSubWing) {AliWarning("GetFound: you asked for a non existing key"); return -1;}
+ return fFound[key];
+}
+inline Int_t AliITSPlaneEffSDD::GetTried(const UInt_t key) const {
+ if(key>=kNModule*kNChip*kNWing*kNSubWing) {AliWarning("GetTried: you asked for a non existing key"); return -1;}
+ return fTried[key];
+}
+inline void AliITSPlaneEffSDD::ChipAndWingFromChip07(const Int_t chip07, UInt_t& chip, 
+                                                           UInt_t& wing) const {
+if(chip07<0 || chip07>7) 
+  {AliWarning("ChipAndWingFromChip07:  you asked for a non existing chip"); return;}
+else if(chip07<=3) { chip=chip07; wing=0;}
+else {chip=chip07-kNChip; wing=1;} 
+return;
+}
 //
 #endif
-

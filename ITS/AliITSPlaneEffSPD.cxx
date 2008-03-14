@@ -35,7 +35,7 @@
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
 //#include "AliCDBRunRange.h"
-//#include "AliITSsegmentationSPD.h"
+#include "AliITSsegmentationSPD.h"
 #include "AliITSCalibrationSPD.h"
 
 ClassImp(AliITSPlaneEffSPD)	
@@ -504,17 +504,16 @@ return key;
 }
 //_____________________________________________________________________________
 UInt_t AliITSPlaneEffSPD::GetColFromLocZ(Float_t zloc) const {
-UInt_t col=0;
-/* note: as it is now, the AliITSsegmentationSPD::Init() does not properly initialize (6 chips !!!)
-AliITSsegmentationSPD spd;
-spd.Init();
-Int_t ix,iz;
-if(spd.LocalToDet(0,zloc,ix,iz)) col+=iz;
-else {
-  AliError("GetColFromLocZ: cannot compute column number from local z");
-  col=99999;}
-return col;
-*/
+// method to retrieve column number from the local z coordinate
+  UInt_t col=0;
+  AliITSsegmentationSPD spd;
+  Int_t ix,iz;
+  if(spd.LocalToDet(0,zloc,ix,iz)) col+=iz;
+  else {
+    AliError("GetColFromLocZ: cannot compute column number from local z");
+    col=99999;}
+  return col;
+/*
 const Float_t kconv = 1.0E-04; // converts microns to cm.
 Float_t bz[160];
 for(Int_t i=000;i<160;i++) bz[i] = 425.0; // most are 425 microns except below
@@ -537,6 +536,7 @@ for(j=0;j<160;j++){
 col+=j;
 //
 return col;
+*/
 }
 //________________________________________________________
 Bool_t AliITSPlaneEffSPD::GetBlockBoundaries(const UInt_t key, Float_t& xmn,Float_t& xmx,
@@ -556,6 +556,7 @@ zmn=GetLocZFromCol(chip*kNCol);
 zmx=GetLocZFromCol((chip+1)*kNCol);
 xmn=GetLocXFromRow(0);
 xmx=GetLocXFromRow(kNRow);
+//
 Float_t tmp=zmn;
 if(zmx<zmn) {zmn=zmx; zmx=tmp;}
 tmp=xmn;
@@ -574,17 +575,13 @@ Float_t AliITSPlaneEffSPD::GetLocXFromRow(const UInt_t row) const {
 //
 if(row>kNRow)  // not >= ! allow also computation of upper limit of the last row. 
   {AliError("LocYFromRow: you asked for a non existing row"); return 9999999.;}
-const Float_t kconv = 1.0E-04; // converts microns to cm.
-Float_t bx[256];
-for(Int_t i=000;i<256;i++) bx[i] = 50.0; // in x all are 50 microns.
-//
-Float_t dx=0;
-for(Int_t i=000;i<256;i++) dx+=bx[i];
-dx = -0.5*kconv*dx;
-for(UInt_t j=0;j<row;j++){
-  dx += kconv*bx[j];
-} // end for j
-return dx;
+// Use only AliITSsegmentationSPD
+AliITSsegmentationSPD spd;
+Double_t dummy,x;
+if(row==kNRow) spd.CellBoundries((Int_t)row-1,0,dummy,x,dummy,dummy);
+else spd.CellBoundries((Int_t)row,0,x,dummy,dummy,dummy);
+return (Float_t)x;
+
 }
 //________________________________________________________
 Float_t AliITSPlaneEffSPD::GetLocZFromCol(const UInt_t col) const {
@@ -598,21 +595,13 @@ Float_t AliITSPlaneEffSPD::GetLocZFromCol(const UInt_t col) const {
 //
 if(col>kNChip*kNCol) // not >= ! allow also computation of upper limit of the last column
   {AliError("LocZFromCol: you asked for a non existing column"); return 9999999.;}
-const Float_t kconv = 1.0E-04; // converts microns to cm.
-Float_t bz[160];
-for(Int_t i=000;i<160;i++) bz[i] = 425.0; // most are 425 microns except below
-bz[ 31] = bz[ 32] = 625.0; // first chip boundry
-bz[ 63] = bz[ 64] = 625.0; // first chip boundry
-bz[ 95] = bz[ 96] = 625.0; // first chip boundry
-bz[127] = bz[128] = 625.0; // first chip boundry
-//
-Float_t dz=0;
-for(Int_t i=000;i<160;i++) dz+=bz[i];
-dz = -0.5*kconv*dz;
-for(UInt_t j=0;j<col;j++){
-  dz += kconv*bz[j];
-} // end for j
-return dz;
+// Use only AliITSsegmentationSPD
+AliITSsegmentationSPD spd;
+Double_t dummy,y;
+if(col==kNChip*kNCol) spd.CellBoundries(0,(Int_t)col-1,dummy,dummy,dummy,y);
+else spd.CellBoundries(0,(Int_t)col,dummy,dummy,y,dummy);
+return (Float_t)y;
+
 }
 //__________________________________________________________
 void AliITSPlaneEffSPD::InitHistos() {

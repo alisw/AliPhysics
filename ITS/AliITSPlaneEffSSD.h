@@ -15,7 +15,7 @@
 // Origin: Giuseppe.Bruno@ba.infn.it     //
 ///////////////////////////////////////////
 
-/* $Id$ */
+/* $Id:$ */
   
 class AliITSPlaneEffSSD :  public AliITSPlaneEff {
  public:
@@ -31,6 +31,9 @@ class AliITSPlaneEffSSD :  public AliITSPlaneEff {
     // Getters for average Plane efficiency (icluding dead/noisy)
     Double_t PlaneEff(const UInt_t mod) const;
     Double_t ErrPlaneEff(const UInt_t mod) const;
+    // Getters for fFound[] and fTried[]
+    Int_t GetFound(const UInt_t key) const;
+    Int_t GetTried(const UInt_t key) const;
     // Methods to update the Plane efficiency (specific of the SSD segmentation) 
     Bool_t UpDatePlaneEff(const Bool_t Kfound, const UInt_t mod);
     //
@@ -112,6 +115,15 @@ const Float_t kconv = 1.0E-04;  //converts microns to cm.
 xmn=-kconv*kDxDefault/2.; xmx=kconv*kDxDefault/2.;
 zmn=-kconv*kDzDefault/2.; zmx=kconv*kDzDefault/2.;
 return kTRUE;
+}
+//
+inline Int_t AliITSPlaneEffSSD::GetFound(const UInt_t key) const {
+ if(key>=kNModule) {AliWarning("GetFound: you asked for a non existing key"); return -1;}
+ return fFound[key];
+}
+inline Int_t AliITSPlaneEffSSD::GetTried(const UInt_t key) const {
+ if(key>=kNModule) {AliWarning("GetTried: you asked for a non existing key"); return -1;}
+ return fTried[key];
 }
 //
 #endif
