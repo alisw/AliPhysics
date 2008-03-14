@@ -105,7 +105,6 @@ ClassImp(AliPHOSSDigitizer)
 //____________________________________________________________________________ 
 AliPHOSSDigitizer::AliPHOSSDigitizer() : 
   TTask("",""),
-  fA(0.f), fB(0.f),
   fPrimThreshold(0.f),
   fDefaultInit(kTRUE),
   fEventFolderName(""),
@@ -113,7 +112,6 @@ AliPHOSSDigitizer::AliPHOSSDigitizer() :
   fSDigitsInRun(0),
   fFirstEvent(0),
   fLastEvent(0)
-//  , fQADM (0x0)
 {
   // ctor
   // Intialize the quality assurance data maker 	
@@ -123,7 +121,6 @@ AliPHOSSDigitizer::AliPHOSSDigitizer() :
 AliPHOSSDigitizer::AliPHOSSDigitizer(const char * alirunFileName, 
 				     const char * eventFolderName):
   TTask("PHOS"+AliConfig::Instance()->GetSDigitizerTaskName(), alirunFileName),
-  fA(0.f), fB(0.f),
   fPrimThreshold(0.f),
   fDefaultInit(kFALSE),
   fEventFolderName(eventFolderName),
@@ -131,26 +128,16 @@ AliPHOSSDigitizer::AliPHOSSDigitizer(const char * alirunFileName,
   fSDigitsInRun(0),
   fFirstEvent(0),
   fLastEvent(0)
-//  , fQADM (0x0)
 {
   // ctor
   InitParameters() ; 
   Init();
   fDefaultInit = kFALSE ; 
-//  // Intialize the quality assurance data maker 
-//  //FIXME: get the run number
-//  Int_t run = 0 ;
-//  //EMXIF 	
-//  GetQADataMaker()->Init(AliQA::kHITS, run, fgkCycles) ;
-//  GetQADataMaker()->StartOfCycle(AliQA::kHITS) ;
-//  GetQADataMaker()->Init(AliQA::kSDIGITS, run) ; 
-//  GetQADataMaker()->StartOfCycle(AliQA::kSDIGITS, kTRUE) ;
 }
 
 //____________________________________________________________________________
 AliPHOSSDigitizer::AliPHOSSDigitizer(const AliPHOSSDigitizer& sd) :
   TTask(sd.GetName(), sd.GetTitle()),
-  fA(sd.fA), fB(sd.fB),
   fPrimThreshold(sd.fPrimThreshold),
   fDefaultInit(kFALSE),
   fEventFolderName(sd.fEventFolderName),
@@ -158,17 +145,8 @@ AliPHOSSDigitizer::AliPHOSSDigitizer(const AliPHOSSDigitizer& sd) :
   fSDigitsInRun(sd.fSDigitsInRun),
   fFirstEvent(sd.fFirstEvent),
   fLastEvent(sd.fLastEvent)
-//  , fQADM (sd.fQADM)
 { 
   // cpy ctor
-//  // Intialize the quality assurance data maker 	
-//  //FIXME: get the run number
-//  Int_t run = 0 ;
-//  //EMXIF 	
-//  GetQADataMaker()->Init(AliQA::kHITS, run, fgkCycles) ;
-//  GetQADataMaker()->StartOfCycle(AliQA::kHITS) ;
-//  GetQADataMaker()->Init(AliQA::kSDIGITS, run) ; 
-//  GetQADataMaker()->StartOfCycle(AliQA::kSDIGITS, kTRUE) ;
 }
 
 //_____________________________________________________________________________
@@ -222,8 +200,6 @@ void AliPHOSSDigitizer::Init()
 void AliPHOSSDigitizer::InitParameters()
 { 
   // initializes the parameters for digitization
-  fA             = 0;
-  fB             = 10000000.;
   fPrimThreshold = 0.01 ;
   fSDigitsInRun  = 0 ;
 }
@@ -373,8 +349,6 @@ void AliPHOSSDigitizer::Print(const Option_t *)const
   // Prints parameters of SDigitizer
   Info("Print", "\n------------------- %s -------------", GetName() ) ; 
   printf("   Writing SDigits to branch with title  %s\n", fEventFolderName.Data()) ;
-  printf("   with digitization parameters  A = %f\n", fA) ; 
-  printf("                                 B = %f\n", fB) ;
   printf("   Threshold for Primary assignment= %f\n", fPrimThreshold)  ; 
   printf("---------------------------------------------------\n") ;
   
@@ -386,7 +360,7 @@ Bool_t AliPHOSSDigitizer::operator==( AliPHOSSDigitizer const &sd )const
   // Equal operator.
   // SDititizers are equal if their pedestal, slope and threshold are equal
 
-  if( (fA==sd.fA)&&(fB==sd.fB)&&(fPrimThreshold==sd.fPrimThreshold))
+  if(fPrimThreshold==sd.fPrimThreshold)
     return kTRUE ;
   else
     return kFALSE ;

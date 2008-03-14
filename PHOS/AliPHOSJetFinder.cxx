@@ -316,33 +316,9 @@ void AliPHOSJetFinder::FindJetsFromDigits(const TClonesArray * digits, TObjArray
 }
 //____________________________________________________________________________ 
 Double_t AliPHOSJetFinder::Calibrate(const AliPHOSDigit * digit){ 
-//   if(fPedestals || fGains ){  //use calibration data
-//     if(!fPedestals || !fGains ){
-//       AliError(Form("Either Pedestals of Gains not set!")) ;
-//       return 0 ;
-//     }
-//     Float_t en=(digit->GetAmp() - fPedestals->Data(digit->GetId)()))*fGains->Data(digit->GetId()) ;
-//     if(en>0)
-//       return en ;
-//     else
-//       return 0. ;
-//   }
-//   else{ //simulation
-  if(fSimGain==0){ //read simulation parameters
-    AliPHOSGetter * gime = AliPHOSGetter::Instance() ;
-    if(!gime){
-      AliError(Form("Can not read Calibration parameters")) ;
-      return 0 ;
-    }
-    const TTask * task = gime->Digitizer() ;
-    if(strcmp(task->IsA()->GetName(),"AliPHOSDigitizer")==0){
-      const AliPHOSDigitizer * dig = static_cast<const AliPHOSDigitizer *>(task) ;
-      fSimGain     = dig->GetEMCchannel() ;
-      fSimPedestal = dig->GetEMCpedestal();
-    }
-  }
+  //Both simulated and raw digits are already calibrated
   
-  return fSimPedestal + digit->GetAmp()*fSimGain ;        
+  return digit->GetEnergy() ;        
   
   //  }  
 }

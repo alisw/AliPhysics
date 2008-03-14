@@ -97,6 +97,7 @@ class TFile;
 #include "AliPHOSRawDigiProducer.h"
 #include "AliPHOSQAChecker.h"
 #include "AliPHOSRecoParamEmc.h"
+#include "AliPHOSSimParam.h"
 
 ClassImp(AliPHOS)
 
@@ -417,6 +418,10 @@ void AliPHOS::Digits2Raw()
 {
 // convert digits of the current event to raw data
   
+  if(AliPHOSSimParam::GetInstance()->IsEDigitizationOn()){
+    AliError("Energy digitization should be OFF if use Digits2Raw") ;
+  }
+
   AliPHOSLoader * loader = dynamic_cast<AliPHOSLoader*>(fLoader) ; 
 
   // get the digits

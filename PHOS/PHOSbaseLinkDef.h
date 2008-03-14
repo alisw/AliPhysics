@@ -43,5 +43,6 @@
 #pragma link C++ class AliPHOSTrackSegment+;
 
 #pragma link C++ class AliPHOSReconstructor+;
+#pragma link C++ class AliPHOSSimParam+;
 
 #endif

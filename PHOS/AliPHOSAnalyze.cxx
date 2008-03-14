@@ -260,8 +260,7 @@ void AliPHOSAnalyze::DrawRecon(Int_t Nevent,Int_t Nmod){
        phosgeom->AbsToRelNumbering(sdigit->GetId(), relid) ;
        Float_t x,z ;
        phosgeom->RelPosInModule(relid,x,z);
-       AliPHOSSDigitizer* sd = dynamic_cast<AliPHOSSDigitizer*>(gime->SDigitizer());
-       Float_t e = sd->Calibrate(sdigit->GetAmp()) ;
+       Float_t e = sdigit->GetEnergy() ;
        nsdig[relid[0]-1]++ ;
        if(relid[0]==Nmod){
          if(relid[1]==0)  //EMC
@@ -288,8 +287,7 @@ void AliPHOSAnalyze::DrawRecon(Int_t Nevent,Int_t Nmod){
        phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
        Float_t x,z ;
        phosgeom->RelPosInModule(relid,x,z) ;
-       AliPHOSSDigitizer* sd = dynamic_cast<AliPHOSSDigitizer*>(gime->SDigitizer());
-       Float_t e = sd->Calibrate(digit->GetAmp()) ;
+       Float_t e = digit->GetEnergy() ;
        if(relid[0]==Nmod){
          if(relid[1]==0)  //EMC
            emcDigits->Fill(x,z,e) ;

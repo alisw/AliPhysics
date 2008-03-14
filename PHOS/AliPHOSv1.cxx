@@ -71,34 +71,19 @@
 #include "AliRun.h"
 #include "AliMC.h"
 #include "AliStack.h"
+#include "AliPHOSSimParam.h"
 
 ClassImp(AliPHOSv1)
 
 //____________________________________________________________________________
-AliPHOSv1::AliPHOSv1():
-  fLightYieldMean(0.),
-  fIntrinsicPINEfficiency(0.),
-  fLightYieldAttenuation(0.),
-  fRecalibrationFactor(0.),
-  fElectronsPerGeV(0.),
-  fAPDGain(0.),
-  fLightFactor(0.),
-  fAPDFactor(0.)
+AliPHOSv1::AliPHOSv1()
 {
   //Def ctor.
 }
 
 //____________________________________________________________________________
 AliPHOSv1::AliPHOSv1(const char *name, const char *title):
-  AliPHOSv0(name,title),
-  fLightYieldMean(0.),
-  fIntrinsicPINEfficiency(0.),
-  fLightYieldAttenuation(0.),
-  fRecalibrationFactor(0.),
-  fElectronsPerGeV(0.),
-  fAPDGain(0.),
-  fLightFactor(0.),
-  fAPDFactor(0.)
+  AliPHOSv0(name,title)
 {
   //
   // We store hits :
@@ -120,26 +105,6 @@ AliPHOSv1::AliPHOSv1(const char *name, const char *title):
   fNhits = 0 ;
 
   fIshunt     =  2 ; // All hits are associated with primary particles
-
-  //Photoelectron statistics:
-  // The light yield is a poissonian distribution of the number of
-  // photons created in the PbWo4 crystal, calculated using following formula
-  // NumberOfPhotons = EnergyLost * LightYieldMean* APDEfficiency *
-  //              exp (-LightYieldAttenuation * DistanceToPINdiodeFromTheHit);
-  // LightYieldMean is parameter calculated to be over 47000 photons per GeV
-  // APDEfficiency is 0.02655
-  // k_0 is 0.0045 from Valery Antonenko
-  // The number of electrons created in the APD is
-  // NumberOfElectrons = APDGain * LightYield
-  // The APD Gain is 300
-  fLightYieldMean = 47000;
-  fIntrinsicPINEfficiency = 0.02655 ; //APD= 0.1875/0.1271 * 0.018 (PIN)
-  fLightYieldAttenuation  = 0.0045 ; 
-  fRecalibrationFactor    = 13.418/ fLightYieldMean ;
-  fElectronsPerGeV        = 2.77e+8 ;
-  fAPDGain                = 300. ;
-  fLightFactor            = fLightYieldMean * fIntrinsicPINEfficiency ; 
-  fAPDFactor              = (fRecalibrationFactor/100.) * fAPDGain ;   
 }
 
 //____________________________________________________________________________
@@ -379,10 +344,10 @@ void AliPHOSv1::StepManager(void)
       //Calculates the light yield, the number of photons produced in the
       //crystal 
       //There is no dependence of reponce on distance from energy deposition to APD
-      Float_t lightYield = gRandom->Poisson(fLightFactor * lostenergy) ;
+      Float_t lightYield = gRandom->Poisson(AliPHOSSimParam::GetInstance()->GetLightFactor() * lostenergy) ;
 
       //Calculates de energy deposited in the crystal  
-      xyzte[4] = fAPDFactor * lightYield ;
+      xyzte[4] = AliPHOSSimParam::GetInstance()->GetAPDFactor() * lightYield ;
       
       Int_t primary ;
       if(fIshunt == 2){
@@ -400,10 +365,9 @@ void AliPHOSv1::StepManager(void)
 	  part = gAlice->GetMCApp()->Particle(primary) ;
 	}
       }
-      else
+      else{
 	primary  =  gAlice->GetMCApp()->GetPrimary( gAlice->GetMCApp()->GetCurrentTrackNumber() ); 
-
-      
+      }
       
       // add current hit to the hit list
       // Info("StepManager","%d %d", primary, tracknumber) ; 

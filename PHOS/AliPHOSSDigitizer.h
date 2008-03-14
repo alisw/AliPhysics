@@ -58,8 +58,6 @@ public:
 
   virtual ~AliPHOSSDigitizer(); // dtor
 
-  Float_t        Calibrate(Int_t amp)const {return (amp - fA)/fB ; }
-  Int_t          Digitize(Float_t Energy)const { return (Int_t ) ( fA + Energy*fB); }
   virtual void   Exec(Option_t *option); 
   Int_t    GetSDigitsInRun() const {return fSDigitsInRun ;}  
   virtual void   Print(const Option_t * = "") const ;
@@ -70,7 +68,6 @@ public:
 
  
 private:
-//  AliPHOSQADataMaker * GetQADataMaker() const { return fQADM ; } 
 
   void     Init() ;
   void     InitParameters() ;
@@ -79,8 +76,6 @@ private:
 
 
 private:
-  Float_t fA ;              // Pedestal parameter
-  Float_t fB ;              // Slope Digitizition parameters
   Float_t fPrimThreshold ;  // To store primari if Elos > threshold
   Bool_t  fDefaultInit;     //! Says if the task was created by defaut ctor (only parameters are initialized)
   TString fEventFolderName; // event folder name
@@ -89,10 +84,7 @@ private:
   Int_t   fFirstEvent;      // first event to process
   Int_t   fLastEvent;       // last  event to process
 
-//  AliPHOSQADataMaker * fQADM ; //!Quality Assurance Data Maker
-//  static const Int_t fgkCycles = 9999 ; // QA data accumulation cycle 
-
-  ClassDef(AliPHOSSDigitizer,4)  // description 
+  ClassDef(AliPHOSSDigitizer,5)  // description 
 
 };
 

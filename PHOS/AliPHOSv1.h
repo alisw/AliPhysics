@@ -54,42 +54,11 @@ public:
   Float_t    CPVPadResponseFunction(Float_t qhit, Float_t zg, Float_t xg) ;
   Double_t   CPVCumulPadResponse(Double_t x, Double_t y) ;
 
-  //Variables conserning light yeild and APD efficiency
-  Float_t GetLightYieldMean()         const { return  fLightYieldMean ;}
-  Float_t GetLightYieldAttenuation()  const { return  fLightYieldAttenuation ;}
-  Float_t GetRecalibrationFactor()    const { return  fRecalibrationFactor ;}
-  Float_t GetAPDGain()                const { return  fAPDGain ;}
-  Float_t GetIntrinsicPINEfficiency() const { return  fIntrinsicPINEfficiency ;}
-  Float_t GetElectronsPerGeV()        const { return  fElectronsPerGeV ;}
-
-  void    SetLightYieldMean(Float_t LightYieldMean) 
-                                   {fLightYieldMean = LightYieldMean;}
-  void    SetLightYieldAttenuation(Float_t LightYieldAttenuation)
-                                   {fLightYieldAttenuation = LightYieldAttenuation;}
-  void    SetIntrinsicPINEfficiency(Float_t IntrinsicPINEfficiency) 
-                                   {fIntrinsicPINEfficiency = IntrinsicPINEfficiency;}
-  void    SetRecalibrationFactor(Float_t RecalibrationFactor) 
-                                   {fRecalibrationFactor = RecalibrationFactor;}
-  void    SetElectronsPerGeV(Float_t ElectronsPerGeV) 
-                                   {fElectronsPerGeV = ElectronsPerGeV;}
-  void    SetAPDGain(Float_t APDGain)   {fAPDGain = APDGain;}
-
-protected:
-
-  Float_t fLightYieldMean ;         // Mean lightyield in the PbOW4 xtal per GeV (Poisson distribution)
-  Float_t fIntrinsicPINEfficiency ; // Photo efficiency of the PIN diode   
-  Float_t fLightYieldAttenuation ;  // Attenuation of the light through the crystal
-  Float_t fRecalibrationFactor ;    // Recalibration factor
-  Float_t fElectronsPerGeV ;        // Number of electrons per GeV created in the PIN by a ionizing particle
-  Float_t fAPDGain ;                // APD Gain
-  Float_t fLightFactor ;            //! a calculated factor
-  Float_t fAPDFactor ;              //! a calculated factor
-
  private:
   AliPHOSv1(AliPHOSv1 & phos);
   AliPHOSv1 & operator = (const AliPHOSv1 & /*rvalue*/);
 
-  ClassDef(AliPHOSv1,2)  // Implementation of PHOS manager class for layout EMC+PPSD
+  ClassDef(AliPHOSv1,3)  // Implementation of PHOS manager class for layout EMC+PPSD
 
 };
 
