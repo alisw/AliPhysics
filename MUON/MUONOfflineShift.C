@@ -117,8 +117,6 @@ Int_t DataMakerReading(const char* input,
   
   timer.Stop();
   
-  delete dm;
-  
   return n;
 }
 
