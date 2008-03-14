@@ -37,8 +37,7 @@ AliESDInputHandler::AliESDInputHandler() :
   AliInputEventHandler(),
   fEvent(0x0),
   fBranches(""),
-  fBranchesOn(""),
-  fNObjCount(0)
+  fBranchesOn("")
 {
   // default constructor
 }
@@ -52,8 +51,9 @@ AliESDInputHandler::~AliESDInputHandler()
 
 //______________________________________________________________________________
 AliESDInputHandler::AliESDInputHandler(const char* name, const char* title):
-  AliInputEventHandler(name, title), fEvent(0x0), fBranches(""), fBranchesOn(""),fNObjCount(0)
+  AliInputEventHandler(name, title), fEvent(0x0), fBranches(""), fBranchesOn("")
 {
+    // Constructor
 }
 
 Bool_t AliESDInputHandler::Init(TTree* tree,  Option_t* /*opt*/)
@@ -84,15 +84,14 @@ Bool_t AliESDInputHandler::BeginEvent(Long64_t /*entry*/)
 	((AliESDEvent*)fEvent)->CopyFromOldESD();
 	old->Reset();
   }
-  fNObjCount = TProcessID::GetObjectCount();
-
   return kTRUE;
 }
 
-Bool_t  AliESDInputHandler::FinishEvent(){
-  if(fEvent)fEvent->Reset();
-  TProcessID::SetObjectCount(fNObjCount);
-  return kTRUE;
+Bool_t  AliESDInputHandler::FinishEvent()
+{
+    // Finish the event 
+    if(fEvent)fEvent->Reset();
+    return kTRUE;
 } 
 
 void AliESDInputHandler::SwitchOffBranches() const {

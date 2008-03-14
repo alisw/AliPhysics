@@ -36,7 +36,6 @@ class AliESDInputHandler : public AliInputEventHandler {
     AliESDEvent    *fEvent;      //! Pointer to the event
     TString         fBranches;   //List of branches to be switched off (separated by space)
     TString         fBranchesOn; //List of branches to be switched on  (separated by space)
-    Int_t           fNObjCount;  //Object count for TRef    
     ClassDef(AliESDInputHandler, 2);
 };
 
