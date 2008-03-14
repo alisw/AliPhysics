@@ -75,8 +75,8 @@ Double_t AliFemtoModelManager::GetWeight(AliFemtoPair *aPair)
   // Return femtoscopic weight for a fiven pair
   if (fCreateCopyHiddenInfo) {
     // Try to gess particle masses and pid from the weight generator
-    Double_t tMass1, tMass2;
-    Int_t tPid1, tPid2;
+    Double_t tMass1=0.0001, tMass2=0.0001;
+    Int_t tPid1=0, tPid2=0;
     if (fWeightGenerator->GetPairType() == AliFemtoModelWeightGenerator::PionPlusPionPlus()) {
       tMass1 = 0.13957;
       tMass2 = 0.13957;
