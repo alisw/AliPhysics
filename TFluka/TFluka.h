@@ -403,7 +403,7 @@ class TFluka : public TVirtualMC {
   void     GetPrimaryElectronPosition(Int_t i, Double_t& x, Double_t& y, Double_t& z, Double_t& t) const;
   void     SetCurrentPrimaryElectronIndex(Int_t i)  {fPrimaryElectronIndex = i;}
   void     PrimaryIonisationStepping(Int_t nprim);
-
+  void     CalcPrimaryIonisationTime();
   void  AddIon(Int_t a, Int_t z) const;
   Int_t GetIonPdg(Int_t z, Int_t a, Int_t i = 0) const;
  private:
@@ -433,6 +433,9 @@ class TFluka : public TVirtualMC {
   Double_t              fYsco;             // Fluka Draw procedures formal parameter
   Double_t              fZsco;             // Fluka Draw procedures formal parameter
   Double_t              fPint[4];          // 4-vector of particle after interaction
+  Double_t*             fPItime;           // Time distribution of primary ionisations
+  Double_t*             fPIlength;         // Track length distribution of primary ionisations
+  Int_t                 fNPI;              // Number of primary ionisation steps
   Bool_t   fTrackIsEntering;      // Flag for track entering
   Bool_t   fTrackIsExiting;       // Flag for track exiting  
   Bool_t   fTrackIsNew;           // Flag for new track

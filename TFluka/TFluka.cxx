@@ -129,6 +129,9 @@ TFluka::TFluka()
    fXsco(0),
    fYsco(0),
    fZsco(0),
+   fPItime(0),
+   fPIlength(0),
+   fNPI(0),
    fTrackIsEntering(kFALSE),
    fTrackIsExiting(kFALSE),
    fTrackIsNew(kFALSE),
@@ -168,6 +171,9 @@ TFluka::TFluka(const char *title, Int_t verbosity, Bool_t isRootGeometrySupporte
    fXsco(0),
    fYsco(0),
    fZsco(0),
+   fPItime(0),
+   fPIlength(0),
+   fNPI(0),
    fTrackIsEntering(kFALSE),
    fTrackIsExiting(kFALSE),
    fTrackIsNew(kFALSE),
@@ -1640,17 +1646,28 @@ Double_t TFluka::TrackStep() const
 // Return the length in centimeters of the current step
 // TRACKR.ctrack = total curved path
     FlukaCallerCode_t caller = GetCaller();
-    if (caller == kBXEntering || caller == kBXExiting || 
-	caller == kENDRAW     || caller == kUSDRAW || 
-	caller == kUSTCKV     || caller == kMGResumedTrack ||
-	caller == kSODRAW)
+    if (caller == kMGDRAW) {
+	Int_t i;
+	if ((i = fPrimaryElectronIndex) > -1) {
+	    if (i > 0) {
+		return (fPIlength[i] - fPIlength[i-1]); 
+	    } else {
+		Double_t s (TRACKR.ctrack - (fPIlength[fNPI - 1] - fPIlength[0]));
+		return s;
+	    }
+	} else {
+	    return TRACKR.ctrack;
+	}
+    } else if (caller == kBXEntering || caller == kBXExiting || 
+	       caller == kENDRAW     || caller == kUSDRAW || 
+	       caller == kUSTCKV     || caller == kMGResumedTrack ||
+	       caller == kSODRAW)
+    {
 	return 0.0;
-  else if (caller == kMGDRAW)
-    return TRACKR.ctrack;
-  else {
-    Warning("TrackStep", "track step not available");
-    return 0.0;
-  }  
+    } else {
+	Warning("TrackStep", "track step not available");
+	return 0.0;
+    }  
 }
 
 //______________________________________________________________________________ 
@@ -1658,19 +1675,27 @@ Double_t TFluka::TrackLength() const
 {
 // TRACKR.cmtrck = cumulative curved path since particle birth
   FlukaCallerCode_t caller = GetCaller();
-  if (caller == kBXEntering || caller == kBXExiting || 
-      caller == kENDRAW || caller == kUSDRAW || caller == kMGDRAW || 
-      caller == kUSTCKV) 
-    return TRACKR.cmtrck;
+  if (caller == kMGDRAW) {
+      Int_t i;
+      if ((i = fPrimaryElectronIndex) > -1) {
+	  return fPIlength[i];
+      } else {
+	  return TRACKR.cmtrck;
+      }
+      
+  } else if (caller == kBXEntering || caller == kBXExiting || 
+	     caller == kENDRAW || caller == kUSDRAW || caller == kUSTCKV) 
+      return TRACKR.cmtrck;
   else if (caller == kMGResumedTrack) 
-    return TRACKR.spausr[8];
+      return TRACKR.spausr[8];
   else if (caller == kSODRAW)
       return 0.0;
   else {
-    Warning("TrackLength", "track length not available for caller %5d \n", caller);
-    return 0.0;
-  } 
+      Warning("TrackLength", "track length not available for caller %5d \n", caller);
+      return 0.0;
+  }
 }
+
 
 //______________________________________________________________________________ 
 Double_t TFluka::TrackTime() const
@@ -1681,8 +1706,7 @@ Double_t TFluka::TrackTime() const
   if (caller == kMGDRAW) {
       Int_t i;
       if ((i = fPrimaryElectronIndex) > -1) {
-	  Double_t x, y, z, t;
-	  GetPrimaryElectronPosition(i, x, y, z, t);
+	  Double_t t = fPItime[i];
 	  return t;
       } else {
 	  return TRACKR.atrack;
@@ -2661,11 +2685,12 @@ Int_t TFluka::GetSpecialPdg(Int_t number) const
 void  TFluka::PrimaryIonisationStepping(Int_t nprim)
 {
 // Call Stepping for primary ionisation electrons
-    Int_t i;
 // Protection against nprim > mxalld
-
 // Multiple steps for nprim > 0
+    Int_t i;
+    fNPI = nprim;
     if (nprim > 0) {
+	CalcPrimaryIonisationTime();
 	for (i = 0; i < nprim; i++) {
 	    SetCurrentPrimaryElectronIndex(i);
 	    (TVirtualMCApplication::Instance())->Stepping();
@@ -2687,7 +2712,7 @@ Float_t* TFluka::CreateFloatArray(Double_t* array, Int_t size) const
 // Converts Double_t* array to Float_t*,
 // !! The new array has to be deleted by user.
 // ---
-
+    
   Float_t* floatArray;
   if (size>0) {
     floatArray = new Float_t[size];
@@ -2702,4 +2727,33 @@ Float_t* TFluka::CreateFloatArray(Double_t* array, Int_t size) const
     floatArray = new Float_t[1];
   }
   return floatArray;
+}
+
+void TFluka::CalcPrimaryIonisationTime()
+{
+    // Calculates the primary ionisation time
+    if (fPItime) delete [] fPItime; 
+    fPItime = new Double_t[fNPI];
+    if (fPIlength) delete [] fPIlength;
+    fPIlength = new Double_t[fNPI];
+    //
+    Double_t px, py, pz, e, t;
+    TrackMomentum(px, py, pz, e);
+    Double_t p    = TMath::Sqrt(px * px + py * py + pz * pz);
+    Double_t beta = p / e;
+    Double_t x0, y0, z0;
+    fPItime[fNPI -1]   = TRACKR.atrack;
+    fPIlength[fNPI -1] = TRACKR.cmtrck;
+    GetPrimaryElectronPosition(fNPI - 1, x0, y0, z0, t);	
+    if (fNPI > 1) {
+	for (Int_t i = fNPI - 2; i > -1; i--) {
+	    Double_t x, y, z, t;
+	    GetPrimaryElectronPosition(i, x, y, z, t);	
+	    Double_t ds = TMath::Sqrt((x-x0) * (x-x0) + (y-y0) * (y-y0) + (z-z0) * (z-z0));
+	    fPItime[i]   = fPItime[i+1]   - ds / (beta * 2.99792458e10);
+	    fPIlength[i] = fPIlength[i+1] - ds;
+	    x0 = x; y0 = y; z0 = z;
+	}
+    }
+    
 }
