@@ -245,7 +245,7 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input,
   Int_t nDigits = 0;
   Float_t gain=0;
   Float_t noise=0.;
-  Float_t pedestal=0.;
+  //  Float_t pedestal=0.;
   Float_t oldnoise=0.;
   AliITSCalibrationSSD* cal=NULL;
 
