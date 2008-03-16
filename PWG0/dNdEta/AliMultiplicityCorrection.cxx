@@ -1281,7 +1281,7 @@ void AliMultiplicityCorrection::DrawHistograms()
 }
 
 //____________________________________________________________________
-void AliMultiplicityCorrection::DrawComparison(const char* name, Int_t inputRange, Bool_t fullPhaseSpace, Bool_t normalizeESD, TH1* mcHist, Bool_t simple)
+void AliMultiplicityCorrection::DrawComparison(const char* name, Int_t inputRange, Bool_t fullPhaseSpace, Bool_t /*normalizeESD*/, TH1* mcHist, Bool_t simple)
 {
   //mcHist->Rebin(2);
 

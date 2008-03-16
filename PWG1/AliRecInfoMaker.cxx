@@ -800,7 +800,7 @@ Int_t AliRecInfoMaker::TreeGenLoop(Int_t eventNr)
   cerr<<"fNParticles, nParticlesTR, fNextTreeGenEntryToRead: "<<fNParticles<<" "
       <<nParticlesTR<<" "<<fNextTreeGenEntryToRead<<endl;
   TBranch * branch = fTreeCmp->GetBranch("RC");
-  TBranch * branchF = fTreeCmp->GetBranch("F");
+  //  TBranch * branchF = fTreeCmp->GetBranch("F");
   
   branch->SetAddress(&fRecInfo); // set all pointers
   fRecArray = new TObjArray(fNParticles);

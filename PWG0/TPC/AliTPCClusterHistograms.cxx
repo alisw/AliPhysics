@@ -718,8 +718,8 @@ void AliTPCClusterHistograms::FillTrack(const AliTPCseed* seed) {
       if (IsClusterOnEdge(cluster))
 	return;
 
-    Int_t padRow =   cluster->GetRow(); 
-    Float_t qMax =   cluster->GetMax();
+    //    Int_t padRow =   cluster->GetRow(); 
+    //Float_t qMax =   cluster->GetMax();
     Float_t qTot =   cluster->GetQ();    
 
     nClusters++;

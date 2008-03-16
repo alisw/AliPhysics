@@ -48,6 +48,7 @@ ClassImp(AliROCClusterAnalysisSelector)
 
 AliROCClusterAnalysisSelector::AliROCClusterAnalysisSelector() :
   AliSelectorRL(),
+  fNMaxObjectsToSave(0),
   fObjectsToSave(0)
 {
   //
