@@ -43,8 +43,11 @@ ClassImp(AliTPCRawHistograms)
 //____________________________________________________________________
 AliTPCRawHistograms::AliTPCRawHistograms() 
   : TNamed(),
+    fTimeStart(0),
+    fTimeStop(0),
     fhDigits(0),
-    fhSignal(0)
+    fhSignal(0),
+    fDigitTree(0)
 {
   // default constructor
 }
@@ -52,9 +55,11 @@ AliTPCRawHistograms::AliTPCRawHistograms()
 //____________________________________________________________________
 AliTPCRawHistograms::AliTPCRawHistograms(Int_t detector, const Char_t* /* comment */, Int_t timeStart, Int_t timeStop)
   : TNamed(),
+    fTimeStart(timeStart),
+    fTimeStop(timeStop),
     fhDigits(0),
-    fhSignal(0),
-    fDigitTree(0)
+    fhSignal(new TH1F("fhSignal", "fhSignal", 200, 0, 2000)),
+    fDigitTree(new TNtuple("fDigitTree", "fDigitTree", "row:pad:time:signal"))
 {
   // constructor 
   
@@ -83,9 +88,6 @@ AliTPCRawHistograms::AliTPCRawHistograms(Int_t detector, const Char_t* /* commen
   SetName(name);
   SetTitle(Form("%s (detector %d)",name.Data(), detector));
 
-  fTimeStart = timeStart;
-  fTimeStop  = timeStop;
-  
   Float_t yRange   = 45;
   Int_t nPadRows   = 96;
   
@@ -99,15 +101,17 @@ AliTPCRawHistograms::AliTPCRawHistograms(Int_t detector, const Char_t* /* commen
   TH1::AddDirectory(kFALSE);
 
   fhDigits = new TH3F("fhDigits", Form("signal distribution;row;pad;time", name.Data()), nPadRows, -0.5, -0.5 + nPadRows, 150, -0.5, 149.5, 100, 0, 1200);
-  fhSignal = new TH1F("fhSignal", "fhSignal", 200, 0, 2000);
-  
-  fDigitTree = new TNtuple("fDigitTree", "fDigitTree", "row:pad:time:signal");
 
   TH1::AddDirectory(oldStatus);
 }
 
 //____________________________________________________________________
-AliTPCRawHistograms::AliTPCRawHistograms(const AliTPCRawHistograms& c) : TNamed(c)
+AliTPCRawHistograms::AliTPCRawHistograms(const AliTPCRawHistograms& c) : TNamed(c),
+    fTimeStart(0),
+    fTimeStop(0),
+    fhDigits(0),
+    fhSignal(0),
+    fDigitTree(0)
 {
   // copy constructor
 
@@ -148,8 +152,8 @@ Long64_t AliTPCRawHistograms::Merge(TCollection* list)
   if (list->IsEmpty())
     return 1;
 
-  TIterator* iter = list->MakeIterator();
-  TObject* obj;
+  //  TIterator* iter = list->MakeIterator();
+  //  TObject* obj;
 
    Int_t count = 0;
 

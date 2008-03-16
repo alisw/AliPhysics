@@ -69,6 +69,11 @@ protected:
   AliKFParticle* fKFOffRecC;        //  constrained vertex
   AliKFParticle* fKFOffRecCM;       //  constrained vertex+mass
 
+ private:
+  AliESDRecV0Info(const AliESDRecV0Info&); // Not implemented
+  AliESDRecV0Info& operator=(const AliESDRecV0Info&); // Not implemented
+
+
   ClassDef(AliESDRecV0Info,2)   // container for  
 };
 
