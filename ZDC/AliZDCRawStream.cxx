@@ -51,6 +51,7 @@ AliZDCRawStream::AliZDCRawStream(AliRawReader* rawReader) :
 //_____________________________________________________________________________
 AliZDCRawStream::AliZDCRawStream(const AliZDCRawStream& stream) :
   TObject(stream),
+  fRawReader(stream.fRawReader),
   fRawADC(stream.GetADCRaw()),
   fADCModule(stream.GetADCModule()),	 
   fADCChannel(stream.GetADCChannel()),	 

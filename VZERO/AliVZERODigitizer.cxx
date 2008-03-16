@@ -115,8 +115,8 @@ Bool_t AliVZERODigitizer::Init()
   // Initialises the Digit array
   fDigits = new TClonesArray ("AliVZEROdigit", 1000);
   
-  TGeoHMatrix *im = AliGeomManager::GetMatrix("VZERO/V0C");
-//  im->Print();
+  //  TGeoHMatrix *im = AliGeomManager::GetMatrix("VZERO/V0C");
+  //  im->Print();
   
   return kTRUE;
 }
@@ -252,17 +252,17 @@ void AliVZERODigitizer::Exec(Option_t* /*option*/)
 // Also adds the ADC pedestals taken out of the calibration data base
 	
    for (Int_t j=0; j<16; j++){
-	adc[j]  = map [j] + gRandom->Gaus(adc_pedestal[j], adc_sigma[j]);
+        adc[j]  = static_cast<Int_t>(map [j] + gRandom->Gaus(adc_pedestal[j], adc_sigma[j]));
 	time2[j]= time[j];}
 	
    for (Int_t j=48; j<80; j++){
-	adc[j-16]  = map [j] 
-	           + gRandom->Gaus(adc_pedestal[j-16],adc_sigma[j-16]);
+        adc[j-16]  = static_cast<Int_t>(map [j] 
+					+ gRandom->Gaus(adc_pedestal[j-16],adc_sigma[j-16]));
 	time2[j-16]= time[j]; }
 	
    for (Int_t j=0; j<16; j++){
-	adc[16+j] = map [16+2*j]+ map [16+2*j+1] 
-	          + gRandom->Gaus(adc_pedestal[16+j], adc_sigma[16+j]);
+        adc[16+j] = static_cast<Int_t>(map [16+2*j]+ map [16+2*j+1] 
+				       + gRandom->Gaus(adc_pedestal[16+j], adc_sigma[16+j]));
 	Float_t min_time = TMath::Min(time [16+2*j],time [16+2*j+1]);
 	time2[16+j] = min_time;
 	if(min_time==0.0){time2[16+j]=TMath::Max(time[16+2*j],time[16+2*j+1]);}

@@ -165,7 +165,7 @@ Bool_t AliHMPIDRawStream::Next()
   */
 
   fPosition = 0;
-  Bool_t status;
+  Bool_t status=kTRUE;
   Int_t  rawDataSize=0;        
   if(fRawReader->GetType() == 7 || fRawReader->GetType() == 8 )  {           //New: Select Physics events, Old: Raw data size is not 0 and not 47148 (pedestal)
     fDDLNumber = fRawReader->GetDDLID();

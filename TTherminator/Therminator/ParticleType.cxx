@@ -71,7 +71,7 @@ ParticleType::~ParticleType()
     delete mTable;
 }
 
-void ParticleType::WriteParticle(int i)
+void ParticleType::WriteParticle(int /*i*/)
 {
     mMass=-1;
     mStrangeness=-1;

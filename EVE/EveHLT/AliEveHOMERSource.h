@@ -26,6 +26,7 @@ private:
 public:
   struct SourceId
   {
+    SourceId(): fDet(), fSDet(), fSSDet(), fType() {}
     TString fDet, fSDet, fSSDet, fType;
 
     struct CmpByDet

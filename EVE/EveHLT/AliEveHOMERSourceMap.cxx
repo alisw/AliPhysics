@@ -62,7 +62,8 @@ void AliEveHOMERSourceMap::PrintXXX()
 /******************************************************************************/
 
 AliEveHOMERSourceMapByDet::AliEveHOMERSourceMapByDet(ESourceGrouping_e grouping) :
-  AliEveHOMERSourceMap(grouping)
+  AliEveHOMERSourceMap(grouping),
+  fMap()
 {}
 
 TString AliEveHOMERSourceMapByDet::iterator_imp::description()
@@ -119,7 +120,8 @@ void AliEveHOMERSourceMapByDet::FillMap(TList* handles, Bool_t def_state)
 /******************************************************************************/
 
 AliEveHOMERSourceMapByType::AliEveHOMERSourceMapByType(ESourceGrouping_e grouping) :
-  AliEveHOMERSourceMap(grouping)
+  AliEveHOMERSourceMap(grouping),
+  fMap()
 {}
 
 TString AliEveHOMERSourceMapByType::iterator_imp::description()

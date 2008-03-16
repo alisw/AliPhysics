@@ -225,11 +225,11 @@ void AliAnalysisTaskPWG2ESDfilter::Exec(Option_t */*option*/)
     Int_t nV0s      = fESD->GetNumberOfV0s();
     Int_t nCascades = fESD->GetNumberOfCascades();
     Int_t nKinks    = fESD->GetNumberOfKinks();
-    Int_t nVertices = nV0s + nCascades + nKinks + 1 /* = prim. vtx*/;
-    Int_t nJets     = 0;
-    Int_t nCaloClus = fESD->GetNumberOfCaloClusters();
-    Int_t nFmdClus  = 0;
-    Int_t nPmdClus  = fESD->GetNumberOfPmdTracks();
+    //    Int_t nVertices = nV0s + nCascades + nKinks + 1 /* = prim. vtx*/;
+    //    Int_t nJets     = 0;
+    //    Int_t nCaloClus = fESD->GetNumberOfCaloClusters();
+    //    Int_t nFmdClus  = 0;
+    //    Int_t nPmdClus  = fESD->GetNumberOfPmdTracks();
     
     printf("   NV0=%d  NCASCADES=%d  NKINKS=%d\n", nV0s, nCascades, nKinks);
 

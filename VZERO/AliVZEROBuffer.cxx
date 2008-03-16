@@ -131,13 +131,13 @@ void AliVZEROBuffer::WriteBunchNumbers() {
 }
 
 //_____________________________________________________________________________
-void AliVZEROBuffer::WriteChannel(Int_t cell, UInt_t ADC, UInt_t Time){
+void AliVZEROBuffer::WriteChannel(Int_t cell, UInt_t ADC, UInt_t /*Time*/){
   // It writes VZERO charge information into a raw data file. 
   // Being called by Digits2Raw
   
   UInt_t data = 0;
   
-  if (ADC < 0 || ADC > 1023) {
+  if (/*ADC < 0 || */ ADC > 1023) {
       AliInfo(Form("ADC saturated: %d. Truncating to 1023",ADC));
       ADC = 1023;
   }
@@ -227,7 +227,7 @@ void AliVZEROBuffer::WriteBeamScalers() {
 }
 
 //_____________________________________________________________________________
-void AliVZEROBuffer::WriteTiming(Int_t cell, UInt_t ADC, UInt_t Time){
+void AliVZEROBuffer::WriteTiming(Int_t /*cell*/, UInt_t /* ADC*/, UInt_t Time){
   // It writes the timing information into a raw data file. 
   // Being called by Digits2Raw
 

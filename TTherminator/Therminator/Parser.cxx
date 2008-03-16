@@ -110,7 +110,7 @@ int Parser::GetParticleNumber(int i)
 
 void Parser::ReadInput()
 {
-  int j,tPartIter,l,tIter2, tIter; //variables
+  int j,tPartIter=0,l,tIter2, tIter; //variables
   char str[50];
   char str1[20];
   double spin1,spin2,value;

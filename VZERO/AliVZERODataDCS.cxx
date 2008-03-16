@@ -167,7 +167,7 @@ void AliVZERODataDCS::Introduce(UInt_t numAlias, const TObjArray* aliasArr)const
 
   // method to introduce new aliases
 
-  int entries=entries = aliasArr->GetEntries();
+  int entries=aliasArr->GetEntries();
   AliInfo(Form("************ Alias: %s **********",fAliasNames[numAlias].Data()));
   AliInfo(Form("    	%d DP values collected",entries));
 

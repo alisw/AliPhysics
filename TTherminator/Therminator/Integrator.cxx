@@ -332,7 +332,7 @@ Integrator::Generate(ParticleType *aPartType, int aPartCount, Particle ***oParti
   tFMax = aPartType->GetFMax();
 
   (*oParticles) = (Particle **) malloc(sizeof(Particle *) * aPartCount);
-  Particle *tBuf;
+  Particle *tBuf=0;
   
   while (tIter<aPartCount)
     {

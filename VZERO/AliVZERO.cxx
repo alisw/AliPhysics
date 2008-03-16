@@ -361,8 +361,8 @@ void AliVZERO::Digits2Raw()
          buffer->WriteMBFlags();   
          buffer->WriteBeamScalers(); 
       } 
-      for(Int_t kChannel = kChannel=0; kChannel < 8; kChannel++) {
-          buffer->WriteTiming(kChannel, ADC[kChannel], Time[kChannel]); 
+      for(Int_t iChannel=0; iChannel < 8; iChannel++) {
+          buffer->WriteTiming(iChannel, ADC[iChannel], Time[iChannel]); 
       }
 
     // End of decoding of one CIU card
@@ -419,6 +419,7 @@ Bool_t AliVZERO::Raw2SDigits(AliRawReader* rawReader){
 
   timer.Stop();
   timer.Print();
+  return kTRUE;
 }
 
 

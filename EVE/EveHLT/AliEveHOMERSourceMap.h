@@ -40,6 +40,7 @@ public:
     iterator_imp_base* m_imp;
 
     iterator()                       :  m_imp(0)   {}
+    iterator(const iterator& it)     :  m_imp(it.m_imp->clone())  {}
     iterator(iterator_imp_base* imp) :  m_imp(imp) {}
     ~iterator() { delete m_imp; }
 

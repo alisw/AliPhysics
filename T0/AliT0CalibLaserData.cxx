@@ -31,7 +31,7 @@
 #include "AliT0RawReader.h"
 #include "TGLabel.h"
 #include "TGFileDialog.h"
-#include <iostream.h>
+#include <iostream>
 
 #include "AliT0CalibLaserData.h"
 

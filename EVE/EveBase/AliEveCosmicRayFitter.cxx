@@ -338,7 +338,7 @@ void AliEveCosmicRayFitter::DrawDebugGraph()
     //fGraphLinear3->SetPointError(i, TMath::Abs(x[i])*0.001, TMath::Abs(yCoor)*0.05, TMath::Abs(zCoor)*0.05);
   }
   
-  TCanvas * canvas;
+  TCanvas * canvas=0;
   if (gPad) gPad->Clear();
   else if (gPad==0 || gPad->GetCanvas()->IsEditable() == kFALSE) {
     canvas = new TCanvas("canvas", "CosmicRayFitter", 800, 800);

@@ -30,7 +30,7 @@ class AliACORDECalibData: public TNamed {
   void AddHTHits(TH1D *Histo){fTHits=(TH1D*)Histo->Clone("Total Hits");}//Total Hits 
   void AddHMultiHits(TH1D  *Histo){fMultiHits=(TH1D*)Histo->Clone("MultiHits");}//
   void AddHTMultiHits(TH1D *Histo){fTMultiHits=(TH1D*)Histo->Clone("Total Multi Hits");}
-  void Draw();
+  void Draw(Option_t *option="");
 
 
  protected:

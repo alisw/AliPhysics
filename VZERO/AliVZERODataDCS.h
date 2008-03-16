@@ -46,6 +46,9 @@ public:
   Float_t* GetWidthHV()   const {return (float*)fWidthHV;}
 
 private:
+  AliVZERODataDCS(const AliVZERODataDCS&); // Not implemented
+  AliVZERODataDCS& operator=(const AliVZERODataDCS&); // Not implemented
+
   void Init();
   void Introduce(UInt_t numAlias, const TObjArray* aliasArr) const;
   void CreateGraph(int i, int dim, const Double_t *x, const Double_t *y);

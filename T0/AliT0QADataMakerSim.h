@@ -34,7 +34,9 @@ private:
   virtual void   InitHits() ;      //book hit QA histo 
   virtual void   InitDigits() ;    //book Digit QA histo
   virtual void   MakeHits(TTree * hits) ;       //Fill hit QA histo
+  virtual void   MakeHits(TClonesArray *) {}       //Dummy for the moment
   virtual void   MakeDigits(TTree* digitsTree) ;   //Fill Digit QA histo
+  virtual void   MakeDigits(TClonesArray *) {}       //Dummy for the moment
   virtual void   EndOfDetectorCycle(AliQA::TASKINDEX, TObjArray * list) ;
   virtual void   StartOfDetectorCycle() ;
   ClassDef(AliT0QADataMakerSim,1)  // description 

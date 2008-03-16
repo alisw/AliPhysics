@@ -48,7 +48,9 @@ AliHMPIDParam* AliHMPIDParam::fgInstance=0x0;        //singleton pointer
 Int_t AliHMPIDParam::fgSigmas=4;
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-AliHMPIDParam::AliHMPIDParam(Bool_t noGeo=kFALSE):TNamed("HmpidParam","default version") 
+AliHMPIDParam::AliHMPIDParam(Bool_t noGeo=kFALSE):
+  TNamed("HmpidParam","default version"),
+  fX(0), fY(0), fRadNmean(0)
 {
 // Here all the intitializition is taken place when AliHMPIDParam::Instance() is invoked for the first time.
 // In particular, matrices to be used for LORS<->MARS trasnformations are initialized from TGeo structure.    

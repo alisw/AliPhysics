@@ -22,10 +22,8 @@ public:
   enum EClusterStatus {kFrm,kCoG,kLo1,kUnf,kMax,kNot,kEdg,kSi1,kNoLoc,kAbn,kEmp=-1};      //status flags    
       AliHMPIDCluster():AliCluster3D(),
                           fCh(-1),fSi(-1),fSt(kEmp),fBox(-1),fNlocMax(-1),fMaxQpad(-1),fMaxQ(-1),fQRaw(0),
-                          fQ(0),fErrQ(-1),fXX(0),fErrX(-1),fYY(0),fErrY(-1),fChi2(-1),fDigs(0) 
+                          fQ(0),fErrQ(-1),fXX(0),fErrX(-1),fYY(0),fErrY(-1),fChi2(-1),fDigs(0),fParam(AliHMPIDParam::Instance())
       {
-        AliHMPIDParam *pParam=AliHMPIDParam::Instance();
-        fParam = pParam;
       }//ctor
   
 
@@ -33,7 +31,7 @@ public:
                         fCh(c.fCh),fSi(c.fSi),fSt(c.fSt),fBox(c.fBox),fNlocMax(c.fNlocMax),fMaxQpad(c.fMaxQpad),fMaxQ(c.fMaxQ),fQRaw(c.fQRaw),
                         fQ (c.fQ ),fErrQ(c.fErrQ),
                         fXX (c.fXX ),fErrX(c.fErrX),
-                        fYY (c.fYY ),fErrY(c.fErrY),fChi2(c.fChi2),fDigs(0)                  {}//copy ctor
+                        fYY (c.fYY ),fErrY(c.fErrY),fChi2(c.fChi2),fDigs(0),fParam(c.fParam)                  {}//copy ctor
    virtual ~AliHMPIDCluster();//dtor   {if(fDigs) delete fDigs; fDigs=0;}
 //framework part                   
          void           Draw   (Option_t *opt=""                                  );                       //overloaded TObject::Print() to draw cluster in current canvas

@@ -108,6 +108,7 @@ AliESDtrackCuts::AliESDtrackCuts(Char_t* name, Char_t* title) : TNamed(name,titl
   fRapMin(0),
   fRapMax(0),
   fHistogramsOn(0),
+  ffDTheoretical(0),
   fhCutStatistics(0),         
   fhCutCorrelation(0)
 {

@@ -29,26 +29,28 @@
 #include <AliESDtrack.h>     //CkovAngle()
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-AliHMPIDRecon::AliHMPIDRecon():TTask("RichRec","RichPat")
+AliHMPIDRecon::AliHMPIDRecon():
+  TTask("RichRec","RichPat"),
+  fPhotCnt(-1),
+  fPhotFlag(0),
+  fPhotCkov(0),
+  fPhotPhi(0),
+  fPhotWei(0),
+  fCkovSigma2(0),
+  fIsWEIGHT(kFALSE),
+  fDTheta(0.001),
+  fWindowWidth(0.045),
+  fRingArea(0),
+  fRingAcc(0),
+  fTrkDir(0,0,1),  // Just for test
+  fTrkPos(30,40),  // Just for test
+  fMipPos(0),
+  fPc(0),
+  fParam(AliHMPIDParam::Instance())
 {
 //..
 //init of data members
 //..
-  
-  fPhotCnt  = -1;
-  fPhotFlag = 0x0;
-  fPhotCkov = 0x0;
-  fPhotPhi  = 0x0;
-  fPhotWei  = 0x0;
-  fCkovSigma2 = 0;
-  fIsWEIGHT = kFALSE;
-  fDTheta   = 0.001;
-  fWindowWidth = 0.045;
-  fTrkDir = TVector3(0,0,1); // init just for test
-  fTrkPos = TVector2(30,40); // init just for test
-  
-  AliHMPIDParam *pParam=AliHMPIDParam::Instance();
-  fParam = pParam;
   
   fParam->SetRefIdx(fParam->MeanIdxRad()); // initialization of ref index to a default one
 }

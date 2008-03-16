@@ -56,7 +56,7 @@ AliFMDQADataMakerRec::AliFMDQADataMakerRec() :
 }
 
 //_____________________________________________________________________
-AliFMDQADataMakerRec::AliFMDQADataMakerRec(const AliFMDQADataMakerRec& qadm) 
+AliFMDQADataMakerRec::AliFMDQADataMakerRec(const AliFMDQADataMakerRec& /*qadm*/) 
   : AliQADataMakerRec()
 {
   // copy ctor 
@@ -179,7 +179,7 @@ void AliFMDQADataMakerRec::MakeDigits(TTree * digitTree)
 }
 
 //_____________________________________________________________________
-void AliFMDQADataMakerRec::MakeRaws(AliRawReader* rawReader)
+void AliFMDQADataMakerRec::MakeRaws(AliRawReader* /*rawReader*/)
 {
   
 }

@@ -46,7 +46,12 @@ void AliACORDECalibData::Reset()
 }
 
 //________________________________________________________________
-AliACORDECalibData::AliACORDECalibData(const char* name)
+AliACORDECalibData::AliACORDECalibData(const char* name) :
+  TNamed(),
+  fHits(0),
+  fTHits(0),
+  fMultiHits(0),
+  fTMultiHits(0)
 {
   TString namst = "Calib_";
   namst += name;
@@ -57,7 +62,11 @@ AliACORDECalibData::AliACORDECalibData(const char* name)
 
 //________________________________________________________________
 AliACORDECalibData::AliACORDECalibData(const AliACORDECalibData& calibda) :
-  TNamed(calibda)
+  TNamed(calibda),
+  fHits(0),
+  fTHits(0),
+  fMultiHits(0),
+  fTMultiHits(0)
 {
 // copy constructor
 
@@ -72,7 +81,7 @@ AliACORDECalibData::AliACORDECalibData(const AliACORDECalibData& calibda) :
   }
 }
 //_______________________________________________________________
-void AliACORDECalibData::Draw()
+void AliACORDECalibData::Draw(Option_t *)
 {
  
 

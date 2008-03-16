@@ -35,20 +35,27 @@
 TH2I* AliHMPIDReconHTA::fgDatabase = 0x0;
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-AliHMPIDReconHTA::AliHMPIDReconHTA():TTask("RichRec","RichPat")
+AliHMPIDReconHTA::AliHMPIDReconHTA():
+  TTask("RichRec","RichPat"),
+  fMipX(-999),
+  fMipY(-999),
+  fMipQ(-999),
+  fRadX(-999),
+  fRadY(-999),
+  fIdxMip(0),
+  fNClu(0),
+  fXClu(0),
+  fYClu(0),
+  fClCk(0),
+  fThTrkFit(-999),
+  fPhTrkFit(-999),
+  fCkovFit(-999),
+  fCkovSig2(0),
+  fParam(AliHMPIDParam::Instance())
 {
 //..
 //hidden algorithm
 //..
-  fMipX=fMipY=fThTrkFit=fPhTrkFit=fCkovFit=fMipQ=fRadX=fRadY=-999;
-  fIdxMip=fNClu=0;
-  fCkovSig2=0;
-  fXClu = 0x0;
-  fYClu = 0x0;
-  fClCk = 0x0;
-  
-  fParam=AliHMPIDParam::Instance();
-  
   fParam->SetRefIdx(fParam->MeanIdxRad()); // initialization of ref index to a default one
   if(!fgDatabase) InitDatabase();
 }
@@ -506,7 +513,7 @@ void AliHMPIDReconHTA::InitDatabase()
   
   AliInfo(Form("database HTA is being built.Please, wait..."));
 //  
-  Double_t x[3],y[3];
+  Double_t x[3]={0,0,0},y[3];
 
   AliHMPIDRecon rec;
 

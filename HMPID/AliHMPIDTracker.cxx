@@ -17,12 +17,14 @@
 //.
 ClassImp(AliHMPIDTracker)
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-AliHMPIDTracker::AliHMPIDTracker():AliTracker()
+AliHMPIDTracker::AliHMPIDTracker():
+  AliTracker(),
+  fClu(new TObjArray(AliHMPIDParam::kMaxCh+1))  
 {
 // ctor. Create TObjArray of TClonesArray of AliHMPIDCluster  
 // 
 //  
-  fClu=new TObjArray(AliHMPIDParam::kMaxCh+1);  fClu->SetOwner(kTRUE);
+  fClu->SetOwner(kTRUE);
   for(int i=AliHMPIDParam::kMinCh;i<=AliHMPIDParam::kMaxCh;i++) fClu->AddAt(new TClonesArray("AliHMPIDCluster"),i);
 }//ctor
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++    

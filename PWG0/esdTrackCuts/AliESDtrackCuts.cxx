@@ -85,6 +85,7 @@ AliESDtrackCuts::AliESDtrackCuts(const Char_t* name, const Char_t* title) : AliA
   fRapMin(0),
   fRapMax(0),
   fHistogramsOn(0),
+  ffDTheoretical(0),
   fhCutStatistics(0),         
   fhCutCorrelation(0)
 {

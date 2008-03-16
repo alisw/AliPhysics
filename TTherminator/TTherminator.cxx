@@ -55,6 +55,7 @@ TTherminator::TTherminator():
   fPartDB = new ParticleDB();
 }
 TTherminator::TTherminator(const TTherminator & therm) :
+  TGenerator(therm),
   fCalka(0),
   fEvent(0),
   fPartDB(0)
@@ -221,7 +222,7 @@ void        TTherminator::GenerateEvent()
     }  
 }
 
-Int_t       TTherminator::ImportParticles(TClonesArray *particles, Option_t *option)
+Int_t       TTherminator::ImportParticles(TClonesArray *particles, Option_t */*option*/)
 {
   // Import particles from a generated event into an external array
   if (particles == 0) return 0;
@@ -255,7 +256,7 @@ Int_t       TTherminator::ImportParticles(TClonesArray *particles, Option_t *opt
   return nump;
 }
 
-TObjArray*  TTherminator::ImportParticles(Option_t *option)
+TObjArray*  TTherminator::ImportParticles(Option_t */*option*/)
 {
   // Import generated particles into an internal array
   Int_t nump = 0;

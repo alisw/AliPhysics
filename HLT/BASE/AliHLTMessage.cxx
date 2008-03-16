@@ -47,7 +47,13 @@ AliHLTMessage::AliHLTMessage(UInt_t what)
 # else
   TBuffer(kWrite),
 # endif
-  AliHLTLogging()
+  AliHLTLogging(),
+  fWhat(what),
+  fClass(0),
+  fCompress(0),
+  fBufComp(0),
+  fBufCompCur(0),
+  fCompPos(0)
 {
    // Create a AliHLTMessage object for storing objects. The "what" integer
    // describes the type of message. Predifined ROOT system message types
@@ -63,14 +69,8 @@ AliHLTMessage::AliHLTMessage(UInt_t what)
    UInt_t   reserved = 0;
    *this << reserved;
 
-   fWhat  = what;
    *this << what;
 
-   fClass      = 0;
-   fCompress   = 0;
-   fBufComp    = 0;
-   fBufCompCur = 0;
-   fCompPos    = 0;
 }
 
 //______________________________________________________________________________
@@ -81,7 +81,13 @@ AliHLTMessage::AliHLTMessage(void *buf, Int_t bufsize)
 # else
   TBuffer(kRead, bufsize, buf, 0),
 # endif
-  AliHLTLogging()
+  AliHLTLogging(),
+  fWhat(0),
+  fClass(0),
+  fCompress(0),
+  fBufComp(0),
+  fBufCompCur(0),
+  fCompPos(0)
 {
    // Create a AliHLTMessage object for reading objects. The objects will be
    // read from buf. Use the What() method to get the message type.
@@ -90,11 +96,6 @@ AliHLTMessage::AliHLTMessage(void *buf, Int_t bufsize)
    fBufCur += sizeof(UInt_t);
 
    *this >> fWhat;
-
-   fCompress   = 0;
-   fBufComp    = 0;
-   fBufCompCur = 0;
-   fCompPos    = 0;
 
    if (fWhat & kMESS_ZIP) {
       // if buffer has kMESS_ZIP set, move it to fBufComp and uncompress

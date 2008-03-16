@@ -19,6 +19,10 @@ class AliVZEROPreprocessor : public AliPreprocessor
     virtual UInt_t Process(TMap* dcsAliasMap);
 
     AliVZERODataDCS *fData;    // CDB class that stores the data
+
+ private:
+    AliVZEROPreprocessor(const AliVZEROPreprocessor&); // Not implemented
+    AliVZEROPreprocessor& operator=(const AliVZEROPreprocessor&); // Not implemented
     
     ClassDef(AliVZEROPreprocessor, 0);
 };
