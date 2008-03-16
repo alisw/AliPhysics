@@ -116,6 +116,7 @@ dNdEtaAnalysis::~dNdEtaAnalysis()
 dNdEtaAnalysis::dNdEtaAnalysis(const dNdEtaAnalysis &c) :
   TNamed(c),
   fData(0),
+  fMult(0),
   fPtDist(0)
 {
   //
