@@ -211,14 +211,14 @@ AliITSRawStreamSSD::AliITSRawStreamSSD(AliRawReader* rawReader) :
   TGeoVolume *v = NULL;
   v = gGeoManager->GetVolume("ITSssdSensitivL5");
   if(!v) {
-    // new geometry AliITSv11Hybrid
-    AliInfo(Form("Enabling the SSD DDL mapping for the AliITSv11Hybrid"));
-    Setv11HybridDDLMapping();
-  }
-  else {
     // new geometry AliITSvPPRasymmFMD
     AliInfo(Form("Enabling the SSD DDL mapping for the AliITSvPPRasymmFMD"));
     SetvPPRasymmFMDDDLMapping();
+  }
+  else {
+    // new geometry AliITSv11Hybrid
+    AliInfo(Form("Enabling the SSD DDL mapping for the AliITSv11Hybrid"));
+    Setv11HybridDDLMapping();
   }
   //  fRawReader->Reset();
   fRawReader->Select("ITSSSD");
