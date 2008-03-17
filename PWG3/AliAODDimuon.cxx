@@ -55,14 +55,13 @@ AliAODDimuon &AliAODDimuon::operator=(const AliAODDimuon& dimu)
 
 //______________________________________________________________________________
 AliAODDimuon::AliAODDimuon(TObject *mu0, TObject *mu1, TObject *ei):
-  fP(0),fMProton(0.93827231)
+  fEi(ei),fP(0),fMProton(0.93827231)
 {
   // Creates a dimuon pair from two tracks and the EventInfo
   
   //printf("Creating dimuon from %p %p\n",mu0,mu1);
   fMu[0]=mu0;
   fMu[1]=mu1;
-  fEi=ei;
 }
 
 //______________________________________________________________________________
