@@ -161,9 +161,7 @@ DEPINC     += $(GENINC)
 # ROOT libraries 
 
 ROOTCLIBS     := $(shell root-config --glibs) -lThread -lMinuit -lHtml -lVMC -lEG -lGeom -lTreePlayer -lXMLIO -lProof -lProofPlayer -lMLP \
-		-lSpectrum
-
-ROOTPLIBS     := -lEGPythia6
+               -lSpectrum
 
 ALILIBS	      := -L$(LIBDIR) -lMUON -lTPC -lPMD -lTRD -lFMD -lTOF \
                 -lITS -lPHOS -lACORDE -lHMPID -lVZERO -lZDC -lSTRUCT \
