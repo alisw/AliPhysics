@@ -17,8 +17,7 @@ ELIBS:= MUONcore MUONgeometry MUONrec MUONsim MUONbase MUONtrigger MUONraw MUONc
         ZDCbase ZDCsim ZDCrec VZERObase VZEROsim VZEROrec \
         EMCALbase EMCALsim EMCALrec EMCALjet BCM \
         STRUCT T0base T0sim T0rec EVGEN STEERBase ESD AOD CDB STEER \
-        pythia6 AliPythia6 lhapdf THijing \
-        hijing \
+        THijing hijing \
         FASTSIM microcern \
 	RAWDatabase RAWDatarec RAWDatasim \
 	HLTbase MUONevaluation \
