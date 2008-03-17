@@ -315,7 +315,10 @@ void AliESDEvent::ResetStdContent()
   if(fESDRun) fESDRun->Reset();
   if(fHeader) fHeader->Reset();
   if(fESDZDC) fESDZDC->Reset();
-  if(fESDFMD) fESDFMD->Clear(); // why clear.... need consistend names
+  if(fESDFMD) {
+      fESDFMD->~AliESDFMD(); 
+      new (fESDFMD) AliESDFMD();
+  }
   if(fESDVZERO){
     // reset by callin d'to /c'tor keep the pointer
     fESDVZERO->~AliESDVZERO();
