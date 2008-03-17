@@ -85,6 +85,7 @@ enum PprGeo_t
 
 //--- Functions ---
 AliGenPythia *PythiaHVQ(ProcessHvFl_t proc);
+void          LoadPythia();
 
 
 // This part for configuration
@@ -140,7 +141,8 @@ void Config()
   //  cerr<<"Seed for random number generation= "<<seed<<endl; 
   gRandom->SetSeed(12345);
   
-
+  // Load Pythia libraries
+  LoadPythia();
   // libraries required by geant321
 #if defined(__CINT__)
   gSystem->Load("libgeant321");
@@ -643,6 +645,15 @@ AliGenPythia *PythiaHVQ(ProcessHvFl_t proc) {
 }
 
 
+
+void LoadPythia()
+{
+    // Load Pythia related libraries
+    gSystem->Load("liblhapdf.so");      // Parton density functions
+    gSystem->Load("libEGPythia6.so");   // TGenerator interface
+    gSystem->Load("libpythia6.so");     // Pythia
+    gSystem->Load("libAliPythia6.so");  // ALICE specific implementations
+}
 
 
 

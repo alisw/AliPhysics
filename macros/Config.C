@@ -49,6 +49,8 @@ enum PprGeo_t
 static PprGeo_t geo = kHoles;
 
 Float_t EtaToTheta(Float_t arg);
+void    LoadPythia();
+
 
 void Config()
 {
@@ -60,8 +62,9 @@ void Config()
   
   AliLog::Message(AliLog::kInfo, Form("Seed for random number generation = %d",gRandom->GetSeed()), "Config.C", "Config.C", "Config()","Config.C", __LINE__);
 
-
-   // libraries required by geant321
+  // Load Pythia libraries
+  LoadPythia();
+  // Libraries required by geant321
 #if defined(__CINT__)
     gSystem->Load("libgeant321");
 #endif
@@ -377,4 +380,14 @@ void Config()
 
 Float_t EtaToTheta(Float_t arg){
   return (180./TMath::Pi())*2.*atan(exp(-arg));
+}
+
+
+void LoadPythia()
+{
+    // Load Pythia related libraries
+    gSystem->Load("liblhapdf.so");      // Parton density functions
+    gSystem->Load("libEGPythia6.so");   // TGenerator interface
+    gSystem->Load("libpythia6.so");     // Pythia
+    gSystem->Load("libAliPythia6.so");  // ALICE specific implementations
 }

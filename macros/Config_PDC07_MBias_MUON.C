@@ -9,15 +9,12 @@ void Config(char directory[100]="", char option[6]="trgAll")
 {
     
     static Int_t sseed = 0; // Set 0 to use the current time
+
+  // Load Pythia libraries
+    LoadPythia();
     
   //=====================================================================
   //  Libraries required by geant321
-  //    gSystem->Load("liblhapdf.so");
-  //    gSystem->Load("libEGPythia6.so");
-  //    gSystem->Load("libPythia6.so");
-  //    gSystem->Load("libpythia6.so");
-  //    gSystem->Load("libAliPythia6.so");
-
     gSystem->Load("libgeant321.so");
     
     new TGeant3TGeo("C++ Interface to Geant3");
@@ -220,3 +217,13 @@ Float_t EtaToTheta(Float_t arg){
     return (180./TMath::Pi())*2.*atan(exp(-arg));
 }
 
+  
+
+void LoadPythia()
+{
+    // Load Pythia related libraries
+    gSystem->Load("liblhapdf.so");      // Parton density functions
+    gSystem->Load("libEGPythia6.so");   // TGenerator interface
+    gSystem->Load("libpythia6.so");     // Pythia
+    gSystem->Load("libAliPythia6.so");  // ALICE specific implementations
+}

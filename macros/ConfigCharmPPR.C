@@ -38,6 +38,7 @@ enum PprGeo_t
     kHoles, kNoHoles
   };
 static PprGeo_t geo = kHoles;
+void LoadPythia();
 
 void Config()
 {
@@ -52,7 +53,8 @@ void Config()
   //  gRandom->SetSeed(seed);
   gRandom->SetSeed(12345);
   cerr<<"Seed for random number generation= "<<seed<<endl; 
-
+  // Load Pythia libraries
+  LoadPythia();
    // libraries required by geant321
 #if defined(__CINT__)
     gSystem->Load("libgeant321");
@@ -333,4 +335,13 @@ void Config()
   }
 
          
+}
+
+void LoadPythia()
+{
+    // Load Pythia related libraries
+    gSystem->Load("liblhapdf.so");      // Parton density functions
+    gSystem->Load("libEGPythia6.so");   // TGenerator interface
+    gSystem->Load("libpythia6.so");     // Pythia
+    gSystem->Load("libAliPythia6.so");  // ALICE specific implementations
 }
