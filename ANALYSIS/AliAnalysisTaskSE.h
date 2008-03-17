@@ -32,8 +32,9 @@ class AliAnalysisTaskSE : public AliAnalysisTask
     // To be implemented by user
     virtual void UserCreateOutputObjects()  {;}
     virtual void UserExec(Option_t* /*option*/) {;}
-    
-    // Getters
+    // Helpers for adding branches to the AOD
+   virtual void AddAODBranch(const char* bname, const char* cname, TObject* addobj);
+// Getters
     virtual Int_t        DebugLevel()  {return fDebug;     }
     virtual AliVEvent*   InputEvent()  {return fInputEvent;}
     virtual AliAODEvent* AODEvent()    {return fOutputAOD; }
