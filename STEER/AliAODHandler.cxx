@@ -109,6 +109,7 @@ Bool_t AliAODHandler::TerminateIO()
 {
     // Terminate IO
     if (fFileA) {
+	fFileA->ls();
 	fFileA->Close();
 	delete fFileA;
     }
@@ -135,4 +136,16 @@ void AliAODHandler::AddAODtoTreeUserInfo()
 {
     // Add aod event to tree user info
     fTreeA->GetUserInfo()->Add(fAODEvent);
+}
+
+void AliAODHandler::AddBranch(const char* bname, const char* cname, TObject* addobj)
+{
+    // Add a new branch to the aod 
+    TDirectory *owd = gDirectory;
+    if (fFileA) {
+	fFileA->cd();
+    }
+    fTreeA->Branch(bname, cname, &addobj);
+    fAODEvent->AddObject(addobj);
+    owd->cd();
 }
