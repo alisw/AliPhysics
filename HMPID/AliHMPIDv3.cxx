@@ -1009,6 +1009,7 @@ TGeoVolume* AliHMPIDv3::CreateCradle()
 
   Double_t params[10]={0.5,10.,24.,-1,5.2,1.5,3.5,8.5,3.8,0.};
   TGeoMedium *med   =gGeoManager->GetMedium("HMPID_Al");  
+  TGeoMedium *air   =gGeoManager->GetMedium("HMPID_Air");  
   TGeoVolume *cradle=new TGeoVolumeAssembly("Hcradle");
   
   Double_t baselong[7]={6037*mm-2*60*mm, 6037*mm-2*60*mm,60*mm,0.,100*mm,10*mm,10*mm};//2CRE2112P3
@@ -1084,7 +1085,7 @@ TGeoVolume* AliHMPIDv3::CreateCradle()
   
   
   //vertical rectangles
-   TGeoVolume *vbox=gGeoManager->MakeBox ("Hvbox",med  , 1488*mm/2 , 487.*mm/2 , 50.*mm/2);
+   TGeoVolume *vbox=gGeoManager->MakeBox ("Hvbox",air , 1488*mm/2 , 487.*mm/2 , 50.*mm/2);
    vbox->SetLineColor(kViolet);
    Double_t width = 50.*mm;
   

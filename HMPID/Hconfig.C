@@ -754,7 +754,7 @@ void HmpConfig::WriteConfig()
   WritePhys(pF); //physics processes
   
 //Field
-       if(fMagBG->GetButton(kFld0)->GetState())     fprintf(pF,"  gAlice->SetField(new AliMagFMaps(\"Maps\",\"Maps\",0,1,10,0));       //no field\n\n");
+       if(fMagBG->GetButton(kFld0)->GetState())     fprintf(pF,"  gAlice->SetField(new AliMagFMaps(\"Maps\",\"Maps\",2,0,10,2));       //no field\n\n");
   else if(fMagBG->GetButton(kFld2)->GetState())     fprintf(pF,"  gAlice->SetField(new AliMagFMaps(\"Maps\",\"Maps\",2,1,10,0));//0.2 Tesla field\n\n");
   else if(fMagBG->GetButton(kFld4)->GetState())     fprintf(pF,"  gAlice->SetField(new AliMagFMaps(\"Maps\",\"Maps\",2,1,10,1));//0.4 Tesla field\n\n");
   else if(fMagBG->GetButton(kFld5)->GetState())     fprintf(pF,"  gAlice->SetField(new AliMagFMaps(\"Maps\",\"Maps\",2,1,10,2));//0.5 Tesla field\n\n");
