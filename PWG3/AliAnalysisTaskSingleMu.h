@@ -24,6 +24,9 @@ protected:
   void ResetHistos();
 
 private:
+  AliAnalysisTaskSingleMu(const AliAnalysisTaskSingleMu&);
+  AliAnalysisTaskSingleMu& operator=(const AliAnalysisTaskSingleMu&);
+
   AliAODEvent *fAOD; //!< ESDevent object
 
   static const Int_t fgkNhistos = 1;

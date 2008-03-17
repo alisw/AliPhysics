@@ -90,6 +90,9 @@ class AliProtonAnalysis : public TObject {
   Double_t GetParticleFraction(Int_t i, Double_t p);
 
  private:
+  AliProtonAnalysis(const AliProtonAnalysis&); // Not implemented
+  AliProtonAnalysis& operator=(const AliProtonAnalysis&); // Not implemented
+
   Bool_t IsAccepted(AliESDtrack *track);
   Float_t GetSigmaToVertex(AliESDtrack* esdTrack); 
   Double_t Rapidity(AliESDtrack *track);

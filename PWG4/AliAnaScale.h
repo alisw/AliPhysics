@@ -30,6 +30,10 @@ public:
   virtual void Terminate(Option_t * opt = "") ;
 
 private:
+  AliAnaScale(const AliAnaScale&); // Not implemented
+  AliAnaScale& operator=(const AliAnaScale&); // Not implemented
+
+
   // input and output
   Int_t          fDebug ;         // Debug flag
   // task parameters

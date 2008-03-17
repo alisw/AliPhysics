@@ -22,7 +22,7 @@
 ClassImp(AliAODDimuon)
 
 //______________________________________________________________________________
-AliAODDimuon::AliAODDimuon():fEi(0),fP(0),fMProton(0.93827231)
+AliAODDimuon::AliAODDimuon():AliVParticle(),fEi(0),fP(0),fMProton(0.93827231)
 {
   // default constructor
   fMu[0]=0;
@@ -30,21 +30,22 @@ AliAODDimuon::AliAODDimuon():fEi(0),fP(0),fMProton(0.93827231)
 }
 
 //______________________________________________________________________________
-AliAODDimuon::AliAODDimuon(const AliAODDimuon& dimu):fP(0),fMProton(0.93827231)
+AliAODDimuon::AliAODDimuon(const AliAODDimuon& dimu):
+  AliVParticle(dimu),
+  fEi(dimu.fEi),fP(0),fMProton(0.93827231)
 {
   // copy constructor
   fMu[0]=dimu.Mu(0);
   fMu[1]=dimu.Mu(1);
-  fEi=dimu.Ei();
 }
 
 //______________________________________________________________________________
 AliAODDimuon &AliAODDimuon::operator=(const AliAODDimuon& dimu)
 {
   // assignment operator
-  fP=0;
-  fMProton=0.93827231;
   if(&dimu != this){
+    fP=0;
+    fMProton=0.93827231;
     fMu[0]=dimu.Mu(0);
     fMu[1]=dimu.Mu(1);
     fEi=dimu.Ei();
