@@ -778,7 +778,6 @@ void LoadPythia()
     // Load Pythia related libraries
     gSystem->Load("liblhapdf.so");      // Parton density functions
     gSystem->Load("libEGPythia6.so");   // TGenerator interface
-    gSystem->Load("libPythia6.so");     // Pythia (root) 
     gSystem->Load("libpythia6.so");     // Pythia
     gSystem->Load("libAliPythia6.so");  // ALICE specific implementations
 }
