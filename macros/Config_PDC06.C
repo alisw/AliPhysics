@@ -106,6 +106,7 @@ AliGenPythia *PythiaHVQ(PDC06Proc_t proc);
 AliGenerator *MbCocktail();
 AliGenerator *PyMbTriggered(Int_t pdg);
 void ProcessEnvironmentVars();
+void LoadPythia();
 
 // This part for configuration
 static PDC06Proc_t   proc     = kPyMbNoHvq;
@@ -153,10 +154,13 @@ static TString comment;
 
 void Config()
 {
- 
+    
 
   // Get settings from environment variables
   ProcessEnvironmentVars();
+  // Load pythia libraries
+  LoadPythia();
+  //
 
   gRandom->SetSeed(seed);
   cerr<<"Seed for random number generation= "<<seed<<endl; 
@@ -769,3 +773,12 @@ void ProcessEnvironmentVars()
 
 
 
+void LoadPythia()
+{
+    // Load Pythia related libraries
+    gSystem->Load("liblhapdf.so");      // Parton density functions
+    gSystem->Load("libEGPythia6.so");   // TGenerator interface
+    gSystem->Load("libPythia6.so");     // Pythia (root) 
+    gSystem->Load("libpythia6.so");     // Pythia
+    gSystem->Load("libAliPythia6.so");  // ALICE specific implementations
+}
