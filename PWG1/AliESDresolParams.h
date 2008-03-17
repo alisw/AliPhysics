@@ -19,13 +19,12 @@ class AliESDresolParams : public TObject{
   AliESDresolParams();
   void SetInstance(AliESDresolParams *param){fgInstance = param;}
   //
-  Double_t GetResolPrim(Int_t param, Float_t onept, Float_t tanth);
-  Double_t GetResolR(Int_t param, Float_t onept, Float_t radius);
+  Double_t GetResolPrim(Int_t param, Float_t onept, Float_t tanth) const;
+  Double_t GetResolR(Int_t param, Float_t onept, Float_t radius) const;
   static Double_t  SGetResolPrim(Int_t sdim, Float_t onept, Float_t tanth){ return fgInstance->GetResolPrim(sdim,onept,tanth);}
   static Double_t  SGetResolR(Int_t param, Float_t onept, Float_t radius){ return fgInstance->GetResolR(param,onept,radius);}
-
-  void MakeParamPrimFast(TTree * tree, Float_t fraction=-1, Int_t entries=100000);
-  void MakeParamRFast(TTree * tree, Float_t fraction=-1, Int_t entries=100000);
+  void SetResolPrim(TObjArray* array);
+  void SetResolR(TObjArray* array);
   // protected:
  public:
   //Resolution at prim vertex
@@ -41,8 +40,7 @@ class AliESDresolParams : public TObject{
   TVectorD *fResolCzz;              // resolution Z parameterization - r-pt
   TVectorD *fResolCphi;             // resolution phi parameterization - r-pt
   TVectorD *fResolCth;              // resolution theta parameterization - r-pt
-  TVectorD *fResolC1pt;             // resolution 1/pt parameterization - r-pt
-  
+  TVectorD *fResolC1pt;             // resolution 1/pt parameterization - r-pt  
   // 
   static AliESDresolParams*   fgInstance; //! Instance of this class (singleton implementation)
   ClassDef(AliESDresolParams,1)      // ESD resolution parametereization

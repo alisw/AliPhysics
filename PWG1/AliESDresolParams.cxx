@@ -21,15 +21,16 @@
 //    Origin: Marian Ivanov marian.ivanov@cern.ch
 //-------------------------------------------------------------------------
 
+/*
+    Example usage:
+    
 
+*/
 
 
 #include "TVectorD.h"
-#include "../STAT/TStatToolkit.h"
 #include "TMath.h"
-#include "TCut.h"
-#include "TTree.h"
-
+#include "TObjArray.h"
 #include "AliESDresolParams.h"
 
 
@@ -58,7 +59,7 @@ AliESDresolParams::AliESDresolParams() :
   //
 }
 
-Double_t AliESDresolParams::GetResolPrim(Int_t param, Float_t onept, Float_t tanth){
+Double_t AliESDresolParams::GetResolPrim(Int_t param, Float_t onept, Float_t tanth) const {
   //
   // Resolution at primary vertex
   // simple Resolution parameterization 
@@ -82,7 +83,7 @@ Double_t AliESDresolParams::GetResolPrim(Int_t param, Float_t onept, Float_t tan
   return val;
 }
 
-Double_t AliESDresolParams::GetResolR(Int_t param, Float_t onept, Float_t radius){
+Double_t AliESDresolParams::GetResolR(Int_t param, Float_t onept, Float_t radius) const {
   //
   // simple DCA resolution parameterization
   // polynom of second order in 2D 
@@ -106,101 +107,40 @@ Double_t AliESDresolParams::GetResolR(Int_t param, Float_t onept, Float_t radius
   return val;
 }
 
+void AliESDresolParams::SetResolPrim(TObjArray* array){
+  //
+  // Set parameters - resolution at prim vertex
+  //
+  if (!array) return;  
+  if (array->At(0)) 
+    fResolDCAyy = new TVectorD(*((TVectorD*)array->At(0))); 
+  if (array->At(1)) 
+    fResolDCAzz = new TVectorD(*((TVectorD*)array->At(1))); 
+  if (array->At(2)) 
+    fResolDCAphi = new TVectorD(*((TVectorD*)array->At(2))); 
+  if (array->At(3)) 
+    fResolDCAth = new TVectorD(*((TVectorD*)array->At(3))); 
+  if (array->At(4)) 
+    fResolDCA1pt = new TVectorD(*((TVectorD*)array->At(4))); 
+}
 
-
-void AliESDresolParams::MakeParamPrimFast(TTree * tree,Float_t fraction, Int_t entries){
+void AliESDresolParams::SetResolR(TObjArray* array){
   //
-  // DCA resolution linear parameterization
-  // Only valid in ITS acceptance
+  // Set parameters - resolution at prim vertex
   //
-  Double_t chi2=0;
-  Int_t    npoints=0;
-  TVectorD fitParam;
-  TMatrixD covMatrix;
-  TCut  cutDCA = "sqrt(Tracks[].fC[0])<1&&Tracks[].fCchi2<100&&abs(Tracks[].fP[4])<8&&abs(Tracks[].fP[3])<1";  
-  //
-  // y param
-  //
-  TString * dcayParam= 
-    TStatToolkit::FitPlane(tree,"sqrt(sqrt(Tracks[].fC[0]))","(abs(Tracks[].fP[4]))++(abs(Tracks[].fP[4]))^2++(abs(Tracks[].fP[3]))++(abs(Tracks[].fP[3]))^2++(abs(Tracks[].fP[4]))*(abs(Tracks[].fP[3]))", cutDCA, chi2,npoints,fitParam,covMatrix,fraction, 0, entries);  
-  fResolDCAyy = new TVectorD(fitParam);
-  printf("Y resol\t%s\n",dcayParam->Data());
-  //
-  // z param
-  //
-  TString * dcazParam= 
-    TStatToolkit::FitPlane(tree, "sqrt(sqrt(Tracks[].fC[2]))", "(abs(Tracks[].fP[4]))++(abs(Tracks[].fP[4]))^2++(abs(Tracks[].fP[3]))++(abs(Tracks[].fP[3]))^2++(abs(Tracks[].fP[4]))*(abs(Tracks[].fP[3]))",  cutDCA, chi2,npoints,fitParam,covMatrix,fraction,0,entries);  
-  printf("Z resol\t%s\n",dcazParam->Data());  
-  fResolDCAzz = new TVectorD(fitParam);
-  //
-  // Phi param
-  //
-  TString * dcaphiParam= 
-    TStatToolkit::FitPlane(tree, "sqrt(sqrt(Tracks[].fC[5]))", "(abs(Tracks[].fP[4]))++(abs(Tracks[].fP[4]))^2++(abs(Tracks[].fP[3]))++(abs(Tracks[].fP[3]))^2++(abs(Tracks[].fP[4]))*(abs(Tracks[].fP[3]))",  cutDCA, chi2,npoints,fitParam,covMatrix,fraction,0,entries);  
-  printf("Phi resol\t%s\n",dcaphiParam->Data());  
-  fResolDCAphi = new TVectorD(fitParam);
-  //
-  // theta param
-  //
-  TString * dcathParam= 
-    TStatToolkit::FitPlane(tree, "sqrt(sqrt(Tracks[].fC[9]))", "(abs(Tracks[].fP[4]))++(abs(Tracks[].fP[4]))^2++(abs(Tracks[].fP[3]))++(abs(Tracks[].fP[3]))^2++(abs(Tracks[].fP[4]))*(abs(Tracks[].fP[3]))",  cutDCA, chi2,npoints,fitParam,covMatrix,fraction,0,entries);  
-  printf("Theta resol\t%s\n",dcathParam->Data());  
-  fResolDCAth = new TVectorD(fitParam);
-  //
-  // 1pt param
-  //
-  TString * dca1ptParam= 
-    TStatToolkit::FitPlane(tree, "sqrt(sqrt(Tracks[].fC[14]))", "(abs(Tracks[].fP[4]))++(abs(Tracks[].fP[4]))^2++(abs(Tracks[].fP[3]))++(abs(Tracks[].fP[3]))^2++(abs(Tracks[].fP[4]))*(abs(Tracks[].fP[3]))",  cutDCA, chi2,npoints,fitParam,covMatrix,fraction,0,entries);  
-  printf("1pt resol\t%s\n",dca1ptParam->Data());  
-  fResolDCA1pt = new TVectorD(fitParam);
-
+  if (!array) return;  
+  if (array->At(0)) 
+    fResolCyy = new TVectorD(*((TVectorD*)array->At(0))); 
+  if (array->At(1)) 
+    fResolCzz = new TVectorD(*((TVectorD*)array->At(1))); 
+  if (array->At(2)) 
+    fResolCphi = new TVectorD(*((TVectorD*)array->At(2))); 
+  if (array->At(3)) 
+    fResolCth = new TVectorD(*((TVectorD*)array->At(3))); 
+  if (array->At(4)) 
+    fResolC1pt = new TVectorD(*((TVectorD*)array->At(4)));   
 }
 
 
 
-void AliESDresolParams::MakeParamRFast(TTree * tree, Float_t fraction, Int_t entries){
-  //
-  // 
-  //
-  Double_t chi2=0;
-  Int_t    npoints=0;
-  TVectorD fitParam;
-  TMatrixD covMatrix;
-  //  fraction=0.8;
-  //entries=100000000;
-  //
-  //
-  TCut  cutV0 = "abs((V0s[].fParamP.fC[0]))<3&&abs(V0s[].fParamP.fP[3])<1&&abs(V0s[].fParamP.fP[4])<8";//
-  //
-  //
-  //
-  TString * v0sigmaY= TStatToolkit::FitPlane(tree,"sqrt(sqrt((V0s[].fParamP.fC[0])))","abs(V0s[].fParamP.fP[4])++V0s[].fParamP.fX++abs(V0s[].fParamP.fP[4])^2++V0s[].fParamP.fX^2++abs(V0s[].fParamP.fP[4])*V0s[].fParamP.fX++abs(V0s[].fParamP.fP[4])*V0s[].fParamP.fX^2", cutV0, chi2,npoints,fitParam,covMatrix,fraction,0,entries);
-  tree->SetAlias("v0sigmaY",v0sigmaY->Data());
-  fResolCyy = new TVectorD(fitParam);
-  //
-  //
-  //
-  TString * v0sigmaZ= TStatToolkit::FitPlane(tree,"sqrt(sqrt((V0s[].fParamP.fC[2])))","abs(V0s[].fParamP.fP[4])++V0s[].fParamP.fX++abs(V0s[].fParamP.fP[4])^2++V0s[].fParamP.fX^2++abs(V0s[].fParamP.fP[4])*V0s[].fParamP.fX++abs(V0s[].fParamP.fP[4])*V0s[].fParamP.fX^2", cutV0, chi2,npoints,fitParam,covMatrix,fraction,0,entries);
-  tree->SetAlias("v0sigmaZ",v0sigmaZ->Data());
-  fResolCzz = new TVectorD(fitParam);
-  //
-  //
-  //
-  TString * v0sigmaPhi= TStatToolkit::FitPlane(tree,"sqrt(sqrt((V0s[].fParamP.fC[5])))","abs(V0s[].fParamP.fP[4])++V0s[].fParamP.fX++abs(V0s[].fParamP.fP[4])^2++V0s[].fParamP.fX^2++abs(V0s[].fParamP.fP[4])*V0s[].fParamP.fX++abs(V0s[].fParamP.fP[4])*V0s[].fParamP.fX^2", cutV0, chi2,npoints,fitParam,covMatrix,fraction,0,entries);
-  tree->SetAlias("v0sigmaPhi",v0sigmaPhi->Data());
-  fResolCphi = new TVectorD(fitParam);
-  //
-  //
-  //
-  TString * v0sigmaTh= TStatToolkit::FitPlane(tree,"sqrt(sqrt((V0s[].fParamP.fC[9])))","abs(V0s[].fParamP.fP[4])++V0s[].fParamP.fX++abs(V0s[].fParamP.fP[4])^2++V0s[].fParamP.fX^2++abs(V0s[].fParamP.fP[4])*V0s[].fParamP.fX++abs(V0s[].fParamP.fP[4])*V0s[].fParamP.fX^2", cutV0, chi2,npoints,fitParam,covMatrix,fraction,0,entries);
-  tree->SetAlias("v0sigmaTh",v0sigmaTh->Data());
-  fResolCth = new TVectorD(fitParam);
-  //
-  //
-  //
-  TString * v0sigma1pt= TStatToolkit::FitPlane(tree,"sqrt(sqrt((V0s[].fParamP.fC[14])))","abs(V0s[].fParamP.fP[4])++V0s[].fParamP.fX++abs(V0s[].fParamP.fP[4])^2++V0s[].fParamP.fX^2++abs(V0s[].fParamP.fP[4])*V0s[].fParamP.fX++abs(V0s[].fParamP.fP[4])*V0s[].fParamP.fX^2", cutV0, chi2,npoints,fitParam,covMatrix,fraction,0,entries);
-  tree->SetAlias("v0sigma1pt",v0sigma1pt->Data());
-  fResolC1pt = new TVectorD(fitParam);
 
-
-}
