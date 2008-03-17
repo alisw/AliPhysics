@@ -40,7 +40,6 @@
 
 // --- AliRoot header files ---
 #include "AliQAChecker.h"
-#include "AliLog.h"
 #include "AliTPC.h"
 #include "AliTPCv2.h"
 #include "AliSimDigits.h"
@@ -52,15 +51,24 @@ AliTPCQADataMakerSim::AliTPCQADataMakerSim() :
   AliQADataMakerSim(AliQA::GetDetName(AliQA::kTPC), 
 		    "TPC Sim Quality Assurance Data Maker"),
   fHistDigitsADC(0),
-  fHistHitsNhits(0), fHistHitsElectrons(0), fHistHitsRadius(0),
-  fHistHitsPrimPerCm(0), fHistHitsElectronsPerCm(0) 
+  fHistHitsNhits(0), 
+  fHistHitsElectrons(0), 
+  fHistHitsRadius(0),
+  fHistHitsPrimPerCm(0), 
+  fHistHitsElectronsPerCm(0) 
 {
   // ctor
 }
 
 //____________________________________________________________________________ 
 AliTPCQADataMakerSim::AliTPCQADataMakerSim(const AliTPCQADataMakerSim& qadm) :
-  AliQADataMakerSim()
+  AliQADataMakerSim(),
+  fHistDigitsADC(0),
+  fHistHitsNhits(0), 
+  fHistHitsElectrons(0), 
+  fHistHitsRadius(0),
+  fHistHitsPrimPerCm(0), 
+  fHistHitsElectronsPerCm(0) 
 {
   //copy ctor 
   SetName((const char*)qadm.GetName()) ; 
@@ -239,13 +247,5 @@ void AliTPCQADataMakerSim::MakeHits(TTree * hitTree)
     }
     fHistHitsNhits->Fill(nHits);
   }
-}
-
-//____________________________________________________________________________
-void AliTPCQADataMakerSim::MakeSDigits(TTree* sdigitTree)
-{
-  // This method is currently not supproted for the TPC as the
-  // summable digits are never created
-  AliInfo("AliTPCQADataMakerSim::MakeSDigits() method not supprted"); 
 }
 

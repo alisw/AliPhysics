@@ -20,6 +20,7 @@
 // --- Standard library ---
 
 // --- AliRoot header files ---
+#include <AliLog.h>
 #include <AliQADataMakerSim.h>
 #include <AliRawReader.h>
 
@@ -47,7 +48,7 @@ private:
 
   // SDigits QA (empty)
   virtual void   InitSDigits() {;}
-  virtual void   MakeSDigits(TTree* sdigitTree);
+  virtual void   MakeSDigits(TTree* ) {  AliInfo("AliTPCQADataMakerSim::MakeSDigits() method not supported"); }
 
   TH1F* fHistDigitsADC;    //! Digit ADC distribution
 

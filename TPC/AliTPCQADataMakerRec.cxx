@@ -81,6 +81,7 @@ AliTPCQADataMakerRec::AliTPCQADataMakerRec() :
 //____________________________________________________________________________ 
 AliTPCQADataMakerRec::AliTPCQADataMakerRec(const AliTPCQADataMakerRec& qadm) :
   AliQADataMakerRec(),
+  fTPCdataQA(0),
   fHistESDclusters(0),  //! Clusters per ESD track
   fHistESDratio(0),     //! Ratio of clusters to findables
   fHistESDpt(0),        //! Pt spectrum

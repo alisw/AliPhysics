@@ -88,13 +88,15 @@ AliTPCTracklet::AliTPCTracklet(const AliTPCseed *track,Int_t sector,
 
 }
 
-AliTPCTracklet::AliTPCTracklet(const TObjArray &clusters,Int_t sector,
-			       TrackType type,Bool_t storeClusters) {
+AliTPCTracklet::AliTPCTracklet(const TObjArray &/*clusters*/,Int_t sector,
+			       TrackType /*type*/,Bool_t /*storeClusters*/)
+  : fNClusters(0),fNStoredClusters(0),fClusters(0),fSector(sector),fOuter(0),
+    fInner(0),fPrimary(0) {
   //TODO: write it!
 }
 
 AliTPCTracklet::AliTPCTracklet(const AliTPCTracklet &t)
-  : fNClusters(t.fNClusters),fNStoredClusters(t.fNStoredClusters),fClusters(0),
+  : TObject(t),fNClusters(t.fNClusters),fNStoredClusters(t.fNStoredClusters),fClusters(0),
     fSector(t.fSector),fOuter(0),fInner(0),
     fPrimary(0) {
   ////
@@ -261,6 +263,9 @@ void AliTPCTracklet::FitLinear(const AliTPCseed *track,Int_t sector,
   case kQuadratic:
     fy.SetFormula("1 ++ x ++ x*x");
     fz.SetFormula("1 ++ x");
+    break;
+  case kKalman:
+  case kRiemann:
     break;
   }
   Double_t xmax=-1.;
@@ -439,8 +444,8 @@ void AliTPCTracklet::FitRiemann(const AliTPCseed *track,Int_t sector) {
     fOuter=new AliExternalTrackParam(xmax,alpha,p,c);
 }
 
-Bool_t AliTPCTracklet::Riemann2Helix(Double_t *a,Double_t *ca,
-				     Double_t *b,Double_t *cb,
+Bool_t AliTPCTracklet::Riemann2Helix(Double_t *a,Double_t */*ca*/,
+				     Double_t *b,Double_t */*cb*/,
 				     Double_t x0,
 				     Double_t *p,Double_t *c) {
   //TODO: signs!
@@ -512,11 +517,13 @@ TObjArray AliTPCTracklet::CreateTracklets(const AliTPCseed *track,
   return tracklets;
 }
 
-TObjArray AliTPCTracklet::CreateTracklets(const TObjArray &clusters,
-					  TrackType type,
-					  Bool_t storeClusters,
-					  Int_t minClusters,
-					  Int_t maxTracklets) {
+TObjArray AliTPCTracklet::CreateTracklets(const TObjArray &/*clusters*/,
+					  TrackType /*type*/,
+					  Bool_t /*storeClusters*/,
+					  Int_t /*minClusters*/,
+					  Int_t /*maxTracklets*/) {
+  // TODO!
+
   TObjArray tracklets;
   return tracklets;
 }
@@ -643,7 +650,7 @@ void AliTPCTracklet::Test(const char* filename) {
     TEllipse e=AliTPCTracklet::ErrorEllipse(0.,0.,4.,1.,1.8);
     e.Draw();
  */
-  TTreeSRedirector ds("AliTPCTrackletDebug.root");
+  TTreeSRedirector ds(filename);
   Double_t p[5]={0.};
   Double_t c[15]={4.,
 		  0.,4.,
