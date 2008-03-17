@@ -18,6 +18,9 @@
 //  Class for emulation of the ALTRO chip (Altro digital Chain) in C++       //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include "TSystem.h"
+
+
 #include <iostream>
 #include <stdlib.h>
 #include <stdio.h>
@@ -25,8 +28,9 @@
 
 using namespace std;
 
-class AliTPCAltroEmulator{
-	public:
+class AliTPCAltroEmulator : public TNamed {
+
+public:
 	AliTPCAltroEmulator(int timebins, short* Channel);
 	AliTPCAltroEmulator(const AliTPCAltroEmulator &sig);
 	~AliTPCAltroEmulator();
@@ -63,7 +67,7 @@ class AliTPCAltroEmulator{
 	private:
 	int ftimebins;          // timebins
 
-	short *fChannelIn;      // ChannelIn
+	//	short *fChannelIn;      // ChannelIn
 	short *fChannelShort;   // incoming signal in short format
 	short *fADCkeep;        // ADCkeep
 

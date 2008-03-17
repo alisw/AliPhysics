@@ -39,11 +39,59 @@
  *	@param Channel an <tt> short* </tt> Pointer to a 1d short Array with the input Data
  */
 
-AliTPCAltroEmulator::AliTPCAltroEmulator(int timebins, short* Channel){
+AliTPCAltroEmulator::AliTPCAltroEmulator(int timebins, short* Channel) : 
+  TNamed(),
+  ftimebins(timebins),
+//  fChannelIn(Channel),
+  fChannelShort(Channel), 
+  fADCkeep(0),     
+  fOnBSL1(0), 
+  fOnTCF(0),  
+  fOnBSL2(0), 
+  fOnClip(0), 
+  fOnZSU(0),  
+
+  fConfiguredAltro(0),   // ConfiguredAltro
+  fConfiguredBSL1(0),    // ConfiguredBSL1
+  fConfiguredTCF(0),     // ConfiguredTCF
+  fConfiguredBSL2(0),    // ConfiguredBSL2
+  fConfiguredZSU(0),     // ConfiguredZSU
+  fBSL1mode(0),          // BSL1mode
+  fBSL1ValuePeDestal(0), // BSL1ValuePeDestal
+  fBSL1PedestalMem(0),  // BSL1PedestalMem
+  fBSL1polarity(0),      // BSL1polarity
+
+  fTCFK1(0), // K1
+  fTCFK2(0), // K2
+  fTCFK3(0), // K3
+  fTCFL1(0), // L1
+  fTCFL2(0), // L2
+  fTCFL3(0), // L3
+
+  fTCFK1Int(0), // K1Int
+  fTCFK2Int(0), // K2Int
+  fTCFK3Int(0), // K3Int
+  fTCFL1Int(0), // L1Int
+  fTCFL2Int(0), // L2Int
+  fTCFL3Int(0), // L3Int
+
+  fBSL2HighThreshold(0), // BSL2HighThreshold
+  fBSL2LowThreshold(0),  // BSL2LowThreshold
+  fBSL2Offset(0),        // BSL2Offset
+  fBSL2Presamples(0),    // BSL2Presamples(0),
+  fBSL2Postsamples(0),   // BSL2Postsamples
+
+  fZSUThreshold(0),      // ZSUThreshold
+
+  fZSUMinSamplesaboveThreshold(0), // ZSUMinSamplesaboveThreshold
+  fZSUPresamples(0),     // ZSUPresamples
+  fZSUPostsamples(0)     // ZSUPostsamples
+
+{
   //
   // Constructor of Altro Class
   //
-
+  /*
   ftimebins = timebins;
   
   fChannelShort = Channel;
@@ -59,12 +107,63 @@ AliTPCAltroEmulator::AliTPCAltroEmulator(int timebins, short* Channel){
   fConfiguredTCF = 0;
   fConfiguredBSL2 = 0;
   fConfiguredZSU = 0;
+  */
 }
 
-AliTPCAltroEmulator::AliTPCAltroEmulator(const AliTPCAltroEmulator &altro){
+
+AliTPCAltroEmulator::AliTPCAltroEmulator(const AliTPCAltroEmulator &altro):
+  TNamed(),
+  ftimebins(altro.ftimebins),
+//  fChannelIn(Channel),
+  fChannelShort(altro.fChannelShort), 
+  fADCkeep(0),     
+  fOnBSL1(0), 
+  fOnTCF(0),  
+  fOnBSL2(0), 
+  fOnClip(0), 
+  fOnZSU(0),  
+
+  fConfiguredAltro(0),   // ConfiguredAltro
+  fConfiguredBSL1(0),    // ConfiguredBSL1
+  fConfiguredTCF(0),     // ConfiguredTCF
+  fConfiguredBSL2(0),    // ConfiguredBSL2
+  fConfiguredZSU(0),     // ConfiguredZSU
+  fBSL1mode(0),          // BSL1mode
+  fBSL1ValuePeDestal(0), // BSL1ValuePeDestal
+  fBSL1PedestalMem(0),  // BSL1PedestalMem
+  fBSL1polarity(0),      // BSL1polarity
+
+  fTCFK1(0), // K1
+  fTCFK2(0), // K2
+  fTCFK3(0), // K3
+  fTCFL1(0), // L1
+  fTCFL2(0), // L2
+  fTCFL3(0), // L3
+
+  fTCFK1Int(0), // K1Int
+  fTCFK2Int(0), // K2Int
+  fTCFK3Int(0), // K3Int
+  fTCFL1Int(0), // L1Int
+  fTCFL2Int(0), // L2Int
+  fTCFL3Int(0), // L3Int
+
+  fBSL2HighThreshold(0), // BSL2HighThreshold
+  fBSL2LowThreshold(0),  // BSL2LowThreshold
+  fBSL2Offset(0),        // BSL2Offset
+  fBSL2Presamples(0),    // BSL2Presamples(0),
+  fBSL2Postsamples(0),   // BSL2Postsamples
+
+  fZSUThreshold(0),      // ZSUThreshold
+
+  fZSUMinSamplesaboveThreshold(0), // ZSUMinSamplesaboveThreshold
+  fZSUPresamples(0),     // ZSUPresamples
+  fZSUPostsamples(0)     // ZSUPostsamples
+
+{
   //
   // copy constructor of Altro Class
   //
+
 }
 
 
@@ -119,6 +218,7 @@ void AliTPCAltroEmulator::ConfigAltro(int ONBaselineCorrection1, int ONTailcance
   fOnBSL2 = InRange(ONBaselineCorrection2,0,1,"AliTPCAltroEmulator::ConfigAltro","ONBaselineCorrection2");
   fOnClip = InRange(ONClipping,0,1,"AliTPCAltroEmulator::ConfigAltro","ONClipping");
   fOnZSU = InRange(ONZerosuppression,0,1,"AliTPCAltroEmulator::ConfigAltro","ONZerosuppression");
+  ONDataFormatting; // does not have to be checked
   fConfiguredAltro = 1;
 }
 

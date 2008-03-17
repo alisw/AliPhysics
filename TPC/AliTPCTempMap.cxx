@@ -106,7 +106,7 @@ Double_t AliTPCTempMap::GetTempGradientY(UInt_t timeSec, Int_t side){
  //        or simply chi2 for validity check? 
  //        -> better use GetLinearFitter - function in this case!
   
- TLinearFitter fitter(3,"x0++x1++x2");
+ TLinearFitter *fitter = new TLinearFitter(3,"x0++x1++x2");
  TVectorD param(3);
  Int_t i = 0;
 
@@ -120,14 +120,15 @@ Double_t AliTPCTempMap::GetTempGradientY(UInt_t timeSec, Int_t side){
      x[1]=entry->GetX();
      x[2]=entry->GetY();    
      Double_t y = entry->GetValue(timeSec); // get temperature value
-     fitter.AddPoint(x,y,1); // add values to LinearFitter
+     fitter->AddPoint(x,y,1); // add values to LinearFitter
      i++;
    }
 
  }  
- fitter.Eval();
- fitter.GetParameters(param);
- fitter.~TLinearFitter();
+ fitter->Eval();
+ fitter->GetParameters(param);
+
+ fitter->~TLinearFitter();
 
  return param[2]; // return vertical (Y) tempGradient in [K/cm]
   
@@ -203,7 +204,7 @@ TLinearFitter *AliTPCTempMap::GetLinearFitter(Int_t type, Int_t side, UInt_t tim
 
   // returns TLinearFitter object where Chi2, Fitparameters and residuals can 
   // be extracted via usual memberfunctions
-  // example: fitter.GetParameters(param)
+  // example: fitter->GetParameters(param)
   // In case of type IFC or OFC, the parameters are the gradients in 
   // Z and Y direction (see fitformula)
   // Caution: Parameters are [K/cm] except Y at IFC,OFC ([K/radius]) 
