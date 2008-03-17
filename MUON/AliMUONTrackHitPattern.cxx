@@ -308,10 +308,17 @@ AliMUONTrackHitPattern::MatchTriggerTrack(AliMUONTrack* track,
 
   if (locTrg)
   {    
+    Int_t deviation = locTrg->LoDev(); 
+    Int_t sign = 0;
+    if ( !locTrg->LoSdev() &&  deviation ) sign=-1;
+    if ( !locTrg->LoSdev() && !deviation ) sign= 0;
+    if (  locTrg->LoSdev() == 1 )          sign=+1;
+    deviation *= sign;
+    deviation += 15;
     track->SetLocalTrigger(locTrg->LoCircuit(),
 			   locTrg->LoStripX(),
 			   locTrg->LoStripY(),
-			   locTrg->LoDev(),
+			   deviation,
 			   locTrg->LoLpt(),
 			   locTrg->LoHpt());
   }
