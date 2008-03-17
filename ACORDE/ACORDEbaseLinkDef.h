@@ -14,5 +14,6 @@
 #pragma link C++ class  AliGenACORDE+;
 #pragma link C++ class  AliACORDECalibData+;
 #pragma link C++ class  AliACORDEPreprocessor+;
+#pragma link C++ class  AliACORDEdigit+;
 
 #endif

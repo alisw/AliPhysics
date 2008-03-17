@@ -1,4 +1,4 @@
-SRCS = AliACORDEv1.cxx AliACORDEhit.cxx AliACORDEdigit.cxx \
+SRCS = AliACORDEv1.cxx AliACORDEhit.cxx \
        AliACORDEDigitizer.cxx AliACORDETrigger.cxx \
        AliACORDERawData.cxx 
 
