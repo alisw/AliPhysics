@@ -260,7 +260,7 @@ TH1D *AliProtonAnalysis::GetPtAsymmetryHistogram() {
 
 //____________________________________________________________________//
 Double_t AliProtonAnalysis::GetParticleFraction(Int_t i, Double_t p) {
-  Double_t partFrac;
+  Double_t partFrac=0;
   if(fFunctionProbabilityFlag) {
     if(i == 0) partFrac = fElectronFunction->Eval(p);
     if(i == 1) partFrac = fMuonFunction->Eval(p);

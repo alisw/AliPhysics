@@ -30,6 +30,9 @@ class AliAnalysisTaskMuonAODfromGeneral : public AliAnalysisTask {
   Double_t GetBeamEnergy(){return fBeamEnergy;}
   
  private:
+  AliAnalysisTaskMuonAODfromGeneral(const AliAnalysisTaskMuonAODfromGeneral&); // Not implemented
+  AliAnalysisTaskMuonAODfromGeneral& operator=(const AliAnalysisTaskMuonAODfromGeneral&); // Not implemented
+
   AliAODEventInfo	*fInfos;
 /*  TClonesArray 	*fInfos;*/
   TClonesArray 	*fDimuons;

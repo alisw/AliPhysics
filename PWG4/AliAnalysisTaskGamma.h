@@ -30,6 +30,8 @@ class AliAnalysisTaskGamma : public AliAnalysisTask
     TString GetConfigFileName() const {return fConfigName ; }
 
  private:
+    AliAnalysisTaskGamma(const AliAnalysisTaskGamma&); // Not implemented
+    AliAnalysisTaskGamma& operator=(const AliAnalysisTaskGamma&); // Not implemented
 
     AliAnaGamma* fAna; //  Pointer to the jet finder 
     TChain*       fChain;     //! chained files

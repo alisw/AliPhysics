@@ -46,7 +46,7 @@ public:
 	
 	// TSelector-inherited member functions
 	virtual Int_t   Version() const {return 1;}
-	virtual void    Begin(TTree *tree) const;
+	virtual void    Begin(TTree *tree);
 	virtual void    SlaveBegin(TTree *tree);
 	virtual void    Init(TTree *tree);
 	virtual Bool_t  Process(Long64_t entry);

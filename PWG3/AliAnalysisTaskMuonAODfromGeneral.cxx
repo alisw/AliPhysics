@@ -28,7 +28,8 @@ AliAnalysisTaskMuonAODfromGeneral::AliAnalysisTaskMuonAODfromGeneral(const char 
 	AliAnalysisTask(name, "AnalysisTaskMuonAODfromGeneral"),
 	fInfos(0),
 	fDimuons(0),
-	fOrgAOD(0), 
+        fChain(0),
+        fOrgAOD(0), 
 	fNewAOD(0), 
 	ft(0),
 	fBeamEnergy(0)

@@ -243,7 +243,7 @@ AliPID::EParticleType AliRsnSelectorRL::FindType(Int_t pdg)
 //--------------------------------------------------------
 
 //--------------------------------------------------------------------------------------------------------
-void AliRsnSelectorRL::Begin(TTree *) const
+void AliRsnSelectorRL::Begin(TTree *)
 {
 //
 // Implementation of BEGIN method
