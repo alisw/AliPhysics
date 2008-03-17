@@ -42,9 +42,9 @@ SUBDIRS 		= BASE \
 			  sim \
 			  rec \
 			  shuttle \
+			  $(RCU_DIR) \
 			  $(SAMPLE_DIR) \
 			  $(TPC_DIR) \
-			  $(RCU_DIR) \
 			  $(PHOS_DIR) \
 			  $(TRD_DIR) \
 			  $(MUON_DIR) \

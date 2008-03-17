@@ -877,6 +877,7 @@ AC_CONFIG_FILES([Makefile
 		 shuttle/Makefile
 		 SampleLib/Makefile
 		 TPCLib/Makefile
+		 TPCLib/test/Makefile
 		 TPCLib/mapping2array.cxx
 		 TPCLib/OnlineDisplay/Makefile
 		 RCU/Makefile

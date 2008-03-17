@@ -8,16 +8,25 @@ AM_CPPFLAGS			= -I$(top_srcdir)/BASE \
 
 EXTRA_DIST			= 
 
-check_PROGRAMS			= testAliHLTAltroEncoder
+check_PROGRAMS			= testAliHLTAltroEncoder \
+				  testAliHLTAltroGenerator
 
 testAliHLTAltroEncoder_SOURCES 	= testAliHLTAltroEncoder.C
-testAliHLTAltroEncoder_LDADD 	= $(top_builddir)/BASE/libHLTbase.la \
-				  $(top_builddir)/RCU/libAliHLTRCU.la
+testAliHLTAltroGenerator_SOURCES= testAliHLTAltroGenerator.C
+
 
 # linker flags
-testAliHLTAltroEncoder_LDFLAGS	= -L@ROOTLIBDIR@ \
+LDADD_COMMON		 	= $(top_builddir)/BASE/libHLTbase.la \
+				  $(top_builddir)/RCU/libAliHLTRCU.la
+LDFLAGS_COMMON			= -L@ROOTLIBDIR@ \
 				  @ROOTLIBS@ \
 				  @ALIROOT_LDFLAGS@ \
 				  @ALIROOT_LIBS@
+
+testAliHLTAltroEncoder_LDADD 	= $(LDADD_COMMON)
+testAliHLTAltroGenerator_LDADD 	= $(LDADD_COMMON)
+
+testAliHLTAltroEncoder_LDFLAGS	= $(LDFLAGS_COMMON)
+testAliHLTAltroGenerator_LDFLAGS= $(LDFLAGS_COMMON)
 
 TESTS				= $(check_PROGRAMS)

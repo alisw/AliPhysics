@@ -190,5 +190,7 @@ void AliHLTTPCDigitReader::PrintMissingFastAccessWarning()
   // see header file for class documentation
   if (CheckFlag(kWarnMissFastAccess)) return;
   SetFlag(kWarnMissFastAccess);
-  HLTWarning("This digit reader does not implement the metghods for fast data access on channel/bunch basis. Data is discarded");
+  HLTWarning("\n"
+	     "      !!! This digit reader does not implement the methods for       !!!\n"
+	     "      !!! fast data access on channel/bunch basis. Data is discarded !!!");
 }

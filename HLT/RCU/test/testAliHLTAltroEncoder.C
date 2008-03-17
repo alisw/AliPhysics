@@ -16,7 +16,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/** @file   altro-encoder.C
+/** @file   testAliHLTAltroEncoder.C
     @author Matthias Richter
     @date   
     @brief  Test macro/program for the AliHLTAltroEncoder
@@ -273,7 +273,7 @@ void CompareDumpFiles()
   Compare(simData, encData);
 }
 
-int altro_encoder()
+int testAliHLTAltroEncoder()
 {
   int nofChannels=GetRandom(1, maxChannels);
   if (nofChannels==0) nofChannels=1;
@@ -393,11 +393,11 @@ int main(int argc, const char** argv)
   int iResult=0;
   int iCount=10000;
   for (int i=0; i<iCount; i++) {
-    if ((iResult=altro_encoder())<0) {
+    if ((iResult=testAliHLTAltroEncoder())<0) {
       cout << "missmatch in block no " << i << endl;
       return iResult;
     }
   }
-  cout << iCount << " encoding cycle(s) successfully tested" << endl;
+  cout << "checking: " << iCount << " encoding cycle(s) successfully tested" << endl;
   return 0;
 }
