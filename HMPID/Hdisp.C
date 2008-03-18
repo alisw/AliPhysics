@@ -744,14 +744,16 @@ void Hdisp()
     if(fEsdFile) { 
       fEsdTree=(TTree*)fEsdFile->Get("esdTree"); 
       fEsd->ReadFromTree(fEsdTree); fEsd->GetStdContent();                       //clm: new ESD schema: see Task Force meeting 20th June, 2007
-      if(fEsdTree) fNevt=fEsdTree->GetEntries(); fType=1;  title+=Form(" ESD-%i ",fNevt); else {delete fEsdFile;fEsdFile=0x0;}
+      if(fEsdTree) {
+        fNevt=fEsdTree->GetEntries(); fType=1;  title+=Form(" ESD-%i ",fNevt); 
+      } else {delete fEsdFile;fEsdFile=0x0;}
     } else {delete fEsdFile; delete fEsdTree;}
     //clm: we need to set the magnetic field  
     if(gSystem->IsFileInIncludePath("galice.root")){
     if(gAlice) delete gAlice;                       
     gAL=AliRunLoader::Open();                       
     gAL->LoadgAlice();           
-//    if(gAL)AliHMPIDTracker::SetFieldMap(gAL->GetAliRun()->Field(),kTRUE);                         
+    if(gAL)AliHMPIDTracker::SetFieldMap(gAL->GetAliRun()->Field(),kTRUE);                         
    }else{
           Printf("=============== NO galice file! Magnetic field for ESD tracking is: %f ===============",AliTracker::GetBz());
      }  
