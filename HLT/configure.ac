@@ -5,7 +5,12 @@ dnl template for the configuration script for the Alice HLT
 dnl framework and components
 dnl 
 dnl ------------------------------------------------------------------
-AC_INIT([Alice High Level Trigger] , [0.9-dev], [Matthias.Richter@ift.uib.no], alice-hlt)
+
+dnl Take either the AliRoot tag as version id or the current revision
+AC_INIT([Alice High Level Trigger] , 
+	m4_esyscmd([url=`svn info | grep "URL:" | cut -d: -f3 | sed -e 's|[/]*HLT[/]*$||' | sed -e 's|^[/]*||g' | cut -d '/' -f 4`; rev=`cat configure.ac | sed -e '/^dnl \$Id:/!d'| cut -d ' ' -f4 | tr -d '\n'`; if test "x$url" != "x"; then echo -n $url; elif test "x$rev" != "x"; then echo -n $rev ; else echo -n invalid-version; fi]),
+	[Matthias.Richter@ift.uib.no], 
+	[alice-hlt])
 
 dnl ------------------------------------------------------------------
 dnl the package from CVS contains the old Makefiles as well. In order to
