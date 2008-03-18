@@ -33,6 +33,7 @@ class AliShuttle: public AliShuttleInterface {
 public:
 	enum DCSType {kAlias=0, kDP};
 	enum TestMode { kNone = 0, kSkipDCS = 1, kErrorDCS = 2, kErrorFXSSources = 4, kErrorFXSFiles = 8, kErrorOCDB = 16, kErrorStorage = 32, kErrorGrid = 64 };
+	enum EMailTarget { kDCSEMail = 0, kFXSEMail, kPPEMail };
 
 	AliShuttle(const AliShuttleConfig* config, UInt_t timeout = 5000, Int_t retries = 5);
 	virtual ~AliShuttle();
@@ -121,8 +122,7 @@ private:
 	Bool_t ContinueProcessing();
 	void UpdateShuttleStatus(AliShuttleStatus::Status newStatus, Bool_t increaseCount = kFALSE);
 	Bool_t UpdateShuttleLogbook(const char* detector, const char* status=0);
-	Bool_t SendMail();
-	Bool_t SendMailToDCS();
+	Bool_t SendMail(EMailTarget target, Int_t system = -1);
 	
 	TString GetLogFileName(const char* detector) const;
 
@@ -145,7 +145,7 @@ private:
 	TSQLServer *fServer[4]; 	// pointer to the three FXS + Run & Shuttle logbook servers
 	Bool_t fFXSCalled[3];		// FXS call status
 	TList  fFXSlist[3];		// List of files retrieved from each FXS
-	Bool_t fFXSError;		// Bool to keep track of any FXS errors
+	Int_t  fFXSError;		// Variable to keep track of any FXS errors; contains -1 for no error, kDAQ, kDCS, kHLT otherwise
 
 	AliCDBEntry* fStatusEntry; // last CDB entry containing a AliShuttleStatus retrieved
 

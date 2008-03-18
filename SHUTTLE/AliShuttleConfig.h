@@ -47,6 +47,7 @@ public:
 	UInt_t 	    GetFXSPort(Int_t sys) const {return fFXSPort[sys];}
 	const char* GetFXSUser(Int_t sys) const {return fFXSUser[sys].Data();}
 	const char* GetFXSPass(Int_t sys) const {return fFXSPass[sys].Data();}
+	const char* GetFXSBaseFolder(Int_t sys) const {return fFXSBaseFolder[sys].Data();}
 
 	const char* GetFXSdbHost(Int_t sys) const {return fFXSdbHost[sys].Data();}
 	UInt_t 	    GetFXSdbPort(Int_t sys) const {return fFXSdbPort[sys];}
@@ -198,6 +199,7 @@ private:
 	UInt_t  fFXSPort[3]; 		// Port of the [DAQ, DCS, HLT] File eXchange Server
 	TString fFXSUser[3]; 		// username of the [DAQ, DCS, HLT] File eXchange Server
 	TString fFXSPass[3]; 		// password of the [DAQ, DCS, HLT] File eXchange Server
+	TString fFXSBaseFolder[3]; 	// base folder of the [DAQ, DCS, HLT] File eXchange Server
 
 	TString fFXSdbHost[3];		// Host of the [DAQ, DCS, HLT] FXS database
 	UInt_t  fFXSdbPort[3];		// Port of the [DAQ, DCS, HLT] FXS database

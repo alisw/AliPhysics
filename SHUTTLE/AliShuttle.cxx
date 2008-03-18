@@ -78,7 +78,7 @@ fPreprocessorMap(),
 fLogbookEntry(0),
 fCurrentDetector(),
 fFirstProcessing(0),
-fFXSError(kFALSE),
+fFXSError(-1),
 fStatusEntry(0),
 fMonitoringMutex(0),
 fLastActionTime(0),
@@ -1151,7 +1151,7 @@ Bool_t AliShuttle::ContinueProcessing()
 		// Send mail to detector expert!
 		Log("SHUTTLE", Form("ContinueProcessing - Sending mail to %s expert...", 
 				    fCurrentDetector.Data()));
-		if (!SendMail())
+		if (!SendMail(kPPEMail))
 			Log("SHUTTLE", Form("ContinueProcessing - Could not send mail to %s expert",
 					    fCurrentDetector.Data()));
 
@@ -1190,8 +1190,17 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 					GetCurrentRun()));
 
 	// Send the information to ML
+	CountOpenRuns();
+	
 	TMonaLisaText  mlStatus("SHUTTLE_status", "Processing");
-	TMonaLisaText  mlRunType("SHUTTLE_runtype", Form("%s (%s)", entry->GetRunType(), entry->GetRunParameter("log")));
+	TString runType(entry->GetRunType());
+	if (strlen(entry->GetRunParameter("log")) > 0){
+
+		runType += "(";
+		runType += entry->GetRunParameter("log");
+		runType += ")";
+	}
+	TMonaLisaText  mlRunType("SHUTTLE_runtype", runType);
 
 	TList mlList;
 	mlList.Add(&mlStatus);
@@ -1525,6 +1534,10 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 					fFirstUnprocessed[iDet] = kFALSE;
 				}
 			}
+			TMonaLisaText  mlStatusPending("SHUTTLE_status", "Pending");
+			mlList.Clear();
+			mlList.Add(&mlStatusPending);
+			fMonaLisa->SendParameters(&mlList, mlID);
 		}
 	}
 
@@ -1610,7 +1623,7 @@ Bool_t AliShuttle::ProcessCurrentDetector()
 							" Sending mail to DCS experts!", host.Data()));
 					UpdateShuttleStatus(AliShuttleStatus::kDCSError);
 					
-					if (!SendMailToDCS())
+					if (!SendMail(kDCSEMail))
 						Log("SHUTTLE", Form("ProcessCurrentDetector - "
 								    "Could not send mail to DCS experts!"));
 
@@ -1632,7 +1645,7 @@ Bool_t AliShuttle::ProcessCurrentDetector()
 							" Sending mail to DCS experts!", host.Data()));
 					UpdateShuttleStatus(AliShuttleStatus::kDCSError);
 					
-					if (!SendMailToDCS())
+					if (!SendMail(kDCSEMail))
 						Log("SHUTTLE", Form("ProcessCurrentDetector - "
 								    "Could not send mail to DCS experts!"));
 					
@@ -1675,12 +1688,13 @@ Bool_t AliShuttle::ProcessCurrentDetector()
 	// DCS Archive DB processing successful. Call Preprocessor!
 	UpdateShuttleStatus(AliShuttleStatus::kPPStarted);
 
-	fFXSError = kFALSE; // this variable is kTRUE after ::Process if an FXS error occured
+	fFXSError = -1; // this variable is kTRUE after ::Process if an FXS error occured
 	
 	UInt_t returnValue = aPreprocessor->Process(dcsMap);
 	
-	if (fFXSError) {
+	if (fFXSError!=-1) {
 		UpdateShuttleStatus(AliShuttleStatus::kFXSError);
+		SendMail(kFXSEMail, fFXSError);
 		dcsMap->DeleteAll();
 		delete dcsMap;
 		return kFALSE;
@@ -2040,7 +2054,7 @@ const char* AliShuttle::GetFile(Int_t system, const char* detector,
 	if (!Connect(system))
 	{
 		Log(detector, Form("GetFile - Couldn't connect to %s FXS database", GetSystemName(system)));
-		fFXSError = kTRUE;
+		fFXSError = system;
 		return 0;
 	}
 
@@ -2075,7 +2089,7 @@ const char* AliShuttle::GetFile(Int_t system, const char* detector,
 	if (!aResult) {
 		Log(detector, Form("GetFile - Can't execute SQL query to %s database for: id = %s, source = %s",
 				GetSystemName(system), id, sourceName.Data()));
-		fFXSError = kTRUE;
+		fFXSError = system;
 		return 0;
 	}
 
@@ -2092,7 +2106,7 @@ const char* AliShuttle::GetFile(Int_t system, const char* detector,
 		Log(detector,
 			Form("GetFile - More than one entry in %s FXS db for: id = %s, source = %s",
 				GetSystemName(system), id, sourceName.Data()));
-		fFXSError = kTRUE;
+		fFXSError = system;
 		delete aResult;
 		return 0;
 	}
@@ -2101,7 +2115,7 @@ const char* AliShuttle::GetFile(Int_t system, const char* detector,
 		Log(detector,
 			Form("GetFileName - Wrong field count in %s FXS db for: id = %s, source = %s",
 				GetSystemName(system), id, sourceName.Data()));
-		fFXSError = kTRUE;
+		fFXSError = system;
 		delete aResult;
 		return 0;
 	}
@@ -2111,7 +2125,7 @@ const char* AliShuttle::GetFile(Int_t system, const char* detector,
 	if (!aRow){
 		Log(detector, Form("GetFile - Empty set result in %s FXS db from query: id = %s, source = %s",
 				GetSystemName(system), id, sourceName.Data()));
-		fFXSError = kTRUE;
+		fFXSError = system;
 		delete aResult;
 		return 0;
 	}
@@ -2172,7 +2186,7 @@ const char* AliShuttle::GetFile(Int_t system, const char* detector,
 		{
 			// compare md5sum of local file with the one stored in the FXS DB
 			if(fileChecksum.Contains(' ')) fileChecksum.Resize(fileChecksum.First(' '));
-			Int_t md5Comp = gSystem->Exec(Form("md5sum %s |grep %s 2>&1 > /dev/null",
+			Int_t md5Comp = gSystem->Exec(Form("md5sum %s |grep %s > /dev/null 2> /dev/null",
 						localFileName.Data(), fileChecksum.Data()));
 
 			if (md5Comp != 0)
@@ -2191,7 +2205,7 @@ const char* AliShuttle::GetFile(Int_t system, const char* detector,
 
 	if (!result) 
 	{
-		fFXSError = kTRUE;
+		fFXSError = system;
 		return 0;
 	}
 
@@ -2234,26 +2248,11 @@ Bool_t AliShuttle::RetrieveFile(UInt_t system, const char* fxsFileName, const ch
 		}
 	}
 
-	TString baseFXSFolder;
-	if (system == kDAQ)
-	{
-		baseFXSFolder = "FES/";
-	}
-	else if (system == kDCS)
-	{
-		baseFXSFolder = "";
-	}
-	else if (system == kHLT)
-	{
-		baseFXSFolder = "/opt/FXS/";
-	}
-
-
-	TString command = Form("scp -oPort=%d -2 %s@%s:%s%s %s",
+	TString command = Form("scp -oPort=%d -2 %s@%s:%s/%s %s",
 		fConfig->GetFXSPort(system),
 		fConfig->GetFXSUser(system),
 		fConfig->GetFXSHost(system),
-		baseFXSFolder.Data(),
+		fConfig->GetFXSBaseFolder(system),
 		fxsFileName,
 		localFileName);
 
@@ -2299,7 +2298,7 @@ TList* AliShuttle::GetFileSources(Int_t system, const char* detector, const char
 	if (!Connect(system))
 	{
 		Log(detector, Form("GetFileSources - Couldn't connect to %s FXS database", GetSystemName(system)));
-		fFXSError = kTRUE;
+		fFXSError = system;
 		return NULL;
 	}
 
@@ -2327,7 +2326,7 @@ TList* AliShuttle::GetFileSources(Int_t system, const char* detector, const char
 	if (!aResult) {
 		Log(detector, Form("GetFileSources - Can't execute SQL query to %s database for id: %s",
 				GetSystemName(system), id));
-		fFXSError = kTRUE;
+		fFXSError = system;
 		return 0;
 	}
 
@@ -3039,7 +3038,7 @@ AliCDBEntry* AliShuttle::GetFromOCDB(const char* detector, const AliCDBPath& pat
 }
 
 //______________________________________________________________________________________________
-Bool_t AliShuttle::SendMail()
+Bool_t AliShuttle::SendMail(EMailTarget target, Int_t system)
 {
 	//
 	// sends a mail to the subdetector expert in case of preprocessor error
@@ -3051,20 +3050,9 @@ Bool_t AliShuttle::SendMail()
 	if (!fConfig->SendMail()) 
 		return kTRUE;
 
-	TString to="";
-	TIter iterExperts(fConfig->GetResponsibles(fCurrentDetector));
-	TObjString *anExpert=0;
-	while ((anExpert = (TObjString*) iterExperts.Next()))
-	{
-		to += Form("%s,", anExpert->GetName());
-	}
-	if (to.Length() > 0)
-	  to.Remove(to.Length()-1);
-	AliDebug(2, Form("to: %s",to.Data()));
-
-	if (to.IsNull()) {
-		Log("SHUTTLE", "List of detector responsibles not set!");
-		return kFALSE;
+	if (target == kDCSEMail || target == kFXSEMail) {
+		if (!fFirstProcessing)
+		return kTRUE;
 	}
 
 	void* dir = gSystem->OpenDirectory(GetShuttleLogDir());
@@ -3080,6 +3068,46 @@ Bool_t AliShuttle::SendMail()
 		gSystem->FreeDirectory(dir);
 	}
 
+	// det experts in to
+	TString to="";
+	TIter *iterExperts;
+	if (target == kDCSEMail) {
+		iterExperts = new TIter(fConfig->GetAdmins(AliShuttleConfig::kAmanda));
+	}
+	else if (target == kFXSEMail) {
+		iterExperts = new TIter(fConfig->GetAdmins(system));
+	}
+	else {
+		iterExperts = new TIter(fConfig->GetResponsibles(fCurrentDetector));
+	}
+	TObjString *anExpert=0;
+	while ((anExpert = (TObjString*) iterExperts->Next()))
+	{
+		to += Form("%s,", anExpert->GetName());
+	}
+	delete iterExperts;
+	if (to.Length() > 0)
+	  to.Remove(to.Length()-1);
+	AliDebug(2, Form("to: %s",to.Data()));
+
+	if (to.IsNull()) {
+		Log("SHUTTLE", Form("List of %d responsibles not set!", (Int_t) target));
+		return kFALSE;
+	}
+
+	// SHUTTLE responsibles in cc
+	TString cc="";
+	TIter iterAdmins(fConfig->GetAdmins(AliShuttleConfig::kGlobal));
+	TObjString *anAdmin=0;
+	while ((anAdmin = (TObjString*) iterAdmins.Next()))
+	{
+		cc += Form("%s,", anAdmin->GetName());
+	}
+	if (cc.Length() > 0)
+	  cc.Remove(cc.Length()-1);
+	AliDebug(2, Form("cc: %s",to.Data()));
+
+	// mail body 
   	TString bodyFileName;
   	bodyFileName.Form("%s/mail.body", GetShuttleLogDir());
   	gSystem->ExpandPathName(bodyFileName);
@@ -3093,25 +3121,43 @@ Bool_t AliShuttle::SendMail()
     		return kFALSE;
   	}
 
-	TString cc="";
-	TIter iterAdmins(fConfig->GetAdmins(AliShuttleConfig::kGlobal));
-	TObjString *anAdmin=0;
-	while ((anAdmin = (TObjString*) iterAdmins.Next()))
-	{
-		cc += Form("%s,", anAdmin->GetName());
+
+	TString subject;
+	TString body;
+
+	if (target == kDCSEMail){
+		subject = Form("Retrieval of data points for %s FAILED in run %d !",
+				fCurrentDetector.Data(), GetCurrentRun());
+		AliDebug(2, Form("subject: %s", subject.Data()));
+		
+		body = Form("Dear DCS experts, \n\n");
+		body += Form("SHUTTLE couldn\'t retrieve the data points for detector %s "
+			     "in run %d!!\n\n", fCurrentDetector.Data(), GetCurrentRun());
 	}
-	if (cc.Length() > 0)
-	  cc.Remove(cc.Length()-1);
-	AliDebug(2, Form("cc: %s",to.Data()));
+	else if (target == kFXSEMail){
+		subject = Form("FXS communication for %s FAILED in run %d !",
+				fCurrentDetector.Data(), GetCurrentRun());
+		AliDebug(2, Form("subject: %s", subject.Data()));
+		TString sys;
+		if (system == kDAQ) sys="DAQ";
+		else if (system == kDCS) sys="DCS";
+		else if (system == kHLT) sys="HLT";
+		else return kFALSE;
+		body = Form("Dear  %s FXS experts, \n\n");
+		body += Form("SHUTTLE couldn\'t retrieve data from the FXS for detector %s "
+			     "in run %d!!\n\n", sys.Data(),fCurrentDetector.Data(), GetCurrentRun());
+	}
+	else {
+		subject = Form("%s Shuttle preprocessor FAILED in run %d (run type = %s)!",
+				       fCurrentDetector.Data(), GetCurrentRun(), GetRunType());
+		AliDebug(2, Form("subject: %s", subject.Data()));
+	
+		body = Form("Dear %s expert(s), \n\n", fCurrentDetector.Data());
+		body += Form("SHUTTLE just detected that your preprocessor "
+			     "failed processing run %d (run type = %s)!!\n\n", 
+			     GetCurrentRun(), GetRunType());
+	}
 
-	TString subject = Form("%s Shuttle preprocessor FAILED in run %d (run type = %s)!",
-				fCurrentDetector.Data(), GetCurrentRun(), GetRunType());
-	AliDebug(2, Form("subject: %s", subject.Data()));
-
-	TString body = Form("Dear %s expert(s), \n\n", fCurrentDetector.Data());
-	body += Form("SHUTTLE just detected that your preprocessor "
-			"failed processing run %d (run type = %s)!!\n\n", 
-					GetCurrentRun(), GetRunType());
 	body += Form("Please check %s status on the SHUTTLE monitoring page: \n\n", 
 				fCurrentDetector.Data());
 	if (fConfig->GetRunMode() == AliShuttleConfig::kTest)
@@ -3141,140 +3187,6 @@ Bool_t AliShuttle::SendMail()
 
 	TString logFileName = Form("%s/%d/%s_%d.log", GetShuttleLogDir(), 
 		GetCurrentRun(), fCurrentDetector.Data(), GetCurrentRun());
-	TString tailCommand = Form("tail -n 10 %s >> %s", logFileName.Data(), bodyFileName.Data());
-	if (gSystem->Exec(tailCommand.Data()))
-	{
-		mailBody << Form("%s log file not found ...\n\n", fCurrentDetector.Data());
-	}
-
-	TString endBody = Form("------------------------------------------------------\n\n");
-	endBody += Form("In case of problems please contact the SHUTTLE core team.\n\n");
-	endBody += "Please do not answer this message directly, it is automatically generated.\n\n";
-	endBody += "Greetings,\n\n \t\t\tthe SHUTTLE\n";
-
-	AliDebug(2, Form("Body end: %s", endBody.Data()));
-
-	mailBody << endBody.Data();
-
-  	mailBody.close();
-
-	// send mail!
-	TString mailCommand = Form("mail -s \"%s\" -c %s %s < %s",
-						subject.Data(),
-						cc.Data(),
-						to.Data(),
-						bodyFileName.Data());
-	AliDebug(2, Form("mail command: %s", mailCommand.Data()));
-
-	Bool_t result = gSystem->Exec(mailCommand.Data());
-
-	return result == 0;
-}
-
-//______________________________________________________________________________________________
-Bool_t AliShuttle::SendMailToDCS()
-{
-	//
-	// sends a mail to the DCS Amanda experts in case of DCS data point retrieval error
-	//
-	
-	if (fTestMode != kNone)
-		return kTRUE;
-
-	if (!fConfig->SendMail()) 
-		return kTRUE;
-
-	if (!fFirstProcessing)
-		return kTRUE;
-
-	void* dir = gSystem->OpenDirectory(GetShuttleLogDir());
-	if (dir == NULL)
-	{
-		if (gSystem->mkdir(GetShuttleLogDir(), kTRUE))
-		{
-			Log("SHUTTLE", Form("SendMailToDCS - Can't open directory <%s>", GetShuttleLogDir()));
-			return kFALSE;
-		}
-
-	} else {
-		gSystem->FreeDirectory(dir);
-	}
-
-  	TString bodyFileName;
-  	bodyFileName.Form("%s/mail.body", GetShuttleLogDir());
-  	gSystem->ExpandPathName(bodyFileName);
-
-  	ofstream mailBody;
-  	mailBody.open(bodyFileName, ofstream::out);
-
-  	if (!mailBody.is_open())
-	{
-    		Log("SHUTTLE", Form("SendMailToDCS - Could not open mail body file %s", bodyFileName.Data()));
-    		return kFALSE;
-  	}
-
-	TString to="";
-	TIter iterExperts(fConfig->GetAdmins(AliShuttleConfig::kAmanda));
-	TObjString *anExpert=0;
-	while ((anExpert = (TObjString*) iterExperts.Next()))
-	{
-		to += Form("%s,", anExpert->GetName());
-	}
-	if (to.Length() > 0)
-	  to.Remove(to.Length()-1);
-	AliDebug(2, Form("to: %s",to.Data()));
-
-	if (to.IsNull()) {
-		Log("SHUTTLE", "List of Amanda server administrators not set!");
-		return kFALSE;
-	}
-
-	TString cc="";
-	TIter iterAdmins(fConfig->GetAdmins(AliShuttleConfig::kGlobal));
-	TObjString *anAdmin=0;
-	while ((anAdmin = (TObjString*) iterAdmins.Next()))
-	{
-		cc += Form("%s,", anAdmin->GetName());
-	}
-	if (cc.Length() > 0)
-	  cc.Remove(cc.Length()-1);
-	AliDebug(2, Form("cc: %s",to.Data()));
-
-	TString subject = Form("Retrieval of data points for %s FAILED in run %d !",
-				fCurrentDetector.Data(), GetCurrentRun());
-	AliDebug(2, Form("subject: %s", subject.Data()));
-
-	TString body = Form("Dear DCS experts, \n\n");
-	body += Form("SHUTTLE couldn\'t retrieve the data points for detector %s "
-			"in run %d!!\n\n", fCurrentDetector.Data(), GetCurrentRun());
-	body += Form("Please check %s status on the SHUTTLE monitoring page: \n\n", 
-				fCurrentDetector.Data());
-	if (fConfig->GetRunMode() == AliShuttleConfig::kTest)
-	{
-		body += Form("\thttp://pcalimonitor.cern.ch:8889/shuttle.jsp?time=168 \n\n");
-	} else {
-		body += Form("\thttp://pcalimonitor.cern.ch/shuttle.jsp?instance=PROD?time=168 \n\n");
-	}
-
-	TString logFolder = "logs";
-	if (fConfig->GetRunMode() == AliShuttleConfig::kProd) 
-		logFolder += "_PROD";
-	
-	
-	body += Form("Find the %s log for the current run on \n\n"
-		"\thttp://pcalishuttle01.cern.ch:8880/%s/%d/%s_%d.log \n\n", 
-		fCurrentDetector.Data(), logFolder.Data(), GetCurrentRun(), 
-				fCurrentDetector.Data(), GetCurrentRun());
-	body += Form("The last 10 lines of %s log file are following:\n\n", fCurrentDetector.Data());
-
-	AliDebug(2, Form("Body begin: %s", body.Data()));
-
-	mailBody << body.Data();
-  	mailBody.close();
-  	mailBody.open(bodyFileName, ofstream::out | ofstream::app);
-
-	TString logFileName = Form("%s/%d/%s_%d.log", GetShuttleLogDir(), GetCurrentRun(),
-		fCurrentDetector.Data(), GetCurrentRun());
 	TString tailCommand = Form("tail -n 10 %s >> %s", logFileName.Data(), bodyFileName.Data());
 	if (gSystem->Exec(tailCommand.Data()))
 	{

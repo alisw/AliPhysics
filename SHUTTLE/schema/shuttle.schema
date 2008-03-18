@@ -30,24 +30,25 @@ objectclass ( DCS_CONFIG
 
 objectidentifier FXS_CONFIG SHUTTLE_BASE:3
 
-attributetype ( FXS_CONFIG:1  NAME 'system'	 DESC 'System name (DAQ, DCS, HLT)'  EQUALITY caseIgnoreMatch  SUP name SINGLE-VALUE )
-attributetype ( FXS_CONFIG:2  NAME 'dbHost'	 DESC 'FXS MySQL DB host'	     EQUALITY caseIgnoreMatch  SUP name SINGLE-VALUE )
-attributetype ( FXS_CONFIG:3  NAME 'dbPort'	 DESC 'FXS MySQL DB port'				       SUP ipServicePort SINGLE-VALUE )
-attributetype ( FXS_CONFIG:4  NAME 'dbUser'	 DESC 'FXS MySQL DB user'	     EQUALITY caseIgnoreMatch  SUP name SINGLE-VALUE )
-attributetype ( FXS_CONFIG:5  NAME 'dbPasswd'    DESC 'FXS MySQL DB passwd'	     EQUALITY caseIgnoreMatch  SUP name SINGLE-VALUE )
-attributetype ( FXS_CONFIG:6  NAME 'dbName'	 DESC 'FXS MySQL DB name'	     EQUALITY caseIgnoreMatch  SUP name SINGLE-VALUE )
-attributetype ( FXS_CONFIG:7  NAME 'dbTable'	 DESC 'FXS MySQL DB table'	     EQUALITY caseIgnoreMatch  SUP name SINGLE-VALUE )
-attributetype ( FXS_CONFIG:8  NAME 'fxsHost'	 DESC 'FXS host' 		     EQUALITY caseIgnoreMatch  SUP name SINGLE-VALUE )
-attributetype ( FXS_CONFIG:9  NAME 'fxsPort'	 DESC 'FXS port' 					       SUP ipServicePort SINGLE-VALUE )
-attributetype ( FXS_CONFIG:10 NAME 'fxsUser'	 DESC 'FXS user'	             EQUALITY caseIgnoreMatch  SUP name SINGLE-VALUE )
-attributetype ( FXS_CONFIG:11 NAME 'fxsPasswd'   DESC 'FXS Password'	             EQUALITY caseIgnoreMatch  SUP name SINGLE-VALUE )
-attributetype ( FXS_CONFIG:12 NAME 'fxsAdmin'    DESC 'FXS admin(s) email address' EQUALITY caseIgnoreIA5Match SUP mail )
+attributetype ( FXS_CONFIG:1  NAME 'system'	 	DESC 'System name (DAQ, DCS, HLT)'  EQUALITY caseIgnoreMatch  SUP name SINGLE-VALUE )
+attributetype ( FXS_CONFIG:2  NAME 'dbHost'	 	DESC 'FXS MySQL DB host'	     EQUALITY caseIgnoreMatch  SUP name SINGLE-VALUE )
+attributetype ( FXS_CONFIG:3  NAME 'dbPort'	 	DESC 'FXS MySQL DB port'				       SUP ipServicePort SINGLE-VALUE )
+attributetype ( FXS_CONFIG:4  NAME 'dbUser'	 	DESC 'FXS MySQL DB user'	     EQUALITY caseIgnoreMatch  SUP name SINGLE-VALUE )
+attributetype ( FXS_CONFIG:5  NAME 'dbPasswd'    	DESC 'FXS MySQL DB passwd'	     EQUALITY caseIgnoreMatch  SUP name SINGLE-VALUE )
+attributetype ( FXS_CONFIG:6  NAME 'dbName'	 	DESC 'FXS MySQL DB name'	     EQUALITY caseIgnoreMatch  SUP name SINGLE-VALUE )
+attributetype ( FXS_CONFIG:7  NAME 'dbTable'	 	DESC 'FXS MySQL DB table'	     EQUALITY caseIgnoreMatch  SUP name SINGLE-VALUE )
+attributetype ( FXS_CONFIG:8  NAME 'fxsHost'	 	DESC 'FXS host' 		     EQUALITY caseIgnoreMatch  SUP name SINGLE-VALUE )
+attributetype ( FXS_CONFIG:9  NAME 'fxsPort'	 	DESC 'FXS port' 					       SUP ipServicePort SINGLE-VALUE )
+attributetype ( FXS_CONFIG:10 NAME 'fxsUser'	 	DESC 'FXS user'	             EQUALITY caseIgnoreMatch  SUP name SINGLE-VALUE )
+attributetype ( FXS_CONFIG:11 NAME 'fxsPasswd'   	DESC 'FXS Password'	             EQUALITY caseIgnoreMatch  SUP name SINGLE-VALUE )
+attributetype ( FXS_CONFIG:12 NAME 'fxsAdmin'    	DESC 'FXS admin(s) email address' EQUALITY caseIgnoreIA5Match SUP mail )
+attributetype ( FXS_CONFIG:13 NAME 'fxsBaseFolder'	DESC 'FXS Base Folder'	             EQUALITY caseIgnoreMatch SUP name SINGLE-VALUE )
 
 objectclass ( FXS_CONFIG
         NAME 'fxsConfig'
         DESC 'ALICE: Configuration of the Shuttle for access to the File Exchange Servers'
         SUP top
-        MUST (system $ dbHost $ dbUser $ dbPasswd $ dbName $ dbTable $ fxsHost $ fxsUser )
+        MUST (system $ dbHost $ dbUser $ dbPasswd $ dbName $ dbTable $ fxsHost $ fxsUser $ fxsBaseFolder)
         MAY ( dbPort $ fxsPasswd $ fxsPort $ fxsAdmin) )
 
 

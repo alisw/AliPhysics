@@ -306,6 +306,7 @@ AliShuttleConfig::AliShuttleConfig(const AliShuttleConfig & other):
 		fFXSPort[i]=other.fFXSPort[i];
 		fFXSUser[i]=other.fFXSUser[i];
 		fFXSPass[i]=other.fFXSPass[i];
+		fFXSBaseFolder[i]=other.fFXSBaseFolder[i];
 		fFXSdbHost[i]=other.fFXSdbHost[i];
 		fFXSdbPort[i]=other.fFXSdbPort[i];
 		fFXSdbUser[i]=other.fFXSdbUser[i];
@@ -366,6 +367,7 @@ AliShuttleConfig& AliShuttleConfig::operator=(const AliShuttleConfig &other)
 		this->fFXSPort[i]=other.fFXSPort[i];
 		this->fFXSUser[i]=other.fFXSUser[i];
 		this->fFXSPass[i]=other.fFXSPass[i];
+		this->fFXSBaseFolder[i]=other.fFXSBaseFolder[i];
 		this->fFXSdbHost[i]=other.fFXSdbHost[i];
 		this->fFXSdbPort[i]=other.fFXSdbPort[i];
 		this->fFXSdbUser[i]=other.fFXSdbUser[i];
@@ -1362,6 +1364,9 @@ UInt_t AliShuttleConfig::SetSysConfig(TList* list)
 
 		anAttribute = anEntry->GetAttribute("fxsPasswd");
 		if (anAttribute) fFXSPass[iSys] = anAttribute->GetValue();
+
+		anAttribute = anEntry->GetAttribute("fxsBaseFolder");
+		if (anAttribute) fFXSBaseFolder[iSys] = anAttribute->GetValue();
 	
 		anAttribute = anEntry->GetAttribute("fxsAdmin"); // MAY
         	if (!anAttribute)
