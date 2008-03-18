@@ -28,14 +28,35 @@
 #include <TClonesArray.h>    //CkovAngle()
 #include <AliESDtrack.h>     //CkovAngle()
 
+  Int_t     fPhotCnt;                           // counter of photons candidate
+  Int_t    *fPhotFlag;                          // flags of photon candidates
+  Double_t *fPhotCkov;                          // Ckov angles of photon candidates, [rad]
+  Double_t *fPhotPhi;                           // phis of photons candidates, [rad]
+  Double_t *fPhotWei;                           // weigths of photon candidates
+  Double_t  fCkovSigma2;                        // sigma2 of the reconstructed ring
+
+  Bool_t    fIsWEIGHT;                          // flag to consider weight procedure
+  Float_t   fDTheta;                            // Step for sliding window
+  Float_t   fWindowWidth;                       // Hough width of sliding window
+  
+  Double_t  fRingArea;                          // area of a given ring
+  Double_t  fRingAcc;                           // fraction of the ring accepted by geometry
+  TVector3  fTrkDir;                            // track direction in LORS at RAD
+  TVector2  fTrkPos;                            // track positon in LORS at RAD
+  TVector2  fMipPos;                            // mip positon for a given track
+  TVector2  fPc;                                // track position at PC
+  
+  AliHMPIDParam *fParam;                        // Pointer to AliHMPIDParam
+
+
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 AliHMPIDRecon::AliHMPIDRecon():
   TTask("RichRec","RichPat"),
   fPhotCnt(-1),
-  fPhotFlag(0),
-  fPhotCkov(0),
-  fPhotPhi(0),
-  fPhotWei(0),
+  fPhotFlag(0x0),
+  fPhotCkov(0x0),
+  fPhotPhi(0x0),
+  fPhotWei(0x0),
   fCkovSigma2(0),
   fIsWEIGHT(kFALSE),
   fDTheta(0.001),
@@ -44,8 +65,8 @@ AliHMPIDRecon::AliHMPIDRecon():
   fRingAcc(0),
   fTrkDir(0,0,1),  // Just for test
   fTrkPos(30,40),  // Just for test
-  fMipPos(0),
-  fPc(0),
+  fMipPos(0,0),
+  fPc(0,0),
   fParam(AliHMPIDParam::Instance())
 {
 //..
