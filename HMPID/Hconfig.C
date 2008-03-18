@@ -771,7 +771,8 @@ void HmpConfig::WriteConfig()
   WriteHmp(pF);  //private HMPID part
   WriteDet(pF);  //other detectors
 //end of Config.C file:  
-  fprintf(pF,"\n  ::Info(\"----------> HMPID private config\",\"Stop\\n\\n\\n\");\n"); 
+  fprintf(pF,"\n  ::Info(\"----------> HMPID private config\",\"Stop\\n\\n\\n\");\n");
+//
   fprintf(pF,"}\n");
   fclose(pF);  
 }//WriteConfig()

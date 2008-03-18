@@ -85,7 +85,7 @@ Int_t AliHMPIDTracker::PropagateBack(AliESDEvent *pEsd)
 // Agruments: pEsd - pointer to ESD
 //   Returns: error code    
   AliCDBEntry *pNmeanEnt =AliCDBManager::Instance()->Get("HMPID/Calib/Nmean"); //contains TObjArray of 21 TF1
-  AliCDBEntry *pQthreEnt =AliCDBManager::Instance()->Get("HMPID/Calib/Qthre"); //contains TObjArray of 7 TF1
+  AliCDBEntry *pQthreEnt =AliCDBManager::Instance()->Get("HMPID/Calib/Qthre"); //contains TObjArray of 42 (7ch * 6sec) TF1
   if(!pNmeanEnt) AliFatal("No Nmean C6F14 ");
   if(!pQthreEnt) AliFatal("No Qthre");
     
@@ -104,7 +104,8 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
     Int_t cham=IntTrkCha(pTrk,xPc,yPc);                                                          //get chamber intersected by this track 
     if(cham<0) continue;                                                                         //no intersection at all, go after next track
     Double_t nmean=((TF1*)pNmean->At(3*cham))->Eval(pEsd->GetTimeStamp());                       //C6F14 Nmean for this chamber
-    Double_t qthre=((TF1*)pQthre->At(cham))  ->Eval(pEsd->GetTimeStamp());                       //Qthre for this chamber
+    Int_t hvsec = AliHMPIDParam::InHVSector(xPc,yPc);
+    Double_t qthre=((TF1*)pQthre->At(6*cham+hvsec))->Eval(pEsd->GetTimeStamp());
     recon.SetImpPC(xPc,yPc);                                                                     //store track impact to PC
     recon.CkovAngle(pTrk,(TClonesArray *)pClus->At(cham),nmean,qthre);                           //search for Cerenkov angle of this track
 //    Printf("AliHMPIDTracker::Recon: nmean %f, qthre %f",nmean,qthre);
@@ -112,14 +113,14 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
   return 0; // error code: 0=no error;
 }//Recon()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Int_t AliHMPIDTracker::ReconHiddenTrk(Int_t iCh,AliESDtrack *pTrk,TClonesArray *pCluLst,TObjArray *pNmean,TObjArray *pQthre)
+Int_t AliHMPIDTracker::ReconHiddenTrk(Int_t iCh,Int_t iHVsec,AliESDtrack *pTrk,TClonesArray *pCluLst,TObjArray *pNmean,TObjArray *pQthre)
 {
 // Static method to reconstruct Theta Ckov for all valid tracks of a given event.
 // Arguments: pEsd- pointer ESD; pClu- pointer to clusters for all chambers; pNmean - pointer to all function Nmean=f(time), pQthre - pointer to all function Qthre=f(time)
 //   Returns: error code, 0 if no errors
   AliHMPIDReconHTA reconHTA;                                                                          //instance of reconstruction class, nothing important in ctor
   Double_t nmean=((TF1*)pNmean->At(3*iCh))->Eval(0);                                            //C6F14 Nmean for this chamber
-  Double_t qthre=((TF1*)pQthre->At(iCh))  ->Eval(0);                                            //C6F14 Nmean for this chamber
+  Double_t qthre=((TF1*)pQthre->At(iCh+iHVsec))->Eval(0);                                             //C6F14 Nmean for this chamber
   if(pCluLst->GetEntriesFast()<4) return 1;                                                     //min 4 clusters (3 + 1 mip) to find a ring! 
   if(reconHTA.CkovHiddenTrk(pTrk,pCluLst,nmean,qthre)) return 0;                                   //search for track parameters and Cerenkov angle of this track
   else return 1;                                                                                // error code: 0=no error,1=fit not performed;

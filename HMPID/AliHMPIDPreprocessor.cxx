@@ -85,42 +85,40 @@ Bool_t AliHMPIDPreprocessor::ProcDcs(TMap* pMap)
   TF2 thr("RthrCH4"  ,"3*10^(3.01e-3*x-4.72)+170745848*exp(-y*0.0162012)"             ,2000,3000,900,1200); 
   
   TObjArray arTmean(21);       arTmean.SetOwner(kTRUE);     //21 Tmean=f(time) one per radiator
-  TObjArray arPress(7);        arPress.SetOwner(kTRUE);     //7  Press=f(time) one pre chamber
+  TObjArray arPress(7);        arPress.SetOwner(kTRUE);     //7  Press=f(time) one per chamber
   TObjArray arNmean(21);       arNmean.SetOwner(kTRUE);     //21 Nmean=f(time) one per radiator
-  TObjArray arQthre(7);        arQthre.SetOwner(kTRUE);     //7  Qthre=f(time) one pre chamber
+  TObjArray arQthre(42);       arQthre.SetOwner(kTRUE);     //42 Qthre=f(time) one per sector
   TObjArray arUserCut(7);    arUserCut.SetOwner(kTRUE);     //7  user cut in number of sigmas
   
   AliDCSValue *pVal; Int_t cnt=0;
 
 // evaluate environment pressure
-  TObjArray *pPenv=(TObjArray*)pMap->GetValue("HMP_DET/HMP_ENV/HMP_ENV_PENV.actual.value"); 
-
-  TIter nextPenv(pPenv);
-
+  TObjArray *pPenv=(TObjArray*)pMap->GetValue("HMP_DET/HMP_ENV/HMP_ENV_PENV.actual.value");TIter nextPenv(pPenv);
   TGraph *pGrPenv=new TGraph; cnt=0;
   while((pVal=(AliDCSValue*)nextPenv())) pGrPenv->SetPoint(cnt++,pVal->GetTimeStamp(),pVal->GetFloat());        //P env
   if( cnt!=0) pGrPenv->Fit(new TF1("Penv","1000+x*[0]",fStartTime,fEndTime),"Q");                               //clm: if no DCS map entry don't fit
   delete pGrPenv;
     
   for(Int_t iCh=0;iCh<7;iCh++){                   
-// evaluate High Voltage
-    TObjArray *pHV=(TObjArray*)pMap->GetValue(Form("HMP_DET/HMP_MP%i/HMP_MP%i_PW/HMP_MP%i_SEC0/HMP_MP%i_SEC0_HV.actual.vMon",iCh,iCh,iCh,iCh)); TIter nextHV(pHV);
-    TGraph *pGrHV=new TGraph; cnt=0;
-    while((pVal=(AliDCSValue*)nextHV())) pGrHV->SetPoint(cnt++,pVal->GetTimeStamp(),pVal->GetFloat());            //P
-    if( cnt!=0) pGrHV->Fit(new TF1(Form("HV%i",iCh),"2000+x*[0]",fStartTime,fEndTime),"Q");                       //clm: if no DCS map entry don't fit
-    delete pGrHV;
-
 // evaluate Pressure
-    TObjArray *pP =(TObjArray*)pMap->GetValue(Form("HMP_DET/HMP_MP%i/HMP_MP%i_GAS/HMP_MP%i_GAS_PMWPC.actual.value"           ,iCh,iCh,iCh));
+    TObjArray *pP =(TObjArray*)pMap->GetValue(Form("HMP_DET/HMP_MP%i/HMP_MP%i_GAS/HMP_MP%i_GAS_PMWPC.actual.value",iCh,iCh,iCh));
     TIter nextP(pP);    
     TGraph *pGrP=new TGraph; cnt=0; 
     while((pVal=(AliDCSValue*)nextP())) pGrP->SetPoint(cnt++,pVal->GetTimeStamp(),pVal->GetFloat());            //P
-    if( cnt!=0) pGrP->Fit(new TF1(Form("P%i",iCh),"4 + x*[0]",fStartTime,fEndTime),"Q");                       //clm: if no DCS map entry don't fit
+    if( cnt!=0) pGrP->Fit(new TF1(Form("P%i",iCh),"[0] + x*[1]",fStartTime,fEndTime),"Q");                        //clm: if no DCS map entry don't fit
     delete pGrP;
     
+    for(Int_t iSec=0;iSec<6;iSec++){
+// evaluate High Voltage
+     TObjArray *pHV=(TObjArray*)pMap->GetValue(Form("HMP_DET/HMP_MP%i/HMP_MP%i_PW/HMP_MP%i_SEC%i/HMP_MP%i_SEC%i_HV.actual.vMon",iCh,iCh,iCh,iSec,iCh,iSec));TIter nextHV(pHV);
+     TGraph *pGrHV=new TGraph; cnt=0;
+     while((pVal=(AliDCSValue*)nextHV())) pGrHV->SetPoint(cnt++,pVal->GetTimeStamp(),pVal->GetFloat());            //HV
+     if( cnt!=0) pGrHV->Fit(new TF1(Form("HV%i_%i",iCh,iSec),"[0]+x*[1]",fStartTime,fEndTime),"Q");               //clm: if no DCS map entry don't fit
+     delete pGrHV;
 // evaluate Qthre
-    arQthre.AddAt(new TF1(Form("HMP_Qthre%i",iCh),Form("3*10^(3.01e-3*HV%i - 4.72)+170745848*exp(-(P%i+Penv)*0.0162012)",iCh),fStartTime,fEndTime),iCh);
-
+     arQthre.AddAt(new TF1(Form("HMP_QthreC%iS%i",iCh,iSec),
+         Form("3*10^(3.01e-3*HV%i_%i - 4.72)+170745848*exp(-(P%i+Penv)*0.0162012)",iCh,iSec,iCh),fStartTime,fEndTime),6*iCh+iSec);
+    }
     
 // evaluate UserCut
     Int_t nSigmaUserCut = 3;

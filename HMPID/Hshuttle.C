@@ -6,6 +6,7 @@
   
   TMap *pDcsMap = new TMap;       pDcsMap->SetOwner(1);          //DCS archive map
   
+//  AliTestShuttle* pShuttle = new AliTestShuttle(0,0,1000000);   
   AliTestShuttle* pShuttle = new AliTestShuttle(0,0,1000000);   
   pShuttle->SetInputRunType("PHYSICS");
 //  pShuttle->SetInputRunType("PEDESTAL_RUN");
@@ -49,23 +50,32 @@ void SimMap(TMap *pDcsMap,Int_t runTime=1500)
   Int_t stepTime=100; //time interval between measurements
   Int_t startTime=0;
   
+  TObjArray *pHV[7];
   for(Int_t iCh=0;iCh<7;iCh++){//chambers loop
-    TObjArray *pP=new TObjArray;  pP->SetOwner(1);
-    TObjArray *pHV=new TObjArray; pHV->SetOwner(1);
+    TObjArray *pPCH4=new TObjArray;  pPCH4->SetOwner(1);
+    TObjArray *pPenv=new TObjArray;  pPenv->SetOwner(1);
+    pHV[iCh]=new TObjArray; pHV[iCh]->SetOwner(1);
     for(Int_t time=0;time<runTime;time+=stepTime) {
-       pP->Add(new AliDCSValue((Float_t)1005.0 ,time));   //sample CH4 pressure [mBar]
-       pHV->Add(new AliDCSValue((Float_t)2050.0,time));   //sample chamber HV [V]
+       pPCH4->Add(new AliDCSValue((Float_t)4.0,time));               //sample CH4 pressure [mBar] differential respect to atm
+       pPenv->Add(new AliDCSValue((Float_t)1000.0 ,time));               //also atm. pressure set to the same value
+       pHV[iCh]->Add(new AliDCSValue((Float_t)(1930+iCh*20),time));   //sample chamber HV [V]
     }
-    pDcsMap->Add(new TObjString(Form("HMP_DET/HMP_MP%i/HMP_MP%i_GAS/HMP_MP%i_GAS_PMWC.actual.value"           ,iCh,iCh,iCh)),pP); 
-    pDcsMap->Add(new TObjString(Form("HMP_DET/HMP_MP%i/HMP_MP%i_PW/HMP_MP%i_SEC0/HMP_MP%i_SEC0_HV.actual.vMon",iCh,iCh,iCh)),pHV); 
+    pDcsMap->Add(new TObjString(Form("HMP_DET/HMP_MP%i/HMP_MP%i_GAS/HMP_MP%i_GAS_PMWPC.actual.value"           ,iCh,iCh,iCh    )),pPCH4);         //CH4 pressure wrt atm
+    pDcsMap->Add(new TObjString(Form("HMP_DET/HMP_ENV/HMP_ENV_PENV.actual.value"                                               )),pPenv);         //atm pressure
+    pDcsMap->Add(new TObjString(Form("HMP_DET/HMP_MP%i/HMP_MP%i_PW/HMP_MP%i_SEC0/HMP_MP%i_SEC0_HV.actual.vMon",iCh,iCh,iCh,iCh)),pHV[iCh]);      //HV SEC0
+    pDcsMap->Add(new TObjString(Form("HMP_DET/HMP_MP%i/HMP_MP%i_PW/HMP_MP%i_SEC1/HMP_MP%i_SEC1_HV.actual.vMon",iCh,iCh,iCh,iCh)),pHV[iCh]);      //HV SEC1
+    pDcsMap->Add(new TObjString(Form("HMP_DET/HMP_MP%i/HMP_MP%i_PW/HMP_MP%i_SEC2/HMP_MP%i_SEC2_HV.actual.vMon",iCh,iCh,iCh,iCh)),pHV[iCh]);      //HV SEC2 
+    pDcsMap->Add(new TObjString(Form("HMP_DET/HMP_MP%i/HMP_MP%i_PW/HMP_MP%i_SEC3/HMP_MP%i_SEC3_HV.actual.vMon",iCh,iCh,iCh,iCh)),pHV[iCh]);      //HV SEC3 
+    pDcsMap->Add(new TObjString(Form("HMP_DET/HMP_MP%i/HMP_MP%i_PW/HMP_MP%i_SEC4/HMP_MP%i_SEC4_HV.actual.vMon",iCh,iCh,iCh,iCh)),pHV[iCh]);      //HV SEC4 
+    pDcsMap->Add(new TObjString(Form("HMP_DET/HMP_MP%i/HMP_MP%i_PW/HMP_MP%i_SEC5/HMP_MP%i_SEC5_HV.actual.vMon",iCh,iCh,iCh,iCh)),pHV[iCh]);      //HV SEC5 
 
     for(Int_t iRad=0;iRad<3;iRad++){//radiators loop
       TObjArray *pT1=new TObjArray; pT1->SetOwner(1);
       TObjArray *pT2=new TObjArray; pT2->SetOwner(1);
-      for (Int_t time=0;time<runTime;time+=stepTime)  pT1->Add(new AliDCSValue(13,time));  //sample inlet temperature    Nmean=1.292 @ 13 degrees
+      for (Int_t time=0;time<runTime;time+=stepTime)  pT1->Add(new AliDCSValue(13,time));  //sample inlet temperature                    Nmean=1.292 @ 13 degrees
       for (Int_t time=0;time<runTime;time+=stepTime)  pT2->Add(new AliDCSValue(14,time));  //sample outlet temperature
-      pDcsMap->Add(new TObjString(Form("HMP_DET/HMP_MP%i/HMP_MP%i_LIQ_LOOP.actual.sensors.Rad%iIn_Temp",iCh,iCh,iRad)) ,pT1); 
-      pDcsMap->Add(new TObjString(Form("HMP_DET/HMP_MP%i/HMP_MP%i_LIQ_LOOP.actual.sensors.Rad%iOut_Temp",iCh,iCh,iRad)),pT2);
+      pDcsMap->Add(new TObjString(Form("HMP_DET/HMP_MP%i/HMP_MP%i_LIQ_LOOP.actual.sensors.Rad%iIn_Temp",iCh,iCh,iRad)) ,pT1);               //Temperature in  Rad 
+      pDcsMap->Add(new TObjString(Form("HMP_DET/HMP_MP%i/HMP_MP%i_LIQ_LOOP.actual.sensors.Rad%iOut_Temp",iCh,iCh,iRad)),pT2);               //Temperature out Rad
     }//radiators loop
   }//chambers loop
 }//SimMap()

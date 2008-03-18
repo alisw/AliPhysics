@@ -66,7 +66,21 @@ AliHMPIDReconstructor::AliHMPIDReconstructor():AliReconstructor(),fUserCut(0),fD
     }
    }
   }
-   
+
+  AliCDBEntry *pQthreEnt =AliCDBManager::Instance()->Get("HMPID/Calib/Qthre"); //contains TObjArray of 7 TF1
+  if(!pQthreEnt) AliFatal("No Qthre available");
+  TObjArray *pQthre = (TObjArray*)pQthreEnt->GetObject();
+  for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++) {
+    for(Int_t isec=0;isec<=5;isec++) {
+     TF1 *pfQthre = (TF1*)pQthre->At(6*iCh+isec); 
+     Double_t tMin,tMax;
+     pfQthre->GetRange(tMin,tMax);
+     Double_t qthre=pfQthre->Eval(tMin);
+      Printf(" HMPID: Qthre successfully loaded for chamber %i  sector %i -> %f ",iCh,isec,qthre);
+    }
+  }
+
+     
   AliCDBEntry *pDaqSigEnt =AliCDBManager::Instance()->Get("HMPID/Calib/DaqSig");  //contains TObjArray of TObjArray 14 TMatrixF sigmas values for pads 
   if(!pDaqSigEnt) AliFatal("No pedestals from DAQ!");
   fDaqSig = (TObjArray*)pDaqSigEnt->GetObject();
