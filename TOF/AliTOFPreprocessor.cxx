@@ -812,8 +812,6 @@ UInt_t AliTOFPreprocessor::Process(TMap* dcsAliasMap)
   TString runType = GetRunType();
   Log(Form("RunType %s",runType.Data()));
   
-  //*((TString*) (0x0)) = "bla";
-
   // processing 
 
   /* always process FEE data */
