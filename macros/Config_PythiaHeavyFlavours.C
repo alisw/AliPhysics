@@ -84,6 +84,7 @@ enum PprGeo_t
   };
 
 //--- Functions ---
+class AliGenPythia;
 AliGenPythia *PythiaHVQ(ProcessHvFl_t proc);
 void          LoadPythia();
 

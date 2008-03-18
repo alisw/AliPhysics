@@ -102,6 +102,7 @@ enum PprGeo_t
   };
 
 //--- Functions ---
+class AliGenPythia;
 AliGenPythia *PythiaHVQ(PDC06Proc_t proc);
 AliGenerator *MbCocktail();
 AliGenerator *PyMbTriggered(Int_t pdg);
