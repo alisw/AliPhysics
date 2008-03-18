@@ -1,7 +1,7 @@
+#-*- Mode: Makefile -*-
 
 SRCS = AliTPCcalibTracksCuts.cxx   AliTPCcalibTracks.cxx   AliTPCcalibTracksGain.cxx  \
         AliTPCSelectorESD.cxx   AliTPCSelectorTracks.cxx   AliTPCCalPadRegion.cxx AliTPCFitPad.cxx AliAnaTPCTrackBase.cxx AliAnaTPCTrackCalib.cxx AliTPCcalibAlign.cxx AliTPCcalibAlignment.cxx  AliTPCcalibV0.cxx
-      
 
 HDRS:= $(SRCS:.cxx=.h) 
 
@@ -10,5 +10,11 @@ EINCLUDE:=RAW TPC STEER ANALYSIS
 DHDR= TPCcalibLinkDef.h
 
 #EXPORT:=$(SRCS:.cxx=.h)
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+                         -lCDB -lESD -lTPCbase -lTPCrec -lSTEERBase -lANALYSIS\
+                         -L$(shell root-config --libdir) -lMinuit -lProof -lEG
+endif
 
 

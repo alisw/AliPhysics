@@ -1,3 +1,5 @@
+#-*- Mode: Makefile -*-
+
 SRCS:=  AliTPC.cxx \
         AliTPCv0.cxx AliTPCv1.cxx AliTPCv2.cxx AliTPCv3.cxx AliTPCv4.cxx \
         AliTPCLaser.cxx \
@@ -12,4 +14,11 @@ HDRS:= $(SRCS:.cxx=.h)
 DHDR:= TPCsimLinkDef.h
 
 EINCLUDE:= RAW
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+                         -lTPCbase -lSTEER -lCDB -lSTEERBase \
+                         -lRAWDatasim -lRAWDatarec -lRAWDatabase \
+                         -L$(shell root-config --libdir) -lVMC -lGeom
+endif
 

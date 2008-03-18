@@ -1,3 +1,5 @@
+#-*- Mode: Makefile -*-
+
 SRCS:=  AliTPCFast.cxx \
         AliTPCtrackerParam.cxx AliTPCkineGrid.cxx
         
@@ -8,4 +10,10 @@ HDRS:= $(SRCS:.cxx=.h)
 DHDR:= TPCfastLinkDef.h
 
 EINCLUDE:= RAW
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+                         -lTPCrec -lTPCsim -lTPCbase -lESD -lSTEER -lSTEERBase \
+                         -L$(shell root-config --libdir) -lEG
+endif
 

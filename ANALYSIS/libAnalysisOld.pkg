@@ -1,3 +1,5 @@
+#-*- Mode: Makefile -*-
+
 SRCS= TGliteXmlEventlist.cxx\
       AliAOD.cxx AliEventBuffer.cxx \
       AliRunAnalysis.cxx AliAnalysis.cxx \
@@ -31,3 +33,9 @@ EXPORT:=AliAOD.h AliEventBuffer.h\
       AliAnalysisEventCuts.h AliAnalysisTrackCuts.h
 
 EINCLUDE:= TPC ITS
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+                         -lSTEER -lESD -lSTEERBase \
+                         -L$(shell root-config --libdir) -lXMLIO -lEG
+endif

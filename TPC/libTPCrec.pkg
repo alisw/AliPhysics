@@ -1,3 +1,5 @@
+#-*- Mode: Makefile -*-
+
 SRCS:=  AliTPCcluster.cxx \
         AliTPCclusterMI.cxx AliComplexCluster.cxx  AliTPCclusterInfo.cxx \
 	AliClusters.cxx AliTPCClustersRow.cxx \
@@ -17,3 +19,9 @@ DHDR:= TPCrecLinkDef.h
 
 EINCLUDE:= RAW
 
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+                         -lTPCbase -lSTEER -lESD -lCDB -lSTEERBase \
+                         -lRAWDatarec -lRAWDatabase \
+                         -L$(shell root-config --libdir) -lMinuit
+endif
