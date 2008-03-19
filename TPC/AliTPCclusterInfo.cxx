@@ -88,7 +88,12 @@ AliTPCclusterInfo::AliTPCclusterInfo(Bool_t extend):
   }
 }
 
-AliTPCclusterInfo::AliTPCclusterInfo(Float_t *matrix, Int_t nbins, Float_t* graph){
+AliTPCclusterInfo::AliTPCclusterInfo(Float_t *matrix, Int_t nbins, Float_t* graph):
+  fNPads(0),
+  fNTimeBins(0),
+  fNBins(0),
+  fGraph(0)
+{
   //
   // constructor of the info
   //
@@ -110,6 +115,17 @@ AliTPCclusterInfo::AliTPCclusterInfo(Float_t *matrix, Int_t nbins, Float_t* grap
   }
 }
 
+AliTPCclusterInfo& AliTPCclusterInfo::operator=(const AliTPCclusterInfo& info){
+  //
+  // assignment operator
+  //
+  if (this != &info) {
+    new (this) AliTPCclusterInfo(info);
+  }
+  return *this;
+}
+
+
 UChar_t AliTPCclusterInfo::GetNPads(Float_t threshold) const { 
   //
   //
@@ -125,7 +141,7 @@ UChar_t AliTPCclusterInfo::GetNTimeBins(Float_t threshold) const {
   //
   Int_t nTimeBins=0;
   Int_t center = 5+5+2;
-  for (Int_t i=-2; i<=2;i++) if (fMatrix[center+i]>0) nTimeBins++;
+  for (Int_t i=-2; i<=2;i++) if (fMatrix[center+i]>threshold) nTimeBins++;
   return nTimeBins;
 }
 

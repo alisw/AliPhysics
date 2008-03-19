@@ -18,6 +18,7 @@ public:
   AliTPCclusterInfo(Bool_t withGraph);
   AliTPCclusterInfo(Float_t *matrix, Int_t nbins, Float_t* graph);
   AliTPCclusterInfo(const  AliTPCclusterInfo & info);
+  AliTPCclusterInfo& operator=(const AliTPCclusterInfo& info);
   virtual ~AliTPCclusterInfo();
   UChar_t GetNPads() const { return fNPads;}
   UChar_t GetNTimeBins() const { return fNTimeBins;}
