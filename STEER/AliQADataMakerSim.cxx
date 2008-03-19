@@ -68,7 +68,7 @@ AliQADataMakerSim& AliQADataMakerSim::operator = (const AliQADataMakerSim& qadm 
 }
 
 //____________________________________________________________________________
-void AliQADataMakerSim::EndOfCycle(AliQA::TASKINDEX task) 
+void AliQADataMakerSim::EndOfCycle(AliQA::TASKINDEX_t task) 
 { 
   // Finishes a cycle of QA data acquistion
 	TObjArray * list = 0x0 ; 
@@ -89,7 +89,7 @@ void AliQADataMakerSim::EndOfCycle(AliQA::TASKINDEX task)
 }
  
 //____________________________________________________________________________
-void AliQADataMakerSim::Exec(AliQA::TASKINDEX task, TObject * data) 
+void AliQADataMakerSim::Exec(AliQA::TASKINDEX_t task, TObject * data) 
 { 
   // creates the quality assurance data for the various tasks (Hits, SDigits, Digits, ESDs)
     
@@ -136,7 +136,7 @@ void AliQADataMakerSim::Exec(AliQA::TASKINDEX task, TObject * data)
 }
 
 //____________________________________________________________________________ 
-TObjArray *  AliQADataMakerSim::Init(AliQA::TASKINDEX task, Int_t run, Int_t cycles)
+TObjArray *  AliQADataMakerSim::Init(AliQA::TASKINDEX_t task, Int_t run, Int_t cycles)
 {
   // general intialisation
 	
@@ -162,7 +162,7 @@ TObjArray *  AliQADataMakerSim::Init(AliQA::TASKINDEX task, Int_t run, Int_t cyc
 }
 
 //____________________________________________________________________________ 
-void AliQADataMakerSim::Init(AliQA::TASKINDEX task, TObjArray * list, Int_t run, Int_t cycles)
+void AliQADataMakerSim::Init(AliQA::TASKINDEX_t task, TObjArray * list, Int_t run, Int_t cycles)
 {
   // Intialisation by passing the list of QA data booked elsewhere
   
@@ -180,7 +180,7 @@ void AliQADataMakerSim::Init(AliQA::TASKINDEX task, TObjArray * list, Int_t run,
 }
 
 //____________________________________________________________________________
-void AliQADataMakerSim::StartOfCycle(AliQA::TASKINDEX task, const Bool_t sameCycle) 
+void AliQADataMakerSim::StartOfCycle(AliQA::TASKINDEX_t task, const Bool_t sameCycle) 
 { 
   // Finishes a cycle of QA data acquistion
 	if ( !sameCycle || fCurrentCycle == -1) {

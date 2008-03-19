@@ -3164,8 +3164,8 @@ void AliReconstruction::CheckQA()
 	 
 	for (Int_t iDet = 0; iDet < AliQA::kNDET; iDet++) {
 		TString detName(AliQA::GetDetName(iDet)) ;
-		AliQA * qa = AliQA::Instance(AliQA::DETECTORINDEX(iDet)) ; 
-		if ( qa->IsSet(AliQA::DETECTORINDEX(iDet), AliQA::kSIM, AliQA::kFATAL)) {
+		AliQA * qa = AliQA::Instance(AliQA::DETECTORINDEX_t(iDet)) ; 
+		if ( qa->IsSet(AliQA::DETECTORINDEX_t(iDet), AliQA::kSIM, AliQA::kFATAL)) {
 				AliInfo(Form("QA status for %s in Hits and/or SDIGITS  and/or Digits was Fatal; No reconstruction performed", detName.Data())) ;
 		} else {
 			if ( fRunLocalReconstruction.Contains(AliQA::GetDetName(iDet)) || 

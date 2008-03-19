@@ -86,11 +86,24 @@ Int_t AliQADataMaker::Add2List(TH1 * hist, const Int_t index, TObjArray * list)
 	}
 }
 
+//____________________________________________________________________________
+void AliQADataMaker::DefaultEndOfDetectorCycle(AliQA::TASKINDEX_t task) 
+{
+	// this method must be oveloaded by detectors
+	// sets the QA result to Fatal
+	AliQA::Instance(AliQA::GetDetName(GetName())) ;
+	AliQA * qa = AliQA::Instance(task) ;
+	qa->Set(AliQA::kFATAL) ; 
+	AliQA::GetQAResultFile()->cd() ; 
+	qa->Write(AliQA::GetQAName(), kWriteDelete) ;   
+	AliQA::GetQAResultFile()->Close() ; 
+}
+
 //____________________________________________________________________________ 
 void AliQADataMaker::Finish() const 
 { 
-  // write to the output File
-  fOutput->Close() ; 
+	// write to the output File
+	fOutput->Close() ; 
 } 
 
 //____________________________________________________________________________ 

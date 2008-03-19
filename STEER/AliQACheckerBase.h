@@ -33,8 +33,8 @@ public:
   AliQACheckerBase& operator = (const AliQACheckerBase& qac) ;
   virtual ~AliQACheckerBase() {;} // dtor
 
-  void   Init(const AliQA::DETECTORINDEX det) ; 
-  void   Run(AliQA::ALITASK tsk, TObjArray * list=0x0); 
+  void   Init(const AliQA::DETECTORINDEX_t det) ; 
+  void   Run(AliQA::ALITASK_t tsk, TObjArray * list=0x0); 
   void   SetRefandData(TDirectory * ref, TObjArray * refOCDB, TDirectory * data=NULL) { fRefSubDir = ref ;  fRefOCDBSubDir = refOCDB, fDataSubDir = data ; }
 
 protected:

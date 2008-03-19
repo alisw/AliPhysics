@@ -143,7 +143,7 @@ AliQADataMakerSteer::~AliQADataMakerSteer()
 }
 
 //_____________________________________________________________________________
-Bool_t AliQADataMakerSteer::DoIt(const AliQA::TASKINDEX taskIndex, const char * mode)
+Bool_t AliQADataMakerSteer::DoIt(const AliQA::TASKINDEX_t taskIndex, const char * mode)
 {
 	// Runs all the QA data Maker for every detector
 
@@ -247,7 +247,7 @@ Bool_t AliQADataMakerSteer::DoIt(const AliQA::TASKINDEX taskIndex, const char * 
 }
 
 //_____________________________________________________________________________
-Bool_t AliQADataMakerSteer::Finish(const AliQA::TASKINDEX taskIndex, const char * mode) 
+Bool_t AliQADataMakerSteer::Finish(const AliQA::TASKINDEX_t taskIndex, const char * mode) 
 {
 	// write output to file for all detectors
 	for (UInt_t iDet = 0; iDet < fgkNDetectors ; iDet++) {
@@ -262,7 +262,7 @@ Bool_t AliQADataMakerSteer::Finish(const AliQA::TASKINDEX taskIndex, const char 
 }
 
 //_____________________________________________________________________________
-TObjArray * AliQADataMakerSteer::GetFromOCDB(AliQA::DETECTORINDEX det, AliQA::TASKINDEX task, const char * year) const 
+TObjArray * AliQADataMakerSteer::GetFromOCDB(AliQA::DETECTORINDEX_t det, AliQA::TASKINDEX_t task, const char * year) const 
 {
 	// Retrieve the list of QA data for a given detector and a given task 
 	TObjArray * rv = NULL ;
@@ -277,10 +277,10 @@ TObjArray * AliQADataMakerSteer::GetFromOCDB(AliQA::DETECTORINDEX det, AliQA::TA
 		tmp.Append(year) ; 
 		tmp.Append("/") ; 
 		man->SetDefaultStorage(tmp.Data()) ; 		
-		man->SetSpecificStorage(Form("%s/*", AliQA::GetQAOCDBDirName()), AliQA::GetQARefStorage()) ;
+		man->SetSpecificStorage(Form("%s/*", AliQA::GetQAName()), AliQA::GetQARefStorage()) ;
 	}
 	char detOCDBDir[10] ; 
-	sprintf(detOCDBDir, "%s/%s/%s", AliQA::GetQAOCDBDirName(), AliQA::GetDetName((Int_t)det), AliQA::GetRefOCDBDirName()) ; 
+	sprintf(detOCDBDir, "%s/%s/%s", AliQA::GetQAName(), AliQA::GetDetName((Int_t)det), AliQA::GetRefOCDBDirName()) ; 
 	AliInfo(Form("Retrieving reference data from %s/%s for %s", AliQA::GetQARefStorage(), detOCDBDir, AliQA::GetTaskName(task).Data())) ; 
 	AliCDBEntry* entry = man->Get(detOCDBDir, 0) ; //FIXME 0 --> Run Number
 	TList * listDetQAD = dynamic_cast<TList *>(entry->GetObject()) ;
@@ -369,7 +369,7 @@ AliQADataMaker * AliQADataMakerSteer::GetQADataMaker(const Int_t iDet, const cha
 }
 
 //_____________________________________________________________________________
-Bool_t AliQADataMakerSteer::Init(const AliQA::TASKINDEX taskIndex, const char * mode, const  char * input )
+Bool_t AliQADataMakerSteer::Init(const AliQA::TASKINDEX_t taskIndex, const char * mode, const  char * input )
 {
 	// Initialize the event source and QA data makers
 	
@@ -507,7 +507,6 @@ Bool_t AliQADataMakerSteer::IsSelected(const char * det)
 	
 	// search for the given detector
 	Bool_t rv = kFALSE;
-	//AliInfo(Form("SSSSSSSSSSSSS fd = %s det = %s ", fDetectors.Data(), det)) ; 
 	if ((fDetectors.CompareTo(detName) == 0) ||
 		fDetectors.BeginsWith(detName+" ") ||
 		fDetectors.EndsWith(" "+detName) ||
@@ -657,7 +656,7 @@ TString AliQADataMakerSteer::Run(const char * detectors, const char * fileName)
 }
 
 //_____________________________________________________________________________
-TString AliQADataMakerSteer::Run(const char * detectors, const AliQA::TASKINDEX taskIndex, const  char * fileName )
+TString AliQADataMakerSteer::Run(const char * detectors, const AliQA::TASKINDEX_t taskIndex, const  char * fileName )
 {
 	// Runs all the QA data Maker for every detector
 
