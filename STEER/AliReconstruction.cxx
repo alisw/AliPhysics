@@ -1595,6 +1595,9 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd)
     }
 
     // run tracking
+    if (iDet>1) // start filling residuals for the "outer" detectors
+    if (fRunGlobalQA) AliTracker::SetFillResiduals(kTRUE);     
+
     if (fTracker[iDet]->PropagateBack(esd) != 0) {
       AliError(Form("%s backward propagation failed", fgkDetectorName[iDet]));
       //      return kFALSE;
@@ -1615,6 +1618,8 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd)
     }
     AliSysInfo::AddStamp(Form("Tracking1%s_%d",fgkDetectorName[iDet],eventNr), iDet,3, eventNr);
   }
+  //stop filling residuals for the "outer" detectors
+  if (fRunGlobalQA) AliTracker::SetFillResiduals(kFALSE);     
 
   // write space-points to the ESD in case alignment data output
   // is switched on
@@ -1623,13 +1628,14 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd)
 
   // pass 3: TRD + TPC + ITS refit inwards
 
-  if (fRunGlobalQA) AliTracker::SetFillResiduals(kTRUE);     
-
   for (Int_t iDet = 2; iDet >= 0; iDet--) {
     if (!fTracker[iDet]) continue;
     AliDebug(1, Form("%s inward refit", fgkDetectorName[iDet]));
 
     // run tracking
+    if (iDet<2) // start filling residuals for TPC and ITS
+    if (fRunGlobalQA) AliTracker::SetFillResiduals(kTRUE);     
+
     if (fTracker[iDet]->RefitInward(esd) != 0) {
       AliError(Form("%s inward refit failed", fgkDetectorName[iDet]));
       //      return kFALSE;
@@ -1649,7 +1655,7 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd)
     fLoader[iDet]->UnloadRecPoints();
     AliSysInfo::AddStamp(Form("RUnloadCluster%s_%d",fgkDetectorName[iDet],eventNr), iDet,5, eventNr);
   }
-
+  // stop filling residuals for TPC and ITS
   if (fRunGlobalQA) AliTracker::SetFillResiduals(kFALSE);     
 
   eventNr++;
