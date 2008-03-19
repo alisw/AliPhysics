@@ -14,7 +14,7 @@
  **************************************************************************/
 
 
-/* $Id$ */
+/* $Id:$ */
 
 
 //========================================================================
@@ -1690,8 +1690,8 @@ void AliITSv11Hybrid::CreateOldGeometry(){
     dgh[48] = ztpc+4.+0.1;
     dgh[49] = 62.0;//62.4;
     dgh[50] = 85.;
-    gMC->Gsvolu("ITSV", "PCON", idtmed[205], dgh, 51);
-
+    //   gMC->Gsvolu("ITSV", "PCON", idtmed[205], dgh, 51);
+    new TGeoVolumeAssembly("ITSV");
     // --- Place the ghost volume in its mother volume (ALIC) and make it 
     //     invisible
     //    gMC->Gspos("ITSV", 1, "ALIC", 0., 0., 0., 0, "ONLY");
@@ -5778,7 +5778,7 @@ void AliITSv11Hybrid::SetDefaults(){
 	(AliITSCalibrationSDD*)fDetTypeSim->GetCalibrationModel(
 	    GetITSgeom()->GetStartSDD());
     const char *kopt=rsp->GetZeroSuppOption();
-    if((!strstr(kopt,"2D")) && (!strstr(kopt,"1D")) || strstr(kData1,"real") ){
+    if((!strstr(kopt,"ZS")) || strstr(kData1,"real") ){
 	fDetTypeSim->SetDigitClassName(kSDD,"AliITSdigit");
     } else fDetTypeSim->SetDigitClassName(kSDD,"AliITSdigitSDD");
     // SSD  Layer 5
