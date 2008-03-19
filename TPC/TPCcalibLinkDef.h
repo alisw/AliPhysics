@@ -23,6 +23,7 @@
 #pragma link C++ class  AliTPCcalibAlign+;
 #pragma link C++ class  AliTPCcalibAlignment+;
 #pragma link C++ class  AliTPCcalibV0+;
+#pragma link C++ class AliTPCCalibKr+;
 
 #endif
 
