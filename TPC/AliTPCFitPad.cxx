@@ -29,13 +29,8 @@
 
 ClassImp(AliTPCFitPad)
 
-AliTPCFitPad::~AliTPCFitPad() {
-   //
-   // Destructor.
-   //
 
-   Delete();
-}
+
 
 AliTPCFitPad::AliTPCFitPad(Int_t ndim, const char* formula, Option_t* opt) :
    AliTPCCalPadRegion("", ""),
@@ -49,19 +44,30 @@ AliTPCFitPad::AliTPCFitPad(Int_t ndim, const char* formula, Option_t* opt) :
    //
 }
 
-AliTPCFitPad& AliTPCFitPad::operator=(const AliTPCFitPad& rhs) {
+AliTPCFitPad& AliTPCFitPad::operator=(const AliTPCFitPad& rhs)
+{
+  //
+  // Assignment operator.
+  //
+  
+  if (this != &rhs) {
+    AliTPCCalPadRegion::operator=(rhs);
+    fNdim = rhs.fNdim;
+    fFormula = rhs.fFormula;
+    fOpt = rhs.fOpt;
+  }
+  return *this;
+}
+
+AliTPCFitPad::~AliTPCFitPad() {
    //
-   // Assignment operator.
+   // Destructor.
    //
 
-   if (this != &rhs) {
-      AliTPCCalPadRegion::operator=(rhs);
-      fNdim = rhs.fNdim;
-      fFormula = rhs.fFormula;
-      fOpt = rhs.fOpt;
-   }
-   return *this;
+   Delete();
 }
+
+
 
 void AliTPCFitPad::Add(AliTPCFitPad* fit) {
    //

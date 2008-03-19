@@ -131,6 +131,21 @@ AliTPCClusterParam* AliTPCClusterParam::Instance()
 }
 
 
+AliTPCClusterParam::AliTPCClusterParam():
+  TObject(),
+  fQNorm(0) 
+{
+  //
+  // Default constructor
+  //
+}
+AliTPCClusterParam::~AliTPCClusterParam(){
+  //
+  // destructor
+  //
+  if (fQNorm) fQNorm->Delete();
+  delete fQNorm;
+}
 
 
 void AliTPCClusterParam::FitResol0(TTree * tree, Int_t dim, Int_t type, Float_t *param0, Float_t *error){
@@ -1199,7 +1214,7 @@ Float_t AliTPCClusterParam::Qnorm(Int_t ipad, Int_t itype, Float_t dr, Float_t t
   //
   //expession formula - TString *strq0 = toolkit.FitPlane(chain,"dedxQ.fElements[2]","dr++ty++tz++dr*ty++dr*tz++ty*tz++ty^2++tz^2","IPad==0",chi2,npoints,param,covar,0,100000);
 
-  if (!fQNorm) return 0;
+  if (fQNorm==0) return 0;
   TVectorD * norm = (TVectorD*)fQNorm->At(3*itype+ipad);
   if (!norm) return 0;
   TVectorD &no  = *norm;

@@ -21,8 +21,8 @@ class TObjArray;
 class AliTPCClusterParam : public TObject {
  public:
   static AliTPCClusterParam* Instance();
-  AliTPCClusterParam(){fRatio=0.01; fQNorm=0;}
-  virtual           ~AliTPCClusterParam(){;}
+  AliTPCClusterParam();
+  virtual           ~AliTPCClusterParam();
   virtual void	Print(Option_t* option = "") const;
   void SetInstance(AliTPCClusterParam*param){fgInstance = param;}
   //

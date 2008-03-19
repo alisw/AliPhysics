@@ -36,15 +36,15 @@ ClassImp(AliTPCclusterMI)
 
 AliTPCclusterMI::AliTPCclusterMI(Bool_t withInfo):
   AliCluster(),
-  fQ(0),
-  fType(0),
-  fMax(0),
-  fUsed(0),
-  fDetector(0),
-  fRow(0),
-  fTimeBin(0),
-  fPad(0),
-  fInfo(0)
+  fInfo(0),
+  fTimeBin(0),  //time bin coordinate
+  fPad(0),  //pad coordinate
+  fQ(0),       //Q of cluster (in ADC counts)  
+  fMax(0),      //maximal amplitude in cluster
+  fType(0),     //type of the cluster 0 means golden 
+  fUsed(0),     //counter of usage  
+  fDetector(0), //detector  number
+  fRow(0)      //row number number
 {
   //
   // default constructor
@@ -54,15 +54,15 @@ AliTPCclusterMI::AliTPCclusterMI(Bool_t withInfo):
 
 AliTPCclusterMI::AliTPCclusterMI(const AliTPCclusterMI & cluster):
   AliCluster(cluster),
-  fQ(cluster.fQ),
-  fType(cluster.fType),
-  fMax(cluster.fMax),
-  fUsed(cluster.fUsed),
-  fDetector(cluster.fDetector),
-  fRow(cluster.fRow),
+  fInfo(0),
   fTimeBin(cluster.fTimeBin),
   fPad(cluster.fPad),
-  fInfo(0)
+  fQ(cluster.fQ),
+  fMax(cluster.fMax),
+  fType(cluster.fType),
+  fUsed(cluster.fUsed),
+  fDetector(cluster.fDetector),
+  fRow(cluster.fRow)
 {
   //
   // copy constructor
@@ -98,13 +98,15 @@ AliTPCclusterMI & AliTPCclusterMI::operator = (const AliTPCclusterMI & cluster)
 
 AliTPCclusterMI::AliTPCclusterMI(Int_t *lab, Float_t *hit) : 
   AliCluster(0,hit,0.,0.,lab),
-  fQ(0),
-  fType(0),
-  fMax(0),
-  fUsed(0),
-  fDetector(0),
-  fRow(0),
-  fInfo(0)
+  fInfo(0),
+  fTimeBin(0),  //time bin coordinate
+  fPad(0),  //pad coordinate
+  fQ(0),       //Q of cluster (in ADC counts)  
+  fMax(0),      //maximal amplitude in cluster
+  fType(0),     //type of the cluster 0 means golden 
+  fUsed(0),     //counter of usage  
+  fDetector(0), //detector  number
+  fRow(0)      //row number number
 {
   //
   // constructor

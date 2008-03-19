@@ -15,7 +15,7 @@ class TString;
 
 class AliTPCFitPad: public AliTPCCalPadRegion {
 public:
-   AliTPCFitPad() : AliTPCCalPadRegion() { }
+  AliTPCFitPad() : AliTPCCalPadRegion(), fNdim(0), fFormula(0), fOpt(0) {}   
    AliTPCFitPad(const AliTPCFitPad& obj) : AliTPCCalPadRegion(obj), fNdim(obj.fNdim), fFormula(obj.fFormula), fOpt(obj.fOpt) { }
    AliTPCFitPad(Int_t ndim, const char* formula, Option_t* opt = "D");
    AliTPCFitPad& operator=(const AliTPCFitPad& rhs);

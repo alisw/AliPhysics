@@ -209,6 +209,8 @@ AliTPCcalibTracksGain::AliTPCcalibTracksGain(const AliTPCcalibTracksGain& obj) :
   TNamed(obj),
   fDebugStream(0),          //! debug stream for debugging
   fCuts(obj.fCuts),            // cuts that are used for sieving the tracks used for calibration
+  fArrayQM(0),                // Qmax normalized
+  fArrayQT(0),                // Qtot normalized 
   //
   // Simple Histograms
   //
@@ -263,10 +265,12 @@ AliTPCcalibTracksGain& AliTPCcalibTracksGain::operator=(const AliTPCcalibTracksG
    return *this;
 }
 
-AliTPCcalibTracksGain::AliTPCcalibTracksGain(const char* name, const char* title, AliTPCcalibTracksCuts* cuts, TNamed* debugStreamPrefix, AliTPCcalibTracksGain* prevIter) :
+AliTPCcalibTracksGain::AliTPCcalibTracksGain(const char* name, const char* title, AliTPCcalibTracksCuts* cuts, TNamed* /*debugStreamPrefix*/, AliTPCcalibTracksGain* prevIter) :
   TNamed(name, title),
   fDebugStream(0),          //! debug stream for debugging
   fCuts(0),            // cuts that are used for sieving the tracks used for calibration
+  fArrayQM(0),                // Qmax normalized
+  fArrayQT(0),                // Qtot normalized 
   //
   // Simple Histograms
   //
@@ -630,9 +634,9 @@ void AliTPCcalibTracksGain::AddCluster(AliTPCclusterMI* cluster){
 
 
 
-void AliTPCcalibTracksGain::AddCluster(AliTPCclusterMI* cluster, Float_t momenta, Float_t mdedx, Int_t padType,
-            Float_t xcenter, TVectorD& dedxQ, TVectorD& dedxM, Float_t fraction, Float_t fraction2, Float_t dedge,
-            TVectorD& parY, TVectorD& parZ, TVectorD& meanPos) {
+void AliTPCcalibTracksGain::AddCluster(AliTPCclusterMI* cluster, Float_t /*momenta*/, Float_t/* mdedx*/, Int_t padType,
+				       Float_t xcenter, TVectorD& dedxQ, TVectorD& /*dedxM*/, Float_t /*fraction*/, Float_t fraction2, Float_t dedge,
+				       TVectorD& /*parY*/, TVectorD& /*parZ*/, TVectorD& meanPos) {
    //
    // Adds cluster to the appropriate fitter for later analysis.
    // The charge used for the fit is the maximum charge for this specific cluster or the
@@ -1074,7 +1078,7 @@ void AliTPCcalibTracksGain::DumpTrack(AliTPCseed* track) {
 
 }
 
-Bool_t AliTPCcalibTracksGain::GetDedx(AliTPCseed* track, Int_t padType, Int_t* rows,
+Bool_t AliTPCcalibTracksGain::GetDedx(AliTPCseed* track, Int_t padType, Int_t* /*rows*/,
 				      Int_t &sector, Int_t& npoints, 
 				      TVectorD &dedxM, TVectorD &dedxQ, 
 				      TVectorD &parY, TVectorD &parZ, TVectorD&meanPos)
