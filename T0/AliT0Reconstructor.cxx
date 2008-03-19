@@ -231,7 +231,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   AliDebug(10," before read data ");
   AliT0RawReader myrawreader(rawReader);
   if (!myrawreader.Next())
-    AliDebug(1,Form(" no raw data found!! %i", myrawreader.Next()));
+    AliDebug(1,"No T0 raw data found!");
   
   for (Int_t i=0; i<105; i++) {
     for (Int_t iHit=0; iHit<5; iHit++) 
@@ -315,7 +315,6 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	AliDebug(1,Form(" QTC %f mv,  time in chann %f ",adc[ipmt] ,time[ipmt]));
       }
       if(option == "cosmic") {
-	if(ipmt == 15) continue; //skip crashed PMT
 	Float_t qt0 = Float_t(chargeQT0[ipmt]);
 	Float_t qt1 = Float_t(chargeQT1[ipmt]);
 	if((qt1-qt0)>0)  adc[ipmt] = qt1-qt0;
