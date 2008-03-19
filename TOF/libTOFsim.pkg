@@ -15,3 +15,10 @@ SRCS  = AliTOF.cxx  AliTOFv6T0.cxx  AliTOFv5T0.cxx  \
 HDRS:= $(SRCS:.cxx=.h)
 
 DHDR=TOFsimLinkDef.h
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+                         -lTOFbase -lSTEER -lSTEERBase \
+                         -lRAWDatasim -lRAWDatabase \
+                         -L$(shell root-config --libdir) -lVMC -lGeom
+endif

@@ -7,3 +7,10 @@ SRCS  = AliTOFcluster.cxx  AliTOFClusterFinder.cxx  AliTOFtrack.cxx  AliTOFtrack
 HDRS:= $(SRCS:.cxx=.h)
 
 DHDR=TOFrecLinkDef.h
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+                         -lTOFbase -lSTEER -lCDB -lESD -lSTEERBase \
+                         -lRAWDatabase \
+                         -L$(shell root-config --libdir) -lGeom
+endif
