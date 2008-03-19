@@ -477,7 +477,7 @@ AliTPCCalPad* AliTPCCalPad::LocalFit(const char* padName, Int_t rowRadius, Int_t
 }
 
 
-AliTPCCalPad* AliTPCCalPad::GlobalFit(const char* padName, AliTPCCalPad* PadOutliers, Bool_t robust, Int_t fitType, Double_t chi2Threshold, Double_t robustFraction){
+AliTPCCalPad* AliTPCCalPad::GlobalFit(const char* padName, AliTPCCalPad* PadOutliers, Bool_t robust, Int_t fitType, Double_t chi2Threshold, Double_t robustFraction, Double_t err, TObjArray *fitParArr, TObjArray *fitCovArr){
    //
    // Loops over all AliTPCCalROCs and performs a globalFit in each ROC
    // AliTPCCalPad with fit-data is returned
@@ -485,6 +485,8 @@ AliTPCCalPad* AliTPCCalPad::GlobalFit(const char* padName, AliTPCCalPad* PadOutl
    // robustFraction: Fraction of data that will be used in EvalRobust
    // chi2Threshold: Threshold for chi2 when EvalRobust is called
    // robustFraction: Fraction of data that will be used in EvalRobust
+   // err: error of the data points
+   // if fitParArr and/or fitCovArr is given, write fitParameters and/or covariance Matrices into the array
    //
    AliTPCCalPad* pad = new AliTPCCalPad(padName, padName);
    TVectorD fitParam(0);
@@ -492,10 +494,15 @@ AliTPCCalPad* AliTPCCalPad::GlobalFit(const char* padName, AliTPCCalPad* PadOutl
    Float_t chi2 = 0;
    for (Int_t isec = 0; isec < 72; isec++){
       if (PadOutliers)
-         GetCalROC(isec)->GlobalFit(PadOutliers->GetCalROC(isec), robust, fitParam, covMatrix, chi2, fitType, chi2Threshold, robustFraction);
+         GetCalROC(isec)->GlobalFit(PadOutliers->GetCalROC(isec), robust, fitParam, covMatrix, chi2, fitType, chi2Threshold, robustFraction, err);
       else 
-         GetCalROC(isec)->GlobalFit(0, robust, fitParam, covMatrix, chi2, fitType, chi2Threshold, robustFraction);
-      pad->SetCalROC(AliTPCCalROC::CreateGlobalFitCalROC(fitParam, isec));
+         GetCalROC(isec)->GlobalFit(0, robust, fitParam, covMatrix, chi2, fitType, chi2Threshold, robustFraction, err);
+
+      AliTPCCalROC *roc=AliTPCCalROC::CreateGlobalFitCalROC(fitParam, isec);
+      pad->SetCalROC(roc);
+      delete roc;
+      if ( fitParArr ) fitParArr->AddAtAndExpand(new TVectorD(fitParam), isec);
+      if ( fitCovArr ) fitCovArr->AddAtAndExpand(new TMatrixD(covMatrix), isec);
    }
    return pad;
 }
