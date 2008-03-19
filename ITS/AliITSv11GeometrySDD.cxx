@@ -5467,8 +5467,8 @@ Int_t AliITSv11GeometrySDD::CreateAndInsetConeCablePart(TGeoVolume *mother, Doub
   // and attached at the border of the SSD cone
 
   TGeoMedium *copper     = GetMedium("COPPER$");
-  TGeoMedium *plastic    = GetMedium("SDDKAPTON (POLYCH2)$");  // ???
-  TGeoMedium *opticalFiber = GetMedium("SDD SI insensitive$");  //  To code !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  TGeoMedium *plastic    = GetMedium("SDDKAPTON (POLYCH2)$");
+  TGeoMedium *opticalFiber = GetMedium("SDD OPTICFIB$");
 
   char titleCable[30];
   sprintf(titleCable,"cableSDDport%i",(Int_t)angle);
@@ -5514,14 +5514,23 @@ Int_t AliITSv11GeometrySDD::CreateAndInsetConeCablePart(TGeoVolume *mother, Doub
 
 
 //________________________________________________________________________
-void AliITSv11GeometrySDD::SDDCables(TGeoVolume *moth) {
+void AliITSv11GeometrySDD::SDDCables(TGeoVolume *moth)
+{
+//
+// Creates and inserts the SDD cables running on SDD and SSD cones
+//
+// Input:
+//         moth : the TGeoVolume owing the volume structure
+// Output:
+//
+// Created:         ???       Ludovic Gaudichet
+// Updated:      15 Mar 2008  Mario Sitta
+//
 
-  // Creates and inserts the SDD cables running on SDD and SSD cones
-
-  TGeoMedium *copper     = GetMedium("COPPER$");
-  TGeoMedium *plastic    = GetMedium("SDDKAPTON (POLYCH2)$");  // ???
-  TGeoMedium *opticalFiber = GetMedium("SDD SI insensitive$");  //  To code !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  TGeoMedium *airSDD     = GetMedium("SDD AIR$");
+  TGeoMedium *copper       = GetMedium("COPPER$");
+  TGeoMedium *plastic      = GetMedium("SDDKAPTON (POLYCH2)$");
+  TGeoMedium *opticalFiber = GetMedium("SDD OPTICFIB$");
+  TGeoMedium *airSDD       = GetMedium("SDD AIR$");
 
 
   //==================================
@@ -5539,10 +5548,29 @@ void AliITSv11GeometrySDD::SDDCables(TGeoVolume *moth) {
   Double_t sectionLay4Plastic = fgkCableBendRatio*fgkSectionPlastPerMod*nModLay4/2;
   Double_t sectionLay4Glass   = fgkCableBendRatio*fgkSectionGlassPerMod*nModLay4/2;
 
-  // calculate z1, z2 thanks to R1 and R2
-  Double_t sddCableZ1 = GetConeZ(fgkSDDCableR1, fgkConeSDDr1,fgkConeSDDr2,fgkConeSDDz1,fgkConeSDDz2);
-  Double_t sddCableZ2 = GetConeZ(fgkSDDCableR2, fgkConeSDDr1,fgkConeSDDr2,fgkConeSDDz1,fgkConeSDDz2);
-  Double_t sddCableZ3 = GetConeZ(fgkSDDCableR3, fgkConeSDDr1,fgkConeSDDr2,fgkConeSDDz1,fgkConeSDDz2);
+  // Do not use hardcoded numbers, get them from real shapes - M.S. 15/03/08
+  TGeoVolume *sddCone = gGeoManager->GetVolume("SDDCarbonFiberCone");
+  TGeoPcon *sddConeShape = (TGeoPcon*)sddCone->GetShape();
+
+  TGeoVolume *sddCylinder = gGeoManager->GetVolume("SDDCarbonFiberCylinder");
+  TGeoTube *sddCylinderShape = (TGeoTube*)sddCylinder->GetShape();
+
+  // (were fgkConeSDDr1, fgkConeSDDr2, fgkConeSDDz1, fgkConeSDDz2 hardcoded)
+  Double_t coneSDDr1 = sddConeShape->GetRmin(5);
+  Double_t coneSDDr2 = sddConeShape->GetRmin(3);
+
+  Double_t coneSDDz1 = sddConeShape->GetZ(9) - sddConeShape->GetZ(5) +
+		       sddCylinderShape->GetDz();
+  Double_t coneSDDz2 = sddConeShape->GetZ(9) - sddConeShape->GetZ(3) +
+		       sddCylinderShape->GetDz();
+
+  // Calculate z1, z2 thanks to R1 and R2
+  Double_t sddCableZ1 = GetConeZ(fgkSDDCableR1, coneSDDr1, coneSDDr2,
+				                coneSDDz1, coneSDDz2);
+  Double_t sddCableZ2 = GetConeZ(fgkSDDCableR2, coneSDDr1, coneSDDr2,
+				                coneSDDz1, coneSDDz2);
+  Double_t sddCableZ3 = GetConeZ(fgkSDDCableR3, coneSDDr1, coneSDDr2,
+				                coneSDDz1, coneSDDz2);
 
   TGeoRotation *rotCableSDD = new TGeoRotation("rotCableSDD",0,180,0);
 
@@ -5555,17 +5583,24 @@ void AliITSv11GeometrySDD::SDDCables(TGeoVolume *moth) {
 		  sectionLay3Plastic+sectionLay3Cu+sectionLay3Glass, 1);
 
   TGeoPcon* pcon1container = new TGeoPcon(0,360,2);
-  pcon1container->DefineSection(0, sddCableZ1, pcon1all->GetRmin(0), pcon1all->GetRmax(0));
+  pcon1container->DefineSection(0, sddCableZ1, pcon1all->GetRmin(0),
+					       pcon1all->GetRmax(0));
+
   Double_t drMax = pcon1all->GetRmax(0)- pcon1all->GetRmin(0);
-  pcon1container->DefineSection(1, sddCableZ2, pcon1all->GetRmax(1)-drMax, pcon1all->GetRmax(1));
+  pcon1container->DefineSection(1, sddCableZ2, pcon1all->GetRmax(1)-drMax,
+					       pcon1all->GetRmax(1));
   delete pcon1all;
-  TGeoVolume *vpcon1container = new TGeoVolume("vpcon1container", pcon1container, airSDD);
+
+  TGeoVolume *vpcon1container = new TGeoVolume("vpcon1container",
+					       pcon1container, airSDD);
   vpcon1container->SetVisibility(kFALSE);
 
   TGeoPcon* pcon1plast = CreateConeConstSection(fgkSDDCableR1, sddCableZ1,
 						fgkSDDCableR2, sddCableZ2,
 						sectionLay3Plastic, 3);
-  TGeoVolume *vpcon1plast = new TGeoVolume("ITScablesSDDpcon1Plast", pcon1plast, plastic);
+
+  TGeoVolume *vpcon1plast = new TGeoVolume("ITScablesSDDpcon1Plast",
+					   pcon1plast, plastic);
   vpcon1plast->SetLineColor(kYellow);
   vpcon1container->AddNode(vpcon1plast, 0);
 
@@ -5573,22 +5608,24 @@ void AliITSv11GeometrySDD::SDDCables(TGeoVolume *moth) {
   TGeoPcon* pcon1Cu = CreateConeConstSection(fgkSDDCableR1 - dr1a, sddCableZ1,
 					     fgkSDDCableR2 - dr1a, sddCableZ2,
 					     sectionLay3Cu, 3);
-  TGeoVolume *vpcon1Cu = new TGeoVolume("ITScablesSDDpcon1Cu", pcon1Cu, copper);
+
+  TGeoVolume *vpcon1Cu = new TGeoVolume("ITScablesSDDpcon1Cu",
+					pcon1Cu, copper);
   vpcon1Cu->SetLineColor(kRed);
   vpcon1container->AddNode(vpcon1Cu, 0);
-  //moth->AddNode(vpcon1Cu, 0);
 
-  //---
   Double_t dr1b = pcon1Cu->GetRmax(0) - pcon1Cu->GetRmin(0);
   TGeoPcon* pcon1glass = CreateConeConstSection(fgkSDDCableR1-dr1a-dr1b, sddCableZ1,
 						fgkSDDCableR2-dr1a-dr1b, sddCableZ2,
 						sectionLay3Glass, 3);
-  TGeoVolume *vpcon1glass = new TGeoVolume("ITScablesSDDpcon1glass", pcon1glass, opticalFiber);
+
+  TGeoVolume *vpcon1glass = new TGeoVolume("ITScablesSDDpcon1glass",
+					   pcon1glass, opticalFiber);
   vpcon1glass->SetLineColor(kGreen);
   vpcon1container->AddNode(vpcon1glass, 0);
 
-  moth->AddNode(vpcon1container, 0);
-  moth->AddNode(vpcon1container, 1, rotCableSDD);
+  moth->AddNode(vpcon1container, 1);
+  moth->AddNode(vpcon1container, 2, rotCableSDD);
 
   //==================================
   //  2nd set of cones : cables from layer 3 and layer 4
@@ -5596,21 +5633,31 @@ void AliITSv11GeometrySDD::SDDCables(TGeoVolume *moth) {
 
   TGeoPcon* pcon2all = CreateConeConstSection(fgkSDDCableR2, sddCableZ2,
 					      fgkSDDCableR3, sddCableZ3,
-					      sectionLay3Plastic+sectionLay4Plastic+
-					      sectionLay3Cu+sectionLay4Cu+
-					      sectionLay3Glass+sectionLay4Glass, 1);
+				      sectionLay3Plastic+sectionLay4Plastic+
+				      sectionLay3Cu+sectionLay4Cu+
+				      sectionLay3Glass+sectionLay4Glass, 1);
+
   TGeoPcon* pcon2container = new TGeoPcon(0,360,2);
-  pcon2container->DefineSection(0, sddCableZ2, pcon2all->GetRmin(0), pcon2all->GetRmax(0));
+  pcon2container->DefineSection(0, sddCableZ2, pcon2all->GetRmin(0),
+					       pcon2all->GetRmax(0));
+
   drMax = pcon2all->GetRmax(0)- pcon2all->GetRmin(0);
-  pcon2container->DefineSection(1, sddCableZ3, pcon2all->GetRmax(1)-drMax, pcon2all->GetRmax(1));
+  pcon2container->DefineSection(1, sddCableZ3, pcon2all->GetRmax(1)-drMax,
+					       pcon2all->GetRmax(1));
+
   delete pcon2all;
-  TGeoVolume *vpcon2container = new TGeoVolume("vpcon2container", pcon2container, airSDD);
+
+  TGeoVolume *vpcon2container = new TGeoVolume("vpcon2container",
+					       pcon2container, airSDD);
   vpcon2container->SetVisibility(kFALSE);
 
   TGeoPcon* pcon2plast = CreateConeConstSection(fgkSDDCableR2, sddCableZ2,
 						fgkSDDCableR3, sddCableZ3,
-						sectionLay3Plastic+sectionLay4Plastic, 3);
-  TGeoVolume *vpcon2plast = new TGeoVolume("ITScablesSDDpcon2Plast", pcon2plast, plastic);
+						sectionLay3Plastic+
+						sectionLay4Plastic, 3);
+
+  TGeoVolume *vpcon2plast = new TGeoVolume("ITScablesSDDpcon2Plast",
+					   pcon2plast, plastic);
   vpcon2plast->SetLineColor(kYellow);
   vpcon2container->AddNode(vpcon2plast, 0);
 
@@ -5618,97 +5665,119 @@ void AliITSv11GeometrySDD::SDDCables(TGeoVolume *moth) {
   TGeoPcon* pcon2Cu = CreateConeConstSection(fgkSDDCableR2 - dr2a, sddCableZ2,
 					     fgkSDDCableR3 - dr2a, sddCableZ3,
 					     sectionLay3Cu+sectionLay4Cu, 3);
-  TGeoVolume *vpcon2Cu = new TGeoVolume("ITScablesSDDpcon2Cu", pcon2Cu, copper);
+
+  TGeoVolume *vpcon2Cu = new TGeoVolume("ITScablesSDDpcon2Cu",
+					pcon2Cu, copper);
   vpcon2Cu->SetLineColor(kRed);
   vpcon2container->AddNode(vpcon2Cu, 0);
 
-  //---
   Double_t dr2b = pcon2Cu->GetRmax(0) - pcon2Cu->GetRmin(0);
   TGeoPcon* pcon2glass = CreateConeConstSection(fgkSDDCableR2-dr2a-dr2b, sddCableZ2,
 						fgkSDDCableR3-dr2a-dr2b, sddCableZ3,
-						sectionLay3Glass+sectionLay4Glass, 3);
-  TGeoVolume *vpcon2glass = new TGeoVolume("ITScablesSDDpcon2glass", pcon2glass, opticalFiber);
+						sectionLay3Glass+
+						sectionLay4Glass, 3);
+
+  TGeoVolume *vpcon2glass = new TGeoVolume("ITScablesSDDpcon2glass",
+					   pcon2glass, opticalFiber);
   vpcon2glass->SetLineColor(kGreen);
   vpcon2container->AddNode(vpcon2glass, 0);
 
-  moth->AddNode(vpcon2container, 0);
-  moth->AddNode(vpcon2container, 1, rotCableSDD);
+  moth->AddNode(vpcon2container, 1);
+  moth->AddNode(vpcon2container, 2, rotCableSDD);
 
   //==================================
   //  intermediate cylinder
   //==================================
 
-  TGeoTube *interCyl = new TGeoTube("sddCableInterCyl", pcon2container->GetRmin(1),
+  // (was fgkSDDCableDZint hardcoded)
+  Double_t sddCableDZint = (sddConeShape->GetZ(9) - sddConeShape->GetZ(0) +
+		            sddCylinderShape->GetDz()) - sddCableZ3;
+
+  TGeoTube *interCyl = new TGeoTube("sddCableInterCyl",
+				    pcon2container->GetRmin(1),
 				    pcon2container->GetRmax(1),
-				    fgkSDDCableDZint/2);
-  TGeoVolume *vInterCyl = new TGeoVolume("vSddCableInterCyl",interCyl, airSDD);
+				    sddCableDZint/2);
+
+  TGeoVolume *vInterCyl = new TGeoVolume("vSddCableInterCyl",
+					 interCyl, airSDD);
   vInterCyl->SetVisibility(kFALSE);
 
-  //---
   Double_t rmaxCylPlast = pcon2container->GetRmax(1);
   Double_t rminCylPlast = TMath::Sqrt(rmaxCylPlast*rmaxCylPlast - 
-				 (sectionLay3Plastic+sectionLay4Plastic)/TMath::Pi() );
+			(sectionLay3Plastic+sectionLay4Plastic)/TMath::Pi() );
 
   TGeoTube *interCylPlast = new TGeoTube("sddCableInterCylPlast", rminCylPlast,
-					 rmaxCylPlast, fgkSDDCableDZint/2);
-  TGeoVolume *vInterCylPlast = new TGeoVolume("vSddCableInterCylPlast", interCylPlast, plastic);
+					 rmaxCylPlast, sddCableDZint/2);
+
+  TGeoVolume *vInterCylPlast = new TGeoVolume("vSddCableInterCylPlast",
+					      interCylPlast, plastic);
   vInterCylPlast->SetLineColor(kYellow);
   vInterCyl->AddNode(vInterCylPlast, 0);
 
-  //---
   Double_t rmaxCylCu = pcon2Cu->GetRmax(3);
   Double_t rminCylCu = TMath::Sqrt(rmaxCylCu*rmaxCylCu - 
-				 (sectionLay3Cu+sectionLay4Cu)/TMath::Pi() );
+		       (sectionLay3Cu+sectionLay4Cu)/TMath::Pi() );
+
   TGeoTube *interCylCu = new TGeoTube("sddCableInterCylCu", rminCylCu,
-					 rmaxCylCu, fgkSDDCableDZint/2);
-  TGeoVolume *vInterCylCu = new TGeoVolume("vSddCableInterCylCu", interCylCu, copper);
+				      rmaxCylCu, sddCableDZint/2);
+
+  TGeoVolume *vInterCylCu = new TGeoVolume("vSddCableInterCylCu",
+					   interCylCu, copper);
   vInterCylCu->SetLineColor(kRed);
   vInterCyl->AddNode(vInterCylCu, 0);
 
-  //---
   Double_t rmaxCylGlass = pcon2glass->GetRmax(3);
   Double_t rminCylGlass = TMath::Sqrt(rmaxCylGlass*rmaxCylGlass - 
-				 (sectionLay3Glass+sectionLay4Glass)/TMath::Pi() );
+			  (sectionLay3Glass+sectionLay4Glass)/TMath::Pi() );
+
   TGeoTube *interCylGlass = new TGeoTube("sddCableInterCylGlass", rminCylGlass,
-					 rmaxCylGlass, fgkSDDCableDZint/2);
-  TGeoVolume *vInterCylGlass = new TGeoVolume("vSddCableInterCylGlass",interCylGlass,opticalFiber);
+					 rmaxCylGlass, sddCableDZint/2);
+
+  TGeoVolume *vInterCylGlass = new TGeoVolume("vSddCableInterCylGlass",
+					      interCylGlass,opticalFiber);
   vInterCylGlass->SetLineColor(kGreen);
   vInterCyl->AddNode(vInterCylGlass, 0);
 
-  //---
-  TGeoTranslation *trInterCylP = new TGeoTranslation("trSddCableInterCylPos",
-						    0,0,sddCableZ3+fgkSDDCableDZint/2);
-  moth->AddNode(vInterCyl, 0,trInterCylP);
-  TGeoTranslation *trInterCylN = new TGeoTranslation("trSddCableInterCylNeg",
-						    0,0,-sddCableZ3-fgkSDDCableDZint/2);
-
-  moth->AddNode(vInterCyl, 1,trInterCylN);
+  moth->AddNode(vInterCyl, 1, new TGeoTranslation(0, 0,
+			      sddCableZ3+sddCableDZint/2));
+  moth->AddNode(vInterCyl, 2, new TGeoTranslation(0, 0,
+			     -sddCableZ3-sddCableDZint/2));
 
   //==================================
   // cable cone on the SSD cone
   //==================================
 
   Double_t sddCableR4 = rmaxCylPlast;
-  Double_t sddCableZ4 = sddCableZ3+fgkSDDCableDZint;
+  Double_t sddCableZ4 = sddCableZ3 + sddCableDZint;
 
   TGeoPcon* pcon3all = CreateConeConstSection(sddCableR4, sddCableZ4,
 					      fgkSDDCableR5, fgkSDDCableZ5,
-					      sectionLay3Plastic+sectionLay4Plastic+
+					      sectionLay3Plastic+
+					      sectionLay4Plastic+
 					      sectionLay3Cu+sectionLay4Cu+
 					      sectionLay3Glass+sectionLay4Glass, 1);
 
   TGeoPcon* pcon3container = new TGeoPcon(0,360,2);
-  pcon3container->DefineSection(0, sddCableZ4, pcon3all->GetRmin(0), pcon3all->GetRmax(0));
+  pcon3container->DefineSection(0, sddCableZ4, pcon3all->GetRmin(0),
+					       pcon3all->GetRmax(0));
+
   drMax = pcon3all->GetRmax(0) - pcon3all->GetRmin(0);
-  pcon3container->DefineSection(1, fgkSDDCableZ5, pcon3all->GetRmax(1)-drMax, pcon3all->GetRmax(1));
+  pcon3container->DefineSection(1, fgkSDDCableZ5, pcon3all->GetRmax(1)-drMax,
+					       pcon3all->GetRmax(1));
+
   delete pcon3all;
-  TGeoVolume *vpcon3container = new TGeoVolume("vpcon3container", pcon3container, airSDD);
+
+  TGeoVolume *vpcon3container = new TGeoVolume("vpcon3container",
+					       pcon3container, airSDD);
   vpcon3container->SetVisibility(kFALSE);
 
   TGeoPcon* pcon3plast = CreateConeConstSection(sddCableR4, sddCableZ4,
 						fgkSDDCableR5, fgkSDDCableZ5,
-						sectionLay3Plastic+sectionLay4Plastic, 3);
-  TGeoVolume *vpcon3plast = new TGeoVolume("ITScablesSDDpcon3Plast", pcon3plast, plastic);
+						sectionLay3Plastic+
+						sectionLay4Plastic, 3);
+
+  TGeoVolume *vpcon3plast = new TGeoVolume("ITScablesSDDpcon3Plast",
+					   pcon3plast, plastic);
   vpcon3plast->SetLineColor(kYellow);
   vpcon3container->AddNode(vpcon3plast, 0);
 
@@ -5716,22 +5785,24 @@ void AliITSv11GeometrySDD::SDDCables(TGeoVolume *moth) {
   TGeoPcon* pcon3Cu = CreateConeConstSection(sddCableR4 - dr3a, sddCableZ4,
 					     fgkSDDCableR5 - dr3a, fgkSDDCableZ5,
 					     sectionLay3Cu+sectionLay4Cu, 3);
-  TGeoVolume *vpcon3Cu = new TGeoVolume("ITScablesSDDpcon3Cu", pcon3Cu, copper);
+
+  TGeoVolume *vpcon3Cu = new TGeoVolume("ITScablesSDDpcon3Cu",
+					pcon3Cu, copper);
   vpcon3Cu->SetLineColor(kRed);
   vpcon3container->AddNode(vpcon3Cu, 0);
 
-  //---
   Double_t dr3b = pcon3Cu->GetRmax(0) - pcon3Cu->GetRmin(0);
   TGeoPcon* pcon3glass = CreateConeConstSection(sddCableR4-dr3a-dr3b, sddCableZ4,
 						fgkSDDCableR5-dr3a-dr3b, fgkSDDCableZ5,
 						sectionLay3Glass+sectionLay4Glass, 3);
-  TGeoVolume *vpcon3glass = new TGeoVolume("ITScablesSDDpcon3glass", pcon3glass,opticalFiber);
+
+  TGeoVolume *vpcon3glass = new TGeoVolume("ITScablesSDDpcon3glass",
+					   pcon3glass,opticalFiber);
   vpcon3glass->SetLineColor(kGreen);
   vpcon3container->AddNode(vpcon3glass, 0);
 
-  moth->AddNode(vpcon3container, 0);
-  moth->AddNode(vpcon3container, 1, rotCableSDD);
-
+  moth->AddNode(vpcon3container, 1);
+  moth->AddNode(vpcon3container, 2, rotCableSDD);
 
   //==================================
   // cables that are grouped at the end of SSD cones
@@ -5760,7 +5831,7 @@ void AliITSv11GeometrySDD::SDDCables(TGeoVolume *moth) {
   CreateAndInsetConeCablePart(endConeSDDCable, 146, 0*3,3*4, fgkSDDCableR5,
 			      fgkSDDCableZ5,fgkSDDCableR6,fgkSDDCableZ6);
 
-  CreateAndInsetConeCablePart(endConeSDDCable, 176, 0*3,1*4, fgkSDDCableR5,
+  CreateAndInsetConeCablePart(endConeSDDCable, 176.1, 0*3,1*4, fgkSDDCableR5,
 			      fgkSDDCableZ5,fgkSDDCableR6,fgkSDDCableZ6);
 
   CreateAndInsetConeCablePart(endConeSDDCable, 190, 2*3,0*4, fgkSDDCableR5,
@@ -5772,18 +5843,21 @@ void AliITSv11GeometrySDD::SDDCables(TGeoVolume *moth) {
   CreateAndInsetConeCablePart(endConeSDDCable, 240, 1*3,2*4, fgkSDDCableR5,
 			      fgkSDDCableZ5,fgkSDDCableR6,fgkSDDCableZ6);
 
-  CreateAndInsetConeCablePart(endConeSDDCable, 290, 2*3,2*4, fgkSDDCableR5,
+  CreateAndInsetConeCablePart(endConeSDDCable, 290.1, 2*3,2*4, fgkSDDCableR5,
 			      fgkSDDCableZ5,fgkSDDCableR6,fgkSDDCableZ6);
 
   CreateAndInsetConeCablePart(endConeSDDCable, 315, 1*3,1*4, fgkSDDCableR5,
 			      fgkSDDCableZ5,fgkSDDCableR6,fgkSDDCableZ6);
 
-  CreateAndInsetConeCablePart(endConeSDDCable, 350, 1*3,3*4, fgkSDDCableR5,
+  CreateAndInsetConeCablePart(endConeSDDCable, 350.1, 1*3,3*4, fgkSDDCableR5,
 			      fgkSDDCableZ5,fgkSDDCableR6,fgkSDDCableZ6);
 
-  moth->AddNode(endConeSDDCable, 0, 0);
+  moth->AddNode(endConeSDDCable, 1, 0);
 
   TGeoRotation* reflect = new TGeoRotation("reflectEndConeSDDCable");
   reflect->ReflectZ(kTRUE);
-  moth->AddNode(endConeSDDCable, 1, reflect);
+  moth->AddNode(endConeSDDCable, 2, reflect);
+
+
+  return;
 }

@@ -14,7 +14,7 @@
  **************************************************************************/
 
 
-/* $Id:$ */
+/* $Id$ */
 
 
 //========================================================================
@@ -1048,13 +1048,14 @@ void AliITSv11Hybrid::CreateGeometry() {
     fSDDgeom->ForwardLayer3(vITSD);
     fSDDgeom->ForwardLayer4(vITSD);
   }
+
   if (AliITSInitGeometry::SSDIsTGeoNative()) {
     fSSDgeom->Layer5(vITS);
     fSSDgeom->Layer6(vITS);
     fSSDgeom->LadderSupportLayer5(vITS);
     fSSDgeom->LadderSupportLayer6(vITS);
-	fSSDgeom->EndCapSupportSystemLayer6(vITS);
-	fSSDgeom->EndCapSupportSystemLayer5(vITS);
+    fSSDgeom->EndCapSupportSystemLayer6(vITS);
+    fSSDgeom->EndCapSupportSystemLayer5(vITS);
   }
 
   if (AliITSInitGeometry::SPDshieldIsTGeoNative())
@@ -1065,6 +1066,10 @@ void AliITSv11Hybrid::CreateGeometry() {
 
   if (AliITSInitGeometry::SSDconeIsTGeoNative())
     fSupgeom->SSDCone(vITS);
+
+  if (AliITSInitGeometry::ServicesAreTGeoNative()) {
+    fSDDgeom->SDDCables(vITS);
+  }
 }
 
 //______________________________________________________________________
@@ -1690,8 +1695,9 @@ void AliITSv11Hybrid::CreateOldGeometry(){
     dgh[48] = ztpc+4.+0.1;
     dgh[49] = 62.0;//62.4;
     dgh[50] = 85.;
-    //   gMC->Gsvolu("ITSV", "PCON", idtmed[205], dgh, 51);
+//    gMC->Gsvolu("ITSV", "PCON", idtmed[205], dgh, 51);
     new TGeoVolumeAssembly("ITSV");
+
     // --- Place the ghost volume in its mother volume (ALIC) and make it 
     //     invisible
     //    gMC->Gspos("ITSV", 1, "ALIC", 0., 0., 0., 0, "ONLY");
@@ -4517,7 +4523,7 @@ void AliITSv11Hybrid::CreateOldGeometry(){
   gMC->Gspos("I2CC", 1, "ITSV", 0., 0., 83.5, 0, "ONLY");
   gMC->Gspos("I2CC", 2, "ITSV", 0., 0., -83.5, idrotm[200], "ONLY");  
 
-
+  } // Move this graph down as you implement services in TGeo - M.S. 19mar08
   // --- DEFINE PATCH PANELS AT THE END OF THE ITS CONES
   //     UPPER PART
   
@@ -4750,7 +4756,7 @@ void AliITSv11Hybrid::CreateOldGeometry(){
   gMC->Gsvolu("IHK2", "TUBS", idtmed[264], dgh, 5);  
   gMC->Gspos("IHK2", 1, "ITSV", 0., 0., -ztpc-dgh[2], 0, "ONLY");      
   
-  }
+//  }
 
 
   // --- DEFINE RAILS BETWEEN THE ITS AND THE TPC
@@ -5230,6 +5236,12 @@ void AliITSv11Hybrid::CreateMaterials(){
     Float_t wAlOxide[2]  = {0.4707, 0.5293};
     Float_t dAlOxide     = 3.97;
 
+    // Silica for optical fibers: Si O2
+    Float_t aoptfib[2] = { 28.0855, 15.9994};
+    Float_t zoptfib[2] = { 14.,      8.    };
+    Float_t woptfib[2] = {  1.,      2.    };
+    Float_t doptfib    = 2.55;
+
     AliMaterial(1,"SI$",0.28086E+02,0.14000E+02,0.23300E+01,0.93600E+01,0.99900E+03);
     AliMedium(1,"SI$",1,0,ifield,fieldm,tmaxfdSi,stemaxSi,deemaxSi,epsilSi,stminSi);
 
@@ -5565,6 +5577,9 @@ void AliITSv11Hybrid::CreateMaterials(){
     */
     AliMaterial(96, "SSD cone$",63.546, 29., 1.15, 1.265, 999);
     AliMedium(96,"SSD cone$",96,0,ifield,fieldm,tmaxfdServ,stemaxServ,deemaxServ,epsilServ,stminServ);
+
+    AliMixture(98,"SDD OPTICFIB$",aoptfib,zoptfib,doptfib,-2,woptfib);
+    AliMedium(98,"SDD OPTICFIB$",98,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 }
 
 //______________________________________________________________________
