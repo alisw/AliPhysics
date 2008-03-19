@@ -47,9 +47,7 @@ using namespace std;
 #include <cstdlib>
 #include <cerrno>
 
-// this is a global object used for automatic component registration, do not use this
-AliHLTTPCGlobalMergerComponent gAliHLTTPCGlobalMergerComponent;
-
+/** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCGlobalMergerComponent);
 
 AliHLTTPCGlobalMergerComponent::AliHLTTPCGlobalMergerComponent()

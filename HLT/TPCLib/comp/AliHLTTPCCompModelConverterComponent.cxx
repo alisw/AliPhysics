@@ -37,9 +37,7 @@ using namespace std;
  * applied to these tracks and clusters
  */
 
-// this is a global object used for automatic component registration, do not use this
-AliHLTTPCCompModelConverterComponent gAliHLTTPCCompClusterModelConverterComponent;
-
+/** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCCompModelConverterComponent)
     
   AliHLTTPCCompModelConverterComponent::AliHLTTPCCompModelConverterComponent() :

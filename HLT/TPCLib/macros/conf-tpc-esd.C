@@ -49,10 +49,10 @@
     // the esd writer configuration
     AliHLTConfiguration sink("sink1", "TPCEsdWriter"   , "globalmerger", "-datafile AliHLTESDs.root");
   } else {
-    // the esd writer configuration
+    // the esd converter configuration
     AliHLTConfiguration esdcconf("esd-converter", "TPCEsdConverter"   , "globalmerger", "-tree");
     
-    // the esd writer configuration
+    // the root file writer configuration
     AliHLTConfiguration sink("sink1", "ROOTFileWriter"   , "esd-converter", "-datafile AliHLTESDs.root");
   }
 }

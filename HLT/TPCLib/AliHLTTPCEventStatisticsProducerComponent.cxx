@@ -44,9 +44,7 @@ using namespace std;
 
 #include <cerrno>
 
-// ** This is a global object used for automatic component registration, do not use this
-AliHLTTPCEventStatisticsProducerComponent gAliHLTTPCEventStatisticsProducerComponent;
-
+/** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCEventStatisticsProducerComponent)
     
 // ------------------------------------------------------------------------------------------

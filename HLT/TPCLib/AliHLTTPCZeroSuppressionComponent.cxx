@@ -40,8 +40,6 @@ using namespace std;
 #include <sys/time.h>
 
 
-AliHLTTPCZeroSuppressionComponent gAliHLTTPCZeroSuppressionComponent;
-
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCZeroSuppressionComponent)
 

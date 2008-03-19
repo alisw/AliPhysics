@@ -47,9 +47,7 @@ using namespace std;
 #include <cerrno>
 #include "TString.h"
 
-// this is a global object used for automatic component registration, do not use this
-AliHLTTPCCalibCEComponent gAliHLTTPCCalibCEComponent;
-
+/** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCCalibCEComponent)
 
 AliHLTTPCCalibCEComponent::AliHLTTPCCalibCEComponent()

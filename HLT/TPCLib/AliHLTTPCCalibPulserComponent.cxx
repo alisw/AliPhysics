@@ -47,9 +47,7 @@ using namespace std;
 #include <errno.h>
 #include "TString.h"
 
-// this is a global object used for automatic component registration, do not use this
-AliHLTTPCCalibPulserComponent gAliHLTTPCCalibPulserComponent;
-
+/** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCCalibPulserComponent)
 
 AliHLTTPCCalibPulserComponent::AliHLTTPCCalibPulserComponent()

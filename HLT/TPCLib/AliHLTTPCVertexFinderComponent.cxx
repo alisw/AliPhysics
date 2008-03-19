@@ -49,9 +49,7 @@ using namespace std;
 #include <cstdlib>
 #include <cerrno>
 
-// this is a global object used for automatic component registration, do not use this
-AliHLTTPCVertexFinderComponent gAliHLTTPCVertexFinderComponent;
-
+/** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCVertexFinderComponent);
 
 AliHLTTPCVertexFinderComponent::AliHLTTPCVertexFinderComponent()

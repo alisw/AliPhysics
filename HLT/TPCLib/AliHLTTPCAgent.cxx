@@ -31,6 +31,24 @@
 AliHLTTPCAgent gAliHLTTPCAgent;
 
 // component headers
+#include "AliHLTTPCRunStatisticsProducerComponent.h"
+#include "AliHLTTPCEventStatisticsProducerComponent.h"
+#include "AliHLTTPCCompModelInflaterComponent.h"
+#include "AliHLTTPCCompModelDeflaterComponent.h"
+#include "AliHLTTPCCompModelDeconverterComponent.h"
+#include "AliHLTTPCCompModelConverterComponent.h"
+#include "AliHLTTPCCompDumpComponent.h"
+#include "AliHLTTPCCalibCEComponent.h"
+#include "AliHLTTPCCalibPulserComponent.h"
+#include "AliHLTTPCCalibPedestalComponent.h"
+#include "AliHLTTPCCATrackerComponent.h"
+#include "AliHLTTPCGlobalMergerComponent.h"
+#include "AliHLTTPCSliceTrackerComponent.h"
+#include "AliHLTTPCVertexFinderComponent.h"
+#include "AliHLTTPCClusterFinderComponent.h"
+#include "AliHLTTPCRawDataUnpackerComponent.h"
+#include "AliHLTTPCDigitPublisherComponent.h"
+#include "AliHLTTPCZeroSuppressionComponent.h"
 #include "AliHLTTPCDigitDumpComponent.h"
 #include "AliHLTTPCEsdWriterComponent.h"
 
@@ -61,12 +79,18 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
 {
   // see header file for class documentation
   if (handler) {
+
+    // This the tracking configuration for the full TPC
+    // - 216 clusterfinders (1 per partition)
+    // - 36 slice trackers
+    // - one global merger
+    // - the esd converter
+    // The ESD is shipped embedded into a TTree
     int iMinSlice=0; 
-    int iMaxSlice=1;
+    int iMaxSlice=35;
     int iMinPart=0;
-    int iMaxPart=1;
-    TString fileWriterInput;
-    TString esdWriterInput;
+    int iMaxPart=5;
+    TString mergerInput;
     for (int slice=iMinSlice; slice<=iMaxSlice; slice++) {
       TString trackerInput;
       for (int part=iMinPart; part<=iMaxPart; part++) {
@@ -86,21 +110,18 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
       TString tracker;
       // tracker finder components
       tracker.Form("TR_%02d", slice);
-      handler->CreateConfiguration(tracker.Data(), "TPCSliceTracker", trackerInput.Data(), "pp-run bfield 0.5");
+      handler->CreateConfiguration(tracker.Data(), "TPCSliceTracker", trackerInput.Data(), "-pp-run -bfield 0.5");
 
-      // input for the global file writer
-      if (fileWriterInput.Length()>0) fileWriterInput+=" ";
-      fileWriterInput+=trackerInput;
+      if (mergerInput.Length()>0) mergerInput+=" ";
+      mergerInput+=tracker;
 
-      // input for the esd writer
-      if (esdWriterInput.Length()>0) esdWriterInput+=" ";
-      esdWriterInput+=tracker;
     }
 
-    // the writer configuration
-    handler->CreateConfiguration("sink1", "FileWriter"   , fileWriterInput.Data(), "-specfmt -subdir=test_%d -blcknofmt=_0x%x -idfmt=_0x%08x");
-    // the esd writer configuration
-    handler->CreateConfiguration("esd-writer", "TPCEsdWriter"   , esdWriterInput.Data(), "-datafile AliESDs.root");
+    // GlobalMerger component
+    handler->CreateConfiguration("globalmerger","TPCGlobalMerger",mergerInput.Data(),"");
+
+    // the esd converter configuration
+    handler->CreateConfiguration("esd-converter", "TPCEsdConverter"   , "globalmerger", "-tree");
   }
   return 0;
 }
@@ -110,8 +131,7 @@ const char* AliHLTTPCAgent::GetReconstructionChains(AliRawReader* /*rawReader*/,
 {
   // see header file for class documentation
   return NULL;
-  //return "sink1";
-  //return "esd-writer";
+  //return "esd-converter";
 }
 
 const char* AliHLTTPCAgent::GetRequiredComponentLibraries() const
@@ -128,6 +148,27 @@ int AliHLTTPCAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
 {
   // see header file for class documentation
   if (!pHandler) return -EINVAL;
+
+  pHandler->AddComponent(new AliHLTTPCRunStatisticsProducerComponent);
+  pHandler->AddComponent(new AliHLTTPCEventStatisticsProducerComponent);
+  pHandler->AddComponent(new AliHLTTPCCalibCEComponent);
+  pHandler->AddComponent(new AliHLTTPCCalibPulserComponent);
+  pHandler->AddComponent(new AliHLTTPCCalibPedestalComponent);
+  pHandler->AddComponent(new AliHLTTPCCompModelInflaterComponent);
+  pHandler->AddComponent(new AliHLTTPCCompModelDeflaterComponent);
+  pHandler->AddComponent(new AliHLTTPCCompModelDeconverterComponent);
+  pHandler->AddComponent(new AliHLTTPCCompModelConverterComponent);
+  pHandler->AddComponent(new AliHLTTPCCompDumpComponent);
+  pHandler->AddComponent(new AliHLTTPCCATrackerComponent);
+  pHandler->AddComponent(new AliHLTTPCGlobalMergerComponent);
+  pHandler->AddComponent(new AliHLTTPCSliceTrackerComponent);
+  pHandler->AddComponent(new AliHLTTPCVertexFinderComponent);
+  pHandler->AddComponent(new AliHLTTPCClusterFinderComponent(AliHLTTPCClusterFinderComponent::kClusterFinderPacked));
+  pHandler->AddComponent(new AliHLTTPCClusterFinderComponent(AliHLTTPCClusterFinderComponent::kClusterFinderUnpacked));
+  pHandler->AddComponent(new AliHLTTPCClusterFinderComponent(AliHLTTPCClusterFinderComponent::kClusterFinderDecoder));
+  pHandler->AddComponent(new AliHLTTPCRawDataUnpackerComponent);
+  pHandler->AddComponent(new AliHLTTPCDigitPublisherComponent);
+  pHandler->AddComponent(new AliHLTTPCZeroSuppressionComponent);
   pHandler->AddComponent(new AliHLTTPCDigitDumpComponent);
   pHandler->AddComponent(new AliHLTTPCEsdWriterComponent::AliWriter);
   pHandler->AddComponent(new AliHLTTPCEsdWriterComponent::AliConverter);

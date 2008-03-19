@@ -38,9 +38,7 @@ using namespace std;
  * due to the Vestbo-compression 
  */
 
-// this is a global object used for automatic component registration, do not use this
-AliHLTTPCCompModelDeconverterComponent gAliHLTTPCCompClusterModelDeconverterComponent;
-
+/** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCCompModelDeconverterComponent)
     
 AliHLTTPCCompModelDeconverterComponent::AliHLTTPCCompModelDeconverterComponent():

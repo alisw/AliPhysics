@@ -36,9 +36,6 @@
 #include "AliHLTTPCDefinitions.h"
 #include "AliHLTTPCFileHandler.h"
 
-/** global instance for agent registration */
-AliHLTTPCDigitPublisherComponent gAliHLTTPCDigitPublisherComponent;
-
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCDigitPublisherComponent)
 

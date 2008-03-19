@@ -55,9 +55,6 @@ using namespace std;
 //#include <stdlib.h>
 //#include <cerrno>
 
-// this is a global object used for automatic component registration, do not use this
-AliHLTTPCSliceTrackerComponent gAliHLTTPCSliceTrackerComponent;
-
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCSliceTrackerComponent)
 

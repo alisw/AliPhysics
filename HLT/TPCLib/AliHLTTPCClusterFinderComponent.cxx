@@ -53,13 +53,6 @@ using namespace std;
 #include "TObjString.h"
 #include <sys/time.h>
 
-// this is a global object used for automatic component registration, do not use this
-// use fPackedSwitch = true for packed inputtype "gkDDLPackedRawDataType"
-// use fPackedSwitch = false for unpacked inputtype "gkUnpackedRawDataType"
-AliHLTTPCClusterFinderComponent gAliHLTTPCClusterFinderComponentPacked(AliHLTTPCClusterFinderComponent::kClusterFinderPacked);
-AliHLTTPCClusterFinderComponent gAliHLTTPCClusterFinderComponentUnpacked(AliHLTTPCClusterFinderComponent::kClusterFinderUnpacked);
-AliHLTTPCClusterFinderComponent gAliHLTTPCClusterFinderComponentDecoder(AliHLTTPCClusterFinderComponent::kClusterFinderDecoder);
-
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCClusterFinderComponent)
 

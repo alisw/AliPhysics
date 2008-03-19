@@ -30,9 +30,7 @@ using namespace std;
 #include <stdlib.h>
 #include <errno.h>
 
-// this is a global object used for automatic component registration, do not use this
-AliHLTTPCCompModelDeflaterComponent gAliHLTTPCCompClusterModelDeflaterComponent;
-
+/** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCCompModelDeflaterComponent);
     
 AliHLTTPCCompModelDeflaterComponent::AliHLTTPCCompModelDeflaterComponent():
