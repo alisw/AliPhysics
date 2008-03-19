@@ -24,7 +24,10 @@ TString ClassName() { return "rawqa" ; }
 //________________________________qa______________________________________
 void rawqa(const Int_t runNumber, Int_t maxFiles = 10, const char* year = "08") 
 {	
-	const char * kDefaultOCDBStorage = Form("alien://folder=/alice/data/20%s/LHC%sa/OCDB/", year, year) ; 
+	char kDefaultOCDBStorage[120] ; 
+	sprintf(kDefaultOCDBStorage, "alien://folder=/alice/data/20%s/LHC%sa/OCDB/", year, year) ; 
+	AliQA::SetQARefStorage(Form("%s%s/", AliQA::GetQARefDefaultStorage(), year)) ;  
+	AliQA::SetQARefDataDirName("Data") ; //Data, Pedestals, BlackEvent, ..... 
 	
 	UInt_t maxEvents = 99999 ;
 	if ( maxFiles < 0 ) {
@@ -70,17 +73,15 @@ void rawqa(const Int_t runNumber, Int_t maxFiles = 10, const char* year = "08")
 	if (local) 
 		in.open("tempo.txt", ifstream::in) ; 
 
-	AliCDBManager* man = AliCDBManager::Instance();
-	man->SetDefaultStorage(kDefaultOCDBStorage) ;  
-	AliQA::SetQARefStorage(Form("%s%s/", AliQA::GetQARefDefaultStorage(), year)) ;  
-	man->SetSpecificStorage("*", AliQA::GetQARefStorage());
 	AliQADataMakerSteer qas ; 
 	TString detectors  = ""; 
 	TString detectorsW = ""; 
 	UShort_t file = 0 ; 
 	UShort_t filesProcessed = 0 ; 
 	UShort_t eventsProcessed = 0 ; 
+	AliCDBManager* man = AliCDBManager::Instance();
 	for ( file = 0 ; file < maxFiles ; file++) {
+		man->SetDefaultStorage(kDefaultOCDBStorage) ;  
 		if ( qas.GetCurrentEvent() >= maxEvents) 
 			break ;
 
@@ -149,10 +150,14 @@ void rawqa(const Int_t runNumber, Int_t maxFiles = 10, const char* year = "08")
 	printf("     number of files/events processed    : %d/%d\n", filesProcessed, eventsProcessed) ; 
 	TFile * qaResult = TFile::Open(AliQA::GetQAResultFileName()) ; 
 	if ( qaResult ) {
-		AliQA * qa = dynamic_cast<AliQA *>(qaResult->Get("QA")) ; 
-		for (Int_t index = 0 ; index < AliQA::kNDET ; index++)
-			if (detectorsW.Contains(AliQA::GetDetName(AliQA::DETECTORINDEX(index)))) 
-				qa->ShowStatus(AliQA::DETECTORINDEX(index)) ;
+		AliQA * qa = dynamic_cast<AliQA *>(qaResult->Get(AliQA::GetQAName())) ; 
+		if ( qa) {
+			for (Int_t index = 0 ; index < AliQA::kNDET ; index++)
+				if (detectorsW.Contains(AliQA::GetDetName(AliQA::DETECTORINDEX_t(index)))) 
+					qa->ShowStatus(AliQA::DETECTORINDEX_t(index)) ;
+		} else {
+			AliError(Form("%s not found in %s !", AliQA::GetQAName(), AliQA::GetQAResultFileName())) ; 
+		}
 	} else {
 		AliError(Form("%s has not been produced !", AliQA::GetQAResultFileName())) ; 
 	}
