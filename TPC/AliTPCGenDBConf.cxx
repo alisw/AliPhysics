@@ -47,7 +47,7 @@ AliTPCGenDBConf::~AliTPCGenDBConf(){
 
 }
 //______________________________________________________________________________________________
-AliTPCGenDBConf& AliTPCGenDBConf::operator= (const AliTPCGenDBConf& org )
+AliTPCGenDBConf& AliTPCGenDBConf::operator= (const AliTPCGenDBConf& /*org*/ )
 {
  //
  // assignment operator

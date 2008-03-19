@@ -681,7 +681,7 @@ void AliTPCCalROC::GetNeighbourhood(TArrayI* &rowArray, TArrayI* &padArray, Int_
       pmax = pmax - pmin;
       pmin = 0;
     }
-    if (pmax >= GetNPads(r)) {
+    if (pmax >= (Int_t)GetNPads(r)) {
       pmin = pmin - (pmax - GetNPads(r)+1);
       pmax = GetNPads(r) - 1;
       if (pmin  < 0 ) pmin = 0; // if the window is bigger than the ROC

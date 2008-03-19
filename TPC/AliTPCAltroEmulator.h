@@ -130,5 +130,6 @@ public:
 	int Multiply36(int P, int N);
 	long long Mask(long long in, int left, int right);
 	long long Maskandshift(long long in, int left, int right);
+  ClassDef(AliTPCAltroEmulator,0)
 };
 #endif

@@ -192,7 +192,7 @@ void AliTPCTransform::Local2RotatedGlobal(Int_t sector, Double_t *x) const {
     AliFatal("Parameters missing");
   }
   Int_t row=TMath::Nint(x[0]);
-  Int_t pad=TMath::Nint(x[1]);
+  //  Int_t pad=TMath::Nint(x[1]);
   //
   const Int_t kNIS=param->GetNInnerSector(), kNOS=param->GetNOuterSector();
   Double_t sign = 1.;

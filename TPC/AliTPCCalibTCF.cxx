@@ -358,7 +358,7 @@ void AliTPCCalibTCF::AnalyzeRootFile(const char *nameFileIn, Int_t minNumPulse) 
   Int_t nHist = fileIn.GetNkeys(); 
   Int_t iHist = 0;  // counter for print of analysis-status
   
-  while (key = (TKey *) next()) { // loop over histograms
+  while ((key = (TKey *) next())) { // loop over histograms
   
     printf("Analyze histogramm %d out of %d\n",++iHist,nHist);
     hisIn = (TH1F*)fileIn.Get(key->GetName()); // copy object to memory

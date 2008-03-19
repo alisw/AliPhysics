@@ -39,6 +39,9 @@
  *	@param Channel an <tt> short* </tt> Pointer to a 1d short Array with the input Data
  */
 
+
+ClassImp(AliTPCAltroEmulator)
+
 AliTPCAltroEmulator::AliTPCAltroEmulator(int timebins, short* Channel) : 
   TNamed(),
   ftimebins(timebins),

@@ -439,9 +439,8 @@ Int_t AliTPCLaserTracks::FindMirror(Char_t *file, Double_t x, Double_t y, Double
 	    id = ltp->GetId();
 	}
     }
-
-    return id;
     delete f;
+    return id;
 }
 
 //_______________________________________________________________________

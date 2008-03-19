@@ -29,21 +29,56 @@
 
 ClassImp(AliTPCcalibTracksCuts)
 
+
+AliTPCcalibTracksCuts::AliTPCcalibTracksCuts():
+  TNamed("calibTracksCuts", "calibTracksCuts"),
+  fMinClusters(0),            // number of clusters
+  fMinRatio(0),               // kMinRratio = 0.4
+  fMax1pt(0),                 // kMax1pt = 0.5
+  fEdgeYXCutNoise(0),         // kEdgeYXCutNoise = 0.13
+  fEdgeThetaCutNoise(0),      // kEdgeThetaCutNoise = 0.018
+  fOutputFileName()          // filename of outputfile ('Output.root')
+{
+   // 
+   // default constructor
+   // 
+}
+
+
 AliTPCcalibTracksCuts::AliTPCcalibTracksCuts(Int_t minClusters, Float_t minRatio, Float_t max1pt,
-   Float_t edgeXZCutNoise, Float_t edgeThetaCutNoise, char* outputFileName):
-      TNamed("calibTracksCuts", "calibTracksCuts") {
+					     Float_t edgeXZCutNoise, Float_t edgeThetaCutNoise, char* outputFileName):
+      TNamed("calibTracksCuts", "calibTracksCuts"),
+      fMinClusters(minClusters),            // number of clusters
+      fMinRatio(minRatio),                  // kMinRratio = 0.4
+      fMax1pt(max1pt),                      // kMax1pt = 0.5
+      fEdgeYXCutNoise(edgeXZCutNoise),      // kEdgeYXCutNoise = 0.13
+      fEdgeThetaCutNoise(edgeXZCutNoise),   // kEdgeThetaCutNoise = 0.018
+      fOutputFileName()                    // filename of outputfile ('Output.root')
+{
    //
    // Constructor for AliTPCcalibTracksCuts
    // specify the cuts to be set on the processed tracks
    // default cuts are for comics
    //
-   fMinClusters = minClusters;
-   fMinRatio = minRatio;
-   fMax1pt = max1pt;
-   fEdgeYXCutNoise = edgeXZCutNoise;
-   fEdgeThetaCutNoise = edgeThetaCutNoise;
-   fOutputFileName = new TObjString(outputFileName);
+   fOutputFileName = outputFileName;
 }
+
+AliTPCcalibTracksCuts::AliTPCcalibTracksCuts(AliTPCcalibTracksCuts *cuts):
+  TNamed(cuts->GetName(), cuts->GetTitle()),
+  fMinClusters(cuts->GetMinClusters()),             // number of clusters
+  fMinRatio(cuts->GetMinRatio()),                   // kMinRratio = 0.4
+  fMax1pt( cuts->GetMax1pt()),                      // kMax1pt = 0.5
+  fEdgeYXCutNoise(cuts->GetEdgeYXCutNoise()),       // kEdgeYXCutNoise = 0.13
+  fEdgeThetaCutNoise( cuts->GetEdgeThetaCutNoise()),   // kEdgeThetaCutNoise = 0.018
+  fOutputFileName(0)                                // filename of outputfile ('Output.root')
+{
+  // 
+  // copy constructor
+  // 
+  fOutputFileName = cuts->GetOutputFileName();
+}
+
+
 
 AliTPCcalibTracksCuts::~AliTPCcalibTracksCuts(){
   //
@@ -53,29 +88,7 @@ AliTPCcalibTracksCuts::~AliTPCcalibTracksCuts(){
 }
 
 
-AliTPCcalibTracksCuts::AliTPCcalibTracksCuts(AliTPCcalibTracksCuts *cuts){
-   // 
-   // copy constructor
-   // 
-   fMinClusters = cuts->GetMinClusters();
-   fMinRatio = cuts->GetMinRatio();
-   fMax1pt = cuts->GetMax1pt();
-   fEdgeYXCutNoise = cuts->GetEdgeYXCutNoise();
-   fEdgeThetaCutNoise = cuts->GetEdgeThetaCutNoise();
-   fOutputFileName = new TObjString(cuts->GetOutputFileName());
-}
 
-AliTPCcalibTracksCuts::AliTPCcalibTracksCuts(){
-   // 
-   // default constructor
-   // 
-   fMinClusters = 0;
-   fMinRatio = 0;
-   fMax1pt = 0;
-   fEdgeYXCutNoise = 0;
-   fEdgeThetaCutNoise = 0;
-   fOutputFileName = new TObjString("");
-}
 
 void AliTPCcalibTracksCuts::AddCuts(TChain * chain, char* ctype, char* outputFileName){
    // 
@@ -133,7 +146,7 @@ void AliTPCcalibTracksCuts::AddCuts(TChain * chain, Int_t minClusters, Float_t m
       minClusters, minRatio, max1pt, edgeXZCutNoise, edgeThetaCutNoise);
 }
 
-void AliTPCcalibTracksCuts::Print(Option_t* option) {
+void AliTPCcalibTracksCuts::Print(Option_t* option) const  {
   //
   // Print the cut contents
   //
@@ -144,5 +157,5 @@ void AliTPCcalibTracksCuts::Print(Option_t* option) {
    cout << "fMax1pt: " << fMax1pt << endl;
    cout << "fEdgeYXCutNoise: " << fEdgeYXCutNoise << endl;
    cout << "fEdgeThetaCutNoise: " << fEdgeThetaCutNoise << endl;
-   cout << "fOutputFileName: " << fOutputFileName->String().Data() << endl;
+   cout << "fOutputFileName: " << fOutputFileName.GetName() << endl;
 }  // Prints out the specified cuts

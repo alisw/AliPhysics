@@ -38,14 +38,14 @@ public:
    void SetMax1pt(Float_t max1pt){fMax1pt = max1pt;}
    void SetEdgeXYCutNoise(Float_t edgeCutNoise){fEdgeYXCutNoise = edgeCutNoise;}
    void SetEdgeThetaCutNoise(Float_t edgeCutNoise){fEdgeThetaCutNoise = edgeCutNoise;}
-   void SetOuputFileNmae(char *fileName) {fOutputFileName = new TObjString(fileName);}
+   void SetOuputFileNmae(char *fileName) {fOutputFileName = fileName;}
    Int_t   GetMinClusters() const {return fMinClusters;}
    Float_t GetMinRatio() const {return fMinRatio;}
    Float_t GetMax1pt() const {return fMax1pt;}
    Float_t GetEdgeYXCutNoise() const {return fEdgeYXCutNoise;}
    Float_t GetEdgeThetaCutNoise() const {return fEdgeThetaCutNoise;}
-   const char* GetOutputFileName() {return fOutputFileName->String().Data();}
-   virtual void Print(Option_t* option = "");
+   const char* GetOutputFileName() {return fOutputFileName.String().Data();}
+   virtual void Print(Option_t* option = "") const;
    
 private:
    Int_t   fMinClusters;         // number of clusters
@@ -53,7 +53,7 @@ private:
    Float_t fMax1pt;              // kMax1pt = 0.5
    Float_t fEdgeYXCutNoise;      // kEdgeYXCutNoise = 0.13
    Float_t fEdgeThetaCutNoise;   // kEdgeThetaCutNoise = 0.018
-   TObjString *fOutputFileName;  // filename of outputfile ('Output.root')
+   TObjString fOutputFileName;  // filename of outputfile ('Output.root')
 
 protected:         
    ClassDef(AliTPCcalibTracksCuts,1)
