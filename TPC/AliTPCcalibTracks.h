@@ -143,25 +143,6 @@ private:
    TLinearFitter *fFitterParY;    //! 
    TLinearFitter *fFitterParZ;    //!
    
-/* 
-   // Threads-stuff:  
-   static Int_t fgLoopCounter;   //! only for MakeResPlotsQTreeThread, display status   
-   static TMutex *fgWriteMutex;  //!
-   static TMutex *fgFitResMutex; //!
-   static TMutex *fgFitRmsMutex; //!
-   struct TthreadParameterStruct {
-      Int_t logLevel;
-      Int_t minEntries;
-      Int_t dim;
-      Int_t pad;
-      TH3F *(*resArray)[2][3][11];
-      TH3F *(*rmsArray)[2][3][11];
-      TString *fileName;
-      TTreeSRedirector *fTreeResol;
-   };   
-   
-*/
-
 };
 
 #endif
