@@ -6068,7 +6068,7 @@ void AliITSvPPRasymmFMD::SetDefaults(){
 	(AliITSCalibrationSDD*)fDetTypeSim->GetCalibrationModel(
 	    GetITSgeom()->GetStartSDD());
     const char *kopt=rsp->GetZeroSuppOption();
-    if((!strstr(kopt,"2D")) && (!strstr(kopt,"1D")) || strstr(kData1,"real") ){
+    if((!strstr(kopt,"ZS")) || strstr(kData1,"real") ){
 	fDetTypeSim->SetDigitClassName(kSDD,"AliITSdigit");
     } else fDetTypeSim->SetDigitClassName(kSDD,"AliITSdigitSDD");
     // SSD  Layer 5

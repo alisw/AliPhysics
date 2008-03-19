@@ -88,7 +88,7 @@ void AliITSClusterFinderSDD::SetCutAmplitude(Int_t mod,Double_t nsigma){
     fCutAmplitude.Set(nanodes);
     for(Int_t ian=0;ian<nanodes;ian++){
       noiseAfterEl = ((AliITSCalibrationSDD*)GetResp(mod))->GetNoiseAfterElectronics(ian);
-      if((strstr(option,"1D")) || (strstr(option,"2D"))){ 
+      if(strstr(option,"ZS")){ 
 	fCutAmplitude[ian] = (Int_t)(nsigma*noiseAfterEl);
       }
       else{
@@ -196,7 +196,7 @@ void AliITSClusterFinderSDD::Find1DClusters(){
 		    		   
 		    for(its=tstart; its<=tstop; its++) {
                         fadc=(float)Map()->GetSignal(idx,its);
-			if(!((strstr(option,"1D")) || (strstr(option,"2D")))){
+			if(!(strstr(option,"ZS"))){
 			  Double_t baseline=GetResp(fModule)->GetBaseline(idx);
 			  if(fadc>baseline) fadc -= baseline;
 			  else fadc = 0.;
@@ -297,7 +297,7 @@ void AliITSClusterFinderSDD::Find1DClustersE(){
                         nTsteps = 0;
                     } // end if on...
                     nTsteps++ ;
-		    if(!((strstr(option,"1D")) || (strstr(option,"2D")))){
+		    if(!(strstr(option,"ZS"))){
 		      Double_t baseline=GetResp(fModule)->GetBaseline(idx);
 		      if( fadc > baseline ) fadc -= baseline;
 		      else fadc=0.;
@@ -737,7 +737,7 @@ void AliITSClusterFinderSDD::ResolveClusters(){
         for( Int_t ianode=astart; ianode<=astop; ianode++ ){
             for( Int_t itime=tstart; itime<=tstop; itime++ ){
                 Double_t fadc = Map()->GetSignal( ianode, itime );	       
-		if(!((strstr(option,"1D")) || (strstr(option,"2D")))){
+		if(!(strstr(option,"ZS"))){
 		  Double_t baseline=GetResp(fModule)->GetBaseline(ianode);
 		  if( fadc > baseline ) fadc -= (Double_t)baseline;
 		  else fadc = 0.;

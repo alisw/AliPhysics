@@ -77,21 +77,23 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(TClonesArray *digits) {
   Int_t i, ndigits=digits->GetEntriesFast();
   for (i=0; i<ndigits; i++) {
      d=(AliITSdigitSDD*)digits->UncheckedAt(i);
-     Int_t y=d->GetCoord2()+1;   //y
-     Int_t z=d->GetCoord1()+1;   //z
-     Float_t gain=cal->GetChannelGain(d->GetCoord1());
+     Int_t ian=d->GetCoord1();
+     Int_t itb=d->GetCoord2();
+     Int_t iSide=0;
+     if (ian >= nAnodes) iSide=1;    
+     Float_t gain=cal->GetChannelGain(ian);
      Float_t charge=d->GetSignal();
-
-     if(!((strstr(option,"1D")) || (strstr(option,"2D")))){
-       Float_t baseline = cal->GetBaseline(d->GetCoord1());
-       if(charge>baseline) charge-=baseline;
-       else charge=0;
-     }
+     if(strstr(option,"ZS")) charge+=(Float_t)cal->GetZSLowThreshold(iSide);
+     Float_t baseline = cal->GetBaseline(ian);
+     if(charge>baseline) charge-=baseline;
+     else charge=0;
 
      if(gain>0.){ // Bad channels have gain=0.
        charge/=gain;
-       if(charge<cal->GetThresholdAnode(d->GetCoord1())) continue;
+       if(charge<cal->GetThresholdAnode(ian)) continue;
        Int_t q=(Int_t)(charge+0.5);
+       Int_t y=itb+1;   
+       Int_t z=ian+1;   
        if (z <= nAnodes){
 	 bins[0][y*nzBins+z].SetQ(q);
 	 bins[0][y*nzBins+z].SetMask(1);
@@ -326,11 +328,10 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(AliITSRawStream* input,
       Float_t charge=input->GetSignal();
       Int_t chan=input->GetCoord1()+nAnodes*iSide;
       Float_t gain=cal->GetChannelGain(chan);
-      if(!((strstr(option,"1D")) || (strstr(option,"2D")))){
-	Float_t baseline = cal->GetBaseline(chan);
-	if(charge>baseline) charge-=baseline;
-	else charge=0;
-      }
+      if(strstr(option,"ZS")) charge+=(Float_t)cal->GetZSLowThreshold(iSide);
+      Float_t baseline = cal->GetBaseline(chan);
+      if(charge>baseline) charge-=baseline;
+      else charge=0;
       if(gain>0.){ // Bad channels have gain=0
 	charge/=gain;
 	if(charge>=cal->GetThresholdAnode(chan)) {

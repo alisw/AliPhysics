@@ -422,7 +422,7 @@ void AliITSvBeamTestITS04::SetDefaults()
       SetSegmentationModel(kSDD,seg1);
       const char *kData1=(fDetTypeSim->GetCalibrationModel(kSDD))->DataType();
       const char *kopt=resp1->GetZeroSuppOption();
-      if((!strstr(kopt,"2D")) && (!strstr(kopt,"1D")) || strstr(kData1,"real") ){
+      if((!strstr(kopt,"ZS")) || strstr(kData1,"real") ){
 	fDetTypeSim->SetDigitClassName(kSDD,"AliITSdigit");
 	} else fDetTypeSim->SetDigitClassName(kSDD,"AliITSdigitSDD");
     }

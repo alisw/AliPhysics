@@ -29,10 +29,9 @@
 //////////////////////////////////////////////////////
 
 const Float_t AliITSCalibrationSDD::fgkTemperatureDefault = 296.;
-const Float_t AliITSCalibrationSDD::fgkNoiseDefault = 10.;
+const Float_t AliITSCalibrationSDD::fgkNoiseDefault = 2.38;
 const Float_t AliITSCalibrationSDD::fgkGainDefault = 1.;
 const Float_t AliITSCalibrationSDD::fgkBaselineDefault = 20.;
-const Float_t AliITSCalibrationSDD::fgkMinValDefault  = 4;
 //______________________________________________________________________
 ClassImp(AliITSCalibrationSDD)
 
@@ -40,7 +39,6 @@ AliITSCalibrationSDD::AliITSCalibrationSDD():
 AliITSCalibration(),
 fDeadChips(0),
 fDeadChannels(0),
-fMinVal(fgkMinValDefault),
 fIsBad(kFALSE),
 fBadChannels(),
 fUseACorrMap(0),
@@ -62,12 +60,13 @@ fDrSpeed1(0)
     SetNoiseAfterElectronics(ian);
   }
   for(Int_t iw=0;iw<fgkWings;iw++){
+    SetZSLowThreshold(iw);
+    SetZSHighThreshold(iw);
     for(Int_t icp=0;icp<fgkChips;icp++){
       Int_t chipindex=iw*fgkChips+icp;
       fIsChipBad[chipindex]=kFALSE;
     }
   }
-  SetThresholds(fgkMinValDefault,0.);
   SetTemperature(fgkTemperatureDefault);
   SetUseCorrectionMaps(kTRUE,kTRUE);
   SetDataType();
@@ -77,7 +76,6 @@ AliITSCalibrationSDD::AliITSCalibrationSDD(const char *dataType):
 AliITSCalibration(),
 fDeadChips(0),
 fDeadChannels(0),
-fMinVal(fgkMinValDefault),
 fIsBad(kFALSE),
 fBadChannels(),
 fUseACorrMap(0),
@@ -99,14 +97,14 @@ fDrSpeed1(0)
     SetNoiseAfterElectronics(ian);
   }  
   for(Int_t iw=0;iw<fgkWings;iw++){
+    SetZSLowThreshold(iw);
+    SetZSHighThreshold(iw);
     for(Int_t icp=0;icp<fgkChips;icp++){
       Int_t chipindex=iw*fgkChips+icp;
       fIsChipBad[chipindex]=kFALSE;
     }
   }
 
-
-  SetThresholds(fgkMinValDefault,0.);
   SetTemperature(fgkTemperatureDefault);
   SetUseCorrectionMaps(kTRUE,kTRUE);
   SetDataType(dataType);
@@ -124,17 +122,12 @@ AliITSCalibrationSDD::~AliITSCalibrationSDD(){
 }
 
 //______________________________________________________________________
-void AliITSCalibrationSDD::GiveCompressParam(Int_t  cp[8],Int_t ian) const {
+void AliITSCalibrationSDD::GiveCompressParam(Int_t  cp[4]) const {
   // give compression param
-
-  cp[0]=(Int_t) fBaseline[ian];
-  cp[1]=(Int_t) fBaseline[ian];
-  cp[2]=(Int_t)(2.*fNoiseAfterEl[ian] + 0.5);
-  cp[3]=(Int_t)(2.*fNoiseAfterEl[ian] + 0.5);
-  cp[4]=0;
-  cp[5]=0;
-  cp[6]=0;
-  cp[7]=0;
+  cp[0]=fZSTH[0];
+  cp[1]=fZSTL[0];
+  cp[2]=fZSTH[1];
+  cp[3]=fZSTL[1];
 }
 //_____________________________________________________________________
 void AliITSCalibrationSDD::SetBadChannel(Int_t i,Int_t anode){
@@ -191,7 +184,6 @@ void AliITSCalibrationSDD::Print(){
   cout << "Baseline (ADC units): " << fBaseline[0] << endl;
   cout << "Noise after electronics (ADC units): " << fNoiseAfterEl[0] << endl;
   cout << "Temperature: " << Temperature() << " K " << endl;
-  cout << "Min. Value: " << fMinVal << endl;
   PrintGains();
 
 }

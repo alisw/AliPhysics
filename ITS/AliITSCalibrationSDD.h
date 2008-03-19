@@ -37,12 +37,16 @@ class AliITSCalibrationSDD : public AliITSCalibration {
     virtual Float_t GetNoise(Int_t anode) const {return fNoise[anode];}
     virtual void SetNoise(Int_t anode, Double_t noise) {fNoise[anode]=noise;}
 
-    virtual void   SetThresholds(Double_t  mv, Double_t /* b */){
-       // Min value used in 2D - could be used as a threshold setting
-	fMinVal = mv;}
-    virtual void   Thresholds(Double_t &  mv, Double_t & /* b */) const 
-      {mv = fMinVal;}
-    virtual void  GiveCompressParam(Int_t *x,Int_t ian) const;
+    virtual void   SetThresholds(Double_t  /* mv */, Double_t /* b */) {
+      NotImplemented("SetThresholds");}
+    virtual void   Thresholds(Double_t &  /* mv */, Double_t & /* b */) const {
+      NotImplemented("Thresholds");}
+    virtual void  GiveCompressParam(Int_t *x) const;
+
+    void SetZSLowThreshold(Int_t iWing, Int_t thr=25){fZSTL[iWing]=thr;}
+    void SetZSHighThreshold(Int_t iWing, Int_t thr=29){fZSTH[iWing]=thr;}
+    Int_t GetZSLowThreshold(Int_t iWing) const {return fZSTL[iWing];}
+    Int_t GetZSHighThreshold(Int_t iWing) const {return fZSTH[iWing];}
 
     void  SetNoiseAfterElectronics(Int_t anode,Double_t n=2.38){
 	// Noise after electronics (ADC units)
@@ -184,7 +188,6 @@ class AliITSCalibrationSDD : public AliITSCalibration {
     static const Float_t fgkTemperatureDefault; // default for fT (Kelvin)
     static const Float_t fgkNoiseDefault; // default for fNoise
     static const Float_t fgkBaselineDefault; // default for fBaseline
-    static const Float_t fgkMinValDefault; // default for fMinVal
     static const Float_t fgkGainDefault; //default for gain
 
     Int_t fDeadChips;                     // Number of dead chips
@@ -193,7 +196,9 @@ class AliITSCalibrationSDD : public AliITSCalibration {
     Float_t fNoise[fgkWings*fgkChips*fgkChannels];          // Noise array
     Float_t fBaseline[fgkWings*fgkChips*fgkChannels];       // Baseline array
     Float_t fNoiseAfterEl[fgkWings*fgkChips*fgkChannels];   // Noise after electronics
-    Float_t fMinVal;        // Min value used in 2D zero-suppression algo
+
+    Int_t   fZSTL[2];     //  Low threshold in 2D zero-suppression (2 hybrids)
+    Int_t   fZSTH[2];     // High threshold in 2D zero-suppression (2 hybrids)
 
     Bool_t   fIsBad;                         // module is dead or alive ?
     Bool_t   fIsChipBad[fgkWings*fgkChips];  // chip is dead or alive ?
@@ -215,7 +220,7 @@ class AliITSCalibrationSDD : public AliITSCalibration {
     AliITSCalibrationSDD& operator=(const AliITSCalibrationSDD & /* source */); // ass. op.
 
 
-    ClassDef(AliITSCalibrationSDD,10) // SDD response 
+    ClassDef(AliITSCalibrationSDD,11) // SDD response 
     
     };
 #endif

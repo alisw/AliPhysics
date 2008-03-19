@@ -408,10 +408,10 @@ void AliITSDetTypeSim::SetDefaults(){
 		    GetITSgeom()->GetStartSDD());
 	    const char *kopt = ((AliITSresponseSDD*)rsp->GetResponse())->
 		ZeroSuppOption();
-	    if((!strstr(kopt,"2D"))&&(!strstr(kopt,"1D"))) {
-		SetDigitClassName(idet,"AliITSdigit");
+	    if(!strstr(kopt,"ZS")) {
+	      SetDigitClassName(idet,"AliITSdigit");
 	    }else {
-		SetDigitClassName(idet,"AliITSdigitSDD");
+	      SetDigitClassName(idet,"AliITSdigitSDD");
 	    } // end if
 	} // end if idet==1
 	//SSD

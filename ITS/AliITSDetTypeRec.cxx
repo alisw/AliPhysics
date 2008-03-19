@@ -356,7 +356,7 @@ void AliITSDetTypeRec::SetDefaults(){
       seg = new AliITSsegmentationSDD();
       SetSegmentationModel(dettype,seg);
       const char *kopt = ((AliITSresponseSDD*)res->GetResponse())->ZeroSuppOption();
-      if((!strstr(kopt,"2D"))&&(!strstr(kopt,"1D"))) SetDigitClassName(dettype,"AliITSdigit");
+      if(!strstr(kopt,"ZS")) SetDigitClassName(dettype,"AliITSdigit");
       else SetDigitClassName(dettype,"AliITSdigitSDD");
       SetClusterClassName(dettype,"AliITSRawClusterSDD");
 

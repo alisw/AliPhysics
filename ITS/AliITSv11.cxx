@@ -447,7 +447,7 @@ void AliITSv11::Init(){
 //     const char *kData1=(fDetTypeSim->GetCalibrationModel(GetITSgeom()->GetStartSDD()))->DataType();
 //     AliITSCalibrationSDD* rsp = (AliITSCalibrationSDD*)fDetTypeSim->GetCalibrationModel(GetITSgeom()->GetStartSDD());
 //     const char *kopt=rsp->GetZeroSuppOption();
-//     if((!strstr(kopt,"2D")) && (!strstr(kopt,"1D")) || strstr(kData1,"real") ){
+//     if((!strstr(kopt,"ZS")) || strstr(kData1,"real") ){
 // 	fDetTypeSim->SetDigitClassName(kSDD,"AliITSdigit");
 //     } else fDetTypeSim->SetDigitClassName(kSDD,"AliITSdigitSDD");
 
@@ -537,7 +537,7 @@ void AliITSv11::SetDefaults(){
     const char *kData1=(fDetTypeSim->GetCalibrationModel(GetITSgeom()->GetStartSDD()))->DataType();
     AliITSCalibrationSDD* rsp = (AliITSCalibrationSDD*)fDetTypeSim->GetCalibrationModel(GetITSgeom()->GetStartSDD());
     const char *kopt=rsp->GetZeroSuppOption();
-    if((!strstr(kopt,"2D")) && (!strstr(kopt,"1D")) || strstr(kData1,"real") ){
+    if((!strstr(kopt,"ZS")) || strstr(kData1,"real") ){
 	fDetTypeSim->SetDigitClassName(kSDD,"AliITSdigit");
     } else fDetTypeSim->SetDigitClassName(kSDD,"AliITSdigitSDD");
 
