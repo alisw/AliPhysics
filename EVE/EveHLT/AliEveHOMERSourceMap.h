@@ -23,15 +23,16 @@ protected:
   {
     virtual ~iterator_imp_base() {}
 
-    virtual const AliEveHOMERSource::SourceId&    id()    = 0;
+    virtual const AliEveHOMERSource::SourceId&    id()    const = 0;
+    virtual const AliEveHOMERSource::SourceState& state() const = 0;
     virtual       AliEveHOMERSource::SourceState& state() = 0;
 
-    virtual iterator_imp_base* clone() = 0;
+    virtual iterator_imp_base* clone() const = 0;
 
     virtual iterator_imp_base& operator++() = 0;
-    virtual bool operator!=(const iterator_imp_base& o) = 0;
+    virtual bool operator!=(const iterator_imp_base& o) const = 0;
 
-    virtual TString description() = 0;
+    virtual TString description() const = 0;
   };
 
 public:
@@ -106,19 +107,20 @@ protected:
     iterator_imp(Map_i mi) : Map_i(mi) {}
     virtual ~iterator_imp() {}
 
-    virtual const AliEveHOMERSource::SourceId&    id()    { return Map_i::operator*().first; }
+    virtual const AliEveHOMERSource::SourceId&    id()    const { return Map_i::operator*().first; }
+    virtual const AliEveHOMERSource::SourceState& state() const { return Map_i::operator*().second; }
     virtual       AliEveHOMERSource::SourceState& state() { return Map_i::operator*().second; }
 
-    virtual iterator_imp* clone()
+    virtual iterator_imp* clone() const
     { return new iterator_imp(*this); }
 
     virtual iterator_imp& operator++()
     { Map_i::operator++(); return *this; }
 
-    virtual bool operator!=(const iterator_imp_base& o)
-    { return Map_i::operator!=(dynamic_cast<const Map_i&>(o)); }
+    virtual bool operator!=(const iterator_imp_base& rhs) const
+    { const Map_i &lhs = *this; return lhs != dynamic_cast<const Map_i&>(rhs); }
 
-    virtual TString description();
+    virtual TString description() const;
   };
 
   void insert(AliEveHOMERSource::SourceId& sid, AliEveHOMERSource::SourceState& sst, Bool_t def_state);
@@ -155,19 +157,20 @@ protected:
     iterator_imp(Map_i mi) : Map_i(mi) {}
     virtual ~iterator_imp() {}
 
-    virtual const AliEveHOMERSource::SourceId&    id()    { return Map_i::operator*().first; }
+    virtual const AliEveHOMERSource::SourceId&    id()    const { return Map_i::operator*().first; }
+    virtual const AliEveHOMERSource::SourceState& state() const { return Map_i::operator*().second; }
     virtual       AliEveHOMERSource::SourceState& state() { return Map_i::operator*().second; }
 
-    virtual iterator_imp* clone()
+    virtual iterator_imp* clone() const
     { return new iterator_imp(*this); }
 
     virtual iterator_imp& operator++()
     { Map_i::operator++(); return *this; }
 
-    virtual bool operator!=(const iterator_imp_base& o)
-    { return Map_i::operator!=(dynamic_cast<const Map_i&>(o)); }
+    virtual bool operator!=(const iterator_imp_base& rhs) const
+    { const Map_i &lhs = *this; return lhs != dynamic_cast<const Map_i&>(rhs); }
 
-    virtual TString description();
+    virtual TString description() const;
   };
 
   void insert(AliEveHOMERSource::SourceId& sid, AliEveHOMERSource::SourceState& sst, Bool_t def_state);

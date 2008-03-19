@@ -26,12 +26,13 @@ private:
 public:
   struct SourceId
   {
-    SourceId(): fDet(), fSDet(), fSSDet(), fType() {}
     TString fDet, fSDet, fSSDet, fType;
+
+    SourceId(): fDet(), fSDet(), fSSDet(), fType() {}
 
     struct CmpByDet
     {
-      bool operator()(const SourceId& s1, const SourceId& s2)
+      bool operator()(const SourceId& s1, const SourceId& s2) const
       {
 	Int_t r;
 	if ((r = s1.fDet  .CompareTo(s2.fDet)  )) return r < 0;
@@ -44,7 +45,7 @@ public:
 
     struct CmpByType
     {
-      bool operator()(const SourceId& s1, const SourceId& s2)
+      bool operator()(const SourceId& s1, const SourceId& s2) const
       {
 	Int_t r;
 	if ((r = s1.fType .CompareTo(s2.fType) )) return r < 0;

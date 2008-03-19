@@ -66,7 +66,7 @@ AliEveHOMERSourceMapByDet::AliEveHOMERSourceMapByDet(ESourceGrouping_e grouping)
   fMap()
 {}
 
-TString AliEveHOMERSourceMapByDet::iterator_imp::description()
+TString AliEveHOMERSourceMapByDet::iterator_imp::description() const
 {
   const AliEveHOMERSource::SourceId& sid = id();
 
@@ -124,7 +124,7 @@ AliEveHOMERSourceMapByType::AliEveHOMERSourceMapByType(ESourceGrouping_e groupin
   fMap()
 {}
 
-TString AliEveHOMERSourceMapByType::iterator_imp::description()
+TString AliEveHOMERSourceMapByType::iterator_imp::description() const
 {
   const AliEveHOMERSource::SourceId& sid = id();
 
