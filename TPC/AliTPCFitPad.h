@@ -19,8 +19,6 @@ public:
    AliTPCFitPad(const AliTPCFitPad& obj) : AliTPCCalPadRegion(obj), fNdim(obj.fNdim), fFormula(obj.fFormula), fOpt(obj.fOpt) { }
    AliTPCFitPad(Int_t ndim, const char* formula, Option_t* opt = "D");
    AliTPCFitPad& operator=(const AliTPCFitPad& rhs);
-   //AliTPCFitPad(const char *name, const char *title) : AliTPCCalPadRegion(name, title) { }
-   //AliTPCFitPad(const TString &name, const TString &title) : AliTPCCalPadRegion(name, title) { }
    virtual ~AliTPCFitPad();
 
    void           Add(AliTPCFitPad* fit);

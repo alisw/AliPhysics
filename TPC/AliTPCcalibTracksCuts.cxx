@@ -52,7 +52,7 @@ AliTPCcalibTracksCuts::AliTPCcalibTracksCuts(Int_t minClusters, Float_t minRatio
       fMinRatio(minRatio),                  // kMinRratio = 0.4
       fMax1pt(max1pt),                      // kMax1pt = 0.5
       fEdgeYXCutNoise(edgeXZCutNoise),      // kEdgeYXCutNoise = 0.13
-      fEdgeThetaCutNoise(edgeXZCutNoise),   // kEdgeThetaCutNoise = 0.018
+      fEdgeThetaCutNoise(edgeThetaCutNoise),   // kEdgeThetaCutNoise = 0.018
       fOutputFileName()                    // filename of outputfile ('Output.root')
 {
    //

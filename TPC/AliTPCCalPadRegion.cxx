@@ -58,7 +58,8 @@ AliTPCCalPadRegion::AliTPCCalPadRegion(const char *name, const char *title) :
 }
 
 AliTPCCalPadRegion::AliTPCCalPadRegion(const AliTPCCalPadRegion& obj) :
-   TNamed(obj)
+  TNamed(obj),
+  fObjects(0)
 {
    //
    // Copy constructor.
