@@ -22,6 +22,8 @@ class AliTPCClusterParam : public TObject {
  public:
   static AliTPCClusterParam* Instance();
   AliTPCClusterParam();
+  AliTPCClusterParam(const AliTPCClusterParam& param);
+  AliTPCClusterParam & operator=(const AliTPCClusterParam&);
   virtual           ~AliTPCClusterParam();
   virtual void	Print(Option_t* option = "") const;
   void SetInstance(AliTPCClusterParam*param){fgInstance = param;}

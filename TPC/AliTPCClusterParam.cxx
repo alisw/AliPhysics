@@ -133,12 +133,38 @@ AliTPCClusterParam* AliTPCClusterParam::Instance()
 
 AliTPCClusterParam::AliTPCClusterParam():
   TObject(),
+  fRatio(0),
   fQNorm(0) 
 {
   //
   // Default constructor
   //
 }
+
+AliTPCClusterParam::AliTPCClusterParam(const AliTPCClusterParam& param):
+  TObject(param),
+  fRatio(0),
+  fQNorm(0)
+{
+  //
+  // copy constructor
+  //
+  memcpy(this, &param,sizeof(AliTPCClusterParam));
+  if (param.fQNorm) fQNorm = (TObjArray*) param.fQNorm->Clone();
+}
+
+AliTPCClusterParam & AliTPCClusterParam::operator=(const AliTPCClusterParam& param){
+  //
+  // Assignment operator
+  //
+  if (this != &param) {
+    memcpy(this, &param,sizeof(AliTPCClusterParam));
+    if (param.fQNorm) fQNorm = (TObjArray*) param.fQNorm->Clone();
+  }
+  return *this;
+}
+
+
 AliTPCClusterParam::~AliTPCClusterParam(){
   //
   // destructor
