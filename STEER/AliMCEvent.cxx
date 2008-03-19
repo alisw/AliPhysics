@@ -177,7 +177,8 @@ void AliMCEvent::FinishEvent()
     fStack->Reset(0);
     fMCParticles->Delete();
     fMCParticleMap->Clear();
-    fTRBuffer->Delete();
+    if (fTRBuffer)
+      fTRBuffer->Delete();
     fTrackReferences->Delete();
 }
 
