@@ -163,6 +163,10 @@ void Config()
 
   // libraries required by geant321
 #if defined(__CINT__)
+  gSystem->Load("liblhapdf");
+  gSystem->Load("libEGPythia6");
+  gSystem->Load("libpythia6");
+  gSystem->Load("libAliPythia6");
   gSystem->Load("libgeant321");
 #endif
 
