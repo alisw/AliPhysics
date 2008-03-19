@@ -188,7 +188,7 @@ Float_t AliPHOSPreprocessor::HG2LG(Int_t mod, Int_t X, Int_t Z, TFile* f)
   gaus1->SetLineColor(kBlue);
   h1->Fit(gaus1,"LERQ+");
 
-  Log(Form("\t%s: %d entries, mean=%.3f, peak=%.3f, rms= %.3f. HG/LG = %.3f\n",
+  AliInfo(Form("%s: %d entries, mean=%.3f, peak=%.3f, rms= %.3f. HG/LG = %.3f\n",
 	   h1->GetTitle(),h1->GetEntries(),h1->GetMean(),max,h1->GetRMS(),
 	   gaus1->GetParameter("Mean"))); 
 
