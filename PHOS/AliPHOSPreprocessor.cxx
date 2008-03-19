@@ -361,13 +361,15 @@ Bool_t AliPHOSPreprocessor::CalibrateEmc()
 	  hRef->SetBins(1000,0.,1000.); // to cut off saturation peak at 1023
 	  // Check if the reference histogram has too little statistics
 	  if(hRef->GetEntries()>2) ok=kTRUE;
-	  if(!ok && counter > nkeys){
-	    Log("No histogram with enough statistics for reference.");
-	    return 1;
-	  }
 	}
       }
+      
       counter++;
+      
+      if(!ok && counter > nkeys){
+	Log("No histogram with enough statistics for reference. Exit.");
+	return 1;
+      }
     }
     
     Log(Form("reference histogram %s, %.1f entries, mean=%.3f, rms=%.3f.",
