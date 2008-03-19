@@ -71,7 +71,9 @@ using namespace std;
 
 ClassImp(AliTPCcalibAlignment)
 
-AliTPCcalibAlignment::AliTPCcalibAlignment() {
+AliTPCcalibAlignment::AliTPCcalibAlignment():
+  fDebugStream(0)
+{
   //
   // Constructor
   //

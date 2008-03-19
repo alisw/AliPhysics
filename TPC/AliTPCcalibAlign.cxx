@@ -62,7 +62,7 @@ void AliTPCcalibAlign::Process(const AliExternalTrackParam &tp1,
   //
   Double_t t1[5],t2[5];
   Double_t &x1=t1[0], &y1=t1[1], &z1=t1[2], &dydx1=t1[3], &dzdx1=t1[4];
-  Double_t &x2=t2[0], &y2=t2[1], &z2=t2[2], &dydx2=t2[3], &dzdx2=t2[4];
+  Double_t /*&x2=t2[0],*/ &y2=t2[1], &z2=t2[2], &dydx2=t2[3]/*, &dzdx2=t2[4]*/;
   x1   =tp1.GetX();
   y1   =tp1.GetY();
   z1   =tp1.GetZ();
@@ -98,7 +98,7 @@ void AliTPCcalibAlign::Process12(Double_t *t1,
   //       a10  a11 a12  a13 ==> p[3]   p[4]  p[5]  p[10]
   //       a20  a21 a22  a23     p[6]   p[7]  p[8]  p[11] 
   Double_t &x1=t1[0], &y1=t1[1], &z1=t1[2], &dydx1=t1[3], &dzdx1=t1[4];
-  Double_t &x2=t2[0], &y2=t2[1], &z2=t2[2], &dydx2=t2[3], &dzdx2=t2[4];
+  Double_t /*&x2=t2[0],*/ &y2=t2[1], &z2=t2[2], &dydx2=t2[3], &dzdx2=t2[4];
 
   // TODO:
   Double_t sy    = 1.;
@@ -175,7 +175,7 @@ void AliTPCcalibAlign::Process9(Double_t *t1,
   //       a10  a11 a12  a13 ==> p[3]   p[4]  p[5]  p[10]
   //       a20  a21 a22  a23     p[6]   p[7]  p[8]  p[11] 
   Double_t &x1=t1[0], &y1=t1[1], &z1=t1[2], &dydx1=t1[3], &dzdx1=t1[4];
-  Double_t &x2=t2[0], &y2=t2[1], &z2=t2[2], &dydx2=t2[3], &dzdx2=t2[4];
+  Double_t /*&x2=t2[0],*/ &y2=t2[1], &z2=t2[2], &dydx2=t2[3], &dzdx2=t2[4];
 
   // TODO:
   Double_t sy    = 1.;
@@ -252,7 +252,7 @@ void AliTPCcalibAlign::Process6(Double_t *t1,
   //       a10  1   0    a13 ==> p[0]   x     x     p[4]
   //       a20  a21 1    a23     p[1]   p[2]  x     p[5] 
   Double_t &x1=t1[0], &y1=t1[1], &z1=t1[2], &dydx1=t1[3], &dzdx1=t1[4];
-  Double_t &x2=t2[0], &y2=t2[1], &z2=t2[2], &dydx2=t2[3], &dzdx2=t2[4];
+  Double_t /*&x2=t2[0],*/ &y2=t2[1], &z2=t2[2], &dydx2=t2[3], &dzdx2=t2[4];
 
   // TODO:
   Double_t sy    = 1.;
