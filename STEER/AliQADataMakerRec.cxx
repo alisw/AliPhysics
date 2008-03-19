@@ -85,13 +85,12 @@ void AliQADataMakerRec::EndOfCycle(AliQA::TASKINDEX task)
 	else if ( task == AliQA::kESDS )
 		list = fESDsQAList ; 
 	
-	EndOfDetectorCycle(task, list) ; 
+	EndOfDetectorCycle(task, list) ;
 	TDirectory * subDir = fDetectorDir->GetDirectory(AliQA::GetTaskName(task)) ; 
 	if ( subDir ) {
 		subDir->cd() ; 
 		list->Write() ;
 	}
-	fOutput->Close() ; 
 }
  
 //____________________________________________________________________________
