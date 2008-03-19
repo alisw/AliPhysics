@@ -658,7 +658,8 @@ void AliTPCCalibPedestal::Analyse()
     for (UInt_t iChannel=0; iChannel<nChannels; ++iChannel){
       Int_t offset = (nbinsAdc+2)*(iChannel+1)+1;
       //calculate mean and sigma using a gaus fit
-      Double_t ret = AliMathBase::FitGaus(array_hP+offset,nbinsAdc,fAdcMin,fAdcMax,&param,&dummy);
+      //Double_t ret =
+      AliMathBase::FitGaus(array_hP+offset,nbinsAdc,fAdcMin,fAdcMax,&param,&dummy);
       // if the fitting failed set noise and pedestal to 0
       // is now done in AliMathBase::FitGaus !
 //       if ( ret == -4 ) {
