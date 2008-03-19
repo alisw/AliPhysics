@@ -664,7 +664,7 @@ TString AliQADataMakerSteer::Run(const char * detectors, const AliQA::TASKINDEX 
 	fDetectors  = detectors ; 
 	fDetectorsW = detectors ; 
 
-	char * mode ; 
+	TString mode ; 
 	if ( (taskIndex == AliQA::kHITS) || (taskIndex == AliQA::kSDIGITS) || (taskIndex == AliQA::kDIGITS) ) 
 		mode = "sim" ; 
 	else if ( (taskIndex == AliQA::kRAWS) || (taskIndex == AliQA::kRECPOINTS) || (taskIndex == AliQA::kESDS) )
@@ -674,10 +674,10 @@ TString AliQADataMakerSteer::Run(const char * detectors, const AliQA::TASKINDEX 
 		return "" ;
 	}
 
-	if ( !Init(taskIndex, mode, fileName) ) 
+	if ( !Init(taskIndex, mode.Data(), fileName) ) 
 		return kFALSE ; 
 
-	DoIt(taskIndex, mode) ;
+	DoIt(taskIndex, mode.Data()) ;
 	
 	return fDetectorsW ;
 
