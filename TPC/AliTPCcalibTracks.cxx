@@ -102,50 +102,82 @@ ClassImp(AliTPCcalibTracks)
 
 
 AliTPCcalibTracks::AliTPCcalibTracks():
-  TNamed()  
+  TNamed(),
+  fClusterParam(0),
+  fDebugStream(0),
+  fROC(0),
+  fArrayAmpRow(0),
+  fArrayAmp(0), 
+  fArrayQDY(0), 
+  fArrayQDZ(0), 
+  fArrayQRMSY(0),
+  fArrayQRMSZ(0),
+  fArrayChargeVsDriftlength(0),
+  fcalPadRegionChargeVsDriftlength(0),
+  fDeltaY(0),
+  fDeltaZ(0),
+  fResolY(0),
+  fResolZ(0),
+  fRMSY(0),
+  fRMSZ(0),
+  fCuts(0),
+  fHclus(0),
+  fRejectedTracksHisto(0),
+  fHclusterPerPadrow(0),
+  fHclusterPerPadrowRaw(0),
+  fClusterCutHisto(0),
+  fCalPadClusterPerPad(0),
+  fCalPadClusterPerPadRaw(0),
+  fDebugLevel(0),       
+  fFitterLinY1(0),   //!
+  fFitterLinZ1(0),   //! 
+  fFitterLinY2(0),   //! 
+  fFitterLinZ2(0),   //!
+  fFitterParY(0),    //! 
+  fFitterParZ(0)    //!  
 { 
    // 
    // AliTPCcalibTracks default constructor
    //    
-   if (fDebugLevel > 0) cout << "AliTPCcalibTracks' default constructor called" << endl;
-   fClusterParam = 0;
-//    fDebugStream  = 0;
-   fROC          = 0;
-   fArrayAmpRow  = 0;
-   fArrayAmp     = 0; 
-   fArrayQDY     = 0; 
-   fArrayQDZ     = 0; 
-   fArrayQRMSY   = 0;
-   fArrayQRMSZ   = 0;
-   fArrayChargeVsDriftlength = 0;
-   fcalPadRegionChargeVsDriftlength = 0;
-   fDeltaY       = 0;
-   fDeltaZ       = 0;
-   fResolY       = 0;
-   fResolZ       = 0;
-   fRMSY         = 0;
-   fRMSZ         = 0;
-   fCuts         = 0;
-   fHclus        = 0;
-   fRejectedTracksHisto    = 0;
-   fHclusterPerPadrow      = 0;
-   fClusterCutHisto        = 0;
-   fHclusterPerPadrowRaw   = 0;
-   fCalPadClusterPerPadRaw = 0;
-   fCalPadClusterPerPad    = 0;
-   fDebugLevel   = 0;       
-   fFitterLinY1=0;   //!
-   fFitterLinZ1=0;   //! 
-   fFitterLinY2=0;   //! 
-   fFitterLinZ2=0;   //!
-   fFitterParY=0;    //! 
-   fFitterParZ=0;    //!
-  
-//    cout << "end of default constructor" << endl; // TO BE REMOVED
+   if (fDebugLevel > 0) cout << "AliTPCcalibTracks' default constructor called" << endl;  
 }   
 
 
-AliTPCcalibTracks::AliTPCcalibTracks(AliTPCcalibTracks* ct){
+AliTPCcalibTracks::AliTPCcalibTracks(AliTPCcalibTracks* ct):
+TNamed(),
+  fClusterParam(0),
+  fDebugStream(0),
+  fROC(0),
+  fArrayAmpRow(0),
+  fArrayAmp(0), 
+  fArrayQDY(0), 
+  fArrayQDZ(0), 
+  fArrayQRMSY(0),
+  fArrayQRMSZ(0),
+  fArrayChargeVsDriftlength(0),
+  fcalPadRegionChargeVsDriftlength(0),
+  fDeltaY(0),
+  fDeltaZ(0),
+  fResolY(0),
+  fResolZ(0),
+  fRMSY(0),
+  fRMSZ(0),
+  fCuts(0),
+  fHclus(0),
+  fRejectedTracksHisto(0),
+  fHclusterPerPadrow(0),
+  fHclusterPerPadrowRaw(0),
+  fClusterCutHisto(0),
+  fCalPadClusterPerPad(0),
+  fCalPadClusterPerPadRaw(0),
+  fDebugLevel(0),       
+  fFitterLinY1(0),   //!
+  fFitterLinZ1(0),   //! 
+  fFitterLinY2(0),   //! 
+  fFitterLinZ2(0),   //!
+  fFitterParY(0),    //! 
+  fFitterParZ(0)    //!  
+{
    // 
    // AliTPCcalibTracks copy constructor
    // 
@@ -215,8 +247,40 @@ AliTPCcalibTracks::AliTPCcalibTracks(AliTPCcalibTracks* ct){
 
 
 AliTPCcalibTracks::AliTPCcalibTracks(const Text_t *name, const Text_t *title, AliTPCClusterParam *clusterParam,  AliTPCcalibTracksCuts* cuts, Int_t logLevel) : 
-   TNamed(name, title),
-   fHclus(0) {
+  TNamed(name, title),
+  fClusterParam(0),
+  fDebugStream(0),
+  fROC(0),
+  fArrayAmpRow(0),
+  fArrayAmp(0), 
+  fArrayQDY(0), 
+  fArrayQDZ(0), 
+  fArrayQRMSY(0),
+  fArrayQRMSZ(0),
+  fArrayChargeVsDriftlength(0),
+  fcalPadRegionChargeVsDriftlength(0),
+  fDeltaY(0),
+  fDeltaZ(0),
+  fResolY(0),
+  fResolZ(0),
+  fRMSY(0),
+  fRMSZ(0),
+  fCuts(0),
+  fHclus(0),
+  fRejectedTracksHisto(0),
+  fHclusterPerPadrow(0),
+  fHclusterPerPadrowRaw(0),
+  fClusterCutHisto(0),
+  fCalPadClusterPerPad(0),
+  fCalPadClusterPerPadRaw(0),
+  fDebugLevel(0),       
+  fFitterLinY1(0),   //!
+  fFitterLinZ1(0),   //! 
+  fFitterLinY2(0),   //! 
+  fFitterLinZ2(0),   //!
+  fFitterParY(0),    //! 
+  fFitterParZ(0)    //!  
+ {
    // 
    // AliTPCcalibTracks constructor
    // specify 'name' and 'title' of your object
@@ -2502,40 +2566,6 @@ Long64_t AliTPCcalibTracks::Merge(TCollection *collectionList) {
       if (fDebugLevel > 5) cout << "filling lists, object " << counter << " added." << endl;
    }
    
-//    // reset data members
-//    if (fDebugLevel > 1) cout << "histogram's reset-functins are called... " << endl;
-//    fDeltaY->Reset();
-//    fDeltaZ->Reset();
-//    fHclus->Reset();
-//    fClusterCutHisto->Reset();
-//    fRejectedTracksHisto->Reset();
-//    fHclusterPerPadrow->Reset();
-//    fHclusterPerPadrowRaw->Reset();
-//    for (Int_t i = 0; i < fArrayAmpRow->GetEntriesFast(); i++ ) 
-//       ((TProfile*)(fArrayAmpRow->At(i)))->Reset();
-//    for (Int_t i = 0; i < fArrayAmp->GetEntriesFast(); i++ ) 
-//       ((TProfile*)(fArrayAmp->At(i)))->Reset();
-//    for (Int_t i = 0; i < fArrayChargeVsDriftlength->GetEntriesFast(); i++)
-//       ((TProfile*)(fArrayChargeVsDriftlength->At(i)))->Reset();
-//    for (Int_t i = 0; i < fArrayQDY->GetEntriesFast(); i++)
-//       ((TH3F*)(fArrayQDY->At(i)))->Reset();
-//    for (Int_t i = 0; i < fArrayQDZ->GetEntriesFast(); i++)
-//       ((TH3F*)(fArrayQDZ->At(i)))->Reset();
-//    for (Int_t i = 0; i < fArrayQRMSY->GetEntriesFast(); i++)
-//       ((TH3F*)(fArrayQRMSY->At(i)))->Reset();
-//    for (Int_t i = 0; i < fArrayQRMSZ->GetEntriesFast(); i++)
-//       ((TH3F*)(fArrayQRMSZ->At(i)))->Reset();
-//    for (Int_t i = 0; i < fResolY->GetEntriesFast(); i++) {
-//       ((TH3F*)(fResolY->At(i)))->Reset();
-//       ((TH3F*)(fResolZ->At(i)))->Reset();
-//       ((TH3F*)(fRMSY->At(i)))->Reset();
-//       ((TH3F*)(fRMSZ->At(i)))->Reset();
-//    }
-//    for (UInt_t isec = 0; isec < 36; isec++){
-//       ((TProfile*)fcalPadRegionChargeVsDriftlength->GetObject(isec, 0))->Reset();
-//       ((TProfile*)fcalPadRegionChargeVsDriftlength->GetObject(isec, 1))->Reset();
-//       ((TProfile*)fcalPadRegionChargeVsDriftlength->GetObject(isec, 2))->Reset();
-//    } 
    
    // merge data members
    if (fDebugLevel > 0) cout << "histogram's merge-functins are called... " << endl; 

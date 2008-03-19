@@ -1184,7 +1184,7 @@ AliTPCCalibViewerGUI::AliTPCCalibViewerGUI(const AliTPCCalibViewerGUI &c)
 }
 
 
-AliTPCCalibViewerGUI & AliTPCCalibViewerGUI::operator =(const AliTPCCalibViewerGUI & param) {
+AliTPCCalibViewerGUI & AliTPCCalibViewerGUI::operator =(const AliTPCCalibViewerGUI & /*param*/) {
    //
    // dummy assignment operator
    //

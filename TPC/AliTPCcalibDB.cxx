@@ -378,7 +378,7 @@ void AliTPCcalibDB::CreateObjectList(const Char_t *filename, TObjArray *calibObj
    TIter nextLine(arrFileLine);
    
    TObjString *sObjLine=0x0;
-   while ( sObjLine = (TObjString*)nextLine() ){
+   while ( (sObjLine = (TObjString*)nextLine()) ){
       TString sLine(sObjLine->GetString());
       
       TObjArray *arrNextCol = sLine.Tokenize("\t");

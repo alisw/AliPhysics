@@ -490,7 +490,7 @@ void AliTPCCalibTCF::TestTCFonRootFile(const char *nameFileIn, const char *nameF
   Int_t iHist = 0;
   
   for(Int_t i=0;i<lowKey-1;i++){++iHist; key = (TKey *) next();}
-  while (key = (TKey *) next()) { // loop over saved histograms
+  while ((key = (TKey *) next())) { // loop over saved histograms
     
     //  loading pulse to memory;
     printf("validating pulse %d out of %d\n",++iHist,nHist);
