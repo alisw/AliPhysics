@@ -53,18 +53,24 @@ public:
 
     //
     AliTPCCalROC* GetCalRocT0  (Int_t sector, Bool_t force=kFALSE);  // get calibration object - sector
+    AliTPCCalROC* GetCalRocT0Err(Int_t sector, Bool_t force=kFALSE);  // get calibration object - sector
     AliTPCCalROC* GetCalRocQ   (Int_t sector, Bool_t force=kFALSE);  // get calibration object - sector
     AliTPCCalROC* GetCalRocRMS(Int_t sector, Bool_t force=kFALSE);  // get calibration object - sector
     AliTPCCalROC* GetCalRocOutliers(Int_t sector, Bool_t force=kFALSE);  // get calibration object - sector
 
-    const TObjArray* GetCalPadT0()  const { return &fCalRocArrayT0; }      // get calibration object
-    const TObjArray* GetCalPadQ()   const { return &fCalRocArrayQ;  }      // get calibration object
-    const TObjArray* GetCalPadRMS() const { return &fCalRocArrayRMS;}      // get calibration object
+    const TObjArray* GetCalPadT0()    const { return &fCalRocArrayT0; }      // get calibration object
+    const TObjArray* GetCalPadT0Err() const { return &fCalRocArrayT0Err; }      // get calibration object
+    const TObjArray* GetCalPadQ()     const { return &fCalRocArrayQ;  }      // get calibration object
+    const TObjArray* GetCalPadRMS()   const { return &fCalRocArrayRMS;}      // get calibration object
     const TObjArray* GetCalPadOutliers() const { return &fCalRocArrayOutliers;}      // get calibration object
 
     TH2S* GetHistoQ  (Int_t sector, Bool_t force=kFALSE);           // get refernce histogram
     TH2S* GetHistoT0 (Int_t sector, Bool_t force=kFALSE);           // get refernce histogram
     TH2S* GetHistoRMS(Int_t sector, Bool_t force=kFALSE);           // get refernce histogram
+
+    const Float_t GetMeanT0rms() {return fMeanT0rms;}
+    const Float_t GetMeanQrms() {return fMeanQrms;}
+    const Float_t GetMeanRMSrms() {return fMeanRMSrms;}
 
     TH1S* GetHistoTmean(Int_t sector, Bool_t force=kFALSE);           // get refernce histogram
 
@@ -139,6 +145,7 @@ private:
     AliTPCCalROC *fPadNoiseROC;       //! Pad noise Information for current ROC
 
     TObjArray fCalRocArrayT0;         //  Array of AliTPCCalROC class for Time0 calibration
+    TObjArray fCalRocArrayT0Err;      //  Array of AliTPCCalROC class for the error (rms) of Time0 calibration
     TObjArray fCalRocArrayQ;          //  Array of AliTPCCalROC class for Charge calibration
     TObjArray fCalRocArrayRMS;        //  Array of AliTPCCalROC class for signal width calibration
     TObjArray fCalRocArrayOutliers;   //  Array of AliTPCCalROC class for signal outliers
@@ -146,6 +153,10 @@ private:
     TObjArray fHistoQArray;           //  Calibration histograms for Charge distribution
     TObjArray fHistoT0Array;          //  Calibration histograms for Time0  distribution
     TObjArray fHistoRMSArray;         //  Calibration histograms for signal width distribution
+
+    Float_t   fMeanT0rms;             // mean of the rms of all pad T0  fits, used as error estimation of T0 results
+    Float_t   fMeanQrms;              // mean of the rms of all pad Q   fits, used as error estimation of Q results
+    Float_t   fMeanRMSrms;            // mean of the rms of all pad TMS fits, used as error estimation of RMS results
 
     TObjArray fHistoTmean;            //! Calibration histograms of the mean CE position for all sectors
 
@@ -155,6 +166,7 @@ private:
     TObjArray fQMeanArrayEvent;       //  Store mean arrival Charge for each sector event by event
     TVectorD  fVEventTime;            //  Timestamps of the events
     TVectorD  fVEventNumber;          //  Eventnumbers of the events
+//    TVectorD  fVTime0Side[2];         //  Mean Time0 for each side for all events
     Int_t     fNevents;               //  Event counter
     Double_t  fTimeStamp;             //! Timestamp of the current event
     Double_t  fEventId;               //! Event Id of the current event
@@ -166,19 +178,20 @@ private:
     TObjArray fPadRMSArrayEvent;      //! Signal width for the event, only needed for debugging streamer
     TObjArray fPadPedestalArrayEvent; //! Signal width for the event, only needed for debugging streamer
 
-    Int_t     fCurrentChannel;         //! current channel processed
-    Int_t     fCurrentSector;          //! current sector processed
-    Int_t     fCurrentRow;             //! current row processed
-    Float_t   fMaxPadSignal;           //! maximum bin of current pad
-    Int_t     fMaxTimeBin;             //! time bin with maximum value
-    TVectorF  fPadSignal;              //! signal of current Pad
-    Float_t   fPadPedestal;            //! Pedestal Value of current pad
-    Float_t   fPadNoise;               //! Noise Value of current pad
+    Int_t     fCurrentChannel;        //! current channel processed
+    Int_t     fCurrentSector;         //! current sector processed
+    Int_t     fCurrentRow;            //! current row processed
+    Float_t   fMaxPadSignal;          //! maximum bin of current pad
+    Int_t     fMaxTimeBin;            //! time bin with maximum value
+    TVectorF  fPadSignal;             //! signal of current Pad
+    Float_t   fPadPedestal;           //! Pedestal Value of current pad
+    Float_t   fPadNoise;              //! Noise Value of current pad
 
     TVectorD  fVTime0Offset;          //!  Time0 Offset for each sector;
     TVectorD  fVTime0OffsetCounter;   //!  Time0 Offset counter for each sector;
     TVectorD  fVMeanQ;                //!  Mean Q for each sector;
     TVectorD  fVMeanQCounter;         //!  Mean Q counter for each sector;
+
     //debugging
 //    Int_t fEvent;
     TTreeSRedirector *fDebugStreamer;  //! debug streamer
@@ -215,7 +228,7 @@ private:
     TVectorF* GetPadRMSEvent(Int_t sector, Bool_t force=kFALSE);
     TVectorF* GetPadPedestalEvent(Int_t sector, Bool_t force=kFALSE);
 
-    ClassDef(AliTPCCalibCE,3)  //Implementation of the TPC Central Electrode calibration
+    ClassDef(AliTPCCalibCE,5)  //Implementation of the TPC Central Electrode calibration
 
 };
 

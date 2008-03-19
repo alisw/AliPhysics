@@ -318,12 +318,16 @@ AliTPCCalibCE::AliTPCCalibCE() :
     fPedestalROC(0x0),
     fPadNoiseROC(0x0),
     fCalRocArrayT0(72),
+    fCalRocArrayT0Err(72),
     fCalRocArrayQ(72),
     fCalRocArrayRMS(72),
     fCalRocArrayOutliers(72),
     fHistoQArray(72),
     fHistoT0Array(72),
     fHistoRMSArray(72),
+    fMeanT0rms(0),
+    fMeanQrms(0),
+    fMeanRMSrms(0),
     fHistoTmean(72),
     fParamArrayEventPol1(72),
     fParamArrayEventPol2(72),
@@ -385,12 +389,16 @@ AliTPCCalibCE::AliTPCCalibCE(const AliTPCCalibCE &sig) :
     fPedestalROC(0x0),
     fPadNoiseROC(0x0),
     fCalRocArrayT0(72),
+    fCalRocArrayT0Err(72),
     fCalRocArrayQ(72),
     fCalRocArrayRMS(72),
     fCalRocArrayOutliers(72),
     fHistoQArray(72),
     fHistoT0Array(72),
     fHistoRMSArray(72),
+    fMeanT0rms(sig.fMeanT0rms),
+    fMeanQrms(sig.fMeanQrms),
+    fMeanRMSrms(sig.fMeanRMSrms),
     fHistoTmean(72),
     fParamArrayEventPol1(72),
     fParamArrayEventPol2(72),
@@ -523,6 +531,7 @@ AliTPCCalibCE::~AliTPCCalibCE()
     //
 
     fCalRocArrayT0.Delete();
+    fCalRocArrayT0Err.Delete();
     fCalRocArrayQ.Delete();
     fCalRocArrayRMS.Delete();
     fCalRocArrayOutliers.Delete();
@@ -1351,10 +1360,20 @@ AliTPCCalROC* AliTPCCalibCE::GetCalRoc(Int_t sector, TObjArray* arr, Bool_t forc
 AliTPCCalROC* AliTPCCalibCE::GetCalRocT0(Int_t sector, Bool_t force)
 {
     //
-    // return pointer to Carge ROC Calibration
+    // return pointer to Time 0 ROC Calibration
     // if force is true create a new histogram if it doesn't exist allready
     //
     TObjArray *arr = &fCalRocArrayT0;
+    return GetCalRoc(sector, arr, force);
+}
+//_____________________________________________________________________
+AliTPCCalROC* AliTPCCalibCE::GetCalRocT0Err(Int_t sector, Bool_t force)
+{
+    //
+    // return pointer to the error of Time 0 ROC Calibration
+    // if force is true create a new histogram if it doesn't exist allready
+    //
+    TObjArray *arr = &fCalRocArrayT0Err;
     return GetCalRoc(sector, arr, force);
 }
 //_____________________________________________________________________
@@ -1661,14 +1680,20 @@ void AliTPCCalibCE::Analyse()
     TVectorD paramRMS(3);
     TMatrixD dummy(3,3);
 
+    Float_t channelCounter=0;
+    fMeanT0rms=0;
+    fMeanQrms=0;
+    fMeanRMSrms=0;
+
     for (Int_t iSec=0; iSec<72; ++iSec){
 	TH2S *hT0 = GetHistoT0(iSec);
         if (!hT0 ) continue;
 
-	AliTPCCalROC *rocQ   = GetCalRocQ  (iSec,kTRUE);
-	AliTPCCalROC *rocT0  = GetCalRocT0 (iSec,kTRUE);
-	AliTPCCalROC *rocRMS = GetCalRocRMS(iSec,kTRUE);
-        AliTPCCalROC *rocOut = GetCalRocOutliers(iSec,kTRUE);
+	AliTPCCalROC *rocQ     = GetCalRocQ  (iSec,kTRUE);
+	AliTPCCalROC *rocT0    = GetCalRocT0 (iSec,kTRUE);
+	AliTPCCalROC *rocT0Err = GetCalRocT0Err (iSec,kTRUE);
+	AliTPCCalROC *rocRMS   = GetCalRocRMS(iSec,kTRUE);
+        AliTPCCalROC *rocOut   = GetCalRocOutliers(iSec,kTRUE);
 
 	TH2S *hQ   = GetHistoQ(iSec);
 	TH2S *hRMS = GetHistoRMS(iSec);
@@ -1691,18 +1716,22 @@ void AliTPCCalibCE::Analyse()
 	    Float_t cogTime0 = -1000;
 	    Float_t cogQ     = -1000;
 	    Float_t cogRMS   = -1000;
-            Float_t cogOut   = 0;
+	    Float_t cogOut   = 0;
+            Float_t rms      = 0;
+            Float_t rmsT0    = 0;
 
 
 	    Int_t offsetQ = (fNbinsQ+2)*(iChannel+1)+1;
 	    Int_t offsetT0 = (fNbinsT0+2)*(iChannel+1)+1;
 	    Int_t offsetRMS = (fNbinsRMS+2)*(iChannel+1)+1;
 
-	    cogQ     = AliMathBase::GetCOG(arrayhQ+offsetQ,fNbinsQ,fXminQ,fXmaxQ);
-	    cogTime0 = AliMathBase::GetCOG(arrayhT0+offsetT0,fNbinsT0,fXminT0,fXmaxT0);
-            cogRMS   = AliMathBase::GetCOG(arrayhRMS+offsetRMS,fNbinsRMS,fXminRMS,fXmaxRMS);
-
-
+	    cogQ     = AliMathBase::GetCOG(arrayhQ+offsetQ,fNbinsQ,fXminQ,fXmaxQ,&rms);
+            fMeanQrms+=rms;
+	    cogTime0 = AliMathBase::GetCOG(arrayhT0+offsetT0,fNbinsT0,fXminT0,fXmaxT0,&rmsT0);
+            fMeanT0rms+=rmsT0;
+            cogRMS   = AliMathBase::GetCOG(arrayhRMS+offsetRMS,fNbinsRMS,fXminRMS,fXmaxRMS,&rms);
+            fMeanRMSrms+=rms;
+            channelCounter++;
 
 	    /*
              //outlier specifications
@@ -1715,6 +1744,7 @@ void AliTPCCalibCE::Analyse()
 */
        	    rocQ->SetValue(iChannel, cogQ*cogQ);
 	    rocT0->SetValue(iChannel, cogTime0);
+	    rocT0Err->SetValue(iChannel, rmsT0);
 	    rocRMS->SetValue(iChannel, cogRMS);
 	    rocOut->SetValue(iChannel, cogOut);
 
@@ -1747,6 +1777,11 @@ void AliTPCCalibCE::Analyse()
 
 	}
 
+    }
+    if ( channelCounter>0 ){
+	fMeanT0rms/=channelCounter;
+	fMeanQrms/=channelCounter;
+	fMeanRMSrms/=channelCounter;
     }
     if ( fDebugStreamer ) fDebugStreamer->GetFile()->Write();
 //    delete fDebugStreamer;
