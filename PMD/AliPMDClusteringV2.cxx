@@ -219,21 +219,25 @@ void AliPMDClusteringV2::DoClust(Int_t idet, Int_t ismn,
 	 
 	  Int_t celldumY   = dummyXY%10000;
 	  Int_t celldumX   = dummyXY/10000;
-	  Float_t cellY    = (Float_t) (ktwobysqrt3*celldumY/10);
-	  Float_t cellX    = (Float_t) (celldumX/10 - (celldumY/2.)/10);
+	  //Float_t cellY    = (Float_t) (ktwobysqrt3*celldumY/10);
+	  //Float_t cellX    = (Float_t) (celldumX/10 - (celldumY/2.)/10);
+           
+          Float_t cellY    = (Float_t) celldumY/10;
+	  Float_t cellX    = (Float_t) celldumX/10;
+
 	  
 	  // 
 	  // Cell X centroid is back transformed
 	  //
 	  if (ismn < 12)
 	    {
-	      celldataX[ihit] = (Int_t) (cellX - (24-1) + cellY/2.);
+	      celldataX[ihit] = (Int_t) ((cellX - (24-1) + cellY/2.) + 0.5);
 	    }
 	  else if (ismn  >= 12 && ismn <= 23)
 	    {
-	      celldataX[ihit] = (Int_t) (cellX - (48-1) + cellY/2.);
+	      celldataX[ihit] = (Int_t) ((cellX - (48-1) + cellY/2.) + 0.5 );
 	    }	  
-	  celldataY[ihit] = (Int_t) cellY;
+	  celldataY[ihit] = (Int_t) (cellY + 0.5);
 	}
 
       pmdcl = new AliPMDcluster(idet, ismn, clusdata, celldataX, celldataY);
@@ -381,19 +385,37 @@ Int_t AliPMDClusteringV2::CrClust(Double_t ave, Double_t cutoff, Int_t nmx1,
   // Takes the big patch and does gaussian fitting and
   // finds out the more refined clusters
 
+  const Float_t ktwobysqrt3 = 1.1547;
   AliPMDcludata *pmdcludata = 0;
-  TArrayI testncl;
-  TArrayI testindex;
-  const Int_t kndim = 4500;
+
+
   Int_t    i, j, k, i1, i2, id, icl, itest, ihld;
   Int_t    ig, nsupcl, clno, clX,clY;
   Int_t    clxy[15];
-  Int_t    ncl[kndim], iord[kndim];
+
   Float_t  clusdata[6];
   Double_t x1, y1, z1, x2, y2, z2, rr;
-  Double_t x[kndim], y[kndim], z[kndim];
-  Double_t xc[kndim], yc[kndim], zc[kndim], cells[kndim];
-  Double_t rcl[kndim], rcs[kndim];
+
+  Int_t kndim = incr + 1;
+
+  TArrayI testncl;
+  TArrayI testindex;
+
+  Int_t    *ncl, *iord;
+
+  Double_t *x, *y, *z, *xc, *yc, *zc, *cells, *rcl, *rcs;
+
+  ncl   = new Int_t [kndim];
+  iord  = new Int_t [kndim];
+  x     = new Double_t [kndim];
+  y     = new Double_t [kndim];
+  z     = new Double_t [kndim];
+  xc    = new Double_t [kndim];
+  yc    = new Double_t [kndim];
+  zc    = new Double_t [kndim];
+  cells = new Double_t [kndim];
+  rcl   = new Double_t [kndim];
+  rcs   = new Double_t [kndim];
   
   for(Int_t kk = 0; kk < 15; kk++)
     {
@@ -407,11 +429,12 @@ Int_t AliPMDClusteringV2::CrClust(Double_t ave, Double_t cutoff, Int_t nmx1,
 
   clno   = -1;
   nsupcl = -1;
-  for(i = 0; i < 4500; i++)
+
+  for(i = 0; i < kndim; i++)
     {
       ncl[i] = -1;
     }
-  for(i = 0; i < incr; i++)
+  for(i = 0; i <= incr; i++)
     {
       if(fInfcl[0][i] != nsupcl)
 	{
@@ -431,7 +454,7 @@ Int_t AliPMDClusteringV2::CrClust(Double_t ave, Double_t cutoff, Int_t nmx1,
   
   id  = -1;
   icl = -1;
-  for(i = 0; i < nsupcl; i++)
+  for(i = 0; i <= nsupcl; i++)
     {
       if(ncl[i] == 0)
 	{
@@ -457,9 +480,18 @@ Int_t AliPMDClusteringV2::CrClust(Double_t ave, Double_t cutoff, Int_t nmx1,
 	  clusdata[5] = 0.0;
 	  
 	  //cell information
-	  clX = (Int_t) fCoord[0][i1][i2]*10;
-	  clY = (Int_t) fCoord[1][i1][i2]*10;
-	  clxy[0] = clX*10000 + clY;
+          //Float_t cellY    = (Float_t) (ktwobysqrt3*celldumY/10);
+	  //Float_t cellX    = (Float_t) (celldumX/10 - (celldumY/2.)/10);
+	  
+	  clY = (Int_t)((ktwobysqrt3*fCoord[1][i1][i2])*10);
+	  clX = (Int_t)((fCoord[0][i1][i2] - clY/20.)*10);
+	  clxy[0] = clX*10000 + clY ;
+
+	  //clX = (Int_t) fCoord[0][i1][i2]*10;
+	  //clY = (Int_t) fCoord[1][i1][i2]*10;
+	  //clxy[0] = clX*10000 + clY;
+
+
 	  for(Int_t icltr = 1; icltr < 15; icltr++)
 	    {
 	      clxy[icltr] = -1;
@@ -506,13 +538,21 @@ Int_t AliPMDClusteringV2::CrClust(Double_t ave, Double_t cutoff, Int_t nmx1,
 	  clusdata[4] = (TMath::Sqrt(z1*z2))/(z1+z2);
 	  clusdata[5] = 0.0;
 
-	  clX = (Int_t) x1*10;
-	  clY = (Int_t) y1*10;
-	  clxy[0] = clX*10000 + clY;
+          clY = (Int_t)((ktwobysqrt3*y1)*10);
+	  clX = (Int_t)((x1 - clY/20.)*10);
+	  clxy[0] = clX*10000 + clY ;
+
+	  //clX = (Int_t) x1*10;
+	  //clY = (Int_t) y1*10;
+	  //clxy[0] = clX*10000 + clY;
 	  
-	  clX = (Int_t) x2*10;
-	  clY = (Int_t) y2*10;
-	  clxy[1] = clX*10000 + clY;
+	  clY = (Int_t)((ktwobysqrt3*y2)*10);
+	  clX = (Int_t)((x2 - clY/20.)*10);
+	  clxy[1] = clX*10000 + clY ;
+
+	  //clX = (Int_t) x2*10;
+	  //clY = (Int_t) y2*10;
+	  //clxy[1] = clX*10000 + clY;
 	  
 	  for(Int_t icltr = 2; icltr < 15; icltr++)
 	    {
@@ -616,8 +656,8 @@ Int_t AliPMDClusteringV2::CrClust(Double_t ave, Double_t cutoff, Int_t nmx1,
 		zc[ig] = z[iord[j]];
 	      }
 	  }
-	ClustDetails(ncl[i], ig, x[0], y[0] ,z[0], xc[0], yc[0], zc[0],
-		     rcl[0], rcs[0], cells[0], testncl, testindex);
+	ClustDetails(ncl[i], ig, x, y ,z, xc, yc, zc, rcl, rcs, cells, 
+		     testncl, testindex);
 	
 	Int_t pp = 0;
 	for(j = 0; j <= ig; j++)
@@ -635,7 +675,8 @@ Int_t AliPMDClusteringV2::CrClust(Double_t ave, Double_t cutoff, Int_t nmx1,
 	    clusdata[5] = rcs[j];
 	    if(ig == 0)
 	      {
-		clusdata[3] = ncl[i];
+		clusdata[3] = ncl[i] + 1;//ajay
+		//clusdata[3] = ncl[i] ;
 	      }
 	    else
 	      {
@@ -648,9 +689,14 @@ Int_t AliPMDClusteringV2::CrClust(Double_t ave, Double_t cutoff, Int_t nmx1,
 		for(Int_t kk = 1; kk <= ncellcls; kk++)
 		  {
 		    Int_t ll =  testindex[pp];
-		    clX = (Int_t) x[ll]*10;
-		    clY = (Int_t) y[ll]*10;
-		    clxy[kk-1] = (Int_t) clX*10000 + clY ;
+                    clY = (Int_t)((ktwobysqrt3*y[ll])*10);
+	            clX = (Int_t)((x[ll] - clY/20.)*10);
+		    clxy[kk-1] = clX*10000 + clY ;
+		    
+
+		    //clX = (Int_t) x[ll]*10;
+		    //clY = (Int_t) y[ll]*10;
+		    //clxy[kk-1] = (Int_t) clX*10000 + clY ;
 		    pp++;
 		  }
 		for(Int_t icltr = ncellcls ; icltr < 15; icltr++)
@@ -665,62 +711,76 @@ Int_t AliPMDClusteringV2::CrClust(Double_t ave, Double_t cutoff, Int_t nmx1,
 	testindex.Set(0);
       }
     }
+  delete [] ncl;
+  delete [] iord;
+  delete [] x;
+  delete [] y;
+  delete [] z;
+  delete [] xc;
+  delete [] yc;
+  delete [] zc;
+  delete [] cells;
+  delete [] rcl;
+  delete [] rcs;
 }
 // ------------------------------------------------------------------------ //
-void AliPMDClusteringV2::ClustDetails(Int_t ncell, Int_t nclust, Double_t &x, 
-				      Double_t &y, Double_t &z, Double_t &xc,
-				      Double_t &yc, Double_t &zc,
-				      Double_t &rcl, Double_t &rcs, 
-				      Double_t &cells, TArrayI &testncl,
+void AliPMDClusteringV2::ClustDetails(Int_t ncell, Int_t nclust, Double_t x[], 
+				      Double_t y[], Double_t z[],Double_t xc[],
+				      Double_t yc[], Double_t zc[],
+				      Double_t rcl[], Double_t rcs[], 
+				      Double_t cells[], TArrayI &testncl,
 				      TArrayI &testindex)
 {
   // function begins
   //
 
-  const Int_t kndim1 = 2000;
-  const Int_t kndim2 = 10;
-  const Int_t kndim3 = 400;
+  Int_t kndim1 = ncell + 1;//ncell
+  Int_t kndim2 = 20;
+  Int_t kndim3 = nclust + 1;//nclust
   
   Int_t    i, j, k, i1, i2;
-  Int_t    cluster[kndim1][kndim2], cell[kndim1][kndim3];
-  
   Double_t x1, y1, x2, y2, rr, b, c, r1, r2;
   Double_t sumx, sumy, sumxy, sumxx, sum, sum1, sumyy;
-  Double_t xx[kndim1], yy[kndim1], zz[kndim1];
-  Double_t xxc[kndim1], yyc[kndim1],clustcell[kndim3][kndim1];
-  Double_t str[kndim1], str1[kndim1],xcl[kndim1], ycl[kndim1], cln[kndim1];
 
-  for(i = 0; i <= nclust; i++)
-    {
-      xxc[i]  = *(&xc+i); 
-      yyc[i]  = *(&yc+i); 
-      str[i]  = 0.; 
-      str1[i] = 0.;
-    }
-  for(i = 0; i <= ncell; i++)
-    {
-      xx[i] = *(&x+i); 
-      yy[i] = *(&y+i); 
-      zz[i] = *(&z+i);
-    }
+  Double_t  *str, *str1, *xcl, *ycl, *cln; 
+  Int_t    **cell;
+  Int_t    ** cluster;
+  Double_t **clustcell;
+  str  = new Double_t [kndim3];
+  str1 = new Double_t [kndim3];
+  xcl  = new Double_t [kndim3];
+  ycl  = new Double_t [kndim3];
+  cln  = new Double_t [kndim3];
 
-  // INITIALIZE 
-
+  clustcell = new Double_t *[kndim3];
+  cell      = new Int_t    *[kndim3];
+  cluster   = new Int_t    *[kndim1];
   for(i = 0; i < kndim1; i++)
     {
+      cluster[i] = new Int_t [kndim2];
+    }
+  
+  for(i = 0; i < kndim3; i++)
+    {
+      str[i]  = 0;
+      str1[i] = 0;
+      xcl[i]  = 0;
+      ycl[i]  = 0;
+      cln[i]  = 0;
+      
+      cell[i]    = new Int_t [kndim2];
+      clustcell[i] = new Double_t [kndim1];	  
+      for(j = 0; j < kndim1; j++)
+	{
+	  clustcell[i][j] = 0;
+	}
       for(j = 0; j < kndim2; j++)
 	{
 	  cluster[i][j] = 0;
-	  
-	}
-      for(j = 0; j < kndim3; j++)
-	{
-	  cell[i][j]      = 0;
-	  clustcell[j][i] = 0.;
+	  cell[i][j] = 0;
 	}
     }
-
-
+  
   if(nclust > 0)
     {
       // more than one cluster
@@ -732,14 +792,14 @@ void AliPMDClusteringV2::ClustDetails(Int_t ncell, Int_t nclust, Double_t &x,
       
       for (i = 0; i <= ncell; i++)
 	{
-	  x1            = xx[i];
-	  y1            = yy[i];
+	  x1            = x[i];
+	  y1            = y[i];
 	  cluster[i][0] = 0;
 	  // distance <= 1 cell unit
 	  for(j = 0; j <= nclust; j++)
 	    {
-	      x2 = xxc[j];
-	      y2 = yyc[j];
+	      x2 = xc[j];
+	      y2 = yc[j];
 	      rr = Distance(x1, y1, x2, y2);
 	      if(rr <= 1.)
 		{
@@ -753,8 +813,8 @@ void AliPMDClusteringV2::ClustDetails(Int_t ncell, Int_t nclust, Double_t &x,
 	    {
 	      for(j=0; j<=nclust; j++)
 		{
-		  x2 = xxc[j];
-		  y2 = yyc[j];
+		  x2 = xc[j];
+		  y2 = yc[j];
 		  rr = Distance(x1, y1, x2, y2);
 		  if(rr <= TMath::Sqrt(3.))
 		    {
@@ -769,8 +829,8 @@ void AliPMDClusteringV2::ClustDetails(Int_t ncell, Int_t nclust, Double_t &x,
 	    {
 	      for(j=0; j<=nclust; j++)
 		{
-		  x2 = xxc[j];
-		  y2 = yyc[j];
+		  x2 = xc[j];
+		  y2 = yc[j];
 		  rr = Distance(x1, y1, x2, y2);
 		  if(rr <= 2.)
 		    {
@@ -785,8 +845,8 @@ void AliPMDClusteringV2::ClustDetails(Int_t ncell, Int_t nclust, Double_t &x,
 	    {
 	      for(j = 0; j <= nclust; j++)
 		{
-		  x2 = xxc[j];
-		  y2 = yyc[j];
+		  x2 = xc[j];
+		  y2 = yc[j];
 		  rr = Distance(x1, y1, x2, y2);
 		  if(rr <= 2.7)
 		    {
@@ -807,7 +867,7 @@ void AliPMDClusteringV2::ClustDetails(Int_t ncell, Int_t nclust, Double_t &x,
 	      for(j = 1; j <= i1; j++)
 		{
 		  i2       = cluster[i][j];
-		  str[i2] += zz[i]/i1;
+		  str[i2] += z[i]/i1;
 		}
 	    }
 	}
@@ -828,8 +888,8 @@ void AliPMDClusteringV2::ClustDetails(Int_t ncell, Int_t nclust, Double_t &x,
 		  for(j = 1; j <= i1; j++)
 		    {
 		      i2               = cluster[i][j]; 
-		      str1[i2]        +=  zz[i]*str[i2]/sum;
-		      clustcell[i2][i] = zz[i]*str[i2]/sum;
+		      str1[i2]        +=  z[i]*str[i2]/sum;
+		      clustcell[i2][i] = z[i]*str[i2]/sum;
 		    }
 		}
 	    }
@@ -852,10 +912,10 @@ void AliPMDClusteringV2::ClustDetails(Int_t ncell, Int_t nclust, Double_t &x,
 	    {
 	      if(clustcell[i][j] != 0)
 		{
-		  sumx  +=  clustcell[i][j]*xx[j];
-		  sumy  +=  clustcell[i][j]*yy[j];
+		  sumx  +=  clustcell[i][j]*x[j];
+		  sumy  +=  clustcell[i][j]*y[j];
 		  sum   +=  clustcell[i][j];
-		  sum1  +=  clustcell[i][j]/zz[j];
+		  sum1  +=  clustcell[i][j]/z[j];
 		}
 	    }
 	  //** xcl and ycl are cluster centroid positions ( center of gravity )
@@ -868,9 +928,9 @@ void AliPMDClusteringV2::ClustDetails(Int_t ncell, Int_t nclust, Double_t &x,
 	  sumxy = 0.;
 	  for(j = 0; j <= ncell; j++)
 	    {
-	      sumxx += clustcell[i][j]*(xx[j]-xcl[i])*(xx[j]-xcl[i])/sum;
-	      sumyy += clustcell[i][j]*(yy[j]-ycl[i])*(yy[j]-ycl[i])/sum;
-	      sumxy += clustcell[i][j]*(xx[j]-xcl[i])*(yy[j]-ycl[i])/sum;
+	      sumxx += clustcell[i][j]*(x[j]-xcl[i])*(x[j]-xcl[i])/sum;
+	      sumyy += clustcell[i][j]*(y[j]-ycl[i])*(y[j]-ycl[i])/sum;
+	      sumxy += clustcell[i][j]*(x[j]-xcl[i])*(y[j]-ycl[i])/sum;
 	    }
 	  b = sumxx+sumyy;
 	  c = sumxx*sumyy-sumxy*sumxy;
@@ -878,12 +938,13 @@ void AliPMDClusteringV2::ClustDetails(Int_t ncell, Int_t nclust, Double_t &x,
 	  r1 = b/2.+TMath::Sqrt(b*b/4.-c);
 	  r2 = b/2.-TMath::Sqrt(b*b/4.-c);
 	  // final assignments to proper external variables
-	  *(&xc + i) = xcl[i];
-	  *(&yc + i) = ycl[i];
-	  *(&zc + i) = str[i];
-	  *(&cells + i) = cln[i];
-	  *(&rcl+i) = r1;
-	  *(&rcs+i) = r2;
+ 	  xc[i]    = xcl[i];
+	  yc[i]    = ycl[i];
+	  zc[i]    = str[i];
+	  cells[i] = cln[i];
+	  rcl[i]   = r1;
+	  rcs[i]   = r2;
+
 	}
       
       //To get the cell position in a cluster
@@ -920,7 +981,7 @@ void AliPMDClusteringV2::ClustDetails(Int_t ncell, Int_t nclust, Double_t &x,
 	}
       
     }
-  else
+  else if(nclust == 0)
     {
       sumx = 0.;
       sumy = 0.;
@@ -929,9 +990,9 @@ void AliPMDClusteringV2::ClustDetails(Int_t ncell, Int_t nclust, Double_t &x,
       i    = 0;
       for(j = 0; j <= ncell; j++)
 	{
-	  sumx += zz[j]*xx[j];
-	  sumy += zz[j]*yy[j];
-	  sum  += zz[j];
+	  sumx += z[j]*x[j];
+	  sumy += z[j]*y[j];
+	  sum  += z[j];
 	  sum1++;
 	}
       xcl[i] = sumx/sum;
@@ -942,9 +1003,9 @@ void AliPMDClusteringV2::ClustDetails(Int_t ncell, Int_t nclust, Double_t &x,
       sumxy  = 0.;
       for(j = 0; j <= ncell; j++)
 	{
-	  sumxx += clustcell[i][j]*(xx[j]-xcl[i])*(xx[j]-xcl[i])/sum;
-	  sumyy += clustcell[i][j]*(yy[j]-ycl[i])*(yy[j]-ycl[i])/sum;
-	  sumxy += clustcell[i][j]*(xx[j]-xcl[i])*(yy[j]-ycl[i])/sum;
+	  sumxx += clustcell[i][j]*(x[j]-xcl[i])*(x[j]-xcl[i])/sum;
+	  sumyy += clustcell[i][j]*(y[j]-ycl[i])*(y[j]-ycl[i])/sum;
+	  sumxy += clustcell[i][j]*(x[j]-xcl[i])*(y[j]-ycl[i])/sum;
 	}
       b  = sumxx+sumyy;
       c  = sumxx*sumyy-sumxy*sumxy;
@@ -953,11 +1014,13 @@ void AliPMDClusteringV2::ClustDetails(Int_t ncell, Int_t nclust, Double_t &x,
       
       // To get the cell position in a cluster
       testncl.Set(nclust+1);
-      testindex.Set(ncell);
-      cell[0][0] = ncell;
+      //testindex.Set(ncell);
+      testindex.Set(ncell+1);
+      cell[0][0] = ncell + 1;//ajay
+      //cell[0][0] = ncell;
       testncl[0] = cell[0][0];
       Int_t ll   = 0;
-      for(Int_t ii=1; ii<=ncell; ii++)
+      for(Int_t ii = 1; ii <= ncell; ii++)
 	{
 	  cell[0][ii]=ii;
 	  //clustcell[0][ii]=1.;
@@ -966,13 +1029,31 @@ void AliPMDClusteringV2::ClustDetails(Int_t ncell, Int_t nclust, Double_t &x,
 	  ll++;
 	}
       // final assignments
-      *(&xc + i)    = xcl[i];
-      *(&yc + i)    = ycl[i];
-      *(&zc + i)    = str[i];
-      *(&cells + i) = cln[i];
-      *(&rcl+i)     = r1;
-      *(&rcs+i)     = r2;
+      xc[i]    = xcl[i];
+      yc[i]    = ycl[i];
+      //zc[i]    = str[i];//ajay
+      zc[i]    = sum;
+      cells[i] = cln[i];
+      rcl[i]   = r1;
+      rcs[i]   = r2;
     }
+  for(i = 0; i < kndim3; i++)
+    {
+      delete [] clustcell[i];
+      delete [] cell[i];
+    }
+  delete [] clustcell;
+  delete [] cell;
+  for(i = 0; i <kndim1 ; i++)
+    {
+      delete [] cluster[i];
+    }
+  delete [] cluster;
+  delete [] str;
+  delete [] str1;
+  delete [] xcl;
+  delete [] ycl;
+  delete [] cln;
 }
 
 // ------------------------------------------------------------------------ //

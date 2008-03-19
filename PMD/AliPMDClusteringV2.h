@@ -34,10 +34,10 @@ class AliPMDClusteringV2 : public AliPMDClustering
 		   Int_t iord1[], Double_t edepcell[]);
   void     RefClust(Int_t incr, Double_t edepcell[]);
 	
-  void     ClustDetails(Int_t ncell, Int_t nclust, Double_t &x,
-			Double_t &y, Double_t &z, Double_t &xc,
-			Double_t &yc, Double_t &zc,
-			Double_t &rcl, Double_t &rcs, Double_t &cells,
+  void     ClustDetails(Int_t ncell, Int_t nclust, Double_t x[],
+			Double_t y[], Double_t z[], Double_t xc[],
+			Double_t yc[], Double_t zc[],
+			Double_t rcl[], Double_t rcs[], Double_t cells[],
 			TArrayI &testncl, TArrayI &testindex);
   Double_t Distance(Double_t x1, Double_t y1, Double_t x2, Double_t y2);
   void     SetEdepCut(Float_t decut);
@@ -60,7 +60,7 @@ class AliPMDClusteringV2 : public AliPMDClustering
 
   Float_t fCutoff; // Energy(ADC) cutoff per cell before clustering
   
-  ClassDef(AliPMDClusteringV2,2) // Does clustering for PMD
+  ClassDef(AliPMDClusteringV2,3) // Does clustering for PMD
 };
 #endif
     
