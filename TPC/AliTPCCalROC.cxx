@@ -702,7 +702,7 @@ void AliTPCCalROC::GetNeighbourhood(TArrayI* &rowArray, TArrayI* &padArray, Int_
 
 
 
-void AliTPCCalROC::GlobalFit(const AliTPCCalROC* ROCoutliers, Bool_t robust, TVectorD &fitParam, TMatrixD &covMatrix, Float_t & chi2, Int_t fitType, Double_t chi2Threshold, Double_t robustFraction){
+void AliTPCCalROC::GlobalFit(const AliTPCCalROC* ROCoutliers, Bool_t robust, TVectorD &fitParam, TMatrixD &covMatrix, Float_t & chi2, Int_t fitType, Double_t chi2Threshold, Double_t robustFraction, Double_t err){
   //
   // Makes a  GlobalFit for the given secotr and return fit-parameters, covariance and chi2
   // The origin of the fit function is the center of the ROC!
@@ -711,14 +711,20 @@ void AliTPCCalROC::GlobalFit(const AliTPCCalROC* ROCoutliers, Bool_t robust, TVe
   // ROCoutliers - pads with value !=0 are not used in fitting procedure
   // chi2Threshold: Threshold for chi2 when EvalRobust is called
   // robustFraction: Fraction of data that will be used in EvalRobust
+  // err: error of the data points
   //
   TLinearFitter* fitterG = 0;
   Double_t xx[6];
   
-  if (fitType  == 1) 
+  if (fitType  == 1) {
     fitterG = new TLinearFitter (6,"x0++x1++x2++x3++x4++x5");
-  else 
+    fitParam.ResizeTo(6);
+    covMatrix.ResizeTo(6,6);
+  } else {
     fitterG = new TLinearFitter(3,"x0++x1++x2");
+    fitParam.ResizeTo(3);
+    covMatrix.ResizeTo(3,3);
+  }
   fitterG->StoreData(kTRUE);   
   fitterG->ClearPoints();
   Int_t    npoints=0;
@@ -731,45 +737,21 @@ void AliTPCCalROC::GlobalFit(const AliTPCCalROC* ROCoutliers, Bool_t robust, TVe
   tpcROCinstance->GetPositionLocal(fSector, GetNrows()/2, GetNPads(GetNrows()/2)/2, centerPad);  // calculate center of ROC 
   
   // loop over all channels and read data into fitterG
-  if (fitType == 1) {  // parabolic fit
-    fitParam.ResizeTo(6);
-    covMatrix.ResizeTo(6,6);
-    for (UInt_t irow = 0; irow < GetNrows(); irow++) {
-      for (UInt_t ipad = 0; ipad < GetNPads(irow); ipad++) {
-	// fill fitterG
-	tpcROCinstance->GetPositionLocal(fSector, irow, ipad, localXY);   // calculate position localXY by pad and row number
-	dlx = centerPad[0] - localXY[0];
-	dly = centerPad[1] - localXY[1];
-	xx[0] = 1;
-	xx[1] = dlx;
-	xx[2] = dly;
-	xx[3] = dlx*dlx;
-	xx[4] = dly*dly;
-	xx[5] = dlx*dly;
-	if (!ROCoutliers || ROCoutliers->GetValue(irow, ipad) != 1) {
-           npoints++;
-	   fitterG->AddPoint(xx, GetValue(irow, ipad), 1);  
-        }
-      }
-    }
-  }
-  else {   // linear fit
-    fitParam.ResizeTo(3);
-    covMatrix.ResizeTo(3,3);
-    for (UInt_t irow = 0; irow < GetNrows(); irow++) {
-      for (UInt_t ipad = 0; ipad < GetNPads(irow); ipad++) {
-	// fill fitterG
-	tpcROCinstance->GetPositionLocal(fSector, irow, ipad, localXY);   // calculate position localXY by pad and row number
-	dlx = centerPad[0] - localXY[0];
-	dly = centerPad[1] - localXY[1];
-	xx[0] = 1;
-	xx[1] = dlx;
-	xx[2] = dly;
-	if (!ROCoutliers || ROCoutliers->GetValue(irow, ipad) != 1) {
-           npoints++;
-	   fitterG->AddPoint(xx, GetValue(irow, ipad), 1);  
-        }
-      }
+  for (UInt_t irow = 0; irow < GetNrows(); irow++) {
+    for (UInt_t ipad = 0; ipad < GetNPads(irow); ipad++) {
+      // fill fitterG
+      if (ROCoutliers && ROCoutliers->GetValue(irow, ipad) != 0) continue;
+      tpcROCinstance->GetPositionLocal(fSector, irow, ipad, localXY);   // calculate position localXY by pad and row number
+      dlx = localXY[0] - centerPad[0];
+      dly = localXY[1] - centerPad[1];
+      xx[0] = 1;
+      xx[1] = dlx;
+      xx[2] = dly;
+      xx[3] = dlx*dlx;
+      xx[4] = dly*dly;
+      xx[5] = dlx*dly;
+      npoints++;
+      fitterG->AddPoint(xx, GetValue(irow, ipad), err);
     }
   }
   fitterG->Eval();
@@ -807,8 +789,8 @@ AliTPCCalROC* AliTPCCalROC::CreateGlobalFitCalROC(TVectorD &fitParam, Int_t sect
     for (UInt_t irow = 0; irow < ROCfitted->GetNrows(); irow++) {
       for (UInt_t ipad = 0; ipad < ROCfitted->GetNPads(irow); ipad++) {
 	tpcROCinstance->GetPositionLocal(sector, irow, ipad, localXY);   // calculate position localXY by pad and row number
-	dlx = centerPad[0] - localXY[0];
-	dly = centerPad[1] - localXY[1];
+	dlx = localXY[0] - centerPad[0];
+	dly = localXY[1] - centerPad[1];
 	value = fitParam[0] + fitParam[1]*dlx + fitParam[2]*dly + fitParam[3]*dlx*dlx + fitParam[4]*dly*dly + fitParam[5]*dlx*dly;
 	ROCfitted->SetValue(irow, ipad, value);
       }
@@ -818,8 +800,8 @@ AliTPCCalROC* AliTPCCalROC::CreateGlobalFitCalROC(TVectorD &fitParam, Int_t sect
     for (UInt_t irow = 0; irow < ROCfitted->GetNrows(); irow++) {
       for (UInt_t ipad = 0; ipad < ROCfitted->GetNPads(irow); ipad++) {
 	tpcROCinstance->GetPositionLocal(sector, irow, ipad, localXY);   // calculate position localXY by pad and row number
-	dlx = centerPad[0] - localXY[0];
-	dly = centerPad[1] - localXY[1];
+	dlx = localXY[0] - centerPad[0];
+	dly = localXY[1] - centerPad[1];
 	value = fitParam[0] + fitParam[1]*dlx + fitParam[2]*dly;
 	ROCfitted->SetValue(irow, ipad, value);
       }
