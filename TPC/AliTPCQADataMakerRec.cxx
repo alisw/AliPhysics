@@ -138,7 +138,7 @@ AliTPCQADataMakerRec& AliTPCQADataMakerRec::operator = (const AliTPCQADataMakerR
 }
  
 //____________________________________________________________________________ 
-void AliTPCQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX task, TObjArray * list)
+void AliTPCQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray * list)
 {
   //Detector specific actions at end of cycle
 

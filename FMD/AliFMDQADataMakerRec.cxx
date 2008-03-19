@@ -69,7 +69,7 @@ AliFMDQADataMakerRec::AliFMDQADataMakerRec(const AliFMDQADataMakerRec& /*qadm*/)
 //_____________________________________________________________________ 
 
 void 
-AliFMDQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX task, 
+AliFMDQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, 
 					 TObjArray * list)
 {
   // Detector specific actions at end of cycle

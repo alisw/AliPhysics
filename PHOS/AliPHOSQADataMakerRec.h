@@ -27,16 +27,16 @@ class AliPHOSQADataMakerRec: public AliQADataMakerRec {
 
 public:
   //Histograms for Raw data control
-  enum HRawType {kHGmod1,kHGmod2,kHGmod3,kHGmod4,kHGmod5,
+  enum HRawType_t {kHGmod1,kHGmod2,kHGmod3,kHGmod4,kHGmod5,
                  kLGmod1,kLGmod2,kLGmod3,kLGmod4,kLGmod5,
                  kNmodLG,kNmodHG,
                  kNtotLG,kNtotHG,kEtotLG,kEtotHG,
                  kLGtime,kHGtime,kSpecLG,kSpecHG} ;
   //Histograms for RecPoints  control
-  enum HRPType {kRPmod1,kRPmod2,kRPmod3,kRPmod4,kRPmod5,
+  enum HRPType_t {kRPmod1,kRPmod2,kRPmod3,kRPmod4,kRPmod5,
                 kRPNtot,kRPEtot,kRPSpec,kRPTime,kRPNcpv} ;
   //Histograms for ESDs  control
-  enum HESDType {kESDNtot,kESDEtot,kESDSpec,kESDpid} ;
+  enum HESDType_t {kESDNtot,kESDEtot,kESDSpec,kESDpid} ;
                  
 
 public:
@@ -46,7 +46,7 @@ public:
   virtual ~AliPHOSQADataMakerRec() {;} // dtor
   
 private:
-  virtual void   EndOfDetectorCycle(AliQA::TASKINDEX, TObjArray * list) ;
+  virtual void   EndOfDetectorCycle(AliQA::TASKINDEX_t, TObjArray * list) ;
   virtual void   InitESDs() ; 
   virtual void   InitRecPoints() ; 
   virtual void   InitRaws() ; 

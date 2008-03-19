@@ -19,6 +19,7 @@
 
 // --- AliRoot header files ---
 #include "AliQADataMaker.h"
+#include "AliQA.h"
 
 class AliQADataMakerRec: public AliQADataMaker {
   

@@ -72,7 +72,7 @@ AliQADataMakerRec& AliQADataMakerRec::operator = (const AliQADataMakerRec& qadm 
 }
 
 //____________________________________________________________________________
-void AliQADataMakerRec::EndOfCycle(AliQA::TASKINDEX task) 
+void AliQADataMakerRec::EndOfCycle(AliQA::TASKINDEX_t task) 
 {
 	// Finishes a cycle of QA data acquistion
 	
@@ -94,7 +94,7 @@ void AliQADataMakerRec::EndOfCycle(AliQA::TASKINDEX task)
 }
  
 //____________________________________________________________________________
-void AliQADataMakerRec::Exec(AliQA::TASKINDEX task, TObject * data) 
+void AliQADataMakerRec::Exec(AliQA::TASKINDEX_t task, TObject * data) 
 { 
   // creates the quality assurance data for the various tasks (Hits, SDigits, Digits, ESDs)
 	
@@ -124,7 +124,7 @@ void AliQADataMakerRec::Exec(AliQA::TASKINDEX task, TObject * data)
 }
 
 //____________________________________________________________________________ 
-TObjArray *  AliQADataMakerRec::Init(AliQA::TASKINDEX task, Int_t run, Int_t cycles)
+TObjArray *  AliQADataMakerRec::Init(AliQA::TASKINDEX_t task, Int_t run, Int_t cycles)
 {
   // general intialisation
 	
@@ -152,7 +152,7 @@ TObjArray *  AliQADataMakerRec::Init(AliQA::TASKINDEX task, Int_t run, Int_t cyc
 }
 
 //____________________________________________________________________________ 
-void AliQADataMakerRec::Init(AliQA::TASKINDEX task, TObjArray * list, Int_t run, Int_t cycles)
+void AliQADataMakerRec::Init(AliQA::TASKINDEX_t task, TObjArray * list, Int_t run, Int_t cycles)
 {
   // Intialisation by passing the list of QA data booked elsewhere
   
@@ -170,7 +170,7 @@ void AliQADataMakerRec::Init(AliQA::TASKINDEX task, TObjArray * list, Int_t run,
 }
 
 //____________________________________________________________________________
-void AliQADataMakerRec::StartOfCycle(AliQA::TASKINDEX task, const Bool_t sameCycle) 
+void AliQADataMakerRec::StartOfCycle(AliQA::TASKINDEX_t task, const Bool_t sameCycle) 
 { 
   // Finishes a cycle of QA data acquistion
 	if ( !sameCycle || fCurrentCycle == -1) {

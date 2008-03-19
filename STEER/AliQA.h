@@ -47,7 +47,7 @@ public:
     static const TString   GetLabLocalOCDB() { return fkgLabLocalOCDB ; } 
     static const TString   GetLabAliEnOCDB() { return fkgLabAliEnOCDB ; } 
 	static const TString   GetDetName(DETECTORINDEX_t det) { return fgDetNames[det] ; }
-	static const DETECTORINDEX_t AliQA::GetDetName(const char * name) ; 
+	static const DETECTORINDEX_t GetDetName(const char * name) ; 
 	static const TString   GetTaskName(TASKINDEX_t tsk) { return fgTaskNames[tsk] ; }
 	static const char *    GetDetName(Int_t det) ;
 	static const char *    GetQADataFileName() { return fgQADataFileName.Data() ; }

@@ -35,7 +35,7 @@ public:
   virtual void MakeRaws(AliRawReader *rawReader);
   virtual void MakeRecPoints(TTree *clustersTree);
   virtual void StartOfDetectorCycle();
-  virtual void EndOfDetectorCycle(AliQA::TASKINDEX task, TObjArray * list);
+	virtual void EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray * list);
   virtual ~AliITSQASDDDataMakerRec(); // dtor
   inline Int_t Raws() { return fSDDhRaws; }
   inline Int_t Recs() { return fSDDhRecs; }

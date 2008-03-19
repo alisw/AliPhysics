@@ -25,7 +25,7 @@ public:
   AliFMDQADataMakerRec(const AliFMDQADataMakerRec& qadm);   
   virtual ~AliFMDQADataMakerRec() {}
 private:
-  virtual void   EndOfDetectorCycle(AliQA::TASKINDEX, TObjArray * list);
+  virtual void   EndOfDetectorCycle(AliQA::TASKINDEX_t, TObjArray * list);
   virtual void   InitESDs(); 
   virtual void   InitDigits(); 
   virtual void   InitRecPoints(); 

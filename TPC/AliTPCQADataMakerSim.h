@@ -36,7 +36,7 @@ public:
   
 private:
   virtual void   StartOfDetectorCycle() {}; // empty 
-  virtual void   EndOfDetectorCycle(AliQA::TASKINDEX, TObjArray* list) ;
+  virtual void   EndOfDetectorCycle(AliQA::TASKINDEX_t, TObjArray* list) ;
 
   // Digits QA
   virtual void   InitDigits();

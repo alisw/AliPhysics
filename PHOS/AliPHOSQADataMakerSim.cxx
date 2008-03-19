@@ -68,7 +68,7 @@ AliPHOSQADataMakerSim& AliPHOSQADataMakerSim::operator = (const AliPHOSQADataMak
 }
  
 //____________________________________________________________________________ 
-void AliPHOSQADataMakerSim::EndOfDetectorCycle(AliQA::TASKINDEX task, TObjArray * list)
+void AliPHOSQADataMakerSim::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray * list)
 {
   //Detector specific actions at end of cycle
   // do the QA checking

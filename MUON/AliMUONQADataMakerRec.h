@@ -41,7 +41,7 @@ private:
   virtual void   MakeRaws(AliRawReader* rawReader); 
   virtual void   MakeRecPoints(TTree* recpo); 
   virtual void   MakeESDs(AliESDEvent* esd) ;
-  virtual void   EndOfDetectorCycle(AliQA::TASKINDEX task, TObjArray* list);
+  virtual void   EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray* list);
 
   AliMUONVDigitStore* fDigitStore; //!< pointer to digits store
   AliMUONVTriggerStore* fTriggerStore; //!< pointer to trigger store

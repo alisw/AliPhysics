@@ -32,7 +32,7 @@ public:
   AliITSQADataMakerSim(const AliITSQADataMakerSim& qadm);
   AliITSQADataMakerSim& operator = (const AliITSQADataMakerSim& qac);
   virtual void StartOfDetectorCycle();
-  virtual void EndOfDetectorCycle(AliQA::TASKINDEX task, TObjArray * list);
+  virtual void EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray * list);
    virtual ~AliITSQADataMakerSim() {;} // dtor
 
 private:

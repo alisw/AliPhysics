@@ -107,7 +107,7 @@ AliMUONQADataMakerRec::~AliMUONQADataMakerRec()
 }
 
 //____________________________________________________________________________ 
-void AliMUONQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX task, TObjArray* list)
+void AliMUONQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray* list)
 {
     ///Detector specific actions at end of cycle
     // do the QA checking
