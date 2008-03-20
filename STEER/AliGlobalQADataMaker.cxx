@@ -142,7 +142,7 @@ void AliGlobalQADataMaker::MakeESDs(AliESDEvent * event) {
 
     if (track->IsOn(AliESDtrack::kTRDrefit)) {
       Int_t n=track->GetTRDclusters(0);
-      GetESDsData(kClr2)->Fill(Float_t(n)/120.);//120 is the number of TRD time bins
+      GetESDsData(kClr2)->Fill(Float_t(n)/(6*24));//(6*24) is the number of TRD time bins
     }
 
     Double_t p=track->GetP();
