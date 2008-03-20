@@ -4790,7 +4790,7 @@ void AliITSv11GeometrySSD::Layer6(TGeoVolume* moth){
 								   +			   fgkSSDMountingBlockHeight[1]
 								   -			   0.5*fgkCoolingTubeSupportHeight
 								   -			   fgkSSDModuleCoolingBlockToSensor
-								   -			   fgkSSDModuleVerticalDisalignment);
+								   -			   2.*fgkSSDModuleVerticalDisalignment);
     downmotherladdersupport[i] = new TGeoVolume(downmotheladdersupportname,
 								          downmotherladdersupportshape[i],fSSDAir);
     upmotherladdersupportshape[i] = new TGeoXtru(2);
@@ -4801,7 +4801,7 @@ void AliITSv11GeometrySSD::Layer6(TGeoVolume* moth){
 								   +			   fgkSSDMountingBlockHeight[1]
 								   -			   0.5*fgkCoolingTubeSupportHeight
 								   -			   fgkSSDModuleCoolingBlockToSensor
-								   -               fgkSSDModuleVerticalDisalignment);
+								   -               2.*fgkSSDModuleVerticalDisalignment);
     upmotherladdersupport[i] = new TGeoVolume(upmotheladdersupportname,
 											  upmotherladdersupportshape[i],fSSDAir);
   }
