@@ -12,10 +12,9 @@
 class AliGenDPMjetEventHeader : public AliGenEventHeader, public AliCollisionGeometry
 {
  public:
-
-  AliGenDPMjetEventHeader(const char* name){;}
-  AliGenDPMjetEventHeader(){;}
-  virtual ~AliGenDPMjetEventHeader() {}
+    AliGenDPMjetEventHeader(const char* name);
+    AliGenDPMjetEventHeader();
+    virtual ~AliGenDPMjetEventHeader() {}
 
   // Getters
   Float_t TotalEnergy()  {return fTotalEnergy;} 

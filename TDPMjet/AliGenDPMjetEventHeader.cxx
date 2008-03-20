@@ -17,4 +17,23 @@
 #include "AliGenDPMjetEventHeader.h"
 ClassImp(AliGenDPMjetEventHeader)
 
+AliGenDPMjetEventHeader::AliGenDPMjetEventHeader():
+    AliGenEventHeader(),
+    AliCollisionGeometry(),
+    fTotalEnergy(0.),
+    fTrials(0), 
+    fProcessType(0)
+{
+    // Default constructor
+}
 
+
+AliGenDPMjetEventHeader::AliGenDPMjetEventHeader(const char* name):
+    AliGenEventHeader(name),
+    AliCollisionGeometry(),
+    fTotalEnergy(0.),
+    fTrials(0), 
+    fProcessType(0)
+{
+    // Constructor
+}
