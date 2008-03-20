@@ -1171,6 +1171,11 @@ Bool_t AliITS::Raw2SDigits(AliRawReader* rawReader)
     // SPD
     //
     AliITSsegmentationSPD* segSPD = (AliITSsegmentationSPD*) fDetTypeSim->GetSegmentationModel(0);
+    if(!segSPD){
+      AliWarning("Set AliITS defaults");
+      SetDefaults();
+      segSPD = (AliITSsegmentationSPD*) fDetTypeSim->GetSegmentationModel(0);
+    }
     npx = segSPD->Npx();
     Double_t thr, sigma; 
     
@@ -1209,14 +1214,15 @@ Bool_t AliITS::Raw2SDigits(AliRawReader* rawReader)
 	Int_t module = inputSDD.GetModuleID();
 	Int_t anode  = inputSDD.GetAnode();
 	Int_t time   = inputSDD.GetTime();
-	Int_t signal = inputSDD.GetSignal();
+	Int_t signal10 = inputSDD.GetSignal();
 	Int_t index  = npx * anode + time;
 
 	if (module >= size) continue;
+	/* 8->10 bit expansion is done in AliITSRawStreamSDD
 	// 8bit -> 10 bit
 	AliITSresponseSDD *resSDD = (AliITSresponseSDD*) fDetTypeSim->GetResponse(1);
 	Int_t signal10 = resSDD->Convert8to10(signal);  // signal is a 8 bit value (if the compression is active)
-	
+	*/
 	last = modA[module]->GetEntries();
 	TClonesArray& dum = *modA[module];
 	new (dum[last]) AliITSpListItem(-1, -1, module, index, Double_t(signal10));
