@@ -29,8 +29,15 @@ void Config(char directory[100]="", char option[6]="param", const char* digitsto
   // Config file for MUON test
   //=====================================================================
   //  Libraries required by geant321
+  gSystem->Load("libEG");
+  gSystem->Load("libEGPythia6");
   gSystem->Load("libgeant321.so");
+  gSystem->Load("liblhapdf.so");      // Parton density functions
+  gSystem->Load("libpythia6.so");     // Pythia
+  gSystem->Load("libAliPythia6.so");  // ALICE specific implementations
+
   new TGeant3TGeo("C++ Interface to Geant3");
+
   //=======================================================================
   //  Create the output file    
   Text_t filename[100];
