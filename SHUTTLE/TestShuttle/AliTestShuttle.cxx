@@ -325,7 +325,7 @@ const char* AliTestShuttle::GetRefFilePrefix(const char* base, const char* detec
 	//
 
 	TString offDetStr(GetOfflineDetName(detector));
-	TString dir;
+	static TString dir;
 	if (offDetStr == "ITS" || offDetStr == "MUON" || offDetStr == "PHOS")
 	{
 		dir.Form("%s/%s/%s", base, offDetStr.Data(), detector);
@@ -334,8 +334,6 @@ const char* AliTestShuttle::GetRefFilePrefix(const char* base, const char* detec
 	}
 	
 	return dir.Data();
-	
-
 }
 
 //______________________________________________________________________________________________
@@ -574,8 +572,11 @@ void AliTestShuttle::Process()
     AliPreprocessor* preprocessor = dynamic_cast<AliPreprocessor*> (fPreprocessors->At(i));
     if (preprocessor)
     {
-      preprocessor->Initialize(fRun, fStartTime, fEndTime);
-      preprocessor->Process(fDcsAliasMap);
+      if (preprocessor->ProcessRunType())
+      {
+        preprocessor->Initialize(fRun, fStartTime, fEndTime);
+        preprocessor->Process(fDcsAliasMap);
+      }
     }
   }
 }

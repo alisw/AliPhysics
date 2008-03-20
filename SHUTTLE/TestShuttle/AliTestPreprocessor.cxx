@@ -24,6 +24,9 @@ AliTestPreprocessor::AliTestPreprocessor(AliShuttleInterface* shuttle) :
   fData(0)
 {
   // constructor
+  
+  AddRunType("PHYSICS");
+  AddRunType("CALIBRATION");
 }
 
 //______________________________________________________________________________________________
