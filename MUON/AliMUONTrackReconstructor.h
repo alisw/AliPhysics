@@ -24,6 +24,8 @@ class AliMUONTrackReconstructor : public AliMUONVTrackReconstructor
   AliMUONTrackReconstructor(AliMUONVClusterServer& clusterServer); // default Constructor
   virtual ~AliMUONTrackReconstructor(); // Destructor
 
+  virtual Bool_t RefitTrack(AliMUONTrack &track);
+
 
  protected:
 

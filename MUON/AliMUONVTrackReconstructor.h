@@ -49,6 +49,9 @@ class AliMUONVTrackReconstructor : public TObject {
                                  const AliMUONVTriggerStore& triggerStore,
                                  const AliMUONTrackHitPattern& trackHitPattern);
   
+  /// re-fit the given track
+  virtual Bool_t RefitTrack(AliMUONTrack &track) = 0;
+  
   
  protected:
 

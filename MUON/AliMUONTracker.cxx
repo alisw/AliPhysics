@@ -86,7 +86,8 @@ AliMUONTracker::AliMUONTracker(AliMUONVClusterServer& clusterServer,
   if (fTransformer && fDigitMaker)
     fTrackHitPatternMaker = new AliMUONTrackHitPattern(*fTransformer,*fDigitMaker);
   
-  fClusterServer.UseDigitStore(fDigitStore);
+  TIter next(fDigitStore.CreateIterator());
+  fClusterServer.UseDigits(next);
 }
 
 //_____________________________________________________________________________

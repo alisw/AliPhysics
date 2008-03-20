@@ -41,6 +41,7 @@ SRCS:= AliMUONReconstructor.cxx \
        AliMUONQAChecker.cxx \
        AliMUONClusterFinderPeakCOG.cxx \
        AliMUONClusterFinderPeakFit.cxx \
+       AliMUONRefitter.cxx \
        AliMUONESDInterface.cxx
 
 HDRS:= $(SRCS:.cxx=.h)

@@ -185,7 +185,8 @@ AliMUONClusterFinderPeakFit::Prepare(Int_t detElemId, TClonesArray* pads[2],
   fDetElemId = detElemId;
   
   // find out current event number, and reset the cluster number
-  fEventNumber = AliRunLoader::GetRunLoader()->GetEventNumber();
+  AliRunLoader *runLoader = AliRunLoader::GetRunLoader();
+  fEventNumber = runLoader ? runLoader->GetEventNumber() : 0;
   fClusterNumber = -1;
   fClusterList.Delete();
   
@@ -278,7 +279,7 @@ AliMUONClusterFinderPeakFit::WorkOnPreCluster()
   //  AliCodeTimerAuto("")	
 
   if (fDebug) {
-    cout << " *** Event # " << AliRunLoader::GetRunLoader()->GetEventNumber() 
+    cout << " *** Event # " << fEventNumber
 	 << " det. elem.: " << fDetElemId << endl;
     for (Int_t j = 0; j < fPreCluster->Multiplicity(); ++j) {
       AliMUONPad* pad = fPreCluster->Pad(j);

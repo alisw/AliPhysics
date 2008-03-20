@@ -1203,3 +1203,27 @@ void AliMUONTrackReconstructorK::FinalizeTrack(AliMUONTrack &track)
   
 }
 
+  //__________________________________________________________________________
+Bool_t AliMUONTrackReconstructorK::RefitTrack(AliMUONTrack &track)
+{
+  /// re-fit the given track
+  
+  // check validity of the track
+  if (!track.IsValid()) {
+    AliWarning("the track does not contain enough clusters --> unable to refit");
+    return kFALSE;
+  }
+  
+  // re-compute track parameters and covariances using Kalman filter
+  RetraceTrack(track,kTRUE);
+  
+  // Improve the reconstructed tracks if required
+  if (AliMUONReconstructor::GetRecoParam()->ImproveTracks()) ImproveTrack(track);
+  
+  // Fill AliMUONTrack data members
+  FinalizeTrack(track);
+  
+  return kTRUE;
+  
+}
+

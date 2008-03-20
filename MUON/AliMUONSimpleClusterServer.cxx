@@ -32,11 +32,13 @@
 #include "AliMpSegmentation.h"
 #include "AliMpVPadIterator.h"
 #include "AliMpVSegmentation.h"
+#include "AliESDMuonPad.h"
 #include "AliLog.h"
 #include <float.h>
 #include <Riostream.h>
 #include <TClonesArray.h>
 #include <TString.h>
+
 
 /// \class AliMUONSimpleClusterServer
 ///
@@ -71,6 +73,9 @@ AliMUONSimpleClusterServer::AliMUONSimpleClusterServer(AliMUONVClusterFinder& cl
   fDEAreas(new AliMpExMap(true))
 {
     /// Ctor
+    
+    fPads[0] = new AliMpExMap(true);
+    fPads[1] = new AliMpExMap(true);
     
     AliMpDEIterator it;
     
@@ -144,6 +149,7 @@ AliMUONSimpleClusterServer::AliMUONSimpleClusterServer(AliMUONVClusterFinder& cl
 AliMUONSimpleClusterServer::~AliMUONSimpleClusterServer()
 {
   /// Dtor
+  delete &fClusterFinder;
   delete fPads[0];
   delete fPads[1];
   delete fDEAreas;
@@ -328,19 +334,14 @@ AliMUONSimpleClusterServer::PadArray(Int_t detElemId, Int_t cathode) const
 
 //_____________________________________________________________________________
 void 
-AliMUONSimpleClusterServer::UseDigitStore(const AliMUONVDigitStore& digitStore)
+AliMUONSimpleClusterServer::UseDigits(TIter& next)
 {
   /// Convert digitStore into two arrays of AliMUONPads
 
-  delete fPads[0];
-  delete fPads[1];
+  fPads[0]->Clear();
+  fPads[1]->Clear();
   
-  fPads[0] = new AliMpExMap(true);
-  fPads[1] = new AliMpExMap(true);
-  
-  TIter next(digitStore.CreateIterator());
   AliMUONVDigit* d;
-  
   while ( ( d = static_cast<AliMUONVDigit*>(next()) ) )
   {
     if ( ! d->Charge() > 0 ) continue; // skip void digits.

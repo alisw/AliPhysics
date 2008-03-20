@@ -125,7 +125,8 @@ AliMUONClusterFinderMLEM::Prepare(Int_t detElemId,
   fSplitter->SetDebug(fDebug);
     
   // find out current event number, and reset the cluster number
-  fEventNumber = AliRunLoader::GetRunLoader()->GetEventNumber();
+  AliRunLoader *runLoader = AliRunLoader::GetRunLoader();
+  fEventNumber = runLoader ? runLoader->GetEventNumber() : 0;
   fClusterNumber = -1;
   fClusterList.Delete();
   
@@ -198,7 +199,7 @@ AliMUONClusterFinderMLEM::WorkOnPreCluster()
   //  AliCodeTimerAuto("")	
 
   if (fDebug) {
-    cout << " *** Event # " << AliRunLoader::GetRunLoader()->GetEventNumber() 
+    cout << " *** Event # " << fEventNumber 
 	 << " det. elem.: " << fDetElemId << endl;
     for (Int_t j = 0; j < fPreCluster->Multiplicity(); ++j) {
       AliMUONPad* pad = fPreCluster->Pad(j);

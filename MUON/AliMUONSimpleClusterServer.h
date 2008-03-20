@@ -18,8 +18,9 @@
 
 class AliMUONVClusterFinder;
 class AliMUONGeometryTransformer;
-class TClonesArray;
 class AliMpExMap;
+class AliESDMuonPad;
+class TClonesArray;
 
 class AliMUONSimpleClusterServer : public AliMUONVClusterServer
 {
@@ -33,7 +34,7 @@ public:
                    AliMUONVClusterStore& clusterStore,
                    const AliMpArea& area);
   
-  void UseDigitStore(const AliMUONVDigitStore& digitStore);
+  void UseDigits(TIter& next);
   
   void Print(Option_t* opt="") const;
   
@@ -50,8 +51,8 @@ private:
   TClonesArray* PadArray(Int_t detElemId, Int_t cathode) const;
   
 private:
-  AliMUONVClusterFinder& fClusterFinder; //!< the cluster finder
-  const AliMUONGeometryTransformer& fTransformer; //!< the geometry transformer
+  AliMUONVClusterFinder& fClusterFinder; //!< the cluster finder (owner)
+  const AliMUONGeometryTransformer& fTransformer; //!< the geometry transformer (not owner)
   AliMpExMap* fPads[2]; ///< map of TClonesArray of AliMUONPads
   AliMpExMap* fDEAreas; ///< map of detection element areas in global coordinates
   

@@ -1156,3 +1156,40 @@ void AliMUONTrackReconstructor::FinalizeTrack(AliMUONTrack &track)
   if (!track.IsImproved()) track.UpdateCovTrackParamAtCluster();
 }
 
+//__________________________________________________________________________
+Bool_t AliMUONTrackReconstructor::RefitTrack(AliMUONTrack &track)
+{
+  /// re-fit the given track
+  
+  // check validity of the track
+  if (!track.IsValid()) {
+    AliWarning("the track does not contain enough clusters --> unable to refit");
+    return kFALSE;
+  }
+  
+  // reset the seed (i.e. parameters at first cluster) before fitting
+  AliMUONTrackParam* firstTrackParam = (AliMUONTrackParam*) track.GetTrackParamAtCluster()->First();
+  if (firstTrackParam->GetInverseBendingMomentum() == 0.) {
+    AliWarning("track parameters at first chamber are not initialized --> unable to refit");
+    return kFALSE;
+  }
+  
+  // compute track parameters at each cluster from parameters at the first one
+  // necessary to compute multiple scattering effect during refitting
+  track.UpdateTrackParamAtCluster();
+  
+  // Re-fit the track:
+  // Take into account the multiple scattering
+  // Calculate the track parameter covariance matrix
+  Fit(track, kTRUE, kFALSE, kTRUE);
+  
+  // Improve the reconstructed tracks if required
+  if (AliMUONReconstructor::GetRecoParam()->ImproveTracks()) ImproveTrack(track);
+  
+  // Fill AliMUONTrack data members
+  FinalizeTrack(track);
+  
+  return kTRUE;
+  
+}
+

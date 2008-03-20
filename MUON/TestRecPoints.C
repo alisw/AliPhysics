@@ -293,7 +293,8 @@ void TestRecPoints(TString baseDir=".", TString outDir=".", Float_t adcCut = 10.
         digitStoreTrackCut.Add(*mDigit, AliMUONVDigitStore::kDeny);
       } // loop on digits
       
-      clusterServer->UseDigitStore(digitStoreTrackCut);
+      TIter nextDigitTrackCut(digitStoreTrackCut->CreateIterator());
+      clusterServer->UseDigits(nextDigitTrackCut);
       
       for (Int_t ch = firstChamber; ch <= lastChamber; ++ch ){
         clusterServer->Clusterize(ch, clusterStore, AliMpArea());

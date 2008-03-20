@@ -13,12 +13,12 @@
 // Author Laurent Aphecetche, Subatech
 
 #ifndef ROOT_TObject
-#  include "TObject.h"
+#include "TObject.h"
 #endif
 
 class AliMUONVClusterStore;
-class AliMUONVDigitStore;
 class AliMpArea;
+class TIter;
 
 class AliMUONVClusterServer : public TObject
 {
@@ -32,7 +32,7 @@ public:
                            const AliMpArea& area) = 0;
   
   /// Use digits from the given digitstore to perform our job.
-  virtual void UseDigitStore(const AliMUONVDigitStore& digitStore) = 0;
+  virtual void UseDigits(TIter& next) = 0;
   
   ClassDef(AliMUONVClusterServer,1) // Cluster server interface
 };
