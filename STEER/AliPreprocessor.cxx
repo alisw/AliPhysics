@@ -130,8 +130,8 @@ some docs added
 #include "AliPreprocessor.h"
 
 #include <TString.h>
-#include <TList.h>
 #include <TMap.h>
+#include <TObjString.h>
 
 #include "AliLog.h"
 #include "AliCDBMetaData.h"
@@ -149,7 +149,8 @@ AliPreprocessor::AliPreprocessor(const char* detector, AliShuttleInterface* shut
   fRun(-1),
   fStartTime(0),
   fEndTime(0),
-  fShuttle(shuttle)
+  fShuttle(shuttle),
+  fRunTypes()
 {
 	SetTitle(Form("AliPreprocessor for %s subdetector.", detector));
 
@@ -160,6 +161,8 @@ AliPreprocessor::AliPreprocessor(const char* detector, AliShuttleInterface* shut
   }
 
   fShuttle->RegisterPreprocessor(this);
+  
+  fRunTypes.SetOwner(kTRUE);
 }
 
 //______________________________________________________________________________________________
@@ -352,4 +355,39 @@ Bool_t AliPreprocessor::GetHLTStatus()
 
   return fShuttle->GetHLTStatus();
 
+}
+    
+//______________________________________________________________________________________________
+void AliPreprocessor::AddRunType(const char* runType)
+{
+	// adds the given run type to the list of run types that are processed
+	// this function should be called in the constructor of the derived preprocessor
+	
+	if (!runType)
+		return;
+	
+	fRunTypes.Add(new TObjString(runType));
+}
+    
+//______________________________________________________________________________________________
+Bool_t AliPreprocessor::AliPreprocessor::ProcessRunType()
+{
+	// searches for the current run type in the list of run types that are processed by this
+	// preprocessor. The list is populated by AddRunType
+	
+	const char* runType = GetRunType();
+
+	Log(Form("Checking if run type %s is in the list of run types to be processed by this preprocessor...", runType));
+	
+	if (fRunTypes.GetEntries() == 0)
+		Log("WARNING! There are no run types defined. This preprocessor will never run.");
+
+	if (fRunTypes.FindObject(runType))
+	{
+		Log("Run type found. Processing this run.");
+		return kTRUE;
+	}
+	
+	Log("Run type not found. Skipping this run.");
+	return kFALSE;
 }

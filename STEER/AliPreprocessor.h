@@ -14,8 +14,8 @@
 //
 
 #include <TNamed.h>
+#include <TList.h>
 
-class TList;
 class TMap;
 
 class AliCDBMetaData;
@@ -26,7 +26,7 @@ class AliPreprocessor : public TNamed
 {
   public:
 
-    enum { kDAQ, kDCS, kHLT };
+    enum { kDAQ = 0, kDCS, kHLT };
 
     AliPreprocessor(const char* detector, AliShuttleInterface* shuttle);
     virtual ~AliPreprocessor();
@@ -35,7 +35,8 @@ class AliPreprocessor : public TNamed
     virtual UInt_t Process(TMap* dcsAliasMap) = 0;
    
     virtual Bool_t ProcessDCS() { return kTRUE; }
- 
+    Bool_t ProcessRunType();
+  
   protected:
     Bool_t Store(const char* pathLevel2, const char* pathLevel3, TObject* object,
     		AliCDBMetaData* metaData, Int_t validityStart = 0, Bool_t validityInfinite = kFALSE);
@@ -52,6 +53,8 @@ class AliPreprocessor : public TNamed
     const char* GetRunType();
     Bool_t GetHLTStatus();
     void Log(const char* message);
+    
+    void AddRunType(const char* runType);
 
     Int_t fRun;         // current run
     UInt_t fStartTime;  // starttime of current run
@@ -61,6 +64,8 @@ class AliPreprocessor : public TNamed
     AliPreprocessor(const AliPreprocessor & source);
     AliPreprocessor & operator=(const AliPreprocessor & source);
     AliShuttleInterface* fShuttle;   // link to Shuttle
+    
+    TList fRunTypes;    // list of run types that are processed by this preprocessor
 
     ClassDef(AliPreprocessor, 0);
 };
