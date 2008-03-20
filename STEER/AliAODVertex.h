@@ -90,6 +90,7 @@ class AliAODVertex : public TObject {
 
   void     AddDaughter(TObject *daughter) { fDaughters.Add(daughter);}
   void     RemoveDaughter(TObject *daughter) { fDaughters.Remove(daughter); }
+  void     RemoveDaughters() { fDaughters.Clear(); }
   TObject* GetDaughter(Int_t i) { return fDaughters.At(i); }
   Bool_t   HasDaughter(TObject *daughter) const;
   Int_t    GetNDaughters() const { return fDaughters.GetEntriesFast(); }
