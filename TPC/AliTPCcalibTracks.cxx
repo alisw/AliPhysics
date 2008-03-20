@@ -143,7 +143,8 @@ AliTPCcalibTracks::AliTPCcalibTracks():
 }   
 
 
-AliTPCcalibTracks::AliTPCcalibTracks(AliTPCcalibTracks* ct):
+
+AliTPCcalibTracks::AliTPCcalibTracks(const AliTPCcalibTracks& calibTracks):
 TNamed(),
   fClusterParam(0),
   fDebugStream(0),
@@ -188,61 +189,73 @@ TNamed(),
    
    Int_t length = -1;
    // backward compatibility: if the data member doesn't yet exist, it will not be merged
-   (ct->fArrayAmpRow) ? length = ct->fArrayAmpRow->GetEntriesFast() : length = -1;
+   (calibTracks.fArrayAmpRow) ? length = calibTracks.fArrayAmpRow->GetEntriesFast() : length = -1;
    fArrayAmpRow = new TObjArray(length);
    fArrayAmp = new TObjArray(length);
    for (Int_t i = 0; i < length; i++) {
-      fArrayAmpRow->AddAt( (TProfile*)ct->fArrayAmpRow->At(i)->Clone(), i);
-      fArrayAmp->AddAt( ((TProfile*)ct->fArrayAmp->At(i)->Clone()), i);
+      fArrayAmpRow->AddAt( (TProfile*)calibTracks.fArrayAmpRow->At(i)->Clone(), i);
+      fArrayAmp->AddAt( ((TProfile*)calibTracks.fArrayAmp->At(i)->Clone()), i);
    }
    
-   (ct->fArrayQDY) ? length = ct->fArrayQDY->GetEntriesFast() : length = -1;
+   (calibTracks.fArrayQDY) ? length = calibTracks.fArrayQDY->GetEntriesFast() : length = -1;
    fArrayQDY= new TObjArray(length);
    fArrayQDZ= new TObjArray(length);
    fArrayQRMSY= new TObjArray(length);
    fArrayQRMSZ= new TObjArray(length);
    for (Int_t i = 0; i < length; i++) {
-      fArrayQDY->AddAt( ((TH1F*)ct->fArrayQDY->At(i)->Clone()), i);
-      fArrayQDZ->AddAt( ((TH1F*)ct->fArrayQDZ->At(i)->Clone()), i);
-      fArrayQRMSY->AddAt( ((TH1F*)ct->fArrayQRMSY->At(i)->Clone()), i);
-      fArrayQRMSZ->AddAt( ((TH1F*)ct->fArrayQRMSZ->At(i)->Clone()), i);
+      fArrayQDY->AddAt( ((TH1F*)calibTracks.fArrayQDY->At(i)->Clone()), i);
+      fArrayQDZ->AddAt( ((TH1F*)calibTracks.fArrayQDZ->At(i)->Clone()), i);
+      fArrayQRMSY->AddAt( ((TH1F*)calibTracks.fArrayQRMSY->At(i)->Clone()), i);
+      fArrayQRMSZ->AddAt( ((TH1F*)calibTracks.fArrayQRMSZ->At(i)->Clone()), i);
    }
    
-   (ct->fResolY) ? length = ct->fResolY->GetEntriesFast() : length = -1;
+   (calibTracks.fResolY) ? length = calibTracks.fResolY->GetEntriesFast() : length = -1;
    fResolY = new TObjArray(length);
    fResolZ = new TObjArray(length);
    fRMSY = new TObjArray(length);
    fRMSZ = new TObjArray(length);
    for (Int_t i = 0; i < length; i++) {
-      fResolY->AddAt( ((TH1F*)ct->fResolY->At(i)->Clone()), i);
-      fResolZ->AddAt( ((TH1F*)ct->fResolZ->At(i)->Clone()), i);
-      fRMSY->AddAt( ((TH1F*)ct->fRMSY->At(i)->Clone()), i);
-      fRMSZ->AddAt( ((TH1F*)ct->fRMSZ->At(i)->Clone()), i);
+      fResolY->AddAt( ((TH1F*)calibTracks.fResolY->At(i)->Clone()), i);
+      fResolZ->AddAt( ((TH1F*)calibTracks.fResolZ->At(i)->Clone()), i);
+      fRMSY->AddAt( ((TH1F*)calibTracks.fRMSY->At(i)->Clone()), i);
+      fRMSZ->AddAt( ((TH1F*)calibTracks.fRMSZ->At(i)->Clone()), i);
    } 
    
-   (ct->fArrayChargeVsDriftlength) ? length = ct->fArrayChargeVsDriftlength->GetEntriesFast() : length = -1;
-   (ct->fArrayChargeVsDriftlength) ? fArrayChargeVsDriftlength = new TObjArray(length) : fArrayChargeVsDriftlength = 0;
+   (calibTracks.fArrayChargeVsDriftlength) ? length = calibTracks.fArrayChargeVsDriftlength->GetEntriesFast() : length = -1;
+   (calibTracks.fArrayChargeVsDriftlength) ? fArrayChargeVsDriftlength = new TObjArray(length) : fArrayChargeVsDriftlength = 0;
    for (Int_t i = 0; i < length; i++) {
-      fArrayChargeVsDriftlength->AddAt( ((TProfile*)ct->fArrayChargeVsDriftlength->At(i)->Clone()), i);
+      fArrayChargeVsDriftlength->AddAt( ((TProfile*)calibTracks.fArrayChargeVsDriftlength->At(i)->Clone()), i);
    }
    
-   fDeltaY =  (TH1F*)ct->fDeltaY->Clone();
-   fDeltaZ =  (TH1F*)ct->fDeltaZ->Clone();
-   fHclus = (TH1I*)ct->fHclus->Clone();
-   fClusterCutHisto = (TH2I*)ct->fClusterCutHisto->Clone();
-   fRejectedTracksHisto    = (TH1I*)ct->fRejectedTracksHisto->Clone();
-   fHclusterPerPadrow      = (TH1I*)ct->fHclusterPerPadrow->Clone();
-   fHclusterPerPadrowRaw   = (TH1I*)ct->fHclusterPerPadrowRaw->Clone();
-   fcalPadRegionChargeVsDriftlength = (AliTPCCalPadRegion*)ct->fcalPadRegionChargeVsDriftlength->Clone();
-   fCalPadClusterPerPad    = (AliTPCCalPad*)ct->fCalPadClusterPerPad->Clone();
-   fCalPadClusterPerPadRaw = (AliTPCCalPad*)ct->fCalPadClusterPerPadRaw->Clone();
+   fDeltaY =  (TH1F*)calibTracks.fDeltaY->Clone();
+   fDeltaZ =  (TH1F*)calibTracks.fDeltaZ->Clone();
+   fHclus = (TH1I*)calibTracks.fHclus->Clone();
+   fClusterCutHisto = (TH2I*)calibTracks.fClusterCutHisto->Clone();
+   fRejectedTracksHisto    = (TH1I*)calibTracks.fRejectedTracksHisto->Clone();
+   fHclusterPerPadrow      = (TH1I*)calibTracks.fHclusterPerPadrow->Clone();
+   fHclusterPerPadrowRaw   = (TH1I*)calibTracks.fHclusterPerPadrowRaw->Clone();
+   fcalPadRegionChargeVsDriftlength = (AliTPCCalPadRegion*)calibTracks.fcalPadRegionChargeVsDriftlength->Clone();
+   fCalPadClusterPerPad    = (AliTPCCalPad*)calibTracks.fCalPadClusterPerPad->Clone();
+   fCalPadClusterPerPadRaw = (AliTPCCalPad*)calibTracks.fCalPadClusterPerPadRaw->Clone();
 
-   fCuts = new AliTPCcalibTracksCuts(ct->fCuts->GetMinClusters(), ct->fCuts->GetMinRatio(), 
-      ct->fCuts->GetMax1pt(), ct->fCuts->GetEdgeYXCutNoise(), ct->fCuts->GetEdgeThetaCutNoise());
-   fDebugLevel = ct->GetLogLevel();
-   SetNameTitle(ct->GetName(), ct->GetTitle());
+   fCuts = new AliTPCcalibTracksCuts(calibTracks.fCuts->GetMinClusters(), calibTracks.fCuts->GetMinRatio(), 
+      calibTracks.fCuts->GetMax1pt(), calibTracks.fCuts->GetEdgeYXCutNoise(), calibTracks.fCuts->GetEdgeThetaCutNoise());
+   fDebugLevel = calibTracks.GetLogLevel();
+   SetNameTitle(calibTracks.GetName(), calibTracks.GetTitle());
    TH1::AddDirectory(dirStatus); // set status back to original status
 //    cout << "+++++ end of copy constructor +++++" << endl;   // TO BE REMOVED
+}
+
+
+AliTPCcalibTracks & AliTPCcalibTracks::operator=(const AliTPCcalibTracks& calibTracks){
+  //
+  // assgnment operator
+  //
+  if (this != &calibTracks) {
+    new (this) AliTPCcalibTracks(calibTracks);
+  }
+  return *this;
+
 }
 
 
@@ -531,7 +544,7 @@ void AliTPCcalibTracks::AddInfo(TChain * chain, char* fileName){
 }
 
    
-void AliTPCcalibTracks::Process(AliTPCseed *track, AliESDtrack *esd){
+void AliTPCcalibTracks::Process(AliTPCseed *track, AliESDtrack */*esd*/){
    // 
    // To be called in the selector
    // first AcceptTrack is evaluated, then calls all the following analyse functions: 
@@ -2838,11 +2851,11 @@ AliTPCcalibTracks* AliTPCcalibTracks::TestMerge(AliTPCcalibTracks *ct, AliTPCClu
    cout << "making list with " << nCalTracks << " AliTPCcalibTrack objects" << endl;
    for (Int_t i = 0; i < nCalTracks; i++) {
       if (i%10==0) cout << "Adding element " << i << " of " << nCalTracks << endl;
-      list->Add(new AliTPCcalibTracks(ct));
+      list->Add(new AliTPCcalibTracks(*ct));
    }
    
    // only for check at the end
-   AliTPCcalibTracks* cal1 = new AliTPCcalibTracks(ct);
+   AliTPCcalibTracks* cal1 = new AliTPCcalibTracks(*ct);
    Double_t cal1Entries = ((TH1F*)cal1->GetfArrayAmpRow()->At(5))->GetEntries();
 //    Double_t cal1Entries = 5; //((TH1F*)ct->GetfArrayAmpRow()->At(5))->GetEntries();
 

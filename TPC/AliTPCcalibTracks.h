@@ -46,8 +46,10 @@ using namespace std;
 class AliTPCcalibTracks : public TNamed {
 public :
    AliTPCcalibTracks();                         // default constructor
-   AliTPCcalibTracks(AliTPCcalibTracks* ct);    // copy constructor
+  AliTPCcalibTracks(const AliTPCcalibTracks&calibTracks); // copy constructor
    AliTPCcalibTracks(const Text_t *name, const Text_t *title, AliTPCClusterParam *clusterParam, AliTPCcalibTracksCuts* cuts, Int_t logLevel = 0);
+  AliTPCcalibTracks & operator=(const AliTPCcalibTracks& calibTracks);
+
    virtual ~AliTPCcalibTracks();                // destructor
    
    static void     AddInfo(TChain *chain, char *fileName);        // add clusterParametrization as user info to the chain
