@@ -29,7 +29,6 @@ protected:
   AliEveHOMERManager* fM; // fModel dynamic-casted to AliEveHOMERManagerEditor
 
   // Declare widgets
-  // TGSomeWidget*   fXYZZ;
   TGTextButton  *fButt;
 
 public:
@@ -39,7 +38,6 @@ public:
   virtual void SetModel(TObject* obj);
 
   // Declare callback/slot methods
-  // void DoXYZZ();
   void DoButt();
 
   ClassDef(AliEveHOMERManagerEditor, 0); // Editor for AliEveHOMERManager

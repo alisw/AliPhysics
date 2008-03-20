@@ -38,7 +38,8 @@ AliEveHOMERManagerEditor::AliEveHOMERManagerEditor(const TGWindow *p, Int_t widt
   // fXYZZ = new TGSomeWidget(this, ...);
   // AddFrame(fXYZZ, new TGLayoutHints(...));
   // fXYZZ->Connect("SignalName()", "AliEveHOMERManagerEditor", this, "DoXYZZ()");
-  fButt = new TGTextButton(this, "Ooogadooga");
+
+  fButt = new TGTextButton(this, "  Connect to HLT  ");
   AddFrame(fButt); //, new TGLayoutHints(...));
   fButt->Connect("Clicked()", "AliEveHOMERManagerEditor", this, "DoButt()");
 
@@ -69,5 +70,6 @@ void AliEveHOMERManagerEditor::SetModel(TObject* obj)
 
 void AliEveHOMERManagerEditor::DoButt()
 {
-  fM->CreateHOMERSourcesList();
+  // Connects to HOMER sources -> to HLT
+  fM->ConnectHOMER();
 }

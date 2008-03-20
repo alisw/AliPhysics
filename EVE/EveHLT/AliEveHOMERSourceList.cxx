@@ -67,13 +67,52 @@ void AliEveHOMERSourceList::RebuildSourceReps()
     parentStack.back()->AddElement(src);
 
     parentStack.push_back(src); ++parentLvl;
-
+    /*
     printf("%*s%s [state=%d, handle=0x%lx] {ssdet='%s'}\n", 4*i.level(), "",
 	   i.description().Data(), i.state().fState,
 	   (ULong_t) i.state().fHandle,
 	   i.id().fSSDet.Data());
+
+    */
   }
 }
+
+
+Bool_t AliEveHOMERSourceList::GetSelectedSources() {
+  // Set selected source in HOMER sources list, of HOMERManager
+
+  if ( ! fManager ) {
+    printf ( "Error : no ptr to HomerManager!");
+    return kFALSE;
+  }
+    
+
+  Bool_t bResult = kFALSE;
+
+  for ( AliEveHOMERSourceMap::iterator iter=fSrcMap->begin(); iter!=fSrcMap->end(); ++iter ) {
+
+    if ( ! iter.state().fHandle ) 
+      continue;
+    
+    fManager->SetSourceState( (AliHLTHOMERSourceDesc*) iter.state().fHandle,iter.state().fState );
+    bResult = kTRUE;
+
+    /*
+    printf("%*s%s [state=%d, handle=0x%lx] {ssdet='%s'}\n", 4*iter.level(), "",
+	   iter.description().Data(), iter.state().fState,
+	   (ULong_t) iter.state().fHandle,
+	   iter.id().fSSDet.Data());
+    */
+
+    
+
+
+  }
+
+
+  return bResult;
+}
+
 
 /******************************************************************************/
 /*

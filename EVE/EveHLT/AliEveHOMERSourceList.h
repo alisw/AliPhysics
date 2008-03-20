@@ -42,6 +42,8 @@ public:
   AliEveHOMERManager* GetManager() const { return fManager; }
   void SetManager(AliEveHOMERManager* m) { fManager = m; }
 
+  Bool_t GetSelectedSources();
+
   void CreateByDet();  // *MENU*
   void CreateByType(); // *MENU*
 

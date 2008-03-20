@@ -27,6 +27,7 @@
 #include "TXMLNode.h"
 #include "TList.h"
 
+#include "AliEveHOMERSourceList.h"
 #include "AliHLTHOMERSourceDesc.h"
 #include "AliHLTHOMERBlockDesc.h"
 #include "AliHLTHOMERReader.h"
@@ -36,21 +37,8 @@
 
 class AliHLTHOMERLibManager;
 
-/**
- * @class AliEveHOMERManager
- *
- * This class is the main class of the AliEveHOMERManager
- * ... more to come
- *
- * @ingroup alihlt_homer
- */
-
 class AliEveHOMERManager : public TEveElementList
 {
-private:
-  AliEveHOMERManager(const AliEveHOMERManager&);            // Not implemented.
-  AliEveHOMERManager& operator=(const AliEveHOMERManager&); // Not implemented.
-
 public:
 
   /*
@@ -59,11 +47,9 @@ public:
    * ---------------------------------------------------------------------------------
    */
 
-  /** constructor
-   * @param argc    Number of command line arguments.
-   * @param argv    Array of command line arguments.
-   */
+  /** constructor */
   AliEveHOMERManager(TString xmlFile="" );
+
   /** destructor */
   virtual ~AliEveHOMERManager();
 
@@ -76,16 +62,11 @@ public:
   /** Create Sources List from HOMER-Proxy */
   Int_t CreateHOMERSourcesList();
 
-  /** Set state of a source
-   * @param source      Pointer to AliHLTHOMERSourceDesc object.
-   * @param state       New (selected/not selected) state.
-   */
+  /** Set state of a source */
   void SetSourceState( AliHLTHOMERSourceDesc* source, Bool_t state);
 
-  /** Get pointer to source List
-   * @return            returns pointer to TList of sources
-   */
-  TList* GetSourceList() { return fSourceList; }
+  /** Get pointer to source List */
+  TList* GetSourceList() { return fSourceList; } // Get pointer to source List
 
   /*
    * ---------------------------------------------------------------------------------
@@ -93,17 +74,13 @@ public:
    * ---------------------------------------------------------------------------------
    */
 
-  /** Connect to HOMER sources, out of Readout List, which gets created when state has changed
-   * @return            0 on sucess, "HOMER" errors on error
-   */
+  /** Connect to HOMER sources, out of Readout List, which gets created when state has changed */
   Int_t ConnectHOMER();
 
   /** Disconnect from HOMER sources */
   void DisconnectHOMER();
 
-  /** Reconnect from HOMER sources
-   * @return            0 on sucess, "ConnectHOMER()" errors on error
-   */
+  /** Reconnect from HOMER sources */
   Int_t ReconnectHOMER();
 
   /*
@@ -112,42 +89,36 @@ public:
    * ---------------------------------------------------------------------------------
    */
 
-  /** Loads the next Event, after being connected
-   * @return            0 on sucess, "HOMER" errors on error
-   */
+  /** Loads the next Event, after being connected */
   Int_t NextEvent();
 
-  /** Get event ID
-   * @return            Returns eventID
+  /** Get event ID */
+  ULong_t GetEventID() { return fEventID; }    // Get event ID
+
+  /** Get pointer to block List */
+  TList* GetBlockList() { return fBlockList; } // Get pointer to block List
+  
+  /*
+   * ---------------------------------------------------------------------------------
+   *                            Test Realm ....
+   * ---------------------------------------------------------------------------------
    */
-  ULong_t GetEventID() { return fEventID; }
 
-  /** Get pointer to block List
-   * @return            returns pointer to TList of blocks
-   */
-  TList* GetBlockList() { return fBlockList; }
-
-
-  ///////////////////////////////////////////////////////////////////////////////////
-
-  void SelectRawTPC();
-  void SelectClusterTPC();
-  void SelectESDTPC();
-
-  void TestSelect();
-  void TestSelectClass( TString objectName );
-
+  /** Still under testing ... */
   void DumpTPCCalib(TString objectName, Bool_t dumpToFile);
 
   ///////////////////////////////////////////////////////////////////////////////////
 
 protected:
 
-  /** Dynamic loader manager for the HOMER library */
-  AliHLTHOMERLibManager* fLibManager;             //! transient
+  AliHLTHOMERLibManager* fLibManager;             //! Dynamic loader manager for the HOMER library
 
+  ///////////////////////////////////////////////////////////////////////////////////
 
 private:
+
+  AliEveHOMERManager(const AliEveHOMERManager&);            // Not implemented.
+  AliEveHOMERManager& operator=(const AliEveHOMERManager&); // Not implemented.
 
   /*
    * ---------------------------------------------------------------------------------
@@ -155,27 +126,13 @@ private:
    * ---------------------------------------------------------------------------------
    */
 
-  /** Get Information out of a TDS process in XML file
-   * @param xmlNode   Pointer to childs of TDS node
-   * @return          0 on sucess, > 0 on error
-   */
+  /** Get Information out of a TDS process in XML file */
   Int_t GetTDSAttributes( TXMLNode * xmlNode );
 
-  /** Resolve Information of hostname and port for source which has to be used by HOMER
-   * ( due to port mapping inside the HLT )
-   * @param xmlHostname  Hostname out of the XML
-   * @param xmlPort      Port out of the XML
-   * @param hostname     Return of the hostname
-   * @param port         Return of the port
-   * @return             0 on sucess, 1 if hostname couldn't be resolved, 2 if port couldn't be resolved,
-   */
+  /** Resolve Information of hostname and port for source which has to be used by HOMER */
   Int_t ResolveHostPortInformation( TString xmlHostname, TString xmlPort, TString &hostname, Int_t &port );
 
-  /** Resolve information of source
-   * @param xmlParent   ParentString out of the XML
-   * @param source      Return the filled AliHLTHOMERSourceDesc object
-   * @return            0 on sucess, 1 on error
-   */
+  /** Resolve information of source */
   Int_t ResolveSourceInformation( TString xmlParent, AliHLTHOMERSourceDesc * source );
 
   /*
@@ -184,20 +141,17 @@ private:
    * ---------------------------------------------------------------------------------
    */
 
-  /** Create a readout list for Hostname and ports
-   * @param socurceHostnames   Array of selected hostnames
-   * @param socurcePorts       Array of selected ports
-   * @param socurceCount       Number of selected hostname:port
-   */
+  /** Create a readout list for Hostname and ports */
   void CreateReadoutList( const char** socurceHostnames, UShort_t* sourcePorts, UInt_t &sourceCount);
 
-  /** Checks if already connected to HOMER sources
-   * @return             kTRUE or kFALSE, depending on connection state
-   */
-  Bool_t IsConnected() { return fConnected; }
+  /** Checks if already connected to HOMER sources */
+  Bool_t IsConnected() { return fConnected; }  // Checks if already connected to HOMER sources
+
+  /** Sets realm ( which can be ACR, GPN, HLT ) */ 
+  void SetRealm( TString s ) { fRealm = s; }   // Sets realm ( which can be ACR, GPN, HLT
 
   /* ---------------------------------------------------------------------------------
-   *                            Eve AliEveHOMERManager::foo(nt Handling - private
+   *                            Event Handling - private
    * ---------------------------------------------------------------------------------
    */
 
@@ -210,84 +164,46 @@ private:
    * ---------------------------------------------------------------------------------
    */
 
-  /** Get Number of blocks in current event
-   * @return           returns number of blocks in current event
-   */
-  ULong_t GetNBlks() { return fNBlks; }
+  /** Get Number of blocks in current event */
+  ULong_t GetNBlks() { return fNBlks; }                                        // Get Number of blocks in current event
 
-  /** Get pointer to block ndx in current event
-   * @param ndx        Block index
-   * @return           returns pointer to blk, NULL if no block present
-   */
+  /** Get pointer to block ndx in current event */
   void* GetBlk( Int_t ndx );
 
-  /** Get pointer to current block in current event
-   * @param ndx        Block index
-   * @return           returns pointer to blk, NULL if no block present
-   */
-  void* GetBlk() { return GetBlk( fCurrentBlk ); }
+  /** Get pointer to current block in current event */
+  void* GetBlk() { return GetBlk( fCurrentBlk ); }                             // Get pointer to current block in current event
 
-  /** Get first block in current event
-   * @return           returns pointer to blk, NULL if no block present
-   */
-  void* GetFirstBlk() { return GetBlk( 0 ); }
+  /** Get first block in current event */
+  void* GetFirstBlk() { return GetBlk( 0 ); }                                  // Get first block in current event
 
-  /** Get next block in current event
-   * @return           returns pointer to blk, NULL if no block present
-   */
-  void* GetNextBlk() { return GetBlk( ++fCurrentBlk ); }
+  /** Get next block in current event */
+  void* GetNextBlk() { return GetBlk( ++fCurrentBlk ); }                       // Get next block in current event
 
-  /** Get size of block ndx
-   * @param ndx        Block index
-   * @return           returns pointer to blk, 0 if no block present
-   */
+  /** Get size of block ndx */
   ULong_t GetBlkSize( Int_t ndx );
 
-  /** Get size of current block
-   * @param ndx        Block index
-   * @return           returns pointer to blk, 0 if no block present
-   */
-  ULong_t GetBlkSize() { return GetBlkSize( fCurrentBlk ); }
-
-  /** Get origin of block ndx
-   * @param ndx        Block index
-   * @return           origin of block
-   */
+  /** Get size of current block */ 
+  ULong_t GetBlkSize() { return GetBlkSize( fCurrentBlk ); }                   // Get size of current block 
+ 
+  /** Get origin of block ndx */
   TString GetBlkOrigin( Int_t ndx );
 
-  /** Get origin of current block
-   * @param ndx        Block index
-   * @return           origin of block
-   */
-  TString GetBlkOrigin(){ return GetBlkOrigin( fCurrentBlk ); }
+  /** Get origin of current block */
+  TString GetBlkOrigin(){ return GetBlkOrigin( fCurrentBlk ); }                // Get origin of current block
 
-  /** Get type of block ndx
-   * @param ndx        Block index
-   * @return           type of block
-   */
-  TString GetBlkType( Int_t ndx );
+  /** Get type of block ndx */
+  TString GetBlkType( Int_t ndx ); 
 
-  /** Get type of current block
-   * @param ndx        Block index
-   * @return           type of block
-   */
-  TString GetBlkType() { return GetBlkType( fCurrentBlk ); }
+  /** Get type of current block */
+  TString GetBlkType() { return GetBlkType( fCurrentBlk ); }                   // Get type of current block
 
-  /** Get specification of block ndx
-   * @param ndx        Block index
-   * @return           specification of block
-   */
+  /** Get specification of block ndx */
   ULong_t GetBlkSpecification( Int_t ndx );
 
-  /** Get specification of current block
-   * @param ndx        Block index
-   * @return           specification of block
-   */
-  ULong_t GetBlkSpecification(){ return GetBlkSpecification( fCurrentBlk ); }
+  /** Get specification of current block */
+  ULong_t GetBlkSpecification() { return GetBlkSpecification( fCurrentBlk ); } // Get specification of current block
 
-  /** Checks if current Block should was requested
-   * @return           returns kTRUE, if block should was requested
-   */
+  /** Checks if current Block should was requested */
   Bool_t CheckIfRequested( AliHLTHOMERBlockDesc* block );
 
   /*
@@ -297,55 +213,33 @@ private:
    */
 
   // == XML parser ==
-
-  /** 	 */
-  TString fXMLFile;                               // XML input file
-
-  /**  */
+  TString     fXMLFile;                           // XML input file
   TDOMParser* fXMLParser;                         //! XML parser into DOM model
-
-  /**  */
-  TXMLNode * fRootNode;                           //! Root node of parsed config file
+  TXMLNode *  fRootNode;                          //! Root node of parsed config file
 
   // == sources ==
-
-  /**  */
   TList * fSourceList;                            //! List to HOMER sources
 
   // == connection ==
-
-
-  /**  */
   AliHLTHOMERReader* fReader;                     //! Pointer to HOMER reader
+  TString            fRealm;                      // Indicates the realm where AliEve can connect to ( HLT, GPN, ACR );
 
   // == blocks ==
-
-  /**  */
   TList * fBlockList;                             //! List to HOMER blocks
 
   // == events ==
-
-  /**  */
-  ULong_t fNBlks;                                 // Number of blockes in current event
-
-  /**  */
+  ULong_t   fNBlks;                               // Number of blockes in current event
   ULong64_t fEventID;                             // EventID of current event
-
-  /**  */
-  ULong_t fCurrentBlk;                            // Current block in current event
+  ULong_t   fCurrentBlk;                          // Current block in current event
 
   // == states ==
-
-  /**  */
   Bool_t fConnected;                              // Shows connection status
-
-  /**  .
-   */
   Bool_t fStateHasChanged;                        // Indicates, if a sources have changes, so that one has to reconnect.
 
+  // == sources ==
+  AliEveHOMERSourceList* fSrcList;                // List of HOMER Sources
 
-  //----
-
+  //-----------------------------------------------------------------------------------------
   AliTPCPreprocessorOnline* fTPCPre;              // Preprocessor for TPC calibration.
 
   ClassDef(AliEveHOMERManager, 0); // Manage connections to HLT data-sources.

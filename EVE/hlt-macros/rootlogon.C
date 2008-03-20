@@ -8,7 +8,6 @@
  **************************************************************************/
 
 {
-
   cout << "Setting include path ..." << endl;
   TString includePath = "-I${ALICE_ROOT}/include ";
   includePath        += "-I${ALICE_ROOT}/EVE ";
@@ -20,5 +19,7 @@
   includePath        += "-I${ALICE_ROOT}/HLT/BASE/HOMER ";
   includePath        += "-I${ALICE_ROOT}/TPC ";
   includePath        += "-I${ALICE_ROOT}/RAW ";
+  includePath        += "-I${ALICE_ROOT}/MUON ";
+  includePath        += "-I${ALICE_ROOT}/MUON/mapping ";
   gSystem->SetIncludePath(includePath.Data());
 }
