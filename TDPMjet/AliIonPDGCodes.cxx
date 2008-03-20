@@ -28,15 +28,16 @@
 ClassImp(AliIonPDGCodes)
  
 //______________________________________________________________________________
-AliIonPDGCodes::AliIonPDGCodes()
+    AliIonPDGCodes::AliIonPDGCodes():
+	TObject(),
+	fNIon(200)
 { 
-  fNIon = 200;
-  for(Int_t i=0; i<fNIon; i++) fPDGCode[i]=0;
-
+    for(Int_t i=0; i<fNIon; i++) fPDGCode[i]=0;
 }
 
 AliIonPDGCodes::AliIonPDGCodes(const AliIonPDGCodes &/*PDGCodes*/)
-    :TObject()
+    :TObject(),
+     fNIon(200)
 {
 }
 
