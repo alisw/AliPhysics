@@ -439,7 +439,7 @@ UInt_t AliTOFPreprocessor::ProcessPulserData()
 	TString fileNamePulser = GetFile(kDAQ, "PULSER", str->GetName());
 	if (fileNamePulser.Length()>0){
 	  // storing refernce data
-	  AliInfo(Form("Got the file %s, now we can store the Reference Data for pulser for the current Run.", fileNamePulser.Data()));
+	  AliInfo(Form("Got the file %s, now we can process pulser data.", fileNamePulser.Data()));
 	  daqFile = new TFile(fileNamePulser.Data(),"READ");
 	  h1 = (TH1S*) daqFile->Get("hTOFpulser");
 	  for (Int_t ibin=0;ibin<kSize;ibin++){
@@ -452,6 +452,7 @@ UInt_t AliTOFPreprocessor::ProcessPulserData()
 	      }
 	    }
 	  }
+	  
 	  // elaborating infos
 	  Double_t mean =0;
 	  Int_t nread=0;
@@ -462,7 +463,7 @@ UInt_t AliTOFPreprocessor::ProcessPulserData()
 	     * if the status is bad it means it has not been read out.
 	     * in this case skip channel in order to not affect the mean */ 
 	    if (((AliTOFChannelOnlineStatus *)fFEEStatus->At(ientry-1))->GetStatus() == AliTOFChannelOnlineStatus::kTOFHWBad)
-	      continue;
+		    continue;
 
 	    if (h1->GetBinContent(ientry)==-1) continue;
 	    else {
@@ -474,31 +475,36 @@ UInt_t AliTOFPreprocessor::ProcessPulserData()
 	      nread++;
 	    }
 	  }
-	  mean/=nread;
-	  AliDebug(1,Form(" nread =  %i , mean = %f",nread,mean));
-	  for (Int_t ich =0;ich<fNChannels;ich++){
-	    AliTOFChannelOnlineStatus * chSt = (AliTOFChannelOnlineStatus *)fCalStatus->At(ich);
-	    if (h1->GetBinContent(ich+1)==-1) continue;
-	    AliDebug(1,Form(" channel %i ",ich));
-	    AliDebug(1,Form(" channel status before pulser = %i",(Int_t)chSt->GetStatus()));
-
-	    /* check whether channel has been read out during current run.
-	     * if the status is bad it means it has not been read out.
-	     * in this case skip channel in order to leave its status 
-	     * unchanged */
-	    if (((AliTOFChannelOnlineStatus *)fFEEStatus->At(ich))->GetStatus() == AliTOFChannelOnlineStatus::kTOFHWBad)
-	      continue;
-	    
-	    if (h1->GetBinContent(ich+1)<0.05*mean){
-	      chSt->SetStatus(chSt->GetStatus()|AliTOFChannelOnlineStatus::kTOFPulserBad);  // bad status for pulser
-	      AliDebug(1,Form(" channel status after pulser = %i",(Int_t)chSt->GetStatus()));
-	    }
-	    else {
-	      chSt->SetStatus(chSt->GetStatus()|AliTOFChannelOnlineStatus::kTOFPulserOk);  // bad status for pulser
-	      AliDebug(1,Form(" channel status after pulser = %i",(Int_t)chSt->GetStatus()));
-	    }
+	  if (nread!=0) {
+		  mean/=nread;
+		  AliDebug(1,Form(" nread =  %i , mean = %f",nread,mean));
+		  for (Int_t ich =0;ich<fNChannels;ich++){
+			  AliTOFChannelOnlineStatus * chSt = (AliTOFChannelOnlineStatus *)fCalStatus->At(ich);
+			  if (h1->GetBinContent(ich+1)==-1) continue;
+			  AliDebug(1,Form(" channel %i ",ich));
+			  AliDebug(1,Form(" channel status before pulser = %i",(Int_t)chSt->GetStatus()));
+			  
+			  /* check whether channel has been read out during current run.
+			   * if the status is bad it means it has not been read out.
+			   * in this case skip channel in order to leave its status 
+			   * unchanged */
+       			  if (((AliTOFChannelOnlineStatus *)fFEEStatus->At(ich))->GetStatus() == AliTOFChannelOnlineStatus::kTOFHWBad)
+			  continue;
+			  
+			  if (h1->GetBinContent(ich+1)<0.05*mean){
+				  chSt->SetStatus(chSt->GetStatus()|AliTOFChannelOnlineStatus::kTOFPulserBad);  // bad status for pulser
+				  AliDebug(1,Form(" channel status after pulser = %i",(Int_t)chSt->GetStatus()));
+			  }
+			  else {
+				  chSt->SetStatus(chSt->GetStatus()|AliTOFChannelOnlineStatus::kTOFPulserOk);  // bad status for pulser
+				  AliDebug(1,Form(" channel status after pulser = %i",(Int_t)chSt->GetStatus()));
+			  }
+		  }
 	  }
-	  
+	  else {
+		  Log("No channels read!! No action taken, keeping old status");
+	  }
+
 	  daqFile->Close();
 	  delete daqFile;
 	  delete h1;
@@ -600,7 +606,7 @@ UInt_t AliTOFPreprocessor::ProcessNoiseData()
 	TString fileNameNoise = GetFile(kDAQ, "NOISE", str->GetName());
 	if (fileNameNoise.Length()>0){
 	  // storing refernce data
-	  AliInfo(Form("Got the file %s, now we can store the Reference Data for noise for the current Run.", fileNameNoise.Data()));
+	  AliInfo(Form("Got the file %s, now we can process noise data.", fileNameNoise.Data()));
 	  daqFile = new TFile(fileNameNoise.Data(),"READ");
 	  h1 = (TH1F*) daqFile->Get("hTOFnoise");
 	  for (Int_t ibin=0;ibin<kSize;ibin++){
