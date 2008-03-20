@@ -1,4 +1,3 @@
-#include "AliAnaTPCTrackBase.h"
 //
 // This class is ment as a base class for doing analysis of
 // reconstructed TPC tracks in the AliAnalysisTask framework.
@@ -20,6 +19,10 @@
 
 // STL includes
 #include <iostream>
+//
+#include "AliAnaTPCTrackBase.h"
+
+
 
 using namespace std;
 
@@ -27,20 +30,63 @@ ClassImp(AliAnaTPCTrackBase)
 
 //________________________________________________________________________
 AliAnaTPCTrackBase::AliAnaTPCTrackBase() : 
-  AliAnalysisTask(), 
-  fESD(0), fESDfriend(0), fListOfHists(0)
+  AliAnalysisTask(),  
+  fDebug(0),          //  Debug flag
+  fESD(0), 
+  fESDfriend(0), 
+  fListOfHists(0),
+  fMaxTracks(0),      // Max tracks in histogram
+  fESDTracks(0),      //! N ESD tracks
+  fGoodTracks(0)     //! GOOD tracks
 {
   //
   // Default constructor (should not be used)
   //
-  fDebug = 0;
   SetMaxTracks();
 }
+
+AliAnaTPCTrackBase::AliAnaTPCTrackBase(const AliAnaTPCTrackBase & ana):
+  AliAnalysisTask(ana),  
+  fDebug(ana.fDebug),          //  Debug flag
+  fESD(ana.fESD), 
+  fESDfriend(ana.fESDfriend), 
+  fListOfHists(ana.fListOfHists),
+  fMaxTracks(ana.fMaxTracks),      // Max tracks in histogram
+  fESDTracks(0),      //! N ESD tracks
+  fGoodTracks(0)     //! GOOD tracks
+{
+  //
+  // copy constructor
+  //  
+  fESDTracks  = (TH1F*)ana.fESDTracks->Clone();      //! N ESD tracks
+  fGoodTracks = (TH1F*)ana.fGoodTracks->Clone();     //! GOOD tracks
+}
+
+
+AliAnaTPCTrackBase& AliAnaTPCTrackBase::operator=(const AliAnaTPCTrackBase&ana){
+  //
+  // assignemnt operator
+  //
+  if (this != &ana) {
+    new (this) AliAnaTPCTrackBase(ana);
+  }
+  return *this;
+
+
+}
+
+
 
 //________________________________________________________________________
 AliAnaTPCTrackBase::AliAnaTPCTrackBase(const char *name) : 
   AliAnalysisTask(name, "AliAnaTPCTrackBase"), 
-  fESD(0), fESDfriend(0), fListOfHists(0)
+  fDebug(0),          //  Debug flag
+  fESD(0), 
+  fESDfriend(0), 
+  fListOfHists(0),
+  fMaxTracks(0),      // Max tracks in histogram
+  fESDTracks(0),      //! N ESD tracks
+  fGoodTracks(0)     //! GOOD tracks
 {
   //
   // Normal constructor
@@ -95,17 +141,17 @@ void AliAnaTPCTrackBase::CreateOutputObjects()
   OpenFile(0);
   fListOfHists = new TList();
   
-  hESDTracks = 
+  fESDTracks = 
     new TH1F("hESDTracks", 
 	     "Number of ESD tracks per event; N ESD tracks; Counts", 
 	     TMath::Min(fMaxTracks, 100), 0, fMaxTracks);
-  fListOfHists->Add(hESDTracks);
+  fListOfHists->Add(fESDTracks);
 
-  hGoodTracks = 
+  fGoodTracks = 
     new TH1F("hGoodTracks", 
 	     "Number of Good tracks per event; N good tracks; Counts", 
 	     TMath::Min(fMaxTracks, 100), 0, fMaxTracks);
-  fListOfHists->Add(hGoodTracks);
+  fListOfHists->Add(fGoodTracks);
 }
 
 
@@ -142,7 +188,7 @@ void AliAnaTPCTrackBase::Exec(Option_t *) {
      return;
   }
   
-  hESDTracks->Fill(nESDTracks);
+  fESDTracks->Fill(nESDTracks);
   Int_t nGoodTracks = 0;
 
   for(Int_t i = 0; i < nESDTracks; i++) {
@@ -176,7 +222,7 @@ void AliAnaTPCTrackBase::Exec(Option_t *) {
     }
   }
   
-  hGoodTracks->Fill(nGoodTracks);
+  fGoodTracks->Fill(nGoodTracks);
   
   // Post final data. It will be written to a file with option "RECREATE"
   PostData(0, fListOfHists);

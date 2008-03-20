@@ -18,6 +18,8 @@ class AliAnaTPCTrackBase : public AliAnalysisTask {
  public:
   AliAnaTPCTrackBase();
   AliAnaTPCTrackBase(const char *name);
+  AliAnaTPCTrackBase(const AliAnaTPCTrackBase&ana);
+  AliAnaTPCTrackBase& operator=(const AliAnaTPCTrackBase&ana);
   virtual ~AliAnaTPCTrackBase() {};
   
   virtual void   ConnectInputData(Option_t *);
@@ -38,8 +40,8 @@ class AliAnaTPCTrackBase : public AliAnalysisTask {
   TList*        fListOfHists;    //! Output list of histograms
   
   Int_t         fMaxTracks;      // Max tracks in histogram
-  TH1F*         hESDTracks;      //! N ESD tracks
-  TH1F*         hGoodTracks;     //! GOOD tracks
+  TH1F*         fESDTracks;      //! N ESD tracks
+  TH1F*         fGoodTracks;     //! GOOD tracks
 
   ClassDef(AliAnaTPCTrackBase, 1); // Analysis task base class for TPC tracks and clusters
 };
