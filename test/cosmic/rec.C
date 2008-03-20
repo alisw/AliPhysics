@@ -1,57 +1,5 @@
-void rec(Int_t runNumber = 0, const char* year = "08", const char *localFileName = NULL)
+void rec(const char *filename="raw.root")
 {
-  // Offline shifter reconstruction macro
-
-  TString filename;
-
-  if (!localFileName) {
-
-    cout << "Going to run the reconstruction for run: " << runNumber << endl;
-
-    // connect to the grid 
-    TGrid * grid = 0x0 ; 
-    grid = TGrid::Connect("alien://") ; 
-		
-    // make the file name pattern year and run number
-    TString pattern;
-    pattern.Form("%9d",runNumber);
-    pattern.ReplaceAll(" ", "0") ; 
-    pattern.Prepend(year);
-    pattern.Append("*0.root");
-
-    // find the files associated to this run
-    // get the list of files from AliEn directly 
-    TString baseDir; 
-    baseDir.Form("/alice/data/20%s/",year);
-
-    cout << "Looking for raw-data files with pattern " << pattern << " in folder " << baseDir << endl;
-
-    TGridResult *result = grid->Query(baseDir, pattern);
-
-    TList *fileList = result->GetFileInfoList();
-
-    cout << fileList->GetEntries() << " raw-data files found" << endl;
-    if ( fileList->GetEntries() == 0) {
-      cout << "Exiting..." << endl;
-      return;
-    }
-
-    // Take the first (or last?) file...
-    TFileInfo *fi =  (TFileInfo *)fileList->At(0); 
-    //  TFileInfo *fi =  (TFileInfo *)fileList->At(fileList->GetEntries()-1); 
-
-    cout << "Getting the file:" << fi->GetCurrentUrl()->GetUrl() << endl;
-    fi->Dump();
-
-    filename = fi->GetCurrentUrl()->GetUrl();
-  }
-  else {
-    // In case of local raw-data file...
-    filename = localFileName;
-  }
-
-  AliLog::Flush();
-
   /////////////////////////////////////////////////////////////////////////////////////////
   //
   // First version of the reconstruction
@@ -132,7 +80,7 @@ void rec(Int_t runNumber = 0, const char* year = "08", const char *localFileName
   rec.SetUniformFieldTracking(kFALSE);
   rec.SetWriteESDfriend(kTRUE);
   rec.SetWriteAlignmentData();
-  rec.SetInput(filename.Data());
+  rec.SetInput(filename);
   rec.SetRunReconstruction("ALL");
   rec.SetUseTrackingErrorsForAlignment("ITS");
 
