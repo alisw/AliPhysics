@@ -1,0 +1,52 @@
+#ifndef ALIESDINPUTHANDLERRP_H
+#define ALIESDINPUTHANDLERRP_H
+/* Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id: AliESDInputHandler.h 24521 2008-03-14 16:43:54Z morsch $ */
+
+//-------------------------------------------------------------------------
+//     ESD Input Handler realisation of the AliVEventHandler interface
+//     Automatic loading of RecPoint Trees
+//     Author: Andreas Morsch, CERN
+//-------------------------------------------------------------------------
+
+#include "AliESDInputHandler.h"
+#include "AliESDEvent.h"
+class TList;
+class TTree;
+class TDirectoryFile;
+class TString;
+
+
+class AliESDInputHandlerRP : public AliESDInputHandler {
+
+ public:
+    AliESDInputHandlerRP();
+    AliESDInputHandlerRP(const char* name, const char* title);
+    virtual ~AliESDInputHandlerRP();
+    virtual Bool_t       Init(Option_t* opt);
+    virtual Bool_t       InitIO(Option_t* opt) {return Init(opt);};
+    virtual Bool_t       BeginEvent(Long64_t entry);
+    virtual Bool_t       FinishEvent();
+    virtual Bool_t       GetEvent(Int_t iev);
+    virtual Bool_t       Notify(const char* path);
+    virtual void         ResetIO();
+ private:
+    Bool_t      OpenFile(Int_t i);
+    AliESDInputHandlerRP(const AliESDInputHandlerRP& handler);             
+    AliESDInputHandlerRP& operator=(const AliESDInputHandlerRP& handler);  
+ private:
+    TList*          fRTrees;           // List of RecPoint Trees
+    TList*          fRFiles;           // List of RecPoint Files
+    TDirectoryFile* fDirR;             //! Directory for RP Tree
+    Int_t           fEventNumber;      //! Current event number
+    Int_t           fNEvent;           //! Number of events in current directory
+    Int_t           fFileNumber;       //! Input file number
+    Int_t           fEventsPerFile;    //! Number of events per file
+    char            *fExtension;       //! File name extension
+    TString         *fPathName;        //! Input file path 
+    ClassDef(AliESDInputHandlerRP, 1);
+};
+
+#endif

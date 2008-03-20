@@ -1,6 +1,6 @@
 #-*- Mode: Makefile -*-
 
-SRCS = AliESDEvent.cxx AliESDInputHandler.cxx AliESDfriend.cxx AliESD.cxx \
+SRCS = AliESDEvent.cxx AliESDInputHandler.cxx AliESDInputHandlerRP.cxx AliESDfriend.cxx AliESD.cxx \
        AliESDtrack.cxx AliESDfriendTrack.cxx\
        AliESDMuonTrack.cxx AliESDPmdTrack.cxx AliESDTrdTrack.cxx AliESDHLTtrack.cxx \
        AliESDv0.cxx AliESDcascade.cxx AliVertex.cxx AliESDVertex.cxx \
