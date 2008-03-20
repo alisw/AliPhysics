@@ -1108,15 +1108,22 @@ Bool_t AliShuttle::ContinueProcessing()
 		return WriteShuttleStatus(status);
 	}
 
-	// The following two cases shouldn't happen if Shuttle Logbook was correctly updated.
+	// The following case shouldn't happen if Shuttle Logbook was correctly updated.
 	// If it happens it may mean Logbook updating failed... let's do it now!
 	if (status->GetStatus() == AliShuttleStatus::kDone ||
-	    status->GetStatus() == AliShuttleStatus::kFailed){
+	    status->GetStatus() == AliShuttleStatus::kFailed ||
+	    status->GetStatus() == AliShuttleStatus::kSkipped) {
 		Log("SHUTTLE", Form("ContinueProcessing - %s is already %s. Updating Shuttle Logbook",
 					fCurrentDetector.Data(),
 					status->GetStatusName(status->GetStatus())));
-		UpdateShuttleLogbook(fCurrentDetector.Data(),
-					status->GetStatusName(status->GetStatus()));
+		
+		if (status->GetStatus() == AliShuttleStatus::kSkipped)
+		{
+			UpdateShuttleLogbook(fCurrentDetector.Data(), "DONE");
+		}
+		else
+			UpdateShuttleLogbook(fCurrentDetector.Data(), status->GetStatusName(status->GetStatus()));
+			
 		return kFALSE;
 	}
 
@@ -1453,11 +1460,11 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 				gSystem->Exit(1);			
 			}
 			
-			Bool_t success = ProcessCurrentDetector();
+			Int_t success = ProcessCurrentDetector();
 			
 			gSystem->ChangeDirectory(wd.Data());
 						
-			if (success) // Preprocessor finished successfully!
+			if (success == 1) // Preprocessor finished successfully!
 			{ 
 				// remove temporary folder or DCS map
    				if (!fConfig->KeepTempFolder())
@@ -1477,7 +1484,7 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 				if (StoreOCDB() == kFALSE)
 					success = kFALSE;
 			} 
-			else 
+			else if (success == 0)
 			{
 				Log("SHUTTLE", 
 					Form("\t\t\t****** run %d - %s: PP ERROR ******",
@@ -1547,7 +1554,7 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 }
 
 //______________________________________________________________________________________________
-Bool_t AliShuttle::ProcessCurrentDetector()
+Int_t AliShuttle::ProcessCurrentDetector()
 {
 	//
         // Makes data retrieval just for a specific detector (fCurrentDetector).
@@ -1559,16 +1566,26 @@ Bool_t AliShuttle::ProcessCurrentDetector()
 	TString wd = gSystem->WorkingDirectory();
 	
 	if (!CleanReferenceStorage(fCurrentDetector.Data()))
-		return kFALSE;
+		return 0;
 	
 	gSystem->ChangeDirectory(wd.Data());
 	
-	TMap* dcsMap = new TMap();
-
 	// call preprocessor
 	AliPreprocessor* aPreprocessor =
 		dynamic_cast<AliPreprocessor*> (fPreprocessorMap.GetValue(fCurrentDetector));
 
+	// these lines will become active in a few days, when all preprocessors are updated
+	if (0 && aPreprocessor->ProcessRunType() == kFALSE)
+	{
+		UpdateShuttleStatus(AliShuttleStatus::kSkipped);
+		UpdateShuttleLogbook(fCurrentDetector, "DONE");
+		Log(fCurrentDetector, Form("ProcessCurrentDetector - %s preprocessor is not interested in this run type", fCurrentDetector.Data()));
+	
+		return 2;
+	}
+	
+	TMap* dcsMap = new TMap();
+	
 	aPreprocessor->Initialize(GetCurrentRun(), GetCurrentStartTime(), GetCurrentEndTime());
 
 	Bool_t processDCS = aPreprocessor->ProcessDCS();
@@ -1588,7 +1605,7 @@ Bool_t AliShuttle::ProcessCurrentDetector()
 		UpdateShuttleStatus(AliShuttleStatus::kDCSStarted);
 		UpdateShuttleStatus(AliShuttleStatus::kDCSError);
 		delete dcsMap;
-		return kFALSE;
+		return 0;
 	} else {
 
 		UpdateShuttleStatus(AliShuttleStatus::kDCSStarted);
@@ -1628,7 +1645,7 @@ Bool_t AliShuttle::ProcessCurrentDetector()
 								    "Could not send mail to DCS experts!"));
 
 					delete dcsMap;
-					return kFALSE;
+					return 0;
 				}
 			}
 			
@@ -1651,7 +1668,7 @@ Bool_t AliShuttle::ProcessCurrentDetector()
 					
 					if (aliasMap) delete aliasMap;
 					delete dcsMap;
-					return kFALSE;
+					return 0;
 				}				
 			}
 			
@@ -1697,7 +1714,7 @@ Bool_t AliShuttle::ProcessCurrentDetector()
 		SendMail(kFXSEMail, fFXSError);
 		dcsMap->DeleteAll();
 		delete dcsMap;
-		return kFALSE;
+		return 0;
 	}
 
 	if (returnValue > 0) // Preprocessor error!
@@ -1707,7 +1724,7 @@ Bool_t AliShuttle::ProcessCurrentDetector()
 		UpdateShuttleStatus(AliShuttleStatus::kPPError);
 		dcsMap->DeleteAll();
 		delete dcsMap;
-		return kFALSE;
+		return 0;
 	}
 	
 	// preprocessor ok!
@@ -1718,7 +1735,7 @@ Bool_t AliShuttle::ProcessCurrentDetector()
 	dcsMap->DeleteAll();
 	delete dcsMap;
 
-	return kTRUE;
+	return 1;
 }
 
 //______________________________________________________________________________________________
@@ -1881,6 +1898,8 @@ AliShuttleLogbookEntry* AliShuttle::QueryRunParameters(Int_t run)
 	UInt_t startTime = entry->GetStartTime();
 	UInt_t endTime = entry->GetEndTime();
 
+	// the conditions under which runs are marked as done and not processed are not clear currently
+	// for the moment no runs are marked as done
 // 	if (!startTime || !endTime || startTime > endTime) 
 // 	{
 // 		Log("SHUTTLE",
@@ -1901,26 +1920,26 @@ AliShuttleLogbookEntry* AliShuttle::QueryRunParameters(Int_t run)
 // 		return 0;
 // 	}
 
-	if (!startTime) 
-	{
-		Log("SHUTTLE",
-			Form("QueryRunParameters - Invalid parameters for Run %d: " 
-				"startTime = %d, endTime = %d. Skipping!",
-					run, startTime, endTime));		
-		
-		Log("SHUTTLE", Form("Marking SHUTTLE done for run %d", run));
-		fLogbookEntry = entry;	
-		if (!UpdateShuttleLogbook("shuttle_ignored"))
-		{
-			AliError(Form("Could not update logbook for run %d !", run));
-		}
-		fLogbookEntry = 0;
-				
-		delete entry;
-		delete aRow;
-		delete aResult;
-		return 0;
-	}
+// 	if (!startTime) 
+// 	{
+// 		Log("SHUTTLE",
+// 			Form("QueryRunParameters - Invalid parameters for Run %d: " 
+// 				"startTime = %d, endTime = %d. Skipping!",
+// 					run, startTime, endTime));		
+// 		
+// 		Log("SHUTTLE", Form("Marking SHUTTLE done for run %d", run));
+// 		fLogbookEntry = entry;	
+// 		if (!UpdateShuttleLogbook("shuttle_ignored"))
+// 		{
+// 			AliError(Form("Could not update logbook for run %d !", run));
+// 		}
+// 		fLogbookEntry = 0;
+// 				
+// 		delete entry;
+// 		delete aRow;
+// 		delete aResult;
+// 		return 0;
+// 	}
 	
 	if (startTime && !endTime) 
 	{

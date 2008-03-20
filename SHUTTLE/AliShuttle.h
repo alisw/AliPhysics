@@ -90,7 +90,7 @@ private:
 	AliShuttle(const AliShuttle& other);
 	AliShuttle& operator= (const AliShuttle& other);
 
-	Bool_t ProcessCurrentDetector();
+	Int_t ProcessCurrentDetector();
 
 	AliShuttleLogbookEntry* QueryRunParameters(Int_t run);
 	Bool_t QueryShuttleLogbook(const char* whereClause, TObjArray& entries);

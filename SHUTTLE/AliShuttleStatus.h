@@ -30,7 +30,8 @@ public:
     kDone, // final
     kFailed,  // final
     kStoreDelayed,
-    kFXSError
+    kFXSError,
+    kSkipped // final
   };
 
   AliShuttleStatus();
