@@ -8,3 +8,9 @@ HDRS= $(SRCS:.cxx=.h)
 DHDR:=ZDCrecLinkDef.h
 
 EINCLUDE:=RAW
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+                         -lSTEER -lCDB -lSTEERBase -lZDCbase
+
+endif

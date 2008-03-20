@@ -1,3 +1,5 @@
+#-*- Mode: Makefile -*-
+
 SRCS= THerwig6.cxx AliGenHerwig.cxx
 
 HDRS= THerwig6.h AliGenHerwig.h
@@ -7,3 +9,9 @@ DHDR:=THerwigLinkDef.h
 EXPORT:=THerwig6.h
 
 EINCLUDE:=HERWIG
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+                         -lEVGEN -lSTEER -lherwig \
+                         -L$(shell root-config --libdir) -lEG
+endif

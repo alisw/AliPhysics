@@ -1,10 +1,15 @@
 #-*- Mode: Makefile -*-
 # $Id$
 
-SRCS:= AliPMDLoader.cxx AliPMDdigit.cxx AliPMDBlockHeader.cxx AliPMDDspHeader.cxx AliPMDPatchBusHeader.cxx AliPMDddldata.cxx AliPMDRawStream.cxx AliPMDCalibData.cxx AliPMDCalibrator.cxx AliPMDPreprocessor.cxx AliPMDRawToSDigits.cxx AliPMDPedestal.cxx
+SRCS:= AliPMDLoader.cxx AliPMDdigit.cxx AliPMDBlockHeader.cxx AliPMDDspHeader.cxx AliPMDPatchBusHeader.cxx AliPMDddldata.cxx AliPMDRawStream.cxx AliPMDCalibData.cxx AliPMDCalibrator.cxx AliPMDPreprocessor.cxx AliPMDRawToSDigits.cxx AliPMDPedestal.cxx AliPMDsdigit.cxx
 
 HDRS:= $(SRCS:.cxx=.h) 
 
 DHDR:=PMDbaseLinkDef.h
 
 EINCLUDE:=RAW
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+                         -lSTEER -lCDB -lSTEERBase -lRAWDatarec -lRAWDatabase
+endif

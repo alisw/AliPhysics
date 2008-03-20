@@ -8,3 +8,9 @@ HDRS:= $(SRCS:.cxx=.h) AliPMDClustering.h AliPMDDiscriminator.h AliPMDcludata.h
 DHDR:=PMDrecLinkDef.h
 
 EINCLUDE:=RAW
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+                         -lPMDbase -lSTEER -lCDB -lESD -lSTEERBase \
+                         -lRAWDatarec
+endif

@@ -1,10 +1,17 @@
 #-*- Mode: Makefile -*-
 # $Id$
 
-SRCS:= AliPMD.cxx AliPMDv0.cxx AliPMDv1.cxx AliPMDhit.cxx AliPMDcell.cxx AliPMDsdigit.cxx AliPMDDigitizer.cxx AliPMDDDLRawData.cxx
+SRCS:= AliPMD.cxx AliPMDv0.cxx AliPMDv1.cxx AliPMDhit.cxx AliPMDcell.cxx AliPMDDigitizer.cxx AliPMDDDLRawData.cxx
 
 HDRS:= $(SRCS:.cxx=.h) 
 
 DHDR:=PMDsimLinkDef.h
 
 EINCLUDE:=RAW
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+                         -lPMDbase -lSTEER -lCDB -lSTEERBase \
+                         -lRAWDatasim -lRAWDatabase \
+                         -L$(shell root-config --libdir) -lVMC -lGeom 
+endif

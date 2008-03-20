@@ -13,7 +13,6 @@
 #pragma link C++ class  AliPMDv1+;
 #pragma link C++ class  AliPMDhit+;
 #pragma link C++ class  AliPMDcell+;
-#pragma link C++ class  AliPMDsdigit+;
 #pragma link C++ class  AliPMDDigitizer+;
 #pragma link C++ class  AliPMDDDLRawData+;
 #endif

@@ -20,4 +20,5 @@
 #pragma link C++ class  AliPMDPreprocessor+;
 #pragma link C++ class  AliPMDRawToSDigits+;
 #pragma link C++ class  AliPMDPedestal+;
+#pragma link C++ class  AliPMDsdigit+;
 #endif

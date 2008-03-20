@@ -11,3 +11,9 @@ HDRS= $(SRCS:.cxx=.h)
 DHDR:=ZDCsimLinkDef.h
 
 EINCLUDE:=RAW
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+                         -lSTEER -lCDB -lSTEERBase -lZDCbase -lRAWDatabase \
+                         -L$(shell root-config --libdir) -lVMC -lEG -lGeom
+endif
