@@ -689,11 +689,10 @@ Bool_t AliESDtrack::UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags){
     break;
 
   case kTRDout: case kTRDin: case kTRDrefit:
-    index=fFriendTrack->GetTRDindices();
+    index     = fFriendTrack->GetTRDindices();
     fTRDLabel = t->GetLabel(); 
-    fTRDchi2=t->GetChi2();
-    fTRDncls=6;//t->GetNumberOfTracklets(); //t->GetNumberOfClusters();
-    //for (Int_t i=0;i<fTRDncls;i++) index[i]=t->GetClusterIndex(i);
+    fTRDchi2  = t->GetChi2();
+    fTRDncls  = t->GetNumberOfClusters();
     for (Int_t i=0;i<6;i++) index[i]=t->GetTrackletIndex(i);
     
     fTRDsignal=t->GetPIDsignal();
