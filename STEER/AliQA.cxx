@@ -54,7 +54,7 @@ TFile    * AliQA::fgQAResultFile         = 0x0 ;
 TString    AliQA::fgQAResultDirName      = "" ;  
 TString    AliQA::fgQAResultFileName     = "QA.root" ; 
 TString    AliQA::fgDetNames[]           = {"ITS", "TPC", "TRD", "TOF", "PHOS", "HMPID", "EMCAL", "MUON", "FMD",
-										    "ZDC", "PMD", "T0", "VZERO", "ACORDE", "HLT"} ;   
+										    "ZDC", "PMD", "T0", "VZERO", "ACORDE", "HLT", "Global"} ;   
 TString       AliQA::fgTaskNames[]       = {"Raws", "Hits", "SDigits", "Digits", "RecPoints", "TrackSegments", "RecParticles", "ESDs"} ;   
 const TString AliQA::fkgLabLocalFile     = "file://"  ; 
 const TString AliQA::fkgLabLocalOCDB     = "local://" ;  
@@ -127,7 +127,6 @@ AliQA::AliQA(const ALITASK_t tsk) :
   fDet(kNULLDET),
   fTask(tsk)
 {
-	AliInfo(Form("TTTTTTTTTTTTTTTTTTTTTTT %d", tsk)) ; 	
   // constructor to be used in the AliRoot module (SIM, REC, ESD or ANA)
   if (! CheckRange(tsk) ) {
     fTask = kNULLTASK ; 
@@ -236,18 +235,7 @@ const char * AliQA::GetAliTaskName(ALITASK_t tsk)
 }
 
 //_______________________________________________________________
-const char * AliQA::GetDetName(Int_t det) 
-{
-	// returns the detector name corresponding to a given index (needed in a loop)
-	
-	if ( det >= 0 &&  det < kNDET) 
-		return (fgDetNames[det]).Data() ; 
-	else 
-		return NULL ; 
-}
-
-//_______________________________________________________________
-const AliQA::DETECTORINDEX_t AliQA::GetDetName(const char * name) 
+const AliQA::DETECTORINDEX_t AliQA::GetDetIndex(const char * name) 
 {
 	// returns the detector index corresponding to a given name
 	TString sname(name) ; 
@@ -259,6 +247,17 @@ const AliQA::DETECTORINDEX_t AliQA::GetDetName(const char * name)
 		}
 	}
 	return rv ; 		
+}
+
+//_______________________________________________________________
+const char * AliQA::GetDetName(Int_t det) 
+{
+	// returns the detector name corresponding to a given index (needed in a loop)
+	
+	if ( det >= 0 &&  det < kNDET) 
+		return (fgDetNames[det]).Data() ; 
+	else 
+		return NULL ; 
 }
 
 //_______________________________________________________________

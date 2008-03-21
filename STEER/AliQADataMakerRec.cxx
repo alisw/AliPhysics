@@ -84,12 +84,16 @@ void AliQADataMakerRec::EndOfCycle(AliQA::TASKINDEX_t task)
 		list = fRecPointsQAList ; 
 	else if ( task == AliQA::kESDS )
 		list = fESDsQAList ; 
-	
+
+	DefaultEndOfDetectorCycle(task) ;
 	EndOfDetectorCycle(task, list) ;
-	TDirectory * subDir = fDetectorDir->GetDirectory(AliQA::GetTaskName(task)) ; 
+	TDirectory * subDir = 0x0 ;
+	if (fDetectorDir) 
+		subDir = fDetectorDir->GetDirectory(AliQA::GetTaskName(task)) ; 
 	if ( subDir ) {
 		subDir->cd() ; 
-		list->Write() ;
+		if (list) 
+			list->Write() ;
 	}
 }
  
@@ -179,7 +183,7 @@ void AliQADataMakerRec::StartOfCycle(AliQA::TASKINDEX_t task, const Bool_t sameC
 			fOutput->Close() ; 
 		fOutput = AliQA::GetQADataFile(GetName(), fRun, fCurrentCycle) ; 	
 	}	
-	AliDebug(1, Form(" Run %d Cycle %d task %s file %s", 
+	AliInfo(Form(" Run %d Cycle %d task %s file %s", 
 				 fRun, fCurrentCycle, AliQA::GetTaskName(task).Data(), fOutput->GetName() )) ;
 
 	fDetectorDir = fOutput->GetDirectory(GetDetectorDirName()) ; 

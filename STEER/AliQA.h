@@ -19,7 +19,7 @@ public:
 
 	enum DETECTORINDEX_t {
     kNULLDET=-1, kITS, kTPC, kTRD, kTOF, kPHOS, kHMPID, kEMCAL, kMUON, kFMD,
-    kZDC, kPMD, kT0, kVZERO, kACORDE, kHLT, kNDET };
+    kZDC, kPMD, kT0, kVZERO, kACORDE, kHLT, kGLOBAL, kNDET };
 	enum ALITASK_t {
     kNULLTASK=-1, kRAW, kSIM, kREC, kESD, kANA, kNTASK };
 	enum QABIT_t {
@@ -46,9 +46,8 @@ public:
     static const TString   GetLabLocalFile() { return fkgLabLocalFile ; } 
     static const TString   GetLabLocalOCDB() { return fkgLabLocalOCDB ; } 
     static const TString   GetLabAliEnOCDB() { return fkgLabAliEnOCDB ; } 
+	static const DETECTORINDEX_t GetDetIndex(const char * name) ; 
 	static const TString   GetDetName(DETECTORINDEX_t det) { return fgDetNames[det] ; }
-	static const DETECTORINDEX_t GetDetName(const char * name) ; 
-	static const TString   GetTaskName(TASKINDEX_t tsk) { return fgTaskNames[tsk] ; }
 	static const char *    GetDetName(Int_t det) ;
 	static const char *    GetQADataFileName() { return fgQADataFileName.Data() ; }
 	static TFile *         GetQADataFile(const char * name, const Int_t run, const Int_t cycle) ; 
@@ -61,6 +60,7 @@ public:
 	static const char  *   GetQARefStorage() { return fgQARefDirName.Data() ; }
 	static const char  *   GetRefOCDBDirName() { return fkgRefOCDBDirName.Data() ; }
 	static const char  *   GetRefDataDirName() { return fkgRefDataDirName.Data() ; }
+	static const TString   GetTaskName(TASKINDEX_t tsk) { return fgTaskNames[tsk] ; }
 	const Bool_t           IsSet(DETECTORINDEX_t det, ALITASK_t tsk, QABIT_t bit) const ;
 	void                   Set(QABIT_t bit) ;
 	static void			   SetQAResultDirName(const char * name) ; 

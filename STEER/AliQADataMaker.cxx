@@ -91,7 +91,7 @@ void AliQADataMaker::DefaultEndOfDetectorCycle(AliQA::TASKINDEX_t task)
 {
 	// this method must be oveloaded by detectors
 	// sets the QA result to Fatal
-	AliQA::Instance(AliQA::GetDetName(GetName())) ;
+	AliQA::Instance(AliQA::GetDetIndex(GetName())) ;
 	AliQA * qa = AliQA::Instance(task) ;
 	qa->Set(AliQA::kFATAL) ; 
 	AliQA::GetQAResultFile()->cd() ; 

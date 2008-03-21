@@ -624,14 +624,15 @@ void AliQADataMakerSteer::Reset(const Bool_t sameCycle)
 }
 
 //_____________________________________________________________________________
-TString AliQADataMakerSteer::Run(const char * detectors, AliRawReader * rawReader) 
+TString AliQADataMakerSteer::Run(const char * detectors, AliRawReader * rawReader, const Bool_t sameCycle) 
 {
 	//Runs all the QA data Maker for Raws only
-
-	fRawReader       = rawReader ; 		
+	
+	fCycleSame       = sameCycle ;
+	fRawReader       = rawReader ;
 	fDetectors       = detectors ; 
-	fDetectorsW      = detectors ; 
-
+	fDetectorsW      = detectors ; 	
+	
 	if ( !Init(AliQA::kRAWS, "rec") ) 
 		return kFALSE ; 
 	fRawReaderDelete = kFALSE ; 
@@ -641,10 +642,11 @@ TString AliQADataMakerSteer::Run(const char * detectors, AliRawReader * rawReade
 }
 
 //_____________________________________________________________________________
-TString AliQADataMakerSteer::Run(const char * detectors, const char * fileName) 
+TString AliQADataMakerSteer::Run(const char * detectors, const char * fileName, const Bool_t sameCycle) 
 {
 	//Runs all the QA data Maker for Raws only
- 
+
+	fCycleSame       = sameCycle ;
 	fDetectors       = detectors ; 
 	fDetectorsW      = detectors ; 	
 	
@@ -656,13 +658,14 @@ TString AliQADataMakerSteer::Run(const char * detectors, const char * fileName)
 }
 
 //_____________________________________________________________________________
-TString AliQADataMakerSteer::Run(const char * detectors, const AliQA::TASKINDEX_t taskIndex, const  char * fileName )
+TString AliQADataMakerSteer::Run(const char * detectors, const AliQA::TASKINDEX_t taskIndex, Bool_t const sameCycle, const  char * fileName ) 
 {
 	// Runs all the QA data Maker for every detector
-
-	fDetectors  = detectors ; 
-	fDetectorsW = detectors ; 
-
+	
+	fCycleSame       = sameCycle ;
+	fDetectors       = detectors ; 
+	fDetectorsW      = detectors ; 		
+	
 	TString mode ; 
 	if ( (taskIndex == AliQA::kHITS) || (taskIndex == AliQA::kSDIGITS) || (taskIndex == AliQA::kDIGITS) ) 
 		mode = "sim" ; 
