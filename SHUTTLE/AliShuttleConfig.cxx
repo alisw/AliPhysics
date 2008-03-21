@@ -787,9 +787,6 @@ AliShuttleConfig::~AliShuttleConfig()
 	fDetectorMap.DeleteAll();
 	fDetectorList.Clear();
 	fProcessedDetectors.Delete();
-	
-	delete[] fAdmin;
-	
 }
 
 //______________________________________________________________________________________________

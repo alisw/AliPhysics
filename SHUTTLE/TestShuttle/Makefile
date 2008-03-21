@@ -11,7 +11,7 @@ ifneq ($(ALICE_ROOT),)
   ALICEINC += -I$(ALICE_ROOT)/include 
 endif
 
-CXXFLAGS     += $(ALICEINC)
+CXXFLAGS     += $(ALICEINC) -g
 SRCS         += dict.cxx
 OBJS          = $(SRCS:.cxx=.o)
 
