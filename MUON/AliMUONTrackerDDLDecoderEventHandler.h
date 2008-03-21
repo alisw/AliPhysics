@@ -231,7 +231,7 @@ public:
 	/// - param UInt_t  This is the raw data word as found within the bus patch payload.
 	/// - param bool  Flag indicating if the raw data word had a parity error.
 	///       This will always be set to false if fSendDataOnParityError in the
-	///       AliMUONTrackerDDLDecoder class was set to true.
+	///       AliMUONTrackerDDLDecoder class was set to false.
 	void OnData(UInt_t /*data*/, bool /*parityError*/) {}
 	
 	/// Whenever a parsing error of the DDL payload is encountered because of
