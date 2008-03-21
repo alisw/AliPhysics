@@ -111,10 +111,10 @@ Bool_t AliESDInputHandlerRP::BeginEvent(Long64_t entry)
 	AliWarning(Form("AliESDInputHandlerRP: Event number out of range %5d %5d\n", entry, fNEvent));
 	return kFALSE;
     }
-    return GetEvent(entry);
+    return LoadEvent(entry);
 }
 
-Bool_t AliESDInputHandlerRP::GetEvent(Int_t iev)
+Bool_t AliESDInputHandlerRP::LoadEvent(Int_t iev)
 {
     // Load the event number iev
     //

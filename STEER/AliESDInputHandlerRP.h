@@ -26,10 +26,12 @@ class AliESDInputHandlerRP : public AliESDInputHandler {
     AliESDInputHandlerRP(const char* name, const char* title);
     virtual ~AliESDInputHandlerRP();
     virtual Bool_t       Init(Option_t* opt);
+    virtual Bool_t       Init(TTree* tree, Option_t* opt) {return AliESDInputHandler::Init(tree, opt);}
     virtual Bool_t       InitIO(Option_t* opt) {return Init(opt);};
     virtual Bool_t       BeginEvent(Long64_t entry);
     virtual Bool_t       FinishEvent();
-    virtual Bool_t       GetEvent(Int_t iev);
+    virtual Bool_t       LoadEvent(Int_t iev);
+    virtual Bool_t       Notify() {return kTRUE;}
     virtual Bool_t       Notify(const char* path);
     virtual void         ResetIO();
  private:
