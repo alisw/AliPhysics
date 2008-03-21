@@ -68,11 +68,12 @@ the Root prompt (from within the $ALICE_ROOT/MUON directory to get the correct
 list of libraries loaded by the loadlibs.C macro)
 
 <pre>
-root[0] AliMUONCDB cdb;
-root[1] Int_t startRun = 0;
-root[2] Bool_t defaultValues = kTRUE;
-root[3] cdb.WriteTrigger(startRun);
-root[4] cdb.WriteTracker(defaultValues,startRun);
+root[0] AliMpCDB::LoadDDLStore2(); 
+root[1] AliMUONCDB cdb;
+root[2] Int_t startRun = 0;
+root[3] Bool_t defaultValues = kTRUE;
+root[4] cdb.WriteTrigger(startRun);
+root[5] cdb.WriteTracker(defaultValues,startRun);
 </pre>
 
 
