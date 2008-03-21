@@ -41,13 +41,15 @@ class AliESDInputHandlerRP : public AliESDInputHandler {
  private:
     TList*          fRTrees;           // List of RecPoint Trees
     TList*          fRFiles;           // List of RecPoint Files
-    TDirectoryFile* fDirR;             //! Directory for RP Tree
+    TList*          fDetectors;        // List of detector names
+    TDirectoryFile *fDirR;             //! Directory for RP Tree
     Int_t           fEventNumber;      //! Current event number
     Int_t           fNEvent;           //! Number of events in current directory
     Int_t           fFileNumber;       //! Input file number
     Int_t           fEventsPerFile;    //! Number of events per file
-    char            *fExtension;       //! File name extension
-    TString         *fPathName;        //! Input file path 
+    char           *fExtension;        //! File name extension
+    TString        *fPathName;         //! Input file path
+    Bool_t          fIsArchive;        //! True if directory is an archive
     ClassDef(AliESDInputHandlerRP, 1);
 };
 

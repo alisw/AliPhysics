@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id: AliESDInputHandler.cxx 24521 2008-03-14 16:43:54Z morsch $ */
+/* $Id$ */
 
 //-------------------------------------------------------------------------
 //     Event handler for ESD input reading the RecPoint Trees in parallel
@@ -23,6 +23,8 @@
 #include <TTree.h>
 #include <TList.h>
 #include <TFile.h>
+#include <TArchiveFile.h>
+#include <TSystemDirectory.h>
 #include <TString.h>
 #include <TObjString.h>
 #include <TProcessID.h>
@@ -39,37 +41,42 @@ AliESDInputHandlerRP::AliESDInputHandlerRP() :
     AliESDInputHandler(),
     fRTrees(new TList()),
     fRFiles(new TList()),
+    fDetectors(new TList()),
     fDirR(0),
     fEventNumber(-1),
     fNEvent(-1),
     fFileNumber(0),
     fEventsPerFile(0),
     fExtension(""),
-    fPathName(new TString("./"))
+    fPathName(new TString("./")),
+    fIsArchive(kFALSE)
 {
-  // default constructor
+  // Default constructor
 }
 
-//______________________________________________________________________________
-AliESDInputHandlerRP::~AliESDInputHandlerRP() 
-{
-  // destructor
-}
 
 //______________________________________________________________________________
 AliESDInputHandlerRP::AliESDInputHandlerRP(const char* name, const char* title):
     AliESDInputHandler(name, title),
     fRTrees(new TList()),
     fRFiles(new TList()),
+    fDetectors(new TList()),
     fDirR(0),
     fEventNumber(-1),
     fNEvent(-1),
     fFileNumber(0),
     fEventsPerFile(0),
     fExtension(""),
-    fPathName(new TString("./"))
+    fPathName(new TString("./")),
+    fIsArchive(kFALSE)
 {
     // Constructor
+}
+
+//______________________________________________________________________________
+AliESDInputHandlerRP::~AliESDInputHandlerRP() 
+{
+  // Destructor
 }
 
 Bool_t AliESDInputHandlerRP::Init(Option_t* opt)
@@ -79,15 +86,24 @@ Bool_t AliESDInputHandlerRP::Init(Option_t* opt)
     //
     if (!(strcmp(opt, "proof")) || !(strcmp(opt, "local"))) return kTRUE;
     //
-    TFile* file;
-    
-    file = TFile::Open(Form("%sTPC.RecPoints.root", fPathName->Data()));
-    if (!file) AliFatal(Form("AliESDInputHandlerRP: TPC.RecPoints.root not found in %s ! \n", fPathName->Data()));
-    fRFiles->Add(file);
+    TIter next(fDetectors);
+    TNamed* det;
+    TFile* file = 0;
+    while (det = ((TNamed*) next()))
+    {
+	if (!fIsArchive) {
+	    file = TFile::Open(Form("%s%s.RecPoints.root", fPathName->Data(), det->GetName()));
+	} else {
+	    file = TFile::Open(Form("%s#%s.RecPoints.root", fPathName->Data(), det->GetName()));
+	}
+	if (!file) AliFatal(Form("AliESDInputHandlerRP: TPC.RecPoints.root not found in %s ! \n", fPathName->Data()));
+	fRFiles->Add(file);
+    }
     fEventsPerFile = file->GetNkeys() - file->GetNProcessIDs();
     // Reset the event number
     fEventNumber      = -1;
     fFileNumber       =  0;
+    // Get number of events from esd tree 
     fNEvent           =  fTree->GetEntries();
     
     printf("AliESDInputHandler::Init() %d\n",__LINE__);
@@ -97,7 +113,7 @@ Bool_t AliESDInputHandlerRP::Init(Option_t* opt)
 Bool_t AliESDInputHandlerRP::BeginEvent(Long64_t entry)
 {
     // Begin the next event
-    // Delegate to base class
+    // Delegate first to base class
     AliESDInputHandler::BeginEvent(entry);
 //
     if (entry == -1) {
@@ -130,19 +146,20 @@ Bool_t AliESDInputHandlerRP::LoadEvent(Int_t iev)
     char folder[20];
     sprintf(folder, "Event%d", iev);
     // Tree R
-    TFile* file = (TFile*) (fRFiles->At(0));
-    
-    file->GetObject(folder, fDirR);
-    if (!fDirR) {
-	AliWarning(Form("AliESDInputHandlerRP: Event #%5d not found\n", iev));
-	return kFALSE;
+    TIter next(fRFiles);
+    TFile* file;
+    while (file = ((TFile*) next()))
+    {
+	file->GetObject(folder, fDirR);
+	if (!fDirR) {
+	    AliWarning(Form("AliESDInputHandlerRP: Event #%5d not found\n", iev));
+	    return kFALSE;
+	}
+	TTree* tree;
+	fDirR ->GetObject("TreeR", tree);
+	fRTrees->Add(tree);
+	tree->ls();
     }
-    
-    TTree* tree;
-    fDirR ->GetObject("TreeR", tree);
-    fRTrees->Add(tree);
-    tree->ls();
-    
     return kTRUE;
 }
 
@@ -157,11 +174,18 @@ Bool_t AliESDInputHandlerRP::OpenFile(Int_t i)
     }
     
     fRFiles->Delete();
+    TIter next(fDetectors);
+    TNamed* det;
     TFile* file;
-    file = TFile::Open(Form("%sTPC.RecPoints%s.root", fPathName->Data(), fExtension));
-    if (!file) {
-	AliFatal(Form("AliESDInputHandlerRP: TPC.RecPoints.root not found in %s ! \n", fPathName->Data()));
-	ok = kFALSE;
+    while (det = ((TNamed*) next()))
+    {
+	if (!fIsArchive) {
+	    file = TFile::Open(Form("%s%s.RecPoints%s.root", fPathName->Data(), det->GetName(), fExtension));
+	} else {
+	    file = TFile::Open(Form("%s#%s.RecPoints%s.root", fPathName->Data(), det->GetName(), fExtension));
+	}
+	if (!file) AliFatal(Form("AliESDInputHandlerRP: RecPoints.root not found in %s ! \n", fPathName->Data()));
+	fRFiles->Add(file);
     }
     return ok;
 }
@@ -170,19 +194,64 @@ Bool_t AliESDInputHandlerRP::Notify(const char *path)
 {
   // Notify about directory change
   // The directory is taken from the 'path' argument
-  // Reconnect trees
+  // 
+    // Get path to directory
     TString fileName(path);
     if(fileName.Contains("AliESDs.root")){
 	fileName.ReplaceAll("AliESDs.root", "");
     }
-
+    // If this is an archive it will contain a # 
+    if(fileName.Contains("#")){
+	fileName.ReplaceAll("#", "");
+    }
+    //
+    // At this point we have a path to the directory or to the archive
     *fPathName = fileName;
+    //
+    // Now filter the files containing RecPoints *.RecPoints.*
+    fIsArchive = kFALSE;
+    if (fPathName->Contains(".zip")) fIsArchive = kTRUE;
 
-    printf("AliESDInputHandlerRP::Notify() Path: %s\n", fPathName->Data());
+    TSeqCollection* members;
     
+    if (fIsArchive) {
+	// Archive
+	TFile* file = TFile::Open(fPathName->Data());
+	TArchiveFile* arch = file->GetArchive();
+	members = arch->GetMembers();
+    } else {
+	// Directory
+	TSystemDirectory dir(".", fPathName->Data());
+	members = dir.GetListOfFiles();
+    }
+    
+    TIter next(members);
+    TFile* entry;
+    while ( (entry = (TFile*) next()) )
+    {
+	printf("File %s \n", entry->GetName());
+	TString name(entry->GetName());
+	TObjArray* tokens = name.Tokenize(".");
+	Int_t ntok = tokens->GetEntries();
+	if (ntok <= 1) continue;
+	TString str = ((TObjString*) tokens->At(1))->GetString();
+	if (!(strcmp(str.Data(), "RecPoints"))){
+	    TString det = ((TObjString*) tokens->At(0))->GetString();
+	    printf("Name  %s \n", det.Data());
+	    fDetectors->Add(new TNamed(det.Data(), det.Data()));
+	}
+    } // loop over files
+    
+
+    // Now we have the path and the list of detectors
+    
+    printf("AliESDInputHandlerRP::Notify() Path: %s\n", fPathName->Data());
+    //
     ResetIO();
     InitIO("");
-
+    // Some clean-up
+    members->Delete();
+    //
     return kTRUE;
 }
 
