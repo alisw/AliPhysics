@@ -10,11 +10,15 @@
 //
 //
 //  W. Ferrarese + P. Cerello Feb 2008
+//  M. Nicassio D. Elia INFN Bari March 2008
+//  maria.nicassio@ba.infn.it
 
-#include "AliQA.h"
-#include "AliITSQADataMakerRec.h"
+/* $Id:$  */
+
 class TObjArray;
 class AliRawReader;
+class AliITSQADataMakerRec;
+class AliQA;
 
 class AliITSQASPDDataMakerRec : public TObject {
 
@@ -28,23 +32,29 @@ public:
   virtual void MakeRecPoints(TTree *clustersTree);
   virtual void StartOfDetectorCycle();
   virtual void EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray * list);
-  virtual ~AliITSQASPDDataMakerRec() {;}   // dtor
-  inline Int_t Raws() { return fSPDhRaws; }
-  inline Int_t Recs() { return fSPDhRecs; }
+  virtual ~AliITSQASPDDataMakerRec();   // dtor
+  Int_t Raws() const { return fSPDhRaws; }
+  Int_t Recs() const { return fSPDhRecs; }
 
-private:
+private: 
+
+  static const Int_t fgknSPDmodules = 240;   //number of SPD modules
+  static const Int_t fgkLADDonLay1 = 80;     //number of modules on layer 1
+  static const Int_t fgkLADDonLay2 = 160;    //number of modules on layer 2
+
 
   AliITSQADataMakerRec *fAliITSQADataMakerRec;//pointer to the main ctor
-  Bool_t  fkOnline;                        //online (1) or offline (0) use
-  Int_t   fLDC;                            //LDC number (0 for offline, 1 to 4 for online) 
-  Int_t   fSPDhRaws;                       //number of booked SPD Raws histograms;
-  Int_t   fSPDhRecs;                       //number of booked SPD Recs histograms;
-  Int_t   fRawsOffset;                     // number of histo booked when SPD start
-  Int_t   fRecsOffset;                     // number of histo booked when SPD start
-  ClassDef(AliITSQASPDDataMakerRec,1)      // description 
+  Bool_t  fkOnline;                           //online (1) or offline (0) use
+  Int_t   fLDC;                               //LDC number (0 for offline, 1 to 4 for online) 
+  Int_t   fSPDhRaws;                          //number of booked SPD Raws histograms;
+  Int_t   fSPDhRecs;                          //number of booked SPD Recs histograms;
+  Int_t   fRawsOffset;                        // number of histo booked when SPD start 
+  Int_t   fRecsOffset;                        // number of histo booked when SPD start
+  
+
+  ClassDef(AliITSQASPDDataMakerRec,2)      // description 
 
 };
 
 #endif
-
 
