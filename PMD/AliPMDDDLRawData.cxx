@@ -93,12 +93,13 @@ void AliPMDDDLRawData::WritePMDRawData(TTree *treeD)
   AliRawDataHeaderSim header;
   UInt_t sizeRawData = 0;
   
+  const Int_t kbusSize = 51;
   const Int_t kSize = 1536;
   UInt_t buffer[kSize];
 
-  UInt_t busPatch[50][1536];
+  UInt_t busPatch[kbusSize][1536];
 
-  Int_t contentsBus[50];
+  Int_t contentsBus[kbusSize];
 
   Char_t filename[80];
 
@@ -132,10 +133,10 @@ void AliPMDDDLRawData::WritePMDRawData(TTree *treeD)
       Int_t bHPosition = outfile->Tellp();
       outfile->WriteBuffer((char*)(&header),sizeof(header));
 
-      for (Int_t ibus = 0; ibus < 50; ibus++)
+      for (Int_t ibus = 0; ibus < kbusSize; ibus++)
 	{
 	  contentsBus[ibus] = 0;
-	  for (Int_t ich = 0; ich < 1536; ich++)
+	  for (Int_t ich = 0; ich < kSize; ich++)
 	    {
 	      busPatch[ibus][ich] = 0;
 	    }
@@ -164,12 +165,13 @@ void AliPMDDDLRawData::WritePMDRawData(TTree *treeD)
 	  dspBus[i] = 0;
 	  for (Int_t ibus=0; ibus < 5; ibus++)
 	    {
+	      ij++;
 	      if (contentsBus[ij] > 0)
 		{
 		  dsp[i] += contentsBus[ij];
 		  dspBus[i]++;
 		}
-	      ij++;
+	      //ij++;
 	    }
 	  // Add the patch Bus header to the DSP contents
 	  dsp[i] += 4*dspBus[i];
@@ -216,7 +218,7 @@ void AliPMDDDLRawData::WritePMDRawData(TTree *treeD)
       UInt_t dspBlockHeaderWord[8];
       UInt_t dspHeaderWord[10];
       UInt_t patchBusHeaderWord[4];
-      Int_t iskip[5];
+      Int_t  iskip[5];
 
 
       for (Int_t iblock = 0; iblock < 2; iblock++)
@@ -288,7 +290,8 @@ void AliPMDDDLRawData::WritePMDRawData(TTree *treeD)
 	      for (Int_t ibus = 0; ibus < 5; ibus++)
 		{
 		  // Patch Bus Header
-		  Int_t busno = iskip[idsp] + ibus;
+		  // BKN - just added 1
+		  Int_t busno = iskip[idsp] + ibus + 1;
 		  Int_t patchbusRDL = contentsBus[busno];
 
 		  if (patchbusRDL > 0)
@@ -360,7 +363,7 @@ void AliPMDDDLRawData::GetUMDigitsData(TTree *treeD, Int_t imodule,
   Int_t  det, smn, irow, icol;
   Int_t  parity;
   
-  const Int_t kMaxBus = 50;
+  const Int_t kMaxBus = 51;   // BKN
   Int_t totPatchBus, bPatchBus, ePatchBus;
   Int_t ibus, totmcm, rows, cols, rowe, cole;
   Int_t moduleno;
@@ -470,7 +473,7 @@ void AliPMDDDLRawData::GetUMDigitsData(TTree *treeD, Int_t imodule,
 
       TransformS2H(smn,irow,icol);
 
-      GetMCMCh(ddlno, irow, icol, beginPatchBus, endPatchBus,
+      GetMCMCh(ddlno, smn, irow, icol, beginPatchBus, endPatchBus,
 	       mcmperBus, startRowBus, startColBus,
 	       endRowBus, endColBus, busno, mcmno, chno);
 
@@ -522,7 +525,7 @@ void AliPMDDDLRawData::TransformS2H(Int_t smn, Int_t &irow, Int_t &icol)
 
 //____________________________________________________________________________
 
-void AliPMDDDLRawData::GetMCMCh(Int_t ddlno, Int_t row, Int_t col,
+void AliPMDDDLRawData::GetMCMCh(Int_t ddlno, Int_t smn, Int_t row, Int_t col,
 				Int_t beginPatchBus, Int_t endPatchBus,
 				Int_t *mcmperBus,
 				Int_t *startRowBus, Int_t *startColBus,
@@ -532,27 +535,139 @@ void AliPMDDDLRawData::GetMCMCh(Int_t ddlno, Int_t row, Int_t col,
   // This converts row col to hardware channel number
   // This is the final version of mapping supplied by Mriganka
 
-  static const UInt_t kCh[16][4] = { {56, 58, 59, 57},
-				     {54, 62, 61, 53},
-				     {52, 60, 63, 51},
-				     {48, 50, 55, 49},
-				     {46, 40, 45, 47},
-				     {44, 32, 35, 43},
-				     {42, 34, 33, 41},
-				     {38, 36, 37, 39},
-				     {24, 26, 27, 25},
-				     {22, 30, 29, 21},
-				     {20, 28, 31, 19},
-				     {16, 18, 23, 17},
-				     {14, 8, 13, 15},
-				     {12, 0, 3, 11},
-				     {10, 2, 1, 9},
-				     {6, 4, 5, 7} };
-  
+    UInt_t iCh[16][4];
+
+//    ChMap(ddlno, smn, iCh);
+
+
+    static const UInt_t kChDdl01[16][4] = { {6, 4, 5, 7},
+					   {10, 2, 1, 9},
+					   {12, 0, 3, 11},
+					   {14, 8, 13, 15},
+					   {16, 18, 23, 17},
+					   {20, 28, 31, 19},
+					   {22, 30, 29, 21},
+					   {24, 26, 27, 25},
+					   {38, 36, 37, 39},
+					   {42, 34, 33, 41},
+					   {44, 32, 35, 43},
+					   {46, 40, 45, 47},
+					   {48, 50, 55, 49},
+					   {52, 60, 63, 51},
+					   {54, 62, 61, 53},
+					   {56, 58, 59, 57} };
+
+
+    static const UInt_t kChDdl23[16][4] = { {57, 59, 58, 56},
+					    {53, 61, 62, 54},
+					    {51, 63, 60, 52},
+					    {49, 55, 50, 48},
+					    {47, 45, 40, 46},
+					    {43, 35, 32, 44},
+					    {41, 33, 34, 42},
+					    {39, 37, 36, 38},
+					    {25, 27, 26, 24},
+					    {21, 29, 30, 22},
+					    {19, 31, 28, 20},
+					    {17, 23, 18, 16},
+					    {15, 13, 8, 14},
+					    {11, 3, 0, 12},
+					    {9, 1, 2, 10},
+					    {7, 5, 4, 6} };
+    
+    
+    static const UInt_t kChDdl41[16][4] = { {56, 58, 59, 57},
+					   {54, 62, 61, 53},
+					   {52, 60, 63, 51},
+					   {48, 50, 55, 49},
+					   {46, 40, 45, 47},
+					   {44, 32, 35, 43},
+					   {42, 34, 33, 41},
+					   {38, 36, 37, 39},
+					   {24, 26, 27, 25},
+					   {22, 30, 29, 21},
+					   {20, 28, 31, 19},
+					   {16, 18, 23, 17},
+					   {14, 8, 13, 15},
+					   {12, 0, 3, 11},
+					   {10, 2, 1, 9},
+					   {6, 4, 5, 7} };
+
+
+    static const UInt_t kChDdl42[16][4] = { {7, 5, 4, 6},
+					    {9, 1, 2, 10},
+					    {11, 3, 0, 12},
+					    {15, 13, 8, 14},
+					    {17, 23, 18, 16},
+					    {19, 31, 28, 20},
+					    {21, 29, 30, 22},
+					    {25, 27, 26, 24},
+					    {39, 37, 36, 38},
+					    {41, 33, 34, 42},
+					    {43, 35, 32, 44},
+					    {47, 45, 40, 46},
+					    {49, 55, 50, 48},
+					    {51, 63, 60, 52},
+					    {53, 61, 62, 54},
+					    {57, 59, 58, 56} };
+
+
+    static const UInt_t kChDdl51[16][4] = { {7, 5, 4, 6},
+					    {9, 1, 2, 10},
+					    {11, 3, 0, 12},
+					    {15, 13, 8, 14},
+					    {17, 23, 18, 16},
+					    {19, 31, 28, 20},
+					    {21, 29, 30, 22},
+					    {25, 27, 26, 24},
+					    {39, 37, 36, 38},
+					    {41, 33, 34, 42},
+					    {43, 35, 32, 44},
+					    {47, 45, 40, 46},
+					    {49, 55, 50, 48},
+					    {51, 63, 60, 52},
+					    {53, 61, 62, 54},
+					    {57, 59, 58, 56} };
+    
+
+
+    static const UInt_t kChDdl52[16][4] = { {56, 58, 59, 57},
+					    {54, 62, 61, 53},
+					    {52, 60, 63, 51},
+					    {48, 50, 55, 49},
+					    {46, 40, 45, 47},
+					    {44, 32, 35, 43},
+					    {42, 34, 33, 41},
+					    {38, 36, 37, 39},
+					    {24, 26, 27, 25},
+					    {22, 30, 29, 21},
+					    {20, 28, 31, 19},
+					    {16, 18, 23, 17},
+					    {14, 8, 13, 15},
+					    {12, 0, 3, 11},
+					    {10, 2, 1, 9},
+					    {6, 4, 5, 7} };
+    
+    
+    for (Int_t i = 0; i < 16; i++)
+    {
+	for (Int_t j = 0; j < 4; j++)
+	{
+	    if (ddlno == 0 || ddlno == 1) iCh[i][j] = kChDdl01[i][j];
+	    if (ddlno == 2 || ddlno == 3) iCh[i][j] = kChDdl23[i][j];
+	    
+	    if (ddlno == 4 && smn < 6)                iCh[i][j] = kChDdl41[i][j];
+	    if (ddlno == 4 && (smn >= 18 && smn < 24))iCh[i][j] = kChDdl42[i][j];
+	    if (ddlno == 5 && (smn >= 12 && smn < 18))iCh[i][j] = kChDdl51[i][j];
+	    if (ddlno == 5 && (smn >=  6 && smn < 12))iCh[i][j] = kChDdl52[i][j];
+	}
+    }
+
+
   Int_t irownew = row%16;
   Int_t icolnew = col%4;
   
-  chno  = kCh[irownew][icolnew];
+  chno  = iCh[irownew][icolnew];
   
   
   for (Int_t ibus = beginPatchBus; ibus <= endPatchBus; ibus++)
@@ -572,34 +687,34 @@ void AliPMDDDLRawData::GetMCMCh(Int_t ddlno, Int_t row, Int_t col,
 	  if (ddlno == 0 || ddlno == 1)
 	    {
 	      // PRE plane, SU Mod = 0, 1
-	      mcmno = (col-scol)/4;
+	      mcmno = (col-scol)/4 + 1;
 	      
 	    }
 	  else if (ddlno == 2 || ddlno == 3)
 	    {
 	      // PRE plane,  SU Mod = 2, 3
 	      Int_t icolnew = (col - scol)/4;
-	      mcmno = tmcm - 1 - icolnew;
+	      mcmno = tmcm - icolnew;
 	    }
 	  else if (ddlno == 4 )
 	    {
 	      // CPV plane,  SU Mod = 0, 3 : ddl = 4
 	      
-	      if(ibus <= 17)
+	      if(ibus <= 18)
 		{
 		  Int_t midrow = srow + 16;
 		  if(row >= srow && row < midrow)
 		    {
-		      mcmno = 12 + (col-scol)/4;
+		      mcmno = 12 + (col-scol)/4 + 1;
 		    }
 		  else if(row >= midrow && row <= erow)
 		  
 		    {
-		      mcmno = (col-scol)/4;
+		      mcmno = (col-scol)/4 + 1;
 		    }
 		}
 	      
-	      else if (ibus > 17)
+	      else if (ibus > 18)
 		{
 		  Int_t rowdiff = endRowBus[ibus] - startRowBus[ibus];
 		  if(rowdiff > 16)
@@ -607,37 +722,37 @@ void AliPMDDDLRawData::GetMCMCh(Int_t ddlno, Int_t row, Int_t col,
 		      Int_t midrow = srow + 16;
 		      if (row >= midrow && row <= erow)
 			{
-			  mcmno = 12 + (ecol -col)/4;
+			  mcmno = 12 + (ecol -col)/4 + 1;
 			}
 		      else if (row >= srow && row < midrow)
 			{
-			  mcmno = (ecol - col)/4;
+			  mcmno = (ecol - col)/4 + 1;
 			}
 		    }
-		  else if (rowdiff < 16) 
+		  else if (rowdiff < 16)
 		    {
-		      mcmno = (ecol - col)/4;
-		    } 
+		      mcmno = (ecol - col)/4 + 1;
+		    }
 		}
 	    }
 	  else if ( ddlno == 5)
 	    {
-	      // CPV plane,  SU Mod = 0, 3 : ddl = 4
+	      // CPV plane,  SU Mod = 1, 2 : ddl = 5
 	      
-	      if(ibus <= 17)
+	      if(ibus <= 18)
 		{
 		  Int_t midrow = srow + 16;
 		  if(row >= srow && row < midrow)
 		    {
-		      mcmno = 12 + (col-scol)/4;
+		      mcmno = 12 + (col-scol)/4 + 1;
 		    }
 		  else if(row >= midrow && row <= erow)
 		    {
-		      mcmno = (col-scol)/4;
+		      mcmno = (col-scol)/4 + 1;
 		    }
 		}
 	      
-	      else if (ibus > 17)
+	      else if (ibus > 18)
 		{
 		  Int_t rowdiff = endRowBus[ibus] - startRowBus[ibus];
 		  if(rowdiff > 16)
@@ -645,17 +760,17 @@ void AliPMDDDLRawData::GetMCMCh(Int_t ddlno, Int_t row, Int_t col,
 		      Int_t midrow = srow + 16;
 		      if (row >= midrow && row <= erow)
 			{
-			  mcmno = 12 + (ecol -col)/4;
+			  mcmno = 12 + (ecol - col)/4 + 1;
 			}
 		      else if (row >= srow && row < midrow)
 			{
-			  mcmno = (ecol - col)/4;
+			  mcmno = (ecol - col)/4 + 1;
 			}
 		    }
-		  else if (rowdiff < 16) 
+		  else if (rowdiff < 16)
 		    {
-		      mcmno = (ecol - col)/4;
-		    } 
+		      mcmno = (ecol - col)/4 + 1;
+		    }
 		}
 	    }
 	}
@@ -663,6 +778,140 @@ void AliPMDDDLRawData::GetMCMCh(Int_t ddlno, Int_t row, Int_t col,
 } 
 
 //____________________________________________________________________________
+
+/*
+void ChMap(Int_t ddlno, Int_t smn, UInt_t iCh[][4])
+{
+// Row and Col converted to Channel
+
+    static const UInt_t kChDdl01[16][4] = { {6, 4, 5, 7},
+					   {10, 2, 1, 9},
+					   {12, 0, 3, 11},
+					   {14, 8, 13, 15},
+					   {16, 18, 23, 17},
+					   {20, 28, 31, 19},
+					   {22, 30, 29, 21},
+					   {24, 26, 27, 25},
+					   {38, 36, 37, 39},
+					   {42, 34, 33, 41},
+					   {44, 32, 35, 43},
+					   {46, 40, 45, 47},
+					   {48, 50, 55, 49},
+					   {52, 60, 63, 51},
+					   {54, 62, 61, 53},
+					   {56, 58, 59, 57} };
+
+
+    static const UInt_t kChDdl23[16][4] = { {57, 59, 58, 56},
+					    {53, 61, 62, 54},
+					    {51, 63, 60, 52},
+					    {49, 55, 50, 48},
+					    {47, 45, 40, 46},
+					    {43, 35, 32, 44},
+					    {41, 33, 34, 42},
+					    {39, 37, 36, 38},
+					    {25, 27, 26, 24},
+					    {21, 29, 30, 22},
+					    {19, 31, 28, 20},
+					    {17, 23, 18, 16},
+					    {15, 13, 8, 14},
+					    {11, 3, 0, 12},
+					    {9, 1, 2, 10},
+					    {7, 5, 4, 6} };
+    
+    
+    static const UInt_t kChDdl41[16][4] = { {56, 58, 59, 57},
+					   {54, 62, 61, 53},
+					   {52, 60, 63, 51},
+					   {48, 50, 55, 49},
+					   {46, 40, 45, 47},
+					   {44, 32, 35, 43},
+					   {42, 34, 33, 41},
+					   {38, 36, 37, 39},
+					   {24, 26, 27, 25},
+					   {22, 30, 29, 21},
+					   {20, 28, 31, 19},
+					   {16, 18, 23, 17},
+					   {14, 8, 13, 15},
+					   {12, 0, 3, 11},
+					   {10, 2, 1, 9},
+					   {6, 4, 5, 7} };
+
+
+    static const UInt_t kChDdl42[16][4] = { {7, 5, 4, 6},
+					    {9, 1, 2, 10},
+					    {11, 3, 0, 12},
+					    {15, 13, 8, 14},
+					    {17, 23, 18, 16},
+					    {19, 31, 28, 20},
+					    {21, 29, 30, 22},
+					    {25, 27, 26, 24},
+					    {39, 37, 36, 38},
+					    {41, 33, 34, 42},
+					    {43, 35, 32, 44},
+					    {47, 45, 40, 46},
+					    {49, 55, 50, 48},
+					    {51, 63, 60, 52},
+					    {53, 61, 62, 54},
+					    {57, 59, 58, 56} };
+
+
+    static const UInt_t kChDdl51[16][4] = { {7, 5, 4, 6},
+					    {9, 1, 2, 10},
+					    {11, 3, 0, 12},
+					    {15, 13, 8, 14},
+					    {17, 23, 18, 16},
+					    {19, 31, 28, 20},
+					    {21, 29, 30, 22},
+					    {25, 27, 26, 24},
+					    {39, 37, 36, 38},
+					    {41, 33, 34, 42},
+					    {43, 35, 32, 44},
+					    {47, 45, 40, 46},
+					    {49, 55, 50, 48},
+					    {51, 63, 60, 52},
+					    {53, 61, 62, 54},
+					    {57, 59, 58, 56} };
+    
+
+
+    static const UInt_t kChDdl52[16][4] = { {56, 58, 59, 57},
+					    {54, 62, 61, 53},
+					    {52, 60, 63, 51},
+					    {48, 50, 55, 49},
+					    {46, 40, 45, 47},
+					    {44, 32, 35, 43},
+					    {42, 34, 33, 41},
+					    {38, 36, 37, 39},
+					    {24, 26, 27, 25},
+					    {22, 30, 29, 21},
+					    {20, 28, 31, 19},
+					    {16, 18, 23, 17},
+					    {14, 8, 13, 15},
+					    {12, 0, 3, 11},
+					    {10, 2, 1, 9},
+					    {6, 4, 5, 7} };
+    
+    
+    for (Int_t i = 0; i < 16; i++)
+    {
+	for (Int_t j = 0; j < 4; j++)
+	{
+	    if (ddlno == 0 || ddlno == 1) iCh[i][j] = kChDdl01[i][j];
+	    if (ddlno == 2 || ddlno == 3) iCh[i][j] = kChDdl23[i][j];
+	    
+	    if (ddlno == 4 && smn < 6)                iCh[i][j] = kChDdl41[i][j];
+	    if (ddlno == 4 && (smn >= 18 && smn < 24))iCh[i][j] = kChDdl42[i][j];
+	    if (ddlno == 5 && (smn >= 12 && smn < 18))iCh[i][j] = kChDdl51[i][j];
+	    if (ddlno == 0 && (smn >=  6 && smn < 12))iCh[i][j] = kChDdl52[i][j];
+	}
+    }
+    
+}
+*/
+//____________________________________________________________________________
+
+
 
 Int_t AliPMDDDLRawData::ComputeParity(UInt_t baseword)
 {

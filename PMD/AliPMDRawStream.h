@@ -35,7 +35,7 @@ class AliPMDRawStream: public TObject {
     AliPMDRawStream(const AliPMDRawStream& stream);
     AliPMDRawStream& operator = (const AliPMDRawStream& stream);
 
-    void             GetRowCol(Int_t ddlno, Int_t pbusid, 
+    void             GetRowCol(Int_t ddlno, Int_t smn, Int_t pbusid, 
 			       UInt_t mcmno, UInt_t chno,
 			       Int_t startRowBus[], Int_t endRowBus[],
 			       Int_t startColBus[], Int_t endColBus[],
@@ -48,7 +48,7 @@ class AliPMDRawStream: public TObject {
     AliRawReader*    fRawReader;    // object for reading the raw data
 
 
-    ClassDef(AliPMDRawStream, 3)    // class for reading PMD raw digits
+    ClassDef(AliPMDRawStream, 4)    // class for reading PMD raw digits
 };
 
 #endif

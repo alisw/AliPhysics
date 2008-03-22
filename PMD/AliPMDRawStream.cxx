@@ -86,6 +86,7 @@ Bool_t AliPMDRawStream::DdlData(Int_t indexDDL, TObjArray *pmdddlcont)
 // read the next raw digit
 // returns kFALSE if there is no digit left
 
+
   AliPMDddldata *pmdddldata;
 
   if (!fRawReader->ReadHeader()) return kFALSE;
@@ -155,7 +156,7 @@ Bool_t AliPMDRawStream::DdlData(Int_t indexDDL, TObjArray *pmdddlcont)
       modulePerDDL = 12;
     }
 
-  const Int_t kNPatchBus = 50;
+  const Int_t kNPatchBus = 51;
   
   Int_t modno, totPatchBus, bPatchBus, ePatchBus;
   Int_t ibus, totmcm, rows, rowe, cols, cole;
@@ -276,12 +277,14 @@ Bool_t AliPMDRawStream::DdlData(Int_t indexDDL, TObjArray *pmdddlcont)
 		      AliWarning("ComputeParity:: Parity Error");
 		      fRawReader->AddMajorErrorLog(kParityError);
 		    }
-		  GetRowCol(iddl, pbusid, imcm, ich, 
+
+		  ConvertDDL2SMN(iddl, imodule, ismn, idet);
+
+		  GetRowCol(iddl, ismn, pbusid, imcm, ich, 
 			    startRowBus, endRowBus,
 			    startColBus, endColBus,
 			    irow, icol);
 
-		  ConvertDDL2SMN(iddl, imodule, ismn, idet);
 		  TransformH2S(ismn, irow, icol);
 
 		  pmdddldata = new AliPMDddldata();
@@ -318,7 +321,7 @@ Bool_t AliPMDRawStream::DdlData(Int_t indexDDL, TObjArray *pmdddlcont)
   return kTRUE;
 }
 //_____________________________________________________________________________
-void AliPMDRawStream::GetRowCol(Int_t ddlno, Int_t pbusid,
+void AliPMDRawStream::GetRowCol(Int_t ddlno, Int_t smn, Int_t pbusid,
 				UInt_t mcmno, UInt_t chno,
 				Int_t startRowBus[], Int_t endRowBus[],
 				Int_t startColBus[], Int_t endColBus[],
@@ -327,106 +330,164 @@ void AliPMDRawStream::GetRowCol(Int_t ddlno, Int_t pbusid,
 // decode: ddlno, patchbusid, mcmno, chno -> um, row, col
 
 
-  static const UInt_t kCh[64] = { 53, 58, 57, 54, 61, 62, 60, 63,
-				  49, 59, 56, 55, 52, 50, 48, 51,
-				  44, 47, 45, 43, 40, 39, 36, 46,
-				  32, 35, 33, 34, 41, 38, 37, 42,
-				  21, 26, 25, 22, 29, 30, 28, 31,
-				  17, 27, 24, 23, 20, 18, 16, 19,
-				  12, 15, 13, 11,  8,  7,  4, 14,
-				  0,   3,  1,  2,  9,  6,  5, 10 };
 
+  UInt_t iCh[64];
 
-  Int_t rowcol  = kCh[chno];
+  static const UInt_t kChDdl01[64] = { 9, 6, 5, 10, 1, 2, 0, 3,
+				       13, 7, 4, 11, 8, 14, 12, 15,
+				       16, 19, 17, 23, 20, 27, 24, 18,
+				       28, 31, 29, 30, 21, 26, 25, 22,
+				       41, 38, 37, 42, 33, 34, 32, 35,
+				       45, 39, 36, 43, 40, 46, 44, 47,
+				       48, 51, 49, 55, 52, 59, 56, 50,
+				       60, 63, 61, 62, 53, 58, 57, 54 };
+    
+  static const UInt_t kChDdl23[64] = { 54, 57, 58, 53, 62, 61, 63, 60,
+				       50, 56, 59, 52, 55, 49, 51, 48,
+				       47, 44, 46, 40, 43, 36, 39, 45,
+				       35, 32, 34, 33, 42, 37, 38, 41,
+				       22, 25, 26, 21, 30, 29, 31, 28,
+				       18, 24, 27, 20, 23, 17, 19, 16,
+				       15, 12, 14, 8, 11, 4, 7, 13,
+				       3, 0, 2, 1, 10, 5, 6, 9 };
+  
+  static const UInt_t kChDdl41[64] = { 53, 58, 57, 54, 61, 62, 60, 63,
+				       49, 59, 56, 55, 52, 50, 48, 51,
+				       44, 47, 45, 43, 40, 39, 36, 46,
+				       32, 35, 33, 34, 41, 38, 37, 42,
+				       21, 26, 25, 22, 29, 30, 28, 31,
+				       17, 27, 24, 23, 20, 18, 16, 19,
+				       12, 15, 13, 11, 8, 7, 4, 14,
+				       0, 3, 1, 2, 9, 6, 5, 10 };
+  
+  static const UInt_t kChDdl42[64] = { 10, 5, 6, 9, 2, 1, 3, 0,
+				       14, 4, 7, 8, 11, 13, 15, 12,
+				       19, 16, 18, 20, 23, 24, 27, 17,
+				       31, 28, 30, 29, 22, 25, 26, 21,
+				       42, 37, 38, 41, 34, 33, 35, 32,
+				       46, 36, 39, 40, 43, 45, 47, 44,
+				       51, 48, 50, 52, 55, 56, 59, 49,
+				       63, 60, 62, 61, 54, 57, 58, 53 };
+  
+  static const UInt_t kChDdl51[64] = { 10, 5, 6, 9, 2, 1, 3, 0,
+				       14, 4, 7, 8, 11, 13, 15, 12,
+				       19, 16, 18, 20, 23, 24, 27, 17,
+				       31, 28, 30, 29, 22, 25, 26, 21,
+				       42, 37, 38, 41, 34, 33, 35, 32,
+				       46, 36, 39, 40, 43, 45, 47, 44,
+				       51, 48, 50, 52, 55, 56, 59, 49,
+				       63, 60, 62, 61, 54, 57, 58, 53 };
+  
+  static const UInt_t kChDdl52[64] = { 53, 58, 57, 54, 61, 62, 60, 63,
+				       49, 59, 56, 55, 52, 50, 48, 51,
+				       44, 47, 45, 43, 40, 39, 36, 46,
+				       32, 35, 33, 34, 41, 38, 37, 42,
+				       21, 26, 25, 22, 29, 30, 28, 31,
+				       17, 27, 24, 23, 20, 18, 16, 19,
+				       12, 15, 13, 11, 8, 7, 4, 14,
+				       0, 3, 1, 2, 9, 6, 5, 10 };
+  
+  for (Int_t i = 0; i < 64; i++)
+  {
+      if (ddlno == 0 || ddlno == 1) iCh[i] = kChDdl01[i];
+      if (ddlno == 2 || ddlno == 3) iCh[i] = kChDdl23[i];
+      
+      if (ddlno == 4 && smn < 6)                iCh[i] = kChDdl41[i];
+      if (ddlno == 4 && (smn >= 18 && smn < 24))iCh[i] = kChDdl42[i];
+      if (ddlno == 5 && (smn >= 12 && smn < 18))iCh[i] = kChDdl51[i];
+      if (ddlno == 5 && (smn >=  6 && smn < 12))iCh[i] = kChDdl52[i];
+  }
+  
+  
+  Int_t rowcol  = iCh[chno];
   Int_t irownew = rowcol/4;
   Int_t icolnew = rowcol%4;
 
   if (ddlno == 0 )
     {
       row = startRowBus[pbusid] + irownew;
-      col = startColBus[pbusid] + mcmno*4 + icolnew;
+      col = startColBus[pbusid] + (mcmno-1)*4 + icolnew;
     }
   else if (ddlno == 1)
     {
     row = endRowBus[pbusid] - (15 - irownew);
-    col = startColBus[pbusid] + mcmno*4 + icolnew;
+    col = startColBus[pbusid] + (mcmno-1)*4 + icolnew;
     
     }
   else if (ddlno == 2 )
     {
       row = startRowBus[pbusid] + irownew;
-      col = endColBus[pbusid] - mcmno*4 - (3 - icolnew);
+      col = endColBus[pbusid] - (mcmno-1)*4 - (3 - icolnew);
     }
   else if (ddlno == 3)
     {
     row = endRowBus[pbusid] - (15 - irownew);
-    col = endColBus[pbusid] - mcmno*4 - (3 - icolnew);
+    col = endColBus[pbusid] - (mcmno-1)*4 - (3 - icolnew);
     }
   else if (ddlno == 4 )
     {
-      if (pbusid  < 18)
+      if (pbusid  < 19)
 	{
-	  if (mcmno <= 11)
+	  if (mcmno <= 12)
 	    {
 	      // Add 16 to skip the 1st 15 rows
 	      row = startRowBus[pbusid] + irownew + 16;
-	      col = startColBus[pbusid] + (mcmno)*4 + icolnew;
+	      col = startColBus[pbusid] + (mcmno-1)*4 + icolnew;
 	    }
-	  else if(mcmno > 11)
+	  else if(mcmno > 12)
 	    {
 	      row = startRowBus[pbusid] + irownew;
-	      col = startColBus[pbusid] + (mcmno-12)*4 + icolnew;
+	      col = startColBus[pbusid] + (mcmno-12-1)*4 + icolnew;
 	    }
 	}
-      else if(pbusid > 17)
+      else if(pbusid > 18)
 	{
-	  if (mcmno <= 11)
+	  if (mcmno <= 12)
 	    {
-	      col = endColBus[pbusid] - mcmno*4 - (3 - icolnew); 
+	      col = endColBus[pbusid] - (mcmno-1)*4 - (3 - icolnew); 
 
 	      if(endRowBus[pbusid] - startRowBus[pbusid] > 16)
 		row = endRowBus[pbusid] - (15 - irownew) - 16 ;
 	      else
 		row = endRowBus[pbusid] - (15 - irownew) ;
-	      
-
 	    }
-	  else if(mcmno > 11)
+	  else if(mcmno > 12)
 	    {
 	      row = endRowBus[pbusid] - (15 - irownew)  ;
-	      col = endColBus[pbusid] - (mcmno - 12)*4 - (3 - icolnew);
+	      col = endColBus[pbusid] - (mcmno - 12 - 1)*4 - (3 - icolnew);
 	    }
 	}
     }
   else if (ddlno == 5)
     {
-      if (pbusid  <= 17)
+      if (pbusid  <= 18)
 	{
-	  if (mcmno > 11)
+	  if (mcmno > 12)
 	    {
 	      // Subtract 16 to skip the 1st 15 rows
 	      row = endRowBus[pbusid] - 16 -(15 - irownew);
-	      col = startColBus[pbusid] + (mcmno-12)*4 + icolnew;
+	      col = startColBus[pbusid] + (mcmno-12 -1)*4 + icolnew;
 	    }
 	  else
 	    {
 	      row = endRowBus[pbusid]  - (15 - irownew) ;
-	      col = startColBus[pbusid] + mcmno*4 + icolnew;
+	      col = startColBus[pbusid] + (mcmno -1)*4 + icolnew;
 	    }
+
 	}
       
-      else if (pbusid > 17)
+      else if (pbusid > 18)
 	{
-	  if(mcmno > 11)
+	  if(mcmno > 12)
 	    {
 	      // Add 16 to skip the 1st 15 rows
 	      row = startRowBus[pbusid] + irownew + 16;
-	      col = endColBus[pbusid] - (mcmno - 12)*4 - (3 - icolnew);
+	      col = endColBus[pbusid] - (mcmno - 12 - 1)*4 - (3 - icolnew);
 	    }
 	  else 
 	    {
 	      row = startRowBus[pbusid] + irownew ;
-	      col = endColBus[pbusid] - mcmno*4 - (3 - icolnew); 
+	      col = endColBus[pbusid] - (mcmno - 1)*4 - (3 - icolnew); 
 	    }
 	}
     }
@@ -451,6 +512,7 @@ void AliPMDRawStream::ConvertDDL2SMN(Int_t iddl, Int_t imodule,
     }
 }
 //_____________________________________________________________________________
+
 void AliPMDRawStream::TransformH2S(Int_t smn, Int_t &row, Int_t &col) const
 {
   // This does the transformation of the hardware coordinate to
