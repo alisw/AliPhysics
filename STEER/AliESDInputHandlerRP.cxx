@@ -39,8 +39,8 @@ ClassImp(AliESDInputHandlerRP)
 //______________________________________________________________________________
 AliESDInputHandlerRP::AliESDInputHandlerRP() :
     AliESDInputHandler(),
-    fRTrees(new TList()),
-    fRFiles(new TList()),
+    fRTrees(   new TList()),
+    fRFiles(   new TList()),
     fDetectors(new TList()),
     fDirR(0),
     fEventNumber(-1),
@@ -58,8 +58,8 @@ AliESDInputHandlerRP::AliESDInputHandlerRP() :
 //______________________________________________________________________________
 AliESDInputHandlerRP::AliESDInputHandlerRP(const char* name, const char* title):
     AliESDInputHandler(name, title),
-    fRTrees(new TList()),
-    fRFiles(new TList()),
+    fRTrees(   new TList()),
+    fRFiles(   new TList()),
     fDetectors(new TList()),
     fDirR(0),
     fEventNumber(-1),
@@ -227,6 +227,7 @@ Bool_t AliESDInputHandlerRP::Notify(const char *path)
     
     TIter next(members);
     TFile* entry;
+    Int_t ien = 0;
     while ( (entry = (TFile*) next()) )
     {
 	printf("File %s \n", entry->GetName());
@@ -238,7 +239,9 @@ Bool_t AliESDInputHandlerRP::Notify(const char *path)
 	if (!(strcmp(str.Data(), "RecPoints"))){
 	    TString det = ((TObjString*) tokens->At(0))->GetString();
 	    printf("Name  %s \n", det.Data());
-	    fDetectors->Add(new TNamed(det.Data(), det.Data()));
+	    TNamed* entry = new TNamed(det.Data(), det.Data());
+	    entry->SetUniqueID(ien++);
+	    fDetectors->Add(entry);
 	}
     } // loop over files
     
@@ -269,4 +272,17 @@ void AliESDInputHandlerRP::ResetIO()
     fRTrees->Delete();
     fRFiles->Delete();
     fExtension="";
+}
+
+TTree* AliESDInputHandlerRP::GetTreeR(char* det)
+{
+// Return pointer to RecPoint tree for detector det
+    TNamed* entry = (TNamed*) (fDetectors->FindObject(det));
+    if (!entry) {
+	AliWarning(Form("AliESDInputHandlerRP: No RecPoints for detector %s available \n", det));
+	return 0;
+    } else {
+	Int_t ien = entry->GetUniqueID();
+	return ((TTree*) (fRTrees->At(ien)));
+    }
 }
