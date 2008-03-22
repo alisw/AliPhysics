@@ -20,3 +20,10 @@ DHDR:=VZEROsimLinkDef.h
 
 EINCLUDE:= STRUCT STEER RAW
 
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+                         -lVZERObase -lVZEROrec -lSTEER -lCDB -lSTEERBase \
+                         -lRAWDatabase \
+                         -L$(shell root-config --libdir) -lVMC -lGeom
+endif
+

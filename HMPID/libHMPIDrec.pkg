@@ -1,3 +1,4 @@
+#-*- Mode: Makefile -*-
 SRCS:=  AliHMPIDReconstructor.cxx AliHMPIDTracker.cxx \
         AliHMPIDRecon.cxx AliHMPIDRecoParam.cxx       \
         AliHMPIDReconHTA.cxx AliHMPIDPid.cxx \
@@ -5,3 +6,10 @@ SRCS:=  AliHMPIDReconstructor.cxx AliHMPIDTracker.cxx \
 
 HDRS:= $(SRCS:.cxx=.h)
 DHDR:= HMPIDrecLinkDef.h
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+                         -lHMPIDbase -lSTEER -lCDB -lESD -lSTEERBase \
+                         -lRAWDatarec \
+                         -L$(shell root-config --libdir) -lMinuit
+endif

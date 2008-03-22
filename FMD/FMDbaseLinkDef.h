@@ -34,6 +34,7 @@
 #pragma link C++ class  AliFMDAltroMapping+;
 #pragma link C++ class  AliFMDPreprocessor+;
 #pragma link C++ class  AliFMDQAChecker+;
+#pragma link C++ class  AliFMDGeometryBuilder+;
 
 // #pragma link C++ class  AliFMDAltroIO+;
 // #pragma link C++ class  AliFMDAltroReader+;

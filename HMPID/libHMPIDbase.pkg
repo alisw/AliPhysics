@@ -1,5 +1,13 @@
+#-*- Mode: Makefile -*-
 SRCS:=  AliHMPIDHit.cxx AliHMPIDDigit.cxx  AliHMPIDCluster.cxx AliHMPIDParam.cxx AliHMPIDPreprocessor.cxx \
 		AliHMPIDQAChecker.cxx AliHMPIDCalib.cxx AliHMPIDRawStream.cxx
 
 HDRS:= $(SRCS:.cxx=.h)
 DHDR:= HMPIDbaseLinkDef.h
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+                         -lSTEER -lCDB -lSTEERBase \
+                         -lRAWDatasim -lRAWDatarec -lRAWDatabase \
+                         -L$(shell root-config --libdir) -lGeom 
+endif

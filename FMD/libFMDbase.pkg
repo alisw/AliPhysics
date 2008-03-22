@@ -21,7 +21,8 @@ SRCS		=  AliFMDIndex.cxx		\
 		   AliFMD2.cxx			\
 		   AliFMD3.cxx			\
 		   AliFMDPreprocessor.cxx	\
-		   AliFMDQAChecker.cxx
+		   AliFMDQAChecker.cxx          \
+		   AliFMDGeometryBuilder.cxx
 
 #		   AliFMDAltroIO.cxx		
 
@@ -29,6 +30,13 @@ HDRS		=  $(SRCS:.cxx=.h)
 DHDR		:= FMDbaseLinkDef.h
 
 EINCLUDE        :=  RAW
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+                         -lSTEER -lCDB -lESD -lSTEERBase \
+                         -lRAWDatabase \
+                         -L$(shell root-config --libdir) -lGeom 
+endif
 #
 # EOF
 #
