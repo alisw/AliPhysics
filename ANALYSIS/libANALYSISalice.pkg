@@ -1,4 +1,4 @@
-SRCS = AliAnalysisTaskSE.cxx
+SRCS = AliAnalysisTaskSE.cxx AliAnalysisTaskESDfilter.cxx
 
 CHECKALIEN = $(shell root-config --has-alien)
 ifeq (yes,$(CHECKALIEN))
