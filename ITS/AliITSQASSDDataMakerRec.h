@@ -43,6 +43,7 @@ public:
 
   Double_t GetSSDOccupancyRaws(TH1 *lHisto, Int_t stripside); 
   
+  static const Int_t fgkNumOfLDCs = 3;      //number of SSD LDCs
   static const Int_t fgkNumOfDDLs = 16;      //number of SSD DDLs
   static const Int_t fgkSSDMODULES = 1698;      //total number of SSD modules
   static const Int_t fgkSSDLADDERSLAYER5 = 34; //ladders on layer 5
@@ -57,15 +58,15 @@ public:
   Int_t fSSDEvent;                              //event counter
   Bool_t  fkOnline;                             //online (1) or offline (0) use
   Int_t   fLDC;                                 //LDC number (0 for offline, 1 to 4 for online) 
+  Int_t   fSSDRawsOffset;               // SSD raw data plot offset
   Int_t   fSSDhRaws;                            // number of histo booked for Raws SSD
   Int_t   fSSDhRecs;                            // number of histo booked for Recs SSD
   Int_t   fRawsOffset;                          // number of histo booked when SSD start
   Int_t   fRecsOffset;                          // number of histo booked when SSD start
  
   TH1D *fHistSSDRawSignalModule[fgkSSDMODULES]; //raw signal vs strip number - SSD
-  ClassDef(AliITSQASSDDataMakerRec,1)           // description 
+  ClassDef(AliITSQASSDDataMakerRec,2)           // description 
 
 };
 
 #endif
-
