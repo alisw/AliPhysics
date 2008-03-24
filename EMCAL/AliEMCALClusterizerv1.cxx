@@ -332,7 +332,7 @@ void AliEMCALClusterizerv1::Init()
   if (rl->GetAliRun() && rl->GetAliRun()->GetDetector("EMCAL"))
     fGeom = dynamic_cast<AliEMCAL*>(rl->GetAliRun()->GetDetector("EMCAL"))->GetGeometry();
   else 
-    fGeom =  AliEMCALGeometry::GetInstance(AliEMCALGeometry::GetDefaulGeometryName());
+    fGeom =  AliEMCALGeometry::GetInstance(AliEMCALGeometry::GetDefaultGeometryName());
 
   AliDebug(1,Form("geom 0x%x",fGeom));
 

@@ -84,39 +84,45 @@ Char_t*            AliEMCALGeometry::fgDefaultGeometryName = "SHISH_77_TRD1_2X2_
 
 AliEMCALGeometry::AliEMCALGeometry() 
   : AliGeometry(),
-    fGeoName(0),fArrayOpts(0),fAlFrontThick(0.),fECPbRadThickness(0.),fECScintThick(0.),
+    fGeoName(0),fArrayOpts(0),fNAdditionalOpts(0),fECPbRadThickness(0.),fECScintThick(0.),
     fNECLayers(0),fArm1PhiMin(0.),fArm1PhiMax(0.),fArm1EtaMin(0.),fArm1EtaMax(0.),fIPDistance(0.),
-    fShellThickness(0.),fZLength(0.),fGap2Active(0.),fNZ(0),fNPhi(0),fSampling(0.),fNumberOfSuperModules(0),
-    fSteelFrontThick(0.),fFrontSteelStrip(0.),fLateralSteelStrip(0.),fPassiveScintThick(0.),fPhiModuleSize(0.),
-    fEtaModuleSize(0.),fPhiTileSize(0.),fEtaTileSize(0.),fLongModuleSize(0.),fNPhiSuperModule(0),fNPHIdiv(0),fNETAdiv(0),
-    fNCells(0),fNCellsInSupMod(0),fNCellsInModule(0),fNTRUEta(0),fNTRUPhi(0),
-    fNCellsInTRUEta(0), fNCellsInTRUPhi(0), fTrd1Angle(0.),f2Trd1Dx2(0.),
+    fShellThickness(0.),fZLength(0.),fNZ(0),fNPhi(0),fSampling(0.),fNumberOfSuperModules(0),
+    fFrontSteelStrip(0.),fLateralSteelStrip(0.),fPassiveScintThick(0.),fPhiModuleSize(0.),
+    fEtaModuleSize(0.),fPhiTileSize(0.),fEtaTileSize(0.),fLongModuleSize(0.),fNPhiSuperModule(0),
+    fNPHIdiv(0),fNETAdiv(0), fNCells(0),fNCellsInSupMod(0),fNCellsInModule(0),fNTRUEta(0),
+    fNTRUPhi(0), fNCellsInTRUEta(0), fNCellsInTRUPhi(0), fTrd1Angle(0.),f2Trd1Dx2(0.),
     fPhiGapForSM(0.),fKey110DEG(0),fPhiBoundariesOfSM(0), fPhiCentersOfSM(0),fEtaMaxOfTRD1(0),
-    fTrd2AngleY(0.),f2Trd2Dy2(0.),fEmptySpace(0.),fTubsR(0.),fTubsTurnAngle(0.),fCentersOfCellsEtaDir(0),
-    fCentersOfCellsXDir(0),fCentersOfCellsPhiDir(0),fEtaCentersOfCells(0),fPhiCentersOfCells(0),
-    fShishKebabTrd1Modules(0), fNAdditionalOpts(0),
-    fILOSS(-1), fIHADR(-1) 
+    fCentersOfCellsEtaDir(0), fCentersOfCellsXDir(0),fCentersOfCellsPhiDir(0),
+    fEtaCentersOfCells(0),fPhiCentersOfCells(0),fShishKebabTrd1Modules(0),
+    fILOSS(-1), fIHADR(-1),
+    //obsolete member data
+    fAlFrontThick(0.), fGap2Active(0.), fSteelFrontThick(0.), fTrd2AngleY(0.),
+    f2Trd2Dy2(0.), fEmptySpace(0.), fTubsR(0.), fTubsTurnAngle(0.)
 { 
   // default ctor only for internal usage (singleton)
-  // must be kept public for root persistency purposes, but should never be called by the outside world    
+  // must be kept public for root persistency purposes, 
+  // but should never be called by the outside world    
+
   //  CreateListOfTrd1Modules();
   AliDebug(2, "AliEMCALGeometry : default ctor ");
 }
 //______________________________________________________________________
 AliEMCALGeometry::AliEMCALGeometry(const Text_t* name, const Text_t* title) 
   : AliGeometry(name, title),
-    fGeoName(0),fArrayOpts(0),fAlFrontThick(0.),fECPbRadThickness(0.),fECScintThick(0.),
+    fGeoName(0),fArrayOpts(0),fNAdditionalOpts(0),fECPbRadThickness(0.),fECScintThick(0.),
     fNECLayers(0),fArm1PhiMin(0.),fArm1PhiMax(0.),fArm1EtaMin(0.),fArm1EtaMax(0.),fIPDistance(0.),
-    fShellThickness(0.),fZLength(0.),fGap2Active(0.),fNZ(0),fNPhi(0),fSampling(0.),fNumberOfSuperModules(0),
-    fSteelFrontThick(0.),fFrontSteelStrip(0.),fLateralSteelStrip(0.),fPassiveScintThick(0.),fPhiModuleSize(0.),
-    fEtaModuleSize(0.),fPhiTileSize(0.),fEtaTileSize(0.),fLongModuleSize(0.),fNPhiSuperModule(0),fNPHIdiv(0),fNETAdiv(0),
-    fNCells(0),fNCellsInSupMod(0),fNCellsInModule(0),fNTRUEta(0),fNTRUPhi(0),
-    fNCellsInTRUEta(0), fNCellsInTRUPhi(0), fTrd1Angle(0.),f2Trd1Dx2(0.),
+    fShellThickness(0.),fZLength(0.),fNZ(0),fNPhi(0),fSampling(0.),fNumberOfSuperModules(0),
+    fFrontSteelStrip(0.),fLateralSteelStrip(0.),fPassiveScintThick(0.),fPhiModuleSize(0.),
+    fEtaModuleSize(0.),fPhiTileSize(0.),fEtaTileSize(0.),fLongModuleSize(0.),fNPhiSuperModule(0),
+    fNPHIdiv(0),fNETAdiv(0), fNCells(0),fNCellsInSupMod(0),fNCellsInModule(0),fNTRUEta(0),
+    fNTRUPhi(0), fNCellsInTRUEta(0), fNCellsInTRUPhi(0), fTrd1Angle(0.),f2Trd1Dx2(0.),
     fPhiGapForSM(0.),fKey110DEG(0),fPhiBoundariesOfSM(0), fPhiCentersOfSM(0), fEtaMaxOfTRD1(0),
-    fTrd2AngleY(0.),f2Trd2Dy2(0.),fEmptySpace(0.),fTubsR(0.),fTubsTurnAngle(0.),fCentersOfCellsEtaDir(0),
-    fCentersOfCellsXDir(0),fCentersOfCellsPhiDir(0),fEtaCentersOfCells(0),fPhiCentersOfCells(0),
-    fShishKebabTrd1Modules(0),fNAdditionalOpts(0),
-    fILOSS(-1), fIHADR(-1) 
+    fCentersOfCellsEtaDir(0),fCentersOfCellsXDir(0),fCentersOfCellsPhiDir(0),
+    fEtaCentersOfCells(0),fPhiCentersOfCells(0),fShishKebabTrd1Modules(0),
+    fILOSS(-1), fIHADR(-1), 
+    //obsolete member data
+    fAlFrontThick(0.), fGap2Active(0.), fSteelFrontThick(0.), fTrd2AngleY(0.),
+    f2Trd2Dy2(0.), fEmptySpace(0.), fTubsR(0.), fTubsTurnAngle(0.)
 {
   // ctor only for internal usage (singleton)
   AliDebug(2, Form("AliEMCALGeometry(%s,%s) ", name,title));
@@ -135,7 +141,7 @@ AliEMCALGeometry::AliEMCALGeometry(const AliEMCALGeometry& geom)
   : AliGeometry(geom),
     fGeoName(geom.fGeoName),
     fArrayOpts(geom.fArrayOpts),
-    fAlFrontThick(geom.fAlFrontThick),
+    fNAdditionalOpts(geom.fNAdditionalOpts),
     fECPbRadThickness(geom.fECPbRadThickness),
     fECScintThick(geom.fECScintThick),
     fNECLayers(geom.fNECLayers),
@@ -146,12 +152,10 @@ AliEMCALGeometry::AliEMCALGeometry(const AliEMCALGeometry& geom)
     fIPDistance(geom.fIPDistance),
     fShellThickness(geom.fShellThickness),
     fZLength(geom.fZLength),
-    fGap2Active(geom.fGap2Active),
     fNZ(geom.fNZ),
     fNPhi(geom.fNPhi),
     fSampling(geom.fSampling),
     fNumberOfSuperModules(geom.fNumberOfSuperModules),
-    fSteelFrontThick(geom.fSteelFrontThick),
     fFrontSteelStrip(geom.fFrontSteelStrip),
     fLateralSteelStrip(geom.fLateralSteelStrip),
     fPassiveScintThick(geom.fPassiveScintThick),
@@ -177,19 +181,22 @@ AliEMCALGeometry::AliEMCALGeometry(const AliEMCALGeometry& geom)
     fPhiBoundariesOfSM(geom.fPhiBoundariesOfSM),
     fPhiCentersOfSM(geom.fPhiCentersOfSM),
     fEtaMaxOfTRD1(geom.fEtaMaxOfTRD1),
-    fTrd2AngleY(geom.fTrd2AngleY),
-    f2Trd2Dy2(geom.f2Trd2Dy2),
-    fEmptySpace(geom.fEmptySpace),
-    fTubsR(geom.fTubsR),
-    fTubsTurnAngle(geom.fTubsTurnAngle),
     fCentersOfCellsEtaDir(geom.fCentersOfCellsEtaDir),
     fCentersOfCellsXDir(geom.fCentersOfCellsXDir),
     fCentersOfCellsPhiDir(geom.fCentersOfCellsPhiDir),
     fEtaCentersOfCells(geom.fEtaCentersOfCells),
     fPhiCentersOfCells(geom.fPhiCentersOfCells),
     fShishKebabTrd1Modules(geom.fShishKebabTrd1Modules),
-    fNAdditionalOpts(geom.fNAdditionalOpts),
-    fILOSS(geom.fILOSS), fIHADR(geom.fIHADR) 
+    fILOSS(geom.fILOSS), fIHADR(geom.fIHADR),
+    //obsolete member data
+    fAlFrontThick(geom.fAlFrontThick),
+    fGap2Active(geom.fGap2Active),
+    fSteelFrontThick(geom.fSteelFrontThick),
+    fTrd2AngleY(geom.fTrd2AngleY),
+    f2Trd2Dy2(geom.f2Trd2Dy2),
+    fEmptySpace(geom.fEmptySpace),
+    fTubsR(geom.fTubsR),
+    fTubsTurnAngle(geom.fTubsTurnAngle)
 {
   //copy ctor
 }
@@ -228,7 +235,6 @@ void AliEMCALGeometry::Init(void){
   fKey110DEG = 0;
   if(fGeoName.Contains("110DEG") || fGeoName.Contains("CURRENT")) fKey110DEG = 1; // for GetAbsCellId
   fShishKebabTrd1Modules = 0;
-  fTrd2AngleY = f2Trd2Dy2 = fEmptySpace = fTubsR = fTubsTurnAngle = 0;
 
   fNZ             = 114;	// granularity along Z (eta) 
   fNPhi           = 168;	// granularity in phi (azimuth)
@@ -240,13 +246,15 @@ void AliEMCALGeometry::Init(void){
   fPhiGapForSM    = 0.;         // cm, only for final TRD1 geometry
 
   // geometry
+  //JLK: Change this to a check on allowable geometry names
+  // the end of the statement closes with an else that throws a Fatal
+  // exception for undefined geometry
   if(fGeoName.Contains("SHISH")){ // Only shahslyk now
     // 7-sep-05; integration issue
     fArm1PhiMin     = 80.0;	// 60  -> 80
     fArm1PhiMax     = 180.0;	// 180 -> 190
 
     fNumberOfSuperModules = 10; // 12 = 6 * 2 (6 in phi, 2 in Z);
-    fSteelFrontThick = 2.54;    //  9-sep-04
     fIPDistance      = 460.0;
     fFrontSteelStrip = fPassiveScintThick = 0.0; // 13-may-05
     fLateralSteelStrip = 0.025; // before MAY 2005 
@@ -254,17 +262,13 @@ void AliEMCALGeometry::Init(void){
     fPhiTileSize = fEtaTileSize      = 5.52; // (11.4-5.52*2)/2. = 0.18 cm (wall thickness)
     fNPhi            = 14;
     fNZ              = 30;
-    fAlFrontThick    = fGap2Active = 0;
     fNPHIdiv = fNETAdiv = 2;
 
     fNECLayers       = 62;
     fECScintThick    = fECPbRadThickness = 0.2;
     fSampling        = 1.;  // 30-aug-04 - should be calculated
-    if(fGeoName.Contains("TWIST")) { // all about EMCAL module
-      fNZ             = 27;  // 16-sep-04
-    } else if(fGeoName.Contains("TRD")) {
+    if(fGeoName.Contains("TRD")) {
       fIPDistance      = 428.0;  //  11-may-05
-      fSteelFrontThick = 0.0;    // 3.17 -> 0.0; 28-mar-05 : no stell plate
       fNPhi            = 12;
       fSampling       = 12.327;
       fPhiModuleSize = fEtaModuleSize = 12.26;
@@ -275,7 +279,7 @@ void AliEMCALGeometry::Init(void){
       if(fGeoName.Contains("TRD1")) {       // 30-jan-05
 	// for final design
         fPhiGapForSM    = 2.;         // cm, only for final TRD1 geometry
-        if(fGeoName.Contains("MAY05") || fGeoName.Contains("WSUC") || fGeoName.Contains("FINAL") || fGeoName.Contains("CURRENT")){
+        if(fGeoName.Contains("WSUC") || fGeoName.Contains("FINAL")){
           fNumberOfSuperModules = 12; // 20-may-05
           if(fGeoName.Contains("WSUC")) fNumberOfSuperModules = 1; // 27-may-05
           fNECLayers     = 77;       // (13-may-05 from V.Petrov)
@@ -288,7 +292,7 @@ void AliEMCALGeometry::Init(void){
           fNZ                = 24;
           fTrd1Angle         = 1.5;  // 1.3 or 1.5
 
-          if(fGeoName.Contains("FINAL") || fGeoName.Contains("CURRENT")) { // 9-sep-05
+          if(fGeoName.Contains("FINAL")) { // 9-sep-05
             fNumberOfSuperModules = 10;
             if(GetKey110DEG()) {
               fNumberOfSuperModules = 12;// last two modules have size 10 degree in phi (180<phi<190)
@@ -296,30 +300,12 @@ void AliEMCALGeometry::Init(void){
 	    }
             if(fGeoName.Contains("FINAL")) {
               fPhiModuleSize = 12.26 - fPhiGapForSM / Float_t(fNPhi); // first assumption
-	    } else if(fGeoName.Contains("CURRENT")) {
-              fECScintThick      = 0.176; // 10% of weight reduction
-              fECPbRadThickness  = 0.144; //
-              fLateralSteelStrip = 0.015; // 0.015cm  = 0.15mm (Oct 30, from Fred)
-              fPhiModuleSize     = 12.00;
-              fPhiGapForSM       = (12.26 - fPhiModuleSize)*fNPhi; // have to check
 	    }
             fEtaModuleSize = fPhiModuleSize;
-            if(fGeoName.Contains("HUGE")) fNECLayers *= 3; // 28-oct-05 for analysing leakage    
           }
 	}
       }
       fNPHIdiv = fNETAdiv  = 2;   // 13-oct-04 - division again
-      if(fGeoName.Contains("3X3")) {   // 23-nov-04
-        fNPHIdiv = fNETAdiv  = 3;
-      } else if(fGeoName.Contains("4X4")) {
-        fNPHIdiv = fNETAdiv  = 4;
-      } else if(fGeoName.Contains("1X1")) {
-        fNPHIdiv = fNETAdiv  = 1;
-      }
-    }
-    if(fGeoName.Contains("25")){
-      fNECLayers     = 25;
-      fECScintThick  = fECPbRadThickness = 0.5;
     }
     if(fGeoName.Contains("WSUC")){ // 18-may-05 - about common structure
       fShellThickness = 30.;       // should be change 
@@ -339,7 +325,6 @@ void AliEMCALGeometry::Init(void){
     if(GetKey110DEG()) fNCells -= fNCellsInSupMod;
 
     fLongModuleSize = fNECLayers*(fECScintThick + fECPbRadThickness);
-    if(fGeoName.Contains("MAY05")) fLongModuleSize += (fFrontSteelStrip + fPassiveScintThick);
 
     // 30-sep-04
     if(fGeoName.Contains("TRD")) {
@@ -347,25 +332,20 @@ void AliEMCALGeometry::Init(void){
     }
   } else Fatal("Init", "%s is an undefined geometry!", fGeoName.Data()) ; 
 
+  //JLK: The following options are true for all geometries
+
   fNPhiSuperModule = fNumberOfSuperModules/2;
   if(fNPhiSuperModule<1) fNPhiSuperModule = 1;
 
-  fShellThickness = fAlFrontThick + fGap2Active + fNECLayers*GetECScintThick()+(fNECLayers-1)*GetECPbRadThick();
-  if(fGeoName.Contains("SHISH")) {
-    fShellThickness = fSteelFrontThick + fLongModuleSize;
-    if(fGeoName.Contains("TWIST")) { // 13-sep-04
-      fShellThickness  = TMath::Sqrt(fLongModuleSize*fLongModuleSize + fPhiModuleSize*fEtaModuleSize);
-      fShellThickness += fSteelFrontThick;
-    } else if(fGeoName.Contains("TRD")) { // 1-oct-04
-      fShellThickness  = TMath::Sqrt(fLongModuleSize*fLongModuleSize + f2Trd1Dx2*f2Trd1Dx2);
-      fShellThickness += fSteelFrontThick;
-      // Local coordinates
-      fParSM[0] = GetShellThickness()/2.;        
-      fParSM[1] = GetPhiModuleSize() * GetNPhi()/2.;
-      fParSM[2] = 350./2.;
-    }
+  fShellThickness = fLongModuleSize;
+  if(fGeoName.Contains("TRD")) { // 1-oct-04
+    fShellThickness  = TMath::Sqrt(fLongModuleSize*fLongModuleSize + f2Trd1Dx2*f2Trd1Dx2);
+    // Local coordinates
+    fParSM[0] = GetShellThickness()/2.;        
+    fParSM[1] = GetPhiModuleSize() * GetNPhi()/2.;
+    fParSM[2] = 350./2.;
   }
-
+  
   fZLength        = 2.*ZFromEtaR(fIPDistance+fShellThickness,fArm1EtaMax); // Z coverage
   fEnvelop[0]     = fIPDistance; // mother volume inner radius
   fEnvelop[1]     = fIPDistance + fShellThickness; // mother volume outer r.
@@ -418,18 +398,8 @@ void AliEMCALGeometry::PrintGeometry()
   printf("                fSampling %5.2f \n",  fSampling );
   if(fGeoName.Contains("SHISH")){
     printf(" fIPDistance       %6.3f cm \n", fIPDistance);
-    if(fSteelFrontThick>0.) 
-    printf(" fSteelFrontThick  %6.3f cm \n", fSteelFrontThick);
     printf(" fNPhi %i   |  fNZ %i \n", fNPhi, fNZ);
     printf(" fNCellsInModule %i : fNCellsInSupMod %i : fNCells %i\n",fNCellsInModule, fNCellsInSupMod, fNCells);
-    if(fGeoName.Contains("MAY05")){
-      printf(" fFrontSteelStrip         %6.4f cm (thickness of front steel strip)\n", 
-      fFrontSteelStrip);
-      printf(" fLateralSteelStrip       %6.4f cm (thickness of lateral steel strip)\n", 
-      fLateralSteelStrip);
-      printf(" fPassiveScintThick  %6.4f cm (thickness of front passive Sc tile)\n",
-      fPassiveScintThick);
-    }
     printf(" X:Y module size     %6.3f , %6.3f cm \n", fPhiModuleSize, fEtaModuleSize);
     printf(" X:Y   tile size     %6.3f , %6.3f cm \n", fPhiTileSize, fEtaTileSize);
     printf(" #of sampling layers %i(fNECLayers) \n", fNECLayers);

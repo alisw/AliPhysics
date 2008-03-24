@@ -69,7 +69,7 @@ AliEMCALReconstructor::AliEMCALReconstructor()
     fGeom = dynamic_cast<AliEMCAL*>(rl->GetAliRun()->GetDetector("EMCAL"))->GetGeometry();
   } else {
     AliInfo(Form("Using default geometry in reconstruction"));
-    fGeom =  AliEMCALGeometry::GetInstance(AliEMCALGeometry::GetDefaulGeometryName());
+    fGeom =  AliEMCALGeometry::GetInstance(AliEMCALGeometry::GetDefaultGeometryName());
   }
 
   if(!fGeom) AliFatal(Form("Could not get geometry!"));
