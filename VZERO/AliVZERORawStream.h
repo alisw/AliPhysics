@@ -56,6 +56,8 @@ class AliVZERORawStream: public TObject {
       { return fIsBG[channel][event]; }   
     UInt_t            GetTime(Int_t channel) const
       { return fTime[channel]; }
+    UInt_t            GetWidth(Int_t channel) const
+      { return fWidth[channel]; }
 
     enum EVZERORawDataParams {
       kNChannels = 64, // number of electronic channels in V0
@@ -90,7 +92,7 @@ class AliVZERORawStream: public TObject {
     Bool_t        fIsBB[kNChannels][kNEvOfInt];  // 'Beam-Beam' flag for all channels
     Bool_t        fIsBG[kNChannels][kNEvOfInt];  // 'Beam-Gas' flag for all channels
     Int_t         fTime[kNChannels];             // leading time for all channels - from HPTDC
-    Int_t         fWidth[kNChannels];            // signal width for all channels - from HPTDC
+    Int_t         fWidth[kNChannels];            // pulse width for all channels - from HPTDC
 
     UShort_t      fTrigger;        // VZERO trigger inputs
     UShort_t      fTriggerMask;    // VZERO trigger inputs mask
