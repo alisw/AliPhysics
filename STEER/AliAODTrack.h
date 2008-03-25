@@ -127,6 +127,10 @@ class AliAODTrack : public AliVParticle {
     if(pid) for(Int_t i=0; i<10; ++i) fPID[i]=pid[i];
     else {for(Int_t i=0; i<10; fPID[i++]=0.); fPID[AliAODTrack::kUnknown]=1.;}}
 
+  Bool_t IsOn(Int_t mask) const {return (fFlags&mask)>0;}
+  ULong_t GetStatus() const { return GetFlags(); }
+  ULong_t GetFlags() const { return fFlags; }
+
   Short_t GetID() const { return fID; }
   Int_t   GetLabel() const { return fLabel; } 
   Char_t  GetType() const { return fType;}
@@ -165,8 +169,12 @@ class AliAODTrack : public AliVParticle {
   void  Print(const Option_t *opt = "") const;
 
   // setters
+  void SetFlags(ULong_t flags) { fFlags = flags; }
+  void SetStatus(ULong_t flags) { fFlags|=flags; }
+  void ResetStatus(ULong_t flags) { fFlags&=~flags; }
+
   void SetID(Short_t id) { fID = id; }
-  void SetLabel(Int_t label) {fLabel = label; }
+  void SetLabel(Int_t label) { fLabel = label; }
 
   template <class T> void SetPosition(const T *x, Bool_t isDCA = kFALSE);
   void SetDCA(Double_t d, Double_t z);
@@ -222,6 +230,7 @@ class AliAODTrack : public AliVParticle {
   Double32_t    fChi2MatchTrigger;  // chi2 of trigger/track matching
   Double32_t    fPID[10];           // [0.,1.,8] pointer to PID object
 
+  ULong_t       fFlags;             // reconstruction status flags 
   Int_t         fLabel;             // track label, points back to MC track
   
   UInt_t        fITSMuonClusterMap; // map of ITS and muon clusters, one bit per layer (ITS: bit 1-8, muon: bit 17-32) 
@@ -236,7 +245,7 @@ class AliAODTrack : public AliVParticle {
   AliAODPid    *fDetPid;            // more detailed or detector specific pid information
   TRef          fProdVertex;        // vertex of origin
 
-  ClassDef(AliAODTrack,6);
+  ClassDef(AliAODTrack,7);
 };
 
 #endif

@@ -33,6 +33,7 @@ AliAODTrack::AliAODTrack() :
   AliVParticle(),
   fChi2perNDF(-999.),
   fChi2MatchTrigger(0.),
+  fFlags(0),
   fLabel(-999),
   fITSMuonClusterMap(0),
   fFilterMap(0),
@@ -69,6 +70,7 @@ AliAODTrack::AliAODTrack(Short_t id,
   AliVParticle(),
   fChi2perNDF(-999.),
   fChi2MatchTrigger(0.),
+  fFlags(0),
   fLabel(label),
   fITSMuonClusterMap(itsClusMap),
   fFilterMap(selectInfo),
@@ -109,6 +111,7 @@ AliAODTrack::AliAODTrack(Short_t id,
   AliVParticle(),
   fChi2perNDF(-999.),
   fChi2MatchTrigger(0.),
+  fFlags(0),
   fLabel(label),
   fITSMuonClusterMap(itsClusMap),
   fFilterMap(selectInfo),
@@ -142,6 +145,7 @@ AliAODTrack::AliAODTrack(const AliAODTrack& trk) :
   AliVParticle(trk),
   fChi2perNDF(trk.fChi2perNDF),
   fChi2MatchTrigger(trk.fChi2MatchTrigger),
+  fFlags(trk.fFlags),
   fLabel(trk.fLabel),
   fITSMuonClusterMap(trk.fITSMuonClusterMap),
   fFilterMap(trk.fFilterMap),
@@ -178,11 +182,13 @@ AliAODTrack& AliAODTrack::operator=(const AliAODTrack& trk)
     fChi2perNDF = trk.fChi2perNDF;
     fChi2MatchTrigger = trk.fChi2MatchTrigger;
 
-    fID = trk.fID;
+    fFlags = trk.fFlags;
     fLabel = trk.fLabel;    
     
     fITSMuonClusterMap = trk.fITSMuonClusterMap;
     fFilterMap = trk.fFilterMap;
+
+    fID = trk.fID;
 
     fCharge = trk.fCharge;
     fType = trk.fType;
