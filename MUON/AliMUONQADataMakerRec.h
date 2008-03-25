@@ -32,6 +32,27 @@ public:
   virtual ~AliMUONQADataMakerRec();
   
 private:
+  /// Raw histograms indices
+  enum ERaw { 
+    kRawBusPatch = 0,  ///< Raw bus patch histogram index
+    kRawCharge   = 1   ///< Raw charge histogram index
+  };
+         
+  /// Rec points histograms indices
+  enum ERecPoints { 
+    kTriggerDigitsBendPlane    = 0, ///< Trigger digits on BP histogram index
+    kTriggerDigitsNonBendPlane = 1  ///< Trigger digits on BP histogram index
+  };
+          
+  /// ESD histograms indices
+  enum EESD { 
+    kESDnTracks       = 0,  ///< ESD nTrack histogram index
+    kESDMomentum      = 1,  ///< ESD momentum histogram index
+    kESDPt            = 2,  ///< ESD Pt histogram index
+    kESDRapidity      = 3,  ///< ESD Rapidity histogram index
+    kESDClusterHitMap = 4   ///< ESD Cluster hit map histogram index
+  };
+
   virtual void   StartOfDetectorCycle(); 
 
   virtual void   InitRaws(); 
@@ -42,7 +63,7 @@ private:
   virtual void   MakeRecPoints(TTree* recpo); 
   virtual void   MakeESDs(AliESDEvent* esd) ;
   virtual void   EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray* list);
-
+  
   AliMUONVDigitStore* fDigitStore; //!< pointer to digits store
   AliMUONVTriggerStore* fTriggerStore; //!< pointer to trigger store
   AliMUONDigitMaker* fDigitMaker;  //!< pointer to digit maker

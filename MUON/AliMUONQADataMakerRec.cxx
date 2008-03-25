@@ -25,6 +25,7 @@
 
 // --- AliRoot header files ---
 #include "AliESDEvent.h"
+#include "AliMUONConstants.h"  
 #include "AliLog.h"
 #include "AliRawReader.h"
 #include "AliQAChecker.h"
@@ -35,6 +36,7 @@
 #include "AliMUONVClusterStore.h"
 #include "AliMUONVCluster.h"
 #include "AliESDMuonTrack.h"
+#include "AliESDMuonCluster.h"
 
 #include "AliMUONDigitMaker.h"
 #include "AliMUONVDigitStore.h"
@@ -119,10 +121,10 @@ void AliMUONQADataMakerRec::InitRaws()
 {
     /// create Raws histograms in Raws subdir
     TH1I* h0 = new TH1I("hRawBusPatch", "buspatch distribution",  1932, 1, 1932); 
-    Add2RawsList(h0, 0);
+    Add2RawsList(h0, kRawBusPatch);
 
     TH1I* h1 = new TH1I("hRawCharge", "Charge distribution in rawdata", 4096, 0, 4095); 
-    Add2RawsList(h1, 1);
+    Add2RawsList(h1, kRawCharge);
 
 }
 
@@ -134,13 +136,13 @@ void AliMUONQADataMakerRec::InitRecPoints()
 			4, -0.5, 4. - 0.5,
 			18, -0.5, 18. - 0.5,
 			7*64, -0.5, 7.*64. - 0.5);
-    Add2RecPointsList(h2, 0);
+    Add2RecPointsList(h2, kTriggerDigitsBendPlane);
 
     TH3F *h3 = new TH3F("hTriggerDigitsNonBendPlane", "Trigger digits in non-bending plane",
 			4, -0.5, 4. - 0.5,
 			18, -0.5, 18. - 0.5,
 			112, -0.5, 112. - 0.5);
-    Add2RecPointsList(h3, 1);
+    Add2RecPointsList(h3, kTriggerDigitsNonBendPlane);
 }
 
 
@@ -149,16 +151,25 @@ void AliMUONQADataMakerRec::InitESDs()
 {
     ///create ESDs histograms in ESDs subdir
   TH1F* h0 = new TH1F("hESDnTracks", "ESDs track number distribution", 30, 0., 30.);  
-  Add2ESDsList(h0, 0);
+  Add2ESDsList(h0, kESDnTracks);
 
   TH1F* h1 = new TH1F("hESDMomentum", "ESDs P distribution", 300, 0., 300) ; 
-  Add2ESDsList(h1, 1);
+  Add2ESDsList(h1, kESDMomentum);
 
   TH1F* h2 = new TH1F("hESDPt", "ESDs Pt distribution", 200, 0., 50) ; 
-  Add2ESDsList(h2, 2) ;
+  Add2ESDsList(h2, kESDPt);
 
   TH1F* h3 = new TH1F("hESDRapidity", "ESDs rapidity distribution", 200, -4.5,-2.) ; 
-  Add2ESDsList(h3, 3) ;
+  Add2ESDsList(h3, kESDRapidity);
+
+  for (Int_t i = 0; i < AliMUONConstants::NTrackingCh(); ++i) 
+  {
+    TH2F* h4 = new TH2F(Form("%s%d", "hESDClusterHitMap", i), 
+		     Form("%s %d", "ESD Clusters hit distribution for chamber", i),
+		     100, -1*AliMUONConstants::Rmax(i/2), AliMUONConstants::Rmax(i/2),
+		     100, -1*AliMUONConstants::Rmax(i/2), AliMUONConstants::Rmax(i/2)); 
+    Add2ESDsList(h4, kESDClusterHitMap+i);
+  }
 }
 
 //____________________________________________________________________________
@@ -175,8 +186,8 @@ void AliMUONQADataMakerRec::MakeRaws(AliRawReader* rawReader)
     rawStream.First();
     while( rawStream.Next(busPatchId, manuId, channelId, charge) ) {
   
-      GetRawsData(0)->Fill(busPatchId);
-      GetRawsData(1)->Fill(charge);
+      GetRawsData(kRawBusPatch)->Fill(busPatchId);
+      GetRawsData(kRawCharge)->Fill(charge);
 		  
     } // Next digit
 }
@@ -222,7 +233,10 @@ void AliMUONQADataMakerRec::MakeRecPoints(TTree* clustersTree)
       Int_t iy = mDigit->PadY();
       Int_t maxY = (cathode==0) ? 64 : 1;
       Int_t currPair = ix*maxY + iy;
-      ((TH3F*)GetRecPointsData(cathode))->Fill(ch, slat, currPair);
+      ERecPoints hindex 
+        = ( cathode == 0 ) ? kTriggerDigitsBendPlane : kTriggerDigitsNonBendPlane;
+      
+      ((TH3F*)GetRecPointsData(hindex))->Fill(ch, slat, currPair);
     }
 }
 
@@ -244,6 +258,14 @@ void AliMUONQADataMakerRec::MakeESDs(AliESDEvent* esd)
       GetESDsData(1)->Fill(v1.P());
       GetESDsData(2)->Fill(v1.Pt());
       GetESDsData(3)->Fill(v1.Rapidity());
+
+      TClonesArray clusters =  muonTrack->GetClusters();
+
+      for (Int_t iCluster = 0; iCluster <clusters.GetEntriesFast(); ++iCluster) {
+	AliESDMuonCluster* cluster = (AliESDMuonCluster*)clusters.At(iCluster);
+	GetESDsData(kESDClusterHitMap+cluster->GetChamberId())
+          ->Fill(cluster->GetX(), cluster->GetY());
+      }
     }
 }
 
