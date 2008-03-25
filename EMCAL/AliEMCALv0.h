@@ -62,7 +62,7 @@ class AliEMCALv0 : public AliEMCAL {
   void PbInTrap(const double parTRAP[11], TString n);
   // 1X1 case - Nov 22, 2006
   void Trd1Tower1X1(double *parSCM0);
-  void PbInTrd1(double *parTrd1, TString n);
+  void PbInTrd1(double *parTrd1, TString n){;}
   // TRD2 - 1th design
   void Scm0InTrd2(const AliEMCALGeometry * g, const Double_t emodPar[5], Double_t parSCM0[5]);
   void Division2X2InScm0(const AliEMCALGeometry * g, const Double_t parSCM0[5]);
