@@ -223,10 +223,19 @@ AC_ARG_ENABLE([$1],
       [   compile the $1 library ])],
   [if test "x$enableval" = "xno";
      then enable_module=no
+   elif test "x$disable_all" = "xyes"; then
+     # do checks if library has been enabled after global disable
+     enable_module=yes
    else
      enable_module=force
   fi],
-  [enable_module=yes
+  [if test "x$disable_all" = "xyes"; then
+   enable_module=no...modules.disabled
+   else
+   enable_module=yes
+   fi # if test "x$disable_all" = "yes"
+  ])
+  if test "x$enable_module" = "xyes"; then
    if test "x$have_aliroot" = "xno" ; then
      enable_module="no...requires.AliRoot"
    else
@@ -271,8 +280,8 @@ AC_ARG_ENABLE([$1],
      LIBS="$save_LIBS"  
      AC_LANG_POP(C++)
 
-   fi
-  ])
+   fi # if test "x$have_aliroot" = "xno"
+  fi  # if test "x$enable_module" = "xyes"
 ])
 
 

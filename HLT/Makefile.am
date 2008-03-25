@@ -2,6 +2,12 @@
 # Makefile template for the Alice HLT framework and components
 
 
+if HAVE_ALIROOT
+ALIROOT_DEP=sim \
+	    rec \
+	    shuttle
+endif
+
 if EN_HLT_SAMPLE
 SAMPLE_DIR=SampleLib	
 endif
@@ -39,9 +45,7 @@ ITS_DIR=ITS
 endif
 
 SUBDIRS 		= BASE \
-			  sim \
-			  rec \
-			  shuttle \
+			  $(ALIROOT_DEP) \
 			  $(RCU_DIR) \
 			  $(SAMPLE_DIR) \
 			  $(TPC_DIR) \
@@ -71,7 +75,8 @@ EXTRA_DIST		= libHLTbase.pkg \
 			  libAliHLTITS.pkg \
 			  exa/sample-component1.C \
 			  exa/monitoring.C \
-			  hlt.conf
+			  hlt.conf \
+			  .revision
 
 DIST_SUBDIRS		= $(SUBDIRS)
 
@@ -96,6 +101,18 @@ SampleLibPkg: Makefile $(top_srcdir)/SampleLib/*
 clean-local: 
 	(test ! -d SampleLibPkg || rm -rf SampleLibPkg)
 
+svn-update:
+	@cd $(top_srcdir) ;\
+	revision=`svn info 2> /dev/null | grep "Revision:" | cut -d ' ' -f 2 | tr -d '\n'` ;\
+	last=`svn info 2> /dev/null | grep "Last Changed Rev:" | cut -d ' ' -f 4 | cut -d '/' -f 4 | tr -d '\n'` ;\
+	if test "x$$revision" != "x" && test $$last -gt $$revision; then \
+		echo "The SVN copy is not up-to-date (revision $$revision - last update $$last), please 'svn update'"; \
+		exit -1; \
+	fi
+
+.revision: svn-update
+	@cd $(top_srcdir) ;\
+	svn info 2> /dev/null | grep "Revision:" | cut -d ' ' -f 2 | tr -d '\n' > $@
 #
 # EOF
 #

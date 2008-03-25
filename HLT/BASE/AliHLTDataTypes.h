@@ -266,7 +266,7 @@ extern "C" {
     /** special value to enable all messages */
     kHLTLogAll       = 0x7f,
     /** the default logging filter */
-    kHLTLogDefault   = 0x7d 
+    kHLTLogDefault   = 0x79
 };
 
   //////////////////////////////////////////////////////////////////////////

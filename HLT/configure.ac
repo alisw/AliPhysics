@@ -8,7 +8,15 @@ dnl ------------------------------------------------------------------
 
 dnl Take either the AliRoot tag as version id or the current revision
 AC_INIT([Alice High Level Trigger] , 
-	m4_esyscmd([url=`svn info | grep "URL:" | cut -d: -f3 | sed -e 's|[/]*HLT[/]*$||' | sed -e 's|^[/]*||g' | cut -d '/' -f 4`; rev=`cat configure.ac | sed -e '/^dnl \$Id:/!d'| cut -d ' ' -f4 | tr -d '\n'`; if test "x$url" != "x"; then echo -n $url; elif test "x$rev" != "x"; then echo -n $rev ; else echo -n invalid-version; fi]),
+	m4_esyscmd([url=`svn info 2> /dev/null | grep "URL:" | cut -d: -f3 | sed -e 's|[/]*HLT[/]*$||' | sed -e 's|^[/]*||g' | cut -d '/' -f 4`; \
+	            revision=`svn info 2> /dev/null | grep "Revision:" | cut -d ' ' -f 2 | cut -d '/' -f 4`; \
+	            if test "x$url" != "x"; then echo -n $url; \
+		    elif test "x$revision" != "x"; then echo -n $revision ; \
+		    elif test -e .revision && test x`cat .revision` != x; then \
+		       cat .revision; \
+		    else \
+		       echo -n invalid-version; \
+		    fi]),
 	[Matthias.Richter@ift.uib.no], 
 	[alice-hlt])
 
@@ -97,6 +105,9 @@ ALIHLT_USEPACKAGE=ALIROOT
 AC_DEFINE(use_aliroot)
 AC_DEFINE(use_root)
 CPPFLAGS="$CPPFLAGS ${ROOTCFLAGS}"
+save_CPPFLAGS=$CPPFLAGS
+save_LDFLAGS=$LDFLAGS
+save_LIBS=$LIBS
 
 dnl ------------------------------------------------------------------
 dnl check for AliRoot features
@@ -312,7 +323,7 @@ if test ! "x$have_aliroot" = "xno" ; then
   CPPFLAGS=$save_CPPFLAGS
   LDFLAGS=$save_LDFLAGS
   LIBS=$save_LIBS
-fi
+fi # if test ! "x$have_aliroot" = "xno"
 
 AC_LANG_POP(C++)
 AC_SUBST([ALICE_ROOT])
@@ -446,6 +457,12 @@ AC_SUBST([HOMER_LDFLAGS])
 AC_SUBST([HOMER_LIBDIR])
 AC_SUBST([HOMER_BINDIR])
 AC_SUBST([HOMER_LIBS])
+
+dnl ------------------------------------------------------------------
+AC_ARG_ENABLE(all,
+  [AC_HELP_STRING([--disable-all],
+      [disable all detector modules, individual modules can be switched on by --enable-det])],
+  [disable_all=yes],[])
 
 dnl ------------------------------------------------------------------
 AC_MSG_CHECKING([whether to impose strict coding conventions])
@@ -862,13 +879,10 @@ dnl fi
 dnl AC_SUBST([HAVE_SRC_SUBDIR])
 
 dnl ------------------------------------------------------------------
-dnl inatallation directory for libraries
-dnl 
-if test "x$prefix" != "xNONE" && test $ALICE_ROOT = $prefix ; then
-libdir=\${exec_prefix}/lib/tgt_$ALICE_TARGET
-AC_MSG_NOTICE([libdir set to $libdir])
-fi
-dnl ------------------------------------------------------------------
+AC_MSG_NOTICE([---------------------------------------------- ])
+AC_MSG_NOTICE([                build summary                  ])
+AC_MSG_NOTICE([---------------------------------------------- ])
+
 AC_CONFIG_FILES([Makefile 
 		 BASE/Makefile
 		 BASE/setenv.sh
@@ -877,26 +891,75 @@ AC_CONFIG_FILES([Makefile
 		 BASE/util/Makefile
 		 BASE/interface/Makefile
 		 BASE/test/Makefile
-		 sim/Makefile
-		 rec/Makefile
-		 shuttle/Makefile
-		 SampleLib/Makefile
-		 TPCLib/Makefile
-		 TPCLib/test/Makefile
-		 TPCLib/mapping2array.cxx
-		 TPCLib/OnlineDisplay/Makefile
-		 RCU/Makefile
-		 RCU/test/Makefile
-		 PHOS/Makefile
-		 TRD/Makefile
-		 MUON/Makefile
-		 trigger/Makefile
-		 ITS/Makefile
-		 comp/Makefile
 		 doc/Makefile
 		 doc/doxygen.conf
 		 doc/doxymodule.conf])
 
+dnl AliRoot and installation directory for libraries
+dnl 
+AC_MSG_NOTICE([AliRoot: $have_aliroot])
+AM_CONDITIONAL(HAVE_ALIROOT, test "x$have_aliroot" != "xno" )
+if test "x$have_aliroot" != "xno"; then 
+  AC_CONFIG_FILES([sim/Makefile	 
+		   rec/Makefile	 
+		   shuttle/Makefile
+		   ])
+fi
+if test "x$prefix" != "xNONE" && test $ALICE_ROOT = $prefix ; then
+libdir=\${exec_prefix}/lib/tgt_$ALICE_TARGET
+AC_MSG_NOTICE([libdir set to $libdir])
+fi
+
+AC_MSG_NOTICE([compile sample library: $enable_sample])
+if test "x$enable_sample" = "xyes"; then 
+  AC_CONFIG_FILES([SampleLib/Makefile])
+fi
+
+AC_MSG_NOTICE([compile TPC library: $enable_tpc])
+if test "x$enable_tpc" = "xyes"; then 
+  AC_CONFIG_FILES([TPCLib/Makefile	      
+		   TPCLib/test/Makefile	      
+		   TPCLib/mapping2array.cxx     
+		   TPCLib/OnlineDisplay/Makefile
+		   ])
+fi
+
+AC_MSG_NOTICE([compile RCU library: $enable_rcu])
+if test "x$enable_rcu" = "xyes"; then 
+  AC_CONFIG_FILES([RCU/Makefile
+		   RCU/test/Makefile
+		   ])
+fi
+
+AC_MSG_NOTICE([compile PHOS library: $enable_phos])
+if test "x$enable_phos" = "xyes"; then 
+  AC_CONFIG_FILES([PHOS/Makefile])
+fi
+
+AC_MSG_NOTICE([compile TRD library: $enable_trd])
+if test "x$enable_trd" = "xyes"; then 
+  AC_CONFIG_FILES([TRD/Makefile])
+fi
+
+AC_MSG_NOTICE([compile MUON library: $enable_muon])
+if test "x$enable_muon" = "xyes"; then 
+  AC_CONFIG_FILES([MUON/Makefile])
+fi
+
+AC_MSG_NOTICE([compile ITS library: $enable_its])
+if test "x$enable_its" = "xyes"; then 
+  AC_CONFIG_FILES([ITS/Makefile])
+fi
+
+AC_MSG_NOTICE([compile trigger library: $enable_trigger])
+if test "x$enable_trigger" = "xyes"; then 
+  AC_CONFIG_FILES([trigger/Makefile])
+fi
+
+AC_MSG_NOTICE([compile comp library: $enable_comp])
+if test "x$enable_comp" = "xyes"; then 
+  AC_CONFIG_FILES([comp/Makefile])
+fi
 
 AC_OUTPUT
 dnl
