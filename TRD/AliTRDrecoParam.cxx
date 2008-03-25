@@ -53,7 +53,7 @@ AliTRDrecoParam::AliTRDrecoParam()
   ,fLUTOn(kTRUE)
   ,fTCOn(kTRUE)
   ,fTCnexp(1)
-  ,fADCbaseline(0.0)
+  ,fADCbaseline(0)
 {
   //
   // Default constructor
@@ -92,7 +92,7 @@ AliTRDrecoParam *AliTRDrecoParam::GetCosmicTestParam()
 
   AliTRDrawStreamBase::SetRawStreamVersion("TB");
   AliTRDrecoParam *par = new AliTRDrecoParam();
-  par->SetADCbaseline(10.0);
+  par->SetADCbaseline(10);
   return par;
 
 }

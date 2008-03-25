@@ -53,7 +53,7 @@ class AliTRDrecoParam : public AliDetectorRecoParam
         Bool_t   LUTOn() const                    { return fLUTOn;           };
         Bool_t   TCOn() const                     { return fTCOn;            };
 
-        Double_t GetADCbaseline() const           { return fADCbaseline;     };
+        Int_t    GetADCbaseline() const           { return fADCbaseline;     };
 
 	static   AliTRDrecoParam *GetLowFluxParam();
         static   AliTRDrecoParam *GetHighFluxParam();
@@ -66,7 +66,7 @@ class AliTRDrecoParam : public AliDetectorRecoParam
         void     SetClusSigThresh(Float_t thresh)        { fClusSigThresh   = thresh; };
         void     SetTailCancelation(Int_t tcOn = 1)      { fTCOn            = tcOn;   };
         void     SetNexponential(Int_t nexp)             { fTCnexp          = nexp;   };
-        void     SetADCbaseline(Double_t base)           { fADCbaseline     = base;   };
+        void     SetADCbaseline(Int_t base)              { fADCbaseline     = base;   };
 
  private:
 
@@ -99,7 +99,7 @@ class AliTRDrecoParam : public AliDetectorRecoParam
         Int_t     fTCnexp;                 // Number of exponentials, digital filter
   
 	// ADC parameter
-        Double_t  fADCbaseline;            // ADC baseline to be subtracted
+        Int_t     fADCbaseline;            // ADC baseline to be subtracted
 
 	ClassDef(AliTRDrecoParam, 3)       // Reconstruction parameters for TRD detector
 

@@ -19,6 +19,7 @@ class AliTRDCalPID;
 class AliTRDCalMonitoring;
 class AliTRDCalROC;
 class AliTRDCalDet;
+class AliTRDCalSingleChamberStatus;
 
 class AliTRDcalibDB : public TObject {
 
@@ -29,49 +30,51 @@ class AliTRDcalibDB : public TObject {
        , kNsect =  18
        , kNdet  = 540 };
   
-  static AliTRDcalibDB      *Instance();
-  static void                Terminate();
+  static AliTRDcalibDB               *Instance();
+  static void                         Terminate();
 
-  void                       SetRun(Long64_t run);
-  Long64_t                   GetRun() const { return fRun; }
+  void                                SetRun(Long64_t run);
+  Long64_t                            GetRun() const { return fRun; }
 
-  Float_t                    GetVdrift(Int_t det, Int_t col, Int_t row);
-  Float_t                    GetVdriftAverage(Int_t det);
-        AliTRDCalROC        *GetVdriftROC(Int_t det);
-  const AliTRDCalDet        *GetVdriftDet();
+  Float_t                             GetVdrift(Int_t det, Int_t col, Int_t row);
+  Float_t                             GetVdriftAverage(Int_t det);
+        AliTRDCalROC                 *GetVdriftROC(Int_t det);
+  const AliTRDCalDet                 *GetVdriftDet();
 
-  Float_t                    GetT0(Int_t det, Int_t col, Int_t row);
-  Float_t                    GetT0Average(Int_t det);
-        AliTRDCalROC        *GetT0ROC(Int_t det);
-  const AliTRDCalDet        *GetT0Det();
+  Float_t                             GetT0(Int_t det, Int_t col, Int_t row);
+  Float_t                             GetT0Average(Int_t det);
+        AliTRDCalROC                 *GetT0ROC(Int_t det);
+  const AliTRDCalDet                 *GetT0Det();
 
-  Float_t                    GetGainFactor(Int_t det, Int_t col, Int_t row);
-  Float_t                    GetGainFactorAverage(Int_t det);
-        AliTRDCalROC        *GetGainFactorROC(Int_t det);
-  const AliTRDCalDet        *GetGainFactorDet();
+  Float_t                             GetGainFactor(Int_t det, Int_t col, Int_t row);
+  Float_t                             GetGainFactorAverage(Int_t det);
+        AliTRDCalROC                 *GetGainFactorROC(Int_t det);
+  const AliTRDCalDet                 *GetGainFactorDet();
 
-        AliTRDCalROC        *GetPRFROC(Int_t det);
-  Float_t                    GetPRFWidth(Int_t det, Int_t col, Int_t row);
+        AliTRDCalROC                 *GetPRFROC(Int_t det);
+  Float_t                             GetPRFWidth(Int_t det, Int_t col, Int_t row);
 
-  Int_t                      GetNumberOfTimeBins();
+  Int_t                               GetNumberOfTimeBins();
 
-  Char_t                     GetPadStatus(Int_t det, Int_t col, Int_t row);
-  Char_t                     GetChamberStatus(Int_t det);
+  Char_t                              GetPadStatus(Int_t det, Int_t col, Int_t row);
+        AliTRDCalSingleChamberStatus *GetPadStatusROC(Int_t det);
 
-  Bool_t                     IsPadMasked(Int_t det, Int_t col, Int_t row);
-  Bool_t                     IsPadBridgedLeft(Int_t det, Int_t col, Int_t row);
-  Bool_t                     IsPadBridgedRight(Int_t det, Int_t col, Int_t row);
+  Char_t                              GetChamberStatus(Int_t det);
+
+  Bool_t                              IsPadMasked(Int_t det, Int_t col, Int_t row);
+  Bool_t                              IsPadBridgedLeft(Int_t det, Int_t col, Int_t row);
+  Bool_t                              IsPadBridgedRight(Int_t det, Int_t col, Int_t row);
   
-  Bool_t                     IsChamberInstalled(Int_t det);
-  Bool_t                     IsChamberMasked(Int_t det);
+  Bool_t                              IsChamberInstalled(Int_t det);
+  Bool_t                              IsChamberMasked(Int_t det);
 
-  const AliTRDCalMonitoring *GetMonitoringObject();
-  const AliTRDCalPID        *GetPIDObject(const Int_t method);
+  const AliTRDCalMonitoring          *GetMonitoringObject();
+  const AliTRDCalPID                 *GetPIDObject(const Int_t method);
 
   // Related functions, these depend on calibration data
-  static Float_t             GetOmegaTau(Float_t vdrift, Float_t bz);
-         Int_t               PadResponse(Double_t signal, Double_t dist
-                                       , Int_t plane, Double_t *pad) const;
+  static Float_t                      GetOmegaTau(Float_t vdrift, Float_t bz);
+         Int_t                        PadResponse(Double_t signal, Double_t dist
+                                                , Int_t plane, Double_t *pad) const;
   
  protected:
 

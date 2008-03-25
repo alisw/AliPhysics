@@ -17,6 +17,10 @@ class AliTRDcluster : public AliCluster {
 
  public:
 
+  enum { kInChamber = 1
+       , kShared    = 2
+       , kMasked    = 4 };
+
   AliTRDcluster();
   AliTRDcluster(Int_t det, Float_t q, Float_t *pos, Float_t *sig
               , Int_t *tracks, Char_t npads, Short_t *signals
@@ -27,25 +31,28 @@ class AliTRDcluster : public AliCluster {
 
   virtual void     AddTrackIndex(Int_t *i); 
 
-          Bool_t   IsInChamber() const          { return TestBit(1);       }
-          Bool_t   IsShared() const             { return TestBit(2);       }
-          Bool_t   IsUsed() const               { return (fQ < 0) ? kTRUE : kFALSE; }
+          Bool_t   IsInChamber() const             { return TestBit(kInChamber);       }
+          Bool_t   IsShared() const                { return TestBit(kShared);          }
+          Bool_t   IsUsed() const                  { return (fQ < 0) ? kTRUE : kFALSE; }
+          Bool_t   HasMaskedPad() const            { return TestBit(kMasked);          }
           
-          void     Use(Int_t = 0)               { fQ = -fQ;                }
+          void     Use(Int_t = 0)                  { fQ = -fQ;              }
     
-          Int_t    GetDetector() const          { return fDetector;        }
-          Int_t    GetLocalTimeBin() const      { return fLocalTimeBin;    }
-          Float_t  GetQ() const                 { return fQ;               }
-          Int_t    GetNPads() const             { return fNPads;           }
-          Float_t  GetCenter() const            { return fCenter;          }
-	  Int_t    GetPadCol() const            { return fPadCol;          }
-	  Int_t    GetPadRow() const            { return fPadRow;          }
-          Int_t    GetPadTime() const           { return fPadTime;         }
-          Short_t *GetSignals()                 { return fSignals;         }
+          Int_t    GetDetector() const             { return fDetector;      }
+          Int_t    GetLocalTimeBin() const         { return fLocalTimeBin;  }
+          Float_t  GetQ() const                    { return fQ;             }
+          Int_t    GetNPads() const                { return fNPads;         }
+          Float_t  GetCenter() const               { return fCenter;        }
+	  Int_t    GetPadCol() const               { return fPadCol;        }
+	  Int_t    GetPadRow() const               { return fPadRow;        }
+          Int_t    GetPadTime() const              { return fPadTime;       }
+          Short_t *GetSignals()                    { return fSignals;       }
           Float_t  GetSumS() const;
 
-          void     SetLocalTimeBin(Char_t t)    { fLocalTimeBin = t;       }
-          void     SetInChamber(Bool_t in = kTRUE)      {SetBit(1, in);}
+          void     SetLocalTimeBin(Char_t t)       { fLocalTimeBin = t;     }
+          void     SetInChamber(Bool_t in = kTRUE) { SetBit(kInChamber,in); }
+          void     SetShared(Bool_t sh  = kTRUE)   { SetBit(kShared,sh);    }
+          void     SetMaskedPad(Bool_t mp = kTRUE) { SetBit(kMasked,mp);    }
 
  protected:
   
@@ -58,7 +65,7 @@ class AliTRDcluster : public AliCluster {
 	  UChar_t fPadRow;         //  Central pad number in row direction
 	  UChar_t fPadTime;        //  Uncalibrated time bin number
           Short_t fSignals[7];     //  Signals in the cluster
-  
+
   ClassDef(AliTRDcluster,5)        //  Cluster for the TRD
  
 };

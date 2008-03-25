@@ -39,6 +39,8 @@
 #include "AliTRDdataArrayS.h"
 #include "AliTRDdataArrayI.h"
 #include "AliTRDSignalIndex.h"
+#include "AliTRDReconstructor.h"
+#include "AliTRDrecoParam.h"
 
 #include "AliLog.h"
 #include "AliRawReader.h"
@@ -657,6 +659,18 @@ AliTRDrawStreamTB::NextChamber(AliTRDdigitsManager *digitsManager)
   AliTRDdataArrayI *track2 = 0; 
   AliTRDSignalIndex *indexes = 0;
 
+  // Get the ADC baseline
+  Int_t adcBaseline = 0;
+  if (!AliTRDReconstructor::RecoParam())
+    {
+      AliError("RecoParam does not exist\n");
+      return 0;
+    }
+  else 
+    {
+      adcBaseline = ((Int_t) AliTRDReconstructor::RecoParam()->GetADCbaseline());
+    }
+
   // Loop through the digits
   Int_t lastdet = -1;
   Int_t det     = -1;
@@ -742,9 +756,9 @@ AliTRDrawStreamTB::NextChamber(AliTRDdigitsManager *digitsManager)
       // ntimebins data are ready to read
       for (it = 0; it < GetNumberOfTimeBins(); it++)
 	{
-	  if (GetSignals()[it] > 0)
+	  if ((GetSignals()[it] - adcBaseline) > 0)
 	    {
-	      digits->SetDataUnchecked(GetRow(), GetCol(), it, GetSignals()[it]);
+	      digits->SetDataUnchecked(GetRow(), GetCol(), it, GetSignals()[it] - adcBaseline);
 	      
 	      indexes->AddIndexTBin(GetRow(), GetCol(), it);
               if (digitsManager->UsesDictionaries()) 

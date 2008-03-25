@@ -53,6 +53,7 @@
 
 #include "Cal/AliTRDCalROC.h"
 #include "Cal/AliTRDCalDet.h"
+#include "Cal/AliTRDCalSingleChamberStatus.h"
 
 ClassImp(AliTRDclusterizer)
 
@@ -661,11 +662,14 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
   Int_t nTimeTotal = digitsIn->GetNtime();
 
   // Detector wise calibration object for the gain factors
-  const AliTRDCalDet *calGainFactorDet      = calibration->GetGainFactorDet();
+  const AliTRDCalDet           *calGainFactorDet      = calibration->GetGainFactorDet();
   // Calibration object with pad wise values for the gain factors
-  AliTRDCalROC       *calGainFactorROC      = calibration->GetGainFactorROC(idet);
+  AliTRDCalROC                 *calGainFactorROC      = calibration->GetGainFactorROC(idet);
   // Calibration value for chamber wise gain factor
-  Float_t             calGainFactorDetValue = calGainFactorDet->GetValue(idet);
+  Float_t                       calGainFactorDetValue = calGainFactorDet->GetValue(idet);
+
+  // Calibration object with the pad status information
+  AliTRDCalSingleChamberStatus *calPadStatusROC       = calibration->GetPadStatusROC(idet);
 
   Int_t nClusters = 0;
 
@@ -848,7 +852,9 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
 	    }
 
 	  // Store the amplitudes of the pads in the cluster for later analysis
+	  // and check whether one of these pads is masked in the database
 	  Short_t signals[7] = { 0, 0, 0, 0, 0, 0, 0 };
+          Bool_t  hasMasked  = kFALSE;
 	  for (Int_t jPad = col-3; jPad <= col+3; jPad++) 
             {
 	      if ((jPad <          0) || 
@@ -857,6 +863,9 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
 	          continue;
 	        }
 	      signals[jPad-col+3] = TMath::Nint(TMath::Abs(digitsOut->GetDataUnchecked(row,jPad,time)));
+              if (calPadStatusROC->IsMasked(jPad,row)) {
+                hasMasked = kTRUE;
+	      }
 	    }
 
           // Transform the local cluster coordinates into calibrated 
@@ -874,7 +883,7 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
           clusterRCT[1] = col;
           clusterRCT[2] = 0;
 		
-		Bool_t out = kTRUE;
+	  Bool_t out = kTRUE;
 	  if (fTransform->Transform(clusterXYZ, clusterRCT, ((UInt_t) time), out, 0)) {
 
   	    // Add the cluster to the output array
@@ -901,8 +910,9 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
 						      ,clusterTimeBin
 						      ,clusterPosCol
 						      ,volid);
-			cluster->SetInChamber(!out);
-			
+	    cluster->SetInChamber(!out);
+	    cluster->SetMaskedPad(hasMasked);
+	
 	    // Temporarily store the row, column and time bin of the center pad
 	    // Used to later on assign the track indices
 	    cluster->SetLabel( row,0);

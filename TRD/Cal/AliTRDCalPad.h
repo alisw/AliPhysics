@@ -33,7 +33,7 @@ class AliTRDCalPad : public TNamed
 
   virtual void        Copy(TObject &c) const;
 
-  static inline Int_t GetDet(Int_t p, Int_t c, Int_t s) { return p+c*kNplan+s*kNplan*kNcham; };
+  static  Int_t       GetDet(Int_t p, Int_t c, Int_t s) { return p+c*kNplan+s*kNplan*kNcham; };
 
   AliTRDCalROC       *GetCalROC(Int_t d) const          { return fROC[d]; };
   AliTRDCalROC       *GetCalROC(Int_t p, Int_t c, Int_t s) const
@@ -46,7 +46,8 @@ class AliTRDCalPad : public TNamed
   Double_t GetMean(const AliTRDCalDet *calDet = 0, Int_t type = 0, AliTRDCalPad* outlierPad = 0);
   Double_t GetRMS(const AliTRDCalDet *calDet = 0, Int_t type = 0, AliTRDCalPad* outlierPad = 0) ;
   Double_t GetMedian(const AliTRDCalDet *calDet = 0, Int_t type = 0, AliTRDCalPad* outlierPad = 0) ;
-  Double_t GetLTM(Double_t *sigma=0, Double_t fraction=0.9, const AliTRDCalDet *calDet = 0, Int_t type = 0, AliTRDCalPad* outlierPad = 0);
+  Double_t GetLTM(Double_t *sigma=0, Double_t fraction=0.9
+                , const AliTRDCalDet *calDet = 0, Int_t type = 0, AliTRDCalPad* outlierPad = 0);
 
   // Plot functions
   TH1F    *MakeHisto1D(const AliTRDCalDet *calDet = 0, Int_t typedet=0, Float_t min=4, Float_t max=-4,Int_t type=0);

@@ -557,7 +557,6 @@ AliTRDCalROC *AliTRDcalibDB::GetGainFactorROC(Int_t det)
 {
   //
   // Returns the gain factor calibration object for a given ROC
-  // containing one number per pad 
   //
   
   const AliTRDCalPad *calPad     = dynamic_cast<const AliTRDCalPad *> 
@@ -694,6 +693,29 @@ Char_t AliTRDcalibDB::GetPadStatus(Int_t det, Int_t col, Int_t row)
   }
 
   return roc->GetStatus(col,row);
+
+}
+
+//_____________________________________________________________________________
+AliTRDCalSingleChamberStatus* AliTRDcalibDB::GetPadStatusROC(Int_t det)
+{
+  //
+  // Returns the pad status calibration object for a given ROC
+  //
+
+  const AliTRDCalPadStatus *cal  = dynamic_cast<const AliTRDCalPadStatus *> 
+                                   (GetCachedCDBObject(kIDPadStatus));
+  if (!cal) {
+    return 0;
+  }
+
+  AliTRDCalSingleChamberStatus *roc = cal->GetCalROC(det);
+  if (!roc) {
+    return 0;
+  }
+  else {
+    return roc;
+  }
 
 }
 
