@@ -99,10 +99,9 @@ AliMUONDigitizerV3::AliMUONDigitizerV3(AliRunDigitizer* manager,
 fIsInitialized(kFALSE),
 fCalibrationData(0x0),
 fTriggerProcessor(0x0),
-fNoiseFunction(0x0),
 fNoiseFunctionTrig(0x0),
-  fGenerateNoisyDigits(generateNoisyDigits),
-  fLogger(new AliMUONLogger(1000)),
+fGenerateNoisyDigits(generateNoisyDigits),
+fLogger(new AliMUONLogger(1000)),
 fTriggerStore(new AliMUONTriggerStoreV1),
 fDigitStore(0x0),
 fOutputDigitStore(0x0)
@@ -110,6 +109,7 @@ fOutputDigitStore(0x0)
   /// Ctor.
 
   AliDebug(1,Form("AliRunDigitizer=%p",fManager));
+
 }
 
 //_____________________________________________________________________________
@@ -121,7 +121,6 @@ AliMUONDigitizerV3::~AliMUONDigitizerV3()
 
   delete fCalibrationData;
   delete fTriggerProcessor;
-  delete fNoiseFunction;
   delete fNoiseFunctionTrig;
   delete fTriggerStore;
   delete fDigitStore;
@@ -175,9 +174,8 @@ AliMUONDigitizerV3::ApplyResponseToTrackerDigit(AliMUONVDigit& digit, Bool_t add
 
   Int_t manuChannel = digit.ManuChannel();
   
-
-  
-  Int_t adc = DecalibrateTrackerDigit(*pedestal,*gain,manuChannel,charge,addNoise);
+  Int_t adc = DecalibrateTrackerDigit(*pedestal,*gain,manuChannel,charge,addNoise,
+                                      digit.IsNoiseOnly());
   
   digit.SetADC(adc);
 }
@@ -219,7 +217,8 @@ AliMUONDigitizerV3::DecalibrateTrackerDigit(const AliMUONVCalibParam& pedestals,
                                             const AliMUONVCalibParam& gains,
                                             Int_t channel,
                                             Float_t charge,
-                                            Bool_t addNoise)
+                                            Bool_t addNoise,
+                                            Bool_t noiseOnly)
 {
   /// Decalibrate (i.e. go from charge to adc) a tracker digit, given its
   /// pedestal and gain parameters.
@@ -231,6 +230,9 @@ AliMUONDigitizerV3::DecalibrateTrackerDigit(const AliMUONVCalibParam& pedestals,
   
   Float_t pedestalMean = pedestals.ValueAsFloat(channel,0);
   Float_t pedestalSigma = pedestals.ValueAsFloat(channel,1);
+  
+  AliDebugClass(1,Form("DE %04d MANU %04d CH %02d PEDMEAN %7.2f PEDSIGMA %7.2f",
+                       pedestals.ID0(),pedestals.ID1(),channel,pedestalMean,pedestalSigma));
   
   Float_t a0 = gains.ValueAsFloat(channel,0);
   Float_t a1 = gains.ValueAsFloat(channel,1);
@@ -295,13 +297,25 @@ AliMUONDigitizerV3::DecalibrateTrackerDigit(const AliMUONVCalibParam& pedestals,
   
   Int_t adc(0);
   
-  if ( padc > 0 ) 
+  Float_t adcNoise = 0.0;
+    
+  if ( addNoise ) 
   {
-    Float_t adcNoise = 0.0;
+    if ( noiseOnly )
+    {      
+      adcNoise = NoiseFunction()->GetRandom()*pedestalSigma;
+    }
+    else
+    {
+      adcNoise = gRandom->Gaus(0.0,pedestalSigma);
+    }
+  }
     
-    if ( addNoise ) adcNoise = gRandom->Gaus(0.0,pedestalSigma);
-    
-    adc = TMath::Nint(padc + pedestalMean + adcNoise);
+  adc = TMath::Nint(padc + pedestalMean + adcNoise + 0.5);
+  
+  if ( adc < TMath::Nint(pedestalMean + fgkNSigmas*pedestalSigma + 0.5) ) 
+  {
+    adc = 0;
   }
   
   // be sure we stick to 12 bits.
@@ -443,14 +457,6 @@ AliMUONDigitizerV3::GenerateNoisyDigits(AliMUONVDigitStore& digitStore)
   
   AliCodeTimerAuto("")
   
-  if ( !fNoiseFunction )
-  {
-    fNoiseFunction = new TF1("AliMUONDigitizerV3::fNoiseFunction","gaus",
-                             fgkNSigmas,fgkNSigmas*10);
-    
-    fNoiseFunction->SetParameters(1,0,1);
-  }
-  
   for ( Int_t i = 0; i < AliMUONConstants::NTrackingCh(); ++i )
   {
     AliMpDEIterator it;
@@ -521,14 +527,9 @@ AliMUONDigitizerV3::GenerateNoisyDigitsForOneCathode(AliMUONVDigitStore& digitSt
     
     d->SetPadXY(ix,iy);
     
-    Float_t pedestalMean = pedestals->ValueAsFloat(manuChannel,0);
-    Float_t pedestalSigma = pedestals->ValueAsFloat(manuChannel,1);
-    
-    Double_t ped = fNoiseFunction->GetRandom()*pedestalSigma;
-
-    d->SetCharge(TMath::Nint(ped+pedestalMean+0.5));
+    d->SetCharge(0.0); // charge is zero, the ApplyResponseToTrackerDigit will add the noise
     d->NoiseOnly(kTRUE);
-    ApplyResponseToTrackerDigit(*d,kFALSE);
+    ApplyResponseToTrackerDigit(*d,kTRUE);
     if ( d->ADC() > 0 )
     {
       Bool_t ok = digitStore.Add(*d,AliMUONVDigitStore::kDeny);
@@ -748,3 +749,18 @@ AliMUONDigitizerV3::MergeWithSDigits(AliMUONVDigitStore*& outputStore,
     }
   }
 }
+
+//_____________________________________________________________________________
+TF1*
+AliMUONDigitizerV3::NoiseFunction()
+{
+  /// Return noise function
+  static TF1* f = 0x0;
+  if (!f)
+  {
+    f = new TF1("AliMUONDigitizerV3::NoiseFunction","gaus",fgkNSigmas,fgkNSigmas*10);
+    f->SetParameters(1,0,1);
+  }
+  return f;
+}
+

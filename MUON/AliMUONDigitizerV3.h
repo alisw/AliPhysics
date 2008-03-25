@@ -43,7 +43,8 @@ public:
                                        const AliMUONVCalibParam& gains,
                                        Int_t channel,
                                        Float_t charge,
-                                       Bool_t addNoise=kFALSE);
+                                       Bool_t addNoise=kFALSE,
+                                       Bool_t noiseOnly=kFALSE);
   
 private:
   /// Not implemented
@@ -68,11 +69,12 @@ private:
                         const AliMUONVDigitStore& input,
                         Int_t mask);
   
+  static TF1* NoiseFunction();
+  
 private:
   Bool_t fIsInitialized; ///< are we initialized ?
   AliMUONCalibrationData* fCalibrationData; //!< pointer to access calib parameters
   AliMUONTriggerElectronics* fTriggerProcessor; ///< pointer to the trigger part of the job
-  TF1* fNoiseFunction; //!< function to randomly get signal above n*sigma_ped
   TF1* fNoiseFunctionTrig; //!< function to get noise disribution on trig. chambers
   Int_t fGenerateNoisyDigits; //!< whether or not we should generate noise-only digits for tracker (1) and trigger (2)
   static const Double_t fgkNSigmas; ///< \brief number of sigmas above ped to use 
@@ -82,7 +84,7 @@ private:
   AliMUONVDigitStore* fDigitStore; //!< temporary digits
   AliMUONVDigitStore* fOutputDigitStore; //!< digits we'll output to disk
   
-  ClassDef(AliMUONDigitizerV3,6) // MUON Digitizer V3-5
+  ClassDef(AliMUONDigitizerV3,7) // MUON Digitizer V3-5
 };
 
 #endif
