@@ -10,6 +10,22 @@
 // Author: andreas.morsch@cern.ch
 
 #include <TObject.h>
+#include <TString.h>
+typedef enum
+{
+    kCTEQ4L,  // cteq4l.LHgrid   
+    kCTEQ4M,  // cteq4m.LHgrid   
+    kCTEQ5L,  // cteq5l.LHgrid
+    kCTEQ5M,  // cteq5m.LHgrid
+    kGRVLO98, // GRV98lo.LHgris   
+    kCTEQ6,   // cteq6.LHpdf
+    kCTEQ61,  // cteq61.LHpdf
+    kCTEQ6m,  // cteq6m.LHpdf
+    kCTEQ6l,  // cteq6l.LHpdf 
+    kCTEQ6ll  // cetq6ll.LHpdf
+}
+StrucFunc_t;
+
 
 class AliStructFuncType : public TObject {
     
@@ -22,23 +38,10 @@ class AliStructFuncType : public TObject {
 			Double_t& dsea,
 			Double_t& str, Double_t& chm, Double_t& bot,
 			Double_t& top, Double_t& gl);
+    static Int_t   PDFsetIndex(StrucFunc_t pdf);
+    static TString PDFsetName(StrucFunc_t pdf);    
     ClassDef(AliStructFuncType,1) // Library for partonic energy loss
 };
-
-typedef enum
-{
-   kCTEQ4L     = 19170,    
-   kCTEQ4M     = 19150,    
-   kCTEQ5L     = 19070,
-   kCTEQ5M     = 19050,
-   kGRVLO98    = 80060,    
-   kCTEQ6      = 10040,
-   kCTEQ61     = 10100,
-   kCTEQ6m     = 10050,
-   kCTEQ6l     = 10041,
-   kCTEQ6ll    = 10042
-}
-StrucFunc_t;
 
 #endif
 

@@ -33,7 +33,6 @@
 # define type_of_call _stdcall
 #endif
 
-
 extern "C" {
     void type_of_call pdfset(char parm[20][20], Double_t value[20]);
     
@@ -61,3 +60,38 @@ void AliStructFuncType::StructA(Double_t xx, Double_t qq, Double_t a,
 }
 
 
+Int_t AliStructFuncType::PDFsetIndex(StrucFunc_t pdf)
+{
+// PDF set index
+    Int_t pdfSetNumber[10] = {
+	19170,
+	19150,
+	19070,
+	19050,
+	80060,
+	10040,
+	10100,
+	10050,
+	10041,
+	10042
+    };
+    return pdfSetNumber[pdf];
+}
+
+TString AliStructFuncType::PDFsetName(StrucFunc_t pdf)
+{
+// PDF Set Name
+    TString pdfsetName[10]   = {
+	"cteq4l.LHgrid",
+	"cteq4m.LHgrid",   
+	"cteq5l.LHgrid",
+	"cteq5m.LHgrid",
+	"GRV98lo.LHgris",   
+	"cteq6.LHpdf",
+	"cteq61.LHpdf",
+	"cteq6m.LHpdf",
+	"cteq6l.LHpdf", 
+	"cetq6ll.LHpdf"
+    };
+    return pdfsetName[pdf];
+}
