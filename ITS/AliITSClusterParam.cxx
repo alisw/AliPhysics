@@ -344,7 +344,7 @@ Int_t AliITSClusterParam::GetErrorParamAngle(Int_t layer,
   p[1] = TMath::Sin(phiglob);
   p[2] = tgl;
   TVector3 pvec(p[0],p[1],p[2]);
-  TVector3 normvec(rot[1],-rot[0],0.);
+  TVector3 normvec(rot[1],rot[4],rot[7]);
   Double_t angle = pvec.Angle(normvec);
   if(angle>0.5*TMath::Pi()) angle = TMath::Pi()-angle;
   Double_t angleDeg = angle*180./TMath::Pi();
