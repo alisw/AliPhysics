@@ -112,9 +112,6 @@ public:
 
   virtual Bool_t Run(const char* input = NULL,Bool_t IsOnline = kFALSE);
 
-  // AOD creation
-  void ESDFile2AODFile(TFile* esdFile, TFile* aodFile);
-
   // Quality Assurance 
   virtual Bool_t RunQA(const char* detectors, AliESDEvent *& esd);
   void    SetQACycles(const char * detector, const Int_t cycles) { fQACycles[GetDetIndex(detector)] = cycles ; }
