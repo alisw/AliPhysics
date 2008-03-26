@@ -1,4 +1,15 @@
 #include "ARVersion.h"
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include "AliCDBManager.h"
+#include "AliCDBStorage.h"
+#include "AliCDBId.h"
+#include "AliCDBMetaData.h"
+#include "AliGeomManager.h"
+#include <TROOT.h>
+#include "AliRun.h"
+#include <TGeoManager.h>
+#include <TString.h>
+#endif
 
 void UpdateCDBIdealGeom(const char* cdbUri, const char* cfgFile){
   // Produce the ideal geometry and store it in the specified CDB
@@ -18,11 +29,10 @@ void UpdateCDBIdealGeom(const char* cdbUri, const char* cfgFile){
 
   // Get root and AliRoot versions
   const char* rootv = gROOT->GetVersion();
-  gROOT->ProcessLine(".L $ALICE_ROOT/macros/GetARversion.C");
   TString av(ALIROOT_SVN_BRANCH);
   Int_t revnum = ALIROOT_SVN_REVISION;
 
-  Printf("AliRoot %s, revision number %d",av.Data(),revnum);
+  Printf("root version: %s.  AliRoot %s, revision number %d",rootv,av.Data(),revnum);
 
   md->SetAliRootVersion(av.Data());
   md->SetComment(Form("Geometry produced with root version %s and AliRoot %s, revision number %d",rootv,av.Data(),revnum));
