@@ -92,6 +92,9 @@ AliTOFPreprocessor::AliTOFPreprocessor(AliShuttleInterface* shuttle) :
   fFDRFlag(kTRUE)
 {
   // constructor
+  AddRunType("PHYSICS");
+  AddRunType("PULSER");
+  AddRunType("NOISE");
 
 }
 

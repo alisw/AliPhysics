@@ -66,6 +66,7 @@ AliTOFPreprocessorFDR::AliTOFPreprocessorFDR(AliShuttleInterface* shuttle) :
   fStoreRefData(kTRUE)
 {
   // constructor
+  AddRunType("PHYSICS");
 
 }
 
