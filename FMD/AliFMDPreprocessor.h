@@ -59,12 +59,12 @@ class AliFMDPreprocessor: public AliPreprocessor
 {
 public:
   /** Constructor */
-  AliFMDPreprocessor(): AliPreprocessor("FMD",0) { }
+  AliFMDPreprocessor(): AliPreprocessor("FMD",0) {}
   /** Constructor 
       @param shuttle Shuttle */
-  AliFMDPreprocessor(AliShuttleInterface* shuttle)
-    : AliPreprocessor("FMD", shuttle)
-  {}
+  AliFMDPreprocessor(AliShuttleInterface* shuttle) ;
+  
+  
   /** Destructor */
   virtual ~AliFMDPreprocessor() {}
   /** Get an entry from OCDB */ 
