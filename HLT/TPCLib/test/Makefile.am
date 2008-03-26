@@ -10,10 +10,12 @@ AM_CPPFLAGS			= -I$(top_srcdir)/BASE \
 EXTRA_DIST			= 
 
 check_PROGRAMS			= testAliHLTTPCDigitReaderDecoder \
-				  testAliHLTTPCDigitReaderPacked
+				  testAliHLTTPCDigitReaderPacked \
+				  testAliHLTTPCMapping
 
 testAliHLTTPCDigitReaderDecoder_SOURCES = testAliHLTTPCDigitReaderDecoder.C
 testAliHLTTPCDigitReaderPacked_SOURCES	= testAliHLTTPCDigitReaderPacked.C
+testAliHLTTPCMapping_SOURCES		= testAliHLTTPCMapping.C
 
 
 # linker flags
@@ -26,9 +28,12 @@ LDFLAGS_COMMON				= -L@ROOTLIBDIR@ \
 
 testAliHLTTPCDigitReaderDecoder_LDADD 	= $(LDADD_COMMON)
 testAliHLTTPCDigitReaderPacked_LDADD 	= $(LDADD_COMMON)
+testAliHLTTPCMapping_LDADD 		= $(LDADD_COMMON)
 testAliHLTTPCDigitReaderDecoder_LDFLAGS	= $(LDFLAGS_COMMON)
 testAliHLTTPCDigitReaderPacked_LDFLAGS	= $(LDFLAGS_COMMON)
+testAliHLTTPCMapping_LDFLAGS		= $(LDFLAGS_COMMON)
 
 # set back to all as sson as DigitReaderPacked is fixed
 #TESTS				= $(check_PROGRAMS)
-TESTS				= testAliHLTTPCDigitReaderDecoder
+TESTS				= testAliHLTTPCDigitReaderDecoder \
+				  testAliHLTTPCMapping
