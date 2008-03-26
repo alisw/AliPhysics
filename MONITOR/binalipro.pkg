@@ -1,0 +1,20 @@
+#-*- Mode: Makefile -*-
+
+SRCS:=alipro_main.cxx
+
+EINCLUDE+= TPC ITS RAW MUON PHOS
+
+PACKBLIBS := $(ROOTCLIBS) $(SYSLIBS)
+
+ifdef DATE_ROOT
+
+PACKBLIBS += $(shell date-config --monitorlibs)
+ELIBSDIR:=
+ELIBS:=STEERBase ESD AOD CDB STEER RAWDatabase RAWDatarec RAWDatasim TPCbase TPCrec HLTbase ITSbase ITSrec MUONrec MUONbase MUONsim MUONgeometry MUONraw MUONcalib MUONmapping MUONtrigger MUONevaluation MUONcore PHOSbase PHOSrec PHOSsim
+EINCLUDE+= ${DATE_COMMON_DEFS} ${DATE_MONITOR_DIR}
+
+endif
+
+ifneq (,$(findstring macosx,$(ALICE_TARGET)))
+PACKLDFLAGS:=$(LDFLAGS) $(ELIBS:%=-Wl,-u,_G__cpp_setupG__%)
+endif
