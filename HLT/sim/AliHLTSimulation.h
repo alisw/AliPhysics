@@ -25,7 +25,6 @@
 
 #include "TObject.h"
 #include "TString.h"
-#include "AliHLTReconstructorBase.h"
 class AliRunLoader;
 class AliHLTSystem;
 class AliRawReader;
@@ -34,7 +33,7 @@ class AliRawReader;
  * @class AliHLTSimulation
  * Base class of HLT data processing simulations.
  */
-class AliHLTSimulation : public TObject, public AliHLTReconstructorBase {
+class AliHLTSimulation : public TObject {
  public:
   /** create an instance of the class */
   static AliHLTSimulation* CreateInstance();
@@ -61,10 +60,13 @@ class AliHLTSimulation : public TObject, public AliHLTReconstructorBase {
   /* current options */
   TString fOptions;                                                   //!transient
 
+  /* HLT steering object */
+  AliHLTSystem* fpSystem;                                             //!transient
+
   /* RAW reader instance for chains which need RAW data as input */
   AliRawReader* fpRawReader;                                            //!transient
 
-  ClassDef(AliHLTSimulation, 2)
+  ClassDef(AliHLTSimulation, 1)
 };
 
 #define ALIHLTSIMULATION_LIBRARY             "libHLTsim.so"
