@@ -1887,6 +1887,7 @@ Bool_t AliReconstruction::FillTriggerESD(AliESDEvent*& esd)
     TString configstr("");
     if (!aCTP->LoadConfiguration(configstr)) { // Load CTP config from OCDB
       AliError("No trigger configuration found in OCDB! The trigger classes information will no be stored in ESD!");
+      delete aCTP;
       return kFALSE;
     }
   }
@@ -1911,6 +1912,7 @@ Bool_t AliReconstruction::FillTriggerESD(AliESDEvent*& esd)
 
   // Now fill the trigger class names into AliESDRun object
   AliTriggerConfiguration *config = aCTP->GetConfiguration();
+  if (fRawReader) delete aCTP;
   if (!config) {
     AliError("No trigger configuration has been found! The trigger classes information will no be stored in ESD!");
     return kFALSE;
