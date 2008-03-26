@@ -234,7 +234,10 @@ void AliAnalysisVertexingHF::FindCandidates(AliESDEvent *esd,TTree treeout[])
       AliESDVertex *vertexp1n1 = ReconstructSecondaryVertex(twoTrackArray1);
       if(vertexp1n1->GetNContributors()!=2) { 
 	if(fDebug) printf("two-track vertexing failed\n"); 
-	negtrack1=0; continue; 
+	twoTrackArray1->Clear();
+	delete vertexp1n1; 
+	negtrack1=0; 
+	continue; 
       }
       if(fD0toKpi || fJPSItoEle) { 
 	io2Prong = Make2Prong(twoTrackArray1,esd,vertexp1n1,dcap1n1,okD0,okJPSI);
