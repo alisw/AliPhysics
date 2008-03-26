@@ -61,7 +61,9 @@ AliITSOnlineSDDInjectors::AliITSOnlineSDDInjectors(Int_t nddl, Int_t ncarlos, In
 //______________________________________________________________________
 AliITSOnlineSDDInjectors::~AliITSOnlineSDDInjectors(){
   // Destructor
-  if(fHisto) delete fHisto;  
+  // fHisto should not be deleted here because it points to an histo created 
+  // by the external code which calls the method AnalyzeEvent
+  // if(fHisto) delete fHisto;  
   if(fParam) delete [] fParam;
 }
 //______________________________________________________________________
