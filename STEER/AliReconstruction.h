@@ -29,6 +29,8 @@ class AliTracker;
 class AliVertexer;
 class AliESDVertex;
 class AliESDEvent;
+class AliESDfriend;
+class AliVertexerTracks;
 class TFile;
 class TTree;
 class TList;
@@ -44,7 +46,8 @@ public:
   virtual ~AliReconstruction();
 
   void           SetGAliceFile(const char* fileName);
-  void           SetInput(const char* input) {fInput = input;};
+  void           SetInput(const char* input,void **pEvent = NULL);
+
   void           SetEquipmentIdMap(const char *mapFile) {fEquipIdMap = mapFile;};
   void           SetEventRange(Int_t firstEvent = 0, Int_t lastEvent = -1) 
     {fFirstEvent = firstEvent; fLastEvent = lastEvent;};
@@ -110,7 +113,11 @@ public:
                    {fAlignObjArray = array;
 		   fLoadAlignFromCDB = kFALSE;}
 
-  virtual Bool_t Run(const char* input = NULL,Bool_t IsOnline = kFALSE);
+  virtual Bool_t InitRun(const char* input, void **pEvent = NULL);
+  virtual Bool_t RunEvent(Int_t iEvent);
+  virtual Bool_t AddEventAndRun(); // for online usage only
+  virtual Bool_t FinishRun();
+  virtual Bool_t Run(const char* input = NULL);
 
   // Quality Assurance 
   virtual Bool_t RunQA(const char* detectors, AliESDEvent *& esd);
@@ -189,6 +196,7 @@ private:
   TString        fUseTrackingErrorsForAlignment; // for these detectors
   TString        fGAliceFileName;     // name of the galice file
   TString        fInput;              // name of input file or directory
+  void**         fpEvent;             // pointer to DATE event in memory
   TString        fEquipIdMap;         // name of file with equipment id map
   Int_t          fFirstEvent;         // index of first event to be reconstr.
   Int_t          fLastEvent;          // index of last event to be reconstr.
@@ -232,7 +240,21 @@ private:
   // Plane Efficiency Evaluation
   Bool_t         fRunPlaneEff ;      // Evaluate Plane Efficiency
 
-  ClassDef(AliReconstruction, 21)      // class for running the reconstruction
+  // New members needed in order to split Run method
+  // into InitRun,RunEvent,FinishRun methods
+  AliESDEvent*         fesd;        //! Pointer to the ESD event object
+  AliESDEvent*         fhltesd;     //! Pointer to the HLT ESD event object
+  AliESDfriend*        fesdf;       //! Pointer to the ESD friend object
+  TFile*               ffile;       //! Pointer to the ESD file
+  TTree*               ftree;       //! Pointer to the ESD tree
+  TTree*               fhlttree;    //! Pointer to the HLT ESD tree
+  TFile*               ffileOld;    //! Pointer to the previous ESD file
+  TTree*               ftreeOld;    //! Pointer to the previous ESD tree
+  TTree*               fhlttreeOld; //! Pointer to the previous HLT ESD tree
+  AliVertexerTracks*   ftVertexer;  //! Pointer to the vertexer based on ESD tracks
+  Bool_t               fIsNewRunLoader; // galice.root created from scratch (real raw data case)
+
+  ClassDef(AliReconstruction, 22)      // class for running the reconstruction
 };
 
 #endif
