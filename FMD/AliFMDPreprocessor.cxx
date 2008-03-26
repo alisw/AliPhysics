@@ -83,6 +83,18 @@ ClassImp(AliFMDPreprocessor)
 ;
 #endif 
 
+
+//____________________________________________________
+AliFMDPreprocessor::AliFMDPreprocessor(AliShuttleInterface* shuttle)
+  : AliPreprocessor("FMD", shuttle)
+{
+  AddRunType("PHYSICS");
+  AddRunType("STANDALONE");
+  AddRunType("PEDESTAL");
+  AddRunType("GAIN");
+}
+
+
 //____________________________________________________
 Bool_t AliFMDPreprocessor::GetAndCheckFileSources(TList*&     list,
 						  Int_t       system, 
@@ -170,7 +182,7 @@ UInt_t AliFMDPreprocessor::Process(TMap* /* dcsAliasMap */)
     }
     resultPed = (calibPed ? kTRUE : kFALSE);
   }
-  if (runType.Contains("PULSER", TString::kIgnoreCase)) {
+  if (runType.Contains("GAIN", TString::kIgnoreCase)) {
     if (GetAndCheckFileSources(files, kDAQ, "gains")) {
       if(files->GetSize())
 	calibGain = GetGainCalibration(files);
