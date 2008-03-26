@@ -1912,9 +1912,9 @@ Bool_t AliReconstruction::FillTriggerESD(AliESDEvent*& esd)
 
   // Now fill the trigger class names into AliESDRun object
   AliTriggerConfiguration *config = aCTP->GetConfiguration();
-  if (fRawReader) delete aCTP;
   if (!config) {
     AliError("No trigger configuration has been found! The trigger classes information will no be stored in ESD!");
+    if (fRawReader) delete aCTP;
     return kFALSE;
   }
 
@@ -1926,6 +1926,7 @@ Bool_t AliReconstruction::FillTriggerESD(AliESDEvent*& esd)
     esd->SetTriggerClass(trclass->GetName(),trindex);
   }
 
+  if (fRawReader) delete aCTP;
   return kTRUE;
 }
 
