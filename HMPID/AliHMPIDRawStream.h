@@ -201,10 +201,11 @@ Int_t AliHMPIDRawStream::GetPad(Int_t ddl,Int_t row,Int_t dil,Int_t pad)
   assert(0<=pad&&pad<=47);  
   
   Int_t a2y[6]={3,2,4,1,5,0};     //pady for a given padress (for single DILOGIC chip)
-                                  Int_t ch=ddl/2;
+  Int_t ch=ddl/2;
   Int_t tmp=(24-row)/8;
   Int_t pc=(ddl%2)?5-2*tmp:2*tmp;
-  Int_t px=(dil-1)*8+pad/6;
+//  Int_t px=(dil-1)*8+pad/6;
+  Int_t px=dil*8-pad/6-1;  //flip according to Paolo (26-3-2008)
 
   tmp=(ddl%2)?row-1:(24-row);
   Int_t py=6*(tmp%8)+a2y[pad%6];

@@ -39,7 +39,7 @@ ObjRec        := $(patsubst %.cxx,$(DirOut)/%.o,$(SrcRec))  $(DictObjRec)
 
 CodeRules     := $(patsubst %.cxx,$(DirOut)/%.viol,$(SrcBase) $(SrcSim) $(SrcRec))
 
-export IRST_INSTALLDIR=$(ALICE)/local/IRST
+export IRST_INSTALLDIR=$(HOME)/IRST
 export IRST_CONFIG_DIR=$(IRST_INSTALLDIR)/userConfig/ALICE
 export CLASSPATH=$(IRST_INSTALLDIR)
 

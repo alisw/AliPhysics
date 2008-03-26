@@ -16,6 +16,7 @@
 #include "AliHMPIDCalib.h" //class header
 #include "AliHMPIDParam.h" //class header
 #include "AliHMPIDRawStream.h" //class header
+#include "AliHMPIDDigit.h" //class header
 #include <fstream>
 #include <TTree.h>
 
@@ -283,26 +284,20 @@ void AliHMPIDCalib::FillPedestal(Int_t abspad,Int_t q)
 {
   //
   //Called from the HMPIDda and fills the pedestal values
-  //Arguments: absulote pad number as from AliHMPIDParam and q-charge
+  //Arguments: absolute pad number as from AliHMPIDParam and q-charge
   //Returns: none
   //
   if(q<0) AliFatal("Negative charge is read!!!!!!");
   
+  UInt_t w32;
   Int_t nDDL=0, row=0, dil=0, adr=0;
   //The decoding (abs. pad -> ddl,dil,...) is the same as in AliHMPIDDigit::Raw
-  Int_t y2a[6]={5,3,1,0,2,4};
-
-       nDDL=  2*AliHMPIDParam::A2C(abspad)+AliHMPIDParam::A2P(abspad)%2;              //DDL# 0..13
-  Int_t tmp=   1+AliHMPIDParam::A2P(abspad)/2*8+AliHMPIDParam::A2Y(abspad)/6;         //temp variable
-        row=   (AliHMPIDParam::A2P(abspad)%2)? tmp:25-tmp;                            //row r=1..24
-        dil=  1+AliHMPIDParam::A2X(abspad)/8;                                         //DILOGIC 
-        adr=y2a[AliHMPIDParam::A2Y(abspad)%6]+6*(AliHMPIDParam::A2X(abspad)%8);       //ADDRESS 0..47 
+  
+  AliHMPIDDigit dig(abspad,q);
+  dig.Raw(w32,nDDL,row,dil,adr);
+  
   //........... decoding done      
 
-//     if(row<1 || row > 24 || nDDL < 0 || nDDL > 13 || dil < 1 || dil > 10 || adr < 0 || adr >47) AliFatal(Form("ddl %d row %d dil %d adr %d",nDDL,row,dil,adr));
-            
-       
-        
      if(q>0) { 
         fsq[nDDL][row][dil][adr]+=q;
       fsq2[nDDL][row][dil][adr]+=q*q;
