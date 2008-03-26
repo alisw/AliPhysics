@@ -206,8 +206,11 @@ class AliHLTTPCMemHandler {
   Int_t fSlice;  //slice
   Int_t fPatch;  //patch
 
-  Int_t fEtaMinTimeBin[159]; //for ROI in eta only
-  Int_t fEtaMaxTimeBin[159]; //for ROI in eta only
+  static const Int_t fgkNSlice = 36; //!
+  static const Int_t fgkNRow = 159; //!
+
+  Int_t fEtaMinTimeBin[fgkNRow]; //for ROI in eta only
+  Int_t fEtaMaxTimeBin[fgkNRow]; //for ROI in eta only
   
   FILE *fInBinary;//!
   FILE *fOutBinary;//!

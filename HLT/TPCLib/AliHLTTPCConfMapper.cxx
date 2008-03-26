@@ -267,6 +267,12 @@ void AliHLTTPCConfMapper::SetPointers()
 	fRow[(localrow-fRowMin)].last = (void *)thisHit;
     }
   
+  // Matthias 2008-03-25
+  // I'm not really sure if this is en error condition. Has to be investigated.
+  // With the ifdef below, the message is only printed if the library was build
+  // in the HLT build system. By that we avoid irritating messages for the
+  // reconstruction included into the Grid tests
+#ifdef PACKAGE_STRING
   if(fClustersUnused>0 && localcounter==0)
     LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::SetPointers","Parameters")
       <<AliHLTTPCLog::kDec<<"No points passed to track finder, hits out of range: "
@@ -276,6 +282,7 @@ void AliHLTTPCConfMapper::SetPointers()
   LOG(AliHLTTPCLog::kDebug,"AliHLTTPCConfMapper::SetPointers","Setup")
     <<"Setup finished, hits out of range: "<<fEtaHitsOutOfRange+fPhiHitsOutOfRange
     <<" hits accepted "<<hits_accepted<<ENDLOG;
+#endif //PACKAGE_STRING
 }
 
 void AliHLTTPCConfMapper::MainVertexTrackingA()

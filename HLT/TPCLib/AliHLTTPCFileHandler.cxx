@@ -395,14 +395,21 @@ Bool_t AliHLTTPCFileHandler::CreateIndex()
 	  <<sector<<" "<<row<<ENDLOG;
 	return kFALSE;
       }
+      // this is just to make sure the same array dimensions are
+      // used as in the AliHLTTPCTransform class. The check for
+      // correct bounds is done in AliHLTTPCTransform::Sector2Slice
+      assert(lslice>=0 && lslice<fgkNSlice);
+      assert(lrow>=0 && lrow<fgkNRow);
       if(fIndex[lslice][lrow]==-1) {
 	fIndex[lslice][lrow]=n;
       }
     }
+    assert(AliHLTTPCTransform::GetNSlice()==fgkNSlice);
+    assert(AliHLTTPCTransform::GetNRows()==fgkNRow);
     if(fUseStaticIndex) { // create static index
-      for(Int_t i=0;i<AliHLTTPCTransform::GetNSlice();i++){
-	for(Int_t j=0;j<AliHLTTPCTransform::GetNRows();j++)
-	  fgStaticIndex[i][j]=fIndex[i][j];
+      for(Int_t islice=0;islice<AliHLTTPCTransform::GetNSlice() && islice<fgkNSlice;islice++){
+	for(Int_t irow=0;irow<AliHLTTPCTransform::GetNRows() && irow<fgkNRow;irow++)
+	  fgStaticIndex[islice][irow]=fIndex[islice][irow];
       }
       fgStaticIndexCreated=kTRUE; //remember that index has been created
     }
@@ -411,9 +418,9 @@ Bool_t AliHLTTPCFileHandler::CreateIndex()
     <<"Index successfully created."<<ENDLOG;
 
   } else if(fUseStaticIndex) { //simply copy static index
-    for(Int_t i=0;i<AliHLTTPCTransform::GetNSlice();i++){
-      for(Int_t j=0;j<AliHLTTPCTransform::GetNRows();j++)
-	fIndex[i][j]=fgStaticIndex[i][j];
+    for(Int_t islice=0;islice<AliHLTTPCTransform::GetNSlice() && islice<fgkNSlice;islice++){
+      for(Int_t irow=0;irow<AliHLTTPCTransform::GetNRows() && irow<fgkNRow;irow++)
+	fIndex[islice][irow]=fgStaticIndex[islice][irow];
     }
 
   LOG(AliHLTTPCLog::kInformational,"AliHLTTPCFileHandler::CreateIndex","Index")
@@ -480,7 +487,8 @@ AliHLTTPCDigitRowData * AliHLTTPCFileHandler::AliDigits2Memory(UInt_t & nrow,Int
   // The index map relates the AliSimDigits objects in the tree to dedicated pad rows
   // in the TPC
   // This loop filters the pad rows according to the slice no set via Init
-  for(Int_t r=fRowMin;r<=fRowMax;r++){
+  assert(fRowMax<fgkNRow);
+  for(Int_t r=fRowMin;r<=fRowMax && r<fgkNRow;r++){
     Int_t n=fIndex[fSlice][r];
     if(n!=-1){ // there is data on that row available
       Int_t lslice,lrow;
@@ -550,7 +558,7 @@ AliHLTTPCDigitRowData * AliHLTTPCFileHandler::AliDigits2Memory(UInt_t & nrow,Int
   AliHLTTPCDigitRowData *tempPt = data;
   memset(data, 0, bufferSize);
 
-  for(Int_t r=fRowMin;r<=fRowMax;r++){
+  for(Int_t r=fRowMin;r<=fRowMax && r<fgkNRow;r++){
     Int_t n=fIndex[fSlice][r];
 
     AliHLTTPCTransform::Slice2Sector(fSlice,r,sector,row);
@@ -666,7 +674,7 @@ AliHLTTPCDigitRowData * AliHLTTPCFileHandler::AliAltroDigits2Memory(UInt_t & nro
   Int_t zerosupval=AliHLTTPCTransform::GetZeroSup();
   Float_t xyz[3];
 
-  for(Int_t r=fRowMin;r<=fRowMax;r++){
+  for(Int_t r=fRowMin;r<=fRowMax && r<fgkNRow;r++){
     Int_t n=fIndex[fSlice][r];
 
     ndigits[r] = 0;

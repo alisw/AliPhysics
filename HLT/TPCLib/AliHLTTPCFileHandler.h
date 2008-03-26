@@ -148,13 +148,13 @@ class AliHLTTPCFileHandler:public AliHLTTPCMemHandler {
 
   TTree *fDigitsTree;//!
   FILE *fMC;//!
-  
+
   Bool_t fIndexCreated;   //is index created
-  Int_t  fIndex[36][159]; //stores index over digitstree 
+  Int_t  fIndex[fgkNSlice][fgkNRow]; //stores index over digitstree 
                           //for faster access w/o ASVVERSION
   Bool_t fUseStaticIndex; //take static index
   static Bool_t fgStaticIndexCreated;   //global index created
-  static Int_t  fgStaticIndex[36][159]; //global index
+  static Int_t  fgStaticIndex[fgkNSlice][fgkNRow]; //global index
 
   virtual Bool_t SetAliInput();
   Bool_t GetDigitsTree(Int_t event);
@@ -166,7 +166,7 @@ class AliHLTTPCFileHandler:public AliHLTTPCMemHandler {
   /** assignment operator prohibited */
   AliHLTTPCFileHandler& operator=(const AliHLTTPCFileHandler&);
 
-  ClassDef(AliHLTTPCFileHandler,1)   //Filehandler class
+  ClassDef(AliHLTTPCFileHandler,2)   //HLT TPC Filehandler IO class
 };
 
 #endif

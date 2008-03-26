@@ -90,6 +90,7 @@
 </pre>
 */  
 
+#include <cassert>
 #include "AliHLTTPCRootTypes.h"
 #include "AliHLTTPCDigitData.h"
 #include "AliHLTTPCLogging.h"
@@ -140,6 +141,17 @@ AliHLTTPCMemHandler::~AliHLTTPCMemHandler()
 void AliHLTTPCMemHandler::Init(Int_t s,Int_t p, Int_t *r)
 {
   //init handler
+  assert(s<fgkNSlice);
+  if (s>fgkNSlice) {
+    fSlice=0;
+    fPatch=0;
+    fRowMin=0;
+    fRowMax=0;
+    if (r) *r=0;
+    LOG(AliHLTTPCLog::kWarning,"AliHLTTPCMemHandler::Init","sector coordinates")
+      <<"Invalid slice no " << s <<ENDLOG;
+    return;
+  }
   fSlice=s;fPatch=p;
   if(r) {
     fRowMin=r[0];
@@ -175,7 +187,7 @@ void AliHLTTPCMemHandler::SetROI(Float_t *eta,Int_t */*slice*/)
   if(eta[1]==0)
     {
       LOG(AliHLTTPCLog::kWarning,"AliHLTTPCMemHandler::SetROI","Eta Values")
-	<<"Bad ROI parameters. IDIOT! "<<ENDLOG;
+	<<"Bad ROI parameters."<<ENDLOG;
       for(Int_t i=fRowMin; i<=fRowMax; i++)
 	{
 	  fEtaMinTimeBin[i]=0;
