@@ -1313,7 +1313,7 @@ void AliTRDgeometry::CreateFrame(Int_t *idtmed)
   gMC->Gsvolu("USD7","BOX ",idtmed[1301-1],parBOX,kNparBOX);
   xpos       =   0.0;
   ypos       =   fClength[5][2]/2.0;
-  zpos       =   fgkSheight/2.0 - 3.20/2.0;
+  zpos       =   fgkSheight/2.0 - fgkSMpltT  - 3.00/2.0;
   gMC->Gspos("USD7",1,"UTI1", xpos, ypos, zpos,        0,"ONLY");
   gMC->Gspos("USD7",2,"UTI1", xpos,-ypos, zpos,        0,"ONLY");
   gMC->Gspos("USD7",3,"UTI2", xpos, ypos, zpos,        0,"ONLY");
@@ -1341,7 +1341,7 @@ void AliTRDgeometry::CreateFrame(Int_t *idtmed)
   gMC->Gsvolu("USD9","BOX ",idtmed[1301-1],parBOX,kNparBOX);
   xpos       =   0.0;
   ypos       =   fClength[5][2]/2.0;
-  zpos       =  -fgkSheight/2.0 + 1.40/2.0;
+  zpos       =  -fgkSheight/2.0 + fgkSMpltT + 1.40/2.0;
   gMC->Gspos("USD9",1,"UTI1", xpos, ypos, zpos,        0,"ONLY");
   gMC->Gspos("USD9",2,"UTI1", xpos,-ypos, zpos,        0,"ONLY");
   gMC->Gspos("USD9",3,"UTI2", xpos, ypos, zpos,        0,"ONLY");
@@ -1435,7 +1435,7 @@ void AliTRDgeometry::CreateFrame(Int_t *idtmed)
   gMC->Gsvolu("USC4","BOX ",idtmed[1301-1],parBOX,kNparBOX);
   xpos       =   0.0;
   ypos       =   fClength[5][2]/2.0 + fClength[5][1] + fClength[5][0];
-  zpos       =   fgkSheight/2.0 - 3.00/2.0;
+  zpos       =   fgkSheight/2.0 - fgkSMpltT - 3.00/2.0;
   gMC->Gspos("USC4",1,"UTI1", xpos, ypos, zpos,        0,"ONLY");
   gMC->Gspos("USC4",2,"UTI1", xpos,-ypos, zpos,        0,"ONLY");
   gMC->Gspos("USC4",3,"UTI2", xpos, ypos, zpos,        0,"ONLY");
@@ -1463,7 +1463,7 @@ void AliTRDgeometry::CreateFrame(Int_t *idtmed)
   gMC->Gsvolu("USC6","BOX ",idtmed[1301-1],parBOX,kNparBOX);
   xpos       =   0.0;
   ypos       =   fClength[5][2]/2.0 + fClength[5][1] + fClength[5][0];
-  zpos       =  -fgkSheight/2.0 + 1.60/2.0;
+  zpos       =  -fgkSheight/2.0 + fgkSMpltT + 1.60/2.0;
   gMC->Gspos("USC6",1,"UTI1", xpos, ypos, zpos,        0,"ONLY");
   gMC->Gspos("USC6",2,"UTI1", xpos,-ypos, zpos,        0,"ONLY");
   gMC->Gspos("USC6",3,"UTI2", xpos, ypos, zpos,        0,"ONLY");
@@ -1527,7 +1527,7 @@ void AliTRDgeometry::CreateFrame(Int_t *idtmed)
   const Float_t kSCLwidLa  =  8.5;
   const Float_t kSCLwidLb  =  3.3;
   // Position of the corner ledges
-  const Float_t kSCLposxLa =  0.0;
+  const Float_t kSCLposxLa =  0.1;
   const Float_t kSCLposxLb =  2.6;
   const Float_t kSCLposzLa = -4.25;
   const Float_t kSCLposzLb = -0.5;
