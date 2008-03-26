@@ -343,7 +343,8 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr)
 
     FitRaw(gSig, signalF, amp, time) ; 
     
-    if (amp > 0) {
+    if (amp > 0 && amp < 10000) {  //check both high and low end of
+				   //result, 10000 is somewhat arbitrary
       AliDebug(2,Form("id %d lowGain %d amp %g", id, lowGain, amp));
       //cout << "col " << col-40 << " row " << row-8 << " lowGain " << lowGain << " amp " << amp << endl;
       AddDigit(digitsArr, id, lowGain, (Int_t)amp, time);
