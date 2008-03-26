@@ -21,7 +21,7 @@ class AliV0;
 class AliESDkink;
 class AliESDfriendTrack;
 class AliITStrackMI;
-class AliTRDtrack;
+class AliTRDtrackV1;
 class AliTPCParam;
 class AliTPCseed;
 
@@ -50,7 +50,7 @@ public:
   AliESDfriendTrack *GetTrackF() const  { return fTrackF;}
   AliTPCseed *GetTPCtrack() const { return fTPCtrack;}
   AliITStrackMI *GetITStrack() const { return fITStrack;}
-  AliTRDtrack   *GetTRDtrack() const { return fTRDtrack;}
+  AliTRDtrackV1   *GetTRDtrack() const { return fTRDtrack;}
   Int_t      GetStatus(Int_t i) { return fStatus[i];}
 protected:
   //
@@ -90,7 +90,7 @@ private:
   AliESDfriendTrack *fTrackF;      // friend track
   AliTPCseed *fTPCtrack;        // tpc track
   AliITStrackMI *fITStrack;        // its track
-  AliTRDtrack   *fTRDtrack;        // trd track
+  AliTRDtrackV1   *fTRDtrack;        // trd track
   ClassDef(AliESDRecInfo,2)  // container for 
 };
 
