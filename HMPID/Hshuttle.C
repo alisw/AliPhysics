@@ -6,7 +6,6 @@
   
   TMap *pDcsMap = new TMap;       pDcsMap->SetOwner(1);          //DCS archive map
   
-//  AliTestShuttle* pShuttle = new AliTestShuttle(0,0,1000000);   
   AliTestShuttle* pShuttle = new AliTestShuttle(0,0,1000000);   
   pShuttle->SetInputRunType("PHYSICS");
 //  pShuttle->SetInputRunType("PEDESTAL_RUN");
@@ -58,7 +57,8 @@ void SimMap(TMap *pDcsMap,Int_t runTime=1500)
     for(Int_t time=0;time<runTime;time+=stepTime) {
        pPCH4->Add(new AliDCSValue((Float_t)4.0,time));               //sample CH4 pressure [mBar] differential respect to atm
        pPenv->Add(new AliDCSValue((Float_t)1000.0 ,time));               //also atm. pressure set to the same value
-       pHV[iCh]->Add(new AliDCSValue((Float_t)(1930+iCh*20),time));   //sample chamber HV [V]
+//       pHV[iCh]->Add(new AliDCSValue((Float_t)(1930+iCh*20),time));   //sample chamber HV [V]
+       pHV[iCh]->Add(new AliDCSValue((Float_t)(2050),time));   //sample chamber HV [V]
     }
     pDcsMap->Add(new TObjString(Form("HMP_DET/HMP_MP%i/HMP_MP%i_GAS/HMP_MP%i_GAS_PMWPC.actual.value"           ,iCh,iCh,iCh    )),pPCH4);         //CH4 pressure wrt atm
     pDcsMap->Add(new TObjString(Form("HMP_DET/HMP_ENV/HMP_ENV_PENV.actual.value"                                               )),pPenv);         //atm pressure

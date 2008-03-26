@@ -13,7 +13,12 @@ class TMap;
 class AliHMPIDPreprocessor : public AliPreprocessor
 {
 public:
-           AliHMPIDPreprocessor(AliShuttleInterface* pShuttle):AliPreprocessor("HMP",pShuttle) {}
+           AliHMPIDPreprocessor(AliShuttleInterface* pShuttle):AliPreprocessor("HMP",pShuttle) 
+           {
+               AddRunType("PHYSICS");
+               AddRunType("CALIBRATION");
+               AddRunType("STANDALONE");
+           }
   virtual ~AliHMPIDPreprocessor(                             )                                 {}
 protected:
   virtual void   Initialize(Int_t run, UInt_t startTime, UInt_t endTime); //
