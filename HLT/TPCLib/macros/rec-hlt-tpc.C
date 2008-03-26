@@ -1,0 +1,94 @@
+// $Id$
+/*
+ * Example macro to run the HLT Conformal mapping tracker embedded into
+ * AliRoot reconstruction. The reconstruction is done from the TPC raw
+ * data.
+ *
+ * aliroot -b -q rec-hlt-tpc.C | tee rec-hlt-tpc.log
+ *
+ * The chain to be run is defined by the macro given to the parameter
+ * 'config='
+ *
+ * The makro asumes that raw data is available in the rawx folders, either
+ * simulated or real data.
+ *
+ * In the first section, an analysis chain is defined. The scale of the
+ * chain can be defined by choosing the range of sectors and partitions.
+ *
+ * The reconstruction is steered by the AliReconstruction object in the
+ * usual way.
+ *
+ * Matthias.Richter@ift.uib.no
+ */
+{
+  ///////////////////////////////////////////////////////////////////////////////////////////////////
+  //
+  // init the HLT system in order to define the analysis chain below
+  //
+  gSystem->Load("libHLTrec.so");
+  AliHLTSystem* gHLT=AliHLTReconstructorBase::GetInstance();
+
+  // choose between ClusterFinderDecoder (true) and ClusterFinderPacked (false)
+  bool bUseClusterFinderDecoder=false;
+
+  ///////////////////////////////////////////////////////////////////////////////////////////////////
+  //
+  // define the analysis chain to be run
+  //
+  int iMinSlice=0;
+  int iMaxSlice=17;
+  int iMinPart=0;
+  int iMaxPart=5;
+  TString writerInput;
+  for (int slice=iMinSlice; slice<=iMaxSlice; slice++) {
+    TString trackerInput;
+    for (int part=iMinPart; part<=iMaxPart; part++) {
+      TString arg, publisher, cf;
+
+      // raw data publisher components
+      int ddlno=768;
+      if (part>1) ddlno+=72+4*slice+(part-2);
+      else ddlno+=2*slice+part;
+      arg.Form("-minid %d -datatype 'DDL_RAW ' 'TPC '  -dataspec 0x%02x%02x%02x%02x", ddlno, slice, slice, part, part);
+      publisher.Form("DP_%02d_%d", slice, part);
+      AliHLTConfiguration pubconf(publisher.Data(), "AliRawReaderPublisher", NULL , arg.Data());
+
+      // cluster finder components
+      cf.Form("CF_%02d_%d", slice, part);
+      if (bUseClusterFinderDecoder) {
+	AliHLTConfiguration cfconf(cf.Data(), "TPCClusterFinderDecoder", publisher.Data(), "pp-run timebins 446 unsorted 1");
+      } else {
+	AliHLTConfiguration cfconf(cf.Data(), "TPCClusterFinderPacked", publisher.Data(), "pp-run timebins 446 rawreadermode 4");
+      }
+      if (trackerInput.Length()>0) trackerInput+=" ";
+      trackerInput+=cf;
+      if (writerInput.Length()>0) writerInput+=" ";
+      writerInput+=cf;
+    }
+    TString tracker;
+    // tracker finder components
+    tracker.Form("TR_%02d", slice);
+    AliHLTConfiguration trackerconf(tracker.Data(), "TPCSliceTracker", trackerInput.Data(), "-pp-run -bfield 0.5");
+    if (writerInput.Length()>0) writerInput+=" ";
+    writerInput+=tracker;
+  }
+
+  // the writer configuration
+  AliHLTConfiguration fwconf("sink1", "FileWriter"   , writerInput.Data(), "-specfmt=_%d -subdir=out_%d -blcknofmt=_0x%x -idfmt=_0x%08x");
+
+  ///////////////////////////////////////////////////////////////////////////////////////////////////
+  //
+  // Init and run the reconstruction
+  // All but HLT reconstructio is switched off
+  //
+  AliReconstruction rec;
+  rec.SetInput("./");
+  rec.SetRunVertexFinder(kFALSE);
+  rec.SetRunLocalReconstruction("HLT");
+  rec.SetRunReconstruction("");
+  rec.SetRunTracking("");
+  rec.SetLoadAlignFromCDB(0);
+  rec.SetFillESD("HLT");
+  rec.SetOption("HLT", "libAliHLTUtil.so libAliHLTRCU.so libAliHLTTPC.so loglevel=0x7c chains=sink1");
+  rec.Run();
+}

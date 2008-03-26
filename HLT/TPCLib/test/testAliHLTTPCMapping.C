@@ -137,7 +137,7 @@ bool compareMapping(int patch, AliHLTTPCMapping* mapper)
     while(result && inFile>>hwAdd && inFile>>row && inFile>>pad){
       row-=rowOffset;
       if (row!=mapper->GetRow(hwAdd) || pad!=mapper->GetPad(hwAdd)) {
-	cout << "missmatch at channel " << hwAdd << ": expected " << row << "/" << pad << "  got " << mapper->GetRow(hwAdd) << "/" << mapper->GetPad(hwAdd) << endl;
+	cout << "mismatch at channel " << hwAdd << ": expected " << row << "/" << pad << "  got " << mapper->GetRow(hwAdd) << "/" << mapper->GetPad(hwAdd) << endl;
 	result=false;
 	break;
       }
