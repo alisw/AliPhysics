@@ -127,11 +127,16 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
 }
 
 const char* AliHLTTPCAgent::GetReconstructionChains(AliRawReader* /*rawReader*/,
-						    AliRunLoader* /*runloader*/) const
+						    AliRunLoader* runloader) const
 {
   // see header file for class documentation
-  //return NULL;
-  return "TPC-esd-converter";
+  if (runloader) {
+    // reconstruction chains for AliRoot simulation
+    // Note: run loader is only available while running embedded into
+    // AliRoot simulation
+    return "TPC-esd-converter";
+  }
+  return NULL;
 }
 
 const char* AliHLTTPCAgent::GetRequiredComponentLibraries() const
