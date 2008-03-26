@@ -745,7 +745,11 @@ void HmpConfig::WriteConfig()
   fprintf(pF,"  pAL->SetNumberOfEventsPerFile(1000);\n");
   fprintf(pF,"  gAlice->SetRunLoader(pAL);\n\n");
 //Decayer  
-  if(fDecayerB->GetState()==kButtonDown){   
+  if(fDecayerB->GetState()==kButtonDown){
+    fprintf(pF,"  gSystem->Load(\"liblhapdf.so\"); // Parton density functions \n");
+    fprintf(pF,"  gSystem->Load(\"libEGPythia6.so\");   // TGenerator interface \n");
+    fprintf(pF,"  gSystem->Load(\"libpythia6.so\");   // Pythia \n");
+    fprintf(pF,"  gSystem->Load(\"libAliPythia6.so\");   // ALICE specifics implementations \n\n");
     fprintf(pF,"  AliDecayer *pDecayer=new AliDecayerPythia();\n");
     fprintf(pF,"  pDecayer->SetForceDecay(kAll);\n"); 
     fprintf(pF,"  pDecayer->Init();\n"); 
