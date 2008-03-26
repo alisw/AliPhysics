@@ -5,6 +5,7 @@
 
 #endif
 
+// THIS MACRO IS NOT SUPPORTED ANYMORE. Goodbye. MDO 26/03/2008
 void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 		      const char *outFileName = "AliAOD.root") {
   
