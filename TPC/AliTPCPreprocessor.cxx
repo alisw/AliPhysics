@@ -61,6 +61,17 @@ AliTPCPreprocessor::AliTPCPreprocessor(AliShuttleInterface* shuttle) :
 {
   // constructor
   fROC = AliTPCROC::Instance();
+
+  // define run types to be processed
+  
+  AddRunType(kPedestalRunType);
+  AddRunType(kPulserRunType);
+  AddRunType(kPhysicsRunType);
+  AddRunType(kStandAloneRunType);
+  AddRunType(kCosmicRunType);
+  AddRunType(kLaserRunType);
+  AddRunType(kDaqRunType);
+  
 }
 //______________________________________________________________________________________________
  AliTPCPreprocessor::AliTPCPreprocessor(const AliTPCPreprocessor&  ) :
