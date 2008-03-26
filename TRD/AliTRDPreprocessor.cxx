@@ -61,6 +61,10 @@ AliTRDPreprocessor::AliTRDPreprocessor(AliShuttleInterface *shuttle)
   // Constructor
   //
 
+ AddRunType("PHYSICS");
+ AddRunType("STANDALONE");
+ AddRunType("PEDESTAL");
+
 }
 
 //______________________________________________________________________________________________
