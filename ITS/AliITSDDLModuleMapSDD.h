@@ -13,6 +13,7 @@
 ///////////////////////////////////////////////////////////////////
 
 #include<TObject.h>
+#include<AliITSgeomTGeo.h>
 
 
 class AliITSDDLModuleMapSDD : public TObject {
@@ -32,6 +33,10 @@ class AliITSDDLModuleMapSDD : public TObject {
   void ReadDDLModuleMap(Char_t *ddlmapfile);
 
   Int_t GetModuleNumber(UInt_t iDDL, UInt_t iChan) const {return fDDLModuleMap[iDDL][iChan];}
+  void FindInDDLMap(Int_t modIndex, Int_t &iDDL, Int_t &iCarlos) const;
+  void FindInDDLMap(Int_t lay, Int_t lad, Int_t det, Int_t &iDDL, Int_t &iCarlos) const {
+    FindInDDLMap(AliITSgeomTGeo::GetModuleIndex(lay,lad,det),iDDL,iCarlos);
+  }
   static Int_t GetNDDLs(){return kDDLsNumber;}
   static Int_t GetNModPerDDL(){return kModulesPerDDL;}
 

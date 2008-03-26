@@ -23,6 +23,7 @@
 ///////////////////////////////////////////////////////////////////
 
 #include "AliITSDDLModuleMapSDD.h"
+#include "AliLog.h"
 
 ClassImp(AliITSDDLModuleMapSDD)
 
@@ -202,6 +203,23 @@ void AliITSDDLModuleMapSDD::SetDDLMap(AliITSDDLModuleMapSDD* ddlmap){
       fDDLModuleMap[iddl][ichan]=ddlmap->GetModuleNumber(iddl,ichan);
     }
   }
+}
+//______________________________________________________________________
+void AliITSDDLModuleMapSDD::FindInDDLMap(Int_t modIndex, Int_t &iDDL, Int_t &iCarlos) const {
+  // finds DDL and carlos number for a given module
+  for(Int_t iddl=0;iddl<kDDLsNumber;iddl++){
+    for(Int_t ichan=0; ichan<kModulesPerDDL; ichan++){
+      if(fDDLModuleMap[iddl][ichan]==modIndex){
+	iDDL=iddl;
+	iCarlos=ichan;
+	return;
+      }
+    }
+  }
+  AliWarning("Module not found in DDL map");
+  iDDL=-1;
+  iCarlos=-1;
+  return;
 }
 //______________________________________________________________________
 void AliITSDDLModuleMapSDD::ReadDDLModuleMap(Char_t *ddlmapfile){
