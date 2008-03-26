@@ -23,8 +23,7 @@ class AliITSPreprocessorSDD : public AliPreprocessor {
 
  public:
  
-  AliITSPreprocessorSDD( AliShuttleInterface* shuttle):
-    AliPreprocessor("SDD", shuttle){}
+  AliITSPreprocessorSDD( AliShuttleInterface* shuttle);
   virtual ~AliITSPreprocessorSDD(){;}
 
   enum {kNumberOfSDD = 260};    // number of SDD modules

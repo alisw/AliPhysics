@@ -6,7 +6,7 @@ void TestPreprocessorSDD(Char_t *optRunType="PULSER"){
   // - 4 tar files with simulated output of INJECTOR DA
   // - 1 root file with simulated output of DCS
   // all these files can be found on 
-  gSystem->Load("libTestShuttle.so");
+  gSystem->Load("$ALICE_ROOT/SHUTTLE/TestShuttle/libTestShuttle.so");
 
   // The parameters are run, startTime, endTime
   AliTestShuttle* shuttle = new AliTestShuttle(7, 0, 1);

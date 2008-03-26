@@ -41,6 +41,15 @@ const TString AliITSPreprocessorSDD::fgkNameHistoPedestals = "hpedestal";
 const TString AliITSPreprocessorSDD::fgkNameHistoNoise = "hnoise";
 ClassImp(AliITSPreprocessorSDD)
 
+//______________________________________________________________________
+AliITSPreprocessorSDD::AliITSPreprocessorSDD( AliShuttleInterface* shuttle):
+    AliPreprocessor("SDD", shuttle)
+{
+  // constructor
+  AddRunType("PULSER");
+  AddRunType("INJECTOR");
+  AddRunType("PHYSICS"); 
+}
 
 //______________________________________________________________________
 UInt_t AliITSPreprocessorSDD::Process(TMap* dcsAliasMap){
