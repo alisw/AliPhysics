@@ -255,6 +255,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename,
   fRunQA(kTRUE),  
   fRunGlobalQA(kTRUE),
   fInLoopQA(kFALSE),
+  fSameQACycle(kFALSE),
 
   fRunPlaneEff(kFALSE),
 
@@ -343,6 +344,7 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fRunQA(rec.fRunQA),  
   fRunGlobalQA(rec.fRunGlobalQA),
   fInLoopQA(rec.fInLoopQA),
+  fSameQACycle(rec.fSameQACycle),
   fRunPlaneEff(rec.fRunPlaneEff),
 
   fesd(NULL),
@@ -743,6 +745,7 @@ Bool_t AliReconstruction::InitRun(const char* input, void **pEvent)
   AliQADataMakerSteer qas ; 
   if (fRunQA && fRawReader) { 
     qas.Run(fRunLocalReconstruction, fRawReader) ; 
+	fSameQACycle = kTRUE ; 
   }
   // checking the QA of previous steps
   //CheckQA() ; 
@@ -871,23 +874,25 @@ Bool_t AliReconstruction::InitRun(const char* input, void **pEvent)
                fgkDetectorName[iDet]));
         qadm->Init(AliQA::kRECPOINTS, AliCDBManager::Instance()->GetRun());
         qadm->Init(AliQA::kESDS, AliCDBManager::Instance()->GetRun());
- //       if (!fInLoopQA) {
-//           qadm->StartOfCycle(AliQA::kRECPOINTS);
-//           qadm->StartOfCycle(AliQA::kESDS,"same");
-//        }
+        if (!fInLoopQA) {
+			qadm->StartOfCycle(AliQA::kRECPOINTS, fSameQACycle);
+			qadm->StartOfCycle(AliQA::kESDS,"same");
+        }
      }
-  }
-  if (fRunGlobalQA) {
-	  AliQADataMakerRec *qadm = GetQADataMaker(AliQA::kGLOBAL);
-     AliInfo(Form("Initializing the global QA data maker"));
-     TObjArray *arr=
-          qadm->Init(AliQA::kRECPOINTS, AliCDBManager::Instance()->GetRun());
-     AliTracker::SetResidualsArray(arr);
-     qadm->Init(AliQA::kESDS, AliCDBManager::Instance()->GetRun());
-     if (!fInLoopQA) {
-        qadm->StartOfCycle(AliQA::kRECPOINTS, (fRunQA && fRawReader));
-        qadm->StartOfCycle(AliQA::kESDS, "same");
-     }
+	  if (fRunGlobalQA) {
+		  AliQADataMakerRec *qadm = GetQADataMaker(AliQA::kGLOBAL);
+		  AliInfo(Form("Initializing the global QA data maker"));
+		  TObjArray *arr=
+			qadm->Init(AliQA::kRECPOINTS, AliCDBManager::Instance()->GetRun());
+		  AliTracker::SetResidualsArray(arr);
+		  qadm->Init(AliQA::kESDS, AliCDBManager::Instance()->GetRun());
+		  if (!fInLoopQA) {
+			  qadm->StartOfCycle(AliQA::kRECPOINTS, fSameQACycle);
+			  qadm->StartOfCycle(AliQA::kESDS, "same");
+		  }
+	  }
+	  if (!fInLoopQA) 
+		  fSameQACycle = kTRUE; 
   }
 
   //Initialize the Plane Efficiency framework
@@ -936,18 +941,20 @@ Bool_t AliReconstruction::RunEvent(Int_t iEvent)
        if (fRunQA) {
           TString detStr(fFillESD); 
           for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
-             if (!IsSelected(fgkDetectorName[iDet], detStr)) continue;
+             if (!IsSelected(fgkDetectorName[iDet], detStr)) 
+				 continue;
              AliQADataMakerRec *qadm = GetQADataMaker(iDet);  
-             if (!qadm) continue;
-             qadm->StartOfCycle(AliQA::kRECPOINTS, (fRunQA && fRawReader));
+             if (!qadm) 
+				 continue;
+             qadm->StartOfCycle(AliQA::kRECPOINTS, fSameQACycle);
              qadm->StartOfCycle(AliQA::kESDS, "same") ; 	
           }
-       }
-       if (fRunGlobalQA) {
-          AliQADataMakerRec *qadm = GetQADataMaker(AliQA::kGLOBAL);
-          qadm->StartOfCycle(AliQA::kRECPOINTS, (fRunQA && fRawReader));
-          qadm->StartOfCycle(AliQA::kESDS, "same");
-       }
+		   if (fRunGlobalQA) {
+			   AliQADataMakerRec *qadm = GetQADataMaker(AliQA::kGLOBAL);
+			   qadm->StartOfCycle(AliQA::kRECPOINTS, fSameQACycle);
+			   qadm->StartOfCycle(AliQA::kESDS, "same");
+		   }		   
+	   }
     }
 
     fRunLoader->GetEvent(iEvent);
@@ -1322,9 +1329,9 @@ Bool_t AliReconstruction::FinishRun()
   if (!fInLoopQA) {
      if (fRunQA) {
        AliQADataMakerSteer qas;
-       qas.Run(fRunLocalReconstruction.Data(), AliQA::kRECPOINTS, (fRunQA && fRawReader));
+       qas.Run(fRunLocalReconstruction.Data(), AliQA::kRECPOINTS, fSameQACycle);
        //qas.Reset() ;
-       qas.Run(fRunTracking.Data(), AliQA::kESDS, (fRunQA && fRawReader));
+       qas.Run(fRunTracking.Data(), AliQA::kESDS, fSameQACycle);
      }
      if (fRunGlobalQA) {
         AliQADataMakerRec *qadm = GetQADataMaker(AliQA::kGLOBAL);

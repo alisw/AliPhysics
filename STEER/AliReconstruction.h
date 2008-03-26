@@ -237,6 +237,7 @@ private:
   Bool_t             fRunQA ;        // Run QA flag
   Bool_t             fRunGlobalQA;   // Run global QA flag
   Bool_t             fInLoopQA;      // In-loop QA flag
+  Bool_t             fSameQACycle;   //! open a vew QA data file or not
   // Plane Efficiency Evaluation
   Bool_t         fRunPlaneEff ;      // Evaluate Plane Efficiency
 

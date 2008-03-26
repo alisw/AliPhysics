@@ -450,43 +450,46 @@ Bool_t AliQADataMakerSteer::InitRunLoader()
 	// get or create the run loader
 	if (fRunLoader) {
 		fCycleSame = kTRUE ; 
-		return kTRUE ;
-	} 
-		
-	if (!gSystem->AccessPathName(fGAliceFileName.Data())) { // galice.root exists
-    // load all base libraries to get the loader classes
-		TString libs = gSystem->GetLibraries() ;
-		for (UInt_t iDet = 0; iDet < fgkNDetectors; iDet++) {
-			if (!IsSelected(AliQA::GetDetName(iDet))) 
-				continue ; 
-			TString detName = AliQA::GetDetName(iDet) ;
-			if (detName == "HLT") 
-				continue;
-			if (libs.Contains("lib" + detName + "base.so")) 
-				continue;
-			gSystem->Load("lib" + detName + "base.so");
-		}
-		fRunLoader = AliRunLoader::Open(fGAliceFileName.Data());
-		if (!fRunLoader) {
-			AliError(Form("no run loader found in file %s", fGAliceFileName.Data()));
+	} else {
+		if (!gSystem->AccessPathName(fGAliceFileName.Data())) { // galice.root exists
+			// load all base libraries to get the loader classes
+			TString libs = gSystem->GetLibraries() ;
+			for (UInt_t iDet = 0; iDet < fgkNDetectors; iDet++) {
+				if (!IsSelected(AliQA::GetDetName(iDet))) 
+					continue ; 
+				TString detName = AliQA::GetDetName(iDet) ;
+				if (detName == "HLT") 
+					continue;
+				if (libs.Contains("lib" + detName + "base.so")) 
+					continue;
+				gSystem->Load("lib" + detName + "base.so");
+			}
+			fRunLoader = AliRunLoader::Open(fGAliceFileName.Data());
+			if (!fRunLoader) {
+				AliError(Form("no run loader found in file %s", fGAliceFileName.Data()));
+				return kFALSE;
+			}
+			fRunLoader->CdGAFile();
+			if (fRunLoader->LoadgAlice() == 0) {
+				gAlice = fRunLoader->GetAliRun();
+			}
+
+			if (!gAlice) {
+				AliError(Form("no gAlice object found in file %s", fGAliceFileName.Data()));
+				return kFALSE;
+			}
+
+		} else {               // galice.root does not exist
+			AliError(Form("the file %s does not exist", fGAliceFileName.Data()));
 			return kFALSE;
 		}
-		fRunLoader->CdGAFile();
-		if (fRunLoader->LoadgAlice() == 0) {
-			gAlice = fRunLoader->GetAliRun();
-		}
+	}
 
-		if (!gAlice) {
-			AliError(Form("no gAlice object found in file %s", fGAliceFileName.Data()));
-			return kFALSE;
-		}
-
-	} else {               // galice.root does not exist
-		AliError(Form("the file %s does not exist", fGAliceFileName.Data()));
-		return kFALSE;
-    }
-
-  return kTRUE;
+	if (!fRunNumber) { 
+		fRunLoader->LoadHeader();
+		fRunNumber = fRunLoader->GetHeader()->GetRun() ; 
+	}
+	return kTRUE;
 }
 
 //_____________________________________________________________________________
