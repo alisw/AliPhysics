@@ -6,7 +6,6 @@ include $(MODDIR)/hlt.conf
 LIBHLTREC_VERSION := 0
 
 CLASS_HDRS:=  	AliHLTReconstructor.h \
-		AliHLTReconstructorBase.h \
 		AliRawReaderHLT.h \
 		AliHLTOUTRawReader.h
 

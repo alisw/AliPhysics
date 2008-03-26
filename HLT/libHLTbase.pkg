@@ -6,6 +6,7 @@ include $(MODDIR)/hlt.conf
 CLASS_HDRS:=  	AliHLTComponent.h \
 		AliHLTComponentHandler.h \
 		AliHLTSystem.h \
+		AliHLTReconstructorBase.h \
 		AliHLTProcessor.h \
 		AliHLTCalibrationProcessor.h \
 		AliHLTConfiguration.h \

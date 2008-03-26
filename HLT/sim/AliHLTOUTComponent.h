@@ -78,6 +78,25 @@ class AliHLTOUTComponent : public AliHLTOfflineDataSink  {
   void GetInputDataTypes( vector<AliHLTComponentDataType>& list);
   AliHLTComponent* Spawn();
 
+  /**
+   * Enable global options valid for all instances of the component
+   * @param options   bit field
+   */
+  static void SetGlobalOption(unsigned int options);
+
+  /**
+   * Disable global options valid for all instances of the component
+   * @param options   bit field
+   */
+  static void ClearGlobalOption(unsigned int options);
+
+  enum {
+    /** write the raw files of the HLT links */
+    kWriteRawFiles = 0x1,
+    /** write the digit file */
+    kWriteDigits = 0x2
+  };
+
  protected:
   /**
    * Init method.
@@ -163,18 +182,15 @@ class AliHLTOUTComponent : public AliHLTOfflineDataSink  {
   /** equipment ID of first HLT DDL */
   int fIdFirstDDL; //!transient
 
-  /** write digits or not */
-  Bool_t fWriteDigits; //!transient
-
-  /** write raw file or not */
-  Bool_t fWriteRaw; //!transient
-
   /** output buffer, allocated once in order to avoid frequent alloc/dealloc */
   vector<AliHLTUInt8_t> fBuffer; //!transient
 
   /** instance of the HOMER library manager */
   AliHLTHOMERLibManager* fpLibManager; // !transient
 
-  ClassDef(AliHLTOUTComponent, 0)
+  /** global options for all instances */
+  static int fgOptions; //! transient
+
+  ClassDef(AliHLTOUTComponent, 1)
 };
 #endif

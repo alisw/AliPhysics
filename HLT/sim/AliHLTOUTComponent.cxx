@@ -52,8 +52,6 @@ AliHLTOUTComponent::AliHLTOUTComponent()
   fWriters(),
   fNofDDLs(10),
   fIdFirstDDL(7680), // 0x1e<<8
-  fWriteDigits(kTRUE),
-  fWriteRaw(kTRUE),
   fBuffer(),
   fpLibManager(NULL)
 {
@@ -72,6 +70,8 @@ AliHLTOUTComponent::AliHLTOUTComponent()
   fIdFirstDDL=AliDAQ::DdlIDOffset("HLT");
   */
 }
+
+int AliHLTOUTComponent::fgOptions=kWriteRawFiles|kWriteDigits;
 
 AliHLTOUTComponent::~AliHLTOUTComponent()
 {
@@ -180,7 +180,7 @@ int AliHLTOUTComponent::DumpEvent( const AliHLTComponentEventData& evtData,
 {
   // see header file for class documentation
   int iResult=0;
-  HLTInfo("write %d output blocks", evtData.fBlockCnt);
+  HLTInfo("write %d output block(s)", evtData.fBlockCnt);
   if (iResult>=0) {
     homer_uint64 homerHeader[kCount_64b_Words];
     HOMERBlockDescriptor homerDescriptor(homerHeader);
@@ -241,8 +241,8 @@ int AliHLTOUTComponent::FillESD(int eventNo, AliRunLoader* runLoader, AliESDEven
     int bufferSize=0;
     
     if ((bufferSize=FillOutputBuffer(eventNo, fWriters[*ddlno], pBuffer))>0) {
-      if (fWriteDigits) WriteDigits(eventNo, runLoader, *ddlno, pBuffer, bufferSize);
-      if (fWriteRaw) WriteRawFile(eventNo, runLoader, *ddlno, pBuffer, bufferSize);
+      if (fgOptions&kWriteDigits) WriteDigits(eventNo, runLoader, *ddlno, pBuffer, bufferSize);
+      if (fgOptions&kWriteRawFiles) WriteRawFile(eventNo, runLoader, *ddlno, pBuffer, bufferSize);
     }
     fWriters[*ddlno]->Clear();
     ddlno++;
@@ -367,4 +367,16 @@ int AliHLTOUTComponent::WriteRawFile(int eventNo, AliRunLoader* /*runLoader*/, i
     rawfile.close();
   }
   return iResult;
+}
+
+void AliHLTOUTComponent::SetGlobalOption(unsigned int options)
+{
+  // see header file for class documentation
+  fgOptions|=options;
+}
+
+void AliHLTOUTComponent::ClearGlobalOption(unsigned int options)
+{
+  // see header file for class documentation
+  fgOptions&=~options;
 }

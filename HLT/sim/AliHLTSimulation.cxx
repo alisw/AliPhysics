@@ -33,6 +33,7 @@
 #include "AliRawReaderDate.h"
 #include "AliRawReaderRoot.h"
 #include "AliESDEvent.h"
+#include "AliHLTOUTComponent.h"
 
 #if ALIHLTSIMULATION_LIBRARY_VERSION != LIBHLTSIM_VERSION
 #error library version in header file and lib*.pkg do not match
@@ -44,7 +45,6 @@ ClassImp(AliHLTSimulation);
 AliHLTSimulation::AliHLTSimulation()
   :
   fOptions(),
-  fpSystem(NULL),
   fpRawReader(NULL)
 {
   // see header file for class documentation
@@ -57,10 +57,6 @@ AliHLTSimulation::AliHLTSimulation()
 AliHLTSimulation::~AliHLTSimulation()
 {
   // see header file for function documentation
-  if (fpSystem) {
-    delete fpSystem;
-  }
-  fpSystem=NULL;
   if (fpRawReader) {
     delete fpRawReader;
   }
@@ -87,12 +83,12 @@ int AliHLTSimulation::Init(AliRunLoader* pRunLoader, const char* options)
   fOptions=options;
   TString sysOp;
 
-  if (!fpSystem) fpSystem=new AliHLTSystem;
-  if (!fpSystem) {
-    AliError("can not create AliHLTSystem object");
+  AliHLTSystem* pSystem=GetInstance();
+  if (!pSystem) {
+    AliError("can not get AliHLTSystem instance");
     return -ENOMEM;
   }
-  if (fpSystem->CheckStatus(AliHLTSystem::kError)) {
+  if (pSystem->CheckStatus(AliHLTSystem::kError)) {
     AliError("HLT system in error state");
     return -EFAULT;
   }
@@ -133,6 +129,10 @@ int AliHLTSimulation::Init(AliRunLoader* pRunLoader, const char* options)
 	      fpRawReader=NULL;
 	    }
 	}
+      } else if (token.Contains("writerawfiles=")) {
+	if (!token.ReplaceAll("writerawfiles=", "").Contains("HLT")) {
+	  AliHLTOUTComponent::ClearGlobalOption(AliHLTOUTComponent::kWriteRawFiles);
+	}
       } else {
 	if (sysOp.Length()>0) sysOp+=" ";
 	sysOp+=token;
@@ -142,13 +142,13 @@ int AliHLTSimulation::Init(AliRunLoader* pRunLoader, const char* options)
   }
 
   // scan options
-  if (fpSystem->ScanOptions(sysOp.Data())<0) {
+  if (pSystem->ScanOptions(sysOp.Data())<0) {
     AliError("error setting options for HLT system");
     return -EINVAL;	
   }
 
-  if (!fpSystem->CheckStatus(AliHLTSystem::kReady)) {
-    if ((fpSystem->Configure(pRunLoader))<0) {
+  if (!pSystem->CheckStatus(AliHLTSystem::kReady)) {
+    if ((pSystem->Configure(pRunLoader))<0) {
       AliError("error during HLT system configuration");
       return -EFAULT;
     }
@@ -169,24 +169,29 @@ int AliHLTSimulation::Run(AliRunLoader* pRunLoader)
   int nEvents = pRunLoader->GetNumberOfEvents();
   int iResult=0;
 
-  if (fpSystem->CheckStatus(AliHLTSystem::kError)) {
+  AliHLTSystem* pSystem=GetInstance();
+  if (!pSystem) {
+    AliError("can not get AliHLTSystem instance");
+    return -ENOMEM;
+  }
+  if (pSystem->CheckStatus(AliHLTSystem::kError)) {
     AliError("HLT system in error state");
     return -EFAULT;
   }
 
   // Note: the rawreader is already placed at the first event
-  if ((iResult=fpSystem->Reconstruct(1, pRunLoader, fpRawReader))>=0) {
-    fpSystem->FillESD(0, pRunLoader, NULL);
+  if ((iResult=pSystem->Reconstruct(1, pRunLoader, fpRawReader))>=0) {
+    pSystem->FillESD(0, pRunLoader, NULL);
     for (int i=1; i<nEvents; i++) {
       if (fpRawReader && !fpRawReader->NextEvent()) {
 	AliError("missmatch in event count, rawreader corrupted");
 	break;
       }
-      fpSystem->Reconstruct(1, pRunLoader, fpRawReader);
-      fpSystem->FillESD(i, pRunLoader, NULL);
+      pSystem->Reconstruct(1, pRunLoader, fpRawReader);
+      pSystem->FillESD(i, pRunLoader, NULL);
     }
     // send specific 'event' to execute the stop sequence
-    fpSystem->Reconstruct(0, NULL, NULL);
+    pSystem->Reconstruct(0, NULL, NULL);
   }
   return iResult;
 }
