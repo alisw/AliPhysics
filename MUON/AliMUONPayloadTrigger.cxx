@@ -76,7 +76,7 @@ AliMUONPayloadTrigger::~AliMUONPayloadTrigger()
 
 
 //______________________________________________________
-Bool_t AliMUONPayloadTrigger::Decode(UInt_t *buffer)
+Bool_t AliMUONPayloadTrigger::Decode(UInt_t *buffer, Bool_t scalerEvent)
 {
   /// decode trigger DDL
   /// store only notified cards
@@ -88,47 +88,24 @@ Bool_t AliMUONPayloadTrigger::Decode(UInt_t *buffer)
   static Int_t kGlobalHeaderSize = darcHeader->GetGlobalHeaderLength(); 
   static Int_t kDarcHeaderSize   = darcHeader->GetDarcHeaderLength(); 
   static Int_t kRegHeaderSize    = fRegHeader->GetHeaderLength();
-
-  Bool_t scalerEvent = kFALSE;
   
   Int_t index = 0;
 
   memcpy(darcHeader->GetHeader(), &buffer[index], (kDarcHeaderSize)*4); 
   index += kDarcHeaderSize;
 
-//   if (!fNofRegSet) // if regional board number not set, set it with darc type
-//   { 
-    // darc type vardorh
-    if (darcHeader->GetDarcType() == 4)
+
+  // darc type vardorh
+  if (darcHeader->GetDarcType() == 4)
       fMaxReg = 1;
     
-    // darc type def.
-    if (darcHeader->GetDarcType() == 6)
+  // darc type def.
+  if (darcHeader->GetDarcType() == 6)
       fMaxReg = 8;
       
-    if(darcHeader->GetEventType() == 0) {
-      scalerEvent = kTRUE;
-    } else
-      scalerEvent = kFALSE;
-//   }
+  if(darcHeader->GetEventType() == scalerEvent) 
+      if (fWarnings) AliWarning("Wrong event type obtained from the Darc header, take the one of CDH");
 
-// overwrite the event type in case
-// the raw-data contents contradicts with the
-// the header
-    if(scalerEvent &&
-       (buffer[index] == darcHeader->GetEndOfDarc()) &&
-       (buffer[index+darcHeader->GetDarcScalerLength()] != darcHeader->GetEndOfDarc())) {
-      // obviously not a scaler event
-      scalerEvent = kFALSE;
-      AliWarning("Overriding the event type obtained from the Darc header to physics event!");
-    }
-    if(!scalerEvent &&
-       (buffer[index] != darcHeader->GetEndOfDarc()) &&
-       (buffer[index+darcHeader->GetDarcScalerLength()] == darcHeader->GetEndOfDarc())) {
-      // obviously a scaler event
-      scalerEvent = kTRUE;
-      AliWarning("Overriding the event type obtained from the Darc header to software trigger event!");
-    }
 
   if(scalerEvent) {
     // 6 DARC scaler words

@@ -24,7 +24,7 @@ class AliMUONPayloadTrigger: public TObject {
     AliMUONPayloadTrigger();
     virtual ~AliMUONPayloadTrigger();
 
-    Bool_t Decode(UInt_t *buffer);
+    Bool_t Decode(UInt_t *buffer, Bool_t scalerEvent = kFALSE);
     void   ResetDDL();
 
     /// Return maximum number of regional cards in DATE file

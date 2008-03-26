@@ -491,9 +491,10 @@ Int_t AliMUONRawWriter::WriteTriggerDDL(const AliMUONVTriggerStore& triggerStore
 					 (kRegHeaderLength + kRegScalerLength +1))* 8 +
                                          (kDarcHeaderLength + kDarcScalerLength + 
 					  kGlobalHeaderLength + kGlobalScalerLength + 2);
-  if(fScalerEvent)
+  if(fScalerEvent) {
     eventPhys = 0; //set to generate scaler events
-
+    fHeader->fWord2 |= 0x1; // set L1SwC bit on
+  }
   if(fScalerEvent)
     buffer = new Int_t [kScalerBufferSize];
   else
