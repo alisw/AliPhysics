@@ -39,7 +39,7 @@ public:
 			       AliESDEvent* esd) const
   {FillESD((TTree*)NULL, clustersTree, esd);}
 
-  void SetRecoParam(AliITSRecoParam * param){ fgRecoParam = param;}
+  static void SetRecoParam(AliITSRecoParam * param){ fgRecoParam = param;}
   static const AliITSRecoParam* GetRecoParam(){ return fgRecoParam;}
   static const AliITSRecoParam* GetRecoParamDefault()
                                 { return fgRecoParamDefault;}
