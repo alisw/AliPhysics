@@ -41,7 +41,7 @@
 #include "AliESDtrack.h"
 #include "AliTPCseed.h"
 #include "AliITStrackMI.h"
-#include "AliTRDtrack.h"
+#include "AliTRDtrackV1.h"
 #include "AliMCInfo.h"
 #include "AliESDRecInfo.h"
 
@@ -166,8 +166,11 @@ void AliESDRecInfo::SetESDtrack(const AliESDtrack *track){
     while (fTrackF->GetCalibObject(icalib)){
       cobject=fTrackF->GetCalibObject(icalib);
       if (dynamic_cast<AliTPCseed*>(cobject)){
-	if (fTPCtrack) delete fTPCtrack;
-	fTPCtrack = (AliTPCseed*)(dynamic_cast<AliTPCseed*>(cobject))->Clone();
+				if (fTPCtrack) delete fTPCtrack;
+				fTPCtrack = (AliTPCseed*)(dynamic_cast<AliTPCseed*>(cobject))->Clone();
+      } else if (dynamic_cast<AliTRDtrackV1*>(cobject)){
+				if (fTRDtrack) delete fTRDtrack;
+				fTRDtrack = (AliTRDtrackV1*)(dynamic_cast<AliTRDtrackV1*>(cobject))->Clone();
       }
       icalib++;
     }
