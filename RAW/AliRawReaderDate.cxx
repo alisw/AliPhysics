@@ -514,7 +514,14 @@ Bool_t AliRawReaderDate::NextEvent()
 // go to the next event in the date file
 
 #ifdef ALI_DATE
-  if (!fFile) return kFALSE;
+  if (!fFile) {
+    if (fEventNumber < 0 && fEvent) {
+      fEventNumber++;
+      return kTRUE;
+    }
+    else
+      return kFALSE;
+  }
 
   Reset();
   eventHeaderStruct header;
@@ -549,9 +556,9 @@ Bool_t AliRawReaderDate::RewindEvents()
 {
 // go back to the beginning of the date file
 
-  if (!fFile) return kFALSE;
+  if (fFile)
+    fseek(fFile, 0, SEEK_SET);
 
-  fseek(fFile, 0, SEEK_SET);
   fEventNumber = -1;
   return Reset();
 }
