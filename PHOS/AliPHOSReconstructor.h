@@ -97,8 +97,8 @@ public:
     return *this ; 
   }
   
-  void SetRecoParamEmc(AliPHOSRecoParam * param){ fgkRecoParamEmc = param;}
-  void SetRecoParamCpv(AliPHOSRecoParam * param){ fgkRecoParamCpv = param;}
+  static void SetRecoParamEmc(AliPHOSRecoParam * param){ fgkRecoParamEmc = param;}
+  static void SetRecoParamCpv(AliPHOSRecoParam * param){ fgkRecoParamCpv = param;}
 
   static const AliPHOSRecoParam* GetRecoParamEmc(){ 
     if (!fgkRecoParamEmc) {
