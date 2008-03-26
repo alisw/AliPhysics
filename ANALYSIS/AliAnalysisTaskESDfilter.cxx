@@ -328,6 +328,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 									   AliAODTrack::kSecondary)
 		);
 	    aodTrack->ConvertAliPIDtoAODPID();
+	    aodTrack->SetFlags(esdTrack->GetStatus());
 	}
 	else {
 //	    cerr << "Error: event " << esd->GetEventNumberInFile() << " cascade " << nCascade
@@ -363,6 +364,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 									   AliAODTrack::kSecondary)
 		);
 	    aodTrack->ConvertAliPIDtoAODPID();
+	    aodTrack->SetFlags(esdTrack->GetStatus());	    
 	}
 	else {
 //	    cerr << "Error: event " << esd->GetEventNumberInFile() << " cascade " << nCascade
@@ -405,6 +407,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 								     AliAODTrack::kSecondary)
 		);
 	    aodTrack->ConvertAliPIDtoAODPID();
+	    aodTrack->SetFlags(esdTrack->GetStatus());
 	}
 	else {
 //	    cerr << "Error: event " << esd->GetEventNumberInFile() << " cascade " << nCascade
@@ -475,6 +478,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 								AliAODTrack::kSecondary)
 		);
 	    aodTrack->ConvertAliPIDtoAODPID();
+	    aodTrack->SetFlags(esdTrack->GetStatus());
 	}
 	else {
 //	    cerr << "Error: event " << esd->GetEventNumberInFile() << " V0 " << nV0
@@ -510,6 +514,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 								AliAODTrack::kSecondary)
 		);
 	    aodTrack->ConvertAliPIDtoAODPID();
+	    aodTrack->SetFlags(esdTrack->GetStatus());
 	}
 	else {
 //	    cerr << "Error: event " << esd->GetEventNumberInFile() << " V0 " << nV0
@@ -598,6 +603,8 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 							       kTRUE, // check if this is right
 							       kTRUE, // check if this is right
 							       AliAODTrack::kPrimary);
+			aodTrack->SetFlags(esdTrack->GetStatus());
+			aodTrack->ConvertAliPIDtoAODPID();
 			primary->AddDaughter(mother);
 			mother->ConvertAliPIDtoAODPID();
 		    }
@@ -645,6 +652,8 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 							       kTRUE, // check if this is right
 							       kTRUE, // check if this is right
 							       AliAODTrack::kPrimary);
+			aodTrack->SetFlags(esdTrack->GetStatus());
+			aodTrack->ConvertAliPIDtoAODPID();
 			vkink->AddDaughter(daughter);
 			daughter->ConvertAliPIDtoAODPID();
 		    }
@@ -706,6 +715,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 								    AliAODTrack::kPrimary, 
 								    selectInfo)
 		);
+	    aodTrack->SetFlags(esdTrack->GetStatus());
 	    aodTrack->ConvertAliPIDtoAODPID();
 	}
 	else {
@@ -729,6 +739,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 					       kFALSE, // check if this is right
 					       AliAODTrack::kOrphan,
 					       selectInfo);
+	  aodTrack->SetFlags(esdTrack->GetStatus());
 	  aodTrack->ConvertAliPIDtoAODPID();
 	  */
 	}	
@@ -766,6 +777,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 					       AliAODTrack::kPrimary)
 	    );
   
+	aodTrack->ConvertAliPIDtoAODPID();
 	aodTrack->SetHitsPatternInTrigCh(esdMuTrack->GetHitsPatternInTrigCh());
 	Int_t track2Trigger = esdMuTrack->GetMatchTrigger();
 	aodTrack->SetMatchTrigger(track2Trigger);
