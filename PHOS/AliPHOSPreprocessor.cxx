@@ -39,6 +39,7 @@
 #include "TObject.h"
 #include "TString.h"
 #include "TMath.h"
+#include "TAxis.h"
 #include "AliPHOSEmcBadChannelsMap.h"
 
 ClassImp(AliPHOSPreprocessor)
@@ -358,9 +359,9 @@ Bool_t AliPHOSPreprocessor::CalibrateEmc()
 	TString htitl = h2->GetTitle();
 	if(htitl.Contains("and gain 1")) {
 	  hRef = h2->ProjectionX();
-	  hRef->SetBins(1000,0.,1000.); // to cut off saturation peak at 1023
+	  hRef->GetXaxis()->SetRange(10,1000); // to cut off saturation peak and noise
 	  // Check if the reference histogram has too little statistics
-	  if(hRef->GetEntries()>2) ok=kTRUE;
+	  if(hRef->GetMean() && hRef->GetEntries()>2) ok=kTRUE;
 	}
       }
       
@@ -394,7 +395,7 @@ Bool_t AliPHOSPreprocessor::CalibrateEmc()
 	  //TODO: dead channels exclusion!
 	  if(h2) {
 	    h1 = h2->ProjectionX();
-	    h1->SetBins(1000,0.,1000.); // to cut off saturation peak at 1023
+	    h1->GetXaxis()->SetRange(10,1000); //to cut off saturation peak and noise
 	    coeff = h1->GetMean()/refMean;
 	    if(coeff>0)
 	      calibData.SetADCchannelEmc(mod+1,col+1,row+1,1./coeff);
