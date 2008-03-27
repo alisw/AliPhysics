@@ -32,6 +32,7 @@
 #include "AliFMDDebug.h" // Better debug macros
 // #include <iomanip>
 // #include <iostream>
+#include "AliRawReader.h"
 
 //____________________________________________________________________
 ClassImp(AliFMDRawStream)
@@ -44,6 +45,7 @@ AliFMDRawStream::AliFMDRawStream(AliRawReader* reader)
   : AliAltroRawStream(reader)
 {
   // CTOR 
+  reader->Reset();
   fNoAltroMapping = kFALSE;
   // Select FMD DDL's 
   SelectRawData("FMD");
