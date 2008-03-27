@@ -1,30 +1,26 @@
-/**************************************************************************
- * This file is property of and copyright by the ALICE HLT Project        * 
- * ALICE Experiment at CERN, All rights reserved.                         *
- *                                                                        *
- * Primary Authors: Kenneth Aamodt <Kenneth.Aamodt@student.uib.no>        *
- *                  for The ALICE HLT Project.                            *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+// $Id$
+
+//**************************************************************************
+//* This file is property of and copyright by the ALICE HLT Project        *
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//*                                                                        *
+//* Primary Authors: Kalliopi Kanaki <Kalliopi.Kanaki@ift.uib.no>          *
+//*                  for The ALICE HLT Project.                            *
+//*                                                                        *
+//* Permission to use, copy, modify and distribute this software and its   *
+//* documentation strictly for non-commercial purposes is hereby granted   *
+//* without fee, provided that the above copyright notice appears in all   *
+//* copies and that both the copyright notice and this permission notice   *
+//* appear in the supporting documentation. The authors make no claims     *
+//* about the suitability of this software for any purpose. It is          *
+//* provided "as is" without express or implied warranty.                  *
+//**************************************************************************
 
 /** @file   AliHLTTPCNoiseMapComponent.cxx
     @author Kalliopi Kanaki
     @date   
     @brief  The TPC Noise Map component
 */
-
-// see header file for class documentation                                   //
-// or                                                                        //
-// refer to README to build package                                          //
-// or                                                                        //
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt                          //
 
 #if __GNUC__>= 3
 using namespace std;
@@ -43,34 +39,20 @@ using namespace std;
 #include "TObjArray.h"
 #include "TObjString.h"
 #include <sys/time.h>
-
+#include "TH2.h"
 
 
 AliHLTTPCNoiseMapComponent gAliHLTTPCNoiseMapComponent;
 
-
 ClassImp(AliHLTTPCNoiseMapComponent) //ROOT macro for the implementation of ROOT specific class methods
 
 AliHLTTPCNoiseMapComponent::AliHLTTPCNoiseMapComponent()
-    :
-    fFirstTimeBin(0),
-    fLastTimeBin(AliHLTTPCTransform::GetNTimeBins()),
-    fNSigmaThreshold(0),
-    fSignalThreshold(0),
-    fMinimumNumberOfSignals(0),
-    fOldRCUFormat(0),
-    fSortPads(0),
-    fDigitReader(NULL),
+    :    
     fNoiseMap(0),
-    fSpecification(0),
-    fMaxPatch(0),
-    fMinPatch(0), 
-    fCurrentPatch(0),
-    fCurrentRow(0),
     fIsPacked(1),
-    fIsUnpacked(0)
-
-
+    fIsUnpacked(0),
+    fCurrentPartition(0),
+    fCurrentRow(0)   
 {
   // see header file for class documentation
   // or
@@ -79,51 +61,56 @@ AliHLTTPCNoiseMapComponent::AliHLTTPCNoiseMapComponent()
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 }
 
-AliHLTTPCNoiseMapComponent::~AliHLTTPCNoiseMapComponent() { // see header file for class documentation
+AliHLTTPCNoiseMapComponent::~AliHLTTPCNoiseMapComponent() { 
+// see header file for class documentation
 
 }
-
 
 // Public functions to implement AliHLTComponent's interface.
 // These functions are required for the registration process
 
-const char* AliHLTTPCNoiseMapComponent::GetComponentID() { // see header file for class documentation
+const char* AliHLTTPCNoiseMapComponent::GetComponentID() { 
+// see header file for class documentation
 
   return "TPCNoiseMap";
 }
 
-void AliHLTTPCNoiseMapComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list) { // see header file for class documentation
+void AliHLTTPCNoiseMapComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list) { 
+// see header file for class documentation
 
   list.clear(); 
   list.push_back( kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTPC );
 }
 
-AliHLTComponentDataType AliHLTTPCNoiseMapComponent::GetOutputDataType() { // see header file for class documentation
+AliHLTComponentDataType AliHLTTPCNoiseMapComponent::GetOutputDataType() { 
+// see header file for class documentation
 
-  //return AliHLTTPCDefinitions::fgkUnpackedRawDataType;
   return AliHLTTPCDefinitions::fgkNoiseHistoDataType;
 }
 
-int AliHLTTPCNoiseMapComponent::GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList) { // see header file for class documentation
+int AliHLTTPCNoiseMapComponent::GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList) { 
+// see header file for class documentation
 
   tgtList.clear();
-  //tgtList.push_back(AliHLTTPCDefinitions::fgkUnpackedRawDataType);
   tgtList.push_back(AliHLTTPCDefinitions::fgkNoiseHistoDataType);
   return tgtList.size();
 }
 
-void AliHLTTPCNoiseMapComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier ) { // see header file for class documentation
+void AliHLTTPCNoiseMapComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier ) { 
+// see header file for class documentation
 
   constBase=0;
   inputMultiplier=1.0;
 }
 
-AliHLTComponent* AliHLTTPCNoiseMapComponent::Spawn() { // see header file for class documentation
+AliHLTComponent* AliHLTTPCNoiseMapComponent::Spawn() { 
+// see header file for class documentation
 
   return new AliHLTTPCNoiseMapComponent();
 }
 	
-int AliHLTTPCNoiseMapComponent::DoInit( int argc, const char** argv ) { // see header file for class documentation
+int AliHLTTPCNoiseMapComponent::DoInit( int argc, const char** argv ) { 
+// see header file for class documentation
 
   Int_t i = 0;
   Char_t* cpErr;
@@ -154,12 +141,13 @@ int AliHLTTPCNoiseMapComponent::DoInit( int argc, const char** argv ) { // see h
     if (!strcmp( argv[i], "-noisemap")) {
         fNoiseMap = strtoul( argv[i+1], &cpErr ,0);
       
-    if(fNoiseMap) {
+    //if(fNoiseMap) {
       
-       hPatch = new TH2F("hPatch","",500,-250,250,500,-250,250);    
+       fHistSideC = new TH2F("fHistSideC","",500,-250,250,500,-250,250);    
        HLTInfo("---- HAVE CREATED HISTOGRAM(S) ----");
+       //fSideA, fSideC, fSliceA[18], fSliceC[18]
     
-    }
+    //}
     if ( *cpErr ) {
         HLTError("Cannot convert noisemap specifier '%s'.", argv[i+1]);
         return EINVAL;
@@ -167,28 +155,15 @@ int AliHLTTPCNoiseMapComponent::DoInit( int argc, const char** argv ) { // see h
       i+=2;
       continue;
     }
-    
-    
-//     // -- zero suppression threshold
-//     if ( !strcmp( argv[i], "adc-threshold" ) ) {
-//       fSignalThreshold = strtoul( argv[i+1], &cpErr ,0);
-//       if ( *cpErr ) {
-// 	HLTError("Cannot convert adc-threshold specifier '%s'.", argv[i+1]);
-// 	return EINVAL;
-//       }
-//       i+=2;
-//       continue;
-//     }
-
-      
+        
     Logging(kHLTLogError, "HLT::TPCNoiseMap::DoInit", "Unknown Option", "Unknown option '%s'", argv[i] );
     return EINVAL;
 
   }
 
-  HLTDebug("using AliHLTTPCDigitReaderDecoder");
-  fDigitReader = new AliHLTTPCDigitReaderDecoder(); // double-loop
-  //fDigitReader = new AliHLTTPCDigitReaderPacked();
+  //HLTDebug("using AliHLTTPCDigitReaderDecoder");
+  //pDigitReader = new AliHLTTPCDigitReaderDecoder(); // double-loop
+  //pDigitReader = new AliHLTTPCDigitReaderPacked();
   
 //   if(fIsPacked){
 //     //cout<<"Digit reader decoder is chosen"<<endl;
@@ -206,14 +181,16 @@ int AliHLTTPCNoiseMapComponent::DoInit( int argc, const char** argv ) { // see h
   return 0;
 } // end DoInit()
 
-int AliHLTTPCNoiseMapComponent::DoDeinit() { // see header file for class documentation 
+int AliHLTTPCNoiseMapComponent::DoDeinit() { 
+// see header file for class documentation 
       
     return 0;
 }
 
 int AliHLTTPCNoiseMapComponent::DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
 					      AliHLTComponentTriggerData&, AliHLTUInt8_t* outputPtr, AliHLTUInt32_t& size, 
-					      vector<AliHLTComponentBlockData>& outputBlocks ) { // see header file for class documentation
+					      vector<AliHLTComponentBlockData>& outputBlocks ) { 
+// see header file for class documentation
  if(fNoiseMap) { 
  
   HLTInfo("--- Entering DoEvent() in TPCNoiseMap ---");
@@ -222,15 +199,11 @@ int AliHLTTPCNoiseMapComponent::DoEvent( const AliHLTComponentEventData& evtData
   const AliHLTComponentBlockData* iter = NULL;
   unsigned long ndx;
   
-  //cout << "Number of blocks: " << evtData.fBlockCnt << endl;
-
   Float_t xyz[3]; 
   Int_t thissector, thisrow;
-  Int_t rowOffset = 0;
   
 
   for ( ndx=0; ndx<evtData.fBlockCnt; ndx++ ) {
-
       iter = blocks+ndx;
       
       HLTInfo("Event 0x%08LX (%Lu) received datatype: %s - required datatype: %s", evtData.fEventID, evtData.fEventID, 
@@ -241,81 +214,103 @@ int AliHLTTPCNoiseMapComponent::DoEvent( const AliHLTComponentEventData& evtData
 	 	      DataType2Text(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTPC).c_str());
       } //endif      
       
-//       if ( iter->fDataType != (kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTPC) &&  iter->fDataType != AliHLTTPCDefinitions::fgkDDLPackedRawDataType ) {
-// 	   continue;
-//       } // endif
+      if (iter->fDataType != (kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTPC)) continue;
   
      
-      UInt_t slice = AliHLTTPCDefinitions::GetMinSliceNr( *iter );
-      UInt_t patch = AliHLTTPCDefinitions::GetMinPatchNr( *iter );
-      
-
-      //if ( patch >= 2 ) // Outer sector, patches 2, 3, 4, 5
-      //rowOffset = AliHLTTPCTransform::GetFirstRow( 2 );      
-      //fCurrentRow += rowOffset;
-      
-
-      if ( patch < fMinPatch ) fMinPatch =  patch;
-      if ( patch > fMaxPatch ) fMaxPatch =  patch;
-      
-      
-      fSpecification = AliHLTTPCDefinitions::EncodeDataSpecification( slice, slice, fMaxPatch, fMinPatch );
-      fDigitReader->InitBlock(iter->fPtr,iter->fSize,patch,slice);
-           	
-      if(!fSortPads) { //the code within this if() does NOT sort the pads, and will only work with the UNSORTED (new) clusterfinding
-      
-        //while( fDigitReader->Next() ){ 
-        while( fDigitReader->NextChannel()) { 
-          while( fDigitReader->NextBunch()) {
+      UInt_t slice     = AliHLTTPCDefinitions::GetMinSliceNr( *iter ); 
+      UInt_t partition = AliHLTTPCDefinitions::GetMinPatchNr( *iter );
           
-             
-             //AliHLTTPCTransform::Slice2Sector(slice,fCurrentRow,thissector,thisrow);            
-	     AliHLTTPCTransform::Slice2Sector(slice,fDigitReader->GetRow(),thissector,thisrow);      
-	     AliHLTTPCTransform::Raw2Global(xyz,slice,thisrow,fDigitReader->GetPad(),fDigitReader->GetTime());
-             
-	     // this is where the messing up takes place, I am not sure about the arguments of the above 2 functions
+      //if ( partition < fMinPartition ) fMinPartition = partition;
+      //if ( partition > fMaxPartition ) fMaxPartition = partition; // add a warning
+      
+      //fSpecification = AliHLTTPCDefinitions::EncodeDataSpecification( slice, slice, partition, partition );
+      fSpecification = iter->fSpecification;
+      
+      AliHLTTPCDigitReader *pDigitReader = new AliHLTTPCDigitReaderDecoder;
+      pDigitReader->InitBlock(iter->fPtr,iter->fSize,partition,slice);
+      if(!pDigitReader) break; //AliHLTComponent.cxx, altrochannelselector rcu folder
+            
+      rowOffset = 0;      
+      
+      switch(partition){
+      case 0:
+	rowOffset=AliHLTTPCTransform::GetFirstRow(0);
+	break;
+      case 1:
+	rowOffset=AliHLTTPCTransform::GetFirstRow(1);
+	break;
+      case 2:
+	rowOffset=AliHLTTPCTransform::GetFirstRow(2);
+	break;
+      case 3:
+	rowOffset=AliHLTTPCTransform::GetFirstRow(3);
+	break;
+      case 4:
+	rowOffset=AliHLTTPCTransform::GetFirstRow(4);
+	break;
+      case 5:
+	rowOffset=AliHLTTPCTransform::GetFirstRow(5);
+	break;
+      }
+          	
+      
+        //while( pDigitReader->Next() ){ 
+        while( pDigitReader->NextChannel()) { 
+	 
+	 fCurrentRow  = pDigitReader->GetRow();	 
+	 fCurrentRow += rowOffset;
+	
+	 if(pDigitReader->GetPad()==1000 || fCurrentRow==1000) continue;
 
-             
-	     //hPatch->Fill(xyz[0],xyz[1]); // as a consequence, this looks strange
-	     hPatch->Fill(fDigitReader->GetPad(), fDigitReader->GetRow());
-	     
-	     
-	     //in case we want to fill the histograms with the signal value, an additional loop is necessary
-//              for(Int_t i=0;i<fDigitReader->GetBunchSize();i++){ 
-//           	
-//                AliHLTTPCTransform::Raw2Global(xyz,slice,thisrow,fDigitReader->GetPad(),fDigitReader->GetTime()+i);              
-//                //  const UInt_t *bunchData = fDigitReader->GetSignals();
-//                //  for(Int_t i=0;i<fDigitReader->GetBunchSize();i++) {
-//                //      cout<<"Time: "<<fDigitReader->GetTime()+i<<"    Signal: "<<bunchData[i]<<endl;
-//                //  } 	                             
-// 	     } // end for
-           } // end of inner while loop
-        } // end of outer while loop
-      } // endif(!fSortPads)                   
-  } // end for loop 
+	 AliHLTTPCTransform::Slice2Sector(slice,fCurrentRow,thissector,thisrow);
+	 AliHLTTPCTransform::Raw2Global(xyz,thissector,thisrow,pDigitReader->GetPad(),0);
+	 //AliHLTTPCTransform::Raw2Local(xyz,thissector,thisrow,pDigitReader->GetPad(),0);
+	 	 
+	 //use AliTPCPad to fill the data there and use the functions to ask for max charge etc.
+
+	 Int_t  maxSignal = 0;
+	 while( pDigitReader->NextBunch()) {
+     
+	     //in case we want to fill the histograms with the signal value, an additional loop is necessary      	                              
+             for(Int_t i=0;i<pDigitReader->GetBunchSize();i++) {
+	     	
+	     	 const UInt_t *bunchData = pDigitReader->GetSignals();
+	     	 if(bunchData[i]>maxSignal) maxSignal = bunchData[i]; 
+             	 //cout<<"Time: "<<pDigitReader->GetTime()+i<<"    Signal: "<<bunchData[i]<<endl;
+             }  					   
+	 } // end of inner while loop
+
+cout<<slice<<" "<<partition<<" "<<fCurrentRow<<" "<<pDigitReader->GetPad()<<" "<<xyz[0]<<" "<<xyz[1]<<" "<<maxSignal<<endl;
+	  
+	  fHistSideC->Fill(xyz[0],xyz[1],maxSignal);
+      
+        } // end of outer while pad loop
+  } // end of data block loop 
  
   SaveAndResetHistograms();
  
- }    
-  
-  return 0;
+ } // end if noisemap==kTRUE  
+ return 0;
 } // end DoEvent()
 
 void AliHLTTPCNoiseMapComponent::SaveAndResetHistograms() {
-  
+// see header file for class documentation
   
   TFile *outputfile = new TFile("test.root","RECREATE");
-  hPatch->Write();
-  
-  PushBack( (TObject*) hPatch, AliHLTTPCDefinitions::fgkNoiseHistoDataType, fSpecification);
-  
+  fHistSideC->Write();
   outputfile->Save();
   outputfile->Close();
-  
-  delete hPatch;
+   
+  PushBack( (TObject*) fHistSideC, AliHLTTPCDefinitions::fgkNoiseHistoDataType, fSpecification);
+  //fill it with the right specification for every histogram
+  //make a TObjArray and add all histos
+  //check which pointers are empty and publish only the ones that hold something
+    
+  delete fHistSideC;
 }
 
-int AliHLTTPCNoiseMapComponent::Configure(const char* arguments) { // see header file for class documentation
+int AliHLTTPCNoiseMapComponent::Configure(const char* arguments) { 
+// see header file for class documentation
   
   int iResult=0;
   if (!arguments) return iResult;
@@ -352,7 +347,8 @@ int AliHLTTPCNoiseMapComponent::Configure(const char* arguments) { // see header
 
 }
 
-int AliHLTTPCNoiseMapComponent::Reconfigure(const char* cdbEntry, const char* chainId) { // see header file for class documentation
+int AliHLTTPCNoiseMapComponent::Reconfigure(const char* cdbEntry, const char* chainId) { 
+// see header file for class documentation
 
   int iResult=0;
   const char* path="HLT/ConfigTPC/TPCNoiseMapComponent";

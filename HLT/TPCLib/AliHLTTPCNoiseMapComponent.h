@@ -1,9 +1,12 @@
+// -*- Mode: C++ -*-
+// $Id$
+
 #ifndef ALIHLTTPCNOISEMAPCOMPONENT_H
 #define ALIHLTTPCNOISEMAPCOMPONENT_H
 
-/* This file is property of and copyright by the ALICE HLT Project        * 
- * ALICE Experiment at CERN, All rights reserved.                         *
- * See cxx source for full Copyright notice                               */
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
 
 /** @file   AliHLTTPCNoiseMapComponent.h
     @author Kalliopi Kanaki
@@ -18,9 +21,10 @@
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 #include "AliHLTProcessor.h"
-#include "TH2.h"
 
+//forward declarations
 class AliHLTTPCDigitReader;
+class TH2;
 
 /**
  * @class AliHLTTPCNoiseMapComponent
@@ -47,20 +51,29 @@ class AliHLTTPCDigitReader;
 class AliHLTTPCNoiseMapComponent : public AliHLTProcessor {
     
    public:
-        
-   AliHLTTPCNoiseMapComponent();          //constructor	   
-   virtual ~AliHLTTPCNoiseMapComponent(); //destructor
+   
+   /** standard constructor */    
+   AliHLTTPCNoiseMapComponent();           
+   /** destructor */
+   virtual ~AliHLTTPCNoiseMapComponent();
 
 
       // Public functions to implement AliHLTComponent's interface.
       // These functions are required for the registration process
       
-      const char* GetComponentID();							   //interface function, see @ref AliHLTComponent for description  
-      void GetInputDataTypes( vector<AliHLTComponentDataType>& list);			   //interface function, see @ref AliHLTComponent for description  
-      AliHLTComponentDataType GetOutputDataType();					   //interface function, see @ref AliHLTComponent for description  
-      int GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList);			   //interface function, see @ref AliHLTComponent for description
-      virtual void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier ); //interface function, see @ref AliHLTComponent for description
-      AliHLTComponent* Spawn(); 							   //interface function, see @ref AliHLTComponent for description
+      /** interface function, see @ref AliHLTComponent for description */
+      const char* GetComponentID();							     
+      /** interface function, see @ref AliHLTComponent for description */
+      void GetInputDataTypes( vector<AliHLTComponentDataType>& list);			     
+      /** interface function, see @ref AliHLTComponent for description */
+      AliHLTComponentDataType GetOutputDataType();					     
+      /** interface function, see @ref AliHLTComponent for description */
+      int GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList);			   
+      /** interface function, see @ref AliHLTComponent for description */
+      virtual void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier ); 
+      /** interface function, see @ref AliHLTComponent for description */
+      AliHLTComponent* Spawn(); 							   
+      /** function for acting on the saving and cleaning histograms, after they are filled */
       void SaveAndResetHistograms();
   
    protected:
@@ -80,7 +93,7 @@ class AliHLTTPCNoiseMapComponent : public AliHLTProcessor {
    private:
    
       int Configure(const char* arguments);
-
+          
       /** copy constructor prohibited */
       AliHLTTPCNoiseMapComponent(const AliHLTTPCNoiseMapComponent&);
 
@@ -88,27 +101,21 @@ class AliHLTTPCNoiseMapComponent : public AliHLTProcessor {
       AliHLTTPCNoiseMapComponent& operator=(const AliHLTTPCNoiseMapComponent&);
 
       /** the reader object for data decoding */
-      AliHLTTPCDigitReader* fDigitReader;  //!transient
-      AliHLTUInt32_t fSpecification;       //!transient
-      AliHLTUInt8_t fMinPatch;             //!transient
-      AliHLTUInt8_t fMaxPatch;             //!transient
+      AliHLTUInt32_t fSpecification;  //!transient
+      //AliHLTUInt8_t fMinPartition;    //!transient
+      //AliHLTUInt8_t fMaxPartition;    //!transient
 
-      UInt_t fFirstTimeBin;
-      UInt_t fLastTimeBin;
-      UInt_t fNSigmaThreshold;
-      UInt_t fSignalThreshold;
-      UInt_t fMinimumNumberOfSignals;
-      UInt_t fOldRCUFormat;
-      Bool_t fSortPads;
-      Bool_t fNoiseMap;
-      Bool_t fIsPacked;    
-      Bool_t fIsUnpacked;
-      Int_t  fCurrentPatch;
-      Int_t  fCurrentRow;
+      Bool_t fNoiseMap;    //!transient
+      Bool_t fIsPacked;    //!transient   
+      Bool_t fIsUnpacked;  //!transient
       
-      TH2F *hPatch;     
+      Int_t  fCurrentPartition; //!transient
+      Int_t  fCurrentRow;       //!transient
+      Int_t  rowOffset;         //!transient
+      
+      TH2 *fHistSideC; //!transient    
 
-      ClassDef(AliHLTTPCNoiseMapComponent, 0)  
+      ClassDef(AliHLTTPCNoiseMapComponent, 0)
     };
 
 #endif
