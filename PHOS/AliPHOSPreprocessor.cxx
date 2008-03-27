@@ -26,6 +26,7 @@
 #include "AliPHOSPreprocessor.h"
 #include "AliLog.h"
 #include "AliCDBMetaData.h"
+#include "AliCDBEntry.h"
 #include "AliPHOSEmcCalibData.h"
 #include "TFile.h"
 #include "TH1.h"
@@ -36,6 +37,7 @@
 #include "TKey.h"
 #include "TList.h"
 #include "TObjString.h"
+#include "TObjArray.h"
 #include "TObject.h"
 #include "TString.h"
 #include "TMath.h"
@@ -306,6 +308,19 @@ Bool_t AliPHOSPreprocessor::CalibrateEmc()
     return kFALSE;
   }
 
+  // Retrieve Bad Channels Map (BCM)
+
+  const AliPHOSEmcBadChannelsMap* badMap=0;
+  AliCDBEntry* entryBCM = GetFromOCDB("Calib", "EmcBadChannels");
+
+  if(!entryBCM)
+    Log(Form("WARNING!! Cannot find any AliCDBEntry for [Calib, EmcBadChannels]!"));
+  else
+    badMap = (AliPHOSEmcBadChannelsMap*)entryBCM->GetObject();
+
+  if(!badMap)
+    Log(Form("WARNING!! No Bad Channels Map in AliCDBEntry. All cells considered _GOOD_!"));
+
   TIter iter(list);
   TObjString *source;
   
@@ -362,6 +377,22 @@ Bool_t AliPHOSPreprocessor::CalibrateEmc()
 	  hRef->GetXaxis()->SetRange(10,1000); // to cut off saturation peak and noise
 	  // Check if the reference histogram has too little statistics
 	  if(hRef->GetMean() && hRef->GetEntries()>2) ok=kTRUE;
+
+	  const TString delim = "_";
+	  TString str = hRef->GetName();
+	  TObjArray* tks = str.Tokenize(delim);
+	  const Int_t md = ((TObjString*)tks->At(0))->GetString().Atoi();
+	  const Int_t X   = ((TObjString*)tks->At(1))->GetString().Atoi();
+	  const Int_t Z   = ((TObjString*)tks->At(2))->GetString().Atoi();
+
+	  if(badMap) {
+	    if(badMap->IsBadChannel(md+1,Z+1,X+1)) {
+	      AliInfo(Form("Cell mod=%d col=%d row=%d is bad. Histogram %s rejected.",
+			   md+1,Z+1,X+1,hRef->GetName()));
+	      ok=kFALSE;
+	    }
+	  }
+
 	}
       }
       
