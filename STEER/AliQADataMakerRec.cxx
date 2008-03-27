@@ -203,11 +203,12 @@ void AliQADataMakerRec::StartOfCycle(AliQA::TASKINDEX_t task, const Bool_t sameC
 	  list = fRecPointsQAList ;
   else if ( task == AliQA::kESDS )  
 	  list = fESDsQAList ;
-
-	TIter next(list) ;
-	TH1 * h ; 
-	while ( (h = dynamic_cast<TH1 *>(next())) )
-		h->Reset() ;  
+	
+// Should be the choice of detectors
+//	TIter next(list) ;
+//	TH1 * h ; 
+//	while ( (h = dynamic_cast<TH1 *>(next())) )
+//		h->Reset() ;  
 
 	StartOfDetectorCycle() ; 
 }
