@@ -46,6 +46,32 @@ struct AliHLTMUONDataBlockHeader
 	AliHLTUInt32_t fNrecords; // Number of records in this data block.
 };
 
+/**
+ * The field structure of a single row of the AliHLTMUONHitReconstructor component's
+ * lookup table.
+ */
+struct AliHLTMUONHitRecoLutRow
+{
+	AliHLTInt32_t fDetElemId;  // The detector element ID of the pad.
+	AliHLTInt32_t fIX, fIY;    // The X,Y number of the pad.
+	AliHLTFloat32_t fRealX, fRealY, fRealZ;  // The real coordinate of the pad.
+	AliHLTFloat32_t fHalfPadSize; // half padsize in X for bending and Y for nonbending
+	AliHLTInt32_t fPlane;  // The plane and PCB zone ID numbers.
+	AliHLTFloat32_t fPed, fSigma, fA0, fA1; // Calibration values
+	AliHLTInt32_t fThres, fSat; //Calibration values
+};
+
+/**
+ * The field structure of a single row of the AliHLTMUONTriggerReconstructor component's
+ * lookup table.
+ */
+struct AliHLTMUONTriggerRecoLutRow
+{
+	AliHLTFloat32_t fX;  // Global X coordinate of channel.
+	AliHLTFloat32_t fY;  // Global Y coordinate of channel.
+	AliHLTFloat32_t fZ;  // Global Z coordinate of channel.
+};
+
 } // extern "C"
 
 
