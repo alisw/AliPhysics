@@ -37,6 +37,7 @@
 #include "AliITSReconstructor.h"
 #include "AliTPCRecoParam.h"
 #include "AliTPCReconstructor.h"
+#include "AliTRDrawStreamBase.h"
 #include "AliMUONRecoParam.h"
 #include "AliMUONReconstructor.h"
 #include "AliPHOSRecoParam.h"
@@ -136,6 +137,9 @@ int main(int argc, char **argv) {
   AliTPCReconstructor::SetRecoParam(tpcRecoParam);
   AliTPCReconstructor::SetStreamLevel(1);
 
+  // TRD setting
+  AliTRDrawStreamBase::SetRawStreamVersion("TB");
+
   // PHOS settings
   AliPHOSRecoParam* recEmc = new AliPHOSRecoParamEmc();
   recEmc->SetSubtractPedestals(kTRUE);
@@ -144,7 +148,7 @@ int main(int argc, char **argv) {
   AliPHOSReconstructor::SetRecoParamEmc(recEmc);
 
   // T0 settings
-  AliLog::SetModuleDebugLevel("T0", 10);
+  //  AliLog::SetModuleDebugLevel("T0", 10);
 
   // MUON settings
   AliLog::SetClassDebugLevel("AliMUONRawStreamTracker",3);
@@ -178,7 +182,7 @@ int main(int argc, char **argv) {
   //  rec.SetRunTracking("ALL");
   //  rec.SetFillESD("ALL");
   // Disable vertex finder for the moment
-  rec.SetRunVertexFinder(kFALSE);
+  rec.SetRunVertexFinder(kTRUE);
   
   // To be enabled if some equipment IDs are not set correctly by DAQ
   //  rec.SetEquipmentIdMap("EquipmentIdMap.data");
@@ -188,6 +192,7 @@ int main(int argc, char **argv) {
   rec.SetOption("MUON","SAVEDIGITS");
   rec.SetOption("TPC","OldRCUFormat");
   rec.SetOption("PHOS","OldRCUFormat");
+  rec.SetOption("T0","cosmic");
   
   // To be enabled when CTP readout starts
   rec.SetFillTriggerESD(kFALSE);
