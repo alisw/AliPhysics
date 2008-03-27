@@ -199,7 +199,8 @@ int main(int argc, char **argv) {
   rec.SetCleanESD(kFALSE);
   
   rec.SetRunQA(kFALSE);
-	
+  rec.SetRunGlobalQA(kFALSE);
+
   void* eventPtr = NULL;
   rec.InitRun(NULL,&eventPtr);
 
