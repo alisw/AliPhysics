@@ -1336,6 +1336,8 @@ Bool_t AliGeomManager::ApplyAlignObjsFromCDB(const char* AlignDetsList)
       alObjsLoaded += " ";
     }
   }
+  detsarr->Delete();
+  delete detsarr;
 
   if(!alObjsLoaded.IsNull()) AliInfoClass(Form("Alignment objects loaded for: %s",
 					       alObjsLoaded.Data()));
