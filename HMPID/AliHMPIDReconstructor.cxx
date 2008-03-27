@@ -53,7 +53,7 @@ AliHMPIDReconstructor::AliHMPIDReconstructor():AliReconstructor(),fUserCut(0),fD
   {
       for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++) {
       fUserCut[iCh] = fgkRecoParam->GetUserCut(iCh);
-      Printf("HMPID: UserCut successfully loaded (from RecoParam) for chamber %i -> %i ",iCh,fUserCut[iCh]);
+      AliDebug(1,Form("UserCut successfully loaded (from RecoParam) for chamber %i -> %i ",iCh,fUserCut[iCh]));
    }
   }  
   else {
@@ -62,7 +62,7 @@ AliHMPIDReconstructor::AliHMPIDReconstructor():AliReconstructor(),fUserCut(0),fD
     TObjArray *pUserCut = (TObjArray*)pUserCutEnt->GetObject(); 
     for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++){                  //chambers loop 
       fUserCut[iCh] = pUserCut->At(iCh)->GetUniqueID();
-      Printf("HMPID: UserCut successfully loaded (from OCDB) for chamber %i -> %i ",iCh,fUserCut[iCh]);
+      AliDebug(1,Form("UserCut successfully loaded (from OCDB) for chamber %i -> %i ",iCh,fUserCut[iCh]));
     }
    }
   }
@@ -76,7 +76,7 @@ AliHMPIDReconstructor::AliHMPIDReconstructor():AliReconstructor(),fUserCut(0),fD
      Double_t tMin,tMax;
      pfQthre->GetRange(tMin,tMax);
      Double_t qthre=pfQthre->Eval(tMin);
-      Printf(" HMPID: Qthre successfully loaded for chamber %i  sector %i -> %f ",iCh,isec,qthre);
+     AliDebug(1,Form("Qthre successfully loaded for chamber %i  sector %i -> %f ",iCh,isec,qthre));
     }
   }
 
@@ -85,7 +85,7 @@ AliHMPIDReconstructor::AliHMPIDReconstructor():AliReconstructor(),fUserCut(0),fD
   if(!pDaqSigEnt) AliFatal("No pedestals from DAQ!");
   fDaqSig = (TObjArray*)pDaqSigEnt->GetObject();
   for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++){                  //chambers loop 
-    Printf(" HMPID: DaqSigCut successfully loaded for chamber %i -> %i ",iCh,(Int_t)fDaqSig->At(iCh)->GetUniqueID());
+    AliDebug(1,Form("DaqSigCut successfully loaded for chamber %i -> %i ",iCh,(Int_t)fDaqSig->At(iCh)->GetUniqueID()));
   }
 }//AliHMPIDReconstructor
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
