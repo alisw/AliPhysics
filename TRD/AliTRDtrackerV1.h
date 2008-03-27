@@ -88,7 +88,26 @@ public:
 	void           UnloadClusters();
   
   static Int_t   Freq(Int_t n, const Int_t *inlist, Int_t *outlist, Bool_t down); // to be removed 
-  static void    FitLeastSquare(Int_t nPoints, Float_t *x, Float_t *y, Float_t *errors, Float_t *fitparams);
+
+	class AliTRDLeastSquare{
+	public:
+					AliTRDLeastSquare();
+					~AliTRDLeastSquare(){};
+		
+		void		AddPoint(Double_t *x, Double_t y, Double_t sigmaY);
+		void		RemovePoint(Double_t *x, Double_t y, Double_t sigmaY);
+		void		Eval();
+		
+		Double_t	GetFunctionParameter(Int_t ParNumber) const {return fParams[ParNumber];}
+		Double_t	GetFunctionValue(Double_t *xpos) const;
+		void		GetCovarianceMatrix(Double_t *storage) const;
+	private:
+					AliTRDLeastSquare(const AliTRDLeastSquare &);
+		AliTRDLeastSquare& operator=(const AliTRDLeastSquare &);
+		Double_t 	fParams[2];						// Fitparameter	
+		Double_t 	fCovarianceMatrix[3];			// Covariance Matrix
+		Double_t 	fSums[6];						// Sums
+	};
 
 protected:
   Bool_t         AdjustSector(AliTRDtrackV1 *track); 

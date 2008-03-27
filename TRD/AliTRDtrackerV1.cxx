@@ -722,39 +722,6 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
 	return nClustersExpected;
 }
 
-//_____________________________________________________________________________
-void AliTRDtrackerV1::FitLeastSquare(Int_t nPoints, Float_t *x, Float_t *y, Float_t *error, Float_t *fitparams){
-// 
-// Performing a least square fit 
-//	
-// Parameters:	- Number of Points
-//				- x-data (array)
-//				- y-data (array)
-//				- error assumption in y-coordinate
-// 				- fitparams (array with length 2, as output)
-// Output:		-
-//
-// The first entry in fitparams is the offset, the second entry the slope
-//
-// @TODO: Implement error paramterisation
-//
-	Float_t sumweights = 0,
-			sumx = 0,
-			sumy = 0,
-			sumxy = 0,
-			sumx2 = 0;
-	for(Int_t ipt = 0; ipt < nPoints; ipt++){
-		sumweights += error[ipt];
-		sumx += x[ipt] * error[ipt];
-		sumy += y[ipt] * error[ipt];
-		sumxy += x[ipt] * y[ipt] * error[ipt];
-		sumx2 += x[ipt] * x[ipt] * error[ipt];
-	}
-	Float_t denominator = sumweights * sumx2 - sumx * sumx;
-	fitparams[0] = (sumy * sumx2 - sumx * sumxy) / denominator;
-	fitparams[1] = (sumweights * sumxy - sumx * sumy)/ denominator;
-}
-
 //_________________________________________________________________________
 Float_t AliTRDtrackerV1::FitRieman(AliTRDseedV1 *tracklets, Double_t *chi2, Int_t *planes){
 //
@@ -950,20 +917,16 @@ Float_t AliTRDtrackerV1::FitTiltedRieman(AliTRDseedV1 *tracklets, Bool_t sigErro
 	TLinearFitter *fitter = GetTiltedRiemanFitter();
 	fitter->StoreData(kTRUE);
 	fitter->ClearPoints();
+	AliTRDLeastSquare zfitter;
 	
 	Double_t xref = CalculateReferenceX(tracklets);
 	Double_t x, y, z, t, tilt, xdelta, rhs, error;
 	Double_t uvt[4];
 	Int_t nPoints = 0;
 	// Containers for Least-square fitter
-	Float_t x0[kNPlanes], zfit[kNPlanes], errors[kNPlanes];
 	Int_t nLayers = 0;
 	for(Int_t ipl = 0; ipl < kNPlanes; ipl++){
 		if(!tracklets[ipl].IsOK()) continue;
-		x0[nLayers] = tracklets[ipl].GetX0();
-		zfit[nLayers] = tracklets[ipl].GetZfit(0);
-		Double_t meanError = 0;
-		Int_t ncls = 0;
 		for(Int_t itb = 0; itb < fgNTimeBins; itb++){
 			if (!tracklets[ipl].IsUsable(itb)) continue;
 			x = tracklets[ipl].GetX(itb) + tracklets[ipl].GetX0();
@@ -982,15 +945,13 @@ Float_t AliTRDtrackerV1::FitTiltedRieman(AliTRDseedV1 *tracklets, Bool_t sigErro
 			error = 2.0 * t;
 			error *= sigError ? tracklets[ipl].GetSigmaY() : 0.2;
 			fitter->AddPoint(uvt, rhs, error);
+			zfitter.AddPoint(&x, z, static_cast<Double_t>(TMath::Sqrt(tracklets[ipl].GetClusters(itb)->GetSigmaZ2())));
 			nPoints++;
-			meanError += tracklets[ipl].GetClusters(itb)->GetSigmaZ2();
-			ncls++;
 		}
-		errors[nLayers] = meanError / ncls;
-		nLayers++;
 	}
 	
 	fitter->Eval();
+	zfitter.Eval();
 
 	Double_t offset = fitter->GetParameter(3);
 	Double_t slope  = fitter->GetParameter(4);
@@ -1006,11 +967,8 @@ Float_t AliTRDtrackerV1::FitTiltedRieman(AliTRDseedV1 *tracklets, Bool_t sigErro
 			acceptablez = kFALSE;
 	}
 	if (!acceptablez) {
-		Float_t fitparams[2];
-		FitLeastSquare(nLayers, x0, zfit, errors, fitparams);
-		Double_t dzmf	= fitparams[1];
-		Double_t zmf	= fitparams[0] + dzmf * xref;
-		//printf("In FitTilted Rieman: zmf = %f, meandz = %f\n", zmf, dzmf);
+		Double_t dzmf	= zfitter.GetFunctionParameter(1);
+		Double_t zmf	= zfitter.GetFunctionValue(&xref);
 		fgTiltedRieman->FixParameter(3, zmf);
 		fgTiltedRieman->FixParameter(4, dzmf);
 		fitter->Eval();
@@ -2770,3 +2728,74 @@ Float_t AliTRDtrackerV1::GetChi2Z(AliTRDseedV1 *tracklets) const
 	}
 	return chi2;
 }
+
+///////////////////////////////////////////////////////
+//                                                   //
+// Resources of class AliTRDLeastSquare              //
+//                                                   //
+///////////////////////////////////////////////////////
+
+//_____________________________________________________________________________
+AliTRDtrackerV1::AliTRDLeastSquare::AliTRDLeastSquare(){
+	//
+	// Constructor of the nested class AliTRDtrackFitterLeastSquare
+	//
+	memset(fParams, 0, sizeof(Double_t) * 2);
+	memset(fSums, 0, sizeof(Double_t) * 5);
+	memset(fCovarianceMatrix, 0, sizeof(Double_t) * 3);
+
+}
+
+//_____________________________________________________________________________
+void AliTRDtrackerV1::AliTRDLeastSquare::AddPoint(Double_t *x, Double_t y, Double_t sigmaY){
+	//
+	// Adding Point to the fitter
+	//
+	Double_t weight = 1/(sigmaY * sigmaY);
+	Double_t &xpt = *x;
+//	printf("Adding point x = %f, y = %f, sigma = %f\n", xpt, y, sigmaY);
+	fSums[0] += weight;
+	fSums[1] += weight * xpt;
+	fSums[2] += weight * y;
+	fSums[3] += weight * xpt * y;
+	fSums[4] += weight * xpt * xpt;
+	fSums[5] += weight * y * y;
+}
+
+//_____________________________________________________________________________
+void AliTRDtrackerV1::AliTRDLeastSquare::RemovePoint(Double_t *x, Double_t y, Double_t sigmaY){
+	//
+	// Remove Point from the sample
+	//
+	Double_t weight = 1/(sigmaY * sigmaY);
+	Double_t &xpt = *x; 
+	fSums[0] -= weight;
+	fSums[1] -= weight * xpt;
+	fSums[2] -= weight * y;
+	fSums[3] -= weight * xpt * y;
+	fSums[4] -= weight * xpt * xpt;
+	fSums[5] -= weight * y * y;
+}
+
+//_____________________________________________________________________________
+void AliTRDtrackerV1::AliTRDLeastSquare::Eval(){
+	//
+	// Evaluation of the fit:
+	// Calculation of the parameters
+	// Calculation of the covariance matrix
+	//
+	
+	Double_t denominator = fSums[0] * fSums[4] - fSums[1] *fSums[1];
+//	for(Int_t isum = 0; isum < 5; isum++)
+//		printf("fSums[%d] = %f\n", isum, fSums[isum]);
+//	printf("denominator = %f\n", denominator);
+	fParams[0] = (fSums[2] * fSums[4] - fSums[1] * fSums[3])/ denominator;
+	fParams[1] = (fSums[0] * fSums[3] - fSums[1] * fSums[2]) / denominator;
+//	printf("fParams[0] = %f, fParams[1] = %f\n", fParams[0], fParams[1]);
+	
+	// Covariance matrix
+	fCovarianceMatrix[0] = fSums[4] - fSums[1] * fSums[1] / fSums[0];
+	fCovarianceMatrix[1] = fSums[5] - fSums[2] * fSums[2] / fSums[0];
+	fCovarianceMatrix[2] = fSums[3] - fSums[1] * fSums[2] / fSums[0];
+}
+

@@ -635,12 +635,13 @@ Bool_t AliTRDseedV1::Fit()
 
 	const Int_t kClmin = 8;
 	const Int_t kNtb = AliTRDtrackerV1::GetNTimeBins();
+	AliTRDtrackerV1::AliTRDLeastSquare fitterY, fitterZ;
 
 	// convertion factor from square to gauss distribution for sigma
 	Double_t convert = 1./TMath::Sqrt(12.);
 
 	// book cluster information
-	Float_t xc[knTimebins+1], yc[knTimebins], zc[knTimebins+1], sy[knTimebins], sz[knTimebins+1];
+	Double_t xc[knTimebins+1], yc[knTimebins], zc[knTimebins+1], sy[knTimebins], sz[knTimebins+1];
 	Int_t zRow[knTimebins];
 	AliTRDcluster *c = 0x0;
 	Int_t nc = 0;
@@ -662,6 +663,7 @@ Bool_t AliTRDseedV1::Fit()
 		zc[nc]   = c->GetZ();
 		sy[ic]   = w; // all clusters have the same sigma
 		sz[ic]   = fPadLength*convert;
+		fitterZ.AddPoint(&xc[ic], zc[ic], sz[ic]);
 		nc++;
 	}
   // to few clusters
@@ -707,16 +709,16 @@ Bool_t AliTRDseedV1::Fit()
 
 	// condition on nCross and reset nchanges TODO
 
-	Float_t par[5];
 	if(nchanges==1){
 		if(dzdx * fZref[1] < 0.){
 			AliInfo("tracklet direction does not correspond to the track direction. TODO.");
 		}
 		SetBit(2, kTRUE); // mark pad row crossing
 		fCross[0] = xc[nc]; fCross[2] = zc[nc]; fCross[3] = sz[nc]; 
-		AliTRDtrackerV1::FitLeastSquare(nc+1, xc, zc, sz, par);
-		dzdx = fZref[1]; // we don't trust par[1] ??;
-		zc[nc] = par[0]; 
+		fitterZ.AddPoint(&xc[nc], zc[nc], sz[nc]);
+		fitterZ.Eval();
+		dzdx = fZref[1]; // we don't trust Parameter[1] ??;
+		zc[nc] = fitterZ.GetFunctionParameter(0); 
 	} else if(nchanges > 1){ // debug
 		AliInfo("ERROR in n changes!!!");
 		return kFALSE;
@@ -727,10 +729,11 @@ Bool_t AliTRDseedV1::Fit()
 	dzdx *= fTilt;
 	for (Int_t ic=0; ic<nc; ic++) {
 		yc[ic] -= y0 + xc[ic]*(dydx + dzdx) + fTilt * (zc[ic] - zc[nc]);
+		fitterY.AddPoint(&xc[ic], yc[ic], sy[ic]);
 	}
-	AliTRDtrackerV1::FitLeastSquare(nc, xc, yc, sy, par);
-	fYfit[0] = y0+par[0]; 
-	fYfit[1] = dydx+par[1];
+	fitterY.Eval();
+	fYfit[0] = y0+fitterY.GetFunctionParameter(0);
+	fYfit[1] = dydx+fitterY.GetFunctionParameter(1);
 	if(nchanges) fCross[1] = fYfit[0] + fCross[0] * fYfit[1];
 
 // 	printf("\nnz = %d\n", nz);
