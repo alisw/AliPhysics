@@ -57,6 +57,7 @@ AliHLTTPCMapping::AliHLTTPCMapping(UInt_t patch)
     }
     fCurrentRowMapping=fgRowMapping0;
     fCurrentPadMapping=fgPadMapping0;
+    fMaxHWAdd=fgkMapping0Size;
     break;
   case 1:
     if(!fgMapping1IsDone){
@@ -66,6 +67,7 @@ AliHLTTPCMapping::AliHLTTPCMapping(UInt_t patch)
     }
     fCurrentRowMapping=fgRowMapping1;
     fCurrentPadMapping=fgPadMapping1;
+    fMaxHWAdd=fgkMapping1Size;
     break;
   case 2:
     if(!fgMapping2IsDone){
@@ -75,6 +77,7 @@ AliHLTTPCMapping::AliHLTTPCMapping(UInt_t patch)
     }
     fCurrentRowMapping=fgRowMapping2;
     fCurrentPadMapping=fgPadMapping2;
+    fMaxHWAdd=fgkMapping2Size;
     break;
   case 3:
     if(!fgMapping3IsDone){
@@ -84,6 +87,7 @@ AliHLTTPCMapping::AliHLTTPCMapping(UInt_t patch)
     }
     fCurrentRowMapping=fgRowMapping3;
     fCurrentPadMapping=fgPadMapping3;
+    fMaxHWAdd=fgkMapping3Size;
     break;
   case 4:
     if(!fgMapping4IsDone){
@@ -93,6 +97,7 @@ AliHLTTPCMapping::AliHLTTPCMapping(UInt_t patch)
     }
     fCurrentRowMapping=fgRowMapping4;
     fCurrentPadMapping=fgPadMapping4;
+    fMaxHWAdd=fgkMapping4Size;
     break;
   case 5:
     if(!fgMapping5IsDone){
@@ -102,6 +107,7 @@ AliHLTTPCMapping::AliHLTTPCMapping(UInt_t patch)
     }
     fCurrentRowMapping=fgRowMapping5;
     fCurrentPadMapping=fgPadMapping5;
+    fMaxHWAdd=fgkMapping5Size;
     break;
   }
 }
