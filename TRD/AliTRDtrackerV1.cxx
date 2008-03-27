@@ -2799,3 +2799,19 @@ void AliTRDtrackerV1::AliTRDLeastSquare::Eval(){
 	fCovarianceMatrix[2] = fSums[3] - fSums[1] * fSums[2] / fSums[0];
 }
 
+//_____________________________________________________________________________
+Double_t AliTRDtrackerV1::AliTRDLeastSquare::GetFunctionValue(Double_t *xpos) const {
+	//
+	// Returns the Function value of the fitted function at a given x-position
+	//
+	return fParams[0] + fParams[1] * (*xpos);
+}
+
+//_____________________________________________________________________________
+void AliTRDtrackerV1::AliTRDLeastSquare::GetCovarianceMatrix(Double_t *storage) const {
+	//
+	// Copies the values of the covariance matrix into the storage
+	//
+	memcpy(storage, fCovarianceMatrix, sizeof(Double_t) * 3);
+}
+
