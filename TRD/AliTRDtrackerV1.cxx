@@ -918,38 +918,38 @@ Float_t AliTRDtrackerV1::FitTiltedRieman(AliTRDseedV1 *tracklets, Bool_t sigErro
 	fitter->StoreData(kTRUE);
 	fitter->ClearPoints();
 	AliTRDLeastSquare zfitter;
-	
+	AliTRDcluster *cl = 0x0;
+
 	Double_t xref = CalculateReferenceX(tracklets);
-	Double_t x, y, z, t, tilt, xdelta, rhs, error;
+	Double_t x, y, z, t, tilt, dx, w, we;
 	Double_t uvt[4];
 	Int_t nPoints = 0;
 	// Containers for Least-square fitter
-	Int_t nLayers = 0;
 	for(Int_t ipl = 0; ipl < kNPlanes; ipl++){
 		if(!tracklets[ipl].IsOK()) continue;
 		for(Int_t itb = 0; itb < fgNTimeBins; itb++){
+			if(!(cl = tracklets[ipl].GetClusters(itb))) continue;
 			if (!tracklets[ipl].IsUsable(itb)) continue;
-			x = tracklets[ipl].GetX(itb) + tracklets[ipl].GetX0();
-			y = tracklets[ipl].GetY(itb);
-			z = tracklets[ipl].GetZ(itb);
+			x = cl->GetX();
+			y = cl->GetY();
+			z = cl->GetZ();
 			tilt = tracklets[ipl].GetTilt();
-			xdelta = x - xref;
+			dx = x - xref;
 			// Transformation
-			t = 1/(x*x + y*y);
-			uvt[0] = 2.0 * x * t;
+			t = 1./(x*x + y*y);
+			uvt[0] = 2. * x * t;
 			uvt[1] = t;
-			uvt[2] = 2.0 * tilt * t;
-			uvt[3] = 2.0 * tilt * xdelta * t;
-			rhs = 2.0 * (y + tilt*z) * t;
+			uvt[2] = 2. * tilt * t;
+			uvt[3] = 2. * tilt * dx * t;
+			w = 2. * (y + tilt*z) * t;
 			// error definition changes for the different calls
-			error = 2.0 * t;
-			error *= sigError ? tracklets[ipl].GetSigmaY() : 0.2;
-			fitter->AddPoint(uvt, rhs, error);
-			zfitter.AddPoint(&x, z, static_cast<Double_t>(TMath::Sqrt(tracklets[ipl].GetClusters(itb)->GetSigmaZ2())));
+			we = 2. * t;
+			we *= sigError ? tracklets[ipl].GetSigmaY() : 0.2;
+			fitter->AddPoint(uvt, w, we);
+			zfitter.AddPoint(&x, z, static_cast<Double_t>(TMath::Sqrt(cl->GetSigmaZ2())));
 			nPoints++;
 		}
 	}
-	
 	fitter->Eval();
 	zfitter.Eval();
 
