@@ -78,7 +78,6 @@ AliFMDGainDA::~AliFMDGainDA() {
 
 //_____________________________________________________________________
 void AliFMDGainDA::Init() {
-  std::cout<<"FMD Gain DA Init"<<std::endl;
     
   fEventsPerChannel = (fPulseLength*fHighPulse) / fPulseSize ;
   
