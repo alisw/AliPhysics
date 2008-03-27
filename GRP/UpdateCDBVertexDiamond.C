@@ -1,38 +1,40 @@
+#include "ARVersion.h"
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include "AliCDBManager.h"
+#include "AliCDBStorage.h"
+#include "AliCDBId.h"
+#include "AliCDBMetaData.h"
+#include "AliESDVertex.h"
+#include <TROOT.h>
+#include "AliRun.h"
+#include <TString.h>
+#include "AliLog.h"
+#endif
+
 void UpdateCDBVertexDiamond(Double_t xmed = 0., Double_t ymed = 0., Double_t sigx = 0.005, Double_t sigy = 0.005, Double_t sigz = 5.3) {
-  // produce the trigger descriptorwith the current AliRoot and store it in the
+  // produce the mean vertex with the current AliRoot and store it in the
   // CDB
   
   AliCDBManager* man = AliCDBManager::Instance();
   man->SetDefaultStorage("local://$ALICE_ROOT");
   man->SetRun(0);
   AliCDBId id("GRP/Calib/MeanVertex",0,AliCDBRunRange::Infinity());
+  AliCDBId idTPC("GRP/Calib/MeanVertexTPC",0,AliCDBRunRange::Infinity());
   AliCDBMetaData *metadata= new AliCDBMetaData();
 
-  // Get root version
+  // Get root and AliRoot versions
   const char* rootv = gROOT->GetVersion();
+  TString av(ALIROOT_SVN_BRANCH);
+  Int_t revnum = ALIROOT_SVN_REVISION;
 
-  // Get AliRoot version from file to set it in the metadata of the entry
-  TFile *fv= TFile::Open("$ALICE_ROOT/CVS/Repository?filetype=raw","READ");
-  Int_t size = fv->GetSize();
-  char *buf = new Char_t[size];
-  memset(buf, '\0', size);
-  fv->Seek(0);
-  char* alirootv;
-  if ( fv->ReadBuffer(buf, size) ) {
-    Printf("Error reading AliRoot version from file to buffer!");
-    alirootv = "";
-  }
-  if(buf=="AliRoot"){
-    alirootv="HEAD";
-  }else{
-    alirootv = buf;
-    metadata->SetResponsible("prino@to.infn.it");
-    metadata->SetComment("Default mean vertex position");
-    metadata->SetAliRootVersion(alirootv);
-    metadata->SetComment(Form("Default trigger description produced with root version %s and AliRoot version %s",rootv,alirootv));
-  }
+  metadata->SetResponsible("prino@to.infn.it");
+  metadata->SetComment("Default mean vertex position");
+  metadata->SetAliRootVersion(av.Data());
+  metadata->SetComment(Form("Default mean vertex produced with root version %s and AliRoot %s, revision number %d",rootv,av.Data(),revnum));
+  
 
-  Printf("Storing in CDB the default trigger description produced with root version %s and AliRoot version %s",rootv,alirootv);
+  Printf(Form("Storing in CDB the default mean vertex produced with root version %s and"
+			  "AliRoot version %s, revision number %d", rootv, av.Data(), revnum));
 
   Double_t resolx=35./10000.;
   Double_t resoly=35./10000.;
@@ -48,5 +50,22 @@ void UpdateCDBVertexDiamond(Double_t xmed = 0., Double_t ymed = 0., Double_t sig
   vertex->PrintStatus();
 
   man->Put(vertex,id,metadata);
+
+  position[0]=xmed;
+  position[1]=ymed;
+  position[2]=0.;
+  sigma[0]=TMath::Sqrt(sigx*sigx+resolx*resolx);
+  sigma[1]=TMath::Sqrt(sigy*sigy+resoly*resoly);
+  sigma[2]=sigz;
+
+  AliESDVertex *vertexTPC = new AliESDVertex(position,sigma,"vtxmean");
+  vertexTPC->PrintStatus();
+
+  man->Put(vertexTPC,idTPC,metadata);
+
+
+
 }
+
+
 
