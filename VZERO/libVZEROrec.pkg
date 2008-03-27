@@ -2,17 +2,12 @@
 # $Id$
 
 SRCS= AliVZEROReconstructor.cxx \
-      AliVZERORawStream.cxx
+      AliVZERORawStream.cxx \
+      AliVZEROQADataMakerRec.cxx
 
 HDRS:= $(SRCS:.cxx=.h)
 
 DHDR:=VZEROrecLinkDef.h
 
 EINCLUDE:= STRUCT STEER RAW
-
-ifeq (win32gcc,$(ALICE_TARGET))
-PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
-                         -lVZERObase -lSTEER -lCDB -lESD -lSTEERBase \
-                         -lRAWDatarec -lRAWDatabase
-endif
 
