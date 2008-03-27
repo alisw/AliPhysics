@@ -94,6 +94,7 @@ EXEFLAGS     := -bind_at_load
 
 ifeq (g95,$(findstring g95,$(ROOTBUILD)))
 SYSLIBS += -L$(shell g95 --print-search-dirs | sed -n -e 's/install: //p') -lf95
+DYLIB += -L$(shell g95 --print-search-dirs | sed -n -e 's/install: //p') -lf95
 else
 SYSLIBS += -ldl $(shell $(F77) -print-file-name=libgfortran.dylib)
 SYSLIBS += $(shell $(F77) -print-file-name=libgfortranbegin.a)
