@@ -41,12 +41,10 @@ class AliGRPPreprocessor: public AliPreprocessor {
   TList *ProcessDaqLB();
   UInt_t ProcessDaqFxs();
   UInt_t ProcessDcsFxs();
-  TList *ProcessDcsDPs(TMap* valueSet, UInt_t iStartTime, UInt_t iStopTime);
+  TList *ProcessDcsDPs(TMap* valueSet);
   AliDCSSensorArray *GetPressureMap(TMap *dcsAliasMap, AliDCSSensorArray *fPressure);
 
  private:
-  TList *GetGlobalList(TList *l1, TList *l2); //global cdb output list
-
   static const char* fgkDCSDataPoints[12]; //! names of dcs dps
   AliDCSSensorArray *fPressure; //pressure array
 

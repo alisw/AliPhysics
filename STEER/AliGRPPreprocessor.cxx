@@ -74,12 +74,9 @@ AliGRPPreprocessor::~AliGRPPreprocessor() {
 //_______________________________________________________________
 void AliGRPPreprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTime) {
   // Initialize preprocessor
-  
-  AliInfo(Form("\n\tRun %d \n\tStartTime %s \n\tEndTime %s", run, TTimeStamp(startTime).AsString(), TTimeStamp(endTime).AsString()));
-  
-  fRun = run;
-  fStartTime = startTime;
-  fEndTime = endTime;
+
+  AliPreprocessor::Initialize(run, startTime, endTime);
+    
   AliInfo("Initialization of the GRP preprocessor.");
 
   TClonesArray * array = new TClonesArray("AliDCSSensor",2);
@@ -105,12 +102,6 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap) {
     Log(Form("Problem with the DAQ logbook parameters!!!"));
     return 1;
   }
-  TMap *m1 = (TMap *)daqlblist->At(0);
-  TObjString *s1 = (TObjString *)m1->GetValue("fAliceStartTime");
-  UInt_t iStartTime = atoi(s1->String().Data());
-  TMap *m2 = (TMap *)daqlblist->At(1);
-  TObjString *s2 = (TObjString *)m2->GetValue("fAliceStopTime");
-  UInt_t iStopTime = atoi(s2->String().Data());
 
   //=================//
   // DAQ FXS         //
@@ -137,7 +128,7 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap) {
   //=================//
   // DCS data points //
   //=================//
-  TList *dcsdplist = ProcessDcsDPs(valueMap, iStartTime, iStopTime);
+  TList *dcsdplist = ProcessDcsDPs(valueMap);
   if(!dcsdplist) {
     Log(Form("Problem with the DCS data points!!!"));
     return 1; 
@@ -153,36 +144,22 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap) {
 //     return 0;
 //   }
 
-  TList * list = new TList();
-  list = GetGlobalList(daqlblist,dcsdplist);
-  list->SetOwner(1);
-  AliInfo(Form("Final list entries: %d",list->GetEntries()));
+  daqlblist->AddAll(dcsdplist);
+  daqlblist->SetOwner(1);
+  AliInfo(Form("Final list entries: %d",daqlblist->GetEntries()));
   
   AliCDBMetaData md;
   md.SetResponsible("Panos Christakoglou");
   md.SetComment("Output parameters from the GRP preprocessor.");
   
-  Bool_t result = Store("GRP", "Data", list, &md);
+  Bool_t result = Store("GRP", "Data", daqlblist, &md);
   
-  delete list;
+  delete daqlblist;
   
   if (result)
     return 0;
   else
     return 1;
-}
-
-//_______________________________________________________________
-TList *AliGRPPreprocessor::GetGlobalList(TList *l1, TList *l2) {
-  //Getting the global output TList
-  TList *list = new TList();
-  TMap *map = new TMap();
-  for(Int_t i = 0; i < l1->GetEntries(); i++) 
-    list->AddLast(map = (TMap *)l1->At(i));
-  for(Int_t i = 0; i < l2->GetEntries(); i++) 
-    list->AddLast(map = (TMap *)l2->At(i));
-
-  return list;
 }
 
 //_______________________________________________________________
@@ -257,6 +234,10 @@ TList *AliGRPPreprocessor::ProcessDaqLB() {
   list->Add(mapDAQ3); list->Add(mapDAQ4);
   list->Add(mapDAQ5); list->Add(mapDAQ6);
   list->Add(mapDAQ7);
+  
+  TMap* mapDAQ8 = new TMap;
+  mapDAQ8->Add(new TObjString("fRunType"), new TObjString(GetRunType()));
+  list->Add(mapDAQ8);
 
   return list;
 }
@@ -432,7 +413,7 @@ UInt_t AliGRPPreprocessor::ProcessDcsFxs() {
 }
 
 //_______________________________________________________________
-TList *AliGRPPreprocessor::ProcessDcsDPs(TMap* valueMap, UInt_t iStartTime, UInt_t iStopTime) {
+TList *AliGRPPreprocessor::ProcessDcsDPs(TMap* valueMap) {
   //Getting the DCS dps
   //===========//
   
@@ -446,7 +427,7 @@ TList *AliGRPPreprocessor::ProcessDcsDPs(TMap* valueMap, UInt_t iStartTime, UInt
     Log(Form("LHCState not found!!!"));
     return list;
   }
-  AliGRPDCS *dcs1 = new AliGRPDCS(aliasLHCState,iStartTime,iStopTime);
+  AliGRPDCS *dcs1 = new AliGRPDCS(aliasLHCState,fStartTime,fEndTime);
   TString sLHCState = dcs1->ProcessDCS(3);  
   if (sLHCState) {
     Log(Form("<LHCState> for run %d: %s",fRun, sLHCState.Data()));
@@ -463,7 +444,7 @@ TList *AliGRPPreprocessor::ProcessDcsDPs(TMap* valueMap, UInt_t iStartTime, UInt
     Log(Form("LHCPeriod not found!!!"));
     return list;
   }
-  AliGRPDCS *dcs2 = new AliGRPDCS(aliasLHCPeriod,iStartTime,iStopTime);
+  AliGRPDCS *dcs2 = new AliGRPDCS(aliasLHCPeriod,fStartTime,fEndTime);
   TString sLHCPeriod = dcs2->ProcessDCS(3);  
   if (sLHCPeriod) {
     Log(Form("<LHCPeriod> for run %d: %s",fRun, sLHCPeriod.Data()));
@@ -480,7 +461,7 @@ TList *AliGRPPreprocessor::ProcessDcsDPs(TMap* valueMap, UInt_t iStartTime, UInt
     Log(Form("LHCLuminosity not found!!!"));
     return list;
   }
-  AliGRPDCS *dcs3 = new AliGRPDCS(aliasLHCLuminosity,iStartTime,iStopTime);
+  AliGRPDCS *dcs3 = new AliGRPDCS(aliasLHCLuminosity,fStartTime,fEndTime);
   TString sMeanLHCLuminosity = dcs3->ProcessDCS(2);  
   if (sMeanLHCLuminosity) {
     Log(Form("<LHCLuminosity> for run %d: %s",fRun, sMeanLHCLuminosity.Data()));
@@ -497,7 +478,7 @@ TList *AliGRPPreprocessor::ProcessDcsDPs(TMap* valueMap, UInt_t iStartTime, UInt
     Log(Form("BeamIntensity not found!!!"));
     return list;
   }
-  AliGRPDCS *dcs4 = new AliGRPDCS(aliasBeamIntensity,iStartTime,iStopTime);
+  AliGRPDCS *dcs4 = new AliGRPDCS(aliasBeamIntensity,fStartTime,fEndTime);
   TString sMeanBeamIntensity = dcs4->ProcessDCS(2);  
   if (sMeanBeamIntensity) {
     Log(Form("<BeamIntensity> for run %d: %s",fRun, sMeanBeamIntensity.Data()));
@@ -514,7 +495,7 @@ TList *AliGRPPreprocessor::ProcessDcsDPs(TMap* valueMap, UInt_t iStartTime, UInt
     Log(Form("L3Current not found!!!"));
     return list;
   }
-  AliGRPDCS *dcs5 = new AliGRPDCS(aliasL3Current,iStartTime,iStopTime);
+  AliGRPDCS *dcs5 = new AliGRPDCS(aliasL3Current,fStartTime,fEndTime);
   TString sMeanL3Current = dcs5->ProcessDCS(2);  
   if (sMeanL3Current) {
     Log(Form("<L3Current> for run %d: %s",fRun, sMeanL3Current.Data()));
@@ -531,7 +512,7 @@ TList *AliGRPPreprocessor::ProcessDcsDPs(TMap* valueMap, UInt_t iStartTime, UInt
     Log(Form("L3Polarity not found!!!"));
     return list;
   }
-  AliGRPDCS *dcs6 = new AliGRPDCS(aliasL3Polarity,iStartTime,iStopTime);
+  AliGRPDCS *dcs6 = new AliGRPDCS(aliasL3Polarity,fStartTime,fEndTime);
   TString sL3Polarity = dcs6->ProcessDCS(4);  
   if (sL3Polarity) {
     Log(Form("<L3Polarity> for run %d: %s",fRun, sL3Polarity.Data()));
@@ -548,7 +529,7 @@ TList *AliGRPPreprocessor::ProcessDcsDPs(TMap* valueMap, UInt_t iStartTime, UInt
     Log(Form("DipoleCurrent not found!!!"));
     return list;
   }
-  AliGRPDCS *dcs7 = new AliGRPDCS(aliasDipoleCurrent,iStartTime,iStopTime);
+  AliGRPDCS *dcs7 = new AliGRPDCS(aliasDipoleCurrent,fStartTime,fEndTime);
   TString sMeanDipoleCurrent = dcs7->ProcessDCS(2);  
   if (sMeanDipoleCurrent) {
     Log(Form("<DipoleCurrent> for run %d: %s",fRun, sMeanDipoleCurrent.Data()));
@@ -565,7 +546,7 @@ TList *AliGRPPreprocessor::ProcessDcsDPs(TMap* valueMap, UInt_t iStartTime, UInt
     Log(Form("DipolePolarity not found!!!"));
     return list;
   }
-  AliGRPDCS *dcs8 = new AliGRPDCS(aliasDipolePolarity,iStartTime,iStopTime);
+  AliGRPDCS *dcs8 = new AliGRPDCS(aliasDipolePolarity,fStartTime,fEndTime);
   TString sDipolePolarity = dcs8->ProcessDCS(4);  
   if (sDipolePolarity) {
     Log(Form("<DipolePolarity> for run %d: %s",fRun, sDipolePolarity.Data()));
@@ -582,7 +563,7 @@ TList *AliGRPPreprocessor::ProcessDcsDPs(TMap* valueMap, UInt_t iStartTime, UInt
     Log(Form("CavernTemperature not found!!!"));
     return list;
   }
-  AliGRPDCS *dcs9 = new AliGRPDCS(aliasCavernTemperature,iStartTime,iStopTime);
+  AliGRPDCS *dcs9 = new AliGRPDCS(aliasCavernTemperature,fStartTime,fEndTime);
   TString sMeanCavernTemperature = dcs9->ProcessDCS(2);  
   if (sMeanCavernTemperature) {
     Log(Form("<CavernTemperature> for run %d: %s",fRun, sMeanCavernTemperature.Data()));
@@ -599,7 +580,7 @@ TList *AliGRPPreprocessor::ProcessDcsDPs(TMap* valueMap, UInt_t iStartTime, UInt
     Log(Form("CavernPressure not found!!!"));
     return list;
   }
-  AliGRPDCS *dcs10 = new AliGRPDCS(aliasCavernPressure,iStartTime,iStopTime);
+  AliGRPDCS *dcs10 = new AliGRPDCS(aliasCavernPressure,fStartTime,fEndTime);
   TString sMeanCavernPressure = dcs10->ProcessDCS(2);  
   if (sMeanCavernPressure) {
     Log(Form("<CavernPressure> for run %d: %s",fRun, sMeanCavernPressure.Data()));
