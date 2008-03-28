@@ -54,6 +54,11 @@ class AliTRDcalibDB : public TObject {
         AliTRDCalROC                 *GetPRFROC(Int_t det);
   Float_t                             GetPRFWidth(Int_t det, Int_t col, Int_t row);
 
+  Float_t*                            GetSampledPRF() { return fPRFsmp; };
+  Int_t                               GetPRFbin()     { return fPRFbin; };
+  Float_t                             GetPRFlo()      { return fPRFlo;  };
+  Float_t                             GetPRFhi()      { return fPRFhi;  };
+
   Int_t                               GetNumberOfTimeBins();
 
   Char_t                              GetPadStatus(Int_t det, Int_t col, Int_t row);
@@ -64,6 +69,7 @@ class AliTRDcalibDB : public TObject {
   Bool_t                              IsPadMasked(Int_t det, Int_t col, Int_t row);
   Bool_t                              IsPadBridgedLeft(Int_t det, Int_t col, Int_t row);
   Bool_t                              IsPadBridgedRight(Int_t det, Int_t col, Int_t row);
+  Bool_t                              IsPadNotConnected(Int_t det, Int_t col, Int_t row);
   
   Bool_t                              IsChamberInstalled(Int_t det);
   Bool_t                              IsChamberMasked(Int_t det);

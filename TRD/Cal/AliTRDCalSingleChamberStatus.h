@@ -21,7 +21,9 @@ class AliTRDCalSingleChamberStatus : public TObject {
   enum { kMasked          = 2
        , kPadBridgedLeft  = 4
        , kPadBridgedRight = 8
-       , kReadSecond      = 16 };
+       , kReadSecond      = 16 
+       , kNotConnected    = 32
+};
 
   AliTRDCalSingleChamberStatus();
   AliTRDCalSingleChamberStatus(Int_t p, Int_t c, Int_t cols);
@@ -34,7 +36,9 @@ class AliTRDCalSingleChamberStatus : public TObject {
           Bool_t  IsMasked(Int_t col, Int_t row) const       { return ((GetStatus(col,row) & kMasked) 
                                                                        ? kTRUE 
                                                                        : kFALSE);                 };
-
+	  Bool_t  IsBridgedLeft(Int_t col, Int_t row) const  { return ((GetStatus(col, row) & kPadBridgedLeft)                                            ? kTRUE                                                                         : kFALSE);                 };
+	  Bool_t  IsBridgedRight(Int_t col, Int_t row) const { return ((GetStatus(col, row) & kPadBridgedRight)                                           ? kTRUE                                                                         : kFALSE);                 };
+	  Bool_t  IsNotConnected(Int_t col, Int_t row) const { return ((GetStatus(col, row) & kNotConnected)                                           ? kTRUE                                                                         : kFALSE);                 };
           Int_t   GetNrows() const                           { return fNrows;                     };
           Int_t   GetNcols() const                           { return fNcols;                     };
 

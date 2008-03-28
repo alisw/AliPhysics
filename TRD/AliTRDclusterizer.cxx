@@ -580,6 +580,23 @@ Bool_t AliTRDclusterizer::Raw2ClustersChamber(AliRawReader *rawReader)
 }
 
 //_____________________________________________________________________________
+UChar_t AliTRDclusterizer::GetStatus(Short_t &signal)
+{
+	UChar_t status = 0;
+	// check if pad is masked
+	if(signal>0 && TESTBIT(signal, 10)){
+		CLRBIT(signal, 10);
+		for(int ibit=0; ibit<4; ibit++){
+			if(TESTBIT(signal, 11+ibit)){
+				SETBIT(status, ibit);
+				CLRBIT(signal, 11+ibit);
+			} 
+		}
+	}
+	return status;
+}
+
+//_____________________________________________________________________________
 Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
 {
   //
@@ -659,6 +676,7 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
   UShort_t volid   = AliGeomManager::LayerToVolUID(ilayer,imodule); 
 
   Int_t nColMax    = digitsIn->GetNcol();
+  Int_t nRowMax    = digitsIn->GetNrow();
   Int_t nTimeTotal = digitsIn->GetNtime();
 
   // Detector wise calibration object for the gain factors
@@ -668,14 +686,10 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
   // Calibration value for chamber wise gain factor
   Float_t                       calGainFactorDetValue = calGainFactorDet->GetValue(idet);
 
-  // Calibration object with the pad status information
-  AliTRDCalSingleChamberStatus *calPadStatusROC       = calibration->GetPadStatusROC(idet);
-
   Int_t nClusters = 0;
 
-  AliTRDdataArrayF *digitsOut = new AliTRDdataArrayF(digitsIn->GetNrow()
-                                                    ,digitsIn->GetNcol()
-			                            ,digitsIn->GetNtime()); 
+  AliTRDdataArrayF *digitsOut = new AliTRDdataArrayF(nRowMax, nColMax, nTimeTotal);
+  AliTRDdataArrayS padStatus(nRowMax, nColMax, nTimeTotal); 
 
   ResetHelperIndexes(indexesIn);
 
@@ -694,37 +708,65 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
   Int_t time = 0;
   Int_t iPad = 0;
     
+	UChar_t status[3], ipos;
+	Short_t signal;
   fIndexesOut->ResetCounters();
-  while (fIndexesOut->NextRCTbinIndex(row, col, time))
-    {
+  while (fIndexesOut->NextRCTbinIndex(row, col, time)){
+		Float_t signalM = TMath::Abs(digitsOut->GetDataUnchecked(row,col,time));
+		signal = digitsIn->GetDataUnchecked(row,col,time);
+		status[1] = GetStatus(signal);
+		ipos = status[1] ? 2 : 0;
 
-      Float_t signalM = TMath::Abs(digitsOut->GetDataUnchecked(row,col,time));
-	    
-      // Look for the maximum
-      if (signalM >= maxThresh) 
-	{
-		
-	  if (col + 1 >= nColMax || col-1 < 0)
-	    continue;
+		// Look for the maximum
+		if (signalM >= maxThresh) {
+			if (col + 1 >= nColMax || col-1 < 0) continue;
 
-	  Float_t signalL = TMath::Abs(digitsOut->GetDataUnchecked(row,col+1,time));
-	  Float_t signalR = TMath::Abs(digitsOut->GetDataUnchecked(row,col-1,time));
+			Float_t signalL = TMath::Abs(digitsOut->GetDataUnchecked(row,col+1,time));
+			signal = digitsIn->GetDataUnchecked(row,col+1,time);
+			status[0] = GetStatus(signal);
+			ipos += status[0] ? 1 : 0;
 
-	  if ((TMath::Abs(signalL) <= signalM) && 
-	      (TMath::Abs(signalR) <  signalM)) 
-	    {
-	      if ((TMath::Abs(signalL) >= sigThresh) ||
-		  (TMath::Abs(signalR) >= sigThresh)) 
-		{
-		  // Maximum found, mark the position by a negative signal
-		  digitsOut->SetDataUnchecked(row,col,time,-signalM);
-		  fIndexesMaxima->AddIndexTBin(row,col,time);
+			Float_t signalR = TMath::Abs(digitsOut->GetDataUnchecked(row,col-1,time));
+			signal = digitsIn->GetDataUnchecked(row,col-1,time);
+			status[2] = GetStatus(signal);
+			ipos += status[0] ? 4 : 0;
+
+			// reject candidates with more than 1 problematic pad
+			if(ipos == 3 || ipos > 4) continue;
+
+			if(!status[1]){ // good central pad
+				if(!ipos){ // all pads are OK
+					if ((signalL <= signalM) && (signalR <  signalM)) {
+						if ((signalL >= sigThresh) || (signalR >= sigThresh)) {
+							// Maximum found, mark the position by a negative signal
+							digitsOut->SetDataUnchecked(row,col,time,-signalM);
+							fIndexesMaxima->AddIndexTBin(row,col,time);
+							padStatus.SetDataUnchecked(row, col, time, ipos);
+						}
+					}
+				} else { // one of the neighbouring pads are bad
+					if(status[0] && signalR < signalM && signalR >= sigThresh){
+						digitsOut->SetDataUnchecked(row,col,time,-signalM);
+						digitsOut->SetDataUnchecked(row, col, time+1, 0.);
+						fIndexesMaxima->AddIndexTBin(row,col,time);
+						padStatus.SetDataUnchecked(row, col, time, ipos);
+					} else if(status[2] && signalL <= signalM && signalL >= sigThresh){
+						digitsOut->SetDataUnchecked(row,col,time,-signalM);
+						digitsOut->SetDataUnchecked(row, col, time-1, 0.);
+						fIndexesMaxima->AddIndexTBin(row,col,time);
+						padStatus.SetDataUnchecked(row, col, time, ipos);
+					}
+				}
+			} else { // wrong maximum pad
+				if ((signalL >= sigThresh) || (signalR >= sigThresh)) {
+					// Maximum found, mark the position by a negative signal
+					digitsOut->SetDataUnchecked(row,col,time,-maxThresh);
+					fIndexesMaxima->AddIndexTBin(row,col,time);
+					padStatus.SetDataUnchecked(row, col, time, ipos);
+				}
+			}
 		}
-	    }
-
 	}
-
-    }
 	       
   // The index to the first cluster of a given ROC
   Int_t firstClusterROC = -1;
@@ -854,7 +896,6 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
 	  // Store the amplitudes of the pads in the cluster for later analysis
 	  // and check whether one of these pads is masked in the database
 	  Short_t signals[7] = { 0, 0, 0, 0, 0, 0, 0 };
-          Bool_t  hasMasked  = kFALSE;
 	  for (Int_t jPad = col-3; jPad <= col+3; jPad++) 
             {
 	      if ((jPad <          0) || 
@@ -863,25 +904,22 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
 	          continue;
 	        }
 	      signals[jPad-col+3] = TMath::Nint(TMath::Abs(digitsOut->GetDataUnchecked(row,jPad,time)));
-              if (calPadStatusROC->IsMasked(jPad,row)) {
-                hasMasked = kTRUE;
-	      }
 	    }
 
           // Transform the local cluster coordinates into calibrated 
           // space point positions defined in the local tracking system.
           // Here the calibration for T0, Vdrift and ExB is applied as well.
-	  Double_t clusterXYZ[6];
-	  clusterXYZ[0] = clusterPosCol;
-	  clusterXYZ[1] = clusterSignal[0];
-	  clusterXYZ[2] = clusterSignal[1];
-	  clusterXYZ[3] = clusterSignal[2];
-	  clusterXYZ[4] = 0.0;
-	  clusterXYZ[5] = 0.0;
-          Int_t    clusterRCT[3];
-          clusterRCT[0] = row;
-          clusterRCT[1] = col;
-          clusterRCT[2] = 0;
+		Double_t clusterXYZ[6];
+		clusterXYZ[0] = clusterPosCol;
+		clusterXYZ[1] = clusterSignal[0];
+		clusterXYZ[2] = clusterSignal[1];
+		clusterXYZ[3] = clusterSignal[2];
+		clusterXYZ[4] = 0.0;
+		clusterXYZ[5] = 0.0;
+		Int_t    clusterRCT[3];
+		clusterRCT[0] = row;
+		clusterRCT[1] = col;
+		clusterRCT[2] = 0;
 		
 	  Bool_t out = kTRUE;
 	  if (fTransform->Transform(clusterXYZ, clusterRCT, ((UInt_t) time), out, 0)) {
@@ -911,8 +949,12 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
 						      ,clusterPosCol
 						      ,volid);
 	    cluster->SetInChamber(!out);
-	    cluster->SetMaskedPad(hasMasked);
-	
+	    if(padStatus.GetDataUnchecked(row, col, time)){ 
+				cluster->SetMaskedPad(kTRUE);
+				//cluster->SetPadMasked(center/side);
+				//cluster->SetPadMaskedStatus(status);
+			}
+
 	    // Temporarily store the row, column and time bin of the center pad
 	    // Used to later on assign the track indices
 	    cluster->SetLabel( row,0);

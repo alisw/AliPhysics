@@ -788,6 +788,22 @@ Bool_t AliTRDcalibDB::IsPadBridgedRight(Int_t det, Int_t col, Int_t row)
 }
 
 //_____________________________________________________________________________
+Bool_t AliTRDcalibDB::IsPadNotConnected(Int_t det, Int_t col, Int_t row)
+{
+  //
+  // Returns status, see name of functions for details ;-)
+  //
+  const AliTRDCalPadStatus         * cal = dynamic_cast<const AliTRDCalPadStatus *> 
+                                           (GetCachedCDBObject(kIDPadStatus));
+  if (!cal) {
+    return -1;
+  }
+
+  return cal->IsNotConnected(det,col,row);
+
+}
+
+//_____________________________________________________________________________
 Bool_t AliTRDcalibDB::IsChamberInstalled(Int_t det)
 {
   //

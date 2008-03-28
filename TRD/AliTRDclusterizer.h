@@ -65,6 +65,8 @@ class AliTRDclusterizer : public TNamed {
                                                return fAddLabels;  } // should we assign labels to clusters
   virtual void     SetRawVersion(Int_t iver) { fRawVersion = iver; } // set the expected raw data version
 
+	static UChar_t GetStatus(Short_t &signal);
+
  protected:
 
           void     DeConvExp(Double_t *source, Double_t *target

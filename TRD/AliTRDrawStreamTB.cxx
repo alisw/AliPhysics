@@ -1,4 +1,4 @@
-/**************************************************************************
+#/**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
@@ -41,6 +41,8 @@
 #include "AliTRDSignalIndex.h"
 #include "AliTRDReconstructor.h"
 #include "AliTRDrecoParam.h"
+#include "AliTRDcalibDB.h"
+#include "Cal/AliTRDCalPadStatus.h"
 
 #include "AliLog.h"
 #include "AliRawReader.h"
@@ -653,6 +655,7 @@ AliTRDrawStreamTB::NextChamber(AliTRDdigitsManager *digitsManager)
   // Return value is the detector number
   //
 
+  AliTRDcalibDB *cal = AliTRDcalibDB::Instance();
   AliTRDdataArrayS *digits = 0;
   AliTRDdataArrayI *track0 = 0;
   AliTRDdataArrayI *track1 = 0;
@@ -707,6 +710,7 @@ AliTRDrawStreamTB::NextChamber(AliTRDdigitsManager *digitsManager)
 
 	  // Add a container for the digits of this detector
 	  digits = (AliTRDdataArrayS *) digitsManager->GetDigits(det);
+
           if (digitsManager->UsesDictionaries()) 
             {
 	      track0 = (AliTRDdataArrayI *) digitsManager->GetDictionary(det,0);
@@ -752,13 +756,49 @@ AliTRDrawStreamTB::NextChamber(AliTRDdigitsManager *digitsManager)
 	  if (indexes->IsAllocated() == kFALSE)
 	    indexes->Allocate(rowMax, colMax, ntbins);
 	}
-    
+
+      Char_t padStatus =  cal->GetPadStatus(det, GetCol(), GetRow());
+  
       // ntimebins data are ready to read
       for (it = 0; it < GetNumberOfTimeBins(); it++)
 	{
 	  if ((GetSignals()[it] - adcBaseline) > 0)
 	    {
-	      digits->SetDataUnchecked(GetRow(), GetCol(), it, GetSignals()[it] - adcBaseline);
+	      Short_t sigvalue = GetSignals()[it] - adcBaseline;
+	      // Masking Pads in the signal
+	      // Coding:
+	      // Any Corruption: Bit 10 set 1
+	      // Noisy: Bit 11: 0, Bit 12: 0
+	      // Not Connected: Bit 11: 1, Bit 12: 0
+	      // Bridged: Bit 11: 0, Bit 12: 1 resp. Bit 11: 1, Bit 12: 1
+	      switch(padStatus)
+		{
+		case AliTRDCalPadStatus::kMasked:
+		  SETBIT(sigvalue, 10);
+		  CLRBIT(sigvalue, 11);
+		  CLRBIT(sigvalue, 12);
+		  break;
+		case AliTRDCalPadStatus::kNotConnected:
+		  SETBIT(sigvalue, 10);
+		  SETBIT(sigvalue, 11);
+		  CLRBIT(sigvalue, 12);
+		  break;
+		case AliTRDCalPadStatus::kPadBridgedLeft:
+		  SETBIT(sigvalue, 10);
+		  CLRBIT(sigvalue, 11);
+		  SETBIT(sigvalue, 12);
+		  break;
+		case AliTRDCalPadStatus::kPadBridgedRight:
+		  SETBIT(sigvalue, 10);
+		  SETBIT(sigvalue, 11);
+		  SETBIT(sigvalue, 12);
+		default:
+		  // No corruption
+		  CLRBIT(sigvalue, 10);
+		  CLRBIT(sigvalue, 11);
+		  CLRBIT(sigvalue, 12);
+		}
+	      digits->SetDataUnchecked(GetRow(), GetCol(), it, sigvalue);
 	      
 	      indexes->AddIndexTBin(GetRow(), GetCol(), it);
               if (digitsManager->UsesDictionaries()) 
