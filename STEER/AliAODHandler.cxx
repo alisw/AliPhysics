@@ -32,6 +32,7 @@ ClassImp(AliAODHandler)
 //______________________________________________________________________________
 AliAODHandler::AliAODHandler() :
     AliVEventHandler(),
+    fIsStandard(kTRUE),
     fAODEvent(NULL),
     fTreeA(NULL),
     fFileA(NULL),
@@ -43,6 +44,7 @@ AliAODHandler::AliAODHandler() :
 //______________________________________________________________________________
 AliAODHandler::AliAODHandler(const char* name, const char* title):
     AliVEventHandler(name, title),
+    fIsStandard(kTRUE),
     fAODEvent(NULL),
     fTreeA(NULL),
     fFileA(NULL),
@@ -72,7 +74,7 @@ Bool_t AliAODHandler::Init(Option_t* opt)
   // Create the AODevent object
   if(!fAODEvent){
     fAODEvent = new AliAODEvent();
-    fAODEvent->CreateStdContent();
+    if (fIsStandard) fAODEvent->CreateStdContent();
   }
   //
   // File opening according to execution mode
@@ -94,7 +96,7 @@ Bool_t AliAODHandler::FinishEvent()
 {
     // Fill data structures
     FillTree();
-    fAODEvent->ResetStd();
+    if (fIsStandard) fAODEvent->ResetStd();
     return kTRUE;
 }
 
@@ -138,14 +140,14 @@ void AliAODHandler::AddAODtoTreeUserInfo()
     fTreeA->GetUserInfo()->Add(fAODEvent);
 }
 
-void AliAODHandler::AddBranch(const char* bname, const char* cname, TObject* addobj)
+void AliAODHandler::AddBranch(const char* cname, TObject* addobj)
 {
     // Add a new branch to the aod 
     TDirectory *owd = gDirectory;
     if (fFileA) {
 	fFileA->cd();
     }
-    fTreeA->Branch(bname, cname, &addobj);
+    fTreeA->Branch(addobj->GetName(), cname, &addobj);
     fAODEvent->AddObject(addobj);
     owd->cd();
 }
