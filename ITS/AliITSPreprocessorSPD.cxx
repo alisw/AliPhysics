@@ -25,6 +25,14 @@ AliITSPreprocessorSPD::AliITSPreprocessorSPD(AliShuttleInterface* shuttle) :
   AliPreprocessor("SPD", shuttle), fIdList()
 {
   // constructor
+  AddRunType("DAQ_MIN_TH_SCAN");
+  AddRunType("DAQ_MEAN_TH_SCAN");
+  AddRunType("DAQ_UNIFORMITY_SCAN");
+  AddRunType("DAQ_NOISY_PIX_SCAN");
+  AddRunType("DAQ_PIX_DELAY_SCAN");
+  AddRunType("DAQ_FO_UNIF_SCAN");
+  AddRunType("PHYSICS");
+
   fIdList.SetOwner(kTRUE);
 }
 
