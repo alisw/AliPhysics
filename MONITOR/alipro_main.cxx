@@ -58,8 +58,9 @@ int main(int argc, char **argv) {
 
   int status;
   
-  if (argc!=2) {
+  if (argc!=4) {
     printf("Wrong number of arguments\n");
+    printf("Usage: alipro <data source - filename or :> <CDB url> <run number for CDB>\n"); 
     return -1;
   }
 
@@ -111,9 +112,9 @@ int main(int argc, char **argv) {
 
   // Set the CDB storage location
   AliCDBManager * man = AliCDBManager::Instance();
-  man->SetDefaultStorage("local://./LocalCDB");
+  man->SetDefaultStorage(argv[2]);
   // Get run number from environment / GRP-in-memory
-  man->SetRun(25984);
+  man->SetRun(atoi(argv[3]));
   
   // ITS settings
   AliITSRecoParam * itsRecoParam = AliITSRecoParam::GetCosmicTestParam();
