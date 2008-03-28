@@ -392,7 +392,7 @@ AliMUONRawWriter::WriteTrackerDDL(AliMpExMap& busPatchMap, Int_t iDDL)
         totalDspLength++;
       }
       
-      Int_t dspLength          = totalDspLength - fDspHeader->GetHeaderLength();
+      Int_t dspLength     = totalDspLength - fDspHeader->GetHeaderLength();
       
       fBuffer[indexDsp+1] = totalDspLength; // dsp total length
       fBuffer[indexDsp+2] = dspLength; // data length  
@@ -401,12 +401,18 @@ AliMUONRawWriter::WriteTrackerDDL(AliMpExMap& busPatchMap, Int_t iDDL)
     
     Int_t totalBlkLength  = index - indexBlk;
     Int_t blkLength       = totalBlkLength - fBlockHeader->GetHeaderLength();
-    totalDDLLength += totalBlkLength;
+    totalDDLLength       += totalBlkLength;
     
     fBuffer[indexBlk+1] = totalBlkLength; // total block length
     fBuffer[indexBlk+2] = blkLength;
-    
+        
   } // block
+  
+    // add twice the end of CRT structure data key
+    // hope it's good placed (ChF)
+    fBuffer[index++] = fBlockHeader->GetDdlDataKey();
+    fBuffer[index++] = fBlockHeader->GetDdlDataKey();
+    totalDDLLength  += 2;
   
   // writting onto disk
   // total length in bytes

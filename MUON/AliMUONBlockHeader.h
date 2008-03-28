@@ -49,7 +49,8 @@ public:
    Int_t   GetHeaderLength()   const {return fgkHeaderLength;}
            /// Return default data key word for CRT header
    UInt_t  GetDefaultDataKey() const {return fgkDefaultDataKey;}
-
+         /// Return  data key end word for CRT header
+   UInt_t  GetDdlDataKey() const {return fgkDdlDataKey;}
 
            /// Set data key word for CRT header
    void    SetDataKey(Int_t d)     {fDataKey = d;}
@@ -103,11 +104,12 @@ public:
    Int_t     fEventId2;       ///< Event Id in orbit number
 
 
-   static const Int_t fgkHeaderLength;   ///< header length in word
-   static const UInt_t fgkDefaultDataKey; ///< default data key word for CRT header 
+   static const Int_t  fgkHeaderLength;    ///< header length in word
+   static const UInt_t fgkDefaultDataKey;  ///< default data key word for CRT header 
+   static const UInt_t fgkDdlDataKey;      ///< data key end word for CRT header 
 
    TClonesArray*  fDspHeaderArray;  ///< array of block header
 
-   ClassDef(AliMUONBlockHeader,2)  // MUON block header for Tracker event
+   ClassDef(AliMUONBlockHeader,3)  // MUON block header for Tracker event
 };
 #endif

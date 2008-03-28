@@ -73,6 +73,9 @@ class AliMUONRawStreamTracker: public AliMUONVRawStreamTracker {
 
     /// Return number of DDL
     Int_t GetDDL() const {return fDDL - 1;}
+		
+		/// Return current DDL index
+    Int_t GetCurentDDL() const {return fCurrentDDLIndex;}
 
     /// Return pointer for payload
     AliMUONPayloadTracker*  GetPayLoad()    const {return fPayload;}

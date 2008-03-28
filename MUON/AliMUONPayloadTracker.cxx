@@ -109,132 +109,142 @@ Bool_t AliMUONPayloadTracker::Decode(UInt_t* buffer, Int_t totalDDLSize)
 
   // CROCUS CRT
   while (buffer[index] == fBlockHeader->GetDefaultDataKey()) {
-
+    
     if (iBlock > fMaxBlock) break;
-     
+    
     // copy within padding words
     memcpy(fBlockHeader->GetHeader(),&buffer[index], (kBlockHeaderSize)*4);
-
+    
     totalBlockSize = fBlockHeader->GetTotalLength();
-
+    
     indexBlk = index;
     index += kBlockHeaderSize;
-
+    
     // copy in TClonesArray
     fDDLTracker->AddBlkHeader(*fBlockHeader);
-
+    
     // Crocus FRT
     Int_t iDsp = 0;
     while (buffer[index] == fDspHeader->GetDefaultDataKey()) {
-
+      
       if (iDsp > fMaxDsp) break; // if ever...
-     		
+      
       memcpy(fDspHeader->GetHeader(),&buffer[index], kDspHeaderSize*4);
-
+      
       totalDspSize = fDspHeader->GetTotalLength();
-
+      
       if (fDspHeader->GetErrorWord()) {
-//	fDspHeader->Print("");
-	if ( fDspHeader->GetErrorWord() == (0x000000B1 |  fBlockHeader->GetDspId())
-	     ||  fDspHeader->GetErrorWord() == (0x00000091 |  fBlockHeader->GetDspId()) ){
-	  // an event with a glitch in the readout  has been detected
-	  // it means that somewhere a 1 byte word has been randomly inserted
-	  // all the readout sequence is shifted  untill the next event 
-   
+        //	fDspHeader->Print("");
+        if ( fDspHeader->GetErrorWord() == (0x000000B1 |  fBlockHeader->GetDspId())
+            ||  fDspHeader->GetErrorWord() == (0x00000091 |  fBlockHeader->GetDspId()) ){
+          // an event with a glitch in the readout  has been detected
+          // it means that somewhere a 1 byte word has been randomly inserted
+          // all the readout sequence is shifted  untill the next event 
+          
           Char_t* msg = Form("Glitch error detected in DSP %d, skipping event ", fBlockHeader->GetDspId());
           
           if (fWarnings) AliWarning(msg); 
           AddErrorMessage(msg);
-	  fGlitchErrors++;
-	  return kFALSE ; 
-	}	
+          fGlitchErrors++;
+          return kFALSE ; 
+        }	
       }
       
       indexDsp = index;
       index += kDspHeaderSize;
-
+      
       // copy in TClonesArray
       fDDLTracker->AddDspHeader(*fDspHeader, iBlock);
-
+      
       // buspatch structure
       Int_t iBusPatch = 0;
       while (buffer[index] == fBusStruct->GetDefaultDataKey()) {
-
-	if (iBusPatch > fMaxBus) break; // if ever
-	
-	//copy buffer into header structure
-	memcpy(fBusStruct->GetHeader(), &buffer[index], kBusPatchHeaderSize*4);
-
-	totalBusPatchSize = fBusStruct->GetTotalLength();
-	indexBusPatch     = index;
-		
-	//Check Buspatch header, not empty events
-	if(totalBusPatchSize > kBusPatchHeaderSize) {    
-
-	  index   += kBusPatchHeaderSize;
-	  dataSize = fBusStruct->GetLength();
-	  bufSize  = fBusStruct->GetBufSize();
-
-	  if(dataSize > 0) { // check data present
-	    if (dataSize > bufSize) // check buffer size
-	      fBusStruct->SetAlloc(dataSize);
-	 
-	    //copy buffer into data structure
-	    memcpy(fBusStruct->GetData(), &buffer[index], dataSize*4);
-	    fBusStruct->SetBlockId(iBlock); // could be usefull in future applications ?
-	    fBusStruct->SetDspId(iDsp);
-
-	    // check parity
+        
+        if (iBusPatch > fMaxBus) break; // if ever
+        
+        //copy buffer into header structure
+        memcpy(fBusStruct->GetHeader(), &buffer[index], kBusPatchHeaderSize*4);
+        
+        totalBusPatchSize = fBusStruct->GetTotalLength();
+        indexBusPatch     = index;
+        
+        //Check Buspatch header, not empty events
+        if(totalBusPatchSize > kBusPatchHeaderSize) {    
+          
+          index   += kBusPatchHeaderSize;
+          dataSize = fBusStruct->GetLength();
+          bufSize  = fBusStruct->GetBufSize();
+          
+          if(dataSize > 0) { // check data present
+            if (dataSize > bufSize) // check buffer size
+              fBusStruct->SetAlloc(dataSize);
+            
+            //copy buffer into data structure
+            memcpy(fBusStruct->GetData(), &buffer[index], dataSize*4);
+            fBusStruct->SetBlockId(iBlock); // could be usefull in future applications ?
+            fBusStruct->SetDspId(iDsp);
+            
+            // check parity
             if(!CheckDataParity()) {
-                fParityErrors++;
-                return kFALSE;
-             }
-
-
-	    // copy in TClonesArray
-	    fDDLTracker->AddBusPatch(*fBusStruct, iBlock, iDsp);
-
-	  } // dataSize test
-
-	} // testing buspatch
-
-	index = indexBusPatch + totalBusPatchSize;
-	if (index >= totalDDLSize) {// check the end of DDL
-	  index = totalDDLSize - 1; // point to the last element of buffer
-	  break;
-	}
-	iBusPatch++;
+              fParityErrors++;
+              return kFALSE;
+            }
+            
+            // copy in TClonesArray
+            fDDLTracker->AddBusPatch(*fBusStruct, iBlock, iDsp);
+            
+          } // dataSize test
+          
+        } // testing buspatch
+        
+        index = indexBusPatch + totalBusPatchSize;
+        if (index >= totalDDLSize) {// check the end of DDL
+          index = totalDDLSize - 1; // point to the last element of buffer
+          break;
+        }
+        iBusPatch++;
       }  // buspatch loop
-
+      
       // skipping additionnal word if padding
       if (fDspHeader->GetPaddingWord() == 1) {
-	if (buffer[index++] != fDspHeader->GetDefaultPaddingWord()) {
-
+        if (buffer[index++] != fDspHeader->GetDefaultPaddingWord()) {
+          
           Char_t *msg = Form("Padding word error for iBlock %d, iDsp %d, iBus %d\n", 
-                      iBlock, iDsp, iBusPatch);
-        
+                             iBlock, iDsp, iBusPatch);
+          
           if (fWarnings) AliWarning(msg);
           AddErrorMessage(msg);
           fPaddingErrors++;
-	}
+        }
       }
-
+      
       index = indexDsp + totalDspSize;
       if (index >= totalDDLSize) {
-	index = totalDDLSize - 1;
-	break;
+        index = totalDDLSize - 1;
+        break;
       }
       iDsp++;
     }  // dsp loop
-
+    
     index = indexBlk + totalBlockSize;
     if (index >= totalDDLSize) {
       index = totalDDLSize - 1;
       break;
     }
+    
     iBlock++;
   }  // block loop
-
+  
+  if (buffer[index++] != fBlockHeader->GetDdlDataKey() || 
+      buffer[index++] != fBlockHeader->GetDdlDataKey()) {
+    
+    Char_t *msg = Form("Bad end of DDL data key\n");
+    
+    if (fWarnings) AliWarning(msg);
+    AddErrorMessage(msg);
+  }
+  
+  
   return kTRUE;
 }
 

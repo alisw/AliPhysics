@@ -35,8 +35,9 @@
 ClassImp(AliMUONBlockHeader)
 /// \endcond
 
-const Int_t  AliMUONBlockHeader::fgkHeaderLength = 8;
+const Int_t  AliMUONBlockHeader::fgkHeaderLength   = 8;
 const UInt_t AliMUONBlockHeader::fgkDefaultDataKey = 0xFC0000FC;
+const UInt_t AliMUONBlockHeader::fgkDdlDataKey     = 0xD000000D;
 //___________________________________________
 AliMUONBlockHeader::AliMUONBlockHeader()
   :  TObject(),

@@ -29,6 +29,7 @@
 #include "AliLog.h"
 #include "AliRawReader.h"
 #include "AliQAChecker.h"
+#include "AliMpBusPatch.h"
 #include "AliMUONCluster.h"  
 #include "AliMUONRawStreamTracker.h"
 #include "AliMUONRawStreamTrigger.h"
@@ -125,6 +126,12 @@ void AliMUONQADataMakerRec::InitRaws()
 
     TH1I* h1 = new TH1I("hRawCharge", "Charge distribution in rawdata", 4096, 0, 4095); 
     Add2RawsList(h1, kRawCharge);
+		
+		for (Int_t iDDL = 0; iDDL < 20; ++iDDL) 
+		{
+			TH1F* h2 = new TH1F(Form("%s%d", "hRawBusPatchDDL", iDDL), Form("%s %d","RAW Buspatch distribution for DDL", iDDL), 50, 0, 49); 
+			Add2RawsList(h2, kRawBuspatchDDL+iDDL);
+		}
 
 }
 
@@ -188,6 +195,9 @@ void AliMUONQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   
       GetRawsData(kRawBusPatch)->Fill(busPatchId);
       GetRawsData(kRawCharge)->Fill(charge);
+			Int_t iDDL = rawStream.GetCurentDDL();
+			GetRawsData(kRawBuspatchDDL + iDDL)->Fill(AliMpBusPatch::GetLocalBusID(busPatchId, iDDL));
+		
 		  
     } // Next digit
 }

@@ -34,8 +34,9 @@ public:
 private:
   /// Raw histograms indices
   enum ERaw { 
-    kRawBusPatch = 0,  ///< Raw bus patch histogram index
-    kRawCharge   = 1   ///< Raw charge histogram index
+    kRawBusPatch    = 0,  ///< Raw bus patch histogram index
+    kRawCharge      = 1,  ///< Raw charge histogram index
+    kRawBuspatchDDL = 2   ///< Raw buspatch hit map histogram per DDL index
   };
          
   /// Rec points histograms indices
