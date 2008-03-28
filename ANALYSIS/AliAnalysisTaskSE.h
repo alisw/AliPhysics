@@ -33,7 +33,7 @@ class AliAnalysisTaskSE : public AliAnalysisTask
     virtual void UserCreateOutputObjects()  {;}
     virtual void UserExec(Option_t* /*option*/) {;}
     // Helpers for adding branches to the AOD
-   virtual void AddAODBranch(const char* bname, const char* cname, TObject* addobj);
+   virtual void AddAODBranch(const char* cname, TObject* addobj);
 // Getters
     virtual Int_t        DebugLevel()  {return fDebug;     }
     virtual AliVEvent*   InputEvent()  {return fInputEvent;}

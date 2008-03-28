@@ -179,12 +179,12 @@ const char* AliAnalysisTaskSE::CurrentFileName()
     else return "";
 }
 
-void AliAnalysisTaskSE::AddAODBranch(const char* bname, const char* cname, TObject* addobj)
+void AliAnalysisTaskSE::AddAODBranch(const char* cname, TObject* addobj)
 {
     // Add a new branch to the aod tree
     AliAODHandler* handler = (AliAODHandler*) 
 	((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
     if (handler) {
-	handler->AddBranch(bname, cname, addobj);
+	handler->AddBranch(cname, addobj);
     }
 }
