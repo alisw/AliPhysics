@@ -185,6 +185,11 @@ public:
   virtual int GetBunchSize();
 
   /**
+   * Returns the row offset. Used by the fast decoder. 
+   */  
+  virtual int GetRowOffset() const;
+
+  /**
    * Access operator to the data of a specific time bin.
    * Not clear if we can manage this.
    */

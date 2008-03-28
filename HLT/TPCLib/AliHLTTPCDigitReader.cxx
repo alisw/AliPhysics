@@ -180,6 +180,12 @@ int AliHLTTPCDigitReader::GetBunchSize()
   return 0;
 }
 
+int AliHLTTPCDigitReader::GetRowOffset() const
+{
+  // see header file for class documentation
+  return 0;
+}
+
 AliHLTUInt32_t AliHLTTPCDigitReader::GetAltroBlockHWaddr() const
 {
   return 0;

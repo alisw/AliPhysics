@@ -90,7 +90,11 @@ int AliHLTTPCDigitReaderDecoder::InitBlock(void* ptr,unsigned long size, Int_t p
 bool AliHLTTPCDigitReaderDecoder::NextChannel()
 {
   // see header file for class documentation
-  return fAltroDecoder->NextChannel(&fAltroData);
+  Bool_t result=fAltroDecoder->NextChannel(&fAltroData);
+  if(result && !fMapping->IsValidHWAddress(fAltroData.GetHadd())){
+    result = fAltroDecoder->NextChannel(&fAltroData);
+  }
+  return result;
 }
 
 int AliHLTTPCDigitReaderDecoder::NextBunch()
@@ -172,6 +176,10 @@ int AliHLTTPCDigitReaderDecoder::GetBunchSize()
   return fAltroBunch->GetBunchSize();
 }
 
+int AliHLTTPCDigitReaderDecoder::GetRowOffset() const
+{
+  return fMapping->GetRowOffset();
+}
 AliHLTUInt32_t AliHLTTPCDigitReaderDecoder::GetAltroBlockHWaddr() const
 {
   // see header file for class documentation

@@ -753,37 +753,11 @@ void AliHLTTPCClusterFinder::ReadDataUnsorted(void* ptr,unsigned long size)
     InitializePadArray();
   }
 
-  Int_t rowOffset=0;
-  switch(fCurrentPatch){
-  case 0:
-    rowOffset=AliHLTTPCTransform::GetFirstRow(0);
-    break;
-  case 1:
-    rowOffset=AliHLTTPCTransform::GetFirstRow(1);
-    break;
-  case 2:
-    rowOffset=AliHLTTPCTransform::GetFirstRow(2);
-    break;
-  case 3:
-    rowOffset=AliHLTTPCTransform::GetFirstRow(3);
-    break;
-  case 4:
-    rowOffset=AliHLTTPCTransform::GetFirstRow(4);
-    break;
-  case 5:
-    rowOffset=AliHLTTPCTransform::GetFirstRow(5);
-    break;
-  }
-  
   fDigitReader->InitBlock(fPtr,fSize,fFirstRow,fLastRow,fCurrentPatch,fCurrentSlice);
   
   while(fDigitReader->NextChannel()){
     UInt_t row=fDigitReader->GetRow();
     UInt_t pad=fDigitReader->GetPad();
-    if(row==1000||pad==1000){
-      HLTInfo("Corrupt data, hw address exceeded the maximum amount");
-      continue;
-    }
 
     fRowPadVector[row][pad]->ClearCandidates();
     while(fDigitReader->NextBunch()){
@@ -802,7 +776,7 @@ void AliHLTTPCClusterFinder::ReadDataUnsorted(void* ptr,unsigned long size)
 	  candidate.fPad=candidate.fTotalCharge*pad;
 	  candidate.fPad2=candidate.fPad*pad;
 	  candidate.fLastMergedPad=pad;
-	  candidate.fRowNumber=row+rowOffset;
+	  candidate.fRowNumber=row+fDigitReader->GetRowOffset();
 	}
 	fRowPadVector[row][pad]->AddClusterCandidate(candidate);
       }

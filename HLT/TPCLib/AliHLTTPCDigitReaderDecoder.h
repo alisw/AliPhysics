@@ -50,6 +50,7 @@ public:
   const UInt_t* GetSignals();
   int GetTime();
   int GetBunchSize();
+  int GetRowOffset() const;
   AliHLTUInt32_t GetAltroBlockHWaddr() const;
 
 protected:

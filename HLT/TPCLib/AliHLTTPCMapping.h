@@ -55,6 +55,19 @@ public:
    */
   UInt_t GetRow(UInt_t HWAddress) const;
 
+  /**
+   * Checks if the hw address is valid
+   * @param HWAddress    The hardware address of the pad
+   * @return kTRUE if valid HWAddress 
+   */
+  Bool_t IsValidHWAddress(UInt_t HWAddress) const;
+
+  /**
+   * Method which returns the row offset of the patch. 
+   * @return row offset of patch.
+  */
+  Int_t GetRowOffset() const {return fRowOffset;}
+
  private:
   /** standard constructor prohibited, pad no always required */
   AliHLTTPCMapping();
@@ -122,11 +135,14 @@ public:
   UInt_t *fCurrentPadMapping;                                        //!transient
 
   /** Number of hardware adresses */
-  UInt_t fNHWAdd;                                                    // see above
+  UInt_t fNHWAdd;                                                    //!transient
 
   /** Maximum number of hardware addresses */
-  UInt_t fMaxHWAdd;                                                  // see above
+  UInt_t fMaxHWAdd;                                                  //!transient
 
-  ClassDef(AliHLTTPCMapping, 0)
+  /** The row offset of the patch*/
+  Int_t fRowOffset;                                                  //!transient
+
+  ClassDef(AliHLTTPCMapping, 1)
 };
 #endif // ALIHLTTPCMAPPING_H
