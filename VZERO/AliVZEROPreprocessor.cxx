@@ -22,7 +22,10 @@ AliVZEROPreprocessor::AliVZEROPreprocessor(AliShuttleInterface* shuttle) :
   fData(0)
  
 {
-  // constructor
+  // constructor  
+  
+  AddRunType("PHYSICS");
+    
 }
 
 //______________________________________________________________________________________________
