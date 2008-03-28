@@ -835,7 +835,10 @@ Int_t AliAlignmentTracks::LoadPoints(const TArrayI *volids, AliTrackPointArray**
 
       // Get tree entry
       Int_t entry = (*index)[iArrayId];
-      if (indexUsed[entry] == kTRUE) continue;
+      if (indexUsed[entry] == kTRUE) {
+	nArrays--;
+	continue;
+      }
       fPointsTree->GetEvent(entry);
       if (!array) {
 	AliWarning("Wrong space point array index!");
