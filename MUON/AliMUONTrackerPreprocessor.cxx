@@ -51,6 +51,11 @@ AliMUONTrackerPreprocessor::AliMUONTrackerPreprocessor(AliShuttleInterface* shut
   fGainSubprocessor(new AliMUONGainSubprocessor(this))
 {
   /// ctor. 
+    
+    AddRunType("PEDESTAL");
+    AddRunType("CALIBRATION");
+    AddRunType("GMS");
+    AddRunType("PHYSICS");
 }
 
 //_____________________________________________________________________________
@@ -82,18 +87,17 @@ AliMUONTrackerPreprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTi
     Add(fPedestalSubprocessor); // to be called only for pedestal runs
     Log("INFO-Will run Pedestal subprocessor");
   }
-  else if ( runType == "ELECTRONICS_CALIBRATION" ||
-            runType == "CALIBRATION" ) // FIXME : check the name
+  else if ( runType == "CALIBRATION" )
   {
-    Add(new AliMUONGainSubprocessor(this)); // to be called only for gain runs
+    Add(fGainSubprocessor); // to be called only for gain runs
     Log("INFO-Will run Gain subprocessor");
   }
-  else if ( runType == "GMS" ) // FIXME : check the name
+  else if ( runType == "GMS" )
   {
     Add(fGMSSubprocessor);
     Log("INFO-Will run GMS subprocessor");
   }
-  else if ( runType == "PHYSICS" ) // FIXME : check the name
+  else if ( runType == "PHYSICS" )
   {
     Bool_t useDCS(kTRUE);
     Add(fHVSubprocessor,useDCS); // to be called only for physics runs

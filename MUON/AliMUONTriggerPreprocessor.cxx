@@ -41,6 +41,8 @@ AliMUONTriggerPreprocessor::AliMUONTriggerPreprocessor(AliShuttleInterface* shut
 fTriggerSubprocessor(new AliMUONTriggerSubprocessor(this))
 {
   /// ctor. 
+  AddRunType("PHYSICS");
+  AddRunType("CALIBRATION");
 }
 
 //_____________________________________________________________________________
@@ -64,8 +66,6 @@ AliMUONTriggerPreprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTi
   TString runType = GetRunType();
   
   if ( runType == "PHYSICS" ||
-       runType == "ELECTRONICS_CALIBRATION" ||
-       runType == "DETECTOR_CALIBRATION" ||
        runType == "CALIBRATION" ) 
   {
     Add(fTriggerSubprocessor);
