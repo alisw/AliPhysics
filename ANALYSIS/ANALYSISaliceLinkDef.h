@@ -6,6 +6,8 @@
 
 #pragma link C++ class  AliAnalysisTaskSE+;
 #pragma link C++ class  AliAnalysisTaskESDfilter+;
+#pragma link C++ class  AliAnalysisTaskKineFilter+;
+#pragma link C++ class  AliKineTrackCuts+;
 #ifdef WITHXML
 #pragma link C++ class AliTagAnalysis+;
 #pragma link C++ class AliXMLCollection+;
