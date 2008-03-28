@@ -96,10 +96,16 @@ Bool_t AliESDInputHandlerRP::Init(Option_t* opt)
 	} else {
 	    file = TFile::Open(Form("%s#%s.RecPoints.root", fPathName->Data(), det->GetName()));
 	}
-	if (!file) AliFatal(Form("AliESDInputHandlerRP: TPC.RecPoints.root not found in %s ! \n", fPathName->Data()));
+	if (!file) AliFatal(Form("AliESDInputHandlerRP: %s.RecPoints.root not found in %s ! \n", det->GetName(), fPathName->Data()));
 	fRFiles->Add(file);
     }
-    fEventsPerFile = file->GetNkeys() - file->GetNProcessIDs();
+    if (file) {
+	fEventsPerFile = file->GetNkeys() - file->GetNProcessIDs();
+    } else {
+	AliFatal(Form("AliESDInputHandlerRP: No file with RecPoints found in %s ! \n", fPathName->Data()));
+    }
+    
+    
     // Reset the event number
     fEventNumber      = -1;
     fFileNumber       =  0;
