@@ -4,6 +4,7 @@ void SETUP()
    gSystem->Load("libVMC");
    gSystem->Load("libNet");
    gSystem->Load("libTree");
+   gSystem->Load("libPhysics");
 
    // Load the STEERBase library
    gSystem->Load("libSTEERBase");
