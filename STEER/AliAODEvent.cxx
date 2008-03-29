@@ -23,6 +23,8 @@
 #include <TROOT.h>
 #include <TTree.h>
 #include <TFolder.h>
+#include <TFriendElement.h>
+
 
 #include "AliAODEvent.h"
 #include "AliAODHeader.h"
@@ -264,7 +266,6 @@ void AliAODEvent::ResetStd(Int_t trkArrSize,
 			   Int_t pmdClusSize)
 {
   // deletes content of standard arrays and resets size 
-
   fTracks->Delete();
   if (trkArrSize > fTracks->GetSize()) 
     fTracks->Expand(trkArrSize);
@@ -369,7 +370,34 @@ void AliAODEvent::ReadFromTree(TTree *tree)
       printf("%s %d AliAODEvent::ReadFromTree() TList contains less than the standard contents %d < %d \n",
 	     (char*)__FILE__,__LINE__,fAODObjects->GetEntries(),kAODListN);
     }
-    // set the branch addresses
+    //
+    // Let's find out whether we have friends
+    TList* friendL = tree->GetListOfFriends();
+    if (friendL) 
+    {
+	TIter next(friendL);
+	TFriendElement* fe;
+	while ((fe = (TFriendElement*)next())){
+	    aodEvent = (AliAODEvent*)(fe->GetTree()->GetUserInfo()->FindObject("AliAODEvent"));
+	    if (!aodEvent) {
+		printf("No UserInfo on tree \n");
+	    } else {
+
+		TList* objL = (TList*)(aodEvent->GetList()->Clone());
+		printf("Get list of object from tree %d !!\n", objL->GetEntries());
+		TIter nextobject(objL);
+		TObject* obj =  0;
+		while(obj = nextobject())
+		{
+		    printf("Adding object from friend %s !\n", obj->GetName());
+		    fAODObjects->Add(obj);
+		} // object "branch" loop
+	    } // has userinfo  
+	} // friend loop
+    } // has friends	
+	    
+
+// set the branch addresses
     TIter next(fAODObjects);
     TNamed *el;
     while((el=(TNamed*)next())){
@@ -380,17 +408,16 @@ void AliAODEvent::ReadFromTree(TTree *tree)
 	tree->SetBranchAddress(bname.Data(),fAODObjects->GetObjectRef(el));
       }
       else{
-	br = tree->GetBranch(Form("%s.",bname.Data()));
-	if(br){
-	  tree->SetBranchAddress(Form("%s.",bname.Data()),fAODObjects->GetObjectRef(el));
-	}
-	else{
-	  printf("%s %d AliAODEvent::ReadFromTree() No Branch found with Name %s. \n",
-		 (char*)__FILE__,__LINE__,bname.Data());
-	}	
+	  br = tree->GetBranch(Form("%s.",bname.Data()));
+	  if(br){
+	      tree->SetBranchAddress(Form("%s.",bname.Data()),fAODObjects->GetObjectRef(el));
+	  }
+	  else{
+	      printf("%s %d AliAODEvent::ReadFromTree() No Branch found with Name %s. \n",
+		     (char*)__FILE__,__LINE__,bname.Data());
+	  }	
       }
     }
-    
     GetStdContent();
     // when reading back we are not owner of the list 
     // must not delete it
