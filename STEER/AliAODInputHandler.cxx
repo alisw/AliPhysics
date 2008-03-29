@@ -30,7 +30,8 @@ ClassImp(AliAODInputHandler)
 //______________________________________________________________________________
 AliAODInputHandler::AliAODInputHandler() :
     AliInputEventHandler(),
-    fEvent(0)
+    fEvent(0),
+    fFriend(0)
 {
   // default constructor
 }
@@ -44,7 +45,9 @@ AliAODInputHandler::~AliAODInputHandler()
 //______________________________________________________________________________
 AliAODInputHandler::AliAODInputHandler(const char* name, const char* title):
   AliInputEventHandler(name, title),
-  fEvent(0)
+  fEvent(0),
+  fFriend(0)
+    
 {
 }
 
@@ -52,6 +55,10 @@ Bool_t AliAODInputHandler::Init(TTree* tree, Option_t* /*opt*/)
 {
     // Initialisation necessary for each new tree
     fTree = tree;
+    if (fFriend) {
+	fTree->AddFriend("aodTree", fFriend);
+    }
+    
     if (!fTree) return kFALSE;
     // Get pointer to AOD event
     if (fEvent) {
