@@ -1071,6 +1071,7 @@ Int_t AliRecInfoMaker::BuildV0Info(Int_t eventNr)
   while (entry < nParticlesTR) {
     fTreeGenV0->GetEntry(entry);
     entry++;
+    fRecV0Info->Reset();  //reset all variables
     if (eventNr < fGenV0Info->GetMinus().fEventNr) continue;
     if (eventNr > fGenV0Info->GetMinus().fEventNr) continue;;
     //
@@ -1168,6 +1169,8 @@ Int_t AliRecInfoMaker::BuildV0Info(Int_t eventNr)
 	AliESDtrack * trackp = fEvent->GetTrack((v0MI2->GetPindex()));
 	Int_t vlabeln = (trackn==0) ? -1 : trackn->GetLabel(); 
 	Int_t vlabelp = (trackp==0) ? -1 : trackp->GetLabel(); 
+	fRecV0Info->fLab[0]=TMath::Abs(vlabelp);
+	fRecV0Info->fLab[1]=TMath::Abs(vlabeln); 
 	//
 	if (TMath::Abs(vlabeln)==label &&TMath::Abs(vlabelp)==label2) {
 	  if (v0MI2->GetOnFlyStatus()) {
@@ -1215,6 +1218,7 @@ Int_t AliRecInfoMaker::BuildV0Info(Int_t eventNr)
     if (fSignedV0[i]==0){
       AliV0 *v0MI  = (AliV0*)fEvent->GetV0(i);
       if (!v0MI) continue;
+      fRecV0Info->Reset();  //reset all variables
       //
       new (fRecV0Info->fV0rec) AliV0(*v0MI);
       fRecV0Info->fV0Status  =-10;
@@ -1224,7 +1228,9 @@ Int_t AliRecInfoMaker::BuildV0Info(Int_t eventNr)
       AliESDtrack * trackp = fEvent->GetTrack((v0MI->GetPindex()));
       Int_t vlabeln = (trackn==0) ? -1 : trackn->GetLabel(); 
       Int_t vlabelp = (trackp==0) ? -1 : trackp->GetLabel(); 
-
+      fRecV0Info->fLab[0]=TMath::Abs(vlabelp);
+      fRecV0Info->fLab[1]=TMath::Abs(vlabeln);      
+      if (TMath::Abs(fRecV0Info->fLab[0] - fRecV0Info->fLab[1])<2) continue;
       AliESDRecInfo*  fRecInfo1 = (AliESDRecInfo*)fRecArray->At(TMath::Abs(vlabeln));
       AliESDRecInfo*  fRecInfo2 = (AliESDRecInfo*)fRecArray->At(TMath::Abs(vlabelp));
       if (fRecInfo1 && fRecInfo2){
