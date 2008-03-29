@@ -262,6 +262,41 @@ void  AliESDRecV0Info::Update(Float_t vertex[3])
   }
 }
 
+void  AliESDRecV0Info::Reset(){
+  //
+  // Reset status and all counters
+  //
+  fDist1=-1;    //info about closest distance according closest MC - linear DCA
+  fDist2=-1;    //info about closest distance parabolic DCA
+  fInvMass=-1;  //reconstructed invariant mass -
+  //
+  fDistMinR=-1; // distance at minimal radius
+  fRr=-1;       // rec position of the vertex 
+  fLab[0]=-20;   //MC label of the partecle
+  fLab[1]=-10;   //MC label of the partecle
+  fPointAngleFi=0; //point angle fi
+  fPointAngleTh=0; //point angle theta
+  fPointAngle=0;   //point angle full
+  //
+  fV0Status= -100;       // status of the V0
+  fMultiple=0;           // how man times V0 was recostructed 
+  fRecStatus=0;          // status form the reconstuction - 1 reconstructed - -1 fake
+  fV0MultipleOn=0;       // how man times was V0 reconstucted - onfly
+  fV0MultipleOff=0;      // how man times was V0 reconstucted - offline
+  //
+  // AliKF variables - variables to make a selection + resoluton study
+  //
+  fKFrecChi2NC=0;     //  ONLINE V0 finder non constrained chi2  
+  fKFrecChi2C=0;      //  ONLINE V0 finder   constrained chi2 - prim vertex  
+  fKFrecChi2CM=0;     //  ONLINE V0 finder   constrained chi2 - prim vertex+mass 
+  //
+  fKFrecOffChi2NC=0;  // OFFLINE V0 finder - non constrained chi2  
+  fKFrecOffChi2C=0;   // OFFLINE V0 finder -     constrained chi2 - prim vertex  
+  fKFrecOffChi2CM=0;  // OFFLINE V0 finder -     constrained chi2 - prim vertex+mass
+}
+
+
+
 void  AliESDRecV0Info::UpdateKF(const AliESDVertex &vertex, Int_t pdg0, Int_t pdg1, Float_t mass){
   //
   // Calculate properties of V0 vertex using different type of constraints 

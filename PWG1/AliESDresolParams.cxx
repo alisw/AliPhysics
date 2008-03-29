@@ -22,7 +22,30 @@
 //-------------------------------------------------------------------------
 
 /*
-    Example usage:
+  The track parameter resolution is determined by the intrinsic detector
+  resolution and by the multiple scattering and fluctuation of the energy 
+  loss in the material.
+
+  The contribution from the intrinsic detector resolution is independent of
+  the particle momenta and the mass of particle. In the limit limit of infinite
+  momenta - zero curvature, the intrinsic detector resolution can be obtained.
+ 
+  Multiple effect scaling:
+
+  SCATERING ANGLE   - fi, theta
+        sigma A   += sqrt(14.1*14.1/(beta2*p2*1e6)*TMath::Abs(xOverX0));
+        sigma A    ~ 1/p
+        sigma sfi  += sigma A *  sqrt((1-sfi^2) * (1+ tth^2))
+        sigma tth  += sigma A * (1+tth^2)    
+
+  MOMENTUM Pt: 
+        sigma 1/pt = sigma A  * 1/pt * tth
+        sigma 1/pt ~ (1/pt)^2
+  
+  POSITION y, z:	
+        sigma y   +~ sigma A * eff length (between update measurements) ~ 1/pt 
+        sigma z   +~ sigma A * eff length (between update measurements) ~ 1/pt
+  Example usage:
     
 
 */
@@ -59,7 +82,7 @@ AliESDresolParams::AliESDresolParams() :
   //
 }
 
-Double_t AliESDresolParams::GetResolPrim(Int_t param, Float_t onept, Float_t tanth) const {
+Double_t AliESDresolParams::GetResolPrimFast(Int_t param, Float_t onept, Float_t tanth) const {
   //
   // Resolution at primary vertex
   // simple Resolution parameterization 
@@ -79,11 +102,16 @@ Double_t AliESDresolParams::GetResolPrim(Int_t param, Float_t onept, Float_t tan
   val+= vec[3]*TMath::Abs(tanth);
   val+= vec[4]*TMath::Abs(tanth*tanth);
   val+= vec[5]*TMath::Abs(onept*tanth);
-  val*=val;
+  Float_t shift1pt=0;
+  if (param==0 || param==1) shift1pt=0.2;
+  if (param==2 || param==3) shift1pt=0.1;
+  if (param==4)             shift1pt=1.;
+  val*= (onept+shift1pt);  
+  if (param==4) val*=(onept+shift1pt);
   return val;
 }
 
-Double_t AliESDresolParams::GetResolR(Int_t param, Float_t onept, Float_t radius) const {
+Double_t AliESDresolParams::GetResolRFast(Int_t param, Float_t onept, Float_t radius) const {
   //
   // simple DCA resolution parameterization
   // polynom of second order in 2D 
@@ -107,7 +135,7 @@ Double_t AliESDresolParams::GetResolR(Int_t param, Float_t onept, Float_t radius
   return val;
 }
 
-void AliESDresolParams::SetResolPrim(TObjArray* array){
+void AliESDresolParams::SetResolPrimFast(TObjArray* array){
   //
   // Set parameters - resolution at prim vertex
   //
@@ -124,7 +152,7 @@ void AliESDresolParams::SetResolPrim(TObjArray* array){
     fResolDCA1pt = new TVectorD(*((TVectorD*)array->At(4))); 
 }
 
-void AliESDresolParams::SetResolR(TObjArray* array){
+void AliESDresolParams::SetResolRFast(TObjArray* array){
   //
   // Set parameters - resolution at prim vertex
   //

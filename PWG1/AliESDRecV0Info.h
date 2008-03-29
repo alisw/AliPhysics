@@ -21,6 +21,7 @@ class AliESDRecV0Info: public TObject {
   friend class  AliRecInfoMaker;
 public:
   AliESDRecV0Info();
+  void Reset();   
   void Update(Float_t vertex[3]);
   void UpdateKF(const AliESDVertex &vertex, Int_t pdg0, Int_t pdg1, Float_t mass);
 protected:

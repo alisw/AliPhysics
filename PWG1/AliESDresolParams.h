@@ -19,12 +19,13 @@ class AliESDresolParams : public TObject{
   AliESDresolParams();
   void SetInstance(AliESDresolParams *param){fgInstance = param;}
   //
-  Double_t GetResolPrim(Int_t param, Float_t onept, Float_t tanth) const;
-  Double_t GetResolR(Int_t param, Float_t onept, Float_t radius) const;
-  static Double_t  SGetResolPrim(Int_t sdim, Float_t onept, Float_t tanth){ return fgInstance->GetResolPrim(sdim,onept,tanth);}
-  static Double_t  SGetResolR(Int_t param, Float_t onept, Float_t radius){ return fgInstance->GetResolR(param,onept,radius);}
-  void SetResolPrim(TObjArray* array);
-  void SetResolR(TObjArray* array);
+  Double_t GetResolPrimFast(Int_t param, Float_t onept, Float_t tanth) const;
+  Double_t GetResolRFast(Int_t param, Float_t onept, Float_t radius) const;
+  //
+  static Double_t  SGetResolPrimFast(Int_t sdim, Float_t onept, Float_t tanth){ return fgInstance->GetResolPrimFast(sdim,onept,tanth);}
+  static Double_t  SGetResolRFast(Int_t param, Float_t onept, Float_t radius){ return fgInstance->GetResolRFast(param,onept,radius);}
+  void SetResolPrimFast(TObjArray* array);
+  void SetResolRFast(TObjArray* array);
   // protected:
  public:
   //Resolution at prim vertex
