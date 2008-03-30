@@ -24,11 +24,11 @@ class AliPMDPreprocessor : public AliPreprocessor
   protected:
     virtual void Initialize(Int_t run, UInt_t startTime, UInt_t endTime);
     virtual UInt_t Process(TMap* pdaqAliasMap);
-
+    virtual Bool_t ProcessDAQ();
   private:
 //    AliPMDDataDAQ *fData;    // CDB class that stores the data
 
-    ClassDef(AliPMDPreprocessor, 1);
+    ClassDef(AliPMDPreprocessor, 2);
 };
 
 #endif

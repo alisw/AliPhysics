@@ -40,6 +40,8 @@ AliPMDPreprocessor::AliPMDPreprocessor(AliShuttleInterface* shuttle) :
   AliPreprocessor("PMD", shuttle)
 {
   // constructor
+  AddRunType("PHYSICS");
+  AddRunType("PEDESTAL_RUN");
 }
 
 //______________________________________________________________________________________________
@@ -65,6 +67,19 @@ void AliPMDPreprocessor::Initialize(Int_t run, UInt_t startTime,
     fEndTime = endTime;
 
 }
+
+//-----------------------------------------
+Bool_t AliPMDPreprocessor::ProcessDAQ()
+{
+    TString RunType = GetRunType();
+    Log(Form("RunType %s",RunType.Data()));
+    if (RunType !="PHYSICS" || RunType != "PEDESTAL_RUN") {
+        return kFALSE;
+    }
+
+    return kTRUE;
+}
+
 
 //______________________________________________________________________________________________
 UInt_t AliPMDPreprocessor::Process(TMap* pdaqAliasMap)
