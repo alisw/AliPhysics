@@ -21,6 +21,8 @@
 //-------------------------------------------------------------------------
 
 #include <TTree.h>
+#include <TList.h>
+#include <TNamed.h>
 
 #include "AliAODInputHandler.h"
 #include "AliAODEvent.h"
@@ -31,32 +33,36 @@ ClassImp(AliAODInputHandler)
 AliAODInputHandler::AliAODInputHandler() :
     AliInputEventHandler(),
     fEvent(0),
-    fFriend(0)
+    fFriends(new TList())
 {
-  // default constructor
-}
-
-//______________________________________________________________________________
-AliAODInputHandler::~AliAODInputHandler() 
-{
-// destructor
+  // Default constructor
 }
 
 //______________________________________________________________________________
 AliAODInputHandler::AliAODInputHandler(const char* name, const char* title):
   AliInputEventHandler(name, title),
   fEvent(0),
-  fFriend(0)
-    
+  fFriends(new TList())
 {
+    // Constructor
 }
+
+//______________________________________________________________________________
+AliAODInputHandler::~AliAODInputHandler() 
+{
+// Destructor
+    fFriends->Delete();
+}
+
 
 Bool_t AliAODInputHandler::Init(TTree* tree, Option_t* /*opt*/)
 {
     // Initialisation necessary for each new tree
     fTree = tree;
-    if (fFriend) {
-	fTree->AddFriend("aodTree", fFriend);
+    TIter next(fFriends);
+    TNamed* obj;
+    while(obj = (TNamed*)next()) {
+	fTree->AddFriend("aodTree", obj->GetName());
     }
     
     if (!fTree) return kFALSE;
@@ -71,3 +77,9 @@ Bool_t AliAODInputHandler::Init(TTree* tree, Option_t* /*opt*/)
     return kTRUE;
 }
 
+void AliAODInputHandler::AddFriend(char* filename)
+{
+    // Add a friend tree 
+    TNamed* obj = new TNamed(filename, filename);
+    fFriends->Add(obj);
+}

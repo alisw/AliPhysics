@@ -13,6 +13,8 @@
 #include "AliInputEventHandler.h"
 #include "AliAODEvent.h"
 
+class TList;
+
 class AliAODInputHandler : public AliInputEventHandler {
 
  public:
@@ -22,14 +24,13 @@ class AliAODInputHandler : public AliInputEventHandler {
     virtual Bool_t       Init(Option_t* /*opt*/) {return kTRUE;}
     virtual Bool_t       Init(TTree* tree, Option_t* opt);
     AliAODEvent         *GetEvent() const {return fEvent;}
-    virtual void         AddFriend(char* filename) {fFriend = filename;}
-    
+    virtual void         AddFriend(char* filename); 
  private:
     AliAODInputHandler(const AliAODInputHandler& handler);             
     AliAODInputHandler& operator=(const AliAODInputHandler& handler);  
  private:
     AliAODEvent    *fEvent;   //! Pointer to the event
-    char           *fFriend;  //! File with friend tree 
+    TList          *fFriends; //  List of friend trees 
     ClassDef(AliAODInputHandler, 1);
 };
 
