@@ -8,7 +8,7 @@
 /// \class AliMUONTracker
 /// \brief MUON base Tracker
 ///
-//  Author: Christian Finck, SUBATECH Nantes
+//  Authors: Christian Finck, Laurent Aphecetche, SUBATECH Nantes
 
 #include "AliTracker.h"
 
@@ -18,19 +18,20 @@ class AliMUONDigitMaker;
 class AliMUONGeometryTransformer;
 class AliMUONTrackHitPattern;
 class AliMUONTriggerCircuit;
+class AliMUONVClusterServer;
 class AliMUONVClusterStore;
+class AliMUONVDigitStore;
 class AliMUONVTrackReconstructor;
 class AliMUONVTrackStore;
 class AliMUONVTriggerStore;
-class AliMUONVClusterServer;
-class AliMUONVDigitStore;
+class AliMUONVTriggerTrackStore;
 
 class AliMUONTracker : public AliTracker
 {
  public:
 
-  AliMUONTracker(AliMUONVClusterServer& clusterServer,
-		 const AliMUONVDigitStore& digitStore,
+  AliMUONTracker(AliMUONVClusterServer* clusterServer,
+                 const AliMUONVDigitStore& digitStore,
                  const AliMUONDigitMaker* digitMaker=0,
                  const AliMUONGeometryTransformer* transformer=0,
                  const AliMUONTriggerCircuit* triggerCircuit=0);
@@ -49,6 +50,8 @@ class AliMUONTracker : public AliTracker
   /// Dummy implementation
   virtual AliCluster *GetCluster(Int_t /*index*/) const {return 0;}
 
+  static AliMUONVTrackReconstructor* CreateTrackReconstructor(const char* trackingMode, AliMUONVClusterServer* clusterServer);
+  
 private:
   /// Not implemented
   AliMUONTracker(const AliMUONTracker& rhs);
@@ -57,10 +60,12 @@ private:
     
   AliMUONVClusterStore* ClusterStore() const;
 
-  void CreateTrackReconstructor();
+  AliMUONVTriggerTrackStore* TriggerTrackStore() const;
   
   void FillESD(AliMUONVTrackStore& trackStore, AliESDEvent* esd) const;
 
+  void SetupClusterServer(AliMUONVClusterServer& clusterServer);
+  
 private:
   const AliMUONDigitMaker* fDigitMaker; //!< digit maker (not owner)
   const AliMUONGeometryTransformer* fTransformer; //!< geometry transformer (not owner)
@@ -69,8 +74,11 @@ private:
   AliMUONVTrackReconstructor* fTrackReco; //!< track reconstructor
   mutable AliMUONVClusterStore* fClusterStore; //!< cluster container
   AliMUONVTriggerStore* fTriggerStore; //!< trigger information
-  AliMUONVClusterServer& fClusterServer; //!< to get clusters
+  AliMUONVClusterServer* fClusterServer; //!< to get clusters
+  Bool_t fIsOwnerOfClusterServer; //!< whether we are owner of the cluster server
   const AliMUONVDigitStore& fDigitStore; //!< digit info to fill in ESD
+  mutable AliMUONVClusterStore* fInputClusterStore; //!< cluster container
+  mutable AliMUONVTriggerTrackStore* fTriggerTrackStore; //!< trigger track store
   
   ClassDef(AliMUONTracker,0)  //tracker base class for MUON
 };

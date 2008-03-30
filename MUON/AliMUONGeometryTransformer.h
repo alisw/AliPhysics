@@ -30,6 +30,8 @@ class AliMUONGeometryDetElement;
 
 class TGeoManager;
 class TClonesArray;
+class AliMpExMap;
+class AliMpArea;
 
 class AliMUONGeometryTransformer : public TObject
 {
@@ -92,6 +94,8 @@ class AliMUONGeometryTransformer : public TObject
     
     Bool_t  HasDE(Int_t detElemId) const;
 
+    AliMpArea* GetDEArea(Int_t detElemId) const;
+    
   protected:
     /// Not implemented
     AliMUONGeometryTransformer(const AliMUONGeometryTransformer& right);
@@ -100,6 +104,9 @@ class AliMUONGeometryTransformer : public TObject
  
   private:
     // methods
+      
+      void CreateDEAreas() const;
+    
     Bool_t LoadMapping() const;
     AliMUONGeometryModuleTransformer* GetModuleTransformerNonConst(
                                     Int_t index, Bool_t warn = true) const;
@@ -138,8 +145,9 @@ class AliMUONGeometryTransformer : public TObject
     TString        fDetectorName;       ///< Detector name
     TObjArray*     fModuleTransformers; ///< array of module transformers
     TClonesArray*  fMisAlignArray;      ///< array of misalignment data
-
-  ClassDef(AliMUONGeometryTransformer,3)  // Geometry parametrisation
+    mutable AliMpExMap*    fDEAreas; ///< areas of detection elements in global coordinates
+    
+  ClassDef(AliMUONGeometryTransformer,4)  // Geometry parametrisation
 };
 
 // inline methods

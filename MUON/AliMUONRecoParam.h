@@ -21,11 +21,11 @@ class AliMUONRecoParam : public AliDetectorRecoParam
   static AliMUONRecoParam *GetLowFluxParam();
   static AliMUONRecoParam *GetHighFluxParam();
   
-  /// set the calibration mode
+  /// set the calibration mode (see GetCalibrationMode() for possible modes)
   void SetCalibrationMode(Option_t* mode) { fCalibrationMode = mode; fCalibrationMode.ToUpper();}
-  /// get the calibration mode
-  Option_t* GetCalibrationMode() const { return fCalibrationMode.Data(); }
-  
+
+  Option_t* GetCalibrationMode() const;
+      
   /// set the clustering (pre-clustering) mode
   void      SetClusteringMode(Option_t* mode) {fClusteringMode = mode; fClusteringMode.ToUpper();}
   /// get the clustering (pre-clustering) mode
@@ -57,6 +57,10 @@ class AliMUONRecoParam : public AliDetectorRecoParam
   void     SetMaxBendingMomentum(Double_t val) {fMaxBendingMomentum = val;}
   /// return the maximum value (GeV/c) of momentum in bending plane
   Double_t GetMaxBendingMomentum() const {return fMaxBendingMomentum;}
+  /// set the maximum value of the non bending slope
+  void     SetMaxNonBendingSlope(Double_t val) {fMaxNonBendingSlope = val;}
+  /// return the maximum value of the non bending slope
+  Double_t GetMaxNonBendingSlope() const {return fMaxNonBendingSlope;}
   
   /// set the vertex dispersion (cm) in non bending plane (used for original tracking only)
   void     SetNonBendingVertexDispersion(Double_t val) {fNonBendingVertexDispersion = val;} 
@@ -115,6 +119,11 @@ class AliMUONRecoParam : public AliDetectorRecoParam
   /// return kTRUE/kFALSE if the fast building of track candidates is switched on/off
   Bool_t   MakeTrackCandidatesFast() const {return fMakeTrackCandidatesFast;}
   
+  /// switch on/off the building of track candidates starting from 1 cluster in each of the stations 4 and 5
+  void     MakeMoreTrackCandidates(Bool_t flag) {fMakeMoreTrackCandidates = flag;} 
+  /// return kTRUE/kFALSE if the building of extra track candidates is switched on/off
+  Bool_t   MakeMoreTrackCandidates() const {return fMakeMoreTrackCandidates;}
+  
   /// switch on/off the completion of reconstructed track
   void     ComplementTracks(Bool_t flag) {fComplementTracks = flag;} 
   /// return kTRUE/kFALSE if completion of the reconstructed track is switched on/off
@@ -125,8 +134,23 @@ class AliMUONRecoParam : public AliDetectorRecoParam
   /// return kTRUE/kFALSE if the use of the smoother is switched on/off
   Bool_t   UseSmoother() const {return fUseSmoother;}
   
-  virtual void Print(Option_t *option = "") const;
+  /// switch on/off a chamber in the reconstruction
+  void     UseChamber(Int_t iCh, Bool_t flag) {if (iCh >= 0 && iCh < 10) fUseChamber[iCh] = flag;}
+  /// return kTRUE/kFALSE whether the chamber must be used or not
+  Bool_t   UseChamber(Int_t iCh) const {return (iCh >= 0 && iCh < 10) ? fUseChamber[iCh] : kFALSE;}
   
+  /// request or not at least one cluster in the station to validate the track
+  void     RequestStation(Int_t iSt, Bool_t flag) {if (iSt >= 0 && iSt < 5) fRequestStation[iSt] = flag;}
+  /// return kTRUE/kFALSE whether at least one cluster is requested in the station to validate the track
+  Bool_t   RequestStation(Int_t iSt) const {return (iSt >= 0 && iSt < 5) ? fRequestStation[iSt] : kFALSE;}
+  
+  /// return kTRUE if we should replace clusters in St 4 and 5 by generated clusters from trigger tracks
+  Bool_t BypassSt45() const { return fBypassSt45; }
+  
+  /// set the bypassSt45 value
+  void BypassSt45(Bool_t value) { fBypassSt45 = value; }
+  
+  virtual void Print(Option_t *option = "") const;
   
  private:
   
@@ -139,6 +163,7 @@ class AliMUONRecoParam : public AliDetectorRecoParam
   
   Double32_t fMinBendingMomentum; ///< minimum value (GeV/c) of momentum in bending plane
   Double32_t fMaxBendingMomentum; ///< maximum value (GeV/c) of momentum in bending plane
+  Double32_t fMaxNonBendingSlope; ///< maximum value of the non bending slope
   
   Double32_t fNonBendingVertexDispersion; ///< vertex dispersion (cm) in non bending plane (used for original tracking only)
   Double32_t fBendingVertexDispersion;    ///< vertex dispersion (cm) in bending plane (used for original tracking only)
@@ -164,6 +189,8 @@ class AliMUONRecoParam : public AliDetectorRecoParam
   
   Bool_t     fMakeTrackCandidatesFast; ///< kTRUE to make candidate tracks assuming linear propagation between stations 4 and 5
   
+  Bool_t     fMakeMoreTrackCandidates; ///< kTRUE to make candidate tracks starting from 1 cluster in each of the stations 4 and 5
+  
   Bool_t     fComplementTracks; ///< kTRUE to try to complete the reconstructed tracks by adding missing clusters
   
   Bool_t     fImproveTracks; ///< kTRUE to try to improve the reconstructed tracks by removing bad clusters
@@ -172,15 +199,21 @@ class AliMUONRecoParam : public AliDetectorRecoParam
   
   Bool_t     fSaveFullClusterInESD; ///< kTRUE to save all cluster info (including pads) in ESD
   
-  /// calibration mode:  GAIN, NOGAIN
+  /// calibration mode:  GAIN, NOGAIN, GAINCONSTANTCAPA
   TString fCalibrationMode; ///<\brief calibration mode
+  
+  Bool_t fBypassSt45; ///< kTRUE to use trigger tracks to generate "fake" clusters in St 4 and 5
+  
+  Bool_t     fUseChamber[10]; ///< kTRUE to use the chamber i in the tracking algorithm
+  
+  Bool_t     fRequestStation[5]; ///< kTRUE to request at least one cluster in station i to validate the track
   
   // functions
   void SetLowFluxParam();
   void SetHighFluxParam();
   
   
-  ClassDef(AliMUONRecoParam,2) // MUON reco parameters
+  ClassDef(AliMUONRecoParam,3) // MUON reco parameters
 };
 
 #endif

@@ -23,6 +23,8 @@
 
 #include "AliMUONTrack.h"
 
+#include "AliMUONReconstructor.h"
+#include "AliMUONRecoParam.h"
 #include "AliMUONVCluster.h"
 #include "AliMUONVClusterStore.h"
 #include "AliMUONObjectPair.h"
@@ -89,26 +91,8 @@ AliMUONTrack::AliMUONTrack(AliMUONObjectPair *segment)
   fVertexErrXY2[1] = 0.;
   
   // Pointers to clusters from the segment
-  AliMUONVCluster* cluster1 = (AliMUONVCluster*) segment->First();
-  AliMUONVCluster* cluster2 = (AliMUONVCluster*) segment->Second();
-  
-  // check sorting in -Z (spectro z<0)
-  if (cluster1->GetZ() < cluster2->GetZ()) {
-    cluster1 = cluster2;
-    cluster2 = (AliMUONVCluster*) segment->First();
-  }
-  
-  // order the clusters into the track according to the station the segment belong to
-  // to anticipate the direction of propagation in the first tracking step
-  // (go backward if the segment is on the last station / go forward otherwise)
-  AliMUONVCluster *firstCluster, *lastCluster;
-  if (cluster1->GetChamberId() == 8) { // last station
-    firstCluster = cluster1;
-    lastCluster = cluster2;
-  } else {
-    firstCluster = cluster2;
-    lastCluster = cluster1;
-  }
+  AliMUONVCluster* firstCluster = (AliMUONVCluster*) segment->First();
+  AliMUONVCluster* lastCluster = (AliMUONVCluster*) segment->Second();
   
   // Compute track parameters
   Double_t z1 = firstCluster->GetZ();
@@ -126,8 +110,7 @@ AliMUONTrack::AliMUONTrack(AliMUONObjectPair *segment)
   Double_t bendingImpact = bendingCoor1 - z1 * bendingSlope;
   Double_t inverseBendingMomentum = 1. / AliMUONTrackExtrap::GetBendingMomentumFromImpactParam(bendingImpact);
   
-  
-  // Set track parameters at first cluster (needed by any tracking algorithm)
+  // Set track parameters at first cluster
   AliMUONTrackParam trackParamAtFirstCluster;
   trackParamAtFirstCluster.SetZ(z1);
   trackParamAtFirstCluster.SetNonBendingCoor(nonBendingCoor1);
@@ -136,8 +119,7 @@ AliMUONTrack::AliMUONTrack(AliMUONObjectPair *segment)
   trackParamAtFirstCluster.SetBendingSlope(bendingSlope);
   trackParamAtFirstCluster.SetInverseBendingMomentum(inverseBendingMomentum);
   
-  
-  // Set track parameters at last cluster (used by Kalman only)
+  // Set track parameters at last cluster
   AliMUONTrackParam trackParamAtLastCluster;
   trackParamAtLastCluster.SetZ(z2);
   trackParamAtLastCluster.SetNonBendingCoor(nonBendingCoor2);
@@ -146,43 +128,40 @@ AliMUONTrack::AliMUONTrack(AliMUONObjectPair *segment)
   trackParamAtLastCluster.SetBendingSlope(bendingSlope);
   trackParamAtLastCluster.SetInverseBendingMomentum(inverseBendingMomentum);
   
-  
-  // Compute and set track parameters covariances at first cluster (needed by any tracking algorithm)
-  TMatrixD paramCov1(5,5);
-  paramCov1.Zero();
+  // Compute and set track parameters covariances at first cluster
+  TMatrixD paramCov(5,5);
+  paramCov.Zero();
   // Non bending plane
-  paramCov1(0,0) = firstCluster->GetErrX2();
-  paramCov1(0,1) = firstCluster->GetErrX2() / dZ;
-  paramCov1(1,0) = paramCov1(0,1);
-  paramCov1(1,1) = ( firstCluster->GetErrX2() + lastCluster->GetErrX2() ) / dZ / dZ;
+  paramCov(0,0) = firstCluster->GetErrX2();
+  paramCov(0,1) = firstCluster->GetErrX2() / dZ;
+  paramCov(1,0) = paramCov(0,1);
+  paramCov(1,1) = ( firstCluster->GetErrX2() + lastCluster->GetErrX2() ) / dZ / dZ;
   // Bending plane
-  paramCov1(2,2) = firstCluster->GetErrY2();
-  paramCov1(2,3) = firstCluster->GetErrY2() / dZ;
-  paramCov1(3,2) = paramCov1(2,3);
-  paramCov1(3,3) = ( firstCluster->GetErrY2() + lastCluster->GetErrY2() ) / dZ / dZ;
-  // Inverse bending momentum (50% error)
-  paramCov1(4,4) = 0.5*inverseBendingMomentum * 0.5*inverseBendingMomentum;
+  paramCov(2,2) = firstCluster->GetErrY2();
+  paramCov(2,3) = firstCluster->GetErrY2() / dZ;
+  paramCov(3,2) = paramCov(2,3);
+  paramCov(3,3) = ( firstCluster->GetErrY2() + lastCluster->GetErrY2() ) / dZ / dZ;
+  // Inverse bending momentum (vertex resolution + bending slope resolution + 10% error on dipole parameters+field)
+  paramCov(4,4) = ((AliMUONReconstructor::GetRecoParam()->GetBendingVertexDispersion() *
+		    AliMUONReconstructor::GetRecoParam()->GetBendingVertexDispersion() +
+		    (z1 * z1 * lastCluster->GetErrY2() + z2 * z2 * firstCluster->GetErrY2()) / dZ / dZ) /
+		   bendingImpact / bendingImpact + 0.1 * 0.1) * inverseBendingMomentum * inverseBendingMomentum;
+  paramCov(2,4) = - z2 * firstCluster->GetErrY2() * inverseBendingMomentum / bendingImpact / dZ;
+  paramCov(4,2) = paramCov(2,4);
+  paramCov(3,4) = - (z1 * lastCluster->GetErrY2() + z2 * firstCluster->GetErrY2()) * inverseBendingMomentum / bendingImpact / dZ / dZ;
+  paramCov(4,3) = paramCov(3,4);
+  
   // Set covariances
-  trackParamAtFirstCluster.SetCovariances(paramCov1);
+  trackParamAtFirstCluster.SetCovariances(paramCov);
   
-  
-  // Compute and set track parameters covariances at last cluster as if the first cluster did not exist (used by Kalman only)
-  TMatrixD paramCov2(5,5);
-  paramCov2.Zero();
-  // Non bending plane
-  paramCov2(0,0) = paramCov1(0,0);
-  paramCov2(1,1) = 100.*paramCov1(1,1);
-  // Bending plane
-  paramCov2(2,2) = paramCov1(2,2);
-  paramCov2(3,3) = 100.*paramCov1(3,3);
-  // Inverse bending momentum
-  paramCov2(4,4) = paramCov1(4,4);
-  // Set covariances
-  trackParamAtLastCluster.SetCovariances(paramCov2);
-  
-  // Flag clusters as being removable
-  trackParamAtFirstCluster.SetRemovable(kTRUE);
-  trackParamAtLastCluster.SetRemovable(kTRUE);
+  // Compute and set track parameters covariances at last cluster
+  paramCov(1,0) = - paramCov(1,0);
+  paramCov(0,1) = - paramCov(0,1);
+  paramCov(3,2) = - paramCov(3,2);
+  paramCov(2,3) = - paramCov(2,3);
+  paramCov(2,4) = z1 * lastCluster->GetErrY2() * inverseBendingMomentum / bendingImpact / dZ;
+  paramCov(4,2) = paramCov(2,4);
+  trackParamAtLastCluster.SetCovariances(paramCov);
   
   // Add track parameters at clusters
   AddTrackParamAtCluster(trackParamAtFirstCluster,*firstCluster);
@@ -451,7 +430,7 @@ void AliMUONTrack::UpdateCovTrackParamAtCluster()
   //__________________________________________________________________________
 Bool_t AliMUONTrack::IsValid()
 {
-  /// check the validity of the current track (at least one cluster per station)
+  /// check the validity of the current track (at least one cluster per requested station)
   
   Int_t nClusters = GetNClusters();
   AliMUONTrackParam *trackParam;
@@ -459,6 +438,10 @@ Bool_t AliMUONTrack::IsValid()
   
   for (Int_t i = 0; i < nClusters; i++) {
     trackParam = (AliMUONTrackParam*) fTrackParamAtCluster->UncheckedAt(i);
+    
+    // skip unrequested stations
+    while (expectedStation < AliMUONConstants::NTrackingSt() &&
+	   !AliMUONReconstructor::GetRecoParam()->RequestStation(expectedStation)) expectedStation++;
     
     currentStation = trackParam->GetClusterPtr()->GetChamberId()/2;
     
@@ -470,23 +453,25 @@ Bool_t AliMUONTrack::IsValid()
     
   }
   
-  return currentStation == AliMUONConstants::NTrackingSt() - 1;
+  return expectedStation == AliMUONConstants::NTrackingSt();
   
 }
 
   //__________________________________________________________________________
 void AliMUONTrack::TagRemovableClusters() {
   /// Identify clusters that can be removed from the track,
-  /// with the only requirement to have at least 1 cluster per station
+  /// with the only requirement to have at least 1 cluster per requested station
   
   Int_t nClusters = GetNClusters();
   AliMUONTrackParam *trackParam, *nextTrackParam;
   Int_t currentCh, nextCh;
   
-  // reset flags to default
+  // reset flags to kFALSE for all clusters in required station
   for (Int_t i = 0; i < nClusters; i++) {
     trackParam = (AliMUONTrackParam*) fTrackParamAtCluster->UncheckedAt(i);
-    trackParam->SetRemovable(kFALSE);
+    if (AliMUONReconstructor::GetRecoParam()->RequestStation(trackParam->GetClusterPtr()->GetChamberId()/2))
+      trackParam->SetRemovable(kFALSE);
+    else trackParam->SetRemovable(kTRUE);
   }
   
   // loop over track parameters
@@ -949,7 +934,7 @@ Double_t AliMUONTrack::GetNormalizedChi2() const
   
   Double_t numberOfDegFree = (2. * GetNClusters() - 5.);
   if (numberOfDegFree > 0.) return fGlobalChi2 / numberOfDegFree;
-  else return 1.e10;
+  else return fGlobalChi2; // system is under-constraint
 }
 
   //__________________________________________________________________________

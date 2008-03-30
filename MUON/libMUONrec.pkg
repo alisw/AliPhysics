@@ -42,7 +42,9 @@ SRCS:= AliMUONReconstructor.cxx \
        AliMUONClusterFinderPeakCOG.cxx \
        AliMUONClusterFinderPeakFit.cxx \
        AliMUONRefitter.cxx \
-       AliMUONESDInterface.cxx
+       AliMUONESDInterface.cxx \
+       AliMUONLegacyClusterServer.cxx \
+       AliMUONTriggerTrackToTrackerClusters.cxx
 
 HDRS:= $(SRCS:.cxx=.h)
 

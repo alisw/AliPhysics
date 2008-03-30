@@ -65,6 +65,7 @@
 #include <Riostream.h>
 #include <TGeoManager.h>
 #include <TROOT.h>
+#include <TF1.h>
 
 #endif
 
@@ -588,7 +589,16 @@ Bool_t MUONefficiency( char* filename = "galice.root", char* geoFilename = "geom
   cout << "Chi2Cut for muon tracks = " << Chi2Cut << endl;
   cout << "PtCutMin for muon tracks = " << PtCutMin << endl;
   cout << "PtCutMax for muon tracks = " << PtCutMax << endl;
+  
+  hInvMassAll->Fit("gaus","q0");
+                   
+  TF1* f1 = hInvMassAll->GetFunction("gaus");
+  
+  cout << "Entries (unlike sign dimuons) : " << hInvMassAll->GetEntries() 
+    << Form(". Rough sigma = %7.2f MeV/c2",f1->GetParameter(2)*1000.0) << endl;
+  
   cout << "Entries (unlike sign dimuons) in the mass range  ["<<invMassMinInPeak<<";"<<invMassMaxInPeak<<"] : " << EventInMass <<endl;
+  
   if (ptTrig==0x800) cout << "Unlike Pair - All Pt" ;   
   if (ptTrig==0x400) cout << "Unlike Pair - High Pt" ;   
   if (ptTrig==0x200) cout << "Unlike Pair - Low Pt" ; 

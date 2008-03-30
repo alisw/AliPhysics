@@ -158,7 +158,7 @@ void AliMUONRawClusterV2::AddDigitId(UInt_t id)
   UInt_t *digitsIdNew = new UInt_t[fNDigits+1];
   memcpy(digitsIdNew,fDigitsId, fNDigits*sizeof(UInt_t));
   digitsIdNew[fNDigits++] = id;
-  delete fDigitsId;
+  delete[] fDigitsId;
   fDigitsId = digitsIdNew;
 }
 

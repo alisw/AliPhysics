@@ -57,6 +57,8 @@ public:
   
   static const AliMUONRecoParam* GetRecoParam();
   
+  static AliMUONVClusterFinder* CreateClusterFinder(const char* clusterFinderType);
+
 private:
   /// Not implemented
   AliMUONReconstructor(const AliMUONReconstructor&);
@@ -69,7 +71,6 @@ private:
   void Calibrate(AliMUONVDigitStore& digitStore) const;
   AliMUONTriggerCrateStore* CrateManager() const;
   void CreateCalibrator() const;
-  AliMUONVClusterFinder* CreateClusterFinder(const char* clusterFinderType) const;
   void CreateDigitMaker() const;
   void CreateTriggerCircuit() const;
   void CreateClusterServer() const;
@@ -78,7 +79,7 @@ private:
   
   AliMUONVDigitStore* DigitStore() const;
   AliMUONVTriggerStore* TriggerStore() const;
-
+  
 private:
   mutable AliMUONTriggerCrateStore* fCrateManager; //!< Trigger Crate manager
   mutable AliMUONDigitMaker* fDigitMaker; //!< Raw to Digits converter
@@ -93,7 +94,7 @@ private:
   
   static AliMUONRecoParam* fgRecoParam; //!< parameters used to tune the MUON reconstruction
   
-  ClassDef(AliMUONReconstructor,5) // Implementation of AliReconstructor
+  ClassDef(AliMUONReconstructor,6) // Implementation of AliReconstructor
 };
 
 #endif

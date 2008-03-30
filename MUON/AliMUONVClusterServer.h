@@ -17,6 +17,7 @@
 #endif
 
 class AliMUONVClusterStore;
+class AliMUONVTriggerTrackStore;
 class AliMpArea;
 class TIter;
 
@@ -31,8 +32,11 @@ public:
                            AliMUONVClusterStore& clusterStore,
                            const AliMpArea& area) = 0;
   
-  /// Use digits from the given digitstore to perform our job.
+  /// Specify an iterator to loop over the digits needed to perform our job.
   virtual void UseDigits(TIter& next) = 0;
+  
+  /// Use trigger tracks. Return kFALSE if not used.
+  virtual Bool_t UseTriggerTrackStore(AliMUONVTriggerTrackStore* /*trackStore*/) { return kFALSE; }
   
   ClassDef(AliMUONVClusterServer,1) // Cluster server interface
 };

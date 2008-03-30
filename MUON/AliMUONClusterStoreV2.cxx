@@ -191,9 +191,14 @@ AliMUONVCluster* AliMUONClusterStoreV2::Remove(AliMUONVCluster& cluster)
   /// Remove a cluster
   AliMUONVCluster* c = static_cast<AliMUONVCluster*>(fClusters->Remove(&cluster));
   
-  if (c) {
+  if (c) 
+  {
     fClusters->Compress();
     fMapped = kFALSE;
+  }
+  else
+  {
+    AliError("Could not remove cluster from array");
   }
   
   return c;
@@ -207,16 +212,24 @@ void AliMUONClusterStoreV2::ReMap()
   
   // Create (or clear) the TClonesArray of map
   Int_t nChamber = AliMpConstants::NofTrackingChambers();
-  if (!fMap) fMap = new TClonesArray("AliMpExMap",nChamber);
-  else fMap->Clear("C");
   
-  // Create one map per chamber
-  AliMpExMap *map;
-  for (Int_t chamber=0; chamber<nChamber; chamber++) {
-    map = new((*fMap)[chamber]) AliMpExMap(kTRUE);
-    map->SetOwner(kFALSE);
+  if (!fMap) {
+    fMap = new TClonesArray("AliMpExMap",nChamber);
+    
+    // Create one map per chamber
+    AliMpExMap *map;
+    for (Int_t chamber=0; chamber<nChamber; chamber++) {
+      map = new((*fMap)[chamber]) AliMpExMap(kTRUE);
+      map->SetOwner(kFALSE);
+    }
   }
-  
+  else {
+    for (Int_t chamber=0; chamber<nChamber; chamber++) {
+      AliMpExMap *map = static_cast<AliMpExMap *>(fMap->At(chamber));
+      map->Clear("C");
+    }
+  }  
+
   // Fill the maps
   TIter next(fClusters);
   AliMUONVCluster* cluster;

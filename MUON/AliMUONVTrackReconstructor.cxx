@@ -136,8 +136,11 @@ void AliMUONVTrackReconstructor::EventReconstruct(AliMUONVClusterStore& clusterS
   // Reset array of tracks
   ResetTracks();
   
-  // Look for candidates from at least 3 aligned points in stations(1..) 4 and 5
+  // Look for candidates from clusters in stations(1..) 4 and 5
   MakeTrackCandidates(clusterStore);
+  
+  // Look for extra candidates from clusters in stations(1..) 4 and 5
+  if (AliMUONReconstructor::GetRecoParam()->MakeMoreTrackCandidates()) MakeMoreTrackCandidates(clusterStore);
   
   // Stop tracking if no candidate found
   if (fRecTracksPtr->GetEntriesFast() == 0) return;
@@ -167,18 +170,16 @@ void AliMUONVTrackReconstructor::EventReconstruct(AliMUONVClusterStore& clusterS
 }
 
   //__________________________________________________________________________
-TClonesArray* AliMUONVTrackReconstructor::MakeSegmentsInStation(const AliMUONVClusterStore& clusterStore, Int_t station)
+TClonesArray* AliMUONVTrackReconstructor::MakeSegmentsBetweenChambers(const AliMUONVClusterStore& clusterStore, Int_t ch1, Int_t ch2)
 {
-  /// To make the list of segments in station(0..) "Station" from the list of clusters to be reconstructed.
+  /// To make the list of segments from the list of clusters in the 2 given chambers.
   /// Return a new TClonesArray of segments.
   /// It is the responsibility of the user to delete it afterward.
-  AliDebug(1,Form("Enter MakeSegmentsPerStation (1..) %d",station+1));
+  AliDebug(1,Form("Enter MakeSegmentsBetweenChambers (1..) %d-%d", ch1+1, ch2+1));
   
   AliMUONVCluster *cluster1, *cluster2;
   AliMUONObjectPair *segment;
-  Double_t bendingSlope = 0, impactParam = 0., bendingMomentum = 0.; // to avoid compilation warning
-  Int_t ch1 = 2 * station;
-  Int_t ch2 = ch1 + 1;
+  Double_t nonBendingSlope = 0, bendingSlope = 0, impactParam = 0., bendingMomentum = 0.; // to avoid compilation warning
   
   // Create iterators to loop over clusters in both chambers
   TIter nextInCh1(clusterStore.CreateChamberIterator(ch1,ch1));
@@ -196,6 +197,9 @@ TClonesArray* AliMUONVTrackReconstructor::MakeSegmentsInStation(const AliMUONVCl
     // Loop over clusters in the second chamber of the station
     while ( ( cluster2 = static_cast<AliMUONVCluster*>(nextInCh2()) ) ) {
       
+      // non bending slope
+      nonBendingSlope = (cluster1->GetX() - cluster2->GetX()) / (cluster1->GetZ() - cluster2->GetZ());
+      
       // bending slope
       bendingSlope = (cluster1->GetY() - cluster2->GetY()) / (cluster1->GetZ() - cluster2->GetZ());
       
@@ -205,9 +209,10 @@ TClonesArray* AliMUONVTrackReconstructor::MakeSegmentsInStation(const AliMUONVCl
       // absolute value of bending momentum
       bendingMomentum = TMath::Abs(AliMUONTrackExtrap::GetBendingMomentumFromImpactParam(impactParam));
       
-      // check for bending momentum within tolerances
-      if ((bendingMomentum < AliMUONReconstructor::GetRecoParam()->GetMaxBendingMomentum()) &&
-	  (bendingMomentum > AliMUONReconstructor::GetRecoParam()->GetMinBendingMomentum())) {
+      // check for non bending slope and bending momentum within tolerances
+      if (TMath::Abs(nonBendingSlope) < AliMUONReconstructor::GetRecoParam()->GetMaxNonBendingSlope() &&
+	  bendingMomentum < AliMUONReconstructor::GetRecoParam()->GetMaxBendingMomentum() &&
+	  bendingMomentum > AliMUONReconstructor::GetRecoParam()->GetMinBendingMomentum()) {
         
 	// make new segment
         segment = new ((*segments)[segments->GetLast()+1]) AliMUONObjectPair(cluster1, cluster2, kFALSE, kFALSE);
@@ -229,7 +234,7 @@ TClonesArray* AliMUONVTrackReconstructor::MakeSegmentsInStation(const AliMUONVCl
   }
   
   // Printout for debug
-  AliDebug(1,Form("Station: %d  NSegments:  %d ", station+1, segments->GetEntriesFast()));
+  AliDebug(1,Form("chambers%d-%d: NSegments =  %d ", ch1+1, ch2+1, segments->GetEntriesFast()));
   
   return segments;
 }
@@ -333,37 +338,49 @@ void AliMUONVTrackReconstructor::RemoveDoubleTracks()
 }
 
   //__________________________________________________________________________
+void AliMUONVTrackReconstructor::AskForNewClustersInChamber(const AliMUONTrackParam &trackParam,
+							    AliMUONVClusterStore& clusterStore, Int_t chamber)
+{
+  /// Ask the clustering to reconstruct new clusters around the track candidate position
+  
+  // check if the current chamber is useable
+  if (!AliMUONReconstructor::GetRecoParam()->UseChamber(chamber)) return;
+  
+  // maximum distance between the center of the chamber and a detection element
+  // (accounting for the inclination of the chamber)
+  static const Double_t gkMaxDZ = 15.; // 15 cm
+  
+  // extrapolate track parameters to the chamber
+  AliMUONTrackParam extrapTrackParam(trackParam);
+  AliMUONTrackExtrap::ExtrapToZCov(&extrapTrackParam, AliMUONConstants::DefaultChamberZ(chamber));
+  
+  // build the searching area using the track resolution and the maximum-distance-to-track value
+  const TMatrixD& kParamCov = extrapTrackParam.GetCovariances();
+  Double_t errX2 = kParamCov(0,0) + gkMaxDZ * gkMaxDZ * kParamCov(1,1) + 2. * gkMaxDZ * TMath::Abs(kParamCov(0,1));
+  Double_t errY2 = kParamCov(2,2) + gkMaxDZ * gkMaxDZ * kParamCov(3,3) + 2. * gkMaxDZ * TMath::Abs(kParamCov(2,3));
+  Double_t dX = TMath::Abs(trackParam.GetNonBendingSlope()) * gkMaxDZ +
+		AliMUONReconstructor::GetRecoParam()->GetMaxNonBendingDistanceToTrack() +
+		AliMUONReconstructor::GetRecoParam()->GetSigmaCutForTracking() * TMath::Sqrt(errX2);
+  Double_t dY = TMath::Abs(trackParam.GetBendingSlope()) * gkMaxDZ +
+		AliMUONReconstructor::GetRecoParam()->GetMaxBendingDistanceToTrack() +
+		AliMUONReconstructor::GetRecoParam()->GetSigmaCutForTracking() * TMath::Sqrt(errY2);
+  TVector2 dimensions(dX, dY);
+  TVector2 position(extrapTrackParam.GetNonBendingCoor(), extrapTrackParam.GetBendingCoor());
+  AliMpArea area(position, dimensions);
+  
+  // ask to cluterize in the given area of the given chamber
+  fClusterServer.Clusterize(chamber, clusterStore, area);
+  
+}
+
+  //__________________________________________________________________________
 void AliMUONVTrackReconstructor::AskForNewClustersInStation(const AliMUONTrackParam &trackParam,
 							    AliMUONVClusterStore& clusterStore, Int_t station)
 {
   /// Ask the clustering to reconstruct new clusters around the track candidate position
   /// in the 2 chambers of the given station
-  
-  // maximum shift of the searching area due to distance between detection elements and the track slope
-  static const Double_t kgMaxShift = 2.; // 2 cm
-  
-  // extrapolate track parameters to the second chamber of the station
-  AliMUONTrackParam extrapTrackParam(trackParam);
-  AliMUONTrackExtrap::ExtrapToZ(&extrapTrackParam, AliMUONConstants::DefaultChamberZ(2*station+1));
-  
-  // build the searching area
-  TVector2 position(extrapTrackParam.GetNonBendingCoor(), extrapTrackParam.GetBendingCoor());
-  TVector2 dimensions(AliMUONReconstructor::GetRecoParam()->GetMaxNonBendingDistanceToTrack() + kgMaxShift,
-		      AliMUONReconstructor::GetRecoParam()->GetMaxBendingDistanceToTrack() + kgMaxShift);
-  AliMpArea area2(position, dimensions);
-  
-  // ask to cluterize in the given area of the given chamber
-  fClusterServer.Clusterize(2*station+1, clusterStore, area2);
-  
-  // extrapolate track parameters to the first chamber of the station
-  AliMUONTrackExtrap::ExtrapToZ(&extrapTrackParam, AliMUONConstants::DefaultChamberZ(2*station));
-  
-  // build the searching area
-  position.Set(extrapTrackParam.GetNonBendingCoor(), extrapTrackParam.GetBendingCoor());
-  AliMpArea area1(position, dimensions);
-  
-  // ask to cluterize in the given area of the given chamber
-  fClusterServer.Clusterize(2*station, clusterStore, area1);
+  AskForNewClustersInChamber(trackParam, clusterStore, 2*station+1);
+  AskForNewClustersInChamber(trackParam, clusterStore, 2*station);
 }
 
   //__________________________________________________________________________
@@ -398,16 +415,24 @@ Double_t AliMUONVTrackReconstructor::TryOneCluster(const AliMUONTrackParam &trac
   //__________________________________________________________________________
 Bool_t AliMUONVTrackReconstructor::TryOneClusterFast(const AliMUONTrackParam &trackParam, AliMUONVCluster* cluster)
 {
-/// Test the compatibility between the track and the cluster within a wide fix window
-/// assuming linear propagation of the track:
+/// Test the compatibility between the track and the cluster
+/// given the track resolution + the maximum-distance-to-track value
+/// and assuming linear propagation of the track:
 /// return kTRUE if they are compatibles
   
   Double_t dZ = cluster->GetZ() - trackParam.GetZ();
   Double_t dX = cluster->GetX() - (trackParam.GetNonBendingCoor() + trackParam.GetNonBendingSlope() * dZ);
   Double_t dY = cluster->GetY() - (trackParam.GetBendingCoor() + trackParam.GetBendingSlope() * dZ);
+  const TMatrixD& kParamCov = trackParam.GetCovariances();
+  Double_t errX2 = kParamCov(0,0) + dZ * dZ * kParamCov(1,1) + 2. * dZ * kParamCov(0,1);
+  Double_t errY2 = kParamCov(2,2) + dZ * dZ * kParamCov(3,3) + 2. * dZ * kParamCov(2,3);
+
+  Double_t dXmax = AliMUONReconstructor::GetRecoParam()->GetSigmaCutForTracking() * TMath::Sqrt(errX2) +
+                   AliMUONReconstructor::GetRecoParam()->GetMaxNonBendingDistanceToTrack();
+  Double_t dYmax = AliMUONReconstructor::GetRecoParam()->GetSigmaCutForTracking() * TMath::Sqrt(errY2) +
+		   AliMUONReconstructor::GetRecoParam()->GetMaxBendingDistanceToTrack();
   
-  if (TMath::Abs(dX) > AliMUONReconstructor::GetRecoParam()->GetMaxNonBendingDistanceToTrack() ||
-      TMath::Abs(dY) > AliMUONReconstructor::GetRecoParam()->GetMaxBendingDistanceToTrack()) return kFALSE;
+  if (TMath::Abs(dX) > dXmax || TMath::Abs(dY) > dYmax) return kFALSE;
   
   return kTRUE;
   
@@ -457,6 +482,127 @@ Double_t AliMUONVTrackReconstructor::TryTwoClustersFast(const AliMUONTrackParam 
 }
 
   //__________________________________________________________________________
+Bool_t AliMUONVTrackReconstructor::FollowLinearTrackInChamber(AliMUONTrack &trackCandidate, const AliMUONVClusterStore& clusterStore,
+							      Int_t nextChamber)
+{
+  /// Follow trackCandidate in chamber(0..) nextChamber assuming linear propagation, and search for compatible cluster(s)
+  /// Keep all possibilities or only the best one(s) according to the flag fgkTrackAllTracks:
+  /// kTRUE:  duplicate "trackCandidate" if there are several possibilities and add the new tracks at the end of
+  ///         fRecTracksPtr to avoid conficts with other track candidates at this current stage of the tracking procedure.
+  ///         Remove the obsolete "trackCandidate" at the end.
+  /// kFALSE: add only the best cluster(s) to the "trackCandidate". Try to add a couple of clusters in priority.
+  /// return kTRUE if new cluster(s) have been found (otherwise return kFALSE)
+  AliDebug(1,Form("Enter FollowLinearTrackInChamber(1..) %d", nextChamber+1));
+  
+  Double_t chi2WithOneCluster = 1.e10;
+  Double_t maxChi2WithOneCluster = 2. * AliMUONReconstructor::GetRecoParam()->GetSigmaCutForTracking() *
+					AliMUONReconstructor::GetRecoParam()->GetSigmaCutForTracking(); // 2 because 2 quantities in chi2
+  Double_t bestChi2WithOneCluster = maxChi2WithOneCluster;
+  Bool_t foundOneCluster = kFALSE;
+  AliMUONTrack *newTrack = 0x0;
+  AliMUONVCluster *cluster;
+  AliMUONTrackParam trackParam;
+  AliMUONTrackParam extrapTrackParamAtCluster;
+  AliMUONTrackParam bestTrackParamAtCluster;
+  
+  // Get track parameters according to the propagation direction
+  if (nextChamber > 7) trackParam = *(AliMUONTrackParam*)trackCandidate.GetTrackParamAtCluster()->Last();
+  else trackParam = *(AliMUONTrackParam*)trackCandidate.GetTrackParamAtCluster()->First();
+  
+  // Printout for debuging
+  if ((AliLog::GetDebugLevel("MUON","AliMUONVTrackReconstructor") >= 2) || (AliLog::GetGlobalDebugLevel() >= 2)) {
+    cout<<endl<<"Track parameters and covariances at first cluster:"<<endl;
+    trackParam.GetParameters().Print();
+    trackParam.GetCovariances().Print();
+  }
+  
+  // Add MCS effect
+  AliMUONTrackExtrap::AddMCSEffect(&trackParam,AliMUONConstants::ChamberThicknessInX0(),1.);
+  
+  // Printout for debuging
+  if ((AliLog::GetDebugLevel("MUON","AliMUONVTrackReconstructor") >= 1) || (AliLog::GetGlobalDebugLevel() >= 1)) {
+    cout << "FollowLinearTrackInChamber: look for cluster in chamber(1..): " << nextChamber+1 << endl;
+  }
+  
+  // Create iterators to loop over clusters in chamber
+  TIter next(clusterStore.CreateChamberIterator(nextChamber,nextChamber));
+  
+  // look for candidates in chamber
+  while ( ( cluster = static_cast<AliMUONVCluster*>(next()) ) ) {
+    
+    // try to add the current cluster fast
+    if (!TryOneClusterFast(trackParam, cluster)) continue;
+    
+    // try to add the current cluster accuratly
+    extrapTrackParamAtCluster = trackParam;
+    AliMUONTrackExtrap::LinearExtrapToZ(&extrapTrackParamAtCluster, cluster->GetZ());
+    chi2WithOneCluster = TryOneCluster(extrapTrackParamAtCluster, cluster, extrapTrackParamAtCluster);
+    
+    // if good chi2 then consider to add cluster
+    if (chi2WithOneCluster < maxChi2WithOneCluster) {
+      foundOneCluster = kTRUE;
+      
+      // Printout for debuging
+      if ((AliLog::GetDebugLevel("MUON","AliMUONVTrackReconstructor") >= 1) || (AliLog::GetGlobalDebugLevel() >= 1)) {
+	cout << "FollowLinearTrackInChamber: found one cluster in chamber(1..): " << nextChamber+1
+	<< " (Chi2 = " << chi2WithOneCluster << ")" << endl;
+	cluster->Print();
+      }
+      
+      if (AliMUONReconstructor::GetRecoParam()->TrackAllTracks()) {
+	// copy trackCandidate into a new track put at the end of fRecTracksPtr and add the new cluster
+	newTrack = new ((*fRecTracksPtr)[fRecTracksPtr->GetLast()+1]) AliMUONTrack(trackCandidate);
+	if (AliMUONReconstructor::GetRecoParam()->RequestStation(nextChamber/2))
+	  extrapTrackParamAtCluster.SetRemovable(kFALSE);
+	else extrapTrackParamAtCluster.SetRemovable(kTRUE);
+	newTrack->AddTrackParamAtCluster(extrapTrackParamAtCluster,*cluster);
+	fNRecTracks++;
+	
+	// Printout for debuging
+	if ((AliLog::GetDebugLevel("MUON","AliMUONVTrackReconstructor") >= 1) || (AliLog::GetGlobalDebugLevel() >= 1)) {
+	  cout << "FollowLinearTrackInChamber: added one cluster in chamber(1..): " << nextChamber+1 << endl;
+	  if (AliLog::GetGlobalDebugLevel() >= 3) newTrack->RecursiveDump();
+	}
+	
+      } else if (chi2WithOneCluster < bestChi2WithOneCluster) {
+	// keep track of the best cluster
+	bestChi2WithOneCluster = chi2WithOneCluster;
+	bestTrackParamAtCluster = extrapTrackParamAtCluster;
+      }
+      
+    }
+    
+  }
+  
+  // fill out the best track if required else clean up the fRecTracksPtr array
+  if (!AliMUONReconstructor::GetRecoParam()->TrackAllTracks()) {
+    if (foundOneCluster) {
+      if (AliMUONReconstructor::GetRecoParam()->RequestStation(nextChamber/2))
+	bestTrackParamAtCluster.SetRemovable(kFALSE);
+      else bestTrackParamAtCluster.SetRemovable(kTRUE);
+      trackCandidate.AddTrackParamAtCluster(bestTrackParamAtCluster,*(bestTrackParamAtCluster.GetClusterPtr()));
+      
+      // Printout for debuging
+      if ((AliLog::GetDebugLevel("MUON","AliMUONVTrackReconstructor") >= 1) || (AliLog::GetGlobalDebugLevel() >= 1)) {
+        cout << "FollowLinearTrackInChamber: added the best cluster in chamber(1..): " << bestTrackParamAtCluster.GetClusterPtr()->GetChamberId()+1 << endl;
+        if (AliLog::GetGlobalDebugLevel() >= 3) newTrack->RecursiveDump();
+      }
+      
+    } else return kFALSE;
+    
+  } else if (foundOneCluster) {
+    
+    // remove obsolete track
+    fRecTracksPtr->Remove(&trackCandidate);
+    fNRecTracks--;
+    
+  } else return kFALSE;
+  
+  return kTRUE;
+  
+}
+
+//__________________________________________________________________________
 Bool_t AliMUONVTrackReconstructor::FollowLinearTrackInStation(AliMUONTrack &trackCandidate, const AliMUONVClusterStore& clusterStore,
 							      Int_t nextStation)
 {
@@ -508,6 +654,13 @@ Bool_t AliMUONVTrackReconstructor::FollowLinearTrackInStation(AliMUONTrack &trac
   if (nextStation==4) trackParam = *(AliMUONTrackParam*)trackCandidate.GetTrackParamAtCluster()->Last();
   else trackParam = *(AliMUONTrackParam*)trackCandidate.GetTrackParamAtCluster()->First();
   
+  // Printout for debuging
+  if ((AliLog::GetDebugLevel("MUON","AliMUONVTrackReconstructor") >= 2) || (AliLog::GetGlobalDebugLevel() >= 2)) {
+    cout<<endl<<"Track parameters and covariances at first cluster:"<<endl;
+    trackParam.GetParameters().Print();
+    trackParam.GetCovariances().Print();
+  }
+  
   // Add MCS effect
   AliMUONTrackExtrap::AddMCSEffect(&trackParam,AliMUONConstants::ChamberThicknessInX0(),1.);
   
@@ -539,6 +692,7 @@ Bool_t AliMUONVTrackReconstructor::FollowLinearTrackInStation(AliMUONTrack &trac
       if ((AliLog::GetDebugLevel("MUON","AliMUONVTrackReconstructor") >= 1) || (AliLog::GetGlobalDebugLevel() >= 1)) {
         cout << "FollowLinearTrackInStation: found one cluster in chamber(1..): " << ch2+1
 	     << " (Chi2 = " << chi2WithOneCluster << ")" << endl;
+	clusterCh2->Print();
         cout << "                      look for second clusters in chamber(1..): " << ch1+1 << " ..." << endl;
       }
       
@@ -567,7 +721,8 @@ Bool_t AliMUONVTrackReconstructor::FollowLinearTrackInStation(AliMUONTrack &trac
 	  // Printout for debuging
 	  if ((AliLog::GetDebugLevel("MUON","AliMUONVTrackReconstructor") >= 1) || (AliLog::GetGlobalDebugLevel() >= 1)) {
 	    cout << "FollowLinearTrackInStation: found one cluster in chamber(1..): " << ch1+1
-	  	 << " (Chi2 = " << chi2WithTwoClusters << ")" << endl;
+		 << " (Chi2 = " << chi2WithTwoClusters << ")" << endl;
+	    clusterCh1->Print();
 	  }
 	  
 	  if (AliMUONReconstructor::GetRecoParam()->TrackAllTracks()) {
@@ -606,7 +761,9 @@ Bool_t AliMUONVTrackReconstructor::FollowLinearTrackInStation(AliMUONTrack &trac
 	if (AliMUONReconstructor::GetRecoParam()->TrackAllTracks()) {
 	  // copy trackCandidate into a new track put at the end of fRecTracksPtr and add the new cluster
           newTrack = new ((*fRecTracksPtr)[fRecTracksPtr->GetLast()+1]) AliMUONTrack(trackCandidate);
-	  extrapTrackParamAtCluster2.SetRemovable(kFALSE);
+	  if (AliMUONReconstructor::GetRecoParam()->RequestStation(nextStation))
+	    extrapTrackParamAtCluster2.SetRemovable(kFALSE);
+	  else extrapTrackParamAtCluster2.SetRemovable(kTRUE);
 	  newTrack->AddTrackParamAtCluster(extrapTrackParamAtCluster2,*clusterCh2);
 	  fNRecTracks++;
 	  
@@ -642,7 +799,7 @@ Bool_t AliMUONVTrackReconstructor::FollowLinearTrackInStation(AliMUONTrack &trac
     
     // add MCS effect for next step
     AliMUONTrackExtrap::AddMCSEffect(&trackParam,AliMUONConstants::ChamberThicknessInX0(),1.);
-      
+    
     // reset cluster iterator of chamber 1
     nextInCh1.Reset();
     iCluster1 = -1;
@@ -655,12 +812,12 @@ Bool_t AliMUONVTrackReconstructor::FollowLinearTrackInStation(AliMUONTrack &trac
       
       // try to add the current cluster fast
       if (!TryOneClusterFast(trackParam, clusterCh1)) continue;
-	
+      
       // try to add the current cluster accuratly
       extrapTrackParamAtCluster1 = trackParam;
       AliMUONTrackExtrap::LinearExtrapToZ(&extrapTrackParamAtCluster1, clusterCh1->GetZ());
       chi2WithOneCluster = TryOneCluster(extrapTrackParamAtCluster1, clusterCh1, extrapTrackParamAtCluster1);
-    
+      
       // if good chi2 then consider to add clusterCh1
       // We do not try to attach a cluster in the other chamber too since it has already been done above
       if (chi2WithOneCluster < maxChi2WithOneCluster) {
@@ -670,12 +827,15 @@ Bool_t AliMUONVTrackReconstructor::FollowLinearTrackInStation(AliMUONTrack &trac
   	if ((AliLog::GetDebugLevel("MUON","AliMUONVTrackReconstructor") >= 1) || (AliLog::GetGlobalDebugLevel() >= 1)) {
   	  cout << "FollowLinearTrackInStation: found one cluster in chamber(1..): " << ch1+1
   	       << " (Chi2 = " << chi2WithOneCluster << ")" << endl;
+	  clusterCh1->Print();
   	}
 	
 	if (AliMUONReconstructor::GetRecoParam()->TrackAllTracks()) {
 	  // copy trackCandidate into a new track put at the end of fRecTracksPtr and add the new cluster
   	  newTrack = new ((*fRecTracksPtr)[fRecTracksPtr->GetLast()+1]) AliMUONTrack(trackCandidate);
-	  extrapTrackParamAtCluster1.SetRemovable(kFALSE);
+	  if (AliMUONReconstructor::GetRecoParam()->RequestStation(nextStation))
+	    extrapTrackParamAtCluster1.SetRemovable(kFALSE);
+	  else extrapTrackParamAtCluster1.SetRemovable(kTRUE);
 	  newTrack->AddTrackParamAtCluster(extrapTrackParamAtCluster1,*clusterCh1);
 	  fNRecTracks++;
   	  
@@ -712,7 +872,9 @@ Bool_t AliMUONVTrackReconstructor::FollowLinearTrackInStation(AliMUONTrack &trac
       }
       
     } else if (foundOneCluster) {
-      bestTrackParamAtCluster1.SetRemovable(kFALSE);
+      if (AliMUONReconstructor::GetRecoParam()->RequestStation(nextStation))
+	bestTrackParamAtCluster1.SetRemovable(kFALSE);
+      else bestTrackParamAtCluster1.SetRemovable(kTRUE);
       trackCandidate.AddTrackParamAtCluster(bestTrackParamAtCluster1,*(bestTrackParamAtCluster1.GetClusterPtr()));
       
       // Printout for debuging

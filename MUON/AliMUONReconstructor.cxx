@@ -83,6 +83,8 @@
 #include "AliMUONClusterFinderSimpleFit.h"
 #include "AliMUONClusterFinderPeakCOG.h"
 #include "AliMUONClusterFinderPeakFit.h"
+#include "AliMUONClusterStoreV1.h"
+#include "AliMUONClusterStoreV2.h"
 #include "AliMUONConstants.h"
 #include "AliMUONDigitCalibrator.h"
 #include "AliMUONDigitMaker.h"
@@ -310,29 +312,37 @@ AliMUONReconstructor::CreateTracker() const
   CreateTriggerCircuit();
   CreateDigitMaker();
   CreateClusterServer();
+
+  AliMUONTracker* tracker(0x0);
   
-  if (!fClusterServer) 
+  if ( ! AliMUONReconstructor::GetRecoParam()->CombineClusterTrackReco() )
   {
-    AliError("ClusterServer is NULL ! Cannot create tracker");
-    return 0x0;
+    tracker = new AliMUONTracker(0x0,
+                                 *DigitStore(),
+                                 fDigitMaker,
+                                 fTransformer,
+                                 fTriggerCircuit);
+  }
+  else
+  {
+    tracker = new AliMUONTracker(fClusterServer,
+                                 *DigitStore(),
+                                 fDigitMaker,
+                                 fTransformer,
+                                 fTriggerCircuit);
   }
   
-  AliMUONTracker* tracker = new AliMUONTracker(*fClusterServer,
-					       *DigitStore(),
-                                               fDigitMaker,
-                                               fTransformer,
-                                               fTriggerCircuit);
   
   return tracker;
 }
 
 //_____________________________________________________________________________
 AliMUONVClusterFinder*
-AliMUONReconstructor::CreateClusterFinder(const char* clusterFinderType) const
+AliMUONReconstructor::CreateClusterFinder(const char* clusterFinderType)
 {
   /// Create a given cluster finder instance
   
-  AliCodeTimerAuto("")
+  AliCodeTimerAutoGeneral("")
 
   AliMUONVClusterFinder* clusterFinder(0x0);
   
@@ -389,7 +399,7 @@ AliMUONReconstructor::CreateClusterFinder(const char* clusterFinderType) const
   } 
   else
   {
-    AliError(Form("clustering mode \"%s\" does not exist",opt.Data()));
+    AliErrorClass(Form("clustering mode \"%s\" does not exist",opt.Data()));
     return 0x0;
   }
   
@@ -404,17 +414,15 @@ AliMUONReconstructor::CreateClusterServer() const
   
   if ( fClusterServer ) return;
   
-  AliCodeTimerAuto("")
-
-  AliDebug(1,"");
-  
+  AliCodeTimerAuto("");
+    
   AliMUONVClusterFinder* clusterFinder = CreateClusterFinder(GetRecoParam()->GetClusteringMode());
   
   if ( !clusterFinder ) return;
   
   AliInfo(Form("Will use %s for clusterizing",clusterFinder->ClassName()));
   
-  fClusterServer = new AliMUONSimpleClusterServer(*clusterFinder,*fTransformer);
+  fClusterServer = new AliMUONSimpleClusterServer(clusterFinder,*fTransformer);
 }
 
 //_____________________________________________________________________________
@@ -503,19 +511,62 @@ AliMUONReconstructor::FillTreeR(AliMUONVTriggerStore* triggerStore,
   AliDebug(1,"");
   
   Bool_t ok(kFALSE);
+  Bool_t alone(kTRUE); // is trigger the only info in TreeR ?
+  
+  if ( ! AliMUONReconstructor::GetRecoParam()->CombineClusterTrackReco() )
+  {
+    alone = kFALSE; // we'll get both tracker and trigger information in TreeR
+  }
+  
   if ( triggerStore ) 
   {
-    ok = triggerStore->Connect(clustersTree,kTRUE);
+    ok = triggerStore->Connect(clustersTree,alone);
     if (!ok)
     {
       AliError("Could not create triggerStore branches in TreeR");
     }
   }
+
+  AliMUONVClusterStore* clusterStore(0x0);
   
+  if ( !alone )
+  {
+    clusterStore = new AliMUONClusterStoreV2;
+    
+    CreateClusterServer();
+    
+    TIter next(DigitStore()->CreateIterator());
+    fClusterServer->UseDigits(next);
+
+    AliMpArea area;
+    
+    AliDebug(1,Form("Doing full clusterization in local reconstruction using %s ",fClusterServer->ClassName()));
+    
+    for ( Int_t i = 0; i < AliMpConstants::NofTrackingChambers(); ++i ) 
+    {
+      if (AliMUONReconstructor::GetRecoParam()->UseChamber(i))
+      {
+        if ( i >= 6 && AliMUONReconstructor::GetRecoParam()->BypassSt45() ) continue;
+        
+        fClusterServer->Clusterize(i,*clusterStore,area);
+      }
+    }
+    
+    Bool_t cok = clusterStore->Connect(clustersTree,alone);
+    
+    if (!cok) AliError("Could not connect clusterStore to clusterTree");
+    
+    AliDebug(1,Form("Number of clusters found = %d",clusterStore->GetSize()));
+    
+    StdoutToAliDebug(1,clusterStore->Print());
+  }
+         
   if (ok) // at least one type of branches created successfully
   {
     clustersTree.Fill();
   }
+  
+  delete clusterStore;
 }
 
 //_____________________________________________________________________________

@@ -51,6 +51,8 @@
 
 #pragma link C++ class AliMUONVClusterServer+;
 #pragma link C++ class AliMUONSimpleClusterServer+;
+#pragma link C++ class AliMUONLegacyClusterServer+;
+#pragma link C++ class AliMUONTriggerTrackToTrackerClusters+;
 
 #pragma link C++ class AliMUONESDInterface+;
 

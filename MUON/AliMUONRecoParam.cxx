@@ -40,6 +40,7 @@ AliMUONRecoParam::AliMUONRecoParam()
   fTrackingMode("KALMAN"),
   fMinBendingMomentum(0.),
   fMaxBendingMomentum(0.),
+  fMaxNonBendingSlope(0.),
   fNonBendingVertexDispersion(0.),
   fBendingVertexDispersion(0.),
   fMaxNonBendingDistanceToTrack(0.),
@@ -53,11 +54,13 @@ AliMUONRecoParam::AliMUONRecoParam()
   fTrackAllTracks(kFALSE),
   fRecoverTracks(kFALSE),
   fMakeTrackCandidatesFast(kFALSE),
+  fMakeMoreTrackCandidates(kFALSE),
   fComplementTracks(kFALSE),
   fImproveTracks(kFALSE),
   fUseSmoother(kFALSE),
   fSaveFullClusterInESD(kTRUE),
-  fCalibrationMode("NOGAIN")
+  fCalibrationMode("NOGAIN"),
+  fBypassSt45(kFALSE)
 {
   /// Constructor
   SetNameTitle("MUON","MUON");
@@ -70,6 +73,19 @@ AliMUONRecoParam::AliMUONRecoParam()
 AliMUONRecoParam::~AliMUONRecoParam() 
 {
   /// Destructor
+}
+
+//_____________________________________________________________________________
+Option_t*
+AliMUONRecoParam::GetCalibrationMode() const
+{
+  /// Return the calibration mode. Can be : 
+  /// NOGAIN : only do pedestal subtraction
+  /// GAIN : do pedestal subtraction, and apply gain correction, but with a
+  ///        single capacitance value for all channels
+  /// GAINCONSTANTCAPA : as GAIN, but with a channel-dependent capacitance value
+  
+  return fCalibrationMode.Data();
 }
 
 //_____________________________________________________________________________
@@ -99,12 +115,13 @@ void AliMUONRecoParam::SetLowFluxParam()
 {
   /// Set reconstruction parameters for low flux environment
   
-  fMinBendingMomentum = 0.5;
+  fMinBendingMomentum = 1.;
   fMaxBendingMomentum = 3000.;
+  fMaxNonBendingSlope = 0.3;
   fNonBendingVertexDispersion = 10.;
   fBendingVertexDispersion = 10.;
-  fMaxNonBendingDistanceToTrack = 2.;
-  fMaxBendingDistanceToTrack = 2.;
+  fMaxNonBendingDistanceToTrack = 1.;
+  fMaxBendingDistanceToTrack = 1.;
   fSigmaCutForTracking = 6.;
   fSigmaCutForImprovement = 5.;
   fSigmaCutForTrigger = 8.;
@@ -112,9 +129,12 @@ void AliMUONRecoParam::SetLowFluxParam()
   fTrackAllTracks = kTRUE;
   fRecoverTracks = kTRUE;
   fMakeTrackCandidatesFast = kFALSE;
+  fMakeMoreTrackCandidates = kFALSE;
   fComplementTracks = kTRUE;
   fImproveTracks = kTRUE;
   fUseSmoother = kTRUE;
+  for (Int_t iCh = 0; iCh < 10; iCh++) fUseChamber[iCh] = kTRUE;
+  for (Int_t iSt = 0; iSt < 5; iSt++) fRequestStation[iSt] = kTRUE;
   
 }
 
@@ -123,12 +143,13 @@ void AliMUONRecoParam::SetHighFluxParam()
 {
   /// Set reconstruction parameters for high flux environment
   
-  fMinBendingMomentum = 0.5;
+  fMinBendingMomentum = 1.;
   fMaxBendingMomentum = 3000.;
+  fMaxNonBendingSlope = 0.3;
   fNonBendingVertexDispersion = 10.;
   fBendingVertexDispersion = 10.;
-  fMaxNonBendingDistanceToTrack = 2.;
-  fMaxBendingDistanceToTrack = 2.;
+  fMaxNonBendingDistanceToTrack = 1.;
+  fMaxBendingDistanceToTrack = 1.;
   fSigmaCutForTracking = 6.;
   fSigmaCutForImprovement = 5.;
   fSigmaCutForTrigger = 8.;
@@ -136,9 +157,12 @@ void AliMUONRecoParam::SetHighFluxParam()
   fTrackAllTracks = kTRUE;
   fRecoverTracks = kTRUE;
   fMakeTrackCandidatesFast = kFALSE;
+  fMakeMoreTrackCandidates = kFALSE;
   fComplementTracks = kTRUE;
   fImproveTracks = kTRUE;
   fUseSmoother = kTRUE;
+  for (Int_t iCh = 0; iCh < 10; iCh++) fUseChamber[iCh] = kTRUE;
+  for (Int_t iSt = 0; iSt < 5; iSt++) fRequestStation[iSt] = kTRUE;
   
 }
 
@@ -152,8 +176,9 @@ void AliMUONRecoParam::Print(Option_t *option) const
   
   cout<<Form("Calibration mode = %s",fCalibrationMode.Data())<<endl;
   cout<<Form("Clustering mode = %s",fClusteringMode.Data())<<endl;
-  
   cout<<Form("Tracking mode = %s",fTrackingMode.Data())<<endl;
+
+  if (BypassSt45()) cout << "Will bypass St45 (replacing their clusters by generated ones from trigger tracks)" << endl;
   
   if (fCombinedClusterTrackReco) cout<<"Combined cluster/track reconstruction: ON"<<endl;
   else cout<<"Combined cluster/track reconstruction: OFF"<<endl;
@@ -162,6 +187,8 @@ void AliMUONRecoParam::Print(Option_t *option) const
   else cout<<"Save partial cluster info in ESD"<<endl;
   
   cout<<Form("Bending momentum range = [%5.2f,%5.2f]",fMinBendingMomentum,fMaxBendingMomentum)<<endl;
+  
+  cout<<Form("Maximum non bending slope = %5.2f",fMaxNonBendingSlope)<<endl;
   
   if (strstr(fTrackingMode,"ORIGINAL"))
     cout<<Form("Vertex dispertion = (%5.2f,%5.2f)",fNonBendingVertexDispersion,fBendingVertexDispersion)<<endl;
@@ -183,6 +210,13 @@ void AliMUONRecoParam::Print(Option_t *option) const
     else cout<<"OFF"<<endl;
   } else if (fMakeTrackCandidatesFast)
     cout<<"Make track candidates assuming linear propagation between stations 4 and 5"<<endl;
+  
+  if (strstr(option,"FULL")) {
+    cout<<"Make track candidates starting from 1 cluster in each of the stations 4 and 5: ";
+    if (fMakeMoreTrackCandidates) cout<<"ON"<<endl;
+    else cout<<"OFF"<<endl;
+  } else if (fMakeMoreTrackCandidates)
+    cout<<"Make track candidates starting from 1 cluster in each of the stations 4 and 5"<<endl;
   
   if (strstr(option,"FULL")) {
     cout<<"Try to recover tracks getting lost during tracking: ";
@@ -213,6 +247,33 @@ void AliMUONRecoParam::Print(Option_t *option) const
     cout<<"Use smoother to compute final track parameters, etc, at each cluster"<<endl;
   
   cout<<Form("Maximum normalized chi2 of tracking/trigger track matching = %5.2f",fMaxNormChi2MatchTrigger)<<endl;
+  
+  Bool_t discardedCh = kFALSE;
+  Int_t ch = 0;
+  do {
+    if (!UseChamber(ch)) {
+      if (!discardedCh) {
+	cout<<"Discarded chambers(1..): "<<ch+1;
+	discardedCh = kTRUE;
+      }
+      else cout<<" "<<ch+1;
+    }
+  } while (++ch < 10);
+  if (discardedCh) cout<<endl;
+  
+  Bool_t discardedSt = kFALSE;
+  Int_t st = 0;
+  do {
+    if (!RequestStation(st)) {
+      if (!discardedSt) {
+	cout<<"Not requested stations(1..): "<<st+1;
+	discardedSt = kTRUE;
+      }
+      else cout<<" "<<st+1;
+    }
+  } while (++st < 5);
+  if (discardedSt) cout<<endl;
+  
   
   cout<<"\t-------------------------------------"<<endl<<endl;
   

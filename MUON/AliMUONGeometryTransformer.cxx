@@ -31,6 +31,14 @@
 #include "AliMpConstants.h"
 #include "AliMpExMap.h"
 #include "AliMpCDB.h"
+#include "AliMpArea.h"
+#include <float.h>
+#include "AliMpVPadIterator.h"
+#include "AliMpPad.h"
+#include "AliMpDEIterator.h"
+#include <TVector2.h>
+#include "AliMpVSegmentation.h"
+#include "AliMpSegmentation.h"
 
 #include "AliLog.h"
 #include "AliAlignObjMatrix.h"
@@ -58,7 +66,8 @@ AliMUONGeometryTransformer::AliMUONGeometryTransformer()
   : TObject(),
     fDetectorName(fgkDefaultDetectorName),
     fModuleTransformers(0),
-    fMisAlignArray(0)
+    fMisAlignArray(0),
+    fDEAreas(0x0)
 {
 /// Standard constructor
 
@@ -72,7 +81,8 @@ AliMUONGeometryTransformer::AliMUONGeometryTransformer(TRootIOCtor* /*ioCtor*/)
   : TObject(),
     fDetectorName(),
     fModuleTransformers(0),
-    fMisAlignArray(0)
+    fMisAlignArray(0),
+    fDEAreas(0x0)
 {
 /// Default constructor
 } 
@@ -84,11 +94,103 @@ AliMUONGeometryTransformer::~AliMUONGeometryTransformer()
 
   delete fModuleTransformers;
   delete fMisAlignArray;
+  delete fDEAreas;
 }
 
 //
 // private methods
 //
+
+
+//_____________________________________________________________________________
+AliMpArea*
+AliMUONGeometryTransformer::GetDEArea(Int_t detElemId) const
+{
+  /// Get area (in global coordinates) covered by a given detection element
+  if (!fDEAreas)
+  {
+    CreateDEAreas();
+  }
+  return static_cast<AliMpArea*>(fDEAreas->GetValue(detElemId));
+}
+
+//_____________________________________________________________________________
+void
+AliMUONGeometryTransformer::CreateDEAreas() const
+{
+  /// Create DE areas
+  
+  fDEAreas = new AliMpExMap(true);
+  
+  AliMpDEIterator it;
+
+  it.First();
+
+  /// Generate the DE areas in global coordinates
+
+  while ( !it.IsDone() )
+  {
+    Int_t detElemId = it.CurrentDEId();
+    
+    if ( !HasDE(detElemId) ) continue;
+    
+    const AliMpVSegmentation* seg = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId,AliMp::kCath0);
+    
+    Double_t xg,yg,zg;
+    
+    AliMp::StationType stationType = AliMpDEManager::GetStationType(detElemId);
+    
+    Double_t xl(0.0), yl(0.0), zl(0.0);
+    Double_t dx(seg->Dimensions().X());
+    Double_t dy(seg->Dimensions().Y());
+    
+    if ( stationType == AliMp::kStation1 || stationType == AliMp::kStation2 ) 
+    {
+      Double_t xmin(FLT_MAX);
+      Double_t xmax(-FLT_MAX);
+      Double_t ymin(FLT_MAX);
+      Double_t ymax(-FLT_MAX);
+      
+      for ( Int_t icathode = 0; icathode < 2; ++icathode ) 
+      {
+        const AliMpVSegmentation* cathode 
+        = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId,AliMp::GetCathodType(icathode));
+        
+        AliMpVPadIterator* it = cathode->CreateIterator();
+        
+        it->First();
+        
+        while ( !it->IsDone() ) 
+        {
+          AliMpPad pad = it->CurrentItem();
+          AliMpArea a(pad.Position(),pad.Dimensions());
+          xmin = TMath::Min(xmin,a.LeftBorder());
+          xmax = TMath::Max(xmax,a.RightBorder());
+          ymin = TMath::Min(ymin,a.DownBorder());
+          ymax = TMath::Max(ymax,a.UpBorder());
+          it->Next();
+        }
+        
+        delete it;
+      }
+      
+      xl = (xmin+xmax)/2.0;
+      yl = (ymin+ymax)/2.0;
+      dx = (xmax-xmin)/2.0;
+      dy = (ymax-ymin)/2.0;
+      
+      Local2Global(detElemId,xl,yl,zl,xg,yg,zg);
+    }
+    else
+    {
+      Local2Global(detElemId,xl,yl,zl,xg,yg,zg);
+    }
+    
+    fDEAreas->Add(detElemId,new AliMpArea(TVector2(xg,yg),TVector2(dx,dy)));
+    
+    it.Next();
+  }
+}
 
 //_____________________________________________________________________________
 Bool_t AliMUONGeometryTransformer::LoadMapping() const

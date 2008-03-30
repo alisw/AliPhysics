@@ -346,6 +346,7 @@ AliMUONCluster::Copy(TObject& obj) const
   ///
   TObject::Copy(obj);
   AliMUONCluster& dest = static_cast<AliMUONCluster&>(obj);
+  delete dest.fPads;
   dest.fPads = 0x0;
   if ( fPads )
   {

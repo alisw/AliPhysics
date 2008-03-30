@@ -31,7 +31,7 @@
 #include "AliMUONVClusterStore.h"
 #include "AliMUONVTrackStore.h"
 #include "AliMUONTrack.h"
-
+#include "AliMUONTracker.h"
 #include "AliLog.h"
 
 //-----------------------------------------------------------------------------
@@ -68,7 +68,7 @@ AliMUONRefitter::AliMUONRefitter()
   /// Default constructor
   CreateGeometryTransformer();
   CreateClusterServer(*fGeometryTransformer);
-  if (fClusterServer) CreateTrackReconstructor(*fClusterServer);
+  if (fClusterServer) AliMUONTracker::CreateTrackReconstructor(AliMUONReconstructor::GetRecoParam()->GetTrackingMode(),fClusterServer);
   if (!fClusterServer || !fTracker) {
     AliFatal("refitter initialization failed");
     exit(-1);
@@ -339,53 +339,8 @@ void AliMUONRefitter::CreateGeometryTransformer()
 void AliMUONRefitter::CreateClusterServer(AliMUONGeometryTransformer& transformer)
 {
   /// Create cluster server
-  AliMUONVClusterFinder* clusterFinder = CreateClusterFinder();
-  fClusterServer = clusterFinder ? new AliMUONSimpleClusterServer(*clusterFinder,transformer) : 0x0;
-}
-
-//_____________________________________________________________________________
-AliMUONVClusterFinder* AliMUONRefitter::CreateClusterFinder()
-{
-  /// Create a given cluster finder instance
-  AliMUONVClusterFinder* clusterFinder;
-  Option_t *opt = AliMUONReconstructor::GetRecoParam()->GetClusteringMode();
-  
-  if      (strstr(opt,"PRECLUSTERV2")) clusterFinder = new AliMUONPreClusterFinderV2;
-  else if (strstr(opt,"PRECLUSTERV3")) clusterFinder = new AliMUONPreClusterFinderV3;
-  else if (strstr(opt,"PRECLUSTER"))   clusterFinder = new AliMUONPreClusterFinder;
-  else if (strstr(opt,"COG"))          clusterFinder = new AliMUONClusterFinderCOG(new AliMUONPreClusterFinder);
-  else if (strstr(opt,"SIMPLEFITV3"))  clusterFinder = new AliMUONClusterFinderSimpleFit(new AliMUONClusterFinderCOG(new AliMUONPreClusterFinderV3));
-  else if (strstr(opt,"SIMPLEFIT"))    clusterFinder = new AliMUONClusterFinderSimpleFit(new AliMUONClusterFinderCOG(new AliMUONPreClusterFinder));
-  else if (strstr(opt,"MLEM:DRAW"))    clusterFinder = new AliMUONClusterFinderMLEM(kTRUE,new AliMUONPreClusterFinder);
-  else if (strstr(opt,"MLEMV3"))       clusterFinder = new AliMUONClusterFinderMLEM(kFALSE,new AliMUONPreClusterFinderV3);
-  else if (strstr(opt,"MLEMV2"))       clusterFinder = new AliMUONClusterFinderMLEM(kFALSE,new AliMUONPreClusterFinderV2);
-  else if (strstr(opt,"MLEM"))         clusterFinder = new AliMUONClusterFinderMLEM(kFALSE,new AliMUONPreClusterFinder);
-  else clusterFinder = 0x0;
-  
-  if (clusterFinder) {
-    AliInfo(Form("Will use %s for clusterizing",clusterFinder->ClassName()));
-  } else {
-    AliError(Form("clustering mode \"%s\" does not exist",opt));
-  }
-  
-  return clusterFinder;
-}
-
-//_____________________________________________________________________________
-void AliMUONRefitter::CreateTrackReconstructor(AliMUONVClusterServer& clusterServer)
-{
-  /// Create track reconstructor, depending on tracking mode set in RecoParam
-  Option_t *opt = AliMUONReconstructor::GetRecoParam()->GetTrackingMode();
-  
-  if      (strstr(opt,"ORIGINAL")) fTracker = new AliMUONTrackReconstructor(clusterServer);
-  else if (strstr(opt,"KALMAN"))   fTracker = new AliMUONTrackReconstructorK(clusterServer);
-  else fTracker = 0x0;
-  
-  if (fTracker) {
-    AliInfo(Form("Will use %s for tracking",fTracker->ClassName()));
-  } else {
-    AliError(Form("tracking mode \"%s\" does not exist",opt));
-  }
+  AliMUONVClusterFinder* clusterFinder = AliMUONReconstructor::CreateClusterFinder(AliMUONReconstructor::GetRecoParam()->GetClusteringMode());
+  fClusterServer = clusterFinder ? new AliMUONSimpleClusterServer(clusterFinder,transformer) : 0x0;
 }
 
 //_____________________________________________________________________________

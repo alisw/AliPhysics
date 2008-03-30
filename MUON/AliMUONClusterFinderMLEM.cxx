@@ -161,16 +161,16 @@ AliMUONClusterFinderMLEM::NextCluster()
   // pre-cluster and treat it
 
   fPreCluster = fPreClusterFinder->NextCluster();
-  
+
+  fClusterList.Delete(); // reset the list of clusters for this pre-cluster
+  fClusterNumber = -1; //AZ
+    
   if (!fPreCluster)
   {
     // we are done
     return 0x0;
   }
     
-  fClusterList.Delete(); // reset the list of clusters for this pre-cluster
-  fClusterNumber = -1; //AZ
-  
   WorkOnPreCluster();
 
   // WorkOnPreCluster may have used only part of the pads, so we check that

@@ -17,10 +17,13 @@
 
 #include "AliMUONSimpleClusterServer.h"
 
-#include "AliMUONConstants.h"
+#include "AliCodeTimer.h"
+#include "AliLog.h"
 #include "AliMUONCluster.h"
+#include "AliMUONConstants.h"
 #include "AliMUONGeometryTransformer.h"
 #include "AliMUONPad.h"
+#include "AliMUONTriggerTrackToTrackerClusters.h"
 #include "AliMUONVCluster.h"
 #include "AliMUONVClusterFinder.h"
 #include "AliMUONVClusterStore.h"
@@ -29,16 +32,13 @@
 #include "AliMpDEIterator.h"
 #include "AliMpDEManager.h"
 #include "AliMpExMap.h"
+#include "AliMpPad.h"
 #include "AliMpSegmentation.h"
-#include "AliMpVPadIterator.h"
 #include "AliMpVSegmentation.h"
-#include "AliESDMuonPad.h"
-#include "AliLog.h"
-#include <float.h>
 #include <Riostream.h>
 #include <TClonesArray.h>
 #include <TString.h>
-
+#include <float.h>
 
 /// \class AliMUONSimpleClusterServer
 ///
@@ -64,95 +64,31 @@ namespace
 }
 
 //_____________________________________________________________________________
-AliMUONSimpleClusterServer::AliMUONSimpleClusterServer(AliMUONVClusterFinder& clusterFinder,
+AliMUONSimpleClusterServer::AliMUONSimpleClusterServer(AliMUONVClusterFinder* clusterFinder,
                                                        const AliMUONGeometryTransformer& transformer)
 : AliMUONVClusterServer(), 
   fClusterFinder(clusterFinder),
   fTransformer(transformer),
   fPads(),
-  fDEAreas(new AliMpExMap(true))
+  fTriggerTrackStore(0x0),
+  fBypass(0x0)
 {
     /// Ctor
+    /// Note that we take ownership of the clusterFinder
     
     fPads[0] = new AliMpExMap(true);
     fPads[1] = new AliMpExMap(true);
     
-    AliMpDEIterator it;
-    
-    it.First();
-    
-    /// Generate the DE areas in global coordinates
-    
-    while ( !it.IsDone() )
-    {
-      Int_t detElemId = it.CurrentDEId();
-      
-      const AliMpVSegmentation* seg = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId,AliMp::kCath0);
-      
-      Double_t xg,yg,zg;
-      
-      AliMp::StationType stationType = AliMpDEManager::GetStationType(detElemId);
-      
-      Double_t xl(0.0), yl(0.0), zl(0.0);
-      Double_t dx(seg->Dimensions().X());
-      Double_t dy(seg->Dimensions().Y());
-      
-      if ( stationType == AliMp::kStation1 || stationType == AliMp::kStation2 ) 
-      {
-        Double_t xmin(FLT_MAX);
-        Double_t xmax(-FLT_MAX);
-        Double_t ymin(FLT_MAX);
-        Double_t ymax(-FLT_MAX);
-        
-        for ( Int_t icathode = 0; icathode < 2; ++icathode ) 
-        {
-          const AliMpVSegmentation* cathode 
-            = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId,AliMp::GetCathodType(icathode));
-          
-          AliMpVPadIterator* it = cathode->CreateIterator();
-          
-          it->First();
-          
-          while ( !it->IsDone() ) 
-          {
-            AliMpPad pad = it->CurrentItem();
-            AliMpArea a(pad.Position(),pad.Dimensions());
-            xmin = TMath::Min(xmin,a.LeftBorder());
-            xmax = TMath::Max(xmax,a.RightBorder());
-            ymin = TMath::Min(ymin,a.DownBorder());
-            ymax = TMath::Max(ymax,a.UpBorder());
-            it->Next();
-          }
-          
-          delete it;
-        }
-        
-        xl = (xmin+xmax)/2.0;
-        yl = (ymin+ymax)/2.0;
-        dx = (xmax-xmin)/2.0;
-        dy = (ymax-ymin)/2.0;
-        
-        fTransformer.Local2Global(detElemId,xl,yl,zl,xg,yg,zg);
-      }
-      else
-      {
-        fTransformer.Local2Global(detElemId,xl,yl,zl,xg,yg,zg);
-      }
-      
-      fDEAreas->Add(detElemId,new AliMpArea(TVector2(xg,yg),TVector2(dx,dy)));
-     
-      it.Next();
-    }
 }
 
 //_____________________________________________________________________________
 AliMUONSimpleClusterServer::~AliMUONSimpleClusterServer()
 {
   /// Dtor
-  delete &fClusterFinder;
+  delete fClusterFinder;
   delete fPads[0];
   delete fPads[1];
-  delete fDEAreas;
+  delete fBypass;
 }
 
 //_____________________________________________________________________________
@@ -166,6 +102,13 @@ AliMUONSimpleClusterServer::Clusterize(Int_t chamberId,
   ///
   /// We first find out the list of DE that have a non-zero overlap with area,
   /// and then use the clusterfinder to find clusters in those areas (and DE).
+  
+  AliCodeTimerAuto(Form("Chamber %d",chamberId));
+  
+  if ( fTriggerTrackStore && chamberId >= 6 ) 
+  {
+    return fBypass->GenerateClusters(chamberId,clusterStore);
+  }
   
   AliMpDEIterator it;
   
@@ -200,17 +143,17 @@ AliMUONSimpleClusterServer::Clusterize(Int_t chamberId,
       
       if ( ok ) 
       {      
-        if ( fClusterFinder.NeedSegmentation() )
+        if ( fClusterFinder->NeedSegmentation() )
         {
           const AliMpVSegmentation* seg[2] = 
         { AliMpSegmentation::Instance()->GetMpSegmentation(detElemId,AliMp::kCath0),
           AliMpSegmentation::Instance()->GetMpSegmentation(detElemId,AliMp::kCath1)
         };
-          fClusterFinder.Prepare(detElemId,pads,deArea,seg);
+          fClusterFinder->Prepare(detElemId,pads,deArea,seg);
         }
         else
         {
-          fClusterFinder.Prepare(detElemId,pads,deArea);
+          fClusterFinder->Prepare(detElemId,pads,deArea);
         }
         
         AliDebug(1,Form("Clusterizing DE %04d with %3d pads (cath0) and %3d pads (cath1)",
@@ -220,7 +163,7 @@ AliMUONSimpleClusterServer::Clusterize(Int_t chamberId,
         
         AliMUONCluster* cluster;
         
-        while ( ( cluster = fClusterFinder.NextCluster() ) ) 
+        while ( ( cluster = fClusterFinder->NextCluster() ) ) 
         {      
           // add new cluster to the store with information to build its ID
           // increment the number of clusters into the store
@@ -267,6 +210,7 @@ AliMUONSimpleClusterServer::Clusterize(Int_t chamberId,
   return nofAddedClusters;
 }
 
+
 //_____________________________________________________________________________
 void
 AliMUONSimpleClusterServer::Global2Local(Int_t detElemId, const AliMpArea& globalArea,
@@ -297,7 +241,9 @@ AliMUONSimpleClusterServer::Overlap(Int_t detElemId,
   
   Bool_t overlap(kFALSE);
   
-  AliMpArea* globalDEArea = static_cast<AliMpArea*>(fDEAreas->GetValue(detElemId));
+  AliMpArea* globalDEArea = fTransformer.GetDEArea(detElemId);
+  
+  if (!globalDEArea) return kFALSE;
   
   AliMpArea overlapArea;
   
@@ -330,6 +276,17 @@ AliMUONSimpleClusterServer::PadArray(Int_t detElemId, Int_t cathode) const
   /// Return array for given cathode of given DE
   
   return static_cast<TClonesArray*>(fPads[cathode]->GetValue(detElemId));
+}
+
+//_____________________________________________________________________________
+Bool_t 
+AliMUONSimpleClusterServer::UseTriggerTrackStore(AliMUONVTriggerTrackStore* trackStore)
+{
+  /// Tells us to use trigger track store, and thus to bypass St45 clusters
+  fTriggerTrackStore = trackStore; // not owner
+  delete fBypass;
+  fBypass = new AliMUONTriggerTrackToTrackerClusters(fTransformer,fTriggerTrackStore);
+  return kTRUE;
 }
 
 //_____________________________________________________________________________

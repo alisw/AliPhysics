@@ -57,11 +57,18 @@ void runReconstruction(int seed, const char* input, const char* recoptions)
   //  MuonRec->SetEventRange(319,319);
   MuonRec->SetWriteAOD();
   
-  AliMUONRecoParam *muonRecoParam = AliMUONRecoParam::GetLowFluxParam();
-  muonRecoParam->CombineClusterTrackReco(kTRUE);
-  //muonRecoParam->SetClusteringMode("PEAKFIT");
-  //muonRecoParam->SetClusteringMode("PEAKCOG");
+  AliMUONRecoParam* muonRecoParam = AliMUONRecoParam::GetLowFluxParam();
+  muonRecoParam->CombineClusterTrackReco(kFALSE);
+  muonRecoParam->BypassSt45(kTRUE);
+  //  muonRecoParam->SetMaxBendingMomentum(10000000.0);
+  //  muonRecoParam->SetMaxNonBendingDistanceToTrack(200.0);
+  //  muonRecoParam->SetMaxBendingDistanceToTrack(200.0);
+  muonRecoParam->SetSigmaCutForTracking(20.0);
+  //  muonRecoParam->UseSmoother(kFALSE);  
+  muonRecoParam->RequestStation(2,kFALSE);
+  muonRecoParam->ImproveTracks(kFALSE);
   muonRecoParam->Print("FULL");
+
   AliRecoParam::Instance()->RegisterRecoParam(muonRecoParam);
   
   MuonRec->Run();
@@ -70,4 +77,3 @@ void runReconstruction(int seed, const char* input, const char* recoptions)
   
   //gObjectTable->Print();
 }
-

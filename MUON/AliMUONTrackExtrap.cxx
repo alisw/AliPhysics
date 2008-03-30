@@ -53,9 +53,10 @@ Double_t AliMUONTrackExtrap::GetImpactParamFromBendingMomentum(Double_t bendingM
   
   if (bendingMomentum == 0.) return 1.e10;
   
+  const Double_t kCorrectionFactor = 0.9; // impact parameter is 10% overestimated
   Double_t simpleBPosition = 0.5 * (AliMUONConstants::CoilZ() + AliMUONConstants::YokeZ());
   Double_t simpleBLength = 0.5 * (AliMUONConstants::CoilL() + AliMUONConstants::YokeL());
-  Float_t b[3], x[3] = {0.,0.,(Float_t) simpleBPosition};
+  Float_t b[3], x[3] = {50.,50.,(Float_t) simpleBPosition};
   if (fgkField) fgkField->Field(x,b);
   else {
     cout<<"F-AliMUONTrackExtrap::GetField: fgkField = 0x0"<<endl;
@@ -63,7 +64,7 @@ Double_t AliMUONTrackExtrap::GetImpactParamFromBendingMomentum(Double_t bendingM
   }
   Double_t simpleBValue = (Double_t) b[0];
   
-  return (-0.0003 * simpleBValue * simpleBLength * simpleBPosition / bendingMomentum);
+  return kCorrectionFactor * (-0.0003 * simpleBValue * simpleBLength * simpleBPosition / bendingMomentum);
 }
 
 //__________________________________________________________________________
@@ -76,9 +77,10 @@ Double_t AliMUONTrackExtrap::GetBendingMomentumFromImpactParam(Double_t impactPa
   
   if (impactParam == 0.) return 1.e10;
   
+  const Double_t kCorrectionFactor = 1.1; // bending momentum is 10% underestimated
   Double_t simpleBPosition = 0.5 * (AliMUONConstants::CoilZ() + AliMUONConstants::YokeZ());
   Double_t simpleBLength = 0.5 * (AliMUONConstants::CoilL() + AliMUONConstants::YokeL());
-  Float_t b[3], x[3] = {0.,0.,(Float_t) simpleBPosition};
+  Float_t b[3], x[3] = {50.,50.,(Float_t) simpleBPosition};
   if (fgkField) fgkField->Field(x,b);
   else {
     cout<<"F-AliMUONTrackExtrap::GetField: fgkField = 0x0"<<endl;
@@ -86,7 +88,7 @@ Double_t AliMUONTrackExtrap::GetBendingMomentumFromImpactParam(Double_t impactPa
   }
   Double_t simpleBValue = (Double_t) b[0];
   
-  return (-0.0003 * simpleBValue * simpleBLength * simpleBPosition / impactParam);
+  return kCorrectionFactor * (-0.0003 * simpleBValue * simpleBLength * simpleBPosition / impactParam);
 }
 
 //__________________________________________________________________________
@@ -278,7 +280,7 @@ void AliMUONTrackExtrap::ExtrapToZCov(AliMUONTrackParam* trackParam, Double_t zE
   
   // Get reference to the parameter covariance matrix
   const TMatrixD& kParamCov = trackParam->GetCovariances();
-  
+	
   // Extrapolate track parameters to "zEnd"
   ExtrapToZ(trackParam,zEnd);
   

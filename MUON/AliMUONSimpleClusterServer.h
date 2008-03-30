@@ -16,16 +16,17 @@
 #  include "AliMUONVClusterServer.h"
 #endif
 
-class AliMUONVClusterFinder;
-class AliMUONGeometryTransformer;
-class AliMpExMap;
 class AliESDMuonPad;
+class AliMUONGeometryTransformer;
+class AliMUONTriggerTrackToTrackerClusters;
+class AliMUONVClusterFinder;
+class AliMpExMap;
 class TClonesArray;
 
 class AliMUONSimpleClusterServer : public AliMUONVClusterServer
 {
 public:
-  AliMUONSimpleClusterServer(AliMUONVClusterFinder& clusterFinder,
+  AliMUONSimpleClusterServer(AliMUONVClusterFinder* clusterFinder,
                              const AliMUONGeometryTransformer& transformer);
   
   virtual ~AliMUONSimpleClusterServer();
@@ -37,7 +38,10 @@ public:
   void UseDigits(TIter& next);
   
   void Print(Option_t* opt="") const;
-  
+
+  /// Use trigger tracks. Return kFALSE if not used.
+  virtual Bool_t UseTriggerTrackStore(AliMUONVTriggerTrackStore* trackStore);
+
 private:
   /// Not implemented
   AliMUONSimpleClusterServer(const AliMUONSimpleClusterServer& rhs);
@@ -51,10 +55,11 @@ private:
   TClonesArray* PadArray(Int_t detElemId, Int_t cathode) const;
   
 private:
-  AliMUONVClusterFinder& fClusterFinder; //!< the cluster finder (owner)
+  AliMUONVClusterFinder* fClusterFinder; //!< the cluster finder (owner)
   const AliMUONGeometryTransformer& fTransformer; //!< the geometry transformer (not owner)
   AliMpExMap* fPads[2]; ///< map of TClonesArray of AliMUONPads
-  AliMpExMap* fDEAreas; ///< map of detection element areas in global coordinates
+  AliMUONVTriggerTrackStore* fTriggerTrackStore; ///< trigger track store (if bypassing of St45 was requested) (not owner)
+  AliMUONTriggerTrackToTrackerClusters* fBypass; ///< to convert trigger track into tracker clusters (owner)
   
   ClassDef(AliMUONSimpleClusterServer,0) // Cluster server
 };
