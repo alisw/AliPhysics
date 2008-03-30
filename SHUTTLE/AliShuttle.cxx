@@ -1574,8 +1574,8 @@ Int_t AliShuttle::ProcessCurrentDetector()
 	AliPreprocessor* aPreprocessor =
 		dynamic_cast<AliPreprocessor*> (fPreprocessorMap.GetValue(fCurrentDetector));
 
-	// these lines will become active in a few days, when all preprocessors are updated
-	if (0 && aPreprocessor->ProcessRunType() == kFALSE)
+	// check if the preprocessor wants to process this run type
+	if (aPreprocessor->ProcessRunType() == kFALSE)
 	{
 		UpdateShuttleStatus(AliShuttleStatus::kSkipped);
 		UpdateShuttleLogbook(fCurrentDetector, "DONE");
