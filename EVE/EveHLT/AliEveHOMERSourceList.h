@@ -21,18 +21,6 @@ class AliEveHOMERSourceMap;
 
 class AliEveHOMERSourceList : public TEveElementList
 {
-private:
-  AliEveHOMERSourceList(const AliEveHOMERSourceList&);            // Not implemented
-  AliEveHOMERSourceList& operator=(const AliEveHOMERSourceList&); // Not implemented
-
-protected:
-  //SourceMap_t       fByType;
-  //ESourceGrouping_e fView;
-  //Bool_t            fDefaultState;
-
-  AliEveHOMERManager   *fManager;
-  AliEveHOMERSourceMap *fSrcMap;
-
 public:
   AliEveHOMERSourceList(const Text_t* n="HOMER Source List", const Text_t* t="");
   virtual ~AliEveHOMERSourceList();
@@ -52,7 +40,19 @@ public:
   //void SelectAll();   // *MENU*
   //void DeselectAll(); // *MENU*
 
-  ClassDef(AliEveHOMERSourceList, 1);
-}; // endclass AliEveHOMERSourceList
+protected:
+  //SourceMap_t       fByType;
+  //ESourceGrouping_e fView;
+  //Bool_t            fDefaultState;
+
+  AliEveHOMERManager   *fManager;
+  AliEveHOMERSourceMap *fSrcMap;
+
+private:
+  AliEveHOMERSourceList(const AliEveHOMERSourceList&);            // Not implemented
+  AliEveHOMERSourceList& operator=(const AliEveHOMERSourceList&); // Not implemented
+
+  ClassDef(AliEveHOMERSourceList, 0); // Interface to a list of HOMER sourcces.
+};
 
 #endif

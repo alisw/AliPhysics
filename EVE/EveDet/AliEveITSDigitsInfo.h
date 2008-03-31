@@ -32,14 +32,6 @@ class AliRawReader;
 /******************************************************************************/
 class AliEveITSModuleSelection
 {
-protected:
-  Int_t    fType;      // Type of modules: 0 - SPD, 1 - SDD, 2 - SSD.
-  Int_t    fLayer;     // Layer, 0 - inner SPD, 5 - outer SSD.
-  Float_t  fMinPhi;    // Min phi.
-  Float_t  fMaxPhi;    // Max phi.
-  Float_t  fMinTheta;  // Min theta.
-  Float_t  fMaxTheta;  // Max theta.
-
 public:
   AliEveITSModuleSelection();
   virtual ~AliEveITSModuleSelection() {}
@@ -60,7 +52,15 @@ public:
   void    SetPhiRange  (Float_t x, Float_t y) { fMinPhi   = x; fMaxPhi   = y; }
   void    SetThetaRange(Float_t x, Float_t y) { fMinTheta = x; fMaxTheta = y; }
 
-  ClassDef(AliEveITSModuleSelection, 1); // Helper for selecting a range of ITS modules by type, layer, phi and theta.
+protected:
+  Int_t    fType;      // Type of modules: 0 - SPD, 1 - SDD, 2 - SSD.
+  Int_t    fLayer;     // Layer, 0 - inner SPD, 5 - outer SSD.
+  Float_t  fMinPhi;    // Min phi.
+  Float_t  fMaxPhi;    // Max phi.
+  Float_t  fMinTheta;  // Min theta.
+  Float_t  fMaxTheta;  // Max theta.
+
+  ClassDef(AliEveITSModuleSelection, 0); // Helper for selecting a range of ITS modules by type, layer, phi and theta.
 };
 
 /******************************************************************************/
@@ -69,21 +69,6 @@ public:
 
 class AliEveITSDigitsInfo : public TObject, public TEveRefCnt
 {
-private:
-  AliEveITSDigitsInfo(const AliEveITSDigitsInfo&);            // Not implemented
-  AliEveITSDigitsInfo& operator=(const AliEveITSDigitsInfo&); // Not implemented
-
-  Float_t fSPDZCoord[192];                // Precalculated z-coordinates for positions of digits.
-
-  void InitInternals();
-
-protected:
-  std::map<Int_t,  TClonesArray*> fSPDmap;     // Map from module-id to SPD data.
-  std::map<Int_t,  TClonesArray*> fSDDmap;     // Map from module-id to SDD data.
-  std::map<Int_t,  TClonesArray*> fSSDmap;     // Map from module-id to SSD data.
-
-  void        SetITSSegmentation();
-
 public:
   TTree*                   fTree;         // Tree from which the digits are read.
 
@@ -122,6 +107,21 @@ public:
   void GetModuleIDs(AliEveITSModuleSelection* sel, std::vector<UInt_t>& ids);
 
   virtual void Print(Option_t* opt="") const;
+
+protected:
+  std::map<Int_t,  TClonesArray*> fSPDmap;     // Map from module-id to SPD data.
+  std::map<Int_t,  TClonesArray*> fSDDmap;     // Map from module-id to SDD data.
+  std::map<Int_t,  TClonesArray*> fSSDmap;     // Map from module-id to SSD data.
+
+  void        SetITSSegmentation();
+
+private:
+  Float_t fSPDZCoord[192];                // Precalculated z-coordinates for positions of digits.
+
+  void InitInternals();
+
+  AliEveITSDigitsInfo(const AliEveITSDigitsInfo&);            // Not implemented
+  AliEveITSDigitsInfo& operator=(const AliEveITSDigitsInfo&); // Not implemented
 
   ClassDef(AliEveITSDigitsInfo, 0); // Stores ITS geometry information and event-data in format suitable for visualization.
 }; // endclass AliEveITSDigitsInfo

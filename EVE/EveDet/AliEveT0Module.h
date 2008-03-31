@@ -23,10 +23,6 @@ class TTree;
 
 class AliEveT0Module : public TEveQuadSet
 {
-private:
-  AliEveT0Module(const AliEveT0Module&);
-  AliEveT0Module& operator=(const AliEveT0Module&);
-
 public:
   AliEveT0Module(const Text_t* n="AliEveT0Module", Int_t sigType=0, AliT0digit *digits=0,AliT0RawReader *start=0);
   virtual ~AliEveT0Module() {}
@@ -42,7 +38,11 @@ protected:
   AliT0digit     *fDigits;  // Digits.
   AliT0RawReader *fStart;   // Reader.
 
-  ClassDef(AliEveT0Module, 0);
+private:
+  AliEveT0Module(const AliEveT0Module&);
+  AliEveT0Module& operator=(const AliEveT0Module&);
+
+  ClassDef(AliEveT0Module, 0); // Representation of a T0 module.
 };
 
 #endif

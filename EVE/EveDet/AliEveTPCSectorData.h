@@ -25,17 +25,11 @@ class AliTPCParam;
 
 class AliEveTPCSectorData : public TObject
 {
-  AliEveTPCSectorData(const AliEveTPCSectorData&);            // Not implemented
-  AliEveTPCSectorData& operator=(const AliEveTPCSectorData&); // Not implemented
-
 public:
+  // --- Inner classes ---
 
   class PadData
   {
-  protected:
-    Short_t* fData;   // Data for given pad.
-    Short_t  fLength; // Length of pad-data.
-
   public:
     PadData(Short_t* d=0, Short_t l=0) : fData(d), fLength(l) {}
 
@@ -49,17 +43,14 @@ public:
     void SetDataLength(Short_t* d, Short_t l) { fData = d; fLength = l; }
 
     void Print(Option_t* opt="");
+
+  protected:
+    Short_t* fData;   // Data for given pad.
+    Short_t  fLength; // Length of pad-data.
   };
 
   class PadIterator
   {
-  protected:
-    Short_t *fBeg, *fEnd;    // Begin and end of data.
-    Short_t *fPos;           // Current position.
-    Short_t  fTime, fSignal; // Current time and signal.
-    Short_t  fThreshold;     // Threshold for data iteration. 
-    Short_t  fNChunk;        // Number of contiguous signals still to read.
-
   public:
     PadIterator(const PadData& pd, Short_t thr=0) :
       fBeg(pd.Data()), fEnd(pd.Data() + pd.Length()), fPos(pd.Data()),
@@ -88,15 +79,17 @@ public:
     void SetThreshold(Short_t t) { fThreshold = t; }
 
     void Test();
+
+  protected:
+    Short_t *fBeg, *fEnd;    // Begin and end of data.
+    Short_t *fPos;           // Current position.
+    Short_t  fTime, fSignal; // Current time and signal.
+    Short_t  fThreshold;     // Threshold for data iteration. 
+    Short_t  fNChunk;        // Number of contiguous signals still to read.
   };
 
   class RowIterator : public PadIterator
   {
-  protected:
-    const PadData *fPadArray; // Pointer to array of pad-data.
-    Short_t        fNPads;    // Number of pads in row.
-    Short_t        fPad;      // Current pad.
-
   public:
     RowIterator(const PadData* first, Short_t npads, Short_t thr=0) :
       PadIterator(*first, thr),
@@ -118,22 +111,16 @@ public:
     void   ResetRow(const PadData* first, Short_t npads);
 
     Short_t TEvePad() const { return fPad; }
+
+  protected:
+    const PadData *fPadArray; // Pointer to array of pad-data.
+    Short_t        fNPads;    // Number of pads in row.
+    Short_t        fPad;      // Current pad.
   };
 
   class SegmentInfo : public TObject
   {
     friend class AliEveTPCSectorData;
-
-  private:
-    Float_t   fPadWidth;  // Width of pad in this segment.
-    Float_t   fPadHeight; // Height of pad in this segment.
-    Float_t   fRLow;      // Radius at the bottom of first row.
-    Int_t     fNRows;     // Number of rows in this segment.
-    Int_t     fFirstRow;  // First row index within sector.
-    Int_t     fLastRow;   // Last row index within sector.
-    Int_t     fNMaxPads;  // Maximum number of pads in a row.
-    Int_t     fNYSteps;   // Number of steps in pad-count.
-    Float_t   fYStep[64]; // Y coords where pad-count changes.
 
   public:
     SegmentInfo();
@@ -148,45 +135,22 @@ public:
     Int_t   GetNYSteps()   const { return fNYSteps; }
     Float_t GetYStep(Int_t step) const { return fYStep[step]; }
 
+  private:
+    Float_t   fPadWidth;  // Width of pad in this segment.
+    Float_t   fPadHeight; // Height of pad in this segment.
+    Float_t   fRLow;      // Radius at the bottom of first row.
+    Int_t     fNRows;     // Number of rows in this segment.
+    Int_t     fFirstRow;  // First row index within sector.
+    Int_t     fLastRow;   // Last row index within sector.
+    Int_t     fNMaxPads;  // Maximum number of pads in a row.
+    Int_t     fNYSteps;   // Number of steps in pad-count.
+    Float_t   fYStep[64]; // Y coords where pad-count changes.
+
     ClassDef(SegmentInfo, 0);
   };
 
-private:
-  static AliTPCParam *fgParam;     // Global TPC parameters.
-  static Float_t      fgZLength;   // Z-length of a sector.
-  static Int_t        fgNAllRows;  // Number of rows in all segments.
-  static Int_t        fgNAllPads;  // Number of pads in all segments.
-  static Int_t       *fgRowBegs;   // Ids of pads at row-beginnings.
+  // --- Interface ---
 
-  static SegmentInfo  fgInnSeg;    // Geometry information for inner segment.
-  static SegmentInfo  fgOut1Seg;   // Geometry information for middle segment.
-  static SegmentInfo  fgOut2Seg;   // Geometry information for outer segment.
-
-  static SegmentInfo* fgSegInfoPtrs[3]; // Array of geometry information objects, for access by segment id.
-
-protected:
-  Int_t                 fSectorID;      // Sector id.
-  Int_t                 fNPadsFilled;   // Number of filled pads.
-  std::vector<PadData>  fPads;          // Vector of pad-data.
-
-  // Blocks of pad-data.
-  const Int_t           fkBlockSize;    // Size of pad-data block.
-  Int_t                 fBlockPos;      // Position in current block.
-  std::vector<Short_t*> fBlocks;        // Vector of blocks.
-
-  void NewBlock();
-
-
-  // Intermediate buffer/vars used during filling of pad-data.
-  Short_t fPadBuffer[2048];     // Buffer for current pad.
-  Int_t   fCurrentRow;          // Current row.
-  Int_t   fCurrentPad;          // Current pad.
-  Int_t   fCurrentPos;          // Current position in pad-buffer.
-  Int_t   fCurrentStep;         // Step, can be -2 or +2, depending on fill direction.
-
-  Int_t PadIndex(Int_t row, Int_t pad) const { return fgRowBegs[row] + pad; }
-
-public:
   AliEveTPCSectorData(Int_t sector, Int_t bsize=65536);
   virtual ~AliEveTPCSectorData();
 
@@ -224,32 +188,44 @@ public:
   static void InitStatics();
 
 
-  //----------------------------------------------------------------
-  // Hack for noisy pad-row removal
-  //----------------------------------------------------------------
-
-  class PadRowHack
-  {
-  public:
-    Int_t   fRow, fPad; // For which row, pad we hack.
-    Int_t   fThrExt;    // Additional treshold
-    Float_t fThrFac;    // Additional threshold factor.
-    // Actual threshold = fThrExt + fThrFac*thr
-
-    PadRowHack(Int_t r, Int_t p, Int_t te=0, Float_t tf=1) :
-      fRow(r), fPad(p), fThrExt(te), fThrFac(tf) {}
-    bool operator<(const PadRowHack& a) const
-    { return (fRow == a.fRow) ? fPad < a.fPad : fRow < a.fRow; }
-  };
-
-  PadRowHack* GetPadRowHack(Int_t r, Int_t p);
-  void AddPadRowHack(Int_t r, Int_t p, Int_t te=0, Float_t tf=1);
-  void RemovePadRowHack(Int_t r, Int_t p);
-  void DeletePadRowHack();
-
 protected:
-  void* fPadRowHackSet; // Pointer to set of PadRowHacks. 
+  Int_t                 fSectorID;      // Sector id.
+  Int_t                 fNPadsFilled;   // Number of filled pads.
+  std::vector<PadData>  fPads;          // Vector of pad-data.
 
+  // Blocks of pad-data.
+  const Int_t           fkBlockSize;    // Size of pad-data block.
+  Int_t                 fBlockPos;      // Position in current block.
+  std::vector<Short_t*> fBlocks;        // Vector of blocks.
+
+  void NewBlock();
+
+
+  // Intermediate buffer/vars used during filling of pad-data.
+  Short_t fPadBuffer[2048];     // Buffer for current pad.
+  Int_t   fCurrentRow;          // Current row.
+  Int_t   fCurrentPad;          // Current pad.
+  Int_t   fCurrentPos;          // Current position in pad-buffer.
+  Int_t   fCurrentStep;         // Step, can be -2 or +2, depending on fill direction.
+
+  Int_t PadIndex(Int_t row, Int_t pad) const { return fgRowBegs[row] + pad; }
+
+
+private:
+  static AliTPCParam *fgParam;     // Global TPC parameters.
+  static Float_t      fgZLength;   // Z-length of a sector.
+  static Int_t        fgNAllRows;  // Number of rows in all segments.
+  static Int_t        fgNAllPads;  // Number of pads in all segments.
+  static Int_t       *fgRowBegs;   // Ids of pads at row-beginnings.
+
+  static SegmentInfo  fgInnSeg;    // Geometry information for inner segment.
+  static SegmentInfo  fgOut1Seg;   // Geometry information for middle segment.
+  static SegmentInfo  fgOut2Seg;   // Geometry information for outer segment.
+
+  static SegmentInfo* fgSegInfoPtrs[3]; // Array of geometry information objects, for access by segment id.
+
+  AliEveTPCSectorData(const AliEveTPCSectorData&);            // Not implemented
+  AliEveTPCSectorData& operator=(const AliEveTPCSectorData&); // Not implemented
 
   ClassDef(AliEveTPCSectorData, 0); // Holds pad-data of a single TPC sector. Also stores geometry information in static data-members.
 };

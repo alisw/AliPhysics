@@ -22,46 +22,6 @@ class TVirtualFitter;
 
 class AliEveCosmicRayFitter : public TEvePointSet
 {
-private:
-  AliEveCosmicRayFitter(const AliEveCosmicRayFitter&);            // Not implemented
-  AliEveCosmicRayFitter& operator=(const AliEveCosmicRayFitter&); // Not implemented
-
-protected:
-
-  struct Point_t
-  {
-    // inner structure to check duplicates
-    TEvePointSet   *fPS;   // selected pointset
-    Int_t           fIdx;  // location in the point set array
-
-    Point_t(TEvePointSet* ps=0, Int_t i=0): fPS(ps), fIdx(i){} 
-    Point_t(const Point_t& p) : fPS(p.fPS), fIdx(p.fIdx)  {}
-
-    Point_t& operator=(const Point_t& p) {
-      fPS = p.fPS; fIdx = p.fIdx; return *this;
-    }
-
-    bool operator<(const Point_t& o) const {
-      if (fPS != o.fPS) return fPS < o.fPS;
-      return fIdx < o.fIdx;
-    }
-  };
-
-  typedef std::map<Point_t, Int_t>          PointMap_t;
-
-  TVirtualFitter* fLine3DFitter; // 3D straight line fitter
-
-  Bool_t     fConnected;         // object connected to pointset Ctrl-shift signal 
-  
-  PointMap_t fSPMap;             // map of selected points from different PointSet
-
-  TGraph            *fGraphPicked1; // graph of selected points debug info
-  TGraphErrors      *fGraphLinear1; // graph of fitted points for debug info
-  TGraph            *fGraphPicked2; // graph of selected points debug info
-  TGraphErrors      *fGraphLinear2; // graph of fitted points for debug info
-  TGraph2D          *fGraphPicked3; // graph of selected points debug info
-  TGraph2DErrors    *fGraphLinear3; // graph of fitted points for debug info
-
 public:
   AliEveCosmicRayFitter(const Text_t* name = "CosmicRayFitter", Int_t n_points=0);
   virtual ~AliEveCosmicRayFitter();
@@ -86,7 +46,46 @@ public:
 
   virtual void  DestroyElements(); // *MENU*
 
+protected:
+  struct Point_t
+  {
+    // inner structure to check duplicates
+    TEvePointSet   *fPS;   // selected pointset
+    Int_t           fIdx;  // location in the point set array
+
+    Point_t(TEvePointSet* ps=0, Int_t i=0): fPS(ps), fIdx(i){} 
+    Point_t(const Point_t& p) : fPS(p.fPS), fIdx(p.fIdx)  {}
+
+    Point_t& operator=(const Point_t& p) {
+      fPS = p.fPS; fIdx = p.fIdx; return *this;
+    }
+
+    bool operator<(const Point_t& o) const {
+      if (fPS != o.fPS) return fPS < o.fPS;
+      return fIdx < o.fIdx;
+    }
+  };
+
+  typedef std::map<Point_t, Int_t>          PointMap_t; // Map of registered points.
+
+  TVirtualFitter* fLine3DFitter; // 3D straight line fitter
+
+  Bool_t     fConnected;         // object connected to pointset Ctrl-shift signal 
+  
+  PointMap_t fSPMap;             // map of selected points from different PointSet
+
+  TGraph            *fGraphPicked1; // graph of selected points debug info
+  TGraphErrors      *fGraphLinear1; // graph of fitted points for debug info
+  TGraph            *fGraphPicked2; // graph of selected points debug info
+  TGraphErrors      *fGraphLinear2; // graph of fitted points for debug info
+  TGraph2D          *fGraphPicked3; // graph of selected points debug info
+  TGraph2DErrors    *fGraphLinear3; // graph of fitted points for debug info
+
+private:
+  AliEveCosmicRayFitter(const AliEveCosmicRayFitter&);            // Not implemented
+  AliEveCosmicRayFitter& operator=(const AliEveCosmicRayFitter&); // Not implemented
+
   ClassDef(AliEveCosmicRayFitter, 0); // Interface to TEvePointSet allowing 3D straight linear fit.
-}; // endclass AliEveCosmicRayFitter
+};
 
 #endif

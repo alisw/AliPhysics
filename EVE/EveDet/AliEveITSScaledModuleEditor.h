@@ -28,11 +28,14 @@ class AliITSsegmentation;
 
 class AliEveITSScaledModuleEditor : public TGedFrame
 {
-private:
-  AliEveITSScaledModuleEditor(const AliEveITSScaledModuleEditor&);            // Not implemented
-  AliEveITSScaledModuleEditor& operator=(const AliEveITSScaledModuleEditor&); // Not implemented
+public:
+  AliEveITSScaledModuleEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30, UInt_t options = kChildFrame, Pixel_t back=GetDefaultFrameBackground());
+  virtual ~AliEveITSScaledModuleEditor() {}
 
-  void CreateInfoFrame();
+  virtual void   SetModel(TObject* obj);
+
+  void DoScale();
+  void DoStatType(Int_t t);
 
 protected:
   AliEveITSScaledModule *fModule;       // Model object.
@@ -44,14 +47,11 @@ protected:
   TGLabel               *fInfoLabel0;   // Info text.
   TGLabel               *fInfoLabel1;   // Info text.
 
-public:
-  AliEveITSScaledModuleEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30, UInt_t options = kChildFrame, Pixel_t back=GetDefaultFrameBackground());
-  virtual ~AliEveITSScaledModuleEditor() {}
+private:
+  void CreateInfoFrame();
 
-  virtual void   SetModel(TObject* obj);
-
-  void DoScale();
-  void DoStatType(Int_t t);
+  AliEveITSScaledModuleEditor(const AliEveITSScaledModuleEditor&);            // Not implemented
+  AliEveITSScaledModuleEditor& operator=(const AliEveITSScaledModuleEditor&); // Not implemented
 
   ClassDef(AliEveITSScaledModuleEditor, 0); // Editor for AliEveITSScaledModule.
 };

@@ -29,17 +29,6 @@ class AliEveTPCSector3D;
 
 class AliEveTPCSector3DEditor : public TGedFrame
 {
-  AliEveTPCSector3DEditor(const AliEveTPCSector3DEditor&);            // Not implemented
-  AliEveTPCSector3DEditor& operator=(const AliEveTPCSector3DEditor&); // Not implemented
-
-protected:
-  AliEveTPCSector3D   *fM;         // Model object.
-
-  TGCheckButton       *fRnrFrame;  // Check-box for frame rendering.
-  TEveGValuator       *fDriftVel;  // Valuator for drift velocity.
-
-  TEveGValuator       *fPointFrac; // Valuator for signal fraction displayed as points.
-  TEveGValuator       *fPointSize; // Size of point in GL.
 
 public:
   AliEveTPCSector3DEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30,
@@ -54,7 +43,20 @@ public:
   void DoPointFrac();
   void DoPointSize();
 
+protected:
+  AliEveTPCSector3D   *fM;         // Model object.
+
+  TGCheckButton       *fRnrFrame;  // Check-box for frame rendering.
+  TEveGValuator       *fDriftVel;  // Valuator for drift velocity.
+
+  TEveGValuator       *fPointFrac; // Valuator for signal fraction displayed as points.
+  TEveGValuator       *fPointSize; // Size of point in GL.
+
+private:
+  AliEveTPCSector3DEditor(const AliEveTPCSector3DEditor&);            // Not implemented
+  AliEveTPCSector3DEditor& operator=(const AliEveTPCSector3DEditor&); // Not implemented
+
   ClassDef(AliEveTPCSector3DEditor, 0); // Editor for AliEveTPCSector3D.
-}; // endclass AliEveTPCSector3DEditor
+};
 
 #endif

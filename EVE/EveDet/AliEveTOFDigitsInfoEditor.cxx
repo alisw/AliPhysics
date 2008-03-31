@@ -40,9 +40,6 @@ AliEveTOFDigitsInfoEditor::AliEveTOFDigitsInfoEditor(const TGWindow *p, Int_t wi
   // fXYZZ->Connect("SignalName()", "AliEveTOFDigitsInfoEditor", this, "DoXYZZ()");
 }
 
-AliEveTOFDigitsInfoEditor::~AliEveTOFDigitsInfoEditor()
-{}
-
 /******************************************************************************/
 
 void AliEveTOFDigitsInfoEditor::SetModel(TObject* obj)

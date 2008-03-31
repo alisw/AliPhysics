@@ -31,8 +31,25 @@ class AliEveMUONChamber : public TEveElement,
   friend class AliEveMUONChamberGL;
   friend class AliEveMUONChamberEditor;
 
-  AliEveMUONChamber(const AliEveMUONChamber&);            // Not implemented
-  AliEveMUONChamber& operator=(const AliEveMUONChamber&); // Not implemented
+public:
+  AliEveMUONChamber(Int_t id, const Text_t* n = "AliEveMUONChamber", const Text_t* t = 0);
+  virtual ~AliEveMUONChamber();
+
+  virtual void   ComputeBBox();
+  virtual void   Paint(Option_t* option = "");
+  virtual UInt_t IncRTS()     { return ++fRTS; };
+  virtual Bool_t CanEditMainColor() const { return kTRUE; }
+
+  void SetDataSource(AliEveMUONData *data);
+  void SetChamberID(Int_t id);
+  void SetFrameColor(Color_t col)     { fFrameColor = col; IncRTS(); };
+  AliEveMUONData* GetData() const { return fMUONData; };
+  AliEveMUONChamberData* GetChamberData() const;
+  Int_t GetID() const { return fChamberID; };
+  void  SetThreshold(Short_t t);
+  void  SetMaxVal(Int_t mv);
+  void  SetClusterSize(Int_t size);
+  void  SetHitSize(Int_t size);
 
 protected:
   void UpdateQuads();
@@ -60,29 +77,15 @@ protected:
   void     ColorFromArray(Int_t val, UChar_t* pix) const;
   Int_t    ColorIndex(Int_t val) const;
 
-public:
-  AliEveMUONChamber(Int_t id, const Text_t* n = "AliEveMUONChamber", const Text_t* t = 0);
-  virtual ~AliEveMUONChamber();
+private:
+  AliEveMUONChamber(const AliEveMUONChamber&);            // Not implemented
+  AliEveMUONChamber& operator=(const AliEveMUONChamber&); // Not implemented
 
-  virtual void   ComputeBBox();
-  virtual void   Paint(Option_t* option = "");
-  virtual UInt_t IncRTS()     { return ++fRTS; };
-  virtual Bool_t CanEditMainColor() const { return kTRUE; }
-
-  void SetDataSource(AliEveMUONData *data);
-  void SetChamberID(Int_t id);
-  void SetFrameColor(Color_t col)     { fFrameColor = col; IncRTS(); };
-  AliEveMUONData* GetData() const { return fMUONData; };
-  AliEveMUONChamberData* GetChamberData() const;
-  Int_t GetID() const { return fChamberID; };
-  void  SetThreshold(Short_t t);
-  void  SetMaxVal(Int_t mv);
-  void  SetClusterSize(Int_t size);
-  void  SetHitSize(Int_t size);
-
-  ClassDef(AliEveMUONChamber,1);  // Visualisation of the MUON chambers
-
+  ClassDef(AliEveMUONChamber, 0);  // Visualisation of the MUON chambers
 };
+
+
+// --- Inlines ---
 
 inline UChar_t* AliEveMUONChamber::ColorFromArray(Int_t val) const
 {

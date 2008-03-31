@@ -29,17 +29,6 @@ class AliEveTPCSectorData;
 
 class AliEveTPCData : public TObject, public TEveRefCnt
 {
-private:
-  AliEveTPCData(const AliEveTPCData&);            // Not implemented
-  AliEveTPCData& operator=(const AliEveTPCData&); // Not implemented
-
-protected:
-  std::vector<AliEveTPCSectorData*>  fSectors; // Vector of sector-data.
-  Int_t                      fSectorBlockSize; // Block-size of sector-data.
-  Short_t                    fLoadThreshold;   // Threshold at load-time.
-  Short_t                    fLoadPedestal;    // Pedestal at load-time.
-  Bool_t                     fAutoPedestal;    // If true determine pedestals automatically for each pad.
-
 public:
   AliEveTPCData();
   virtual ~AliEveTPCData();
@@ -66,7 +55,18 @@ public:
   void LoadDigits(TTree* tree, Bool_t spawnSectors=kTRUE);
   void LoadRaw(AliTPCRawStream& input, Bool_t spawnSectors=kTRUE, Bool_t warn=kFALSE);
 
-  ClassDef(AliEveTPCData, 1); // Manages TPC data for an event.
-}; // endclass AliEveTPCData
+protected:
+  std::vector<AliEveTPCSectorData*>  fSectors; // Vector of sector-data.
+  Int_t                      fSectorBlockSize; // Block-size of sector-data.
+  Short_t                    fLoadThreshold;   // Threshold at load-time.
+  Short_t                    fLoadPedestal;    // Pedestal at load-time.
+  Bool_t                     fAutoPedestal;    // If true determine pedestals automatically for each pad.
+
+private:
+  AliEveTPCData(const AliEveTPCData&);            // Not implemented
+  AliEveTPCData& operator=(const AliEveTPCData&); // Not implemented
+
+  ClassDef(AliEveTPCData, 0); // Manages TPC data for an event.
+};
 
 #endif

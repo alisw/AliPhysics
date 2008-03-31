@@ -21,26 +21,25 @@ class AliEveHOMERManager;
 
 class AliEveHOMERManagerEditor : public TGedFrame
 {
-private:
-  AliEveHOMERManagerEditor(const AliEveHOMERManagerEditor&);            // Not implemented
-  AliEveHOMERManagerEditor& operator=(const AliEveHOMERManagerEditor&); // Not implemented
-
-protected:
-  AliEveHOMERManager* fM; // fModel dynamic-casted to AliEveHOMERManagerEditor
-
-  // Declare widgets
-  TGTextButton  *fButt;
-
 public:
   AliEveHOMERManagerEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30, UInt_t options = kChildFrame, Pixel_t back=GetDefaultFrameBackground());
-  virtual ~AliEveHOMERManagerEditor();
+  virtual ~AliEveHOMERManagerEditor() {}
 
   virtual void SetModel(TObject* obj);
 
   // Declare callback/slot methods
   void DoButt();
 
+protected:
+  AliEveHOMERManager  *fM; // Model object.
+
+  TGTextButton     *fButt; // Button to connect to HOMER.
+
+private:
+  AliEveHOMERManagerEditor(const AliEveHOMERManagerEditor&);            // Not implemented
+  AliEveHOMERManagerEditor& operator=(const AliEveHOMERManagerEditor&); // Not implemented
+
   ClassDef(AliEveHOMERManagerEditor, 0); // Editor for AliEveHOMERManager
-}; // endclass AliEveHOMERManagerEditor
+};
 
 #endif

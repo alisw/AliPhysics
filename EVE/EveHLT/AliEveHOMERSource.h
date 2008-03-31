@@ -19,10 +19,6 @@ class AliHLTHOMERSourceDesc;
 class AliEveHOMERSource : public TEveElement,
 			  public TNamed
 {
-private:
-  AliEveHOMERSource(const AliEveHOMERSource&);            // Not implemented
-  AliEveHOMERSource& operator=(const AliEveHOMERSource&); // Not implemented
-
 public:
   struct SourceId
   {
@@ -67,11 +63,7 @@ public:
     SourceState(Bool_t state) : fState(state), fHandle(0) {}
   };
 
-protected:
-  const SourceId    *fSrcId;
-        SourceState *fSrcState;
 
-public:
   AliEveHOMERSource(const Text_t* n="HOMER Source", const Text_t* t="");
   virtual ~AliEveHOMERSource() {}
 
@@ -86,7 +78,15 @@ public:
   virtual Bool_t SingleRnrState() const { return kTRUE; }
   virtual void   SetRnrState(Bool_t rnr);
 
-  ClassDef(AliEveHOMERSource, 1);
-}; // endclass AliEveHOMERSource
+protected:
+  const SourceId    *fSrcId;
+        SourceState *fSrcState;
+
+private:
+  AliEveHOMERSource(const AliEveHOMERSource&);            // Not implemented
+  AliEveHOMERSource& operator=(const AliEveHOMERSource&); // Not implemented
+
+  ClassDef(AliEveHOMERSource, 0); // Description of an HOMER source.
+};
 
 #endif

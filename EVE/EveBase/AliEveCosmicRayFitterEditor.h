@@ -16,24 +16,10 @@ class TGCheckButton;
 class TGNumberEntry;
 class TGColorSelect;
 
-
 class AliEveCosmicRayFitter;
 
 class AliEveCosmicRayFitterEditor : public TGedFrame
 {
-private:
-  AliEveCosmicRayFitterEditor(const AliEveCosmicRayFitterEditor&);            // Not implemented
-  AliEveCosmicRayFitterEditor& operator=(const AliEveCosmicRayFitterEditor&); // Not implemented
-
-protected:
-  AliEveCosmicRayFitter* fM; // fModel dynamic-casted to AliEveCosmicRayFitterEditor
-
-  TGTextButton* fFit;    // button to fit selection
-  TGTextButton* fReset;  // button to reset selection
-  TGTextButton* fStart;  // button to connect to signal
-  TGTextButton* fStop;   // button to disconnect from signal
-  TGTextButton* fGraph;  // button to draw graph
-
 public:
   AliEveCosmicRayFitterEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30, UInt_t options = kChildFrame, Pixel_t back=GetDefaultFrameBackground());
   virtual ~AliEveCosmicRayFitterEditor() {}
@@ -45,6 +31,19 @@ public:
   void DoReset();
   void DoStop();
   void DoGraph();
+
+protected:
+  AliEveCosmicRayFitter* fM; // fModel dynamic-casted to AliEveCosmicRayFitterEditor
+
+  TGTextButton* fFit;    // button to fit selection
+  TGTextButton* fReset;  // button to reset selection
+  TGTextButton* fStart;  // button to connect to signal
+  TGTextButton* fStop;   // button to disconnect from signal
+  TGTextButton* fGraph;  // button to draw graph
+
+private:
+  AliEveCosmicRayFitterEditor(const AliEveCosmicRayFitterEditor&);            // Not implemented
+  AliEveCosmicRayFitterEditor& operator=(const AliEveCosmicRayFitterEditor&); // Not implemented
 
   ClassDef(AliEveCosmicRayFitterEditor, 0); // Editor for AliEveCosmicRayFitter class.
 };

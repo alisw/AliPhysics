@@ -45,9 +45,6 @@ AliEveHOMERManagerEditor::AliEveHOMERManagerEditor(const TGWindow *p, Int_t widt
 
 }
 
-AliEveHOMERManagerEditor::~AliEveHOMERManagerEditor()
-{}
-
 /******************************************************************************/
 
 void AliEveHOMERManagerEditor::SetModel(TObject* obj)
@@ -70,6 +67,7 @@ void AliEveHOMERManagerEditor::SetModel(TObject* obj)
 
 void AliEveHOMERManagerEditor::DoButt()
 {
-  // Connects to HOMER sources -> to HLT
+  // Connects to HOMER sources -> to HLT.
+
   fM->ConnectHOMER();
 }

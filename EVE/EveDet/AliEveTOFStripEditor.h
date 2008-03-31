@@ -26,29 +26,24 @@ class AliEveTOFStrip;
 
 class AliEveTOFStripEditor : public TGedFrame
 {
-private:
-  AliEveTOFStripEditor(const AliEveTOFStripEditor&);            // Not implemented
-  AliEveTOFStripEditor& operator=(const AliEveTOFStripEditor&); // Not implemented
-
-protected:
-  AliEveTOFStrip* fM; // fModel dynamic-casted to AliEveTOFStripEditor
-
-  // Declare widgets
-  // TGSomeWidget*   fXYZZ;
-
-  TEveGValuator*    fThreshold;
-  TEveGValuator*    fMaxVal;
-
 public:
   AliEveTOFStripEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30, UInt_t options = kChildFrame, Pixel_t back=GetDefaultFrameBackground());
-  virtual ~AliEveTOFStripEditor();
+  virtual ~AliEveTOFStripEditor() {}
 
   virtual void SetModel(TObject* obj);
+
   void DoThreshold();
   void DoMaxVal();
 
-  // Declare callback/slot methods
-  // void DoXYZZ();
+protected:
+  AliEveTOFStrip *fM; // Model object.
+
+  TEveGValuator  *fThreshold; // Value widget for threshold.
+  TEveGValuator  *fMaxVal;    // Value widget for maximal value.
+
+private:
+  AliEveTOFStripEditor(const AliEveTOFStripEditor&);            // Not implemented
+  AliEveTOFStripEditor& operator=(const AliEveTOFStripEditor&); // Not implemented
 
   ClassDef(AliEveTOFStripEditor, 0); // Editor for AliEveTOFStrip
 }; // endclass AliEveTOFStripEditor

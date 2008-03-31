@@ -14,15 +14,18 @@
 
 class TEveQuadSetGL;
 
-
 class AliEveMUONChamber;
 
 class AliEveMUONChamberGL : public TGLObject
 {
-  AliEveMUONChamberGL(const AliEveMUONChamberGL&);            // Not implemented
-  AliEveMUONChamberGL& operator=(const AliEveMUONChamberGL&); // Not implemented
+public:
+  AliEveMUONChamberGL();
+  virtual ~AliEveMUONChamberGL();
 
- protected:
+  virtual Bool_t SetModel(TObject* obj, const Option_t* opt=0);
+  virtual void   SetBBox();
+
+protected:
   virtual void DirectDraw(TGLRnrCtx & rnrCtx) const;
   void DrawChamberFrame() const;
   void DrawQuads(TGLRnrCtx& rnrCtx) const;
@@ -34,15 +37,11 @@ class AliEveMUONChamberGL : public TGLObject
 
   mutable UInt_t           fRTS;     // render time stamp
 
- public:
-  AliEveMUONChamberGL();
-  virtual ~AliEveMUONChamberGL();
+private:
+  AliEveMUONChamberGL(const AliEveMUONChamberGL&);            // Not implemented
+  AliEveMUONChamberGL& operator=(const AliEveMUONChamberGL&); // Not implemented
 
-  virtual Bool_t SetModel(TObject* obj, const Option_t* opt=0);
-  virtual void   SetBBox();
-
-  ClassDef(AliEveMUONChamberGL,1);   // the GL drawing class of one chamber
-
+  ClassDef(AliEveMUONChamberGL, 0);   // the GL drawing class of one chamber
 };
 
 #endif

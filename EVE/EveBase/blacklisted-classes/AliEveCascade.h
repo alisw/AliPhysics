@@ -29,57 +29,14 @@ class TH2F;
 class CascadeList;
 
 class AliEveCascade : public TEveElement,
-                public TPolyMarker3D
+                      public TPolyMarker3D
 {
+  friend class CascadeList;
+
 public:
   typedef std::vector<TEvePathMark*>           vpPathMark_t;
 
-private:
-  friend class CascadeList;
 
-  AliEveCascade(const AliEveCascade&);            // Not implemented
-  AliEveCascade& operator=(const AliEveCascade&); // Not implemented
-
-protected:
-  typedef std::vector<TEvePathMark*>::iterator vpPathMark_i;
-
-  TEveVector fV_neg;       // Vertex of negative track
-  TEveVector fP_neg;       // Momentum of negative track
-  TEveVector fV_pos;       // Vertex of positive track
-  TEveVector fP_pos;       // Momentum of positive track
-  TEveVector fV_bach;      // Vertex of positive track
-  TEveVector fP_bach;      // Momentum of positive track
-
-  TEveVector fV_decay;     //decay point of the cascade
-  TEveVector fV_birth;    // Reconstructed birth point of neutral particle
-
-  vpPathMark_t         fPathMarksNeg;
-  vpPathMark_t         fPathMarksPos;
-  vpPathMark_t         fPathMarksBach;
-  TEveTrackPropagator *fRnrStyle;
-
-  TPolyLine3D       fPolyLineNeg;
-  TPolyLine3D       fPolyLinePos;
-  TPolyLine3D       fPolyLineBach;
-  TPolyLine3D       fPolyLineV0;   // line of AliEveV0 travel
-  TPolyLine3D       fPolyLineCas;  // line of cascade travel
-
-  Float_t           fBeta_neg;
-  Float_t           fBeta_pos;
-  Float_t           fBeta_bach;
-
-  Int_t             fESDIndex;
-
-  Float_t           fDCA_v0_Bach;
-  Float_t           fCasCosPointingAngle;
-  Float_t           fCasDecayLength;
-
-  static const Float_t fgkMassPion2;
-  static const Float_t fgkMassKaon2;
-  static const Float_t fgkMassProton2;
-  static const Float_t fgkMassLambda2;
-
-public:
   AliEveCascade();
   AliEveCascade(TEveTrackPropagator* rs);
   virtual ~AliEveCascade();
@@ -174,8 +131,52 @@ public:
   Float_t GetOmegaMass() const;
   Float_t GetAntiOmegaMass() const;
 
-  ClassDef(AliEveCascade, 1); // Visual representation of a cascade.
-}; // endclass AliEveCascade
+
+protected:
+  typedef std::vector<TEvePathMark*>::iterator vpPathMark_i;
+
+  TEveVector fV_neg;       // Vertex of negative track
+  TEveVector fP_neg;       // Momentum of negative track
+  TEveVector fV_pos;       // Vertex of positive track
+  TEveVector fP_pos;       // Momentum of positive track
+  TEveVector fV_bach;      // Vertex of positive track
+  TEveVector fP_bach;      // Momentum of positive track
+
+  TEveVector fV_decay;     //decay point of the cascade
+  TEveVector fV_birth;    // Reconstructed birth point of neutral particle
+
+  vpPathMark_t         fPathMarksNeg;
+  vpPathMark_t         fPathMarksPos;
+  vpPathMark_t         fPathMarksBach;
+  TEveTrackPropagator *fRnrStyle;
+
+  TPolyLine3D       fPolyLineNeg;
+  TPolyLine3D       fPolyLinePos;
+  TPolyLine3D       fPolyLineBach;
+  TPolyLine3D       fPolyLineV0;   // line of AliEveV0 travel
+  TPolyLine3D       fPolyLineCas;  // line of cascade travel
+
+  Float_t           fBeta_neg;
+  Float_t           fBeta_pos;
+  Float_t           fBeta_bach;
+
+  Int_t             fESDIndex;
+
+  Float_t           fDCA_v0_Bach;
+  Float_t           fCasCosPointingAngle;
+  Float_t           fCasDecayLength;
+
+  static const Float_t fgkMassPion2;
+  static const Float_t fgkMassKaon2;
+  static const Float_t fgkMassProton2;
+  static const Float_t fgkMassLambda2;
+
+private:
+  AliEveCascade(const AliEveCascade&);            // Not implemented
+  AliEveCascade& operator=(const AliEveCascade&); // Not implemented
+
+  ClassDef(AliEveCascade, 0); // Visual representation of a cascade.
+};
 
 
 
@@ -351,40 +352,6 @@ inline Float_t AliEveCascade::GetBachPseudoRapidity() const {
 
 class CascadeList : public TEveElementList
 {
-  CascadeList(const CascadeList&);            // Not implemented
-  CascadeList& operator=(const CascadeList&); // Not implemented
-
-private:
-  void  Init();
-
-protected:
-  TString              fTitle;
-
-  TEveTrackPropagator *fRnrStyle;
-
-  Bool_t               fRnrBach;
-  Bool_t               fRnrV0Daughters;
-  Bool_t               fRnrV0vtx;
-  Bool_t               fRnrV0path;
-  Bool_t               fRnrCasVtx;
-  Bool_t               fRnrCasPath;
-
-  Color_t              fNegColor;
-  Color_t              fPosColor;
-  Color_t              fBachColor;
-
-  static const Int_t fgkNcutVar = 14;
-  TH1F *fHist[fgkNcutVar];
-  Float_t fMin[fgkNcutVar];
-  Float_t fMax[fgkNcutVar];
-
-  static const Int_t fgkNcutVar2D = 1;
-  TH2F *fHist2D[fgkNcutVar2D];
-  Float_t fMinX[fgkNcutVar2D];
-  Float_t fMinY[fgkNcutVar2D];
-  Float_t fMaxX[fgkNcutVar2D];
-  Float_t fMaxY[fgkNcutVar2D];
-
 public:
   CascadeList(TEveTrackPropagator* rs=0);
   CascadeList(const Text_t* name, TEveTrackPropagator* rs=0);
@@ -451,9 +418,41 @@ public:
   void BachPtFilter(Float_t min, Float_t max);
   void BachEtaFilter(Float_t min, Float_t max);
 
-  //--------------------------------
+protected:
+  TString              fTitle;
 
-  ClassDef(CascadeList, 1); // A list of AliEveCascade objects.
+  TEveTrackPropagator *fRnrStyle;
+
+  Bool_t               fRnrBach;
+  Bool_t               fRnrV0Daughters;
+  Bool_t               fRnrV0vtx;
+  Bool_t               fRnrV0path;
+  Bool_t               fRnrCasVtx;
+  Bool_t               fRnrCasPath;
+
+  Color_t              fNegColor;
+  Color_t              fPosColor;
+  Color_t              fBachColor;
+
+  static const Int_t fgkNcutVar = 14;
+  TH1F *fHist[fgkNcutVar];
+  Float_t fMin[fgkNcutVar];
+  Float_t fMax[fgkNcutVar];
+
+  static const Int_t fgkNcutVar2D = 1;
+  TH2F *fHist2D[fgkNcutVar2D];
+  Float_t fMinX[fgkNcutVar2D];
+  Float_t fMinY[fgkNcutVar2D];
+  Float_t fMaxX[fgkNcutVar2D];
+  Float_t fMaxY[fgkNcutVar2D];
+
+private:
+  void  Init();
+
+  CascadeList(const CascadeList&);            // Not implemented
+  CascadeList& operator=(const CascadeList&); // Not implemented
+
+  ClassDef(CascadeList, 0); // A list of AliEveCascade objects.
 };
 
 #endif

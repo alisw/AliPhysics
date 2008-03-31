@@ -20,11 +20,12 @@ class AliEvePMDModule;
 
 class AliEvePMDModuleEditor : public TGedFrame
 {
-private:
-  AliEvePMDModuleEditor(const AliEvePMDModuleEditor&);            // Not implemented
-  AliEvePMDModuleEditor& operator=(const AliEvePMDModuleEditor&); // Not implemented
+public:
+  AliEvePMDModuleEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30, UInt_t options = kChildFrame, Pixel_t back=GetDefaultFrameBackground());
+  virtual ~AliEvePMDModuleEditor() {}
 
-  void CreateInfoFrame();
+  virtual void SetModel(TObject* obj);
+  void DisplayHistos();
 
 protected:
   AliEvePMDModule* fM; // Model object.
@@ -38,12 +39,11 @@ protected:
   TGLabel*   fInfoLabel4; // label
   TGLabel*   fInfoLabel5; // label
 
-public:
-  AliEvePMDModuleEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30, UInt_t options = kChildFrame, Pixel_t back=GetDefaultFrameBackground());
-  virtual ~AliEvePMDModuleEditor() {}
+private:
+  void CreateInfoFrame();
 
-  virtual void SetModel(TObject* obj);
-  void DisplayHistos();
+  AliEvePMDModuleEditor(const AliEvePMDModuleEditor&);            // Not implemented
+  AliEvePMDModuleEditor& operator=(const AliEvePMDModuleEditor&); // Not implemented
 
   ClassDef(AliEvePMDModuleEditor, 0); // Editor for AliEvePMDModule
 };

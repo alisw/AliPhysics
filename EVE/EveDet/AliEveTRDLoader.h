@@ -39,10 +39,6 @@ class AliEveTRDLoader : public TEveElementList
 {
   friend class AliEveTRDLoaderEditor;
 
-private:
-  AliEveTRDLoader(const AliEveTRDLoader&);            // Not implemented
-  AliEveTRDLoader& operator=(const AliEveTRDLoader&); // Not implemented
-
 public:
   enum TRDDataTypes {
     kHits     = 0,
@@ -53,12 +49,13 @@ public:
     kRawData  = 5
   };
 
-public:
+
   AliEveTRDLoader(const Text_t* n="AliEveTRDLoader", const Text_t* t=0);
   virtual ~AliEveTRDLoader() {}
 
   virtual void 		Paint(Option_t *option="");
   virtual void		SetDataType(TRDDataTypes type);
+
 
 protected:
   virtual void		AddChambers(int sm=-1, int stk=-1, int ly=-1);
@@ -70,7 +67,6 @@ protected:
   virtual Bool_t	Open(const char *file, const char *dir = ".");
   virtual void		Unload();
 
-protected:
   Bool_t	fLoadHits, fLoadDigits, fLoadClusters, fLoadTracks; // flags for data-loading
   Int_t		fSM, fStack, fLy; // supermodule, stack, layer
   TString	fFilename;        // name of data file
@@ -80,16 +76,16 @@ protected:
   AliTRDv1			*fTRD; // the TRD detector
   AliTRDgeometry		*fGeo; // the TRD geometry
 
-  ClassDef(AliEveTRDLoader, 1); // Alieve Loader class for the TRD detector.
+private:
+  AliEveTRDLoader(const AliEveTRDLoader&);            // Not implemented
+  AliEveTRDLoader& operator=(const AliEveTRDLoader&); // Not implemented
+
+  ClassDef(AliEveTRDLoader, 0); // Alieve Loader class for the TRD detector.
 };
 
 
 class AliEveTRDLoaderEditor : public TGedFrame
 {
-private:
-  AliEveTRDLoaderEditor(const AliEveTRDLoaderEditor&);            // Not implemented
-  AliEveTRDLoaderEditor& operator=(const AliEveTRDLoaderEditor&); // Not implemented
-
 public:
   AliEveTRDLoaderEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30,
 			UInt_t options=kChildFrame, Pixel_t back=GetDefaultFrameBackground());
@@ -107,7 +103,11 @@ protected:
   TEveGValuator		*fEvent; // Event no weed.
   TEveGValuator		*fSMNumber, *fStackNumber, *fPlaneNumber; // Detector id weeds.
 
-  ClassDef(AliEveTRDLoaderEditor,1); // Editor for AliEveTRDLoader.
+private:
+  AliEveTRDLoaderEditor(const AliEveTRDLoaderEditor&);            // Not implemented
+  AliEveTRDLoaderEditor& operator=(const AliEveTRDLoaderEditor&); // Not implemented
+
+  ClassDef(AliEveTRDLoaderEditor, 0); // Editor for AliEveTRDLoader.
 };
 
 #endif

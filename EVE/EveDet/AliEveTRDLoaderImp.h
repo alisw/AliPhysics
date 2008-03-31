@@ -30,9 +30,7 @@ class TGCheckButton;
 class AliEveTRDLoaderSim : public AliEveTRDLoader
 {
   friend class AliEveTRDLoaderSimEditor;
-private:
-  AliEveTRDLoaderSim(const AliEveTRDLoaderSim&);            // Not implemented
-  AliEveTRDLoaderSim& operator=(const AliEveTRDLoaderSim&); // Not implemented
+
 public:
   AliEveTRDLoaderSim(const Text_t* n="AliEveTRDLoaderSim", const Text_t* t=0);
   virtual ~AliEveTRDLoaderSim() {}
@@ -44,16 +42,15 @@ public:
 private:
   AliRunLoader *fRunLoader; // Run Loader
 
-  ClassDef(AliEveTRDLoaderSim, 1); // Alieve loader for the TRD detector (gAlice)
+  AliEveTRDLoaderSim(const AliEveTRDLoaderSim&);            // Not implemented
+  AliEveTRDLoaderSim& operator=(const AliEveTRDLoaderSim&); // Not implemented
+
+  ClassDef(AliEveTRDLoaderSim, 0); // Alieve loader for the TRD detector (gAlice)
 };
 
 
 class AliEveTRDLoaderRaw : public AliEveTRDLoader
 {
-private:
-  AliEveTRDLoaderRaw(const AliEveTRDLoaderRaw&);            // Not implemented
-  AliEveTRDLoaderRaw& operator=(const AliEveTRDLoaderRaw&); // Not implemented
-
 public:
   AliEveTRDLoaderRaw(const Text_t* n="AliEveTRDLoaderRaw", const Text_t* t=0);
   virtual ~AliEveTRDLoaderRaw() {}
@@ -66,23 +63,21 @@ public:
 private:
   void NextEvent(Bool_t rewindOnEnd=kTRUE);
 
-private:
   AliRawReaderDate	*fRawDateReader; // raw data reader
   AliRawReaderRoot	*fRawRootReader; // raw root reader
   AliTRDrawData		*fRaw;           // raw data
   Bool_t		 fDataRoot;      // data in root format
   Int_t			 fEventOld;      // old event
 
-  ClassDef(AliEveTRDLoaderRaw, 1); // Alieve loader for the TRD detector (raw)
+  AliEveTRDLoaderRaw(const AliEveTRDLoaderRaw&);            // Not implemented
+  AliEveTRDLoaderRaw& operator=(const AliEveTRDLoaderRaw&); // Not implemented
+
+  ClassDef(AliEveTRDLoaderRaw, 0); // Alieve loader for the TRD detector (raw)
 };
 
 
 class AliEveTRDLoaderSimEditor : public TGedFrame
 {
-private:
-  AliEveTRDLoaderSimEditor(const AliEveTRDLoaderSimEditor&);            // Not implemented
-  AliEveTRDLoaderSimEditor& operator=(const AliEveTRDLoaderSimEditor&); // Not implemented
-
 public:
   AliEveTRDLoaderSimEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30,
 			   UInt_t options=kChildFrame, Pixel_t back=GetDefaultFrameBackground());
@@ -95,7 +90,11 @@ protected:
   AliEveTRDLoaderSim  *fM; // Model object.
   TGCheckButton       *fLoadHits, *fLoadDigits, *fLoadClusters, *fLoadTracks; // What data to load.
 
-  ClassDef(AliEveTRDLoaderSimEditor,1); // Editor for AliEveTRDLoaderSim
+private:
+  AliEveTRDLoaderSimEditor(const AliEveTRDLoaderSimEditor&);            // Not implemented
+  AliEveTRDLoaderSimEditor& operator=(const AliEveTRDLoaderSimEditor&); // Not implemented
+
+  ClassDef(AliEveTRDLoaderSimEditor, 0); // Editor for AliEveTRDLoaderSim
 };
 
 #endif

@@ -11,18 +11,18 @@ namespace Alieve {
 
 class CLASS
 {
-private:
-  CLASS(const CLASS&);            // Not implemented
-  CLASS& operator=(const CLASS&); // Not implemented
-
-protected:
-
 public:
   CLASS();
   virtual ~CLASS() {}
 
-  ClassDef(CLASS, 1);
-}; // endclass CLASS
+protected:
+
+private:
+  CLASS(const CLASS&);            // Not implemented
+  CLASS& operator=(const CLASS&); // Not implemented
+
+  ClassDef(CLASS, 0);  // Short desc/purpose of CLASS
+};
 
 }
 

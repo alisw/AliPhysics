@@ -25,10 +25,6 @@ class TEveRecTrack;
 
 class AliEveMUONTrack: public TEveTrack
 {
-
-  AliEveMUONTrack(const AliEveMUONTrack&);            // Not implemented
-  AliEveMUONTrack& operator=(const AliEveMUONTrack&); // Not implemented
-
  public:
 
   AliEveMUONTrack(TEveRecTrack* t, TEveTrackPropagator* rs);
@@ -63,6 +59,9 @@ class AliEveMUONTrack: public TEveTrack
 
  private:
 
+  AliEveMUONTrack(const AliEveMUONTrack&);            // Not implemented
+  AliEveMUONTrack& operator=(const AliEveMUONTrack&); // Not implemented
+
   AliMUONTrack *fTrack;              // pointer to the MUON track
   TParticle    *fPart;               // pointer to the MC particle
   Int_t         fCount;              // track points counter
@@ -74,7 +73,7 @@ class AliEveMUONTrack: public TEveTrack
 
   static AliMagF      *fgFieldMap;    // pointer to the magnetic field map
 
-  ClassDef(AliEveMUONTrack, 1);    // Produce TEveUtil:TEveTrack from AliMUONTrack
+  ClassDef(AliEveMUONTrack, 0);    // Produce TEveUtil:TEveTrack from AliMUONTrack
 };
 
 #endif

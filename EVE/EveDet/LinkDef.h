@@ -45,8 +45,6 @@
 #pragma link C++ class AliEveTPCSectorData::RowIterator;
 #pragma link C++ class AliEveTPCSectorData::SegmentInfo;
 
-#pragma link C++ class AliEveTPCSectorData::PadRowHack;
-
 #pragma link C++ class AliEveTPCSectorViz+;
 #pragma link C++ class AliEveTPCSectorVizEditor+;
 #pragma link C++ class AliEveTPCSector2D+;

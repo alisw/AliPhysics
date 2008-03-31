@@ -26,6 +26,21 @@ class AliEveTPCSector3D : public AliEveTPCSectorViz
   friend class AliEveTPCSector3DEditor;
   friend class AliEveTPCSector3DGL;
 
+public:
+  AliEveTPCSector3D(const Text_t* n="AliEveTPCSector3D", const Text_t* t=0);
+  virtual ~AliEveTPCSector3D() {}
+
+  void SetPointFrac(Float_t f) { fPointFrac = f; IncRTS(); }
+  void SetPointSize(Float_t s) { fPointSize = s; }
+
+  void SetDriftVel(Float_t v) { fDriftVel = v; IncRTS(); }
+  void SetZStep(Float_t step) { fZStep = step; IncRTS(); }
+
+  virtual void SetRnrFrame(Bool_t rf);
+
+  virtual void ComputeBBox();
+  virtual void Paint(Option_t* option="");
+
 protected:
   void LoadPadrow(AliEveTPCSectorData::RowIterator& iter,
                   Float_t sx, Float_t sy, Float_t pw, Float_t ph);
@@ -42,22 +57,7 @@ protected:
   Float_t             fDriftVel;        // Drift velocity for 'z' coordinate.
   Float_t             fZStep;           // Z width of a time-bin.
 
-public:
-  AliEveTPCSector3D(const Text_t* n="AliEveTPCSector3D", const Text_t* t=0);
-  virtual ~AliEveTPCSector3D() {}
-
-  void SetPointFrac(Float_t f) { fPointFrac = f; IncRTS(); }
-  void SetPointSize(Float_t s) { fPointSize = s; }
-
-  void SetDriftVel(Float_t v) { fDriftVel = v; IncRTS(); }
-  void SetZStep(Float_t step) { fZStep = step; IncRTS(); }
-
-  virtual void SetRnrFrame(Bool_t rf);
-
-  virtual void ComputeBBox();
-  virtual void Paint(Option_t* option="");
-
-  ClassDef(AliEveTPCSector3D, 1); // Visualization of TPC raw-data in 3D.
+  ClassDef(AliEveTPCSector3D, 0); // Visualization of TPC raw-data in 3D.
 };
 
 #endif

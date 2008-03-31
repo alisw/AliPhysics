@@ -20,22 +20,11 @@ class TString;
 
 class AliRawReader;
 
-
 class AliEveMUONChamberData;
 
 class AliEveMUONData : public TObject, public TEveRefCnt
 {
-
- protected:
-
-  std::vector<AliEveMUONChamberData*>   fChambers;           // vector of 14 chambers
-
-  static AliRawReader*            fgRawReader;         // raw reader
-
-  Int_t fNTrackList;      // number of MC tracks which have hits
-  Int_t fTrackList[256];  // list of MC tracks which have hits
-
- public:
+public:
 
   AliEveMUONData();
   virtual ~AliEveMUONData();
@@ -62,7 +51,16 @@ class AliEveMUONData : public TObject, public TEveRefCnt
 
   AliEveMUONChamberData* GetChamberData(Int_t chamber);
 
-  ClassDef(AliEveMUONData,1);           // Manages MUON data for one event
+protected:
+
+  std::vector<AliEveMUONChamberData*>   fChambers;   // vector of 14 chambers
+
+  static AliRawReader                  *fgRawReader; // raw reader
+
+  Int_t fNTrackList;      // number of MC tracks which have hits
+  Int_t fTrackList[256];  // list of MC tracks which have hits
+
+  ClassDef(AliEveMUONData, 0);           // Manages MUON data for one event
 
 };
 

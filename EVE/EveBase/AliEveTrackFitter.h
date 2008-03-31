@@ -21,9 +21,26 @@ class TEveTrackList;
 
 class AliEveTrackFitter : public TEvePointSet
 {
-private:
-  AliEveTrackFitter(const AliEveTrackFitter&);            // Not implemented
-  AliEveTrackFitter& operator=(const AliEveTrackFitter&); // Not implemented
+public:
+  AliEveTrackFitter(const Text_t* name = "TrackFitter", Int_t nPoints=0);
+  virtual ~AliEveTrackFitter();
+
+  virtual void DestroyElements();
+
+  virtual void  AddFitPoint(Int_t pointId);  // slot for TEvePointSet::PointSelected() signal
+
+  virtual void  Start();
+  virtual void  Stop();
+  virtual void  FitTrack();
+  virtual void  Reset(Int_t nPoints=0, Int_t nIntIds=0);
+
+  Bool_t        GetConnected() const { return fConnected; }
+  AliRieman*    GetRieman()    const { return fRieman; }
+
+  TGraph*       GetGraphPicked() const { return fGraphPicked; }
+  TGraphErrors* GetGraphHelix()  const { return fGraphHelix; }
+  void          DrawDebugGraph();
+
 
 protected:
 
@@ -60,25 +77,9 @@ protected:
   TGraph            *fGraphPicked;     // graph of selected points debug info
   TGraphErrors      *fGraphHelix;      // graph of fitted points for debug info
 
-public:
-  AliEveTrackFitter(const Text_t* name = "TrackFitter", Int_t nPoints=0);
-  virtual ~AliEveTrackFitter();
-
-  virtual void DestroyElements();
-
-  virtual void  AddFitPoint(Int_t pointId);  // slot for TEvePointSet::PointSelected() signal
-
-  virtual void  Start();
-  virtual void  Stop();
-  virtual void  FitTrack();
-  virtual void  Reset(Int_t nPoints=0, Int_t nIntIds=0);
-
-  Bool_t        GetConnected() const { return fConnected; }
-  AliRieman*    GetRieman()    const { return fRieman; }
-
-  TGraph*       GetGraphPicked() const { return fGraphPicked; }
-  TGraphErrors* GetGraphHelix()  const { return fGraphHelix; }
-  void          DrawDebugGraph();
+private:
+  AliEveTrackFitter(const AliEveTrackFitter&);            // Not implemented
+  AliEveTrackFitter& operator=(const AliEveTrackFitter&); // Not implemented
 
   ClassDef(AliEveTrackFitter, 0); // Interface of TEvePointSet allowing helix fit.
 };

@@ -19,6 +19,8 @@
 class AliEveHOMERSourceMap : public TNamed
 {
 protected:
+  // --- Inner structs ---
+
   struct iterator_imp_base
   {
     virtual ~iterator_imp_base() {}
@@ -36,6 +38,8 @@ protected:
   };
 
 public:
+  // --- Inner structs ---
+
   struct iterator
   {
     iterator_imp_base* m_imp;
@@ -65,17 +69,11 @@ public:
 
   iterator begin() { return iterator(iterator_imp_begin()); }
   iterator end()   { return iterator(iterator_imp_end()); }
-  
+
   enum ESourceGrouping_e { kSG_ByDet, kSG_ByType };
 
-protected:
-  ESourceGrouping_e fGrouping; // Not used so far ...
+  // --- Interface ---
 
-  virtual iterator_imp_base* iterator_imp_new()   = 0; // Not used so far ...
-  virtual iterator_imp_base* iterator_imp_begin() = 0;
-  virtual iterator_imp_base* iterator_imp_end()   = 0;
-
-public:
   AliEveHOMERSourceMap(ESourceGrouping_e grouping);
   virtual ~AliEveHOMERSourceMap() {}
 
@@ -85,13 +83,27 @@ public:
 
   void PrintXXX();
 
-  ClassDef(AliEveHOMERSourceMap, 0);
+
+protected:
+  ESourceGrouping_e fGrouping; // Not used so far ...
+
+  virtual iterator_imp_base* iterator_imp_new()   = 0; // Not used so far ...
+  virtual iterator_imp_base* iterator_imp_begin() = 0;
+  virtual iterator_imp_base* iterator_imp_end()   = 0;
+
+  ClassDef(AliEveHOMERSourceMap, 0); // A map of HOMER sources.
 };
 
 /******************************************************************************/
 
 class AliEveHOMERSourceMapByDet : public AliEveHOMERSourceMap
 {
+public:
+  AliEveHOMERSourceMapByDet(ESourceGrouping_e grouping);
+  virtual ~AliEveHOMERSourceMapByDet() {}
+
+  virtual void FillMap(TList* handles, Bool_t def_state);
+
 protected:
   typedef std::map<AliEveHOMERSource::SourceId,
 		   AliEveHOMERSource::SourceState,
@@ -129,19 +141,20 @@ protected:
   virtual iterator_imp_base* iterator_imp_begin() { return new iterator_imp(fMap.begin()); }
   virtual iterator_imp_base* iterator_imp_end()   { return new iterator_imp(fMap.end());   }
 
-public:
-  AliEveHOMERSourceMapByDet(ESourceGrouping_e grouping);
-  virtual ~AliEveHOMERSourceMapByDet() {}
 
-  virtual void FillMap(TList* handles, Bool_t def_state);
-
-  // ClassDef(AliEveHOMERSourceMapByDet, 1);
+  // ClassDef(AliEveHOMERSourceMapByDet, 0);
 };
 
 /******************************************************************************/
 
 class AliEveHOMERSourceMapByType : public AliEveHOMERSourceMap
 {
+public:
+  AliEveHOMERSourceMapByType(ESourceGrouping_e grouping);
+  virtual ~AliEveHOMERSourceMapByType() {}
+
+  virtual void FillMap(TList* handles, Bool_t def_state);
+
 protected:
   typedef std::map<AliEveHOMERSource::SourceId,
 		   AliEveHOMERSource::SourceState,
@@ -179,13 +192,7 @@ protected:
   virtual iterator_imp_base* iterator_imp_begin() { return new iterator_imp(fMap.begin()); }
   virtual iterator_imp_base* iterator_imp_end()   { return new iterator_imp(fMap.end());   }
 
-public:
-  AliEveHOMERSourceMapByType(ESourceGrouping_e grouping);
-  virtual ~AliEveHOMERSourceMapByType() {}
-
-  virtual void FillMap(TList* handles, Bool_t def_state);
-
-  // ClassDef(AliEveHOMERSourceMapByType, 1);
+  // ClassDef(AliEveHOMERSourceMapByType, 0);
 };
 
 #endif

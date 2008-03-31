@@ -23,12 +23,6 @@
 
 class AliEveTOFStrip : public TEveQuadSet
 {
-  AliEveTOFStrip(const AliEveTOFStrip&);            // Not implemented
-  AliEveTOFStrip& operator=(const AliEveTOFStrip&); // Not implemented
-
-private:
-  void LoadQuads();
-
 protected:
 
   AliTOFGeometry *fTOFgeometry;
@@ -60,19 +54,25 @@ public:
 		 TClonesArray *tofArray);
   virtual ~AliEveTOFStrip();
 
-  static Bool_t    fgStaticInitDone;
-  static void      InitStatics();
-
   void SetThreshold(Short_t t);
   void SetMaxVal(Int_t mv);
-  Short_t GetThreshold() const {return fThreshold;};
-  Int_t GetMaxVal() const {return fMaxVal;};
+  Short_t GetThreshold() const { return fThreshold; }
+  Int_t   GetMaxVal()    const { return fMaxVal; }
   virtual void DigitSelected(Int_t idx);
 
-  static TEveFrameBox* fgTOFstripFrameBox;
+protected:
+  static Bool_t    fgStaticInitDone; // Has initialization of static variables been done.
+  static void      InitStatics();    // Initialize static variables.
 
-  static TEveRGBAPalette* fgTOFstripPalette;
+  static TEveFrameBox    *fgTOFstripFrameBox; // Shared box-frame for all strips.
+  static TEveRGBAPalette *fgTOFstripPalette;  // Shared palette.
 
-  ClassDef(AliEveTOFStrip, 1);
+private:
+  void LoadQuads();
+
+  AliEveTOFStrip(const AliEveTOFStrip&);            // Not implemented
+  AliEveTOFStrip& operator=(const AliEveTOFStrip&); // Not implemented
+
+  ClassDef(AliEveTOFStrip, 0); // Representation of a TOF strip.
 };
 #endif

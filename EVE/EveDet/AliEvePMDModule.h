@@ -17,30 +17,6 @@ class TTree;
 
 class AliEvePMDModule : public TEveQuadSet
 {
-private:
-  AliEvePMDModule(const AliEvePMDModule&);            // Not implemented
-  AliEvePMDModule& operator=(const AliEvePMDModule&); // Not implemented
-
-  void RectGeomCellPos(Int_t ism, Int_t irow, Int_t icol,
-		       Float_t &xpos, Float_t &ypos);
-  void GenerateBox(Int_t ism, Float_t &xism, Float_t &yism,
-		   Float_t &dxism, Float_t &dyism);
-
-protected:
-  TH1F*        fH1;         // histogram
-  Float_t      fX, fY, fZ;  // coordinates
-  Int_t        fNPads;      // number of pads
-  Int_t        fAdc;        // ad count
-
-  static const Float_t fgkRad;      // fooconst
-  static const Float_t fgkSqRoot3;  // fooconst
-  static const Float_t fgkZpos;     // position of PMD
-
-  static Int_t fgPreTotPads; // total pre pads
-  static Int_t fgCpvTotPads; // total cpv pads
-  static Int_t fgPreTotAdc;  // total pre signal
-  static Int_t fgCpvTotAdc;  // total cpv signal
-
 public:
   AliEvePMDModule();
   virtual ~AliEvePMDModule();
@@ -59,7 +35,31 @@ public:
   void DisplayRawData(Int_t ism,   TObjArray *ddlcont);
   void SetPosition(Float_t x, Float_t y, Float_t z);
 
-  ClassDef(AliEvePMDModule, 1);
+protected:
+  TH1F*        fH1;         // histogram
+  Float_t      fX, fY, fZ;  // coordinates
+  Int_t        fNPads;      // number of pads
+  Int_t        fAdc;        // ad count
+
+  static const Float_t fgkRad;      // fooconst
+  static const Float_t fgkSqRoot3;  // fooconst
+  static const Float_t fgkZpos;     // position of PMD
+
+  static Int_t fgPreTotPads; // total pre pads
+  static Int_t fgCpvTotPads; // total cpv pads
+  static Int_t fgPreTotAdc;  // total pre signal
+  static Int_t fgCpvTotAdc;  // total cpv signal
+
+private:
+  void RectGeomCellPos(Int_t ism, Int_t irow, Int_t icol,
+		       Float_t &xpos, Float_t &ypos);
+  void GenerateBox(Int_t ism, Float_t &xism, Float_t &yism,
+		   Float_t &dxism, Float_t &dyism);
+
+  AliEvePMDModule(const AliEvePMDModule&);            // Not implemented
+  AliEvePMDModule& operator=(const AliEvePMDModule&); // Not implemented
+
+  ClassDef(AliEvePMDModule, 0);
 }; // endclass AliEvePMDModule
 
 #endif

@@ -24,22 +24,11 @@ class AliEveMUONChamber;
 
 class AliEveMUONChamberEditor : public TGedFrame
 {
-  AliEveMUONChamberEditor(const AliEveMUONChamberEditor&);            // Not implemented
-  AliEveMUONChamberEditor& operator=(const AliEveMUONChamberEditor&); // Not implemented
-
-protected:
-  AliEveMUONChamber* fM; // fModel dynamic-casted to AliEveMUONChamberEditor
-
-  TEveGValuator *fThreshold;   // digit ADC min
-  TEveGValuator *fMaxVal;      // digit ADC max
-  TEveGValuator *fClusterSize; // cluster point size
-  TEveGValuator *fHitSize;     // hit point size
-
- public:
+public:
   AliEveMUONChamberEditor(const TGWindow* p = 0,
-		    Int_t width = 170, Int_t height = 30,
-		    UInt_t options = kChildFrame,
-		    Pixel_t back = GetDefaultFrameBackground());
+                          Int_t width = 170, Int_t height = 30,
+                          UInt_t options = kChildFrame,
+                          Pixel_t back = GetDefaultFrameBackground());
 
   virtual ~AliEveMUONChamberEditor();
 
@@ -50,8 +39,19 @@ protected:
   void DoClusterSize();
   void DoHitSize();
 
-  ClassDef(AliEveMUONChamberEditor, 0); // Editor for AliEveMUONChamber
+protected:
+  AliEveMUONChamber* fM; // fModel dynamic-casted to AliEveMUONChamberEditor
 
+  TEveGValuator *fThreshold;   // digit ADC min
+  TEveGValuator *fMaxVal;      // digit ADC max
+  TEveGValuator *fClusterSize; // cluster point size
+  TEveGValuator *fHitSize;     // hit point size
+
+private:
+  AliEveMUONChamberEditor(const AliEveMUONChamberEditor&);            // Not implemented
+  AliEveMUONChamberEditor& operator=(const AliEveMUONChamberEditor&); // Not implemented
+
+  ClassDef(AliEveMUONChamberEditor, 0); // Editor for AliEveMUONChamber
 };
 
 #endif

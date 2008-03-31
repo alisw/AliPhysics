@@ -41,10 +41,6 @@ class AliEveTRDChamber : public TEveElement, public AliEveTRDModule
 {
   friend class AliEveTRDDigits;
 
-private:
-  AliEveTRDChamber(const AliEveTRDChamber&);            // Not implemented.
-  AliEveTRDChamber& operator=(const AliEveTRDChamber&); // Not implemented.
-
 public:
 
   AliEveTRDChamber(Int_t det=0);
@@ -81,7 +77,11 @@ protected:
   AliTRDpadPlane *fPadPlane; // pad plane object
   AliTRDgeometry *fGeo;      // TRD geometry
 
-  ClassDef(AliEveTRDChamber,1); // Holder for TRD chamber data
+private:
+  AliEveTRDChamber(const AliEveTRDChamber&);            // Not implemented.
+  AliEveTRDChamber& operator=(const AliEveTRDChamber&); // Not implemented.
+
+  ClassDef(AliEveTRDChamber, 0); // Holder for TRD chamber data
 };
 
 
@@ -100,10 +100,10 @@ public:
   void UpdateLeaves();
   void UpdateNode();
 
-  List_i begin(){return fChildren.begin();}
-  List_i end(){return fChildren.end();}
+  List_i begin() { return fChildren.begin(); }
+  List_i end()   { return fChildren.end(); }
 
-  ClassDef(AliEveTRDNode, 1);
+  ClassDef(AliEveTRDNode, 0);
 };
 
 #endif

@@ -32,10 +32,6 @@ class AliEveTRDChamber;
 
 class AliEveTRDHits : public TEvePointSet
 {
-private:
-  AliEveTRDHits(const AliEveTRDHits&);            // Not implemented
-  AliEveTRDHits& operator=(const AliEveTRDHits&); // Not implemented
-
 public:
   AliEveTRDHits(AliEveTRDChamber *p);
 
@@ -44,16 +40,16 @@ public:
 protected:
   AliEveTRDChamber *fParent; // Chaber holding the hits.
 
-  ClassDef(AliEveTRDHits,1); // Base class for TRD hits visualisation
+private:
+  AliEveTRDHits(const AliEveTRDHits&);            // Not implemented
+  AliEveTRDHits& operator=(const AliEveTRDHits&); // Not implemented
+
+  ClassDef(AliEveTRDHits, 0); // Base class for TRD hits visualisation
 };
 
 
 class AliEveTRDHitsEditor : public TGedFrame
 {
-private:
-  AliEveTRDHitsEditor(const AliEveTRDHitsEditor&);            // Not implemented
-  AliEveTRDHitsEditor& operator=(const AliEveTRDHitsEditor&); // Not implemented
-
 public:
   AliEveTRDHitsEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30,
 		      UInt_t options=kChildFrame, Pixel_t back=GetDefaultFrameBackground());
@@ -64,17 +60,17 @@ public:
 protected:
   AliEveTRDHits* fM; // Model object.
 
-  ClassDef(AliEveTRDHitsEditor,1); // Editor for AliEveTRDHits.
+private:
+  AliEveTRDHitsEditor(const AliEveTRDHitsEditor&);            // Not implemented
+  AliEveTRDHitsEditor& operator=(const AliEveTRDHitsEditor&); // Not implemented
+
+  ClassDef(AliEveTRDHitsEditor, 0); // Editor for AliEveTRDHits.
 };
 
 
 class AliEveTRDDigits : public TEveQuadSet
 {
   friend class AliEveTRDDigitsEditor;
-
-private:
-  AliEveTRDDigits(const AliEveTRDDigits&);            // Not implemented
-  AliEveTRDDigits& operator=(const AliEveTRDDigits&); // Not implemented
 
 public:
   AliEveTRDDigits(AliEveTRDChamber *p);
@@ -91,16 +87,15 @@ private:
   TEveBoxSet		fBoxes; // Boxset for didigit representation.
   AliTRDdataArrayI	fData;  // Raw-data array.
 
-  ClassDef(AliEveTRDDigits,1); // Digits visualisation for TRD
+  AliEveTRDDigits(const AliEveTRDDigits&);            // Not implemented
+  AliEveTRDDigits& operator=(const AliEveTRDDigits&); // Not implemented
+
+  ClassDef(AliEveTRDDigits, 0); // Digits visualisation for TRD
 };
 
 
 class AliEveTRDDigitsEditor : public TGedFrame
 {
-private:
-  AliEveTRDDigitsEditor(const AliEveTRDDigitsEditor&);            // Not implemented
-  AliEveTRDDigitsEditor& operator=(const AliEveTRDDigitsEditor&); // Not implemented
-
 public:
   AliEveTRDDigitsEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30,
 			UInt_t options=kChildFrame, Pixel_t back=GetDefaultFrameBackground());
@@ -111,22 +106,26 @@ public:
 protected:
   AliEveTRDDigits* fM; // Model object.
 
-  ClassDef(AliEveTRDDigitsEditor,1); // Editor for AliEveTRDDigits
+private:
+  AliEveTRDDigitsEditor(const AliEveTRDDigitsEditor&);            // Not implemented
+  AliEveTRDDigitsEditor& operator=(const AliEveTRDDigitsEditor&); // Not implemented
+
+  ClassDef(AliEveTRDDigitsEditor, 0); // Editor for AliEveTRDDigits
 };
 
 
 class AliEveTRDClusters : public AliEveTRDHits
 {
-private:
-  AliEveTRDClusters(const AliEveTRDClusters&);            // Not implemented
-  AliEveTRDClusters& operator=(const AliEveTRDClusters&); // Not implemented
-
 public:
   AliEveTRDClusters(AliEveTRDChamber *p);
 
   void PointSelected(Int_t n);
 
-  ClassDef(AliEveTRDClusters,1); // Base class for TRD clusters visualisation
+private:
+  AliEveTRDClusters(const AliEveTRDClusters&);            // Not implemented
+  AliEveTRDClusters& operator=(const AliEveTRDClusters&); // Not implemented
+
+  ClassDef(AliEveTRDClusters, 0); // Base class for TRD clusters visualisation
 };
 
 #endif

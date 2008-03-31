@@ -20,19 +20,6 @@ class AliEveTrackFitter;
 
 class AliEveTrackFitterEditor : public TGedFrame
 {
-private:
-  AliEveTrackFitterEditor(const AliEveTrackFitterEditor&);            // Not implemented
-  AliEveTrackFitterEditor& operator=(const AliEveTrackFitterEditor&); // Not implemented
-
-protected:
-  AliEveTrackFitter* fM; // fModel dynamic-casted to AliEveTrackFitterEditor
-
-  TGTextButton* fFit;    // button to fit selection
-  TGTextButton* fReset;  // button to reset selection
-  TGTextButton* fStart;  // button to connect to signal
-  TGTextButton* fStop;   // button to disconnect from signal
-  TGTextButton* fGraph;  // button to draw graph
-
 public:
   AliEveTrackFitterEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30, UInt_t options = kChildFrame, Pixel_t back=GetDefaultFrameBackground());
   virtual ~AliEveTrackFitterEditor() {}
@@ -44,6 +31,19 @@ public:
   void DoReset();
   void DoStop();
   void DoGraph();
+
+protected:
+  AliEveTrackFitter* fM; // fModel dynamic-casted to AliEveTrackFitterEditor
+
+  TGTextButton* fFit;    // button to fit selection
+  TGTextButton* fReset;  // button to reset selection
+  TGTextButton* fStart;  // button to connect to signal
+  TGTextButton* fStop;   // button to disconnect from signal
+  TGTextButton* fGraph;  // button to draw graph
+
+private:
+  AliEveTrackFitterEditor(const AliEveTrackFitterEditor&);            // Not implemented
+  AliEveTrackFitterEditor& operator=(const AliEveTrackFitterEditor&); // Not implemented
 
   ClassDef(AliEveTrackFitterEditor, 0); // Editor for AliEveTrackFitter class.
 };

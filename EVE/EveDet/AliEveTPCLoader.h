@@ -29,27 +29,6 @@ class AliEveTPCLoader : public TEveElementList
 {
   friend class AliEveTPCLoaderEditor;
 
-  AliEveTPCLoader(const AliEveTPCLoader&);            // Not implemented
-  AliEveTPCLoader& operator=(const AliEveTPCLoader&); // Not implemented
-
-protected:
-  TString           fFile;      // File holding raw-data.
-  Int_t             fEvent;     // Current event.
-  Bool_t            fDoubleSR;  // Set to true for double sampling-rate.
-
-  TString           fTPCEquipementMap; // Equipement-map file-name, if set passed to raw-reader.
-  AliRawReaderRoot *fReader;           // Raw-data reader.
-  AliEveTPCData    *fData;             // TPC data container.
-
-  std::vector<AliEveTPCSector2D*> fSec2Ds; // 2D sector representations.
-  std::vector<AliEveTPCSector3D*> fSec3Ds; // 3D sector representations.
-
-  Bool_t   fSetInitSectorParams; // If true, initial parameters of 2D and 3D sectors are set from values below.
-  Int_t    fInitMinTime;         // Min time for display.
-  Int_t    fInitMaxTime;         // Max time for display.
-  Int_t    fInitThreshold;       // Threshold.
-  Int_t    fInitMaxVal;          // Maximum-signal value (all signals above mapped to saturation color).
-
 public:
   AliEveTPCLoader(const Text_t* n="AliEveTPCLoader", const Text_t* t=0);
   virtual ~AliEveTPCLoader();
@@ -80,7 +59,29 @@ public:
 
   void SetInitParams(Int_t mint, Int_t maxt, Int_t thr, Int_t maxval=128);
 
-  ClassDef(AliEveTPCLoader, 1); // Front-end for stand-alone inspection of TPC raw-data.
-}; // endclass AliEveTPCLoader
+protected:
+  TString           fFile;      // File holding raw-data.
+  Int_t             fEvent;     // Current event.
+  Bool_t            fDoubleSR;  // Set to true for double sampling-rate.
+
+  TString           fTPCEquipementMap; // Equipement-map file-name, if set passed to raw-reader.
+  AliRawReaderRoot *fReader;           // Raw-data reader.
+  AliEveTPCData    *fData;             // TPC data container.
+
+  std::vector<AliEveTPCSector2D*> fSec2Ds; // 2D sector representations.
+  std::vector<AliEveTPCSector3D*> fSec3Ds; // 3D sector representations.
+
+  Bool_t   fSetInitSectorParams; // If true, initial parameters of 2D and 3D sectors are set from values below.
+  Int_t    fInitMinTime;         // Min time for display.
+  Int_t    fInitMaxTime;         // Max time for display.
+  Int_t    fInitThreshold;       // Threshold.
+  Int_t    fInitMaxVal;          // Maximum-signal value (all signals above mapped to saturation color).
+
+private:
+  AliEveTPCLoader(const AliEveTPCLoader&);            // Not implemented
+  AliEveTPCLoader& operator=(const AliEveTPCLoader&); // Not implemented
+
+  ClassDef(AliEveTPCLoader, 0); // Front-end for stand-alone inspection of TPC raw-data.
+};
 
 #endif

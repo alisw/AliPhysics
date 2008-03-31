@@ -16,31 +16,24 @@ class TGCheckButton;
 class TGNumberEntry;
 class TGColorSelect;
 
-
 class AliEveTOFDigitsInfo;
 
 class AliEveTOFDigitsInfoEditor : public TGedFrame
 {
+public:
+  AliEveTOFDigitsInfoEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30, UInt_t options = kChildFrame, Pixel_t back=GetDefaultFrameBackground());
+  virtual ~AliEveTOFDigitsInfoEditor() {}
+
+  virtual void SetModel(TObject* obj);
+
+protected:
+  AliEveTOFDigitsInfo* fM; // Model object.
+
 private:
   AliEveTOFDigitsInfoEditor(const AliEveTOFDigitsInfoEditor&);            // Not implemented
   AliEveTOFDigitsInfoEditor& operator=(const AliEveTOFDigitsInfoEditor&); // Not implemented
 
-protected:
-  AliEveTOFDigitsInfo* fM; // fModel dynamic-casted to AliEveTOFDigitsInfoEditor
-
-  // Declare widgets
-  // TGSomeWidget*   fXYZZ;
-
-public:
-  AliEveTOFDigitsInfoEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30, UInt_t options = kChildFrame, Pixel_t back=GetDefaultFrameBackground());
-  virtual ~AliEveTOFDigitsInfoEditor();
-
-  virtual void SetModel(TObject* obj);
-
-  // Declare callback/slot methods
-  // void DoXYZZ();
-
   ClassDef(AliEveTOFDigitsInfoEditor, 0); // Editor for AliEveTOFDigitsInfo
-}; // endclass AliEveTOFDigitsInfoEditor
+};
 
 #endif

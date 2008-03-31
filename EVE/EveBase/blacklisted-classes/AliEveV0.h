@@ -37,9 +37,6 @@ class AliEveV0 : public TEveElement,
 {
   friend class V0List;
 
-  AliEveV0(const AliEveV0&);            // Not implemented
-  AliEveV0& operator=(const AliEveV0&); // Not implemented
-
 public:
   AliEveV0();
   AliEveV0(TEveRecTrack* tNeg, TEveRecTrack* tPos, TEveRecV0* v0,
@@ -160,8 +157,12 @@ protected:
   static const Float_t fgkMassPion2;
   static const Float_t fgkMassProton2;
 
-  ClassDef(AliEveV0, 1); // Visual representation of a AliEveV0.
-}; // endclass AliEveV0
+private:
+  AliEveV0(const AliEveV0&);            // Not implemented
+  AliEveV0& operator=(const AliEveV0&); // Not implemented
+
+  ClassDef(AliEveV0, 0); // Visual representation of a AliEveV0.
+};
 
 
 //______________________________________________________________________________
@@ -320,9 +321,6 @@ inline Float_t AliEveV0::GetAntiLamMass() const {
 
 class V0List : public TEveElementList
 {
-  V0List(const V0List&);            // Not implemented
-  V0List& operator=(const V0List&); // Not implemented
-
 public:
   V0List();
   V0List(TEveTrackPropagator* rs);
@@ -393,10 +391,6 @@ public:
   void PosEtaFilter(Float_t min, Float_t max);
   void IndexFilter(Float_t min, Float_t max);
 
-
-private:
-  void  Init();
-
 protected:
   TString              fTitle;
 
@@ -421,7 +415,13 @@ protected:
   Float_t fMaxX[fgkNcutVar2D];
   Float_t fMaxY[fgkNcutVar2D];
 
-  ClassDef(V0List, 1); // A list of AliEveV0 objecs.
+private:
+  void  Init();
+
+  V0List(const V0List&);            // Not implemented
+  V0List& operator=(const V0List&); // Not implemented
+
+  ClassDef(V0List, 0); // A list of AliEveV0 objecs.
 };
 
 

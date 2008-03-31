@@ -181,8 +181,7 @@ void AliEveTPCSectorData::NewBlock()
 AliEveTPCSectorData::AliEveTPCSectorData(Int_t sector, Int_t bsize) :
   fSectorID(sector),  fNPadsFilled(0), fPads(),
   fkBlockSize(bsize), fBlockPos(0),    fBlocks(),
-  fCurrentRow(0), fCurrentPad(0), fCurrentPos(0), fCurrentStep(0),
-  fPadRowHackSet(0)
+  fCurrentRow(0), fCurrentPad(0), fCurrentPos(0), fCurrentStep(0)
 {
   // Constructor.
 
@@ -200,7 +199,6 @@ AliEveTPCSectorData::~AliEveTPCSectorData()
 
   for (std::vector<Short_t*>::iterator b=fBlocks.begin(); b!=fBlocks.end(); ++b)
     delete [] *b;
-  DeletePadRowHack();
 }
 
 void AliEveTPCSectorData::DropData()
@@ -509,55 +507,4 @@ AliEveTPCSectorData::SegmentInfo::SegmentInfo() :
   // Constructor.
 
   memset(fYStep, sizeof(fYStep), 0);
-}
-
-/******************************************************************************/
-// AliEveTPCSectorData::PadRowHack
-/******************************************************************************/
-
-AliEveTPCSectorData::PadRowHack* AliEveTPCSectorData::GetPadRowHack(Int_t r, Int_t p)
-{
-  // Get PadRowHack applicable to given row and pad.
-
-  if (fPadRowHackSet == 0) return 0;
-  std::set<PadRowHack>* hs = static_cast<std::set<PadRowHack>*>(fPadRowHackSet);
-  std::set<PadRowHack>::iterator i = hs->find(PadRowHack(r,p));
-  return (i == hs->end()) ? 0 : const_cast<PadRowHack*>(&*i);
-}
-
-void AliEveTPCSectorData::AddPadRowHack(Int_t r, Int_t p, Int_t te, Float_t tf)
-{
-  // Register PadRowHack for given row and pad.
-
-  if (fPadRowHackSet == 0) fPadRowHackSet = new std::set<PadRowHack>;
-
-  PadRowHack* prh = GetPadRowHack(r, p);
-  if (prh == 0) {
-    std::set<PadRowHack>* hs = static_cast<std::set<PadRowHack>*>(fPadRowHackSet);
-    hs->insert(PadRowHack(r, p, te, tf));
-  } else {
-    prh->fThrExt += te;
-    prh->fThrFac *= tf;
-  }
-}
-
-void AliEveTPCSectorData::RemovePadRowHack(Int_t r, Int_t p)
-{
-  // Remove PadRowHack for given row and pad.
-
-  if (fPadRowHackSet == 0) return;
-  std::set<PadRowHack>*hs = static_cast<std::set<PadRowHack>*>(fPadRowHackSet);
-  std::set<PadRowHack>::iterator i = hs->find(PadRowHack(r,p));
-  if (i != hs->end()) hs->erase(i);
-}
-
-void AliEveTPCSectorData::DeletePadRowHack()
-{
-  // Delete all PadRowHacks and their container.
-
-  if (fPadRowHackSet != 0) {
-    std::set<PadRowHack>*hs = static_cast<std::set<PadRowHack>*>(fPadRowHackSet);
-    delete hs;
-    fPadRowHackSet = 0;
-  }
 }

@@ -18,19 +18,19 @@ class AliStack;
 
 class AliEveKineTools
 {
-private:
-  AliEveKineTools(const AliEveKineTools&);            // Not implemented
-  AliEveKineTools& operator=(const AliEveKineTools&); // Not implemented
-
 public:
-  AliEveKineTools(){}
-  virtual ~AliEveKineTools(){}
+  AliEveKineTools() {}
+  virtual ~AliEveKineTools() {}
 
   void SetDaughterPathMarks(TEveElement* cont, AliStack* stack, Bool_t recurse=kFALSE);
   void SetTrackReferences  (TEveElement* cont, TTree* treeTR=0, Bool_t recurse=kFALSE);
   void SortPathMarks       (TEveElement* cont, Bool_t recurse=kFALSE);
 
-  ClassDef(AliEveKineTools, 1); // Tools for import of kinematics.
+private:
+  AliEveKineTools(const AliEveKineTools&);            // Not implemented
+  AliEveKineTools& operator=(const AliEveKineTools&); // Not implemented
+
+  ClassDef(AliEveKineTools, 0); // Tools for import of kinematics.
 };
 
 #endif

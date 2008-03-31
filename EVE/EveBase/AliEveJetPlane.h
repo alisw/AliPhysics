@@ -32,45 +32,6 @@ class AliEveJetPlane : public TEveElementList,
 {
   friend class AliEveJetPlaneGL;
 
-private:
-  AliEveJetPlane(const AliEveJetPlane&);            // Not implemented
-  AliEveJetPlane& operator=(const AliEveJetPlane&); // Not implemented
-
-protected:
-  Float_t fMinEta;    // Min eta for display.
-  Float_t fMaxEta;    // Max eta for display.
-  Float_t fMinPhi;    // Min phi for display.
-  Float_t fMaxPhi;    // Max phi for display.
-  Int_t   fNEtaDiv;   // Number of eta divisions for display.
-  Int_t   fNPhiDiv;   // Number of phi divisions for display.
-
-  Float_t fEtaScale;          // Multiplier for eta.
-  Float_t fPhiScale;          // Multiplier for phi.
-  Float_t fEnergyScale;       // Multiplier for energy.
-  Float_t fEnergyColorScale;  // Multiplier for energy color.
-
-  Color_t fGridColor; // Color of coordinate grid.
-
-  std::vector<AliAODJet>   fJets;   // Jets to display.
-  std::vector<AliAODTrack> fTracks; // Tracks to display.
-
-  Bool_t                 fRnrJets;       // Show jets.
-  Bool_t                 fRnrTracks;     // Show tracks.
-  Bool_t                 fOneSelection;  // One object selected.
-  Bool_t                 fTwoSelection;  // Two objects selected.
-
-  AliAODJet             *fJet1,   *fJet2;    // Selection jets.
-  AliAODTrack           *fTrack1, *fTrack2;  // Selection tracks.
-
-  Int_t                  fSelectionFlag; // Selection state, handled by GL renderer.
-
-  // Common settings:
-  static Bool_t fgOneMomentumXYZ;       // Display momentum as coordinates.
-  static Bool_t fgOneMomentumPhiTheta;  // Display momentum as phi/theta.
-  static Bool_t fgOneEta;               // Display eta.
-  static Bool_t fgOneE;                 // Display energy.
-  static Bool_t fgOneChgMass;           // Display charge and mass.
-
 public:
   AliEveJetPlane(Int_t iev);
   virtual ~AliEveJetPlane() {}
@@ -119,7 +80,46 @@ public:
   virtual void ComputeBBox();
   virtual void Paint(Option_t* option = "");
 
-  ClassDef(AliEveJetPlane, 1); // Show jets and tracks in eta-phi plane.
-}; // endclass AliEveJetPlane
+protected:
+  Float_t fMinEta;    // Min eta for display.
+  Float_t fMaxEta;    // Max eta for display.
+  Float_t fMinPhi;    // Min phi for display.
+  Float_t fMaxPhi;    // Max phi for display.
+  Int_t   fNEtaDiv;   // Number of eta divisions for display.
+  Int_t   fNPhiDiv;   // Number of phi divisions for display.
+
+  Float_t fEtaScale;          // Multiplier for eta.
+  Float_t fPhiScale;          // Multiplier for phi.
+  Float_t fEnergyScale;       // Multiplier for energy.
+  Float_t fEnergyColorScale;  // Multiplier for energy color.
+
+  Color_t fGridColor; // Color of coordinate grid.
+
+  std::vector<AliAODJet>   fJets;   // Jets to display.
+  std::vector<AliAODTrack> fTracks; // Tracks to display.
+
+  Bool_t                 fRnrJets;       // Show jets.
+  Bool_t                 fRnrTracks;     // Show tracks.
+  Bool_t                 fOneSelection;  // One object selected.
+  Bool_t                 fTwoSelection;  // Two objects selected.
+
+  AliAODJet             *fJet1,   *fJet2;    // Selection jets.
+  AliAODTrack           *fTrack1, *fTrack2;  // Selection tracks.
+
+  Int_t                  fSelectionFlag; // Selection state, handled by GL renderer.
+
+  // Common settings:
+  static Bool_t fgOneMomentumXYZ;       // Display momentum as coordinates.
+  static Bool_t fgOneMomentumPhiTheta;  // Display momentum as phi/theta.
+  static Bool_t fgOneEta;               // Display eta.
+  static Bool_t fgOneE;                 // Display energy.
+  static Bool_t fgOneChgMass;           // Display charge and mass.
+
+private:
+  AliEveJetPlane(const AliEveJetPlane&);            // Not implemented
+  AliEveJetPlane& operator=(const AliEveJetPlane&); // Not implemented
+
+  ClassDef(AliEveJetPlane, 0); // Show jets and tracks in eta-phi plane.
+};
 
 #endif

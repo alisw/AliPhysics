@@ -28,28 +28,6 @@ class AliEveTOFSector;
 
 class AliEveTOFSectorEditor : public TGedFrame
 {
-private:
-  AliEveTOFSectorEditor(const AliEveTOFSectorEditor&);            // Not implemented
-  AliEveTOFSectorEditor& operator=(const AliEveTOFSectorEditor&); // Not implemented
-
-protected:
-  AliEveTOFSector*  fM; // Model object.
-
-  TEveGValuator*    fSectorID;
-
-  TGCheckButton*    fAutoTrans;
-
-  TGCheckButton**   fPlate;
-
-  TGCheckButton*    fPlate0;
-  TGCheckButton*    fPlate1;
-  TGCheckButton*    fPlate2;
-  TGCheckButton*    fPlate3;
-  TGCheckButton*    fPlate4;
-
-  TEveGValuator*    fThreshold;
-  TEveGValuator*    fMaxVal;
-
 public:
   AliEveTOFSectorEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30,
 			UInt_t options=kChildFrame, Pixel_t back=GetDefaultFrameBackground());
@@ -68,7 +46,29 @@ public:
   void DoThreshold();
   void DoMaxVal();
 
+protected:
+  AliEveTOFSector*  fM;         // Model object.
+
+  TEveGValuator*    fSectorID;  // Valuator for sector id.
+
+  TGCheckButton*    fAutoTrans; // Check-button for automatic translation.
+
+  TGCheckButton**   fPlate;     // Check-buttons for plates.
+
+  TGCheckButton*    fPlate0;    // Check-button for plate 0.
+  TGCheckButton*    fPlate1;    // Check-button for plate 1.
+  TGCheckButton*    fPlate2;    // Check-button for plate 2.
+  TGCheckButton*    fPlate3;    // Check-button for plate 3.
+  TGCheckButton*    fPlate4;    // Check-button for plate 4.
+
+  TEveGValuator*    fThreshold; // Valuator for threshold.
+  TEveGValuator*    fMaxVal;    // Valuator for maximum value.
+
+private:
+  AliEveTOFSectorEditor(const AliEveTOFSectorEditor&);            // Not implemented
+  AliEveTOFSectorEditor& operator=(const AliEveTOFSectorEditor&); // Not implemented
+
   ClassDef(AliEveTOFSectorEditor, 0); // Editor for AliEveTOFSector
-}; // endclass AliEveTOFSectorEditor
+};
 
 #endif

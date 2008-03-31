@@ -41,35 +41,6 @@ class AliEveTPCSectorViz : public TEveElement,
   friend class AliEveTPCSector3DEditor;
   friend class AliEveTPCSector3DGL;
 
-  AliEveTPCSectorViz(const AliEveTPCSectorViz&);            // Not implemented
-  AliEveTPCSectorViz& operator=(const AliEveTPCSectorViz&); // Not implemented
-
-protected:
-  AliEveTPCData    *fTPCData;    //  Source of data.
-  Int_t             fSectorID;   //  Id of the displayed sector.
-
-  Int_t             fMinTime;    //  Min time-bin to display.
-  Int_t             fMaxTime;    //  Max time-bin to display.
-  Short_t           fThreshold;  //  Threshold for display/
-  Int_t             fMaxVal;     //  Maximum signal-value, all above is of the same color.
-
-  Bool_t            fRnrInn;     //  Render inner segment.
-  Bool_t            fRnrOut1;    //  Render middle segment.
-  Bool_t            fRnrOut2;    //  Render outer segment.
-
-  Color_t           fFrameColor; //  Color of the frame, the main color.
-  Bool_t            fRnrFrame;   //  Render frame.
-  Bool_t            fAutoTrans;  //  Automatically calculate transformation based on sector id.
-  UInt_t            fRTS;        //! Rendering TimeStamp
-
-  mutable UChar_t  *fColorArray; //  Color array caching signal to color mapping.
-
-  void SetupColor(Int_t val, UChar_t* pix) const;
-  void ClearColorArray();
-  void SetupColorArray() const;
-  UChar_t* ColorFromArray(Int_t val) const;
-  void     ColorFromArray(Int_t val, UChar_t* pix) const;
-
 public:
   AliEveTPCSectorViz(const Text_t* n="AliEveTPCSectorViz", const Text_t* t=0);
   virtual ~AliEveTPCSectorViz();
@@ -103,10 +74,41 @@ public:
 
   void SetUseTrans(Bool_t t);
 
-  ClassDef(AliEveTPCSectorViz, 1); // Base-class for visualization of data for one TPC sector.
+protected:
+  AliEveTPCData    *fTPCData;    //  Source of data.
+  Int_t             fSectorID;   //  Id of the displayed sector.
+
+  Int_t             fMinTime;    //  Min time-bin to display.
+  Int_t             fMaxTime;    //  Max time-bin to display.
+  Short_t           fThreshold;  //  Threshold for display/
+  Int_t             fMaxVal;     //  Maximum signal-value, all above is of the same color.
+
+  Bool_t            fRnrInn;     //  Render inner segment.
+  Bool_t            fRnrOut1;    //  Render middle segment.
+  Bool_t            fRnrOut2;    //  Render outer segment.
+
+  Color_t           fFrameColor; //  Color of the frame, the main color.
+  Bool_t            fRnrFrame;   //  Render frame.
+  Bool_t            fAutoTrans;  //  Automatically calculate transformation based on sector id.
+  UInt_t            fRTS;        //! Rendering TimeStamp
+
+  mutable UChar_t  *fColorArray; //  Color array caching signal to color mapping.
+
+  void SetupColor(Int_t val, UChar_t* pix) const;
+  void ClearColorArray();
+  void SetupColorArray() const;
+  UChar_t* ColorFromArray(Int_t val) const;
+  void     ColorFromArray(Int_t val, UChar_t* pix) const;
+
+private:
+  AliEveTPCSectorViz(const AliEveTPCSectorViz&);            // Not implemented
+  AliEveTPCSectorViz& operator=(const AliEveTPCSectorViz&); // Not implemented
+
+  ClassDef(AliEveTPCSectorViz, 0); // Base-class for visualization of data for one TPC sector.
 };
 
-//------------------------------------------------------------------------------
+
+// --- Inlines ---
 
 inline UChar_t* AliEveTPCSectorViz::ColorFromArray(Int_t val) const
 {

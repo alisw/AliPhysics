@@ -219,12 +219,7 @@ void AliEveTPCData::LoadRaw(AliTPCRawStream& input, Bool_t spawnSectors, Bool_t 
 	continue;
       }
 
-      AliEveTPCSectorData::PadRowHack* prh = secData->GetPadRowHack(row, pad);
-      if (prh != 0) {
-	threshold = prh->fThrExt + Short_t(prh->fThrFac*fLoadThreshold);
-      } else {
-	threshold = fLoadThreshold;
-      }
+      threshold = fLoadThreshold;
 
       secData->BeginPad(row, pad, kTRUE);
       inFill   = kTRUE;

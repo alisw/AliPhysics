@@ -25,15 +25,6 @@ class AliEveJetPlane;
 
 class AliEveJetPlaneGL : public TGLObject
 {
-private:
-  AliEveJetPlaneGL(const AliEveJetPlaneGL&);            // Not implemented
-  AliEveJetPlaneGL& operator=(const AliEveJetPlaneGL&); // Not implemented
-
-protected:
-  AliEveJetPlane* fM; // Model object.
-
-  virtual void DirectDraw(TGLRnrCtx & rnrCtx) const;
-
 public:
   AliEveJetPlaneGL();
   virtual ~AliEveJetPlaneGL() {}
@@ -44,6 +35,15 @@ public:
   // To support two-level selection
   virtual Bool_t SupportsSecondarySelect() const { return kTRUE; }
   virtual void ProcessSelection(TGLRnrCtx & rnrCtx, TGLSelectRecord & rec);
+
+protected:
+  AliEveJetPlane* fM; // Model object.
+
+  virtual void DirectDraw(TGLRnrCtx & rnrCtx) const;
+
+private:
+  AliEveJetPlaneGL(const AliEveJetPlaneGL&);            // Not implemented
+  AliEveJetPlaneGL& operator=(const AliEveJetPlaneGL&); // Not implemented
 
   ClassDef(AliEveJetPlaneGL, 0); // GL renderer for AliEveJetPlane.
 }; // endclass AliEveJetPlaneGL

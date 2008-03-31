@@ -34,9 +34,6 @@ class AliEveTRDLoaderManager : public TEveElementList
 {
   friend class AliEveTRDLoaderManagerEditor;
 
-  AliEveTRDLoaderManager(const AliEveTRDLoaderManager&);            // Not implemented
-  AliEveTRDLoaderManager& operator=(const AliEveTRDLoaderManager&); // Not implemented
-
 public:
   AliEveTRDLoaderManager(const Text_t* name="AliEveTRDLoader", const Text_t* title=0x0);
   virtual ~AliEveTRDLoaderManager() {}
@@ -47,16 +44,16 @@ protected:
   void	Add(Int_t type, const Text_t *name, const Text_t *title=0x0);
   void	Remove(Int_t entry);
 
-  ClassDef(AliEveTRDLoaderManager, 1); // Alieve loaders manager for TRD
+private:
+  AliEveTRDLoaderManager(const AliEveTRDLoaderManager&);            // Not implemented
+  AliEveTRDLoaderManager& operator=(const AliEveTRDLoaderManager&); // Not implemented
+
+  ClassDef(AliEveTRDLoaderManager, 0); // Alieve loaders manager for TRD
 };
 
 
 class AliEveTRDLoaderManagerEditor : public TGedFrame
 {
-private:
-  AliEveTRDLoaderManagerEditor(const AliEveTRDLoaderManagerEditor&);            // Not implemented
-  AliEveTRDLoaderManagerEditor& operator=(const AliEveTRDLoaderManagerEditor&); // Not implemented
-
 public:
   AliEveTRDLoaderManagerEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30,
 			       UInt_t options=kChildFrame, Pixel_t back=GetDefaultFrameBackground());
@@ -75,7 +72,10 @@ private:
   TGGroupFrame 	*fGroupFrame;          // Frame.
   TClonesArray	*fRemove;              // Remove array.
 
-  ClassDef(AliEveTRDLoaderManagerEditor, 1); // Editor for AliEveTRDLoaderManager.
+  AliEveTRDLoaderManagerEditor(const AliEveTRDLoaderManagerEditor&);            // Not implemented
+  AliEveTRDLoaderManagerEditor& operator=(const AliEveTRDLoaderManagerEditor&); // Not implemented
+
+  ClassDef(AliEveTRDLoaderManagerEditor, 0); // Editor for AliEveTRDLoaderManager.
 };
 
 #endif

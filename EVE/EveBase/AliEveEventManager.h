@@ -33,28 +33,6 @@ class TGeoManager;
 
 class AliEveEventManager : public TEveEventManager
 {
-private:
-  AliEveEventManager(const AliEveEventManager&);            // Not implemented
-  AliEveEventManager& operator=(const AliEveEventManager&); // Not implemented
-
-protected:
-  TString       fPath;			// URL to event-data.
-  Int_t         fEventId;		// Id of current event.
-
-  AliRunLoader* fRunLoader;		// Run loader.
-
-  TFile*        fESDFile;		// ESD file.
-  TTree*        fESDTree;		// ESD tree.
-  AliESDEvent*  fESD;			// ESDEvent object.
-  AliESDfriend* fESDfriend;		// ESDfriend object.
-  Bool_t        fESDfriendExists;	// Flag specifying if ESDfriend was found during opening of the event-data.
-
-  static TString  fgCdbUri;		// Global URI to CDB.
-  static Bool_t   fgAssertRunLoader;	// Global flag specifying if AliRunLoader must be asserted during opening of the event-data.
-  static Bool_t   fgAssertESD;		// Global flag specifying if ESDEvent must be asserted during opening of the event-data.
-
-  static AliMagF* fgMagField;		// Global pointer to magneti field.
-
 public:
   static void SetCdbUri(const Text_t* cdb) { if (cdb) fgCdbUri = cdb; }
   static void SetAssertElements(Bool_t assertRunloader, Bool_t assertEsd)
@@ -87,8 +65,30 @@ public:
 
   static TGeoManager*  AssertGeometry();
 
-  ClassDef(AliEveEventManager, 1);
-}; // endclass AliEveEventManager
+protected:
+  TString       fPath;			// URL to event-data.
+  Int_t         fEventId;		// Id of current event.
+
+  AliRunLoader* fRunLoader;		// Run loader.
+
+  TFile*        fESDFile;		// ESD file.
+  TTree*        fESDTree;		// ESD tree.
+  AliESDEvent*  fESD;			// ESDEvent object.
+  AliESDfriend* fESDfriend;		// ESDfriend object.
+  Bool_t        fESDfriendExists;	// Flag specifying if ESDfriend was found during opening of the event-data.
+
+  static TString  fgCdbUri;		// Global URI to CDB.
+  static Bool_t   fgAssertRunLoader;	// Global flag specifying if AliRunLoader must be asserted during opening of the event-data.
+  static Bool_t   fgAssertESD;		// Global flag specifying if ESDEvent must be asserted during opening of the event-data.
+
+  static AliMagF* fgMagField;		// Global pointer to magneti field.
+
+private:
+  AliEveEventManager(const AliEveEventManager&);            // Not implemented
+  AliEveEventManager& operator=(const AliEveEventManager&); // Not implemented
+
+  ClassDef(AliEveEventManager, 0); // Interface for getting all event components in a uniform way.
+};
 
 extern AliEveEventManager* gAliEveEvent;
 

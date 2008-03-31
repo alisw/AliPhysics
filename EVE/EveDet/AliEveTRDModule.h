@@ -36,10 +36,6 @@ class AliEveTRDModule : public TNamed
   friend class AliEveTRDNode;
   friend class AliEveTRDChamber;
 
-private:
-  AliEveTRDModule(const AliEveTRDModule&);            // Not implemented
-  AliEveTRDModule& operator=(const AliEveTRDModule&); // Not implemented
-
 public:
   AliEveTRDModule(const char *typ="XXX", Int_t id=0);
   virtual ~AliEveTRDModule() {}
@@ -63,16 +59,16 @@ protected:
   Int_t         fDet;             // detector number
   UShort_t	fDigitsThreshold; // digits threshold
 
-  ClassDef(AliEveTRDModule,1); // Structure holder for TRD chamber.
+private:
+  AliEveTRDModule(const AliEveTRDModule&);            // Not implemented
+  AliEveTRDModule& operator=(const AliEveTRDModule&); // Not implemented
+
+  ClassDef(AliEveTRDModule, 0); // Structure holder for TRD chamber.
 };
 
 
 class AliEveTRDModuleEditor : public TGedFrame
 {
-private:
-  AliEveTRDModuleEditor(const AliEveTRDModuleEditor&);            // Not implemented
-  AliEveTRDModuleEditor& operator=(const AliEveTRDModuleEditor&); // Not implemented
-
 public:
   AliEveTRDModuleEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30,
 			UInt_t options=kChildFrame, Pixel_t back=GetDefaultFrameBackground());
@@ -98,7 +94,10 @@ private:
   TGColorSelect *fClustersColor;    // Cluster color.
   TGCheckButton *fDisplayTracks;    // Track control.
 
-  ClassDef(AliEveTRDModuleEditor,1); // Editor for AliEveTRDModule.
+  AliEveTRDModuleEditor(const AliEveTRDModuleEditor&);            // Not implemented
+  AliEveTRDModuleEditor& operator=(const AliEveTRDModuleEditor&); // Not implemented
+
+  ClassDef(AliEveTRDModuleEditor, 0); // Editor for AliEveTRDModule.
 };
 
 #endif

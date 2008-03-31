@@ -33,25 +33,6 @@ class AliEveTPCLoaderEditor : public TGedFrame
   AliEveTPCLoaderEditor(const AliEveTPCLoaderEditor&);            // Not implemented
   AliEveTPCLoaderEditor& operator=(const AliEveTPCLoaderEditor&); // Not implemented
 
-protected:
-  AliEveTPCLoader *fM;                  // Model object.
-
-  TGTextEntry     *fFile;               // Text entry for file-name.
-  TGTextButton    *fOpenFile;           // Button to open the file.
-
-  TEveGValuator   *fEvent;              // Valueator for event number.
-  TGCheckButton   *fDoubleSR;           // Check-box for double sampling-rate.
-
-  // AliEveTPCData loading settings
-  TEveGValuator   *fDataLoadThreshold;  // Valuator for threshold.
-  TEveGValuator   *fDataLoadPedestal;   // Valuator for pedestal.
-  TGCheckButton   *fDataAutoPedestal;   // Check-box for auto pedestal.
-
-  TGTextButton    *fUpdateSectors;      // Button to update sectors.
-  TGTextButton    *fReloadSectors;      // Button to reload sectors.
-  TGTextButton    *fCreateSectors3D;    // Button to create 3D sectors.
-  TGTextButton    *fDeleteSectors3D;    // Button to delete 3D sectors.
-
 public:
   AliEveTPCLoaderEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30,
                         UInt_t options=kChildFrame, Pixel_t back=GetDefaultFrameBackground());
@@ -74,6 +55,25 @@ public:
   void DoReloadSectors();
   void DoCreateSectors3D();
   void DoDeleteSectors3D();
+
+protected:
+  AliEveTPCLoader *fM;                  // Model object.
+
+  TGTextEntry     *fFile;               // Text entry for file-name.
+  TGTextButton    *fOpenFile;           // Button to open the file.
+
+  TEveGValuator   *fEvent;              // Valueator for event number.
+  TGCheckButton   *fDoubleSR;           // Check-box for double sampling-rate.
+
+  // AliEveTPCData loading settings
+  TEveGValuator   *fDataLoadThreshold;  // Valuator for threshold.
+  TEveGValuator   *fDataLoadPedestal;   // Valuator for pedestal.
+  TGCheckButton   *fDataAutoPedestal;   // Check-box for auto pedestal.
+
+  TGTextButton    *fUpdateSectors;      // Button to update sectors.
+  TGTextButton    *fReloadSectors;      // Button to reload sectors.
+  TGTextButton    *fCreateSectors3D;    // Button to create 3D sectors.
+  TGTextButton    *fDeleteSectors3D;    // Button to delete 3D sectors.
 
   ClassDef(AliEveTPCLoaderEditor, 0); // Editor for AliEveTPCLoader.
 };

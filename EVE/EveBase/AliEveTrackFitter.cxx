@@ -185,11 +185,11 @@ void AliEveTrackFitter::FitTrack()
   Int_t alphaIdx = 0;
   GetPoint(alphaIdx, x, y, z);
   Float_t minR2=x*x + y*y;
-  for (Int_t i=1; i<=fLastPoint; i++)
+  for (Int_t i=0; i<=fLastPoint; i++)
   {
     GetPoint(i, x, y, z);
     Float_t cR2 = x*x + y*y;
-    if ( minR2 > cR2 )
+    if (minR2 > cR2)
     {
       minR2 = cR2;
       alphaIdx = i;
@@ -199,7 +199,8 @@ void AliEveTrackFitter::FitTrack()
   fAlpha = ATan2(y, x);
   Float_t sin = Sin(-fAlpha);
   Float_t cos = Cos(-fAlpha);
-  for (Int_t i=0; i<=fLastPoint; i++) {
+  for (Int_t i = 0; i <= fLastPoint; ++i)
+  {
     GetPoint(i, x, y, z);
     fRieman->AddPoint(cos*x - sin*y, cos*y + sin*x, z, 1, 1);
   }
@@ -212,7 +213,7 @@ void AliEveTrackFitter::FitTrack()
   // curvature to pt
   param[4] /= TEveTrackPropagator::fgDefMagField*TEveTrackPropagator::fgkB2C;
   // sign in tang
-  if (param[4] < 0) param[3] *= -1;
+  if (param[4] < 0) param[3] = -param[3];
   AliExternalTrackParam trackParam(r, fAlpha, param, cov);
   trackParam.Print();
 
@@ -228,14 +229,7 @@ void AliEveTrackFitter::FitTrack()
 
   TEveTrack* track = new TEveTrack(&rc, fTrackList->GetPropagator());
   track->SetName(Form("track %f", fAlpha));
-  for(Int_t i=0; i<=fLastPoint; ++i)
-  {
-    TEvePathMark pm(TEvePathMark::kDaughter);
-    GetPoint(i, x, y, z);
-    pm.fV.Set(x, y, z);
-    pm.fP.Set(p0);
-    track->AddPathMark(pm);
-  }
+
   track->MakeTrack();
   track->SetAttLineAttMarker(fTrackList);
   fTrackList->AddElement(track);

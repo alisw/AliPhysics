@@ -25,18 +25,6 @@ class AliEveDigitScaleInfo : public TQObject, public TEveRefBackPtr
 public:
   enum StatType_e { kSTOccup, kSTAverage, kSTRms };
 
-  // Bool_t           fAutoUpdatePalette;
-private:
-  AliEveDigitScaleInfo(const AliEveDigitScaleInfo&);            // Not implemented
-  AliEveDigitScaleInfo& operator=(const AliEveDigitScaleInfo&); // Not implemented
-
-protected:
-  Int_t            fScale;        // Current scale.
-  Int_t            fStatType;     // Digit scaling algorithm, see StatType_e.
-
-  Bool_t           fSyncPalette;  // Synchronize palette on next usage.
-
-public:
   AliEveDigitScaleInfo();
   virtual ~AliEveDigitScaleInfo() {}
 
@@ -49,7 +37,17 @@ public:
   Bool_t GetSyncPalette() const   { return fSyncPalette; }
   void   SetSyncPalette(Bool_t x) { fSyncPalette = x; }
 
-  ClassDef(AliEveDigitScaleInfo, 1);
+protected:
+  Int_t            fScale;        // Current scale.
+  Int_t            fStatType;     // Digit scaling algorithm, see StatType_e.
+
+  Bool_t           fSyncPalette;  // Synchronize palette on next usage.
+
+private:
+  AliEveDigitScaleInfo(const AliEveDigitScaleInfo&);            // Not implemented
+  AliEveDigitScaleInfo& operator=(const AliEveDigitScaleInfo&); // Not implemented
+
+  ClassDef(AliEveDigitScaleInfo, 0);
 };
 
 /******************************************************************************/
@@ -65,6 +63,22 @@ class AliEveITSScaledModule : public AliEveITSModule
   friend class ITSSDSubEditor;
 
 public:
+  AliEveITSScaledModule(Int_t gid, AliEveITSDigitsInfo* info, AliEveDigitScaleInfo* si );
+  virtual ~AliEveITSScaledModule();
+
+  virtual void DigitSelected(Int_t idx);
+
+  virtual void LoadQuads();
+  void         SetQuadValues();
+
+  void         SyncPalette();
+
+  void         GetScaleData(Int_t& cnx, Int_t& cnz, Int_t& total) const;
+  AliEveDigitScaleInfo*  GetScaleInfo() { return fScaleInfo; }
+
+
+  // --- Inner structs
+
   struct ScaledDigit_t : public TObject
   {
   public:
@@ -80,12 +94,6 @@ public:
     void Dump() const;
   };
 
-private:
-  std::map<Int_t, ScaledDigit_t> fDigitsMap;
-
-  AliEveITSScaledModule(const AliEveITSScaledModule&);            // Not implemented
-  AliEveITSScaledModule& operator=(const AliEveITSScaledModule&); // Not implemented
-
 protected:
   Int_t       fNx;   // per module
   Int_t       fNz;
@@ -95,21 +103,13 @@ protected:
 
   AliEveDigitScaleInfo* fScaleInfo;
 
-public:
-  AliEveITSScaledModule(Int_t gid, AliEveITSDigitsInfo* info, AliEveDigitScaleInfo* si );
-  virtual ~AliEveITSScaledModule();
+private:
+  std::map<Int_t, ScaledDigit_t> fDigitsMap;
 
-  virtual void DigitSelected(Int_t idx);
+  AliEveITSScaledModule(const AliEveITSScaledModule&);            // Not implemented
+  AliEveITSScaledModule& operator=(const AliEveITSScaledModule&); // Not implemented
 
-  virtual void LoadQuads();
-  void         SetQuadValues();
-
-  void         SyncPalette();
-
-  void         GetScaleData(Int_t& cnx, Int_t& cnz, Int_t& total) const;
-  AliEveDigitScaleInfo*  GetScaleInfo() { return fScaleInfo; }
-
-  ClassDef(AliEveITSScaledModule, 1); // Visualization of an ITS module with digits aggregated on a grid of pre-defined size.
-}; // endclass AliEveITSScaledModule
+  ClassDef(AliEveITSScaledModule, 0); // Visualization of an ITS module with digits aggregated on a grid of pre-defined size.
+};
 
 #endif

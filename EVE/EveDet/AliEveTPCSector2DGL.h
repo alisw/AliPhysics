@@ -25,8 +25,18 @@ class AliEveTPCSector2D;
 
 class AliEveTPCSector2DGL : public TGLObject
 {
-  AliEveTPCSector2DGL(const AliEveTPCSector2DGL&);            // Not implemented
-  AliEveTPCSector2DGL& operator=(const AliEveTPCSector2DGL&); // Not implemented
+public:
+  AliEveTPCSector2DGL();
+  virtual ~AliEveTPCSector2DGL();
+
+  virtual Bool_t SetModel(TObject* obj, const Option_t* opt=0);
+  virtual void   SetBBox();
+  virtual Bool_t SupportsSecondarySelect() const { return kTRUE; }
+
+  virtual void ProcessSelection(TGLRnrCtx & rnrCtx, TGLSelectRecord & rec);
+
+  static void TraceStepsUp  (const AliEveTPCSectorData::SegmentInfo& s);
+  static void TraceStepsDown(const AliEveTPCSectorData::SegmentInfo& s);
 
 protected:
   virtual void DirectDraw(TGLRnrCtx & rnrCtx) const;
@@ -55,18 +65,9 @@ protected:
   static const Int_t fgkTextureHeight;    // Height of the texture.
   static const Int_t fgkTextureByteSize;  // Size of the texture in bytes.
 
-public:
-  AliEveTPCSector2DGL();
-  virtual ~AliEveTPCSector2DGL();
-
-  virtual Bool_t SetModel(TObject* obj, const Option_t* opt=0);
-  virtual void   SetBBox();
-  virtual Bool_t SupportsSecondarySelect() const { return kTRUE; }
-
-  virtual void ProcessSelection(TGLRnrCtx & rnrCtx, TGLSelectRecord & rec);
-
-  static void TraceStepsUp  (const AliEveTPCSectorData::SegmentInfo& s);
-  static void TraceStepsDown(const AliEveTPCSectorData::SegmentInfo& s);
+private:
+  AliEveTPCSector2DGL(const AliEveTPCSector2DGL&);            // Not implemented
+  AliEveTPCSector2DGL& operator=(const AliEveTPCSector2DGL&); // Not implemented
 
   ClassDef(AliEveTPCSector2DGL, 0); // GL renderer for AliEveTPCSector2D.
 };

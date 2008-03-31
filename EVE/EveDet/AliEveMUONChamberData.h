@@ -15,31 +15,12 @@ class AliMUONGeometryTransformer;
 
 class AliEveMUONChamberData : public TObject
 {
-  AliEveMUONChamberData(const AliEveMUONChamberData&);            // Not implemented
-  AliEveMUONChamberData& operator=(const AliEveMUONChamberData&); // Not implemented
-
-private:
-  static AliMUONGeometryTransformer* fgTransformer;   // geometry transformer
-
-protected:
-
-  Int_t   fChamberID;                 // number of the chamber, 0 to 13
-  Float_t fFrameCoord[26][5];         // detector elements frames
-  Int_t   fNDetElem;                  // number of detector elements
-  Int_t   fNDigits;                   // number of found digits (times 7)
-  Int_t   fNClusters;                 // number of found rec points
-  Int_t   fNHits;                     // number of simulation hits
-  Float_t fDigitBuffer[7*4096];       // digits coordinates, etc.
-  Float_t fClusterBuffer[5*256];      // cluster coordinates, etc.
-  Float_t fHitBuffer[3*256];          // hits coordinates
-  Float_t fChamberBox[6];             // chamber envelope box
-
 public:
 
   AliEveMUONChamberData(Int_t chamber);
   virtual ~AliEveMUONChamberData();
 
-  void DropData();
+  void     DropData();
 
   void     Init(Int_t chamber);
 
@@ -60,8 +41,29 @@ public:
 
   Float_t* GetChamberBox() { return &fChamberBox[0]; };
 
-  ClassDef(AliEveMUONChamberData,1);     // class with data for one chamber
 
+protected:
+
+  Int_t   fChamberID;                 // number of the chamber, 0 to 13
+  Float_t fFrameCoord[26][5];         // detector elements frames
+  Int_t   fNDetElem;                  // number of detector elements
+  Int_t   fNDigits;                   // number of found digits (times 7)
+  Int_t   fNClusters;                 // number of found rec points
+  Int_t   fNHits;                     // number of simulation hits
+  Float_t fDigitBuffer[7*4096];       // digits coordinates, etc.
+  Float_t fClusterBuffer[5*256];      // cluster coordinates, etc.
+  Float_t fHitBuffer[3*256];          // hits coordinates
+  Float_t fChamberBox[6];             // chamber envelope box
+
+
+private:
+
+  static AliMUONGeometryTransformer* fgTransformer;   // geometry transformer
+
+  AliEveMUONChamberData(const AliEveMUONChamberData&);            // Not implemented
+  AliEveMUONChamberData& operator=(const AliEveMUONChamberData&); // Not implemented
+
+  ClassDef(AliEveMUONChamberData, 0);     // class with data for one chamber
 };
 
 #endif

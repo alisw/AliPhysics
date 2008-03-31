@@ -31,26 +31,6 @@ class AliEveTPCSectorViz;
 
 class AliEveTPCSectorVizEditor : public TGedFrame
 {
-  AliEveTPCSectorVizEditor(const AliEveTPCSectorVizEditor&);            // Not implemented
-  AliEveTPCSectorVizEditor& operator=(const AliEveTPCSectorVizEditor&); // Not implemented
-
-protected:
-  AliEveTPCSectorViz   *fM;          // Model dynamic-casted to AliEveTPCSectorVizEditor
-
-  TEveTransSubEditor   *fHMTrans;    // Widget for transormation.
-
-  TEveGValuator        *fSectorID;   // Widget for SectorID.
-  TGCheckButton        *fAutoTrans;  // Widget for AutoTrans.
-
-  TGCheckButton        *fRnrInn;     // Widget for RnrInn.
-  TGCheckButton        *fRnrOut1;    // Widget for RnrOut1.
-  TGCheckButton        *fRnrOut2;    // Widget for RnrOut2.
-
-  TEveGValuator        *fThreshold;  // Widget for Threshold.
-  TEveGValuator        *fMaxVal;     // Widget for MaxVal.
-
-  TEveGDoubleValuator  *fTime;       // Widget for time-range.
-
 public:
   AliEveTPCSectorVizEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30,
 		     UInt_t options=kChildFrame, Pixel_t back=GetDefaultFrameBackground());
@@ -69,6 +49,27 @@ public:
   void DoMaxVal();
 
   void DoTime();
+
+protected:
+  AliEveTPCSectorViz   *fM;          // Model dynamic-casted to AliEveTPCSectorVizEditor
+
+  TEveTransSubEditor   *fHMTrans;    // Widget for transormation.
+
+  TEveGValuator        *fSectorID;   // Widget for SectorID.
+  TGCheckButton        *fAutoTrans;  // Widget for AutoTrans.
+
+  TGCheckButton        *fRnrInn;     // Widget for RnrInn.
+  TGCheckButton        *fRnrOut1;    // Widget for RnrOut1.
+  TGCheckButton        *fRnrOut2;    // Widget for RnrOut2.
+
+  TEveGValuator        *fThreshold;  // Widget for Threshold.
+  TEveGValuator        *fMaxVal;     // Widget for MaxVal.
+
+  TEveGDoubleValuator  *fTime;       // Widget for time-range.
+
+private:
+  AliEveTPCSectorVizEditor(const AliEveTPCSectorVizEditor&);            // Not implemented
+  AliEveTPCSectorVizEditor& operator=(const AliEveTPCSectorVizEditor&); // Not implemented
 
   ClassDef(AliEveTPCSectorVizEditor, 0); // Editor for AliEveTPCSectorViz.
 };
