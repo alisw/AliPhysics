@@ -1160,10 +1160,12 @@ Bool_t AliReconstruction::RunEvent(Int_t iEvent)
     // write ESD
     if (fCleanESD) CleanESD(fesd);
 
-    if (fRunGlobalQA) {
-       AliQADataMakerRec *qadm = GetQADataMaker(AliQA::kGLOBAL);
-       if (qadm) qadm->Exec(AliQA::kESDS, fesd);
-    }
+	if (fRunQA) {
+		if (fRunGlobalQA) {
+			AliQADataMakerRec *qadm = GetQADataMaker(AliQA::kGLOBAL);
+			if (qadm) qadm->Exec(AliQA::kESDS, fesd);
+		}
+	}
 
     if (fWriteESDfriend) {
       fesdf->~AliESDfriend();
@@ -1327,20 +1329,20 @@ Bool_t AliReconstruction::FinishRun()
 
   //Finish QA and end of cycle for out-of-loop QA
   if (!fInLoopQA) {
-     if (fRunQA) {
-       AliQADataMakerSteer qas;
-       qas.Run(fRunLocalReconstruction.Data(), AliQA::kRECPOINTS, fSameQACycle);
-       //qas.Reset() ;
-       qas.Run(fRunTracking.Data(), AliQA::kESDS, fSameQACycle);
-     }
-     if (fRunGlobalQA) {
-        AliQADataMakerRec *qadm = GetQADataMaker(AliQA::kGLOBAL);
-        if (qadm) {
-	   qadm->EndOfCycle(AliQA::kRECPOINTS);
-	   qadm->EndOfCycle(AliQA::kESDS);
-	   qadm->Finish();
- 	}
-     }
+	  if (fRunQA) {
+		  AliQADataMakerSteer qas;
+		  qas.Run(fRunLocalReconstruction.Data(), AliQA::kRECPOINTS, fSameQACycle);
+		  //qas.Reset() ;
+		  qas.Run(fRunTracking.Data(), AliQA::kESDS, fSameQACycle);
+		  if (fRunGlobalQA) {
+			 AliQADataMakerRec *qadm = GetQADataMaker(AliQA::kGLOBAL);
+			  if (qadm) {
+				  qadm->EndOfCycle(AliQA::kRECPOINTS);
+				  qadm->EndOfCycle(AliQA::kESDS);
+				  qadm->Finish();
+			  }
+		  }
+	  }
   }
   
   // Cleanup of CDB manager: cache and active storages!
