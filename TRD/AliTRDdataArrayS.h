@@ -44,7 +44,7 @@ class AliTRDdataArrayS : public AliTRDdataArray {
   virtual void    SetThreshold(Short_t threshold) { fThreshold = threshold; };
 
   virtual Short_t GetData(Int_t row, Int_t col, Int_t time) const;
-          Short_t GetDataUnchecked(Int_t row, Int_t col, Int_t time) const
+  virtual Short_t GetDataUnchecked(Int_t row, Int_t col, Int_t time) const
                                  { return GetDataFast(GetIdx1Unchecked(row,col),time); };
 
   virtual Short_t GetThreshold() const            { return fThreshold;      };
@@ -76,5 +76,3 @@ class AliTRDdataArrayS : public AliTRDdataArray {
 };
  
 #endif
-
-

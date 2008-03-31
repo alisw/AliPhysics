@@ -38,6 +38,7 @@
 #include "AliTRDdigitsManager.h"
 #include "AliTRDdataArrayS.h"
 #include "AliTRDdataArrayI.h"
+#include "AliTRDdataArrayDigits.h"
 #include "AliTRDSignalIndex.h"
 #include "AliTRDReconstructor.h"
 #include "AliTRDrecoParam.h"
@@ -656,7 +657,7 @@ AliTRDrawStreamTB::NextChamber(AliTRDdigitsManager *digitsManager)
   //
 
   AliTRDcalibDB *cal = AliTRDcalibDB::Instance();
-  AliTRDdataArrayS *digits = 0;
+  AliTRDdataArrayDigits *digits = 0;
   AliTRDdataArrayI *track0 = 0;
   AliTRDdataArrayI *track1 = 0;
   AliTRDdataArrayI *track2 = 0; 
@@ -709,7 +710,7 @@ AliTRDrawStreamTB::NextChamber(AliTRDdigitsManager *digitsManager)
 	    }
 
 	  // Add a container for the digits of this detector
-	  digits = (AliTRDdataArrayS *) digitsManager->GetDigits(det);
+	  digits = (AliTRDdataArrayDigits *) digitsManager->GetDigits(det);
 
           if (digitsManager->UsesDictionaries()) 
             {
@@ -764,42 +765,9 @@ AliTRDrawStreamTB::NextChamber(AliTRDdigitsManager *digitsManager)
 	{
 	  if ((GetSignals()[it] - adcBaseline) > 0)
 	    {
-	      Short_t sigvalue = GetSignals()[it] - adcBaseline;
-	      // Masking Pads in the signal
-	      // Coding:
-	      // Any Corruption: Bit 10 set 1
-	      // Noisy: Bit 11: 0, Bit 12: 0
-	      // Not Connected: Bit 11: 1, Bit 12: 0
-	      // Bridged: Bit 11: 0, Bit 12: 1 resp. Bit 11: 1, Bit 12: 1
-	      switch(padStatus)
-		{
-		case AliTRDCalPadStatus::kMasked:
-		  SETBIT(sigvalue, 10);
-		  CLRBIT(sigvalue, 11);
-		  CLRBIT(sigvalue, 12);
-		  break;
-		case AliTRDCalPadStatus::kNotConnected:
-		  SETBIT(sigvalue, 10);
-		  SETBIT(sigvalue, 11);
-		  CLRBIT(sigvalue, 12);
-		  break;
-		case AliTRDCalPadStatus::kPadBridgedLeft:
-		  SETBIT(sigvalue, 10);
-		  CLRBIT(sigvalue, 11);
-		  SETBIT(sigvalue, 12);
-		  break;
-		case AliTRDCalPadStatus::kPadBridgedRight:
-		  SETBIT(sigvalue, 10);
-		  SETBIT(sigvalue, 11);
-		  SETBIT(sigvalue, 12);
-		default:
-		  // No corruption
-		  CLRBIT(sigvalue, 10);
-		  CLRBIT(sigvalue, 11);
-		  CLRBIT(sigvalue, 12);
-		}
-	      digits->SetDataUnchecked(GetRow(), GetCol(), it, sigvalue);
-	      
+	      digits->SetDataUnchecked(GetRow(), GetCol(), it, GetSignals()[it] - adcBaseline);
+	      digits->SetPadStatus(GetRow(), GetCol(), it, padStatus);
+	      	      
 	      indexes->AddIndexTBin(GetRow(), GetCol(), it);
               if (digitsManager->UsesDictionaries()) 
                 {

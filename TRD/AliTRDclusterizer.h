@@ -23,6 +23,7 @@ class AliRawReader;
 class AliTRD;
 class AliTRDcluster;
 class AliTRDdataArrayS;
+class AliTRDdataArrayDigits;
 class AliTRDdataArrayF;
 class AliTRDdigitsManager;
 class AliTRDSignalIndex;
@@ -71,7 +72,7 @@ class AliTRDclusterizer : public TNamed {
 
           void     DeConvExp(Double_t *source, Double_t *target
                            , Int_t nTimeTotal, Int_t nexp);
-	  void     TailCancelation(AliTRDdataArrayS *digitsIn
+	  void     TailCancelation(AliTRDdataArrayDigits *digitsIn
                                  , AliTRDdataArrayF *digitsOut 
                                  , AliTRDSignalIndex *indexesIn
 			         , AliTRDSignalIndex *indexesOut

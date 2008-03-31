@@ -18,6 +18,7 @@
 #pragma link C++ class  AliTRDdataArray+;
 #pragma link C++ class  AliTRDdataArrayI+;
 #pragma link C++ class  AliTRDdataArrayS+;
+#pragma link C++ class  AliTRDdataArrayDigits+;
 #pragma link C++ class  AliTRDdataArrayF+;
 #pragma link C++ class  AliTRDSignalIndex+;
 

@@ -41,6 +41,7 @@
 #include "AliTRDdataArrayF.h"
 #include "AliTRDdataArrayI.h"
 #include "AliTRDdataArrayS.h"
+#include "AliTRDdataArrayDigits.h"
 #include "AliTRDdigitsManager.h"
 #include "AliTRDrawData.h"
 #include "AliTRDcalibDB.h"
@@ -474,7 +475,7 @@ Bool_t AliTRDclusterizer::MakeClusters()
   for (Int_t i = 0; i < AliTRDgeometry::kNdet; i++)
     {
 
-      AliTRDdataArrayS *digitsIn = (AliTRDdataArrayS *) fDigitsManager->GetDigits(i);      
+      AliTRDdataArrayDigits *digitsIn = (AliTRDdataArrayDigits*) fDigitsManager->GetDigits(i);      
       // This is to take care of switched off super modules
       if (!digitsIn->HasData()) 
         {
@@ -606,7 +607,7 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
   // Get the digits
   //   digits should be expanded beforehand!
   //   digitsIn->Expand();
-  AliTRDdataArrayS *digitsIn = (AliTRDdataArrayS *) fDigitsManager->GetDigits(det);      
+  AliTRDdataArrayDigits *digitsIn = (AliTRDdataArrayDigits *) fDigitsManager->GetDigits(det);      
 
   // This is to take care of switched off super modules
   if (!digitsIn->HasData()) 
@@ -714,7 +715,7 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
   while (fIndexesOut->NextRCTbinIndex(row, col, time)){
 		Float_t signalM = TMath::Abs(digitsOut->GetDataUnchecked(row,col,time));
 		signal = digitsIn->GetDataUnchecked(row,col,time);
-		status[1] = GetStatus(signal);
+		status[1] = digitsIn->GetPadStatus(row, col, time);
 		ipos = status[1] ? 2 : 0;
 
 		// Look for the maximum
@@ -723,12 +724,12 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
 
 			Float_t signalL = TMath::Abs(digitsOut->GetDataUnchecked(row,col+1,time));
 			signal = digitsIn->GetDataUnchecked(row,col+1,time);
-			status[0] = GetStatus(signal);
+			status[0] = digitsIn->GetPadStatus(row,col+1,time);
 			ipos += status[0] ? 1 : 0;
 
 			Float_t signalR = TMath::Abs(digitsOut->GetDataUnchecked(row,col-1,time));
 			signal = digitsIn->GetDataUnchecked(row,col-1,time);
-			status[2] = GetStatus(signal);
+			status[2] = digitsIn->GetPadStatus(row, col-1, time);
 			ipos += status[0] ? 4 : 0;
 
 			// reject candidates with more than 1 problematic pad
@@ -1141,7 +1142,7 @@ Double_t AliTRDclusterizer::Unfold(Double_t eps, Int_t plane, Double_t *padSigna
 }
 
 //_____________________________________________________________________________
-void AliTRDclusterizer::TailCancelation(AliTRDdataArrayS *digitsIn
+void AliTRDclusterizer::TailCancelation(AliTRDdataArrayDigits *digitsIn
 	       		              , AliTRDdataArrayF *digitsOut
 				      , AliTRDSignalIndex *indexesIn
 				      , AliTRDSignalIndex *indexesOut
