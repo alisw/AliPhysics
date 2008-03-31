@@ -45,7 +45,7 @@ void run(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFALSE, B
 
   task = new AlidNdEtaTask(option);
 
-  AliPWG0Helper::AnalysisMode analysisMode = AliPWG0Helper::kTPC;
+  AliPWG0Helper::AnalysisMode analysisMode = AliPWG0Helper::kSPD;
   task->SetAnalysisMode(analysisMode);
 
   if (analysisMode != AliPWG0Helper::kSPD)
@@ -66,6 +66,7 @@ void run(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFALSE, B
     task->SetReadMC();
 
   //task->SetUseMCVertex();
+  //task->SetUseMCKine();
 
   mgr->AddTask(task);
 

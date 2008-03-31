@@ -45,8 +45,10 @@ void runCorrection(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug =
 
   task = new AlidNdEtaCorrectionTask(option);
 
-  AliPWG0Helper::AnalysisMode analysisMode = AliPWG0Helper::kTPC;
+  AliPWG0Helper::AnalysisMode analysisMode = AliPWG0Helper::kSPD;
   task->SetAnalysisMode(analysisMode);
+
+  //task->SetOnlyPrimaries();
 
   if (analysisMode != AliPWG0Helper::kSPD)
   {
@@ -87,6 +89,8 @@ void runCorrection(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug =
     mgr->SetDebugLevel(2);
     AliLog::SetClassDebugLevel("AlidNdEtaCorrectionTask", AliLog::kDebug+2);
   }
+  else
+    AliLog::SetClassDebugLevel("AlidNdEtaCorrectionTask", AliLog::kWarning);
 
   // Run analysis
   mgr->InitAnalysis();

@@ -40,6 +40,7 @@ AlidNdEtaCorrectionTask::AlidNdEtaCorrectionTask(const char* opt) :
   fOption(opt),
   fAnalysisMode(AliPWG0Helper::kTPC),
   fSignMode(0),
+  fOnlyPrimaries(kFALSE),
   fEsdTrackCuts(0),
   fdNdEtaCorrection(0),
   fdNdEtaAnalysisMC(0),
@@ -49,6 +50,8 @@ AlidNdEtaCorrectionTask::AlidNdEtaCorrectionTask(const char* opt) :
   fVertexCorrelation(0),
   fVertexProfile(0),
   fVertexShiftNorm(0),
+  fEtaCorrelation(0),
+  fEtaProfile(0),
   fSigmaVertexTracks(0),
   fSigmaVertexPrim(0),
   fMultAll(0),
@@ -66,7 +69,7 @@ AlidNdEtaCorrectionTask::AlidNdEtaCorrectionTask(const char* opt) :
   for (Int_t i=0; i<2; i++)
     fdNdEtaCorrectionProcessType[i] = 0;
   
-  for (Int_t i=0; i<3; i++)
+  for (Int_t i=0; i<8; i++)
     fDeltaPhi[i] = 0;
 }
 
@@ -180,12 +183,15 @@ void AlidNdEtaCorrectionTask::CreateOutputObjects()
   fVertexProfile = new TProfile("fVertexProfile", "fVertexProfile;MC z-vtx;MC z-vtx - ESD z-vtx", 40, -20, 20);
   fVertexShiftNorm = new TH1F("fVertexShiftNorm", "fVertexShiftNorm;(MC z-vtx - ESD z-vtx) / #sigma_{ESD z-vtx};Entries", 200, -100, 100);
   
+  fEtaCorrelation = new TH2F("fEtaCorrelation", "fEtaCorrelation;MC #eta;ESD #eta", 120, -3, 3, 120, -3, 3);
+  fEtaProfile = new TProfile("fEtaProfile", "fEtaProfile;MC #eta;MC #eta - ESD #eta", 120, -3, 3);
+
   fMultAll = new TH1F("fMultAll", "fMultAll", 500, -0.5, 499.5);
   fMultVtx = new TH1F("fMultVtx", "fMultVtx", 500, -0.5, 499.5);
   fMultTr = new TH1F("fMultTr", "fMultTr", 500, -0.5, 499.5);
 
-  for (Int_t i=0; i<3; i++)
-    fDeltaPhi[i] = new TH1F(Form("fDeltaPhi_%d", i), ";#Delta phi;Entries", 200, -0.5, 0.5);
+  for (Int_t i=0; i<8; i++)
+    fDeltaPhi[i] = new TH1F(Form("fDeltaPhi_%d", i), ";#Delta phi;Entries", 2000, -0.1, 0.1);
 }
 
 void AlidNdEtaCorrectionTask::Exec(Option_t*)
@@ -199,8 +205,14 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
     return;
   }
 
+  if (fOnlyPrimaries)
+    Printf("WARNING: Processing only primaries. For systematical studies only!");
+
   // trigger definition
   Bool_t eventTriggered = AliPWG0Helper::IsEventTriggered(fESD->GetTriggerMask(), AliPWG0Helper::kMB2);
+
+  if (!eventTriggered)
+    Printf("No trigger");
 
   // post the data already here
   PostData(0, fOutput);
@@ -261,10 +273,10 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
   else
     Printf("No vertex found");
 
-
   // create list of (label, eta, pt) tuples
   Int_t inputCount = 0;
   Int_t* labelArr = 0;
+  Int_t* labelArr2 = 0; // only for case of SPD
   Float_t* etaArr = 0;
   Float_t* ptArr = 0;
   Float_t* deltaPhiArr = 0;
@@ -279,6 +291,7 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
     }
 
     labelArr = new Int_t[mult->GetNumberOfTracklets()];
+    labelArr2 = new Int_t[mult->GetNumberOfTracklets()];
     etaArr = new Float_t[mult->GetNumberOfTracklets()];
     ptArr = new Float_t[mult->GetNumberOfTracklets()];
     deltaPhiArr = new Float_t[mult->GetNumberOfTracklets()];
@@ -298,8 +311,13 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
       if (TMath::Abs(deltaPhi) > 1)
         printf("WARNING: Very high Delta Phi: %d %f %f %f\n", i, mult->GetTheta(i), mult->GetPhi(i), deltaPhi);
 
+      if (fOnlyPrimaries)
+        if (mult->GetLabel(i, 0) < 0 || mult->GetLabel(i, 0) != mult->GetLabel(i, 1) || !stack->IsPhysicalPrimary(mult->GetLabel(i, 0)))
+          continue;
+
       etaArr[inputCount] = mult->GetEta(i);
-      labelArr[inputCount] = mult->GetLabel(i);
+      labelArr[inputCount] = mult->GetLabel(i, 0);
+      labelArr2[inputCount] = mult->GetLabel(i, 1);
       ptArr[inputCount] = 0; // no pt for tracklets
       deltaPhiArr[inputCount] = deltaPhi;
       ++inputCount;
@@ -320,6 +338,7 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
     Printf("Accepted %d tracks", nGoodTracks);
 
     labelArr = new Int_t[nGoodTracks];
+    labelArr2 = new Int_t[nGoodTracks];
     etaArr = new Float_t[nGoodTracks];
     ptArr = new Float_t[nGoodTracks];
     deltaPhiArr = new Float_t[nGoodTracks];
@@ -336,6 +355,7 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
 
       etaArr[inputCount] = esdTrack->Eta();
       labelArr[inputCount] = TMath::Abs(esdTrack->GetLabel());
+      labelArr2[inputCount] = labelArr[inputCount]; // no second label for tracks
       ptArr[inputCount] = esdTrack->Pt();
       deltaPhiArr[inputCount] = 0; // no delta phi for tracks
       ++inputCount;
@@ -406,14 +426,16 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
       fMultVtx->Fill(nAccepted);
   }
 
+  Int_t processed = 0;
+
   for (Int_t i=0; i<inputCount; ++i)
   {
     Int_t label = labelArr[i];
+    Int_t label2 = labelArr2[i];
 
     if (label < 0)
     {
       Printf("WARNING: cannot find corresponding mc part for track(let) %d with label %d.", i, label);
-      fDeltaPhi[2]->Fill(deltaPhiArr[i]);
       continue;
     }
 
@@ -423,14 +445,53 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
       AliDebug(AliLog::kError, Form("UNEXPECTED: particle with label %d not found in stack (track loop).", label));
       continue;
     }
+    
+    // find particle that is filled in the correction map
+    // this should be the particle that has been reconstructed
+    // for TPC this is clear and always identified by the track's label
+    // for SPD the labels might not be identical. In this case the particle closest to the beam line that is a primary is taken: 
+    //  L1 L2 (P = primary, S = secondary)
+    //   P P' : --> P
+    //   P S  : --> P
+    //   S P  : --> P
+    //   S S' : --> S
 
-    if (SignOK(particle->GetPDG()) == kFALSE)
-        continue;
+    if (label != label2 && label2 >= 0)
+    {
+      if (stack->IsPhysicalPrimary(label) == kFALSE && stack->IsPhysicalPrimary(label2))
+      {
+        particle = stack->Particle(label2);
+        if (!particle)
+        {
+          AliDebug(AliLog::kError, Form("UNEXPECTED: particle with label %d not found in stack (track loop).", label2));
+          continue;
+        }
+      }
+    }
 
     if (eventTriggered && eventVertex)
     {
-      fdNdEtaCorrection->FillTrackedParticle(vtxMC[2], particle->Eta(), particle->Pt());
+      if (SignOK(particle->GetPDG()) == kFALSE)
+        continue;
+
+      processed++;
+
+      Bool_t firstIsPrim = stack->IsPhysicalPrimary(label);
+      // in case of primary the MC values are filled, otherwise (background) the reconstructed values
+      if (label == label2 && firstIsPrim)
+      {
+        fdNdEtaCorrection->FillTrackedParticle(vtxMC[2], particle->Eta(), particle->Pt());
+      }
+      else
+      {
+        fdNdEtaCorrection->FillTrackedParticle(vtxMC[2], etaArr[i], ptArr[i]);
+        fEtaProfile->Fill(particle->Eta(), particle->Eta() - etaArr[i]);
+      }
+	      
       fdNdEtaAnalysisESD->FillTrack(vtxMC[2], particle->Eta(), particle->Pt());
+
+      fEtaCorrelation->Fill(etaArr[i], particle->Eta());
+
       if (particle->Pt() > 0.1 && particle->Pt() < 0.2)
       {
         fPIDTracks->Fill(particle->GetPdgCode());
@@ -451,14 +512,64 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
           fdNdEtaCorrectionProcessType[2]->FillTrackedParticle(vtxMC[2], particle->Eta(), particle->Pt());
       }
 
-      if (stack->IsPhysicalPrimary(label))
+      Int_t hist = -1;
+      if (label == label2)
       {
-        fDeltaPhi[0]->Fill(deltaPhiArr[i]);
+      	if (firstIsPrim)
+        {
+	  hist = 0;
+        }
+        else
+          hist = 1; 
+      }
+      else if (label2 >= 0)
+      {
+        Bool_t secondIsPrim = stack->IsPhysicalPrimary(label2);
+        if (firstIsPrim && secondIsPrim)
+        {
+          hist = 2;
+        }
+        else if (firstIsPrim && !secondIsPrim)
+        {
+          hist = 3;
+	  
+          // check if secondary is caused by the primary or it is a fake combination
+          //Printf("PS case --> Label 1 is %d, label 2 is %d", label, label2);
+          Int_t mother = label2;
+          while (stack->Particle(mother) && stack->Particle(mother)->GetMother(0) >= 0)
+          {
+            //Printf("  %d created by %d, %d", mother, stack->Particle(mother)->GetMother(0), stack->Particle(mother)->GetMother(1));
+            if (stack->Particle(mother)->GetMother(0) == label)
+            {
+              /*Printf("The untraceable decay was:");
+              Printf("   from:");
+              particle->Print();
+              Printf("   to (status code %d):", stack->Particle(mother)->GetStatusCode());
+              stack->Particle(mother)->Print();*/
+              hist = 4;
+            }
+            mother = stack->Particle(mother)->GetMother(0);
+          }
+        }
+        else if (!firstIsPrim && secondIsPrim)
+        {
+          hist = 5;
+        }
+        else if (!firstIsPrim && !secondIsPrim)
+        {
+          hist = 6;
+        }
+
       }
       else
-        fDeltaPhi[1]->Fill(deltaPhiArr[i]);
+        hist = 7;
+      
+      fDeltaPhi[hist]->Fill(deltaPhiArr[i]);
     }
   }
+
+  if (processed < inputCount)
+    Printf("Only %d out of %d track(let)s were used", processed, inputCount); 
 
   if (eventTriggered && eventVertex)
   {
@@ -486,6 +597,7 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
 
   delete[] etaArr;
   delete[] labelArr;
+  delete[] labelArr2;
   delete[] ptArr;
   delete[] deltaPhiArr;
 
@@ -591,6 +703,12 @@ void AlidNdEtaCorrectionTask::Terminate(Option_t *)
     fVertexProfile->Write();
   if (fVertexShiftNorm)
     fVertexShiftNorm->Write();
+
+  if (fEtaCorrelation)
+    fEtaCorrelation->Write();
+  if (fEtaProfile)
+    fEtaProfile->Write();
+
   if (fMultAll)
     fMultAll->Write();
 
@@ -600,7 +718,7 @@ void AlidNdEtaCorrectionTask::Terminate(Option_t *)
   if (fMultVtx)
     fMultVtx->Write();
 
-  for (Int_t i=0; i<3; ++i)
+  for (Int_t i=0; i<8; ++i)
     if (fDeltaPhi[i])
       fDeltaPhi[i]->Write();
 

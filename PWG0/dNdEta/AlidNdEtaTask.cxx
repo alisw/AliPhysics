@@ -45,6 +45,7 @@ AlidNdEtaTask::AlidNdEtaTask(const char* opt) :
   fAnalysisMode(AliPWG0Helper::kTPC),
   fReadMC(kFALSE),
   fUseMCVertex(kFALSE),
+  fUseMCKine(kFALSE),
   fEsdTrackCuts(0),
   fdNdEtaAnalysisESD(0),
   fMult(0),
@@ -213,6 +214,57 @@ void AlidNdEtaTask::Exec(Option_t*)
   // post the data already here
   PostData(0, fOutput);
 
+  // needed for syst. studies
+  AliStack* stack = 0;
+  
+  if (fUseMCVertex || fUseMCKine) {
+    if (!fReadMC) {
+      Printf("ERROR: fUseMCVertex or fUseMCKine set without fReadMC set!");
+      return;
+    }
+
+    AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+    if (!eventHandler) {
+      Printf("ERROR: Could not retrieve MC event handler");
+      return;
+    }
+
+    AliMCEvent* mcEvent = eventHandler->MCEvent();
+    if (!mcEvent) {
+      Printf("ERROR: Could not retrieve MC event");
+      return;
+    }
+
+    AliHeader* header = mcEvent->Header();
+    if (!header)
+    {
+      AliDebug(AliLog::kError, "Header not available");
+      return;
+    }
+
+    if (fUseMCVertex)
+    {
+      Printf("WARNING: Replacing vertex by MC vertex. This is for systematical checks only.");
+      // get the MC vertex
+      AliGenEventHeader* genHeader = header->GenEventHeader();
+      TArrayF vtxMC(3);
+      genHeader->PrimaryVertex(vtxMC);
+
+      vtx[2] = vtxMC[2];
+    }
+
+    if (fUseMCKine)
+    {
+
+      stack = mcEvent->Stack();
+      if (!stack)
+      {
+        AliDebug(AliLog::kError, "Stack not available");
+        return;
+      }
+    }
+  }
+
   // create list of (label, eta, pt) tuples
   Int_t inputCount = 0;
   Int_t* labelArr = 0;
@@ -232,19 +284,32 @@ void AlidNdEtaTask::Exec(Option_t*)
     etaArr = new Float_t[mult->GetNumberOfTracklets()];
     ptArr = new Float_t[mult->GetNumberOfTracklets()];
 
+    if (fUseMCKine && stack)
+      Printf("Processing only primaries (MC information used). This is for systematical checks only.");
+
     // get multiplicity from ITS tracklets
     for (Int_t i=0; i<mult->GetNumberOfTracklets(); ++i)
     {
       //printf("%d %f %f %f\n", i, mult->GetTheta(i), mult->GetPhi(i), mult->GetDeltaPhi(i));
 
-      // This removes non-tracklets in PDC06 data. Very bad solution. New solution is implemented for newer data. Keeping this for compatibility.
-      if (mult->GetDeltaPhi(i) < -1000)
-        continue;
+      if (fUseMCKine && stack)
+        if (mult->GetLabel(i, 0) < 0 || mult->GetLabel(i, 0) != mult->GetLabel(i, 1) || !stack->IsPhysicalPrimary(mult->GetLabel(i, 0)))
+          continue;
+      
+      Float_t deltaPhi = mult->GetDeltaPhi(i);
+      // prevent values to be shifted by 2 Pi()
+      if (deltaPhi < -TMath::Pi())
+        deltaPhi += TMath::Pi() * 2;
+      if (deltaPhi > TMath::Pi())
+        deltaPhi -= TMath::Pi() * 2;
 
-      fDeltaPhi->Fill(mult->GetDeltaPhi(i));
+      if (TMath::Abs(deltaPhi) > 1)
+        printf("WARNING: Very high Delta Phi: %d %f %f %f\n", i, mult->GetTheta(i), mult->GetPhi(i), deltaPhi);
+
+      fDeltaPhi->Fill(deltaPhi);
 
       etaArr[inputCount] = mult->GetEta(i);
-      labelArr[inputCount] = mult->GetLabel(i);
+      labelArr[inputCount] = mult->GetLabel(i, 0);
       ptArr[inputCount] = 0; // no pt for tracklets
       ++inputCount;
     }
@@ -289,40 +354,6 @@ void AlidNdEtaTask::Exec(Option_t*)
   }
   else
     return;
-
-  if (fUseMCVertex) {
-    Printf("WARNING: Replacing vertex by MC vertex. This is for systematical checks only.");
-    if (!fReadMC) {
-      Printf("ERROR: fUseMCVertex set without fReadMC set!");
-      return;
-    }
-
-    AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-    if (!eventHandler) {
-      Printf("ERROR: Could not retrieve MC event handler");
-      return;
-    }
-
-    AliMCEvent* mcEvent = eventHandler->MCEvent();
-    if (!mcEvent) {
-      Printf("ERROR: Could not retrieve MC event");
-      return;
-    }
-
-    AliHeader* header = mcEvent->Header();
-    if (!header)
-    {
-      AliDebug(AliLog::kError, "Header not available");
-      return;
-    }
-
-    // get the MC vertex
-    AliGenEventHeader* genHeader = header->GenEventHeader();
-    TArrayF vtxMC(3);
-    genHeader->PrimaryVertex(vtxMC);
-
-    vtx[2] = vtxMC[2];
-  }
 
   // Processing of ESD information (always)
   if (eventTriggered)

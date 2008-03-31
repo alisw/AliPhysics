@@ -28,6 +28,7 @@ class AlidNdEtaCorrectionTask : public AliAnalysisTask {
 
     void SetTrackCuts(AliESDtrackCuts* cuts) { fEsdTrackCuts = cuts; }
     void SetAnalysisMode(AliPWG0Helper::AnalysisMode mode) { fAnalysisMode = mode; }
+    void SetOnlyPrimaries(Bool_t flag = kTRUE) { fOnlyPrimaries = flag; }
 
  protected:
     Bool_t SignOK(TParticlePDG* particle);
@@ -38,6 +39,7 @@ class AlidNdEtaCorrectionTask : public AliAnalysisTask {
     TString fOption;                 // option string
     AliPWG0Helper::AnalysisMode fAnalysisMode;    // detector that is used for analysis
     Int_t fSignMode;                 // if 0 process all particles, if +-1 process only particles with that sign
+    Bool_t fOnlyPrimaries;           // only process primaries (syst. studies)
 
     AliESDtrackCuts*  fEsdTrackCuts;             // Object containing the parameters of the esd track cuts
 
@@ -54,6 +56,9 @@ class AlidNdEtaCorrectionTask : public AliAnalysisTask {
     TProfile* fVertexProfile;                    //! Profile of MC z-vtx - ESD z-vtx vs. MC z-vtx
     TH1F* fVertexShiftNorm;                      //! (MC z-vtx - ESD z-vtx) / (sigma_ESD-z-vtx) histogrammed
 
+    TH2F* fEtaCorrelation;                       //! ESD eta vs MC eta
+    TProfile* fEtaProfile;                       //! Profile of MC eta - ESD eta vs. MC eta
+
     // histograms for systematic studies (must be enabled with option)
 
     TH1F* fSigmaVertexTracks;                    //! (accepted tracks) vs (n of sigma to vertex cut)
@@ -64,7 +69,7 @@ class AlidNdEtaCorrectionTask : public AliAnalysisTask {
     TH1F* fMultTr; //! primary particles  in |eta| < 1 and pT > 0.2 in triggered events
     TH1F* fMultVtx; //! primary particles  in |eta| < 1 and pT > 0.2 in triggered events with vertex
 
-    TH1F* fDeltaPhi[3]; //! delta phi of primaries, secondaries, other (= unclear cases)
+    TH1F* fDeltaPhi[8]; //! delta phi of primaries, secondaries, other (= unclear cases)
 
     AlidNdEtaCorrection* fdNdEtaCorrectionProcessType[3]; //! correction for specific process type (ND, SD, DD)
                                                           // enable with option: process-types
