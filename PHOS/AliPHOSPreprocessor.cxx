@@ -65,6 +65,9 @@ AliPHOSPreprocessor::AliPHOSPreprocessor(AliShuttleInterface* shuttle):
 AliPreprocessor("PHS",shuttle)
 {
   // Constructor
+
+  AddRunType("PHYSICS");
+  AddRunType("STANDALONE");
 }
 
 //_______________________________________________________________________________________
