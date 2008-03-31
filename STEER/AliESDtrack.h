@@ -243,10 +243,10 @@ public:
      x=fHMPIDtrkX; y=fHMPIDtrkY; th=fHMPIDtrkTheta; ph=fHMPIDtrkPhi;
   }
   void    SetHMPIDmip(Float_t  x, Float_t  y, Int_t q, Int_t nph=0) {
-     fHMPIDmipX=x; fHMPIDmipY=y; fHMPIDqn=1000000*q+nph;
+     fHMPIDmipX=x; fHMPIDmipY=y; fHMPIDqn=1000000*nph+q;
   }
   void    GetHMPIDmip(Float_t &x,Float_t &y,Int_t &q,Int_t &nph) const {
-     x=fHMPIDmipX; y=fHMPIDmipY; q=fHMPIDqn/1000000; nph=fHMPIDqn%1000000;
+     x=fHMPIDmipX; y=fHMPIDmipY; q=fHMPIDqn%1000000; nph=fHMPIDqn/1000000;
   }
   Bool_t  IsHMPID() const {return fFlags&kHMPIDpid;}
 
@@ -312,7 +312,7 @@ protected:
   Int_t     fTOFLabel[3];    // TOF label 
   Int_t     fTOFCalChannel;  // Channel Index of the TOF Signal 
   Int_t     fTOFindex;       // index of the assigned TOF cluster
-  Int_t     fHMPIDqn;         // 1000000*QDC + number of photon clusters
+  Int_t     fHMPIDqn;         // 1000000*number of photon clusters + QDC
   Int_t     fHMPIDcluIdx;     // 1000000*chamber id + cluster idx of the assigned MIP cluster
   Int_t     fEMCALindex;     // index of associated EMCAL cluster (AliESDCaloCluster)
 
