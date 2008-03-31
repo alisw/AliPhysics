@@ -25,12 +25,12 @@
 
 ClassImp(AliAODTracklets)
 
-AliAODTracklets::AliAODTracklets() : TNamed(), fNTracks(0), fTheta(0), fPhi(0), fDeltaPhi(0), fLabels(0)
+AliAODTracklets::AliAODTracklets() : TNamed(), fNTracks(0), fTheta(0), fPhi(0), fDeltaPhi(0), fLabels(0), fLabelsL2(0)
 {
   // default constructor
 }
 
-AliAODTracklets::AliAODTracklets(const char* name, const char* title) : TNamed(name, title), fNTracks(0), fTheta(0), fPhi(0), fDeltaPhi(0), fLabels(0)
+AliAODTracklets::AliAODTracklets(const char* name, const char* title) : TNamed(name, title), fNTracks(0), fTheta(0), fPhi(0), fDeltaPhi(0), fLabels(0), fLabelsL2(0)
 {
   // TNamed constructor
 }
@@ -41,18 +41,21 @@ AliAODTracklets::AliAODTracklets(const AliAODTracklets& tracklet) :
     fTheta(0),
     fPhi(0),
     fDeltaPhi(0),
-    fLabels(0)
+    fLabels(0), 
+    fLabelsL2(0)
 {
 // Copy constructor
     fTheta = new Double32_t[fNTracks];
     fPhi = new Double32_t[fNTracks];
     fDeltaPhi = new Double32_t[fNTracks];
     fLabels = new Int_t[fNTracks];
+    fLabelsL2 = new Int_t[fNTracks];
     for (Int_t i = 0; i < fNTracks; i++) {
 	fTheta[i]    = tracklet.fTheta[i];
 	fPhi[i]      = tracklet.fPhi[i];
 	fDeltaPhi[i] = tracklet.fDeltaPhi[i];
 	fLabels[i]   = tracklet.fLabels[i];
+	fLabelsL2[i]   = tracklet.fLabelsL2[i];
     }
 }
 
@@ -67,6 +70,7 @@ AliAODTracklets& AliAODTracklets::operator=(const AliAODTracklets& tracklet)
 	fPhi[i]      = tracklet.fPhi[i];
 	fDeltaPhi[i] = tracklet.fDeltaPhi[i];
 	fLabels[i]   = tracklet.fLabels[i];
+	fLabelsL2[i]   = tracklet.fLabelsL2[i];
     }
     return *this;
 }
@@ -88,6 +92,7 @@ void AliAODTracklets::CreateContainer(Int_t nTracks)
   fPhi = new Double32_t[fNTracks];
   fDeltaPhi = new Double32_t[fNTracks];
   fLabels = new Int_t[fNTracks];
+  fLabelsL2 = new Int_t[fNTracks];
 }
 
 
@@ -126,10 +131,16 @@ void AliAODTracklets::DeleteContainer()
     fLabels = 0;
   }
 
+  if (fLabelsL2)
+  {
+    delete[] fLabelsL2;
+    fLabelsL2 = 0;
+  }
+
   fNTracks = 0;
 }
 
-Bool_t AliAODTracklets::SetTracklet(Int_t pos, Double32_t theta, Double32_t phi, Double32_t deltaPhi, Int_t label)
+Bool_t AliAODTracklets::SetTracklet(Int_t pos, Double32_t theta, Double32_t phi, Double32_t deltaPhi, Int_t labelL1, Int_t labelL2)
 {
   // Sets a tracklet at the given position
 
@@ -139,7 +150,9 @@ Bool_t AliAODTracklets::SetTracklet(Int_t pos, Double32_t theta, Double32_t phi,
   fTheta[pos] = theta;
   fPhi[pos] = phi;
   fDeltaPhi[pos] = deltaPhi;
-  fLabels[pos] = label;
+  fLabels[pos] = labelL1;
+  fLabelsL2[pos] = labelL2;
 
   return kTRUE;
 }
+

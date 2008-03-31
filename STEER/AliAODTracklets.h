@@ -27,23 +27,24 @@ class AliAODTracklets : public TNamed
   void CreateContainer(Int_t nTracks);
   void DeleteContainer();
 
-  Bool_t SetTracklet(Int_t pos, Double32_t theta, Double32_t phi, Double32_t deltaPhi, Int_t label);
+  Bool_t SetTracklet(Int_t pos, Double32_t theta, Double32_t phi, Double32_t deltaPhi, Int_t labelL1, Int_t labelL2);
 
   Int_t GetNumberOfTracklets() const { return fNTracks; }
   inline Double32_t GetTheta(Int_t i) const;
   inline Double32_t GetPhi(Int_t i) const;
   inline Double32_t GetDeltaPhi(Int_t i) const;
-  inline Int_t   GetLabel(Int_t i) const;
+  inline Int_t   GetLabel(Int_t i, Int_t layer) const;
 
  protected:
   Int_t      fNTracks;       // Number of tracklets
   Double32_t *fTheta;        //[fNTracks] array with theta values
   Double32_t *fPhi;          //[fNTracks] array with phi values
   Double32_t *fDeltaPhi;     //[fNTracks] array with delta phi values
-  Int_t      *fLabels;       //[fNTracks] array with labels of tracklets
+  Int_t      *fLabels;       //[fNTracks] array with labels of cluster in L1 used for the tracklet
+  Int_t      *fLabelsL2;     //[fNTracks] array with labels of cluster in L2 used for the tracklet
 
 
-  ClassDef(AliAODTracklets, 2);
+  ClassDef(AliAODTracklets, 3);
 };
 
 Double32_t AliAODTracklets::GetTheta(Int_t i) const 
@@ -76,11 +77,11 @@ Double32_t AliAODTracklets::GetDeltaPhi(Int_t i) const
     Error("GetDeltaPhi","Invalid track number %d",i); return -9999.;
 }
 
-Int_t AliAODTracklets::GetLabel(Int_t i) const 
+Int_t AliAODTracklets::GetLabel(Int_t i, Int_t layer) const 
 {
   if (i>=0 && i<fNTracks) 
   {
-    return fLabels[i];
+    return (layer == 0) ? fLabels[i] : fLabelsL2[i];
   }
   else 
     Error("GetLabel","Invalid track number %d",i); return -9999;

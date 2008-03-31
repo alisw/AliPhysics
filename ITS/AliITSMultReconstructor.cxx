@@ -111,7 +111,7 @@ fhphiClustersLay1(0){
   for(Int_t i=0; i<300000; i++) {
     fClustersLay1[i]       = new Float_t[6];
     fClustersLay2[i]       = new Float_t[6];
-    fTracklets[i]          = new Float_t[4];
+    fTracklets[i]          = new Float_t[5];
     fSClusters[i]           = new Float_t[2];
     fAssociationFlag[i]    = kFALSE;
   }
@@ -365,6 +365,8 @@ AliITSMultReconstructor::Reconstruct(TTree* clusterTree, Float_t* vtx, Float_t* 
       fTracklets[fNTracklets][2] = fClustersLay1[iC1][1] - fClustersLay2[iC2WithBestDist][1];
 
       // find label
+      // if equal label in both clusters found this label is assigned
+      // if no equal label can be found the first labels of the L1 AND L2 cluster are assigned
       Int_t label1 = 0;
       Int_t label2 = 0;
       while (label2 < 3)
@@ -383,11 +385,13 @@ AliITSMultReconstructor::Reconstruct(TTree* clusterTree, Float_t* vtx, Float_t* 
       {
         AliDebug(AliLog::kDebug, Form("Found label %d == %d for tracklet candidate %d\n", (Int_t) fClustersLay1[iC1][3+label1], (Int_t) fClustersLay2[iC2WithBestDist][3+label2], fNTracklets));
         fTracklets[fNTracklets][3] = fClustersLay1[iC1][3+label1];
+        fTracklets[fNTracklets][4] = fClustersLay2[iC2WithBestDist][3+label2];
       }
       else
       {
         AliDebug(AliLog::kDebug, Form("Did not find label %d %d %d %d %d %d for tracklet candidate %d\n", (Int_t) fClustersLay1[iC1][3], (Int_t) fClustersLay1[iC1][4], (Int_t) fClustersLay1[iC1][5], (Int_t) fClustersLay2[iC2WithBestDist][3], (Int_t) fClustersLay2[iC2WithBestDist][4], (Int_t) fClustersLay2[iC2WithBestDist][5], fNTracklets));
-        fTracklets[fNTracklets][3] = -2;
+        fTracklets[fNTracklets][3] = fClustersLay1[iC1][3];
+        fTracklets[fNTracklets][4] = fClustersLay2[iC2WithBestDist][3];
       }
 
       if (fHistOn) {

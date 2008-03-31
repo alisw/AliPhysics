@@ -16,7 +16,7 @@ class AliMultiplicity : public TObject {
   AliMultiplicity();               // default constructor
   // standard constructor
   AliMultiplicity(Int_t ntr,Float_t *t, Float_t *ph, Float_t *df, Int_t *labels,
-                  Int_t ns, Float_t *ts, Float_t *ps);
+                  Int_t* labelsL2, Int_t ns, Float_t *ts, Float_t *ps);
   AliMultiplicity(const AliMultiplicity& m);
   AliMultiplicity& operator=(const AliMultiplicity& m);
   virtual ~AliMultiplicity();
@@ -30,7 +30,7 @@ class AliMultiplicity : public TObject {
   else {Error("GetPhi","Invalid track number %d",i); return -9999.;}}
   Double_t GetDeltaPhi(Int_t i) const {if(i>=0 && i<fNtracks) {return fDeltPhi[i];}
   else {Error("GetDeltaPhi","Invalid track number %d",i); return -9999.;}}
-  Int_t GetLabel(Int_t i) const {if(i>=0 && i<fNtracks) {return fLabels[i];}
+  Int_t GetLabel(Int_t i, Int_t layer) const {if(i>=0 && i<fNtracks) {return (layer == 0) ? fLabels[i] : fLabelsL2[i];}
   else {Error("GetLabel","Invalid track number %d",i); return -9999;}}
 // methods to access single cluster information
   Int_t GetNumberOfSingleClusters() const {return fNsingle;}
@@ -47,8 +47,9 @@ class AliMultiplicity : public TObject {
 
   Int_t fNtracks;            // Number of tracklets
   Int_t fNsingle;            // Number of clusters on SPD layer 1, not associated
-  Int_t *fLabels;            //[fNtracks] array with labels of tracklets
                              // with a tracklet on SPD layer 2
+  Int_t *fLabels;            //[fNtracks] array with labels of cluster in L1 used for tracklet
+  Int_t *fLabelsL2;          //[fNtracks] array with labels of cluster in L2 used for tracklet
   Double32_t *fTh;           //[fNtracks] array with theta values
   Double32_t *fPhi;          //[fNtracks] array with phi values
   Double32_t *fDeltPhi;      //[fNtracks] array with delta phi values
@@ -56,7 +57,7 @@ class AliMultiplicity : public TObject {
   Double32_t *fPhisingle;    //[fNsingle] array with phi values of L2 clusters
   Short_t fFiredChips[2]; // number of fired chips in the two SPD layers
 
-  ClassDef(AliMultiplicity,6);
+  ClassDef(AliMultiplicity,7);
 };
 
 #endif

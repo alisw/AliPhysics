@@ -9,6 +9,7 @@ AliMultiplicity::AliMultiplicity():
   fNtracks(0),
   fNsingle(0),
   fLabels(0),
+  fLabelsL2(0),
   fTh(0),
   fPhi(0),
   fDeltPhi(0),
@@ -21,11 +22,12 @@ AliMultiplicity::AliMultiplicity():
 }
 
 //______________________________________________________________________
-AliMultiplicity::AliMultiplicity(Int_t ntr, Float_t *t,  Float_t *ph, Float_t *df, Int_t *labels, Int_t ns, Float_t *ts, Float_t *ps):
+AliMultiplicity::AliMultiplicity(Int_t ntr, Float_t *t,  Float_t *ph, Float_t *df, Int_t *labels, Int_t* labelsL2, Int_t ns, Float_t *ts, Float_t *ps):
   TObject(),
   fNtracks(ntr),
   fNsingle(ns),
   fLabels(0),
+  fLabelsL2(0),
   fTh(0),
   fPhi(0),
   fDeltPhi(0),
@@ -35,6 +37,7 @@ AliMultiplicity::AliMultiplicity(Int_t ntr, Float_t *t,  Float_t *ph, Float_t *d
 // Standard constructor
   if(ntr>0){
     fLabels = new Int_t[ntr];
+    fLabelsL2 = new Int_t[ntr];
     fTh = new Double_t [ntr];
     fPhi = new Double_t [ntr];
     fDeltPhi = new Double_t [ntr];
@@ -43,6 +46,7 @@ AliMultiplicity::AliMultiplicity(Int_t ntr, Float_t *t,  Float_t *ph, Float_t *d
       fPhi[i]=ph[i];
       fDeltPhi[i]=df[i];
       fLabels[i] = labels[i];
+      fLabelsL2[i] = labelsL2[i];
     }
   }
   if(ns>0){
@@ -63,6 +67,7 @@ AliMultiplicity::AliMultiplicity(const AliMultiplicity& m):
   fNtracks(m.fNtracks),
   fNsingle(m.fNsingle),
   fLabels(0),
+  fLabelsL2(0),
   fTh(0),
   fPhi(0),
   fDeltPhi(0),
@@ -83,6 +88,7 @@ AliMultiplicity &AliMultiplicity::operator=(const AliMultiplicity& m){
   if(fPhi)delete [] fPhi;fPhi = 0; 
   if(fDeltPhi)delete [] fDeltPhi;fDeltPhi = 0; 
   if(fLabels)delete [] fLabels;fLabels = 0;
+  if(fLabelsL2)delete [] fLabelsL2;fLabelsL2 = 0;
   if(fThsingle)delete [] fThsingle;fThsingle = 0;
   if(fPhisingle)delete [] fPhisingle;fPhisingle = 0;
   Duplicate(m);
@@ -99,12 +105,14 @@ void AliMultiplicity::Duplicate(const AliMultiplicity& m){
     fPhi = new Double_t[fNtracks];
     fDeltPhi = new Double_t[fNtracks];
     fLabels = new Int_t[fNtracks];
+    fLabelsL2 = new Int_t[fNtracks];
   }
   else {
     fTh = 0;
     fPhi = 0;
     fDeltPhi = 0;
     fLabels = 0;
+    fLabelsL2 = 0;
   }
   fNsingle = m.fNsingle;
   if(fNsingle>0){
@@ -119,6 +127,7 @@ void AliMultiplicity::Duplicate(const AliMultiplicity& m){
   if(m.fPhi)memcpy(fPhi,m.fPhi,fNtracks*sizeof(Double_t));
   if(m.fDeltPhi)memcpy(fDeltPhi,m.fDeltPhi,fNtracks*sizeof(Double_t));
   if(m.fLabels)memcpy(fLabels,m.fLabels,fNtracks*sizeof(Int_t));
+  if(m.fLabelsL2)memcpy(fLabelsL2,m.fLabelsL2,fNtracks*sizeof(Int_t));
   if(m.fThsingle)memcpy(fThsingle,m.fThsingle,fNsingle*sizeof(Double_t));
   if(m.fPhisingle)memcpy(fPhisingle,m.fPhisingle,fNsingle*sizeof(Double_t));
 
@@ -133,6 +142,7 @@ AliMultiplicity::~AliMultiplicity(){
   if(fPhi)delete [] fPhi;fPhi = 0; 
   if(fDeltPhi)delete [] fDeltPhi;fDeltPhi = 0; 
   if(fLabels)delete [] fLabels;fLabels = 0;
+  if(fLabelsL2)delete [] fLabelsL2;fLabelsL2 = 0;
   if(fThsingle)delete [] fThsingle;fThsingle = 0;
   if(fPhisingle)delete [] fPhisingle;fPhisingle = 0;
 

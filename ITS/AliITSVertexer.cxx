@@ -115,11 +115,13 @@ void AliITSVertexer::FindMultiplicity(Int_t evnumber){
   Float_t *phi = new Float_t [notracks];
   Float_t *dphi = new Float_t [notracks];
   Int_t *labels = new Int_t[notracks];
+  Int_t *labelsL2 = new Int_t[notracks];
   for(Int_t i=0;i<multReco->GetNTracklets();i++){
     tht[i] = multReco->GetTracklet(i)[0];
     phi[i] =  multReco->GetTracklet(i)[1];
     dphi[i] = multReco->GetTracklet(i)[2];
     labels[i] = static_cast<Int_t>(multReco->GetTracklet(i)[3]);
+    labelsL2[i] = static_cast<Int_t>(multReco->GetTracklet(i)[4]);
   }
   Int_t nosingleclus=multReco->GetNSingleClusters();
   Float_t *ths = new Float_t [nosingleclus];
@@ -128,13 +130,14 @@ void AliITSVertexer::FindMultiplicity(Int_t evnumber){
     ths[i] = multReco->GetCluster(i)[0];
     phs[i] =  multReco->GetCluster(i)[1];
   }
-  fMult = new AliMultiplicity(notracks,tht,phi,dphi,labels,nosingleclus,ths,phs);
+  fMult = new AliMultiplicity(notracks,tht,phi,dphi,labels,labelsL2,nosingleclus,ths,phs);
   delete [] tht;
   delete [] phi;
   delete [] dphi;
   delete [] ths;
   delete [] phs;
   delete [] labels;
+  delete [] labelsL2;
   itsLoader->UnloadRecPoints();
   delete multReco;
   return;

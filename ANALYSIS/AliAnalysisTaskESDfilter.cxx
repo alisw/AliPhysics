@@ -877,7 +877,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 	SPDTracklets.CreateContainer(mult->GetNumberOfTracklets());
 
 	for (Int_t n=0; n<mult->GetNumberOfTracklets(); n++) {
-	  SPDTracklets.SetTracklet(n, mult->GetTheta(n), mult->GetPhi(n), mult->GetDeltaPhi(n), mult->GetLabel(n));
+	  SPDTracklets.SetTracklet(n, mult->GetTheta(n), mult->GetPhi(n), mult->GetDeltaPhi(n), mult->GetLabel(n, 0), mult->GetLabel(n, 1));
 	}
       }
     } else {
