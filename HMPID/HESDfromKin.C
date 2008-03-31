@@ -56,10 +56,17 @@ void SimEsd(AliLoader *pHL,AliESDEvent *pEsd)
       if(mtid>=0) continue; // only primaries
       if(pTrack->GetPDG()->Charge()==0) continue;
       AliESDtrack trk(pTrack); 
-      Float_t xPc,yPc;
-      Int_t iCh=AliHMPIDTracker::IntTrkCha(&trk,xPc,yPc);                           //get chamber intersected by this track 
-      if(iCh<0) continue;                                                           //no intersection at all, go after next track
+      Float_t xPc,yPc,xRa,yRa,thRa,phRa;
+      Int_t iCh=AliHMPIDTracker::IntTrkCha(&trk,xPc,yPc,xRa,yRa,thRa,phRa);         //get chamber intersected by this track 
+      if(iCh<0) {
+        trk.SetHMPIDtrk(0,0,0,0);                                                                //no intersection found
+        trk.SetHMPIDcluIdx   (99,99999);                                                         //chamber not found, mip not yet considered
+        trk.SetHMPIDsignal(AliHMPIDRecon::kNotPerformed);                                        //ring reconstruction not yet performed
+        continue;                                                           //no intersection at all, go after next track
+      }
 //      Printf(" particle analyzed %d with mtid %d is %s hitting chamber %d",i,mtid,pTrack->GetName(),iCh);
+      trk.SetHMPIDcluIdx   (iCh,99999);                                                          //chamber not found, mip not yet considered
+      trk.SetHMPIDtrk(xRa,yRa,thRa,phRa);                                                        //store initial infos
       pEsd->AddTrack(&trk);
       AliHMPIDTracker::Recon(pEsd,pH->CluLst(),pNmean,pQthre);
     }// track loop
@@ -105,15 +112,16 @@ void SimEsdHidden(AliLoader *pHL,AliESDEvent *pEsd)
       
       //find the chamber that intersects HMPID
       AliESDtrack trk(pTrack);
-      Float_t xPc,yPc;
-      Int_t iCh=AliHMPIDTracker::IntTrkCha(&trk,xPc,yPc);                           //get chamber intersected by this track 
+      Float_t xPc,yPc,xRa,yRa,thRa,phRa;
+      Int_t iCh=AliHMPIDTracker::IntTrkCha(&trk,xPc,yPc,xRa,yRa,thRa,phRa);         //get chamber intersected by this track
       if(iCh<0) continue;                                                           //no intersection at all, go after next track
+      trk.SetHMPIDtrk(xRa,yRa,thRa,phRa);                                                        //store initial infos
       Float_t radX,radY,thetaTrk,phiTrk;
       trk.GetHMPIDtrk(radX,radY,thetaTrk,phiTrk);
 //      Printf("simulated track theta %f phi %f",thetaTrk*rd,phiTrk*rd);
       TObjArray *pClus = pH->CluLst();
       
-      if(AliHMPIDTracker::ReconHiddenTrk(iCh,&trk,(TClonesArray *)pClus->At(iCh),pNmean,pQthre)!=0) continue;
+      if(AliHMPIDTracker::ReconHiddenTrk(iCh,0,&trk,(TClonesArray *)pClus->At(iCh),pNmean,pQthre)!=0) continue;
       
       pEsd->AddTrack(&trk);
       Double_t thetaCerSim = TMath::ACos(pTrack->Energy()/(1.292*pTrack->P()));

@@ -46,13 +46,12 @@ Bool_t AliHMPIDTracker::GetTrackPoint(Int_t idx, AliTrackPoint& point) const
   return kTRUE;
 }//GetTrackPoint()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Int_t AliHMPIDTracker::IntTrkCha(AliESDtrack *pTrk,Float_t &xPc,Float_t &yPc)
+Int_t AliHMPIDTracker::IntTrkCha(AliESDtrack *pTrk,Float_t &xPc,Float_t &yPc,Float_t &xRa,Float_t &yRa,Float_t &theta,Float_t &phi)
 {
 // Static method to find intersection in between given track and HMPID chambers
 // Arguments: pTrk- ESD track; xPc,yPc- track intersection with PC in LORS [cm]
 //   Returns: intersected chamber ID or -1
   AliHMPIDParam *pParam=AliHMPIDParam::Instance();
-  Float_t xRa=0,yRa=0,theta=0,phi=0;                                                            //track intersection at PC and angles at RAD, LORS  
   for(Int_t i=AliHMPIDParam::kMinCh;i<=AliHMPIDParam::kMaxCh;i++){                              //chambers loop
     Double_t p1[3],n1[3]; pParam->Norm(i,n1); pParam->Point(i,p1,AliHMPIDParam::kRad);          //point & norm  for middle of radiator plane
     Double_t p2[3],n2[3]; pParam->Norm(i,n2); pParam->Point(i,p2,AliHMPIDParam::kPc);           //point & norm  for entrance to PC plane
@@ -61,12 +60,9 @@ Int_t AliHMPIDTracker::IntTrkCha(AliESDtrack *pTrk,Float_t &xPc,Float_t &yPc)
     pParam->Mars2LorsVec(i,n1,theta,phi);                                                       //track angles at RAD
     pParam->Mars2Lors   (i,p1,xRa,yRa);                                                         //TRKxRAD position
     pParam->Mars2Lors   (i,p2,xPc,yPc);                                                         //TRKxPC position
-    if(AliHMPIDParam::IsInside(xPc,yPc,pParam->DistCut())==kFALSE) continue;                    //not in active area  
-    pTrk->SetHMPIDtrk      (xRa,yRa,theta,phi);                                                 //store track intersection info
-    pTrk->SetHMPIDcluIdx   (i,0);
-    return i;
+    if(AliHMPIDParam::IsInside(xPc,yPc,pParam->DistCut())==kTRUE) return i;                     //return intersected chamber  
   }                                                                                             //chambers loop
-  return -1; //no intersection with HMPID chambers
+  return -1;                                                                                    //no intersection with HMPID chambers
 }//IntTrkCha()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Int_t AliHMPIDTracker::LoadClusters(TTree *pCluTree)
@@ -98,11 +94,17 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
 // Arguments: pEsd- pointer ESD; pClu- pointer to clusters for all chambers; pNmean - pointer to all function Nmean=f(time)
 //   Returns: error code, 0 if no errors   
   AliHMPIDRecon recon;                                                                       //instance of reconstruction class, nothing important in ctor
-  Float_t xPc,yPc;
+  Float_t xPc,yPc,xRa,yRa,theta,phi;
   for(Int_t iTrk=0;iTrk<pEsd->GetNumberOfTracks();iTrk++){                                       //ESD tracks loop
     AliESDtrack *pTrk = pEsd->GetTrack(iTrk);                                                    //get reconstructed track    
-    Int_t cham=IntTrkCha(pTrk,xPc,yPc);                                                          //get chamber intersected by this track 
-    if(cham<0) continue;                                                                         //no intersection at all, go after next track
+    Int_t cham=IntTrkCha(pTrk,xPc,yPc,xRa,yRa,theta,phi);                                        //get chamber intersected by this track 
+    if(cham<0) {                                                                                 //no intersection at all, go after next track
+      pTrk->SetHMPIDtrk(0,0,0,0);                                                                //no intersection found
+      pTrk->SetHMPIDcluIdx   (99,99999);                                                         //chamber not found, mip not yet considered
+      pTrk->SetHMPIDsignal(AliHMPIDRecon::kNotPerformed);                                        //ring reconstruction not yet performed
+      continue;                                                                         
+    }
+    pTrk->SetHMPIDtrk(xRa,yRa,theta,phi);                                                        //store initial infos
     Double_t nmean=((TF1*)pNmean->At(3*cham))->Eval(pEsd->GetTimeStamp());                       //C6F14 Nmean for this chamber
     Int_t hvsec = AliHMPIDParam::InHVSector(xPc,yPc);
     Double_t qthre=((TF1*)pQthre->At(6*cham+hvsec))->Eval(pEsd->GetTimeStamp());

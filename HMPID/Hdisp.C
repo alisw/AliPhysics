@@ -320,10 +320,11 @@ void RenderEsd(AliESDEvent *pEsd)
   AliHMPIDRecon rec;
   for(Int_t iTrk=0;iTrk<pEsd->GetNumberOfTracks();iTrk++){//tracks loop to collect cerenkov rings and intersection points
     AliESDtrack *pTrk=pEsd->GetTrack(iTrk);    Int_t ch=pTrk->GetHMPIDcluIdx(); //get track and chamber intersected by it
-    if(ch<0) continue;                                                          //this track does not intersect any chamber
-    Float_t thRa,phRa,xRa,yRa; pTrk->GetHMPIDtrk(xRa,yRa,thRa,phRa);            //get info on current track
-    ch/=1000000;                            
-    Float_t xPc=0,yPc=0; AliHMPIDTracker::IntTrkCha(pTrk,xPc,yPc);              //find again intersection of track with PC--> it is not stored in ESD!
+    ch/=1000000;
+    if(ch<AliHMPIDParam::AliHMPIDParam::kMinCh||ch>AliHMPIDParam::kMaxCh) continue;//this track does not intersect any chamber
+    Float_t xPc,yPc,xRa,yRa,thRa,phRa; 
+    Int_t chamb = AliHMPIDTracker::IntTrkCha(pTrk,xPc,yPc,xRa,yRa,thRa,phRa);   //find again intersection of track with PC--> it is not stored in ESD!
+    if(ch!=chamb){(" CHAMBER MISMATCH: in ESDTrack chamber %i - in IntTrkCha chamber %i",ch,chamb);End();}
     Int_t npTrk = fRenTxC[ch]->SetNextPoint(xPc,yPc);                           //add this intersection point
     Float_t ckov=pTrk->GetHMPIDsignal();                                        //get ckov angle stored for this track  
     if(ckov>0){
@@ -568,9 +569,9 @@ void DisplayInfo(Int_t evt,Int_t px, Int_t py)
   else if (symbol==kTrack || symbol==kRing) {
     if(symbol==kRing) index = b->GetUniqueID();
     AliESDtrack *pTrk=fEsd->GetTrack(index);
-    Float_t thRa,phRa,xRa,yRa; pTrk->GetHMPIDtrk(xRa,yRa,thRa,phRa);
-    Float_t xPc,yPc; AliHMPIDTracker::IntTrkCha(pTrk,xPc,yPc);
-    text0="";text0.Append(Form("TRACK n.%d: x %6.2f y %6.2f at PC plane",index,xPc,yPc));
+    Float_t xPc,yPc,thRa,phRa,xRa,yRa;
+    Int_t ch = AliHMPIDTracker::IntTrkCha(pTrk,xPc,yPc,xRa,yRa,thRa,phRa);
+    text0="";text0.Append(Form("TRACK n.%d: x %6.2f y %6.2f at PC plane in chamber %i",index,xPc,yPc,ch));
     text2="";text2.Append(Form("p = %7.2f GeV/c",pTrk->GetP()));
     Float_t ckov=pTrk->GetHMPIDsignal();                             
     Double_t prob[5];

@@ -639,10 +639,10 @@ void HmpConfig::WriteBatch()
   if(fDetBG->GetButton(kTRD  )->GetState())  det+="TRD ";
   if(fDetBG->GetButton(kTOF  )->GetState())  det+="TOF ";
   if(!fVerBG->GetButton(kNo)->GetState())    det+="HMPID ";
-  char *sBatchName="Hbatch";
-  FILE *fp=fopen(Form("%s.C",sBatchName),"w"); if(!fp){Info("CreateBatch","Cannot open output file: %s.C",sBatchName);return;}
+  char *sBatchName="sim";
+  FILE *fp=fopen(Form("%s.C",sBatchName),"w"); if(!fp){Info("CreateSim","Cannot open output file: %s.C",sBatchName);return;}
   
-                                                    fprintf(fp,"void %s(Int_t iNevt,Bool_t isDbg,char *sCfg)\n{\n",sBatchName);
+                                                    fprintf(fp,"void %s(Int_t iNevt=1,Bool_t isDbg=kFALSE,char *sCfg=\"Config.C\")\n{\n",sBatchName);
                                                     fprintf(fp,"  gSystem->Exec(\"rm -rf hlt hough gphysi* fort* ZZZ* raw*\");  //remove garbage\n"); 
                                                     fprintf(fp,"  gBenchmark->Start(\"ALICE\"); TDatime time;      //start benchmarking\n\n");
                                                        
@@ -668,11 +668,25 @@ void HmpConfig::WriteBatch()
     else if(fRawBG->GetButton(kRoo)->GetState())    fprintf(fp,"  pSim->SetWriteRawData(\"%s\",\"raw.root\");     //raw data as ROOT\n",det.Data());
 
                                                     fprintf(fp,"  pSim->SetRunHLT(\"\");                           //no HLT stuff\n");   
-                                                    fprintf(fp,"  pSim->Run(iNevt);                              //run iNevt events\n  delete pSim;\n\n");
+                                                    fprintf(fp,"  pSim->SetQA(kFALSE);                             //no QA\n");
+                                                    fprintf(fp,"  pSim->Run(iNevt);                                //run iNevt events\n  delete pSim;\n\n");
   }//sim section
+                                                    fprintf(fp,"  cout<<\"!!!!!!!!!!!!Info in <sim.C>: Start time: \";time.Print();\n");
+                                                    fprintf(fp,"  cout<<\"!!!!!!!!!!!!Info in <sim.C>: Stop  time: \";time.Set();  time.Print();\n");
+                                                    fprintf(fp,"  gBenchmark->Show(\"ALICE\");\n");
+  
+                                                    fprintf(fp,"  gSystem->Exec(\"aliroot rec.C\");\n");
+                                                    fprintf(fp,"  gSystem->Exec(\"touch ZZZ______finished_______SSS\");\n}\n");
+  fclose(fp);  
+  char *sBatchName="rec";
+  FILE *fp=fopen(Form("%s.C",sBatchName),"w"); if(!fp){Info("CreateRec","Cannot open output file: %s.C",sBatchName);return;}
+  
+                                                    fprintf(fp,"void %s()\n{\n",sBatchName);
+                                                    fprintf(fp,"  gSystem->Exec(\"rm -rf RRR* \");  //remove garbage\n"); 
 
   if(fRecB->GetState()){
                                                     fprintf(fp,"  AliReconstruction *pRec=new AliReconstruction;\n");
+                                                    fprintf(fp,"  gBenchmark->Start(\"ALICE\"); TDatime time;      //start benchmarking\n\n");
                                                     
     //---------------------------------------------
     if     (fTrkBG->GetButton(kRecoPar)->GetState())
@@ -710,11 +724,11 @@ void HmpConfig::WriteBatch()
                                                     fprintf(fp,"  pRec->Run();delete pRec;\n\n");         
   }//rec part                                                       
 //benchmarks  
-                                                    fprintf(fp,"  cout<<\"!!!!!!!!!!!!Info in <my/Batch.C>: Start time: \";time.Print();\n");
-                                                    fprintf(fp,"  cout<<\"!!!!!!!!!!!!Info in <my/Batch.C>: Stop  time: \";time.Set();  time.Print();\n");
+                                                    fprintf(fp,"  cout<<\"!!!!!!!!!!!!Info in <rec.C>: Start time: \";time.Print();\n");
+                                                    fprintf(fp,"  cout<<\"!!!!!!!!!!!!Info in <rec.C>: Stop  time: \";time.Set();  time.Print();\n");
                                                     fprintf(fp,"  gBenchmark->Show(\"ALICE\");\n");
   
-                                                    fprintf(fp,"  gSystem->Exec(\"touch ZZZ______finished_______ZZZ\");\n}\n");
+                                                    fprintf(fp,"  gSystem->Exec(\"touch ZZZ______finished_______RRR\");\n}\n");
   fclose(fp);  
 }//WriteBatch()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

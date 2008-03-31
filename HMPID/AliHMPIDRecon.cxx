@@ -107,6 +107,10 @@ void AliHMPIDRecon::CkovAngle(AliESDtrack *pTrk,TClonesArray *pCluLst,Double_t n
 //              pCluLst  - list of clusters for this chamber   
 //   Returns:            - track ckov angle, [rad], 
     
+
+  const Int_t nMinPhotAcc = 3;                      // Minimum number of photons required to perform the pattern recognition
+  
+  
   Int_t nClusTot = pCluLst->GetEntries();
   if(nClusTot>fParam->MultCut()) fIsWEIGHT = kTRUE; // offset to take into account bkg in reconstruction
   else                           fIsWEIGHT = kFALSE;
@@ -137,14 +141,25 @@ void AliHMPIDRecon::CkovAngle(AliESDtrack *pTrk,TClonesArray *pCluLst,Double_t n
       }
     }
   }//clusters loop
+  
   fMipPos.Set(mipX,mipY);
-  if(fPhotCnt<=3) pTrk->SetHMPIDsignal(kNoPhotAccept);                                        //no reconstruction with <=3 photon candidates
+  
+  if(fPhotCnt<=nMinPhotAcc) {                                                                 //no reconstruction with <=3 photon candidates
+    pTrk->SetHMPIDsignal(kNoPhotAccept);                                                      //set the appropriate flag
+    pTrk->SetHMPIDmip(mipX,mipY,mipQ,fPhotCnt);                                               //store mip info 
+    return;
+  }
+  
+  if(mipId==-1)              {pTrk->SetHMPIDsignal(kMipQdcCut);  return;}                     //no clusters with QDC more the threshold at all
+  if(dMin>fParam->DistCut()) {pTrk->SetHMPIDsignal(kMipDistCut); return;}                     //closest cluster with enough charge is still too far from intersection
+  
+//PATTERN RECOGNITION STARTED: 
+  
   Int_t iNrec=FlagPhot(HoughResponse());                                                      //flag photons according to individual theta ckov with respect to most probable
   pTrk->SetHMPIDmip(mipX,mipY,mipQ,iNrec);                                                    //store mip info 
 
-  if(mipId==-1)              {pTrk->SetHMPIDsignal(kMipQdcCut);  return;}                     //no clusters with QDC more the threshold at all
-  if(dMin>fParam->DistCut()) {pTrk->SetHMPIDsignal(kMipDistCut); return;}                     //closest cluster with enough charge is still too far from intersection
   pTrk->SetHMPIDcluIdx(chId,mipId);                                                           //set index of cluster
+  
   if(iNrec<1){
     pTrk->SetHMPIDsignal(kNoPhotAccept);                                                      //no photon candidates are accepted
   }
