@@ -28,7 +28,6 @@ class AliDCSSensorArray;
 
 class AliGRPPreprocessor: public AliPreprocessor {
  public:
-  AliGRPPreprocessor();
   AliGRPPreprocessor(AliShuttleInterface* shuttle);
   virtual ~AliGRPPreprocessor();
   

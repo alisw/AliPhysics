@@ -52,17 +52,11 @@ ClassImp(AliGRPPreprocessor)
   const char* AliGRPPreprocessor::fgkDCSDataPoints[12] = {"LHCState","LHCPeriod","LHCLuminosity","BeamIntensity","L3Current","L3Polarity","DipoleCurrent","DipolePolarity","CavernTemperature","CavernAtmosPressure","gva_cr5AtmosphericPressure","gva_meyrinAtmosphericPressure"};
 
 //_______________________________________________________________
-AliGRPPreprocessor::AliGRPPreprocessor():
-  AliPreprocessor("GRP",0), fPressure(0) {
-  // default constructor - Don't use this!
-  
-}
-
-//_______________________________________________________________
 AliGRPPreprocessor::AliGRPPreprocessor(AliShuttleInterface* shuttle):
   AliPreprocessor("GRP",shuttle), fPressure(0) {
   // constructor - shuttle must be instantiated!
-  
+
+  AddRunType("PHYSICS");
 }
 
 //_______________________________________________________________
