@@ -3255,20 +3255,28 @@ const char* AliShuttle::GetRunType()
 Bool_t AliShuttle::GetHLTStatus()
 {
   	// Return HLT status (ON=1 OFF=0)
-  	// Converts the HLT status from the status string read in the run logbook (not just a bool)
+  	// Converts the HLT status from the mode string read in the run logbook (not just a bool)
 
 	if(!fLogbookEntry) {
 		AliError("No logbook entry!");
 		return 0;
 	}
 
-	// TODO implement when HLTStatus is inserted in run logbook
-	//TString hltStatus = fLogbookEntry->GetRunParameter("HLTStatus");
-	//if(hltStatus == "OFF") {return kFALSE};
-
-	return kTRUE;
+	// TODO implement when HLTMode is inserted in run logbook
+	TString hltMode = fLogbookEntry->GetRunParameter("HLTMode");
+	TSubString firstChar = hltMode(0,1);
+	AliDebug(2,Form("First char = %s ",firstChar.Data())); 
+	if (firstChar == "A") {
+		return kFALSE;
+	}
+	else if ((firstChar == "B") || (firstChar == "C") || (firstChar == "D") || (firstChar == "E")) {
+		return kTRUE;
+	}
+	else {
+		Log("SHUTTLE","Unexpected HLT mode! Returning 0....");
+		return kFALSE;
+	}
 }
-
 //______________________________________________________________________________________________
 void AliShuttle::SetShuttleTempDir(const char* tmpDir)
 {
