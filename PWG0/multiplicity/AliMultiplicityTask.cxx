@@ -245,7 +245,8 @@ void AliMultiplicityTask::Exec(Option_t*)
         continue;
 
       etaArr[inputCount] = mult->GetEta(i);
-      labelArr[inputCount] = mult->GetLabel(i);
+      // TODO add second label array
+      labelArr[inputCount] = mult->GetLabel(i, 0);
       ++inputCount;
     }
   }
