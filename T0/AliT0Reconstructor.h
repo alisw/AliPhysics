@@ -12,6 +12,7 @@
 
 #include "AliReconstructor.h"
 #include "AliT0Parameters.h"
+#include "AliT0Calibrator.h"
 
 class AliT0Reconstructor: public AliReconstructor {
  public:
@@ -37,8 +38,10 @@ class AliT0Reconstructor: public AliReconstructor {
   Float_t             fTime0vertex[24];  // time position if Zvertex=0
   AliT0Parameters     *fParam;           //pointer to T0 parameters class     
   TObjArray           fAmpLEDrec;        // amp LED-CFD 
+  // TObjArray           fWalk;        // amp LED-CFD 
+  AliT0Calibrator     *fCalib;           //pointer to T0 Calibrator     
 
-  ClassDef(AliT0Reconstructor, 1)   // class for the T0 reconstruction
+  ClassDef(AliT0Reconstructor, 2)   // class for the T0 reconstruction
 
 };
 

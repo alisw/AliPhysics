@@ -27,6 +27,7 @@ class AliT0Calibrator: public TNamed
  protected:
 
   Int_t           fTimeDelayCFD[24];  //CFD[i]-CFD[0]
+  Int_t           fMaxValue[24];  //CFD[i]-CFD[0]
   Float_t         fChannelWidth  ;   //channel width
   TObjArray       fWalk;             //walk correction function
   
