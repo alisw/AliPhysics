@@ -79,7 +79,7 @@ void runDataReconstruction(Int_t calib = 1)
   MuonRec->SetWriteAOD();
   //MuonRec.SetEventRange(0,100); 
   AliMUONRecoParam *muonRecoParam = AliMUONRecoParam::GetLowFluxParam();
-  muonRecoParam->CombineClusterTrackReco(kTRUE);
+  muonRecoParam->CombineClusterTrackReco(kFALSE);
   TString caliboption = caliboption1;
   if ( calib == 2 ) caliboption = caliboption2;
   muonRecoParam->SetCalibrationMode(caliboption.Data());
