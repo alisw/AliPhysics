@@ -110,13 +110,18 @@ void AliQADataMaker::Finish() const
 TObject * AliQADataMaker::GetData(TObjArray * list, const Int_t index)  
 { 
 	// Returns the QA object at index. Limit is 100. 
-	if ( index > 10000 ) {
-		AliError("Max number of authorized QA objects is 10000") ; 
-		return NULL; 
+	if (list) {
+		if ( index > 10000 ) {
+			AliError("Max number of authorized QA objects is 10000") ; 
+			return NULL ; 
+		} else {
+			return list->At(index) ; 
+		} 	
 	} else {
-		return list->At(index) ; 
+		AliError("Data list is NULL !!") ; 
+		return NULL ; 		
 	}
-} 
+}
 
 //____________________________________________________________________________
 void AliQADataMaker::Reset(const Bool_t sameCycle) 
