@@ -95,6 +95,10 @@ ALIROOTMODULES := STEER PHOS TRD TPC ZDC MUON PMD FMD TOF ITS \
       THerwig TEPEMGEN EPEMGEN FASTSIM TPHIC RAW MONITOR ANALYSIS \
       JETAN HLT LHC ESDCheck STAT TTherminator CORRFW DPMJET TDPMjet
 
+ifneq ($(wildcard $(ROOTSYS)/include/TPythia8.h),)
+ALIROOTMODULES += PYTHIA8
+endif 
+
 ifneq ($(wildcard $(ROOTSYS)/include/TGLIncludes.h),)
 ALIROOTMODULES += EVE
 endif 
