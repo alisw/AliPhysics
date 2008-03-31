@@ -47,6 +47,8 @@ AliT0PreprocessorCosmic::AliT0PreprocessorCosmic(AliShuttleInterface* shuttle) :
   fData(0)
 {
   //constructor
+  AddRunType("PHYSICS");
+  AddRunType("STANDALONE");
 }
 //____________________________________________________
 

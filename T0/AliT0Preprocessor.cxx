@@ -61,6 +61,8 @@ AliT0Preprocessor::AliT0Preprocessor(AliShuttleInterface* shuttle) :
   fData(0)
 {
   //constructor
+  AddRunType("PHYSICS");
+  AddRunType("STANDALONE");
 }
 //____________________________________________________
 
