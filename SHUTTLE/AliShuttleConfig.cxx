@@ -175,7 +175,7 @@ some docs added
 // will be retrieved (used by AliShuttle).
 //
 
-
+#include <Riostream.h>
 #include "AliShuttleConfig.h"
 #include "AliShuttleInterface.h"
 
@@ -279,6 +279,7 @@ AliShuttleConfig::AliShuttleConfig(const AliShuttleConfig & other):
 	fDAQlbTable(other.fDAQlbTable),
 	fShuttlelbTable(other.fShuttlelbTable),
 	fRunTypelbTable(other.fRunTypelbTable),
+	fPasswdFilePath(other.fPasswdFilePath),
 	fMaxRetries(other.fMaxRetries),
 	fPPTimeOut(other.fPPTimeOut),
 	fDCSTimeOut(other.fDCSTimeOut),
@@ -345,6 +346,7 @@ AliShuttleConfig& AliShuttleConfig::operator=(const AliShuttleConfig &other)
 	this->fDAQlbTable=other.fDAQlbTable;
 	this->fShuttlelbTable=other.fShuttlelbTable;
 	this->fRunTypelbTable=other.fRunTypelbTable;
+	this->fPasswdFilePath=other.fPasswdFilePath;
 	this->fMaxRetries=other.fMaxRetries;
 	this->fPPTimeOut=other.fPPTimeOut;
 	this->fDCSTimeOut=other.fDCSTimeOut;
@@ -659,6 +661,7 @@ AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 	fDAQlbTable(""), 
 	fShuttlelbTable(""), 
 	fRunTypelbTable(""),
+	fPasswdFilePath(""),
 	fMaxRetries(0), 
 	fPPTimeOut(0), 
 	fDCSTimeOut(0), 
@@ -766,6 +769,7 @@ AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 	
 	result += SetGlobalConfig(&globalList);
 	result += SetSysConfig(&sysList);
+	result += SetPasswords();
 	result += SetDetConfig(&detList,&dcsList);
 	result += SetHostConfig(&hostList);
 	
@@ -1017,6 +1021,7 @@ UInt_t AliShuttleConfig::SetGlobalConfig(TList* list)
 {
 	// Set the global configuration (DAQ Logbook + preprocessor monitoring settings)
 
+
 	TLDAPEntry* anEntry = 0;
 	TLDAPAttribute* anAttribute = 0;
 	
@@ -1061,13 +1066,6 @@ UInt_t AliShuttleConfig::SetGlobalConfig(TList* list)
 		return 4;
 	}
 	fDAQlbUser = anAttribute->GetValue();
-
-	anAttribute = anEntry->GetAttribute("daqLbPasswd");
-	if (!anAttribute) {
-		AliError("Can't find daqLbPasswd attribute!");
-		return 4;
-	}
-	fDAQlbPass = anAttribute->GetValue();
 
 	anAttribute = anEntry->GetAttribute("daqLbDB");
 	if (!anAttribute) {
@@ -1245,6 +1243,13 @@ UInt_t AliShuttleConfig::SetGlobalConfig(TList* list)
 		fSendMail = (Bool_t) sendMailStr.Atoi();
 	}
 						
+	anAttribute = anEntry->GetAttribute("passwdFilePath");
+	if (!anAttribute) {
+		AliError("Can't find Passwords File Path attribute!");
+		return 4;
+	}
+	fPasswdFilePath = anAttribute->GetValue();
+
 	return 0;
 }
 
@@ -1252,7 +1257,8 @@ UInt_t AliShuttleConfig::SetGlobalConfig(TList* list)
 UInt_t AliShuttleConfig::SetSysConfig(TList* list)
 {
 	// Set the online FXS configuration (DAQ + DCS + HLT)
-	
+
+
 	TLDAPEntry* anEntry = 0;
 	TLDAPAttribute* anAttribute = 0;
 	
@@ -1310,14 +1316,6 @@ UInt_t AliShuttleConfig::SetSysConfig(TList* list)
 			return 5;
 		}
 		fFXSdbUser[iSys] = anAttribute->GetValue();
-
-		anAttribute = anEntry->GetAttribute("dbPasswd");
-		if (!anAttribute) {
-			AliError(Form ("Can't find dbPasswd attribute for %s!!",
-						AliShuttleInterface::GetSystemName(iSys)));
-			return 5;
-		}
-		fFXSdbPass[iSys] = anAttribute->GetValue();
 
 		anAttribute = anEntry->GetAttribute("dbName");
 		if (!anAttribute) {
@@ -1389,6 +1387,67 @@ UInt_t AliShuttleConfig::SetSysConfig(TList* list)
 	return 0;
 }
 
+//______________________________________________________________________________________________
+UInt_t AliShuttleConfig::SetPasswords(){
+	
+	AliInfo("Setting Passwords");
+
+	// Retrieving Passwords for DAQ lb, DAQ/DCS/HLT FXS
+
+	ifstream *inputfile = new ifstream(fPasswdFilePath.Data());
+	if (!*inputfile) {
+		AliError(Form("Error opening file %s !", fPasswdFilePath.Data()));
+		inputfile->close();
+		delete inputfile;
+		return 1;
+	}
+
+	TString line;
+	Int_t nPwd=0;
+	Int_t nPwdFake=0;
+	while (line.ReadLine(*inputfile)) {
+		TObjArray *tokens = line.Tokenize(" \t");
+		TString system = ((TObjString *)tokens->At(0))->String(); 
+		TString password = ((TObjString *)tokens->At(1))->String();
+		if (system.Contains("DAQ_LB")){
+			fDAQlbPass=password;
+			nPwd++;
+			AliDebug(3,Form("DAQ_LB: Password %s for %s found", password.Data(), system.Data()));
+		}
+		else if (system.Contains("DAQ_DB")){
+			fFXSdbPass[0]=password;
+			nPwd++;
+			AliDebug(3,Form("DAQ_DB: Password %s for %s found", password.Data(), system.Data()));
+		}
+		else if (system.Contains("DCS_DB")){
+			fFXSdbPass[1]=password;
+			nPwd++;
+			AliDebug(3,Form("DCS_DB: Password %s for %s found", password.Data(), system.Data()));
+		}
+		else if (system.Contains("HLT_DB")){
+			fFXSdbPass[2]=password;
+			nPwd++;
+			AliDebug(3,Form("HLT_DB: Password %s for %s found", password.Data(), system.Data()));
+		}
+		else {
+			nPwdFake++;
+			AliDebug(3,Form("%i fake line(s) found in file %s", nPwdFake, fPasswdFilePath.Data()));
+			continue;
+		}
+		delete tokens;
+	}
+
+	inputfile->close();
+	delete inputfile;
+
+	if (nPwd!=4){
+		AliError(Form("Wrong file for DAQ Logbook password found %s (some passwors missing), please Check!", fPasswdFilePath.Data()));
+		return 2;
+	}
+
+	return 0;
+
+}
 //______________________________________________________________________________________________
 UInt_t AliShuttleConfig::SetDetConfig(TList* detList, TList* dcsList)
 {

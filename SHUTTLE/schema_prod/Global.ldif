@@ -4,14 +4,12 @@ objectClass: globalConfig
 name: globalConfig
 daqLbHost: aldaqgw01-gpn.cern.ch
 daqLbUser: shuttle
-daqLbPasswd: alice
 daqLbDB: LOGBOOK
 daqLbPort: 1444
 daqLbTable: logbook
 shuttleLbTable: logbook_shuttle
 runTypeLbTable: logbook_detectors
 ppMaxMem: 2097152
-ppmaxRetries: 2
 monitorHost: aliendb1.cern.ch
 monitorTable: SHUTTLE_PROD
 mode: prod
@@ -21,8 +19,8 @@ keepDCSMap: 1
 keepTempFolder: 1
 dcsTimeOut: 1100
 sendMail: 1
-shuttleAdmin: chiara.zampolli@cern.ch
-shuttleAdmin: raffaele.grosso@cern.ch
 amandaAdmin: svetozar.kapusta@cern.ch
 nDCSretries: 5
+ppmaxRetries: 2
+passwdFilePath: /home/shuttle/.shuttle_prod
 

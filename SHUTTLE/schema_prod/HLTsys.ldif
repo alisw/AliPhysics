@@ -1,13 +1,14 @@
-# HLT Config
 dn: system=HLT,o=shuttle_prod,dc=cern,dc=ch
 objectClass: top
 objectClass: fxsConfig
 system: HLT
 dbUser: shuttle
-dbPasswd: 0ffl1n3-5huttl3
 dbName: hlt_logbook
 dbTable: calib_data
 dbHost: alihlt-shuttle1.cern.ch
 fxsHost: alihlt-shuttle1.cern.ch
 fxsUser: hlt-fxs
+fxsBaseFolder: /opt/FXS
+fxsAdmin: sebastian.bablok@cern.ch
+fxsAdmin: jochen.thaeder@cern.ch
 

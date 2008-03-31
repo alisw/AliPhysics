@@ -181,6 +181,7 @@ private:
 
 	UInt_t SetGlobalConfig(TList* globalList);
 	UInt_t SetSysConfig(TList* sysList);
+	UInt_t SetPasswords();
 	UInt_t SetDetConfig(TList* detList, TList* dcsList);
 	UInt_t SetHostConfig(TList* hostList);
 	
@@ -194,6 +195,7 @@ private:
 	TString fDAQlbTable; 		// Table name of the DAQ logbook 
 	TString fShuttlelbTable; 	// Table name of the Shuttle logbook
 	TString fRunTypelbTable; 	// Table name of the Run typr logbook
+	TString fPasswdFilePath; 	// Path for the local file where the passwords are stored
 
 	TString fFXSHost[3]; 		// Host of the [DAQ, DCS, HLT] File eXchange Server
 	UInt_t  fFXSPort[3]; 		// Port of the [DAQ, DCS, HLT] File eXchange Server
