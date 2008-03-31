@@ -227,12 +227,12 @@ void AliMpExMap::AddKey(Long_t key)
 //
 
 //_____________________________________________________________________________
-void AliMpExMap::Clear(Option_t* /*option*/)
+void AliMpExMap::Clear(Option_t* option)
 {
 /// Clear memory
 
   fMap.Delete();
-  fObjects.Clear();
+  fObjects.Clear(option);
   fKeys.Reset();
 }
 
