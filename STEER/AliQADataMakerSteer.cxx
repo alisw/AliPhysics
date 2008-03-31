@@ -500,7 +500,7 @@ Bool_t AliQADataMakerSteer::IsSelected(const char * det)
 	
 	const TString detName(det) ;
 	// check if all detectors are selected
-	if ((fDetectors.CompareTo("ALL") == 0) ||
+	if ((fDetectors.CompareTo("ALL")) ||
 		fDetectors.BeginsWith("ALL ") ||
 		fDetectors.EndsWith(" ALL") ||
 		fDetectors.Contains(" ALL ")) {
