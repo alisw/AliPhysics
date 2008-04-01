@@ -24,7 +24,8 @@
 #include <TTree.h>
 #include <TFolder.h>
 #include <TFriendElement.h>
-
+#include <TProcessID.h>
+#include <TCollection.h>
 
 #include "AliAODEvent.h"
 #include "AliAODHeader.h"
@@ -196,6 +197,21 @@ void AliAODEvent::CreateStdContent()
   GetStdContent();
   CreateStdFolders();
   return;
+}
+
+void  AliAODEvent::MakeEntriesReferencable()
+{
+    // Make all entries referencable in a subsequent process
+    //
+    TIter next(fAODObjects);
+    TObject* obj;
+    while (obj = next())
+    {
+	if(obj->InheritsFrom("TCollection"))
+	    {
+		AssignIDtoCollection((TCollection*)obj);
+	    }
+    }
 }
 
 //______________________________________________________________________________
@@ -450,4 +466,16 @@ void AliAODEvent::Print(Option_t *) const
   // Something meaningful should be implemented here.
   
   return;
+}
+
+void AliAODEvent::AssignIDtoCollection(TCollection* col)
+{
+    // Static method which assigns a ID to each object in a collection
+    // In this way the objects are marked as referenced and written with 
+    // an ID. This has the advantage that TRefs to this objects can be 
+    // written by a subsequent process.
+    TIter next(col);
+    TObject* obj;
+    while (obj = next())
+	TProcessID::AssignID(obj);
 }

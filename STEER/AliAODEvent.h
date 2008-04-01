@@ -173,7 +173,8 @@ class AliAODEvent : public AliVEvent {
   const void WriteToTree(TTree* tree) const {tree->Branch(fAODObjects);}
 
   void  Print(Option_t *option="") const;
-
+  void  MakeEntriesReferencable();
+  static void AssignIDtoCollection(TCollection* col);
  private :
 
   TList   *fAODObjects; //  list of AODObjects
