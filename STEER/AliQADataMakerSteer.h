@@ -78,6 +78,7 @@ private:
 	static const UInt_t fgkNDetectors = AliQA::kNDET ; //! number of detectors    
 	AliLoader      *   fLoader[fgkNDetectors];         //! array of detectors loader
 	AliQADataMaker *   fQADataMaker[fgkNDetectors];    //! array of QA data maker objects
+	TObjArray          fQADataMakers;                  //! array of active QA data maker objects
 	Int_t              fQACycles[fgkNDetectors];       //! array of QA cycle length
 	
   ClassDef(AliQADataMakerSteer, 0)      // class for running the QA makers
