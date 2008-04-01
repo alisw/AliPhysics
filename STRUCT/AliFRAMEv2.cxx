@@ -146,7 +146,7 @@ void AliFRAMEv2::CreateGeometry()
   ppgon[3] =   2.;
 
   ppgon[4] = -350.;
-  ppgon[5] =  399.;
+  ppgon[5] =  401.35;
   ppgon[6] =  415.6;
 
   ppgon[7] =  -ppgon[4]; 
@@ -195,8 +195,8 @@ void AliFRAMEv2::CreateGeometry()
   
 
   gMC->Gsvolu("B080", "BOX", kSteel, pbox, 3);
-  gMC->Gspos("B080", 1, "B077",  286.01, 0., 0., 0, "ONLY");
-  gMC->Gspos("B080", 2, "B077", -286.01, 0., 0., 0, "ONLY");
+  gMC->Gspos("B080", 1, "B077",  285.3, 0., 0., 0, "ONLY");
+  gMC->Gspos("B080", 2, "B077", -285.3, 0., 0., 0, "ONLY");
 
 //
 // Diagonal bars (1) 
@@ -406,7 +406,7 @@ void AliFRAMEv2::CreateGeometry()
   AliMatrix(idrotm[2032],   0.0, 0.0, 90.0, 190.0, 90.0, 100.0);
   AliMatrix(idrotm[2033],   0.0, 0.0, 90.0, 350.0, 90.0,  80.0);
   
-  Float_t rd =  405.24;
+  Float_t rd =  405.5;
   dz = (dymodU[1]+dymodU[0])/2.;
   Float_t dz2 =  (dymodU[1]+dymodU[2])/2.;
 
@@ -476,7 +476,7 @@ void AliFRAMEv2::CreateGeometry()
   ptrd1[3] =  iFrH / 2.;  
   
   Float_t r      = 342.0;
-  Float_t rout1  = 405.24;
+  Float_t rout1  = 405.5;
   Float_t rout2  = 411.5;
   TString module[18];
   
