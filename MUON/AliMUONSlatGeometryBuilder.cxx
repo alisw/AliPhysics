@@ -498,15 +498,14 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	// Get shape
 	Int_t nSlatType = 2;
 	Int_t nVol = 8;
-	char slatType[3] = "CD"; // C: central slat; D: rounded slat
-	char volLetter[9] = "CNXIPHBG";
-	char volName[5] = "SC5C";
-	char compName[11] = "SC5C";
-	char csName[14] = "centerSlatC5C";
+	const char* slatType = "CD"; // C: central slat; D: rounded slat
+	const char* volLetter = "CNXIPHBG";
+	TString volName;
+	TString compName;
+	TString csName;
 	TGeoVolume *mVol = 0x0;
 	TObjArray centerSlat(nSlatType*((nVol+1)*2));	
 	TObjArray composite(nSlatType*((nVol+1)*2));
-
 
 	// Beam shield recess
 	new TGeoTube("tubeCut", 0., AliMUONConstants::Rmin(2), kSlatWidth/2.+0.001);
@@ -534,7 +533,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	  for (int iSlatType = 0; iSlatType<nSlatType; iSlatType++) {
 	    for (int iVol = 0; iVol<nVol; iVol++){
 	      Int_t lIndex = (iCh-5)*(nSlatType*(nVol+1))+iSlatType*(nVol+1)+iVol;
-	      sprintf(volName,"S%c%d%c",slatType[iSlatType],iCh,volLetter[iVol]);
+	      volName=Form("S%c%d%c",slatType[iSlatType],iCh,volLetter[iVol]);
 	      mVol = gGeoManager->FindVolumeFast(volName);
 	      if ( !mVol ) {
 		AliErrorStream() 
@@ -542,7 +541,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	      }
 	      else {
 		centerSlat[lIndex] = mVol->GetShape();
-		sprintf(csName,"centerSlat%c%d%c",slatType[iSlatType],iCh,volLetter[iVol]);
+		csName=Form("centerSlat%c%d%c",slatType[iSlatType],iCh,volLetter[iVol]);
 		((TGeoShape*)centerSlat[lIndex])->SetName(csName); 
 
 		// Composite shape
@@ -556,7 +555,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 		  trB->RegisterYourself();
 		  compOperation.ReplaceAll("-tubeCut",":trB-tubeCut");
 		}
-		sprintf(compName,"composite%d%c",iCh,volLetter[iVol]);
+		compName=Form("composite%d%c",iCh,volLetter[iVol]);
 		composite[lIndex] = new TGeoCompositeShape(compName, compOperation.Data()); 
 		
 		// Reset shape to volume      
@@ -566,7 +565,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 
 	    // For rounded spacer
 	    Int_t lIndex = (iCh-5)*(nSlatType*(nVol+1))+iSlatType*(nVol+1)+nVol;
-	    sprintf(volName,"S%c%dD",slatType[iSlatType],iCh);
+	    volName=Form("S%c%dD",slatType[iSlatType],iCh);
 	    mVol = gGeoManager->FindVolumeFast(volName);
 	    if ( !mVol ) {
 	      AliErrorStream() 
@@ -574,7 +573,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	    }
 	    else {
 	      centerSlat[lIndex] = mVol->GetShape();
-	      sprintf(csName,"centerSlat%c%dD",slatType[iSlatType],iCh);
+	      csName=Form("centerSlat%c%dD",slatType[iSlatType],iCh);
 	      ((TGeoShape*)centerSlat[lIndex])->SetName(csName);	 	  
 	      
 	      // Composite shape
@@ -586,7 +585,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 		compOperation.Prepend("(");
 		compOperation+="+boxVframe:trVBox)*boxDCut:trDBox";
 	      }
-	      sprintf(compName,"composite%c%dD",slatType[iSlatType],iCh);
+	      compName=Form("composite%c%dD",slatType[iSlatType],iCh);
 	      composite[lIndex] = new TGeoCompositeShape(compName, compOperation.Data()); 	      
 	      // Reset shape to volume      
 	      mVol->SetShape((TGeoShape*)composite[lIndex]);
@@ -1168,11 +1167,11 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
       // Get shape
       Int_t nSlatType = 1;
       Int_t nVol = 8;
-      char slatType[2] = "D"; // D: Rounded slat
-      char volLetter[9] = "CNXIPHBG";
-      char volName[5] = "SD7C";
-      char compName[14] = "SD7C";
-      char csName[16] = "rounded4SlatD7C";
+      const char* slatType = "D"; // D: Rounded slat
+      const char* volLetter = "CNXIPHBG";
+      TString volName;
+      TString compName;
+      TString csName;
       TGeoVolume *mVol = 0x0;
       // Beam shield recess
       new TGeoTube("tube4Cut", 0., AliMUONConstants::Rmin(3), kSlatWidth/2.+0.001);
@@ -1194,7 +1193,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	for (int iSlatType = 0; iSlatType<nSlatType; iSlatType++) {
 	  for (int iVol = 0; iVol<nVol; iVol++){
 	    Int_t lIndex = (iCh-7)*(nSlatType*(nVol+1))+iSlatType*(nVol+1)+iVol;
-	    sprintf(volName,"S%c%d%c",slatType[iSlatType],iCh,volLetter[iVol]);
+	    volName=Form("S%c%d%c",slatType[iSlatType],iCh,volLetter[iVol]);
 	    mVol = gGeoManager->FindVolumeFast(volName);
 	    if ( !mVol ) {
 	      AliErrorStream() 
@@ -1202,7 +1201,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	    }
 	    else {
 	      rounded4Slat[lIndex] = mVol->GetShape();
-	      sprintf(csName,"rounded4Slat%c%d%c",slatType[iSlatType],iCh,volLetter[iVol]);
+	      csName=Form("rounded4Slat%c%d%c",slatType[iSlatType],iCh,volLetter[iVol]);
 	      ((TGeoShape*)rounded4Slat[lIndex])->SetName(csName);
 	      
 	      // Composite shape
@@ -1219,7 +1218,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 		trB->RegisterYourself();
 		compOperation.ReplaceAll("-tube4Cut",":trB-tube4Cut");
 	      }
-	      sprintf(compName,"composite4%d%c",iCh,volLetter[iVol]);
+	      compName=Form("composite4%d%c",iCh,volLetter[iVol]);
 	      composite4[lIndex] = new TGeoCompositeShape(compName, compOperation.Data()); 
 	      
 	      // Reset shape to volume      
@@ -1229,7 +1228,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 
 	  // For rounded spacer
 	  Int_t lIndex = (iCh-7)*(nSlatType*(nVol+1))+iSlatType*(nVol+1)+nVol;
-	  sprintf(volName,"S%c%dD",slatType[iSlatType],iCh);
+	  volName=Form("S%c%dD",slatType[iSlatType],iCh);
 	  mVol = gGeoManager->FindVolumeFast(volName);
 	  if ( !mVol ) {
 	    AliErrorStream() 
@@ -1237,7 +1236,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	  }
 	  else {
 	    rounded4Slat[lIndex] = mVol->GetShape();
-	    sprintf(csName,"rounded4Slat%c%dD",slatType[iSlatType],iCh);
+	    csName=Form("rounded4Slat%c%dD",slatType[iSlatType],iCh);
 	    ((TGeoShape*)rounded4Slat[lIndex])->SetName(csName);
 	    
 	    // Composite shape
@@ -1246,7 +1245,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	      compOperation.Prepend("(");
 	      compOperation+="+box4Vframe:trVBox4)*box4DCut:trDBox4";
 	    }
-	    sprintf(compName,"composite4%c%dD",slatType[iSlatType],iCh);
+	    compName=Form("composite4%c%dD",slatType[iSlatType],iCh);
 	    composite4[lIndex] = new TGeoCompositeShape(compName, compOperation.Data()); 	      
 	    // Reset shape to volume      
 	    mVol->SetShape((TGeoShape*)composite4[lIndex]);
@@ -1720,11 +1719,11 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
       // Get shape
       Int_t nSlatType = 1;
       Int_t nVol = 8;
-      char slatType[2] = "D"; // D: Rounde slat
-      char volLetter[9] = "CNXIPHBG";
-      char volName[5] = "SD9D";
-      char compName[14] = "SD9D";
-      char csName[16] = "rounded5SlatD9D";
+      const char* slatType = "D"; // D: Rounde slat
+      const char* volLetter = "CNXIPHBG";
+      TString volName;
+      TString compName;
+      TString csName;
       TGeoVolume *mVol = 0x0;
       // Beam shield recess
       new TGeoTube("tube5Cut", 0., AliMUONConstants::Rmin(4), kSlatWidth/2.+0.001);
@@ -1746,7 +1745,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	for (int iSlatType = 0; iSlatType<nSlatType; iSlatType++) {
 	  for (int iVol = 0; iVol<nVol; iVol++){
 	    Int_t lIndex = (iCh-9)*(nSlatType*(nVol+1))+iSlatType*(nVol+1)+iVol;
-	    sprintf(volName,"S%c%d%c",slatType[iSlatType],iCh%10,volLetter[iVol]);
+	    volName=Form("S%c%d%c",slatType[iSlatType],iCh%10,volLetter[iVol]);
 	    mVol = gGeoManager->FindVolumeFast(volName);
 	    if ( !mVol ) {
 	      AliErrorStream() 
@@ -1754,7 +1753,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	    }
 	    else {
 	      rounded5Slat[lIndex] = mVol->GetShape();
-	      sprintf(csName,"rounded5Slat%c%d%c",slatType[iSlatType],iCh%10,volLetter[iVol]);
+	      csName=Form("rounded5Slat%c%d%c",slatType[iSlatType],iCh%10,volLetter[iVol]);
 	      ((TGeoShape*)rounded5Slat[lIndex])->SetName(csName);  
 	      
 	      // Composite shape
@@ -1768,7 +1767,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 		trB->RegisterYourself();
 		compOperation.ReplaceAll("-tube5Cut",":trB-tube5Cut");
 	      }
-	      sprintf(compName,"composite5%d%c",iCh,volLetter[iVol]);
+	      compName=Form("composite5%d%c",iCh,volLetter[iVol]);
 	      composite5[lIndex] = new TGeoCompositeShape(compName, compOperation.Data()); 
 	      
 	      // Reset shape to volume      
@@ -1778,7 +1777,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 
 	  // For rounded spacer
 	  Int_t lIndex = (iCh-9)*(nSlatType*(nVol+1))+iSlatType*(nVol+1)+nVol;
-	  sprintf(volName,"S%c%dD",slatType[iSlatType],iCh%10);
+	  volName=Form("S%c%dD",slatType[iSlatType],iCh%10);
 	  mVol = gGeoManager->FindVolumeFast(volName);
 	  if ( !mVol ) {
 	    AliErrorStream() 
@@ -1786,7 +1785,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	  }
 	  else {
 	    rounded5Slat[lIndex] = mVol->GetShape();
-	    sprintf(csName,"rounded5Slat%c%dD",slatType[iSlatType],iCh%10);
+	    csName=Form("rounded5Slat%c%dD",slatType[iSlatType],iCh%10);
 	    ((TGeoShape*)rounded5Slat[lIndex])->SetName(csName);	 	  
 	    
 	    // Composite shape
@@ -1795,7 +1794,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	      compOperation.Prepend("(");
 	      compOperation+="+box5Vframe:trVBox5)*box5DCut:trDBox5";
 	    }
-	    sprintf(compName,"composite5%c%dD",slatType[iSlatType],iCh%10);
+	    compName=Form("composite5%c%dD",slatType[iSlatType],iCh%10);
 	    composite5[lIndex] = new TGeoCompositeShape(compName, compOperation.Data()); 	      
 	    // Reset shape to volume      
 	    mVol->SetShape((TGeoShape*)composite5[lIndex]);
