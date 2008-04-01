@@ -1,6 +1,8 @@
-SRCS=
+SRCS:=  AliD0toKpi.cxx  AliD0toKpiAnalysis.cxx \
+        AliBtoJPSItoEle.cxx  AliBtoJPSItoEleAnalysis.cxx
 
-HDRS= $(SRCS:.cxx=.h) 
+
+HDRS:= $(SRCS:.cxx=.h) 
 
 DHDR:=PWG3LinkDef.h
 
