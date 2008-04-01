@@ -131,10 +131,9 @@ AliAnalysisVertexingHF::~AliAnalysisVertexingHF() {
   if(fV1) { delete fV1; fV1=0; }
 }
 //----------------------------------------------------------------------------
-void AliAnalysisVertexingHF::FindCandidates(AliESDEvent *esd,TTree treeout[])
+void AliAnalysisVertexingHF::FindCandidates(AliESDEvent *esd,TTree *treeout[])
 {
   // Find heavy-flavour vertex candidates
-
   
   AliAODRecoDecayHF2Prong *io2Prong = new AliAODRecoDecayHF2Prong();
   AliAODRecoDecayHF3Prong *io3Prong = new AliAODRecoDecayHF3Prong();
@@ -144,27 +143,27 @@ void AliAnalysisVertexingHF::FindCandidates(AliESDEvent *esd,TTree treeout[])
   Int_t initEntriesD0toKpi=0,initEntriesJPSItoEle=0,initEntries3Prong=0,initEntries4Prong=0;
   if(fD0toKpi) {
     itreeD0toKpi=itree;
-    treeout[itree].SetBranchAddress("D0toKpi",&io2Prong);
+    treeout[itree]->SetBranchAddress("D0toKpi",&io2Prong);
     itree++;
-    initEntriesD0toKpi = treeout[itreeD0toKpi].GetEntries();
+    initEntriesD0toKpi = treeout[itreeD0toKpi]->GetEntries();
   }
   if(fJPSItoEle) {
     itreeJPSItoEle=itree;
-    treeout[itree].SetBranchAddress("JPSItoEle",&io2Prong);
+    treeout[itree]->SetBranchAddress("JPSItoEle",&io2Prong);
     itree++;
-    initEntriesJPSItoEle = treeout[itreeJPSItoEle].GetEntries();
+    initEntriesJPSItoEle = treeout[itreeJPSItoEle]->GetEntries();
   }
   if(f3Prong) {
     itree3Prong=itree;
-    treeout[itree].SetBranchAddress("Charmto3Prong",&io3Prong);
+    treeout[itree]->SetBranchAddress("Charmto3Prong",&io3Prong);
     itree++;
-    initEntries3Prong = treeout[itree3Prong].GetEntries();
+    initEntries3Prong = treeout[itree3Prong]->GetEntries();
   }
   if(f4Prong) {
     itree4Prong=itree;
-    treeout[itree].SetBranchAddress("D0to4Prong",&io4Prong);
+    treeout[itree]->SetBranchAddress("D0to4Prong",&io4Prong);
     itree++;
-    initEntries4Prong = treeout[itree4Prong].GetEntries();
+    initEntries4Prong = treeout[itree4Prong]->GetEntries();
   }
   delete io2Prong; io2Prong = NULL;
   delete io3Prong; io3Prong = NULL;
@@ -241,8 +240,8 @@ void AliAnalysisVertexingHF::FindCandidates(AliESDEvent *esd,TTree treeout[])
       }
       if(fD0toKpi || fJPSItoEle) { 
 	io2Prong = Make2Prong(twoTrackArray1,esd,vertexp1n1,dcap1n1,okD0,okJPSI);
-	if(okD0)   treeout[itreeD0toKpi].Fill();
-	if(okJPSI) treeout[itreeJPSItoEle].Fill();
+	if(okD0)   treeout[itreeD0toKpi]->Fill();
+	if(okJPSI) treeout[itreeJPSItoEle]->Fill();
         delete io2Prong; io2Prong=NULL; 
       }
 
@@ -271,7 +270,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliESDEvent *esd,TTree treeout[])
 	  threeTrackArray->AddAt(negtrack1,1);
 	  threeTrackArray->AddAt(postrack2,2);
 	  io3Prong = Make3Prong(threeTrackArray,esd,vertexp1n1,vertexp2n1,dcap1n1,dcap2n1,dcap1p2,ok3Prong);
-	  if(ok3Prong) treeout[itree3Prong].Fill();
+	  if(ok3Prong) treeout[itree3Prong]->Fill();
 	  if(io3Prong) delete io3Prong; io3Prong=NULL; 
 	}
 	if(f4Prong) {
@@ -287,7 +286,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliESDEvent *esd,TTree treeout[])
 	    fourTrackArray->AddAt(postrack2,2);
 	    fourTrackArray->AddAt(negtrack2,3);
 	    io4Prong = Make4Prong(fourTrackArray,esd,vertexp1n1,vertexp2n1,dcap1n1,dcap1n2,dcap2n1,ok4Prong);
-	    if(ok4Prong) treeout[itree4Prong].Fill();
+	    if(ok4Prong) treeout[itree4Prong]->Fill();
 	    delete io4Prong; io4Prong=NULL; 
             fourTrackArray->Clear();
 	    negtrack2 = 0;
@@ -316,7 +315,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliESDEvent *esd,TTree treeout[])
 	  threeTrackArray->AddAt(postrack1,1);
 	  threeTrackArray->AddAt(negtrack2,2);
 	  io3Prong = Make3Prong(threeTrackArray,esd,vertexp1n1,vertexp1n2,dcap1n1,dcap1n2,dcan1n2,ok3Prong);
-	  if(ok3Prong) treeout[itree3Prong].Fill();
+	  if(ok3Prong) treeout[itree3Prong]->Fill();
 	  if(io3Prong) delete io3Prong; io3Prong=NULL; 
 	  }
 	negtrack2 = 0;
@@ -351,26 +350,26 @@ void AliAnalysisVertexingHF::FindCandidates(AliESDEvent *esd,TTree treeout[])
   if(fD0toKpi) {
     printf(" D0->Kpi: event %d = %d; total = %d;\n",
 	   (Int_t)esd->GetEventNumberInFile(),
-	   (Int_t)treeout[itreeD0toKpi].GetEntries()-initEntriesD0toKpi,
-	   (Int_t)treeout[itreeD0toKpi].GetEntries());
+	   (Int_t)treeout[itreeD0toKpi]->GetEntries()-initEntriesD0toKpi,
+	   (Int_t)treeout[itreeD0toKpi]->GetEntries());
   }
   if(fJPSItoEle) {
     printf(" JPSI->ee: event %d = %d; total = %d;\n",
 	   (Int_t)esd->GetEventNumberInFile(),
-	   (Int_t)treeout[itreeJPSItoEle].GetEntries()-initEntriesJPSItoEle,
-	   (Int_t)treeout[itreeJPSItoEle].GetEntries());
+	   (Int_t)treeout[itreeJPSItoEle]->GetEntries()-initEntriesJPSItoEle,
+	   (Int_t)treeout[itreeJPSItoEle]->GetEntries());
   }
   if(f3Prong) {
     printf(" Charm->3Prong: event %d = %d; total = %d;\n",
 	   (Int_t)esd->GetEventNumberInFile(),
-	   (Int_t)treeout[itree3Prong].GetEntries()-initEntries3Prong,
-	   (Int_t)treeout[itree3Prong].GetEntries());
+	   (Int_t)treeout[itree3Prong]->GetEntries()-initEntries3Prong,
+	   (Int_t)treeout[itree3Prong]->GetEntries());
   }
   if(f4Prong) {
     printf(" Charm->4Prong: event %d = %d; total = %d;\n",
 	   (Int_t)esd->GetEventNumberInFile(),
-	   (Int_t)treeout[itree4Prong].GetEntries()-initEntries4Prong,
-	   (Int_t)treeout[itree4Prong].GetEntries());
+	   (Int_t)treeout[itree4Prong]->GetEntries()-initEntries4Prong,
+	   (Int_t)treeout[itree4Prong]->GetEntries());
   }
 
 
