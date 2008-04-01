@@ -608,7 +608,7 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
   //   digits should be expanded beforehand!
   //   digitsIn->Expand();
   AliTRDdataArrayDigits *digitsIn = (AliTRDdataArrayDigits *) fDigitsManager->GetDigits(det);      
-
+  
   // This is to take care of switched off super modules
   if (!digitsIn->HasData()) 
     {
@@ -696,295 +696,266 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
 
   // Apply the gain and the tail cancelation via digital filter
   TailCancelation(digitsIn
-	         ,digitsOut  
-	         ,indexesIn
-	         ,fIndexesOut
-	         ,nTimeTotal
-                 ,adcThreshold
-                 ,calGainFactorROC
-                 ,calGainFactorDetValue);	
+                ,digitsOut  
+                ,indexesIn
+                ,fIndexesOut
+                ,nTimeTotal
+                ,adcThreshold
+                ,calGainFactorROC
+                ,calGainFactorDetValue);	
 	
   Int_t row  = 0;
   Int_t col  = 0;
   Int_t time = 0;
   Int_t iPad = 0;
     
-	UChar_t status[3], ipos;
-	Short_t signal;
+  UChar_t status[3]={0, 0, 0}, ipos = 0;
   fIndexesOut->ResetCounters();
   while (fIndexesOut->NextRCTbinIndex(row, col, time)){
-		Float_t signalM = TMath::Abs(digitsOut->GetDataUnchecked(row,col,time));
-		signal = digitsIn->GetDataUnchecked(row,col,time);
-		status[1] = digitsIn->GetPadStatus(row, col, time);
-		ipos = status[1] ? 2 : 0;
+    Float_t signalM = TMath::Abs(digitsOut->GetDataUnchecked(row,col,time));
+    status[1] = digitsIn->GetPadStatus(row,col,time);
+    if(status[1]) SETBIT(ipos, AliTRDcluster::kMaskedCenter);
 
-		// Look for the maximum
-		if (signalM >= maxThresh) {
-			if (col + 1 >= nColMax || col-1 < 0) continue;
+    // Look for the maximum
+    if (signalM >= maxThresh) {
+      if (col + 1 >= nColMax || col-1 < 0) continue;
+    
+      Float_t signalL = TMath::Abs(digitsOut->GetDataUnchecked(row,col+1,time));
+      status[0] = digitsIn->GetPadStatus(row,col+1,time);
+      if(status[0]) SETBIT(ipos, AliTRDcluster::kMaskedLeft);
+    
+      Float_t signalR = TMath::Abs(digitsOut->GetDataUnchecked(row,col-1,time));
+      status[2] = digitsIn->GetPadStatus(row,col-1,time);
+      if(status[2]) SETBIT(ipos, AliTRDcluster::kMaskedRight);
+    
+      // reject candidates with more than 1 problematic pad
+      if(ipos == 3 || ipos > 4) continue;
+    
+      if(!status[1]){ // good central pad
+        if(!ipos){ // all pads are OK
+          if ((signalL <= signalM) && (signalR <  signalM)) {
+            if ((signalL >= sigThresh) || (signalR >= sigThresh)) {
+              // Maximum found, mark the position by a negative signal
+              digitsOut->SetDataUnchecked(row,col,time,-signalM);
+              fIndexesMaxima->AddIndexTBin(row,col,time);
+              padStatus.SetDataUnchecked(row, col, time, ipos);
+              }
+            }
+          } else { // one of the neighbouring pads are bad
+            if(status[0] && signalR < signalM && signalR >= sigThresh){
+              digitsOut->SetDataUnchecked(row,col,time,-signalM);
+              digitsOut->SetDataUnchecked(row, col, time+1, 0.);
+              fIndexesMaxima->AddIndexTBin(row,col,time);
+              padStatus.SetDataUnchecked(row, col, time, ipos);
+            } else if(status[2] && signalL <= signalM && signalL >= sigThresh){
+              digitsOut->SetDataUnchecked(row,col,time,-signalM);
+              digitsOut->SetDataUnchecked(row, col, time-1, 0.);
+              fIndexesMaxima->AddIndexTBin(row,col,time);
+              padStatus.SetDataUnchecked(row, col, time, ipos);
+            }
+          }
+        } else { // wrong maximum pad
+          if ((signalL >= sigThresh) || (signalR >= sigThresh)) {
+            // Maximum found, mark the position by a negative signal
+            digitsOut->SetDataUnchecked(row,col,time,-maxThresh);
+            fIndexesMaxima->AddIndexTBin(row,col,time);
+            padStatus.SetDataUnchecked(row, col, time, ipos);
+          }
+        }
+      }
+    }
 
-			Float_t signalL = TMath::Abs(digitsOut->GetDataUnchecked(row,col+1,time));
-			signal = digitsIn->GetDataUnchecked(row,col+1,time);
-			status[0] = digitsIn->GetPadStatus(row,col+1,time);
-			ipos += status[0] ? 1 : 0;
+    // The index to the first cluster of a given ROC
+    Int_t firstClusterROC = -1;
+    // The number of cluster in a given ROC
+    Int_t nClusterROC     =  0;
 
-			Float_t signalR = TMath::Abs(digitsOut->GetDataUnchecked(row,col-1,time));
-			signal = digitsIn->GetDataUnchecked(row,col-1,time);
-			status[2] = digitsIn->GetPadStatus(row, col-1, time);
-			ipos += status[0] ? 4 : 0;
-
-			// reject candidates with more than 1 problematic pad
-			if(ipos == 3 || ipos > 4) continue;
-
-			if(!status[1]){ // good central pad
-				if(!ipos){ // all pads are OK
-					if ((signalL <= signalM) && (signalR <  signalM)) {
-						if ((signalL >= sigThresh) || (signalR >= sigThresh)) {
-							// Maximum found, mark the position by a negative signal
-							digitsOut->SetDataUnchecked(row,col,time,-signalM);
-							fIndexesMaxima->AddIndexTBin(row,col,time);
-							padStatus.SetDataUnchecked(row, col, time, ipos);
-						}
-					}
-				} else { // one of the neighbouring pads are bad
-					if(status[0] && signalR < signalM && signalR >= sigThresh){
-						digitsOut->SetDataUnchecked(row,col,time,-signalM);
-						digitsOut->SetDataUnchecked(row, col, time+1, 0.);
-						fIndexesMaxima->AddIndexTBin(row,col,time);
-						padStatus.SetDataUnchecked(row, col, time, ipos);
-					} else if(status[2] && signalL <= signalM && signalL >= sigThresh){
-						digitsOut->SetDataUnchecked(row,col,time,-signalM);
-						digitsOut->SetDataUnchecked(row, col, time-1, 0.);
-						fIndexesMaxima->AddIndexTBin(row,col,time);
-						padStatus.SetDataUnchecked(row, col, time, ipos);
-					}
-				}
-			} else { // wrong maximum pad
-				if ((signalL >= sigThresh) || (signalR >= sigThresh)) {
-					// Maximum found, mark the position by a negative signal
-					digitsOut->SetDataUnchecked(row,col,time,-maxThresh);
-					fIndexesMaxima->AddIndexTBin(row,col,time);
-					padStatus.SetDataUnchecked(row, col, time, ipos);
-				}
-			}
-		}
-	}
-	       
-  // The index to the first cluster of a given ROC
-  Int_t firstClusterROC = -1;
-  // The number of cluster in a given ROC
-  Int_t nClusterROC     =  0;
-
-  // Now check the maxima and calculate the cluster position
-  fIndexesMaxima->ResetCounters();
-  while (fIndexesMaxima->NextRCTbinIndex(row, col, time)) 
-    {
+    // Now check the maxima and calculate the cluster position
+    fIndexesMaxima->ResetCounters();
+    while (fIndexesMaxima->NextRCTbinIndex(row, col, time)) {
 
       // Maximum found ?             
-      if (digitsOut->GetDataUnchecked(row,col,time) < 0.0) 
-        {
+      if (digitsOut->GetDataUnchecked(row,col,time) < 0.0) {
+        for (iPad = 0; iPad < kNclus; iPad++) {
+          Int_t iPadCol = col - 1 + iPad;
+          clusterSignal[iPad] = TMath::Abs(digitsOut->GetDataUnchecked(row,iPadCol,time));
+        }
 
-	  for (iPad = 0; iPad < kNclus; iPad++) 
-            {
-	      Int_t iPadCol = col - 1 + iPad;
-	      clusterSignal[iPad] = TMath::Abs(digitsOut->GetDataUnchecked(row,iPadCol,time));
-	    }
+        // Count the number of pads in the cluster
+        Int_t nPadCount = 0;
+        Int_t ii;
+        // Look to the left
+        ii = 0;
+        while (TMath::Abs(digitsOut->GetDataUnchecked(row,col-ii  ,time)) >= sigThresh) {
+          nPadCount++;
+          ii++;
+          if (col-ii   <        0) break;
+        }
+        // Look to the right
+        ii = 0;
+        while (TMath::Abs(digitsOut->GetDataUnchecked(row,col+ii+1,time)) >= sigThresh){
+          nPadCount++;
+          ii++;
+          if (col+ii+1 >= nColMax) break;
+        }
+        nClusters++;
 
-	  // Count the number of pads in the cluster
-	  Int_t nPadCount = 0;
-	  Int_t ii;
-	  // Look to the left
-	  ii = 0;
-	  while (TMath::Abs(digitsOut->GetDataUnchecked(row,col-ii  ,time)) >= sigThresh) 
-            {
-	      nPadCount++;
-	      ii++;
-	      if (col-ii   <        0) break;
-	    }
-	  // Look to the right
-	  ii = 0;
-	  while (TMath::Abs(digitsOut->GetDataUnchecked(row,col+ii+1,time)) >= sigThresh) 
-            {
-	      nPadCount++;
-	      ii++;
-	      if (col+ii+1 >= nColMax) break;
-	    }
-	  nClusters++;
+        // Look for 5 pad cluster with minimum in the middle
+        Bool_t fivePadCluster = kFALSE;
+        if (col < (nColMax - 3)){
+          if (digitsOut->GetDataUnchecked(row,col+2,time) < 0) {
+            fivePadCluster = kTRUE;
+          }
+          if ((fivePadCluster) && (col < (nColMax - 5))) {
+            if (digitsOut->GetDataUnchecked(row,col+4,time) >= sigThresh){
+              fivePadCluster = kFALSE;
+            }
+          }
+          if ((fivePadCluster) && (col >             1)){
+            if (digitsOut->GetDataUnchecked(row,col-2,time) >= sigThresh){
+              fivePadCluster = kFALSE;
+            }
+          }
+        }
 
-	  // Look for 5 pad cluster with minimum in the middle
-	  Bool_t fivePadCluster = kFALSE;
-	  if (col < (nColMax - 3)) 
-            {
-	      if (digitsOut->GetDataUnchecked(row,col+2,time) < 0) 
-                {
-	          fivePadCluster = kTRUE;
-	        }
-	      if ((fivePadCluster) && (col < (nColMax - 5))) 
-                {
-	          if (digitsOut->GetDataUnchecked(row,col+4,time) >= sigThresh) 
-                    {
-	              fivePadCluster = kFALSE;
-	            }
-	        }
-	      if ((fivePadCluster) && (col >             1)) 
-                {
-	          if (digitsOut->GetDataUnchecked(row,col-2,time) >= sigThresh) 
-                    {
-	              fivePadCluster = kFALSE;
-	            }
-	        }
-	    }
+        // 5 pad cluster
+        // Modify the signal of the overlapping pad for the left part 
+        // of the cluster which remains from a previous unfolding
+        if (iUnfold) {
+          clusterSignal[0] *= ratioLeft;
+          iUnfold = 0;
+        }
 
-	  // 5 pad cluster
-	  // Modify the signal of the overlapping pad for the left part 
-	  // of the cluster which remains from a previous unfolding
-	  if (iUnfold) 
-            {
-	      clusterSignal[0] *= ratioLeft;
-	      iUnfold = 0;
-	    }
+        // Unfold the 5 pad cluster
+        if (fivePadCluster){
+          for (iPad = 0; iPad < kNsig; iPad++) {
+            padSignal[iPad] = TMath::Abs(digitsOut->GetDataUnchecked(row
+                      ,col-1+iPad
+                      ,time));
+          }
+          // Unfold the two maxima and set the signal on 
+          // the overlapping pad to the ratio
+          ratioRight        = Unfold(kEpsilon,iplan,padSignal);
+          ratioLeft         = 1.0 - ratioRight; 
+          clusterSignal[2] *= ratioRight;
+          iUnfold = 1;
+        }
 
-	  // Unfold the 5 pad cluster
-	  if (fivePadCluster) 
-            {
-	      for (iPad = 0; iPad < kNsig; iPad++) 
-                {
-	          padSignal[iPad] = TMath::Abs(digitsOut->GetDataUnchecked(row
-			   					          ,col-1+iPad
-								          ,time));
-	        }
-	      // Unfold the two maxima and set the signal on 
-	      // the overlapping pad to the ratio
-	      ratioRight        = Unfold(kEpsilon,iplan,padSignal);
-	      ratioLeft         = 1.0 - ratioRight; 
-	      clusterSignal[2] *= ratioRight;
-	      iUnfold = 1;
-	    }
+        // The position of the cluster in COL direction relative to the center pad (pad units)
+        Double_t clusterPosCol = 0.0;
+        if (AliTRDReconstructor::RecoParam()->LUTOn()) {
+          // Calculate the position of the cluster by using the
+          // lookup table method
+          clusterPosCol = LUTposition(iplan,clusterSignal[0]
+              ,clusterSignal[1]
+              ,clusterSignal[2]);
+        } else {
+          // Calculate the position of the cluster by using the
+          // center of gravity method
+          for (Int_t i = 0; i < kNsig; i++) {
+            padSignal[i] = 0.0;
+          }
+          padSignal[2] = TMath::Abs(digitsOut->GetDataUnchecked(row,col  ,time)); // Central pad
+          padSignal[1] = TMath::Abs(digitsOut->GetDataUnchecked(row,col-1,time)); // Left    pad
+          padSignal[3] = TMath::Abs(digitsOut->GetDataUnchecked(row,col+1,time)); // Right   pad
 
-	  // The position of the cluster in COL direction relative to the center pad (pad units)
-          Double_t clusterPosCol = 0.0;
-	  if (AliTRDReconstructor::RecoParam()->LUTOn()) 
-            {
-	      // Calculate the position of the cluster by using the
-	      // lookup table method
-	      clusterPosCol = LUTposition(iplan,clusterSignal[0]
-                                               ,clusterSignal[1]
- 	                                       ,clusterSignal[2]);
-	    }
-	  else 
-            {
-	      // Calculate the position of the cluster by using the
-	      // center of gravity method
-	      for (Int_t i = 0; i < kNsig; i++) 
-                {
-	          padSignal[i] = 0.0;
-	        }
-	      padSignal[2] = TMath::Abs(digitsOut->GetDataUnchecked(row,col  ,time)); // Central pad
-	      padSignal[1] = TMath::Abs(digitsOut->GetDataUnchecked(row,col-1,time)); // Left    pad
-	      padSignal[3] = TMath::Abs(digitsOut->GetDataUnchecked(row,col+1,time)); // Right   pad
-	      if ((col >           2) && 
-	          (TMath::Abs(digitsOut->GetDataUnchecked(row,col-2,time)) < padSignal[1])) 
-                {
-	          padSignal[0] = TMath::Abs(digitsOut->GetDataUnchecked(row,col-2,time));
-	        }
-	      if ((col < nColMax - 3) &&
-	          (TMath::Abs(digitsOut->GetDataUnchecked(row,col+2,time)) < padSignal[3])) 
-                {
-	          padSignal[4] = TMath::Abs(digitsOut->GetDataUnchecked(row,col+2,time));
-	        }  
-	      clusterPosCol = GetCOG(padSignal);
-	    }
+          if ((col >           2) && 
+              (TMath::Abs(digitsOut->GetDataUnchecked(row,col-2,time)) < padSignal[1])) {
+              padSignal[0] = TMath::Abs(digitsOut->GetDataUnchecked(row,col-2,time));
+          }
+          if ((col < nColMax - 3) &&
+              (TMath::Abs(digitsOut->GetDataUnchecked(row,col+2,time)) < padSignal[3])){
+              padSignal[4] = TMath::Abs(digitsOut->GetDataUnchecked(row,col+2,time));
+          }
+          clusterPosCol = GetCOG(padSignal);
+        }
 
-	  // Store the amplitudes of the pads in the cluster for later analysis
-	  // and check whether one of these pads is masked in the database
-	  Short_t signals[7] = { 0, 0, 0, 0, 0, 0, 0 };
-	  for (Int_t jPad = col-3; jPad <= col+3; jPad++) 
-            {
-	      if ((jPad <          0) || 
-	          (jPad >= nColMax-1)) 
-                {
-	          continue;
-	        }
-	      signals[jPad-col+3] = TMath::Nint(TMath::Abs(digitsOut->GetDataUnchecked(row,jPad,time)));
-	    }
+        // Store the amplitudes of the pads in the cluster for later analysis
+        // and check whether one of these pads is masked in the database
+        Short_t signals[7] = { 0, 0, 0, 0, 0, 0, 0 };
+        for (Int_t jPad = col-3; jPad <= col+3; jPad++) {
+          if ((jPad <          0) || 
+              (jPad >= nColMax-1)) {
+              continue;
+          }
+          signals[jPad-col+3] = TMath::Nint(TMath::Abs(digitsOut->GetDataUnchecked(row,jPad,time)));
+        }
 
-          // Transform the local cluster coordinates into calibrated 
-          // space point positions defined in the local tracking system.
-          // Here the calibration for T0, Vdrift and ExB is applied as well.
-		Double_t clusterXYZ[6];
-		clusterXYZ[0] = clusterPosCol;
-		clusterXYZ[1] = clusterSignal[0];
-		clusterXYZ[2] = clusterSignal[1];
-		clusterXYZ[3] = clusterSignal[2];
-		clusterXYZ[4] = 0.0;
-		clusterXYZ[5] = 0.0;
-		Int_t    clusterRCT[3];
-		clusterRCT[0] = row;
-		clusterRCT[1] = col;
-		clusterRCT[2] = 0;
-		
-	  Bool_t out = kTRUE;
-	  if (fTransform->Transform(clusterXYZ, clusterRCT, ((UInt_t) time), out, 0)) {
+        // Transform the local cluster coordinates into calibrated 
+        // space point positions defined in the local tracking system.
+        // Here the calibration for T0, Vdrift and ExB is applied as well.
+        Double_t clusterXYZ[6];
+        clusterXYZ[0] = clusterPosCol;
+        clusterXYZ[1] = clusterSignal[0];
+        clusterXYZ[2] = clusterSignal[1];
+        clusterXYZ[3] = clusterSignal[2];
+        clusterXYZ[4] = 0.0;
+        clusterXYZ[5] = 0.0;
+        Int_t    clusterRCT[3];
+        clusterRCT[0] = row;
+        clusterRCT[1] = col;
+        clusterRCT[2] = 0;
+        
+        Bool_t out = kTRUE;
+        if (fTransform->Transform(clusterXYZ, clusterRCT, ((UInt_t) time), out, 0)) {
 
-  	    // Add the cluster to the output array
-	    // The track indices will be stored later 
-            Float_t clusterPos[3];
-            clusterPos[0] = clusterXYZ[0];
-            clusterPos[1] = clusterXYZ[1];
-            clusterPos[2] = clusterXYZ[2];
-	    Float_t clusterSig[2];
-	    clusterSig[0] = clusterXYZ[4];
-	    clusterSig[1] = clusterXYZ[5];
-            Double_t clusterCharge  = clusterXYZ[3];
-	    Char_t   clusterTimeBin = ((Char_t) clusterRCT[2]);
-	    AliTRDcluster *cluster = new AliTRDcluster(idet
-		  				      ,clusterCharge
-						      ,clusterPos
-						      ,clusterSig
-						      ,0x0
-						      ,((Char_t) nPadCount)
-						      ,signals
-						      ,((UChar_t) col)
-						      ,((UChar_t) row)
-						      ,((UChar_t) time)
-						      ,clusterTimeBin
-						      ,clusterPosCol
-						      ,volid);
-	    cluster->SetInChamber(!out);
-	    if(padStatus.GetDataUnchecked(row, col, time)){ 
-				cluster->SetMaskedPad(kTRUE);
-				//cluster->SetPadMasked(center/side);
-				//cluster->SetPadMaskedStatus(status);
-			}
+        // Add the cluster to the output array
+        // The track indices will be stored later 
+        Float_t clusterPos[3];
+        clusterPos[0] = clusterXYZ[0];
+        clusterPos[1] = clusterXYZ[1];
+        clusterPos[2] = clusterXYZ[2];
+        Float_t clusterSig[2];
+        clusterSig[0] = clusterXYZ[4];
+        clusterSig[1] = clusterXYZ[5];
+        Double_t clusterCharge  = clusterXYZ[3];
+        Char_t   clusterTimeBin = ((Char_t) clusterRCT[2]);
+        AliTRDcluster *cluster = new AliTRDcluster(idet
+                    ,clusterCharge
+                    ,clusterPos
+                    ,clusterSig
+                    ,0x0
+                    ,((Char_t) nPadCount)
+                    ,signals
+                    ,((UChar_t) col)
+                    ,((UChar_t) row)
+                    ,((UChar_t) time)
+                    ,clusterTimeBin
+                    ,clusterPosCol
+                    ,volid);
+        cluster->SetInChamber(!out);
+        UChar_t maskPosition = padStatus.GetDataUnchecked(row, col, time);
+        if(maskPosition){ 
+          cluster->SetPadMaskedPosition(maskPosition);
 
-	    // Temporarily store the row, column and time bin of the center pad
-	    // Used to later on assign the track indices
-	    cluster->SetLabel( row,0);
-	    cluster->SetLabel( col,1);
-	    cluster->SetLabel(time,2);
+          if(maskPosition & AliTRDcluster::kMaskedLeft) cluster->SetPadMaskedStatus(status[0]);
+          else if(maskPosition & AliTRDcluster::kMaskedCenter) cluster->SetPadMaskedStatus(status[1]);
+          else cluster->SetPadMaskedStatus(status[2]);
+        }
 
-	    RecPoints()->Add(cluster);
+        // Temporarily store the row, column and time bin of the center pad
+        // Used to later on assign the track indices
+        cluster->SetLabel( row,0);
+        cluster->SetLabel( col,1);
+        cluster->SetLabel(time,2);
+  
+        RecPoints()->Add(cluster);
 
-	    // Store the index of the first cluster in the current ROC
-	    if (firstClusterROC < 0) 
-              {
-	        firstClusterROC = RecPoints()->GetEntriesFast() - 1;
-	      }
+        // Store the index of the first cluster in the current ROC
+        if (firstClusterROC < 0) {
+          firstClusterROC = RecPoints()->GetEntriesFast() - 1;
+        }
 
-	    // Count the number of cluster in the current ROC
-	    nClusterROC++;
+        // Count the number of cluster in the current ROC
+        nClusterROC++;
 
-	  } // if: Transform ok ?
-
-        } // if: Maximum found ?
-
-    }
+      } // if: Transform ok ?
+    } // if: Maximum found ?
+  }
 
   delete digitsOut;
 
-  if (fAddLabels) 
-    {
-      AddLabels(idet, firstClusterROC, nClusterROC);
-    }
+  if (fAddLabels) AddLabels(idet, firstClusterROC, nClusterROC);
 
   // Write the cluster and reset the array
   WriteClusters(idet);
@@ -1169,19 +1140,24 @@ void AliTRDclusterizer::TailCancelation(AliTRDdataArrayDigits *digitsIn
       Double_t gain                  = calGainFactorDetValue 
                                      * calGainFactorROCValue;
 
+      Bool_t corrupted = kFALSE;
       for (iTime = 0; iTime < nTimeTotal; iTime++) 
 	{	  
 	  // Apply gain gain factor
 	  inADC[iTime]   = digitsIn->GetDataUnchecked(iRow,iCol,iTime);
+	  if(digitsIn->GetPadStatus(iRow, iCol, iTime)) corrupted = kTRUE;
 	  inADC[iTime]  /= gain;
 	  outADC[iTime]  = inADC[iTime];
 	}
-
-      // Apply the tail cancelation via the digital filter
-      if (AliTRDReconstructor::RecoParam()->TCOn()) 
-        {
-	  DeConvExp(inADC,outADC,nTimeTotal,AliTRDReconstructor::RecoParam()->GetTCnexp());
-        }
+      if(!corrupted)
+	{
+	  // Apply the tail cancelation via the digital filter
+	  // (only for non-coorupted pads)
+	  if (AliTRDReconstructor::RecoParam()->TCOn()) 
+	    {
+	      DeConvExp(inADC,outADC,nTimeTotal,AliTRDReconstructor::RecoParam()->GetTCnexp());
+	    }
+	}
 
       indexesIn->ResetTbinCounter();
       while (indexesIn->NextTbinIndex(iTime))

@@ -36,6 +36,7 @@
 #include "AliTRDdataArray.h"
 #include "AliTRDdataArrayI.h"
 #include "AliTRDdataArrayS.h"
+#include "AliTRDdataArrayDigits.h"
 #include "AliTRDdigit.h"
 #include "AliTRDgeometry.h"
 
@@ -156,7 +157,7 @@ void AliTRDdigitsManager::CreateArrays()
     fDigits = new AliTRDsegmentArray("AliTRDdataArrayF",AliTRDgeometry::Ndet());
   }
   else {
-    fDigits = new AliTRDsegmentArray("AliTRDdataArrayS",AliTRDgeometry::Ndet());
+    fDigits = new AliTRDsegmentArray("AliTRDdataArrayDigits",AliTRDgeometry::Ndet());
   }
 
   if (fUseDictionaries) {
@@ -220,7 +221,7 @@ Short_t AliTRDdigitsManager::GetDigitAmp(Int_t row, Int_t col,Int_t time
     return 0;
   }
 
-  return ((Short_t) ((AliTRDdataArrayS *) GetDigits(det))->GetData(row,col,time));
+  return ((Short_t) ((AliTRDdataArrayDigits *) GetDigits(det))->GetData(row,col,time));
 
 }
  
@@ -370,7 +371,7 @@ AliTRDdigit *AliTRDdigitsManager::GetDigit(Int_t row, Int_t col
   digits[2] = col;
   digits[3] = time;
 
-  amp[0]    = ((AliTRDdataArrayS *) GetDigits(det))->GetData(row,col,time);
+  amp[0]    = ((AliTRDdataArrayDigits *) GetDigits(det))->GetData(row,col,time);
   
   return (new AliTRDdigit(digits,amp));
 
@@ -401,7 +402,7 @@ Int_t AliTRDdigitsManager::GetTrack(Int_t track
 }
 
 //_____________________________________________________________________________
-AliTRDdataArray *AliTRDdigitsManager::GetDigits(Int_t det) const
+AliTRDdataArrayDigits *AliTRDdigitsManager::GetDigits(Int_t det) const
 {
   //
   // Returns the digits array for one detector
@@ -411,7 +412,7 @@ AliTRDdataArray *AliTRDdigitsManager::GetDigits(Int_t det) const
     return 0x0;
   }
 
-  return (AliTRDdataArray *) fDigits->At(det);
+  return (AliTRDdataArrayDigits *) fDigits->At(det);
 
 }
 
@@ -508,13 +509,13 @@ Bool_t AliTRDdigitsManager::BuildIndexes(Int_t det)
   Int_t nTbins = 0;
 
   AliTRDgeometry    geom;
-  AliTRDdataArrayS *digits = 0x0;
+  AliTRDdataArrayDigits *digits = 0x0;
 
   if (fHasSDigits) {
     return kFALSE;
   }
   else {
-    digits = (AliTRDdataArrayS *) GetDigits(det);
+    digits = (AliTRDdataArrayDigits *) GetDigits(det);
   }
 
   //digits should be expanded by now!!!

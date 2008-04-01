@@ -1,29 +1,3 @@
-/**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
-
-/* $Id: AliTRDdataArrayDigits.cxx,v 1.17 2006/08/28 14:37:05 cblume Exp $ */
-
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-// Container for TRD signals type of short taking pad masking into account   //
-//                                                                           //
-// Author:                                                                   // 
-//   Markus Fasel (markus.fasel@web.de)                                      //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
-
 #include <TROOT.h>
 
 #include "AliLog.h"
@@ -35,8 +9,7 @@
 ClassImp(AliTRDdataArrayDigits)
 
 //_____________________________________________________________________________
-AliTRDdataArrayDigits::AliTRDdataArrayDigits(Int_t nrow, Int_t ncol, Int_t ntime)
-                      :AliTRDdataArrayS(nrow, ncol, ntime)
+AliTRDdataArrayDigits::AliTRDdataArrayDigits(Int_t nrow, Int_t ncol, Int_t ntime): AliTRDdataArrayS(nrow, ncol, ntime)
 {
   //
   // Constructor
@@ -172,7 +145,7 @@ void AliTRDdataArrayDigits::SetPadStatus(Int_t row, Int_t col, Int_t time, UChar
   //               Bridged Left masking:    Bit 11(0), Bit 12(1)
   //               Bridged Right masking:   Bit 11(1), Bit 12(1)
   // 
-  Short_t signal = GetDataFast(GetIdx1Unchecked(col, row), time);
+  Short_t signal = GetDataFast(GetIdx1Unchecked(row, col), time);
   // only set the Pad Status if the signal is > 0
   if(signal > 0){
     switch(status)

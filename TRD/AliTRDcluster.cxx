@@ -29,14 +29,15 @@ ClassImp(AliTRDcluster)
 //___________________________________________________________________________
 AliTRDcluster::AliTRDcluster() 
   :AliCluster() 
-  ,fDetector(0)
-  ,fLocalTimeBin(0)
-  ,fQ(0)
-  ,fNPads(0)
-  ,fCenter(0)
   ,fPadCol(0)
   ,fPadRow(0)
   ,fPadTime(0)
+  ,fLocalTimeBin(0)
+  ,fNPads(0)
+  ,fClusterMasking(0)
+  ,fDetector(0)
+  ,fQ(0)
+  ,fCenter(0)
 { 
   //
   // Default constructor
@@ -55,14 +56,15 @@ AliTRDcluster::AliTRDcluster(Int_t det, Float_t q
                            , UChar_t col, UChar_t row, UChar_t time
                            , Char_t timebin, Float_t center, UShort_t volid)
   :AliCluster(volid,pos[0],pos[1],pos[2],sig[0],sig[1],0.0,0x0) 
-  ,fDetector(det)
-  ,fLocalTimeBin(timebin)
-  ,fQ(q)
-  ,fNPads(npads)
-  ,fCenter(center)
   ,fPadCol(col)
   ,fPadRow(row)
   ,fPadTime(time)
+  ,fLocalTimeBin(timebin)
+  ,fNPads(npads)
+  ,fClusterMasking(0)
+  ,fDetector(det)
+  ,fQ(q)
+  ,fCenter(center)
 { 
   //
   // Constructor
@@ -81,14 +83,15 @@ AliTRDcluster::AliTRDcluster(Int_t det, Float_t q
 //_____________________________________________________________________________
 AliTRDcluster::AliTRDcluster(const AliTRDcluster &c)
   :AliCluster(c)
-  ,fDetector(c.fDetector)
-  ,fLocalTimeBin(c.fLocalTimeBin)
-  ,fQ(c.fQ)
-  ,fNPads(c.fNPads)
-  ,fCenter(c.fCenter)
   ,fPadCol(c.fPadCol)
   ,fPadRow(c.fPadRow)
   ,fPadTime(c.fPadTime)
+  ,fLocalTimeBin(c.fLocalTimeBin)
+  ,fNPads(c.fNPads)
+  ,fClusterMasking(c.fClusterMasking)
+  ,fDetector(c.fDetector)
+  ,fQ(c.fQ)
+  ,fCenter(c.fCenter)
 {
   //
   // Copy constructor 
@@ -203,4 +206,34 @@ Float_t AliTRDcluster::GetSumS() const
 
   return sum;
 
+}
+
+//_____________________________________________________________________________
+void AliTRDcluster::SetPadMaskedPosition(UChar_t position)
+{
+  //
+  // store the pad corruption position code
+  // 
+  // Code: 1 = left cluster
+  //       2 = middle cluster;
+  //       4 = right cluster
+  //
+  for(Int_t ipos = 0; ipos < 3; ipos++)
+    if(TESTBIT(position, ipos))
+      SETBIT(fClusterMasking, ipos);
+}
+
+//_____________________________________________________________________________
+void AliTRDcluster::SetPadMaskedStatus(UChar_t status)
+{
+  //
+  // store the status of the corrupted pad
+  //
+  // Code: 2 = noisy
+  //       4 = Bridged Left
+  //       8 = Bridged Right
+  //      32 = Not Connected
+  for(Int_t ipos = 0; ipos < 5; ipos++)
+    if(TESTBIT(status, ipos))
+      SETBIT(fClusterMasking, ipos + 3);
 }

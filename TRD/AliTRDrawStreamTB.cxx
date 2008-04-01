@@ -766,7 +766,8 @@ AliTRDrawStreamTB::NextChamber(AliTRDdigitsManager *digitsManager)
 	  if ((GetSignals()[it] - adcBaseline) > 0)
 	    {
 	      digits->SetDataUnchecked(GetRow(), GetCol(), it, GetSignals()[it] - adcBaseline);
-	      digits->SetPadStatus(GetRow(), GetCol(), it, padStatus);
+	      if(padStatus)
+		digits->SetPadStatus(GetRow(), GetCol(), it, padStatus);
 	      	      
 	      indexes->AddIndexTBin(GetRow(), GetCol(), it);
               if (digitsManager->UsesDictionaries()) 

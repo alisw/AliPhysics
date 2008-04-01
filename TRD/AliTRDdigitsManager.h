@@ -17,6 +17,7 @@ class TTree;
 
 class AliTRDsegmentArray;
 class AliTRDdataArray;
+class AliTRDdataArrayDigits;
 class AliTRDdigit;
 class AliTRDSignalIndex;
 
@@ -56,7 +57,7 @@ class AliTRDdigitsManager : public TObject {
           Int_t               GetTrack(Int_t track, Int_t row, Int_t col
                                      , Int_t time, Int_t det) const;
 
-          AliTRDdataArray    *GetDigits(Int_t det) const;
+          AliTRDdataArrayDigits    *GetDigits(Int_t det) const;
           AliTRDdataArray    *GetDictionary(Int_t det, Int_t i) const;
 
 	  AliTRDSignalIndex  *GetIndexes(Int_t det);
