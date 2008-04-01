@@ -144,11 +144,11 @@ class AliMUONRecoParam : public AliDetectorRecoParam
   /// return kTRUE/kFALSE whether at least one cluster is requested in the station to validate the track
   Bool_t   RequestStation(Int_t iSt) const {return (iSt >= 0 && iSt < 5) ? fRequestStation[iSt] : kFALSE;}
   
+  /// set the bypassSt45 value
+  void BypassSt45(Bool_t value) { fBypassSt45 = value; }
   /// return kTRUE if we should replace clusters in St 4 and 5 by generated clusters from trigger tracks
   Bool_t BypassSt45() const { return fBypassSt45; }
   
-  /// set the bypassSt45 value
-  void BypassSt45(Bool_t value) { fBypassSt45 = value; }
   
   virtual void Print(Option_t *option = "") const;
   

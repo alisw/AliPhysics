@@ -126,6 +126,7 @@ void AliMUONRecoParam::SetLowFluxParam()
   fSigmaCutForImprovement = 5.;
   fSigmaCutForTrigger = 8.;
   fMaxNormChi2MatchTrigger = 16.;
+  fCombinedClusterTrackReco = kFALSE;
   fTrackAllTracks = kTRUE;
   fRecoverTracks = kTRUE;
   fMakeTrackCandidatesFast = kFALSE;
@@ -135,6 +136,7 @@ void AliMUONRecoParam::SetLowFluxParam()
   fUseSmoother = kTRUE;
   for (Int_t iCh = 0; iCh < 10; iCh++) fUseChamber[iCh] = kTRUE;
   for (Int_t iSt = 0; iSt < 5; iSt++) fRequestStation[iSt] = kTRUE;
+  fBypassSt45 = kFALSE;
   
 }
 
@@ -154,6 +156,7 @@ void AliMUONRecoParam::SetHighFluxParam()
   fSigmaCutForImprovement = 5.;
   fSigmaCutForTrigger = 8.;
   fMaxNormChi2MatchTrigger = 16.;
+  fCombinedClusterTrackReco = kFALSE;
   fTrackAllTracks = kTRUE;
   fRecoverTracks = kTRUE;
   fMakeTrackCandidatesFast = kFALSE;
@@ -163,6 +166,7 @@ void AliMUONRecoParam::SetHighFluxParam()
   fUseSmoother = kTRUE;
   for (Int_t iCh = 0; iCh < 10; iCh++) fUseChamber[iCh] = kTRUE;
   for (Int_t iSt = 0; iSt < 5; iSt++) fRequestStation[iSt] = kTRUE;
+  fBypassSt45 = kFALSE;
   
 }
 
@@ -273,6 +277,13 @@ void AliMUONRecoParam::Print(Option_t *option) const
     }
   } while (++st < 5);
   if (discardedSt) cout<<endl;
+  
+  if (strstr(option,"FULL")) {
+    cout<<"Bypass stations 4 and 5 (use trigger tracks as primary track candidates): ";
+    if (fBypassSt45) cout<<"ON"<<endl;
+    else cout<<"OFF"<<endl;
+  } else if (fBypassSt45)
+    cout<<"Bypass stations 4 and 5 (use trigger tracks as primary track candidates)"<<endl;
   
   
   cout<<"\t-------------------------------------"<<endl<<endl;

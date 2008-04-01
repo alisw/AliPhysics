@@ -30,6 +30,7 @@ public:
   AliMUONRefitter();
   virtual ~AliMUONRefitter();
   
+  /// connect to the ESD interface containing MUON data to refit
   void Connect(AliMUONESDInterface* esdInterface) {fESDInterface = esdInterface;}
   
   // re-reconstruct all tracks (clusters) in the ESD event
@@ -55,8 +56,6 @@ private:
   
   void                   CreateGeometryTransformer();
   void                   CreateClusterServer(AliMUONGeometryTransformer& transformer);
-  AliMUONVClusterFinder* CreateClusterFinder();
-  void                   CreateTrackReconstructor(AliMUONVClusterServer& clusterServer);
   
   void AddClusterToTracks(const AliMUONVClusterStore &localClusterStore, AliMUONVTrackStore &trackStore);
   
