@@ -501,7 +501,164 @@ AliTriggerClass *AliTriggerConfiguration::AddClass( TString &name, UChar_t index
 }
 
 //_____________________________________________________________________________
-AliTriggerConfiguration* AliTriggerConfiguration::LoadConfiguration( TString & configuration)
+Bool_t AliTriggerConfiguration::ProcessConfigurationLine(const char* line, Int_t& level)
+{
+    // processes one line of configuration
+
+     TString strLine(line);
+
+     if (strLine.BeginsWith("#")) return kTRUE;
+     if (strLine.BeginsWith("INPUTS:")) {
+       level = 1;
+       return kTRUE;
+     }
+     if (strLine.BeginsWith("INTERACTIONS:")) {
+       level = 2;
+       return kTRUE;
+     }
+     if (strLine.BeginsWith("DESCRIPTORS:")) {
+       level = 3;
+       return kTRUE;
+     }
+     if (strLine.BeginsWith("CLUSTERS:")) {
+       level = 4;
+       return kTRUE;
+     }
+     if (strLine.BeginsWith("PFS:")) {
+       level = 5;
+       return kTRUE;
+     }
+     if (strLine.BeginsWith("BCMASKS:")) {
+       level = 6;
+       return kTRUE;
+     }
+     if (strLine.BeginsWith("CLASSES:")) {
+       level = 7;
+       return kTRUE;
+     }
+
+     strLine.ReplaceAll("*",'!');
+     TObjArray *tokens = strLine.Tokenize(" \t");
+     Int_t ntokens = tokens->GetEntriesFast();
+     if (ntokens == 0)
+     {
+       delete tokens;
+       return kTRUE;
+     }
+     switch (level) {
+     case 1:
+       // Read inputs
+       if (ntokens != 5) {
+	 AliError(Form("Invalid trigger input syntax (%s)!",strLine.Data()));
+	 return kFALSE;
+       }
+       AddInput(((TObjString*)tokens->At(0))->String(),
+		     ((TObjString*)tokens->At(1))->String(),
+		     ((TObjString*)tokens->At(2))->String().Atoi(),
+		     ((TObjString*)tokens->At(3))->String().Atoi(),
+		     ((TObjString*)tokens->At(4))->String().Atoi());
+       break;
+     case 2:
+       // Read interaction
+       if (ntokens != 2) {
+	 AliError(Form("Invalid trigger interaction syntax (%s)!",strLine.Data()));
+	 return kFALSE;
+       }
+       AddInteraction(((TObjString*)tokens->At(0))->String(),
+			   ((TObjString*)tokens->At(1))->String());
+       break;
+     case 3:
+       // Read logical functions and descriptors
+       if (ntokens < 2) {
+	 AliError(Form("Invalid trigger descriptor syntax (%s)!",strLine.Data()));
+	 return kFALSE;
+       }
+       if (((TObjString*)tokens->At(0))->String().BeginsWith("l0f")) {
+	 // function
+	 AddFunction(((TObjString*)tokens->At(0))->String(),
+			  strLine.ReplaceAll(((TObjString*)tokens->At(0))->String(),""));
+       }
+       else {
+	 AddDescriptor(((TObjString*)tokens->At(0))->String(),
+			    strLine.ReplaceAll(((TObjString*)tokens->At(0))->String(),""));
+       }
+       break;
+     case 4:
+       {
+         if (ntokens < 2) {
+           AliError(Form("Invalid trigger cluster syntax (%s)!",strLine.Data()));
+           return kFALSE;
+         }
+	 TString strTemp;
+	 for(Int_t i = 2; i < ntokens; i++) {
+	   strTemp += ((TObjString*)tokens->At(i))->String();
+	   strTemp += " ";
+	 }
+	 AddCluster(((TObjString*)tokens->At(0))->String(),
+			 ((TObjString*)tokens->At(1))->String().Atoi(),
+			 strTemp);
+       }
+       break;
+     case 5:
+       {
+	 AliTriggerPFProtection *pfp = NULL;
+	 if (((TObjString*)tokens->At(0))->String().CompareTo("NONE") == 0) {
+	   pfp = new AliTriggerPFProtection(((TObjString*)tokens->At(0))->String());
+	 }
+	 else {
+           if (ntokens != 10) {
+  	     AliError(Form("Invalid trigger pfs syntax (%s)!",strLine.Data()));
+	     return kFALSE;
+           }
+	   pfp = new AliTriggerPFProtection(((TObjString*)tokens->At(0))->String(),
+					    ((TObjString*)tokens->At(1))->String(),
+					    ((TObjString*)tokens->At(2))->String(),
+					    ((TObjString*)tokens->At(3))->String());
+	   pfp->SetNa1(((TObjString*)tokens->At(4))->String().Atoi());
+	   pfp->SetNa2(((TObjString*)tokens->At(5))->String().Atoi());
+	   pfp->SetNb1(((TObjString*)tokens->At(6))->String().Atoi());
+	   pfp->SetNb2(((TObjString*)tokens->At(7))->String().Atoi());
+	   pfp->SetTa(((TObjString*)tokens->At(8))->String().Atoi());
+	   pfp->SetTb(((TObjString*)tokens->At(9))->String().Atoi());
+	 }
+	 AddPFProtection(pfp);
+       }
+       break;
+     case 6:
+         if (ntokens > 2) {
+  	   AliError(Form("Invalid trigger bcmasks syntax (%s)!",strLine.Data()));
+	   return kFALSE;
+         }
+       if (((TObjString*)tokens->At(0))->String().CompareTo("NONE") == 0)
+	 AddMask(new AliTriggerBCMask(((TObjString*)tokens->At(0))->String()));
+       else {
+	 AddMask(((TObjString*)tokens->At(0))->String(),
+		      ((TObjString*)tokens->At(1))->String());
+       }
+       break;
+     case 7:
+       {
+         if (ntokens != 8) {
+  	   AliError(Form("Invalid trigger class syntax (%s)!",strLine.Data()));
+	   return kFALSE;
+         }
+         AliTriggerClass *trclass = new AliTriggerClass(this,
+							((TObjString*)tokens->At(0))->String(),((TObjString*)tokens->At(1))->String().Atoi(),
+							((TObjString*)tokens->At(2))->String(),((TObjString*)tokens->At(3))->String(),
+							((TObjString*)tokens->At(4))->String(),((TObjString*)tokens->At(5))->String(),
+							((TObjString*)tokens->At(6))->String().Atoi(),(Bool_t)(((TObjString*)tokens->At(7))->String().Atoi()));
+	 AddClass(trclass);
+       }
+     default:
+       break;
+     }
+     delete tokens;
+
+     return kTRUE;
+}
+
+//_____________________________________________________________________________
+AliTriggerConfiguration* AliTriggerConfiguration::LoadConfiguration(TString & configuration)
 {
    // Load one pre-created Configurations from database/file that match
    // with the input string 'configuration'
@@ -539,133 +696,53 @@ AliTriggerConfiguration* AliTriggerConfiguration::LoadConfiguration( TString & c
    AliTriggerConfiguration *cfg = new AliTriggerConfiguration();
 
    Int_t level = 0;
+
    TString strLine;
    while (strLine.ReadLine(*file)) {
-     if (strLine.BeginsWith("#")) continue;
-     if (strLine.BeginsWith("INPUTS:")) {
-       level = 1;
-       continue;
+     if (cfg->ProcessConfigurationLine(strLine, level) == kFALSE)
+     {
+        delete cfg;
+        cfg = 0;
+        break;
      }
-     if (strLine.BeginsWith("INTERACTIONS:")) {
-       level = 2;
-       continue;
-     }
-     if (strLine.BeginsWith("DESCRIPTORS:")) {
-       level = 3;
-       continue;
-     }
-     if (strLine.BeginsWith("CLUSTERS:")) {
-       level = 4;
-       continue;
-     }
-     if (strLine.BeginsWith("PFS:")) {
-       level = 5;
-       continue;
-     }
-     if (strLine.BeginsWith("BCMASKS:")) {
-       level = 6;
-       continue;
-     }
-     if (strLine.BeginsWith("CLASSES:")) {
-       level = 7;
-       continue;
-     }
-     strLine.ReplaceAll("*",'!');
-     TObjArray *tokens = strLine.Tokenize(" \t");
-     Int_t ntokens = tokens->GetEntriesFast();
-     switch (level) {
-     case 1:
-       // Read inputs
-       if (ntokens != 5) {
-	 AliErrorClass(Form("Invalid trigger input syntax (%s)!",strLine.Data()));
-	 file->close();
-	 delete file;
-	 return NULL;
-       }
-       cfg->AddInput(((TObjString*)tokens->At(0))->String(),
-		     ((TObjString*)tokens->At(1))->String(),
-		     ((TObjString*)tokens->At(2))->String().Atoi(),
-		     ((TObjString*)tokens->At(3))->String().Atoi(),
-		     ((TObjString*)tokens->At(4))->String().Atoi());
-       break;
-     case 2:
-       // Read intreractions
-       cfg->AddInteraction(((TObjString*)tokens->At(0))->String(),
-			   ((TObjString*)tokens->At(1))->String());
-       break;
-     case 3:
-       // Read logical functions and descriptors
-       if (((TObjString*)tokens->At(0))->String().BeginsWith("l0f")) {
-	 // function
-	 cfg->AddFunction(((TObjString*)tokens->At(0))->String(),
-			  strLine.ReplaceAll(((TObjString*)tokens->At(0))->String(),""));
-       }
-       else {
-	 cfg->AddDescriptor(((TObjString*)tokens->At(0))->String(),
-			    strLine.ReplaceAll(((TObjString*)tokens->At(0))->String(),""));
-       }
-       break;
-     case 4:
-       {
-	 TString strTemp;
-	 for(Int_t i = 2; i < ntokens; i++) {
-	   strTemp += ((TObjString*)tokens->At(i))->String();
-	   strTemp += " ";
-	 }
-	 cfg->AddCluster(((TObjString*)tokens->At(0))->String(),
-			 ((TObjString*)tokens->At(1))->String().Atoi(),
-			 strTemp);
-       }
-       break;
-     case 5:
-       {
-	 AliTriggerPFProtection *pfp = NULL;
-	 if (((TObjString*)tokens->At(0))->String().CompareTo("NONE") == 0) {
-	   pfp = new AliTriggerPFProtection(((TObjString*)tokens->At(0))->String());
-	 }
-	 else {
-	   pfp = new AliTriggerPFProtection(((TObjString*)tokens->At(0))->String(),
-					    ((TObjString*)tokens->At(1))->String(),
-					    ((TObjString*)tokens->At(2))->String(),
-					    ((TObjString*)tokens->At(3))->String());
-	   pfp->SetNa1(((TObjString*)tokens->At(4))->String().Atoi());
-	   pfp->SetNa2(((TObjString*)tokens->At(5))->String().Atoi());
-	   pfp->SetNb1(((TObjString*)tokens->At(6))->String().Atoi());
-	   pfp->SetNb2(((TObjString*)tokens->At(7))->String().Atoi());
-	   pfp->SetTa(((TObjString*)tokens->At(8))->String().Atoi());
-	   pfp->SetTb(((TObjString*)tokens->At(9))->String().Atoi());
-	 }
-	 cfg->AddPFProtection(pfp);
-       }
-       break;
-     case 6:
-       if (((TObjString*)tokens->At(0))->String().CompareTo("NONE") == 0)
-	 cfg->AddMask(new AliTriggerBCMask(((TObjString*)tokens->At(0))->String()));
-       else {
-	 cfg->AddMask(((TObjString*)tokens->At(0))->String(),
-		      ((TObjString*)tokens->At(1))->String());
-       }
-       break;
-     case 7:
-       {
-	 AliTriggerClass *trclass = new AliTriggerClass(cfg,
-							((TObjString*)tokens->At(0))->String(),((TObjString*)tokens->At(1))->String().Atoi(),
-							((TObjString*)tokens->At(2))->String(),((TObjString*)tokens->At(3))->String(),
-							((TObjString*)tokens->At(4))->String(),((TObjString*)tokens->At(5))->String(),
-							((TObjString*)tokens->At(6))->String().Atoi(),(Bool_t)(((TObjString*)tokens->At(0))->String().Atoi()));
-	 cfg->AddClass(trclass);
-       }
-     default:
-       break;
-     }
-     delete tokens;
    }
 
    file->close();
    delete file;
 
    return cfg;
+}
 
+//_____________________________________________________________________________
+AliTriggerConfiguration* AliTriggerConfiguration::LoadConfigurationFromString(const char* configuration)
+{
+   // Loads configuration given as parameter <configuration>
+
+   if (!configuration)
+     return 0;
+
+   AliTriggerConfiguration *cfg = new AliTriggerConfiguration();
+
+   Int_t level = 0;
+
+   TObjArray* tokens = TString(configuration).Tokenize("\n");
+   for (Int_t i=0; i<tokens->GetEntries(); i++)
+   {
+     TObjString* str = dynamic_cast<TObjString*>(tokens->At(i));
+     if (!str)
+       continue;
+
+     if (cfg->ProcessConfigurationLine(str->String(), level) == kFALSE)
+     {
+        delete cfg;
+        cfg = 0;
+        break;
+     }
+   }
+
+   delete tokens;
+
+   return cfg;
 }
 
 //_____________________________________________________________________________

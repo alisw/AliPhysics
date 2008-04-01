@@ -96,8 +96,9 @@ public:
   //  Configurations Database (root file)
                   void    WriteConfiguration( const char* filename="" );
       static TObjArray*   GetAvailableConfigurations( const char* filename="" );
-      static
- AliTriggerConfiguration* LoadConfiguration( TString & des);
+
+      static AliTriggerConfiguration* LoadConfiguration(TString & des);
+      static AliTriggerConfiguration* LoadConfigurationFromString(const char* configuration);
 
       enum {kNMaxInputs = 50}; // CTP handles up to 50 trigger detector inputs
       enum {kNMaxInteractions = 2}; // CTP handles up to two different interactions
@@ -108,6 +109,8 @@ public:
       enum {kNMaxMasks = 4};  // CTP handles up to 4 different BC masks
 
 private:
+      Bool_t ProcessConfigurationLine(const char* line, Int_t& level);
+
       TObjArray            fInputs;                           // Array with active CTP inputs
       TObjArray            fInteractions;                     // Array with the trigger interactions
       TObjArray            fFunctions;                        // Array with the logical functions of the first 4 inputs
