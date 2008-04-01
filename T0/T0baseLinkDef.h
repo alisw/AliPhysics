@@ -23,5 +23,6 @@
 #pragma link C++ class  AliT0hit+;
 #pragma link C++ class  AliT0RawReader+;
 #pragma link C++ class  AliT0RawData+;
+#pragma link C++ class  AliT0Digitizer+;
 
 #endif

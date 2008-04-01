@@ -53,6 +53,7 @@ public:
     virtual void   SetTreeAddress();
    virtual void   MakeBranchInTreeD(TTree *treeD, const char *file=0);
    // virtual AliLoader* MakeLoader(const char* topfoldername);
+   virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;
    void  Digits2Raw ();
    void  Raw2Digits (AliRawReader *reader,TTree* digitsTree);
    virtual AliTriggerDetector* CreateTriggerDetector() const 

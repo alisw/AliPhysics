@@ -57,6 +57,7 @@
 //#include "AliT0Loader.h"
 #include "AliT0digit.h"
 #include "AliT0hit.h"
+#include "AliT0Digitizer.h"
 #include "AliT0RawData.h"
 #include "AliT0RecPoint.h"
 //#include "AliT0Parameters.h"
@@ -322,6 +323,11 @@ void AliT0::MakeBranchInTreeD(TTree *treeD, const char *file)
      }
 }
 
+//_____________________________________________________________________________
+AliDigitizer* AliT0::CreateDigitizer(AliRunDigitizer* manager) const
+{
+  return new AliT0Digitizer(manager);
+}
 //____________________________________________________________________________
 void AliT0::Digits2Raw()
 {

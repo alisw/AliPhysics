@@ -10,7 +10,6 @@
  
 #pragma link C++ class  AliT0v0+;
 #pragma link C++ class  AliT0v1+;
-#pragma link C++ class  AliT0Digitizer+;
 #pragma link C++ class  AliT0QADataMakerSim+;
 
 #endif
