@@ -8,7 +8,6 @@
 #pragma link off all classes;
 #pragma link off all functions;
  
- 
 #pragma link C++ class  AliT0+;
 #pragma link C++ class  AliT0digit+;
 #pragma link C++ class  AliT0Trigger+;
@@ -20,5 +19,9 @@
 #pragma link C++ class  AliT0LookUpKey+;
 #pragma link C++ class  AliT0Align+;
 #pragma link C++ class  AliT0QAChecker+;
+#pragma link C++ class  AliT0RecPoint+;
+#pragma link C++ class  AliT0hit+;
+#pragma link C++ class  AliT0RawReader+;
+#pragma link C++ class  AliT0RawData+;
 
 #endif

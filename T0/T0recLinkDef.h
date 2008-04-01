@@ -8,13 +8,7 @@
 #pragma link off all classes;
 #pragma link off all functions;
  
-#pragma link C++ typedef  AliSTARTRecPoint;
-#pragma link C++ typedef  AliSTARTReconstructor;
-#pragma link C++ typedef  AliSTARTRawReader;
- 
-#pragma link C++ class  AliT0RecPoint+;
 #pragma link C++ class  AliT0Reconstructor+;
-#pragma link C++ class  AliT0RawReader+;
 #pragma link C++ class  AliT0Calibrator+;
 #pragma link C++ class  AliT0CalibLaserData+;
 #pragma link C++ class  AliT0QADataMakerRec+;

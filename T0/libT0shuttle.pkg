@@ -8,3 +8,8 @@ HDRS:= $(SRCS:.cxx=.h)
 DHDR= T0shuttleLinkDef.h
 
 EINCLUDE:=RAW
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+                         -lT0base -lCDB -lSTEERBase
+endif

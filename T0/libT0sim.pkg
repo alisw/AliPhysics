@@ -1,10 +1,17 @@
 #-*- Mode: Makefile -*-
 # $Id$
 
-SRCS= AliT0v0.cxx AliT0v1.cxx AliT0hit.cxx AliT0Digitizer.cxx  AliT0RawData.cxx AliT0QADataMakerSim.cxx 
+SRCS= AliT0v0.cxx AliT0v1.cxx AliT0Digitizer.cxx AliT0QADataMakerSim.cxx 
 
 HDRS= $(SRCS:.cxx=.h)
 
 
 DHDR:= T0simLinkDef.h
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+                         -lT0base -lSTEER -lCDB -lSTEERBase \
+                         -lRAWDatabase \
+                         -L$(shell root-config --libdir) -lVMC -lGeom 
+endif
 

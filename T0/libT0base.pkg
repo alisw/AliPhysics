@@ -4,10 +4,18 @@
 SRCS=  AliT0.cxx AliT0digit.cxx AliT0Trigger.cxx \
        AliT0CalibData.cxx AliT0CalibTimeEq.cxx AliT0CalibWalk.cxx \
        AliT0Parameters.cxx AliT0LookUpValue.cxx AliT0LookUpKey.cxx \
-       AliT0Align.cxx AliT0QAChecker.cxx
+       AliT0Align.cxx AliT0QAChecker.cxx AliT0RecPoint.cxx AliT0hit.cxx \
+       AliT0RawReader.cxx   AliT0RawData.cxx
 
 HDRS= $(SRCS:.cxx=.h)
 
 
 DHDR:= T0baseLinkDef.h
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+                         -lSTEER -lCDB -lSTEERBase \
+                         -lRAWDatasim -lRAWDatarec -lRAWDatabase \
+                         -L$(shell root-config --libdir) -lGeom -lSpectrum
+endif
 
