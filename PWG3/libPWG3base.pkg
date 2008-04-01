@@ -1,7 +1,5 @@
 SRCS:= AliQuarkoniaAcceptance.cxx \
        AliQuarkoniaEfficiency.cxx \
-       AliD0toKpi.cxx  AliD0toKpiAnalysis.cxx \
-       AliBtoJPSItoEle.cxx  AliBtoJPSItoEleAnalysis.cxx \
        AliAODRecoDecayHF.cxx \
        AliAODRecoDecayHF2Prong.cxx  AliAODRecoDecayHF3Prong.cxx \
        AliAODRecoDecayHF4Prong.cxx \
