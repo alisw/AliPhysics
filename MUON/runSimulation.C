@@ -41,6 +41,12 @@ void runSimulation(int seed, int nevents, const char* config)
   MuonSim.SetSeed(seed);
   MuonSim.SetMakeTrigger("MUON");
   MuonSim.SetWriteRawData("MUON","raw.root",kTRUE);
+
+  MuonSim.SetMakeDigits("MUON");
+  MuonSim.SetMakeSDigits("MUON");
+  MuonSim.SetMakeDigitsFromHits("");
+
   MuonSim.Run(nevents);
   //gObjectTable->Print();
+
 }
