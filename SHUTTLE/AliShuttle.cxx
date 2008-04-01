@@ -1895,121 +1895,36 @@ AliShuttleLogbookEntry* AliShuttle::QueryRunParameters(Int_t run)
 	for (Int_t ii = 0; ii < aResult->GetFieldCount(); ii++)
 		entry->SetRunParameter(aResult->GetFieldName(ii), aRow->GetField(ii));
 
-	UInt_t startTime = entry->GetStartTime();
-	UInt_t endTime = entry->GetEndTime();
-
-	// the conditions under which runs are marked as done and not processed are not clear currently
-	// for the moment no runs are marked as done
-// 	if (!startTime || !endTime || startTime > endTime) 
-// 	{
-// 		Log("SHUTTLE",
-// 			Form("QueryRunParameters - Invalid parameters for Run %d: startTime = %d, endTime = %d. Skipping!",
-// 				run, startTime, endTime));		
-// 		
-// 		Log("SHUTTLE", Form("Marking SHUTTLE done for run %d", run));
-// 		fLogbookEntry = entry;	
-// 		if (!UpdateShuttleLogbook("shuttle_done"))
-// 		{
-// 			AliError(Form("Could not update logbook for run %d !", run));
-// 		}
-// 		fLogbookEntry = 0;
-// 				
-// 		delete entry;
-// 		delete aRow;
-// 		delete aResult;
-// 		return 0;
-// 	}
-
-// 	if (!startTime) 
-// 	{
-// 		Log("SHUTTLE",
-// 			Form("QueryRunParameters - Invalid parameters for Run %d: " 
-// 				"startTime = %d, endTime = %d. Skipping!",
-// 					run, startTime, endTime));		
-// 		
-// 		Log("SHUTTLE", Form("Marking SHUTTLE done for run %d", run));
-// 		fLogbookEntry = entry;	
-// 		if (!UpdateShuttleLogbook("shuttle_ignored"))
-// 		{
-// 			AliError(Form("Could not update logbook for run %d !", run));
-// 		}
-// 		fLogbookEntry = 0;
-// 				
-// 		delete entry;
-// 		delete aRow;
-// 		delete aResult;
-// 		return 0;
-// 	}
-	
-	if (startTime && !endTime) 
-	{
-		// TODO Here we don't mark SHUTTLE done, because this may mean 
-		//the run is still ongoing!!		
-		Log("SHUTTLE",
-			Form("QueryRunParameters - Invalid parameters for Run %d: "
-			     "startTime = %d, endTime = %d. Skipping (Shuttle won't be marked as DONE)!",
-					run, startTime, endTime));		
-		
-		//Log("SHUTTLE", Form("Marking SHUTTLE done for run %d", run));
-		//fLogbookEntry = entry;	
-		//if (!UpdateShuttleLogbook("shuttle_done"))
-		//{
-		//	AliError(Form("Could not update logbook for run %d !", run));
-		//}
-		//fLogbookEntry = 0;
-				
-		delete entry;
-		delete aRow;
-		delete aResult;
-		return 0;
-	}
-			
-	if (startTime && endTime && (startTime > endTime)) 
-	{
-		Log("SHUTTLE",
-			Form("QueryRunParameters - Invalid parameters for Run %d: "
-				"startTime = %d, endTime = %d. Skipping!",
-					run, startTime, endTime));		
-		
-		Log("SHUTTLE", Form("Marking SHUTTLE done for run %d", run));
-		fLogbookEntry = entry;	
-		if (!UpdateShuttleLogbook("shuttle_ignored"))
-		{
-			AliError(Form("Could not update logbook for run %d !", run));
-		}
-		fLogbookEntry = 0;
-				
-		delete entry;
-		delete aRow;
-		delete aResult;
-		return 0;
-	}
-			
-	TString totEventsStr = entry->GetRunParameter("totalEvents");  
-	Int_t totEvents = totEventsStr.Atoi();
-	if (totEvents < 1) 
-	{
-		Log("SHUTTLE",
-			Form("QueryRunParameters - Run %d has 0 events - Skipping!", run));		
-		
-		Log("SHUTTLE", Form("Marking SHUTTLE done for run %d", run));		
-		fLogbookEntry = entry;	
-		if (!UpdateShuttleLogbook("shuttle_ignored"))
-		{
-			AliError(Form("Could not update logbook for run %d !", run));
-		}
-		fLogbookEntry = 0;
-				
-		delete entry;
-		delete aRow;
-		delete aResult;
-		return 0;
-	}
-
 	delete aRow;
 	delete aResult;
+	
+	UInt_t startTime = entry->GetStartTime();
+	UInt_t endTime = entry->GetEndTime();
+	
+	TString totEventsStr = entry->GetRunParameter("totalEvents");  
+	Int_t totEvents = totEventsStr.Atoi();
+	
+	if (startTime != 0 && endTime != 0 && endTime > startTime && totEvents > 0)
+		return entry;	
 
-	return entry;
+	Log("SHUTTLE",
+		Form("QueryRunParameters - Invalid parameters for Run %d: "
+			"startTime = %d, endTime = %d. Skipping (Shuttle won't be marked as DONE)!",
+			run, startTime, endTime));		
+
+	if (totEvents < 1) 
+		Log("SHUTTLE", Form("QueryRunParameters - Run %d has 0 events - Skipping!", run));
+
+	//Log("SHUTTLE", Form("Marking SHUTTLE done for run %d", run));
+	//fLogbookEntry = entry;	
+	//if (!UpdateShuttleLogbook("shuttle_done"))
+	//{
+	//	AliError(Form("Could not update logbook for run %d !", run));
+	//}
+	//fLogbookEntry = 0;
+			
+	delete entry;
+	return 0;
 }
 
 //______________________________________________________________________________________________
