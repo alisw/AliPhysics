@@ -34,7 +34,10 @@ AliZDCPreprocessor::AliZDCPreprocessor(AliShuttleInterface* shuttle) :
   fData(0)
 {
   // constructor
+  AddRunType("STANDALONE_PEDESTAL");
+  AddRunType("STANDALONE_EMD");
 }
+
 
 //______________________________________________________________________________________________
 AliZDCPreprocessor::~AliZDCPreprocessor()
