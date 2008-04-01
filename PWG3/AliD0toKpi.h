@@ -15,6 +15,7 @@
 
 #include <TObject.h>
 #include <TMath.h>
+#include <TString.h>
 
 //----------------------------------------------------------------------------
 //     Some constants (masses + parameterized TOF PID)
