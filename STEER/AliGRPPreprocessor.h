@@ -31,6 +31,8 @@ class AliGRPPreprocessor: public AliPreprocessor {
   AliGRPPreprocessor(AliShuttleInterface* shuttle);
   virtual ~AliGRPPreprocessor();
   
+  static Int_t ReceivePromptRecoParameters(UInt_t run, const char* dbHost, Int_t dbPort, const char* dbName, const char* user, const char* password, const char* logbookTable, const char* triggerTable, const char *cdbRoot);
+
  protected:
 
   virtual void Initialize(Int_t run, UInt_t startTime, UInt_t endTime);
@@ -42,7 +44,7 @@ class AliGRPPreprocessor: public AliPreprocessor {
   UInt_t ProcessDcsFxs();
   TList *ProcessDcsDPs(TMap* valueSet);
   AliDCSSensorArray *GetPressureMap(TMap *dcsAliasMap, AliDCSSensorArray *fPressure);
-
+  
  private:
   static const char* fgkDCSDataPoints[12]; //! names of dcs dps
   AliDCSSensorArray *fPressure; //pressure array

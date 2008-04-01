@@ -44,6 +44,15 @@ class AliShuttleInterface;
 
 #include <TH1.h>
 
+// needed for ReceivePromptRecoParameters
+#include <TSQLServer.h>
+#include <TSQLResult.h>
+#include <TSQLRow.h>
+#include <AliCDBManager.h>
+#include <AliCDBMetaData.h>
+#include <AliCDBId.h>
+#include <AliTriggerConfiguration.h>
+
 const Double_t kFitFraction = 0.7;                 // Fraction of DCS sensor fits required
 
 ClassImp(AliGRPPreprocessor)
@@ -643,3 +652,151 @@ AliDCSSensorArray *AliGRPPreprocessor::GetPressureMap(TMap* dcsAliasMap, AliDCSS
   
   return result; 
   }*/
+
+  
+//_______________________________________________________________
+Int_t AliGRPPreprocessor::ReceivePromptRecoParameters(UInt_t run, const char* dbHost, Int_t dbPort, const char* dbName, const char* user, const char* password, const char* logbookTable, const char* triggerTable, const char *cdbRoot)
+{
+	//
+	// Retrieves logbook and trigger information from the online logbook 
+	// This information is needed for prompt reconstruction
+	//
+	// Parameters are:
+	// Run number
+	// DAQ params: dbHost, dbPort, dbName, user, password, logbookTable, triggerTable
+	// cdbRoot
+	//
+	// returns 0 on success
+	//         negative on error
+	//
+	// This function is NOT called during the preprocessor run in the Shuttle!
+	//
+		
+	// CDB connection
+	AliCDBManager* cdb = AliCDBManager::Instance();
+	cdb->SetDefaultStorage(cdbRoot);
+	
+	// SQL connection
+	TSQLServer* server = TSQLServer::Connect(Form("mysql://%s:%d/%s", dbHost, dbPort, dbName), user, password);
+	
+	if (!server)
+	{
+		Printf("ERROR: Could not connect to DAQ LB");
+		return -1;
+	}
+	
+	// main logbook
+	TString sqlQuery;
+	sqlQuery.Form("SELECT time_start, run_type, detectorMask FROM %s WHERE run = %d", logbookTable, run);
+	TSQLResult* result = server->Query(sqlQuery);
+	if (!result) 
+	{
+		Printf("ERROR: Can't execute query <%s>!", sqlQuery.Data());
+		return -2;
+	}
+
+	if (result->GetRowCount() == 0) 
+	{
+		Printf("ERROR: Run %d not found", run);
+		delete result;
+		return -3;
+	}
+
+	TSQLRow* row = result->Next();
+	if (!row)
+	{
+		Printf("ERROR: Could not receive data from run %d", run);
+		delete result;
+		return -4;
+	}
+	
+	TMap grpData;
+	grpData.Add(new TObjString("time_start"), new TObjString(row->GetField(0)));
+	grpData.Add(new TObjString("run_type"), new TObjString(row->GetField(1)));
+	grpData.Add(new TObjString("detectorMask"), new TObjString(row->GetField(2)));
+	
+	delete row;
+	row = 0;
+	
+	delete result;
+	result = 0;
+	
+	Printf("Storing GRP/GRP/Data object with the following content");
+	grpData.Print();
+
+	AliCDBMetaData metadata;
+	metadata.SetResponsible("Jan Fiete Grosse-Oetringhaus");
+	metadata.SetComment("GRP Output parameters received during online running");
+	
+	AliCDBId id("GRP/GRP/Data", run, run);
+	Bool_t success = cdb->Put(&grpData, id, &metadata);
+	
+	grpData.DeleteAll();
+	
+	if (!success)
+	{
+		Printf("ERROR: Could not store GRP/GRP/Data into OCDB");
+		return -5;
+	}
+	
+	sqlQuery.Form("SELECT configFile FROM %s WHERE run = %d", triggerTable, run);
+	result = server->Query(sqlQuery);
+	if (!result) 
+	{
+		Printf("ERROR: Can't execute query <%s>!", sqlQuery.Data());
+		return -11;
+	}
+
+	if (result->GetRowCount() == 0) 
+	{
+		Printf("ERROR: Run %d not found in logbook_trigger_config", run);
+		delete result;
+		return -12;
+	}
+
+	row = result->Next();
+	if (!row)
+	{
+		Printf("ERROR: Could not receive logbook_trigger_config data from run %d", run);
+		delete result;
+		return -13;
+	}
+	
+	TString triggerConfig(row->GetField(0));
+	
+	delete row;
+	row = 0;
+	
+	delete result;
+	result = 0;
+	
+	Printf("Found trigger configuration: %s", triggerConfig.Data());
+	
+	// add a function that takes the configuration from a string...
+	AliTriggerConfiguration *runcfg = AliTriggerConfiguration::LoadConfigurationFromString(triggerConfig);
+	if (!runcfg) 
+	{
+		Printf("ERROR: Could not create CTP configuration object");
+		return -14;
+	}
+	
+	metadata.SetComment("CTP run configuration received during online running");
+	
+	AliCDBId id2("GRP/CTP/Config", run, run);
+	success = cdb->Put(runcfg, id2, &metadata);
+	
+	delete runcfg;
+	runcfg = 0;
+	
+	if (!success)
+	{
+		Printf("ERROR: Could not store GRP/CTP/Config into OCDB");
+		return -15;
+	}
+	
+	server->Close();
+	delete server;
+	server = 0;
+	
+	return 0;
+}
