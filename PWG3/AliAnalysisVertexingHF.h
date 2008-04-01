@@ -29,7 +29,7 @@ class AliAnalysisVertexingHF : public TNamed {
   AliAnalysisVertexingHF& operator=(const AliAnalysisVertexingHF& source); 
   virtual ~AliAnalysisVertexingHF();
 
-  void FindCandidates(AliESDEvent *esd,TTree treeout[]);
+  void FindCandidates(AliESDEvent *esd,TTree *treeout[]);
   AliAODRecoDecayHF2Prong* Make2Prong(TObjArray *twoTrackArray1,AliESDEvent *esd,
 				     AliESDVertex *vertexp1n1,Double_t dcap1n1,
 				     Bool_t &okD0,Bool_t &okJPSI) const;
