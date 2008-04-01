@@ -95,6 +95,7 @@ Bool_t AliAODHandler::Init(Option_t* opt)
 Bool_t AliAODHandler::FinishEvent()
 {
     // Fill data structures
+    fAODEvent->MakeEntriesReferencable();
     FillTree();
     if (fIsStandard) fAODEvent->ResetStd();
     return kTRUE;
