@@ -38,13 +38,14 @@ void AliAnalysisTaskVertexingHFTest() {
   TChain* chain = tagAna->QueryTags(runCuts,lhcCuts,detCuts,eventCuts);
   */
  
-  //Temporary solution to avoid memory leaks : 
-  chain->SetBranchStatus("*FMD*",0);
-  chain->SetBranchStatus("*CaloClusters*",0);
-
   //Create tasks
   AliAnalysisManager *analManager = new AliAnalysisManager("myAnalysisManager");
   //analManager->SetDebugLevel(10);
+  // ESD input handler
+  AliESDInputHandler *esdHandler = new AliESDInputHandler();
+  esdHandler->SetInactiveBranches("FMD CaloCluster");
+  analManager->SetInputEventHandler(esdHandler);
+
   AliAnalysisTaskVertexingHF *task1 = new AliAnalysisTaskVertexingHF("myTask");
   analManager->AddTask(task1);
   //Create containers for input/output
@@ -58,7 +59,6 @@ void AliAnalysisTaskVertexingHFTest() {
   analManager->ConnectOutput(task1,1,coutput2);
   analManager->ConnectOutput(task1,2,coutput3);
   analManager->ConnectOutput(task1,3,coutput4);
-  cinput1->SetData(chain);
  
   printf("CHAIN HAS %d ENTRIES\n",(Int_t)chain->GetEntries());
   if (analManager->InitAnalysis()) {
