@@ -77,6 +77,13 @@ Bool_t AliAODInputHandler::Init(TTree* tree, Option_t* /*opt*/)
     return kTRUE;
 }
 
+Bool_t AliAODInputHandler::BeginEvent(Long64_t /*entry*/)
+{
+    //
+    if (fTree) fTree->BranchRef();
+    return kTRUE;
+}
+
 void AliAODInputHandler::AddFriend(char* filename)
 {
     // Add a friend tree 
