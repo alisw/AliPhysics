@@ -45,6 +45,7 @@
 
 #include <TRandom.h>
 #include <TF1.h>
+#include <TF2.h>
 #include <TClonesArray.h>
 #include <TRandom.h> 
 #include <TVirtualMC.h>
@@ -62,6 +63,7 @@ ClassImp(AliMUONv1)
 AliMUONv1::AliMUONv1() 
   : AliMUON(),
     fAngleEffect(kTRUE),
+    fMagEffect(kTRUE),
     fStepMaxInActiveGas(0.6),
     fStepSum(0x0),
     fDestepSum(0x0),
@@ -69,7 +71,8 @@ AliMUONv1::AliMUONv1()
     fTrackPosition(),
     fElossRatio(0x0),
     fAngleEffect10(0x0),
-    fAngleEffectNorma(0x0)
+    fAngleEffectNorma(0x0),
+    fMagAngleEffectNorma(0x0)
 {
 /// Default constructor
   
@@ -80,6 +83,7 @@ AliMUONv1::AliMUONv1()
 AliMUONv1::AliMUONv1(const char *name, const char* title)
 : AliMUON(name, title), 
     fAngleEffect(kTRUE),
+    fMagEffect(kTRUE),
     fStepMaxInActiveGas(0.6),
     fStepSum(0x0),
     fDestepSum(0x0),
@@ -87,7 +91,8 @@ AliMUONv1::AliMUONv1(const char *name, const char* title)
     fTrackPosition(),
     fElossRatio(0x0),
     fAngleEffect10(0x0),
-    fAngleEffectNorma(0x0)
+    fAngleEffectNorma(0x0),
+    fMagAngleEffectNorma(0x0)
 {
 /// Standard onstructor
 
@@ -126,6 +131,11 @@ AliMUONv1::AliMUONv1(const char *name, const char* title)
     fAngleEffectNorma->SetParameter(1,-6.809e-01);
     fAngleEffectNorma->SetParameter(2,5.151e-02);
     fAngleEffectNorma->SetParameter(3,-1.490e-03);
+
+    // Magnetic field effect: Normalisation form theta=16 degres (eq. 10 degrees B=0) to theta between -20 and 20 (Lamia Benhabib jun 2006 )  
+    // Angle with respect to the wires assuming that chambers are perpendicular to the z axis.
+    fMagAngleEffectNorma = new TF2("MagAngleEffectNorma","121.24/(([1]+[2]*abs(y))+[3]*abs(x-[0]*y)+[4]*abs((x-[0]*y)*(x-[0]*y))+[5]*abs((x-[0]*y)*(x-[0]*y)*(x-[0]*y))+[6]*abs((x-[0]*y)*(x-[0]*y)*(x-[0]*y)*(x-[0]*y)))",-20.0,20.0,-1.,1.);
+    fMagAngleEffectNorma->SetParameters(8.6995, 25.4022, 13.8822, 2.4717, 1.1551, -0.0624, 0.0012);
 }
 
 //___________________________________________
@@ -139,6 +149,7 @@ AliMUONv1::~AliMUONv1()
   delete fElossRatio;
   delete fAngleEffect10;
   delete fAngleEffectNorma; 
+  delete fMagAngleEffectNorma;
 }
 
 //__________________________________________________
@@ -392,10 +403,13 @@ void AliMUONv1::StepManager()
     Float_t sigmaEffectThetadegrees;
     Float_t eLossParticleELossMip;
     Float_t yAngleEffect=0.;
-    Float_t thetawires      =  TMath::Abs( TMath::ASin( TMath::Sin(TMath::Pi()-theta) * TMath::Sin(phi) ) );// We use Pi-theta because z is negative
+    Float_t thetawires      =  TMath::ASin( TMath::Sin(TMath::Pi()-theta) * TMath::Sin(phi) ) ;// We use Pi-theta because z is negative
+    Double_t bField[3] = {0};
+    fTrackPosition.Vect().GetXYZ(tmp);
+    gAlice->Field(tmp,bField);
 
-
-    if (fAngleEffect){
+    if (fAngleEffect && !fMagEffect){
+      thetawires = TMath::Abs(thetawires);
     if ( (betaxGamma >3.2)   &&  (thetawires*kRaddeg<=15.) ) {
       betaxGamma=TMath::Log(betaxGamma);
       eLossParticleELossMip = fElossRatio->Eval(betaxGamma);
@@ -408,23 +422,36 @@ void AliMUONv1::StepManager()
       yAngleEffect=1.e-04*gRandom->Gaus(0,sigmaEffectThetadegrees); // Error due to the angle effect in cm
     }
     }
-    
-    AliMUONHit hit(fIshunt, 
-			  gAlice->GetMCApp()->GetCurrentTrackNumber(), 
-			  detElemId, ipart,
-			  fTrackPosition.X(), 
-			  fTrackPosition.Y()+yAngleEffect, 
-			  fTrackPosition.Z(), 
-			  gMC->TrackTime(),
-			  fTrackMomentum.P(),
-			  theta, 
-			  phi, 
-			  fStepSum[idvol], 
-			  fDestepSum[idvol],                        
-			  fTrackPosition.X(),
-			  fTrackPosition.Y(),
-			  fTrackPosition.Z());
+    else if (fAngleEffect && fMagEffect) {
+      if ( (betaxGamma >3.2)   &&  (TMath::Abs(thetawires*kRaddeg)<=15.) ) {
+	betaxGamma=TMath::Log(betaxGamma);
+	eLossParticleELossMip = fElossRatio->Eval(betaxGamma);
+	// 10 degrees is a reference for a model (arbitrary)
+	sigmaEffect10degrees=fAngleEffect10->Eval(eLossParticleELossMip);// in micrometers
+	// Angle with respect to the wires assuming that chambers are perpendicular to the z axis.
+	sigmaEffectThetadegrees =  sigmaEffect10degrees/fMagAngleEffectNorma->Eval(thetawires*kRaddeg,bField[0]/10.);  // For 5mm gap  
+      if ( (iChamber==1)  ||  (iChamber==2) )  
+        sigmaEffectThetadegrees/=(1.09833e+00+1.70000e-02*(thetawires*kRaddeg)); // The gap is different (4mm)
+	yAngleEffect=1.e-04*gRandom->Gaus(0,sigmaEffectThetadegrees); // Error due to the angle effect in cm
+      }
+    }
 
+    AliMUONHit hit(fIshunt, 
+		   gAlice->GetMCApp()->GetCurrentTrackNumber(), 
+		   detElemId, ipart,
+		   fTrackPosition.X(), 
+		   fTrackPosition.Y()+yAngleEffect, 
+		   fTrackPosition.Z(), 
+		   gMC->TrackTime(),
+		   fTrackMomentum.P(),
+		   theta, 
+		   phi, 
+		   fStepSum[idvol], 
+		   fDestepSum[idvol],                        
+		   fTrackPosition.X(),
+		   fTrackPosition.Y(),
+		   fTrackPosition.Z());
+    
     fHitStore->Add(hit);
 
     fStepSum[idvol]  =0; // Reset for the next event

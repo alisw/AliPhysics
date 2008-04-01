@@ -16,6 +16,7 @@
 #include <TLorentzVector.h>
 
 class TF1;
+class TF2;
 class TGeoCombiTrans;
 class TString;
 class TGeoHMatrix;
@@ -39,6 +40,10 @@ class AliMUONv1 : public AliMUON
         /// Set option to take into account angle effect
    void SetAngleEffect(Bool_t Opt) 
      { fAngleEffect = Opt; }
+
+        /// Set option to take into account magnetic field effect
+   void SetMagEffect(Bool_t Opt) 
+     { fMagEffect = Opt; }
         
         /// Set max step max in active gas 
    void SetStepMaxInActiveGas(Float_t StepMax)
@@ -54,6 +59,7 @@ class AliMUONv1 : public AliMUON
    TString CurrentVolumePath() const;	     
 
    Bool_t  fAngleEffect;           ///< Angle Effect along wires, Default is true
+   Bool_t  fMagEffect;             ///< Magnetic Field Effect along wires, Default is true
    Float_t fStepMaxInActiveGas;    ///< Step max in active gas default 0.6cm
 
    // StepManager 
@@ -65,8 +71,9 @@ class AliMUONv1 : public AliMUON
    TF1 *          fElossRatio;    ///< Ratio of particle mean eloss with respect MIP's 
    TF1 *          fAngleEffect10; ///< Angle effect in tracking chambers at theta =10 degres as a function of ElossRatio (Khalil BOUDJEMLINE sep 2003 Ph.D Thesis) (in micrometers)  
    TF1 *          fAngleEffectNorma;///< Angle effect: Normalisation form theta=10 degres to theta between 0 and 10 (Khalil BOUDJEMLINE sep 2003 Ph.D Thesis)
-     
-   ClassDef(AliMUONv1,5)  // MUON Detector class Version 1
+   TF2 *          fMagAngleEffectNorma;///< Magnetic field effect: Normalisation from theta=16 degres to theta between -20 and 20 (Lamia Benhabib jun 2006 Master Thesis)
+    
+   ClassDef(AliMUONv1,6)  // MUON Detector class Version 1
 };
 #endif
 
