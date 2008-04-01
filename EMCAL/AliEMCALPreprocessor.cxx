@@ -79,6 +79,9 @@ AliEMCALPreprocessor::AliEMCALPreprocessor(AliShuttleInterface* shuttle):
 AliPreprocessor("EMC",shuttle)
 {
   // Constructor
+  AddRunType("PHYSICS");
+  AddRunType("STANDALONE");
+
 }
 
 //_______________________________________________________________________________________
