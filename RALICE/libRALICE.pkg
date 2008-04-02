@@ -1,3 +1,5 @@
+#-*- Mode: Makefile -*-
+
 SRCS=  Ali3Vector.cxx Ali4Vector.cxx AliBoost.cxx AliCalcluster.cxx \
 	AliCalmodule.cxx AliCalorimeter.cxx AliInvmass.cxx AliJet.cxx \
 	AliMath.cxx AliPosition.cxx AliRandom.cxx AliSample.cxx AliSignal.cxx \
@@ -12,3 +14,8 @@ DHDR:=RALICELinkDef.h
 
 PACKCXXFLAGS:=$(filter-out -Weffc++,$(CXXFLAGS))
 PACKDCXXFLAGS:=$(filter-out -Weffc++,$(CXXFLAGSNO))
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) \
+                         -L$(shell root-config --libdir) -lEG -lEGPythia6
+endif
