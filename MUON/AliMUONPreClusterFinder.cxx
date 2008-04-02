@@ -50,7 +50,8 @@ AliMUONPreClusterFinder::AliMUONPreClusterFinder()
   fClusters(0x0),
   fPads(0x0),
   fDetElemId(0),
-  fArea()
+  fArea(),
+  fShouldAbort(kFALSE)
 {
   /// ctor
 }
@@ -94,6 +95,8 @@ AliMUONPreClusterFinder::Prepare(Int_t detElemId,
   fDetElemId = detElemId;
   fArea = area;
   
+  fShouldAbort = kFALSE;
+  
   return kTRUE;
 }
 
@@ -102,6 +105,13 @@ void
 AliMUONPreClusterFinder::AddPad(AliMUONCluster& cluster, AliMUONPad* pad)
 {
   /// Add a pad to a cluster
+  
+  if ( cluster.Multiplicity() > 500 ) 
+  {
+    fShouldAbort = kTRUE;
+    return;
+  }
+  
   cluster.AddPad(*pad);
   
   Int_t cathode = pad->Cathode();
@@ -210,18 +220,29 @@ AliMUONPreClusterFinder::NextCluster()
     // Builds (recursively) a cluster on first cathode only
     AddPad(*cluster,pad);
     
-    // On the 2nd cathode, only add pads overlapping with the current cluster
-    TClonesArray& padArray = *fPads[1];
-    TIter next(&padArray);
-    AliMUONPad* testPad;
-  
-    while ( ( testPad = static_cast<AliMUONPad*>(next())))
+    if ( !ShouldAbort() ) 
     {
-      if (AreOverlapping(*testPad,*cluster) )
+      // On the 2nd cathode, only add pads overlapping with the current cluster
+      TClonesArray& padArray = *fPads[1];
+      TIter next(&padArray);
+      AliMUONPad* testPad;
+      
+      while ( ( testPad = static_cast<AliMUONPad*>(next())) && !ShouldAbort() )
       {
-        AddPad(*cluster,testPad);
+        if (AreOverlapping(*testPad,*cluster) )
+        {
+          AddPad(*cluster,testPad);
+        }
       }
     }
+  }
+  
+  if ( ShouldAbort() ) 
+  {
+    AliError("Aborting clustering of that DE because we've got too many pads");
+    fClusters->Remove(cluster);
+    fClusters->Compress();
+    return 0x0;
   }
   
   if ( cluster->Multiplicity() <= 1 )

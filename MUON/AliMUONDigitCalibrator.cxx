@@ -17,18 +17,20 @@
 
 #include "AliMUONDigitCalibrator.h"
 
+#include "AliLog.h"
 #include "AliMUONCalibrationData.h"
-#include "AliMUONVDigit.h"
-#include "AliMUONVDigitStore.h"
 #include "AliMUONLogger.h"
 #include "AliMUONPadStatusMaker.h"
 #include "AliMUONPadStatusMapMaker.h"
-#include "AliMUONVStore.h"
 #include "AliMUONVCalibParam.h"
+#include "AliMUONVDigit.h"
+#include "AliMUONVDigitStore.h"
+#include "AliMUONVStore.h"
+#include "AliMpBusPatch.h"
 #include "AliMpConstants.h"
-#include "AliMpDetElement.h"
 #include "AliMpDDLStore.h"
-#include "AliLog.h"
+#include "AliMpDEIterator.h"
+#include "AliMpDetElement.h"
 
 //-----------------------------------------------------------------------------
 /// \class AliMUONDigitCalibrator
@@ -68,7 +70,8 @@ fStatusMapMaker(0x0),
 fPedestals(0x0),
 fGains(0x0),
 fApplyGains(0),
-fCapacitances(0x0)
+fCapacitances(0x0),
+fNofChannelsPerDE(new TExMap)
 {
   /// ctor
   
@@ -127,6 +130,36 @@ fCapacitances(0x0)
   {
     fCapacitances = calib.Capacitances();
   }
+  
+  // FIXME: get the nof of channels per de directly within AliMpDetElement ?
+  // or use the AliMUONTrackerData class for that ?
+  
+  AliMpDEIterator it;
+  
+  it.First();
+  
+  while ( !it.IsDone() ) 
+  {
+    
+    AliMpDetElement* det = it.CurrentDE();
+    Int_t detElemId = det->GetId();
+    Int_t nchannels(0);
+    
+    for ( Int_t i = 0; i < det->GetNofBusPatches(); ++i ) 
+    {
+      Int_t busPatchId = det->GetBusPatchId(i);
+      AliMpBusPatch* bp = AliMpDDLStore::Instance()->GetBusPatch(busPatchId);
+      for ( Int_t j = 0; j < bp->GetNofManus(); ++j ) 
+      {
+        Int_t manuId = bp->GetManuId(j);
+        nchannels += det->NofChannelsInManu(manuId);
+      }        
+    }
+    
+    it.Next();
+    
+    fNofChannelsPerDE->Add((Long_t)detElemId,(Long_t)nchannels);
+  }
 }
 
 //_____________________________________________________________________________
@@ -140,6 +173,7 @@ AliMUONDigitCalibrator::~AliMUONDigitCalibrator()
   fLogger->Print();
 
   delete fLogger;
+  delete fNofChannelsPerDE;
 }
 
 //_____________________________________________________________________________
@@ -149,16 +183,39 @@ AliMUONDigitCalibrator::Calibrate(AliMUONVDigitStore& digitStore)
   /// Calibrate the digits contained in digitStore  
   TIter next(digitStore.CreateTrackerIterator());
   AliMUONVDigit* digit;
+  Int_t detElemId(-1);
+  Double_t nsigmas(3.0);
+  
+  AliDebug(1,Form("# of digits = %d",digitStore.GetSize()));
   
   while ( ( digit = static_cast<AliMUONVDigit*>(next() ) ) )
   {
-    CalibrateDigit(*digit);
+    if ( digit->DetElemId() != detElemId ) 
+    {
+      // Find out occupancy of that DE
+      detElemId = digit->DetElemId();
+      Double_t nchannels = fNofChannelsPerDE->GetValue(detElemId);
+      Double_t occ = digitStore.GetSize(detElemId)/nchannels;
+      if ( occ > 0.05 ) 
+      {
+        nsigmas = 10.0; // enlarge (a lot) sigma cut if occupancy is high
+        // (which probably means zero suppression was not exactly OK).
+        fLogger->Log(Form("Will use %5.0f*sigma cut for DE %04d "
+                          "due to high occupancy",nsigmas,detElemId));
+      }
+      else
+      {
+        nsigmas = 3.0;
+      }
+    }
+
+     CalibrateDigit(*digit,nsigmas);
   }
 }
 
 //_____________________________________________________________________________
 void
-AliMUONDigitCalibrator::CalibrateDigit(AliMUONVDigit& digit)
+AliMUONDigitCalibrator::CalibrateDigit(AliMUONVDigit& digit, Double_t nsigmas)
 {
   /// Calibrate one digit
   
@@ -247,7 +304,7 @@ AliMUONDigitCalibrator::CalibrateDigit(AliMUONVDigit& digit)
       }
     }
     
-    if ( padc > 3.0*pedestal->ValueAsFloat(manuChannel,1) ) 
+    if ( padc > nsigmas*pedestal->ValueAsFloat(manuChannel,1) ) 
     {
       if ( fApplyGains != fgkNoGain ) 
       {
