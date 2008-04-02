@@ -57,7 +57,7 @@ Float_t AliHMPIDHit::QdcTot(Float_t e)
   Float_t  x=(fLx > 66.6)? fLx-66.6:fLx;                                                             //sagita is for PC (0-64) and not for chamber   
   Float_t  qdcEle=34.06311+0.2337070*x+5.807476e-3*x*x-2.956471e-04*x*x*x+2.310001e-06*x*x*x*x;      //reparametrised from DiMauro
   
-  Int_t iNele=Int_t(e/26e-9);  if(iNele<1) iNele=1;                                                  //number of electrons created by hit
+  Int_t iNele=Int_t(e/26e-9);  if(iNele<1) return 0;                                                 //number of electrons created by hit
   fQ=0;
   for(Int_t i=1;i<=iNele;i++){
     Double_t rnd=gRandom->Rndm(); if(rnd==0) rnd=1e-12;                                              //1e-12 is a protection against 0 from rndm  

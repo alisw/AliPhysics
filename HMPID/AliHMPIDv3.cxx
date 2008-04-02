@@ -919,8 +919,10 @@ void AliHMPIDv3::StepManager()
       out[2]=0.5*(out[2]+in[2]);
       TString tmpname = volname;  tmpname.Remove(0,4);  Int_t idch = tmpname.Atoi();              //retrieve the chamber number
       Float_t xl,yl;AliHMPIDParam::Instance()->Mars2Lors(idch,out,xl,yl);                         //take LORS position
-      new((*fHits)[fNhits++])AliHMPIDHit(idch,eloss,pid,tid,xl,yl,out);                           //HIT for MIP, position near anod plane, eloss will be set to Q 
-      if(fDoFeed) GenFee(eloss);                                                                  //generate feedback photons 
+      if(eloss>0) {
+        new((*fHits)[fNhits++])AliHMPIDHit(idch,eloss,pid,tid,xl,yl,out);                           //HIT for MIP, position near anod plane, eloss will be set to Q 
+        if(fDoFeed) GenFee(eloss);                                                                  //generate feedback photons 
+      }
     }else                                                                                         //just going inside
       eloss          += gMC->Edep();                                                              //collect this step eloss 
   }//MIP in GAP
