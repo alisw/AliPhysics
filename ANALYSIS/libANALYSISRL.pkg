@@ -1,3 +1,5 @@
+#-*- Mode: Makefile -*-
+
 SRCS = AliAnalysisTaskRL.cxx
 
 HDRS:= $(SRCS:.cxx=.h) 
@@ -10,4 +12,9 @@ PACKCXXFLAGS := $(CXXFLAGS) -DWITHALIEN
 endif
 EXPORT:=$(SRCS:.cxx=.h)
 
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+                         -lANALYSIS -lSTEER \
+#                         -L$(shell root-config --libdir) -lGui
+endif
 

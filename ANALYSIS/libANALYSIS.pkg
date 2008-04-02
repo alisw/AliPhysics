@@ -14,9 +14,7 @@ DHDR= ANALYSISLinkDef.h
 EXPORT:=$(SRCS:.cxx=.h)
 
 ifeq (win32gcc,$(ALICE_TARGET))
-PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
-                         -lITSrec -lSTEER -lESD -lSTEERBase \
-                         -L$(shell root-config --libdir) -lTreePlayer -lXMLIO -lEG
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) -lSTEERBase
 endif
 
 

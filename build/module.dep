@@ -1,7 +1,7 @@
 #-*- Mode: Makefile -*-
 
 ALIROOT/module.mk:	ALIROOT/binaliroot.pkg 
-ANALYSIS/module.mk:	ANALYSIS/libANALYSIS.pkg ANALYSIS/libAnalysisOld.pkg ANALYSIS/libANALYSISRL.pkg ANALYSIS/libAliengui.pkg ANALYSIS/binaliengui.pkg
+ANALYSIS/module.mk:	ANALYSIS/libANALYSIS.pkg ANALYSIS/libANALYSISalice.pkg ANALYSIS/libAnalysisOld.pkg ANALYSIS/libANALYSISRL.pkg ANALYSIS/libAliengui.pkg ANALYSIS/binaliengui.pkg
 ACORDE/module.mk:	ACORDE/libACORDEbase.pkg ACORDE/libACORDErec.pkg ACORDE/libACORDEsim.pkg
 EMCAL/module.mk:	EMCAL/libEMCALbase.pkg EMCAL/libEMCALsim.pkg EMCAL/libEMCALrec.pkg EMCAL/libEMCALjet.pkg
 EVGEN/module.mk:	EVGEN/libEVGEN.pkg
@@ -135,4 +135,10 @@ $(LIBPATH)/libEMCALrec.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/lib
 $(LIBPATH)/libEMCALjet.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libESD.$(SOEXT) $(LIBPATH)/libSTEER.$(SOEXT) $(LIBPATH)/libEMCALBase.$(SOEXT) $(LIBPATH)/libmicrocern.$(SOEXT)
 $(LIBPATH)/libBCM.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libSTEER.$(SOEXT)
 $(LIBPATH)/libTEPEMGEN.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libSTEER.$(SOEXT) $(LIBPATH)/libEVGEN.$(SOEXT) $(LIBPATH)/libmicrocern.$(SOEXT)
+$(LIBPATH)/libTPHIC.$(SOEXT): $(LIBPATH)/libSTEER.$(SOEXT) $(LIBPATH)/libEVGEN.$(SOEXT) $(LIBPATH)/libAliPythia6.$(SOEXT) $(LIBPATH)/libpythia6.$(SOEXT)
+$(LIBPATH)/libANALYSIS.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT)
+$(LIBPATH)/libANALYSISalice.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libAOD.$(SOEXT) $(LIBPATH)/libESD.$(SOEXT) $(LIBPATH)/libANALYSIS.$(SOEXT) 
+$(LIBPATH)/libANALYSISRL.$(SOEXT): $(LIBPATH)/libSTEER.$(SOEXT) $(LIBPATH)/libANALYSIS.$(SOEXT) 
+$(LIBPATH)/libAnalysisOld.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libSTEER.$(SOEXT) $(LIBPATH)/libESD.$(SOEXT) $(LIBPATH)/libTPCrec.$(SOEXT) $(LIBPATH)/libITSrec.$(SOEXT)
+$(LIBPATH)/libAliengui.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libANALYSISalice.$(SOEXT) 
 endif

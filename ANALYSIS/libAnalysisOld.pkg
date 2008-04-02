@@ -36,6 +36,6 @@ EINCLUDE:= TPC ITS
 
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
-                         -lSTEER -lESD -lSTEERBase \
+                         -lSTEER -lESD -lSTEERBase -lTPCrec -lITSrec \
                          -L$(shell root-config --libdir) -lXMLIO -lEG
 endif
