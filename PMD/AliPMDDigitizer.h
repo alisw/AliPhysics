@@ -55,6 +55,7 @@ class AliPMDDigitizer:public AliDigitizer
   void SDigits2Digits(Int_t ievt);
   void Exec(Option_t *option);
   void MergeSDigits(Int_t filenumber, Int_t troffset);
+  void TrackAssignment2CPVCell();
   void TrackAssignment2Cell();
   void MeV2ADC(Float_t mev, Float_t & adc) const;
   void AddSDigit(Int_t trnumber, Int_t det, Int_t smnumber, 
@@ -87,8 +88,9 @@ class AliPMDDigitizer:public AliDigitizer
   TClonesArray *fSDigits;    //! List of summable digits
   TClonesArray *fDigits;     //! List of digits
 
+  TObjArray     fCPVCell;     //! List of cpv cells   
   TObjArray     fCell;       //! List of pmd cells
-
+  
   Int_t   fNsdigit;          // Summable digits counter
   Int_t   fNdigit;           // Digits counter
   Int_t   fDetNo;            // Detector Number (0:PRE, 1:CPV)
@@ -97,14 +99,22 @@ class AliPMDDigitizer:public AliDigitizer
   static const Int_t fgkTotUM = 24; // Total Unit modules in one detector
   static const Int_t fgkRow   = 48; // Total number of rows in one unitmodule
   static const Int_t fgkCol   = 96; // Total number of cols in one unitmodule
+
   Float_t fCPV[fgkTotUM][fgkRow][fgkCol]; //! CPV Array containing total edep
   Float_t fPRE[fgkTotUM][fgkRow][fgkCol]; //! PRE Array containing total edep
+  
+  Int_t   fCPVCounter[fgkTotUM][fgkRow][fgkCol]; //! Number of times each cell
+                                                 // is fired in CPV
   Int_t   fPRECounter[fgkTotUM][fgkRow][fgkCol]; //! Number of times each cell
                                                  // is fired in PMD
-  Int_t   fPRETrackNo[fgkTotUM][fgkRow][fgkCol]; //! PRE Array containing track number
-  Int_t   fCPVTrackNo[fgkTotUM][fgkRow][fgkCol]; //! CPV Array containing track number
 
-  ClassDef(AliPMDDigitizer,7)    // To digitize PMD Hits
+  Int_t   fCPVTrackNo[fgkTotUM][fgkRow][fgkCol]; //! CPV Array containing 
+                                                 //  track number
+  Int_t   fPRETrackNo[fgkTotUM][fgkRow][fgkCol]; //! PRE Array containing 
+                                                 //  track number
+
+  
+  ClassDef(AliPMDDigitizer,8)    // To digitize PMD Hits
 };
 #endif
 

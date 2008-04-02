@@ -69,6 +69,7 @@ AliPMDDigitizer::AliPMDDigitizer() :
   fCalibPed(GetCalibPed()),
   fSDigits(0),
   fDigits(0),
+  fCPVCell(0),
   fCell(0),
   fNsdigit(0),
   fNdigit(0),
@@ -85,9 +86,10 @@ AliPMDDigitizer::AliPMDDigitizer() :
 	    {
 	      fCPV[i][j][k] = 0.;
 	      fPRE[i][j][k] = 0.;
+	      fCPVCounter[i][j][k] =  0; 
 	      fPRECounter[i][j][k] =  0;
-	      fPRETrackNo[i][j][k] = -1;
 	      fCPVTrackNo[i][j][k] = -1;
+	      fPRETrackNo[i][j][k] = -1;
 	    }
 	}
     }
@@ -104,6 +106,7 @@ AliPMDDigitizer::AliPMDDigitizer(const AliPMDDigitizer& digitizer):
   fCalibPed(GetCalibPed()),
   fSDigits(0),
   fDigits(0),
+  fCPVCell(0),
   fCell(0),
   fNsdigit(0),
   fNdigit(0),
@@ -133,6 +136,7 @@ AliPMDDigitizer::AliPMDDigitizer(AliRunDigitizer* manager):
   fCalibPed(GetCalibPed()),
   fSDigits(new TClonesArray("AliPMDsdigit", 1000)),
   fDigits(new TClonesArray("AliPMDdigit", 1000)),
+  fCPVCell(0),
   fCell(0),
   fNsdigit(0),
   fNdigit(0),
@@ -150,9 +154,10 @@ AliPMDDigitizer::AliPMDDigitizer(AliRunDigitizer* manager):
 	    {
 	      fCPV[i][j][k] = 0.;
 	      fPRE[i][j][k] = 0.;
+	      fCPVCounter[i][j][k] =  0; 
 	      fPRECounter[i][j][k] =  0;
-	      fPRETrackNo[i][j][k] = -1;
 	      fCPVTrackNo[i][j][k] = -1;
+	      fPRETrackNo[i][j][k] = -1;
 	    }
 	}
     }
@@ -173,6 +178,7 @@ AliPMDDigitizer::~AliPMDDigitizer()
     delete fDigits;
     fDigits=0;
   }
+  fCPVCell.Delete();
   fCell.Delete();
 }
 //
@@ -300,7 +306,7 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
       if (fPMD)
 	{
 	  npmd = hits->GetEntriesFast();
-	  for (int ipmd = 0; ipmd < npmd; ipmd++)
+	  for (Int_t ipmd = 0; ipmd < npmd; ipmd++)
 	    {
 	      fPMDHit = (AliPMDhit*) hits->UncheckedAt(ipmd);
 	      trackno = fPMDHit->GetTrack();
@@ -308,15 +314,10 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
 
 	      TParticle* mparticle = gAlice->GetMCApp()->Particle(trackno);
 	      trackpid  = mparticle->GetPdgCode();
-
-	      Int_t igatr = -999;
-	      Int_t ichtr = -999;
-	      Int_t igapid = -999;
+	      Int_t  ks = mparticle->GetStatusCode();
 	      Int_t imo;
-	      Int_t igen = 0;
-	      Int_t idmo = -999;
-
 	      Int_t tracknoOld=0, trackpidOld=0, statusOld = 0;
+	      
 	      if (mparticle->GetFirstMother() == -1)
 		{
 		  tracknoOld  = trackno;
@@ -324,51 +325,39 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
 		  statusOld   = -1;
 		}
 	      Int_t igstatus = 0;
-	      while((imo = mparticle->GetFirstMother()) >= 0)
+	      //------------------modified by Mriganka ----------------------
+	      if(ks==1||(imo = mparticle->GetFirstMother())<0 ){
+		vx = mparticle->Vx();
+		vy = mparticle->Vy();
+		vz = mparticle->Vz();
+		
+		if(trackpid==kGamma||trackpid==11||trackpid==-11||
+		   trackpid==kPi0)igstatus=1;
+	      }
+	      
+	      
+	      while(((imo = mparticle->GetFirstMother()) >= 0)&& 
+		    (ks = mparticle->GetStatusCode() <1) )
 		{
-		  igen++;
-
 		  mparticle =  gAlice->GetMCApp()->Particle(imo);
-		  idmo = mparticle->GetPdgCode();
-		  
+		  trackpid = mparticle->GetPdgCode();
+		  ks = mparticle->GetStatusCode();
 		  vx = mparticle->Vx();
 		  vy = mparticle->Vy();
 		  vz = mparticle->Vz();
-		
-		  //printf("==> Mother ID %5d %5d %5d Vertex: %13.3f %13.3f %13.3f\n", igen, imo, idmo, vx, vy, vz);
-		  //fprintf(fpw1,"==> Mother ID %5d %5d %5d Vertex: %13.3f %13.3f %13.3f\n", igen, imo, idmo, vx, vy, vz);
-		  if ((idmo == kGamma || idmo == -11 || idmo == 11) && vx == 0. && vy == 0. && vz == 0.)
-		    {
-		      igatr = imo;
-		      igapid = idmo;
-		      igstatus = 1;
+		  
+		  trackno=imo;
+		  		
 		    }
-		  if(igstatus == 0)
-		    {
-		      if (idmo == kPi0 && vx == 0. && vy == 0. && vz == 0.)
-			{
-			  igatr = imo;
-			  igapid = idmo;
-			}
-		    }
-		  ichtr = imo;
-		}
-
-	      if (idmo == kPi0 && vx == 0. && vy == 0. && vz == 0.)
-		{
-		  mtrackno = igatr;
-		  mtrackpid = igapid;
-		}
-	      else
-		{
-		  mtrackno  = ichtr;
-		  mtrackpid = idmo;
-		}
-	      if (statusOld == -1)
-		{
-		  mtrackno  = tracknoOld;
-		  mtrackpid = trackpidOld;
-		}
+	 
+	      if(trackpid==kGamma||trackpid==11||trackpid==-11||
+		 trackpid==kPi0)igstatus=1;
+	      mtrackpid=trackpid;
+	      mtrackno=trackno;
+	      trackpid=trackpidOld;
+	      trackno=tracknoOld;
+	      
+	      //-----------------end of modification----------------
 	      xPos = fPMDHit->X();
 	      yPos = fPMDHit->Y();
 	      zPos = fPMDHit->Z();
@@ -429,12 +418,14 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
 	      else if(fDetNo == 1)
 		{
 		  fCPV[smn][ixx][iyy] += edep;
-		  fCPVTrackNo[smn][ixx][iyy] = mtrackno;
+		  fCPVCounter[smn][ixx][iyy]++;
+		  AliPMDcell* cpvcell = new AliPMDcell(mtrackno,smn,ixx,iyy,edep); 
+		  fCPVCell.Add(cpvcell);
 		}
 	    }
 	}
     } // Track Loop ended
-
+  TrackAssignment2CPVCell();
   TrackAssignment2Cell();
   ResetCell();
 
@@ -540,7 +531,7 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
       if (fPMD)
 	{
 	  npmd = hits->GetEntriesFast();
-	  for (int ipmd = 0; ipmd < npmd; ipmd++)
+	  for (Int_t ipmd = 0; ipmd < npmd; ipmd++)
 	    {
 	      fPMDHit = (AliPMDhit*) hits->UncheckedAt(ipmd);
 	      trackno = fPMDHit->GetTrack();
@@ -549,14 +540,8 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
 	      
 	      TParticle* mparticle = gAlice->GetMCApp()->Particle(trackno);
 	      trackpid  = mparticle->GetPdgCode();
-
-	      Int_t igatr = -999;
-	      Int_t ichtr = -999;
-	      Int_t igapid = -999;
+	      Int_t  ks = mparticle->GetStatusCode();
 	      Int_t imo;
-	      Int_t igen = 0;
-	      Int_t idmo = -999;
-
 	      Int_t tracknoOld=0, trackpidOld=0, statusOld = 0;
 	      if (mparticle->GetFirstMother() == -1)
 		{
@@ -566,52 +551,39 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
 		}
 
 	      Int_t igstatus = 0;
-	      while((imo = mparticle->GetFirstMother()) >= 0)
+	      //-----------------------modified by Mriganka ------------------
+	      if(ks==1||(imo = mparticle->GetFirstMother())<0 ){
+		vx = mparticle->Vx();
+		vy = mparticle->Vy();
+		vz = mparticle->Vz();
+		
+		if(trackpid==kGamma||trackpid==11||trackpid==-11||trackpid==kPi0)
+		  igstatus=1;
+	      }
+	      
+	      
+	      while(((imo = mparticle->GetFirstMother()) >= 0)&& 
+		    (ks = mparticle->GetStatusCode() <1) )
 		{
-		  igen++;
-
 		  mparticle =  gAlice->GetMCApp()->Particle(imo);
-		  idmo = mparticle->GetPdgCode();
-		  
+		  trackpid = mparticle->GetPdgCode();
+		  ks = mparticle->GetStatusCode();
 		  vx = mparticle->Vx();
 		  vy = mparticle->Vy();
 		  vz = mparticle->Vz();
-		
-		  //printf("==> Mother ID %5d %5d %5d Vertex: %13.3f %13.3f %13.3f\n", igen, imo, idmo, vx, vy, vz);
-		  //fprintf(fpw1,"==> Mother ID %5d %5d %5d Vertex: %13.3f %13.3f %13.3f\n", igen, imo, idmo, vx, vy, vz);
-		  if ((idmo == kGamma || idmo == -11 || idmo == 11) && vx == 0. && vy == 0. && vz == 0.)
-		    {
-		      igatr = imo;
-		      igapid = idmo;
-		      igstatus = 1;
+		  
+		  trackno=imo;
+		  		
 		    }
-		  if(igstatus == 0)
-		    {
-		      if (idmo == kPi0 && vx == 0. && vy == 0. && vz == 0.)
-			{
-			  igatr = imo;
-			  igapid = idmo;
-			}
-		    }
-		  ichtr = imo;
-		}
-
-	      if (idmo == kPi0 && vx == 0. && vy == 0. && vz == 0.)
-		{
-		  mtrackno = igatr;
-		  mtrackpid = igapid;
-		}
-	      else
-		{
-		  mtrackno  = ichtr;
-		  mtrackpid = idmo;
-		}
-	      if (statusOld == -1)
-		{
-		  mtrackno  = tracknoOld;
-		  mtrackpid = trackpidOld;
-		}
+	 
+	      if(trackpid==kGamma||trackpid==11||trackpid==-11||trackpid==kPi0)
+		igstatus=1;
+	      mtrackpid=trackpid;
+	      mtrackno=trackno;
+	      trackpid=trackpidOld;
+	      trackno=tracknoOld;
 	      
+	      //-----------------end of modification----------------
 	      xPos = fPMDHit->X();
 	      yPos = fPMDHit->Y();
 	      zPos = fPMDHit->Z();
@@ -672,12 +644,14 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
 	      else if(fDetNo == 1)
 		{
 		  fCPV[smn][ixx][iyy] += edep;
-		  fCPVTrackNo[smn][ixx][iyy] = mtrackno;
+		  fCPVCounter[smn][ixx][iyy]++;
+		  AliPMDcell* cpvcell = new AliPMDcell(mtrackno,smn,ixx,iyy,edep); 
+		  fCPVCell.Add(cpvcell);
 		}
 	    }
 	}
     } // Track Loop ended
-
+  TrackAssignment2CPVCell();
   TrackAssignment2Cell();
   ResetCell();
 
@@ -943,6 +917,206 @@ void AliPMDDigitizer::Exec(Option_t *option)
   ResetCellADC();
 }
 //____________________________________________________________________________
+void AliPMDDigitizer::TrackAssignment2CPVCell()
+{
+  // This block assigns the cell id when there are
+  // multiple tracks in a cell according to the
+  // energy deposition
+  // This method added by Ajay
+  Bool_t jsort = false;
+
+  Int_t i, j, k;
+
+  Int_t   *status1;
+  Int_t   *status2;
+  Int_t   *trnarray;  
+  Float_t *fracEdp;
+  Float_t *trEdp;
+  
+  Int_t   ****cpvTrack;
+  Float_t ****cpvEdep;
+
+  cpvTrack = new Int_t ***[fgkTotUM];
+  cpvEdep  = new Float_t ***[fgkTotUM];
+  for (i=0; i<fgkTotUM; i++)
+    {
+      cpvTrack[i] = new Int_t **[fgkRow];
+      cpvEdep[i]  = new Float_t **[fgkRow];
+    }
+
+  for (i = 0; i < fgkTotUM; i++)
+    {
+      for (j = 0; j < fgkRow; j++)
+	{
+	  cpvTrack[i][j] = new Int_t *[fgkCol];
+	  cpvEdep[i][j]  = new Float_t *[fgkCol];
+	}
+    }
+  for (i = 0; i < fgkTotUM; i++)
+    {
+      for (j = 0; j < fgkRow; j++)
+	{
+	  for (k = 0; k < fgkCol; k++)
+	    {
+	      Int_t nn = fCPVCounter[i][j][k];
+	      if(nn > 0)
+		{
+		  cpvTrack[i][j][k] = new Int_t[nn];
+		  cpvEdep[i][j][k] = new Float_t[nn];
+		}
+	      else
+		{
+		  nn = 1;
+		  cpvTrack[i][j][k] = new Int_t[nn];
+		  cpvEdep[i][j][k] = new Float_t[nn];
+		}		      
+	      fCPVCounter[i][j][k] = 0;
+	    }
+	}
+    }
+
+
+  Int_t nentries = fCPVCell.GetEntries();
+ 
+  Int_t   mtrackno, ism, ixp, iyp;
+  Float_t edep;
+  for (i = 0; i < nentries; i++)
+    {
+      AliPMDcell* cpvcell = (AliPMDcell*)fCPVCell.UncheckedAt(i);
+      
+      mtrackno = cpvcell->GetTrackNumber();
+      ism      = cpvcell->GetSMNumber();
+      ixp      = cpvcell->GetX();
+      iyp      = cpvcell->GetY();
+      edep     = cpvcell->GetEdep();
+      Int_t nn = fCPVCounter[ism][ixp][iyp];
+      cpvTrack[ism][ixp][iyp][nn] = (Int_t) mtrackno;
+      cpvEdep[ism][ixp][iyp][nn] = edep;
+      fCPVCounter[ism][ixp][iyp]++;
+    }
+  
+  Int_t iz, il;
+  Int_t im, ix, iy;
+  Int_t nn;
+  for (im=0; im<fgkTotUM; im++)
+    {
+      for (ix=0; ix<fgkRow; ix++)
+	{
+	  for (iy=0; iy<fgkCol; iy++)
+	    {
+	      nn = fCPVCounter[im][ix][iy];
+	      if (nn > 1)
+		{
+		  // This block handles if a cell is fired
+		  // many times by many tracks
+		  status1  = new Int_t[nn];
+		  status2  = new Int_t[nn];
+		  trnarray = new Int_t[nn];
+		  for (iz = 0; iz < nn; iz++)
+		    {
+		      status1[iz] = cpvTrack[im][ix][iy][iz];
+		    }
+		  TMath::Sort(nn,status1,status2,jsort);
+		  Int_t trackOld = -99999;
+		  Int_t track, trCount = 0;
+		  for (iz = 0; iz < nn; iz++)
+		    {
+		      track = status1[status2[iz]];
+		      if (trackOld != track)
+			{
+			  trnarray[trCount] = track;
+			  trCount++;
+			}			      
+		      trackOld = track;
+		    }
+		  delete [] status1;
+		  delete [] status2;
+		  Float_t totEdp = 0.;
+		  trEdp = new Float_t[trCount];
+		  fracEdp = new Float_t[trCount];
+		  for (il = 0; il < trCount; il++)
+		    {
+		      trEdp[il] = 0.;
+		      track = trnarray[il];
+		      for (iz = 0; iz < nn; iz++)
+			{
+			  if (track == cpvTrack[im][ix][iy][iz])
+			    {
+			      trEdp[il] += cpvEdep[im][ix][iy][iz];
+			    }
+			}
+		      totEdp += trEdp[il];
+		    }
+		  Int_t ilOld = 0;
+		  Float_t fracOld = 0.;
+		  
+		  for (il = 0; il < trCount; il++)
+		    {
+		      fracEdp[il] = trEdp[il]/totEdp;
+		      if (fracOld < fracEdp[il])
+			{
+			  fracOld = fracEdp[il];
+			  ilOld = il;
+			}
+		    }
+		  fCPVTrackNo[im][ix][iy] = trnarray[ilOld];
+		  delete [] fracEdp;
+		  delete [] trEdp;
+		  delete [] trnarray;
+		}
+	      else if (nn == 1)
+		{
+		  // This only handles if a cell is fired
+		  // by only one track
+		  
+		  fCPVTrackNo[im][ix][iy] = cpvTrack[im][ix][iy][0];
+		  
+		}
+	      else if (nn ==0)
+		{
+		  // This is if no cell is fired
+		  fCPVTrackNo[im][ix][iy] = -999;
+		}
+	    } // end of iy
+	} // end of ix
+    } // end of im
+  
+  // Delete all the pointers
+  
+ for (i = 0; i < fgkTotUM; i++)
+    {
+      for (j = 0; j < fgkRow; j++)
+	{
+	  for (k = 0; k < fgkCol; k++)
+	    {
+	      delete []cpvTrack[i][j][k];
+	      delete []cpvEdep[i][j][k];
+	    }
+	}
+    }
+ 
+  for (i = 0; i < fgkTotUM; i++)
+    {
+      for (j = 0; j < fgkRow; j++)
+	{
+	  delete [] cpvTrack[i][j];
+	  delete [] cpvEdep[i][j];
+	}
+    }
+  
+  for (i = 0; i < fgkTotUM; i++)
+    {
+      delete [] cpvTrack[i];
+      delete [] cpvEdep[i];
+    }
+  delete [] cpvTrack;
+  delete [] cpvEdep;
+  
+  // 
+  // End of the cell id assignment
+  //
+}
+//____________________________________________________________________________
 
 void AliPMDDigitizer::MergeSDigits(Int_t filenumber, Int_t troffset)
 {
@@ -1008,11 +1182,12 @@ void AliPMDDigitizer::TrackAssignment2Cell()
 
   Int_t i, j, k;
 
+  Int_t   *status1;
+  Int_t   *status2;
+  Int_t   *trnarray;
   Float_t *fracEdp;
   Float_t *trEdp;
-  Int_t *status1;
-  Int_t *status2;
-  Int_t *trnarray;
+  
   Int_t   ****pmdTrack;
   Float_t ****pmdEdep;
 
@@ -1203,37 +1378,27 @@ void AliPMDDigitizer::MeV2ADC(Float_t mev, Float_t & adc) const
 {
   // This converts the simulated edep to ADC according to the
   // Test Beam Data
-  // To be done
-  //
-
-  // PS Test in September 2003
-  // MeV - ADC conversion for 10bit ADC
-
-  const Float_t kConstant   = 7.181;
-  const Float_t kErConstant = 0.6899;
-  const Float_t kSlope      = 35.93;
-  const Float_t kErSlope    = 0.306;
-
-  //gRandom->SetSeed();
-
+  //PS Test in September 2003 and 2006
+  // KeV - ADC conversion for 12bit ADC
+  // Modified by Ajay
+  const Float_t kConstant   = 9.0809;
+  const Float_t kErConstant = 1.6763;
+  const Float_t kSlope      = 128.348;
+  const Float_t kErSlope    = 0.4703;
+  
   Float_t cons   = gRandom->Gaus(kConstant,kErConstant);
   Float_t slop   = gRandom->Gaus(kSlope,kErSlope);
-
-  Float_t adc10bit = slop*mev*0.001 + cons;
-
-  // 12 bit adc
-
-  Int_t adc12bit = (Int_t) (4.0*adc10bit);
-
-  if(adc12bit < 3000)
+  
+  Float_t adc12bit = slop*mev*0.001 + cons;
+  
+  if(adc12bit < 1600.0)
     {
       adc = (Float_t) adc12bit;
     }
-  else if (adc12bit >= 3000)
+  else if (adc12bit >= 1600.0)
     {
-      adc = 3000.0;
+      adc = 1600.0;
     }
-
 }
 //____________________________________________________________________________
 void AliPMDDigitizer::AddSDigit(Int_t trnumber, Int_t det, Int_t smnumber,
@@ -1274,6 +1439,7 @@ void AliPMDDigitizer::ResetCell()
   // clears the cell array and also the counter
   //  for each cell
   //
+  fCPVCell.Delete();
   fCell.Delete();
   for (Int_t i = 0; i < fgkTotUM; i++)
     {
@@ -1281,6 +1447,7 @@ void AliPMDDigitizer::ResetCell()
 	{
 	  for (Int_t k = 0; k < fgkCol; k++)
 	    {
+	      fCPVCounter[i][j][k] = 0; 
 	      fPRECounter[i][j][k] = 0;
 	    }
 	}
@@ -1313,8 +1480,8 @@ void AliPMDDigitizer::ResetCellADC()
 	    {
 	      fCPV[i][j][k] = 0.;
 	      fPRE[i][j][k] = 0.;
-	      fPRETrackNo[i][j][k] = 0;
 	      fCPVTrackNo[i][j][k] = 0;
+	      fPRETrackNo[i][j][k] = 0;
 	    }
 	}
     }
