@@ -28,23 +28,20 @@ class TH2;
 
 /**
  * @class AliHLTTPCNoiseMapComponent
- * Implementation of the component to fill histograms with TPC noise by request.
+ * Implementation of the component to fill histograms with TPC noise and read
+ * the noise map from OCDB by request.
  * The component implements the interface methods of the @ref AliHLTProcessor.
  * It reads the data pad by pad and fills histograms. The output is unpacked and 
  * sent to the clulsterfinder.
  * 
  * The component has the following component arguments:
- * - adc-threshold   ADC count threshold for zero suppression.
+ * - apply-noise-map  Read the noise map from OCDB and apply it on the online data
  *
- * - rms-threshold   RMS threshold for zero suppression.
+ * -plot-side-a   Histograms the TPC side A
  *          
- * - first-timebin   The first timebin for zero suppression
+ * -plot-side-c   Histograms the TPC side C
  *
- * - last-timebin    The last timebin for zero suppression
- *
- * - occupancy-limit Minimum number of timebins with signal
- *
- * - sort-pads Flag to switch on pad sorting(needed by the SORTED clusterfinder)
+ * -apply-noisemap  Reads a noise map from a file and subtracts the value contained in every pad from the data
  *
  * @ingroup alihlt_tpc
  */
@@ -56,7 +53,6 @@ class AliHLTTPCNoiseMapComponent : public AliHLTProcessor {
    AliHLTTPCNoiseMapComponent();           
    /** destructor */
    virtual ~AliHLTTPCNoiseMapComponent();
-
 
       // Public functions to implement AliHLTComponent's interface.
       // These functions are required for the registration process
@@ -74,7 +70,7 @@ class AliHLTTPCNoiseMapComponent : public AliHLTProcessor {
       /** interface function, see @ref AliHLTComponent for description */
       AliHLTComponent* Spawn(); 							   
       /** function for acting on the saving and cleaning histograms, after they are filled */
-      void SaveAndResetHistograms();
+      void MakeHistosPublic();
   
    protected:
 	
@@ -83,9 +79,10 @@ class AliHLTTPCNoiseMapComponent : public AliHLTProcessor {
 
       int DoInit( int argc, const char** argv );
       int DoDeinit();
-      int DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
-		   AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
-		   AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks );
+//       int DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
+// 		   AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
+// 		   AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks );
+      int DoEvent( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData );
       int Reconfigure(const char* cdbEntry, const char* chainId);
 
       using AliHLTProcessor::DoEvent;
@@ -104,18 +101,25 @@ class AliHLTTPCNoiseMapComponent : public AliHLTProcessor {
       AliHLTUInt32_t fSpecification;  //!transient
       //AliHLTUInt8_t fMinPartition;    //!transient
       //AliHLTUInt8_t fMaxPartition;    //!transient
+      
+      //AliHLTTPCDigitReader *pDigitReader;
 
-      Bool_t fNoiseMap;    //!transient
-      Bool_t fIsPacked;    //!transient   
-      Bool_t fIsUnpacked;  //!transient
+      Bool_t fPlotSideA;      //!transient
+      Bool_t fPlotSideC;      //!transient
+      Bool_t fApplyNoiseMap;  //!transient
+      Bool_t fIsPacked;       //!transient   
+      Bool_t fIsUnpacked;     //!transient
+      
+      Int_t fSlice;  //!transient
       
       Int_t  fCurrentPartition; //!transient
       Int_t  fCurrentRow;       //!transient
-      Int_t  rowOffset;         //!transient
       
-      TH2 *fHistSideC; //!transient    
-
-      ClassDef(AliHLTTPCNoiseMapComponent, 0)
+      TH2 *fHistSideA;     //!transient    
+      TH2 *fHistSideC;     //!transient  
+      TH2 *fHistCDBMap;    //!transient 
+            
+      ClassDef(AliHLTTPCNoiseMapComponent, 1)
     };
 
 #endif

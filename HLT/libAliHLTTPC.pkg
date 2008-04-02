@@ -19,6 +19,7 @@ CLASS_HDRS:=  	AliHLTTPCTransform.h \
 		AliHLTTPCDigitReaderDecoder.h \
 		AliHLTTPCDigitDumpComponent.h \
 		AliHLTTPCZeroSuppressionComponent.h \
+		AliHLTTPCNoiseMapComponent.h \
 		AliHLTTPCVertex.h \
 		AliHLTTPCVertexArray.h \
 		AliHLTTPCVertexFinder.h \
