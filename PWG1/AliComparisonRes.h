@@ -21,6 +21,7 @@ class TH3F;
 class TH3;
 class TProfile;
 class TProfile2D;
+class AliESDVertex;
 
 #include "TNamed.h"
 
@@ -57,6 +58,7 @@ private:
   TH2F* fPtResolHPT;        //-> pt resolution - high pt 
   TH2F* fPtPullLPT;         //-> pt resolution - low pt
   TH2F* fPtPullHPT;         //-> pt resolution - high pt 
+
   //
   // Resolution constrained param
   //
@@ -66,6 +68,22 @@ private:
   TH2F   *fCPhiPullTan;    //-> angular resolution -  constrained
   TH2F   *fCTanPullTan;    //-> angular resolution -  constrained
   TH2F   *fCPtPullTan;     //-> pt resolution      -  constrained
+
+  //
+  // Histograms for track resolution parameterisation
+  //
+  TH2F* fC1Pt2Resol1PtTPC;      //-> (1/mcpt-1/pt)/(1+1/pt)^2 vs 1/pt (TPC)
+  TH2F* fC1Pt2Resol1PtTPCITS;   //-> (1/mcpt-1/pt)/(1+1/pt)^2 vs 1/pt (TPC+ITS)
+  TH2F* fCYResol1PtTPC;         //-> (mcy-y)/(0.2+1/pt) vs 1/pt (TPC) 
+  TH2F* fCYResol1PtTPCITS;      //-> (mcy-y)/(0.2+1/pt) vs 1/pt (TPC + ITS) 
+  TH2F* fCZResol1PtTPC;         //-> (mcz-z)/(0.2+1/pt) vs 1/pt (TPC)
+  TH2F* fCZResol1PtTPCITS;      //-> (mcz-z)/(0.2+1/pt) vs 1/pt (TPC+ITS)
+  TH2F* fCPhiResol1PtTPC;       //-> (mcphi-phi)/(0.1+1/pt) vs 1/pt (TPC)
+  TH2F* fCPhiResol1PtTPCITS;    //-> (mcphi-phi)/(0.1+1/pt) vs 1/pt (TPC+ITS)
+  TH2F* fCThetaResol1PtTPC;     //-> (mctheta-theta)/(0.1+1/pt) vs 1/pt (TPC)
+  TH2F* fCThetaResol1PtTPCITS;  //-> (mctheta-theta)/(0.1+1/pt) vs 1/pt (TPC+ITS)
+
+  AliESDVertex *fVertex;  //! 
 
   // Global cuts objects
   AliRecInfoCuts*  fCutsRC;      // selection cuts for reconstructed tracks

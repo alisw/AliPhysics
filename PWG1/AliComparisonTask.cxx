@@ -112,6 +112,7 @@ void AliComparisonTask::CreateOutputObjects()
 {
   // Create histograms
   // Called once
+
   fOutput = new TList;
   fOutput->SetOwner();
 

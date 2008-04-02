@@ -337,7 +337,7 @@ void AliComparisonEff::Process(AliMCInfo* infoMC, AliESDRecInfo *infoRC)
   AliExternalTrackParam *track = 0;
   Double_t kRadius    = 3.0;      // beam pipe radius
   Double_t kMaxStep   = 5.0;      // max step
-  Double_t field      = 0.4;      // mag. field 
+  Double_t field      = AliTracker::GetBz(); // nominal Bz field [kG]
   Double_t kMaxD      = 123456.0; // max distance
 
   // systematics
@@ -353,14 +353,12 @@ void AliComparisonEff::Process(AliMCInfo* infoMC, AliESDRecInfo *infoRC)
   Double_t  DCASigmaDay0=0;
 
   Double_t dca[2], cov[3]; // dca_xy, dca_z, sigma_xy, sigma_xy_z, sigma_z
-  const Double_t* dv;
 
   // distance to Prim. vertex 
-  dv = infoMC->GetVDist(); 
+  const Double_t* dv = infoMC->GetVDist(); 
 
   Float_t mcpt = infoMC->GetParticle().Pt();
   Float_t tantheta = TMath::Tan(infoMC->GetParticle().Theta()-TMath::Pi()*0.5);
-  //Bool_t isPrim = infoMC->GetParticle().R()<fCutsMC->GetMaxR() && TMath::Abs(infoMC->GetParticle().Vz())<fCutsMC->GetMaxVz();
   Bool_t isPrim = TMath::Sqrt(dv[0]*dv[0] + dv[1]*dv[1])<fCutsMC->GetMaxR() && TMath::Abs(dv[2])<fCutsMC->GetMaxVz();
  
   // calculate and set prim. vertex
@@ -372,9 +370,11 @@ void AliComparisonEff::Process(AliMCInfo* infoMC, AliESDRecInfo *infoRC)
   if (fCutsMC->IsPdgParticle(TMath::Abs(infoMC->GetParticle().GetPdgCode())) == kFALSE) return; 
 
   // transform Pdg to Pid
+  // Pdg convension is different for hadrons and leptons 
+  // (e.g. K+/K- = 321/-321; e+/e- = -11/11 ) 
   Double_t pid = -1;
-  if( TMath::Abs(infoMC->GetParticle().GetPdgCode())==fCutsMC->GetEP() ) pid = 0; 
-  if( TMath::Abs(infoMC->GetParticle().GetPdgCode())==fCutsMC->GetMuP() ) pid = 1; 
+  if( TMath::Abs(infoMC->GetParticle().GetPdgCode())==fCutsMC->GetEM() ) pid = 0; 
+  if( TMath::Abs(infoMC->GetParticle().GetPdgCode())==fCutsMC->GetMuM() ) pid = 1; 
   if( TMath::Abs(infoMC->GetParticle().GetPdgCode())==fCutsMC->GetPiP() ) pid = 2; 
   if( TMath::Abs(infoMC->GetParticle().GetPdgCode())==fCutsMC->GetKP() ) pid = 3; 
   if( TMath::Abs(infoMC->GetParticle().GetPdgCode())==fCutsMC->GetProt() ) pid = 4; 
@@ -383,18 +383,15 @@ void AliComparisonEff::Process(AliMCInfo* infoMC, AliESDRecInfo *infoRC)
   //cout << "v[0] " << fVertex->GetXv()  << " v[1] " << fVertex->GetYv()  <<  " v[2] " << fVertex->GetZv()<< endl; 
   if (TMath::Abs(tantheta)<fCutsRC->GetMaxAbsTanTheta())
   {
-  
-    // MC pt
-    fMCPt->Fill(mcpt); 
-
-
     if (infoRC->GetESDtrack()->GetTPCInnerParam()) 
     {
       if ((track = new AliExternalTrackParam(*infoRC->GetESDtrack()->GetTPCInnerParam())) != 0 )
       {
-        AliTracker::PropagateTrackTo(track,kRadius,infoMC->GetMass(),kMaxStep,kTRUE);
-        track->PropagateToDCA(fVertex,field,kMaxD,dca,cov);
 
+        Bool_t bStatus = AliTracker::PropagateTrackTo(track,kRadius,infoMC->GetMass(),kMaxStep,kTRUE);
+        Bool_t bDCAStatus = track->PropagateToDCA(fVertex,field,kMaxD,dca,cov);
+
+		if(bStatus && bDCAStatus) {
 		//
 		cov[2] = track->GetCovariance()[2];
 
@@ -420,6 +417,8 @@ void AliComparisonEff::Process(AliMCInfo* infoMC, AliESDRecInfo *infoRC)
             //cout << " -------------------------------------------------------- "<<  endl; 
 		 }
 
+         // MC pt
+         fMCPt->Fill(mcpt); 
          if(infoRC->GetStatus(1)==3) fMCRecPt->Fill(mcpt); 
          if(infoRC->GetStatus(1)==3 && isPrim) fMCRecPrimPt->Fill(mcpt); 
          if(infoRC->GetStatus(1)==3 && !isPrim) fMCRecSecPt->Fill(mcpt); 
@@ -497,6 +496,7 @@ void AliComparisonEff::Process(AliMCInfo* infoMC, AliESDRecInfo *infoRC)
            }
 	     }
 	   delete track;
+       }
        }
      } 
 	 else 

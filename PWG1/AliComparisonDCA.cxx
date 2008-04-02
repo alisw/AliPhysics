@@ -103,34 +103,34 @@ AliComparisonDCA::~AliComparisonDCA()
 void AliComparisonDCA::InitHisto()
 {
   // DCA histograms
-  fD0TanSPtB1 = new TH3F("DCAyTanSPtB1","DCAyTanSPt",20,1,2, 10,0.3,2, 100,-4,4);
+  fD0TanSPtB1 = new TH3F("DCAyTanSPtB1","DCAyTanSPt",40,-2,2, 10,0.3,3, 100,-1,1);
   fD0TanSPtB1->SetXTitle("tan(#theta)");
-  fD0TanSPtB1->SetYTitle("sqrt(p_{t})");
+  fD0TanSPtB1->SetYTitle("#sqrt{p_{t}(GeV/c)}");
   fD0TanSPtB1->SetZTitle("DCA_{xy}");
 
-  fD1TanSPtB1 = new TH3F("DCAzTanSPtB1","DCAzTanSPt",20,1,2, 10,0.3,2, 100,-4,4);
+  fD1TanSPtB1 = new TH3F("DCAzTanSPtB1","DCAzTanSPt",40,-2,2, 10,0.3,3, 100,-1,1);
   fD1TanSPtB1->SetXTitle("tan(#theta)");
-  fD1TanSPtB1->SetYTitle("sqrt(p_{t})");
+  fD1TanSPtB1->SetYTitle("#sqrt(p_{t}(GeV/c))");
   fD1TanSPtB1->SetZTitle("DCA_{z}");
 
-  fD0TanSPtL1 = new TH3F("DCAyTanSPtL1","DCAyTanSPt",20,0,1, 10,0.3,2, 100,-0.1,0.1);
+  fD0TanSPtL1 = new TH3F("DCAyTanSPtL1","DCAyTanSPt",40,-2,2, 10,0.3,3, 100,-1,1);
   fD0TanSPtL1->SetXTitle("tan(#theta)");
-  fD0TanSPtL1->SetYTitle("sqrt(p_{t})");
+  fD0TanSPtL1->SetYTitle("#sqrt{p_{t}(GeV/c)}");
   fD0TanSPtL1->SetZTitle("DCA_{xy}");
 
-  fD1TanSPtL1 = new TH3F("DCAzTanSPtL1","DCAzTanSPt",20,0,1, 10,0.3,2, 100, -0.1,0.1);
+  fD1TanSPtL1 = new TH3F("DCAzTanSPtL1","DCAzTanSPt",40,-2,2, 10,0.3,3, 100, -1,1);
   fD1TanSPtL1->SetXTitle("tan(#theta)");
-  fD1TanSPtL1->SetYTitle("sqrt(p_{t})");
+  fD1TanSPtL1->SetYTitle("#sqrt{p_{t}(GeV/c)}");
   fD1TanSPtL1->SetZTitle("DCA_{z}");
 
-  fD0TanSPtInTPC = new TH3F("DCAyTanSPtInTPC","DCAyTanSPt",100,0,100, 10,0.3,2, 100,-0.1,0.1);
+  fD0TanSPtInTPC = new TH3F("DCAyTanSPtInTPC","DCAyTanSPt",40,-2,2, 10,0.3,3, 100,-1,1);
   fD0TanSPtInTPC->SetXTitle("tan(#theta)");
-  fD0TanSPtInTPC->SetYTitle("sqrt(p_{t})");
+  fD0TanSPtInTPC->SetYTitle("#sqrt{p_{t}(GeV/c)}");
   fD0TanSPtInTPC->SetZTitle("DCA_{xy}");
 
-  fD1TanSPtInTPC = new TH3F("DCAzTanSPtInTPC","DCAzTanSPt",100,0,100, 10,0.3,2, 100, -0.1,0.1);
+  fD1TanSPtInTPC = new TH3F("DCAzTanSPtInTPC","DCAzTanSPt",40,-2,2, 10,0.3,3, 100, -1,1);
   fD1TanSPtInTPC->SetXTitle("tan(#theta)");
-  fD1TanSPtInTPC->SetYTitle("sqrt(p_{t})");
+  fD1TanSPtInTPC->SetYTitle("#sqrt{p_{t}(GeV/c)}");
   fD1TanSPtInTPC->SetZTitle("DCA_{z}");
 }
 
@@ -147,21 +147,23 @@ void AliComparisonDCA::InitCuts()
 void AliComparisonDCA::Process(AliMCInfo* infoMC, AliESDRecInfo *infoRC)
 {
   // Fill DCA comparison information
-   
-  Float_t mcpt = infoMC->GetParticle().Pt();
-  Float_t tantheta = TMath::Tan(infoMC->GetParticle().Theta()-TMath::Pi()*0.5);
-  Bool_t isPrim = infoMC->GetParticle().R()<fCutsMC->GetMaxR() && TMath::Abs(infoMC->GetParticle().Vz())<fCutsMC->GetMaxVz() ;
-  Float_t spt = TMath::Sqrt(mcpt);
-
   AliExternalTrackParam *track = 0;
   Double_t kRadius    = 3.0;      // beam pipe radius
   Double_t kMaxStep   = 5.0;      // max step
-  Double_t field      = 0.4;      // mag. field
+  Double_t field      = AliTracker::GetBz(); // nominal Bz field [kG]
   Double_t kMaxD      = 123456.0; // max distance
 
   Int_t clusterITS[200];
   Double_t dca[2], cov[3]; // dca_xy, dca_z, sigma_xy, sigma_xy_z, sigma_z
-  const Double_t* dv;
+
+  Float_t mcpt = infoMC->GetParticle().Pt();
+  Float_t tantheta = TMath::Tan(infoMC->GetParticle().Theta()-TMath::Pi()*0.5);
+  Float_t spt = TMath::Sqrt(mcpt);
+
+  // distance to Prim. vertex 
+  const Double_t* dv = infoMC->GetVDist(); 
+
+  Bool_t isPrim = TMath::Sqrt(dv[0]*dv[0] + dv[1]*dv[1])<fCutsMC->GetMaxR() && TMath::Abs(dv[2])<fCutsMC->GetMaxVz();
 
   // Check selection cuts
   if (fCutsMC->IsPdgParticle(TMath::Abs(infoMC->GetParticle().GetPdgCode())) == kFALSE) return; 
@@ -172,23 +174,22 @@ void AliComparisonDCA::Process(AliMCInfo* infoMC, AliESDRecInfo *infoRC)
   if (!infoRC->GetESDtrack()->GetConstrainedParam()) return;
 
   // calculate and set prim. vertex
-  dv = infoMC->GetVDist(); // distance to Prim. vertex
-
   fVertex->SetXv( infoMC->GetParticle().Vx() - dv[0] );
   fVertex->SetYv( infoMC->GetParticle().Vy() - dv[1] );
   fVertex->SetZv( infoMC->GetParticle().Vz() - dv[2] );
 
   // calculate track parameters at vertex
-
   if (infoRC->GetESDtrack()->GetTPCInnerParam())
   {
     if ((track = new AliExternalTrackParam(*infoRC->GetESDtrack()->GetTPCInnerParam())) != 0 )
     {
-      AliTracker::PropagateTrackTo(track,kRadius,infoMC->GetMass(),kMaxStep,kTRUE);
-      track->PropagateToDCA(fVertex,field,kMaxD,dca,cov);
+      Bool_t bStatus = AliTracker::PropagateTrackTo(track,kRadius,infoMC->GetMass(),kMaxStep,kTRUE);
+      Bool_t bDCAStatus = track->PropagateToDCA(fVertex,field,kMaxD,dca,cov);
 
-      fD0TanSPtInTPC->Fill(tantheta,spt,dca[0]);
-      fD1TanSPtInTPC->Fill(tantheta,spt,dca[1]);
+      if(bStatus && bDCAStatus) {
+        fD0TanSPtInTPC->Fill(tantheta,spt,dca[0]);
+        fD1TanSPtInTPC->Fill(tantheta,spt,dca[1]);
+	  }
 
 	  delete track;
     }
@@ -269,6 +270,7 @@ void AliComparisonDCA::Analyse()
   //
   gr = AliMathBase::MakeStat2D(comp->fD0TanSPtB1,4,2,5); 
   gr->GetXaxis()->SetTitle("Tan(#theta)");
+  gr->GetYaxis()->SetTitle("#sqrt{p_{t}(GeV/c)}");
   gr->GetYaxis()->SetTitle("#sigmaDCA (cm)");
   gr->GetHistogram()->Write("DCAResolSPTTan");
 

@@ -125,7 +125,7 @@ void AliComparisonDEdx::InitHisto()
 
   fTPCSignalNormTanSPt= new TH3F("CdEdxTanSPt","CdEdxTanSPt",20, -2,2, 10,0.3 ,3, 40,30,70); 
   fTPCSignalNormTanSPt->SetXTitle("tan(#theta)");
-  fTPCSignalNormTanSPt->SetYTitle("#sqrt(p_{t})");
+  fTPCSignalNormTanSPt->SetYTitle("#sqrt{p_{t}}");
   fTPCSignalNormTanSPt->SetZTitle("rec. dE/dx / calc. dE/dx");
 }
 
@@ -145,9 +145,12 @@ void AliComparisonDEdx::Process(AliMCInfo* infoMC, AliESDRecInfo *infoRC){
   
   Float_t mcpt = infoMC->GetParticle().Pt();
   Float_t tantheta = TMath::Tan(infoMC->GetParticle().Theta()-TMath::Pi()*0.5);
-  Bool_t isPrim = infoMC->GetParticle().R()<fCutsMC->GetMaxR() && TMath::Abs(infoMC->GetParticle().Vz())<fCutsMC->GetMaxVz() ;
-
   Float_t mprim = infoMC->GetPrim();
+
+  // distance to Prim. vertex 
+  const Double_t* dv = infoMC->GetVDist(); 
+
+  Bool_t isPrim = TMath::Sqrt(dv[0]*dv[0] + dv[1]*dv[1])<fCutsMC->GetMaxR() && TMath::Abs(dv[2])<fCutsMC->GetMaxVz();
   
   // Check selection cuts 
   if (fCutsMC->IsPdgParticle(TMath::Abs(infoMC->GetParticle().GetPdgCode())) == kFALSE) return; 
