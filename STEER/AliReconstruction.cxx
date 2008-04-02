@@ -224,7 +224,6 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename,
   fUseTrackingErrorsForAlignment(""),
   fGAliceFileName(gAliceFilename),
   fInput(""),
-  fpEvent(NULL),
   fEquipIdMap(""),
   fFirstEvent(0),
   fLastEvent(-1),
@@ -313,7 +312,6 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fUseTrackingErrorsForAlignment(rec.fUseTrackingErrorsForAlignment),
   fGAliceFileName(rec.fGAliceFileName),
   fInput(rec.fInput),
-  fpEvent(rec.fpEvent),
   fEquipIdMap(rec.fEquipIdMap),
   fFirstEvent(rec.fFirstEvent),
   fLastEvent(rec.fLastEvent),
@@ -616,21 +614,15 @@ void AliReconstruction::SetGAliceFile(const char* fileName)
 }
 
 //_____________________________________________________________________________
-void AliReconstruction::SetInput(const char* input,void **pEvent) 
+void AliReconstruction::SetInput(const char* input) 
 {
-  // In case event pointer is given, we run in an online mode
-  // and the first argument is ignored.
-  // In case event pointer is NULL, we run in a normal
-  // mode over a raw-data file and the first argument points
-  // to the name of that file
-  if (!pEvent) {
-    fInput = input;
-    fpEvent = NULL;
-  }
-  else {
-    fInput = "";
-    fpEvent = pEvent;
-  }
+  // In case the input string starts with 'mem://', we run in an online mode
+  // and AliRawReaderDateOnline object is created. In all other cases a raw-data
+  // file is assumed. One can give as an input:
+  // mem://: - events taken from DAQ monitoring libs online
+  //  or
+  // mem://<filename> - emulation of the above mode (via DATE monitoring libs)
+  fInput = input;
 }
 
 //_____________________________________________________________________________
@@ -665,7 +657,7 @@ Bool_t AliReconstruction::Run(const char* input)
 }
 
 //_____________________________________________________________________________
-Bool_t AliReconstruction::InitRun(const char* input, void **pEvent)
+Bool_t AliReconstruction::InitRun(const char* input)
 {
   // Initialize all the stuff before
   // going into the event loop
@@ -673,30 +665,13 @@ Bool_t AliReconstruction::InitRun(const char* input, void **pEvent)
   // the reconstruction works in an online mode
   AliCodeTimerAuto("");
 
-  if (pEvent) fpEvent = pEvent;
+  // Overwrite the previous setting
   if (input) fInput = input;
 
   // set the input in case of raw data
-  if (!fInput.IsNull() || fpEvent) {
-    if (!fInput.IsNull()) {
-      AliInfo(Form("Reconstruction will run over a raw-data file: %s",fInput.Data()));
-      TString fileName(fInput);
-      if (fInput.EndsWith("/")) {
-	fRawReader = new AliRawReaderFile(fInput);
-      } else if (fInput.EndsWith(".root")) {
-	fRawReader = new AliRawReaderRoot(fInput);
-      } else {
-	fRawReader = new AliRawReaderDate(fInput);
-      }
-    }
-    else {
-      AliInfo(Form("Reconstruction will run over an event in memory at: %p",*fpEvent));
-      fRawReader = new AliRawReaderDate((void *)(*fpEvent));
-    }
-  }
-  else {
+  fRawReader = AliRawReader::Create(fInput.Data());
+  if (!fRawReader)
     AliInfo("Reconstruction will run over digits");
-  }
 
   if (!fEquipIdMap.IsNull() && fRawReader)
     fRawReader->LoadEquipmentIdsMap(fEquipIdMap);
@@ -1217,32 +1192,6 @@ Bool_t AliReconstruction::RunEvent(Int_t iEvent)
      }
 
      return kTRUE;
-}
-
-//_____________________________________________________________________________
-Bool_t AliReconstruction::AddEventAndRun()
-{
-  // for online usage only
-  // Add an event to the run-loader
-  // and
-  // re-creates AliRawReaderDate for this new event
-  AliCodeTimerAuto("");
-
-  if (!fpEvent) {
-    AliError("No raw-data event in memory given as an input! Do nothing!");
-    return kFALSE;
-  }
-
-  // New raw-reader. Could be redone in a better way... To do
-  fRawReader->~AliRawReader();
-  new (fRawReader) AliRawReaderDate((void*)(*fpEvent));
-  if (!fRawReader->NextEvent()) return kFALSE;
-
-  // Expand the number of events in the run-loader
-
-  Int_t nEvents = fRunLoader->GetNumberOfEvents();
-
-  return RunEvent(nEvents);
 }
 
 //_____________________________________________________________________________

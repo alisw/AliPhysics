@@ -46,7 +46,7 @@ public:
   virtual ~AliReconstruction();
 
   void           SetGAliceFile(const char* fileName);
-  void           SetInput(const char* input,void **pEvent = NULL);
+  void           SetInput(const char* input);
 
   void           SetEquipmentIdMap(const char *mapFile) {fEquipIdMap = mapFile;};
   void           SetEventRange(Int_t firstEvent = 0, Int_t lastEvent = -1) 
@@ -113,9 +113,8 @@ public:
                    {fAlignObjArray = array;
 		   fLoadAlignFromCDB = kFALSE;}
 
-  virtual Bool_t InitRun(const char* input, void **pEvent = NULL);
+  virtual Bool_t InitRun(const char* input);
   virtual Bool_t RunEvent(Int_t iEvent);
-  virtual Bool_t AddEventAndRun(); // for online usage only
   virtual Bool_t FinishRun();
   virtual Bool_t Run(const char* input = NULL);
 
@@ -196,7 +195,6 @@ private:
   TString        fUseTrackingErrorsForAlignment; // for these detectors
   TString        fGAliceFileName;     // name of the galice file
   TString        fInput;              // name of input file or directory
-  void**         fpEvent;             // pointer to DATE event in memory
   TString        fEquipIdMap;         // name of file with equipment id map
   Int_t          fFirstEvent;         // index of first event to be reconstr.
   Int_t          fLastEvent;          // index of last event to be reconstr.
