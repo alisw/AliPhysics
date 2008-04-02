@@ -31,7 +31,7 @@ class AliGRPPreprocessor: public AliPreprocessor {
   AliGRPPreprocessor(AliShuttleInterface* shuttle);
   virtual ~AliGRPPreprocessor();
   
-  static Int_t ReceivePromptRecoParameters(UInt_t run, const char* dbHost, Int_t dbPort, const char* dbName, const char* user, const char* password, const char* logbookTable, const char* triggerTable, const char *cdbRoot);
+  static Int_t ReceivePromptRecoParameters(UInt_t run, const char* dbHost, Int_t dbPort, const char* dbName, const char* user, const char* password, const char *cdbRoot);
 
  protected:
 

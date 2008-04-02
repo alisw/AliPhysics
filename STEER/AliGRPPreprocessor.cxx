@@ -655,7 +655,7 @@ AliDCSSensorArray *AliGRPPreprocessor::GetPressureMap(TMap* dcsAliasMap, AliDCSS
 
   
 //_______________________________________________________________
-Int_t AliGRPPreprocessor::ReceivePromptRecoParameters(UInt_t run, const char* dbHost, Int_t dbPort, const char* dbName, const char* user, const char* password, const char* logbookTable, const char* triggerTable, const char *cdbRoot)
+Int_t AliGRPPreprocessor::ReceivePromptRecoParameters(UInt_t run, const char* dbHost, Int_t dbPort, const char* dbName, const char* user, const char* password, const char *cdbRoot)
 {
 	//
 	// Retrieves logbook and trigger information from the online logbook 
@@ -666,11 +666,17 @@ Int_t AliGRPPreprocessor::ReceivePromptRecoParameters(UInt_t run, const char* db
 	// DAQ params: dbHost, dbPort, dbName, user, password, logbookTable, triggerTable
 	// cdbRoot
 	//
-	// returns 0 on success
+	// returns:
+	//         positive on success: the return code is the run number of last run processed of the same run type already processed by the SHUTTLE
+	//         0 on success and no run was found
 	//         negative on error
 	//
 	// This function is NOT called during the preprocessor run in the Shuttle!
 	//
+	
+	// defaults
+	if (dbPort == 0)
+		dbPort = 3306;
 		
 	// CDB connection
 	AliCDBManager* cdb = AliCDBManager::Instance();
@@ -687,7 +693,7 @@ Int_t AliGRPPreprocessor::ReceivePromptRecoParameters(UInt_t run, const char* db
 	
 	// main logbook
 	TString sqlQuery;
-	sqlQuery.Form("SELECT time_start, run_type, detectorMask FROM %s WHERE run = %d", logbookTable, run);
+	sqlQuery.Form("SELECT time_start, run_type, detectorMask FROM logbook WHERE run = %d", run);
 	TSQLResult* result = server->Query(sqlQuery);
 	if (!result) 
 	{
@@ -710,9 +716,11 @@ Int_t AliGRPPreprocessor::ReceivePromptRecoParameters(UInt_t run, const char* db
 		return -4;
 	}
 	
+	TString runType(row->GetField(1));
+	
 	TMap grpData;
 	grpData.Add(new TObjString("time_start"), new TObjString(row->GetField(0)));
-	grpData.Add(new TObjString("run_type"), new TObjString(row->GetField(1)));
+	grpData.Add(new TObjString("run_type"), new TObjString(runType));
 	grpData.Add(new TObjString("detectorMask"), new TObjString(row->GetField(2)));
 	
 	delete row;
@@ -739,7 +747,7 @@ Int_t AliGRPPreprocessor::ReceivePromptRecoParameters(UInt_t run, const char* db
 		return -5;
 	}
 	
-	sqlQuery.Form("SELECT configFile FROM %s WHERE run = %d", triggerTable, run);
+	sqlQuery.Form("SELECT configFile FROM logbook_trigger_config WHERE run = %d", run);
 	result = server->Query(sqlQuery);
 	if (!result) 
 	{
@@ -794,9 +802,45 @@ Int_t AliGRPPreprocessor::ReceivePromptRecoParameters(UInt_t run, const char* db
 		return -15;
 	}
 	
+	// get last run with same run type that was already processed by the SHUTTLE
+	
+	sqlQuery.Form("SELECT max(logbook.run) FROM logbook LEFT JOIN logbook_shuttle ON logbook_shuttle.run = logbook.run WHERE run_type = '%s' AND shuttle_done = 1", runType.Data());
+	result = server->Query(sqlQuery);
+	if (!result) 
+	{
+		Printf("ERROR: Can't execute query <%s>!", sqlQuery.Data());
+		return -21;
+	}
+
+	if (result->GetRowCount() == 0) 
+	{
+		Printf("ERROR: No result with query <%s>", sqlQuery.Data());
+		delete result;
+		return -22;
+	}
+
+	row = result->Next();
+	if (!row)
+	{
+		Printf("ERROR: Could not receive data for query <%s>", sqlQuery.Data());
+		delete result;
+		return -23;
+	}
+	
+	TString lastRunStr(row->GetField(0));
+	Int_t lastRun = lastRunStr.Atoi();
+	
+	Printf("Last run with same run type %s is %d", runType.Data(), lastRun);
+	
+	delete row;
+	row = 0;
+	
+	delete result;
+	result = 0;
+		
 	server->Close();
 	delete server;
 	server = 0;
 	
-	return 0;
+	return lastRun;
 }
