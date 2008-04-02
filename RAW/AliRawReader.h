@@ -27,6 +27,8 @@ class AliRawReader: public TObject {
     AliRawReader& operator = (const AliRawReader& rawReader);
     virtual ~AliRawReader();
 
+    static  AliRawReader* Create(const char *uri);
+
     virtual void     Select(Int_t detectorID, 
 			    Int_t minDDLID = -1, Int_t maxDDLID = -1);
     virtual void     Select(const char *detectorName, 

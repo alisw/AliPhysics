@@ -36,8 +36,15 @@
 ///
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <TClass.h>
+#include <TPluginManager.h>
+#include <TROOT.h>
+
 #include <Riostream.h>
 #include "AliRawReader.h"
+#include "AliRawReaderFile.h"
+#include "AliRawReaderDate.h"
+#include "AliRawReaderRoot.h"
 #include "AliDAQ.h"
 #include "AliLog.h"
 
@@ -155,6 +162,58 @@ AliRawReader::~AliRawReader()
   if (fEquipmentIdsOut) delete fEquipmentIdsOut;
   fErrorLogs.Delete();
   if (fHeaderSwapped) delete fHeaderSwapped;
+}
+
+AliRawReader* AliRawReader::Create(const char *uri)
+{
+  // RawReader's factory
+  // It instantiate corresponding raw-reader implementation class object
+  // depending on the URI provided
+  // Normal URIs point to files, while the URI starting with
+  // 'mem://:' or 'mem://<filename>' will create
+  // AliRawReaderDateOnline object which is supposed to be used
+  // in the online reconstruction
+
+  TString strURI = uri;
+
+  if (strURI.IsNull()) {
+    AliWarningClass("No raw-reader created");
+    return NULL;
+  }
+
+  AliRawReader *rawReader = NULL;
+  if (!strURI.BeginsWith("mem://")) {
+    AliInfoClass(Form("Creating raw-reader in order to read raw-data file: %s",strURI.Data()));
+    if (strURI.EndsWith("/")) {
+      rawReader = new AliRawReaderFile(strURI);
+    } else if (strURI.EndsWith(".root")) {
+      rawReader = new AliRawReaderRoot(strURI);
+    } else {
+      rawReader = new AliRawReaderDate(strURI);
+    }
+  }
+  else {
+    strURI.ReplaceAll("mem://","");
+    AliInfoClass(Form("Creating raw-reader in order to read events in shared memory (option=%s)",strURI.Data()));
+
+    TPluginManager* pluginManager = gROOT->GetPluginManager();
+    TString rawReaderName = "AliRawReaderDateOnline";
+    TPluginHandler* pluginHandler = pluginManager->FindHandler("AliRawReader", "online");
+    // if not, add a plugin for it
+    if (!pluginHandler) {
+      pluginManager->AddHandler("AliRawReader", "online", 
+				"AliRawReaderDateOnline", "RAWDatarecOnline", "AliRawReaderDateOnline(const char*)");
+      pluginHandler = pluginManager->FindHandler("AliRawReader", "online");
+    }
+    if (pluginHandler && (pluginHandler->LoadPlugin() == 0)) {
+      rawReader = (AliRawReader*)pluginHandler->ExecPlugin(1,strURI.Data());
+    }
+    else {
+      return NULL;
+    }
+  }
+
+  return rawReader;
 }
 
 Int_t AliRawReader::GetMappedEquipmentId() const
