@@ -23,9 +23,9 @@ public:
     
 //ctor&dtor    
   AliHMPIDDigit(                          ):AliDigit( ),fPad(AliHMPIDParam::Abs(-1,-1,-1,-1)),fQ(-1)  {}                         //default ctor
-  AliHMPIDDigit(Int_t pad,Int_t q,Int_t *t):AliDigit(t),fPad(pad             ),fQ(q )  {}                         //digit ctor
-  AliHMPIDDigit(Int_t pad,Int_t q         ):AliDigit( ),fPad(pad             ),fQ(q )  {}                         //digit ctor
-  AliHMPIDDigit(const AliHMPIDDigit &d    ):AliDigit(d),fPad(d.fPad),fQ(d.fQ)          {}                         //copy ctor
+  AliHMPIDDigit(Int_t pad,Int_t q,Int_t *t):AliDigit(t),fPad(pad             ),fQ(q )  {if(fQ>4095)fQ=4095;}                     //digit ctor
+  AliHMPIDDigit(Int_t pad,Int_t q         ):AliDigit( ),fPad(pad             ),fQ(q )  {if(fQ>4095)fQ=4095;}                     //digit ctor
+  AliHMPIDDigit(const AliHMPIDDigit &d    ):AliDigit(d),fPad(d.fPad),fQ(d.fQ)          {}                                        //copy ctor
   virtual ~AliHMPIDDigit()                                                             {}                         //dtor   
 //framework part    
          Bool_t  IsSortable  (                               )const{return kTRUE;}                                                     //provision to use TObject::Sort() 
@@ -53,7 +53,7 @@ public:
          Float_t Q           (                               )const{return fQ;}                                                        //charge, [QDC]
   inline void    Raw(UInt_t &w32,Int_t &ddl,Int_t &r,Int_t &d,Int_t &a)const;
   inline Bool_t  Set         (Int_t c,Int_t p,Int_t x,Int_t y,Int_t tid=0);                                                            //manual creation 
-         void    SetQ        (Float_t q                      )     {fQ=q;}                                                             //manual creation 
+         void    SetQ        (Float_t q                      )     {fQ=q;if(fQ>4095)fQ=4095;}                                          //manual creation 
 
  
 protected:                                                                   //AliDigit has fTracks[3]
@@ -147,9 +147,7 @@ void AliHMPIDDigit::Raw(UInt_t &w32,Int_t &ddl,Int_t &r,Int_t &d,Int_t &a)const
   //Printf("AliHMPIDDigit::Raw ddl: %d r: %d d: %d a: %d",ddl,r,d,a);
   //Printf("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
 //  Bool_t isOK=kTRUE; isOK=
-  AliBitPacking::PackWord((fQ>4095)?(UInt_t)4095:(UInt_t)fQ,w32, 0,11);       // 0000 0rrr rrdd ddaa aaaa qqqq qqqq qqqq        Qdc               bits (00..11) counts (0..4095)
-  //Printf("isOK: %d",isOK);
-  //molnarl: Since in simulation the the charge can be > than 4095 but not in real life we need to protect. If fQ>4095 after packing we will get 0 for the charge! 
+  AliBitPacking::PackWord((UInt_t)fQ,w32, 0,11);                      // 0000 0rrr rrdd ddaa aaaa qqqq qqqq qqqq        Qdc               bits (00..11) counts (0..4095)
   assert(0<=a&&a<=47);AliBitPacking::PackWord(        a ,w32,12,17);  // 3322 2222 2222 1111 1111 1000 0000 0000        DILOGIC address   bits (12..17) counts (0..47)
   assert(1<=d&&d<=10);AliBitPacking::PackWord(        d ,w32,18,21);  // 1098 7654 3210 9876 5432 1098 7654 3210        DILOGIC number    bits (18..21) counts (1..10)
   assert(1<=r&&r<=24);AliBitPacking::PackWord(        r ,w32,22,26);  //                                                Row number        bits (22..26) counts (1..24)  
