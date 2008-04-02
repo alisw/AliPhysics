@@ -1,0 +1,44 @@
+#ifndef AliAODDIJet_H
+#define AliAODDIJet_H
+/* Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
+
+//-------------------------------------------------------------------------
+//     AOD di-jet class
+//     The present version is for test purposes only
+//     Author: Andreas Morsch, CERN
+//-------------------------------------------------------------------------
+
+#include <TLorentzVector.h>
+#include <TRefArray.h>
+#include <TRef.h>
+#include "AliAODJet.h"
+
+
+class AliAODDiJet : public AliAODJet {
+
+ public:
+    AliAODDiJet();
+    AliAODDiJet(Double_t px, Double_t py, Double_t pz, Double_t e);
+    AliAODDiJet(TLorentzVector & p);
+    void SetJetRefs(AliAODJet* jet1, AliAODJet* jet2) 
+	{
+	    fJetR->AddAt(jet1, 0);
+	    fJetR->AddAt(jet2, 1);
+	    fJet1 = jet1;
+	    fJet2 = jet2;
+	}
+    AliAODJet* Jet(Int_t i) {return ((AliAODJet*) (fJetR->At(i)));}
+    virtual ~AliAODDiJet();
+ private:
+    AliAODDiJet(const AliAODDiJet& jet); 
+    AliAODDiJet& operator=(const AliAODDiJet& jet);
+ private:
+    TRefArray*  fJetR;
+    TRef        fJet1;
+    TRef        fJet2;    
+    ClassDef(AliAODDiJet, 1);
+};
+#endif

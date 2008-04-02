@@ -35,6 +35,7 @@
 #pragma link C++ class AliAODTracklets+;
 #pragma link C++ class AliAODTagCreator+;
 #pragma link C++ class AliAODCaloCells+;
+#pragma link C++ class AliAODDiJet+;
 
 #endif
 
