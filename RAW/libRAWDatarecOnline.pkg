@@ -1,0 +1,20 @@
+#-*- Mode: Makefile -*-
+
+SRCS:=  AliRawReaderDateOnline.cxx
+
+HDRS:= $(SRCS:.cxx=.h)
+
+HDRS +=
+
+DHDR:= RAWrecOnlineLinkDef.h 
+
+ifdef DATE_ROOT
+EINCLUDE+= ${DATE_COMMON_DEFS}
+TEMPDATELIBS:=$(shell date-config --monitorlibs)
+ELIBS+=$(patsubst lib%,%,$(basename $(notdir $(filter %.a,$(TEMPDATELIBS)))))
+ELIBSDIR+=$(dir $(filter %.a,$(TEMPDATELIBS)))
+ELIBS+=$(patsubst -l%,%,$(filter -l%,$(TEMPDATELIBS)))
+ELIBSDIR+=$(patsubst -L%,%,$(filter -L%,$(TEMPDATELIBS)))
+endif
+
+EXPORT:=AliRawReaderDateOnline.h

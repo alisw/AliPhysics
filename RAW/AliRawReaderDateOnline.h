@@ -26,7 +26,7 @@ class AliRawReaderDateOnline: public AliRawReaderDate {
     virtual ~AliRawReaderDateOnline();
 
     virtual Bool_t   NextEvent();
-    virtual Bool_t   RewindEvents();
+    //    virtual Bool_t   RewindEvents();
 
   private:
     AliRawReaderDateOnline(const AliRawReaderDateOnline& rawReader);

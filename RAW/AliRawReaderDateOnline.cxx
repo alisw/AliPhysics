@@ -29,17 +29,22 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliRawReaderDateOnline.h"
+#include "AliLog.h"
+#ifdef ALI_DATE
+#include "event.h"
+#include "monitor.h"
+#endif
 
 ClassImp(AliRawReaderDateOnline)
 
-AliRawReaderDate::AliRawReaderDate(
+AliRawReaderDateOnline::AliRawReaderDateOnline(
 #ifdef ALI_DATE
 				   const char* filename
 #else
 				   const char* /* filename */
 #endif
 				   ) :
-  AliRawReaderDate()
+  AliRawReaderDate((void*)NULL)
 {
 
 // Constructor
@@ -50,7 +55,7 @@ AliRawReaderDate::AliRawReaderDate(
   int status;
 
   /* define data source : this is argument 1 */  
-  status=monitorSetDataSource( filename );
+  status=monitorSetDataSource( (char* )filename );
   if (status!=0) {
     AliFatal(Form("monitorSetDataSource() failed : %s",monitorDecodeError(status)));
   }
@@ -70,60 +75,83 @@ AliRawReaderDate::AliRawReaderDate(
 #endif
 }
 
-Bool_t AliRawReaderDate::NextEvent()
+Bool_t AliRawReaderDateOnline::NextEvent()
 {
 // wait and get the next event
 // from shared memory
 
 #ifdef ALI_DATE
 
+  // Event already loaded no need take a new one
+  if (AliRawReaderDate::NextEvent()) return kTRUE;
+
   if (fEvent) free(fEvent);
+  fEvent = NULL;
 
   while (1) {
     /* get next event (blocking call until timeout) */
-    int status=monitorGetEventDynamic(&fEvent);
-    struct eventHeaderStruct *event=(eventHeaderStruct*)eventPtr;
+    int status=monitorGetEventDynamic((void**)&fEvent);
 
-    if (status==MON_ERR_EOF) {
+    if ((unsigned int)status==MON_ERR_EOF) {
       AliInfo("End of File detected");
+      Reset();
+      fEvent = NULL;
       return kFALSE; /* end of monitoring file has been reached */
     }
     
     if (status!=0) {
       AliError(Form("monitorGetEventDynamic() failed : %s\n",monitorDecodeError(status)));
+      Reset();
+      fEvent = NULL;
       return kFALSE;
     }
     
     /* retry if got no event */
-    if (event==NULL) {
+    if (fEvent==NULL) {
       continue;
     }
-
-    eventTypeType eventT=event->eventType;
+    
+    eventTypeType eventT=fEvent->eventType;
     /* exit when last event received, no need to wait for TERM signal */
     if (eventT==END_OF_RUN) {
       AliInfo("EOR event detected");
+      Reset();
+      fEvent = NULL;
       return kFALSE;
     }
+    
     if (eventT!=PHYSICS_EVENT) {
       continue;
     }
 
     AliInfo(Form("Run #%lu, event size: %lu, BC:%u, Orbit:%u, Period:%u",
-		 (unsigned long)event->eventRunNb,
-		 (unsigned long)event->eventSize,
-		 EVENT_ID_GET_BUNCH_CROSSING(event->eventId),
-		 EVENT_ID_GET_ORBIT(event->eventId),
-		 EVENT_ID_GET_PERIOD(event->eventId)
+		 (unsigned long)fEvent->eventRunNb,
+		 (unsigned long)fEvent->eventSize,
+		 EVENT_ID_GET_BUNCH_CROSSING(fEvent->eventId),
+		 EVENT_ID_GET_ORBIT(fEvent->eventId),
+		 EVENT_ID_GET_PERIOD(fEvent->eventId)
 		 ));
+    break;
   }
 
-  return AliRawRederDate::NextEvent();
+  fEventNumber++;
+  Reset();
+
+  return kTRUE;
+
 }
 
-#endif
-
+#else
   return kFALSE;
 }
+#endif
 
+AliRawReaderDateOnline::~AliRawReaderDateOnline()
+{
+// Destructor
+// Free the last event in shared memory
 
+#ifdef ALI_DATE
+  if (fEvent) free(fEvent);
+#endif
+}
