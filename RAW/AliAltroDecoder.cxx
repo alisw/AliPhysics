@@ -98,8 +98,8 @@ Bool_t AliAltroDecoder::Decode()
 
   if( fIsFatalCorruptedTrailer == kTRUE)
     {
-      printf("\n AliAltroDecoder::Decode(), WARNING, attempt to decode badly corrupted data\n");
-      printf("\n AliAltroDecoder::Decode(). Please check on the return value (-1 if fataly corrupted) of the SetMemory() function\n");    
+      //      printf("\n AliAltroDecoder::Decode(), WARNING, attempt to decode badly corrupted data\n");
+      //     printf("\n AliAltroDecoder::Decode(). Please check on the return value (-1 if fataly corrupted) of the SetMemory() function\n");    
       return kFALSE;
     }
 
@@ -145,10 +145,10 @@ Bool_t AliAltroDecoder::Decode()
 
       else
 	{
-	  cout <<" ERROR: data integrity check failed, discarding data" << endl;
-	  cout << "Size of datablock is  " << fSize   << endl;
-	  cout << "fN40AltroWords = "      << fN40AltroWords   << endl;
-	  cout << "fN40RcuAltroWords = "   << fN40RcuAltroWords  << endl;
+// 	  cout <<" ERROR: data integrity check failed, discarding data" << endl;
+// 	  cout << "Size of datablock is  " << fSize   << endl;
+// 	  cout << "fN40AltroWords = "      << fN40AltroWords   << endl;
+// 	  cout << "fN40RcuAltroWords = "   << fN40RcuAltroWords  << endl;
 	  return kFALSE;
 	}
 
@@ -165,8 +165,8 @@ Bool_t AliAltroDecoder::NextChannel(AliAltroData *altroDataPtr)
 
   if(fIsFatalCorruptedTrailer == kTRUE)
     {
-      printf("\n AliAltroDecoder::NextChannel(), WARNING, attempt to decode badly corrupted data\n");
-      printf("\n AliAltroDecoder::NextChannel(), Please check on the return value (-1 if fataly corrupted) of the SetMemory() function\n");    
+      //    printf("\n AliAltroDecoder::NextChannel(), WARNING, attempt to decode badly corrupted data\n");
+      //    printf("\n AliAltroDecoder::NextChannel(), Please check on the return value (-1 if fataly corrupted) of the SetMemory() function\n");    
       return kFALSE;
     } 
   
@@ -175,7 +175,7 @@ Bool_t AliAltroDecoder::NextChannel(AliAltroData *altroDataPtr)
 
       if(fIsDecoded != kTRUE)
 	{
-	  cout <<"AliAltroDecoder::NextChanne, WARNING, buffer was not decoded, decoding now.. "<< endl;
+	  //	  cout <<"AliAltroDecoder::NextChanne, WARNING, buffer was not decoded, decoding now.. "<< endl;
  	  Decode();
  	}
 
@@ -264,10 +264,10 @@ Float_t AliAltroDecoder::GetFailureRate()
   // is missing the 2aaa trailer.
  
   Float_t tmp = 0;
-  cout << "Number of Complete channles = " << fComplete <<endl;
-  cout << "Number of InComplete channles = " << fInComplete <<endl;
+  //  cout << "Number of Complete channles = " << fComplete <<endl;
+  // cout << "Number of InComplete channles = " << fInComplete <<endl;
   tmp = (100*(Float_t)fInComplete)/((Float_t)fComplete + (Float_t)fInComplete);
-  cout <<"There are "<<  tmp <<"% incomplete channels"<<endl;
+  // cout <<"There are "<<  tmp <<"% incomplete channels"<<endl;
   return  tmp;
 }
 
@@ -277,8 +277,8 @@ void AliAltroDecoder::PrintInfo(AliAltroData &altrodata, Int_t n, Int_t nPerLine
   // prints data and address information contained in altrodata 
   // to the standard output
 
-  cout << "altrodata.fDataSize = " << altrodata.GetDataSize() <<  endl;
-  cout << "altrodata.fHadd = "     << altrodata.GetHadd()  <<endl;
+  //  cout << "altrodata.fDataSize = " << altrodata.GetDataSize() <<  endl;
+  // cout << "altrodata.fHadd = "     << altrodata.GetHadd()  <<endl;
   const UInt_t* data = altrodata.GetData();
   for(Int_t i= 0; i< n; i++)
     {
@@ -329,7 +329,7 @@ int AliAltroDecoder::SetMemory(UChar_t *dtaPtr, UInt_t size)
     }
   else
     {
-      printf("\n AliAltroDecoder::SetMemory, ERROR\n, trailer is corrupted");
+      //     printf("\n AliAltroDecoder::SetMemory, ERROR\n, trailer is corrupted");
       fIsFatalCorruptedTrailer = kTRUE;
       iRet = -1;
     }
