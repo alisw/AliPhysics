@@ -4,7 +4,6 @@ ALIROOT/module.mk:	ALIROOT/binaliroot.pkg
 ANALYSIS/module.mk:	ANALYSIS/libANALYSIS.pkg ANALYSIS/libAnalysisOld.pkg ANALYSIS/libANALYSISRL.pkg ANALYSIS/libAliengui.pkg ANALYSIS/binaliengui.pkg
 ACORDE/module.mk:	ACORDE/libACORDEbase.pkg ACORDE/libACORDErec.pkg ACORDE/libACORDEsim.pkg
 EMCAL/module.mk:	EMCAL/libEMCALbase.pkg EMCAL/libEMCALsim.pkg EMCAL/libEMCALrec.pkg EMCAL/libEMCALjet.pkg
-EPEMGEN/module.mk:	EPEMGEN/libEPEMGEN.pkg
 EVGEN/module.mk:	EVGEN/libEVGEN.pkg
 FMD/module.mk:		FMD/libFMDbase.pkg FMD/libFMDsim.pkg FMD/libFMDrec.pkg FMD/libFMDutil.pkg FMD/libFMDflow.pkg
 FASTSIM/module.mk:	FASTSIM/libFASTSIM.pkg
@@ -135,4 +134,5 @@ $(LIBPATH)/libEMCALsim.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/lib
 $(LIBPATH)/libEMCALrec.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libESD.$(SOEXT) $(LIBPATH)/libSTEER.$(SOEXT) $(LIBPATH)/libEMCALBase.$(SOEXT)
 $(LIBPATH)/libEMCALjet.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libESD.$(SOEXT) $(LIBPATH)/libSTEER.$(SOEXT) $(LIBPATH)/libEMCALBase.$(SOEXT) $(LIBPATH)/libmicrocern.$(SOEXT)
 $(LIBPATH)/libBCM.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libSTEER.$(SOEXT)
+$(LIBPATH)/libTEPEMGEN.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libSTEER.$(SOEXT) $(LIBPATH)/libEVGEN.$(SOEXT) $(LIBPATH)/libmicrocern.$(SOEXT)
 endif

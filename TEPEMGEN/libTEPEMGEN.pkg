@@ -1,7 +1,20 @@
+#-*- Mode: Makefile -*-
+
 SRCS= TEpEmGen.cxx AliGenEpEmv1.cxx
 
 HDRS= TEpEmGen.h AliGenEpEmv1.h
 
 DHDR:=TEPEMGENLinkDef.h
 
+FSRCS:= \
+epemgen.f diffcross.f dtrint.f
+
+PACKFFLAGS      := $(filter-out -O%,$(FFLAGS))
+
 EXPORT:=TEpEmGen.h
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+                         -lSTEER -lSTEERBase -lEVGEN -lmicrocern \
+                         -L$(shell root-config --libdir) -lEG
+endif

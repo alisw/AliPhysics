@@ -21,7 +21,7 @@ ELIBS:= MUONcore MUONgeometry MUONrec MUONsim MUONbase MUONtrigger MUONraw MUONc
         FASTSIM microcern \
 	RAWDatabase RAWDatarec RAWDatasim \
 	HLTbase MUONevaluation \
-# TMEVSIM mevsim THbtp HBTP TEPEMGEN EPEMGEN \
+# TMEVSIM mevsim THbtp HBTP TEPEMGEN \
 #	THerwig herwig TPHIC
 
 ifeq (macosx,$(ALICE_TARGET))
@@ -31,7 +31,6 @@ ELIBSCPP:=$(filter-out lhapdf,$(ELIBSCPP))
 ELIBSCPP:=$(filter-out mevsim,$(ELIBSCPP))
 ELIBSCPP:=$(filter-out HBTP,$(ELIBSCPP))
 ELIBSCPP:=$(filter-out herwig,$(ELIBSCPP))
-ELIBSCPP:=$(filter-out EPEMGEN,$(ELIBSCPP))
 PACKLDFLAGS:=$(LDFLAGS) $(ELIBSCPP:%=-Wl,-u,_G__cpp_setupG__%)
 # On Mac OS X gcc we need f2c
 ELIBS+=f2c
@@ -107,6 +106,6 @@ ARLIBS:= \
    RAW/tgt_$(ALICE_TARGET)/G__RAWDatarec.o $(LIBPATH)/libRAWDatarec.a \
    RAW/tgt_$(ALICE_TARGET)/G__MDC.o $(LIBPATH)/libMDC.a
 
-#SHLIBS:= $(BINLIBDIRS) -lEVGEN -lEGPythia6 -lPythia6 -lpythia6 -lAliPythia6 -llhapdf -lTHijing -lhijing -lTMEVSIM -lmevsim -lTHbtp -lHBTP -lTHerwig -lherwig -lTEPEMGEN -lEPEMGEN -lTPHIC -lFASTSIM -lmicrocern
+#SHLIBS:= $(BINLIBDIRS) -lEVGEN -lEGPythia6 -lPythia6 -lpythia6 -lAliPythia6 -llhapdf -lTHijing -lhijing -lTMEVSIM -lmevsim -lTHbtp -lHBTP -lTHerwig -lherwig -lTEPEMGEN -lTPHIC -lFASTSIM -lmicrocern
 SHLIBS:= $(BINLIBDIRS) -lEVGEN -lEGPythia6 -lPythia6 -lpythia6 -lAliPythia6 -llhapdf -lTHijing -lhijing -lTHerwig -lherwig -lTPHIC -lFASTSIM -lmicrocern
 

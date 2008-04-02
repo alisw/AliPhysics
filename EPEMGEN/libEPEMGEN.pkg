@@ -1,6 +1,0 @@
-CSRCS:=
-
-FSRCS:= \
-epemgen.f diffcross.f dtrint.f
-
-PACKFFLAGS      := $(filter-out -O%,$(FFLAGS))
