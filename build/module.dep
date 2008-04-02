@@ -17,7 +17,7 @@ ITS/module.mk:		ITS/libITSbase.pkg ITS/libITSsim.pkg ITS/libITSrec.pkg
 JETAN/module.mk:	JETAN/libJETAN.pkg JETAN/libJETANMC.pkg
 MEVSIM/module.mk:	MEVSIM/libmevsim.pkg
 MICROCERN/module.mk:	MICROCERN/libmicrocern.pkg
-MONITOR/module.mk:	MONITOR/libMONITOR.pkg MONITOR/binmonitorGDC.pkg MONITOR/binmonitorCheck.pkg MONITOR/binderoot.pkg MONITOR/binalipro.pkg
+MONITOR/module.mk:	MONITOR/libMONITOR.pkg MONITOR/binmonitorGDC.pkg MONITOR/binmonitorCheck.pkg MONITOR/binderoot.pkg
 MUON/module.mk:		MUON/binmchview.pkg MUON/libMUONgeometry.pkg MUON/libMUONshuttle.pkg MUON/libMUONbase.pkg MUON/libMUONgraphics.pkg  MUON/libMUONsim.pkg MUON/libMUONcalib.pkg MUON/libMUONmapping.pkg MUON/libMUONtrigger.pkg MUON/libMUONcore.pkg MUON/libMUONraw.pkg MUON/libMUONevaluation.pkg  MUON/libMUONrec.pkg
 LHC/module.mk:		LHC/libLHC.pkg
 LHAPDF/module.mk:	LHAPDF/liblhapdf.pkg
