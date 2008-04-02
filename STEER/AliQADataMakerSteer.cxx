@@ -364,15 +364,7 @@ Bool_t AliQADataMakerSteer::Init(const AliQA::TASKINDEX_t taskIndex, const char 
 	
 	if (taskIndex == AliQA::kRAWS) { 
 		if (!fRawReader) {
-			TString fileName(input);
-			if (fileName.EndsWith("/")) {
-				fRawReader = new AliRawReaderFile(fileName);
-			} else if (fileName.EndsWith(".root")) {
-				fRawReader = new AliRawReaderRoot(fileName);
-			} else if (!fileName.IsNull()) {
-				fRawReader = new AliRawReaderDate(fileName);
-				fRawReader->SelectEvents(7);
-			}
+		        fRawReader = AliRawReader::Create(input);
 		}
 	    if ( ! fRawReader ) 
 			return kFALSE ; 
