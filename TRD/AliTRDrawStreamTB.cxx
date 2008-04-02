@@ -103,6 +103,9 @@
 
 #define MCM_DUMMY_ADCMASK_VAL 0x015fffffc  // updated 
 //#define MCM_DUMMY_ADCMASK_VAL 0x001fffffc 
+#define ADCDATA_VAL1 0x2  // updated 
+#define ADCDATA_VAL2 0x3  // updated 
+
 //--------------------------------------------------------
 
 #define MAX_TRACKLETS_PERHC 256 // max number of tracklets per HC - large number for now
@@ -1393,7 +1396,7 @@ AliTRDrawStreamTB::IsMCMevCounterOK()
 
   if (fEventCounter < fLastEventCounter)
     {
-      fMCM->fCorrupted += 4;
+      fMCM->fCorrupted += 2;
       if (fgWarnError) AliWarning(Form("Event from the past? Current %d Last %d %s. Error : %d\n", fEventCounter, fLastEventCounter, DumpMCMinfo(fMCM), fMCM->fCorrupted));
       if (fRawReader) fRawReader->AddMajorErrorLog(kMCMeventMissmatch, "Wrong MCM event counter ? Past-Future");
       return kFALSE;
@@ -1401,7 +1404,7 @@ AliTRDrawStreamTB::IsMCMevCounterOK()
 
   if (fEventCounter != fMCM->fEvCounter)
     {
-      fMCM->fCorrupted += 4;
+      fMCM->fCorrupted += 2;
       if (fgWarnError) AliWarning(Form("Event missmatch? FirstMCMs %d ThisMCMs %d %s. Error : %d\n", fEventCounter, fMCM->fEvCounter, DumpMCMinfo(fMCM), fMCM->fCorrupted));
       if (fRawReader) fRawReader->AddMajorErrorLog(kMCMeventMissmatch, "Wrong MCM event counter ?");
       return kFALSE;
@@ -1619,7 +1622,7 @@ AliTRDrawStreamTB::DecodeHCheader()
   fHC->fDET = -1;
   if (IsHCheaderOK() == kFALSE)
     {
-      fHC->fCorrupted +=4;
+      if(fHC->fCorrupted < 1) fHC->fCorrupted +=4;
       return kFALSE;
     }
   
@@ -1913,7 +1916,10 @@ AliTRDrawStreamTB::DecodeADC()
   //
 
   fADC->fCorrupted = 0;
-  fMaskADCword = ADC_WORD_MASK(*fpPos);
+  //fMaskADCword = ADC_WORD_MASK(*fpPos);
+  if(fADC->fADCnumber%2==1) fMaskADCword = ADC_WORD_MASK(ADCDATA_VAL1);
+  if(fADC->fADCnumber%2==0) fMaskADCword = ADC_WORD_MASK(ADCDATA_VAL2);
+
   fADC->fPos = fpPos;
   fTbinADC = 0;
 
@@ -1934,8 +1940,10 @@ AliTRDrawStreamTB::DecodeADC()
       if (fMaskADCword != ADC_WORD_MASK(*fpPos))
 	{
 	  fADC->fCorrupted += 1;
-	  if (fgWarnError) AliWarning(Form("Mask Change in ADC data Previous word (%d) : 0x%08x Previous mask : 0x%08x Current word(%d) : 0x%08x Current mask : 0x%08x", 
-					   iw - 1, *(fpPos-1), fMaskADCword, iw, *fpPos, ADC_WORD_MASK(*fpPos)));
+          if (fgWarnError) AliWarning(Form("Wrong ADC data mask! ADC channel number: %02d [Expected mask: 0x%08x  Current mask: 0x%08x] MCM= %s Error : %d",
+                                           fADC->fADCnumber, fMaskADCword, ADC_WORD_MASK(*fpPos),DumpMCMinfo(fMCM),fADC->fCorrupted));
+	  //if (fgWarnError) AliWarning(Form("Mask Change in ADC data Previous word (%d) : 0x%08x Previous mask : 0x%08x Current word(%d) : 0x%08x Current mask : 0x%08x", 
+	  //				   iw - 1, *(fpPos-1), fMaskADCword, iw, *fpPos, ADC_WORD_MASK(*fpPos)));
 	  if (fRawReader) fRawReader->AddMajorErrorLog(kADCmaskMissmatch, "Mask change inside single channel"); 
 	  break;
 	}
@@ -2398,7 +2406,7 @@ UInt_t AliTRDrawStreamTB::GetMCMadcMask(const UInt_t *word, struct AliTRDrawMCM 
   else
     {
       mcm->fADCMask = 0xffffffff;
-      mcm->fCorrupted += 2;
+      mcm->fCorrupted += 4;
       mcm->fMaskErrorCounter++;
     }
 

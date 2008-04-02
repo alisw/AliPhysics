@@ -459,8 +459,9 @@ class AliTRDrawStreamTB : public AliTRDrawStreamBase
   Int_t     GetMCM() const {return fMCM ? fMCM->fMCM : -1;} // get current MCM number
   Int_t     GetEventNumber() const { return fMCM->fEvCounter;} //  MCM Event number and position of current MCM on TRD chamber
 
-  Int_t     GetMCMErrorCode() const {return fMCM ? fMCM->fCorrupted : -1;} // get HC error code
-  //Int_t     GetHCErrorCode() const {return fHC ? fHC->fCorrupted : -1;} // get HC error code
+  Int_t     GetHCErrorCode() const {return fHC ? fHC->fCorrupted : -1;} // get HC error code
+  Int_t     GetMCMErrorCode() const {return fMCM ? fMCM->fCorrupted : -1;} // get MCM error code
+  Int_t     GetADCErrorCode() const {return fADC ? fADC->fCorrupted : -1;} // get ADC error code
 
   Int_t     IsMCMcorrupted() const {return fMCM ? fMCM->fCorrupted : -1;} // is current MCM header corrupted
 
