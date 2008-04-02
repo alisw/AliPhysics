@@ -15,7 +15,7 @@ void TOFPreprocessor(Char_t * RunType="PHYSICS")
 {
   gSystem->Load("$ALICE_ROOT/SHUTTLE/TestShuttle/libTestShuttle.so");
 
-  //AliLog::SetClassDebugLevel("AliTOFPreprocessor",1);
+  AliLog::SetClassDebugLevel("AliTOFPreprocessor",1);
   // initialize location of CDB
   AliTestShuttle::SetMainCDB("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB");
   AliTestShuttle::SetMainRefStorage("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestReference");
@@ -104,21 +104,15 @@ TMap* CreateDCSAliasMap()
   //Float_t sigmaHVv=1, sigmaHVc=0.25, sigmaLVv=0.25, sigmaLVc=0.25,
   //  sigmaFEEthr=0.05, sigmaFEEt=5, sigmaTemp=1, sigmaPress=10;
 
-  Float_t tentHVv=6500, tentHVi=80, tentLVv=2.7, tentLVi=4.5,
-    tentLVv33=3.3, tentLVv50=5.0, tentLVv48=48,
-    tentLVi33=100, tentLVi50=3.0, tentLVi48=10,
-    tentFEEthr=1.0, tentFEEtfeac=25, tentFEEttrm=45;
-  Float_t sigmaHVv=10, sigmaHVi=10, sigmaLVv=0.2, sigmaLVi=1.0,
-    sigmaLVv33=0.1, sigmaLVv50=0.1, sigmaLVv48=1,
-    sigmaLVi33=10, sigmaLVi50=0.5, sigmaLVi48=2,
-    sigmaFEEthr=0.1, sigmaFEEtfeac=10, sigmaFEEttrm=4;
+  Float_t tentHVv=6500, tentHVi=80;
+  Float_t sigmaHVv=10, sigmaHVi=10;
 
   Float_t tent=0, sigma=0, thr=0;
-  // to have all the aliases, deccoment the following line:
-  //  Int_t NAliases=10944, NHV=90, NLV=792, NLV33=72, NLV50=72, NLV48=72, NFEEthr=1152, NFEEtfeac=576, NFEEttrm=6840;
+  // to have all the aliases, decomment the following line:
+  Int_t NAliases=360, NHV=90;
 
   // if not all the aliases are there, use this:
-  Int_t NAliases=4104, NHV=90, NLV=792, NLV33=72, NLV50=72, NLV48=72, NFEEthr=1152, NFEEtfeac=576;
+  //Int_t NAliases=120, NHV=90;
 
   for(int nAlias=0;nAlias<NAliases;nAlias++) {
 
@@ -166,122 +160,6 @@ TMap* CreateDCSAliasMap()
       sigma=-sigmaHVi;
       //thr=-thrHVc;
     }
-    else if (nAlias<NHV*4+NLV){
-      //      aliasName = "LVv";
-      //aliasName += nAlias-4*NHV;
-      aliasName = "tof_lv_vfea_";
-      sindex.Form("%03i",nAlias-4*NHV);
-      aliasName += sindex;
-      tent=tentLVv;
-      sigma=sigmaLVv;
-      //thr=thrLVv;
-    }
-    else if (nAlias<NHV*4+2*NLV){
-      //      aliasName = "LVc";
-      //aliasName += nAlias-(4*NHV+NLV);
-      aliasName = "tof_lv_ifea_";
-      sindex.Form("%03i",nAlias-(4*NHV+NLV));
-      aliasName += sindex;
-      tent=tentLVi;
-      sigma=sigmaLVi;
-      //thr=thrLVc;
-    }
-    else if (nAlias<NHV*4+2*NLV+NLV33){
-      //      aliasName = "LVc";
-      //aliasName += nAlias-(4*NHV+NLV);
-      aliasName = "tof_lv_v33_";
-      sindex.Form("%02i",nAlias-(4*NHV+2*NLV));
-      aliasName += sindex;
-      tent=tentLVv33;
-      sigma=sigmaLVv33;
-      //thr=thrLVc;
-    }
-    else if (nAlias<NHV*4+2*NLV+2*NLV33){
-      //      aliasName = "LVc";
-      //aliasName += nAlias-(4*NHV+NLV);
-      aliasName = "tof_lv_i33_";
-      sindex.Form("%02i",nAlias-(4*NHV+2*NLV+NLV33));
-      aliasName += sindex;
-      tent=tentLVi33;
-      sigma=sigmaLVi33;
-      //thr=thrLVc;
-    }
-    else if (nAlias<NHV*4+2*NLV+2*NLV33+NLV50){
-      //      aliasName = "LVc";
-      //aliasName += nAlias-(4*NHV+NLV);
-      aliasName = "tof_lv_v50_";
-      sindex.Form("%02i",nAlias-(4*NHV+2*NLV+2*NLV33));
-      aliasName += sindex;
-      tent=tentLVv50;
-      sigma=sigmaLVv50;
-      //thr=thrLVc;
-    }
-    else if (nAlias<NHV*4+2*NLV+2*NLV33+2*NLV50){
-      //      aliasName = "LVc";
-      //aliasName += nAlias-(4*NHV+NLV);
-      aliasName = "tof_lv_i50_";
-      sindex.Form("%02i",nAlias-(4*NHV+2*NLV+2*NLV33+NLV50));
-      aliasName += sindex;
-      tent=tentLVi50;
-      sigma=sigmaLVi50;
-      //thr=thrLVc;
-    }
-    else if (nAlias<NHV*4+2*NLV+2*NLV33+2*NLV50+NLV48){
-      //      aliasName = "LVc";
-      //aliasName += nAlias-(4*NHV+NLV);
-      aliasName = "tof_lv_v48_";
-      sindex.Form("%02i",nAlias-(4*NHV+2*NLV+2*NLV33+2*NLV50));
-      aliasName += sindex;
-      tent=tentLVv48;
-      sigma=sigmaLVv48;
-      //thr=thrLVc;
-    }
-    else if (nAlias<NHV*4+2*NLV+2*NLV33+2*NLV50+2*NLV48){
-      //      aliasName = "LVc";
-      //aliasName += nAlias-(4*NHV+NLV);
-      aliasName = "tof_lv_i48_";
-      sindex.Form("%02i",nAlias-(4*NHV+2*NLV+2*NLV33+2*NLV50+NLV48));
-      aliasName += sindex;
-      tent=tentLVi48;
-      sigma=sigmaLVi48;
-      //thr=thrLVc;
-    }
-    else if (nAlias<NHV*4+2*NLV+2*NLV33+2*NLV50+2*NLV48+NFEEthr){
-      //      aliasName = "FEEthr";
-      //aliasName += nAlias-(4*NHV+2*NLV-(4*NHV+2*NLV+2*NLV33+2*NLV50+2*NLV48));
-      aliasName = "tof_fee_th_";
-      sindex.Form("%04i",nAlias-(4*NHV+2*NLV+2*NLV33+2*NLV50+2*NLV48));
-      aliasName += sindex;
-      tent=tentFEEthr;
-      sigma=sigmaFEEthr;
-      //thr=thrFEEthr;
-    }
-    else if (nAlias<NHV*4+2*NLV+2*NLV33+2*NLV50+2*NLV48+NFEEthr+NFEEtfeac){
-      //cout << " nalias fee temp = " << nAlias << endl;
-      //      aliasName = "FEEt";
-      //aliasName += nAlias-(4*NHV+2*NLV+NFEEthr);
-      aliasName = "tof_fee_tfeac_";
-      sindex.Form("%03i",nAlias-(4*NHV+2*NLV+2*NLV33+2*NLV50+2*NLV48+NFEEthr));
-      aliasName += sindex;
-      //cout << " nalias fee temp name = " << aliasName << endl;
-      tent=tentFEEtfeac;
-      sigma=sigmaFEEtfeac;
-      //thr=thrFEEthr;
-    }
-    /*
-    else if (nAlias<NHV*4+2*NLV+2*NLV33+2*NLV50+2*NLV48+NFEEthr+NFEEtfeac+NFEEttrm){
-      //cout << " nalias fee temp = " << nAlias << endl;
-      //      aliasName = "FEEt";
-      //aliasName += nAlias-(4*NHV+2*NLV+NFEEthr);
-      aliasName = "tof_fee_ttrm_";
-      sindex.Form("%04i",nAlias-(4*NHV+2*NLV+2*NLV33+2*NLV50+2*NLV48+NFEEthr+NFEEtfeac));
-      aliasName += sindex;
-      //cout << " nalias fee temp name = " << aliasName << endl;
-      tent=tentFEEttrm;
-      sigma=sigmaFEEttrm;
-      //thr=thrFEEthr;
-    }
-    */
     // gauss generation of values 
     for (int timeStamp=0;timeStamp<1000;timeStamp+=10){
     //for (int timeStamp=0;timeStamp<1;timeStamp++){

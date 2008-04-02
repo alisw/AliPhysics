@@ -87,39 +87,7 @@ AliTOFDataDCS::AliTOFDataDCS():
     fHVip[i]=0x0;
     fHVin[i]=0x0;
   }
-  
-  for(int i=0;i<kNLV;i++) {
-    fLVv[i]=0x0;
-    fLVi[i]=0x0;
-  }
-  
-  for(int i=0;i<kNLV33;i++) {
-    fLVv33[i]=0x0;
-    fLVi33[i]=0x0;
-  }
-  
-  for(int i=0;i<kNLV50;i++) {
-    fLVv50[i]=0x0;
-    fLVi50[i]=0x0;
-  }
-  
-  for(int i=0;i<kNLV48;i++) {
-    fLVv48[i]=0x0;
-    fLVi48[i]=0x0;
-  }
-  
-  for(int i=0;i<kNFEEthr;i++) {
-    fFEEthr[i]=0x0;
-  }
-  
-  for(int i=0;i<kNFEEtfeac;i++) {
-    fFEEtfeac[i]=0x0;
-  }
-  
-  for(int i=0;i<kNFEEttrm;i++) {
-    fFEEttrm[i]=0x0;
-  }
-  
+    
   
 }
 
@@ -174,37 +142,6 @@ AliTOFDataDCS::AliTOFDataDCS(const AliTOFDataDCS & data):
     fHVin[i]=data.fHVin[i];
   }
   
-  for(int i=0;i<kNLV;i++) {
-    fLVv[i]=data.fLVv[i];
-    fLVi[i]=data.fLVi[i];
-  }
-
-  for(int i=0;i<kNLV33;i++) {
-    fLVv33[i]=data.fLVv33[i];
-    fLVi33[i]=data.fLVi33[i];
-  }
-
-  for(int i=0;i<kNLV50;i++) {
-    fLVv50[i]=data.fLVv50[i];
-    fLVi50[i]=data.fLVi50[i];
-  }
-
-  for(int i=0;i<kNLV48;i++) {
-    fLVv48[i]=data.fLVv48[i];
-    fLVi48[i]=data.fLVi48[i];
-  }
-
-  for(int i=0;i<kNFEEthr;i++) {
-    fFEEthr[i]=data.fFEEthr[i];
-  }
-
-  for(int i=0;i<kNFEEtfeac;i++) {
-    fFEEtfeac[i]=data.fFEEtfeac[i];
-  }
-
-  for(int i=0;i<kNFEEttrm;i++) {
-    fFEEttrm[i]=data.fFEEttrm[i];
-  }
     
 }
 //---------------------------------------------------------------
@@ -228,40 +165,6 @@ AliTOFDataDCS& AliTOFDataDCS:: operator=(const AliTOFDataDCS & data) {
     this->fHVin[i]=data.GetHVin(i);
   }
 
-  for(int i=0;i<kNLV;i++) {
-    this->fLVv[i]=data.GetLVv(i);
-    this->fLVi[i]=data.GetLVi(i);
-  }
-
-  for(int i=0;i<kNLV33;i++) {
-    this->fLVv33[i]=data.GetLVv33(i);
-    this->fLVi33[i]=data.GetLVi33(i);
-  }
-
-  for(int i=0;i<kNLV50;i++) {
-    this->fLVv50[i]=data.GetLVv50(i);
-    this->fLVi50[i]=data.GetLVi50(i);
-  }
-
-  for(int i=0;i<kNLV48;i++) {
-    this->fLVv48[i]=data.GetLVv48(i);
-    this->fLVi48[i]=data.GetLVi48(i);
-  }
-
-  for(int i=0;i<kNFEEthr;i++) {
-    this->fFEEthr[i]=data.GetFEEthr(i);
-  }
-
-  for(int i=0;i<kNFEEtfeac;i++) {
-    this->fFEEtfeac[i]=data.GetFEEtfeac(i);
-  }
-
-  for(int i=0;i<kNFEEttrm;i++) {
-    this->fFEEttrm[i]=data.GetFEEttrm(i);
-  }
-
-  this->fIsProcessed=data.fIsProcessed;
-  this->fFDR=data.fFDR;
 
   return *this;
 }
@@ -281,48 +184,6 @@ AliTOFDataDCS::~AliTOFDataDCS() {
     fHVin[i]=0;
   }
   
-  for(int i=0;i<kNLV;i++) {
-    delete fLVv[i];
-    fLVv[i]=0;
-    delete fLVi[i];
-    fLVi[i]=0;
-  }
-  
-  for(int i=0;i<kNLV33;i++) {
-    delete fLVv33[i];
-    fLVv33[i]=0;
-    delete fLVi33[i];
-    fLVi33[i]=0;
-  }
-  
-  for(int i=0;i<kNLV50;i++) {
-    delete fLVv50[i];
-    fLVv50[i]=0;
-    delete fLVi50[i];
-    fLVi50[i]=0;
-  }
-  
-  for(int i=0;i<kNLV48;i++) {
-    delete fLVv48[i];
-    fLVv48[i]=0;
-    delete fLVi48[i];
-    fLVi48[i]=0;
-  }
-  
-  for(int i=0;i<kNFEEthr;i++) {
-    delete fFEEthr[i];
-    fFEEthr[i]=0;
-  }
-  
-  for(int i=0;i<kNFEEtfeac;i++) {
-    delete fFEEtfeac[i];
-    fFEEtfeac[i]=0;
-  }
-  
-  for(int i=0;i<kNFEEttrm;i++) {
-    delete fFEEttrm[i];
-    fFEEttrm[i]=0;
-  }
 }
 
 //---------------------------------------------------------------
@@ -414,50 +275,6 @@ Bool_t AliTOFDataDCS::ProcessData(TMap& aliasMap){
 	fHVin[j-3*kNHV]->SetFloat(k,val);
 	fHVin[j-3*kNHV]->SetTimeStampFloat(k,time);
       }
-      else if (j<kNHV*4+kNLV){
-	fLVv[j-4*kNHV]->SetFloat(k,val);
-	fLVv[j-4*kNHV]->SetTimeStampFloat(k,time);
-      }
-      else if (j<kNHV*4+kNLV*2){
-	fLVi[j-4*kNHV-kNLV]->SetFloat(k,val);
-	fLVi[j-4*kNHV-kNLV]->SetTimeStampFloat(k,time);
-      }
-      else if (j<kNHV*4+kNLV*2+kNLV33){
-	fLVv33[j-4*kNHV-2*kNLV]->SetFloat(k,val);
-	fLVv33[j-4*kNHV-2*kNLV]->SetTimeStampFloat(k,time);
-      }
-      else if (j<kNHV*4+kNLV*2+kNLV33*2){
-	fLVi33[j-4*kNHV-2*kNLV-kNLV33]->SetFloat(k,val);
-	fLVi33[j-4*kNHV-2*kNLV-kNLV33]->SetTimeStampFloat(k,time);
-      }
-      else if (j<kNHV*4+kNLV*2+kNLV33*2+kNLV50){
-	fLVv50[j-4*kNHV-2*kNLV-2*kNLV33]->SetFloat(k,val);
-	fLVv50[j-4*kNHV-2*kNLV-2*kNLV33]->SetTimeStampFloat(k,time);
-      }
-      else if (j<kNHV*4+kNLV*2+kNLV33*2+kNLV50*2){
-	fLVi50[j-4*kNHV-2*kNLV-2*kNLV33-kNLV50]->SetFloat(k,val);
-	fLVi50[j-4*kNHV-2*kNLV-2*kNLV33-kNLV50]->SetTimeStampFloat(k,time);
-      }
-      else if (j<kNHV*4+kNLV*2+kNLV33*2+kNLV50*2+kNLV48){
-	fLVv48[j-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50]->SetFloat(k,val);
-	fLVv48[j-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50]->SetTimeStampFloat(k,time);
-      }
-      else if (j<kNHV*4+kNLV*2+kNLV33*2+kNLV50*2+kNLV48*2){
-	fLVi48[j-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50-kNLV48]->SetFloat(k,val);
-	fLVi48[j-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50-kNLV48]->SetTimeStampFloat(k,time);
-      }
-      else if (j<kNHV*4+kNLV*2+kNLV33*2+kNLV50*2+kNLV48*2+kNFEEthr){
-	fFEEthr[j-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50-2*kNLV48]->SetFloat(k,val);
-	fFEEthr[j-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50-2*kNLV48]->SetTimeStampFloat(k,time);
-      }
-      else if (j<kNHV*4+kNLV*2+kNLV33*2+kNLV50*2+kNLV48*2+kNFEEthr+kNFEEtfeac){
-	fFEEtfeac[j-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50-2*kNLV48-kNFEEthr]->SetFloat(k,val);
-	fFEEtfeac[j-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50-2*kNLV48-kNFEEthr]->SetTimeStampFloat(k,time);
-      }
-      else {
-	fFEEttrm[j-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50-2*kNLV48-kNFEEthr-kNFEEtfeac]->SetFloat(k,val);
-	fFEEttrm[j-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50-2*kNLV48-kNFEEthr-kNFEEtfeac]->SetTimeStampFloat(k,time);
-      }
     }
   
     //computing the most significant variations
@@ -502,50 +319,6 @@ Bool_t AliTOFDataDCS::ProcessData(TMap& aliasMap){
 	fHVin[j-3*kNHV]->SetDelta(kk,delta[kk]);
 	fHVin[j-3*kNHV]->SetTimeStampDelta(kk,(Float_t)timedelta[kk]);
       }
-      else if (j<kNHV*4+kNLV){
-	fLVv[j-4*kNHV]->SetDelta(kk,delta[kk]);
-	fLVv[j-4*kNHV]->SetTimeStampDelta(kk,(Float_t)timedelta[kk]);
-      }
-      else if (j<kNHV*4+kNLV*2){
-	fLVi[j-4*kNHV-kNLV]->SetDelta(kk,delta[kk]);
-	fLVi[j-4*kNHV-kNLV]->SetTimeStampDelta(kk,(Float_t)timedelta[kk]);
-      }
-      else if (j<kNHV*4+kNLV*2+kNLV33){
-	fLVv33[j-4*kNHV-2*kNLV]->SetDelta(kk,delta[kk]);
-	fLVv33[j-4*kNHV-2*kNLV]->SetTimeStampDelta(kk,(Float_t)timedelta[kk]);
-      }
-      else if (j<kNHV*4+kNLV*2+kNLV33*2){
-	fLVi33[j-4*kNHV-2*kNLV-kNLV33]->SetDelta(kk,delta[kk]);
-	fLVi33[j-4*kNHV-2*kNLV-kNLV33]->SetTimeStampDelta(kk,(Float_t)timedelta[kk]);
-      }
-      else if (j<kNHV*4+kNLV*2+kNLV33*2+kNLV50){
-	fLVv50[j-4*kNHV-2*kNLV-2*kNLV33]->SetDelta(kk,delta[kk]);
-	fLVv50[j-4*kNHV-2*kNLV-2*kNLV33]->SetTimeStampDelta(kk,(Float_t)timedelta[kk]);
-      }
-      else if (j<kNHV*4+kNLV*2+kNLV33*2+kNLV50*2){
-	fLVi50[j-4*kNHV-2*kNLV-2*kNLV33-kNLV50]->SetDelta(kk,delta[kk]);
-	fLVi50[j-4*kNHV-2*kNLV-2*kNLV33-kNLV50]->SetTimeStampDelta(kk,(Float_t)timedelta[kk]);
-      }
-      else if (j<kNHV*4+kNLV*2+kNLV33*2+kNLV50*2+kNLV48){
-	fLVv48[j-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50]->SetDelta(kk,delta[kk]);
-	fLVv48[j-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50]->SetTimeStampDelta(kk,(Float_t)timedelta[kk]);
-      }
-      else if (j<kNHV*4+kNLV*2+kNLV33*2+kNLV50*2+kNLV48*2){
-	fLVi48[j-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50-kNLV48]->SetDelta(kk,delta[kk]);
-	fLVi48[j-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50-kNLV48]->SetTimeStampDelta(kk,(Float_t)timedelta[kk]);
-      }
-      else if (j<kNHV*4+kNLV*2+kNLV33*2+kNLV50*2+kNLV48*2+kNFEEthr){
-	fFEEthr[j-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50-2*kNLV48]->SetDelta(kk,delta[kk]);
-	fFEEthr[j-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50-2*kNLV48]->SetTimeStampDelta(kk,(Float_t)timedelta[kk]);
-      }
-      else if (j<kNHV*4+kNLV*2+kNLV33*2+kNLV50*2+kNLV48*2+kNFEEthr+kNFEEtfeac){
-	fFEEtfeac[j-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50-2*kNLV48-kNFEEthr]->SetDelta(kk,delta[kk]);
-	fFEEtfeac[j-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50-2*kNLV48-kNFEEthr]->SetTimeStampDelta(kk,(Float_t)timedelta[kk]);
-      }
-      else if (j<kNHV*4+kNLV*2+kNLV33*2+kNLV50*2+kNLV48*2+kNFEEthr+kNFEEtfeac+kNFEEttrm){
-	fFEEttrm[j-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50-2*kNLV48-kNFEEthr-kNFEEtfeac]->SetDelta(kk,delta[kk]);
-	fFEEttrm[j-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50-2*kNLV48-kNFEEthr-kNFEEtfeac]->SetTimeStampDelta(kk,(Float_t)timedelta[kk]);
-      }
     }
   }
   
@@ -586,83 +359,6 @@ void AliTOFDataDCS::Init(){
 	sindex.Form("%02i",i-3*kNHV);
 	fAliasNames[i] += sindex;
 	fHVin[i-3*kNHV] = new AliTOFFormatDCS();
-    }
-    //LV, v
-    else if (i<(kNHV*4+kNLV)){
-	fAliasNames[i] = "tof_lv_vfea_";
-	sindex.Form("%03i",i-4*kNHV);
-	fAliasNames[i] += sindex;
-	fLVv[i-4*kNHV] = new AliTOFFormatDCS();
-    }
-    //LV, i
-    else if (i<(kNHV*4+kNLV*2)){
-	fAliasNames[i] = "tof_lv_ifea_";
-	sindex.Form("%03i",i-4*kNHV-kNLV);
-	fAliasNames[i] += sindex;
-	fLVi[i-4*kNHV-kNLV] = new AliTOFFormatDCS();
-    }
-    //LV 3.3, v
-    else if (i<(kNHV*4+kNLV*2+kNLV33)){
-	fAliasNames[i] = "tof_lv_v33_";
-	sindex.Form("%02i",i-4*kNHV-2*kNLV);
-	fAliasNames[i] += sindex;
-	fLVv33[i-4*kNHV-2*kNLV] = new AliTOFFormatDCS();
-    }
-    //LV 3.3, i
-    else if (i<(kNHV*4+kNLV*2+kNLV33*2)){
-	fAliasNames[i] = "tof_lv_i33_";
-	sindex.Form("%02i",i-4*kNHV-2*kNLV-kNLV33);
-	fAliasNames[i] += sindex;
-	fLVi33[i-4*kNHV-2*kNLV-kNLV33] = new AliTOFFormatDCS();
-    }
-    //LV 5.0, v
-    else if (i<(kNHV*4+kNLV*2+kNLV33*2+kNLV50)){
-	fAliasNames[i] = "tof_lv_v50_";
-	sindex.Form("%02i",i-4*kNHV-2*kNLV-2*kNLV33);
-	fAliasNames[i] += sindex;
-	fLVv50[i-4*kNHV-2*kNLV-2*kNLV33] = new AliTOFFormatDCS();
-    }
-    //LV 5.0, i
-    else if (i<(kNHV*4+kNLV*2+kNLV33*2+kNLV50*2)){
-	fAliasNames[i] = "tof_lv_i50_";
-	sindex.Form("%02i",i-4*kNHV-2*kNLV-2*kNLV33-kNLV50);
-	fAliasNames[i] += sindex;
-	fLVi50[i-4*kNHV-2*kNLV-2*kNLV33-kNLV50] = new AliTOFFormatDCS();
-    }
-    //LV 48, v
-    else if (i<(kNHV*4+kNLV*2+kNLV33*2+kNLV50*2+kNLV48)){
-	fAliasNames[i] = "tof_lv_v48_";
-	sindex.Form("%02i",i-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50);
-	fAliasNames[i] += sindex;
-	fLVv48[i-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50] = new AliTOFFormatDCS();
-    }
-    //LV 48, i
-    else if (i<(kNHV*4+kNLV*2+kNLV33*2+kNLV50*2+kNLV48*2)){
-	fAliasNames[i] = "tof_lv_i48_";
-	sindex.Form("%02i",i-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50-kNLV48);
-	fAliasNames[i] += sindex;
-	fLVi48[i-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50-kNLV48] = new AliTOFFormatDCS();
-    }
-    //FEE thresholds
-    else if (i<(kNHV*4+kNLV*2+kNLV33*2+kNLV50*2+kNLV48*2+kNFEEthr)){
-	fAliasNames[i] = "tof_fee_th_";
-	sindex.Form("%04i",i-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50-2*kNLV48);
-	fAliasNames[i] += sindex;
- 	fFEEthr[i-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50-2*kNLV48] = new AliTOFFormatDCS();
-    }
-    //FEE FEAC temperatures
-    else if (i<(kNHV*4+kNLV*2+kNLV33*2+kNLV50*2+kNLV48*2+kNFEEthr+kNFEEtfeac)){
-	fAliasNames[i] = "tof_fee_tfeac_";
-	sindex.Form("%03i",i-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50-2*kNLV48-kNFEEthr);
-	fAliasNames[i] += sindex;
- 	fFEEtfeac[i-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50-2*kNLV48-kNFEEthr] = new AliTOFFormatDCS();
-    }
-    //FEE trms temperatures
-    else if (i<(kNHV*4+kNLV*2+kNLV33*2+kNLV50*2+kNLV48*2+kNFEEthr+kNFEEtfeac+kNFEEttrm)){
-	fAliasNames[i] = "tof_fee_ttrm_";
-	sindex.Form("%04i",i-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50-2*kNLV48-kNFEEthr-kNFEEtfeac);
-	fAliasNames[i] += sindex;
- 	fFEEttrm[i-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50-2*kNLV48-kNFEEthr-kNFEEtfeac] = new AliTOFFormatDCS();
     }
   }
 }
