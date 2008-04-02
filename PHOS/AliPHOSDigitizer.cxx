@@ -512,7 +512,7 @@ void AliPHOSDigitizer::Digitize(Int_t event)
 
   //set amplitudes in bad channels to zero
 
-  for(Int_t i = 0 ; i <digits->GetEntries(); i++){
+  for(Int_t i = 0 ; i <digits->GetEntriesFast(); i++){
     digit = dynamic_cast<AliPHOSDigit*>( digits->At(i) ) ;
     geom->AbsToRelNumbering(digit->GetId(),relId);
     if(relId[1] == 0) // Emc
