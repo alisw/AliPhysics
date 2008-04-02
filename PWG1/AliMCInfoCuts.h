@@ -68,10 +68,10 @@ private:
   // PDG tracked particles (later added to aTrackParticles)
   enum enumData {
     kNParticles = 10, // number of particles below
-    ep = 11,
-    em = -11,
-    mup = 13,
-    mum = -13,
+    ep = -11,
+    em = 11,
+    mup = -13,
+    mum = 13,
     pip = 211,
     pim = -211,
     kp = 321,
