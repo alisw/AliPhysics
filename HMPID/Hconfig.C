@@ -750,9 +750,6 @@ void HmpConfig::WriteConfig()
   fprintf(pF,"\n  ::Info(\"\\n\\n\\n----------> HMPID private config\",\"Start\");\n"); 
 //Random
   fprintf(pF,"  gRandom->SetSeed(123456);//put 0 to use system time\n\n");    
-//Geant  
-  fprintf(pF,"  gSystem->Load(\"libgeant321\");\n");
-  fprintf(pF,"  new TGeant3TGeo(\"C++ Interface to Geant3\");\n\n");
 //File
   fprintf(pF,"  AliRunLoader *pAL=AliRunLoader::Open(\"galice.root\",AliConfig::GetDefaultEventFolderName(),\"recreate\");\n");    
   fprintf(pF,"  pAL->SetCompressionLevel(2);\n");
@@ -764,6 +761,10 @@ void HmpConfig::WriteConfig()
     fprintf(pF,"  gSystem->Load(\"libEGPythia6.so\");   // TGenerator interface \n");
     fprintf(pF,"  gSystem->Load(\"libpythia6.so\");   // Pythia \n");
     fprintf(pF,"  gSystem->Load(\"libAliPythia6.so\");   // ALICE specifics implementations \n\n");
+//Geant  
+    fprintf(pF,"  gSystem->Load(\"libgeant321\");\n");
+    fprintf(pF,"  new TGeant3TGeo(\"C++ Interface to Geant3\");\n\n");
+  
     fprintf(pF,"  AliDecayer *pDecayer=new AliDecayerPythia();\n");
     fprintf(pF,"  pDecayer->SetForceDecay(kAll);\n"); 
     fprintf(pF,"  pDecayer->Init();\n"); 
