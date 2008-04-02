@@ -324,7 +324,7 @@ void RenderEsd(AliESDEvent *pEsd)
     if(ch<AliHMPIDParam::AliHMPIDParam::kMinCh||ch>AliHMPIDParam::kMaxCh) continue;//this track does not intersect any chamber
     Float_t xPc,yPc,xRa,yRa,thRa,phRa; 
     Int_t chamb = AliHMPIDTracker::IntTrkCha(pTrk,xPc,yPc,xRa,yRa,thRa,phRa);   //find again intersection of track with PC--> it is not stored in ESD!
-    if(ch!=chamb){(" CHAMBER MISMATCH: in ESDTrack chamber %i - in IntTrkCha chamber %i",ch,chamb);End();}
+    if(ch!=chamb){Printf(" CHAMBER MISMATCH: in ESDTrack chamber %i - in IntTrkCha chamber %i",ch,chamb);End();}
     Int_t npTrk = fRenTxC[ch]->SetNextPoint(xPc,yPc);                           //add this intersection point
     Float_t ckov=pTrk->GetHMPIDsignal();                                        //get ckov angle stored for this track  
     if(ckov>0){
@@ -751,7 +751,7 @@ void Hdisp()
     } else {delete fEsdFile; delete fEsdTree;}
     //clm: we need to set the magnetic field  
     if(gSystem->IsFileInIncludePath("galice.root")){
-    if(gAlice) delete gAlice;                       
+    if(gAlice) gAlice=0x0;                       
     gAL=AliRunLoader::Open();                       
     gAL->LoadgAlice();           
     if(gAL)AliHMPIDTracker::SetFieldMap(gAL->GetAliRun()->Field(),kTRUE);                         

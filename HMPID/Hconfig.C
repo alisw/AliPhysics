@@ -675,8 +675,8 @@ void HmpConfig::WriteBatch()
                                                     fprintf(fp,"  cout<<\"!!!!!!!!!!!!Info in <sim.C>: Stop  time: \";time.Set();  time.Print();\n");
                                                     fprintf(fp,"  gBenchmark->Show(\"ALICE\");\n");
   
-                                                    fprintf(fp,"  gSystem->Exec(\"aliroot rec.C\");\n");
                                                     fprintf(fp,"  gSystem->Exec(\"touch ZZZ______finished_______SSS\");\n}\n");
+                                                    fprintf(fp,"  gSystem->Exec(\"aliroot rec.C\");\n");
   fclose(fp);  
   char *sBatchName="rec";
   FILE *fp=fopen(Form("%s.C",sBatchName),"w"); if(!fp){Info("CreateRec","Cannot open output file: %s.C",sBatchName);return;}

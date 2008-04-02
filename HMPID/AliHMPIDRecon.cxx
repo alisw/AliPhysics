@@ -142,33 +142,37 @@ void AliHMPIDRecon::CkovAngle(AliESDtrack *pTrk,TClonesArray *pCluLst,Double_t n
     }
   }//clusters loop
   
-  fMipPos.Set(mipX,mipY);
-  
   if(fPhotCnt<=nMinPhotAcc) {                                                                 //no reconstruction with <=3 photon candidates
     pTrk->SetHMPIDsignal(kNoPhotAccept);                                                      //set the appropriate flag
     pTrk->SetHMPIDmip(mipX,mipY,mipQ,fPhotCnt);                                               //store mip info 
+    pTrk->SetHMPIDcluIdx(-1,-1);                                                              //set index of cluster
     return;
   }
   
-  if(mipId==-1)              {pTrk->SetHMPIDsignal(kMipQdcCut);  return;}                     //no clusters with QDC more the threshold at all
-  if(dMin>fParam->DistCut()) {pTrk->SetHMPIDsignal(kMipDistCut); return;}                     //closest cluster with enough charge is still too far from intersection
+  if(mipId==-1) {
+    pTrk->SetHMPIDcluIdx(chId,9999);                                                          //set index of cluster
+    pTrk->SetHMPIDsignal(kMipQdcCut);
+    return;
+  }                                                                                           //no clusters with QDC more the threshold at all
+    pTrk->SetHMPIDcluIdx(chId,mipId);                                                         //set index of cluster
+    if(dMin>fParam->DistCut()) {pTrk->SetHMPIDsignal(kMipDistCut); return;}                   //closest cluster with enough charge is still too far from intersection
+  
+  fMipPos.Set(mipX,mipY);
+  
   
 //PATTERN RECOGNITION STARTED: 
   
   Int_t iNrec=FlagPhot(HoughResponse());                                                      //flag photons according to individual theta ckov with respect to most probable
   pTrk->SetHMPIDmip(mipX,mipY,mipQ,iNrec);                                                    //store mip info 
 
-  pTrk->SetHMPIDcluIdx(chId,mipId);                                                           //set index of cluster
-  
   if(iNrec<1){
     pTrk->SetHMPIDsignal(kNoPhotAccept);                                                      //no photon candidates are accepted
+    return;
   }
-  else {
-    Double_t thetaC = FindRingCkov(pCluLst->GetEntries());                                    //find the best reconstructed theta Cherenkov
+  Double_t thetaC = FindRingCkov(pCluLst->GetEntries());                                    //find the best reconstructed theta Cherenkov
 //    FindRingGeom(thetaC,2);
-    pTrk->SetHMPIDsignal(thetaC);                                                             //store theta Cherenkov
-    pTrk->SetHMPIDchi2(fCkovSigma2);                                                          //store errors squared
-  }
+  pTrk->SetHMPIDsignal(thetaC);                                                             //store theta Cherenkov
+  pTrk->SetHMPIDchi2(fCkovSigma2);                                                          //store errors squared
 
   DeleteVars();
 }//CkovAngle()
