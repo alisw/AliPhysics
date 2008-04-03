@@ -131,6 +131,7 @@ FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins,
   TClonesArray &cl=*clusters;
   for (Int_t s=0; s<2; s++)
     for (Int_t i=0; i<nMaxBin; i++) {
+      NoiseSuppress(i,s,nzBins,bins[s],cal);
       if (bins[s][i].IsUsed()) continue;
       Int_t idx[32]; UInt_t msk[32]; Int_t npeaks=0;
       FindPeaks(i, nzBins, bins[s], idx, msk, npeaks);
@@ -352,6 +353,55 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(AliITSRawStream* input,
   }
   for(Int_t iHyb=0;iHyb<kHybridsPerDDL;iHyb++) delete [] ddlbins[iHyb];
   Info("FindClustersSDD", "found clusters in ITS SDD: %d", nClustersSDD);
+}
+
+//______________________________________________________________________
+void AliITSClusterFinderV2SDD::NoiseSuppress(Int_t k, Int_t sid,Int_t nzBins, AliBin* bins, AliITSCalibrationSDD* cal) const {
+  // applies zero suppression using the measured noise of each anode
+  // threshold values from ALICE-INT-1999-28 V10
+  Float_t factL=2.2; 
+  Float_t factH=4.0;
+  //
+
+  Int_t iAn=(k%nzBins)-1;
+  if(iAn<0 || iAn>255) return;
+  if(sid==1) iAn+=256;
+  Int_t nLow=0, nHigh=0;
+  Float_t noise=cal->GetNoiseAfterElectronics(iAn);
+  Float_t noisem1=noise;
+  if(iAn>1) noisem1=cal->GetNoiseAfterElectronics(iAn-1);
+  Float_t noisep1=noise;
+  if(iAn<511) noisep1=cal->GetNoiseAfterElectronics(iAn+1);
+  Float_t tL=noise*factL;
+  Float_t tH=noise*factH;
+  Float_t tLp1=noisep1*factL;
+  Float_t tHp1=noisep1*factH;
+  Float_t tLm1=noisem1*factL;
+  Float_t tHm1=noisem1*factH;
+  Float_t cC=bins[k].GetQ();
+  if(cC<=tL){
+    bins[k].SetQ(0);
+    bins[k].SetMask(0xFFFFFFFE);
+    return;
+  }
+  nLow++; // cC is greater than tL
+  if(cC>tH) nHigh++;
+  Int_t sS=bins[k-1].GetQ();
+  if(sS>tLm1) nLow++;
+  if(sS>tHm1) nHigh++;
+  Int_t nN=bins[k+1].GetQ();
+  if(nN>tLp1) nLow++;
+  if(nN>tHp1) nHigh++;
+  Int_t eE=bins[k-nzBins].GetQ();
+  if(eE>tL) nLow++;
+  if(eE>tH) nHigh++;
+  Int_t wW=bins[k+nzBins].GetQ();
+  if(wW>tL) nLow++;
+  if(wW>tH) nHigh++;
+  if(nLow<3 || nHigh<1){
+    bins[k].SetQ(0);
+    bins[k].SetMask(0xFFFFFFFE);
+  }
 }
 
 
