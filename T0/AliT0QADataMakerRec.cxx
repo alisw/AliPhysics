@@ -39,6 +39,7 @@
 #include "AliQAChecker.h"
 #include "AliT0RawReader.h"
 
+#include "iostream.h"
 ClassImp(AliT0QADataMakerRec)
            
 //____________________________________________________________________________ 
@@ -111,8 +112,11 @@ void AliT0QADataMakerRec::InitRaws()
   printf("   AliT0QADataMakerRec::InitRaws() started\n");
   TString timename, ampname, qtcname;
 
+  TH1F* fhRefPoint = new TH1F("hRefPoint","Ref Point", 10,1252170, 1252180);
+  Add2RawsList( fhRefPoint,0);
+   
   TH1F *fhRawCFD[24]; TH1F * fhRawLEDamp[24]; TH1F *fhRawQTC[24];
-
+  
   for (Int_t i=0; i<24; i++)
     {
       timename ="hRawCFD";
@@ -121,16 +125,22 @@ void AliT0QADataMakerRec::InitRaws()
       timename += i;
       ampname += i;
       qtcname += i;
-      fhRawCFD[i] = new TH1F(timename.Data(), timename.Data(),100,100,5000);
-      Add2RawsList( fhRawCFD[i],i);
-      fhRawLEDamp[i] = new TH1F(ampname.Data(), ampname.Data(),100,120000,150000);
-      Add2RawsList( fhRawLEDamp[i],i+24);
-      fhRawQTC[i] = new TH1F(qtcname.Data(), qtcname.Data(),100,100,500);
-      Add2RawsList( fhRawQTC[i],i+48);
+      fhRawCFD[i] = new TH1F(timename.Data(), timename.Data(),500,2100,2800);
+      Add2RawsList( fhRawCFD[i],i+1);
+      fhRawLEDamp[i] = new TH1F(ampname.Data(), ampname.Data(),300,350,650);
+      Add2RawsList( fhRawLEDamp[i],i+24+1);
+      fhRawQTC[i] = new TH1F(qtcname.Data(), qtcname.Data(),1500,1000,7000);
+      Add2RawsList( fhRawQTC[i],i+48+1);
      }
   
-  TH1F* fhRawMean = new TH1F("hRawMean","online mean signal", 100,500,600);
-  Add2RawsList( fhRawMean,72);
+  TH1F* fhRawMean = new TH1F("hRawMean","online mean signal", 100,2400,2500);
+  Add2RawsList( fhRawMean,73);
+  TH1F* fhRawVertex = new TH1F("hRawVertex","online vertex signal", 100,0,600);
+  Add2RawsList( fhRawVertex,74);
+  TH1F* fhRawORA = new TH1F("hRawORA","online OR A", 100,2500,2800);
+  Add2RawsList( fhRawORA,75);
+  TH1F* fhRawORC = new TH1F("hRawORC","online OR C", 100,2000,2300);
+  Add2RawsList( fhRawORC,76);
   
 }
 
@@ -190,47 +200,61 @@ void AliT0QADataMakerRec::InitESDs()
 //____________________________________________________________________________
 void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
 {
-  Int_t allData[110][5];
-  for (Int_t i0=0; i0<105; i0++)
-    {
-      for (Int_t j0=0; j0<5; j0++) allData[i0][j0]=0;
-    }
   //fills QA histos for RAW
-
-   AliT0RawReader *start = new AliT0RawReader(rawReader);
-   start->Next();
-   for (Int_t i=0; i<105; i++) 
-     for (Int_t iHit=0; iHit<5; iHit++)
-       allData[i][iHit]= start->GetData(i,iHit);
-   
-   
-   for (Int_t ik = 0; ik<24; ik+=2){
-     for (Int_t iHt=0; iHt<5; iHt++){
-       Int_t cc = ik/2;
-       if(allData[cc+1][iHt]!=0){
-	 GetRawsData(cc) -> Fill(allData[cc+1][iHt]-allData[0][0]);
-	if(allData[ik+25][iHt]!=0 && allData[ik+26][iHt]!=0)
-	  GetRawsData(cc+48)->Fill(allData[ik+26][iHt]-allData[ik+25][iHt]);
-	if(allData[cc+13][iHt]!=0 )
-	  GetRawsData(cc+24)->Fill(allData[cc+13][iHt]-allData[cc+1][iHt]);
+  cout<<" !!!! AliT0QADataMakerRec::MakeRaws start "<<endl;
+  AliT0RawReader *start = new AliT0RawReader(rawReader);
+  //  start->Next();
+  if (! start->Next())
+    AliDebug(1,Form(" no raw data found!!"));
+  else
+    {  
+      Int_t allData[110][5];
+      for (Int_t i0=0; i0<105; i0++)
+	{
+	  for (Int_t j0=0; j0<5; j0++) allData[i0][j0]=0;
 	}
-     }
-   }
-    
-   for (Int_t ik = 24; ik<48; ik+=2) {
-     for (Int_t iHt=0; iHt<5; iHt++) {
-       Int_t cc = ik/2;
-       if(allData[cc+45][iHt]!=0) {
-	 GetRawsData(cc)->Fill(allData[cc+1][iHt]-allData[0][0]);
-	if(allData[ik+57][iHt]!=0 && allData[ik+58][iHt]!=0)
-	  GetRawsData(cc+48)->Fill(allData[ik+57][iHt]-allData[ik+58][iHt]);
-	if(allData[cc+57][iHt]!=0 )
-	  GetRawsData(cc+48)->Fill(allData[cc+57][iHt]-allData[cc+45][iHt]);
+      for (Int_t i=0; i<105; i++) 
+	for (Int_t iHit=0; iHit<5; iHit++)
+	  allData[i][iHit]= start->GetData(i,iHit);
+      
+      allData[0][0] = allData[0][0] - 5000; 
+      cout<<" refPoint "<<allData[0][0]<<endl;
+      
+      for (Int_t ik = 0; ik<12; ik++){
+	for (Int_t iHt=0; iHt<5; iHt++){
+	  if(allData[ik+1][iHt]>0){
+	    GetRawsData(ik+1) -> Fill(allData[ik+1][iHt]-allData[0][0]);
+	    if(allData[2*ik+25][iHt] > 0 && allData[2*ik+26][iHt] > 0)
+	      GetRawsData(ik+48+1)->Fill(allData[2*ik+25][iHt]-allData[2*ik+26][iHt]);
+	    if(allData[ik+13][iHt]!=0 )
+	      GetRawsData(ik+24+1)->Fill(allData[ik+13][iHt]-allData[ik+1][iHt]);
+	  }
 	}
-     }
-   }
-   delete start;
+      }
+      
+      for (Int_t ik = 12; ik<24; ik++) {
+	for (Int_t iHt=0; iHt<5; iHt++) {
+	  if(allData[ik+45][iHt]>0) {
+	    GetRawsData(ik+1)->Fill(allData[ik+45][iHt]-allData[0][0]);
+	    if(allData[2*ik+57][iHt]!=0 && allData[2*ik+58][iHt]!=0)
+	      GetRawsData(ik+48+1)->Fill(allData[2*ik+57][iHt]-allData[2*ik+58][iHt]);
+	    if(allData[ik+57][iHt] > 0 )
+	      GetRawsData(ik+24+1)->Fill(allData[ik+57][iHt]-allData[ik+45][iHt]);
+	  }
+	}
+      }
+      
 
+
+      GetRawsData(72)->Fill(allData[49][0]-allData[0][0]);
+      GetRawsData(73)->Fill(allData[50][0]-allData[0][0]);
+      GetRawsData(74)->Fill(allData[51][0]-allData[0][0]);
+      GetRawsData(75)->Fill(allData[52][0]-allData[0][0]);
+      
+      delete start;
+    }
+  cout<<" !!!! AliT0QADataMakerRec::MakeRaws end "<<endl;
+  
 }
 
 //____________________________________________________________________________
