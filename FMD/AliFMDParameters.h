@@ -350,6 +350,9 @@ public:
   static const char* AltroMapPath()        { return fgkAltroMap; }
   static const char* ZeroSuppressionPath() { return fgkZeroSuppression; }
   static const char* StripRangePath()      { return fgkStripRange; }
+  static const char* GetPedestalShuttleID()   {return fkPedestalShuttleID;}
+  static const char* GetGainShuttleID()       {return fkGainShuttleID;}
+  static const char* GetConditionsShuttleID()   {return fkConditionsShuttleID;}
 protected:
   /** CTOR  */
   AliFMDParameters();
@@ -411,32 +414,36 @@ protected:
   /** Initialize strip range.  Try to get it from CDB */
   void InitStripRange(AliFMDPreprocessor* pp=0);
 
-  Bool_t          fIsInit;               // Whether we've been initialised  
+  Bool_t          fIsInit;                   // Whether we've been initialised  
 
-  static const char* fgkPulseGain;	 // Path to PulseGain calib object
-  static const char* fgkPedestal;	 // Path to Pedestal calib object
-  static const char* fgkDead;	         // Path to Dead calib object
-  static const char* fgkSampleRate;	 // Path to SampleRate calib object
-  static const char* fgkAltroMap;	 // Path to AltroMap calib object
-  static const char* fgkZeroSuppression; // Path to ZeroSuppression cal object
-  static const char* fgkStripRange;      // Path to strip range cal object
-  const Float_t   fkSiDeDxMip;           // MIP dE/dx in Silicon
-  UShort_t        fVA1MipRange;          // # MIPs the pre-amp can do    
-  UShort_t        fAltroChannelSize;     // Largest # to store in 1 ADC ch.
-  UShort_t        fChannelsPerAltro;     // Number of pre-amp. chan/adc chan.
-  Float_t         fPedestalFactor;       // Number of pedestal widths
+  static const char* fgkPulseGain;	     // Path to PulseGain calib object
+  static const char* fgkPedestal;	     // Path to Pedestal calib object
+  static const char* fgkDead;	             // Path to Dead calib object
+  static const char* fgkSampleRate;	     // Path to SampleRate calib object
+  static const char* fgkAltroMap;	     // Path to AltroMap calib object
+  static const char* fgkZeroSuppression;     // Path to ZeroSuppression cal object
+  static const char* fgkStripRange;          // Path to strip range cal object
+  const Float_t   fkSiDeDxMip;               // MIP dE/dx in Silicon
+  UShort_t        fVA1MipRange;              // # MIPs the pre-amp can do    
+  UShort_t        fAltroChannelSize;         // Largest # to store in 1 ADC ch.
+  UShort_t        fChannelsPerAltro;         // Number of pre-amp. chan/adc chan.
+  Float_t         fPedestalFactor;           // Number of pedestal widths
 
-  Float_t         fFixedPedestal;        // Pedestal to subtract
-  Float_t         fFixedPedestalWidth;   // Width of pedestal
-  UShort_t        fFixedZeroSuppression; // Threshold for zero-suppression
-  UShort_t        fFixedSampleRate;      // Times the ALTRO samples pre-amp.
-  Float_t         fFixedThreshold;       // Threshold in ADC counts
-  UShort_t        fFixedMinStrip;        // Minimum strip read-out
-  UShort_t        fFixedMaxStrip;        // Maximum strip read-out 
-  mutable Float_t fFixedPulseGain;       //! Gain (cached)
-  mutable Float_t fEdepMip;              //! Cache of energy loss for a MIP
-  Bool_t          fHasRcuTrailer;        // if the raw data has RCU trailer
-  Bool_t          fHasCompleteHeader;    // raw data has incomplete data header
+  Float_t         fFixedPedestal;            // Pedestal to subtract
+  Float_t         fFixedPedestalWidth;       // Width of pedestal
+  UShort_t        fFixedZeroSuppression;     // Threshold for zero-suppression
+  UShort_t        fFixedSampleRate;          // Times the ALTRO samples pre-amp.
+  Float_t         fFixedThreshold;           // Threshold in ADC counts
+  UShort_t        fFixedMinStrip;            // Minimum strip read-out
+  UShort_t        fFixedMaxStrip;            // Maximum strip read-out 
+  mutable Float_t fFixedPulseGain;           //! Gain (cached)
+  mutable Float_t fEdepMip;                  //! Cache of energy loss for a MIP
+  Bool_t          fHasRcuTrailer;            // if the raw data has RCU trailer
+  Bool_t          fHasCompleteHeader;        // raw data has incomplete data header
+  
+  static const char* fkPedestalShuttleID;    // Shuttle/preprocessor ID for pedestals
+  static const char* fkGainShuttleID;        // Shuttle/preprocessor ID for gains
+  static const char* fkConditionsShuttleID;  // Shuttle/preprocessor ID for conditions
   
   AliFMDCalibZeroSuppression* fZeroSuppression; // Zero suppression from CDB
   AliFMDCalibSampleRate*      fSampleRate;      // Sample rate from CDB 
