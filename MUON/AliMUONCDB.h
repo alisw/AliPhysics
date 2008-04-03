@@ -13,6 +13,7 @@
 
 #include <TObject.h>
 #include <TString.h>
+#include "AliCDBRunRange.h"
 
 class AliMUONVStore;
 class AliMUONVStore;
@@ -20,8 +21,6 @@ class TMap;
 class AliMUONVCalibParam;
 class AliMUONTriggerLut;
 class AliMUONTriggerEfficiencyCells;
-
-#define ALIMUONCDBINFINITY 99999999
 
 class AliMUONCDB : public TObject
 {
@@ -58,21 +57,21 @@ public:
   void WriteToCDB(const char* calibpath, TObject* object, 
                   Int_t startRun, Int_t endRun, const char* filename);
 
-  void WriteTrigger(Int_t startRun=0,Int_t endRun=ALIMUONCDBINFINITY);
-  void WriteTracker(Bool_t defaultValues=kTRUE, Int_t startRun=0,Int_t endRun=ALIMUONCDBINFINITY);
+  void WriteTrigger(Int_t startRun=0,Int_t endRun=AliCDBRunRange::Infinity());
+  void WriteTracker(Bool_t defaultValues=kTRUE, Int_t startRun=0,Int_t endRun=AliCDBRunRange::Infinity());
   
-  void WriteNeighbours(Int_t startRun=0, Int_t endRun=ALIMUONCDBINFINITY);
+  void WriteNeighbours(Int_t startRun=0, Int_t endRun=AliCDBRunRange::Infinity());
   void WriteHV(Bool_t defaultValues, Int_t startRun, Int_t endRun);
-  void WritePedestals(Bool_t defaultValues, Int_t startRun, Int_t endRun=ALIMUONCDBINFINITY);
-  void WriteGains(Bool_t defaultValues, Int_t startRun, Int_t endRun=ALIMUONCDBINFINITY);
-  void WriteCapacitances(Bool_t defaultValues, Int_t startRun=0, Int_t endRun=ALIMUONCDBINFINITY);
-  void WriteCapacitances(const char* file, Int_t startRun=0, Int_t endRun=ALIMUONCDBINFINITY);
+  void WritePedestals(Bool_t defaultValues, Int_t startRun, Int_t endRun=AliCDBRunRange::Infinity());
+  void WriteGains(Bool_t defaultValues, Int_t startRun, Int_t endRun=AliCDBRunRange::Infinity());
+  void WriteCapacitances(Bool_t defaultValues, Int_t startRun=0, Int_t endRun=AliCDBRunRange::Infinity());
+  void WriteCapacitances(const char* file, Int_t startRun=0, Int_t endRun=AliCDBRunRange::Infinity());
   
-  void WriteLocalTriggerMasks(Int_t startRun=0, Int_t endRun=ALIMUONCDBINFINITY);
-  void WriteRegionalTriggerMasks(Int_t startRun=0, Int_t endRun=ALIMUONCDBINFINITY);
-  void WriteGlobalTriggerMasks(Int_t startRun=0, Int_t endRun=ALIMUONCDBINFINITY);
-  void WriteTriggerLut(Int_t startRun=0, Int_t endRun=ALIMUONCDBINFINITY);
-  void WriteTriggerEfficiency(Int_t startRun=0, Int_t endRun=ALIMUONCDBINFINITY);
+  void WriteLocalTriggerMasks(Int_t startRun=0, Int_t endRun=AliCDBRunRange::Infinity());
+  void WriteRegionalTriggerMasks(Int_t startRun=0, Int_t endRun=AliCDBRunRange::Infinity());
+  void WriteGlobalTriggerMasks(Int_t startRun=0, Int_t endRun=AliCDBRunRange::Infinity());
+  void WriteTriggerLut(Int_t startRun=0, Int_t endRun=AliCDBRunRange::Infinity());
+  void WriteTriggerEfficiency(Int_t startRun=0, Int_t endRun=AliCDBRunRange::Infinity());
   
 private:
   /// Not implemented
