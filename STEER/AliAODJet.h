@@ -60,6 +60,7 @@ class AliAODJet : public AliVParticle {
     virtual Double_t   EffectiveAreaCharged()   const { return  fEffectiveArea[0];}
     virtual Double_t   EffectiveAreaNeutral()   const { return  fEffectiveArea[1];}
 
+    TLorentzVector*    MomentumVector()         const {return fMomentum;}
     virtual void     Print(Option_t* /*option*/) const;
     
 // Dummy  
@@ -75,7 +76,7 @@ class AliAODJet : public AliVParticle {
     TLorentzVector* fMomentum;           // Jet 4-momentum vector
     TRefArray*      fRefTracks;          // array of references to the tracks belonging to the jet
 
-    ClassDef(AliAODJet,3);
+    ClassDef(AliAODJet,4);
 
 };
 
