@@ -8,6 +8,7 @@
 //            Reconstruction of heavy-flavour decay candidates
 //      
 //  Origin: E.Bruna, G.E.Bruno, A.Dainese, F.Prino, R.Romita
+//  Contact: andrea.dainese@lnl.infn.it
 //-------------------------------------------------------------------------
 
 #include <TNamed.h>
@@ -29,6 +30,12 @@ class AliAnalysisVertexingHF : public TNamed {
   AliAnalysisVertexingHF& operator=(const AliAnalysisVertexingHF& source); 
   virtual ~AliAnalysisVertexingHF();
 
+  void FindCandidatesESDtoAOD(AliESDEvent *esd,
+			      TClonesArray *aodVerticesHFTClArr,
+			      TClonesArray *aodD0toKpiTClArr,
+			      TClonesArray *aodJPSItoEleTClArr,
+			      TClonesArray *aodCharm3ProngTClArr,
+			      TClonesArray *aodCharm4ProngTClArr);
   void FindCandidates(AliESDEvent *esd,TTree *treeout[]);
   AliAODRecoDecayHF2Prong* Make2Prong(TObjArray *twoTrackArray1,AliESDEvent *esd,
 				     AliESDVertex *vertexp1n1,Double_t dcap1n1,
@@ -48,6 +55,7 @@ class AliAnalysisVertexingHF : public TNamed {
 
   void SetDebug(Int_t debug=0) {fDebug=debug;}
   void PrintStatus() const;
+  void SetUseTRef() { fUseTRef=kTRUE; }
   void SetSecVtxWithKF() { fSecVtxWithKF=kTRUE; }
   void SetD0toKpiOn() { fD0toKpi=kTRUE; }
   void SetD0toKpiOff() { fD0toKpi=kFALSE; }
@@ -57,6 +65,10 @@ class AliAnalysisVertexingHF : public TNamed {
   void Set3ProngOff() { f3Prong=kFALSE; }
   void Set4ProngOn() { f4Prong=kTRUE; }
   void Set4ProngOff() { f4Prong=kFALSE; }
+  Bool_t GetD0toKpi() { return fD0toKpi; }
+  Bool_t GetJPSItoEle() { return fJPSItoEle; }
+  Bool_t Get3Prong() { return f3Prong; }
+  Bool_t Get4Prong() { return f4Prong; }
   void SetRecoPrimVtxSkippingTrks() 
     { fRecoPrimVtxSkippingTrks=kTRUE; fRmTrksFromPrimVtx=kFALSE;}
   void SetRmTrksFromPrimVtx() 
@@ -95,6 +107,8 @@ class AliAnalysisVertexingHF : public TNamed {
   Double_t fBzkG; // z componenent of field in kG
 
   Bool_t fSecVtxWithKF; // if kTRUE use KF vertexer, else AliVertexerTracks
+
+  Bool_t fUseTRef;      // use TRef to store in the AOD 
 
   Bool_t fRecoPrimVtxSkippingTrks; // flag for primary vertex reco on the fly
                                    // for each candidate, w/o its daughters
