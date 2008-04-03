@@ -446,6 +446,17 @@ Long64_t AliMDC::Close()
 }
 
 //______________________________________________________________________________
+Long64_t AliMDC::AutoSave()
+{
+  // Auto-save the raw-data
+  // and esd (if any) trees
+
+  if (!fRawDB) return -1;
+
+  return fRawDB->AutoSave();
+}
+
+//______________________________________________________________________________
 Int_t AliMDC::Run(const char* inputFile, Bool_t loop,
 		  EWriteMode mode, Double_t maxFileSize, 
 		  const char* fs1, const char* fs2)

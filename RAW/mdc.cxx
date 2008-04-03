@@ -82,3 +82,11 @@ void  alimdcEnableDebug()
   AliLog::SetPrintRepetitions(kFALSE);
   AliLog::SetHandleRootMessages(kTRUE);
 }
+
+long long  alimdcAutoSave(void* alimdc)
+{
+  // Auto-save the raw-data tree
+
+  return ((AliMDC*)alimdc)->AutoSave();
+}
+  

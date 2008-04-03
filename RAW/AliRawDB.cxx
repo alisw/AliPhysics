@@ -413,6 +413,19 @@ Long64_t AliRawDB::GetTotalSize()
 }
 
 //______________________________________________________________________________
+Long64_t AliRawDB::AutoSave()
+{
+  // Auto-save the raw-data and
+  // esd (if any) trees
+
+  Long64_t nbytes = fTree->AutoSave();
+
+  if (fESDTree) nbytes += fESDTree->AutoSave();
+
+  return nbytes;
+}
+
+//______________________________________________________________________________
 void AliRawDB::WriteStats(AliStats* stats)
 {
    // Write stats to raw DB, local run DB and global MySQL DB.

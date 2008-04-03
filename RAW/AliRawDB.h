@@ -52,6 +52,7 @@ public:
    virtual Long64_t    Close();
    Int_t               Fill();
    Long64_t            GetTotalSize();
+   Long64_t            AutoSave();
 
    void         WriteStats(AliStats* stats);
 

@@ -24,6 +24,7 @@ long long  alimdcGetTotalFileSize(void* alimdc);
 long long  alimdcClose(void* alimdc);
 void  alimdcDelete(void* alimdc);
 void  alimdcEnableDebug();
+long long  alimdcAutoSave(void* alimdc);
 
 #ifdef __cplusplus
 }
