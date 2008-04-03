@@ -103,7 +103,8 @@ void AliQADataMaker::DefaultEndOfDetectorCycle(AliQA::TASKINDEX_t task)
 void AliQADataMaker::Finish() const 
 { 
 	// write to the output File
-	fOutput->Close() ; 
+	if (fOutput) 
+		fOutput->Close() ; 
 } 
 
 //____________________________________________________________________________ 
