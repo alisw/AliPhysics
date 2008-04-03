@@ -39,7 +39,7 @@
 #include "AliQAChecker.h"
 #include "AliT0RawReader.h"
 
-#include "iostream.h"
+//#include "iostream.h"
 ClassImp(AliT0QADataMakerRec)
            
 //____________________________________________________________________________ 
@@ -201,7 +201,6 @@ void AliT0QADataMakerRec::InitESDs()
 void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
 {
   //fills QA histos for RAW
-  cout<<" !!!! AliT0QADataMakerRec::MakeRaws start "<<endl;
   AliT0RawReader *start = new AliT0RawReader(rawReader);
   //  start->Next();
   if (! start->Next())
@@ -218,8 +217,7 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
 	  allData[i][iHit]= start->GetData(i,iHit);
       
       allData[0][0] = allData[0][0] - 5000; 
-      cout<<" refPoint "<<allData[0][0]<<endl;
-      
+       
       for (Int_t ik = 0; ik<12; ik++){
 	for (Int_t iHt=0; iHt<5; iHt++){
 	  if(allData[ik+1][iHt]>0){
@@ -253,7 +251,6 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
       
       delete start;
     }
-  cout<<" !!!! AliT0QADataMakerRec::MakeRaws end "<<endl;
   
 }
 
