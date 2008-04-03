@@ -81,6 +81,19 @@ AliComparisonRes::AliComparisonRes():
   //
   // Parametrisation histograms
   //
+
+  f1Pt2Resol1PtTPC(0),
+  f1Pt2Resol1PtTPCITS(0),
+  fYResol1PtTPC(0),
+  fYResol1PtTPCITS(0),
+  fZResol1PtTPC(0),
+  fZResol1PtTPCITS(0),
+  fPhiResol1PtTPC(0),
+  fPhiResol1PtTPCITS(0),
+  fThetaResol1PtTPC(0),
+  fThetaResol1PtTPCITS(0),
+
+  // constrained
   fC1Pt2Resol1PtTPC(0),
   fC1Pt2Resol1PtTPCITS(0),
   fCYResol1PtTPC(0),
@@ -127,6 +140,19 @@ AliComparisonRes::~AliComparisonRes(){
   if(fCPtPullTan)   delete fCPtPullTan;   fCPtPullTan=0;
 
   // Parametrisation histograms
+  // 
+  if(f1Pt2Resol1PtTPC) delete f1Pt2Resol1PtTPC; f1Pt2Resol1PtTPC=0;
+  if(f1Pt2Resol1PtTPCITS) delete f1Pt2Resol1PtTPCITS; f1Pt2Resol1PtTPCITS=0;
+  if(fYResol1PtTPC) delete fYResol1PtTPC; fYResol1PtTPC=0;
+  if(fYResol1PtTPCITS) delete fYResol1PtTPCITS; fYResol1PtTPCITS=0;
+  if(fZResol1PtTPC) delete fZResol1PtTPC; fZResol1PtTPC=0;
+  if(fZResol1PtTPCITS) delete fZResol1PtTPCITS; fZResol1PtTPCITS=0;
+  if(fPhiResol1PtTPC) delete fPhiResol1PtTPC; fPhiResol1PtTPC=0;
+  if(fPhiResol1PtTPCITS) delete fPhiResol1PtTPCITS; fPhiResol1PtTPCITS=0;
+  if(fThetaResol1PtTPC) delete fThetaResol1PtTPC; fThetaResol1PtTPC=0;
+  if(fThetaResol1PtTPCITS) delete fThetaResol1PtTPCITS; fThetaResol1PtTPCITS=0;
+
+  // constrained
   if(fC1Pt2Resol1PtTPC) delete fC1Pt2Resol1PtTPC; fC1Pt2Resol1PtTPC=0;
   if(fC1Pt2Resol1PtTPCITS) delete fC1Pt2Resol1PtTPCITS; fC1Pt2Resol1PtTPCITS=0;
   if(fCYResol1PtTPC) delete fCYResol1PtTPC; fCYResol1PtTPC=0;
@@ -186,7 +212,51 @@ void AliComparisonRes::InitHisto(){
   fPtPullHPT->SetXTitle("p_{t}");
   fPtPullHPT->SetYTitle("#Deltap_{t}/#Sigma");
 
+  //
   // Parametrisation histograms
+  // 
+
+  f1Pt2Resol1PtTPC = new TH2F("f1Pt2Resol1PtTPC","(1/mcpt-1/pt)/(1+1/mcpt)^2 vs 1/pt)",100,0,10,200,-0.020,0.020);  
+  f1Pt2Resol1PtTPC->SetXTitle("1/mcp_{t}");
+  f1Pt2Resol1PtTPC->SetYTitle("(1/mcp_{t}-1/p_{t})/(1+1/mcp_{t})^2)");
+
+  f1Pt2Resol1PtTPCITS = new TH2F("f1Pt2Resol1PtTPCITS","(1/mcpt-1/pt)/(1+1/mcpt)^2 vs 1/pt)",100,0,10,200,-0.020,0.020);  
+  f1Pt2Resol1PtTPCITS->SetXTitle("1/mcp_{t}");
+  f1Pt2Resol1PtTPCITS->SetYTitle("(1/mcp_{t}-1/p_{t})/(1+1/mcp_{t})^2)");
+
+  fYResol1PtTPC = new TH2F("fYResol1PtTPC","fYResol1PtTPC",100, 0,10,200,-0.010,0.010);   
+  fYResol1PtTPC->SetXTitle("1/mcpt");
+  fYResol1PtTPC->SetYTitle("#DeltaY");
+
+  fYResol1PtTPCITS = new TH2F("fYResol1PtTPCITS","fYResol1PtTPCITS",100, 0,10,200,-0.010,0.010);   
+  fYResol1PtTPCITS->SetXTitle("1/mcpt");
+  fYResol1PtTPCITS->SetYTitle("#DeltaY");
+
+  fZResol1PtTPC = new TH2F("fZResol1PtTPC","fZResol1PtTPC",50, 0,10,200,-0.020,0.020);   
+  fZResol1PtTPC->SetXTitle("1/mcpt");
+  fZResol1PtTPC->SetYTitle("#DeltaZ");
+
+  fZResol1PtTPCITS = new TH2F("fZResol1PtTPCITS","fZResol1PtTPCITS",50, 0,10,200,-0.020,0.020);   
+  fZResol1PtTPCITS->SetXTitle("1/mcpt");
+  fZResol1PtTPCITS->SetYTitle("#DeltaZ");
+
+  fPhiResol1PtTPC = new TH2F("fPhiResol1PtTPC","fPhiResol1PtTPC",50, 0,10,200,-0.005,0.005);   
+  fPhiResol1PtTPC->SetXTitle("1/mcpt");
+  fPhiResol1PtTPC->SetYTitle("#Delta#phi");
+
+  fPhiResol1PtTPCITS = new TH2F("fPhiResol1PtTPCITS","fPhiResol1PtTPCITS",50, 0,10,200,-0.005,0.005);   
+  fPhiResol1PtTPCITS->SetXTitle("1/mcpt");
+  fPhiResol1PtTPCITS->SetYTitle("#Delta#phi");
+
+  fThetaResol1PtTPC = new TH2F("fThetaResol1PtTPC","fThetaResol1PtTPC",50, 0,10,200,-0.005,0.005);   
+  fThetaResol1PtTPC->SetXTitle("1/mcpt");
+  fThetaResol1PtTPC->SetYTitle("#Delta#theta");
+
+  fThetaResol1PtTPCITS = new TH2F("fThetaResol1PtTPCITS","fThetaResol1PtTPCITS",50, 0,10,200,-0.005,0.005);   
+  fThetaResol1PtTPCITS->SetXTitle("1/mcpt");
+  fThetaResol1PtTPCITS->SetYTitle("#Delta#theta");
+  
+  // constrained
   fC1Pt2Resol1PtTPC = new TH2F("fC1Pt2Resol1PtTPC","(1/mcpt-1/pt)/(1+1/mcpt)^2 vs 1/pt)",100,0,10,200,-0.020,0.020);  
   fC1Pt2Resol1PtTPC->SetXTitle("1/mcp_{t}");
   fC1Pt2Resol1PtTPC->SetYTitle("(1/mcp_{t}-1/p_{t})/(1+1/mcp_{t})^2)");
@@ -242,17 +312,26 @@ void AliComparisonRes::InitCuts()
 void AliComparisonRes::Process(AliMCInfo* infoMC, AliESDRecInfo *infoRC)
 {
   // Fill resolution comparison information 
+  AliExternalTrackParam *track = 0;
+  Double_t kRadius    = 3.0;      // beam pipe radius
+  Double_t kMaxStep   = 5.0;      // max step
+  Double_t field      = AliTracker::GetBz(); // nominal Bz field [kG]
+  Double_t kMaxD      = 123456.0; // max distance
+
+  Int_t clusterITS[200];
+  Double_t dca[2], cov[3]; // dca_xy, dca_z, sigma_xy, sigma_xy_z, sigma_z
+
   Float_t mcpt = infoMC->GetParticle().Pt();
 
   // distance to Prim. vertex 
   const Double_t* dv = infoMC->GetVDist(); 
-
   Bool_t isPrim = TMath::Sqrt(dv[0]*dv[0] + dv[1]*dv[1])<fCutsMC->GetMaxR() && TMath::Abs(dv[2])<fCutsMC->GetMaxVz();
 
   // Check selection cuts
   if (fCutsMC->IsPdgParticle(TMath::Abs(infoMC->GetParticle().GetPdgCode())) == kFALSE) return; 
   if (!isPrim) return;
-  if (infoRC->GetStatus(1)==0) return;
+  //if (infoRC->GetStatus(1)==0) return;
+  if (infoRC->GetStatus(1)!=3) return; // TPC refit
   if (!infoRC->GetESDtrack()) return;  
   if (infoRC->GetESDtrack()->GetTPCNcls()<fCutsRC->GetMinNClustersTPC()) return;
 
@@ -263,6 +342,49 @@ void AliComparisonRes::Process(AliMCInfo* infoMC, AliESDRecInfo *infoRC)
 
   Float_t deltaPt= (mcpt-infoRC->GetESDtrack()->Pt())/mcpt;  
   Float_t pullPt= (1/mcpt-infoRC->GetESDtrack()->OneOverPt())/TMath::Sqrt(infoRC->GetESDtrack()->GetSigma1Pt2());  
+  Float_t deltaPhi = TMath::ATan2(infoRC->GetESDtrack()->Py(),infoRC->GetESDtrack()->Px())-
+                     TMath::ATan2(infoMC->GetParticle().Py(),infoMC->GetParticle().Px());
+
+  Float_t deltaTan = TMath::ATan2(infoRC->GetESDtrack()->Pz(),infoRC->GetESDtrack()->Pt())-
+                     TMath::ATan2(infoMC->GetParticle().Pz(),infoMC->GetParticle().Pt());
+
+  Float_t delta1Pt2 = (1/mcpt-infoRC->GetESDtrack()->OneOverPt())/TMath::Power(1+1/mcpt,2);       
+
+  Float_t deltaY1Pt = (infoMC->GetParticle().Vy()-infoRC->GetESDtrack()->GetY()) / (0.2+1/mcpt);
+  Float_t deltaZ1Pt = (infoMC->GetParticle().Vz()-infoRC->GetESDtrack()->GetZ()) / (0.2+1/mcpt);
+  Float_t deltaPhi1Pt = deltaPhi   / (0.1+1/mcpt);
+  Float_t deltaTheta1Pt = deltaTan / (0.1+1/mcpt);
+
+  // calculate track parameters at vertex
+  if (infoRC->GetESDtrack()->GetTPCInnerParam())
+  {
+    if ((track = new AliExternalTrackParam(*infoRC->GetESDtrack()->GetTPCInnerParam())) != 0 )
+    {
+      Bool_t bStatus = AliTracker::PropagateTrackTo(track,kRadius,infoMC->GetMass(),kMaxStep,kTRUE);
+      Bool_t bDCAStatus = track->PropagateToDCA(fVertex,field,kMaxD,dca,cov);
+
+      // Fill parametrisation histograms (only TPC track)
+      if(bStatus && bDCAStatus) 
+	  {
+        f1Pt2Resol1PtTPC->Fill(1/mcpt,delta1Pt2);
+        fYResol1PtTPC->Fill(1/mcpt,deltaY1Pt);
+        fZResol1PtTPC->Fill(1/mcpt,deltaZ1Pt);
+        fPhiResol1PtTPC->Fill(1/mcpt,deltaPhi1Pt);
+        fThetaResol1PtTPC->Fill(1/mcpt,deltaTheta1Pt);
+	  }
+	  delete track;
+    }
+  }
+
+ // TPC and ITS (nb. of clusters >2) in the system
+  if(infoRC->GetESDtrack()->GetITSclusters(clusterITS)>2) 
+  {
+      f1Pt2Resol1PtTPCITS->Fill(1/mcpt,delta1Pt2);
+      fYResol1PtTPCITS->Fill(1/mcpt,deltaY1Pt);
+      fZResol1PtTPCITS->Fill(1/mcpt,deltaZ1Pt);
+      fPhiResol1PtTPCITS->Fill(1/mcpt,deltaPhi1Pt);
+      fThetaResol1PtTPCITS->Fill(1/mcpt,deltaTheta1Pt);
+  }
 
   // Fill histograms
   fPtResolLPT->Fill(mcpt,deltaPt);
@@ -300,25 +422,22 @@ void AliComparisonRes::ProcessConstrained(AliMCInfo* infoMC, AliESDRecInfo *info
   if (infoRC->GetESDtrack()->GetTPCNcls()<fCutsRC->GetMinNClustersTPC()) return;
   if (!infoRC->GetESDtrack()->GetConstrainedParam()) return;
 
-  // calculate and set prim. vertex
+// calculate and set prim. vertex
   fVertex->SetXv( infoMC->GetParticle().Vx() - dv[0] );
   fVertex->SetYv( infoMC->GetParticle().Vy() - dv[1] );
   fVertex->SetZv( infoMC->GetParticle().Vz() - dv[2] );
 
   // constrained parameters resolution
   const AliExternalTrackParam * cparam = infoRC->GetESDtrack()->GetConstrainedParam();
-  Float_t deltaCPt= (mcpt-cparam->Pt())/mcpt;  
-  Float_t pullCPt= (1/mcpt-cparam->OneOverPt())/
-    TMath::Sqrt(cparam->GetSigma1Pt2());          
+  Float_t deltaPt= (mcpt-cparam->Pt())/mcpt;  
+  Float_t pullPt= (1/mcpt-cparam->OneOverPt())/TMath::Sqrt(cparam->GetSigma1Pt2());          
   Float_t deltaPhi = TMath::ATan2(cparam->Py(),cparam->Px())-
-    TMath::ATan2(infoMC->GetParticle().Py(),infoMC->GetParticle().Px());
+                     TMath::ATan2(infoMC->GetParticle().Py(),infoMC->GetParticle().Px());
   Float_t pullPhi = deltaPhi/TMath::Sqrt(cparam->GetSigmaSnp2()); 
-
   Float_t deltaTan = TMath::ATan2(cparam->Pz(),cparam->Pt())-TMath::ATan2(infoMC->GetParticle().Pz(),infoMC->GetParticle().Pt());
   Float_t pullTan = deltaPhi/TMath::Sqrt(cparam->GetSigmaSnp2()); 
 
 
-  //Float_t delta1Pt2 = (1/mcpt-infoRC->GetESDtrack()->OneOverPt())/TMath::Power(1+1/mcpt,2));       
   Float_t delta1Pt2 = (1/mcpt-cparam->OneOverPt())/TMath::Power(1+1/mcpt,2);       
 
   Float_t deltaY1Pt = (infoMC->GetParticle().Vy()-cparam->GetY()) / (0.2+1/mcpt);
@@ -348,7 +467,7 @@ void AliComparisonRes::ProcessConstrained(AliMCInfo* infoMC, AliESDRecInfo *info
   }
 
  // TPC and ITS (nb. of clusters >2) in the system
-  if(infoRC->GetStatus(1)==3 && infoRC->GetESDtrack()->GetITSclusters(clusterITS)>2) 
+  if(infoRC->GetESDtrack()->GetITSclusters(clusterITS)>2) 
   {
       fC1Pt2Resol1PtTPCITS->Fill(1/mcpt,delta1Pt2);
       fCYResol1PtTPCITS->Fill(1/mcpt,deltaY1Pt);
@@ -358,8 +477,8 @@ void AliComparisonRes::ProcessConstrained(AliMCInfo* infoMC, AliESDRecInfo *info
   }
 
   // Fill histograms
-  fCPtResolTan->Fill(tantheta,deltaCPt);
-  fCPtPullTan->Fill(tantheta,pullCPt);
+  fCPtResolTan->Fill(tantheta,deltaPt);
+  fCPtPullTan->Fill(tantheta,pullPt);
   fCPhiResolTan->Fill(tantheta,deltaPhi);
   fCPhiPullTan->Fill(tantheta,pullPhi);
   fCTanResolTan->Fill(tantheta,deltaTan);
@@ -428,14 +547,14 @@ void AliComparisonRes::Analyse(){
   hiss->SetXTitle("1/mcp_{t}");
   hiss->SetYTitle("1/mcp_{t}-1/p_{t}/(1+1/p_{t})^2");
   hiss->Draw();
-  hiss->Write("Pt2Resol1PtTPC");
+  hiss->Write("C1Pt2Resol1PtTPC");
   fC1Pt2Resol1PtTPC->Write();
 
   hiss = comp->MakeResol(comp->fC1Pt2Resol1PtTPCITS,1,0);
   hiss->SetXTitle("1/mcp_{t}");
   hiss->SetYTitle("1/mcp_{t}-1/p_{t}/(1+1/p_{t})^2");
   hiss->Draw();
-  hiss->Write("Pt2Resol1PtTPCITS");
+  hiss->Write("C1Pt2Resol1PtTPCITS");
   fC1Pt2Resol1PtTPCITS->Write();
   //
   hiss = comp->MakeResol(comp->fCYResol1PtTPC,1,0);
@@ -494,6 +613,77 @@ void AliComparisonRes::Analyse(){
   hiss->Write("CThetaResol1PtTPCITS");
   fCThetaResol1PtTPCITS->Write();
 
+  //
+  hiss = comp->MakeResol(comp->f1Pt2Resol1PtTPC,1,0);
+  hiss->SetXTitle("1/mcp_{t}");
+  hiss->SetYTitle("1/mcp_{t}-1/p_{t}/(1+1/p_{t})^2");
+  hiss->Draw();
+  hiss->Write("OnePt2Resol1PtTPC");
+  f1Pt2Resol1PtTPC->Write();
+
+  hiss = comp->MakeResol(comp->f1Pt2Resol1PtTPCITS,1,0);
+  hiss->SetXTitle("1/mcp_{t}");
+  hiss->SetYTitle("1/mcp_{t}-1/p_{t}/(1+1/p_{t})^2");
+  hiss->Draw();
+  hiss->Write("OnePt2Resol1PtTPCITS");
+  f1Pt2Resol1PtTPCITS->Write();
+  //
+  hiss = comp->MakeResol(comp->fYResol1PtTPC,1,0);
+  hiss->SetXTitle("1/mcp_{t}");
+  hiss->SetYTitle("(mcy-y)/(0.2+1/mcp_{t})");
+  hiss->Draw();
+  hiss->Write("YResol1PtTPC");
+  fYResol1PtTPC->Write();
+
+  hiss = comp->MakeResol(comp->fYResol1PtTPCITS,1,0);
+  hiss->SetXTitle("1/mcp_{t}");
+  hiss->SetYTitle("(mcy-y)/(0.2+1/mcp_{t})");
+  hiss->Draw();
+  hiss->Write("YResol1PtTPCITS");
+  fYResol1PtTPCITS->Write();
+  //
+  hiss = comp->MakeResol(comp->fZResol1PtTPC,1,0);
+  hiss->SetXTitle("1/mcp_{t}");
+  hiss->SetYTitle("(mcz-z)/(0.2+1/mcp_{t})");
+  hiss->Draw();
+  hiss->Write("ZResol1PtTPC");
+  fZResol1PtTPC->Write();
+
+  hiss = comp->MakeResol(comp->fZResol1PtTPCITS,1,0);
+  hiss->SetXTitle("1/mcp_{t}");
+  hiss->SetYTitle("(mcz-z)/(0.2+1/mcp_{t})");
+  hiss->Draw();
+  hiss->Write("ZResol1PtTPCITS");
+  fZResol1PtTPCITS->Write();
+  //
+  hiss = comp->MakeResol(comp->fPhiResol1PtTPC,1,0);
+  hiss->SetXTitle("1/mcp_{t}");
+  hiss->SetYTitle("(mc#phi-#phi)/(0.1+1/mcp_{t})");
+  hiss->Draw();
+  hiss->Write("PhiResol1PtTPC");
+  fPhiResol1PtTPC->Write();
+
+  hiss = comp->MakeResol(comp->fPhiResol1PtTPCITS,1,0);
+  hiss->SetXTitle("1/mcp_{t}");
+  hiss->SetYTitle("(mc#phi-#phi)/(0.1+1/mcp_{t})");
+  hiss->Draw();
+  hiss->Write("PhiResol1PtTPCITS");
+  fPhiResol1PtTPCITS->Write();
+  //
+  hiss = comp->MakeResol(comp->fThetaResol1PtTPC,1,0);
+  hiss->SetXTitle("1/mcp_{t}");
+  hiss->SetYTitle("(mc#theta-#theta)/(0.1+1/mcp_{t})");
+  hiss->Draw();
+  hiss->Write("ThetaResol1PtTPC");
+  fThetaResol1PtTPC->Write();
+
+  hiss = comp->MakeResol(comp->fThetaResol1PtTPCITS,1,0);
+  hiss->SetXTitle("1/mcp_{t}");
+  hiss->SetYTitle("(mc#theta-#theta)/(0.1+1/mcp_{t})");
+  hiss->Draw();
+  hiss->Write("ThetaResol1PtTPCITS");
+  fThetaResol1PtTPCITS->Write();
+
   fp->Close();
 }
 
@@ -523,6 +713,19 @@ Long64_t AliComparisonRes::Merge(TCollection* list)
   fPtPullLPT->Add(entry->fPtPullLPT);
   fPtPullHPT->Add(entry->fPtPullHPT);
 
+  // Histograms for 1/pt parameterisation
+  f1Pt2Resol1PtTPC->Add(entry->f1Pt2Resol1PtTPC);
+  fYResol1PtTPC->Add(entry->fYResol1PtTPC);
+  fZResol1PtTPC->Add(entry->fZResol1PtTPC);
+  fPhiResol1PtTPC->Add(entry->fPhiResol1PtTPC);
+  fThetaResol1PtTPC->Add(entry->fThetaResol1PtTPC);
+
+  f1Pt2Resol1PtTPCITS->Add(entry->f1Pt2Resol1PtTPCITS);
+  fYResol1PtTPCITS->Add(entry->fYResol1PtTPCITS);
+  fZResol1PtTPCITS->Add(entry->fZResol1PtTPCITS);
+  fPhiResol1PtTPCITS->Add(entry->fPhiResol1PtTPCITS);
+  fThetaResol1PtTPCITS->Add(entry->fThetaResol1PtTPCITS);
+
   // Resolution histograms (constrained param)
   fCPhiResolTan->Add(entry->fCPhiResolTan);
   fCTanResolTan->Add(entry->fCTanResolTan);
@@ -531,7 +734,7 @@ Long64_t AliComparisonRes::Merge(TCollection* list)
   fCTanPullTan->Add(entry->fCTanPullTan);
   fCPtPullTan->Add(entry->fCPtPullTan);
 
-  //  Histograms for 1/pt parameterisation
+  //  Histograms for 1/pt parameterisation (constrained)
   fC1Pt2Resol1PtTPC->Add(entry->fC1Pt2Resol1PtTPC);
   fCYResol1PtTPC->Add(entry->fCYResol1PtTPC);
   fCZResol1PtTPC->Add(entry->fCZResol1PtTPC);
