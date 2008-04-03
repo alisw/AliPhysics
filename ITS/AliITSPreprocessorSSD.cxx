@@ -1,5 +1,5 @@
 #include "AliITSPreprocessorSSD.h"
-
+ 
 #include "AliCDBMetaData.h"
 #include "AliLog.h"
 #include "TFile.h"
@@ -26,7 +26,19 @@ const Int_t AliITSPreprocessorSSD::fgkNumberOfSSD = 1698;
 
 ClassImp(AliITSPreprocessorSSD)
 
-//______________________________________________________________________________________________
+//-----------------------------------------------------------------------
+AliITSPreprocessorSSD::AliITSPreprocessorSSD(AliShuttleInterface* shuttle) :
+  AliPreprocessor("SSD", shuttle)
+{
+  // constructor
+
+  AddRunType("ELECTRONICS_CALIBRATION_RUN");
+  AddRunType("PEDESTAL");
+  AddRunType("PHYSICS");
+
+}
+
+///______________________________________________________________________________________________
 void AliITSPreprocessorSSD::Initialize(Int_t run, UInt_t startTime,
 	UInt_t endTime)
 {
@@ -67,6 +79,47 @@ UInt_t AliITSPreprocessorSSD::Process(TMap* /*dcsAliasMap*/)
 	TIter next(list);
 	TObjString *ok;
 	
+	//---------------------------------------
+	// in case some module was not calibrated!
+	for(Int_t i=0; i<fgkNumberOfSSD; i++) {
+	  AliITSNoiseSSD *calib = new AliITSNoiseSSD();
+	  calib->SetMod((UShort_t) i+500);
+	  calib->SetNNoiseP(768);
+	  calib->SetNNoiseN(768);
+	  // take a reasonable averaged value for the noise on P- and N-side strips
+	  for(Int_t j=0; j<768; j++) {
+	    calib->AddNoiseP(j,1000.);
+	    calib->AddNoiseN(j,1000.);
+	  }
+	  calib_array.AddAt(calib,i);
+	}
+	//-----------------------------------------
+	//---------------------------------------
+	// in case some module was not calibrated!
+	for(Int_t i=0; i<fgkNumberOfSSD; i++) {
+	  AliITSBadChannelsSSD *badch = new AliITSBadChannelsSSD();
+	  badch->SetMod((UShort_t) i+500);
+	  badch_array.AddAt(badch,i);
+	}
+	//-----------------------------------------
+	
+	//---------------------------------------
+	// in case some module was not calibrated!
+	for(Int_t i=0; i<fgkNumberOfSSD; i++) {
+	  AliITSPedestalSSD *pedel = new AliITSPedestalSSD();
+	  pedel->SetMod((UShort_t) i+500);
+	  pedel->SetNPedestalP(768);
+	  pedel->SetNPedestalN(768);
+	  for(Int_t j=0; j<768; j++) {
+	    pedel->AddPedestalP(j,0.);
+	    pedel->AddPedestalN(j,0.);
+	  }
+	  ped_array.AddAt(pedel,i);
+	}
+	//-----------------------------------------
+	
+	
+	
 	// expect to iterate 3 times (LDC0, LDC1, LDC2)
 	while ( (ok = (TObjString*) next()) ) {                               
 	  
@@ -92,40 +145,15 @@ UInt_t AliITSPreprocessorSSD::Process(TMap* /*dcsAliasMap*/)
 		return 3;
 	    }	    
 
-	    //---------------------------------------
-	    // in case some module was not calibrated!
-	    for(Int_t i=0; i<fgkNumberOfSSD; i++) {
-	      AliITSNoiseSSD *calib = new AliITSNoiseSSD();
-	      calib->SetMod((UShort_t) i+500);
-	      calib->SetNNoiseP(768);
-	      calib->SetNNoiseN(768);
-	      // take a reasonable averaged value for the noise on P- and N-side strips
-	      for(Int_t j=0; j<768; j++) {
-		calib->AddNoiseP(j,2.);
-		calib->AddNoiseN(j,4.);
-	      }
-	      calib_array.AddAt(calib,i);
-	    }
-	    //-----------------------------------------
-
 	    Int_t nmod = cal->GetEntries();
+	    Log(Form("\n#Mod %d", nmod ));
 	    for(Int_t mod=0; mod<nmod; mod++) {
 	      AliITSNoiseSSD *calib = (AliITSNoiseSSD*) cal->At(mod);
+	      Log(Form("\nModId %d", calib->GetMod() ));
 	      if((calib->GetMod()<500)||(calib->GetMod()>2198)) continue;
 	      calib_array.AddAt(calib,calib->GetMod()-500);
 	    }
 
-
-	    //---------------------------------------
-	    // in case some module was not calibrated!
-	    for(Int_t i=0; i<fgkNumberOfSSD; i++) {
-	      AliITSBadChannelsSSD *badch = new AliITSBadChannelsSSD();
-	      badch->SetMod((UShort_t) i+500);
-	      badch_array.AddAt(badch,i);
-	    }
-	    //-----------------------------------------
-
-	    //-----------------------------------------
 	    TObjArray *bad; 
 	    f->GetObject("BadChannels;1", bad); 
 	    if(!bad) {
@@ -139,21 +167,6 @@ UInt_t AliITSPreprocessorSSD::Process(TMap* /*dcsAliasMap*/)
 	      if((badch->GetMod()<500)||(badch->GetMod()>2198)) continue;
 	      badch_array.AddAt(badch,badch->GetMod()-500);
 	    }
-
-	    //---------------------------------------
-	    // in case some module was not calibrated!
-	    for(Int_t i=0; i<fgkNumberOfSSD; i++) {
-	      AliITSPedestalSSD *pedel = new AliITSPedestalSSD();
-	      pedel->SetMod((UShort_t) i+500);
-	      pedel->SetNPedestalP(768);
-	      pedel->SetNPedestalN(768);
-	      for(Int_t j=0; j<768; j++) {
-		pedel->AddPedestalP(j,0.);
-		pedel->AddPedestalN(j,0.);
-	      }
-	      ped_array.AddAt(pedel,i);
-	    }
-	    //-----------------------------------------
 
 	    TObjArray *ped; 
 	    f->GetObject("Pedestal;1", ped); 
@@ -206,7 +219,7 @@ UInt_t AliITSPreprocessorSSD::Process(TMap* /*dcsAliasMap*/)
 	return 1;
       }
 	 
-  } // end if noise_run
+  } // end if pedestal run
   else {
     Log("Nothing to do");
     return 0;
