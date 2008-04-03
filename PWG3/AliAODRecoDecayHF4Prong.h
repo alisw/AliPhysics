@@ -37,7 +37,7 @@ class AliAODRecoDecayHF4Prong : public AliAODRecoDecayHF {
 
   virtual ~AliAODRecoDecayHF4Prong() {}  
  
-  void GetDCAs(Float_t dca[6]) const 
+  void GetDCAs(Double_t dca[6]) const 
     {for(Int_t i=0;i<6;i++) dca[i]=GetDCA(i);} // convention:fDCA[0]=p0p1,fDCA[1]=p0p2,fDCA[2]=p0p3,fDCA[3]=p1p2...
   Double_t GetDist12toPrim() const {return fDist12toPrim;}
   Double_t GetDist23toPrim() const {return fDist12toPrim;}

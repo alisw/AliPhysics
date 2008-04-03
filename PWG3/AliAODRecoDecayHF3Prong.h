@@ -33,7 +33,7 @@ class AliAODRecoDecayHF3Prong : public AliAODRecoDecayHF {
 
   virtual ~AliAODRecoDecayHF3Prong() {}  
  
-  void GetDCAs(Float_t dca[3]) const 
+  void GetDCAs(Double_t dca[3]) const 
     {for(Int_t i=0;i<3;i++) dca[i]=GetDCA(i);}
   Double_t GetSigmaVert() const { return fSigmaVert; }
   Double_t GetDist12toPrim() const { return fDist12toPrim; }
