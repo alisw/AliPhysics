@@ -1,3 +1,5 @@
+#-*- Mode: Makefile -*-
+
 SRCS=  TKDTree.cxx \
   TKDInterpolatorBase.cxx \
   TKDNodeInfo.cxx \
@@ -10,3 +12,9 @@ SRCS=  TKDTree.cxx \
 HDRS= $(SRCS:.cxx=.h)
 
 DHDR:=StatLinkDef.h
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+                         -lCDB \
+                         -L$(shell root-config --libdir) -lMinuit
+endif

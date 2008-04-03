@@ -1,3 +1,5 @@
+#-*- Mode: Makefile -*-
+
 SRCS= TDPMjet.cxx AliGenDPMjet.cxx AliGenDPMjetEventHeader.cxx AliIonPDGCodes.cxx
 
 HDRS= $(SRCS:.cxx=.h) 
@@ -7,3 +9,9 @@ DHDR:=TDPMjetLinkDef.h
 EXPORT:=TDPMjet.h AliGenDPMjetEventHeader.h AliIonPDGCodes.h
 
 EINCLUDE:=DPMJET
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+                         -lSTEERBase -lEVGEN -lSTEER -ldpmjet \
+                         -L$(shell root-config --libdir) -lEG
+endif
