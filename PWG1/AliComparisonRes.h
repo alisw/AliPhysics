@@ -72,6 +72,19 @@ private:
   //
   // Histograms for track resolution parameterisation
   //
+
+  TH2F* f1Pt2Resol1PtTPC;      //-> (1/mcpt-1/pt)/(1+1/pt)^2 vs 1/pt (TPC)
+  TH2F* f1Pt2Resol1PtTPCITS;   //-> (1/mcpt-1/pt)/(1+1/pt)^2 vs 1/pt (TPC+ITS)
+  TH2F* fYResol1PtTPC;         //-> (mcy-y)/(0.2+1/pt) vs 1/pt (TPC) 
+  TH2F* fYResol1PtTPCITS;      //-> (mcy-y)/(0.2+1/pt) vs 1/pt (TPC + ITS) 
+  TH2F* fZResol1PtTPC;         //-> (mcz-z)/(0.2+1/pt) vs 1/pt (TPC)
+  TH2F* fZResol1PtTPCITS;      //-> (mcz-z)/(0.2+1/pt) vs 1/pt (TPC+ITS)
+  TH2F* fPhiResol1PtTPC;       //-> (mcphi-phi)/(0.1+1/pt) vs 1/pt (TPC)
+  TH2F* fPhiResol1PtTPCITS;    //-> (mcphi-phi)/(0.1+1/pt) vs 1/pt (TPC+ITS)
+  TH2F* fThetaResol1PtTPC;     //-> (mctheta-theta)/(0.1+1/pt) vs 1/pt (TPC)
+  TH2F* fThetaResol1PtTPCITS;  //-> (mctheta-theta)/(0.1+1/pt) vs 1/pt (TPC+ITS)
+  
+  // constrained
   TH2F* fC1Pt2Resol1PtTPC;      //-> (1/mcpt-1/pt)/(1+1/pt)^2 vs 1/pt (TPC)
   TH2F* fC1Pt2Resol1PtTPCITS;   //-> (1/mcpt-1/pt)/(1+1/pt)^2 vs 1/pt (TPC+ITS)
   TH2F* fCYResol1PtTPC;         //-> (mcy-y)/(0.2+1/pt) vs 1/pt (TPC) 
