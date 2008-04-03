@@ -265,10 +265,9 @@ TObjArray * AliQADataMakerSteer::GetFromOCDB(AliQA::DETECTORINDEX_t det, AliQA::
 		man->SetDefaultStorage(tmp.Data()) ; 		
 		man->SetSpecificStorage(Form("%s/*", AliQA::GetQAName()), AliQA::GetQARefStorage()) ;
 	}
-	char detOCDBDir[10] ; 
-	sprintf(detOCDBDir, "%s/%s/%s", AliQA::GetQAName(), AliQA::GetDetName((Int_t)det), AliQA::GetRefOCDBDirName()) ; 
-	AliInfo(Form("Retrieving reference data from %s/%s for %s", AliQA::GetQARefStorage(), detOCDBDir, AliQA::GetTaskName(task).Data())) ; 
-	AliCDBEntry* entry = man->Get(detOCDBDir, 0) ; //FIXME 0 --> Run Number
+	TString detOCDBDir(Form("%s/%s/%s", AliQA::GetQAName(), AliQA::GetDetName((Int_t)det), AliQA::GetRefOCDBDirName())) ; 
+	AliInfo(Form("Retrieving reference data from %s/%s for %s", AliQA::GetQARefStorage(), detOCDBDir.Data(), AliQA::GetTaskName(task).Data())) ; 
+	AliCDBEntry* entry = man->Get(detOCDBDir.Data(), 0) ; //FIXME 0 --> Run Number
 	TList * listDetQAD = dynamic_cast<TList *>(entry->GetObject()) ;
 	if ( listDetQAD ) 
 		rv = dynamic_cast<TObjArray *>(listDetQAD->FindObject(AliQA::GetTaskName(task))) ; 
@@ -527,12 +526,12 @@ Bool_t AliQADataMakerSteer::IsSelected(const char * det)
 Bool_t AliQADataMakerSteer::Merge(const Int_t runNumber) const
 {
 	// Merge all the cycles from all detectors in one single file per run
-	char cmd[80] ;
+	TString cmd ;
 	if ( runNumber == -1 )
-		sprintf(cmd, ".! ls *%s*.*.*.root > tempo.txt", AliQA::GetQADataFileName()) ; 
+		cmd = Form(".! ls *%s*.*.*.root > tempo.txt", AliQA::GetQADataFileName()) ; 
 	else 
-		sprintf(cmd, ".! ls *%s*.%d.*.root > tempo.txt", AliQA::GetQADataFileName(), runNumber) ; 
-	gROOT->ProcessLine(cmd) ;
+		cmd = Form(".! ls *%s*.%d.*.root > tempo.txt", AliQA::GetQADataFileName(), runNumber) ; 
+	gROOT->ProcessLine(cmd.Data()) ;
 	ifstream in("tempo.txt") ; 
 	const Int_t runMax = 10 ;  
 	TString file[AliQA::kNDET*runMax] ;
@@ -554,8 +553,7 @@ Bool_t AliQADataMakerSteer::Merge(const Int_t runNumber) const
 	
 	Int_t runIndex    = 0 ;  
 	Int_t runIndexMax = 0 ; 
-	char stmp[10] ; 
-	sprintf(stmp, ".%s.", AliQA::GetQADataFileName()) ; 
+	TString stmp(Form(".%s.", AliQA::GetQADataFileName())) ; 
 	for (Int_t ifile = 0 ; ifile < index ; ifile++) {
 		TString tmp(file[ifile]) ; 
 		tmp.ReplaceAll(".root", "") ; 
@@ -576,12 +574,10 @@ Bool_t AliQADataMakerSteer::Merge(const Int_t runNumber) const
 	}
 	for (Int_t irun = 0 ; irun < runIndexMax ; irun++) {
 		TFileMerger merger ; 
-		char outFileName[20] ; 
-		sprintf(outFileName, "Merged.%s.%d.root", AliQA::GetQADataFileName(), run[irun]) ; 
-		merger.OutputFile(outFileName) ; 
+		TString outFileName(Form("Merged.%s.%d.root",AliQA::GetQADataFileName(),run[irun]));		
+		merger.OutputFile(outFileName.Data()) ; 
 		for (Int_t ifile = 0 ; ifile < index-1 ; ifile++) {
-			char pattern[100] ; 
-			sprintf(pattern, "%s.%d.", AliQA::GetQADataFileName(), run[irun]) ; 
+			TString pattern(Form("%s.%d.", AliQA::GetQADataFileName(), run[irun])) ; 
 			TString tmp(file[ifile]) ; 
 			if (tmp.Contains(pattern)) {
 				merger.AddFile(tmp) ; 
@@ -697,16 +693,14 @@ Bool_t AliQADataMakerSteer::Save2OCDB(const Int_t runNumber, const char * year, 
 		rv = Merge(runNumber) ; 
 		if ( ! rv )
 			return kFALSE ; 
-		char inputFileName[20] ; 
-		sprintf(inputFileName, "Merged.%s.%d.root", AliQA::GetQADataFileName(), runNumber) ; 
-		inputFile = TFile::Open(inputFileName) ; 
+		TString inputFileName(Form("Merged.%s.%d.root", AliQA::GetQADataFileName(), runNumber)) ; 
+		inputFile = TFile::Open(inputFileName.Data()) ; 
 		rv = SaveIt2OCDB(runNumber, inputFile, year) ; 
 	} else {
 		for (Int_t index = 0; index < AliQA::kNDET; index++) {
 			if (sdet.Contains(AliQA::GetDetName(index))) {
-				char inputFileName[20] ; 
-				sprintf(inputFileName, "%s.%s.%d.%d.root", AliQA::GetDetName(index), AliQA::GetQADataFileName(), runNumber, cycleNumber) ; 
-				inputFile = TFile::Open(inputFileName) ; 			
+				TString inputFileName(Form("%s.%s.%d.%d.root", AliQA::GetDetName(index), AliQA::GetQADataFileName(), runNumber, cycleNumber)) ; 
+				inputFile = TFile::Open(inputFileName.Data()) ; 			
 				rv *= SaveIt2OCDB(runNumber, inputFile, year) ; 
 			}
 		}
@@ -738,12 +732,10 @@ Bool_t AliQADataMakerSteer::SaveIt2OCDB(const Int_t runNumber, TFile * inputFile
 		TDirectory * detDir = inputFile->GetDirectory(AliQA::GetDetName(detIndex)) ; 
 		if ( detDir ) {
 			AliInfo(Form("Entering %s", detDir->GetName())) ;
-			char detOCDBDir[20] ;
-			sprintf(detOCDBDir, "%s/%s/%s", AliQA::GetDetName(detIndex), AliQA::GetRefOCDBDirName(), AliQA::GetRefDataDirName()) ; 
-			AliCDBId idr(detOCDBDir, runNumber, AliCDBRunRange::Infinity())  ;
+			TString detOCDBDir(Form("%s/%s/%s", AliQA::GetDetName(detIndex), AliQA::GetRefOCDBDirName(), AliQA::GetRefDataDirName())) ; 
+			AliCDBId idr(detOCDBDir.Data(), runNumber, AliCDBRunRange::Infinity())  ;
 			TList * listDetQAD = new TList() ;
-			char listName[20] ; 
-			sprintf(listName, "%s QA data Reference", AliQA::GetDetName(detIndex)) ; 
+			TString listName(Form("%s QA data Reference", AliQA::GetDetName(detIndex))) ; 
 			mdr.SetComment("HMPID QA stuff");
 			listDetQAD->SetName(listName) ; 
 			TList * taskList = detDir->GetListOfKeys() ; 
