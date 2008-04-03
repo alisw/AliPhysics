@@ -1,3 +1,5 @@
+#-*- Mode: Makefile -*-
+
 SRCS = AliCFFrame.cxx \
        AliCFVGrid.cxx \
        AliCFGrid.cxx \
@@ -40,5 +42,10 @@ DHDR= CORRFWLinkDef.h
 
 EXPORT:=$(SRCS:.cxx=.h)
 
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+                         -lSTEERBase -lANALYSIS -lESD \
+                         -L$(shell root-config --libdir) -lEG
+endif
 
 
