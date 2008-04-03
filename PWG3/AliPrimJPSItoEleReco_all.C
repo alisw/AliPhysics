@@ -8,6 +8,7 @@
 void AliPrimJPSItoEleReco_all() {
   
   gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
   gSystem->Load("libAOD.so");
   gSystem->Load("libPWG3base.so");
   gSystem->Load("libPWG3.so");
@@ -74,6 +75,8 @@ void AliPrimJPSItoEleReco_all() {
 //==========================================================================
 void AliBtoJPSItoEleSele() {  
 
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
   gSystem->Load("libAOD.so");
   gSystem->Load("libPWG3base.so");
   gSystem->Load("libPWG3.so");
