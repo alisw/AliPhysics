@@ -58,14 +58,16 @@ ClassImp(AliFMDParameters)
 AliFMDParameters* AliFMDParameters::fgInstance = 0;
 
 //____________________________________________________________________
-const char* AliFMDParameters::fgkPulseGain	 = "FMD/Calib/PulseGain";
-const char* AliFMDParameters::fgkPedestal	 = "FMD/Calib/Pedestal";
-const char* AliFMDParameters::fgkDead	         = "FMD/Calib/Dead";
-const char* AliFMDParameters::fgkSampleRate	 = "FMD/Calib/SampleRate";
-const char* AliFMDParameters::fgkAltroMap	 = "FMD/Calib/AltroMap";
-const char* AliFMDParameters::fgkZeroSuppression = "FMD/Calib/ZeroSuppression";
-const char* AliFMDParameters::fgkStripRange	 = "FMD/Calib/StripRange";
-
+const char* AliFMDParameters::fgkPulseGain	    = "FMD/Calib/PulseGain";
+const char* AliFMDParameters::fgkPedestal	    = "FMD/Calib/Pedestal";
+const char* AliFMDParameters::fgkDead	            = "FMD/Calib/Dead";
+const char* AliFMDParameters::fgkSampleRate	    = "FMD/Calib/SampleRate";
+const char* AliFMDParameters::fgkAltroMap	    = "FMD/Calib/AltroMap";
+const char* AliFMDParameters::fgkZeroSuppression    = "FMD/Calib/ZeroSuppression";
+const char* AliFMDParameters::fgkStripRange	    = "FMD/Calib/StripRange";
+const char* AliFMDParameters::fkPedestalShuttleID   = "pedestals";
+const char* AliFMDParameters::fkGainShuttleID       = "gains";
+const char* AliFMDParameters::fkConditionsShuttleID = "conditions";
 
 //____________________________________________________________________
 AliFMDParameters* 
