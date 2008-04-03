@@ -130,6 +130,7 @@ private:
 	
 	void SendAlive();
 	void SendMLInfo();
+	virtual Bool_t TouchFile();
 
 	const AliShuttleConfig* fConfig; 	// pointer to configuration object
 

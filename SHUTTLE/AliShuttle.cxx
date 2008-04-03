@@ -57,6 +57,7 @@
 #include <TFile.h>
 #include <TGrid.h>
 #include <TGridResult.h>
+#include <TMap.h>
 
 #include <TMonaLisaWriter.h>
 
@@ -2584,15 +2585,21 @@ Bool_t AliShuttle::UpdateShuttleLogbook(const char* detector, const char* status
 
 		if (detName == "shuttle_done")
 		{
-			// Send the information to ML
-			TMonaLisaText  mlStatus("SHUTTLE_status", "Done");
+			if (TouchFile()==kTRUE){
+				//Send the information to ML
+				TMonaLisaText  mlStatus("SHUTTLE_status", "Done");
 
-			TList mlList;
-			mlList.Add(&mlStatus);
-		
-			TString mlID;
-			mlID.Form("%d", GetCurrentRun());
-			fMonaLisa->SendParameters(&mlList, mlID);
+				TList mlList;
+				mlList.Add(&mlStatus);
+				
+				TString mlID;
+				mlID.Form("%d", GetCurrentRun());
+				fMonaLisa->SendParameters(&mlList, mlID);
+			}
+			else{
+				return kFALSE;
+			}
+					
 		}
 	} else {
 		TString statusStr(status);
@@ -3211,3 +3218,49 @@ void AliShuttle::SetShuttleLogDir(const char* logDir)
 
 	fgkShuttleLogDir = gSystem->ExpandPathName(logDir);
 }
+//______________________________________________________________________________________________
+Bool_t AliShuttle::TouchFile()
+{
+	//
+	// touching a file on the grid if run has been DONE
+	//
+	
+	if (!gGrid)
+	{
+		Log("SHUTTLE",Form("No TGrid connection estabilished!"));
+		Log("SHUTTLE",Form("Could not touch file for run %i",GetCurrentRun()));
+		return kFALSE;
+	}
+
+	TString command;
+	command.Form("touch /alice/data/%d/%s/SHUTTLE_DONE/shuttle_done_%i", GetCurrentYear(), GetLHCPeriod(),GetCurrentRun());
+	TGridResult *resultTouch = dynamic_cast<TGridResult*>(gGrid->Command(command));
+	if (resultTouch){
+		TMap *mapTouch = dynamic_cast<TMap*>(resultTouch->At(0));
+		if (mapTouch){
+			TObjString *valueTouch = dynamic_cast<TObjString*>(mapTouch->GetValue("__result__"));
+			if (valueTouch){
+				if (valueTouch->GetString()=="1"){
+				return kTRUE;
+				}	
+				else {
+					Log("SHUTTLE",Form("No value for __result__ key set in the map for touching command"));
+				}
+			}
+			else {
+				Log("SHUTTLE",Form("No value set in the map for touching command"));
+			}
+		}
+		else {
+			Log("SHUTTLE",Form("No map for touching command"));
+		}
+	}
+
+	else {
+		Log("SHUTTLE",Form("No result for touching command"));
+	}
+	Log("SHUTTLE",Form("Could not touch file for run %i",GetCurrentRun()));
+	return kFALSE;
+}
+
+
