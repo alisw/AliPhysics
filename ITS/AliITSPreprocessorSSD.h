@@ -14,8 +14,7 @@
 class AliITSPreprocessorSSD : public AliPreprocessor
 {
   public:
-  AliITSPreprocessorSSD(AliShuttleInterface* shuttle):
-    AliPreprocessor("SSD",shuttle) {}
+  AliITSPreprocessorSSD(AliShuttleInterface* shuttle);
   virtual ~AliITSPreprocessorSSD() {;}
     enum {kDDLperLDC = 4};      // number of DDLs in LDC
 
