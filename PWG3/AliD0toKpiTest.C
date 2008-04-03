@@ -7,6 +7,7 @@
 void AliD0toKpiReco() {
   
   gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
   gSystem->Load("libAOD.so");
   gSystem->Load("libPWG3base.so");
   gSystem->Load("libPWG3.so");
@@ -71,6 +72,7 @@ void AliD0toKpiReco() {
 void AliD0toKpiSele() {  
 
   gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
   gSystem->Load("libAOD.so");
   gSystem->Load("libPWG3base.so");
   gSystem->Load("libPWG3.so");

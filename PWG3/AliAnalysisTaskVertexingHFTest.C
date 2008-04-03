@@ -1,6 +1,7 @@
 void AliAnalysisTaskVertexingHFTest() {
 
   gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice.so");
   gSystem->Load("libANALYSISRL");
   gSystem->Load("libAOD.so");
   gSystem->Load("libPWG3base.so");
