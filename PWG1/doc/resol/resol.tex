@@ -44,14 +44,39 @@ The track paramterization - 5 parameters:
 The error scaling:
 \begin{equation}
 \begin{split}
-\sigma^2_{yy} \approx   \sigma^2_{yy0}+ \frac{k_p}{p^2_t} \\
-\sigma^2_{zz} \approx   \sigma^2_{zz0}+ \frac{k_p}{p^2_t} \\
-\sigma^2_{\phi\phi}     \approx  \sigma^2_{\phi\phi0}+ \frac{k_a}{p^2_t} \\
-\sigma^2_{\theta\theta} \approx  \sigma^2_{\theta\theta0}+ \frac{k_a}{p^2_t} \\
-\sigma^2_{cc} \approx  \sigma^2_{cc0}+ \frac{k_a}{p^4_t} \\
+C=1/p_t \\
+\sigma^2_{yy} \approx   \sigma^2_{yy0}+ k_p.C^2 \\
+\sigma^2_{zz} \approx   \sigma^2_{zz0}+ k_p.C^2 \\
+\sigma^2_{\phi\phi}     \approx  \sigma^2_{\phi\phi0}+ k_a.C^2 \\
+\sigma^2_{\theta\theta} \approx  \sigma^2_{\theta\theta0}+ k_a.C^2 \\
+\sigma^2_{cc} \approx  \sigma^2_{cc0}+ k_c.C^4\\
 \end{split}
 \end{equation}
 
+
+
+\subsection{Resolution histograming and parameterization}
+
+The resolution of the track parameters depends strongly on the momenta, 
+respectivaly curvature. 
+There is roughly linear scaling roughly linear scaling in position and 
+angle, and parabolic scaling  for momentum resolution. The pread of the resolutions
+because of the wide range of particle momenta is of the order of magnitude.
+($p_t$ $<0.1,\inf>$, C $<0,10>$).
+
+In order to save the space for histograms, the resolution can be appropriatetly 
+scaled. Following scaling function are used:
+
+\begin{equation}
+\begin{split}
+C=1/p_t \\
+sf_{pp} =   \sqrt{s_{pp}+C}   \\
+sf_{aa} =   \sqrt{s_{aa}+C}   \\
+sf_{cc} =   \sqrt{s_{cc}+C^2} \\ 
+\end{split}
+\end{equation}
+Choosing appropriate scaling coeficient s, the scaled resolution as function of the
+particle curvature is roughly constant.  
 
 
 
