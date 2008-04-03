@@ -855,23 +855,32 @@ void AliITSsimulationSDD::Compress2D(){
       Int_t ian=i+iWing*fNofMaps/2;
       if( !fAnodeFire[ian] ) continue;
       for (Int_t itb=0; itb<fMaxNofSamples; itb++) {
+	Int_t nLow=0, nHigh=0;      
 	Float_t cC=fHitMap2->GetSignal(ian,itb);
 	if(cC<=tL) continue;
+	nLow++; // cC is greater than tL
+	if(cC>tH) nHigh++;
 	//                     N
 	// Get "quintuple":   WCE
 	//                     S
 	Float_t wW=0.;
 	if(itb>0) wW=fHitMap2->GetSignal(ian,itb-1);
+	if(wW>tL) nLow++;
+	if(wW>tH) nHigh++;
 	Float_t eE=0.;
 	if(itb<fMaxNofSamples-1) eE=fHitMap2->GetSignal(ian,itb+1);
+	if(eE>tL) nLow++;
+	if(eE>tH) nHigh++;
 	Float_t nN=0.;
 	if(i<(fNofMaps/2-1)) nN=fHitMap2->GetSignal(ian+1,itb);
+	if(nN>tL) nLow++;
+	if(nN>tH) nHigh++;
 	Float_t sS=0.;
 	if(i>0) sS=fHitMap2->GetSignal(ian-1,itb);
-	
-	Int_t thres=tH;  // another cell in quintuplet should pass high threshold
-	if(cC>tH) thres=tL; // another cell in quintuplet should pass low threshold
-	if(wW>thres || eE>thres || nN>thres || sS>thres){  
+	if(sS>tL) nLow++;
+	if(sS>tH) nHigh++;
+ 	
+	if(nLow>=3 && nHigh>=1){
 	  Int_t signal=(Int_t)(cC-tL);
 	  if(do10to8) signal = Convert10to8(signal);
 	  AddDigit(ian,itb,signal);  // store C (subtracting low threshold)

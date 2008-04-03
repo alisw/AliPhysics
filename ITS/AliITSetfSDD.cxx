@@ -33,12 +33,6 @@ ClassImp(AliITSetfSDD)
 const Int_t AliITSetfSDD::AliITSetfSDDparam::fgkMaxNofPoles = 5;
 const Int_t AliITSetfSDD::AliITSetfSDDparam::fgkMaxNofSamples = 1024;
 
-Int_t ppower(Int_t b, Int_t e) {
-  Int_t power = 1;
-  for(Int_t i=0; i<e; i++) power *= b;
-  return power;
-}
-
 AliITSetfSDD::AliITSetfSDD():
 fTimeDelay(0),
 fSamplingTime(0),
@@ -84,10 +78,9 @@ fWI(0)
   fTimeDelay = 53.5;
   if(amplif == 2) fTimeDelay = 35.5;
   fSamplingTime = timestep;
-
+  Double_t xGiga=1.0E+9;
   fT0 = 0.;
-  fDf = ppower(10,9)/(AliITSetfSDDparam::NumberOfSamples()*fSamplingTime);
-
+  fDf = xGiga/(AliITSetfSDDparam::NumberOfSamples()*fSamplingTime);
   Int_t i,j;
   fZeroM = new Double_t[AliITSetfSDDparam::NumberOfPoles()];
   fZeroR = new Double_t [AliITSetfSDDparam::NumberOfPoles()];
@@ -182,8 +175,8 @@ fWI(0)
       Double_t vVI = vVM*sin(vVA);
       //cout << "VM: " << vVM << ", VA: " << vVA << endl;
       //cout << "VR: " << vVR << ", VI: " << vVI << endl;
-      fTfR[i] = vVR*ppower(10,9);
-      fTfI[i] = vVI*ppower(10,9);
+      fTfR[i] = vVR*xGiga;
+      fTfI[i] = vVI*xGiga;
       //cout << "fTfR[" << i << "] = " << fTfR[i] << endl;
       //cout << "fTfI[" << i << "] = " << fTfI[i] << endl;
       if(i) {
