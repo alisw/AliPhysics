@@ -79,32 +79,17 @@ void AliVZEROQADataMakerSim::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArr
 //____________________________________________________________________________ 
 void AliVZEROQADataMakerSim::InitHits()
 {
-  // create Hits histograms in Hits subdir
-  char  timename[10];
-  char  chargename[12];
-  TH1F  *fhHitTime[72];
-  TH1F  *fhHitCharge[72];
-  char  texte[25];
  
   // create Hits histograms in Hits subdir
-  TH1F * h0 = new TH1F("hHitMultiplicity", "Hits multiplicity distribution in VZERO", 300, 0., 299.) ; 
+  
+  TH1I * h0 = new TH1I("hHitMultiplicity", "Hit multiplicity distribution in VZERO", 300, 0, 299) ; 
   h0->Sumw2() ;
   Add2HitsList(h0, 0) ;  
+  
+  TH1I * h1 = new TH1I("hHitCellNumber", "Hit cell distribution in VZERO", 80, 0, 79) ; 
+  h1->Sumw2() ;
+  Add2HitsList(h1, 1) ;  
     
-  for (Int_t i=0; i<72; i++)
-    {
-       sprintf(timename,"hHitTime%d",i);
-       sprintf(texte,"Hit Time in VZERO cell %d",i);    
-       fhHitTime[i] = new TH1F(timename,texte,300,0.,149.);
-       
-       sprintf(chargename,"hHitCharge%d",i);
-       sprintf(texte,"Hit Charge in VZERO cell %d",i);
-       fhHitCharge[i]= new TH1F(chargename,texte,1024,0.,1023.);
-       
-       Add2HitsList( fhHitTime[i],i+1);
-       Add2HitsList( fhHitCharge[i],i+1+72);
-    }
-
 }
 
 //____________________________________________________________________________ 
@@ -115,12 +100,12 @@ void AliVZEROQADataMakerSim::InitDigits()
   
   char TDCname[10];
   char ADCname[12];
-  TH1F *fhDigTDC[64]; 
-  TH1F *fhDigADC[64]; 
+  TH1I *fhDigTDC[64]; 
+  TH1I *fhDigADC[64]; 
   char texte[30];
 
   // create Digits histograms in Digits subdir
-  TH1I * h0 = new TH1I("hDigitMultiplicity", "Digits multiplicity distribution in VZERO", 100, 0., 99.) ; 
+  TH1I * h0 = new TH1I("hDigitMultiplicity", "Digits multiplicity distribution in VZERO", 100, 0, 99) ; 
   h0->Sumw2() ;
   Add2DigitsList(h0, 0) ;
   
@@ -128,11 +113,11 @@ void AliVZEROQADataMakerSim::InitDigits()
     {
        sprintf(TDCname, "hDigitTDC%d", i);
        sprintf(texte,"Digit TDC in cell %d",i);    
-       fhDigTDC[i] = new TH1F(TDCname,texte,300,0.,149.);
+       fhDigTDC[i] = new TH1I(TDCname,texte,300,0.,149.);
        
        sprintf(ADCname,"hDigitADC%d",i);
        sprintf(texte,"Digit ADC in cell %d",i);
-       fhDigADC[i]= new TH1F(ADCname,texte,1024,0.,1023.);
+       fhDigADC[i]= new TH1I(ADCname,texte,1024,0.,1023.);
        
        Add2DigitsList(fhDigTDC[i],i+1);
        Add2DigitsList(fhDigADC[i],i+1+64);  
@@ -154,9 +139,7 @@ void AliVZEROQADataMakerSim::MakeHits(TClonesArray * hits)
  	      AliError("The unchecked hit doesn't exist");
 	      break;
 	   }
-	   Int_t cell = VZEROHit->Cell();
-	   GetHitsData(cell+1)->Fill(VZEROHit->Tof());
-	   GetHitsData(cell+1+72)->Fill(VZEROHit->Charge());
+	   GetHitsData(1)->Fill(VZEROHit->Cell());
 	}
 }
 
@@ -194,9 +177,7 @@ void AliVZEROQADataMakerSim::MakeHits(TTree *hitTree)
  	    AliError("The unchecked hit doesn't exist");
 	    break;
 	  }
-	  Int_t cell = VZEROHit->Cell();
-	  GetHitsData(cell+1)->Fill(VZEROHit->Tof());
-	  GetHitsData(cell+1+72)->Fill(VZEROHit->Charge());
+	  GetHitsData(1)->Fill(VZEROHit->Cell());	 
 	}
     }
   }
@@ -224,9 +205,9 @@ void AliVZEROQADataMakerSim::MakeDigits(TTree *digitTree)
 {
     // makes data from Digit Tree
 	
-    TClonesArray * digits = new TClonesArray("AliVZERODigit", 1000) ; 
+    TClonesArray * digits = new TClonesArray("AliVZEROdigit", 1000) ; 
 
-    TBranch * branch = digitTree->GetBranch("VZERO") ;
+    TBranch * branch = digitTree->GetBranch("VZERODigit") ;
     if ( ! branch ) {
          AliWarning("VZERO branch in Digit Tree not found") ; 
     } else {
