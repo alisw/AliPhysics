@@ -4,6 +4,8 @@ SRCS:= AliQuarkoniaAcceptance.cxx \
        AliAODRecoDecayHF2Prong.cxx  AliAODRecoDecayHF3Prong.cxx \
        AliAODRecoDecayHF4Prong.cxx \
        AliAnalysisVertexingHF.cxx AliAnalysisTaskVertexingHF.cxx \
+       AliAnalysisTaskSEVertexingHF.cxx \
+       AliAnalysisTaskSESelectHF.cxx \
        AliAODDimuon.cxx AliAODEventInfo.cxx \
        AliAnalysisTaskMuonAODfromGeneral.cxx AliAnalysisTaskSingleMu.cxx
      
