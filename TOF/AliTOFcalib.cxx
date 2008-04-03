@@ -460,12 +460,14 @@ Bool_t AliTOFcalib::ReadParOnlineFromCDB(Char_t *sel, Int_t nrun)
   Char_t *sel1 = "ParOnline" ;
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
-  if (!man->Get(out,nrun)) { 
-    return kFALSE;
-  }
   AliCDBEntry *entry = man->Get(out,nrun);
+  if (!entry) { 
+    AliFatal("Exiting, no CDB object (ParOnline) found!!!");
+    exit(0);  
+  }
   if(!entry->GetObject()){
-    return kFALSE;
+    AliFatal("Exiting, no CDB object (ParOnline) found!!!");
+    exit(0);  
   }  
   
   fTOFCalOnline =(TObjArray*)entry->GetObject();
@@ -482,12 +484,14 @@ Bool_t AliTOFcalib::ReadParOnlinePulserFromCDB(Char_t *sel, Int_t nrun)
   Char_t *sel1 = "Pulser" ;
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
-  if (!man->Get(out,nrun)) { 
-    return kFALSE;
-  }
   AliCDBEntry *entry = man->Get(out,nrun);
+  if (!entry) { 
+    AliFatal("Exiting, no CDB object (Pulser) found!!!");
+    exit(0);  
+  }
   if(!entry->GetObject()){
-    return kFALSE;
+    AliFatal("Exiting, no CDB object (Pulser) found!!!");
+    exit(0);  
   }  
   
   fTOFCalOnlinePulser =(TObjArray*)entry->GetObject();
@@ -504,12 +508,14 @@ Bool_t AliTOFcalib::ReadParOnlineNoiseFromCDB(Char_t *sel, Int_t nrun)
   Char_t *sel1 = "Noise" ;
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
-  if (!man->Get(out,nrun)) { 
-    return kFALSE;
-  }
   AliCDBEntry *entry = man->Get(out,nrun);
+  if (!entry) { 
+    AliFatal("Exiting, no CDB object (Noise) found!!!");
+    exit(0);  
+  }
   if(!entry->GetObject()){
-    return kFALSE;
+    AliFatal("Exiting, no CDB object (Noise) found!!!");
+    exit(0);  
   }  
   
   fTOFCalOnlineNoise =(TObjArray*)entry->GetObject();
@@ -526,12 +532,14 @@ Bool_t AliTOFcalib::ReadParOnlineHWFromCDB(Char_t *sel, Int_t nrun)
   Char_t *sel1 = "HW" ;
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
-  if (!man->Get(out,nrun)) { 
-    return kFALSE;
-  }
   AliCDBEntry *entry = man->Get(out,nrun);
+  if (!entry) { 
+    AliFatal("Exiting, no CDB object (HW map) found!!!");
+    exit(0);  
+  }
   if(!entry->GetObject()){
-    return kFALSE;
+    AliFatal("Exiting, no CDB object (HW map) found!!!");
+    exit(0);  
   }  
   
   fTOFCalOnlineHW =(TObjArray*)entry->GetObject();
@@ -548,12 +556,14 @@ Bool_t AliTOFcalib::ReadParOfflineFromCDB(Char_t *sel, Int_t nrun)
   Char_t *sel1 = "ParOffline" ;
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
-  if (!man->Get(out,nrun)) { 
-    return kFALSE;
-  }
   AliCDBEntry *entry = man->Get(out,nrun);
+  if (!entry) { 
+    AliFatal("Exiting, no CDB object (ParOffline) found!!!");
+    exit(0);  
+  }
   if(!entry->GetObject()){
-    return kFALSE;
+    AliFatal("Exiting, no CDB object (ParOffline) found!!!");
+    exit(0);  
   }  
   AliCDBMetaData * md = entry->GetMetaData();
   fkValidity = md->GetComment();  
@@ -588,11 +598,11 @@ Bool_t AliTOFcalib::ReadSimHistoFromCDB(Char_t *sel, Int_t nrun)
   Char_t *sel1 = "SimHisto" ;
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
-  if (!man->Get(out,nrun)) { 
+  AliCDBEntry *entry = man->Get(out,nrun);
+  if (!entry) { 
     AliFatal("Exiting, no CDB object (SimHisto) found!!!");
     exit(0);  
   }
-  AliCDBEntry *entry = man->Get(out,nrun);
   if(!entry->GetObject()){
     AliFatal("Exiting, no CDB object (SimHisto) found!!!");
     exit(0);  
@@ -623,11 +633,11 @@ AliTOFRecoParam * AliTOFcalib::ReadRecParFromCDB(Char_t *sel, Int_t nrun)
   Char_t *sel1 = "RecPar" ;
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
-  if (!man->Get(out,nrun)) { 
+  AliCDBEntry *entry = man->Get(out,nrun);
+  if (!entry) { 
     AliFatal("Exiting, no CDB object (RecPar) found!!!");
     exit(0);  
   }  
-  AliCDBEntry *entry = man->Get(out,nrun);
   if(!entry->GetObject()){
     AliFatal("Exiting, no CDB object (RecPar) found!!!");
     exit(0);  
