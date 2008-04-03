@@ -31,7 +31,8 @@ ClassImp(AliAODRecoDecayHF)
 AliAODRecoDecayHF::AliAODRecoDecayHF() :
   AliAODRecoDecay(),
   fOwnPrimaryVtx(0x0),
-  fd0err(0x0) 
+  fd0err(0x0), 
+  fProngID(0x0) 
 {
   //
   // Default Constructor
@@ -43,7 +44,8 @@ AliAODRecoDecayHF::AliAODRecoDecayHF(AliAODVertex *vtx2,Int_t nprongs,Short_t ch
 				     Double_t *d0,Double_t *d0err) :
   AliAODRecoDecay(vtx2,nprongs,charge,px,py,pz,d0),
   fOwnPrimaryVtx(0x0),
-  fd0err(0x0)
+  fd0err(0x0),
+  fProngID(0x0) 
 {
   //
   // Constructor with AliAODVertex for decay vertex
@@ -56,7 +58,8 @@ AliAODRecoDecayHF::AliAODRecoDecayHF(AliAODVertex *vtx2,Int_t nprongs,Short_t ch
 				     Double_t *d0,Double_t *d0err) :
   AliAODRecoDecay(vtx2,nprongs,charge,d0),
   fOwnPrimaryVtx(0x0),
-  fd0err(0x0)
+  fd0err(0x0),
+  fProngID(0x0) 
 {
   //
   // Constructor with AliAODVertex for decay vertex and without prongs momenta
@@ -68,7 +71,8 @@ AliAODRecoDecayHF::AliAODRecoDecayHF(AliAODVertex *vtx2,Int_t nprongs,Short_t ch
 AliAODRecoDecayHF::AliAODRecoDecayHF(const AliAODRecoDecayHF &source) :
   AliAODRecoDecay(source),
   fOwnPrimaryVtx(source.fOwnPrimaryVtx),
-  fd0err(0x0)
+  fd0err(0x0),
+  fProngID(0x0)
 {
   //
   // Copy constructor
@@ -76,6 +80,10 @@ AliAODRecoDecayHF::AliAODRecoDecayHF(const AliAODRecoDecayHF &source) :
   if(source.GetNProngs()>0) {
     fd0err = new Double_t[GetNProngs()];
     memcpy(fd0err,source.fd0err,GetNProngs()*sizeof(Double_t));
+    if(source.fProngID) {
+      fProngID = new UShort_t[GetNProngs()];
+      memcpy(fProngID,source.fProngID,GetNProngs()*sizeof(UShort_t));
+    }
   }
 }
 //--------------------------------------------------------------------------
@@ -113,6 +121,10 @@ AliAODRecoDecayHF &AliAODRecoDecayHF::operator=(const AliAODRecoDecayHF &source)
       fDCA = new Double32_t[GetNProngs()*(GetNProngs()-1)/2];
       memcpy(fDCA,source.fDCA,(GetNProngs()*(GetNProngs()-1)/2)*sizeof(Float_t));
     }
+    if(source.fProngID) {
+      fProngID = new UShort_t[GetNProngs()];
+      memcpy(fProngID,source.fProngID,GetNProngs()*sizeof(UShort_t));
+    }
   }
   return *this;
 }
@@ -123,5 +135,6 @@ AliAODRecoDecayHF::~AliAODRecoDecayHF() {
   //
   if(fOwnPrimaryVtx) delete fOwnPrimaryVtx;
   if(fd0err) delete [] fd0err;
+  if(fProngID) delete [] fProngID;
 }
 //---------------------------------------------------------------------------

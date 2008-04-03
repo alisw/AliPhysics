@@ -34,6 +34,7 @@ class AliAODRecoDecayHF : public AliAODRecoDecay {
   AliAODVertex* GetOwnPrimaryVtx() const {return fOwnPrimaryVtx;}
   void GetOwnPrimaryVtx(Double_t vtx[3]) const 
     {CheckOwnPrimaryVtx();fOwnPrimaryVtx->GetPosition(vtx);}
+  void UnsetOwnPrimaryVtx() {fOwnPrimaryVtx=0; return;}
 
   // kinematics & topology
   Double_t DecayLength() const 
@@ -66,14 +67,32 @@ class AliAODRecoDecayHF : public AliAODRecoDecay {
   Double_t Normalizedd0Prong(Int_t ip) const 
     {return Getd0Prong(ip)/Getd0errProng(ip);}
   
+  void SetProngIDs(Int_t nIDs,UShort_t *id);
+  UShort_t GetProngID(Int_t ip) const 
+    {if(fProngID) {return fProngID[ip];} else {return 999999;}}
+
 
  protected:
 
   AliAODVertex *fOwnPrimaryVtx; // primary vertex for this candidate
-  Double_t      *fd0err;  //[fNProngs] error on prongs rphi impact param [cm]
+  Double_t     *fd0err;  //[fNProngs] error on prongs rphi impact param [cm]
+  UShort_t     *fProngID;  //[fNProngs] track ID of daughters
 
-  ClassDef(AliAODRecoDecayHF,1)  // base class for AOD reconstructed 
+  ClassDef(AliAODRecoDecayHF,2)  // base class for AOD reconstructed 
                                  // heavy-flavour decays
 };
+
+inline void AliAODRecoDecayHF::SetProngIDs(Int_t nIDs,UShort_t *id) 
+{
+  if(nIDs!=GetNProngs()) { 
+    printf("Wrong number of IDs, must be nProngs\n");
+    return;
+  }
+  if(fProngID) delete [] fProngID;
+  fProngID = new UShort_t[nIDs];
+  for(Int_t i=0;i<nIDs;i++) 
+    fProngID[i] = id[i]; 
+  return;
+}
 
 #endif
