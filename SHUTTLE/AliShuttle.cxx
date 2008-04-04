@@ -3233,7 +3233,8 @@ Bool_t AliShuttle::TouchFile()
 	}
 
 	TString command;
-	command.Form("touch /alice/data/%d/%s/SHUTTLE_DONE/shuttle_done_%i", GetCurrentYear(), GetLHCPeriod(),GetCurrentRun());
+	command.Form("touch /alice/data/%d/%s/SHUTTLE_DONE/%i", GetCurrentYear(), GetLHCPeriod(), GetCurrentRun());
+	Log("SHUTTLE", Form("Creating entry in file catalog: %s", command.Data()));
 	TGridResult *resultTouch = dynamic_cast<TGridResult*>(gGrid->Command(command));
 	if (resultTouch){
 		TMap *mapTouch = dynamic_cast<TMap*>(resultTouch->At(0));
