@@ -95,7 +95,7 @@ AliTRDCalibPadStatus::AliTRDCalibPadStatus() : /*FOLD00*/
   TObject(),
   fGeo(0),
   fAdcMin(0),
-  fAdcMax(20),
+  fAdcMax(21),
   fDetector(-1),
   fNumberOfTimeBins(0),
   fCalRocArrayMean(540),
@@ -202,8 +202,10 @@ Int_t AliTRDCalibPadStatus::UpdateHisto(const Int_t icdet, /*FOLD00*/
   // Attention: the entry counter of the histogram is not increased
   //            this means that e.g. the colz draw option gives an empty plot
   Int_t bin = 0;
-  if ( !(((Int_t)csignal>fAdcMax ) || ((Int_t)csignal<fAdcMin)) )
+  if ( !(((Int_t)csignal>=fAdcMax ) || ((Int_t)csignal<fAdcMin)) )
     bin = (nbchannel+1)*(fAdcMax-fAdcMin+2)+((Int_t)csignal-fAdcMin+1);
+
+  //GetHisto(icdet,kTRUE)->Fill(csignal,nbchannel);
   
   GetHisto(icdet,kTRUE)->GetArray()[bin]++;
   
@@ -237,7 +239,7 @@ Int_t AliTRDCalibPadStatus::ProcessEvent(AliTRDrawStreamBase *rawStream, Bool_t 
       Int_t iCol       = rawStream->GetCol();                            //  current col
       
 
-      Int_t iADC       = 21-rawStream->GetADC();                            //  current ADC
+      Int_t iADC       = 21-rawStream->GetADC();                         //  current ADC
       Int_t col        = 0;
       if(iADC == 1) col = 1;
       else {
@@ -251,7 +253,6 @@ Int_t AliTRDCalibPadStatus::ProcessEvent(AliTRDrawStreamBase *rawStream, Bool_t 
       //Bool_t shared = rawStream->IsCurrentPadShared();                  
       //printf("ADC %d, iCol %d, col %d, mcm %d, shared %d\n",iADC,iCol,col,mcm,(Int_t)shared);
 
-      Int_t iTimeBin   = rawStream->GetTimeBin();                        //  current time bin
       Int_t *signal    = rawStream->GetSignals();                        //  current ADC signal
       Int_t nbtimebin  = rawStream->GetNumberOfTimeBins();               //  number of time bins read from data
 
@@ -261,12 +262,8 @@ Int_t AliTRDCalibPadStatus::ProcessEvent(AliTRDrawStreamBase *rawStream, Bool_t 
       }
       fNumberOfTimeBins = nbtimebin;
       
-      Int_t fin        = TMath::Min(nbtimebin,(iTimeBin+3));
-      Int_t n          = 0;
-      
-      for(Int_t k = iTimeBin; k < fin; k++){
-	if(signal[n]>0) UpdateHisto(idetector,iRow,iCol,signal[n],iRowMax,col,mcm);
-	n++;
+      for(Int_t k = 0; k < fNumberOfTimeBins; k++){
+	if(signal[k]>0) UpdateHisto(idetector,iRow,iCol,signal[k],iRowMax,col,mcm);
       }
       
       withInput = 2;
@@ -291,21 +288,17 @@ Int_t AliTRDCalibPadStatus::ProcessEvent(AliTRDrawStreamBase *rawStream, Bool_t 
       if(col > 1) mcm -= 1;      
       if(col ==1) mcm += 1;
 
-      Int_t iTimeBin   = rawStream->GetTimeBin();                        //  current time bin
       Int_t *signal    = rawStream->GetSignals();                        //  current ADC signal
       Int_t nbtimebin = rawStream->GetNumberOfTimeBins();               //  number of time bins read from data
       
-      Int_t fin        = TMath::Min(nbtimebin,(iTimeBin+3));
-      Int_t n          = 0;
-     
+      
       //printf("det %d, row %d, signal[0] %d, signal[1] %d, signal [2] %d\n", idetector, iRow, signal[0], signal[1], signal[2]);
  
-      for(Int_t k = iTimeBin; k < fin; k++){
-	if(signal[n]>0) {
-	  UpdateHisto(idetector,iRow,iCol,signal[n],iRowMax,col,mcm);
+      for(Int_t k = 0; k < nbtimebin; k++){
+	if(signal[k]>0) {
+	  UpdateHisto(idetector,iRow,iCol,signal[k],iRowMax,col,mcm);
 	  //printf("Update with det %d, row %d, col %d, signal %d, rowmax %d, col %d, mcm %d\n",idetector,iRow,iCol,signal[n],iRowMax,col,mcm);
 	}
-	n++;
       }
       
       withInput = 2;
@@ -363,7 +356,7 @@ Int_t AliTRDCalibPadStatus::ProcessEvent(
 }
 
 //_____________________________________________________________________
-Bool_t AliTRDCalibPadStatus::TestEventHisto(Int_t nevent, Int_t sm) /*FOLD00*/
+Bool_t AliTRDCalibPadStatus::TestEventHisto(Int_t nevent, Int_t sm, Int_t ch) /*FOLD00*/
 {
   //
   //  Test event loop
@@ -373,12 +366,12 @@ Bool_t AliTRDCalibPadStatus::TestEventHisto(Int_t nevent, Int_t sm) /*FOLD00*/
   gRandom->SetSeed(0);
 
     for (Int_t ism=sm; ism<sm+1; ism++){
-       	for (Int_t ich=0; ich < 5; ich++){
+       	for (Int_t ich=ch; ich < ch+1; ich++){
 	    for (Int_t ipl=0; ipl < 6; ipl++){
 	      for(Int_t irow = 0; irow < fGeo->GetRowMax(ipl,ich,ism); irow++){
 		for(Int_t icol = 0; icol < fGeo->GetColMax(ipl); icol++){
 		  for (Int_t iTimeBin=0; iTimeBin<(30*nevent); iTimeBin++){
-		    Int_t signal=(Int_t)(gRandom->Gaus(10.0,1.2));
+		    Int_t signal=TMath::Nint(gRandom->Gaus(10,1.5));
 		    if ( signal>0 )UpdateHisto((ipl+ich*6+ism*6*5),irow,icol,signal,fGeo->GetRowMax(ipl,ich,ism),0,0);
 		  }
 		}
@@ -432,7 +425,7 @@ TH2F* AliTRDCalibPadStatus::GetHisto(Int_t det, Bool_t force) /*FOLD00*/
     // if force is true create a new histogram if it doesn't exist allready
     //
     TObjArray *arr = &fHistoArray;
-    return GetHisto(det, arr, fAdcMax-fAdcMin, fAdcMin, fAdcMax, "Pedestal", force);
+    return GetHisto(det, arr, fAdcMax-fAdcMin, fAdcMin-0.5, fAdcMax-0.5, "Pedestal", force);
 }
 
 //_____________________________________________________________________
@@ -504,7 +497,7 @@ void AliTRDCalibPadStatus::AnalyseHisto() /*FOLD00*/
 
     Int_t nbinsAdc = fAdcMax-fAdcMin;
 
-    TVectorD param(3);
+    TVectorD param(4);
     TMatrixD dummy(3,3);
 
     Float_t *arrayHP=0;
@@ -516,6 +509,8 @@ void AliTRDCalibPadStatus::AnalyseHisto() /*FOLD00*/
 	  continue;
 	}
 
+        //printf("Entries for %d\n",idet);
+
 	AliTRDCalROC *rocMean     = GetCalRocMean(idet,kTRUE);
 	AliTRDCalROC *rocRMS      = GetCalRocRMS(idet,kTRUE);
 
@@ -524,8 +519,8 @@ void AliTRDCalibPadStatus::AnalyseHisto() /*FOLD00*/
 
 	for (Int_t iChannel=0; iChannel<nChannels; iChannel++){
             Int_t offset = (nbinsAdc+2)*(iChannel+1)+1;
-	    Double_t ret = AliMathBase::FitGaus(arrayHP+offset,nbinsAdc,fAdcMin,fAdcMax,&param,&dummy);
-            // if the fitting failed set noise and pedestal to 0
+	    Double_t ret = AliMathBase::FitGaus(arrayHP+offset,nbinsAdc,fAdcMin-0.5,fAdcMax-0.5,&param,&dummy);
+	    // if the fitting failed set noise and pedestal to 0
 	    if ((ret==-4) || (ret==-1) || (ret==-2)) {
 		param[1]=0.0;
 		param[2]=0.0;
@@ -547,7 +542,7 @@ void AliTRDCalibPadStatus::AnalyseHisto() /*FOLD00*/
 
       	for (Int_t iChannel=shift; iChannel<total; iChannel++){
             Int_t offset = (nbinsAdc+2)*(iChannel+1)+1;
-	    Double_t ret = AliMathBase::FitGaus(arrayHP+offset,nbinsAdc,fAdcMin,fAdcMax,&param,&dummy);
+	    Double_t ret = AliMathBase::FitGaus(arrayHP+offset,nbinsAdc,fAdcMin-0.5,fAdcMax-0.5,&param,&dummy);
             // if the fitting failed set noise and pedestal to 0
 	    if ((ret==-4) || (ret==-1) || (ret==-2)) {
 		param[1]=0.0;

@@ -340,9 +340,11 @@ Bool_t AliTRDCalibraFillHisto::Init2Dhistos()
   }
 
   // Some parameters
-  fTimeMax = cal->GetNumberOfTimeBins();
-  fSf      = parCom->GetSamplingFrequency();
-  fRelativeScale = 20;
+  fTimeMax            = cal->GetNumberOfTimeBins();
+  fSf                 = parCom->GetSamplingFrequency();
+  fRelativeScale      = 20;
+  fNumberClustersf    = fTimeMax;
+  fNumberClusters     = (Int_t)(0.6*fTimeMax);
  
   //calib object from database used for reconstruction
   if(fCalDetGain) delete fCalDetGain;
@@ -545,7 +547,7 @@ Bool_t AliTRDCalibraFillHisto::UpdateHistograms(AliTRDtrack *t)
     ///////////////////////////////////////
     Int_t row = cl->GetPadRow();
     Int_t col = cl->GetPadCol();
-    CheckGoodTracklet(detector,row,col);
+    CheckGoodTrackletV1(cl);
     Int_t     group[2] = {0,0};
     if(fCH2dOn)  group[0]  = CalculateCalibrationGroup(0,row,col);
     if(fPH2dOn)  group[1]  = CalculateCalibrationGroup(1,row,col);
@@ -650,7 +652,7 @@ Bool_t AliTRDCalibraFillHisto::UpdateHistogramsV1(AliTRDtrackV1 *t)
       // Store the info bis of the tracklet
       Int_t row = cl->GetPadRow();
       Int_t col = cl->GetPadCol();
-      CheckGoodTracklet(detector,row,col);
+      CheckGoodTrackletV1(cl);
       Int_t     group[2] = {0,0};
       if(fCH2dOn)  group[0]  = CalculateCalibrationGroup(0,row,col);
       if(fPH2dOn)  group[1]  = CalculateCalibrationGroup(1,row,col);
@@ -1598,7 +1600,18 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtrackletV1(const AliTRDseedV1 *tracklet,
 // Pad row col stuff: see if masked or not
 ///////////////////////////////////////////////////////////////////////////////////////
 //_____________________________________________________________________________
-void AliTRDCalibraFillHisto::CheckGoodTracklet(Int_t detector, Int_t row, Int_t col)
+void AliTRDCalibraFillHisto::CheckGoodTrackletV1(AliTRDcluster *cl)
+{
+  //
+  // See if we are not near a masked pad
+  //
+
+  if(cl->IsMasked()) fGoodTracklet = kFALSE;
+
+  
+}
+//_____________________________________________________________________________
+void AliTRDCalibraFillHisto::CheckGoodTrackletV0(Int_t detector, Int_t row, Int_t col)
 {
   //
   // See if we are not near a masked pad
@@ -2122,7 +2135,7 @@ Int_t AliTRDCalibraFillHisto::ProcessEventDAQ(AliTRDrawStreamBase *rawStream, Bo
   fMCMPrevious           = -1;
   fROBPrevious           = -1;
   Int_t nbtimebin = 0;                                        
-  Int_t baseline  = 0;  
+  Int_t baseline  = 10;  
 
 
   if(!nocheck){
@@ -2134,7 +2147,9 @@ Int_t AliTRDCalibraFillHisto::ProcessEventDAQ(AliTRDrawStreamBase *rawStream, Bo
       Int_t idetector = rawStream->GetDet();                            //  current detector
       Int_t imcm      = rawStream->GetMCM();                            //  current MCM
       Int_t irob      = rawStream->GetROB();                            //  current ROB
-      
+
+      //printf("Detector %d\n",idetector);
+
       if((fDetectorPreviousTrack != idetector) && (fDetectorPreviousTrack != -1)){
 	
 	// Fill
@@ -2160,9 +2175,11 @@ Int_t AliTRDCalibraFillHisto::ProcessEventDAQ(AliTRDrawStreamBase *rawStream, Bo
       if((fTimeMax != 0) && (nbtimebin != fTimeMax)) return 0;
       fTimeMax          = nbtimebin;
 
-      baseline          = rawStream->GetCommonAdditive();                // common additive baseline
-     
-      Int_t iTimeBin    = rawStream->GetTimeBin();                       //  current time bin
+      //baseline          = rawStream->GetCommonAdditive();                // common additive baseline
+      fNumberClustersf    = fTimeMax;
+      fNumberClusters     = (Int_t)(0.6*fTimeMax);
+
+
       Int_t *signal     = rawStream->GetSignals();                       //  current ADC signal
       Int_t  col        = rawStream->GetCol();
       Int_t row         = rawStream->GetRow();    
@@ -2171,11 +2188,8 @@ Int_t AliTRDCalibraFillHisto::ProcessEventDAQ(AliTRDrawStreamBase *rawStream, Bo
       //printf("detector %d, signal[0] %d, signal[1] %d, signal[2] %d, baseline %d\n",idetector,signal[0],signal[1],signal[2], baseline);
      
                 
-      Int_t fin     = TMath::Min(fTimeMax,(iTimeBin+3));
-      Int_t n       = 0;
-      for(Int_t itime = iTimeBin; itime < fin; itime++){
-	phvalue[row][col][itime] = signal[n]-baseline;
-	n++;
+      for(Int_t itime = 0; itime < nbtimebin; itime++){
+	phvalue[row][col][itime] = signal[itime]-baseline;
       }
     }
     
@@ -2204,6 +2218,8 @@ Int_t AliTRDCalibraFillHisto::ProcessEventDAQ(AliTRDrawStreamBase *rawStream, Bo
       Int_t imcm      = rawStream->GetMCM();                            //  current MCM
       Int_t irob      = rawStream->GetROB();                            //  current ROB
 
+      //printf("Detector %d\n",idetector);
+
       if((fDetectorPreviousTrack != idetector) && (fDetectorPreviousTrack != -1)){
 
 	// Fill
@@ -2223,22 +2239,20 @@ Int_t AliTRDCalibraFillHisto::ProcessEventDAQ(AliTRDrawStreamBase *rawStream, Bo
       fMCMPrevious           = imcm;
       fROBPrevious           = irob;
 
-      baseline          = rawStream->GetCommonAdditive();                //  common baseline
+      //baseline          = rawStream->GetCommonAdditive();                //  common baseline
       
       fTimeMax          = rawStream->GetNumberOfTimeBins();              //  number of time bins read from data
-      Int_t iTimeBin    = rawStream->GetTimeBin();                       //  current time bin
+      fNumberClustersf    = fTimeMax;
+      fNumberClusters     = (Int_t)(0.6*fTimeMax);
       Int_t *signal     = rawStream->GetSignals();                       //  current ADC signal
       Int_t col         = rawStream->GetCol();
       Int_t row         = rawStream->GetRow();   
 
-      Int_t fin     = TMath::Min(fTimeMax,(iTimeBin+3));
-      Int_t n       = 0;
-    
+       
       //printf("detector %d, signal[0] %d, signal[1] %d, signal[2] %d, baseline %d\n",idetector,signal[0],signal[1],signal[2], baseline);
       
-      for(Int_t itime = iTimeBin; itime < fin; itime++){
-	phvalue[row][col][itime] = signal[n]-baseline;
-	n++;
+      for(Int_t itime = 0; itime < fTimeMax; itime++){
+	phvalue[row][col][itime] = signal[itime]-baseline;
       }
     }
     
@@ -2286,7 +2300,7 @@ Int_t AliTRDCalibraFillHisto::ProcessEventDAQV1(AliTRDrawStreamBase *rawStream, 
   fROBPrevious           = -1;
   Int_t row              = -1;
   Int_t nbtimebin = 0;                                        
-  Int_t baseline  = 0;  
+  Int_t baseline  = 10;  
 
 
   if(!nocheck){
@@ -2332,23 +2346,20 @@ Int_t AliTRDCalibraFillHisto::ProcessEventDAQV1(AliTRDrawStreamBase *rawStream, 
       if(nbtimebin == 0) return 0;
       if((fTimeMax != 0) && (nbtimebin != fTimeMax)) return 0;
       fTimeMax          = nbtimebin;
+      fNumberClustersf  = fTimeMax;
+      fNumberClusters   = (Int_t)(0.6*fTimeMax);
       param->SetTimeRange(0,fTimeMax);
 
-      baseline          = rawStream->GetCommonAdditive();                // common additive baseline
+      //baseline          = rawStream->GetCommonAdditive();                // common additive baseline
      
-      Int_t iTimeBin    = rawStream->GetTimeBin();                       //  current time bin
       Int_t *signal     = rawStream->GetSignals();                       //  current ADC signal
       Int_t  adc        = rawStream->GetADC();
     
       
       //printf("detector %d, signal[0] %d, signal[1] %d, signal[2] %d, baseline %d\n",idetector,signal[0],signal[1],signal[2], baseline);
      
-                
-      Int_t fin     = TMath::Min(fTimeMax,(iTimeBin+3));
-      Int_t n       = 0;
-      for(Int_t itime = iTimeBin; itime < fin; itime++){
-	mcm.SetADC(adc,itime,(signal[n]-baseline));
-	n++;
+      for(Int_t itime = 0; itime < nbtimebin; itime++){
+	mcm.SetADC(adc,itime,(signal[itime]-baseline));
       }
     }
     
@@ -2397,23 +2408,20 @@ Int_t AliTRDCalibraFillHisto::ProcessEventDAQV1(AliTRDrawStreamBase *rawStream, 
       fMCMPrevious           = imcm;
       fROBPrevious           = irob;
 
-      baseline          = rawStream->GetCommonAdditive();                //  common baseline
+      //baseline          = rawStream->GetCommonAdditive();                //  common baseline
       
       fTimeMax          = rawStream->GetNumberOfTimeBins();              //  number of time bins read from data
+      fNumberClustersf  = fTimeMax;
+      fNumberClusters   = (Int_t)(0.6*fTimeMax);
       param->SetTimeRange(0,fTimeMax);
-      Int_t iTimeBin    = rawStream->GetTimeBin();                       //  current time bin
       Int_t *signal     = rawStream->GetSignals();                       //  current ADC signal
       Int_t adc         = rawStream->GetADC();
        
-
-      Int_t fin     = TMath::Min(fTimeMax,(iTimeBin+3));
-      Int_t n       = 0;
-    
+      
       //printf("detector %d, signal[0] %d, signal[1] %d, signal[2] %d, baseline %d\n",idetector,signal[0],signal[1],signal[2], baseline);
       
-      for(Int_t itime = iTimeBin; itime < fin; itime++){
-	mcm.SetADC(adc,itime,(signal[n]-baseline));
-	n++;
+      for(Int_t itime = 0; itime < fTimeMax; itime++){
+	mcm.SetADC(adc,itime,(signal[itime]-baseline));
       }
     }
     
@@ -2612,12 +2620,12 @@ Int_t AliTRDCalibraFillHisto::UpdateHistogramcm(AliTRDmcmTracklet *trk)
   
   Int_t used = 1;
 
-  fGoodTracklet = kTRUE;
+  //fGoodTracklet = kTRUE;
 
   // Localisation of the Xbins involved
   Int_t idect = trk->GetDetector();
   Int_t idectrue = trk->GetDetector();
-  idect = 0;
+  //idect = 0;
 
   Int_t nbclusters = trk->GetNclusters();
   
@@ -2646,7 +2654,7 @@ Int_t AliTRDCalibraFillHisto::UpdateHistogramcm(AliTRDmcmTracklet *trk)
     Int_t   time   = trk->GetClusterTime(icl);
     Int_t   col    = trk->GetClusterCol(icl);
     
-    CheckGoodTracklet(idect,row,col);
+    //CheckGoodTrackletV0(idect,row,col);
     
     amp[0] = trk->GetClusterADC(icl)[0] * correction;
     amp[1] = trk->GetClusterADC(icl)[1] * correction;
@@ -2729,13 +2737,14 @@ Int_t AliTRDCalibraFillHisto::FillDAQ(Double_t phvalue[16][144][36]){
 
 
   Int_t idect = fDetectorPreviousTrack;      
+  //printf("Enter Detector %d\n",fDetectorPreviousTrack);
   Double_t sum[36];
   for(Int_t tb = 0; tb < 36; tb++){
     sum[tb] = 0.0;
   }
 
-  fGoodTracklet = kTRUE;
-  fDetectorPreviousTrack = 0;
+  //fGoodTracklet = kTRUE;
+  //fDetectorPreviousTrack = 0;  
 
 
   ///////////////////////////
@@ -2778,8 +2787,8 @@ Int_t AliTRDCalibraFillHisto::FillDAQ(Double_t phvalue[16][144][36]){
   //printf("imaxRow %d, imaxCol %d, fTimeMax %d, integralMax %f\n",imaxRow,imaxCol,fTimeMax, integralMax);
 
   if((imaxRow == 0) || (imaxCol == 0)) used=1;
-  CheckGoodTracklet(fDetectorPreviousTrack,imaxRow,imaxCol);
-  if(!fGoodTracklet) used = 1;;
+  //CheckGoodTrackletV0(fDetectorPreviousTrack,imaxRow,imaxCol);
+  //if(!fGoodTracklet) used = 1;;
   
   //  /////////////////////////////////////////////////////
   // sum ober 2 row and 4 pad cols for each time bins
@@ -2856,6 +2865,8 @@ Int_t AliTRDCalibraFillHisto::FillDAQ(Double_t phvalue[16][144][36]){
    
     //((TH2I *)GetCH2d()->Fill(sumcharge/30.0,fDetectorPreviousTrack));
     used = 2;
+    //printf("Pass Detector %d\n",fDetectorPreviousTrack);
+
   }
  
   return used;

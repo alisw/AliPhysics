@@ -70,7 +70,7 @@ public:
   void    SetRangeAdc (Int_t aMin, Int_t aMax){ fAdcMin=aMin; fAdcMax=aMax; }  // Set adc range 
 
 
-  Bool_t TestEventHisto(Int_t nevent, Int_t sm);  //test the fast approach to fill histograms  
+  Bool_t TestEventHisto(Int_t nevent, Int_t sm, Int_t ch);  //test the fast approach to fill histograms  
 
  private:
 

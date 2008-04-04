@@ -263,7 +263,8 @@ AliTRDCalibraVector *GetCalibraVector() const                                { r
   // row col calibration groups stuff
           Bool_t   LocalisationDetectorXbins(Int_t detector);
 	  Int_t    CalculateTotalNumberOfBins(Int_t i);
-	  void     CheckGoodTracklet(Int_t detector, Int_t row, Int_t col);
+	  void     CheckGoodTrackletV0(Int_t detector, Int_t row, Int_t col);
+	  void     CheckGoodTrackletV1(AliTRDcluster *cl);
 	  Int_t    CalculateCalibrationGroup(Int_t i, Int_t row, Int_t col) const;
  
   // LinearFitter
