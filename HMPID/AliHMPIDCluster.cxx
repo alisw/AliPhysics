@@ -317,13 +317,12 @@ Int_t AliHMPIDCluster::Solve(TClonesArray *pCluLst,Bool_t isTryUnfold)
 //Phase 2. Fit loc max number of Mathiesons or add this current cluster to the list
 // case 1 -> no loc max found
  if ( fNlocMax == 0) {                                                                       // case of no local maxima found: pads with same charge...
-   
-   ierflg = fitter->SetParameter(3*fNlocMax  ,Form("x%i",fNlocMax),fXX,0.1,0,0);              // Init values taken from CoG() -> fXX,fYY,fQRaw
-   ierflg = fitter->SetParameter(3*fNlocMax+1,Form("y%i",fNlocMax),fYY,0.1,0,0);              //
-   ierflg = fitter->SetParameter(3*fNlocMax+2,Form("q%i",fNlocMax),fQRaw,0.1,0,10000);       //
-   
    fNlocMax = 1;
    fSt=kNoLoc;
+   if(fParam->GetInstType()) SetClusterParams(fXX,fYY,fCh);                                                      //need to fill the AliCluster3D part
+   new ((*pCluLst)[iCluCnt++]) AliHMPIDCluster(*this);	                                   //add new unfolded cluster
+   
+   return fNlocMax;
  }
 
 // case 2 -> loc max found. Check # of loc maxima 
