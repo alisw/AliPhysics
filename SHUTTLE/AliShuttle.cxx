@@ -1901,20 +1901,28 @@ AliShuttleLogbookEntry* AliShuttle::QueryRunParameters(Int_t run)
 	
 	UInt_t startTime = entry->GetStartTime();
 	UInt_t endTime = entry->GetEndTime();
+	Bool_t ecsSuccess = entry->GetECSSuccess();
 	
 	TString totEventsStr = entry->GetRunParameter("totalEvents");  
 	Int_t totEvents = totEventsStr.Atoi();
 	
-	if (startTime != 0 && endTime != 0 && endTime > startTime && totEvents > 0)
-		return entry;	
-
-	Log("SHUTTLE",
-		Form("QueryRunParameters - Invalid parameters for Run %d: "
-			"startTime = %d, endTime = %d. Skipping (Shuttle won't be marked as DONE)!",
-			run, startTime, endTime));		
-
-	if (totEvents < 1) 
+	if (startTime != 0 && endTime != 0 && endTime > startTime && totEvents > 0 && ecsSuccess)
+		return entry;
+		
+	if (ecsSuccess == kFALSE)
+	{
+		Log("SHUTTLE", Form("Skipped run %d due to ECS failure, Reason: %s", run, entry->GetRunParameter("eor_reason")));
+	}
+	else if (totEvents < 1) 
+	{
 		Log("SHUTTLE", Form("QueryRunParameters - Run %d has 0 events - Skipping!", run));
+	}
+	else
+	{
+		Log("SHUTTLE", Form("QueryRunParameters - Invalid parameters for Run %d: "
+			"startTime = %d, endTime = %d. Skipping (Shuttle won't be marked as DONE)!",
+			run, startTime, endTime));
+	}
 
 	//Log("SHUTTLE", Form("Marking SHUTTLE done for run %d", run));
 	//fLogbookEntry = entry;	
