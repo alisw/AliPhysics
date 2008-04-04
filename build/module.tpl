@@ -411,7 +411,7 @@ $(@PACKAGE@SML) : $(MODDIRZ)/%.smell : $(MODDIRZ)/%_cxx.ml $(MODDIRZ)/%_h.ml
 .SECONDARY: $(@PACKAGE@SML:.smell=_cxx.ml) $(@PACKAGE@SML:.smell=_h.ml)
 
 # targets to create .par archives (jgrosseo)
-@PACKAGE@.par: $(patsubst %,@MODULE@/@PACKAGE@/%,$(filter-out dict.%, $(HDRS) $(SRCS) $(DHDR) $(PKGFILE) Makefile Makefile.arch lib@PACKAGE@.pkg PROOF-INF))
+@PACKAGE@.par: $(patsubst %,@MODULE@/@PACKAGE@/%,$(filter-out dict.%, $(HDRS) $(SRCS) $(DHDR) $(PKGFILE) $(FSRCS) Makefile Makefile.arch lib@PACKAGE@.pkg PROOF-INF))
 	@echo "Creating archive" $@ ...
 	@cd @MODULE@; tar cfzh /tmp/$@ @PACKAGE@
 	@rm -rf @MODULE@/@PACKAGE@
