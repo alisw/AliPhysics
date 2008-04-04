@@ -747,6 +747,7 @@ Int_t AliGRPPreprocessor::ReceivePromptRecoParameters(UInt_t run, const char* db
 		return -5;
 	}
 	
+	// Receive trigger information
 	sqlQuery.Form("SELECT configFile FROM logbook_trigger_config WHERE run = %d", run);
 	result = server->Query(sqlQuery);
 	if (!result) 
@@ -780,7 +781,6 @@ Int_t AliGRPPreprocessor::ReceivePromptRecoParameters(UInt_t run, const char* db
 	
 	Printf("Found trigger configuration: %s", triggerConfig.Data());
 	
-	// add a function that takes the configuration from a string...
 	AliTriggerConfiguration *runcfg = AliTriggerConfiguration::LoadConfigurationFromString(triggerConfig);
 	if (!runcfg) 
 	{
