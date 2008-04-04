@@ -1250,14 +1250,10 @@ The trapezoid is build in the xy plane
   xv[1] =  l[0]/2 + l[3];   yv[1] =  l[2]/2;
   xv[2] =  l[1]/2; yv[2] = -l[2]/2;
   xv[3] = -l[1]/2; yv[3] = -l[2]/2;
-  Double_t ang1 = 90, ang2 = 90;
-   if(xv[0]-xv[3]!=0) ang1 = TMath::RadToDeg()*TMath::ATan((yv[0]-yv[3])/(xv[0]-xv[3]));
-   if(xv[1]-xv[2]!=0) ang2 = TMath::RadToDeg()*TMath::ATan((yv[1]-yv[2])/(xv[1]-xv[2]));
-  AliDebug(1,Form("name %s     x0 - x2 = %f  angoli alla base maggiore: %f  %f",xtruIn->GetName(),xv[0] - xv[2],ang1,ang2));
   
   xtruOut->DefinePolygon(4, xv, yv);
-  xtruOut->DefineSection(0, -l[4]/2., 0., 0., 1.0);//0=  I piano z; (0.,0.) = spostamento rispetto al centro; 1.=fattore di scala della forma 
-  xtruOut->DefineSection(1,  +l[4]/2., 0., 0., 1.0);//1= II piano z;
+  xtruOut->DefineSection(0, -l[4]/2., 0., 0., 1.0);//0=  I plane z; (0.,0.) = shift wrt centre; 1.= shape scale factor 
+  xtruOut->DefineSection(1, +l[4]/2., 0., 0., 1.0);//1= II plane z;
   
   Double_t tgalpha = 0;
    if(xv[3]-xv[0] == 0 ) tgalpha = 999999; 
