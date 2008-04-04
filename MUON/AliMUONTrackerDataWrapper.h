@@ -59,7 +59,9 @@ public:
   virtual Long64_t Merge(TCollection* li);
   
 private:
+    /// not implemented.
     AliMUONTrackerDataWrapper(const AliMUONTrackerDataWrapper& rhs);
+  /// not implemented.
   AliMUONTrackerDataWrapper& operator=(const AliMUONTrackerDataWrapper& rhs);
   
 private:

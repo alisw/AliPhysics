@@ -48,6 +48,7 @@ private:
   
   AliMUONPad* GetNextPad(Int_t cathode) const;
 
+  /// Whether we should stop working...
   virtual Bool_t ShouldAbort() const { return fShouldAbort; }
   
 private:

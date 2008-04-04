@@ -36,6 +36,7 @@ public:
   TH1* CreateChannelHisto(Int_t detElemId, Int_t manuId, 
                           Int_t manuChannel) const;
     
+  /// Whether we are working with internal dimensions or external ones.
   Bool_t IsInternalMode() const { return fInternalDim >=0; }
   
 private:

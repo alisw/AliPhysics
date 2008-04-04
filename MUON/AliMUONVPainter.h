@@ -71,6 +71,7 @@ public:
   
   AliMUONVPainter* Detach() const;
   
+  /// Whether this painter can be detached from the current view.
   virtual Bool_t CanBeDetached() const { return kTRUE; }
   
   /// Whether we are valid or not
@@ -217,6 +218,7 @@ public:
 
   /// To avoid getting a popup asking for the parameter in the GUI...
   void DrawHistogram0() const { DrawHistogram(0x0); }
+  /// To avoid getting a popup asking for the parameter in the GUI...
   void DrawHistogramClone0() const { DrawHistogramClone(0x0); }
 
   virtual void DrawHistogramClone(Double_t* values=0x0) const;
@@ -228,19 +230,28 @@ public:
   /// Append (i.e. don't have the right to clear the array !) our list of manus to manuList
   virtual void FillManuList(TObjArray& manuList) const;
   
-  /// following kind of stupid lines, because I don't know how to
+  /// following kind of stupid lines (SL), because I don't know how to
   /// pass parameters to TClassMenuItem for context menu (don't even
   /// know if that's possible at all)
-  
+  /// SL
   void DrawInternalHistogramClone0() { DrawInternalHistogramClone(0); }
+  /// SL
   void DrawInternalHistogramClone1() { DrawInternalHistogramClone(1); }
+  /// SL
   void DrawInternalHistogramClone2() { DrawInternalHistogramClone(2); }
+  /// SL
   void DrawInternalHistogramClone3() { DrawInternalHistogramClone(3); }
+  /// SL
   void DrawInternalHistogramClone4() { DrawInternalHistogramClone(4); }
+  /// SL
   void DrawInternalHistogramClone5() { DrawInternalHistogramClone(5); }
+  /// SL
   void DrawInternalHistogramClone6() { DrawInternalHistogramClone(6); }
+  /// SL
   void DrawInternalHistogramClone7() { DrawInternalHistogramClone(7); }
+  /// SL
   void DrawInternalHistogramClone8() { DrawInternalHistogramClone(8); }
+  /// SL
   void DrawInternalHistogramClone9() { DrawInternalHistogramClone(9); }
   
 protected:

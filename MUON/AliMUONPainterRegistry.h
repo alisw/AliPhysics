@@ -53,6 +53,7 @@ public:
   
   Int_t NumberOfDataMakers() const;
 
+  /// Number of data sources = data makers
   Int_t NumberOfDataSources() const { return NumberOfDataMakers(); }
 
   Int_t NumberOfPainterMatrices() const;
