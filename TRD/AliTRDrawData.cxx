@@ -153,6 +153,8 @@ Bool_t AliTRDrawData::Digits2Raw(AliTRDdigitsManager *digitsManager)
 
   // Buffer to temporary store half chamber data
   UInt_t     *hcBuffer    = new UInt_t[kMaxHcWords];
+  
+  Bool_t newEvent = kFALSE;  // only for correct readout tree
 
   // sect is same as iDDL, so I use only sect here.
   for (Int_t sect = 0; sect < fGeo->Nsect(); sect++) { 
@@ -170,11 +172,14 @@ Bool_t AliTRDrawData::Digits2Raw(AliTRDdigitsManager *digitsManager)
     // Reset payload byte size (payload does not include header).
     Int_t npayloadbyte = 0;
 
+    
+
     // GTU common data header (5x4 bytes per super module, shows link mask)
     for( Int_t cham = 0; cham < fGeo->Ncham(); cham++ ) {
       UInt_t gtuCdh = (UInt_t)(0xe << 28);
       for( Int_t plan = 0; plan < fGeo->Nplan(); plan++) {
 	Int_t iDet = fGeo->GetDetector(plan, cham, sect);
+	
 	// If chamber status is ok, we assume that the optical link is also OK.
         // This is shown in the GTU link mask.
 	if ( AliTRDcalibDB::Instance()->GetChamberStatus(iDet) )
@@ -189,10 +194,10 @@ Bool_t AliTRDrawData::Digits2Raw(AliTRDdigitsManager *digitsManager)
       for( Int_t plan = 0; plan < fGeo->Nplan(); plan++) {
 
         Int_t iDet = fGeo->GetDetector(plan,cham,sect);
-
-        // Get the digits array
+	if (iDet == 0) newEvent = kTRUE; // it is expected that each event has at least one tracklet; this is only needed for correct readout tree
+	// Get the digits array
         AliTRDdataArrayS *digits = (AliTRDdataArrayS *) digitsManager->GetDigits(iDet);
-        if (digits->HasData()) {
+        if (digits->HasData() ) {  // second part is new!! and is for indicating a new event
 
           digits->Expand();
 
@@ -204,7 +209,10 @@ Bool_t AliTRDrawData::Digits2Raw(AliTRDdigitsManager *digitsManager)
             hcwords = ProduceHcDataV1andV2(digits,0,iDet,hcBuffer,kMaxHcWords);
 	  }
 	  if ( rv == 3 ) { 
-            hcwords = ProduceHcDataV3     (digits,0,iDet,hcBuffer,kMaxHcWords);
+   
+	      // hcwords = ProduceHcDataV3     (digits,0,iDet,hcBuffer,kMaxHcWords,newEvent);
+	      hcwords = ProduceHcDataV3     (digits,0,iDet,hcBuffer,kMaxHcWords);
+	    if(newEvent == kTRUE) newEvent = kFALSE;
 	  }
 
           of->WriteBuffer((char *) hcBuffer, hcwords*4);
@@ -215,7 +223,9 @@ Bool_t AliTRDrawData::Digits2Raw(AliTRDdigitsManager *digitsManager)
             hcwords = ProduceHcDataV1andV2(digits,1,iDet,hcBuffer,kMaxHcWords);
 	  }
 	  if ( rv >= 3 ) {
-            hcwords = ProduceHcDataV3     (digits,1,iDet,hcBuffer,kMaxHcWords);
+	   
+	      //hcwords = ProduceHcDataV3     (digits,1,iDet,hcBuffer,kMaxHcWords,newEvent);
+	      hcwords = ProduceHcDataV3     (digits,1,iDet,hcBuffer,kMaxHcWords);
 	  }
 
           of->WriteBuffer((char *) hcBuffer, hcwords*4);
@@ -426,8 +436,8 @@ Int_t AliTRDrawData::ProduceHcDataV1andV2(AliTRDdataArrayS *digits, Int_t side
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDrawData::ProduceHcDataV3(AliTRDdataArrayS *digits, Int_t side
-				   , Int_t det, UInt_t *buf, Int_t maxSize)
+//Int_t AliTRDrawData::ProduceHcDataV3(AliTRDdataArrayS *digits, Int_t side , Int_t det, UInt_t *buf, Int_t maxSize, Bool_t newEvent)
+Int_t AliTRDrawData::ProduceHcDataV3(AliTRDdataArrayS *digits, Int_t side , Int_t det, UInt_t *buf, Int_t maxSize)
 {
   //
   // This function simulates: Raw Version == 3 (Zero Suppression Prototype)
@@ -443,8 +453,10 @@ Int_t AliTRDrawData::ProduceHcDataV3(AliTRDdataArrayS *digits, Int_t side
   const Int_t kNTBin = AliTRDcalibDB::Instance()->GetNumberOfTimeBins();
   Int_t       kCtype = 0;                       // Chamber type (0:C0, 1:C1)
   //Int_t          iEv = 0xA;                     // Event ID. Now fixed to 10, how do I get event id?
-  UInt_t           x = 0;                       // General used number
-  Int_t           rv = fFee->GetRAWversion();
+
+ 
+
+  Bool_t tracklet_on = fFee->GetTracklet();     // **new**
 
   // Check the nCol and nRow.
   if ((nCol == 144) && 
@@ -460,95 +472,115 @@ Int_t AliTRDrawData::ProduceHcDataV3(AliTRDdataArrayS *digits, Int_t side
   AliDebug(1,Form("Producing raw data for sect=%d plan=%d cham=%d side=%d"
                  ,sect,plan,cham,side));
 
-  // Tracklet should be processed here but not implemented yet
+  AliTRDmcmSim** mcm = new AliTRDmcmSim*[(kCtype + 3)*(fGeo->MCMmax())];
 
-  // Write end of tracklet marker
-  if (nw < maxSize) {
-    buf[nw++] = kEndoftrackletmarker;
-  } 
-  else {
-    of++;
+  // in case no tracklet-words are processed: write the tracklet-endmarker as well as all additional words immediately and write 
+  // raw-data in one go; if tracklet-processing is enabled, first all tracklet-words of a half-chamber have to be processed before the
+  // additional words (tracklet-endmarker,headers,...)are written. Raw-data is written in a second loop;
+  
+  if (!tracklet_on) {
+      WriteIntermediateWords(buf,nw,of,maxSize,det,side); 
   }
-
-  // Half Chamber header
-  // h[0] (there are 3 HC header)
-  Int_t minorv = 0;    // The minor version number
-  Int_t add    = 2;    // The number of additional header words to follow
-  x = (1<<31) | (rv<<24) | (minorv<<17) | (add<<14) | (sect<<9) | (plan<<6) | (cham<<3) | (side<<2) | 1;
-  if (nw < maxSize) {
-    buf[nw++] = x; 
-  }
-  else {
-    of++;
-  }
-  // h[1]
-  Int_t bcCtr   = 99; // bunch crossing counter. Here it is set to 99 always for no reason
-  Int_t ptCtr   = 15; // pretrigger counter. Here it is set to 15 always for no reason
-  Int_t ptPhase = 11; // pretrigger phase. Here it is set to 11 always for no reason
-  x = (bcCtr<<16) | (ptCtr<<12) | (ptPhase<<8) | ((kNTBin-1)<<2) | 1;
-  if (nw < maxSize) {
-    buf[nw++] = x; 
-  }
-  else {
-    of++;
-  }
-  // h[2]
-  Int_t pedSetup       = 1;  // Pedestal filter setup (0:1). Here it is always 1 for no reason
-  Int_t gainSetup      = 1;  // Gain filter setup (0:1). Here it is always 1 for no reason
-  Int_t tailSetup      = 1;  // Tail filter setup (0:1). Here it is always 1 for no reason
-  Int_t xtSetup        = 0;  // Cross talk filter setup (0:1). Here it is always 0 for no reason
-  Int_t nonlinSetup    = 0;  // Nonlinearity filter setup (0:1). Here it is always 0 for no reason
-  Int_t bypassSetup    = 0;  // Filter bypass (for raw data) setup (0:1). Here it is always 0 for no reason
-  Int_t commonAdditive = 10; // Digital filter common additive (0:63). Here it is always 10 for no reason
-  x = (pedSetup<<31) | (gainSetup<<30) | (tailSetup<<29) | (xtSetup<<28) | (nonlinSetup<<27)
-    | (bypassSetup<<26) | (commonAdditive<<20) | 1;
-  if (nw < maxSize) {
-    buf[nw++] = x; 
-  }
-  else {
-    of++;
-  }
-
+  
   // Scan for ROB and MCM
-  for (Int_t iRobRow = 0; iRobRow < (kCtype + 3); iRobRow++ ) {
+  // scanning direction such, that tracklet-words are sorted in ascending z and then in ascending y order
+  // ROB numbering on chamber and MCM numbering on ROB increase with decreasing z and increasing y
+  for (Int_t iRobRow =  (kCtype + 3)-1; iRobRow >= 0; iRobRow-- ) {
     Int_t iRob = iRobRow * 2 + side;
-    for (Int_t iMcm = 0; iMcm < fGeo->MCMmax(); iMcm++ ) {
+    // MCM on one ROB
+    for (Int_t iMcmRB = 0; iMcmRB < fGeo->MCMmax(); iMcmRB++ ) {
+	Int_t iMcm = 16 - 4*(iMcmRB/4 + 1) + (iMcmRB%4);
+	Int_t entry = iRobRow*(fGeo->MCMmax()) + iMcm;
+	
+	mcm[entry] = new AliTRDmcmSim();
+	//mcm[entry]->Init( det, iRob, iMcm , newEvent);
+	mcm[entry]->Init( det, iRob, iMcm);
+	//if (newEvent == kTRUE) newEvent = kFALSE; // only one mcm is concerned with new event
+	Int_t padrow = mcm[entry]->GetRow();
 
-      AliTRDmcmSim *mcm = new AliTRDmcmSim();
-      mcm->Init( det, iRob, iMcm );
-      Int_t padrow = mcm->GetRow();
-
-      // Copy ADC data to MCM simulator
-      for (Int_t iAdc = 0; iAdc < 21; iAdc++ ) {
-	Int_t padcol = mcm->GetCol( iAdc );
-	if ((padcol >=    0) && (padcol <  nCol)) {
-	  for (Int_t iT = 0; iT < kNTBin; iT++) { 
-	    mcm->SetData( iAdc, iT, digits->GetDataUnchecked( padrow, padcol, iT) );
-	  } 
-	} else {  // this means it is out of chamber, and masked ADC
-	  mcm->SetDataPedestal( iAdc );
+	// Copy ADC data to MCM simulator
+	for (Int_t iAdc = 0; iAdc < 21; iAdc++ ) {
+	    Int_t padcol = mcm[entry]->GetCol( iAdc );
+	    if ((padcol >=    0) && (padcol <  nCol)) {
+		for (Int_t iT = 0; iT < kNTBin; iT++) { 
+		    mcm[entry]->SetData( iAdc, iT, digits->GetDataUnchecked( padrow, padcol, iT) );
+		} 
+	    } 
+	    else {  // this means it is out of chamber, and masked ADC
+		mcm[entry]->SetDataPedestal( iAdc );
+	    }
 	}
-      }
-      // Simulate process in MCM
-      mcm->Filter();     // Apply filter
-      mcm->ZSMapping();  // Calculate zero suppression mapping
-      //mcm->DumpData( "trdmcmdata.txt", "RFZS" ); // debugging purpose
 
-      // Write MCM data to buffer
-      Int_t tempNw =  mcm->ProduceRawStream( &buf[nw], maxSize - nw );
-      if( tempNw < 0 ) {
-	of += tempNw;
-	nw += maxSize - nw;
-	AliError(Form("Buffer overflow detected. Please increase the buffer size and recompile."));
-      } else {
-	nw += tempNw;
-      }
+	// Simulate process in MCM
+	mcm[entry]->Filter();     // Apply filter
+	mcm[entry]->ZSMapping();  // Calculate zero suppression mapping
 
-      delete mcm;
+	if (tracklet_on) {
+	    mcm[entry]->Tracklet(); 
+	    Int_t tempNw =  mcm[entry]->ProduceTrackletStream( &buf[nw], maxSize - nw );
+	    //Int_t tempNw = 0;
+	    if( tempNw < 0 ) {
+		of += tempNw;
+		nw += maxSize - nw;
+		AliError(Form("Buffer overflow detected. Please increase the buffer size and recompile."));
+	    } else {
+		nw += tempNw;
+	    }
+	}
+	// no tracklets: write raw-data already in this loop
+	else {
+	     // Write MCM data to buffer
+	    Int_t tempNw =  mcm[entry]->ProduceRawStream( &buf[nw], maxSize - nw );
+	    if( tempNw < 0 ) {
+		of += tempNw;
+		nw += maxSize - nw;
+		AliError(Form("Buffer overflow detected. Please increase the buffer size and recompile."));
+	    } else {
+		nw += tempNw;
+	    }
+	    
+	    delete mcm[entry];
+	}
+	    
+	
 
+
+	//mcm->DumpData( "trdmcmdata.txt", "RFZS" ); // debugging purpose
     }
   }
 
+  // if tracklets are switched on, raw-data can be written only after all tracklets
+  if (tracklet_on) {
+      WriteIntermediateWords(buf,nw,of,maxSize,det,side); 
+  
+  
+      // Scan for ROB and MCM
+      for (Int_t iRobRow =  (kCtype + 3)-1; iRobRow >= 0; iRobRow-- ) {
+	  //Int_t iRob = iRobRow * 2 + side;
+	  // MCM on one ROB
+	  for (Int_t iMcmRB = 0; iMcmRB < fGeo->MCMmax(); iMcmRB++ ) {
+	      Int_t iMcm = 16 - 4*(iMcmRB/4 + 1) + (iMcmRB%4);
+	      
+	      Int_t entry = iRobRow*(fGeo->MCMmax()) + iMcm; 
+	      
+	      // Write MCM data to buffer
+	      Int_t tempNw =  mcm[entry]->ProduceRawStream( &buf[nw], maxSize - nw );
+	      if( tempNw < 0 ) {
+		  of += tempNw;
+		  nw += maxSize - nw;
+		  AliError(Form("Buffer overflow detected. Please increase the buffer size and recompile."));
+	      } else {
+		  nw += tempNw;
+	      }
+	      
+	      delete mcm[entry];
+	  
+	  }
+      }
+  }
+
+  delete [] mcm;
+  
   // Write end of raw data marker
   if (nw < maxSize) {
     buf[nw++] = kEndofrawdatamarker; 
@@ -559,6 +591,7 @@ Int_t AliTRDrawData::ProduceHcDataV3(AliTRDdataArrayS *digits, Int_t side
   if (of != 0) {
     AliError("Buffer overflow. Data is truncated. Please increase buffer size and recompile.");
   }
+
 
   return nw;
 
@@ -617,6 +650,66 @@ AliTRDdigitsManager *AliTRDrawData::Raw2Digits(AliRawReader *rawReader)
 
   return digitsManager;
 }
+
+
+//_____________________________________________________________________________
+void AliTRDrawData::WriteIntermediateWords(UInt_t* buf, Int_t& nw, Int_t& of, const Int_t& maxSize, const Int_t& det, const Int_t& side) {
+    
+    Int_t         plan = fGeo->GetPlane( det );   // Plane
+    Int_t         cham = fGeo->GetChamber( det ); // Chamber
+    Int_t         sect = fGeo->GetSector( det );  // Sector (=iDDL)
+    Int_t           rv = fFee->GetRAWversion();
+    const Int_t kNTBin = AliTRDcalibDB::Instance()->GetNumberOfTimeBins();
+    UInt_t           x = 0;
+
+    // Write end of tracklet marker
+    if (nw < maxSize) {
+	buf[nw++] = kEndoftrackletmarker;
+    } 
+    else {
+	of++;
+    }
+    
+  // Half Chamber header
+  // h[0] (there are 3 HC header)
+    Int_t minorv = 0;    // The minor version number
+    Int_t add    = 2;    // The number of additional header words to follow
+    x = (1<<31) | (rv<<24) | (minorv<<17) | (add<<14) | (sect<<9) | (plan<<6) | (cham<<3) | (side<<2) | 1;
+    if (nw < maxSize) {
+	buf[nw++] = x; 
+    }
+    else {
+	of++;
+    }
+    // h[1]
+    Int_t bcCtr   = 99; // bunch crossing counter. Here it is set to 99 always for no reason
+    Int_t ptCtr   = 15; // pretrigger counter. Here it is set to 15 always for no reason
+    Int_t ptPhase = 11; // pretrigger phase. Here it is set to 11 always for no reason
+    x = (bcCtr<<16) | (ptCtr<<12) | (ptPhase<<8) | ((kNTBin-1)<<2) | 1;
+    if (nw < maxSize) {
+	buf[nw++] = x; 
+    }
+    else {
+	of++;
+    }
+    // h[2]
+    Int_t pedSetup       = 1;  // Pedestal filter setup (0:1). Here it is always 1 for no reason
+    Int_t gainSetup      = 1;  // Gain filter setup (0:1). Here it is always 1 for no reason
+    Int_t tailSetup      = 1;  // Tail filter setup (0:1). Here it is always 1 for no reason
+    Int_t xtSetup        = 0;  // Cross talk filter setup (0:1). Here it is always 0 for no reason
+    Int_t nonlinSetup    = 0;  // Nonlinearity filter setup (0:1). Here it is always 0 for no reason
+    Int_t bypassSetup    = 0;  // Filter bypass (for raw data) setup (0:1). Here it is always 0 for no reason
+    Int_t commonAdditive = 10; // Digital filter common additive (0:63). Here it is always 10 for no reason
+    x = (pedSetup<<31) | (gainSetup<<30) | (tailSetup<<29) | (xtSetup<<28) | (nonlinSetup<<27)
+	| (bypassSetup<<26) | (commonAdditive<<20) | 1;
+    if (nw < maxSize) {
+	buf[nw++] = x; 
+    }
+    else {
+	of++;
+    } 
+}
+
 
 //_____________________________________________________________________________
 AliTRDdigitsManager *AliTRDrawData::Raw2DigitsOLD(AliRawReader *rawReader)
@@ -714,3 +807,7 @@ AliTRDdigitsManager *AliTRDrawData::Raw2DigitsOLD(AliRawReader *rawReader)
   return digitsManager;
 
 }
+
+
+
+

@@ -71,6 +71,17 @@ class AliTRDfeeParam : public TObject
   static  Int_t    GetPFtimeConstant()    { return fgkPFtimeConstant;   }
   static  Int_t    GetPFeffectPedestal()  { return fgkPFeffectPedestal; }
 
+  //new
+  static  Int_t    GetQacc0Start()        {  return fgkPREPqAcc0Start; }
+  static  Int_t    GetQacc0End()          {  return fgkPREPqAcc0End; }
+  static  Int_t    GetQacc1Start()        {  return fgkPREPqAcc1Start; }
+  static  Int_t    GetQacc1End()          {  return fgkPREPqAcc1End; }
+          Float_t  GetMinClusterCharge() const {  return fgkMinClusterCharge; }
+  static  Int_t    GetLinearFitStart()    {  return fgkPREPLinearFitStart; }
+  static  Int_t    GetLinearFitEnd()      {  return fgkPREPLinearFitEnd;  }
+
+
+
   //        Float_t  GetClusThr()           { return fClusThr; };
   //        Float_t  GetPadThr() const { return fPadThr; };
   //        Int_t    GetTailCancelation() const { return fTCOn; };
@@ -84,6 +95,10 @@ class AliTRDfeeParam : public TObject
           Float_t  GetTFr2()        const { return fTFr2;           }
           Float_t  GetTFc1()        const { return fTFc1;           }
           Float_t  GetTFc2()        const { return fTFc2;           }
+
+ // for tracklets
+	  Bool_t   GetTracklet()         const { return fgkTracklet; } 
+          Int_t    GetMaxNrOfTracklets() const { return fgkMaxNrOfTracklets; } 
 
   static  Float_t  GetTFattPar()          { return ((Float_t) fgkTFattPar1) / ((Float_t) fgkTFattPar2); }
           Float_t  GetTFf0()        const { return 1.0 + fgkTFon*(-1.0+GetTFattPar()); }   // 1 if TC off
@@ -145,10 +160,16 @@ class AliTRDfeeParam : public TObject
   static const Int_t    fgkGFnoise           =  0;        // Noise level increased by gain filter x 100 [in ADC] (to be measured)
 
   // TF setup
-  static const Int_t    fgkTFtype            = 1;         // TC type (0=analog, 1=digital, 2=MI) (old name fFilterType)
+  static const Int_t    fgkTFtype            = 1;         // TC type (0=analog, 1=digital, 2=MI, 3=close to electronics) (old name fFilterType)
 
   // OLD TF setup (calculated from above)  (valid only for fgkTFsimType = 0 or 1)
   static const Int_t    fgkTFnExp          = 1;           // Number of exponential for simType 0 and 1
+
+ // Tracklet  processing on/off 
+  static const Bool_t   fgkTracklet         = kFALSE; // default should be kFALSE
+
+  // max. nr of tracklet words for one mcm
+  static const Int_t    fgkMaxNrOfTracklets = 4; 
 
   // following need Instance because initialized in constructor
                Float_t  fTFr1;                            // Time constant [us] long (old name fR1)
@@ -170,11 +191,18 @@ class AliTRDfeeParam : public TObject
                Int_t    fEBignoreNeighbour;               // EBIN 0:include neighbor
 
   // Charge accumulators
-  static const Int_t    fgkPREPqAcc0Start     =  0;       // Preprocessor Charge Accumulator 0 Start
+  static const Int_t    fgkPREPqAcc0Start     =  5;       // Preprocessor Charge Accumulator 0 Start
   static const Int_t    fgkPREPqAcc0End       = 10;       // Preprocessor Charge Accumulator 0 End
   static const Int_t    fgkPREPqAcc1Start     = 11;       // Preprocessor Charge Accumulator 1 Start
   static const Int_t    fgkPREPqAcc1End       = 20;       // Preprocessor Charge Accumulator 1 End
   static const Int_t    fgkMinClusterCharge   = 20;       // Hit detection [in ADC units]
+
+  //new
+  //time constants for linear fit
+  static const Int_t    fgkPREPLinearFitStart = 5;
+  static const Int_t    fgkPREPLinearFitEnd   = 20;
+
+
 
   // OLD TRAP processing parameters calculated from above
   //static const Float_t  fClusThr;                       // Cluster threshold

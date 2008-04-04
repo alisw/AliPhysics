@@ -41,7 +41,9 @@ class AliTRDrawData : public TObject {
 
   virtual Bool_t       Digits2Raw(AliTRDdigitsManager* digitsManager); // for fRawVersion > 0
   virtual Int_t        ProduceHcDataV1andV2(AliTRDdataArrayS *digits, Int_t side, Int_t det, UInt_t *buf, Int_t maxSize);
+  // virtual Int_t        ProduceHcDataV3(AliTRDdataArrayS *digits, Int_t side, Int_t det, UInt_t *buf, Int_t maxSize, Bool_t newEvent);
   virtual Int_t        ProduceHcDataV3(AliTRDdataArrayS *digits, Int_t side, Int_t det, UInt_t *buf, Int_t maxSize);
+          void         WriteIntermediateWords(UInt_t *buf, Int_t& nw, Int_t& of, const Int_t& maxSize, const Int_t& det, const Int_t& side); // writes tracklet-endmarker and additional words between tracklet and raw-data
   
   AliTRDgeometry      *fGeo;            //! Geometry
   AliTRDfeeParam      *fFee;            //! Fee Parameters

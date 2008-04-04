@@ -17,6 +17,8 @@ class AliTRDfeeParam;
 class AliTRDSimParam;
 class AliTRDcalibDB;
 class AliTRDgeometry;
+class AliTRDtrapAlu;
+class AliTRDpadPlane;
 
 class AliTRDmcmSim : public TObject {
 
@@ -29,6 +31,7 @@ class AliTRDmcmSim : public TObject {
 
   virtual void      Copy(TObject &m) const;
 
+  // void      Init( Int_t cha, Int_t rob, Int_t mcm, Bool_t newEvent );   // Initialize MCM by the position parameters
           void      Init( Int_t cha, Int_t rob, Int_t mcm );   // Initialize MCM by the position parameters
           void      SetData(Int_t iadc, Int_t *adc);           // Set ADC data with array 
           void      SetData(Int_t iadc, Int_t it, Int_t adc ); // Set ADC data
@@ -41,14 +44,21 @@ class AliTRDmcmSim : public TObject {
 	  Int_t     GetCol( Int_t iadc );                      // Get corresponding column (0-143) from for ADC channel iadc = [0:20]
 	  // for the ADC/Col mapping, see: http://wiki.kip.uni-heidelberg.de/ti/TRD/index.php/Image:ROB_MCM_numbering.pdf
 
+	  Int_t*    GetPosLUT();
+
 	  Int_t     ProduceRawStream( UInt_t *buf, Int_t bufsize ); // Produce raw data stream from this MCM
+	  Int_t     ProduceTrackletStream( UInt_t *buf, Int_t bufsize ); // produce the tracklet stream for this MCM
 	  void      Filter();                                  // Apply digital filters for existing data
 	  void      ZSMapping();                               // Do ZS mapping for existing data
 	  void      DumpData( char *f, char *target );         // Dump data stored (only for debugging)
+	  void      Tracklet();
+	  void      SetPosLUT();
 
  protected:
 
           Bool_t    fInitialized;                       // Status whether the class is initialized or not
+	  Bool_t    fNextEvent;                         // 0, if new event; 1 if not
+	  Int_t     fMaxTracklets;                      // maximum number of tracklet-words submitted per mcm **new**
 	  Int_t     fChaId;                             // Chamber ID
 	  Int_t     fSector;                            // Sector number of the supermodule
 	  Int_t     fStack;                             // Chamber stack ID
@@ -58,10 +68,17 @@ class AliTRDmcmSim : public TObject {
 	  Int_t     fNADC;                              // Number of ADC (usually 21)
 	  Int_t     fNTimeBin;                          // Number of Timebins (variable)
           Int_t     fRow;                               // Pad row number (0-11 or 0-15) of the MCM on chamber
-          Int_t   **fADCR;                              // Array with MCM ADC values (Raw)
+	  Int_t   **fADCR;                              // Array with MCM ADC values (Raw)
           Int_t   **fADCF;                              // Array with MCM ADC values (Filtered)
-          Int_t   **fZSM;                               // Zero suppression map
+	  Int_t   **fADCT;                              // Array with MCM ADC values (filtered) for tracklet (12bits) //***NEW***
+	  Int_t    *fPosLUT;                            // position lookup table **new**
+	  UInt_t   *fMCMT;                              // tracklet word for one mcm/trap-chip **new**
+	  Int_t   **fZSM;                               // Zero suppression map
           Int_t    *fZSM1Dim;                           // Zero suppression map (1 dimensional projection)
+
+	
+	
+
 
 	  // Parameter classes
 	  AliTRDfeeParam *fFeeParam;                    // FEE parameters
@@ -80,6 +97,7 @@ class AliTRDmcmSim : public TObject {
 	  void      FilterSimDeConvExpMI(Int_t *source, Double_t *target, Int_t n);
 	  void      FilterSimTailMakerSpline(Double_t *ampin, Double_t *ampout, Double_t lambda, Int_t n);
 	  void      FilterSimTailCancelationMI(Double_t *ampin, Double_t *ampout, Double_t norm, Double_t lambda, Int_t n);
+	  void      FilterSimDeConvExpEl(Int_t *source, Int_t *target, Int_t n, Int_t nexp);
 
   ClassDef(AliTRDmcmSim,3)
 
