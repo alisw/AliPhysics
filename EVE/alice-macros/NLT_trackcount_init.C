@@ -34,6 +34,10 @@ void NLT_trackcount_init()
   TGLCameraMarkupStyle* mup = v->GetCameraMarkup();
   if(mup) mup->SetShow(kFALSE);
 
+  AliEveTrackFitter* fitter = new AliEveTrackFitter();
+  gEve->AddToListTree(fitter, 1);
+  gEve->AddElement(fitter, gEve->GetEventScene());
+
   TEveTrackCounter* g_trkcnt = new TEveTrackCounter("Primary Counter");
   gEve->AddToListTree(g_trkcnt, kFALSE);
 

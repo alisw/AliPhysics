@@ -89,14 +89,9 @@ TEveStraightLineSet* ESDvertex_lineset(AliESDVertex* v, const Text_t* name)
   // dimensions
   TEveStraightLineSet* ls = new TEveStraightLineSet();
   ls->SetName(name);
-  ls->AddLine(e[0], 0, 0, -e[0], 0, 0);
-  ls->AddLine(0, e[1], 0, 0, -e[1], 0);
-  ls->AddLine(0, 0, e[2], 0, 0, -e[2]);
-  for(Int_t i =0; i < 3; i++)
-  {
-    ls->AddMarker(i, 0);
-    ls->AddMarker(i, 1);
-  }
+  ls->AddLine(e[0], 0,    0,   -e[0], 0,    0);
+  ls->AddLine(0,    e[1], 0,    0,   -e[1], 0);
+  ls->AddLine(0,    0,    e[2], 0,    0,   -e[2]);
 
   // centre marker
   ls->AddMarker(0, 0.5);
@@ -126,6 +121,7 @@ void make_vertex_ellipses(TEveStraightLineSet* ls, AliESDVertex* v, Bool_t ellip
     ls->SetLineColor(6);
     ls->SetTitle("+- 10 x 10 x 20mm");
   }
+
   Int_t N = 32;
   Float_t S = 2*TMath::Pi()/N;
   Float_t b, a, phi;
