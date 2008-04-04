@@ -2705,6 +2705,15 @@ Bool_t AliTRDgeometry::CreateClusterMatrixArray()
 
   for (Int_t iLayer = AliGeomManager::kTRD1; iLayer <= AliGeomManager::kTRD6; iLayer++) {
     for (Int_t iModule = 0; iModule < AliGeomManager::LayerSize(iLayer); iModule++) {
+      
+      Int_t        isector   = iModule/Ncham();
+      Int_t        ichamber  = iModule%Ncham();
+      Int_t        iLayerTRD = iLayer - AliGeomManager::kTRD1;
+      Int_t        lid       = GetDetector(iLayerTRD,ichamber,isector);    
+
+      // Taking holes into account
+      if (((isector == 13) || (isector == 14) || (isector == 15)) && 
+          (ichamber == 2)) continue; 
 
       UShort_t     volid   = AliGeomManager::LayerToVolUID(iLayer,iModule);
       const char  *symname = AliGeomManager::SymName(volid);
@@ -2722,10 +2731,6 @@ Bool_t AliTRDgeometry::CreateClusterMatrixArray()
         continue;
       }
       TGeoHMatrix *m         = gGeoManager->GetCurrentMatrix();
-      Int_t        iLayerTRD = iLayer - AliGeomManager::kTRD1;
-      Int_t        isector   = iModule/Ncham();
-      Int_t        ichamber  = iModule%Ncham();
-      Int_t        lid       = GetDetector(iLayerTRD,ichamber,isector);    
       
       TGeoRotation mchange; 
       mchange.RotateY(90); 

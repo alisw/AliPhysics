@@ -38,6 +38,7 @@
 #include "AliTrackReference.h"
 #include "AliMC.h"
 #include "AliRun.h"
+#include "AliGeomManager.h"
 
 #include "AliTRDgeometry.h"
 #include "AliTRDhit.h"
@@ -158,6 +159,9 @@ void AliTRDv1::AddAlignableVolumes() const
   //                           ...
   //                         TRD/sm17/st4/pl5
   //
+  AliGeomManager::ELayerID idTRD1 = AliGeomManager::kTRD1;
+  Int_t layer, modUID;
+  
   for (Int_t isect = 0; isect < AliTRDgeometry::Nsect(); isect++) {
 
     if (fGeometry->GetSMstatus(isect) == 0) continue;
@@ -165,6 +169,9 @@ void AliTRDv1::AddAlignableVolumes() const
     for (Int_t icham = 0; icham < AliTRDgeometry::Ncham(); icham++) {
       for (Int_t iplan = 0; iplan < AliTRDgeometry::Nplan(); iplan++) {
 
+	layer = idTRD1 + iplan;
+	modUID = AliGeomManager::LayerToVolUIDSafe(layer,isect*5+icham);
+	
         Int_t idet = AliTRDgeometry::GetDetectorSec(iplan,icham);
 
         volPath  = vpStr;
@@ -199,16 +206,12 @@ void AliTRDv1::AddAlignableVolumes() const
         symName += iplan;
 
         TGeoPNEntry *alignableEntry = 
-	  gGeoManager->SetAlignableEntry(symName.Data(),volPath.Data());
+	  gGeoManager->SetAlignableEntry(symName.Data(),volPath.Data(),modUID);
 
 	// Add the tracking to local matrix following the TPC example
 	if (alignableEntry) {
-	  const char *path = alignableEntry->GetTitle();
-	  if (!gGeoManager->cd(path)) {
-	    AliFatal(Form("Volume path %s not valid!",path));
-	  }
   	  // Is this correct still????
-	  TGeoHMatrix *globMatrix = gGeoManager->GetCurrentMatrix();
+	  TGeoHMatrix *globMatrix = alignableEntry->GetGlobalOrig();
 	  Double_t sectorAngle = 20.0 * (isect % 18) + 10.0;
 	  TGeoHMatrix *t2lMatrix  = new TGeoHMatrix();
 	  t2lMatrix->RotateZ(sectorAngle);
