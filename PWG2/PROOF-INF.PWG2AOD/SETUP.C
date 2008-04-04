@@ -19,7 +19,7 @@ void SETUP() {
   gROOT->ProcessLine(".include PWG2AOD");
 
   // Set our location, so that other packages can find us
-  gSystem->Setenv("PWG2AOD_INCLUDE", "PWG2/AOD");
+  gSystem->Setenv("PWG2AOD_INCLUDE", "PWG2AOD/AOD");
 }
 
 Int_t CheckLoadLibrary(const char* library) {

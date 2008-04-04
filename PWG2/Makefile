@@ -21,6 +21,18 @@ ifneq ($(AOD_INCLUDE),)
   ALICEINC += -I../$(AOD_INCLUDE)
 endif
 
+ifneq ($(ANALYSIS_INCLUDE),)
+  ALICEINC += -I../$(ANALYSIS_INCLUDE)
+endif
+
+ifneq ($(PWG2AOD_INCLUDE),)
+  ALICEINC += -I../$(PWG2AOD_INCLUDE)
+endif
+
+ifneq ($(PWG2femtoscopy_INCLUDE),)
+  ALICEINC += -I../$(PWG2femtoscopy_INCLUDE)
+endif
+
 # only if no par file was loaded before
 ifeq ($(ALICEINC),-I.)
   ifneq ($(ALICE_ROOT),)
@@ -34,6 +46,7 @@ endif
 #endif
 
 CXXFLAGS     += $(ALICEINC) -g
+F77FLAGS     += $(ALICEINC) -g -fPIC
 
 #ALICEINC += -IFEMTOSCOPY/AliFemto -IANALYSIS -IFEMTOSCOPY/AliFemtoUser
 
@@ -42,7 +55,8 @@ include lib$(PACKAGE).pkg
 DHDR_PWG2 := $(DHDR)
 HDRS_PWG2 := $(HDRS)
 SRCS_PWG2 := $(SRCS) G__$(PACKAGE).cxx
-OBJS_PWG2 := $(SRCS_PWG2:.cxx=.o)
+FSCRS_PWG2 := $(FSRCS)
+OBJS_PWG2 := $(SRCS_PWG2:.cxx=.o) $(FSRCS:.F=.o)
 
 PARFILE       = $(PACKAGE).par
 
@@ -59,6 +73,9 @@ endif
 
 %.o:    %.cxx %.h
 	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+%.o:    %.F
+	$(F77) $(F77FLAGS) -c $< -o $@
 
 G__$(PACKAGE).cxx G__$(PACKAGE).h: $(HDRS_PWG2) $(DHDR_PWG2)
 	@echo "Generating dictionary ..."

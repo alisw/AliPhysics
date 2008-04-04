@@ -21,9 +21,9 @@
 
 #include "AliFemtoEvent.h"
 
-#include "AliAODParticle.h"
 #include "TParticle.h"
 #include "AliFemtoModelHiddenInfo.h"
+#include "AliGenHijingEventHeader.h"
 
 ClassImp(AliFemtoEventReaderESDChainKine)
 
@@ -40,7 +40,8 @@ AliFemtoEventReaderESDChainKine::AliFemtoEventReaderESDChainKine():
   fCurEvent(0),
   fCurFile(0),
   fEvent(0x0),
-  fStack(0x0)
+  fStack(0x0),
+  fGenHeader(0x0)
 {
   //constructor with 0 parameters , look at default settings 
 }
@@ -54,7 +55,8 @@ AliFemtoEventReaderESDChainKine::AliFemtoEventReaderESDChainKine(const AliFemtoE
   fCurEvent(0),
   fCurFile(0),
   fEvent(0x0),
-  fStack(0x0)
+  fStack(0x0),
+  fGenHeader(0x0)
 {
   // Copy constructor
   fConstrained = aReader.fConstrained;
@@ -85,7 +87,8 @@ AliFemtoEventReaderESDChainKine& AliFemtoEventReaderESDChainKine::operator=(cons
   if (fEvent) delete fEvent;
   fEvent = new AliESDEvent();
   fStack = aReader.fStack;
-  
+  fGenHeader = aReader.fGenHeader;
+
   return *this;
 }
 //__________________
@@ -142,7 +145,14 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
 
   AliFmThreeVectorF vertex(fV1[0],fV1[1],fV1[2]);
   hbtEvent->SetPrimVertPos(vertex);
+
+  AliGenHijingEventHeader *hdh = dynamic_cast<AliGenHijingEventHeader *> (fGenHeader);
 	
+  Double_t tReactionPlane = 0;
+  if (hdh)
+    {
+      tReactionPlane = hdh->ReactionPlaneAngle();
+    }
   //starting to reading tracks
   int nofTracks=0;  //number of reconstructed tracks in event
   nofTracks=fEvent->GetNumberOfTracks();
@@ -234,21 +244,19 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
 
       // Fill the hidden information with the simulated data
       TParticle *tPart = fStack->Particle(TMath::Abs(esdtrack->GetLabel()));
-      AliAODParticle* tParticle= new AliAODParticle(*tPart,i);
       AliFemtoModelHiddenInfo *tInfo = new AliFemtoModelHiddenInfo();
-      tInfo->SetPDGPid(tParticle->GetMostProbable());
-      tInfo->SetTrueMomentum(tParticle->Px(), tParticle->Py(), tParticle->Pz());
-      Double_t mass2 = (tParticle->E()*tParticle->E() -
-			tParticle->Px()*tParticle->Px() -
-			tParticle->Py()*tParticle->Py() -
-			tParticle->Pz()*tParticle->Pz());
-      
-      
+      tInfo->SetPDGPid(tPart->GetPdgCode());
+      tInfo->SetTrueMomentum(tPart->Px(), tPart->Py(), tPart->Pz());
+      Double_t mass2 = (tPart->Energy() *tPart->Energy() -
+			tPart->Px()*tPart->Px() -
+			tPart->Py()*tPart->Py() -
+			tPart->Pz()*tPart->Pz());
       if (mass2>0.0)
 	tInfo->SetMass(TMath::Sqrt(mass2));
       else 
 	tInfo->SetMass(0.0);
-      tInfo->SetEmissionPoint(tParticle->Vx(), tParticle->Vy(), tParticle->Vz(), tParticle->T());
+
+      tInfo->SetEmissionPoint(tPart->Vx()*1e13*0.197327, tPart->Vy()*1e13*0.197327, tPart->Vz()*1e13*0.197327, tPart->T()*1e13*300000000*0.197327);
       trackCopy->SetHiddenInfo(tInfo);
 
       //decision if we want this track
@@ -285,6 +293,13 @@ void AliFemtoEventReaderESDChainKine::SetStackSource(AliStack *aStack)
   // The chain loads the stack for us
   // You must provide the address where it can be found
   fStack = aStack;
+}
+//___________________
+void AliFemtoEventReaderESDChainKine::SetGenEventHeader(AliGenEventHeader *aGenHeader)
+{
+  // The chain loads the generator event header for us
+  // You must provide the address where it can be found
+  fGenHeader = aGenHeader;
 }
 
 
