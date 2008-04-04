@@ -866,7 +866,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	  cablepar6[0] = supporthlengthCh6/2.;
 	  lCableX6 = 0.;
 	  lCableDY = (kYpos3[i+1]+kYpos3[i+2])/2.-cablepar[1]; // half way between 2 slats on same side
-	  lCableZ = TMath::Power(-1,i)*(nomexthickness+carbonthickness+(iCable++)*kCableWidth)/2.;
+	  lCableZ = TMath::Power(-1,i)*(nomexthickness/2.+carbonthickness+(-1+iCable++)*kCableWidth+kCableWidth/2.);
 	  if(i==0){ // central slat is shorter (rounded)
 	    cablepar[0] -= (kPcbLength-csvPcbLength)/2.;
 	    lCableX = (kPcbLength-csvPcbLength)/2.;
@@ -908,7 +908,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	  cablepar6[0] = (supporthlengthCh6-kPcbLength-kVframeLength)/2.;
 	  lCableX6 = (kPcbLength+kVframeLength)/2.;
 	  lCableDY = (kYpos3[i+1]+kYpos3[i+2])/2.-cablepar[1]; // half way between 2 slats on same side
-	  lCableZ = TMath::Power(-1,i)*(nomexthickness+carbonthickness+(iCable++)*kCableWidth)/2.;
+	  lCableZ = TMath::Power(-1,i)*(nomexthickness/2.+carbonthickness+(-1+iCable++)*kCableWidth+kCableWidth/2.);
 	  gMC->Gsposp("S05L",100*i+cIndex++,"S05S",lCableX,lCableY+lCableDY,lCableZ,0,"ONLY",cablepar,3); 	
 	  gMC->Gsposp("S05L",100*i+cIndex++,"S05S",lCableX,-(lCableY+lCableDY),lCableZ,0,"ONLY",cablepar,3);
 	  gMC->Gsposp("S06L",100*i+cIndex6++,"S06S",lCableX6,lCableY+lCableDY,lCableZ,0,"ONLY",cablepar6,3); 	
@@ -933,7 +933,8 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	else {
 	  lCableDY = (kYpos3[i+1]+kYpos3[i+2])/2.-cablepar[1];
 	}
-	lCableZ = TMath::Power(-1,i)*(nomexthickness+carbonthickness+(iCable++)*kCableWidth)/2.;
+	lCableZ = TMath::Power(-1,i)*(nomexthickness/2.+carbonthickness+(-1+iCable++)*kCableWidth+kCableWidth/2.);
+
 	if (i<=2){ // shortened pcb
 	  cablepar[0] += pcbDLength3/2.;
 	  lCableX -=  pcbDLength3/2.;
@@ -1427,7 +1428,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	lCableX = kXpos4[i]/2.;
 	lCableDY = (kYpos41[i+1]+kYpos41[i+2])/2.-cablepar[1];
 	lCableDY8 = (kYpos42[i+1]+kYpos42[i+2])/2.-cablepar[1];
-	lCableZ = TMath::Power(-1,i)*(nomexthickness+carbonthickness+(iCable++)*kCableWidth)/2.;
+	lCableZ = TMath::Power(-1,i)*(nomexthickness/2.+carbonthickness+(-1+iCable++)*kCableWidth+kCableWidth/2.);
 	gMC->Gsposp("S07L",10*i+cIndex++,"S07S",lCableX,lCableY+lCableDY,lCableZ,0,"ONLY",cablepar,3); 	
 	gMC->Gsposp("S07L",10*i+cIndex++,"S07S",lCableX,-(lCableY+lCableDY),lCableZ,0,"ONLY",cablepar,3);
 	gMC->Gsposp("S08L",10*i+cIndex8++,"S08S",lCableX,lCableY8+lCableDY8,lCableZ,0,"ONLY",cablepar,3); 	
@@ -1464,7 +1465,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	lCableX = (kPcbLength+kVframeLength)/2.;
 	lCableDY = (kYpos41[i+1]+kYpos41[i+2])/2.-cablepar[1]; // half way between 2 slats on same side
 	lCableDY8 = (kYpos42[i+1]+kYpos42[i+2])/2.-cablepar[1]; // half way between 2 slats on same side
-	lCableZ = TMath::Power(-1,i)*(nomexthickness+carbonthickness+(iCable++)*kCableWidth)/2.;
+	lCableZ = TMath::Power(-1,i)*(nomexthickness/2.+carbonthickness+(-1+iCable++)*kCableWidth+kCableWidth/2.);
 	gMC->Gsposp("S07L",10*i+cIndex++,"S07S",lCableX,lCableY+lCableDY,lCableZ,0,"ONLY",cablepar,3); 
 	gMC->Gsposp("S07L",10*i+cIndex++,"S07S",lCableX,-(lCableY+lCableDY),lCableZ,0,"ONLY",cablepar,3); 
 	gMC->Gsposp("S08L",10*i+cIndex8++,"S08S",lCableX,lCableY8+lCableDY8,lCableZ,0,"ONLY",cablepar,3); 
@@ -1482,7 +1483,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	lCableDY = (kYpos41[i+1]+kYpos41[i+2])/2.-cablepar[1];
 	lCableDY8 = (kYpos42[i+1]+kYpos42[i+2])/2.-cablepar[1];
       }
-      lCableZ = TMath::Power(-1,i)*(nomexthickness+carbonthickness+(iCable++)*kCableWidth)/2.;
+      lCableZ = TMath::Power(-1,i)*(nomexthickness/2.+carbonthickness+(-1+iCable++)*kCableWidth+kCableWidth/2.);
       gMC->Gsposp("S07L",10*i+cIndex++,"S07S",lCableX,lCableY+lCableDY,lCableZ,0,"ONLY",cablepar,3); 
       gMC->Gsposp("S07L",10*i+cIndex++,"S07S",lCableX,-(lCableY+lCableDY),lCableZ,0,"ONLY",cablepar,3); 
       gMC->Gsposp("S08L",10*i+cIndex8++,"S08S",lCableX,lCableY8+lCableDY8,lCableZ,0,"ONLY",cablepar,3); 
@@ -1970,7 +1971,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	else {
 	  lCableDY = (kYpos5[i+1]+kYpos5[i+2])/2.-cablepar[1];
 	}
-	lCableZ = TMath::Power(-1,i)*(nomexthickness+carbonthickness+(iCable++)*kCableWidth)/2.;
+	lCableZ = TMath::Power(-1,i)*(nomexthickness/2.+carbonthickness+(-1+iCable++)*kCableWidth+kCableWidth/2.);
 	gMC->Gsposp("S09L",10*i+cIndex++,"S09S",lCableX,lCableY+lCableDY,lCableZ,0,"ONLY",cablepar,3); 	
 	gMC->Gsposp("S09L",10*i+cIndex++,"S09S",lCableX,-(lCableY+lCableDY),lCableZ,0,"ONLY",cablepar,3);
 	// Then bottom cables
@@ -1997,7 +1998,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	cablepar[0] = (supporthlength-kPcbLength-kVframeLength)/2.;
 	lCableX = (kPcbLength+kVframeLength)/2.;
 	lCableDY = (kYpos5[i+1]+kYpos5[i+2])/2.-cablepar[1]; // half way between 2 slats on same side
-	lCableZ = TMath::Power(-1,i)*(nomexthickness+carbonthickness+(iCable++)*kCableWidth)/2.;
+	lCableZ = TMath::Power(-1,i)*(nomexthickness/2.+carbonthickness+(-1+iCable++)*kCableWidth+kCableWidth/2.);
 	gMC->Gsposp("S09L",10*i+cIndex++,"S09S",lCableX,lCableY+lCableDY,lCableZ,0,"ONLY",cablepar,3); 
 	gMC->Gsposp("S09L",10*i+cIndex++,"S09S",lCableX,-(lCableY+lCableDY),lCableZ,0,"ONLY",cablepar,3); 
       }	
@@ -2012,7 +2013,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
       else {
 	lCableDY = (kYpos5[i+1]+kYpos5[i+2])/2.-cablepar[1];
       }
-      lCableZ = TMath::Power(-1,i)*(nomexthickness+carbonthickness+(iCable++)*kCableWidth)/2.;
+      lCableZ = TMath::Power(-1,i)*(nomexthickness/2.+carbonthickness+(-1+iCable++)*kCableWidth+kCableWidth/2.);	
       gMC->Gsposp("S09L",10*i+cIndex++,"S09S",lCableX,lCableY+lCableDY,lCableZ,0,"ONLY",cablepar,3); 
       gMC->Gsposp("S09L",10*i+cIndex++,"S09S",lCableX,-(lCableY+lCableDY),lCableZ,0,"ONLY",cablepar,3); 
       if(i>0){
