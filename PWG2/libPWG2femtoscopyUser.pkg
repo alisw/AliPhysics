@@ -9,7 +9,6 @@ SRCS= FEMTOSCOPY/AliFemtoUser/AliFemtoQPairCut.cxx \
       FEMTOSCOPY/AliFemtoUser/AliFemtoModelCorrFctnSource.cxx \
       FEMTOSCOPY/AliFemtoUser/AliFemtoModelBPLCMSCorrFctn.cxx \
       FEMTOSCOPY/AliFemtoUser/AliFemtoModelGausRinvFreezeOutGenerator.cxx \
-      FEMTOSCOPY/AliFemtoUser/AliFemtoEventReaderESDKine.cxx \
       FEMTOSCOPY/AliFemtoUser/AliFemtoModelCorrFctnTrueQ.cxx \
       FEMTOSCOPY/AliFemtoUser/AliFemtoModelCorrFctnNonIdDR.cxx \
       FEMTOSCOPY/AliFemtoUser/AliFemtoModelCorrFctn3DSpherical.cxx \

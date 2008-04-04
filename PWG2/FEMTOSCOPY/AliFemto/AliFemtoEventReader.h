@@ -78,7 +78,5 @@ protected:
 #endif
 };
 
-inline int Init(const char* /* ReadWrite */, AliFemtoString& /* Message */){cout << "do-nothing AliFemtoEventReader::Init()\n"; return(0);}
-
 #endif
 

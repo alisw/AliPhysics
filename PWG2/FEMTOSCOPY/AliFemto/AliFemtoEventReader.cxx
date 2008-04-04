@@ -114,5 +114,11 @@ AliFemtoV0Cut*    AliFemtoEventReader::V0Cut(){return fV0Cut;}
 AliFemtoXiCut*    AliFemtoEventReader::XiCut(){return fXiCut;} 
 //______________________________________
 AliFemtoKinkCut*    AliFemtoEventReader::KinkCut(){return fKinkCut;}
+//______________________________________
+int AliFemtoEventReader::Init(const char* /* ReadWrite */, AliFemtoString& /* Message */)
+{
+  cout << "do-nothing AliFemtoEventReader::Init()\n"; 
+  return(0);
+}
 
 

@@ -41,8 +41,7 @@ SRCS= FEMTOSCOPY/AliFemto/AliFemtoSimpleAnalysis.cxx \
       FEMTOSCOPY/AliFemto/AliFemtoEventReaderAOD.cxx \
       FEMTOSCOPY/AliFemto/AliFemtoEventReaderAODChain.cxx \
       FEMTOSCOPY/AliFemto/AliFemtoAODTrackCut.cxx \
-      FEMTOSCOPY/AliFemto/AliFemtoCutMonitor.cxx
-      
+      FEMTOSCOPY/AliFemto/AliFemtoCutMonitor.cxx 
 
 HDRS= $(SRCS:.cxx=.h) 
 HDRS += FEMTOSCOPY/AliFemto/AliFmThreeVector.h \
@@ -53,7 +52,42 @@ HDRS += FEMTOSCOPY/AliFemto/AliFmThreeVector.h \
         FEMTOSCOPY/AliFemto/AliFmLorentzVectorD.h \
         FEMTOSCOPY/AliFemto/AliFemtoV0Cut.h \
         FEMTOSCOPY/AliFemto/AliFemtoKinkCut.h \
-        FEMTOSCOPY/AliFemto/AliFemtoXiCut.h 
+        FEMTOSCOPY/AliFemto/AliFemtoXiCut.h \
+        FEMTOSCOPY/AliFemto/AliFemtoAnalysisCollection.h \
+        FEMTOSCOPY/AliFemto/AliFemtoAnalysis.h \
+        FEMTOSCOPY/AliFemto/AliFemtoCorrFctnCollection.h \
+        FEMTOSCOPY/AliFemto/AliFemtoCorrFctn.h \
+        FEMTOSCOPY/AliFemto/AliFemtoEnumeration.h \
+        FEMTOSCOPY/AliFemto/AliFemtoHelix.h \
+        FEMTOSCOPY/AliFemto/AliFemtoHiddenInfo.h \
+        FEMTOSCOPY/AliFemto/AliFemtoLikeSignCorrFctn.h \
+        FEMTOSCOPY/AliFemto/AliFemtoLorentzVectorD.h \
+        FEMTOSCOPY/AliFemto/AliFemtoLorentzVector.h \
+        FEMTOSCOPY/AliFemto/AliFemtoString.h \
+        FEMTOSCOPY/AliFemto/AliFemtoThreeVectorD.h \
+        FEMTOSCOPY/AliFemto/AliFemtoThreeVector.h \
+        FEMTOSCOPY/AliFemto/AliFemtoTypes.h \
+        FEMTOSCOPY/AliFemto/AliFemtoVector.h \
+        FEMTOSCOPY/AliFemto/AliFmLorentzVectorD.h \
+        FEMTOSCOPY/AliFemto/AliFmLorentzVector.h \
+        FEMTOSCOPY/AliFemto/phys_constants.h \
+        FEMTOSCOPY/AliFemto/PhysicalConstants.h \
+        FEMTOSCOPY/AliFemto/SystemOfUnits.h \
+        FEMTOSCOPY/AliFemto/AliFemtoPairCut.h \
+        FEMTOSCOPY/AliFemto/AliFemtoEventCut.h \
+        FEMTOSCOPY/AliFemto/AliFemtoParticleCut.h \
+        FEMTOSCOPY/AliFemto/AliFemtoTrackCollection.h \
+        FEMTOSCOPY/AliFemto/AliFemtoV0Collection.h \
+        FEMTOSCOPY/AliFemto/AliFemtoXiCollection.h \
+        FEMTOSCOPY/AliFemto/AliFemtoKinkCollection.h \
+        FEMTOSCOPY/AliFemto/AliFemtoPicoEventCollection.h \
+        FEMTOSCOPY/AliFemto/AliFemtoParticleCollection.h \
+        FEMTOSCOPY/AliFemto/AliFemtoCutMonitorCollection.h \
+        FEMTOSCOPY/AliFemto/AliFemtoTrackCut.h \
+        FEMTOSCOPY/AliFemto/AliFemtoPicoEventCollectionVector.h \
+        FEMTOSCOPY/AliFemto/AliFemtoEventWriter.h \
+        FEMTOSCOPY/AliFemto/AliFemtoEventWriterCollection.h
+
 
 FSRCS= FEMTOSCOPY/AliFemto/AliFemtoFsiTools.F \
        FEMTOSCOPY/AliFemto/AliFemtoFsiWeightLednicky.F

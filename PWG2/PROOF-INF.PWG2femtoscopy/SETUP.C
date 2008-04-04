@@ -5,7 +5,7 @@ void SETUP() {
   gROOT->ProcessLine(".include PWG2femtoscopy");
 
   // Set our location, so that other packages can find us
-  gSystem->Setenv("PWG2femtoscopy_INCLUDE", "PWG2femtoscopy");
+  gSystem->Setenv("PWG2femtoscopy_INCLUDE", "PWG2femtoscopy/FEMTOSCOPY/AliFemto");
 }
 
 Int_t CheckLoadLibrary(const char* library) {

@@ -19,6 +19,7 @@
 #include <AliESDfriend.h>
 #include <AliStack.h>
 #include <list>
+#include <AliGenEventHeader.h>
 
 class AliFemtoEvent;
 
@@ -38,6 +39,7 @@ class AliFemtoEventReaderESDChainKine : public AliFemtoEventReader
 
   void SetESDSource(AliESDEvent *aESD);
   void SetStackSource(AliStack *aStack);
+  void SetGenEventHeader(AliGenEventHeader *aGenHeader);
 
  protected:
 
@@ -49,6 +51,7 @@ class AliFemtoEventReaderESDChainKine : public AliFemtoEventReader
   unsigned int   fCurFile;       // number of current file
   AliESDEvent*   fEvent;         // ESD event
   AliStack      *fStack;         // Kinematics stack pointer
+  AliGenEventHeader *fGenHeader; // Link to the generator event header
 
 #ifdef __ROOT__
   ClassDef(AliFemtoEventReaderESDChainKine, 1)
