@@ -20,7 +20,7 @@
 #pragma link C++ class AliAODEventInfo+;
 #pragma link C++ class AliAnalysisTaskMuonAODfromGeneral+;
 #pragma link C++ class AliAnalysisTaskSingleMu+;
-
+#pragma link C++ class AliAnalysisTaskLUT+;
 #endif
 
 
