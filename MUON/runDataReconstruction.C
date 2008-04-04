@@ -37,7 +37,8 @@
 #endif
 
 // Data file, OCDB on Grid
-TString input="alien:///alice/data/2008/LHC08a/000021931/raw/08000021931001.50.root";
+TString input="alien:///alice/data/2008/LHC08a/000024841/raw/08000024841010.10.root";
+//TString input="alien:///alice/data/2008/LHC08a/000021931/raw/08000021931001.50.root";
 TString ocdbPath = "alien://folder=/alice/data/2008/LHC08a/OCDB";
 
 // Data file, OCDB locally
@@ -52,20 +53,21 @@ Int_t seed = 1234567;
 void runDataReconstruction(Int_t calib = 1)
 { 
   TGrid::Connect("alien://");
-
+  
   AliCDBManager* man = AliCDBManager::Instance();
   man->SetDefaultStorage(ocdbPath.Data());
   //man->SetSpecificStorage("MUON/Calib/Mapping","local://$ALICE_ROOT");
   //man->SetSpecificStorage("MUON/Calib/DDLStore","local://$ALICE_ROOT");
   //man->SetSpecificStorage("MUON/Calib/Gains","local://$ALICE_ROOT");
-
+  
   gRandom->SetSeed(seed);
   
-  AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 1, 1., 10., AliMagFMaps::k5kG);
+  // no magnetic field --> factor (4th parameter) = 0
+  AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 1, 0., 10., AliMagFMaps::k5kG);
   AliTracker::SetFieldMap(field, kFALSE);
   AliReconstruction *MuonRec = new AliReconstruction();
-
- 
+  
+  
   MuonRec->SetInput(input.Data());
   MuonRec->SetRunVertexFinder(kFALSE);
   MuonRec->SetRunLocalReconstruction("MUON");
@@ -77,8 +79,9 @@ void runDataReconstruction(Int_t calib = 1)
   //  MuonRec->SetEventRange(319,319);
   MuonRec->SetWriteAOD();
   //MuonRec.SetEventRange(0,100); 
-  AliMUONRecoParam *muonRecoParam = AliMUONRecoParam::GetLowFluxParam();
-  muonRecoParam->CombineClusterTrackReco(kFALSE);
+  AliMUONRecoParam *muonRecoParam = AliMUONRecoParam::GetCosmicParam();
+  muonRecoParam->BypassSt45(kTRUE);
+  muonRecoParam->RequestStation(2,kFALSE);
   TString caliboption = caliboption1;
   if ( calib == 2 ) caliboption = caliboption2;
   muonRecoParam->SetCalibrationMode(caliboption.Data());

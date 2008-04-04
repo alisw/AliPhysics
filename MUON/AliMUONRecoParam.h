@@ -20,6 +20,7 @@ class AliMUONRecoParam : public AliDetectorRecoParam
   
   static AliMUONRecoParam *GetLowFluxParam();
   static AliMUONRecoParam *GetHighFluxParam();
+  static AliMUONRecoParam *GetCosmicParam();
   
   /// set the calibration mode (see GetCalibrationMode() for possible modes)
   void SetCalibrationMode(Option_t* mode) { fCalibrationMode = mode; fCalibrationMode.ToUpper();}
@@ -48,6 +49,12 @@ class AliMUONRecoParam : public AliDetectorRecoParam
   Bool_t    SaveFullClusterInESD() const {return fSaveFullClusterInESD;}
   /// return the percentage of events for which all cluster info are stored in ESD
   Double_t  GetPercentOfFullClusterInESD() const {return fPercentOfFullClusterInESD;}
+  
+  /// set the most probable value (GeV/c) of momentum in bending plane
+  /// needed to get some "reasonable" corrections for MCS and E loss even if B = 0
+  void     SetMostProbBendingMomentum(Double_t val) {fMostProbBendingMomentum = val;}
+  /// return the most probable value (GeV/c) of momentum in bending plane
+  Double_t GetMostProbBendingMomentum() const {return fMostProbBendingMomentum;}
   
   /// set the minimum value (GeV/c) of momentum in bending plane
   void     SetMinBendingMomentum(Double_t val) {fMinBendingMomentum = val;}
@@ -161,6 +168,8 @@ class AliMUONRecoParam : public AliDetectorRecoParam
   /// tracking mode: ORIGINAL, KALMAN
   TString fTrackingMode; ///< \brief name of the tracking mode
   
+  Double32_t fMostProbBendingMomentum; ///< most probable value (GeV/c) of muon momentum in bending plane (used when B = 0)
+  
   Double32_t fMinBendingMomentum; ///< minimum value (GeV/c) of momentum in bending plane
   Double32_t fMaxBendingMomentum; ///< maximum value (GeV/c) of momentum in bending plane
   Double32_t fMaxNonBendingSlope; ///< maximum value of the non bending slope
@@ -211,9 +220,10 @@ class AliMUONRecoParam : public AliDetectorRecoParam
   // functions
   void SetLowFluxParam();
   void SetHighFluxParam();
+  void SetCosmicParam();
   
   
-  ClassDef(AliMUONRecoParam,3) // MUON reco parameters
+  ClassDef(AliMUONRecoParam,4) // MUON reco parameters
 };
 
 #endif

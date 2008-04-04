@@ -913,9 +913,6 @@ void AliMUONVTrackReconstructor::ImproveTracks()
   
   AliMUONTrack *track, *nextTrack;
   
-  // Remove double track to improve only "good" tracks
-  RemoveDoubleTracks();
-  
   track = (AliMUONTrack*) fRecTracksPtr->First();
   while (track) {
     

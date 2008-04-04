@@ -191,53 +191,49 @@ AliMUONTrackParam::Clear(Option_t* /*opt*/)
 Double_t AliMUONTrackParam::Px() const
 {
   /// return p_x from track parameters
-  Double_t pYZ, pZ, pX;
-  pYZ = 0;
-  if (  TMath::Abs(fParameters(4,0)) > 0 )
-    pYZ = TMath::Abs(1.0 / fParameters(4,0));
-  pZ = -pYZ / (TMath::Sqrt(1.0 + fParameters(3,0) * fParameters(3,0)));  // spectro. (z<0)
-  pX = pZ * fParameters(1,0); 
-  return pX;
+  Double_t pZ;
+  if (TMath::Abs(fParameters(4,0)) > 0) {
+    Double_t pYZ = (TMath::Abs(fParameters(4,0)) > 0) ? TMath::Abs(1.0 / fParameters(4,0)) : FLT_MAX;
+    pZ = - pYZ / (TMath::Sqrt(1.0 + fParameters(3,0) * fParameters(3,0)));  // spectro. (z<0)
+  } else {
+    pZ = - FLT_MAX / TMath::Sqrt(1.0 + fParameters(3,0) * fParameters(3,0) + fParameters(1,0) * fParameters(1,0));
+  }
+  return pZ * fParameters(1,0); 
 }
 
   //__________________________________________________________________________
 Double_t AliMUONTrackParam::Py() const
 {
   /// return p_y from track parameters
-  Double_t pYZ, pZ, pY;
-  pYZ = 0;
-  if (  TMath::Abs(fParameters(4,0)) > 0 )
-    pYZ = TMath::Abs(1.0 / fParameters(4,0));
-  pZ = -pYZ / (TMath::Sqrt(1.0 + fParameters(3,0) * fParameters(3,0)));  // spectro. (z<0)
-  pY = pZ * fParameters(3,0); 
-  return pY;
+  Double_t pZ;
+  if (TMath::Abs(fParameters(4,0)) > 0) {
+    Double_t pYZ = (TMath::Abs(fParameters(4,0)) > 0) ? TMath::Abs(1.0 / fParameters(4,0)) : FLT_MAX;
+    pZ = - pYZ / (TMath::Sqrt(1.0 + fParameters(3,0) * fParameters(3,0)));  // spectro. (z<0)
+  } else {
+    pZ = - FLT_MAX / TMath::Sqrt(1.0 + fParameters(3,0) * fParameters(3,0) + fParameters(1,0) * fParameters(1,0));
+  }
+  return pZ * fParameters(3,0); 
 }
 
   //__________________________________________________________________________
 Double_t AliMUONTrackParam::Pz() const
 {
   /// return p_z from track parameters
-  Double_t pYZ, pZ;
-  pYZ = 0;
-  if (  TMath::Abs(fParameters(4,0)) > 0 )
-    pYZ = TMath::Abs(1.0 / fParameters(4,0));
-  pZ = -pYZ / (TMath::Sqrt(1.0 + fParameters(3,0) * fParameters(3,0)));  // spectro. (z<0)
-  return pZ;
+  if (TMath::Abs(fParameters(4,0)) > 0) {
+    Double_t pYZ = TMath::Abs(1.0 / fParameters(4,0));
+    return - pYZ / (TMath::Sqrt(1.0 + fParameters(3,0) * fParameters(3,0)));  // spectro. (z<0)
+  } else return - FLT_MAX / TMath::Sqrt(1.0 + fParameters(3,0) * fParameters(3,0) + fParameters(1,0) * fParameters(1,0));
 }
 
   //__________________________________________________________________________
 Double_t AliMUONTrackParam::P() const
 {
   /// return p from track parameters
-  Double_t  pYZ, pZ, p;
-  pYZ = 0;
-  if (  TMath::Abs(fParameters(4,0)) > 0 )
-    pYZ = TMath::Abs(1.0 / fParameters(4,0));
-  pZ = -pYZ / (TMath::Sqrt(1.0 + fParameters(3,0) * fParameters(3,0)));  // spectro. (z<0)
-  p = TMath::Abs(pZ) * 
-    TMath::Sqrt(1.0 + fParameters(3,0) * fParameters(3,0) + fParameters(1,0) * fParameters(1,0));
-  return p;
-  
+  if (TMath::Abs(fParameters(4,0)) > 0) {
+    Double_t pYZ = TMath::Abs(1.0 / fParameters(4,0));
+    Double_t pZ = - pYZ / (TMath::Sqrt(1.0 + fParameters(3,0) * fParameters(3,0)));  // spectro. (z<0)
+    return TMath::Abs(pZ) * TMath::Sqrt(1.0 + fParameters(3,0) * fParameters(3,0) + fParameters(1,0) * fParameters(1,0));
+  } else return FLT_MAX;
 }
 
   //__________________________________________________________________________

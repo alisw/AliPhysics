@@ -278,6 +278,11 @@ void AliMUONTrackReconstructorK::RetraceTrack(AliMUONTrack &trackCandidate, Bool
     // parameters at last but one cluster
     AliMUONTrackParam* previousTrackParam = (AliMUONTrackParam*) trackCandidate.GetTrackParamAtCluster()->Before(lastTrackParam);
     AliMUONVCluster* cluster1 = previousTrackParam->GetClusterPtr();
+    // make sure it is on the previous chamber (can have 2 clusters in the same chamber after "ComplementTrack")
+    if (cluster2->GetChamberId() == cluster1->GetChamberId()) {
+      previousTrackParam = (AliMUONTrackParam*) trackCandidate.GetTrackParamAtCluster()->Before(previousTrackParam);
+      cluster1 = previousTrackParam->GetClusterPtr();
+    }
     Double_t x1 = cluster1->GetX();
     Double_t y1 = cluster1->GetY();
     Double_t z1 = cluster1->GetZ();
@@ -1323,9 +1328,6 @@ void AliMUONTrackReconstructorK::ComplementTracks(const AliMUONVClusterStore& cl
   AliMUONVCluster *cluster;
   AliMUONTrackParam *trackParam, *previousTrackParam, *nextTrackParam, trackParamAtCluster, bestTrackParamAtCluster;
   
-  // Remove double track to complete only "good" tracks
-  RemoveDoubleTracks();
-  
   AliMUONTrack *track = (AliMUONTrack*) fRecTracksPtr->First();
   while (track) {
     trackModified = kFALSE;
@@ -1377,6 +1379,16 @@ void AliMUONTrackReconstructorK::ComplementTracks(const AliMUONVClusterStore& cl
       
       // add new cluster if any
       if (foundOneCluster) {
+	
+	// Printout for debuging
+	if ((AliLog::GetDebugLevel("MUON","AliMUONTrackReconstructorK") >= 1) || (AliLog::GetGlobalDebugLevel() >= 1)) {
+	  cout << "ComplementTracks: found one cluster in chamber(1..): " << chamberId+1 << endl;
+	  bestTrackParamAtCluster.GetClusterPtr()->Print();
+	  cout<<endl<<"Track parameters and covariances at cluster:"<<endl;
+	  bestTrackParamAtCluster.GetParameters().Print();
+	  bestTrackParamAtCluster.GetCovariances().Print();
+	}
+	
 	trackParam->SetRemovable(kTRUE);
 	bestTrackParamAtCluster.SetRemovable(kTRUE);
 	track->AddTrackParamAtCluster(bestTrackParamAtCluster,*(bestTrackParamAtCluster.GetClusterPtr()));

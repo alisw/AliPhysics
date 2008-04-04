@@ -25,6 +25,8 @@
 #include "AliMUONTrackExtrap.h" 
 #include "AliMUONTrackParam.h"
 #include "AliMUONConstants.h"
+#include "AliMUONReconstructor.h"
+#include "AliMUONRecoParam.h"
 
 #include "AliMagF.h" 
 
@@ -88,7 +90,8 @@ Double_t AliMUONTrackExtrap::GetBendingMomentumFromImpactParam(Double_t impactPa
   }
   Double_t simpleBValue = (Double_t) b[0];
   
-  return kCorrectionFactor * (-0.0003 * simpleBValue * simpleBLength * simpleBPosition / impactParam);
+  if (TMath::Abs(simpleBValue) > 0.01) return kCorrectionFactor * (-0.0003 * simpleBValue * simpleBLength * simpleBPosition / impactParam);
+  else return AliMUONReconstructor::GetRecoParam()->GetMostProbBendingMomentum();
 }
 
 //__________________________________________________________________________

@@ -1263,9 +1263,6 @@ void AliMUONTrackReconstructor::ComplementTracks(const AliMUONVClusterStore& clu
   AliMUONVCluster* cluster;
   AliMUONTrackParam *trackParam, *nextTrackParam, copyOfTrackParam, trackParamAtCluster, bestTrackParamAtCluster;
   
-  // Remove double track to complete only "good" tracks
-  RemoveDoubleTracks();
-  
   AliMUONTrack *track = (AliMUONTrack*) fRecTracksPtr->First();
   while (track) {
     trackModified = kFALSE;
@@ -1311,6 +1308,16 @@ void AliMUONTrackReconstructor::ComplementTracks(const AliMUONVClusterStore& clu
       
       // add new cluster if any
       if (foundOneCluster) {
+	
+	// Printout for debuging
+	if ((AliLog::GetDebugLevel("MUON","AliMUONTrackReconstructor") >= 1) || (AliLog::GetGlobalDebugLevel() >= 1)) {
+	  cout << "ComplementTracks: found one cluster in chamber(1..): " << chamberId+1 << endl;
+	  bestTrackParamAtCluster.GetClusterPtr()->Print();
+	  cout<<endl<<"Track parameters and covariances at cluster:"<<endl;
+	  bestTrackParamAtCluster.GetParameters().Print();
+	  bestTrackParamAtCluster.GetCovariances().Print();
+	}
+	
 	trackParam->SetRemovable(kTRUE);
 	bestTrackParamAtCluster.SetRemovable(kTRUE);
 	track->AddTrackParamAtCluster(bestTrackParamAtCluster,*(bestTrackParamAtCluster.GetClusterPtr()));
