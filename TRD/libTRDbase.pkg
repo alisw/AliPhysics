@@ -55,6 +55,7 @@ SRCS= AliTRDarrayI.cxx \
       AliTRDtrigger.cxx \
       AliTRDltuTracklet.cxx \
       AliTRDgtuTrack.cxx \
+      AliTRDtrapAlu.cxx \
       AliTRDmodule.cxx \
       AliTRDhit.cxx
 
