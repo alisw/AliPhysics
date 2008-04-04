@@ -1,4 +1,3 @@
-# ACO config
 dn: det=ACO,o=shuttle,dc=cern,dc=ch
 objectClass: detectorConfig
 det: ACO
@@ -11,4 +10,5 @@ objectClass: dcsConfig
 dcsHost: aldcs052.cern.ch
 dcsPort: 1337
 multiSplit: 4000
-dcsAlias: ACO_HV_MODULE[00..59]
+dcsAlias: ACO_HV_MODULE[00..59]_VMON
+
