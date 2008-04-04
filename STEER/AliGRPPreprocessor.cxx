@@ -693,7 +693,7 @@ Int_t AliGRPPreprocessor::ReceivePromptRecoParameters(UInt_t run, const char* db
 	
 	// main logbook
 	TString sqlQuery;
-	sqlQuery.Form("SELECT time_start, run_type, detectorMask FROM logbook WHERE run = %d", run);
+	sqlQuery.Form("SELECT DAQ_time_start, run_type, detectorMask FROM logbook WHERE run = %d", run);
 	TSQLResult* result = server->Query(sqlQuery);
 	if (!result) 
 	{
@@ -719,7 +719,7 @@ Int_t AliGRPPreprocessor::ReceivePromptRecoParameters(UInt_t run, const char* db
 	TString runType(row->GetField(1));
 	
 	TMap grpData;
-	grpData.Add(new TObjString("time_start"), new TObjString(row->GetField(0)));
+	grpData.Add(new TObjString("DAQ_time_start"), new TObjString(row->GetField(0)));
 	grpData.Add(new TObjString("run_type"), new TObjString(runType));
 	grpData.Add(new TObjString("detectorMask"), new TObjString(row->GetField(2)));
 	
