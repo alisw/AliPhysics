@@ -102,6 +102,7 @@ public AliITSsegmentation {
 // Print default parameters (static const data members, if any)
     virtual void PrintDefaultParameters() const;	    
 
+    static const Int_t GetNAnodesPerHybrid()  { return fgkHalfNanodesDefault;}
   protected:
 
     virtual void Copy(TObject &obj) const;
