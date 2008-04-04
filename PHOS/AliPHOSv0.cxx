@@ -105,6 +105,7 @@
 #include "AliPHOSv0.h"
 #include "AliRun.h"
 #include "AliLog.h"
+#include "AliGeomManager.h"
 
 ClassImp(AliPHOSv0)
 
@@ -928,28 +929,30 @@ void AliPHOSv0::AddAlignableVolumes() const
 
   // Alignable modules
   // Volume path /ALIC_1/PHOS_<i> => symbolic name /PHOS/Module<i>, <i>=1,2,3,4,5
-
+  
+  AliGeomManager::ELayerID idPHOS1 = AliGeomManager::kPHOS1;
+  AliGeomManager::ELayerID idPHOS2 = AliGeomManager::kPHOS2;
+  Int_t modUID, modnum = 0;
   TString physModulePath="/ALIC_1/PHOS_";
   TString symbModuleName="PHOS/Module";
   Int_t nModules = GetGeometry()->GetNModules();
   
   for(Int_t iModule=1; iModule<=nModules; iModule++){
+    modUID = AliGeomManager::LayerToVolUID(idPHOS1,modnum++);
     volpath = physModulePath;
     volpath += iModule;
     //    volpath += "/PEMC_1/PCOL_1/PTIO_1/PCOR_1/PAGA_1/PTII_1";
 
     symname = symbModuleName;
     symname += iModule;
-    gGeoManager->SetAlignableEntry(symname.Data(),volpath.Data());
+    if(!gGeoManager->SetAlignableEntry(symname.Data(),volpath.Data(),modUID))
+      AliFatal(Form("Alignable entry %s not created. Volume path %s not valid", symname.Data(),volpath.Data()));
 
     // Creates the Tracking to Local transformation matrix for PHOS modules
-    TGeoPNEntry *alignableEntry = gGeoManager->GetAlignableEntry(symname.Data()) ;
-    const char *path = alignableEntry->GetTitle();
-    if (!gGeoManager->cd(path))
-       AliFatal(Form("Volume path %s not valid!",path));
+    TGeoPNEntry *alignableEntry = gGeoManager->GetAlignableEntryByUID(modUID) ;
 
     Float_t angle = GetGeometry()->GetPHOSAngle(iModule);
-    TGeoHMatrix* globMatrix = gGeoManager->GetCurrentMatrix();
+    TGeoHMatrix* globMatrix = alignableEntry->GetGlobalOrig();
 
     TGeoHMatrix *matTtoL = new TGeoHMatrix;
     matTtoL->RotateZ(-90.+angle);
@@ -959,7 +962,9 @@ void AliPHOSv0::AddAlignableVolumes() const
 
   //Aligning of CPV should be done for volume PCPV_1
   symbModuleName="PHOS/Module";
+  modnum=0;
   for(Int_t iModule=1; iModule<=nModules; iModule++){
+    modUID = AliGeomManager::LayerToVolUID(idPHOS2,modnum++);
     volpath = physModulePath;
     volpath += iModule;
     volpath += "/PCPV_1";
@@ -972,16 +977,14 @@ void AliPHOSv0::AddAlignableVolumes() const
     symname = symbModuleName;
     symname += iModule;
     symname += "/CPV";
-    gGeoManager->SetAlignableEntry(symname.Data(),volpath.Data());
+    if(!gGeoManager->SetAlignableEntry(symname.Data(),volpath.Data(),modUID))
+      AliFatal(Form("Alignable entry %s not created. Volume path %s not valid", symname.Data(),volpath.Data()));
           
     // Creates the TGeo Local to Tracking transformation matrix ...
-    TGeoPNEntry *alignableEntry = gGeoManager->GetAlignableEntry(symname.Data()) ;
-    const char *path = alignableEntry->GetTitle();
-    if (!gGeoManager->cd(path))
-       AliFatal(Form("Volume path %s not valid!",path));
+    TGeoPNEntry *alignableEntry = gGeoManager->GetAlignableEntryByUID(modUID) ;
 
     Float_t angle = GetGeometry()->GetPHOSAngle(iModule);
-    TGeoHMatrix* globMatrix = gGeoManager->GetCurrentMatrix();
+    TGeoHMatrix* globMatrix = alignableEntry->GetGlobalOrig();
 
     TGeoHMatrix *matTtoL = new TGeoHMatrix;
     matTtoL->RotateZ(-90.+angle);
