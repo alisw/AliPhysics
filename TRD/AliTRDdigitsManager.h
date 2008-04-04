@@ -69,6 +69,7 @@ class AliTRDdigitsManager : public TObject {
 
           Int_t               GetTrack(Int_t track, AliTRDdigit *digit) const;
           Short_t             GetDigitAmp(Int_t row, Int_t col, Int_t time, Int_t det) const;
+					UChar_t             GetPadStatus(Int_t row, Int_t col, Int_t time, Int_t det) const;
 
  protected:
 

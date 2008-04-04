@@ -226,6 +226,21 @@ Short_t AliTRDdigitsManager::GetDigitAmp(Int_t row, Int_t col,Int_t time
 }
  
 //_____________________________________________________________________________
+UChar_t AliTRDdigitsManager::GetPadStatus(Int_t row, Int_t col, Int_t time
+                                             , Int_t det) const
+{
+	//
+	// Returns the pad status for the requested pad
+	//
+	
+	if(!GetDigits(det)){
+		return 0;
+	}
+
+	return ((UChar_t)((AliTRDdataArrayDigits *) GetDigits(det))->GetPadStatus(row, col, time));
+}
+
+//_____________________________________________________________________________
 Bool_t AliTRDdigitsManager::MakeBranch(TTree *tree)
 {
   //

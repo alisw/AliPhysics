@@ -67,6 +67,7 @@ public:
   
 	Int_t          Clusters2Tracks(AliESDEvent *esd);
   static TTreeSRedirector* DebugStreamer() {return fgDebugStreamer;}
+  static void SetNTimeBins(Int_t nTimeBins){fgNTimeBins = nTimeBins; }
   AliCluster*    GetCluster(Int_t index) const;
 	static void    GetExtrapolationConfig(Int_t iconfig, Int_t planes[2]);
 	static const Int_t   GetNTimeBins() {return fgNTimeBins;}
