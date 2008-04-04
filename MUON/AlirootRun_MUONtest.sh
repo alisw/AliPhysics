@@ -101,6 +101,7 @@ if [ "$SIMULATION" -eq 1 ]; then
   
   echo "Moving generated files to $SIMDIR"
   mkdir $OUTDIR/$SIMDIR
+  mv $OUTDIR/*QA*.root $OUTDIR/*.log $OUTDIR/$SIMDIR
   mv $OUTDIR/MUON*.root $OUTDIR/Kinematics*.root $OUTDIR/galice.root $OUTDIR/TrackRefs*.root $OUTDIR/$SIMDIR
 
 fi
