@@ -1,0 +1,26 @@
+Analysis task for the calculation of the Look-up-Tables used by the MUON
+trigger algorithm
+
+Purpose: extract from ESD files track information (ESD track parameters and
+matched local trigger decisions) and store in TNtuple; the ntuple is used
+for building 2D histograms (transverse momentum / local deviation) which
+afterwards enter calculation/optimization procedures for the selection of
+LUT cuts for individual local boards and several transverse momenta.
+
+This version is prepared for the use on the grid, see the JDL file.
+
+Files:
+
+AliAnalysisTaskLUT.cxx   - source files of the analysis task
+AliAnalysisTaskLUT.h
+
+rootlutnt.sh             - executable (script)
+
+runCreateLUTNT.C         - macro for setting the libraries environment and
+                           execution of the main macro
+
+analysisTaskLUTNT.C      - main macro for the analysis
+
+createLUTNT.jdl          - JDL file
+
+
