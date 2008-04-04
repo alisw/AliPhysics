@@ -9,6 +9,7 @@
 
 void its_raw(const char *input = "rawdata.root",
 	     Int_t  mode       = 63,
+	     Int_t  nrun       = 0,
 	     Int_t  event      = 0,
 	     Bool_t accumulate = kFALSE)
 {
@@ -18,7 +19,7 @@ void its_raw(const char *input = "rawdata.root",
     return;
   }
 
-  AliCDBManager::Instance()->SetRun(0);
+  AliCDBManager::Instance()->SetRun(nrun);
   AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
 
   AliRawReader *rawReader = NULL;

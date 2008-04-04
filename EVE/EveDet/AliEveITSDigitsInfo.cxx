@@ -235,9 +235,6 @@ void AliEveITSDigitsInfo::ReadRaw(AliRawReader* raw, Int_t mode)
     while (input.Next())
     {
       Int_t module = input.GetModuleID();
-      Int_t anode  = input.GetAnode();
-      Int_t time   = input.GetTime();
-      Int_t signal = input.GetSignal();
 
       if (input.IsNewModule())
       {
@@ -246,11 +243,16 @@ void AliEveITSDigitsInfo::ReadRaw(AliRawReader* raw, Int_t mode)
 	  fSDDmap[module] = digits = new TClonesArray("AliITSdigit", 0);
       }
 
-      AliITSdigit* d = new ((*digits)[digits->GetEntriesFast()]) AliITSdigit();
-      d->SetCoord1(anode);
-      d->SetCoord2(time);
-      d->SetSignal(signal);
-
+      if (input.IsCompletedModule()==kFALSE)
+      {
+	Int_t anode  = input.GetAnode()+input.GetChannel()*AliITSsegmentationSDD::GetNAnodesPerHybrid();
+	Int_t time   = input.GetTime();
+	Int_t signal = input.GetSignal();
+	AliITSdigit* d = new ((*digits)[digits->GetEntriesFast()]) AliITSdigit();
+	d->SetCoord1(anode);
+	d->SetCoord2(time);
+	d->SetSignal(signal);
+      }
       // printf("SDD: %d %d %d %d\n",module,anode,time,signal);
     }
     raw->Reset();
