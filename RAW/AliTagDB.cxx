@@ -154,7 +154,7 @@ const char *AliTagDB::GetFileName() const
    // Return filename based on hostname and date and time. This will make
    // each file unique. The tags will be stored in the /data1/tags directory.
 
-   static char fname[1024];
+   static TString fname;
    const char *fs = fFS;
 
    // check that fs exists (crude check fails if fs is a file)
@@ -167,17 +167,14 @@ const char *AliTagDB::GetFileName() const
      if (header) runNumber = header->Get("RunNb");
    }
 
-   char hostname[1024];
-   strcpy(hostname, gSystem->HostName());
-
-   char *s;
-   if ((s = strchr(hostname, '.')))
-     *s = 0;
+   TString hostname;
+   hostname.Form("%s",gSystem->HostName());
+   hostname.Resize(hostname.First('.'));
 
    TTimeStamp ts;
 
-   sprintf(fname, "%s/Run%d.%s_%d_%d_%d.RAW.tag.root", fs, runNumber, hostname,
-	   ts.GetDate(), ts.GetTime(), ts.GetNanoSec());
+   fname.Form("%s/Run%d.%s_%d_%d_%d.RAW.tag.root", fs, runNumber, hostname.Data(),
+	      ts.GetDate(), ts.GetTime(), ts.GetNanoSec());
 
-   return fname;
+   return fname.Data();
 }
