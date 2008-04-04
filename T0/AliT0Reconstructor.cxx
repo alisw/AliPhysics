@@ -52,16 +52,15 @@ ClassImp(AliT0Reconstructor)
   
   fParam = AliT0Parameters::Instance();
   fParam->Init();
-  /* 
+  
   for (Int_t i=0; i<24; i++){
         TGraph* gr = fParam ->GetAmpLEDRec(i);
-	if (gr) fAmpLEDrec.AddAtAndExpand(gr,i) ;  
-   }
-  */ 
+	if (gr) fAmpLEDrec.AddAtAndExpand(gr,i) ; 
+}
+  
   fdZonC = TMath::Abs(fParam->GetZPositionShift("T0/C/PMT1"));
   fdZonA = TMath::Abs(fParam->GetZPositionShift("T0/A/PMT15"));
   fCalib = new AliT0Calibrator(); 
-
 }
 //____________________________________________________________________
 
@@ -305,8 +304,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	   if(option == "pdc"){
 	     Double_t qt0 = Double_t(chargeQT0[ipmt]);
 	     Double_t qt1 = Double_t(chargeQT1[ipmt]);
-	     if((qt1-qt0)>0)  adc[ipmt] = Int_t(TMath::Exp( Double_t (channelWidth*(qt1-qt0)/1000)));
-	     
+	     if((qt1-qt0)>0)  adc[ipmt] = Int_t(TMath::Exp( Double_t (channelWidth*(qt1-qt0)/1000.)));
 	     time[ipmt] = fCalib-> WalkCorrection( ipmt,Int_t(qt1) , timeCFD[ipmt], "pdc" ) ;
 	     Double_t sl = (timeLED[ipmt] - time[ipmt])*channelWidth;
 	     if(fAmpLEDrec.At(ipmt)) 
@@ -314,7 +312,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	     frecpoints->SetTime(ipmt,time[ipmt]);
 	     frecpoints->SetAmp(ipmt,adc[ipmt]);
 	     frecpoints->SetAmpLED(ipmt,qt);
-	     AliDebug(1,Form(" QTC %f mv,  time in chann %f ",adc[ipmt] ,time[ipmt]));
+	     AliDebug(10,Form(" QTC %i mv,  time in chann %i ",adc[ipmt] ,time[ipmt]));
 	   }
 	   if(option == "cosmic") {
 	     //	     if(ipmt == 15) continue; //skip crashed PMT
@@ -360,7 +358,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
        }
        if(besttimeA !=9999999)  frecpoints->SetTimeBestA(Int_t(besttimeA));
        if( besttimeC != 9999999 ) frecpoints->SetTimeBestC(Int_t(besttimeC));
-       AliDebug(1,Form(" besttimeA %f ps,  besttimeC %f ps",besttimeA, besttimeC));
+       AliDebug(1,Form(" besttimeA %i ps,  besttimeC %i ps",besttimeA, besttimeC));
        Float_t c = 0.0299792; // cm/ps
        Float_t vertex = 99999;
        if(besttimeA <9999999 && besttimeC < 9999999 ){

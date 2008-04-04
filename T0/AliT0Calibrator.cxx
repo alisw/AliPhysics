@@ -120,6 +120,8 @@ Int_t  AliT0Calibrator::WalkCorrection(Int_t ipmt, Int_t qt, Int_t time, TString
   if (option == "pdc") {
     timeWalk = time + Int_t((fMaxValue[ipmt]-walk)/fChannelWidth) ;
     timeEq= timeWalk - (fTimeDelayCFD[ipmt]-fTimeDelayCFD[0]);
+     AliDebug(10,Form(" ipmt %i time before %i timeWalk %i ,  qt %i timeEq %i \n ",
+		 ipmt, time,timeWalk, qt, timeEq ));
   }
   if (option == "cosmic") {
     timeWalk = time + Int_t((fMaxValue[ipmt]-walk)) ;
