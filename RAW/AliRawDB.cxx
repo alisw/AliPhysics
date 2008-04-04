@@ -354,16 +354,16 @@ Int_t AliRawDB::Fill()
     AliRawEvent *subEvent = fEvent->GetSubEvent(iSubEvent);
     for(Int_t iEquipment = 0; iEquipment < subEvent->GetNEquipments(); iEquipment++) {
       AliRawEquipment *equipment = subEvent->GetEquipment(iEquipment);
-      UInt_t eqId = equipment->GetEquipmentHeader()->GetId();
-      Int_t ddlIndex;
-      Int_t iDet = AliDAQ::DetectorIDFromDdlID(eqId,ddlIndex);
-      Int_t iBranch;
-      if (iDet < 0 || iDet > AliDAQ::kNDetectors) {
-	iDet = AliDAQ::kNDetectors;
-	iBranch = 0; // can we split somehow the unrecognized data??? For the moment - no
-      }
-      else {
-	iBranch = (ddlIndex * fgkDetBranches[iDet])/AliDAQ::NumberOfDdls(iDet);
+      Int_t iDet = AliDAQ::kNDetectors;
+      Int_t iBranch = 0; // can we split somehow the unrecognized data??? For the moment - no
+      if(equipment->GetEquipmentHeader()->GetEquipmentSize()) {
+	UInt_t eqId = equipment->GetEquipmentHeader()->GetId();
+	Int_t ddlIndex = -1;
+	iDet = AliDAQ::DetectorIDFromDdlID(eqId,ddlIndex);
+	if (iDet < 0 || iDet >= AliDAQ::kNDetectors)
+	  iDet = AliDAQ::kNDetectors;
+	else
+	  iBranch = (ddlIndex * fgkDetBranches[iDet])/AliDAQ::NumberOfDdls(iDet);
       }
       equipment->SetRawDataRef(fDetRawData[iDet][iBranch]);
     }
