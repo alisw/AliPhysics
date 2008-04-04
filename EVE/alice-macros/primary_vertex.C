@@ -58,7 +58,7 @@ void primary_vertex_primitive(Bool_t showSPD=kTRUE, Bool_t showBoxes=kFALSE)
 {
   AliESDEvent* esd = AliEveEventManager::AssertESD();
 
-  AliESDVertex*  pv  = esd->GetPrimaryVertex();
+  AliESDVertex*  pv  = esd->GetPrimaryVertexSPD();
   TPolyMarker3D* pvm = make_vertex_marker(pv, "Primary Vertex");
   pvm->SetMarkerStyle(5);
   pvm->SetMarkerColor(5);
@@ -66,7 +66,7 @@ void primary_vertex_primitive(Bool_t showSPD=kTRUE, Bool_t showBoxes=kFALSE)
   register_vertex_marker(pvm);
 
   if (showSPD) {
-    AliESDVertex*  spdv  = esd->GetVertex();
+    AliESDVertex*  spdv  = esd->GetPrimaryVertexSPD();
     TPolyMarker3D* spdvm = make_vertex_marker(spdv, "SPD Vertex");
     spdvm->SetMarkerStyle(2);
     spdvm->SetMarkerColor(6);
@@ -79,7 +79,7 @@ void primary_vertex_primitive(Bool_t showSPD=kTRUE, Bool_t showBoxes=kFALSE)
 
 /******************************************************************************/
 
-TEveStraightLineSet* ESDvertex_lineset(AliESDVertex* v, const Text_t* name)
+TEveStraightLineSet* make_vertex_lineset(AliESDVertex* v, const Text_t* name)
 {
   Double_t x[3], e[3];
   v->GetXYZ(x); v->GetSigmaXYZ(e);
@@ -93,8 +93,6 @@ TEveStraightLineSet* ESDvertex_lineset(AliESDVertex* v, const Text_t* name)
   ls->AddLine(0,    e[1], 0,    0,   -e[1], 0);
   ls->AddLine(0,    0,    e[2], 0,    0,   -e[2]);
 
-  // centre marker
-  ls->AddMarker(0, 0.5);
   ls->RefMainTrans().SetPos(x);
   return ls;
 }
@@ -148,14 +146,14 @@ void primary_vertex(Bool_t showSPD=kTRUE, Bool_t rnrEllipse=kTRUE)
   TEveStraightLineSet* ls;
 
   AliESDVertex* PV  =  esd->GetPrimaryVertex();
-  ls = ESDvertex_lineset(PV, "Primary Vertex");
+  ls = make_vertex_lineset(PV, "Primary Vertex");
   if (rnrEllipse) make_vertex_ellipses(ls, PV, kTRUE);
   gEve->AddElement(ls);
 
   if (showSPD)
   {
-    AliESDVertex*  SPDV  = esd->GetVertex();
-    ls = ESDvertex_lineset(SPDV, "SPD Vertex");
+    AliESDVertex*  SPDV  = esd->GetPrimaryVertexSPD();
+    ls = make_vertex_lineset(SPDV, "SPD Vertex");
     if (rnrEllipse) make_vertex_ellipses(ls, SPDV, kFALSE);
     gEve->AddElement(ls);
   }
