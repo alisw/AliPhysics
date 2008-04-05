@@ -11,7 +11,16 @@ or End of Run event.
 
 Messages on stdout are exported to DAQ log system.
 
-contact: alice-datesupport@cern.ch
+PMD DA for online calibration
+
+contact: basanta@phy.iitb.ac.in
+Run Type: PHYSICS for calibration
+        : PEDESTAL_RUN for Pedestal
+DA Type: MON
+Number of events needed: 1 million for PB+PB, 200 milion for p+p
+Input Files: outPMDdaRun.root, to be updated if existing
+Output Files: pmd_calib.root, pmd_ped.root, both to be exported to the DAQ FXS
+Trigger types used: PHYSICS_EVENT
 
 */
 extern "C" {
