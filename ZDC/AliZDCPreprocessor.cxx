@@ -36,6 +36,7 @@ AliZDCPreprocessor::AliZDCPreprocessor(AliShuttleInterface* shuttle) :
   // constructor
   AddRunType("STANDALONE_PEDESTAL");
   AddRunType("STANDALONE_EMD");
+  AddRunType("PHYSICS");
 }
 
 
