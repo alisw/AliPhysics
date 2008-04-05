@@ -113,7 +113,7 @@ void AliPHOSIhepAnalyze::AnalyzeCPV1(Int_t Nevents)
      return ;
    }
 
-  const AliPHOSGeometry *  fGeom  = please->PHOSGeometry();
+  AliPHOSGeometry * phosgeom =  AliPHOSGeometry::GetInstance() ;
 
   AliInfo(Form("Start CPV Analysis-1. Resolutions, cluster multiplicity and lengths")) ;
   for ( Int_t ievent=0; ievent<Nevents; ievent++) {  
@@ -141,7 +141,7 @@ void AliPHOSIhepAnalyze::AnalyzeCPV1(Int_t Nevents)
  
     // Create and fill arrays of hits for each CPV module
       
-    Int_t nOfModules = fGeom->GetNModules();
+    Int_t nOfModules = phosgeom->GetNModules();
     TClonesArray **hitsPerModule = new TClonesArray *[nOfModules];
     Int_t iModule = 0; 	
     for (iModule=0; iModule < nOfModules; iModule++)
@@ -215,14 +215,12 @@ void AliPHOSIhepAnalyze::AnalyzeCPV1(Int_t Nevents)
 	ygen   = impact->Y();
       	
 	//Transform to the local ref.frame
-	const AliPHOSGeometry* geom = please->PHOSGeometry();
-	Float_t phig = geom->GetPHOSAngle(phosModule);
+	Float_t phig = phosgeom->GetPHOSAngle(phosModule);
 	Float_t phi = TMath::Pi()/180*phig;
-	Float_t distanceIPtoCPV = geom->GetIPtoOuterCoverDistance() -
-	                  (geom->GetFTPosition(1)+
-                          geom->GetFTPosition(2)+
-                          geom->GetCPVTextoliteThickness()
-			  )/2;
+	Float_t distanceIPtoCPV = phosgeom->GetIPtoOuterCoverDistance() -
+	  (phosgeom->GetFTPosition(1)+
+	   phosgeom->GetFTPosition(2)+
+	   phosgeom->GetCPVTextoliteThickness())/2;
 	Float_t xoL,yoL,zoL ;
 //  	xoL = xgen*TMath::Cos(phig)+ygen*TMath::Sin(phig) ;
 //  	yoL = -xgen*TMath::Sin(phig)+ygen*TMath::Cos(phig) + distanceIPtoCPV;
@@ -347,7 +345,7 @@ void AliPHOSIhepAnalyze::AnalyzeEMC1(Int_t Nevents)
      return ;
    }
 
-  const AliPHOSGeometry *  fGeom  = please->PHOSGeometry();
+  AliPHOSGeometry * phosgeom =  AliPHOSGeometry::GetInstance() ;
 
   AliInfo(Form("Start EMC Analysis-1. Resolutions, cluster multiplicity and lengths"));
   for ( Int_t ievent=0; ievent<Nevents; ievent++) {  
@@ -374,7 +372,7 @@ void AliPHOSIhepAnalyze::AnalyzeEMC1(Int_t Nevents)
  
     // Create and fill arrays of hits for each EMC module
       
-    Int_t nOfModules = fGeom->GetNModules();
+    Int_t nOfModules = phosgeom->GetNModules();
     TClonesArray **hitsPerModule = new TClonesArray *[nOfModules];
     Int_t iModule = 0; 	
     for (iModule=0; iModule < nOfModules; iModule++)
@@ -446,10 +444,9 @@ void AliPHOSIhepAnalyze::AnalyzeEMC1(Int_t Nevents)
       
 	
 	//Transform to the local ref.frame
-	const AliPHOSGeometry* geom = please->PHOSGeometry();
-	Float_t phig = geom->GetPHOSAngle(phosModule);
+	Float_t phig = phosgeom->GetPHOSAngle(phosModule);
 	Float_t phi = TMath::Pi()/180*phig;
-	Float_t distanceIPtoEMC = geom->GetIPtoCrystalSurface();
+	Float_t distanceIPtoEMC = phosgeom->GetIPtoCrystalSurface();
 	Float_t xoL,yoL,zoL ;
 //  	xoL = xgen*TMath::Cos(phig)+ygen*TMath::Sin(phig) ;
 //  	yoL = -xgen*TMath::Sin(phig)+ygen*TMath::Cos(phig) + distanceIPtoEMC;
@@ -565,7 +562,7 @@ void AliPHOSIhepAnalyze::AnalyzeCPV2(Int_t Nevents)
      AliError(Form("Could not obtain the Loader object !"));
      return ;
    }
-  const AliPHOSGeometry *  fGeom  = please->PHOSGeometry();
+  AliPHOSGeometry * phosgeom =  AliPHOSGeometry::GetInstance() ;
   fRunLoader->LoadHeader();
 
   for (Int_t nev=0; nev<Nevents; nev++) 
@@ -588,7 +585,7 @@ void AliPHOSIhepAnalyze::AnalyzeCPV2(Int_t Nevents)
       if (! (branchCPVimpacts =treeH->GetBranch("PHOSCpvImpacts")) )  return;
       
       // Create and fill arrays of hits for each CPV module
-      Int_t nOfModules = fGeom->GetNModules();
+      Int_t nOfModules = phosgeom->GetNModules();
       TClonesArray **hitsPerModule = new TClonesArray *[nOfModules];
       Int_t iModule = 0; 	
       for (iModule=0; iModule < nOfModules; iModule++)
@@ -794,7 +791,7 @@ void AliPHOSIhepAnalyze::HitsCPV(Int_t nev)
      AliError(Form("Could not obtain the Loader object !"));
      return ;
    }
-  const AliPHOSGeometry *  fGeom  = please->PHOSGeometry();
+  AliPHOSGeometry * phosgeom =  AliPHOSGeometry::GetInstance() ;
 
      
   printf("\n=================== Event %10d ===================\n",nev);
@@ -815,7 +812,7 @@ void AliPHOSIhepAnalyze::HitsCPV(Int_t nev)
   if (! (branchCPVimpacts =treeH->GetBranch("PHOSCpvImpacts")) )  return;
       
   // Create and fill arrays of hits for each CPV module
-  Int_t nOfModules = fGeom->GetNModules();
+  Int_t nOfModules = phosgeom->GetNModules();
   TClonesArray **hitsPerModule = new TClonesArray *[nOfModules];
   Int_t iModule = 0; 	
   for (iModule=0; iModule < nOfModules; iModule++)

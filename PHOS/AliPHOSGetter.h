@@ -39,7 +39,6 @@ class TF1 ;
 #include "AliPHOSCalibData.h"
 
 class AliPHOS ;  
-class AliPHOSGeometry ;
 class AliPHOSClusterizer ;
 class AliPHOSTrackSegmentMaker ;  
 class AliPHOSPID ; 
@@ -81,9 +80,8 @@ public:
   virtual UShort_t EventPattern(void) const ; 
   virtual Float_t  BeamEnergy(void) const ;
   
-  //========== PHOSGeometry and PHOS ============= 
+  //========== PHOS ============= 
   virtual AliPHOS *         PHOS() const  ;  
-  virtual AliPHOSGeometry * PHOSGeometry() const ; 
   
   //========== Methods to read something from file ==========
   virtual void   Event(Int_t event, const char * opt = "HSDRTP") ;    

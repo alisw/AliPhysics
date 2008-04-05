@@ -20,7 +20,6 @@ class TObjArray ;
  
 // --- AliRoot header files ---
 #include "AliPHOSGetter.h" 
-#include "AliPHOSGeometry.h"
 class AliPHOSClusterizer ;
 class AliPHOSTrackSegmentMaker ;
 class AliPHOSPID ;
@@ -53,9 +52,8 @@ public:
   virtual UShort_t EventPattern(void) const {return 0;}  //not needed in on-flight reconstruction
   virtual Float_t  BeamEnergy(void) const {return 10.;} //not needed in on-flight reconstruction
   
-  //========== PHOSGeometry and PHOS ============= 
+  //========== PHOS ============= 
   //Dummy function not necessary for on-flight reconstruction, but has to be overloaded
-  virtual AliPHOSGeometry * PHOSGeometry() const {return AliPHOSGeometry::GetInstance("IHEP","IHEP") ; } //Create if necessary geom
   
   //========== Methods to read something from file ==========
   virtual void   Event(Int_t /*event*/, const char * /*opt = "HSDRTP"*/){} //Use data already in memory    

@@ -547,24 +547,6 @@ AliPHOSPID * AliPHOSGetter::PID()
 }
 
 //____________________________________________________________________________ 
-AliPHOSGeometry * AliPHOSGetter::PHOSGeometry() const 
-{
-  // Returns PHOS geometry
-
-  AliPHOSGeometry * rv = 0 ; 
-  if (PHOS() )
-    rv =  PHOS()->GetGeometry() ;
-  else {
-    rv = AliPHOSGeometry::GetInstance();
-    if (!rv) {
-      AliError("Could not find PHOS geometry! Loading the default one !");
-      rv = AliPHOSGeometry::GetInstance("IHEP","");
-    }
-  }
-  return rv ; 
-} 
-
-//____________________________________________________________________________ 
 TClonesArray * AliPHOSGetter::Primaries()  
 {
   // creates the Primaries container if needed
@@ -764,11 +746,12 @@ Int_t AliPHOSGetter::ReadRaw(AliRawReader *rawReader,Bool_t isOldRCUFormat)
   Float_t eMax=-333;
   //!!!for debug!!!
 
+  AliPHOSGeometry * phosgeom =  AliPHOSGeometry::GetInstance() ;
   Int_t relId[4];
   for(Int_t iDigit=0; iDigit<digits->GetEntries(); iDigit++) {
     AliPHOSDigit* digit = (AliPHOSDigit*)digits->At(iDigit);
     if(digit->GetEnergy()>eMax) {
-      PHOSGeometry()->AbsToRelNumbering(digit->GetId(),relId);
+      phosgeom->AbsToRelNumbering(digit->GetId(),relId);
       eMax=digit->GetEnergy();
       modMax=relId[0];
       rowMax=relId[2];

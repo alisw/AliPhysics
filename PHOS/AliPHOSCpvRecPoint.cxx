@@ -23,22 +23,12 @@
  *
  * Revision 1.25  2007/03/06 06:47:28  kharlov
  * DP:Possibility to use actual vertex position added
- *
- * Revision 1.24  2006/08/28 10:01:56  kharlov
- * Effective C++ warnings fixed (Timur Pocheptsov)
- *
- * Revision 1.23  2005/12/20 14:28:47  hristov
- * Additional protection
- *
- * Revision 1.22  2005/05/28 14:19:04  schutz
- * Compilation warnings fixed by T.P.
- *
  */
 
 //_________________________________________________________________________
 //  RecPoint implementation for PHOS-CPV
 //  An CpvRecPoint is a cluster of digits   
-//*-- Author: Yuri Kharlov
+//-- Author: Yuri Kharlov
 //  (after Dmitri Peressounko (RRC KI & SUBATECH))
 //  30 October 2000 
 
@@ -89,7 +79,7 @@ Bool_t AliPHOSCpvRecPoint::AreNeighbours(AliPHOSDigit * digit1, AliPHOSDigit * d
   
   Bool_t aren = kFALSE ;
   
-  AliPHOSGeometry * phosgeom =  AliPHOSLoader::GetPHOSGeometry();
+  AliPHOSGeometry * phosgeom =  AliPHOSGeometry::GetInstance() ;
 
   Int_t relid1[4] ; 
   phosgeom->AbsToRelNumbering(digit1->GetId(), relid1) ; 
@@ -287,7 +277,7 @@ void AliPHOSCpvRecPoint::EvalLocalPosition(Float_t logWeight, TVector3 & /*vtx *
   
   AliPHOSDigit * digit ;
 
-  AliPHOSGeometry * phosgeom =  AliPHOSLoader::GetPHOSGeometry();
+  AliPHOSGeometry * phosgeom =  AliPHOSGeometry::GetInstance();
   
   Int_t iDigit;
 
@@ -338,7 +328,7 @@ void AliPHOSCpvRecPoint::EvalClusterLengths(TClonesArray * digits)
 
   AliPHOSDigit * digit ;
 
-  AliPHOSGeometry * phosgeom =  AliPHOSLoader::GetPHOSGeometry();
+  AliPHOSGeometry * phosgeom =  AliPHOSGeometry::GetInstance();
 
   const Int_t kMaxLeng=20;
   Int_t idX[kMaxLeng], idZ[kMaxLeng];

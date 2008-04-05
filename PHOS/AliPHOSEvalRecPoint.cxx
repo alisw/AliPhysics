@@ -313,7 +313,7 @@ void AliPHOSEvalRecPoint::InitTwoGam(Float_t* gamma1, Float_t* gamma2)
   Float_t cos2fi = 1.;
 
   AliPHOSLoader* fLoader = AliPHOSLoader::GetPHOSLoader(fEventFolderName);
-  const AliPHOSGeometry* fGeom = fLoader->PHOSGeometry();
+  AliPHOSGeometry * phosgeom =  AliPHOSGeometry::GetInstance() ;
 
   Int_t iDigit; //loop variable
 
@@ -321,8 +321,8 @@ void AliPHOSEvalRecPoint::InitTwoGam(Float_t* gamma1, Float_t* gamma2)
     {
       digit = (AliPHOSDigit*)fLoader->Digits()->At( digits[iDigit] ); 
       eDigit = energies[iDigit];
-      fGeom->AbsToRelNumbering(digit->GetId(), relid) ;
-      fGeom->RelPosInModule(relid, iy, ix);
+      phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
+      phosgeom->RelPosInModule(relid, iy, ix);
     
       Float_t dx =  ix - xx;
       Float_t dy =  iy - yy;
@@ -344,8 +344,8 @@ void AliPHOSEvalRecPoint::InitTwoGam(Float_t* gamma1, Float_t* gamma2)
     {
       digit = (AliPHOSDigit*)fLoader->Digits()->At( digits[iDigit] ); 
       eDigit = energies[iDigit];
-      fGeom->AbsToRelNumbering(digit->GetId(), relid) ;
-      fGeom->RelPosInModule(relid, iy, ix);
+      phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
+      phosgeom->RelPosInModule(relid, iy, ix);
     
       Float_t dx =  ix - xx;
       Float_t dy =  iy - yy;
@@ -443,7 +443,7 @@ void AliPHOSEvalRecPoint::TwoGam(Float_t* gamma1, Float_t* gamma2)
   Int_t relid[4] ; 
 
   AliPHOSLoader* fLoader = AliPHOSLoader::GetPHOSLoader(fEventFolderName);
-  const AliPHOSGeometry* fGeom = fLoader->PHOSGeometry();
+  AliPHOSGeometry * phosgeom =  AliPHOSGeometry::GetInstance() ;
 
   for(Int_t iter=0; iter<nIter; iter++)
     {
@@ -458,8 +458,8 @@ void AliPHOSEvalRecPoint::TwoGam(Float_t* gamma1, Float_t* gamma2)
 	{
 	  digit = (AliPHOSDigit*)fLoader->Digits()->At( digits[iDigit] ); 
 	  eDigit = energies[iDigit];
-	  fGeom->AbsToRelNumbering(digit->GetId(), relid) ;
-	  fGeom->RelPosInModule(relid, iy, ix);
+	  phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
+	  phosgeom->RelPosInModule(relid, iy, ix);
 	  
 	  Float_t a1,gx1,gy1;
 	  Float_t a2,gx2,gy2;
@@ -602,15 +602,15 @@ void AliPHOSEvalRecPoint::UnfoldTwoMergedPoints(Float_t* gamma1, Float_t* gamma2
   Float_t* eFit = new Float_t[nDigits];
 
   AliPHOSLoader* fLoader = AliPHOSLoader::GetPHOSLoader(fEventFolderName);
-  const AliPHOSGeometry* fGeom = fLoader->PHOSGeometry();
+  AliPHOSGeometry * phosgeom =  AliPHOSGeometry::GetInstance() ;
 
   for(Int_t iDigit=0; iDigit<nDigits; iDigit++)
     {
       AliPHOSDigit* digit = (AliPHOSDigit*)fLoader->Digits()->At( digits[iDigit] ); 
       Int_t relid[4] ;
-      fGeom->AbsToRelNumbering(digit->GetId(), relid) ;
+      phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
       Float_t x,z;     
-      fGeom->RelPosInModule(relid, x, z);
+      phosgeom->RelPosInModule(relid, x, z);
 
       Float_t gain = 0.;
       for(Int_t iMax=0; iMax<nMax; iMax++)
@@ -655,9 +655,9 @@ void AliPHOSEvalRecPoint::UnfoldTwoMergedPoints(Float_t* gamma1, Float_t* gamma2
 	  AliPHOSDigit* digit = (AliPHOSDigit*)fLoader->Digits()->At( digits[iDigit] ); 
 	  Float_t eDigit = energies[iDigit];
 	  Int_t relid[4] ;
-	  fGeom->AbsToRelNumbering(digit->GetId(), relid) ;
+	  phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
 	  Float_t ix,iz;
-	  fGeom->RelPosInModule(relid, ix, iz);
+	  phosgeom->RelPosInModule(relid, ix, iz);
 	  
 	  Float_t dx = xMax - ix;
 	  Float_t dz = zMax - iz;
@@ -720,7 +720,7 @@ void AliPHOSEvalRecPoint::EvaluatePosition()
   Float_t chisqc;
 
   AliPHOSLoader* fLoader = AliPHOSLoader::GetPHOSLoader(fEventFolderName);
-  const AliPHOSGeometry* fGeom = fLoader->PHOSGeometry();
+  AliPHOSGeometry * phosgeom =  AliPHOSGeometry::GetInstance() ;
 
   for(Int_t iter=0; iter<nIter; iter++)
     {
@@ -735,8 +735,8 @@ void AliPHOSEvalRecPoint::EvaluatePosition()
 	  Int_t* digits = GetDigitsList();
 	  digit = (AliPHOSDigit*)fLoader->Digits()->At( digits[iDigit] );
 	  eDigit = energies[iDigit];
-	  fGeom->AbsToRelNumbering(digit->GetId(), relid) ;
-	  fGeom->RelPosInModule(relid, iy, ix);
+	  phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
+	  phosgeom->RelPosInModule(relid, iy, ix);
       
 	  dx =  xc - ix;
 	  dy =  yc - iy;
@@ -948,7 +948,7 @@ Int_t AliPHOSEvalRecPoint::UnfoldLocalMaxima()
   }
 
   AliPHOSLoader* fLoader = AliPHOSLoader::GetPHOSLoader(fEventFolderName);
-  const AliPHOSGeometry* fGeom = fLoader->PHOSGeometry();
+  AliPHOSGeometry * phosgeom =  AliPHOSGeometry::GetInstance() ;
   TClonesArray* digits = fLoader->Digits();
 
   // if number of local maxima less then 2 - nothing to unfold
@@ -971,16 +971,16 @@ Int_t AliPHOSEvalRecPoint::UnfoldLocalMaxima()
     {
       
       AliPHOSDigit* digit = (AliPHOSDigit*)fLoader->Digits()->At( digitsList[iDigit] );
-      fGeom->AbsToRelNumbering(digit->GetId(), relid) ;
+      phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
       Float_t x,z;
-      fGeom->RelPosInModule(relid, x, z);
+      phosgeom->RelPosInModule(relid, x, z);
 
       for(Int_t iMax=0; iMax<nMax; iMax++)
 	{
 	  AliPHOSDigit* digitMax = maxAt[iMax];
 	  Float_t eMax = maxAtEnergy[iMax]; 
-	  fGeom->AbsToRelNumbering(digitMax->GetId(), relid) ;
-	  fGeom->RelPosInModule(relid, xMax, zMax);
+	  phosgeom->AbsToRelNumbering(digitMax->GetId(), relid) ;
+	  phosgeom->RelPosInModule(relid, xMax, zMax);
 	  Float_t dx = xMax - x;
 	  Float_t dz = zMax - z;
 	  Float_t amp,gx,gy;
@@ -994,8 +994,8 @@ Int_t AliPHOSEvalRecPoint::UnfoldLocalMaxima()
   for(Int_t iMax=0; iMax<nMax; iMax++) 
     {
       AliPHOSDigit* digitMax = maxAt[iMax];
-      fGeom->AbsToRelNumbering(digitMax->GetId(), relid) ;
-      fGeom->RelPosInModule(relid, xMax, zMax);
+      phosgeom->AbsToRelNumbering(digitMax->GetId(), relid) ;
+      phosgeom->RelPosInModule(relid, xMax, zMax);
       Float_t eMax = maxAtEnergy[iMax];
 
       AliPHOSEvalRecPoint* newRP = new AliPHOSEvalRecPoint(IsCPV(),this);    
@@ -1006,9 +1006,9 @@ Int_t AliPHOSEvalRecPoint::UnfoldLocalMaxima()
 	{     
 	  AliPHOSDigit* digit = (AliPHOSDigit*)fLoader->Digits()->At( digitsList[iDigit] );
   	  Float_t eDigit = energies[iDigit];
-	  fGeom->AbsToRelNumbering(digit->GetId(), relid) ;
+	  phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
 	  Float_t ix,iz;
-	  fGeom->RelPosInModule(relid, ix, iz);
+	  phosgeom->RelPosInModule(relid, ix, iz);
 
   	  if(AreNeighbours(digitMax,digit))
   	    {

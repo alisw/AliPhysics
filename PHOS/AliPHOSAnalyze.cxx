@@ -159,7 +159,7 @@ void AliPHOSAnalyze::DrawRecon(Int_t Nevent,Int_t Nmod){
     AliError(Form("There is no event %d only %d events available", Nevent, fRunLoader->GetNumberOfEvents() )) ;
     return ;
   }
-  const AliPHOSGeometry * phosgeom = gime->PHOSGeometry() ; 
+  AliPHOSGeometry * phosgeom =  AliPHOSGeometry::GetInstance() ;
   fRunLoader->GetEvent(Nevent);
 
   Int_t nx = phosgeom->GetNPhi() ;
@@ -679,7 +679,7 @@ void AliPHOSAnalyze::Ls(){
    } 
 
 
-  const AliPHOSGeometry * phosgeom = gime->PHOSGeometry();
+  AliPHOSGeometry * phosgeom =  AliPHOSGeometry::GetInstance() ;
 
   Int_t ievent;
   Int_t maxevent = (Int_t)fRunLoader->TreeE()->GetEntries();
@@ -835,7 +835,7 @@ void AliPHOSAnalyze::PositionResolution()
   
   if (fRunLoader->TreeE() == 0x0) fRunLoader->LoadHeader();
 
-  const AliPHOSGeometry * phosgeom = gime->PHOSGeometry() ; 
+  AliPHOSGeometry * phosgeom =  AliPHOSGeometry::GetInstance() ;
 
   Int_t ievent;
   Int_t maxevent = (Int_t)fRunLoader->TreeE()->GetEntries() ; 
@@ -1060,7 +1060,7 @@ void AliPHOSAnalyze::Contamination(){
    } 
   
   if (fRunLoader->TreeE() == 0x0) fRunLoader->LoadHeader();
-  const AliPHOSGeometry * phosgeom = gime->PHOSGeometry() ; 
+  AliPHOSGeometry * phosgeom =  AliPHOSGeometry::GetInstance() ;
   
   Int_t ievent;
   Int_t maxevent = (Int_t)fRunLoader->TreeE()->GetEntries() ; 

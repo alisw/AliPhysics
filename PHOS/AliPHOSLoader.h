@@ -47,7 +47,6 @@ class TTask ;
 #include "AliPHOSTrackSegmentMaker.h"
 #include "AliPHOSPID.h"
 class AliPHOS ; 
-class AliPHOSGeometry ;
 class AliPHOSHit ; 
 class AliPHOSDigit ; 
 class AliPHOSEmcRecPoint ; 
@@ -123,7 +122,6 @@ public:
   TObject** AlarmsRef(){return GetDetectorDataRef(Alarms());}
   void   Track(Int_t itrack) ;
 
-  static AliPHOSGeometry* GetPHOSGeometry();
   static AliPHOSLoader* GetPHOSLoader(const  char* eventfoldername);
 
   //Method to be used when digitizing under AliRunDigitizer, who opens all files etc.
@@ -131,7 +129,6 @@ public:
   Int_t  MaxEvent()          { return (Int_t) GetRunLoader()->TreeE()->GetEntries();}
 
   const AliPHOS *         PHOS();
-  const AliPHOSGeometry  *PHOSGeometry() ; 
   // Alarms
   // TFolder * Alarms() const { return (TFolder*)(ReturnO("Alarms", 0)); }
   TObjArray *  Alarms() {return 0x0;}  

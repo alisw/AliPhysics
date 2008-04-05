@@ -36,19 +36,6 @@
  *
  * Revision 1.51  2007/08/07 14:12:03  kharlov
  * Quality assurance added (Yves Schutz)
- *
- * Revision 1.50  2006/08/28 10:01:56  kharlov
- * Effective C++ warnings fixed (Timur Pocheptsov)
- *
- * Revision 1.49  2006/05/10 06:42:53  kharlov
- * Remove redundant loop over primaries
- *
- * Revision 1.48  2006/04/22 10:30:17  hristov
- * Add fEnergy to AliPHOSDigit and operate with EMC amplitude in energy units (Yu.Kharlov)
- *
- * Revision 1.47  2005/05/28 14:19:04  schutz
- * Compilation warnings fixed by T.P.
- *
  */
 
 //_________________________________________________________________________
@@ -81,7 +68,7 @@
 //             deb all  - print # and list of produced SDigits
 //             tim - print benchmarking information
 //
-//*-- Author :  Dmitri Peressounko (SUBATECH & KI) 
+//-- Author :  Dmitri Peressounko (SUBATECH & KI) 
 //////////////////////////////////////////////////////////////////////////////
 
 
@@ -162,12 +149,9 @@ AliPHOSSDigitizer& AliPHOSSDigitizer::operator = (const AliPHOSSDigitizer& qa)
 //____________________________________________________________________________ 
 AliPHOSSDigitizer::~AliPHOSSDigitizer() {
   //dtor
-  //  AliPHOSGetter * gime =
-  //  AliPHOSGetter::Instance(GetTitle(),fEventFolderName.Data());  
   AliPHOSGetter * gime =
     AliPHOSGetter::Instance();  
   gime->PhosLoader()->CleanSDigitizer();
-//  delete fQADM ; 
 }
 
 //____________________________________________________________________________ 
@@ -192,8 +176,6 @@ void AliPHOSSDigitizer::Init()
   gime->PostSDigitizer(this);
   gime->PhosLoader()->GetSDigitsDataLoader()->GetBaseTaskLoader()->SetDoNotReload(kTRUE);
  
-//  fQADM = new AliPHOSQADataMaker() ;  
-
 }
 
 //____________________________________________________________________________ 
@@ -251,8 +233,6 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
   Int_t nEvents   = fLastEvent - fFirstEvent + 1;
   
   Int_t ievent, i;
-
-  //AliMemoryWatcher memwatcher;
 
   for (ievent = fFirstEvent; ievent <= fLastEvent; ievent++) {    
     gime->Event(ievent,"H") ;   
@@ -320,7 +300,6 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
     if(strstr(option,"deb"))
       PrintSDigits(option) ;
       
-    //memwatcher.Watch(ievent); 
   }// event loop
   
 //  //Write the quality assurance data 
@@ -338,9 +317,6 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
 	 gBenchmark->GetCpuTime("PHOSSDigitizer"), gBenchmark->GetCpuTime("PHOSSDigitizer")/nEvents) ;
   }
   
-  //TFile f("out.root","RECREATE");
-  //memwatcher.WriteToFile(); 
-  //f.Close();
 }
 
 //__________________________________________________________________
@@ -373,6 +349,12 @@ void AliPHOSSDigitizer::PrintSDigits(Option_t * option)
 
 
   AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
+
+  // Get PHOS Geometry object
+  AliPHOSGeometry *geom;
+  if (!(geom = AliPHOSGeometry::GetInstance())) 
+        geom = AliPHOSGeometry::GetInstance("IHEP","");
+
   const TClonesArray * sdigits = gime->SDigits() ;
   
   Info( "\nPrintSDigits", "event # %d %d sdigits", gAlice->GetEvNumber(), sdigits->GetEntriesFast() ) ; 
@@ -382,7 +364,7 @@ void AliPHOSSDigitizer::PrintSDigits(Option_t * option)
     //loop over digits
     AliPHOSDigit * digit;
     printf("\nEMC sdigits\n") ; 
-    Int_t maxEmc = gime->PHOSGeometry()->GetNModules()*gime->PHOSGeometry()->GetNCristalsInModule() ;
+    Int_t maxEmc = geom->GetNModules() * geom->GetNCristalsInModule() ;
     Int_t index ;
     for (index = 0 ; (index < sdigits->GetEntriesFast()) && 
 	 ((dynamic_cast<AliPHOSDigit *> (sdigits->At(index)))->GetId() <= maxEmc) ; index++) {
@@ -404,7 +386,7 @@ void AliPHOSSDigitizer::PrintSDigits(Option_t * option)
     //loop over CPV digits
     AliPHOSDigit * digit;
     printf("\nCPV sdigits\n") ; 
-    Int_t maxEmc = gime->PHOSGeometry()->GetNModules()*gime->PHOSGeometry()->GetNCristalsInModule() ;
+    Int_t maxEmc = geom->GetNModules() * geom->GetNCristalsInModule() ;
     Int_t index ;
     for (index = 0 ; index < sdigits->GetEntriesFast(); index++) {
       digit = dynamic_cast<AliPHOSDigit *>( sdigits->At(index) ) ;

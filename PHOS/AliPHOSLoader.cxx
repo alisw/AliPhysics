@@ -209,17 +209,6 @@ const AliPHOS * AliPHOSLoader::PHOS()
 }  
 
 //____________________________________________________________________________ 
-const AliPHOSGeometry * AliPHOSLoader::PHOSGeometry() 
-{
-  // Return PHOS geometry
-  AliPHOSGeometry * rv = 0 ; 
-  if (PHOS() )
-    rv =  PHOS()->GetGeometry();
-  return rv ; 
-} 
-
-
-//____________________________________________________________________________ 
 Int_t AliPHOSLoader::LoadHits(Option_t* opt)
 {  
 //------- Hits ----------------------
@@ -708,17 +697,6 @@ Int_t AliPHOSLoader::ReadRecParticles()
 }
 
 
-AliPHOSGeometry* AliPHOSLoader::GetPHOSGeometry()
-{
-  //returns PHOS geometry from gAlice 
-  //static Method used by some classes where it is not convienient to pass eventfoldername
-  if (gAlice == 0x0)
-    return 0x0;
-  AliPHOS* phos=dynamic_cast<AliPHOS*>(gAlice->GetDetector("PHOS"));
-  if (phos == 0x0)
-    return 0x0;
-  return phos->GetGeometry();
-}
 /***************************************************************************************/
 
 AliPHOSLoader* AliPHOSLoader::GetPHOSLoader(const  char* eventfoldername)

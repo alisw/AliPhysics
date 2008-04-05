@@ -114,8 +114,12 @@ const TParticle * AliPHOSRecParticle::GetPrimary() const
     return GetPrimary(0) ;
   Int_t AbsId = 0;
   Int_t module ;
-  const AliPHOSGeometry * geom = gime->PHOSGeometry() ;
-   Double_t x,z ;
+
+  // Get PHOS Geometry object
+  AliPHOSGeometry *geom;
+  if (!(geom = AliPHOSGeometry::GetInstance())) 
+        geom = AliPHOSGeometry::GetInstance("IHEP","");
+  Double_t x,z ;
 //DP to be fixed: Why do we use this method here??? M.B. use RecPoint???
   Double_t vtx[3]={0.,0.,0.} ;
   geom->ImpactOnEmc(vtx,static_cast<double>(Theta()),static_cast<double>(Phi()), module,z,x);

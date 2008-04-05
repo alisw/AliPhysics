@@ -18,7 +18,7 @@
 //  Why should I put meaningless comments
 //  just to satisfy
 //  the code checker                
-//*-- Author: Gines Martinez (SUBATECH)
+//-- Author: Gines Martinez (SUBATECH)
 
 // --- ROOT system ---
 #include "TPad.h"
@@ -166,7 +166,7 @@ void AliPHOSRecPoint::ExecuteEvent(Int_t event, Int_t, Int_t)
   case kButton1Down:{
     AliPHOSDigit * digit ;
   
-    AliPHOSGeometry * phosgeom = AliPHOSLoader::GetPHOSGeometry();
+    AliPHOSGeometry * phosgeom =  AliPHOSGeometry::GetInstance() ;
 
     Int_t iDigit;
     Int_t relid[4] ;

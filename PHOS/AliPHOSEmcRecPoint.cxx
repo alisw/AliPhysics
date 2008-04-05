@@ -32,23 +32,13 @@
  *
  * Revision 1.55  2007/01/19 20:31:19  kharlov
  * Improved formatting for Print()
- *
- * Revision 1.54  2006/08/28 10:01:56  kharlov
- * Effective C++ warnings fixed (Timur Pocheptsov)
- *
- * Revision 1.53  2005/12/20 14:28:47  hristov
- * Additional protection
- *
- * Revision 1.52  2005/05/28 14:19:04  schutz
- * Compilation warnings fixed by T.P.
- *
  */
 
 //_________________________________________________________________________
 //  RecPoint implementation for PHOS-EMC 
 //  An EmcRecPoint is a cluster of digits   
-//*--
-//*-- Author: Dmitri Peressounko (RRC KI & SUBATECH)
+//--
+//-- Author: Dmitri Peressounko (RRC KI & SUBATECH)
 
 
 // --- ROOT system ---

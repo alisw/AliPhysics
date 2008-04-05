@@ -625,16 +625,17 @@ void  AliPHOSOnlineMonitor::Go(){
   AliPHOSClusterizerv1* clu = 0 ;
   AliPHOSTrackSegmentMakerv1 * tsm = 0 ;
   AliPHOSPIDv1 * pid = 0 ;
+  AliPHOSGeometry * phosgeom = AliPHOSGeometry::GetInstance() ;
   if(fReconstruct){ //We will need calibation parameters
-    clu = new AliPHOSClusterizerv1(gime->PHOSGeometry()) ;
+    clu = new AliPHOSClusterizerv1(phosgeom) ;
     clu->SetWriting(0) ; //Do not write to file
 //    clu->SetEmcMinE(0.05) ;  //Minimal energy of the digit
     clu->SetEmcLocalMaxCut(0.05) ; //Height of local maximum over environment
     clu->SetEmcClusteringThreshold(0.2) ; //Minimal energy to start cluster
 //    clu->SetUnfolding(kFALSE) ; //Do not unfold
-    tsm = new AliPHOSTrackSegmentMakerv1(gime->PHOSGeometry());
+    tsm = new AliPHOSTrackSegmentMakerv1(phosgeom);
     tsm->SetWriting(0) ; //Do not write to file
-    pid = new AliPHOSPIDv1(gime->PHOSGeometry()) ;
+    pid = new AliPHOSPIDv1(phosgeom) ;
     pid->SetWriting(0) ; //Do not write to file    
   }
   

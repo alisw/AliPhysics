@@ -667,8 +667,10 @@ void AliPHOSTrigger::DoIt(const char * fileName)
 
   AliPHOSGetter * gime = AliPHOSGetter::Instance( fileName ) ;
   
-  //Get Geometry
-  const AliPHOSGeometry * geom = AliPHOSGetter::Instance()->PHOSGeometry() ;
+  // Get PHOS Geometry object
+  AliPHOSGeometry *geom;
+  if (!(geom = AliPHOSGeometry::GetInstance())) 
+        geom = AliPHOSGeometry::GetInstance("IHEP","");
    
   //Define parameters
   Int_t nModules     = geom->GetNModules();
