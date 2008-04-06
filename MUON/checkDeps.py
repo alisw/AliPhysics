@@ -9,13 +9,11 @@ import getopt
 """
 Given a directory, will look into lib*.pkg files to produce a dependency graph
  of libraries (and DA if there are some)
- 
-$Id$
 """
 
 __author__ = "L. Aphecetche aphecetc_at_in2p3_dot_fr"
 __date__ = "April 2008"
-__version__ = "0.3"
+__version__ = "$Id$"
 
 #_______________________________________________________________________________
 def usage():
