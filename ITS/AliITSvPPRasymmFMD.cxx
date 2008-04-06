@@ -63,6 +63,7 @@
 #include "AliMagF.h"
 #include "AliRun.h"
 #include "AliTrackReference.h"
+#include "AliGeomManager.h"
 
 
 #define GEANTGEOMETRY kTRUE
@@ -100,6 +101,7 @@ fIgm((AliITSVersion_t)fMajorVersion,fMinorVersion)//! Get access to decoding
     //   none.
     fIgm.SetGeometryName("");
 }
+
 //______________________________________________________________________
 AliITSvPPRasymmFMD::AliITSvPPRasymmFMD(const Char_t *title):
 AliITS(title),               // Standard AliITS Constructor
@@ -149,6 +151,7 @@ fIgm((AliITSVersion_t)fMajorVersion,fMinorVersion)//! Get access to decoding
     fIdSens    = new Int_t[fIdN];
     for(i=0;i<fIdN;i++) fIdSens[i] = 0;
 }
+
 //______________________________________________________________________
 AliITSvPPRasymmFMD::AliITSvPPRasymmFMD(const char *name, const char *title):
 AliITS(name,title),          // Extended AliITS Constructor
@@ -206,6 +209,7 @@ fIgm((AliITSVersion_t)fMajorVersion,fMinorVersion)//! Get access to decoding
     SetThicknessChip2();
     SetDensityServicesByThickness();
 }
+
 //______________________________________________________________________
 AliITSvPPRasymmFMD::AliITSvPPRasymmFMD(const AliITSvPPRasymmFMD &source):
 AliITS(source.GetName(),source.GetTitle()),// Extended AliITS Constructor
@@ -245,6 +249,7 @@ fIgm(source.GetGeomInit())//! Get access to decoding
     Warning("Copy Constructor","Not allowed to copy AliITSvPPRasymmFMD");
     return;
 }
+
 //______________________________________________________________________
 AliITSvPPRasymmFMD& AliITSvPPRasymmFMD::operator=(const AliITSvPPRasymmFMD 
 						  &source){
@@ -262,6 +267,7 @@ AliITSvPPRasymmFMD& AliITSvPPRasymmFMD::operator=(const AliITSvPPRasymmFMD
     Warning("= operator","Not allowed to copy AliITSvPPRasymmFMD");
     return *this; // return null pointer, copy not allowed.
 }
+
 //______________________________________________________________________
 AliITSvPPRasymmFMD::~AliITSvPPRasymmFMD() {
     //    Standard destructor for the ITS version 10.
@@ -272,6 +278,7 @@ AliITSvPPRasymmFMD::~AliITSvPPRasymmFMD() {
     // Return:
     //   none.
 }
+
 //______________________________________________________________________
 void AliITSvPPRasymmFMD::AddAlignableVolumes() const
 {
@@ -291,6 +298,9 @@ void AliITSvPPRasymmFMD::AddAlignableVolumes() const
     AliFatal("TGeoManager doesn't exist !");
     return;
   }
+
+  AliGeomManager::ELayerID layerId;
+  Int_t modUID, modnum;
 
   if( !gGeoManager->SetAlignableEntry("ITS","ALIC_1/ITSV_1") )
     AliFatal("Unable to set alignable entry!!");    
@@ -312,6 +322,8 @@ void AliITSvPPRasymmFMD::AddAlignableVolumes() const
 
   //===== SPD layer1 =====
   {
+    layerId = AliGeomManager::kSPD1;
+    modnum = 0;
     TString str0 = "ALIC_1/ITSV_1/ITSD_1/IT12_1/I12B_";
     TString str1 = "/I10B_";
     TString str1Bis = "/L1H-STAVE";
@@ -323,8 +335,8 @@ void AliITSvPPRasymmFMD::AddAlignableVolumes() const
     TString halfStave;
     TString module;
     
-    for(Int_t cSect = 0; cSect<10; cSect++) {
-      
+    for(Int_t cSect = 0; cSect<10; cSect++)
+    {
       sector = str0;
       sector += cSect+1; // this is one full sector
       strEntryName1 = strSPD;
@@ -335,8 +347,8 @@ void AliITSvPPRasymmFMD::AddAlignableVolumes() const
       if(!gGeoManager->SetAlignableEntry(strEntryName1.Data(),sector.Data()))
 	AliFatal("Unable to set alignable entry!!");    
       
-      for(Int_t cStave = 0; cStave<2; cStave++) {
-	
+      for(Int_t cStave = 0; cStave<2; cStave++)
+      {
 	stave = sector;
 	stave += str1;
 	stave += cStave+1;
@@ -345,8 +357,8 @@ void AliITSvPPRasymmFMD::AddAlignableVolumes() const
 	strEntryName2 += cStave;
 	//printf("%s   ==   %s\n",strEntryName2.Data(),stave.Data()); // this is a stave
 
-	for(Int_t cHS=0; cHS<2; cHS++) {
-
+	for(Int_t cHS=0; cHS<2; cHS++)
+	{
 	  halfStave = stave;
 	  halfStave += str1Bis;
 	  halfStave += cHS;
@@ -358,8 +370,9 @@ void AliITSvPPRasymmFMD::AddAlignableVolumes() const
 	  if(!gGeoManager->SetAlignableEntry(strEntryName3.Data(),halfStave.Data()))
 	    AliFatal("Unable to set alignable entry!!");    
 
-	  for(Int_t cLadder = 0; cLadder<2; cLadder++) {
-	    
+	  for(Int_t cLadder = 0; cLadder<2; cLadder++)
+	  {
+	    modUID = AliGeomManager::LayerToVolUID(layerId,modnum++);
 	    module = halfStave;
 	    module += str2;
 	    module += cLadder+cHS*2+1;
@@ -367,15 +380,12 @@ void AliITSvPPRasymmFMD::AddAlignableVolumes() const
 	    strEntryName4 += strLadder;
 	    strEntryName4 += cLadder+cHS*2;
 	    //printf("%s   ==   %s\n",strEntryName4.Data(),module.Data());
-	    if(!gGeoManager->SetAlignableEntry(strEntryName4.Data(),module.Data()))
+	    if(!gGeoManager->SetAlignableEntry(strEntryName4.Data(),module.Data(),modUID))
 	      AliFatal("Unable to set alignable entry!!");    
 
 	    // Creates the TGeo Local to Tracking transformation matrix ...
-	    TGeoPNEntry *alignableEntry = gGeoManager->GetAlignableEntry(strEntryName4.Data());
-	    const char *path = alignableEntry->GetTitle();
-	    if (!gGeoManager->cd(path))
-	      AliFatal(Form("Volume path %s not valid!",path));
-	    TGeoHMatrix* globMatrix = gGeoManager->GetCurrentMatrix();
+	    TGeoPNEntry *alignableEntry = gGeoManager->GetAlignableEntryByUID(modUID);
+	    TGeoHMatrix *globMatrix = alignableEntry->GetGlobalOrig();
 	    gtrans = globMatrix->GetTranslation();
 	    memcpy(&rotMatrix[0], globMatrix->GetRotationMatrix(), 9*sizeof(Double_t));
 	    al = TMath::ATan2(rotMatrix[1],rotMatrix[0]);
@@ -400,12 +410,14 @@ void AliITSvPPRasymmFMD::AddAlignableVolumes() const
     }
     
     //===== SPD layer2 =====
+    layerId = AliGeomManager::kSPD2;
+    modnum = 0;
     str1Bis = "/L2H-STAVE";
     str1 = "/I20B_";
     str2 = "/I1D7_";
     
-    for(Int_t cSect = 0; cSect<10; cSect++) {
-      
+    for(Int_t cSect = 0; cSect<10; cSect++)
+    {
       sector = str0;
       sector += cSect+1; // this is one full sector
       strEntryName1 = strSPD;
@@ -417,8 +429,8 @@ void AliITSvPPRasymmFMD::AddAlignableVolumes() const
       // we don't need the previous lines because the whole sector is already define
       // with first layer ...
       
-      for(Int_t cStave =0; cStave<4; cStave++) {
-	
+      for(Int_t cStave =0; cStave<4; cStave++)
+      {
 	stave = sector;
 	stave += str1;
 	stave += cStave+1;
@@ -426,8 +438,8 @@ void AliITSvPPRasymmFMD::AddAlignableVolumes() const
 	strEntryName2 += strStave;
 	strEntryName2 += cStave;
 	
-	for(Int_t cHS=0; cHS<2; cHS++) {
-	  
+	for(Int_t cHS=0; cHS<2; cHS++)
+	{
 	  halfStave = stave;
 	  halfStave += str1Bis;
 	  halfStave += cHS;
@@ -439,8 +451,9 @@ void AliITSvPPRasymmFMD::AddAlignableVolumes() const
 	  if(!gGeoManager->SetAlignableEntry(strEntryName3.Data(),halfStave.Data()))
 	    AliFatal("Unable to set alignable entry!!");    
 	  
-	  for(Int_t cLad =0; cLad<2; cLad++) {
-	    
+	  for(Int_t cLad =0; cLad<2; cLad++)
+	  {
+	    modUID = AliGeomManager::LayerToVolUID(layerId,modnum++);
 	    module = halfStave;
 	    module += str2;
 	    module += cLad+cHS*2+1;
@@ -448,15 +461,12 @@ void AliITSvPPRasymmFMD::AddAlignableVolumes() const
 	    strEntryName4 += strLadder;
 	    strEntryName4 += cLad+cHS*2;
 	    //printf("%s   ==   %s\n",strEntryName4.Data(),module.Data());
-	    if(!gGeoManager->SetAlignableEntry(strEntryName4.Data(),module.Data()))
+	    if(!gGeoManager->SetAlignableEntry(strEntryName4.Data(),module.Data(),modUID))
 	      AliFatal("Unable to set alignable entry!!");
 	    
 	    // Creates the TGeo Local to Tracking transformation matrix ...
-	    TGeoPNEntry *alignableEntry = gGeoManager->GetAlignableEntry(strEntryName4.Data());
-	    const char *path = alignableEntry->GetTitle();
-	    if (!gGeoManager->cd(path))
-	      AliFatal(Form("Volume path %s not valid!",path));
-	    TGeoHMatrix* globMatrix = gGeoManager->GetCurrentMatrix();
+	    TGeoPNEntry *alignableEntry = gGeoManager->GetAlignableEntryByUID(modUID);
+	    TGeoHMatrix *globMatrix = alignableEntry->GetGlobalOrig();
 	    gtrans = globMatrix->GetTranslation();
 	    memcpy(&rotMatrix[0], globMatrix->GetRotationMatrix(), 9*sizeof(Double_t));
 	    al = TMath::ATan2(rotMatrix[1],rotMatrix[0]) + TMath::Pi();
@@ -483,14 +493,16 @@ void AliITSvPPRasymmFMD::AddAlignableVolumes() const
   
   //===== SDD layer1 =====
   {
+    layerId = AliGeomManager::kSDD1;
+    modnum = 0;
     TString str0 = "ALIC_1/ITSV_1/ITSD_1/IT34_1/I004_";
     TString str1 = "/I302_";
 
     TString ladder;
     TString wafer;
 
-    for(Int_t c1 = 1; c1<=14; c1++){
-
+    for(Int_t c1 = 1; c1<=14; c1++)
+    {
       ladder = str0;
       ladder += c1; // the set of wafers from one ladder
       strEntryName1 = strSDD;
@@ -501,24 +513,22 @@ void AliITSvPPRasymmFMD::AddAlignableVolumes() const
 	AliFatal("Unable to set alignable entry!!");    
       //printf("%s    ==    %s\n",strEntryName1.Data(),ladder.Data());
 
-      for(Int_t c2 =1; c2<=6; c2++){
-
+      for(Int_t c2 =1; c2<=6; c2++)
+      {
+	modUID = AliGeomManager::LayerToVolUID(layerId,modnum++);
 	wafer = ladder;
 	wafer += str1;
 	wafer += c2;    // one wafer
 	strEntryName2 = strEntryName1;
 	strEntryName2 += strSensor;
 	strEntryName2 += (c2-1);
-	if(!gGeoManager->SetAlignableEntry(strEntryName2.Data(),wafer.Data()))
+	if(!gGeoManager->SetAlignableEntry(strEntryName2.Data(),wafer.Data(),modUID))
 	  AliFatal("Unable to set alignable entry!!");    
 	//printf("%s    ==    %s\n",strEntryName2.Data(),wafer.Data());
 
 	// Creates the TGeo Local to Tracking transformation matrix ...
-	TGeoPNEntry *alignableEntry = gGeoManager->GetAlignableEntry(strEntryName2.Data());
-	const char *path = alignableEntry->GetTitle();
-	if (!gGeoManager->cd(path))
-	  AliFatal(Form("Volume path %s not valid!",path));
-	TGeoHMatrix* globMatrix = gGeoManager->GetCurrentMatrix();
+	TGeoPNEntry *alignableEntry = gGeoManager->GetAlignableEntryByUID(modUID);
+	TGeoHMatrix *globMatrix = alignableEntry->GetGlobalOrig();
 	gtrans = globMatrix->GetTranslation();
 	memcpy(&rotMatrix[0], globMatrix->GetRotationMatrix(), 9*sizeof(Double_t));
 	al = TMath::ATan2(rotMatrix[1],rotMatrix[0]) + TMath::Pi();
@@ -543,14 +553,16 @@ void AliITSvPPRasymmFMD::AddAlignableVolumes() const
 
   //===== SDD layer2 =====
   {
+    layerId = AliGeomManager::kSDD2;
+    modnum = 0;
     TString str0 = "ALIC_1/ITSV_1/ITSD_1/IT34_1/I005_";
     TString str1 = "/I402_";
 
     TString ladder;
     TString wafer;
 
-    for(Int_t c1 = 1; c1<=22; c1++){
-
+    for(Int_t c1 = 1; c1<=22; c1++)
+    {
       ladder = str0;
       ladder += c1; // the set of wafers from one ladder
       strEntryName1 = strSDD;
@@ -561,24 +573,22 @@ void AliITSvPPRasymmFMD::AddAlignableVolumes() const
 	AliFatal("Unable to set alignable entry!!");    
       //printf("%s    ==    %s\n",strEntryName1.Data(),ladder.Data());
 
-      for(Int_t c2 =1; c2<=8; c2++){
-
+      for(Int_t c2 =1; c2<=8; c2++)
+      {
+	modUID = AliGeomManager::LayerToVolUID(layerId,modnum++);
 	wafer = ladder;
 	wafer += str1;
 	wafer += c2;    // one wafer
 	strEntryName2 = strEntryName1;
 	strEntryName2 += strSensor;
 	strEntryName2 += (c2-1);
-	if(!gGeoManager->SetAlignableEntry(strEntryName2.Data(),wafer.Data()))
+	if(!gGeoManager->SetAlignableEntry(strEntryName2.Data(),wafer.Data(),modUID))
 	  AliFatal("Unable to set alignable entry!!");    
 	//printf("%s    ==    %s\n",strEntryName2.Data(),wafer.Data());
 
 	// Creates the TGeo Local to Tracking transformation matrix ...
-	TGeoPNEntry *alignableEntry = gGeoManager->GetAlignableEntry(strEntryName2.Data());
-	const char *path = alignableEntry->GetTitle();
-	if (!gGeoManager->cd(path))
-	  AliFatal(Form("Volume path %s not valid!",path));
-	TGeoHMatrix* globMatrix = gGeoManager->GetCurrentMatrix();
+	TGeoPNEntry *alignableEntry = gGeoManager->GetAlignableEntryByUID(modUID);
+	TGeoHMatrix *globMatrix = alignableEntry->GetGlobalOrig();
 	gtrans = globMatrix->GetTranslation();
 	memcpy(&rotMatrix[0], globMatrix->GetRotationMatrix(), 9*sizeof(Double_t));
 	al = TMath::ATan2(rotMatrix[1],rotMatrix[0]) + TMath::Pi();
@@ -603,14 +613,16 @@ void AliITSvPPRasymmFMD::AddAlignableVolumes() const
 
   //===== SSD layer1 =====
   {
+    layerId = AliGeomManager::kSSD1;
+    modnum = 0;
     TString str0 = "ALIC_1/ITSV_1/ITSD_1/IT56_1/I565_";
     TString str1 = "/I562_";
 
     TString ladder;
     TString wafer;
 
-    for(Int_t c1 = 1; c1<=34; c1++){
-
+    for(Int_t c1 = 1; c1<=34; c1++)
+    {
       ladder = str0;
       ladder += c1; // the set of wafers from one ladder
       strEntryName1 = strSSD;
@@ -621,24 +633,22 @@ void AliITSvPPRasymmFMD::AddAlignableVolumes() const
 	AliFatal("Unable to set alignable entry!!");    
       //printf("%s    ==    %s\n",strEntryName1.Data(),ladder.Data());
 
-      for(Int_t c2 = 1; c2<=22; c2++){
-
+      for(Int_t c2 = 1; c2<=22; c2++)
+      {
+	modUID = AliGeomManager::LayerToVolUID(layerId,modnum++);
 	wafer = ladder;
 	wafer += str1;
 	wafer += c2;     // one wafer
 	strEntryName2 = strEntryName1;
 	strEntryName2 += strSensor;
 	strEntryName2 += (c2-1);
-	if(!gGeoManager->SetAlignableEntry(strEntryName2.Data(),wafer.Data()))
+	if(!gGeoManager->SetAlignableEntry(strEntryName2.Data(),wafer.Data(),modUID))
 	  AliFatal("Unable to set alignable entry!!");    
 	//printf("%s    ==    %s\n",strEntryName2.Data(),wafer.Data());
 
 	// Creates the TGeo Local to Tracking transformation matrix ...
-	TGeoPNEntry *alignableEntry = gGeoManager->GetAlignableEntry(strEntryName2.Data());
-	const char *path = alignableEntry->GetTitle();
-	if (!gGeoManager->cd(path))
-	  AliFatal(Form("Volume path %s not valid!",path));
-	TGeoHMatrix* globMatrix = gGeoManager->GetCurrentMatrix();
+	TGeoPNEntry *alignableEntry = gGeoManager->GetAlignableEntryByUID(modUID);
+	TGeoHMatrix *globMatrix = alignableEntry->GetGlobalOrig();
 	gtrans = globMatrix->GetTranslation();
 	memcpy(&rotMatrix[0], globMatrix->GetRotationMatrix(), 9*sizeof(Double_t));
 	al = TMath::ATan2(rotMatrix[1],rotMatrix[0]) + TMath::Pi();
@@ -663,14 +673,16 @@ void AliITSvPPRasymmFMD::AddAlignableVolumes() const
 
   //===== SSD layer2 =====
   {
+    layerId = AliGeomManager::kSSD2;
+    modnum = 0;
     TString str0 = "ALIC_1/ITSV_1/ITSD_1/IT56_1/I569_";
     TString str1 = "/I566_";
 
     TString ladder;
     TString wafer;
 
-    for(Int_t c1 = 1; c1<=38; c1++){
-
+    for(Int_t c1 = 1; c1<=38; c1++)
+    {
       ladder = str0;
       ladder += c1; // the set of wafers from one ladder
       strEntryName1 = strSSD;
@@ -681,24 +693,22 @@ void AliITSvPPRasymmFMD::AddAlignableVolumes() const
 	AliFatal("Unable to set alignable entry!!");    
       //printf("%s    ==    %s\n",strEntryName1.Data(),ladder.Data());
 
-      for(Int_t c2 = 1; c2<=25; c2++){
-
+      for(Int_t c2 = 1; c2<=25; c2++)
+      {
+	modUID = AliGeomManager::LayerToVolUID(layerId,modnum++);
 	wafer = ladder;
 	wafer += str1;
 	wafer += c2;     // one wafer
 	strEntryName2 = strEntryName1;
 	strEntryName2 += strSensor;
 	strEntryName2 += (c2-1);
-	if(!gGeoManager->SetAlignableEntry(strEntryName2.Data(),wafer.Data()))
+	if(!gGeoManager->SetAlignableEntry(strEntryName2.Data(),wafer.Data(),modUID))
 	  AliFatal("Unable to set alignable entry!!");    
 	//printf("%s    ==    %s\n",strEntryName2.Data(),wafer.Data());
 
 	// Creates the TGeo Local to Tracking transformation matrix ...
-	TGeoPNEntry *alignableEntry = gGeoManager->GetAlignableEntry(strEntryName2.Data());
-	const char *path = alignableEntry->GetTitle();
-	if (!gGeoManager->cd(path))
-	  AliFatal(Form("Volume path %s not valid!",path));
-	TGeoHMatrix* globMatrix = gGeoManager->GetCurrentMatrix();
+	TGeoPNEntry *alignableEntry = gGeoManager->GetAlignableEntryByUID(modUID);
+	TGeoHMatrix *globMatrix = alignableEntry->GetGlobalOrig();
 	gtrans = globMatrix->GetTranslation();
 	memcpy(&rotMatrix[0], globMatrix->GetRotationMatrix(), 9*sizeof(Double_t));
 	al = TMath::ATan2(rotMatrix[1],rotMatrix[0]) + TMath::Pi();
@@ -721,6 +731,7 @@ void AliITSvPPRasymmFMD::AddAlignableVolumes() const
     }
   }
 }
+
 //______________________________________________________________________
 void AliITSvPPRasymmFMD::BuildGeometry(){
     //    Geometry builder for the ITS version 10. Event Display geometry.
@@ -777,6 +788,7 @@ void AliITSvPPRasymmFMD::BuildGeometry(){
     node->SetLineColor(kColorITS);
     fNodes->Add(node);
 }
+
 //______________________________________________________________________
 void AliITSvPPRasymmFMD::CreateGeometry(){
     //    This routine defines and Creates the geometry for version 10 of 
@@ -5339,6 +5351,7 @@ void AliITSvPPRasymmFMD::CreateGeometry(){
   }
 
 }
+
 //______________________________________________________________________
 void AliITSvPPRasymmFMD::CreateMaterials(){
     // Create ITS materials
@@ -5854,6 +5867,7 @@ void AliITSvPPRasymmFMD::CreateMaterials(){
     AliMaterial(96, "SSD cone$",63.546, 29., 1.15, 1.265, 999);
     AliMedium(96,"SSD cone$",96,0,ifield,fieldm,tmaxfdServ,stemaxServ,deemaxServ,epsilServ,stminServ);
 }
+
 //______________________________________________________________________
 void AliITSvPPRasymmFMD::InitAliITSgeom(){
     //     Based on the geometry tree defined in Geant 3.21, this
@@ -5971,6 +5985,7 @@ void AliITSvPPRasymmFMD::InitAliITSgeom(){
     } // end for lay
     return;
 }
+
 //______________________________________________________________________
 void AliITSvPPRasymmFMD::Init(){
     //     Initialise the ITS after it has been created.
@@ -5999,6 +6014,7 @@ void AliITSvPPRasymmFMD::Init(){
     //
     fIDMother = gMC->VolId("ITSV"); // ITS Mother Volume ID.
 }
+
 //______________________________________________________________________
 void AliITSvPPRasymmFMD::SetDefaults(){
     // sets the default segmentation, response, digit and raw cluster classes
@@ -6101,6 +6117,7 @@ void AliITSvPPRasymmFMD::SetDefaults(){
     }// end if
     return;
 }
+
 //______________________________________________________________________
 void AliITSvPPRasymmFMD::DrawModule() const{
     //     Draw a shaded view of the FMD version 10.
@@ -6153,6 +6170,7 @@ void AliITSvPPRasymmFMD::DrawModule() const{
     gMC->Gdhead(1111, "Inner Tracking System Version 1");
     gMC->Gdman(17, 6, "MAN");
 }
+
 /*
 //______________________________________________________________________
 void AliITSvPPRasymmFMD::StepManager(){
@@ -6289,6 +6307,7 @@ void AliITSvPPRasymmFMD::StepManager(){
 }
 
 */
+
 //______________________________________________________________________
 void AliITSvPPRasymmFMD::StepManager(){
     //    Called for every step in the ITS, then calles the AliITShit class
@@ -6453,6 +6472,7 @@ void AliITSvPPRasymmFMD::StepManager(){
     */
     return;
 }
+
 //______________________________________________________________________
 void AliITSvPPRasymmFMD::PrintAscii(ostream *os)const{
     // Print out class data values in Ascii Form to output stream
@@ -6487,6 +6507,7 @@ void AliITSvPPRasymmFMD::PrintAscii(ostream *os)const{
     os->flags(fmt); // reset back to old Formating.
     return;
 }
+
 //______________________________________________________________________
 void AliITSvPPRasymmFMD::ReadAscii(istream *is){
     // Read in class data values in Ascii Form to output stream
@@ -6512,6 +6533,7 @@ void AliITSvPPRasymmFMD::ReadAscii(istream *is){
     fIgm.SetGeometryName("ITS PPR aymmetric services with course"
                          " cables on cones");
 }
+
 //______________________________________________________________________
 ostream &operator<<(ostream &os,const AliITSvPPRasymmFMD &s){
     // Standard output streaming function
@@ -6526,6 +6548,7 @@ ostream &operator<<(ostream &os,const AliITSvPPRasymmFMD &s){
     s.PrintAscii(&os);
     return os;
 }
+
 //______________________________________________________________________
 istream &operator>>(istream &is,AliITSvPPRasymmFMD &s){
     // Standard inputput streaming function
