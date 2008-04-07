@@ -1,0 +1,118 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+
+#include <TClass.h>
+#include <TFile.h>
+#include <TSystem.h>
+
+#include "AliMagWrapCheb.h"
+#include "AliLog.h"
+
+ClassImp(AliMagWrapCheb)
+    
+
+//_______________________________________________________________________
+AliMagWrapCheb::AliMagWrapCheb():
+  AliMagF(),
+  fMeasuredMap(0)
+{
+  // Default constructor
+  //
+}
+
+//_______________________________________________________________________
+AliMagWrapCheb::AliMagWrapCheb(const char *name, const char *title, Int_t integ, 
+			       Float_t factor, Float_t fmax, Int_t map, 
+			       Bool_t dipoleON,const char* path):
+  AliMagF(name, title, integ, factor, fmax),
+  fMeasuredMap(0)
+{
+  //
+  fMap = map;
+  char* fname = gSystem->ExpandPathName(path);
+  TFile* file = TFile::Open(fname);
+  if (!file) {
+    AliError(Form("Failed to open magnetic field data file %s\n",fname)); 
+    return;
+  }
+  const char* parname = 0;
+  if      (fMap == k2kG) parname = dipoleON ? "Sol12_Dip6_Hole":"Sol12_Dip0_Hole";
+  else if (fMap == k5kG) parname = dipoleON ? "Sol30_Dip6_Hole":"Sol30_Dip0_Hole";
+  else {
+    AliError(Form("Unknown field identifier %d is requested\n",fMap)); 
+    return;
+  }
+  //
+  fMeasuredMap = dynamic_cast<AliMagFCheb*>(file->Get(parname));
+  if (!fMeasuredMap) {
+    AliError(Form("Did not find field %s in %s\n",parname,fname)); 
+    return;
+  }
+  file->Close();
+  delete file;
+}
+
+
+//_______________________________________________________________________
+AliMagWrapCheb::AliMagWrapCheb(const AliMagWrapCheb &src):
+  AliMagF(src),
+  fMeasuredMap(0)
+{
+  if (src.fMeasuredMap) fMeasuredMap = new AliMagFCheb(*src.fMeasuredMap);
+}
+
+//_______________________________________________________________________
+AliMagWrapCheb::~AliMagWrapCheb()
+{
+  delete fMeasuredMap;
+}
+
+//_______________________________________________________________________
+void AliMagWrapCheb::GetTPCInt(Float_t *xyz, Float_t *b) const
+{
+  // Method to calculate the integral of magnetic integral from xyz to nearest cathode plane
+  //
+  if (fMeasuredMap) fMeasuredMap->GetTPCInt(xyz,b);
+  for (int i=3;i--;) b[i] *= fFactor;
+}
+
+//_______________________________________________________________________
+void AliMagWrapCheb::GetTPCIntCyl(Float_t *rphiz, Float_t *b) const
+{
+  // Method to calculate the integral of magnetic integral from point to nearest cathode plane
+  // in cylindrical coordiates ( -pi<phi<pi convention )
+  if (fMeasuredMap) fMeasuredMap->GetTPCIntCyl(rphiz,b);
+  for (int i=3;i--;) b[i] *= fFactor;
+}
+
+//_______________________________________________________________________
+void AliMagWrapCheb::Field(Float_t *xyz, Float_t *b) const
+{
+  // Method to calculate the field at point  xyz
+  //
+  if (fMeasuredMap) fMeasuredMap->Field(xyz,b);
+  for (int i=3;i--;) b[i] *= fFactor;
+}
+
+//_______________________________________________________________________
+AliMagWrapCheb& AliMagWrapCheb::operator=(const AliMagWrapCheb& maps)
+{
+  if (this != &maps && maps.fMeasuredMap) { 
+    if (fMeasuredMap) delete fMeasuredMap;
+    fMeasuredMap = new AliMagFCheb(*maps.fMeasuredMap);
+  }
+  return *this;
+}

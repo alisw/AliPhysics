@@ -46,6 +46,7 @@ AliTracker.cxx AliCluster.cxx AliCluster3D.cxx \
 AliHelix.cxx AliV0.cxx AliKink.cxx \
 AliSelectorRL.cxx \
 AliMagFMapsV1.cxx \
+AliMagWrapCheb.cxx \
 AliSurveyObj.cxx AliSurveyPoint.cxx \
 AliFstream.cxx \
 AliCTPRawData.cxx \
