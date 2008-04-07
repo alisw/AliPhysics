@@ -61,8 +61,13 @@ Bool_t AliAODInputHandler::Init(TTree* tree, Option_t* /*opt*/)
     fTree = tree;
     TIter next(fFriends);
     TNamed* obj;
+    
     while(obj = (TNamed*)next()) {
-	fTree->AddFriend("aodTree", obj->GetName());
+	if (fTree->GetTree()) {
+	    (fTree->GetTree())->AddFriend("aodTree", obj->GetName());
+	} else {
+	    fTree->AddFriend("aodTree", obj->GetName());
+	}
     }
     
     if (!fTree) return kFALSE;

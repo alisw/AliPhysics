@@ -388,7 +388,7 @@ void AliAODEvent::ReadFromTree(TTree *tree)
     }
     //
     // Let's find out whether we have friends
-    TList* friendL = tree->GetListOfFriends();
+    TList* friendL = tree->GetTree()->GetListOfFriends();
     if (friendL) 
     {
 	TIter next(friendL);
@@ -419,11 +419,11 @@ void AliAODEvent::ReadFromTree(TTree *tree)
     while((el=(TNamed*)next())){
       TString bname(el->GetName());
       // check if branch exists under this Name
-      TBranch *br = tree->GetBranch(bname.Data());
+      printf("Trying to connect branch %s\n", bname.Data());
+      TBranch *br = tree->GetTree()->GetBranch(bname.Data());
       if(br){
 	tree->SetBranchAddress(bname.Data(),fAODObjects->GetObjectRef(el));
-      }
-      else{
+      } else {
 	  br = tree->GetBranch(Form("%s.",bname.Data()));
 	  if(br){
 	      tree->SetBranchAddress(Form("%s.",bname.Data()),fAODObjects->GetObjectRef(el));
