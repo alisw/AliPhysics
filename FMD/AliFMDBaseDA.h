@@ -43,12 +43,12 @@ class AliFMDBaseDA: public TNamed {
   Int_t GetRequiredEvents() {return fRequiredEvents ;}
  protected:
   
-  virtual void Init() = 0;
-  virtual void FillChannels(AliFMDDigit* ) = 0;
-  virtual void Analyse(UShort_t, Char_t, UShort_t, UShort_t ) = 0;
-  virtual void WriteHeaderToFile() = 0;
-  virtual void AddChannelContainer(TObjArray*, UShort_t, Char_t, UShort_t, UShort_t ) = 0;
-  virtual void FinishEvent() = 0;
+  virtual void Init()  {};
+  virtual void FillChannels(AliFMDDigit* )  {};
+  virtual void Analyse(UShort_t, Char_t, UShort_t, UShort_t )  {};
+  virtual void WriteHeaderToFile()  {};
+  virtual void AddChannelContainer(TObjArray*, UShort_t, Char_t, UShort_t, UShort_t )  {};
+  virtual void FinishEvent()  {};
   
   
   Int_t GetCurrentEvent() {return fCurrentEvent;}
@@ -56,13 +56,14 @@ class AliFMDBaseDA: public TNamed {
   static const UInt_t kBaseDDL = 3072;
   Char_t* fDiagnosticsFilename;
   std::ofstream fOutputFile;
+  std::ofstream fConditionsFile;
   Bool_t fSaveHistograms;
   TObjArray fDetectorArray;
   
   
  private:
  
-  
+  void WriteConditionsData();
   void SetCurrentEvent(Int_t currentEvent) {fCurrentEvent = currentEvent; }
   void InitContainer();
   Int_t fRequiredEvents;
