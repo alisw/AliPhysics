@@ -37,19 +37,21 @@ ClassImp(AliFMDBaseDA)
 AliFMDBaseDA::AliFMDBaseDA() : TNamed(),
   fDiagnosticsFilename("diagnosticsHistograms.root"),
   fOutputFile(),
+  fConditionsFile(),
   fSaveHistograms(kFALSE),
   fDetectorArray(),
   fRequiredEvents(0),
   fCurrentEvent(0)
 {
   fDetectorArray.SetOwner();
-  
+  fConditionsFile.open("conditions.csv");
 }
 //_____________________________________________________________________
 AliFMDBaseDA::AliFMDBaseDA(const AliFMDBaseDA & baseDA) : 
   TNamed(baseDA),
   fDiagnosticsFilename(baseDA.fDiagnosticsFilename),
   fOutputFile(),
+  fConditionsFile(),
   fSaveHistograms(baseDA.fSaveHistograms),
   fDetectorArray(baseDA.fDetectorArray),
   fRequiredEvents(baseDA.fRequiredEvents),
@@ -104,8 +106,13 @@ void AliFMDBaseDA::Run(AliRawReader* reader) {
     }
     
   reader->Reset();
+  
+  
+  
   AliFMDRawReader* fmdReader = new AliFMDRawReader(reader,0);
   TClonesArray* digitArray   = new TClonesArray("AliFMDDigit",0);
+  
+  WriteConditionsData();
   
   reader->NextEvent();
   reader->NextEvent();
@@ -121,8 +128,10 @@ void AliFMDBaseDA::Run(AliRawReader* reader) {
       digitArray->Clear();
       fmdReader->ReadAdcs(digitArray);
       
-      // std::cout<<"In event # "<< *(reader->GetEventId()) << "\r"<<std::flush;
-            
+      
+      //std::cout<<"In event # "<< *(reader->GetEventId()) << " with " <<digitArray->GetEntries()<<" digits     \r"<<std::flush;
+      
+      
       for(Int_t i = 0; i<digitArray->GetEntries();i++) {
 	AliFMDDigit* digit = static_cast<AliFMDDigit*>(digitArray->At(i));
 	FillChannels(digit);
@@ -148,8 +157,9 @@ void AliFMDBaseDA::Run(AliRawReader* reader) {
       }
     }
   }
+
   if(fOutputFile.is_open()) {
-   
+    
     fOutputFile.write("# EOF\n",6);
     fOutputFile.close();
     
@@ -157,8 +167,7 @@ void AliFMDBaseDA::Run(AliRawReader* reader) {
   
   if(fSaveHistograms ) {
     AliInfo("Closing diagnostics file...please wait");
-       
-    delete diagFile;
+    diagFile->Close();
   }
 }
 //_____________________________________________________________________
@@ -192,6 +201,27 @@ void AliFMDBaseDA::InitContainer(){
     }
   }
 }
+
+//_____________________________________________________________________ 
+void AliFMDBaseDA::WriteConditionsData() {
+  
+  AliFMDParameters* pars       = AliFMDParameters::Instance();
+  fConditionsFile.write(Form("# %s \n",pars->GetConditionsShuttleID()),14);
+  fConditionsFile.write("# Sample Rate, timebins \n",25);
+  
+  UInt_t sampleRate = 4;
+  UInt_t timebins   = 544;
+  fConditionsFile     << sampleRate   << ',' 
+		      << timebins     <<"\n";
+  //if(fConditionsFile.is_open()) {
+  //  
+  //  fConditionsFile.write("# EOF\n",6);
+  //  fConditionsFile.close();
+    
+  //}
+  
+}
+
 //_____________________________________________________________________ 
 //
 // EOF
