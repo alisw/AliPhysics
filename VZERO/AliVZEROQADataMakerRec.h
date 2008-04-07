@@ -10,9 +10,9 @@
 
 
 // --- ROOT system ---
-class TH1F ; 
-class TH1I ; 
-class TObjArray ; 
+class TH1F; 
+class TH1I; 
+class TObjArray; 
 
 // --- Standard library ---
 
@@ -31,9 +31,9 @@ public:
 private:
   virtual void   EndOfDetectorCycle(AliQA::TASKINDEX_t, TObjArray * list) ;
   virtual void   InitESDs() ; 
-//  virtual void   InitRaws() ; 
+  virtual void   InitRaws() ; 
   virtual void   MakeESDs(AliESDEvent * esd) ;
-//  virtual void   MakeRaws(AliRawReader* rawReader) ; 
+  virtual void   MakeRaws(AliRawReader* rawReader) ; 
   virtual void   StartOfDetectorCycle() ; 
 
   ClassDef(AliVZEROQADataMakerRec,1)  // description 
