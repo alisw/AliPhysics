@@ -1,13 +1,6 @@
-#ifndef ALIMAGFCHEB_H
-#define ALIMAGFCHEB_H
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
-
-/* $Id$ */
-
 
 // Author: ruben.shahoyan@cern.ch   20/03/2007
-//
+
 ///////////////////////////////////////////////////////////////////////////////////
 //                                                                               //
 //  Wrapper for the set of mag.field parameterizations by Chebyshev polinomials  //
@@ -16,8 +9,7 @@
 //  For cylindrical coordinates/components:                                      //
 //    FieldCyl(float* rphiz, float* brphiz)                                      //
 //                                                                               //
-//  For the moment only the solenoid part is parameterized in the volume defined //
-//  by R<500, -550<Z<550 cm                                                      //
+//  The solenoid part is parameterized in the volume  R<500, -550<Z<550 cm       //
 //                                                                               //
 //  The region R<423 cm,  -343.3<Z<481.3 for 30kA and -343.3<Z<481.3 for 12kA    //
 //  is parameterized using measured data while outside the Tosca calculation     //
@@ -26,37 +18,58 @@
 //  If the querried point is outside the validity region no the return values    //
 //  for the field components are set to 0.                                       //
 //                                                                               //
+//  To obtain the field integral in the TPC region from given point to nearest   //
+//  cathod plane (+- 250 cm) use:                                                //
+//  GetTPCInt(float* xyz, float* bxyz);  for Cartesian frame                     //
+//  or                                                                           //
+//  GetTPCIntCyl(Float_t *rphiz, Float_t *b); for Cylindrical frame              //
+//                                                                               //
+//                                                                               //
+//  The units are kiloGauss and cm.                                              //
+//                                                                               //
 ///////////////////////////////////////////////////////////////////////////////////
+#ifndef _ALIMAGFCHEB_
+#define _ALIMAGFCHEB_
 
-
-#include <TSystem.h>
 #include <TNamed.h>
+#include <TSystem.h>
 #include "AliCheb3D.h"
-#include "AliCheb3DCalc.h"
 
 class AliMagFCheb: public TNamed
 {
  public:
-    AliMagFCheb();
-    AliMagFCheb(const char* inputFile);
-    AliMagFCheb(const AliMagFCheb &src);
-    AliMagFCheb& operator= (const AliMagFCheb &rhs);
-    
-   ~AliMagFCheb();
+  AliMagFCheb();
+  AliMagFCheb(const AliMagFCheb& src);
+  ~AliMagFCheb() {Clear();}
   //
-  void       AddParamSol(AliCheb3D* param);
-  void       AddParamDip(AliCheb3D* param);
-  void       BuildTableSol();
+  void       CopyFrom(const AliMagFCheb& src);
+  AliMagFCheb& operator=(const AliMagFCheb& rhs);
+  virtual void Clear(Option_t * = "");
   //
   Int_t      GetNParamsSol()                              const {return fNParamsSol;}
   Int_t      GetNSegZSol()                                const {return fNSegZSol;}
-  Int_t      GetNSegRSol(int iz)                          const {return iz<fNParamsSol ? fNSegRSol[iz]:0;}
-  Int_t      GetSegIDSol(int iz,int ir)                   const {return iz<fNParamsSol&&ir<fNSegRSol[iz] ? fSegZIdSol[iz]+ir:-1;}
+  //
+  Int_t      GetNParamsTPCInt()                           const {return fNParamsTPCInt;}
+  Int_t      GetNSegZTPCInt()                             const {return fNSegZTPCInt;}
+  //
+  Int_t      GetNParamsDip()                              const {return fNParamsDip;}
+  Int_t      GetNSegZDip()                                const {return fNZSegDip;}
+  //
   //
   Float_t    GetMinZSol()                                 const {return fMinZSol;}
   Float_t    GetMaxZSol()                                 const {return fMaxZSol;}
   Float_t    GetMaxRSol()                                 const {return fMaxRSol;}
+  //
+  Float_t    GetMinZDip()                                 const {return fMinZDip;}
+  Float_t    GetMaxZDip()                                 const {return fMaxZDip;}
+  //
+  Float_t    GetMinZTPCInt()                              const {return fMinZTPCInt;}
+  Float_t    GetMaxZTPCInt()                              const {return fMaxZTPCInt;}
+  Float_t    GetMaxRTPCInt()                              const {return fMaxRTPCInt;}
+  //
+  Int_t      FindDipSegment(float *xyz)                   const;
   AliCheb3D* GetParamSol(Int_t ipar)                      const {return (AliCheb3D*)fParamsSol->UncheckedAt(ipar);}
+  AliCheb3D* GetParamTPCInt(Int_t ipar)                   const {return (AliCheb3D*)fParamsTPCInt->UncheckedAt(ipar);}
   AliCheb3D* GetParamDip(Int_t ipar)                      const {return (AliCheb3D*)fParamsDip->UncheckedAt(ipar);}
   //
   void         LoadData(const char* inpfile);
@@ -65,40 +78,87 @@ class AliMagFCheb: public TNamed
   //
   virtual void Field(Float_t *xyz, Float_t *b)            const;
   virtual void FieldCyl(Float_t *rphiz, Float_t *b)       const;
-  virtual void GetTPCInt(Float_t */*xyz*/,     Float_t */*b*/)    const {;}
-  virtual void GetTPCIntCyl(Float_t */*rphiz*/, Float_t */*b*/)   const {;}
   //
+  virtual void GetTPCInt(Float_t *xyz, Float_t *b)        const;
+  virtual void GetTPCIntCyl(Float_t *rphiz, Float_t *b)   const;
   //
+  static void CylToCartCylB(float *rphiz,  float *brphiz,float *bxyz);
+  static void CylToCartCartB(float *xyz,   float *brphiz,float *bxyz);
+  static void CartToCylCartB(float *xyz,   float *bxyz, float *brphiz);
+  static void CartToCylCylB(float *rphiz,  float *bxyz, float *brphiz);
+  static void CartToCyl(float *xyz,  float *rphiz);
+  static void CylToCart(float *rphiz,float *xyz);
   //
 #ifdef  _INC_CREATION_ALICHEB3D_                          // see AliCheb3D.h for explanation
-  void         SaveData(const char* outfile)              const;
+  AliMagFCheb(const char* inputFile);
+  void       SaveData(const char* outfile)              const;
+  Int_t      SegmentDipDimension(float** seg,const TObjArray* par,int npar, int dim, 
+				 float xmn,float xmx,float ymn,float ymx,float zmn,float zmx);
+  //
+  void       AddParamSol(AliCheb3D* param);
+  void       AddParamTPCInt(AliCheb3D* param);
+  void       AddParamDip(AliCheb3D* param);
+  void       BuildTableDip();
+  void       BuildTableSol();
+  void       BuildTableTPCInt();
+  void       ResetTPCInt();
+
 #endif
   //
  protected:
-  void         Init0();
   virtual void FieldCylSol(Float_t *rphiz, Float_t *b)    const;
   //
  protected:
   //
   Int_t      fNParamsSol;            // Total number of parameterization pieces for Sol 
-  Int_t      fNSegZSol;              // Number of segments is Z
+  Int_t      fNSegZSol;              // Number of segments in Z for Solenoid field
+  //
+  Int_t      fNParamsTPCInt;         // Total number of parameterization pieces for TPC field integral 
+  Int_t      fNSegZTPCInt;           // Number of segments in Z for TPC field integral
   //
   Int_t      fNParamsDip;            // Total number of parameterization pieces for dipole 
+  Int_t      fNZSegDip;              // number of distinct Z segments in Dipole
+  Int_t      fNYSegDip;              // number of distinct Y segments in Dipole
+  Int_t      fNXSegDip;              // number of distinct X segments in Dipole
   //
-  Float_t*   fSegZSol;               //[fNSegZSol]       upper boundaries of Z segments
-  Float_t*   fSegRSol;               //[fNParamsSol]     upper boundaries of R segments
+  Float_t*   fSegZSol;               //[fNSegZSol]      upper boundaries of Z segments
+  Float_t*   fSegRSol;               //[fNParamsSol]    upper boundaries of R segments
   //
-  Int_t*     fNSegRSol;              //[fNSegZSol]       number of R segments for each Z segment
-  Int_t*     fSegZIdSol;             //[fNSegZSol]       Id of the first R segment of each Z segment in the fSegRSol...
+  Float_t*   fSegZTPCInt;            //[fNSegZTPCInt]    upper boundaries of Z segments
+  Float_t*   fSegRTPCInt;            //[fNParamsTPCInt]  upper boundaries of R segments
+  //
+  Float_t*   fSegZDip;               //[fNZSegDip] coordinates of distinct Z segments in Dipole
+  Float_t*   fSegYDip;               //[fNYSegDip] coordinated of Y segments for each Zsegment in Dipole
+  Float_t*   fSegXDip;               //[fNXSegDip] coordinated of X segments for each Ysegment in Dipole
+  //
+  Int_t*     fNSegRSol;              //[fNSegZSol]      number of R segments for each Z segment
+  Int_t*     fSegZIdSol;             //[fNSegZSol]      Id of the first R segment of each Z segment in the fSegRSol...
+  //
+  Int_t*     fNSegRTPCInt;           //[fNSegZTPCInt]   number of R segments for each Z segment
+  Int_t*     fSegZIdTPCInt;          //[fNSegZTPCInt]   Id of the first R segment of each Z segment in the fSegRTPCInt...
+  //
+  Int_t*     fBegSegYDip;            //[fNZSegDip] beginning of Y segments array for each Z segment
+  Int_t*     fNSegYDip;              //[fNZSegDip] number of Y segments for each Z segment
+  Int_t*     fBegSegXDip;            //[fNYSegDip] beginning of X segments array for each Y segment
+  Int_t*     fNSegXDip;              //[fNYSegDip] number of X segments for each Y segment
+  Int_t*     fSegIDDip;              //[fNXSegDip] ID of the dipole parameterization for given XYZ segment
   //
   Float_t    fMinZSol;               // Min Z of Sol parameterization (in CYL. coordinates)
   Float_t    fMaxZSol;               // Max Z of Sol parameterization (in CYL. coordinates)
   Float_t    fMaxRSol;               // Max R of Sol parameterization (in CYL. coordinates)
   //
+  Float_t    fMinZDip;               // Min Z of Dipole parameterization
+  Float_t    fMaxZDip;               // Max Z of Dipole parameterization
+  //
+  Float_t    fMinZTPCInt;            // Min Z of TPCInt parameterization (in CYL. coordinates)
+  Float_t    fMaxZTPCInt;            // Max Z of TPCInt parameterization (in CYL. coordinates)
+  Float_t    fMaxRTPCInt;            // Max R of TPCInt parameterization (in CYL. coordinates)
+  // 
   TObjArray* fParamsSol;             // Parameterization pieces for Solenoid field
   TObjArray* fParamsDip;             // Parameterization pieces for Dipole field
+  TObjArray* fParamsTPCInt;          // Parameterization pieces for Solenoid field integrals in TPC region
   //
-  ClassDef(AliMagFCheb,1)            // Wrapper class for the set of Chebishev parameterizations of Alice mag.field
+  ClassDef(AliMagFCheb,3)            // Wrapper class for the set of Chebishev parameterizations of Alice mag.field
   //
  };
 
@@ -107,8 +167,73 @@ class AliMagFCheb: public TNamed
 inline void AliMagFCheb::FieldCyl(Float_t *rphiz, Float_t *b) const
 {
   // compute field in Cylindircal coordinates
-  if (rphiz[2]<GetMinZSol() || rphiz[2]>GetMaxZSol() || rphiz[0]>GetMaxRSol()) {for (int i=3;i--;) b[i]=0; return;}
+  //  if (rphiz[2]<GetMinZSol() || rphiz[2]>GetMaxZSol() || rphiz[0]>GetMaxRSol()) {for (int i=3;i--;) b[i]=0; return;}
   FieldCylSol(rphiz,b);
+}
+
+//__________________________________________________________________________________________________
+inline void AliMagFCheb::CylToCartCylB(float *rphiz, float *brphiz,float *bxyz)
+{
+  // convert field in cylindrical coordinates to cartesian system, point is in cyl.system
+  float btr = TMath::Sqrt(brphiz[0]*brphiz[0]+brphiz[1]*brphiz[1]);
+  float psiPLUSphi = TMath::ATan2(brphiz[1],brphiz[0]) + rphiz[1];
+  bxyz[0] = btr*TMath::Cos(psiPLUSphi);
+  bxyz[1] = btr*TMath::Sin(psiPLUSphi);
+  bxyz[2] = brphiz[2];
+  //
+}
+
+//__________________________________________________________________________________________________
+inline void AliMagFCheb::CylToCartCartB(float *xyz, float *brphiz,float *bxyz)
+{
+  // convert field in cylindrical coordinates to cartesian system, point is in cart.system
+  float btr = TMath::Sqrt(brphiz[0]*brphiz[0]+brphiz[1]*brphiz[1]);
+  float phiPLUSpsi = TMath::ATan2(xyz[1],xyz[0]) +  TMath::ATan2(brphiz[1],brphiz[0]);
+  bxyz[0] = btr*TMath::Cos(phiPLUSpsi);
+  bxyz[1] = btr*TMath::Sin(phiPLUSpsi);
+  bxyz[2] = brphiz[2];
+  //
+}
+
+//__________________________________________________________________________________________________
+inline void AliMagFCheb::CartToCylCartB(float *xyz ,float *bxyz, float *brphiz)
+{
+  // convert field in cylindrical coordinates to cartesian system, poin is in cart.system
+  float btr = TMath::Sqrt(bxyz[0]*bxyz[0]+bxyz[1]*bxyz[1]);
+  float psiMINphi = TMath::ATan2(bxyz[1],bxyz[0]) - TMath::ATan2(xyz[1],xyz[0]);
+  //
+  brphiz[0] = btr*TMath::Cos(psiMINphi);
+  brphiz[1] = btr*TMath::Sin(psiMINphi);
+  brphiz[2] = bxyz[2];
+  //
+}
+
+//__________________________________________________________________________________________________
+inline void AliMagFCheb::CartToCylCylB(float *rphiz,float *bxyz, float *brphiz)
+{
+  // convert field in cylindrical coordinates to cartesian system, point is in cyl.system
+  float btr = TMath::Sqrt(bxyz[0]*bxyz[0]+bxyz[1]*bxyz[1]);
+  float psiMINphi =  TMath::ATan2(bxyz[1],bxyz[0]) - rphiz[1];
+  brphiz[0] = btr*TMath::Cos(psiMINphi);
+  brphiz[1] = btr*TMath::Sin(psiMINphi);
+  brphiz[2] = bxyz[2];
+  //
+}
+
+//__________________________________________________________________________________________________
+inline void AliMagFCheb::CartToCyl(float *xyz,float *rphiz)
+{
+  rphiz[0] = TMath::Sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]);
+  rphiz[1] = TMath::ATan2(xyz[1],xyz[0]);
+  rphiz[2] = xyz[2];
+}
+
+//__________________________________________________________________________________________________
+inline void AliMagFCheb::CylToCart(float *rphiz,float *xyz)
+{
+  xyz[0] = rphiz[0]*TMath::Cos(rphiz[1]);
+  xyz[1] = rphiz[0]*TMath::Sin(rphiz[1]);
+  xyz[2] = rphiz[2];
 }
 
 #endif
