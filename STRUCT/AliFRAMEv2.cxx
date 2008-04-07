@@ -472,7 +472,7 @@ void AliFRAMEv2::CreateGeometry()
 //
   ptrd1[0] =  49.8;
   ptrd1[1] =  70.7;
-  ptrd1[2] = 375.5;
+  ptrd1[2] = 376.0;    // CBL 4/4/08
   ptrd1[3] =  iFrH / 2.;  
   
   Float_t r      = 342.0;
@@ -882,8 +882,6 @@ void AliFRAMEv2::CreateGeometry()
   ptrd1[1] = 61.1765;   // CBL
   ptrd1[2] = 375.5;     // CBL
   ptrd1[3] = 38.95;     // CBL
-
-
 
   for (i = 0; i < 18; i++) {
     char nameCh[16];
