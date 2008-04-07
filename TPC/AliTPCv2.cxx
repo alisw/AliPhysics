@@ -39,6 +39,7 @@
 #include "AliTPCParam.h"
 #include "AliTPCTrackHitsV2.h"
 #include "AliTPCv2.h"
+#include "AliGeomManager.h"
 #include "TGeoVolume.h"
 #include "TGeoPcon.h"
 #include "TGeoTube.h"
@@ -908,7 +909,8 @@ void AliTPCv2::AddAlignableVolumes() const
 void AliTPCv2::SetInnerChambersAlignable() const
 {
   //
-  Int_t modnum = 0;
+  AliGeomManager::ELayerID idTPC1 = AliGeomManager::kTPC1;
+  Int_t modUID, modnum = 0;
   TString vpstr1 = "ALIC_1/TPC_M_1/TPC_Drift_1/TPC_ENDCAP_1/TPC_SECT_";
   TString vpstr2 = "ALIC_1/TPC_M_1/TPC_Drift_1/TPC_ENDCAP_2/TPC_SECT_";
   TString vpappend = "/TPC_IROC_1";
@@ -918,42 +920,35 @@ void AliTPCv2::SetInnerChambersAlignable() const
   TString volpath, symname;
   
   for(Int_t cnt=1; cnt<=18; cnt++){
+    modUID = AliGeomManager::LayerToVolUID(idTPC1,modnum++);
     volpath = vpstr1;
     volpath += cnt;
     volpath += vpappend;
     symname = snstr1;
     symname += cnt;
     symname += snappend;
-    if(!gGeoManager->SetAlignableEntry(symname.Data(),volpath.Data()))
+    if(!gGeoManager->SetAlignableEntry(symname.Data(),volpath.Data(),modUID))
       AliFatal(Form("Alignable entry %s not created. Volume path %s not valid", symname.Data(),volpath.Data()));
-    //
-    TGeoPNEntry *alignableEntry = gGeoManager->GetAlignableEntry(symname.Data());
-    const char *path = alignableEntry->GetTitle();
-    if (!gGeoManager->cd(path))
-      AliFatal(Form("Volume path %s not valid!",path));
-    TGeoHMatrix* globMatrix = gGeoManager->GetCurrentMatrix();
+    TGeoPNEntry *alignableEntry = gGeoManager->GetAlignableEntryByUID(modUID);
+    TGeoHMatrix* globMatrix = alignableEntry->GetGlobalOrig();
     TGeoHMatrix* matTtoL = fTPCParam->Tracking2LocalMatrix(globMatrix,cnt-1);
     alignableEntry->SetMatrix(matTtoL);
-    modnum++;
   }
 
   for(Int_t cnt=1; cnt<=18; cnt++){
+    modUID = AliGeomManager::LayerToVolUID(idTPC1,modnum++);
     volpath = vpstr2;
     volpath += cnt;
     volpath += vpappend;
     symname = snstr2;
     symname += cnt;
     symname += snappend;
-    if(!gGeoManager->SetAlignableEntry(symname.Data(),volpath.Data()))
+    if(!gGeoManager->SetAlignableEntry(symname.Data(),volpath.Data(),modUID))
       AliFatal(Form("Alignable entry %s not created. Volume path %s not valid", symname.Data(),volpath.Data()));
-    TGeoPNEntry *alignableEntry = gGeoManager->GetAlignableEntry(symname.Data());
-    const char *path = alignableEntry->GetTitle();
-    if (!gGeoManager->cd(path))
-      AliFatal(Form("Volume path %s not valid!",path));
-    TGeoHMatrix* globMatrix = gGeoManager->GetCurrentMatrix();
+    TGeoPNEntry *alignableEntry = gGeoManager->GetAlignableEntryByUID(modUID);
+    TGeoHMatrix* globMatrix = alignableEntry->GetGlobalOrig();
     TGeoHMatrix* matTtoL = fTPCParam->Tracking2LocalMatrix(globMatrix,18+cnt-1);
     alignableEntry->SetMatrix(matTtoL);
-    modnum++;
   }
 }
 
@@ -961,7 +956,8 @@ void AliTPCv2::SetInnerChambersAlignable() const
 void AliTPCv2::SetOuterChambersAlignable() const
 {
   //
-  Int_t modnum = 0;
+  AliGeomManager::ELayerID idTPC2 = AliGeomManager::kTPC2;
+  Int_t modUID, modnum = 0;
   TString vpstr1 = "ALIC_1/TPC_M_1/TPC_Drift_1/TPC_ENDCAP_1/TPC_SECT_";
   TString vpstr2 = "ALIC_1/TPC_M_1/TPC_Drift_1/TPC_ENDCAP_2/TPC_SECT_";
   TString vpappend = "/TPC_OROC_1";
@@ -971,41 +967,35 @@ void AliTPCv2::SetOuterChambersAlignable() const
   TString volpath, symname;
   
   for(Int_t cnt=1; cnt<=18; cnt++){
+    modUID = AliGeomManager::LayerToVolUID(idTPC2,modnum++);
     volpath = vpstr1;
     volpath += cnt;
     volpath += vpappend;
     symname = snstr1;
     symname += cnt;
     symname += snappend;
-    if(!gGeoManager->SetAlignableEntry(symname.Data(),volpath.Data()))
+    if(!gGeoManager->SetAlignableEntry(symname.Data(),volpath.Data(),modUID))
       AliFatal(Form("Alignable entry %s not created. Volume path %s not valid", symname.Data(),volpath.Data()));
-    TGeoPNEntry *alignableEntry = gGeoManager->GetAlignableEntry(symname.Data());
-    const char *path = alignableEntry->GetTitle();
-    if (!gGeoManager->cd(path))
-      AliFatal(Form("Volume path %s not valid!",path));
-    TGeoHMatrix* globMatrix = gGeoManager->GetCurrentMatrix();
+    TGeoPNEntry *alignableEntry = gGeoManager->GetAlignableEntryByUID(modUID);
+    TGeoHMatrix* globMatrix = alignableEntry->GetGlobalOrig();
     TGeoHMatrix* matTtoL = fTPCParam->Tracking2LocalMatrix(globMatrix,36+cnt-1);
     alignableEntry->SetMatrix(matTtoL);
-    modnum++;
   }
 
   for(Int_t cnt=1; cnt<=18; cnt++){
+    modUID = AliGeomManager::LayerToVolUID(idTPC2,modnum++);
     volpath = vpstr2;
     volpath += cnt;
     volpath += vpappend;
     symname = snstr2;
     symname += cnt;
     symname += snappend;
-    if(!gGeoManager->SetAlignableEntry(symname.Data(),volpath.Data()))
+    if(!gGeoManager->SetAlignableEntry(symname.Data(),volpath.Data(),modUID))
       AliFatal(Form("Alignable entry %s not created. Volume path %s not valid", symname.Data(),volpath.Data()));
-     TGeoPNEntry *alignableEntry = gGeoManager->GetAlignableEntry(symname.Data());
-    const char *path = alignableEntry->GetTitle();
-    if (!gGeoManager->cd(path))
-      AliFatal(Form("Volume path %s not valid!",path));
-    TGeoHMatrix* globMatrix = gGeoManager->GetCurrentMatrix();
+    TGeoPNEntry *alignableEntry = gGeoManager->GetAlignableEntryByUID(modUID);
+    TGeoHMatrix* globMatrix = alignableEntry->GetGlobalOrig();
     TGeoHMatrix* matTtoL = fTPCParam->Tracking2LocalMatrix(globMatrix,36+18+cnt-1);
     alignableEntry->SetMatrix(matTtoL);
-    modnum++;
   }
 }
 
