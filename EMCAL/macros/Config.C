@@ -6,6 +6,7 @@
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <Riostream.h>
+#include <TPDGCode.h>
 #include <TRandom.h>
 #include <TSystem.h>
 #include <TVirtualMC.h>
@@ -28,8 +29,8 @@
 #include "ITS/AliITSvPPRasymmFMD.h"
 #include "TPC/AliTPCv2.h"
 #include "TOF/AliTOFv6T0.h"
-#include "HMPID/AliHMPIDv1.h"
-#include "ZDC/AliZDCv2.h"
+#include "HMPID/AliHMPIDv2.h"
+#include "ZDC/AliZDCv3.h"
 #include "TRD/AliTRDv1.h"
 #include "FMD/AliFMDv1.h"
 #include "MUON/AliMUONv1.h"
@@ -42,6 +43,7 @@
 #endif
 
 Float_t EtaToTheta(Float_t arg);
+void    LoadPythia();
 
 void Config()
 {
@@ -49,9 +51,11 @@ void Config()
     // Theta range given through pseudorapidity limits 22/6/2001
 
     // Set Random Number seed
-  gRandom->SetSeed(123456); // Set 0 to use the currecnt time
+    //gRandom->SetSeed(123456); // Set 0 to use the currecnt time
   AliLog::Message(AliLog::kInfo, Form("Seed for random number generation = %d",gRandom->GetSeed()), "Config.C", "Config.C", "Config()","Config.C", __LINE__);
 
+  // Load Pythia libraries                                        
+  LoadPythia();
 
    // libraries required by geant321
 #if defined(__CINT__)
@@ -230,56 +234,8 @@ void Config()
     if(iITS) {
 
     //=================== ITS parameters ============================
-    //
-    // As the innermost detector in ALICE, the Inner Tracking System "impacts" on
-    // almost all other detectors. This involves the fact that the ITS geometry
-    // still has several options to be followed in parallel in order to determine
-    // the best set-up which minimizes the induced background. All the geometries
-    // available to date are described in the following. Read carefully the comments
-    // and use the default version (the only one uncommented) unless you are making
-    // comparisons and you know what you are doing. In this case just uncomment the
-    // ITS geometry you want to use and run Aliroot.
-    //
-    // Detailed geometries:         
-    //
-    //
-    //
-	AliITSvPPRasymmFMD *ITS  = new AliITSvPPRasymmFMD("ITS","ITS PPR detailed version with asymmetric services");
-	ITS->SetMinorVersion(2);  // don't touch this parameter if you're not an ITS developer
-	ITS->SetReadDet(kFALSE);	  // don't touch this parameter if you're not an ITS developer
-	//    ITS->SetWriteDet("$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm2.det");  // don't touch this parameter if you're not an ITS developer
-	ITS->SetThicknessDet1(200.);   // detector thickness on layer 1 must be in the range [100,300]
-	ITS->SetThicknessDet2(200.);   // detector thickness on layer 2 must be in the range [100,300]
-	ITS->SetThicknessChip1(150.);  // chip thickness on layer 1 must be in the range [150,300]
-	ITS->SetThicknessChip2(150.);  // chip thickness on layer 2 must be in the range [150,300]
-	ITS->SetRails(0);	       // 1 --> rails in ; 0 --> rails out
-	ITS->SetCoolingFluid(1);       // 1 --> water ; 0 --> freon
 
- 
-    //
-    // Coarse geometries (warning: no hits are produced with these coarse geometries and they unuseful 
-    // for reconstruction !):
-    //                                                     
-    //
-    //AliITSvPPRcoarseasymm *ITS  = new AliITSvPPRcoarseasymm("ITS","New ITS PPR coarse version with asymmetric services");
-    //ITS->SetRails(0);                // 1 --> rails in ; 0 --> rails out
-    //ITS->SetSupportMaterial(0);      // 0 --> Copper ; 1 --> Aluminum ; 2 --> Carbon
-    //
-    //AliITS *ITS  = new AliITSvPPRcoarsesymm("ITS","New ITS PPR coarse version with symmetric services");
-    //ITS->SetRails(0);                // 1 --> rails in ; 0 --> rails out
-    //ITS->SetSupportMaterial(0);      // 0 --> Copper ; 1 --> Aluminum ; 2 --> Carbon
-    //                      
-    //
-    //
-    // Geant3 <-> EUCLID conversion
-    // ============================
-    //
-    // SetEUCLID is a flag to output (=1) or not to output (=0) both geometry and
-    // media to two ASCII files (called by default ITSgeometry.euc and
-    // ITSgeometry.tme) in a format understandable to the CAD system EUCLID.
-    // The default (=0) means that you dont want to use this facility.
-    //
-     ITS->SetEUCLID(0);  
+      AliITSvPPRasymmFMD *ITS  = new AliITSvPPRasymmFMD("ITS","ITS PPR detailed version with asymmetric services");
     }
 
     if (iTPC)
@@ -298,7 +254,7 @@ void Config()
     if (iHMPID)
     {
         //=================== HMPID parameters ===========================
-        AliHMPID *HMPID = new AliHMPIDv1("HMPID", "normal HMPID");
+        AliHMPID *HMPID = new AliHMPIDv2("HMPID", "normal HMPID");
 
     }
 
@@ -307,7 +263,7 @@ void Config()
     {
         //=================== ZDC parameters ============================
 
-        AliZDC *ZDC = new AliZDCv2("ZDC", "normal ZDC");
+        AliZDC *ZDC = new AliZDCv3("ZDC", "normal ZDC");
     }
 
     if (iTRD)
@@ -373,4 +329,14 @@ void Config()
 
 Float_t EtaToTheta(Float_t arg){
   return (180./TMath::Pi())*2.*atan(exp(-arg));
+}
+
+void LoadPythia()
+{
+  // Load Pythia related libraries                                                                
+  gSystem->Load("liblhapdf.so");      // Parton density functions                                 
+  gSystem->Load("libEGPythia6.so");   // TGenerator interface                                     
+  gSystem->Load("libpythia6.so");     // Pythia                                                   
+  gSystem->Load("libAliPythia6.so");  // ALICE specific
+				      // implementations                           
 }
