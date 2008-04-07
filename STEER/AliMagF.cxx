@@ -69,6 +69,20 @@ AliMagF::AliMagF(const char *name, const char *title, Int_t integ,
 }
 
 //_______________________________________________________________________
+AliMagF::AliMagF(const AliMagF &src):
+  TNamed(src),
+  fMap(src.fMap),
+  fType(src.fType),
+  fInteg(src.fInteg),
+  fPrecInteg(src.fPrecInteg),
+  fFactor(src.fFactor),
+  fMax(src.fMax),
+  fReadField(src.fReadField)
+{
+    // Copy constructor
+}
+
+//_______________________________________________________________________
 void AliMagF::Field(Float_t*, Float_t *b) const
 {
   //
@@ -76,4 +90,40 @@ void AliMagF::Field(Float_t*, Float_t *b) const
   //
   AliWarning("Undefined MagF Field called, returning 0");
   b[0]=b[1]=b[2]=0;
+}
+
+//_______________________________________________________________________
+void AliMagF::GetTPCInt(Float_t *, Float_t *b) const
+{
+//
+// Obtain the integral of the field components in the TPC from given point
+// to the closest cathod plane
+//
+  AliWarning("Undefined MagF TPCIntegral called, returning 0");
+  b[0]=b[1]=b[2]=0;
+}
+
+//_______________________________________________________________________
+void AliMagF::GetTPCIntCyl(Float_t *, Float_t *b) const
+{
+//    
+// Obtain the integral of the field components in the TPC from given point
+// to the closest cathod plane
+//
+  AliWarning("Undefined MagF TPCIntegral called, returning 0");
+  b[0]=b[1]=b[2]=0;
+}
+
+//_______________________________________________________________________
+AliMagF& AliMagF::operator=(const AliMagF& rhs)
+{
+    // Asignment operator
+    fMap       = rhs.fMap;
+    fType      = rhs.fType;
+    fInteg     = rhs.fInteg;
+    fPrecInteg = rhs.fPrecInteg;
+    fFactor    = rhs.fFactor;
+    fMax       = rhs.fMax;
+    fReadField = rhs.fReadField;
+    return *this;
 }

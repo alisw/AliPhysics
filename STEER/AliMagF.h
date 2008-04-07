@@ -21,18 +21,22 @@ public:
   AliMagF();
   AliMagF(const char *name, const char *title, Int_t integ, 
 	  Float_t factor = 1., Float_t fmax = 10.);
+  AliMagF(const AliMagF& maps);
   virtual ~AliMagF() {}
-  virtual void Field(Float_t *x, Float_t *b) const;
-  virtual Int_t Type() const {return fType;}
+  AliMagF& operator=(const AliMagF& rhs);
+  virtual void    Field(Float_t *x, Float_t *b) const;
+  virtual void    GetTPCInt(Float_t *xyz, Float_t *b)        const;
+  virtual void    GetTPCIntCyl(Float_t *rphiz, Float_t *b)   const;
+  virtual Int_t   Type() const {return fType;}
   virtual Float_t Max() const {return fMax;}
-  virtual Int_t Map() const {return fMap;}
-  virtual Int_t Integ() const {return fInteg;}
-  virtual Int_t PrecInteg() const {return fPrecInteg;}  
+  virtual Int_t   Map() const {return fMap;}
+  virtual Int_t   Integ() const {return fInteg;}
+  virtual Int_t   PrecInteg() const {return fPrecInteg;}  
   virtual Float_t Factor() const {return fFactor;}
-  virtual void ReadField() {}
+  virtual void    ReadField() {}
   virtual Float_t SolenoidField() const {return 2.;}
-  virtual void SetPrecInteg(Int_t integ) {fPrecInteg = integ;}
-  virtual void SetReadField(Bool_t flag = kTRUE) {fReadField = flag;}
+  virtual void    SetPrecInteg(Int_t integ) {fPrecInteg = integ;}
+  virtual void    SetReadField(Bool_t flag = kTRUE) {fReadField = flag;}
  protected:
   Int_t     fMap;       // Field Map identifier
   Int_t     fType;      // Mag Field type
