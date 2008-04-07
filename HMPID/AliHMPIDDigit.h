@@ -41,9 +41,11 @@ public:
 
          Float_t LorsY       (                               )const{return AliHMPIDParam::LorsY(AliHMPIDParam::A2P(fPad),AliHMPIDParam::A2Y(fPad));                               } //center of the pad y, [cm]
 //  
-  inline Float_t Mathieson   (Float_t x                      )const;                                                                   //Mathieson distribution 
-  inline Float_t IntPartMathi(Float_t z, Int_t axis          )const;                                                                   //integral in 1-dim of Mathieson
-  inline Float_t IntMathieson(Float_t x,Float_t y            )const;                                                                   //integral in 2-dim of Mathieson  
+  inline Double_t MathiesonX   (Double_t x                   )const;                                                                   //Mathieson distribution along wires X 
+  inline Double_t MathiesonY   (Double_t x                   )const;                                                                   //Mathieson distribution perp to wires Y
+  inline Double_t IntPartMathiX(Double_t z                   )const;                                                                   //integral in 1-dim of Mathieson X
+  inline Double_t IntPartMathiY(Double_t z                   )const;                                                                   //integral in 1-dim of Mathieson Y
+  inline Double_t IntMathieson (Double_t x,Double_t y        )const;                                                                   //integral in 2-dim of Mathieson  
          Int_t   PadPcX      (                               )const{return AliHMPIDParam::A2X(fPad);}                                                 //pad pc x # 0..79
          Int_t   PadPcY      (                               )const{return AliHMPIDParam::A2Y(fPad);}                                                 //pad pc y # 0..47
          Int_t   PadChX      (                               )const{return (Pc()%2)*AliHMPIDParam::kPadPcX+PadPcX();}                                 //pad ch x # 0..159
@@ -78,54 +80,80 @@ Int_t AliHMPIDDigit::Compare(const TObject *pObj) const
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-Float_t AliHMPIDDigit::Mathieson(Float_t x)const
+Double_t AliHMPIDDigit::MathiesonX(Double_t x)const
 {
 // Mathieson function.
 // This is the answer to electrostatic problem of charge distrubution in MWPC described elsewhere. (NIM A370(1988)602-603)
 // Arguments: x- position of the center of Mathieson distribution
 //  Returns: value of the Mathieson function
-  Float_t  kK1=0.28278795,kK2=0.96242952, kSqrtK3 =0.77459667, kD=0.445;
-  Float_t lambda = x/kD;
-  Float_t a=1-TMath::TanH(kK2*lambda)*TMath::TanH(kK2*lambda);
-  Float_t b=1+kSqrtK3*kSqrtK3*TMath::TanH(kK2*lambda)*TMath::TanH(kK2*lambda);
-  Float_t mathi = kK1*a/b;
+  
+  Double_t lambda = x/AliHMPIDParam::PitchAnodeCathode();
+  Double_t tanh = TMath::TanH(AliHMPIDParam::K2x()*lambda);
+  Double_t a=1-tanh*tanh;
+  Double_t b=1+AliHMPIDParam::SqrtK3x()*AliHMPIDParam::SqrtK3x()*tanh*tanh;
+  Double_t mathi = AliHMPIDParam::K1x()*a/b;
   return mathi;
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-Float_t AliHMPIDDigit::IntPartMathi(Float_t z, Int_t axis)const
+Double_t AliHMPIDDigit::MathiesonY(Double_t y)const
 {
-// Integration of Mathieson.
+// Mathieson function.
 // This is the answer to electrostatic problem of charge distrubution in MWPC described elsewhere. (NIM A370(1988)602-603)
-// Arguments: x,y- position of the center of Mathieson distribution
-//  Returns: a charge fraction [0-1] imposed into the pad
-  Float_t shift1,shift2;
-  if(axis==1) {
-    shift1 = -LorsX()+0.5*AliHMPIDParam::SizePadX();
-    shift2 = -LorsX()-0.5*AliHMPIDParam::SizePadX();
-  } else {
-    shift1 = -LorsY()+0.5*AliHMPIDParam::SizePadY();
-    shift2 = -LorsY()-0.5*AliHMPIDParam::SizePadY();
-  }
-    
-  Float_t  kK2=0.96242952, kSqrtK3 =0.77459667,  kK4=0.37932926, kD=0.445;
-
-  Float_t ux1=kSqrtK3*TMath::TanH(kK2*(z+shift1)/kD);
-  Float_t ux2=kSqrtK3*TMath::TanH(kK2*(z+shift2)/kD);
+// Arguments: x- position of the center of Mathieson distribution
+//  Returns: value of the Mathieson function
   
-  return kK4*(TMath::ATan(ux2)-TMath::ATan(ux1));
+  Double_t lambda = y/AliHMPIDParam::PitchAnodeCathode();
+  Double_t tanh = TMath::TanH(AliHMPIDParam::K2y()*lambda);
+  Double_t a=1-tanh*tanh;
+  Double_t b=1+AliHMPIDParam::SqrtK3y()*AliHMPIDParam::SqrtK3y()*tanh*tanh;
+  Double_t mathi = AliHMPIDParam::K1y()*a/b;
+  return mathi;
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-Float_t AliHMPIDDigit::IntMathieson(Float_t x,Float_t y)const
+Double_t AliHMPIDDigit::IntPartMathiX(Double_t x)const
+{
+// Integration of Mathieson.
+// This is the answer to electrostatic problem of charge distrubution in MWPC described elsewhere. (NIM A370(1988)602-603)
+// Arguments: x,y- position of the center of Mathieson distribution
+//  Returns: a charge fraction [0-1] imposed into the pad
+  Double_t shift1 = -LorsX()+0.5*AliHMPIDParam::SizePadX();
+  Double_t shift2 = -LorsX()-0.5*AliHMPIDParam::SizePadX();
+    
+  Double_t ux1=AliHMPIDParam::SqrtK3x()*TMath::TanH(AliHMPIDParam::K2x()*(x+shift1)/AliHMPIDParam::PitchAnodeCathode());
+  Double_t ux2=AliHMPIDParam::SqrtK3x()*TMath::TanH(AliHMPIDParam::K2x()*(x+shift2)/AliHMPIDParam::PitchAnodeCathode());
+  
+  return AliHMPIDParam::K4x()*(TMath::ATan(ux2)-TMath::ATan(ux1));
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Double_t AliHMPIDDigit::IntPartMathiY(Double_t y)const
+{
+// Integration of Mathieson.
+// This is the answer to electrostatic problem of charge distrubution in MWPC described elsewhere. (NIM A370(1988)602-603)
+// Arguments: x,y- position of the center of Mathieson distribution
+//  Returns: a charge fraction [0-1] imposed into the pad
+  Double_t shift1 = -LorsY()+0.5*AliHMPIDParam::SizePadY();
+  Double_t shift2 = -LorsY()-0.5*AliHMPIDParam::SizePadY();
+    
+  Double_t uy1=AliHMPIDParam::SqrtK3y()*TMath::TanH(AliHMPIDParam::K2y()*(y+shift1)/AliHMPIDParam::PitchAnodeCathode());
+  Double_t uy2=AliHMPIDParam::SqrtK3y()*TMath::TanH(AliHMPIDParam::K2y()*(y+shift2)/AliHMPIDParam::PitchAnodeCathode());
+  
+  return AliHMPIDParam::K4y()*(TMath::ATan(uy2)-TMath::ATan(uy1));
+  
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Double_t AliHMPIDDigit::IntMathieson(Double_t x,Double_t y)const
 {
 // Integration of Mathieson.
 // This is the answer to electrostatic problem of charge distrubution in MWPC described elsewhere. (NIM A370(1988)602-603)
 // Arguments: x,y- position of the center of Mathieson distribution
 //  Returns: a charge fraction [0-1] imposed into the pad
 
-  Float_t xm = IntPartMathi(x,1);
-  Float_t ym = IntPartMathi(y,2);
+  Double_t xm = IntPartMathiX(x);
+  Double_t ym = IntPartMathiY(y);
   return 4*xm*ym;
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

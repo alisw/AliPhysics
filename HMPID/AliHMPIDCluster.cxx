@@ -185,12 +185,12 @@ void AliHMPIDCluster::FitFunc(Int_t &iNpars, Double_t* deriv, Double_t &chi2, Do
     for(Int_t i=0;i<nPads;i++){                                                          //loop on all pads of the cluster
       for(Int_t j=0;j<iNshape;j++){                                                      //Mathiesons loop as all of them may contribute to this pad
         Double_t fracMathi = pClu->Dig(i)->IntMathieson(par[3*j],par[3*j+1]);
-        derivPart[3*j  ][i] += par[3*j+2]*(pClu->Dig(i)->Mathieson(par[3*j]-pClu->Dig(i)->LorsX()-0.5*AliHMPIDParam::SizePadX())-
-                                           pClu->Dig(i)->Mathieson(par[3*j]-pClu->Dig(i)->LorsX()+0.5*AliHMPIDParam::SizePadX()))*
-                                           pClu->Dig(i)->IntPartMathi(par[3*j+1],2);
-        derivPart[3*j+1][i] += par[3*j+2]*(pClu->Dig(i)->Mathieson(par[3*j+1]-pClu->Dig(i)->LorsY()-0.5*AliHMPIDParam::SizePadY())-
-                                           pClu->Dig(i)->Mathieson(par[3*j+1]-pClu->Dig(i)->LorsY()+0.5*AliHMPIDParam::SizePadY()))*
-                                           pClu->Dig(i)->IntPartMathi(par[3*j],1);
+        derivPart[3*j  ][i] += par[3*j+2]*(pClu->Dig(i)->MathiesonX(par[3*j]-pClu->Dig(i)->LorsX()-0.5*AliHMPIDParam::SizePadX())-
+                                           pClu->Dig(i)->MathiesonX(par[3*j]-pClu->Dig(i)->LorsX()+0.5*AliHMPIDParam::SizePadX()))*
+                                           pClu->Dig(i)->IntPartMathiY(par[3*j+1]);
+        derivPart[3*j+1][i] += par[3*j+2]*(pClu->Dig(i)->MathiesonY(par[3*j+1]-pClu->Dig(i)->LorsY()-0.5*AliHMPIDParam::SizePadY())-
+                                           pClu->Dig(i)->MathiesonY(par[3*j+1]-pClu->Dig(i)->LorsY()+0.5*AliHMPIDParam::SizePadY()))*
+                                           pClu->Dig(i)->IntPartMathiX(par[3*j]);
         derivPart[3*j+2][i] += fracMathi;
       }
     }

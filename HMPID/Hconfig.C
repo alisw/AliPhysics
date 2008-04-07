@@ -213,6 +213,9 @@ void HmpConfig::GuiGen(TGCompositeFrame *pMainF)
   fGenNprimCO->AddEntry("N prim=1"    ,1);
   fGenNprimCO->AddEntry("N prim=2"    ,2);
   fGenNprimCO->AddEntry("N prim=5"    ,5);
+  fGenNprimCO->AddEntry("N prim=10"   ,10);
+  fGenNprimCO->AddEntry("N prim=20"   ,20);
+  fGenNprimCO->AddEntry("N prim=50"   ,50);
   fGenNprimCO->AddEntry("N prim=100"  ,100);
   fGenNprimCO->AddEntry("N prim=500"  ,500);
   fGenNprimCO->AddEntry("N prim=1000" ,1000);
@@ -676,7 +679,7 @@ void HmpConfig::WriteBatch()
                                                     fprintf(fp,"  gBenchmark->Show(\"ALICE\");\n");
   
                                                     fprintf(fp,"  gSystem->Exec(\"touch ZZZ______finished_______SSS\");\n");
-                                                    fprintf(fp,"  gSystem->Exec(\"aliroot rec.C\");\n}\n");
+                                                    fprintf(fp,"  gSystem->Exec(\"aliroot rec.C &\");\n}\n");
   fclose(fp);  
   char *sBatchName="rec";
   FILE *fp=fopen(Form("%s.C",sBatchName),"w"); if(!fp){Info("CreateRec","Cannot open output file: %s.C",sBatchName);return;}

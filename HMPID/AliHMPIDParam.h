@@ -100,7 +100,19 @@ public:
   Double_t SigGeom     (Double_t trkTheta,Double_t trkPhi,Double_t ckovTh,Double_t ckovPh,Double_t beta);//error due to unknown photon origin
   Double_t SigCrom     (Double_t trkTheta,Double_t trkPhi,Double_t ckovTh,Double_t ckovPh,Double_t beta);//error due to unknonw photon energy
   Double_t Sigma2      (Double_t trkTheta,Double_t trkPhi,Double_t ckovTh,Double_t ckovPh              );//photon candidate sigma^2
+
+  //Mathieson Getters
   
+  static Double_t PitchAnodeCathode()  {return fgkD;}
+  static Double_t SqrtK3x() {return fgkSqrtK3x;}
+  static Double_t K2x    () {return fgkK2x;}
+  static Double_t K1x    () {return fgkK1x;}
+  static Double_t K4x    () {return fgkK4x;}
+  static Double_t SqrtK3y() {return fgkSqrtK3y;}
+  static Double_t K2y    () {return fgkK2y;}
+  static Double_t K1y    () {return fgkK1y;}
+  static Double_t K4y    () {return fgkK4y;}
+  //
   enum EPlaneId {kPc,kRad,kAnod};            //3 planes in chamber 
   enum ETrackingFlags {kMipDistCut=-9,kMipQdcCut=-5,kNoPhotAccept=-11};     //flags for Reconstruction
 
@@ -109,7 +121,18 @@ protected:
   static /*const*/ Float_t fgkMinPcY[6];                                                           //limits PC
   static /*const*/ Float_t fgkMaxPcX[6];                                                           //limits PC
   static /*const*/ Float_t fgkMaxPcY[6]; 
+  
+// Mathieson constants
+// For HMPID --> x direction means parallel      to the wires: K3 = 0.66  (NIM A270 (1988) 602-603) fig.1  
+// For HMPID --> y direction means perpendicular to the wires: K3 = 0.90  (NIM A270 (1988) 602-603) fig.2  
+//
 
+  static const Double_t fgkD;  // ANODE-CATHODE distance 0.445/2
+  
+  static const Double_t fgkSqrtK3x,fgkK2x,fgkK1x,fgkK4x;
+  static const Double_t fgkSqrtK3y,fgkK2y,fgkK1y,fgkK4y;
+//
+    
   static Int_t    fgSigmas;                                                                        //sigma Cut
   static Bool_t   fgInstanceType;                                                                  //kTRUE if from geomatry kFALSE if from ideal geometry
 
