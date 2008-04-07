@@ -2,50 +2,58 @@
 #define ALICHEB3DCALC_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
-
-/* $Id$ */
-
+#include <TNamed.h>
+#include <TSystem.h>
 //
 // Author: Ruben Shahoyan
 // ruben.shahoyan@cern.ch   09/09/2006
 // See Comments in AliCheb3D.h
 //
-#include <TNamed.h>
+
+
+// to decrease the compilable code size comment this define. This will exclude the routines 
+// used for the calculation and saving of the coefficients. 
+#define _INC_CREATION_ALICHEB3D_
+
+// when _BRING_TO_BOUNDARY_ is defined, the point outside of the fitted folume is assumed
+// to be on the surface 
+#define _BRING_TO_BOUNDARY_
+//
+
 
 class AliCheb3DCalc: public TNamed
 {
  public:
   AliCheb3DCalc();
-  AliCheb3DCalc(FILE* stream); // read coefs from text file
-  AliCheb3DCalc(const AliCheb3DCalc &src);
-  AliCheb3DCalc& operator= (const AliCheb3DCalc &rhs);
-  ~AliCheb3DCalc() {Clear();}
+  AliCheb3DCalc(const AliCheb3DCalc& src);
+  AliCheb3DCalc(FILE* stream);
+  ~AliCheb3DCalc()                                                           {Clear();}
   //
+  AliCheb3DCalc& operator=(const AliCheb3DCalc& rhs);
   void       Print(Option_t* opt="")                                   const;
   void       LoadData(FILE* stream);
   Float_t    Eval(Float_t  *par)                                       const;
+  Float_t    EvalDeriv(int dim, Float_t  *par)                         const;
   //
 #ifdef _INC_CREATION_ALICHEB3D_
   void       SaveData(const char* outfile,Bool_t append=kFALSE)        const;
   void       SaveData(FILE* stream=stdout)                             const;
 #endif
   //
-  static void ReadLine(TString& str,FILE* stream);
-  //
- protected:
-  //
-  void       Clear(Option_t* option = "");
-  void       Init0();
-  Float_t    ChebEval1D(Float_t  x, const Float_t * array, int ncf)     const;  
   void       InitRows(int nr);
   void       InitCols(int nc);
-  void       InitElemBound2D(int ne);
-  void       InitCoefs(int nc);
   Int_t*     GetNColsAtRow()                                            const {return fNColsAtRow;}
   Int_t*     GetColAtRowBg()                                            const {return fColAtRowBg;}
+  void       InitElemBound2D(int ne);
   Int_t*     GetCoefBound2D0()                                          const {return fCoefBound2D0;}
   Int_t*     GetCoefBound2D1()                                          const {return fCoefBound2D1;}
+  void       Clear(Option_t* option = "");
+  static Float_t    ChebEval1D(Float_t  x, const Float_t * array, int ncf);//     const;  
+  static Float_t    ChebEval1Deriv(Float_t  x, const Float_t * array, int ncf);// const;  
+  void       InitCoefs(int nc);
   Float_t *  GetCoefs()                                                 const {return fCoefs;}
+  //
+  static void ReadLine(TString& str,FILE* stream);
   //
  protected:
   Int_t      fNCoefs;            // total number of coeeficients
@@ -61,14 +69,14 @@ class AliCheb3DCalc: public TNamed
   Float_t *  fTmpCf1;            //[fNCols] temp. coeffs for 2d summation
   Float_t *  fTmpCf0;            //[fNRows] temp. coeffs for 1d summation
   //
-  ClassDef(AliCheb3DCalc,1)  // Class for interpolation of 3D->1 function by Chebyshev parametrization 
+  ClassDef(AliCheb3DCalc,1)      // Class for interpolation of 3D->1 function by Chebyshev parametrization 
 };
 
-inline Float_t AliCheb3DCalc::ChebEval1D(Float_t  x, const Float_t * array, int ncf ) const
+//__________________________________________________________________________________________
+inline Float_t AliCheb3DCalc::ChebEval1D(Float_t  x, const Float_t * array, int ncf ) 
 {
   // evaluate 1D Chebyshev parameterization. x is the argument mapped to [-1:1] interval
-  Float_t b0, b1, b2;
-  Float_t x2 = x+x;
+  Float_t b0, b1, b2, x2 = x+x;
   b0 = array[--ncf]; 
   b1 = b2 = 0;
   for (int i=ncf;i--;) {
@@ -77,6 +85,7 @@ inline Float_t AliCheb3DCalc::ChebEval1D(Float_t  x, const Float_t * array, int 
     b0 = array[i] + x2*b1 -b2;
   }
   return b0 - x*b1;
+  //
 }
 
 #endif

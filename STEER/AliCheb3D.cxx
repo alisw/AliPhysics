@@ -1,22 +1,5 @@
-/**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
-
-/* $Id$ */
-
 // Author: ruben.shahoyan@cern.ch   09/09/2006
-//
+
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
 // AliCheb3D produces the interpolation of the user 3D->NDimOut arbitrary     //
@@ -79,120 +62,98 @@
 
 #include <TString.h>
 #include <TSystem.h>
-#include <TRandom.h>
 #include <TROOT.h>
+#include <TRandom.h>
 #include "AliCheb3D.h"
-#include "AliLog.h"
 
 
 
 ClassImp(AliCheb3D)
 
-AliCheb3D::AliCheb3D():
-    TNamed("", ""),
-    fDimOut(0),
-    fPrec(0.),
-    fChebCalc(),
-    fMaxCoefs(0),
-    fResTmp(0),
-    fGrid(0),
-    fUsrFunName(),
-    fUsrMacro(0)	     
+//__________________________________________________________________________________________
+AliCheb3D::AliCheb3D() : 
+  fDimOut(0), 
+  fPrec(0), 
+  fChebCalc(1), 
+  fMaxCoefs(0), 
+  fResTmp(0), 
+  fGrid(0), 
+  fUsrFunName(""), 
+  fUsrMacro(0) 
 {
-    // Default constructor
-    Init0();
+  for (int i=3;i--;) fBMin[i] = fBMax[i] = fBScale[i] = fBOffset[i] = 0;
 }
 
-AliCheb3D::AliCheb3D(const char* inputFile):
-    TNamed("", ""),
-    fDimOut(0),
-    fPrec(0.),
-    fChebCalc(),
-    fMaxCoefs(0),
-    fResTmp(0),
-    fGrid(0),
-    fUsrFunName(),
-    fUsrMacro(0)	     
-{
-    // Default constructor
-    Init0();
-    LoadData(inputFile);
-}
-
-
-
-AliCheb3D::AliCheb3D(FILE* stream):
-    TNamed("", ""),
-    fDimOut(0),
-    fPrec(0.),
-    fChebCalc(),
-    fMaxCoefs(0),
-    fResTmp(0),
-    fGrid(0),
-    fUsrFunName(),
-    fUsrMacro(0)	     
-{
-    // Default constructor
-    Init0();
-    LoadData(stream);
-}
-
+//__________________________________________________________________________________________
 AliCheb3D::AliCheb3D(const AliCheb3D& src) : 
-    TNamed(src),
-    fDimOut(src.fDimOut), 
-    fPrec(src.fPrec), 
-    fChebCalc(1), 
-    fMaxCoefs(src.fMaxCoefs), 
-					   fResTmp(0),
-    fGrid(0), 
-    fUsrFunName(src.fUsrFunName), 
-    fUsrMacro(0)
+  TNamed(src),
+  fDimOut(src.fDimOut), 
+  fPrec(src.fPrec), 
+  fChebCalc(1), 
+  fMaxCoefs(src.fMaxCoefs), 
+  fResTmp(0),
+  fGrid(0), 
+  fUsrFunName(src.fUsrFunName), 
+  fUsrMacro(0)
 {
-    // Copy constructor
-    // read coefs from text file
-    for (int i=3;i--;) {
-	fBMin[i]    = src.fBMin[i];
-	fBMax[i]    = src.fBMax[i];
-	fBScale[i]  = src.fBScale[i];
-	fBOffset[i] = src.fBOffset[i];
-	fNPoints[i] = src.fNPoints[i];
-    }
-    for (int i=0;i<fDimOut;i++) {
-	AliCheb3DCalc* cbc = src.GetChebCalc(i);
-	if (cbc) fChebCalc.AddAtAndExpand(new AliCheb3DCalc(*cbc),i);
-    }
+  // read coefs from text file
+  for (int i=3;i--;) {
+    fBMin[i]    = src.fBMin[i];
+    fBMax[i]    = src.fBMax[i];
+    fBScale[i]  = src.fBScale[i];
+    fBOffset[i] = src.fBOffset[i];
+    fNPoints[i] = src.fNPoints[i];
+  }
+  for (int i=0;i<fDimOut;i++) {
+    AliCheb3DCalc* cbc = src.GetChebCalc(i);
+    if (cbc) fChebCalc.AddAtAndExpand(new AliCheb3DCalc(*cbc),i);
+  }
 }
 
-AliCheb3D& AliCheb3D::operator=(const AliCheb3D& rhs)
+//__________________________________________________________________________________________
+AliCheb3D::AliCheb3D(const char* inpFile) : 
+  fDimOut(0), 
+  fPrec(0),  
+  fChebCalc(1),
+  fMaxCoefs(0),  
+  fResTmp(0),
+  fGrid(0), 
+  fUsrFunName(""), 
+  fUsrMacro(0)
 {
-    // Assignment operator
-    if (this != &rhs) {
-	Clear();
-	fDimOut   = rhs.fDimOut;
-	fPrec     = rhs.fPrec;
-	fMaxCoefs = rhs.fMaxCoefs;
-	fUsrFunName = rhs.fUsrFunName;
-	fUsrMacro   = 0;
-	for (int i=3;i--;) {
-	    fBMin[i]    = rhs.fBMin[i];
-	    fBMax[i]    = rhs.fBMax[i];
-	    fBScale[i]  = rhs.fBScale[i];
-	    fBOffset[i] = rhs.fBOffset[i];
-	    fNPoints[i] = rhs.fNPoints[i];
-	} 
-	for (int i=0;i<fDimOut;i++) {
-	    AliCheb3DCalc* cbc = rhs.GetChebCalc(i);
-	    if (cbc) fChebCalc.AddAtAndExpand(new AliCheb3DCalc(*cbc),i);
-	}    
-    }
-    return *this;
-    //
+  // read coefs from text file
+  for (int i=3;i--;) fBMin[i] = fBMax[i] = fBScale[i] = fBOffset[i] = 0;
+  LoadData(inpFile);
 }
 
+//__________________________________________________________________________________________
+AliCheb3D::AliCheb3D(FILE* stream) : 
+  fDimOut(0), 
+  fPrec(0), 
+  fChebCalc(1), 
+  fMaxCoefs(0),
+  fResTmp(0),
+  fGrid(0),
+  fUsrFunName(""),
+  fUsrMacro(0)
+{
+  // read coefs from stream
+  for (int i=3;i--;) fBMin[i] = fBMax[i] = fBScale[i] = fBOffset[i] = 0;
+  LoadData(stream);
+}
 
 //__________________________________________________________________________________________
 #ifdef _INC_CREATION_ALICHEB3D_
-AliCheb3D::AliCheb3D(const char* funName, int DimOut, Float_t  *bmin,Float_t  *bmax, Int_t *npoints, Float_t prec) : TNamed(funName,funName)
+AliCheb3D::AliCheb3D(const char* funName, int DimOut, Float_t  *bmin,Float_t  *bmax, Int_t *npoints, Float_t prec) : 
+  TNamed(funName,funName), 
+  fDimOut(0), 
+  fPrec(TMath::Max(1.E-12f,prec)), 
+  fChebCalc(1), 
+  fMaxCoefs(0), 
+  fResTmp(0), 
+  fGrid(0), 
+  fUsrFunName("") ,
+  fUsrMacro(0)
 {
   // Construct the parameterization for the function
   // funName : name of the file containing the function: void funName(Float_t * inp,Float_t * out)
@@ -202,8 +163,6 @@ AliCheb3D::AliCheb3D(const char* funName, int DimOut, Float_t  *bmin,Float_t  *b
   // npoints : array of 3 elements with the number of points to compute in each of 3 dimension
   // prec    : max allowed absolute difference between the user function and computed parameterization on the requested grid
   //
-  Init0();
-  fPrec = TMath::Max(1.E-12f,prec);
   if (DimOut<1) {Error("AliCheb3D","Requested output dimension is %d\nStop\n",fDimOut); exit(1);}
   SetDimOut(DimOut);
   PrepareBoundaries(bmin,bmax);
@@ -216,7 +175,15 @@ AliCheb3D::AliCheb3D(const char* funName, int DimOut, Float_t  *bmin,Float_t  *b
 
 //__________________________________________________________________________________________
 #ifdef _INC_CREATION_ALICHEB3D_
-AliCheb3D::AliCheb3D(void (*ptr)(float*,float*), int DimOut, Float_t  *bmin,Float_t  *bmax, Int_t *npoints, Float_t prec) : TNamed("AliCheb3D","AliCheb3D")
+AliCheb3D::AliCheb3D(void (*ptr)(float*,float*), int DimOut, Float_t  *bmin,Float_t  *bmax, Int_t *npoints, Float_t prec) : 
+  fDimOut(0), 
+  fPrec(TMath::Max(1.E-12f,prec)), 
+  fChebCalc(1), 
+  fMaxCoefs(0), 
+  fResTmp(0), 
+  fGrid(0), 
+  fUsrFunName(""),
+  fUsrMacro(0)
 {
   // Construct the parameterization for the function
   // ptr     : pointer on the function: void fun(Float_t * inp,Float_t * out)
@@ -226,8 +193,6 @@ AliCheb3D::AliCheb3D(void (*ptr)(float*,float*), int DimOut, Float_t  *bmin,Floa
   // npoints : array of 3 elements with the number of points to compute in each of 3 dimension
   // prec    : max allowed absolute difference between the user function and computed parameterization on the requested grid
   //
-  Init0();
-  fPrec = TMath::Max(1.E-12f,prec);
   if (DimOut<1) {Error("AliCheb3D","Requested output dimension is %d\nStop\n",fDimOut); exit(1);}
   SetDimOut(DimOut);
   PrepareBoundaries(bmin,bmax);
@@ -238,11 +203,110 @@ AliCheb3D::AliCheb3D(void (*ptr)(float*,float*), int DimOut, Float_t  *bmin,Floa
 }
 #endif
 
+//__________________________________________________________________________________________
+#ifdef _INC_CREATION_ALICHEB3D_
+AliCheb3D::AliCheb3D(void (*ptr)(float*,float*), int DimOut, Float_t  *bmin,Float_t  *bmax, Int_t *npX,Int_t *npY,Int_t *npZ, Float_t prec) : 
+  fDimOut(0), 
+  fPrec(TMath::Max(1.E-12f,prec)), 
+  fChebCalc(1), 
+  fMaxCoefs(0), 
+  fResTmp(0), 
+  fGrid(0), 
+  fUsrFunName(""),
+  fUsrMacro(0)
+{
+  // Construct very economic  parameterization for the function
+  // ptr     : pointer on the function: void fun(Float_t * inp,Float_t * out)
+  // DimOut  : dimension of the vector computed by the user function
+  // bmin    : array of 3 elements with the lower boundaries of the region where the function is defined
+  // bmax    : array of 3 elements with the upper boundaries of the region where the function is defined
+  // npX     : array of 3 elements with the number of points to compute in each dimension for 1st component 
+  // npY     : array of 3 elements with the number of points to compute in each dimension for 2nd component 
+  // npZ     : array of 3 elements with the number of points to compute in each dimension for 3d  component 
+  // prec    : max allowed absolute difference between the user function and computed parameterization on the requested grid
+  //
+  if (DimOut<1) {Error("AliCheb3D","Requested output dimension is %d\nStop\n",fDimOut); exit(1);}
+  SetDimOut(DimOut);
+  PrepareBoundaries(bmin,bmax);
+  SetUsrFunction(ptr);
+  //
+  DefineGrid(npX);
+  ChebFit(0);
+  DefineGrid(npY);
+  ChebFit(1);
+  DefineGrid(npZ);
+  ChebFit(2);
+  //
+}
+#endif
+
+
+//__________________________________________________________________________________________
+#ifdef _INC_CREATION_ALICHEB3D_
+AliCheb3D::AliCheb3D(void (*ptr)(float*,float*), int DimOut, Float_t  *bmin,Float_t  *bmax, Float_t prec) : 
+  fDimOut(0), 
+  fPrec(TMath::Max(1.E-12f,prec)), 
+  fChebCalc(1), 
+  fMaxCoefs(0), 
+  fResTmp(0), 
+  fGrid(0), 
+  fUsrFunName(""),
+  fUsrMacro(0)
+{
+  // Construct very economic  parameterization for the function with automatic calculation of the root's grid
+  // ptr     : pointer on the function: void fun(Float_t * inp,Float_t * out)
+  // DimOut  : dimension of the vector computed by the user function
+  // bmin    : array of 3 elements with the lower boundaries of the region where the function is defined
+  // bmax    : array of 3 elements with the upper boundaries of the region where the function is defined
+  // prec    : max allowed absolute difference between the user function and computed parameterization on the requested grid
+  //
+  if (DimOut!=3) {Error("AliCheb3D","This constructor works only for 3D fits, %dD fit was requested\n",fDimOut); exit(1);}
+  SetDimOut(DimOut);
+  PrepareBoundaries(bmin,bmax);
+  SetUsrFunction(ptr);
+  //
+  int gridNC[3][3];
+  EstimateNPoints(prec,gridNC);
+  DefineGrid(gridNC[0]);
+  ChebFit(0);
+  DefineGrid(gridNC[1]);
+  ChebFit(1);
+  DefineGrid(gridNC[2]);
+  ChebFit(2);
+  //
+}
+#endif
+
+
+//__________________________________________________________________________________________
+AliCheb3D& AliCheb3D::operator=(const AliCheb3D& rhs)
+{
+  if (this != &rhs) {
+    Clear();
+    fDimOut   = rhs.fDimOut;
+    fPrec     = rhs.fPrec;
+    fMaxCoefs = rhs.fMaxCoefs;
+    fUsrFunName = rhs.fUsrFunName;
+    fUsrMacro   = 0;
+    for (int i=3;i--;) {
+      fBMin[i]    = rhs.fBMin[i];
+      fBMax[i]    = rhs.fBMax[i];
+      fBScale[i]  = rhs.fBScale[i];
+      fBOffset[i] = rhs.fBOffset[i];
+      fNPoints[i] = rhs.fNPoints[i];
+    } 
+    for (int i=0;i<fDimOut;i++) {
+      AliCheb3DCalc* cbc = rhs.GetChebCalc(i);
+      if (cbc) fChebCalc.AddAtAndExpand(new AliCheb3DCalc(*cbc),i);
+    }    
+  }
+  return *this;
+  //
+}
 
 //__________________________________________________________________________________________
 void AliCheb3D::Clear(Option_t*)
 {
-// Clean-up
   if (fResTmp)        { delete[] fResTmp; fResTmp = 0; }
   if (fGrid)          { delete[] fGrid;   fGrid   = 0; }
   if (fUsrMacro)      { delete fUsrMacro; fUsrMacro = 0;}
@@ -253,27 +317,11 @@ void AliCheb3D::Clear(Option_t*)
 //__________________________________________________________________________________________
 void AliCheb3D::Print(Option_t* opt) const
 {
-    // Print Chebyshev parameterisation data
   printf("%s: Chebyshev parameterization for 3D->%dD function. Precision: %e\n",GetName(),fDimOut,fPrec);
   printf("Region of validity: [%+.5e:%+.5e] [%+.5e:%+.5e] [%+.5e:%+.5e]\n",fBMin[0],fBMax[0],fBMin[1],fBMax[1],fBMin[2],fBMax[2]);
   TString opts = opt; opts.ToLower();
   if (opts.Contains("l")) for (int i=0;i<fDimOut;i++) {printf("Output dimension %d:\n",i+1); GetChebCalc(i)->Print();}
   //
-}
-
-//__________________________________________________________________________________________
-void AliCheb3D::Init0()
-{
-  // Initialisation  
-  for (int i=3;i--;) fBMin[i] = fBMax[i] = fBScale[i] = fBOffset[i] = 0;
-  fMaxCoefs = 0;
-  fGrid = 0;
-  fResTmp = 0;
-  fUsrFunName = "";
-  fUsrMacro = 0;
-#ifdef _INC_CREATION_ALICHEB3D_
-  gUsrFunAliCheb3D = 0;
-#endif
 }
 
 //__________________________________________________________________________________________
@@ -295,8 +343,20 @@ void AliCheb3D::PrepareBoundaries(Float_t  *bmin,Float_t  *bmax)
   //
 }
 
+
 //__________________________________________________________________________________________
 #ifdef _INC_CREATION_ALICHEB3D_
+
+// Pointer on user function (faster altrnative to TMethodCall)
+void (*gUsrFunAliCheb3D) (float* ,float* );
+
+void AliCheb3D::EvalUsrFunction() 
+{
+  // call user supplied function
+  if   (gUsrFunAliCheb3D) gUsrFunAliCheb3D(fArgsTmp,fResTmp);
+  else fUsrMacro->Execute(); 
+}
+
 void AliCheb3D::SetUsrFunction(const char* name)
 {
   // load user macro with function definition and compile it
@@ -383,12 +443,14 @@ void AliCheb3D::DefineGrid(Int_t* npoints)
   for (int id=3;id--;) { 
     fNPoints[id] = npoints[id];
     if (fNPoints[id]<kMinPoints) {
-      Error("DefineGrid","at %d-th dimension %d point is requested, at least %d is needed\nStop\n",fNPoints[id],kMinPoints);
+      Error("DefineGrid","at %d-th dimension %d point is requested, at least %d is needed\nStop\n",id,fNPoints[id],kMinPoints);
       exit(1);
     }
     ntot += fNPoints[id];
     fMaxCoefs *= fNPoints[id];
   }
+  printf("Computing Chebyshev nodes on [%2d/%2d/%2d] grid\n",npoints[0],npoints[1],npoints[2]);
+  if (fGrid) delete[] fGrid;
   fGrid = new Float_t [ntot];
   //
   int curp = 0;
@@ -432,7 +494,13 @@ Int_t AliCheb3D::ChebFit(int dmOut)
   // 1D Cheb.fit for 0-th dimension at current steps of remaining dimensions
   int ncmax = 0;
   //
+  printf("Dim%d : 00.00%% Done",dmOut);fflush(stdout);
   AliCheb3DCalc* cheb =  GetChebCalc(dmOut);
+  //
+  float ncals2count = fNPoints[2]*fNPoints[1]*fNPoints[0];
+  float ncals = 0;
+  float frac = 0;
+  float fracStep = 0.001;
   //
   for (int id2=fNPoints[2];id2--;) {
     fArgsTmp[2] = fGrid[ fGridOffs[2]+id2 ];
@@ -444,6 +512,14 @@ Int_t AliCheb3D::ChebFit(int dmOut)
 	fArgsTmp[0] = fGrid[ fGridOffs[0]+id0 ];
 	EvalUsrFunction();     // compute function values at Chebyshev roots of 0-th dimension
 	fvals[id0] =  fResTmp[dmOut];
+	float fr = (++ncals)/ncals2count;
+	if (fr-frac>=fracStep) {
+	  frac = fr;
+	  printf("\b\b\b\b\b\b\b\b\b\b\b");
+	  printf("%05.2f%% Done",fr*100);
+	  fflush(stdout);
+	}
+	//
       }
       int nc = CalcChebCoefs(fvals,fNPoints[0], tmpCoef1D, fPrec);
       for (int id0=fNPoints[0];id0--;) tmpCoef2D[id1 + id0*fNPoints[1]] = tmpCoef1D[id0];
@@ -474,8 +550,7 @@ Int_t AliCheb3D::ChebFit(int dmOut)
       for (int id2=fNPoints[2];id2--;) {
 	int id = id2 + fNPoints[2]*(id1+id0*fNPoints[1]);
 	Float_t  cfa = TMath::Abs(tmpCoef3D[id]);
-	if (cfa < RTiny) {tmpCoef3D[id] = 0; continue;} // neglect coeefs below the threshold
-
+	if (cfa < RTiny) {tmpCoef3D[id] = 0; continue;} // neglect coefs below the threshold
 	resid += cfa;
 	if (resid<fPrec) continue; // this coeff is negligible
 	// otherwise go back 1 step
@@ -532,11 +607,11 @@ Int_t AliCheb3D::ChebFit(int dmOut)
   fMaxCoefs = 0; // redefine number of coeffs
   for (int id0=0;id0<NRows;id0++) {
     int nCLoc = NColsAtRow[id0];
-    int col0  = ColAtRowBg[id0];
+    int Col0  = ColAtRowBg[id0];
     for (int id1=0;id1<nCLoc;id1++) {
-      CoefBound2D0[col0 + id1] = tmpCoefSurf[id1+id0*fNPoints[1]];  // number of coefs to store for 3-d dimension
-      CoefBound2D1[col0 + id1] = fMaxCoefs;
-      fMaxCoefs += CoefBound2D0[col0 + id1];
+      CoefBound2D0[Col0 + id1] = tmpCoefSurf[id1+id0*fNPoints[1]];  // number of coefs to store for 3-d dimension
+      CoefBound2D1[Col0 + id1] = fMaxCoefs;
+      fMaxCoefs += CoefBound2D0[Col0 + id1];
     }
   }
   //
@@ -546,9 +621,9 @@ Int_t AliCheb3D::ChebFit(int dmOut)
   int count = 0;
   for (int id0=0;id0<NRows;id0++) {
     int ncLoc = NColsAtRow[id0];
-    int col0  = ColAtRowBg[id0];
+    int Col0  = ColAtRowBg[id0];
     for (int id1=0;id1<ncLoc;id1++) {
-      int ncf2 = CoefBound2D0[col0 + id1];
+      int ncf2 = CoefBound2D0[Col0 + id1];
       for (int id2=0;id2<ncf2;id2++) {
 	Coefs[count++] = tmpCoef3D[id2 + fNPoints[2]*(id1+id0*fNPoints[1])];
       }
@@ -570,6 +645,8 @@ Int_t AliCheb3D::ChebFit(int dmOut)
   delete[] tmpCoef3D;
   delete[] fvals;
   //
+  printf("\b\b\b\b\b\b\b\b\b\b\b\b");
+  printf("100.00%% Done\n");
   return 1;
 }
 #endif
@@ -603,7 +680,7 @@ void AliCheb3D::SaveData(FILE* stream) const
   for (int i=0;i<3;i++) fprintf(stream,"%+.8e\n",fBMin[i]);
   fprintf(stream,"# Upper boundaries of interpolation region\n");
   for (int i=0;i<3;i++) fprintf(stream,"%+.8e\n",fBMax[i]);
-  fprintf(stream,"# Parameterization for each output dimension follows:\n",GetName());
+  fprintf(stream,"# Parameterization for each output dimension follows:\n");
   //
   for (int i=0;i<fDimOut;i++) GetChebCalc(i)->SaveData(stream);
   fprintf(stream,"#\nEND %s\n#\n",GetName());
@@ -614,7 +691,6 @@ void AliCheb3D::SaveData(FILE* stream) const
 //_______________________________________________
 void AliCheb3D::LoadData(const char* inpFile)
 {
-  // Load data from input file  
   TString strf = inpFile;
   gSystem->ExpandPathName(strf);
   FILE* stream = fopen(strf.Data(),"r");
@@ -626,7 +702,6 @@ void AliCheb3D::LoadData(const char* inpFile)
 //_______________________________________________
 void AliCheb3D::LoadData(FILE* stream)
 {
-  // Load data from input stream stream  
   if (!stream) {Error("LoadData","No stream provided.\nStop"); exit(1);}
   TString buffs;
   Clear();
@@ -669,10 +744,9 @@ void AliCheb3D::LoadData(FILE* stream)
 //_______________________________________________
 void AliCheb3D::SetDimOut(int d)
 {
-  // Set the dimension of the output array 
   fDimOut = d;
   if (fResTmp) delete fResTmp;
-  fResTmp = new Float_t[fDimOut]; // RRR
+  fResTmp = new Float_t[fDimOut];
   fChebCalc.Delete();
   for (int i=0;i<d;i++) fChebCalc.AddAtAndExpand(new AliCheb3DCalc(),i);
 }
@@ -680,7 +754,6 @@ void AliCheb3D::SetDimOut(int d)
 //_______________________________________________
 void AliCheb3D::ShiftBound(int id,float dif)
 {
-  //Shift the boundary of dimension id
   if (id<0||id>2) {printf("Maximum 3 dimensions are supported\n"); return;}
   fBMin[id] += dif;
   fBMax[id] += dif;
@@ -709,6 +782,83 @@ TH1* AliCheb3D::TestRMS(int idim,int npoints,TH1* histo)
     histo->Fill(valFun - valPar);
   }
   return histo;
+  //
+}
+#endif
+
+//_______________________________________________
+#ifdef _INC_CREATION_ALICHEB3D_
+void AliCheb3D::EstimateNPoints(float Prec, int gridBC[3][3])
+{
+  const float sclA[9] = {0.1, 0.5, 0.9, 0.1, 0.5, 0.9, 0.1, 0.5, 0.9} ;
+  const float sclB[9] = {0.1, 0.1, 0.1, 0.5, 0.5, 0.5, 0.9, 0.9, 0.9} ;
+  const float sclDim[2] = {0.01,0.99};
+  const int   compDim[3][2] = { {1,2}, {2,0}, {0,1} };
+  static float xyz[3];
+  //
+  for (int i=3;i--;)for (int j=3;j--;) gridBC[i][j] = -1;
+  //
+  for (int idim=0;idim<3;idim++) {
+    float dimMN = fBMin[idim] + sclDim[0]*(fBMax[idim]-fBMin[idim]);
+    float dimMX = fBMin[idim] + sclDim[1]*(fBMax[idim]-fBMin[idim]);
+    //
+    for (int it=0;it<9;it++) { // test in 9 points
+      int id1 = compDim[idim][0]; // 1st fixed dim
+      int id2 = compDim[idim][1]; // 2nd fixed dim
+      xyz[ id1 ] = fBMin[id1] + sclA[it]*( fBMax[id1]-fBMin[id1] );
+      xyz[ id2 ] = fBMin[id2] + sclB[it]*( fBMax[id2]-fBMin[id2] );
+      //
+      int* npt = GetNCNeeded(xyz,idim, dimMN,dimMX, Prec); // npoints for Bx,By,Bz
+      for (int ib=0;ib<3;ib++) if (npt[ib]>gridBC[ib][idim]) gridBC[ib][idim] = npt[ib]+2;
+      //
+    }
+  }
+}
+
+
+int* AliCheb3D::GetNCNeeded(float xyz[3],int DimVar, float mn,float mx, float prec)
+{
+  // estimate needed number of chebyshev coefs for given function desctiption in DimVar dimension
+  // The values for two other dimensions must be set beforehand
+  //
+  static int curNC[3];
+  static int retNC[3];
+  const int kMaxPoint = 400;
+  float* gridVal = new float[3*kMaxPoint];
+  float* coefs   = new float[3*kMaxPoint];
+  //
+  float scale = mx-mn;
+  float offs  = mn + scale/2.0;
+  scale = 2./scale;
+  // 
+  int curNP;
+  int maxNC=-1;
+  int maxNCPrev=-1;
+  for (int i=0;i<3;i++) retNC[i] = -1;
+  for (int i=0;i<3;i++) fArgsTmp[i] = xyz[i];
+  //
+  for (curNP=5; curNP<kMaxPoint; curNP+=5) { 
+    maxNCPrev = maxNC;
+    //
+    for (int i=0;i<curNP;i++) { // get function values on Cheb. nodes
+      float x = TMath::Cos( TMath::Pi()*(i+0.5)/curNP );
+      fArgsTmp[DimVar] =  x/scale+offs; // map to requested interval
+      EvalUsrFunction();
+      for (int ib=3;ib--;) gridVal[ib*kMaxPoint + i] = fResTmp[ib];
+    }
+    //
+    for (int ib=0;ib<3;ib++) {
+      curNC[ib] = AliCheb3D::CalcChebCoefs(&gridVal[ib*kMaxPoint], curNP, &coefs[ib*kMaxPoint],prec);
+      if (maxNC < curNC[ib]) maxNC = curNC[ib];
+      if (retNC[ib] < curNC[ib]) retNC[ib] = curNC[ib];
+    }
+    if ( (curNP-maxNC)>3 &&  (maxNC-maxNCPrev)<1 ) break;
+    maxNCPrev = maxNC;
+    //
+  }
+  delete[] gridVal;
+  delete[] coefs;
+  return retNC;
   //
 }
 #endif
