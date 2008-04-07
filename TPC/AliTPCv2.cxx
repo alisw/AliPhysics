@@ -1141,6 +1141,7 @@ void AliTPCv2::Init()
  
       gMC->Gstpar(idtmed[2],"PRIMIO_N", 14.35);
       gMC->Gstpar(idtmed[2],"LOSS", 14); // specific energy loss
+      gMC->Gstpar(idtmed[2],"STRA",4);
   } else {
       gMC->Gstpar(idtmed[2],"LOSS", 5); // specific energy loss
   }
