@@ -56,6 +56,7 @@
 #include "AliEMCALGeometry.h"
 #include "AliRun.h"
 #include "AliLog.h"
+#include "AliGeomManager.h"
 
 ClassImp(AliEMCALv0)
 
@@ -1179,10 +1180,13 @@ void AliEMCALv0::AddAlignableVolumesInALICE() const
   double rpos = (GetGeometry()->GetEnvelop(0) + GetGeometry()->GetEnvelop(1))/2.;
   double phi, phiRad, xpos, ypos, zpos;
 
+  AliGeomManager::ELayerID idEMCAL = AliGeomManager::kEMCAL;
+  Int_t modUID, modnum = 0;
   TString volpath, symname;
 
   Int_t nSMod = GetGeometry()->GetNumberOfSuperModules(); 
   for (Int_t smodnum=0; smodnum < nSMod; smodnum++) {
+    modUID = AliGeomManager::LayerToVolUID(idEMCAL,modnum++);
     volpath = "ALIC_1/XEN1_1/SMOD_";
     volpath += (smodnum+1);
     symname = "EMCAL/FullSupermodule";
@@ -1195,15 +1199,12 @@ void AliEMCALv0::AddAlignableVolumesInALICE() const
       symname += (smodnum-10+1);
     }
 
-    if(!gGeoManager->SetAlignableEntry(symname.Data(),volpath.Data()))
+    if(!gGeoManager->SetAlignableEntry(symname.Data(),volpath.Data(),modUID))
       AliFatal("AliEMCALv0::Unable to set alignable entry!!");
 
     // Creates the Tracking to Local transformation matrix for EMCAL
     // modules                         
-    TGeoPNEntry *alignableEntry = gGeoManager->GetAlignableEntry(symname.Data()) ;
-    const char *path = alignableEntry->GetTitle();
-    if (!gGeoManager->cd(path))
-      AliFatal(Form("Volume path %s not valid!",path));
+    TGeoPNEntry *alignableEntry = gGeoManager->GetAlignableEntryByUID(modUID) ;
 
     phiRad = GetGeometry()->GetPhiCenterOfSM(smodnum);  //comes in radians, not degrees
     phi = phiRad*180./TMath::Pi();             //need degrees for rot. matrix
@@ -1216,7 +1217,7 @@ void AliEMCALv0::AddAlignableVolumesInALICE() const
     }
 
     TGeoHMatrix *matTtoL;
-    TGeoHMatrix* globMatrix = gGeoManager->GetCurrentMatrix();
+    TGeoHMatrix *globMatrix = alignableEntry->GetGlobalOrig();
 
     if(smodnum%2 == 0) {
       // pozitive z                                                        
