@@ -65,6 +65,9 @@ class AliMagFCheb: public TNamed
   //
   virtual void Field(Float_t *xyz, Float_t *b)            const;
   virtual void FieldCyl(Float_t *rphiz, Float_t *b)       const;
+  virtual void GetTPCInt(Float_t */*xyz*/,     Float_t */*b*/)    const {;}
+  virtual void GetTPCIntCyl(Float_t */*rphiz*/, Float_t */*b*/)   const {;}
+  //
   //
   //
 #ifdef  _INC_CREATION_ALICHEB3D_                          // see AliCheb3D.h for explanation
