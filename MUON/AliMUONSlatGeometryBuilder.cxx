@@ -314,7 +314,8 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	spar2[1] = spar[1];
 	spar2[2] = spar[2]; 
 	Float_t dzCh3 = dzCh; 
-	Float_t zSlat3 = (i%2 ==0)? -zSlat : zSlat; // seems not that zSlat3 = zSlat4 & 5 refering to plan PQ7EN345-6 ?
+	Float_t dzSlat3 = -0.25; // see drawing PQ7EN345-6 (Delta_slat=80mm instead 85mm)
+	Float_t zSlat3 = (i%2 ==0)? -(zSlat+dzSlat3) : (zSlat+dzSlat3); // seems not that zSlat3 = zSlat4 & 5 refering to plan PQ7EN345-6 ? -> Indeed, fixed J.C.
 
 	sprintf(idSlatCh5,"LA%d",i+kNslats3-1);
 	detElemId = 509 - (i + kNslats3-1-4);
