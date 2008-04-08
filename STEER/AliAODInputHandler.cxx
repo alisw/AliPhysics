@@ -85,7 +85,7 @@ Bool_t AliAODInputHandler::Init(TTree* tree, Option_t* /*opt*/)
 Bool_t AliAODInputHandler::BeginEvent(Long64_t /*entry*/)
 {
     //
-    if (fTree) fTree->BranchRef();
+    //if (fTree) fTree->BranchRef();
     return kTRUE;
 }
 
