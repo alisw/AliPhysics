@@ -788,8 +788,8 @@ void AliACORDEv1::CreateAcorde()
 	// Define a volume for the bars (up-face)
 
 	box[0]=5;
-	box[1]=40;
-//	box[1]=29;
+//	box[1]=40;
+	box[1]=33;
 	box[2]=5;
 	Float_t z1 = 21 ;
 	TGeoBBox *acorde00 = new TGeoBBox("acorde00",box[0],box[1],box[2]);
@@ -937,13 +937,14 @@ void AliACORDEv1::CreateAcorde()
 
 	//*** In Face ***
 
-	box[0]=39;
-//	box[0]=29;
+//	box[0]=39;
+	box[0]=27;
 	box[1]=5;
 	box[2]=5;
+	Float_t kro=3;
 	Float_t q1=0;
 	Float_t posx=constants->ModulePositionX(0)+0.5*293*0.7071-56*0.7071-18;
-	Float_t posy=constants->ModulePositionY(0)-0.5*293*0.7071-56*0.7071+3-q1;
+	Float_t posy=constants->ModulePositionY(0)-0.5*293*0.7071-56*0.7071+3-q1+kro;
 	Float_t posz=constants->ModulePositionZ(0);
 
 	TGeoBBox *acorde7 = new TGeoBBox("acorde7",box[0],box[1],box[2]);
@@ -969,10 +970,10 @@ void AliACORDEv1::CreateAcorde()
 	{
 
 		Float_t posx1=constants->ModulePositionX(dy)+0.1*293*0.7071-56*0.7071-18+des;
-		Float_t posy1=constants->ModulePositionY(dy)-0.1*293*0.7071-56*0.7071+3-des-q1;
+		Float_t posy1=constants->ModulePositionY(dy)-0.1*293*0.7071-56*0.7071+3-des-q1+kro;
 		Float_t posz=constants->ModulePositionZ(dy);
 		Float_t posx2=constants->ModulePositionX(dy)-0.27*293*0.7071-56*0.7071-18+des;
-		Float_t posy2=constants->ModulePositionY(dy)+0.27*293*0.7071-56*0.7071+3-des-q1;
+		Float_t posy2=constants->ModulePositionY(dy)+0.27*293*0.7071-56*0.7071+3-des-q1+kro;
 		TGeoCombiTrans *aco7q4 = new TGeoCombiTrans("aco7q4",posx1,posy1,posz,idrotm231);
 		TGeoCombiTrans *aco7q5 = new TGeoCombiTrans("aco7q5",posx2,posy2,posz,idrotm231);
 		inFace->AddNode(aCORDE7,count,aco7q4);
@@ -987,10 +988,10 @@ void AliACORDEv1::CreateAcorde()
 	{
 
 		Float_t posx1=constants->ModulePositionX(dy)+0.1*293*0.7071-56*0.7071-18+des;
-		Float_t posy1=constants->ModulePositionY(dy)-0.1*293*0.7071-56*0.7071+3-des-q1;
+		Float_t posy1=constants->ModulePositionY(dy)-0.1*293*0.7071-56*0.7071+3-des-q1+kro;
 		Float_t posz=constants->ModulePositionZ(dy+10);
 		Float_t posx2=constants->ModulePositionX(dy)-0.27*293*0.7071-56*0.7071-18+des;
-		Float_t posy2=constants->ModulePositionY(dy)+0.27*293*0.7071-56*0.7071+3-des-q1;
+		Float_t posy2=constants->ModulePositionY(dy)+0.27*293*0.7071-56*0.7071+3-des-q1+kro;
 		TGeoCombiTrans *aco7q6 = new TGeoCombiTrans("aco7q6",posx1,posy1,posz,idrotm231);
 		TGeoCombiTrans *aco7q7 = new TGeoCombiTrans("aco7q7",posx2,posy2,posz,idrotm231);
 		inFace->AddNode(aCORDE7,count,aco7q6);
@@ -1002,7 +1003,7 @@ void AliACORDEv1::CreateAcorde()
 
 
 	Float_t posxq1=constants->ModulePositionX(10)+0.5*293*0.7071-56*0.7071-18;
-	Float_t posyq1=constants->ModulePositionY(10)-0.5*293*0.7071-56*0.7071+3-q1;
+	Float_t posyq1=constants->ModulePositionY(10)-0.5*293*0.7071-56*0.7071+3-q1+kro;
 	Float_t poszq1=constants->ModulePositionZ(10);
 	TGeoCombiTrans *aco7q8 = new TGeoCombiTrans("aco7q8",posxq1,posyq1,poszq1-4*dy,idrotm231);
 	TGeoCombiTrans *aco7q9 = new TGeoCombiTrans("aco7q9",posxq1,posyq1,
@@ -1023,10 +1024,10 @@ void AliACORDEv1::CreateAcorde()
 	{
 
 		Float_t posx1=constants->ModulePositionX(dy)+0.1*293*0.7071-56*0.7071-18+des;
-		Float_t posy1=constants->ModulePositionY(dy)-0.1*293*0.7071-56*0.7071+3-des-0.8;
+		Float_t posy1=constants->ModulePositionY(dy)-0.1*293*0.7071-56*0.7071+3-des-0.8+kro;
 		Float_t posz=constants->ModulePositionZ(dy);
 		Float_t posx2=constants->ModulePositionX(dy)-0.27*293*0.7071-56*0.7071-18+des;
-		Float_t posy2=constants->ModulePositionY(dy)+0.27*293*0.7071-56*0.7071+3-des-1.5-0.8;
+		Float_t posy2=constants->ModulePositionY(dy)+0.27*293*0.7071-56*0.7071+3-des-1.5-0.8+kro;
 		TGeoRotation *rot1 = new TGeoRotation();
 		rot1->RotateZ(70);
 		TGeoCombiTrans *aco7q12 = new TGeoCombiTrans("aco7q12",posx1,posy1,posz,idrotm231);
@@ -1044,10 +1045,10 @@ void AliACORDEv1::CreateAcorde()
 	{
 
 		Float_t posx1=constants->ModulePositionX(dy)+0.1*293*0.7071-56*0.7071-18+des;
-		Float_t posy1=constants->ModulePositionY(dy)-0.1*293*0.7071-56*0.7071+3-des-q1-0.8;
+		Float_t posy1=constants->ModulePositionY(dy)-0.1*293*0.7071-56*0.7071+3-des-q1-0.8+kro;
 		Float_t posz=constants->ModulePositionZ(dy);
 		Float_t posx2=constants->ModulePositionX(dy)-0.27*293*0.7071-56*0.7071-18+des;
-		Float_t posy2=constants->ModulePositionY(dy)+0.27*293*0.7071-56*0.7071+3-des-1.5-q1-0.8;
+		Float_t posy2=constants->ModulePositionY(dy)+0.27*293*0.7071-56*0.7071+3-des-1.5-q1-0.8+kro;
 		TGeoRotation *rot1 = new TGeoRotation();
 		rot1->RotateZ(70);
 		TGeoCombiTrans *aco7q14 = new TGeoCombiTrans("aco7q14",posx1,posy1,posz,idrotm231);
@@ -1061,13 +1062,13 @@ void AliACORDEv1::CreateAcorde()
 
 	//*** Out Face ***
 
-	box[0]=39;
-//	box[0]=29;
+//	box[0]=39;
+	box[0]=27;
 	box[1]=5;
 	box[2]=5;
 	Float_t s1=2.5;
 	Float_t posxqa=constants->ModulePositionX(50)-0.5*293*0.7071+56*0.7071+18;
-	Float_t posyqa=constants->ModulePositionY(50)-0.5*293*0.7071-56*0.7071+3-s1;
+	Float_t posyqa=constants->ModulePositionY(50)-0.5*293*0.7071-56*0.7071+3-s1+kro;
 	Float_t poszqa=constants->ModulePositionZ(50);
 	TGeoCombiTrans *aco7q16 = new TGeoCombiTrans("aco7q16",
 					posxqa,posyqa,poszqa-4*dy,idrotm232);
@@ -1103,10 +1104,10 @@ void AliACORDEv1::CreateAcorde()
 	{
 
 		Float_t posx1=constants->ModulePositionX(dy)-0.1*293*0.7071+56*0.7071+18-des;
-		Float_t posy1=constants->ModulePositionY(dy)-0.1*293*0.7071-56*0.7071+3-des-s1;
+		Float_t posy1=constants->ModulePositionY(dy)-0.1*293*0.7071-56*0.7071+3-des-s1+kro;
 		Float_t posz=constants->ModulePositionZ(dy);
 		Float_t posx2=constants->ModulePositionX(dy)+0.27*293*0.7071+56*0.7071+18-des;
-		Float_t posy2=constants->ModulePositionY(dy)+0.27*293*0.7071-56*0.7071+3-des-s1;
+		Float_t posy2=constants->ModulePositionY(dy)+0.27*293*0.7071-56*0.7071+3-des-s1+kro;
 		TGeoCombiTrans *aco7q22 = new TGeoCombiTrans("aco7q22",posx1,posy1,posz,idrotm232);
 		TGeoCombiTrans *aco7q23 = new TGeoCombiTrans("aco7q23",posx2,posy2,posz,idrotm232);
 		outFace->AddNode(aCORDE7,count,aco7q22);
@@ -1121,10 +1122,10 @@ void AliACORDEv1::CreateAcorde()
 	{
 
 		Float_t posx1=constants->ModulePositionX(dy)-0.1*293*0.7071+56*0.7071+18-des;
-		Float_t posy1=constants->ModulePositionY(dy)-0.1*293*0.7071-56*0.7071+3-des-s1;
+		Float_t posy1=constants->ModulePositionY(dy)-0.1*293*0.7071-56*0.7071+3-des-s1+kro;
 		Float_t posz=constants->ModulePositionZ(dy-10);
 		Float_t posx2=constants->ModulePositionX(dy)+0.27*293*0.7071+56*0.7071+18-des;
-		Float_t posy2=constants->ModulePositionY(dy)+0.27*293*0.7071-56*0.7071+3-des-s1;
+		Float_t posy2=constants->ModulePositionY(dy)+0.27*293*0.7071-56*0.7071+3-des-s1+kro;
 		TGeoCombiTrans *aco7q24 = new TGeoCombiTrans("aco7q24",posx1,posy1,posz,idrotm232);
 		TGeoCombiTrans *aco7q25 = new TGeoCombiTrans("aco7q25",posx2,posy2,posz,idrotm232);
 		outFace->AddNode(aCORDE7,count,aco7q24);
@@ -1135,7 +1136,7 @@ void AliACORDEv1::CreateAcorde()
 
 
 	Float_t posxqb=constants->ModulePositionX(40)-0.5*293*0.7071+56*0.7071+18;
-	Float_t posyqb=constants->ModulePositionY(40)-0.5*293*0.7071-56*0.7071+3-s1;
+	Float_t posyqb=constants->ModulePositionY(40)-0.5*293*0.7071-56*0.7071+3-s1+kro;
 	Float_t poszqb=constants->ModulePositionZ(40);
 	TGeoCombiTrans *aco7q26 = new TGeoCombiTrans("aco7q26",
 					posxqb,posyqb,poszqb-4*dy,idrotm232);
@@ -1157,10 +1158,10 @@ void AliACORDEv1::CreateAcorde()
 	{
 
 		Float_t posx1=constants->ModulePositionX(dy)-0.1*293*0.7071+56*0.7071+18-des;
-		Float_t posy1=constants->ModulePositionY(dy)-0.1*293*0.7071-56*0.7071+3-des-s1;
+		Float_t posy1=constants->ModulePositionY(dy)-0.1*293*0.7071-56*0.7071+3-des-s1+kro;
 		Float_t posz=constants->ModulePositionZ(dy);
 		Float_t posx2=constants->ModulePositionX(dy)+0.27*293*0.7071+56*0.7071+18-des;
-		Float_t posy2=constants->ModulePositionY(dy)+0.27*293*0.7071-56*0.7071+3-des-s1;
+		Float_t posy2=constants->ModulePositionY(dy)+0.27*293*0.7071-56*0.7071+3-des-s1+kro;
 		TGeoRotation *rot1 = new TGeoRotation();
 		rot1->RotateZ(105);
 		TGeoCombiTrans *aco7q30 = new TGeoCombiTrans("aco7q30",posx1,posy1,posz,idrotm232);
@@ -1177,10 +1178,10 @@ void AliACORDEv1::CreateAcorde()
 	{
 
 		Float_t posx1=constants->ModulePositionX(dy)-0.1*293*0.7071+56*0.7071+18-des;
-		Float_t posy1=constants->ModulePositionY(dy)-0.1*293*0.7071-56*0.7071+3-des-s1;
+		Float_t posy1=constants->ModulePositionY(dy)-0.1*293*0.7071-56*0.7071+3-des-s1+kro;
 		Float_t posz=constants->ModulePositionZ(dy);
 		Float_t posx2=constants->ModulePositionX(dy)+0.27*293*0.7071+56*0.7071+18-des;
-		Float_t posy2=constants->ModulePositionY(dy)+0.27*293*0.7071-56*0.7071+3-des-s1;
+		Float_t posy2=constants->ModulePositionY(dy)+0.27*293*0.7071-56*0.7071+3-des-s1+kro;
 		TGeoRotation *rot1 = new TGeoRotation();
 		rot1->RotateZ(105);
 		TGeoCombiTrans *aco7q32 = new TGeoCombiTrans("aco7q32",posx1,posy1,posz,idrotm232);
@@ -1198,8 +1199,8 @@ void AliACORDEv1::CreateAcorde()
 	//*** In-Face ***
 
 	box[0]=5;
-	box[1]=55.15;
-//	box[1]=41.15;
+//	box[1]=55.15;
+	box[1]=40;
 	box[2]=5;
 	Float_t sm=2;
 	Float_t re=1;
