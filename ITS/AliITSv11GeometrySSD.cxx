@@ -2570,9 +2570,7 @@ TGeoVolume* AliITSv11GeometrySSD::GetCoolingBlockSystem(){
   /////////////////////////////////////////////////////////////
   TGeoRotation* localcoolingblockrot = new TGeoRotation();
   localcoolingblockrot->SetAngles(0.,90.,0.);
-  TGeoCombiTrans* localcoolingblockmatrix = 
-	new TGeoCombiTrans(0.,0.5*fgkSSDCoolingBlockWidth,0.,localcoolingblockrot);
-  TGeoTranslation* localcoolingblocktrans;  
+  TGeoCombiTrans localcoolingblockmatrix(0.,0.5*fgkSSDCoolingBlockWidth,0.,localcoolingblockrot);
   TVector3* coolingblocktransvector;
   coolingblocktransvector = new TVector3(fgkSSDModuleSensorSupportDistance
 								+ fgkSSDCoolingBlockLength,
@@ -2587,23 +2585,19 @@ TGeoVolume* AliITSv11GeometrySSD::GetCoolingBlockSystem(){
   localcoolingtuberot->SetAngles(0.0,90.0,0.0);
   TGeoTranslation* localcoolingtubetrans = new TGeoTranslation();
   localcoolingtubetrans->SetTranslation(0.5*fgkSSDCoolingBlockLength,
-										0.5*fgkSSDCoolingBlockWidth,
-											fgkSSDCoolingBlockHoleCenter);
-  TGeoCombiTrans* localcoolingtubematrix = new TGeoCombiTrans(*localcoolingtubetrans,
-															  *localcoolingtuberot);
+					0.5*fgkSSDCoolingBlockWidth,
+					fgkSSDCoolingBlockHoleCenter);
+  TGeoCombiTrans localcoolingtubematrix (*localcoolingtubetrans,*localcoolingtuberot);
   Double_t coolingtubedistance = fgkCoolingTubeSupportRmax-fgkCoolingTubeSupportRmin;
   for(Int_t i=0; i<kcoolingblocktransnumber; i++){
-	  for(Int_t j=0; j<kcoolingblocktransnumber; j++){
-		localcoolingblocktrans= 
-		     new TGeoTranslation(i*coolingblocktransvector->X()+2*coolingtubedistance,
-  								 j*coolingblocktransvector->Y(),
-								 - 0.5*(fgkSSDCoolingBlockHoleCenter
-							     + fgkCoolingTubeRmax));
-		coolingblockmatrix[2*i+j] = new TGeoHMatrix((*localcoolingblocktrans)
-								 *(*localcoolingblockmatrix));
-		coolingtubematrix[2*i+j] = new TGeoHMatrix((*localcoolingblocktrans)
-								 *(*localcoolingtubematrix));
-	}
+    for(Int_t j=0; j<kcoolingblocktransnumber; j++){
+      TGeoTranslation localcoolingblocktrans(i*coolingblocktransvector->X()+2*coolingtubedistance,
+					     j*coolingblocktransvector->Y(),
+					     - 0.5*(fgkSSDCoolingBlockHoleCenter
+						    + fgkCoolingTubeRmax));
+      coolingblockmatrix[2*i+j] = new TGeoHMatrix(localcoolingblocktrans*localcoolingblockmatrix);
+      coolingtubematrix[2*i+j] = new TGeoHMatrix(localcoolingblocktrans*localcoolingtubematrix);
+    }
   }
   /////////////////////////////////////////////////////////////
   // Virtual Volume containing CoolingBlock System   
@@ -2678,9 +2672,7 @@ TGeoVolume* AliITSv11GeometrySSD::GetCoolingBlockSystem(){
   // Deallocating memory
   /////////////////////////////////////////////////////////////
 	delete coolingblocktransvector;
-    delete localcoolingblocktrans;
 	delete localcoolingblockrot;
-	delete localcoolingblockmatrix;
 	delete localcoolingtubetrans;
 	delete localcoolingtuberot;
   /////////////////////////////////////////////////////////////
