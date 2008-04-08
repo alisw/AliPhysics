@@ -395,7 +395,8 @@ Bool_t AliITSDetTypeRec::GetCalibration() {
     fCalibration->Clear();
   }
 
-  AliCDBEntry *entrySPD = AliCDBManager::Instance()->Get("ITS/Calib/SPDDead");
+  // dead pixel are not used for local reconstruction
+  AliCDBEntry *entrySPD = AliCDBManager::Instance()->Get("ITS/Calib/SPDNoisy");
   AliCDBEntry *entrySDD = AliCDBManager::Instance()->Get("ITS/Calib/CalibSDD");
  
  //  AliCDBEntry *entrySSD = AliCDBManager::Instance()->Get("ITS/Calib/CalibSSD");

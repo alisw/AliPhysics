@@ -80,6 +80,7 @@ class AliITSCalibrationSPD :  public AliITSCalibration {
     Int_t  GetBadRowAt(UInt_t index); //returns -1 if out of bounds
     void   ClearBad() {fBadChannels.Reset(); fNrBad=0;}
     Bool_t IsPixelBad(Int_t col, Int_t row) const ;
+    void GetBadPixel(Int_t i, Int_t &row, Int_t &col) const;
 
     void   SetBadList(TArrayI badlist) {fBadChannels=badlist;}
     void   SetNrBad(UInt_t nr) {fNrBad=nr;}

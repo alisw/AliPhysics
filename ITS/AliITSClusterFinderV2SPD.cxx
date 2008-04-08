@@ -21,6 +21,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 
+#include "AliITSCalibrationSPD.h"
 #include "AliITSClusterFinderV2SPD.h"
 #include "AliITSRecPoint.h"
 #include "AliITSgeomTGeo.h"
@@ -95,7 +96,17 @@ Int_t AliITSClusterFinderV2SPD::ClustersSPD(AliBin* bins, TClonesArray* digits,T
     }
   }
   const TGeoHMatrix *mT2L=AliITSgeomTGeo::GetTracking2LocalMatrix(iModule);
-  
+
+  AliITSCalibrationSPD *cal =  
+       (AliITSCalibrationSPD*) fDetTypeRec->GetCalibrationModel(iModule); 
+  // Loop on bad pixels and reset them
+  for(Int_t ipix = 0; ipix<cal->GetNrBad(); ipix++){
+    Int_t row, col;
+    cal->GetBadPixel(ipix,row,col);
+    Int_t index = (row+1) * nzbins + (col+1);
+    bins[index].SetQ(0);
+    bins[index].SetMask(0xFFFFFFFE);
+  }
   Int_t nclu=0;
   for(Int_t iBin =0; iBin < maxBins;iBin++){
     if(bins[iBin].IsUsed()) continue;

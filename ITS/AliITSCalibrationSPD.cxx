@@ -95,6 +95,23 @@ Bool_t AliITSCalibrationSPD::IsPixelBad(Int_t col, Int_t row) const {
   }
   return false;
 }
+
+//____________________________________________________________________________
+void AliITSCalibrationSPD::GetBadPixel(Int_t i, Int_t &row, Int_t &col) const {
+  //
+  // i: is the i-th bad pixel in fBadChannels
+  // row: is the corresponding row (-1 if i is out of range)
+  // col: is the corresponding column (-1 if i is out of range)
+  row = -1;
+  col = -1;
+  if(i<0 || i>=GetNrBad()){
+    AliWarning(Form("Index %d is out of bounds - nothing done",i));
+    return;
+  }
+  col = fBadChannels.At(i*2);
+  row = fBadChannels.At(i*2+1);
+}
+ 
 //___________________________________________________________________________
 Int_t  AliITSCalibrationSPD::GetNrBadInColumn(Int_t col) const {
  //
