@@ -13,7 +13,8 @@
 // to avoid circular dependencie
 
 // --- ROOT system ---
-class TObjArray; 
+class TObjArray;
+class TArrayF;
 
 // --- AliRoot header files ---
 class AliMUONVTrackStore;
@@ -34,15 +35,21 @@ public:
 private:
   /// Raw histograms indices
   enum ERaw { 
-    kRawBusPatch    = 0,  ///< Raw bus patch histogram index
-    kRawCharge      = 1,  ///< Raw charge histogram index
-    kRawBuspatchDDL = 2   ///< Raw buspatch hit map histogram per DDL index
+    kRawBusPatch           = 0,   ///< Raw bus patch histogram index
+    kRawCharge             = 1,   ///< Raw charge histogram index
+    kRawBuspatchDDL        = 2,   ///< Raw buspatch hit map histogram per DDL index
+    kTriggerScalersBP      = 22,  ///< Trigger scalers on BP histogram per chamber index
+    kTriggerScalersNBP     = 23,  ///< Trigger scalers on NBP histogram per chamber index
+    kTriggerScalersDisplay = 24   ///< Trigger scalers display histogram per chamber index
   };
          
   /// Rec points histograms indices
   enum ERecPoints { 
-    kTriggerDigitsBendPlane    = 0, ///< Trigger digits on BP histogram index
-    kTriggerDigitsNonBendPlane = 1  ///< Trigger digits on BP histogram index
+    kTriggerDigitsBendPlane    = 0,  ///< Trigger digits on BP histogram index
+    kTriggerDigitsNonBendPlane = 1,  ///< Trigger digits on NBP histogram index
+    kTriggeredBoards           = 2,  ///< Triggered boards histogram index
+    kTriggerDigitsDisplay      = 3,  ///< Trigger digits display histogram per plane index
+    kTriggerBoardsDisplay      = 11  ///< Triggered boards display histogram index
   };
           
   /// ESD histograms indices
@@ -64,6 +71,10 @@ private:
   virtual void   MakeRecPoints(TTree* recpo); 
   virtual void   MakeESDs(AliESDEvent* esd) ;
   virtual void   EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray* list);
+
+  void DisplayTriggerInfo(AliQA::TASKINDEX_t task);
+  void InitDisplayHistos(AliQA::TASKINDEX_t task);
+  Bool_t AddSortedPoint(Float_t currVal, TArrayF& position, const Float_t kResetValue);
   
   AliMUONVDigitStore* fDigitStore; //!< pointer to digits store
   AliMUONVTriggerStore* fTriggerStore; //!< pointer to trigger store
