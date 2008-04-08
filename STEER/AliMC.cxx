@@ -362,7 +362,6 @@ void AliMC::Stepping()
   //
   // Called at every step during transport
   //
-    
   Int_t id = DetFromMate(gMC->CurrentMedium());
   if (id < 0) return;
 
@@ -1249,12 +1248,11 @@ void AliMC::ReorderAndExpandTreeTR()
     Int_t it = 0;
     for (Int_t ip = np - 1; ip > -1; ip--) {
 	TParticle *part = stack->Particle(ip);
-//	printf("Particle %5d %5d %5d %5d %5d \n", ip, part->GetPdgCode(), part->GetFirstMother(), part->GetFirstDaughter(), part->GetLastDaughter());
+	//printf("Particle %5d %5d %5d %5d %5d \n", ip, part->GetPdgCode(), part->GetFirstMother(), part->GetFirstDaughter(), part->GetLastDaughter());
 	
 	// Skip primaries that have not been transported
 	Int_t dau1  = part->GetFirstDaughter();
 	Int_t dau2  = -1;
-	// if ((dau1 > -1 && dau1 < np) || part->GetStatusCode() > 1) continue;
 	if (!part->TestBit(kTransportBit)) continue;
 	//
 	fTmpTreeTR->GetEntry(it++);
@@ -1266,7 +1264,8 @@ void AliMC::ReorderAndExpandTreeTR()
 		if (inext >= 0) {
 		    part = stack->Particle(inext);
 		    dau2 =  part->GetFirstDaughter();
-		    if (dau2 == -1 || dau2 < np) {
+		    if (!(part->TestBit(kTransportBit)) || dau2 == -1 || dau2 < np) {
+//		    if (dau2 == -1 || dau2 < np) {
 			dau2 = -1;
 		    } else {
 			dau2--;
@@ -1278,7 +1277,6 @@ void AliMC::ReorderAndExpandTreeTR()
 	    } // find upper bound
 	}  // dau2 < 0
 //	printf("Check (1) %5d %5d %5d %5d %5d \n", ip, np, it, dau1, dau2);
-	
 	// 
 	// Loop over reference hits and find secondary label
 	for (Int_t id = dau1; (id <= dau2) && (dau1 > -1); id++) {
