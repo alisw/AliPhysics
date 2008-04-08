@@ -5589,7 +5589,6 @@ void AliITSv11GeometrySDD::SDDCables(TGeoVolume *moth)
   Double_t drMax = pcon1all->GetRmax(0)- pcon1all->GetRmin(0);
   pcon1container->DefineSection(1, sddCableZ2, pcon1all->GetRmax(1)-drMax,
 					       pcon1all->GetRmax(1));
-  delete pcon1all;
 
   TGeoVolume *vpcon1container = new TGeoVolume("vpcon1container",
 					       pcon1container, airSDD);
@@ -5645,7 +5644,6 @@ void AliITSv11GeometrySDD::SDDCables(TGeoVolume *moth)
   pcon2container->DefineSection(1, sddCableZ3, pcon2all->GetRmax(1)-drMax,
 					       pcon2all->GetRmax(1));
 
-  delete pcon2all;
 
   TGeoVolume *vpcon2container = new TGeoVolume("vpcon2container",
 					       pcon2container, airSDD);
@@ -5765,7 +5763,6 @@ void AliITSv11GeometrySDD::SDDCables(TGeoVolume *moth)
   pcon3container->DefineSection(1, fgkSDDCableZ5, pcon3all->GetRmax(1)-drMax,
 					       pcon3all->GetRmax(1));
 
-  delete pcon3all;
 
   TGeoVolume *vpcon3container = new TGeoVolume("vpcon3container",
 					       pcon3container, airSDD);
