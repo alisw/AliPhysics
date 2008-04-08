@@ -106,6 +106,7 @@
 #include "AliITSv11GeometrySDD.h"
 #include "AliITSv11GeometrySSD.h"
 #include "AliITSv11GeometrySupport.h"
+#include "AliGeomManager.h"
 
 
 ClassImp(AliITSv11Hybrid)
@@ -313,7 +314,7 @@ AliITSv11Hybrid::~AliITSv11Hybrid() {
 }
 
 //______________________________________________________________________
-void AliITSv11Hybrid::SetT2Lmatrix(const char *name, Double_t yShift, 
+void AliITSv11Hybrid::SetT2Lmatrix(Int_t uid, Double_t yShift, 
 				   Bool_t yFlip, Bool_t yRot180)
   const {
 
@@ -323,12 +324,8 @@ void AliITSv11Hybrid::SetT2Lmatrix(const char *name, Double_t yShift,
   //
   // This function is used in AddAlignableVolumes()
 
-  TGeoPNEntry *alignableEntry = gGeoManager->GetAlignableEntry(name);
-  const char *path = alignableEntry->GetTitle();
-
-  if (!gGeoManager->cd(path))
-    AliFatal(Form("Volume path %s not valid!",path));
-  TGeoHMatrix* globMatrix = gGeoManager->GetCurrentMatrix();
+  TGeoPNEntry *alignableEntry = gGeoManager->GetAlignableEntryByUID(uid);
+  TGeoHMatrix* globMatrix = alignableEntry->GetGlobalOrig();
 
   Double_t *gtrans = globMatrix->GetTranslation(), rotMatrix[9];
   memcpy(&rotMatrix[0], globMatrix->GetRotationMatrix(), 9*sizeof(Double_t));
@@ -389,6 +386,9 @@ void AliITSv11Hybrid::AddAlignableVolumes() const{
     return;
   }
 
+  AliGeomManager::ELayerID layerId;
+  Int_t modUID, modnum;
+
   if( !gGeoManager->SetAlignableEntry("ITS","ALIC_1/ITSV_1") )
     AliFatal(Form("Unable to set alignable entry ! %s :: %s",
                   "ITS","ALIC_1/ITSV_1"));    
@@ -407,6 +407,7 @@ void AliITSv11Hybrid::AddAlignableVolumes() const{
   TString strEntryName4;
 
   //===== SPD layers =====
+  
   if (AliITSInitGeometry::SPDIsTGeoNative()) { // new SPD geometry
 
     TString str0 = "ALIC_1/ITSV_1/ITSSPD_1/ITSSPDCarbonFiberSectorV_";
@@ -420,6 +421,9 @@ void AliITSv11Hybrid::AddAlignableVolumes() const{
     TString halfStave;
     TString module;
 
+    layerId = AliGeomManager::kSPD1;
+    modnum = 0;
+    
     for(Int_t cSect = 0; cSect<10; cSect++) {
 
       sector = str0;
@@ -458,18 +462,18 @@ void AliITSv11Hybrid::AddAlignableVolumes() const{
 
 	  for(Int_t cLad=0; cLad<2; cLad++) {
 	  
+	    modUID = AliGeomManager::LayerToVolUID(layerId,modnum++);
 	    module = halfStave;
 	    module += str2;
 	    module += cLad+cHS*2+1;
 	    strEntryName4 = strEntryName3;
 	    strEntryName4 += strLadder;
 	    strEntryName4 += cLad+cHS*2;
-	    if(!gGeoManager->SetAlignableEntry(strEntryName4.Data(),
-                                               module.Data()))
+	    if(!gGeoManager->SetAlignableEntry(strEntryName4.Data(),module.Data(),modUID))
 	      AliFatal(Form("New lay 1: Unable to set alignable entry 4! %s::%s",
                        strEntryName4.Data(),module.Data()));
 
-	    SetT2Lmatrix(strEntryName4.Data(), 0.0081, kTRUE, kTRUE);
+	    SetT2Lmatrix(modUID, 0.0081, kTRUE, kTRUE);
 	    // 0.0081 is the shift between the centers of alignable 
             // and sensitive volumes. It is directly extracted from 
             // the new SPD geometry
@@ -478,6 +482,8 @@ void AliITSv11Hybrid::AddAlignableVolumes() const{
       } // end for cStave
     } // end for cSect
 
+    layerId = AliGeomManager::kSPD2;
+    modnum = 0;
     str1 = "/ITSSPDSensitiveVirtualvolumeM0_1/ITSSPDlay2-Stave_";
     str2 = "/ITSSPDlay2-Ladder_";
 
@@ -516,18 +522,18 @@ void AliITSv11Hybrid::AddAlignableVolumes() const{
 
 	  for(Int_t cLad=0; cLad<2; cLad++) {
 
+	    modUID = AliGeomManager::LayerToVolUID(layerId,modnum++);
 	    module = halfStave;
 	    module += str2;
 	    module += cLad+cHS*2 +1;
 	    strEntryName4 = strEntryName3;
 	    strEntryName4 += strLadder;
 	    strEntryName4 += cLad+cHS*2;
-	    if(!gGeoManager->SetAlignableEntry(strEntryName4.Data(),
-                                               module.Data()))
+	    if(!gGeoManager->SetAlignableEntry(strEntryName4.Data(),module.Data(),modUID))
 	      AliFatal(Form("New lay 2: Unable to set alignable entry 4! %s::%s",
                        strEntryName4.Data(),module.Data()));
 
-	    SetT2Lmatrix(strEntryName4.Data(), -0.0081, kFALSE);
+	    SetT2Lmatrix(modUID, -0.0081, kFALSE);
 	  } // end for cLad
 	} // end for cHS
       } // end for cStave
@@ -545,6 +551,9 @@ void AliITSv11Hybrid::AddAlignableVolumes() const{
     TString stave;
     TString halfStave;
     TString module;
+
+    layerId = AliGeomManager::kSPD1;
+    modnum = 0;
 
     for(Int_t cSect = 0; cSect<10; cSect++) {
 
@@ -587,6 +596,7 @@ void AliITSv11Hybrid::AddAlignableVolumes() const{
 
 	  for(Int_t cLadder = 0; cLadder<2; cLadder++) {
 	    
+	    modUID = AliGeomManager::LayerToVolUID(layerId,modnum++);
 	    module = halfStave;
 	    module += str2;
 	    module += cLadder+cHS*2+1;
@@ -594,16 +604,18 @@ void AliITSv11Hybrid::AddAlignableVolumes() const{
 	    strEntryName4 += strLadder;
 	    strEntryName4 += cLadder+cHS*2;
 	    //printf("%s   ==   %s\n",strEntryName4.Data(),module.Data());
-	    if(!gGeoManager->SetAlignableEntry(strEntryName4.Data(),
-                                               module.Data()))
+	    if(!gGeoManager->SetAlignableEntry(strEntryName4.Data(),module.Data(),modUID))
 	      AliFatal(Form("Old lay 1: Unable to set alignable entry 4! %s::%s",
-                       strEntryName4.Data(),module.Data()));
+		    strEntryName4.Data(),module.Data()));
 
-	    SetT2Lmatrix(strEntryName4.Data(), -fChip1*0.0001/2., kTRUE);
+	    SetT2Lmatrix(modUID, -fChip1*0.0001/2., kTRUE);
 	  } // end for cLadder
 	} // end for cHS
       } // end for cStave
     } // end for cSect
+
+    layerId = AliGeomManager::kSPD2;
+    modnum = 0;
 
     str1Bis = "/L2H-STAVE";
     str1 = "/I20B_";
@@ -649,6 +661,7 @@ void AliITSv11Hybrid::AddAlignableVolumes() const{
 
 	  for(Int_t cLad =0; cLad<2; cLad++) {
 
+	    modUID = AliGeomManager::LayerToVolUID(layerId,modnum++);
 	    module = halfStave;
 	    module += str2;
 	    module += cLad+cHS*2+1;
@@ -656,12 +669,11 @@ void AliITSv11Hybrid::AddAlignableVolumes() const{
 	    strEntryName4 += strLadder;
 	    strEntryName4 += cLad+cHS*2;
 	    //printf("%s   ==   %s\n",strEntryName4.Data(),module.Data());
-	    if(!gGeoManager->SetAlignableEntry(strEntryName4.Data(),
-                                               module.Data()))
+	    if(!gGeoManager->SetAlignableEntry(strEntryName4.Data(),module.Data(),modUID))
 	      AliFatal(Form("Old lay2: Unable to set alignable entry 4! %s::%s",
                        strEntryName4.Data(),module.Data()));
 
-	    SetT2Lmatrix(strEntryName4.Data(), -fChip2*0.0001/2., kFALSE);
+	    SetT2Lmatrix(modUID, -fChip2*0.0001/2., kFALSE);
 	  } // end for cLad
 	} // end for cHS
       } // end for cStave
@@ -671,6 +683,8 @@ void AliITSv11Hybrid::AddAlignableVolumes() const{
   //===== SDD layers =====
   if (AliITSInitGeometry::SDDIsTGeoNative()) { // new SDD geometry
     
+    layerId = AliGeomManager::kSDD1;
+    modnum = 0;
     TString str0 = "/ALIC_1/ITSV_1/ITSsddLayer3_1/ITSsddLadd_"; // SDD layer1
     TString str1 = "/ITSsddSensor3_";
     TString str2 = "/ITSsddWafer3_1";
@@ -692,6 +706,7 @@ void AliITSv11Hybrid::AddAlignableVolumes() const{
 
       for(Int_t c2 =0; c2<6; c2++) {
 
+	modUID = AliGeomManager::LayerToVolUID(layerId,modnum++);
 	wafer = ladder;
 	wafer += str1;
 	wafer += c2;
@@ -700,18 +715,20 @@ void AliITSv11Hybrid::AddAlignableVolumes() const{
 	strEntryName2 += strSensor;
 	strEntryName2 += c2;
 	//printf("%s    ==    %s\n",strEntryName2.Data(),wafer.Data());
-	if(!gGeoManager->SetAlignableEntry(strEntryName2.Data(),wafer.Data()))
+	if(!gGeoManager->SetAlignableEntry(strEntryName2.Data(),wafer.Data(),modUID))
 	  AliFatal(Form("Unable to set alignable entry 2! %s :: %s",
                    strEntryName2.Data(),wafer.Data()));
 
 	if(c1 != 2) { 
-	SetT2Lmatrix(strEntryName2.Data(), 0, kFALSE, c2>=3);
+	SetT2Lmatrix(modUID, 0, kFALSE, c2>=3);
 	  	  } else {// for ladder 2, mounted with a pi rot around y
-	  SetT2Lmatrix(strEntryName2.Data(), 0, kFALSE, c2<3);
+	  SetT2Lmatrix(modUID, 0, kFALSE, c2<3);
 	  }
       }
     }
 
+    layerId = AliGeomManager::kSDD2;
+    modnum = 0;
     str0 = "/ALIC_1/ITSV_1/ITSsddLayer4_1/ITSsddLadd_"; // SDD layer2
     str1 = "/ITSsddSensor4_";
     str2 = "/ITSsddWafer4_1";
@@ -731,6 +748,7 @@ void AliITSv11Hybrid::AddAlignableVolumes() const{
 
       for(Int_t c2 =0; c2<8; c2++) {
 
+	modUID = AliGeomManager::LayerToVolUID(layerId,modnum++);
 	wafer = ladder;
 	wafer += str1;
 	wafer += c2;
@@ -739,16 +757,19 @@ void AliITSv11Hybrid::AddAlignableVolumes() const{
 	strEntryName2 += strSensor;
 	strEntryName2 += c2;
 	//printf("%s    ==    %s\n",strEntryName2.Data(),wafer.Data());
-	if(!gGeoManager->SetAlignableEntry(strEntryName2.Data(),wafer.Data()))
+	if(!gGeoManager->SetAlignableEntry(strEntryName2.Data(),wafer.Data(),modUID))
 	  AliFatal(Form("Unable to set alignable entry 2! %s :: %s",
                    strEntryName2.Data(),wafer.Data()));
 
-  	SetT2Lmatrix(strEntryName2.Data(), 0, kFALSE, c2>=4);
+  	SetT2Lmatrix(modUID, 0, kFALSE, c2>=4);
       }
     }
 
   } else {  // else old SDD geometry
 
+    layerId = AliGeomManager::kSDD1;
+    modnum = 0;
+    
     TString str0 = "ALIC_1/ITSV_1/ITSD_1/IT34_1/I004_";
     TString str1 = "/I302_";
     
@@ -769,20 +790,23 @@ void AliITSv11Hybrid::AddAlignableVolumes() const{
 
       for(Int_t c2 =1; c2<=6; c2++){
 
+	modUID = AliGeomManager::LayerToVolUID(layerId,modnum++);
 	wafer = ladder;
 	wafer += str1;
 	wafer += c2;    // one wafer
 	strEntryName2 = strEntryName1;
 	strEntryName2 += strSensor;
 	strEntryName2 += (c2-1);
-	if(!gGeoManager->SetAlignableEntry(strEntryName2.Data(),wafer.Data()))
+	if(!gGeoManager->SetAlignableEntry(strEntryName2.Data(),wafer.Data(),modUID))
 	  AliFatal(Form("Unable to set alignable entry 2! %s :: %s",
                    strEntryName2.Data(),wafer.Data()));
 
-	SetT2Lmatrix(strEntryName2.Data(), 0, kFALSE);
+	SetT2Lmatrix(modUID, 0, kFALSE);
       }
     }
 
+    layerId = AliGeomManager::kSDD2;
+    modnum = 0;
     str0 = "ALIC_1/ITSV_1/ITSD_1/IT34_1/I005_";
     str1 = "/I402_";
 
@@ -800,17 +824,18 @@ void AliITSv11Hybrid::AddAlignableVolumes() const{
 
       for(Int_t c2 =1; c2<=8; c2++){
 
+	modUID = AliGeomManager::LayerToVolUID(layerId,modnum++);
 	wafer = ladder;
 	wafer += str1;
 	wafer += c2;    // one wafer
 	strEntryName2 = strEntryName1;
 	strEntryName2 += strSensor;
 	strEntryName2 += (c2-1);
-	if(!gGeoManager->SetAlignableEntry(strEntryName2.Data(),wafer.Data()))
+	if(!gGeoManager->SetAlignableEntry(strEntryName2.Data(),wafer.Data(),modUID))
 	  AliFatal(Form("Unable to set alignable entry 2! %s,%s",
                         strEntryName2.Data(),wafer.Data()));
 
-	SetT2Lmatrix(strEntryName2.Data(), 0, kFALSE);
+	SetT2Lmatrix(modUID, 0, kFALSE);
       }
     }
   }   // end SDD
@@ -818,6 +843,8 @@ void AliITSv11Hybrid::AddAlignableVolumes() const{
   //===== SSD layers =====
   if (AliITSInitGeometry::SSDIsTGeoNative()) { // new SSD geometry
 
+    layerId = AliGeomManager::kSSD1;
+    modnum = 0;
     TString str0 = "/ALIC_1/ITSV_1/ITSssdLayer5_1/ITSssdLay5Ladd_";//SSD layer1
     TString str1 = "/ITSssdSensor5_";
     TString str2 = "";
@@ -839,6 +866,7 @@ void AliITSv11Hybrid::AddAlignableVolumes() const{
 
       for(Int_t c2 =0; c2<22; c2++) {
 
+	modUID = AliGeomManager::LayerToVolUID(layerId,modnum++);
 	wafer = ladder;
 	wafer += str1;
 	wafer += c2;
@@ -847,14 +875,16 @@ void AliITSv11Hybrid::AddAlignableVolumes() const{
 	strEntryName2 += strSensor;
 	strEntryName2 += c2;
 	//printf("%s    ==    %s\n",strEntryName2.Data(),wafer.Data());
-	if(!gGeoManager->SetAlignableEntry(strEntryName2.Data(),wafer.Data()))
+	if(!gGeoManager->SetAlignableEntry(strEntryName2.Data(),wafer.Data(),modUID))
 	  AliFatal(Form("Unable to set alignable entry 2! %s :: %s",
                    strEntryName2.Data(),wafer.Data()));
 
-	SetT2Lmatrix(strEntryName2.Data(), 0, kFALSE, kFALSE);
+	SetT2Lmatrix(modUID, 0, kFALSE, kFALSE);
       }
     }
 
+    layerId = AliGeomManager::kSSD2;
+    modnum = 0;
     str0 = "/ALIC_1/ITSV_1/ITSssdLayer6_1/ITSssdLay6Ladd_"; // SSD layer2
     str1 = "/ITSssdSensor6_";
     str2 = "";
@@ -874,6 +904,7 @@ void AliITSv11Hybrid::AddAlignableVolumes() const{
 
       for(Int_t c2 =0; c2<25; c2++) {
 
+	modUID = AliGeomManager::LayerToVolUID(layerId,modnum++);
 	wafer = ladder;
 	wafer += str1;
 	wafer += c2;
@@ -882,15 +913,18 @@ void AliITSv11Hybrid::AddAlignableVolumes() const{
 	strEntryName2 += strSensor;
 	strEntryName2 += c2;
 	//printf("%s    ==    %s\n",strEntryName2.Data(),wafer.Data());
-	if(!gGeoManager->SetAlignableEntry(strEntryName2.Data(),wafer.Data()))
+	if(!gGeoManager->SetAlignableEntry(strEntryName2.Data(),wafer.Data(),modUID))
 	  AliFatal(Form("Unable to set alignable entry 2! %s :: %s",
                    strEntryName2.Data(),wafer.Data()));
 
-	SetT2Lmatrix(strEntryName2.Data(), 0, kFALSE, kFALSE);
+	SetT2Lmatrix(modUID, 0, kFALSE, kFALSE);
       }
     }
     
   } else { // else old SSD geometry
+    
+    layerId = AliGeomManager::kSSD1;
+    modnum = 0;
     TString str0 = "ALIC_1/ITSV_1/ITSD_1/IT56_1/I565_";
     TString str1 = "/I562_";
     TString ladder;
@@ -910,20 +944,23 @@ void AliITSv11Hybrid::AddAlignableVolumes() const{
 
       for(Int_t c2 = 1; c2<=22; c2++){
 	
+	modUID = AliGeomManager::LayerToVolUID(layerId,modnum++);
 	wafer = ladder;
 	wafer += str1;
 	wafer += c2;     // one wafer
 	strEntryName2 = strEntryName1;
 	strEntryName2 += strSensor;
 	strEntryName2 += (c2-1);
-	if(!gGeoManager->SetAlignableEntry(strEntryName2.Data(),wafer.Data()))
+	if(!gGeoManager->SetAlignableEntry(strEntryName2.Data(),wafer.Data(),modUID))
 	  AliFatal(Form("Unable to set alignable entry 2! %s :: %s",
                    strEntryName2.Data(),wafer.Data()));
 
-	SetT2Lmatrix(strEntryName2.Data(), 0, kFALSE);
+	SetT2Lmatrix(modUID, 0, kFALSE);
       }
     }
     
+    layerId = AliGeomManager::kSSD2;
+    modnum = 0;
     str0 = "ALIC_1/ITSV_1/ITSD_1/IT56_1/I569_";
     str1 = "/I566_";
     
@@ -941,17 +978,18 @@ void AliITSv11Hybrid::AddAlignableVolumes() const{
 
       for(Int_t c2 = 1; c2<=25; c2++){
 	
+	modUID = AliGeomManager::LayerToVolUID(layerId,modnum++);
 	wafer = ladder;
 	wafer += str1;
 	wafer += c2;     // one wafer
 	strEntryName2 = strEntryName1;
 	strEntryName2 += strSensor;
 	strEntryName2 += (c2-1);
-	if(!gGeoManager->SetAlignableEntry(strEntryName2.Data(),wafer.Data()))
+	if(!gGeoManager->SetAlignableEntry(strEntryName2.Data(),wafer.Data(),modUID))
 	  AliFatal(Form("Unable to set alignable entry 2! %s :: %s",
                    strEntryName2.Data(),wafer.Data()));
 
-	SetT2Lmatrix(strEntryName2.Data(), 0, kFALSE);
+	SetT2Lmatrix(modUID, 0, kFALSE);
       }
     }
   } // end SSD geometry 

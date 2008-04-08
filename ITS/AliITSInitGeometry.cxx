@@ -2474,9 +2474,11 @@ Bool_t AliITSInitGeometry::WriteVersionString(Char_t *str,Int_t length,
     i = (Int_t)maj;
     sprintf(str,"Major Version= %d Minor Version= %d Revision: %s Date: %s",
             i,min,cvsrevision,cvsdate);
+    /* this gives compilation warnings on some compilers: descriptor zu
     if(GetDebug()>1)printf("AliITSInitGeometry::WriteVersionString: "
-                       "n=%d str=%s revision[%u] date[%u]\n",
+                       "n=%d str=%s revision[%zu] date[%zu]\n",
                        n,str,strlen(cvsrevision),strlen(cvsdate));
+    */
     delete[] cvsrevision;
     delete[] cvsdate;
     return kTRUE;

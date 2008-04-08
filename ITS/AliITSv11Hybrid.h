@@ -131,7 +131,7 @@ class AliITSv11Hybrid : public AliITS {
 
  protected:
     void CreateOldGeometry();
-    void SetT2Lmatrix(const char *name, Double_t yShift,
+    void SetT2Lmatrix(Int_t uid, Double_t yShift,
 		      Bool_t yFlip, Bool_t yRot180=kFALSE) const; // Set T2L matrix in TGeoPNEntries
     void CreateSPDThermalShield(TGeoVolume *moth);
     TGeoVolumeAssembly *CreateSPDThermalShieldAssembly(const char *name,
