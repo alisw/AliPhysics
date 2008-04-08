@@ -84,7 +84,8 @@ AliITSOnlineSPDscan::~AliITSOnlineSPDscan() {
     }
     fFile->Delete("AliITSOnlineSPDscanInfo;*");
     fFile->WriteTObject(fScanInfo, "AliITSOnlineSPDscanInfo");
-    fFile->Close();
+  }
+  if (fFile!=NULL) {
     delete fFile;
   }
 }

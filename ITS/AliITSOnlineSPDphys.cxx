@@ -74,7 +74,8 @@ AliITSOnlineSPDphys::~AliITSOnlineSPDphys() {
     }
     fFile->Delete("AliITSOnlineSPDphysInfo;*");
     fFile->WriteTObject(fPhysInfo, "AliITSOnlineSPDphysInfo");
-    fFile->Close();
+  }
+  if (fFile!=NULL) {
     delete fFile;
   }
 }
