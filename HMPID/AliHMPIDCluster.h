@@ -38,7 +38,7 @@ public:
          void           Print  (Option_t *opt=""                                  )const;                  //overloaded TObject::Print() to print cluster info
   static void           FitFunc(Int_t &iNpars, Double_t* deriv, Double_t &chi2, Double_t *par, Int_t iflag);//fit function to be used by MINUIT
 //private part  
-         Int_t          Box      (                                         )const{return fBox;                                  }  //Dimension of the cluster
+         Int_t          Box      (                                         )const{return fBox;                                   } //Dimension of the cluster
          void           CoG      (                                         );                                                      //calculates center of gravity
          void           CorrSin  (                                         );                                                      //sinoidal correction   
          Int_t          Ch       (                                         )const{return fCh;                                    } //chamber number
@@ -48,19 +48,21 @@ public:
   inline void           Reset    (                                         );                                                      //cleans the cluster
   void           SetClusterParams(Double_t xL,Double_t yL,Int_t iCh  );                                                            //Set AliCluster3D part
          Int_t          Size     (                                         )const{return fSi;                                    } //returns number of pads in formed cluster 
-         Int_t          Solve    (TClonesArray *pCluLst,Bool_t isUnfold    );                                                      //solve cluster: MINUIT fit or CoG
+         Int_t          Solve    (TClonesArray *pCluLst,Int_t *pSigmaCut, Bool_t isUnfold);                                        //solve cluster: MINUIT fit or CoG
          Int_t          Status   (                                         ) const{return fSt;}                                    //Status of cluster                                  
          Double_t       QRaw     (                                         )const{return fQRaw;                                  } //raw cluster charge in QDC channels 
          Double_t       Q        (                                         )const{return fQ;                                     } //given cluster charge in QDC channels 
          Double_t       Qe       (                                         )const{return fErrQ;                                  } //Error in cluster charge in QDC channels 
-         Double_t       X        (                                         )const{return fXX;                                     } //cluster x position in LRS
+         Double_t       X        (                                         )const{return fXX;                                    } //cluster x position in LRS
          Double_t       Xe       (                                         )const{return fErrX;                                  } //cluster charge in QDC channels 
-         Double_t       Y        (                                         )const{return fYY;                                     } //cluster y position in LRS 
+         Double_t       Y        (                                         )const{return fYY;                                    } //cluster y position in LRS 
          Double_t       Ye       (                                         )const{return fErrY;                                  } //cluster charge in QDC channels 
          Double_t       Chi2     (                                         )const{return fChi2;                                  } //chi2 of the fit
-         void           DoCorrSin(Bool_t doCorrSin                         ){fgDoCorrSin=doCorrSin;}                                // Set sinoidal correction
-         void           SetX     (Double_t x                               ){fXX=x;}                                                // Setter
-         void           SetY     (Double_t y                               ){fYY=y;}                                                // Setter
+         void           DoCorrSin(Bool_t doCorrSin                         ){fgDoCorrSin=doCorrSin;}                               // Set sinoidal correction
+         void           SetX     (Double_t x                               ){fXX=x;}                                               // Setter
+         void           SetY     (Double_t y                               ){fYY=y;}                                               // Setter
+         void           SetSize  (Int_t size                               ){fSi=size;}                                            // Setter
+         void           FindClusterSize(Int_t i,Int_t *pSigmaCut);                                                                 //Find the clusterSize of deconvoluted clusters 
          
 protected:
   Int_t         fCh;          //chamber number

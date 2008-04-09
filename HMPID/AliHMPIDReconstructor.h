@@ -32,11 +32,10 @@ public:
   using AliReconstructor::Reconstruct;                                                                                  // 
 
   //private part  
-  static        void           Dig2Clu (TObjArray *pDigLst,TObjArray *pCluLst,Bool_t isUnfold=kFALSE                      );//digits->clusters
+  static        void           Dig2Clu (TObjArray *pDigLst,TObjArray *pCluLst,Int_t *pUserCut,Bool_t isUnfold=kFALSE     );//digits->clusters
   static        void           FormClu (AliHMPIDCluster *pClu,AliHMPIDDigit *pDig,TClonesArray *pDigLst,TMatrixF *pPadMap);//cluster formation recursive algorithm
   static inline AliHMPIDDigit* UseDig  (Int_t padX,Int_t padY,                    TClonesArray *pDigLst,TMatrixF *pDigMap);//use this pad's digit to form a cluster
   inline Bool_t                IsDigSurvive(AliHMPIDDigit *pDig                                                     )const;//check for sigma cut
-  
   void SetRecoParam(AliHMPIDRecoParam *recopar){ fgkRecoParam = recopar;}
   static const AliHMPIDRecoParam* GetRecoParam(){ return fgkRecoParam;}
 

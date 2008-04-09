@@ -681,11 +681,12 @@ void HmpConfig::WriteBatch()
                                                     fprintf(fp,"  gSystem->Exec(\"touch ZZZ______finished_______SSS\");\n");
                                                     fprintf(fp,"  gSystem->Exec(\"aliroot rec.C &\");\n}\n");
   fclose(fp);  
+// rec section
   char *sBatchName="rec";
   FILE *fp=fopen(Form("%s.C",sBatchName),"w"); if(!fp){Info("CreateRec","Cannot open output file: %s.C",sBatchName);return;}
   
                                                     fprintf(fp,"void %s()\n{\n",sBatchName);
-                                                    fprintf(fp,"  gSystem->Exec(\"rm -rf RRR* \");  //remove garbage\n"); 
+                                                    fprintf(fp,"  gSystem->Exec(\"rm -rf *RRR \");  //remove garbage\n"); 
 
   if(fRecB->GetState()){
                                                     fprintf(fp,"  AliReconstruction *pRec=new AliReconstruction;\n");

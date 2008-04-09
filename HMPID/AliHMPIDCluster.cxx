@@ -211,6 +211,9 @@ void AliHMPIDCluster::FitFunc(Int_t &iNpars, Double_t* deriv, Double_t &chi2, Do
     for(Int_t i=0;i<iNpars;i++) delete [] derivPart[i]; delete [] derivPart;
   }
 //---gradient calculations ended
+
+// fit ended. Final calculations
+  
   
 }//FitFunction()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -240,7 +243,7 @@ void AliHMPIDCluster::Print(Option_t* opt)const
   if(fDigs) fDigs->Print();    
 }//Print()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Int_t AliHMPIDCluster::Solve(TClonesArray *pCluLst,Bool_t isTryUnfold)
+Int_t AliHMPIDCluster::Solve(TClonesArray *pCluLst,Int_t *pSigmaCut, Bool_t isTryUnfold)
 {
 //This methode is invoked when the cluster is formed to solve it. Solve the cluster means to try to unfold the cluster
 //into the local maxima number of clusters. This methode is invoked by AliHMPIDRconstructor::Dig2Clu() on cluster by cluster basis.  
@@ -282,12 +285,13 @@ Int_t AliHMPIDCluster::Solve(TClonesArray *pCluLst,Bool_t isTryUnfold)
 //Phase 1. Find number of local maxima. Strategy is to check if the current pad has QDC more then all neigbours. Also find the box contaning the cluster   
   fNlocMax=0;
 
-  for(Int_t iDig1=0;iDig1<Size();iDig1++) {                                               //first digits loop
+  Int_t rawSize = Size();
+  for(Int_t iDig1=0;iDig1<rawSize;iDig1++) {                                               //first digits loop
     
     AliHMPIDDigit *pDig1 = Dig(iDig1);                                                   //take next digit    
     Int_t iCnt = 0;                                                                      //counts how many neighbouring pads has QDC more then current one
     
-    for(Int_t iDig2=0;iDig2<Size();iDig2++) {                                            //loop on all digits again
+    for(Int_t iDig2=0;iDig2<rawSize;iDig2++) {                                            //loop on all digits again
       
       if(iDig1==iDig2) continue;                                                         //the same digit, no need to compare 
       AliHMPIDDigit *pDig2 = Dig(iDig2);                                                 //take second digit to compare with the first one
@@ -350,21 +354,25 @@ Int_t AliHMPIDCluster::Solve(TClonesArray *pCluLst,Bool_t isTryUnfold)
    Double_t dummy; char sName[80];                                                        //vars to get results from Minuit
    Double_t edm, errdef;
    Int_t nvpar, nparx;
-  
+   
    for(Int_t i=0;i<fNlocMax;i++){                                                        //store the local maxima parameters
-     fitter->GetParameter(3*i   ,sName,  fXX, fErrX , dummy, dummy);                      // X
-     fitter->GetParameter(3*i+1 ,sName,  fYY, fErrY , dummy, dummy);                      // Y
+     fitter->GetParameter(3*i   ,sName,  fXX, fErrX , dummy, dummy);                     // X
+     fitter->GetParameter(3*i+1 ,sName,  fYY, fErrY , dummy, dummy);                     // Y
      fitter->GetParameter(3*i+2 ,sName,  fQ, fErrQ , dummy, dummy);                      // Q
      fitter->GetStats(fChi2, edm, errdef, nvpar, nparx);                                 //get fit infos
-      if(fSt!=kAbn) {         
-        if(fNlocMax!=1)fSt=kUnf;                                                         // if unfolded
-        if(fNlocMax==1&&fSt!=kNoLoc) fSt=kLo1;                                           // if only 1 loc max
-        if ( !IsInPc()) fSt = kEdg;                                                      // if Out of Pc
-        if(fSt==kNoLoc) fNlocMax=0;                                                      // if with no loc max (pads with same charge..)
-      }
-      if(fParam->GetInstType()) SetClusterParams(fXX,fYY,fCh);                                                      //need to fill the AliCluster3D part
-      new ((*pCluLst)[iCluCnt++]) AliHMPIDCluster(*this);	                         //add new unfolded cluster
-      
+
+     if(fNlocMax>1)FindClusterSize(i,pSigmaCut);                                         //find clustersize for deconvoluted clusters
+                                                                                         //after this call, fSi temporarly is the calculated size. Later is set again 
+                                                                                         //to its original value
+     if(fSt!=kAbn) {         
+      if(fNlocMax!=1)fSt=kUnf;                                                           // if unfolded
+      if(fNlocMax==1&&fSt!=kNoLoc) fSt=kLo1;                                             // if only 1 loc max
+      if ( !IsInPc()) fSt = kEdg;                                                        // if Out of Pc
+      if(fSt==kNoLoc) fNlocMax=0;                                                        // if with no loc max (pads with same charge..)
+     }
+     if(fParam->GetInstType()) SetClusterParams(fXX,fYY,fCh);                            //need to fill the AliCluster3D part
+     new ((*pCluLst)[iCluCnt++]) AliHMPIDCluster(*this);	                         //add new unfolded cluster
+     if(fNlocMax>1)SetSize(rawSize);                                                     //Original raw size is set again to its proper value
    }
  }
 
@@ -372,3 +380,19 @@ Int_t AliHMPIDCluster::Solve(TClonesArray *pCluLst,Bool_t isTryUnfold)
  
 }//Solve()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void AliHMPIDCluster::FindClusterSize(Int_t i,Int_t *pSigmaCut)
+{
+
+//Estimate of the clustersize for a deconvoluted cluster
+  Int_t size = 0;
+  for(Int_t iDig=0;iDig<Size();iDig++) {                                               //digits loop
+    AliHMPIDDigit *pDig = Dig(iDig);                                                   //take digit
+    Int_t iCh = pDig->Ch();
+    Double_t qPad = Q()*pDig->IntMathieson(X(),Y());                                   //pad charge
+    AliDebug(1,Form("Chamber %i X %i Y %i SigmaCut %i pad %i qpadMath %8.2f qPadRaw %8.2f Qtotal %8.2f cluster n.%i",iCh,pDig->PadChX(),pDig->PadChY(),
+        pSigmaCut[iCh],iDig,qPad,pDig->Q(),QRaw(),i));
+    if(qPad>pSigmaCut[iCh]) size++;
+   }
+  AliDebug(1,Form(" Calculated size %i",size));
+  SetSize(size);
+}

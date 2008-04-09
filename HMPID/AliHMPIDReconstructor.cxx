@@ -89,7 +89,7 @@ AliHMPIDReconstructor::AliHMPIDReconstructor():AliReconstructor(),fUserCut(0),fD
   }
 }//AliHMPIDReconstructor
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPIDReconstructor::Dig2Clu(TObjArray *pDigAll,TObjArray *pCluAll,Bool_t isTryUnfold)
+void AliHMPIDReconstructor::Dig2Clu(TObjArray *pDigAll,TObjArray *pCluAll,Int_t *pUserCut,Bool_t isTryUnfold)
 {
 // Finds all clusters for a given digits list provided not empty. Currently digits list is a list of all digits for a single chamber.
 // Puts all found clusters in separate lists, one per clusters. 
@@ -116,8 +116,7 @@ void AliHMPIDReconstructor::Dig2Clu(TObjArray *pDigAll,TObjArray *pCluAll,Bool_t
       AliHMPIDDigit *pDig=(AliHMPIDDigit*)pDigCur->At(iDig);                              //take current digit
       if(!(pDig=UseDig(pDig->PadChX(),pDig->PadChY(),pDigCur,&padMap))) continue;         //this digit is already taken in FormClu(), go after next digit
       FormClu(&clu,pDig,pDigCur,&padMap);                                                 //form cluster starting from this digit by recursion
-      
-      clu.Solve(pCluCur,isTryUnfold);                                                     //solve this cluster and add all unfolded clusters to provided list  
+      clu.Solve(pCluCur,pUserCut,isTryUnfold);                                 //solve this cluster and add all unfolded clusters to provided list  
       clu.Reset();                                                                        //empty current cluster
     }//digits loop for current chamber
   }//chambers loop
@@ -154,7 +153,7 @@ void AliHMPIDReconstructor::Reconstruct(TTree *pDigTree,TTree *pCluTree)const
     pDigTree->SetBranchAddress(Form("HMPID%d",iCh),&((*fDig)[iCh]));
   }   
   pDigTree->GetEntry(0);
-  Dig2Clu(fDig,fClu);              //cluster finder 
+  Dig2Clu(fDig,fClu,fUserCut);     //cluster finder 
   pCluTree->Fill();                //fill tree for current event
   
   for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++){
