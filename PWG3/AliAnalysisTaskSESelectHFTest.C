@@ -83,7 +83,7 @@ void AliAnalysisTaskSESelectHFTest()
 		      100000.,
 		      100000.,
 		      100000000.,
-		      0.9}; 
+		      -0.9}; 
   hfTask->SetD0toKpiCuts(cutsD0);
   
   mgr->AddTask(hfTask);
