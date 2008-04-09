@@ -313,6 +313,14 @@ UInt_t AliTOFPreprocessor::ProcessOnlineDelays()
 	    }
 	    Int_t nNotStatistics = 0; // number of channel with not enough statistics
 	    for (Int_t ich=0;ich<kSize;ich++){
+	      /* check whether channel has been read out during current run.
+		  * if the status is bad it means it has not been read out.
+	          * in this case skip channel in order to not affect the mean */ 
+	      if (((AliTOFChannelOnlineStatus *)fFEEStatus->At(ich))->GetStatus() == AliTOFChannelOnlineStatus::kTOFHWBad){
+   	        AliDebug(2,Form(" Channel %i found bad according to FEEmap, skipping from delay computing",ich));
+	        continue;
+              }
+              AliDebug(2,Form(" Channel %i found ok according to FEEmap, starting delay computing",ich));
 	      TH1S *h1 = new TH1S("h1","h1",kNBins,kXBinmin-0.5,kNBins*1.+kXBinmin-0.5);
 	      for (Int_t ibin=0;ibin<kNBins;ibin++){
 		h1->SetBinContent(ibin+1,fh2->GetBinContent(ich+1,ibin+1));
