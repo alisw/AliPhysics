@@ -10,7 +10,6 @@ SRCS          =  \
 		 AliPHOSRecEmcManager.cxx \
                  AliPHOSClusterizerv2.cxx AliPHOSPIDv1.cxx \
 		 AliPHOSJet.cxx AliPHOSJetFinder.cxx\
-                 AliPHOSFastGlobalReconstruction.cxx \
 		 AliPHOSGridFile.cxx \
 		 AliPHOSTracker.cxx \
 		 AliPHOSRecoParam.cxx \
