@@ -603,8 +603,8 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 							       kTRUE, // check if this is right
 							       kTRUE, // check if this is right
 							       AliAODTrack::kPrimary);
-			aodTrack->SetFlags(esdTrack->GetStatus());
-			aodTrack->ConvertAliPIDtoAODPID();
+			mother->SetFlags(esdTrack->GetStatus());
+			mother->ConvertAliPIDtoAODPID();
 			primary->AddDaughter(mother);
 			mother->ConvertAliPIDtoAODPID();
 		    }
@@ -652,8 +652,8 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 							       kTRUE, // check if this is right
 							       kTRUE, // check if this is right
 							       AliAODTrack::kPrimary);
-			aodTrack->SetFlags(esdTrack->GetStatus());
-			aodTrack->ConvertAliPIDtoAODPID();
+			daughter->SetFlags(esdTrack->GetStatus());
+			daughter->ConvertAliPIDtoAODPID();
 			vkink->AddDaughter(daughter);
 			daughter->ConvertAliPIDtoAODPID();
 		    }
