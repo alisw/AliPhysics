@@ -270,7 +270,7 @@ Double_t AliITSMisalignMaker::GaussCut(Double_t mean,Double_t sigma,Double_t abs
   // random from gaussian with cut on tails
   //
   Double_t val = fRnd.Gaus(mean,sigma);
-  while (TMath::Abs(val)>absMax)
+  while (TMath::Abs(val-mean)>absMax)
     val = fRnd.Gaus(mean,sigma);
   return val;
 }
