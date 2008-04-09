@@ -31,7 +31,7 @@ PARFILE       = $(PACKAGE).par
 lib$(PACKAGE).so: $(OBJS_TTherminator)
 	@echo "Linking" $@ ...
 	@/bin/rm -f $@
-ifeq ($(PLATFORM),macosx)
+ifeq ($(ARCH),macosx)
 	@$(LD) -bundle -undefined $(UNDEFOPT) $(LDFLAGS) $^ -o $@
 else
 	@$(LD) $(SOFLAGS) $(LDFLAGS) $^ -o $@

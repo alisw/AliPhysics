@@ -45,7 +45,7 @@ PARFILE       = $(PACKAGE).par
 lib$(PACKAGE).so: $(OBJS_PWG0base)
 	@echo "Linking" $@ ...
 	@/bin/rm -f $@
-ifeq ($(PLATFORM),macosx)
+ifeq ($(ARCH),macosx)
 	@$(LD) -bundle -undefined $(UNDEFOPT) $(LDFLAGS) $^ -o $@
 else
 	@$(LD) $(SOFLAGS) $(LDFLAGS) $^ -o $@
@@ -109,7 +109,7 @@ OBJS_PWG0dep := $(SRCS_PWG0dep:.cxx=.o)
 libPWG0dep.so: $(OBJS_PWG0dep)
 	@echo "Linking" $@ ...
 	@/bin/rm -f $@
-ifeq ($(PLATFORM),macosx)
+ifeq ($(ARCH),macosx)
 	@$(LD) -bundle -undefined $(UNDEFOPT) $(LDFLAGS) $^ -o $@
 else
 	@$(LD) $(SOFLAGS) $(LDFLAGS) $^ -o $@
@@ -132,7 +132,7 @@ OBJS_PWG0selectors := $(SRCS_PWG0selectors:.cxx=.o)
 libPWG0selectors.so: $(OBJS_PWG0selectors)
 	@echo "Linking" $@ ...
 	@/bin/rm -f $@
-ifeq ($(PLATFORM),macosx)
+ifeq ($(ARCH),macosx)
 	@$(LD) -bundle -undefined $(UNDEFOPT) $(LDFLAGS) $^ -o $@
 else
 	@$(LD) $(SOFLAGS) $(LDFLAGS) $^ -o $@
