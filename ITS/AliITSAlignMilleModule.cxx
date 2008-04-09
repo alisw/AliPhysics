@@ -170,7 +170,7 @@ void AliITSAlignMilleModule::AddSensitiveVolume(UShort_t voluid)
   fNSensVol++;
 }
 //-------------------------------------------------------------
-Bool_t AliITSAlignMilleModule::IsIn(UShort_t voluid) 
+Bool_t AliITSAlignMilleModule::IsIn(UShort_t voluid) const 
 {
   /// check if voluid is defined
   if (!voluid) return kFALSE; // only positive voluid are accepted

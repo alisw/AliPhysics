@@ -10,8 +10,8 @@
 // Authors: Marcello Lunardon 
 
 /* $Id$  */ 
-#include <TString.h> 
-#include <TObject.h> 
+//#include <TString.h> 
+//#include <TObject.h> 
 #include <TNamed.h> 
 
 #define ITSMILLE_NSENSVOL    2198
@@ -46,7 +46,7 @@ public:
   static UShort_t GetVolumeIDFromIndex(Int_t index);
 
   // methods
-  Bool_t    IsIn(UShort_t volid);
+  Bool_t    IsIn(UShort_t volid) const;
   TGeoHMatrix *GetSensitiveVolumeMatrix(UShort_t voluid);
   TGeoHMatrix *GetSensitiveVolumeOrigGlobalMatrix(UShort_t voluid);
   TGeoHMatrix *GetSensitiveVolumeModifiedMatrix(UShort_t voluid, Double_t *deltalocal); 
