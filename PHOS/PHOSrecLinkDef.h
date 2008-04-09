@@ -17,7 +17,6 @@
 #pragma link C++ class AliPHOSClusterizerv2+;
 #pragma link C++ class AliPHOSEvalRecPoint+;
 #pragma link C++ class AliPHOSPIDv1+;
-#pragma link C++ class AliPHOSFastGlobalReconstruction+;
 #pragma link C++ class AliPHOSJet+;
 #pragma link C++ class AliPHOSJetFinder+;
 #pragma link C++ class AliPHOSGridFile+;
