@@ -846,12 +846,12 @@ const AliTRDCalPID *AliTRDcalibDB::GetPIDObject(const Int_t method)
 
   switch(method) {
     case 0: return dynamic_cast<const AliTRDCalPID *> 
-		               (GetCachedCDBObject(kIDPIDNN));
-    case 1: return dynamic_cast<const AliTRDCalPID *>
 		               (GetCachedCDBObject(kIDPIDLQ));
+    case 1: return dynamic_cast<const AliTRDCalPID *>
+		               (GetCachedCDBObject(kIDPIDNN));
   }
 
-  return 0;
+  return 0x0;
 
 }
 

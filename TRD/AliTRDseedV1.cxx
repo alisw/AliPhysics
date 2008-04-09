@@ -221,13 +221,15 @@ void AliTRDseedV1::CookdEdx(Int_t nslices)
 	} // End of loop over clusters
 
 	// calculate mean charge per slice
-	for(int is=0; is<nslices; is++) if(nclusters[is]) fdEdx[is] /= nclusters[is];
+	for(int is=0; is<nslices; is++){ 
+    if(nclusters[is]) fdEdx[is] /= nclusters[is];
+  }
 }
 
 //____________________________________________________________________
 Float_t AliTRDseedV1::GetdQdl(Int_t ic) const
 {
-	return fClusters[ic] ? TMath::Abs(fClusters[ic]->GetQ()) /fdX / TMath::Sqrt(1. + fYfit[1]*fYfit[1] + fZfit[1]*fZfit[1]) : 0.;
+	return fClusters[ic] ? TMath::Abs(fClusters[ic]->GetQ()) /fdX / TMath::Sqrt(1. + fYfit[1]*fYfit[1] + fZref[1]*fZref[1]) : 0.;
 }
 
 //____________________________________________________________________
@@ -256,7 +258,8 @@ Double_t* AliTRDseedV1::GetProbability()
     AliError("No access to AliTRDCalPID object");
     return 0x0;
   }
-	
+	//AliInfo(Form("Method[%d] : %s", AliTRDReconstructor::RecoParam()->GetPIDMethod(), pd->IsA()->GetName()));
+
 	// calculate tracklet length TO DO
   Float_t length = (AliTRDgeometry::AmThick() + AliTRDgeometry::DrThick());
   /// TMath::Sqrt((1.0 - fSnp[iPlane]*fSnp[iPlane]) / (1.0 + fTgl[iPlane]*fTgl[iPlane]));
