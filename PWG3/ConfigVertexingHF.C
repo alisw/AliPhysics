@@ -34,7 +34,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   //--- check the settings
   vHF->PrintStatus();
   //--- verbose
-  vHF->SetDebug(1);
+  vHF->SetDebug(0);
 
  
   return vHF;
