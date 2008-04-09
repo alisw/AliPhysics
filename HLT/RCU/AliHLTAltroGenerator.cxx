@@ -344,8 +344,8 @@ int AliHLTAltroGenerator::EncodeData(AliHLTUInt8_t* pBuffer, int size)
       int startTime=fpSimData->At(dataPos++);
       int time=startTime;
       for (; time<startTime+bunchLength; time++) {
-	//iResult=encoder.AddSignal(fpSimData->At(dataPos++), time);
-	iResult=encoder.AddChannelSignal(fpSimData->At(dataPos++), time, channelAddress);
+	iResult=encoder.AddSignal(fpSimData->At(dataPos++), time);
+	//iResult=encoder.AddChannelSignal(fpSimData->At(dataPos++), time, channelAddress);
       }
       assert(time-1==fpSimData->At(dataPos));
       dataPos++; // DO NOT PUT INTO ASSERT
@@ -359,10 +359,10 @@ int AliHLTAltroGenerator::EncodeData(AliHLTUInt8_t* pBuffer, int size)
       assert(channelAddress==fpSimData->At(dataPos));
       dataPos++; // DO NOT PUT INTO ASSERT
     }
-    //encoder.SetChannel(channelAddress);
+    encoder.SetChannel(channelAddress);
   }
   if (iResult>=0 && channelAddress>=0) {
-    encoder.SetChannel(channelAddress);
+    //encoder.SetChannel(channelAddress);
   }
 
   if (iResult>=0) {

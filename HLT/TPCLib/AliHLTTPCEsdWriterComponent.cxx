@@ -1,28 +1,28 @@
 // @(#) $Id$
 
-/**************************************************************************
- * This file is property of and copyright by the ALICE HLT Project        * 
- * ALICE Experiment at CERN, All rights reserved.                         *
- *                                                                        *
- * Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
- *                  for The ALICE HLT Project.                            *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+//**************************************************************************
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//*                                                                        *
+//* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
+//*                  for The ALICE HLT Project.                            *
+//*                                                                        *
+//* Permission to use, copy, modify and distribute this software and its   *
+//* documentation strictly for non-commercial purposes is hereby granted   *
+//* without fee, provided that the above copyright notice appears in all   *
+//* copies and that both the copyright notice and this permission notice   *
+//* appear in the supporting documentation. The authors make no claims     *
+//* about the suitability of this software for any purpose. It is          *
+//* provided "as is" without express or implied warranty.                  *
+//**************************************************************************
 
 /** @file   AliHLTTPCEsdWriterComponent.cxx
     @author Matthias Richter
     @date   
     @brief  Writer component to store tracks of the HLT TPC conformal
             mapping tracker in the AliESD format
+*/
 
-                                                                          */
 // see header file for class documentation
 // or
 // refer to README to build package
@@ -179,7 +179,7 @@ int AliHLTTPCEsdWriterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* pESD,
 	  if (minslice >=-1 && minslice<AliHLTTPCTransform::GetNSlice()) {
 	    if (minslice!=maxslice) {
 	      HLTWarning("data from multiple sectors in one block: "
-			 "possible missmatch in treatment of local coordinate system");
+			 "possible mismatch in treatment of local coordinate system");
 	    }
 	    AliHLTTPCTrackArray tracks;
 	    inPtr=(AliHLTTPCTrackletData*)iter->fPtr;
@@ -226,7 +226,7 @@ int AliHLTTPCEsdWriterComponent::Tracks2ESD(AliHLTTPCTrackArray* pTracks, AliESD
 	  HLTError("conversion to AliKalmanTrack failed for track %d of %d", i, pTracks->GetNTracks());
 	}
       } else {
-	HLTError("internal missmatch in array");
+	HLTError("internal mismatch in array");
 	iResult=-EFAULT;
       }
     }
@@ -273,7 +273,7 @@ void AliHLTTPCEsdWriterComponent::AliConverter::GetOutputDataSize(unsigned long&
 {
   // see header file for class documentation
   constBase=1000000;
-  inputMultiplier=1.0;
+  inputMultiplier=5.0;
 }
 
 int AliHLTTPCEsdWriterComponent::AliConverter::DoInit(int argc, const char** argv)

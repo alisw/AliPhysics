@@ -1,32 +1,26 @@
 // $Id$
 
-/**************************************************************************
- * This file is property of and copyright by the ALICE HLT Project        * 
- * ALICE Experiment at CERN, All rights reserved.                         *
- *                                                                        *
- * Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
- *                  for The ALICE HLT Project.                            *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+//**************************************************************************
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//*                                                                        *
+//* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
+//*                  for The ALICE HLT Project.                            *
+//*                                                                        *
+//* Permission to use, copy, modify and distribute this software and its   *
+//* documentation strictly for non-commercial purposes is hereby granted   *
+//* without fee, provided that the above copyright notice appears in all   *
+//* copies and that both the copyright notice and this permission notice   *
+//* appear in the supporting documentation. The authors make no claims     *
+//* about the suitability of this software for any purpose. It is          *
+//* provided "as is" without express or implied warranty.                  *
+//**************************************************************************
 
 /** @file   AliHLTSystem.cxx
     @author Matthias Richter
     @date   
     @brief  Implementation of HLT module management.
 */
-
-// see header file for class documentation
-// or
-// refer to README to build package
-// or
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt   
 
 #if __GNUC__>= 3
 using namespace std;
@@ -43,6 +37,8 @@ using namespace std;
 #include "AliHLTModuleAgent.h"
 #include "AliHLTOfflineInterface.h"
 #include "AliHLTDataSource.h"
+#include "AliHLTOUT.h"
+#include "AliHLTOUTHandler.h"
 #include <TObjArray.h>
 #include <TObjString.h>
 #include <TStopwatch.h>
@@ -59,6 +55,7 @@ const char* AliHLTSystem::fgkHLTDefaultLibs[]= {
   //"libAliHLTPHOS.so",
   //"libAliHLTMUON.so",
   "libAliHLTTRD.so",
+  "libAliHLTTrigger.so",
   NULL
 };
 
@@ -199,7 +196,7 @@ int AliHLTSystem::BuildTaskList(AliHLTConfiguration* pConf)
     AliHLTTask* pTask=NULL;
     if ((pTask=FindTask(pConf->GetName()))!=NULL) {
       if (pTask->GetConf()!=pConf) {
-	HLTError("configuration missmatch, there is already a task with configuration name \"%s\", but it is different. Most likely configuration %p is not registered properly", pConf->GetName(), pConf);
+	HLTError("configuration mismatch, there is already a task with configuration name \"%s\", but it is different. Most likely configuration %p is not registered properly", pConf->GetName(), pConf);
 	iResult=-EEXIST;
       }
       // task for this configuration exists, terminate
@@ -699,6 +696,109 @@ int AliHLTSystem::FillESD(int eventNo, AliRunLoader* runLoader, AliESDEvent* esd
     HLTError("missing run loader/ESD instance(s)");
     iResult=-EINVAL;
   }
+  return iResult;
+}
+
+int AliHLTSystem::ProcessHLTOUT(AliHLTOUT* pHLTOUT, AliESDEvent* esd)
+{
+  // see header file for class documentation
+  int iResult=0;
+  if (!pHLTOUT) return -EINVAL;
+
+  HLTDebug("processing %d HLT data blocks", pHLTOUT->GetNofDataBlocks());
+  AliHLTOUT::AliHLTOUTHandlerListEntryVector esdHandlers;
+  for (iResult=pHLTOUT->SelectFirstDataBlock();
+       iResult>=0;
+       iResult=pHLTOUT->SelectNextDataBlock()) {
+    AliHLTComponentDataType dt=kAliHLTVoidDataType;
+    AliHLTUInt32_t spec=kAliHLTVoidDataSpec;
+    pHLTOUT->GetDataBlockDescription(dt, spec);
+    AliHLTOUTHandler* pHandler=pHLTOUT->GetHandler();
+    AliHLTModuleAgent::AliHLTOUTHandlerType handlerType=pHLTOUT->GetDataBlockHandlerType();
+    if (!pHandler && (dt!=kAliHLTDataTypeESDObject || dt!=kAliHLTDataTypeESDTree)) {
+      handlerType=AliHLTModuleAgent::kEsd;
+    }
+    const char* pMsg="invalid";
+    switch (handlerType) {
+    case AliHLTModuleAgent::kEsd:
+      {
+	if (pHandler) {
+	  // preprocess and write later
+	  AliHLTOUT::AliHLTOUTLockGuard g(pHLTOUT);
+	  pHandler->ProcessData(pHLTOUT);
+	  pHLTOUT->InsertHandler(esdHandlers, pHLTOUT->GetDataBlockHandlerDesc());
+	} else {
+	  // write directly
+	  const AliHLTUInt8_t* pBuffer=NULL;
+	  AliHLTUInt32_t size=0;
+	  if (pHLTOUT->GetDataBuffer(pBuffer, size)>=0) {
+	    pHLTOUT->WriteESD(pBuffer, size, dt);
+	    pHLTOUT->ReleaseDataBuffer(pBuffer);
+	  }
+	}
+      }
+      break;
+    case AliHLTModuleAgent::kRawReader:
+      // handled in the AliRawReaderHLT
+      break;
+    case AliHLTModuleAgent::kRawStream:
+      HLTWarning("HLTOUT handler type 'kRawStream' not yet implemented: agent %s, data type %s, specification %#x",
+		 pMsg, pHLTOUT->GetAgent()?pHLTOUT->GetAgent()->GetModuleId():"invalid",
+		 AliHLTComponent::DataType2Text(dt).c_str(), spec);
+      break;
+    case AliHLTModuleAgent::kChain:
+      HLTWarning("HLTOUT handler type 'kChain' not yet implemented: agent %s, data type %s, specification %#x",
+		 pMsg, pHLTOUT->GetAgent()?pHLTOUT->GetAgent()->GetModuleId():"invalid",
+		 AliHLTComponent::DataType2Text(dt).c_str(), spec);
+      break;
+    case AliHLTModuleAgent::kProprietary:
+      HLTDebug("processing proprietary data: agent %s, data type %s, specification %#x",
+		 pMsg, pHLTOUT->GetAgent()?pHLTOUT->GetAgent()->GetModuleId():"invalid",
+		 AliHLTComponent::DataType2Text(dt).c_str(), spec);
+      if (pHandler) {
+	AliHLTOUT::AliHLTOUTLockGuard g(pHLTOUT);
+	int res=pHandler->ProcessData(pHLTOUT);
+	if (res<0) {
+	  HLTWarning("processing proprietary data failed (%d): agent %s, data type %s, specification %#x",
+		     res, pMsg, pHLTOUT->GetAgent()?pHLTOUT->GetAgent()->GetModuleId():"invalid",
+		     AliHLTComponent::DataType2Text(dt).c_str(), spec);
+	}
+      }
+      break;
+    case AliHLTModuleAgent::kUnknownOutput:
+      pMsg="unknown";
+      // fall trough intended
+    default:
+      HLTWarning("%s handler type: agent %s, data type %s, specification %#x, ... skipping data block",
+		 pMsg, pHLTOUT->GetAgent()?pHLTOUT->GetAgent()->GetModuleId():"invalid",
+		 AliHLTComponent::DataType2Text(dt).c_str(), spec);
+    }
+  }
+  // TODO: the return value of SelectFirst/NextDataBlock must be
+  // changed in order to avoid this check
+  if (iResult==-ENOENT) iResult=0;
+
+  AliHLTOUT::AliHLTOUTHandlerListEntryVector::iterator esdHandler;
+  // write all postponed esd data blocks
+  // first come first serve: the ESD of the first handler is also filled into
+  // the main ESD. Has to be changed later.
+  AliESDEvent* pMasterESD=esd;
+  for (esdHandler=esdHandlers.begin(); esdHandler!=esdHandlers.end() && iResult>=0; esdHandler++) {
+    AliHLTOUTHandler* pHandler=*esdHandler;
+    const AliHLTUInt8_t* pBuffer=NULL;
+    AliHLTUInt32_t size=0;
+    if ((size=pHandler->GetProcessedData(pBuffer))>0) {
+      AliHLTModuleAgent::AliHLTOUTHandlerDesc desc=*esdHandler;
+      AliHLTComponentDataType dt=desc;
+      pHLTOUT->WriteESD(pBuffer, size, dt);
+      if (pMasterESD) {
+	pHLTOUT->WriteESD(pBuffer, size, dt, pMasterESD);
+	pMasterESD=NULL;
+      }
+      pHandler->ReleaseProcessedData(pBuffer, size);
+    }
+  }
+
   return iResult;
 }
 

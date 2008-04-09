@@ -109,7 +109,7 @@ int AliHLTOUT::FindAndSelectDataBlock()
 	(fSearchHandlerType==AliHLTModuleAgent::kUnknownOutput || FindHandlerDesc(fCurrent->GetIndex())==fSearchHandlerType)) {
       iResult=fCurrent->GetIndex();
       // TODO: check the byte order on the current system and the byte order of the
-      // data block, print warning when missmatch and user did not check
+      // data block, print warning when mismatch and user did not check
       //AliHLTOUTByteOrder blockBO=CheckByteOrder();
       CheckByteOrder();
       /*
@@ -121,7 +121,7 @@ int AliHLTOUT::FindAndSelectDataBlock()
       ClearStatusFlag(kByteOrderChecked);
 
       // TODO: check the alignment on the current system and the alignment of the
-      // data block, print warning when missmatch and user did not check
+      // data block, print warning when mismatch and user did not check
       ClearStatusFlag(kAlignmentChecked);
 
       break;
@@ -141,6 +141,20 @@ int AliHLTOUT::GetDataBlockDescription(AliHLTComponentDataType& dt, AliHLTUInt32
     spec=(*fCurrent);
   }
   return iResult;
+}
+
+const AliHLTOUT::AliHLTOUTHandlerListEntry& AliHLTOUT::GetDataBlockHandlerDesc()
+{
+  // see header file for class documentation
+  return FindHandlerDesc(GetDataBlockIndex());
+}
+
+AliHLTModuleAgent::AliHLTOUTHandlerType AliHLTOUT::GetDataBlockHandlerType()
+{
+  // see header file for class documentation
+  AliHLTModuleAgent::AliHLTOUTHandlerDesc desc=FindHandlerDesc(GetDataBlockIndex());
+  AliHLTModuleAgent::AliHLTOUTHandlerType type=desc;
+  return type;
 }
 
 AliHLTUInt32_t AliHLTOUT::GetDataBlockIndex()
@@ -176,12 +190,27 @@ int AliHLTOUT::ReleaseDataBuffer(const AliHLTUInt8_t* pBuffer)
   return iResult;  
 }
 
+AliHLTModuleAgent* AliHLTOUT::GetAgent()
+{
+  // see header file for class documentation
+  AliHLTModuleAgent* pAgent=NULL;
+  pAgent=FindHandlerDesc(GetDataBlockIndex());
+  return pAgent;
+}
+
 AliHLTOUTHandler* AliHLTOUT::GetHandler()
 {
   // see header file for class documentation
   AliHLTOUTHandler* pHandler=NULL;
   pHandler=FindHandlerDesc(GetDataBlockIndex());
   return pHandler;
+}
+
+int AliHLTOUT::WriteESD(const AliHLTUInt8_t* /*pBuffer*/, AliHLTUInt32_t /*size*/, AliHLTComponentDataType /*dt*/, AliESDEvent* /*tgtesd*/) const
+{
+  // see header file for class documentation
+  HLTWarning("method not implemented in base class");
+  return -ENOSYS;
 }
 
 int AliHLTOUT::AddBlockDescriptor(const AliHLTOUTBlockDescriptor desc)
@@ -231,7 +260,7 @@ int AliHLTOUT::InitHandlers()
       AliHLTModuleAgent::AliHLTOUTHandlerDesc handlerDesc;
       if (pAgent->GetHandlerDescription(dt, spec, handlerDesc)>0) {
 	AliHLTOUTHandlerListEntry entry(pAgent->GetOutputHandler(dt, spec), handlerDesc, pAgent, GetDataBlockIndex());
-	InsertHandler(entry);
+	InsertHandler(fDataHandlers, entry);
 	remnants.pop_back();
 	break;
       }
@@ -268,17 +297,17 @@ int AliHLTOUT::InitHandlers()
   return iResult;
 }
 
-int AliHLTOUT::InsertHandler(const AliHLTOUTHandlerListEntry &entry)
+int AliHLTOUT::InsertHandler(AliHLTOUTHandlerListEntryVector& list, const AliHLTOUTHandlerListEntry &entry)
 {
   // see header file for class documentation
   int iResult=0;
-  AliHLTOUTHandlerListEntryVector::iterator element=fDataHandlers.begin();
-  while (element!=fDataHandlers.end()) {
+  AliHLTOUTHandlerListEntryVector::iterator element=list.begin();
+  while (element!=list.end()) {
     if (entry==(*element)) break;
     element++;
   }
-  if (element==fDataHandlers.end()) {
-    fDataHandlers.push_back(entry);
+  if (element==list.end()) {
+    list.push_back(entry);
   } else {
     element->AddIndex(const_cast<AliHLTOUTHandlerListEntry&>(entry));
   }

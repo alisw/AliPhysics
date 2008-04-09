@@ -1,32 +1,26 @@
 // $Id$
 
-/**************************************************************************
- * This file is property of and copyright by the ALICE HLT Project        * 
- * ALICE Experiment at CERN, All rights reserved.                         *
- *                                                                        *
- * Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
- *                  for The ALICE HLT Project.                            *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+//**************************************************************************
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//*                                                                        *
+//* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
+//*                  for The ALICE HLT Project.                            *
+//*                                                                        *
+//* Permission to use, copy, modify and distribute this software and its   *
+//* documentation strictly for non-commercial purposes is hereby granted   *
+//* without fee, provided that the above copyright notice appears in all   *
+//* copies and that both the copyright notice and this permission notice   *
+//* appear in the supporting documentation. The authors make no claims     *
+//* about the suitability of this software for any purpose. It is          *
+//* provided "as is" without express or implied warranty.                  *
+//**************************************************************************
 
 /** @file   AliHLTOUTComponent.cxx
     @author Matthias Richter
     @date   
     @brief  The HLTOUT data sink component similar to HLTOUT nodes
 */
-
-// see header file for class documentation
-// or
-// refer to README to build package
-// or
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 #if __GNUC__>= 3
 using namespace std;
@@ -42,6 +36,9 @@ using namespace std;
 #include "AliRawDataHeader.h" // Common Data Header 
 #include <TDatime.h> // seed for TRandom
 #include <TRandom.h> // random int generation for DDL no
+#include <TFile.h>
+#include <TTree.h>
+#include <TArrayC.h>
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTOUTComponent)
@@ -53,7 +50,10 @@ AliHLTOUTComponent::AliHLTOUTComponent()
   fNofDDLs(10),
   fIdFirstDDL(7680), // 0x1e<<8
   fBuffer(),
-  fpLibManager(NULL)
+  fpLibManager(NULL),
+  fpDigitFile(NULL),
+  fpDigitTree(NULL),
+  fppDigitArrays(NULL)
 {
   // see header file for class documentation
   // or
@@ -142,7 +142,7 @@ int AliHLTOUTComponent::DoInit( int argc, const char** argv )
 	HLTDebug("HOMER writer %p added", pWriter);
 	fWriters.push_back(pWriter);
       } else {
-	HLTError("can nor open HOMER writer");
+	HLTError("can not open HOMER writer");
 	iResult=-ENODEV;
 	break;
       }
@@ -169,6 +169,25 @@ int AliHLTOUTComponent::DoDeinit()
       if (*element!=NULL) fpLibManager->DeleteWriter((AliHLTHOMERWriter*)(*element));
       element=fWriters.erase(element);
     }
+  }
+
+  if (fpDigitTree) {
+    delete fpDigitTree;
+    fpDigitTree=NULL;
+  }
+
+  if (fpDigitFile) {
+    fpDigitFile->Close();
+    delete fpDigitFile;
+    fpDigitFile=NULL;
+  }
+
+  if (fppDigitArrays) {
+    for (int i=0; i<fNofDDLs; i++) {
+      if (fppDigitArrays[i]) delete fppDigitArrays[i];
+    }
+    delete[] fppDigitArrays;
+    fppDigitArrays=NULL;
   }
   
   return iResult;
@@ -197,7 +216,7 @@ int AliHLTOUTComponent::DumpEvent( const AliHLTComponentEventData& evtData,
       memcpy(&id, blocks[n].fDataType.fID, sizeof(homer_uint64));
       memcpy(((AliHLTUInt8_t*)&origin)+sizeof(homer_uint32), blocks[n].fDataType.fOrigin, sizeof(homer_uint32));
       homerDescriptor.SetType(AliHLTOUT::ByteSwap64(id));
-      homerDescriptor.SetSubType1(AliHLTOUT::ByteSwap32(origin));
+      homerDescriptor.SetSubType1(AliHLTOUT::ByteSwap64(origin));
       homerDescriptor.SetSubType2(blocks[n].fSpecification);
       homerDescriptor.SetBlockSize(blocks[n].fSize);
       int writerNo=ShuffleWriters(fWriters, blocks[n].fSize);
@@ -241,12 +260,13 @@ int AliHLTOUTComponent::FillESD(int eventNo, AliRunLoader* runLoader, AliESDEven
     int bufferSize=0;
     
     if ((bufferSize=FillOutputBuffer(eventNo, fWriters[*ddlno], pBuffer))>0) {
-      if (fgOptions&kWriteDigits) WriteDigits(eventNo, runLoader, *ddlno, pBuffer, bufferSize);
+      if (fgOptions&kWriteDigits) WriteDigitArray(*ddlno, pBuffer, bufferSize);
       if (fgOptions&kWriteRawFiles) WriteRawFile(eventNo, runLoader, *ddlno, pBuffer, bufferSize);
     }
     fWriters[*ddlno]->Clear();
     ddlno++;
   }
+  if (fgOptions&kWriteDigits) WriteDigits(eventNo, runLoader);
   return iResult;
 }
 
@@ -334,10 +354,67 @@ int AliHLTOUTComponent::FillOutputBuffer(int eventNo, AliHLTMonitoringWriter* pW
   return iResult;
 }
 
-int AliHLTOUTComponent::WriteDigits(int /*eventNo*/, AliRunLoader* /*runLoader*/, int /*hltddl*/, const AliHLTUInt8_t* /*pBuffer*/, unsigned int /*bufferSize*/)
+int AliHLTOUTComponent::WriteDigitArray(int hltddl, const AliHLTUInt8_t* pBuffer, unsigned int bufferSize)
 {
   // see header file for class documentation
   int iResult=0;
+  assert(hltddl<fNofDDLs);
+  if (hltddl>=fNofDDLs) return -ERANGE;
+
+  if (!fppDigitArrays) {
+    fppDigitArrays=new TArrayC*[fNofDDLs];
+    if (fppDigitArrays) {
+      for (int i=0; i<fNofDDLs; i++) {
+	fppDigitArrays[i]=new TArrayC(0);
+      }
+    }
+  }
+  if (fppDigitArrays && fppDigitArrays[hltddl]) {
+    fppDigitArrays[hltddl]->Set(bufferSize, reinterpret_cast<const Char_t*>(pBuffer));
+  } else {
+    iResult=-ENOMEM;    
+  }
+  return iResult;
+}
+
+int AliHLTOUTComponent::WriteDigits(int /*eventNo*/, AliRunLoader* /*runLoader*/)
+{
+  // see header file for class documentation
+  int iResult=0;
+  const char* digitFileName="HLT.Digits.root";
+  if (!fpDigitFile) {
+    fpDigitFile=new TFile(digitFileName, "RECREATE");
+  }
+  if (fpDigitFile && !fpDigitFile->IsZombie()) {
+    if (!fpDigitTree) {
+      fpDigitTree=new TTree("rawhltout","HLTOUT raw data");
+      if (fpDigitTree && fppDigitArrays) {
+	for (int i=0; i<fNofDDLs; i++) {
+	  const char* branchName=AliDAQ::DdlFileName("HLT", i);
+	  if (fppDigitArrays[i]) fpDigitTree->Branch(branchName, "TArrayC", &fppDigitArrays[i], 32000/*just as the default*/, 0);
+	}
+      }
+    }
+    if (fpDigitTree) {
+      int res=fpDigitTree->Fill();
+      HLTDebug("writing digit tree: %d", res);
+      fpDigitFile->cd();
+      res=fpDigitTree->Write("",TObject::kOverwrite);
+      HLTDebug("writing digit tree: %d", res);
+      if (fppDigitArrays) for (int i=0; i<fNofDDLs; i++) {
+	if (fppDigitArrays[i]) fppDigitArrays[i]->Set(0);
+      }
+    }
+  } else {
+    const char* errorMsg="";
+    if (GetEventCount()==5) {
+      errorMsg=" (suppressing further error messages)";
+    }
+    if (GetEventCount()<5) {
+      HLTError("can not open HLT digit file %s%s", digitFileName, errorMsg);
+    }
+    iResult=-EBADF;
+  }
   return iResult;
 }
 

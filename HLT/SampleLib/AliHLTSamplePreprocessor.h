@@ -11,7 +11,7 @@
  * @file   AliHLTSamplePreprocessor.h
  * @author Kenneth Aamodt, Sebastian Bablok
  * @date   2007-12-06
- * @brief  HLT Preprocessor plugin for the AliHLTComp library
+ * @brief  HLT Preprocessor plugin for the AliHLTSample library
  */
 
 // see below for class documentation
@@ -24,9 +24,7 @@
 
 /**
  * @class AliHLTSamplePreprocessor
- * HLT preprocessor for the libAliHLTComp module.
- *
- * @author Jenny Wagner, Matthias Richter
+ * A sample HLT preprocessor.
  *
  * @date 2008-01-22
  */

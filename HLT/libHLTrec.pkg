@@ -3,10 +3,13 @@
 
 include $(MODDIR)/hlt.conf
 
-LIBHLTREC_VERSION := 0
+LIBHLTREC_VERSION := 1
 
 CLASS_HDRS:=  	AliHLTReconstructor.h \
 		AliRawReaderHLT.h \
+		AliHLTOUTHomerCollection.h \
+		AliHLTEsdManager.h \
+		AliHLTOUTDigitReader.h \
 		AliHLTOUTRawReader.h
 
 MODULE_SRCS:= 	AliHLTDynamicAliLog.cxx \

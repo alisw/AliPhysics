@@ -1,20 +1,20 @@
 // $Id$
 
-/**************************************************************************
- * This file is property of and copyright by the ALICE HLT Project        * 
- * ALICE Experiment at CERN, All rights reserved.                         *
- *                                                                        *
- * Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
- *                  for The ALICE HLT Project.                            *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+//**************************************************************************
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//*                                                                        *
+//* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
+//*                  for The ALICE HLT Project.                            *
+//*                                                                        *
+//* Permission to use, copy, modify and distribute this software and its   *
+//* documentation strictly for non-commercial purposes is hereby granted   *
+//* without fee, provided that the above copyright notice appears in all   *
+//* copies and that both the copyright notice and this permission notice   *
+//* appear in the supporting documentation. The authors make no claims     *
+//* about the suitability of this software for any purpose. It is          *
+//* provided "as is" without express or implied warranty.                  *
+//**************************************************************************
 
 /** @file   AliHLTSimulation.cxx
     @author Matthias Richter
@@ -122,7 +122,7 @@ int AliHLTSimulation::Init(AliRunLoader* pRunLoader, const char* options)
 	    int count=0;
 	    for (; fpRawReader->NextEvent(); count++);
 	    if (count!=pRunLoader->GetNumberOfEvents()) {
-	      AliError(Form("missmatch in event count: runloader %d, rawreader %d; ignoring rawreader", 
+	      AliError(Form("mismatch in event count: runloader %d, rawreader %d; ignoring rawreader", 
 			    pRunLoader->GetNumberOfEvents(), count));
 	      count=0;
 	    }
@@ -184,7 +184,7 @@ int AliHLTSimulation::Run(AliRunLoader* pRunLoader)
     fpSystem->FillESD(0, pRunLoader, NULL);
     for (int i=1; i<nEvents; i++) {
       if (fpRawReader && !fpRawReader->NextEvent()) {
-	AliError("missmatch in event count, rawreader corrupted");
+	AliError("mismatch in event count, rawreader corrupted");
 	break;
       }
       fpSystem->Reconstruct(1, pRunLoader, fpRawReader);

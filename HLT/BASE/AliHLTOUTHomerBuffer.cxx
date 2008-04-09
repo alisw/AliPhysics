@@ -126,7 +126,7 @@ int AliHLTOUTHomerBuffer::ScanReader(AliHLTMonitoringReader* pReader, AliHLTUInt
 
     // first check if the offset allows to add all data blocks without exceeding the
     // range
-    while (nofBlocks<tmp1 && tmp2>0) {
+    while (nofBlocks>tmp1 && tmp2>0) {
       if (tmp2&0x1) {
 	HLTError("index range %#x exceeded for %d data blocks", nofBlocks, offset);
 	iResult=-ERANGE;

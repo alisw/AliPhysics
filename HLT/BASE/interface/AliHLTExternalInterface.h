@@ -14,6 +14,8 @@
 
 #include <AliHLTDataTypes.h>
 class AliHLTSystem;
+class AliHLTOUT;
+class AliESDEvent;
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -157,6 +159,17 @@ int AliHLT_C_GetOutputSize( AliHLTComponentHandle, unsigned long* constBase, dou
  * @ingroup alihlt_system_interface
  */
 int AliHLTSystemSetOptions(AliHLTSystem*, const char*);
+
+/**
+ * Process the HLTOUT data with the specified system instance.
+ * The function is introduced for the sake of backward compatibility.
+ * Called from AliHLTReconstructor, which loads the function dynamically.
+ * @return neg. error code if failed                                     <br>
+ *         -EFAULT    type cast failed                                   <br>
+ *         -EINVAL    invalid parameter
+ * @ingroup alihlt_system_interface
+ */
+int AliHLTSystemProcessHLTOUT(AliHLTSystem* pInstance, AliHLTOUT* pHLTOUT, AliESDEvent* esd);
 
 #ifdef __cplusplus
 }

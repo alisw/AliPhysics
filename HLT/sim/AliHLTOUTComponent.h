@@ -2,9 +2,9 @@
 
 #ifndef ALIHLTOUTCOMPONENT_H
 #define ALIHLTOUTCOMPONENT_H
-/* This file is property of and copyright by the ALICE HLT Project        * 
- * ALICE Experiment at CERN, All rights reserved.                         *
- * See cxx source for full Copyright notice                               */
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
 
 /** @file   AliHLTOUTComponent.h
     @author Matthias Richter
@@ -22,6 +22,8 @@
 
 class AliHLTHOMERLibManager;
 class AliHLTMonitoringWriter;
+class TFile;
+class TTree;
 typedef vector<AliHLTMonitoringWriter*> AliHLTMonitoringWriterPVector;
 
 /**
@@ -152,15 +154,20 @@ class AliHLTOUTComponent : public AliHLTOfflineDataSink  {
   int FillOutputBuffer(int eventNo, AliHLTMonitoringWriter* pWriter, const AliHLTUInt8_t* &pBuffer);
 
   /**
+   * Write data for a DDL link.
+   * @param hltddl     Number of DDL link within the range of HLT
+   * @param pBuffer    buffer to write
+   * @param bufferSize size of the buffer
+   */
+  int WriteDigitArray(int hltddl, const AliHLTUInt8_t* pBuffer, unsigned int bufferSize);
+
+  /**
    * Write the digits for one DDL
    * @param eventNo    number of the event
    * @param runLoader  AliRoot run loader instance
-   * @param hltddl     Number of DDL link within the range of HLT
-   * @param pBuffer    buffer to write
-   * @param size       size of the buffer
    * @return neg. error if failed
    */
-  int WriteDigits(int eventNo, AliRunLoader* runLoader, int hltddl, const AliHLTUInt8_t* pBuffer, unsigned int size);
+  int WriteDigits(int eventNo, AliRunLoader* runLoader);
 
   /**
    * Write the raw file for one DDL
@@ -191,6 +198,15 @@ class AliHLTOUTComponent : public AliHLTOfflineDataSink  {
   /** global options for all instances */
   static int fgOptions; //! transient
 
-  ClassDef(AliHLTOUTComponent, 1)
+  /** the root file for the HLT 'digit' output */
+  TFile* fpDigitFile; //!transient
+
+  /** the tree for the HLT 'digit' output */
+  TTree* fpDigitTree; //!transient
+
+  /** array of TArrayC output buffers and branches */
+  TArrayC** fppDigitArrays; //!transient
+
+  ClassDef(AliHLTOUTComponent, 2)
 };
 #endif

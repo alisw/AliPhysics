@@ -54,6 +54,8 @@
 #include "AliHLTTPCSpacePointData.h"
 //#include "AliHLTTPCTrackArray.h"
 #include "AliHLTTPCFileHandler.h"
+#include "AliHLTTPCMapping.h"
+#include "AliHLTAltroEncoder.h"
 
 #if __GNUC__ >= 3
 using namespace std;
@@ -619,6 +621,88 @@ AliHLTTPCDigitRowData * AliHLTTPCFileHandler::AliDigits2Memory(UInt_t & nrow,Int
   assert((Byte_t*)tempPt==((Byte_t*)data)+bufferSize);
   delete [] ndigits;
   return data;
+}
+
+int AliHLTTPCFileHandler::AliDigits2Altro(Int_t event, Byte_t* tgtBuffer, UInt_t tgtSize)
+{
+  //Read data from AliROOT file into memory, and store it in the ALTRO data format
+  //in the provided buffer 
+  //Returns: size of the encoded data in bytes
+  int iResult=0;
+
+  if(!fInAli){
+    LOG(AliHLTTPCLog::kWarning,"AliHLTTPCFileHandler::AliDigits2Altro","File")
+    <<"No Input avalible: Pointer to fInAli == NULL"<<ENDLOG;
+    return 0; 
+  }
+
+  if (!tgtBuffer) {
+    return -EINVAL;
+  }
+
+  if(!fDigitsTree)
+    if(!GetDigitsTree(event)) return 0;
+
+  UShort_t dig;
+  Int_t time=0;
+  Int_t pad=0;
+  Int_t sector=0;
+
+  AliHLTTPCMapping mapper(fPatch);
+  AliHLTAltroEncoder encoder;
+  encoder.SetBuffer(tgtBuffer, tgtSize);
+
+  // The digits of the current event have been indexed: all digits are organized in
+  // rows, all digits of one row are stored in a AliSimDigits object (fDigit) which
+  // are stored in the digit tree.
+  // The index map relates the AliSimDigits objects in the tree to dedicated pad rows
+  // in the TPC
+  // This loop filters the pad rows according to the slice no set via Init
+
+  assert(fRowMax<fgkNRow);
+  for(Int_t r=fRowMin;r<=fRowMax && r<fgkNRow && iResult>=0;r++){
+    Int_t n=fIndex[fSlice][r];
+
+    Int_t row=0;
+    Int_t rowOffset=0;
+    AliHLTTPCTransform::Slice2Sector(fSlice,r,sector,row);
+    AliHLTTPCTransform::Slice2Sector(fSlice,AliHLTTPCTransform::GetFirstRow(fPatch),sector,rowOffset);
+
+    if(n!=-1){//data on that row
+      Int_t lslice,lrow;
+      fDigitsTree->GetEvent(n);
+      fParam->AdjustSectorRow(fDigits->GetID(),sector,row);
+      AliHLTTPCTransform::Sector2Slice(lslice,lrow,sector,row);
+      if(lrow!=r){
+	LOG(AliHLTTPCLog::kError,"AliHLTTPCFileHandler::AliDigits2Altro","Row")
+	  <<AliHLTTPCLog::kDec<<"Rows on slice " << fSlice << " dont match "<<lrow<<" "<<r<<ENDLOG;
+	continue;
+      }
+
+      Int_t channelAddress=-1;
+      fDigits->First();
+      do {
+	time=fDigits->CurrentRow();
+	pad=fDigits->CurrentColumn();
+	dig = fDigits->GetDigit(time,pad);
+	if (dig <= fParam->GetZeroSup()) continue;
+	if(dig >= AliHLTTPCTransform::GetADCSat())
+	  dig = AliHLTTPCTransform::GetADCSat();
+	
+	channelAddress=mapper.GetHwAddress(row-rowOffset, pad);
+	iResult=encoder.AddChannelSignal(dig, time, channelAddress);
+      } while (fDigits->Next() && iResult>=0);
+      if (iResult>=0 && channelAddress>=0) {
+	iResult=encoder.SetChannel(channelAddress);
+      }
+    }
+  }
+
+  if (iResult>=0) {
+    iResult=(encoder.GetTotal40bitWords()*5)/4;
+  }
+
+  return iResult;
 }
 
 AliHLTTPCDigitRowData * AliHLTTPCFileHandler::AliAltroDigits2Memory(UInt_t & nrow,Int_t event,Bool_t eventmerge)

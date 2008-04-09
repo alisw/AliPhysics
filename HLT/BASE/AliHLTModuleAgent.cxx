@@ -49,6 +49,8 @@ AliHLTModuleAgent::AliHLTModuleAgent(const char* id)
   Register(this);
 }
 
+const AliHLTModuleAgent::AliHLTOUTHandlerDesc AliHLTModuleAgent::fgkVoidHandlerDesc;
+
 AliHLTModuleAgent::~AliHLTModuleAgent()
 {
   // see header file for function documentation

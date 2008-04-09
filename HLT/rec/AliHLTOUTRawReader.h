@@ -3,22 +3,17 @@
 
 #ifndef ALIHLTOUTRAWREADER_H
 #define ALIHLTOUTRAWREADER_H
-/* This file is property of and copyright by the ALICE HLT Project        * 
- * ALICE Experiment at CERN, All rights reserved.                         *
- * See cxx source for full Copyright notice                               */
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               */
 
 /** @file   AliHLTOUTRawReader.h
     @author Matthias Richter
     @date   
     @brief  HLTOUT data wrapper for AliRawReader.
-                                                                          */
-// see below for class documentation
-// or
-// refer to README to build package
-// or
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+*/
 
-#include "AliHLTOUTHomerBuffer.h"
+#include "AliHLTOUTHomerCollection.h"
 
 class AliRawReader;
 class AliHLTHOMERReader;
@@ -27,14 +22,21 @@ class AliHLTHOMERReader;
  * @class AliHLTOUTRawReader
  * Handler of HLTOUT data for AliRawReader input.
  */
-class AliHLTOUTRawReader : public AliHLTOUTHomerBuffer {
+class AliHLTOUTRawReader : public AliHLTOUTHomerCollection {
  public:
   /** constructor */
-  AliHLTOUTRawReader(AliRawReader* pRawReader);
+  AliHLTOUTRawReader(AliRawReader* pRawReader, int event=-1, AliHLTEsdManager* pEsdManager=NULL);
   /** destructor */
   virtual ~AliHLTOUTRawReader();
 
  protected:
+  // interface functions of AliHLTOUTHomerCollection
+  Bool_t ReadNextData(UChar_t*& data);
+  int Reset();
+  int GetDataSize();
+  const AliRawDataHeader* GetDataHeader();
+  void SelectEquipment(int equipmentType, int minEquipmentId = -1, int maxEquipmentId = -1);
+  int GetEquipmentId();
 
  private:
   /** standard constructor prohibited */
@@ -44,42 +46,9 @@ class AliHLTOUTRawReader : public AliHLTOUTHomerBuffer {
   /** assignment operator prohibited */
   AliHLTOUTRawReader& operator=(const AliHLTOUTRawReader&);
 
-  /**
-   * Generate the index of the HLTOUT data from the data buffer.
-   */
-  int GenerateIndex();
-
-  /**
-   * Get the data buffer
-   * @param index   [in]  index of the block
-   * @param pBuffer [out] buffer of the selected data block
-   * @param size    [out] size of the selected data block
-   */
-  int GetDataBuffer(AliHLTUInt32_t index, const AliHLTUInt8_t* &pBuffer, 
-		    AliHLTUInt32_t& size);
-
-  /**
-   * Open HOMER reader for the data buffer.
-   * The function expects the data buffer including all headers (CDH
-   * and HLTOUT header). The offset for the HLT payload is determined from
-   * the headers and the optional HLT decision data.
-   * @param pSrc    data buffer
-   * @param size    size of the buffer in byte
-   * @return instance of HOMER reader
-   */
-  AliHLTHOMERReader* OpenReader(UChar_t* pSrc, unsigned int size);
-
   /** the rawreader */
   AliRawReader* fpRawreader; //!transient
 
-  /** current instance of the HOMER reader */
-  AliHLTHOMERReader* fpCurrent;  //!transient
-
-  /** DDL id offset shift for index
-   *  bit 16-31: DDL id, bit 0-15 block no
-   */
-  static const int fgkIdShift; //!transient
-  
-  ClassDef(AliHLTOUTRawReader, 0)
+  ClassDef(AliHLTOUTRawReader, 1)
 };
 #endif

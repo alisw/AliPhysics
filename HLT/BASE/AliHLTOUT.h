@@ -19,6 +19,8 @@
 
 class AliHLTOUTHandler;
 class AliHLTOUTHandlerDesc; // AliHLTModuleAgent.h
+class AliESDEvent;
+class AliHLTReconstructor;
 
 #define AliHLTOUTInvalidIndex (~(AliHLTUInt32_t)0)
 
@@ -39,76 +41,6 @@ class AliHLTOUT : public AliHLTLogging {
   AliHLTOUT();
   /** standard destructor */
   virtual ~AliHLTOUT();
-
-  /**
-   * Init for processing.
-   * The HLTOUT is scanned for all available data blocks and the
-   * AliHLTOUTHandler objects for the data blocks are created according
-   * to the module agents (see AliHLTModuleAgent).
-   */
-  int Init();
-
-  /**
-   * Get number of data blocks in the HLTOUT data
-   */
-  int GetNofDataBlocks();
-
-  /**
-   * Select the first data block of a certain data type and specification.
-   * The selection criteria can be of kAliHLTAnyDataType and/or
-   * kAliHLTVoidDataSpec in order to be ignored and just match any data block.
-   *
-   * The search criteria can be combined with a handler type (e.g. kRawReader)
-   * @param dt    [in]  data type to match                                <br>
-   * @param spec  [in]  data specification to match                       <br>
-   * @param handlerType [in]  type of the handler
-   * @return identifier >0 if success, 0 if no block found                <br>
-   *         neg. error code if failed                                    <br>
-   *                        -EPERM if access denied (object locked)
-   */
-  int SelectFirstDataBlock(AliHLTComponentDataType dt=kAliHLTAnyDataType,
-			   AliHLTUInt32_t spec=kAliHLTVoidDataSpec,
-			   AliHLTModuleAgent::AliHLTOUTHandlerType handlerType=AliHLTModuleAgent::kUnknownOutput);
-
-  /**
-   * Select the next data block of data type and specification of the previous
-   * call to @ref SelectFirstDataBlock.
-   * @return identifier >0 if success, 0 if no block found                <br>
-   *         neg. error code if failed                                    <br>
-   *                        -EPERM if access denied (object locked)
-   */
-  int SelectNextDataBlock();
-
-  /**
-   * Get properties of the selected data block.
-   * @param dt    [out] data type of the selected block
-   * @param spec  [out] data specification of the selected block
-   */
-  int GetDataBlockDescription(AliHLTComponentDataType& dt, AliHLTUInt32_t& spec);
-
-  /**
-   * Get the index of the current data block.
-   * @return index, AliHLTOUTInvalidIndex if no block selected
-   */
-  AliHLTUInt32_t GetDataBlockIndex();
-
-  /**
-   * Get buffer of the selected data block.
-   * @param pBuffer [out] buffer of the selected data block
-   * @param size    [out] size of the selected data block
-   */
-  int GetDataBuffer(const AliHLTUInt8_t* &pBuffer, AliHLTUInt32_t& size);
-
-  /**
-   * Release buffer after use.
-   * @param pBuffer [in]  buffer of the selected data block
-   */
-  int ReleaseDataBuffer(const AliHLTUInt8_t* pBuffer);
-
-  /**
-   * Get handler for the selected data block.
-   */
-  AliHLTOUTHandler* GetHandler();
 
   /**
    * Locking guard for the AliHLTOUT object.
@@ -199,87 +131,6 @@ class AliHLTOUT : public AliHLTLogging {
     AliHLTUInt32_t          fIndex; //!transient
   };
 
-  enum AliHLTOUTByteOrder {
-    /** no data block selected */
-    kInvalidByteOrder=-1,
-    kUnknownByteOrder=0,
-    kLittleEndian,
-    kBigEndian
-  };
-
-  enum AliHLTOUTDataType {
-    kUint64 = 0,
-    kUint32 = 1,
-    kUint16 = 2,
-    kUint8  = 3,
-    kDouble = 4,
-    kFloat  = 5
-  };
-
-  /**
-   * Check byte order of selected block
-   */
-  AliHLTOUTByteOrder CheckByteOrder();
-
-  /**
-   * Check alignment of selected block
-   */
-  int CheckAlignment(AliHLTOUT::AliHLTOUTDataType type);
-
-  /**
-   * Helper function to byte swap a 64 bit value.
-   */
-  static AliHLTUInt64_t ByteSwap64(AliHLTUInt64_t src);
-
-  /**
-   * Helper function to byte swap a 32 bit value.
-   */
-  static AliHLTUInt32_t ByteSwap32(AliHLTUInt32_t src);
-
- protected:
-  /**
-   * Add a block descriptor.
-   * This is done by the child classes generating the index. The AliHLTOUT
-   * object must be locked for index generation.
-   * @param desc    the block descriptor
-   * @return 0 if success, -EPERM if access denied
-   */
-  int AddBlockDescriptor(const AliHLTOUTBlockDescriptor desc);
-
-  /**
-   * Print output or suppress.
-   */
-  bool BeVerbose() {return fbVerbose;}
-
-  /**
-   * Switch output.
-   */
-  void SwitchVerbosity(bool verbose) {fbVerbose=verbose;}
-
- private:
-  /** copy constructor prohibited */
-  AliHLTOUT(const AliHLTOUT&);
-  /** assignment operator prohibited */
-  AliHLTOUT& operator=(const AliHLTOUT&);
-
-  /**
-   * Internal status flags
-   */
-  enum {
-    /** the HLTOUT object is locked with the current data block */
-    kLocked = 0x1,
-    /** childs can add block descriptors */
-    kCollecting = 0x2,
-    /** user of the data block has checked the byte order */
-    kByteOrderChecked = 0x4,
-    /** warning on byte order missmatch has been printed */
-    kByteOrderWarning = 0x8,
-    /** user of the data block has checked the alignment */
-    kAlignmentChecked = 0x10,
-    /** warning on alignment missmatch has been printed */
-    kAlignmentWarning = 0x20
-  };
-
   class AliHLTOUTHandlerListEntry {
   public:
     AliHLTOUTHandlerListEntry(AliHLTOUTHandler* pHandler, 
@@ -303,7 +154,8 @@ class AliHLTOUT : public AliHLTLogging {
     // in the constructor. Thats why it is dereferenced here. The pointer
     // type is on purpose, even though it is a bit confusing with the 
     // argument by reference in the AliHLTOUTHandlerListEntry constructor.
-    operator AliHLTModuleAgent::AliHLTOUTHandlerDesc&() const {return *fpHandlerDesc;}
+    operator const AliHLTModuleAgent::AliHLTOUTHandlerDesc&() const 
+    {return fpHandlerDesc?*fpHandlerDesc:AliHLTModuleAgent::fgkVoidHandlerDesc;}
     operator AliHLTModuleAgent*() const {return fpAgent;}
 
     /**
@@ -351,7 +203,205 @@ class AliHLTOUT : public AliHLTLogging {
     /** list of block indexes */
     AliHLTOUTIndexList fBlocks; //!transient
   };
+
+  typedef vector<AliHLTOUTHandlerListEntry> AliHLTOUTHandlerListEntryVector;
+  typedef vector<AliHLTOUTBlockDescriptor>  AliHLTOUTBlockDescriptorVector;
+
+  /**
+   * Init for processing.
+   * The HLTOUT is scanned for all available data blocks and the
+   * AliHLTOUTHandler objects for the data blocks are created according
+   * to the module agents (see AliHLTModuleAgent).
+   */
+  int Init();
+
+  /**
+   * Get number of data blocks in the HLTOUT data
+   */
+  int GetNofDataBlocks();
+
+  /**
+   * Select the first data block of a certain data type and specification.
+   * The selection criteria can be of kAliHLTAnyDataType and/or
+   * kAliHLTVoidDataSpec in order to be ignored and just match any data block.
+   *
+   * The search criteria can be combined with a handler type (e.g. kRawReader)
+   * @param dt    [in]  data type to match                                <br>
+   * @param spec  [in]  data specification to match                       <br>
+   * @param handlerType [in]  type of the handler
+   * @return identifier >0 if success, 0 if no block found                <br>
+   *         neg. error code if failed                                    <br>
+   *                        -EPERM if access denied (object locked)
+   */
+  int SelectFirstDataBlock(AliHLTComponentDataType dt=kAliHLTAnyDataType,
+			   AliHLTUInt32_t spec=kAliHLTVoidDataSpec,
+			   AliHLTModuleAgent::AliHLTOUTHandlerType handlerType=AliHLTModuleAgent::kUnknownOutput);
+
+  /**
+   * Select the next data block of data type and specification of the previous
+   * call to @ref SelectFirstDataBlock.
+   * @return identifier >0 if success, 0 if no block found                <br>
+   *         neg. error code if failed                                    <br>
+   *                        -EPERM if access denied (object locked)
+   */
+  int SelectNextDataBlock();
+
+  /**
+   * Get properties of the selected data block.
+   * @param dt    [out] data type of the selected block
+   * @param spec  [out] data specification of the selected block
+   */
+  int GetDataBlockDescription(AliHLTComponentDataType& dt, AliHLTUInt32_t& spec);
+
+  /**
+   * Get handler description of the current data block.
+   */
+  const AliHLTOUTHandlerListEntry& GetDataBlockHandlerDesc();
+
+  /**
+   * Get handler type of the selected data block.
+   * @return handler type for the selected data block
+   */
+  AliHLTModuleAgent::AliHLTOUTHandlerType GetDataBlockHandlerType();
+
+  /**
+   * Get the index of the current data block.
+   * @return index, AliHLTOUTInvalidIndex if no block selected
+   */
+  AliHLTUInt32_t GetDataBlockIndex();
+
+  /**
+   * Get buffer of the selected data block.
+   * @param pBuffer [out] buffer of the selected data block
+   * @param size    [out] size of the selected data block
+   */
+  int GetDataBuffer(const AliHLTUInt8_t* &pBuffer, AliHLTUInt32_t& size);
+
+  /**
+   * Release buffer after use.
+   * @param pBuffer [in]  buffer of the selected data block
+   */
+  int ReleaseDataBuffer(const AliHLTUInt8_t* pBuffer);
+
+  /**
+   * Get module agent for the selected data block.
+   */
+  AliHLTModuleAgent* GetAgent();
+
+  /**
+   * Get handler for the selected data block.
+   */
+  AliHLTOUTHandler* GetHandler();
+
+  /**
+   * Convert data buffer to ESD.
+   * The buffer is supposed to describe a streamed AliESDEvent object.
+   * If no target object is specified, the ESD is written to a file AliHLTdetESDs.root,
+   * where 'det' is derived from the data type origin. Each time the function is invoked
+   * a new event is created. Dummy events are added if the previous events did not contain
+   *
+   * The function needs AliRoot and might not be implemented by all AliHLTOUT
+   * implementations.
+   * a data block of this specification.
+   * @param pBuffer  [in] the data buffer
+   * @param size     [in] data buffer size
+   * @param dt       [in] data type of the block
+   * @param tgtesd   [out] optional target
+   */
+  virtual int WriteESD(const AliHLTUInt8_t* pBuffer, AliHLTUInt32_t size, AliHLTComponentDataType dt, AliESDEvent* tgtesd=NULL) const;
+
+  enum AliHLTOUTByteOrder {
+    /** no data block selected */
+    kInvalidByteOrder=-1,
+    kUnknownByteOrder=0,
+    kLittleEndian,
+    kBigEndian
+  };
+
+  enum AliHLTOUTDataType {
+    kUint64 = 0,
+    kUint32 = 1,
+    kUint16 = 2,
+    kUint8  = 3,
+    kDouble = 4,
+    kFloat  = 5
+  };
+
+  /**
+   * Check byte order of selected block
+   */
+  AliHLTOUTByteOrder CheckByteOrder();
+
+  /**
+   * Check alignment of selected block
+   */
+  int CheckAlignment(AliHLTOUT::AliHLTOUTDataType type);
+
+  /**
+   * Helper function to byte swap a 64 bit value.
+   */
+  static AliHLTUInt64_t ByteSwap64(AliHLTUInt64_t src);
+
+  /**
+   * Helper function to byte swap a 32 bit value.
+   */
+  static AliHLTUInt32_t ByteSwap32(AliHLTUInt32_t src);
+
+  /**
+   * Insert a handler item.
+   * The current list entries are checked if the handler is already in
+   * the list. It is added if not in the list, otherwise the block index
+   * is added to the existing entry.
+   * @param entry    handler list entry
+   * @return 0 if added, EEXIST (non negative!) if merged with existing entry <br>
+   *         neg. error code if failed
+   */
+  static int InsertHandler(AliHLTOUTHandlerListEntryVector& list, const AliHLTOUTHandlerListEntry &entry);
   
+ protected:
+  /**
+   * Add a block descriptor.
+   * This is done by the child classes generating the index. The AliHLTOUT
+   * object must be locked for index generation.
+   * @param desc    the block descriptor
+   * @return 0 if success, -EPERM if access denied
+   */
+  int AddBlockDescriptor(const AliHLTOUTBlockDescriptor desc);
+
+  /**
+   * Print output or suppress.
+   */
+  bool BeVerbose() {return fbVerbose;}
+
+  /**
+   * Switch output.
+   */
+  void SwitchVerbosity(bool verbose) {fbVerbose=verbose;}
+
+ private:
+  /** copy constructor prohibited */
+  AliHLTOUT(const AliHLTOUT&);
+  /** assignment operator prohibited */
+  AliHLTOUT& operator=(const AliHLTOUT&);
+
+  /**
+   * Internal status flags
+   */
+  enum {
+    /** the HLTOUT object is locked with the current data block */
+    kLocked = 0x1,
+    /** childs can add block descriptors */
+    kCollecting = 0x2,
+    /** user of the data block has checked the byte order */
+    kByteOrderChecked = 0x4,
+    /** warning on byte order missmatch has been printed */
+    kByteOrderWarning = 0x8,
+    /** user of the data block has checked the alignment */
+    kAlignmentChecked = 0x10,
+    /** warning on alignment missmatch has been printed */
+    kAlignmentWarning = 0x20
+  };
+
   /**
    * Generate the index of the HLTOUT data.
    * Must be implemented by the child classes.
@@ -417,17 +467,6 @@ class AliHLTOUT : public AliHLTLogging {
   int CheckStatusFlag(unsigned int flag) const {return (fFlags&flag)==flag;}
 
   /**
-   * Insert a handler item.
-   * The current list entries are checked if the handler is already in
-   * the list. It is added if not in the list, otherwise the block index
-   * is added to the existing entry.
-   * @param entry    handler list entry
-   * @return 0 if added, EEXIST (non negative!) if merged with existing entry <br>
-   *         neg. error code if failed
-   */
-  int InsertHandler(const AliHLTOUTHandlerListEntry &entry);
-
-  /**
    * Find handler description for a certain block index.
    */
   const AliHLTOUTHandlerListEntry& FindHandlerDesc(AliHLTUInt32_t blockIndex);
@@ -443,9 +482,6 @@ class AliHLTOUT : public AliHLTLogging {
 
   /** instance flags: locked, collecting, ... */
   unsigned int fFlags; //!transient
-
-  typedef vector<AliHLTOUTHandlerListEntry> AliHLTOUTHandlerListEntryVector;
-  typedef vector<AliHLTOUTBlockDescriptor>  AliHLTOUTBlockDescriptorVector;
 
   /** list of block descriptors */
   AliHLTOUTBlockDescriptorVector fBlockDescList; //!transient

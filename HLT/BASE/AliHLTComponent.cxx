@@ -652,7 +652,7 @@ TObject* AliHLTComponent::CreateInputObject(int idx, int bForce)
 	  }
 	  //} else {
        	} else if (bForce!=0) {
-	  HLTError("size missmatch: block size %d, indicated %d", fpInputBlocks[idx].fSize, firstWord+sizeof(AliHLTUInt32_t));
+	  HLTError("size mismatch: block size %d, indicated %d", fpInputBlocks[idx].fSize, firstWord+sizeof(AliHLTUInt32_t));
 	}
       } else {
 	HLTFatal("block descriptor empty");
@@ -1192,7 +1192,7 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
 	  AliHLTRunDesc rundesc;
 	  if ((iResult=CopyStruct(&rundesc, sizeof(AliHLTRunDesc), indexEOREvent, "AliHLTRunDesc", "SOR"))>0) {
 	    if (fpRunDesc->fRunNo!=rundesc.fRunNo) {
-	      HLTWarning("run no missmatch: SOR %d, EOR %d", fpRunDesc->fRunNo, rundesc.fRunNo);
+	      HLTWarning("run no mismatch: SOR %d, EOR %d", fpRunDesc->fRunNo, rundesc.fRunNo);
 	    } else {
 	      HLTDebug("EOR run no %d", fpRunDesc->fRunNo);
 	    }
@@ -1414,11 +1414,11 @@ int AliHLTComponent::CopyStruct(void* pStruct, unsigned int iStructSize, unsigne
       if (fpInputBlocks[iBlockNo].fPtr && fpInputBlocks[iBlockNo].fSize) {
 	AliHLTUInt32_t copy=*((AliHLTUInt32_t*)fpInputBlocks[iBlockNo].fPtr);
 	if (fpInputBlocks[iBlockNo].fSize!=copy) {
-	  HLTWarning("%s event: missmatch of block size (%d) and structure size (%d)", eventname, fpInputBlocks[iBlockNo].fSize, copy);
+	  HLTWarning("%s event: mismatch of block size (%d) and structure size (%d)", eventname, fpInputBlocks[iBlockNo].fSize, copy);
 	  if (copy>fpInputBlocks[iBlockNo].fSize) copy=fpInputBlocks[iBlockNo].fSize;
 	}
 	if (copy!=iStructSize) {
-	  HLTWarning("%s event: missmatch in %s version (data type version %d)", eventname, structname, ALIHLT_DATA_TYPES_VERSION);
+	  HLTWarning("%s event: mismatch in %s version (data type version %d)", eventname, structname, ALIHLT_DATA_TYPES_VERSION);
 	  if (copy>iStructSize) {
 	    copy=iStructSize;
 	  } else {

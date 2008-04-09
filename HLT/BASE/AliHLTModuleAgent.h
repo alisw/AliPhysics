@@ -272,6 +272,8 @@ class AliHLTModuleAgent : public TObject, public AliHLTLogging {
     bool operator==(const AliHLTOUTHandlerType handlerType) const {
       return fHType==handlerType;
     }
+    operator AliHLTOUTHandlerType() {return fHType;}
+    operator AliHLTComponentDataType() {return fDt;}
 
   private:
     /** type of the handler */
@@ -281,6 +283,8 @@ class AliHLTModuleAgent : public TObject, public AliHLTLogging {
     /** class or chain name */
     TString                 fModule;                         //!transient
   };
+
+  static const AliHLTOUTHandlerDesc fgkVoidHandlerDesc; //! initializer
 
   /**
    * Get handler description for a data block.

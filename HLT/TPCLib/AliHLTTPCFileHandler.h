@@ -101,17 +101,22 @@ class AliHLTTPCFileHandler:public AliHLTTPCMemHandler {
   }
 
   /**
-   * Convert and filetr AliDigits from AliRoot file to HLT Digit data in memory.
+   * Convert and filter AliDigits from AliRoot file to HLT Digit data in memory.
    * This functions is the same as @ref AliDigits2Memory but in addition it
    * filters out single timebins, which is noise. The timebins which
    * are removed are timebins which have the 4 zero neighbours; 
    * (pad-1,time),(pad+1,time),(pad,time-1),(pad,time+1).
    *
-   * This is legacy code, the two function contain big portions of identical code
+   * This is legacy code, the two functions contain big portions of identical code
    * will be merged.
    * See @ref AliDigits2Memory for detailed description.
    */
   AliHLTTPCDigitRowData *AliAltroDigits2Memory(UInt_t & nrow,Int_t event=0,Bool_t eventmerge=kFALSE); 
+
+  /**
+   * Convert AliDigits from AliRoot file to Altro data format in memory.
+   */
+  int AliDigits2Altro(Int_t event, Byte_t* tgtBuffer, UInt_t size);
 
   /**
    * Write AliDigits from AliRoot file to binary file.

@@ -2,21 +2,15 @@
 
 #ifndef ALIHLTRECONSTRUCTOR_H
 #define ALIHLTRECONSTRUCTOR_H
-/* This file is property of and copyright by the ALICE HLT Project        * 
- * ALICE Experiment at CERN, All rights reserved.                         *
- * See cxx source for full Copyright notice                               */
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
 
 /** @file   AliHLTReconstructor.h
     @author Matthias Richter
     @date   
     @brief  Binding class for HLT simulation in AliRoot
-
-// see below for class documentation
-// or
-// refer to README to build package
-// or
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
-                                                                          */
+*/
 
 #include "AliReconstructor.h"
 #include "AliHLTReconstructorBase.h"
@@ -24,6 +18,8 @@
 class AliHLTSystem;
 class AliRawReader;
 class AliESDEvent;
+class AliHLTOUT;
+class AliHLTEsdManager;
 
 /**
  * @class AliHLTReconstructor
@@ -70,6 +66,9 @@ public:
    * The function forwards to the default bahavior of AliReconstructor but gives
    * a warning if there were options set, i.e. the user runs customized
    * reconstruction.
+   *
+   * @note HLT reconstruction on simulated data is processed at the end of
+   * simulation. <br>
    */
   void Reconstruct(TTree* digitsTree, TTree* clustersTree) const;
 
@@ -81,21 +80,28 @@ public:
   void Reconstruct(AliRawReader* rawReader, TTree* clustersTree) const;
 
   /**
-   * This function is purely for simulated data and not applicable for HLT.
-   * HLT reconstruction on simulated data is processed at the end of
-   * simulation. <br>
-   * The function forwards to the default bahavior of AliReconstructor but gives
-   * a warning if there were options set, i.e. the user runs customized
-   * reconstruction.
+   * This function treats the simulated HLTOUT data.
+   * Opens a handler for simulated HLTOUT data and forwards to ::ProcessHLTOUT.
    */
   void FillESD(TTree* digitsTree, TTree* clustersTree, AliESDEvent* esd) const;
 
   /**
-   * Fill the ESD from RAW data.
-   * This is the main entry for HLT reconstruction of RAW data. It performs both
-   * the analysis by the defined chains and the filling of the ESD.
+   * Process the raw HLTOUT data and fill ESD.
+   * Opens a handler for raw HLTOUT data and forwards to ::ProcessHLTOUT.
    */
   void FillESD(AliRawReader* rawReader, TTree* clustersTree, AliESDEvent* esd) const;
+
+  /**
+   * Process HLTOUT data and fill ESD.
+   * This is the final treatment of the HLTOUT data, either simulated or real.
+   * HLTOUT data is stored in HOMER format, the AliHLTOUT object provides the interface
+   * to the individual data blocks.
+   *
+   * During reconstruction (::Reconstruct), module or user defined chains can be
+   * processed and may add additional data to the HLTOUT object. This data is then
+   * treated in the same way.
+   */
+  void ProcessHLTOUT(AliHLTOUT* pHLTOUT, AliESDEvent* esd) const;
 
 private:
   /** copy constructor prohibited */
@@ -103,7 +109,14 @@ private:
   /** assignment operator prohibited */
   AliHLTReconstructor& operator=(const AliHLTReconstructor& src);
 
-  ClassDef(AliHLTReconstructor, 4)   // class for the HLT reconstruction
+  /** function pointer: processing of HLTOUT data */
+  void* fFctProcessHLTOUT; //!transient
+
+  /** ESD manger instance for this reconstruction */
+  AliHLTEsdManager* fpEsdManager; //!transient
+
+  ClassDef(AliHLTReconstructor, 5)   // class for the HLT reconstruction
+
 };
 
 typedef AliHLTReconstructor AliL3Reconstructor; // for backward compatibility

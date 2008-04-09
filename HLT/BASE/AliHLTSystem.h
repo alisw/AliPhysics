@@ -3,8 +3,9 @@
 
 #ifndef ALIHLTSYSTEM_H
 #define ALIHLTSYSTEM_H
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
 
 /** @file   AliHLTSystem.h
     @author Matthias Richter
@@ -12,12 +13,6 @@
     @brief  Global HLT module management and AliRoot integration.
     @note   The class is used in Offline (AliRoot) context
 */
-
-// see below for class documentation
-// or
-// refer to README to build package
-// or
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt   
 
 /**
  * @defgroup alihlt_system HLT integration into AliRoot
@@ -32,6 +27,7 @@ class AliHLTComponentHandler;
 class AliHLTConfiguration;
 class AliHLTConfigurationHandler;
 class AliHLTTask;
+class AliHLTOUT;
 class AliRunLoader;
 class AliRawReader;
 class AliESDEvent;
@@ -251,6 +247,18 @@ class AliHLTSystem : public AliHLTLogging {
    * Fill ESD for one event.
    * To be called by the AliHLTReconstructor plugin during the event loop
    * and FillESD method of the AliRoot reconstruction.
+   *
+   * The method is most likely deprecated as the scheme has been slightly
+   * changed. The ESD is filled by the HLTOUT handlers u=implemented by the
+   * HLT modules rather than by components within the reconstruction chain.
+   * Still, HLT reconstruction chains can be run during the AliRoot
+   * reconstruction, data produced by such chains is automatically added
+   * to the HLTOUT stream in order to be equivalent to the online HLT.
+   * The HLTOUT is processed during AliReconstruction at the end of the
+   * HLT event processing, literally during the FillESD method of the AliRoot
+   * reconstruction interface. The HLT module must implement HLTOUT handlers
+   * and provide those through the module agent.
+   *
    * This method is called on event basis, and thus must copy the previously
    * reconstructed data of the event from the 'ESD' recorder. The FillESD
    * method of all active AliHLTOfflineDataSink's is called.
@@ -262,6 +270,11 @@ class AliHLTSystem : public AliHLTLogging {
    * @return neg. error code if failed 
    */
   int FillESD(int eventNo, AliRunLoader* runLoader, AliESDEvent* esd);
+
+  /**
+   * Process the HLTOUT data.
+   */
+  int ProcessHLTOUT(AliHLTOUT* pHLTOUT, AliESDEvent* esd);
 
   /**
    * Load component libraries.

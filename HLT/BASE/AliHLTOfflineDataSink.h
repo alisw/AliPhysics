@@ -38,6 +38,14 @@
  *
  * @note This class is only used for the @ref alihlt_system.
  *
+ * @note This class is very likely to be deprecated. According to the new
+ * reconstruction scheme, the esd is no longer filled by components in the
+ * reconstruction chain, but added to the HLTOUT data. The HLTOUT is
+ * processed during AliReconstruction at the end of the HLT event processing,
+ * literally during the FillESD method of the AliRoot reconstruction
+ * interface. The HLT module must implement HLTOUT handlers and provide
+ * those through the module agent.
+ *
  * @ingroup alihlt_system
  */
 class AliHLTOfflineDataSink 

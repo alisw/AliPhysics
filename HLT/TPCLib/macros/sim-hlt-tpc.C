@@ -8,7 +8,7 @@
  * The chain to be run is defined by the macro given to the parameter
  * 'config='
  *
- * The makro asumes the data to be already simulated. If it should run
+ * The macro asumes the data to be already simulated. If it should run
  * within the initial simulation, comment the corresponding functions
  * below (SetRunGeneration etc.)
  *

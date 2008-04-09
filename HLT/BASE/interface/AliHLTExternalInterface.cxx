@@ -140,3 +140,19 @@ int AliHLTSystemSetOptions(AliHLTSystem* pInstance, const char* options)
   }
   return iResult;
 }
+
+int AliHLTSystemProcessHLTOUT(AliHLTSystem* pInstance, AliHLTOUT* pHLTOUT, AliESDEvent* esd)
+{
+  int iResult=0;
+  if (pInstance) {
+    AliHLTSystem* pSystem=reinterpret_cast<AliHLTSystem*>(pInstance);
+    if (pSystem) {
+      iResult=pSystem->ProcessHLTOUT(pHLTOUT, esd);
+    } else {
+      iResult=-EFAULT;
+    }
+  } else {
+    iResult=-EINVAL;
+  }
+  return iResult;
+}
