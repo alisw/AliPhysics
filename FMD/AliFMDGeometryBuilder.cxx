@@ -460,7 +460,10 @@ AliFMDGeometryBuilder::FMD1Geometry(AliFMD1* fmd1,
 
   // Must add this after filling the assembly.
   TGeoVolume* top    = gGeoManager->GetVolume("ALIC");
-  TGeoMatrix* matrix = new TGeoTranslation("FMD1 trans", 0, 0, z);
+  // TGeoMatrix* matrix = new TGeoTranslation("FMD1 trans", 0, 0, z);
+  TGeoRotation* rot = new TGeoRotation("FMD1 rotatation");
+  rot->RotateZ(90);
+  TGeoMatrix* matrix = new TGeoCombiTrans("FMD1 trans", 0, 0, z, rot);
   AliFMDDebug(5, ("Placing volumes %s and %s in ALIC at z=%f", 
 		   fmd1TopVolume->GetName(), fmd1BotVolume->GetName(), z));
   top->AddNode(fmd1TopVolume, fmd1->GetId(), matrix);

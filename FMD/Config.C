@@ -287,6 +287,7 @@ Config()
       //
       // Libraries needed by GEANT 3.21 
       //
+      gSystem->Load("EGPythia6.so");
       gSystem->Load("libgeant321");
     
       // 
