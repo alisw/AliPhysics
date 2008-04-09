@@ -715,7 +715,7 @@ int AliHLTSystem::ProcessHLTOUT(AliHLTOUT* pHLTOUT, AliESDEvent* esd)
     pHLTOUT->GetDataBlockDescription(dt, spec);
     AliHLTOUTHandler* pHandler=pHLTOUT->GetHandler();
     AliHLTModuleAgent::AliHLTOUTHandlerType handlerType=pHLTOUT->GetDataBlockHandlerType();
-    if (!pHandler && (dt!=kAliHLTDataTypeESDObject || dt!=kAliHLTDataTypeESDTree)) {
+    if (!pHandler && (dt==kAliHLTDataTypeESDObject || dt==kAliHLTDataTypeESDTree)) {
       handlerType=AliHLTModuleAgent::kEsd;
     }
     const char* pMsg="invalid";

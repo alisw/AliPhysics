@@ -191,6 +191,7 @@ void AliHLTReconstructor::FillESD(AliRawReader* rawReader, TTree* /*clustersTree
     AliHLTOUTRawReader* pHLTOUT=new AliHLTOUTRawReader(rawReader, esd->GetEventNumberInFile(), fpEsdManager);
     if (pHLTOUT) {
       ProcessHLTOUT(pHLTOUT, esd);
+      delete pHLTOUT;
     } else {
       AliError("error creating HLTOUT handler");
     }
@@ -240,6 +241,7 @@ void AliHLTReconstructor::FillESD(TTree* /*digitsTree*/, TTree* /*clustersTree*/
     AliHLTOUTDigitReader* pHLTOUT=new AliHLTOUTDigitReader(esd->GetEventNumberInFile(), fpEsdManager);
     if (pHLTOUT) {
       ProcessHLTOUT(pHLTOUT, esd);
+      delete pHLTOUT;
     } else {
       AliError("error creating HLTOUT handler");
     }
@@ -248,7 +250,7 @@ void AliHLTReconstructor::FillESD(TTree* /*digitsTree*/, TTree* /*clustersTree*/
 
 void AliHLTReconstructor::ProcessHLTOUT(AliHLTOUT* pHLTOUT, AliESDEvent* esd) const
 {
-  // treatmen of simulated or real HLTOUT data
+  // treatment of simulated or real HLTOUT data
   if (!pHLTOUT) return;
   AliHLTSystem* pSystem=GetInstance();
   if (!pSystem) {
@@ -260,6 +262,11 @@ void AliHLTReconstructor::ProcessHLTOUT(AliHLTOUT* pHLTOUT, AliESDEvent* esd) co
     AliError("error : initialization of HLTOUT handler failed");
     return;
   }
+
+  // postpone the processing until a few issues have been solved
+  // - copying of ESDs
+  // - HLT loader
+  return;
 
   if (fFctProcessHLTOUT) {
     typedef int (*AliHLTSystemProcessHLTOUT)(AliHLTSystem* pInstance, AliHLTOUT* pHLTOUT, AliESDEvent* esd);

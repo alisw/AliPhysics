@@ -256,14 +256,20 @@ int AliHLTOUT::InitHandlers()
     AliHLTComponentDataType dt=kAliHLTVoidDataType;
     AliHLTUInt32_t spec=kAliHLTVoidDataSpec;
     if (GetDataBlockDescription(dt, spec)<0) break;
+    bool bHaveHandler=false;
     for (AliHLTModuleAgent* pAgent=AliHLTModuleAgent::GetFirstAgent(); pAgent && iResult>=0; pAgent=AliHLTModuleAgent::GetNextAgent()) {
       AliHLTModuleAgent::AliHLTOUTHandlerDesc handlerDesc;
       if (pAgent->GetHandlerDescription(dt, spec, handlerDesc)>0) {
 	AliHLTOUTHandlerListEntry entry(pAgent->GetOutputHandler(dt, spec), handlerDesc, pAgent, GetDataBlockIndex());
 	InsertHandler(fDataHandlers, entry);
 	remnants.pop_back();
+	bHaveHandler=true;
 	break;
       }
+    }
+    if (!bHaveHandler && (dt==kAliHLTDataTypeESDObject || dt==kAliHLTDataTypeESDTree)) {
+      // ESDs are handled by the framework
+      remnants.pop_back();
     }
   }
 
