@@ -285,12 +285,14 @@ void AliAnalysisVertexingHF::FindCandidatesESDtoAOD(AliESDEvent *esd,
 		AliAODRecoDecayHF2Prong(v,px,py,pz,d0,d0err,dcap1n1);
 	      if(fRecoPrimVtxSkippingTrks || fRmTrksFromPrimVtx) rd->SetOwnPrimaryVtx(io2Prong->GetOwnPrimaryVtx());
 	      rd->SetProngIDs(2,id);
+	      v->SetParent(rd);
 	    }
 	    if(okJPSI) {
 	      AliAODRecoDecayHF2Prong *rd=new(aodJPSItoEleRef[iJPSItoEle++]) 
 		AliAODRecoDecayHF2Prong(v,px,py,pz,d0,d0err,dcap1n1);
 	      if(fRecoPrimVtxSkippingTrks || fRmTrksFromPrimVtx) rd->SetOwnPrimaryVtx(io2Prong->GetOwnPrimaryVtx());
 	      rd->SetProngIDs(2,id);
+	      if(!okD0) v->SetParent(rd); // do something better here...
 	    }
 	    //printf("DCA: %f\n",rd->GetDCA());
 	  } else {
@@ -349,6 +351,7 @@ void AliAnalysisVertexingHF::FindCandidatesESDtoAOD(AliESDEvent *esd,
 		AliAODRecoDecayHF3Prong(v,px,py,pz,d0,d0err,dcas,io3Prong->GetSigmaVert(),io3Prong->GetDist12toPrim(),io3Prong->GetDist23toPrim(),io3Prong->GetCharge());
 	      if(fRecoPrimVtxSkippingTrks || fRmTrksFromPrimVtx) rd->SetOwnPrimaryVtx(io3Prong->GetOwnPrimaryVtx());
 	      rd->SetProngIDs(3,id);
+	      v->SetParent(rd);
 	    } else {
 	      new(aodD0toKpiRef[i3Prong++]) AliAODRecoDecayHF3Prong(*io3Prong);
 	    }
@@ -389,6 +392,7 @@ void AliAnalysisVertexingHF::FindCandidatesESDtoAOD(AliESDEvent *esd,
 		  AliAODRecoDecayHF4Prong(v,px,py,pz,d0,d0err,dcas,io4Prong->GetDist12toPrim(),io4Prong->GetDist23toPrim(),io4Prong->GetDist14toPrim(),io4Prong->GetDist34toPrim(),io4Prong->GetCharge());
 		if(fRecoPrimVtxSkippingTrks || fRmTrksFromPrimVtx) rd->SetOwnPrimaryVtx(io4Prong->GetOwnPrimaryVtx());
 		rd->SetProngIDs(4,id);
+		v->SetParent(rd);
 	      } else {
 		new(aodD0toKpiRef[i4Prong++]) AliAODRecoDecayHF4Prong(*io4Prong);
 	      }
@@ -442,6 +446,7 @@ void AliAnalysisVertexingHF::FindCandidatesESDtoAOD(AliESDEvent *esd,
 		AliAODRecoDecayHF3Prong(v,px,py,pz,d0,d0err,dcas,io3Prong->GetSigmaVert(),io3Prong->GetDist12toPrim(),io3Prong->GetDist23toPrim(),io3Prong->GetCharge());
 	      if(fRecoPrimVtxSkippingTrks || fRmTrksFromPrimVtx) rd->SetOwnPrimaryVtx(io3Prong->GetOwnPrimaryVtx());
 	      rd->SetProngIDs(3,id);
+	      v->SetParent(rd);
 	    } else {
 	      new(aodD0toKpiRef[i3Prong++]) AliAODRecoDecayHF3Prong(*io3Prong);
 	    }

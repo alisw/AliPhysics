@@ -159,6 +159,7 @@ void AliAnalysisTaskSESelectHF::UserExec(Option_t */*option*/)
       AliAODRecoDecayHF2Prong *dOut=new(aodD0toKpiRef[iOutD0toKpi++]) 
 	AliAODRecoDecayHF2Prong(v,px,py,pz,d0,d0err,dIn->GetDCA());
       dOut->SetOwnPrimaryVtx((AliAODVertex*)((dIn->GetOwnPrimaryVtx())->Clone()));
+      v->SetParent(dOut);
     }
     if(unsetvtx) dIn->UnsetOwnPrimaryVtx();
   } // end loop on D0->Kpi
