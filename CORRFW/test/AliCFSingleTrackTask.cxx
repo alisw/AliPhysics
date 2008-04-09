@@ -156,7 +156,9 @@ void AliCFSingleTrackTask::Exec(Option_t *)
     AliMCParticle *mcPart  = mcEvent->GetTrack(ipart);
 
     //check the MC-level cuts
+    fCFManager->FillQABeforeParticleCuts(AliCFManager::kPartGenCuts,mcPart);  
     if (!fCFManager->CheckParticleCuts(AliCFManager::kPartGenCuts,mcPart)) continue;
+    fCFManager->FillQAAfterParticleCuts(AliCFManager::kPartGenCuts,mcPart);  
 
     containerInput[0] = (Float_t)mcPart->Pt();
     containerInput[1] = mcPart->Eta() ;
@@ -164,7 +166,9 @@ void AliCFSingleTrackTask::Exec(Option_t *)
     fCFManager->GetParticleContainer()->Fill(containerInput,kStepGenerated);
     
     //check the Acceptance-level cuts
+    fCFManager->FillQABeforeParticleCuts(AliCFManager::kPartAccCuts,mcPart);  
     if (!fCFManager->CheckParticleCuts(AliCFManager::kPartAccCuts,mcPart)) continue;
+    fCFManager->FillQAAfterParticleCuts(AliCFManager::kPartAccCuts,mcPart);  
     //fill the container for Acceptance-level selection
     fCFManager->GetParticleContainer()->Fill(containerInput,kStepReconstructible);
   }    
@@ -192,7 +196,12 @@ void AliCFSingleTrackTask::Exec(Option_t *)
     containerInput[0] = pt ;
     containerInput[1] = track->Eta();
     fCFManager->GetParticleContainer()->Fill(containerInput,kStepReconstructed) ;   
+
+
+    fCFManager->FillQABeforeParticleCuts(AliCFManager::kPartSelCuts,track);  
     if (!fCFManager->CheckParticleCuts(AliCFManager::kPartSelCuts,track)) continue ;
+    fCFManager->FillQAAfterParticleCuts(AliCFManager::kPartSelCuts,track);  
+
     fCFManager->GetParticleContainer()->Fill(containerInput,kStepSelected);
   }
   
