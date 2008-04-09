@@ -67,6 +67,7 @@ AliCentralTrigger::AliCentralTrigger() :
    fConfiguration(NULL)
 {
    // Default constructor
+  SetOwner();
 }
 
 //_____________________________________________________________________________
@@ -93,7 +94,10 @@ void AliCentralTrigger::DeleteConfiguration()
   // Delete the active configuration
   fClassMask = 0;
   fClusterMask = 0;
-  if (fConfiguration) delete fConfiguration;
+  if (fConfiguration) {
+    if (IsOwner()) delete fConfiguration;
+    fConfiguration = 0x0;
+  }
 }
 
 //_____________________________________________________________________________
@@ -146,6 +150,7 @@ Bool_t AliCentralTrigger::LoadConfiguration( TString & config )
    // Load the selected configuration
    if (!config.IsNull()) {
      fConfiguration = AliTriggerConfiguration::LoadConfiguration( config );
+     SetOwner();
      if(fConfiguration)
        return kTRUE;
      else {
@@ -160,6 +165,7 @@ Bool_t AliCentralTrigger::LoadConfiguration( TString & config )
      AliCDBPath path( "GRP", "CTP", "Config" );
 	
      AliCDBEntry *entry=AliCDBManager::Instance()->Get(path.GetPath());
+     SetOwner(kFALSE);
      if( !entry ) AliFatal( "Couldn't load trigger description data from CDB!" );
 
      fConfiguration = (AliTriggerConfiguration *)entry->GetObject();

@@ -56,6 +56,8 @@ protected:
  AliTriggerConfiguration* fConfiguration;      // Trigger Configuration used
 
 private:
+                void      SetOwner(Bool_t x=kTRUE){SetBit(22,x);} // Bit 22 indicates that the object owns fConfiguration
+                Bool_t    IsOwner() const {TestBit(22);} // Test bit 22 to check that the object owns fConfiguration
                 Bool_t    IsSelected( TString detName, TString& detectors ) const;
 		AliCentralTrigger( const AliCentralTrigger& ctp ); // Implemented
 		AliCentralTrigger& operator=( const AliCentralTrigger& ctp ); // Not implemented
