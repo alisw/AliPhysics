@@ -16,23 +16,16 @@
 #include <TEveGridStepper.h>
 #include <TEveTrans.h>
 
-#include <TMath.h>
-
-#include <TBuffer3D.h>
-#include <TVirtualPad.h>
-
 #include <TGLRnrCtx.h>
-#include <TGLSelectRecord.h>
-#include <TGLText.h>
-#include <TGLUtil.h>
 #include <TGLIncludes.h>
-#include <TGLAxis.h>
+#include <TGLSelectRecord.h>
+#include <TGLUtil.h>
 #include <TGLViewer.h>
+#include <TGLAxis.h>
 
-//==============================================================================
-//==============================================================================
-// AliEveITSModuleStepper
-//==============================================================================
+#include <TMath.h>
+#include <THLimitsFinder.h>
+#include <TVirtualPad.h>
 
 //______________________________________________________________________________
 //
@@ -45,41 +38,30 @@ ClassImp(AliEveITSModuleStepper)
 AliEveITSModuleStepper::AliEveITSModuleStepper(AliEveITSDigitsInfo* di) :
   TEveElementList("ITS 2DStore", "AliEveITSModuleStepper", kTRUE),
 
-  fIDs(),
-  fPosition(0),
-
   fDigitsInfo(di),
   fScaleInfo(0),
+  fStepper(0),
 
+  fModuleIDs(),
+  fPosition(0),
   fSubDet(-1),
 
-  fStepper(0),
   fAxis(0),
-  fText(0),
-  fTextSize(0.05),
-  fPagerGap(0.1),
-  fRnrFrame(kFALSE),
 
-  fExpandCell(0.85),
-  fModuleFrameCol(2),
+  fMenuHeight(0.13),
+  fTextSize(64),
+  fTextCol(kGray+1),
+  fActiveCol(kRed-4),
 
-  fPaletteOffset(0.2),
-  fPaletteLength(0.6),
-
-  fWActive(-1),
-  fWWidth(0.025),
-  fWHeight(0.032),
-  fWOff(0.05),
-  fWCol(30),
-  fWActiveCol(45),
-  fFontCol(8)
+  fActiveID(-1)
 {
   // Constructor.
 
+  SetMainColorPtr(&fTextCol);
+  fAxis = new TGLAxis();
+
   // override member from base TEveElementList
   fChildClass = AliEveITSScaledModule::Class();
-
-  SetMainColorPtr(&fWCol);
 
   fDigitsInfo->IncRefCount();
 
@@ -88,16 +70,6 @@ AliEveITSModuleStepper::AliEveITSModuleStepper(AliEveITSDigitsInfo* di) :
 
   fScaleInfo = new AliEveDigitScaleInfo();
   fScaleInfo->IncRefCount();
-
-  fAxis = new TGLAxis();
-  fAxis->SetLineColor(4);
-  fAxis->SetTextColor(fFontCol);
-
-  fText = new TGLText();
-  fText->SetTextColor(fFontCol);
-  fText->SetGLTextFont(40);
-  fText->SetGLTextAngles(0, 0, 0);
-  fText->SetTextSize(fTextSize);
 
   gEve->GetGLViewer()->AddOverlayElement(this);
 }
@@ -108,13 +80,11 @@ AliEveITSModuleStepper::~AliEveITSModuleStepper()
 
   gEve->GetGLViewer()->RemoveOverlayElement(this);
 
-   fScaleInfo->DecRefCount();
+  fScaleInfo->DecRefCount();
   fDigitsInfo->DecRefCount();
 
   delete fStepper;
-
   delete fAxis;
-  delete fText;
 }
 
 /******************************************************************************/
@@ -140,8 +110,10 @@ void AliEveITSModuleStepper::Capacity()
 
 void AliEveITSModuleStepper::SetFirst(Int_t first)
 {
-  Int_t lastpage = fIDs.size()/Nxy();
-  if(fIDs.size() % Nxy() ) lastpage++;
+  // Se module ID which apply to first item in stepper.
+
+  Int_t lastpage = fModuleIDs.size()/Nxy();
+  if(fModuleIDs.size() % Nxy() ) lastpage++;
 
   Int_t firstLastpage = (lastpage - 1)*Nxy();
   if(first > firstLastpage) first = firstLastpage;
@@ -176,8 +148,8 @@ void AliEveITSModuleStepper::End()
 {
   // Go to last page.
 
-  Int_t lastpage = fIDs.size()/Nxy();
-  if (fIDs.size() % Nxy()) lastpage++;
+  Int_t lastpage = fModuleIDs.size()/Nxy();
+  if (fModuleIDs.size() % Nxy()) lastpage++;
   fPosition = (lastpage - 1)*Nxy();
 
   fStepper->Reset();
@@ -188,29 +160,15 @@ void AliEveITSModuleStepper::End()
 
 void AliEveITSModuleStepper::DisplayDet(Int_t det, Int_t layer)
 {
-  // Select modules to display by sub-det type / layer. 
+  // Select modules to display by sub-det type / layer.
 
   fSubDet = det;
-  fIDs.clear();
+  fModuleIDs.clear();
   AliEveITSModuleSelection sel = AliEveITSModuleSelection();
   sel.SetType (det);
   sel.SetLayer(layer);
-  fDigitsInfo->GetModuleIDs(&sel, fIDs);
+  fDigitsInfo->GetModuleIDs(&sel, fModuleIDs);
   //in reder menu define a space between left and right pager
-  fPagerGap = 1.2*TextLength(Form("%d/%d",GetPages(), GetPages()));
-  Start();
-}
-
-/******************************************************************************/
-
-void AliEveITSModuleStepper::DisplayTheta(Float_t min, Float_t max)
-{
-  // Select modules to display by theta range.
-
-  fIDs.clear();
-  AliEveITSModuleSelection sel = AliEveITSModuleSelection();
-  sel.SetThetaRange(min, max);
-  fDigitsInfo->GetModuleIDs(&sel, fIDs);
   Start();
 }
 
@@ -232,8 +190,8 @@ Int_t AliEveITSModuleStepper::GetPages()
 {
   // Get number of all pages.
 
-  Int_t n = fIDs.size()/Nxy();
-  if(fIDs.size() % Nxy()) n++;
+  Int_t n = fModuleIDs.size()/Nxy();
+  if(fModuleIDs.size() % Nxy()) n++;
   return n;
 }
 
@@ -243,17 +201,16 @@ void  AliEveITSModuleStepper::Apply()
 {
   // Apply current settings to children modules.
 
-  // printf("AliEveITSModuleStepper::Apply fPosition %d \n", fPosition);
   gEve->DisableRedraw();
   Capacity();
 
   UInt_t idx = fPosition;
   for(List_i childit=fChildren.begin(); childit!=fChildren.end(); ++childit)
   {
-    if(idx < fIDs.size())
+    if(idx < fModuleIDs.size())
     {
       AliEveITSScaledModule* mod = dynamic_cast<AliEveITSScaledModule*>(*childit);
-      mod->SetID(fIDs[idx], kFALSE);
+      mod->SetID(fModuleIDs[idx], kFALSE);
       TEveTrans& tr = mod->RefMainTrans();
       tr.UnitTrans();
       tr.RotateLF(3,2,TMath::PiOver2());
@@ -271,11 +228,10 @@ void  AliEveITSModuleStepper::Apply()
       Double_t sy = (mx*fStepper->GetDx())/mz;
       if(sy > fStepper->GetDy())
       {
-        //	printf("fit width \n");
 	sy =  fStepper->GetDy();
 	sx =  (mz*fStepper->GetDx())/mx;
       }
-      Float_t scale = (fExpandCell*sx)/mz;
+      Float_t scale = (0.85*sx)/mz;
       tr.Scale(scale, scale, scale);
 
       Float_t  p[3];
@@ -304,370 +260,6 @@ void  AliEveITSModuleStepper::Apply()
   gEve->EnableRedraw();
 }
 
-/******************************************************************************/
-
-void AliEveITSModuleStepper::Render(TGLRnrCtx& rnrCtx)
-{
-  // Render the overlay elements.
-
-  // render everyting in relative coordinates
-  glMatrixMode(GL_PROJECTION);
-  glPushMatrix();
-  glLoadIdentity();
-  if (rnrCtx.Selection())
-  {
-    // Should be
-    // glLoadMatrix(rnrCtx.GetCamera()->GetProjMBase());
-    TGLRect rect(*rnrCtx.GetPickRectangle());
-    rnrCtx.GetCamera()->WindowToViewport(rect);
-    gluPickMatrix(rect.X(), rect.Y(), rect.Width(), rect.Height(),
-                  (Int_t*) rnrCtx.GetCamera()->RefViewport().CArr());
-  }
-
-  glMatrixMode(GL_MODELVIEW);
-  glPushMatrix();
-  glLoadIdentity();
-
-  GLboolean lightp;
-  glGetBooleanv(GL_LIGHTING, &lightp);
-  if (lightp) glDisable(GL_LIGHTING);
-
-  glPushAttrib(GL_ENABLE_BIT | GL_POLYGON_BIT);
-  glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-  glDisable(GL_CULL_FACE);
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-  RenderMenu();
-  RenderPalette(fPaletteLength, 1.6*fWWidth, fWHeight*0.6);
-  glPopMatrix();
-  glPopAttrib();
-
-  if (lightp) glEnable(GL_LIGHTING);
-
-  glMatrixMode(GL_PROJECTION);
-  glPopMatrix();
-
-  glMatrixMode(GL_MODELVIEW);
-  RenderCellIDs();
-}
-
-
-/******************************************************************************/
-// Protected sub-renderers
-/******************************************************************************/
-
-//______________________________________________________________________________
-Float_t AliEveITSModuleStepper::TextLength(const char* txt)
-{
-  // Calculate length of text txt.
-
-  Float_t llx, lly, llz, urx, ury, urz;
-  fText->BBox(txt, llx, lly, llz, urx, ury, urz);
-  return (urx-llx)*fTextSize;
-}
-
-//______________________________________________________________________________
-void AliEveITSModuleStepper::RenderString(TString string, Int_t id)
-{
-  // Render text for button id.
-
-  Float_t txtY = fWHeight*0.5;
-  Float_t txtl = TextLength(string.Data());
-
-  if(id > 0) glLoadName(id);
-  if(id>0 && fWActive == id)
-    fText->SetTextColor(fWActiveCol);
-  else
-    fText->SetTextColor(fFontCol);
-
-
-  if(id>0)
-  {
-    if(fWActive == id)
-      fText->SetTextColor(fWActiveCol);
-    else
-      fText->SetTextColor(fFontCol);
-
-    glLoadName(id);
-    Float_t ss = fWWidth*0.4;
-    fText->PaintGLText(ss, txtY, -0.8, string.Data());
-    // box
-    Float_t bw =2*ss+txtl;
-    RenderFrame(bw,fWHeight*2,id);
-    glTranslatef( bw, 0, 0);
-  }
-  else
-  {
-    fText->SetTextColor(fFontCol);
-    fText->PaintGLText(0, txtY, -0.8, string.Data());
-    glTranslatef(txtl, 0, 0);
-  }
-}
-
-//______________________________________________________________________________
-void AliEveITSModuleStepper::RenderFrame(Float_t dx, Float_t dy, Int_t id)
-{
-  // Render frame for button id, taking into account if it is currently
-  // below mouse.
-
-  if (fRnrFrame == kFALSE)return;
-
-  glPushAttrib(GL_ENABLE_BIT | GL_POLYGON_BIT);
-  glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-  if (fWActive == id)
-    TGLUtil::Color(fWActiveCol);
-  else
-    TGLUtil::Color(fWCol);
-
-  glBegin(GL_QUADS);
-  glVertex2f(0, 0);   glVertex2f(dx, 0);
-  glVertex2f(dx, dy); glVertex2f(0, dy);
-  glEnd();
-  glPopAttrib();
-}
-
-//______________________________________________________________________________
-void AliEveITSModuleStepper::RenderSymbol(Float_t dx, Float_t dy, Int_t id)
-{
-  // Render an overlay / GUI symbol, based on button id:
-  // 1 ~ <, 2 ~ <<, 3 ~ >, 4 ~ >>, 5 ~ ^, 6 ~ v.
-
-  glLoadName(id);
-
-  if (fWActive == id)
-    TGLUtil::Color(fWActiveCol);
-  else
-    TGLUtil::Color(fWCol);
-
-  Float_t xs = dx/4, ys = dy/4;
-  if(id == 0) {
-    glBegin(GL_QUADS);
-    glVertex2f(0,ys); glVertex2f(0, ys*3);
-    glVertex2f(dx, ys*3); glVertex2f(dx, ys);
-    glEnd();
-    return;
-  }
-
-  glBegin(GL_TRIANGLES);
-  switch (id) {
-    case 1:
-    {
-      // left
-      //      glVertex2f(xs*2.5, ys*3); glVertex2f(xs*1.5, ys*2); glVertex2f(xs*2.5, ys);
-      glVertex2f(xs*3, ys*3); glVertex2f(xs*1, ys*2); glVertex2f(xs*3, ys);
-      break;
-    }
-    case 2:
-    {
-      //double left
-      glVertex2f(xs*2, ys*3); glVertex2f(xs, ys*2);    glVertex2f(xs*2, ys);
-      glVertex2f(xs*3, ys*3); glVertex2f(xs*2, ys*2);  glVertex2f(xs*3, ys);
-      break;
-    }
-    case 3:
-    {
-      // right
-      //glVertex2f(xs*1.5, ys); glVertex2f(xs*2.5, ys*2); glVertex2f(xs*1.5, ys*3);
-      glVertex2f(xs*1, ys); glVertex2f(xs*3, ys*2); glVertex2f(xs*1, ys*3);
-      break;
-    }
-    case 4:
-    {
-      // double right
-      glVertex2f(xs, ys);     glVertex2f(xs*2, ys*2);   glVertex2f(xs, ys*3);
-      glVertex2f(xs*2, ys);   glVertex2f(xs*3, ys*2);   glVertex2f(xs*2, ys*3);
-      break;
-    }
-    case 5:
-    {
-      // up
-      glVertex2f(xs, ys*2.5);  glVertex2f(xs*2, ys*3.5); glVertex2f(xs*3, ys*2.5);
-      break;
-    }
-    case 6:
-    {
-      // down
-      glVertex2f(xs, ys*1.5);  glVertex2f(xs*2, ys*0.5); glVertex2f(xs*3, ys*1.5);
-      break;
-    }
-
-    default:
-      break;
-  }
-  glEnd();
-  glLoadName(0);
-}
-
-//______________________________________________________________________________
-void AliEveITSModuleStepper::RenderPalette(Float_t dx, Float_t x, Float_t y)
-{
-  // Render color palette with number axis.
-
-  glPushMatrix();
-  glLoadIdentity();
-  glTranslatef(1 -x- dx, -1+y*4, 0);
-  AliEveITSModule* qs = dynamic_cast<AliEveITSModule*>(*BeginChildren());
-  TEveRGBAPalette* p = qs->GetPalette();
-  glBegin(GL_QUAD_STRIP);
-  TGLUtil::Color4ubv(p->ColorFromValue(p->GetMinVal()));
-  glVertex2f(0, 0);
-  glVertex2f(0, y);
-  if (p->GetMaxVal() > p->GetMinVal() + 1)
-  {
-    Float_t xs = dx/(p->GetMaxVal() - p->GetMinVal());
-    Float_t x0 = xs;
-    for(Int_t i=p->GetMinVal() + 1; i<p->GetMaxVal(); i++)
-    {
-      TGLUtil::Color4ubv(p->ColorFromValue(i));
-      glVertex2f(x0, 0);
-      glVertex2f(x0, y);
-      x0+=xs;
-    }
-  }
-  TGLUtil::Color4ubv(p->ColorFromValue(p->GetMaxVal()));
-  glVertex2f(dx, 0);
-  glVertex2f(dx, y);
-  glEnd();
-
-  if (p->GetMaxVal() > p->GetMinVal())
-  {
-    glRotatef(-90,1, 0, 0 );
-    Double_t v1[3] = {0., 0., 0.};
-    Double_t v2[3] = {dx, 0, 0.};
-    fAxis->SetLabelsSize(fTextSize/dx);
-    fAxis->PaintGLAxis(v1, v2, p->GetMinVal(), p->GetMaxVal(), 206);
-  }
-  glPopMatrix();
-}
-
-//______________________________________________________________________________
-void AliEveITSModuleStepper::RenderMenu()
-{
-  // Render menu: page control, scale control, detector type buttons.
-
-  Float_t ww = 2*fWWidth;
-  Float_t wh = 2*fWHeight;
-
-  // transparent bar
-  Float_t a=0.3;
-  TGLUtil::Color4f(a, a, a, a);
-  Float_t h = 1.9*wh*(1+ 2*fWOff);
-  if(1) {
-    glBegin(GL_QUADS);
-    glVertex3f(-1, -1,   0.1); glVertex3f(-1, -1+h, 0.1);
-    glVertex3f(1 , -1+h, 0.1); glVertex3f( 1, -1  , 0.1);
-    glEnd();
-  }
-
-  Float_t yBase = -1 + wh*0.35;
-  glTranslatef(-1, yBase, 0.);
-  glPushName(0);
-  // pager
-  glPushMatrix();
-  glTranslatef(ww, 0, 0.);
-  fText->SetTextSize(fTextSize);
-  Float_t soff = ww*1.3;
-  glTranslatef(0, fWOff*wh, 0);
-  RenderSymbol(ww, wh, 2);
-  RenderFrame(ww,wh,2);
-  glTranslatef(soff, 0, 0);
-  RenderSymbol(ww, wh, 1);
-  RenderFrame(ww,wh,1);
-  glTranslatef(soff, 0, 0);
-  // text info
-  {
-    const char* txt =  Form("%d/%d ", GetCurrentPage(), GetPages());
-    Float_t dx = (fPagerGap - TextLength(txt))*0.5;
-    fText->SetTextColor(fFontCol);
-    fText->PaintGLText(dx, wh*0.25, -0.8, txt);
-  }
-  glTranslatef(fPagerGap, 0, 0);
-
-  RenderSymbol(ww, wh, 3);
-  RenderFrame(ww,wh,3);
-  glTranslatef(soff, 0, 0);
-  RenderSymbol(ww, wh, 4);
-  RenderFrame(ww,wh,4);
-  glTranslatef(2*ww, 0, 0);
-  glPopMatrix();
-
-  // scale info
-  glPushMatrix();
-  AliEveITSDigitsInfo* di = fDigitsInfo;
-  Int_t scale = fScaleInfo->GetScale() - 1;
-  AliEveITSScaledModule* sm = dynamic_cast<AliEveITSScaledModule*>(*BeginChildren());
-  Int_t cnx = 0, cnz = 0;
-  switch(sm->GetSubDetID())
-  {
-    case 0:
-      cnx = di->fSPDScaleX[scale], cnz = di->fSPDScaleZ[scale];
-      break;
-    case 1:
-      cnx = di->fSDDScaleX[scale], cnz = di->fSDDScaleZ[scale];
-      break;
-    case 2:
-      cnx = di->fSSDScale[scale], cnz = 1;
-      break;
-  }
-  glTranslatef(10*ww,0, 0);
-  RenderString(Form("Zoom: "));
-  glPushMatrix();
-  glTranslatef(0, 0.2*wh, 0);
-  RenderSymbol(ww, wh*0.9, 5);
-  glTranslatef(0, 0.4*wh, 0);
-  RenderFrame(ww, wh*0.5, 5);
-  glPopMatrix();
-  RenderSymbol(ww, wh*0.9, 6);
-  RenderFrame(ww, wh*0.5, 6);
-  glTranslatef(ww, 0, 0);
-  RenderString(Form("%dx%d ", cnx, cnz));
-  glPopMatrix();
-
-  //choose detector
-  glPushMatrix();
-  glTranslatef(18*ww, 0, 0);
-  Float_t bs = ww*0.2;
-  RenderString("SPD", 8);
-  glTranslatef(bs, 0, 0);
-  RenderString("SDD", 9);
-  glTranslatef(bs, 0, 0);
-  RenderString("SSD", 10);
-  glPopMatrix();
-
-  glPopName();
-}
-
-//______________________________________________________________________________
-void AliEveITSModuleStepper::RenderCellIDs()
-{
-  // Render module-ids under their cells.
-
-  fText->SetTextSize(fStepper->GetDy()*0.1);
-  fText->SetTextColor(fFontCol);
-  Double_t x, y, z;
-  Double_t sx, sy, sz;
-  UInt_t idx = fPosition;
-  for (List_i childit=fChildren.begin(); childit!=fChildren.end(); ++childit)
-  {
-    if(idx < fIDs.size())
-    {
-      AliEveITSScaledModule* mod = dynamic_cast<AliEveITSScaledModule*>(*childit);
-      TEveTrans& tr = mod->RefMainTrans();
-      TString name = Form("%d",mod->GetID());
-      tr.GetPos(x,y,z);
-      x += fStepper->GetDx()*0.5;
-      y -= fStepper->GetDy()*0.5;
-      z += 0.4; // !!! MT hack - cross check with overlay rendering.
-      Float_t llx, lly, llz, urx, ury, urz;
-      fText->BBox(name, llx, lly, llz, urx, ury, urz);
-      tr.GetScale(sx, sy, sz);
-      fText->PaintGLText(x-(urx-llx)*sx, y, z, name);
-      idx++;
-    }
-  }
-}
-
 
 /******************************************************************************/
 // Virtual event handlers from TGLOverlayElement
@@ -686,8 +278,8 @@ Bool_t AliEveITSModuleStepper::Handle(TGLRnrCtx          & /*rnrCtx*/,
     case kMotionNotify:
     {
       Int_t item = rec.GetN() < 2 ? -1 : (Int_t)rec.GetItem(1);
-      if (fWActive != item) {
-        fWActive = item;
+      if (fActiveID != item) {
+        fActiveID = item;
         return kTRUE;
       } else {
         return kFALSE;
@@ -738,13 +330,13 @@ Bool_t AliEveITSModuleStepper::Handle(TGLRnrCtx          & /*rnrCtx*/,
           break;
 
         case 8:
-            DisplayDet(0, -1);
+	  DisplayDet(0, -1);
           break;
         case 9:
-            DisplayDet(1, -1);
+	  DisplayDet(1, -1);
           break;
         case 10:
-            DisplayDet(2, -1);
+	  DisplayDet(2, -1);
           break;
         default:
           break;
@@ -771,5 +363,202 @@ void AliEveITSModuleStepper::MouseLeave()
 {
   // Mouse has left overlay area.
 
-  fWActive = -1;
+  fActiveID = -1;
+}
+
+
+/******************************************************************************/
+// Protected sub-renderers
+/******************************************************************************/
+
+//______________________________________________________________________________
+void AliEveITSModuleStepper::RenderText(const char* txt, Int_t id, const TGLFont &font)
+{
+  // Render text for button id.
+
+  Float_t llx, lly, llz, urx, ury, urz;
+
+  (fActiveID == id && id > 0) ? TGLUtil::Color(fActiveCol) :TGLUtil::Color(fTextCol);
+  glPushMatrix();
+  font.BBox(txt, llx, lly, llz, urx, ury, urz);
+  glLoadName(id);
+  font.Render(txt);
+  glPopMatrix();
+  glTranslatef(urx, 0, 0);
+}
+
+//______________________________________________________________________________
+void AliEveITSModuleStepper::RenderPalette(TEveRGBAPalette* p)
+{
+  // Render color palette with number axis.
+
+  Float_t length = 7*fTextSize;
+  Float_t x = 1.5*fTextSize;
+  Float_t y = 0.2*fTextSize;
+
+  glTranslatef(x, 0.8*fTextSize, 0);
+
+  TGLCapabilitySwitch lights_off(GL_LIGHTING, kFALSE);
+
+  glPushAttrib(GL_ENABLE_BIT | GL_POLYGON_BIT);
+  glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+  glDisable(GL_CULL_FACE);
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+
+  glBegin(GL_QUAD_STRIP);
+  TGLUtil::Color4ubv(p->ColorFromValue(p->GetMinVal()));
+  glVertex2f(0, 0);
+  glVertex2f(0, y);
+  if (p->GetMaxVal() > p->GetMinVal() + 1)
+  {
+    Float_t xs = length/(p->GetMaxVal() - p->GetMinVal());
+    Float_t x0 = xs;
+    for(Int_t i=p->GetMinVal() + 1; i<p->GetMaxVal(); i++)
+    {
+      TGLUtil::Color4ubv(p->ColorFromValue(i));
+      glVertex2f(x0, 0);
+      glVertex2f(x0, y);
+      x0+=xs;
+    }
+  }
+  TGLUtil::Color4ubv(p->ColorFromValue(p->GetMaxVal()));
+  glVertex2f(length, 0);
+  glVertex2f(length, y);
+  glEnd();
+
+  glRotatef(-90,1, 0, 0 );
+  Double_t v1[3] = {0., 0., 0.};
+  Double_t v2[3] = {length, 0, 0.};
+  fAxis->SetTextColor(kWhite);
+  fAxis->SetLineColor(kWhite);
+  fAxis->PaintGLAxis(v1, v2, p->GetMinVal(), p->GetMaxVal(), 5);
+  glPopAttrib();
+}
+
+//______________________________________________________________________________
+void AliEveITSModuleStepper::RenderMenu(Int_t curP, Int_t maxP, Int_t scaleX, Int_t scaleZ)
+{
+  // Make UI to set page in stepper and UI to scale in the AliEveITSScaledModule.
+
+  TGLUtil::Color(fTextCol);
+  fTextFont.PreRender();
+  glTranslatef(0, fTextSize*0.3, 0);
+  // pager
+  glTranslatef(fTextSize*0.2,0 , 0);
+  RenderText("9", 2, fSymbolFont); // last page
+  RenderText("3", 1, fSymbolFont);//last page
+  RenderText(Form(" %d/%d ", curP, maxP),-1, fTextFont); //status
+  RenderText("4", 3, fSymbolFont); // next page
+  RenderText(":",4, fSymbolFont); // last page
+  // scale
+  glTranslatef(fTextSize,0, 0);
+  RenderText(Form("Zoom: "), -1, fTextFont);
+  RenderText("5", 5, fSymbolFont);
+  RenderText("6", 6, fSymbolFont);
+  RenderText(Form("%dx%d ", scaleX, scaleZ), -1, fTextFont);
+  // detectors
+  glTranslatef(fTextSize, 0, 0);
+  RenderText("SPD ", 8, fTextFont );
+  RenderText("SDD ", 9, fTextFont);
+  RenderText("SSD ", 10, fTextFont);
+  fTextFont.PostRender();
+}
+
+//______________________________________________________________________________
+void AliEveITSModuleStepper::RenderModuleIDs()
+{
+  // Render module-ids.
+
+  Double_t x, y, z;
+  UInt_t idx = fPosition;
+  Float_t llx, lly, llz, urx, ury, urz;
+  fModuleFont.PreRender();
+  TGLUtil::Color(kWhite);
+  for (List_i childit=fChildren.begin(); childit!=fChildren.end(); ++childit)
+  {
+    if(idx < fModuleIDs.size())
+    {
+      AliEveITSScaledModule* mod = dynamic_cast<AliEveITSScaledModule*>(*childit);
+      TEveTrans& tr = mod->RefMainTrans();
+      tr.GetPos(x,y,z);
+      x += fStepper->GetDx()*0.5;
+      y -= fStepper->GetDy()*0.5;
+      z += 0.4; // !!! MT hack - cross check with overlay rendering.
+      const char* txt = Form("%d",mod->GetID());
+      fModuleFont.BBox(txt, llx, lly, llz, urx, ury, urz);
+      glRasterPos3f(x, y, z);
+      glBitmap(0, 0, 0, 0,-urx, 0, 0);
+      fModuleFont.Render(txt);
+      idx++;
+    }
+  }
+  fModuleFont.PostRender();
+}
+
+/******************************************************************************/
+
+void AliEveITSModuleStepper::Render(TGLRnrCtx& rnrCtx)
+{
+  // Render the overlay elements.
+
+  AliEveITSScaledModule* sm = dynamic_cast<AliEveITSScaledModule*>(*BeginChildren());
+  Int_t scale = fScaleInfo->GetScale() - 1;
+  Int_t cnx = 0, cnz = 0;
+  switch(sm->GetSubDetID())
+  {
+    case 0:
+      cnx = fDigitsInfo->fSPDScaleX[scale], cnz = fDigitsInfo->fSPDScaleZ[scale];
+      break;
+    case 1:
+      cnx = fDigitsInfo->fSDDScaleX[scale], cnz = fDigitsInfo->fSDDScaleZ[scale];
+      break;
+    case 2:
+      cnx = fDigitsInfo->fSSDScale[scale], cnz = 1;
+      break;
+  }
+
+  // init fonts
+  if(fTextFont.GetMode() == TGLFont::kUndef)
+  {
+    fTextFont = rnrCtx.GetFont(fTextSize, 4, TGLFont::kTexture);
+    fSymbolFont =  rnrCtx.GetFont(72, 31, TGLFont::kTexture);
+    fModuleFont =  rnrCtx.GetFont(14, 4, TGLFont::kPixmap);
+  }
+
+  {
+    // toolbar
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
+    if (rnrCtx.Selection())
+    {
+      TGLRect rect(*rnrCtx.GetPickRectangle());
+      rnrCtx.GetCamera()->WindowToViewport(rect);
+      gluPickMatrix(rect.X(), rect.Y(), rect.Width(), rect.Height(),
+                    (Int_t*) rnrCtx.GetCamera()->RefViewport().CArr());
+    }
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glLoadIdentity();
+    glTranslatef(-1, -1, 0); // translate to lower left corner
+    Float_t scale = fMenuHeight/fTextSize*0.5; // scale text
+    glScalef(scale, scale, 1.);
+
+    //menu
+    glPushName(0);
+    RenderMenu(GetCurrentPage(), GetPages(), cnx, cnz);
+    glPopName();
+    //palette
+    Double_t ls = 1.6*scale*fTextSize;
+    fAxis->SetLabelsSize(ls);
+    fAxis->SetLabelsOffset(ls*1.2);
+    RenderPalette(sm->GetPalette());
+
+    glPopMatrix();
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+    glMatrixMode(GL_MODELVIEW);
+  }
+  RenderModuleIDs();
 }

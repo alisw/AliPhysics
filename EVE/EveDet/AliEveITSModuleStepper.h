@@ -11,47 +11,40 @@
 #define AliEveITSModuleStepper_H
 
 #include <TEveElement.h>
-#include <TEveGridStepper.h>
-
 #include <TGLOverlay.h>
+#include <TEveGridStepper.h>
+#include <TGLFontManager.h>
 
 #include <vector>
 
-class TGLText;
-class TGLAxis;
 
+class TEveRGBAPalette;
 class AliEveITSDigitsInfo;
 class AliEveDigitScaleInfo;
+
+class TGLAxis;
+
 
 class AliEveITSModuleStepper : public TEveElementList,
 			       public TGLOverlayElement
 {
-  friend class ITSModuleStepperGL;
-
 public:
-
   typedef std::vector<UInt_t>           vpInt_t;
   typedef std::vector<UInt_t>::iterator vpInt_i;
-
 
   AliEveITSModuleStepper(AliEveITSDigitsInfo* di);
   virtual ~AliEveITSModuleStepper();
 
-  // external functions
-  void     DisplayDet(Int_t det, Int_t layer = -1);
-  void     DisplayTheta(Float_t min, Float_t max);
+  TEveGridStepper* GetStepper()                   { return fStepper; }
+  void             SetStepper(TEveGridStepper* s) { fStepper = s; Apply(); }
 
-  // overlay functions
+  // overlay
   virtual  Bool_t MouseEnter(TGLOvlSelectRecord& selRec);
-  virtual  Bool_t Handle(TGLRnrCtx& rnrCtx, TGLOvlSelectRecord& selRec,
-                        Event_t* event);
-  virtual void   MouseLeave();
-  virtual void   Render(TGLRnrCtx& rnrCtx);
+  virtual  Bool_t Handle(TGLRnrCtx& rnrCtx, TGLOvlSelectRecord& selRec, Event_t* event);
+  virtual  void   MouseLeave();
 
-  // stepper
-  TEveGridStepper*  GetStepper()                   { return fStepper; }
-  void              SetStepper(TEveGridStepper* s) { fStepper = s; Apply(); }
-
+ // menu callbacks
+  void     DisplayDet(Int_t det, Int_t layer = -1);
   Int_t    GetCurrentPage() const;
   Int_t    GetPages();
   void     Start();
@@ -61,64 +54,45 @@ public:
   void     Apply();
   void     Capacity();
 
-  // getters/setters
-  Color_t  GetWColor() const     { return fWCol; }
-  void     SetWColor(Color_t c)  { fWCol = c;    }
-  TGLText* GetFont()             { return fText; }
-  void     SetGLText(TGLText* t) { fText = t;    }
-
+  virtual void    Render(TGLRnrCtx& rnrCtx);
 
 protected:
-
   AliEveITSDigitsInfo    *fDigitsInfo; // Source of data and geometry.
   AliEveDigitScaleInfo   *fScaleInfo;  // Parameters for digit-scaling.
-  Int_t                   fSubDet;     // Sub-det, 0~SPD, 1~SDD, 2~SSD.
-
   TEveGridStepper        *fStepper;    // Module placement.
-  TGLAxis                *fAxis;       // Axis of color scale.
-  TGLText                *fText;       // GL text-output object.
-  Float_t                 fTextSize;   // Overlay text size.
-  Float_t                 fPagerGap;   //
-  Bool_t                  fRnrFrame;   //
 
-  // module configuration
-  Float_t                 fExpandCell;     //
-  Color_t                 fModuleFrameCol; //
+  vpInt_t                 fModuleIDs;  // Vector of module IDs to be displayed.
+  UInt_t                  fPosition;  // Position of top corner ITS module in vector fIDs.
+  Int_t                   fSubDet;    // Sub-det, 0~SPD, 1~SDD, 2~SSD.
 
-  // palette configuratiom
-  Float_t                 fPaletteOffset;  //
-  Float_t                 fPaletteLength;  //
+  mutable TGLFont         fModuleFont; // Pixmap font for module ids.
+  mutable TGLFont         fTextFont;   // Texture font for text tool bar.
+  mutable TGLFont         fSymbolFont; // Webdings font for pager and scale actions. 
+  TGLAxis*                fAxis;
 
-  // symbol configuration
-  Int_t                   fWActive;     // 
-  Float_t                 fWWidth;      // 
-  Float_t                 fWHeight;     // 
-  Float_t                 fWOff;        // Offset relative to widget size.
-  Color_t                 fWCol;        // 
-  Color_t                 fWActiveCol;  // 
-  Color_t                 fFontCol;     // 
+  Float_t                 fMenuHeight; // Height of a tool bar.
+  Int_t                   fTextSize;   // Size of texture for menu font.
+  Color_t                 fTextCol;    // Default text color in menu.
+  Color_t                 fActiveCol;  // Color of selected menu item.
 
-  // wrappers
-  Float_t TextLength(const char* txt);
-  void    RenderString(TString tex ,Int_t id = -1);
-  void    RenderFrame(Float_t dx, Float_t dy, Int_t id);
-  void    RenderSymbol(Float_t dx, Float_t dy, Int_t id);
-  void    RenderPalette(Float_t dx, Float_t x, Float_t y);
-  void    RenderMenu();
-  void    RenderCellIDs();
+  Int_t                   fActiveID;   // Id of active menu item.
 
-  // module ID navigation
+  // ITS module ID navigation
   Int_t  Nxy()            const { return fStepper->GetNx()*fStepper->GetNy(); }
-  void   AddToList(Int_t modID) { fIDs.push_back(modID);}
-  void   ResetList()            { fIDs.clear();}
+  void   AddToList(Int_t modID) { fModuleIDs.push_back(modID);}
+  void   ResetList()            { fModuleIDs.clear();}
   void   SetFirst(Int_t first);
 
-private:
-  vpInt_t                 fIDs;       // Vector of module IDs to be displayed.
-  UInt_t                  fPosition;  // Position of top corner ITS module in vector fIDs.
 
+private:
   AliEveITSModuleStepper(const AliEveITSModuleStepper&);            // Not implemented
   AliEveITSModuleStepper& operator=(const AliEveITSModuleStepper&); // Not implemented
+
+  // GUI
+  void   RenderModuleIDs();
+  void   RenderText(const char* tex ,Int_t id, const TGLFont &font);
+  void   RenderPalette(TEveRGBAPalette* p);
+  void   RenderMenu(Int_t currP, Int_t MaxP, Int_t scaleX, Int_t scaleZ);
 
   ClassDef(AliEveITSModuleStepper, 0); // Display scaled ITS modules in a paged layout, also providing GL-overaly control GUI.
 };
