@@ -37,7 +37,11 @@ SRCS = 	AliITS.cxx \
 		AliITSv11GeometrySPD.cxx \
 		AliITSv11Hybrid.cxx \
 		AliITSv11GeometrySupport.cxx \
-		AliITSQADataMakerSim.cxx 
+		AliITSQADataMakerSim.cxx \
+                AliITSQASPDDataMakerSim.cxx \
+                AliITSQASDDDataMakerSim.cxx \
+                AliITSQASSDDataMakerSim.cxx
+ 
 
 
 HDRS:=  $(SRCS:.cxx=.h)

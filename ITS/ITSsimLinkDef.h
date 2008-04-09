@@ -59,6 +59,9 @@
 
 #pragma link C++ class AliITSTrigger+;
 #pragma link C++ class AliITSQADataMakerSim+;
+#pragma link C++ class AliITSQASPDDataMakerSim+;
+#pragma link C++ class AliITSQASDDDataMakerSim+;
+#pragma link C++ class AliITSQASSDDataMakerSim+;
 
 
 

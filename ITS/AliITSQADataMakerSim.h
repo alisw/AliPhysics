@@ -3,7 +3,6 @@
 /* Copyright(c) 2007-2009, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-
 /* $Id$ */
 
 //
@@ -12,35 +11,49 @@
 //  contained in a DB
 //
 //
-//  W. Ferrarese Nov 2007
-
-
-
+//  W. Ferrarese + P. Cerello Feb 2008
 
 #include "AliQADataMakerSim.h"
-class TObjArray;
-class TH1F;
-class TH2D;
+
+class AliITSQASPDDataMakerSim;
+class AliITSQASDDDataMakerSim;
+class AliITSQASSDDataMakerSim;
 class AliRawReader;
-class AliITSgeomTGeo;
 
 class AliITSQADataMakerSim: public AliQADataMakerSim {
 
+friend class AliITSQASPDDataMakerSim;
+friend class AliITSQASDDDataMakerSim;
+friend class AliITSQASSDDataMakerSim;
+
 public:
-  AliITSQADataMakerSim();          // ctor
-  AliITSQADataMakerSim(Int_t /* ldc */, Bool_t /* kMode =  kFALSE */);
+  AliITSQADataMakerSim(Short_t subDet = 0); // subDet = 0 (ALL), 1 (SPD), 2 (SDD), 3 (SSD)
   AliITSQADataMakerSim(const AliITSQADataMakerSim& qadm);
   AliITSQADataMakerSim& operator = (const AliITSQADataMakerSim& qac);
   virtual void StartOfDetectorCycle();
   virtual void EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray * list);
-   virtual ~AliITSQADataMakerSim() {;} // dtor
+  virtual void InitDigits();
+  virtual void InitSDigits();
+  virtual void InitHits();
+  virtual void MakeDigits(TClonesArray * digits);
+  virtual void MakeSDigits(TClonesArray * sdigits);
+  virtual void MakeHits(TClonesArray * hits);
+  virtual void MakeDigits(TTree * digits);
+  virtual void MakeSDigits(TTree * sdigits);
+  virtual void MakeHits(TTree * hits);
+  virtual ~AliITSQADataMakerSim(); // dtor
 
 private:
 
-  ClassDef(AliITSQADataMakerSim,1)  // description 
+  Short_t fSubDetector;                    // subDetector: 0 (ALL), 1 (SPD), 2 (SDD), 3 (SSD)
+
+  AliITSQASPDDataMakerSim *fSPDDataMaker;  // SPD Data Maker 
+  AliITSQASDDDataMakerSim *fSDDDataMaker;  // SDD Data Maker 
+  AliITSQASSDDataMakerSim *fSSDDataMaker;  // SSD Data Maker 
+
+  ClassDef(AliITSQADataMakerSim,2)         // description 
 
 };
 
 #endif
-
 
