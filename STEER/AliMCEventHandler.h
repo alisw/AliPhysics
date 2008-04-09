@@ -34,9 +34,9 @@ public:
     AliMCEventHandler();
     AliMCEventHandler(const char* name, const char* title);
     virtual ~AliMCEventHandler();
-    virtual void         SetOutputFileName(char* /* fname */) {;}
-    virtual char*        GetOutputFileName() {return 0;}
-    virtual void         SetInputPath(char* fname); 
+    virtual void         SetOutputFileName(const char* /* fname */) {;}
+    virtual const char*  GetOutputFileName() {return 0;}
+    virtual void         SetInputPath(const char* fname); 
     virtual void         SetInputTree(TTree* /*tree*/) {;}
     virtual TString*     GetInputPath() const {return fPathName;}
     virtual Bool_t       Init(Option_t* opt);

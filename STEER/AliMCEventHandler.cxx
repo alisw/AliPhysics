@@ -285,7 +285,7 @@ Bool_t AliMCEventHandler::TerminateIO()
 }
     
 
-void AliMCEventHandler::SetInputPath(char* fname)
+void AliMCEventHandler::SetInputPath(const char* fname)
 {
     // Set the input path name
     delete fPathName;

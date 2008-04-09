@@ -22,8 +22,8 @@ class AliInputEventHandler : public AliVEventHandler {
     AliInputEventHandler();
     AliInputEventHandler(const char* name, const char* title);
     virtual ~AliInputEventHandler();
-    virtual void         SetOutputFileName(char* /*fname*/) {;}
-    virtual char        *GetOutputFileName()                          {return 0;}
+    virtual void         SetOutputFileName(const char* /*fname*/) {;}
+    virtual const char  *GetOutputFileName()                          {return 0;}
     virtual Bool_t       Init(Option_t* /*opt*/)                      {return kTRUE;}
     virtual Bool_t       Init(TTree* /*tree*/, Option_t* /*opt*/)     {return kTRUE;}
     virtual Bool_t       BeginEvent(Long64_t /*entry*/)               {return kTRUE;}

@@ -21,8 +21,8 @@ class AliVEventHandler : public TNamed {
     AliVEventHandler(const char* name, const char* title);
     virtual ~AliVEventHandler();
     // Output
-    virtual void         SetOutputFileName(char* fname)   = 0;
-    virtual char*        GetOutputFileName()              = 0;
+    virtual void         SetOutputFileName(const char* fname)   = 0;
+    virtual const char*  GetOutputFileName()              = 0;
     // Input
     virtual void         SetInputTree(TTree* tree)        = 0;
     // Steering 
