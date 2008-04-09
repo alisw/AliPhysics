@@ -700,7 +700,10 @@ Bool_t AliPHOSDigitizer::Init()
   // Makes all memory allocations
   fInit = kTRUE ; 
 
-  const AliPHOSGeometry *geom = AliPHOSGeometry::GetInstance() ;
+  AliPHOSGeometry *geom;
+  if (!(geom = AliPHOSGeometry::GetInstance())) 
+        geom = AliPHOSGeometry::GetInstance("IHEP","");
+//   const AliPHOSGeometry *geom = AliPHOSGeometry::GetInstance() ;
 
   fEmcCrystals = geom->GetNModules() * geom->GetNCristalsInModule() ;
   

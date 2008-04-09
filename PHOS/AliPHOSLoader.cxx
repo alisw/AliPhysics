@@ -50,11 +50,11 @@
 //     ................
 //  please->GetEvent(event) ;    // reads new event from galice.root
 //                  
-//*-- Author: Yves Schutz (SUBATECH) & Dmitri Peressounko (RRC KI & SUBATECH)
-//*--         Completely redesigned by Dmitri Peressounko March 2001  
+//-- Author: Yves Schutz (SUBATECH) & Dmitri Peressounko (RRC KI & SUBATECH)
+//--         Completely redesigned by Dmitri Peressounko March 2001  
 //
-//*-- YS June 2001 : renamed the original AliPHOSIndexToObject and make
-//*--         systematic usage of TFolders without changing the interface        
+//-- YS June 2001 : renamed the original AliPHOSIndexToObject and make
+//--         systematic usage of TFolders without changing the interface        
 //////////////////////////////////////////////////////////////////////////////
 
 
@@ -130,10 +130,10 @@ AliPHOSLoader::~AliPHOSLoader()
   Clean(fgkTracksName);
   Clean(fgkRecParticlesName);
   CleanFolders() ;
-  // set to 0x0 the objgetter in AliGetter ... weird isn it !
-  AliPHOSGetter * gime = AliPHOSGetter::Instance() ; // (AliLoader::GetRunLoader()->GetFileName()).Data()) ; 
-  if (gime) 
-    gime->Reset() ;
+//   // set to 0x0 the objgetter in AliGetter ... weird isn it !
+//   AliPHOSGetter * gime = AliPHOSGetter::Instance() ; // (AliLoader::GetRunLoader()->GetFileName()).Data()) ; 
+//   if (gime) 
+//     gime->Reset() ;
 }
 
 //____________________________________________________________________________ 

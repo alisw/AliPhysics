@@ -78,7 +78,7 @@ class TFile;
 // --- AliRoot header files ---
 #include "AliMagF.h"
 #include "AliPHOS.h"
-#include "AliPHOSGetter.h"
+#include "AliPHOSLoader.h"
 #include "AliRun.h"
 #include "AliPHOSDigitizer.h"
 #include "AliPHOSSDigitizer.h"

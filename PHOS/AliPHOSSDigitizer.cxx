@@ -74,7 +74,6 @@
 
 // --- ROOT system ---
 #include "TBenchmark.h"
-		//#include "TObjectTable.h"
 
 // --- Standard library ---
 
@@ -82,7 +81,7 @@
 #include "AliLog.h"
 #include "AliPHOSGeometry.h" 
 #include "AliPHOSDigit.h"
-#include "AliPHOSGetter.h"
+#include "AliPHOSLoader.h"
 #include "AliPHOSHit.h"
 #include "AliPHOSSDigitizer.h"
 
@@ -149,33 +148,29 @@ AliPHOSSDigitizer& AliPHOSSDigitizer::operator = (const AliPHOSSDigitizer& qa)
 //____________________________________________________________________________ 
 AliPHOSSDigitizer::~AliPHOSSDigitizer() {
   //dtor
-  AliPHOSGetter * gime =
-    AliPHOSGetter::Instance();  
-  gime->PhosLoader()->CleanSDigitizer();
+  AliRunLoader* rl = AliRunLoader::GetRunLoader(fEventFolderName) ;
+  if(rl){
+    AliPHOSLoader * phosLoader = 
+      dynamic_cast<AliPHOSLoader*>(rl->GetLoader("PHOSLoader"));
+    phosLoader->CleanSDigitizer() ;
+  }
 }
 
 //____________________________________________________________________________ 
 void AliPHOSSDigitizer::Init()
 {
-  // Uses the getter to access the required files
+  // Uses the Loader to access the required files
   
   fInit = kTRUE ; 
   
-  AliPHOSGetter * gime = AliPHOSGetter::Instance(GetTitle(), fEventFolderName.Data());  
-  if ( gime == 0 ) {
-    Fatal("Init" ,"Could not obtain the Getter object for file %s and event %s !", GetTitle(), fEventFolderName.Data()) ;  
-    return ;
-  } 
-  
-  TString opt("SDigits") ; 
-  if(gime->VersionExists(opt) ) { 
-    Error( "Init", "Give a version name different from %s", fEventFolderName.Data() ) ;
-    fInit = kFALSE ; 
-  }
+  //to prevent cleaning of this object while GetEvent is called
+  AliRunLoader* rl = AliRunLoader::GetRunLoader(fEventFolderName) ;
+  if (!rl)
+    rl = AliRunLoader::Open(GetTitle(), fEventFolderName) ; 
 
-  gime->PostSDigitizer(this);
-  gime->PhosLoader()->GetSDigitsDataLoader()->GetBaseTaskLoader()->SetDoNotReload(kTRUE);
- 
+  AliPHOSLoader * phosLoader = dynamic_cast<AliPHOSLoader*>(rl->GetLoader("PHOSLoader"));
+  phosLoader->PostSDigitizer(this);
+  phosLoader->GetSDigitsDataLoader()->GetBaseTaskLoader()->SetDoNotReload(kTRUE);
 }
 
 //____________________________________________________________________________ 
@@ -218,7 +213,8 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
 	AliInfo("QA status in RAW was Info") ;
   }
 */
-  AliPHOSGetter * gime = AliPHOSGetter::Instance() ;
+  AliRunLoader* rl = AliRunLoader::GetRunLoader(fEventFolderName) ;
+  AliPHOSLoader * phosLoader = dynamic_cast<AliPHOSLoader*>(rl->GetLoader("PHOSLoader"));
 
   //switch off reloading of this task while getting event
   if (!fInit) { // to prevent overwrite existing file
@@ -227,20 +223,33 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
   }
 
   if (fLastEvent == -1) 
-    fLastEvent = gime->MaxEvent() - 1 ;
+    fLastEvent = rl->GetNumberOfEvents() - 1 ;
   else 
-    fLastEvent = TMath::Min(fFirstEvent, gime->MaxEvent()); // only ine event at the time 
+    fLastEvent = TMath::Min(fFirstEvent, rl->GetNumberOfEvents()); // only one event at the time 
   Int_t nEvents   = fLastEvent - fFirstEvent + 1;
   
   Int_t ievent, i;
 
   for (ievent = fFirstEvent; ievent <= fLastEvent; ievent++) {    
-    gime->Event(ievent,"H") ;   
-    TTree * treeS = gime->TreeS(); 
-    TClonesArray * hits = gime->Hits() ;
-    TClonesArray * sdigits = gime->SDigits() ;
+    rl->GetEvent(ievent) ;
+    TTree * treeS = phosLoader->TreeS(); 
+    if(!treeS){
+      phosLoader->MakeTree("S");
+      treeS = phosLoader->TreeS();
+    }
+
+    phosLoader->CleanHits() ; 
+    phosLoader->LoadHits("READ") ;
+
+    TClonesArray * hits    = phosLoader->Hits() ;
+    TClonesArray * sdigits = phosLoader->SDigits() ;
+    if( !sdigits ) {
+      phosLoader->MakeSDigitsArray() ; 
+      sdigits = phosLoader->SDigits() ;
+    }
     sdigits->Clear();
     Int_t nSdigits = 0 ;
+
     //Now make SDigits from hits, for PHOS it is the same, so just copy    
     for ( i = 0 ; i < hits->GetEntries() ; i++ ) {
       AliPHOSHit * hit = dynamic_cast<AliPHOSHit *>(hits->At(i)) ;
@@ -287,16 +296,11 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
 
     Int_t bufferSize = 32000 ;
     TBranch * sdigitsBranch = treeS->Branch("PHOS",&sdigits,bufferSize);
-
     sdigitsBranch->Fill() ;
 
-    gime->WriteSDigits("OVERWRITE");
+    phosLoader->WriteSDigits("OVERWRITE");
+    phosLoader->WriteSDigitizer("OVERWRITE");
 
-    //Next - SDigitizer
-
-    gime->WriteSDigitizer("OVERWRITE");
-    //gObjectTable->Print() ; 
-  
     if(strstr(option,"deb"))
       PrintSDigits(option) ;
       
@@ -309,12 +313,11 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
 
   Unload();
 
-  //  gime->PhosLoader()->GetSDigitsDataLoader()->GetBaseTaskLoader()->SetDoNotReload(kTRUE);
-  
   if(strstr(option,"tim")){
     gBenchmark->Stop("PHOSSDigitizer");
     Info("Exec","   took %f seconds for SDigitizing  %f seconds per event",
-	 gBenchmark->GetCpuTime("PHOSSDigitizer"), gBenchmark->GetCpuTime("PHOSSDigitizer")/nEvents) ;
+	 gBenchmark->GetCpuTime("PHOSSDigitizer"), 
+	 gBenchmark->GetCpuTime("PHOSSDigitizer")/nEvents) ;
   }
   
 }
@@ -347,17 +350,18 @@ void AliPHOSSDigitizer::PrintSDigits(Option_t * option)
 {
   // Prints list of digits produced in the current pass of AliPHOSDigitizer
 
-
-  AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
+  AliRunLoader* rl = AliRunLoader::GetRunLoader(fEventFolderName) ;
+  AliPHOSLoader * phosLoader = dynamic_cast<AliPHOSLoader*>(rl->GetLoader("PHOSLoader"));
 
   // Get PHOS Geometry object
   AliPHOSGeometry *geom;
   if (!(geom = AliPHOSGeometry::GetInstance())) 
         geom = AliPHOSGeometry::GetInstance("IHEP","");
 
-  const TClonesArray * sdigits = gime->SDigits() ;
+  const TClonesArray * sdigits = phosLoader->SDigits() ;
   
-  Info( "\nPrintSDigits", "event # %d %d sdigits", gAlice->GetEvNumber(), sdigits->GetEntriesFast() ) ; 
+  Info( "\nPrintSDigits", "event # %d %d sdigits", 
+	gAlice->GetEvNumber(), sdigits->GetEntriesFast() ) ; 
 
   if(strstr(option,"all")||strstr(option,"EMC")){
     
@@ -406,8 +410,8 @@ void AliPHOSSDigitizer::PrintSDigits(Option_t * option)
 void AliPHOSSDigitizer::Unload() const
 {
   // Unloads the objects from the folder
-  AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
-  AliPHOSLoader * loader = gime->PhosLoader() ; 
-  loader->UnloadHits() ; 
-  loader->UnloadSDigits() ; 
+  AliRunLoader* rl = AliRunLoader::GetRunLoader(fEventFolderName) ;
+  AliPHOSLoader * phosLoader = dynamic_cast<AliPHOSLoader*>(rl->GetLoader("PHOSLoader"));
+  phosLoader->UnloadHits() ; 
+  phosLoader->UnloadSDigits() ; 
 }

@@ -40,12 +40,15 @@
 
 
 // --- ROOT system ---
+#include "TMath.h"
 
 // --- ALIROOT system ---
+#include "AliConfig.h"
 #include "AliPHOS.h"
 #include "AliPHOSTrigger.h" 
 #include "AliPHOSGeometry.h"
-#include "AliPHOSGetter.h" 
+#include "AliPHOSDigit.h" 
+#include "AliPHOSLoader.h" 
 #include "AliPHOSPulseGenerator.h" 
 #include "AliTriggerInput.h"
 
@@ -121,6 +124,7 @@ AliPHOSTrigger::AliPHOSTrigger(const AliPHOSTrigger & trig) :
   // cpy ctor
 }
 
+//_________________________________________________________________________
 AliPHOSTrigger::~AliPHOSTrigger() 
 {
   // dtor
@@ -640,32 +644,21 @@ void AliPHOSTrigger::SetTriggers(const TClonesArray * ampmatrix, const Int_t iMo
 }
 
 //____________________________________________________________________________
-void AliPHOSTrigger::Trigger() 
+void AliPHOSTrigger::Trigger(TClonesArray *digits) 
 {
-
   //Main Method to select triggers.
 
-  AliRunLoader * rl = AliRunLoader::GetRunLoader(); 
-  TString fileName = rl->GetFileName() ; 
-  DoIt(fileName.Data()) ; 
+  fDigitsList = digits;
+  DoIt() ; 
 }
 
 //____________________________________________________________________________
-void AliPHOSTrigger::Trigger(const char * fileName) 
-{
-
-  //Main Method to select triggers.
-
-  
-  DoIt(fileName) ; 
-}
-
-//____________________________________________________________________________
-void AliPHOSTrigger::DoIt(const char * fileName) 
+void AliPHOSTrigger::DoIt()
 {
   // does the trigger job
 
-  AliPHOSGetter * gime = AliPHOSGetter::Instance( fileName ) ;
+  AliRunLoader* rl = AliRunLoader::GetRunLoader() ;
+  AliPHOSLoader * phosLoader = dynamic_cast<AliPHOSLoader*>(rl->GetLoader("PHOSLoader"));
   
   // Get PHOS Geometry object
   AliPHOSGeometry *geom;
@@ -683,7 +676,7 @@ void AliPHOSTrigger::DoIt(const char * fileName)
 
   //Take the digits list if simulation
   if(fSimulation)
-    fDigitsList = gime->Digits() ;
+    fDigitsList = phosLoader->Digits() ;
   
   if(!fDigitsList)
     AliFatal("Digits not found !") ;
@@ -707,7 +700,7 @@ void AliPHOSTrigger::DoIt(const char * fileName)
     //Set the trigger
     if(fIsolateInModule)
       SetTriggers(ampmods,imod,ampmax2,ampmaxn) ;
-    if(!fIsolateInModule)
+    else
       SetTriggers(amptrus,imod,ampmax2,ampmaxn) ;
   }
 

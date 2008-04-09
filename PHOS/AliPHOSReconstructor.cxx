@@ -167,7 +167,8 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
 
   AliPHOSTrigger tr ;
   //   tr.SetPatchSize(1);//create 4x4 patches
-  tr.Trigger();
+  tr.SetSimulation(kFALSE);
+  tr.Trigger(digitsArray);
   
   Float_t maxAmp2x2  = tr.Get2x2MaxAmplitude();
   Float_t maxAmpnxn  = tr.GetnxnMaxAmplitude();
@@ -186,9 +187,10 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   AliDebug(2, Form("Trigger 4x4 max amp %f , out amp %f, SM %d, iphi %d, ieta %d",
 		   maxAmpnxn, ampOutOfPatchnxn, iSMnxn,iCrystalPhinxn, iCrystalEtanxn));
 
-  Int_t iRelId2x2 []= {iSM2x2+1,0,iCrystalPhi2x2,iCrystalEta2x2};// PHOS modules in order to calculate AbsId need to be 1-5 not 0-4 as returns trigger.
+  // Attention! PHOS modules in order to calculate AbsId need to be 1-5 not 0-4 as returns trigger.
+  Int_t iRelId2x2 []= {iSM2x2+1,0,iCrystalPhi2x2,iCrystalEta2x2};
   Int_t iAbsId2x2 =-1;
-  Int_t iRelIdnxn []= {iSMnxn+1,0,iCrystalPhinxn,iCrystalEtanxn};// PHOS modules in order to calculate AbsId need to be 1-5 not 0-4 as returns trigger.
+  Int_t iRelIdnxn []= {iSMnxn+1,0,iCrystalPhinxn,iCrystalEtanxn};
   Int_t iAbsIdnxn =-1;
   TVector3    pos2x2(-1,-1,-1);
   TVector3    posnxn(-1,-1,-1);
