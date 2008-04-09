@@ -100,6 +100,24 @@ public:
   Int_t    LoLpt(void)    const  { return fLocalTrigger >> 22 & 0x03; }
   Int_t    LoHpt(void)    const  { return fLocalTrigger >> 24 & 0x03; }
   
+  // Get and Set methods for the hit strips pattern in the trigger chambers
+  UShort_t GetTriggerX1Pattern() { return fX1Pattern; }
+  UShort_t GetTriggerY1Pattern() { return fY1Pattern; }
+  UShort_t GetTriggerX2Pattern() { return fX2Pattern; }
+  UShort_t GetTriggerY2Pattern() { return fY2Pattern; }
+  UShort_t GetTriggerX3Pattern() { return fX3Pattern; }
+  UShort_t GetTriggerY3Pattern() { return fY3Pattern; }
+  UShort_t GetTriggerX4Pattern() { return fX4Pattern; }
+  UShort_t GetTriggerY4Pattern() { return fY4Pattern; }
+  void     SetTriggerX1Pattern(UShort_t pat) { fX1Pattern = pat; }
+  void     SetTriggerY1Pattern(UShort_t pat) { fY1Pattern = pat; }
+  void     SetTriggerX2Pattern(UShort_t pat) { fX2Pattern = pat; }
+  void     SetTriggerY2Pattern(UShort_t pat) { fY2Pattern = pat; }
+  void     SetTriggerX3Pattern(UShort_t pat) { fX3Pattern = pat; }
+  void     SetTriggerY3Pattern(UShort_t pat) { fY3Pattern = pat; }
+  void     SetTriggerX4Pattern(UShort_t pat) { fX4Pattern = pat; }
+  void     SetTriggerY4Pattern(UShort_t pat) { fY4Pattern = pat; }
+
   // Get and Set methods for muon cluster map
   UInt_t   GetMuonClusterMap() const {return fMuonClusterMap;}
   void     SetMuonClusterMap(UInt_t muonClusterMap) {fMuonClusterMap = muonClusterMap;}
@@ -185,6 +203,16 @@ protected:
   Double32_t fChi2;                ///< chi2 in the MUON track fit
   Double32_t fChi2MatchTrigger;    ///< chi2 of trigger/track matching
   Int_t      fLocalTrigger;        ///< packed local trigger information
+
+  // hit strips pattern in the trigger chambers
+  UShort_t fX1Pattern;             ///< x-strips pattern in st6/ch1
+  UShort_t fY1Pattern;             ///< y-strips pattern in st6/ch1
+  UShort_t fX2Pattern;             ///< x-strips pattern in st6/ch2
+  UShort_t fY2Pattern;             ///< y-strips pattern in st6/ch2
+  UShort_t fX3Pattern;             ///< x-strips pattern in st7/ch1
+  UShort_t fY3Pattern;             ///< y-strips pattern in st7/ch1
+  UShort_t fX4Pattern;             ///< x-strips pattern in st7/ch2
+  UShort_t fY4Pattern;             ///< y-strips pattern in st7/ch2
   
   UInt_t     fMuonClusterMap;      ///< Map of clusters in tracking chambers
   UShort_t   fHitsPatternInTrigCh; ///< Word containing info on the hits left in trigger chambers
@@ -192,7 +220,7 @@ protected:
   
   mutable TClonesArray* fClusters; ///< Array of clusters attached to the track
   
-  ClassDef(AliESDMuonTrack,9) // MUON ESD track class 
+  ClassDef(AliESDMuonTrack,10) // MUON ESD track class 
 };
 
 #endif 

@@ -57,6 +57,14 @@ AliESDMuonTrack::AliESDMuonTrack ():
   fChi2(0),
   fChi2MatchTrigger(0),
   fLocalTrigger(0),
+  fX1Pattern(0),
+  fY1Pattern(0),
+  fX2Pattern(0),
+  fY2Pattern(0),
+  fX3Pattern(0),
+  fY3Pattern(0),
+  fX4Pattern(0),
+  fY4Pattern(0),
   fMuonClusterMap(0),
   fHitsPatternInTrigCh(0),
   fNHit(0),
@@ -92,6 +100,14 @@ AliESDMuonTrack::AliESDMuonTrack (const AliESDMuonTrack& muonTrack):
   fChi2(muonTrack.fChi2),
   fChi2MatchTrigger(muonTrack.fChi2MatchTrigger),
   fLocalTrigger(muonTrack.fLocalTrigger),
+  fX1Pattern(muonTrack.fX1Pattern),
+  fY1Pattern(muonTrack.fY1Pattern),
+  fX2Pattern(muonTrack.fX2Pattern),
+  fY2Pattern(muonTrack.fY2Pattern),
+  fX3Pattern(muonTrack.fX3Pattern),
+  fY3Pattern(muonTrack.fY3Pattern),
+  fX4Pattern(muonTrack.fX4Pattern),
+  fY4Pattern(muonTrack.fY4Pattern),
   fMuonClusterMap(muonTrack.fMuonClusterMap),
   fHitsPatternInTrigCh(muonTrack.fHitsPatternInTrigCh),
   fNHit(muonTrack.fNHit),
@@ -151,6 +167,14 @@ AliESDMuonTrack& AliESDMuonTrack::operator=(const AliESDMuonTrack& muonTrack)
   fNHit                   = muonTrack.fNHit; 
 
   fLocalTrigger           = muonTrack.fLocalTrigger;  
+  fX1Pattern              = muonTrack.fX1Pattern;  
+  fY1Pattern              = muonTrack.fY1Pattern;  
+  fX2Pattern              = muonTrack.fX2Pattern;  
+  fY2Pattern              = muonTrack.fY2Pattern;  
+  fX3Pattern              = muonTrack.fX3Pattern;  
+  fY3Pattern              = muonTrack.fY3Pattern;  
+  fX4Pattern              = muonTrack.fX4Pattern;  
+  fY4Pattern              = muonTrack.fY4Pattern;  
   fChi2MatchTrigger       = muonTrack.fChi2MatchTrigger; 
 
   fHitsPatternInTrigCh    = muonTrack.fHitsPatternInTrigCh;
