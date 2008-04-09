@@ -12,8 +12,7 @@ const Int_t    minclustersTPC = 50 ;
 
 Bool_t AliCFSingleTrackTask(
 			    const Bool_t useGrid = 1,
-			    const char * kTagXMLFile="wn.xml", // XML file containing tags
-			    Long64_t     nentries=TChain::kBigNumber
+			    const char * kTagXMLFile="wn.xml" // XML file containing tags
 			    )
 {
   
@@ -27,12 +26,14 @@ Bool_t AliCFSingleTrackTask(
   TChain * analysisChain ;
 
   if (useGrid) { //data located on AliEn
-    TGrid::Connect("alien://") ;    //  Create an AliRunTagCuts and an AliEventTagCuts Object and impose some selection criteria
+    TGrid::Connect("alien://") ;    //  Create an AliRunTagCuts and an AliEventTagCuts Object 
+                                    //  and impose some selection criteria
     AliRunTagCuts      *runCuts   = new AliRunTagCuts(); 
     AliEventTagCuts    *eventCuts = new AliEventTagCuts(); 
     AliLHCTagCuts      *lhcCuts   = new AliLHCTagCuts(); 
     AliDetectorTagCuts *detCuts   = new AliDetectorTagCuts(); 
-    eventCuts->SetMultiplicityRange(0,20000);
+    eventCuts->SetMultiplicityRange(0,2000);
+
     //  Create an AliTagAnalysis Object and chain the tags
     AliTagAnalysis   *tagAna = new AliTagAnalysis(); 
     tagAna->SetType("ESD");  //for aliroot > v4-05
@@ -40,33 +41,41 @@ Bool_t AliCFSingleTrackTask(
     TGridResult      *tagResult = coll->GetGridResult("",0,0);
     tagResult->Print();
     tagAna->ChainGridTags(tagResult);
+
     //  Create a new esd chain and assign the chain that is returned by querying the tags
     analysisChain = tagAna->QueryTags(runCuts,lhcCuts,detCuts,eventCuts); 
   }
+
   else {// local data
     analysisChain = new TChain("esdTree");
     //here put your input data path
+    printf("\n\nRunning on local file, please check the path\n\n");
     analysisChain->Add("AliESDs.root");
   }
   
-  
+
   Info("AliCFSingleTrackTask",Form("CHAIN HAS %d ENTRIES",(Int_t)analysisChain->GetEntries()));
 
   //CONTAINER DEFINITION
   Info("AliCFSingleTrackTask","SETUP CONTAINER");
   //the sensitive variables (2 in this example), their indices
-  Int_t ipt = 0;
-  Int_t iy  = 1;
+  UInt_t ipt = 0;
+  UInt_t iy  = 1;
   //Setting up the container grid... 
-  Int_t nstep = 4 ; //number of selection steps MC 
+  UInt_t nstep = 4 ; //number of selection steps MC 
   const Int_t nvar   = 2 ; //number of variables on the grid:pt,y
   const Int_t nbin1  = 8 ; //bins in pt
   const Int_t nbin2  = 8 ; //bins in y 
+
   //arrays for the number of bins in each dimension
-  const Int_t iBin[nvar] ={nbin1,nbin2};
+  Int_t iBin[nvar];
+  iBin[0]=nbin1;
+  iBin[1]=nbin2;
+
   //arrays for lower bounds :
-  Double_t binLim1[nbin1+1];
-  Double_t binLim2[nbin2+1];
+  Double_t *binLim1=new Double_t[nbin1+1];
+  Double_t *binLim2=new Double_t[nbin2+1];
+
   //values for bin lower bounds
   for(Int_t i=0; i<=nbin1; i++) binLim1[i]=(Double_t)ptmin + (ptmax-ptmin)/nbin1*(Double_t)i ; 
   for(Int_t i=0; i<=nbin2; i++) binLim2[i]=(Double_t)ymin  + (ymax-ymin)  /nbin2*(Double_t)i ;
@@ -85,6 +94,7 @@ Bool_t AliCFSingleTrackTask(
   mcKineCuts->SetPtRange(ptmin,ptmax);
   mcKineCuts->SetRapidityRange(ymin,ymax);
   mcKineCuts->SetChargeMC(charge);
+  mcKineCuts->SetQAOn(kTRUE);
 
   AliCFParticleGenCuts* mcGenCuts = new AliCFParticleGenCuts("mcGenCuts","MC particle generation cuts");
   mcGenCuts->SetRequireIsPrimary();
@@ -115,11 +125,15 @@ Bool_t AliCFSingleTrackTask(
   recIsPrimaryCuts->SetQAOn(kTRUE);
 
   AliCFTrackCutPid* cutPID = new AliCFTrackCutPid("cutPID","ESD_PID") ;
-  Double_t prior[AliPID::kSPECIES] = {0.0244519,
-				      0.0143988,
-				      0.805747 ,
-				      0.0928785,
-				      0.0625243 };
+  int n_species = AliPID::kSPECIES ;
+  Double_t* prior = new Double_t[n_species];
+  
+  prior[0] = 0.0244519 ;
+  prior[1] = 0.0143988 ;
+  prior[2] = 0.805747  ;
+  prior[3] = 0.0928785 ;
+  prior[4] = 0.0625243 ;
+  
   cutPID->SetPriors(prior);
   cutPID->SetProbabilityCut(0.0);
   cutPID->SetDetectors("TPC TOF");
@@ -206,18 +220,16 @@ Bool_t AliCFSingleTrackTask(
 
   benchmark.Stop("AliSingleTrackTask");
   benchmark.Show("AliSingleTrackTask");
-  
+
   return kTRUE ;
 }
 
 void Load() {
-  //remove this file which can cause problems
-  gSystem->Exec("rm $ALICE_ROOT/ANALYSIS/AliAnalysisSelector_cxx.so");
 
   //load the required aliroot libraries
   gSystem->Load("libANALYSIS") ;
-  gSystem->Load("libANALYSISRL") ;
-  gSystem->Load("$ALICE_ROOT/CORRFW/libCORRFW.so") ;
+  gSystem->Load("libANALYSISalice") ;
+  gSystem->Load("libCORRFW.so") ;
 
   //compile online the task class
   gSystem->SetIncludePath("-I. -I$ALICE_ROOT/include -I$ROOTSYS/include");
