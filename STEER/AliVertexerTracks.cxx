@@ -279,10 +279,11 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(TObjArray *trkArrayOrig,
   // set indices of used tracks
   UShort_t *indices = 0;
   if(fCurrentVertex->GetNContributors()>0) {
-    indices = new UShort_t[fCurrentVertex->GetNContributors()];
-    for(Int_t jj=0; jj<(Int_t)fTrkArraySel.GetEntriesFast(); jj++)
+    Int_t nIndices = (Int_t)fTrkArraySel.GetEntriesFast();
+    indices = new UShort_t[nIndices];
+    for(Int_t jj=0; jj<nIndices; jj++)
       indices[jj] = fIdSel[jj];
-    fCurrentVertex->SetIndices(fCurrentVertex->GetNContributors(),indices);
+    fCurrentVertex->SetIndices(nIndices,indices);
   }
   delete [] indices; indices=NULL;
   //
@@ -691,7 +692,8 @@ AliESDVertex* AliVertexerTracks::RemoveTracksFromVertex(AliESDVertex *inVtx,
   AliESDVertex *outVtx = new AliESDVertex(position,cov,chi2,nUsedTrks);
   outVtx->SetTitle(inVtx->GetTitle());
   UShort_t *inindices = inVtx->GetIndices();
-  UShort_t *outindices = new UShort_t[outVtx->GetNContributors()];
+  Int_t nIndices = outVtx->GetNContributors()-1;
+  UShort_t *outindices = new UShort_t[nIndices];
   Int_t j=0;
   for(Int_t k=0; k<inVtx->GetNIndices(); k++) {
     Bool_t copyindex=kTRUE;
@@ -702,7 +704,7 @@ AliESDVertex* AliVertexerTracks::RemoveTracksFromVertex(AliESDVertex *inVtx,
       outindices[j] = inindices[k]; j++;
     }
   }
-  outVtx->SetIndices(outVtx->GetNContributors(),outindices);
+  outVtx->SetIndices(nIndices,outindices);
   delete [] outindices;
 
   if(fDebug) {
