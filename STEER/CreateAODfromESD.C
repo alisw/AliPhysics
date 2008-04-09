@@ -1,23 +1,62 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
-
-#include "TFile.h"
-#include "AliReconstruction.h"
-
+#include <TChain.h>
+#include <TSystem.h>
+#include "AliAnalysisManager.h"
+#include "AliESDInputHandler.h"
+#include "AliAODHandler.h"
+#include "AliAnalysisTaskESDfilter.h"
+#include "AliAnalysisDataContainer.h"
 #endif
 
-// THIS MACRO IS NOT SUPPORTED ANYMORE. Goodbye. MDO 26/03/2008
 void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 		      const char *outFileName = "AliAOD.root") {
   
-  // open input and output files
-  TFile *esdFile = TFile::Open(inFileName, "READ");
-  TFile *aodFile = TFile::Open(outFileName, "RECREATE");
-  
-  // call conversion method
-  AliReconstruction reco;
-  reco.ESDFile2AODFile(esdFile, aodFile);
+    gSystem->Load("libTree.so");
+    gSystem->Load("libGeom.so");
+    gSystem->Load("libPhysics.so");
+    gSystem->Load("libVMC.so");
+    gSystem->Load("libSTEERBase.so");
+    gSystem->Load("libESD.so");
+    gSystem->Load("libAOD.so");
+    
+    gSystem->Load("libANALYSIS.so");
+    gSystem->Load("libANALYSISalice.so");
+    TChain *chain = new TChain("esdTree");
 
-  // close files
-  esdFile->Close();
-  aodFile->Close();
+    // Steering input chain
+    chain->Add(inFileName);
+    AliAnalysisManager *mgr  = new AliAnalysisManager("ESD to AOD", "Analysis Manager");
+
+    // Input
+    AliESDInputHandler* inpHandler = new AliESDInputHandler();
+    mgr->SetInputEventHandler  (inpHandler);
+
+    // Output
+    AliAODHandler* aodHandler   = new AliAODHandler();
+    aodHandler->SetOutputFileName(outFileName);
+    mgr->SetOutputEventHandler(aodHandler);
+
+    // Task
+    AliAnalysisTaskESDfilter *filter = new AliAnalysisTaskESDfilter("Filter");
+    mgr->AddTask(filter);
+
+    
+    // Pipelining
+    AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("cchain", TChain::Class(),
+                                                             AliAnalysisManager::kInputContainer);
+    
+    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("tree", TTree::Class(),
+                                                              AliAnalysisManager::kOutputContainer,
+                                                              "default");
+  
+
+    mgr->ConnectInput (filter, 0, cinput1 );
+    mgr->ConnectOutput(filter, 0, coutput1);
+
+    //
+    // Run the analysis
+    //
+    mgr->InitAnalysis();
+    mgr->PrintStatus();
+    mgr->StartAnalysis("local", chain);
 }
