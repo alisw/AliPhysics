@@ -98,13 +98,17 @@ void AliAnalysisTaskSESelectHF::UserExec(Option_t */*option*/)
   // load D0->Kpi candidates                                                   
   TClonesArray *inputArrayD0toKpi =
     (TClonesArray*)aodIn->GetList()->FindObject("D0toKpi");
+  if(!inputArrayD0toKpi) {
+    printf("AliAnalysisTaskSESelectHF::UserExec: D0toKpi branch not found!\n");
+    return;
+  }
 
   //print event info
-  aodIn->GetHeader()->Print();
+  //aodIn->GetHeader()->Print();
   
   // primary vertex
   AliAODVertex *vtx1 = (AliAODVertex*)aodIn->GetPrimaryVertex();
-  vtx1->Print();
+  //vtx1->Print();
     
   // make trkIDtoEntry register (temporary)
   Int_t trkIDtoEntry[100000];
@@ -142,7 +146,7 @@ void AliAnalysisTaskSESelectHF::UserExec(Option_t */*option*/)
       //AliAODTrack *trk0 = (AliAODTrack*)(dIn->GetSecondaryVtx()->GetDaughter(0));
       printf("pt of positive track: %f\n",trk0->Pt());
       printf("pt of negative track: %f\n",trk1->Pt());
-
+      // HERE ONE COULD RECALCULATE THE VERTEX USING THE KF PACKAGE
 
       // clone candidate for output AOD
       AliAODVertex *v = new(verticesHFRef[iOutVerticesHF++]) 
@@ -154,10 +158,12 @@ void AliAnalysisTaskSESelectHF::UserExec(Option_t */*option*/)
       Double_t d0err[2]={dIn->Getd0errProng(0),dIn->Getd0errProng(1)};
       AliAODRecoDecayHF2Prong *dOut=new(aodD0toKpiRef[iOutD0toKpi++]) 
 	AliAODRecoDecayHF2Prong(v,px,py,pz,d0,d0err,dIn->GetDCA());
-      dOut->SetOwnPrimaryVtx(dIn->GetOwnPrimaryVtx());
+      dOut->SetOwnPrimaryVtx((AliAODVertex*)((dIn->GetOwnPrimaryVtx())->Clone()));
     }
     if(unsetvtx) dIn->UnsetOwnPrimaryVtx();
   } // end loop on D0->Kpi
+
+  printf("Number of selected D0->Kpi: %d\n",iOutD0toKpi);
 
 
   return;
