@@ -82,6 +82,7 @@ SRCS = 	AliITSDetTypeRec.cxx \
                 AliITSOnlineSDDCMN.cxx \
 		AliITSPreprocessorSSD.cxx \
 		AliITSAlignMille.cxx \
+		AliITSAlignMilleModule.cxx \
 		AliITSQAChecker.cxx \
 		AliITSResidualsAnalysis.cxx \
 		AliITSQADataMakerRec.cxx \

@@ -28,10 +28,14 @@
 //-----------------------------------------------------------------------------
 
 #include <TF1.h>
+#include <TFile.h>
+#include <TClonesArray.h>
 #include <TGraph.h>
 #include <TGeoMatrix.h>
 #include <TMath.h>
+#include <TGraphErrors.h>
 
+#include "AliITSAlignMilleModule.h"
 #include "AliITSAlignMille.h"
 #include "AliITSgeomTGeo.h"
 #include "AliGeomManager.h"
@@ -63,26 +67,31 @@ AliITSAlignMille::AliITSAlignMille(const Char_t *configFilename, Bool_t initmill
     fTrack(NULL),
     fCluster(),
     fGlobalDerivatives(NULL),
-    fTempHMat(NULL),
     fTempAlignObj(NULL),
     fDerivativeXLoc(0),
     fDerivativeZLoc(0),
     fDeltaPar(0),
     fMinNPtsPerTrack(3),
+    fInitTrackParamsMeth(1),
     fGeometryFileName("geometry.root"),
+    fPreAlignmentFileName(""),
     fGeoManager(0),
     fCurrentModuleIndex(0),
     fCurrentModuleInternalIndex(0),
+    fCurrentSensVolIndex(0),
     fNModules(0),
     fUseLocalShifts(kTRUE),
+    fUseSuperModules(kFALSE),
+    fUsePreAlignment(kFALSE),
+    fNSuperModules(0),
     fCurrentModuleHMatrix(NULL)
 {
   /// main constructor that takes input from configuration file
   
   fMillepede = new AliMillepede();
   fGlobalDerivatives = new Double_t[fNGlobal];
-  fTempHMat = new TGeoHMatrix;
-  fCurrentModuleHMatrix = new TGeoHMatrix;
+  //fTempHMat = new TGeoHMatrix;
+  //fCurrentModuleHMatrix = new TGeoHMatrix;
   
   Int_t lc=LoadConfig(configFilename);
   if (lc) {
@@ -108,8 +117,10 @@ AliITSAlignMille::~AliITSAlignMille() {
   /// Destructor
   if (fMillepede) delete fMillepede;
   delete [] fGlobalDerivatives;
-  delete fCurrentModuleHMatrix;
-  delete fTempHMat;
+  //delete fCurrentModuleHMatrix;
+  //delete fTempHMat;
+  for (int i=0; i<fNModules; i++) delete fMilleModule[i];
+  for (int i=0; i<fNSuperModules; i++) delete fSuperModule[i];
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -143,6 +154,29 @@ Int_t AliITSAlignMille::LoadConfig(const Char_t *cfile) {
       }  
       fGeometryFileName=st2;
       InitGeometry();
+    }
+
+    if (strstr(st,"PREALIGNMENT_FILE")) {
+      sscanf(st,"%s %s",tmp,st2);
+      if (gSystem->AccessPathName(st2)) {
+	AliInfo("*** WARNING! *** prealignment file not found! ");
+	return -1;
+      }  
+      fPreAlignmentFileName=st2;
+      itx=ApplyToGeometry();
+      if (itx) {
+	AliInfo(Form("*** WARNING! *** error %d reading prealignment file! ",itx));
+	return -6;
+      }
+    }
+
+    if (strstr(st,"SUPERMODULE_FILE")) {
+      sscanf(st,"%s %s",tmp,st2);
+      if (gSystem->AccessPathName(st2)) {
+	AliInfo("*** WARNING! *** supermodule file not found! ");
+	return -1;
+      }  
+      if (LoadSuperModuleFile(st2)) return -1;
     }
 
     if (strstr(st,"SET_PARSIG_TRA")) {
@@ -179,10 +213,10 @@ Int_t AliITSAlignMille::LoadConfig(const Char_t *cfile) {
       fUseLocalShifts = kTRUE;
     }
 
-    if (strstr(st,"MODULE_INDEX")) {
+    if (strstr(st,"MODULE_INDEX")) { // works only for sensitive modules
       sscanf(st,"%s %d %d %d %d %d %d %d",tmp,&idx,&itx,&ity,&itz,&iph,&ith,&ips);
       voluid=GetModuleVolumeID(idx);
-      if (!voluid) return 1; // bad index
+      if (!voluid || voluid>14300) return 1; // bad index
       fModuleIndex[nmod]=idx;
       fModuleVolumeID[nmod]=voluid;
       fFreeParam[nmod][0]=itx;
@@ -191,12 +225,46 @@ Int_t AliITSAlignMille::LoadConfig(const Char_t *cfile) {
       fFreeParam[nmod][3]=iph;
       fFreeParam[nmod][4]=ith;
       fFreeParam[nmod][5]=ips;
+      fMilleModule[nmod] = new AliITSAlignMilleModule(voluid);
       nmod++;
     }
    
     if (strstr(st,"MODULE_VOLUID")) {
-      // to be implemented
+      sscanf(st,"%s %d %d %d %d %d %d %d",tmp,&idx,&itx,&ity,&itz,&iph,&ith,&ips);
+      voluid=UShort_t(idx);
+      if (voluid>14335 && fUseSuperModules) { // custom supermodule
+	int ism=-1;
+	for (int j=0; j<fNSuperModules; j++) {
+	  if (voluid==fSuperModule[j]->GetVolumeID()) ism=j;
+	}
+	if (ism<0) return -1; // bad volid
+	fModuleIndex[nmod]=fSuperModule[ism]->GetIndex();
+	fModuleVolumeID[nmod]=voluid;
+	fFreeParam[nmod][0]=itx;
+	fFreeParam[nmod][1]=ity;
+	fFreeParam[nmod][2]=itz;
+	fFreeParam[nmod][3]=iph;
+	fFreeParam[nmod][4]=ith;
+	fFreeParam[nmod][5]=ips;
+	fMilleModule[nmod] = new AliITSAlignMilleModule(*fSuperModule[ism]);
+	nmod++;
+      }
+      else { // sensitive volume
+	idx=GetModuleIndex(voluid);
+	if (idx<0 || idx>2197) return 1; // bad index
+	fModuleIndex[nmod]=idx;
+	fModuleVolumeID[nmod]=voluid;
+	fFreeParam[nmod][0]=itx;
+	fFreeParam[nmod][1]=ity;
+	fFreeParam[nmod][2]=itz;
+	fFreeParam[nmod][3]=iph;
+	fFreeParam[nmod][4]=ith;
+	fFreeParam[nmod][5]=ips;
+	fMilleModule[nmod] = new AliITSAlignMilleModule(voluid);
+	nmod++;
+      }
     }
+    //----------
 
   } // end while
 
@@ -229,6 +297,7 @@ Int_t AliITSAlignMille::GetModuleIndex(UShort_t voluid) {
 
 UShort_t AliITSAlignMille::GetModuleVolumeID(const Char_t *symname) {
   /// volume ID from symname
+  /// works for sensitive volumes only
   if (!symname) return 0;
 
   for (UShort_t voluid=2000; voluid<13300; voluid++) {
@@ -244,8 +313,15 @@ UShort_t AliITSAlignMille::GetModuleVolumeID(const Char_t *symname) {
 
 UShort_t AliITSAlignMille::GetModuleVolumeID(Int_t index) {
   /// volume ID from index
-  if (index<0 || index>2197) return 0;
-  return GetModuleVolumeID(AliITSgeomTGeo::GetSymName(index));
+  if (index<0) return 0;
+  if (index<2198)
+    return GetModuleVolumeID(AliITSgeomTGeo::GetSymName(index));
+  else {
+    for (int i=0; i<fNSuperModules; i++) {
+      if (fSuperModule[i]->GetIndex()==index) return fSuperModule[i]->GetVolumeID();
+    }
+  }
+  return 0;
 }
 
 void AliITSAlignMille::InitGeometry() {
@@ -257,7 +333,8 @@ void AliITSAlignMille::InitGeometry() {
     return;
   }
   // temporary align object, just use the rotation...
-  fTempAlignObj=new AliAlignObjParams(AliITSgeomTGeo::GetSymName(7),2055,0,0,0,0,0,0,kFALSE);
+  //fTempAlignObj=new AliAlignObjParams(AliITSgeomTGeo::GetSymName(7),2055,0,0,0,0,0,0,kFALSE);
+  fTempAlignObj=new AliAlignObjParams;
 }
 
 void AliITSAlignMille::Init(Int_t nGlobal,  /* number of global paramers */
@@ -330,6 +407,27 @@ void AliITSAlignMille::ResetLocalEquation()
   }
 }
 
+Int_t AliITSAlignMille::ApplyToGeometry() {
+  /// apply starting realignment to ideal geometry
+  if (!fGeoManager) return -1; 
+  TFile *pref = new TFile(fPreAlignmentFileName.Data());
+  if (!pref->IsOpen()) return -2;
+  TClonesArray *prea=(TClonesArray*)pref->Get("ITSAlignObjs");
+  if (!prea) return -3;  
+  Int_t nprea=prea->GetEntriesFast();
+  AliInfo(Form("Array of input misalignments with %d entries",nprea));
+
+  for (int ix=0; ix<nprea; ix++) {
+    AliAlignObjParams *preo=(AliAlignObjParams*) prea->UncheckedAt(ix);
+    if (!preo->ApplyToGeometry()) return -4;
+  }
+  pref->Close();
+  delete pref;
+
+  fUsePreAlignment = kTRUE;
+  return 0;
+}
+
 Int_t AliITSAlignMille::InitModuleParams() {
   /// initialize geometry parameters for a given detector
   /// for current cluster (fCluster)
@@ -347,17 +445,21 @@ Int_t AliITSAlignMille::InitModuleParams() {
     return -1;
   }
 
+  // now 'voluid' is the volumeID of a SENSITIVE VOLUME (coming from a cluster)
+
   // set the internal index (index in module list)
   UShort_t voluid=fCluster.GetVolumeID();
   Int_t k=fNModules-1;
-  while (k>=0 && !(voluid==fModuleVolumeID[k]) ) k--;  
+  while (k>=0 && !(fMilleModule[k]->IsIn(voluid)) ) k--;  // new
   if (k<0) return -3;    
-  fCurrentModuleInternalIndex=k;
+  fCurrentModuleInternalIndex=k; // the internal index of the SUPERMODULE
+
+  fCurrentModuleIndex=fMilleModule[k]->GetIndex(); // index of the SUPERMODULE
 
   // set the index
-  Int_t index = GetModuleIndex(AliGeomManager::SymName(voluid));
+  Int_t index = GetModuleIndex(voluid);
   if (index<0) return -2;
-  fCurrentModuleIndex = index;
+  fCurrentSensVolIndex = index; // the index of the SENSITIVE VOLUME
 
   fModuleInitParam[0] = 0.0;
   fModuleInitParam[1] = 0.0;
@@ -368,19 +470,37 @@ Int_t AliITSAlignMille::InitModuleParams() {
 
   /// get global (corrected) matrix  
   //  if (!AliITSgeomTGeo::GetOrigMatrix(index,*fCurrentModuleHMatrix)) return -3;
-  Double_t rott[9];
-  if (!AliITSgeomTGeo::GetRotation(index,rott)) return -3;
-  fCurrentModuleHMatrix->SetRotation(rott);
-  Double_t oLoc[3]={0,0,0};
-  if (!AliITSgeomTGeo::LocalToGlobal(index,oLoc,fCurrentModuleTranslation)) return -4;
-  fCurrentModuleHMatrix->SetTranslation(fCurrentModuleTranslation);
+//   Double_t rott[9];
+//   if (!AliITSgeomTGeo::GetRotation(index,rott)) return -3;
+//   fCurrentModuleHMatrix->SetRotation(rott);
+//   Double_t oLoc[3]={0,0,0};
+//   if (!AliITSgeomTGeo::LocalToGlobal(index,oLoc,fCurrentModuleTranslation)) return -4;
+//   fCurrentModuleHMatrix->SetTranslation(fCurrentModuleTranslation);
+  
+// new
+  fCurrentModuleHMatrix = fMilleModule[fCurrentModuleInternalIndex]->GetMatrix();
+
+  for (int ii=0; ii<3; ii++)
+    fCurrentModuleTranslation[ii]=fCurrentModuleHMatrix->GetTranslation()[ii];
+
+  TGeoHMatrix *svOrigMatrix = fMilleModule[fCurrentModuleInternalIndex]->GetSensitiveVolumeOrigGlobalMatrix(voluid);
 
   /// get back local coordinates
   fMeasGlo[0] = fCluster.GetX();
   fMeasGlo[1] = fCluster.GetY();
   fMeasGlo[2] = fCluster.GetZ();
-  fCurrentModuleHMatrix->MasterToLocal(fMeasGlo,fMeasLoc);
+  svOrigMatrix->MasterToLocal(fMeasGlo,fMeasLoc);
+  //svMatrix->MasterToLocal(fMeasGlo,fMeasLoc);
+  AliDebug(2,Form("Local coordinates of measured point : X=%f  Y=%f  Z=%f \n",fMeasLoc[0] ,fMeasLoc[1] ,fMeasLoc[2] ));
 
+  TGeoHMatrix *svMatrix = fMilleModule[fCurrentModuleInternalIndex]->GetSensitiveVolumeMatrix(voluid);
+  
+  // modify global coordinates according with pre-aligment
+  svMatrix->LocalToMaster(fMeasLoc,fMeasGlo);
+  fCluster.SetXYZ(fMeasGlo[0],fMeasGlo[1] ,fMeasGlo[2]);
+  AliDebug(2,Form("New global coordinates of measured point : X=%f  Y=%f  Z=%f \n",fMeasGlo[0] ,fMeasGlo[1] ,fMeasGlo[2] ));
+
+  // mettere il new GetLocalSigma...
   // set stdev from cluster
   TGeoHMatrix hcov;
   Double_t hcovel[9];
@@ -395,8 +515,8 @@ Int_t AliITSAlignMille::InitModuleParams() {
   hcovel[8]=double(fCluster.GetCov()[5]);
   hcov.SetRotation(hcovel);
   // now rotate in local system
-  hcov.MultiplyLeft(&fCurrentModuleHMatrix->Inverse());
-  hcov.Multiply(fCurrentModuleHMatrix);
+  hcov.MultiplyLeft(&svMatrix->Inverse());
+  hcov.Multiply(svMatrix);
 
   // per i ruotati c'e' delle sigmaY che compaiono... prob
   // e' un problema di troncamento
@@ -404,33 +524,82 @@ Int_t AliITSAlignMille::InitModuleParams() {
   fSigmaLoc[1] = TMath::Sqrt(TMath::Abs(hcov.GetRotationMatrix()[4]));
   fSigmaLoc[2] = TMath::Sqrt(TMath::Abs(hcov.GetRotationMatrix()[8]));
 
+  // set minimum value for SigmaLoc to 10 micron
+  if (fSigmaLoc[0]<0.0010) fSigmaLoc[0]=0.0010;
+  if (fSigmaLoc[2]<0.0010) fSigmaLoc[2]=0.0010;
+
     AliDebug(2,Form("Setting StDev from CovMat : fSigmaLocX=%f  fSigmaLocY=%f fSigmaLocZ=%f \n",fSigmaLoc[0] ,fSigmaLoc[1] ,fSigmaLoc[2] ));
    
   return 0;
 }
 
 void AliITSAlignMille::SetCurrentModule(Int_t index) {
-  ///
+  /// set as current the SuperModule that contains the 'index' sens.vol.
+  if (index<0 || index>2197) {
+    AliInfo("index does not correspond to a sensitive volume!");
+    return;
+  }
   UShort_t voluid=GetModuleVolumeID(index);
-  if (voluid) {
+  //Int_t k=IsDefined(voluid);
+  Int_t k=IsContained(voluid);
+  if (k>=0){
+    //if (voluid<14336) 
+    fCluster.SetVolumeID(voluid);
+    //else {
+    //fCluster.SetVolumeID(fMilleModule[k]->GetSensitiveVolumeVolumeID()[0]);
+    //printf("current module is a supermodule: fCluster set to first sensitive volume of the supermodule\n");
+    //}
+    fCluster.SetXYZ(0,0,0);
+    InitModuleParams();
+  }
+  else
+    printf("module %d not defined\n",index);    
+}
+
+void AliITSAlignMille::SetCurrentSensitiveModule(Int_t index) {
+  /// set as current the SuperModule that contains the 'index' sens.vol.
+  if (index<0 || index>2197) {
+    AliInfo("index does not correspond to a sensitive volume!");
+    return;
+  }
+  UShort_t voluid=AliITSAlignMilleModule::GetVolumeIDFromIndex(index);
+  Int_t k=IsDefined(voluid);
+  //printf("---> voluid=%d   k=%d\n",voluid,k);
+  if (k>=0){
     fCluster.SetVolumeID(voluid);
     fCluster.SetXYZ(0,0,0);
     InitModuleParams();
   }
+  else
+    printf("module %d not defined\n",index);    
 }
 
-void AliITSAlignMille::Print(Option_t* /* opt */) const {
+void AliITSAlignMille::Print(Option_t*) const 
+{
   ///
   printf("*** AliMillepede for ITS ***\n");
-  printf("    number of defined modules: %d\n",fNModules);
+  printf("    number of defined super modules: %d\n",fNModules);
+  
   if (fGeoManager)
     printf("    geometry loaded from %s\n",fGeometryFileName.Data());
   else
     printf("    geometry not loaded\n");
+  
+  if (fUseSuperModules) 
+    printf("    using custom supermodules ( %d defined )\n",fNSuperModules);
+  else
+    printf("    custom supermodules not used\n");    
+
+  if (fUsePreAlignment) 
+    printf("    using prealignment from %s \n",fPreAlignmentFileName.Data());
+  else
+    printf("    prealignment not used\n");    
+
   if (fUseLocalShifts) 
     printf("    Alignment shifts will be computed in LOCAL RS\n");
   else
     printf("    Alignment shifts will be computed in GLOBAL RS\n");    
+  
   printf("    Millepede configuration parameters:\n");
   printf("       init parsig for translations  : %.4f\n",fParSigTranslations);
   printf("       init parsig for rotations     : %.4f\n",fParSigRotations);
@@ -440,19 +609,33 @@ void AliITSAlignMille::Print(Option_t* /* opt */) const {
   printf("       number of stddev for chi2 cut : %d\n",fNStdDev);
 
   printf("List of defined modules:\n");
-  printf("  intidx\tindex\tvoluid\tsymname\n");
+  printf("  intidx\tindex\tvoluid\tname\n");
   for (int i=0; i<fNModules; i++)
-    printf("  %d\t%d\t%d\t%s\n",i,fModuleIndex[i],fModuleVolumeID[i],AliITSgeomTGeo::GetSymName(fModuleIndex[i]));
+    printf("  %d\t%d\t%d\t%s\n",i,fModuleIndex[i],fModuleVolumeID[i],fMilleModule[i]->GetName());
+   
 }
 
-void AliITSAlignMille::PrintCurrentModuleInfo() {
+AliITSAlignMilleModule  *AliITSAlignMille::GetMilleModule(UShort_t voluid) 
+{
+  // return pointer to a define supermodule
+  // return NULL if error
+  Int_t i=IsDefined(voluid);
+  if (i<0) return NULL;
+  return fMilleModule[i];
+}
+
+AliITSAlignMilleModule  *AliITSAlignMille::GetCurrentModule() 
+{
+  if (fNModules) return fMilleModule[fCurrentModuleInternalIndex];
+  return NULL;
+}
+
+void AliITSAlignMille::PrintCurrentModuleInfo() 
+{
   ///
-  if (fCurrentModuleIndex<0 || fCurrentModuleIndex>2197) return;
-  UShort_t voluid=fModuleVolumeID[fCurrentModuleInternalIndex];
-  printf("Current module: index=%d   voluid=%d\n",fCurrentModuleIndex,voluid);
-  printf("                symname:%s\n",AliGeomManager::SymName(voluid));
-  printf("  TGeoHMatrix: \n");
-  fCurrentModuleHMatrix->Print();
+  Int_t k=fCurrentModuleInternalIndex;
+  if (k<0 || k>=fNModules) return;
+  fMilleModule[k]->Print("");
 }
 
 
@@ -460,6 +643,13 @@ void AliITSAlignMille::InitTrackParams(int meth) {
   /// initialize local parameters with different methods
   /// for current track (fTrack)
   
+  Int_t npts=0;
+  TF1 *f1=NULL;
+  TGraph *g=NULL;
+  Float_t sigmax[20],sigmay[20],sigmaz[20];
+  AliTrackPoint ap;
+  TGraphErrors *ge=NULL;
+
   switch (meth) {
   case 1:   // simple linear interpolation
     // get local starting parameters (to be substituted by ESD track parms)
@@ -470,11 +660,11 @@ void AliITSAlignMille::InitTrackParams(int meth) {
     //      [3] = pz/py
     
     // test #1: linear fit in x(y) and z(y)
-    Int_t npts = fTrack->GetNPoints();
+    npts = fTrack->GetNPoints();
 
-    TF1 *f1=new TF1("f1","[0]+x*[1]",-50,50);
+    f1=new TF1("f1","[0]+x*[1]",-50,50);
 
-    TGraph *g=new TGraph(npts,fTrack->GetY(),fTrack->GetX());
+    g=new TGraph(npts,fTrack->GetY(),fTrack->GetX());
     g->Fit(f1,"RNQ");
     fLocalInitParam[0] = f1->GetParameter(0);
     fLocalInitParam[2] = f1->GetParameter(1);
@@ -490,15 +680,80 @@ void AliITSAlignMille::InitTrackParams(int meth) {
     delete f1;
 
     break;
-  }
+    
+  case 2:   // simple linear interpolation weighted using sigmas
+    // get local starting parameters (to be substituted by ESD track parms)
+    // local parms (fLocalInitParam[]) are:
+    //      [0] = global x coord. of straight line intersection at y=0 plane
+    //      [1] = global z coord. of straight line intersection at y=0 plane
+    //      [2] = px/py  
+    //      [3] = pz/py
+    
+    // test #1: linear fit in x(y) and z(y)
+    npts = fTrack->GetNPoints();
+    for (Int_t isig=0; isig<npts; isig++) {
+      fTrack->GetPoint(ap,isig);
+      sigmax[isig]=ap.GetCov()[0]; 
+      if (sigmax[isig]<1.0e-07) sigmax[isig]=1.0e-07; // minimum sigma=3 mu
+      sigmax[isig]=TMath::Sqrt(sigmax[isig]);
 
+      sigmay[isig]=ap.GetCov()[2]; 
+      if (sigmay[isig]<1.0e-07) sigmay[isig]=1.0e-07; // minimum sigma=3 mu
+      sigmay[isig]=TMath::Sqrt(sigmay[isig]);
+
+      sigmaz[isig]=ap.GetCov()[5]; 
+      if (sigmaz[isig]<1.0e-07) sigmaz[isig]=1.0e-07; // minimum sigma=3 mu
+      sigmaz[isig]=TMath::Sqrt(sigmaz[isig]);      
+    }
+
+    f1=new TF1("f1","[0]+x*[1]",-50,50);
+
+    ge=new TGraphErrors(npts,fTrack->GetY(),fTrack->GetX(),sigmay,sigmax);
+    ge->Fit(f1,"RNQ");
+    fLocalInitParam[0] = f1->GetParameter(0);
+    fLocalInitParam[2] = f1->GetParameter(1);
+    AliDebug(2,Form("X = p0gx + ugx*Y : p0gx = %f +- %f    ugx = %f +- %f\n",fLocalInitParam[0],f1->GetParError(0),fLocalInitParam[2],f1->GetParError(1)));
+    delete ge; ge=NULL;
+    
+    ge=new TGraphErrors(npts,fTrack->GetY(),fTrack->GetZ(),sigmay,sigmaz);
+    ge->Fit(f1,"RNQ");
+    fLocalInitParam[1] = f1->GetParameter(0);
+    fLocalInitParam[3] = f1->GetParameter(1);
+    AliDebug(2,Form("Z = p0gz + ugz*Y : p0gz=%f  ugz=%f\n",fLocalInitParam[1],fLocalInitParam[3]));
+    delete ge;
+    delete f1;
+    
+    break;
+    
+  }
 }
-Bool_t AliITSAlignMille::CheckVolumeID(UShort_t voluid) const 
+
+Int_t AliITSAlignMille::IsDefined(UShort_t voluid) const
 {
-  ///
+  // checks if supermodule 'voluid' is defined and return the internal index
+  // return -1 if error
   Int_t k=fNModules-1;
   while (k>=0 && !(voluid==fModuleVolumeID[k]) ) k--;  
-  //printf("selected element with voluid=%d : %d\n",voluid,k);
+  if (k<0) return -1; 
+  return k;
+}
+
+Int_t AliITSAlignMille::IsContained(UShort_t voluid) const
+{
+  // checks if the sensitive module 'voluid' is contained inside a supermodule and return the internal index of the last identified supermodule
+  // return -1 if error
+  if (AliITSAlignMilleModule::GetIndexFromVolumeID(voluid)<0) return -1;
+  Int_t k=fNModules-1;
+  while (k>=0 && !(fMilleModule[k]->IsIn(voluid)) ) k--;  
+  if (k<0) return -1; 
+  return k;
+}
+
+Bool_t AliITSAlignMille::CheckVolumeID(UShort_t voluid) const 
+{
+  /// check if a sensitive volume is contained inside one of the defined supermodules
+  Int_t k=fNModules-1;
+  while (k>=0 && !(fMilleModule[k]->IsIn(voluid)) ) k--;  
   if (k>=0) return kTRUE;
   return kFALSE;
 }
@@ -549,18 +804,19 @@ Int_t AliITSAlignMille::ProcessTrack(AliTrackPointArray *track) {
   //      [1] = global z coord. of straight line intersection at y=0 plane
   //      [2] = px/py  
   //      [3] = pz/py
-  InitTrackParams(1);  
+  InitTrackParams(fInitTrackParamsMeth);  
 
   for (Int_t ipt=0; ipt<npts; ipt++) {
     fTrack->GetPoint(fCluster,ipt);
     if (!CheckVolumeID(fCluster.GetVolumeID())) continue;
+    AliDebug(2,Form("  Original Point = ( %f , %f , %f )   volid=%d\n",fCluster.GetX(),fCluster.GetY(),fCluster.GetZ(),fCluster.GetVolumeID()));
 
     // set geometry parameters for the the current module
     AliDebug(2,Form("\n--- processing point %d --- \n",ipt));    
     if (InitModuleParams()) continue;
 
     AliDebug(2,Form("    VolID=%d  Index=%d  InternalIdx=%d  symname=%s\n", track->GetVolumeID()[ipt], fCurrentModuleIndex ,fCurrentModuleInternalIndex, AliGeomManager::SymName(track->GetVolumeID()[ipt]) ));
-    AliDebug(2,Form("    Point = ( %f , %f , %f ) \n",track->GetX()[ipt],track->GetY()[ipt],track->GetZ()[ipt]));
+    AliDebug(2,Form("  Preprocessed Point = ( %f , %f , %f ) \n",fCluster.GetX(),fCluster.GetY(),fCluster.GetZ()));
     
     if (SetLocalEquations()) return -1;    
 
@@ -595,35 +851,37 @@ Int_t AliITSAlignMille::CalcIntersectionPoint(Double_t *lpar, Double_t *gpar) {
 
 
   // prepare the TGeoHMatrix
-  Double_t tr[3],ang[3];
-  //Double_t rad2deg=180./TMath::Pi();
-  if (fUseLocalShifts) { // just Delta matrix
-    tr[0]=gpar[0]; 
-    tr[1]=gpar[1]; 
-    tr[2]=gpar[2];
-    ang[0]=gpar[3]; // psi   (X)
-    ang[1]=gpar[4]; // theta (Y)
-    ang[2]=gpar[5]; // phi   (Z)
-  }
-  else { // total matrix with shifted parameter
-    AliInfo("global shifts not implemented yet!");
-    return -1;
-  }
+//   Double_t tr[3],ang[3];
+//   //Double_t rad2deg=180./TMath::Pi();
+//   if (fUseLocalShifts) { // just Delta matrix
+//     tr[0]=gpar[0]; 
+//     tr[1]=gpar[1]; 
+//     tr[2]=gpar[2];
+//     ang[0]=gpar[3]; // psi   (X)
+//     ang[1]=gpar[4]; // theta (Y)
+//     ang[2]=gpar[5]; // phi   (Z)
+//   }
+//   else { // total matrix with shifted parameter
+//     AliInfo("global shifts not implemented yet!");
+//     return -1;
+//   }
 
-  //printf("fTempRot = 0x%x  - ang = %g %g %g \n",fTempRot,gpar[5]*rad2deg,gpar[3]*rad2deg,gpar[4]*rad2deg);
+//   //printf("fTempRot = 0x%x  - ang = %g %g %g \n",fTempRot,gpar[5]*rad2deg,gpar[3]*rad2deg,gpar[4]*rad2deg);
 
-  fTempAlignObj->SetRotation(ang[0],ang[1],ang[2]);
-  AliDebug(3,Form("Delta angles: psi=%f  theta=%f   phi=%f",ang[0],ang[1],ang[2]));
-  TGeoHMatrix hm;
-  fTempAlignObj->GetMatrix(hm);
-  fTempHMat->SetRotation(hm.GetRotationMatrix());
-  fTempHMat->SetTranslation(tr);
+//   fTempAlignObj->SetRotation(ang[0],ang[1],ang[2]);
+//   AliDebug(3,Form("Delta angles: psi=%f  theta=%f   phi=%f",ang[0],ang[1],ang[2]));
+//   TGeoHMatrix hm;
+//   fTempAlignObj->GetMatrix(hm);
+//   fTempHMat->SetRotation(hm.GetRotationMatrix());
+//   fTempHMat->SetTranslation(tr);
   
-  // in this case the gpar[] array contains only shifts
-  // and fInitModuleParam[] are set to 0
-  // fCurrentModuleHMatrix is then modified as fCurrentHM*fTempHM
-  if (fUseLocalShifts) 
-    fTempHMat->MultiplyLeft(fCurrentModuleHMatrix);
+//   // in this case the gpar[] array contains only shifts
+//   // and fInitModuleParam[] are set to 0
+//   // fCurrentModuleHMatrix is then modified as fCurrentHM*fTempHM
+//   if (fUseLocalShifts) 
+//     fTempHMat->MultiplyLeft(fCurrentModuleHMatrix);
+  TGeoHMatrix *fTempHMat = fMilleModule[fCurrentModuleInternalIndex]->GetSensitiveVolumeModifiedMatrix(fCluster.GetVolumeID(),gpar);
+  if (!fTempHMat) return -1;
 
   // same in local coord.
   Double_t p0l[3],v0l[3];
@@ -734,6 +992,7 @@ Int_t AliITSAlignMille::SetLocalEquations() {
   // store first interaction point
   CalcIntersectionPoint(fLocalInitParam, fModuleInitParam);  
   for (Int_t i=0; i<3; i++) fPintLoc0[i]=fPintLoc[i];
+  AliDebug(2,Form("Intesect. point: L( %f , %f , %f )",fPintLoc[0],fPintLoc[1],fPintLoc[2]));
   
   // calculate local derivatives numerically
   Double_t dXdL[ITSMILLE_NLOCAL],dZdL[ITSMILLE_NLOCAL];
@@ -822,4 +1081,94 @@ void AliITSAlignMille::PrintGlobalParameters() {
 }
 
 // //_________________________________________________________________________
+Int_t AliITSAlignMille::LoadSuperModuleFile(const Char_t *sfile)
+{ 
+  // load definitions of supermodules from a root file
+  // return 0 if success
+
+  TFile *smf=TFile::Open(sfile);
+  if (!smf->IsOpen()) {
+    AliInfo(Form("Cannot open supermodule file %s",sfile));
+    return -1;
+  }
+
+  TClonesArray *sma=(TClonesArray*)smf->Get("ITSMilleSuperModules");
+  if (!sma) {
+    AliInfo(Form("Cannot find ITSMilleSuperModules array in file"));
+    return -2;  
+  }  
+  Int_t nsma=sma->GetEntriesFast();
+  AliInfo(Form("Array of SuperModules with %d entries\n",nsma));
+  
+  Char_t st[250];
+  char symname[150];
+  UShort_t volid;
+  TGeoHMatrix m;
+
+  for (Int_t i=0; i<nsma; i++) {
+    AliAlignObjParams *a = (AliAlignObjParams*)sma->UncheckedAt(i);
+    volid=a->GetVolUID();
+    strcpy(st,a->GetSymName());
+    a->GetMatrix(m);
+
+    sscanf(st,"%s",symname);
+    // decode module list
+    char *stp=strstr(st,"ModuleList:");
+    if (!stp) return -3;
+    stp += 11;
+    int idx[2200];
+    char spp[200]; int jp=0;
+    char cl[20];
+    strcpy(st,stp);
+    int l=strlen(st);
+    int j=0;
+    int n=0;
+
+    while (j<=l) {
+      if (st[j]==9 || st[j]==32 || st[j]==10 || st[j]==0) {
+	spp[jp]=0;
+	jp=0;
+	if (strlen(spp)) {
+	  int k=strcspn(spp,"-");
+	  if (k<int(strlen(spp))) { // c'e' il -
+	    strcpy(cl,&(spp[k+1]));
+	    spp[k]=0;
+	    int ifrom=atoi(spp); int ito=atoi(cl);
+	    for (int b=ifrom; b<=ito; b++) {
+	      idx[n]=b;
+	      n++;
+	    }
+	  }
+	  else { // numerillo singolo
+	    idx[n]=atoi(spp);
+	    n++;
+	  }
+	}
+      }
+      else {
+	spp[jp]=st[j];
+	jp++;
+      }
+      j++;
+    }
+    UShort_t volidsv[2198];
+    for (j=0;j<n;j++) {
+      volidsv[j]=AliITSAlignMilleModule::GetVolumeIDFromIndex(idx[j]);
+      if (!volidsv[j]) {
+	AliInfo(Form("Index %d not valid (range 0->2197)",idx[j]));
+	return -5;
+      }
+    }
+    Int_t smindex=int(2198+volid-14336); // virtual index
+    fSuperModule[fNSuperModules]=new AliITSAlignMilleModule(smindex,volid,symname,&m,n,volidsv);
+
+    //-------------
+    fNSuperModules++;
+  }
+
+  smf->Close();
+
+  fUseSuperModules=1;
+  return 0;
+}
 

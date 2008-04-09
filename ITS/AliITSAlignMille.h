@@ -20,6 +20,7 @@ class AliMillepede;
 class AliAlignObjParams;
 class TGeoManager;
 class TGeoHMatrix;
+class AliITSAlignMilleModule;
 
 // number of used objects
 #define ITSMILLE_NDETELEM    2198
@@ -35,31 +36,35 @@ public:
   virtual ~AliITSAlignMille();
   
   // geometry methods 
-  Int_t     GetModuleIndex(const Char_t *symname);
+  Int_t  GetModuleIndex(const Char_t *symname);
   Int_t     GetModuleIndex(UShort_t voluid);
   UShort_t  GetModuleVolumeID(const Char_t *symname);
   UShort_t  GetModuleVolumeID(Int_t index);
-  void      SetCurrentModule(Int_t index);
+  void      SetCurrentModule(Int_t index); 
+  void      SetCurrentSensitiveModule(Int_t index); // set as current the SENSITIVE module with index 'index'
 
   // configuration methods
   void      SetGeometryFileName(const Char_t* filename="geometry.root") 
     { fGeometryFileName = filename; }
   const Char_t* GetGeometryFileName() {return fGeometryFileName.Data();}
+  const Char_t* GetPreAlignmentFileName() {return fPreAlignmentFileName.Data();}
   void      PrintCurrentModuleInfo();
-  virtual void Print(Option_t* /* opt */) const;
+  void      Print(Option_t*) const;
   
   // fitting methods
   void      SetMinNPtsPerTrack(Int_t pts=3) {fMinNPtsPerTrack=pts;}
-  //Bool_t    CheckTrack(AliTrackPointArray *track);
   Int_t     ProcessTrack(AliTrackPointArray *track);
   void      InitTrackParams(int meth=1);
   Int_t     InitModuleParams();
   Int_t     CheckCurrentTrack();
-  Bool_t    CheckVolumeID(UShort_t voluid) const ;
+  Bool_t    CheckVolumeID(UShort_t voluid) const; // checks voluid for sensitive volumes
+  Int_t     IsDefined(UShort_t voluid) const;
+  Int_t     IsContained(UShort_t voluid) const;
   Int_t     CalcIntersectionPoint(Double_t *lpar, Double_t *gpar);
   Int_t     CalcDerivatives(Int_t paridx, Bool_t islpar);
   Double_t* GetLocalIntersectionPoint() {return fPintLoc;}
   Double_t* GetGlobalIntersectionPoint() {return fPintGlo;}
+  void      SetInitTrackParamsMeth(Int_t meth=1) {fInitTrackParamsMeth=meth;}
 
   // millepede methods
   void      FixParameter(Int_t param, Double_t value);
@@ -86,14 +91,18 @@ public:
   Double_t    *GetCurrentModuleTranslation() {return fCurrentModuleTranslation;}
   Int_t  GetCurrentModuleInternalIndex() const {return fCurrentModuleInternalIndex;}
   Int_t       *GetModuleIndexArray() {return fModuleIndex;}
+  AliITSAlignMilleModule  *GetMilleModule(UShort_t voluid); // get pointer to the defined supermodule
+  AliITSAlignMilleModule  *GetCurrentModule();
   UShort_t    *GetModuleVolumeIDArray() {return fModuleVolumeID;}
   
  private:
 
   // configuration methods
   Int_t     LoadConfig(const Char_t *cfile="AliITSAlignMille.conf");
+  Int_t     LoadSuperModuleFile(const Char_t *cfile="ITSMilleSuperModules.root");
   void      ResetLocalEquation();
   void      InitGeometry();
+  Int_t     ApplyToGeometry();
 
   // millepede methods
   void      Init(Int_t nGlobal, Int_t nLocal, Int_t nStdDev);
@@ -126,30 +135,42 @@ public:
   Double_t      fMeasLoc[3]; // current point local coordinates (the original ones)
   Double_t      fMeasGlo[3]; // current point glob. coord (AliTrackPoint)
   Double_t      fSigmaLoc[3]; // stdev current point
-  TGeoHMatrix  *fTempHMat; ///
+  //TGeoHMatrix  *fTempHMat; ///
   AliAlignObjParams *fTempAlignObj; ///
   Double_t      fDerivativeXLoc; // localX deriv.
   Double_t      fDerivativeZLoc; // localZ deriv.
   Double_t      fDeltaPar; ///
   Int_t         fMinNPtsPerTrack; ///
-  
+  Int_t         fInitTrackParamsMeth; ///
+
   // geometry stuffs
   TString       fGeometryFileName;  ///
+  TString       fPreAlignmentFileName;  ///
   TGeoManager  *fGeoManager;        ///
-  Int_t         fCurrentModuleIndex;   ///
-  Int_t         fCurrentModuleInternalIndex;  ///
+  Int_t         fCurrentModuleIndex;   /// SuperModule index
+  Int_t         fCurrentModuleInternalIndex;  /// SuperModule internal index
+  Int_t         fCurrentSensVolIndex;   /// Current point (sens. vol.) index
   Double_t      fCurrentModuleTranslation[3]; ///
   Int_t         fNModules;  /// number of defined modules from config file
-  Int_t         fModuleIndex[ITSMILLE_NDETELEM]; ///
-  UShort_t      fModuleVolumeID[ITSMILLE_NDETELEM];  ///
-  Bool_t        fFreeParam[ITSMILLE_NDETELEM][ITSMILLE_NPARCH];  ///
+  Int_t         fModuleIndex[ITSMILLE_NDETELEM*2]; ///
+  UShort_t      fModuleVolumeID[ITSMILLE_NDETELEM*2];  ///
+  Bool_t        fFreeParam[ITSMILLE_NDETELEM*2][ITSMILLE_NPARCH];  ///
   Bool_t        fUseLocalShifts; /// 
-  TGeoHMatrix  *fCurrentModuleHMatrix; /// 
+  Bool_t        fUseSuperModules; /// 
+  Bool_t        fUsePreAlignment; /// 
+  Int_t         fNSuperModules; /// number of custom supermodules in SM file
+  TGeoHMatrix  *fCurrentModuleHMatrix; /// SuperModule matrix
+
+  AliITSAlignMilleModule *fMilleModule[ITSMILLE_NDETELEM*2]; /// array of super modules to be aligned
+
+  AliITSAlignMilleModule *fSuperModule[ITSMILLE_NDETELEM*2]; /// array of super modules defined in supermodule file
 
   AliITSAlignMille(const AliITSAlignMille& rhs);
   AliITSAlignMille& operator=(const AliITSAlignMille& rhs);
 
 
-ClassDef(AliITSAlignMille, 0)};
+  ClassDef(AliITSAlignMille, 0)
+
+};
 
 #endif
