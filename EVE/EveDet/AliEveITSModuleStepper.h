@@ -90,7 +90,7 @@ private:
 
   // GUI
   void   RenderModuleIDs();
-  void   RenderText(const char* tex ,Int_t id, const TGLFont &font);
+  void   RenderText(const char* tex ,Int_t id, const TGLFont &font, Float_t step=-1);
   void   RenderPalette(TEveRGBAPalette* p);
   void   RenderMenu(Int_t currP, Int_t MaxP, Int_t scaleX, Int_t scaleZ);
 

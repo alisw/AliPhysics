@@ -113,11 +113,11 @@ void AliEveITSModuleStepper::SetFirst(Int_t first)
   // Se module ID which apply to first item in stepper.
 
   Int_t lastpage = fModuleIDs.size()/Nxy();
-  if(fModuleIDs.size() % Nxy() ) lastpage++;
+  if (fModuleIDs.size() % Nxy() ) lastpage++;
 
   Int_t firstLastpage = (lastpage - 1)*Nxy();
-  if(first > firstLastpage) first = firstLastpage;
-  if(first < 0) first = 0;
+  if (first > firstLastpage) first = firstLastpage;
+  if (first < 0) first = 0;
   fPosition = first;
   Apply();
 }
@@ -191,7 +191,7 @@ Int_t AliEveITSModuleStepper::GetPages()
   // Get number of all pages.
 
   Int_t n = fModuleIDs.size()/Nxy();
-  if(fModuleIDs.size() % Nxy()) n++;
+  if (fModuleIDs.size() % Nxy()) n++;
   return n;
 }
 
@@ -207,7 +207,7 @@ void  AliEveITSModuleStepper::Apply()
   UInt_t idx = fPosition;
   for(List_i childit=fChildren.begin(); childit!=fChildren.end(); ++childit)
   {
-    if(idx < fModuleIDs.size())
+    if (idx < fModuleIDs.size())
     {
       AliEveITSScaledModule* mod = dynamic_cast<AliEveITSScaledModule*>(*childit);
       mod->SetID(fModuleIDs[idx], kFALSE);
@@ -226,7 +226,7 @@ void  AliEveITSModuleStepper::Apply()
       // fit width first
       Double_t sx = fStepper->GetDx();
       Double_t sy = (mx*fStepper->GetDx())/mz;
-      if(sy > fStepper->GetDy())
+      if (sy > fStepper->GetDy())
       {
 	sy =  fStepper->GetDy();
 	sx =  (mz*fStepper->GetDx())/mx;
@@ -238,9 +238,9 @@ void  AliEveITSModuleStepper::Apply()
       fStepper->GetPosition(p);
       tr.SetPos(p[0]+0.5*fStepper->GetDx(), p[1]+0.5*fStepper->GetDy(), p[2]+0.5*fStepper->GetDz());
 
-      if(mod->GetSubDetID() == 2)
+      if (mod->GetSubDetID() == 2)
 	mod->SetName(Form("SSD %d", idx));
-      else if(mod->GetSubDetID() == 1)
+      else if (mod->GetSubDetID() == 1)
 	mod->SetName(Form("SDD %d", idx));
       else
 	mod->SetName(Form("SPD %d", idx));
@@ -308,7 +308,7 @@ Bool_t AliEveITSModuleStepper::Handle(TGLRnrCtx          & /*rnrCtx*/,
         case 5:
         {
           AliEveDigitScaleInfo* si = fScaleInfo;
-          if(si->GetScale() < 5)
+          if (si->GetScale() < 5)
           {
             si->ScaleChanged(si->GetScale() + 1);
             ElementChanged(kTRUE, kTRUE);
@@ -318,7 +318,7 @@ Bool_t AliEveITSModuleStepper::Handle(TGLRnrCtx          & /*rnrCtx*/,
         case 6:
         {
           AliEveDigitScaleInfo* si = fScaleInfo;
-          if(si->GetScale() > 1)
+          if (si->GetScale() > 1)
           {
             si->ScaleChanged(si->GetScale() - 1);
             ElementChanged(kTRUE, kTRUE);
@@ -372,19 +372,33 @@ void AliEveITSModuleStepper::MouseLeave()
 /******************************************************************************/
 
 //______________________________________________________________________________
-void AliEveITSModuleStepper::RenderText(const char* txt, Int_t id, const TGLFont &font)
+void AliEveITSModuleStepper::RenderText(const char* txt, Int_t id, const TGLFont &font, Float_t step)
 {
   // Render text for button id.
 
   Float_t llx, lly, llz, urx, ury, urz;
-
-  (fActiveID == id && id > 0) ? TGLUtil::Color(fActiveCol) :TGLUtil::Color(fTextCol);
-  glPushMatrix();
   font.BBox(txt, llx, lly, llz, urx, ury, urz);
-  glLoadName(id);
-  font.Render(txt);
-  glPopMatrix();
-  glTranslatef(urx, 0, 0);
+  (fActiveID == id && id > 0) ? TGLUtil::Color(fActiveCol) :TGLUtil::Color(fTextCol);
+
+  if (step > 0)
+  {
+    // center text in the step interval
+    glPushMatrix();
+    if (step>urx)
+    glTranslatef((step-urx+llx)*0.5f-llx, 0, 0);
+    glLoadName(id);
+    font.Render(txt);
+    glPopMatrix();
+    glTranslatef(step, 0, 0);
+  }
+  else 
+  {
+    glLoadName(id);
+    glPushMatrix();
+    font.Render(txt);
+    glPopMatrix();
+    glTranslatef(urx, 0, 0);
+  }
 }
 
 //______________________________________________________________________________
@@ -427,11 +441,11 @@ void AliEveITSModuleStepper::RenderPalette(TEveRGBAPalette* p)
   glVertex2f(length, y);
   glEnd();
 
-  glRotatef(-90,1, 0, 0 );
+  glRotatef(-90, 1, 0, 0 );
   Double_t v1[3] = {0., 0., 0.};
   Double_t v2[3] = {length, 0, 0.};
-  fAxis->SetTextColor(kWhite);
-  fAxis->SetLineColor(kWhite);
+  fAxis->SetTextColor(kGray+1);
+  fAxis->SetLineColor(kGray+1);
   fAxis->PaintGLAxis(v1, v2, p->GetMinVal(), p->GetMaxVal(), 5);
   glPopAttrib();
 }
@@ -444,25 +458,37 @@ void AliEveITSModuleStepper::RenderMenu(Int_t curP, Int_t maxP, Int_t scaleX, In
   TGLUtil::Color(fTextCol);
   fTextFont.PreRender();
   glTranslatef(0, fTextSize*0.3, 0);
-  // pager
-  glTranslatef(fTextSize*0.2,0 , 0);
-  RenderText("9", 2, fSymbolFont); // last page
-  RenderText("3", 1, fSymbolFont);//last page
-  RenderText(Form(" %d/%d ", curP, maxP),-1, fTextFont); //status
-  RenderText("4", 3, fSymbolFont); // next page
-  RenderText(":",4, fSymbolFont); // last page
-  // scale
-  glTranslatef(fTextSize,0, 0);
-  RenderText(Form("Zoom: "), -1, fTextFont);
-  RenderText("5", 5, fSymbolFont);
-  RenderText("6", 6, fSymbolFont);
-  RenderText(Form("%dx%d ", scaleX, scaleZ), -1, fTextFont);
-  // detectors
-  glTranslatef(fTextSize, 0, 0);
-  RenderText("SPD ", 8, fTextFont );
-  RenderText("SDD ", 9, fTextFont);
-  RenderText("SSD ", 10, fTextFont);
-  fTextFont.PostRender();
+  {
+    // pager
+    glTranslatef(fTextSize*0.2, 0 , 0);
+    RenderText("9", 2, fSymbolFont); // last page
+    RenderText("3", 1, fSymbolFont);//last page
+    RenderText(Form("%d/%d", curP, maxP),-1, fTextFont, 2.7*fTextSize); //status
+    {
+      // bugg in webdings font , bbox does not give realistic value
+      Float_t llx, lly, llz, urx, ury, urz;
+      fSymbolFont.BBox("4", llx, lly, llz, urx, ury, urz);
+      glTranslatef(-llx, 0, 0);
+    }
+    RenderText("4", 3, fSymbolFont); // next page
+    RenderText(":",4, fSymbolFont); // last page
+  }
+  {
+    // scale
+    glTranslatef(fTextSize,0, 0);
+    RenderText(Form("Zoom:"), -1, fTextFont);
+    RenderText("6", 6, fSymbolFont);
+    RenderText("5", 5, fSymbolFont);
+    RenderText(Form("%dx%d", scaleX, scaleZ), -1, fTextFont, 2*fTextSize);
+  }
+  {
+    // detectors
+    glTranslatef(fTextSize, 0, 0);
+    RenderText("SPD ", 8, fTextFont);
+    RenderText("SDD ", 9, fTextFont);
+    RenderText("SSD ", 10, fTextFont);
+    fTextFont.PostRender();
+  }
 }
 
 //______________________________________________________________________________
@@ -477,7 +503,7 @@ void AliEveITSModuleStepper::RenderModuleIDs()
   TGLUtil::Color(kWhite);
   for (List_i childit=fChildren.begin(); childit!=fChildren.end(); ++childit)
   {
-    if(idx < fModuleIDs.size())
+    if (idx < fModuleIDs.size())
     {
       AliEveITSScaledModule* mod = dynamic_cast<AliEveITSScaledModule*>(*childit);
       TEveTrans& tr = mod->RefMainTrans();
@@ -519,7 +545,7 @@ void AliEveITSModuleStepper::Render(TGLRnrCtx& rnrCtx)
   }
 
   // init fonts
-  if(fTextFont.GetMode() == TGLFont::kUndef)
+  if (fTextFont.GetMode() == TGLFont::kUndef)
   {
     fTextFont = rnrCtx.GetFont(fTextSize, 4, TGLFont::kTexture);
     fSymbolFont =  rnrCtx.GetFont(72, 31, TGLFont::kTexture);
