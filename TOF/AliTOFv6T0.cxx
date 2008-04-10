@@ -935,7 +935,7 @@ void AliTOFv6T0::MakeModulesInBTOFvolumes(Float_t ytof, Float_t zlenA) const
   //
   // Fill BTOF_%i (for i=0,...17) volumes
   // with volumes FTOA (MRPC strip container),
-  // In case of TOF holes, two sectors (i.e. 13th, 14th and 15th)
+  // In case of TOF holes, three sectors (i.e. 13th, 14th and 15th)
   // are filled with volumes: FTOB and FTOC (MRPC containers),
   //
 
@@ -975,7 +975,7 @@ void AliTOFv6T0::MakeCoversInBTOFvolumes() const
   //
   // Fill BTOF_%i (for i=0,...17) volumes
   // with volumes FPEA (to separate strips from FEA cards)
-  // In case of TOF holes, two sectors (i.e. 13th, 14th and 15th)
+  // In case of TOF holes, three sectors (i.e. 13th, 14th and 15th)
   // are filled with FPEB volumes
   // (to separate MRPC strips from FEA cards)
   //
