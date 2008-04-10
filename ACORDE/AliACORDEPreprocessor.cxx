@@ -22,14 +22,14 @@
 #include "AliCDBEntry.h"
 #include "AliLog.h"
 #include "AliACORDECalibData.h"
+#include "AliACORDEDataDCS.h"
 
 #include <TTimeStamp.h>
 #include <TObjString.h>
 #include <TList.h>
 #include <TH1F.h>
 
-//
-// This is the first version of ACORDE Preprocessor
+//ACORDE Preprocessor
 // It takes data from DAQ and passes it to the class AliACORDECalibModule and 
 // stores reference data.
 //
@@ -43,9 +43,13 @@ ClassImp(AliACORDEPreprocessor)
 //______________________________________________________________________________________________
 AliACORDEPreprocessor::AliACORDEPreprocessor(AliShuttleInterface* shuttle) :
   AliPreprocessor("ACO", shuttle),
-  fCalData(0)
+  fCalData(0),
+  fDataDCS(0)
 {
   // constructor
+  AddRunType("STANDALONE_BC");
+  AddRunType("STANDALONE_PULSER");
+
 }
 
 //______________________________________________________________________________________________
@@ -67,39 +71,52 @@ void AliACORDEPreprocessor::Initialize(Int_t run, UInt_t startTime,
 		TTimeStamp(endTime).AsString()));
 
         fCalData = new AliACORDECalibData();
+        fDataDCS = new AliACORDEDataDCS();
 }
 
 //______________________________________________________________________________________________
-UInt_t AliACORDEPreprocessor::Process(TMap* /*dcsAliasMap*/)
+UInt_t AliACORDEPreprocessor::Process(TMap* dcsAliasMap)
 {
   
-
  
- 
-  TH1D *fH1,*fH2,*fH3,*fH4; //Histogram of the rates per module
+//   TH1D *fH1,*fH2,*fH3,*fH4; //Histogram of the rates per module
+   
+   TH1D *fH[4];
    TFile *daqFile=0x0;
+
 
 
    // retrieve the run type from the Shuttle,
 
+   if(!dcsAliasMap)
+   {
+   
+   Log(Form("Error there isn't dcsAliasMap"));
+   return  1;
+   
+   }
+
+
+   fDataDCS->ProcessData(*dcsAliasMap);
+
+
+
+   AliCDBMetaData metaData1;
+   metaData1.SetBeamPeriod(0);
+   metaData1.SetResponsible("Pedro and Irais");
+   metaData1.SetComment("This preprocessor fills an AliACORDECalibModule object.");
+
+   Bool_t result1 = StoreReferenceData("Calib", "DataDCS",fDataDCS, &metaData1);
+
+   if(!result1)
+   return 2;
  
    TString runType = GetRunType();
 
 
-   //acorde	STANDALONE_BC
-   //acorde	STANDALONE_PULSER
-    
-   if(runType !="STANDALONE_PULSER")
-   {
-
-   Log("RunType is not STANDALONE_PULSER, nothing to do");
-   return 0;
-
-   }
-
-
    Log(Form("Run type for run %d: %s", fRun, runType.Data()));
    TString SourcesId = "CALIB";
+
 
   
 
@@ -110,7 +127,7 @@ UInt_t AliACORDEPreprocessor::Process(TMap* /*dcsAliasMap*/)
    if (!sourceList)
    {
   	Log(Form("Error: No sources found for id %s", SourcesId.Data()));
-	return 2;
+	return 3;
    }
   
    // TODO We have the list of sources that produced the files with Id RATES 
@@ -140,28 +157,28 @@ UInt_t AliACORDEPreprocessor::Process(TMap* /*dcsAliasMap*/)
               {
                             
               Log(Form("There are not histos     1"));
-	      return 3;
+	      return 4;
 
               }
 
            
                 
-            fH1 = (TH1D*)daqFile->Get("fHist1");
-            fH2 = (TH1D*)daqFile->Get("fHist2");
-            fH3 = (TH1D*)daqFile->Get("fHist3");
-            fH4 = (TH1D*)daqFile->Get("fHist4");
+            fH[0] = (TH1D*)daqFile->Get("fHist1");
+            fH[1] = (TH1D*)daqFile->Get("fHist2");
+            fH[2] = (TH1D*)daqFile->Get("fHist3");
+            fH[3] = (TH1D*)daqFile->Get("fHist4");
           
 
              
-             if(fH1!=NULL&&fH2!=NULL&&fH3!=NULL&&fH4!=NULL)  
+             if(fH[0]!=NULL&&fH[1]!=NULL&&fH[2]!=NULL&&fH[3]!=NULL)  
              {  
-             fCalData->AddHHits(fH1);
-             fCalData->AddHTHits(fH2);
-             fCalData->AddHMultiHits(fH3);
-             fCalData->AddHTMultiHits(fH4);
+             fCalData->AddHHits(fH[0]);
+             fCalData->AddHTHits(fH[1]);
+             fCalData->AddHMultiHits(fH[2]);
+             fCalData->AddHTMultiHits(fH[3]);
              }
             
-             else
+            else
             {
              Log(Form("There are not histos     2"));
              return 4;
@@ -182,14 +199,16 @@ UInt_t AliACORDEPreprocessor::Process(TMap* /*dcsAliasMap*/)
 	metaData.SetResponsible("Pedro and Irais");
 	metaData.SetComment("This preprocessor fills an AliACORDECalibModule object.");
 
-          	Bool_t result = StoreReferenceData("Calib", "Data",fCalData, &metaData);
+          	Bool_t result2 = StoreReferenceData("Calib", "Data",fCalData, &metaData);
       
 	delete fCalData;
+        delete fDataDCS;
+        fDataDCS = 0;
 	fCalData = 0;
   
 
-  if (!result)
-  return 4;
+  if (!result2)
+  return 5;
   
   return 0;
 }
