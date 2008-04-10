@@ -380,6 +380,9 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
    pid->RunPID(esd);
    delete pid;
 
+   delete digits;
+   delete clusters;
+
 }
 
 
