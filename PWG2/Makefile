@@ -25,6 +25,10 @@ ifneq ($(ANALYSIS_INCLUDE),)
   ALICEINC += -I../$(ANALYSIS_INCLUDE)
 endif
 
+ifneq ($(ANALYSISalice_INCLUDE),)
+  ALICEINC += -I../$(ANALYSISalice_INCLUDE)
+endif
+
 ifneq ($(PWG2AOD_INCLUDE),)
   ALICEINC += -I../$(PWG2AOD_INCLUDE)
 endif
