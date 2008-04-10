@@ -26,10 +26,10 @@
 #include "STRUCT/AliFRAMEv2.h"
 #include "STRUCT/AliSHILv2.h"
 #include "STRUCT/AliPIPEv0.h"
-#include "ITS/AliITSvPPRasymmFMD.h"
+#include "ITS/AliITSv11Hybrid.h"
 #include "TPC/AliTPCv2.h"
 #include "TOF/AliTOFv5T0.h"
-#include "HMPID/AliHMPIDv1.h"
+#include "HMPID/AliHMPIDv3.h"
 #include "ZDC/AliZDCv3.h"
 #include "TRD/AliTRDv1.h"
 #include "FMD/AliFMDv1.h"
@@ -266,7 +266,7 @@ void Config()
     {
         //=================== ITS parameters ============================
 
-	AliITSvPPRasymmFMD *ITS  = new AliITSvPPRasymmFMD("ITS","ITS PPR detailed version with asymmetric services");
+	AliITS *ITS  = new AliITSv11Hybrid("ITS","ITS v11Hybrid");
     }
 
     if (iTPC)
@@ -285,7 +285,7 @@ void Config()
     if (iHMPID)
     {
         //=================== HMPID parameters ===========================
-        AliHMPID *HMPID = new AliHMPIDv1("HMPID", "normal HMPID");
+        AliHMPID *HMPID = new AliHMPIDv3("HMPID", "normal HMPID");
 
     }
 

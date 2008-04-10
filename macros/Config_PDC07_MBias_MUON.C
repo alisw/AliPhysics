@@ -196,7 +196,7 @@ void Config(char directory[100]="", char option[6]="trgAll")
     AliSHIL *SHIL = new AliSHILv3("SHIL", "Shielding Version 3");
   //=================== ITS parameters =============================
     if(iITS) {
-	AliITSvPPRasymmFMD *ITS  = new AliITSvPPRasymmFMD("ITS","ITS PPR detailed version with asymmetric services");
+	AliITS *ITS  = new AliITSv11Hybrid("ITS","ITS v11Hybrid");
     }      
  //=================== FMD parameters =============================
     if(iFMD) {
