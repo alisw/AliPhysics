@@ -22,12 +22,6 @@
 
 ClassImp(AliACORDECalibData)
 
-TH1D *fHits;
-  TH1D *fTHits;
-  TH1D *fMultiHits;
-  TH1D *fTMultiHits;
-
-
 
 //________________________________________________________________
 AliACORDECalibData::AliACORDECalibData():
