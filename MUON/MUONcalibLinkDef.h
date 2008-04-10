@@ -21,6 +21,9 @@
 #pragma link C++ class AliMUON2DStoreValidator+;
 #pragma link C++ class AliMUONTriggerIO+;
 #pragma link C++ class AliMUONTrackerIO+;
+#pragma link C++ class AliMUONVTrackerData+;
+#pragma link C++ class AliMUONSparseHisto+;
+#pragma link C++ class AliMUONTrackerData+;
 
 #endif
 

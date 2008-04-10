@@ -9,8 +9,11 @@ SRCS:=  AliMUONTriggerLut.cxx \
         AliMUONTriggerEfficiencyCells.cxx\
         AliMUON2DStoreValidator.cxx \
         AliMUONTriggerIO.cxx \
-        AliMUONTrackerIO.cxx
-
+        AliMUONTrackerIO.cxx \
+        AliMUONVTrackerData.cxx \
+        AliMUONSparseHisto.cxx \
+        AliMUONTrackerData.cxx
+        
 HDRS:= $(SRCS:.cxx=.h)
 
 DHDR:= MUONcalibLinkDef.h

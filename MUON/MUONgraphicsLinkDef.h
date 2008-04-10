@@ -35,13 +35,10 @@
 #pragma link C++ class AliMUONPainterDataSourceItem+;
 #pragma link C++ class AliMUONTrackerOCDBDataMaker+;
 #pragma link C++ class AliMUONPainterEnv+;
-#pragma link C++ class AliMUONVTrackerData+;
 #pragma link C++ class AliMUONVTrackerDataMaker+;
-#pragma link C++ class AliMUONTrackerData+;
 #pragma link C++ class AliMUONTrackerRawDataMaker+;
 #pragma link C++ class AliMUONTrackerCalibratedDataMaker+;
 #pragma link C++ class AliMUONMchViewApplication+;
-#pragma link C++ class AliMUONSparseHisto+;
 #pragma link C++ class AliMUONTrackerDataHistogrammer+;
 #pragma link C++ class AliMUONTrackerDataWrapper+;
 #pragma link C++ class AliMUONTrackerDataCompareDialog+;

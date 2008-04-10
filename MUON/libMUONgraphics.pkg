@@ -27,17 +27,14 @@ SRCS:=  AliMUONVPainter.cxx \
   AliMUONPainterDataSourceItem.cxx \
   AliMUONTrackerOCDBDataMaker.cxx \
   AliMUONPainterEnv.cxx \
-  AliMUONVTrackerData.cxx \
   AliMUONVTrackerDataMaker.cxx \
-  AliMUONTrackerData.cxx \
   AliMUONTrackerRawDataMaker.cxx \
   AliMUONTrackerCalibratedDataMaker.cxx \
   AliMUONMchViewApplication.cxx \
-  AliMUONSparseHisto.cxx \
   AliMUONTrackerDataHistogrammer.cxx \
   AliMUONTrackerDataWrapper.cxx \
   AliMUONTrackerDataCompareDialog.cxx
-
+  
 HDRS:= $(SRCS:.cxx=.h) 
 
 DHDR:= MUONgraphicsLinkDef.h
