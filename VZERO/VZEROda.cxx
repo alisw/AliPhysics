@@ -1,13 +1,15 @@
 /*********************************************************************************
 - Contact:    Brigitte Cheynis     b.cheynis@ipnl.in2p3.fr
-- Link:       /afs/cern.ch/user/c/cheynis/public/run546.dat
+- Link:       http
+- Raw data test file : 
+              /afs/cern.ch/user/c/cheynis/public/run546.dat
 - Run Type:   PHYSICS
 - DA Type:    LDC
 - Number of events needed: >=100
-- Input Files:  raw_data_file_on_LDC
+- Input Files:  argument list
 - Output Files: local files  V00Log.txt, VZERO_Histos.root, V0_Ped_Width_Gain.dat
                 FXS file     V0_Ped_Width_Gain.dat
-- Trigger types used:
+- Trigger types used: PHYSICS_EVENT
 **********************************************************************************/
 
 
