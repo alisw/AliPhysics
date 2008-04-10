@@ -89,6 +89,8 @@ Revision 0.01  2005/07/22 A. De Caro
 ////////////////////////////////////////////////////////////////////////
 
 
+#include "Riostream.h"
+
 #include "TClonesArray.h"
 
 #include "AliDAQ.h"
@@ -789,7 +791,7 @@ Int_t AliTOFRawStream::GetField(UInt_t word, Int_t fieldMask, Int_t fieldPositio
 }
 
 //----------------------------------------------------------------------------
-Int_t AliTOFRawStream::Equip2VolNplate(Int_t iDDL, Int_t nTRM, Int_t nTDC) const 
+Int_t AliTOFRawStream::Equip2VolNplate(Int_t iDDL, Int_t nTRM, Int_t nTDC)
 {
   //
   // Returns the TOF plate number [0;4]
@@ -875,7 +877,7 @@ Int_t AliTOFRawStream::Equip2VolNplate(Int_t iDDL, Int_t nTRM, Int_t nTDC) const
 }
 
 //----------------------------------------------------------------------------
-Int_t AliTOFRawStream::Equip2VolNstrip(Int_t iDDL, Int_t nTRM, Int_t nTDC) const 
+Int_t AliTOFRawStream::Equip2VolNstrip(Int_t iDDL, Int_t nTRM, Int_t nTDC)
 {
   //
   // Returns the TOF strip number per module:
@@ -971,7 +973,7 @@ Int_t AliTOFRawStream::Equip2VolNstrip(Int_t iDDL, Int_t nTRM, Int_t nTDC) const
 
 //----------------------------------------------------------------------------
 Int_t AliTOFRawStream::Equip2VolNpad(Int_t iDDL, Int_t iChain, Int_t nTDC,
-				Int_t iCH) const 
+				     Int_t iCH)
 {
   //
   // Returns the TOF pad number per strip [0;95]
@@ -996,8 +998,8 @@ Int_t AliTOFRawStream::Equip2VolNpad(Int_t iDDL, Int_t iChain, Int_t nTDC,
 
   if (((iDDL==1 || iDDL==2) && iPadAlongTheStrip< AliTOFGeometry::NpadX()) ||
       ((iDDL==0 || iDDL==3) && iPadAlongTheStrip>=AliTOFGeometry::NpadX())) {
-    fRawReader->AddMajorErrorLog(kPadXError);
-    AliWarning("Problems with the padX number!");
+    std::cerr << "Problems with the padX number!" << endl;
+    //AliWarning("Problems with the padX number!");
   }
   return iPadAlongTheStrip;
 
@@ -1062,25 +1064,28 @@ void AliTOFRawStream::EquipmentId2VolumeId(Int_t nDDL, Int_t nTRM, Int_t iChain,
 
   Int_t iPlate = Equip2VolNplate(iDDL, nTRM, nTDC);
   if (iPlate==-1) {
-    fRawReader->AddMajorErrorLog(kPlateError,"plate = -1");
+    if (fRawReader)
+      fRawReader->AddMajorErrorLog(kPlateError,"plate = -1");
     AliWarning("Problems with the plate number!");
   }
 
   Int_t iStrip = Equip2VolNstrip(iDDL, nTRM, nTDC);
   if (iStrip==-1) {
-    fRawReader->AddMajorErrorLog(kStripError,"strip = -1");
+    if (fRawReader)
+      fRawReader->AddMajorErrorLog(kStripError,"strip = -1");
     AliWarning("Problems with the strip number!");
   }
 
   Int_t iPadAlongTheStrip  = Equip2VolNpad(iDDL, iChain, nTDC, iCH);
   if (iPadAlongTheStrip==-1){
-    fRawReader->AddMajorErrorLog(kPadAlongStripError,"pad = -1");
+    if (fRawReader)
+      fRawReader->AddMajorErrorLog(kPadAlongStripError,"pad = -1");
     AliWarning("Problems with the pad number along the strip!");
   }
-
+  
   Int_t iPadX  = (Int_t)(iPadAlongTheStrip/(Float_t(AliTOFGeometry::NpadZ())));
   Int_t iPadZ  = iPadAlongTheStrip%AliTOFGeometry::NpadZ();
-
+  
   volume[0] = iSector;
   volume[1] = iPlate;
   volume[2] = iStrip;

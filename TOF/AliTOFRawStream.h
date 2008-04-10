@@ -437,9 +437,9 @@ class AliTOFRawStream: public TObject {
   void  EquipmentId2VolumeId(Int_t nDDL, Int_t nTRM, Int_t iChain,
 			     Int_t iTDC, Int_t iCH, Int_t *volume) const;
   void  EquipmentId2VolumeId(AliTOFHitData *hitData, Int_t *volume) const;
-  Int_t Equip2VolNplate(Int_t iDDL, Int_t nTRM, Int_t nTDC) const ;
-  Int_t Equip2VolNstrip(Int_t iDDL, Int_t nTRM, Int_t nTDC) const ;
-  Int_t Equip2VolNpad(Int_t iDDL, Int_t iChain, Int_t nTDC, Int_t iCH) const ;
+  static Int_t Equip2VolNplate(Int_t iDDL, Int_t nTRM, Int_t nTDC);
+  static Int_t Equip2VolNstrip(Int_t iDDL, Int_t nTRM, Int_t nTDC);
+  static Int_t Equip2VolNpad(Int_t iDDL, Int_t iChain, Int_t nTDC, Int_t iCH);
   Int_t GetDDLnumberPerSector(Int_t nDDL) const;
   Int_t GetSectorNumber(Int_t nDDL) const;
 
