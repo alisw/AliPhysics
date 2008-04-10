@@ -161,11 +161,11 @@ void Config()
 
    // libraries required by geant321 and Pythia6
 #if defined(__CINT__)
-    gSystem->Load("libgeant321");
     gSystem->Load("liblhapdf.so");      // Parton density functions
     gSystem->Load("libEGPythia6.so");   // TGenerator interface
     gSystem->Load("libpythia6.so");     // Pythia
     gSystem->Load("libAliPythia6.so");  // ALICE specific implementations
+    gSystem->Load("libgeant321");
 #endif
 
     new     TGeant3TGeo("C++ Interface to Geant3");
