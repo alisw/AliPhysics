@@ -23,7 +23,9 @@
 
 #include "AliHMPIDPid.h"       //class header
 #include "AliHMPIDParam.h"     //class header
+#include "AliHMPIDRecon.h"     //class header
 #include <AliESDtrack.h>       //FindPid()
+#include <TRandom.h>           //Resolution()
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 AliHMPIDPid::AliHMPIDPid():TTask("HMPIDrec","HMPIDPid")
@@ -35,35 +37,83 @@ AliHMPIDPid::AliHMPIDPid():TTask("HMPIDrec","HMPIDPid")
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDPid::FindPid(AliESDtrack *pTrk,Int_t nsp,Double_t *prob)
 {
-// Calculates probability to be a electron-muon-pion-kaon-proton
+// Calculates probability to be a electron-muon-pion-kaon-proton with the "amplitude" method
 // from the given Cerenkov angle and momentum assuming no initial particle composition
 // (i.e. apriory probability to be the particle of the given sort is the same for all sorts)
 
-  if(pTrk->GetHMPIDsignal()<=0){//HMPID does not find anything reasonable for this track, assign 0.2 for all species
+  AliPID *pPid = new AliPID();
+  Double_t thetaCerExp = pTrk->GetHMPIDsignal();                                                                           //  measured thetaCherenkov
+  
+  if(thetaCerExp<=0){                                         //HMPID does not find anything reasonable for this track, assign 0.2 for all species
     for(Int_t iPart=0;iPart<nsp;iPart++) prob[iPart]=1.0/(Float_t)nsp;
     return;
   } 
 
-  Double_t pmod = pTrk->GetP();
-  Double_t hTot=0;
-  Double_t *h = new Double_t [nsp];
+  Double_t pmod = pTrk->GetP();                  // Momentum of the charged particle
+  Double_t hTot=0;                               // Initialize the total height of the amplitude method
+  Double_t *h = new Double_t [nsp];              // number of charged particles to be considered
 
-  for(Int_t iPart=0;iPart<nsp;iPart++){
-    Double_t mass = AliPID::ParticleMass(iPart);
-    Double_t cosThetaTh = TMath::Sqrt(mass*mass+pmod*pmod)/(AliHMPIDParam::Instance()->MeanIdxRad()*pmod);
-    if(cosThetaTh<1) //calculate the height of theoretical theta ckov on the gaus of experimental one
-      h[iPart] =TMath::Gaus(TMath::ACos(cosThetaTh),pTrk->GetHMPIDsignal(),TMath::Sqrt(pTrk->GetHMPIDchi2()),kTRUE);      
-    else             //beta < 1/ref. idx. => no light at all  
-      h[iPart] =0 ;       
+  Bool_t desert = kTRUE;                                                                                                     //  Flag to evaluate if ThetaC is far ("desert") from the given Gaussians
+  
+  for(Int_t iPart=0;iPart<nsp;iPart++){                                                                                      //  for each particle
+    
+    h[iPart] = 0;                                                                                                            //  reset the height
+    Double_t mass = pPid->ParticleMass(iPart);                                                                             //  with the given mass
+    Double_t cosThetaTh = TMath::Sqrt(mass*mass+pmod*pmod)/(AliHMPIDParam::Instance()->MeanIdxRad()*pmod);                   //  evaluate the theor. Theta Cherenkov
+    if(cosThetaTh>1) continue;                                                                                               //  no light emitted, zero height
+    Double_t thetaCerTh = TMath::ACos(cosThetaTh);                                                                           //  theoretical Theta Cherenkov
+    Double_t sigmaRing = Resolution(thetaCerTh,pTrk);
+    
+    if(sigmaRing==0) {
+      for(Int_t jPart=0;jPart<nsp;jPart++) prob[jPart]=1.0/(Float_t)nsp;
+      return;
+    } 
+    
+    if(TMath::Abs(thetaCerExp-thetaCerTh)<4*sigmaRing) desert = kFALSE;                                                                //   
+    h[iPart] =TMath::Gaus(thetaCerTh,thetaCerExp,sigmaRing,kTRUE);
     hTot    +=h[iPart]; //total height of all theoretical heights for normalization
+    
   }//species loop
 
-  Double_t hMin=TMath::Gaus(pTrk->GetHMPIDsignal()-4*TMath::Sqrt(pTrk->GetHMPIDchi2()),pTrk->GetHMPIDsignal(),TMath::Sqrt(pTrk->GetHMPIDchi2()),kTRUE);//5 sigma protection
-
   for(Int_t iPart=0;iPart<nsp;iPart++) {//species loop to assign probabilities
-    if(hTot>hMin) prob[iPart]=h[iPart]/hTot;
+    
+    if(!desert) prob[iPart]=h[iPart]/hTot;
     else prob[iPart]=1.0/(Float_t)nsp;            //all theoretical values are far away from experemental one
+    
   }
+  
   delete [] h;
+  delete pPid ; pPid=0x0;
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Double_t AliHMPIDPid::Resolution(Double_t thetaCerTh, AliESDtrack *pTrk)
+{
+  AliHMPIDParam *pParam = AliHMPIDParam::Instance();
+      
+  AliHMPIDRecon rec;
+  Float_t xRa,yRa,thRa,phRa;
+  pTrk->GetHMPIDtrk(xRa,yRa,thRa,phRa);
+  rec.SetTrack(xRa,yRa,thRa,phRa);
+  Double_t thetaMax = TMath::ACos(1./pParam->MeanIdxRad());
+  Int_t nPhots = (Int_t)(21.*TMath::Sin(thetaCerTh)*TMath::Sin(thetaCerTh)/(TMath::Sin(thetaMax)*TMath::Sin(thetaMax))+0.01);
+
+  Double_t sigmatot = 0;
+  Int_t nTrks = 20;
+  for(Int_t iTrk=0;iTrk<nTrks;iTrk++) {
+    Double_t invSigma = 0;
+    Int_t nPhotsAcc = 0;
+    for(Int_t j=0;j<nPhots;j++){
+      Double_t phi = gRandom->Rndm()*TMath::TwoPi();
+      TVector2 pos; pos=rec.TracePhot(thetaCerTh,phi);
+      if(!pParam->IsInside(pos.X(),pos.Y())) continue;
+      if(pParam->IsInDead(pos.X(),pos.Y())) continue;
+      Double_t sigma2 = pParam->Sigma2(thRa,phRa,thetaCerTh,phi);//photon candidate sigma^2
+      if(sigma2!=0) {
+        invSigma += 1./sigma2;
+        nPhotsAcc++;
+      }
+    }      
+    if(invSigma!=0) sigmatot += 1./TMath::Sqrt(invSigma);  
+  }
+  return sigmatot/nTrks;
+}

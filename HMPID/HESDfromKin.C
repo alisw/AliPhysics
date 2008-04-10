@@ -68,10 +68,23 @@ void SimEsd(AliLoader *pHL,AliESDEvent *pEsd)
       trk.SetHMPIDcluIdx   (iCh,99999);                                                          //chamber not found, mip not yet considered
       trk.SetHMPIDtrk(xRa,yRa,thRa,phRa);                                                        //store initial infos
       pEsd->AddTrack(&trk);
-      AliHMPIDTracker::Recon(pEsd,pH->CluLst(),pNmean,pQthre);
     }// track loop
+    
+    AliHMPIDTracker::Recon(pEsd,pH->CluLst(),pNmean,pQthre);
+// Perform PID
+    
+    for(Int_t iTrk=0;iTrk<pEsd->GetNumberOfTracks();iTrk++){                                       //ESD tracks loop
+      AliESDtrack *pTrk = pEsd->GetTrack(iTrk);                                                    //get reconstructed track    
+      AliHMPIDPid pID;
+      Double_t prob[5];
+      pID.FindPid(pTrk,5,prob);
+      trk.SetHMPIDpid(prob);
+//      Printf(" Prob e- %6.2f mu %6.2f pi %6.2f k %6.2f p %6.2f",prob[0]*100,prob[1]*100,prob[2]*100,prob[3]*100,prob[4]*100);
+    }
+    
     gEsdTr->Fill();
     pEsd->Reset();
+    
   }// event loop
   Printf("Events processed %i",iEvt);
   gAL->UnloadHeader();  gAL->UnloadKinematics();

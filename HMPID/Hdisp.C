@@ -578,7 +578,7 @@ void DisplayInfo(Int_t evt,Int_t px, Int_t py)
     pTrk->GetHMPIDpid(prob);
     if(ckov>0){
       Float_t x,y;Int_t q,nacc;   pTrk->GetHMPIDmip(x,y,q,nacc);
-      text3="";text3.Append(Form("Theta Cherenkov %5.3f with %i photons |  e %5.1f%% | u %5.1f%% | K %5.1f%% | pi %5.1f%% | p %5.1f%%",
+      text3="";text3.Append(Form("Theta Cherenkov %5.3f with %i photons |  e %5.1f%% | u %5.1f%% | pi %5.1f%% | K %5.1f%% | p %5.1f%%",
           pTrk->GetHMPIDsignal(),nacc,prob[0]*100,prob[1]*100,prob[2]*100,prob[3]*100,prob[4]*100));
     }      
   }
