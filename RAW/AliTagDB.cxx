@@ -169,7 +169,7 @@ const char *AliTagDB::GetFileName() const
 
    TString hostname;
    hostname.Form("%s",gSystem->HostName());
-   hostname.Resize(hostname.First('.'));
+   if ( hostname.First('.') > 0 ) hostname.Resize(hostname.First('.'));
 
    TTimeStamp ts;
 
