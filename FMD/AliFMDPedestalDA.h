@@ -21,7 +21,7 @@ class AliFMDPedestalDA: public AliFMDBaseDA {
  public:
   AliFMDPedestalDA() ;
   AliFMDPedestalDA(const AliFMDPedestalDA & pedDA) ;
-  AliFMDPedestalDA& operator = (const AliFMDPedestalDA & pedDA) ; 
+  //  AliFMDPedestalDA& operator = (const AliFMDPedestalDA & pedDA) ; 
   virtual ~AliFMDPedestalDA();
   void Init();
  
