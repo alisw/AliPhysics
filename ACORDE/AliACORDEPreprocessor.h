@@ -8,6 +8,7 @@
 // test preprocessor that writes data to AliACORDECalibModule
 
 class AliACORDECalibData;
+class AliACORDEDataDCS;
 
 class AliACORDEPreprocessor : public AliPreprocessor
 {
@@ -27,6 +28,7 @@ class AliACORDEPreprocessor : public AliPreprocessor
     AliACORDEPreprocessor(const AliACORDEPreprocessor &proc); //copy constructor
     AliACORDEPreprocessor& operator = (const AliACORDEPreprocessor & proc);
     AliACORDECalibData *fCalData;    // CDB class that stores the data
+    AliACORDEDataDCS   *fDataDCS;   // ACORDE Data DCS  
 
     ClassDef(AliACORDEPreprocessor, 0);
 };
