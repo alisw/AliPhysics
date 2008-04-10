@@ -330,6 +330,17 @@ Bool_t  AliESD::RemoveTrack(Int_t rm) {
 
   Int_t used=0;
 
+  // Check if this track comes from the reconstructed primary vertex
+  if (fPrimaryVertex.GetStatus()) {
+     UShort_t *primIdx=fPrimaryVertex.GetIndices();
+     Int_t n=fPrimaryVertex.GetNIndices();
+     while (n--) {
+       Int_t idx=Int_t(primIdx[n]);
+       if (rm==idx) return kFALSE;
+       if (idx==last) used++; 
+     }
+  }
+  
   // Check if this track comes from a reconstructed decay
   Int_t nv0=GetNumberOfV0s();
   for (Int_t n=0; n<nv0; n++) {
@@ -378,9 +389,24 @@ Bool_t  AliESD::RemoveTrack(Int_t rm) {
   new (a[rm]) AliESDtrack(*t);
   delete a.RemoveAt(last);
 
+
   if (!used) return kTRUE;
   
 
+  // Remap the indices of the tracks used for the primary vertex reconstruction
+  if (fPrimaryVertex.GetStatus()) {
+     UShort_t *primIdx=fPrimaryVertex.GetIndices();
+     Int_t n=fPrimaryVertex.GetNIndices();
+     while (n--) {
+       Int_t idx=Int_t(primIdx[n]);
+       if (idx==last) {
+          primIdx[n]=Short_t(rm); 
+          used--;
+          if (!used) return kTRUE;
+       }
+     }
+  }
+  
   // Remap the indices of the daughters of reconstructed decays
   for (Int_t n=0; n<nv0; n++) {
     AliESDv0 *v0=GetV0(n);
