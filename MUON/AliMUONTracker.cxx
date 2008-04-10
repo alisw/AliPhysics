@@ -51,6 +51,8 @@
 #include "AliMUONTrackReconstructorK.h"
 #include "AliMUONTrackStoreV1.h"
 #include "AliMUONTriggerTrackStoreV1.h"
+#include "AliMUONTriggerTrack.h"
+#include "AliMUONLocalTrigger.h"
 #include "AliMUONVCluster.h"
 #include "AliMUONVClusterServer.h"
 #include "AliMUONVDigitStore.h"
@@ -259,6 +261,18 @@ void AliMUONTracker::FillESD(AliMUONVTrackStore& trackStore, AliESDEvent* esd) c
     
     while ( ( track = static_cast<AliMUONTrack*>(next()) ) ) {
       AliMUONESDInterface::MUONToESD(*track, esdTrack, vertex, &fDigitStore);
+      // set the trigger x/y strips pattern
+      if (esdTrack.GetMatchTrigger()) {
+	AliMUONLocalTrigger* locTrg = static_cast<AliMUONLocalTrigger*>(fTriggerStore->FindLocal(esdTrack.LoCircuit()));
+	esdTrack.SetTriggerX1Pattern(locTrg->GetX1Pattern());
+	esdTrack.SetTriggerY1Pattern(locTrg->GetY1Pattern());
+	esdTrack.SetTriggerX2Pattern(locTrg->GetX2Pattern());
+	esdTrack.SetTriggerY2Pattern(locTrg->GetY2Pattern());
+	esdTrack.SetTriggerX3Pattern(locTrg->GetX3Pattern());
+	esdTrack.SetTriggerY3Pattern(locTrg->GetY3Pattern());
+	esdTrack.SetTriggerX4Pattern(locTrg->GetX4Pattern());
+	esdTrack.SetTriggerY4Pattern(locTrg->GetY4Pattern());
+      }
       esd->AddMuonTrack(&esdTrack);
     }
     
@@ -266,10 +280,73 @@ void AliMUONTracker::FillESD(AliMUONVTrackStore& trackStore, AliESDEvent* esd) c
     
     while ( ( track = static_cast<AliMUONTrack*>(next()) ) ) {
       AliMUONESDInterface::MUONToESD(*track, esdTrack, vertex);
+      // set the trigger x/y strips pattern
+      if (esdTrack.GetMatchTrigger()) {
+	AliMUONLocalTrigger* locTrg = static_cast<AliMUONLocalTrigger*>(fTriggerStore->FindLocal(esdTrack.LoCircuit()));
+	esdTrack.SetTriggerX1Pattern(locTrg->GetX1Pattern());
+	esdTrack.SetTriggerY1Pattern(locTrg->GetY1Pattern());
+	esdTrack.SetTriggerX2Pattern(locTrg->GetX2Pattern());
+	esdTrack.SetTriggerY2Pattern(locTrg->GetY2Pattern());
+	esdTrack.SetTriggerX3Pattern(locTrg->GetX3Pattern());
+	esdTrack.SetTriggerY3Pattern(locTrg->GetY3Pattern());
+	esdTrack.SetTriggerX4Pattern(locTrg->GetX4Pattern());
+	esdTrack.SetTriggerY4Pattern(locTrg->GetY4Pattern());
+      }
       esd->AddMuonTrack(&esdTrack);
     }
     
   }
+
+  // fill the local trigger decisions not matched with tracks 
+  // associate them to "ghost" tracks
+
+  Int_t loTrgNum(-1);
+  Bool_t matched = kFALSE;
+
+  AliMUONTriggerTrack *triggerTrack;
+  AliMUONTrack muonTrack;
+  AliESDMuonTrack esdGhostTrack;
+  TIter itTriggerTrack(fTriggerTrackStore->CreateIterator());
+  while ( ( triggerTrack = static_cast<AliMUONTriggerTrack*>(itTriggerTrack() )
+) )
+    {
+      loTrgNum = triggerTrack->GetLoTrgNum();
+      AliMUONLocalTrigger* locTrg = static_cast<AliMUONLocalTrigger*>(fTriggerStore->FindLocal(loTrgNum));
+
+      /* verify if this local trigger has been already matched */
+      TIter itTrack(trackStore.CreateIterator());
+      while ( ( track = static_cast<AliMUONTrack*>(itTrack()) ) )
+        {
+          if (matched = (track->LoCircuit() == locTrg->LoCircuit())) break;
+        }
+      if (matched) continue;
+
+      muonTrack.SetLocalTrigger(locTrg->LoCircuit(),
+                                locTrg->LoStripX(),
+                                locTrg->LoStripY(),
+                                locTrg->LoDev(),
+                                locTrg->LoLpt(),
+                                locTrg->LoHpt());
+
+      /* make the AliESDMuonTrack from the "track" object */
+
+      esdGhostTrack.SetLocalTrigger(muonTrack.GetLocalTrigger());
+      // set the transverse momentum of this track to "zero"
+      esdGhostTrack.SetInverseBendingMomentum(1.E+10);
+      esdGhostTrack.SetInverseBendingMomentumAtDCA(1.E+10);
+      esdGhostTrack.SetInverseBendingMomentumUncorrected(1.E+10);
+      // set the trigger x/y strips pattern
+      esdGhostTrack.SetTriggerX1Pattern(locTrg->GetX1Pattern());
+      esdGhostTrack.SetTriggerY1Pattern(locTrg->GetY1Pattern());
+      esdGhostTrack.SetTriggerX2Pattern(locTrg->GetX2Pattern());
+      esdGhostTrack.SetTriggerY2Pattern(locTrg->GetY2Pattern());
+      esdGhostTrack.SetTriggerX3Pattern(locTrg->GetX3Pattern());
+      esdGhostTrack.SetTriggerY3Pattern(locTrg->GetY3Pattern());
+      esdGhostTrack.SetTriggerX4Pattern(locTrg->GetX4Pattern());
+      esdGhostTrack.SetTriggerY4Pattern(locTrg->GetY4Pattern());
+      esd->AddMuonTrack(&esdGhostTrack);
+
+    }
   
 }
 
