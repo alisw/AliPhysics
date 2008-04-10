@@ -1,7 +1,7 @@
 #-*- Mode: Makefile -*-
 
 SRCS = 	AliAnalysisTaskSE.cxx AliAnalysisTaskESDfilter.cxx AliAnalysisTaskKineFilter.cxx \
-	AliKineTrackCuts.cxx
+	AliKineTrackCuts.cxx AliESDtrackCuts.cxx
 
 CHECKALIEN = $(shell root-config --has-alien)
 ifeq (yes,$(CHECKALIEN))
