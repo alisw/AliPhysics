@@ -1643,19 +1643,19 @@ Int_t AliTRDtrackerV1::Clusters2TracksStack(AliTRDtrackingChamber **stack, TClon
 	}
 			
 	AliTRDtrackV1 *track = MakeTrack(&sseed[trackIndex*kNPlanes], trackParams);
-	// computes PID for track
-	track->CookPID();
-	// update calibration references using this track
-	if(calibra->GetHisto2d()) calibra->UpdateHistogramsV1(track);
-
 	if(!track){
 	  //AliWarning("Fail to build a TRD Track.");
 	  continue;
 	}
 	//AliInfo("End of MakeTrack()");
+	// computes PID for track
+	track->CookPID();
+	// update calibration references using this track
+	if(calibra->GetHisto2d()) calibra->UpdateHistogramsV1(track);
 	AliESDtrack esdTrack;
 	esdTrack.UpdateTrackParams(track, AliESDtrack::kTRDout);
 	esdTrack.SetLabel(track->GetLabel());
+	track->UpdateESDtrack(&esdTrack);
 	// write ESD-friends if neccessary
 	if (AliTRDReconstructor::StreamLevel() > 0){
 	  //printf("Creating Calibrations Object\n");
