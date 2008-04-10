@@ -116,6 +116,7 @@ AliFMDParameters::AliFMDParameters()
   SetPedestalFactor();
   SetThreshold();
   SetStripRange();
+  fAltroMap = new AliFMDAltroMapping;
 }
 
 //__________________________________________________________________
@@ -553,6 +554,10 @@ void
 AliFMDParameters::InitAltroMap(AliFMDPreprocessor* pp)
 {
   // Get hardware mapping from CDB
+  if (fAltroMap) { 
+    delete fAltroMap;
+    fAltroMap = 0;
+  }
   AliCDBEntry*   hwMap    = GetEntry(fgkAltroMap, pp);       
   if (!hwMap) return;
 
