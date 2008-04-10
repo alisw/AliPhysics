@@ -48,27 +48,31 @@ ClassImp(AliT0Calibrator)
    param->Init();
   
   fChannelWidth = param->GetChannelWidth() ;  
-  Double_t *grY ;
-  Double_t *grX ;
-  Int_t index[2500];
+  Double_t *grY ; //= new grY[2500] ;
+  // Double_t *grX ;
+  Int_t index[25000];
   Bool_t down=true;
   for (Int_t i=0; i<24; i++){
     fMaxValue[i]=0;
     fTimeDelayCFD[i] = Int_t (param->GetTimeDelayCFD(i));
        
-    //  TGraph* fu = param ->GetWalk(i);
-     TGraph* fu  = param ->GetAmpLEDRec(i);
-    if(fu) {
+     TGraph* fu = param ->GetWalk(i);
+     //    TGraph* fu  = param ->GetAmpLEDRec(i);
+ 	fWalk.AddAtAndExpand(fu,i);
+	
+  if(fu) {
       Int_t np=fu->GetN();
       if(np>0) {
 	grY = fu->GetY();
-	grX = fu->GetX();
+	//	grX[i] = fu->GetX();
 	TMath::Sort(np, grY, index,down);
 	fMaxValue[i]=Int_t(grY[index[0]]);
-	fWalk.AddAtAndExpand(fu,i);
+
       }
     }
+	
   }
+
   //  delete [] grY;
   //  delete [] grX;
   
@@ -118,8 +122,8 @@ Int_t  AliT0Calibrator::WalkCorrection(Int_t ipmt, Int_t qt, Int_t time, TString
     walk=Int_t(fu1->Eval(Double_t(qt)));
   }
   if (option == "pdc") {
-    timeWalk = time + Int_t((fMaxValue[ipmt]-walk)/fChannelWidth) ;
-    timeEq= timeWalk - (fTimeDelayCFD[ipmt]-fTimeDelayCFD[0]);
+    timeWalk = time + Int_t(fMaxValue[ipmt]-walk) ;
+    timeEq= timeWalk - fTimeDelayCFD[ipmt];
      AliDebug(10,Form(" ipmt %i time before %i timeWalk %i ,  qt %i timeEq %i \n ",
 		 ipmt, time,timeWalk, qt, timeEq ));
   }

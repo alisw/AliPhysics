@@ -88,6 +88,8 @@ AliT0Digitizer::AliT0Digitizer(AliRunDigitizer* manager)
   AliDebug(1,"processed");
   fParam = AliT0Parameters::Instance();
   fParam->Init();
+  Int_t index[25000];
+  Bool_t down=true;
 
   for (Int_t i=0; i<24; i++){
     TGraph* gr = fParam ->GetAmpLEDRec(i);
@@ -102,11 +104,19 @@ AliT0Digitizer::AliT0Digitizer(AliRunDigitizer* manager)
     }
     
     TGraph *grInverse = new TGraph(np,y1,x1);
-    delete [] x1;
-    delete [] y1;
     fAmpLED.AddAtAndExpand(grInverse,i);
+
+     TGraph* grw = fParam ->GetWalk(i);
+      Int_t npw = grw->GetN();
+     Double_t *yw = grw->GetY();
+    TMath::Sort(npw, yw, index,down);
+    fMaxValue[i]=Int_t(yw[index[0]]);
   }
+
+    //    delete [] x1;
+    //   delete [] y1;
 }
+
 //------------------------------------------------------------------------
 AliT0Digitizer::~AliT0Digitizer()
 {
@@ -286,7 +296,7 @@ void AliT0Digitizer::Exec(Option_t* /*option*/)
 	  qt= 50.*al/ph2Mip;  // 50mv/Mip amp in mV 
 	  //  fill TDC
 	  timeDelayCFD[i] = fParam->GetTimeDelayCFD(i);
- 	  trCFD = Int_t (timeGaus[i]/channelWidth + (timeDelayCFD[i]-timeDelayCFD[0])); 
+ 	  trCFD = Int_t (timeGaus[i]/channelWidth + timeDelayCFD[i]); 
 	  TGraph* gr = ((TGraph*)fAmpLED.At(i));
 	  sl = gr->Eval(qt);
 
@@ -301,9 +311,8 @@ void AliT0Digitizer::Exec(Option_t* /*option*/)
 	  // put slewing 
 	  TGraph *fu=(TGraph*) fParam ->GetWalk(i) ;
 	  Float_t slew=fu->Eval(Float_t(qtCh));
-	  hr=fu->GetHistogram();
-	  Float_t maxValue=hr->GetMaximum(50);
-	  trCFD=trCFD-Int_t((maxValue-slew)/channelWidth);
+
+	  trCFD=trCFD-Int_t(fMaxValue[i]-slew);
 	  ftimeCFD->AddAt(Int_t (trCFD),i);
 	  AliDebug(10,Form("  pmt %i : time in ns %f time in channels %i   ",
 			   i, timeGaus[i],trCFD ));

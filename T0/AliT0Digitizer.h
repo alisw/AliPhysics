@@ -44,6 +44,7 @@ private:
   TArrayI *fADC0;        //! array of QTC signals (main amplitude)
   Int_t fSumMult;        // multiplicity
   TObjArray fAmpLED;     // amplitude time (CFD-LED) dependence
+  Double_t fMaxValue[24];  //max amplitue-time LED
 
   AliT0Parameters  *fParam;           //pointer to T0 parameters class     
 
