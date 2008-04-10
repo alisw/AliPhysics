@@ -90,9 +90,7 @@ AliPHOSTrackSegmentMaker::AliPHOSTrackSegmentMaker(const AliPHOSTrackSegmentMake
 //____________________________________________________________________________
 AliPHOSTrackSegmentMaker::~AliPHOSTrackSegmentMaker()
 {
- //Remove this from the parental task before destroying
-  //  if(AliPHOSGetter::Instance()->PhosLoader())
-  //    AliPHOSGetter::Instance()->PhosLoader()->CleanTracker();
+  //Remove this from the parental task before destroying
   if (fEMCRecPoints) {
     fEMCRecPoints->Delete();
     delete fEMCRecPoints;

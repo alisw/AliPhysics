@@ -41,7 +41,6 @@
 #include "AliPHOSTracker.h"
 #include "AliPHOSEmcRecPoint.h"
 #include "AliESDEvent.h"
-#include "AliPHOSGetter.h"
 #include "AliESDtrack.h"
 #include "AliPHOSTrackSegmentMakerv1.h"
 #include "AliPHOSPIDv1.h"

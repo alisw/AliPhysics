@@ -29,8 +29,13 @@
 
 
 // --- AliRoot header files ---
+#include "AliStack.h"
+#include "AliPHOSHit.h" 
+#include "AliPHOSDigit.h" 
+#include "AliPHOSTrackSegment.h" 
+#include "AliPHOSEmcRecPoint.h" 
 #include "AliPHOSRecParticle.h"
-#include "AliPHOSGetter.h" 
+#include "AliPHOSLoader.h" 
 #include "AliPHOSGeometry.h" 
 #include "AliLog.h"
 
@@ -93,9 +98,10 @@ Int_t AliPHOSRecParticle::GetNPrimariesToRecParticles() const
 { 
   // Get the number of primaries at the origine of the RecParticle
   Int_t rv = 0 ;
-  AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
-  Int_t emcRPindex = dynamic_cast<AliPHOSTrackSegment*>(gime->TrackSegments()->At(GetPHOSTSIndex()))->GetEmcIndex();
-  dynamic_cast<AliPHOSEmcRecPoint*>(gime->EmcRecPoints()->At(emcRPindex))->GetPrimaries(rv) ; 
+  AliRunLoader* rl = AliRunLoader::GetRunLoader() ;
+  AliPHOSLoader * phosLoader = dynamic_cast<AliPHOSLoader*>(rl->GetLoader("PHOSLoader"));
+  Int_t emcRPindex = dynamic_cast<AliPHOSTrackSegment*>(phosLoader->TrackSegments()->At(GetPHOSTSIndex()))->GetEmcIndex();
+  dynamic_cast<AliPHOSEmcRecPoint*>(phosLoader->EmcRecPoints()->At(emcRPindex))->GetPrimaries(rv) ; 
   return rv ; 
 }
 
@@ -104,10 +110,12 @@ const TParticle * AliPHOSRecParticle::GetPrimary() const
 {
   // Get the primary particle at the origine of the RecParticle and 
   // which has deposited the largest energy in SDigits
-  AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
-  if (!gime) 
-    Error("GetPrimary", "Getter not yet instantiated") ; 
-  gime->Event(gime->EventNumber(), "SRTPX") ; 
+  AliRunLoader* rl = AliRunLoader::GetRunLoader() ;
+  AliPHOSLoader * phosLoader = dynamic_cast<AliPHOSLoader*>(rl->GetLoader("PHOSLoader"));
+  rl->GetEvent(rl->GetEventNumber()) ;
+  rl->LoadKinematics("READ");
+  rl->LoadSDigits("READ");
+  
   if(GetNPrimaries() == 0)
     return 0 ;
   if(GetNPrimaries() == 1)
@@ -127,7 +135,7 @@ const TParticle * AliPHOSRecParticle::GetPrimary() const
   Int_t iPrim=-1 ;
   if(module != 0){
     geom->RelPosToAbsId(module,x,z,AbsId) ;
-   TClonesArray * sdigits = gime->SDigits() ;
+   TClonesArray * sdigits = phosLoader->SDigits() ;
    AliPHOSDigit * sdig ;
     
    for(Int_t i = 0 ; i < sdigits->GetEntriesFast() ; i++){
@@ -144,7 +152,7 @@ const TParticle * AliPHOSRecParticle::GetPrimary() const
    }
   }
   if(iPrim >= 0)
-    return gime->Primary(iPrim) ;
+    return rl->Stack()->Particle(iPrim) ;
   else
     return 0 ;
 } 
@@ -157,39 +165,40 @@ Int_t AliPHOSRecParticle::GetPrimaryIndex() const
   // which the RecParticle is created from
 
 
-  AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
-  if (!gime) 
-    AliError(Form("Getter not yet instantiated")) ; 
-  //PH  gime->Event(gime->EventNumber(), "DRTX") ; 
-  gime->Event(gime->EventNumber(), "DRT") ; 
+  AliRunLoader* rl = AliRunLoader::GetRunLoader() ;
+  AliPHOSLoader * phosLoader = dynamic_cast<AliPHOSLoader*>(rl->GetLoader("PHOSLoader"));
+  rl->GetEvent(rl->GetEventNumber()) ;
+  rl->LoadHits("READ");
+  rl->LoadDigits("READ");
+  rl->LoadRecPoints("READ");
+  rl->LoadTracks("READ");
   
   // Get TrackSegment corresponding to this RecParticle
-  AliPHOSTrackSegment *ts          = gime->TrackSegment(fPHOSTrackSegment);
+  const AliPHOSTrackSegment *ts          = phosLoader->TrackSegment(fPHOSTrackSegment);
 
   // Get EmcRecPoint corresponding to this TrackSegment
   Int_t emcRecPointIndex = ts->GetEmcIndex();
 
-  AliPHOSEmcRecPoint  *emcRecPoint = gime->EmcRecPoint(emcRecPointIndex);
+  const AliPHOSEmcRecPoint  *emcRecPoint = phosLoader->EmcRecPoint(emcRecPointIndex);
 
   // Get the list of digits forming this EmcRecParticle
   Int_t  nDigits   = emcRecPoint->GetDigitsMultiplicity();
   Int_t *digitList = emcRecPoint->GetDigitsList();
 
   // Find the digit with maximum amplitude
-  AliPHOSDigit *digit = 0;
   Int_t maxAmp = 0;
   Int_t bestDigitIndex = -1;
   for (Int_t iDigit=0; iDigit<nDigits; iDigit++) {
-    digit = gime->Digit(digitList[iDigit]);
+    const AliPHOSDigit * digit = phosLoader->Digit(digitList[iDigit]);
     if (digit->GetAmp() > maxAmp) {
       maxAmp = digit->GetAmp();
       bestDigitIndex = iDigit;
     }
   }
-  if (bestDigitIndex>-1)
-    digit = gime->Digit(digitList[bestDigitIndex]);
-  if (digit==0) return -12345;
-
+  if (bestDigitIndex>-1) {
+    const AliPHOSDigit * digit = phosLoader->Digit(digitList[bestDigitIndex]);
+    if (digit==0) return -12345;
+  }
   
   // Get the list of primary tracks producing this digit
   // and find which track has more track energy.
@@ -230,17 +239,16 @@ Int_t AliPHOSRecParticle::GetPrimaryIndex() const
   // find which hit has deposited more energy 
   // and find the primary track.
 
-  AliPHOSHit *hit = 0;
-  TClonesArray *hits = gime->Hits();
+  TClonesArray *hits = phosLoader->Hits();
   if (hits==0) return -12345;
 
   Double_t maxedep  =  0;
   Int_t    maxtrack = -1;
   Int_t    nHits    = hits ->GetEntries();
-  Int_t    id       = digit->GetId();
+  Int_t    id       = (phosLoader->Digit(digitList[bestDigitIndex]))->GetId();
 
   for (Int_t iHit=0; iHit<nHits; iHit++) {
-    hit = gime->Hit(iHit);
+    const AliPHOSHit * hit = phosLoader->Hit(iHit);
     if(hit->GetId() == id){
       Double_t edep  = hit->GetEnergy();
       Int_t    track = hit->GetPrimary();
@@ -267,11 +275,12 @@ const TParticle * AliPHOSRecParticle::GetPrimary(Int_t index) const
   } 
   else { 
     Int_t dummy ; 
-    AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
+    AliRunLoader* rl = AliRunLoader::GetRunLoader() ;
+    AliPHOSLoader * phosLoader = dynamic_cast<AliPHOSLoader*>(rl->GetLoader("PHOSLoader"));
 
-    Int_t emcRPindex = dynamic_cast<AliPHOSTrackSegment*>(gime->TrackSegments()->At(GetPHOSTSIndex()))->GetEmcIndex();
-    Int_t primaryindex = dynamic_cast<AliPHOSEmcRecPoint*>(gime->EmcRecPoints()->At(emcRPindex))->GetPrimaries(dummy)[index] ; 
-    return gime->Primary(primaryindex) ;
+    Int_t emcRPindex = dynamic_cast<AliPHOSTrackSegment*>(phosLoader->TrackSegments()->At(GetPHOSTSIndex()))->GetEmcIndex();
+    Int_t primaryindex = dynamic_cast<AliPHOSEmcRecPoint*>(phosLoader->EmcRecPoints()->At(emcRPindex))->GetPrimaries(dummy)[index] ; 
+    return rl->Stack()->Particle(primaryindex) ;
    } 
   //  return 0 ; 
 }

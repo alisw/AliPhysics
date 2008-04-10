@@ -745,7 +745,7 @@ Float_t  AliPHOSPIDv1::GetParameterToCalculateEllipse(TString particle, TString 
 //{
 //  // Calculates the distance between the EMC RecPoint and the PPSD RecPoint
 //  
-//  const AliPHOSGeometry * geom = AliPHOSGetter::Instance()->PHOSGeometry() ; 
+//  AliPHOSGeometry * geom =  AliPHOSGeometry::GetInstance();
 //  TVector3 vecEmc ;
 //  TVector3 vecCpv ;
 //  if(cpv){

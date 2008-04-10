@@ -11,8 +11,6 @@
 #pragma link C++ class AliPHOSGeometry+;
 #pragma link C++ class AliPHOS+;
 #pragma link C++ class AliPHOSLoader+;
-#pragma link C++ class AliPHOSGetter+;
-#pragma link C++ class AliPHOSGetterLight+;
 #pragma link C++ class AliPHOSHit+;
 #pragma link C++ class AliPHOSTrackSegmentMaker+;
 #pragma link C++ class AliPHOSPID+;

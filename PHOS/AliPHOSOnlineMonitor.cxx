@@ -59,12 +59,12 @@
 #include "AliRawEventHeaderBase.h"
 #include "AliPHOSRawStream2004.h"
 #include "AliPHOSDigit.h"
-#include "AliPHOSGetterLight.h"  
 #include "AliPHOSClusterizerv1.h"  
 #include "AliPHOSTrackSegmentMakerv1.h"  
 #include "AliPHOSPIDv1.h"  
 #include "AliPHOSCalibrManager.h" 
 #include "AliPHOSCalibrationDB.h"
+#include "AliPHOSRecParticle.h"
 
 ClassImp(AliPHOSOnlineMonitor)
 
@@ -508,30 +508,30 @@ void  AliPHOSOnlineMonitor::ScanPedestals(TClonesArray * digits){
 //____________________________________________________________________________ 
 void  AliPHOSOnlineMonitor::ScanEdep(TClonesArray * digits){
   //Fill 2D distribution of ADC values in NEL and WEL events
-  AliPHOSGetter * gime = AliPHOSGetter::Instance() ;
-  AliPHOSCalibrationDB *cdb = 0 ;
-  if(gime)
-    cdb = gime->CalibrationDB() ;
-  Int_t mod = 0 ;
-  char name[15] ;
-  TH2D * h = 0 ;
-  TH2D * hCal = 0 ;
-  for(Int_t i=0; i<digits->GetEntriesFast(); i++){
-    AliPHOSDigit * dig = static_cast<AliPHOSDigit*>(digits->At(i)) ;
-    Int_t relId[4] ;
-    fGeom->AbsToRelNumbering(dig->GetId(),relId) ;
-    if(mod != relId[0]){ //new module, look for histograms
-      mod = relId[0] ;
-      sprintf(name,"hEdep%d",mod) ;
-      h = (TH2D*)gROOT->FindObjectAny(name);
-      sprintf(name,"hEdepCal%d",mod) ;
-      hCal = (TH2D*)gROOT->FindObjectAny(name);
-    }
-    if(h)
-      h->Fill(relId[2]-0.1,relId[3]-0.1,1.*dig->GetAmp()) ;
-    if(hCal)
-      hCal->Fill(relId[2]-0.1,relId[3]-0.1,cdb->Calibrate(dig->GetAmp(),dig->GetId())) ;
-  }
+//   AliPHOSGetter * gime = AliPHOSGetter::Instance() ;
+//   AliPHOSCalibrationDB *cdb = 0 ;
+//   if(gime)
+//     cdb = gime->CalibrationDB() ;
+//   Int_t mod = 0 ;
+//   char name[15] ;
+//   TH2D * h = 0 ;
+//   TH2D * hCal = 0 ;
+//   for(Int_t i=0; i<digits->GetEntriesFast(); i++){
+//     AliPHOSDigit * dig = static_cast<AliPHOSDigit*>(digits->At(i)) ;
+//     Int_t relId[4] ;
+//     fGeom->AbsToRelNumbering(dig->GetId(),relId) ;
+//     if(mod != relId[0]){ //new module, look for histograms
+//       mod = relId[0] ;
+//       sprintf(name,"hEdep%d",mod) ;
+//       h = (TH2D*)gROOT->FindObjectAny(name);
+//       sprintf(name,"hEdepCal%d",mod) ;
+//       hCal = (TH2D*)gROOT->FindObjectAny(name);
+//     }
+//     if(h)
+//       h->Fill(relId[2]-0.1,relId[3]-0.1,1.*dig->GetAmp()) ;
+//     if(hCal)
+//       hCal->Fill(relId[2]-0.1,relId[3]-0.1,cdb->Calibrate(dig->GetAmp(),dig->GetId())) ;
+//   }
 }
 //____________________________________________________________________________ 
 void  AliPHOSOnlineMonitor::ScanRecon(TClonesArray * recParticles){
@@ -598,109 +598,109 @@ void  AliPHOSOnlineMonitor::Go(){
     }
   }
 
-  AliPHOSGetterLight * gime = AliPHOSGetterLight::Instance("PHOS","On Flight") ;
+//   AliPHOSGetterLight * gime = AliPHOSGetterLight::Instance("PHOS","On Flight") ;
 
-  //Configure CalibrManager to read data from file
-  //Create calibration database and read it
-  AliPHOSCalibrationDB * calibDB = 0 ;
-  if(fScanSig || fReconstruct){ //We will ned calibration parameters
-    AliPHOSCalibrManager::GetInstance("CalibrDB.root","root") ;
-    //If we configured manager to read from ASCII file, 
-    //give him connection table. OK, it will not harm in any case.
-    AliPHOSCalibrManager::GetInstance()->SetConTable(fcdb) ;
+//   //Configure CalibrManager to read data from file
+//   //Create calibration database and read it
+//   AliPHOSCalibrationDB * calibDB = 0 ;
+//   if(fScanSig || fReconstruct){ //We will ned calibration parameters
+//     AliPHOSCalibrManager::GetInstance("CalibrDB.root","root") ;
+//     //If we configured manager to read from ASCII file, 
+//     //give him connection table. OK, it will not harm in any case.
+//     AliPHOSCalibrManager::GetInstance()->SetConTable(fcdb) ;
     
-    calibDB = new AliPHOSCalibrationDB("OnLine") ;
-    calibDB->GetParameters() ; //Read parameters using Manager
-    gime->SetCalibrationDB(calibDB) ;
-  }
+//     calibDB = new AliPHOSCalibrationDB("OnLine") ;
+//     calibDB->GetParameters() ; //Read parameters using Manager
+//     gime->SetCalibrationDB(calibDB) ;
+//   }
   
-  //Now open data file
-  AliRawReaderDateV3 *rawReader = new AliRawReaderDateV3(fInputFile) ; 
-  rawReader->RequireHeader(kFALSE);
-  AliPHOSRawStream2004     *rawStream = new AliPHOSRawStream2004(rawReader) ;
-  rawStream->SetConTableDB(fcdb) ;
+//   //Now open data file
+//   AliRawReaderDateV3 *rawReader = new AliRawReaderDateV3(fInputFile) ; 
+//   rawReader->RequireHeader(kFALSE);
+//   AliPHOSRawStream2004     *rawStream = new AliPHOSRawStream2004(rawReader) ;
+//   rawStream->SetConTableDB(fcdb) ;
   
-  TClonesArray * digits = gime->Digits() ;
-  TClonesArray * recParticles = gime->RecParticles() ;
-  AliPHOSClusterizerv1* clu = 0 ;
-  AliPHOSTrackSegmentMakerv1 * tsm = 0 ;
-  AliPHOSPIDv1 * pid = 0 ;
-  AliPHOSGeometry * phosgeom = AliPHOSGeometry::GetInstance() ;
-  if(fReconstruct){ //We will need calibation parameters
-    clu = new AliPHOSClusterizerv1(phosgeom) ;
-    clu->SetWriting(0) ; //Do not write to file
-//    clu->SetEmcMinE(0.05) ;  //Minimal energy of the digit
-    clu->SetEmcLocalMaxCut(0.05) ; //Height of local maximum over environment
-    clu->SetEmcClusteringThreshold(0.2) ; //Minimal energy to start cluster
-//    clu->SetUnfolding(kFALSE) ; //Do not unfold
-    tsm = new AliPHOSTrackSegmentMakerv1(phosgeom);
-    tsm->SetWriting(0) ; //Do not write to file
-    pid = new AliPHOSPIDv1(phosgeom) ;
-    pid->SetWriting(0) ; //Do not write to file    
-  }
+//   TClonesArray * digits = gime->Digits() ;
+//   TClonesArray * recParticles = gime->RecParticles() ;
+//   AliPHOSClusterizerv1* clu = 0 ;
+//   AliPHOSTrackSegmentMakerv1 * tsm = 0 ;
+//   AliPHOSPIDv1 * pid = 0 ;
+//   AliPHOSGeometry * phosgeom = AliPHOSGeometry::GetInstance() ;
+//   if(fReconstruct){ //We will need calibation parameters
+//     clu = new AliPHOSClusterizerv1(phosgeom) ;
+//     clu->SetWriting(0) ; //Do not write to file
+// //    clu->SetEmcMinE(0.05) ;  //Minimal energy of the digit
+//     clu->SetEmcLocalMaxCut(0.05) ; //Height of local maximum over environment
+//     clu->SetEmcClusteringThreshold(0.2) ; //Minimal energy to start cluster
+// //    clu->SetUnfolding(kFALSE) ; //Do not unfold
+//     tsm = new AliPHOSTrackSegmentMakerv1(phosgeom);
+//     tsm->SetWriting(0) ; //Do not write to file
+//     pid = new AliPHOSPIDv1(phosgeom) ;
+//     pid->SetWriting(0) ; //Do not write to file    
+//   }
   
-  fNevents=0 ;
-  //Scan all event in file
-  printf("      ") ;
-  while(rawReader->NextEvent()){
-    //Is it PHYSICAL event
-    if(rawReader->GetType() == AliRawEventHeaderBase::kPhysicsEvent){
-      fNevents++ ;
-      if(fNevents%100 ==0){
-	printf("\b\b\b\b\b\b%6d",fNevents) ;
-      }
-      if(rawStream->ReadDigits(digits)){
+//   fNevents=0 ;
+//   //Scan all event in file
+//   printf("      ") ;
+//   while(rawReader->NextEvent()){
+//     //Is it PHYSICAL event
+//     if(rawReader->GetType() == AliRawEventHeaderBase::kPhysicsEvent){
+//       fNevents++ ;
+//       if(fNevents%100 ==0){
+// 	printf("\b\b\b\b\b\b%6d",fNevents) ;
+//       }
+//       if(rawStream->ReadDigits(digits)){
 	
-	//Test trigger
-	//Pedestal Event
-	ScanTrigger(rawStream->GetTrigger()) ;
-	if(rawStream->IsPEDevent() && fScanPed){
-	  ScanPedestals(digits) ;
-	}
-	if((rawStream->IsNELevent() || rawStream->IsWELevent()) && fScanSig){
-	  ScanEdep(digits) ;
-	  if(fReconstruct){
-	    // PLEASE FIX IT !!!
-	    //	    gime->Clusterizer()->Exec("") ;
-	    //	    gime->TrackSegmentMaker()->Exec("") ;
-	    //	    gime->PID()->Exec("") ;
-	    ScanRecon(recParticles) ;
-	  }
-	}
-      }
+// 	//Test trigger
+// 	//Pedestal Event
+// 	ScanTrigger(rawStream->GetTrigger()) ;
+// 	if(rawStream->IsPEDevent() && fScanPed){
+// 	  ScanPedestals(digits) ;
+// 	}
+// 	if((rawStream->IsNELevent() || rawStream->IsWELevent()) && fScanSig){
+// 	  ScanEdep(digits) ;
+// 	  if(fReconstruct){
+// 	    // PLEASE FIX IT !!!
+// 	    //	    gime->Clusterizer()->Exec("") ;
+// 	    //	    gime->TrackSegmentMaker()->Exec("") ;
+// 	    //	    gime->PID()->Exec("") ;
+// 	    ScanRecon(recParticles) ;
+// 	  }
+// 	}
+//       }
       
-      if(fNevents%fNUpdate == 0 ){ //upate all histograms	
-	TIter nextCanvas(fCanvasList);
-	TCanvas * c ;
-	while((c=(TCanvas*)nextCanvas())){
-	  c->Modified() ;
-	  c->Update() ;
-	}
-      }
-      gSystem->ProcessEvents(); 
-    }
-    //    if(fNevents>=200)break ;
-  }
-  printf("\n") ;
-  gBenchmark->Stop("PHOSOnlineMon");
-  Float_t time = gBenchmark->GetCpuTime("PHOSOnlineMon") ;
-  printf("took %f seconds for scanning, i.e. %f seconds per event %d  \n",
-	 time,time/fNevents,fNevents) ; 
+//       if(fNevents%fNUpdate == 0 ){ //upate all histograms	
+// 	TIter nextCanvas(fCanvasList);
+// 	TCanvas * c ;
+// 	while((c=(TCanvas*)nextCanvas())){
+// 	  c->Modified() ;
+// 	  c->Update() ;
+// 	}
+//       }
+//       gSystem->ProcessEvents(); 
+//     }
+//     //    if(fNevents>=200)break ;
+//   }
+//   printf("\n") ;
+//   gBenchmark->Stop("PHOSOnlineMon");
+//   Float_t time = gBenchmark->GetCpuTime("PHOSOnlineMon") ;
+//   printf("took %f seconds for scanning, i.e. %f seconds per event %d  \n",
+// 	 time,time/fNevents,fNevents) ; 
   
-  //Update canvas with histograms at the end
-  TIter nextCanvas(fCanvasList);
-  TCanvas * c ;
-  while((c=(TCanvas*)nextCanvas())){
-    c->Modified(kTRUE) ;
-  }
+//   //Update canvas with histograms at the end
+//   TIter nextCanvas(fCanvasList);
+//   TCanvas * c ;
+//   while((c=(TCanvas*)nextCanvas())){
+//     c->Modified(kTRUE) ;
+//   }
   
-  if(clu)delete clu ;
-  if(tsm)delete tsm ;
-  if(pid)delete pid ;
-  printf("delete 1 \n") ;
-  if(calibDB) delete calibDB ;
-  delete rawStream ;
-  delete rawReader ;
+//   if(clu)delete clu ;
+//   if(tsm)delete tsm ;
+//   if(pid)delete pid ;
+//   printf("delete 1 \n") ;
+//   if(calibDB) delete calibDB ;
+//   delete rawStream ;
+//   delete rawReader ;
 }
 //____________________________________________________________________________ 
 void  AliPHOSOnlineMonitor::Clean(){

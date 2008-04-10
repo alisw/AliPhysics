@@ -27,13 +27,16 @@
 
 
 // --- ROOT system ---
+#include "TBranch.h"
+#include "TClonesArray.h"
+#include "TTree.h"
 
 // --- Standard library ---
 
 // --- AliRoot header files ---
 #include "AliConfig.h"
+#include "AliLog.h"
 #include "AliPHOSPID.h"
-#include "AliPHOSGetter.h"
 
 ClassImp(AliPHOSPID)
 

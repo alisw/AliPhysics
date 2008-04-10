@@ -73,7 +73,6 @@
 #include "AliPHOS.h"
 #include "AliPHOSHit.h"
 #include "AliPHOSCalibrationDB.h"
-#include "AliPHOSGetter.h"
 
 ClassImp(AliPHOSLoader)
 
@@ -130,10 +129,6 @@ AliPHOSLoader::~AliPHOSLoader()
   Clean(fgkTracksName);
   Clean(fgkRecParticlesName);
   CleanFolders() ;
-//   // set to 0x0 the objgetter in AliGetter ... weird isn it !
-//   AliPHOSGetter * gime = AliPHOSGetter::Instance() ; // (AliLoader::GetRunLoader()->GetFileName()).Data()) ; 
-//   if (gime) 
-//     gime->Reset() ;
 }
 
 //____________________________________________________________________________ 

@@ -3,8 +3,7 @@ SRCS          =  AliPHOS.cxx \
                  AliPHOSEMCAGeometry.cxx \
                  AliPHOSCPVGeometry.cxx AliPHOSCPVBaseGeometry.cxx \
                  AliPHOSSupportGeometry.cxx \
-                 AliPHOSLoader.cxx AliPHOSGetter.cxx \
-                 AliPHOSGetterLight.cxx \
+                 AliPHOSLoader.cxx \
                  AliPHOSHit.cxx AliPHOSTrackSegmentMaker.cxx  AliPHOSPID.cxx \
 		 AliPHOSClusterizer.cxx \
 		 AliPHOSCalibrationDB.cxx AliPHOSDigitizer.cxx \

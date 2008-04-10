@@ -248,15 +248,15 @@ void AliPHOSEmcRecPoint::ExecuteEvent(Int_t event, Int_t, Int_t) /*const*/
       AliError(Form("Cannot find Run Loader in Default Event Folder"));
       return;
     }
-  AliPHOSLoader* gime = dynamic_cast<AliPHOSLoader*>(rn->GetLoader("PHOSLoader"));
-  if (gime == 0x0) 
+  AliPHOSLoader* phosLoader = dynamic_cast<AliPHOSLoader*>(rn->GetLoader("PHOSLoader"));
+  if (phosLoader == 0x0) 
     {
       AliError(Form("Cannot find PHOS Loader from Run Loader"));
       return;
     }
   
   
-  const TClonesArray * digits = gime->Digits() ;
+  const TClonesArray * digits = phosLoader->Digits() ;
   
   switch (event) {
     
@@ -531,8 +531,7 @@ void  AliPHOSEmcRecPoint::EvalElipsAxis(Float_t logWeight,TClonesArray * digits,
 //   //Apply correction due to non-perpendicular incidence
 //   Double_t CosX ;
 //   Double_t CosZ ;
-//   AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
-//   AliPHOSGeometry * phosgeom =  (AliPHOSGeometry*)gime->PHOSGeometry();
+//   AliPHOSGeometry * phosgeom = AliPHOSGeometry::GetInstance() ;
 //   Double_t DistanceToIP= (Double_t ) phosgeom->GetIPtoCrystalSurface() ;
   
 //   CosX = DistanceToIP/TMath::Sqrt(DistanceToIP*DistanceToIP+x*x) ;

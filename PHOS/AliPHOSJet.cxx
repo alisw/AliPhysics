@@ -31,7 +31,6 @@
 
 // --- AliRoot header files ---
 #include "AliPHOSJet.h"
-//  #include "AliPHOSGetter.h"
 
 ClassImp(AliPHOSJet)
   
