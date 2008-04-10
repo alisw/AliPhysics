@@ -145,19 +145,19 @@ void AliFMDGainDA::Analyse(UShort_t det,
 			   UShort_t strip) {
   TGraphErrors* grChannel = GetChannel(det,ring,sec,strip);
   if(!grChannel->GetN()) {
-    AliWarning(Form("No entries for FMD%d%c, sector %d, strip %d",det, ring , sec, strip));
+    // AliWarning(Form("No entries for FMD%d%c, sector %d, strip %d",det, ring , sec, strip));
     return;
   }
-  TF1* fitFunc = new TF1("fitFunc","pol1",-10,280); 
-  fitFunc->SetParameters(100,3);
+  TF1 fitFunc("fitFunc","pol1",-10,280); 
+  fitFunc.SetParameters(100,3);
   grChannel->Fit("fitFunc","Q","Q",0,fHighPulse);
   AliFMDParameters* pars = AliFMDParameters::Instance();
   UInt_t ddl, board,chip,channel;
   pars->Detector2Hardware(det,ring,sec,strip,ddl,board,chip,channel);
     
   Float_t chi2ndf = 0;
-  if(fitFunc->GetNDF())
-    chi2ndf = fitFunc->GetChisquare() / fitFunc->GetNDF();
+  if(fitFunc.GetNDF())
+    chi2ndf = fitFunc.GetChisquare() / fitFunc.GetNDF();
   ddl = ddl + kBaseDDL;
   
   Int_t relStrip = strip%fNumberOfStripsPerChip;
@@ -167,8 +167,8 @@ void AliFMDGainDA::Analyse(UShort_t det,
 	      << chip                        << ','
 	      << channel                     << ','
 	      << relStrip                    << ','
-	      << fitFunc->GetParameter(1)    << ','
-	      << fitFunc->GetParError(1)     << ','
+	      << fitFunc.GetParameter(1)     << ','
+	      << fitFunc.GetParError(1)      << ','
 	      << chi2ndf                     <<"\n";
   
   
@@ -178,13 +178,14 @@ void AliFMDGainDA::Analyse(UShort_t det,
     grChannel->Write(Form("grFMD%d%c_%d_%d",det,ring,sec,strip));
   }
   
-  delete fitFunc;
-  delete grChannel;
+ 
+  
 }
 
 //_____________________________________________________________________
 void AliFMDGainDA::WriteHeaderToFile() {
-  fOutputFile.write("# Gains \n",9);
+  AliFMDParameters* pars       = AliFMDParameters::Instance();
+  fOutputFile.write(Form("# %s \n",pars->GetGainShuttleID()),9);
   fOutputFile.write("# Rcu, Board, Chip, Channel, Strip, Gain, Error, Chi2/NDF \n",59);
   
 }
@@ -241,9 +242,7 @@ void AliFMDGainDA::UpdatePulseAndADC(UShort_t det, Char_t ring, UShort_t sec, US
   Double_t rms       = hChannel->GetRMS();
   Double_t pulse     = (Double_t)fCurrentPulse*fPulseSize;
   
-  for(Int_t i=1;i<hChannel->GetNbinsX();i++)
-    if(hChannel->GetBinCenter(i)>mean+5*rms || hChannel->GetBinCenter(i)<mean-5*rms)
-      hChannel->SetBinContent(i,0);
+  hChannel->GetXaxis()->SetRangeUser(mean-4*rms,mean+4*rms);
   
   mean      = hChannel->GetMean();
   rms       = hChannel->GetRMS();
@@ -257,6 +256,7 @@ void AliFMDGainDA::UpdatePulseAndADC(UShort_t det, Char_t ring, UShort_t sec, US
   
   if(fSaveHistograms) {
     gDirectory->cd(Form("%s:FMD%d%c/sector_%d/strip_%d",fDiagnosticsFilename,det,ring,sec,channelNumber));
+    hChannel->GetXaxis()->SetRange(0,1023);
     hChannel->Write(Form("hFMD%d%c_%d_%d_pulse_%d",det,ring,sec,channelNumber,fCurrentPulse));
   }
   
