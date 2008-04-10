@@ -3,6 +3,7 @@
 - Link:       http
 - Raw data test file : 
               /afs/cern.ch/user/c/cheynis/public/run546.dat
+- Reference run number : 6360	      
 - Run Type:   PHYSICS
 - DA Type:    LDC
 - Number of events needed: >=100
@@ -54,9 +55,15 @@
       
 int main(int argc, char **argv) {
 
+/* magic line from Cvetan */
+  gROOT->GetPluginManager()->AddHandler("TVirtualStreamerInfo",
+                    "*",
+                    "TStreamerInfo",
+                    "RIO",
+                    "TStreamerInfo()");
   int status;
 
-  printf(" argc = %d, argv = %s \n",argc, &(**argv));
+//  printf(" argc = %d, argv = %s \n",argc, &(**argv));
 
   Int_t    kHighCut = 50; // high cut on pedestal distribution - to be tuned
   Int_t    kLowCut  = 30; // low cut on signal distribution - to be tuned
