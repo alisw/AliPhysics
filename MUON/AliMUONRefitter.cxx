@@ -68,7 +68,7 @@ AliMUONRefitter::AliMUONRefitter()
   /// Default constructor
   CreateGeometryTransformer();
   CreateClusterServer(*fGeometryTransformer);
-  if (fClusterServer) AliMUONTracker::CreateTrackReconstructor(AliMUONReconstructor::GetRecoParam()->GetTrackingMode(),fClusterServer);
+  if (fClusterServer) fTracker = AliMUONTracker::CreateTrackReconstructor(AliMUONReconstructor::GetRecoParam()->GetTrackingMode(),fClusterServer);
   if (!fClusterServer || !fTracker) {
     AliFatal("refitter initialization failed");
     exit(-1);
