@@ -32,8 +32,10 @@ extern "C" {
 #include "AliBitPacking.h"
 
 //ROOT
-#include "TFile.h"
 #include "TROOT.h"
+#include "TFile.h"
+#include "TSystem.h"
+#include "TString.h"
 #include "TObject.h"
 #include "TPluginManager.h"
 
@@ -74,11 +76,20 @@ int main(int argc, char **argv){
   monitorSetNowait();
   monitorSetNoWaitNetworkTimeout(1000);
 
+  /* set local storage of ped files for Fe2C */
+ 
+  
   /* init the pedestal calculation */
   AliHMPIDCalib *pCal=new AliHMPIDCalib();
   /* Set the number of sigma cuts inside the file HmpidSigmaCut.txt on BOTH LDCs! */
   /* If the file is NOT present then the default cut 3 will be used!*/
-  pCal->SetSigCutFromFile("HmpidSigmaCut.txt");
+
+  //pCal->SetSigCutFromFile("HmpidSigmaCut.txt");
+  pCal->SetSigCutFromShell("HMPID_SIGMA_CUT");                        //decision to make later: wether to use file or env variable...
+  pCal->SetDaOutFromShell("HMPID_DA_OUT");                            //decision to make later: wether to use file or env variable...
+  pCal->SetFeeInFromShell("HMPID_FEE_IN");                            //decision to make later: wether to use file or env variable...
+   
+  
   /* ONLY set this option to kTRUE if you want to create the ADC dsitributions for all 161280 pads!!!!*/  
   /* kTRUE is not suggested for production mode b/c of the memory consumption! */
   pCal->SetWriteHistoPads(kFALSE);               //use this option for default production useage!!!
@@ -188,18 +199,21 @@ int main(int argc, char **argv){
 
   /* report progress */
   daqDA_progressReport(90);
- 
+  TString sDaOut=pCal->GetDaOutFromShell();
+  
   for(Int_t nDDL=0; nDDL < AliHMPIDRawStream::kNDDL; nDDL++) {
     
     /* Calculate pedestal for the given ddl, if there is no ddl go t next */
-    if(!pCal->CalcPedestal(nDDL,Form("./HmpidPedDdl%02i.txt",nDDL),iEvtNcal)) continue;
-    if(!pCal->WriteErrors(nDDL,Form("./HmpidErrorsDdl%02i.txt",nDDL),iEvtNcal)) continue;
+    if(!pCal->CalcPedestal(nDDL,Form("%sHmpidPedDdl%02i.txt",sDaOut.Data(),nDDL),iEvtNcal)) continue;
+    /* to create pedestal file as Paolo uncomment the line */
+//    if(!pCal->CalcPedestalPaolo(nDDL,Form("%sHmpidPedDdl%02i.txt",sDaOut.Data(),nDDL),iEvtNcal)) continue;
+    if(!pCal->WriteErrors(nDDL,Form("%sHmpidErrorsDdl%02i.txt",sDaOut.Data(),nDDL),iEvtNcal)) continue;
     
     /* store the result file on FES */
    
-    status=daqDA_FES_storeFile(Form("./HmpidPedDdl%02i.txt",nDDL),Form("HMPID_DA_Pedestals_ddl=%02i",nDDL));
+    status=daqDA_FES_storeFile(Form("%sHmpidPedDdl%02i.txt",sDaOut.Data(),nDDL),Form("HMPID_DA_Pedestals_ddl=%02i",nDDL));
     if (status) { printf("Failed to export file : %d\n",status); }
-    status=daqDA_FES_storeFile(Form("./HmpidErrorsDdl%02i.txt",nDDL),Form("HMPID_DA_Errors_ddl=%02i",nDDL));
+    status=daqDA_FES_storeFile(Form("%sHmpidErrorsDdl%02i.txt",sDaOut.Data(),nDDL),Form("HMPID_DA_Errors_ddl=%02i",nDDL));
     if (status) { printf("Failed to export file : %d\n",status); }
     
   }//nDDL
