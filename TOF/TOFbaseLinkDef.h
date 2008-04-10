@@ -26,6 +26,7 @@
 #pragma link C++ class  AliTOFDataDCS+;
 #pragma link C++ class  AliTOFFormatDCS+;
 #pragma link C++ class  AliTOFFEEReader+;
+#pragma link C++ class  AliTOFCableLengthMap+;
 
 
 #endif

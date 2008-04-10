@@ -18,7 +18,8 @@ SRCS  = AliTOFGeometry.cxx  \
         AliTOFDataDCS.cxx \
         AliTOFFormatDCS.cxx \
 	AliTOFPreprocessorFDR.cxx \
-	AliTOFFEEReader.cxx
+	AliTOFFEEReader.cxx \
+	AliTOFCableLengthMap.cxx
 
 
 HDRS:= $(SRCS:.cxx=.h)
