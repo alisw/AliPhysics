@@ -21,7 +21,7 @@ class AliFMDGainDA: public AliFMDBaseDA {
   
   AliFMDGainDA() ;
   AliFMDGainDA(const AliFMDGainDA & gainDA) ;
-  AliFMDGainDA& operator = (const AliFMDGainDA & gainDA) ; 
+  //  AliFMDGainDA& operator = (const AliFMDGainDA & gainDA) ; 
   virtual ~AliFMDGainDA();
   void Init();
   void SetPulseSize(Int_t pulseSize = 32) {fPulseSize = pulseSize; }
