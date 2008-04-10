@@ -261,7 +261,7 @@ void AliMUONQADataMakerRec::MakeRaws(AliRawReader* rawReader)
     {
       // If not a scaler event, do nothing
       Bool_t scalerEvent =  rawReader->GetDataHeader()->GetL1TriggerMessage() & 0x1;
-      if(!scalerEvent) continue;
+      if(!scalerEvent) break;
 
       AliMUONDDLTrigger* ddlTrigger = rawStreamTrig.GetDDLTrigger();
       AliMUONDarcHeader* darcHeader = ddlTrigger->GetDarcHeader();
@@ -343,14 +343,8 @@ void AliMUONQADataMakerRec::MakeRecPoints(TTree* clustersTree)
 
       Int_t nBoard = locTrg->LoCircuit();
 
-      Bool_t xTrig=kFALSE;
-      Bool_t yTrig=kFALSE;
-      if ( locTrg->LoSdev()==1 && locTrg->LoDev()==0 && 
-	   locTrg->LoStripX()==0) xTrig=kFALSE; // no trigger in X
-      else xTrig=kTRUE;                         // trigger in X
-      if (locTrg->LoTrigY()==1 && 
-	  locTrg->LoStripY()==15 ) yTrig = kFALSE; // no trigger in Y
-      else yTrig = kTRUE;                          // trigger in Y
+      Bool_t xTrig=locTrg->IsTrigX();
+      Bool_t yTrig=locTrg->IsTrigY();
     
       if (xTrig && yTrig)
 	((TH1F*)GetRecPointsData(kTriggeredBoards))->Fill(nBoard);

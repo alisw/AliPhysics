@@ -250,10 +250,49 @@ void AliMUONLocalTrigger::Print(Option_t* opt) const
 }
 
 //----------------------------------------------------------------------
+Int_t AliMUONLocalTrigger::GetDeviation() const
+{
+/// return deviation
+
+   Int_t deviation = LoDev(); 
+    Int_t sign = 0;
+    if ( !LoSdev() &&  deviation ) sign=-1;
+    if ( !LoSdev() && !deviation ) sign= 0;
+    if (  LoSdev() == 1 )          sign=+1;
+    deviation *= sign;
+    deviation += 15;
+    return deviation;
+}
+
+//----------------------------------------------------------------------
 const char*
 AliMUONLocalTrigger::GetName() const
 {
 /// Generate name
 
   return Form("LocalBoard%3d",LoCircuit());
+}
+
+
+//----------------------------------------------------------------------
+Bool_t AliMUONLocalTrigger::IsTrigX()
+{
+/// Trigger response X strips
+  Bool_t xTrig;
+  if ( LoSdev()==1 && LoDev()==0 && 
+       LoStripX()==0) xTrig=kFALSE; // no trigger in X
+  else xTrig = kTRUE;                       // trigger in X
+  return xTrig;
+}
+
+
+//----------------------------------------------------------------------
+Bool_t AliMUONLocalTrigger::IsTrigY()
+{
+/// Trigger response Y strips
+  Bool_t yTrig;
+  if ( LoTrigY()==1 && 
+       LoStripY()==15 ) yTrig = kFALSE; // no trigger in Y
+  else yTrig = kTRUE;                          // trigger in Y
+  return yTrig;
 }

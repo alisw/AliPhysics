@@ -401,15 +401,8 @@ AliMUONDataInterface::NtupleTrigger(const char* treeLetter)
     AliMUONLocalTrigger* locTrg(0x0);
     while ( ( locTrg = static_cast<AliMUONLocalTrigger*>(next()) ) )
     {
-      Bool_t xTrig=kFALSE;
-      Bool_t yTrig=kFALSE;
-      
-      if ( locTrg->LoSdev()==1 && locTrg->LoDev()==0 && 
-           locTrg->LoStripX()==0) xTrig=kFALSE; // no trigger in X
-      else xTrig=kTRUE;                         // trigger in X
-      if (locTrg->LoTrigY()==1 && 
-          locTrg->LoStripY()==15 ) yTrig = kFALSE; // no trigger in Y
-      else yTrig = kTRUE;                          // trigger in Y
+      Bool_t xTrig=locTrg->IsTrigX();
+      Bool_t yTrig=locTrg->IsTrigY();
       
       if (xTrig && yTrig) 
       { // fill ntuple if trigger in X and Y		        

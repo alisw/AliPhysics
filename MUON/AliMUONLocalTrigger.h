@@ -67,6 +67,14 @@ class AliMUONLocalTrigger : public TObject {
    void    GetYPattern(TArrayS& array) const;
 
   Char_t GetLoDecision() const;
+  
+        /// return deviation
+  Int_t GetDeviation() const;
+
+  /// Trigger response X strips
+  Bool_t IsTrigX();
+  /// Trigger response Y strips
+  Bool_t IsTrigY();
 
   // setter methods
   //

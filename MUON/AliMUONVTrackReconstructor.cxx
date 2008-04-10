@@ -993,16 +993,10 @@ void AliMUONVTrackReconstructor::EventReconstructTrigger(const AliMUONTriggerCir
   
   while ( ( locTrg = static_cast<AliMUONLocalTrigger*>(next()) ) )
   {
-    Bool_t xTrig=kFALSE;
-    Bool_t yTrig=kFALSE;
+    Bool_t xTrig=locTrg->IsTrigX();
+    Bool_t yTrig=locTrg->IsTrigY();
     
     Int_t localBoardId = locTrg->LoCircuit();
-    if ( locTrg->LoSdev()==1 && locTrg->LoDev()==0 && 
-         locTrg->LoStripX()==0) xTrig=kFALSE; // no trigger in X
-    else xTrig=kTRUE;                         // trigger in X
-    if (locTrg->LoTrigY()==1 && 
-        locTrg->LoStripY()==15 ) yTrig = kFALSE; // no trigger in Y
-    else yTrig = kTRUE;                          // trigger in Y
     
     if (xTrig && yTrig) 
     { // make Trigger Track if trigger in X and Y
@@ -1010,13 +1004,7 @@ void AliMUONVTrackReconstructor::EventReconstructTrigger(const AliMUONTriggerCir
       Float_t y11 = circuit.GetY11Pos(localBoardId, locTrg->LoStripX()); 
       // need first to convert deviation to [0-30] 
       // (see AliMUONLocalTriggerBoard::LocalTrigger)
-      Int_t deviation = locTrg->LoDev(); 
-      Int_t sign = 0;
-      if ( !locTrg->LoSdev() &&  deviation ) sign=-1;
-      if ( !locTrg->LoSdev() && !deviation ) sign= 0;
-      if (  locTrg->LoSdev() == 1 )          sign=+1;
-      deviation *= sign;
-      deviation += 15;
+      Int_t deviation = locTrg->GetDeviation(); 
       Int_t stripX21 = locTrg->LoStripX()+deviation+1;
       Float_t y21 = circuit.GetY21Pos(localBoardId, stripX21);       
       Float_t x11 = circuit.GetX11Pos(localBoardId, locTrg->LoStripY());
