@@ -33,7 +33,7 @@ class AliFMDBaseDA: public TNamed {
  public:
   AliFMDBaseDA() ;
   AliFMDBaseDA(const AliFMDBaseDA & baseDA) ;
-  AliFMDBaseDA& operator = (const AliFMDBaseDA & baseDA) ; 
+  //  AliFMDBaseDA& operator = (const AliFMDBaseDA & baseDA) ; 
   
   ~AliFMDBaseDA() ;
   
