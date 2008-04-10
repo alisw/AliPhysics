@@ -26,8 +26,7 @@
 #include "AliMUONTrackerCalibratedDataMaker.h"
 #include "AliMUONTrackerOCDBDataMaker.h"
 #include "AliMUONTrackerRawDataMaker.h"
-#include "AliRawReaderDate.h"
-#include "AliRawReaderRoot.h"
+#include "AliRawReader.h"
 #include <TGButton.h>
 #include <TGComboBox.h>
 #include <TGFileDialog.h>
@@ -420,27 +419,24 @@ AliMUONPainterDataSourceFrame::CreateRawDataSource(const TString& uri)
   
   AliRawReader* rawReader = 0x0;
 
-  if ( filename.Contains(TRegexp(".root$")) ) 
+  if ( filename.Contains(TRegexp("^alien")) )
   {
-    AliDebug(1,"Using RawReaderRoot");
-    if ( filename.Contains(TRegexp("^alien")) )
+    // insure we've initialized the grid...
+    if (!gGrid)
     {
-      // insure we've initialized the grid...
-      if (!gGrid)
-      {
-        TGrid::Connect("alien://");
-      }
+      TGrid::Connect("alien://");
     }
-         
-    rawReader = new AliRawReaderRoot(filename.Data());
   }
-  else 
-  {
-    /// Anything not .root is supposed to be DATE file
-    AliDebug(1,"Using RawReaderDate");
-    rawReader = new AliRawReaderDate(filename.Data());
-  }
+  
+  rawReader = AliRawReader::Create(filename.Data());
 
+  if (!rawReader)
+  {
+    AliError(Form("Could not open file %s",filename.Data()));
+    fFilePath->SetText("");
+    return kFALSE;
+  }
+  
   /// Basic test to see if the file is correct
   Bool_t ok = rawReader->NextEvent();
   if (!ok)
