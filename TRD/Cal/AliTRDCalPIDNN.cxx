@@ -148,6 +148,9 @@ Double_t AliTRDCalPIDNN::GetProbability(Int_t spec, Float_t mom, Float_t *dedx
   // layer in a given layer (iplane)
   //
 
+  const Int_t kMLPscale  = 16000; // scaling of the MLP input to be smaller than 1
+
+
   if (spec < 0 || spec >= AliPID::kSPECIES) return 0.;
 
   // find the interval in momentum and track segment length which applies for this data
@@ -167,7 +170,7 @@ Double_t AliTRDCalPIDNN::GetProbability(Int_t spec, Float_t mom, Float_t *dedx
 
   Double_t ddedx[AliTRDtrack::kNMLPslice];
   for (int inode=0; inode<AliTRDtrack::kNMLPslice; inode++) {
-    ddedx[inode] = (Double_t) dedx[inode]
+    ddedx[inode] = (((Double_t) dedx[inode]/kMLPscale)*3)          // Bug fix! Needs new reference data or different calculation of dedx!!!!
                  / (AliTRDcalibDB::Instance()->GetNumberOfTimeBins()/AliTRDtrack::kNMLPslice);
   }
   lNN1 = nn->Evaluate(spec, ddedx);
