@@ -151,6 +151,7 @@ public:
   void SetZeroSuppression(UShort_t s=0)       { fFixedZeroSuppression = s; }
   /** @param r How many times we oversample each strip. */
   void SetSampleRate(UShort_t r=1)            { fFixedSampleRate = (r>2?2:r);}
+  void SetSampleRate(AliFMDCalibSampleRate* r) { fSampleRate = r; }
   /** @param p Pedestal value in ADC counts */
   void SetPedestal(Float_t p=10)              { fFixedPedestal = p; }
   /** @param w Pedestal width in ADC counts */
