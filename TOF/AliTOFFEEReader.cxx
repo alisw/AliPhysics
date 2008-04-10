@@ -28,6 +28,7 @@
 #include "AliTOFFEEReader.h"
 #include "AliTOFFEEConfig.h"
 #include "AliTOFRawStream.h"
+#include "AliTOFGeometry.h"
 #include "AliLog.h"
 #include <fstream>
 
@@ -110,7 +111,7 @@ AliTOFFEEReader::ResetChannelEnabledArray()
 //_______________________________________________________________
 
 void
-AliTOFFEEReader::LoadFEEConfig(const Char_t *FileName)
+AliTOFFEEReader::LoadFEEConfig(const Char_t *FileName) const
 {
   /*
    *
@@ -174,7 +175,7 @@ AliTOFFEEReader::ParseFEEConfig()
 //_______________________________________________________________
 
 Bool_t 
-AliTOFFEEReader::IsChannelEnabled(Int_t iDDL, Int_t iTRM, Int_t iChain, Int_t iTDC, Int_t iChannel)
+AliTOFFEEReader::IsChannelEnabled(Int_t iDDL, Int_t iTRM, Int_t iChain, Int_t iTDC, Int_t iChannel) const
 {
   /*
    *
