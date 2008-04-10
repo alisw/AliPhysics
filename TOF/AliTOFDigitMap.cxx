@@ -253,3 +253,16 @@ Int_t AliTOFDigitMap::GetFilledCellNumber() const
   return counter;
 
 }
+
+////////////////////////////////////////////////////////////////////////
+void AliTOFDigitMap::ResetDigit(Int_t *vol)
+{
+  //
+  // Reset digit into pad vol
+  //
+  // 0 means empty pad, we need to shift indeces by 1
+
+  for (Int_t slot=0; slot<kMaxDigitsPerPad; slot++)
+    fDigitMap[CheckedIndex(vol)][slot] = 0;
+
+}

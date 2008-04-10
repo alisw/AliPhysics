@@ -47,6 +47,8 @@ class AliTOFDigitMap : public TObject
     
     Int_t GetFilledCellNumber() const;
 
+    void ResetDigit(Int_t *vol);
+
  private:
     // Check index
     Int_t CheckedIndex(Int_t *vol) const;
