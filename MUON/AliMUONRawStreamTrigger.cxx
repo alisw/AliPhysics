@@ -358,7 +358,7 @@ Bool_t AliMUONRawStreamTrigger::NextDDL()
 
   Int_t totalDataWord = GetReader()->GetDataSize(); // in bytes
 
-  Bool_t scalerEvent =  GetReader()->GetDataHeader()->GetL1TriggerMessage() & 0x1;
+  Bool_t scalerEvent =  GetReader()->GetDataHeader() && GetReader()->GetDataHeader()->GetL1TriggerMessage() & 0x1;
 
 
   UInt_t *buffer = new UInt_t[totalDataWord/4];
