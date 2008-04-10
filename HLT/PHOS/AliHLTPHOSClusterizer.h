@@ -34,7 +34,7 @@
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 #include "AliHLTPHOSBase.h"
-#include "AliPHOSGetter.h"
+#include "AliPHOSLoader.h"
 
 #include "AliHLTPHOSRecPointContainerStruct.h"
 #include "AliHLTPHOSRecPointDataStruct.h"
@@ -51,7 +51,7 @@ class AliPHOSRecoParamEmc;
  * @class AliHLTPHOSClusterizer
  * Clusterizer for PHOS HLT. The clusterizer takes digits as input, either
  * in the form of a container of AliHLTPHOSDigitDataStruct or a
- * TClonesArray of AliPHOSDigit through an instance of a AliPHOSGetter
+ * TClonesArray of AliPHOSDigit through an instance of a AliPHOSLoader
  *
  * @ingroup alihlt_phos
  */
@@ -120,7 +120,7 @@ public:
    * Set offline mode
    * @param getter pointer to an instance of AliPHOSGetter
    */
-  void SetOfflineMode(AliPHOSGetter* getter); 
+  void SetOfflineMode(AliPHOSLoader* getter); 
   
   /** Starts clusterization of the event */ 
   virtual Int_t ClusterizeEvent();
@@ -191,7 +191,7 @@ private:
   AliPHOSGeometry *fPHOSGeometry;                              //! transient
   
   /** Instance of the PHOS getter, used in offline mode */    
-  AliPHOSGetter *fGetterPtr;                                   //! transient
+  AliPHOSLoader *fGetterPtr;                                   //! transient
   
   ClassDef(AliHLTPHOSClusterizer, 1);
 };

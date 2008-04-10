@@ -89,7 +89,7 @@ AliHLTPHOSClusterizer::SetRecoParameters(AliPHOSRecoParamEmc* params)
 }
 
 void
-AliHLTPHOSClusterizer::SetOfflineMode(AliPHOSGetter* getter)
+AliHLTPHOSClusterizer::SetOfflineMode(AliPHOSLoader* getter)
 {
   //see header file for documentation
   fRecPointContainerPtr = new AliHLTPHOSRecPointContainerStruct();
@@ -106,7 +106,8 @@ AliHLTPHOSClusterizer::GetEvent(Int_t i)
   //see header file for documentation
   Int_t coord[4];
 
-  fGetterPtr->Event(i, "D");
+  //  fGetterPtr->Event(i, "D");
+  fGetterPtr->GetEvent();
   for(Int_t j = 0; j < fDigitArrayPtr->GetEntries(); j++)
     {
       fDigitPtr = (AliPHOSDigit*)fDigitArrayPtr->At(j);
