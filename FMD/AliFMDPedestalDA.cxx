@@ -94,18 +94,17 @@ void AliFMDPedestalDA::Analyse(UShort_t det,
 			       UShort_t strip) {
 
   TH1S* hChannel       = GetChannel(det, ring, sec, strip);
-  if(hChannel->GetEntries()==0) {
-    AliWarning(Form("No entries for FMD%d%c, sector %d, strip %d",det,ring,sec,strip));
+  if(hChannel->GetEntries() == 0) {
+    //  AliWarning(Form("No entries for FMD%d%c, sector %d, strip %d",det,ring,sec,strip));
     return;
   }
-  //std::cout<<"Fitting Channel #"<<Form("FMD%d%c_%d_%d",det,ring,sec,strip)<<"   \r"<<std::flush;
+  
+  //std::cout<<"Fitting Channel #"<<Form("FMD%d%c_%d_%d",det,ring,sec,strip)<<" with "<<hChannel->GetEntries()<<" entries     \r"<<std::flush;
   
   Float_t mean = hChannel->GetMean();
   Float_t rms  = hChannel->GetRMS();
   
-  for(Int_t i=1;i<hChannel->GetNbinsX();i++)
-    if(hChannel->GetBinCenter(i)>mean+5*rms || hChannel->GetBinCenter(i)<mean-5*rms)
-      hChannel->SetBinContent(i,0);
+  hChannel->GetXaxis()->SetRangeUser(mean-4*rms,mean+4*rms);
   
   mean = hChannel->GetMean();
   rms  = hChannel->GetRMS();
@@ -138,6 +137,7 @@ void AliFMDPedestalDA::Analyse(UShort_t det,
   
   if(fSaveHistograms) {
     gDirectory->cd(Form("%s:FMD%d%c/sector_%d/strip_%d",fDiagnosticsFilename,det,ring,sec,strip));
+    hChannel->GetXaxis()->SetRange(0,1023);
     hChannel->Write();
     
   }
@@ -146,7 +146,8 @@ void AliFMDPedestalDA::Analyse(UShort_t det,
 
 //_____________________________________________________________________
 void AliFMDPedestalDA::WriteHeaderToFile() {
-  fOutputFile.write("# Pedestals \n",13);
+  AliFMDParameters* pars       = AliFMDParameters::Instance();
+  fOutputFile.write(Form("# %s \n",pars->GetPedestalShuttleID()),13);
   fOutputFile.write("# Rcu, Board, Chip, Channel, Strip, Sample, TimeBin, Pedestal, Noise, Mu, Sigma, Chi2/NDF \n",91);
   
 }
