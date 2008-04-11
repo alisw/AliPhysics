@@ -7,7 +7,6 @@
 /* $Id: AliAnalysisTaskESDMuonFilter.h 24429 2008-03-12 10:27:50Z jgrosseo $ */
 
 #include <TList.h> 
-/*#include "/n60raid3/alice/roberta/Trunk/AliRoot/ANALYSIS/AliAnalysisTaskSE.h"*/
 #include "AliAnalysisTaskSE.h"
 
 class AliAnalysisFilter;
@@ -29,15 +28,11 @@ class AliAnalysisTaskESDMuonFilter : public AliAnalysisTaskSE
 
     // Setters
     virtual void SetTrackFilter(AliAnalysisFilter* trackF) {fTrackFilter = trackF;}
-    virtual void SetKinkFilter (AliAnalysisFilter*  KinkF) {fKinkFilter  =  KinkF;}
-    virtual void SetV0Filter   (AliAnalysisFilter*    V0F) {fV0Filter    =    V0F;}
 
  private:
     AliAnalysisTaskESDMuonFilter(const AliAnalysisTaskESDMuonFilter&);
     AliAnalysisTaskESDMuonFilter& operator=(const AliAnalysisTaskESDMuonFilter&);
     AliAnalysisFilter* fTrackFilter; //  Track Filter
-    AliAnalysisFilter* fKinkFilter;  //  Kink  Filter
-    AliAnalysisFilter* fV0Filter;    //  V0    Filter    
     ClassDef(AliAnalysisTaskESDMuonFilter, 1); // Analysis task for standard ESD filtering
 };
  

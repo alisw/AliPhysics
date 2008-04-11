@@ -81,8 +81,6 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD() {
     // set arrays and pointers
     Double_t pos[3];
     Double_t p[3];
-    Double_t p_pos[3];
-    Double_t p_neg[3];
     Double_t covVtx[6];
     Double_t covTr[21];
     Double_t pid[10];
