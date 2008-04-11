@@ -202,7 +202,7 @@ void AliEveCosmicRayFitter::AddFitPoint(Int_t n)
     fSPMap[Point_t(ps, n)] = Size();
     ps->GetPoint(n, x, y, z);
     SetNextPoint(x, y, z); 
-    SetPointId(ps->GetPointId(n));
+    //SetPointId(ps->GetPointId(n));
   }
   ResetBBox();
   ElementChanged(kTRUE, kTRUE);
