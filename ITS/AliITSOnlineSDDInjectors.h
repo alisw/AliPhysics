@@ -2,15 +2,18 @@
 #define ALIITSONLINESDDINJECTORS_H
 
 
+/* $Id: */
+
 ///////////////////////////////////////////////////////////////////
 //                                                               //
 // Class used for SDD injector analysis                           //
 // Origin: F.Prino, Torino, prino@to.infn.it                     //
 //                                                               //
 ///////////////////////////////////////////////////////////////////
+
 #include "AliITSOnlineSDD.h"
 
-/* $Id: */
+
 class TH2F;
 class TGraphErrors;
 class AliITSOnlineSDDInjectors : public AliITSOnlineSDD {
@@ -20,41 +23,53 @@ class AliITSOnlineSDDInjectors : public AliITSOnlineSDD {
   AliITSOnlineSDDInjectors(Int_t nddl, Int_t ncarlos, Int_t sid);
   virtual ~AliITSOnlineSDDInjectors();
 
-  void SetSide(Int_t sid){fSide=sid;}
-  void SetThreshold(Float_t thr=75.){fThreshold=thr;}
-  void SetRangeLine1(Int_t tbmin=40, Int_t tbmax=90){
-    fTbMin[0]=tbmin; fTbMax[0]=tbmax; 
+  void SetThresholds(Float_t tl, Float_t th){
+    fLowThreshold=tl;
+    fHighThreshold=th;
   }
-  void SetRangeLine2(Int_t tbmin=90, Int_t tbmax=140){
-    fTbMin[1]=tbmin; fTbMax[1]=tbmax; 
+  void SetInjLineRange(Int_t jlin, Int_t tbmin, Int_t tbmax){
+    fTbMin[jlin]=tbmin;
+    fTbMax[jlin]=tbmax;
   }
-  void SetRangeLine3(Int_t tbmin=170, Int_t tbmax=220){
-    fTbMin[2]=tbmin; fTbMax[2]=tbmax; 
+  void SetPolOrder(Int_t n){fPolOrder=n;}
+  void SetMinDriftSpeed(Float_t vmin){fMinDriftSpeed=vmin;}
+  void SetMaxDriftSpeed(Float_t vmax){fMaxDriftSpeed=vmax;}
+  void SetMaxDriftSpeedErr(Float_t maxval){
+    fMaxDriftSpeedErr=maxval;
   }
-  void SetPolOrder(Int_t n=3){fPolOrder=n;}
-  void SetMinDriftVel(Float_t vmin=4.){fMinDriftVel=vmin;}
-  void SetMaxDriftVel(Float_t vmax=9.){fMaxDriftVel=vmax;}
-  void SetTimeDiffTB(Float_t tbDiff=8.){fTimeDiffTB=tbDiff;}
+  void SetFitLimits(Int_t firstpad,Int_t lastpad){
+    fFirstPadForFit=firstpad;
+    fLastPadForFit=lastpad;
+  }
+  void SetPadStatusCutForFit(Int_t cutval=1){
+    fPadStatusCutForFit=cutval;
+  }
+  void SetDefaults();
+  
 
-  TGraphErrors* GetLineGraph(Int_t jlin) const;
-  TGraphErrors* GetDriftVelocityGraph() const;
-  Float_t* GetDriftVelFitParam()const{ return fParam;}
-  Float_t GetDriftVelocity(Int_t jlin) const{return fDriftVel[jlin];}
-  Float_t GetSigmaDriftVelocity(Int_t jlin) const{return fSigmaDriftVel[jlin];}
+  TGraphErrors* GetTimeVsDistGraph(Int_t jpad) const;
+  TGraphErrors* GetDriftSpeedGraph() const;
+  Float_t* GetDriftSpeedFitParam()const{ return fParam;}
+  Float_t GetDriftSpeeed(Int_t jpad) const{return fDriftSpeed[jpad];}
+  Float_t GetDriftSpeedErr(Int_t jpad) const{return fDriftSpeedErr[jpad];}
   Float_t GetTimeBinZero() const{return fTbZero;}
-  Float_t GetDriftCoordinate(Float_t cAnode, Float_t cTimeBin);
-  Int_t GetAnodeNumber(Int_t iInjLine) const;
-  Int_t GetLineNumberFromAnode(Int_t nAnode) const;
-  Int_t GetAnodeStatus(Int_t nAnode) const;  
-  Float_t GetCentroid(Int_t injnumb, Int_t injline) const {
-    if(injnumb<kNInjectors && injline<3) return fCentroid[injnumb][injline];
+
+  Int_t GetAnodeNumber(Int_t iInjPad) const;
+  Int_t GetInjPadNumberFromAnode(Int_t nAnode) const;
+  Int_t GetInjPadStatus(Int_t jpad) const;  
+  Int_t GetAnodeStatus(Int_t nAnode) const{
+    Int_t jpad=GetInjPadNumberFromAnode(nAnode);
+    return GetInjPadStatus(jpad);
+  }  
+  Float_t GetCentroid(Int_t jpad, Int_t jlin) const {
+    if(jpad<kInjPads && jlin<kInjLines) return fCentroid[jpad][jlin];
     else return -9999.;
   }
-  Bool_t IsInjectorGood(Int_t injnumb, Int_t injline) const {
-    if(injnumb<kNInjectors && injline<3) return fGoodInj[injnumb][injline];
+  Bool_t IsInjectorGood(Int_t jpad, Int_t jlin) const {
+    if(jpad<kInjPads && jlin<kInjLines) return fGoodInj[jpad][jlin];
     else return 0;
   }
-  void PrintInjMap();
+  void PrintInjectorStatus();
   void PrintCentroids();
   void WriteToASCII(Int_t evNumb, UInt_t timeStamp, Int_t optAppend=0);
 
@@ -62,41 +77,54 @@ class AliITSOnlineSDDInjectors : public AliITSOnlineSDD {
   void AnalyzeEvent(TH2F* his);      
   void FindGoodInjectors();
   void FindCentroids();
-  void CalcDriftVelocity(Int_t jlin);
+  void CalcDriftSpeed(Int_t jpad);
   void CalcTimeBinZero();
-  void FitDriftVelocityVsAnode();
+  void FitDriftSpeedVsAnode();
 
  protected:
   void SetPositions();
  private:
 
-  enum {
-    kNInjectors = 33
-  };
+  enum {kInjPads  = 33};
+  enum {kInjLines = 3};
 
   AliITSOnlineSDDInjectors(const AliITSOnlineSDDInjectors& source);
   AliITSOnlineSDDInjectors& operator = (const AliITSOnlineSDDInjectors& source);
-  static const Float_t fgkSaturation;   // ADC saturation value (1008)
+  static const Float_t fgkSaturation;        // ADC saturation value (1008)
+  static const Float_t fgkDefaultLThreshold;  // Default for fLowThreshold
+  static const Float_t fgkDefaultHThreshold;  // Default for fHighThreshold
+  static const Float_t fgkDefaultMinSpeed;   // Default for fMinDriftSpeed
+  static const Float_t fgkDefaultMaxSpeed;   // Default for fMaxDriftSpeed
+  static const Float_t fgkDefaultMaxErr;     // Default for fMaxDriftSpeedErr
+  static const Int_t   fgkDefaultPolOrder;   // Default for fPolOrder
+  static const UShort_t   fgkDefaultTbMin[kInjLines];  // Defaults for fTbMin
+  static const UShort_t   fgkDefaultTbMax[kInjLines];  // Defaults for fTbMax
 
-  TH2F* fHisto;                         // histogram of module channel counts
-  Float_t fTbZero;                      // Time zero for injector event
-  Float_t fPosition[3];                 // Coordinates of injector lines
-  UShort_t fTbMin[3];                   // Minimum time bin for each line
-  UShort_t fTbMax[3];                   // Maximum time bin for each line
-  Bool_t fGoodInj[kNInjectors][3];      // array of good injectors
-  Float_t fCentroid[kNInjectors][3];    // array of time centroids of injectors
-  Float_t fRMSCentroid[kNInjectors][3]; // array of time rms of injectors
-  Float_t fDriftVel[kNInjectors];       // drift velocity
-  Float_t fSigmaDriftVel[kNInjectors];  // error on drift velocity
-  Float_t *fParam;                      // parameters of polinomial fit
-                                        //  of drift vel. vs. anode number
-  Int_t fPolOrder;                      // order of polinomial fit
-  Float_t fMinDriftVel;                 // Cut value for minimum drift speed
-  Float_t fMaxDriftVel;                 // Cut value for maximum drift speed
-  Float_t fThreshold;                   // Threshold for injector signal
 
-  Float_t fTimeDiffTB;                  // time difference (in TB) between injector trigger and particle trigger
+  TH2F* fHisto;                              // histogram of channel counts
+  Float_t fTbZero;                           // Time zero for injector event
+  Float_t fPosition[kInjLines];              // Coordinates of injector lines
+  UShort_t fTbMin[kInjLines];                // Minimum time bin for each line
+  UShort_t fTbMax[kInjLines];                // Maximum time bin for each line
+  Bool_t fGoodInj[kInjPads][kInjLines];      // array of good injectors
+  Float_t fCentroid[kInjPads][kInjLines];    // array of time bin centroids
+  Float_t fRMSCentroid[kInjPads][kInjLines]; // array of time rms of injectors
+  Float_t fDriftSpeed[kInjPads];             // drift speed
+  Float_t fDriftSpeedErr[kInjPads];          // error on drift speed
+  Float_t *fParam;                           // parameters of polinomial fit to
+                                             // drift speed vs. anode number
+  Int_t fPolOrder;                   // order of polinomial fit
+  Float_t fMinDriftSpeed;            // Minimum value for drift speed
+  Float_t fMaxDriftSpeed;            // Maximum value for drift speed
+  Float_t fMaxDriftSpeedErr;         // Maximum value for error on drift speed
+  Float_t fLowThreshold;             // Low threshold for injector signal
+  Float_t fHighThreshold;            // High threshold for injector signal
 
-  ClassDef(AliITSOnlineSDDInjectors,2)
+  Int_t fFirstPadForFit;             // first injector pad used in fit
+  Int_t fLastPadForFit;              // last injector pad used in fit
+  Int_t fPadStatusCutForFit;         // minimum value of pad status for fit
+
+
+  ClassDef(AliITSOnlineSDDInjectors,3)
 };
 #endif

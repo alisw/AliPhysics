@@ -29,34 +29,28 @@
 ClassImp(AliITSOnlineSDDInjectors)
 
 const Float_t AliITSOnlineSDDInjectors::fgkSaturation = 1008.;
+const Float_t AliITSOnlineSDDInjectors::fgkDefaultLThreshold = 5.;
+const Float_t AliITSOnlineSDDInjectors::fgkDefaultHThreshold = 25.;
+const Float_t AliITSOnlineSDDInjectors::fgkDefaultMinSpeed = 5.5;
+const Float_t AliITSOnlineSDDInjectors::fgkDefaultMaxSpeed = 9.0;
+const Float_t AliITSOnlineSDDInjectors::fgkDefaultMaxErr = 1.5;
+const Int_t   AliITSOnlineSDDInjectors::fgkDefaultPolOrder = 3;
+const UShort_t AliITSOnlineSDDInjectors::fgkDefaultTbMin[kInjLines] = {20,90,170};
+const UShort_t AliITSOnlineSDDInjectors::fgkDefaultTbMax[kInjLines] = {50,160,240};
 
 //______________________________________________________________________
-AliITSOnlineSDDInjectors::AliITSOnlineSDDInjectors():AliITSOnlineSDD(),fHisto(),fTbZero(0.),fParam(),fPolOrder(0),fMinDriftVel(0.),fMaxDriftVel(0.),fThreshold(0.),fTimeDiffTB()
+AliITSOnlineSDDInjectors::AliITSOnlineSDDInjectors():AliITSOnlineSDD(),fHisto(),fTbZero(0.),fParam(),fPolOrder(0),fMinDriftSpeed(0.),fMaxDriftSpeed(0.),fMaxDriftSpeedErr(0.),fLowThreshold(0.),fHighThreshold(0.),fFirstPadForFit(0),fLastPadForFit(0),fPadStatusCutForFit(0)
 {
   // default constructor
-  SetMinDriftVel();
-  SetMaxDriftVel();
-  SetRangeLine1();
-  SetRangeLine2();
-  SetRangeLine3();
   SetPositions();
-  SetPolOrder();
-  SetThreshold();
-  SetTimeDiffTB();
+  SetDefaults();
 }
 //______________________________________________________________________
-AliITSOnlineSDDInjectors::AliITSOnlineSDDInjectors(Int_t nddl, Int_t ncarlos, Int_t sid):AliITSOnlineSDD(nddl,ncarlos,sid),fHisto(),fTbZero(0.),fParam(),fPolOrder(0),fMinDriftVel(0.),fMaxDriftVel(0.),fThreshold(0.),fTimeDiffTB()
+AliITSOnlineSDDInjectors::AliITSOnlineSDDInjectors(Int_t nddl, Int_t ncarlos, Int_t sid):AliITSOnlineSDD(nddl,ncarlos,sid),fHisto(),fTbZero(0.),fParam(),fPolOrder(0),fMinDriftSpeed(0.),fMaxDriftSpeed(0.),fMaxDriftSpeedErr(0.),fLowThreshold(0.),fHighThreshold(0.),fFirstPadForFit(0),fLastPadForFit(0),fPadStatusCutForFit(0)
 { 
 // standard constructor
-  SetMinDriftVel();
-  SetMaxDriftVel();
-  SetRangeLine1();
-  SetRangeLine2();
-  SetRangeLine3();
   SetPositions();
-  SetPolOrder();
-  SetThreshold();
-  SetTimeDiffTB();
+  SetDefaults();
 }
 //______________________________________________________________________
 AliITSOnlineSDDInjectors::~AliITSOnlineSDDInjectors(){
@@ -67,24 +61,36 @@ AliITSOnlineSDDInjectors::~AliITSOnlineSDDInjectors(){
   if(fParam) delete [] fParam;
 }
 //______________________________________________________________________
+void AliITSOnlineSDDInjectors::SetDefaults(){
+  for(Int_t i=0;i<kInjLines;i++) 
+    SetInjLineRange(i,fgkDefaultTbMin[i],fgkDefaultTbMax[i]);
+  SetThresholds(fgkDefaultLThreshold,fgkDefaultHThreshold);
+  SetPolOrder(fgkDefaultPolOrder);
+  SetMinDriftSpeed(fgkDefaultMinSpeed);
+  SetMaxDriftSpeed(fgkDefaultMaxSpeed);
+  SetMaxDriftSpeedErr(fgkDefaultMaxErr);
+  SetFitLimits(1,kInjPads-2); // exclude first and last pad
+  SetPadStatusCutForFit();
+}
+//______________________________________________________________________
 void AliITSOnlineSDDInjectors::SetPositions(){
   // 
-  Float_t kLinFromCenterUm[3]={31860.,17460.,660.};
-  Float_t kAnodeFromCenterUm=35085;
-  for(Int_t i=0;i<3;i++){
-    fPosition[i]=kAnodeFromCenterUm-kLinFromCenterUm[i];
+  Float_t xLinFromCenterUm[kInjLines]={31860.,17460.,660.};
+  Float_t xAnodeFromCenterUm=35085;
+  for(Int_t i=0;i<kInjLines;i++){
+    fPosition[i]=xAnodeFromCenterUm-xLinFromCenterUm[i];
     fPosition[i]/=10000.; // from microns to cm
   }
 }
 //______________________________________________________________________
 void AliITSOnlineSDDInjectors::Reset(){
   //
-  for(Int_t i=0;i<kNInjectors;i++){ 
-    fDriftVel[i]=0.;
-    fSigmaDriftVel[i]=0.;
+  for(Int_t i=0;i<kInjPads;i++){ 
+    fDriftSpeed[i]=0.;
+    fDriftSpeedErr[i]=0.;
   }
-  for(Int_t i=0;i<kNInjectors;i++){
-    for(Int_t j=0;j<3;j++){
+  for(Int_t i=0;i<kInjPads;i++){
+    for(Int_t j=0;j<kInjLines;j++){
       fGoodInj[i][j]=0;
       fCentroid[i][j]=0.;
       fRMSCentroid[i][j]=0.;
@@ -99,42 +105,37 @@ void AliITSOnlineSDDInjectors::AnalyzeEvent(TH2F* his){
   FindGoodInjectors();
   FindCentroids();
   CalcTimeBinZero();
-  for(Int_t j=0;j<kNInjectors;j++) CalcDriftVelocity(j);
-  FitDriftVelocityVsAnode();
+  for(Int_t j=0;j<kInjPads;j++) CalcDriftSpeed(j);
+  FitDriftSpeedVsAnode();
 }
 //______________________________________________________________________
-TGraphErrors* AliITSOnlineSDDInjectors::GetLineGraph(Int_t jlin) const{
+TGraphErrors* AliITSOnlineSDDInjectors::GetTimeVsDistGraph(Int_t jpad) const{
   // 
-  Float_t x[4],y[4],ex[4],ey[4];
+  const Int_t kPts=kInjLines+1;
+  Float_t x[kPts],y[kPts],ex[kPts],ey[kPts];
   x[0]=0.;
   ex[0]=0.;
   y[0]=fTbZero;
   ey[0]=0.;
-  for(Int_t i=0;i<3;i++){
+  for(Int_t i=0;i<kInjLines;i++){
     x[i+1]=fPosition[i];
     ex[i+1]=0.;
-    y[i+1]=fCentroid[jlin][i];
-    ey[i+1]=fRMSCentroid[jlin][i];
+    y[i+1]=fCentroid[jpad][i];
+    ey[i+1]=fRMSCentroid[jpad][i];
   }
   TGraphErrors *g=new TGraphErrors(4,x,y,ex,ey);
   return g;
 }
+
 //______________________________________________________________________
-Float_t AliITSOnlineSDDInjectors::GetDriftCoordinate(Float_t cAnode, Float_t cTimeBin){
-  //
-  Float_t vel=0;
-  for(Int_t i=0;i<=fPolOrder;i++) vel+=fParam[i]*TMath::Power(cAnode,(Float_t)i);
-  return vel*(cTimeBin-(fTbZero-fTimeDiffTB))*25/1000.; 
-}
-//______________________________________________________________________
-TGraphErrors* AliITSOnlineSDDInjectors::GetDriftVelocityGraph() const{
+TGraphErrors* AliITSOnlineSDDInjectors::GetDriftSpeedGraph() const{
   // 
   Int_t ipt=0;
   TGraphErrors *g=new TGraphErrors(0);
-  for(Int_t i=0;i<kNInjectors;i++){
-    if(fDriftVel[i]>0){ 
-      g->SetPoint(ipt,GetAnodeNumber(i),fDriftVel[i]);
-      g->SetPointError(ipt,0,fSigmaDriftVel[i]);
+  for(Int_t i=0;i<kInjPads;i++){
+    if(fDriftSpeed[i]>0){ 
+      g->SetPoint(ipt,GetAnodeNumber(i),fDriftSpeed[i]);
+      g->SetPointError(ipt,0,fDriftSpeedErr[i]);
       ipt++;
     }
   }
@@ -147,7 +148,7 @@ void AliITSOnlineSDDInjectors::CalcTimeBinZero(){
   for(Int_t ian=0;ian<fgkNAnodes;ian++){
     for(Int_t itb=1;itb<fTbMin[0];itb++){
       Float_t cont=fHisto->GetBinContent(itb,ian+1);
-      if(cont>fThreshold){
+      if(cont>fLowThreshold){
 	tzero+=cont*float(itb);
 	intCont+=cont;
       }
@@ -156,26 +157,29 @@ void AliITSOnlineSDDInjectors::CalcTimeBinZero(){
   if(intCont>0) fTbZero=tzero/intCont;
 }
 //______________________________________________________________________
-void AliITSOnlineSDDInjectors::FitDriftVelocityVsAnode(){
-  // fits the anode dependence of drift velocity with a polynomial
+void AliITSOnlineSDDInjectors::FitDriftSpeedVsAnode(){
+  // fits the anode dependence of drift speed with a polynomial function
   const Int_t kNn=fPolOrder+1;
   Float_t **mat = new Float_t*[kNn];
   for(Int_t i=0; i < kNn; i++) mat[i] = new Float_t[kNn];
   Float_t *vect = new Float_t[kNn];
+
   for(Int_t k1=0;k1<kNn;k1++){
     vect[k1]=0;
     for(Int_t k2=0;k2<kNn;k2++){
       mat[k1][k2]=0;
-      for(Int_t n=0; n<kNInjectors;n++){
-	Float_t x=(Float_t)GetAnodeNumber(n);
-	if(fDriftVel[n]>0) mat[k1][k2]+=TMath::Power(x,k1+k2)/TMath::Power(fSigmaDriftVel[n],2);
-      }
     }
   }
   for(Int_t k1=0;k1<kNn;k1++){
-    for(Int_t n=0; n<kNInjectors;n++){
-      Float_t x=(Float_t)GetAnodeNumber(n);
-      if(fDriftVel[n]>0) vect[k1]+=fDriftVel[n]*TMath::Power(x,k1)/TMath::Power(fSigmaDriftVel[n],2);
+    for(Int_t jpad=fFirstPadForFit; jpad<=fLastPadForFit; jpad++){
+      Float_t x=(Float_t)GetAnodeNumber(jpad);
+      if(fDriftSpeed[jpad]>0 && GetInjPadStatus(jpad)>fPadStatusCutForFit){
+	  vect[k1]+=fDriftSpeed[jpad]*TMath::Power(x,k1)/TMath::Power(fDriftSpeedErr[jpad],2);	
+	  for(Int_t k2=0;k2<kNn;k2++){
+
+	    mat[k1][k2]+=TMath::Power(x,k1+k2)/TMath::Power(fDriftSpeedErr[jpad],2);
+	  }
+      }
     }
   }
   Int_t *iPivot = new Int_t[kNn];
@@ -239,18 +243,18 @@ void AliITSOnlineSDDInjectors::FitDriftVelocityVsAnode(){
   delete [] vect;
 }
 //______________________________________________________________________
-void AliITSOnlineSDDInjectors::CalcDriftVelocity(Int_t jlin){
+void AliITSOnlineSDDInjectors::CalcDriftSpeed(Int_t jpad){
   // 
   Float_t sumY=0,sumX=0,sumXX=0,sumYY=0.,sumXY=0,sumWEI=0.;
   Int_t npt=0;
-  Float_t y[3],ey[3];
+  Float_t y[kInjLines],ey[kInjLines];
   Float_t tzero=0,erry=0;
-  for(Int_t i=0;i<3;i++){ 
-    y[i]=fCentroid[jlin][i];
-    ey[i]=fRMSCentroid[jlin][i];
+  for(Int_t i=0;i<kInjLines;i++){ 
+    y[i]=fCentroid[jpad][i];
+    ey[i]=fRMSCentroid[jpad][i];
   }
-  for(Int_t i=0;i<3;i++){
-    if(fGoodInj[jlin][i] && ey[i]!=0){
+  for(Int_t i=0;i<kInjLines;i++){
+    if(fGoodInj[jpad][i] && ey[i]!=0){
       sumY+=y[i]/ey[i]/ey[i];
       sumX+=fPosition[i]/ey[i]/ey[i];
       sumXX+=fPosition[i]*fPosition[i]/ey[i]/ey[i];
@@ -279,86 +283,83 @@ void AliITSOnlineSDDInjectors::CalcDriftVelocity(Int_t jlin){
       evel=eslope/slope/slope*10000./25.;// micron/ns
     }
   }
-  if(vel>fMaxDriftVel||vel<fMinDriftVel){ 
+  if(vel>fMaxDriftSpeed||vel<fMinDriftSpeed || evel>fMaxDriftSpeedErr){ 
     vel=0.;
     evel=0.;
   }
-  fDriftVel[jlin]=vel;
-  fSigmaDriftVel[jlin]=evel;
+  fDriftSpeed[jpad]=vel;
+  fDriftSpeedErr[jpad]=evel;
 }
 //______________________________________________________________________
-Int_t AliITSOnlineSDDInjectors::GetAnodeNumber(Int_t iInjLine) const{
+Int_t AliITSOnlineSDDInjectors::GetAnodeNumber(Int_t iInjPad) const{
   //
   Int_t ian=-1;
-  if(iInjLine>32) return ian;
+  if(iInjPad>=kInjPads) return ian;
   if(!fSide){
-    ian=iInjLine*8;
-    if(iInjLine==32) ian--;
+    ian=iInjPad*8;
+    if(iInjPad==32) ian--;
   }else{
-    ian=iInjLine*8-1;
-    if(iInjLine==0) ian=0;
+    ian=iInjPad*8-1;
+    if(iInjPad==0) ian=0;
   }
   return ian;
 }
 //______________________________________________________________________
-Int_t AliITSOnlineSDDInjectors::GetLineNumberFromAnode(Int_t nAnode) const{
+Int_t AliITSOnlineSDDInjectors::GetInjPadNumberFromAnode(Int_t nAnode) const{
   //
-  Int_t iLine=-1;
+  Int_t iInjPad=-1;
   if(!fSide){
-    if(nAnode%8==0) iLine=nAnode/8;
-    if(nAnode==255) iLine=32;
+    if(nAnode%8==0) iInjPad=nAnode/8;
+    if(nAnode==255) iInjPad=32;
   }else{
-    if(nAnode%8==7) iLine=1+nAnode/8;
-    if(nAnode==0) iLine=0;
+    if(nAnode%8==7) iInjPad=1+nAnode/8;
+    if(nAnode==0) iInjPad=0;
   }
-  if(nAnode>=256) iLine=-1;
-  return iLine;
+  if(nAnode>=256) iInjPad=-1;
+  return iInjPad;
 }
 //______________________________________________________________________
-Int_t AliITSOnlineSDDInjectors::GetAnodeStatus(Int_t nAnode) const{
-  //
-  Int_t iii=GetLineNumberFromAnode(nAnode);
+Int_t AliITSOnlineSDDInjectors::GetInjPadStatus(Int_t jpad) const{
+  // returns an integer value with status of injector lines for given pad/anode
+  // status=7  -->  111  all injector are good
+  // status=6  -->  110  1st line (close to anodes) is bad, other two are good
+  // ....
+  // status=1  -->  001  only 1st line (close to anodes) good
+  // status=0  -->  000  all lines are bad
   Int_t istatus=0;
-  if(iii>=0){
-    for(Int_t ninj=0;ninj<3;ninj++) istatus+=fGoodInj[iii][ninj]<<ninj;
+  if(jpad>=0 && jpad<kInjPads){
+    for(Int_t jlin=0;jlin<kInjLines;jlin++) istatus+=fGoodInj[jpad][jlin]<<jlin;
   }
   return istatus;
 }
 //______________________________________________________________________
 void AliITSOnlineSDDInjectors::FindGoodInjectors(){
   // 
-  for(Int_t iii=0;iii<kNInjectors;iii++){
-    Int_t ian=GetAnodeNumber(iii);
-    for(Int_t ninj=0;ninj<3;ninj++){
-      for(Int_t jjj=fTbMin[ninj];jjj<fTbMax[ninj];jjj++){
+  for(Int_t jpad=0;jpad<kInjPads;jpad++){
+    Int_t ian=GetAnodeNumber(jpad);
+    for(Int_t jlin=0;jlin<kInjLines;jlin++){
+      for(Int_t jjj=fTbMin[jlin];jjj<fTbMax[jlin];jjj++){
 	Float_t c1=fHisto->GetBinContent(jjj,ian+1);
 	Float_t c2=fHisto->GetBinContent(jjj+1,ian+1);
 	Float_t c3=fHisto->GetBinContent(jjj+2,ian+1);
-	if(c1>fThreshold && c2>fThreshold && c3>fThreshold){ 
-	  fGoodInj[iii][ninj]=1;
+	if(c1>fLowThreshold && c2>fHighThreshold && c3>fLowThreshold){ 
+	  fGoodInj[jpad][jlin]=1;
 	  break;
 	}
       }
-      //      for(Int_t jjj=fTbMin[ninj];jjj<fTbMax[ninj];jjj++){
-      //      	Float_t c1=fHisto->GetBinContent(jjj,ian+1);
-      //      	if(c1>=fgkSaturation){
-      //      	  fGoodInj[iii][ninj]=0;
-      //	  break;
-      //	}
-      //      }
     }
   }
 }
 //______________________________________________________________________
 void AliITSOnlineSDDInjectors::FindCentroids(){
   // 
-  for(Int_t iii=0;iii<kNInjectors;iii++){
-    Int_t ian=GetAnodeNumber(iii);
-    for(Int_t ninj=0;ninj<3;ninj++){
-      if(!fGoodInj[iii][ninj]) continue;
+  for(Int_t jpad=0;jpad<kInjPads;jpad++){
+    Int_t ian=GetAnodeNumber(jpad);
+    for(Int_t jlin=0;jlin<kInjLines;jlin++){
+      if(!fGoodInj[jpad][jlin]) continue;
       Float_t maxcont=0;
       Int_t ilmax=-1;
-      for(Int_t jjj=fTbMin[ninj];jjj<fTbMax[ninj];jjj++){
+      for(Int_t jjj=fTbMin[jlin];jjj<fTbMax[jlin];jjj++){
 	Float_t cont=fHisto->GetBinContent(jjj,ian+1);
 	if(cont>maxcont){
 	  maxcont=cont;
@@ -369,10 +370,10 @@ void AliITSOnlineSDDInjectors::FindCentroids(){
       Int_t jjj=ilmax;
       while(1){
 	Float_t cont=fHisto->GetBinContent(jjj,ian+1);
-	if(cont<fThreshold) break;
+	if(cont<fLowThreshold) break;
 	if(cont<fgkSaturation){
-	  fCentroid[iii][ninj]+=cont*(Float_t)jjj;
-	  fRMSCentroid[iii][ninj]+=cont*TMath::Power((Float_t)jjj,2);
+	  fCentroid[jpad][jlin]+=cont*(Float_t)jjj;
+	  fRMSCentroid[jpad][jlin]+=cont*TMath::Power((Float_t)jjj,2);
 	  intCont+=cont;
 	}
 	jjj--;
@@ -380,39 +381,39 @@ void AliITSOnlineSDDInjectors::FindCentroids(){
       jjj=ilmax+1;
       while(1){
 	Float_t cont=fHisto->GetBinContent(jjj,ian+1);
-	if(cont<fThreshold) break;
+	if(cont<fLowThreshold) break;
 	if(cont<fgkSaturation){
-	  fCentroid[iii][ninj]+=cont*float(jjj);
-	  fRMSCentroid[iii][ninj]+=cont*TMath::Power((Float_t)jjj,2);
+	  fCentroid[jpad][jlin]+=cont*float(jjj);
+	  fRMSCentroid[jpad][jlin]+=cont*TMath::Power((Float_t)jjj,2);
 	  intCont+=cont;
 	}
 	jjj++;
       }
       if(intCont>0){ 
-	fCentroid[iii][ninj]/=intCont;
-	fRMSCentroid[iii][ninj]=TMath::Sqrt(fRMSCentroid[iii][ninj]/intCont-fCentroid[iii][ninj]*fCentroid[iii][ninj]);
+	fCentroid[jpad][jlin]/=intCont;
+	fRMSCentroid[jpad][jlin]=TMath::Sqrt(fRMSCentroid[jpad][jlin]/intCont-fCentroid[jpad][jlin]*fCentroid[jpad][jlin]);
       }
       else{ 
-	fCentroid[iii][ninj]=0.;
-	fRMSCentroid[iii][ninj]=0.;
-	fGoodInj[iii][ninj]=0;
+	fCentroid[jpad][jlin]=0.;
+	fRMSCentroid[jpad][jlin]=0.;
+	fGoodInj[jpad][jlin]=0;
       }
-      if(fRMSCentroid[iii][ninj]==0) fGoodInj[iii][ninj]=0;
+      if(fRMSCentroid[jpad][jlin]==0) fGoodInj[jpad][jlin]=0;
     }
   }
 }
 //______________________________________________________________________
-void AliITSOnlineSDDInjectors::PrintInjMap(){
+void AliITSOnlineSDDInjectors::PrintInjectorStatus(){
   //
-  for(Int_t iii=0;iii<kNInjectors;iii++){
-    printf("Line%d-Anode%d: %d %d %d\n",iii,GetAnodeNumber(iii),fGoodInj[iii][0],fGoodInj[iii][1],fGoodInj[iii][2]);
+  for(Int_t jpad=0;jpad<kInjPads;jpad++){
+    printf("Line%d-Anode%d: %d %d %d\n",jpad,GetAnodeNumber(jpad),fGoodInj[jpad][0],fGoodInj[jpad][1],fGoodInj[jpad][2]);
   }
 }
 //______________________________________________________________________
 void AliITSOnlineSDDInjectors::PrintCentroids(){
   //
-  for(Int_t iii=0;iii<kNInjectors;iii++){
-    printf("Line%d-Anode%d: %f+-%f %f+-%f %f+-%f\n",iii,GetAnodeNumber(iii),fCentroid[iii][0],fRMSCentroid[iii][0],fCentroid[iii][1],fRMSCentroid[iii][1],fCentroid[iii][2],fRMSCentroid[iii][2]);
+  for(Int_t jpad=0;jpad<kInjPads;jpad++){
+    printf("Line%d-Anode%d: %f+-%f %f+-%f %f+-%f\n",jpad,GetAnodeNumber(jpad),fCentroid[jpad][0],fRMSCentroid[jpad][0],fCentroid[jpad][1],fRMSCentroid[jpad][1],fCentroid[jpad][2],fRMSCentroid[jpad][2]);
   }
 }
 //______________________________________________________________________
