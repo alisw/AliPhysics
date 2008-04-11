@@ -1305,6 +1305,10 @@ void AliITSv11GeometrySupport::SSDCone(TGeoVolume *moth,TGeoManager *mgr)
 // drawings ALR3-0743/1, ALR3-0743/1A and ALR3-0743/1B), "Supporto Generale
 // Settore SSD" (technical drawings ALR3-0743/2A and ALR3-0743/2E), private
 // communication with B. Giraudo
+//
+// Updated:      11 Apr 2008  Mario Sitta
+// Measures from drawings give overlaps with SPD thermal shield wings,
+// so the terminal part of the SSD cone was reduced
 
   // Dimensions of the Central cylinder and flanges
   const Double_t kCylinderHalfLength   = (1144.0/2) *fgkmm;
@@ -1323,10 +1327,14 @@ void AliITSv11GeometrySupport::SSDCone(TGeoVolume *moth,TGeoManager *mgr)
   const Double_t kConeRCurv2           =       25.0 *fgkmm;
   const Double_t kConeCent1RCurv2      = ( 578.0/2) *fgkmm;
   const Double_t kConeCent2RCurv2      = ( 593.0/2) *fgkmm;
-  const Double_t kConeZOuterRing       =       47.0 *fgkmm;
-  const Double_t kConeZOuterRingInside =       30.25*fgkmm;
-  const Double_t kConeZInnerRing       =      161.5 *fgkmm;
-  const Double_t kConeZLength          =      176.5 *fgkmm;
+//  const Double_t kConeZOuterRing       =       47.0 *fgkmm;
+//  const Double_t kConeZOuterRingInside =       30.25*fgkmm;
+//  const Double_t kConeZInnerRing       =      161.5 *fgkmm;
+//  const Double_t kConeZLength          =      176.5 *fgkmm;
+  const Double_t kConeZOuterRing       =       38.5 *fgkmm;
+  const Double_t kConeZOuterRingInside =       22.2 *fgkmm;
+  const Double_t kConeZInnerRing       =      153.0 *fgkmm;
+  const Double_t kConeZLength          =      168.0 *fgkmm;
   const Double_t kConeZPosition        = kConeZLength + kCylinderHalfLength;
   const Double_t kConeThickness        =       13.0 *fgkmm; // Cone thickness
   const Double_t kConeTheta            =       39.0 *fgkDegree; // Cone angle
