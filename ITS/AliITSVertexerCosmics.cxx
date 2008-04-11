@@ -64,20 +64,21 @@ fMinDist2Vtxs(0)
   SetFirstLastModules(3,324,499);
   SetFirstLastModules(4,500,1247);
   SetFirstLastModules(5,1248,2197);
+  /*
   SetMaxVtxRadius(0,3.5);
   SetMaxVtxRadius(1,6.5);
   SetMaxVtxRadius(2,14.5);
   SetMaxVtxRadius(3,23.5);
   SetMaxVtxRadius(4,37.5);
   SetMaxVtxRadius(5,42.5);
-  /*
+  */  
   SetMaxVtxRadius(0,5.5);
   SetMaxVtxRadius(1,8.5);
   SetMaxVtxRadius(2,18.5);
   SetMaxVtxRadius(3,28.5);
   SetMaxVtxRadius(4,39.5);
   SetMaxVtxRadius(5,48.5);
-  */
+  
   SetMaxDistOnOuterLayer();
   SetMinDist2Vtxs();
 }
@@ -129,7 +130,8 @@ AliESDVertex* AliITSVertexerCosmics::FindVertexForCurrentEvent(Int_t evnumber)
     ilayer2++;
   }
 
-  //if(ilayer==1 && ilayer2>5 && !AliITSReconstructor::GetRecoParam()->GetLayersToSkip(0)) {ilayer=0; ilayer2=1;}
+  // try tracklet on SPD2 and point on SPD1
+  if(ilayer==1 && ilayer2>5 && !AliITSReconstructor::GetRecoParam()->GetLayersToSkip(0)) {ilayer=0; ilayer2=1;}
 
   if(ilayer>4 || ilayer2>5) {
     AliWarning("Not enough clusters");
@@ -231,11 +233,12 @@ AliESDVertex* AliITSVertexerCosmics::FindVertexForCurrentEvent(Int_t evnumber)
 	p3[0]=xclOutLay[iOutLay]; 
 	p3[1]=yclOutLay[iOutLay]; 
 	p3[2]=zclOutLay[iOutLay];
-	//printf(" %f\n",innLayline.GetDistFromPoint(p3));
+	//printf("(%f,%f) (%f,%f)     (%f,%f) %f\n",p1[0],p1[1],p2[0],p2[1],p3[0],p3[1],innLayline.GetDistFromPoint(p3));
 	matchOutLayValue=innLayline.GetDistFromPoint(p3);
 	distxyInnLay = (p1[0]-p2[0])*(p1[0]-p2[0])+(p1[1]-p2[1])*(p1[1]-p2[1]);
 	if(matchOutLayValue<fMaxDistOnOuterLayer &&
 	   distxyInnLay>distxyInnLayBest) { 
+	  //printf("found\n");
 	  distxyInnLayBest=distxyInnLay;
 	  i1InnLayBest=i1InnLay;
 	  i2InnLayBest=i2InnLay;
@@ -258,19 +261,9 @@ AliESDVertex* AliITSVertexerCosmics::FindVertexForCurrentEvent(Int_t evnumber)
       err[1]=TMath::Sqrt(0.25*(e2yclInnLay[i1InnLayBest]+e2yclInnLay[i2InnLayBest])); 
       err[2]=TMath::Sqrt(0.25*(e2zclInnLay[i1InnLayBest]+e2zclInnLay[i2InnLayBest]));
     }
-    /*
-    fCurrentVertex = new AliESDVertex(pos,err,"cosmics");
-    fCurrentVertex->SetTitle("cosmics fake vertex");
-    fCurrentVertex->SetNContributors(ncontributors);
-    delete recpoints;
-    itsLoader->UnloadRecPoints();
-    return fCurrentVertex;
-    */
-  }
 
-  /*
-  if(i1InnLayBest==-1 && i2InnLayBest==-1) {
-    // give a try exchanging InnLay and OutLay
+  } else { // give it a try exchanging InnLay and OutLay
+
     // OutLay - first cluster
     for(i1InnLay=0; i1InnLay<nclOutLayStored; i1InnLay++) { 
       p1[0]=xclOutLay[i1InnLay]; 
@@ -300,24 +293,23 @@ AliESDVertex* AliITSVertexerCosmics::FindVertexForCurrentEvent(Int_t evnumber)
 	}
       } // OutLay - second cluster
     } // OutLay - first cluster
-  }
 
-  if(i1InnLayBest>-1 && i2InnLayBest>-1) { 
-    xvtx = 0.5*(xclOutLay[i1InnLayBest]+xclOutLay[i2InnLayBest]);
-    yvtx = 0.5*(yclOutLay[i1InnLayBest]+yclOutLay[i2InnLayBest]);
-    zvtx = 0.5*(zclOutLay[i1InnLayBest]+zclOutLay[i2InnLayBest]);
-    rvtx = TMath::Sqrt(xvtx*xvtx+yvtx*yvtx);
-    if(rvtx<fMaxVtxRadius[ilayer]) {
-      ncontributors = ilayer2;
-      pos[0] = xvtx;
-      pos[1] = yvtx;
-      pos[2] = zvtx;
-      err[0]=TMath::Sqrt(0.25*(e2xclOutLay[i1InnLayBest]+e2xclOutLay[i2InnLayBest])); 
-      err[1]=TMath::Sqrt(0.25*(e2yclOutLay[i1InnLayBest]+e2yclOutLay[i2InnLayBest])); 
-      err[2]=TMath::Sqrt(0.25*(e2zclOutLay[i1InnLayBest]+e2zclOutLay[i2InnLayBest]));
+    if(i1InnLayBest>-1 && i2InnLayBest>-1) { 
+      xvtx = 0.5*(xclOutLay[i1InnLayBest]+xclOutLay[i2InnLayBest]);
+      yvtx = 0.5*(yclOutLay[i1InnLayBest]+yclOutLay[i2InnLayBest]);
+      zvtx = 0.5*(zclOutLay[i1InnLayBest]+zclOutLay[i2InnLayBest]);
+      rvtx = TMath::Sqrt(xvtx*xvtx+yvtx*yvtx);
+      if(rvtx<fMaxVtxRadius[ilayer]) {
+	ncontributors = ilayer2;
+	pos[0] = xvtx;
+	pos[1] = yvtx;
+	pos[2] = zvtx;
+	err[0]=TMath::Sqrt(0.25*(e2xclOutLay[i1InnLayBest]+e2xclOutLay[i2InnLayBest])); 
+	err[1]=TMath::Sqrt(0.25*(e2yclOutLay[i1InnLayBest]+e2yclOutLay[i2InnLayBest])); 
+	err[2]=TMath::Sqrt(0.25*(e2zclOutLay[i1InnLayBest]+e2zclOutLay[i2InnLayBest]));
+      }
     }
-  }
-  */
+  } // give it a try exchanging InnLay and OutLay
 
   fCurrentVertex = new AliESDVertex(pos,err,"cosmics");
   fCurrentVertex->SetTitle("cosmics fake vertex");
