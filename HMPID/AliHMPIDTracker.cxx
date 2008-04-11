@@ -128,8 +128,9 @@ Int_t AliHMPIDTracker::ReconHiddenTrk(Int_t iCh,Int_t iHVsec,AliESDtrack *pTrk,T
   AliHMPIDReconHTA reconHTA;                                                                          //instance of reconstruction class, nothing important in ctor
   Double_t nmean=((TF1*)pNmean->At(3*iCh))->Eval(0);                                            //C6F14 Nmean for this chamber
   Double_t qthre = 0;
-  if(pQthre->GetEntriesFast()==7) qthre=((TF1*)pQthre->At(iCh))->Eval(0);                                             //C6F14 Nmean for this chamber
-  else  qthre=((TF1*)pQthre->At(6*iCh+iHVsec))->Eval(0); 
+  if(pQthre->GetEntriesFast()==AliHMPIDParam::kMaxCh+1)                                         //
+    qthre=((TF1*)pQthre->At(iCh))->Eval(0);                                                     //just for backward compatibi
+  else  qthre=((TF1*)pQthre->At(6*iCh+iHVsec))->Eval(0);                                        //
   if(pCluLst->GetEntriesFast()<4) return 1;                                                     //min 4 clusters (3 + 1 mip) to find a ring! 
   if(reconHTA.CkovHiddenTrk(pTrk,pCluLst,nmean,qthre)) return 0;                                   //search for track parameters and Cerenkov angle of this track
   else return 1;                                                                                // error code: 0=no error,1=fit not performed;
