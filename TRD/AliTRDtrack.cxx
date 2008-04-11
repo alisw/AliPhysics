@@ -68,6 +68,10 @@ AliTRDtrack::AliTRDtrack()
     fMom[i]         = -1.;
     fSnp[i]         = 0.;
     fTgl[i]         = 0.;
+    fTrackletIndex[i] = -1;
+  }
+  for(int ispec=0; ispec<AliPID::kSPECIES; ispec++) {
+    fPID[ispec] = 1.0 / AliPID::kSPECIES;	
   }
 
   for (UInt_t i = 0; i < kMAXCLUSTERSPERTRACK; i++) {
@@ -143,6 +147,10 @@ AliTRDtrack::AliTRDtrack(AliTRDcluster *c, Int_t index
     fMom[i]         = -1.;
     fSnp[i]         =  0.;
     fTgl[i]         =  0.;
+    fTrackletIndex[i] = -1;
+  }
+  for(int ispec=0; ispec<AliPID::kSPECIES; ispec++) {
+    fPID[ispec] = 1.0 / AliPID::kSPECIES;	
   }
 
   Double_t q = TMath::Abs(c->GetQ());
@@ -200,6 +208,7 @@ AliTRDtrack::AliTRDtrack(const AliTRDtrack &t/*, const Bool_t owner*/)
     fMom[i]         = t.fMom[i];
     fSnp[i]         = t.fSnp[i];
     fTgl[i]         = t.fTgl[i];
+    fTrackletIndex[i] = t.fTrackletIndex[i];
   }
 
   Int_t n = t.GetNumberOfClusters(); 
@@ -269,6 +278,10 @@ AliTRDtrack::AliTRDtrack(const AliKalmanTrack &t, Double_t /*alpha*/)
     fMom[i]         = -1.;
     fSnp[i]         =  0.;
     fTgl[i]         =  0.;
+    fTrackletIndex[i] = -1;
+  }
+  for(int ispec=0; ispec<AliPID::kSPECIES; ispec++) {
+    fPID[ispec] = 1.0 / AliPID::kSPECIES;	
   }
 
   for (UInt_t i = 0; i < kMAXCLUSTERSPERTRACK; i++) {
@@ -328,6 +341,7 @@ AliTRDtrack::AliTRDtrack(const AliESDtrack &t)
     fMom[i]         = -1.;
     fSnp[i]         =  0.;
     fTgl[i]         =  0.;
+    fTrackletIndex[i] = -1;
   }
 
   const AliExternalTrackParam *par = &t;
@@ -350,6 +364,9 @@ AliTRDtrack::AliTRDtrack(const AliESDtrack &t)
 
   for (Int_t i = 0; i < 3; i++) {
     fBudget[i] = 0;
+  }
+  for(int ispec=0; ispec<AliPID::kSPECIES; ispec++) {
+    fPID[ispec] = t.GetTRDpid(ispec);	
   }
 
   if ((t.GetStatus() & AliESDtrack::kTIME) == 0) {
