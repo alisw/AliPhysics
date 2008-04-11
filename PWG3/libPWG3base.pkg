@@ -8,7 +8,7 @@ SRCS:= AliQuarkoniaAcceptance.cxx \
        AliAnalysisTaskSESelectHF.cxx \
        AliAODDimuon.cxx AliAODEventInfo.cxx \
        AliAnalysisTaskMuonAODfromGeneral.cxx AliAnalysisTaskSingleMu.cxx \
-       AliAnalysisTaskLUT.cxx
+       AliAnalysisTaskLUT.cxx AliAnalysisTaskESDMuonFilter.cxx
      
 HDRS:= $(SRCS:.cxx=.h)
 

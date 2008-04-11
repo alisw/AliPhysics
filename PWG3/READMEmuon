@@ -1,3 +1,18 @@
+---------------------------------------------------------------
+ ESDMuonFilter task for filling the muon iformation in the AOD from the ESD
+ Roberta ARNALDI, Torino
+---------------------------------------------------------------
+
+1)  RunESDMuonFilter.C --> macro to run locally the AliAnalysisTaskESDMuonFilter
+2) AliAnalysisTaskESDMuonFilter.h  --> analysis task to produce the Muon AOD from ESD
+3) AliAnalysisTaskESDMuonFilter.cxx --> analysis task to produce the Muon AOD from ESD
+4) libPWG3base.pkg
+5) PWG3baseLinkDef.h 
+
+---------------------------------------------------------------
+ Calculation of the LUT 
+ Bogdan VULPESCU, Clermont
+---------------------------------------------------------------
 Analysis task for the calculation of the Look-up-Tables used by the MUON
 trigger algorithm
 
@@ -22,5 +37,5 @@ runCreateLUTNT.C         - macro for setting the libraries environment and
 analysisTaskLUTNT.C      - main macro for the analysis
 
 createLUTNT.jdl          - JDL file
-
+---------------------------------------------------------------
 
