@@ -78,7 +78,7 @@ void SimEsd(AliLoader *pHL,AliESDEvent *pEsd)
       AliHMPIDPid pID;
       Double_t prob[5];
       pID.FindPid(pTrk,5,prob);
-      trk.SetHMPIDpid(prob);
+      pTrk->SetHMPIDpid(prob);
 //      Printf(" Prob e- %6.2f mu %6.2f pi %6.2f k %6.2f p %6.2f",prob[0]*100,prob[1]*100,prob[2]*100,prob[3]*100,prob[4]*100);
     }
     
