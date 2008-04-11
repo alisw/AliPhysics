@@ -34,13 +34,7 @@ void tof_digits_strips()
 
   TString sPlate;
   TString bsPlate="Plate";
-  TString sStrip;
-  TString bsStrip="Strip";
-  TString sPadZ;
-  TString bsPadZ="PadZ";
-  TString sPadX;
-  TString bsPadX="PadX";
-  
+
   Char_t sectorName[100];
   Char_t sectorTitle[200];
 
@@ -59,6 +53,9 @@ void tof_digits_strips()
 
 
     for(Int_t iPlate=0; iPlate<g->NPlates(); iPlate++) {
+      if ((iSector==13 || iSector==14 || iSector==15) &&
+	  (iPlate==2) )continue; // staging TOF geometry with holes
+
       if(iPlate==2) nStrips=15;
       else nStrips=19;
 
