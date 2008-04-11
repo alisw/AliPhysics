@@ -1,0 +1,31 @@
+Executable="/alice/cern.ch/user/s/schutz/bin/ana.sh";
+Jobtag ={"Analysis: Processing ESD collection for run $1"};
+Packages={"VO_ALICE@ROOT::v5-18-00b", "VO_ALICE@APISCONFIG::V2.4"};
+
+
+TTL=72000;
+
+InputFile={"LF:/alice/cern.ch/user/s/schutz/analysis/macro/anaGammaAnalysis.C",
+           "LF:/alice/cern.ch/user/s/schutz/analysis/macro/ConfigESDGammaDirect.C",
+           "LF:/alice/cern.ch/user/s/schutz/analysis/par/STEERBase.par",
+           "LF:/alice/cern.ch/user/s/schutz/analysis/par/ANALYSIS.par",
+           "LF:/alice/cern.ch/user/s/schutz/analysis/par/AOD.par",
+           "LF:/alice/cern.ch/user/s/schutz/analysis/par/PWG4Gamma.par",
+           "LF:/alice/cern.ch/user/s/schutz/analysis/par/ESD.par"};
+
+OutputArchive={"log_archive:stdout,stderr,*.log@ALICE::Subatech::DPM",
+               "root_archive:*.root@ALICE::Subatech::DPM"};
+
+OutputDir = "/alice/cern.ch/user/s/schutz/analysis/output/gammajetpp14/$1/#alien_split_03i#";
+
+InputDataCollection = "LF:/alice/cern.ch/user/s/schutz/analysis/collection/collection$1.xml,nodownload";
+
+InputDataListFormat = "xml-single";
+InputDataList = "collection.xml";
+
+Split = "se";
+
+SplitMaxInputFileNumber = "30";
+OutputFile="gammahistos.root";
+MergeOutputDir = "/alice/cern.ch/user/s/schutz/analysis/output/gammajetpp14";
+Merge = {"gammahistos.root:/alice/cern.ch/user/s/schutz/analysis/jdl/mergerootfile.jdl:gammahistos-merged.root"};
