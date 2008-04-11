@@ -26,10 +26,10 @@ enum anaModes {mLocal, mLocalCAF,mPROOF,mGRID};
 //Settings to read locally several files
 //The differnt values are default, they can be set with environmental 
 //variables: OUTDIR, PATTERN, NEVENT, respectivelly
-char * kInDir = "/data/"; 
-char * kPattern = "Run"; // Data are in diles /data/Run0, 
+char * kInDir = "/home/group/alice/schutz/analysis/PWG4/data"; 
+char * kPattern = ""; // Data are in diles /data/Run0, 
 // /Data/Run1 ...
-Int_t kEvent = 3; // Number of files
+Int_t kEvent = 1; // Number of files
 
 
 //Scale histograms from file. Change to kTRUE when xsection file exists
@@ -41,7 +41,7 @@ const char * kXSFileName = "pyxsec.root";
 const Int_t kNumberOfEventsPerFile = 100; 
 
 
-void anaGammaAnalysis(Int_t mode=mLocal, TString configName = "ConfigGammaAnalysis")
+void anaGammaAnalysis(Int_t mode=mLocal, TString configName = "ConfigESDGammaDirect")
 {
   // Main
   
@@ -217,39 +217,47 @@ void SetupPar(char* pararchivename, Bool_t decomp = kTRUE)
   //Load par files, create analysis libraries
   //For testing, if par file already decompressed and modified
   //classes then do not decompress.
-
-  if (pararchivename) {
-    char processline[1024];
-    if(decomp){
-      sprintf(processline,".! tar xvzf %s.par",pararchivename);
-      gROOT->ProcessLine(processline);
-    }
-    TString ocwd = gSystem->WorkingDirectory();
-    gSystem->ChangeDirectory(pararchivename);
-    
-    // check for BUILD.sh and execute
-    if (!gSystem->AccessPathName("PROOF-INF/BUILD.sh")) {
-      printf("*******************************\n");
-      printf("*** Building PAR archive    ***\n");
-      printf("*******************************\n");
-      
-      if (gSystem->Exec("PROOF-INF/BUILD.sh")) {
-	Error("runProcess","Cannot Build the PAR Archive! - Abort!");
-	return -1;
-      }
-    }
-    // check for SETUP.C and execute
-    if (!gSystem->AccessPathName("PROOF-INF/SETUP.C")) {
-      printf("*******************************\n");
-      printf("*** Setup PAR archive       ***\n");
-      printf("*******************************\n");
-      gROOT->Macro("PROOF-INF/SETUP.C");
-    }
-    
-    gSystem->ChangeDirectory(ocwd.Data());
-    printf("Current dir: %s\n", ocwd.Data());
+  TString cdir(Form("%s", gSystem->WorkingDirectory() )) ; 
+  TString parpar(Form("%s.par", pararchivename)) ; 
+  if ( gSystem->AccessPathName(parpar.Data()) ) {
+    gSystem->ChangeDirectory(gSystem->Getenv("ALICE_ROOT")) ;
+    TString processline(Form(".! make %s", parpar.Data())) ; 
+    gROOT->ProcessLine(processline.Data()) ;
+    gSystem->ChangeDirectory(cdir) ; 
+    processline = Form(".! mv /tmp/%s .", parpar.Data()) ;
+    gROOT->ProcessLine(processline.Data()) ;
+  } 
+  if ( gSystem->AccessPathName(pararchivename) ) {  
+    TString processline = Form(".! tar xvzf %s",parpar.Data()) ;
+    gROOT->ProcessLine(processline.Data());
   }
+
+  TString ocwd = gSystem->WorkingDirectory();
+  gSystem->ChangeDirectory(pararchivename);
+  
+  // check for BUILD.sh and execute
+  if (!gSystem->AccessPathName("PROOF-INF/BUILD.sh")) {
+    printf("*******************************\n");
+    printf("*** Building PAR archive    ***\n");
+    printf("*******************************\n");
+    
+    if (gSystem->Exec("PROOF-INF/BUILD.sh")) {
+      Error("runProcess","Cannot Build the PAR Archive! - Abort!");
+      return -1;
+    }
+  }
+  // check for SETUP.C and execute
+  if (!gSystem->AccessPathName("PROOF-INF/SETUP.C")) {
+    printf("*******************************\n");
+    printf("*** Setup PAR archive       ***\n");
+    printf("*******************************\n");
+    gROOT->Macro("PROOF-INF/SETUP.C");
+  }
+  
+  gSystem->ChangeDirectory(ocwd.Data());
+  printf("Current dir: %s\n", ocwd.Data());
 }
+
 
 
 TChain * CreateChain(const anaModes mode, Double_t &xsection, Int_t &ntrials, Int_t &nfiles){
@@ -353,7 +361,9 @@ TChain * CreateChain(const anaModes mode, Double_t &xsection, Int_t &ntrials, In
       return ;
     }
 
-#ifdef WITHALIEN
+    gSystem->Load("libNetx.so") ; 
+    gSystem->Load("libRAliEn.so"); 
+    TGrid::Connect("alien://") ;
     TGridCollection * collection =  (TGridCollection*)gROOT->ProcessLine(Form("TAlienCollection::Open(\"%s\", 0)", kXML));
     if (! collection) {
       AliError(Form("%s not found", kXML)) ; 
@@ -361,14 +371,14 @@ TChain * CreateChain(const anaModes mode, Double_t &xsection, Int_t &ntrials, In
     }
     
     TGridResult* result = collection->GetGridResult("",0 ,0);
-    TList* analysisfilelist = result->GetFileInfoList();
-    
     // Makes the ESD chain 
     printf("*** Getting the Chain       ***\n");
-    chain->AddFileInfoList(analysisfilelist);
-    
-#endif
-
+    chain = new TChain("esdTree") ;
+    for (Int_t index = 0; index < result->GetEntries(); index++) {
+      TString alienURL = result->GetKey(index, "turl") ; 
+      cout << "================== " << alienURL << endl ; 
+      chain->Add(alienURL) ; 
+    }
   }// xml analysis
   
   gSystem->ChangeDirectory(ocwd.Data());
