@@ -31,6 +31,7 @@ class TGeoCompositeShape;
 class AliITSv11GeometrySPD : public AliITSv11Geometry
 {
  public:
+ 
     // Default constructor
     AliITSv11GeometrySPD(/*Double_t gap = 0.0075*/);
     // Standard Constructor
@@ -111,6 +112,9 @@ class AliITSv11GeometrySPD : public AliITSv11Geometry
     // the Pixel Bus & extenders (old method which will be removed)
     virtual TGeoVolumeAssembly* CreatePixelBusAndExtensions(Bool_t zpos=kTRUE,
                                         TGeoManager *mgr = gGeoManager) const;
+                                        
+    virtual TGeoVolumeAssembly* CreateConeModule(TGeoManager *mgr = gGeoManager) const;
+    virtual void CreateCones(TGeoVolume *moth) const;
     // a half-stave (put together ladders + MCM + bus, and add clips 
     // if requested)
     virtual TGeoVolumeAssembly* CreateHalfStave(Bool_t isRight, Int_t layer,
