@@ -760,7 +760,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 	// has to be changed once the muon pid is provided by the ESD
 	for (Int_t i = 0; i < 10; pid[i++] = 0.); pid[AliAODTrack::kMuon]=1.;
 	
-	primary->AddDaughter(
+	primary->AddDaughter(aodTrack =
 	    new(tracks[jTracks++]) AliAODTrack(0, // no ID provided
 					       0, // no label provided
 					       p,
