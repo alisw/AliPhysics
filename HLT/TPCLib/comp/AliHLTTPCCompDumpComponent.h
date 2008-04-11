@@ -19,7 +19,7 @@
  * @class AliHLTTPCCompDumpComponent
  * @author Timm Steinbeck
  * @brief A dummy HLT processing component. 
- * @data 05-03-2008
+ * @date 05-03-2008
  *
  * An implementiation of a copy component that just copies its input data
  * to debug a components input data

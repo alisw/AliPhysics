@@ -29,16 +29,16 @@ as 'topdir' from now on.
 1. Choose a name for your library and the sub-folder: 
    e.g. 'libAliHLTTest' in folder 'Test'
 2. Go to the topdir:
-> cd <topdir>
+$ cd <topdir>
 
 3. Copy the SampleLib folder as new 'Test' folder
-> cp -a SampleLib Test
+$ cp -a SampleLib Test
 
 4. Copy libAliHLTSample.pkg to libAliHLTTest.pkg
-> cp libAliHLTSample.pkg libAliHLTTest.pkg
+$ cp libAliHLTSample.pkg libAliHLTTest.pkg
 
 5. Change dir to the new folder
-> cd Test
+$ cd Test
 
 6. Open 'Makefile.am' with an editor
    This is the Makefile template for the autotools build system. In particular
@@ -55,10 +55,10 @@ as 'topdir' from now on.
    - AliHLTSampleComponent1/2: two dummy components which just demonstrate 
      how several components can be implemented in one library
    Each of the components has a header file '<component>.h' and a source code
-   file '<component>.cxx
+   file '<component>.cxx'
 7.1 Take the DummyComponent, copy the two files (to your component name):
-> cp AliHLTDummyComponent.h MyTestComponent.h
-> cp AliHLTDummyComponent.cxx MyTestComponent.cxx
+$ cp AliHLTDummyComponent.h MyTestComponent.h
+$ cp AliHLTDummyComponent.cxx MyTestComponent.cxx
 7.2 Implement the required methods. A tutorial will be added to this package
    soon. A comprehensive online tutorial is available at
    http://www.kip.uni-heidelberg.de/wiki/HLT
@@ -82,8 +82,8 @@ as 'topdir' from now on.
 10.Make sure that all files are saved. Now follow the instruction from the
    README in the topdir. In principle its enough to go to your build directory
    and simply type
-> make
-> make install
+$ make
+$ make install
 
 
 
