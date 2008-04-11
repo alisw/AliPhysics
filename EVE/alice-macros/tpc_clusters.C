@@ -52,8 +52,6 @@ TEvePointSet* tpc_clusters(TEveElement* cont=0, Float_t maxR=270)
     TClonesArray *cl = clrow->GetArray();
     Int_t ncl = cl->GetEntriesFast();
 
-    printf("%d: %d\n", i, ncl);
-
     while (ncl--)
     {
       AliCluster *c = (AliCluster*) cl->UncheckedAt(ncl);

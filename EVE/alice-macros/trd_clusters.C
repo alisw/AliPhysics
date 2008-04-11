@@ -17,22 +17,23 @@ class TEveElement;
 
 #include "AliRunLoader.h"
 #include "AliCluster.h"
-#include "AliTRDcluster.h"
+#include "TRD/AliTRDcluster.h"
 #endif
 
-TEvePointSet* trd_clusters(TEveElement *cont = 0){
-	const Int_t kMaxClusters = 18 * 6 * 24 *10;
-	AliEveEventManager::AssertGeometry();
+TEvePointSet* trd_clusters(TEveElement *cont = 0)
+{
+  const Int_t kMaxClusters = 18 * 6 * 24 *10;
+  AliEveEventManager::AssertGeometry();
 
-	TEvePointSet *clusters = new TEvePointSet(kMaxClusters);
-	clusters->SetOwnIds(kTRUE);
+  TEvePointSet *clusters = new TEvePointSet(kMaxClusters);
+  clusters->SetOwnIds(kTRUE);
 
-	AliRunLoader *rl = AliEveEventManager::AssertRunLoader();
-	rl->LoadRecPoints("TRD");
+  AliRunLoader *rl = AliEveEventManager::AssertRunLoader();
+  rl->LoadRecPoints("TRD");
 
-	TObjArray *TRDcluster = 0x0;
-	TTree *recPoints = rl->GetTreeR("TRD", kFALSE);
-	recPoints->SetBranchAddress("TRDcluster", &TRDcluster);
+  TObjArray *TRDcluster = 0x0;
+  TTree *recPoints = rl->GetTreeR("TRD", kFALSE);
+  recPoints->SetBranchAddress("TRDcluster", &TRDcluster);
 
   Int_t nentr=(Int_t)recPoints->GetEntries();
   for (Int_t i=0; i<nentr; i++) {
@@ -44,9 +45,9 @@ TEvePointSet* trd_clusters(TEveElement *cont = 0){
       AliTRDcluster *c = (AliTRDcluster*)TRDcluster->UncheckedAt(ncl);
       Float_t g[3]; //global coordinates
       c->GetGlobalXYZ(g);
-			clusters->SetNextPoint(g[0], g[1], g[2]);
-			AliCluster *atp = new AliCluster(*c);
-			clusters->SetPointId(atp);
+      clusters->SetNextPoint(g[0], g[1], g[2]);
+      AliCluster *atp = new AliCluster(*c);
+      clusters->SetPointId(atp);
     }
     TRDcluster->Clear();
   }

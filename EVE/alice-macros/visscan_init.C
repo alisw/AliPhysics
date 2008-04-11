@@ -14,7 +14,10 @@ class TEveUtil;
 R__EXTERN TEveProjectionManager *gRPhiMgr;
 R__EXTERN TEveProjectionManager *gRhoZMgr;
 
-TEveGeoShape *gGeomGentle = 0;
+TEveGeoShape *gGeomGentle    = 0;
+TEveGeoShape *gGeomGentleTRD = 0;
+
+Bool_t gShowTRD = kFALSE;
 
 void visscan_init()
 {
@@ -22,11 +25,13 @@ void visscan_init()
   alieve_init(".", -1);
 
   TEveUtil::LoadMacro("geom_gentle.C");
+  if (gShowTRD) TEveUtil::LoadMacro("geom_gentle_trd.C");
 
   TEveUtil::LoadMacro("primary_vertex.C");
   TEveUtil::LoadMacro("esd_tracks.C");
   TEveUtil::LoadMacro("its_clusters.C+");
   TEveUtil::LoadMacro("tpc_clusters.C+");
+  TEveUtil::LoadMacro("trd_clusters.C+");
 
   TEveLine::SetDefaultSmooth(1);
 
@@ -49,7 +54,8 @@ void visscan_init()
 
 
   // geometry
-  gGeomGentle = geom_gentle();
+  gGeomGentle    = geom_gentle();
+  if (gShowTRD) gGeomGentleTRD = geom_gentle_trd();
 
 
   gROOT->ProcessLine(".L SplitGLView.C+g"); // !!!! debug-mode
@@ -63,7 +69,6 @@ void visscan_init()
       a->SetFontFile("comicbd");
       a->SetFontSize(10);
       gEve->GetScenes()->FindChild("R-Phi Projection")->AddElement(a);
-      gRPhiMgr->ImportElements(gGeomGentle);
    }
    if (gRhoZMgr) {
       TEveProjectionAxes* a = new TEveProjectionAxes(gRhoZMgr);
@@ -72,7 +77,6 @@ void visscan_init()
       a->SetFontFile("comicbd");
       a->SetFontSize(10);
       gEve->GetScenes()->FindChild("Rho-Z Projection")->AddElement(a);
-      gRhoZMgr->ImportElements(gGeomGentle);
    }
 
   // event
@@ -92,6 +96,11 @@ void on_new_event()
 
     TEvePointSet* tpcc = tpc_clusters();
     tpcc->SetMarkerColor(4);
+
+    TEvePointSet* trdc = trd_clusters();
+    trdc->SetMarkerColor(7);
+    trdc->SetMarkerStyle(4);
+    trdc->SetMarkerSize(0.5);
   }
   catch(TEveException& exc) {
     printf("Exception loading ITS/TPC clusters: %s\n", exc.Data());
@@ -129,12 +138,14 @@ void on_new_event()
     gRPhiMgr->DestroyElements();
     gRPhiMgr->SetCenter(x[0], x[1], x[2]);
     gRPhiMgr->ImportElements(gGeomGentle);
+    if (gShowTRD) gRPhiMgr->ImportElements(gGeomGentleTRD);
     gRPhiMgr->ImportElements(top);
   }
   if (gRhoZMgr && top) {
     gRhoZMgr->DestroyElements();
     gRhoZMgr->SetCenter(x[0], x[1], x[2]);
     gRhoZMgr->ImportElements(gGeomGentle);
+    if (gShowTRD) gRhoZMgr->ImportElements(gGeomGentleTRD);
     gRhoZMgr->ImportElements(top);
   }
 
