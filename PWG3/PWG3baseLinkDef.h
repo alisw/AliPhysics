@@ -21,6 +21,7 @@
 #pragma link C++ class AliAnalysisTaskMuonAODfromGeneral+;
 #pragma link C++ class AliAnalysisTaskSingleMu+;
 #pragma link C++ class AliAnalysisTaskLUT+;
+#pragma link C++ class AliAnalysisTaskESDMuonFilter+;
 #endif
 
 
