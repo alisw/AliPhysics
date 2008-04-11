@@ -1686,9 +1686,15 @@ Bool_t AliSimulation::RunHLT()
   }
 
   // init the HLT simulation
-  if (fRunHLT.CompareTo("default")==0) fRunHLT="";
+  TString options;
+  if (fRunHLT.CompareTo("default")!=0) options=fRunHLT;
+  if (!IsSelected("HLT", fWriteRawData)) {
+    options+=" writerawfiles=";
+  } else {
+    options+=" writerawfiles=HLT";
+  }
   AliHLTSimulationInit_t fctInit=(AliHLTSimulationInit_t)(gSystem->DynFindSymbol(ALIHLTSIMULATION_LIBRARY, ALIHLTSIMULATION_INIT));
-  if (fctInit==NULL || (iResult=(fctInit(pHLT, pRunLoader, fRunHLT.Data())))<0) {
+  if (fctInit==NULL || (iResult=(fctInit(pHLT, pRunLoader, options.Data())))<0) {
     AliError(Form("can not init HLT simulation: error %d (init %p)", iResult, fctInit));
   } else {
     // run the HLT simulation

@@ -942,7 +942,15 @@ Bool_t AliReconstruction::RunEvent(Int_t iEvent)
 
     // local signle event reconstruction
     if (!fRunLocalReconstruction.IsNull()) {
-      if (!RunLocalEventReconstruction(fRunLocalReconstruction)) {
+      TString detectors="HLT";
+      // run HLT event reconstruction first
+      if (IsSelected(detectors, fRunLocalReconstruction) &&
+	  !RunLocalEventReconstruction(detectors)) {
+	if (fStopOnError) {CleanUp(ffile, ffileOld); return kFALSE;}
+      }
+      detectors=fRunLocalReconstruction;
+      detectors.ReplaceAll("HLT", "");
+      if (!RunLocalEventReconstruction(detectors)) {
 	if (fStopOnError) {CleanUp(ffile, ffileOld); return kFALSE;}
       }
     }
