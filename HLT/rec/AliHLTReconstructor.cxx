@@ -263,11 +263,6 @@ void AliHLTReconstructor::ProcessHLTOUT(AliHLTOUT* pHLTOUT, AliESDEvent* esd) co
     return;
   }
 
-  // postpone the processing until a few issues have been solved
-  // - copying of ESDs
-  // - HLT loader
-  return;
-
   if (fFctProcessHLTOUT) {
     typedef int (*AliHLTSystemProcessHLTOUT)(AliHLTSystem* pInstance, AliHLTOUT* pHLTOUT, AliESDEvent* esd);
     AliHLTSystemProcessHLTOUT pFunc=(AliHLTSystemProcessHLTOUT)fFctProcessHLTOUT;

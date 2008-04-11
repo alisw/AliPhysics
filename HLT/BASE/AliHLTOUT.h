@@ -352,6 +352,7 @@ class AliHLTOUT : public AliHLTLogging {
    * The current list entries are checked if the handler is already in
    * the list. It is added if not in the list, otherwise the block index
    * is added to the existing entry.
+   * @param list     the handler list
    * @param entry    handler list entry
    * @return 0 if added, EEXIST (non negative!) if merged with existing entry <br>
    *         neg. error code if failed

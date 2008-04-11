@@ -346,7 +346,7 @@ int AliHLTComponentHandler::LoadLibrary( const char* libraryPath, int bActivateA
 	hLib.fHandle=pRootHandle;
     }
     
-    if (hLib.fHandle==NULL && gSystem->Load(libraryPath)==0) {
+    if (hLib.fHandle==NULL && gSystem->Load(libraryPath)>=0) {
       int* pRootHandle=new int;
       if (pRootHandle) *pRootHandle=1;
       hLib.fHandle=pRootHandle;

@@ -59,10 +59,6 @@ class AliHLTEsdManager : public AliHLTLogging {
   public:
     /** constructor */
     AliHLTEsdListEntry(AliHLTComponentDataType dt);
-    /** copy constructor */
-    AliHLTEsdListEntry(const AliHLTEsdListEntry& src);
-    /** assignment operator */
-    AliHLTEsdListEntry& operator=(const AliHLTEsdListEntry& src);
     /** destructor */
     ~AliHLTEsdListEntry();
 
@@ -80,6 +76,10 @@ class AliHLTEsdManager : public AliHLTLogging {
     bool operator==(AliHLTComponentDataType dt) const;
 
   private:
+    /** copy constructor prohibited */
+    AliHLTEsdListEntry(const AliHLTEsdListEntry& src);
+    /** assignment operator prohibited */
+    AliHLTEsdListEntry& operator=(const AliHLTEsdListEntry& src);
 
     /** root file name */
     TString fName; //!transient
@@ -93,7 +93,7 @@ class AliHLTEsdManager : public AliHLTLogging {
     AliHLTComponentDataType fDt; //!transient
   };
 
-  typedef vector<AliHLTEsdListEntry> AliHLTEsdList;
+  typedef vector<AliHLTEsdListEntry*> AliHLTEsdPList;
 
   /**
    * Find list entry for given data type
@@ -101,7 +101,7 @@ class AliHLTEsdManager : public AliHLTLogging {
   AliHLTEsdListEntry* Find(AliHLTComponentDataType dt) const;
 
   /** the list of the ESDs */
-  AliHLTEsdList fESDs; //!transient
+  AliHLTEsdPList fESDs; //!transient
 
   ClassDef(AliHLTEsdManager, 0)
 };

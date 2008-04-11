@@ -31,6 +31,7 @@
 #include "TTree.h"
 #include "TClass.h"
 #include "TObject.h"
+#include "TObjectTable.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTEsdManager)
@@ -49,6 +50,12 @@ AliHLTEsdManager::AliHLTEsdManager()
 AliHLTEsdManager::~AliHLTEsdManager()
 {
   // see header file for class documentation
+  for (unsigned int i=0; i<fESDs.size(); i++) {
+    if (fESDs[i]) {
+      delete fESDs[i];
+    }
+    fESDs[i]=NULL;
+  }
 }
 
 AliHLTEsdManager::AliHLTEsdListEntry* AliHLTEsdManager::Find(AliHLTComponentDataType dt) const
@@ -56,8 +63,8 @@ AliHLTEsdManager::AliHLTEsdListEntry* AliHLTEsdManager::Find(AliHLTComponentData
   // see header file for class documentation
   AliHLTEsdListEntry* pEntry=NULL;
   for (unsigned int i=0; i<fESDs.size(); i++) {
-    if (fESDs[i]==dt) {
-      pEntry=const_cast<AliHLTEsdListEntry*>(&fESDs[i]);
+    if (fESDs[i] && *(fESDs[i])==dt) {
+      pEntry=const_cast<AliHLTEsdListEntry*>(fESDs[i]);
     }
   }
   return pEntry;
@@ -99,7 +106,7 @@ int AliHLTEsdManager::WriteESD(const AliHLTUInt8_t* pBuffer, AliHLTUInt32_t size
       if (pESD) {
 	AliHLTEsdListEntry* entry=Find(dt);
 	if (!entry) {
-	  AliHLTEsdListEntry newEntry(dt);
+	  AliHLTEsdListEntry* newEntry=new AliHLTEsdListEntry(dt);
 	  fESDs.push_back(newEntry);
 	}
 	if (tgtesd) {
@@ -138,41 +145,22 @@ AliHLTEsdManager::AliHLTEsdListEntry::AliHLTEsdListEntry(AliHLTComponentDataType
   // see header file for class documentation
 }
 
-AliHLTEsdManager::AliHLTEsdListEntry::AliHLTEsdListEntry(const AliHLTEsdListEntry& src)
-  :
-  AliHLTLogging(),
-  fName(src.fName),
-  fpFile(src.fpFile),
-  fpTree(src.fpTree),
-  fpEsd(src.fpEsd),
-  fDt(src.fDt)
-{
-  // copy constructor copies everything including pointers
-}
-
-AliHLTEsdManager::AliHLTEsdListEntry& AliHLTEsdManager::AliHLTEsdListEntry::operator=(const AliHLTEsdListEntry& src)
-{
-  // assignment operator copies everything including pointers
-  fName=src.fName;
-  fpFile=src.fpFile;
-  fpTree=src.fpTree;
-  fpEsd=src.fpEsd;
-  fDt=src.fDt;
-  return *this;
-}
-
 AliHLTEsdManager::AliHLTEsdListEntry::~AliHLTEsdListEntry()
 {
   // see header file for class documentation
   if (fpTree) {
+    fpTree->GetUserInfo()->Clear();
     delete fpTree;
     fpTree=NULL;
   }
 
-  if (fpEsd) {
+  // due to the Root garbage collection the ESD object might already be
+  // deleted since the pTree->GetUserInfo()->Add(pESD) adds the ESD object to
+  // an internal list which is cleaned when the tree is deleted
+  if (fpEsd && gObjectTable->PtrIsValid(fpEsd)) {
     delete fpEsd;
-    fpEsd=NULL;
   }
+  fpEsd=NULL;
 
   if (fpFile) {
     fpFile->Close();
@@ -217,6 +205,8 @@ int AliHLTEsdManager::AliHLTEsdListEntry::WriteESD(AliESDEvent* pESD, int eventn
       fpTree=new TTree("esdTree", "Tree with HLT ESD objects");
       if (!fpTree) {
 	iResult=-ENOMEM;
+      } else {
+	fpTree->SetDirectory(0);
       }
     }
     if (fpTree && iResult>=0) {
@@ -225,7 +215,7 @@ int AliHLTEsdManager::AliHLTEsdListEntry::WriteESD(AliESDEvent* pESD, int eventn
 	fpEsd=new AliESDEvent;
 	if (fpEsd) {
 	  fpEsd->CreateStdContent();
-	  fpEsd->WriteToTree(fpTree);
+	  fpTree->GetUserInfo()->Add(fpEsd);
 	} else {
 	  iResult=-ENOMEM;
 	}
@@ -248,11 +238,17 @@ int AliHLTEsdManager::AliHLTEsdListEntry::WriteESD(AliESDEvent* pESD, int eventn
 	// used for filling
 	TTree* dummy=new TTree("dummy","dummy");
 	if (dummy) {
+	  /*
+	  dummy->SetDirectory(0);
 	  pESD->WriteToTree(dummy);
 	  dummy->Fill();
+	  dummy->GetUserInfo()->Add(pESD);
 	  fpEsd->ReadFromTree(dummy);
 	  dummy->GetEvent(0);
+	  */
+	  fpEsd->WriteToTree(fpTree);
 	  fpTree->Fill();
+	  dummy->GetUserInfo()->Clear();
 	  delete dummy;
 	} else {
 	  iResult=-ENOMEM;

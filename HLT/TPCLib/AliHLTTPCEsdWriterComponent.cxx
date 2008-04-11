@@ -34,6 +34,7 @@
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
 #include "TTree.h"
+#include "TList.h"
 #include "AliHLTTPCTrack.h"
 #include "AliHLTTPCTrackArray.h"
 #include "AliHLTTPCTrackletDataFormat.h"
@@ -108,12 +109,20 @@ int AliHLTTPCEsdWriterComponent::AliWriter::CloseWriter()
   // see header file for class documentation
   int iResult=0;
   if (fTree) {
+    // the esd structure is written to the user info and is
+    // needed in te ReadFromTree method to read all objects correctly
+    if (fESD) fTree->GetUserInfo()->Add(fESD);
     WriteObject(kAliHLTVoidEventID, fTree);
+    fTree->GetUserInfo()->Clear();
     TTree* pTree=fTree;
     fTree=NULL;
     delete pTree;
   } else {
     HLTWarning("not initialized");
+  }
+
+  if (fESD) {
+    delete fESD;
   }
   iResult=AliHLTRootFileWriterComponent::CloseWriter();
   return iResult;
@@ -272,8 +281,8 @@ AliHLTComponentDataType AliHLTTPCEsdWriterComponent::AliConverter::GetOutputData
 void AliHLTTPCEsdWriterComponent::AliConverter::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier)
 {
   // see header file for class documentation
-  constBase=1000000;
-  inputMultiplier=5.0;
+  constBase=2000000;
+  inputMultiplier=10.0;
 }
 
 int AliHLTTPCEsdWriterComponent::AliConverter::DoInit(int argc, const char** argv)
@@ -339,13 +348,20 @@ int AliHLTTPCEsdWriterComponent::AliConverter::DoEvent(const AliHLTComponentEven
 
     if ((iResult=fBase->ProcessBlocks(pTree, pESD, blocks, (int)evtData.fBlockCnt))>=0) {
 	// TODO: set the specification correctly
-      if (pTree)
+      if (pTree) {
+	// the esd structure is written to the user info and is
+	// needed in te ReadFromTree method to read all objects correctly
+	pTree->GetUserInfo()->Add(pESD);
 	iResult=PushBack(pTree, kAliHLTDataTypeESDTree|kAliHLTDataOriginTPC, 0);
-      else
+      } else {
 	iResult=PushBack(pESD, kAliHLTDataTypeESDObject|kAliHLTDataOriginTPC, 0);
+      }
     }
-    if (pTree)
+    if (pTree) {
+      // clear user info list to prevent objects from being deleted
+      pTree->GetUserInfo()->Clear();
       delete pTree;
+    }
 
     delete pESD;
   }
