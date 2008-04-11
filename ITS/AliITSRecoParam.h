@@ -141,6 +141,12 @@ class AliITSRecoParam : public AliDetectorRecoParam
   void   SetFactorSAWindowSizes(Double_t fact=1.) { fFactorSAWindowSizes=fact; return; }
   Double_t GetFactorSAWindowSizes() const { return fFactorSAWindowSizes; }
 
+  void   SetSAOnePointTracks() { fSAOnePointTracks=kTRUE; return; }
+  Bool_t GetSAOnePointTracks() const { return fSAOnePointTracks; }
+
+  void   SetSAUseAllClusters() { fSAUseAllClusters=kTRUE; return; }
+  Bool_t GetSAUseAllClusters() const { return fSAUseAllClusters; }
+
   void   SetFindV0s(Bool_t find=kTRUE) { fFindV0s=find; return; }
   Bool_t GetFindV0s() const { return fFindV0s; }
 
@@ -266,6 +272,8 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Bool_t fUseDeadZonesFromOCDB; // enable using OCDB info on dead modules.. (MI)
   Bool_t fAllowProlongationWithEmptyRoad; // allow to prolong even if road is empty (MI)
   Double_t fFactorSAWindowSizes; // larger window sizes in SA
+  Bool_t fSAOnePointTracks; // one-cluster tracks in SA (only for cosmics!)
+  Bool_t fSAUseAllClusters; // do not skip clusters used by MI (same track twice in AliESDEvent!)
 
   Bool_t fFindV0s;  // flag to enable V0 finder (MI)
 
