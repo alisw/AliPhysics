@@ -49,6 +49,7 @@ AliACORDEPreprocessor::AliACORDEPreprocessor(AliShuttleInterface* shuttle) :
   // constructor
   AddRunType("STANDALONE_BC");
   AddRunType("STANDALONE_PULSER");
+  AddRunType("PHYSICS");
 
 }
 
