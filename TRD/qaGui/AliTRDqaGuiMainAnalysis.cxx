@@ -20,7 +20,7 @@
 #include "AliTRDqaGuiEnergyDeposit.h"
 #include "TGTab.h"
 
-ClassImp(AliTRDqaGuiMainAnalysis);
+ClassImp(AliTRDqaGuiMainAnalysis)
 
 //////////////////////////////////////////////////////////////////////////////////
 //
