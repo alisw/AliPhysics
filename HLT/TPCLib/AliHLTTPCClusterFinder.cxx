@@ -5,8 +5,7 @@
  * This file is property of and copyright by the ALICE HLT Project        * 
  * ALICE Experiment at CERN, All rights reserved.                         *
  *                                                                        *
- * Primary Authors: Anders Vestbo, Constantin Loizides, Jochen Thaeder    *
- *                  Kenneth Aamodt <kenneth.aamodt@student.uib.no>        *
+ * Primary Authors: Kenneth Aamodt, Kalliopi Kanaki                       *
  *                  for The ALICE HLT Project.                            *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
@@ -19,8 +18,7 @@
  **************************************************************************/
 
 /** @file   AliHLTTPCClusterFinder.cxx
-    @author Anders Vestbo, Constantin Loizides, Jochen Thaeder
-	    Kenneth Aamodt kenneth.aamodt@student.uib.no
+    @author Kenneth Aamodt, Kalliopi Kanaki
     @date   
     @brief  Cluster Finder for the TPC
 */

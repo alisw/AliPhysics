@@ -82,7 +82,7 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
   void InitializePadArray();
   Int_t DeInitializePadArray();
   Bool_t ComparePads(AliHLTTPCPad *nextPad,AliHLTTPCClusters* candidate,Int_t nextPadToRead);
- private: 
+ protected: 
   /** copy constructor prohibited */
   AliHLTTPCClusterFinder(const AliHLTTPCClusterFinder&);
   /** assignment operator prohibited */

@@ -8,9 +8,9 @@
  * See cxx source for full Copyright notice                               */
 
 /** @file   AliHLTTPCKryptonClusterFinderComponent.h
-    @author Timm Steinbeck, Matthias Richter, Jochen Thaeder
+    @author Kenneth Aamodt, Kalliopi Kanaki
     @date   
-    @brief  The TPC cluster finder component.
+    @brief  The TPC krypton cluster finder component.
 */
 
 // see below for class documentation
@@ -35,7 +35,6 @@ class AliHLTTPCKryptonClusterFinderComponent : public AliHLTProcessor
 
         /**
          * constructor 
-         * @param mode    input type see e.g. @ref kClusterFinderUnpacked
          */
 	AliHLTTPCKryptonClusterFinderComponent();
 	/** destructor */
@@ -78,11 +77,10 @@ class AliHLTTPCKryptonClusterFinderComponent : public AliHLTProcessor
 	/** assignment operator prohibited */
 	AliHLTTPCKryptonClusterFinderComponent& operator=(const AliHLTTPCKryptonClusterFinderComponent&);
 	/** the cluster finder object */
-	AliHLTTPCKryptonClusterFinder* fClusterFinder;                                      //!transient
+	AliHLTTPCKryptonClusterFinder* fKryptonClusterFinder;                               //!transient
 	/** the reader object for data decoding */
 	AliHLTTPCDigitReader* fReader;                                                      //!transient
 
 	ClassDef(AliHLTTPCKryptonClusterFinderComponent, 0)
-
 };
 #endif

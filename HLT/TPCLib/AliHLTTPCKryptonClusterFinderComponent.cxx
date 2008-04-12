@@ -42,6 +42,7 @@ using namespace std;
 #include "AliHLTTPCDefinitions.h"
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
+#include "TH1F.h"
 
 #include <cstdlib>
 #include <cerrno>
@@ -56,7 +57,7 @@ ClassImp(AliHLTTPCKryptonClusterFinderComponent)
 
 AliHLTTPCKryptonClusterFinderComponent::AliHLTTPCKryptonClusterFinderComponent()
   :
-  fClusterFinder(NULL),
+  fKryptonClusterFinder(NULL),
   fReader(NULL)
 {
   // see header file for class documentation
@@ -98,7 +99,7 @@ int AliHLTTPCKryptonClusterFinderComponent::GetOutputDataTypes(AliHLTComponentDa
 {
   // see header file for class documentation
   tgtList.clear();
-  tgtList.push_back(AliHLTTPCDefinitions::fgkClustersDataType);
+  tgtList.push_back(kAliHLTDataTypeHistogram);
   return tgtList.size();
 }
 
@@ -119,10 +120,10 @@ AliHLTComponent* AliHLTTPCKryptonClusterFinderComponent::Spawn()
 int AliHLTTPCKryptonClusterFinderComponent::DoInit( int argc, const char** argv )
 {
   // see header file for class documentation
-  if ( fClusterFinder )
+  if ( fKryptonClusterFinder )
     return EINPROGRESS;
 
-  fClusterFinder = new AliHLTTPCKryptonClusterFinder();
+  fKryptonClusterFinder = new AliHLTTPCKryptonClusterFinder();
 
   Int_t i = 0;
 
@@ -136,7 +137,7 @@ int AliHLTTPCKryptonClusterFinderComponent::DoInit( int argc, const char** argv 
   }
 
   fReader = new AliHLTTPCDigitReaderDecoder();
-  fClusterFinder->SetReader(fReader);
+  fKryptonClusterFinder->SetReader(fReader);
  
   return 0;
 }
@@ -145,9 +146,9 @@ int AliHLTTPCKryptonClusterFinderComponent::DoDeinit()
 {
   // see header file for class documentation
 
-  if ( fClusterFinder )
-    delete fClusterFinder;
-  fClusterFinder = NULL;
+  if ( fKryptonClusterFinder )
+    delete fKryptonClusterFinder;
+  fKryptonClusterFinder = NULL;
  
   if ( fReader )
     delete fReader;
@@ -169,16 +170,24 @@ int AliHLTTPCKryptonClusterFinderComponent::DoEvent( const AliHLTComponentEventD
   unsigned long ndx;
 
   //  == OUTdatatype pointer
-  AliHLTTPCClusterData* outPtr;
+  TH1F* outPtr;
 
   AliHLTUInt8_t* outBPtr;
   UInt_t offset, mysize, nSize, tSize = 0;
 
+    
+
   outBPtr = outputPtr;
-  outPtr = (AliHLTTPCClusterData*)outBPtr;
+  outPtr = (TH1F*)outBPtr;
 
   Int_t slice, patch, row[2];
   unsigned long maxPoints, realPoints = 0;
+
+  //warnings!!!
+  nSize=0;
+  realPoints=0;
+  maxPoints=0;
+  //end warnings
 
   for ( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
     {
@@ -209,35 +218,30 @@ int AliHLTTPCKryptonClusterFinderComponent::DoEvent( const AliHLTComponentEventD
       row[1] = AliHLTTPCTransform::GetLastRow( patch );
 
 
-      fClusterFinder->SetPatch(patch);
+      fKryptonClusterFinder->SetPatch(patch);
 
-      outPtr = (AliHLTTPCClusterData*)outBPtr;
-
-      maxPoints = (size-tSize-sizeof(AliHLTTPCClusterData))/sizeof(AliHLTTPCSpacePointData);
-
-      fClusterFinder->InitSlice( slice, patch, row[0], row[1], maxPoints );
+      fKryptonClusterFinder->InitSlice( slice, patch, row[0], row[1], maxPoints );
 	
-      fClusterFinder->ReadDataUnsorted(iter->fPtr, iter->fSize);
+      fKryptonClusterFinder->ReadDataUnsorted(iter->fPtr, iter->fSize);
       
-      fClusterFinder->FindNormalClusters();
+      fKryptonClusterFinder->FindRowClusters();
 
-      fClusterFinder->FindKryptonClusters();
+      fKryptonClusterFinder->FindKryptonClusters();
 
-      realPoints = fClusterFinder->GetNumberOfClusters();
-	
-    
+
+
+
       AliHLTComponentBlockData bd;
       FillBlockData( bd );
       bd.fOffset = offset;
       bd.fSize = mysize;
       bd.fSpecification = iter->fSpecification;
-      bd.fDataType = AliHLTTPCDefinitions::fgkClustersDataType;
-      //AliHLTSubEventDescriptor::FillBlockAttributes( bd.fAttributes );
+      bd.fDataType = kAliHLTDataTypeHistogram;
       outputBlocks.push_back( bd );
   
       tSize += mysize;
       outBPtr += mysize;
-      outPtr = (AliHLTTPCClusterData*)outBPtr;
+      outPtr = (TH1F*)outBPtr;
   
   
       if ( tSize > size )

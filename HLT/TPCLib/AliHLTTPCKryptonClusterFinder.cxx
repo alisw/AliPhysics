@@ -3,8 +3,7 @@
  * This file is property of and copyright by the ALICE HLT Project        * 
  * ALICE Experiment at CERN, All rights reserved.                         *
  *                                                                        *
- * Primary Authors: Anders Vestbo, Constantin Loizides, Jochen Thaeder    *
- *                  Kenneth Aamodt <kenneth.aamodt@student.uib.no>        *
+ * Primary Authors: Kenneth Aamodt <kenneth.aamodt@student.uib.no>        *
  *                  for The ALICE HLT Project.                            *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
@@ -17,21 +16,14 @@
  **************************************************************************/
 
 /** @file    AliHLTTPCKryptonClusterFinder.cxx
-    @author  Kenneth Aamodt kenneth.aamodt@student.uib.no
+    @author  Kenneth Aamodt, Kalliopi Kanaki
     @date   
     @brief  Krypton Cluster Finder for the TPC
 */
 
 #include "AliHLTTPCDigitReader.h"
-#include "AliHLTTPCRootTypes.h"
-#include "AliHLTTPCLogging.h"
 #include "AliHLTTPCKryptonClusterFinder.h"
-#include "AliHLTTPCDigitData.h"
 #include "AliHLTTPCTransform.h"
-#include "AliHLTTPCSpacePointData.h"
-#include "AliHLTTPCMemHandler.h"
-#include "AliHLTTPCPad.h"
-#include <sys/time.h>
 
 #if __GNUC__ >= 3
 using namespace std;
@@ -40,100 +32,11 @@ using namespace std;
 ClassImp(AliHLTTPCKryptonClusterFinder)
 
 AliHLTTPCKryptonClusterFinder::AliHLTTPCKryptonClusterFinder()
-  :
-  fSpacePointData(NULL),
-  fDigitReader(NULL),
-  fPtr(NULL),
-  fSize(0),
-  fFirstRow(0),
-  fLastRow(0),
-  fCurrentRow(0),
-  fCurrentSlice(0),
-  fCurrentPatch(0),
-  fMatch(1),
-  fThreshold(10),
-  fNClusters(0),
-  fMaxNClusters(0),
-  fXYErr(0.2),
-  fZErr(0.3),
-  fVectorInitialized(kFALSE),
-  fRowPadVector(),
-  fClusters(),
-  fTimebinsInBunch(),
-  fIndexOfBunchStart(),
-  fNumberOfPadsInRow(NULL),
-  fNumberOfRows(0),
-  fRowOfFirstCandidate(0)
+  : AliHLTTPCClusterFinder(),
+    fTimebinsInBunch(),
+    fIndexOfBunchStart()
 {
   //constructor  
-}
-
-AliHLTTPCKryptonClusterFinder::~AliHLTTPCKryptonClusterFinder()
-{
-  //destructor
-  if(fVectorInitialized){
-    DeInitializePadArray();
-  }
-  if(fNumberOfPadsInRow){
-    delete [] fNumberOfPadsInRow;
-    fNumberOfPadsInRow=NULL;
-  }
-}
- 
-void AliHLTTPCKryptonClusterFinder::InitializePadArray(){
-  // see header file for class documentation
-  
-  if(fCurrentPatch>5||fCurrentPatch<0){
-    HLTFatal("Patch is not set");
-    return;
-  }
-
-  HLTDebug("Patch number=%d",fCurrentPatch);
-
-  fFirstRow = AliHLTTPCTransform::GetFirstRow(fCurrentPatch);
-  fLastRow = AliHLTTPCTransform::GetLastRow(fCurrentPatch);
-
-  fNumberOfRows=fLastRow-fFirstRow+1;
-  fNumberOfPadsInRow= new UInt_t[fNumberOfRows];
-
-  memset( fNumberOfPadsInRow, 0, sizeof(Int_t)*(fNumberOfRows));
-
-  for(UInt_t i=0;i<fNumberOfRows;i++){
-    fNumberOfPadsInRow[i]=AliHLTTPCTransform::GetNPads(i+fFirstRow);
-    AliHLTTPCPadVector tmpRow;
-    for(UInt_t j=0;j<fNumberOfPadsInRow[i];j++){
-      AliHLTTPCPad *tmpPad = new AliHLTTPCPad(2);
-      tmpPad->SetID(i,j);
-      tmpRow.push_back(tmpPad);
-    }
-    fRowPadVector.push_back(tmpRow);
-  }
-  fVectorInitialized=kTRUE;
-}
-
-Int_t AliHLTTPCKryptonClusterFinder::DeInitializePadArray()
-{
-  // see header file for class documentation
-  for(UInt_t i=0;i<fNumberOfRows;i++){
-    for(UInt_t j=0;j<fNumberOfPadsInRow[i];j++){
-      delete fRowPadVector[i][j];
-      fRowPadVector[i][j]=NULL;
-    }
-    fRowPadVector[i].clear();
-  }
-  fRowPadVector.clear();
-  return 1;
-} 
-
-void AliHLTTPCKryptonClusterFinder::InitSlice(Int_t slice,Int_t patch,Int_t firstrow, Int_t lastrow,Int_t nmaxpoints)
-{
-  //init slice
-  fNClusters = 0;
-  fMaxNClusters = nmaxpoints;
-  fCurrentSlice = slice;
-  fCurrentPatch = patch;
-  fFirstRow = firstrow;
-  fLastRow = lastrow;
 }
 
 void AliHLTTPCKryptonClusterFinder::ReBunch(const UInt_t *bunchData , Int_t bunchSize){
@@ -169,7 +72,7 @@ void AliHLTTPCKryptonClusterFinder::ReadDataUnsorted(void* ptr,unsigned long siz
 
   if(!fVectorInitialized){
     InitializePadArray();
-  }
+   }
 
   fDigitReader->InitBlock(fPtr,fSize,fFirstRow,fLastRow,fCurrentPatch,fCurrentSlice);
   
@@ -214,39 +117,7 @@ void AliHLTTPCKryptonClusterFinder::ReadDataUnsorted(void* ptr,unsigned long siz
   }
 }
 
-Bool_t AliHLTTPCKryptonClusterFinder::ComparePads(AliHLTTPCPad *nextPad,AliHLTTPCClusters* cluster,Int_t nextPadToRead){
-  //Checking if we have a match on the next pad
-  for(UInt_t candidateNumber=0;candidateNumber<nextPad->fClusterCandidates.size();candidateNumber++){
-    AliHLTTPCClusters *candidate =&nextPad->fClusterCandidates[candidateNumber];
-
-    if(cluster->fMean-candidate->fMean==1 || candidate->fMean-cluster->fMean==1 || cluster->fMean-candidate->fMean==0){
-      cluster->fMean=candidate->fMean;
-      cluster->fTotalCharge+=candidate->fTotalCharge;
-      cluster->fTime += candidate->fTime;
-      cluster->fTime2 += candidate->fTime2;
-      cluster->fPad+=candidate->fPad;
-      cluster->fPad2=candidate->fPad2;
-      cluster->fLastMergedPad=candidate->fPad;
-
-      //setting the matched pad to used
-      nextPad->fUsedClusterCandidates[candidateNumber]=1;
-      nextPadToRead++;
-      if(nextPadToRead<(Int_t)fNumberOfPadsInRow[fRowOfFirstCandidate]){
-	nextPad=fRowPadVector[fRowOfFirstCandidate][nextPadToRead];
-	ComparePads(nextPad,cluster,nextPadToRead);
-      }
-      else{
-	return kFALSE;
-      }
-    }
-    else{
-      return kFALSE;
-    }
-  }
-  return kFALSE;
-}
-
-void AliHLTTPCKryptonClusterFinder::FindNormalClusters()
+void AliHLTTPCKryptonClusterFinder::FindRowClusters()
 {
   // see header file for function documentation
 
@@ -298,7 +169,6 @@ void AliHLTTPCKryptonClusterFinder::FindKryptonClusters()
       }
 
       if(tmpCluster->fRowNumber==nextCluster->fRowNumber-1){//Checks if the row numbers are ok (next to eachother)
-	//	if(abs((Int_t)(tmpCluster->fPad/tmpCluster->fTotalCharge) - (Int_t)(nextCluster->fPad/nextCluster->fTotalCharge))<3){ // checks if the pad numbers are ok
 	if(abs((Int_t)(tmpCluster->fPad) - (Int_t)(nextCluster->fPad))<3){ // checks if the pad numbers are ok
 	  if(abs((Int_t)tmpCluster->fMean-(Int_t)nextCluster->fMean)<2){
 	    tmpCluster->fMean=nextCluster->fMean;
@@ -351,20 +221,5 @@ void AliHLTTPCKryptonClusterFinder::CheckForCandidateOnPreviousPad(AliHLTTPCClus
 	}
       }
     }
-  }
-}
-
-void AliHLTTPCKryptonClusterFinder::PrintClusters()
-{
-  // see header file for class documentation
-  for(size_t i=0;i<fClusters.size();i++){
-    HLTInfo("Cluster number: %d",i);
-    HLTInfo("Row: %d \t Pad: %d",fClusters[i].fRowNumber,fClusters[i].fFirstPad);
-    HLTInfo("Total Charge:   %d",fClusters[i].fTotalCharge);
-    HLTInfo("fPad:           %d",fClusters[i].fPad);
-    HLTInfo("PadError:       %d",fClusters[i].fPad2);
-    HLTInfo("TimeMean:       %d",fClusters[i].fTime);
-    HLTInfo("TimeError:      %d",fClusters[i].fTime2);
-    HLTInfo("EndOfCluster:");
   }
 }
