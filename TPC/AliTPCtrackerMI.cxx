@@ -575,95 +575,7 @@ void AliTPCtrackerMI::FillESD(TObjArray* arr)
   printf("Number of filled ESDs-\t%d\n",fEvent->GetNumberOfTracks());
 }
 
-void AliTPCtrackerMI::WriteTracks(TTree * tree)
-{
-  //
-  // write tracks from seed array to selected tree
-  //
-  fOutput  = tree;
-  if (fOutput){
-    AliTPCtrack *iotrack= new AliTPCtrack;
-    fOutput->Branch("tracks","AliTPCtrack",&iotrack,32000,100);
-  }
-  WriteTracks();
-}
 
-void AliTPCtrackerMI::WriteTracks()
-{
-  //
-  // write tracks to the given output tree -
-  // output specified with SetIO routine
-  if (!fSeeds)  return;
-  if (!fOutput){
-    SetIO();
-  }
-
-  if (fOutput){
-    AliTPCtrack *iotrack= 0;
-    Int_t nseed=fSeeds->GetEntriesFast();
-    //for (Int_t i=0; i<nseed; i++) {
-    //  iotrack= (AliTPCtrack*)fSeeds->UncheckedAt(i);
-    //  if (iotrack) break;      
-    //}    
-    //TBranch * br = fOutput->Branch("tracks","AliTPCtrack",&iotrack,32000,100);
-    TBranch * br = fOutput->GetBranch("tracks");
-    br->SetAddress(&iotrack);
-    //
-    for (Int_t i=0; i<nseed; i++) {
-      AliTPCseed *pt=(AliTPCseed*)fSeeds->UncheckedAt(i);    
-      if (!pt) continue;    
-      AliTPCtrack * track = new AliTPCtrack(*pt);
-      iotrack = track;
-      pt->SetLab2(i); 
-      //      br->SetAddress(&iotrack);
-      fOutput->Fill();
-      delete track;
-      iotrack =0;
-    }
-    //fOutput->GetDirectory()->cd();
-    //fOutput->Write();
-  }
-  // delete iotrack;
-  //
-  if (fSeedTree){
-    //write the full seed information if specified in debug mode
-      
-    AliTPCseed * vseed = new AliTPCseed;
-    //
-    TClonesArray * arrtr = new TClonesArray("AliTPCTrackPoint",160);
-    arrtr->ExpandCreateFast(160);
-    //TClonesArray * arrcl = new TClonesArray("AliTPCclusterMI",160);
-    //arrcl->ExpandCreateFast(160);
-    TClonesArray * arre = new TClonesArray("AliTPCExactPoint",160);
-    //
-    vseed->SetPoints(arrtr);
-    vseed->SetEPoints(arre);
-    //    vseed->fClusterPoints = arrcl;
-    //TBranch * brseed = seedtree->Branch("seeds","AliTPCseed",&vseed,32000,99);
-    TBranch * brseed = fSeedTree->GetBranch("seeds");
-    
-    Int_t nseed=fSeeds->GetEntriesFast();
-    
-    for (Int_t i=0; i<nseed; i++) {
-      AliTPCseed *pt=(AliTPCseed*)fSeeds->UncheckedAt(i);    
-      if (!pt) continue;     
-      pt->SetPoints(arrtr);
-      //      pt->fClusterPoints = arrcl;
-      pt->SetEPoints(arre);
-      pt->RebuildSeed();
-      vseed = pt;
-      brseed->SetAddress(&vseed);
-      fSeedTree->Fill();
-      pt->SetPoints(0);
-      pt->SetEPoints(0);
-      //      pt->fClusterPoints = 0;
-    }
-    fSeedTree->Write();
-    if (fTreeDebug) fTreeDebug->Write();
-  }
-
-}
-  
 
 
 
@@ -2660,7 +2572,6 @@ Int_t AliTPCtrackerMI::RefitInward(AliESDEvent *event)
   //FindKinks(fSeeds,event);
   Info("RefitInward","Number of refitted tracks %d",ntracks);
   fEvent =0;
-  //WriteTracks();
   return 0;
 }
 
@@ -2712,7 +2623,6 @@ Int_t AliTPCtrackerMI::PropagateBack(AliESDEvent *event)
   //FindKinks(fSeeds,event);
   Info("PropagateBack","Number of back propagated tracks %d",ntracks);
   fEvent =0;
-  //WriteTracks();
   
   return 0;
 }
@@ -6688,7 +6598,6 @@ Int_t AliTPCtrackerMI::PropagateForward()
   ParallelTracking(fSeeds,fOuterSec->GetNRows()+fInnerSec->GetNRows()-1,fInnerSec->GetNRows());
   fSectors = fInnerSec;
   ParallelTracking(fSeeds,fInnerSec->GetNRows()-1,0);
-  //WriteTracks();
   return 1;
 }
 
