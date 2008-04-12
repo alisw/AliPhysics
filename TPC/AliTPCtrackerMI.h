@@ -207,7 +207,7 @@ private:
 
    void  StopNotActive(TObjArray * arr, Int_t row0, Float_t th0, Float_t th1, Float_t th2) const;
    void  StopNotActive(AliTPCseed * seed, Int_t row0, Float_t th0, Float_t th1, Float_t th2) const;
-   Int_t AcceptCluster(AliTPCseed * seed, AliTPCclusterMI * cluster, Float_t factor, Float_t cory=1., Float_t corz=1.);
+   Int_t AcceptCluster(AliTPCseed * seed, AliTPCclusterMI * cluster);
 
 private:
   AliTPCtrackerMI(const AliTPCtrackerMI& r);           //dummy copy constructor

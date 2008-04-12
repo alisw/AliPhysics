@@ -252,14 +252,13 @@ Int_t AliTPCtrackerMI::UpdateTrack(AliTPCseed * track, Int_t accept){
 
 
 
-Int_t AliTPCtrackerMI::AcceptCluster(AliTPCseed * seed, AliTPCclusterMI * cluster, Float_t factor, 
-                                      Float_t cory, Float_t corz)
+Int_t AliTPCtrackerMI::AcceptCluster(AliTPCseed * seed, AliTPCclusterMI * cluster)
 {
   //
   // decide according desired precision to accept given 
   // cluster for tracking
-  Double_t sy2=ErrY2(seed,cluster)*cory;
-  Double_t sz2=ErrZ2(seed,cluster)*corz;
+  Double_t sy2=ErrY2(seed,cluster);
+  Double_t sz2=ErrZ2(seed,cluster);
   //sy2=ErrY2(seed,cluster)*cory;
   //sz2=ErrZ2(seed,cluster)*cory;
   
@@ -277,14 +276,14 @@ Int_t AliTPCtrackerMI::AcceptCluster(AliTPCseed * seed, AliTPCclusterMI * cluste
   if (rdistance2>16) return 3;
   
   
-  if ((rdistancey2>9.*factor || rdistancez2>9.*factor) && cluster->GetType()==0)  
+  if ((rdistancey2>9. || rdistancez2>9.) && cluster->GetType()==0)  
     return 2;  //suspisiouce - will be changed
   
-  if ((rdistancey2>6.25*factor || rdistancez2>6.25*factor) && cluster->GetType()>0)  
+  if ((rdistancey2>6.25 || rdistancez2>6.25) && cluster->GetType()>0)  
     // strict cut on overlaped cluster
     return  2;  //suspisiouce - will be changed
   
-  if ( (rdistancey2>1.*factor || rdistancez2>6.25*factor ) 
+  if ( (rdistancey2>1. || rdistancez2>6.25 ) 
        && cluster->GetType()<0){
     seed->SetNFoundable(seed->GetNFoundable()-1);
     return 2;    
@@ -786,84 +785,6 @@ Double_t AliTPCtrackerMI::ErrZ2(AliTPCseed* seed, AliTPCclusterMI * cl){
   return res;
 }
 
-
-
-/*
-Double_t AliTPCtrackerMI::ErrZ2(AliTPCseed* seed, AliTPCclusterMI * cl){
-  //
-  //
-  //seed->SetErrorZ2(0.1);
-  //return 0.1;
-
-  Float_t snoise2;
-  Float_t z = TMath::Abs(fParam->GetZLength(0)-TMath::Abs(seed->GetZ()));
-  //
-  Float_t rsigmaz = cl->GetSigmaZ2()/(seed->fCurrentSigmaZ2);
-  Int_t ctype = cl->GetType();
-  Float_t amp = TMath::Abs(cl->GetQ());
-  
-  Float_t nel;
-  Float_t nprim;
-  //
-  Float_t landau=2 ;    //landau fluctuation part
-  Float_t gg=2;         // gg fluctuation part
-  Float_t padlength= GetPadPitchLength(seed->GetX());
- 
-  if (fSectors==fInnerSec){
-    snoise2 = 0.0004/padlength;
-    nel     = 0.268*amp;
-    nprim   = 0.155*amp;
-    gg      = (2+0.001*nel/(padlength*padlength))/nel;
-    landau  = (2.+0.12*nprim)*0.5*(2.+nprim*nprim*0.001/(padlength*padlength))/nprim;
-    if (landau>1) landau=1;
-  }
-  else {
-    snoise2 = 0.0004/padlength;
-    nel     = 0.3*amp;
-    nprim   = 0.133*amp;
-    gg      = (2+0.0008*nel/(padlength*padlength))/nel;
-    landau  = (2.+0.12*nprim)*0.5*(2.+nprim*nprim*0.001/(padlength*padlength))/nprim;
-    if (landau>1) landau=1;
-  }
-  Float_t sdiff = gg*fParam->GetDiffT()*fParam->GetDiffT()*z;
-
-  //
-  Float_t angle2 = seed->GetSnp()*seed->GetSnp();
-  angle2 = TMath::Sqrt((1-angle2));
-  if (angle2<0.6) angle2 = 0.6;
-  //angle2 = 1;
-
-  Float_t angle = seed->GetTgl()/angle2;
-  Float_t angular = landau*angle*angle*padlength*padlength/12.;
-  Float_t res = sdiff + angular;
-
-  
-  if ((ctype==0) && (fSectors ==fOuterSec))
-    res *= 0.81 +TMath::Exp(6.8*(rsigmaz-1.2));
-
-  if ((ctype==0) && (fSectors ==fInnerSec))
-    res *= 0.72 +TMath::Exp(2.04*(rsigmaz-1.2));
-  
-  if ((ctype>0)){
-    res+=0.005;
-    res*= TMath::Power(rsigmaz+0.5,1.5);  //0.31+0.147*ctype;
-  }
-  if (ctype<0){
-    res+=0.002;
-    res*=1.3;
-  }
-  if ((ctype<0) &&amp<70){
-    res+=0.002;
-    res*=1.3;  
-  }
-  res += snoise2;
-  if (res<2*snoise2)
-     res = 2*snoise2;
-
-  seed->SetErrorZ2(res);
-  return res;
-}
-*/
 
 
 
@@ -1387,7 +1308,7 @@ Int_t AliTPCtrackerMI::FollowToNext(AliTPCseed& t, Int_t nr) {
       //
       t.SetCurrentCluster(cl); 
       t.SetRow(nr);
-      Int_t accept = AcceptCluster(&t,t.GetCurrentCluster(),1.);
+      Int_t accept = AcceptCluster(&t,t.GetCurrentCluster());
       if ((tpcindex&0x8000)==0) accept =0;
       if (accept<3) { 
 	//if founded cluster is acceptible
@@ -1472,7 +1393,7 @@ Int_t AliTPCtrackerMI::FollowToNext(AliTPCseed& t, Int_t nr) {
     t.SetCurrentCluster(cl); 
     t.SetRow(nr);
     if (fIteration==2&&cl->IsUsed(10)) return 0; 
-    Int_t accept = AcceptCluster(&t,t.GetCurrentCluster(),1.);
+    Int_t accept = AcceptCluster(&t,t.GetCurrentCluster());
     if (fIteration==2&&cl->IsUsed(11)) {
       t.SetErrorY2(t.GetErrorY2()+0.03);
       t.SetErrorZ2(t.GetErrorZ2()+0.03); 
@@ -1568,7 +1489,7 @@ Int_t AliTPCtrackerMI::FollowToNextFast(AliTPCseed& t, Int_t nr) {
 
   if (cl) {
     t.SetCurrentCluster(cl); 
-    //    Int_t accept = AcceptCluster(&t,t.fCurrentCluster,1.);        
+    //    Int_t accept = AcceptCluster(&t,t.fCurrentCluster);        
     //if (accept<3){
       t.SetClusterIndex2(row,index);
       t.SetClusterPointer(row, cl);
@@ -1749,7 +1670,7 @@ Int_t AliTPCtrackerMI::FollowToNextCluster(AliTPCseed & t, Int_t nr) {
 
   if (t.GetCurrentCluster()) {
     t.SetRow(nr); 
-    Int_t accept = AcceptCluster(&t,t.GetCurrentCluster(),1.);
+    Int_t accept = AcceptCluster(&t,t.GetCurrentCluster());
     
     if (t.GetCurrentCluster()->IsUsed(10)){
       //
