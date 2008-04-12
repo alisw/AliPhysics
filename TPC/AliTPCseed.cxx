@@ -233,9 +233,9 @@ AliTPCseed::AliTPCseed(Double_t xr, Double_t alpha, const Double_t xx[5],
 AliTPCseed::~AliTPCseed(){
   //
   // destructor
-  if (fPoints) delete fPoints;
+  if (fPoints) delete [] fPoints;
   fPoints =0;
-  if (fEPoints) delete fEPoints;
+  if (fEPoints) delete [] fEPoints;
   fEPoints = 0;
   fNoCluster =0;
   if (fClusterOwner){
