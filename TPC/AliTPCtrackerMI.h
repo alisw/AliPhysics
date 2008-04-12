@@ -44,8 +44,6 @@ public:
   void   UnloadClusters();
   void   Transform(AliTPCclusterMI * cluster);
   //
-  void SetIO();  //set default IO from folders
-  void SetIO(TTree * input, TTree * output, AliESDEvent * event);
   void FillESD(TObjArray* arr);
   void DeleteSeeds();
   void SetDebug(Int_t debug){ fDebug = debug;}

@@ -394,68 +394,6 @@ AliTPCtrackerMI::~AliTPCtrackerMI() {
   if (fDebugStreamer) delete fDebugStreamer;
 }
 
-void AliTPCtrackerMI::SetIO()
-{
-  //
-  fNewIO   =  kTRUE;
-  fInput   =  AliRunLoader::GetTreeR("TPC", kFALSE,AliConfig::GetDefaultEventFolderName());
-  
-  fOutput  =  AliRunLoader::GetTreeT("TPC", kTRUE,AliConfig::GetDefaultEventFolderName());
-  if (fOutput){
-    AliTPCtrack *iotrack= new AliTPCtrack;
-    fOutput->Branch("tracks","AliTPCtrack",&iotrack,32000,100);
-    delete iotrack;
-  }
-}
-
-
-void AliTPCtrackerMI::SetIO(TTree * input, TTree * output, AliESDEvent * event)
-{
-
-  // set input
-  fNewIO = kFALSE;
-  fInput    = 0;
-  fOutput   = 0;
-  fSeedTree = 0;
-  fTreeDebug =0;
-  fInput = input;
-  if (input==0){
-    return;
-  }  
-  //set output
-  fOutput = output;
-  if (output){
-    AliTPCtrack *iotrack= new AliTPCtrack;
-    //    iotrack->fHelixIn   = new TClonesArray("AliHelix");
-    //iotrack->fHelixOut  = new TClonesArray("AliHelix");    
-    fOutput->Branch("tracks","AliTPCtrack",&iotrack,32000,100);
-    delete iotrack;
-  }
-  if (output && (fDebug&2)){
-    //write the full seed information if specified in debug mode
-    //
-    fSeedTree =  new TTree("Seeds","Seeds");
-    AliTPCseed * vseed = new AliTPCseed;
-    //
-    TClonesArray * arrtr = new TClonesArray("AliTPCTrackPoint",160);
-    arrtr->ExpandCreateFast(160);
-    TClonesArray * arre = new TClonesArray("AliTPCExactPoint",160);
-    //
-    vseed->SetPoints(arrtr);
-    vseed->SetEPoints(arre);
-    //    vseed->fClusterPoints = arrcl;
-    fSeedTree->Branch("seeds","AliTPCseed",&vseed,32000,99);
-    delete arrtr;
-    delete arre;    
-    fTreeDebug = new TTree("trackDebug","trackDebug");
-    TClonesArray * arrd = new TClonesArray("AliTPCTrackPoint2",0);
-    fTreeDebug->Branch("debug",&arrd,32000,99);
-  }
-
-
-  //set ESD event  
-  fEvent  = event;  
-}
 
 void AliTPCtrackerMI::FillESD(TObjArray* arr)
 {
