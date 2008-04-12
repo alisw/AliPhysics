@@ -193,7 +193,7 @@ void AliTRDqaElectronSpectra::Exec(Option_t *)
 {
   // Process one event
   Long64_t entry = fChain->GetReadEntry() ;
-  if (!(entry%10)) Info("Exec", "Entry = %ld", entry);
+  if (!(entry%100)) Info("Exec", "Entry = %ld", entry);
 
   // Processing of one event 
    

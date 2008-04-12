@@ -6,7 +6,7 @@ void testQAGuiBlack(const char *filename) {
   gStyle->SetOptStat(0);
   
   gSystem->Load("libGui.so");
-  gSystem->Load("libTRDGui.so");
+  gSystem->Load("libTRDgui.so");
   
   AliTRDqaGuiMainBlack *fMain = new AliTRDqaGuiMainBlack(gClient->GetRoot());
   fMain->SetQAFile(filename);

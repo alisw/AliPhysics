@@ -5,7 +5,10 @@ SRCS= qaGui/AliTRDqaGuiMain.cxx \
       qaGui/AliTRDqaGuiESDs.cxx \
       qaGui/AliTRDqaGuiMainBlack.cxx \
       qaGui/AliTRDqaGuiBlackSM.cxx \
-      qaGui/AliTRDqaGuiBlackChamber.cxx
+      qaGui/AliTRDqaGuiBlackChamber.cxx \
+      qaGui/AliTRDqaGuiJPsi.cxx \
+      qaGui/AliTRDqaGuiEnergyDeposit.cxx \
+      qaGui/AliTRDqaGuiMainAnalysis.cxx 
 
 HDRS= $(SRCS:.cxx=.h)
 

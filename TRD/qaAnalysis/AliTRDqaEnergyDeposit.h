@@ -52,6 +52,13 @@ protected:
   TH1D *fProb[2*5];           // probabilities
   //TH2D *fSignalPtChamber[2*540];
 
-   ClassDef(AliTRDqaEnergyDeposit, 0); // a TRD analysis task 
+  TH2D *fSignalPtPure[2*5];   // dedx for a clean sample 
+
+  void FillElectrons();
+  void FillPions() {}
+  void FillKaons() {}
+  void FillProtons() {}
+
+  ClassDef(AliTRDqaEnergyDeposit, 0); // a TRD analysis task 
 };
 #endif // ALITRDQAENERGYDEPOSIT_H

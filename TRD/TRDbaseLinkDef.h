@@ -57,7 +57,6 @@
 #pragma link C++ class  AliTRDalignment+;
 
 #pragma link C++ class  AliTRDQAChecker+;
-#pragma link C++ class  AliTRDqaBlackEvents+;
 
 #pragma link C++ class  AliTRDCalibraFillHisto+;
 #pragma link C++ class  AliTRDCalibraFit+;

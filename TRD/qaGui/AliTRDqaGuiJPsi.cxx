@@ -13,21 +13,17 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id: AliTRDqaGuiClustersSM.cxx 23871 2008-02-12 11:48:20Z hristov $ */
-
 //////////////////////////////////////////////////////////////////////////////////
 //
 // This class is a Graphical User Interface for the Quality Monitorig 
-// of clusters. It lets display and browse throu histograms created by 
-// the AliTRDQADataMakerRec run during the reconstruction 
 //
 // S. Radomski 
 // Uni-Heidelberg
-// Feb. 2008
+// April 2008
 // 
 //////////////////////////////////////////////////////////////////////////////////
 
-#include "AliTRDqaGuiClustersSM.h"
+#include "AliTRDqaGuiJPsi.h"
 
 #include "TH1D.h"
 #include "TFile.h"
@@ -40,35 +36,31 @@
 #include "TGButton.h"
 #include "TRootEmbeddedCanvas.h"
 
-ClassImp(AliTRDqaGuiClustersSM)
-
-const Int_t AliTRDqaGuiClustersSM::fgkLogList[4] = {0,0,0,0};
+ClassImp(AliTRDqaGuiJPsi)
 
 //////////////////////////////////////////////////////////////////////////////////
 
-AliTRDqaGuiClustersSM::AliTRDqaGuiClustersSM() 
+AliTRDqaGuiJPsi::AliTRDqaGuiJPsi() 
   : fIdx(0),
     fGPanel(0),
     fGCanvas(0),
     fGSelect(0),
     fGPrev(0),
-    fGNext(0),
-    fGPlay(0)
+    fGNext(0)
 {
   
 }
 
 //////////////////////////////////////////////////////////////////////////////////
 
-AliTRDqaGuiClustersSM::AliTRDqaGuiClustersSM(TGWindow *parent) 
+AliTRDqaGuiJPsi::AliTRDqaGuiJPsi(TGWindow *parent) 
   : TGCompositeFrame(parent, 720, 500),
     fIdx(0),
     fGPanel(0),
     fGCanvas(0),
     fGSelect(0),
     fGPrev(0),
-    fGNext(0),
-    fGPlay(0)
+    fGNext(0)
 {
   //
   // Main constructor
@@ -82,45 +74,44 @@ AliTRDqaGuiClustersSM::AliTRDqaGuiClustersSM(TGWindow *parent)
 
   fGPanel = new TGHorizontalFrame(this);
 
-  // fGLabel = new TGLabel(fGPanel, "Current SM: ");
-  fGPrev = new TGTextButton(fGPanel, "Prev SM");
-  fGNext = new TGTextButton(fGPanel, "Next SM");
+  // fGLabel = new TGLabel(fGPanel, "Current Step: ");
+  fGPrev = new TGTextButton(fGPanel, "Prev Step");
+  fGNext = new TGTextButton(fGPanel, "Next Step");
 
   fGSelect = new TGComboBox(fGPanel);
-  for(int i=0; i<18; i++) fGSelect->AddEntry(Form("SM %d", i), i);
+  for(int i=0; i<5; i++) fGSelect->AddEntry(Form("Step %d", i), i);
   fGSelect->Resize(100, fGPrev->GetHeight());
   fGSelect->Select(fIdx);
-
-  fGPlay = new TGTextButton(fGPanel, "PLAY");
-
-   TGLayoutHints *hint = new TGLayoutHints(kLHintsNormal, 5, 5, 5, 5);
+  
+  TGLayoutHints *hint = new TGLayoutHints(kLHintsNormal, 5, 5, 5, 5);
   
   // fGPanel->AddFrame(fGLabel, hint);
   fGPanel->AddFrame(fGPrev, hint);
   fGPanel->AddFrame(fGSelect, hint);
   fGPanel->AddFrame(fGNext, hint);
-  fGPanel->AddFrame(fGPlay, hint);
 
   AddFrame(fGPanel);
 
   // panel logic
-  fGPrev->Connect("Clicked()", "AliTRDqaGuiClustersSM", this, "PreviusSM()");
-  fGNext->Connect("Clicked()", "AliTRDqaGuiClustersSM", this, "NextSM()");
-  fGSelect->Connect("Selected(Int_t", "AliTRDqaGuiClustersSM", this, "SelectSM(Int_t)");
-  fGPlay->Connect("Clicked()", "AliTRDqaGuiClustersSM", this, "Play()");
-
+  fGPrev->Connect("Clicked()", "AliTRDqaGuiJPsi", this, "PreviusStep()");
+  fGNext->Connect("Clicked()", "AliTRDqaGuiJPsi", this, "NextStep()");
+  fGSelect->Connect("Selected(Int_t", "AliTRDqaGuiJPsi", this, "SelectStep(Int_t)");
+ 
   // histograms
   /**/
   fGCanvas = new TGCompositeFrame(this);
-  fGCanvas->SetLayoutManager(new TGMatrixLayout(fGCanvas,2,2,1,1));
+  fGCanvas->SetLayoutManager(new TGMatrixLayout(fGCanvas,2,3,1,1));
 
-  fNameList[0] = "sigTimeShape";
-  fNameList[1] = "sigTime";
-  fNameList[2] = "totalCharge";
-  fNameList[3] = "nCls";
+  fNameList[0] = "mass";
+  fNameList[1] = "nTracksNeg";
+  fNameList[2] = "ptNeg";
+  fNameList[3] = "pidNeg";
+  //fNameList[3] = "ptAngle";
+  fNameList[4] = "nTracksPos";
+  fNameList[5] = "ptPos";
 
-  for(Int_t i=0; i<4; i++) {
-    fCanvasList[i] = new TRootEmbeddedCanvas(fNameList[i], fGCanvas, 480, 300);
+  for(Int_t i=0; i<6; i++) {
+    fCanvasList[i] = new TRootEmbeddedCanvas(fNameList[i], fGCanvas, 320, 300);
     fGCanvas->AddFrame(fCanvasList[i]);
     fCanvasList[i]->GetCanvas()->SetRightMargin(0.05);
   }
@@ -135,34 +126,40 @@ AliTRDqaGuiClustersSM::AliTRDqaGuiClustersSM(TGWindow *parent)
 
 //////////////////////////////////////////////////////////////////////////////////
 
-void AliTRDqaGuiClustersSM::SetQAFile(const char *filename) {
+void AliTRDqaGuiJPsi::SetQAFile(const char *filename) {
   //
   // Ste file with histograms
-  //
+  // 
 
   strcpy(fFileName, filename);
 
-  for(Int_t i=0; i<4; i++) {
+  for(Int_t i=0; i<6; i++) {
     if (fHistList[i]) delete fHistList[i];
   }
   
-  TFile *file = new TFile(filename);
-  file->cd("TRD/RecPoints");
-  
-  const char *opt[4] = {"", "colz", "", ""};
+  const Int_t logy[6] = {0, 1, 1, 1, 1, 1};
+  const Int_t logz[6] = {0, 0, 0, 1, 0, 0};
+  const char *opt[6]  = {"", "", "", "", "", ""};
 
-  for(int i=0; i<4; i++) {
-    fHistList[i] = (TH1D*)gDirectory->Get(Form("qaTRD_recPoints_%s_sm%d", fNameList[i], fIdx));
+  TFile *file = new TFile(filename);
+  
+  for(Int_t i=0; i<6; i++) {
+    fHistList[i] = (TH1D*)gDirectory->Get(Form("%s_%d", fNameList[i], fIdx));
+    if (fHistList[i]) fHistList[i]->SetDirectory(0);
     fCanvasList[i]->GetCanvas()->cd();
-    gPad->SetLogy(fgkLogList[i]);
     if (fHistList[i]) fHistList[i]->Draw(opt[i]);
+    gPad->SetLogy(logy[i]);
+    gPad->SetLogz(logz[i]);
     fCanvasList[i]->GetCanvas()->Update();
   }
+
+  file->Close();
+  delete file;
 }
 
 //////////////////////////////////////////////////////////////////////////////////
 
-void AliTRDqaGuiClustersSM::SetSM(Int_t idx) {
+void AliTRDqaGuiJPsi::SetStep(Int_t idx) {
   //
   // Sets active supermodule 
   //
@@ -170,20 +167,6 @@ void AliTRDqaGuiClustersSM::SetSM(Int_t idx) {
   fIdx = idx; 
   fGSelect->Select(fIdx, 0); 
   SetQAFile(fFileName);
-}
-
-//////////////////////////////////////////////////////////////////////////////////
-
-void AliTRDqaGuiClustersSM::Play() {
-  //
-  // Loop throught suermodules
-  //
-  
-  SetSM(0);
-  for(Int_t i=0; i<18; i++) {
-    gSystem->Sleep(1 * 1000);
-    NextSM();
-  }
 }
 
 //////////////////////////////////////////////////////////////////////////////////

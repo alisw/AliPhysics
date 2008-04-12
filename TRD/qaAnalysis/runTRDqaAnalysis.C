@@ -29,12 +29,13 @@ void runTRDqaAnalysis(const char *chainName, int limit = 0) {
   
   // Create an analysis manager
   AliAnalysisManager *mgr = new AliAnalysisManager("qaTasks", "No safety");
-  AliAnalysisTask *tasks[3];
-  AliAnalysisDataContainer *out[3];
+  AliAnalysisTask *tasks[4];
+  AliAnalysisDataContainer *out[4];
 
   tasks[0] = new AliTRDqaElectronSpectra("trdElectronSpectra");
   tasks[1] = new AliTRDqaESDFriends("trdESDFriends");
   tasks[2] = new AliTRDqaEnergyDeposit("trdEnergyDeposit");
+  tasks[3] = new AliTRDqaJPsi("trdJPsi");
   
   AliAnalysisDataContainer *cinput = 
     mgr->CreateContainer("inputESD", TTree::Class(), AliAnalysisManager::kInputContainer);
@@ -42,9 +43,10 @@ void runTRDqaAnalysis(const char *chainName, int limit = 0) {
   out[0] = mgr->CreateContainer("oES", TObjArray::Class(), AliAnalysisManager::kOutputContainer);
   out[1] = mgr->CreateContainer("oEF", TObjArray::Class(), AliAnalysisManager::kOutputContainer);
   out[2] = mgr->CreateContainer("oED", TObjArray::Class(), AliAnalysisManager::kOutputContainer);
+  out[3] = mgr->CreateContainer("oEJ", TObjArray::Class(), AliAnalysisManager::kOutputContainer);  
 
   // register
-  for(int i=0; i<3; i++) {
+  for(int i=0; i<4; i++) {
     mgr->AddTask(tasks[i]);
     mgr->ConnectInput(tasks[i],0,cinput);
     mgr->ConnectOutput(tasks[i],0,out[i]);

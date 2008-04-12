@@ -1,3 +1,4 @@
+
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -120,9 +121,16 @@ void AliTRDqaEnergyDeposit::CreateOutputObjects()
 
     for(Int_t j=0; j<AliPID::kSPECIES; j++) {
       Int_t idx = AliPID::kSPECIES*i+j;
+
+      //
       fSignalPtType[idx] = 
 	new TH2D(Form("ptSig%s%d", charge[i], j), title, knbinsx, scalex, knbinsy, scaley);
       fOutputContainer->AddAt(fSignalPtType[idx], c++);
+
+      //
+      fSignalPtPure[idx] = 
+	new TH2D(Form("ptSigPure%s%d", charge[i], j), title, knbinsx, scalex, knbinsy, scaley);
+      fOutputContainer->AddAt(fSignalPtPure[idx], c++);
       
       fProb[idx] = new TH1D(Form("prob%s%d", charge[i], j), ";LQ", 100, 0, 1);
       fOutputContainer->AddAt(fProb[idx], c++);
@@ -187,11 +195,18 @@ void AliTRDqaEnergyDeposit::Exec(Option_t *)
       
       Double_t lq = track->GetTRDpid(i);
       fProb[AliPID::kSPECIES*idx+i]->Fill(lq);
-      fSignalPtType[AliPID::kSPECIES*idx+i]->Fill(pt, signal, lq);
+      if (lq > 0.8) fSignalPtType[AliPID::kSPECIES*idx+i]->Fill(pt, signal);
     }
   }
 
   PostData(0, fOutputContainer);
+}
+
+//______________________________________________________________________________
+void AliTRDqaEnergyDeposit::FillElectrons() {
+
+  
+
 }
 
 //______________________________________________________________________________

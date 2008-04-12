@@ -17,6 +17,7 @@
 #include "AliAnalysisTask.h"  
 
 class TH1D; 
+class AliESDtrack;
 class AliExternalTrackParam;
 
 class AliTRDqaAT : public TObject {
@@ -29,6 +30,9 @@ class AliTRDqaAT : public TObject {
   static Int_t GetSector(const Double_t alpha);
   static Int_t GetStack(const AliExternalTrackParam *paramOut);
   static void  BuildRatio(TH1D *ratio, TH1D *histN, TH1D *histD);
+  static void  FillStatus(TH1D *fStatusHist, UInt_t status);
+
+  static void  PrintPID(const AliESDtrack *track);
 
   ClassDef(AliTRDqaAT, 0); // TRD analysis tools
 };

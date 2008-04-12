@@ -312,22 +312,24 @@ void AliTRDQADataMakerRec::InitESDs()
   const char *zoneName[4] = {"total charge", "ampilification range", "plateau", "TR range"};
  
   // prepare the scale from 0.1 to 10 GeV
-  Double_t scalex[101];
-  Double_t dd = (TMath::Log(10) - TMath::Log(0.5)) / 100.;
-  for(Int_t ix=0; ix<101; ix++) {
+  const Int_t nscalex= 50;
+  Double_t scalex[nscalex+1];
+  Double_t dd = (TMath::Log(10) - TMath::Log(0.5)) / nscalex;
+  for(Int_t ix=0; ix<nscalex+1; ix++) {
     scalex[ix] = 0.5 * TMath::Exp(dd * ix);
   }
 
-  Double_t scaley[101];
-  for(Int_t iy=0; iy<101; iy++) {
-    scaley[iy] = iy * (3e3/100.);
+  const Int_t nscaley = 50;
+  Double_t scaley[nscaley+1];
+  for(Int_t iy=0; iy<nscaley+1; iy++) {
+    scaley[iy] = iy * (3e3/nscaley);
   }
     
 
   for(Int_t i=0; i<4; i++) {
     hist[41+i] = new TH2D(Form("qaTRD_esd_signalPzone_%d",i), 
 			  Form("%s;momentum (GeV/c);singal (a.u.)", zoneName[i]),
-			  100, scalex, 100, scaley);
+			  nscalex, scalex, nscaley, scaley);
   }
 
   for(Int_t i=0; i<kNhist; i++) {

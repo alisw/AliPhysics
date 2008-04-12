@@ -17,7 +17,8 @@ SRCS= AliTRDcluster.cxx \
       AliTRDtrackingSector.cxx \
       AliTRDtrackingChamber.cxx \
       AliTRDchamberTimeBin.cxx \
-      AliTRDQADataMakerRec.cxx
+      AliTRDQADataMakerRec.cxx \
+      AliTRDqaBlackEvents.cxx
 
 HDRS= $(SRCS:.cxx=.h)
 

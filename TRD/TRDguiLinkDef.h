@@ -15,4 +15,9 @@
 #pragma link C++ class AliTRDqaGuiBlackSM+;
 #pragma link C++ class AliTRDqaGuiBlackChamber+;
 
+#pragma link C++ class AliTRDqaGuiMainAnalysis+;
+#pragma link C++ class AliTRDqaGuiJPsi+;
+#pragma link C++ class AliTRDqaGuiEnergyDeposit+;
+
+
 #endif

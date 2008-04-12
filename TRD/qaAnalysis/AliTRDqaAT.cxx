@@ -28,6 +28,8 @@
 
 #include "TMath.h"
 #include "TH1D.h"
+#include "AliPID.h"
+#include "AliESDtrack.h"
 #include "AliExternalTrackParam.h"
 
 //______________________________________________________________________________
@@ -98,4 +100,49 @@ void AliTRDqaAT::BuildRatio(TH1D *ratio, TH1D *histN, TH1D*histD) {
   ratio->SetMaximum(1.1);
   ratio->SetMarkerStyle(20);
 }
+//__________________________________________________________________________
+
+void AliTRDqaAT::FillStatus(TH1D *fStatusHist, UInt_t status) {
+
+  UInt_t u = 1;
+  //UInt_t status = track->GetStatus();
+  for(Int_t bit=0; bit<32; bit++) 
+    if (u<<bit & status) fStatusHist->Fill(bit);
+}
+
+//__________________________________________________________________________
+
+void AliTRDqaAT::PrintPID(const AliESDtrack *track) {
+
+  Int_t id = AliPID::kElectron;
+  Double_t pidESD[5], pidITS[5], pidTPC[5], pidTRD[5];
+  
+  track->GetESDpid(pidESD);
+  track->GetITSpid(pidITS);
+  track->GetTPCpid(pidTPC);
+  track->GetTRDpid(pidTRD);
+  //track->GetTOFpid(pidTOF);
+  
+  Double_t comb = pidITS[id] * pidTPC[id] * pidTRD[id];
+
+  Double_t normTot = 0;
+  Double_t norm[5] = {0,0,0,0,0};
+  for(Int_t i=0; i<5; i++) {
+    norm[i] = pidITS[i] * pidTPC[i] * pidTRD[i];
+    normTot += norm[i];
+  }
+  
+  Double_t trdTot = 0;
+  for(Int_t i=0; i<AliPID::kSPECIES; i++) trdTot += pidTRD[i];
+    
+
+  //  comb /= norm;
+  
+  printf("%.3f | %.3f %.3f | %.3f %.3f %.3f | ",
+	 pidESD[id], comb, normTot, pidITS[id], pidTPC[id], pidTRD[id]);
+
+  for(Int_t i=0; i<5; i++) printf("%.2f:%.2f:%.2f | ", pidITS[i], pidTPC[i], pidTRD[i]);
+  printf("| %.3f |\n", trdTot);
+}
+
 //__________________________________________________________________________
