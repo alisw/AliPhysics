@@ -46,7 +46,6 @@ class AliTPCseed : public AliTPCtrack {
      AliTPCTrackerPoint * GetTrackPoint(Int_t i);
      AliTPCclusterMI * GetClusterFast(Int_t irow){ return fClusterPointer[irow];}
      void SetClusterPointer(Int_t irow, AliTPCclusterMI* cl) {fClusterPointer[irow]=cl;}
-     void RebuildSeed(); // rebuild seed to be ready for storing
      Double_t GetDensityFirst(Int_t n);
      Double_t GetSigma2C() const {
        Double_t cnv=GetBz()*kB2C;
@@ -104,8 +103,6 @@ class AliTPCseed : public AliTPCtrack {
      void SetSector(Int_t n) {fSector=n;}
      void SetCurrentClusterIndex1(Int_t n) {fCurrentClusterIndex1=n;}
      void SetInDead(Bool_t s) {fInDead=s;}
-     void SetPoints(TClonesArray* p) {fPoints=p;}
-     void SetEPoints(TClonesArray* p) {fEPoints=p;}
 
      Double_t TPCrPID(Int_t i) const {return fTPCr[i];}
      Double_t* TPCrPIDs() {return fTPCr;}
@@ -143,8 +140,6 @@ class AliTPCseed : public AliTPCtrack {
      AliESDtrack * fEsd; //!
      AliTPCclusterMI*   fClusterPointer[160];  // array of cluster pointers  - 
      Bool_t             fClusterOwner;         // indicates the track is owner of cluster
-     TClonesArray * fPoints;              //!array with points along the track
-     TClonesArray * fEPoints;             //! array with exact points - calculated in special macro not used in tracking
      //---CURRENT VALUES
      Int_t fRow;                 // current row number  
      Int_t fSector;              // current sector number

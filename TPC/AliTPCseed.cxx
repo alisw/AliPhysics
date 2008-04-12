@@ -34,8 +34,6 @@ AliTPCseed::AliTPCseed():
   AliTPCtrack(),
   fEsd(0x0),
   fClusterOwner(kFALSE),
-  fPoints(0x0),
-  fEPoints(0x0),
   fRow(0),
   fSector(-1),
   fRelativeSector(-1),
@@ -80,8 +78,6 @@ AliTPCseed::AliTPCseed(const AliTPCseed &s, Bool_t clusterOwner):
   AliTPCtrack(s),
   fEsd(0x0),
   fClusterOwner(clusterOwner),
-  fPoints(0x0),
-  fEPoints(0x0),
   fRow(0),
   fSector(-1),
   fRelativeSector(-1),
@@ -133,8 +129,6 @@ AliTPCseed::AliTPCseed(const AliTPCtrack &t):
   AliTPCtrack(t),
   fEsd(0x0),
   fClusterOwner(kFALSE),
-  fPoints(0x0),
-  fEPoints(0x0),
   fRow(0),
   fSector(-1),
   fRelativeSector(-1),
@@ -191,8 +185,6 @@ AliTPCseed::AliTPCseed(Double_t xr, Double_t alpha, const Double_t xx[5],
   AliTPCtrack(xr, alpha, xx, cc, index),
   fEsd(0x0),
   fClusterOwner(kFALSE),
-  fPoints(0x0),
-  fEPoints(0x0),
   fRow(0),
   fSector(-1),
   fRelativeSector(-1),
@@ -233,10 +225,6 @@ AliTPCseed::AliTPCseed(Double_t xr, Double_t alpha, const Double_t xx[5],
 AliTPCseed::~AliTPCseed(){
   //
   // destructor
-  if (fPoints) delete  fPoints;
-  fPoints =0;
-  if (fEPoints) delete  fEPoints;
-  fEPoints = 0;
   fNoCluster =0;
   if (fClusterOwner){
     for (Int_t icluster=0; icluster<160; icluster++){
@@ -258,8 +246,6 @@ AliTPCseed & AliTPCseed::operator=(const AliTPCseed &param)
     fClusterOwner = param.fClusterOwner;
     // leave out fPoint, they are also not copied in the copy ctor...
     // but deleted in the dtor... strange...
-    // fPoints =
-    // fEPoints =
     fRow            = param.fRow;
     fSector         = param.fSector;
     fRelativeSector = param.fRelativeSector;
@@ -301,30 +287,6 @@ AliTPCTrackerPoint * AliTPCseed::GetTrackPoint(Int_t i)
   return &fTrackPoints[i];
 }
 
-void AliTPCseed::RebuildSeed()
-{
-  //
-  // rebuild seed to be ready for storing
-  AliTPCclusterMI cldummy;
-  cldummy.SetQ(0);
-  AliTPCTrackPoint pdummy;
-  pdummy.GetTPoint().SetShared(10);
-  for (Int_t i=0;i<160;i++){
-    AliTPCclusterMI * cl0 = fClusterPointer[i];
-    AliTPCTrackPoint *trpoint = (AliTPCTrackPoint*)fPoints->UncheckedAt(i);     
-    if (cl0){
-      trpoint->GetTPoint() = *(GetTrackPoint(i));
-      trpoint->GetCPoint() = *cl0;
-      trpoint->GetCPoint().SetQ(TMath::Abs(cl0->GetQ()));
-    }
-    else{
-      *trpoint = pdummy;
-      trpoint->GetCPoint()= cldummy;
-    }
-    
-  }
-
-}
 
 
 Double_t AliTPCseed::GetDensityFirst(Int_t n)
@@ -563,7 +525,6 @@ Float_t AliTPCseed::CookdEdx(Double_t low, Double_t up,Int_t i1, Int_t i2, Bool_
   Float_t weight[200];
   Int_t index[200];
   //Int_t nc = 0;
-  //  TClonesArray & arr = *fPoints; 
   Float_t meanlog = 100.;
   
   Float_t mean[4]  = {0,0,0,0};
