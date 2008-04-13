@@ -1,4 +1,4 @@
-SRCS = AliACORDERawStream.cxx AliACORDEReconstructor.cxx
+SRCS = AliACORDERawStream.cxx
                                                                                
 HDRS:= $(SRCS:.cxx=.h)
 
