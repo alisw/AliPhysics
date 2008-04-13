@@ -24,6 +24,7 @@ class AliACORDERawStream : public TObject {
   virtual ~AliACORDERawStream();
   AliACORDERawStream &operator=(const AliACORDERawStream &r);
 
+  Int_t GetNEvents(char* fileName);
   virtual void    Reset();
   virtual Bool_t  Next();
 
