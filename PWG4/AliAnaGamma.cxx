@@ -265,10 +265,9 @@ void AliAnaGamma::Print(const Option_t * opt) const
 
 
 //____________________________________________________________________________
-Bool_t AliAnaGamma::ProcessEvent(Long64_t entry){
+Bool_t AliAnaGamma::ProcessEvent(){
+  //Process analysis for this event
 
-  AliDebug(1,Form("Entry %d",entry));
-  //cout<<"Event >>>>>>>>>>>>> "<<entry<<endl;
   if(!fOutputContainer)
     AliFatal("Histograms not initialized");
 

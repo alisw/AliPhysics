@@ -99,7 +99,7 @@ public:
 
   void Print(const Option_t * opt) const;
 
-  Bool_t ProcessEvent(Long64_t entry) ;
+  Bool_t ProcessEvent() ;
 
  private:
   
