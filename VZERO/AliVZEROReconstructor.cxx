@@ -73,6 +73,13 @@ void AliVZEROReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
 {
 // converts to digits
 
+//  retrieval of calibration information 
+//  Float_t     adc_pedestal[128],adc_sigma[128];
+//  for(Int_t  i=0; i<128; i++){ adc_pedestal[i] = fCalibData->GetPedestal(i); 
+//                               adc_sigma[i]    = fCalibData->GetSigma(i);                            
+//                               printf(" i = %d pedestal = %f sigma = %f \n\n", 
+//                                        i, adc_pedestal[i], adc_sigma[i] );} 
+              
   if (!digitsTree) {
     AliError("No digits tree!");
     return;
@@ -85,10 +92,14 @@ void AliVZEROReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
   AliVZERORawStream rawStream(rawReader);
   if (rawStream.Next()) {
     for(Int_t iChannel = 0; iChannel < 64; iChannel++) {
-    Int_t adc = rawStream.GetADC(iChannel);  
-    Int_t time = rawStream.GetTime(iChannel);
-    new ((*digitsArray)[digitsArray->GetEntriesFast()])
-      AliVZEROdigit(iChannel,adc,time);
+        Int_t adc;
+        if(!rawStream.GetIntegratorFlag(iChannel,10))
+           {adc = rawStream.GetADC(iChannel) - Int_t(fCalibData->GetPedestal(iChannel));} //even integrator
+	else 
+	   {adc = rawStream.GetADC(iChannel) - Int_t(fCalibData->GetPedestal(iChannel+64));} // odd
+        Int_t time = rawStream.GetTime(iChannel);
+        if (adc >=0) new ((*digitsArray)[digitsArray->GetEntriesFast()])
+                     AliVZEROdigit(iChannel,adc,time);
     }
   }
 
@@ -105,7 +116,7 @@ void AliVZEROReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,
     AliError("No digits tree!");
     return;
   }
-
+  
   TClonesArray* digitsArray = NULL;
   TBranch* digitBranch = digitsTree->GetBranch("VZERODigit");
   digitBranch->SetAddress(&digitsArray);
@@ -183,8 +194,8 @@ void AliVZEROReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,
   fESDVZERO->SetMRingV0C(mRingV0C);
   
   if (esd) { 
-    AliDebug(1, Form("Writing VZERO data to ESD tree"));
-    esd->SetVZEROData(fESDVZERO);
+      AliDebug(1, Form("Writing VZERO data to ESD tree"));
+      esd->SetVZEROData(fESDVZERO);
   }
 }
 
