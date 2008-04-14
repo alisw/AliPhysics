@@ -32,9 +32,11 @@
 #include "AliITSRawStreamSDD.h"
 #include "AliITSCalibrationSDD.h"
 #include "AliITSDetTypeRec.h"
+#include "AliITSReconstructor.h"
 #include "AliITSsegmentationSDD.h"
 #include "AliITSdigitSDD.h"
 #include "AliITSgeomTGeo.h"
+
 ClassImp(AliITSClusterFinderV2SDD)
 
 AliITSClusterFinderV2SDD::AliITSClusterFinderV2SDD(AliITSDetTypeRec* dettyp):AliITSClusterFinderV2(dettyp)
@@ -121,6 +123,14 @@ FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins,
   // Actual SDD cluster finder
   //------------------------------------------------------------
 
+  static AliITSRecoParam *repa = NULL;
+  if(!repa){
+    repa = (AliITSRecoParam*) AliITSReconstructor::GetRecoParam();
+    if(!repa){
+      repa = (AliITSRecoParam*) AliITSReconstructor::GetRecoParamDefault();
+      AliWarning("Using default AliITSRecoParam class");
+    }
+  }
   const TGeoHMatrix *mT2L=AliITSgeomTGeo::GetTracking2LocalMatrix(fModule);
   AliITSCalibrationSDD* cal = (AliITSCalibrationSDD*)GetResp(fModule);
   if(cal==0){
@@ -161,6 +171,7 @@ FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins,
       }
 
       for (k=0; k<npeaks; k++) {
+	if(repa->GetUseUnfoldingInClusterFinderSDD()==kFALSE) msk[k]=msk[0];
         MarkPeak(TMath::Abs(idx[k]), nzBins, bins[s], msk[k]);
       }
         
