@@ -192,16 +192,16 @@ Int_t AliPHOSLoader::GetEvent()
   return 0;
 }
 
-//____________________________________________________________________________ 
-const AliPHOS * AliPHOSLoader::PHOS() 
-{
-  // returns the PHOS object 
-  AliPHOS * phos = dynamic_cast<AliPHOS*>(GetModulesFolder()->FindObject(fDetectorName));
-  if ( phos == 0x0) 
-    if (fDebug)
-      cout << "WARNING: AliPHOSLoader::PHOS -> PHOS module not found in Folders" << endl ; 
-  return phos ; 
-}  
+// //____________________________________________________________________________ 
+// const AliPHOS * AliPHOSLoader::PHOS() 
+// {
+//   // returns the PHOS object 
+//   AliPHOS * phos = dynamic_cast<AliPHOS*>(GetModulesFolder()->FindObject(fDetectorName));
+//   if ( phos == 0x0) 
+//     if (fDebug)
+//       cout << "WARNING: AliPHOSLoader::PHOS -> PHOS module not found in Folders" << endl ; 
+//   return phos ; 
+// }  
 
 //____________________________________________________________________________ 
 Int_t AliPHOSLoader::LoadHits(Option_t* opt)

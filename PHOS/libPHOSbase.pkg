@@ -1,36 +1,52 @@
-SRCS          =  AliPHOS.cxx \
+#-*- Mode: Makefile -*-
+
+SRCS          =  \
                  AliPHOSGeometry.cxx \
                  AliPHOSEMCAGeometry.cxx \
                  AliPHOSCPVGeometry.cxx AliPHOSCPVBaseGeometry.cxx \
                  AliPHOSSupportGeometry.cxx \
                  AliPHOSLoader.cxx \
                  AliPHOSHit.cxx AliPHOSTrackSegmentMaker.cxx  AliPHOSPID.cxx \
-		 AliPHOSClusterizer.cxx \
-		 AliPHOSCalibrationDB.cxx AliPHOSDigitizer.cxx \
-		 AliPHOSSDigitizer.cxx AliPHOSDigit.cxx \
-		 AliPHOSFastRecParticle.cxx AliPHOSRawStream2004.cxx \
-		 AliPHOSCalibData.cxx \
+                 AliPHOSClusterizer.cxx \
+                 AliPHOSCalibrationDB.cxx AliPHOSDigitizer.cxx \
+                 AliPHOSSDigitizer.cxx AliPHOSDigit.cxx \
+                 AliPHOSFastRecParticle.cxx AliPHOSRawStream2004.cxx \
+                 AliPHOSCalibData.cxx \
+		 AliPHOSCalibrationData.cxx \
                  AliPHOSCpvCalibData.cxx \
-                 AliPHOSEmcCalibData.cxx \
-		 AliPHOSPulseGenerator.cxx \
-		 AliPHOSRawDecoder.cxx \
-		 AliPHOSRawDecoderv1.cxx \
-		 AliPHOSRawDecoderv2.cxx \
-		 AliPHOSRawDigiProducer.cxx \
-		 AliPHOSEmcBadChannelsMap.cxx \
-		 AliPHOSSurvey.cxx \
-		 AliPHOSSurvey1.cxx \
+                 AliPHOSEmcCalibData.cxx AliPHOSCalibrManager.cxx \
+		 AliPHOSConTableDB.cxx \
+                 AliPHOSPulseGenerator.cxx \
+                 AliPHOSRawDecoder.cxx \
+                 AliPHOSRawDecoderv1.cxx \
+                 AliPHOSRawDecoderv2.cxx \
+                 AliPHOSRawDigiProducer.cxx \
+                 AliPHOSEmcBadChannelsMap.cxx \
+                 AliPHOSSurvey.cxx \
+                 AliPHOSSurvey1.cxx \
                  AliPHOSQAChecker.cxx \
                  AliPHOSRecParticle.cxx AliPHOSRecPoint.cxx \
                  AliPHOSEmcRecPoint.cxx \
                  AliPHOSCpvRecPoint.cxx   AliPHOSTrackSegment.cxx \
-                 AliPHOSReconstructor.cxx AliPHOSSimParam.cxx
+		 AliPHOSRecoParam.cxx \
+		 AliPHOSRecoParamEmc.cxx \
+		 AliPHOSRecoParamCpv.cxx \
+                 AliPHOSImpact.cxx \
+                 AliPHOSTrigger.cxx \
+                 AliPHOSSimParam.cxx
 
 HDRS:= $(SRCS:.cxx=.h) 
 
 DHDR= PHOSbaseLinkDef.h
 
 EINCLUDE:=RAW
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+                         -lSTEER -lCDB -lESD -lSTEERBase \
+                         -lRAWDatasim -lRAWDatarec -lRAWDatabase \
+                         -L$(shell root-config --libdir) -lVMC -lEG -lGeom -lMinuit
+endif
 
 
 

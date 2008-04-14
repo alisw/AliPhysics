@@ -24,8 +24,8 @@
 
 // --- ROOT system ---
 class TClonesArray ;
-class TLorentzVector ;
 class TFile;
+#include <TLorentzVector.h>
 
 // --- AliRoot header files ---
 #include "AliPHOSv0.h"

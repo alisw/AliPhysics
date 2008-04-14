@@ -21,10 +21,8 @@
 #pragma link C++ class AliPHOSJetFinder+;
 #pragma link C++ class AliPHOSGridFile+;
 #pragma link C++ class AliPHOSTracker+;
-#pragma link C++ class AliPHOSRecoParam+;
-#pragma link C++ class AliPHOSRecoParamEmc+;
-#pragma link C++ class AliPHOSRecoParamCpv+;
 #pragma link C++ class  AliPHOSEsdCluster+;
 #pragma link C++ class  AliPHOSQADataMakerRec+;
 
+#pragma link C++ class AliPHOSReconstructor+;
 #endif

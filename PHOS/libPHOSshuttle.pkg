@@ -1,3 +1,5 @@
+#-*- Mode: Makefile -*-
+
 SRCS          =  AliPHOSCalibHistoProducer.cxx \
                  AliPHOSPreprocessor.cxx \
 		 AliPHOSDA1.cxx \
@@ -10,3 +12,8 @@ HDRS:= $(SRCS:.cxx=.h)
 DHDR= PHOSshuttleLinkDef.h
 
 EINCLUDE:=RAW
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+                         -lPHOSbase -lSTEER -lCDB -lSTEERBase
+endif

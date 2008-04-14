@@ -128,7 +128,7 @@ public:
   Int_t  EventNumber()       { return (Int_t) GetRunLoader()->GetEventNumber();}
   Int_t  MaxEvent()          { return (Int_t) GetRunLoader()->TreeE()->GetEntries();}
 
-  const AliPHOS *         PHOS();
+/*   const AliPHOS *         PHOS(); */
   // Alarms
   // TFolder * Alarms() const { return (TFolder*)(ReturnO("Alarms", 0)); }
   TObjArray *  Alarms() {return 0x0;}  
