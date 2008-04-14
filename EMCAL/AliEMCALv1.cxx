@@ -226,6 +226,7 @@ void AliEMCALv1::StepManager(void){
   }
 }
 
+//___________________________________________________________
 void AliEMCALv1::RemapTrackHitIDs(Int_t *map) {
   // remap track index numbers for primary and parent indices
   // (Called by AliStack::PurifyKine)
@@ -244,6 +245,7 @@ void AliEMCALv1::RemapTrackHitIDs(Int_t *map) {
   }
 }
 
+//___________________________________________________________
 void AliEMCALv1::FinishPrimary() {
   // finish primary
   fCurPrimary=-1;

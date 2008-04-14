@@ -47,6 +47,8 @@ void    LoadPythia();
 
 void Config()
 {
+  //AliLog::SetGlobalDebugLevel(2);
+
     // ThetaRange is (0., 180.). It was (0.28,179.72) 7/12/00 09:00
     // Theta range given through pseudorapidity limits 22/6/2001
 
@@ -308,7 +310,10 @@ void Config()
     if (iEMCAL)
     {
         //=================== EMCAL parameters ============================
-        AliEMCAL *EMCAL = new AliEMCALv2("EMCAL", "SHISH_77_TRD1_2X2_FINAL_110DEG");
+        //AliEMCAL *EMCAL = new AliEMCALv2("EMCAL", "SHISH_77_TRD1_2X2_FINAL_110DEG");
+        AliEMCAL *EMCAL = new AliEMCALv2("EMCAL", "EMCAL_PDC06");
+        //AliEMCAL *EMCAL = new AliEMCALv2("EMCAL", "SHISH_77_TRD1_2X2_FINAL_110DEG pbTh=0.144 scTh=0.176");
+        //AliEMCAL *EMCAL = new AliEMCALv2("EMCAL", "EMCAL_COMPLETE");
     }
 
      if (iACORDE)

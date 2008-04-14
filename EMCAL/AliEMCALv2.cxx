@@ -131,6 +131,7 @@ void AliEMCALv2::AddHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t ipa
     //    printf(" fNhits %i \n", fNhits); 
     delete newHit;
 }
+
 //______________________________________________________________________
 void AliEMCALv2::StepManager(void){
   // Accumulates hits as long as the track stays in a tower
@@ -143,7 +144,7 @@ void AliEMCALv2::StepManager(void){
   static Float_t ienergy = 0; // part->Energy();
   static TString curVolName;
   static int supModuleNumber, moduleNumber, yNumber, xNumber, absid;
-  static int keyGeom=1;
+  static int keyGeom=1;  //real TRD1 geometry
   static char *vn = "SCMX"; // Apr 13, 2006 - only TRD1 case now
   static int nSMOP[7]={1,3,5,7,9,11}; // 30-mar-05
   static int nSMON[7]={2,4,6,8,10,12};
@@ -274,6 +275,7 @@ void AliEMCALv2::StepManager(void){
   }
 }
 
+//_________________________________________________________________
 void AliEMCALv2::FinishEvent()
 { 
   // Calculate deposit energy and fill control histogram; 26-may-05
@@ -283,6 +285,7 @@ void AliEMCALv2::FinishEvent()
   if(fHDe) fHDe->Fill(de);
 }
 
+//_________________________________________________________________
 Double_t AliEMCALv2::GetDepositEnergy(int print)
 { 
   // 23-mar-05 - for testing
@@ -303,11 +306,13 @@ Double_t AliEMCALv2::GetDepositEnergy(int print)
   return de;
 }
 
+//___________________________________________________________
 void AliEMCALv2::Browse(TBrowser* b)
 {
   TObject::Browse(b);
 }
 
+//___________________________________________________________
 void AliEMCALv2::DrawCalorimeterCut(const char *name, int axis, double dcut)
 { 
   // Size of tower is 5.6x5.6x24.8 (25.0); cut on Z axiz
@@ -350,6 +355,7 @@ void AliEMCALv2::DrawCalorimeterCut(const char *name, int axis, double dcut)
   printf("%s\n",cmd); gROOT->ProcessLine(cmd);
 }
 
+//___________________________________________________________
 void AliEMCALv2::DrawSuperModuleCut(const char *name, int axis, double dcut, int fill)
 { 
  // Size of tower is 5.6x5.6x24.8 (25.0); cut on Z axiz
@@ -366,23 +372,18 @@ void AliEMCALv2::DrawSuperModuleCut(const char *name, int axis, double dcut, int
 
   double cxy=0.055, x0=10., y0=10.;
   char *optShad = "on", *optHide="on";
-  if(sn.Contains("TRD1")) {
-    SetVolumeAttributes("STPL", 1, 3, fill);  // green 
-    if     (axis==1) {
-      gMC->Gsatt("STPL", "seen", 0);
-      dcut = 0.;
-      optHide = "off";
-      optShad = "off";
-    } else if(axis==3) cxy = 0.1;
-  } else if(sn.Contains("TRD2")) {
-    y0 = -10.;
-    if (axis==2) cxy=0.06;
-  }
+  SetVolumeAttributes("STPL", 1, 3, fill);  // green 
+  if     (axis==1) {
+    gMC->Gsatt("STPL", "seen", 0);
+    dcut = 0.;
+    optHide = "off";
+    optShad = "off";
+  } else if(axis==3) cxy = 0.1;
+  
   gMC->Gdopt("hide", optHide);
   gMC->Gdopt("shad", optShad);
 
   TString st("Shish-Kebab, Compact, SMOD, ");
-  if(sn.Contains("TWIST")) st = "Shish-Kebab, Twist, SMOD, ";
   st += tit[axis-1];;
 
   gROOT->ProcessLine("TGeant3 *g3 = (TGeant3*)gMC");
@@ -393,28 +394,15 @@ void AliEMCALv2::DrawSuperModuleCut(const char *name, int axis, double dcut, int
   sprintf(cmd,"gMC->Gdhead(1111, \"%s\")\n", st.Data());
   printf("%s\n",cmd); gROOT->ProcessLine(cmd);
   // hint for testing
-  if(sn.Contains("TRD1")){
-    printf("Begin of super module\n");
-    printf("g3->Gdrawc(\"SMOD\", 2,  0.300, 89., 10., 0.5, 0.5)\n");
-    printf("Center of super modules\n");
-    printf("g3->Gdrawc(\"SMOD\", 2,  0.300, 0., 10., 0.5, 0.5)\n");
-    printf("end of super modules\n");
-    printf("g3->Gdrawc(\"SMOD\", 2,  0.300, -70., 10., 0.5, 0.5)\n");
-  } else if(sn.Contains("TRD2")){
-    printf("Begin of super module  ** TRD2 ** \n");
-    printf("g3->Gdrawc(\"SMOD\", 2,  0.00,  40., -80, 0.2, 0.2)\n");
-    printf("end of super modules\n");
-    printf("g3->Gdrawc(\"SMOD\", 2,  0.00, -20., -80, 0.2, 0.2)\n");
-
-    printf(" ***  Z cut (Y|X plane)\n scale 0.4\n");
-    printf("g3->Gdrawc(\"SMOD\", 3,  -170.,-165.,10.,0.4,0.4)\n");
-    printf(" scale 0.2\n");
-    printf("g3->Gdrawc(\"SMOD\", 3,  -170.,-80.,10.,0.2,0.2)\n");
-    printf(" scale 0.12\n");
-    printf("g3->Gdrawc(\"SMOD\", 3,   -170.,-45.,10.,0.12,0.12)\n");
-  }
+  printf("Begin of super module\n");
+  printf("g3->Gdrawc(\"SMOD\", 2,  0.300, 89., 10., 0.5, 0.5)\n");
+  printf("Center of super modules\n");
+  printf("g3->Gdrawc(\"SMOD\", 2,  0.300, 0., 10., 0.5, 0.5)\n");
+  printf("end of super modules\n");
+  printf("g3->Gdrawc(\"SMOD\", 2,  0.300, -70., 10., 0.5, 0.5)\n");
 }
 
+//___________________________________________________________
 void AliEMCALv2::DrawTowerCut(const char *name, int axis, double dcut, int fill, char *optShad)
 { 
   // Size of tower is 5.6x5.6x24.8 (25.0); cut on Z axiz
@@ -435,13 +423,7 @@ void AliEMCALv2::DrawTowerCut(const char *name, int axis, double dcut, int fill,
     SetVolumeAttributes("SCMY", 1, 5, fill); // yellow
   } else if(mn == "SCMY") { // first division 
     SetVolumeAttributes(mn.Data(), 1, 1, fill); 
-    if(sn.Contains("TEST") && sn.Contains("3X3")) {
-      SetVolumeAttributes("SCX1", 1, 5, fill); // yellow
-      SetVolumeAttributes("SCX2", 1, 2, fill); // red
-      SetVolumeAttributes("SCX3", 1, 3, fill); // green
-    } else {
-      SetVolumeAttributes("SCMX", 1, 5, fill); // yellow
-    }
+    SetVolumeAttributes("SCMX", 1, 5, fill); // yellow
   } else if(mn == "SCMX" || mn.Contains("SCX")) {
     SetVolumeAttributes(mn.Data(), 1, 5, fill);// yellow
     SetVolumeAttributes("PBTI", 1, 4, fill);
@@ -449,25 +431,12 @@ void AliEMCALv2::DrawTowerCut(const char *name, int axis, double dcut, int fill,
     printf("<W> for volume |%s| did not defined volume attributes\n", mn.Data());
   }
 
-  //  TString st("Shish-Kebab, 2x2 mm sampling, 62 layers, ");
-  TString st("Shashlyk, 2x2 mm sampling, 62 layers, ");
-  if    (sn.Contains("25"))   st = "Shish-Kebab, 5x5 mm sampling, 25 layers, ";
-  else if(sn.Contains("MAY05"))   st = "Shish-Kebab, 5x5 mm sampling, 77 layers, ";
-  if(sn.Contains("TRD1")) st += " TRD1, ";
-  if(sn.Contains("3X3"))  st += " 3x3, ";
+  TString st("Shashlyk, 2x2 mm sampling, 77 layers, ");
   st += name;
 
   gROOT->ProcessLine("TGeant3 *g3 = (TGeant3*)gMC");
   double cx=0.78, cy=2.;
-  if     (axis==1 && sn.Contains("TRD")==0) {
-   cx = cy = 1.;
-   gMC->Gsatt("PBTI", "seen", 0);
-  } else if (sn.Contains("TEST") && sn.Contains("3X3")) {
-    cx = cy = 0.7;
-    if (axis==3) cx = cy = 1.;
-  } else if (sn.Contains("TRD2")) {
-    if (axis==3) cx = cy = 2.;
-  } else if (mn.Contains("EMOD")) {
+  if (mn.Contains("EMOD")) {
     cx = cy = 0.5;
   }
   char cmd[200];
@@ -481,7 +450,8 @@ void AliEMCALv2::DrawTowerCut(const char *name, int axis, double dcut, int fill,
   sprintf(cmd,"gMC->Gdhead(1111, \"%s\")\n", st.Data());
   printf("%s\n",cmd); gROOT->ProcessLine(cmd);
 }
-  
+
+//___________________________________________________________  
 void AliEMCALv2::DrawAlicWithHits(int mode)
 { 
  // 20-sep-04; does not work now
@@ -521,6 +491,7 @@ void AliEMCALv2::DrawAlicWithHits(int mode)
   if(mode>0 && h2->Integral()>0.) h2->Draw();
 }
 
+//___________________________________________________________
 void AliEMCALv2::SetVolumeAttributes(const char *name, int seen, int color, int fill)
 {
  /* seen=-2:volume is visible but none of its descendants;
@@ -533,14 +504,10 @@ void AliEMCALv2::SetVolumeAttributes(const char *name, int seen, int color, int 
   printf(" %s : seen %i color %i fill %i \n", name, seen, color, fill);
 } 
 
+//___________________________________________________________
 void AliEMCALv2::TestIndexTransition(int pri, int idmax)
 { 
- // Test for EMCAL_SHISH geometry
-  TString sn(fGeometry->GetName());
-  if(!sn.Contains("SHISH")) {
-    printf("Wrong geometry |%s| ! Bye \n", sn.Data());
-    return; 
-  }
+ // Test for EMCAL SHISHKEBAB geometry
 
   Int_t nSupMod, nModule, nIphi, nIeta, idNew, nGood=0;
   if(idmax==0) idmax = fGeometry->GetNCells();

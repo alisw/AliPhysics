@@ -223,7 +223,7 @@ Bool_t AliEMCALShishKebabTrd1Module::GetParameters()
   fgtanBetta = TMath::Tan(fgangle/2.);
   fgr        = (Double_t)fgGeometry->GetIPDistance();
 
-  if(!sn.Contains("TRD2")) fgr += fgGeometry->GetSteelFrontThickness();
+  fgr += fgGeometry->GetSteelFrontThickness();
 
   fga2       = Double_t(fgGeometry->Get2Trd1Dx2());
   //PH  PrintShish(0);
@@ -273,6 +273,7 @@ Double_t  AliEMCALShishKebabTrd1Module::GetEtaOfCenterOfModule() const
   return -TMath::Log(TMath::Tan(fOK.Phi()/2.));
 }
 
+//_____________________________________________________________________________
 void AliEMCALShishKebabTrd1Module::GetPositionAtCenterCellLine(Int_t ieta, Double_t dist, TVector2 &v)
 {
   // Jul 30, 2007

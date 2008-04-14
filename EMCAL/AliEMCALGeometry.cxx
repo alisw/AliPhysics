@@ -18,20 +18,34 @@
 //_________________________________________________________________________
 // Geometry class  for EMCAL : singleton  
 // EMCAL consists of layers of scintillator and lead
+// with scintillator fiber arranged as "shish-kebab" skewers 
 // Places the the Barrel Geometry of The EMCAL at Midrapidity
 // between 80 and 180(or 190) degrees of Phi and
 // -0.7 to 0.7 in eta 
-// Number of Modules and Layers may be controlled by 
-// the name of the instance defined               
+//
 //     EMCAL geometry tree:
 //     EMCAL -> superModule -> module -> tower(cell)
 //     Indexes
 //     absId -> nSupMod     -> nModule -> (nIphi,nIeta)
 //
+//   Name choices: 
+//   EMCAL_PDC06 (geometry used for PDC06 simulations, kept for backward compatibility)
+//      = equivalent to SHISH_77_TRD1_2X2_FINAL_110DEG in old notation
+//   EMCAL_COMPLETE (geometry for expected complete detector)
+//      = equivalent to SHISH_77_TRD1_2X2_FINAL_110DEG scTh=0.176 pbTh=0.144
+//          in old notation
+//   EMCAL_WSUC (Wayne State test stand)
+//      = no definite equivalent in old notation, was only used by
+//          Aleksei, but kept for testing purposes
+//
+//   etc.
+//
+//
+//
 //*-- Author: Sahal Yacoob (LBL / UCT)
 //     and  : Yves Schutz (SUBATECH)
 //     and  : Jennifer Klay (LBL)
-//     SHASHLYK : Aleksei Pavlinov (WSU) 
+//     and  : Aleksei Pavlinov (WSU) 
 //
 
 #include <assert.h>
@@ -65,7 +79,7 @@ ClassImp(AliEMCALGeometry)
 // these initialisations are needed for a singleton
 AliEMCALGeometry  *AliEMCALGeometry::fgGeom      = 0;
 Bool_t             AliEMCALGeometry::fgInit      = kFALSE;
-Char_t*            AliEMCALGeometry::fgDefaultGeometryName = "SHISH_77_TRD1_2X2_FINAL_110DEG scTh=0.176 pbTh=0.144";
+Char_t*            AliEMCALGeometry::fgDefaultGeometryName = "EMCAL_COMPLETE";
 //
 // Usage: 
 //        You can create the AliEMCALGeometry object independently from anything.
@@ -79,8 +93,8 @@ Char_t*            AliEMCALGeometry::fgDefaultGeometryName = "SHISH_77_TRD1_2X2_
 //  MC:   If you work with MC data you have to get geometry the next way: 
 //  ==                                      =============================
 //  AliRunLoader    *rl   = AliRunLoader::GetRunLoader();
-// AliEMCALGeometry *geom = dynamic_cast<AliEMCAL*>(rl->GetAliRun()->GetDetector("EMCAL"))->GetGeometry();
-// TGeoManager::Import("geometry.root");
+//  AliEMCALGeometry *geom = dynamic_cast<AliEMCAL*>(rl->GetAliRun()->GetDetector("EMCAL"))->GetGeometry();
+//  TGeoManager::Import("geometry.root");
 
 AliEMCALGeometry::AliEMCALGeometry() 
   : AliGeometry(),
@@ -103,7 +117,6 @@ AliEMCALGeometry::AliEMCALGeometry()
   // must be kept public for root persistency purposes, 
   // but should never be called by the outside world    
 
-  //  CreateListOfTrd1Modules();
   AliDebug(2, "AliEMCALGeometry : default ctor ");
 }
 //______________________________________________________________________
@@ -205,19 +218,14 @@ AliEMCALGeometry::AliEMCALGeometry(const AliEMCALGeometry& geom)
 AliEMCALGeometry::~AliEMCALGeometry(void){
     // dtor
 }
+
 //______________________________________________________________________
 void AliEMCALGeometry::Init(void){
-  // Initializes the EMCAL parameters
-  // naming convention : GUV_WX_N_ gives the composition of a tower
-  // WX inform about the composition of the EM calorimeter section: 
-  //   thickness in mm of Pb radiator (W) and of scintillator (X), and number of scintillator layers (N)
-  // New geometry: EMCAL_55_25
-  // 24-aug-04 for shish-kebab
-  // SHISH_25 or SHISH_62
-  // 11-oct-05   - correction for pre final design
-  // Feb 06,2006 - decrease the weight of EMCAL
   //
-  // Oct 30,2006 - SHISH_TRD1_CURRENT_1X1, SHISH_TRD1_CURRENT_2X2 or SHISH_TRD1_CURRENT_3X3;
+  // Initializes the EMCAL parameters based on the name
+  // Only Shashlyk geometry is available, but various combinations of
+  // layers and number of supermodules can be selected with additional
+  // options or geometry name
   //
 
   fAdditionalOpts[0] = "nl=";       // number of sampling layers (fNECLayers)
@@ -229,152 +237,134 @@ void AliEMCALGeometry::Init(void){
 
   fNAdditionalOpts = sizeof(fAdditionalOpts) / sizeof(char*);
 
+  // geometry
   fgInit = kFALSE; // Assume failed until proven otherwise.
   fGeoName   = GetName();
   fGeoName.ToUpper();
+
+  //Convert old geometry names to new ones
+  if(fGeoName.Contains("SHISH_77_TRD1_2X2_FINAL_110DEG")) {
+    if(fGeoName.Contains("PBTH=0.144") && fGeoName.Contains("SCTH=0.176")) {
+      fGeoName = "EMCAL_COMPLETE";
+    } else {
+      fGeoName = "EMCAL_PDC06";
+    }
+  }
+  if(fGeoName.Contains("WSUC")) fGeoName = "EMCAL_WSUC";
+
+  //check that we have a valid geometry name
+  if(!(fGeoName.Contains("EMCAL_PDC06") || fGeoName.Contains("EMCAL_COMPLETE") || fGeoName.Contains("EMCAL_WSUC"))) {
+    Fatal("Init", "%s is an undefined geometry!", fGeoName.Data()) ; 
+  }
+
+  // Option to know whether we have the "half" supermodule(s) or not
   fKey110DEG = 0;
-  if(fGeoName.Contains("110DEG") || fGeoName.Contains("CURRENT")) fKey110DEG = 1; // for GetAbsCellId
+  if(fGeoName.Contains("COMPLETE") || fGeoName.Contains("PDC06")) fKey110DEG = 1; // for GetAbsCellId
   fShishKebabTrd1Modules = 0;
 
-  fNZ             = 114;	// granularity along Z (eta) 
-  fNPhi           = 168;	// granularity in phi (azimuth)
-  fArm1PhiMin     = 80.0;	// degrees, Starting EMCAL Phi position
-  fArm1PhiMax     = 190.0;	// degrees, Ending EMCAL Phi position
-  fArm1EtaMin     = -0.7;	// pseudorapidity, Starting EMCAL Eta position
-  fArm1EtaMax     = +0.7;	// pseudorapidity, Ending EMCAL Eta position
-  fIPDistance     = 454.0;      // cm, Radial distance to inner surface of EMCAL
-  fPhiGapForSM    = 0.;         // cm, only for final TRD1 geometry
+  // JLK 13-Apr-2008
+  //default parameters are those of EMCAL_COMPLETE geometry
+  //all others render variations from these at the end of
+  //geometry-name specific options
 
-  // geometry
-  //JLK: Change this to a check on allowable geometry names
-  // the end of the statement closes with an else that throws a Fatal
-  // exception for undefined geometry
-  if(fGeoName.Contains("SHISH")){ // Only shahslyk now
-    // 7-sep-05; integration issue
-    fArm1PhiMin     = 80.0;	// 60  -> 80
-    fArm1PhiMax     = 180.0;	// 180 -> 190
+  fNumberOfSuperModules = 12;       // 12 = 6 * 2 (6 in phi, 2 in Z)
+  fNPhi                 = 12;	    // module granularity in phi within smod (azimuth)
+  fNZ                   = 24;       // module granularity along Z within smod (eta)
+  fNPHIdiv = fNETAdiv   = 2;        // tower granularity within module
+  fArm1PhiMin           = 80.0;	    // degrees, Starting EMCAL Phi position
+  fArm1PhiMax           = 200.0;    // degrees, Ending EMCAL Phi position
+  fArm1EtaMin           = -0.7;	    // pseudorapidity, Starting EMCAL Eta position
+  fArm1EtaMax           = +0.7;	    // pseudorapidity, Ending EMCAL Eta position
+  fIPDistance           = 428.0;    // cm, radial distance to front face from nominal vertex point
+  fPhiGapForSM          = 2.;       // cm, only for final TRD1 geometry
+  fFrontSteelStrip      = 0.025;    // 0.025cm = 0.25mm  (13-may-05 from V.Petrov)
+  fPassiveScintThick    = 0.8;      // 0.8cm   = 8mm     (13-may-05 from V.Petrov)
+  fLateralSteelStrip    = 0.01;     // 0.01cm  = 0.1mm   (13-may-05 from V.Petrov) - was 0.025
+  fTrd1Angle            = 1.5;      // in degrees	
 
-    fNumberOfSuperModules = 10; // 12 = 6 * 2 (6 in phi, 2 in Z);
-    fIPDistance      = 460.0;
-    fFrontSteelStrip = fPassiveScintThick = 0.0; // 13-may-05
-    fLateralSteelStrip = 0.025; // before MAY 2005 
-    fPhiModuleSize   = fEtaModuleSize   = 11.4;
-    fPhiTileSize = fEtaTileSize      = 5.52; // (11.4-5.52*2)/2. = 0.18 cm (wall thickness)
-    fNPhi            = 14;
-    fNZ              = 30;
-    fNPHIdiv = fNETAdiv = 2;
+  fSampling             = 1.;       // should be calculated with call to DefineSamplingFraction()
+  fNECLayers            = 77;       // (13-may-05 from V.Petrov) - can be changed with additional options
+  fECScintThick         = 0.176;    // scintillator layer thickness
+  fECPbRadThickness     = 0.144;    // lead layer thickness
 
-    fNECLayers       = 62;
-    fECScintThick    = fECPbRadThickness = 0.2;
-    fSampling        = 1.;  // 30-aug-04 - should be calculated
-    if(fGeoName.Contains("TRD")) {
-      fIPDistance      = 428.0;  //  11-may-05
-      fNPhi            = 12;
-      fSampling       = 12.327;
-      fPhiModuleSize = fEtaModuleSize = 12.26;
-      fNZ            = 26;     // 11-oct-04
-      fTrd1Angle     = 1.3;    // in degree
-// 18-nov-04; 1./0.08112=12.327
-// http://pdsfweb01.nersc.gov/~pavlinov/ALICE/SHISHKEBAB/RES/linearityAndResolutionForTRD1.html
-      if(fGeoName.Contains("TRD1")) {       // 30-jan-05
-	// for final design
-        fPhiGapForSM    = 2.;         // cm, only for final TRD1 geometry
-        if(fGeoName.Contains("WSUC") || fGeoName.Contains("FINAL")){
-          fNumberOfSuperModules = 12; // 20-may-05
-          if(fGeoName.Contains("WSUC")) fNumberOfSuperModules = 1; // 27-may-05
-          fNECLayers     = 77;       // (13-may-05 from V.Petrov)
-          fPhiModuleSize = 12.5;     // 20-may-05 - rectangular shape
-          fEtaModuleSize = 11.9;
-          fECScintThick  = fECPbRadThickness = 0.16;// (13-may-05 from V.Petrov)
-          fFrontSteelStrip   = 0.025;// 0.025cm = 0.25mm  (13-may-05 from V.Petrov)
-          fLateralSteelStrip = 0.01; // 0.01cm  = 0.1mm   (13-may-05 from V.Petrov) - was 0.025
-          fPassiveScintThick = 0.8;  // 0.8cm   = 8mm     (13-may-05 from V.Petrov)
-          fNZ                = 24;
-          fTrd1Angle         = 1.5;  // 1.3 or 1.5
+  fPhiModuleSize = 12.26 - fPhiGapForSM / Float_t(fNPhi); // first assumption
+  fEtaModuleSize = fPhiModuleSize;
 
-          if(fGeoName.Contains("FINAL")) { // 9-sep-05
-            fNumberOfSuperModules = 10;
-            if(GetKey110DEG()) {
-              fNumberOfSuperModules = 12;// last two modules have size 10 degree in phi (180<phi<190)
-              fArm1PhiMax = 200.0;       // for XEN1 and turn angle of super modules
-	    }
-            if(fGeoName.Contains("FINAL")) {
-              fPhiModuleSize = 12.26 - fPhiGapForSM / Float_t(fNPhi); // first assumption
-	    }
-            fEtaModuleSize = fPhiModuleSize;
-          }
-	}
-      }
-      fNPHIdiv = fNETAdiv  = 2;   // 13-oct-04 - division again
-    }
-    if(fGeoName.Contains("WSUC")){ // 18-may-05 - about common structure
-      fShellThickness = 30.;       // should be change 
-      fNPhi = fNZ = 4; 
-    }
+  //needs to be called for each geometry and before setting geometry
+  //parameters which can depend on the outcome
+  CheckAdditionalOptions();
 
+  //modifications to the above for PDC06 geometry
+  if(fGeoName.Contains("PDC06")){ // 18-may-05 - about common structure
+    fECScintThick  = fECPbRadThickness = 0.16;// (13-may-05 from V.Petrov)    
     CheckAdditionalOptions();
-    DefineSamplingFraction();
+  }
 
-    fPhiTileSize = fPhiModuleSize/double(fNPHIdiv) - fLateralSteelStrip; // 13-may-05 
-    fEtaTileSize = fEtaModuleSize/double(fNETAdiv) - fLateralSteelStrip; // 13-may-05 
+  //modifications to the above for WSUC geometry
+  if(fGeoName.Contains("WSUC")){ // 18-may-05 - about common structure
+    fPhiModuleSize = 12.5;     // 20-may-05 - rectangular shape
+    fEtaModuleSize = 11.9;
+    fECScintThick  = fECPbRadThickness = 0.16;// (13-may-05 from V.Petrov)
+    fNumberOfSuperModules = 1; // 27-may-05
+    fShellThickness = 30.;       // should be change 
+    fNPhi = fNZ = 4; 
+    CheckAdditionalOptions();
+  }
 
-    // constant for transition absid <--> indexes
-    fNCellsInModule  = fNPHIdiv*fNETAdiv;
-    fNCellsInSupMod = fNCellsInModule*fNPhi*fNZ;
-    fNCells         = fNCellsInSupMod*fNumberOfSuperModules;
-    if(GetKey110DEG()) fNCells -= fNCellsInSupMod;
-
-    fLongModuleSize = fNECLayers*(fECScintThick + fECPbRadThickness);
-
-    // 30-sep-04
-    if(fGeoName.Contains("TRD")) {
-      f2Trd1Dx2 = fEtaModuleSize + 2.*fLongModuleSize*TMath::Tan(fTrd1Angle*TMath::DegToRad()/2.);
-    }
-  } else Fatal("Init", "%s is an undefined geometry!", fGeoName.Data()) ; 
-
-  //JLK: The following options are true for all geometries
+  // constant for transition absid <--> indexes
+  fNCellsInModule  = fNPHIdiv*fNETAdiv;
+  fNCellsInSupMod = fNCellsInModule*fNPhi*fNZ;
+  fNCells         = fNCellsInSupMod*fNumberOfSuperModules;
+  if(GetKey110DEG()) fNCells -= fNCellsInSupMod;
 
   fNPhiSuperModule = fNumberOfSuperModules/2;
   if(fNPhiSuperModule<1) fNPhiSuperModule = 1;
+    
+  fPhiTileSize = fPhiModuleSize/double(fNPHIdiv) - fLateralSteelStrip; // 13-may-05 
+  fEtaTileSize = fEtaModuleSize/double(fNETAdiv) - fLateralSteelStrip; // 13-may-05 
 
-  fShellThickness = fLongModuleSize;
-  if(fGeoName.Contains("TRD")) { // 1-oct-04
-    fShellThickness  = TMath::Sqrt(fLongModuleSize*fLongModuleSize + f2Trd1Dx2*f2Trd1Dx2);
-    // Local coordinates
-    fParSM[0] = GetShellThickness()/2.;        
-    fParSM[1] = GetPhiModuleSize() * GetNPhi()/2.;
-    fParSM[2] = 350./2.;
-  }
+  fLongModuleSize = fNECLayers*(fECScintThick + fECPbRadThickness);  
+  f2Trd1Dx2 = fEtaModuleSize + 2.*fLongModuleSize*TMath::Tan(fTrd1Angle*TMath::DegToRad()/2.);
+  if(!fGeoName.Contains("WSUC")) fShellThickness  = TMath::Sqrt(fLongModuleSize*fLongModuleSize + f2Trd1Dx2*f2Trd1Dx2);
   
   fZLength        = 2.*ZFromEtaR(fIPDistance+fShellThickness,fArm1EtaMax); // Z coverage
   fEnvelop[0]     = fIPDistance; // mother volume inner radius
   fEnvelop[1]     = fIPDistance + fShellThickness; // mother volume outer r.
   fEnvelop[2]     = 1.00001*fZLength; // add some padding for mother volume. 
 
-  fNumberOfSuperModules = 12;
+  // Local coordinates
+  fParSM[0] = GetShellThickness()/2.;        
+  fParSM[1] = GetPhiModuleSize() * GetNPhi()/2.;
+  fParSM[2] = 350./2.;
 
   // SM phi boundaries - (0,1),(2,3) .. (10,11) - has the same boundaries; Nov 7, 2006 
   fPhiBoundariesOfSM.Set(fNumberOfSuperModules);
   fPhiCentersOfSM.Set(fNumberOfSuperModules/2);
   fPhiBoundariesOfSM[0] = TMath::PiOver2() - TMath::ATan2(fParSM[1] , fIPDistance); // 1th and 2th modules)
-  fPhiBoundariesOfSM[1] = TMath::PiOver2() + TMath::ATan2(fParSM[1] , fIPDistance);
   fPhiCentersOfSM[0]     = TMath::PiOver2();
-  for(int i=1; i<=4; i++) { // from 2th ro 9th
-    fPhiBoundariesOfSM[2*i]   = fPhiBoundariesOfSM[0] + 20.*TMath::DegToRad()*i;
-    fPhiBoundariesOfSM[2*i+1] = fPhiBoundariesOfSM[1] + 20.*TMath::DegToRad()*i;
-    fPhiCentersOfSM[i]         = fPhiCentersOfSM[0]     + 20.*TMath::DegToRad()*i;
+  if(fNumberOfSuperModules > 1) 
+    fPhiBoundariesOfSM[1] = TMath::PiOver2() + TMath::ATan2(fParSM[1] , fIPDistance);
+  if(fNumberOfSuperModules > 2) {
+    for(int i=1; i<=4; i++) { // from 2th ro 9th
+      fPhiBoundariesOfSM[2*i]   = fPhiBoundariesOfSM[0] + 20.*TMath::DegToRad()*i;
+      fPhiBoundariesOfSM[2*i+1] = fPhiBoundariesOfSM[1] + 20.*TMath::DegToRad()*i;
+      fPhiCentersOfSM[i]         = fPhiCentersOfSM[0]     + 20.*TMath::DegToRad()*i;
+    }
   }
-  fPhiBoundariesOfSM[11] = 190.*TMath::DegToRad();
-  fPhiBoundariesOfSM[10] = fPhiBoundariesOfSM[11] - TMath::ATan2((fParSM[1]) , fIPDistance);
-  fPhiCentersOfSM[5]      = (fPhiBoundariesOfSM[10]+fPhiBoundariesOfSM[11])/2.; 
+  if(fNumberOfSuperModules > 10) {
+    fPhiBoundariesOfSM[11] = 190.*TMath::DegToRad();
+    fPhiBoundariesOfSM[10] = fPhiBoundariesOfSM[11] - TMath::ATan2((fParSM[1]) , fIPDistance);
+    fPhiCentersOfSM[5]      = (fPhiBoundariesOfSM[10]+fPhiBoundariesOfSM[11])/2.; 
+  }
+
+  //called after setting of scintillator and lead layer parameters
+  DefineSamplingFraction();
 
   //TRU parameters. These parameters values are not the final ones.
   fNTRUEta = 3 ;
   fNTRUPhi = 1 ;
   fNCellsInTRUEta = 16 ;
   fNCellsInTRUPhi = 24 ;
-
-  if(fGeoName.Contains("WSUC")) fNumberOfSuperModules = 1; // Jul 12, 2007
 
   fgInit = kTRUE; 
 }
@@ -396,60 +386,56 @@ void AliEMCALGeometry::PrintGeometry()
   printf( "               ECAL      : %d x (%f cm Pb, %f cm Sc) \n", 
   GetNECLayers(), GetECPbRadThick(), GetECScintThick() ) ; 
   printf("                fSampling %5.2f \n",  fSampling );
-  if(fGeoName.Contains("SHISH")){
-    printf(" fIPDistance       %6.3f cm \n", fIPDistance);
-    printf(" fNPhi %i   |  fNZ %i \n", fNPhi, fNZ);
-    printf(" fNCellsInModule %i : fNCellsInSupMod %i : fNCells %i\n",fNCellsInModule, fNCellsInSupMod, fNCells);
-    printf(" X:Y module size     %6.3f , %6.3f cm \n", fPhiModuleSize, fEtaModuleSize);
-    printf(" X:Y   tile size     %6.3f , %6.3f cm \n", fPhiTileSize, fEtaTileSize);
-    printf(" #of sampling layers %i(fNECLayers) \n", fNECLayers);
-    printf(" fLongModuleSize     %6.3f cm \n", fLongModuleSize);
-    printf(" #supermodule in phi direction %i \n", fNPhiSuperModule );
-  }
+  printf(" fIPDistance       %6.3f cm \n", fIPDistance);
+  printf(" fNPhi %i   |  fNZ %i \n", fNPhi, fNZ);
+  printf(" fNCellsInModule %i : fNCellsInSupMod %i : fNCells %i\n",fNCellsInModule, fNCellsInSupMod, fNCells);
+  printf(" X:Y module size     %6.3f , %6.3f cm \n", fPhiModuleSize, fEtaModuleSize);
+  printf(" X:Y   tile size     %6.3f , %6.3f cm \n", fPhiTileSize, fEtaTileSize);
+  printf(" #of sampling layers %i(fNECLayers) \n", fNECLayers);
+  printf(" fLongModuleSize     %6.3f cm \n", fLongModuleSize);
+  printf(" #supermodule in phi direction %i \n", fNPhiSuperModule );
   printf(" fILOSS %i : fIHADR %i \n", fILOSS, fIHADR);
-  if(fGeoName.Contains("TRD")) {
-    printf(" fTrd1Angle %7.4f\n", fTrd1Angle);
-    printf(" f2Trd1Dx2  %7.4f\n",  f2Trd1Dx2);
-    if(fGeoName.Contains("TRD1")){
-      printf("SM dimensions(TRD1) : dx %7.2f dy %7.2f dz %7.2f (SMOD, BOX)\n", 
-      fParSM[0],fParSM[1],fParSM[2]);
-      printf(" fPhiGapForSM  %7.4f cm (%7.4f <- phi size in degree)\n",  
-      fPhiGapForSM, TMath::ATan2(fPhiGapForSM,fIPDistance)*TMath::RadToDeg());
-      if(GetKey110DEG()) printf(" Last two modules have size 10 degree in  phi (180<phi<190)\n");
-      printf(" phi SM boundaries \n"); 
-      for(int i=0; i<fPhiBoundariesOfSM.GetSize()/2.; i++) {
-	printf(" %i : %7.5f(%7.2f) -> %7.5f(%7.2f) : center %7.5f(%7.2f) \n", i, 
-        fPhiBoundariesOfSM[2*i], fPhiBoundariesOfSM[2*i]*TMath::RadToDeg(),
-	       fPhiBoundariesOfSM[2*i+1], fPhiBoundariesOfSM[2*i+1]*TMath::RadToDeg(),
-               fPhiCentersOfSM[i], fPhiCentersOfSM[i]*TMath::RadToDeg());
-      }
-      printf(" fShishKebabTrd1Modules has %i modules : max eta %5.4f \n", 
-	       fShishKebabTrd1Modules->GetSize(),fEtaMaxOfTRD1);
-
-      printf("\n Cells grid in eta directions : size %i\n", fCentersOfCellsEtaDir.GetSize());
-      for(Int_t i=0; i<fCentersOfCellsEtaDir.GetSize(); i++) {
-        printf(" ind %2.2i : z %8.3f : x %8.3f \n", i, 
-	       fCentersOfCellsEtaDir.At(i),fCentersOfCellsXDir.At(i));
-        int ind=0; // Nov 21,2006
-        for(Int_t iphi=0; iphi<fCentersOfCellsPhiDir.GetSize(); iphi++) {
-          ind = iphi*fCentersOfCellsEtaDir.GetSize() + i;
-          printf("%6.4f ", fEtaCentersOfCells[ind]);
-          if((iphi+1)%12 == 0) printf("\n");
-	}
-        printf("\n");
-
-      }
-
-      printf("\n Cells grid in phi directions : size %i\n", fCentersOfCellsPhiDir.GetSize());
-      for(Int_t i=0; i<fCentersOfCellsPhiDir.GetSize(); i++) {
-        double phi=fPhiCentersOfCells.At(i);
-        printf(" ind %2.2i : y %8.3f : phi %7.5f(%6.2f) \n", i, fCentersOfCellsPhiDir.At(i), 
-	       phi, phi*TMath::RadToDeg());
-      }
-    }
+  printf(" fTrd1Angle %7.4f\n", fTrd1Angle);
+  printf(" f2Trd1Dx2  %7.4f\n",  f2Trd1Dx2);
+  printf("SM dimensions(TRD1) : dx %7.2f dy %7.2f dz %7.2f (SMOD, BOX)\n", 
+	 fParSM[0],fParSM[1],fParSM[2]);
+  printf(" fPhiGapForSM  %7.4f cm (%7.4f <- phi size in degree)\n",  
+	 fPhiGapForSM, TMath::ATan2(fPhiGapForSM,fIPDistance)*TMath::RadToDeg());
+  if(GetKey110DEG()) printf(" Last two modules have size 10 degree in  phi (180<phi<190)\n");
+  printf(" phi SM boundaries \n"); 
+  for(int i=0; i<fPhiBoundariesOfSM.GetSize()/2.; i++) {
+    printf(" %i : %7.5f(%7.2f) -> %7.5f(%7.2f) : center %7.5f(%7.2f) \n", i, 
+	   fPhiBoundariesOfSM[2*i], fPhiBoundariesOfSM[2*i]*TMath::RadToDeg(),
+	   fPhiBoundariesOfSM[2*i+1], fPhiBoundariesOfSM[2*i+1]*TMath::RadToDeg(),
+	   fPhiCentersOfSM[i], fPhiCentersOfSM[i]*TMath::RadToDeg());
   }
+  printf(" fShishKebabTrd1Modules has %i modules : max eta %5.4f \n", 
+	 fShishKebabTrd1Modules->GetSize(),fEtaMaxOfTRD1);
+  
+  printf("\n Cells grid in eta directions : size %i\n", fCentersOfCellsEtaDir.GetSize());
+  for(Int_t i=0; i<fCentersOfCellsEtaDir.GetSize(); i++) {
+    printf(" ind %2.2i : z %8.3f : x %8.3f \n", i, 
+	   fCentersOfCellsEtaDir.At(i),fCentersOfCellsXDir.At(i));
+    int ind=0; // Nov 21,2006
+    for(Int_t iphi=0; iphi<fCentersOfCellsPhiDir.GetSize(); iphi++) {
+      ind = iphi*fCentersOfCellsEtaDir.GetSize() + i;
+      printf("%6.4f ", fEtaCentersOfCells[ind]);
+      if((iphi+1)%12 == 0) printf("\n");
+    }
+    printf("\n");
+    
+  }
+
+  printf("\n Cells grid in phi directions : size %i\n", fCentersOfCellsPhiDir.GetSize());
+  for(Int_t i=0; i<fCentersOfCellsPhiDir.GetSize(); i++) {
+    double phi=fPhiCentersOfCells.At(i);
+    printf(" ind %2.2i : y %8.3f : phi %7.5f(%6.2f) \n", i, fCentersOfCellsPhiDir.At(i), 
+	   phi, phi*TMath::RadToDeg());
+  }
+
 }
 
+//______________________________________________________________________
 void AliEMCALGeometry::PrintCellIndexes(Int_t absId, int pri, char *tit)
 {
   // Service methods
@@ -537,11 +523,14 @@ void AliEMCALGeometry::DefineSamplingFraction()
   } else if(fNECLayers == 61) { // 20% layer reduction
     fSampling = 12.80;
   } else if(fNECLayers == 77) {
-    if       (fECScintThick>0.175 && fECScintThick<0.177) { // 10% Pb thicknes reduction
+    if       (fECScintThick>0.159 && fECScintThick<0.161) { // original sampling fraction, equal layers
+      fSampling = 12.327; // fECScintThick = fECPbRadThickness = 0.160;
+    } else if (fECScintThick>0.175 && fECScintThick<0.177) { // 10% Pb thicknes reduction
       fSampling = 10.5; // fECScintThick = 0.176, fECPbRadThickness=0.144;
     } else if(fECScintThick>0.191 && fECScintThick<0.193) { // 20% Pb thicknes reduction
       fSampling = 8.93; // fECScintThick = 0.192, fECPbRadThickness=0.128;
     }
+
   }
 }
 
@@ -599,6 +588,7 @@ AliEMCALGeometry* AliEMCALGeometry::GetInstance(const Text_t* name,
     return rv; 
 }
 
+//_____________________________________________________________________________
 Bool_t AliEMCALGeometry::IsInEMCAL(Double_t x, Double_t y, Double_t z) const {
   // Checks whether point is inside the EMCal volume, used in AliEMCALv*.cxx
   //
@@ -627,11 +617,11 @@ Bool_t AliEMCALGeometry::IsInEMCAL(Double_t x, Double_t y, Double_t z) const {
   }
   return 0;
 }
-// ==
 
 //
 // == Shish-kebab cases ==
 //
+//________________________________________________________________________________________________
 Int_t AliEMCALGeometry::GetAbsCellId(Int_t nSupMod, Int_t nModule, Int_t nIphi, Int_t nIeta) const
 { 
   // 27-aug-04; 
@@ -665,6 +655,7 @@ Int_t AliEMCALGeometry::GetAbsCellId(Int_t nSupMod, Int_t nModule, Int_t nIphi, 
   return id;
 }
 
+//________________________________________________________________________________________________
 Bool_t  AliEMCALGeometry::CheckAbsCellId(Int_t absId) const
 { 
   // May 31, 2006; only trd1 now
@@ -672,6 +663,7 @@ Bool_t  AliEMCALGeometry::CheckAbsCellId(Int_t absId) const
   else                            return kTRUE;
 }
 
+//________________________________________________________________________________________________
 Bool_t AliEMCALGeometry::GetCellIndex(Int_t absId,Int_t &nSupMod,Int_t &nModule,Int_t &nIphi,Int_t &nIeta) const
 { 
   // 21-sep-04; 19-oct-05;
@@ -705,6 +697,7 @@ Bool_t AliEMCALGeometry::GetCellIndex(Int_t absId,Int_t &nSupMod,Int_t &nModule,
   return kTRUE;
 }
 
+//________________________________________________________________________________________________
 void AliEMCALGeometry::GetModulePhiEtaIndexInSModule(Int_t nSupMod, Int_t nModule,  int &iphim, int &ietam) const
 { 
   // added nSupMod; - 19-oct-05 !
@@ -721,6 +714,7 @@ void AliEMCALGeometry::GetModulePhiEtaIndexInSModule(Int_t nSupMod, Int_t nModul
   iphim = nModule%nphi;
 }
 
+//________________________________________________________________________________________________
 void AliEMCALGeometry::GetCellPhiEtaIndexInSModule(Int_t nSupMod, Int_t nModule, Int_t nIphi, Int_t nIeta, 
 int &iphi, int &ieta) const
 { 
@@ -750,6 +744,7 @@ int &iphi, int &ieta) const
   nSupMod, nModule, nIphi, nIeta, ieta, iphi));
 }
 
+//________________________________________________________________________________________________
 Int_t  AliEMCALGeometry::GetSuperModuleNumber(Int_t absId)  const
 {
   // Return the number of the  supermodule given the absolute
@@ -760,6 +755,7 @@ Int_t  AliEMCALGeometry::GetSuperModuleNumber(Int_t absId)  const
   return nSupMod;
 } 
 
+//________________________________________________________________________________________________
 void  AliEMCALGeometry::GetModuleIndexesFromCellIndexesInSModule(Int_t nSupMod, Int_t iphi, Int_t ieta, 
 			Int_t &iphim, Int_t &ietam, Int_t &nModule) const
 {
@@ -772,6 +768,7 @@ void  AliEMCALGeometry::GetModuleIndexesFromCellIndexesInSModule(Int_t nSupMod, 
   nModule = ietam * nphi + iphim; 
 }
 
+//________________________________________________________________________________________________
 Int_t  AliEMCALGeometry::GetAbsCellIdFromCellIndexes(Int_t nSupMod, Int_t iphi, Int_t ieta) const
 {
   // Transition from super module number(nSupMod) and cell indexes (ieta,iphi) to absId
@@ -789,6 +786,7 @@ Int_t  AliEMCALGeometry::GetAbsCellIdFromCellIndexes(Int_t nSupMod, Int_t iphi, 
 
 
 // Methods for AliEMCALRecPoint - Feb 19, 2006
+//________________________________________________________________________________________________
 Bool_t AliEMCALGeometry::RelPosCellInSModule(Int_t absId, Double_t &xr, Double_t &yr, Double_t &zr) const
 {
   // Look to see what the relative
@@ -822,6 +820,7 @@ Bool_t AliEMCALGeometry::RelPosCellInSModule(Int_t absId, Double_t &xr, Double_t
   return kTRUE;
 }
 
+//________________________________________________________________________________________________
 Bool_t AliEMCALGeometry::RelPosCellInSModule(Int_t absId, Double_t loc[3]) const
 {
   // Alice numbering scheme - Jun 03, 2006
@@ -832,6 +831,7 @@ Bool_t AliEMCALGeometry::RelPosCellInSModule(Int_t absId, Double_t loc[3]) const
   return kFALSE;
 }
 
+//________________________________________________________________________________________________
 Bool_t AliEMCALGeometry::RelPosCellInSModule(Int_t absId, TVector3 &vloc) const
 {
   static Double_t loc[3];
@@ -845,6 +845,7 @@ Bool_t AliEMCALGeometry::RelPosCellInSModule(Int_t absId, TVector3 &vloc) const
   // Alice numbering scheme - Jun 03, 2006
 }
 
+//________________________________________________________________________________________________
 Bool_t AliEMCALGeometry::RelPosCellInSModule(Int_t absId, Double_t distEff, Double_t &xr, Double_t &yr, Double_t &zr) const
 {
   // Jul 30, 2007 - taking into account position of shower max
@@ -885,6 +886,7 @@ Bool_t AliEMCALGeometry::RelPosCellInSModule(Int_t absId, Double_t distEff, Doub
   return kTRUE;
 }
 
+//________________________________________________________________________________________________
 Bool_t AliEMCALGeometry::RelPosCellInSModule(Int_t absId, Int_t maxAbsId, Double_t distEff, Double_t &xr, Double_t &yr, Double_t &zr) const
 {
   // Jul 31, 2007 - taking into account position of shower max and apply coor2.
@@ -949,6 +951,7 @@ Bool_t AliEMCALGeometry::RelPosCellInSModule(Int_t absId, Int_t maxAbsId, Double
   return kTRUE;
 }
 
+//________________________________________________________________________________________________
 void AliEMCALGeometry::CreateListOfTrd1Modules()
 {
   // Generate the list of Trd1 modules
@@ -1061,6 +1064,7 @@ void AliEMCALGeometry::CreateListOfTrd1Modules()
 
 }
 
+//________________________________________________________________________________________________
 void AliEMCALGeometry::GetGlobal(const Double_t *loc, Double_t *glob, int ind) const
 {
   // Figure out the global numbering
@@ -1090,6 +1094,7 @@ void AliEMCALGeometry::GetGlobal(const Double_t *loc, Double_t *glob, int ind) c
   }
 }
 
+//________________________________________________________________________________________________
 void AliEMCALGeometry::GetGlobal(const TVector3 &vloc, TVector3 &vglob, int ind) const
 {
   //Figure out the global numbering
@@ -1102,6 +1107,7 @@ void AliEMCALGeometry::GetGlobal(const TVector3 &vloc, TVector3 &vglob, int ind)
   vglob.SetXYZ(tglob[0], tglob[1], tglob[2]);
 }
 
+//________________________________________________________________________________________________
 void AliEMCALGeometry::GetGlobal(Int_t absId , double glob[3]) const
 { 
   // Alice numbering scheme - Jun 03, 2006
@@ -1171,6 +1177,7 @@ void AliEMCALGeometry::GetGlobalEMCAL(const AliEMCALRecPoint *rp, TVector3 &vglo
   GetGlobal(vloc, vglob, nSupMod);
 }
 
+//________________________________________________________________________________________________
 void AliEMCALGeometry::EtaPhiFromIndex(Int_t absId,Double_t &eta,Double_t &phi) const
 {
   // Nov 16, 2006- float to double
@@ -1181,6 +1188,7 @@ void AliEMCALGeometry::EtaPhiFromIndex(Int_t absId,Double_t &eta,Double_t &phi) 
   phi = vglob.Phi();
 }
 
+//________________________________________________________________________________________________
 void AliEMCALGeometry::EtaPhiFromIndex(Int_t absId,Float_t &eta,Float_t &phi) const
 {
   // Nov 16,2006 - should be discard in future
@@ -1190,6 +1198,7 @@ void AliEMCALGeometry::EtaPhiFromIndex(Int_t absId,Float_t &eta,Float_t &phi) co
   phi = float(vglob.Phi());
 }
 
+//________________________________________________________________________________________________
 Bool_t AliEMCALGeometry::GetPhiBoundariesOfSM(Int_t nSupMod, Double_t &phiMin, Double_t &phiMax) const
 {
   // 0<= nSupMod <=11; phi in rad
@@ -1201,6 +1210,7 @@ Bool_t AliEMCALGeometry::GetPhiBoundariesOfSM(Int_t nSupMod, Double_t &phiMin, D
   return kTRUE; 
 }
 
+//________________________________________________________________________________________________
 Bool_t AliEMCALGeometry::GetPhiBoundariesOfSMGap(Int_t nPhiSec, Double_t &phiMin, Double_t &phiMax) const
 {
   // 0<= nPhiSec <=4; phi in rad
@@ -1215,6 +1225,7 @@ Bool_t AliEMCALGeometry::GetPhiBoundariesOfSMGap(Int_t nPhiSec, Double_t &phiMin
   return kTRUE; 
 }
 
+//________________________________________________________________________________________________
 Bool_t AliEMCALGeometry::SuperModuleNumberFromEtaPhi(Double_t eta, Double_t phi, Int_t &nSupMod) const
 { 
   // Return false if phi belongs a phi cracks between SM
@@ -1235,6 +1246,7 @@ Bool_t AliEMCALGeometry::SuperModuleNumberFromEtaPhi(Double_t eta, Double_t phi,
   return kFALSE;
 }
 
+//________________________________________________________________________________________________
 Bool_t AliEMCALGeometry::GetAbsCellIdFromEtaPhi(Double_t eta, Double_t phi, Int_t &absId) const
 {
   // Nov 17,2006
@@ -1286,6 +1298,7 @@ Bool_t AliEMCALGeometry::GetAbsCellIdFromEtaPhi(Double_t eta, Double_t phi, Int_
   return kFALSE;
 }
 
+//________________________________________________________________________________________________
 AliEMCALShishKebabTrd1Module* AliEMCALGeometry::GetShishKebabModule(Int_t neta) const
 {
   //This method was too long to be
@@ -1301,12 +1314,14 @@ AliEMCALShishKebabTrd1Module* AliEMCALGeometry::GetShishKebabModule(Int_t neta) 
   return trd1;
 }
 
+//________________________________________________________________________________________________
 void AliEMCALGeometry::Browse(TBrowser* b)
 {
   //Browse the modules
   if(fShishKebabTrd1Modules) b->Add(fShishKebabTrd1Modules);
 }
 
+//________________________________________________________________________________________________
 Bool_t AliEMCALGeometry::IsFolder() const
 {
   //Check if fShishKebabTrd1Modules is in folder
@@ -1314,6 +1329,7 @@ Bool_t AliEMCALGeometry::IsFolder() const
   else                       return kFALSE;
 }
 
+//________________________________________________________________________________________________
 Double_t AliEMCALGeometry::GetPhiCenterOfSM(Int_t nsupmod) const
 {
   //returns center of supermodule in phi 
