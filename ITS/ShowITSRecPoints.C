@@ -10,12 +10,12 @@
 #include "AliHeader.h"
 #include "AliITS.h"
 #include "AliITSDetTypeRec.h"
-#include "AliITSgeom.h"
+#include "AliITSgeomTGeo.h"
 #include "AliITSRecPoint.h"
 #include "AliRun.h"
 #endif
 
-Int_t ShowITSRecPoints(){
+Int_t ShowITSRecPoints(Int_t nevfordisp=0){
   ///////////////////////////////////////////////////////////////////////
   // Macro to check clusters in the 6 ITS layers                       //
   // Provides:                                                         //
@@ -37,12 +37,6 @@ Int_t ShowITSRecPoints(){
     cerr<<"Can not open session RL=NULL"<< endl;
     return -1;
   }
-  Int_t retval = rl->LoadHeader();
-  if (retval){
-    cerr<<"LoadHeader returned error"<<endl;
-    return -1;
-  }
-
 
   AliITSLoader* ITSloader =  (AliITSLoader*) rl->GetLoader("ITSLoader");
   if(!ITSloader){
@@ -50,15 +44,14 @@ Int_t ShowITSRecPoints(){
     return -1;
   }
   ITSloader->LoadRecPoints("read");
-  AliITSgeom *geom = ITSloader->GetITSgeom();
 
   Float_t cluglo[3]={0.,0.,0.}; 
   AliITSDetTypeRec* detTypeRec = new AliITSDetTypeRec();
-  detTypeRec->SetITSgeom(geom);
 
-  Int_t modmin=geom->GetStartDet(0);
-  Int_t modmax=geom->GetLastDet(2);
-  Int_t totmod=modmax-modmin;
+  Int_t totmod=AliITSgeomTGeo::GetNModules();
+  Int_t modmin=AliITSgeomTGeo::GetModuleIndex(1,1,1);
+  Int_t modmax=AliITSgeomTGeo::GetNModules()-1;
+
   Float_t xlim[6]={4.5,7.5,16.,26.,40.,45.};
   Float_t zlim[6]={15.,15.,22.,30.,45.,55.};
 
@@ -113,12 +106,9 @@ Int_t ShowITSRecPoints(){
     hq[iLay]->GetXaxis()->CenterTitle();
   }
 
-  TGraph **gpts=new TGraph*[3];
-  TGraph2D **gpts3d=new TGraph2D*[3];
-  for(Int_t i=0;i<3;i++){
-    gpts[i]=new TGraph(0);
-    gpts3d[i]=new TGraph2D(0);
-  }
+  TGraph *gptsXY=new TGraph(0);
+  TGraph *gptsRZ=new TGraph(0);
+
   Int_t totev=rl->GetNumberOfEvents();
   printf("Total Number of events = %d\n",totev);
 
@@ -136,42 +126,38 @@ Int_t ShowITSRecPoints(){
 
 
     Int_t ipt=0;
-    for(Int_t subd=0;subd<3;subd++){
-
-      Int_t first = geom->GetStartDet(subd);
-      Int_t last = geom->GetLastDet(subd);
-
-      for (Int_t mod=first; mod<=last; mod++){
-	detTypeRec->ResetRecPoints();
-	branch->GetEvent(mod);
-	Int_t nrecp = ITSrec->GetEntries();
-	if(nrecp>0){
-	  for(Int_t irec=0;irec<nrecp;irec++) {
-	    AliITSRecPoint *recp = (AliITSRecPoint*)ITSrec->At(irec);
-	    Int_t lay=recp->GetLayer();
-	    hlayer->Fill(lay);
-	    recp->GetGlobalXYZ(cluglo);
-	    Float_t rad=TMath::Sqrt(cluglo[0]*cluglo[0]+cluglo[1]*cluglo[1]); 
-	    Float_t phi=TMath::ATan2(cluglo[1],cluglo[0]);
-	    if(iev<3){
- 	      gpts[iev]->SetPoint(ipt,cluglo[0],cluglo[1]);
- 	      gpts3d[iev]->SetPoint(ipt,cluglo[0],cluglo[1],cluglo[2]);
-	      ipt++;
-	    }
-	    hmod[lay]->Fill(mod);
-	    hzl[lay]->Fill(recp->GetDetLocalZ());
-	    hxl[lay]->Fill(recp->GetDetLocalX());
-	    hzg[lay]->Fill(cluglo[2]);
-	    hyg[lay]->Fill(cluglo[1]);
-	    hxg[lay]->Fill(cluglo[0]);
-	    hr[lay]->Fill(rad);
-	    hphi[lay]->Fill(phi);
-	    hq[lay]->Fill(recp->GetQ());
+    for (Int_t mod=modmin; mod<=modmax; mod++){
+      detTypeRec->ResetRecPoints();
+      branch->GetEvent(mod);
+      Int_t nrecp = ITSrec->GetEntries();
+      if(nrecp>0){
+	for(Int_t irec=0;irec<nrecp;irec++) {
+	  AliITSRecPoint *recp = (AliITSRecPoint*)ITSrec->At(irec);
+	  Int_t lay=recp->GetLayer();
+	  hlayer->Fill(lay);
+	  recp->GetGlobalXYZ(cluglo);
+	  Float_t rad=TMath::Sqrt(cluglo[0]*cluglo[0]+cluglo[1]*cluglo[1]); 
+	  Float_t phi=TMath::ATan2(cluglo[1],cluglo[0]);
+	  if(iev==nevfordisp){
+	    gptsXY->SetPoint(ipt,cluglo[0],cluglo[1]);
+	    if(cluglo[1]>0) gptsRZ->SetPoint(ipt,cluglo[2],rad);
+	    else gptsRZ->SetPoint(ipt,cluglo[2],-rad);
+	    ipt++;
 	  }
+	  hmod[lay]->Fill(mod);
+	  hzl[lay]->Fill(recp->GetDetLocalZ());
+	  hxl[lay]->Fill(recp->GetDetLocalX());
+	  hzg[lay]->Fill(cluglo[2]);
+	  hyg[lay]->Fill(cluglo[1]);
+	  hxg[lay]->Fill(cluglo[0]);
+	  hr[lay]->Fill(rad);
+	  hphi[lay]->Fill(phi);
+	  hq[lay]->Fill(recp->GetQ());
 	}
       }
     }
   }
+  
   TCanvas **c=new TCanvas*[6];
   Char_t ctit[30];
   for(Int_t iLay=0;iLay<6;iLay++){
@@ -200,23 +186,26 @@ Int_t ShowITSRecPoints(){
   }
 
   TCanvas *cev0;
-  cev0=new TCanvas("cev0","Event 0",600,600);
-  gpts[0]->SetMarkerStyle(7);
-  gpts[0]->SetTitle(0);
-  gpts[0]->Draw("AP");
+  sprintf(ctit,"Event %d XY",nevfordisp);
+  cev0=new TCanvas("cev0",ctit,600,600);
+  if(gptsXY->GetN()>0){
+    gptsXY->SetMarkerStyle(7);
+    gptsXY->SetTitle(0);
+    gptsXY->Draw("AP");
+    gptsXY->GetXaxis()->SetTitle("Xglob");
+    gptsXY->GetYaxis()->SetTitle("Yglob");
+   }
 
   TCanvas *cev1;
-  cev1=new TCanvas("cev1","Event 1",600,600);
-  gpts[1]->SetMarkerStyle(7);
-  gpts[1]->SetTitle(0);
-  gpts[1]->Draw("AP");
-
-  TCanvas *cev2;
-  cev2=new TCanvas("cev2","Event 2",600,600);
-  gpts[2]->SetMarkerStyle(7);
-  gpts[2]->SetTitle(0);
-  gpts[2]->Draw("AP");
-
+  sprintf(ctit,"Event %d Zr",nevfordisp);
+  cev1=new TCanvas("cev1",ctit,600,600);
+  if(gptsRZ->GetN()>0){
+    gptsRZ->SetMarkerStyle(7);
+    gptsRZ->SetTitle(0);
+    gptsRZ->Draw("AP");
+    gptsRZ->GetXaxis()->SetTitle("Zglob");
+    gptsRZ->GetYaxis()->SetTitle("Radius");
+  }
 
   return 0;
 }
