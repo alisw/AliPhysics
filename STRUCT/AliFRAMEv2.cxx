@@ -899,7 +899,7 @@ void AliFRAMEv2::CreateGeometry()
   ptrd1[0] = 62.2500; 
   ptrd1[1] = 67.3631; 
   ptrd1[2] = 373.6; 
-  ptrd1[3] = 14.5;
+  ptrd1[3] = 14.525; //AdC
   for (i = 0; i < 18; i++) {
     char nameCh[16];
     sprintf(nameCh, "BTOF%d",i);
@@ -907,7 +907,7 @@ void AliFRAMEv2::CreateGeometry()
     sprintf(nameMo, "BSEGMO%d",i);
     gMC->Gsvolu(nameCh, "TRD1", kAir, ptrd1, 4);
     gGeoManager->GetVolume(nameCh)->SetVisibility(kFALSE);
-    gMC->Gspos(nameCh, 1, nameMo, 0., 0., 42.53, 0, "ONLY");
+    gMC->Gspos(nameCh, 1, nameMo, 0., 0., 43.525, 0, "ONLY"); //AdC
   }
 
 //
