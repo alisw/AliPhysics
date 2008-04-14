@@ -25,7 +25,7 @@ enum anaModes {mLocal, mLocalCAF,mPROOF,mGRID};
 
 //Settings to read locally several files
 //The differnt values are default, they can be set with environmental 
-//variables: OUTDIR, PATTERN, NEVENT, respectivelly
+//variables: INDIR, PATTERN, NEVENT, respectivelly
 char * kInDir = "/home/group/alice/schutz/analysis/PWG4/data"; 
 char * kPattern = ""; // Data are in diles /data/Run0, 
 // /Data/Run1 ...
@@ -36,12 +36,12 @@ Int_t kEvent = 1; // Number of files
 //Put name of file containing xsection 
 //Put number of events per ESD file
 //This is an specific case for normalization of Pythia files.
-const Bool_t kGetXSectionFromFileAndScale = kFALSE ;
+const Bool_t kGetXSectionFromFileAndScale = kTRUE ;
 const char * kXSFileName = "pyxsec.root";
 const Int_t kNumberOfEventsPerFile = 100; 
 
 
-void anaGammaAnalysis(Int_t mode=mLocal, TString configName = "ConfigESDGammaDirect")
+void anaGammaAnalysis(Int_t mode=mLocal, TString configName = "ConfigKineGammaDirect")
 {
   // Main
   
@@ -68,6 +68,9 @@ void anaGammaAnalysis(Int_t mode=mLocal, TString configName = "ConfigESDGammaDir
   }
 
   if(chain){
+
+    AliLog::SetGlobalLogLevel(AliLog::kError);
+
   //
   // Make the analysis manager
   //
@@ -154,26 +157,19 @@ void  LoadLibraries(const anaModes mode) {
     //gSystem->Load("libESD");
     //gSystem->Load("libAOD");
     //gSystem->Load("libANALYSIS");
+    //gSystem->Load("libANALYSISalice");
     //gSystem->Load("libPWG4Gamma");
 
     //--------------------------------------------------------
-    //If you want to use your own modified classes
+    //If you want to use root and par files from aliroot
     //--------------------------------------------------------  
     SetupPar("STEERBase");
     SetupPar("ESD");
     SetupPar("AOD");
     SetupPar("ANALYSIS");
+    SetupPar("ANALYSISalice");
     SetupPar("PWG4Gamma");
     
-    //--------------------------------------------------------
-    // If the modified libraries have already been compiled and 
-    // you don't want to  decompress them and recompile
-    //--------------------------------------------------------
-    //SetupPar("STEERBase",kFALSE);
-    //SetupPar("ESD",kFALSE);
-    //SetupPar("AOD",kFALSE);
-    //SetupPar("ANALYSIS",kFALSE);
-    //SetupPar("PWG4Gamma",kFALSE);
   }
   
   // <<<<<<<<<< PROOF mode >>>>>>>>>>>>
@@ -211,7 +207,7 @@ void  LoadLibraries(const anaModes mode) {
   
 }
 
-void SetupPar(char* pararchivename, Bool_t decomp = kTRUE)
+void SetupPar(char* pararchivename)
 {
 
   //Load par files, create analysis libraries
@@ -239,6 +235,7 @@ void SetupPar(char* pararchivename, Bool_t decomp = kTRUE)
   if (!gSystem->AccessPathName("PROOF-INF/BUILD.sh")) {
     printf("*******************************\n");
     printf("*** Building PAR archive    ***\n");
+    cout<<pararchivename<<endl;
     printf("*******************************\n");
     
     if (gSystem->Exec("PROOF-INF/BUILD.sh")) {
@@ -250,6 +247,7 @@ void SetupPar(char* pararchivename, Bool_t decomp = kTRUE)
   if (!gSystem->AccessPathName("PROOF-INF/SETUP.C")) {
     printf("*******************************\n");
     printf("*** Setup PAR archive       ***\n");
+    cout<<pararchivename<<endl;
     printf("*******************************\n");
     gROOT->Macro("PROOF-INF/SETUP.C");
   }
@@ -278,12 +276,12 @@ TChain * CreateChain(const anaModes mode, Double_t &xsection, Int_t &ntrials, In
     chain = new TChain("esdTree") ;
     TString input = "AliESDs.root" ;
     
-    //If you want to add several ESD files sitting in a common directory OUTDIR
-    //Specify as environmental variables the directory (OUTDIR), the number of files 
+    //If you want to add several ESD files sitting in a common directory INDIR
+    //Specify as environmental variables the directory (INDIR), the number of files 
     //to analyze (NEVENT) and the pattern name of the directories with files (PATTERN)
-    if(gSystem->Getenv("OUTDIR"))  
-      kInDir = gSystem->Getenv("OUTDIR") ; 
-    else cout<<"OUTDIR not set, use default: "<<kInDir<<endl;	
+    if(gSystem->Getenv("INDIR"))  
+      kInDir = gSystem->Getenv("INDIR") ; 
+    else cout<<"INDIR not set, use default: "<<kInDir<<endl;	
 
     if(gSystem->Getenv("PATTERN"))   
       kPattern = gSystem->Getenv("PATTERN") ; 
@@ -300,7 +298,7 @@ TChain * CreateChain(const anaModes mode, Double_t &xsection, Int_t &ntrials, In
 	printf("%s does not exist\n", kInDir) ;
 	return ;
       }
-      cout<<"OUTDIR : "<<kInDir<<endl;
+      cout<<"INDIR : "<<kInDir<<endl;
       cout<<"NEVENT : "<<kEvent<<endl;
       cout<<"PATTERN: " <<kPattern<<endl;
       
