@@ -133,7 +133,7 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 	
 	for (int i = 0; i < argc; i++)
 	{
-		if ( !strcmp( argv[i], "-lut" ) )
+		if (strcmp( argv[i], "-lut" ) == 0)
 		{
 			if ( argc <= i+1 )
 			{
@@ -147,7 +147,7 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 			continue;
 		}
 		
-		if ( !strcmp( argv[i], "-ddl" ) )
+		if (strcmp( argv[i], "-ddl" ) == 0)
 		{
 			if ( argc <= i+1 )
 			{
@@ -173,13 +173,13 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 			continue;
 		}
 			
-		if (not strcmp( argv[i], "-warn_on_unexpected_block" ))
+		if (strcmp( argv[i], "-warn_on_unexpected_block" ) == 0)
 		{
 			fWarnForUnexpecedBlock = true;
 			continue;
 		}
 			
-		if (not strcmp( argv[i], "-suppress_partial_triggers" ))
+		if (strcmp( argv[i], "-suppress_partial_triggers" ) == 0)
 		{
 			fSuppressPartialTrigs = true;
 			continue;
@@ -300,7 +300,7 @@ int AliHLTMUONTriggerReconstructorComponent::DoEvent(
 		AliHLTMUONUtils::UnpackSpecBits(blocks[n].fSpecification, ddl);
 		if (not ddl[fDDL])
 		{
-			HLTWarning("Received trigger DDL raw data from a DDL which we did not expect.");
+			HLTWarning("Received raw data from an unexpected DDL.");
 		}
 		
 		// Create a new output data block and initialise the header.

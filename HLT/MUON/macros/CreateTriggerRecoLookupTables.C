@@ -35,19 +35,15 @@
 #include "AliMpDEManager.h"
 #include "AliMpLocalBoard.h"
 #include "AliMpTriggerCrate.h"
+#include "AliHLTMUONDataTypes.h"
 
 using namespace std;
 
 
-struct TriggerRecoLookupTableRow
-{
-	float fX, fY, fZ;
-};
-
 struct TriggerRecoLookupTable
 {
 	// [regional header index][local board ID][chamber][cathode - X/Y][bit set in bit pattern]
-	TriggerRecoLookupTableRow fRow[8][16][4][2][16];
+	AliHLTMUONTriggerRecoLutRow fRow[8][16][4][2][16];
 };
 
 

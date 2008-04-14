@@ -135,6 +135,8 @@ int AliHLTMUONMansoTrackerFSMComponent::DoInit(int argc, const char** argv)
 	/// Parses the command line parameters and initialises the component.
 	///
 	
+	HLTInfo("Initialising dHLT manso tracker FSM component.");
+	
 	try
 	{
 		fTracker = new AliHLTMUONMansoTrackerFSM();
@@ -193,6 +195,8 @@ int AliHLTMUONMansoTrackerFSMComponent::DoDeinit()
 	///
 	/// Inherited from AliHLTComponent. Performs a cleanup of the component.
 	///
+	
+	HLTInfo("Deinitialising dHLT manso tracker FSM component.");
 	
 	if (fTracker != NULL)
 	{

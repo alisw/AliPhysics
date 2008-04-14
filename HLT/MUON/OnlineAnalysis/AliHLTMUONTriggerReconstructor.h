@@ -45,16 +45,11 @@ private:
 	AliHLTMUONTriggerReconstructor(const AliHLTMUONTriggerReconstructor& rhs); // copy constructor
 	AliHLTMUONTriggerReconstructor& operator=(const AliHLTMUONTriggerReconstructor& rhs); // assignment operator
 
-	struct LookupTableRow
-	{
-		float fX, fY, fZ;
-	};
-
 	AliHLTUInt32_t fMaxRecPointsCount;   // max nof reconstructed hit
 	AliHLTInt32_t fTrigRecId;  // A running counter for the trigger record ID.
 	
 	// [regional header index][local board ID][chamber][cathode - X/Y][bit set in bit pattern]
-	LookupTableRow fLookupTable[8][16][4][2][16];  // pointer to the array of Lookuptable data
+	AliHLTMUONTriggerRecoLutRow fLookupTable[8][16][4][2][16];  // pointer to the array of Lookuptable data
 };
 
 #endif // AliHLTMUONTRIGGERRECONSTRUCTOR_H
