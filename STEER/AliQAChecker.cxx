@@ -154,13 +154,10 @@ void AliQAChecker::GetRefSubDir(const char * det, const char * task, TDirectory 
 		}  
 	} else if (refStorage.Contains(AliQA::GetLabLocalOCDB()) || refStorage.Contains(AliQA::GetLabAliEnOCDB())) {	
 		AliCDBManager* man = AliCDBManager::Instance() ; 
-		if ( ! man->IsDefaultStorageSet() ) //{ 
-//		TString temp(AliQA::GetQARefStorage()) ;  
-//			if ( ! temp.Contains(man->GetDefaultStorage()->GetBaseFolder() ) ) {
-				man->SetDefaultStorage(AliQA::GetQARefStorage()) ; 
+		if ( ! man->IsDefaultStorageSet() ) { 
+		  man->SetDefaultStorage(AliQA::GetQARefStorage()) ; 
 		man->SetSpecificStorage("*", AliQA::GetQARefStorage()) ;
-//			}
-//		}
+		}
 		char detOCDBDir[20] ; 
 		sprintf(detOCDBDir, "%s/%s/%s", det, AliQA::GetRefOCDBDirName(), AliQA::GetRefDataDirName()) ; 
 		AliCDBEntry * entry = man->Get(detOCDBDir, man->GetRun()) ;
