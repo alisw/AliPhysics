@@ -781,20 +781,15 @@ void  AliEMCALRecPoint::EvalElipsAxis(Float_t logWeight,TClonesArray * digits)
   for(Int_t iDigit=0; iDigit<fMulDigit; iDigit++) {
     digit = (AliEMCALDigit *) digits->At(fDigitsList[iDigit])  ;
     etai = phii = 0.; 
-    if(gn.Contains("SHISH")) { 
     // Nov 15,2006 - use cell numbers as coordinates
     // Copied for shish-kebab geometry, ieta,iphi is cast as double as eta,phi
     // We can use the eta,phi(or coordinates) of cell
-      nSupMod = nModule = nIphi = nIeta = iphi = ieta = 0;
+    nSupMod = nModule = nIphi = nIeta = iphi = ieta = 0;
 
-      fGeomPtr->GetCellIndex(digit->GetId(), nSupMod,nModule,nIphi,nIeta);
-      fGeomPtr->GetCellPhiEtaIndexInSModule(nSupMod,nModule,nIphi,nIeta, iphi,ieta);
-      etai=(Double_t)ieta;
-      phii=(Double_t)iphi;
-    } else { // 
-      fGeomPtr->EtaPhiFromIndex(digit->GetId(), etai, phii);
-      phii = phii * TMath::DegToRad();
-    }
+    fGeomPtr->GetCellIndex(digit->GetId(), nSupMod,nModule,nIphi,nIeta);
+    fGeomPtr->GetCellPhiEtaIndexInSModule(nSupMod,nModule,nIphi,nIeta, iphi,ieta);
+    etai=(Double_t)ieta;
+    phii=(Double_t)iphi;
 
     w = TMath::Max(0.,logWeight+TMath::Log(fEnergyList[iDigit]/fAmp ) ) ;
     // fAmp summed amplitude of digits, i.e. energy of recpoint 

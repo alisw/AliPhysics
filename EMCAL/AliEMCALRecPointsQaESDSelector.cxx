@@ -211,7 +211,7 @@ void AliEMCALRecPointsQaESDSelector::InitStructure(Int_t it)
   //
   // Initialize the common structure of selector
   //
-  fgEmcalGeo = AliEMCALGeometry::GetInstance("SHISH_TRD1_CURRENT_2X2"); // initialize geometry just once
+  fgEmcalGeo = AliEMCALGeometry::GetInstance("EMCAL_COMPLETE"); // initialize geometry just once
   fCellsInfo = AliEMCALCellInfo::GetTableForGeometry(fgEmcalGeo);
 
   if(fRunOpts.Length()>0) CheckRunOpts();
