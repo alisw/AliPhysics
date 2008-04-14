@@ -446,12 +446,14 @@ void AliEMCALSDigitizer::Unload() const
   rl->UnloadSDigits() ; 
 }
 
+//____________________________________________________________________________ 
 void AliEMCALSDigitizer::Browse(TBrowser* b)
 {
   if(fHists) b->Add(fHists);
   TTask::Browse(b);
 }
 
+//____________________________________________________________________________ 
 TList *AliEMCALSDigitizer::BookControlHists(int var)
 { 
   //book histograms for monitoring sdigitization
@@ -474,6 +476,7 @@ TList *AliEMCALSDigitizer::BookControlHists(int var)
   return fHists;
 }
 
+//____________________________________________________________________________ 
 void AliEMCALSDigitizer::SaveHists(const char* name, Bool_t kSingleKey, const char* opt)
 {
   AliEMCALHistoUtilities::SaveListOfHists(fHists, name, kSingleKey, opt); 

@@ -80,6 +80,8 @@ Double_t AliEMCALRawUtils::fgTimeTrigger = 1.5E-6 ;   // 15 time bins ~ 1.5 muse
 // some digitization constants
 Int_t    AliEMCALRawUtils::fgThreshold = 1;
 Int_t    AliEMCALRawUtils::fgDDLPerSuperModule = 2;  // 2 ddls per SuperModule
+Int_t    AliEMCALRawUtils::fgPedestalValue = 32;      // pedestal value for digits2raw
+Double_t AliEMCALRawUtils::fgFEENoise = 3.;            // 3 ADC channels of noise (sampled)
 
 AliEMCALRawUtils::AliEMCALRawUtils()
   : fHighLowGainFactor(0.), fOrder(0), fTau(0.), fNoiseThreshold(0),
@@ -523,7 +525,6 @@ const Double_t dtime, const Double_t damp, Int_t * adcH, Int_t * adcL) const
   // for a start time dtime and an amplitude damp given by digit, 
   // calculates the raw sampled response AliEMCAL::RawResponseFunction
 
-  const Int_t pedVal = 32;
   Bool_t lowGain = kFALSE ; 
 
   // A:   par[0]   // Amplitude = peak value
@@ -537,11 +538,17 @@ const Double_t dtime, const Double_t damp, Int_t * adcH, Int_t * adcL) const
   signalF.SetParameter(1, dtime + fgTimeTrigger) ; 
   signalF.SetParameter(2, fTau) ; 
   signalF.SetParameter(3, fOrder);
-  signalF.SetParameter(4, pedVal);
+  signalF.SetParameter(4, fgPedestalValue);
 
   for (Int_t iTime = 0; iTime < GetRawFormatTimeBins(); iTime++) {
     Double_t time = iTime * GetRawFormatTimeBinWidth() ;
     Double_t signal = signalF.Eval(time) ;     
+
+    //According to Terry Awes, 13-Apr-2008
+    //add gaussian noise in quadrature to each sample
+    //Double_t noise = gRandom->Gaus(0.,fgFEENoise);
+    //signal = sqrt(signal*signal + noise*noise);
+
     adcH[iTime] =  static_cast<Int_t>(signal + 0.5) ;
     if ( adcH[iTime] > fgkRawSignalOverflow ){  // larger than 10 bits 
       adcH[iTime] = fgkRawSignalOverflow ;

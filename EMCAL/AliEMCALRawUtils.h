@@ -96,13 +96,15 @@ class AliEMCALRawUtils : public TObject {
   static Double_t fgTimeBinWidth;       // maximum sampled time of the raw RO signal                             
   static Int_t fgThreshold;             // threshold
   static Int_t fgDDLPerSuperModule;     // number of DDL per SuperModule
+  static Int_t fgPedestalValue;         // pedestal value for Digits2Raw
+  static Double_t fgFEENoise;           // electronics noise in ADC units
 
   AliEMCALGeometry* fGeom;         //geometry
   AliAltroMapping*  fMapping[2];   //only two for now
 
   TString fOption;                      //! option passed from Reconstructor
 
-  ClassDef(AliEMCALRawUtils,2)          // utilities for raw signal fitting
+  ClassDef(AliEMCALRawUtils,3)          // utilities for raw signal fitting
 };
 
 #endif

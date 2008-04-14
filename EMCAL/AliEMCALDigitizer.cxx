@@ -241,7 +241,6 @@ void AliEMCALDigitizer::Digitize(Int_t event)
   // after that adds contributions from SDigits. This design 
   // helps to avoid scanning over the list of digits to add 
   // contribution of any new SDigit.
-  static int isTrd1Geom = -1; // -1 - mean undefined 
   static int nEMC=0; //max number of digits possible
 
   AliRunLoader *rl = AliRunLoader::GetRunLoader();
@@ -266,16 +265,9 @@ void AliEMCALDigitizer::Digitize(Int_t event)
   else 
     AliFatal("Could not get AliRun from runLoader");
 
-  if(isTrd1Geom < 0) { 
-    AliDebug(1, Form(" get Geometry %s : %s ", geom->GetName(),geom->GetTitle()));
-    TString ng(geom->GetName());
-    isTrd1Geom = 0;
-    if(ng.Contains("SHISH") &&  ng.Contains("TRD1")) isTrd1Geom = 1;
-
-    if(isTrd1Geom == 0) nEMC = geom->GetNPhi()*geom->GetNZ();
-    else                nEMC = geom->GetNCells();
-    AliDebug(1,Form("nEMC %i (number cells in EMCAL) | %s | isTrd1Geom %i\n", nEMC, geom->GetName(), isTrd1Geom));
-  }
+  nEMC = geom->GetNCells();
+  AliDebug(1,Form("nEMC %i (number cells in EMCAL) | %s \n", nEMC, geom->GetName()));
+  
   Int_t absID ;
 
   digits->Expand(nEMC) ;
@@ -617,9 +609,10 @@ void AliEMCALDigitizer::InitParameters()
 { 
   // Parameter initialization for digitizer
   // Tune parameters - 24-nov-04; Apr 29, 2007
+  // New parameters JLK 14-Apr-2008
 
-  fMeanPhotonElectron = 3300;  // electrons per GeV 
-  fPinNoise           = 0.010; // pin noise in GEV from analysis test beam data 
+  fMeanPhotonElectron = 4400;  // electrons per GeV 
+  fPinNoise           = 0.037; // pin noise in GEV from analysis test beam data 
   if (fPinNoise == 0. ) 
     Warning("InitParameters", "No noise added\n") ; 
   fDigitThreshold     = fPinNoise * 3; // 3 * sigma
@@ -691,6 +684,7 @@ void AliEMCALDigitizer::MixWith(TString alirunFileName, TString eventFolderName)
     fInput++ ;
 }  
 
+//__________________________________________________________________
 void AliEMCALDigitizer::Print1(Option_t * option)
 { // 19-nov-04 - just for convinience
   Print(); 
@@ -837,12 +831,14 @@ void AliEMCALDigitizer::WriteDigits()
 
 }
 
+//__________________________________________________________________
 void AliEMCALDigitizer::Browse(TBrowser* b)
 {
   if(fHists) b->Add(fHists);
   TTask::Browse(b);
 }
 
+//__________________________________________________________________
 TList *AliEMCALDigitizer::BookControlHists(int var)
 { 
   // 22-nov-04
@@ -866,6 +862,7 @@ TList *AliEMCALDigitizer::BookControlHists(int var)
   return fHists;
 }
 
+//__________________________________________________________________
 void AliEMCALDigitizer::SaveHists(const char* name, Bool_t kSingleKey, const char* opt)
 {
   AliEMCALHistoUtilities::SaveListOfHists(fHists, name, kSingleKey, opt); 
