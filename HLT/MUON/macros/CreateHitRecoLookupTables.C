@@ -17,7 +17,7 @@
 /*********************************************
 Purpose:  A macro to generate LookupTable
           in the following form
-detElemId+manuid+channelId  buspatchId Ix  IY  X  Y  B/NB
+buspatchId+manuid+channelId  buspatchId Ix  IY  X  Y  B/NB
 
 Created:  7/10/2005
 Modified: 22/12/2005
@@ -27,10 +27,8 @@ Modified: 24/08/2007 (To adopt to AliRoot v4-06-Release)
 
 Run Info: To run this code copy "rootlogon.C" 
           in the current directory from $ALICE_ROOT/MUON 
-          and specify the 
-          transformFileName as "geometry.root" of the 
-          simulation directory.Then compile and run using
-          .L generateLookupTable.C++
+           then compile and run using
+          .L CreateHitRecoLookupTables.C+
 
 Author:   Indranil Das, HEP, SINP, Kolkata
 Email:    indra.das@saha.ac.in
@@ -41,8 +39,11 @@ Email:    indra.das@saha.ac.in
 //STEER 
 #include "AliCDBManager.h"
 #include "AliGeomManager.h"
+
 //MUON
 #include "AliMUONGeometryTransformer.h"
+#include "AliMUONCalibrationData.h"
+#include "AliMUONVCalibParam.h"
 
 //MUON/mapping 
 #include "AliMpCDB.h"
@@ -52,14 +53,13 @@ Email:    indra.das@saha.ac.in
 #include "AliMpDEIterator.h"
 #include "AliMpVSegmentation.h"
 #include "AliMpDEManager.h"
-
-class AliMpDDLStore ;
+#include <AliMpDetElement.h>
 
 using namespace std;
 
 Bool_t CreateHitRecoLookupTables(TString CDBPath = "local://$ALICE_ROOT", Int_t run = 0, Bool_t warn = kTRUE)
 {
-  Char_t filename1[20], filename2[20];
+  Char_t filename1[50];
   Int_t chamberId;
   
   AliCDBManager* cdbManager = AliCDBManager::Instance();
@@ -79,30 +79,27 @@ Bool_t CreateHitRecoLookupTables(TString CDBPath = "local://$ALICE_ROOT", Int_t 
     return kFALSE;
   }
   
-//   AliMpSegmentation *mpSegFactory = AliMpSegmentation::ReadData(); 
-
-//   AliMpDDLStore* fDDLStore = AliMpDDLStore::ReadData();
+  int maxDDL = 8;
+  FILE *fout[maxDDL];
+  for(int iDDL = 0;iDDL<maxDDL; iDDL++){
+    sprintf(filename1,"Lut%d.dat",iDDL+13);
+    fout[iDDL] = fopen(filename1,"w");
+  }
   
-//   AliMUONGeometryTransformer* chamberGeometryTransformer = new AliMUONGeometryTransformer();
-//   chamberGeometryTransformer->LoadGeometryData(transformFileName);
-  
-  for(Int_t iCh = 0; iCh < 4; iCh++){ // max 4
-    
-    sprintf(filename1,"Lut%d.dat",2*(6+iCh)+1);
-    FILE *fout1 = fopen(filename1,"w");
+  AliMUONCalibrationData calibData(run);
 
-    sprintf(filename2,"Lut%d.dat",2*(6+iCh)+2);
-    FILE *fout2 = fopen(filename2,"w");
+  int totMaxIX = -1;
+  int totMaxIY = -1;
 
-    chamberId = iCh + 6;
+  for(Int_t iCh = 6; iCh < 10; iCh++){ // max 4
+
+    chamberId = iCh ;
 
     AliMpDEIterator it;
     for ( it.First(chamberId); ! it.IsDone(); it.Next() ) {
     
       Int_t detElemId = it.CurrentDEId();
-      
-      cout<<"Running for detElemId :"<<detElemId<<endl;
-      
+      int iDDL = AliMpDDLStore::Instance()->GetDetElement(detElemId)->GetDdlId() - 12 ;
       for(Int_t iCath = 0 ; iCath <= 1 ; iCath++){
 	
 	AliMp::CathodType cath;
@@ -111,35 +108,43 @@ Bool_t CreateHitRecoLookupTables(TString CDBPath = "local://$ALICE_ROOT", Int_t 
 	  cath = AliMp::kCath0 ;
 	else
 	  cath = AliMp::kCath1 ;
-	
-	const AliMpVSegmentation* seg = mpSegFactory->CreateMpSegmentation(detElemId, cath);
+
+	const AliMpVSegmentation* seg = mpSegFactory->GetMpSegmentation(detElemId, cath);
 	AliMp::PlaneType plane = seg->PlaneType(); 
 	Int_t maxIX = seg->MaxPadIndexX();  
 	Int_t maxIY = seg->MaxPadIndexY(); 
-	Int_t idManuChannel, manuId, channelId,idetElemId;
+	if(maxIX > totMaxIX)
+	  totMaxIX = maxIX;
+	if(maxIY > totMaxIY)
+	  totMaxIY = maxIY;
+
+	Int_t idManuChannel, manuId, channelId, buspatchId;
+	float padSizeX, padSizeY;
+	float halfPadSize ;
 	Double_t realX, realY, realZ;
 	Double_t localX, localY, localZ;
-	Double_t padSizeX, padSizeY;
-	Int_t pcbType;
+	Float_t calibA0Coeff,calibA1Coeff,pedestal,sigma;
+	Int_t thresold,saturation;
 
-	//Pad Info of a segment
+// 	cout<<"Running for detElemId :"<<detElemId<<", and plane : "<<plane<<endl;
+	//Pad Info of a segment to print in lookuptable
 	for(Int_t iX = 0; iX<= maxIX ; iX++){
 	  for(Int_t iY = 0; iY<= maxIY ; iY++){
 	    if(seg->HasPad(AliMpIntPair(iX,iY))){
 	      AliMpPad pad = seg->PadByIndices(AliMpIntPair(iX,iY),kFALSE);
-	      
+
 	      // Getting Manu id
 	      manuId = pad.GetLocation().GetFirst();
 	      manuId &= 0x7FF; // 11 bits 
+
+	      buspatchId = AliMpDDLStore::Instance()->GetBusPatchId(detElemId,manuId);
 	      
 	      // Getting channel id
 	      channelId =  pad.GetLocation().GetSecond();
 	      channelId &= 0x3F; // 6 bits
 	      
-	      idetElemId = detElemId%100;
-	      
 	      idManuChannel &= 0x0;
-	      idManuChannel = (idManuChannel|idetElemId)<<11;  
+	      idManuChannel = (idManuChannel|buspatchId)<<11;  
 	      idManuChannel = (idManuChannel|manuId)<<6 ;
 	      idManuChannel |= channelId ;
 	      
@@ -150,34 +155,27 @@ Bool_t CreateHitRecoLookupTables(TString CDBPath = "local://$ALICE_ROOT", Int_t 
  	      chamberGeometryTransformer->Local2Global(detElemId,localX,localY,localZ,
  						       realX,realY,realZ);
 
-	      padSizeX = 2.0*pad.Dimensions().X();
-	      padSizeY = 2.0*pad.Dimensions().Y();
+	      padSizeX = pad.Dimensions().X();
+	      padSizeY = pad.Dimensions().Y();
 
-	      if(plane == 0 ){
-		if(padSizeX==2.5)
-		  pcbType = 0;
-		else if(padSizeX==5.0)
-		  pcbType = 1;
-		else
-		  pcbType = 2;
-	      }
-	      else{
-		if(padSizeY==2.5)
-		  pcbType = 0;
-		else if(padSizeY==5.0)
-		  pcbType = 1;
-		else
-		  pcbType = 2;
-	      }
-		
-	      if(idetElemId<7 || idetElemId > 19){
-  		fprintf(fout2,"%d\t%d\t%d\t%f\t%f\t%f\t%d\t%d\n",idManuChannel,iX,iY,realX,realY,realZ,pcbType,plane);
-	      }
-	      else{
- 		fprintf(fout1,"%d\t%d\t%d\t%f\t%f\t%f\t%d\t%d\n",idManuChannel,iX,iY,realX,realY,realZ,pcbType,plane);
-	      }// HasPad Condn
-	      
-	    }
+	      calibA0Coeff = (calibData.Gains(detElemId,manuId))->ValueAsFloat(channelId,0) ;
+	      calibA1Coeff = (calibData.Gains(detElemId,manuId))->ValueAsFloat(channelId,1) ;
+	      thresold = (calibData.Gains(detElemId,manuId))->ValueAsInt(channelId,2) ;
+	      saturation = (calibData.Gains(detElemId,manuId))->ValueAsInt(channelId,4) ;
+
+	      pedestal = (calibData.Pedestals(detElemId,manuId))->ValueAsFloat(channelId,0);
+	      sigma = (calibData.Pedestals(detElemId,manuId))->ValueAsFloat(channelId,1);
+
+	      if(plane==0)
+		halfPadSize = padSizeX;
+	      else
+		halfPadSize = padSizeY;
+
+	      fprintf(fout[iDDL],"%d\t%d\t%d\t%d\t%f\t%f\t%f\t%f\t%d\t%f\t%f\t%f\t%f\t%d\t%d\n",
+		      idManuChannel,detElemId,iX,iY,realX,realY,realZ,
+		      halfPadSize,plane,pedestal,sigma,calibA0Coeff,calibA1Coeff,thresold,saturation);
+
+	    }// HasPad Condn
 	  }// iY loop
 	}// iX loop
 	
@@ -185,9 +183,15 @@ Bool_t CreateHitRecoLookupTables(TString CDBPath = "local://$ALICE_ROOT", Int_t 
 
     } // detElemId loop
 
-    fclose(fout1);
-    fclose(fout2);
+//     fclose(fout1);
+
   }// ichamber loop
+
+  for(int iDDL = 0;iDDL<maxDDL; iDDL++){
+    fclose(fout[iDDL]);
+  }
+
+//   cout<<"TotMaxIX : "<<totMaxIX<<", and totMaxIY : "<<totMaxIY<<endl;
   
   return kTRUE;
 }

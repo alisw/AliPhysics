@@ -38,15 +38,33 @@
 #include <cerrno>
 #include <cassert>
 
+//STEER 
+#include "AliCDBManager.h"
+#include "AliGeomManager.h"
+
+//MUON
+#include "AliMUONGeometryTransformer.h"
+#include "AliMUONCalibrationData.h"
+#include "AliMUONVCalibParam.h"
+
+//MUON/mapping 
+#include "AliMpCDB.h"
+#include "AliMpPad.h"
+#include "AliMpSegmentation.h"
+#include "AliMpDDLStore.h"
+#include "AliMpDEIterator.h"
+#include "AliMpVSegmentation.h"
+#include "AliMpDEManager.h"
+#include "AliMpDetElement.h"
+
 ClassImp(AliHLTMUONHitReconstructorComponent)
 
 
 AliHLTMUONHitReconstructorComponent::AliHLTMUONHitReconstructorComponent() :
 	AliHLTProcessor(),
 	fHitRec(NULL),
-	fDDLDir(""),
 	fDDL(0),
-	fReaderType(false),
+	fIdToEntry(),
 	fWarnForUnexpecedBlock(false)
 {
 	///
@@ -60,6 +78,11 @@ AliHLTMUONHitReconstructorComponent::~AliHLTMUONHitReconstructorComponent()
 	///
 	/// Default destructor.
 	///
+	
+	if (fHitRec != NULL)
+	{
+		delete fHitRec;
+	}
 }
 
 const char* AliHLTMUONHitReconstructorComponent::GetComponentID()
@@ -120,131 +143,212 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 	/// Inherited from AliHLTComponent.
 	/// Parses the command line parameters and initialises the component.
 	///
+
+	HLTInfo("Initialising dHLT hit reconstruction component.");
 	
-  // perform initialization. We check whether our relative output size is specified in the arguments.
-     
-  HLTInfo("Initialising DHLT HitReconstruction Component");
-
-  fHitRec = new AliHLTMUONHitReconstructor();
-  fWarnForUnexpecedBlock = false;
-
-  // this is to get rid of the warning "unused parameter"
-  if (argc==0 && argv==NULL) {
-    HLTError("Arguments missing", " no arguments" );
-  }
-
-  char lutFileName[500],buspatchFileName[500];
-
-  int i = 0;
-  char* cpErr;
-  while ( i < argc )
-    {
-      HLTDebug("argv[%d] == %s", i, argv[i] );
-      
-      if ( !strcmp( argv[i], "-lut" ) ) {
-	if ( argc <= i+1 ) {
-	  HLTError("LookupTable filename not specified" );
-	  return EINVAL; /* Invalid argument */ 
-	}
-	    
-	sprintf(lutFileName,"%s",argv[i+1]);
-	
-	i += 2;
-	continue;
-      }// lut argument
-	  
-	  
-      if ( !strcmp( argv[i], "-ddl" ) ) {
-	if ( argc <= i+1 ) {
-	  HLTError("DDL number not specified" );
-	  return EINVAL;  /* Invalid argument */
-	}
-	    
-	unsigned long num = strtoul( argv[i+1], &cpErr, 0 );
-	if (cpErr == NULL or *cpErr != '\0')
-	  {
-	    HLTError("Cannot convert '%s' to DDL Number ", argv[i+1] );
-	    return EINVAL;
-	  }
-	if (num < 13 or 20 < num)
+	try
 	{
-		HLTError("The DDL number must be in the range [13..20].");
+		fHitRec = new AliHLTMUONHitReconstructor();
+	}
+	catch (const std::bad_alloc&)
+	{
+		HLTError("Could not allocate more memory for the hit reconstructor component.");
+		return -ENOMEM;
+	}
+	
+	fWarnForUnexpecedBlock = false;
+
+	const char* lutFileName = NULL;
+	const char* cdbPath = NULL;
+	Int_t run = -1;
+	bool useCDB = false;
+	
+	for (int i = 0; i < argc; i++)
+	{
+		HLTDebug("argv[%d] == %s", i, argv[i]);
+		
+		if (strcmp( argv[i], "-ddl" ) == 0)
+		{
+			if (argc <= i+1)
+			{
+				HLTError("The DDL number was not specified. Must be in the range [13..20].");
+				return EINVAL;
+			}
+			
+			char* cpErr = NULL;
+			unsigned long num = strtoul( argv[i+1], &cpErr, 0 );
+			if (cpErr == NULL or *cpErr != '\0')
+			{
+				HLTError("Cannot convert '%s' to DDL Number ", argv[i+1] );
+				return EINVAL;
+			}
+			if (num < 13 or 20 < num)
+			{
+				HLTError("The DDL number must be in the range [13..20].");
+				return EINVAL;
+			}
+			fDDL = num - 1;
+			
+			i++;
+			continue;
+		} // -ddl argument
+		
+		if (strcmp( argv[i], "-lut" ) == 0)
+		{
+			if (argc <= i+1)
+			{
+				HLTError("The lookup table filename was not specified.");
+				return EINVAL;
+			}
+			lutFileName = argv[i+1];
+			i++;
+			continue;
+		} // -lut argument
+		
+		if (strcmp( argv[i], "-cdb" ) == 0)
+		{
+			useCDB = true;
+			continue;
+		} // -cdb argument
+		
+		if (strcmp( argv[i], "-cdbpath" ) == 0)
+		{
+			if ( argc <= i+1 )
+			{
+				HLTError("The CDB path was not specified." );
+				return EINVAL;
+			}
+			cdbPath = argv[i+1];
+			useCDB = true;
+			i++;
+			continue;
+		} // -cdb argument
+	
+		if (strcmp( argv[i], "-run" ) == 0)
+		{
+			if ( argc <= i+1 )
+			{
+				HLTError("The RUN number was not specified." );
+				return EINVAL;
+			}
+			
+			char* cpErr = NULL;
+			run = Int_t( strtoul(argv[i+1], &cpErr, 0) );
+			if (cpErr == NULL or *cpErr != '\0')
+			{
+				HLTError("Cannot convert '%s' to a valid run number."
+					" Expected an integer value.", argv[i+1]
+				);
+				return EINVAL;
+			}
+			
+			i++;
+			continue;
+		} // -run argument
+		
+		if (strcmp( argv[i], "-warn_on_unexpected_block" ) == 0)
+		{
+			fWarnForUnexpecedBlock = true;
+			continue;
+		}
+	
+		HLTError("Unknown option '%s'", argv[i]);
 		return EINVAL;
-	}
-	fDDL = num - 1;
 	
-	i += 2;
-	continue;
-      }// ddl argument
-      
-
-      if ( !strcmp( argv[i], "-rawdir" ) ) {
-	if ( argc <= i+1 ) {
-	  HLTError("DDL directory not specified" );
-	  return EINVAL;  /* Invalid argument */
-	}
-	    
-	fDDLDir = argv[i+1] ;
-	    
-	i += 2;
-	continue;
-      }// ddl directory argument
-	  
-	  
-      if ( !strcmp( argv[i], "-buspatchmap" ) ) {
-	if ( argc <= i+1 ) {
-	  HLTError("Buspatch filename not specified" );
-	  return EINVAL; /* Invalid argument */
-	}
-	    
-	sprintf(buspatchFileName,"%s",argv[i+1]);
+	} // for loop
 	
-	i += 2;
-	continue;
-      }// buspatch argument
-
-      if ( !strcmp( argv[i], "-rawreader" ) ) {
-	fReaderType = true; // true when using rawreader for standalone it is set to false.
-	i += 1;
-	continue;
-      }
-	  
-      if ( !strcmp( argv[i], "-warn_on_unexpected_block" ) ) {
-        fWarnForUnexpecedBlock = true;
-	i++;
-	continue;
-      }
-
-      HLTError("Unknown option '%s'", argv[i] );
-      return EINVAL;
-      
-    }//while loop
-
-  int lutline = fHitRec->GetLutLine(fDDL);
-  AliHLTMUONHitReconstructor::DHLTLut* lookupTable = new AliHLTMUONHitReconstructor::DHLTLut[lutline];
-  if(!ReadLookUpTable(lookupTable,lutFileName)){
-    HLTError("Failed to read lut, lut cannot be read, DoInit");
-    return ENOENT ; /* No such file or directory */
-  }else{
-    
-    BusToDetElem busToDetElem;
-    BusToDDL busToDDL;
-    if(!ReadBusPatchToDetElemFile(busToDetElem,busToDDL,buspatchFileName)){
-      HLTError("Failed to read buspatchmap, buspatchmap cannot be read, DoInit");
-      return ENOENT ; /* No such file or directory */
-    }
-    
-    fHitRec->SetBusToDetMap(busToDetElem);
-    fHitRec->SetBusToDDLMap(busToDDL);
-    fHitRec->LoadLookUpTable(lookupTable,fDDL);
-    
-  }// reading lut
-
-  delete []lookupTable;
-  
-  HLTInfo("Initialisation of DHLT HitReconstruction Component is done");
-  
-  return 0;
+	if (lutFileName == NULL) useCDB = true;
+	
+	AliHLTMUONHitRecoLutRow* lookupTable;
+	
+	if (useCDB)
+	{
+		if(!ReadCDB(lookupTable,cdbPath,run))
+		{
+			HLTError("Failed to read cdb, cdb cannot be read, DoInit");
+			
+			if (fHitRec)
+			{
+				delete fHitRec;
+				fHitRec = NULL;
+			}
+			if(lookupTable)
+				delete []lookupTable;
+			
+			return ENOENT ; /* No such file or directory */
+		}
+	}
+	else
+	{
+		AliHLTUInt32_t lutLine;
+		if(!GetLutLine(lutFileName,fDDL,lutLine))
+		{
+			HLTError("Failed for lookuptable count the number of lines in lookuptable, DoInit");
+			
+			if(fHitRec)
+				delete fHitRec;
+			return EIO;
+		}
+	
+		try
+		{
+			lookupTable = new AliHLTMUONHitRecoLutRow[lutLine];
+		}
+		catch(const std::bad_alloc&)
+		{
+			HLTError("Dynamic memory allocation failed for lookuptable, DoInit");
+			
+			if(fHitRec)
+				delete fHitRec;
+			
+			return ENOMEM;
+		}
+	
+	
+		if(!ReadLookUpTable(lookupTable,lutFileName))
+		{
+			HLTError("Failed to read lut, lut cannot be read, DoInit");
+			
+			if(fHitRec)
+				delete fHitRec;
+			if(lookupTable)
+				delete []lookupTable;
+			
+			return ENOENT ; /* No such file or directory */
+		}
+	}
+	
+	if(!fHitRec->SetIdManuChannelToEntry(fIdToEntry))
+	{
+		HLTError("Failed to set fIdToEntry mapping, DoInit");
+		
+		if(fHitRec)
+		delete fHitRec;
+		if(lookupTable)
+		delete []lookupTable;
+		
+		fIdToEntry.clear();
+		
+		return ENOENT ; /* No such file or directory */
+	}
+	
+	if(!fHitRec->LoadLookUpTable(lookupTable,fDDL))
+	{
+		HLTError("Cannot Laod hitrec lookuptable , DoInit");
+		
+		if(fHitRec)
+		delete fHitRec;
+		if(lookupTable)
+		delete []lookupTable;
+		
+		fIdToEntry.clear();
+		
+		return ENOENT;
+	}
+	
+	delete [] lookupTable;
+	
+	return 0;
 }
 
 
@@ -254,12 +358,17 @@ int AliHLTMUONHitReconstructorComponent::DoDeinit()
 	/// Inherited from AliHLTComponent. Performs a cleanup of the component.
 	///
 	
-  if(fHitRec)
-    delete fHitRec;
-  
-  HLTInfo(" Deinitialising DHLT HitReconstruction Component");
-  
-  return 0;
+	HLTInfo("Deinitialising dHLT hit reconstruction component.");
+	
+	if (fHitRec != NULL)
+	{
+		delete fHitRec;
+		fHitRec = NULL;
+	}
+	
+	fIdToEntry.clear();
+	
+	return 0;
 }
 
 
@@ -329,6 +438,13 @@ int AliHLTMUONHitReconstructorComponent::DoEvent(
 			continue;
 		}
 		
+		bool ddl[22];
+		AliHLTMUONUtils::UnpackSpecBits(blocks[n].fSpecification, ddl);
+		if (not ddl[fDDL])
+		{
+			HLTWarning("Received raw data from an unexpected DDL.");
+		}
+		
 		// Create a new output data block and initialise the header.
 		AliHLTMUONRecHitsBlockWriter block(outputPtr+totalSize, size-totalSize);
 		if (not block.InitCommonHeader())
@@ -347,10 +463,12 @@ int AliHLTMUONHitReconstructorComponent::DoEvent(
 			+ fHitRec->GetkDDLHeaderSize();
 		AliHLTUInt32_t nofHit = block.MaxNumberOfEntries();
 
+#ifdef DEBUG
 		HLTDebug("=========== Dumping DDL payload buffer ==========");
 		for (AliHLTUInt32_t j = 0; j < totalDDLSize; j++)
 			HLTDebug("buffer[%d] : %x",j,buffer[j]);
 		HLTDebug("================== End of dump =================");
+#endif // DEBUG
 
 		if (not fHitRec->Run(buffer, ddlRawDataSize, block.GetArray(), nofHit))
 		{
@@ -387,74 +505,247 @@ int AliHLTMUONHitReconstructorComponent::DoEvent(
 }
 
 
-bool AliHLTMUONHitReconstructorComponent::ReadLookUpTable(AliHLTMUONHitReconstructor::DHLTLut* lookupTable, const char* lutpath)
+bool AliHLTMUONHitReconstructorComponent::GetLutLine(
+		const char* lutFileName, AliHLTInt32_t /*iDDL*/, AliHLTUInt32_t& iLine
+	)
 {
-	///
-	/// Read in the lookup table from a text file.
-	///
-	
-  if (fDDL < AliHLTMUONHitReconstructor::GetkDDLOffSet() ||
-      fDDL >= AliHLTMUONHitReconstructor::GetkDDLOffSet() + AliHLTMUONHitReconstructor::GetkNofDDL()){
-    HLTError("DDL number is out of range");
+  // Reads LUT from CDB.
+  // TODO: combine this with ReadLookUpTable().
+  
+  ifstream fin(lutFileName);
+
+  if(!fin){
+    HLTError("Failed to open file '%s' ",lutFileName);
     return false;
   }
-  
-  int lutLine = fHitRec->GetLutLine(fDDL);
-  
-  FILE* fin = fopen(lutpath, "r");
-  if (fin == NULL){
-    HLTError("Failed to open file: %s",lutpath);
-    return false;
+
+  string s;
+  iLine = 0;
+  while(getline(fin,s)){
+    iLine++;
   }
-  
-  for(int i=0;i<lutLine;i++){
-    fscanf(
-	   fin,
-	   "%d\t%d\t%d\t%f\t%f\t%f\t%d\t%d\n",
-	   &lookupTable[i].fIdManuChannel,
-	   &lookupTable[i].fIX,
-	   &lookupTable[i].fIY,
-	   &lookupTable[i].fRealX,
-	   &lookupTable[i].fRealY,
-	   &lookupTable[i].fRealZ,
-	   &lookupTable[i].fPcbZone,
-	   &lookupTable[i].fPlane
-	   );
-  }
-  
-  fclose(fin);
+
+  fin.close();
+
   return true;
 }
 
 
-bool AliHLTMUONHitReconstructorComponent::ReadBusPatchToDetElemFile(BusToDetElem& busToDetElem, BusToDDL& busToDDL, const char* buspatchmappath)
+bool AliHLTMUONHitReconstructorComponent::ReadLookUpTable(
+		AliHLTMUONHitRecoLutRow* lookupTable, const char* lutFileName
+	)
 {
 	///
-	/// Read in the lookup table for bus patch to detector element IDs from a text file.
+	/// Read in the lookup table from a text file.
 	///
-	
-  char getLine[80];
-  char temp;
-  int detElem, minBusPatch, maxBusPatch, ddl;
   
-  FILE* fin = fopen(buspatchmappath, "r");
-  if (fin == NULL){
-    HLTError("Failed to open file: %s",buspatchmappath);
+  if (fDDL < AliHLTMUONHitReconstructor::GetkDDLOffSet() ||
+      fDDL >= AliHLTMUONHitReconstructor::GetkDDLOffSet() + AliHLTMUONHitReconstructor::GetkNofDDL())
+  {
+    HLTError("DDL number is out of range");
     return false;
   }
   
-  while (feof(fin)==0){
-    fgets(getLine,80,fin);
-    sscanf(getLine, "%d\t%d %c %d\t%d", &detElem, &minBusPatch, &temp, &maxBusPatch,&ddl);
-    if (detElem >= 700 && detElem <= 1025){
-      
-      for(int i = minBusPatch; i <= maxBusPatch; i++){
-	busToDetElem[i] = detElem;
-	busToDDL[i] = ddl;
-      }//for loop
-    } // detElem condn
-  } // while loop for file
+  AliHLTUInt32_t lutLine;
+  if(!GetLutLine(lutFileName,fDDL,lutLine)){
+    HLTError("Failed for lookuptable count the number of lines in lookuptable, DoInit");
+    
+    return false;
+  }
   
+  int idManuChannel;
+  fIdToEntry.clear();
+  
+  FILE *fin = fopen(lutFileName,"r");
+  if(fin == NULL){
+    printf("Failed to open file %s\n",lutFileName);
+    return false;
+  }else{
+    for(AliHLTUInt32_t i=0;i<lutLine;i++){
+      fscanf(fin,"%d\t%d\t%d\t%d\t%f\t%f\t%f\t%f\t%d\t%f\t%f\t%f\t%f\t%d\t%d\n",
+	     &idManuChannel,&lookupTable[i].fDetElemId,&lookupTable[i].fIX,
+	     &lookupTable[i].fIY,&lookupTable[i].fRealX,
+	     &lookupTable[i].fRealY,&lookupTable[i].fRealZ,
+	     &lookupTable[i].fHalfPadSize,&lookupTable[i].fPlane,
+	     &lookupTable[i].fPed,&lookupTable[i].fSigma,&lookupTable[i].fA0,
+	     &lookupTable[i].fA1,&lookupTable[i].fThres,&lookupTable[i].fSat);
+      
+      fIdToEntry[idManuChannel] = i+1;
+
+      
+    }
+  }
+
   fclose(fin);
+
+  return true;
+}
+
+
+bool AliHLTMUONHitReconstructorComponent::ReadCDB(
+		AliHLTMUONHitRecoLutRow*& lookupTable,
+		const char* cdbPath, Int_t run
+	)
+{
+  // Reads LUT from CDB.
+  // TODO: merge this with CreateHitRecoLookupTables.C, make this static and use in the macro for example.
+
+  vector<AliHLTMUONHitRecoLutRow> lutList;
+  lutList.clear();
+  AliHLTMUONHitRecoLutRow lut;
+  int iEntry = 0;
+
+  Bool_t warn = kTRUE;
+
+  AliCDBManager* cdbManager = AliCDBManager::Instance();
+  if (cdbPath != NULL) cdbManager->SetDefaultStorage(cdbPath);
+  if (run != -1) cdbManager->SetRun(run);
+
+  if (! AliMpCDB::LoadDDLStore(warn)){
+    HLTError("Failed to Load DDLStore specified for CDBPath '%s', and Run : '%d'",cdbPath,run);
+    return false;
+  }
+
+  AliMpSegmentation *mpSegFactory = AliMpSegmentation::Instance();
+  AliGeomManager::LoadGeometry();
+  AliMUONGeometryTransformer* chamberGeometryTransformer = new AliMUONGeometryTransformer();
+  if(! chamberGeometryTransformer->LoadGeometryData()){
+    HLTError("Failed to Load Geomerty Data ");
+    return false;
+  }
+  
+  AliMUONCalibrationData calibData(run);
+
+  int totMaxIX = -1;
+  int totMaxIY = -1;
+  Int_t chamberId;
+
+  for(Int_t iCh = 6; iCh < 10; iCh++){ // max 4
+
+    chamberId = iCh ;
+
+    AliMpDEIterator it;
+    for ( it.First(chamberId); ! it.IsDone(); it.Next() ) {
+    
+      Int_t detElemId = it.CurrentDEId();
+      int iDDL = AliMpDDLStore::Instance()->GetDetElement(detElemId)->GetDdlId() + 1;
+      if(iDDL == fDDL){
+
+	for(Int_t iCath = 0 ; iCath <= 1 ; iCath++){
+	
+	  AliMp::CathodType cath;
+	  
+	  if(iCath == 0)
+	    cath = AliMp::kCath0 ;
+	  else
+	  cath = AliMp::kCath1 ;
+	  
+	  const AliMpVSegmentation* seg = mpSegFactory->GetMpSegmentation(detElemId, cath);
+	  AliMp::PlaneType plane = seg->PlaneType(); 
+	  Int_t maxIX = seg->MaxPadIndexX();  
+	  Int_t maxIY = seg->MaxPadIndexY(); 
+	  if(maxIX > totMaxIX)
+	    totMaxIX = maxIX;
+	  if(maxIY > totMaxIY)
+	    totMaxIY = maxIY;
+	  
+	  Int_t idManuChannel, manuId, channelId, buspatchId;
+	  float padSizeX, padSizeY;
+	  float halfPadSize ;
+	  Double_t realX, realY, realZ;
+	  Double_t localX, localY, localZ;
+	  Float_t calibA0Coeff,calibA1Coeff,pedestal,sigma;
+	  Int_t thresold,saturation;
+	  
+	  // 	cout<<"Running for detElemId :"<<detElemId<<", and plane : "<<plane<<endl;
+	  //Pad Info of a segment to print in lookuptable
+	  for(Int_t iX = 0; iX<= maxIX ; iX++){
+	    for(Int_t iY = 0; iY<= maxIY ; iY++){
+	      if(seg->HasPad(AliMpIntPair(iX,iY))){
+		AliMpPad pad = seg->PadByIndices(AliMpIntPair(iX,iY),kFALSE);
+		
+		// Getting Manu id
+		manuId = pad.GetLocation().GetFirst();
+		manuId &= 0x7FF; // 11 bits 
+
+		buspatchId = AliMpDDLStore::Instance()->GetBusPatchId(detElemId,manuId);
+		
+		// Getting channel id
+		channelId =  pad.GetLocation().GetSecond();
+		channelId &= 0x3F; // 6 bits
+		
+		idManuChannel &= 0x0;
+		idManuChannel = (idManuChannel|buspatchId)<<11;  
+		idManuChannel = (idManuChannel|manuId)<<6 ;
+		idManuChannel |= channelId ;
+		
+		localX = pad.Position().X();
+		localY = pad.Position().Y();
+		localZ = 0.0;
+		
+		chamberGeometryTransformer->Local2Global(detElemId,localX,localY,localZ,
+ 						       realX,realY,realZ);
+		
+		padSizeX = pad.Dimensions().X();
+		padSizeY = pad.Dimensions().Y();
+		
+		calibA0Coeff = (calibData.Gains(detElemId,manuId))->ValueAsFloat(channelId,0) ;
+		calibA1Coeff = (calibData.Gains(detElemId,manuId))->ValueAsFloat(channelId,1) ;
+		thresold = (calibData.Gains(detElemId,manuId))->ValueAsInt(channelId,2) ;
+		saturation = (calibData.Gains(detElemId,manuId))->ValueAsInt(channelId,4) ;
+		
+		pedestal = (calibData.Pedestals(detElemId,manuId))->ValueAsFloat(channelId,0);
+		sigma = (calibData.Pedestals(detElemId,manuId))->ValueAsFloat(channelId,1);
+		
+		if(plane==0)
+		  halfPadSize = padSizeX;
+		else
+		  halfPadSize = padSizeY;
+		
+		fIdToEntry[idManuChannel] = iEntry+1;
+
+		lut.fDetElemId = detElemId;
+		lut.fIX = iX;
+		lut.fIY = iY;
+		lut.fRealX = realX;
+		lut.fRealY = realY;
+		lut.fRealZ = realZ;
+		lut.fHalfPadSize = halfPadSize;
+		lut.fPlane = plane;
+		lut.fPed = pedestal;
+		lut.fSigma = sigma;
+		lut.fA0 = calibA0Coeff;
+		lut.fA1 = calibA1Coeff;
+		lut.fThres = thresold;
+		lut.fSat = saturation;
+		
+		lutList.push_back(lut);
+		iEntry++;
+	      }// HasPad Condn
+	    }// iY loop
+	  }// iX loop
+	
+	}// iPlane
+      }// iDDL
+    } // detElemId loop
+
+  }// ichamber loop
+
+  AliHLTMUONHitRecoLutRow *temp;
+
+  try{
+    temp = new AliHLTMUONHitRecoLutRow[iEntry];
+  }
+  catch(const std::bad_alloc&){
+    HLTError("Dynamic memory allocation failed for temp");
+
+    return false;
+  }
+  
+  for(int iterm = 0; iterm < iEntry ;iterm++)
+    temp[iterm] = lutList.at(iterm);
+  
+  lookupTable = temp;
+
   return true;
 }
