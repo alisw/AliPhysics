@@ -27,6 +27,7 @@ AliITSPreprocessorSPD::AliITSPreprocessorSPD(AliShuttleInterface* shuttle) :
   // constructor
   AddRunType("DAQ_MIN_TH_SCAN");
   AddRunType("DAQ_MEAN_TH_SCAN");
+  AddRunType("DAQ_GEN_DAC_SCAN");
   AddRunType("DAQ_UNIFORMITY_SCAN");
   AddRunType("DAQ_NOISY_PIX_SCAN");
   AddRunType("DAQ_PIX_DELAY_SCAN");
@@ -74,6 +75,7 @@ UInt_t AliITSPreprocessorSPD::Process(TMap* /*dcsAliasMap*/)
   // *** GET THE FILE IDs FOR DEBUGGING *** //
   if (runType == "DAQ_MIN_TH_SCAN" || 
       runType == "DAQ_MEAN_TH_SCAN" || 
+      runType == "DAQ_GEN_DAC_SCAN" || 
       runType == "DAQ_UNIFORMITY_SCAN" || 
       runType == "DAQ_NOISY_PIX_SCAN" || 
       runType == "DAQ_PIX_DELAY_SCAN" || 
@@ -123,6 +125,7 @@ UInt_t AliITSPreprocessorSPD::Process(TMap* /*dcsAliasMap*/)
   // Standalone runs:
   if (runType == "DAQ_MIN_TH_SCAN" ||
       runType == "DAQ_MEAN_TH_SCAN" ||
+      runType == "DAQ_GEN_DAC_SCAN" || 
       runType == "DAQ_UNIFORMITY_SCAN" ||
       runType == "DAQ_NOISY_PIX_SCAN" ||
       runType == "DAQ_PIX_DELAY_SCAN" ||
