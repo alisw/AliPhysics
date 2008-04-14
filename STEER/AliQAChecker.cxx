@@ -268,42 +268,40 @@ Bool_t AliQAChecker::Run(const char * fileName)
 //_____________________________________________________________________________
 Bool_t AliQAChecker::Run(AliQA::DETECTORINDEX_t det, AliQA::TASKINDEX_t task, TObjArray * list)
 {
-  // run the Quality Assurance Checker for detector det, for task task starting from data in list
+	// run the Quality Assurance Checker for detector det, for task task starting from data in list
 
-  AliQACheckerBase * qac = GetDetQAChecker(det) ; 
-  if (qac)
-    AliDebug(1, Form("QA checker found for %s", AliQA::GetDetName(det).Data())) ;
-  if (!qac)
-	AliError(Form("QA checker not found for %s", AliQA::GetDetName(det).Data())) ; 
+	AliQACheckerBase * qac = GetDetQAChecker(det) ; 
+	if (qac)
+		AliDebug(1, Form("QA checker found for %s", AliQA::GetDetName(det).Data())) ;
+	if (!qac)
+		AliError(Form("QA checker not found for %s", AliQA::GetDetName(det).Data())) ; 
   
-  AliQA::ALITASK_t index = AliQA::kNULLTASK ; 
-  if ( task == AliQA::kRAWS ) 
+	AliQA::ALITASK_t index = AliQA::kNULLTASK ; 
+	if ( task == AliQA::kRAWS ) 
 		index = AliQA::kRAW ; 
-  else if ( task == AliQA::kHITS ) 
+	else if ( task == AliQA::kHITS ) 
 		index = AliQA::kSIM ; 
-  else if ( task == AliQA::kSDIGITS ) 
+	else if ( task == AliQA::kSDIGITS ) 
 		index = AliQA::kSIM ; 
-  else if ( task == AliQA::kDIGITS ) 
+	else if ( task == AliQA::kDIGITS ) 
 		index = AliQA::kSIM ; 
-  else if ( task == AliQA::kRECPOINTS ) 
+	else if ( task == AliQA::kRECPOINTS ) 
 		index = AliQA::kREC ; 
-  else if ( task == AliQA::kTRACKSEGMENTS ) 
+	else if ( task == AliQA::kTRACKSEGMENTS ) 
 		index = AliQA::kREC ; 
-  else if ( task == AliQA::kRECPARTICLES ) 
+	else if ( task == AliQA::kRECPARTICLES ) 
 		index = AliQA::kREC ; 
-  else if ( task == AliQA::kESDS ) 
+	else if ( task == AliQA::kESDS ) 
 		index = AliQA::kESD ; 
 
-  TDirectory * refDir    = NULL ; 
-  TObjArray * refOCDBDir = NULL ;	
+	TDirectory * refDir    = NULL ; 
+	TObjArray * refOCDBDir = NULL ;	
+	qac->Init(det) ; 
 	GetRefSubDir(AliQA::GetDetName(det), AliQA::GetTaskName(task), refDir, refOCDBDir) ;
-  if ( refDir || refOCDBDir) {
-	  qac->Init(det) ; 
+	if ( refDir || refOCDBDir)  // references found
 	  qac->SetRefandData(refDir, refOCDBDir) ; 
-	  qac->Run(index, list) ; 
-  }
-  return kTRUE ; 
-  
+	qac->Run(index, list) ; 
+	return kTRUE ; 
 }
 
 
