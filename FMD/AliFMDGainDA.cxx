@@ -242,11 +242,15 @@ void AliFMDGainDA::UpdatePulseAndADC(UShort_t det, Char_t ring, UShort_t sec, US
   Double_t rms       = hChannel->GetRMS();
   Double_t pulse     = (Double_t)fCurrentPulse*fPulseSize;
   
+  Int_t firstBin = hChannel->GetXaxis()->GetFirst();
+  Int_t lastBin  = hChannel->GetXaxis()->GetLast();
   hChannel->GetXaxis()->SetRangeUser(mean-4*rms,mean+4*rms);
   
   mean      = hChannel->GetMean();
   rms       = hChannel->GetRMS();
-    
+  
+  hChannel->GetXaxis()->SetRange(firstBin,lastBin);
+  
   Int_t channelNumber = strip + (GetCurrentEvent()-1)/800; 
   
   TGraphErrors* channel = GetChannel(det,ring,sec,channelNumber);
@@ -254,9 +258,10 @@ void AliFMDGainDA::UpdatePulseAndADC(UShort_t det, Char_t ring, UShort_t sec, US
   channel->SetPoint(fCurrentPulse,pulse,mean);
   channel->SetPointError(fCurrentPulse,0,rms);
   
+ 
+  
   if(fSaveHistograms) {
     gDirectory->cd(Form("%s:FMD%d%c/sector_%d/strip_%d",fDiagnosticsFilename,det,ring,sec,channelNumber));
-    hChannel->GetXaxis()->SetRange(0,1023);
     hChannel->Write(Form("hFMD%d%c_%d_%d_pulse_%d",det,ring,sec,channelNumber,fCurrentPulse));
   }
   
