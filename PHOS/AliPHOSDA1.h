@@ -18,7 +18,12 @@ class AliPHOSDA1 : public TNamed {
   void  FillHistograms(Float_t e[64][56][2], Float_t t[64][56][2]);
   Int_t GetModule() { return fMod; }
   void  UpdateHistoFile();
-  
+
+  const TH2F* GetTimeEnergyHistogram(Int_t X, Int_t Z, Int_t gain) const 
+  { return fTimeEnergy[X][Z][gain]; }
+  const TH1F* GetHgLgRatioHistogram(Int_t X, Int_t Z) const
+  { return fHgLgRatio[X][Z]; }
+   
  private:
 
   TFile* fHistoFile;            // root file to store histograms in

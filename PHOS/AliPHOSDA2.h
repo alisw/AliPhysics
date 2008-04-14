@@ -18,6 +18,9 @@ class AliPHOSDA2 : public TNamed {
   void  FillQualityHistograms(Float_t quality[64][56][2]);
   Int_t GetModule() { return fMod; }
   void  UpdateHistoFile();
+
+  const TH1F* GetQualityHistogram(Int_t X, Int_t Z, Int_t gain) const
+  { return fHQuality[X][Z][gain]; }
   
  private:
 
