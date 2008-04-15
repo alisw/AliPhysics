@@ -88,7 +88,6 @@ Bool_t AliHMPIDPreprocessor::ProcDcs(TMap* pMap)
   TObjArray arPress(7);        arPress.SetOwner(kTRUE);     //7  Press=f(time) one per chamber
   TObjArray arNmean(21);       arNmean.SetOwner(kTRUE);     //21 Nmean=f(time) one per radiator
   TObjArray arQthre(42);       arQthre.SetOwner(kTRUE);     //42 Qthre=f(time) one per sector
-  TObjArray arUserCut(7);    arUserCut.SetOwner(kTRUE);     //7  user cut in number of sigmas
   
   AliDCSValue *pVal; Int_t cnt=0;
 
@@ -120,11 +119,6 @@ Bool_t AliHMPIDPreprocessor::ProcDcs(TMap* pMap)
          Form("3*10^(3.01e-3*HV%i_%i - 4.72)+170745848*exp(-(P%i+Penv)*0.0162012)",iCh,iSec,iCh),fStartTime,fEndTime),6*iCh+iSec);
     }
     
-// evaluate UserCut
-    Int_t nSigmaUserCut = 3;
-    TObject *pUserCut = new TObject();pUserCut->SetUniqueID(nSigmaUserCut);
-    arUserCut.AddAt(pUserCut,iCh);    
-    
 // evaluate Temperatures    
     for(Int_t iRad=0;iRad<3;iRad++){
       TObjArray *pT1=(TObjArray*)pMap->GetValue(Form("HMP_DET/HMP_MP%i/HMP_MP%i_LIQ_LOOP.actual.sensors.Rad%iIn_Temp",iCh,iCh,iRad));  TIter nextT1(pT1);//Tin
@@ -150,12 +144,8 @@ Bool_t AliHMPIDPreprocessor::ProcDcs(TMap* pMap)
   metaData.SetResponsible("AliHMPIDPreprocessor"); 
   metaData.SetComment("SIMULATED");
 
-//  stDcsStore =   Store("Calib","Qthre",&arQthre,&metaData,0,kTRUE) &&    // from DCS 
-//                 Store("Calib","Nmean",&arNmean,&metaData,0,kTRUE) &&    // from DCS
-//                 Store("Calib","UserCut",&arUserCut,&metaData,0,kTRUE);  //really not from DCS...a method ProcManual maybe needed
   stDcsStore =   Store("Calib","Qthre",&arQthre,&metaData) &&    // from DCS 
-                 Store("Calib","Nmean",&arNmean,&metaData) &&    // from DCS
-                 Store("Calib","UserCut",&arUserCut,&metaData);  //really not from DCS...a method ProcManual maybe needed
+                 Store("Calib","Nmean",&arNmean,&metaData);      // from DCS
   if(!stDcsStore) {
     Log("HMPID - failure to store DCS data results in OCDB");    
   }

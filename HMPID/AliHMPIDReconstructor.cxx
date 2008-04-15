@@ -26,6 +26,7 @@
 #include <AliCDBManager.h>         //ctor
 #include <AliESDEvent.h>           //FillEsd()
 #include <AliRawReader.h>          //Reconstruct() for raw digits
+#include <AliLog.h>                //
 #include "AliHMPIDRawStream.h"     //ConvertDigits()
 #include "AliHMPIDRecoParam.h"     //ctor
 ClassImp(AliHMPIDReconstructor)
@@ -49,24 +50,18 @@ AliHMPIDReconstructor::AliHMPIDReconstructor():AliReconstructor(),fUserCut(0),fD
     fClu->AddAt(pClus,i);
   }
 
-   if(fgkRecoParam!=0x0 && fgkRecoParam->GetUserCutMode()==kFALSE)
-  {
-      for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++) {
+   if(fgkRecoParam!=0x0 && fgkRecoParam->GetUserCutMode()==kTRUE) {
+    for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++) {
       fUserCut[iCh] = fgkRecoParam->GetUserCut(iCh);
       AliDebug(1,Form("UserCut successfully loaded (from RecoParam) for chamber %i -> %i ",iCh,fUserCut[iCh]));
-   }
+    }
   }  
   else {
-  AliCDBEntry *pUserCutEnt =AliCDBManager::Instance()->Get("HMPID/Calib/UserCut");    //contains TObjArray of 14 TObject with n. of sigmas to cut charge 
-  if(pUserCutEnt) {
-    TObjArray *pUserCut = (TObjArray*)pUserCutEnt->GetObject(); 
-    for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++){                  //chambers loop 
-      fUserCut[iCh] = pUserCut->At(iCh)->GetUniqueID();
-      AliDebug(1,Form("UserCut successfully loaded (from OCDB) for chamber %i -> %i ",iCh,fUserCut[iCh]));
+    for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++) {
+      fUserCut[iCh] = 3;                                                                             // minimal requirement for sigma cut
+      AliDebug(1,Form("UserCut loaded from defaults for chamber %i -> %i ",iCh,fUserCut[iCh]));
     }
-   }
-   else {for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++) fUserCut[iCh] = 3;}
-  }
+  } 
 
   AliCDBEntry *pQthreEnt =AliCDBManager::Instance()->Get("HMPID/Calib/Qthre"); //contains TObjArray of 7 TF1
   if(!pQthreEnt) AliFatal("No Qthre available");

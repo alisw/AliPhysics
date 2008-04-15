@@ -21,7 +21,7 @@ public:
           HmpConfig(const char*sFileName);
          ~HmpConfig()                    {Info("ctor","");Cleanup();}
          
-  enum EVersOpts  {kNo=101,kVer0,kVer1,kVer2,kTest, kDeclust=301,kSagita,kFeedback,kElNoise,kQe0=400,kQeNorm,kFlatIdx,kOptics};
+  enum EVersOpts  {kNo=101,kVer0,kVer1,kVer2,kVer3,kTest, kDeclust=301,kSagita,kFeedback,kElNoise,kQe0=400,kQeNorm,kFlatIdx,kOptics};
   enum EGenTypes  {kGunZ=1,kGun1,kGun7,kBox,kHijing,kHijingPara,kPythia,kHmpLib,kNotUsed=999};
   
   enum EDetectors {kPIPE=1,kITS,kTPC,kTRD,kTOF,kFRAME,kMAG,kACORDE,kHALL,kPHOS,kT0,kFMD,kABSO,kPMD,kDIPO,kEMCAL,kVZERO,kMUON,kZDC,kSHILD};
@@ -88,7 +88,8 @@ void HmpConfig::GuiHmp(TGHorizontalFrame *pMainHF)
     new TGRadioButton(fVerBG,   "No"         ,kNo       );   
     new TGRadioButton(fVerBG,   "ver0"       ,kVer0     );
     new TGRadioButton(fVerBG,   "ver1"       ,kVer1     );  
-    new TGRadioButton(fVerBG,   "ver2"       ,kVer2     ); fVerBG->SetButton(kVer2);
+    new TGRadioButton(fVerBG,   "ver2"       ,kVer2     ); 
+    new TGRadioButton(fVerBG,   "ver3"       ,kVer3     ); fVerBG->SetButton(kVer3);
   pHmpGF->AddFrame(fOptBG=new TGButtonGroup(pHmpGF,""));  fOptBG->Connect("Pressed(Int_t)" ,"HmpConfig",this,"HmpVerSlot(Int_t)");
     new TGCheckButton(fOptBG,"Test run position"   ,kTest);       
     new TGCheckButton(fOptBG,"Unfold cluster    "  ,kDeclust);      fOptBG->SetButton(kDeclust);
@@ -131,6 +132,7 @@ void HmpConfig::WriteHmp(FILE *pF)
     if     (fVerBG->GetButton(kVer0)->GetState())           fprintf(pF,"  new AliHMPIDv0(\"Gel %s\");\n\n",title.Data());    
     else if(fVerBG->GetButton(kVer1)->GetState())           fprintf(pF,"  new AliHMPIDv1(\"HMPID\",\"%s\");\n\n",title.Data());   
     else if(fVerBG->GetButton(kVer2)->GetState())           fprintf(pF,"  new AliHMPIDv2(\"HMPID\",\"%s\");\n\n",title.Data());   
+    else if(fVerBG->GetButton(kVer3)->GetState())           fprintf(pF,"  new AliHMPIDv3(\"HMPID\",\"%s\");\n\n",title.Data());   
   }
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -696,8 +698,14 @@ void HmpConfig::WriteBatch()
     if     (fTrkBG->GetButton(kRecoPar)->GetState())
       { 
          fprintf(fp,"  AliHMPIDRecoParam * hmpidRecoParam = AliHMPIDRecoParam::GetUserModeParam(); //Get the HMPID reco param\n"); 
-         fprintf(fp,"  hmpidRecoParam->SetUserCutMode(kFALSE);                                     //Switch to RecoParam from OCDB cuts\n");
-         fprintf(fp,"  hmpidRecoParam->SetUserCut(4,4,4,4,4,4,4);                                  //eg cut for UserCutSigma (Values: ch0, ch1, ..,ch6)\n");
+         fprintf(fp,"  hmpidRecoParam->SetUserCutMode(kTRUE);                                      //Switch to RecoParam\n");
+         fprintf(fp,"  hmpidRecoParam->SetUserCut(0,4);                                            //eg cut for UserCutSigma (Values: ch0)\n");
+         fprintf(fp,"  hmpidRecoParam->SetUserCut(1,4);                                            //eg cut for UserCutSigma (Values: ch1)\n");
+         fprintf(fp,"  hmpidRecoParam->SetUserCut(2,4);                                            //eg cut for UserCutSigma (Values: ch2)\n");
+         fprintf(fp,"  hmpidRecoParam->SetUserCut(3,4);                                            //eg cut for UserCutSigma (Values: ch3)\n");
+         fprintf(fp,"  hmpidRecoParam->SetUserCut(4,4);                                            //eg cut for UserCutSigma (Values: ch4)\n");
+         fprintf(fp,"  hmpidRecoParam->SetUserCut(5,4);                                            //eg cut for UserCutSigma (Values: ch5)\n");
+         fprintf(fp,"  hmpidRecoParam->SetUserCut(6,4);                                            //eg cut for UserCutSigma (Values: ch6)\n");
          fprintf(fp,"  AliHMPIDReconstructor::SetRecoParam(hmpidRecoParam);                        //Pass the RecoPar to the Reconstructor\n");
       }
     //---------------------------------------------                                                    
