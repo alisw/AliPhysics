@@ -119,6 +119,11 @@ public:
             /// Return end of global info word
    UInt_t GetEndOfGlobal()   const {return fgkEndOfGlobal;} 
 
+           /// Return default type for DARC def.
+   UInt_t GetDarcDefaultType()   const {return fgkDarcDefaultType;} 
+          /// Return default type for DARC def.
+   UInt_t GetDarcVadohrType()   const {return fgkDarcVadorhType;} 
+
    // set random numbers to fill variable
    void SetScalersNumbers();
 
@@ -167,6 +172,10 @@ public:
 
    static const UInt_t     fgkEndOfDarc;         ///< end of darc info word
    static const UInt_t     fgkEndOfGlobal;       ///< end of global info word
+
+   static const UInt_t     fgkDarcDefaultType;   ///< default type for DARC def.
+   static const UInt_t     fgkDarcVadorhType;    ///< default type for DARC vadorh
+
 
    TClonesArray* fRegHeaderArray; ///< container for regional header
 

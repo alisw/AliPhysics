@@ -41,6 +41,8 @@ ClassImp(AliMUONDarcHeader)
 
  const UInt_t AliMUONDarcHeader::fgkEndOfDarc   = 0xDEADFACE;
  const UInt_t AliMUONDarcHeader::fgkEndOfGlobal = 0xDEADBEEF;
+ const UInt_t AliMUONDarcHeader::fgkDarcVadorhType    = 4;
+ const UInt_t AliMUONDarcHeader::fgkDarcDefaultType   = 6;
 
 //___________________________________________
 AliMUONDarcHeader::AliMUONDarcHeader()

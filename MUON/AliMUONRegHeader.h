@@ -94,7 +94,8 @@ public:
    Int_t   GetHeaderLength() const {return fgkHeaderLength;}
    /// Return end of regional info word
    UInt_t  GetEndOfReg()     const {return fgkEndOfReg;}
-
+  /// Return error word
+   UInt_t  GetErrorWord()    const {return fgkErrorWord;}
 
    /// Return header
    UInt_t* GetHeader() {return &fDarcWord;}
@@ -146,9 +147,10 @@ public:
    static const Int_t  fgkScalerLength;  ///< length of regional scaler in word
    static const Int_t  fgkHeaderLength;  ///< header length in word
    static const UInt_t fgkEndOfReg;      ///< end of regional info word
-
+   static const UInt_t fgkErrorWord;     ///< error word when a regional board is missing
+   
    TClonesArray* fLocalArray;   ///< array of local structure
 
-   ClassDef(AliMUONRegHeader,3) //MUON regional header for trigger
+   ClassDef(AliMUONRegHeader,4) //MUON regional header for trigger
 };
 #endif

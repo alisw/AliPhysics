@@ -85,22 +85,25 @@ Bool_t AliMUONPayloadTrigger::Decode(UInt_t *buffer, Bool_t scalerEvent)
 
   AliMUONDarcHeader* darcHeader = fDDLTrigger->GetDarcHeader();
 
-  static Int_t kGlobalHeaderSize = darcHeader->GetGlobalHeaderLength(); 
-  static Int_t kDarcHeaderSize   = darcHeader->GetDarcHeaderLength(); 
-  static Int_t kRegHeaderSize    = fRegHeader->GetHeaderLength();
-  
+  static Int_t kGlobalHeaderSize   = darcHeader->GetGlobalHeaderLength(); 
+  static Int_t kDarcHeaderSize     = darcHeader->GetDarcHeaderLength(); 
+  static Int_t kRegHeaderSize      = fRegHeader->GetHeaderLength();
+  static Int_t kRegEmptySize       = fRegHeader->GetHeaderLength()+1 + 16*(fLocalStruct->GetLength()+1);
+  static Int_t kRegEmptyScalerSize = fRegHeader->GetHeaderLength() + fRegHeader->GetScalerLength() + 1 +
+                                      16*(fLocalStruct->GetLength() + fLocalStruct->GetScalerLength() + 1);
+
   Int_t index = 0;
 
   memcpy(darcHeader->GetHeader(), &buffer[index], (kDarcHeaderSize)*4); 
   index += kDarcHeaderSize;
 
 
-  // darc type vardorh
-  if (darcHeader->GetDarcType() == 4)
+  // darc type vadorh
+  if (darcHeader->GetDarcType() == darcHeader->GetDarcVadohrType())
       fMaxReg = 1;
     
   // darc type def.
-  if (darcHeader->GetDarcType() == 6)
+  if (darcHeader->GetDarcType() == darcHeader->GetDarcDefaultType())
       fMaxReg = 8;
       
   if(darcHeader->GetEventType() == scalerEvent) 
@@ -142,6 +145,14 @@ Bool_t AliMUONPayloadTrigger::Decode(UInt_t *buffer, Bool_t scalerEvent)
   // 8 regional boards
   for (Int_t iReg = 0; iReg < fMaxReg; iReg++) {           //loop over regeonal card
 
+    // skip empty regaional board (not connected or with error reading)
+    if (buffer[index] == fRegHeader->GetErrorWord()) {
+      if (scalerEvent)
+        index += kRegEmptyScalerSize;
+      else 
+        index += kRegEmptySize;
+      continue;
+    }
     memcpy(fRegHeader->GetHeader(), &buffer[index], kRegHeaderSize*4);
     index += kRegHeaderSize;
 

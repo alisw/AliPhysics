@@ -36,6 +36,7 @@ ClassImp(AliMUONRegHeader)
  const Int_t  AliMUONRegHeader::fgkHeaderLength = 5;
  const Int_t  AliMUONRegHeader::fgkScalerLength = 10;
  const UInt_t AliMUONRegHeader::fgkEndOfReg     = 0xBEEFFACE;
+ const UInt_t AliMUONRegHeader::fgkErrorWord    = 0xCAFEDEAD;
 
 //___________________________________________
 AliMUONRegHeader::AliMUONRegHeader()
