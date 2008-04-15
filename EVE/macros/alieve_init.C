@@ -12,13 +12,13 @@
 #include <string>
 #endif
 
-// !!!!! Need initialization that will also work for raw.
-// Path and event-id are usually not needed.
-// const Text_t* raw_file = 0,
-
 void alieve_init(const Text_t* path   = ".", Int_t event=0,
-		 const Text_t* cdburi = 0,
-		 Bool_t assert_runloader=kFALSE, Bool_t assert_esd=kFALSE)
+                 const Text_t* esdfile = 0,
+                 const Text_t* rawfile = 0,
+		 const Text_t* cdburi  = 0,
+		 Bool_t assert_runloader = kFALSE,
+                 Bool_t assert_esd       = kFALSE,
+                 Bool_t assert_raw       = kFALSE)
 {
   Info("alieve_init", "Adding standard macros.");
   TString  hack = gSystem->pwd(); // Problem with TGFileBrowser cding
@@ -29,10 +29,14 @@ void alieve_init(const Text_t* path   = ".", Int_t event=0,
 
   gSystem->ProcessEvents();
 
+  AliEveEventManager::SetESDFileName(esdfile);
+  AliEveEventManager::SetRawFileName(rawfile);
+  AliEveEventManager::SetAssertElements(assert_runloader, assert_esd, assert_raw);
+  AliEveEventManager::SetCdbUri(cdburi);
+
   // Open event
-  if(path != 0) {
-    AliEveEventManager::SetCdbUri(cdburi);
-    AliEveEventManager::SetAssertElements(assert_runloader, assert_esd);
+  if(path != 0)
+  {
     printf("Opening event %d from '%s' ...", event, path); fflush(stdout);
     gAliEveEvent = new AliEveEventManager(path, event);
     printf(" done.\n");

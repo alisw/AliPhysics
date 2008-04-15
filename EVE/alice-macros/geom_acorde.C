@@ -11,18 +11,17 @@ void geom_acorde()
 {
   gGeoManager = gEve->GetGeometry("geometry.root");
 
+  TGeoNode* node = gGeoManager->GetTopVolume()->FindNode("ACORDE_1");
+  if (!node) {
+    Warning("geom_acorde()", "Node ACORDE_1 not found,");
+  }
+
   TEveElementList* list = new TEveElementList("ACORDE");
   gEve->AddGlobalElement(list);
 
-  for (Int_t i=1; i<61; ++i)
-  {
-    char form[1000];
-    sprintf(form, "ACORDE1_%d", i);
-    TGeoNode* node = gGeoManager->GetTopVolume()->FindNode(form);
-    TEveGeoTopNode* re = new TEveGeoTopNode(gGeoManager, node);
-    re->UseNodeTrans();
-    gEve->AddGlobalElement(re, list);
-  }
+  TEveGeoTopNode* re = new TEveGeoTopNode(gGeoManager, node);
+  re->UseNodeTrans();
+  gEve->AddGlobalElement(re, list);
 
   gEve->Redraw3D();
 }

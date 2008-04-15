@@ -13,6 +13,8 @@
 #include <TSystem.h>
 #include <TError.h>
 
+#include <AliLog.h>
+
 #include <TEveUtil.h>
 #include <TEveManager.h>
 
@@ -46,6 +48,8 @@ int main(int argc, char **argv)
     gInterpreter->AddIncludePath(gSystem->Getenv("ALICE_ROOT"));
   }
   gROOT->SetMacroPath(macPath);
+
+  AliLog* log = new AliLog;
 
   TRint app("App", &argc, argv);
 

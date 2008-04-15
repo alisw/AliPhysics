@@ -15,6 +15,7 @@
 class AliRunLoader;
 class AliESDEvent;
 class AliESDfriend;
+class AliRawReader;
 
 class AliMagF;
 
@@ -34,9 +35,10 @@ class TGeoManager;
 class AliEveEventManager : public TEveEventManager
 {
 public:
-  static void SetCdbUri(const Text_t* cdb) { if (cdb) fgCdbUri = cdb; }
-  static void SetAssertElements(Bool_t assertRunloader, Bool_t assertEsd)
-  { fgAssertRunLoader = assertRunloader; fgAssertESD = assertEsd; }
+  static void SetESDFileName(const Text_t* esd);
+  static void SetRawFileName(const Text_t* raw);
+  static void SetCdbUri(const Text_t* cdb);
+  static void SetAssertElements(Bool_t assertRunloader, Bool_t assertEsd, Bool_t assertRaw);
 
   AliEveEventManager();
   AliEveEventManager(TString path, Int_t ev=0);
@@ -60,6 +62,7 @@ public:
   static AliRunLoader* AssertRunLoader();
   static AliESDEvent*  AssertESD();
   static AliESDfriend* AssertESDfriend();
+  static AliRawReader* AssertRawReader();
 
   static AliMagF*      AssertMagField();
 
@@ -77,9 +80,14 @@ protected:
   AliESDfriend* fESDfriend;		// ESDfriend object.
   Bool_t        fESDfriendExists;	// Flag specifying if ESDfriend was found during opening of the event-data.
 
+  AliRawReader* fRawReader;             // Raw-adata reader.
+
+  static TString  fgESDFileName;        // Name by which to open ESD.
+  static TString  fgRawFileName;        // Name by which to open raw-data file.
   static TString  fgCdbUri;		// Global URI to CDB.
   static Bool_t   fgAssertRunLoader;	// Global flag specifying if AliRunLoader must be asserted during opening of the event-data.
   static Bool_t   fgAssertESD;		// Global flag specifying if ESDEvent must be asserted during opening of the event-data.
+  static Bool_t   fgAssertRaw;		// Global flag specifying if raw-data presence must be asserted during opening of the event-data.
 
   static AliMagF* fgMagField;		// Global pointer to magneti field.
 
