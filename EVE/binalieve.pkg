@@ -19,7 +19,7 @@ ELIBS    := EveBase EveDet EveHLT \
   EMCALbase EMCALsim EMCALrec EMCALjet BCM \
   STRUCT T0base T0sim T0rec EVGEN STEERBase ESD AOD CDB STEER \
   THijing \
-  hijing TMEVSIM mevsim THbtp HBTP TEPEMGEN \
+  hijing THbtp HBTP TEPEMGEN \
   FASTSIM microcern \
   RAWDatabase RAWDatarec RAWDatasim \
   HLTbase XMLParser
@@ -35,7 +35,6 @@ ELIBSDIR+=/usr/X11R6/lib/
 
 ELIBSCPP:=$(filter-out microcern,$(ELIBS))
 ELIBSCPP:=$(filter-out lhapdf,$(ELIBSCPP))
-ELIBSCPP:=$(filter-out mevsim,$(ELIBSCPP))
 ELIBSCPP:=$(filter-out HBTP,$(ELIBSCPP))
 ELIBSCPP:=$(filter-out herwig,$(ELIBSCPP))
 PACKLDFLAGS:=$(LDFLAGS) $(ELIBSCPP:%=-Wl,-u,_G__cpp_setupG__%)
