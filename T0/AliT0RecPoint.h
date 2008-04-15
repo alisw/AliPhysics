@@ -17,6 +17,7 @@ class AliT0RecPoint: public TObject  {
     virtual ~AliT0RecPoint() {}
 
     const Int_t  GetMeanTime() {return fTimeAverage;}
+    const Int_t  GetOnlineMean() {return fTimeOnlineMean;}
     const Int_t  GetBestTimeA() {return fTimeBestA ;}
     const Int_t  GetBestTimeC() {return fTimeBestC ;}
     const Int_t GetMultC() {return fMultC;}
@@ -25,6 +26,7 @@ class AliT0RecPoint: public TObject  {
 
 
     void SetMeanTime(Int_t time) {fTimeAverage=time;}
+    void SetOnlineMean(Int_t time) {fTimeOnlineMean=time;}
     void SetTimeBestA( Int_t time) {fTimeBestA = time;}
     void SetTimeBestC( Int_t time) {fTimeBestC = time;}
     void SetVertex( Float_t vertex) {fVertexPosition= vertex;}
@@ -40,6 +42,7 @@ class AliT0RecPoint: public TObject  {
 
   private: 
     Int_t fTimeAverage;     // Average time
+    Int_t fTimeOnlineMean; // online mean signal
     Float_t fVertexPosition;     // Diffrence time between C and A
     Int_t fTimeBestA;   //TOF first particle on the A
     Int_t fTimeBestC;    //TOF first particle on the C
@@ -51,7 +54,7 @@ class AliT0RecPoint: public TObject  {
     Float_t fADCLED[24];    // array's LED amplitude
 
 
-    ClassDef(AliT0RecPoint,3)  //Digit (Header) object for set:T0
+    ClassDef(AliT0RecPoint,4)  //Digit (Header) object for set:T0
 };
 
 typedef AliT0RecPoint AliSTARTRecPoint; // for backward compatibility

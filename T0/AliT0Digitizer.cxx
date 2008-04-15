@@ -174,10 +174,7 @@ void AliT0Digitizer::Exec(Option_t* /*option*/)
   Float_t zdetA, zdetC;
   Int_t sumMultCoeff = 100;
   Int_t refpoint=0;
-  TH1F *hr;
-
-
-  
+   
   Int_t ph2Mip = fParam->GetPh2Mip();     
   Float_t channelWidth = fParam->GetChannelWidth() ;  
   Float_t delayVertex = fParam->GetTimeDelayTVD();
@@ -282,8 +279,7 @@ void AliT0Digitizer::Exec(Option_t* /*option*/)
     }
 
     timeDelayCFD[0] = fParam->GetTimeDelayCFD(0);
-    Int_t meanTimeDelay=200;
-
+ 
     for (Int_t i=0; i<24; i++)
       {
        	Float_t  al = countE[i]; 
@@ -312,10 +308,10 @@ void AliT0Digitizer::Exec(Option_t* /*option*/)
 	  TGraph *fu=(TGraph*) fParam ->GetWalk(i) ;
 	  Float_t slew=fu->Eval(Float_t(qtCh));
 
-	  trCFD=trCFD-Int_t(fMaxValue[i]-slew);
+	  //	  trCFD=trCFD-Int_t(fMaxValue[i]-slew);
+	  trCFD = trCFD-Int_t(fMaxValue[i]-slew) + 2000; //for the same channel as cosmic
 	  ftimeCFD->AddAt(Int_t (trCFD),i);
-	  AliDebug(10,Form("  pmt %i : time in ns %f time in channels %i   ",
-			   i, timeGaus[i],trCFD ));
+	  AliDebug(10,Form("  pmt %i : time in ns %f time in channels %i  LEd %i  ",  i, timeGaus[i],trCFD, trLED ));
 	  AliDebug(10,Form(" qt in mV %f qt in ns %f qt in channels %i   ",qt, 
 			   TMath::Log(qt), qtCh));
 
@@ -335,7 +331,7 @@ void AliT0Digitizer::Exec(Option_t* /*option*/)
       {
 	timeDiff=Int_t (((besttimeC-besttimeA)+1000*delayVertex)
 			/channelWidth);
-	meanTime=Int_t (((besttimeC+besttimeA)/2. + meanTimeDelay)/channelWidth);
+	meanTime=Int_t (((besttimeC+besttimeA)/2. )/channelWidth);
       }
 	AliDebug(10,Form(" time A& C %i %i  time diff && mean time in channels %i %i",bestATDC,bestCTDC, timeDiff, meanTime));
 

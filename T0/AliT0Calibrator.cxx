@@ -1,3 +1,4 @@
+
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -55,8 +56,8 @@ ClassImp(AliT0Calibrator)
   for (Int_t i=0; i<24; i++){
     fMaxValue[i]=0;
     fTimeDelayCFD[i] = Int_t (param->GetTimeDelayCFD(i));
-       
-     TGraph* fu = param ->GetWalk(i);
+     
+    TGraph* fu = param ->GetWalk(i);
      //    TGraph* fu  = param ->GetAmpLEDRec(i);
  	fWalk.AddAtAndExpand(fu,i);
 	
@@ -123,7 +124,8 @@ Int_t  AliT0Calibrator::WalkCorrection(Int_t ipmt, Int_t qt, Int_t time, TString
   }
   if (option == "pdc") {
     timeWalk = time + Int_t(fMaxValue[ipmt]-walk) ;
-    timeEq= timeWalk - fTimeDelayCFD[ipmt];
+    //    timeEq= timeWalk - fTimeDelayCFD[ipmt];
+    timeEq= timeWalk - fTimeDelayCFD[ipmt]; //for the same as cosmic
      AliDebug(10,Form(" ipmt %i time before %i timeWalk %i ,  qt %i timeEq %i \n ",
 		 ipmt, time,timeWalk, qt, timeEq ));
   }
