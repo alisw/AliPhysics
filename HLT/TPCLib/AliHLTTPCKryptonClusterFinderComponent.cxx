@@ -58,7 +58,8 @@ ClassImp(AliHLTTPCKryptonClusterFinderComponent)
 AliHLTTPCKryptonClusterFinderComponent::AliHLTTPCKryptonClusterFinderComponent()
   :
   fKryptonClusterFinder(NULL),
-  fReader(NULL)
+  fReader(NULL),
+  fSpecification(0)
 {
   // see header file for class documentation
   // or
@@ -108,7 +109,7 @@ void AliHLTTPCKryptonClusterFinderComponent::GetOutputDataSize( unsigned long& c
   // see header file for class documentation
   // XXX TODO: Find more realistic values.  
   constBase = 0;
-  inputMultiplier = (6 * 0.4);
+  inputMultiplier = (100 * 0.4);
 }
 
 AliHLTComponent* AliHLTTPCKryptonClusterFinderComponent::Spawn()
@@ -157,104 +158,110 @@ int AliHLTTPCKryptonClusterFinderComponent::DoDeinit()
   return 0;
 }
 
-int AliHLTTPCKryptonClusterFinderComponent::DoEvent( const AliHLTComponentEventData& evtData, 
-						     const AliHLTComponentBlockData* blocks, 
-						     AliHLTComponentTriggerData& /*trigData*/, AliHLTUInt8_t* outputPtr, 
-						     AliHLTUInt32_t& size, 
-						     vector<AliHLTComponentBlockData>& outputBlocks )
-{
+int AliHLTTPCKryptonClusterFinderComponent::DoEvent(const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData){
   // see header file for class documentation
+
+  if(GetFirstInputBlock( kAliHLTDataTypeSOR ) || GetFirstInputBlock( kAliHLTDataTypeEOR )) return 0;
 
   //  == init iter (pointer to datablock)
   const AliHLTComponentBlockData* iter = NULL;
-  unsigned long ndx;
-
-  //  == OUTdatatype pointer
-  TH1F* outPtr;
-
-  AliHLTUInt8_t* outBPtr;
-  UInt_t offset, mysize, nSize, tSize = 0;
-
-    
-
-  outBPtr = outputPtr;
-  outPtr = (TH1F*)outBPtr;
 
   Int_t slice, patch, row[2];
-  unsigned long maxPoints, realPoints = 0;
 
-  //warnings!!!
-  nSize=0;
-  realPoints=0;
-  maxPoints=0;
-  //end warnings
+  unsigned long maxPoints = 0;
 
-  for ( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
-    {
-      iter = blocks+ndx;
-      mysize = 0;
-      offset = tSize;
+  for (iter = GetFirstInputBlock(kAliHLTDataTypeDDLRaw|kAliHLTDataOriginTPC); iter != NULL; iter = GetNextInputBlock()){
 
+    HLTInfo("Event 0x%08LX (%Lu) received datatype: %s - required datatype: %s", 
+	    evtData.fEventID, evtData.fEventID,
+	    DataType2Text(iter->fDataType).c_str(), 
+	    DataType2Text(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTPC).c_str());
 
-      HLTDebug("Event 0x%08LX (%Lu) received datatype: %s - required datatype: %s",
-	       evtData.fEventID, evtData.fEventID, 
-	       DataType2Text( iter->fDataType).c_str(), 
-	       DataType2Text(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTPC).c_str());
+    if (iter->fDataType == AliHLTTPCDefinitions::fgkDDLPackedRawDataType && GetEventCount()<2){
+      HLTWarning("data type %s is depricated, use %s (kAliHLTDataTypeDDLRaw)!", 
+		 DataType2Text(AliHLTTPCDefinitions::fgkDDLPackedRawDataType).c_str(),
+		 DataType2Text(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTPC).c_str());
+    }      
+     
+    if ( iter->fDataType != (kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTPC) &&
+	 iter->fDataType != AliHLTTPCDefinitions::fgkDDLPackedRawDataType ) continue;
       
-      if (iter->fDataType == AliHLTTPCDefinitions::fgkDDLPackedRawDataType &&
-	  GetEventCount()<2) {
-	HLTWarning("data type %s is depricated, use %s (kAliHLTDataTypeDDLRaw)!",
-		   DataType2Text(AliHLTTPCDefinitions::fgkDDLPackedRawDataType).c_str(),
-		   DataType2Text(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTPC).c_str());
-      }
+    fSpecification = iter->fSpecification;
       
-      if ( iter->fDataType != (kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTPC) &&
-	   iter->fDataType != AliHLTTPCDefinitions::fgkDDLPackedRawDataType ) continue;
-      
-      
-      slice = AliHLTTPCDefinitions::GetMinSliceNr( *iter );
-      patch = AliHLTTPCDefinitions::GetMinPatchNr( *iter );
-      row[0] = AliHLTTPCTransform::GetFirstRow( patch );
-      row[1] = AliHLTTPCTransform::GetLastRow( patch );
+    slice = AliHLTTPCDefinitions::GetMinSliceNr( *iter );
+    patch = AliHLTTPCDefinitions::GetMinPatchNr( *iter );
+    row[0] = AliHLTTPCTransform::GetFirstRow( patch );
+    row[1] = AliHLTTPCTransform::GetLastRow( patch );
 
 
-      fKryptonClusterFinder->SetPatch(patch);
+    fKryptonClusterFinder->SetPatch(patch);
 
-      fKryptonClusterFinder->InitSlice( slice, patch, row[0], row[1], maxPoints );
+    fKryptonClusterFinder->InitSlice( slice, patch, row[0], row[1], maxPoints );
+
+    fKryptonClusterFinder->InitializeHistograms();
 	
-      fKryptonClusterFinder->ReadDataUnsorted(iter->fPtr, iter->fSize);
+    fKryptonClusterFinder->ReadDataUnsorted(iter->fPtr, iter->fSize);
       
-      fKryptonClusterFinder->FindRowClusters();
+    fKryptonClusterFinder->FindRowClusters();
 
-      fKryptonClusterFinder->FindKryptonClusters();
+    fKryptonClusterFinder->FindKryptonClusters();
 
+    //fKryptonClusterFinder->WriteHistograms();
 
-
-
-      AliHLTComponentBlockData bd;
-      FillBlockData( bd );
-      bd.fOffset = offset;
-      bd.fSize = mysize;
-      bd.fSpecification = iter->fSpecification;
-      bd.fDataType = kAliHLTDataTypeHistogram;
-      outputBlocks.push_back( bd );
-  
-      tSize += mysize;
-      outBPtr += mysize;
-      outPtr = (TH1F*)outBPtr;
-  
-  
-      if ( tSize > size )
-	{
-	  Logging( kHLTLogFatal, "HLT::TPCClusterFinder::DoEvent", "Too much data", 
-		   "Data written over allowed buffer. Amount written: %lu, allowed amount: %lu.",
-		   tSize, size );
-	  return EMSGSIZE;
-	}
-  
-      size = tSize;
-    }
+  }
+  MakeHistosPublic();
   return 0;
+}
+
+int AliHLTTPCKryptonClusterFinderComponent::Configure(const char* arguments) { 
+// see header file for class documentation
+  
+  int iResult=0;
+  if (!arguments) return iResult;
+  HLTInfo("parsing configuration string \'%s\'", arguments);
+  /*
+  TString allArgs=arguments;
+  TString argument;
+  int bMissingParam=0;
+
+  TObjArray* pTokens=allArgs.Tokenize(" ");
+  if (pTokens) {
+    for (int i=0; i<pTokens->GetEntries() && iResult>=0; i++) {
+      argument=((TObjString*)pTokens->At(i))->GetString();
+      if (argument.IsNull()) continue;
+     
+      if (argument.CompareTo("-apply-noisemap")==0) {
+	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+	HLTInfo("got \'-apply-noisemap\': %s", ((TObjString*)pTokens->At(i))->GetString().Data());
+	
+      } 
+      else if (argument.CompareTo("-plot-side-c")==0) {
+	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+	HLTInfo("got \'-plot-side-c\': %s", ((TObjString*)pTokens->At(i))->GetString().Data());
+	
+      } 
+      else if (argument.CompareTo("-plot-side-a")==0) {
+	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+	HLTInfo("got \'-plot-side-a\': %s", ((TObjString*)pTokens->At(i))->GetString().Data());
+	
+      } 
+      else {
+	HLTError("unknown argument %s", argument.Data());
+	iResult=-EINVAL;
+	break;
+      }
+    } // end for
+  
+    delete pTokens;
+  
+  } // end if pTokens
+  
+  if (bMissingParam) {
+    HLTError("missing parameter for argument %s", argument.Data());
+    iResult=-EINVAL;
+  }
+  */
+  return iResult;
 }
 
 int AliHLTTPCKryptonClusterFinderComponent::Reconfigure(const char* cdbEntry, const char* chainId)
@@ -277,4 +284,12 @@ int AliHLTTPCKryptonClusterFinderComponent::Reconfigure(const char* cdbEntry, co
     }
   }
   return 0;
+}
+
+void AliHLTTPCKryptonClusterFinderComponent::MakeHistosPublic() {
+// see header file for class documentation
+  
+  TObjArray histos;
+  fKryptonClusterFinder->GetHistogramObjectArray(histos);
+  PushBack( (TObject*) &histos, kAliHLTDataTypeHistogram, fSpecification);   
 }

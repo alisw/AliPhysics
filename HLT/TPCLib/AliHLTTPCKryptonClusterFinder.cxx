@@ -24,6 +24,7 @@
 #include "AliHLTTPCDigitReader.h"
 #include "AliHLTTPCKryptonClusterFinder.h"
 #include "AliHLTTPCTransform.h"
+#include "TFile.h"
 
 #if __GNUC__ >= 3
 using namespace std;
@@ -34,9 +35,51 @@ ClassImp(AliHLTTPCKryptonClusterFinder)
 AliHLTTPCKryptonClusterFinder::AliHLTTPCKryptonClusterFinder()
   : AliHLTTPCClusterFinder(),
     fTimebinsInBunch(),
-    fIndexOfBunchStart()
+    fIndexOfBunchStart(),
+    fHKryptonSpectrumFullPatch(NULL),
+    fHKryptonSpectrumSelection(NULL),
+    fHNumberOfKryptonClusters(NULL),
+    fHNumberOfKryptonClustersSelection(NULL),
+    fHMaxQofKryptonClusterLast1000(NULL),
+    fHMaxQofKryptonClusterSelection(NULL),
+    fStartBinKryptonSpectrum(0),
+    fEndBinKryptonSpectrum(3000),
+    fStartBinMaxQ(0),
+    fEndBinMaxQ(1000),
+    fStartBinNumberOfKryptonClusters(0),
+    fEndBinNumberOfKryptonClusters(1000),
+    fSelectionMinRowNumber(0),
+    fSelectionMaxRowNumber(0),
+    fMaxQOfCluster(0),
+    fMaxQOfClusterBin(0),
+    fNumberOfKryptonClusters(0),
+    fNumberOfKryptonClustersBin(0),
+    fHistogramsInitialized(kFALSE)
 {
   //constructor  
+}
+
+AliHLTTPCKryptonClusterFinder::~AliHLTTPCKryptonClusterFinder(){
+  if(fHKryptonSpectrumFullPatch){
+    delete fHKryptonSpectrumFullPatch;
+    fHKryptonSpectrumFullPatch=NULL;
+  }
+  if(fHKryptonSpectrumSelection){
+    delete fHKryptonSpectrumSelection;
+    fHKryptonSpectrumSelection=NULL;
+  }
+  if(fHNumberOfKryptonClusters){
+    delete fHNumberOfKryptonClusters;
+    fHNumberOfKryptonClusters=NULL;
+  }
+  if(fHMaxQofKryptonClusterLast1000){
+    delete fHMaxQofKryptonClusterLast1000;
+    fHMaxQofKryptonClusterLast1000=NULL;
+  }
+  if(fHMaxQofKryptonClusterSelection){
+    delete fHMaxQofKryptonClusterSelection;
+    fHMaxQofKryptonClusterSelection=NULL;
+  }
 }
 
 void AliHLTTPCKryptonClusterFinder::ReBunch(const UInt_t *bunchData , Int_t bunchSize){
@@ -93,11 +136,15 @@ void AliHLTTPCKryptonClusterFinder::ReadDataUnsorted(void* ptr,unsigned long siz
 	  UInt_t time = fDigitReader->GetTime()+fIndexOfBunchStart[r];
 	  AliHLTTPCClusters candidate;
 	  candidate.fTotalCharge=0;
+	  candidate.fChargeFalling=0;//PS This variable will store teh maximum charge of the candidate, used later. Keep this in mind 
 	  if(fTimebinsInBunch[r]>2){
 	    for(Int_t i=0;i<fTimebinsInBunch[r];i++){
 	      candidate.fTotalCharge+=bunchData[i + fIndexOfBunchStart[r]];	
 	      candidate.fTime += time*bunchData[i + fIndexOfBunchStart[r]];
 	      candidate.fTime2 += time*time*bunchData[i + fIndexOfBunchStart[r]];
+	      if(bunchData[i + fIndexOfBunchStart[r]]>candidate.fChargeFalling){
+		candidate.fChargeFalling = bunchData[i + fIndexOfBunchStart[r]];
+	      }
 	      time++;
 	    }
 	    if(candidate.fTotalCharge>0){
@@ -115,6 +162,41 @@ void AliHLTTPCKryptonClusterFinder::ReadDataUnsorted(void* ptr,unsigned long siz
       }
     }
   }
+}
+
+Bool_t AliHLTTPCKryptonClusterFinder::ComparePads(AliHLTTPCPad *nextPad,AliHLTTPCClusters* cluster,Int_t nextPadToRead){
+  //Checking if we have a match on the next pad
+  for(UInt_t candidateNumber=0;candidateNumber<nextPad->fClusterCandidates.size();candidateNumber++){
+    AliHLTTPCClusters *candidate =&nextPad->fClusterCandidates[candidateNumber]; 
+    if(cluster->fMean-candidate->fMean==1 || candidate->fMean-cluster->fMean==1 || cluster->fMean-candidate->fMean==0){
+      cluster->fMean=candidate->fMean;
+      cluster->fTotalCharge+=candidate->fTotalCharge;
+      cluster->fTime += candidate->fTime;
+      cluster->fTime2 += candidate->fTime2;
+      cluster->fPad+=candidate->fPad;
+      cluster->fPad2=candidate->fPad2;
+      cluster->fLastMergedPad=candidate->fPad;
+      
+      if(candidate->fChargeFalling>cluster->fChargeFalling){
+	cluster->fChargeFalling = candidate->fChargeFalling;
+      }
+
+      //setting the matched pad to used
+      nextPad->fUsedClusterCandidates[candidateNumber]=1;
+      nextPadToRead++;
+      if(nextPadToRead<(Int_t)fNumberOfPadsInRow[fRowOfFirstCandidate]){
+	nextPad=fRowPadVector[fRowOfFirstCandidate][nextPadToRead];
+	ComparePads(nextPad,cluster,nextPadToRead);
+      }
+      else{
+	return kFALSE;
+      }
+    }
+    else{
+      return kFALSE;
+    }
+  }
+  return kFALSE;
 }
 
 void AliHLTTPCKryptonClusterFinder::FindRowClusters()
@@ -135,6 +217,7 @@ void AliHLTTPCKryptonClusterFinder::FindRowClusters()
 	}
 	tmpCandidate=&tmpPad->fClusterCandidates[candidate];
 	UInt_t tmpTotalCharge=tmpCandidate->fTotalCharge;
+	
 	ComparePads(fRowPadVector[row][pad+1],tmpCandidate,pad+1);
 	if(tmpCandidate->fTotalCharge>tmpTotalCharge){
 	  //we have a cluster
@@ -159,6 +242,9 @@ void AliHLTTPCKryptonClusterFinder::FindKryptonClusters()
     if(tmpCluster->fFlags==99){//quickfix to check if a cluster is used already
       continue;
     }
+    if((Int_t)tmpCluster->fChargeFalling>fMaxQOfCluster){
+      fMaxQOfCluster = tmpCluster->fChargeFalling;
+    }
     
     //adds "normal" clusters belonging to the krypton cluster
     for(UInt_t j=i+1;j<fClusters.size();j++){
@@ -174,8 +260,13 @@ void AliHLTTPCKryptonClusterFinder::FindKryptonClusters()
 	    tmpCluster->fMean=nextCluster->fMean;
 	    tmpCluster->fTotalCharge+=nextCluster->fTotalCharge;
 	    tmpCluster->fPad=nextCluster->fPad;
+	    
+	    if((Int_t)nextCluster->fChargeFalling>fMaxQOfCluster){
+	      fMaxQOfCluster = nextCluster->fChargeFalling;
+	    }
+	    
 	    if(tmpCluster->fFlags!=99){//means that this is the first time normal clusters match
-	      CheckForCandidateOnPreviousPad(tmpCluster);
+	      CheckForCandidateOnPreviousRow(tmpCluster);
 	    }
 	    tmpCluster->fRowNumber=nextCluster->fRowNumber;
 	    nextCluster->fFlags=99;
@@ -199,6 +290,21 @@ void AliHLTTPCKryptonClusterFinder::FindKryptonClusters()
 	  }
 	  }//end add clustercandidate if present
 	  }*/
+	fHMaxQofKryptonClusterLast1000->Fill(fMaxQOfClusterBin,fMaxQOfCluster);
+	fMaxQOfClusterBin++;
+	if(fMaxQOfClusterBin>fEndBinMaxQ){
+	  fMaxQOfClusterBin=0;
+	}
+	fHKryptonSpectrumFullPatch->Fill(tmpCluster->fTotalCharge);
+	fHNumberOfKryptonClusters->Fill(fNumberOfKryptonClustersBin);
+	if(fNumberOfKryptonClustersBin>fEndBinNumberOfKryptonClusters){
+	  fNumberOfKryptonClustersBin=0;
+	}
+	/*
+	fHKryptonSpectrumSelection
+	fHNumberOfKryptonClustersSelection
+	fHMaxQofKryptonClusterSelection
+	*/
 	HLTInfo("Krypton cluster found, charge: %d   in patch number: %d",tmpCluster->fTotalCharge,fCurrentPatch);
 	break;
       }
@@ -206,10 +312,10 @@ void AliHLTTPCKryptonClusterFinder::FindKryptonClusters()
 
     }
   }//end add "normal" clusters belonging to the krypton cluster
-
+  fNumberOfKryptonClustersBin++;
 }
 
-void AliHLTTPCKryptonClusterFinder::CheckForCandidateOnPreviousPad(AliHLTTPCClusters *tmpCluster){
+void AliHLTTPCKryptonClusterFinder::CheckForCandidateOnPreviousRow(AliHLTTPCClusters *tmpCluster){
   if(tmpCluster->fRowNumber>1){
     for(Int_t p=-1;p<2;p++){
       if(tmpCluster->fPad+p>0 && tmpCluster->fPad+p<fNumberOfPadsInRow[tmpCluster->fRowNumber-1]){
@@ -222,4 +328,96 @@ void AliHLTTPCKryptonClusterFinder::CheckForCandidateOnPreviousPad(AliHLTTPCClus
       }
     }
   }
+}
+
+void AliHLTTPCKryptonClusterFinder::InitializeHistograms(){
+
+
+  if(fHistogramsInitialized){
+    return;
+  }
+
+  TString sliceStr("-Slice_");
+  sliceStr+=fCurrentSlice;
+  TString patchStr("-Patch_");
+  patchStr+=fCurrentPatch;
+
+  TString namefKryptonSpectrumFullPatch("KryptonSpectrumFullPatch"+sliceStr+patchStr);
+  TString namefKryptonSpectrumSelection = "KryptonSpectrumSelection"+sliceStr+patchStr;
+  TString namefNumberOfKryptonClusters = "NumberOfKryptonClusters"+sliceStr+patchStr;
+  TString namefNumberOfKryptonClustersSelection = "NumberOfKryptonClustersSelection"+sliceStr+patchStr;
+  TString namefMaxQLast1000 = "MaxQ"+sliceStr+patchStr;
+  TString namefMaxQSelection = "MaxQSelection"+sliceStr+patchStr;
+
+  fHKryptonSpectrumFullPatch = new TH1F(namefKryptonSpectrumFullPatch,namefKryptonSpectrumFullPatch,fEndBinKryptonSpectrum-fStartBinKryptonSpectrum,fStartBinKryptonSpectrum,fEndBinKryptonSpectrum);
+ 
+ fHKryptonSpectrumSelection = new TH1F(namefKryptonSpectrumSelection,namefKryptonSpectrumSelection,fEndBinKryptonSpectrum-fStartBinKryptonSpectrum,fStartBinKryptonSpectrum,fEndBinKryptonSpectrum);
+
+  fHNumberOfKryptonClusters = new TH1F(namefNumberOfKryptonClusters,namefNumberOfKryptonClusters,fEndBinNumberOfKryptonClusters-fStartBinNumberOfKryptonClusters,fStartBinNumberOfKryptonClusters,fEndBinNumberOfKryptonClusters);
+
+  fHNumberOfKryptonClustersSelection = new TH1F(namefNumberOfKryptonClustersSelection,namefNumberOfKryptonClustersSelection,fEndBinNumberOfKryptonClusters-fStartBinNumberOfKryptonClusters,fStartBinNumberOfKryptonClusters,fEndBinNumberOfKryptonClusters);
+
+  fHMaxQofKryptonClusterLast1000 = new TH1F(namefMaxQLast1000,namefMaxQLast1000,fEndBinMaxQ-fStartBinMaxQ,fStartBinMaxQ,fEndBinMaxQ);
+
+  fHMaxQofKryptonClusterSelection = new TH1F(namefMaxQSelection,namefMaxQSelection,fEndBinMaxQ-fStartBinMaxQ,fStartBinMaxQ,fEndBinMaxQ);
+
+  fHistogramsInitialized=kTRUE;
+}
+
+void AliHLTTPCKryptonClusterFinder::ResetHistograms(TString histoName){
+
+  if (histoName.CompareTo("KryptonSpectrumFullPatch")==0){
+    fHKryptonSpectrumFullPatch->Reset();
+  }
+  if (histoName.CompareTo("KryptonSpectrumSelection")==0){
+    fHKryptonSpectrumSelection->Reset();
+  }
+  if (histoName.CompareTo("NumberOfKryptonClusters")==0){
+    fHNumberOfKryptonClusters->Reset();
+  }
+  if (histoName.CompareTo("NumberOfKryptonClustersSelection")==0){
+    fHNumberOfKryptonClustersSelection->Reset();
+  }
+  if (histoName.CompareTo("MaxQ")==0){
+    fHMaxQofKryptonClusterLast1000->Reset();
+  }
+  if (histoName.CompareTo("MaxQSelection")==0){
+    fHMaxQofKryptonClusterSelection->Reset();
+  }
+  if (histoName.CompareTo("All")==0){
+    fHKryptonSpectrumFullPatch->Reset();
+    fHKryptonSpectrumSelection->Reset();
+    fHNumberOfKryptonClusters->Reset();
+    fHNumberOfKryptonClustersSelection->Reset();
+    fHMaxQofKryptonClusterLast1000->Reset();
+    fHMaxQofKryptonClusterSelection->Reset();
+  }
+}
+
+void AliHLTTPCKryptonClusterFinder::SetSelection(Int_t minRow, Int_t maxRow){
+  fSelectionMinRowNumber=minRow;
+  fSelectionMaxRowNumber=maxRow;
+}
+
+void AliHLTTPCKryptonClusterFinder::GetHistogramObjectArray(TObjArray & histos){
+  //  TObjArray histos;
+  histos.Add(fHKryptonSpectrumFullPatch);
+  histos.Add(fHKryptonSpectrumSelection);
+  histos.Add(fHNumberOfKryptonClusters);
+  histos.Add(fHNumberOfKryptonClustersSelection);
+  histos.Add(fHMaxQofKryptonClusterLast1000);
+  histos.Add(fHMaxQofKryptonClusterSelection);
+  //  return histos;
+}
+
+void AliHLTTPCKryptonClusterFinder::WriteHistograms(TString filename){
+
+  TFile file(filename,"recreate");
+  fHKryptonSpectrumFullPatch->Write();
+  fHKryptonSpectrumSelection->Write();
+  fHNumberOfKryptonClusters->Write();
+  fHNumberOfKryptonClustersSelection->Write();
+  fHMaxQofKryptonClusterLast1000->Write();
+  fHMaxQofKryptonClusterSelection->Write();
+  file.Close();
 }
