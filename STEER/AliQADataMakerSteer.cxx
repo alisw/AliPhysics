@@ -535,7 +535,7 @@ Bool_t AliQADataMakerSteer::Merge(const Int_t runNumber) const
 	ifstream in("tempo.txt") ; 
 	const Int_t runMax = 10 ;  
 	TString file[AliQA::kNDET*runMax] ;
-	Int_t run[AliQA::kNDET*runMax] ;
+	Int_t run[AliQA::kNDET*runMax] = {-1.0} ;
 	
 	Int_t index = 0 ; 
 	while ( 1 ) {
@@ -716,12 +716,17 @@ Bool_t AliQADataMakerSteer::SaveIt2OCDB(const Int_t runNumber, TFile * inputFile
 	AliInfo(Form("Saving TH1s in %s to %s", inputFile->GetName(), AliQA::GetQARefStorage())) ; 
 	AliCDBManager* man = AliCDBManager::Instance() ; 
 	if ( ! man->IsDefaultStorageSet() ) {
-		TString tmp(AliQA::GetQARefDefaultStorage()) ; 
-		tmp.Append(year) ; 
-		tmp.Append("?user=alidaq") ; 
-		man->SetDefaultStorage(tmp.Data()) ; 
-		man->SetSpecificStorage("*", AliQA::GetQARefStorage()) ; 
+		TString tmp( AliQA::GetQARefStorage() ) ; 
+		if ( tmp.Contains(AliQA::GetLabLocalOCDB()) ) 
+			man->SetDefaultStorage(AliQA::GetQARefStorage()) ;
+		else {
+			TString tmp(AliQA::GetQARefDefaultStorage()) ; 
+			tmp.Append(year) ; 
+			tmp.Append("?user=alidaq") ; 
+			man->SetDefaultStorage(tmp.Data()) ; 
+		}
 	}
+	man->SetSpecificStorage("*", AliQA::GetQARefStorage()) ; 
 	if(man->GetRun() < 0) 
 		man->SetRun(runNumber);
 
@@ -752,10 +757,15 @@ Bool_t AliQADataMakerSteer::SaveIt2OCDB(const Int_t runNumber, TFile * inputFile
 				TKey * histKey ; 
 				while ( (histKey = dynamic_cast<TKey*>(nextHist())) ) {
 					TObject * odata = taskDir->Get(histKey->GetName()) ; 
-					if ( odata->IsA()->InheritsFrom("TH1") ) {
+					if ( !odata ) {
+						AliError(Form("%s in %s/%s returns a NULL pointer !!", histKey->GetName(), detDir->GetName(), taskDir->GetName())) ;
+					} else {
 						AliInfo(Form("Adding %s", histKey->GetName())) ;
-						TH1 * hdata = static_cast<TH1*>(odata) ; 
-						listTaskQAD->Add(hdata) ; 
+						if ( odata->IsA()->InheritsFrom("TH1") ) {
+							AliInfo(Form("Adding %s", histKey->GetName())) ;
+							TH1 * hdata = static_cast<TH1*>(odata) ; 
+							listTaskQAD->Add(hdata) ; 
+						}
 					}
 				}
 			}
