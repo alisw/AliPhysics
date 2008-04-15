@@ -191,6 +191,7 @@ Double_t TimeUsingOldDecoder(AliBufferInfo* list, AliDigitInfo* buffer, UInt_t m
 
 	AliRawReaderMemory rawReader;
 	AliMUONRawStreamTracker rawStream(&rawReader);
+	rawReader.NextEvent();
 
 	TStopwatch timer;
 	timer.Start(kTRUE);
@@ -233,6 +234,7 @@ Double_t TimeUsingNewDecoder(AliBufferInfo* list, AliDigitInfo* buffer, UInt_t m
 
 	AliRawReaderMemory rawReader;
 	AliMUONRawStreamTrackerHP rawStream(&rawReader);
+	rawReader.NextEvent();
 
 	TStopwatch timer;
 	timer.Start(kTRUE);
@@ -280,6 +282,7 @@ Double_t TimeUsingNewDecoderOldInterface(AliBufferInfo* list, AliDigitInfo* buff
 
 	AliRawReaderMemory rawReader;
 	AliMUONRawStreamTrackerHP rawStream(&rawReader);
+	rawReader.NextEvent();
 
 	TStopwatch timer;
 	timer.Start(kTRUE);

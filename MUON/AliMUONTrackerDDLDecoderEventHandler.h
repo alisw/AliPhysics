@@ -124,6 +124,8 @@ public:
 		kBadBusPatchLength = 26,       /// The bus patch length field points past the end of the DSP structure.
 		kBadBusPatchTotalLength = 27,  /// The total bus patch length field points past the end of the DSP structure.
 		kBusPatchLengthMismatch = 28,  /// The bus patch length and total length fields do not correspond. One or both of these values is incorrect.
+		kNoDDLTrailerWords = 29,       /// No end of DDL markers found in the trailer words.
+		kTooFewDDLTrailerWords = 30,   /// Only one end of DDL marker trailer word found but expected two.
 		// match up error codes with AliMUONRawStreamTracker:
 		kGlitchFound = 1,              /// Found a glitch. This means a 1 byte word has been randomly inserted into the raw data by mistake.
 		kBadPaddingWord = 2,           /// The padding word does not contain the correct value.
@@ -310,6 +312,8 @@ inline const char* AliMUONTrackerDDLDecoderEventHandler::ErrorCodeToString(Error
 	case kBadBusPatchLength: return "kBadBusPatchLength";
 	case kBadBusPatchTotalLength: return "kBadBusPatchTotalLength";
 	case kBusPatchLengthMismatch: return "kBusPatchLengthMismatch";
+	case kNoDDLTrailerWords: return "kNoDDLTrailerWords";
+	case kTooFewDDLTrailerWords: return "kTooFewDDLTrailerWords";
 	case kGlitchFound: return "kGlitchFound";
 	case kBadPaddingWord: return "kBadPaddingWord";
 	case kParityError: return "kParityError";
@@ -376,6 +380,10 @@ inline const char* AliMUONTrackerDDLDecoderEventHandler::ErrorCodeToMessage(Erro
 	case kBusPatchLengthMismatch:
 		return "The bus patch length and total length fields do not correspond."
 		       " One or both of these values is incorrect.";
+	case kNoDDLTrailerWords:
+		return "No end of DDL data key found in the trailer words.";
+	case kTooFewDDLTrailerWords:
+		return "Only one end of DDL data key word found in the trailer but expected two.";
 	case kGlitchFound:
 		return "Found a glitch. This means a 1 byte word has been randomly"
 		       " inserted into the raw data by mistake.";

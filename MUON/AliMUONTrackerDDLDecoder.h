@@ -81,6 +81,18 @@
 /// significantly slower if run time polymorphism was used i.e. making the class
 /// AliMUONTrackerDDLDecoderEventHandler abstract and using virtual methods.
 ///
+/// There has been a change to the data format that the real detector generates.
+/// Two trailer words are added to the end of the DDL payload which indicated
+/// the end of data. The decoder is initialised by default to automatically
+/// check for these and deal with it correctly, if they exist or not.
+/// However, if you want to override this behaviour then set the flag
+/// fAutoDetectTrailer to false with AutoDetectTrailer(false). Then if you have
+/// data with the old data format you should set fCheckForTrailer to false with
+/// CheckForTrailer(false), otherwise for real data it should be
+/// fCheckForTrailer = true. Only when fAutoDetectTrailer is true will the
+/// fCheckForTrailer flag be ignored and no warnings will be generated for an
+/// incorrect data format.
+///
 /// \author Artur Szostak <artursz@iafrica.com>
 
 template <class EventHandler>
@@ -92,6 +104,7 @@ public:
 	AliMUONTrackerDDLDecoder() :
 		fExitOnError(true), fTryRecover(false),
 		fSendDataOnParityError(false), fHadError(false),
+		fAutoDetectTrailer(true), fCheckForTrailer(true),
 		fMaxBlocks(2), fMaxDSPs(5), fMaxBusPatches(5), fHandler()
 	{}
 	
@@ -111,12 +124,12 @@ public:
 	
 	/// Returns the "try to recover from errors" flag.
 	/// i.e. should the decoder try to recover from errors found in the
-	/// payload headers.
+	/// payload headers or trailers.
 	bool TryRecover() const { return fTryRecover; }
 	
 	/// Sets the "try to recover from errors" flag.
 	/// i.e. should the decoder try to recover from errors found in the
-	/// payload headers.
+	/// payload headers or trailers.
 	void TryRecover(bool value) { fTryRecover = value; }
 	
 	/// Returns the flag indicating if the raw data words in the bus patches
@@ -151,15 +164,29 @@ public:
 	/// structure within the DDL payload.
 	void MaxBusPatches(UInt_t n) { fMaxBusPatches = n; }
 	
+	/// Returns the value of the auto-detect trailer flag.
+	bool AutoDetectTrailer() const { return fAutoDetectTrailer; }
+	
+	/// Sets the value of the auto-detect trailer flag.
+	void AutoDetectTrailer(bool value) { fAutoDetectTrailer = value; }
+	
+	/// Returns the value of the flag to check for the end of DDL trailer.
+	bool CheckForTrailer() const { return fCheckForTrailer; }
+	
+	/// Sets the value of the flag to check for the end of DDL trailer.
+	void CheckForTrailer(bool value) { fCheckForTrailer = value; }
+	
 	/// This method decodes the DDL payload contained in the buffer.
 	bool Decode(const void* buffer, UInt_t bufferSize);
 	
 private:
 
 	bool fExitOnError; ///< Indicates if we should exit on the very first error.
-	bool fTryRecover; ///< Indicates if we should try recover from a corrupt structure header.
+	bool fTryRecover; ///< Indicates if we should try recover from a corrupt structure header or DDL trailer.
 	bool fSendDataOnParityError; ///< If set to true then we issue a OnData() event even if the data word had a parity error.
 	bool fHadError; ///< Indicates if we had an error decoding the data.
+	bool fAutoDetectTrailer; ///< Indicates if we should automatically check for the end of DDL trailer (Default = true).
+	bool fCheckForTrailer; ///< Indicates if we should check for the end of DDL trailer (Default = true). This flag is ignored if fAutoDetectTrailer is true.
 	UInt_t fMaxBlocks; ///< Maximum number of block structures allowed in a DDL stream.
 	UInt_t fMaxDSPs; ///< Maximum number of DSP structures allowed in a DDL stream.
 	UInt_t fMaxBusPatches; ///< Maximum number of bus patch structures allowed in a DDL stream.
@@ -206,6 +233,7 @@ private:
 	static const UInt_t fgkDSPDataKey;       ///< The key word expected to identify DSP structure headers.
 	static const UInt_t fgkBusPatchDataKey;  ///< The key word expected to identify bus patch headers.
 	static const UInt_t fgkPaddingWord;      ///< The expected format of the padding word in the DDL payload.
+	static const UInt_t fgkEndOfDDL;         ///< The end of DDL trailer word.
 };
 
 //_____________________________________________________________________________
@@ -220,6 +248,8 @@ template <class EventHandler>
 const UInt_t AliMUONTrackerDDLDecoder<EventHandler>::fgkBusPatchDataKey = 0xB000000B;
 template <class EventHandler>
 const UInt_t AliMUONTrackerDDLDecoder<EventHandler>::fgkPaddingWord = 0xBEEFFACE;
+template <class EventHandler>
+const UInt_t AliMUONTrackerDDLDecoder<EventHandler>::fgkEndOfDDL = 0xD000000D;
 
 
 template <class EventHandler>
@@ -241,6 +271,8 @@ bool AliMUONTrackerDDLDecoder<EventHandler>::Decode(const void* buffer, UInt_t b
 	/// flag is set to true. There is also an optional flag fTryRecover which
 	/// can enable logic which will attempt to recover the header structures found
 	/// in the DDL payload if they are found to be inconsistent (assumed corrupt).
+	/// fTryRecover set to true will also enable recovery from a corrupt
+	/// DDL trailer marking the end of DDL payload.
 	///
 	/// \param buffer  This is the pointer to the start of the memory buffer
 	///     containing the DDL payload. Remember that this must be the start of
@@ -286,9 +318,73 @@ void AliMUONTrackerDDLDecoder<EventHandler>::DecodeBuffer(
 	///      False is returned otherwise.
 	
 	const UChar_t* current = start;
+	const UInt_t* bufferStart = reinterpret_cast<const UInt_t*>(start);
+	const UInt_t* bufferEnd = reinterpret_cast<const UInt_t*>(end);
+	bool problemWithTrailer = false;
+	
+	// The DDL payload normally has a 2 word trailer which contains the end of
+	// DDL markers 0xD000000D. But this is not the case for older simulated
+	// data so if we are autodetecting the trailer then we need to carefully
+	// check if these words are there or not.
+	const UChar_t* endOfBlocks = end;
+	const UInt_t* trailerWords = reinterpret_cast<const UInt_t*>(end) - 2;
+	if (fAutoDetectTrailer)
+	{
+		if (trailerWords >= bufferStart and *trailerWords == fgkEndOfDDL
+		    and *(trailerWords+1) == fgkEndOfDDL
+		   )
+		{
+			// Found the trailer so reposition the end of blocks marker.
+			endOfBlocks = reinterpret_cast<const UChar_t*>(trailerWords);
+		}
+		// else assume we are dealing with the older data format.
+	}
+	else if (fCheckForTrailer)
+	{
+		if (trailerWords >= bufferStart and *trailerWords == fgkEndOfDDL
+		    and *(trailerWords+1) == fgkEndOfDDL
+		   )
+		{
+			// Found the trailer so reposition the end of blocks marker.
+			endOfBlocks = reinterpret_cast<const UChar_t*>(trailerWords);
+		}
+		else
+		{
+			if (trailerWords+1 >= bufferStart and *(trailerWords+1) == fgkEndOfDDL)
+				fHandler.OnError(EventHandler::kTooFewDDLTrailerWords, trailerWords+1);
+			else if (trailerWords >= bufferStart and *(trailerWords) == fgkEndOfDDL)
+				fHandler.OnError(EventHandler::kTooFewDDLTrailerWords, trailerWords);
+			else
+				fHandler.OnError(EventHandler::kNoDDLTrailerWords, end);
+	
+			// Stop the decoding if so requested by the user, otherwise
+			// remember about the error so that we return false from the
+			// Decode() method and continue decoding.
+			fHadError = true;
+			if (fExitOnError) return;
+			
+			// Mark that there was a problem with the trailer so that
+			// for subsequest errors we try to deal with this better.
+			problemWithTrailer = true;
+			
+			// We can also try figure out how many trailer words there
+			// actually are and move the end of blocks marker back.
+			
+			if (fTryRecover)
+			{
+				trailerWords = bufferEnd;
+				// There should only be a max of 2 trailer words.
+				if (*(trailerWords-1) == fgkEndOfDDL)
+					trailerWords--;
+				else if (*(trailerWords-1) == fgkEndOfDDL)
+					trailerWords--;
+				endOfBlocks = reinterpret_cast<const UChar_t*>(trailerWords);
+			}
+		}
+	}
 
 	UInt_t blockCount = 0; // Indicates the number of blocks decoded.
-	while (current < end)
+	while (current < endOfBlocks)
 	{
 		// Mark the start of the block structure.
 		const UChar_t* blockStart = current;
@@ -298,8 +394,32 @@ void AliMUONTrackerDDLDecoder<EventHandler>::DecodeBuffer(
 		const AliMUONBlockHeaderStruct* blockHeader
 			= reinterpret_cast<const AliMUONBlockHeaderStruct*>(blockStart);
 		current += sizeof(AliMUONBlockHeaderStruct);
-		if (current > end)
+		if (current > endOfBlocks)
 		{
+			// We first check if we actually hit the end of DDL markers
+			// If we did then either we did not/could not recover from
+			// a corrupt trailer or we did not detect a correct trailer
+			// in auto-detect mode.
+			trailerWords = reinterpret_cast<const UInt_t*>(blockHeader);
+			// The "trailerWords+1 <= bufferEnd" checks that we are
+			// not reading beyond the end of the buffer.
+			if (trailerWords+1 <= bufferEnd and *trailerWords == fgkEndOfDDL)
+			{
+				// If we aready knew the trailer was corrupt then just
+				// return because the error was already announced.
+				if (problemWithTrailer) return;
+				
+				if (fAutoDetectTrailer)
+				{
+					// If we got here then there is at least one correct trailer
+					// word, but since we did not detect a currect trailer then
+					// there must be only one. Announce the error and exit.
+					fHandler.OnError(EventHandler::kTooFewDDLTrailerWords, trailerWords);
+					fHadError = true;
+					return;
+				}
+			}
+			
 			// So we only got part of a block header at the very end
 			// of the buffer. Nothing to do but report the error and exit.
 			if (blockCount == fMaxBlocks)
@@ -328,7 +448,7 @@ void AliMUONTrackerDDLDecoder<EventHandler>::DecodeBuffer(
 		// If any of the above fail then we know there is a problem with
 		// the block header. It must be corrupted somehow.
 		if (blockHeader->fDataKey != fgkBlockDataKey
-		    or dataEnd > end or blockEnd > end or dataEnd != blockEnd)
+		    or dataEnd > endOfBlocks or blockEnd > endOfBlocks or dataEnd != blockEnd)
 		{
 			// So let us see what exactly is wrong and report this.
 			if (blockCount == fMaxBlocks)
@@ -342,9 +462,9 @@ void AliMUONTrackerDDLDecoder<EventHandler>::DecodeBuffer(
 			}
 			if (blockHeader->fDataKey != fgkBlockDataKey)
 				fHandler.OnError(EventHandler::kBadBlockKey, &blockHeader->fDataKey);
-			if (blockEnd > end)
+			if (blockEnd > endOfBlocks)
 				fHandler.OnError(EventHandler::kBadBlockLength, &blockHeader->fLength);
-			if (dataEnd > end)
+			if (dataEnd > endOfBlocks)
 				fHandler.OnError(EventHandler::kBadBlockTotalLength, &blockHeader->fTotalLength);
 			if (dataEnd != blockEnd)
 				fHandler.OnError(EventHandler::kBlockLengthMismatch, blockHeader);
@@ -359,7 +479,7 @@ void AliMUONTrackerDDLDecoder<EventHandler>::DecodeBuffer(
 			RecoverResult result = TryRecoverStruct(
 					fgkBlockDataKey, sizeof(AliMUONBlockHeaderStruct),
 					blockHeader->fTotalLength, blockHeader->fLength,
-					blockStart, end, dataEnd, blockEnd, current
+					blockStart, endOfBlocks, dataEnd, blockEnd, current
 				);
 			if (result == kContinueToNextStruct)
 				continue; // Try the next block at 'current'.
