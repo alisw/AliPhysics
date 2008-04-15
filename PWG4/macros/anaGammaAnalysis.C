@@ -12,8 +12,8 @@
 // analysis classes in PWG4Gamma
 // Can be executed with Root and AliRoot
 //
-// Pay attention to the loading of libraries in LoadLibraries()
-// in the local mode.
+// Pay attention to the options and definitions
+// set in the lines below
 //
 //  Author : Gustavo Conesa Balbastre (INFN-LNF)
 //
@@ -23,15 +23,18 @@ enum anaModes {mLocal, mLocalCAF,mPROOF,mGRID};
 //mLocalCAF: Analyze locally CAF files
 //mPROOF: Analyze CAF files with PROOF
 
-//Settings to read locally several files
-//The differnt values are default, they can be set with environmental 
+//---------------------------------------------------------------------------
+//Settings to read locally several files, only for "mLocal" mode
+//The different values are default, they can be set with environmental 
 //variables: INDIR, PATTERN, NEVENT, respectivelly
 char * kInDir = "/home/group/alice/schutz/analysis/PWG4/data"; 
 char * kPattern = ""; // Data are in diles /data/Run0, 
 // /Data/Run1 ...
 Int_t kEvent = 1; // Number of files
-
-
+//---------------------------------------------------------------------------
+//Collection file for grid analysis
+char * kXML = "collection.xml";
+//---------------------------------------------------------------------------
 //Scale histograms from file. Change to kTRUE when xsection file exists
 //Put name of file containing xsection 
 //Put number of events per ESD file
@@ -39,102 +42,106 @@ Int_t kEvent = 1; // Number of files
 const Bool_t kGetXSectionFromFileAndScale = kTRUE ;
 const char * kXSFileName = "pyxsec.root";
 const Int_t kNumberOfEventsPerFile = 100; 
+//---------------------------------------------------------------------------
 
+const Bool_t kMC = kTRUE; //With real data kMC = kFALSE
 
 void anaGammaAnalysis(Int_t mode=mLocal, TString configName = "ConfigKineGammaDirect")
 {
   // Main
-  
-  //
+
+  //--------------------------------------------------------------------
   // Load analysis libraries
   // Look at the method below, 
   // change whatever you need for your analysis case
-  // 
+  // ------------------------------------------------------------------
   LoadLibraries(mode) ;
   
-  //
-  //Create chain, get cross sections, look below for options.
-  // 
-  Double_t xsection = 0;
-  Int_t ntrials = 0;
-  Int_t nfiles = 0;
-  TChain* chain = CreateChain(mode, xsection, ntrials, nfiles);  
-  if(kGetXSectionFromFileAndScale && nfiles > 0){
-    xsection /= nfiles ;
-    ntrials  /= nfiles ;
-    cout<<"//////////////////////////////////////////////////////////////"<<endl;
-    cout<<"Average cross section: "<<xsection<<" ntrials "<<ntrials<<" files "<<nfiles<<endl;
-    cout<<"//////////////////////////////////////////////////////////////"<<endl;
-  }
+  //-------------------------------------------------------------------------------------------------
+  //Create chain from ESD and from cross sections files, look below for options.
+  //------------------------------------------------------------------------------------------------- 
+  TChain *chain   = new TChain("esdTree") ;
+  TChain * chainxs = new TChain("Xsection") ;
+  CreateChain(mode, chain, chainxs);  
 
   if(chain){
-
-    AliLog::SetGlobalLogLevel(AliLog::kError);
-
-  //
-  // Make the analysis manager
-  //
-  AliAnalysisManager *mgr  = new AliAnalysisManager("Manager", "Manager");
-  // MC handler
-  AliMCEventHandler* mcHandler = new AliMCEventHandler();
-  mgr->SetMCtruthEventHandler(mcHandler);
-  // AOD output handler
-  AliAODHandler* aodHandler   = new AliAODHandler();
-  aodHandler->SetOutputFileName("aod.root");
-  mgr->SetOutputEventHandler(aodHandler);
-  // ESD handler
-  AliESDInputHandler *esdHandler = new AliESDInputHandler();
-  mgr->SetInputEventHandler(esdHandler);
-
-  //mgr->SetDebugLevel(10);
-
-  //Define task, put here any other task that you want to use.
-  AliAnalysisTaskGamma * taskgamma = new AliAnalysisTaskGamma ("Gamma");
-  taskgamma->SetConfigFileName(configName); //Default name is ConfigGammaAnalysis
-  mgr->AddTask(taskgamma);
-
-  // Create containers for input/output
-  AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("cchain",TChain::Class(), 
-                      AliAnalysisManager::kInputContainer);
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("tree", TTree::Class(),
-                      AliAnalysisManager::kOutputContainer, "default");
-  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("gammahistos", TList::Class(),
-                      AliAnalysisManager::kOutputContainer, "gammahistos.root");
-
-  mgr->ConnectInput  (taskgamma,     0, cinput1);
-  mgr->ConnectOutput (taskgamma,     0, coutput1 );
-  mgr->ConnectOutput (taskgamma,     1, coutput2 );
-
-  //Scaling task
-  
-  if(kGetXSectionFromFileAndScale){
-    AliAnaScale * scale = new AliAnaScale("scale") ;
-    scale->Set(xsection/ntrials/kNumberOfEventsPerFile/nfiles) ;
-    mgr->AddTask(scale);
+    AliLog::SetGlobalLogLevel(AliLog::kError);//Minimum prints on screen
     
-    AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("gammahistosscaled", TList::Class(),
-							      AliAnalysisManager::kOutputContainer, "gammahistosscaled.root");
-    mgr->ConnectInput  (scale,     0, coutput2);
-    mgr->ConnectOutput (scale,     0, coutput3 );
-  }
+    //--------------------------------------
+    // Make the analysis manager
+    //-------------------------------------
+    AliAnalysisManager *mgr  = new AliAnalysisManager("Manager", "Manager");
+    // MC handler
+    if(kMC){
+      AliMCEventHandler* mcHandler = new AliMCEventHandler();
+      mgr->SetMCtruthEventHandler(mcHandler);
+    }
+    // AOD output handler
+    AliAODHandler* aodHandler   = new AliAODHandler();
+    aodHandler->SetOutputFileName("aod.root");
+    mgr->SetOutputEventHandler(aodHandler);
+    // ESD handler
+    AliESDInputHandler *esdHandler = new AliESDInputHandler();
+    mgr->SetInputEventHandler(esdHandler);
+    
+    //mgr->SetDebugLevel(10); // For debugging
+
+    //-------------------------------------------------------------------------
+    //Define task, put here any other task that you want to use.
+    //-------------------------------------------------------------------------
+    AliAnalysisTaskGamma * taskgamma = new AliAnalysisTaskGamma ("Gamma");
+    taskgamma->SetConfigFileName(configName); //Default name is ConfigGammaAnalysis
+    mgr->AddTask(taskgamma);
+    
+    // Create containers for input/output
+    AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("cchain",TChain::Class(), 
+							     AliAnalysisManager::kInputContainer);
+    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("tree", TTree::Class(),
+							      AliAnalysisManager::kOutputContainer, "default");
+    AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("gammahistos", TList::Class(),
+							      AliAnalysisManager::kOutputContainer, "gammahistos.root");
+    
+    mgr->ConnectInput  (taskgamma,     0, cinput1);
+    mgr->ConnectOutput (taskgamma,     0, coutput1 );
+    mgr->ConnectOutput (taskgamma,     1, coutput2 );
   
-  //
-  // Run the analysis
-  //    
-  TString smode = "";
-  if (mode==mLocal || mode == mLocalCAF) 
-    smode = "local";
-  else if (mode==mPROOF) 
-    smode = "proof";
-   else if (mode==mGRID) 
-    smode = "grid";
-  
-  mgr->InitAnalysis();
-  mgr->PrintStatus();
-  mgr->StartAnalysis(smode.Data(),chain);
+    //------------------------  
+    //Scaling task
+    //-----------------------
+    Int_t nfiles = chainxs->GetEntries();
+    if(kGetXSectionFromFileAndScale && nfiles > 0){
+      //Get the cross section
+      Double_t xsection=0; 
+      Float_t ntrials = 0;
+      GetAverageXsection(chainxs, xsection, ntrials);
+      
+      AliAnaScale * scale = new AliAnaScale("scale") ;
+      scale->Set(xsection/ntrials/kNumberOfEventsPerFile/nfiles) ;
+      mgr->AddTask(scale);
+      
+      AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("gammahistosscaled", TList::Class(),
+								AliAnalysisManager::kOutputContainer, "gammahistosscaled.root");
+      mgr->ConnectInput  (scale,     0, coutput2);
+      mgr->ConnectOutput (scale,     0, coutput3 );
+    }
+    
+    //-----------------------
+    // Run the analysis
+    //-----------------------    
+    TString smode = "";
+    if (mode==mLocal || mode == mLocalCAF) 
+      smode = "local";
+    else if (mode==mPROOF) 
+      smode = "proof";
+    else if (mode==mGRID) 
+      smode = "grid";
+    
+    mgr->InitAnalysis();
+    mgr->PrintStatus();
+    mgr->StartAnalysis(smode.Data(),chain);
   }
   else cout << "Chain was not produced ! "<<endl;
-
+  
 }
 
 void  LoadLibraries(const anaModes mode) {
@@ -147,7 +154,9 @@ void  LoadLibraries(const anaModes mode) {
   gSystem->Load("libVMC.so");
   gSystem->Load("libXMLIO.so");
   
+  //----------------------------------------------------------
   // >>>>>>>>>>> Local mode <<<<<<<<<<<<<< 
+  //----------------------------------------------------------
   if (mode==mLocal || mode == mLocalCAF || mode == mGRID) {
     //--------------------------------------------------------
     // If you want to use already compiled libraries 
@@ -159,7 +168,7 @@ void  LoadLibraries(const anaModes mode) {
     //gSystem->Load("libANALYSIS");
     //gSystem->Load("libANALYSISalice");
     //gSystem->Load("libPWG4Gamma");
-
+    
     //--------------------------------------------------------
     //If you want to use root and par files from aliroot
     //--------------------------------------------------------  
@@ -171,8 +180,10 @@ void  LoadLibraries(const anaModes mode) {
     SetupPar("PWG4Gamma");
     
   }
-  
+
+  //---------------------------------------------------------
   // <<<<<<<<<< PROOF mode >>>>>>>>>>>>
+  //---------------------------------------------------------
   else if (mode==mPROOF) {
     //
     // Connect to proof
@@ -209,10 +220,10 @@ void  LoadLibraries(const anaModes mode) {
 
 void SetupPar(char* pararchivename)
 {
-
   //Load par files, create analysis libraries
   //For testing, if par file already decompressed and modified
   //classes then do not decompress.
+ 
   TString cdir(Form("%s", gSystem->WorkingDirectory() )) ; 
   TString parpar(Form("%s.par", pararchivename)) ; 
   if ( gSystem->AccessPathName(parpar.Data()) ) {
@@ -227,7 +238,7 @@ void SetupPar(char* pararchivename)
     TString processline = Form(".! tar xvzf %s",parpar.Data()) ;
     gROOT->ProcessLine(processline.Data());
   }
-
+  
   TString ocwd = gSystem->WorkingDirectory();
   gSystem->ChangeDirectory(pararchivename);
   
@@ -258,35 +269,36 @@ void SetupPar(char* pararchivename)
 
 
 
-TChain * CreateChain(const anaModes mode, Double_t &xsection, Int_t &ntrials, Int_t &nfiles){
-  //Creates data chain
-  TChain *chain;
-
+void CreateChain(const anaModes mode, TChain * chain, TChain * chainxs){
+  //Fills chain with data
   TString ocwd = gSystem->WorkingDirectory();
+  
+  //-----------------------------------------------------------
   //Analysis of CAF data locally and with PROOF
+  //-----------------------------------------------------------
   if(mode ==mPROOF || mode ==mLocalCAF){
     // Chain from CAF
     gROOT->LoadMacro("$ALICE_ROOT/PWG0/CreateESDChain.C");
     // The second parameter is the number of input files in the chain
     chain = CreateESDChain("ESD12001.txt", 5);  
   }
-
+  
+  //---------------------------------------
   //Local files analysis
-  else if(mode == mLocal){
-    chain = new TChain("esdTree") ;
-    TString input = "AliESDs.root" ;
-    
+  //---------------------------------------
+  else if(mode == mLocal){    
     //If you want to add several ESD files sitting in a common directory INDIR
     //Specify as environmental variables the directory (INDIR), the number of files 
     //to analyze (NEVENT) and the pattern name of the directories with files (PATTERN)
+
     if(gSystem->Getenv("INDIR"))  
       kInDir = gSystem->Getenv("INDIR") ; 
     else cout<<"INDIR not set, use default: "<<kInDir<<endl;	
-
+    
     if(gSystem->Getenv("PATTERN"))   
       kPattern = gSystem->Getenv("PATTERN") ; 
     else  cout<<"PATTERN not set, use default: "<<kPattern<<endl;
-
+    
     if(gSystem->Getenv("NEVENT"))
       kEvent = atoi(gSystem->Getenv("NEVENT")) ;
     else cout<<"NEVENT not set, use default: "<<kEvent<<endl;
@@ -306,86 +318,83 @@ TChain * CreateChain(const anaModes mode, Double_t &xsection, Int_t &ntrials, In
       Int_t event =0;
       Int_t skipped=0 ; 
       char file[120] ;
-      Double_t * rv = new Double_t[2] ;
-      rv[0] = rv[1] = 0.0 ;
-
+      char filexs[120] ;
+      
       for (event = 0 ; event < kEvent ; event++) {
-        sprintf(file, "%s/%s%d/AliESDs.root", kInDir,kPattern,event) ; 
+	sprintf(file, "%s/%s%d/AliESDs.root", kInDir,kPattern,event) ; 
+	sprintf(filexs, "%s/%s%d/%s", kInDir,kPattern,event,kXSFileName) ; 
 	TFile * fESD = 0 ; 
 	//Check if file exists and add it, if not skip it
 	if ( fESD = TFile::Open(file)) {
-	  //Get cross section if file exists
-	  ReadXsection(kInDir, kPattern, event, rv) ;
 	  if ( fESD->Get("esdTree") ) { 
 	    printf("++++ Adding %s\n", file) ;
 	    chain->AddFile(file);
-	    nfiles++;
-	    if(rv) {
-	      cout << "xsection" << rv[0] << "; ntrials " <<rv[1]<< endl ;	      
-	      xsection += rv[0] ;
-	      ntrials += rv[1] ;
-	    }
-	   }
-          }
-	  else { 
-	    printf("---- Skipping %s\n", file) ;
-	    skipped++ ;
+	    chainxs->Add(filexs) ; 
 	  }
+	}
+	else { 
+	  printf("---- Skipping %s\n", file) ;
+	  skipped++ ;
+	}
       }
       printf("number of entries # %lld, skipped %d\n", chain->GetEntries(), skipped*100) ; 	
     }
     else {
+      TString input = "AliESDs.root" ;
       cout<<">>>>>> No list added, take a single file <<<<<<<<< "<<input<<endl;
       chain->AddFile(input);
     }
-
-  }// local files analysis
-
-  //GRID xml files
-  else if(mode == mGRID){
     
-    //Get colection file
-    TString input = "collection.xml" ;
-    char kXML  [1000];
+  }// local files analysis
+  
+  //------------------------------
+  //GRID xml files
+  //-----------------------------
+  else if(mode == mGRID){
+    //Get colection file. It is specified by the environmental
+    //variable XML
+
     if(gSystem->Getenv("XML") )
       kXML = gSystem->Getenv("XML");
     else
-        sprintf(kXML, "collection.xml") ; 
-
-    cout<<"XML file "<<kXML<<endl;
+      sprintf(kXML, "collection.xml") ; 
     
     if (!TFile::Open(kXML)) {
       printf("No collection file with name -- %s -- was found\n",kXML);
       return ;
     }
+    else cout<<"XML file "<<kXML<<endl;
 
+    //Load necessary libraries and connect to the GRID
     gSystem->Load("libNetx.so") ; 
     gSystem->Load("libRAliEn.so"); 
     TGrid::Connect("alien://") ;
-    TGridCollection * collection =  (TGridCollection*)gROOT->ProcessLine(Form("TAlienCollection::Open(\"%s\", 0)", kXML));
+
+    //Feed Grid with collection file
+    //TGridCollection * collection =  (TGridCollection*)gROOT->ProcessLine(Form("TAlienCollection::Open(\"%s\", 0)", kXML));
+    TGridCollection * collection = (TGridCollection*) TAlienCollection::Open(kXML);
     if (! collection) {
       AliError(Form("%s not found", kXML)) ; 
       return kFALSE ; 
     }
-    
     TGridResult* result = collection->GetGridResult("",0 ,0);
+   
     // Makes the ESD chain 
     printf("*** Getting the Chain       ***\n");
-    chain = new TChain("esdTree") ;
     for (Int_t index = 0; index < result->GetEntries(); index++) {
       TString alienURL = result->GetKey(index, "turl") ; 
       cout << "================== " << alienURL << endl ; 
       chain->Add(alienURL) ; 
+      alienURL.ReplaceAll("AliESDs.root",kXSFileName);
+      chainxs->Add(alienURL) ; 
     }
   }// xml analysis
   
   gSystem->ChangeDirectory(ocwd.Data());
-  
-  return chain ;
 }
 
 //________________________________________________
-void ReadXsection(const char * inDir, const char * pattern, const Int_t event, Double_t * rv)
+void GetAverageXsection(TTree * tree, Double_t & xs, Float_t & ntr)
 {
   // Read the PYTHIA statistics from the file pyxsec.root created by
   // the function WriteXsection():
@@ -398,28 +407,32 @@ void ReadXsection(const char * inDir, const char * pattern, const Int_t event, D
   // userSpectrum->Scale(weight)
   //
   // Yuri Kharlov 19 June 2007
-
-  Double_t xsection;
-  UInt_t    ntrials;
-
-  char cfile[100] ;
-  sprintf(cfile, "%s/%s%d/%s", inDir, pattern,event,kXSFileName) ;
-  TFile *file = new TFile(cfile,"readonly");
-
-  if ( ! file ) {
-    AliInfo(Form("Cross section file not found %s", cfile)) ;
-    rv=0x0 ;
-  }
-  else{
-    TTree *tree = file->Get("Xsection");
-    if (tree) {
-      tree->SetBranchAddress("xsection",&xsection);
-      tree->SetBranchAddress("ntrials",&ntrials);
-      tree->GetEntry(0);
-      rv[0] = xsection ;
-      rv[1] = ntrials ;
-    } 
-    else
-      rv = 0x0 ;
-  }
+  // Gustavo Conesa 15 April 2008
+  Double_t xsection = 0;
+  UInt_t    ntrials = 0;
+  xs = 0;
+  ntr = 0;
+  
+  Int_t nfiles =  tree->GetEntries()  ;
+  if (tree && nfiles > 0) {
+    tree->SetBranchAddress("xsection",&xsection);
+    tree->SetBranchAddress("ntrials",&ntrials);
+    for(Int_t i = 0; i < nfiles; i++){
+      tree->GetEntry(i);
+      xs += xsection ;
+      ntr += ntrials ;
+      cout << "xsection " <<xsection<<" ntrials "<<ntrials<<endl; 
+    }
+    
+    xs =   xs /  nfiles;
+    ntr =  ntr / nfiles;
+    cout << "-----------------------------------------------------------------"<<endl;
+    cout << "Average of "<< nfiles<<" files: xsection " <<xs<<" ntrials "<<ntr<<endl; 
+    cout << "-----------------------------------------------------------------"<<endl;
+  } 
+  else cout << " >>>> Empty tree !!!! <<<<< "<<endl;
+  
 }
+
+
+
