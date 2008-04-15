@@ -35,8 +35,6 @@ class AliTRDqaGuiBlackSM : public TGCompositeFrame {
 
   AliTRDqaGuiBlackSM();
   AliTRDqaGuiBlackSM(TGWindow *parent);
-  AliTRDqaGuiBlackSM& operator = (const AliTRDqaGuiBlackSM& /*g*/) { return *this; };
-  AliTRDqaGuiBlackSM(const AliTRDqaGuiBlackSM&);
   ~AliTRDqaGuiBlackSM() {}
   
   void SetQAFile(const char *filename);
@@ -90,6 +88,10 @@ class AliTRDqaGuiBlackSM : public TGCompositeFrame {
   //TGTextButton *fGPlay;
 
   TGComboBox *fGSelectType;     // data type selection
+
+ private:
+  AliTRDqaGuiBlackSM& operator = (const AliTRDqaGuiBlackSM& /*g*/) { return *this; };
+  AliTRDqaGuiBlackSM(const AliTRDqaGuiBlackSM&);
 
   ClassDef(AliTRDqaGuiBlackSM,1) // 
 };

@@ -21,8 +21,6 @@ class AliTRDqaGuiClustersStack : public TGCompositeFrame {
 
   AliTRDqaGuiClustersStack();
   AliTRDqaGuiClustersStack(TGWindow *parent);
-  AliTRDqaGuiClustersStack& operator = (const AliTRDqaGuiClustersStack& /*g*/) { return *this; };
-  AliTRDqaGuiClustersStack(const AliTRDqaGuiClustersStack &);
   ~AliTRDqaGuiClustersStack() {}
 
   
@@ -77,7 +75,10 @@ class AliTRDqaGuiClustersStack : public TGCompositeFrame {
   void CreateHistAmplitude();
   void CreateHistTimeCharge();
   void CreateHistTimeMPV();
-  
+
+ private:  
+  AliTRDqaGuiClustersStack& operator = (const AliTRDqaGuiClustersStack& /*g*/) { return *this; };
+  AliTRDqaGuiClustersStack(const AliTRDqaGuiClustersStack &);
   ClassDef(AliTRDqaGuiClustersStack,1) // 
 };
 

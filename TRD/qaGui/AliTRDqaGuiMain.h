@@ -34,8 +34,6 @@ class AliTRDqaGuiMain : public TGMainFrame {
 
   AliTRDqaGuiMain();
   AliTRDqaGuiMain(TGWindow *parent);
-  AliTRDqaGuiMain& operator = (const AliTRDqaGuiMain& /*g*/) { return *this; };
-  AliTRDqaGuiMain (const AliTRDqaGuiMain&);
   ~AliTRDqaGuiMain() {}
 
   void SetQAFile(const char *file);
@@ -48,6 +46,10 @@ class AliTRDqaGuiMain : public TGMainFrame {
   AliTRDqaGuiClustersSM     *fGSM;    // panel with clusers
   AliTRDqaGuiClustersStack  *fGStack; // panel with clusers
   AliTRDqaGuiESDs *fGESDs[4];         // panel with ESDs
+
+ private:
+  AliTRDqaGuiMain& operator = (const AliTRDqaGuiMain& /*g*/) { return *this; };
+  AliTRDqaGuiMain (const AliTRDqaGuiMain&);
 
   ClassDef(AliTRDqaGuiMain,1) //
 };

@@ -34,8 +34,6 @@ class AliTRDqaGuiClustersSM : public TGCompositeFrame {
 
   AliTRDqaGuiClustersSM();
   AliTRDqaGuiClustersSM(TGWindow *parent);
-  AliTRDqaGuiClustersSM& operator = (const AliTRDqaGuiClustersSM& /*g*/) { return *this; };
-  AliTRDqaGuiClustersSM(const AliTRDqaGuiClustersSM&);
   ~AliTRDqaGuiClustersSM() {}
   
   void SetQAFile(const char *filename);
@@ -67,6 +65,10 @@ class AliTRDqaGuiClustersSM : public TGCompositeFrame {
   TGTextButton *fGPrev;      // previus sm
   TGTextButton *fGNext;      // next sm
   TGTextButton *fGPlay;      // loop throu sm
+
+ private:
+  AliTRDqaGuiClustersSM& operator = (const AliTRDqaGuiClustersSM& /*g*/) { return *this; };
+  AliTRDqaGuiClustersSM(const AliTRDqaGuiClustersSM&);
 
   ClassDef(AliTRDqaGuiClustersSM,1) // 
 };

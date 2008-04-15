@@ -28,8 +28,6 @@ class AliTRDqaGuiMainAnalysis : public TGMainFrame {
 
   AliTRDqaGuiMainAnalysis();
   AliTRDqaGuiMainAnalysis(TGWindow *parent);
-  AliTRDqaGuiMainAnalysis& operator = (const AliTRDqaGuiMainAnalysis& /*g*/) { return *this; };
-  AliTRDqaGuiMainAnalysis (const AliTRDqaGuiMainAnalysis&);
   ~AliTRDqaGuiMainAnalysis() {}
 
   void SetQAFile();
@@ -39,6 +37,10 @@ class AliTRDqaGuiMainAnalysis : public TGMainFrame {
   TGTab *fGTabPanel;                  // main tab panel
   AliTRDqaGuiJPsi          *fGJPsi;       // 
   AliTRDqaGuiEnergyDeposit *fGED;
+
+ private:
+  AliTRDqaGuiMainAnalysis& operator = (const AliTRDqaGuiMainAnalysis& /*g*/) { return *this; };
+  AliTRDqaGuiMainAnalysis (const AliTRDqaGuiMainAnalysis&);
 
   ClassDef(AliTRDqaGuiMainAnalysis,1) //
 };

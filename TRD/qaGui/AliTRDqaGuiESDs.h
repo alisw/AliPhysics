@@ -30,8 +30,6 @@ class AliTRDqaGuiESDs : public TGCompositeFrame {
 
   AliTRDqaGuiESDs():TGCompositeFrame(),fPage(0) {}
   AliTRDqaGuiESDs(TGWindow *parent, Int_t page);
-  AliTRDqaGuiESDs& operator = (const AliTRDqaGuiESDs& /*g*/) { return *this; };
-  AliTRDqaGuiESDs(const AliTRDqaGuiESDs &);
   ~AliTRDqaGuiESDs() {}
 
   void SetPage(Int_t page) {fPage = page;}
@@ -45,6 +43,10 @@ class AliTRDqaGuiESDs : public TGCompositeFrame {
  
   TRootEmbeddedCanvas *fCanvasList[6];  // canvas list
   TH1D *fHistList[6];                   // and histograms
+
+ private:
+  AliTRDqaGuiESDs& operator = (const AliTRDqaGuiESDs& /*g*/) { return *this; };
+  AliTRDqaGuiESDs(const AliTRDqaGuiESDs &);
 
   ClassDef(AliTRDqaGuiESDs,1) // 
 };

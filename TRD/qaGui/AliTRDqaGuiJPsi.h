@@ -31,8 +31,6 @@ class AliTRDqaGuiJPsi : public TGCompositeFrame {
 
   AliTRDqaGuiJPsi();
   AliTRDqaGuiJPsi(TGWindow *parent);
-  AliTRDqaGuiJPsi& operator = (const AliTRDqaGuiJPsi& /*g*/) { return *this; };
-  AliTRDqaGuiJPsi(const AliTRDqaGuiJPsi&);
   ~AliTRDqaGuiJPsi() {}
   
   void SetQAFile(const char *filename);
@@ -60,6 +58,10 @@ class AliTRDqaGuiJPsi : public TGCompositeFrame {
   TGComboBox   *fGSelect;    // step selector button 
   TGTextButton *fGPrev;      // previus step
   TGTextButton *fGNext;      // next step
+
+ private:
+  AliTRDqaGuiJPsi& operator = (const AliTRDqaGuiJPsi& /*g*/) { return *this; };
+  AliTRDqaGuiJPsi(const AliTRDqaGuiJPsi&);
 
   ClassDef(AliTRDqaGuiJPsi,1) // 
 };

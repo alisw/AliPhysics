@@ -30,8 +30,6 @@ class AliTRDqaGuiClusters : public TGCompositeFrame {
 
   AliTRDqaGuiClusters() {}
   AliTRDqaGuiClusters(TGWindow *parent);
-  AliTRDqaGuiClusters& operator = (const AliTRDqaGuiClusters& /*g*/) { return *this; };
-  AliTRDqaGuiClusters(const AliTRDqaGuiClusters &);
   ~AliTRDqaGuiClusters() {}
   
   void SetQAFile(const char *filename);
@@ -43,6 +41,10 @@ class AliTRDqaGuiClusters : public TGCompositeFrame {
  
   TRootEmbeddedCanvas *fCanvasList[4]; // list of canvases
   TH1D *fHistList[4];                  // and histograms
+
+ private:
+  AliTRDqaGuiClusters& operator = (const AliTRDqaGuiClusters& /*g*/) { return *this; };
+  AliTRDqaGuiClusters(const AliTRDqaGuiClusters &);
 
   ClassDef(AliTRDqaGuiClusters,1) // 
 };

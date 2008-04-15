@@ -29,8 +29,6 @@ class AliTRDqaGuiEnergyDeposit : public TGCompositeFrame {
 
   AliTRDqaGuiEnergyDeposit();
   AliTRDqaGuiEnergyDeposit(TGWindow *parent);
-  AliTRDqaGuiEnergyDeposit& operator = (const AliTRDqaGuiEnergyDeposit& /*g*/) { return *this; };
-  AliTRDqaGuiEnergyDeposit(const AliTRDqaGuiEnergyDeposit&);
   ~AliTRDqaGuiEnergyDeposit() {}
   
   void SetQAFile(const char *filename);
@@ -58,6 +56,10 @@ class AliTRDqaGuiEnergyDeposit : public TGCompositeFrame {
   TGComboBox   *fGSelect;    // step selector button 
   TGTextButton *fGPrev;      // previus step
   TGTextButton *fGNext;      // next step
+
+ private:
+  AliTRDqaGuiEnergyDeposit& operator = (const AliTRDqaGuiEnergyDeposit& /*g*/) { return *this; };
+  AliTRDqaGuiEnergyDeposit(const AliTRDqaGuiEnergyDeposit&);
 
   ClassDef(AliTRDqaGuiEnergyDeposit,1) // 
 };
