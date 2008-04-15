@@ -1,21 +1,23 @@
 void JetAnalysisManagerLoc()
 {
       gSystem->Load("libTree.so");
+      gSystem->Load("libPhysics.so");
       gSystem->Load("libGeom.so");
       gSystem->Load("libVMC.so");
       gSystem->Load("libANALYSIS.so");
       gSystem->Load("libSTEERBase.so");
       gSystem->Load("libAOD.so");
       gSystem->Load("libESD.so");
+      gSystem->Load("libANALYSISalice.so");
       gSystem->Load("libJETAN.so");
-      gSystem->Load("libPWG0base.so");
+
      //
     if (gApplication) gApplication->InitializeGraphics();
     // Create the chain
     //
     gROOT->LoadMacro("CreateESDChain.C");
     TChain* chain = new TChain("esdTree");
-    chain->Add("/home/morsch/AliRoot/data/data_jets102/AliESDs.root");
+    chain->Add("/afs/cern.ch/user/k/kleinb/public/tutorial/local/data/AliESDs.root");
 
     /////////////////////////////////////////////////////////////////////////////////// 
     // Create the analysis manager
@@ -33,7 +35,7 @@ void JetAnalysisManagerLoc()
     mgr->SetInputEventHandler  (inpHandler);
     mgr->SetOutputEventHandler (aodHandler);
     mgr->SetMCtruthEventHandler(mcHandler);
-    mgr-> SetDebugLevel(10);
+    mgr->SetDebugLevel(10);
     /////////////////////////////////////////////////////////////////////////////////// 
     
     
