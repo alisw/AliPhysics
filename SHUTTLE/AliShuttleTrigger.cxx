@@ -212,7 +212,7 @@ void AliShuttleTrigger::Run() {
 
 	fTerminate = kFALSE;
 
-	DATENotifier* notifier = new DATENotifier(this, "/DATE/LOGBOOK/UPDATE");
+	DATENotifier* notifier = new DATENotifier(this, "/LOGBOOK/SUBSCRIBE/ECS_EOR");
 
 	Int_t nTry=0; 
 	Int_t nMaxTry = fConfig->GetMaxRetries()+1;

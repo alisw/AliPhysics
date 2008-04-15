@@ -9,8 +9,10 @@ void DATENotifier::infoHandler()
 {
 // Info handler
 
-	AliInfoGeneral("DATENotifier::infoHandler()",
-			"DATE notification received ...");
+	Int_t run = -1;
+	if (getData())
+		run = getInt();
+	AliInfoGeneral("DATENotifier::infoHandler()", Form("DATE notification received for run %d...", run));
 	fTrigger->Notify();
 }
 
