@@ -262,11 +262,20 @@ Int_t AliHMPIDCluster::Solve(TClonesArray *pCluLst,Int_t *pSigmaCut, Bool_t isTr
   
   Int_t rawSize = Size();                                                                //get current raw cluster size
   
-  if(rawSize>100 || isTryUnfold==kFALSE || Size()==1) {                                  //No deconv if: 1 - big cluster (also avoid no zero suppression!)
-    fSt = (isTryUnfold)? kSi1: kNot;                                                     //              2 - flag is set to FALSE
+  if(rawSize>100) {
+    fSt = kBig;
+  } else if(isTryUnfold==kFALSE) {
+    fSt = kNot;
+  } else if(rawSize==1) {
+    fSt = kSi1;
+  }
+  
+  if(rawSize>100 || isTryUnfold==kFALSE || rawSize==1) {                                 //No deconv if: 1 - big cluster (also avoid no zero suppression!)
+                                                                                         //              2 - flag is set to FALSE
     if(fParam->GetInstType()) SetClusterParams(fXX,fYY,fCh);                             //              3 - size = 1
     new ((*pCluLst)[iCluCnt++]) AliHMPIDCluster(*this);  //add this raw cluster 
     return 1;
+    
   } 
   
 //Phase 0. Initialise Fitter  
