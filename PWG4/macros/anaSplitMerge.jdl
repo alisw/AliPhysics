@@ -9,6 +9,7 @@ InputFile={"LF:/alice/cern.ch/user/s/schutz/analysis/macro/anaGammaAnalysis.C",
            "LF:/alice/cern.ch/user/s/schutz/analysis/macro/ConfigESDGammaDirect.C",
            "LF:/alice/cern.ch/user/s/schutz/analysis/par/STEERBase.par",
            "LF:/alice/cern.ch/user/s/schutz/analysis/par/ANALYSIS.par",
+           "LF:/alice/cern.ch/user/s/schutz/analysis/par/ANALYSISalice.par",	
            "LF:/alice/cern.ch/user/s/schutz/analysis/par/AOD.par",
            "LF:/alice/cern.ch/user/s/schutz/analysis/par/PWG4Gamma.par",
            "LF:/alice/cern.ch/user/s/schutz/analysis/par/ESD.par"};
