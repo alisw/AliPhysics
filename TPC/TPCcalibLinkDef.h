@@ -19,6 +19,7 @@
 #pragma link C++ class  AliTPCSelectorESD+;
 #pragma link C++ class  AliTPCSelectorTracks+;
 #pragma link C++ class  AliAnaTPCTrackBase+;
+#pragma link C++ class  AliTPCcalibBase+;
 #pragma link C++ class  AliAnaTPCTrackCalib+;
 #pragma link C++ class  AliTPCcalibAlign+;
 #pragma link C++ class  AliTPCcalibAlignment+;
