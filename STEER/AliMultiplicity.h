@@ -30,8 +30,9 @@ class AliMultiplicity : public TObject {
   else {Error("GetPhi","Invalid track number %d",i); return -9999.;}}
   Double_t GetDeltaPhi(Int_t i) const {if(i>=0 && i<fNtracks) {return fDeltPhi[i];}
   else {Error("GetDeltaPhi","Invalid track number %d",i); return -9999.;}}
-  Int_t GetLabel(Int_t i, Int_t layer) const {if(i>=0 && i<fNtracks) {return (layer == 0) ? fLabels[i] : fLabelsL2[i];}
-  else {Error("GetLabel","Invalid track number %d",i); return -9999;}}
+
+  Int_t GetLabel(Int_t i, Int_t layer) const;
+  
 // methods to access single cluster information
   Int_t GetNumberOfSingleClusters() const {return fNsingle;}
   Double_t GetThetaSingle(Int_t i) const { if(i>=0 && i<fNsingle) {return fThsingle[i];}
@@ -60,4 +61,23 @@ class AliMultiplicity : public TObject {
   ClassDef(AliMultiplicity,7);
 };
 
+inline Int_t AliMultiplicity::GetLabel(Int_t i, Int_t layer) const
+{
+    if(i>=0 && i<fNtracks) {
+	if (layer == 0) {
+	    return fLabels[i];
+	} else if (layer == 1) {
+	    if (fLabelsL2) {
+		return fLabelsL2[i];
+	    } else {
+		Warning("GetLabel", "No information for layer 2 available !");
+		return -9999;
+	    }
+	} else {
+	    Error("GetLabel","Invalid layer number %d",layer); return -9999;
+	}
+    } else {
+	Error("GetLabel","Invalid track number %d",i); return -9999;
+    }
+}
 #endif
