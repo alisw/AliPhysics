@@ -13,13 +13,13 @@
 //  * provided "as is" without express or implied warranty.                  *
 //  **************************************************************************
 
+#include "AliHMPIDCluster.h"  //class header
 #include <TVirtualFitter.h>  //Solve()
 #include <TMinuit.h>         //Solve()
 #include <TClonesArray.h>    //Solve()
 #include <TMarker.h>         //Draw()
 
-#include "AliLog.h"          //FitFunc()
-#include "AliHMPIDCluster.h"  //class header
+#include "AliLog.h"          //FindCusterSize()
 
 Bool_t AliHMPIDCluster::fgDoCorrSin=kTRUE;
 
@@ -394,5 +394,5 @@ void AliHMPIDCluster::FindClusterSize(Int_t i,Int_t *pSigmaCut)
     if(qPad>pSigmaCut[iCh]) size++;
    }
   AliDebug(1,Form(" Calculated size %i",size));
-  SetSize(size);
+  if(size>0) SetSize(size);                                                            //in case of size == 0, original raw clustersize used 
 }
