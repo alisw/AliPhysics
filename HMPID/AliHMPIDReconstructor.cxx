@@ -65,6 +65,7 @@ AliHMPIDReconstructor::AliHMPIDReconstructor():AliReconstructor(),fUserCut(0),fD
       AliDebug(1,Form("UserCut successfully loaded (from OCDB) for chamber %i -> %i ",iCh,fUserCut[iCh]));
     }
    }
+   else {for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++) fUserCut[iCh] = 3;}
   }
 
   AliCDBEntry *pQthreEnt =AliCDBManager::Instance()->Get("HMPID/Calib/Qthre"); //contains TObjArray of 7 TF1
