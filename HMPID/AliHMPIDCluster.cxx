@@ -233,6 +233,7 @@ void AliHMPIDCluster::Print(Option_t* opt)const
     case 	kSi1  : status="size 1   (cog)"   ;break;
     case 	kNoLoc: status="no LocMax(fit)"   ;break;
     case 	kAbn  : status="Abnormal fit  "   ;break;
+    case 	kBig  : status="Big Clu(>100) "   ;break;
     
     default:            status="??????"          ;break;   
   }
@@ -256,10 +257,14 @@ Int_t AliHMPIDCluster::Solve(TClonesArray *pCluLst,Int_t *pSigmaCut, Bool_t isTr
   const Int_t kMaxLocMax=6;                                                              //max allowed number of loc max for fitting
 //  
   CoG();                                                                                 //First calculate CoG for the given cluster
+  
   Int_t iCluCnt=pCluLst->GetEntriesFast();                                               //get current number of clusters already stored in the list by previous operations
-  if(isTryUnfold==kFALSE || Size()==1) {                                                 //if cluster contains single pad there is no way to improve the knowledge 
-    fSt = (isTryUnfold)? kSi1: kNot;
-    if(fParam->GetInstType()) SetClusterParams(fXX,fYY,fCh);  
+  
+  Int_t rawSize = Size();                                                                //get current raw cluster size
+  
+  if(rawSize>100 || isTryUnfold==kFALSE || Size()==1) {                                  //No deconv if: 1 - big cluster (also avoid no zero suppression!)
+    fSt = (isTryUnfold)? kSi1: kNot;                                                     //              2 - flag is set to FALSE
+    if(fParam->GetInstType()) SetClusterParams(fXX,fYY,fCh);                             //              3 - size = 1
     new ((*pCluLst)[iCluCnt++]) AliHMPIDCluster(*this);  //add this raw cluster 
     return 1;
   } 
@@ -285,7 +290,6 @@ Int_t AliHMPIDCluster::Solve(TClonesArray *pCluLst,Int_t *pSigmaCut, Bool_t isTr
 //Phase 1. Find number of local maxima. Strategy is to check if the current pad has QDC more then all neigbours. Also find the box contaning the cluster   
   fNlocMax=0;
 
-  Int_t rawSize = Size();
   for(Int_t iDig1=0;iDig1<rawSize;iDig1++) {                                               //first digits loop
     
     AliHMPIDDigit *pDig1 = Dig(iDig1);                                                   //take next digit    
