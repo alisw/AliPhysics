@@ -679,7 +679,7 @@ void HmpConfig::WriteBatch()
                                                     fprintf(fp,"  gBenchmark->Show(\"ALICE\");\n");
   
                                                     fprintf(fp,"  gSystem->Exec(\"touch ZZZ______finished_______SSS\");\n");
-                                                    fprintf(fp,"  gSystem->Exec(\"aliroot rec.C &\");\n}\n");
+                                                    fprintf(fp,"  gSystem->Exec(\"aliroot -q rec.C &\");\n}\n");
   fclose(fp);  
 // rec section
   char *sBatchName="rec";
