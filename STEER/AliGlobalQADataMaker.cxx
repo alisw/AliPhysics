@@ -80,9 +80,9 @@ void AliGlobalQADataMaker::InitESDs() {
   Char_t *name[]={
     "Track azimuthal distribution (rad)",                   // kTrk0
     "Track pseudo-rapidity distribution",                   // kTrk1
-    "TPC: track momentum distribution (GeV/c)",             // kTrk2
-    "TPC-ITS matched: track momentum distribution (GeV/c)", // kTrk3
-    "TPC-TOF matched: track momentum distribution (GeV/c)", // kTrk4
+    "TPC: track momentum distribution (GeV)",               // kTrk2
+    "TPC-ITS matched: track momentum distribution (GeV)",   // kTrk3
+    "TPC-TOF matched: track momentum distribution (GeV)",   // kTrk4
     "TPC-ITS track-matching probability",                   // kTrk5
     "TPC-TOF track-matching probability"                    // kTrk6
   };
@@ -106,8 +106,8 @@ void AliGlobalQADataMaker::InitESDs() {
 
   {// PID related QA
   Char_t *name[]={
-    "ITS: dE/dx (ADC) for particles with momentum 0.4 - 0.5 (GeV/c)",
-    "TPC: dE/dx (ADC) for particles with momentum 0.4 - 0.5 (GeV/c)",
+    "ITS: dEdx (ADC) for particles with momentum 0.4 - 0.5 (GeV)",
+    "TPC: dEdx (ADC) for particles with momentum 0.4 - 0.5 (GeV)",
     "TOF: tracking - measured (ps)"
   };
   Add2ESDsList(new TH1F(name[0],name[0],50,0.00,200.),kPid0);
