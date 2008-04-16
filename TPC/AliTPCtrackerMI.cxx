@@ -72,7 +72,15 @@
 // The debug level -  different procedure produce tree for numerical debugging
 //                    To enable them set AliTPCReconstructor::SetStreamLevel(n); where nis bigger 1
 //
-
+// There are several places in the code which can be numerically debuged
+// This code is keeped in order to enable code development and to check the calibration implementtion
+//
+//      1. ErrParam stream (Log level 9) - dump information about 
+//         1.a) cluster
+//         2.a) cluster error estimate
+//         3.a) cluster shape estimate
+//
+//
 //-------------------------------------------------------
 
 
@@ -108,6 +116,7 @@
 #include "TRandom.h"
 #include "AliTPCcalibDB.h"
 #include "AliTPCTransform.h"
+#include "AliTPCClusterParam.h"
 
 //
 
@@ -259,8 +268,6 @@ Int_t AliTPCtrackerMI::AcceptCluster(AliTPCseed * seed, AliTPCclusterMI * cluste
   // cluster for tracking
   Double_t sy2=ErrY2(seed,cluster);
   Double_t sz2=ErrZ2(seed,cluster);
-  //sy2=ErrY2(seed,cluster)*cory;
-  //sz2=ErrZ2(seed,cluster)*cory;
   
   Double_t sdistancey2 = sy2+seed->GetSigmaY2();
   Double_t sdistancez2 = sz2+seed->GetSigmaZ2();
@@ -273,6 +280,20 @@ Int_t AliTPCtrackerMI::AcceptCluster(AliTPCseed * seed, AliTPCclusterMI * cluste
   Double_t rdistance2  = rdistancey2+rdistancez2;
   //Int_t  accept =0;
   
+  if (AliTPCReconstructor::StreamLevel()>5) {
+    Float_t rmsy2 = seed->GetCurrentSigmaY2();
+    Float_t rmsz2 = seed->GetCurrentSigmaZ2();
+    AliExternalTrackParam param(*seed); 
+    (*fDebugStreamer)<<"ErrParam"<<
+	"Cl.="<<cluster<<
+	"T.="<<&param<<
+	"erry2="<<sy2<<
+	"errz2="<<sz2<<
+	"rmsy2="<<rmsy2<<
+	"rmsz2="<<rmsz2<<	
+	"\n";
+  }
+
   if (rdistance2>16) return 3;
   
   
@@ -519,131 +540,147 @@ void AliTPCtrackerMI::FillESD(TObjArray* arr)
 Double_t AliTPCtrackerMI::ErrY2(AliTPCseed* seed, AliTPCclusterMI * cl){
   //
   //
-  //seed->SetErrorY2(0.1);
-  //return 0.1;
-  //calculate look-up table at the beginning
-  static Bool_t  ginit = kFALSE;
-  static Float_t gnoise1,gnoise2,gnoise3;
-  static Float_t ggg1[10000];
-  static Float_t ggg2[10000];
-  static Float_t ggg3[10000];
-  static Float_t glandau1[10000];
-  static Float_t glandau2[10000];
-  static Float_t glandau3[10000];
+  // Use calibrated cluster error from OCDB
   //
-  static Float_t gcor01[500];
-  static Float_t gcor02[500];
-  static Float_t gcorp[500];
+  AliTPCClusterParam * clparam = AliTPCcalibDB::Instance()->GetClusterParam();
   //
-
-  //
-  if (ginit==kFALSE){
-    for (Int_t i=1;i<500;i++){
-      Float_t rsigma = float(i)/100.;
-      gcor02[i] = TMath::Max(0.78 +TMath::Exp(7.4*(rsigma-1.2)),0.6);
-      gcor01[i] = TMath::Max(0.72 +TMath::Exp(3.36*(rsigma-1.2)),0.6);
-      gcorp[i]  = TMath::Max(TMath::Power((rsigma+0.5),1.5),1.2);
-    }
-
-    //
-    for (Int_t i=3;i<10000;i++){
-      //
-      //
-      // inner sector
-      Float_t amp = float(i);
-      Float_t padlength =0.75;
-      gnoise1 = 0.0004/padlength;
-      Float_t nel     = 0.268*amp;
-      Float_t nprim   = 0.155*amp;
-      ggg1[i]          = fParam->GetDiffT()*fParam->GetDiffT()*(2+0.001*nel/(padlength*padlength))/nel;
-      glandau1[i]      = (2.+0.12*nprim)*0.5* (2.+nprim*nprim*0.001/(padlength*padlength))/nprim;
-      if (glandau1[i]>1) glandau1[i]=1;
-      glandau1[i]*=padlength*padlength/12.;      
-      //
-      // outer short
-      padlength =1.;
-      gnoise2   = 0.0004/padlength;
-      nel       = 0.3*amp;
-      nprim     = 0.133*amp;
-      ggg2[i]      = fParam->GetDiffT()*fParam->GetDiffT()*(2+0.0008*nel/(padlength*padlength))/nel;
-      glandau2[i]  = (2.+0.12*nprim)*0.5*(2.+nprim*nprim*0.001/(padlength*padlength))/nprim;
-      if (glandau2[i]>1) glandau2[i]=1;
-      glandau2[i]*=padlength*padlength/12.;
-      //
-      //
-      // outer long
-      padlength =1.5;
-      gnoise3   = 0.0004/padlength;
-      nel       = 0.3*amp;
-      nprim     = 0.133*amp;
-      ggg3[i]      = fParam->GetDiffT()*fParam->GetDiffT()*(2+0.0008*nel/(padlength*padlength))/nel;
-      glandau3[i]  = (2.+0.12*nprim)*0.5*(2.+nprim*nprim*0.001/(padlength*padlength))/nprim;
-      if (glandau3[i]>1) glandau3[i]=1;
-      glandau3[i]*=padlength*padlength/12.;
-      //
-    }
-    ginit = kTRUE;
-  }
-  //
-  //
-  //
-  Int_t amp = int(TMath::Abs(cl->GetQ()));  
-  if (amp>9999) {
-    seed->SetErrorY2(1.);
-    return 1.;
-  }
-  Float_t snoise2;
   Float_t z = TMath::Abs(fParam->GetZLength(0)-TMath::Abs(seed->GetZ()));
   Int_t ctype = cl->GetType();  
-  Float_t padlength= GetPadPitchLength(seed->GetRow());
-  Double_t angle2 = seed->GetSnp()*seed->GetSnp();
-  angle2 = angle2/(1-angle2); 
-  //
-  //cluster "quality"
-  Int_t rsigmay = int(100.*cl->GetSigmaY2()/(seed->GetCurrentSigmaY2()));
-  Float_t res;
-  //
-  if (fSectors==fInnerSec){
-    snoise2 = gnoise1;
-    res     = ggg1[amp]*z+glandau1[amp]*angle2;     
-    if (ctype==0) res *= gcor01[rsigmay];
-    if ((ctype>0)){
-      res+=0.002;
-      res*= gcorp[rsigmay];
-    }
+  Int_t    type = (cl->GetRow()<63) ? 0: (cl->GetRow()>126) ? 1:2;
+  Double_t angle = seed->GetSnp()*seed->GetSnp();
+  angle = TMath::Sqrt(angle/(1.-angle));
+  Double_t erry2 = clparam->GetError0Par(0,type, z,angle);
+  if (ctype<0) {
+    erry2+=0.5;  // edge cluster
   }
-  else {
-    if (padlength<1.1){
-      snoise2 = gnoise2;
-      res     = ggg2[amp]*z+glandau2[amp]*angle2; 
-      if (ctype==0) res *= gcor02[rsigmay];      
-      if ((ctype>0)){
-	res+=0.002;
-	res*= gcorp[rsigmay];
-      }
-    }
-    else{
-      snoise2 = gnoise3;      
-      res     = ggg3[amp]*z+glandau3[amp]*angle2; 
-      if (ctype==0) res *= gcor02[rsigmay];
-      if ((ctype>0)){
-	res+=0.002;
-	res*= gcorp[rsigmay];
-      }
-    }
-  }  
+  erry2*=erry2;
+  seed->SetErrorY2(erry2);
+  //
+  return erry2;
 
-  if (ctype<0){
-    res+=0.005;
-    res*=2.4;  // overestimate error 2 times
-  }
-  res+= snoise2;
+//calculate look-up table at the beginning
+//   static Bool_t  ginit = kFALSE;
+//   static Float_t gnoise1,gnoise2,gnoise3;
+//   static Float_t ggg1[10000];
+//   static Float_t ggg2[10000];
+//   static Float_t ggg3[10000];
+//   static Float_t glandau1[10000];
+//   static Float_t glandau2[10000];
+//   static Float_t glandau3[10000];
+//   //
+//   static Float_t gcor01[500];
+//   static Float_t gcor02[500];
+//   static Float_t gcorp[500];
+//   //
+
+//   //
+//   if (ginit==kFALSE){
+//     for (Int_t i=1;i<500;i++){
+//       Float_t rsigma = float(i)/100.;
+//       gcor02[i] = TMath::Max(0.78 +TMath::Exp(7.4*(rsigma-1.2)),0.6);
+//       gcor01[i] = TMath::Max(0.72 +TMath::Exp(3.36*(rsigma-1.2)),0.6);
+//       gcorp[i]  = TMath::Max(TMath::Power((rsigma+0.5),1.5),1.2);
+//     }
+
+//     //
+//     for (Int_t i=3;i<10000;i++){
+//       //
+//       //
+//       // inner sector
+//       Float_t amp = float(i);
+//       Float_t padlength =0.75;
+//       gnoise1 = 0.0004/padlength;
+//       Float_t nel     = 0.268*amp;
+//       Float_t nprim   = 0.155*amp;
+//       ggg1[i]          = fParam->GetDiffT()*fParam->GetDiffT()*(2+0.001*nel/(padlength*padlength))/nel;
+//       glandau1[i]      = (2.+0.12*nprim)*0.5* (2.+nprim*nprim*0.001/(padlength*padlength))/nprim;
+//       if (glandau1[i]>1) glandau1[i]=1;
+//       glandau1[i]*=padlength*padlength/12.;      
+//       //
+//       // outer short
+//       padlength =1.;
+//       gnoise2   = 0.0004/padlength;
+//       nel       = 0.3*amp;
+//       nprim     = 0.133*amp;
+//       ggg2[i]      = fParam->GetDiffT()*fParam->GetDiffT()*(2+0.0008*nel/(padlength*padlength))/nel;
+//       glandau2[i]  = (2.+0.12*nprim)*0.5*(2.+nprim*nprim*0.001/(padlength*padlength))/nprim;
+//       if (glandau2[i]>1) glandau2[i]=1;
+//       glandau2[i]*=padlength*padlength/12.;
+//       //
+//       //
+//       // outer long
+//       padlength =1.5;
+//       gnoise3   = 0.0004/padlength;
+//       nel       = 0.3*amp;
+//       nprim     = 0.133*amp;
+//       ggg3[i]      = fParam->GetDiffT()*fParam->GetDiffT()*(2+0.0008*nel/(padlength*padlength))/nel;
+//       glandau3[i]  = (2.+0.12*nprim)*0.5*(2.+nprim*nprim*0.001/(padlength*padlength))/nprim;
+//       if (glandau3[i]>1) glandau3[i]=1;
+//       glandau3[i]*=padlength*padlength/12.;
+//       //
+//     }
+//     ginit = kTRUE;
+//   }
+//   //
+//   //
+//   //
+//   Int_t amp = int(TMath::Abs(cl->GetQ()));  
+//   if (amp>9999) {
+//     seed->SetErrorY2(1.);
+//     return 1.;
+//   }
+//   Float_t snoise2;
+//   Float_t z = TMath::Abs(fParam->GetZLength(0)-TMath::Abs(seed->GetZ()));
+//   Int_t ctype = cl->GetType();  
+//   Float_t padlength= GetPadPitchLength(seed->GetRow());
+//   Double_t angle2 = seed->GetSnp()*seed->GetSnp();
+//   angle2 = angle2/(1-angle2); 
+//   //
+//   //cluster "quality"
+//   Int_t rsigmay = int(100.*cl->GetSigmaY2()/(seed->GetCurrentSigmaY2()));
+//   Float_t res;
+//   //
+//   if (fSectors==fInnerSec){
+//     snoise2 = gnoise1;
+//     res     = ggg1[amp]*z+glandau1[amp]*angle2;     
+//     if (ctype==0) res *= gcor01[rsigmay];
+//     if ((ctype>0)){
+//       res+=0.002;
+//       res*= gcorp[rsigmay];
+//     }
+//   }
+//   else {
+//     if (padlength<1.1){
+//       snoise2 = gnoise2;
+//       res     = ggg2[amp]*z+glandau2[amp]*angle2; 
+//       if (ctype==0) res *= gcor02[rsigmay];      
+//       if ((ctype>0)){
+// 	res+=0.002;
+// 	res*= gcorp[rsigmay];
+//       }
+//     }
+//     else{
+//       snoise2 = gnoise3;      
+//       res     = ggg3[amp]*z+glandau3[amp]*angle2; 
+//       if (ctype==0) res *= gcor02[rsigmay];
+//       if ((ctype>0)){
+// 	res+=0.002;
+// 	res*= gcorp[rsigmay];
+//       }
+//     }
+//   }  
+
+//   if (ctype<0){
+//     res+=0.005;
+//     res*=2.4;  // overestimate error 2 times
+//   }
+//   res+= snoise2;
  
-  if (res<2*snoise2)
-    res = 2*snoise2;
+//   if (res<2*snoise2)
+//     res = 2*snoise2;
   
-  seed->SetErrorY2(res);
-  return res;
+//   seed->SetErrorY2(res);
+//   return res;
 
 
 }
@@ -653,136 +690,158 @@ Double_t AliTPCtrackerMI::ErrY2(AliTPCseed* seed, AliTPCclusterMI * cl){
 Double_t AliTPCtrackerMI::ErrZ2(AliTPCseed* seed, AliTPCclusterMI * cl){
   //
   //
-  //seed->SetErrorY2(0.1);
-  //return 0.1;
-  //calculate look-up table at the beginning
-  static Bool_t  ginit = kFALSE;
-  static Float_t gnoise1,gnoise2,gnoise3;
-  static Float_t ggg1[10000];
-  static Float_t ggg2[10000];
-  static Float_t ggg3[10000];
-  static Float_t glandau1[10000];
-  static Float_t glandau2[10000];
-  static Float_t glandau3[10000];
+  // Use calibrated cluster error from OCDB
   //
-  static Float_t gcor01[1000];
-  static Float_t gcor02[1000];
-  static Float_t gcorp[1000];
+  AliTPCClusterParam * clparam = AliTPCcalibDB::Instance()->GetClusterParam();
   //
-
-  //
-  if (ginit==kFALSE){
-    for (Int_t i=1;i<1000;i++){
-      Float_t rsigma = float(i)/100.;
-      gcor02[i] = TMath::Max(0.81 +TMath::Exp(6.8*(rsigma-1.2)),0.6);
-      gcor01[i] = TMath::Max(0.72 +TMath::Exp(2.04*(rsigma-1.2)),0.6);
-      gcorp[i]  = TMath::Max(TMath::Power((rsigma+0.5),1.5),1.2);
-    }
-
-    //
-    for (Int_t i=3;i<10000;i++){
-      //
-      //
-      // inner sector
-      Float_t amp = float(i);
-      Float_t padlength =0.75;
-      gnoise1 = 0.0004/padlength;
-      Float_t nel     = 0.268*amp;
-      Float_t nprim   = 0.155*amp;
-      ggg1[i]          = fParam->GetDiffT()*fParam->GetDiffT()*(2+0.001*nel/(padlength*padlength))/nel;
-      glandau1[i]      = (2.+0.12*nprim)*0.5* (2.+nprim*nprim*0.001/(padlength*padlength))/nprim;
-      if (glandau1[i]>1) glandau1[i]=1;
-      glandau1[i]*=padlength*padlength/12.;      
-      //
-      // outer short
-      padlength =1.;
-      gnoise2   = 0.0004/padlength;
-      nel       = 0.3*amp;
-      nprim     = 0.133*amp;
-      ggg2[i]      = fParam->GetDiffT()*fParam->GetDiffT()*(2+0.0008*nel/(padlength*padlength))/nel;
-      glandau2[i]  = (2.+0.12*nprim)*0.5*(2.+nprim*nprim*0.001/(padlength*padlength))/nprim;
-      if (glandau2[i]>1) glandau2[i]=1;
-      glandau2[i]*=padlength*padlength/12.;
-      //
-      //
-      // outer long
-      padlength =1.5;
-      gnoise3   = 0.0004/padlength;
-      nel       = 0.3*amp;
-      nprim     = 0.133*amp;
-      ggg3[i]      = fParam->GetDiffT()*fParam->GetDiffT()*(2+0.0008*nel/(padlength*padlength))/nel;
-      glandau3[i]  = (2.+0.12*nprim)*0.5*(2.+nprim*nprim*0.001/(padlength*padlength))/nprim;
-      if (glandau3[i]>1) glandau3[i]=1;
-      glandau3[i]*=padlength*padlength/12.;
-      //
-    }
-    ginit = kTRUE;
-  }
-  //
-  //
-  //
-  Int_t amp = int(TMath::Abs(cl->GetQ()));  
-  if (amp>9999) {
-    seed->SetErrorY2(1.);
-    return 1.;
-  }
-  Float_t snoise2;
   Float_t z = TMath::Abs(fParam->GetZLength(0)-TMath::Abs(seed->GetZ()));
   Int_t ctype = cl->GetType();  
-  Float_t padlength= GetPadPitchLength(seed->GetRow());
+  Int_t    type = (cl->GetRow()<63) ? 0: (cl->GetRow()>126) ? 1:2;
   //
   Double_t angle2 = seed->GetSnp()*seed->GetSnp();
-  //  if (angle2<0.6) angle2 = 0.6;
   angle2 = seed->GetTgl()*seed->GetTgl()*(1+angle2/(1-angle2)); 
-  //
-  //cluster "quality"
-  Int_t rsigmaz = int(100.*cl->GetSigmaZ2()/(seed->GetCurrentSigmaZ2()));
-  Float_t res;
-  //
-  if (fSectors==fInnerSec){
-    snoise2 = gnoise1;
-    res     = ggg1[amp]*z+glandau1[amp]*angle2;     
-    if (ctype==0) res *= gcor01[rsigmaz];
-    if ((ctype>0)){
-      res+=0.002;
-      res*= gcorp[rsigmaz];
-    }
+  Double_t angle = TMath::Sqrt(angle2);
+  Double_t errz2 = clparam->GetError0Par(1,type, z,angle);
+  if (ctype<0) {
+    errz2+=0.5;  // edge cluster
   }
-  else {
-    if (padlength<1.1){
-      snoise2 = gnoise2;
-      res     = ggg2[amp]*z+glandau2[amp]*angle2; 
-      if (ctype==0) res *= gcor02[rsigmaz];      
-      if ((ctype>0)){
-	res+=0.002;
-	res*= gcorp[rsigmaz];
-      }
-    }
-    else{
-      snoise2 = gnoise3;      
-      res     = ggg3[amp]*z+glandau3[amp]*angle2; 
-      if (ctype==0) res *= gcor02[rsigmaz];
-      if ((ctype>0)){
-	res+=0.002;
-	res*= gcorp[rsigmaz];
-      }
-    }
-  }  
+  errz2*=errz2;
+  seed->SetErrorZ2(errz2);
+  //
+  return errz2;
 
-  if (ctype<0){
-    res+=0.002;
-    res*=1.3;
-  }
-  if ((ctype<0) &&amp<70){
-    res+=0.002;
-    res*=1.3;  
-  }
-  res += snoise2;
-  if (res<2*snoise2)
-     res = 2*snoise2;
-  if (res>3) res =3;
-  seed->SetErrorZ2(res);
-  return res;
+
+
+//   //seed->SetErrorY2(0.1);
+//   //return 0.1;
+//   //calculate look-up table at the beginning
+//   static Bool_t  ginit = kFALSE;
+//   static Float_t gnoise1,gnoise2,gnoise3;
+//   static Float_t ggg1[10000];
+//   static Float_t ggg2[10000];
+//   static Float_t ggg3[10000];
+//   static Float_t glandau1[10000];
+//   static Float_t glandau2[10000];
+//   static Float_t glandau3[10000];
+//   //
+//   static Float_t gcor01[1000];
+//   static Float_t gcor02[1000];
+//   static Float_t gcorp[1000];
+//   //
+
+//   //
+//   if (ginit==kFALSE){
+//     for (Int_t i=1;i<1000;i++){
+//       Float_t rsigma = float(i)/100.;
+//       gcor02[i] = TMath::Max(0.81 +TMath::Exp(6.8*(rsigma-1.2)),0.6);
+//       gcor01[i] = TMath::Max(0.72 +TMath::Exp(2.04*(rsigma-1.2)),0.6);
+//       gcorp[i]  = TMath::Max(TMath::Power((rsigma+0.5),1.5),1.2);
+//     }
+
+//     //
+//     for (Int_t i=3;i<10000;i++){
+//       //
+//       //
+//       // inner sector
+//       Float_t amp = float(i);
+//       Float_t padlength =0.75;
+//       gnoise1 = 0.0004/padlength;
+//       Float_t nel     = 0.268*amp;
+//       Float_t nprim   = 0.155*amp;
+//       ggg1[i]          = fParam->GetDiffT()*fParam->GetDiffT()*(2+0.001*nel/(padlength*padlength))/nel;
+//       glandau1[i]      = (2.+0.12*nprim)*0.5* (2.+nprim*nprim*0.001/(padlength*padlength))/nprim;
+//       if (glandau1[i]>1) glandau1[i]=1;
+//       glandau1[i]*=padlength*padlength/12.;      
+//       //
+//       // outer short
+//       padlength =1.;
+//       gnoise2   = 0.0004/padlength;
+//       nel       = 0.3*amp;
+//       nprim     = 0.133*amp;
+//       ggg2[i]      = fParam->GetDiffT()*fParam->GetDiffT()*(2+0.0008*nel/(padlength*padlength))/nel;
+//       glandau2[i]  = (2.+0.12*nprim)*0.5*(2.+nprim*nprim*0.001/(padlength*padlength))/nprim;
+//       if (glandau2[i]>1) glandau2[i]=1;
+//       glandau2[i]*=padlength*padlength/12.;
+//       //
+//       //
+//       // outer long
+//       padlength =1.5;
+//       gnoise3   = 0.0004/padlength;
+//       nel       = 0.3*amp;
+//       nprim     = 0.133*amp;
+//       ggg3[i]      = fParam->GetDiffT()*fParam->GetDiffT()*(2+0.0008*nel/(padlength*padlength))/nel;
+//       glandau3[i]  = (2.+0.12*nprim)*0.5*(2.+nprim*nprim*0.001/(padlength*padlength))/nprim;
+//       if (glandau3[i]>1) glandau3[i]=1;
+//       glandau3[i]*=padlength*padlength/12.;
+//       //
+//     }
+//     ginit = kTRUE;
+//   }
+//   //
+//   //
+//   //
+//   Int_t amp = int(TMath::Abs(cl->GetQ()));  
+//   if (amp>9999) {
+//     seed->SetErrorY2(1.);
+//     return 1.;
+//   }
+//   Float_t snoise2;
+//   Float_t z = TMath::Abs(fParam->GetZLength(0)-TMath::Abs(seed->GetZ()));
+//   Int_t ctype = cl->GetType();  
+//   Float_t padlength= GetPadPitchLength(seed->GetRow());
+//   //
+//   Double_t angle2 = seed->GetSnp()*seed->GetSnp();
+//   //  if (angle2<0.6) angle2 = 0.6;
+//   angle2 = seed->GetTgl()*seed->GetTgl()*(1+angle2/(1-angle2)); 
+//   //
+//   //cluster "quality"
+//   Int_t rsigmaz = int(100.*cl->GetSigmaZ2()/(seed->GetCurrentSigmaZ2()));
+//   Float_t res;
+//   //
+//   if (fSectors==fInnerSec){
+//     snoise2 = gnoise1;
+//     res     = ggg1[amp]*z+glandau1[amp]*angle2;     
+//     if (ctype==0) res *= gcor01[rsigmaz];
+//     if ((ctype>0)){
+//       res+=0.002;
+//       res*= gcorp[rsigmaz];
+//     }
+//   }
+//   else {
+//     if (padlength<1.1){
+//       snoise2 = gnoise2;
+//       res     = ggg2[amp]*z+glandau2[amp]*angle2; 
+//       if (ctype==0) res *= gcor02[rsigmaz];      
+//       if ((ctype>0)){
+// 	res+=0.002;
+// 	res*= gcorp[rsigmaz];
+//       }
+//     }
+//     else{
+//       snoise2 = gnoise3;      
+//       res     = ggg3[amp]*z+glandau3[amp]*angle2; 
+//       if (ctype==0) res *= gcor02[rsigmaz];
+//       if ((ctype>0)){
+// 	res+=0.002;
+// 	res*= gcorp[rsigmaz];
+//       }
+//     }
+//   }  
+
+//   if (ctype<0){
+//     res+=0.002;
+//     res*=1.3;
+//   }
+//   if ((ctype<0) &&amp<70){
+//     res+=0.002;
+//     res*=1.3;  
+//   }
+//   res += snoise2;
+//   if (res<2*snoise2)
+//      res = 2*snoise2;
+//   if (res>3) res =3;
+//   seed->SetErrorZ2(res);
+//   return res;
 }
 
 
@@ -6500,19 +6559,27 @@ Int_t AliTPCtrackerMI::PropagateBack(AliTPCseed * pt, Int_t row0, Int_t row1)
 void  AliTPCtrackerMI::GetShape(AliTPCseed * seed, Int_t row)
 {
   //
-  //
-  Float_t sd2 = TMath::Abs((fParam->GetZLength(0)-TMath::Abs(seed->GetZ())))*fParam->GetDiffL()*fParam->GetDiffL();
-  //  Float_t padlength =  fParam->GetPadPitchLength(seed->fSector);
-  Float_t padlength =  GetPadPitchLength(row);
-  //
-  Float_t sresy = (seed->GetSector() < fParam->GetNSector()/2) ? 0.2 :0.3;
+  // 
+  AliTPCClusterParam * clparam = AliTPCcalibDB::Instance()->GetClusterParam();
+  Float_t zdrift = TMath::Abs((fParam->GetZLength(0)-TMath::Abs(seed->GetZ())));
+  Int_t type = (seed->GetSector() < fParam->GetNSector()/2) ? 0: (row>126) ? 1:2;
   Double_t angulary  = seed->GetSnp();
   angulary = angulary*angulary/(1-angulary*angulary);
-  seed->SetCurrentSigmaY2(sd2+padlength*padlength*angulary/12.+sresy*sresy);  
-  //
-  Float_t sresz = fParam->GetZSigma();
-  Float_t angularz  = seed->GetTgl();
-  seed->SetCurrentSigmaZ2(sd2+padlength*padlength*angularz*angularz*(1+angulary)/12.+sresz*sresz);
+  Double_t angularz  = seed->GetTgl()*seed->GetTgl()*(1.+angulary);
+  
+  Double_t sigmay =  clparam->GetRMS0(0,type,zdrift,TMath::Sqrt(angulary));
+  Double_t sigmaz =  clparam->GetRMS0(1,type,zdrift,TMath::Sqrt(angularz));
+  seed->SetCurrentSigmaY2(sigmay*sigmay);
+  seed->SetCurrentSigmaZ2(sigmaz*sigmaz);
+  // Float_t sd2 = TMath::Abs((fParam->GetZLength(0)-TMath::Abs(seed->GetZ())))*fParam->GetDiffL()*fParam->GetDiffL();
+//   //  Float_t padlength =  fParam->GetPadPitchLength(seed->fSector);
+//   Float_t padlength =  GetPadPitchLength(row);
+//   //
+//   Float_t sresy = (seed->GetSector() < fParam->GetNSector()/2) ? 0.2 :0.3;
+//   seed->SetCurrentSigmaY2(sd2+padlength*padlength*angulary/12.+sresy*sresy);  
+//   //
+//   Float_t sresz = fParam->GetZSigma();
+//   seed->SetCurrentSigmaZ2(sd2+padlength*padlength*angularz*angularz*(1+angulary)/12.+sresz*sresz);
   /*
   Float_t wy = GetSigmaY(seed);
   Float_t wz = GetSigmaZ(seed);
@@ -6524,32 +6591,6 @@ void  AliTPCtrackerMI::GetShape(AliTPCseed * seed, Int_t row)
   */
 }
 
-
-Float_t  AliTPCtrackerMI::GetSigmaY(AliTPCseed * seed)
-{
-  //
-  //  
-  Float_t sd2 = TMath::Abs((fParam->GetZLength(0)-TMath::Abs(seed->GetZ())))*fParam->GetDiffL()*fParam->GetDiffL();
-  Float_t padlength =  fParam->GetPadPitchLength(seed->GetSector());
-  Float_t sres = (seed->GetSector() < fParam->GetNSector()/2) ? 0.2 :0.3;
-  Float_t angular  = seed->GetSnp();
-  angular = angular*angular/(1-angular*angular);
-  //  angular*=angular;
-  //angular  = TMath::Sqrt(angular/(1-angular));
-  Float_t res = TMath::Sqrt(sd2+padlength*padlength*angular/12.+sres*sres);
-  return res;
-}
-Float_t  AliTPCtrackerMI::GetSigmaZ(AliTPCseed * seed)
-{
-  //
-  //
-  Float_t sd2 = TMath::Abs((fParam->GetZLength(0)-TMath::Abs(seed->GetZ())))*fParam->GetDiffL()*fParam->GetDiffL();
-  Float_t padlength =  fParam->GetPadPitchLength(seed->GetSector());
-  Float_t sres = fParam->GetZSigma();
-  Float_t angular  = seed->GetTgl();
-  Float_t res = TMath::Sqrt(sd2+padlength*padlength*angular*angular/12.+sres*sres);
-  return res;
-}
 
 
 //__________________________________________________________________________

@@ -88,7 +88,6 @@ public:
 
    void SortTracks(TObjArray * arr, Int_t mode) const;
   
-
    virtual Double_t ErrY2(AliTPCseed* seed, AliTPCclusterMI * cl = 0);
    virtual Double_t ErrZ2(AliTPCseed* seed, AliTPCclusterMI * cl = 0);   
 
@@ -221,9 +220,7 @@ private:
    inline Double_t GetPadPitchLength(Double_t x) const;
    inline Double_t GetPadPitchLength(Int_t row) const;
 
-   Float_t  GetSigmaY(AliTPCseed * seed);
-   Float_t  GetSigmaZ(AliTPCseed * seed);
-   void GetShape(AliTPCseed * seed, Int_t row);
+    void GetShape(AliTPCseed * seed, Int_t row);
  
    void ReadSeeds(AliESDEvent *event, Int_t direction);  //read seeds from the event
 
