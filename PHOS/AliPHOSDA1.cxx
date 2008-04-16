@@ -5,7 +5,7 @@ ClassImp(AliPHOSDA1)
 
 //----------------------------------------------------------------
 AliPHOSDA1::AliPHOSDA1(int module) : TNamed(),
- fHistoFile(0),fMod(module)
+  fHistoFile(0),fMod(module),fWriteToFile(kTRUE)
 
 {
   // Create DA1 ("Calibration DA") object.
@@ -53,8 +53,40 @@ AliPHOSDA1::AliPHOSDA1(int module) : TNamed(),
 }
 
 //-------------------------------------------------------------------
+AliPHOSDA1::AliPHOSDA1(Int_t module, TH2F oldTimeEnergy[64][56][2]) :
+  TNamed(),fHistoFile(0),fMod(module),fWriteToFile(kFALSE)
+{
+  // Constructor. 
+  // oldTimeEnergy is an array of histograms kept from the previous run.
+  // By default the final histograms will not be saved to the root file.
+
+  char name[128];
+  sprintf(name,"PHOS_Module%d_Calib",fMod);
+  SetName(name);
+  
+  SetTitle("Calibration Detector Algorithm");
+  
+  if(oldTimeEnergy) {
+
+    for(Int_t iX=0; iX<64; iX++) {
+      for(Int_t iZ=0; iZ<56; iZ++) {
+	for(Int_t iGain=0; iGain<2; iGain++) {
+
+	  if((&(oldTimeEnergy[iX][iZ][iGain]))->GetEntries()) 
+	    fTimeEnergy[iX][iZ][iGain] = &(oldTimeEnergy[iX][iZ][iGain]);
+	  else
+	    fTimeEnergy[iX][iZ][iGain] = 0;
+	}
+      }
+    }
+  
+  }
+
+}
+
+//-------------------------------------------------------------------
 AliPHOSDA1::AliPHOSDA1(const AliPHOSDA1& da) : TNamed(da),
-  fHistoFile(0),fMod(da.fMod)
+  fHistoFile(0),fMod(da.fMod),fWriteToFile(da.fWriteToFile)
 {
   // Copy constructor.
 
@@ -196,6 +228,7 @@ void AliPHOSDA1::UpdateHistoFile()
 {
   // Write histograms to file
 
+  if(!fWriteToFile) return;
   if(!fHistoFile) return;
   if(!fHistoFile->IsOpen()) return;
 
@@ -218,3 +251,19 @@ void AliPHOSDA1::UpdateHistoFile()
 
 }
 
+//-----------------------------------------------------------------------
+void AliPHOSDA1::SetWriteToFile(Bool_t write)
+{
+  if(!write) { 
+    fWriteToFile = write;
+    return;
+  }
+
+  if(!fHistoFile) {
+    char rootname[128];
+    sprintf(rootname,"%s.root",GetName());
+    fHistoFile =  new TFile(rootname,"update");
+  } 
+  
+  fWriteToFile = write;
+}

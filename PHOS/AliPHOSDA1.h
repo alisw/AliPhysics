@@ -11,6 +11,7 @@ class AliPHOSDA1 : public TNamed {
  public:
   
   AliPHOSDA1(Int_t module);
+  AliPHOSDA1(Int_t module, TH2F oldTimeEnergy[64][56][2]);
   AliPHOSDA1(const AliPHOSDA1& );
   AliPHOSDA1& operator= (const AliPHOSDA1& );
   ~AliPHOSDA1();
@@ -18,6 +19,7 @@ class AliPHOSDA1 : public TNamed {
   void  FillHistograms(Float_t e[64][56][2], Float_t t[64][56][2]);
   Int_t GetModule() { return fMod; }
   void  UpdateHistoFile();
+  void  SetWriteToFile(Bool_t write);
 
   const TH2F* GetTimeEnergyHistogram(Int_t X, Int_t Z, Int_t gain) const 
   { return fTimeEnergy[X][Z][gain]; }
@@ -30,6 +32,7 @@ class AliPHOSDA1 : public TNamed {
   TH1F* fHgLgRatio[64][56];     // high gain to low gain ratio  
   TH2F* fTimeEnergy[64][56][2]; // time and energy
   Int_t fMod;                   // PHOS module number (0..4)
+  Bool_t fWriteToFile;          // kTRUE to save histograms to ROOT file (default) 
   
   ClassDef(AliPHOSDA1,1)
 
