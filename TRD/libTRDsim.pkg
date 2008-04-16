@@ -1,8 +1,9 @@
+#-*- Mode: Makefile -*-
+
 SRCS= AliTRDpoints.cxx \
       AliTRDsimTR.cxx \
       AliTRD.cxx \
       AliTRDv1.cxx \
-      AliTRDSimParam.cxx \
       AliTRDdigitizer.cxx \
       AliTRDQADataMakerSim.cxx
 
@@ -11,3 +12,9 @@ HDRS= $(SRCS:.cxx=.h)
 DHDR= TRDsimLinkDef.h
 
 EINCLUDE= RAW
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+                         -lTRDbase -lSTEER -lSTEERBase \
+                         -L$(shell root-config --libdir) -lGeom -lVMC
+endif

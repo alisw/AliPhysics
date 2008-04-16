@@ -58,7 +58,6 @@
 
 #pragma link C++ class  AliTRDQAChecker+;
 
-#pragma link C++ class  AliTRDCalibraFillHisto+;
 #pragma link C++ class  AliTRDCalibraFit+;
 #pragma link C++ class  AliTRDCalibraMode+;
 #pragma link C++ class  AliTRDCalibraVector+;
@@ -84,4 +83,6 @@
 
 #pragma link C++ class  AliTRDhit+;
 
+#pragma link C++ class  AliTRDrecoParam+;
+#pragma link C++ class  AliTRDSimParam+;
 #endif

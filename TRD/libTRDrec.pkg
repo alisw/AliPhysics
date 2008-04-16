@@ -1,3 +1,5 @@
+#-*- Mode: Makefile -*-
+
 SRCS= AliTRDcluster.cxx \
       AliTRDclusterizer.cxx \
       AliTRDtransform.cxx \
@@ -9,7 +11,6 @@ SRCS= AliTRDcluster.cxx \
       AliTRDpidESD.cxx \
       AliTRDReconstructor.cxx \
       AliTRDtrackingAnalysis.cxx \
-      AliTRDrecoParam.cxx \
       AliTRDseedV1.cxx \
       AliTRDtrackV1.cxx \
       AliTRDtrackerV1.cxx \
@@ -18,10 +19,18 @@ SRCS= AliTRDcluster.cxx \
       AliTRDtrackingChamber.cxx \
       AliTRDchamberTimeBin.cxx \
       AliTRDQADataMakerRec.cxx \
-      AliTRDqaBlackEvents.cxx
+      AliTRDqaBlackEvents.cxx \
+      AliTRDCalibraFillHisto.cxx \
 
 HDRS= $(SRCS:.cxx=.h)
 
 DHDR= TRDrecLinkDef.h
 
 EINCLUDE= RAW
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+                         -lTRDbase -lSTEER -lESD -lCDB -lSTEERBase \
+                         -lRAWDatarec -lRAWDatabase \
+                         -L$(shell root-config --libdir) -lMinuit -lGeom
+endif

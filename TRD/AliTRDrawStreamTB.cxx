@@ -40,7 +40,7 @@
 #include "AliTRDdataArrayI.h"
 #include "AliTRDdataArrayDigits.h"
 #include "AliTRDSignalIndex.h"
-#include "AliTRDReconstructor.h"
+// #include "AliTRDReconstructor.h"
 #include "AliTRDrecoParam.h"
 #include "AliTRDcalibDB.h"
 #include "Cal/AliTRDCalPadStatus.h"
@@ -668,16 +668,18 @@ AliTRDrawStreamTB::NextChamber(AliTRDdigitsManager *digitsManager)
 
   // Get the ADC baseline
   Int_t adcBaseline = 0;
-  if (!AliTRDReconstructor::RecoParam())
-    {
-      AliError("RecoParam does not exist\n");
-      return 0;
-    }
-  else 
-    {
-      adcBaseline = ((Int_t) AliTRDReconstructor::RecoParam()->GetADCbaseline());
-    }
+//   if (!AliTRDReconstructor::RecoParam())
+//     {
+//       AliError("RecoParam does not exist\n");
+//       return 0;
+//     }
+//   else 
+//     {
+//       adcBaseline = ((Int_t) AliTRDReconstructor::RecoParam()->GetADCbaseline());
+//     }
 
+  static AliTRDrecoParam * par = AliTRDrecoParam::GetLowFluxParam();
+  adcBaseline = par->GetADCbaseline();
   // Loop through the digits
   Int_t lastdet = -1;
   Int_t det     = -1;

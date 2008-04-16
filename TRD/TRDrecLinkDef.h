@@ -22,7 +22,6 @@
 
 #pragma link C++ class  AliTRDReconstructor+;
 
-#pragma link C++ class  AliTRDrecoParam+;
 #pragma link C++ class  AliTRDseedV1+;
 #pragma link C++ class  AliTRDtrackV1+;
 #pragma link C++ class  AliTRDtrackerV1+;
@@ -35,4 +34,5 @@
 #pragma link C++ class  AliTRDQADataMakerRec+;
 #pragma link C++ class  AliTRDtrackingAnalysis+;
 
+#pragma link C++ class  AliTRDCalibraFillHisto+;
 #endif

@@ -1,3 +1,5 @@
+#-*- Mode: Makefile -*-
+
 SRCS= qaGui/AliTRDqaGuiMain.cxx \
       qaGui/AliTRDqaGuiClusters.cxx \
       qaGui/AliTRDqaGuiClustersSM.cxx \
@@ -14,3 +16,7 @@ HDRS= $(SRCS:.cxx=.h)
 
 DHDR= TRDguiLinkDef.h
 
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+                         -L$(shell root-config --libdir) -lGui
+endif

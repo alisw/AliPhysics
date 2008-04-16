@@ -1,3 +1,5 @@
+#-*- Mode: Makefile -*-
+
 SRCS= qaAnalysis/AliTRDqaElectronSpectra.cxx \
       qaAnalysis/AliTRDqaESDFriends.cxx \
       qaAnalysis/AliTRDqaEnergyDeposit.cxx \
@@ -9,3 +11,8 @@ HDRS= $(SRCS:.cxx=.h)
 DHDR= TRDqaAnalysisLinkDef.h
 
 
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+                         -lANALYSIS -lESD \
+#                         -L$(shell root-config --libdir) -lGui
+endif

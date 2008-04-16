@@ -1,3 +1,5 @@
+#-*- Mode: Makefile -*-
+
 SRCS= AliTRDarrayI.cxx \
       AliTRDarrayS.cxx \
       AliTRDarrayF.cxx \
@@ -34,7 +36,6 @@ SRCS= AliTRDarrayI.cxx \
       Cal/AliTRDCalChamberStatus.cxx \
       Cal/AliTRDCalPadStatus.cxx \
       Cal/AliTRDCalSingleChamberStatus.cxx \
-      AliTRDCalibraFillHisto.cxx \
       AliTRDCalibraFit.cxx \
       AliTRDCalibraMode.cxx \
       AliTRDCalibraVector.cxx \
@@ -56,10 +57,19 @@ SRCS= AliTRDarrayI.cxx \
       AliTRDgtuTrack.cxx \
       AliTRDtrapAlu.cxx \
       AliTRDmodule.cxx \
-      AliTRDhit.cxx
+      AliTRDhit.cxx \
+      AliTRDrecoParam.cxx \
+      AliTRDSimParam.cxx \
 
 HDRS= $(SRCS:.cxx=.h)
 
 DHDR= TRDbaseLinkDef.h
 
 EINCLUDE= RAW
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+                         -lSTEER -lCDB -lESD -lSTEERBase \
+                         -lRAWDatasim -lRAWDatarec -lRAWDatabase \
+                         -L$(shell root-config --libdir) -lMinuit -lGeom -lVMC -lMLP
+endif
