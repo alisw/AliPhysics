@@ -1065,7 +1065,6 @@ void AliITSv11Hybrid::CreateGeometry() {
   CreateOldGeometry();
 
   TGeoVolume *vITS  = geoManager->GetVolume("ITSV");
-  TGeoVolume *vITSD = geoManager->GetVolume("ITSD");
 
 
   const Char_t *cvsDate="$Date$";
@@ -1083,8 +1082,8 @@ void AliITSv11Hybrid::CreateGeometry() {
   if (AliITSInitGeometry::SDDIsTGeoNative()) {
     fSDDgeom->Layer3(vITS);
     fSDDgeom->Layer4(vITS);
-    fSDDgeom->ForwardLayer3(vITSD);
-    fSDDgeom->ForwardLayer4(vITSD);
+    fSDDgeom->ForwardLayer3(vITS);
+    fSDDgeom->ForwardLayer4(vITS);
   }
 
   if (AliITSInitGeometry::SSDIsTGeoNative()) {
@@ -1793,9 +1792,15 @@ void AliITSv11Hybrid::CreateOldGeometry(){
     //======================================================================
 
     //TGeoVolumeAssembly *dITS = new TGeoVolumeAssembly("ITSD");
+    if (! AliITSInitGeometry::SPDshieldIsTGeoNative() ||
+        ! AliITSInitGeometry::SPDIsTGeoNative()       ||
+        ! AliITSInitGeometry::SDDIsTGeoNative()       ||
+        ! AliITSInitGeometry::SSDIsTGeoNative()       ||
+        ! AliITSInitGeometry::SDDconeIsTGeoNative()   ||
+        ! AliITSInitGeometry::SSDconeIsTGeoNative()   ) {
     new TGeoVolumeAssembly("ITSD");
     gMC->Gspos("ITSD", 1, "ITSV", 0., 0., 0., idrotm[199], "ONLY");
-
+    }
 
   // --- Define SPD (option 'b') volumes ----------------------------
   

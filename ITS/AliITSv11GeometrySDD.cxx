@@ -11,7 +11,7 @@
  * appear in the supporting documentation. The authors make no claims     *
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
- *********************************s*****************************************/
+ **************************************************************************/
 
 
 //*************************************************************************
@@ -1483,8 +1483,12 @@ void AliITSv11GeometrySDD::ForwardLayer3(TGeoVolume *moth) {
     virtualForward3Neg->CheckOverlaps(0.01);
   }
 
-  moth->AddNode(virtualForward3Pos, 1);
-  moth->AddNode(virtualForward3Neg, 1);
+  // 180deg Y rotation to compensate the cancellation of ITSD volume
+  // (idortm[199] in AliITSv11Hybrid : z--->  -z;   x ---> -x;   y ---> y)
+  TGeoRotation *y180 = new TGeoRotation();
+  y180->SetAngles( 90.,180., 90., 90.,180.,  0.);
+  moth->AddNode(virtualForward3Pos, 1, y180);
+  moth->AddNode(virtualForward3Neg, 1, y180);
 }
 
 //________________________________________________________________________
@@ -1733,8 +1737,12 @@ void AliITSv11GeometrySDD::ForwardLayer4(TGeoVolume *moth) {
     virtualForward4Neg->AddNode(lay4EndLadder, iLadd*2, ctEndLaddNeg);
   }
 
-  moth->AddNode(virtualForward4Pos, 1);
-  moth->AddNode(virtualForward4Neg, 1);
+  // 180deg Y rotation to compensate the cancellation of ITSD volume
+  // (idortm[199] in AliITSv11Hybrid : z--->  -z;   x ---> -x;   y ---> y)
+  TGeoRotation *y180 = new TGeoRotation();
+  y180->SetAngles( 90.,180., 90., 90.,180.,  0.);
+  moth->AddNode(virtualForward4Pos, 1, y180);
+  moth->AddNode(virtualForward4Neg, 1, y180);
 }
 
 
@@ -5525,6 +5533,7 @@ void AliITSv11GeometrySDD::SDDCables(TGeoVolume *moth)
 //
 // Created:         ???       Ludovic Gaudichet
 // Updated:      15 Mar 2008  Mario Sitta
+// Updated:      14 Apr 2008  Mario Sitta            Overlap fixes
 //
 
   TGeoMedium *copper       = GetMedium("COPPER$");
@@ -5805,8 +5814,8 @@ void AliITSv11GeometrySDD::SDDCables(TGeoVolume *moth)
   // cables that are grouped at the end of SSD cones
   //==================================
 
-  Double_t fgkSDDCableR6 = fgkSDDCableR5+10;
-  Double_t fgkSDDCableZ6 = fgkSDDCableZ5+10;
+  Double_t fgkSDDCableR6 = fgkSDDCableR5+9;
+  Double_t fgkSDDCableZ6 = fgkSDDCableZ5+9;
 
   TGeoVolumeAssembly *endConeSDDCable = new TGeoVolumeAssembly("endConeSDDCable");
 
