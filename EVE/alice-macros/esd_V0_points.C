@@ -13,12 +13,14 @@ esd_V0_points()
   AliESDEvent* esd = AliEveEventManager::AssertESD();
 
   Int_t NV0s = esd->GetNumberOfV0s();
-  TEvePointSet* points = new TEvePointSet("AliEveV0 CA points", NV0s);
+  TEvePointSet* points = new TEvePointSet("V0 vertex locations", NV0s);
 
-  for (Int_t n =0; n<NV0s; n++)
+  Double_t x, y, z;
+  for (Int_t n = 0; n < NV0s; ++n)
   {
     AliESDv0* av = esd->GetV0(n);
-    points->SetNextPoint(av->GetXr(0), av->GetXr(1), av->GetXr(2));
+    av->GetXYZ(x, y, z);
+    points->SetNextPoint(x, y, z);
     points->SetPointId(av);
   }
 

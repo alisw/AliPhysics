@@ -28,6 +28,7 @@ void visscan_init()
   if (gShowTRD) TEveUtil::LoadMacro("geom_gentle_trd.C");
 
   TEveUtil::LoadMacro("primary_vertex.C");
+  TEveUtil::LoadMacro("esd_V0_points.C");
   TEveUtil::LoadMacro("esd_tracks.C");
   TEveUtil::LoadMacro("its_clusters.C+");
   TEveUtil::LoadMacro("tpc_clusters.C+");
@@ -107,6 +108,7 @@ void on_new_event()
   }
 
   primary_vertex(1, 1);
+  esd_V0_points();
 
   TEveElementList* cont = esd_tracks_vertex_cut();
 
