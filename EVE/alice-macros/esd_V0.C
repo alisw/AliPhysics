@@ -7,6 +7,17 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
+void esd_v0_init_rectrack(TEveRecTrack& rt, AliExternalTrackParam* tp)
+{
+  Double_t      pbuf[3], vbuf[3];
+
+  rt.fSign = tp->GetSign();
+  tp->GetXYZ(vbuf);     rt.fV.Set(vbuf);
+  tp->GetPxPyPz(pbuf);  rt.fP.Set(pbuf);
+  // Double_t ep = at->GetP(), mc = at->GetMass();
+  rt.fBeta = 1; // ep/TMath::Sqrt(ep*ep + mc*mc);
+}
+
 AliEveV0* esd_make_v0(TEveTrackPropagator* rnrStyle, AliESDVertex* primVtx,
 		      AliESDtrack* neg, AliESDtrack* pos, AliESDv0* v0, Int_t i)
 {
@@ -18,30 +29,26 @@ AliEveV0* esd_make_v0(TEveTrackPropagator* rnrStyle, AliESDVertex* primVtx,
 
     Double_t p[3];
     v0->GetNPxPyPz(p[0], p[1], p[2]);
-    rcV0.P_pos.Set(p);
+    rcV0.fPPos.Set(p);
     v0->GetPPxPyPz(p[0], p[1], p[2]);
-    rcV0.P_neg.Set(p);
+    rcV0.fPNeg.Set(p);
 
     v0->GetPxPyPz(p[0], p[1], p[2]);
     Double_t v[3];
     v0->GetXYZ(v[0], v[1], v[2]);
 
-
     //   printf(" %f %f %f / %f %f %f    %i\n",p[0], p[1], p[2],
     // 	 v[0], v[1], v[2], v0->GetOnFlyStatus());
 
-    rcV0.V_neg.Set(v); //original track vertices at dca not stored
-    rcV0.V_pos.Set(v);
-    rcV0.V_ca.Set(v);
+    rcV0.fVNeg.Set(v); //original track vertices at dca not stored
+    rcV0.fVPos.Set(v);
+    rcV0.fVCa.Set(v);
 
-    rcV0.d_label[0] = v0->GetNindex();
-    rcV0.d_label[1] = v0->GetPindex();
+    rcV0.fDLabel[0] = v0->GetNindex();
+    rcV0.fDLabel[1] = v0->GetPindex();
 
-    Double_t ep = neg->GetP(), mc = neg->GetMass();
-    rcNeg.beta = ep/TMath::Sqrt(ep*ep + mc*mc);
-    ep = pos->GetP(); mc = pos->GetMass();
-    rcPos.beta = ep/TMath::Sqrt(ep*ep + mc*mc);
-
+    esd_v0_init_rectrack(rcNeg, v0->GetParamN());
+    esd_v0_init_rectrack(rcPos, v0->GetParamP());
 
     AliEveV0* myV0 = new AliEveV0(&rcNeg, &rcPos, &rcV0, rnrStyle);
     char ch[50];
@@ -51,32 +58,19 @@ AliEveV0* esd_make_v0(TEveTrackPropagator* rnrStyle, AliESDVertex* primVtx,
     myV0->SetESDIndex(i);
     myV0->SetDaughterDCA(v0->GetDcaV0Daughters());
 
-    Double_t primx = primVtx->GetXv(),
-      primy = primVtx->GetYv(),
-      primz = primVtx->GetZv();
-    myV0->SetCosPointingAngle(v0->GetV0CosineOfPointingAngle(primx,primy,primz));
-
-    myV0->SetDecayLength(primVtx->GetXv(), primVtx->GetYv(), primVtx->GetZv());
-
     return myV0;
   } else {
     return 0;
   }
-
 }
 
 
-V0List* esd_AliEveV0(Double_t min_pt=0.1, Double_t max_pt=100)
+AliEveV0List* esd_V0(Double_t min_pt=0.1, Double_t max_pt=100)
 {
-  printf("THIS SCRIPT DOES NOT WORK.\n"
-	 "AliEveV0 classes have been temporarily removed.\n"
-	 "They need to be cleaned up.\n");
-  return;
-
   AliESDEvent* esd = AliEveEventManager::AssertESD();
   AliESDVertex* primVertex =(AliESDVertex*) esd->GetVertex();
 
-  V0List* cont = new V0List("ESD v0");
+  AliEveV0List* cont = new AliEveV0List("ESD v0");
   cont->SetMainColor(Color_t(3)); // green
   TEveTrackPropagator* rnrStyle = cont->GetPropagator();
   rnrStyle->SetMagField( 0.1*esd->GetMagneticField() );
@@ -102,7 +96,7 @@ V0List* esd_AliEveV0(Double_t min_pt=0.1, Double_t max_pt=100)
     }
   }
 
-  cont->SetTitle("testV0List ");
+  cont->SetTitle("test");
   cont->UpdateItems();
 
   cont->MakeV0s();

@@ -43,7 +43,6 @@
 // #pragma link C++ class CascadeListEditor+;
 //
 // AliEveV0
-// #pragma link C++ class AliEveV0+;
-// #pragma link C++ class V0List+;
-// #pragma link C++ class V0ListEditor+;
-
+#pragma link C++ class AliEveV0+;
+#pragma link C++ class AliEveV0List+;
+//#pragma link C++ class AliEveV0ListEditor+;

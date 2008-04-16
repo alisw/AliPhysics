@@ -1342,23 +1342,24 @@ void SplitGLView::UpdateSummary()
    TEveEventManager *mgr = gEve ? gEve->GetCurrentEvent() : 0;
    if (mgr) {
       fgHtmlSummary->Clear("D");
-      for (i=mgr->BeginChildren(); i!=mgr->EndChildren(); ++i) {
+      for (i=mgr->BeginChildren(); i!=mgr->EndChildren(); ++i)
+      {
          el = ((TEveElement*)(*i));
          if (el->IsA() == TEvePointSet::Class()) {
             TEvePointSet *ps = (TEvePointSet *)el;
             TString ename  = ps->GetElementName();
             TString etitle = ps->GetElementTitle();
-            ename.Remove(ename.First('\''));
-            etitle.Remove(0, 2);
+            //ename.Remove(ename.First('\''));
+            //etitle.Remove(0, 2);
             Int_t nel = atoi(etitle.Data());
             table = fgHtmlSummary->AddTable(ename, 0, nel);
          }
          else if (el->IsA() == TEveTrackList::Class()) {
             TEveTrackList *tracks = (TEveTrackList *)el;
             TString ename  = tracks->GetElementName();
-            ename.Remove(ename.First('\''));
+            // ename.Remove(ename.First('\''));
             table = fgHtmlSummary->AddTable(ename.Data(), 5, 
-                     tracks->GetNChildren(), kTRUE, "first");
+                                            tracks->GetNChildren(), kTRUE, "first");
             table->SetLabel(0, "Momentum");
             table->SetLabel(1, "P_t");
             table->SetLabel(2, "Phi");
