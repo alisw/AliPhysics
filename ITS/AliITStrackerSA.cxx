@@ -272,7 +272,16 @@ void AliITStrackerSA::Init(){
     fPointc[1]=0;
     fVert = 0;
     fVertexer = 0;
-    SetWindowSizes();
+    Int_t nLoops=AliITSReconstructor::GetRecoParam()->GetNLoopsSA();
+    if(nLoops==33){
+      SetFixedWindowSizes();
+    }else{
+      Double_t phimin=AliITSReconstructor::GetRecoParam()->GetMinPhiSA();
+      Double_t phimax=AliITSReconstructor::GetRecoParam()->GetMaxPhiSA();
+      Double_t lambmin=AliITSReconstructor::GetRecoParam()->GetMinLambdaSA();
+      Double_t lambmax=AliITSReconstructor::GetRecoParam()->GetMaxLambdaSA();
+      SetCalculatedWindowSizes(nLoops,phimin,phimax,lambmin,lambmax);
+    }
     fITSclusters = 0;
     SetSixPoints();
     SetOuterStartLayer(0);
@@ -1289,9 +1298,25 @@ Int_t gl12, Int_t gl13, Int_t gl14,Int_t gl15, Int_t gl16, Int_t gl17, Int_t gl1
 
   
 }
-
 //_____________________________________________________________________________
-void AliITStrackerSA::SetWindowSizes(Int_t n, Double_t *phi, Double_t *lam){
+void AliITStrackerSA::SetCalculatedWindowSizes(Int_t n, Float_t phimin, Float_t phimax, Float_t lambdamin, Float_t lambdamax){
+  // Set sizes of the phi and lambda windows used for track finding
+  fNloop = n;
+  if(fPhiWin) delete [] fPhiWin;
+  if(fLambdaWin) delete [] fLambdaWin;
+  fPhiWin = new Double_t[fNloop];
+  fLambdaWin = new Double_t[fNloop];
+  Float_t stepPhi=(phimax-phimin)/(Float_t)(fNloop-1);
+  Float_t stepLambda=(lambdamax-lambdamin)/(Float_t)(fNloop-1);
+  for(Int_t k=0;k<fNloop;k++){
+    Float_t phi=phimin+k*stepPhi;
+    Float_t lam=lambdamin+k*stepLambda;
+    fPhiWin[k]=phi;
+    fLambdaWin[k]=lam;
+  }
+}
+//_____________________________________________________________________________
+void AliITStrackerSA::SetFixedWindowSizes(Int_t n, Double_t *phi, Double_t *lam){
   // Set sizes of the phi and lambda windows used for track finding
   fNloop = n;
   if(phi){ // user defined values
