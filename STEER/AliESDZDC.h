@@ -7,12 +7,12 @@
 
 //-------------------------------------------------------------------------
 //                      Implementation of   Class AliESDZDC
-//   This is a class that summarizes the ZDC data
-//   for the ESD   
+//   This is a class that summarizes the ZDC data for the ESD   
 //   Origin: Christian Klein-Boesing, CERN, Christian.Klein-Boesing@cern.ch 
 //-------------------------------------------------------------------------
 
 #include <TObject.h>
+#include <TMath.h>
 
 
 class AliESDZDC: public TObject {
@@ -25,8 +25,8 @@ public:
   Double_t GetZDCP1Energy() const {return fZDCP1Energy;}
   Double_t GetZDCN2Energy() const {return fZDCN2Energy;}
   Double_t GetZDCP2Energy() const {return fZDCP2Energy;}
-  Double_t GetZDCEMEnergy(Int_t i) const {if(i==0){return fZDCEMEnergy;}
-  else if(i==1){return fZDCEMEnergy1;}return 0;}
+  Double_t GetZDCEMEnergy(Int_t i) const 
+  	   {if(i==0){return fZDCEMEnergy;}else if(i==1){return fZDCEMEnergy1;}return 0;}
   Short_t  GetZDCParticipants() const {return fZDCParticipants;}
   const Double_t * GetZN1TowerEnergy() const {return fZN1TowerEnergy;}
   const Double_t * GetZN2TowerEnergy() const {return fZN2TowerEnergy;}
@@ -36,46 +36,42 @@ public:
   const Double_t * GetZN2TowerEnergyLR() const {return fZN2TowerEnergyLR;}
   const Double_t * GetZP1TowerEnergyLR() const {return fZP1TowerEnergyLR;}
   const Double_t * GetZP2TowerEnergyLR() const {return fZP2TowerEnergyLR;}
+  //
+  const Float_t * GetZNCCentroid(int NspecnC) const;
+  const Float_t * GetZNACentroid(int NspecnA) const;
+  //
   void  SetZDC(Double_t n1Energy, Double_t p1Energy, Double_t emEnergy0, Double_t emEnergy1,
 	       Double_t n2Energy, Double_t p2Energy, Short_t participants) 
    {fZDCN1Energy=n1Energy; fZDCP1Energy=p1Energy; fZDCEMEnergy=emEnergy0; fZDCEMEnergy1=emEnergy1;
     fZDCN2Energy=n2Energy; fZDCP2Energy=p2Energy; fZDCParticipants=participants;}
-  void  SetZN1TowerEnergy(Float_t tow1[5]){
-      for(Int_t i=0; i<5; i++) fZN1TowerEnergy[i] = tow1[i];
-  }
-  void  SetZN2TowerEnergy(Float_t tow2[5]){
-      for(Int_t i=0; i<5; i++) fZN2TowerEnergy[i] = tow2[i];
-  }
-  void  SetZP1TowerEnergy(Float_t tow1[5]){
-      for(Int_t i=0; i<5; i++) fZP1TowerEnergy[i] = tow1[i];
-  }
-  void  SetZP2TowerEnergy(Float_t tow2[5]){
-      for(Int_t i=0; i<5; i++) fZP2TowerEnergy[i] = tow2[i];
-  }
-  void  SetZN1TowerEnergyLR(Float_t tow1[5]){
-      for(Int_t i=0; i<5; i++) fZN1TowerEnergyLR[i] = tow1[i];
-  }
-  void  SetZN2TowerEnergyLR(Float_t tow2[5]){
-      for(Int_t i=0; i<5; i++) fZN2TowerEnergyLR[i] = tow2[i];
-  }
-  void  SetZP1TowerEnergyLR(Float_t tow1[5]){
-      for(Int_t i=0; i<5; i++) fZP1TowerEnergyLR[i] = tow1[i];
-  }
-  void  SetZP2TowerEnergyLR(Float_t tow2[5]){
-      for(Int_t i=0; i<5; i++) fZP2TowerEnergyLR[i] = tow2[i];
-  }
+  void  SetZN1TowerEnergy(Float_t tow1[5])
+          {for(Int_t i=0; i<5; i++) fZN1TowerEnergy[i] = tow1[i];}
+  void  SetZN2TowerEnergy(Float_t tow2[5])
+          {for(Int_t i=0; i<5; i++) fZN2TowerEnergy[i] = tow2[i];}
+  void  SetZP1TowerEnergy(Float_t tow1[5])
+          {for(Int_t i=0; i<5; i++) fZP1TowerEnergy[i] = tow1[i];}
+  void  SetZP2TowerEnergy(Float_t tow2[5])
+          {for(Int_t i=0; i<5; i++) fZP2TowerEnergy[i] = tow2[i];}
+  void  SetZN1TowerEnergyLR(Float_t tow1[5])
+          {for(Int_t i=0; i<5; i++) fZN1TowerEnergyLR[i] = tow1[i];}
+  void  SetZN2TowerEnergyLR(Float_t tow2[5])
+          {for(Int_t i=0; i<5; i++) fZN2TowerEnergyLR[i] = tow2[i];}
+  void  SetZP1TowerEnergyLR(Float_t tow1[5])
+          {for(Int_t i=0; i<5; i++) fZP1TowerEnergyLR[i] = tow1[i];}
+  void  SetZP2TowerEnergyLR(Float_t tow2[5])
+          {for(Int_t i=0; i<5; i++) fZP2TowerEnergyLR[i] = tow2[i];}
 
   void    Reset();
   void    Print(const Option_t *opt=0) const;
 
 private:
 
-  Double32_t   fZDCN1Energy;      // reconstructed energy in the neutron ZDC
-  Double32_t   fZDCP1Energy;      // reconstructed energy in the proton ZDC
-  Double32_t   fZDCN2Energy;      // reconstructed energy in the neutron ZDC
-  Double32_t   fZDCP2Energy;      // reconstructed energy in the proton ZDC
-  Double32_t   fZDCEMEnergy;      // signal in the electromagnetic ZDCs
-  Double32_t   fZDCEMEnergy1;    // second EM signal,cannot change fZDCEMEnergy to array (not backward compatible)
+  Double32_t   fZDCN1Energy;  // reconstructed energy in the neutron ZDC
+  Double32_t   fZDCP1Energy;  // reconstructed energy in the proton ZDC
+  Double32_t   fZDCN2Energy;  // reconstructed energy in the neutron ZDC
+  Double32_t   fZDCP2Energy;  // reconstructed energy in the proton ZDC
+  Double32_t   fZDCEMEnergy;  // signal in the electromagnetic ZDCs
+  Double32_t   fZDCEMEnergy1; // second EM signal,cannot change fZDCEMEnergy to array (not backward compatible)
   Double32_t   fZN1TowerEnergy[5];// reco E in 5 ZN1 sectors - high gain chain
   Double32_t   fZN2TowerEnergy[5];// reco E in 5 ZN2 sectors - high gain chain
   Double32_t   fZP1TowerEnergy[5];// reco E in 5 ZP1 sectors - high gain chain

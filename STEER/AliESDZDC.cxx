@@ -27,6 +27,8 @@
 
 ClassImp(AliESDZDC)
 
+float fCParCentr(const int n) {return 1.8936-0.7126/(n + 0.7179);}
+
 //______________________________________________________________________________
 AliESDZDC::AliESDZDC() :
   TObject(),
@@ -124,4 +126,44 @@ void AliESDZDC::Print(const Option_t *) const
   fZDCN1Energy,fZDCP1Energy,fZDCN2Energy,fZDCP2Energy,fZDCParticipants);
 }
 
+//______________________________________________________________________________
+const Float_t * AliESDZDC::GetZNCCentroid(int NspecnC) const
+{
+  // Provide coordinates of centroid over ZN (side C) front face
+  Float_t CentrCoord[2];
+  Float_t x[4] = {-1.75, 1.75, -1.75, 1.75};
+  Float_t y[4] = {-1.75, -1.72, 1.75, 1.75};
+  Float_t NumX=0., NumY=0., Den=0.;
+  Float_t alpha=0.395, w;
+  for(Int_t i=1; i<5; i++){
+    w = TMath::Power(fZN1TowerEnergy[i], alpha);
+    NumX += x[i]*w;
+    NumY += y[i]*w;
+    Den += w;
+  }
+  if(Den!=0){
+    CentrCoord[0] = fCParCentr(NspecnC)*NumX/Den;
+    CentrCoord[1] = fCParCentr(NspecnC)*NumY/Den;
+  }
+  return CentrCoord;
+}
 
+//______________________________________________________________________________
+const Float_t * AliESDZDC::GetZNACentroid(int NspecnA) const
+{
+  // Provide coordinates of centroid over ZN (side A) front face
+  Float_t CentrCoord[2];
+  Float_t x[4] = {-1.75, 1.75, -1.75, 1.75};
+  Float_t y[4] = {-1.75, -1.72, 1.75, 1.75};
+  Float_t NumX=0., NumY=0., Den=0.;
+  Float_t alpha=0.395, w;
+  for(Int_t i=1; i<5; i++){
+    w = TMath::Power(fZN2TowerEnergy[i], alpha);
+    NumX += x[i]*w;
+    NumY += y[i]*w;
+    Den += w;
+  }
+  CentrCoord[0] = fCParCentr(NspecnA)*NumX/Den;
+  CentrCoord[1] = fCParCentr(NspecnA)*NumY/Den;
+  return CentrCoord;
+}
