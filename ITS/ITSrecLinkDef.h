@@ -122,5 +122,8 @@
 #pragma link C++ class AliITSQASPDDataMakerRec+;
 #pragma link C++ class AliITSQASDDDataMakerRec+;
 #pragma link C++ class AliITSQASSDDataMakerRec+;
+#pragma link C++ class AliITSQASPDChecker+;
+#pragma link C++ class AliITSQASDDChecker+;
+#pragma link C++ class AliITSQASSDChecker+;
 
 #endif

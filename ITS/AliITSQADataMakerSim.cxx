@@ -35,6 +35,7 @@
 #include "AliLog.h"
 #include "AliQA.h"
 #include "AliQAChecker.h"
+#include "AliITSQAChecker.h"
 #include "AliRawReader.h"
 
 ClassImp(AliITSQADataMakerSim)
@@ -121,7 +122,9 @@ void AliITSQADataMakerSim::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray
   if(fSubDetector == 0 || fSubDetector == 2) fSDDDataMaker->EndOfDetectorCycle(task, list);
   if(fSubDetector == 0 || fSubDetector == 3) fSSDDataMaker->EndOfDetectorCycle(task, list);
   
-  //AliQAChecker::Instance()->Run( AliQA::kITS , task, list);  //temporary skipping the checking
+  AliQAChecker *qac = AliQAChecker::Instance();
+  AliITSQAChecker *qacb = (AliITSQAChecker *) qac->GetDetQAChecker(0);
+  qac->Run( AliQA::kITS , task, list);  //temporary skipping the checking
 }
 
 //____________________________________________________________________________ 

@@ -20,19 +20,46 @@ class TH2F ;
 
 // --- AliRoot header files ---
 #include "AliQACheckerBase.h"
+
+class AliITSQASPDChecker;
+class AliITSQASDDChecker;
+class AliITSQASSDChecker;
 class AliITSLoader ; 
 
 class AliITSQAChecker: public AliQACheckerBase {
 
+friend class AliITSQASPDChecker;
+friend class AliITSQASDDChecker;
+friend class AliITSQASSDChecker;
+
 public:
-  AliITSQAChecker() : AliQACheckerBase("ITS","SDD Quality Assurance Data Maker") {;}          // ctor
-  AliITSQAChecker(const AliITSQAChecker& qac) : AliQACheckerBase(qac.GetName(), qac.GetTitle()) {;} // cpy ctor   
+  AliITSQAChecker(Bool_t kMode = kFALSE, Short_t subDet = 0, Short_t ldc = 0) ;         // ctor
+  AliITSQAChecker(const AliITSQAChecker& qac) : AliQACheckerBase(qac.GetName(), qac.GetTitle()), fkOnline(kFALSE), fDet(0), fLDC(0), fSPDChecker(0), fSDDChecker(0), fSSDChecker(0) {;} // cpy ctor   
   AliITSQAChecker& operator = (const AliITSQAChecker& qac) ; //operator =
   virtual ~AliITSQAChecker() {;} // dtor
+  void SetMode(Bool_t kMode) { fkOnline = kMode; }
+  void SetSubDet(Short_t subdet) { fDet = subdet; }
+  void SetLDC(Short_t ldc) { fLDC = ldc; }
+  Bool_t GetMode() { return fkOnline; }
+  Short_t GetSubDet() { return fDet; }
+  Short_t GetLDC() { return fLDC; }
+
+ protected:
+
+  virtual const Double_t Check(TObjArray * list) ;
+  virtual const Double_t Check() {return 0.;} ;
 
 private:
-  
-  ClassDef(AliITSQAChecker,1)  // description 
+
+  Bool_t  fkOnline;
+  Short_t fDet;  
+  Short_t fLDC;
+
+  AliITSQASPDChecker *fSPDChecker;  // SPD Checker
+  AliITSQASDDChecker *fSDDChecker;  // SDD Checker
+  AliITSQASSDChecker *fSSDChecker;  // SSD Checker
+
+  ClassDef(AliITSQAChecker,3)  // description 
 
 };
 

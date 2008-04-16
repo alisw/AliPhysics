@@ -22,12 +22,32 @@
 //  INFN Torino
 
 // --- ROOT system ---
-
+#include "TH1.h"
 
 // --- AliRoot header files ---
 #include "AliITSQAChecker.h"
+#include "AliITSQASPDChecker.h"
+#include "AliITSQASDDChecker.h"
+#include "AliITSQASSDChecker.h"
 
 ClassImp(AliITSQAChecker)
+
+//____________________________________________________________________________
+AliITSQAChecker::AliITSQAChecker(Bool_t kMode, Short_t subDet, Short_t ldc) :
+AliQACheckerBase("ITS","SDD Quality Assurance Checker")
+{
+  fkOnline = kMode; fDet = subDet; fLDC = ldc;
+  if(fDet == 0 || fDet == 1) {
+    AliDebug(1,"AliITSQAChecker::Create SPD Checker\n");
+  }
+  if(fDet == 0 || fDet == 2) {
+    AliDebug(1,"AliITSQAChecker::Create SDD Checker\n");
+  }
+  if(fDet == 0 || fDet == 3) {
+    AliDebug(1,"AliITSQAChecker::Create SSD Checker\n");
+  }
+
+}
 
 //__________________________________________________________________
 AliITSQAChecker& AliITSQAChecker::operator = (const AliITSQAChecker& qac )
@@ -37,3 +57,30 @@ AliITSQAChecker& AliITSQAChecker::operator = (const AliITSQAChecker& qac )
   new(this) AliITSQAChecker(qac);
   return *this;
 }
+
+//____________________________________________________________________________
+const Double_t AliITSQAChecker::Check(TObjArray * list)
+{
+
+  // Super-basic check on the QA histograms on the input list:
+  // look whether they are empty!
+  if(fDet == 0 || fDet == 1) {
+    AliDebug(1,"AliITSQAChecker::Create SPD Checker\n");
+	if(!fSPDChecker) fSPDChecker = new AliITSQASPDChecker();
+	Double_t SPDcheck = fSPDChecker->Check();
+  }
+  if(fDet == 0 || fDet == 2) {
+    AliDebug(1,"AliITSQAChecker::Create SDD Checker\n");
+	if(!fSDDChecker) fSDDChecker = new AliITSQASDDChecker();
+	Double_t SDDcheck = fSDDChecker->Check();
+  }
+  if(fDet == 0 || fDet == 3) {
+    AliDebug(1,"AliITSQAChecker::Create SSD Checker\n");
+	if(!fSSDChecker) fSSDChecker = new AliITSQASSDChecker();
+	Double_t SSDcheck = fSSDChecker->Check();
+  }
+  // here merging part for common ITS QA result
+  return 0;
+}
+
+
