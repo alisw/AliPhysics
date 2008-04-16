@@ -12,7 +12,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/* $Id:$    */
+/* $Id$    */
 //  *************************************************************
 //  Checks the quality assurance 
 //  by comparing with reference data
@@ -26,6 +26,7 @@
 #include <TTree.h>
 #include <TMath.h>
 #include <TString.h>
+#include <TSystem.h>
 
 // --- Standard library ---
 
@@ -41,6 +42,9 @@
 #include "AliITSgeomTGeo.h"
 #include "AliRawEventHeaderBase.h"
 #include "AliITSRecPoint.h"
+
+#include "AliCDBManager.h"
+#include "AliCDBEntry.h"
 
 ClassImp(AliITSQASSDDataMakerRec)
 
@@ -60,6 +64,16 @@ fRecsOffset(0) {
   Int_t fLayer = 0,fLadder = 0, fModule = 0;
   TString fTitle; Int_t fHistCounter = 0;
   if(fkOnline) {
+    AliCDBManager * man = AliCDBManager::Instance();
+    man->SetDefaultStorage("local://$ALICE_ROOT");
+    Int_t runNumber = atoi(gSystem->Getenv("DATE_RUN_NUMBER"));
+    if(!runNumber) 
+      AliInfo("DATE_RUN_NUMBER not defined!!!\n");
+
+    man->SetRun(runNumber);
+    AliCDBEntry *geomGRP = man->Get("GRP/Geometry/Data");
+    if(!geomGRP) AliInfo("GRP geometry not found!!!\n");
+
     for(Int_t i = 500; i < fgkSSDMODULES + 500; i++) {
       AliITSgeomTGeo::GetModuleId(i,fLayer,fLadder,fModule);
       fTitle = "SSD_RawSignal_Layer"; fTitle += fLayer;
