@@ -1,13 +1,13 @@
 /*
 
 Contact: r.bailhache@gsi.de
-Link: http://www-linux.gsi.de/~bailhach/VDRIFT/raw.root.date
-Run Type: nothing special in ECS, physics run
+Link: run 25909
+Run Type: PHYSICS STANDALONE
 DA Type: MON
 Number of events needed: as many as possible
-Input Files: no config files, no previous result files, RAW DATA file with all the TRD ([DDL = 1024 to DDL = 1041])
-Output Files: trdCalibrationv.root, trdCalibrationv.root, no persitent file over runs
-Trigger types used: PHYSICS
+Input Files:  raw files of the TRD
+Output Files: trdCalibrationv.root,to be exported to the DAQ FXS
+Trigger types used: PHYSICS_EVENT, for the time being
 
 */
 
@@ -30,10 +30,11 @@ extern "C" {
 #include <TObjArray.h>
 #include <TString.h>
 #include <TVectorF.h>
-#include <TROOT.h>
 #include <TDirectory.h>
 #include <TSystem.h>
 #include <TFile.h>
+#include "TROOT.h"
+#include "TPluginManager.h"
 //
 //AliRoot includes
 //
@@ -56,6 +57,12 @@ extern "C" {
 */
 int main(int argc, char **argv) {
 
+  /* magic line from Rene */
+  gROOT->GetPluginManager()->AddHandler("TVirtualStreamerInfo",
+					"*",
+					"TStreamerInfo",
+					"RIO",
+					"TStreamerInfo()");
   int status;
 
   if (argc!=2) {
@@ -141,7 +148,7 @@ int main(int argc, char **argv) {
       continue;
     }
 
-    if( ((Int_t)nevents_total)%100 == 0 ) printf(" event number %d (physic event number %d) will be processed\n",(Int_t) nevents_total,(Int_t) nevents_physics);  
+    if( ((Int_t)nevents_total)%1000 == 0 ) printf(" event number %d (physic event number %d) will be processed\n",(Int_t) nevents_total,(Int_t) nevents_physics);  
 
 
     /* use event - here, just write event id to result file */

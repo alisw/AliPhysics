@@ -1,13 +1,13 @@
 /*
 
 Contact: r.bailhache@gsi.de
-Link: http://www-linux.gsi.de/~bailhach/PEDESTAL/raw.root.date
-Run Type: dedicated pedestals run
+Link: run 12170
+Run Type: PEDESTAL
 DA Type: LDC
 Number of events needed: 100
-Input Files: no config files, no previous result files, RAW DATA files from DDL = 1024 to DDL = 1041 included
-Output Files: trdCalibration.root, trdCalibration.root, no persitent file over runs
-Trigger types used: PEDESTAL_RUN
+Input Files: raw files of the TRD
+Output Files: trdCalibration.root,to be exported to the DAQ FXS
+Trigger types used:
 
 */
 
@@ -27,7 +27,8 @@ extern "C" {
 //
 #include <TFile.h>
 #include <TStopwatch.h>
-
+#include "TROOT.h"
+#include "TPluginManager.h"
 //
 // AliRoot includes
 //
@@ -47,6 +48,13 @@ extern "C" {
 */
 int main(int argc, char **argv) {
 
+  /* magic line from Rene */
+  gROOT->GetPluginManager()->AddHandler("TVirtualStreamerInfo",
+					"*",
+					"TStreamerInfo",
+					"RIO",
+					"TStreamerInfo()");
+  
   int status;
 
 
@@ -82,11 +90,6 @@ int main(int argc, char **argv) {
   AliTRDCalibPadStatus calipad = AliTRDCalibPadStatus();
   Bool_t passpadstatus = kTRUE;
 
-
-  /*see the time*/
-  TStopwatch timer;
-  timer.Start();
-  
   // setting
   // AliTRDrawStreamTB::SetNoDebug();
   AliTRDrawStreamTB::SetNoErrorWarning();
@@ -154,33 +157,18 @@ int main(int argc, char **argv) {
   /* report progress */
   printf("%d events processed and %d used\n",nevents_total,nevents);
 
-  /*see the time*/
-  timer.Stop();
-  timer.Print();
-
   /* write file in any case to see what happens in case of problems*/
-  /*see the time*/
-  TStopwatch timer1;
-  timer1.Start();
   TFile *fileTRD = new TFile(RESULT_FILE,"recreate");
   calipad.AnalyseHisto();
   calipad.Write("calibpadstatus");
   fileTRD->Close();   
-  printf("Wrote local file %s\n",RESULT_FILE);
-  /*see the time*/
-  timer1.Stop();
-  timer1.Print();
-  
+     
   /* store the result file on FES */
   status=daqDA_FES_storeFile(RESULT_FILE,RESULT_FILE);
   if (status) {
     printf("Failed to export file : %d\n",status);
     return -1;
   }
-  
-   
-  /* report progress */
-  daqDA_progressReport(100);
 
   
   return status;
