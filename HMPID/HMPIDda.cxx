@@ -211,9 +211,9 @@ int main(int argc, char **argv){
     
     /* store the result file on FES */
    
-    status=daqDA_FES_storeFile(Form("%sHmpidPedDdl%02i.txt",sDaOut.Data(),nDDL),Form("HMPID_DA_Pedestals_ddl=%02i",nDDL));
+    status=daqDA_FES_storeFile(Form("%sHmpidPedDdl%02i.txt",sDaOut.Data(),nDDL),Form("HmpidPedDdl%02i.txt",nDDL));
     if (status) { printf("Failed to export file : %d\n",status); }
-    status=daqDA_FES_storeFile(Form("%sHmpidErrorsDdl%02i.txt",sDaOut.Data(),nDDL),Form("HMPID_DA_Errors_ddl=%02i",nDDL));
+    status=daqDA_FES_storeFile(Form("%sHmpidErrorsDdl%02i.txt",sDaOut.Data(),nDDL),Form("HmpidErrorsDdl%02i.txt",nDDL));
     if (status) { printf("Failed to export file : %d\n",status); }
     
   }//nDDL

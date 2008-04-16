@@ -1,4 +1,4 @@
-  void Hshuttle(Int_t runTime=1500)
+void Hshuttle(Int_t runTime=1500)
 {// this macro is to simulate the functionality of SHUTTLE.
   gSystem->Load("$ALICE_ROOT/SHUTTLE/TestShuttle/libTestShuttle.so");
 //  AliTestShuttle::SetMainCDB(TString("local://$HOME/CDB"));
@@ -7,41 +7,50 @@
   TMap *pDcsMap = new TMap;       pDcsMap->SetOwner(1);          //DCS archive map
   
   AliTestShuttle* pShuttle = new AliTestShuttle(0,0,1000000);   
-  pShuttle->SetInputRunType("PHYSICS");
-//  pShuttle->SetInputRunType("PEDESTAL_RUN");
-  SimPed();   for(Int_t ldc=1;ldc<=2;ldc++) pShuttle->AddInputFile(AliTestShuttle::kDAQ,"HMP","pedestals",Form("LDC%i",ldc),Form("HmpidPeds%i.tar",ldc));
+ // pShuttle->SetInputRunType("PHYSICS");
+   pShuttle->SetInputRunType("CALIBRATION");
+  SimPed();   
+  for(Int_t ldc=51;ldc<=52;ldc++) 
+  {
+   if(ldc==51) {for(Int_t iddl=0;iddl<=7;iddl++)  pShuttle->AddInputFile(AliTestShuttle::kDAQ,"HMP",Form("HmpidPedDdl%02i.txt",iddl),Form("LDC%i",ldc),Form("HmpidPedDdl%02i.txt",iddl));}
+   if(ldc==52) {for(Int_t iddl=8;iddl<=13;iddl++) pShuttle->AddInputFile(AliTestShuttle::kDAQ,"HMP",Form("HmpidPedDdl%02i.txt",iddl),Form("LDC%i",ldc),Form("HmpidPedDdl%02i.txt",iddl));}
+  }
   SimMap(pDcsMap,runTime); pShuttle->SetDCSInput(pDcsMap);                                    //DCS map
   
   AliPreprocessor* pp = new AliHMPIDPreprocessor(pShuttle); pShuttle->Process();  delete pp;  //here goes preprocessor 
 
   DrawInput(pDcsMap); DrawOutput();
   gSystem->Exec("rm -rf HmpidPedDdl*.txt");
-  gSystem->Exec("rm -rf HmpidPeds*.tar");
+
 }//Hshuttle()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void SimPed()
 {
   Int_t iDDLmin=0,iDDLmax=13;
-  Int_t nSigmas = 3;             // value stored in the ddl files of pedestals
+  Int_t nSigmas = 3;                                            // value stored in the ddl files of pedestals
   ofstream out;
   for(Int_t ddl=iDDLmin;ddl<=iDDLmax;ddl++){
     out.open(Form("HmpidPedDdl%02i.txt",ddl));
-    out << nSigmas <<endl;
+    out << Form("%8s %2d\n","RunNumber",      999);             //read run number
+    out << Form("%8s %2d\n","LdcId" ,         999);             //read LDC Id
+    out << Form("%8s %2d\n","TimeStamp",      999);             //read time stamp
+    out << Form("%8s %2d\n","TotNumEvt",      999);             //read number of total events processed
+    out << Form("%8s %2d\n","TotDDLEvt",      999);             //read number of bad events for DDL # nDDL processed
+    out << Form("%8s %2d\n","NumBadEvt",      999);             //read number of bad events for DDL # nDDL processed
+    out << Form("%8s %2f\n","NBadE(%)",       999.9);           //read number of bad events (in %) for DDL # nDDL processed
+    out << Form("%8s %2.2d\n","SigCut",      nSigmas);          //# of sigma cuts
     for(Int_t row=1;row<=24;row++)
       for(Int_t dil=1;dil<=10;dil++)
         for(Int_t adr=0;adr<=47;adr++){
           Float_t mean  = 150+200*gRandom->Rndm();
           Float_t sigma = 1+0.3*gRandom->Gaus();
-          Int_t inhard=((Int_t(mean))<<9)+Int_t(mean+nSigmas*sigma);
-          out << Form("%2i %2i %2i %5.2f %5.2f %x\n",row,dil,adr,mean,sigma,inhard);
+          Int_t inhard=((Int_t(mean+nSigmas*sigma))<<9)+Int_t(mean); //right calculation, xchecked with Paolo 8/4/2008
+          out << Form("%2i %2i %2i %5.3f %5.3f %4.4x \n",row,dil,adr,mean,sigma,inhard);
         }
 
     out.close();
   }
   Printf("HMPID - All %i DDL pedestal files created successfully",iDDLmax-iDDLmin+1);
-  gSystem->Exec("tar cf HmpidPeds1.tar HmpidPedDdl00.txt HmpidPedDdl01.txt HmpidPedDdl02.txt HmpidPedDdl03.txt HmpidPedDdl04.txt HmpidPedDdl05.txt HmpidPedDdl06.txt");
-  gSystem->Exec("tar cf HmpidPeds2.tar HmpidPedDdl07.txt HmpidPedDdl08.txt HmpidPedDdl09.txt HmpidPedDdl10.txt HmpidPedDdl11.txt HmpidPedDdl12.txt HmpidPedDdl13.txt");
-  Printf("HMPID - 2 tar files (HmpidPeds1-2) created (size 2273280 bytes)");
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void SimMap(TMap *pDcsMap,Int_t runTime=1500)
