@@ -39,6 +39,7 @@
 // --- Standard library ---
 
 // --- AliRoot header files ---
+#include "AliCDBManager.h"
 #include "AliLog.h"
 #include "AliQA.h"
 
@@ -482,6 +483,12 @@ void AliQA::SetQARefStorage(const char * name)
   }	
 	TString tmp(fgQARefDirName) ; // + fgQARefFileName) ;
 	printf("AliQA::SetQARefDir: QA references are in  %s\n", tmp.Data() ) ;
+
+	AliCDBManager* man = AliCDBManager::Instance() ; 
+	if ( ! man->IsDefaultStorageSet() ) { 
+		man->SetDefaultStorage(AliQA::GetQARefStorage()) ; 
+		man->SetSpecificStorage("*", AliQA::GetQARefStorage()) ;
+	}
 }
 
 //_____________________________________________________________________________
