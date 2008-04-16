@@ -123,9 +123,9 @@ const Float_t AliTOFGeometry::fgkZlenB    = 146.5;    // length (cm) of the B mo
 const Float_t AliTOFGeometry::fgkZlenC    = 170.45;   // length (cm) of the C module
 const Float_t AliTOFGeometry::fgkMaxhZtof = 370.6;    // Max half z-size of TOF (cm)
 
-const Float_t AliTOFGeometry::fgkxTOF     = 371.-0.01;// Inner radius of the TOF for Reconstruction (cm)
-const Float_t AliTOFGeometry::fgkRmin     = 370.-0.01;// Inner radius of the TOF (cm)
-const Float_t AliTOFGeometry::fgkRmax     = 399.-0.01;// Outer radius of the TOF (cm)
+const Float_t AliTOFGeometry::fgkxTOF     = 372.00;// Inner radius of the TOF for Reconstruction (cm)
+const Float_t AliTOFGeometry::fgkRmin     = 371.00;// Inner radius of the TOF (cm)
+const Float_t AliTOFGeometry::fgkRmax     = 400.05;// Outer radius of the TOF (cm)
 
 const Int_t AliTOFGeometry::fgkTimeDiff   = 25000;  // Min signal separation (ps)
 const Float_t AliTOFGeometry::fgkXPad     = 2.5;    // Pad size in the x direction (cm)

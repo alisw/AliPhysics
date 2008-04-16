@@ -58,7 +58,7 @@ AliTOFtrackerMI::AliTOFtrackerMI():
   fnbadmatch(0),
   fnunmatch(0),
   fnmatch(0),
-  fR(378.), 
+  fR(379.), 
   fTOFHeigth(15.3),  
   fdCut(3.), 
   fDx(1.5), 
@@ -93,7 +93,7 @@ AliTOFtrackerMI::AliTOFtrackerMI(const AliTOFtrackerMI &t):
   fnbadmatch(0),
   fnunmatch(0),
   fnmatch(0),
-  fR(378.), 
+  fR(379.), 
   fTOFHeigth(15.3),  
   fdCut(3.), 
   fDx(1.5), 
@@ -267,7 +267,7 @@ void AliTOFtrackerMI::CollectESD() {
     AliESDtrack *t =(AliESDtrack*)fSeeds->UncheckedAt(i);
     if ((t->GetStatus()&AliESDtrack::kTPCout)==0)continue;
 
-    // TRD good tracks, already propagated at 371 cm
+    // TRD good tracks, already propagated at 372 cm
 
     AliTOFtrack *track = new AliTOFtrack(*t); // New
     Double_t x = track->GetX(); //New
@@ -380,12 +380,12 @@ void AliTOFtrackerMI::MatchTracksMI(Bool_t mLastStep){
     //
     //propagat track to the middle of TOF
     //
-    Float_t xs = 378.2;  // should be defined in the TOF geometry
+    Float_t xs = 379.2;  // should be defined in the TOF geometry
     Double_t ymax=xs*TMath::Tan(0.5*AliTOFGeometry::GetAlpha());  
     Bool_t skip=kFALSE;
     Double_t ysect=trackTOFin->GetYat(xs,skip);
     if (skip){
-      xs = 372.;
+      xs = 373.;
       ymax=xs*TMath::Tan(0.5*AliTOFGeometry::GetAlpha());
       ysect=trackTOFin->GetYat(xs,skip);
     }
@@ -584,7 +584,7 @@ void AliTOFtrackerMI::MatchTracksMI(Bool_t mLastStep){
     t->SetTOFsignal(tof2);
     t->SetTOFcluster(cgold->GetIndex());  
     AliTOFtrack *trackTOFout = new AliTOFtrack(*t); 
-    trackTOFout->PropagateTo(378.);
+    trackTOFout->PropagateTo(379.);
     t->UpdateTrackParams(trackTOFout,AliESDtrack::kTOFout);    
     t->SetIntegratedLength(length[igold]);
     t->SetIntegratedTimes(times[igold]);

@@ -290,7 +290,7 @@ void AliTOFtrackerV1::CollectESD() {
     AliESDtrack *t =(AliESDtrack*)fSeeds->UncheckedAt(i);
     if ((t->GetStatus()&AliESDtrack::kTPCout)==0)continue;
 
-    // TRD 'good' tracks, already propagated at 371 cm
+    // TRD 'good' tracks, already propagated at 372 cm
 
     AliTOFtrack *track = new AliTOFtrack(*t); // New
     Double_t x = track->GetX(); //New
@@ -400,7 +400,7 @@ void AliTOFtrackerV1::MatchTracks( ){
       nc++;  
     }
 
-    //start propagation: go to the average TOF pad middle plane at ~378.5 cm
+    //start propagation: go to the average TOF pad middle plane at ~379.5 cm
 
     Float_t  xTOF = sensRadius;
     Double_t ymax = xTOF*TMath::Tan(0.5*AliTOFGeometry::GetAlpha());

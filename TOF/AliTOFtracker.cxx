@@ -311,7 +311,7 @@ void AliTOFtracker::CollectESD() {
     AliESDtrack *t =(AliESDtrack*)fSeeds->UncheckedAt(i);
     if ((t->GetStatus()&AliESDtrack::kTPCout)==0)continue;
 
-    // TRD 'good' tracks, already propagated at 371 cm
+    // TRD 'good' tracks, already propagated at 372 cm
 
     AliTOFtrack *track = new AliTOFtrack(*t); // New
     Double_t x = track->GetX(); //New
