@@ -1025,11 +1025,16 @@ Int_t TFluka::GetDummyLattice() const
 //_____________________________________________________________________________
 Int_t TFluka::IdFromPDG(Int_t pdg) const 
 {
+
     //
     // Return Fluka code from PDG and pseudo ENDF code
-    
+    Int_t idSpecial[4] = {GetIonPdg(2,4), GetIonPdg(2, 3), GetIonPdg(1,3), GetIonPdg(1,2)};    
     // Catch the feedback photons
     if (pdg == 50000051) return (kFLUKAoptical);
+    for (Int_t i = 0; i < 4; i++) {
+	if (pdg == idSpecial[i]) return (i + kFLUKAcodemin);
+    }
+    
     // MCIHAD() goes from pdg to fluka internal.
     Int_t intfluka = mcihad(pdg);
     // KPTOIP array goes from internal to official
