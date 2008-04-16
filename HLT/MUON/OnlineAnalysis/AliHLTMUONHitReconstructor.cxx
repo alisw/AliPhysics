@@ -798,19 +798,19 @@ void AliHLTMUONHitReconstructor::Clear()
 
 AliHLTMUONHitReconstructor::AliHLTMUONRawDecoder::AliHLTMUONRawDecoder() :
 	fBufferStart(NULL),
-  fDCCut(0),
-  fPadData(NULL),
-  fLookUpTableData(NULL),
-  fMaxFiredPerDetElem(NULL),
-  fNofFiredDetElem(NULL),
-  fBusPatchId(0),
-  fDataCount(1),
-  fPrevDetElemId(0),
-  fPadCharge(0),
-  fCharge(0.0),
-  fIdManuChannel(0x0),
-  fLutEntry(0),
-  fIdToEntry()
+	fBusPatchId(0),
+	fDCCut(0),
+	fPadData(NULL),
+	fLookUpTableData(NULL),
+	fNofFiredDetElem(NULL),
+	fMaxFiredPerDetElem(NULL),
+	fIdToEntry(),
+	fDataCount(1),
+	fPrevDetElemId(0),
+	fPadCharge(0),
+	fCharge(0.0),
+	fIdManuChannel(0x0),
+	fLutEntry(0)
 {
 	// ctor
 }

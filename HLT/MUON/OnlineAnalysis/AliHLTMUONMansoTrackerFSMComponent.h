@@ -100,6 +100,7 @@ private:
 	AliHLTMUONMansoTrackerFSMComponent& operator = (const AliHLTMUONMansoTrackerFSMComponent& /*obj*/);
 
 	void Reset();
+	void FreeMemory();
 	
 	void AddRecHits(
 			AliHLTUInt32_t specification,

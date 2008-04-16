@@ -10,17 +10,18 @@
 ///  @file   AliHLTMUONHitReconstructorComponent.h
 ///  @author Indranil Das <indra.das@saha.ac.in> | <indra.ehep@gmail.com>
 ///  @date   
-///  @brief  Hit Reconstruction processing component for the dimuon HLT. 
+///  @brief  Hit Reconstruction processing component for the dimuon HLT.
 ///
 
 #include "AliHLTProcessor.h"
-#include <TString.h>
-#include "AliHLTMUONHitReconstructor.h"
 
 #if __GNUC__ && __GNUC__ < 3
 #define std
 #endif
 
+// TODO: see if we can remove the following header somehow.
+#include "AliHLTMUONHitReconstructor.h"
+//class AliHLTMUONHitReconstructor;
 
 extern "C" struct AliHLTMUONHitRecoLutRow;
 
@@ -65,12 +66,13 @@ private:
 	AliHLTMUONHitReconstructorComponent(const AliHLTMUONHitReconstructorComponent& /*obj*/);
 	AliHLTMUONHitReconstructorComponent& operator = (const AliHLTMUONHitReconstructorComponent& /*obj*/);
 	
+	void FreeMemory();
 	bool ReadLookUpTable(AliHLTMUONHitRecoLutRow* lookupTable, const char* lutpath);
 	bool ReadCDB(AliHLTMUONHitRecoLutRow*& lookupTable, const char* cdbpath, Int_t run);
-	bool GetLutLine(const char* lutPath, AliHLTInt32_t iDDL, AliHLTUInt32_t& iLine); //To count the nof lines in lookuptable
+	bool GetLutLine(const char* lutPath, AliHLTUInt32_t& iLine); // To count the nof lines in lookuptable
  
-	AliHLTMUONHitReconstructor* fHitRec;   // Internal class instance implementing the hit reconstruction algorithm.
-	AliHLTInt32_t fDDL;        // DDL number in the range [13..20].
+	AliHLTMUONHitReconstructor* fHitRec;  // Internal class instance implementing the hit reconstruction algorithm.
+	AliHLTInt32_t fDDL;  // DDL number in the range [13..20]. Set to -1 for invalid/unspecified value.
 	IdManuChannelToEntry fIdToEntry; // id to line mapping.
 	bool fWarnForUnexpecedBlock;  // Flag indicating if we should log a warning if we got a block of an unexpected type.
 	

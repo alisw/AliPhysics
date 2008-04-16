@@ -31,6 +31,7 @@
 #include "AliHLTMUONConstants.h"
 #include "AliHLTMUONUtils.h"
 #include "AliHLTMUONDataBlockWriter.h"
+#include "AliHLTMUONHitReconstructor.h"
 #include "AliHLTLogging.h"
 #include "AliHLTSystem.h"
 #include "AliHLTDefinitions.h"
@@ -47,7 +48,7 @@
 #include "AliMUONCalibrationData.h"
 #include "AliMUONVCalibParam.h"
 
-//MUON/mapping 
+//MUON/mapping
 #include "AliMpCDB.h"
 #include "AliMpPad.h"
 #include "AliMpSegmentation.h"
@@ -63,7 +64,7 @@ ClassImp(AliHLTMUONHitReconstructorComponent)
 AliHLTMUONHitReconstructorComponent::AliHLTMUONHitReconstructorComponent() :
 	AliHLTProcessor(),
 	fHitRec(NULL),
-	fDDL(0),
+	fDDL(-1),
 	fIdToEntry(),
 	fWarnForUnexpecedBlock(false)
 {
@@ -146,6 +147,10 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 
 	HLTInfo("Initialising dHLT hit reconstruction component.");
 	
+	// Must make sure that fHitRec is deleted if it is still allocated for
+	// whatever reason.
+	FreeMemory();
+	
 	try
 	{
 		fHitRec = new AliHLTMUONHitReconstructor();
@@ -156,8 +161,11 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 		return -ENOMEM;
 	}
 	
+	// Initialise fields with default values then parse the command line.
+	fDDL = -1;
+	fIdToEntry.clear();
 	fWarnForUnexpecedBlock = false;
-
+	
 	const char* lutFileName = NULL;
 	const char* cdbPath = NULL;
 	Int_t run = -1;
@@ -172,7 +180,8 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 			if (argc <= i+1)
 			{
 				HLTError("The DDL number was not specified. Must be in the range [13..20].");
-				return EINVAL;
+				FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
+				return -EINVAL;
 			}
 			
 			char* cpErr = NULL;
@@ -180,12 +189,14 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 			if (cpErr == NULL or *cpErr != '\0')
 			{
 				HLTError("Cannot convert '%s' to DDL Number ", argv[i+1] );
-				return EINVAL;
+				FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
+				return -EINVAL;
 			}
 			if (num < 13 or 20 < num)
 			{
 				HLTError("The DDL number must be in the range [13..20].");
-				return EINVAL;
+				FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
+				return -EINVAL;
 			}
 			fDDL = num - 1;
 			
@@ -198,7 +209,8 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 			if (argc <= i+1)
 			{
 				HLTError("The lookup table filename was not specified.");
-				return EINVAL;
+				FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
+				return -EINVAL;
 			}
 			lutFileName = argv[i+1];
 			i++;
@@ -216,7 +228,8 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 			if ( argc <= i+1 )
 			{
 				HLTError("The CDB path was not specified." );
-				return EINVAL;
+				FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
+				return -EINVAL;
 			}
 			cdbPath = argv[i+1];
 			useCDB = true;
@@ -229,7 +242,8 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 			if ( argc <= i+1 )
 			{
 				HLTError("The RUN number was not specified." );
-				return EINVAL;
+				FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
+				return -EINVAL;
 			}
 			
 			char* cpErr = NULL;
@@ -239,7 +253,8 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 				HLTError("Cannot convert '%s' to a valid run number."
 					" Expected an integer value.", argv[i+1]
 				);
-				return EINVAL;
+				FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
+				return -EINVAL;
 			}
 			
 			i++;
@@ -253,41 +268,39 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 		}
 	
 		HLTError("Unknown option '%s'", argv[i]);
-		return EINVAL;
+		FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
+		return -EINVAL;
 	
 	} // for loop
 	
+	if (fDDL == -1)
+	{
+		HLTWarning("DDL number not specified. Cannot check if incomming data is valid.");
+	}
+	
 	if (lutFileName == NULL) useCDB = true;
 	
-	AliHLTMUONHitRecoLutRow* lookupTable;
+	AliHLTMUONHitRecoLutRow* lookupTable = NULL;
 	
 	if (useCDB)
 	{
-		if(!ReadCDB(lookupTable,cdbPath,run))
+		if (not ReadCDB(lookupTable,cdbPath,run))
 		{
 			HLTError("Failed to read cdb, cdb cannot be read, DoInit");
-			
-			if (fHitRec)
-			{
-				delete fHitRec;
-				fHitRec = NULL;
-			}
-			if(lookupTable)
-				delete []lookupTable;
-			
-			return ENOENT ; /* No such file or directory */
+			FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
+			if (lookupTable != NULL)
+				delete [] lookupTable;
+			return -ENOENT;
 		}
 	}
 	else
 	{
 		AliHLTUInt32_t lutLine;
-		if(!GetLutLine(lutFileName,fDDL,lutLine))
+		if (not GetLutLine(lutFileName, lutLine))
 		{
 			HLTError("Failed for lookuptable count the number of lines in lookuptable, DoInit");
-			
-			if(fHitRec)
-				delete fHitRec;
-			return EIO;
+			FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
+			return -EIO;
 		}
 	
 		try
@@ -297,53 +310,36 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 		catch(const std::bad_alloc&)
 		{
 			HLTError("Dynamic memory allocation failed for lookuptable, DoInit");
-			
-			if(fHitRec)
-				delete fHitRec;
-			
-			return ENOMEM;
+			FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
+			return -ENOMEM;
 		}
 	
-	
-		if(!ReadLookUpTable(lookupTable,lutFileName))
+		if (not ReadLookUpTable(lookupTable, lutFileName))
 		{
 			HLTError("Failed to read lut, lut cannot be read, DoInit");
-			
-			if(fHitRec)
-				delete fHitRec;
-			if(lookupTable)
-				delete []lookupTable;
-			
-			return ENOENT ; /* No such file or directory */
+			FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
+			if (lookupTable != NULL)
+				delete [] lookupTable;
+			return -ENOENT;
 		}
 	}
 	
-	if(!fHitRec->SetIdManuChannelToEntry(fIdToEntry))
+	if (not fHitRec->SetIdManuChannelToEntry(fIdToEntry))
 	{
 		HLTError("Failed to set fIdToEntry mapping, DoInit");
-		
-		if(fHitRec)
-		delete fHitRec;
-		if(lookupTable)
-		delete []lookupTable;
-		
-		fIdToEntry.clear();
-		
-		return ENOENT ; /* No such file or directory */
+		FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
+		if (lookupTable != NULL)
+			delete [] lookupTable;
+		return -ENOENT;
 	}
 	
-	if(!fHitRec->LoadLookUpTable(lookupTable,fDDL))
+	if (not fHitRec->LoadLookUpTable(lookupTable, fDDL))
 	{
 		HLTError("Cannot Laod hitrec lookuptable , DoInit");
-		
-		if(fHitRec)
-		delete fHitRec;
-		if(lookupTable)
-		delete []lookupTable;
-		
-		fIdToEntry.clear();
-		
-		return ENOENT;
+		FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
+		if (lookupTable != NULL)
+			delete [] lookupTable;
+		return -ENOENT;
 	}
 	
 	delete [] lookupTable;
@@ -359,15 +355,7 @@ int AliHLTMUONHitReconstructorComponent::DoDeinit()
 	///
 	
 	HLTInfo("Deinitialising dHLT hit reconstruction component.");
-	
-	if (fHitRec != NULL)
-	{
-		delete fHitRec;
-		fHitRec = NULL;
-	}
-	
-	fIdToEntry.clear();
-	
+	FreeMemory();
 	return 0;
 }
 
@@ -438,11 +426,14 @@ int AliHLTMUONHitReconstructorComponent::DoEvent(
 			continue;
 		}
 		
-		bool ddl[22];
-		AliHLTMUONUtils::UnpackSpecBits(blocks[n].fSpecification, ddl);
-		if (not ddl[fDDL])
+		if (fDDL != -1)
 		{
-			HLTWarning("Received raw data from an unexpected DDL.");
+			bool ddl[22];
+			AliHLTMUONUtils::UnpackSpecBits(blocks[n].fSpecification, ddl);
+			if (not ddl[fDDL])
+			{
+				HLTWarning("Received raw data from an unexpected DDL.");
+			}
 		}
 		
 		// Create a new output data block and initialise the header.
@@ -474,7 +465,7 @@ int AliHLTMUONHitReconstructorComponent::DoEvent(
 		{
 			HLTError("Error while processing of hit reconstruction algorithm.");
 			size = totalSize; // Must tell the framework how much buffer space was used.
-			return EIO;
+			return -EIO;
 		}
 		
 		// nofHit should now contain the number of reconstructed hits actually found
@@ -505,8 +496,25 @@ int AliHLTMUONHitReconstructorComponent::DoEvent(
 }
 
 
+void AliHLTMUONHitReconstructorComponent::FreeMemory()
+{
+	/// Deletes any allocated objects if they are allocated else nothing is
+	/// done for objects not yet allocated.
+	/// This is used as a helper method to make sure the corresponding pointers
+	/// are NULL and we are back to a well defined state.
+
+	if (fHitRec != NULL)
+	{
+		delete fHitRec;
+		fHitRec = NULL;
+	}
+	
+	fIdToEntry.clear();
+}
+
+
 bool AliHLTMUONHitReconstructorComponent::GetLutLine(
-		const char* lutFileName, AliHLTInt32_t /*iDDL*/, AliHLTUInt32_t& iLine
+		const char* lutFileName, AliHLTUInt32_t& iLine
 	)
 {
   // Reads LUT from CDB.
@@ -547,7 +555,7 @@ bool AliHLTMUONHitReconstructorComponent::ReadLookUpTable(
   }
   
   AliHLTUInt32_t lutLine;
-  if(!GetLutLine(lutFileName,fDDL,lutLine)){
+  if(!GetLutLine(lutFileName, lutLine)){
     HLTError("Failed for lookuptable count the number of lines in lookuptable, DoInit");
     
     return false;

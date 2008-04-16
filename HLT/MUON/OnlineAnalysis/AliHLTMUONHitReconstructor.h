@@ -37,6 +37,7 @@
 
 extern "C" struct AliHLTMUONRecHitStruct;
 
+//TODO: Change code to not use std::map to avoid too many AliRoot coding rule violations.
 typedef std::map<AliHLTInt32_t, AliHLTInt32_t> IdManuChannelToEntry;
 
 
@@ -58,8 +59,6 @@ public:
 			AliHLTUInt32_t& nofHit
 		);
 	void SetDCCut(AliHLTInt32_t dcCut) {fDCCut = dcCut;}
-	//void SetDebugLevel(AliHLTInt32_t debugLevel) {fDebugLevel = debugLevel;} //TODO: remove
-	//int GetDebugLevel() const {return fDebugLevel;} //TODO: remove
 	
 	static AliHLTInt32_t GetkDetectorId() { return fgkDetectorId; }
 	static AliHLTInt32_t GetkDDLOffSet() { return fgkDDLOffSet; }
@@ -179,8 +178,7 @@ private:
 	AliHLTFloat32_t *fAvgChargeX, *fAvgChargeY;                  // average charge on central pad found using CG method
 	AliHLTInt32_t *fNofBChannel, *fNofNBChannel;                 // number of channels bending and non-bending.
 	AliHLTInt32_t fGetIdTotalData[336][237][2];                  // an array of idManuChannel with argument of centralX, centralY and planeType.
-	AliHLTInt32_t fNofFiredDetElem,fMaxFiredPerDetElem[13];      // counter for detector elements that are fired 
-	AliHLTInt32_t fDebugLevel;
+	AliHLTInt32_t fNofFiredDetElem,fMaxFiredPerDetElem[13];      // counter for detector elements that are fired
 	IdManuChannelToEntry fIdToEntry;       // Mapping between Linenumber to IdManuChannel;
 	
 	//bool ReadDDL(const AliHLTUInt32_t* rawData, AliHLTUInt32_t rawDataSize);

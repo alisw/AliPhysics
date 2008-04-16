@@ -66,8 +66,13 @@ AliHLTMUONMansoTrackerFSMComponent::~AliHLTMUONMansoTrackerFSMComponent()
 	/// Default destructor.
 	///
 	
-	assert( fTracker == NULL );
-	assert( fRecHitBlock[0] == NULL );
+	// Should never have the following 2 pointers non-NULL since DoDeinit
+	// should have been called before, but handle this case anyway.
+	if (fTracker != NULL) delete fTracker;
+	
+	// Remember that only fRecHitBlock[0] stores the pointer to the allocated
+	// memory. The other pointers are just reletive to this.
+	if (fRecHitBlock[0] != NULL) delete [] fRecHitBlock[0];
 }
 
 
@@ -137,6 +142,10 @@ int AliHLTMUONMansoTrackerFSMComponent::DoInit(int argc, const char** argv)
 	
 	HLTInfo("Initialising dHLT manso tracker FSM component.");
 	
+	// Just in case for whatever reason we still have some of the internal
+	// object allocated previously still hanging around delete them now.
+	FreeMemory();
+	
 	try
 	{
 		fTracker = new AliHLTMUONMansoTrackerFSM();
@@ -159,11 +168,12 @@ int AliHLTMUONMansoTrackerFSMComponent::DoInit(int argc, const char** argv)
 		}
 
 		HLTError("Unknown option '%s'.", argv[i]);
-		return EINVAL;
+		FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
+		return -EINVAL;
 	}
 	
 	const int initArraySize = 10;
-	// allocate some initial memory for the reconstructed hit arrays.
+	// Allocate some initial memory for the reconstructed hit arrays.
 	try
 	{
 		fRecHitBlock[0] = new AliRecHitBlockInfo[initArraySize*4];
@@ -171,6 +181,7 @@ int AliHLTMUONMansoTrackerFSMComponent::DoInit(int argc, const char** argv)
 	catch (const std::bad_alloc&)
 	{
 		HLTError("Could not allocate more memory for the reconstructed hit arrays.");
+		FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
 		return -ENOMEM;
 	}
 	// Only set the arrays' size once we have successfully allocated the memory for the arrays.
@@ -197,25 +208,7 @@ int AliHLTMUONMansoTrackerFSMComponent::DoDeinit()
 	///
 	
 	HLTInfo("Deinitialising dHLT manso tracker FSM component.");
-	
-	if (fTracker != NULL)
-	{
-		delete fTracker;
-		fTracker = NULL;
-	}
-	
-	// Remember that only fRecHitBlock[0] stores the pointer to the allocated memory.
-	// The other pointers are just reletive to this.
-	if (fRecHitBlock[0] != NULL)
-		delete [] fRecHitBlock[0];
-	
-	fRecHitBlockArraySize = 0;
-	for (Int_t i = 0; i < 4; i++)
-	{
-		fRecHitBlockCount[i] = 0;
-		fRecHitBlock[i] = NULL;
-	}
-	
+	FreeMemory();
 	return 0;
 }
 
@@ -236,12 +229,17 @@ int AliHLTMUONMansoTrackerFSMComponent::DoEvent(
 	Reset();
 	AliHLTUInt32_t specification = 0;  // Contains the output data block spec bits.
 	
-	// Resize the rec hit arrays if we need to. To guarantee that they will not overflow
-	// we need to make sure each array is at least as big as the number of input data block.
+	// Resize the rec hit arrays if we possibly will need more space.
+	// To guarantee that they will not overflow we need to make sure each
+	// array is at least as big as the number of input data blocks.
 	if (fRecHitBlockArraySize < evtData.fBlockCnt)
 	{
 		// Release the old memory block and allocate more memory.
-		delete [] fRecHitBlock[0];
+		if (fRecHitBlock[0] != NULL)
+		{
+			delete [] fRecHitBlock[0];
+		}
+		
 		// Reset the number of records actually stored in the arrays.
 		for (Int_t i = 0; i < 4; i++)
 		{
@@ -447,6 +445,34 @@ void AliHLTMUONMansoTrackerFSMComponent::Reset()
 	for (int i = 0; i < 4; i++)
 	{
 		fRecHitBlockCount[i] = 0;
+	}
+}
+
+
+void AliHLTMUONMansoTrackerFSMComponent::FreeMemory()
+{
+	/// Deletes any objects and arrays allocated by this component and releases
+	/// the memory used. This is called as a helper routine by the init and deinit
+	/// methods. If some or all of the object pointers are already NULL then
+	/// nothing is done for those. This method guarantees that all the relevant
+	/// pointers will be NULL after returning from this method.
+
+	if (fTracker != NULL)
+	{
+		delete fTracker;
+		fTracker = NULL;
+	}
+	
+	// Remember that only fRecHitBlock[0] stores the pointer to the allocated memory.
+	// The other pointers are just reletive to this.
+	if (fRecHitBlock[0] != NULL)
+		delete [] fRecHitBlock[0];
+	
+	fRecHitBlockArraySize = 0;
+	for (Int_t i = 0; i < 4; i++)
+	{
+		fRecHitBlockCount[i] = 0;
+		fRecHitBlock[i] = NULL;
 	}
 }
 

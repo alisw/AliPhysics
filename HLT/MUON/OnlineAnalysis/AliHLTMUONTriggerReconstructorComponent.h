@@ -70,7 +70,7 @@ private:
 	bool ReadLookUpTable(const char* lutpath);
 	
 	AliHLTMUONTriggerReconstructor* fTrigRec; // The trigger reconstructor class implementing the algorithm.
-	AliHLTInt32_t fDDL;   // The DDL number in the range 20..21 from which to expect input.
+	AliHLTInt32_t fDDL;   // The DDL number in the range 20..21 from which to expect input. Set to -1 for invalid/unspecified value.
 	bool fWarnForUnexpecedBlock;  // Flag indicating if we should log a warning if we got a block of an unexpected type.
 	bool fSuppressPartialTrigs;   // Flag indicating if we should suppress triggers that did not trigger the L0
 

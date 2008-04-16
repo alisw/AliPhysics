@@ -56,6 +56,8 @@ AliHLTMUONTriggerReconstructorComponent::~AliHLTMUONTriggerReconstructorComponen
 	///
 	/// Default destructor.
 	///
+	
+	if (fTrigRec != NULL) delete fTrigRec;
 }
 
 
@@ -124,10 +126,26 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 	
 	HLTInfo("Initialising dHLT trigger reconstructor component.");
 	
+	// Make sure to cleanup fTrigRec if it is still there for some reason.
+	if (fTrigRec != NULL)
+	{
+		delete fTrigRec;
+		fTrigRec = NULL;
+	}
+	
+	try
+	{
+		fTrigRec = new AliHLTMUONTriggerReconstructor();
+	}
+	catch (const std::bad_alloc&)
+	{
+		HLTError("Could not allocate more memory for the trigger reconstructor component.");
+		return -ENOMEM;
+	}
+	
+	fDDL = -1;
 	fWarnForUnexpecedBlock = false;
 	fSuppressPartialTrigs = false;
-	assert(fTrigRec == NULL);
-	fTrigRec = new AliHLTMUONTriggerReconstructor();
 	
 	const char* lutFileName = NULL;
 	
@@ -138,7 +156,10 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 			if ( argc <= i+1 )
 			{
 				HLTError("LookupTable filename not specified." );
-				return EINVAL; /* Invalid argument */ 
+				// Make sure to delete fTrigRec to avoid partial initialisation.
+				delete fTrigRec;
+				fTrigRec = NULL;
+				return -EINVAL;
 			}
 			
 			lutFileName = argv[i+1];
@@ -152,20 +173,29 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 			if ( argc <= i+1 )
 			{
 				HLTError("DDL number not specified." );
-				return EINVAL;  /* Invalid argument */
+				// Make sure to delete fTrigRec to avoid partial initialisation.
+				delete fTrigRec;
+				fTrigRec = NULL;
+				return -EINVAL;
 			}
 		
 			char* cpErr = NULL;
 			unsigned long num = strtoul(argv[i+1], &cpErr, 0);
 			if (cpErr == NULL or *cpErr != '\0')
 			{
-				HLTError("Cannot convert '%s' to a DDL Number.", argv[i+1] );
-				return EINVAL;
+				HLTError("Cannot convert '%s' to a DDL Number.", argv[i+1] );\
+				// Make sure to delete fTrigRec to avoid partial initialisation.
+				delete fTrigRec;
+				fTrigRec = NULL;
+				return -EINVAL;
 			}
 			if (num < 21 or 22 < num)
 			{
 				HLTError("The DDL number must be in the range [21..22].");
-				return EINVAL;
+				// Make sure to delete fTrigRec to avoid partial initialisation.
+				delete fTrigRec;
+				fTrigRec = NULL;
+				return -EINVAL;
 			}
 			fDDL = num - 1; // Convert to DDL number in the range 0..21
 			
@@ -186,9 +216,12 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 		}
 		
 		HLTError("Unknown option '%s'.", argv[i] );
-		return EINVAL;
+		// Make sure to delete fTrigRec to avoid partial initialisation.
+		delete fTrigRec;
+		fTrigRec = NULL;
+		return -EINVAL;
 			
-	}//while loop
+	} // for loop
 	
 	if (fDDL == -1)
 	{
@@ -199,8 +232,11 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 	{
 		if (not ReadLookUpTable(lutFileName))
 		{
-			HLTError("Failed to read lut, lut cannot be read");
-			return ENOENT ; /* No such file or directory */
+			HLTError("Failed to read lut from file.");
+			// Make sure to delete fTrigRec to avoid partial initialisation.
+			delete fTrigRec;
+			fTrigRec = NULL;
+			return -ENOENT;
 		}
 	}
 	else
@@ -296,11 +332,14 @@ int AliHLTMUONTriggerReconstructorComponent::DoEvent(
 			continue;
 		}
 		
-		bool ddl[22];
-		AliHLTMUONUtils::UnpackSpecBits(blocks[n].fSpecification, ddl);
-		if (not ddl[fDDL])
+		if (fDDL != -1)
 		{
-			HLTWarning("Received raw data from an unexpected DDL.");
+			bool ddl[22];
+			AliHLTMUONUtils::UnpackSpecBits(blocks[n].fSpecification, ddl);
+			if (not ddl[fDDL])
+			{
+				HLTWarning("Received raw data from an unexpected DDL.");
+			}
 		}
 		
 		// Create a new output data block and initialise the header.
@@ -329,7 +368,7 @@ int AliHLTMUONTriggerReconstructorComponent::DoEvent(
 		{
 			HLTError("Error while processing of trigger DDL reconstruction algorithm.");
 			size = totalSize; // Must tell the framework how much buffer space was used.
-			return EIO;
+			return -EIO;
 		}
 		
 		// nofTrigRec should now contain the number of triggers actually found
