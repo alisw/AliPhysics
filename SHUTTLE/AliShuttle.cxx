@@ -2721,7 +2721,7 @@ void AliShuttle::Log(const char* detector, const char* message)
 		gSystem->FreeDirectory(dir);
 	}
 
-	TString toLog = Form("%s (%d): %s - ", TTimeStamp(time(0)).AsString("s"), getpid(), detector);
+	TString toLog = Form("%s UTC (%d): %s - ", TTimeStamp(time(0)).AsString("s"), getpid(), detector);
 	if (GetCurrentRun() >= 0) 
 		toLog += Form("run %d - ", GetCurrentRun());
 	toLog += Form("%s", message);
