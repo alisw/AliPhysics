@@ -141,6 +141,20 @@ class AliITSRecoParam : public AliDetectorRecoParam
   void   SetFactorSAWindowSizes(Double_t fact=1.) { fFactorSAWindowSizes=fact; return; }
   Double_t GetFactorSAWindowSizes() const { return fFactorSAWindowSizes; }
 
+  void SetNLoopsSA(Int_t nl=10) {fNLoopsSA=nl;}
+  Int_t GetNLoopsSA() const { return fNLoopsSA;}
+  void SetPhiLimitsSA(Double_t phimin,Double_t phimax){
+    fMinPhiSA=phimin; fMaxPhiSA=phimax;
+  }
+  Double_t GetMinPhiSA() const {return fMinPhiSA;}
+  Double_t GetMaxPhiSA() const {return fMaxPhiSA;}
+  void SetLambdaLimitsSA(Double_t lambmin,Double_t lambmax){
+    fMinLambdaSA=lambmin; fMaxLambdaSA=lambmax;
+  }
+  Double_t GetMinLambdaSA() const {return fMinLambdaSA;}
+  Double_t GetMaxLambdaSA() const {return fMaxLambdaSA;}
+
+
   void   SetSAOnePointTracks() { fSAOnePointTracks=kTRUE; return; }
   Bool_t GetSAOnePointTracks() const { return fSAOnePointTracks; }
 
@@ -272,6 +286,12 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Bool_t fUseDeadZonesFromOCDB; // enable using OCDB info on dead modules.. (MI)
   Bool_t fAllowProlongationWithEmptyRoad; // allow to prolong even if road is empty (MI)
   Double_t fFactorSAWindowSizes; // larger window sizes in SA
+  Int_t fNLoopsSA;               // number of loops in tracker SA
+  Double_t fMinPhiSA;               // minimum phi value for SA windows
+  Double_t fMaxPhiSA;               // maximum phi value for SA windows
+  Double_t fMinLambdaSA;            // minimum lambda value for SA windows
+  Double_t fMaxLambdaSA;            // maximum lambda value for SA windows
+
   Bool_t fSAOnePointTracks; // one-cluster tracks in SA (only for cosmics!)
   Bool_t fSAUseAllClusters; // do not skip clusters used by MI (same track twice in AliESDEvent!)
 
@@ -282,7 +302,7 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Bool_t fUseUnfoldingInClusterFinderSDD; // SDD
   Bool_t fUseUnfoldingInClusterFinderSSD; // SSD
 
-  ClassDef(AliITSRecoParam,1) // ITS reco parameters
+  ClassDef(AliITSRecoParam,2) // ITS reco parameters
 };
 
 #endif

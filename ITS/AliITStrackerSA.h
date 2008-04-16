@@ -50,7 +50,8 @@ class AliITStrackerSA : public AliITStrackerMI {
   Int_t GetOuterStartLayer() const {return fOuterStartLayer;}
   void SetSAFlag(Bool_t fl){fITSStandAlone=fl;}  // StandAlone flag setter
   Bool_t GetSAFlag() const {return fITSStandAlone;} // StandAlone flag getter
-  void SetWindowSizes(Int_t n=46, Double_t *phi=0, Double_t *lam=0);
+  void SetFixedWindowSizes(Int_t n=46, Double_t *phi=0, Double_t *lam=0);
+  void SetCalculatedWindowSizes(Int_t n=10, Float_t phimin=0.002, Float_t phimax=0.0145, Float_t lambdamin=0.003, Float_t lambdamax=0.008);
 
   enum {kSAflag=0x8000}; //flag to mark clusters used in the SA tracker
 
