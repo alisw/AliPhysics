@@ -45,6 +45,8 @@ public:
 	TString Run(const char * detectors, const char * filename, Bool_t const sameCycle = kFALSE) ;
     Bool_t  Save2OCDB(const Int_t runNumber, const char * year = "08", const Int_t cycleNumber=0, const char * detectors = "ALL") const ; 
 	void    SetCycleLength(const AliQA::DETECTORINDEX_t det, const Int_t cycle) { fQACycles[det] = cycle ; }
+	void    SetEventRange(UInt_t first, UInt_t last) { fFirstEvent = first ; fMaxEvents = last - first + 1 ; }      
+	void    SetFirsEvent(UInt_t first) { fFirstEvent = first ; }      
 	void    SetMaxEvents(UInt_t max) { fMaxEvents = max ; }      
 	void    SetNewCycle() { fCycleSame = kTRUE ; }
     void    SetRunLoader(AliRunLoader * rl) { fRunLoader = rl ; }
@@ -69,7 +71,8 @@ private:
 	TTree *            fESDTree ;                      //! current ESD Tree
 	Bool_t             fFirst ;                        //! to search the detector QA data maker only once
 	TString            fGAliceFileName ;               //! name of the galice file
-	Int_t              fMaxEvents ;                    //! number of events to process
+	UInt_t             fFirstEvent ;                   //! first event to process
+	UInt_t             fMaxEvents ;                    //! number of events to process
 	Long64_t           fNumberOfEvents ;               //! number of events in the run 
 	UInt_t             fRunNumber ;                    //! current run number
 	AliRawReader     * fRawReader ;                    //! current raw reader object 

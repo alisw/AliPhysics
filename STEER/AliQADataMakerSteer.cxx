@@ -67,7 +67,8 @@ AliQADataMakerSteer::AliQADataMakerSteer(const char* gAliceFilename, const char 
 	fESDTree(NULL),
 	fFirst(kTRUE),  
 	fGAliceFileName(gAliceFilename), 
-    fMaxEvents(0),        
+	fFirstEvent(0),        
+	fMaxEvents(0),        
 	fNumberOfEvents(999999), 
     fRunNumber(0), 
 	fRawReader(NULL), 
@@ -98,7 +99,8 @@ AliQADataMakerSteer::AliQADataMakerSteer(const AliQADataMakerSteer & qas) :
 	fESDTree(NULL), 
 	fFirst(qas.fFirst),  
 	fGAliceFileName(qas.fGAliceFileName), 
-    fMaxEvents(qas.fMaxEvents),        
+	fFirstEvent(qas.fFirstEvent),        
+	fMaxEvents(qas.fMaxEvents),        
 	fNumberOfEvents(qas.fNumberOfEvents), 
     fRunNumber(qas.fRunNumber), 
 	fRawReader(NULL), 
@@ -152,7 +154,7 @@ Bool_t AliQADataMakerSteer::DoIt(const AliQA::TASKINDEX_t taskIndex, const char 
 
 	Bool_t rv = kFALSE ;
     // Fill QA data in event loop 
-	for (UInt_t iEvent = 0 ; iEvent < (UInt_t)fMaxEvents ; iEvent++) {
+	for (UInt_t iEvent = fFirstEvent ; iEvent < fMaxEvents ; iEvent++) {
 		fCurrentEvent++ ; 
 		// Get the event
 		if ( iEvent%10 == 0  ) 

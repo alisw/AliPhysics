@@ -719,6 +719,7 @@ Bool_t AliReconstruction::InitRun(const char* input)
   //QA
   AliQADataMakerSteer qas ; 
   if (fRunQA && fRawReader) { 
+	qas.SetEventRange(fFirstEvent, fLastEvent) ; 
     qas.Run(fRunLocalReconstruction, fRawReader) ; 
 	fSameQACycle = kTRUE ; 
   }
@@ -1288,6 +1289,7 @@ Bool_t AliReconstruction::FinishRun()
   if (!fInLoopQA) {
 	  if (fRunQA) {
 		  AliQADataMakerSteer qas;
+		  qas.SetEventRange(fFirstEvent, fLastEvent) ; 
 		  qas.Run(fRunLocalReconstruction.Data(), AliQA::kRECPOINTS, fSameQACycle);
 		  //qas.Reset() ;
 		  qas.Run(fRunTracking.Data(), AliQA::kESDS, fSameQACycle);
