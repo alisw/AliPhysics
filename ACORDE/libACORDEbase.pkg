@@ -1,7 +1,14 @@
-SRCS = AliACORDE.cxx AliACORDEConstants.cxx AliACORDECalibData.cxx \
+#-*-Mode: Makefile-*-
+
+SRCS = AliACORDEConstants.cxx AliACORDECalibData.cxx \
        AliGenACORDE.cxx  AliACORDELoader.cxx AliACORDEPreprocessor.cxx AliACORDEdigit.cxx AliACORDEDataDCS.cxx
                                                                                           
 HDRS:= $(SRCS:.cxx=.h)
                                                                                           
 DHDR:=ACORDEbaseLinkDef.h
 
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+                         -lSTEER -lCDB -lSTEERBase \
+#                         -L$(shell root-config --libdir) -lGeom
+endif

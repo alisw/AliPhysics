@@ -8,7 +8,6 @@
                                                                                 
 #pragma link C++ enum   ECRMode;
                                                                                
-#pragma link C++ class  AliACORDE+;
 #pragma link C++ class  AliACORDEConstants+;
 #pragma link C++ class  AliACORDELoader+;
 #pragma link C++ class  AliGenACORDE+;

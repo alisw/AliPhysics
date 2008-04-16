@@ -8,6 +8,7 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
+#pragma link C++ class  AliACORDE+;
 #pragma link C++ class AliACORDEv1+;
 #pragma link C++ class AliACORDEhit+;
 #pragma link C++ class AliACORDEDigitizer+;
