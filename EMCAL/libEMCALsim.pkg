@@ -1,6 +1,13 @@
+#-*-Mode: Makefile-*-
+
 # 19-Aug-05 - split from libEMCAL.pkg
 
 SRCS =\
+AliEMCAL.cxx \
+AliEMCALv0.cxx \
+AliEMCALv1.cxx \
+AliEMCALv2.cxx \
+AliEMCALDigitizer.cxx \
 AliEMCALTick.cxx \
 AliEMCALTrigger.cxx
 
@@ -9,3 +16,9 @@ HDRS= $(SRCS:.cxx=.h)
 DHDR:=EMCALLinkDefsim.h
 # have to tune
 EINCLUDE:=PYTHIA6 RAW EVGEN THijing
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+                         -lEMCALbase -lSTEER -lSTEERBase \
+                         -L$(shell root-config --libdir) -lVMC -lGeom
+endif

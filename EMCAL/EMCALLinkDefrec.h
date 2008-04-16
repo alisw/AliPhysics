@@ -11,7 +11,6 @@
 #pragma link C++ class AliEMCALPID+;
 #pragma link C++ class AliEMCALRecPointsQaESDSelector+;
 //
-#pragma link C++ class AliEMCALRecParam+;
 // Calibration staff
 #pragma link C++ class AliEMCALFolder;
 #pragma link C++ class AliEMCALSuperModule;

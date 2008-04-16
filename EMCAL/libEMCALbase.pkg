@@ -1,9 +1,7 @@
+#-*-Mode: Makefile-*-
+
 SRCS = \
-AliEMCAL.cxx \
 AliEMCALGeometry.cxx \
-AliEMCALv0.cxx \
-AliEMCALv1.cxx \
-AliEMCALv2.cxx \
 AliEMCALHit.cxx \
 AliEMCALLoader.cxx \
 AliEMCALShishKebabModule.cxx \
@@ -13,7 +11,6 @@ AliEMCALRecPoint.cxx \
 AliEMCALClusterizer.cxx \
 AliEMCALHistoUtilities.cxx \
 AliEMCALSDigitizer.cxx \
-AliEMCALDigitizer.cxx \
 AliEMCALDigit.cxx \
 AliEMCALCalibData.cxx \
 AliEMCALCalibHistoProducer.cxx \
@@ -21,12 +18,20 @@ AliEMCALPreprocessor.cxx \
 AliEMCALRawUtils.cxx \
 AliEMCALPi0SelectionParam.cxx \
 AliEMCALCalibCoefs.cxx \
-AliEMCALCellInfo.cxx\
-AliCaloCalibPedestal.cxx\
-AliEMCALSurvey.cxx
+AliEMCALCellInfo.cxx \
+AliCaloCalibPedestal.cxx \
+AliEMCALSurvey.cxx \
+AliEMCALRecParam.cxx
 
 HDRS= $(SRCS:.cxx=.h) 
 
 DHDR:=EMCALLinkDefbase.h
 # have to tune
 EINCLUDE:=PYTHIA6 RAW EVGEN THijing
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+                         -lSTEERBase -lCDB -lSTEER \
+                         -lRAWDatarec -lRAWDatasim -lRAWDatabase \
+                         -L$(shell root-config --libdir) -lVMC -lGeom
+endif
