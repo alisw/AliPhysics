@@ -81,12 +81,9 @@ class AliJetUnitArray : public TObject
   }
 
 
-  Bool_t operator>  ( AliJetUnitArray unit1) const;
-  Bool_t operator<  ( AliJetUnitArray unit1) const;
-  Bool_t operator== ( AliJetUnitArray unit1) const;
- private:
-  AliJetUnitArray(const AliJetUnitArray &det);
-  AliJetUnitArray &operator=(const AliJetUnitArray &det);
+  Bool_t operator>  ( AliJetUnitArray &unit1) const;
+  Bool_t operator<  ( AliJetUnitArray &unit1) const;
+  Bool_t operator== ( AliJetUnitArray &unit1) const;
 
  protected:
   Float_t         fUnitEnergy;                          // Energy of the unit 
@@ -106,6 +103,10 @@ class AliJetUnitArray : public TObject
   Float_t         fUnitPy;                              // Py of charged track
   Float_t         fUnitPz;                              // Pz of charged track
   Float_t         fUnitMass;                            // Mass of charged particle
+
+ private:
+  AliJetUnitArray(const AliJetUnitArray &det);
+  AliJetUnitArray &operator=(const AliJetUnitArray &det);
 
   ClassDef(AliJetUnitArray,1)
 };

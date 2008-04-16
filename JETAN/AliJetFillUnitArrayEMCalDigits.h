@@ -30,8 +30,8 @@ class AliJetFillUnitArrayEMCalDigits : public TTask
 {
  public: 
   AliJetFillUnitArrayEMCalDigits();
-  AliJetFillUnitArrayEMCalDigits(Int_t event);
-  AliJetFillUnitArrayEMCalDigits(AliESD *fESD);
+  //PH  AliJetFillUnitArrayEMCalDigits(Int_t event);
+  //PH  AliJetFillUnitArrayEMCalDigits(AliESD *fESD);
   AliJetFillUnitArrayEMCalDigits(AliESDEvent *fESD);
   virtual ~AliJetFillUnitArrayEMCalDigits();
   
@@ -57,11 +57,6 @@ class AliJetFillUnitArrayEMCalDigits : public TTask
   // Other
   void          Exec(Option_t*);
   Float_t       EtaToTheta(Float_t arg);
- private:
-  AliJetFillUnitArrayEMCalDigits(const AliJetFillUnitArrayEMCalDigits &det);
-  AliJetFillUnitArrayEMCalDigits &operator=(const AliJetFillUnitArrayEMCalDigits &det);
-
-  void InitParameters();
 
  protected:
   AliESDEvent  *fESD; // ESD
@@ -91,6 +86,11 @@ class AliJetFillUnitArrayEMCalDigits : public TTask
   Int_t fNDigitEmcalCut;                  //!
 
   
+ private:
+  AliJetFillUnitArrayEMCalDigits(const AliJetFillUnitArrayEMCalDigits &det);
+  AliJetFillUnitArrayEMCalDigits &operator=(const AliJetFillUnitArrayEMCalDigits &det);
+
+  void InitParameters();
 
   ClassDef(AliJetFillUnitArrayEMCalDigits,1) // Fill Unit Array with tpc and/or emcal information
 };

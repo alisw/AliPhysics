@@ -31,7 +31,7 @@ class AliJetFillUnitArrayTracks : public TTask
 {
  public: 
   AliJetFillUnitArrayTracks();
-  AliJetFillUnitArrayTracks(AliESD *fESD);
+  //PH  AliJetFillUnitArrayTracks(AliESD *fESD);
   AliJetFillUnitArrayTracks(AliESDEvent *fESD);
   virtual ~AliJetFillUnitArrayTracks();
   
@@ -45,7 +45,7 @@ class AliJetFillUnitArrayTracks : public TTask
   void SetHadCorrector(AliJetHadronCorrectionv1* corr) {fHadCorr = corr;}
   void SetTPCGrid(AliJetGrid *grid) {fTPCGrid = grid;}
   void SetEMCalGrid(AliJetGrid *grid) {fEMCalGrid = grid;}
-  void SetGrid(Double_t phiMin,Double_t phiMax,Double_t etaMin,Double_t etaMax);
+  //PH  void SetGrid(Double_t phiMin,Double_t phiMax,Double_t etaMin,Double_t etaMax);
   //  void SetESD(AliESD *esd) {fESD = esd;}
   void SetESD(AliESDEvent *esd) {fESD = esd;}
   void SetGrid0(AliJetGrid *grid0){fGrid0 = grid0;}
@@ -65,9 +65,6 @@ class AliJetFillUnitArrayTracks : public TTask
   Int_t         GetMult()          const {return fNTracks;}
   Int_t         GetMultCut()       const {return fNTracksCut;}
   void          Exec(Option_t*);
- private:
-  AliJetFillUnitArrayTracks(const AliJetFillUnitArrayTracks &det);
-  AliJetFillUnitArrayTracks &operator=(const AliJetFillUnitArrayTracks &det);
 
  protected:
   Int_t   fNumUnits;      // Number of units in the unit object array (same as num towers in EMCAL)
@@ -118,6 +115,8 @@ class AliJetFillUnitArrayTracks : public TTask
   Int_t     fNbinPhi;                 // number of phi bins
 
  private:
+  AliJetFillUnitArrayTracks(const AliJetFillUnitArrayTracks &det);
+  AliJetFillUnitArrayTracks &operator=(const AliJetFillUnitArrayTracks &det);
   //  void SetEMCALGeometry();
   void InitParameters();
 
