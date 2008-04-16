@@ -16,3 +16,11 @@ HDRS:= $(SRCS:.cxx=.h)
 DHDR:= MONITORLinkDef.h
 
 EINCLUDE:= TPC ITS RAW
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+                         -lSTEER -lSTEERBase -lESD \
+                         -lTPCbase -lTPCrec -lTPCsim \
+                         -lITSbase -lITSrec -lRAWDatarec \
+                         -L$(shell root-config --libdir) -lGui
+endif
