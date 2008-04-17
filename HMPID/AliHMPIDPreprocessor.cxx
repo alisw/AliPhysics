@@ -156,43 +156,33 @@ Bool_t AliHMPIDPreprocessor::ProcPed()
 {
 // Process pedestal files and create 7 M(padx,pady)=sigma, one for each chamber
 // Arguments:
-//   Returns: kTRUE on success
+// Returns: kTRUE on success
   
   Bool_t stPedStore=kFALSE;
-
-  TObjArray aDaqSig(7); aDaqSig.SetOwner(kTRUE); for(Int_t i=0;i<7;i++) aDaqSig.AddAt(new TMatrix(160,144),i); //TObjArray of 7 TMatrixF, m(padx,pady)=sigma
-  
-  //TList *pLdc=GetFileSources(kDAQ,"pedestals"); //get list of LDC names containing id "pedestals"
-  
-  for(Int_t iddl=0;iddl<AliHMPIDRawStream::kNDDL;iddl++)            //retrieve the files from LDCs independently the DDL<->LDC connection
-  {
-    TList *pLdc=GetFileSources(kDAQ,Form("HmpidPedDdl%02i.txt",iddl)); //get list of LDC names containing id "pedestals"
-    if(!pLdc) {
-        Log(Form("ERROR: Retrieval of sources for pedestals: HmpidPedDdl%02i.txt failed!",iddl));
-        return kFALSE;}
-  Log(Form("HMPID - Pedestal files to be read --> %i LDCs for HMPID",pLdc->GetEntries()));
-  for(Int_t i=0;i<pLdc->GetEntries();i++) {//lists of LDCs -- but in general we have 1 LDC for 1 ped file
-  TString fileName = GetFile(kDAQ,Form("HmpidPedDdl%02i.txt",iddl),((TObjString*)pLdc->At(i))->GetName());
-   
-  if(fileName.Length()==0) {
-        Log(Form("ERROR retrieving pedestal file: HmpidPedDdl%02i.txt!",iddl));
-        return kFALSE;  }
-
-  }//LDCs
- }//DDL
-
   AliHMPIDDigit dig;
   AliHMPIDRawStream rs;
   Int_t nSigCut,r,d,a,hard;  Float_t mean,sigma;
   Int_t  runNumber,ldcId,timeStamp,nEv,nDdlEv,nBadEv;  Char_t tName[10]; 
   Float_t nBadEvPer;
-    
-  for(Int_t ddl=0;ddl<14;ddl++){  
-    ifstream infile(Form("HmpidPedDdl%02i.txt",ddl));
-    if(!infile.is_open()) {Log("No pedestal file found for HMPID,bye!");return kFALSE;}
-    TMatrix *pM=(TMatrixF*)aDaqSig.At(ddl/2);
   
-    infile>>tName>>runNumber;
+  TObjArray aDaqSig(7); aDaqSig.SetOwner(kTRUE); for(Int_t i=0;i<7;i++) aDaqSig.AddAt(new TMatrix(160,144),i); //TObjArray of 7 TMatrixF, m(padx,pady)=sigma
+  
+  for(Int_t iddl=0;iddl<AliHMPIDRawStream::kNDDL;iddl++)            //retrieve the files from LDCs independently the DDL<->LDC connection
+  {
+    TList *pLdc=GetFileSources(kDAQ,Form("HmpidPedDdl%02i.txt",iddl)); //get list of LDC names containing id "pedestals"
+    if(!pLdc) {Log(Form("ERROR: Retrieval of sources for pedestals: HmpidPedDdl%02i.txt failed!",iddl));continue;}
+    
+    Log(Form("HMPID - Pedestal files to be read --> %i LDCs for HMPID",pLdc->GetEntries()));
+    for(Int_t i=0;i<pLdc->GetEntries();i++) {//lists of LDCs -- but in general we have 1 LDC for 1 ped file
+    TString fileName = GetFile(kDAQ,Form("HmpidPedDdl%02i.txt",iddl),((TObjString*)pLdc->At(i))->GetName());
+    if(fileName.Length()==0) {Log(Form("ERROR retrieving pedestal file: HmpidPedDdl%02i.txt!",iddl));continue;}
+  
+    //reading pedestal file
+    ifstream infile(Form("HmpidPedDdl%02i.txt",iddl));
+    if(!infile.is_open()) {Log("No pedestal file found for HMPID,bye!");continue;}
+    TMatrix *pM=(TMatrixF*)aDaqSig.At(iddl/2);
+  
+    infile>>tName>>runNumber;Printf("Xcheck: reading DDL %i",runNumber);
     infile>>tName>>ldcId;
     infile>>tName>>timeStamp;
     infile>>tName>>nEv; 
@@ -202,20 +192,21 @@ Bool_t AliHMPIDPreprocessor::ProcPed()
     infile>>tName>>nSigCut; pM->SetUniqueID(nSigCut); //n. of pedestal distribution sigmas used to create zero suppresion table
     while(!infile.eof()){
       infile>>dec>>r>>d>>a>>mean>>sigma>>hex>>hard;     
-      AliHMPIDDigit dig(rs.GetPad(ddl,r,d,a),(Int_t)mean);
+      AliHMPIDDigit dig(rs.GetPad(iddl,r,d,a),(Int_t)mean);
       (*pM)(dig.PadChX(),dig.PadChY()) = sigma;
     }
     infile.close();
-    Log(Form("Pedestal file for DDL %i read successfully",ddl));
-  }//ddl
+    Log(Form("Pedestal file for DDL %i read successfully",iddl));
   
+  }//LDCs reading entries
+
+ }//DDL 
+
   AliCDBMetaData metaData; 
   metaData.SetBeamPeriod(0); 
   metaData.SetResponsible("AliHMPIDPreprocessor"); 
-  metaData.SetComment("HMPID processor fills TObjArrays.");
-  
+  metaData.SetComment("HMPID processor fills TObjArrays.");  
   stPedStore = Store("Calib","DaqSig",&aDaqSig,&metaData,0,kTRUE);
-  
   if(!stPedStore) {
     Log("HMPID - failure to store PEDESTAL data results in OCDB");    
   }
