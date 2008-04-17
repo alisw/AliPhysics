@@ -1066,13 +1066,15 @@ Bool_t AliReconstruction::RunEvent(Int_t iEvent)
         trkArray.AddLast(tpcTrack);
       }
 
-      if (track->GetX() < kRadius) continue;
 
-      ok = AliTracker::
+      //Tracks refitted by ITS should already be at the SPD vertex
+      if (track->IsOn(AliESDtrack::kITSrefit)) continue;
+
+
+      AliTracker::
            PropagateTrackTo(track,kRadius,track->GetMass(),kMaxStep,kTRUE);
-      if (ok) {
-         track->RelateToVertex(fesd->GetPrimaryVertexSPD(), kBz, kRadius);
-      }
+      track->RelateToVertex(fesd->GetPrimaryVertexSPD(), kBz, kVeryBig);
+
     }
 
     //
@@ -1098,7 +1100,7 @@ Bool_t AliReconstruction::RunEvent(Int_t iEvent)
              fesd->SetPrimaryVertex(pvtx);
              for (Int_t i=0; i<ntracks; i++) {
 	         AliESDtrack *t = fesd->GetTrack(i);
-                 t->RelateToVertex(pvtx, kBz, kRadius);
+                 t->RelateToVertex(pvtx, kBz, kVeryBig);
              } 
           }
        }
