@@ -716,16 +716,7 @@ Bool_t AliReconstruction::InitRun(const char* input)
   if (!MisalignGeometry(fLoadAlignData)) if (fStopOnError) return kFALSE;
    AliSysInfo::AddStamp("LoadGeom");
 
-  //QA
-  AliQADataMakerSteer qas ; 
-  if (fRunQA && fRawReader) { 
-	qas.SetEventRange(fFirstEvent, fLastEvent) ; 
-    qas.Run(fRunLocalReconstruction, fRawReader) ; 
-	fSameQACycle = kTRUE ; 
-  }
-  // checking the QA of previous steps
-  //CheckQA() ; 
- 
+  
   /*
   // local reconstruction
   if (!fRunLocalReconstruction.IsNull()) {
@@ -840,7 +831,16 @@ Bool_t AliReconstruction::InitRun(const char* input)
   
 
   //Initialize the QA and start of cycle for out-of-cycle QA
-  if (fRunQA) {
+	//QA
+	AliQADataMakerSteer qas ; 
+	if (fRunQA && fRawReader) { 
+		qas.SetEventRange(fFirstEvent, fLastEvent) ; 
+		qas.Run(fRunLocalReconstruction, fRawReader) ; 
+		fSameQACycle = kTRUE ; 
+	}
+	// checking the QA of previous steps
+	//CheckQA() ; 
+	if (fRunQA) {
      TString detStr(fFillESD); 
      for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
         if (!IsSelected(fgkDetectorName[iDet], detStr)) continue;
@@ -848,9 +848,11 @@ Bool_t AliReconstruction::InitRun(const char* input)
         if (!qadm) continue;
         AliInfo(Form("Initializing the QA data maker for %s", 
                fgkDetectorName[iDet]));
-        qadm->Init(AliQA::kRECPOINTS, AliCDBManager::Instance()->GetRun());
-        qadm->Init(AliQA::kESDS, AliCDBManager::Instance()->GetRun());
-        if (!fInLoopQA) {
+
+		if (fInLoopQA) {
+			qadm->Init(AliQA::kRECPOINTS, AliCDBManager::Instance()->GetRun());
+			qadm->Init(AliQA::kESDS, AliCDBManager::Instance()->GetRun());
+		} else {
 			qadm->StartOfCycle(AliQA::kRECPOINTS, fSameQACycle);
 			qadm->StartOfCycle(AliQA::kESDS,"same");
         }

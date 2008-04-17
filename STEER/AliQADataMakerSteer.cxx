@@ -397,7 +397,7 @@ Bool_t AliQADataMakerSteer::Init(const AliQA::TASKINDEX_t taskIndex, const char 
 			AliError("AliESDs.root not found") ; 
 			return kFALSE ; 
 		}			
-	} else {
+		} else {
 		if ( !InitRunLoader() ) { 
 			AliWarning("No Run Loader not found") ; 
 		} else {
@@ -411,8 +411,10 @@ Bool_t AliQADataMakerSteer::Init(const AliQA::TASKINDEX_t taskIndex, const char 
 	// Get Detectors 
 	TObjArray* detArray = NULL ; 
 	if (fRunLoader) // check if RunLoader exists 
-		if ( fRunLoader->GetAliRun() ) // check if AliRun exists in gAlice.root
+		if ( fRunLoader->GetAliRun() ) { // check if AliRun exists in gAlice.root
 			detArray = fRunLoader->GetAliRun()->Detectors() ;
+			fRunNumber = fRunLoader->GetHeader()->GetRun() ; 
+		}
 	// Build array of QA data makers for all detectors
 	fQADataMakers.Clear();
 	for (UInt_t iDet = 0; iDet < fgkNDetectors ; iDet++) {
@@ -629,7 +631,6 @@ TString AliQADataMakerSteer::Run(const char * detectors, AliRawReader * rawReade
 	}
 	
 	if ( man->GetRun() == -1 ) {// check if run number not set previously and set it from raw data
-
 		rawReader->NextEvent() ; 
 		man->SetRun(fRawReader->GetRunNumber()) ;
 		rawReader->RewindEvents() ;
