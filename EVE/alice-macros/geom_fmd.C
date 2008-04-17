@@ -9,7 +9,7 @@
 
 void geom_fmd()
 {
-  gGeoManager = gEve->GetGeometry("$REVESYS/alice-data/alice_fullgeo.root");
+  gGeoManager = AliEveEventManager::AssertGeometry();
 
   TEveElementList* list = new TEveElementList("FMD");
   gEve->AddGlobalElement(list);

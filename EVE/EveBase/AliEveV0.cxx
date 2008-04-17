@@ -45,10 +45,15 @@ AliEveV0::AliEveV0() :
   fRnrStyle(0),
   fPolyLineV0(),
   fESDIndex(-1),
+  fOnFlyStatus(kFALSE),
   fDaughterDCA(999),
   fChi2V0(-1)
-{}
+{
+  // Default constructor.
 
+  // Override from TEveElement.
+  fPickable = kTRUE;
+}
 
 AliEveV0::AliEveV0(TEveRecTrack* tNeg, TEveRecTrack* tPos,
 		   TEveRecV0* v0, TEveTrackPropagator* rs) :
@@ -64,9 +69,13 @@ AliEveV0::AliEveV0(TEveRecTrack* tNeg, TEveRecTrack* tPos,
   fRnrStyle(rs),
   fPolyLineV0(),
   fESDIndex(-1),
+  fOnFlyStatus(kFALSE),
   fDaughterDCA(999),
   fChi2V0(-1)
 {
+  // Override from TEveElement.
+  fPickable = kTRUE;
+
   fPolyLineV0.SetLineColor(fMarkerColor);
  
   fPosTrack->SetLineColor(2);  // red
@@ -127,7 +136,9 @@ AliEveV0List::AliEveV0List() :
   fRnrV0vtx(kTRUE),
   fRnrV0path(kTRUE),
   fNegColor(0),
-  fPosColor(0)
+  fPosColor(0),
+  fMinRCut(0),
+  fMaxRCut(250)
 {
   fChildClass = AliEveV0::Class(); // override member from base TEveElementList
 }
@@ -141,7 +152,9 @@ AliEveV0List::AliEveV0List(TEveTrackPropagator* rs) :
   fRnrV0vtx(kTRUE),
   fRnrV0path(kTRUE),
   fNegColor(0),
-  fPosColor(0)
+  fPosColor(0),
+  fMinRCut(0),
+  fMaxRCut(250)
 {
   fChildClass = AliEveV0::Class(); // override member from base TEveElementList
 
@@ -157,7 +170,9 @@ AliEveV0List::AliEveV0List(const Text_t* name, TEveTrackPropagator* rs) :
   fRnrV0vtx(kTRUE),
   fRnrV0path(kTRUE),
   fNegColor(0),
-  fPosColor(0)
+  fPosColor(0),
+  fMinRCut(0),
+  fMaxRCut(100)
 {
   fChildClass = AliEveV0::Class(); // override member from base TEveElementList
 
@@ -230,8 +245,7 @@ void AliEveV0List::SetRnrDaughters(Bool_t rnr)
   gEve->Redraw3D();
 }
 
-
-//______________________________________________________________________________
+/******************************************************************************/
 
 void AliEveV0List::MakeV0s()
 {
@@ -244,5 +258,23 @@ void AliEveV0List::MakeV0s()
 
 void AliEveV0List::MakeMarkers()
 {
+  gEve->Redraw3D();
+}
+
+/******************************************************************************/
+
+void AliEveV0List::FilterByRadius(Float_t minR, Float_t maxR)
+{
+  fMinRCut = minR;
+  fMaxRCut = maxR;
+
+  for(List_i i = fChildren.begin(); i != fChildren.end(); ++i)
+  {
+    AliEveV0* v0 = (AliEveV0*) *i;
+    Float_t  rad = v0->GetRadius();
+    Bool_t  show = rad >= fMinRCut && rad <= fMaxRCut;
+    v0->SetRnrState(show);
+  }
+  ElementChanged();
   gEve->Redraw3D();
 }

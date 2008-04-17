@@ -78,6 +78,9 @@ public:
 
   Float_t GetRadius() const { return fRecDecayV.Perp(); }
 
+  Bool_t GetOnFlyStatus()    const { return fOnFlyStatus; }
+  void   SetOnFlyStatus(Bool_t fs) { fOnFlyStatus = fs; }
+
   Int_t GetESDIndex() const { return fESDIndex; }
   void  SetESDIndex(Int_t ind) { fESDIndex = ind;}
 
@@ -105,9 +108,10 @@ protected:
 
   TPolyLine3D       fPolyLineV0;
 
-  Int_t             fESDIndex;
-  Float_t           fDaughterDCA;
-  Float_t           fChi2V0;
+  Int_t             fESDIndex;    // Index in ESD V0 array.
+  Bool_t            fOnFlyStatus; // Reconstructed during tracking.
+  Float_t           fDaughterDCA; // Distance at the point of closest approach. 
+  Float_t           fChi2V0;      // Some Chi-square.
 
 private:
   AliEveV0(const AliEveV0&);            // Not implemented
@@ -123,6 +127,8 @@ private:
 
 class AliEveV0List : public TEveElementList
 {
+  friend class AliEveV0ListEditor;
+
 public:
   AliEveV0List();
   AliEveV0List(TEveTrackPropagator* rs);
@@ -152,6 +158,8 @@ public:
   void   MakeV0s();
   void   MakeMarkers();
 
+  void   FilterByRadius(Float_t minR, Float_t maxR);
+
 protected:
   TString              fTitle;
 
@@ -163,6 +171,9 @@ protected:
 
   Color_t              fNegColor;
   Color_t              fPosColor;
+
+  Float_t              fMinRCut;
+  Float_t              fMaxRCut;
 
 private:
   void  Init();

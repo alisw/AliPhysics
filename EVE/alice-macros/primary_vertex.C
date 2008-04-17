@@ -58,7 +58,7 @@ void primary_vertex_primitive(Bool_t showSPD=kTRUE, Bool_t showBoxes=kFALSE)
 {
   AliESDEvent* esd = AliEveEventManager::AssertESD();
 
-  AliESDVertex*  pv  = esd->GetPrimaryVertexSPD();
+  AliESDVertex*  pv  = esd->GetPrimaryVertex();
   TPolyMarker3D* pvm = make_vertex_marker(pv, "Primary Vertex");
   pvm->SetMarkerStyle(5);
   pvm->SetMarkerColor(5);

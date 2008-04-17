@@ -29,6 +29,7 @@ void visscan_init()
 
   TEveUtil::LoadMacro("primary_vertex.C");
   TEveUtil::LoadMacro("esd_V0_points.C");
+  TEveUtil::LoadMacro("esd_V0.C");
   TEveUtil::LoadMacro("esd_tracks.C");
   TEveUtil::LoadMacro("its_clusters.C+");
   TEveUtil::LoadMacro("tpc_clusters.C+");
@@ -109,6 +110,7 @@ void on_new_event()
 
   primary_vertex(1, 1);
   esd_V0_points();
+  esd_V0();
 
   TEveElementList* cont = esd_tracks_vertex_cut();
 
