@@ -18,3 +18,8 @@ ELIBSDIR+=$(patsubst -L%,%,$(filter -L%,$(TEMPDATELIBS)))
 endif
 
 EXPORT:=AliRawReaderDateOnline.h
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+                         -lRAWDatarec
+endif
