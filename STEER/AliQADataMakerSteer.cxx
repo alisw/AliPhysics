@@ -622,10 +622,6 @@ TString AliQADataMakerSteer::Run(const char * detectors, AliRawReader * rawReade
 	fDetectors       = detectors ; 
 	fDetectorsW      = detectors ; 	
 	
-	if ( !Init(AliQA::kRAWS, "rec") ) 
-		return kFALSE ; 
-	fRawReaderDelete = kFALSE ; 
-
 	AliCDBManager* man = AliCDBManager::Instance() ; 
 	if ( ! man->IsDefaultStorageSet() ) { 
 		man->SetDefaultStorage(AliQA::GetQARefStorage()) ; 
@@ -639,6 +635,10 @@ TString AliQADataMakerSteer::Run(const char * detectors, AliRawReader * rawReade
 		rawReader->RewindEvents() ;
 	}	
 	
+	if ( !Init(AliQA::kRAWS, "rec") ) 
+		return kFALSE ; 
+	fRawReaderDelete = kFALSE ; 
+
 	DoIt(AliQA::kRAWS, "rec") ; 
 	return 	fDetectorsW ;
 }
@@ -652,9 +652,6 @@ TString AliQADataMakerSteer::Run(const char * detectors, const char * fileName, 
 	fDetectors       = detectors ; 
 	fDetectorsW      = detectors ; 	
 	
-	if ( !Init(AliQA::kRAWS, "rec", fileName) ) 
-		return kFALSE ; 
-
 	AliCDBManager* man = AliCDBManager::Instance() ; 
 	if ( ! man->IsDefaultStorageSet() ) { 
 		man->SetDefaultStorage(AliQA::GetQARefStorage()) ; 
@@ -676,6 +673,9 @@ TString AliQADataMakerSteer::Run(const char * detectors, const char * fileName, 
 			}
 		}
 	}
+	
+	if ( !Init(AliQA::kRAWS, "rec", fileName) ) 
+		return kFALSE ; 
 	
 	DoIt(AliQA::kRAWS, "rec") ; 
 	return 	fDetectorsW ;
@@ -700,9 +700,6 @@ TString AliQADataMakerSteer::Run(const char * detectors, const AliQA::TASKINDEX_
 		return "" ;
 	}
 
-	if ( !Init(taskIndex, mode.Data(), fileName) ) 
-		return kFALSE ; 
-
 	AliCDBManager* man = AliCDBManager::Instance() ; 
 	if ( ! man->IsDefaultStorageSet() ) { 
 		man->SetDefaultStorage(AliQA::GetQARefStorage()) ; 
@@ -725,6 +722,9 @@ TString AliQADataMakerSteer::Run(const char * detectors, const AliQA::TASKINDEX_
 		}
 	}
 	
+	if ( !Init(taskIndex, mode.Data(), fileName) ) 
+		return kFALSE ; 
+
 	DoIt(taskIndex, mode.Data()) ;
 	
 	return fDetectorsW ;
