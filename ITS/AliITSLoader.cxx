@@ -17,6 +17,7 @@
 
 #include <TClonesArray.h>
 #include <TClass.h>
+#include <TGeoManager.h>
 
 #include "AliITSdigit.h"
 #include "AliITSLoader.h"
@@ -328,6 +329,10 @@ AliITSgeom* AliITSLoader::GetITSgeom(Bool_t force) {
   if(fGeom && force){
     delete fGeom;
     fGeom = 0;
+  }
+  if(!gGeoManager){
+    AliError("gGeoManager is a null pointer - ITS geometry not built");
+    return fGeom;
   }
   AliITSInitGeometry initgeom;
   fGeom = initgeom.CreateAliITSgeom();

@@ -13,6 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 //  *************************************************************
 //  Checks the quality assurance 
 //  by comparing with reference data
@@ -133,7 +135,7 @@ void AliITSQASDDDataMakerSim::InitDigits()
 void AliITSQASDDDataMakerSim::MakeDigits(TTree * digits)
 { 
   // Fill QA for DIGIT - SDD -
-  //printf("AliITSQASDDDataMakerSim::MakeDigits called \n");
+  //  printf("AliITSQASDDDataMakerSim::MakeDigits called \n");
   AliITS *fITS  = (AliITS*)gAlice->GetModule("ITS");
   fITS->SetTreeAddress();
   TClonesArray *iITSdigits  = fITS->DigitsAddress(1);
@@ -189,7 +191,7 @@ void AliITSQASDDDataMakerSim::InitSDigits()
 void AliITSQASDDDataMakerSim::MakeSDigits(TTree * sdigits)
 { 
   // Fill QA for SDIGIT - SDD -
-  //printf("AliITSQASDDDataMakerSim::MakeSDigits called \n");
+  //  printf("AliITSQASDDDataMakerSim::MakeSDigits called \n");
   AliITSsegmentationSDD* seg = new AliITSsegmentationSDD();
   Int_t nan=seg->Npz();
   Int_t ntb=seg->Npx();
@@ -265,8 +267,10 @@ void AliITSQASDDDataMakerSim::MakeHits(TTree * hits)
   AliITS *fITS  = (AliITS*)gAlice->GetModule("ITS");
   fITS->SetTreeAddress();
   Int_t nmodules;
-  fITS->InitModules(-1,nmodules);
-  //fITS->FillModules(0,0,nmodules," "," ");
+  if(!(fITS->InitModules(-1,nmodules))){
+    AliError("ITS geometry not available - nothing done");
+    return;
+  }
  
   fITS->FillModules(hits,0);
 

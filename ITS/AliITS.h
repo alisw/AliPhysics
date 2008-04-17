@@ -97,7 +97,7 @@ class AliITS : public AliDetector {
     //------------ sort hits by module for Digitisation ----------------
     virtual void FillModules(Int_t evnt,Int_t bgrev,Int_t nmodules,
 			     Option_t *opt, const char *filename); 
-    virtual void InitModules(Int_t size,Int_t &nmodules);  
+    virtual Bool_t InitModules(Int_t size,Int_t &nmodules);  
     virtual void FillModules(TTree *treeH, Int_t mask = 0);
     virtual void ClearModules(){if(fITSmodules) fITSmodules->Delete();}
     virtual void AddHit(Int_t track, Int_t *vol, Float_t *hits);

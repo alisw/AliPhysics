@@ -538,7 +538,7 @@ void AliITS::FillModules(TTree *treeH, Int_t mask) {
 }
 
 //______________________________________________________________________
-void AliITS::InitModules(Int_t size,Int_t &nmodules){
+Bool_t AliITS::InitModules(Int_t size,Int_t &nmodules){
     // Initialize the modules array.
     // Inputs:
     //      Int_t size  Size of array of the number of modules to be
@@ -556,7 +556,7 @@ void AliITS::InitModules(Int_t size,Int_t &nmodules){
 
     if(!fDetTypeSim) {
       Error("InitModules","fDetTypeSim is null!");
-      return;
+      return kFALSE;
     }
 
     Int_t nl,indexMAX,index;
@@ -564,7 +564,7 @@ void AliITS::InitModules(Int_t size,Int_t &nmodules){
     if(size<=0){ // default to using data stored in AliITSgeom
         if(fDetTypeSim->GetITSgeom()==0) {
             Error("InitModules","fITSgeom not defined");
-            return;
+            return kFALSE;
         } // end if fITSgeom==0
         nl = fDetTypeSim->GetITSgeom()->GetNlayers();
         indexMAX = fDetTypeSim->GetITSgeom()->GetIndexMax();
@@ -581,6 +581,7 @@ void AliITS::InitModules(Int_t size,Int_t &nmodules){
 
         nmodules = size;
     } // end i size<=0
+    return kTRUE;
 }
 //______________________________________________________________________
 void AliITS::Hits2SDigits(){
