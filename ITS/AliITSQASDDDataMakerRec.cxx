@@ -24,6 +24,7 @@
 //  INFN Torino
 
 // --- ROOT system ---
+#include <TProfile2D.h>
 #include <TH2D.h>
 #include <TBranch.h>
 #include <TTree.h>
@@ -64,9 +65,6 @@ fSDDDDLModuleMap(0)
   if(fLDC < 0 || fLDC > 4) {
 	AliError("Error: LDC number out of range; return\n");
   }
-  for(Int_t i=0;i<2*fgknSDDmodules;i++){
-    fModuleChargeMap[i] = NULL;
-  }
 }
 
 //____________________________________________________________________________ 
@@ -89,11 +87,7 @@ fSDDDDLModuleMap(0)
 //____________________________________________________________________________ 
 AliITSQASDDDataMakerRec::~AliITSQASDDDataMakerRec(){
   // destructor
-
-  for(Int_t i=0;i<2*fgknSDDmodules;i++){
-    if(fModuleChargeMap[i]) delete fModuleChargeMap[i];
-  }
-  
+	if(fSDDDDLModuleMap) delete fSDDDDLModuleMap;
 }
 //__________________________________________________________________
 AliITSQASDDDataMakerRec& AliITSQASDDDataMakerRec::operator = (const AliITSQASDDDataMakerRec& qac )
@@ -112,12 +106,10 @@ void AliITSQASDDDataMakerRec::StartOfDetectorCycle()
 }
 
 //____________________________________________________________________________ 
-void AliITSQASDDDataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t /*task*/, TObjArray* /*list*/)
+void AliITSQASDDDataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray* list)
 {
   // launch the QA checking
   AliDebug(1,"AliITSDM instantiates checker with Run(AliQA::kITS, task, list)\n"); 
-  
-  //AliQAChecker::Instance()->Run( AliQA::kITS , task, list);
 }
 
 //____________________________________________________________________________ 
@@ -149,44 +141,47 @@ void AliITSQASDDDataMakerRec::InitRaws()
   else {
     AliInfo("Book Offline Histograms for SDD\n ");
   }
-  TH1F *h0 = new TH1F("ModPattern","Modules pattern",fgknSDDmodules,-0.5,259.5);
+  TH1D *h0 = new TH1D("ModPattern","HW Modules pattern",fgknSDDmodules,-0.5,259.5);
   h0->GetXaxis()->SetTitle("Module Number");
   h0->GetYaxis()->SetTitle("Counts");
-  fAliITSQADataMakerRec->Add2RawsList(h0,0+fRawsOffset);
+  fAliITSQADataMakerRec->Add2RawsList((new TH1D(*h0)),0+fRawsOffset);
+  delete h0;
   fSDDhRaws++;
   if(fLDC==0 || fLDC==1 || fLDC==2){
-    TH1F *h1 = new TH1F("LadPatternL3","Ladder pattern L3",14,0.5,14.5);  
+    TH1D *h1 = new TH1D("LadPatternL3","Ladder pattern L3",14,0.5,14.5);  
     h1->GetXaxis()->SetTitle("Ladder Number on Lay3");
     h1->GetYaxis()->SetTitle("Counts");
-    fAliITSQADataMakerRec->Add2RawsList(h1,1+fRawsOffset);
+    fAliITSQADataMakerRec->Add2RawsList((new TH1D(*h1)),1+fRawsOffset);
+	delete h1;
     fSDDhRaws++;
   }	
   if(fLDC==0 || fLDC==3 || fLDC==4){
-    TH1F *h2 = new TH1F("LadPatternL4","Ladder pattern L4",22,0.5,22.5);  
+    TH1D *h2 = new TH1D("LadPatternL4","Ladder pattern L4",22,0.5,22.5);  
     h2->GetXaxis()->SetTitle("Ladder Number on Lay4");
     h2->GetYaxis()->SetTitle("Counts");
-    fAliITSQADataMakerRec->Add2RawsList(h2,2+fRawsOffset);
+    fAliITSQADataMakerRec->Add2RawsList((new TH1D(*h2)),2+fRawsOffset);
+	delete h2;
     fSDDhRaws++;
   }
   if(fLDC==0 || fLDC==1 || fLDC==2){
-    TH1D *h3[fgkLADDonLAY3] ; 
-    for(Int_t i=1; i<=fgkLADDonLAY3; i++) {
+	for(Int_t i=1; i<=fgkLADDonLAY3; i++) {
       sprintf(hname0,"ModPattern_L3_%d",i);
-      h3[i-1] = new TH1D(hname0,hname0,6,0.5,6.5);
-      h3[i-1]->GetXaxis()->SetTitle("Channel Number");
-      h3[i-1]->GetYaxis()->SetTitle("Counts");
-      fAliITSQADataMakerRec->Add2RawsList(h3[i-1],i-1+3+fRawsOffset);
+      TH1D *h3 = new TH1D(hname0,hname0,6,0.5,6.5);
+      h3->GetXaxis()->SetTitle("Module Number");
+      h3->GetYaxis()->SetTitle("Counts");
+      fAliITSQADataMakerRec->Add2RawsList((new TH1D(*h3)),i-1+3+fRawsOffset);
+	  delete h3;
       fSDDhRaws++;
     }
   }
   if(fLDC==0 || fLDC==3 || fLDC==4){
-    TH1D *h4[fgkLADDonLAY4] ; 
     for(Int_t i=1; i<=fgkLADDonLAY4; i++) {
       sprintf(hname0,"ModPattern_L4_%d",i);
-      h4[i-1] = new TH1D(hname0,hname0,8,0.5,8.5);
-      h4[i-1]->GetXaxis()->SetTitle("Channel Number");
-      h4[i-1]->GetYaxis()->SetTitle("Counts");
-      fAliITSQADataMakerRec->Add2RawsList(h4[i-1],i-1+17+fRawsOffset);
+	  TH1D *h4 = new TH1D(hname0,hname0,8,0.5,8.5);
+      h4->GetXaxis()->SetTitle("Module Number");
+      h4->GetYaxis()->SetTitle("Counts");
+      fAliITSQADataMakerRec->Add2RawsList((new TH1D(*h4)),i-1+17+fRawsOffset);
+	  delete h4;
       fSDDhRaws++;
     }
   }
@@ -196,148 +191,46 @@ void AliITSQASDDDataMakerRec::InitRaws()
 
   if(fkOnline) {
     indexlast = 0;
-    TH1D *h5[fgknSDDmodules*2] ; 
     index1 = 0;
-
-/*
-    if(fLDC == 0 || fLDC == 1 || fLDC == 4){
-      
-	for(Int_t lad=0; lad<fgkLADDonLAY3; lad++){
-	for(Int_t ichan=0; det<3; det++){
-	  for(Int_t iside=0; iside<fgknSide; iside++){
-	    sprintf(hname0,"ProjYMap_L%d_%d_%d_%d",lay,lad,det+sideflag*3,iside);  //need to define "lay"
-	    h5[index1] = new TH1D(hname0,hname0,256,-0.5,255.5);
-	    h5[index1]->GetXaxis()->SetTitle("Anode Number");
-	    h5[index1]->GetYaxis()->SetTitle("Counts");
-	    fAliITSQADataMakerRec->Add2RawsList(h5[index1],index1+39+fRawsOffset);
-		fSDDhRaws++;
-	    index1++;
-	    indexlast = index1+39;
-	  }
-	}	
-      }
-    }
-*/  
-    for(Int_t moduleSDD=0; moduleSDD<fgknSDDmodules; moduleSDD++){
-      if((moduleSDD >= 0 && moduleSDD < 36) || (moduleSDD >= 84 && moduleSDD < 180)) {
-	for(Int_t iside=0; iside<fgknSide; iside++){
-	  AliITSgeomTGeo::GetModuleId(moduleSDD+fgkmodoffset, lay, lad, det);
-	  //if(fLDC == 0 || ((fLDC == 1 || fLDC == 2) && lay == 2) || ((fLDC == 3 || fLDC == 4) && lay == 3)
-	  sprintf(hname0,"ProjYMap_L%d_%d_%d_%d",lay,lad,det,iside);
-	  h5[index1] = new TH1D(hname0,hname0,256,-0.5,255.5);
-	  h5[index1]->GetXaxis()->SetTitle("Anode Number");
-	  h5[index1]->GetYaxis()->SetTitle("Counts");
-	  fAliITSQADataMakerRec->Add2RawsList(h5[index1],index1+39+fRawsOffset);
-	  fSDDhRaws++;
-	  index1++;
-	  indexlast = index1+39;
-	}
-      }
-    }
-    
-    TH1D *h6[fgknSDDmodules*8] ; 
-    Int_t indextot = 0;
-    indexlast1 = 0;
-    for(Int_t htype=0; htype<4; htype++){
-      for(Int_t moduleSDD=0; moduleSDD<fgknSDDmodules; moduleSDD++){
-	if((moduleSDD >= 0 && moduleSDD < 36) || (moduleSDD >= 84 && moduleSDD < 180)) {	 
-	  for(Int_t iside=0; iside<fgknSide; iside++){
-	    AliITSgeomTGeo::GetModuleId(moduleSDD+fgkmodoffset, lay, lad, det);
-	    if(htype == 0) sprintf(hname0,"CountsVSAnode_L%d_%d_%d_%d",lay,lad,det,iside);
-	    if(htype == 1) sprintf(hname0,"ChargeVSAnode_L%d_%d_%d_%d",lay,lad,det,iside);
-	    if(htype == 2) sprintf(hname0,"CountsVSTbin_L%d_%d_%d_%d",lay,lad,det,iside);
-	    if(htype == 3) sprintf(hname0,"ChargeVSTbin_L%d_%d_%d_%d",lay,lad,det,iside);
-	    h6[indextot] = new TH1D(hname0,hname0,256,-0.5,255.5);
-	    if(htype == 0){
-	      h6[indextot]->GetXaxis()->SetTitle("Anode Number");
-	      h6[indextot]->GetYaxis()->SetTitle("Counts");
-	    }
-	    if(htype == 1){
-	      h6[indextot]->GetXaxis()->SetTitle("Anode Number");
-	      h6[indextot]->GetYaxis()->SetTitle("Charge (ADC)");
-	    }
-	    if(htype == 2){
-	      h6[indextot]->GetXaxis()->SetTitle("Time bin");
-	      h6[indextot]->GetYaxis()->SetTitle("Counts");
-	    }
-	    if(htype == 3){
-	      h6[indextot]->GetXaxis()->SetTitle("Time bin");
-	      h6[indextot]->GetYaxis()->SetTitle("Charge (ADC)");
-	    }
-	    fAliITSQADataMakerRec->Add2RawsList(h6[indextot],indexlast + indextot + fRawsOffset);
-	    fSDDhRaws++;
-	    indextot++;
-	    indexlast1 = indexlast + indextot;
-	  }
-	}
-      }
-    }
-
-
+	indexlast1 = fSDDhRaws;
     indexlast2 = 0;
-    index1 = 0;
     char *hname[3];
     for(Int_t i=0; i<3; i++) hname[i]= new char[50];
     for(Int_t moduleSDD =0; moduleSDD<fgknSDDmodules; moduleSDD++){
-      if((moduleSDD >= 0 && moduleSDD < 36) || (moduleSDD >= 84 && moduleSDD < 180)) {
-	for(Int_t iside=0;iside<fgknSide;iside++){
-	AliITSgeomTGeo::GetModuleId(moduleSDD+fgkmodoffset, lay, lad, det);
-	sprintf(hname[0],"chargeMap_L%d_%d_%d_%d",lay,lad,det,iside);
-	sprintf(hname[1],"TotalCharge_L%d_%d_%d_%d",lay,lad,det,iside);
-	sprintf(hname[2],"hmonoDMap_L%d_%d_%d_%d",lay,lad,det,iside);
-	fModuleChargeMap[index1] = new TH2D(hname[0],hname[1],256,-0.5,255.5,256,-0.5,255.5);
-	fModuleChargeMap[index1]->GetXaxis()->SetTitle("Time Bin");
-	fModuleChargeMap[index1]->GetYaxis()->SetTitle("Anode");
-	fAliITSQADataMakerRec->Add2RawsList((new TH2D(*fModuleChargeMap[index1])),indexlast1 + index1 + fRawsOffset);
-	fSDDhRaws++;
-       	index1++;	 
-	indexlast2 = indexlast1 + index1;
-      }
-    }
-  }
-  
-  
-  TH2D *h7[fgknSDDmodules*2] ;
-  index1 = 0;
-  for(Int_t moduleSDD=0; moduleSDD<fgknSDDmodules; moduleSDD++){
-    if((moduleSDD >= 0 && moduleSDD < 36) || (moduleSDD >= 84 && moduleSDD < 180)) {
-      for(Int_t iside=0; iside<fgknSide; iside++){
-	AliITSgeomTGeo::GetModuleId(moduleSDD+fgkmodoffset, lay, lad, det);
-	sprintf(hname0,"Anode_vs_Charge_L%d_%d_%d_%d",lay,lad,det,iside);
-	h7[index1] = new TH2D(hname0,hname0,fgknSDDmodules*2,-0.5,-0.5+fgknSDDmodules*2,256,0.5,256.5);
-	h7[index1]->GetXaxis()->SetTitle("Charge Value (ADC)");
-	h7[index1]->GetYaxis()->SetTitle("Anode");
-	fAliITSQADataMakerRec->Add2RawsList(h7[index1],indexlast2 + index1 + fRawsOffset);
-	fSDDhRaws++;
-	index1++;
-      }
-    }
-  }
-  /*
-  TH2F *h8[3];
-  for(Int_t htype =0; htype<3; htype++){
-    if(htype == 0) sprintf(hname0,"BLcompare");
-    if(htype == 1) sprintf(hname0,"NoiseCompare");
-    if(htype == 2) sprintf(hname0,"VdriftCompare");
-    h8[htype]= new TH2F(hname0,hname0,520,0,260,100,-0.5,99.5);
-    if(htype == 0){
-      h8[htype]->GetXaxis()->SetTitle("Module Number");
-      h8[htype]->GetYaxis()->SetTitle("Time #");
-    }
-    if(htype == 1){
-      h8[htype]->GetXaxis()->SetTitle("Module Number");
-      h8[htype]->GetYaxis()->SetTitle("Time #)");
-    }
-    if(htype == 2){
-      h8[htype]->GetXaxis()->SetTitle("Module Number");
-      h8[htype]->GetYaxis()->SetTitle("Time #");
-    }
+		for(Int_t iside=0;iside<fgknSide;iside++){
+			AliITSgeomTGeo::GetModuleId(moduleSDD+fgkmodoffset, lay, lad, det);
+			sprintf(hname[0],"chargeMapFSE_L%d_%d_%d_%d",lay,lad,det,iside);
+			sprintf(hname[1],"ChargeMapForSingleEvent_L%d_%d_%d_%d",lay,lad,det,iside);
+			sprintf(hname[2],"hmonoDMap_L%d_%d_%d_%d",lay,lad,det,iside);
+			TProfile2D *fModuleChargeMapFSE = new TProfile2D(hname[0],hname[1],128,-0.5,255.5,256,-0.5,255.5);
+			fModuleChargeMapFSE->GetXaxis()->SetTitle("Time Bin");
+			fModuleChargeMapFSE->GetYaxis()->SetTitle("Anode");
+			fAliITSQADataMakerRec->Add2RawsList((new TProfile2D(*fModuleChargeMapFSE)),indexlast1 + index1 + fRawsOffset);
+			delete fModuleChargeMapFSE;
+			
+			fSDDhRaws++;
+			index1++;	 
+			indexlast2 = indexlast1 + index1;
+		}
+	}
 
-    fAliITSQADataMakerRec->Add2RawsList(h8[htype],indexlast2 + index1 + htype+1 + fRawsOffset);
-    fSDDhRaws++;
-    printf("added histos %c, at position %d \n", hname0, indexlast2 + index1 + htype+1 + fRawsOffset);
-  }
-  */
+    for(Int_t moduleSDD =0; moduleSDD<fgknSDDmodules; moduleSDD++){
+		for(Int_t iside=0;iside<fgknSide;iside++){
+			AliITSgeomTGeo::GetModuleId(moduleSDD+fgkmodoffset, lay, lad, det);
+			sprintf(hname[0],"chargeMap_L%d_%d_%d_%d",lay,lad,det,iside);
+			sprintf(hname[1],"ChargeMap_L%d_%d_%d_%d",lay,lad,det,iside);
+			TProfile2D *fModuleChargeMap = new TProfile2D(hname[0],hname[1],128,-0.5,255.5,256,-0.5,255.5);
+			fModuleChargeMap->GetXaxis()->SetTitle("Time Bin");
+			fModuleChargeMap->GetYaxis()->SetTitle("Anode");
+			fAliITSQADataMakerRec->Add2RawsList((new TProfile2D(*fModuleChargeMap)),indexlast1 + index1 + fRawsOffset);
+			delete fModuleChargeMap;
+
+			fSDDhRaws++;
+			index1++;	 
+			indexlast2 = indexlast1 + index1;
+		}
+	}
+  
 }  // kONLINE
 
 
@@ -377,19 +270,17 @@ void AliITSQASDDDataMakerRec::MakeRaws(AliRawReader* rawReader)
   Int_t index=0;
   if(fkOnline) {
     for(Int_t moduleSDD =0; moduleSDD<fgknSDDmodules; moduleSDD++){
-      if((moduleSDD >= 0 && moduleSDD < 36) || (moduleSDD >= 84 && moduleSDD < 180)) {
         for(Int_t iside=0;iside<fgknSide;iside++) {
-          if(fSDDhRaws > 39+12 * 132 + index) fAliITSQADataMakerRec->GetRawsData(39+12 * 132 + index +fRawsOffset)->Reset();
+          if(fSDDhRaws > 39 + index) fAliITSQADataMakerRec->GetRawsData(39 + index +fRawsOffset)->Reset();
           index++;
         }
-      }
     }
   }
   Int_t cnt = 0;
   Int_t ildcID = -1;
   Int_t iddl = -1;
   Int_t isddmod = -1;
-  Int_t coord1, coord2, signal, moduleSDD, ioffset, iorder, activeModule, index1 ,nBins , iside, bin ;
+  Int_t coord1, coord2, signal, moduleSDD, ioffset, iorder, activeModule, index1;
   while(s.Next()) {
     ildcID = rawReader->GetLDCId();
     iddl = rawReader->GetDDLID() - fgkDDLIDshift;
@@ -426,7 +317,6 @@ void AliITSQASDDDataMakerRec::MakeRaws(AliRawReader* rawReader)
     
     Short_t iside = s.GetChannel();
     activeModule = moduleSDD;
-    if(moduleSDD > 35) activeModule -= 48;
     index1 = activeModule * 2 + iside;
     
     if(index1<0){
@@ -435,15 +325,9 @@ void AliITSQASDDDataMakerRec::MakeRaws(AliRawReader* rawReader)
     }
     
     if(fkOnline) {
-      if(fSDDhRaws > 39+12 * 132 + index1) {
-	
-        fAliITSQADataMakerRec->GetRawsData(39+ 2 * 132 + index1 +fRawsOffset)->Fill(coord1); 
-        fAliITSQADataMakerRec->GetRawsData(39+ 4 * 132 + index1 +fRawsOffset)->Fill(coord1,signal); 
-        fAliITSQADataMakerRec->GetRawsData(39+ 6 * 132 + index1 +fRawsOffset)->Fill(coord2);	
-        fAliITSQADataMakerRec->GetRawsData(39+ 8 * 132 + index1 +fRawsOffset)->Fill(coord2,signal); 
-        fAliITSQADataMakerRec->GetRawsData(39+12 * 132 + index1 +fRawsOffset)->Fill(signal,coord1);
-        ((TH2D *)(fAliITSQADataMakerRec->GetRawsData(39+10 * 132 + index1 +fRawsOffset)))->Fill(coord2, coord1, signal);
-
+      if(fSDDhRaws > 39 + index1) {
+        ((TProfile2D *)(fAliITSQADataMakerRec->GetRawsData(39 + index1 +fRawsOffset)))->Fill(coord2, coord1, signal);
+        ((TProfile2D *)(fAliITSQADataMakerRec->GetRawsData(39 + index1 + 260*2 +fRawsOffset)))->Fill(coord2, coord1, signal);
       }
     }
     cnt++;
@@ -451,28 +335,6 @@ void AliITSQASDDDataMakerRec::MakeRaws(AliRawReader* rawReader)
   }
   AliDebug(1,Form("Event completed, %d raw digits read",cnt));  
 
-  if(fkOnline) {
-    TH1D *ptr = NULL;
-    nBins = 256;
-    for(moduleSDD=0; moduleSDD<fgknSDDmodules; moduleSDD++){
-      if((moduleSDD >= 0 && moduleSDD < 36) || (moduleSDD >= 84 && moduleSDD < 180)) {
-	for(iside=0; iside<fgknSide; iside++){
-	  activeModule = moduleSDD;
-	  if(moduleSDD > 35) activeModule -= 48;
-	  index1 = activeModule * 2 + iside;
-	  if(fSDDhRaws > 39 + 2 * 132 + index1) {
-	    ptr = ((TH2D *) (fAliITSQADataMakerRec->GetRawsData(39+10 * 132 + index1 +fRawsOffset)))->ProjectionY();
-	    for(bin=0; bin<nBins; bin++) fAliITSQADataMakerRec->GetRawsData(index1+39 +fRawsOffset)->Fill(bin,ptr->GetBinContent(bin+1) );
-	  }  
-	}
-      }
-    }
-    for(Int_t i=0; i<fSDDhRaws; i++){
-      Int_t entries = static_cast<Int_t>(fAliITSQADataMakerRec->GetRawsData(i +fRawsOffset)->GetEntries());
-      if(entries != 0)
-	AliDebug(1,Form("histo %d, name %s , entries %d ",i,fAliITSQADataMakerRec->GetRawsData(i +fRawsOffset)->GetName(),entries));
-    }
-  }
 }
 
 //____________________________________________________________________________ 
@@ -481,80 +343,88 @@ void AliITSQASDDDataMakerRec::InitRecPoints()
   // Initialization for RECPOINTS - SDD -
   fRecsOffset = (fAliITSQADataMakerRec->fRecPointsQAList)->GetEntries();
   
-  TH1F * h0 = new TH1F("Lay3TotCh","Layer 3 total charge",1000,-0.5, 499.5);
+  TH1F *h0 = new TH1F("Lay3TotCh","Layer 3 total charge",1000,-0.5, 499.5);
   h0->GetXaxis()->SetTitle("ADC value");
   h0->GetYaxis()->SetTitle("Entries");
-  fAliITSQADataMakerRec->Add2RecPointsList(h0, 0 +fRecsOffset);
+  fAliITSQADataMakerRec->Add2RecPointsList((new TH1F(*h0)), 0 +fRecsOffset);
+  delete h0;
   fSDDhRecs++;
  
-  TH1F * h1 = new TH1F("Lay4TotCh","Layer 4 total charge",1000,-0.5, 499.5);
+  TH1F *h1 = new TH1F("Lay4TotCh","Layer 4 total charge",1000,-0.5, 499.5);
   h1->GetXaxis()->SetTitle("ADC value");
   h1->GetYaxis()->SetTitle("Entries");
-  fAliITSQADataMakerRec->Add2RecPointsList(h1, 1 +fRecsOffset);
+  fAliITSQADataMakerRec->Add2RecPointsList((new TH1F(*h1)), 1 +fRecsOffset);
+  delete h1;
   fSDDhRecs++;
 
     
   char hisnam[50];
-  TH1F *h2[3]; 
   for(Int_t i=1; i<=3; i++){
     sprintf(hisnam,"Charge_L3_Strip%d",i);
-    h2[i] = new TH1F(hisnam,hisnam,1000,-0.5, 499.5);
-    fAliITSQADataMakerRec->Add2RecPointsList(h2[i],i+1 +fRecsOffset);
+    TH1F *h2 = new TH1F(hisnam,hisnam,1000,-0.5, 499.5);
+    fAliITSQADataMakerRec->Add2RecPointsList((new TH1F(*h2)),i+1 +fRecsOffset);
+	delete h2;
     fSDDhRecs++;
   }
   
-  TH1F *h3[4]; 
   for(Int_t i=1; i<=4; i++){
     sprintf(hisnam,"Charge_L4_Strip%d",i);
-    h3[i] = new TH1F(hisnam,hisnam,1000,-0.5, 499.5);
-    fAliITSQADataMakerRec->Add2RecPointsList(h3[i],i+4 +fRecsOffset);
+    TH1F *h3 = new TH1F(hisnam,hisnam,1000,-0.5, 499.5);
+    fAliITSQADataMakerRec->Add2RecPointsList((new TH1F(*h3)),i+4 +fRecsOffset);
+	delete h3;
     fSDDhRecs++;
   }
   
   TH1F *h4 = new TH1F("ModPatternRP","Modules pattern RP",fgknSDDmodules,239.5,499.5); 
   h4->GetXaxis()->SetTitle("Module number");
   h4->GetYaxis()->SetTitle("Entries");
-  fAliITSQADataMakerRec->Add2RecPointsList(h4,9 +fRecsOffset);
+  fAliITSQADataMakerRec->Add2RecPointsList((new TH1F(*h4)),9 +fRecsOffset);
+  delete h4;
   fSDDhRecs++;
   TH1F *h5 = new TH1F("ModPatternL3 RP","Ladder pattern L3 RP",14,0.5,14.5);  
   h5->GetXaxis()->SetTitle("Ladder #, Layer 3");
   h5->GetYaxis()->SetTitle("Entries");
-  fAliITSQADataMakerRec->Add2RecPointsList(h5,10 +fRecsOffset);
+  fAliITSQADataMakerRec->Add2RecPointsList((new TH1F(*h5)),10 +fRecsOffset);
+  delete h5;
   fSDDhRecs++;
   TH1F *h6 = new TH1F("ModPatternL4 RP","Ladder pattern L4 RP",22,0.5,22.5); 
   h6->GetXaxis()->SetTitle("Ladder #, Layer 4");
   h6->GetYaxis()->SetTitle("Entries");
-  fAliITSQADataMakerRec->Add2RecPointsList(h6,11 +fRecsOffset);
+  fAliITSQADataMakerRec->Add2RecPointsList((new TH1F(*h6)),11 +fRecsOffset);
+  delete h6;
   fSDDhRecs++;
   TH2F *h7 = new TH2F("Local Coord Distrib","Local Coord Distrib",1000,-4,4,1000,-4,4);
   h7->GetXaxis()->SetTitle("X local coord, drift, cm");
   h7->GetYaxis()->SetTitle("Z local coord, anode, cm");
-  fAliITSQADataMakerRec->Add2RecPointsList(h7,12 +fRecsOffset);
+  fAliITSQADataMakerRec->Add2RecPointsList((new TH2F(*h7)),12 +fRecsOffset);
+  delete h7;
   fSDDhRecs++;
   TH2F *h8 = new TH2F("Global Coord Distrib","Global Coord Distrib",6000,-30,30,6000,-30,30);
   h8->GetYaxis()->SetTitle("Y glob coord, cm");
   h8->GetXaxis()->SetTitle("X glob coord, cm");
-  fAliITSQADataMakerRec->Add2RecPointsList(h8,13 +fRecsOffset);
+  fAliITSQADataMakerRec->Add2RecPointsList((new TH2F(*h8)),13 +fRecsOffset);
+  delete h8;
   fSDDhRecs++;
-  
-  TH1F *h9[2]; 
+   
   for(Int_t iLay=0; iLay<=1; iLay++){
     sprintf(hisnam,"hr_Layer%d",iLay+3);
-    h9[iLay] = new TH1F(hisnam,hisnam,100,10.,30.);
-    h9[iLay]->GetXaxis()->SetTitle("r (cm)");
-    h9[iLay]->GetXaxis()->CenterTitle();
-    h9[iLay]->GetYaxis()->SetTitle("Entries");
-    fAliITSQADataMakerRec->Add2RecPointsList(h9[iLay],iLay+14 +fRecsOffset);
+    TH1F *h9 = new TH1F(hisnam,hisnam,100,10.,30.);
+    h9->GetXaxis()->SetTitle("r (cm)");
+    h9->GetXaxis()->CenterTitle();
+    h9->GetYaxis()->SetTitle("Entries");
+    fAliITSQADataMakerRec->Add2RecPointsList((new TH1F(*h9)),iLay+14 +fRecsOffset);
+	delete h9;
     fSDDhRecs++;
   }
-  TH1F *h10[2]; 
+
   for(Int_t iLay=0; iLay<=1; iLay++){
     sprintf(hisnam,"hphi_Layer%d",iLay+3);
-    h10[iLay] = new TH1F(hisnam,hisnam,100,-TMath::Pi(),TMath::Pi());
-    h10[iLay]->GetXaxis()->SetTitle("#varphi (rad)");
-    h10[iLay]->GetXaxis()->CenterTitle();
-    h10[iLay]->GetYaxis()->SetTitle("Entries");
-    fAliITSQADataMakerRec->Add2RecPointsList(h10[iLay],iLay+16 +fRecsOffset);
+    TH1F *h10 = new TH1F(hisnam,hisnam,100,-TMath::Pi(),TMath::Pi());
+    h10->GetXaxis()->SetTitle("#varphi (rad)");
+    h10->GetXaxis()->CenterTitle();
+    h10->GetYaxis()->SetTitle("Entries");
+    fAliITSQADataMakerRec->Add2RecPointsList((new TH1F(*h10)),iLay+16 +fRecsOffset);
+	delete h10;
     fSDDhRecs++;
   }
 

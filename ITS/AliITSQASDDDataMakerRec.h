@@ -17,7 +17,7 @@
 #include "AliITSQADataMakerRec.h"
 class TObjArray;
 class TH1D;
-class TH2D;
+class TProfile2D;
 class AliRawReader;
 class AliITSgeomTGeo;
 class AliITSDDLModuleMapSDD;
@@ -60,9 +60,11 @@ private:
   Int_t   fRawsOffset;                     // number of histo booked when SDD start
   Int_t   fRecsOffset;                     // number of histo booked when SDD start
   AliITSDDLModuleMapSDD  *fSDDDDLModuleMap;// SDD Detector configuration for the decoding
-  TH2D *fModuleChargeMap[2*fgknSDDmodules];//module map
- 
-  ClassDef(AliITSQASDDDataMakerRec,2)      // description 
+/*
+  TProfile2D *fModuleChargeMap[2*fgknSDDmodules];//module map
+  TProfile2D *fModuleChargeMapFSE[2*fgknSDDmodules];//module map for one event 
+*/ 
+  ClassDef(AliITSQASDDDataMakerRec,3)      // description 
 
 };
 
