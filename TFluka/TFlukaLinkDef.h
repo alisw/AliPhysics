@@ -8,11 +8,14 @@
 #pragma link off all classes;
 #pragma link off all functions;
  
+
 #pragma link C++ class  TFluka+;
+#pragma link C++ class  TFlukaIon+;
 #pragma link C++ class  TFlukaMCGeometry+;
 #pragma link C++ class  TFlukaCerenkov+;
 #pragma link C++ class  TFlukaConfigOption+;
 #pragma link C++ class  TFlukaScoringOption+;
+
 #endif
 
 
