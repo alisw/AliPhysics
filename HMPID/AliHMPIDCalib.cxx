@@ -577,18 +577,22 @@ Bool_t AliHMPIDCalib::CalcPedestalPaolo(Int_t nDDL, Char_t* /*name*/, Int_t nEv)
          nEvPerPad2=fnpc[nDDL][2*row][dil][pad];
         
         if(nEvPerPad1 < 1 ) { mean1  = 4000; sigma1 = 1000; }
+        else 
+        {
+          mean1 = fsq[nDDL][2*row-1][dil][pad]*1.0/nEvPerPad1;
+          qs2m1 = fsq2[nDDL][2*row-1][dil][pad]*1.0/nEvPerPad1;
+          qsm21 = TMath::Power(fsq[nDDL][2*row-1][dil][pad]*1.0/nEvPerPad1,2); 
+         sigma1 = TMath::Sqrt(TMath::Abs(qs2m1-qsm21));
+        }
+        
         if(nEvPerPad2 < 1 ) { mean2  = 4000; sigma2 = 1000; }
-                
-         mean1 = fsq[nDDL][2*row-1][dil][pad]*1.0/nEvPerPad1;
-         qs2m1 = fsq2[nDDL][2*row-1][dil][pad]*1.0/nEvPerPad1;
-         qsm21 = TMath::Power(fsq[nDDL][2*row-1][dil][pad]*1.0/nEvPerPad1,2); 
-        sigma1 = TMath::Sqrt(TMath::Abs(qs2m1-qsm21));
-       
+        else
+        {        
          mean2 = fsq[nDDL][2*row][dil][pad]*1.0/nEvPerPad2;
          qs2m2 = fsq2[nDDL][2*row][dil][pad]*1.0/nEvPerPad2;
          qsm22 = TMath::Power(fsq[nDDL][2*row][dil][pad]*1.0/nEvPerPad2,2); 
         sigma2 = TMath::Sqrt(TMath::Abs(qs2m2-qsm22));
-        
+      }
         pped[(row-1)/4]<<Form("%d %3.3lf %3.3lf %3.3lf %3.3lf \n",cnt,mean1,sigma1,mean2,sigma2);cnt++;
       }//pad
       }//dil 

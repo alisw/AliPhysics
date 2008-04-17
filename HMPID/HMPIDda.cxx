@@ -152,13 +152,13 @@ int main(int argc, char **argv){
         ldcId=(unsigned long)event->eventLdcId;
         if(iEvtNcal==firstEvt && pCal->GetWritePads()==kTRUE) 
         {
-          if(pCal->GetLargePads()==kFALSE)  pCal->InitFile((Int_t)ldcId);    //The number for iEvtNcal should be the same as for the first value
-          else pCal->InitFile((Int_t)runNum);    //The number for iEvtNcal should be the same as for the first value
+          if(pCal->GetLargePads()==kFALSE)  pCal->InitFile((Int_t)ldcId);         //The number for iEvtNcal should be the same as for the first value
+          else pCal->InitFile((Int_t)runNum);                                     //The number for iEvtNcal should be the same as for the first value
         }
         
         iEvtNcal++;        
 	AliRawReader *reader = new AliRawReaderDate((void*)event);
-	AliHMPIDRawStream stream(reader);
+	AliHMPIDRawStream stream(reader);stream.SetTurbo(kTRUE);                  //raw data decoding without error checks SetTurbo(kTRUE)
         while(stream.Next())
           {
              for(Int_t iPad=0;iPad<stream.GetNPads();iPad++) {
@@ -206,7 +206,7 @@ int main(int argc, char **argv){
     /* Calculate pedestal for the given ddl, if there is no ddl go t next */
     if(!pCal->CalcPedestal(nDDL,Form("%sHmpidPedDdl%02i.txt",sDaOut.Data(),nDDL),iEvtNcal)) continue;
     /* to create pedestal file as Paolo uncomment the line */
-//    if(!pCal->CalcPedestalPaolo(nDDL,Form("%sHmpidPedDdl%02i.txt",sDaOut.Data(),nDDL),iEvtNcal)) continue;
+    //if(!pCal->CalcPedestalPaolo(nDDL,Form("%sHmpidPedDdl%02i.txt",sDaOut.Data(),nDDL),iEvtNcal)) continue;
     if(!pCal->WriteErrors(nDDL,Form("%sHmpidErrorsDdl%02i.txt",sDaOut.Data(),nDDL),iEvtNcal)) continue;
     
     /* store the result file on FES */

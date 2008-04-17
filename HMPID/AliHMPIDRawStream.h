@@ -54,8 +54,9 @@ class AliHMPIDRawStream: public TObject {
     UInt_t GetLDCNumber() const{ return fLDCNumber;} //return the number of LDC actually being decoded
     UInt_t GetTimeStamp() const{ return fTimeStamp;} //return the time stamp of the event actually being decoded
 
-  
-        
+    void   SetTurbo(Bool_t isTurbo){fTurbo=isTurbo;}     // Enable/Disable Turbo
+    Bool_t GetTurbo(){ return fTurbo;}                   // Enable Turbo
+    Bool_t Turbo();                                      // Read HMPID Raw data without error checks
     Bool_t ReadHMPIDRawData();                           // Read HMPID Raw data
     Bool_t ReadSegment(Int_t &cntSegment);               // Read Segment
     Bool_t ReadRow(Int_t &cntRow);                       // Read Row
@@ -127,6 +128,7 @@ enum Ebits {kbit0,kbit1 , kbit2, kbit3, kbit4, kbit5, kbit6, kbit7, kbit8,
     Bool_t           fZeroSup;                                           // set if zero suppression is applied
     Int_t           *fPos;                                               // for debug purposes
     Int_t            fiPos;                                              // counter for debug
+    Bool_t           fTurbo;                                             // kTRUE = Turbo decoding is called. DEFAULT: kFALSE = normal decoding is called
     ClassDef(AliHMPIDRawStream, 2)                                       // base class for reading HMPID raw digits
 };
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

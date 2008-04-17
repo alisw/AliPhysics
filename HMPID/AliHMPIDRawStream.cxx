@@ -44,7 +44,8 @@ AliHMPIDRawStream::AliHMPIDRawStream(AliRawReader* rawReader) :
   fWord(0),
   fZeroSup(kTRUE),
   fPos(0x0),
-  fiPos(0)
+  fiPos(0),
+  fTurbo(kFALSE)
 {
   //
   // Constructor
@@ -83,7 +84,8 @@ AliHMPIDRawStream::AliHMPIDRawStream() :
   fWord(0),
   fZeroSup(kTRUE),
   fPos(0x0),
-  fiPos(0) 
+  fiPos(0),
+  fTurbo(kFALSE) 
 {
   //
   // Constructor
@@ -116,7 +118,7 @@ AliHMPIDRawStream::~AliHMPIDRawStream()
   fPosition=0;
   fWord=0;
   fZeroSup=0;
-  
+  fTurbo=0;
   for(Int_t i=0;i<kSumErr;i++) delete [] fNumOfErr[i]; 
   delete [] fNumOfErr; 
 
@@ -134,6 +136,37 @@ void AliHMPIDRawStream::Reset()
   fData = NULL;
   if (fRawReader) fRawReader->Reset();
 }
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Bool_t AliHMPIDRawStream::Turbo()
+{
+  
+  Int_t row,dilogic;UInt_t pad;
+  Int_t cntGlob = fRawReader->GetDataSize()/4;
+  fPosition=0;
+  fNPads=0;
+//  Int_t gw=0;
+  for(Int_t i=1;i<cntGlob;i++) {
+    GetWord(1);
+    if (((fWord >> kbit27) & 1)) continue;
+    UInt_t statusControlRow = 0x32a8; 
+    UInt_t rowControlWord = fWord >> kbit0 & 0xfbff;
+    if(rowControlWord == statusControlRow) continue;
+
+    row = (fWord >> kbit22) & 0x1f;
+    dilogic = (fWord >> kbit18) & 0xf;                                              //dilogic info in raw word is between bits: 18...21
+    
+    pad = (fWord >> kbit12) & 0x3f;                                          //pad info in raw word is between bits: 12...17
+    if(!CheckPad(pad)) continue;
+    Int_t charge = fWord & 0xfff;
+    if(GetPad(fDDLNumber,row,dilogic,pad)<0) continue;
+    fPad[fNPads] = GetPad(fDDLNumber,row,dilogic,pad);
+    fCharge[fNPads] = charge; 
+    fNPads++;
+    if(charge==0) fNumOfErr[fDDLNumber][kPedQZero]++;
+  }//word loop
+  //Printf("Size: %i  DDL %i row %i dilogic %i pad %i fPos %i fNPads: %i Charge: %d Word %4.4x GoodW: %i",cntGlob,fDDLNumber,row,dilogic,pad,fPosition,fNPads,fCharge[fNPads-1],fWord,gw++);
+  return kTRUE;
+}//Turbo()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Bool_t AliHMPIDRawStream::Next()
 {
@@ -179,7 +212,8 @@ Bool_t AliHMPIDRawStream::Next()
     DelVars();                                        //We have to delete the variables initialized in the InitVars before recall IntiVars!!!
     InitVars(rawDataSize);                            //To read the charge and pads we cannot delete before the status return
     
-    status = ReadHMPIDRawData();
+    if(fTurbo==kTRUE) status=Turbo();
+    else status = ReadHMPIDRawData();
    
     if(status) AliDebug(1,Form("Event DDL %i successfully decoded!.",fDDLNumber));
     else AliDebug(1,Form("Event DDL %i ERROR in decoding!.",fDDLNumber));
