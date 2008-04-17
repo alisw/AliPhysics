@@ -30,9 +30,6 @@
 #include <TDatabasePDG.h>
 #include <TString.h>
 #include <TRandom.h>
-#include <TFile.h>
-#include <TNtuple.h>
-
 
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
@@ -55,7 +52,6 @@
 #include "AliITSPlaneEffSDD.h"
 #include "AliITSPlaneEffSSD.h"
 #include "AliITStrackerMI.h"
-#include "AliITShit.h"
 
 ClassImp(AliITStrackerMI)
 
