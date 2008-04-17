@@ -572,13 +572,25 @@ Bool_t AliITSDetTypeSim::GetCalibration() {
   }
 
   fDDLMapSDD->SetDDLMap(ddlsdd);
-  for(Int_t iddl=0; iddl<AliITSDDLModuleMapSDD::GetNDDLs(); iddl++){
-    for(Int_t icar=0; icar<AliITSDDLModuleMapSDD::GetNModPerDDL();icar++){
-      Int_t iMod=fDDLMapSDD->GetModuleNumber(iddl,icar);
-      if(iMod==-1) continue;
-      Int_t i=iMod - fgkDefaultNModulesSPD;
+
+  for (Int_t i=0; i<fgkDefaultNModulesSDD; i++) {
+    Int_t iddl,icarlos;
+    Int_t iMod = i + fgkDefaultNModulesSPD;
+    fDDLMapSDD->FindInDDLMap(iMod,iddl,icarlos);
+    if(iddl<0){ 
+      AliITSCalibrationSDD* calsdddead=new AliITSCalibrationSDD();
+      calsdddead->SetResponse(pSDD);
+      calsdddead->SetBad();      
+      AliITSDriftSpeedSDD* driftspdef = new AliITSDriftSpeedSDD();
+      AliITSDriftSpeedArraySDD* arrdrsp=new AliITSDriftSpeedArraySDD(1);
+      arrdrsp->AddDriftSpeed(driftspdef);
+      calsdddead->SetDriftSpeed(0,arrdrsp);
+      calsdddead->SetDriftSpeed(1,arrdrsp);
+      SetCalibrationModel(iMod, calsdddead);
+      AliWarning(Form("SDD module %d not present in DDL map: set it as dead",iMod));
+    }else{
       cal = (AliITSCalibration*) calSDD->At(i);
-      cal->SetResponse((AliITSresponse*)pSDD);
+      cal->SetResponse(pSDD);
       Int_t i0=2*i;
       Int_t i1=1+2*i;
       AliITSDriftSpeedArraySDD* arr0 = (AliITSDriftSpeedArraySDD*) drSp->At(i0);
@@ -596,6 +608,7 @@ Bool_t AliITSDetTypeSim::GetCalibration() {
       SetCalibrationModel(iMod, cal);
     }
   }
+
   for (Int_t i=0; i<fNMod[2]; i++) {
     AliITSCalibrationSSD *calibSSD = new AliITSCalibrationSSD();
     calibSSD->SetResponse((AliITSresponse*)pSSD);
