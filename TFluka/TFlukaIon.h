@@ -26,6 +26,7 @@ public:
     TFlukaIon(const char* name, Int_t z, Int_t a, Int_t q, Double_t exE, Double_t mass = 0.);
     Int_t    GetZ()                const  {return fZ;}
     Int_t    GetA()                const  {return fA;}
+
     Int_t    GetQ()                const  {return fQ;}
     Double_t GetExcitationEnergy() const  {return fExEnergy;}
     Double_t GetMass()             const  {return fMass;}
@@ -35,6 +36,9 @@ public:
     //
     static void  AddIon(Int_t a, Int_t z);
     static Int_t GetIonPdg(Int_t z, Int_t a, Int_t i = 0);
+    static Int_t    GetZ(Int_t pdg);
+    static Int_t    GetA(Int_t pdg);
+
  protected:
     Int_t    fZ;         // Z
     Int_t    fA;         // A

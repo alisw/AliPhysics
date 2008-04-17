@@ -62,6 +62,26 @@ Int_t TFlukaIon::GetIonPdg(Int_t z, Int_t a, Int_t i)
   return 1000000000 + 10*1000*z + 10*a + i;
 }  
 
+Int_t TFlukaIon::GetZ(Int_t pdg)
+{
+// Acording to
+// http://cepa.fnal.gov/psm/stdhep/pdg/montecarlorpp-2006.pdf
+
+  return (pdg - 1000000000)/10000; 
+}  
+
+
+Int_t TFlukaIon::GetA(Int_t pdg)
+{
+// Acording to
+// http://cepa.fnal.gov/psm/stdhep/pdg/montecarlorpp-2006.pdf
+
+    Int_t a = pdg - 1000000000;
+    a %= 10000;
+    a /= 10;
+    return (a);
+}  
+
 void TFlukaIon::AddIon(Int_t a, Int_t z)
 {
 

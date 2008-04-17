@@ -5,14 +5,16 @@
 #include "Fdblprc.h"  //(DBLPRC) fluka common
 #include "Fdimpar.h"  //(DIMPAR) fluka parameters
 #include "Fsourcm.h"  //(EPISOR) fluka common
-#include "Fflkstk.h"  //(FLKSTK)  fluka common
-#include "Fsumcou.h"  //(SUMCOU)  fluka common
+#include "Fflkstk.h"  //(FLKSTK) fluka common
+#include "Fsumcou.h"  //(SUMCOU) fluka common
 #include "Fpaprop.h"  //(PAPROP) fluka common
 #include "Fltclcm.h"  //(LTCLCM) fluka common
 #include "Fopphst.h"  //(OPPHST) fluka common
-
+#include "Fioiocm.h"  //(IOIOCM) fluka common
+#include "Fbeamcm.h"  //(BEAMCM) fluka common
 //Virutal MC
 #include "TFluka.h"
+#include "TFlukaIon.h"
 
 #include "TVirtualMCStack.h"
 //#include "TVirtualMCApplication.h"
@@ -29,12 +31,16 @@
 # define georeg georeg_
 # define geohsm geohsm_
 # define soevsv soevsv_
+# define dcdion dcdion_
+# define setion setion_
 #else
 # define source SOURCE
 # define geocrs GEOCRS
 # define georeg GEOREG
 # define geohsm GEOHSM
 # define soevsv SOEVSV
+# define dcdion DCDION
+# define setion SETION
 #endif
 
 extern "C" {
@@ -46,6 +52,9 @@ extern "C" {
                            Int_t &, Int_t &);
   void type_of_call geohsm(Int_t &, Int_t &, Int_t &, Int_t &);
   void type_of_call soevsv();
+  void type_of_call dcdion(Int_t &);
+  void type_of_call setion(Int_t &);
+
  /*
    *----------------------------------------------------------------------*
    *                                                                      *
@@ -183,7 +192,24 @@ extern "C" {
     if (pdg != 50000050 &&  pdg !=  50000051) {
         FLKSTK.npflka++;
         Int_t ifl =  fluka-> IdFromPDG(pdg);
-        FLKSTK.iloflk[FLKSTK.npflka] = ifl;
+	Int_t ionid;
+	
+	if (ifl == -2) {
+	    Int_t ia = TFlukaIon::GetA(pdg);
+	    Int_t iz = TFlukaIon::GetZ(pdg);
+	    IOIOCM.iproa = ia;
+	    IOIOCM.iproz = iz;
+	    BEAMCM.ijhion = iz * 1000 + ia;
+	    BEAMCM.ijhion = 100 * BEAMCM.ijhion + 30;
+	    ionid = BEAMCM.ijhion;
+	    dcdion(ionid);
+	    setion(ionid);
+	    FLKSTK.iloflk[FLKSTK.npflka] = ionid;
+	} else {
+	    FLKSTK.iloflk[FLKSTK.npflka] = ifl;
+	    ionid = ifl;
+	}
+	
         /* Wtflk is the weight of the particle*/
         FLKSTK.wtflk[FLKSTK.npflka] = oneone;
         SUMCOU.weipri += FLKSTK.wtflk[FLKSTK.npflka];
@@ -219,7 +245,8 @@ extern "C" {
         
         /* Kinetic energy */
         Double_t p    = particle->P();
-        Double_t mass = PAPROP.am[ifl + 6];
+//        Double_t mass = PAPROP.am[ifl + 6];
+	Double_t mass = PAPROP.am[ionid + 6];
         FLKSTK.tkeflk[FLKSTK.npflka] =  TMath::Sqrt( p * p + mass * mass) - mass;
         /* Particle momentum*/
         FLKSTK.pmoflk [FLKSTK.npflka] = p;
