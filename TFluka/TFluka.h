@@ -23,6 +23,7 @@
 class TGeoMCGeometry;
 //class TFlukaMCGeometry;
 class TGeoMaterial;
+class TFlukaIon;
 
 class TFluka : public TVirtualMC {
   
@@ -309,7 +310,8 @@ class TFluka : public TVirtualMC {
   virtual Bool_t DefineParticle(Int_t, const char*, TMCParticleType, Double_t, Double_t, Double_t,
 				const TString&, Double_t, Int_t, Int_t, Int_t, Int_t, Int_t, Int_t, Int_t, Int_t,
 				Bool_t, Bool_t = kFALSE, const TString& = "", Int_t = 0, Double_t = 0.0, Double_t = 0.0) {return kFALSE;}
-  virtual Bool_t DefineIon(const char*, int, int, int, double, double) {return kFALSE;}
+  virtual Bool_t DefineIon(const char* name , Int_t z, Int_t a, Int_t q, Double_t exE, Double_t mass);
+  
   virtual TString  ParticleName(int pdg)      const;
   virtual Double_t ParticleMass(int pdg)      const;
   virtual Double_t ParticleMassFPC(int fpc)   const;
@@ -404,8 +406,6 @@ class TFluka : public TVirtualMC {
   void     SetCurrentPrimaryElectronIndex(Int_t i)  {fPrimaryElectronIndex = i;}
   void     PrimaryIonisationStepping(Int_t nprim);
   void     CalcPrimaryIonisationTime();
-  void  AddIon(Int_t a, Int_t z) const;
-  Int_t GetIonPdg(Int_t z, Int_t a, Int_t i = 0) const;
  private:
    
   // Copy constructor and operator= declared but not implemented (-Weff++ flag)
@@ -460,9 +460,11 @@ class TFluka : public TVirtualMC {
   // SetProcess, SetCut and user Scoring dynamic storage
   TObjArray* fUserConfig;            // List of user physics configuration 
   TObjArray* fUserScore;             // List of user scoring options
-  
+  // User defined Ion
+  TFlukaIon* fUserIon;               // User defined ion
+  //
 
-  ClassDef(TFluka,1)  //C++ interface to Fluka montecarlo
+  ClassDef(TFluka,1)                 // C++ interface to Fluka montecarlo
 
 
   // Temporary implementation of new functions

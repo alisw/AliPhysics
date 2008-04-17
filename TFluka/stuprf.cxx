@@ -22,6 +22,7 @@
 
 //Virtual MC
 #include "TFluka.h"
+#include "TFlukaIon.h"
 #include "TVirtualMCStack.h"
 #include "TVirtualMCApplication.h"
 #include "TParticle.h"
@@ -103,8 +104,8 @@ extern "C" {
 //	a = kpart - z * 100000;
 //	a /= 100;
 	usrdci(kpart, a, z, ism);
-	pdg = fluka->GetIonPdg(z, a);
-	fluka->AddIon(a, z);
+	pdg = TFlukaIon::GetIonPdg(z, a);
+	TFlukaIon::AddIon(a, z);
     } else {
 	pdg  = fluka->PDGFromId(kpart);
     }

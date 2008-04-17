@@ -33,6 +33,7 @@
 #include <TList.h>
 
 #include "TFluka.h"
+#include "TFlukaIon.h"
 #include "TFlukaCodes.h"
 #include "TCallf77.h"      //For the fortran calls
 #include "Fdblprc.h"       //(DBLPRC) fluka common
@@ -149,7 +150,8 @@ TFluka::TFluka()
    fGeom(0),
    fMCGeo(0),
    fUserConfig(0), 
-   fUserScore(0)
+   fUserScore(0),
+   fUserIon(0)
 { 
   //
   // Default constructor
@@ -191,7 +193,8 @@ TFluka::TFluka(const char *title, Int_t verbosity, Bool_t isRootGeometrySupporte
    fGeom(0),
    fMCGeo(0),
    fUserConfig(new TObjArray(100)),
-   fUserScore(new TObjArray(100)) 
+   fUserScore(new TObjArray(100)),
+   fUserIon(0)
 {
   // create geometry interface
     for (Int_t i = 0; i < 4; i++) fPint[i] = 0.;
@@ -1028,13 +1031,21 @@ Int_t TFluka::IdFromPDG(Int_t pdg) const
 
     //
     // Return Fluka code from PDG and pseudo ENDF code
-    Int_t idSpecial[4] = {GetIonPdg(2,4), GetIonPdg(2, 3), GetIonPdg(1,3), GetIonPdg(1,2)};    
+    Int_t idSpecial[4] = {TFlukaIon::GetIonPdg(2,4), 
+			  TFlukaIon::GetIonPdg(2,3), 
+			  TFlukaIon::GetIonPdg(1,3), 
+			  TFlukaIon::GetIonPdg(1,2)};    
     // Catch the feedback photons
     if (pdg == 50000051) return (kFLUKAoptical);
+    // Ion as primary
     for (Int_t i = 0; i < 4; i++) {
 	if (pdg == idSpecial[i]) return (i + kFLUKAcodemin);
     }
     
+    if ((!fUserIon && pdg == TFlukaIon::GetIonPdg(6,12)) ||
+	( fUserIon && pdg == fUserIon->GetPdgCode())) 
+	return (-2);
+
     // MCIHAD() goes from pdg to fluka internal.
     Int_t intfluka = mcihad(pdg);
     // KPTOIP array goes from internal to official
@@ -1046,8 +1057,12 @@ Int_t TFluka::PDGFromId(Int_t id) const
 {
   //
   // Return PDG code and pseudo ENDF code from Fluka code
-  //                      Alpha     He3       Triton    Deuteron  gen. ion  opt. photon   
-    Int_t idSpecial[6] = {GetIonPdg(2,4), GetIonPdg(2, 3), GetIonPdg(1,3), GetIonPdg(1,2), GetIonPdg(0,0), 50000050};
+    Int_t idSpecial[6] = {TFlukaIon::GetIonPdg(2,4), // alpha 
+			  TFlukaIon::GetIonPdg(2,3), // He3
+			  TFlukaIon::GetIonPdg(1,3), // triton
+			  TFlukaIon::GetIonPdg(1,2), // deuteron 
+			  TFlukaIon::GetIonPdg(0,0), // gen. ion 
+			  50000050};
   // IPTOKP array goes from official to internal
 
     if (id == kFLUKAoptical) {
@@ -1314,6 +1329,8 @@ void TFluka::InitPhysics()
 
 // Add RANDOMIZ card
     fprintf(pFlukaVmcInp,"RANDOMIZ  %10.1f%10.0f\n", 1., Float_t(gRandom->GetSeed()));
+// User defined ion
+    if (fUserIon) fUserIon->WriteUserInputCard(pFlukaVmcInp);
 // Add START and STOP card
     fprintf(pFlukaVmcInp,"START     %10.1f\n",fEventsPerRun);
     fprintf(pFlukaVmcInp,"STOP      \n");
@@ -2593,13 +2610,17 @@ void TFluka::AddParticlesToPdgDataBase() const
 // Ions
 //
   pdgDB->AddParticle("Deuteron","Deuteron",2*kAu2Gev+8.071e-3,kTRUE,
-                     0,3,"Ion",GetIonPdg(1,2));
+                     0,3,"Ion",TFlukaIon::GetIonPdg(1,2));
   pdgDB->AddParticle("Triton","Triton",3*kAu2Gev+14.931e-3,kFALSE,
-                     khShGev/(12.33*kYear2Sec),3,"Ion",GetIonPdg(1,3));
+                     khShGev/(12.33*kYear2Sec),3,"Ion",TFlukaIon::GetIonPdg(1,3));
   pdgDB->AddParticle("Alpha","Alpha",4*kAu2Gev+2.424e-3,kTRUE,
-                     khShGev/(12.33*kYear2Sec),6,"Ion",GetIonPdg(2,4));
+                     khShGev/(12.33*kYear2Sec),6,"Ion",TFlukaIon::GetIonPdg(2,4));
   pdgDB->AddParticle("HE3","HE3",3*kAu2Gev+14.931e-3,kFALSE,
-                     0,6,"Ion",GetIonPdg(2,3));
+                     0,6,"Ion",TFlukaIon::GetIonPdg(2,3));
+//
+// Default user ion
+  TFlukaIon::AddIon(12, 6);
+  
 //
 //
 //
@@ -2611,18 +2632,6 @@ void TFluka::AddParticlesToPdgDataBase() const
                      0,0,"Special",GetSpecialPdg(51));
 }
 
-void TFluka::AddIon(Int_t a, Int_t z) const
-{
-
-    // Add a new ion
-    TDatabasePDG *pdgDB = TDatabasePDG::Instance();
-    const Double_t kAu2Gev   = 0.9314943228;
-    Int_t pdg =  GetIonPdg(z, a);
-    if (pdgDB->GetParticle(pdg)) return;
-    
-    pdgDB->AddParticle(Form("Iion A  = %5d Z = %5d", a, z),"Ion", Float_t(a) * kAu2Gev + 8.071e-3, kTRUE,
-		       0, 3 * z, "Ion", pdg);
-}
 
 //
 // Info about primary ionization electrons
@@ -2670,13 +2679,6 @@ void TFluka::GetPrimaryElectronPosition(Int_t i, Double_t& x, Double_t& y, Doubl
 	return;
 }
 
-Int_t TFluka::GetIonPdg(Int_t z, Int_t a, Int_t i) const
-{
-// Acording to
-// http://cepa.fnal.gov/psm/stdhep/pdg/montecarlorpp-2006.pdf
-
-  return 1000000000 + 10*1000*z + 10*a + i;
-}  
 
 //__________________________________________________________________
 Int_t TFluka::GetSpecialPdg(Int_t number) const
@@ -2761,4 +2763,16 @@ void TFluka::CalcPrimaryIonisationTime()
 	}
     }
     
+}
+
+Bool_t TFluka::DefineIon(const char* name , Int_t z, Int_t a, Int_t q, Double_t exE, Double_t mass)
+{
+    // User defined ion that can be used as a primary
+    if (fUserIon) {
+	Warning("DefineIon", "Only one user ion can be defined !");
+	return kFALSE;
+    } else {
+	fUserIon = new TFlukaIon(name, z, a, q, exE, mass);
+	return kTRUE;
+    }
 }
