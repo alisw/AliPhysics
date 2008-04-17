@@ -849,10 +849,9 @@ Bool_t AliReconstruction::InitRun(const char* input)
         AliInfo(Form("Initializing the QA data maker for %s", 
                fgkDetectorName[iDet]));
 
-		if (fInLoopQA) {
-			qadm->Init(AliQA::kRECPOINTS, AliCDBManager::Instance()->GetRun());
-			qadm->Init(AliQA::kESDS, AliCDBManager::Instance()->GetRun());
-		} else {
+		qadm->Init(AliQA::kRECPOINTS, AliCDBManager::Instance()->GetRun());
+		qadm->Init(AliQA::kESDS, AliCDBManager::Instance()->GetRun());
+		 if (!fInLoopQA) {
 			qadm->StartOfCycle(AliQA::kRECPOINTS, fSameQACycle);
 			qadm->StartOfCycle(AliQA::kESDS,"same");
         }
