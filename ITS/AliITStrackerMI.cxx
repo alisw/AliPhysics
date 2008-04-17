@@ -12,7 +12,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/* $Id:$ */
+/* $Id$ */
 
 //-------------------------------------------------------------------------
 //               Implementation of the ITS tracker class
@@ -30,6 +30,8 @@
 #include <TDatabasePDG.h>
 #include <TString.h>
 #include <TRandom.h>
+#include <TFile.h>
+#include <TNtuple.h>
 
 
 #include "AliESDEvent.h"
@@ -53,6 +55,7 @@
 #include "AliITSPlaneEffSDD.h"
 #include "AliITSPlaneEffSSD.h"
 #include "AliITStrackerMI.h"
+#include "AliITShit.h"
 
 ClassImp(AliITStrackerMI)
 
@@ -403,6 +406,8 @@ Int_t AliITStrackerMI::Clusters2Tracks(AliESDEvent *event) {
   // This functions reconstructs ITS tracks
   // The clusters must be already loaded !
   //--------------------------------------------------------------------
+
+
   fTrackingPhase="Clusters2Tracks";
 
   TObjArray itsTracks(15000);
@@ -522,11 +527,9 @@ Int_t AliITStrackerMI::Clusters2Tracks(AliESDEvent *event) {
      GetBestHypothesysMIP(itsTracks); 
   } // end loop on the two tracking passes
 
-  //GetBestHypothesysMIP(itsTracks);
   if(event->GetNumberOfV0s()>0) UpdateTPCV0(event);
   if(AliITSReconstructor::GetRecoParam()->GetFindV0s()) FindV02(event);
   fAfterV0 = kTRUE;
-  //GetBestHypothesysMIP(itsTracks);
   //
   itsTracks.Delete();
   //
@@ -2857,7 +2860,8 @@ void AliITStrackerMI::AddTrackHypothesys(AliITStrackMI * track, Int_t esdindex)
   // add track to the list of hypothesys
   //------------------------------------------------------------------
 
-  if (esdindex>=fTrackHypothesys.GetEntriesFast()) fTrackHypothesys.Expand(esdindex*2+10);
+  if (esdindex>=fTrackHypothesys.GetEntriesFast()) 
+    fTrackHypothesys.Expand(TMath::Max(fTrackHypothesys.GetSize(),esdindex*2+10));
   //
   TObjArray * array = (TObjArray*) fTrackHypothesys.At(esdindex);
   if (!array) {
@@ -3138,7 +3142,8 @@ AliITStrackMI * AliITStrackerMI::GetBestHypothesys(Int_t esdindex, AliITStrackMI
   delete forwardtrack;
   Int_t accepted=0;
   for (Int_t i=0;i<entries;i++){    
-    AliITStrackMI * track = (AliITStrackMI*)array->At(i);   
+    AliITStrackMI * track = (AliITStrackMI*)array->At(i);
+   
     if (!track) continue;
     
     if (accepted>checkmax || track->GetChi2MIP(3)>AliITSReconstructor::GetRecoParam()->GetMaxChi2PerCluster(3)*6. || 
@@ -3156,6 +3161,7 @@ AliITStrackMI * AliITStrackerMI::GetBestHypothesys(Int_t esdindex, AliITStrackMI
   //
   array->Compress();
   SortTrackHypothesys(esdindex,checkmax,1);
+
   array = (TObjArray*) fTrackHypothesys.At(esdindex);
   if (!array) return 0; // PH What can be the reason? Check SortTrackHypothesys
   besttrack = (AliITStrackMI*)array->At(0);  
@@ -3458,12 +3464,14 @@ Int_t AliITStrackerMI::UpdateMI(AliITStrackMI* track, const AliITSRecPoint* cl,D
 
   if (cl->GetQ()<=0) return 0;  // ingore the "virtual" clusters
 
-  //Float_t clxyz[3]; cl->GetGlobalXYZ(clxyz);Double_t trxyz[3]; track->GetXYZ(trxyz);printf("gtr %f %f %f\n",trxyz[0],trxyz[1],trxyz[2]);printf("gcl %f %f %f\n",clxyz[0],clxyz[1],clxyz[2]);
+  //  Float_t clxyz[3]; cl->GetGlobalXYZ(clxyz);Double_t trxyz[3]; track->GetXYZ(trxyz);//printf("gtr %f %f %f\n",trxyz[0],trxyz[1],trxyz[2]);printf("gcl %f %f %f\n",clxyz[0],clxyz[1],clxyz[2]);
 
 
   // Take into account the mis-alignment
   Double_t x=track->GetX()+cl->GetX();
   if (!track->PropagateTo(x,0.,0.)) return 0;
+
+
   
   AliCluster c(*cl);
   c.SetSigmaY2(track->GetSigmaY(layer)*track->GetSigmaY(layer));
