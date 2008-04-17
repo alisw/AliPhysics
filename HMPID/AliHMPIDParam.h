@@ -62,7 +62,7 @@ public:
   Bool_t  GetInstType        (                               )const{return fgInstanceType;                            }  //return if the instance is from geom or ideal                        
   
   inline static Bool_t IsInDead(Float_t x,Float_t y        );                                                           //is the point in dead area?
-  inline static Int_t  InHVSector(Float_t x, Float_t y     );                                                           //find HV sector
+  inline static Int_t  InHVSector(           Float_t y     );                                                           //find HV sector
   static Bool_t  IsInside    (Float_t x,Float_t y,Float_t d=0)     {return  x>-d&&y>-d&&x<fgkMaxPcX[kMaxPc]+d&&y<fgkMaxPcY[kMaxPc]+d; } //is point inside chamber boundaries?
 
             Double_t   MeanIdxRad              ()const {return 1.29204;}   //<--TEMPORAR--> to be removed in future. Mean ref index C6F14
@@ -198,20 +198,20 @@ void AliHMPIDParam::Lors2Pad(Float_t x,Float_t y,Int_t &pc,Int_t &px,Int_t &py)
   else return;
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Int_t AliHMPIDParam::InHVSector(Float_t x, Float_t y)
+Int_t AliHMPIDParam::InHVSector(Float_t y)
 {
-    Int_t hvsec = 0;
-
-    if(x>=fgkMinPcY[0] && x<=(fgkMaxPcY[0]+fgkMinPcY[0])/2 && y>=fgkMinPcY[1] && y<=(fgkMaxPcY[1]+fgkMinPcY[1])/2) hvsec=0;
-    if(x>=(fgkMaxPcY[0]+fgkMinPcY[0])/2 && x<=fgkMaxPcY[0] && y>=(fgkMaxPcY[1]+fgkMinPcY[1])/2 && y<=fgkMaxPcY[1]) hvsec=1;
-    if(x>=fgkMinPcY[2] && x<=(fgkMaxPcY[2]+fgkMinPcY[2])/2 && y>=fgkMinPcY[3] && y<=(fgkMaxPcY[3]+fgkMinPcY[3])/2) hvsec=2;
-    if(x>=(fgkMaxPcY[2]+fgkMinPcY[2])/2 && x<=fgkMaxPcY[2] && y>=(fgkMaxPcY[3]+fgkMinPcY[3])/2 && y<=fgkMaxPcY[3]) hvsec=3;
-    if(x>=fgkMinPcY[4] && x<=(fgkMaxPcY[4]+fgkMinPcY[4])/2 && y>=fgkMinPcY[5] && y<=(fgkMaxPcY[5]+fgkMinPcY[5])/2) hvsec=4;
-    if(x>=(fgkMaxPcY[4]+fgkMinPcY[4])/2 && x<=fgkMaxPcY[4] && y>=(fgkMaxPcY[5]-fgkMinPcY[5])/2 && y<=fgkMaxPcY[5]) hvsec=5;
-
-    return hvsec;
-
- //in current pc
+//Calculate the HV sector corresponding to the cluster position
+//Arguments: y
+//Returns the HV sector in the single module
+ 
+   Int_t hvsec = -1;
+   Int_t pc,px,py;
+   Lors2Pad(1.,y,pc,px,py);
+   if(py==-1) return hvsec;
+   
+   hvsec = (py+(pc/2)*(kMaxPy+1))/((kMaxPy+1)/2);
+   
+   return hvsec;
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #endif

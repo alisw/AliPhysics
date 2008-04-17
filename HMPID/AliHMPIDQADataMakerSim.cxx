@@ -21,7 +21,6 @@
 #include <TFile.h> 
 #include <TH1F.h> 
 #include <TH2F.h>
-#include <TProfile.h>
 #include <Riostream.h>
 // --- Standard library ---
 
@@ -89,18 +88,21 @@ void AliHMPIDQADataMakerSim::InitHits()
 void AliHMPIDQADataMakerSim::InitDigits()
 {
   // create Digits histograms in Digits subdir
-      TH1F *hDigPcEvt = new TH1F("hDigPcEvt","PC occupancy",156,-1,77);
-      TH1F *hDigQ     = new TH1F("Q        ","Charge of digits (ADC)     ",3000,0,3000);
       TH1F *hDigChEvt = new TH1F("hDigChEvt","Chamber occupancy per event",AliHMPIDParam::kMaxCh+1,AliHMPIDParam::kMinCh,AliHMPIDParam::kMaxCh+1);
+      TH1F *hDigPcEvt = new TH1F("hDigPcEvt","PC occupancy",156,-1,77);
+      TH2F *hDigMap[7];
+      TH1F *hDigQ[42];
+      for(Int_t iCh =0; iCh < 7; iCh++){
+       hDigMap[iCh] = new TH2F(Form("MapCh%i",iCh),Form("Digit Map in Chamber %i",iCh),159,0,159,143,0,143);
+       for(Int_t iPc =0; iPc < 6; iPc++ ){
+        hDigQ[iCh*6+iPc] = new TH1F(Form("QCh%iPc%i        ",iCh,iPc),Form("Charge of digits (ADC) in Chamber %i and PC %i   ",iCh,iPc),4100,0,4100);
+      }
+     }
 
-      TProfile *tDigHighQ = new TProfile("tDigHighQ","Highest charge in chamber  ",AliHMPIDParam::kMaxCh+1,AliHMPIDParam::kMinCh,AliHMPIDParam::kMaxCh+1);
-      TProfile *tDigChEvt = new TProfile("tDigChEvt","Chamber occupancy per event (profile)",AliHMPIDParam::kMaxCh+1,AliHMPIDParam::kMinCh,AliHMPIDParam::kMaxCh+1);
-
-Add2DigitsList(hDigPcEvt,0);
-Add2DigitsList(hDigQ    ,1);
-Add2DigitsList(hDigChEvt,2);
-Add2DigitsList(tDigHighQ,3);
-Add2DigitsList(tDigChEvt,4);
+   Add2DigitsList(hDigChEvt,0);
+   Add2DigitsList(hDigPcEvt,1);
+   for(Int_t iMap=0; iMap < 7; iMap++) Add2DigitsList(hDigMap[iMap],2+iMap);
+   for(Int_t iH =0; iH < 42 ; iH++) Add2DigitsList(hDigQ[iH]    ,9+iH);
 }
 
 //____________________________________________________________________________ 
@@ -150,6 +152,7 @@ void AliHMPIDQADataMakerSim::MakeDigits(TClonesArray * data)
  //
  //filling QA histos for Digits
  //
+
   TObjArray *chamber = dynamic_cast<TObjArray*>(data);
   if ( !chamber) {
     AliError("Wrong type of digits container") ; 
@@ -157,18 +160,14 @@ void AliHMPIDQADataMakerSim::MakeDigits(TClonesArray * data)
     for(Int_t i =0; i< chamber->GetEntries(); i++)
       {
 	TClonesArray * digits = dynamic_cast<TClonesArray*>(chamber->At(i)); 
-	GetDigitsData(2)->Fill(i,digits->GetEntriesFast()/(48.*80.*6.));
-        GetDigitsData(4)->Fill(i,digits->GetEntriesFast()/(48.*80.*6.));
-        Double_t highQ=0;
+	GetDigitsData(0)->Fill(i,digits->GetEntriesFast()/(48.*80.*6.));
 	TIter next(digits); 
 	AliHMPIDDigit * digit; 
 	while ( (digit = dynamic_cast<AliHMPIDDigit *>(next())) ) {
-	  GetDigitsData(0)->Fill(10.*i+digit->Pc(),1./(48.*80.));
-	  GetDigitsData(1)->Fill(digit->Q());
-          if(digit->Q()>highQ) highQ = digit->Q();
+	  GetDigitsData(1)->Fill(10.*i+digit->Pc(),1./(48.*80.));
+          GetDigitsData(2+i)->Fill(digit->PadChX(),digit->PadChY());
+          GetDigitsData(9+i*6+digit->Pc())->Fill(digit->Q());
 	}  
-      GetDigitsData(3)->Fill(i,highQ);
- 
       }
   }
 }
@@ -235,10 +234,10 @@ void AliHMPIDQADataMakerSim::StartOfDetectorCycle()
   
 }
 
-void AliHMPIDQADataMakerSim::EndOfDetectorCycle(AliQA::TASKINDEX_t, TObjArray *)
+void AliHMPIDQADataMakerSim::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray *obj)
 {
   //Detector specific actions at end of cycle
   // do the QA checking
-//  AliQAChecker::Instance()->Run(AliQA::kHMPID, task, obj) ;  
+  AliQAChecker::Instance()->Run(AliQA::kHMPID, task, obj) ;  
 }
 

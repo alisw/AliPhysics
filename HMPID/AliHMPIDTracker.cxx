@@ -110,7 +110,7 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
     if(pQthre->GetEntriesFast()==AliHMPIDParam::kMaxCh+1)                                        // just for backward compatibility
       qthre=((TF1*)pQthre->At(cham))->Eval(pEsd->GetTimeStamp());                                //
     else {                                                                                       // in the past just 1 qthre
-      Int_t hvsec = AliHMPIDParam::InHVSector(xPc,yPc);                                          //  per chamber
+      Int_t hvsec = AliHMPIDParam::InHVSector(yPc);                                              //  per chamber
       qthre=((TF1*)pQthre->At(6*cham+hvsec))->Eval(pEsd->GetTimeStamp());                        //
     }                                                                                            //
     recon.SetImpPC(xPc,yPc);                                                                     //store track impact to PC
