@@ -395,7 +395,7 @@ void AliITSvPPRasymmFMD::AddAlignableVolumes() const
 
 	    matLtoT->SetDy(-fChip1*0.0001/2.);
 	    matLtoT->SetDz(-gtrans[2]);
-	    rotMatrix[0]= 0;  rotMatrix[1]= 1;  rotMatrix[2]= 0; // + rotation
+	    rotMatrix[0]= 0;  rotMatrix[1]=-1;  rotMatrix[2]= 0; // + rotation
 	    rotMatrix[3]=-1;  rotMatrix[4]= 0;  rotMatrix[5]= 0; // ! flip in y for the SPD1 only
 	    rotMatrix[6]= 0;  rotMatrix[7]= 0;  rotMatrix[8]=-1;
 	    TGeoRotation rot;

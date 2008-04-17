@@ -344,6 +344,7 @@ void AliITSv11Hybrid::SetT2Lmatrix(Int_t uid, Double_t yShift,
   rotMatrix[3]= 1;  rotMatrix[4]= 0;  rotMatrix[5]= 0;
   rotMatrix[6]= 0;  rotMatrix[7]= 0;  rotMatrix[8]=-1;
   if (yFlip) rotMatrix[3] = -1;  // flipping in y  (for SPD1)
+  if (yFlip) rotMatrix[1] = -1;  // flipping in y  (for SPD1)
 
   if (yRot180) { // rotation of pi around the axis perpendicular to the wafer
     if (yFlip) matLtoT->SetDx( -xShift ); // flipping in y  (for SPD1)
