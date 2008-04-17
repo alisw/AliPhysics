@@ -15,5 +15,6 @@
 #pragma link C++ class  AliZDCRecParam+;
 #pragma link C++ class  AliZDCDataDCS+;
 #pragma link C++ class  AliZDCPreprocessor+;
+#pragma link C++ class  AliZDCQAChecker+;
 
 #endif

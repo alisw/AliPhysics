@@ -23,7 +23,7 @@ public:
 private:
   virtual void   InitHits(); 
   virtual void   InitDigits(); 
-  virtual void   InitSDigits(); 
+  virtual void   InitSDigits() {;} 
   virtual void   MakeHits(TClonesArray * hits);
   virtual void   MakeHits(TTree * hitTree);
   virtual void   MakeDigits(TClonesArray * digits); 

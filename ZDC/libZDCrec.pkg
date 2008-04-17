@@ -1,7 +1,7 @@
 #-*- Mode: Makefile -*-
 # $Id$
 
-SRCS= AliZDCReco.cxx AliZDCReconstructor.cxx
+SRCS= AliZDCReco.cxx AliZDCReconstructor.cxx AliZDCQADataMakerRec.cxx
 
 HDRS= $(SRCS:.cxx=.h) 
 

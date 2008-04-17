@@ -9,7 +9,6 @@
 #pragma link off all functions;
  
 #pragma link C++ class  AliZDC+;
-//#pragma link C++ class  AliZDCv1+;
 #pragma link C++ class  AliZDCv2+;
 #pragma link C++ class  AliZDCv3+;
 
@@ -20,8 +19,7 @@
 
 #pragma link C++ class  AliGenZDC+;
 
-//#pragma link C++ class  AliZDCMergedHit+;
-//#pragma link C++ class  AliZDCMerger+;
+#pragma link C++ class  AliZDCQADataMakerSim+;
 
 #pragma link C++ class  AliZDCTrigger+;
 

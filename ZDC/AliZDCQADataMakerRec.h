@@ -21,9 +21,9 @@ public:
   virtual ~AliZDCQADataMakerRec() {;} // dtor
   
 private:
-  virtual void   InitESDs() ; 
-  virtual void   InitRecPoints() ; 
-  virtual void   InitRaws() ; 
+  virtual void   InitESDs(); 
+  virtual void   InitRecPoints() {;} 
+  virtual void   InitRaws(); 
   virtual void   MakeRecPoints(TTree * recTree) {;} 
   virtual void   MakeRaws(AliRawReader* rawReader) ; 
   virtual void   MakeESDs(AliESDEvent * esd) ;

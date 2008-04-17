@@ -10,5 +10,6 @@
  
 #pragma link C++ class  AliZDCReco+;
 #pragma link C++ class  AliZDCReconstructor+;
+#pragma link C++ class  AliZDCQADataMakerRec+;
 
 #endif
