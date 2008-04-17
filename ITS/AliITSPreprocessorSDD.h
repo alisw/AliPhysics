@@ -36,8 +36,8 @@ class AliITSPreprocessorSDD : public AliPreprocessor {
 
   
   virtual UInt_t Process(TMap* dcsAliasMap);
-  Bool_t ProcessPulser(AliITSDDLModuleMapSDD* ddlmap);
-  Bool_t ProcessInjector(AliITSDDLModuleMapSDD* ddlmap);
+  UInt_t ProcessPulser(AliITSDDLModuleMapSDD* ddlmap);
+  UInt_t ProcessInjector(AliITSDDLModuleMapSDD* ddlmap);
   Bool_t ProcessDCSDataPoints(TMap* dcsAliasMap);
 
 

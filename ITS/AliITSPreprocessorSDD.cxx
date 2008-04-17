@@ -68,25 +68,26 @@ UInt_t AliITSPreprocessorSDD::Process(TMap* dcsAliasMap){
 
   //preprocessing
   TString runType = GetRunType();
-  Bool_t retcode;
+  Int_t retcode=0;
 
   if (runType == "PULSER"){
     retcode=ProcessPulser(ddlmap);
   }else if(runType== "INJECTOR"){
     retcode=ProcessInjector(ddlmap);
-  }else{
-    // do nothing for other run types
-    retcode=1;
   }
-  if(retcode){
-    Bool_t retcodedcs =ProcessDCSDataPoints(dcsAliasMap);
-    if(retcodedcs) return 0;
-  }
-  return 1;
+  if(retcode!=0) return retcode;
+
+  Bool_t retcodedcs =ProcessDCSDataPoints(dcsAliasMap);
+  if(retcodedcs) return 0; 
+  else return 1;           
+
 }
 //______________________________________________________________________
-Bool_t AliITSPreprocessorSDD::ProcessPulser(AliITSDDLModuleMapSDD* ddlmap){
+UInt_t AliITSPreprocessorSDD::ProcessPulser(AliITSDDLModuleMapSDD* ddlmap){
   // Process FXS files from PULSER run (baseline, noise, gain)
+  // returns 0 in case of success, 
+  //         1 in case of storage error, 
+  //         2 in case of error with input files
   TObjArray calSDD(kNumberOfSDD);
   calSDD.SetOwner(kFALSE);
   Char_t command[100];
@@ -165,11 +166,15 @@ Bool_t AliITSPreprocessorSDD::ProcessPulser(AliITSDDLModuleMapSDD* ddlmap){
   md->SetBeamPeriod(0);
   md->SetComment("AliITSCalibrationSDD from PEDESTAL+PULSER runs");
   Bool_t retCode = Store("Calib","CalibSDD",&calSDD,md, 0, kTRUE);
-  return retCode;
+  if(retCode) return 0;
+  else return 1;
 }
 //______________________________________________________________________
-Bool_t AliITSPreprocessorSDD::ProcessInjector(AliITSDDLModuleMapSDD* ddlmap){
+UInt_t AliITSPreprocessorSDD::ProcessInjector(AliITSDDLModuleMapSDD* ddlmap){
   // Process FXS files from injector events (INJECTOR or PHYSICS runs)
+  // returns 0 in case of success, 
+  //         1 in case of storage error, 
+  //         2 in case of error with input files
   TObjArray vdrift(2*kNumberOfSDD);
   vdrift.SetOwner(kFALSE);
   Char_t command[100];
@@ -230,7 +235,8 @@ Bool_t AliITSPreprocessorSDD::ProcessInjector(AliITSDDLModuleMapSDD* ddlmap){
   md->SetBeamPeriod(0);
   md->SetComment("AliITSDriftSpeedSDD from injector events");
   Bool_t retCode = Store("Calib","DriftSpeedSDD",&vdrift,md,0, kTRUE);
-  return retCode;
+  if(retCode) return 0;
+  else return 1;
 }
 //______________________________________________________________________
 Bool_t AliITSPreprocessorSDD::ProcessDCSDataPoints(TMap* dcsAliasMap){
