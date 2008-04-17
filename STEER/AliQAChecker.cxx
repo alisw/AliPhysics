@@ -154,7 +154,7 @@ void AliQAChecker::GetRefSubDir(const char * det, const char * task, TDirectory 
 		}  
 	} else if (refStorage.Contains(AliQA::GetLabLocalOCDB()) || refStorage.Contains(AliQA::GetLabAliEnOCDB())) {	
 		AliCDBManager* man = AliCDBManager::Instance() ; 
-		if ( ! man->IsDefaultStorageSet() ) { 
+		if ( ! man->GetLock() ) { 
 			man->SetDefaultStorage(AliQA::GetQARefStorage()) ; 
 			man->SetSpecificStorage("*", AliQA::GetQARefStorage()) ;
 		}

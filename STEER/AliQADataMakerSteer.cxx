@@ -623,7 +623,7 @@ TString AliQADataMakerSteer::Run(const char * detectors, AliRawReader * rawReade
 	fDetectorsW      = detectors ; 	
 	
 	AliCDBManager* man = AliCDBManager::Instance() ; 
-	if ( ! man->IsDefaultStorageSet() ) { 
+	if ( ! man->GetLock() ) { 
 		man->SetDefaultStorage(AliQA::GetQARefStorage()) ; 
 		man->SetSpecificStorage("*", AliQA::GetQARefStorage()) ;
 	}
@@ -653,11 +653,6 @@ TString AliQADataMakerSteer::Run(const char * detectors, const char * fileName, 
 	fDetectorsW      = detectors ; 	
 	
 	AliCDBManager* man = AliCDBManager::Instance() ; 
-	if ( ! man->IsDefaultStorageSet() ) { 
-		man->SetDefaultStorage(AliQA::GetQARefStorage()) ; 
-		man->SetSpecificStorage("*", AliQA::GetQARefStorage()) ;
-	}
-
 	if ( man->GetRun() == -1 ) { // check if run number not set previously and set it from AliRun
 		AliRunLoader * rl = AliRunLoader::Open("galice.root") ;
 		if ( ! rl ) {
@@ -700,12 +695,7 @@ TString AliQADataMakerSteer::Run(const char * detectors, const AliQA::TASKINDEX_
 		return "" ;
 	}
 
-	AliCDBManager* man = AliCDBManager::Instance() ; 
-	if ( ! man->IsDefaultStorageSet() ) { 
-		man->SetDefaultStorage(AliQA::GetQARefStorage()) ; 
-		man->SetSpecificStorage("*", AliQA::GetQARefStorage()) ;
-	}
-	
+	AliCDBManager* man = AliCDBManager::Instance() ; 	
 	if ( man->GetRun() == -1 ) { // check if run number not set previously and set it from AliRun
 		AliRunLoader * rl = AliRunLoader::Open("galice.root") ;
 		if ( ! rl ) {
