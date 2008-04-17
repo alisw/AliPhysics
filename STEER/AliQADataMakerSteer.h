@@ -72,7 +72,7 @@ private:
 	Bool_t             fFirst ;                        //! to search the detector QA data maker only once
 	TString            fGAliceFileName ;               //! name of the galice file
 	UInt_t             fFirstEvent ;                   //! first event to process
-	UInt_t             fMaxEvents ;                    //! number of events to process
+	Int_t              fMaxEvents ;                    //! number of events to process
 	Long64_t           fNumberOfEvents ;               //! number of events in the run 
 	UInt_t             fRunNumber ;                    //! current run number
 	AliRawReader     * fRawReader ;                    //! current raw reader object 

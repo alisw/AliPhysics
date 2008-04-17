@@ -151,10 +151,10 @@ AliQADataMakerSteer::~AliQADataMakerSteer()
 Bool_t AliQADataMakerSteer::DoIt(const AliQA::TASKINDEX_t taskIndex, const char * mode)
 {
 	// Runs all the QA data Maker for every detector
-
+		
 	Bool_t rv = kFALSE ;
     // Fill QA data in event loop 
-	for (UInt_t iEvent = fFirstEvent ; iEvent < fMaxEvents ; iEvent++) {
+	for (UInt_t iEvent = fFirstEvent ; iEvent < (UInt_t)fMaxEvents ; iEvent++) {
 		fCurrentEvent++ ; 
 		// Get the event
 		if ( iEvent%10 == 0  ) 
@@ -171,7 +171,7 @@ Bool_t AliQADataMakerSteer::DoIt(const AliQA::TASKINDEX_t taskIndex, const char 
 		}
 		// loop  over active loaders
 		for (Int_t i = 0; i < fQADataMakers.GetEntriesFast() ; i++) {
-			AliQADataMaker * qadm = static_cast<AliQADataMaker *>(fQADataMakers.At(i)); //GetQADataMaker(iDet, mode) ;
+			AliQADataMaker * qadm = static_cast<AliQADataMaker *>(fQADataMakers.At(i)) ;
 			if ( qadm->IsCycleDone() ) {
 				qadm->EndOfCycle(AliQA::kRAWS) ;
 				qadm->StartOfCycle(AliQA::kRAWS) ;
@@ -537,7 +537,7 @@ Bool_t AliQADataMakerSteer::Merge(const Int_t runNumber) const
 	ifstream in("tempo.txt") ; 
 	const Int_t runMax = 10 ;  
 	TString file[AliQA::kNDET*runMax] ;
-	Int_t run[AliQA::kNDET*runMax] = {-1.0} ;
+	Int_t run[AliQA::kNDET*runMax] = {-1} ;
 	
 	Int_t index = 0 ; 
 	while ( 1 ) {
@@ -626,6 +626,19 @@ TString AliQADataMakerSteer::Run(const char * detectors, AliRawReader * rawReade
 		return kFALSE ; 
 	fRawReaderDelete = kFALSE ; 
 
+	AliCDBManager* man = AliCDBManager::Instance() ; 
+	if ( ! man->IsDefaultStorageSet() ) { 
+		man->SetDefaultStorage(AliQA::GetQARefStorage()) ; 
+		man->SetSpecificStorage("*", AliQA::GetQARefStorage()) ;
+	}
+	
+	if ( man->GetRun() == -1 ) {// check if run number not set previously and set it from raw data
+
+		rawReader->NextEvent() ; 
+		man->SetRun(fRawReader->GetRunNumber()) ;
+		rawReader->RewindEvents() ;
+	}	
+	
 	DoIt(AliQA::kRAWS, "rec") ; 
 	return 	fDetectorsW ;
 }
@@ -642,6 +655,28 @@ TString AliQADataMakerSteer::Run(const char * detectors, const char * fileName, 
 	if ( !Init(AliQA::kRAWS, "rec", fileName) ) 
 		return kFALSE ; 
 
+	AliCDBManager* man = AliCDBManager::Instance() ; 
+	if ( ! man->IsDefaultStorageSet() ) { 
+		man->SetDefaultStorage(AliQA::GetQARefStorage()) ; 
+		man->SetSpecificStorage("*", AliQA::GetQARefStorage()) ;
+	}
+
+	if ( man->GetRun() == -1 ) { // check if run number not set previously and set it from AliRun
+		AliRunLoader * rl = AliRunLoader::Open("galice.root") ;
+		if ( ! rl ) {
+			AliFatal("galice.root file not found in current directory") ; 
+		} else {
+			rl->CdGAFile() ; 
+			rl->LoadgAlice() ;
+			if ( ! rl->GetAliRun() ) {
+				AliFatal("AliRun not found in galice.root") ;
+			} else {
+				rl->LoadHeader() ;
+				man->SetRun(rl->GetHeader()->GetRun());
+			}
+		}
+	}
+	
 	DoIt(AliQA::kRAWS, "rec") ; 
 	return 	fDetectorsW ;
 }
@@ -668,6 +703,28 @@ TString AliQADataMakerSteer::Run(const char * detectors, const AliQA::TASKINDEX_
 	if ( !Init(taskIndex, mode.Data(), fileName) ) 
 		return kFALSE ; 
 
+	AliCDBManager* man = AliCDBManager::Instance() ; 
+	if ( ! man->IsDefaultStorageSet() ) { 
+		man->SetDefaultStorage(AliQA::GetQARefStorage()) ; 
+		man->SetSpecificStorage("*", AliQA::GetQARefStorage()) ;
+	}
+	
+	if ( man->GetRun() == -1 ) { // check if run number not set previously and set it from AliRun
+		AliRunLoader * rl = AliRunLoader::Open("galice.root") ;
+		if ( ! rl ) {
+			AliFatal("galice.root file not found in current directory") ; 
+		} else {
+			rl->CdGAFile() ; 
+			rl->LoadgAlice() ;
+			if ( ! rl->GetAliRun() ) {
+				AliFatal("AliRun not found in galice.root") ;
+			} else {
+				rl->LoadHeader() ;
+				man->SetRun(rl->GetHeader()->GetRun()) ;
+			}
+		}
+	}
+	
 	DoIt(taskIndex, mode.Data()) ;
 	
 	return fDetectorsW ;
