@@ -240,6 +240,23 @@ class AliHLTTPCEsdWriterComponent : public AliHLTLogging
   /** assignment operator prohibited */
   AliHLTTPCEsdWriterComponent& operator=(const AliHLTTPCEsdWriterComponent&);
 
-  ClassDef(AliHLTTPCEsdWriterComponent, 1)
+  /**
+   * (Re)Configure from the CDB
+   * Loads the following objects:
+   * - HLT/ConfigHLT/SolenoidBz
+   */
+  int Reconfigure(const char* cdbEntry, const char* chainId);
+
+  /**
+   * Configure the component.
+   * Parse a string for the configuration arguments and set the component
+   * properties.
+   */  
+  int Configure(const char* arguments);
+
+  /** solenoid b field */
+  Double_t fSolenoidBz; //! transient
+
+  ClassDef(AliHLTTPCEsdWriterComponent, 2)
 };
 #endif

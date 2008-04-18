@@ -32,13 +32,17 @@
 #include "TClass.h"
 #include "TObject.h"
 #include "TObjectTable.h"
+#include "TSystem.h"
+#include "TChain.h"
+#include "TList.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTEsdManager)
 
 AliHLTEsdManager::AliHLTEsdManager()
   :
-  fESDs()
+  fESDs(),
+  fDirectory()
 {
   // see header file for class documentation
   // or
@@ -107,16 +111,30 @@ int AliHLTEsdManager::WriteESD(const AliHLTUInt8_t* pBuffer, AliHLTUInt32_t size
 	AliHLTEsdListEntry* entry=Find(dt);
 	if (!entry) {
 	  AliHLTEsdListEntry* newEntry=new AliHLTEsdListEntry(dt);
+	  if (!fDirectory.IsNull()) {
+	    newEntry->SetDirectory(fDirectory);
+	  }
 	  fESDs.push_back(newEntry);
 	}
 	if (tgtesd) {
-	}
+	  TTree* pTmpTree=AliHLTEsdManager::EmbedIntoTree(pESD);
+	  if (pTmpTree) {
+	    tgtesd->ReadFromTree(pTmpTree);
+	    pTmpTree->GetEvent(0);
+	    pTmpTree->GetUserInfo()->Clear();
+	    delete pTmpTree;
+	    HLTDebug("data block %s written to target ESD", AliHLTComponent::DataType2Text(dt).c_str());
+	  } else {
+	    iResult=-ENOMEM;
+	  }
+	} else {
 	entry=Find(dt);
 	if (entry) {
 	  entry->WriteESD(pESD, eventno);
 	} else {
 	  HLTError("internal mismatch, can not create list entry");
 	  iResult=-ENOMEM;
+	}
 	}
       } else {
 	HLTWarning("data block %s is not of class type AliESDEvent, ignoring ...", AliHLTComponent::DataType2Text(dt).c_str());
@@ -134,12 +152,68 @@ int AliHLTEsdManager::WriteESD(const AliHLTUInt8_t* pBuffer, AliHLTUInt32_t size
   return iResult;
 }
 
+int AliHLTEsdManager::PadESDs(int eventno)
+{
+  // see header file for class documentation
+  int iResult=0;
+  for (unsigned int i=0; i<fESDs.size(); i++) {
+    if (fESDs[i]) {
+      int res=fESDs[i]->WriteESD(NULL, eventno);
+      if (res<0 && iResult>=0) iResult=res;
+    }
+  }
+  return iResult;
+}
+
+void AliHLTEsdManager::SetDirectory(const char* directory)
+{
+  // see header file for class documentation
+  if (!directory) return;
+  fDirectory=directory;
+  for (unsigned int i=0; i<fESDs.size(); i++) {
+    if (fESDs[i]) {
+      fESDs[i]->SetDirectory(directory);
+    }
+  }
+}
+
+TString AliHLTEsdManager::GetFileNames(AliHLTComponentDataType dt) const
+{
+  TString result;
+  for (unsigned int i=0; i<fESDs.size(); i++) {
+    if (fESDs[i] && *(fESDs[i])==dt) {
+      if (!result.IsNull()) result+=" ";
+      result+=fESDs[i]->GetFileName();
+    }
+  }
+  return result;
+}
+
+TTree* AliHLTEsdManager::EmbedIntoTree(AliESDEvent* pESD, const char* name, const char* title)
+{
+  // see header file for class documentation
+  int iResult=0;
+  TTree* pTree=new TTree(name, title);
+  if (pTree) {
+    pESD->WriteToTree(pTree);
+    pTree->Fill();
+    pTree->GetUserInfo()->Add(pESD);
+  } else {
+    iResult=-ENOMEM;
+  }
+
+  if (iResult<0) {
+    pTree->GetUserInfo()->Clear();
+    delete pTree;
+  }
+
+  return pTree;
+}
+
 AliHLTEsdManager::AliHLTEsdListEntry::AliHLTEsdListEntry(AliHLTComponentDataType dt)
   :
   fName(),
-  fpFile(NULL),
-  fpTree(NULL),
-  fpEsd(NULL),
+  fDirectory(),
   fDt(dt)
 {
   // see header file for class documentation
@@ -148,25 +222,6 @@ AliHLTEsdManager::AliHLTEsdListEntry::AliHLTEsdListEntry(AliHLTComponentDataType
 AliHLTEsdManager::AliHLTEsdListEntry::~AliHLTEsdListEntry()
 {
   // see header file for class documentation
-  if (fpTree) {
-    fpTree->GetUserInfo()->Clear();
-    delete fpTree;
-    fpTree=NULL;
-  }
-
-  // due to the Root garbage collection the ESD object might already be
-  // deleted since the pTree->GetUserInfo()->Add(pESD) adds the ESD object to
-  // an internal list which is cleaned when the tree is deleted
-  if (fpEsd && gObjectTable->PtrIsValid(fpEsd)) {
-    delete fpEsd;
-  }
-  fpEsd=NULL;
-
-  if (fpFile) {
-    fpFile->Close();
-    delete fpFile;
-    fpFile=NULL;
-  }
 }
 
 bool AliHLTEsdManager::AliHLTEsdListEntry::operator==(AliHLTComponentDataType dt) const
@@ -175,17 +230,44 @@ bool AliHLTEsdManager::AliHLTEsdListEntry::operator==(AliHLTComponentDataType dt
   return fDt==dt;
 }
 
-int AliHLTEsdManager::AliHLTEsdListEntry::WriteESD(AliESDEvent* pESD, int eventno)
+int AliHLTEsdManager::AliHLTEsdListEntry::WriteESD(AliESDEvent* pSrcESD, int eventno)
 {
-  // see header file for class documentation
-  if (!pESD) return -EINVAL;
+  // we need to copy the ESD, I did not find an approptiate
+  // method, the workaround is to save the ESD in a temporary
+  // tree, read the content back into the ESD structure
+  // used for filling.
+  // Unfortunately the following code crashes at the second event.
+  // The expert on the ESD (Christian Klein Boesig) does not have
+  // a solution either. It seems to be a problem in ROOT.
+  //  TTree* dummy=new TTree("dummy","dummy");
+  //  dummy->SetDirectory(0);
+  //  pESD->WriteToTree(dummy);
+  //  dummy->Fill();
+  //  dummy->GetUserInfo()->Add(pESD);
+  //  fpEsd->ReadFromTree(dummy);
+  //  dummy->GetEvent(0);
+  //  fpEsd->WriteToTree(fpTree);
+  //  fpTree->Fill();
+  //  dummy->GetUserInfo()->Clear();
+  //  delete dummy;
+  //
+  // The only way is via TChain, which is working on files only at the
+  // time of writing.
+  // We use temporary files for the new event to be copied into the
+  // existing tree.
+  //
   int iResult=0;
-  if (!fpFile) {
+  if (fName.IsNull()) {
+    // this is the first event, create the file on disk and write ESD
     TString origin;
     origin.Insert(0, fDt.fOrigin, kAliHLTComponentDataTypefOriginSize);
     origin.Remove(TString::kTrailing, ' ');
     origin.ToUpper();
-    fName="AliHLT"; fName+=origin;
+    fName="";
+    if (!fDirectory.IsNull()) {
+      fName+=fDirectory; fName+="/";
+    }
+    fName+="AliHLT"; fName+=origin;
     if (fDt!=kAliHLTDataTypeESDObject &&
 	fDt!=kAliHLTDataTypeESDTree) {
 
@@ -197,69 +279,199 @@ int AliHLTEsdManager::AliHLTEsdListEntry::WriteESD(AliESDEvent* pESD, int eventn
       fName+="_"; fName+=id; fName+=".root";
     } else {
       fName+="ESDs.root";
-      fpFile=new TFile(fName, "RECREATE");
+    }
+
+    if (!gSystem->AccessPathName(fName)) {
+      // file exists, delete
+      TString shellcmd="rm -f ";
+      shellcmd+=fName;
+      gSystem->Exec(shellcmd);
     }
   }
-  if (fpFile && !fpFile->IsZombie() && iResult>=0) {
-    if (!fpTree) {
-      fpTree=new TTree("esdTree", "Tree with HLT ESD objects");
-      if (!fpTree) {
-	iResult=-ENOMEM;
-      } else {
-	fpTree->SetDirectory(0);
-      }
-    }
-    if (fpTree && iResult>=0) {
-      if (!fpEsd) {
-	// create the ESD structure for filling into the tree
-	fpEsd=new AliESDEvent;
-	if (fpEsd) {
-	  fpEsd->CreateStdContent();
-	  fpTree->GetUserInfo()->Add(fpEsd);
-	} else {
-	  iResult=-ENOMEM;
-	}
-      } else {
-	fpEsd->ResetStdContent();
-      }
+
+  TChain chain("esdTree");
+  TList cleanup;
+  cleanup.SetOwner();
+
+  int nofCurrentEvents=0;
+  if (iResult>=0) {
+    if (!gSystem->AccessPathName(fName)) {
+      // these are the other events, use the target file and temporary files to merge
+      // with TChain
+      chain.Add(fName);
+
       if (eventno>=0) {
-	// synchronize and add empty events
-	for (int i=fpTree->GetEntries(); i<eventno; i++) {
-	  fpTree->Fill();
+	TFile file(fName);
+	if (!file.IsZombie()) {
+	  TTree* pSrcTree;
+	  file.GetObject("esdTree", pSrcTree);
+	  if (pSrcTree) {
+	    nofCurrentEvents=pSrcTree->GetEntries();
+	  }
+	  file.Close();
 	}
-	if (fpTree->GetEntries()>eventno) {
-	  HLTWarning("event %d ESD of type %s already written, skipping additional data block", eventno, AliHLTComponent::DataType2Text(fDt).c_str());
-	}
-      }
-      if (fpEsd) {
-	// we need to copy the ESD, I did not find an approptiate
-	// method, the workaround is to save the ESD in a temporary
-	// tree, read the content back into the ESD structure
-	// used for filling
-	TTree* dummy=new TTree("dummy","dummy");
-	if (dummy) {
-	  /*
-	  dummy->SetDirectory(0);
-	  pESD->WriteToTree(dummy);
-	  dummy->Fill();
-	  dummy->GetUserInfo()->Add(pESD);
-	  fpEsd->ReadFromTree(dummy);
-	  dummy->GetEvent(0);
-	  */
-	  fpEsd->WriteToTree(fpTree);
-	  fpTree->Fill();
-	  dummy->GetUserInfo()->Clear();
-	  delete dummy;
-	} else {
-	  iResult=-ENOMEM;
-	}
-      } else {
-	iResult=-ENOMEM;
-      }
-      if (iResult>=0) {
-	fpTree->Write("",TObject::kOverwrite);
       }
     }
   }
+
+  // synchronize and add empty events
+  if (nofCurrentEvents<eventno) {
+    iResult=1; // indicate files to merge
+    TTree* pTgtTree=new TTree("esdTree", "Tree with HLT ESD objects");
+    if (pTgtTree) {
+      pTgtTree->SetDirectory(0);
+      AliESDEvent* pTmpESD=new AliESDEvent;
+      if (pTmpESD) {
+	TString tmpfilename;
+	FILE* pTmpFile=gSystem->TempFileName(tmpfilename);
+	if (pTmpFile) {
+	  fclose(pTmpFile);
+	  pTmpFile=NULL;
+	  cleanup.Add(new TObjString(tmpfilename));
+	  TFile emptyevents(tmpfilename, "RECREATE");
+	  if (!emptyevents.IsZombie()) {
+	    pTmpESD->CreateStdContent();
+	    pTmpESD->WriteToTree(pTgtTree);
+	    HLTDebug("adding %d empty events to file %s", eventno-nofCurrentEvents, fName.Data());
+	    for (int i=nofCurrentEvents; i<eventno; i++) {
+	      pTgtTree->Fill();
+	    }
+	    pTgtTree->GetUserInfo()->Add(pTmpESD);
+	    emptyevents.cd();
+	    pTgtTree->Write();
+	    emptyevents.Close();
+	    chain.Add(tmpfilename);
+	    pTgtTree->GetUserInfo()->Clear();
+	  }
+	}
+	delete pTmpESD;
+      } else {
+	iResult=-ENOMEM;
+      }
+      delete pTgtTree;
+    } else {
+      iResult=-ENOMEM;
+    }
+  }
+
+  if (iResult>=0 && pSrcESD) {
+    // add the new event to the chain
+    iResult=1; // indicate files to merge
+    TString tmpfilename=WriteTempFile(pSrcESD);
+    if (!tmpfilename.IsNull()) {
+      chain.Add(tmpfilename);
+      cleanup.Add(new TObjString(tmpfilename));
+    }
+  }
+
+  if (iResult>0) {
+    // build temporary file name for chain output
+    TString tgtName;
+    FILE* pTmpFile=gSystem->TempFileName(tgtName);
+    if (pTmpFile) {
+      fclose(pTmpFile);
+      pTmpFile=NULL;
+
+      chain.Merge(tgtName);
+      // rename the merged file to the original file
+      TString shellcmd="mv ";
+      shellcmd+=tgtName + " " + fName;
+      if (gSystem->Exec(shellcmd)==0) {
+	HLTDebug("renaming %s to %s", tgtName.Data(), fName.Data());
+      } else {
+	HLTError("can not rename temporary file %s to %s", tgtName.Data(), fName.Data());
+      }
+    } else {
+      HLTError("can not get temporary file name from system");
+      iResult=-EBADF;
+    }
+  }
+
+  // delete temporary files
+  // the list objects are cleaned up be the TList destructor as the
+  // list is owner
+  TIter entry(&cleanup);
+  while (TObject* pObj=entry.Next()) {
+    if (dynamic_cast<TObjString*>(pObj)) {
+      TString shellcmd="rm -f ";
+      shellcmd+=(dynamic_cast<TObjString*>(pObj))->GetString();
+      gSystem->Exec(shellcmd);
+    }
+  }
+
   return iResult;
+}
+
+TString AliHLTEsdManager::AliHLTEsdListEntry::WriteTempFile(AliESDEvent* pESD) const
+{
+  // see header file for class documentation
+  int iResult;
+  TString tmpfilename;
+  FILE* pTmpFile=gSystem->TempFileName(tmpfilename);
+  if (pTmpFile) {
+    fclose(pTmpFile);
+    pTmpFile=NULL;
+
+    TFile file(tmpfilename, "RECREATE");
+    if (!file.IsZombie()) {
+      TTree* pTree=AliHLTEsdManager::EmbedIntoTree(pESD);
+      if (pTree) {
+	file.cd();
+	if (pTree->Write()>0) {
+	} else {
+	  HLTError("can not write esd tree to temporary file %s", tmpfilename.Data());
+	}
+
+	pTree->GetUserInfo()->Clear();
+	delete pTree;
+      } else {
+	iResult=-ENOMEM;
+      }
+      file.Close();
+    } else {
+      HLTError("can not open file %s", tmpfilename.Data());
+    }
+  } else {
+    HLTError("can not get temporary file name from system");
+    iResult=-EBADF;
+  }
+
+  if (iResult<0) {
+    if (gSystem->AccessPathName(tmpfilename)==0) {
+      TString shellcmd="rm -f ";
+      shellcmd+=tmpfilename;
+      gSystem->Exec(shellcmd);
+    }
+    tmpfilename="";
+  }
+  return tmpfilename;
+}
+
+void AliHLTEsdManager::AliHLTEsdListEntry::SetDirectory(const char* directory)
+{
+  // see header file for class documentation
+  if (!directory) return;
+  if (!fName.IsNull()) {
+    HLTWarning("ESD entry already in writing mode (%s), ignoring directory", fName.Data());
+    return;
+  }
+  fDirectory=directory;
+}
+
+void AliHLTEsdManager::AliHLTEsdListEntry::Delete()
+{
+  // see header file for class documentation
+  if (fName.IsNull()) return;
+  if (gSystem->AccessPathName(fName)!=0) return;
+
+  TString shellcmd="rm -f ";
+  shellcmd+=fName;
+  gSystem->Exec(shellcmd);
+  fName="";
+}
+
+const char* AliHLTEsdManager::AliHLTEsdListEntry::GetFileName() const
+{
+  // see header file for class documentation
+  return fName.Data();
 }

@@ -71,7 +71,8 @@ AliHLTSystem::AliHLTSystem()
   fChains(),
   fStopwatches(new TObjArray),
   fEventCount(-1),
-  fGoodEvents(-1)
+  fGoodEvents(-1),
+  bWriteGlobalEsd(false)
 {
   // see header file for class documentation
   // or
@@ -707,6 +708,14 @@ int AliHLTSystem::ProcessHLTOUT(AliHLTOUT* pHLTOUT, AliESDEvent* esd)
 
   HLTDebug("processing %d HLT data blocks", pHLTOUT->GetNofDataBlocks());
   AliHLTOUT::AliHLTOUTHandlerListEntryVector esdHandlers;
+
+  // first come first serve: the ESD of the first handler is also filled into
+  // the main ESD. Has to be changed later.
+  // currently, merging to the provided ESDs crashes at the level of the
+  // TTree::Fill in AliReconstruction, furthermore, the wrong ESD is passed
+  // by the framework
+  AliESDEvent* pMasterESD=NULL;
+  if (bWriteGlobalEsd) pMasterESD=esd;
   for (iResult=pHLTOUT->SelectFirstDataBlock();
        iResult>=0;
        iResult=pHLTOUT->SelectNextDataBlock()) {
@@ -733,6 +742,10 @@ int AliHLTSystem::ProcessHLTOUT(AliHLTOUT* pHLTOUT, AliESDEvent* esd)
 	  AliHLTUInt32_t size=0;
 	  if (pHLTOUT->GetDataBuffer(pBuffer, size)>=0) {
 	    pHLTOUT->WriteESD(pBuffer, size, dt);
+	    if (pMasterESD) {
+	      pHLTOUT->WriteESD(pBuffer, size, dt, pMasterESD);
+	      pMasterESD=NULL;
+	    }
 	    pHLTOUT->ReleaseDataBuffer(pBuffer);
 	  }
 	}
@@ -780,9 +793,6 @@ int AliHLTSystem::ProcessHLTOUT(AliHLTOUT* pHLTOUT, AliESDEvent* esd)
 
   AliHLTOUT::AliHLTOUTHandlerListEntryVector::iterator esdHandler;
   // write all postponed esd data blocks
-  // first come first serve: the ESD of the first handler is also filled into
-  // the main ESD. Has to be changed later.
-  AliESDEvent* pMasterESD=esd;
   for (esdHandler=esdHandlers.begin(); esdHandler!=esdHandlers.end() && iResult>=0; esdHandler++) {
     AliHLTOUTHandler* pHandler=*esdHandler;
     const AliHLTUInt8_t* pBuffer=NULL;
@@ -937,6 +947,8 @@ int AliHLTSystem::ScanOptions(const char* options)
 	      HLTWarning("wrong argument for option \'libmode=\', use \'static\' or \'dynamic\'");
 	    }
 	  }
+	} else if (token.Contains("globalesd")) {
+	  bWriteGlobalEsd=true;
 	} else if (token.BeginsWith("lib") && token.EndsWith(".so")) {
 	  libs+=token;
 	  libs+=" ";

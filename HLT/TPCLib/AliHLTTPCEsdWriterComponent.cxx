@@ -33,6 +33,8 @@
 #include "AliHLTTPCEsdWriterComponent.h"
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
+#include "AliCDBEntry.h"
+#include "AliCDBManager.h"
 #include "TTree.h"
 #include "TList.h"
 #include "AliHLTTPCTrack.h"
@@ -45,6 +47,8 @@
 ClassImp(AliHLTTPCEsdWriterComponent)
 
 AliHLTTPCEsdWriterComponent::AliHLTTPCEsdWriterComponent()
+  :
+  fSolenoidBz(0)
 {
   // see header file for class documentation
   // or
@@ -101,6 +105,11 @@ int AliHLTTPCEsdWriterComponent::AliWriter::InitWriter()
   if (fTree==NULL) {
     iResult=-ENOMEM;
   }
+
+  if (iResult>=0) {
+    iResult=fBase->Reconfigure(NULL, NULL);
+  }
+
   return iResult;
 }
 
@@ -164,6 +173,7 @@ int AliHLTTPCEsdWriterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* pESD,
   // see header file for class documentation
   int iResult=0;
   if (pESD && blocks) {
+      pESD->SetMagneticField(fSolenoidBz);
       const AliHLTComponentBlockData* iter = NULL;
       AliHLTTPCTrackletData* inPtr=NULL;
       int bIsTrackSegs=0;
@@ -246,6 +256,72 @@ int AliHLTTPCEsdWriterComponent::Tracks2ESD(AliHLTTPCTrackArray* pTracks, AliESD
   return iResult;
 }
 
+int AliHLTTPCEsdWriterComponent::Configure(const char* arguments)
+{
+  // see header file for class documentation
+  int iResult=0;
+  if (!arguments) return iResult;
+
+  TString allArgs=arguments;
+  TString argument;
+  int bMissingParam=0;
+
+  TObjArray* pTokens=allArgs.Tokenize(" ");
+  if (pTokens) {
+    for (int i=0; i<pTokens->GetEntries() && iResult>=0; i++) {
+      argument=((TObjString*)pTokens->At(i))->GetString();
+      if (argument.IsNull()) continue;
+      
+      if (argument.CompareTo("-solenoidBz")==0) {
+	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+	HLTInfo("Magnetic Field set to: %s", ((TObjString*)pTokens->At(i))->GetString().Data());
+	fSolenoidBz=((TObjString*)pTokens->At(i))->GetString().Atof();
+	continue;
+      } else {
+	HLTError("unknown argument %s", argument.Data());
+	iResult=-EINVAL;
+	break;
+      }
+    }
+    delete pTokens;
+  }
+  if (bMissingParam) {
+    HLTError("missing parameter for argument %s", argument.Data());
+    iResult=-EINVAL;
+  }
+
+  return iResult;
+}
+
+int AliHLTTPCEsdWriterComponent::Reconfigure(const char* cdbEntry, const char* chainId)
+{
+  // see header file for class documentation
+  int iResult=0;
+  const char* path="HLT/ConfigHLT/SolenoidBz";
+  const char* defaultNotify="";
+  if (cdbEntry) {
+    path=cdbEntry;
+    defaultNotify=" (default)";
+  }
+  if (path) {
+    HLTInfo("reconfigure from entry %s%s, chain id %s", path, defaultNotify,(chainId!=NULL && chainId[0]!=0)?chainId:"<none>");
+    AliCDBEntry *pEntry = AliCDBManager::Instance()->Get(path/*,GetRunNo()*/);
+    if (pEntry) {
+      TObjString* pString=dynamic_cast<TObjString*>(pEntry->GetObject());
+      if (pString) {
+	HLTInfo("received configuration object string: \'%s\'", pString->GetString().Data());
+	iResult=Configure(pString->GetString().Data());
+      } else {
+	HLTError("configuration object \"%s\" has wrong type, required TObjString", path);
+      }
+    } else {
+      HLTError("can not fetch object \"%s\" from CDB", path);
+    }
+  }
+  
+  return iResult;
+}
+
 AliHLTTPCEsdWriterComponent::AliConverter::AliConverter()
   :
   fBase(new AliHLTTPCEsdWriterComponent),
@@ -311,6 +387,10 @@ int AliHLTTPCEsdWriterComponent::AliConverter::DoInit(int argc, const char** arg
   if (bMissingParam) {
     HLTError("missing parameter for argument %s", argument.Data());
     iResult=-EINVAL;
+  }
+
+  if (iResult>=0) {
+    iResult=fBase->Reconfigure(NULL, NULL);
   }
 
   return iResult;

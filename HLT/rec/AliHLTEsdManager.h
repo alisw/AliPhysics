@@ -15,6 +15,7 @@
 
 #include "AliHLTDataTypes.h"
 #include "AliHLTLogging.h"
+#include "TString.h"
 #include <vector>
 
 class AliESDEvent;
@@ -47,6 +48,32 @@ class AliHLTEsdManager : public AliHLTLogging {
   int WriteESD(const AliHLTUInt8_t* pBuffer, AliHLTUInt32_t size, AliHLTComponentDataType dt,
 	       AliESDEvent* tgtesd=NULL, int eventno=-1);
 
+  /**
+   * Align all ESD to the same number of events.
+   * The function adds empty events to all ESD files if their event number
+   * does not match the specified one.
+   * @param eventno     the desired event no
+   * @return neg. error code if failed
+   */
+  int PadESDs(int eventno);
+
+  /**
+   * Set the target directory for the ESD files.
+   */
+  void SetDirectory(const char* directory);
+
+  /**
+   * Get the list of the internally created files.
+   * Returns a blank separated list of the file names.
+   */
+  TString GetFileNames(AliHLTComponentDataType dt=kAliHLTAnyDataType) const;
+
+  /**
+   * Embed an ESD into a TTree object.
+   * The tree object needs to be deleted by the caller.
+   */
+  static TTree* EmbedIntoTree(AliESDEvent* pESD, const char* name="esdTree", const char* title="Tree with HLT ESD objects");
+
  protected:
 
  private:
@@ -73,6 +100,21 @@ class AliHLTEsdManager : public AliHLTLogging {
      */
     int WriteESD(AliESDEvent* pESD, int eventno=-1);
 
+    /**
+     * Set the target directory for the ESD file.
+     */
+    void SetDirectory(const char* directory);
+
+    /**
+     * Delete the ESD file.
+     */
+    void Delete();
+
+    /**
+     * Get name of the ESD file.
+     */
+    const char* GetFileName() const;
+
     bool operator==(AliHLTComponentDataType dt) const;
 
   private:
@@ -81,14 +123,19 @@ class AliHLTEsdManager : public AliHLTLogging {
     /** assignment operator prohibited */
     AliHLTEsdListEntry& operator=(const AliHLTEsdListEntry& src);
 
+    /**
+     * Write ESD to temporary file.
+     * The ESD is embedded into a tree and saved to a temporary file.
+     * The file name is retrieved by TSystem::GetTempFileName and returned
+     * on success.
+     * @return file name, empty on failure
+     */
+    TString WriteTempFile(AliESDEvent* pESD) const;
+
     /** root file name */
     TString fName; //!transient
-    /** the root file for this esd */
-    TFile* fpFile; //!transient
-    /** the tree for this esd */
-    TTree* fpTree; //!transient
-    /** the esd to fill into the tree */
-    AliESDEvent* fpEsd; //!transient
+    /** target directory */
+    TString fDirectory; //!transient
     /** data type of the corresponding block */
     AliHLTComponentDataType fDt; //!transient
   };
@@ -103,6 +150,10 @@ class AliHLTEsdManager : public AliHLTLogging {
   /** the list of the ESDs */
   AliHLTEsdPList fESDs; //!transient
 
+  /** target directory */
+  TString fDirectory; //!transient
+
   ClassDef(AliHLTEsdManager, 0)
 };
+
 #endif

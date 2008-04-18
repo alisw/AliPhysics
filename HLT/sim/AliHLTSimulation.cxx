@@ -27,7 +27,15 @@
 #include "TObjString.h"
 #include "AliHLTSimulation.h"
 #include "AliLog.h"
+#include "AliRun.h"
 #include "AliRunLoader.h"
+#include "AliHeader.h"
+#include "AliTracker.h"
+#include "AliCDBManager.h"
+#include "AliCDBEntry.h"
+#include "AliCDBPath.h"
+#include "AliCDBId.h"
+#include "AliCDBMetaData.h"
 #include "AliHLTSystem.h"
 #include "AliRawReaderFile.h"
 #include "AliRawReaderDate.h"
@@ -144,6 +152,32 @@ int AliHLTSimulation::Init(AliRunLoader* pRunLoader, const char* options)
       }
     }
     delete pTokens;
+  }
+
+  // init solenoid field
+  Bool_t bUniformField=kTRUE;
+  AliTracker::SetFieldMap(pRunLoader->GetAliRun()->Field(),bUniformField);
+  Double_t solenoidBz=AliTracker::GetBz();
+  AliCDBManager* man = AliCDBManager::Instance();
+  if (man && man->IsDefaultStorageSet())
+  {
+    const char* cdbSolenoidPath="HLT/ConfigHLT/SolenoidBz";
+    int runNo=pRunLoader->GetHeader()->GetRun();
+    TString cdbSolenoidParam;
+    cdbSolenoidParam.Form("-solenoidBz %f", solenoidBz);
+
+    // check if the entry is already there
+    AliCDBEntry *pEntry = man->Get(cdbSolenoidPath, runNo);
+    TObjString* pString=NULL;
+    if (pEntry) pString=dynamic_cast<TObjString*>(pEntry->GetObject());
+
+    if (!pEntry || !pString || pString->GetString().CompareTo(cdbSolenoidParam)!=0) {
+      TObjString obj(cdbSolenoidParam);
+      AliCDBPath cdbSolenoidEntry(cdbSolenoidPath);
+      AliCDBId cdbSolenoidId(cdbSolenoidEntry, runNo, runNo);
+      AliCDBMetaData cdbMetaData;
+      man->Put(&obj, cdbSolenoidId, &cdbMetaData);
+    }
   }
 
   // scan options
