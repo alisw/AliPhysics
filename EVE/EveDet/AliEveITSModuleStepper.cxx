@@ -547,12 +547,9 @@ void AliEveITSModuleStepper::Render(TGLRnrCtx& rnrCtx)
   // init fonts
   if (fTextFont.GetMode() == TGLFont::kUndef)
   {
-//    fTextFont = rnrCtx.GetFont(fTextSize, 4, TGLFont::kTexture);
-//    fSymbolFont =  rnrCtx.GetFont(72, 31, TGLFont::kTexture);
-//    fModuleFont =  rnrCtx.GetFont(14, 4, TGLFont::kPixmap);
-	  rnrCtx.RegisterFont(fTextSize, 4, TGLFont::kTexture, fTextFont);
-	  rnrCtx.RegisterFont(72,       31, TGLFont::kTexture, fSymbolFont);
-	  rnrCtx.RegisterFont(14,        4, TGLFont::kPixmap,  fModuleFont);
+    fTextFont = rnrCtx.GetFont(fTextSize, 4, TGLFont::kTexture);
+    fSymbolFont =  rnrCtx.GetFont(72, 31, TGLFont::kTexture);
+    fModuleFont =  rnrCtx.GetFont(14, 4, TGLFont::kPixmap);
   }
 
   {
