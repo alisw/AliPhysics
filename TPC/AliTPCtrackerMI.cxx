@@ -242,10 +242,10 @@ Int_t AliTPCtrackerMI::UpdateTrack(AliTPCseed * track, Int_t accept){
 
   Double_t chi2 = track->GetPredictedChi2(track->GetCurrentCluster());
   //
-  track->SetErrorY2(track->GetErrorY2()*1.3);
-  track->SetErrorY2(track->GetErrorY2()+0.01);    
-  track->SetErrorZ2(track->GetErrorZ2()*1.3);   
-  track->SetErrorZ2(track->GetErrorZ2()+0.005);      
+//   track->SetErrorY2(track->GetErrorY2()*1.3);
+//   track->SetErrorY2(track->GetErrorY2()+0.01);    
+//   track->SetErrorZ2(track->GetErrorZ2()*1.3);   
+//   track->SetErrorZ2(track->GetErrorZ2()+0.005);      
     //}
   if (accept>0) return 0;
   if (track->GetNumberOfClusters()%20==0){
