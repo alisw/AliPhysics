@@ -1,5 +1,5 @@
 /**************************************************************************
- * This file is property of and copyright by the ALICE HLT Project        * 
+ * This file is property of and copyright by the ALICE HLT Project        *
  * All rights reserved.                                                   *
  *                                                                        *
  * Primary Authors:                                                       *
@@ -14,13 +14,30 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* This macro is used to run the dHLT component chain within the AliHLTSystem
+/* $Id$ */
+
+/**
+ * \ingroup macros
+ * \file RunChain.C
+ * \brief Macro for running the dHLT chain in a standalone mode.
+ *
+ * This macro is used to run the dHLT component chain within the AliHLTSystem
  * framework, which is a simulation of the dHLT online system's output.
  * To run this macro you must be in the same directory as the galice.root
  * files or in the directory containing the rawXX/ directories produced from
  * AliRoot simulations.
- * Also make sure the LUTs are in the same directory or specify the directory
- * with the lutDir parameter option.
+ * Also make sure you specify CDB as for the lutDir (lookup table directory)
+ * or that the appropriate LUTs are in the same directory as your working
+ * directory, or you can specify the directory with the lutDir parameter option.
+ *
+ * The simplest way to run this macro with defaults is to copy "rootlogon.C" from
+ * $ALICE_ROOT/HLT/MUON/macros into your current working directory, then from
+ * the shell command prompt run the following command:
+ * \code
+ *   > aliroot -b -q -l $ALICE_ROOT/HLT/MUON/macros/RunChain.C+
+ * \endcode
+ *
+ * \author Artur Szostak <artursz@iafrica.com>
  */
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
@@ -33,7 +50,12 @@ using std::cerr;
 using std::endl;
 #endif
 
-/* @param chainType  Specifies the type of chain to run. This can be one of the
+/**
+ * Used to run the dimuon HLT (dHLT) chain in various configuration in a standalone
+ * configuration. This is normally used for debugging, testing and can also be used
+ * as an example of how to build chains for dHLT by hand.
+ *
+ * @param chainType  Specifies the type of chain to run. This can be one of the
  *     following:
  *       "full" - Run the full dHLT chain. (default)
  *       "ddlreco" - Run only the reconstruction of the DDL raw data up to hits
@@ -67,8 +89,8 @@ using std::endl;
  *       "max" - Shows everything including debug messages if they were compiled in.
  *       "min" - Shows only error messages.
  * @param lutDir  This is the directory in which the LUTs can be found.
-///TODO *      If it is set to "CDB" (case sensitive) then the LUTs will be loaded from
-///TODO *      CDB instead.
+ *      If it is set to "CDB" (case sensitive) then the LUTs will be loaded from
+ *      CDB instead. The default behaviour is to read from the local CDB store.
  */
 void RunChain(
 		const char* chainType = "full",
@@ -77,7 +99,7 @@ void RunChain(
 		const char* output = "bin",
 		const char* dataSource = "sim",
 		const char* logLevel = "normal",
-		const char* lutDir = "."
+		const char* lutDir = "CDB"
 	)
 {
 	// Make sure that the lastEvent is greater than firstEvent.
@@ -90,6 +112,7 @@ void RunChain(
 	bool buildSimDataPubs = false;
 	bool buildRecDataPubs = false;
 	bool buildTrackerComp = false;
+	bool defaultLogging = true;
 	bool maxLogging = false;
 	bool minLogging = false;
 	bool useRootWriter = false;
@@ -195,7 +218,9 @@ void RunChain(
 	}
 	if (minLogging)
 	{
-		sys.SetGlobalLoggingLevel(kHLTLogError);
+		sys.SetGlobalLoggingLevel(AliHLTComponentLogSeverity(
+			kHLTLogFatal | kHLTLogError
+		));
 	}
 	
 	sys.LoadComponentLibraries("libAliHLTUtil.so");
@@ -262,16 +287,32 @@ void RunChain(
 	// these components if we are are building the ddlreco or full chains.
 	if (buildDDLRecoComps)
 	{
-		AliHLTConfiguration recDDL13("recDDL13", "MUONHitReconstructor", "pubDDL13", TString("-ddl 13 -lut ") + lutDir + TString("/Lut13.dat"));
-		AliHLTConfiguration recDDL14("recDDL14", "MUONHitReconstructor", "pubDDL14", TString("-ddl 14 -lut ") + lutDir + TString("/Lut14.dat"));
-		AliHLTConfiguration recDDL15("recDDL15", "MUONHitReconstructor", "pubDDL15", TString("-ddl 15 -lut ") + lutDir + TString("/Lut15.dat"));
-		AliHLTConfiguration recDDL16("recDDL16", "MUONHitReconstructor", "pubDDL16", TString("-ddl 16 -lut ") + lutDir + TString("/Lut16.dat"));
-		AliHLTConfiguration recDDL17("recDDL17", "MUONHitReconstructor", "pubDDL17", TString("-ddl 17 -lut ") + lutDir + TString("/Lut17.dat"));
-		AliHLTConfiguration recDDL18("recDDL18", "MUONHitReconstructor", "pubDDL18", TString("-ddl 18 -lut ") + lutDir + TString("/Lut18.dat"));
-		AliHLTConfiguration recDDL19("recDDL19", "MUONHitReconstructor", "pubDDL19", TString("-ddl 19 -lut ") + lutDir + TString("/Lut19.dat"));
-		AliHLTConfiguration recDDL20("recDDL20", "MUONHitReconstructor", "pubDDL20", TString("-ddl 20 -lut ") + lutDir + TString("/Lut20.dat"));	
-		AliHLTConfiguration recDDL21("recDDL21", "MUONTriggerReconstructor", "pubDDL21", TString("-ddl 21 -lut ") + lutDir + TString("/Lut21.dat -suppress_partial_triggers"));
-		AliHLTConfiguration recDDL22("recDDL22", "MUONTriggerReconstructor", "pubDDL22", TString("-ddl 22 -lut ") + lutDir + TString("/Lut22.dat -suppress_partial_triggers"));
+		if (TString(lutDir) == "CDB")
+		{
+			AliHLTConfiguration recDDL13("recDDL13", "MUONHitReconstructor", "pubDDL13", TString("-ddl 13 -cdbpath local://$ALICE_ROOT -run 0"));
+			AliHLTConfiguration recDDL14("recDDL14", "MUONHitReconstructor", "pubDDL14", TString("-ddl 14 -cdbpath local://$ALICE_ROOT -run 0"));
+			AliHLTConfiguration recDDL15("recDDL15", "MUONHitReconstructor", "pubDDL15", TString("-ddl 15 -cdbpath local://$ALICE_ROOT -run 0"));
+			AliHLTConfiguration recDDL16("recDDL16", "MUONHitReconstructor", "pubDDL16", TString("-ddl 16 -cdbpath local://$ALICE_ROOT -run 0"));
+			AliHLTConfiguration recDDL17("recDDL17", "MUONHitReconstructor", "pubDDL17", TString("-ddl 17 -cdbpath local://$ALICE_ROOT -run 0"));
+			AliHLTConfiguration recDDL18("recDDL18", "MUONHitReconstructor", "pubDDL18", TString("-ddl 18 -cdbpath local://$ALICE_ROOT -run 0"));
+			AliHLTConfiguration recDDL19("recDDL19", "MUONHitReconstructor", "pubDDL19", TString("-ddl 19 -cdbpath local://$ALICE_ROOT -run 0"));
+			AliHLTConfiguration recDDL20("recDDL20", "MUONHitReconstructor", "pubDDL20", TString("-ddl 20 -cdbpath local://$ALICE_ROOT -run 0"));
+			AliHLTConfiguration recDDL21("recDDL21", "MUONTriggerReconstructor", "pubDDL21", TString("-ddl 21 -cdbpath local://$ALICE_ROOT -run 0 -suppress_partial_triggers"));
+			AliHLTConfiguration recDDL22("recDDL22", "MUONTriggerReconstructor", "pubDDL22", TString("-ddl 22 -cdbpath local://$ALICE_ROOT -run 0 -suppress_partial_triggers"));
+		}
+		else
+		{
+			AliHLTConfiguration recDDL13("recDDL13", "MUONHitReconstructor", "pubDDL13", TString("-ddl 13 -lut ") + lutDir + TString("/Lut13.dat"));
+			AliHLTConfiguration recDDL14("recDDL14", "MUONHitReconstructor", "pubDDL14", TString("-ddl 14 -lut ") + lutDir + TString("/Lut14.dat"));
+			AliHLTConfiguration recDDL15("recDDL15", "MUONHitReconstructor", "pubDDL15", TString("-ddl 15 -lut ") + lutDir + TString("/Lut15.dat"));
+			AliHLTConfiguration recDDL16("recDDL16", "MUONHitReconstructor", "pubDDL16", TString("-ddl 16 -lut ") + lutDir + TString("/Lut16.dat"));
+			AliHLTConfiguration recDDL17("recDDL17", "MUONHitReconstructor", "pubDDL17", TString("-ddl 17 -lut ") + lutDir + TString("/Lut17.dat"));
+			AliHLTConfiguration recDDL18("recDDL18", "MUONHitReconstructor", "pubDDL18", TString("-ddl 18 -lut ") + lutDir + TString("/Lut18.dat"));
+			AliHLTConfiguration recDDL19("recDDL19", "MUONHitReconstructor", "pubDDL19", TString("-ddl 19 -lut ") + lutDir + TString("/Lut19.dat"));
+			AliHLTConfiguration recDDL20("recDDL20", "MUONHitReconstructor", "pubDDL20", TString("-ddl 20 -lut ") + lutDir + TString("/Lut20.dat"));
+			AliHLTConfiguration recDDL21("recDDL21", "MUONTriggerReconstructor", "pubDDL21", TString("-ddl 21 -lut ") + lutDir + TString("/Lut21.dat -suppress_partial_triggers"));
+			AliHLTConfiguration recDDL22("recDDL22", "MUONTriggerReconstructor", "pubDDL22", TString("-ddl 22 -lut ") + lutDir + TString("/Lut22.dat -suppress_partial_triggers"));
+		}
 	}
 
 	TString startEventStr = "-firstevent ";
