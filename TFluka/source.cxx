@@ -33,6 +33,7 @@
 # define soevsv soevsv_
 # define dcdion dcdion_
 # define setion setion_
+# define stisbm stisbm_
 #else
 # define source SOURCE
 # define geocrs GEOCRS
@@ -41,8 +42,8 @@
 # define soevsv SOEVSV
 # define dcdion DCDION
 # define setion SETION
+# define stisbm STISBM
 #endif
-
 extern "C" {
   //
   // Prototypes for FLUKA functions
@@ -54,6 +55,7 @@ extern "C" {
   void type_of_call soevsv();
   void type_of_call dcdion(Int_t &);
   void type_of_call setion(Int_t &);
+  void type_of_call stisbm(Int_t &, Int_t &, Int_t &);
 
  /*
    *----------------------------------------------------------------------*
@@ -197,16 +199,33 @@ extern "C" {
 	if (ifl == -2) {
 	    Int_t ia = TFlukaIon::GetA(pdg);
 	    Int_t iz = TFlukaIon::GetZ(pdg);
-	    IOIOCM.iproa = ia;
-	    IOIOCM.iproz = iz;
-	    BEAMCM.ijhion = iz * 1000 + ia;
-	    BEAMCM.ijhion = 100 * BEAMCM.ijhion + 30;
-	    ionid = BEAMCM.ijhion;
-	    dcdion(ionid);
-	    setion(ionid);
-	    FLKSTK.iloflk[FLKSTK.npflka] = ionid;
+	    Int_t is = TFlukaIon::GetIsomerNumber(pdg);
+	    printf("Isomer %5d \n", is);
+	    
+	    if (is == 0) {
+		IOIOCM.iproa = ia;
+		IOIOCM.iproz = iz;
+		BEAMCM.ijhion = iz * 1000 + ia;
+		BEAMCM.ijhion = 100 * BEAMCM.ijhion + 30;
+		ionid = BEAMCM.ijhion;
+		dcdion(ionid);
+		setion(ionid);
+		FLKSTK.iloflk[FLKSTK.npflka] = ionid;
+		FLKSTK.lraddc[FLKSTK.npflka] = 0;
+	    } else {
+		BEAMCM.lrdbea = 1;
+		stisbm(ia, iz, is);
+		BEAMCM.ijhion = iz * 1000 + ia;
+		BEAMCM.ijhion = 100 * BEAMCM.ijhion + 30;
+		ionid = BEAMCM.ijhion;
+		dcdion(ionid);
+		setion(ionid);
+		FLKSTK.iloflk[FLKSTK.npflka] = ionid;
+		FLKSTK.lraddc[FLKSTK.npflka] = 1;
+	    }
 	} else {
 	    FLKSTK.iloflk[FLKSTK.npflka] = ifl;
+	    FLKSTK.lraddc[FLKSTK.npflka] = 0;
 	    ionid = ifl;
 	}
 	

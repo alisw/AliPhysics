@@ -1330,7 +1330,7 @@ void TFluka::InitPhysics()
 // Add RANDOMIZ card
     fprintf(pFlukaVmcInp,"RANDOMIZ  %10.1f%10.0f\n", 1., Float_t(gRandom->GetSeed()));
 // User defined ion
-//    if (fUserIon) fUserIon->WriteUserInputCard(pFlukaVmcInp);
+    if (fUserIons) TFlukaIon::WriteUserInputCard(pFlukaVmcInp);
 // Add START and STOP card
     fprintf(pFlukaVmcInp,"START     %10.1f\n",fEventsPerRun);
     fprintf(pFlukaVmcInp,"STOP      \n");

@@ -82,6 +82,17 @@ Int_t TFlukaIon::GetA(Int_t pdg)
     return (a);
 }  
 
+Int_t TFlukaIon::GetIsomerNumber(Int_t pdg)
+{
+// Acording to
+// http://cepa.fnal.gov/psm/stdhep/pdg/montecarlorpp-2006.pdf
+
+    Int_t is = pdg - 1000000000;
+    is %= 10000;
+    is %= 10;
+    return (is);
+}  
+
 void TFlukaIon::AddIon(Int_t a, Int_t z)
 {
 
@@ -95,22 +106,22 @@ void TFlukaIon::AddIon(Int_t a, Int_t z)
 		       0, 3 * z, "Ion", pdg);
 }
 
-void  TFlukaIon::AddIon(const char* name, Int_t z, Int_t a, Int_t /*q*/,
+void  TFlukaIon::AddIon(const char* name, Int_t z, Int_t a, Int_t q,
 			Double_t /*exE*/, Double_t mass)
 {
 // User defined ion
     TDatabasePDG *pdgDB = TDatabasePDG::Instance();
     const Double_t kAu2Gev   = 0.9314943228;
-    Int_t pdg =  GetIonPdg(z, a);
+    Int_t pdg =  GetIonPdg(z, a, q);
     if (pdgDB->GetParticle(pdg)) return;
     if (mass = 0.) mass = Float_t(a) * kAu2Gev + 8.071e-3;
 
     pdgDB->AddParticle(name, "User Ion", mass, kTRUE, 0, 3 * z, "Ion", pdg);
 }
 
-void TFlukaIon::WriteUserInputCard(FILE* pFlukaVmcInp) const
+void TFlukaIon::WriteUserInputCard(FILE* pFlukaVmcInp)
 {
     // Write the user input card
-    
-    fprintf(pFlukaVmcInp,"HI-PROPE  %10.1f%10.1f%10.3f\n", (Float_t)GetZ(), (Float_t)GetA(), GetExcitationEnergy());
+    // EVENTYPE          0.        0.        2.        0.        0.        0.DPMJET    
+    fprintf(pFlukaVmcInp,"EVENTYPE          0.        0.        2.        0.        0.        0.DPMJET\n");
 }

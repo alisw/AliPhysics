@@ -32,14 +32,15 @@ public:
     Double_t GetMass()             const  {return fMass;}
     Int_t    GetPdgCode()          const  {return GetIonPdg(fZ, fA);}
     //
-    void     WriteUserInputCard(FILE* file) const;
+    static void     WriteUserInputCard(FILE* file);
     //
     static void  AddIon(Int_t a, Int_t z);
     static void  AddIon(const char* name, Int_t z, Int_t a, Int_t q,
 			Double_t exE, Double_t mass);
     static Int_t GetIonPdg(Int_t z, Int_t a, Int_t i = 0);
-    static Int_t    GetZ(Int_t pdg);
-    static Int_t    GetA(Int_t pdg);
+    static Int_t GetZ(Int_t pdg);
+    static Int_t GetA(Int_t pdg);
+    static Int_t GetIsomerNumber(Int_t pdg);
 
  protected:
     Int_t    fZ;         // Z
