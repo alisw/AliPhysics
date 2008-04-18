@@ -7,12 +7,6 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-/***********************************************************************
-*  This code defines the reconstructed v0 visualized with EVE
-*
-* Ludovic Gaudichet (gaudichet@to.infn.it)
-************************************************************************/
-
 #include "AliEveV0.h"
 
 #include <TEveTrack.h>
@@ -34,6 +28,7 @@
 
 ClassImp(AliEveV0)
 
+//______________________________________________________________________________
 AliEveV0::AliEveV0() :
   TEvePointSet(),
 
@@ -43,7 +38,7 @@ AliEveV0::AliEveV0() :
   fNegTrack(0),
   fPosTrack(0),
   fRnrStyle(0),
-  fPolyLineV0(),
+  fPointingLine(0),
   fESDIndex(-1),
   fOnFlyStatus(kFALSE),
   fDaughterDCA(999),
@@ -53,8 +48,10 @@ AliEveV0::AliEveV0() :
 
   // Override from TEveElement.
   fPickable = kTRUE;
+  fMainColorPtr = &fMarkerColor;
 }
 
+//______________________________________________________________________________
 AliEveV0::AliEveV0(TEveRecTrack* tNeg, TEveRecTrack* tPos,
 		   TEveRecV0* v0, TEveTrackPropagator* rs) :
   TEvePointSet(),
@@ -67,55 +64,60 @@ AliEveV0::AliEveV0(TEveRecTrack* tNeg, TEveRecTrack* tPos,
   fPosTrack(new TEveTrack(tPos, rs)),
 
   fRnrStyle(rs),
-  fPolyLineV0(),
+  fPointingLine(new TEveLine("Pointing line")),
   fESDIndex(-1),
   fOnFlyStatus(kFALSE),
   fDaughterDCA(999),
   fChi2V0(-1)
 {
+  // Constructor with full V0 specification.
+
   // Override from TEveElement.
   fPickable = kTRUE;
-
-  fPolyLineV0.SetLineColor(fMarkerColor);
- 
-  fPosTrack->SetLineColor(2);  // red
-  fNegTrack->SetLineColor(7);  // light blue
-
   fMainColorPtr = &fMarkerColor;
-  fMarkerStyle = 20;
-  fMarkerColor = 5;
-  fMarkerSize  = 0.3;
 
+  fMarkerStyle = 2;
+  fMarkerColor = kSpring + 6;
+  fMarkerSize  = 1;
+
+  fPointingLine->SetLineColor(fMarkerColor);
+  fPointingLine->SetLineWidth(2);
+  fPointingLine->IncDenyDestroy();
+  AddElement(fPointingLine);
+
+  fPosTrack->SetLineColor(2);  // red
+  fPosTrack->SetStdTitle();
+  fNegTrack->SetLineColor(7);  // light blue
+  fNegTrack->SetStdTitle();
+
+  fNegTrack->IncDenyDestroy();
   AddElement(fNegTrack);
+  fPosTrack->IncDenyDestroy();
   AddElement(fPosTrack);
 }
 
-AliEveV0::~AliEveV0()
-{}
-
-
-void AliEveV0::Reset(TPolyLine3D* polyLine)
-{
-  //polyLine->SetPolyLine(n_points);
-  polyLine->SetPolyLine(0);
-}
-
 //______________________________________________________________________________
-void AliEveV0::MakeV0path()
+AliEveV0::~AliEveV0()
 {
-  fPolyLineV0.SetPoint(0, fRecBirthV.fX, fRecBirthV.fY, fRecBirthV.fZ);
-  fPolyLineV0.SetPoint(1, fRecDecayV.fX, fRecDecayV.fY, fRecDecayV.fZ);
-}
+  // Destructor. Dereferences pos/neg tracks and pointing-line objects.
 
+  fNegTrack->DecDenyDestroy();
+  fPosTrack->DecDenyDestroy();
+  fPointingLine->DecDenyDestroy();
+}
 
 //______________________________________________________________________________
 void AliEveV0::MakeV0()
 {
+  // Set all dependant components for drawing.
+
   SetPoint(0, fRecDecayV.fX, fRecDecayV.fY, fRecDecayV.fZ);
 
   fNegTrack->MakeTrack();
   fPosTrack->MakeTrack();
-  MakeV0path();
+
+  fPointingLine->SetPoint(0, fRecBirthV.fX, fRecBirthV.fY, fRecBirthV.fZ);
+  fPointingLine->SetPoint(1, fRecDecayV.fX, fRecDecayV.fY, fRecDecayV.fZ);
 }
 
 
@@ -140,6 +142,8 @@ AliEveV0List::AliEveV0List() :
   fMinRCut(0),
   fMaxRCut(250)
 {
+  // Default constructor.
+
   fChildClass = AliEveV0::Class(); // override member from base TEveElementList
 }
 
@@ -156,6 +160,8 @@ AliEveV0List::AliEveV0List(TEveTrackPropagator* rs) :
   fMinRCut(0),
   fMaxRCut(250)
 {
+  // Constructor with given track-propagator..
+
   fChildClass = AliEveV0::Class(); // override member from base TEveElementList
 
   Init();
@@ -174,6 +180,8 @@ AliEveV0List::AliEveV0List(const Text_t* name, TEveTrackPropagator* rs) :
   fMinRCut(0),
   fMaxRCut(100)
 {
+  // Standard constructor.
+
   fChildClass = AliEveV0::Class(); // override member from base TEveElementList
 
   Init();
@@ -183,88 +191,31 @@ AliEveV0List::AliEveV0List(const Text_t* name, TEveTrackPropagator* rs) :
 //______________________________________________________________________________
 void AliEveV0List::Init()
 {
+  // Initialize members needed for drawing operations.
+
   if (fRnrStyle== 0) fRnrStyle = new TEveTrackPropagator;
-
-}
-
-//______________________________________________________________________________
-AliEveV0List::~AliEveV0List()
-{
-
-}
-
-//______________________________________________________________________________
-void AliEveV0List::Paint(Option_t* option)
-{
-  if(fRnrSelf) {
-
-    if(fRnrV0vtx) {
-      for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
-	if((*i)->GetRnrSelf()) {
-	  ((AliEveV0*)(*i))->Paint(option);
-	}
-      }
-    }
-
-    if(fRnrDaughters) {
-      for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
-	if((*i)->GetRnrSelf()) {
-	  ((AliEveV0*)(*i))->PaintDaughters(option);
-	}
-      }
-    }
-
-    if(fRnrV0path) {
-      for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
-	if((*i)->GetRnrSelf()) {
-	  ((AliEveV0*)(*i))->PaintPath(option);
-	}
-      }
-    }
-  }
-}
-
-
-//______________________________________________________________________________
-
-void AliEveV0List::SetRnrV0vtx(Bool_t rnr)
-{
-  fRnrV0vtx = rnr;
-  gEve->Redraw3D();
-}
-
-void AliEveV0List::SetRnrV0path(Bool_t rnr)
-{
-  fRnrV0path = rnr;
-  gEve->Redraw3D();
-}
-
-void AliEveV0List::SetRnrDaughters(Bool_t rnr)
-{
-  fRnrDaughters = rnr;
-  gEve->Redraw3D();
 }
 
 /******************************************************************************/
 
+//______________________________________________________________________________
 void AliEveV0List::MakeV0s()
 {
+  // Call MakeV0() for all elements.
+
   for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
     ((AliEveV0*)(*i))->MakeV0();
   }
   gEve->Redraw3D();
 }
 
-
-void AliEveV0List::MakeMarkers()
-{
-  gEve->Redraw3D();
-}
-
 /******************************************************************************/
 
+//______________________________________________________________________________
 void AliEveV0List::FilterByRadius(Float_t minR, Float_t maxR)
 {
+  // Select visibility of elements based on their axial radius.
+
   fMinRCut = minR;
   fMaxRCut = maxR;
 

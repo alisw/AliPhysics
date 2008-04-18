@@ -32,21 +32,25 @@ AliEveV0* esd_make_v0(TEveTrackPropagator* rnrStyle, AliESDVertex* primVtx,
   rcV0.fPNeg.Set(p);
 
   v0->GetPxPyPz(p[0], p[1], p[2]);
+
   Double_t v[3];
+
   v0->GetXYZ(v[0], v[1], v[2]);
-
-  //   printf(" %f %f %f / %f %f %f    %i\n",p[0], p[1], p[2],
-  // 	 v[0], v[1], v[2], v0->GetOnFlyStatus());
-
-  rcV0.fVNeg.Set(v); //original track vertices at dca not stored
-  rcV0.fVPos.Set(v);
   rcV0.fVCa.Set(v);
 
-  rcV0.fDLabel[0] = v0->GetNindex();
-  rcV0.fDLabel[1] = v0->GetPindex();
+  v0->GetParamN()->GetXYZ(v);  rcV0.fVNeg.Set(v);
+  v0->GetParamP()->GetXYZ(v);  rcV0.fVPos.Set(v);
+
+  rcV0.fV0Birth.Set(primVtx->GetXv(), primVtx->GetYv(), primVtx->GetZv());
+
+  // Simulation data not directly available in AliESDv0
+  //rcV0.fDLabel[0] = v0->GetNindex();
+  //rcV0.fDLabel[1] = v0->GetPindex();
 
   esd_v0_init_rectrack(rcNeg, v0->GetParamN());
+  rcNeg.fIndex = v0->GetNindex();
   esd_v0_init_rectrack(rcPos, v0->GetParamP());
+  rcPos.fIndex = v0->GetPindex();
 
   AliEveV0* myV0 = new AliEveV0(&rcNeg, &rcPos, &rcV0, rnrStyle);
   myV0->SetElementName(Form("ESDv0 %d", i));

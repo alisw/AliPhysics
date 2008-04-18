@@ -42,33 +42,12 @@ public:
      TEveTrackPropagator* rs);
   virtual ~AliEveV0();
 
-  //void  AddPathMarkPos(TEvePathMark* pm) { fPathMarksPos.push_back(pm); }
-  //void  AddPathMarkNeg(TEvePathMark* pm) { fPathMarksNeg.push_back(pm); }
-
-  void Reset(TPolyLine3D* polyLine);
-
-  void MakeV0path();
   void MakeV0();
-
-  virtual void PaintDaughters(Option_t* option="")
-  {
-    if (fRnrSelf) { fNegTrack->Paint(option); fPosTrack->Paint(option);}
-  }
-
-  virtual void Paint(Option_t* option="")
-  {
-    if (fRnrSelf) TEvePointSet::Paint(option);
-  }
-
-  virtual void PaintPath(Option_t* option="")
-  {
-    if (fRnrSelf) fPolyLineV0.Paint(option);
-  }
 
   virtual void  SetMainColor(Color_t col)
   {
-    fMarkerColor = col; fMainColorPtr = &fMarkerColor;
-    fPolyLineV0.SetLineColor(fMarkerColor);
+    TEvePointSet::SetMainColor(col);
+    fPointingLine->SetLineColor(fMarkerColor);
   }
 
   void SetRnrStyle(TEveTrackPropagator* rs) { fRnrStyle = rs; }
@@ -87,14 +66,12 @@ public:
   virtual const Text_t* GetName() const    { return Form("ESDv0_%i",fESDIndex); }
   virtual const Text_t* GetTitle() const   { return Form("ESDv0_%i",fESDIndex); }
 
-  //Int_t          GetLabelPos() const { return fLabel_pos; }
-  //Int_t          GetLabelNeg() const { return fLabel_neg; }
   TEveTrackPropagator* GetPropagator() const  { return fRnrStyle; }
 
-  TEveTrack*   GetNegTrack() { return fNegTrack; }
-  TEveTrack*   GetPosTrack() { return fPosTrack; }
+  TEveTrack* GetNegTrack() { return fNegTrack; }
+  TEveTrack* GetPosTrack() { return fPosTrack; }
 
-  TPolyLine3D*  GetPolyLineV0() { return &fPolyLineV0; }
+  TEveLine*  GetPointingLine() { return fPointingLine; }
 
 protected:
   TEveVector fRecBirthV;    // Reconstucted birth point of neutral particle
@@ -106,7 +83,7 @@ protected:
 
   TEveTrackPropagator *fRnrStyle;
 
-  TPolyLine3D       fPolyLineV0;
+  TEveLine         *fPointingLine;
 
   Int_t             fESDIndex;    // Index in ESD V0 array.
   Bool_t            fOnFlyStatus; // Reconstructed during tracking.
@@ -133,7 +110,7 @@ public:
   AliEveV0List();
   AliEveV0List(TEveTrackPropagator* rs);
   AliEveV0List(const Text_t* name, TEveTrackPropagator* rs=0);
-  virtual ~AliEveV0List();
+  virtual ~AliEveV0List() {}
 
   virtual const Text_t* GetTitle() const { return fTitle; }
   virtual void SetTitle(const Text_t* t) { fTitle = t; }
@@ -142,8 +119,6 @@ public:
 
   virtual Bool_t CanEditMainColor() const { return kTRUE; }
 
-  virtual void Paint(Option_t* option="");
-
   void  SetRnrStyle(TEveTrackPropagator* rst) { fRnrStyle = rst; }
   TEveTrackPropagator* GetPropagator()        { return fRnrStyle; }
 
@@ -151,12 +126,7 @@ public:
   Bool_t GetRnrV0path()    const { return fRnrV0path; }
   Bool_t GetRnrDaughters() const { return fRnrDaughters; }
 
-  void   SetRnrV0vtx(Bool_t);
-  void   SetRnrV0path(Bool_t);
-  void   SetRnrDaughters(Bool_t);
-
   void   MakeV0s();
-  void   MakeMarkers();
 
   void   FilterByRadius(Float_t minR, Float_t maxR);
 
@@ -176,7 +146,7 @@ protected:
   Float_t              fMaxRCut;
 
 private:
-  void  Init();
+  void Init();
 
   AliEveV0List(const AliEveV0List&);            // Not implemented
   AliEveV0List& operator=(const AliEveV0List&); // Not implemented
