@@ -18,8 +18,9 @@
 **********************************************************************/
 
 #include "AliHLTLogging.h"
-#include "AliHLTMUONTriggerRecordsBlockStruct.h"
-#include "AliHLTMUONHitReconstructor.h"
+#include "AliHLTMUONDataTypes.h"
+
+extern "C" struct AliHLTMUONTriggerRecordStruct;
 
 
 class AliHLTMUONTriggerReconstructor : public AliHLTLogging
@@ -37,7 +38,7 @@ public:
 			bool suppressPartialTrigs = false
 		);
 
-	void* LookupTableBuffer() { return &fLookupTable; }
+	AliHLTMUONTriggerRecoLookupTable* LookupTableBuffer() { return &fLookupTable; }
 	size_t LookupTableSize() const { return sizeof(fLookupTable); }
 
 private:
@@ -47,9 +48,7 @@ private:
 
 	AliHLTUInt32_t fMaxRecPointsCount;   // max nof reconstructed hit
 	AliHLTInt32_t fTrigRecId;  // A running counter for the trigger record ID.
-	
-	// [regional header index][local board ID][chamber][cathode - X/Y][bit set in bit pattern]
-	AliHLTMUONTriggerRecoLutRow fLookupTable[8][16][4][2][16];  // pointer to the array of Lookuptable data
+	AliHLTMUONTriggerRecoLookupTable fLookupTable;  // The lookup table used for mapping between channel addresses and geometrical information.
 };
 
 #endif // AliHLTMUONTRIGGERRECONSTRUCTOR_H

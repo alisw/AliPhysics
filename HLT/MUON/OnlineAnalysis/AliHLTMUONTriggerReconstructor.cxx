@@ -39,6 +39,7 @@
 //*/
 
 #include "AliHLTMUONTriggerReconstructor.h"
+#include "AliHLTMUONTriggerRecordsBlockStruct.h"
 #include "AliHLTMUONUtils.h"
 #include "AliHLTMUONConstants.h"
 #include "AliHLTMUONCalculations.h"
@@ -48,7 +49,8 @@
 
 AliHLTMUONTriggerReconstructor::AliHLTMUONTriggerReconstructor() :
 	fMaxRecPointsCount(0),
-	fTrigRecId(0)
+	fTrigRecId(0),
+	fLookupTable()
 {
 	// ctor
 	
@@ -58,9 +60,9 @@ AliHLTMUONTriggerReconstructor::AliHLTMUONTriggerReconstructor() :
 	for (Int_t n = 0; n < 2; n++)
 	for (Int_t m = 0; m < 16; m++)
 	{
-		fLookupTable[i][j][k][n][m].fX = 0;
-		fLookupTable[i][j][k][n][m].fY = 0;
-		fLookupTable[i][j][k][n][m].fZ = 0;
+		fLookupTable.fRow[i][j][k][n][m].fX = 0;
+		fLookupTable.fRow[i][j][k][n][m].fY = 0;
+		fLookupTable.fRow[i][j][k][n][m].fZ = 0;
 	}
 }
 
@@ -177,15 +179,15 @@ bool AliHLTMUONTriggerReconstructor::Run(
 							if (iPlane == 1)
 							{
 								trigRecord[nofTrigRec].fHit[iChamber].fX =
-									fLookupTable[iReg][iLoc][iChamber][iPlane][ibitxy].fX;
+									fLookupTable.fRow[iReg][iLoc][iChamber][iPlane][ibitxy].fX;
 								Xset[iChamber] = true;
 							}
 							else
 							{
 								trigRecord[nofTrigRec].fHit[iChamber].fY =
-									fLookupTable[iReg][iLoc][iChamber][iPlane][ibitxy].fY;
+									fLookupTable.fRow[iReg][iLoc][iChamber][iPlane][ibitxy].fY;
 								trigRecord[nofTrigRec].fHit[iChamber].fZ =
-									fLookupTable[iReg][iLoc][iChamber][iPlane][ibitxy].fZ;
+									fLookupTable.fRow[iReg][iLoc][iChamber][iPlane][ibitxy].fZ;
 								Yset[iChamber] = true;
 							}
 							

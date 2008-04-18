@@ -72,6 +72,17 @@ struct AliHLTMUONTriggerRecoLutRow
 	AliHLTFloat32_t fZ;  // Global Z coordinate of channel.
 };
 
+/**
+ * The lookup table structure for the AliHLTMUONTriggerReconstructor component.
+ * The LUT is used for translating from channel addresses to geometrical positions
+ * and other relevant information of the strips in the trigger chambers.
+ */
+struct AliHLTMUONTriggerRecoLookupTable
+{
+	// [regional header index][local board ID][chamber][cathode - X/Y][bit set in bit pattern]
+	AliHLTMUONTriggerRecoLutRow fRow[8][16][4][2][16];
+};
+
 } // extern "C"
 
 

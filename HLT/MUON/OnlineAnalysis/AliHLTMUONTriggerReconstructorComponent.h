@@ -40,6 +40,21 @@ public:
 	virtual AliHLTComponentDataType GetOutputDataType();
 	virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
 	virtual AliHLTComponent* Spawn();
+	
+	/**
+	 * Generates a binary file containing the lookup table (LUT) from the
+	 * CDB, which can be used for the trigger reconstructor component later.
+	 * @param ddl  Must be the DDL for which to generate the DDL,
+	 *             in the range [20..21].
+	 * @param filename  The name of the LUT file to generate.
+	 * @param cdbPath  The CDB path to use.
+	 * @param run  The run number to use for the CDB.
+	 * @return  True if the generation of the LUT file succeeded.
+	 */
+	static bool GenerateLookupTable(
+			AliHLTInt32_t ddl, const char* filename,
+			const char* cdbPath, Int_t run
+		);
 
 protected:
 
@@ -67,7 +82,8 @@ private:
 	AliHLTMUONTriggerReconstructorComponent(const AliHLTMUONTriggerReconstructorComponent& /*obj*/);
 	AliHLTMUONTriggerReconstructorComponent& operator = (const AliHLTMUONTriggerReconstructorComponent& /*obj*/);
 
-	bool ReadLookUpTable(const char* lutpath);
+	int ReadLookUpTable(const char* lutpath);
+	int ReadCDB(const char* cdbPath, Int_t run);
 	
 	AliHLTMUONTriggerReconstructor* fTrigRec; // The trigger reconstructor class implementing the algorithm.
 	AliHLTInt32_t fDDL;   // The DDL number in the range 20..21 from which to expect input. Set to -1 for invalid/unspecified value.

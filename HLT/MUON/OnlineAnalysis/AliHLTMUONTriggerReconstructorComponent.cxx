@@ -30,10 +30,25 @@
 #include "AliHLTMUONConstants.h"
 #include "AliHLTMUONUtils.h"
 #include "AliHLTMUONDataBlockWriter.h"
+#include "AliCDBManager.h"
+#include "AliCDBStorage.h"
+#include "AliGeomManager.h"
+#include "AliMUONGeometryTransformer.h"
+#include "AliMUONGeometryDetElement.h"
+#include "AliMpCDB.h"
+#include "AliMpDDLStore.h"
+#include "AliMpPad.h"
+#include "AliMpSegmentation.h"
+#include "AliMpDEIterator.h"
+#include "AliMpVSegmentation.h"
+#include "AliMpDEManager.h"
+#include "AliMpLocalBoard.h"
+#include "AliMpTriggerCrate.h"
 #include <cstdlib>
 #include <cerrno>
 #include <cassert>
 #include <fstream>
+
 
 ClassImp(AliHLTMUONTriggerReconstructorComponent)
 
@@ -148,6 +163,9 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 	fSuppressPartialTrigs = false;
 	
 	const char* lutFileName = NULL;
+	const char* cdbPath = NULL;
+	Int_t run = -1;
+	bool useCDB = false;
 	
 	for (int i = 0; i < argc; i++)
 	{
@@ -172,7 +190,7 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 		{
 			if ( argc <= i+1 )
 			{
-				HLTError("DDL number not specified." );
+				HLTError("DDL number not specified. It must be in the range [21..22]" );
 				// Make sure to delete fTrigRec to avoid partial initialisation.
 				delete fTrigRec;
 				fTrigRec = NULL;
@@ -191,7 +209,7 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 			}
 			if (num < 21 or 22 < num)
 			{
-				HLTError("The DDL number must be in the range [21..22].");
+				HLTError("The DDL ID number must be in the range [21..22].");
 				// Make sure to delete fTrigRec to avoid partial initialisation.
 				delete fTrigRec;
 				fTrigRec = NULL;
@@ -202,13 +220,63 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 			i++;
 			continue;
 		}
+		
+		if (strcmp( argv[i], "-cdb" ) == 0)
+		{
+			useCDB = true;
+			continue;
+		}
+		
+		if (strcmp( argv[i], "-cdbpath" ) == 0)
+		{
+			if ( argc <= i+1 )
+			{
+				HLTError("The CDB path was not specified." );
+				// Make sure to delete fTrigRec to avoid partial initialisation.
+				delete fTrigRec;
+				fTrigRec = NULL;
+				return -EINVAL;
+			}
+			cdbPath = argv[i+1];
+			useCDB = true;
+			i++;
+			continue;
+		}
+	
+		if (strcmp( argv[i], "-run" ) == 0)
+		{
+			if ( argc <= i+1 )
+			{
+				HLTError("The RUN number was not specified." );
+				// Make sure to delete fTrigRec to avoid partial initialisation.
+				delete fTrigRec;
+				fTrigRec = NULL;
+				return -EINVAL;
+			}
 			
+			char* cpErr = NULL;
+			run = Int_t( strtoul(argv[i+1], &cpErr, 0) );
+			if (cpErr == NULL or *cpErr != '\0')
+			{
+				HLTError("Cannot convert '%s' to a valid run number."
+					" Expected an integer value.", argv[i+1]
+				);
+				// Make sure to delete fTrigRec to avoid partial initialisation.
+				delete fTrigRec;
+				fTrigRec = NULL;
+				return -EINVAL;
+			}
+			
+			i++;
+			continue;
+		}
+		
 		if (strcmp( argv[i], "-warn_on_unexpected_block" ) == 0)
 		{
 			fWarnForUnexpecedBlock = true;
 			continue;
 		}
-			
+		
 		if (strcmp( argv[i], "-suppress_partial_triggers" ) == 0)
 		{
 			fSuppressPartialTrigs = true;
@@ -220,28 +288,37 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 		delete fTrigRec;
 		fTrigRec = NULL;
 		return -EINVAL;
-			
+		
 	} // for loop
+	
+	if (lutFileName == NULL) useCDB = true;
 	
 	if (fDDL == -1)
 	{
 		HLTWarning("DDL number not specified. Cannot check if incomming data is valid.");
 	}
 	
-	if (lutFileName != NULL)
+	int result = 0;
+	if (useCDB)
 	{
-		if (not ReadLookUpTable(lutFileName))
-		{
-			HLTError("Failed to read lut from file.");
-			// Make sure to delete fTrigRec to avoid partial initialisation.
-			delete fTrigRec;
-			fTrigRec = NULL;
-			return -ENOENT;
-		}
+		HLTInfo("Loading lookup table information from CDB for DDL %d.", fDDL+1);
+		if (fDDL == -1)
+			HLTWarning("DDL number not specified. The lookup table loaded from CDB will be empty!");
+		result = ReadCDB(cdbPath, run);
 	}
 	else
 	{
-		HLTWarning("The lookup table has not been specified. Output results will be invalid.");
+		HLTInfo("Loading lookup table information from file %s.", lutFileName);
+		result = ReadLookUpTable(lutFileName);
+	}
+	if (result != 0)
+	{
+		// Error messages already generated in ReadCDB or ReadLookUpTable.
+		
+		// Make sure to delete fTrigRec to avoid partial initialisation.
+		delete fTrigRec;
+		fTrigRec = NULL;
+		return result;
 	}
 	
 	return 0;
@@ -404,7 +481,7 @@ int AliHLTMUONTriggerReconstructorComponent::DoEvent(
 }
 
 
-bool AliHLTMUONTriggerReconstructorComponent::ReadLookUpTable(const char* lutpath)
+int AliHLTMUONTriggerReconstructorComponent::ReadLookUpTable(const char* lutpath)
 {
 	///
 	/// Read in the lookup table from file.
@@ -417,7 +494,7 @@ bool AliHLTMUONTriggerReconstructorComponent::ReadLookUpTable(const char* lutpat
 	if (not file)
 	{
 		HLTError("Could not open file: %s", lutpath);
-		return false;
+		return -ENOENT;
 	}
 	
 	file.read(reinterpret_cast<char*>(fTrigRec->LookupTableBuffer()), fTrigRec->LookupTableSize());
@@ -425,15 +502,231 @@ bool AliHLTMUONTriggerReconstructorComponent::ReadLookUpTable(const char* lutpat
 	{
 		HLTError("The file %s was too short to contain a valid lookup table for this component.", lutpath);
 		file.close();
-		return false;
+		return -EIO;
 	}
-	if (file.bad())
+	if (file.fail())
 	{
 		HLTError("Could not read from file: %s", lutpath);
 		file.close();
-		return false;
+		return -EIO;
 	}
 	
 	file.close();
+	return 0;
+}
+
+
+int AliHLTMUONTriggerReconstructorComponent::ReadCDB(const char* cdbPath, Int_t run)
+{
+	/// Loads the lookup table containing channel and geometrical position
+	/// information about trigger strips from CDB.
+	/// \param cdbPath  This specifies the CDB path to use to load from.
+	///                 Can be set to NULL meaning the default storage is used.
+	/// \param run  Specifies the run number to use. If set to -1 then the
+	///             default / current run number set for the CDB is used.
+	/// \return 0 on success and non zero codes for errors.
+
+	if (fDDL == -1)
+	{
+		HLTError("No DDL number specified for which to load LUT data from CDB.");
+		return -EINVAL;
+	}
+
+	Bool_t warn = kFALSE;
+	
+	AliCDBManager* cdbManager = AliCDBManager::Instance();
+	if (cdbManager == NULL)
+	{
+		HLTError("CDB manager instance does not exist.");
+		return -EIO;
+	}
+	
+	const char* cdbPathUsed = "unknown (not set)";
+	if (cdbPath != NULL)
+	{
+		cdbManager->SetDefaultStorage(cdbPath);
+		cdbPathUsed = cdbPath;
+	}
+	else
+	{
+		AliCDBStorage* store = cdbManager->GetDefaultStorage();
+		if (store != NULL) cdbPathUsed = store->GetURI().Data();
+	}
+	
+	if (run != -1) cdbManager->SetRun(run);
+	Int_t runUsed = cdbManager->GetRun();
+	
+	if (not AliMpCDB::LoadDDLStore(warn))
+	{
+		HLTError("Failed to load DDL store specified for CDB path '%s' and run no. %d",
+			cdbPathUsed, runUsed
+		);
+		return -ENOENT;
+	}
+	AliMpDDLStore* ddlStore = AliMpDDLStore::Instance();
+	if (ddlStore == NULL)
+	{
+		HLTError("Could not find DDL store instance.");
+		return -EIO;
+	}
+	AliMpSegmentation* segmentation = AliMpSegmentation::Instance();
+	if (segmentation == NULL)
+	{
+		HLTError("Could not find segmentation mapping (AliMpSegmentation) instance.");
+		return -EIO;
+	}
+	
+	AliGeomManager::LoadGeometry();
+	AliMUONGeometryTransformer transformer;
+	if (not transformer.LoadGeometryData())
+	{
+		HLTError("Could not load geometry into transformer.");
+		return -ENOENT;
+	}
+	
+	AliHLTMUONTriggerRecoLookupTable* lookupTable = fTrigRec->LookupTableBuffer();
+	
+	for (Int_t i = 0; i < 8; i++)
+	for (Int_t j = 0; j < 16; j++)
+	for (Int_t k = 0; k < 4; k++)
+	for (Int_t n = 0; n < 2; n++)
+	for (Int_t m = 0; m < 16; m++)
+	{
+		lookupTable->fRow[i][j][k][n][m].fX = 0;
+		lookupTable->fRow[i][j][k][n][m].fY = 0;
+		lookupTable->fRow[i][j][k][n][m].fZ = 0;
+	}
+	
+	AliMpDEIterator detElemIter;
+	for (Int_t iReg = 0; iReg < 8; iReg++)
+	{
+		AliMpTriggerCrate* crate = ddlStore->GetTriggerCrate(fDDL, iReg);
+		if (crate == NULL)
+		{
+			cerr << "ERROR: Could not get crate for regional header = " << iReg
+				<< ", and DDL ID = " << fDDL << endl;
+			continue;
+		}
+		
+		for (Int_t iLocBoard = 0; iLocBoard < 16; iLocBoard++)
+		{
+			Int_t boardId = crate->GetLocalBoardId(iLocBoard);
+			if (boardId == 0) continue;
+			
+			AliMpLocalBoard* localBoard = ddlStore->GetLocalBoard(boardId);
+			if (localBoard == NULL)
+			{
+				cerr << "ERROR: Could not get loacl board: " << boardId << endl;
+				continue;
+			}
+
+			// skip copy cards
+			if (! localBoard->IsNotified()) continue;
+		
+			for (Int_t iChamber = 0; iChamber < 4; iChamber++)
+			{
+				Int_t detElemId = ddlStore->GetDEfromLocalBoard(boardId, iChamber);
+				
+				const AliMUONGeometryDetElement* detElemTransform = transformer.GetDetElement(detElemId);
+				if (detElemTransform == NULL)
+				{
+					cerr << "ERROR: Got NULL pointer for geometry transformer for detection element ID = "
+						<< detElemId << endl;
+					continue;
+				}
+				
+				for (Int_t iCathode = 0; iCathode <= 1; iCathode++)
+				{
+					const AliMpVSegmentation* seg = segmentation->GetMpSegmentation(
+							detElemId, AliMp::GetCathodType(iCathode)
+						);
+					
+					for (Int_t bitxy = 0; bitxy < 16; bitxy++)
+					{
+						Int_t offset = 0;
+						if (iCathode && localBoard->GetSwitch(6)) offset = -8;
+						
+						AliMpPad pad = seg->PadByLocation(AliMpIntPair(boardId, bitxy+offset), kFALSE);
+					
+						if (! pad.IsValid())
+						{
+							// There is no pad associated with the given local board and bit pattern.
+							continue;
+						}
+						
+						// Get the global coodinates of the pad.
+						Float_t lx = pad.Position().X();
+						Float_t ly = pad.Position().Y();
+						Float_t gx, gy, gz;
+						detElemTransform->Local2Global(lx, ly, 0, gx, gy, gz);
+						
+						// Fill the LUT
+						lookupTable->fRow[iReg][iLocBoard][iChamber][iCathode][bitxy].fX = gx;
+						lookupTable->fRow[iReg][iLocBoard][iChamber][iCathode][bitxy].fY = gy;
+						lookupTable->fRow[iReg][iLocBoard][iChamber][iCathode][bitxy].fZ = gz;
+					}
+				}
+			}
+		}
+	}
+
+	return 0;
+}
+
+
+bool AliHLTMUONTriggerReconstructorComponent::GenerateLookupTable(
+		AliHLTInt32_t ddl, const char* filename,
+		const char* cdbPath, Int_t run
+	)
+{
+	/// Generates a binary file containing the lookup table (LUT) from the
+	/// CDB, which can be used for the trigger reconstructor component later.
+	/// @param ddl  Must be the DDL for which to generate the DDL,
+	///             in the range [20..21].
+	/// @param filename  The name of the LUT file to generate.
+	/// @param cdbPath  The CDB path to use.
+	/// @param run  The run number to use for the CDB.
+	/// @return  True if the generation of the LUT file succeeded.
+	
+	AliHLTMUONTriggerReconstructorComponent comp;
+	
+	if (ddl < 20 or 21 < ddl)
+	{
+		std::cerr << "ERROR: the DDL number must be in the range [20..21]." << std::endl;
+		return false;
+	}
+	
+	char ddlNum[32];
+	char runNum[32];
+	sprintf(ddlNum, "%d", ddl+1);
+	sprintf(runNum, "%d", run);
+	const char* argv[7] = {"-ddl", ddlNum, "-cdbpath", cdbPath, "-run", runNum, NULL};
+	int result = comp.DoInit(6, argv);
+	if (result != 0)
+	{
+		// Error message already generated in DoInit.
+		return false;
+	}
+	
+	std::fstream file(filename, std::ios::out);
+	if (not file)
+	{
+		std::cerr << "ERROR: could not open file: " << filename << std::endl;
+		return false;
+	}
+	
+	file.write(
+			reinterpret_cast<char*>(comp.fTrigRec->LookupTableBuffer()),
+			comp.fTrigRec->LookupTableSize()
+		);
+	if (not file)
+	{
+		cerr << "ERROR: There was a problem writing to the file: " << filename << endl;
+		return false;
+	}
+	file.close();
+	
+	comp.DoDeinit();
+	
 	return true;
 }
