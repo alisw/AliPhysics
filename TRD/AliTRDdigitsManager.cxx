@@ -508,7 +508,7 @@ void AliTRDdigitsManager::ClearIndexes(Int_t det)
   // Clear memory
   //
 
-  fSignalIndexes->At(det)->Clear();  
+  ((AliTRDSignalIndex*)fSignalIndexes->At(det))->ClearAll();  
 
 }
 
