@@ -595,11 +595,11 @@ protected:
 	
 	struct NodeEntry
 	{
-		bool fFree; // Is this block free.
+		bool fFree; // Indicates if this block is free.
 		Node fNode; // The node structure.
 	};
 	
-	AliHLTUInt32_t fNextFree;   // The next free entry that is presumably free.
+	AliHLTUInt32_t fNextFree;   // The next entry that is presumably free.
 	AliHLTUInt32_t fMaxEntries; // The number of node entries that can be stored in fEntries.
 	NodeEntry* fEntry;          // Buffer of preallocated node entries.
 	
@@ -630,7 +630,7 @@ protected:
 		throw std::bad_alloc();
 	}
 	
-	Node* NewNode(const DataType& data)
+	Node* NewNode(const DataType& data) throw(std::bad_alloc)
 	{
 		//return new Node(data);
 		assert( fNextFree < fMaxEntries );
