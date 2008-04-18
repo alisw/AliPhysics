@@ -47,10 +47,13 @@ public:
 	
 	AliHLTMUONHitReconstructor();
 	virtual ~AliHLTMUONHitReconstructor(void);
-
-	bool LoadLookUpTable(AliHLTMUONHitRecoLutRow* lookUpTableData, AliHLTInt32_t lookUpTableId);
-	bool SetIdManuChannelToEntry(IdManuChannelToEntry lineToId);
 	
+	void SetLookUpTable(
+			const AliHLTMUONHitRecoLutRow* lookupTable,
+			const IdManuChannelToEntry* idToEntry
+		);
+	
+	void SetDCCut(AliHLTInt32_t dcCut) { fDCCut = dcCut; }
 	
 	bool Run(
 			const AliHLTUInt32_t* rawData,
@@ -58,7 +61,6 @@ public:
 			AliHLTMUONRecHitStruct* recHit,
 			AliHLTUInt32_t& nofHit
 		);
-	void SetDCCut(AliHLTInt32_t dcCut) {fDCCut = dcCut;}
 	
 	static AliHLTInt32_t GetkDetectorId() { return fgkDetectorId; }
 	static AliHLTInt32_t GetkDDLOffSet() { return fgkDDLOffSet; }
@@ -123,9 +125,9 @@ private:
 		
 		void SetDCCut(AliHLTInt32_t dcCut) {fDCCut = dcCut;}
 		void SetPadData(AliHLTMUONPad* padData) {fPadData = padData;}
-		void SetLookUpTable(AliHLTMUONHitRecoLutRow* lookUpTableData) {fLookUpTableData = lookUpTableData;}
+		void SetLookUpTable(const AliHLTMUONHitRecoLutRow* lookUpTableData) {fLookUpTableData = lookUpTableData;}
 		void SetNofFiredDetElemId(AliHLTInt32_t& nofFiredDetElem) {fNofFiredDetElem = &nofFiredDetElem;}
-		void SetIdManuChannelToEntry(IdManuChannelToEntry idToEntry) {fIdToEntry = idToEntry;}
+		void SetIdManuChannelToEntry(const IdManuChannelToEntry* idToEntry) {fIdToEntry = idToEntry;}
 		void SetMaxFiredPerDetElem(AliHLTInt32_t* maxFiredPerDetElem) {fMaxFiredPerDetElem = maxFiredPerDetElem;}
 		
 		AliHLTInt32_t GetDataCount() {return fDataCount;}
@@ -138,48 +140,47 @@ private:
 		AliHLTMUONRawDecoder& operator=(const AliHLTMUONRawDecoder& rhs); // assignment operator
 	
 		const void* fBufferStart;   // Pointer to the start of the current DDL payload buffer.
-		AliHLTInt32_t fBusPatchId;                                                // buspatchId
-		AliHLTInt32_t fDCCut;                                                     // DC Cut value
-		AliHLTMUONPad* fPadData;                  // pointer to the array containing the information of each padhits
-		AliHLTMUONHitRecoLutRow* fLookUpTableData;          // pointer to the array of Lookuptable data
-		AliHLTInt32_t* fNofFiredDetElem;                                          // counter for detector elements that are fired 
-		AliHLTInt32_t* fMaxFiredPerDetElem;                                       // array for detector elements that are fired 
-		IdManuChannelToEntry fIdToEntry;                                // Mapping between Linenumber to IdManuChannel;
+		AliHLTInt32_t fBusPatchId;  // buspatchId
+		AliHLTInt32_t fDCCut;       // DC Cut value
+		AliHLTMUONPad* fPadData;    // pointer to the array containing the information of each padhits
+		const AliHLTMUONHitRecoLutRow* fLookUpTableData;   // pointer to the array of Lookuptable data
+		AliHLTInt32_t* fNofFiredDetElem;         // counter for detector elements that are fired 
+		AliHLTInt32_t* fMaxFiredPerDetElem;      // array for detector elements that are fired 
+		const IdManuChannelToEntry* fIdToEntry;  // Mapping between Linenumber to IdManuChannel;
 		
-		AliHLTInt32_t fDataCount;                                                 // Data Counter
-		AliHLTInt32_t fPrevDetElemId;                                             // previous detection elementId
-		AliHLTInt32_t fPadCharge;                                                 // pedestal subtracted pad charge
-		AliHLTFloat32_t fCharge;                                                  //calibrated pad charge 
-		AliHLTInt32_t fIdManuChannel;                                             // id manu channel
-		AliHLTInt32_t fLutEntry;                                                  // i-th entry in lookuptable
+		AliHLTInt32_t fDataCount;           // Data Counter
+		AliHLTInt32_t fPrevDetElemId;       // previous detection elementId
+		AliHLTInt32_t fPadCharge;           // pedestal subtracted pad charge
+		AliHLTFloat32_t fCharge;            //calibrated pad charge 
+		AliHLTInt32_t fIdManuChannel;       // id manu channel
+		AliHLTInt32_t fLutEntry;            // i-th entry in lookuptable
 	};
 
 	AliMUONTrackerDDLDecoder<AliHLTMUONRawDecoder> fHLTMUONDecoder; // robust HLTMUON Decoder
 	
-	AliHLTInt32_t fkBlockHeaderSize;                     // Block header size
-	AliHLTInt32_t fkDspHeaderSize;                       // DSP header size
-	AliHLTInt32_t fkBuspatchHeaderSize;                  // buspatch header size
+	AliHLTInt32_t fkBlockHeaderSize;      // Block header size
+	AliHLTInt32_t fkDspHeaderSize;        // DSP header size
+	AliHLTInt32_t fkBuspatchHeaderSize;   // buspatch header size
 	
-	AliHLTInt32_t fDCCut;                                // DC Cut value
+	AliHLTInt32_t fDCCut;                 // DC Cut value
 	
-	AliHLTMUONPad* fPadData;                         // pointer to the array containing the information of each padhits
-	AliHLTMUONHitRecoLutRow* fLookUpTableData;                 // pointer to the array of Lookuptable data
+	AliHLTMUONPad* fPadData;  // pointer to the array containing the information of each padhits
+	const AliHLTMUONHitRecoLutRow* fLookUpTableData;  // pointer to the array of Lookuptable data (The memory is not owned by this component).
 	
-	AliHLTMUONRecHitStruct* fRecPoints;       // Reconstructed hits
-	AliHLTUInt32_t *fRecPointsCount;                      // nof reconstructed hit  
-	AliHLTUInt32_t fMaxRecPointsCount;                    // max nof reconstructed hit  
+	AliHLTMUONRecHitStruct* fRecPoints;      // Reconstructed hits
+	AliHLTUInt32_t *fRecPointsCount;         // nof reconstructed hit.
+	AliHLTUInt32_t fMaxRecPointsCount;       // max nof reconstructed hit.
 	
-	AliHLTInt32_t fCentralCountB, fCentralCountNB;        // centeral hits 
-	AliHLTInt32_t fDDLId;                                 // DDLId
-	AliHLTInt32_t fDigitPerDDL;                           // Total nof Digits perDDL 
+	AliHLTInt32_t fCentralCountB, fCentralCountNB;   // centeral hits.
+	AliHLTInt32_t fDigitPerDDL;                      // Total nof Digits perDDL.
 	
-	AliHLTInt32_t *fCentralChargeB, *fCentralChargeNB;           // pointer to an array of central hit
-	AliHLTFloat32_t *fRecX, *fRecY;                              // pointer to an array of reconstructed hit
-	AliHLTFloat32_t *fAvgChargeX, *fAvgChargeY;                  // average charge on central pad found using CG method
-	AliHLTInt32_t *fNofBChannel, *fNofNBChannel;                 // number of channels bending and non-bending.
-	AliHLTInt32_t fGetIdTotalData[336][237][2];                  // an array of idManuChannel with argument of centralX, centralY and planeType.
-	AliHLTInt32_t fNofFiredDetElem,fMaxFiredPerDetElem[13];      // counter for detector elements that are fired
-	IdManuChannelToEntry fIdToEntry;       // Mapping between Linenumber to IdManuChannel;
+	AliHLTInt32_t *fCentralChargeB, *fCentralChargeNB;       // pointer to an array of central hit
+	AliHLTFloat32_t *fRecX, *fRecY;                          // pointer to an array of reconstructed hit
+	AliHLTFloat32_t *fAvgChargeX, *fAvgChargeY;              // average charge on central pad found using CG method
+	AliHLTInt32_t *fNofBChannel, *fNofNBChannel;             // number of channels bending and non-bending.
+	AliHLTInt32_t fGetIdTotalData[336][237][2];              // an array of idManuChannel with argument of centralX, centralY and planeType.
+	AliHLTInt32_t fNofFiredDetElem,fMaxFiredPerDetElem[13];  // counter for detector elements that are fired
+	const IdManuChannelToEntry* fIdToEntry;   // Mapping between Linenumber to IdManuChannel (The object is not owned by this component).
 	
 	//bool ReadDDL(const AliHLTUInt32_t* rawData, AliHLTUInt32_t rawDataSize);
 	bool DecodeDDL(const AliHLTUInt32_t* rawData, AliHLTUInt32_t rawDataSize);

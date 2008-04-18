@@ -38,9 +38,11 @@
 #include <cstdlib>
 #include <cerrno>
 #include <cassert>
+#include <fstream>
 
 //STEER 
 #include "AliCDBManager.h"
+#include "AliCDBStorage.h"
 #include "AliGeomManager.h"
 
 //MUON
@@ -65,6 +67,8 @@ AliHLTMUONHitReconstructorComponent::AliHLTMUONHitReconstructorComponent() :
 	AliHLTProcessor(),
 	fHitRec(NULL),
 	fDDL(-1),
+	fLutSize(0),
+	fLut(NULL),
 	fIdToEntry(),
 	fWarnForUnexpecedBlock(false)
 {
@@ -83,6 +87,10 @@ AliHLTMUONHitReconstructorComponent::~AliHLTMUONHitReconstructorComponent()
 	if (fHitRec != NULL)
 	{
 		delete fHitRec;
+	}
+	if (fLut != NULL)
+	{
+		delete fLut;
 	}
 }
 
@@ -147,8 +155,8 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 
 	HLTInfo("Initialising dHLT hit reconstruction component.");
 	
-	// Must make sure that fHitRec is deleted if it is still allocated for
-	// whatever reason.
+	// Must make sure that fHitRec and fLut is deleted if it is still
+	// allocated for whatever reason.
 	FreeMemory();
 	
 	try
@@ -188,7 +196,7 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 			unsigned long num = strtoul( argv[i+1], &cpErr, 0 );
 			if (cpErr == NULL or *cpErr != '\0')
 			{
-				HLTError("Cannot convert '%s' to DDL Number ", argv[i+1] );
+				HLTError("Cannot convert '%s' to DDL a number.", argv[i+1] );
 				FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
 				return -EINVAL;
 			}
@@ -198,7 +206,7 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 				FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
 				return -EINVAL;
 			}
-			fDDL = num - 1;
+			fDDL = num - 1;  // convert to range [12..19]
 			
 			i++;
 			continue;
@@ -273,76 +281,34 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 	
 	} // for loop
 	
+	if (lutFileName == NULL) useCDB = true;
+	
 	if (fDDL == -1)
 	{
 		HLTWarning("DDL number not specified. Cannot check if incomming data is valid.");
 	}
 	
-	if (lutFileName == NULL) useCDB = true;
-	
-	AliHLTMUONHitRecoLutRow* lookupTable = NULL;
-	
+	int result = 0;
 	if (useCDB)
 	{
-		if (not ReadCDB(lookupTable,cdbPath,run))
-		{
-			HLTError("Failed to read cdb, cdb cannot be read, DoInit");
-			FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
-			if (lookupTable != NULL)
-				delete [] lookupTable;
-			return -ENOENT;
-		}
+		HLTInfo("Loading lookup table information from CDB for DDL %d.", fDDL+1);
+		if (fDDL == -1)
+			HLTWarning("DDL number not specified. The lookup table loaded from CDB will be empty!");
+		result = ReadCDB(cdbPath, run);
 	}
 	else
 	{
-		AliHLTUInt32_t lutLine;
-		if (not GetLutLine(lutFileName, lutLine))
-		{
-			HLTError("Failed for lookuptable count the number of lines in lookuptable, DoInit");
-			FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
-			return -EIO;
-		}
-	
-		try
-		{
-			lookupTable = new AliHLTMUONHitRecoLutRow[lutLine];
-		}
-		catch(const std::bad_alloc&)
-		{
-			HLTError("Dynamic memory allocation failed for lookuptable, DoInit");
-			FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
-			return -ENOMEM;
-		}
-	
-		if (not ReadLookUpTable(lookupTable, lutFileName))
-		{
-			HLTError("Failed to read lut, lut cannot be read, DoInit");
-			FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
-			if (lookupTable != NULL)
-				delete [] lookupTable;
-			return -ENOENT;
-		}
+		HLTInfo("Loading lookup table information from file %s.", lutFileName);
+		result = ReadLookUpTable(lutFileName);
 	}
-	
-	if (not fHitRec->SetIdManuChannelToEntry(fIdToEntry))
+	if (result != 0)
 	{
-		HLTError("Failed to set fIdToEntry mapping, DoInit");
+		// Error messages already generated in ReadCDB or ReadLookUpTable.
 		FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
-		if (lookupTable != NULL)
-			delete [] lookupTable;
-		return -ENOENT;
+		return result;
 	}
 	
-	if (not fHitRec->LoadLookUpTable(lookupTable, fDDL))
-	{
-		HLTError("Cannot Laod hitrec lookuptable , DoInit");
-		FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
-		if (lookupTable != NULL)
-			delete [] lookupTable;
-		return -ENOENT;
-	}
-	
-	delete [] lookupTable;
+	fHitRec->SetLookUpTable(fLut, &fIdToEntry);
 	
 	return 0;
 }
@@ -501,259 +467,400 @@ void AliHLTMUONHitReconstructorComponent::FreeMemory()
 	/// Deletes any allocated objects if they are allocated else nothing is
 	/// done for objects not yet allocated.
 	/// This is used as a helper method to make sure the corresponding pointers
-	/// are NULL and we are back to a well defined state.
+	/// are NULL and we get back to a well defined state.
 
 	if (fHitRec != NULL)
 	{
 		delete fHitRec;
 		fHitRec = NULL;
 	}
+	if (fLut != NULL)
+	{
+		delete fLut;
+		fLut = NULL;
+		fLutSize = 0;
+	}
 	
 	fIdToEntry.clear();
 }
 
 
-bool AliHLTMUONHitReconstructorComponent::GetLutLine(
-		const char* lutFileName, AliHLTUInt32_t& iLine
-	)
+int AliHLTMUONHitReconstructorComponent::ReadLookUpTable(const char* lutFileName)
 {
-  // Reads LUT from CDB.
-  // TODO: combine this with ReadLookUpTable().
-  
-  ifstream fin(lutFileName);
-
-  if(!fin){
-    HLTError("Failed to open file '%s' ",lutFileName);
-    return false;
-  }
-
-  string s;
-  iLine = 0;
-  while(getline(fin,s)){
-    iLine++;
-  }
-
-  fin.close();
-
-  return true;
-}
-
-
-bool AliHLTMUONHitReconstructorComponent::ReadLookUpTable(
-		AliHLTMUONHitRecoLutRow* lookupTable, const char* lutFileName
-	)
-{
-	///
 	/// Read in the lookup table from a text file.
-	///
-  
-  if (fDDL < AliHLTMUONHitReconstructor::GetkDDLOffSet() ||
-      fDDL >= AliHLTMUONHitReconstructor::GetkDDLOffSet() + AliHLTMUONHitReconstructor::GetkNofDDL())
-  {
-    HLTError("DDL number is out of range");
-    return false;
-  }
-  
-  AliHLTUInt32_t lutLine;
-  if(!GetLutLine(lutFileName, lutLine)){
-    HLTError("Failed for lookuptable count the number of lines in lookuptable, DoInit");
-    
-    return false;
-  }
-  
-  int idManuChannel;
-  fIdToEntry.clear();
-  
-  FILE *fin = fopen(lutFileName,"r");
-  if(fin == NULL){
-    printf("Failed to open file %s\n",lutFileName);
-    return false;
-  }else{
-    for(AliHLTUInt32_t i=0;i<lutLine;i++){
-      fscanf(fin,"%d\t%d\t%d\t%d\t%f\t%f\t%f\t%f\t%d\t%f\t%f\t%f\t%f\t%d\t%d\n",
-	     &idManuChannel,&lookupTable[i].fDetElemId,&lookupTable[i].fIX,
-	     &lookupTable[i].fIY,&lookupTable[i].fRealX,
-	     &lookupTable[i].fRealY,&lookupTable[i].fRealZ,
-	     &lookupTable[i].fHalfPadSize,&lookupTable[i].fPlane,
-	     &lookupTable[i].fPed,&lookupTable[i].fSigma,&lookupTable[i].fA0,
-	     &lookupTable[i].fA1,&lookupTable[i].fThres,&lookupTable[i].fSat);
-      
-      fIdToEntry[idManuChannel] = i+1;
-
-      
-    }
-  }
-
-  fclose(fin);
-
-  return true;
+	/// Note that this method could leave fLut allocated which is cleaned up
+	/// by DoInit with a call to FreeMemory().
+	
+	assert( fLut == NULL );
+	assert( fLutSize == 0 );
+	assert( fIdToEntry.empty() );
+	
+	std::ifstream file(lutFileName);
+	if (not file.good())
+	{
+		HLTError("Could not open the LUT file %s", lutFileName);
+		return -ENOENT;
+	}
+	
+	// First count the number of lines of text in the LUT file before decoding.
+	// This is not the most optimal. It would be better to read and decode at the
+	// same time but we are not allowed to use STL and ROOT containers are too
+	// heavy for this task. At least this is done only at the start of run.
+	std::string str;
+	AliHLTUInt32_t lineCount = 0;
+	while (std::getline(file, str)) lineCount++;
+	if (not file.eof())
+	{
+		HLTError("There was a problem reading the LUT file %s", lutFileName);
+		return -EIO;
+	}
+	if (lineCount == 0)
+	{
+		HLTWarning("The LUT file %s was empty.", lutFileName);
+	}
+	
+	// Add one extra LUT line for the first element which is used as a sentinel value.
+	lineCount++;
+	
+	try
+	{
+		fLut = new AliHLTMUONHitRecoLutRow[lineCount];
+		fLutSize = lineCount;
+	}
+	catch (const std::bad_alloc&)
+	{
+		HLTError("Could not allocate more memory for the lookuptable.");
+		return -ENOMEM;
+	}
+	
+	// Initialise the sentinel value.
+	fLut[0].fDetElemId = 0;
+	fLut[0].fIX = 0;
+	fLut[0].fIY = 0;
+	fLut[0].fRealX = 0.0;
+	fLut[0].fRealY = 0.0;
+	fLut[0].fRealZ = 0.0;
+	fLut[0].fHalfPadSize = 0.0;
+	fLut[0].fPlane = -1;
+	fLut[0].fPed = -1;
+	fLut[0].fSigma = -1;
+	fLut[0].fA0 = -1;
+	fLut[0].fA1 = -1;
+	fLut[0].fThres = -1;
+	fLut[0].fSat = -1;
+	
+	// Clear the eof flag and start reading from the beginning of the file again.
+	file.clear();
+	file.seekg(0, std::ios::beg);
+	if (not file.good())
+	{
+		HLTError("There was a problem seeking in the LUT file %s", lutFileName);
+		return -EIO;
+	}
+	
+	AliHLTInt32_t idManuChannel;
+	for (AliHLTUInt32_t i = 1; i < fLutSize; i++)
+	{
+		if (std::getline(file, str).fail())
+		{
+			HLTError("There was a problem reading line %d of LUT file %s", i, lutFileName);
+			return -EIO;
+		}
+		
+		int result = sscanf(
+			str.c_str(), "%d\t%d\t%d\t%d\t%e\t%e\t%e\t%e\t%d\t%e\t%e\t%e\t%e\t%d\t%d",
+			&idManuChannel, &fLut[i].fDetElemId, &fLut[i].fIX,
+			&fLut[i].fIY, &fLut[i].fRealX,
+			&fLut[i].fRealY, &fLut[i].fRealZ,
+			&fLut[i].fHalfPadSize, &fLut[i].fPlane,
+			&fLut[i].fPed, &fLut[i].fSigma, &fLut[i].fA0,
+			&fLut[i].fA1, &fLut[i].fThres, &fLut[i].fSat
+		);
+		
+		if (result != 15)
+		{
+			HLTError("Line %d in LUT file %s does not contain 15 elements.", i, lutFileName);
+			return -EIO;
+		}
+		
+		fIdToEntry[idManuChannel] = i;
+	}
+	
+	return 0;
 }
 
 
-bool AliHLTMUONHitReconstructorComponent::ReadCDB(
-		AliHLTMUONHitRecoLutRow*& lookupTable,
+int AliHLTMUONHitReconstructorComponent::ReadCDB(const char* cdbPath, Int_t run)
+{
+	// Reads LUT from CDB.
+	// TODO: merge this with CreateHitRecoLookupTables.C, make this static and use in the macro for example.
+
+	assert( fLut == NULL );
+	assert( fLutSize == 0 );
+	assert( fIdToEntry.empty() );
+	
+	std::vector<AliHLTMUONHitRecoLutRow> lutList;
+	AliHLTMUONHitRecoLutRow lut;
+	AliHLTUInt32_t iEntry = 0;
+	
+	Bool_t warn = kFALSE;
+	
+	AliCDBManager* cdbManager = AliCDBManager::Instance();
+	if (cdbManager == NULL)
+	{
+		HLTError("CDB manager instance does not exist.");
+		return -EIO;
+	}
+	
+	const char* cdbPathUsed = "unknown (not set)";
+	if (cdbPath != NULL)
+	{
+		cdbManager->SetDefaultStorage(cdbPath);
+		cdbPathUsed = cdbPath;
+	}
+	else
+	{
+		AliCDBStorage* store = cdbManager->GetDefaultStorage();
+		if (store != NULL) cdbPathUsed = store->GetURI().Data();
+	}
+	
+	if (run != -1) cdbManager->SetRun(run);
+	Int_t runUsed = cdbManager->GetRun();
+	
+	if (not AliMpCDB::LoadDDLStore(warn))
+	{
+		HLTError("Failed to load DDL store specified for CDB path '%s' and run no. %d",
+			cdbPathUsed, runUsed
+		);
+		return -ENOENT;
+	}
+	AliMpDDLStore* ddlStore = AliMpDDLStore::Instance();
+	if (ddlStore == NULL)
+	{
+		HLTError("Could not find DDL store instance.");
+		return -EIO;
+	}
+	AliMpSegmentation* mpSegFactory = AliMpSegmentation::Instance();
+	if (mpSegFactory == NULL)
+	{
+		HLTError("Could not find segmentation mapping (AliMpSegmentation) instance.");
+		return -EIO;
+	}
+	
+	AliGeomManager::LoadGeometry();
+	AliMUONGeometryTransformer chamberGeometryTransformer;
+	if (not chamberGeometryTransformer.LoadGeometryData())
+	{
+		HLTError("Failed to load geomerty data.");
+		return -ENOENT;
+	}
+	
+	AliMUONCalibrationData calibData(run);
+	
+	Int_t chamberId;
+	
+	for(Int_t iCh = 6; iCh < 10; iCh++)
+	{
+		chamberId = iCh;
+		
+		AliMpDEIterator it;
+		for ( it.First(chamberId); ! it.IsDone(); it.Next() )
+		{
+			Int_t detElemId = it.CurrentDEId();
+			int iDDL = ddlStore->GetDetElement(detElemId)->GetDdlId();
+			if (iDDL != fDDL) continue;
+		
+			for (Int_t iCath = 0 ; iCath <= 1 ; iCath++)
+			{
+				AliMp::CathodType cath;
+				
+				if(iCath == 0)
+					cath = AliMp::kCath0;
+				else
+					cath = AliMp::kCath1;
+				
+				const AliMpVSegmentation* seg = mpSegFactory->GetMpSegmentation(detElemId, cath);
+				AliMp::PlaneType plane = seg->PlaneType();
+				Int_t maxIX = seg->MaxPadIndexX();
+				Int_t maxIY = seg->MaxPadIndexY();
+				
+				Int_t idManuChannel, manuId, channelId, buspatchId;
+				AliHLTFloat32_t padSizeX, padSizeY;
+				AliHLTFloat32_t halfPadSize;
+				Double_t realX, realY, realZ;
+				Double_t localX, localY, localZ;
+				Float_t calibA0Coeff,calibA1Coeff,pedestal,sigma;
+				Int_t thresold,saturation;
+				
+				// Pad Info of a slat to print in lookuptable
+				for (Int_t iX = 0; iX<= maxIX ; iX++)
+				for (Int_t iY = 0; iY<= maxIY ; iY++)
+				{
+					if (not seg->HasPad(AliMpIntPair(iX,iY))) continue;
+
+					AliMpPad pad = seg->PadByIndices(AliMpIntPair(iX,iY), kFALSE);
+					
+					// Getting Manu id
+					manuId = pad.GetLocation().GetFirst();
+					manuId &= 0x7FF; // 11 bits 
+			
+					buspatchId = ddlStore->GetBusPatchId(detElemId,manuId);
+					
+					// Getting channel id
+					channelId =  pad.GetLocation().GetSecond();
+					channelId &= 0x3F; // 6 bits
+					
+					idManuChannel = buspatchId << 11;
+					idManuChannel = (idManuChannel | manuId) << 6;
+					idManuChannel |= channelId;
+					
+					localX = pad.Position().X();
+					localY = pad.Position().Y();
+					localZ = 0.0;
+					
+					chamberGeometryTransformer.Local2Global(
+						detElemId,localX,localY,localZ,
+						realX,realY,realZ
+					);
+					
+					padSizeX = pad.Dimensions().X();
+					padSizeY = pad.Dimensions().Y();
+					
+					calibA0Coeff = (calibData.Gains(detElemId, manuId))->ValueAsFloat(channelId, 0);
+					calibA1Coeff = (calibData.Gains(detElemId, manuId))->ValueAsFloat(channelId, 1);
+					thresold = (calibData.Gains(detElemId, manuId))->ValueAsInt(channelId, 2);
+					saturation = (calibData.Gains(detElemId, manuId))->ValueAsInt(channelId, 4);
+					
+					pedestal = (calibData.Pedestals(detElemId, manuId))->ValueAsFloat(channelId, 0);
+					sigma = (calibData.Pedestals(detElemId, manuId))->ValueAsFloat(channelId, 1);
+					
+					if (plane == 0)
+						halfPadSize = padSizeX;
+					else
+						halfPadSize = padSizeY;
+					
+					fIdToEntry[idManuChannel] = iEntry+1;
+			
+					lut.fDetElemId = detElemId;
+					lut.fIX = iX;
+					lut.fIY = iY;
+					lut.fRealX = realX;
+					lut.fRealY = realY;
+					lut.fRealZ = realZ;
+					lut.fHalfPadSize = halfPadSize;
+					lut.fPlane = plane;
+					lut.fPed = pedestal;
+					lut.fSigma = sigma;
+					lut.fA0 = calibA0Coeff;
+					lut.fA1 = calibA1Coeff;
+					lut.fThres = thresold;
+					lut.fSat = saturation;
+					
+					lutList.push_back(lut);
+					iEntry++;
+				} // iX, iY loop
+			} // iCath loop
+		} // detElemId loop
+	} // ichamber loop
+
+	try
+	{
+		// Use iEntry+1 since we add one extra LUT line for the first element
+		// which is used as a sentinel value.
+		fLut = new AliHLTMUONHitRecoLutRow[iEntry+1];
+		fLutSize = iEntry+1;
+	}
+	catch (const std::bad_alloc&)
+	{
+		HLTError("Could not allocate more memory for the lookuptable.");
+		return -ENOMEM;
+	}
+	
+	// Initialise the sentinel value.
+	fLut[0].fDetElemId = 0;
+	fLut[0].fIX = 0;
+	fLut[0].fIY = 0;
+	fLut[0].fRealX = 0.0;
+	fLut[0].fRealY = 0.0;
+	fLut[0].fRealZ = 0.0;
+	fLut[0].fHalfPadSize = 0.0;
+	fLut[0].fPlane = -1;
+	fLut[0].fPed = -1;
+	fLut[0].fSigma = -1;
+	fLut[0].fA0 = -1;
+	fLut[0].fA1 = -1;
+	fLut[0].fThres = -1;
+	fLut[0].fSat = -1;
+	
+	for (AliHLTUInt32_t i = 0; i < iEntry; i++)
+		fLut[i+1] = lutList[i];
+	
+	return 0;
+}
+
+
+bool AliHLTMUONHitReconstructorComponent::GenerateLookupTable(
+		AliHLTInt32_t ddl, const char* filename,
 		const char* cdbPath, Int_t run
 	)
 {
-  // Reads LUT from CDB.
-  // TODO: merge this with CreateHitRecoLookupTables.C, make this static and use in the macro for example.
-
-  vector<AliHLTMUONHitRecoLutRow> lutList;
-  lutList.clear();
-  AliHLTMUONHitRecoLutRow lut;
-  int iEntry = 0;
-
-  Bool_t warn = kTRUE;
-
-  AliCDBManager* cdbManager = AliCDBManager::Instance();
-  if (cdbPath != NULL) cdbManager->SetDefaultStorage(cdbPath);
-  if (run != -1) cdbManager->SetRun(run);
-
-  if (! AliMpCDB::LoadDDLStore(warn)){
-    HLTError("Failed to Load DDLStore specified for CDBPath '%s', and Run : '%d'",cdbPath,run);
-    return false;
-  }
-
-  AliMpSegmentation *mpSegFactory = AliMpSegmentation::Instance();
-  AliGeomManager::LoadGeometry();
-  AliMUONGeometryTransformer* chamberGeometryTransformer = new AliMUONGeometryTransformer();
-  if(! chamberGeometryTransformer->LoadGeometryData()){
-    HLTError("Failed to Load Geomerty Data ");
-    return false;
-  }
-  
-  AliMUONCalibrationData calibData(run);
-
-  int totMaxIX = -1;
-  int totMaxIY = -1;
-  Int_t chamberId;
-
-  for(Int_t iCh = 6; iCh < 10; iCh++){ // max 4
-
-    chamberId = iCh ;
-
-    AliMpDEIterator it;
-    for ( it.First(chamberId); ! it.IsDone(); it.Next() ) {
-    
-      Int_t detElemId = it.CurrentDEId();
-      int iDDL = AliMpDDLStore::Instance()->GetDetElement(detElemId)->GetDdlId() + 1;
-      if(iDDL == fDDL){
-
-	for(Int_t iCath = 0 ; iCath <= 1 ; iCath++){
+	/// Generates a ASCII text file containing the lookup table (LUT) from
+	/// the CDB, which can be used for the hit reconstructor component later.
+	/// @param ddl  Must be the DDL for which to generate the DDL,
+	///             in the range [13..20].
+	/// @param filename  The name of the LUT file to generate.
+	/// @param cdbPath  The CDB path to use.
+	/// @param run  The run number to use for the CDB.
+	/// @return  True if the generation of the LUT file succeeded.
 	
-	  AliMp::CathodType cath;
-	  
-	  if(iCath == 0)
-	    cath = AliMp::kCath0 ;
-	  else
-	  cath = AliMp::kCath1 ;
-	  
-	  const AliMpVSegmentation* seg = mpSegFactory->GetMpSegmentation(detElemId, cath);
-	  AliMp::PlaneType plane = seg->PlaneType(); 
-	  Int_t maxIX = seg->MaxPadIndexX();  
-	  Int_t maxIY = seg->MaxPadIndexY(); 
-	  if(maxIX > totMaxIX)
-	    totMaxIX = maxIX;
-	  if(maxIY > totMaxIY)
-	    totMaxIY = maxIY;
-	  
-	  Int_t idManuChannel, manuId, channelId, buspatchId;
-	  float padSizeX, padSizeY;
-	  float halfPadSize ;
-	  Double_t realX, realY, realZ;
-	  Double_t localX, localY, localZ;
-	  Float_t calibA0Coeff,calibA1Coeff,pedestal,sigma;
-	  Int_t thresold,saturation;
-	  
-	  // 	cout<<"Running for detElemId :"<<detElemId<<", and plane : "<<plane<<endl;
-	  //Pad Info of a segment to print in lookuptable
-	  for(Int_t iX = 0; iX<= maxIX ; iX++){
-	    for(Int_t iY = 0; iY<= maxIY ; iY++){
-	      if(seg->HasPad(AliMpIntPair(iX,iY))){
-		AliMpPad pad = seg->PadByIndices(AliMpIntPair(iX,iY),kFALSE);
-		
-		// Getting Manu id
-		manuId = pad.GetLocation().GetFirst();
-		manuId &= 0x7FF; // 11 bits 
-
-		buspatchId = AliMpDDLStore::Instance()->GetBusPatchId(detElemId,manuId);
-		
-		// Getting channel id
-		channelId =  pad.GetLocation().GetSecond();
-		channelId &= 0x3F; // 6 bits
-		
-		idManuChannel &= 0x0;
-		idManuChannel = (idManuChannel|buspatchId)<<11;  
-		idManuChannel = (idManuChannel|manuId)<<6 ;
-		idManuChannel |= channelId ;
-		
-		localX = pad.Position().X();
-		localY = pad.Position().Y();
-		localZ = 0.0;
-		
-		chamberGeometryTransformer->Local2Global(detElemId,localX,localY,localZ,
- 						       realX,realY,realZ);
-		
-		padSizeX = pad.Dimensions().X();
-		padSizeY = pad.Dimensions().Y();
-		
-		calibA0Coeff = (calibData.Gains(detElemId,manuId))->ValueAsFloat(channelId,0) ;
-		calibA1Coeff = (calibData.Gains(detElemId,manuId))->ValueAsFloat(channelId,1) ;
-		thresold = (calibData.Gains(detElemId,manuId))->ValueAsInt(channelId,2) ;
-		saturation = (calibData.Gains(detElemId,manuId))->ValueAsInt(channelId,4) ;
-		
-		pedestal = (calibData.Pedestals(detElemId,manuId))->ValueAsFloat(channelId,0);
-		sigma = (calibData.Pedestals(detElemId,manuId))->ValueAsFloat(channelId,1);
-		
-		if(plane==0)
-		  halfPadSize = padSizeX;
-		else
-		  halfPadSize = padSizeY;
-		
-		fIdToEntry[idManuChannel] = iEntry+1;
-
-		lut.fDetElemId = detElemId;
-		lut.fIX = iX;
-		lut.fIY = iY;
-		lut.fRealX = realX;
-		lut.fRealY = realY;
-		lut.fRealZ = realZ;
-		lut.fHalfPadSize = halfPadSize;
-		lut.fPlane = plane;
-		lut.fPed = pedestal;
-		lut.fSigma = sigma;
-		lut.fA0 = calibA0Coeff;
-		lut.fA1 = calibA1Coeff;
-		lut.fThres = thresold;
-		lut.fSat = saturation;
-		
-		lutList.push_back(lut);
-		iEntry++;
-	      }// HasPad Condn
-	    }// iY loop
-	  }// iX loop
+	AliHLTMUONHitReconstructorComponent comp;
 	
-	}// iPlane
-      }// iDDL
-    } // detElemId loop
-
-  }// ichamber loop
-
-  AliHLTMUONHitRecoLutRow *temp;
-
-  try{
-    temp = new AliHLTMUONHitRecoLutRow[iEntry];
-  }
-  catch(const std::bad_alloc&){
-    HLTError("Dynamic memory allocation failed for temp");
-
-    return false;
-  }
-  
-  for(int iterm = 0; iterm < iEntry ;iterm++)
-    temp[iterm] = lutList.at(iterm);
-  
-  lookupTable = temp;
-
-  return true;
+	if (ddl < 12 or 19 < ddl)
+	{
+		std::cerr << "ERROR: the DDL number must be in the range [12..19]." << std::endl;
+		return false;
+	}
+	
+	comp.fDDL = ddl;
+	if (comp.ReadCDB(cdbPath, run) != 0) return false;
+	
+	char str[1024*4];
+	std::fstream file(filename, std::ios::out);
+	if (not file)
+	{
+		std::cerr << "ERROR: could not open file: " << filename << std::endl;
+		return false;
+	}
+	
+	assert( comp.fLut != NULL );
+	
+	for (IdManuChannelToEntry::iterator id = comp.fIdToEntry.begin();
+	     id != comp.fIdToEntry.end();
+	     id++
+	    )
+	{
+		AliHLTInt32_t idManuChannel = id->first;
+		AliHLTInt32_t row = id->second;
+		
+		assert( row < comp.fLutSize );
+		
+		sprintf(str, "%d\t%d\t%d\t%d\t%.15e\t%.15e\t%.15e\t%.15e\t%d\t%.15e\t%.15e\t%.15e\t%.15e\t%d\t%d",
+			idManuChannel, comp.fLut[row].fDetElemId, comp.fLut[row].fIX,
+			comp.fLut[row].fIY, comp.fLut[row].fRealX,
+			comp.fLut[row].fRealY, comp.fLut[row].fRealZ,
+			comp.fLut[row].fHalfPadSize, comp.fLut[row].fPlane,
+			comp.fLut[row].fPed, comp.fLut[row].fSigma, comp.fLut[row].fA0,
+			comp.fLut[row].fA1, comp.fLut[row].fThres, comp.fLut[row].fSat
+		);
+		
+		file << str << endl;
+		if (file.fail())
+		{
+			std::cerr << "ERROR: There was an I/O error when writing to the file: "
+				<< filename << std::endl;
+			return false;
+		}
+	}
+	
+	return true;
 }

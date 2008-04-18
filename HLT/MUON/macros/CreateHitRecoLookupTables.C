@@ -1,5 +1,5 @@
 /**************************************************************************
- * This file is property of and copyright by the ALICE HLT Project        * 
+ * This file is property of and copyright by the ALICE HLT Project        *
  * All rights reserved.                                                   *
  *                                                                        *
  * Primary Authors:                                                       *
@@ -10,11 +10,38 @@
  * without fee, provided that the above copyright notice appears in all   *
  * copies and that both the copyright notice and this permission notice   *
  * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          * 
+ * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*********************************************
+/* $Id$ */
+
+/**
+ * \ingroup macros
+ * \file CreateHitRecoLookupTables.C
+ * \brief Macro used to generate lookup tables for the hit reconstructor components.
+ *
+ * This macro is used to generate the lookup tables for the hit reconstructor
+ * component. All alignment and geometry data is taken from the CDB.
+ *
+ * \note The LUT files must be generated on the same platform / machine on which
+ * they will be used, since they may not be binary compatible across platforms.
+ *
+ * To run this macro copy "rootlogon.C" from $ALICE_ROOT/HLT/MUON/macros
+ * into the current directory, then from the shell command prompt run one of
+ * the following commands:
+ * \code
+ *   > aliroot $ALICE_ROOT/HLT/MUON/macros/CreateHitRecoLookupTables.C
+ * \endcode
+ * or
+ * \code
+ *   > aliroot -b -q -l $ALICE_ROOT/HLT/MUON/macros/CreateHitRecoLookupTables.C+
+ * \endcode
+ *
+ * \author Indranil Das <indra.das@saha.ac.in>
+ */
+
+/*
 Purpose:  A macro to generate LookupTable
           in the following form
 buspatchId+manuid+channelId  buspatchId Ix  IY  X  Y  B/NB
@@ -25,173 +52,47 @@ Modified: 09/02/2006
 Modified: 09/04/2007
 Modified: 24/08/2007 (To adopt to AliRoot v4-06-Release)
 
-Run Info: To run this code copy "rootlogon.C" 
-          in the current directory from $ALICE_ROOT/MUON 
-           then compile and run using
-          .L CreateHitRecoLookupTables.C+
+Run Info: To run this macro copy "rootlogon.C" from $ALICE_ROOT/HLT/MUON/macros
+  into the current directory then compile and run from inside AliRoot using
+      root [0] .x CreateHitRecoLookupTables.C+
 
 Author:   Indranil Das, HEP, SINP, Kolkata
 Email:    indra.das@saha.ac.in
-***********************************************/
 
-#include <iostream> 
+18 Apr 2008: Moved lookup table generation code to the AliHLTMUONHitReconstructorComponent
+component since it is required there anyway and we want to avoid code duplication.
+This also makes this macro much cleaner.
+    -- Artur Szostak <artursz@iafrica.com>
+*/
 
-//STEER 
-#include "AliCDBManager.h"
-#include "AliGeomManager.h"
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include "Riostream.h"
+#include "AliHLTMUONHitReconstructorComponent.h"
+#include "TSystem.h"
+#endif
 
-//MUON
-#include "AliMUONGeometryTransformer.h"
-#include "AliMUONCalibrationData.h"
-#include "AliMUONVCalibParam.h"
-
-//MUON/mapping 
-#include "AliMpCDB.h"
-#include "AliMpPad.h"
-#include "AliMpSegmentation.h"
-#include "AliMpDDLStore.h"
-#include "AliMpDEIterator.h"
-#include "AliMpVSegmentation.h"
-#include "AliMpDEManager.h"
-#include <AliMpDetElement.h>
-
-using namespace std;
-
-Bool_t CreateHitRecoLookupTables(TString CDBPath = "local://$ALICE_ROOT", Int_t run = 0, Bool_t warn = kTRUE)
+/**
+ * Generates the ASCII lookup tables for the AliHLTMUONHitReconstructorComponent
+ * components. The tables are generated from the CDB database information.
+ * \param CDBPath  This is the CDB path to use as the DB storage.
+ *                 (Default = local://$ALICE_ROOT)
+ * \param run  This is the run number to use for the CDB (Default = 0).
+ */
+void CreateHitRecoLookupTables(const char* CDBPath = "local://$ALICE_ROOT", Int_t run = 0)
 {
-  Char_t filename1[50];
-  Int_t chamberId;
-  
-  AliCDBManager* cdbManager = AliCDBManager::Instance();
-  cdbManager->SetDefaultStorage(CDBPath.Data());
-  cdbManager->SetRun(run);
+	gSystem->Load("libAliHLTMUON.so");
 
-  if (! AliMpCDB::LoadDDLStore(warn)){
-    cerr<<__FILE__<<": Failed to Load DDLStore specified for CDBPath "<<CDBPath<<", and Run : "<<run<<endl;
-    return kFALSE;
-  }
-
-  AliMpSegmentation *mpSegFactory = AliMpSegmentation::Instance(); 
-  AliGeomManager::LoadGeometry();
-  AliMUONGeometryTransformer* chamberGeometryTransformer = new AliMUONGeometryTransformer();
-  if(! chamberGeometryTransformer->LoadGeometryData()){
-    cerr<<__FILE__<<": Failed to Load Geomerty Data "<<endl;
-    return kFALSE;
-  }
-  
-  int maxDDL = 8;
-  FILE *fout[maxDDL];
-  for(int iDDL = 0;iDDL<maxDDL; iDDL++){
-    sprintf(filename1,"Lut%d.dat",iDDL+13);
-    fout[iDDL] = fopen(filename1,"w");
-  }
-  
-  AliMUONCalibrationData calibData(run);
-
-  int totMaxIX = -1;
-  int totMaxIY = -1;
-
-  for(Int_t iCh = 6; iCh < 10; iCh++){ // max 4
-
-    chamberId = iCh ;
-
-    AliMpDEIterator it;
-    for ( it.First(chamberId); ! it.IsDone(); it.Next() ) {
-    
-      Int_t detElemId = it.CurrentDEId();
-      int iDDL = AliMpDDLStore::Instance()->GetDetElement(detElemId)->GetDdlId() - 12 ;
-      for(Int_t iCath = 0 ; iCath <= 1 ; iCath++){
+	for (Int_t ddl = 12; ddl < 20; ddl++)
+	{
+		Char_t filename[64];
+		sprintf(filename, "Lut%d.dat", ddl+1);
+		cout << "Generating LUT for DDL " << ddl+1
+			<< " and writing output to file " << filename << endl;
+		bool ok = AliHLTMUONHitReconstructorComponent::GenerateLookupTable(
+				ddl, filename, CDBPath, run
+			);
+		if (! ok) return;
+	}
 	
-	AliMp::CathodType cath;
-
-	if(iCath == 0)
-	  cath = AliMp::kCath0 ;
-	else
-	  cath = AliMp::kCath1 ;
-
-	const AliMpVSegmentation* seg = mpSegFactory->GetMpSegmentation(detElemId, cath);
-	AliMp::PlaneType plane = seg->PlaneType(); 
-	Int_t maxIX = seg->MaxPadIndexX();  
-	Int_t maxIY = seg->MaxPadIndexY(); 
-	if(maxIX > totMaxIX)
-	  totMaxIX = maxIX;
-	if(maxIY > totMaxIY)
-	  totMaxIY = maxIY;
-
-	Int_t idManuChannel, manuId, channelId, buspatchId;
-	float padSizeX, padSizeY;
-	float halfPadSize ;
-	Double_t realX, realY, realZ;
-	Double_t localX, localY, localZ;
-	Float_t calibA0Coeff,calibA1Coeff,pedestal,sigma;
-	Int_t thresold,saturation;
-
-// 	cout<<"Running for detElemId :"<<detElemId<<", and plane : "<<plane<<endl;
-	//Pad Info of a segment to print in lookuptable
-	for(Int_t iX = 0; iX<= maxIX ; iX++){
-	  for(Int_t iY = 0; iY<= maxIY ; iY++){
-	    if(seg->HasPad(AliMpIntPair(iX,iY))){
-	      AliMpPad pad = seg->PadByIndices(AliMpIntPair(iX,iY),kFALSE);
-
-	      // Getting Manu id
-	      manuId = pad.GetLocation().GetFirst();
-	      manuId &= 0x7FF; // 11 bits 
-
-	      buspatchId = AliMpDDLStore::Instance()->GetBusPatchId(detElemId,manuId);
-	      
-	      // Getting channel id
-	      channelId =  pad.GetLocation().GetSecond();
-	      channelId &= 0x3F; // 6 bits
-	      
-	      idManuChannel &= 0x0;
-	      idManuChannel = (idManuChannel|buspatchId)<<11;  
-	      idManuChannel = (idManuChannel|manuId)<<6 ;
-	      idManuChannel |= channelId ;
-	      
-	      localX = pad.Position().X();
-	      localY = pad.Position().Y();
-	      localZ = 0.0;
-
- 	      chamberGeometryTransformer->Local2Global(detElemId,localX,localY,localZ,
- 						       realX,realY,realZ);
-
-	      padSizeX = pad.Dimensions().X();
-	      padSizeY = pad.Dimensions().Y();
-
-	      calibA0Coeff = (calibData.Gains(detElemId,manuId))->ValueAsFloat(channelId,0) ;
-	      calibA1Coeff = (calibData.Gains(detElemId,manuId))->ValueAsFloat(channelId,1) ;
-	      thresold = (calibData.Gains(detElemId,manuId))->ValueAsInt(channelId,2) ;
-	      saturation = (calibData.Gains(detElemId,manuId))->ValueAsInt(channelId,4) ;
-
-	      pedestal = (calibData.Pedestals(detElemId,manuId))->ValueAsFloat(channelId,0);
-	      sigma = (calibData.Pedestals(detElemId,manuId))->ValueAsFloat(channelId,1);
-
-	      if(plane==0)
-		halfPadSize = padSizeX;
-	      else
-		halfPadSize = padSizeY;
-
-	      fprintf(fout[iDDL],"%d\t%d\t%d\t%d\t%f\t%f\t%f\t%f\t%d\t%f\t%f\t%f\t%f\t%d\t%d\n",
-		      idManuChannel,detElemId,iX,iY,realX,realY,realZ,
-		      halfPadSize,plane,pedestal,sigma,calibA0Coeff,calibA1Coeff,thresold,saturation);
-
-	    }// HasPad Condn
-	  }// iY loop
-	}// iX loop
-	
-      }// iPlane
-
-    } // detElemId loop
-
-//     fclose(fout1);
-
-  }// ichamber loop
-
-  for(int iDDL = 0;iDDL<maxDDL; iDDL++){
-    fclose(fout[iDDL]);
-  }
-
-//   cout<<"TotMaxIX : "<<totMaxIX<<", and totMaxIY : "<<totMaxIY<<endl;
-  
-  return kTRUE;
+	cout << "Lookup tables have been generated successfully." << endl;
 }

@@ -14,14 +14,12 @@
 ///
 
 #include "AliHLTProcessor.h"
+#include "AliHLTMUONHitReconstructor.h"
 
 #if __GNUC__ && __GNUC__ < 3
 #define std
 #endif
 
-// TODO: see if we can remove the following header somehow.
-#include "AliHLTMUONHitReconstructor.h"
-//class AliHLTMUONHitReconstructor;
 
 extern "C" struct AliHLTMUONHitRecoLutRow;
 
@@ -40,6 +38,21 @@ public:
 	virtual AliHLTComponentDataType GetOutputDataType();
 	virtual void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier );
 	virtual AliHLTComponent* Spawn();
+	
+	/**
+	 * Generates a ASCII text file containing the lookup table (LUT) from
+	 * the CDB, which can be used for the hit reconstructor component later.
+	 * @param ddl  Must be the DDL for which to generate the DDL,
+	 *             in the range [12..19].
+	 * @param filename  The name of the LUT file to generate.
+	 * @param cdbPath  The CDB path to use.
+	 * @param run  The run number to use for the CDB.
+	 * @return  True if the generation of the LUT file succeeded.
+	 */
+	static bool GenerateLookupTable(
+			AliHLTInt32_t ddl, const char* filename,
+			const char* cdbPath, Int_t run
+		);
 	
 protected:
 	
@@ -67,12 +80,13 @@ private:
 	AliHLTMUONHitReconstructorComponent& operator = (const AliHLTMUONHitReconstructorComponent& /*obj*/);
 	
 	void FreeMemory();
-	bool ReadLookUpTable(AliHLTMUONHitRecoLutRow* lookupTable, const char* lutpath);
-	bool ReadCDB(AliHLTMUONHitRecoLutRow*& lookupTable, const char* cdbpath, Int_t run);
-	bool GetLutLine(const char* lutPath, AliHLTUInt32_t& iLine); // To count the nof lines in lookuptable
- 
+	int ReadLookUpTable(const char* lutpath);
+	int ReadCDB(const char* cdbpath, Int_t run);
+	
 	AliHLTMUONHitReconstructor* fHitRec;  // Internal class instance implementing the hit reconstruction algorithm.
-	AliHLTInt32_t fDDL;  // DDL number in the range [13..20]. Set to -1 for invalid/unspecified value.
+	AliHLTInt32_t fDDL;  // DDL number in the range [12..19]. Set to -1 for invalid/unspecified value.
+	AliHLTUInt32_t fLutSize;  // The number of rows / entries in the LUT.
+	AliHLTMUONHitRecoLutRow* fLut;  // The lookup table used by the hit reconstruction algorithm (Owned by this component however).
 	IdManuChannelToEntry fIdToEntry; // id to line mapping.
 	bool fWarnForUnexpecedBlock;  // Flag indicating if we should log a warning if we got a block of an unexpected type.
 	

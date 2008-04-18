@@ -60,7 +60,6 @@ AliHLTMUONHitReconstructor::AliHLTMUONHitReconstructor() :
 	fMaxRecPointsCount(0),
 	fCentralCountB(0),
 	fCentralCountNB(0),
-	fDDLId(0),
 	fDigitPerDDL(0),
 	fCentralChargeB(NULL),
 	fCentralChargeNB(NULL),
@@ -108,105 +107,30 @@ AliHLTMUONHitReconstructor::~AliHLTMUONHitReconstructor()
 {
 	/// Default destructor
 	
-	if(fPadData)
+	if (fPadData)
 	{
 		delete [] fPadData;
 		fPadData = NULL;
 	}
+}
+
+
+void AliHLTMUONHitReconstructor::SetLookUpTable(
+		const AliHLTMUONHitRecoLutRow* lookupTable,
+		const IdManuChannelToEntry* idToEntry
+	)
+{
+	/// Sets the Lookup table (LUT) containing the position of each pad with
+	/// electronic channel associated with it. Also the appropriate manu
+	/// channel ID mapping to LUT row is also set.
+
+	assert( lookupTable != NULL );
+	assert( idToEntry != NULL );
 	
-	if(fLookUpTableData)
-	{
-		delete [] fLookUpTableData;
-		fLookUpTableData = NULL;
-	}
+	fIdToEntry = idToEntry;
+	fLookUpTableData = lookupTable;
 }
 
-
-bool AliHLTMUONHitReconstructor::LoadLookUpTable(AliHLTMUONHitRecoLutRow* lookUpTableData, int lookUpTableId)
-{
-  // function that loads LookUpTable (= position of each pad with electronic channel associated with it)
-
-  if(lookUpTableId<fgkDDLOffSet || lookUpTableId>= fgkDDLOffSet + fgkNofDDL){
-    HLTError("DDL number %d is out of range (must be %d<=iDDL<%d)\n",lookUpTableId,fgkDDLOffSet,fgkDDLOffSet+fgkNofDDL);
-    return false;
-  }
-
-
-  if(fIdToEntry.size()==0){
-    HLTError("SetLineNumToIdManuChannel() is not set properly");
-    return false;
-  }else{
-    
-//     if(fLookUpTableData){
-//       delete []fLookUpTableData;
-//       fLookUpTableData = NULL;
-//     }
-
-    try{
-      fLookUpTableData = new AliHLTMUONHitRecoLutRow[fIdToEntry.size()+1];
-    }
-    catch(const std::bad_alloc&){
-      HLTError("Dynamic memory allocation failed for AliHLTMUONHitReconstructor::fLookUpTableData");
-      return false;
-    }
-
-  }
-
-  fDDLId = lookUpTableId;
-
-  fLookUpTableData[0].fDetElemId = 0;
-  fLookUpTableData[0].fIX = 0 ;
-  fLookUpTableData[0].fIY = 0 ;
-  fLookUpTableData[0].fRealX = 0.0 ;
-  fLookUpTableData[0].fRealY = 0.0 ;
-  fLookUpTableData[0].fRealZ = 0.0 ;
-  fLookUpTableData[0].fHalfPadSize = 0.0 ;
-  fLookUpTableData[0].fPlane = -1 ;
-  fLookUpTableData[0].fPed = -1 ;
-  fLookUpTableData[0].fSigma = -1 ;
-  fLookUpTableData[0].fA0 = -1 ;
-  fLookUpTableData[0].fA1 = -1 ;
-  fLookUpTableData[0].fThres = -1 ;
-  fLookUpTableData[0].fSat = -1 ;
-
-  for(int i=0; i<int(fIdToEntry.size()); i++){
-
-    fLookUpTableData[i+1].fDetElemId = lookUpTableData[i].fDetElemId;
-    fLookUpTableData[i+1].fIX = lookUpTableData[i].fIX ;
-    fLookUpTableData[i+1].fIY = lookUpTableData[i].fIY ;
-    fLookUpTableData[i+1].fRealX = lookUpTableData[i].fRealX ;
-    fLookUpTableData[i+1].fRealY = lookUpTableData[i].fRealY ;
-    fLookUpTableData[i+1].fRealZ = lookUpTableData[i].fRealZ ;
-    fLookUpTableData[i+1].fHalfPadSize = lookUpTableData[i].fHalfPadSize ;
-    fLookUpTableData[i+1].fPlane = lookUpTableData[i].fPlane ;
-    fLookUpTableData[i+1].fPed = lookUpTableData[i].fPed ;
-    fLookUpTableData[i+1].fSigma = lookUpTableData[i].fSigma ;
-    fLookUpTableData[i+1].fA0 = lookUpTableData[i].fA0 ;
-    fLookUpTableData[i+1].fA1 = lookUpTableData[i].fA1 ;
-    fLookUpTableData[i+1].fThres= lookUpTableData[i].fThres ;
-    fLookUpTableData[i+1].fSat = lookUpTableData[i].fSat ;
-    
-  }
-
-  return true;
-  
-}
-
-
-bool AliHLTMUONHitReconstructor::SetIdManuChannelToEntry(IdManuChannelToEntry idToEntry)
-{
-
-  // function that loads LineNumber To IdManuChannel map
-
-  if(idToEntry.size()==0) {
-    HLTError("Empty idToEntry mapping");
-    return false;
-  } else {
-    fIdToEntry = idToEntry;
-  }
-  
-  return true;
-}
 
 bool AliHLTMUONHitReconstructor::Run(
 		const AliHLTUInt32_t* rawData,
@@ -821,6 +745,7 @@ AliHLTMUONHitReconstructor::AliHLTMUONRawDecoder::~AliHLTMUONRawDecoder()
 	// dtor
 }
 
+
 void AliHLTMUONHitReconstructor::AliHLTMUONRawDecoder::OnData(UInt_t dataWord, bool /*parityError*/)
 {
   //function to arrange the decoded Raw Data
@@ -829,7 +754,8 @@ void AliHLTMUONHitReconstructor::AliHLTMUONRawDecoder::OnData(UInt_t dataWord, b
   fIdManuChannel = (fIdManuChannel|fBusPatchId)<<17;
   fIdManuChannel |= (dataWord >> 12) & 0x1FFFF;
   
-  fLutEntry = fIdToEntry[fIdManuChannel];
+  IdManuChannelToEntry& idToEntry = * const_cast<IdManuChannelToEntry*>(fIdToEntry);
+  fLutEntry = idToEntry[fIdManuChannel];
   fPadCharge = int(((unsigned short)(dataWord & 0xFFF)) - fLookUpTableData[fLutEntry].fPed);
   
   fCharge = 0;	  
