@@ -11,6 +11,7 @@
 //                                                                 // 
 /////////////////////////////////////////////////////////////////////
 
+#include "AliQA.h"
 #include "AliQACheckerBase.h"
 
 //class TFile ; 
@@ -27,8 +28,8 @@ public:
 
  protected:
 
-  virtual const Double_t Check(TObjArray * list) ;
-  virtual const Double_t Check() {return 0.;} ;
+  virtual const Double_t Check(AliQA::ALITASK_t index, TObjArray * list) ;
+  virtual const Double_t Check(AliQA::ALITASK_t index) {return 0.;} ;
 
   
   ClassDef(AliTOFQAChecker,2)  // description 

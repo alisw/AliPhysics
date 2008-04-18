@@ -38,7 +38,7 @@ AliITSQASPDChecker& AliITSQASPDChecker::operator = (const AliITSQASPDChecker& qa
 }
 
 //__________________________________________________________________
-const Double_t AliITSQASPDChecker::Check() 
+const Double_t AliITSQASPDChecker::Check(AliQA::ALITASK_t /*index*/) 
 {
 /*
   TObjArray * list

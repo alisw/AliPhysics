@@ -38,8 +38,8 @@ public:
   void   SetRefandData(TDirectory * ref, TObjArray * refOCDB, TDirectory * data=NULL) { fRefSubDir = ref ;  fRefOCDBSubDir = refOCDB, fDataSubDir = data ; }
 
 protected:
-  virtual const Double_t Check() ;
-  virtual const Double_t Check(TObjArray * list) ;
+  virtual const Double_t Check(AliQA::ALITASK_t index) ;
+  virtual const Double_t Check(AliQA::ALITASK_t index, TObjArray * list) ;
   const Double_t DiffC(const TH1 * href, const TH1 * hin) const ;   
   const Double_t DiffK(const TH1 * href, const TH1 * hin) const ;   
   void           Finish() const ; 

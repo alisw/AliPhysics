@@ -59,7 +59,7 @@ AliITSQAChecker& AliITSQAChecker::operator = (const AliITSQAChecker& qac )
 }
 
 //____________________________________________________________________________
-const Double_t AliITSQAChecker::Check(TObjArray * list)
+const Double_t AliITSQAChecker::Check(AliQA::ALITASK_t index, TObjArray * list)
 {
 
   // Super-basic check on the QA histograms on the input list:
@@ -67,17 +67,17 @@ const Double_t AliITSQAChecker::Check(TObjArray * list)
   if(fDet == 0 || fDet == 1) {
     AliDebug(1,"AliITSQAChecker::Create SPD Checker\n");
 	if(!fSPDChecker) fSPDChecker = new AliITSQASPDChecker();
-	Double_t SPDcheck = fSPDChecker->Check();
+	Double_t SPDcheck = fSPDChecker->Check(index);
   }
   if(fDet == 0 || fDet == 2) {
     AliDebug(1,"AliITSQAChecker::Create SDD Checker\n");
 	if(!fSDDChecker) fSDDChecker = new AliITSQASDDChecker();
-	Double_t SDDcheck = fSDDChecker->Check();
+	Double_t SDDcheck = fSDDChecker->Check(index);
   }
   if(fDet == 0 || fDet == 3) {
     AliDebug(1,"AliITSQAChecker::Create SSD Checker\n");
 	if(!fSSDChecker) fSSDChecker = new AliITSQASSDChecker();
-	Double_t SSDcheck = fSSDChecker->Check();
+	Double_t SSDcheck = fSSDChecker->Check(index);
   }
   // here merging part for common ITS QA result
   return 0;

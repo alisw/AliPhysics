@@ -74,7 +74,7 @@ AliQACheckerBase& AliQACheckerBase::operator = (const AliQACheckerBase& qadm )
 }
 
 //____________________________________________________________________________
-const Double_t AliQACheckerBase::Check() 
+const Double_t AliQACheckerBase::Check(AliQA::ALITASK_t /*index*/) 
 {
   // Performs a basic checking
   // Compares all the histograms stored in the directory
@@ -123,7 +123,7 @@ const Double_t AliQACheckerBase::Check()
 }  
 
 //____________________________________________________________________________
-const Double_t AliQACheckerBase::Check(TObjArray * list) 
+const Double_t AliQACheckerBase::Check(AliQA::ALITASK_t /*index*/, TObjArray * list) 
 {
   // Performs a basic checking
   // Compares all the histograms in the list
@@ -205,9 +205,9 @@ void AliQACheckerBase::Run(AliQA::ALITASK_t index, TObjArray * list)
 
   Double_t rv = -1 ;	
   if (list)
-    rv = Check(list) ;
+    rv = Check(index, list) ;
   else 
-    rv = Check() ;   
+    rv = Check(index) ;   
 
   if ( rv <= 0.) 
     qa->Set(AliQA::kFATAL) ; 

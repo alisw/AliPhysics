@@ -19,6 +19,7 @@ class TFile ;
 class TH2F ;  
 
 // --- AliRoot header files ---
+#include "AliQA.h"
 #include "AliQACheckerBase.h"
 #include "AliITSQAChecker.h"
 class AliITSLoader ; 
@@ -29,7 +30,7 @@ public:
   AliITSQASDDChecker() {;}          // ctor
   AliITSQASDDChecker& operator = (const AliITSQASDDChecker& qac) ; //operator =
   virtual ~AliITSQASDDChecker() {;} // dtor
-  const Double_t Check();
+  const Double_t Check(AliQA::ALITASK_t index);
 
 private:
   AliITSQASDDChecker(const AliITSQASDDChecker& qac) {;} // cpy ctor   

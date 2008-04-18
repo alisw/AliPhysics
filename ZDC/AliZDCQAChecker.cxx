@@ -43,7 +43,7 @@ AliZDCQAChecker& AliZDCQAChecker::operator = (const AliZDCQAChecker& qac )
 
 
 //____________________________________________________________________________
-const Double_t AliZDCQAChecker::Check(TObjArray * list) 
+const Double_t AliZDCQAChecker::Check(AliQA::ALITASK_t /*index*/, TObjArray * list) 
 {
 
   // Super-basic check on the QA histograms on the input list: 

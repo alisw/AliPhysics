@@ -22,6 +22,7 @@ class TObjArray;
 // --- Standard library ---
 
 // --- AliRoot header files ---
+#include "AliQA.h"
 #include "AliQACheckerBase.h"
 class AliTRDLoader ; 
 
@@ -33,9 +34,9 @@ public:
   AliTRDQAChecker& operator = (const AliTRDQAChecker& qac) ;
   virtual ~AliTRDQAChecker() {;} // dtor
 
-  virtual const Double_t Check() {return 1.0;}
+  virtual const Double_t Check(AliQA::ALITASK_t index) {return 1.0;}
   virtual const Double_t Check(TList * /*list*/) {return 1.0;}
-  virtual const Double_t Check(TObjArray * /*list*/) {return 1.0;}
+  virtual const Double_t Check(AliQA::ALITASK_t index, TObjArray * /*list*/) {return 1.0;}
 
 private:
   
