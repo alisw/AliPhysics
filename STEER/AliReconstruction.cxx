@@ -716,7 +716,15 @@ Bool_t AliReconstruction::InitRun(const char* input)
   if (!MisalignGeometry(fLoadAlignData)) if (fStopOnError) return kFALSE;
    AliSysInfo::AddStamp("LoadGeom");
 
-  
+  //QA
+  AliQADataMakerSteer qas ; 
+  if (fRunQA && fRawReader) { 
+    qas.Run(fRunLocalReconstruction, fRawReader) ; 
+	fSameQACycle = kTRUE ; 
+  }
+  // checking the QA of previous steps
+  //CheckQA() ; 
+ 
   /*
   // local reconstruction
   if (!fRunLocalReconstruction.IsNull()) {
@@ -831,32 +839,21 @@ Bool_t AliReconstruction::InitRun(const char* input)
   
 
   //Initialize the QA and start of cycle for out-of-cycle QA
-	//QA
-	AliQADataMakerSteer qas ; 
-	if (fRunQA && fRawReader) { 
-		qas.SetEventRange(fFirstEvent, fLastEvent) ; 
-		qas.Run(fRunLocalReconstruction, fRawReader) ; 
-		fSameQACycle = kTRUE ; 
-	}
-	// checking the QA of previous steps
-	//CheckQA() ; 
-
-	if (fRunQA) {
- //    TString detStr(fFillESD); 
-//     for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
-//        if (!IsSelected(fgkDetectorName[iDet], detStr)) continue;
-//        AliQADataMakerRec *qadm = GetQADataMaker(iDet);  
-//        if (!qadm) continue;
-//        AliInfo(Form("Initializing the QA data maker for %s", 
-//               fgkDetectorName[iDet]));
-//
-//		qadm->Init(AliQA::kRECPOINTS, AliCDBManager::Instance()->GetRun());
-//		qadm->Init(AliQA::kESDS, AliCDBManager::Instance()->GetRun());
-//		 if (!fInLoopQA) {
-//			qadm->StartOfCycle(AliQA::kRECPOINTS, fSameQACycle);
-//			qadm->StartOfCycle(AliQA::kESDS,"same");
-//        }
-//     }
+  if (fRunQA) {
+     TString detStr(fFillESD); 
+     for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
+        if (!IsSelected(fgkDetectorName[iDet], detStr)) continue;
+        AliQADataMakerRec *qadm = GetQADataMaker(iDet);  
+        if (!qadm) continue;
+        AliInfo(Form("Initializing the QA data maker for %s", 
+               fgkDetectorName[iDet]));
+        qadm->Init(AliQA::kRECPOINTS, AliCDBManager::Instance()->GetRun());
+        qadm->Init(AliQA::kESDS, AliCDBManager::Instance()->GetRun());
+        if (!fInLoopQA) {
+			qadm->StartOfCycle(AliQA::kRECPOINTS, fSameQACycle);
+			qadm->StartOfCycle(AliQA::kESDS,"same");
+        }
+     }
 	  if (fRunGlobalQA) {
 		  AliQADataMakerRec *qadm = GetQADataMaker(AliQA::kGLOBAL);
 		  AliInfo(Form("Initializing the global QA data maker"));
@@ -905,7 +902,7 @@ Bool_t AliReconstruction::RunEvent(Int_t iEvent)
       ftree->Fill();
     }
     if (fhlttreeOld) {
-      fesd->ReadFromTree(fhlttreeOld);
+      fhltesd->ReadFromTree(fhlttreeOld);
       fhlttreeOld->GetEntry(iEvent);
       fhlttree->Fill();
     }
@@ -982,16 +979,6 @@ Bool_t AliReconstruction::RunEvent(Int_t iEvent)
       }
     }
 
-    // HLT tracking
-    if (!fRunTracking.IsNull()) {
-      if (fRunHLTTracking) {
-	fhltesd->SetPrimaryVertexSPD(fesd->GetVertex());
-	if (!RunHLTTracking(fhltesd)) {
-	  if (fStopOnError) {CleanUp(ffile, ffileOld); return kFALSE;}
-	}
-      }
-    }
-
     // Muon tracking
     if (!fRunTracking.IsNull()) {
       if (fRunMuonTracking) {
@@ -1013,7 +1000,15 @@ Bool_t AliReconstruction::RunEvent(Int_t iEvent)
 
     // fill ESD
     if (!fFillESD.IsNull()) {
-      if (!FillESD(fesd, fFillESD)) {
+      TString detectors="HLT";
+      // run HLT first and on hltesd
+      if (IsSelected(detectors, fFillESD) &&
+	  !FillESD(fhltesd, detectors)) {
+	if (fStopOnError) {CleanUp(ffile, ffileOld); return kFALSE;}
+      }
+      detectors=fFillESD;
+      detectors.ReplaceAll("HLT", "");
+      if (!FillESD(fesd, detectors)) {
 	if (fStopOnError) {CleanUp(ffile, ffileOld); return kFALSE;}
       }
     }
@@ -1068,15 +1063,13 @@ Bool_t AliReconstruction::RunEvent(Int_t iEvent)
         trkArray.AddLast(tpcTrack);
       }
 
+      if (track->GetX() < kRadius) continue;
 
-      //Tracks refitted by ITS should already be at the SPD vertex
-      if (track->IsOn(AliESDtrack::kITSrefit)) continue;
-
-
-      AliTracker::
+      ok = AliTracker::
            PropagateTrackTo(track,kRadius,track->GetMass(),kMaxStep,kTRUE);
-      track->RelateToVertex(fesd->GetPrimaryVertexSPD(), kBz, kVeryBig);
-
+      if (ok) {
+         track->RelateToVertex(fesd->GetPrimaryVertexSPD(), kBz, kRadius);
+      }
     }
 
     //
@@ -1102,7 +1095,7 @@ Bool_t AliReconstruction::RunEvent(Int_t iEvent)
              fesd->SetPrimaryVertex(pvtx);
              for (Int_t i=0; i<ntracks; i++) {
 	         AliESDtrack *t = fesd->GetTrack(i);
-                 t->RelateToVertex(pvtx, kBz, kVeryBig);
+                 t->RelateToVertex(pvtx, kBz, kRadius);
              } 
           }
        }
@@ -1293,10 +1286,9 @@ Bool_t AliReconstruction::FinishRun()
   if (!fInLoopQA) {
 	  if (fRunQA) {
 		  AliQADataMakerSteer qas;
-		  qas.SetEventRange(fFirstEvent, fLastEvent) ; 
 		  qas.Run(fRunLocalReconstruction.Data(), AliQA::kRECPOINTS, fSameQACycle);
 		  //qas.Reset() ;
-		  qas.Run(fRunLocalReconstruction.Data(), AliQA::kESDS, fSameQACycle);
+		  qas.Run(fRunTracking.Data(), AliQA::kESDS, fSameQACycle);
 		  if (fRunGlobalQA) {
 			 AliQADataMakerRec *qadm = GetQADataMaker(AliQA::kGLOBAL);
 			  if (qadm) {
@@ -1385,6 +1377,17 @@ Bool_t AliReconstruction::RunLocalEventReconstruction(const TString& detectors)
     AliReconstructor* reconstructor = GetReconstructor(iDet);
     if (!reconstructor) continue;
     AliLoader* loader = fLoader[iDet];
+    // Matthias April 2008: temporary fix to run HLT reconstruction
+    // although the HLT loader is missing
+    if (strcmp(fgkDetectorName[iDet], "HLT")==0) {
+      if (fRawReader) {
+	reconstructor->Reconstruct(fRawReader, NULL);
+      } else {
+	TTree* dummy=NULL;
+	reconstructor->Reconstruct(dummy, NULL);
+      }
+      continue;
+    }
     if (!loader) {
       AliWarning(Form("No loader is defined for %s!",fgkDetectorName[iDet]));
       continue;
