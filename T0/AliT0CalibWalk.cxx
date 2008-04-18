@@ -40,7 +40,9 @@ ClassImp(AliT0CalibWalk)
 //________________________________________________________________
   AliT0CalibWalk::AliT0CalibWalk():   TNamed(),
 				      fWalk(0),
-				      fAmpLEDRec(0)
+				      fAmpLEDRec(0),
+				      fQTC(0),
+				      fAmpLED(0)
 {
   //
 }
@@ -48,7 +50,9 @@ ClassImp(AliT0CalibWalk)
 //________________________________________________________________
 AliT0CalibWalk::AliT0CalibWalk(const char* name):TNamed(),
 				      fWalk(0),
-				      fAmpLEDRec(0)				      
+				      fAmpLEDRec(0),				  				      fQTC(0),
+				      fAmpLED(0)
+    
 {
   TString namst = "Calib_";
   namst += name;
@@ -61,8 +65,10 @@ AliT0CalibWalk::AliT0CalibWalk(const char* name):TNamed(),
 AliT0CalibWalk::AliT0CalibWalk(const AliT0CalibWalk& calibda) :
   TNamed(calibda),		
   fWalk(0),
-  fAmpLEDRec(0)
-
+  fAmpLEDRec(0),
+  fQTC(0),
+  fAmpLED(0)
+ 
 {
 // copy constructor
   SetName(calibda.GetName());
@@ -140,6 +146,12 @@ void AliT0CalibWalk::SetWalk(Int_t ipmt)
 
   TGraph* gr = new TGraph(isum, amplitude, time);
   fWalk.AddAtAndExpand(gr,ipmt);
+
+  //should be change to real
+  Double_t xq[10] = { 1220, 1370, 1542, 1697, 1860, 2023,2171,2331,2495,2684};
+  Double_t yq[10] = {1,2,3,4,5,6,7,8,9,10};
+  TGraph* gr1 = new TGraph(10, xq, yq);
+  fQTC.AddAtAndExpand(gr1,ipmt);
 }
 
 //________________________________________________________________
@@ -169,6 +181,11 @@ void AliT0CalibWalk::SetAmpLEDRec(Int_t ipmt)
     y1[ir]=y[i-ir]; x1[ir]=x[i-ir];}
   TGraph* gr = new TGraph(i,y1,x1);
   fAmpLEDRec.AddAtAndExpand(gr,ipmt);
+  //should be change to real
+  Double_t xq[10] = { 411, 412,413,415,417,419,422,428,437,452};
+  Double_t yq[10] = {1,2,3,4,5,6,7,8,9,10};
+  TGraph* gr1 = new TGraph(10, xq, yq);
+  fAmpLED.AddAtAndExpand(gr1,ipmt);
   
 }
 
@@ -177,129 +194,72 @@ void AliT0CalibWalk::SetAmpLEDRec(Int_t ipmt)
 void AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
 {
   //make walk corerction for preprocessor
-
+  
+      Double_t *grY ; //= new grY[2500] ;
+      Double_t *grX ;
   TFile *gFile = TFile::Open(laserFile);
- 
-  Int_t npeaks = 20;
-  Double_t sigma=3.;
-  Bool_t down = false;
- 
-  Int_t index[20];
-  Char_t buf1[20], buf2[20],buf3[20];
+  //  gFile->ls();
   
+  Float_t x1[10], y1[10]; 
+  Float_t x2[10], y2[10];
+ 
+  Float_t xx1[10],yy1[10], xx[10];
+
   
+  TH2F*  hCFDvsQTC[24][10]; TH2F*  hCFDvsLED[24][10];
+
   for (Int_t i=0; i<24; i++)
     {
-      if(i>11)	{  sprintf(buf1,"T0_A_%i_CFD",i+1-12); }
-
-      if(i<12)	{ sprintf(buf1,"T0_C_%i_CFD",i+1); }
-
-      sprintf(buf2,"CFDvsQTC%i",i+1);
-      sprintf(buf3,"CFDvsLED%i",i+1);
-      // cout<<buf1<<" "<<buf2<<" "<<buf3<<endl;
-      TH2F *qtcVScfd = (TH2F*) gFile->Get(buf2);
-      //	qtcVScfd->Print();
-      TH2F *ledVScfd = (TH2F*) gFile->Get(buf3);
-      TH1F *cfd = (TH1F*) gFile->Get(buf1);
-         
-      TSpectrum *s = new TSpectrum(2*npeaks,1);
-      Int_t nfound = s->Search(cfd,sigma,"goff",0.1);
-      //      cout<<"Found "<<nfound<<" peaks sigma "<<sigma<<endl;;
-       if(nfound!=0){
-	Float_t *xpeak = s->GetPositionX();
-  	TMath::Sort(nfound, xpeak, index,down);
-  	Float_t xp = xpeak[index[0]];
-	Int_t xbin = cfd->GetXaxis()->FindBin(xp);
-	Float_t yp = cfd->GetBinContent(xbin);
-	//	cout<<"xbin = "<<xbin<<"\txpeak = "<<xpeak[1]<<"\typeak = "<<yp<<endl;
-	Float_t hmax = xp+20*sigma;
-	Float_t hmin = xp-20*sigma;
-      }
-	//QTC
-	Int_t nbins= qtcVScfd->GetXaxis()->GetNbins();
-	TProfile *prY = qtcVScfd->ProfileX();
-	Float_t	hmin = qtcVScfd->GetYaxis()->GetXmin();
-	Float_t	hmax = qtcVScfd->GetYaxis()->GetXmax();
-	prY->SetMaximum(hmax);
-	prY->SetMinimum(hmin);
-	Int_t np=0; //=nbins/5;
-	Double_t *xx = new Double_t[nbins];
-	Double_t *yy = new Double_t[nbins];
-	Int_t ng=0;
-	Double_t yg=0;
-	for (Int_t ip=1; ip<nbins; ip++)
-	  {
-	    
-	    if(ip%5 != 0 )
-	      {
-	      //	      if (prY->GetBinContent(ip) !=0)
-		if (prY->GetBinContent(ip) >hmin && prY->GetBinContent(ip)<hmax){
-		yg +=prY->GetBinContent(ip);
-		ng++;
-		//	cout<<" ip "<<ip<<" Y "<<yg<<endl;
-			  }
-	    }
-	    else {
-	      if (/*prY->GetBinContent(ip) >hmin && prY->GetBinContent(ip)<hmax &&*/ ng>0){
-		//		xx[ip/5] = Float_t (prY->GetBinCenter(ip));
-		//	yy[ip/5] = yg/ng;
-		xx[np] = Float_t (prY->GetBinCenter(ip));
-		yy[np] = yg/ng;
-		yg=0;
-		ng=0;
-		//	cout<<" ip "<<ip<<" np "<<np<<" XX "<<xx[np]<<" YY "<<yy[np]<<endl;
-		np++;
-	      }
-	    }
-	  }
+      for (Int_t im=0; im<10; im++)
+	{
 	  
-	TGraph *gr = new TGraph(np,xx,yy);
-	gr->SetMinimum(hmin);
-	gr->SetMaximum(hmax);
-	fWalk.AddAtAndExpand(gr,i);	  
+	  TString qtc = Form("QTCvsCFD%i_%i",i+1,im+1);
+	  TString led = Form("LEDvsCFD%i_%i",i+1,im+1);
+	  hCFDvsQTC[i][im] = (TH2F*) gFile->Get(qtc.Data()) ;
+	  hCFDvsLED[i][im] = (TH2F*) gFile->Get(led.Data());
+	  
+	  x1[im] = hCFDvsQTC[i][im]->GetMean(1);
+	  y1[im] = hCFDvsQTC[i][im]->GetMean(2);
+	  x2[im] = hCFDvsLED[i][im]->GetMean(1);
+	  y2[im] = hCFDvsLED[i][im]->GetMean(2);
+	  xx[im]=im+1;
+	  //cout<<" qtc "<< x1[im]<<" "<< y1[im]<<endl;
+	}
+      for (Int_t imi=0; imi<10; imi++)
+	{
+	  yy1[imi] = Float_t (10-imi);
+	  xx1[imi]=x2[10-imi-1]; 
+      
+	  //	  cout<<i<<" "<<imi<<" "<<" qtc " <<x1[imi]<<" "<<xx[imi]<<
+	  //    " led "<<x2[imi]<<" "<<y2[imi]<<" led2d "<<yy1[imi]<<" "<<xx1[imi]<<endl;
+	}
+      TGraph *gr1 = new TGraph (10,x1,y1);
+      TGraph *gr2 = new TGraph (10,x2,y2);
+      fWalk.AddAtAndExpand(gr1,i);
+      fAmpLEDRec.AddAtAndExpand(gr2,i);
+      
 
-	//LED
-	Int_t nbinsled= ledVScfd->GetXaxis()->GetNbins();
-	cout<<" nbins led "<<nbinsled<<endl;
-	TProfile *prledY = ledVScfd->ProfileX();
-	
-	Int_t npled = 0; //nbinsled/5;
-	Double_t *xxled = new Double_t[nbinsled];
-	Double_t *yyled = new Double_t[nbinsled];
-	Int_t ngled=0;
-	Double_t ygled=0;
-	for (Int_t ip=1; ip<nbinsled; ip++)
-	  {
-	    if(ip%5 != 0 ) {
-	      if (prledY->GetBinContent(ip) !=0)
-		ygled +=prledY->GetBinContent(ip);
-	      ngled++;}
-	    else {
-	      xxled[npled] = Float_t (prledY->GetBinCenter(ip));
-	      yyled[npled] = ygled/ngled;
-	      ygled=0;
-	      ngled=0;
-	      npled++;
-	    }
+ 
+      TGraph *gr4 = new TGraph (10,xx1,yy1);
+      TGraph *gr3 = new TGraph (10,x1,xx);
+      /*    
+     if(gr4) {
+	  Int_t np=gr4->GetN();
+	  if(np>0) {
+	    grY = gr4->GetY();
+	    grX = gr4->GetX();
+	    for (Int_t ig=0; ig<np; ig++)
+	      cout<<i<<" "<<ig<<" "<<grX[ig]<<" "<<grY[ig]<<" eval "<<gr4->Eval(grX[ig])<<endl;  
 	  }
-        
- 	TGraph *grled = new TGraph(npled,xxled,yyled);
-	grled->SetMinimum(hmin);
-	grled->SetMaximum(hmax);
-	fAmpLEDRec.AddAtAndExpand(grled,i);	  
+	  }
+      */
+      fQTC.AddAtAndExpand(gr3,i);	 
+      fAmpLED.AddAtAndExpand(gr4,i);
+      //      for (Int_t im=0; im<10; im++) { x2[im]=0;  y2[im]=0;  xx1[im]=0; xx[im]=0;}
 
- 	delete [] xx;
-	delete [] yy;
-	delete [] xxled;
-	delete [] yyled;
-	delete prY;
-	delete prledY;
-	
-	// }
-      delete cfd;
-      delete qtcVScfd;
-      delete ledVScfd;
     }
-  
 }
+
+
+
 

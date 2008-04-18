@@ -69,9 +69,9 @@ public:
 
 
   TGraph *  GetAmpLEDRec(Int_t ipmt) const;  
- 
   TGraph *GetWalk(Int_t ipmt )  const;
-  Float_t  GetWalkVal(Int_t ipmt, Float_t mv ) const ;
+  TGraph *GetQTC(Int_t ipmt) const;
+  TGraph *GetAmpLED(Int_t ipmt) const;
    
   Float_t GetTimeDelayCFD(Int_t ipmt);
 //  Float_t GetTimeV0(Int_t ipmt = 512) {return  fTimeV0;}
@@ -98,6 +98,9 @@ public:
   TObjArray fAmpLEDRec;  // array of amlitude vs LED-CFD (simulation & reconstruction)
   TObjArray fPMTeff; //array PMT registration efficiency
   TObjArray fWalk; //array time-amplitude walk
+  TObjArray fQTC; //array of TGraphs for QTC vs number of MIPs
+  TObjArray fAmpLED; //array of TGraphs for LED-CFD vs number of MIPs
+
   
   Float_t   fTimeDelayCFD;  // sum time delay for CFD channel
  // Float_t   fTimeV0;  // sum time delay for CFD channel

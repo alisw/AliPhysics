@@ -38,10 +38,11 @@ class AliT0Reconstructor: public AliReconstructor {
   Float_t             fTime0vertex[24];  // time position if Zvertex=0
   AliT0Parameters     *fParam;           //pointer to T0 parameters class     
   TObjArray           fAmpLEDrec;        // amp LED-CFD 
-  // TObjArray           fWalk;        // amp LED-CFD 
+  TObjArray           fQTC;        // QTC vs #MIPs
+  TObjArray           fAmpLED;        // LED-CFD vs #MIPs
   AliT0Calibrator     *fCalib;           //pointer to T0 Calibrator     
 
-  ClassDef(AliT0Reconstructor, 2)   // class for the T0 reconstruction
+  ClassDef(AliT0Reconstructor, 3)   // class for the T0 reconstruction
 
 };
 

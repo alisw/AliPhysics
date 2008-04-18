@@ -23,24 +23,31 @@ class AliT0CalibWalk: public TNamed {
   
   
   TGraph *GetWalk(Int_t ipmt )  const {return (TGraph*)fWalk.At(ipmt);}
-  Float_t  GetWalkVal(Int_t ipmt, Float_t mv )  const {return ((TGraph*)fWalk.At(ipmt))->Eval(mv);}
   void SetWalk(Int_t ipmt) ;
+  TObjArray* GetfWalk() {return &fWalk;}    
+
+  TGraph *GetQTC(Int_t ipmt )  const {return (TGraph*)fQTC.At(ipmt);}
+  // void SetQTC(Int_t ipmt) ;
+  
+  TGraph *GetAmpLED(Int_t ipmt )  const {return (TGraph*)fAmpLED.At(ipmt);}
+  //  void SetAmpLED(Int_t ipmt) ;
+ 
   void MakeWalkCorrGraph(const char *laserFile);
+  
   
 
   TGraph *  GetAmpLEDRec(Int_t ipmt) const   {return (TGraph*)fAmpLEDRec.At(ipmt);}
-  Float_t  GetAmpLEDRecVal(Int_t ipmt, Float_t mv)  const
-    {return((TGraph*)fAmpLEDRec.At(ipmt))->Eval(mv);}
   void     SetAmpLEDRec(Int_t ipmt) ;
-  TObjArray* GetfWalk() {return &fWalk;}    
    
  protected:
    
    TObjArray   fWalk;  //time - amp. walk
    TObjArray fAmpLEDRec;  //time - amp. LED-CFD for reconstruction
-   
+   TObjArray   fQTC;  //time - amp. walk
+   TObjArray fAmpLED;  //time - amp. LED-CFD for reconstruction
+  
    //
-   ClassDef(AliT0CalibWalk,1)    // T0 Sensor Calibration data
+   ClassDef(AliT0CalibWalk,2)    // T0 Sensor Calibration data
      };
 
      typedef AliT0CalibWalk AliSTARTCalibWalk; // for backward compatibility

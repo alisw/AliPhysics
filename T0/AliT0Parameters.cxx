@@ -217,14 +217,26 @@ TGraph *AliT0Parameters::GetWalk(Int_t ipmt) const
 
 //__________________________________________________________________
 
-Float_t AliT0Parameters::GetWalkVal(Int_t ipmt, Float_t mv) const
+TGraph *AliT0Parameters::GetQTC(Int_t ipmt) const
 {
   if (!fSlewCorr) {
-    return ((TGraph*)fWalk.At(ipmt))->Eval(mv); 
+    AliError("No walk correction is available!");
+    //    return  (TGraph*)fQTC.At(ipmt); 
+   return  0; 
   } 
-  return fgSlewCorr -> GetWalkVal(ipmt, mv) ;
+  return fgSlewCorr -> GetQTC(ipmt) ;
 }
 
+//__________________________________________________________________
+TGraph *AliT0Parameters::GetAmpLED(Int_t ipmt) const
+{
+  if (!fSlewCorr) {
+    AliError("No walk correction is available!");
+    //    return  (TGraph*)fQTC.At(ipmt); 
+   return  0; 
+  } 
+  return fgSlewCorr -> GetAmpLED(ipmt) ;
+}
 
 //__________________________________________________________________
 void 
