@@ -32,3 +32,8 @@ PACKCFLAGS   := ${HLTCLFAGS}
 PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
 
 EINCLUDE := HLT/rec HLT/BASE HLT/BASE/HOMER STEER RAW
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+                         -lHLTbase -lCDB -lESD -lSTEERbase -lSTEER -lRAWDatarec -lRAWDatabase
+endif

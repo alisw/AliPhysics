@@ -65,3 +65,10 @@ PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
 EINCLUDE := 	HLT/BASE HLT/MUON HLT/MUON/utils HLT/MUON/OnlineAnalysis \
 		HLT/MUON/OfflineInterface MUON MUON/mapping STEER RAW
 
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+                         -lHLTbase -lMUONmapping -lMUONbase -lMUONevaluation \
+                         -lMUONsim -lMUONcore -lMUONcalib -lMUONgeometry -lMUONraw \
+                         -lCDB -lSTEER -lSTEERBase -lRAWDatarec \
+                         -L$(shell root-config --libdir) -lMinuit
+endif

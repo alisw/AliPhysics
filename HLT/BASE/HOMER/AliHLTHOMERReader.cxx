@@ -57,7 +57,9 @@ extern int h_errno;
 //#include <netinet/in.h>
 //#include <netinet/tcp.h>
 #include <unistd.h>
+#ifndef __CYGWIN__
 #include <rpc/types.h>
+#endif
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <netinet/in.h>

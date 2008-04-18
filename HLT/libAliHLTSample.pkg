@@ -55,3 +55,8 @@ CINTHDRS:=$(patsubst %,SampleLib/%,$(CLASS_HDRS))
 HDRS:=$(patsubst %,SampleLib/%,$(MODULE_HDRS))
 DHDR:=$(patsubst %,SampleLib/%,$(MODULE_DHDR))
 CINTAUTOLINK:= $(shell test "x$(MODULE_DHDR)" = "x" && echo 1)
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+                         -lHLTbase -lCDB -lSTEERBase
+endif

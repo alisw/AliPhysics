@@ -49,6 +49,10 @@ using namespace std;
 #include <cstdlib>
 #include <cerrno>
 
+#ifndef ECANCELED 
+#define ECANCELED   125
+#endif
+
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCVertexFinderComponent);
 
