@@ -8,7 +8,6 @@ EVGEN/module.mk:	EVGEN/libEVGEN.pkg
 FMD/module.mk:		FMD/libFMDbase.pkg FMD/libFMDsim.pkg FMD/libFMDrec.pkg FMD/libFMDutil.pkg FMD/libFMDflow.pkg
 FASTSIM/module.mk:	FASTSIM/libFASTSIM.pkg
 HBTAN/module.mk:	HBTAN/libHBTAN.pkg
-HBTP/module.mk:		HBTP/libHBTP.pkg
 HERWIG/module.mk:	HERWIG/libherwig.pkg
 HIJING/module.mk:	HIJING/libhijing.pkg
 HLT/module.mk:		HLT/bindHLTdumpraw.pkg  HLT/libAliHLTRCU.pkg HLT/libHLTbase.pkg HLT/libAliHLTComp.pkg HLT/libAliHLTSample.pkg HLT/libHLTinterface.pkg HLT/libAliHLTHOMER.pkg HLT/libAliHLTTPC.pkg HLT/libHLTrec.pkg HLT/libAliHLTITS.pkg HLT/libAliHLTTRD.pkg HLT/libHLTshuttle.pkg HLT/libAliHLTMUON.pkg HLT/libAliHLTTrigger.pkg HLT/libHLTsim.pkg HLT/libAliHLTPHOS.pkg HLT/libAliHLTUtil.pkg
@@ -168,4 +167,5 @@ $(LIBPATH)/libAliHLTTRD.$(SOEXT): $(LIBPATH)/libHLTbase.$(SOEXT) $(LIBPATH)/libA
 $(LIBPATH)/libAliHLTTPC.$(SOEXT): $(LIBPATH)/libHLTbase.$(SOEXT) $(LIBPATH)/libAliHLTRCU.$(SOEXT) $(LIBPATH)/libAliHLTUtil.$(SOEXT) $(LIBPATH)/libESD.$(SOEXT) $(LIBPATH)/libCDB.$(SOEXT) $(LIBPATH)/libSTEER.$(SOEXT) $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libTPCrec.$(SOEXT) $(LIBPATH)/libTPCbase.$(SOEXT) $(LIBPATH)/libRAWDatarec.$(SOEXT)
 $(LIBPATH)/libAliHLTMUON.$(SOEXT): $(LIBPATH)/libHLTbase.$(SOEXT) $(LIBPATH)/libMUONmapping.$(SOEXT) $(LIBPATH)/libMUONbase.$(SOEXT) $(LIBPATH)/libMUONevaluation.$(SOEXT) $(LIBPATH)/libMUONsim.$(SOEXT) $(LIBPATH)/libMUONcore.$(SOEXT) $(LIBPATH)/libMUONcalib.$(SOEXT) $(LIBPATH)/libMUONgeometry.$(SOEXT) $(LIBPATH)/libMUONraw.$(SOEXT) $(LIBPATH)/libCDB.$(SOEXT) $(LIBPATH)/libSTEER.$(SOEXT) $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libRAWDatarec.$(SOEXT)
 $(LIBPATH)/libHBTAN.$(SOEXT): $(LIBPATH)/libAnalysisOld.$(SOEXT) $(LIBPATH)/libSTEERBase.$(SOEXT)
+$(LIBPATH)/libTHbtp.$(SOEXT): $(LIBPATH)/libSTEER.$(SOEXT) $(LIBPATH)/libEVGEN.$(SOEXT) $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libmicrocern.$(SOEXT)
 endif
