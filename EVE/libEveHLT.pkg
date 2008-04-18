@@ -1,3 +1,5 @@
+#-*- Mode: Makefile -*-
+#
 ORGSRCS  := $(wildcard EVE/EveHLT/*.cxx)
 SRCS     := $(patsubst EVE/%, %, ${ORGSRCS})
 HDRS     := $(SRCS:.cxx=.h)
@@ -5,3 +7,12 @@ HDRS     := $(SRCS:.cxx=.h)
 DHDR     := EveHLT/LinkDef.h
 
 EINCLUDE := RAW ITS TPC TRD TOF T0 MUON MUON/mapping PMD HLT/BASE HLT/BASE/HOMER
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKCXXFLAGS:= $(CXXFLAGS) -I/usr/X11R6/include
+ELIBSDIR:= /usr/X11R6/lib
+ELIBS:= GL
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) -lSTEERBase \
+                         -lTPCbase -lHLTbase \
+                         -L$(shell root-config --libdir) -lEve -lXMLParser -lGed -lGui
+endif
