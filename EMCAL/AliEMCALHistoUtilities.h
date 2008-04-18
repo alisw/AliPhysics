@@ -24,6 +24,7 @@ class TF1;
 class TLatex;
 class TChain;
 class TLorentzVector;
+class TArrayF;
 
 class AliESDCaloCluster;
 class AliEMCALRecPoint;
@@ -57,6 +58,8 @@ class AliEMCALHistoUtilities: public TNamed {
   // TChain
   static void InitChain(TChain *chain=0, const char* nameListOfFiles=0, Int_t nFileMax=0); 
   static AliRunLoader* InitKinematics(const Int_t nev=0, const char* galiceName="galice.root");
+  static AliRunLoader* GetRunLoader(const Int_t nev, const Char_t* galiceName,
+				 const Char_t* eventFolderName, AliRunLoader* rlOld);
   //
   static Double_t GetMomentum(const char* nameListOfFiles); 
   static int ParseString(const TString &topt, TObjArray &Opt); 
@@ -78,6 +81,15 @@ class AliEMCALHistoUtilities: public TNamed {
   static Double_t GetCorrectionCoefficientForGamma1(const Double_t eRec);
   static Double_t GetCorrectedEnergyForGamma1(const Double_t eRec);
   static TF1* GetResolutionFunction(const char *opt, TString &latexName);
+  //
+  // Analysis
+  //
+  // Trigger 
+  static TList* GetTriggersListOfHists(const Int_t scale=0, const Bool_t toBrowser=kFALSE);
+  static void   FillTriggersListOfHists(TList *l, TArrayF *triggerPosition, TArrayF *triggerAmplitudes);
+  // Jet(s) kinematics
+  static TList* GetJetsListOfHists(Int_t njet=2, Bool_t toBrowser=kFALSE);
+  static void   FillJetKineListOfHists(TList *l, AliRunLoader* rl, TLorentzVector &goodJet);
 
   AliEMCALHistoUtilities & operator = (const AliEMCALHistoUtilities &) {
     Fatal("operator =", "not implemented") ; return *this ; }

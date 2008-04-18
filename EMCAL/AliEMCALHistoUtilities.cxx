@@ -46,10 +46,14 @@
 #include <TString.h>
 #include <TLorentzVector.h>
 #include <Gtypes.h> // color, line style and so on
+#include <TArrayF.h>
 
 #include "AliESDCaloCluster.h"
 #include "AliEMCALRecPoint.h"
 #include "AliRunLoader.h"
+#include "AliHeader.h"
+#include "AliGenEventHeader.h"
+#include "AliGenPythiaEventHeader.h"
 
 using namespace std;
 
@@ -328,22 +332,24 @@ void AliEMCALHistoUtilities::InitChain(TChain *chain, const char* nameListOfFile
   // Read name of files from text file with nameListOfFiles and added to the chain
   if(chain==0 || nameListOfFiles==0) return;
  
-  ifstream in;
-  in.open(nameListOfFiles);
-  if (!in) {
+  ifstream fin;
+  fin.open(nameListOfFiles);
+  if (!fin.is_open()) {
     cout << "Input file "<<nameListOfFiles<<" cannot be opened.\n";
     return;
   }
 
   Int_t nfiles = 0; // number of files in chain
   char nf[200];     // name of current file
-  while (!in.getline(nf,200).eof()) {
-    if(!in.good()) break;
+  while (!fin.getline(nf,200).eof()) {
+    if(!fin.good()) break;
     chain->Add(nf);
     nfiles++;
     cout<<nfiles<<" "<<nf<<endl;
     if(nFileMax && nfiles>=nFileMax) break;
   }
+  fin.close();
+  //
   cout << " \n ********** <I> Accepted file "<< nfiles << "********* \n"<<endl;
   //  chainEsd->Print();
   //  chain->Lookup();
@@ -352,17 +358,23 @@ void AliEMCALHistoUtilities::InitChain(TChain *chain, const char* nameListOfFile
 AliRunLoader* AliEMCALHistoUtilities::InitKinematics(const Int_t nev, const char* galiceName)
 {
   // Oct 15, 2007
+  // nev == 0 - new file
   static AliRunLoader *rl = 0;
-  if(rl == 0 || nev%1000==0) {
+
+  if((rl == 0 || nev==0) && galiceName) {
+    printf("<I> AliEMCALHistoUtilities::InitKinematics() : nev %i : rl %p : %s (IN)\n", 
+	 nev, rl, galiceName);  
     if(rl)  {
       rl->UnloadgAlice();
       delete rl;
     }
     rl = AliRunLoader::Open(galiceName,AliConfig::GetDefaultEventFolderName(),"read");
     rl->LoadgAlice(); // obligatory
+    printf("<I> AliEMCALHistoUtilities::InitKinematics() : nev %i : rl %p : %s (OUT)\n", 
+	 nev, rl, galiceName);  
   }
   if(rl) {
-    rl->GetEvent(nev%1000);
+    rl->GetEvent(nev);
     rl->LoadKinematics();
     /* Get what you need after that
       rl->LoadHits();
@@ -372,6 +384,34 @@ AliRunLoader* AliEMCALHistoUtilities::InitKinematics(const Int_t nev, const char
       TParticle *primary=stack->Particle(label); 
     */
   }
+  return rl;
+}
+
+AliRunLoader* AliEMCALHistoUtilities::GetRunLoader(const Int_t nev, const Char_t* galiceName,
+				       const Char_t* eventFolderName, AliRunLoader* rlOld)
+{
+  // Nov 26, 2007
+  // nev == 0 - new file
+  AliRunLoader *rl = 0;
+
+  if(nev==0 && galiceName) {
+    printf("<I> AliEMCALHistoUtilities::GetLoader() : nev %i : %s (IN)\n", 
+	   nev, galiceName);  
+    if(rlOld) {
+      rlOld->UnloadgAlice();
+      delete rlOld;
+    }
+    TString folderName(eventFolderName);
+    if(folderName.Length() == 0) folderName = AliConfig::GetDefaultEventFolderName();
+    rl = AliRunLoader::Open(galiceName, folderName.Data(),"read");
+    rl->LoadgAlice(); // obligatory
+    printf("<I> AliEMCALHistoUtilities::GetLoader() : nev %i : %s : %s (OUT)\n", 
+	   nev, galiceName, folderName.Data());  
+  } else {
+    rl = rlOld;
+  }
+  if(rl) rl->LoadgAlice(); // obligatory
+  // if(rl) rl->GetEvent(nev);
   return rl;
 }
 
@@ -584,4 +624,126 @@ Double_t AliEMCALHistoUtilities::GetCorrectionCoefficientForGamma1(const Double_
 Double_t AliEMCALHistoUtilities::GetCorrectedEnergyForGamma1(const Double_t eRec)
 {
   return GetCorrectionCoefficientForGamma1(eRec) * eRec;
+}
+
+// Trigger 
+TList* AliEMCALHistoUtilities::GetTriggersListOfHists(const Int_t scale, const Bool_t toBrowser)
+{
+  // Oct 22, 2007 - trigger technical assurance
+  gROOT->cd();
+  TH1::AddDirectory(1);
+
+  new TH1F("00_hXpos2x2", "X coord. of max Amp 2x2",100, -500., +500.);
+  new TH1F("01_hYpos2x2", "Y coord. of max Amp 2x2",100, -500., +500.);
+  new TH1F("02_hZpos2x2", "Z coord. of max Amp 2x2",100, -500., +500.);
+  new TH1F("03_hXposnxn", "X coord. of max Amp NXN",100, -500., +500.);
+  new TH1F("04_hYposnxn", "Y coord. of max Amp NXN",100, -500., +500.);
+  new TH1F("05_hZposnxn", "Z coord. of max Amp NXN",100, -500., +500.);
+  // 
+  new TH1F("06_hMaxAmp2x2", "max Amp 2x2", 1000, 0.0, pow(2.,14.));
+  new TH1F("07_hAmpOutOf2x2", "Amp out of patch 2x2", 1000, 0.0, pow(2.,14.));
+  new TH1F("08_hMaxAmpnxn", "max Amp NXN", 1000, 0.0, pow(2.,14.));
+  new TH1F("09_hAmpOutOfnxn", "Amp out of patch nxn", 1000, 0.0, pow(2.,14.));
+  // For checking
+  Double_t maxEdigit=100., maxN=1000., maxPC = 200.;
+  if(scale==1) {
+    maxN  *= 10.;
+    maxPC *= 10.;
+  }
+  new TH1F("10_hDigitsAmp", "amplitude of digits (PC)  ", 1001, -0.5, 1000.5);
+  new TH1F("11_hDigitsE", " energy of digits (PC)", 1000, 0.0, maxEdigit);
+  new TH1F("12_hNDigitsInPCs", " number of digits in PC's", 1000, 0.0, maxN);
+  new TH1F("13_hEinInPCs", " energy in PC's", 200, 0.0, maxPC);
+
+  return MoveHistsToList("TriggerLiOfHists", toBrowser);
+}
+
+void AliEMCALHistoUtilities::FillTriggersListOfHists(TList *l, TArrayF *triggerPosition, TArrayF *triggerAmplitudes)
+{
+  // Oct 22, 2007 - trigger technical assurance
+  if(l==0) {
+    printf("<E> FillTriggersListOfHists() : list of hists undefined. \n");
+    return;
+  }
+  if(triggerPosition && triggerPosition->GetSize() == 6) {
+    for(int i=0; i<6; i++) {
+      FillH1(l, i, double(triggerPosition->At(i)));
+    }
+  }
+  if(triggerAmplitudes && triggerAmplitudes->GetSize() == 4) {
+    for(int i=0; i<4; i++) {
+      FillH1(l, 6+i, double(triggerAmplitudes->At(i)) );
+    }
+  }
+}
+
+// Jet(s) kinematics 
+TList* AliEMCALHistoUtilities::GetJetsListOfHists(Int_t njet, Bool_t toBrowser)
+{
+  // Oct 30, 2007
+  gROOT->cd();
+  TH1::AddDirectory(1);
+  new TH1F("00_nJet", "number of jets in Pythia",5, -0.5, +4.5);
+  int ic=1;
+  for(Int_t ij=0; ij<njet; ij++)
+  {
+    new TH1F(Form("%2.2i_EtaOfJet%i",ic++,ij), Form("#eta of jet (%i)",ij),80, -2., 2.);
+    new TH1F(Form("%2.2i_ThetaOfJet%i",ic++,ij), Form("#theta(degree) of jet (%i)",ij),
+    180, 0.0, 180.);
+    new TH1F(Form("%2.2i_PhiOfJet%i",ic++,ij), Form("#phi(degree) of jet (%i)",ij),
+    180, 0.0, 360.);
+    new TH1F(Form("%2.2i_PtOfJet%i",ic++,ij), Form(" p_{T} of jet (%i)",ij),
+    200, 0.0, 200.);
+    new TH1F(Form("%2.2i_EOfJet%i",ic++,ij), Form(" E of jet (%i)",ij),
+    200, 0.0, 200.);
+  }
+
+  return MoveHistsToList("JetLiOfHists", toBrowser);
+}
+
+void  AliEMCALHistoUtilities::FillJetKineListOfHists(TList *l, AliRunLoader* rl, TLorentzVector &goodJet)
+{
+  // Oct 30, 2007; Nov 07;
+  // goodJet - output; only one jet with EMCAL acceptance
+
+  // Bad case
+  goodJet.SetPxPyPzE(0., 0., 0., 0.); 
+
+  if(l==0 || rl==0) return;
+  //try to get trigger jet info
+  AliHeader* alih = rl->GetHeader();
+  if (alih == 0) return;
+
+  AliGenEventHeader * genh = alih->GenEventHeader();
+  if (genh == 0) return;
+
+  AliGenPythiaEventHeader* genhpy = dynamic_cast<AliGenPythiaEventHeader *>(genh);
+  if(genhpy==0) return; // Not Pythia
+
+  Int_t nj = genhpy->NTriggerJets();
+  FillH1(l, 0, double(nj));
+
+  TLorentzVector* jets[4];
+  nj = nj>4?4:nj;
+
+  int ic=1;
+  for (Int_t i=0; i< nj; i++) {
+     Float_t p[4];
+     genhpy->TriggerJet(i,p);
+     jets[i] = new TLorentzVector(p);
+     FillH1(l, ic++, jets[i]->Eta());
+     FillH1(l, ic++, jets[i]->Theta()*TMath::RadToDeg());
+     FillH1(l, ic++, TVector2::Phi_0_2pi(jets[i]->Phi())*TMath::RadToDeg());
+     FillH1(l, ic++, jets[i]->Pt());
+     FillH1(l, ic++, jets[i]->E());
+
+     //printf(" %i pj %f %f %f %f : ic %i\n", i, p[0], p[1], p[2], p[3], ic);
+     if(ic >= l->GetSize()) break;
+  }
+  if(nj==1) {
+    Double_t eta=jets[0]->Eta(), phi=TVector2::Phi_0_2pi(jets[0]->Phi())*TMath::RadToDeg();
+    if(TMath::Abs(eta)<0.5 && (phi>90.&&phi<180.)) {
+      goodJet = (*jets[0]);
+    }
+  }
 }
