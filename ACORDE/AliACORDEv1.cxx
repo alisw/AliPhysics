@@ -154,6 +154,7 @@ void AliACORDEv1::CreateCavern()
 	CreateMolasse();
 }
 
+
 void AliACORDEv1::CreateShafts()
 {
 
@@ -567,18 +568,8 @@ void AliACORDEv1::CreateAcorde()
 
 	//*** Support & Bars***
 
-	TGeoMaterial *matAl = new TGeoMaterial("Al", 26.98,13,2.7);
-	TGeoMedium *al = new TGeoMedium("Al",2, matAl);
-
-	//*** Scintillators ***
-
-	TGeoMixture *mat17 = new TGeoMixture("SCINTILLATOR",2,1.03200);
-    	mat17->SetUniqueID(17);
-    	mat17->DefineElement(0,12.01,6,0.9153266);
-    	mat17->DefineElement(1,1.01,1,0.8467343E-01);
-	TGeoMedium *med6 = new TGeoMedium("SCINTILLATOR",6,17,1,0,0,1,
-					  0.1000000E+11,0.3081371E-01,
-					  0.1000000E-01,0.8135138E-02);
+	TGeoMedium* al    = gGeoManager->GetMedium("ACORDE_ALU_C0");
+	TGeoMedium* med6  = gGeoManager->GetMedium("ACORDE_CPV scint.1");
 	
 	//Define a FULL-ACORDE-VOLUME
 
