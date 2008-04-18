@@ -18,7 +18,7 @@
 // This macro must be compiled and run like so from within the aliroot command
 // prompt:
 //   root [0] gSystem->Load("libAliHLTMUON.so");
-//   root [0] .L MakeHitsTable.C+
+//   root [0] .x MakeHitsTable.C+
 
 #include "TVector3.h"
 #include "TSystem.h"
@@ -52,7 +52,7 @@ using std::endl;
 void MakeTrackTable(
 		Int_t firstEvent = 0,
 		Int_t lastEvent = -1,
-		const char* dHLToutputfile = "output_0x00000000.root",
+		const char* dHLToutputfile = "output.root",
 		Float_t maxSigma = 4., // 4 standard deviations
 		Float_t sigmaX = 0.1,  // 1 mm resolution
 		Float_t sigmaY = 0.01, // 100 micron resolution

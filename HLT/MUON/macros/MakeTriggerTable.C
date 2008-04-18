@@ -18,7 +18,7 @@
 // This macro must be compiled and run like so from within the aliroot command
 // prompt:
 //   root [0] gSystem->Load("libAliHLTMUON.so");
-//   root [0] .L MakeHitsTable.C+
+//   root [0] .x MakeHitsTable.C+
 
 #include "TVector3.h"
 #include "TSystem.h"
@@ -51,7 +51,7 @@ using std::endl;
 void MakeTriggerTable(
 		Int_t firstEvent = 0,
 		Int_t lastEvent = -1,
-		const char* L0outputfile = "output_0x00000000.root",
+		const char* L0outputfile = "output.root",
 		Float_t maxSigma = 4., // 4 standard deviations
 		Float_t sigmaXtrg = 0.5,  // 5 mm resolution
 		Float_t sigmaYtrg = 0.5,  // 5 mm resolution

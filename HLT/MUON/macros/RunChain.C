@@ -112,7 +112,6 @@ void RunChain(
 	bool buildSimDataPubs = false;
 	bool buildRecDataPubs = false;
 	bool buildTrackerComp = false;
-	bool defaultLogging = true;
 	bool maxLogging = false;
 	bool minLogging = false;
 	bool useRootWriter = false;
@@ -373,7 +372,7 @@ void RunChain(
 	if (useRootWriter)
 	{
 		AliHLTConfiguration convert("convert", "MUONRootifier", sources, "");
-		AliHLTConfiguration sink("sink", "ROOTFileWriter", "convert", "-datafile output.root -specfmt");
+		AliHLTConfiguration sink("sink", "ROOTFileWriter", "convert", "-concatenate-events -datafile output.root -specfmt");
 	}
 	else
 	{
