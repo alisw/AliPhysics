@@ -20,23 +20,25 @@ void loadlibsrec ()
   gSystem->Load("libNet");
   gSystem->Load("libTree");
 
+  gSystem->Load("libmicrocern");
   gSystem->Load("libSTEERBase");
   gSystem->Load("libESD");
   gSystem->Load("libCDB");
   gSystem->Load("libRAWDatabase");
   gSystem->Load("libRAWDatarec");
+  gSystem->Load("libAOD");
   gSystem->Load("libSTEER");
+  gSystem->Load("libRAWDatasim");
 
   gSystem->Load("libSTRUCT");
   gSystem->Load("libPHOSbase");
-  gSystem->Load("libPHOSsim");
   gSystem->Load("libPHOSrec");
+  gSystem->Load("libMUONcore");
   gSystem->Load("libMUONmapping");
   gSystem->Load("libMUONgeometry");
   gSystem->Load("libMUONcalib");
   gSystem->Load("libMUONraw");
   gSystem->Load("libMUONtrigger");
-  gSystem->Load("libMUONcore");
   gSystem->Load("libMUONbase");
   gSystem->Load("libMUONsim");
   gSystem->Load("libMUONrec");
@@ -56,13 +58,13 @@ void loadlibsrec ()
   gSystem->Load("libZDCsim");
   gSystem->Load("libZDCrec");
   gSystem->Load("libACORDEbase");
-  gSystem->Load("libACORDEsim");
   gSystem->Load("libACORDErec");
   gSystem->Load("libVZERObase");
-  gSystem->Load("libVZEROsim");
   gSystem->Load("libVZEROrec");
+  gSystem->Load("libVZEROsim");
   gSystem->Load("libEMCALbase");
   gSystem->Load("libEMCALsim");
+  gSystem->Load("libEMCALjet");
   gSystem->Load("libEMCALrec");
 
   // The following lines have to be commented on Darwin

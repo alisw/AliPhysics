@@ -31,10 +31,11 @@ void loadlibssim ()
   gSystem->Load("libCDB");
   gSystem->Load("libRAWDatabase");
   gSystem->Load("libRAWDatarec");
+  gSystem->Load("libAOD");
   gSystem->Load("libSTEER");
   gSystem->Load("libRAWDatasim");
-  gSystem->Load("libEVGEN");
   gSystem->Load("libFASTSIM");
+  gSystem->Load("libEVGEN");
   gSystem->Load("libAliPythia6");
 
   gSystem->Load("libhijing");
@@ -43,13 +44,12 @@ void loadlibssim ()
   gSystem->Load("libSTRUCT");
   gSystem->Load("libPHOSbase");
   gSystem->Load("libPHOSsim");
-  gSystem->Load("libPHOSrec");
+  gSystem->Load("libMUONcore");
   gSystem->Load("libMUONmapping");
   gSystem->Load("libMUONgeometry");
   gSystem->Load("libMUONcalib");
   gSystem->Load("libMUONraw");
   gSystem->Load("libMUONtrigger");
-  gSystem->Load("libMUONcore");
   gSystem->Load("libMUONbase");
   gSystem->Load("libMUONsim");
   gSystem->Load("libFMDbase");
@@ -64,8 +64,10 @@ void loadlibssim ()
   gSystem->Load("libZDCbase");
   gSystem->Load("libZDCsim");
   gSystem->Load("libACORDEbase");
+  gSystem->Load("libACORDErec");
   gSystem->Load("libACORDEsim");
   gSystem->Load("libVZERObase");
+  gSystem->Load("libVZEROrec");
   gSystem->Load("libVZEROsim");
   gSystem->Load("libEMCALbase");
   gSystem->Load("libEMCALsim");

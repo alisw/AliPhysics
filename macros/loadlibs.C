@@ -33,10 +33,11 @@ void loadlibs ()
   gSystem->Load("libCDB");
   gSystem->Load("libRAWDatabase");
   gSystem->Load("libRAWDatarec");
+  gSystem->Load("libAOD");
   gSystem->Load("libSTEER");
   gSystem->Load("libRAWDatasim");
-  gSystem->Load("libEVGEN");
   gSystem->Load("libFASTSIM");
+  gSystem->Load("libEVGEN");
   gSystem->Load("libAliPythia6");
 
   gSystem->Load("libhijing");
@@ -46,12 +47,12 @@ void loadlibs ()
   gSystem->Load("libPHOSbase");
   gSystem->Load("libPHOSsim");
   gSystem->Load("libPHOSrec");
+  gSystem->Load("libMUONcore");
   gSystem->Load("libMUONmapping");
   gSystem->Load("libMUONgeometry");
   gSystem->Load("libMUONcalib");
   gSystem->Load("libMUONraw");
   gSystem->Load("libMUONtrigger");
-  gSystem->Load("libMUONcore");
   gSystem->Load("libMUONbase");
   gSystem->Load("libMUONsim");
   gSystem->Load("libMUONrec");
@@ -72,15 +73,15 @@ void loadlibs ()
   gSystem->Load("libZDCsim");
   gSystem->Load("libZDCrec");
   gSystem->Load("libACORDEbase");
-  gSystem->Load("libACORDEsim");
   gSystem->Load("libACORDErec");
+  gSystem->Load("libACORDEsim");
   gSystem->Load("libVZERObase");
-  gSystem->Load("libVZEROsim");
   gSystem->Load("libVZEROrec");
+  gSystem->Load("libVZEROsim");
   gSystem->Load("libEMCALbase");
   gSystem->Load("libEMCALsim");
-  gSystem->Load("libEMCALrec");
   gSystem->Load("libEMCALjet");
+  gSystem->Load("libEMCALrec");
 
   // The following lines have to be commented on Darwin
   // for the moment due to cross dependencies
