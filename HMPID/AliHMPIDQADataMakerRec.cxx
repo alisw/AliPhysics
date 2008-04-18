@@ -21,6 +21,7 @@
 #include <TFile.h> 
 #include <TH1F.h> 
 #include <TH2F.h>
+#include <TProfile.h>
 #include <Riostream.h>
 // --- Standard library ---
 
@@ -50,6 +51,7 @@ ClassImp(AliHMPIDQADataMakerRec)
   AliHMPIDQADataMakerRec::AliHMPIDQADataMakerRec() : 
   AliQADataMakerRec(AliQA::GetDetName(AliQA::kHMPID), "HMPID Quality Assurance Data Maker")
 {
+  fEvtRaw=0;
   // ctor
 }
 
@@ -77,26 +79,32 @@ void AliHMPIDQADataMakerRec::InitRecPoints()
 {
   // create cluster histograms in RecPoint subdir
 
-  TH1F *hCluEvt=new TH1F("CluPerEvt","Cluster multiplicity"   ,100,0,100);
-  TH1F *hCluChi2  =new TH1F("CluChi2"  ,"Chi2 "               ,1000,0,100);
-  TH1F *hCluFlg   =new TH1F("CluFlg"   ,"Cluster flag"        ,14,-1.5,12.5);
-  TH1F *hCluSize     =new TH1F("CluSize"  ,"Cluster size        ",100,0,100);
-  TH1F *hCluSizeMip  =new TH1F("CluSizeMip"  ,"Cluster size  (cluster Q > 100 ADC)   ",100,0,100);
-  TH1F *hCluQ     =new TH1F("CluQ"     ,"Cluster charge (ADC)",5000,0,5000);
-  TH1F *hCluQSect[42];
+  TProfile *hCluMult          = new TProfile("CluMult"   ,"Cluster multiplicity per chamber"    , 16, -1 , 7  , 0, 500);
+  Add2RecPointsList(hCluMult    , 0);
+  
+  TH2F *hCluFlg          = new TH2F("CluFlg"      ,"Cluster flag  "                              ,  56  ,-1.5, 12.5, 70, -0.5, 6.5);
+  Add2RecPointsList(hCluFlg    , 1);
+  
+  TH1F *hCluSizeMip[7], *hCluSizePho[7];
+  
+  TH1F *hCluQSect[42], *hCluQSectZoom[42];
+  
   for(Int_t iCh =0; iCh <7; iCh++){
-   for(Int_t iSect =0; iSect < 6; iSect++){
-      hCluQSect[iCh*6+iSect] = new TH1F(Form("QClusCh%iSect%i",iCh,iSect) ,Form("Cluster charge (ADC) in Chamber %i and sector %i",iCh,iSect),5000,0,5000);
-     }  
-  }
+   hCluSizeMip[iCh] = new TH1F(Form("CluSizeMipCh%i",iCh),Form("Cluster size  MIP  (cluster Q > 100 ADC) in Chamber %i",iCh),  50  , 0  , 50  );
+  Add2RecPointsList(hCluSizeMip[iCh], iCh+2);
 
-  Add2RecPointsList(hCluEvt , 0);
-  Add2RecPointsList(hCluChi2, 1);
-  Add2RecPointsList(hCluFlg , 2);
-  Add2RecPointsList(hCluSize, 3);
-  Add2RecPointsList(hCluSizeMip, 4);
-  Add2RecPointsList(hCluQ   , 5);
-  for(Int_t i=0; i< 42; i++)  Add2RecPointsList(hCluQSect[i],i+6);
+   hCluSizePho[iCh]  = new TH1F(Form("CluSizePho%i",iCh ),Form("Cluster size  Phots(cluster Q < 100 ADC) in Chamber %i",iCh),  50  , 0  , 50  );
+  Add2RecPointsList(hCluSizePho[iCh], iCh+7+2);
+
+    for(Int_t iSect =0; iSect < 6; iSect++){
+      hCluQSectZoom[iCh*6+iSect] = new TH1F(Form("QClusCh%iSect%iZoom",iCh,iSect) ,Form("Zoom on Cluster charge (ADC) in Chamber %i and sector %i",iCh,iSect),100,0,100);
+      Add2RecPointsList(hCluQSectZoom[iCh*6+iSect],2+14+iCh*6+iSect);
+
+      hCluQSect[iCh*6+iSect] = new TH1F(Form("QClusCh%iSect%i",iCh,iSect) ,Form("Cluster charge (ADC) in Chamber %i and sector %i",iCh,iSect),250,0,5000);
+      Add2RecPointsList(hCluQSect[iCh*6+iSect],2+14+42+iCh*6+iSect);
+
+    }  
+  }
 }
 //____________________________________________________________________________
 
@@ -106,24 +114,23 @@ void AliHMPIDQADataMakerRec::InitRaws()
 // Booking QA histo for Raw data
 //
   const Int_t kNerr = (Int_t)AliHMPIDRawStream::kSumErr+1;
-  TH1F *hqPad[14], *hSumErr[14];
+  TH1F *hSumErr[14];
+  TH2F *hDilo[14];
 
   for(Int_t iddl =0; iddl<AliHMPIDRawStream::kNDDL; iddl++) {
-    hqPad[iddl] = new TH1F(Form("hqPadDDL%i",iddl), Form("Pad Q Entries at DDL %i",iddl), 500,0,5000);
-    Add2RawsList(hqPad[iddl],iddl);
-    hSumErr[iddl] = new TH1F(Form("SumErrDDL%i",iddl), Form("Error summary for ddl %i",iddl), 2*kNerr,0,2*kNerr);
-    hSumErr[iddl]->SetYTitle("%");
     
+    hSumErr[iddl] = new TH1F(Form("SumErrDDL%i",iddl), Form("Error summary for ddl %i",iddl), 2*kNerr,0,2*kNerr);
     for(Int_t ilabel=0; ilabel< kNerr; ilabel++) {
       hSumErr[iddl]->GetXaxis()->CenterLabels(kTRUE);
-      //hSumErr[iddl]->GetXaxis()->SetBinLabel((2*ilabel+1),Form("%i  %s",ilabel+1,hnames[ilabel]));
       hSumErr[iddl]->GetXaxis()->SetBinLabel((2*ilabel+1),Form("%i  %s",ilabel+1,AliHMPIDRawStream::GetErrName(ilabel)));
       }
       
-    Add2RawsList(hSumErr[iddl],iddl+14);
+    Add2RawsList(hSumErr[iddl],iddl);
+    
+    hDilo[iddl] = new TH2F(Form("DiloDDL%i",iddl),Form("Dilogic response at DDL",iddl),24,0,24,10,0,10);
+    
+      Add2RawsList(hDilo[iddl],14+iddl);
  }
-  TH1F *hNevRaws = new TH1F("NevRaws","Events per DDL",15,0,15);
-  Add2RawsList(hNevRaws,28);
 }
 //____________________________________________________________________________
 void AliHMPIDQADataMakerRec::InitESDs()
@@ -157,23 +164,27 @@ void AliHMPIDQADataMakerRec::MakeRaws(AliRawReader *rawReader)
 //
     AliHMPIDRawStream stream(rawReader);
 
+    fEvtRaw++;
+
     while(stream.Next())
      {
        UInt_t ddl=stream.GetDDLNumber(); //returns 0,1,2 ... 13
-
-       for(Int_t iPad=0;iPad<stream.GetNPads();iPad++) {
-       GetRawsData(ddl)->Fill(stream.GetChargeArray()[iPad]);}
-                                                           
-       GetRawsData(28)->Fill(ddl);
-
+ 
        for(Int_t iErr =1; iErr<(Int_t)AliHMPIDRawStream::kSumErr; iErr++){
  
          Int_t numOfErr = stream.GetErrors(ddl,iErr);
-
-         GetRawsData(ddl+14)->Fill(iErr,numOfErr);
+         GetRawsData(ddl)->Fill(iErr,numOfErr);
        }
+       UInt_t word; Int_t Nddl, r, d, a;      
+       for(Int_t iPad=0;iPad<stream.GetNPads();iPad++) {
+       AliHMPIDDigit dig(stream.GetPadArray()[iPad],stream.GetChargeArray()[iPad]);
+       dig.Raw(word,Nddl,r,d,a);
+       GetRawsData(ddl+14)->Fill(r,d);
+       }
+       
      }
    stream.Delete();
+   
 }
 //___________________________________________________________________________
 void AliHMPIDQADataMakerRec::MakeRecPoints(TTree * clustersTree)
@@ -181,24 +192,24 @@ void AliHMPIDQADataMakerRec::MakeRecPoints(TTree * clustersTree)
   //
   //filling QA histos for clusters
   //
-
   AliHMPIDParam *pPar =AliHMPIDParam::Instance();
   TClonesArray *clusters = new TClonesArray("AliHMPIDCluster");
-  for(int i=AliHMPIDParam::kMinCh;i<=AliHMPIDParam::kMaxCh;i++){
-    TBranch *branch = clustersTree->GetBranch(Form("HMPID%d",i));
+  for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++){
+    TBranch *branch = clustersTree->GetBranch(Form("HMPID%d",iCh));
     branch->SetAddress(&clusters);
     branch->GetEntry(0);
-    GetRecPointsData(0)->Fill(i,clusters->GetEntries());
+    GetRecPointsData(0)->Fill(iCh,clusters->GetEntries());
     TIter next(clusters);
     AliHMPIDCluster *clu;
     while ( (clu = dynamic_cast<AliHMPIDCluster *>(next())) ) {
-      GetRecPointsData(1)->Fill(clu->Chi2());
-      GetRecPointsData(2)->Fill(clu->Status());
-      GetRecPointsData(3)->Fill(clu->Size());
-      if(clu->Q()>100) GetRecPointsData(3)->Fill(clu->Size());
-      GetRecPointsData(5)->Fill(clu->Q());
-      Int_t hv =  pPar->InHVSector(clu->Y()); 
-      GetRecPointsData(6+clu->Ch()*6+hv)->Fill(clu->Q());     
+      GetRecPointsData(1)->Fill(clu->Status(),iCh);
+      Int_t sect =  pPar->InHVSector(clu->Y());
+      if(clu->Q()>100) GetRecPointsData(2+iCh)->Fill(clu->Size());
+      else {
+        GetRecPointsData(2+7+iCh)->Fill(clu->Size());
+	GetRecPointsData(2+14+iCh*6+sect)->Fill(clu->Q());
+      }    
+      GetRecPointsData(2+14+42+iCh*6+sect)->Fill(clu->Q());
     }
   }
 
@@ -242,11 +253,17 @@ void AliHMPIDQADataMakerRec::StartOfDetectorCycle()
   
 }
 
-void AliHMPIDQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t , TObjArray *)
+void AliHMPIDQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray *histos)
 {
   //Detector specific actions at end of cycle
   // do the QA checking
-
  //  AliQAChecker::Instance()->Run(AliQA::kHMPID, task, obj);
+
+  if(task==AliQA::kRAWS) {
+    for(Int_t iddl=0;iddl<14;iddl++) {
+     TH1F *h = (TH1F*)histos->At(14+iddl); //ddl histos scaled by the number of events 
+     h->Scale(1./(Float_t)fEvtRaw);
+    }
+  }
 }
 
