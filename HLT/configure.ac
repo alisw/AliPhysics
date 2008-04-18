@@ -598,7 +598,7 @@ ALIPHOS_LIBS=
 CHECK_HLTMODULE([phos],
 		[], [$ALIROOT_CPPFLAGS],
 		[RAWDatasim], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS], [$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS],
-		[PHOSbase PHOSrec PHOSsim], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS], 
+		[PHOSbase PHOSrec PHOSsim PHOSshuttle], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS], 
 		[$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS])
 
 if test "x$enable_module" = "xmissheader"; then
@@ -902,6 +902,7 @@ AM_CONDITIONAL(HAVE_ALIROOT, test "x$have_aliroot" != "xno" )
 if test "x$have_aliroot" != "xno"; then 
   AC_CONFIG_FILES([sim/Makefile	 
 		   rec/Makefile	 
+		   rec/test/Makefile	 
 		   shuttle/Makefile
 		   ])
 fi
@@ -915,19 +916,19 @@ if test "x$enable_sample" = "xyes"; then
   AC_CONFIG_FILES([SampleLib/Makefile])
 fi
 
+AC_MSG_NOTICE([compile RCU library: $enable_rcu])
+if test "x$enable_rcu" = "xyes"; then 
+  AC_CONFIG_FILES([RCU/Makefile
+		   RCU/test/Makefile
+		   ])
+fi
+
 AC_MSG_NOTICE([compile TPC library: $enable_tpc])
 if test "x$enable_tpc" = "xyes"; then 
   AC_CONFIG_FILES([TPCLib/Makefile	      
 		   TPCLib/test/Makefile	      
 		   TPCLib/mapping2array.cxx     
 		   TPCLib/OnlineDisplay/Makefile
-		   ])
-fi
-
-AC_MSG_NOTICE([compile RCU library: $enable_rcu])
-if test "x$enable_rcu" = "xyes"; then 
-  AC_CONFIG_FILES([RCU/Makefile
-		   RCU/test/Makefile
 		   ])
 fi
 

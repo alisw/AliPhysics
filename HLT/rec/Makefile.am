@@ -3,7 +3,7 @@
 
 MODULE				= HLTrec
 
-SUBDIRS 			= 
+SUBDIRS 			= . test
 
 EXTRA_DIST			= 
 

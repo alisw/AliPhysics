@@ -44,7 +44,7 @@ AliHLTFileWriter::AliHLTFileWriter()
   fSubDirFormat(""),
   fIdFormat(""),
   fSpecFormat(""),
-  fBlcknoFormat(""),
+  fBlcknoFormat("_0x%02x"),
   fCurrentFileName(""),
   fMode(0)
 {
