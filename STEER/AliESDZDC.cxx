@@ -163,7 +163,10 @@ const Float_t * AliESDZDC::GetZNACentroid(int NspecnA) const
     NumY += y[i]*w;
     Den += w;
   }
-  CentrCoord[0] = fCParCentr(NspecnA)*NumX/Den;
-  CentrCoord[1] = fCParCentr(NspecnA)*NumY/Den;
+  //
+  if(Den!=0){
+    CentrCoord[0] = fCParCentr(NspecnA)*NumX/Den;
+    CentrCoord[1] = fCParCentr(NspecnA)*NumY/Den;
+  }
   return CentrCoord;
 }
