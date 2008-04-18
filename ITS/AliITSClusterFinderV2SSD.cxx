@@ -34,6 +34,7 @@
 #include "AliITSRawStreamSSD.h"
 #include <TClonesArray.h>
 #include "AliITSdigitSSD.h"
+#include "AliITSReconstructor.h"
 #include "AliITSCalibrationSSD.h"
 
 Short_t *AliITSClusterFinderV2SSD::fgPairs = 0x0;
@@ -88,6 +89,16 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(TClonesArray *alldigits) {
   //------------------------------------------------------------
   // Actual SSD cluster finder
   //------------------------------------------------------------
+
+  static AliITSRecoParam *repa = NULL;
+  if(!repa){
+    repa = (AliITSRecoParam*) AliITSReconstructor::GetRecoParam();
+    if(!repa){
+      repa = (AliITSRecoParam*) AliITSReconstructor::GetRecoParamDefault();
+      AliWarning("Using default AliITSRecoParam class");
+    }
+  }
+
   AliITSCalibrationSSD* cal = (AliITSCalibrationSSD*)GetResp(fModule);
   Float_t gain=0;
 
@@ -143,20 +154,26 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(TClonesArray *alldigits) {
          c[*n].SetNd(nd);
 	 CheckLabels2(milab);
          c[*n].SetLabels(milab);
-         //Split suspiciously big cluster
-	 if (nd>4&&nd<25) {
-	   c[*n].SetY(y/q-0.25*nd);
-	   c[*n].SetQ(0.5*q);
-	   (*n)++;
-	   if (*n==kMax) {
-	     Error("FindClustersSSD","Too many 1D clusters !");
-	     return;
-	   }
-	   c[*n].SetY(y/q+0.25*nd);
-	   c[*n].SetQ(0.5*q);
-	   c[*n].SetNd(nd);
-	   c[*n].SetLabels(milab);
-	 }	 
+
+	 if(repa->GetUseUnfoldingInClusterFinderSSD()==kTRUE) {
+	   
+	   //Split suspiciously big cluster
+	   if (nd>4&&nd<25) {
+	     c[*n].SetY(y/q-0.25*nd);
+	     c[*n].SetQ(0.5*q);
+	     (*n)++;
+	     if (*n==kMax) {
+	       Error("FindClustersSSD","Too many 1D clusters !");
+	       return;
+	     }
+	     c[*n].SetY(y/q+0.25*nd);
+	     c[*n].SetQ(0.5*q);
+	     c[*n].SetNd(nd);
+	     c[*n].SetLabels(milab);
+	   }	 
+	   
+	 } // unfolding is on
+
          (*n)++;
          if (*n==kMax) {
           Error("FindClustersSSD","Too many 1D clusters !");
@@ -189,20 +206,25 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(TClonesArray *alldigits) {
   c[*n].SetQ(q);
   c[*n].SetNd(nd);
   c[*n].SetLabels(lab);
-  //Split suspiciously big cluster
-  if (nd>4 && nd<25) {
-     c[*n].SetY(y/q-0.25*nd);
-     c[*n].SetQ(0.5*q);
-     (*n)++;
-     if (*n==kMax) {
+
+  if(repa->GetUseUnfoldingInClusterFinderSSD()==kTRUE) {
+    
+    //Split suspiciously big cluster
+    if (nd>4 && nd<25) {
+      c[*n].SetY(y/q-0.25*nd);
+      c[*n].SetQ(0.5*q);
+      (*n)++;
+      if (*n==kMax) {
         Error("FindClustersSSD","Too many 1D clusters !");
         return;
-     }
-     c[*n].SetY(y/q+0.25*nd);
-     c[*n].SetQ(0.5*q);
-     c[*n].SetNd(nd);
-     c[*n].SetLabels(lab);
-  }
+      }
+      c[*n].SetY(y/q+0.25*nd);
+      c[*n].SetQ(0.5*q);
+      c[*n].SetNd(nd);
+      c[*n].SetLabels(lab);
+    }
+  } // unfolding is on
+  
   (*n)++;
   if (*n==kMax) {
      Error("FindClustersSSD","Too many 1D clusters !");
@@ -235,6 +257,16 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input,
   //------------------------------------------------------------
   // Actual SSD cluster finder for raw data
   //------------------------------------------------------------
+
+  static AliITSRecoParam *repa = NULL;
+  if(!repa){
+    repa = (AliITSRecoParam*) AliITSReconstructor::GetRecoParam();
+    if(!repa){
+      repa = (AliITSRecoParam*) AliITSReconstructor::GetRecoParamDefault();
+      AliWarning("Using default AliITSRecoParam class");
+    }
+  }
+
   Int_t nClustersSSD = 0;
   const Int_t kMax = 1000;
   Ali1Dcluster clusters1D[2][kMax];
@@ -357,40 +389,44 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input,
 	    cluster.SetNd(nDigits);
 	    cluster.SetLabels(lab);
 	    
-	    //Split suspiciously big cluster
-	    if (nDigits > 4&&nDigits < 25) {
-	      cluster.SetY(y/q - 0.25*nDigits);
-	      cluster.SetQ(0.5*q);
-	      if (nClusters[0] == kMax) {
-		Error("FindClustersSSD", "Too many 1D clusters !");
-		return;
+	    if(repa->GetUseUnfoldingInClusterFinderSSD()==kTRUE) {
+	      
+	      //Split suspiciously big cluster
+	      if (nDigits > 4&&nDigits < 25) {
+		cluster.SetY(y/q - 0.25*nDigits);
+		cluster.SetQ(0.5*q);
+		if (nClusters[0] == kMax) {
+		  Error("FindClustersSSD", "Too many 1D clusters !");
+		  return;
+		}
+		Ali1Dcluster& cluster2 = clusters1D[0][nClusters[0]++];
+		cluster2.SetY(y/q + 0.25*nDigits);
+		cluster2.SetQ(0.5*q);
+		cluster2.SetNd(nDigits);
+		cluster2.SetLabels(lab);
 	      }
-	      Ali1Dcluster& cluster2 = clusters1D[0][nClusters[0]++];
-	      cluster2.SetY(y/q + 0.25*nDigits);
-	      cluster2.SetQ(0.5*q);
-	      cluster2.SetNd(nDigits);
-	      cluster2.SetLabels(lab);
-	    }
-	    
+	    } // unfolding is on	    
 	  }
 	  
 	  y = q = 0.;
 	  nDigits = 0;
 	  first=0;
 	}
-
+	
       } // loop over strip on P-side
-
+      
       // if last strip does have signal
       if(first) {
 	
-	  if ( ((nDigits==1)&&(q>5*oldnoise)) || (nDigits>1) ) {
-
-	    Ali1Dcluster& cluster = clusters1D[0][nClusters[0]++];
-	    cluster.SetY(y/q);
-	    cluster.SetQ(q);
-	    cluster.SetNd(nDigits);
-	    cluster.SetLabels(lab);
+	if ( ((nDigits==1)&&(q>5*oldnoise)) || (nDigits>1) ) {
+	  
+	  Ali1Dcluster& cluster = clusters1D[0][nClusters[0]++];
+	  cluster.SetY(y/q);
+	  cluster.SetQ(q);
+	  cluster.SetNd(nDigits);
+	  cluster.SetLabels(lab);
+	  
+	  if(repa->GetUseUnfoldingInClusterFinderSSD()==kTRUE) {
 	    
 	    //Split suspiciously big cluster
 	    if (nDigits > 4&&nDigits < 25) {
@@ -406,11 +442,12 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input,
 	      cluster2.SetNd(nDigits);
 	      cluster2.SetLabels(lab);
 	    }
-	    
-	  }
-	  y = q = 0.;
-	  nDigits = 0;
-	  first=0;
+	  } // unfolding is on    
+	  
+	}
+	y = q = 0.;
+	nDigits = 0;
+	first=0;
       }
       
       /*
@@ -459,7 +496,7 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input,
 	}
 
 	else if(first) {
-
+	  
 	  if ( ((nDigits==1)&&(q>5*oldnoise)) || (nDigits>1) ) {
 	    
 	    Ali1Dcluster& cluster = clusters1D[1][nClusters[1]++];
@@ -468,22 +505,25 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input,
 	    cluster.SetNd(nDigits);
 	    cluster.SetLabels(lab);
 	    
-	    //Split suspiciously big cluster
-	    if (nDigits > 4&&nDigits < 25) {
-	      cluster.SetY(y/q - 0.25*nDigits);
-	      cluster.SetQ(0.5*q);
-	      if (nClusters[1] == kMax) {
-		Error("FindClustersSSD", "Too many 1D clusters !");
-		return;
-	      }
-	      Ali1Dcluster& cluster2 = clusters1D[1][nClusters[1]++];
-	      cluster2.SetY(y/q + 0.25*nDigits);
-	      cluster2.SetQ(0.5*q);
-	      cluster2.SetNd(nDigits);
-	      cluster2.SetLabels(lab);
-	    }
-	    
-	  }
+	    if(repa->GetUseUnfoldingInClusterFinderSSD()==kTRUE) {
+
+	      //Split suspiciously big cluster
+	      if (nDigits > 4&&nDigits < 25) {
+		cluster.SetY(y/q - 0.25*nDigits);
+		cluster.SetQ(0.5*q);
+		if (nClusters[1] == kMax) {
+		  Error("FindClustersSSD", "Too many 1D clusters !");
+		  return;
+		}
+		Ali1Dcluster& cluster2 = clusters1D[1][nClusters[1]++];
+		cluster2.SetY(y/q + 0.25*nDigits);
+		cluster2.SetQ(0.5*q);
+		cluster2.SetNd(nDigits);
+		cluster2.SetLabels(lab);
+	      }	      
+	    } // unfolding is on
+	  } 
+
 	  y = q = 0.;
 	  nDigits = 0;
 	  first=0;	  
@@ -493,13 +533,15 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input,
 
       if(first) {
 	
-	  if ( ((nDigits==1)&&(q>5*oldnoise)) || (nDigits>1) ) {
-
-	    Ali1Dcluster& cluster = clusters1D[1][nClusters[1]++];
-	    cluster.SetY(y/q);
-	    cluster.SetQ(q);
-	    cluster.SetNd(nDigits);
-	    cluster.SetLabels(lab);
+	if ( ((nDigits==1)&&(q>5*oldnoise)) || (nDigits>1) ) {
+	  
+	  Ali1Dcluster& cluster = clusters1D[1][nClusters[1]++];
+	  cluster.SetY(y/q);
+	  cluster.SetQ(q);
+	  cluster.SetNd(nDigits);
+	  cluster.SetLabels(lab);
+	  
+	  if(repa->GetUseUnfoldingInClusterFinderSSD()==kTRUE) {
 	    
 	    //Split suspiciously big cluster
 	    if (nDigits > 4&&nDigits < 25) {
@@ -515,16 +557,17 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input,
 	      cluster2.SetNd(nDigits);
 	      cluster2.SetLabels(lab);
 	    }
-	    
-	  }
-	  y = q = 0.;
-	  nDigits = 0;
-	  first=0;	  
+	  } // unfolding is on	    
+	}
+
+	y = q = 0.;
+	nDigits = 0;
+	first=0;	  
       }
       
       // create recpoints
       if((nClusters[0])&&(nClusters[1])) {
- 
+	
 	//cout<<"creating recpoint for module="<<iModule<<" "<<nClusters[0]<<" "<<nClusters[1]<<endl;
 	clusters[iModule] = new TClonesArray("AliITSRecPoint");
 	fModule = iModule;
@@ -639,230 +682,248 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
   Int_t milab[10];
   Double_t ratio;
   
-  //
-  // sign gold tracks
-  //
-  for (Int_t ip=0;ip<np;ip++){
-    Float_t ybest=1000,zbest=1000,qbest=0;
-    //
-    // select gold clusters
-    if ( (cnegative[ip]==1) && cpositive[negativepair[10*ip]]==1){ 
-      Float_t yp=pos[ip].GetY()*fYpitchSSD; 
-      Int_t j = negativepair[10*ip];      
-      ratio = (pos[ip].GetQ()-neg[j].GetQ())/(pos[ip].GetQ()+neg[j].GetQ());
-      //
-      Float_t yn=neg[j].GetY()*fYpitchSSD;
-      Float_t zt=(2*fHlSSD*tanp + yp - yn)/(tann+tanp);
-      Float_t yt=yn + tann*zt;
-      zt-=fHlSSD; yt-=fHwSSD;
-      ybest=yt; zbest=zt; 
-      qbest=0.5*(pos[ip].GetQ()+neg[j].GetQ());
 
-      //cout<<yt<<" "<<zt<<" "<<qbest<<endl;
-
-      {
-      Double_t loc[3]={ybest,0.,zbest},trk[3]={0.,0.,0.};
-      mT2L->MasterToLocal(loc,trk);
-      lp[0]=trk[1];
-      lp[1]=trk[2];
-      }
-      lp[2]=0.0025*0.0025;  //SigmaY2
-      lp[3]=0.110*0.110;  //SigmaZ2
-      
-      lp[4]=qbest;        //Q
-      for (Int_t ilab=0;ilab<10;ilab++) milab[ilab]=-2;
-      for (Int_t ilab=0;ilab<3;ilab++){
-	milab[ilab] = pos[ip].GetLabel(ilab);
-	milab[ilab+3] = neg[j].GetLabel(ilab);
-      }
-      //
-      CheckLabels2(milab);
-      milab[3]=(((ip<<10) + j)<<10) + idet; // pos|neg|det
-      Int_t info[3] = {pos[ip].GetNd(),neg[j].GetNd(),fNlayer[fModule]};
-      AliITSRecPoint * cl2;
-    
-      if(clusters){  // Note clusters != 0 when method is called for rawdata
-
-
-	cl2 = new (cl[ncl]) AliITSRecPoint(milab,lp,info);
-
-	//	cl2-> GetGlobalXYZ(xyz); cout<<"rec "<<xyz[0]<<" "<<xyz[1]<<" "<<xyz[2]<<endl;
-
-	cl2->SetChargeRatio(ratio);    	
-	cl2->SetType(1);
-	fgPairs[ip*nn+j]=1;
-	if ((pos[ip].GetNd()+neg[j].GetNd())>6){ //multi cluster
-	  cl2->SetType(2);
-	  fgPairs[ip*nn+j]=2;
-	}
-	cused1[ip]++;
-	cused2[j]++;
-	
-      }
-      else{ // Note clusters == 0 when method is called for digits
-
-	cl2 = new AliITSRecPoint(milab,lp,info);	
-
-	//	cl2-> GetGlobalXYZ(xyz); cout<<"rec "<<xyz[0]<<" "<<xyz[1]<<" "<<xyz[2]<<endl;
-
-	cl2->SetChargeRatio(ratio);    	
-	cl2->SetType(1);
-	fgPairs[ip*nn+j]=1;
-	if ((pos[ip].GetNd()+neg[j].GetNd())>6){ //multi cluster
-	  cl2->SetType(2);
-	  fgPairs[ip*nn+j]=2;
-	}
-	cused1[ip]++;
-	cused2[j]++;
-	//cout<<"AliITSClusterFinderV2SSD "<<fModule<<" gold"<<endl;
-	fDetTypeRec->AddRecPoint(*cl2);
-      }
-      ncl++;
+  static AliITSRecoParam *repa = NULL;
+  if(!repa){
+    repa = (AliITSRecoParam*) AliITSReconstructor::GetRecoParam();
+    if(!repa){
+      repa = (AliITSRecoParam*) AliITSReconstructor::GetRecoParamDefault();
+      AliWarning("Using default AliITSRecoParam class");
     }
   }
-    
-  for (Int_t ip=0;ip<np;ip++){
-    Float_t ybest=1000,zbest=1000,qbest=0;
+
+  if(repa->GetUseChargeMatchingInClusterFinderSSD()==kTRUE) {
+
+
+
+
     //
+    // sign gold tracks
     //
-    // select "silber" cluster
-    if ( cnegative[ip]==1 && cpositive[negativepair[10*ip]]==2){
-      Int_t in  = negativepair[10*ip];
-      Int_t ip2 = positivepair[10*in];
-      if (ip2==ip) ip2 =  positivepair[10*in+1];
-      Float_t pcharge = pos[ip].GetQ()+pos[ip2].GetQ();
-      if (TMath::Abs(pcharge-neg[in].GetQ())<10){
+    for (Int_t ip=0;ip<np;ip++){
+      Float_t ybest=1000,zbest=1000,qbest=0;
+      //
+      // select gold clusters
+      if ( (cnegative[ip]==1) && cpositive[negativepair[10*ip]]==1){ 
+	Float_t yp=pos[ip].GetY()*fYpitchSSD; 
+	Int_t j = negativepair[10*ip];      
+	ratio = (pos[ip].GetQ()-neg[j].GetQ())/(pos[ip].GetQ()+neg[j].GetQ());
 	//
-	// add first pair
-	if (fgPairs[ip*nn+in]==100){  //
-	  Float_t yp=pos[ip].GetY()*fYpitchSSD; 
-	  Float_t yn=neg[in].GetY()*fYpitchSSD;
-	  Float_t zt=(2*fHlSSD*tanp + yp - yn)/(tann+tanp);
-	  Float_t yt=yn + tann*zt;
-	  zt-=fHlSSD; yt-=fHwSSD;
-	  ybest =yt;  zbest=zt; 
-	  qbest =pos[ip].GetQ();
-          {
-          Double_t loc[3]={ybest,0.,zbest},trk[3]={0.,0.,0.};
-          mT2L->MasterToLocal(loc,trk);
-          lp[0]=trk[1];
-          lp[1]=trk[2];
-          }
-	  lp[2]=0.0025*0.0025;  //SigmaY2
-	  lp[3]=0.110*0.110;  //SigmaZ2
-	  
-	  lp[4]=qbest;        //Q
-	  for (Int_t ilab=0;ilab<10;ilab++) milab[ilab]=-2;
-	  for (Int_t ilab=0;ilab<3;ilab++){
-	    milab[ilab] = pos[ip].GetLabel(ilab);
-	    milab[ilab+3] = neg[in].GetLabel(ilab);
-	  }
-	  //
-	  CheckLabels2(milab);
-	  ratio = (pos[ip].GetQ()-neg[in].GetQ())/(pos[ip].GetQ()+neg[in].GetQ());
-	  milab[3]=(((ip<<10) + in)<<10) + idet; // pos|neg|det
-	  Int_t info[3] = {pos[ip].GetNd(),neg[in].GetNd(),fNlayer[fModule]};
-
-	  AliITSRecPoint * cl2;
-	  if(clusters){
-
-	    cl2 = new (cl[ncl]) AliITSRecPoint(milab,lp,info);
-
-	    //	cl2-> GetGlobalXYZ(xyz); cout<<"rec "<<xyz[0]<<" "<<xyz[1]<<" "<<xyz[2]<<endl;
-
-	    cl2->SetChargeRatio(ratio);    	
-	    cl2->SetType(5);
-	    fgPairs[ip*nn+in] = 5;
-	    if ((pos[ip].GetNd()+neg[in].GetNd())>6){ //multi cluster
-	      cl2->SetType(6);
-	      fgPairs[ip*nn+in] = 6;
-	    }	    
-	  }
-	  else{
-	    cl2 = new AliITSRecPoint(milab,lp,info);
-	    cl2->SetChargeRatio(ratio);    	
-	    cl2->SetType(5);
-	    fgPairs[ip*nn+in] = 5;
-	    if ((pos[ip].GetNd()+neg[in].GetNd())>6){ //multi cluster
-	      cl2->SetType(6);
-	      fgPairs[ip*nn+in] = 6;
-	    }
-	    //cout<<"AliITSClusterFinderV2SSD "<<fModule<<" silver1"<<endl;
-
-	    fDetTypeRec->AddRecPoint(*cl2);
-	  }
-	  ncl++;
+	Float_t yn=neg[j].GetY()*fYpitchSSD;
+	Float_t zt=(2*fHlSSD*tanp + yp - yn)/(tann+tanp);
+	Float_t yt=yn + tann*zt;
+	zt-=fHlSSD; yt-=fHwSSD;
+	ybest=yt; zbest=zt; 
+	qbest=0.5*(pos[ip].GetQ()+neg[j].GetQ());
+	
+	//cout<<yt<<" "<<zt<<" "<<qbest<<endl;
+	
+	{
+	  Double_t loc[3]={ybest,0.,zbest},trk[3]={0.,0.,0.};
+	  mT2L->MasterToLocal(loc,trk);
+	  lp[0]=trk[1];
+	  lp[1]=trk[2];
 	}
+	lp[2]=0.0025*0.0025;  //SigmaY2
+	lp[3]=0.110*0.110;  //SigmaZ2
 	
+	lp[4]=qbest;        //Q
+	for (Int_t ilab=0;ilab<10;ilab++) milab[ilab]=-2;
+	for (Int_t ilab=0;ilab<3;ilab++){
+	  milab[ilab] = pos[ip].GetLabel(ilab);
+	  milab[ilab+3] = neg[j].GetLabel(ilab);
+	}
 	//
-	// add second pair
+	CheckLabels2(milab);
+	milab[3]=(((ip<<10) + j)<<10) + idet; // pos|neg|det
+	Int_t info[3] = {pos[ip].GetNd(),neg[j].GetNd(),fNlayer[fModule]};
+	AliITSRecPoint * cl2;
 	
-      //	if (!(cused1[ip2] || cused2[in])){  //
-	if (fgPairs[ip2*nn+in]==100){
-	  Float_t yp=pos[ip2].GetY()*fYpitchSSD;
-	  Float_t yn=neg[in].GetY()*fYpitchSSD;
-	  Float_t zt=(2*fHlSSD*tanp + yp - yn)/(tann+tanp);
-	  Float_t yt=yn + tann*zt;
-	  zt-=fHlSSD; yt-=fHwSSD;
-	  ybest =yt;  zbest=zt; 
-	  qbest =pos[ip2].GetQ();
-          {
-          Double_t loc[3]={ybest,0.,zbest},trk[3]={0.,0.,0.};
-          mT2L->MasterToLocal(loc,trk);
-          lp[0]=trk[1];
-          lp[1]=trk[2];
-          }
-	  lp[2]=0.0025*0.0025;  //SigmaY2
-	  lp[3]=0.110*0.110;  //SigmaZ2
+	if(clusters){  // Note clusters != 0 when method is called for rawdata
 	  
-	  lp[4]=qbest;        //Q
-	  for (Int_t ilab=0;ilab<10;ilab++) milab[ilab]=-2;
-	  for (Int_t ilab=0;ilab<3;ilab++){
-	    milab[ilab] = pos[ip2].GetLabel(ilab);
-	    milab[ilab+3] = neg[in].GetLabel(ilab);
-	  }
-	  //
-	  CheckLabels2(milab);
-	  ratio = (pos[ip2].GetQ()-neg[in].GetQ())/(pos[ip2].GetQ()+neg[in].GetQ());
-	  milab[3]=(((ip2<<10) + in)<<10) + idet; // pos|neg|det
-	  Int_t info[3] = {pos[ip2].GetNd(),neg[in].GetNd(),fNlayer[fModule]};
 	  
-	  AliITSRecPoint * cl2;
-	  if(clusters){
-	    cl2 = new (cl[ncl]) AliITSRecPoint(milab,lp,info);
-
-	    //	cl2-> GetGlobalXYZ(xyz); cout<<"rec "<<xyz[0]<<" "<<xyz[1]<<" "<<xyz[2]<<endl;
-
-	    cl2->SetChargeRatio(ratio);    	
-	    cl2->SetType(5);
-	    fgPairs[ip2*nn+in] =5;
-	    if ((pos[ip2].GetNd()+neg[in].GetNd())>6){ //multi cluster
-	      cl2->SetType(6);
-	      fgPairs[ip2*nn+in] =6;
-	    }
+	  cl2 = new (cl[ncl]) AliITSRecPoint(milab,lp,info);
+	  
+	  //	cl2-> GetGlobalXYZ(xyz); cout<<"rec "<<xyz[0]<<" "<<xyz[1]<<" "<<xyz[2]<<endl;
+	  
+	  cl2->SetChargeRatio(ratio);    	
+	  cl2->SetType(1);
+	  fgPairs[ip*nn+j]=1;
+	  if ((pos[ip].GetNd()+neg[j].GetNd())>6){ //multi cluster
+	    cl2->SetType(2);
+	    fgPairs[ip*nn+j]=2;
 	  }
-	  else{
-	    cl2 = new AliITSRecPoint(milab,lp,info);
-	    cl2->SetChargeRatio(ratio);    	
-	    cl2->SetType(5);
-	    fgPairs[ip2*nn+in] =5;
-	    if ((pos[ip2].GetNd()+neg[in].GetNd())>6){ //multi cluster
-	      cl2->SetType(6);
-	      fgPairs[ip2*nn+in] =6;
-	    }
-	    
-	    //	 cout<<"AliITSClusterFinderV2SSD "<<fModule<<" silver2"<<endl;
-	    fDetTypeRec->AddRecPoint(*cl2);
+	  cused1[ip]++;
+	  cused2[j]++;
+	  
+	}
+	else{ // Note clusters == 0 when method is called for digits
+	  
+	  cl2 = new AliITSRecPoint(milab,lp,info);	
+	  
+	  //	cl2-> GetGlobalXYZ(xyz); cout<<"rec "<<xyz[0]<<" "<<xyz[1]<<" "<<xyz[2]<<endl;
+	  
+	  cl2->SetChargeRatio(ratio);    	
+	  cl2->SetType(1);
+	  fgPairs[ip*nn+j]=1;
+	  if ((pos[ip].GetNd()+neg[j].GetNd())>6){ //multi cluster
+	    cl2->SetType(2);
+	    fgPairs[ip*nn+j]=2;
 	  }
-	  ncl++;
-	}	
-	cused1[ip]++;
-	cused1[ip2]++;
-	cused2[in]++;
+	  cused1[ip]++;
+	  cused2[j]++;
+	  //cout<<"AliITSClusterFinderV2SSD "<<fModule<<" gold"<<endl;
+	  fDetTypeRec->AddRecPoint(*cl2);
+	}
+	ncl++;
       }
-    }    
-  }
-
+    }
+    
+    for (Int_t ip=0;ip<np;ip++){
+      Float_t ybest=1000,zbest=1000,qbest=0;
+      //
+      //
+      // select "silber" cluster
+      if ( cnegative[ip]==1 && cpositive[negativepair[10*ip]]==2){
+	Int_t in  = negativepair[10*ip];
+	Int_t ip2 = positivepair[10*in];
+	if (ip2==ip) ip2 =  positivepair[10*in+1];
+	Float_t pcharge = pos[ip].GetQ()+pos[ip2].GetQ();
+	if (TMath::Abs(pcharge-neg[in].GetQ())<10){
+	  //
+	  // add first pair
+	  if (fgPairs[ip*nn+in]==100){  //
+	    Float_t yp=pos[ip].GetY()*fYpitchSSD; 
+	    Float_t yn=neg[in].GetY()*fYpitchSSD;
+	    Float_t zt=(2*fHlSSD*tanp + yp - yn)/(tann+tanp);
+	    Float_t yt=yn + tann*zt;
+	    zt-=fHlSSD; yt-=fHwSSD;
+	    ybest =yt;  zbest=zt; 
+	    qbest =pos[ip].GetQ();
+	    {
+	      Double_t loc[3]={ybest,0.,zbest},trk[3]={0.,0.,0.};
+	      mT2L->MasterToLocal(loc,trk);
+	      lp[0]=trk[1];
+	      lp[1]=trk[2];
+	    }
+	    lp[2]=0.0025*0.0025;  //SigmaY2
+	    lp[3]=0.110*0.110;  //SigmaZ2
+	    
+	    lp[4]=qbest;        //Q
+	    for (Int_t ilab=0;ilab<10;ilab++) milab[ilab]=-2;
+	    for (Int_t ilab=0;ilab<3;ilab++){
+	      milab[ilab] = pos[ip].GetLabel(ilab);
+	      milab[ilab+3] = neg[in].GetLabel(ilab);
+	    }
+	    //
+	    CheckLabels2(milab);
+	    ratio = (pos[ip].GetQ()-neg[in].GetQ())/(pos[ip].GetQ()+neg[in].GetQ());
+	    milab[3]=(((ip<<10) + in)<<10) + idet; // pos|neg|det
+	    Int_t info[3] = {pos[ip].GetNd(),neg[in].GetNd(),fNlayer[fModule]};
+	    
+	    AliITSRecPoint * cl2;
+	    if(clusters){
+	      
+	      cl2 = new (cl[ncl]) AliITSRecPoint(milab,lp,info);
+	      
+	      //	cl2-> GetGlobalXYZ(xyz); cout<<"rec "<<xyz[0]<<" "<<xyz[1]<<" "<<xyz[2]<<endl;
+	      
+	      cl2->SetChargeRatio(ratio);    	
+	      cl2->SetType(5);
+	      fgPairs[ip*nn+in] = 5;
+	      if ((pos[ip].GetNd()+neg[in].GetNd())>6){ //multi cluster
+		cl2->SetType(6);
+		fgPairs[ip*nn+in] = 6;
+	      }	    
+	    }
+	    else{
+	      cl2 = new AliITSRecPoint(milab,lp,info);
+	      cl2->SetChargeRatio(ratio);    	
+	      cl2->SetType(5);
+	      fgPairs[ip*nn+in] = 5;
+	      if ((pos[ip].GetNd()+neg[in].GetNd())>6){ //multi cluster
+		cl2->SetType(6);
+		fgPairs[ip*nn+in] = 6;
+	      }
+	      //cout<<"AliITSClusterFinderV2SSD "<<fModule<<" silver1"<<endl;
+	      
+	      fDetTypeRec->AddRecPoint(*cl2);
+	    }
+	    ncl++;
+	  }
+	  
+	  //
+	  // add second pair
+	  
+	  //	if (!(cused1[ip2] || cused2[in])){  //
+	  if (fgPairs[ip2*nn+in]==100){
+	    Float_t yp=pos[ip2].GetY()*fYpitchSSD;
+	    Float_t yn=neg[in].GetY()*fYpitchSSD;
+	    Float_t zt=(2*fHlSSD*tanp + yp - yn)/(tann+tanp);
+	    Float_t yt=yn + tann*zt;
+	    zt-=fHlSSD; yt-=fHwSSD;
+	    ybest =yt;  zbest=zt; 
+	    qbest =pos[ip2].GetQ();
+	    {
+	      Double_t loc[3]={ybest,0.,zbest},trk[3]={0.,0.,0.};
+	      mT2L->MasterToLocal(loc,trk);
+	      lp[0]=trk[1];
+	      lp[1]=trk[2];
+	    }
+	    lp[2]=0.0025*0.0025;  //SigmaY2
+	    lp[3]=0.110*0.110;  //SigmaZ2
+	    
+	    lp[4]=qbest;        //Q
+	    for (Int_t ilab=0;ilab<10;ilab++) milab[ilab]=-2;
+	    for (Int_t ilab=0;ilab<3;ilab++){
+	      milab[ilab] = pos[ip2].GetLabel(ilab);
+	      milab[ilab+3] = neg[in].GetLabel(ilab);
+	    }
+	    //
+	    CheckLabels2(milab);
+	    ratio = (pos[ip2].GetQ()-neg[in].GetQ())/(pos[ip2].GetQ()+neg[in].GetQ());
+	    milab[3]=(((ip2<<10) + in)<<10) + idet; // pos|neg|det
+	    Int_t info[3] = {pos[ip2].GetNd(),neg[in].GetNd(),fNlayer[fModule]};
+	    
+	    AliITSRecPoint * cl2;
+	    if(clusters){
+	      cl2 = new (cl[ncl]) AliITSRecPoint(milab,lp,info);
+	      
+	      //	cl2-> GetGlobalXYZ(xyz); cout<<"rec "<<xyz[0]<<" "<<xyz[1]<<" "<<xyz[2]<<endl;
+	      
+	      cl2->SetChargeRatio(ratio);    	
+	      cl2->SetType(5);
+	      fgPairs[ip2*nn+in] =5;
+	      if ((pos[ip2].GetNd()+neg[in].GetNd())>6){ //multi cluster
+		cl2->SetType(6);
+		fgPairs[ip2*nn+in] =6;
+	      }
+	    }
+	    else{
+	      cl2 = new AliITSRecPoint(milab,lp,info);
+	      cl2->SetChargeRatio(ratio);    	
+	      cl2->SetType(5);
+	      fgPairs[ip2*nn+in] =5;
+	      if ((pos[ip2].GetNd()+neg[in].GetNd())>6){ //multi cluster
+		cl2->SetType(6);
+		fgPairs[ip2*nn+in] =6;
+	      }
+	      
+	      //	 cout<<"AliITSClusterFinderV2SSD "<<fModule<<" silver2"<<endl;
+	      fDetTypeRec->AddRecPoint(*cl2);
+	    }
+	    ncl++;
+	  }	
+	  cused1[ip]++;
+	  cused1[ip2]++;
+	  cused2[in]++;
+	}
+      }    
+    }
+    
+  } // use charge matching
+  
+  
   //  
   for (Int_t jn=0;jn<nn;jn++){
     if (cused2[jn]) continue;
@@ -1187,5 +1248,4 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
   }
 
 }
-
 

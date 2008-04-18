@@ -113,7 +113,8 @@ fSAUseAllClusters(kFALSE),
 fFindV0s(kTRUE),
 fUseUnfoldingInClusterFinderSPD(kFALSE),
 fUseUnfoldingInClusterFinderSDD(kTRUE),
-fUseUnfoldingInClusterFinderSSD(kTRUE)
+fUseUnfoldingInClusterFinderSSD(kTRUE),
+fUseChargeMatchingInClusterFinderSSD(kTRUE)
 {
   //
   // constructor
@@ -449,4 +450,3 @@ void AliITSRecoParam::SetLayersParameters()
 
   return;
 }
-

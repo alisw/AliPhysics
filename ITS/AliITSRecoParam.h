@@ -176,6 +176,9 @@ class AliITSRecoParam : public AliDetectorRecoParam
   void   SetUseUnfoldingInClusterFinderSSD(Bool_t use=kTRUE) { fUseUnfoldingInClusterFinderSSD=use; return; }
   Bool_t GetUseUnfoldingInClusterFinderSSD() const { return fUseUnfoldingInClusterFinderSSD; }
 
+  void   SetUseChargeMatchingInClusterFinderSSD(Bool_t use=kTRUE) { fUseChargeMatchingInClusterFinderSSD=use; return; }
+  Bool_t GetUseChargeMatchingInClusterFinderSSD() const { return fUseChargeMatchingInClusterFinderSSD; }
+
   //
 
   enum {fgkMaxClusterPerLayer=70000}; //7000*10;   // max clusters per layer
@@ -301,6 +304,8 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Bool_t fUseUnfoldingInClusterFinderSPD; // SPD
   Bool_t fUseUnfoldingInClusterFinderSDD; // SDD
   Bool_t fUseUnfoldingInClusterFinderSSD; // SSD
+
+  Bool_t fUseChargeMatchingInClusterFinderSSD; // SSD
 
   ClassDef(AliITSRecoParam,2) // ITS reco parameters
 };
