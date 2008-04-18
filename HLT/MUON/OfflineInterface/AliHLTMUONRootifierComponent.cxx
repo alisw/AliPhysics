@@ -86,11 +86,19 @@ const char* AliHLTMUONRootifierComponent::GetComponentID()
 
 AliHLTComponentDataType AliHLTMUONRootifierComponent::GetOutputDataType()
 {
-	///
-	/// Inherited from AliHLTComponent. Returns the output data type.
-	///
+	/// Inherited from AliHLTComponent. Returns kAliHLTMultipleDataType
+	/// refer to GetOutputDataTypes for all returned data types.
 	
-	return kAliHLTAnyDataType;
+	return kAliHLTMultipleDataType;
+}
+
+
+int AliHLTMUONRootifierComponent::GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList)
+{
+	/// Inherited from AliHLTComponent. Returns the output data types.
+	
+	tgtList.push_back(kAliHLTAnyDataType);
+	return 1;
 }
 
 
@@ -275,7 +283,7 @@ int AliHLTMUONRootifierComponent::DoEvent(
 					}
 				}
 			}
-			if (sourceDDL < 21 or sourceDDL > 22)
+			if (sourceDDL != -1 and (sourceDDL < 21 or sourceDDL > 22))
 			{
 				HLTWarning("The source DDL for input data block %d is %d."
 					" The expected range for the DDL is [21..22].",

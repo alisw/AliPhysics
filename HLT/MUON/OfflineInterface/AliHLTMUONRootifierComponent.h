@@ -61,7 +61,7 @@ public:
 
 	virtual void GetInputDataTypes(vector<AliHLTComponentDataType>& list);
 	virtual AliHLTComponentDataType GetOutputDataType();
-
+	virtual int GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList);
 	virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
 
 	virtual AliHLTComponent* Spawn();
