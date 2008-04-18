@@ -107,16 +107,18 @@ void TFlukaIon::AddIon(Int_t a, Int_t z)
 }
 
 void  TFlukaIon::AddIon(const char* name, Int_t z, Int_t a, Int_t q,
-			Double_t /*exE*/, Double_t mass)
+			Double_t exE, Double_t mass)
 {
 // User defined ion
     TDatabasePDG *pdgDB = TDatabasePDG::Instance();
     const Double_t kAu2Gev   = 0.9314943228;
-    Int_t pdg =  GetIonPdg(z, a, q);
+    Int_t is = (exE > 0.)? 1 : 0;
+    if (q == 0) q = z;
+    Int_t pdg =  GetIonPdg(z, a, is);
     if (pdgDB->GetParticle(pdg)) return;
-    if (mass = 0.) mass = Float_t(a) * kAu2Gev + 8.071e-3;
+    if (mass == 0.) mass = Float_t(a) * kAu2Gev + 8.071e-3;
 
-    pdgDB->AddParticle(name, "User Ion", mass, kTRUE, 0, 3 * z, "Ion", pdg);
+    pdgDB->AddParticle(name, "User Ion", mass, kTRUE, 0, 3 * q, "Ion", pdg);
 }
 
 void TFlukaIon::WriteUserInputCard(FILE* pFlukaVmcInp)

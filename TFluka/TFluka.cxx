@@ -267,6 +267,7 @@ void TFluka::Init() {
     // Add ions to PDG Data base
     //
      AddParticlesToPdgDataBase();
+     fApplication->AddIons();
     //
 }
 
@@ -2617,9 +2618,6 @@ void TFluka::AddParticlesToPdgDataBase() const
                      khShGev/(12.33*kYear2Sec),6,"Ion",TFlukaIon::GetIonPdg(2,4));
   pdgDB->AddParticle("HE3","HE3",3*kAu2Gev+14.931e-3,kFALSE,
                      0,6,"Ion",TFlukaIon::GetIonPdg(2,3));
-//
-// Default user ion
-  TFlukaIon::AddIon(12, 6);
   
 //
 //
