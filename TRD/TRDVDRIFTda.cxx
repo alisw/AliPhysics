@@ -1,13 +1,14 @@
 /*
 
 Contact: r.bailhache@gsi.de
-Link: run 25909
+Link:
+Reference run: 25909
 Run Type: PHYSICS STANDALONE
 DA Type: MON
-Number of events needed: as many as possible
-Input Files:  raw files of the TRD
-Output Files: trdCalibrationv.root,to be exported to the DAQ FXS
-Trigger types used: PHYSICS_EVENT, for the time being
+Number of events needed: many
+Input Files:  TRD raw files
+Output Files: trdCalibrationv.root
+Trigger types used: PHYSICS_EVENT
 
 */
 
@@ -41,7 +42,7 @@ extern "C" {
 #include "AliRawReader.h"
 #include "AliRawReaderDate.h"
 #include "AliTRDrawStreamTB.h"
-#include "AliCDBManager.h"
+
 
 //
 // TRD calibration algorithm includes
@@ -101,9 +102,9 @@ int main(int argc, char **argv) {
   int nevents_total=0;
 
   //Instance of AliCDBManager: needed by AliTRDRawStreamV2
-  AliCDBManager *man = AliCDBManager::Instance();
-  man->SetDefaultStorage("local://$ALICE_ROOT");
-  man->SetRun(0);
+  //AliCDBManager *man = AliCDBManager::Instance();
+  //man->SetDefaultStorage("local://$ALICE_ROOT");
+  //man->SetRun(0);
   //Instance of AliTRDCalibraFillHisto
   AliTRDCalibraFillHisto *calibra      = AliTRDCalibraFillHisto::Instance();
   // everythings are okey for vdrift

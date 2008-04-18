@@ -1,12 +1,13 @@
 /*
 
 Contact: r.bailhache@gsi.de
-Link: run 12170
+Link:
+Reference run: 12170
 Run Type: PEDESTAL
 DA Type: LDC
 Number of events needed: 100
-Input Files: raw files of the TRD
-Output Files: trdCalibration.root,to be exported to the DAQ FXS
+Input Files: TRD raw files
+Output Files: trdCalibration.root
 Trigger types used:
 
 */

@@ -2786,7 +2786,10 @@ Int_t AliTRDCalibraFillHisto::FillDAQ(Double_t phvalue[16][144][36]){
 
   //printf("imaxRow %d, imaxCol %d, fTimeMax %d, integralMax %f\n",imaxRow,imaxCol,fTimeMax, integralMax);
 
-  if((imaxRow == 0) || (imaxCol == 0)) used=1;
+  if((imaxRow == 0) || (imaxCol == 0)) {
+    used=1;
+    return used;
+  }
   //CheckGoodTrackletV0(fDetectorPreviousTrack,imaxRow,imaxCol);
   //if(!fGoodTracklet) used = 1;;
   
