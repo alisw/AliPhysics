@@ -165,27 +165,25 @@ void AliZDCQADataMakerSim::MakeHits(TTree * hitTree)
     return;
   }
   //
-  TClonesArray * hits = new TClonesArray("AliZDCHit", 1000);
   TBranch * branch = hitTree->GetBranch("ZDC") ;
   if(!branch){
     AliError("ZDC branch in Hit Tree not found!"); 
     return;
   }
-  //
-  TClonesArray * tmp = new TClonesArray("AliZDCHit", 1000);
-  branch->SetAddress(&tmp) ;
-  Int_t index = 0 ;  
-  for(Int_t ientry = 0; ientry<branch->GetEntries(); ientry++) {
-      branch->GetEntry(ientry) ; 
-      for(Int_t ihit =0 ; ihit<tmp->GetEntries(); ihit++){
-  	 AliZDCHit * hit = dynamic_cast<AliZDCHit *> (tmp->At(ihit)); 
-  	 new((*hits)[index]) AliZDCHit(*hit); 
-  	 index++;
-      } 
-  }	  
-  tmp->Delete(); 
-  delete tmp; 
-  MakeHits(hits); 
+  else{
+    //
+    TClonesArray * hits = new TClonesArray("AliZDCHit", 1000);
+    //
+    Int_t ntracks = (Int_t) hitTree->GetEntries();
+    if (ntracks<=0) return;
+    //
+    for(Int_t itrack=0; itrack<ntracks; itrack++){
+      branch->SetAddress(&hits) ;
+      branch->GetEntry(itrack);
+      //
+      MakeHits(hits); 
+    }	  
+  }
 }
 
 //____________________________________________________________________________
