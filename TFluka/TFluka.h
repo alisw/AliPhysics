@@ -23,7 +23,6 @@
 class TGeoMCGeometry;
 //class TFlukaMCGeometry;
 class TGeoMaterial;
-class TFlukaIon;
 
 class TFluka : public TVirtualMC {
   
@@ -461,7 +460,8 @@ class TFluka : public TVirtualMC {
   TObjArray* fUserConfig;            // List of user physics configuration 
   TObjArray* fUserScore;             // List of user scoring options
   // User defined Ion
-  TFlukaIon* fUserIon;               // User defined ion
+  Bool_t               fUserIons;    // User requests ion transport
+  
   //
 
   ClassDef(TFluka,1)                 // C++ interface to Fluka montecarlo

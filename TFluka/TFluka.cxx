@@ -151,7 +151,7 @@ TFluka::TFluka()
    fMCGeo(0),
    fUserConfig(0), 
    fUserScore(0),
-   fUserIon(0)
+   fUserIons(0)
 { 
   //
   // Default constructor
@@ -194,7 +194,7 @@ TFluka::TFluka(const char *title, Int_t verbosity, Bool_t isRootGeometrySupporte
    fMCGeo(0),
    fUserConfig(new TObjArray(100)),
    fUserScore(new TObjArray(100)),
-   fUserIon(0)
+   fUserIons(0)
 {
   // create geometry interface
     for (Int_t i = 0; i < 4; i++) fPint[i] = 0.;
@@ -1037,14 +1037,14 @@ Int_t TFluka::IdFromPDG(Int_t pdg) const
 			  TFlukaIon::GetIonPdg(1,2)};    
     // Catch the feedback photons
     if (pdg == 50000051) return (kFLUKAoptical);
-    // Ion as primary
+
+    // Light ions (d,t,h3,alpha)
     for (Int_t i = 0; i < 4; i++) {
 	if (pdg == idSpecial[i]) return (i + kFLUKAcodemin);
     }
     
-    if ((!fUserIon && pdg == TFlukaIon::GetIonPdg(6,12)) ||
-	( fUserIon && pdg == fUserIon->GetPdgCode())) 
-	return (-2);
+    // Heavy ions
+    if (pdg > TFlukaIon::GetIonPdg(1,1)) return (-2);
 
     // MCIHAD() goes from pdg to fluka internal.
     Int_t intfluka = mcihad(pdg);
@@ -1330,7 +1330,7 @@ void TFluka::InitPhysics()
 // Add RANDOMIZ card
     fprintf(pFlukaVmcInp,"RANDOMIZ  %10.1f%10.0f\n", 1., Float_t(gRandom->GetSeed()));
 // User defined ion
-    if (fUserIon) fUserIon->WriteUserInputCard(pFlukaVmcInp);
+//    if (fUserIon) fUserIon->WriteUserInputCard(pFlukaVmcInp);
 // Add START and STOP card
     fprintf(pFlukaVmcInp,"START     %10.1f\n",fEventsPerRun);
     fprintf(pFlukaVmcInp,"STOP      \n");
@@ -2768,11 +2768,7 @@ void TFluka::CalcPrimaryIonisationTime()
 Bool_t TFluka::DefineIon(const char* name , Int_t z, Int_t a, Int_t q, Double_t exE, Double_t mass)
 {
     // User defined ion that can be used as a primary
-    if (fUserIon) {
-	Warning("DefineIon", "Only one user ion can be defined !");
-	return kFALSE;
-    } else {
-	fUserIon = new TFlukaIon(name, z, a, q, exE, mass);
-	return kTRUE;
-    }
+    fUserIons = kTRUE;
+    TFlukaIon::AddIon(name, z, a, q,exE, mass);
+    return kTRUE;
 }
