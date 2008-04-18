@@ -467,11 +467,20 @@ void AliZDCv3::CreateBeamLine()
   gMC->Matrix(im1, 90.+0.143, 0., 90., 90., 0.143, 0.); // x<0  
   gMC->Gspos("QT17", 1, "ZDCC", TMath::Sin(angle) * 680.8/ 2. - 9.4, 
              0., -tubpar[2]-zd1, im1, "ONLY"); 
+  //printf("\n	QT17-18 pipe from z = %f to z= %f\n",-zd1,-2*tubpar[2]-zd1);
 	     
   //AliMatrix(im2, 90.-0.143, 0., 90., 90., 0.143, 180.); // x>0 (ZP)
   gMC->Matrix(im2, 90.-0.143, 0., 90., 90., 0.143, 180.); // x>0 (ZP)  
   gMC->Gspos("QT18", 1, "ZDCC", 9.7 - TMath::Sin(angle) * 680.8 / 2., 
              0., -tubpar[2]-zd1, im2, "ONLY"); 
+	   
+  // -- Luminometer (Cu box) in front of ZN - side C
+  boxpar[0] = 8.0/2.;
+  boxpar[1] = 8.0/2.;
+  boxpar[2] = 15./2.;
+  gMC->Gsvolu("QLUC", "BOX ", idtmed[6], boxpar, 3);
+  gMC->Gspos("QLUC", 1, "ZDCC", 0., 0.,  fPosZNC[2]+66.+boxpar[2], 0, "ONLY");
+  //printf("\n	QLUC LUMINOMETER from z = %f to z= %f\n",  fPosZNC[2]+66., fPosZNC[2]+66.+2*boxpar[2]);
 	         
   // --  END OF BEAM PIPE VOLUME DEFINITION FOR SIDE C (RB26 SIDE) 
   // ----------------------------------------------------------------
@@ -1258,7 +1267,6 @@ void AliZDCv3::CreateBeamLine()
   gMC->Gspos("QFV4", 1, "QF04", 16.5/2., 0.,  0., 0, "MANY");
   gMC->Gspos("QF04", 1, "ZDCA", 0., 0.,  18.5+zd2, 0, "MANY");
   
-
   // 2 tubes (ID = 63 mm OD=70 mm)      
   tubpar[0] = 6.3/2.;
   tubpar[1] = 7.0/2.;
@@ -1270,7 +1278,14 @@ void AliZDCv3::CreateBeamLine()
 
   zd2 += 2.*tubpar[2];
   //printf("\n	END OF BEAM PIPE VOLUME DEFINITION AT z= %f\n",zd2);
-  //printf("	MAGNET DEFINITION FOLLOWS\n\n"); 
+	   
+  // -- Luminometer (Cu box) in front of ZN - side A
+  boxpar[0] = 8.0/2.;
+  boxpar[1] = 8.0/2.;
+  boxpar[2] = 15./2.;
+  gMC->Gsvolu("QLUA", "BOX ", idtmed[6], boxpar, 3);
+  gMC->Gspos("QLUA", 1, "ZDCA", 0., 0.,  fPosZNA[2]-66.-boxpar[2], 0, "ONLY");
+  //printf("\n	QLUC LUMINOMETER from z = %f to z= %f\n\n",  fPosZNA[2]-66., fPosZNA[2]-66.-2*boxpar[2]);
   
 
   // ----------------------------------------------------------------
