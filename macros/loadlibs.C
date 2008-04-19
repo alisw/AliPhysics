@@ -95,7 +95,6 @@ void loadlibs ()
   gSystem->Load("libTRDbase");
   gSystem->Load("libTRDsim");
   gSystem->Load("libTRDrec");
-  gSystem->Load("libTRDfast");
   gSystem->Load("libTOFbase");
   gSystem->Load("libTOFrec");
   gSystem->Load("libTOFsim");

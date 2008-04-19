@@ -76,6 +76,7 @@ void loadlibssim ()
   // for the moment due to cross dependencies
   gSystem->Load("libTPCbase");
   gSystem->Load("libTPCsim");
+  gSystem->Load("libTPCrec");
   gSystem->Load("libITSbase");
   gSystem->Load("libITSsim");
   gSystem->Load("libTRDbase");
