@@ -10,6 +10,6 @@ DHDR:= HMPIDrecLinkDef.h
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
                          -lHMPIDbase -lSTEER -lCDB -lESD -lSTEERBase \
-                         -lRAWDatarec \
+                         -lRAWDatarec -lRAWDatasim \
                          -L$(shell root-config --libdir) -lMinuit
 endif
