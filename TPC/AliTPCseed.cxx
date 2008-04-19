@@ -39,6 +39,11 @@ AliTPCseed::AliTPCseed():
   fRelativeSector(-1),
   fCurrentSigmaY2(1e10),
   fCurrentSigmaZ2(1e10),
+  fCMeanSigmaY2p30(-1.),   //! current mean sigma Y2 - mean30%
+  fCMeanSigmaZ2p30(-1.),   //! current mean sigma Z2 - mean30%
+  fCMeanSigmaY2p2(-1.),   //! current mean sigma Y2 - mean2%
+  fCMeanSigmaZ2p2(-1.),   //! current mean sigma Z2 - mean2%
+  //
   fErrorY2(1e10),
   fErrorZ2(1e10),
   fCurrentCluster(0x0),
@@ -83,6 +88,10 @@ AliTPCseed::AliTPCseed(const AliTPCseed &s, Bool_t clusterOwner):
   fRelativeSector(-1),
   fCurrentSigmaY2(1e10),
   fCurrentSigmaZ2(1e10),
+  fCMeanSigmaY2p30(-1.),   //! current mean sigma Y2 - mean30%
+  fCMeanSigmaZ2p30(-1.),   //! current mean sigma Z2 - mean30%
+  fCMeanSigmaY2p2(-1.),   //! current mean sigma Y2 - mean2%
+  fCMeanSigmaZ2p2(-1.),   //! current mean sigma Z2 - mean2%
   fErrorY2(1e10),
   fErrorZ2(1e10),
   fCurrentCluster(0x0),
@@ -134,6 +143,10 @@ AliTPCseed::AliTPCseed(const AliTPCtrack &t):
   fRelativeSector(-1),
   fCurrentSigmaY2(1e10),
   fCurrentSigmaZ2(1e10),
+  fCMeanSigmaY2p30(-1.),   //! current mean sigma Y2 - mean30%
+  fCMeanSigmaZ2p30(-1.),   //! current mean sigma Z2 - mean30%
+  fCMeanSigmaY2p2(-1.),   //! current mean sigma Y2 - mean2%
+  fCMeanSigmaZ2p2(-1.),   //! current mean sigma Z2 - mean2%
   fErrorY2(1e10),
   fErrorZ2(1e10),
   fCurrentCluster(0x0),
@@ -190,6 +203,10 @@ AliTPCseed::AliTPCseed(Double_t xr, Double_t alpha, const Double_t xx[5],
   fRelativeSector(-1),
   fCurrentSigmaY2(1e10),
   fCurrentSigmaZ2(1e10),
+  fCMeanSigmaY2p30(-1.),   //! current mean sigma Y2 - mean30%
+  fCMeanSigmaZ2p30(-1.),   //! current mean sigma Z2 - mean30%
+  fCMeanSigmaY2p2(-1.),   //! current mean sigma Y2 - mean2%
+  fCMeanSigmaZ2p2(-1.),   //! current mean sigma Z2 - mean2%
   fErrorY2(1e10),
   fErrorZ2(1e10),
   fCurrentCluster(0x0),
@@ -507,6 +524,20 @@ Bool_t AliTPCseed::Update(const AliCluster *c, Double_t chisq, Int_t index)
 
   AliCluster cl(*c);  cl.SetSigmaY2(fErrorY2); cl.SetSigmaZ2(fErrorZ2);
   if (!AliTPCtrack::Update(&cl,chisq,index)) return kFALSE;
+  
+  if (fCMeanSigmaY2p30<0){
+    fCMeanSigmaY2p30= c->GetSigmaY2();   //! current mean sigma Y2 - mean30%
+    fCMeanSigmaZ2p30= c->GetSigmaZ2();   //! current mean sigma Z2 - mean30%
+    fCMeanSigmaY2p2 = c->GetSigmaY2();   //! current mean sigma Y2 - mean5%
+    fCMeanSigmaZ2p2 = c->GetSigmaZ2();   //! current mean sigma Z2 - mean5%
+  }
+  //
+  fCMeanSigmaY2p30= 0.70*fCMeanSigmaY2p30 +0.30*c->GetSigmaY2();   
+  fCMeanSigmaZ2p30= 0.70*fCMeanSigmaZ2p30 +0.30*c->GetSigmaZ2();   
+  fCMeanSigmaY2p2 = 0.98*fCMeanSigmaY2p30 +0.02*c->GetSigmaY2();  
+  fCMeanSigmaZ2p2 = 0.98*fCMeanSigmaZ2p30 +0.02*c->GetSigmaZ2();   
+  
+
 
   SetClusterIndex(n,idx);          // restore the current cluster index
   return kTRUE;

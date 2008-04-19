@@ -123,6 +123,10 @@ class AliTPCseed : public AliTPCtrack {
      Bool_t GetInDead() const {return fInDead;}
      Float_t GetErrorY2() const {return fErrorY2;}
      Float_t GetErrorZ2() const {return fErrorZ2;}
+  Float_t GetCMeanSigmaY2p30() const {return fCMeanSigmaY2p30;}
+  Float_t GetCMeanSigmaZ2p30() const {return fCMeanSigmaZ2p30;}
+  Float_t GetCMeanSigmaY2p2() const {return fCMeanSigmaY2p2;}
+  Float_t GetCMeanSigmaZ2p2() const {return fCMeanSigmaZ2p2;}
      //
      //
      void SetClusterMapBit(int ibit, Bool_t state);
@@ -146,6 +150,10 @@ class AliTPCseed : public AliTPCtrack {
      Int_t fRelativeSector;      // index of current relative sector
      Float_t fCurrentSigmaY2;    //!expected current cluster sigma Y
      Float_t fCurrentSigmaZ2;    //!expected current cluster sigma Z
+     Float_t fCMeanSigmaY2p30;   //! current mean sigma Y2 - mean30%
+     Float_t fCMeanSigmaZ2p30;   //! current mean sigma Z2 - mean30%
+     Float_t fCMeanSigmaY2p2;   //! current mean sigma Y2 - mean2%
+     Float_t fCMeanSigmaZ2p2;   //! current mean sigma Z2 - mean2%
      Float_t fErrorY2;           //!sigma of current cluster 
      Float_t fErrorZ2;           //!sigma of current cluster    
      AliTPCclusterMI * fCurrentCluster; //!pointer to the current cluster for prolongation

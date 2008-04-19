@@ -283,17 +283,26 @@ Int_t AliTPCtrackerMI::AcceptCluster(AliTPCseed * seed, AliTPCclusterMI * cluste
   if (AliTPCReconstructor::StreamLevel()>5) {
     Float_t rmsy2 = seed->GetCurrentSigmaY2();
     Float_t rmsz2 = seed->GetCurrentSigmaZ2();
+    Float_t rmsy2p30 = seed->GetCMeanSigmaY2p30();
+    Float_t rmsz2p30 = seed->GetCMeanSigmaZ2p30();
+    Float_t rmsy2p2  = seed->GetCMeanSigmaY2p2();
+    Float_t rmsz2p2  = seed->GetCMeanSigmaZ2p2();
+
     AliExternalTrackParam param(*seed); 
     (*fDebugStreamer)<<"ErrParam"<<
-	"Cl.="<<cluster<<
-	"T.="<<&param<<
-	"erry2="<<sy2<<
-	"errz2="<<sz2<<
-	"rmsy2="<<rmsy2<<
-	"rmsz2="<<rmsz2<<	
-	"\n";
+      "Cl.="<<cluster<<
+      "T.="<<&param<<
+      "erry2="<<sy2<<
+      "errz2="<<sz2<<
+      "rmsy2="<<rmsy2<<
+      "rmsz2="<<rmsz2<<	
+      "rmsy2p30="<<rmsy2p30<<
+      "rmsz2p30="<<rmsz2p30<<	
+      "rmsy2p2="<<rmsy2p2<<
+      "rmsz2p2="<<rmsz2p2<<	
+      "\n";
   }
-
+  
   if (rdistance2>16) return 3;
   
   
@@ -548,7 +557,7 @@ Double_t AliTPCtrackerMI::ErrY2(AliTPCseed* seed, AliTPCclusterMI * cl){
   Int_t ctype = cl->GetType();  
   Int_t    type = (cl->GetRow()<63) ? 0: (cl->GetRow()>126) ? 1:2;
   Double_t angle = seed->GetSnp()*seed->GetSnp();
-  angle = TMath::Sqrt(angle/(1.-angle));
+  angle = TMath::Sqrt(TMath::Abs(angle/(1.-angle)));
   Double_t erry2 = clparam->GetError0Par(0,type, z,angle);
   if (ctype<0) {
     erry2+=0.5;  // edge cluster
@@ -700,7 +709,7 @@ Double_t AliTPCtrackerMI::ErrZ2(AliTPCseed* seed, AliTPCclusterMI * cl){
   //
   Double_t angle2 = seed->GetSnp()*seed->GetSnp();
   angle2 = seed->GetTgl()*seed->GetTgl()*(1+angle2/(1-angle2)); 
-  Double_t angle = TMath::Sqrt(angle2);
+  Double_t angle = TMath::Sqrt(TMath::Abs(angle2));
   Double_t errz2 = clparam->GetError0Par(1,type, z,angle);
   if (ctype<0) {
     errz2+=0.5;  // edge cluster
@@ -6564,11 +6573,11 @@ void  AliTPCtrackerMI::GetShape(AliTPCseed * seed, Int_t row)
   Float_t zdrift = TMath::Abs((fParam->GetZLength(0)-TMath::Abs(seed->GetZ())));
   Int_t type = (seed->GetSector() < fParam->GetNSector()/2) ? 0: (row>126) ? 1:2;
   Double_t angulary  = seed->GetSnp();
-  angulary = angulary*angulary/(1-angulary*angulary);
+  angulary = angulary*angulary/(1.-angulary*angulary);
   Double_t angularz  = seed->GetTgl()*seed->GetTgl()*(1.+angulary);
   
-  Double_t sigmay =  clparam->GetRMS0(0,type,zdrift,TMath::Sqrt(angulary));
-  Double_t sigmaz =  clparam->GetRMS0(1,type,zdrift,TMath::Sqrt(angularz));
+  Double_t sigmay =  clparam->GetRMS0(0,type,zdrift,TMath::Sqrt(TMath::Abs(angulary)));
+  Double_t sigmaz =  clparam->GetRMS0(1,type,zdrift,TMath::Sqrt(TMath::Abs(angularz)));
   seed->SetCurrentSigmaY2(sigmay*sigmay);
   seed->SetCurrentSigmaZ2(sigmaz*sigmaz);
   // Float_t sd2 = TMath::Abs((fParam->GetZLength(0)-TMath::Abs(seed->GetZ())))*fParam->GetDiffL()*fParam->GetDiffL();
