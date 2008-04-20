@@ -38,8 +38,10 @@ class AliGRPDCS: public TObject {
   const char *ProcessInt();
   const char *ProcessUInt();
   const char *ProcessFloat();
-  const char *ProcessString();
+  const char *ProcessChar();
+//  const char *ProcessString();
   const char *ProcessBoolean();
+  
   AliGRPDCS & operator=(const AliGRPDCS & ) {return *this;}
 
   ClassDef(AliGRPDCS, 0);

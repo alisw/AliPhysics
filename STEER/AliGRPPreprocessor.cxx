@@ -19,6 +19,7 @@
 //                          Class AliGRPPreprocessor
 //                  Global Run Parameters (GRP) preprocessor
 //    Origin: Panos Christakoglou, UOA-CERN, Panos.Christakoglou@cern.ch
+//    Modified: Ernesto.Lopez.Torres@cern.ch  CEADEN-CERN
 //-------------------------------------------------------------------------
 
 #include <TChain.h>
@@ -58,34 +59,75 @@ const Double_t kFitFraction = 0.7;                 // Fraction of DCS sensor fit
 ClassImp(AliGRPPreprocessor)
 
 //_______________________________________________________________
-  const char* AliGRPPreprocessor::fgkDCSDataPoints[12] = {"LHCState","LHCPeriod","LHCLuminosity","BeamIntensity","L3Current","L3Polarity","DipoleCurrent","DipolePolarity","CavernTemperature","CavernAtmosPressure","gva_cr5AtmosphericPressure","gva_meyrinAtmosphericPressure"};
+  const Int_t AliGRPPreprocessor::fgknDAQLbPar = 8; // num parameters in the logbook
+  const Int_t AliGRPPreprocessor::fgknDCSDP = 11;   // number of dcs dps
+  const char* AliGRPPreprocessor::fgkDCSDataPoints[AliGRPPreprocessor::fgknDCSDP] = {
+                   "LHCState",
+                   "L3Polarity",
+                   "DipolePolarity",
+                   "LHCLuminosity",
+                   "BeamIntensity",
+                   "L3Current",
+                   "DipoleCurrent",
+                   "CavernTemperature",
+                   "CavernAtmosPressure",
+                   "gva_cr5AtmosphericPressure",
+                   "gva_meyrinAtmosphericPressure"
+                 };
+                 
+  const Short_t kSensors = 9; // start index position of sensor in DCS DPs
+
+  const char* AliGRPPreprocessor::fgkLHCState[20] = {
+                   "P", "PREPARE",
+                   "J", "PREINJECTION",
+                   "I", "INJECTION",
+                   "F", "FILLING",
+                   "A", "ADJUST",
+                   "U", "UNSTABLE BEAMS",
+                   "S", "STABLE BEAMS",
+                   "D", "BEAM DUMP",
+                   "R", "RECOVER",
+                   "C", "PRECYCLE"
+                 };
+
+  const char* kppError[] = {
+                   "",
+                   "(DAQ logbook ERROR)",
+                   "(DAQ FXS ERROR)",
+                   "(DCS FXS ERROR)",
+                   "(DCS data points ERROR)"
+  };
 
 //_______________________________________________________________
 AliGRPPreprocessor::AliGRPPreprocessor(AliShuttleInterface* shuttle):
-  AliPreprocessor("GRP",shuttle), fPressure(0) {
+  AliPreprocessor("GRP",shuttle), fPressure(0)
+{
   // constructor - shuttle must be instantiated!
 
   AddRunType("PHYSICS");
 }
 
 //_______________________________________________________________
-AliGRPPreprocessor::~AliGRPPreprocessor() {
+AliGRPPreprocessor::~AliGRPPreprocessor()
+{
   //destructor
+
   delete fPressure;
 }
 
 //_______________________________________________________________
-void AliGRPPreprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTime) {
+void AliGRPPreprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTime)
+{
   // Initialize preprocessor
 
   AliPreprocessor::Initialize(run, startTime, endTime);
-    
+
   AliInfo("Initialization of the GRP preprocessor.");
 
   TClonesArray * array = new TClonesArray("AliDCSSensor",2);
   for(Int_t j = 0; j < 2; j++) {
     AliDCSSensor * sens = new ((*array)[j])AliDCSSensor;
-    sens->SetStringID(fgkDCSDataPoints[j+10]);
+    sens->SetStringID(fgkDCSDataPoints[j+kSensors]);
   }
   AliInfo(Form("Pressure Entries: %d",array->GetEntries()));
 
@@ -93,160 +135,151 @@ void AliGRPPreprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTime)
 }
 
 //_______________________________________________________________
-UInt_t AliGRPPreprocessor::Process(TMap* valueMap) {
+UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
+{
   // process data retrieved by the Shuttle
   
   //=================//
   // DAQ logbook     //
   //=================//
+  UInt_t error = 0;
   
-  TList *daqlblist = ProcessDaqLB();
-  if(!daqlblist) {
-    Log(Form("Problem with the DAQ logbook parameters!!!"));
-    return 1;
+  TMap *grpmap = ProcessDaqLB();
+  if( grpmap->GetEntries() == fgknDAQLbPar ) {
+    Log(Form("DAQ logbook, successful!"));
+  } else {
+    Log(Form("DAQ logbook, missing parameters!!!"));
+    error |= 1;
   }
-
   //=================//
   // DAQ FXS         //
   //=================//
   UInt_t iDaqFxs = ProcessDaqFxs();
-  if(iDaqFxs == 0) {
-  	Log(Form("ProcessDaqFxs successful!"));
+  if( iDaqFxs == 0 ) {
+    Log(Form("DAQ FXS, successful!"));
   } else {
-  	Log(Form("Could not store run raw tag file!"));
-	return 1;
+    Log(Form("DAQ FXS, could not store run raw tag file!!!"));
+    error |= 2;
   }
   
   //=================//
   // DCS FXS         //
   //=================//
   UInt_t iDcsFxs = ProcessDcsFxs();
-  if(iDcsFxs == 0) {
-  	Log(Form("ProcessDcsFxs successful!"));
+  if( iDcsFxs == 0 ) {
+     Log(Form("DCS FXS, successful!"));
   } else {
-  	Log(Form("Could not store CTP run configuration and scalers!"));
-	return 1;
+     Log(Form("DCS FXS, Could not store CTP run configuration and scalers!!!"));
+    error |= 4;
   }
   
   //=================//
   // DCS data points //
   //=================//
-  TList *dcsdplist = ProcessDcsDPs(valueMap);
-  if(!dcsdplist) {
+  Int_t entries = ProcessDcsDPs( valueMap, grpmap );
+  if( entries < fgknDCSDP-3 ) { // FIXME (!= ) LHState and pressure map are not working yet...???
     Log(Form("Problem with the DCS data points!!!"));
-    return 1; 
-  }    
-  if(dcsdplist->GetEntries() != 10) {
-    Log(Form("Problem with the DCS data points!!!"));
-    // return 1; // TODO:COMMENTED FOR TESTING PURPOSES!
-  }
-  //NEEDS TO BE REVISED - BREAKS!!!
-//   AliDCSSensorArray *dcsSensorArray = GetPressureMap(valueMap,fPressure);
-//   if(!dcsSensorArray) {
-//     Log(Form("Problem with the pressure sensor values!!!"));
-//     return 0;
-//   }
+    error |= 8;
+  } else  Log(Form("DCS data points, successful!"));
 
-  daqlblist->AddAll(dcsdplist);
-  daqlblist->SetOwner(1);
-  AliInfo(Form("Final list entries: %d",daqlblist->GetEntries()));
+  grpmap->SetOwner(1);
+  AliInfo(Form("Final list entries: %d",grpmap->GetEntries()));
   
   AliCDBMetaData md;
-  md.SetResponsible("Panos Christakoglou");
+  md.SetResponsible("Ernesto Lopez Torres");
   md.SetComment("Output parameters from the GRP preprocessor.");
   
-  Bool_t result = Store("GRP", "Data", daqlblist, &md);
+  Bool_t result = Store("GRP", "Data", grpmap, &md);
   
-  delete daqlblist;
+  delete grpmap;
   
-  if (result)
+  if (result && !error ) {
+    Log("GRP Preprocessor Success");
     return 0;
-  else
-    return 1;
+  } else {
+    Log( Form("GRP Preprocessor FAILS!!! %s%s%s%s",
+                                 kppError[(error&1)?1:0],
+                                 kppError[(error&2)?2:0],
+                                 kppError[(error&4)?3:0],
+                                 kppError[(error&8)?4:0]
+                                  ));
+    return error;
+  }
 }
 
 //_______________________________________________________________
-TList *AliGRPPreprocessor::ProcessDaqLB() {
-  //Getting the DAQ lb informnation
-  const char* timeStart = GetRunParameter("time_start");
-  const char* timeEnd = GetRunParameter("time_end");
-  const char* beamEnergy = GetRunParameter("beamEnergy");
-  const char* beamType = GetRunParameter("beamType");
+TMap *AliGRPPreprocessor::ProcessDaqLB()
+{
+  //Getting the DAQ lb information
+  
+  const char* timeStart         = GetRunParameter("time_start");
+  const char* timeEnd           = GetRunParameter("time_end");
+  const char* beamEnergy        = GetRunParameter("beamEnergy");
+  const char* beamType          = GetRunParameter("beamType");
   const char* numberOfDetectors = GetRunParameter("numberOfDetectors");
-  const char* detectorMask = GetRunParameter("detectorMask");
-  const char* lhcPeriod = GetRunParameter("LHCperiod");
-
+  const char* detectorMask      = GetRunParameter("detectorMask");
+  const char* lhcPeriod         = GetRunParameter("LHCperiod");
+  
+  TMap *mapDAQ = new TMap();
+  
   if (timeStart) {
     Log(Form("Start time for run %d: %s",fRun, timeStart));
   } else {
     Log(Form("Start time not put in logbook!"));
   }
-  TMap *mapDAQ1 = new TMap();
-  mapDAQ1->Add(new TObjString("fAliceStartTime"),new TObjString(timeStart));
+  mapDAQ->Add(new TObjString("fAliceStartTime"), new TObjString(timeStart));
 
   if (timeEnd) {
     Log(Form("End time for run %d: %s",fRun, timeEnd));
   } else {
     Log(Form("End time not put in logbook!"));
   }
-  TMap *mapDAQ2 = new TMap();
-  mapDAQ2->Add(new TObjString("fAliceStopTime"),new TObjString(timeEnd));
+  mapDAQ->Add(new TObjString("fAliceStopTime"), new TObjString(timeEnd));
 
   if (beamEnergy) {
     Log(Form("Beam energy for run %d: %s",fRun, beamEnergy));
   } else {
     Log(Form("Beam energy not put in logbook!"));
   }
-  TMap *mapDAQ3 = new TMap();
-  mapDAQ3->Add(new TObjString("fAliceBeamEnergy"),new TObjString(beamEnergy));
+  mapDAQ->Add(new TObjString("fAliceBeamEnergy"), new TObjString(beamEnergy));
 
   if (beamType) {
     Log(Form("Beam type for run %d: %s",fRun, beamType));
   } else {
     Log(Form("Beam type not put in logbook!"));
   }
-  TMap *mapDAQ4 = new TMap();
-  mapDAQ4->Add(new TObjString("fAliceBeamType"),new TObjString(beamType));
+  mapDAQ->Add(new TObjString("fAliceBeamType"), new TObjString(beamType));
 
   if (numberOfDetectors) {
     Log(Form("Number of active detectors for run %d: %s",fRun, numberOfDetectors));
   } else {
     Log(Form("Number of active detectors not put in logbook!"));
   }
-  TMap *mapDAQ5 = new TMap();
-  mapDAQ5->Add(new TObjString("fNumberOfDetectors"),new TObjString(numberOfDetectors));
+  mapDAQ->Add(new TObjString("fNumberOfDetectors"), new TObjString(numberOfDetectors));
 
   if (detectorMask) {
     Log(Form("Detector mask for run %d: %s",fRun, detectorMask));
   } else {
     Log(Form("Detector mask not put in logbook!"));
   }
-  TMap *mapDAQ6 = new TMap();
-  mapDAQ6->Add(new TObjString("fDetectorMask"),new TObjString(detectorMask));
+  mapDAQ->Add(new TObjString("fDetectorMask"), new TObjString(detectorMask));
 
   if (lhcPeriod) {
     Log(Form("LHC period (DAQ) for run %d: %s",fRun, lhcPeriod));
   } else {
     Log(Form("LHCperiod not put in logbook!"));
   }
-  TMap *mapDAQ7 = new TMap();
-  mapDAQ7->Add(new TObjString("fLHCPeriod"),new TObjString(lhcPeriod));
-
-  TList *list = new TList();
-  list->Add(mapDAQ1); list->Add(mapDAQ2);
-  list->Add(mapDAQ3); list->Add(mapDAQ4);
-  list->Add(mapDAQ5); list->Add(mapDAQ6);
-  list->Add(mapDAQ7);
+  mapDAQ->Add(new TObjString("fLHCPeriod"), new TObjString(lhcPeriod));
   
-  TMap* mapDAQ8 = new TMap;
-  mapDAQ8->Add(new TObjString("fRunType"), new TObjString(GetRunType()));
-  list->Add(mapDAQ8);
+  mapDAQ->Add(new TObjString("fRunType"), new TObjString(GetRunType()));
+  Log( Form("Retrived %d parameters from logbook", mapDAQ->GetEntries() ) );
 
-  return list;
+  return mapDAQ;
 }
 
 //_______________________________________________________________
-UInt_t AliGRPPreprocessor::ProcessDaqFxs() {
+UInt_t AliGRPPreprocessor::ProcessDaqFxs()
+{
   //======DAQ FXS======//
 
   TList* list = GetFileSources(kDAQ);  
@@ -254,12 +287,11 @@ UInt_t AliGRPPreprocessor::ProcessDaqFxs() {
     Log("No raw data tag list: connection problems with DAQ FXS logbook!");
     return 1;
   }
-  
-  if (list->GetEntries() == 0)
-  {
-  	Log("no raw data tags in this run: nothing to merge!");
-	delete  list; list=0;
-	return 0;
+
+  if (list->GetEntries() == 0) {
+    Log("no raw data tags in this run: nothing to merge!");
+    delete  list; list=0;
+    return 0;
   }
 
   TChain *fRawTagChain = new TChain("T");
@@ -272,28 +304,27 @@ UInt_t AliGRPPreprocessor::ProcessDaqFxs() {
       Log(Form("Found source %s", objStr->String().Data()));
       TList* list2 = GetFileIDs(kDAQ, objStr->String());
       if (!list2) {
-	Log("No list with ids from DAQ was found: connection problems with DAQ FXS logbook!");
-	delete fRawTagChain; fRawTagChain=0;
-	return 1;
+        Log("No list with ids from DAQ was found: connection problems with DAQ FXS logbook!");
+        delete fRawTagChain; fRawTagChain=0;
+        return 1;
       }
       Log(Form("Number of ids: %d",list2->GetEntries()));
       for(Int_t i = 0; i < list2->GetEntries(); i++) {
-	TObjString *idStr = (TObjString *)list2->At(i);
-	TString fileName = GetFile(kDAQ,idStr->String().Data(),objStr->String().Data());
-	if (fileName.Length() > 0) 
-	{      
-		Log(Form("Adding file in the chain: %s",fileName.Data()));
-		fRawTagChain->Add(fileName.Data());
-		nFiles++;
-	} else {
-		Log(Form("Could not retrieve file with id %s from source %s: "
-			"connection problems with DAQ FXS!",
-				idStr->String().Data(),objStr->String().Data()));
-		delete list; list=0;
-		delete list2; list2=0;
-		delete fRawTagChain; fRawTagChain=0;
-		return 2;
-	}
+        TObjString *idStr = (TObjString *)list2->At(i);
+        TString fileName = GetFile(kDAQ,idStr->String().Data(),objStr->String().Data());
+        if (fileName.Length() > 0) {
+           Log(Form("Adding file in the chain: %s",fileName.Data()));
+           fRawTagChain->Add(fileName.Data());
+           nFiles++;
+        } else {
+           Log(Form("Could not retrieve file with id %s from source %s: "
+                    "connection problems with DAQ FXS!",
+                     idStr->String().Data(), objStr->String().Data()));
+           delete list; list=0;
+           delete list2; list2=0;
+           delete fRawTagChain; fRawTagChain=0;
+           return 2;
+        }
       }
       delete list2;
     }
@@ -301,33 +332,35 @@ UInt_t AliGRPPreprocessor::ProcessDaqFxs() {
   
   TString fRawDataFileName = "GRP_Merged.tag.root";
   Log(Form("Merging %d raw data tags into file: %s", nFiles, fRawDataFileName.Data()));
-  fRawTagChain->Merge(fRawDataFileName);
+  if( fRawTagChain->Merge(fRawDataFileName) < 1 ) {
+    Log("Error merging raw data files!!!");
+    return 3;
+  }
   
   TString outputfile = Form("Run%d.Merged.RAW.tag.root", fRun);
   Bool_t result = StoreRunMetadataFile(fRawDataFileName.Data(),outputfile.Data());
   
-  if (!result)
-  {
-  	Log("Problem storing raw data tags in local file!!");
+  if (!result) {
+    Log("Problem storing raw data tags in local file!!!");
   } else {
-  	Log("Raw data tags merged successfully!!");  
+    Log("Raw data tags merged successfully!!");
   }
   
   delete iter;
   delete list;
   delete fRawTagChain; fRawTagChain=0;
-  
-  if (result == kFALSE)
-  {
-  	return 3;
+
+  if (result == kFALSE) {
+    return 4;
   }
-  
+
   return 0;
-  
+
 }
 
 //_______________________________________________________________
-UInt_t AliGRPPreprocessor::ProcessDcsFxs() {
+UInt_t AliGRPPreprocessor::ProcessDcsFxs()
+{
   //======DCS FXS======//
   // Get the CTP run configuration
   // and scalers from DCS FXS
@@ -342,31 +375,33 @@ UInt_t AliGRPPreprocessor::ProcessDcsFxs() {
   
     if (list->GetEntries() == 0) {
       Log("No CTP runconfig file to be processed!");
+      return 1;
     }
     else {
       TIter iter(list);
       TObjString *source;
       while ((source = dynamic_cast<TObjString *> (iter.Next()))) {
-	TString runcfgfile = GetFile(kDCS, "CTP_runconfig", source->GetName());
-	if (runcfgfile.IsNull()) {
-	  Log("No CTP runconfig files has been found: empty source!");
-	}
-	else {
-	  Log(Form("File with Id CTP_runconfig found in source %s! Copied to %s",source->GetName(),runcfgfile.Data()));
-	  AliTriggerConfiguration *runcfg = AliTriggerConfiguration::LoadConfiguration(runcfgfile);
-	  if (!runcfg) {
-	    Log("Bad CTP run configuration file! The corresponding CDB entry will not be filled!");
-	  }
-	  else {
-	    AliCDBMetaData metaData;
-	    metaData.SetBeamPeriod(0);
-	    metaData.SetResponsible("Roman Lietava");
-	    metaData.SetComment("CTP run configuration");
-	    if (!Store("CTP","Config", runcfg, &metaData, 0, 0)) {
-	      Log("Unable to store the CTP run configuration object to OCDB!");
-	    }
-	  }
-	}
+        TString runcfgfile = GetFile(kDCS, "CTP_runconfig", source->GetName());
+        if (runcfgfile.IsNull()) {
+          Log("No CTP runconfig files has been found: empty source!");
+        }
+        else {
+          Log(Form("File with Id CTP_runconfig found in source %s! Copied to %s",source->GetName(),runcfgfile.Data()));
+          AliTriggerConfiguration *runcfg = AliTriggerConfiguration::LoadConfiguration(runcfgfile);
+          if (!runcfg) {
+            Log("Bad CTP run configuration file! The corresponding CDB entry will not be filled!");
+            return 1;
+          }
+          else {
+            AliCDBMetaData metaData;
+            metaData.SetBeamPeriod(0);
+            metaData.SetResponsible("Roman Lietava");
+            metaData.SetComment("CTP run configuration");
+            if (!Store("CTP","Config", runcfg, &metaData, 0, 0)) {
+              Log("Unable to store the CTP run configuration object to OCDB!");
+            }
+          }
+        }
       }
     }
     delete list;
@@ -382,31 +417,33 @@ UInt_t AliGRPPreprocessor::ProcessDcsFxs() {
   
     if (list->GetEntries() == 0) {
       Log("No CTP counters file to be processed!");
+      return 1;
     }
     else {
       TIter iter(list);
       TObjString *source;
       while ((source = dynamic_cast<TObjString *> (iter.Next()))) {
-	TString countersfile = GetFile(kDCS, "CTP_xcounters", source->GetName());
-	if (countersfile.IsNull()) {
-	  Log("No CTP counters files has been found: empty source!");
-	}
-	else {
-	  Log(Form("File with Id CTP_xcounters found in source %s! Copied to %s",source->GetName(),countersfile.Data()));
-	  AliTriggerRunScalers *scalers = AliTriggerRunScalers::ReadScalers(countersfile);
-	  if (!scalers) {
-	    Log("Bad CTP counters file! The corresponding CDB entry will not be filled!");
-	  }
-	  else {
-	    AliCDBMetaData metaData;
-	    metaData.SetBeamPeriod(0);
-	    metaData.SetResponsible("Roman Lietava");
-	    metaData.SetComment("CTP scalers");
-	    if (!Store("CTP","Scalers", scalers, &metaData, 0, 0)) {
-	      Log("Unable to store the CTP scalers object to OCDB!");
-	    }
-	  }
-	}
+        TString countersfile = GetFile(kDCS, "CTP_xcounters", source->GetName());
+        if (countersfile.IsNull()) {
+          Log("No CTP counters files has been found: empty source!");
+        }
+        else {
+          Log(Form("File with Id CTP_xcounters found in source %s! Copied to %s",source->GetName(),countersfile.Data()));
+          AliTriggerRunScalers *scalers = AliTriggerRunScalers::ReadScalers(countersfile);
+          if (!scalers) {
+            Log("Bad CTP counters file! The corresponding CDB entry will not be filled!");
+            return 1;
+          }
+          else {
+            AliCDBMetaData metaData;
+            metaData.SetBeamPeriod(0);
+            metaData.SetResponsible("Roman Lietava");
+            metaData.SetComment("CTP scalers");
+            if (!Store("CTP","Scalers", scalers, &metaData, 0, 0)) {
+              Log("Unable to store the CTP scalers object to OCDB!");
+            }
+          }
+        }
       }
     }
     delete list;
@@ -416,189 +453,200 @@ UInt_t AliGRPPreprocessor::ProcessDcsFxs() {
 }
 
 //_______________________________________________________________
-TList *AliGRPPreprocessor::ProcessDcsDPs(TMap* valueMap) {
+Int_t AliGRPPreprocessor::ProcessDcsDPs(TMap* valueMap, TMap* mapDCS)
+{
   //Getting the DCS dps
   //===========//
-  
-  TList *list = new TList();
 
   //DCS data points
   //===========//
+  
+  Int_t entries = 0;
+
   AliInfo(Form("==========LHCState==========="));
   TObjArray *aliasLHCState = (TObjArray *)valueMap->GetValue(fgkDCSDataPoints[0]);
   if(!aliasLHCState) {
     Log(Form("LHCState not found!!!"));
-    return list;
-  }
-  AliGRPDCS *dcs1 = new AliGRPDCS(aliasLHCState,fStartTime,fEndTime);
-  TString sLHCState = dcs1->ProcessDCS(3);  
-  if (sLHCState) {
-    Log(Form("<LHCState> for run %d: %s",fRun, sLHCState.Data()));
   } else {
-    Log(Form("LHCState not put in TMap!"));
+    AliGRPDCS *dcs1 = new AliGRPDCS(aliasLHCState,fStartTime,fEndTime);
+    TString sLHCState = dcs1->ProcessDCS(2);
+    if (sLHCState) {
+      for( Int_t i=0; i<20; i+=2 ) {
+         if( sLHCState.CompareTo(fgkLHCState[i]) == 0 ) {
+            sLHCState = fgkLHCState[i+1];
+            break;
+         }
+      }
+      Log(Form("<LHCState> for run %d: %s",fRun, sLHCState.Data()));
+    } else {
+      Log("LHCState not put in TMap!");
+    }
+    mapDCS->Add(new TObjString("fLHCState"),new TObjString(sLHCState));
+    ++entries;
   }
-  TMap *mapDCS1 = new TMap();
-  mapDCS1->Add(new TObjString("fLHCState"),new TObjString(sLHCState));
-  list->Add(mapDCS1);
-
-  AliInfo(Form("==========LHCPeriod==========="));
-  TObjArray *aliasLHCPeriod = (TObjArray *)valueMap->GetValue(fgkDCSDataPoints[1]);
-  if(!aliasLHCPeriod) {
-    Log(Form("LHCPeriod not found!!!"));
-    return list;
-  }
-  AliGRPDCS *dcs2 = new AliGRPDCS(aliasLHCPeriod,fStartTime,fEndTime);
-  TString sLHCPeriod = dcs2->ProcessDCS(3);  
-  if (sLHCPeriod) {
-    Log(Form("<LHCPeriod> for run %d: %s",fRun, sLHCPeriod.Data()));
-  } else {
-    Log(Form("LHCPeriod not put in TMap!"));
-  }
-  TMap *mapDCS2 = new TMap();
-  mapDCS2->Add(new TObjString("fLHCCondition"),new TObjString(sLHCPeriod));
-  list->Add(mapDCS2);
-
-  AliInfo(Form("==========LHCLuminosity==========="));
-  TObjArray *aliasLHCLuminosity = (TObjArray *)valueMap->GetValue(fgkDCSDataPoints[2]);
-  if(!aliasLHCLuminosity) {
-    Log(Form("LHCLuminosity not found!!!"));
-    return list;
-  }
-  AliGRPDCS *dcs3 = new AliGRPDCS(aliasLHCLuminosity,fStartTime,fEndTime);
-  TString sMeanLHCLuminosity = dcs3->ProcessDCS(2);  
-  if (sMeanLHCLuminosity) {
-    Log(Form("<LHCLuminosity> for run %d: %s",fRun, sMeanLHCLuminosity.Data()));
-  } else {
-    Log(Form("LHCLuminosity not put in TMap!"));
-  }
-  TMap *mapDCS3 = new TMap();
-  mapDCS3->Add(new TObjString("fLHCLuminosity"),new TObjString(sMeanLHCLuminosity));
-  list->Add(mapDCS3);
-
-  AliInfo(Form("==========BeamIntensity==========="));
-  TObjArray *aliasBeamIntensity = (TObjArray *)valueMap->GetValue(fgkDCSDataPoints[3]);
-  if(!aliasBeamIntensity) {
-    Log(Form("BeamIntensity not found!!!"));
-    return list;
-  }
-  AliGRPDCS *dcs4 = new AliGRPDCS(aliasBeamIntensity,fStartTime,fEndTime);
-  TString sMeanBeamIntensity = dcs4->ProcessDCS(2);  
-  if (sMeanBeamIntensity) {
-    Log(Form("<BeamIntensity> for run %d: %s",fRun, sMeanBeamIntensity.Data()));
-  } else {
-    Log(Form("BeamIntensity not put in TMap!"));
-  }
-  TMap *mapDCS4 = new TMap();
-  mapDCS4->Add(new TObjString("fBeamIntensity"),new TObjString(sMeanBeamIntensity));
-  list->Add(mapDCS4);
-
-  AliInfo(Form("==========L3Current==========="));
-  TObjArray *aliasL3Current = (TObjArray *)valueMap->GetValue(fgkDCSDataPoints[4]);
-  if(!aliasL3Current) {
-    Log(Form("L3Current not found!!!"));
-    return list;
-  }
-  AliGRPDCS *dcs5 = new AliGRPDCS(aliasL3Current,fStartTime,fEndTime);
-  TString sMeanL3Current = dcs5->ProcessDCS(2);  
-  if (sMeanL3Current) {
-    Log(Form("<L3Current> for run %d: %s",fRun, sMeanL3Current.Data()));
-  } else {
-    Log(Form("L3Current not put in TMap!"));
-  }
-  TMap *mapDCS5 = new TMap();
-  mapDCS5->Add(new TObjString("fL3Current"),new TObjString(sMeanL3Current));
-  list->Add(mapDCS5);
 
   AliInfo(Form("==========L3Polarity==========="));
-  TObjArray *aliasL3Polarity = (TObjArray *)valueMap->GetValue(fgkDCSDataPoints[5]);
+  TObjArray *aliasL3Polarity = (TObjArray *)valueMap->GetValue(fgkDCSDataPoints[1]);
   if(!aliasL3Polarity) {
     Log(Form("L3Polarity not found!!!"));
-    return list;
-  }
-  AliGRPDCS *dcs6 = new AliGRPDCS(aliasL3Polarity,fStartTime,fEndTime);
-  TString sL3Polarity = dcs6->ProcessDCS(4);  
-  if (sL3Polarity) {
-    Log(Form("<L3Polarity> for run %d: %s",fRun, sL3Polarity.Data()));
   } else {
-    Log(Form("L3Polarity not put in TMap!"));
+    AliGRPDCS *dcs6 = new AliGRPDCS(aliasL3Polarity,fStartTime,fEndTime);
+    TString sL3Polarity = dcs6->ProcessDCS(1);  
+    if (sL3Polarity) {
+      Log(Form("<L3Polarity> for run %d: %s",fRun, sL3Polarity.Data()));
+    } else {
+      Log("L3Polarity not put in TMap!");
+    }
+    mapDCS->Add(new TObjString("fL3Polarity"),new TObjString(sL3Polarity));
+    ++entries;
   }
-  TMap *mapDCS6 = new TMap();
-  mapDCS6->Add(new TObjString("fL3Polarity"),new TObjString(sL3Polarity));
-  list->Add(mapDCS6);
+
+  AliInfo(Form("==========DipolePolarity==========="));
+  TObjArray *aliasDipolePolarity = (TObjArray *)valueMap->GetValue(fgkDCSDataPoints[2]);
+  if(!aliasDipolePolarity) {
+    Log(Form("DipolePolarity not found!!!"));
+  } else {
+    AliGRPDCS *dcs8 = new AliGRPDCS(aliasDipolePolarity,fStartTime,fEndTime);
+    TString sDipolePolarity = dcs8->ProcessDCS(1);  
+    if (sDipolePolarity) {
+      Log(Form("<DipolePolarity> for run %d: %s",fRun, sDipolePolarity.Data()));
+    } else {
+      Log("DipolePolarity not put in TMap!");
+    }
+    mapDCS->Add(new TObjString("fDipolePolarity"),new TObjString(sDipolePolarity));
+    ++entries;
+  }
+
+  AliInfo(Form("==========LHCLuminosity==========="));
+  TObjArray *aliasLHCLuminosity = (TObjArray *)valueMap->GetValue(fgkDCSDataPoints[3]);
+  if(!aliasLHCLuminosity) {
+    Log(Form("LHCLuminosity not found!!!"));
+  } else {
+    AliGRPDCS *dcs3 = new AliGRPDCS(aliasLHCLuminosity,fStartTime,fEndTime);
+    TString sMeanLHCLuminosity = dcs3->ProcessDCS(5);  
+    if (sMeanLHCLuminosity) {
+      Log(Form("<LHCLuminosity> for run %d: %s",fRun, sMeanLHCLuminosity.Data()));
+    } else {
+      Log("LHCLuminosity not put in TMap!");
+    }
+    mapDCS->Add(new TObjString("fLHCLuminosity"), new TObjString(sMeanLHCLuminosity));
+    ++entries;
+  }
+
+  AliInfo(Form("==========BeamIntensity==========="));
+  TObjArray *aliasBeamIntensity = (TObjArray *)valueMap->GetValue(fgkDCSDataPoints[4]);
+  if(!aliasBeamIntensity) {
+    Log(Form("BeamIntensity not found!!!"));
+  } else {
+    AliGRPDCS *dcs4 = new AliGRPDCS(aliasBeamIntensity,fStartTime,fEndTime);
+    TString sMeanBeamIntensity = dcs4->ProcessDCS(5);  
+    if (sMeanBeamIntensity) {
+      Log(Form("<BeamIntensity> for run %d: %s",fRun, sMeanBeamIntensity.Data()));
+    } else {
+      Log("BeamIntensity not put in TMap!");
+    }
+    mapDCS->Add(new TObjString("fBeamIntensity"),new TObjString(sMeanBeamIntensity));
+    ++entries;
+  }
+
+  AliInfo(Form("==========L3Current==========="));
+  TObjArray *aliasL3Current = (TObjArray *)valueMap->GetValue(fgkDCSDataPoints[5]);
+  if(!aliasL3Current) {
+    Log(Form("L3Current not found!!!"));
+  } else {
+    AliGRPDCS *dcs5 = new AliGRPDCS(aliasL3Current,fStartTime,fEndTime);
+    TString sMeanL3Current = dcs5->ProcessDCS(5);  
+    if (sMeanL3Current) {
+      Log(Form("<L3Current> for run %d: %s",fRun, sMeanL3Current.Data()));
+    } else {
+      Log("L3Current not put in TMap!");
+    }
+    mapDCS->Add(new TObjString("fL3Current"),new TObjString(sMeanL3Current));
+    ++entries;
+  }
+
 
   AliInfo(Form("==========DipoleCurrent==========="));
   TObjArray *aliasDipoleCurrent = (TObjArray *)valueMap->GetValue(fgkDCSDataPoints[6]);
   if(!aliasDipoleCurrent) {
     Log(Form("DipoleCurrent not found!!!"));
-    return list;
+  }  else {
+    AliGRPDCS *dcs7 = new AliGRPDCS(aliasDipoleCurrent,fStartTime,fEndTime);
+    TString sMeanDipoleCurrent = dcs7->ProcessDCS(5);  
+    if (sMeanDipoleCurrent) {
+      Log(Form("<DipoleCurrent> for run %d: %s",fRun, sMeanDipoleCurrent.Data()));
+    } else {
+      Log("DipoleCurrent not put in TMap!");
+    }
+    mapDCS->Add(new TObjString("fDipoleCurrent"),new TObjString(sMeanDipoleCurrent));
+    ++entries;
   }
-  AliGRPDCS *dcs7 = new AliGRPDCS(aliasDipoleCurrent,fStartTime,fEndTime);
-  TString sMeanDipoleCurrent = dcs7->ProcessDCS(2);  
-  if (sMeanDipoleCurrent) {
-    Log(Form("<DipoleCurrent> for run %d: %s",fRun, sMeanDipoleCurrent.Data()));
-  } else {
-    Log(Form("DipoleCurrent not put in TMap!"));
-  }
-  TMap *mapDCS7 = new TMap();
-  mapDCS7->Add(new TObjString("fDipoleCurrent"),new TObjString(sMeanDipoleCurrent));
-  list->Add(mapDCS7);
-
-  AliInfo(Form("==========DipolePolarity==========="));
-  TObjArray *aliasDipolePolarity = (TObjArray *)valueMap->GetValue(fgkDCSDataPoints[7]);
-  if(!aliasDipolePolarity) {
-    Log(Form("DipolePolarity not found!!!"));
-    return list;
-  }
-  AliGRPDCS *dcs8 = new AliGRPDCS(aliasDipolePolarity,fStartTime,fEndTime);
-  TString sDipolePolarity = dcs8->ProcessDCS(4);  
-  if (sDipolePolarity) {
-    Log(Form("<DipolePolarity> for run %d: %s",fRun, sDipolePolarity.Data()));
-  } else {
-    Log(Form("DipolePolarity not put in TMap!"));
-  }
-  TMap *mapDCS8 = new TMap();
-  mapDCS8->Add(new TObjString("fDipolePolarity"),new TObjString(sDipolePolarity));
-  list->Add(mapDCS8);
 
   AliInfo(Form("==========CavernTemperature==========="));
-  TObjArray *aliasCavernTemperature = (TObjArray *)valueMap->GetValue(fgkDCSDataPoints[8]);
+  TObjArray *aliasCavernTemperature = (TObjArray *)valueMap->GetValue(fgkDCSDataPoints[7]);
   if(!aliasCavernTemperature) {
     Log(Form("CavernTemperature not found!!!"));
-    return list;
+  }  else {
+    AliGRPDCS *dcs9 = new AliGRPDCS(aliasCavernTemperature,fStartTime,fEndTime);
+    TString sMeanCavernTemperature = dcs9->ProcessDCS(5);  
+    if (sMeanCavernTemperature) {
+      Log(Form("<CavernTemperature> for run %d: %s",fRun, sMeanCavernTemperature.Data()));
+    } else {
+      Log("CavernTemperature not put in TMap!");
+    }
+    mapDCS->Add(new TObjString("fCavernTemperature"),new TObjString(sMeanCavernTemperature));
+    ++entries;
   }
-  AliGRPDCS *dcs9 = new AliGRPDCS(aliasCavernTemperature,fStartTime,fEndTime);
-  TString sMeanCavernTemperature = dcs9->ProcessDCS(2);  
-  if (sMeanCavernTemperature) {
-    Log(Form("<CavernTemperature> for run %d: %s",fRun, sMeanCavernTemperature.Data()));
-  } else {
-    Log(Form("CavernTemperature not put in TMap!"));
-  }
-  TMap *mapDCS9 = new TMap();
-  mapDCS9->Add(new TObjString("fCavernTemperature"),new TObjString(sMeanCavernTemperature));
-  list->Add(mapDCS9);
 
   AliInfo(Form("==========CavernPressure==========="));
-  TObjArray *aliasCavernPressure = (TObjArray *)valueMap->GetValue(fgkDCSDataPoints[9]);
+  TObjArray *aliasCavernPressure = (TObjArray *)valueMap->GetValue(fgkDCSDataPoints[8]);
   if(!aliasCavernPressure) {
-    Log(Form("CavernPressure not found!!!"));
-    return list;
-  }
-  AliGRPDCS *dcs10 = new AliGRPDCS(aliasCavernPressure,fStartTime,fEndTime);
-  TString sMeanCavernPressure = dcs10->ProcessDCS(2);  
-  if (sMeanCavernPressure) {
-    Log(Form("<CavernPressure> for run %d: %s",fRun, sMeanCavernPressure.Data()));
+    Log("CavernPressure not found!!!");
   } else {
-    Log(Form("CavernPressure not put in TMap!"));
+    AliGRPDCS *dcs10 = new AliGRPDCS(aliasCavernPressure,fStartTime,fEndTime);
+    TString sMeanCavernPressure = dcs10->ProcessDCS(5);  
+    if (sMeanCavernPressure) {
+      Log(Form("<CavernPressure> for run %d: %s",fRun, sMeanCavernPressure.Data()));
+    } else {
+      Log("CavernPressure not put in TMap!");
+    }
+    mapDCS->Add(new TObjString("fCavernPressure"),new TObjString(sMeanCavernPressure));
+    ++entries;
   }
-  TMap *mapDCS10 = new TMap();
-  mapDCS10->Add(new TObjString("fCavernPressure"),new TObjString(sMeanCavernPressure));
-  list->Add(mapDCS10);
 
-  return list;
+
+   // NEEDS TO BE REVISED, CONFIRMED
+   AliInfo(Form("==========GenevaPressureMaps==========="));
+   AliDCSSensorArray *dcsSensorArray = GetPressureMap(valueMap,fPressure);
+   if( fPressure->NumFits()==0 ) {
+     Log("Problem with the pressure sensor values!!!");
+   } else {
+      AliDCSSensor* sensorCr5 = dcsSensorArray->GetSensor(fgkDCSDataPoints[9]);
+      if( sensorCr5->GetFit() ) {
+        Log(Form("<GvaCr5Pressure> for run %d: Sensor Fit found",fRun));
+        mapDCS->Add( new TObjString("fCr5Pressure"), sensorCr5 );
+        ++entries;
+      } else {
+        Log(Form("ERROR Sensor Fit for %s not found: ", fgkDCSDataPoints[9] ));
+      }
+      
+      AliDCSSensor* sensorMeyrin = dcsSensorArray->GetSensor(fgkDCSDataPoints[10]);
+      if( sensorMeyrin->GetFit() ) {
+        Log(Form("<MeyrinPressure> for run %d: Sensor Fit found",fRun));
+        mapDCS->Add( new TObjString("fMeyrinPressure"), sensorMeyrin );
+        ++entries;
+      } else {
+        Log(Form("ERROR Sensor Fit for %s not found: ", fgkDCSDataPoints[10] ));
+      }
+
+   }
+
+  return entries;
 }
 
 //_______________________________________________________________
-AliDCSSensorArray *AliGRPPreprocessor::GetPressureMap(TMap* dcsAliasMap, AliDCSSensorArray *fPressure) {
+AliDCSSensorArray *AliGRPPreprocessor::GetPressureMap(TMap* dcsAliasMap, AliDCSSensorArray *fPressure)
+{
   // extract DCS pressure maps. Perform fits to save space
   
   TMap *map = fPressure->ExtractDCS(dcsAliasMap);
@@ -606,12 +654,12 @@ AliDCSSensorArray *AliGRPPreprocessor::GetPressureMap(TMap* dcsAliasMap, AliDCSS
     fPressure->MakeSplineFit(map);
     Double_t fitFraction = fPressure->NumFits()/fPressure->NumSensors(); 
     if (fitFraction > kFitFraction ) {
-      AliInfo(Form("Pressure values extracted, fits performed.\n"));
+      AliInfo(Form("Pressure values extracted, %d fits performed.", fPressure->NumFits()));
     } else { 
-      AliInfo("Too few pressure maps fitted. \n");
+      AliInfo("Too few pressure maps fitted!!!");
     }
   } else {
-    AliInfo("AliGRPDCS: no atmospheric pressure map extracted. \n");
+    AliInfo("no atmospheric pressure map extracted!!!");
   }
   delete map;
  
@@ -657,190 +705,190 @@ AliDCSSensorArray *AliGRPPreprocessor::GetPressureMap(TMap* dcsAliasMap, AliDCSS
 //_______________________________________________________________
 Int_t AliGRPPreprocessor::ReceivePromptRecoParameters(UInt_t run, const char* dbHost, Int_t dbPort, const char* dbName, const char* user, const char* password, const char *cdbRoot)
 {
-	//
-	// Retrieves logbook and trigger information from the online logbook 
-	// This information is needed for prompt reconstruction
-	//
-	// Parameters are:
-	// Run number
-	// DAQ params: dbHost, dbPort, dbName, user, password, logbookTable, triggerTable
-	// cdbRoot
-	//
-	// returns:
-	//         positive on success: the return code is the run number of last run processed of the same run type already processed by the SHUTTLE
-	//         0 on success and no run was found
-	//         negative on error
-	//
-	// This function is NOT called during the preprocessor run in the Shuttle!
-	//
-	
-	// defaults
-	if (dbPort == 0)
-		dbPort = 3306;
-		
-	// CDB connection
-	AliCDBManager* cdb = AliCDBManager::Instance();
-	cdb->SetDefaultStorage(cdbRoot);
-	
-	// SQL connection
-	TSQLServer* server = TSQLServer::Connect(Form("mysql://%s:%d/%s", dbHost, dbPort, dbName), user, password);
-	
-	if (!server)
-	{
-		Printf("ERROR: Could not connect to DAQ LB");
-		return -1;
-	}
-	
-	// main logbook
-	TString sqlQuery;
-	sqlQuery.Form("SELECT DAQ_time_start, run_type, detectorMask FROM logbook WHERE run = %d", run);
-	TSQLResult* result = server->Query(sqlQuery);
-	if (!result) 
-	{
-		Printf("ERROR: Can't execute query <%s>!", sqlQuery.Data());
-		return -2;
-	}
+   //
+   // Retrieves logbook and trigger information from the online logbook
+   // This information is needed for prompt reconstruction
+   //
+   // Parameters are:
+   // Run number
+   // DAQ params: dbHost, dbPort, dbName, user, password, logbookTable, triggerTable
+   // cdbRoot
+   //
+   // returns:
+   //         positive on success: the return code is the run number of last run processed of the same run type already processed by the SHUTTLE
+   //         0 on success and no run was found
+   //         negative on error
+   //
+   // This function is NOT called during the preprocessor run in the Shuttle!
+   //
 
-	if (result->GetRowCount() == 0) 
-	{
-		Printf("ERROR: Run %d not found", run);
-		delete result;
-		return -3;
-	}
+   // defaults
+   if (dbPort == 0)
+     dbPort = 3306;
 
-	TSQLRow* row = result->Next();
-	if (!row)
-	{
-		Printf("ERROR: Could not receive data from run %d", run);
-		delete result;
-		return -4;
-	}
-	
-	TString runType(row->GetField(1));
-	
-	TMap grpData;
-	grpData.Add(new TObjString("DAQ_time_start"), new TObjString(row->GetField(0)));
-	grpData.Add(new TObjString("run_type"), new TObjString(runType));
-	grpData.Add(new TObjString("detectorMask"), new TObjString(row->GetField(2)));
-	
-	delete row;
-	row = 0;
-	
-	delete result;
-	result = 0;
-	
-	Printf("Storing GRP/GRP/Data object with the following content");
-	grpData.Print();
+   // CDB connection
+   AliCDBManager* cdb = AliCDBManager::Instance();
+   cdb->SetDefaultStorage(cdbRoot);
 
-	AliCDBMetaData metadata;
-	metadata.SetResponsible("Jan Fiete Grosse-Oetringhaus");
-	metadata.SetComment("GRP Output parameters received during online running");
-	
-	AliCDBId id("GRP/GRP/Data", run, run);
-	Bool_t success = cdb->Put(&grpData, id, &metadata);
-	
-	grpData.DeleteAll();
-	
-	if (!success)
-	{
-		Printf("ERROR: Could not store GRP/GRP/Data into OCDB");
-		return -5;
-	}
-	
-	// Receive trigger information
-	sqlQuery.Form("SELECT configFile FROM logbook_trigger_config WHERE run = %d", run);
-	result = server->Query(sqlQuery);
-	if (!result) 
-	{
-		Printf("ERROR: Can't execute query <%s>!", sqlQuery.Data());
-		return -11;
-	}
+   // SQL connection
+   TSQLServer* server = TSQLServer::Connect(Form("mysql://%s:%d/%s", dbHost, dbPort, dbName), user, password);
 
-	if (result->GetRowCount() == 0) 
-	{
-		Printf("ERROR: Run %d not found in logbook_trigger_config", run);
-		delete result;
-		return -12;
-	}
+   if (!server)
+   {
+     Printf("ERROR: Could not connect to DAQ LB");
+     return -1;
+   }
 
-	row = result->Next();
-	if (!row)
-	{
-		Printf("ERROR: Could not receive logbook_trigger_config data from run %d", run);
-		delete result;
-		return -13;
-	}
-	
-	TString triggerConfig(row->GetField(0));
-	
-	delete row;
-	row = 0;
-	
-	delete result;
-	result = 0;
-	
-	Printf("Found trigger configuration: %s", triggerConfig.Data());
-	
-	AliTriggerConfiguration *runcfg = AliTriggerConfiguration::LoadConfigurationFromString(triggerConfig);
-	if (!runcfg) 
-	{
-		Printf("ERROR: Could not create CTP configuration object");
-		return -14;
-	}
-	
-	metadata.SetComment("CTP run configuration received during online running");
-	
-	AliCDBId id2("GRP/CTP/Config", run, run);
-	success = cdb->Put(runcfg, id2, &metadata);
-	
-	delete runcfg;
-	runcfg = 0;
-	
-	if (!success)
-	{
-		Printf("ERROR: Could not store GRP/CTP/Config into OCDB");
-		return -15;
-	}
-	
-	// get last run with same run type that was already processed by the SHUTTLE
-	
-	sqlQuery.Form("SELECT max(logbook.run) FROM logbook LEFT JOIN logbook_shuttle ON logbook_shuttle.run = logbook.run WHERE run_type = '%s' AND shuttle_done = 1", runType.Data());
-	result = server->Query(sqlQuery);
-	if (!result) 
-	{
-		Printf("ERROR: Can't execute query <%s>!", sqlQuery.Data());
-		return -21;
-	}
+   // main logbook
+   TString sqlQuery;
+   sqlQuery.Form("SELECT DAQ_time_start, run_type, detectorMask FROM logbook WHERE run = %d", run);
+   TSQLResult* result = server->Query(sqlQuery);
+   if (!result)
+   {
+     Printf("ERROR: Can't execute query <%s>!", sqlQuery.Data());
+     return -2;
+   }
 
-	if (result->GetRowCount() == 0) 
-	{
-		Printf("ERROR: No result with query <%s>", sqlQuery.Data());
-		delete result;
-		return -22;
-	}
+   if (result->GetRowCount() == 0)
+   {
+     Printf("ERROR: Run %d not found", run);
+     delete result;
+     return -3;
+   }
 
-	row = result->Next();
-	if (!row)
-	{
-		Printf("ERROR: Could not receive data for query <%s>", sqlQuery.Data());
-		delete result;
-		return -23;
-	}
-	
-	TString lastRunStr(row->GetField(0));
-	Int_t lastRun = lastRunStr.Atoi();
-	
-	Printf("Last run with same run type %s is %d", runType.Data(), lastRun);
-	
-	delete row;
-	row = 0;
-	
-	delete result;
-	result = 0;
-		
-	server->Close();
-	delete server;
-	server = 0;
-	
-	return lastRun;
+   TSQLRow* row = result->Next();
+   if (!row)
+   {
+     Printf("ERROR: Could not receive data from run %d", run);
+     delete result;
+     return -4;
+   }
+
+   TString runType(row->GetField(1));
+
+   TMap grpData;
+   grpData.Add(new TObjString("DAQ_time_start"), new TObjString(row->GetField(0)));
+   grpData.Add(new TObjString("run_type"), new TObjString(runType));
+   grpData.Add(new TObjString("detectorMask"), new TObjString(row->GetField(2)));
+
+   delete row;
+   row = 0;
+
+   delete result;
+   result = 0;
+
+   Printf("Storing GRP/GRP/Data object with the following content");
+   grpData.Print();
+
+   AliCDBMetaData metadata;
+   metadata.SetResponsible("Jan Fiete Grosse-Oetringhaus");
+   metadata.SetComment("GRP Output parameters received during online running");
+
+   AliCDBId id("GRP/GRP/Data", run, run);
+   Bool_t success = cdb->Put(&grpData, id, &metadata);
+
+   grpData.DeleteAll();
+
+   if (!success)
+   {
+     Printf("ERROR: Could not store GRP/GRP/Data into OCDB");
+     return -5;
+   }
+
+   // Receive trigger information
+   sqlQuery.Form("SELECT configFile FROM logbook_trigger_config WHERE run = %d", run);
+   result = server->Query(sqlQuery);
+   if (!result)
+   {
+     Printf("ERROR: Can't execute query <%s>!", sqlQuery.Data());
+     return -11;
+   }
+
+   if (result->GetRowCount() == 0)
+   {
+     Printf("ERROR: Run %d not found in logbook_trigger_config", run);
+     delete result;
+     return -12;
+   }
+
+   row = result->Next();
+   if (!row)
+   {
+     Printf("ERROR: Could not receive logbook_trigger_config data from run %d", run);
+     delete result;
+     return -13;
+   }
+
+   TString triggerConfig(row->GetField(0));
+
+   delete row;
+   row = 0;
+
+   delete result;
+   result = 0;
+
+   Printf("Found trigger configuration: %s", triggerConfig.Data());
+
+   AliTriggerConfiguration *runcfg = AliTriggerConfiguration::LoadConfigurationFromString(triggerConfig);
+   if (!runcfg)
+   {
+     Printf("ERROR: Could not create CTP configuration object");
+     return -14;
+   }
+
+   metadata.SetComment("CTP run configuration received during online running");
+
+   AliCDBId id2("GRP/CTP/Config", run, run);
+   success = cdb->Put(runcfg, id2, &metadata);
+
+   delete runcfg;
+   runcfg = 0;
+
+   if (!success)
+   {
+     Printf("ERROR: Could not store GRP/CTP/Config into OCDB");
+     return -15;
+   }
+
+   // get last run with same run type that was already processed by the SHUTTLE
+
+   sqlQuery.Form("SELECT max(logbook.run) FROM logbook LEFT JOIN logbook_shuttle ON logbook_shuttle.run = logbook.run WHERE run_type = '%s' AND shuttle_done = 1", runType.Data());
+   result = server->Query(sqlQuery);
+   if (!result)
+   {
+     Printf("ERROR: Can't execute query <%s>!", sqlQuery.Data());
+     return -21;
+   }
+
+   if (result->GetRowCount() == 0)
+   {
+     Printf("ERROR: No result with query <%s>", sqlQuery.Data());
+     delete result;
+     return -22;
+   }
+
+   row = result->Next();
+   if (!row)
+   {
+     Printf("ERROR: Could not receive data for query <%s>", sqlQuery.Data());
+     delete result;
+     return -23;
+   }
+
+   TString lastRunStr(row->GetField(0));
+   Int_t lastRun = lastRunStr.Atoi();
+
+   Printf("Last run with same run type %s is %d", runType.Data(), lastRun);
+
+   delete row;
+   row = 0;
+
+   delete result;
+   result = 0;
+
+   server->Close();
+   delete server;
+   server = 0;
+
+   return lastRun;
 }

@@ -19,6 +19,7 @@
 //                AliGRPDCS class
 //   This class deals with the DCS related info of the GRP
 //   Origin: Panos Christakoglou, UOA-CERN, Panos.Christakoglou@cern.ch
+//    Modified: Ernesto.Lopez.Torres@cern.ch  CEADEN-CERN
 //-----------------------------------------------------------------
 #include "Riostream.h"
 #include "TError.h"
@@ -35,7 +36,8 @@ ClassImp(AliGRPDCS)
 
 //_______________________________________________________________
 AliGRPDCS::AliGRPDCS():
-  TObject(), fStartTime(0), fStopTime(0), fDCSArray(new TObjArray()) {
+  TObject(), fStartTime(0), fStopTime(0), fDCSArray(new TObjArray())
+{
   // default constructor
   
 }
@@ -51,44 +53,53 @@ AliGRPDCS::AliGRPDCS(TObjArray *dcsArray, UInt_t fStart, UInt_t fStop):
 AliGRPDCS::AliGRPDCS(const AliGRPDCS& grpDcs):
   TObject(grpDcs), 
   fStartTime(grpDcs.fStartTime), fStopTime(grpDcs.fStopTime), 
-  fDCSArray(grpDcs.fDCSArray) {
+  fDCSArray(grpDcs.fDCSArray)
+{
   //copy constructor
 
   //if (grpDcs.fDCSArray) fDCSArray = new TObjArray();
 }
 
 //_______________________________________________________________
-const char* AliGRPDCS::ProcessDCS(Int_t iType) {
+const char* AliGRPDCS::ProcessDCS(Int_t iType)
+{
   // process the dcs dps
   if(!fDCSArray->GetEntries()) {
     Error("AliGRPDCS::ProcessDCS","No entries in array!!!");
     return 0;
   }
 
-  //0:Int - 1:UInt - 2:Float - 3:String - 4:Bool
+  // 1:Bool - 2:Char - 3:Int - 4:UInt - 5:Float
   TString fDCSDataPointValue;
   switch (iType) {
-  case 0: {
-    fDCSDataPointValue += ProcessInt();
-    break;
-  }
-  case 1: {
-    fDCSDataPointValue += ProcessUInt();
-    break;
-  }
-  case 2: {
-    fDCSDataPointValue += ProcessFloat();
-    break;
-  }
-  case 3: {
-    fDCSDataPointValue += ProcessString();
-    break;
-  }
-  case 4: {
-    fDCSDataPointValue += ProcessBoolean();
-    break;
-  }
-  default: break;
+    case 1: {
+      fDCSDataPointValue += ProcessBoolean();
+      break;
+    }
+    case 2: {
+      fDCSDataPointValue += ProcessChar();
+      break;
+    }
+    case 3: {
+      fDCSDataPointValue += ProcessInt();
+      break;
+    }
+    case 4: {
+      fDCSDataPointValue += ProcessUInt();
+      break;
+    }
+    case 5: {
+      fDCSDataPointValue += ProcessFloat();
+      break;
+    }
+//  case 6: {
+//    fDCSDataPointValue += ProcessString();
+//    break;
+//  }
+    default: {
+      Error("AliGRPDCS::ProcessDCS", "Unknown type!!!" );
+      break;
+    }
   }//switch
 
   //cout<<fDCSDataPointValue.Data()<<endl;
@@ -96,7 +107,28 @@ const char* AliGRPDCS::ProcessDCS(Int_t iType) {
 }
 
 //_______________________________________________________________
-const char* AliGRPDCS::ProcessInt() {
+const char* AliGRPDCS::ProcessBoolean()
+{
+  Bool_t fDCSBool = kTRUE;
+
+  AliDCSValue *v = 0x0;
+
+  for(Int_t iCount = 0; iCount < fDCSArray->GetEntries(); iCount++) {
+    v = (AliDCSValue *)fDCSArray->At(iCount);
+    if ((v->GetTimeStamp() >= fStartTime) && (v->GetTimeStamp() <= fStopTime)) 
+      AliError(Form("DCS values for the parameter changed within the queried interval"));
+    if (v->GetTimeStamp() > fStopTime) continue;
+    fDCSBool = v->GetBool();
+  }
+
+  TString fDCSDataPointValue = (fDCSBool)? "1" : "0";
+
+  return fDCSDataPointValue.Data();
+}
+
+//_______________________________________________________________
+const char* AliGRPDCS::ProcessInt()
+{
   Float_t fFDCSArraySum = 0.0, fFDCSArrayMean = 0.0;
   Int_t iCounts = 0;
   for(Int_t i = 0; i < fDCSArray->GetEntries(); i++) {
@@ -115,7 +147,8 @@ const char* AliGRPDCS::ProcessInt() {
 }
 
 //_______________________________________________________________
-const char* AliGRPDCS::ProcessUInt() {
+const char* AliGRPDCS::ProcessUInt()
+{
   Float_t fFDCSArraySum = 0.0, fFDCSArrayMean = 0.0;
   Int_t iCounts = 0;
   for(Int_t i = 0; i < fDCSArray->GetEntries(); i++) {
@@ -134,7 +167,8 @@ const char* AliGRPDCS::ProcessUInt() {
 }
 
 //_______________________________________________________________
-const char* AliGRPDCS::ProcessFloat() {
+const char* AliGRPDCS::ProcessFloat()
+{
   Float_t fFDCSArraySum = 0.0, fFDCSArrayMean = 0.0;
   Int_t iCounts = 0;
   //printf("Entries: %d\n",fDCSArray->GetEntries());
@@ -155,8 +189,9 @@ const char* AliGRPDCS::ProcessFloat() {
 }
 
 //_______________________________________________________________
-const char* AliGRPDCS::ProcessString() {
-  TString fDCSString, fDCSTemp;
+const char* AliGRPDCS::ProcessChar()
+{
+  TString fDCSString;
 
   AliDCSValue *v = 0x0;
 
@@ -168,7 +203,31 @@ const char* AliGRPDCS::ProcessString() {
     if ((v->GetTimeStamp() >= fStartTime) && (v->GetTimeStamp() <= fStopTime)) 
       AliError(Form("DCS values for the parameter changed within the queried interval"));
     if (v->GetTimeStamp() > fStopTime) continue;
-    fDCSString = v->GetChar();    
+    fDCSString = v->GetChar();
+  }
+  
+  TString fDCSDataPointValue = fDCSString;
+  
+  return fDCSDataPointValue.Data();
+}
+
+/*
+//_______________________________________________________________
+const char* AliGRPDCS::ProcessString()
+{
+  TString fDCSString;
+
+  AliDCSValue *v = 0x0;
+
+  //printf("Entries: %d\n",fDCSArray->GetEntries());
+  //printf("Start: %d - Stop: %d\n",fStartTime,fStopTime);
+  
+  for(Int_t iCount = 0; iCount < fDCSArray->GetEntries(); iCount++) {
+    v = (TObjString *)fDCSArray->At(iCount);
+    if ((v->GetTimeStamp() >= fStartTime) && (v->GetTimeStamp() <= fStopTime)) 
+      AliError(Form("DCS values for the parameter changed within the queried interval"));
+    if (v->GetTimeStamp() > fStopTime) continue;
+    fDCSString = v->GetChar(); // FIXME  should be something like v->GetString()
   }
   
   TString fDCSDataPointValue = fDCSString;
@@ -176,22 +235,4 @@ const char* AliGRPDCS::ProcessString() {
 
   return fDCSDataPointValue.Data();
 }
-
-//_______________________________________________________________
-const char* AliGRPDCS::ProcessBoolean() {
-  Bool_t fDCSBool = kTRUE;
-
-  AliDCSValue *v = 0x0;
-
-  for(Int_t iCount = 0; iCount < fDCSArray->GetEntries(); iCount++) {
-    v = (AliDCSValue *)fDCSArray->At(iCount);
-    if ((v->GetTimeStamp() >= fStartTime) && (v->GetTimeStamp() <= fStopTime)) 
-      AliError(Form("DCS values for the parameter changed within the queried interval"));
-    if (v->GetTimeStamp() > fStopTime) continue;
-    fDCSBool = v->GetBool();    
-  }
-
-  TString fDCSDataPointValue = fDCSBool;
-
-  return fDCSDataPointValue.Data();
-}
+*/

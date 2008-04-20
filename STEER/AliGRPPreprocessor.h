@@ -8,6 +8,7 @@
 //                  Global Run Parameters (GRP) preprocessor
 //
 //    Origin: Panos Christakoglou, UOA-CERN, Panos.Christakoglou@cern.ch
+//    Modified: Ernesto.Lopez.Torres@cern.ch  CEADEN-CERN
 //-------------------------------------------------------------------------
 
 
@@ -28,31 +29,44 @@ class AliDCSSensorArray;
 
 class AliGRPPreprocessor: public AliPreprocessor {
  public:
-  AliGRPPreprocessor(AliShuttleInterface* shuttle);
-  virtual ~AliGRPPreprocessor();
+                      AliGRPPreprocessor(AliShuttleInterface* shuttle);
+  virtual            ~AliGRPPreprocessor();
   
-  static Int_t ReceivePromptRecoParameters(UInt_t run, const char* dbHost, Int_t dbPort, const char* dbName, const char* user, const char* password, const char *cdbRoot);
+  static      Int_t   ReceivePromptRecoParameters(
+                                  UInt_t run,
+                                  const char* dbHost,
+                                  Int_t dbPort,
+                                  const char* dbName,
+                                  const char* user,
+                                  const char* password,
+                                  const char *cdbRoot
+                                 );
 
  protected:
 
-  virtual void Initialize(Int_t run, UInt_t startTime, UInt_t endTime);
+  virtual      void   Initialize(Int_t run, UInt_t startTime, UInt_t endTime);
   
-  virtual UInt_t Process(TMap* valueSet);
+  virtual     UInt_t   Process(TMap* valueSet);
 
-  TList *ProcessDaqLB();
-  UInt_t ProcessDaqFxs();
-  UInt_t ProcessDcsFxs();
-  TList *ProcessDcsDPs(TMap* valueSet);
-  AliDCSSensorArray *GetPressureMap(TMap *dcsAliasMap, AliDCSSensorArray *fPressure);
+                TMap*  ProcessDaqLB();
+              UInt_t   ProcessDaqFxs();
+              UInt_t   ProcessDcsFxs();
+               Int_t   ProcessDcsDPs(TMap* valueSet, TMap* grpmap);
+   AliDCSSensorArray*  GetPressureMap(TMap *dcsAliasMap, AliDCSSensorArray *fPressure);
   
  private:
-  static const char* fgkDCSDataPoints[12]; //! names of dcs dps
-  AliDCSSensorArray *fPressure; //pressure array
+ 
+  static const Int_t   fgknDAQLbPar;            //! number of DAQ lb parameters
+  static const Int_t   fgknDCSDP;               //! number of dcs dps
+  static const char*   fgkDCSDataPoints[];      //! names of dcs dps
+  static const char*   fgkLHCState[];           //! names of LHC States
+  
+  AliDCSSensorArray*   fPressure; //pressure array
 
-  AliGRPPreprocessor(const AliGRPPreprocessor&); // Not implemented
-  AliGRPPreprocessor& operator=(const AliGRPPreprocessor&); // Not implemented
+                       AliGRPPreprocessor(const AliGRPPreprocessor&); // Not implemented
+                       AliGRPPreprocessor& operator=(const AliGRPPreprocessor&); // Not implemented
 
-  ClassDef(AliGRPPreprocessor, 0);
+  ClassDef(AliGRPPreprocessor, 1);
 };
 
 #endif
