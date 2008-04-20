@@ -82,6 +82,15 @@ fIterator(0x0)
   
   ++fgInstanceCounter;
   
+  if (AliCDBManager::Instance() != NULL)
+  {
+    if (AliCDBManager::Instance()->GetDefaultStorage() == NULL)
+    {
+      AliInfo("Default storage for CDB not set.");
+      AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+    }
+  }
+  
   Open(filename);
 
   // Load mapping
