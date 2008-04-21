@@ -139,7 +139,7 @@ void AliTRDseedV1::Copy(TObject &ref) const
 
 
 //____________________________________________________________
-void AliTRDseedV1::Init(AliTRDtrack *track)
+Bool_t AliTRDseedV1::Init(AliTRDtrack *track)
 {
 // Initialize this tracklet using the track information
 //
@@ -156,13 +156,14 @@ void AliTRDseedV1::Init(AliTRDtrack *track)
 //
 
 	Double_t y, z; 
-	track->GetProlongation(fX0, y, z);
+	if(!track->GetProlongation(fX0, y, z)) return kFALSE;
 	fYref[0] = y;
 	fYref[1] = track->GetSnp()/(1. - track->GetSnp()*track->GetSnp());
 	fZref[0] = z;
 	fZref[1] = track->GetTgl();
 
 	//printf("Tracklet ref x[%7.3f] y[%7.3f] z[%7.3f], snp[%f] tgl[%f]\n", fX0, fYref[0], fZref[0], track->GetSnp(), track->GetTgl());
+	return kTRUE;
 }
 
 

@@ -51,7 +51,7 @@ class AliTRDseedV1 : public AliTRDseed
 	void    Draw(Option_t* o = "");
 	Bool_t  Fit();
 
-	void      Init(AliTRDtrack *track);
+	Bool_t  Init(AliTRDtrack *track);
 	inline void      Init(const AliRieman *fit);
 	Bool_t    IsOwner() const          { return TestBit(1);}
 	Bool_t    IsRowCross() const       { return TestBit(2);}

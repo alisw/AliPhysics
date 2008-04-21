@@ -618,27 +618,27 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
       z -= stack >= 0 ? 0. : 4.; 
 			
       for(int icham=0; icham<nCandidates; icham++, z+=8){
-	if((stack = fGeom->GetChamber(z, iplane)) < 0) continue;
-			
-	if(!(chamber = fTrSec[sector].GetChamber(stack, iplane))) continue;
-			
-	if(chamber->GetNClusters() < fgNTimeBins*AliTRDReconstructor::RecoParam()->GetFindableClusters()) continue;
-			
-	x = chamber->GetX();
-			
-	AliTRDpadPlane *pp = fGeom->GetPadPlane(iplane, stack);
-	tracklet.SetTilt(TMath::Tan(-TMath::DegToRad()*pp->GetTiltingAngle()));
-	tracklet.SetPadLength(pp->GetLengthIPad());
-	tracklet.SetPlane(iplane);
-	tracklet.SetX0(x);
-	tracklet.Init(&t);
-	if(!tracklet.AttachClustersIter(chamber, 1000.)) continue;
-	tracklet.Init(&t);
-	    	
-	if(tracklet.GetN() < fgNTimeBins * AliTRDReconstructor::RecoParam()->GetFindableClusters()) continue;
-			
-	break;
-      }
+				if((stack = fGeom->GetChamber(z, iplane)) < 0) continue;
+						
+				if(!(chamber = fTrSec[sector].GetChamber(stack, iplane))) continue;
+						
+				if(chamber->GetNClusters() < fgNTimeBins*AliTRDReconstructor::RecoParam()->GetFindableClusters()) continue;
+						
+				x = chamber->GetX();
+						
+				AliTRDpadPlane *pp = fGeom->GetPadPlane(iplane, stack);
+				tracklet.SetTilt(TMath::Tan(-TMath::DegToRad()*pp->GetTiltingAngle()));
+				tracklet.SetPadLength(pp->GetLengthIPad());
+				tracklet.SetPlane(iplane);
+				tracklet.SetX0(x);
+				if(!tracklet.Init(&t)) continue;
+				if(!tracklet.AttachClustersIter(chamber, 1000.)) continue;
+				tracklet.Init(&t);
+							
+				if(tracklet.GetN() < fgNTimeBins * AliTRDReconstructor::RecoParam()->GetFindableClusters()) continue;
+						
+				break;
+			}
     }
     if(!tracklet.IsOK()){
       if(x < 1.) continue; //temporary
