@@ -48,7 +48,6 @@ class AliAODCaloCluster : public AliAODCluster {
   Double_t GetDistToBadChannel() const { return fDistToBadChannel; }
   Double_t GetDispersion() const { return fDispersion; }
   Double_t GetM20() const { return fM20; }
-  Double_t GetM01() const { return fM01; }
   Double_t GetM02() const { return fM02; }
   Double_t GetM11() const { return fM11; }
   Double_t GetEmcCpvDistance() const { return fEmcCpvDistance; }
@@ -78,7 +77,6 @@ class AliAODCaloCluster : public AliAODCluster {
   void SetDistToBadChannel(Double_t dist) { fDistToBadChannel = dist; }
   void SetDispersion(Double_t disp) { fDispersion = disp; }
   void SetM20(Double_t m20) { fM20 = m20; }
-  void SetM01(Double_t m01) { fM01 = m01; }
   void SetM02(Double_t m02) { fM02 = m02; }
   void SetM11(Double_t m11) { fM11 = m11; }
   void SetEmcCpvDistance(Double_t emcCpvDist) { fEmcCpvDistance = emcCpvDist; }
@@ -87,7 +85,6 @@ class AliAODCaloCluster : public AliAODCluster {
   void SetCaloCluster(Double_t dist = -999., 
 		      Double_t disp = -1., 
 		      Double_t m20 = 0., 
-		      Double_t m01 = 0., 
 		      Double_t m02 = 0., 
 		      Double_t m11 = 0., 
 		      Double_t emcCpvDist = -999., 
@@ -96,7 +93,6 @@ class AliAODCaloCluster : public AliAODCluster {
     fDistToBadChannel = dist;
     fDispersion = disp;
     fM20 = m20;
-    fM01 = m01;
     fM02 = m02;
     fM11 = m11;
     fEmcCpvDistance = emcCpvDist;
@@ -112,7 +108,6 @@ class AliAODCaloCluster : public AliAODCluster {
   Double32_t   fDistToBadChannel; // Distance to nearest bad channel
   Double32_t   fDispersion;       // cluster dispersion, for shape analysis
   Double32_t   fM20;              // 2-nd moment along the main eigen axis
-  Double32_t   fM01;              // 
   Double32_t   fM02;              // 2-nd moment along the second eigen axis
   Double32_t   fM11;              // 2-nd mixed moment Mxy
   Double32_t   fEmcCpvDistance;   // the distance from PHOS EMC rec.point to the closest CPV rec.point
@@ -124,7 +119,7 @@ class AliAODCaloCluster : public AliAODCluster {
   UShort_t   *fCellsAbsId;        //[fNCells] array of cell absId numbers
   Double32_t *fCellsAmpFraction;  //[fNCells][0.,1.,16] array with cell amplitudes fraction.
 
-  ClassDef(AliAODCaloCluster,2);
+  ClassDef(AliAODCaloCluster,3);
 };
 
 #endif

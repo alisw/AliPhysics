@@ -30,7 +30,6 @@ AliAODCaloCluster::AliAODCaloCluster() :
   fDistToBadChannel(-999.),
   fDispersion(-1),
   fM20(0.),
-  fM01(0.),
   fM02(0.),
   fM11(0.),
   fEmcCpvDistance(-999.),
@@ -57,7 +56,6 @@ AliAODCaloCluster::AliAODCaloCluster(Int_t id,
   fDistToBadChannel(-999.),
   fDispersion(-1),
   fM20(0.),
-  fM01(0.),
   fM02(0.),
   fM11(0.),
   fEmcCpvDistance(-999.),
@@ -84,7 +82,6 @@ AliAODCaloCluster::AliAODCaloCluster(Int_t id,
   fDistToBadChannel(-999.),
   fDispersion(-1),
   fM20(0.),
-  fM01(0.),
   fM02(0.),
   fM11(0.),
   fEmcCpvDistance(-999.),
@@ -113,7 +110,6 @@ AliAODCaloCluster::AliAODCaloCluster(const AliAODCaloCluster& clus) :
   fDistToBadChannel(clus.fDistToBadChannel),
   fDispersion(clus.fDispersion),
   fM20(clus.fM20),
-  fM01(clus.fM01),
   fM02(clus.fM02),
   fM11(clus.fM11),
   fEmcCpvDistance(clus.fEmcCpvDistance),
@@ -154,7 +150,6 @@ AliAODCaloCluster& AliAODCaloCluster::operator=(const AliAODCaloCluster& clus)
     fDistToBadChannel = clus.fDistToBadChannel;
     fDispersion = clus.fDispersion;
     fM20 = clus.fM20;
-    fM01 = clus.fM01;
     fM02 = clus.fM02;
     fM11 = clus.fM11;
     fEmcCpvDistance = clus.fEmcCpvDistance;
