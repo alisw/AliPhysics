@@ -37,7 +37,7 @@ private:
   TClonesArray * fDigits; 	//! Array containing ZDC digits
   
   
-  ClassDef(AliZDCQADataMakerSim2)  // description 
+  ClassDef(AliZDCQADataMakerSim,2)  // description 
 
 };
 
