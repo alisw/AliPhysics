@@ -96,10 +96,6 @@ public:
   /** central electrode calibration data */
   static const AliHLTComponentDataType fgkCalibCEDataType;         // see above
 
-  // Offline wrappers
-  /** offline TreeR tree containing recpoints */
-  static const AliHLTComponentDataType fgkOfflineTreeR;            // see above
-
   ClassDef(AliHLTTPCDefinitions, 2)
 };
 
