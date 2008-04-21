@@ -36,27 +36,24 @@ MODULE_HDRS:= 	$(CLASS_HDRS)
 # enable automatic generation. 
 MODULE_DHDR:=
 
-# extra defines and flags for the AliRoot build system. NOTE: include
-# directories and linking flags/options must be specified in 
-# Makefile.am (stand-alone build system) and here (AliRoot).
-EDEFINE      := ${HLTDEFS}
-PACKCXXFLAGS := $(filter-out -ansi,$(filter-out -pedantic-errors, $(CXXFLAGS)))
-PACKCFLAGS   := $(filter-out -ansi, $(filter-out -pedantic-errors, $(CFLAGS)))
-PACKDCXXFLAGS:= $(filter-out -pedantic-errors, $(CXXFLAGS))
-
 EINCLUDE := HLT/BASE HLT/shuttle
+
+LIBRARY_DEP := -lHLTbase -lCDB -lSTEERBase
 
 ###############################################################################
 #
 # do not change anything below this line
 #
+include $(MODDIR)/hlt.conf
+
 SRCS:=$(patsubst %,SampleLib/%,$(MODULE_SRCS))
 CINTHDRS:=$(patsubst %,SampleLib/%,$(CLASS_HDRS))
 HDRS:=$(patsubst %,SampleLib/%,$(MODULE_HDRS))
 DHDR:=$(patsubst %,SampleLib/%,$(MODULE_DHDR))
 CINTAUTOLINK:= $(shell test "x$(MODULE_DHDR)" = "x" && echo 1)
 
-ifeq (win32gcc,$(ALICE_TARGET))
-PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
-                         -lHLTbase -lCDB -lSTEERBase
-endif
+EDEFINE      := ${HLTDEFS}
+PACKCXXFLAGS := $(filter-out -ansi,$(filter-out -pedantic-errors, $(CXXFLAGS)))
+PACKCFLAGS   := $(filter-out -ansi, $(filter-out -pedantic-errors, $(CFLAGS)))
+PACKDCXXFLAGS:= $(filter-out -pedantic-errors, $(CXXFLAGS))
+PACKSOFLAGS  := $(HLTSOFLAGS)

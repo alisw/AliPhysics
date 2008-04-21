@@ -1,7 +1,5 @@
 #-*- Mode: Makefile -*-
-# $Id: libHLTshuttle.pkg 22878 2007-12-07 15:32:53Z richterm $
-
-include $(MODDIR)/hlt.conf
+# $Id$
 
 LIBHLTSHUTTLE_VERSION := 0
 
@@ -13,6 +11,12 @@ MODULE_HDRS:= 	$(CLASS_HDRS)
 
 MODULE_DHDR:= 		
 
+EINCLUDE := HLT/shuttle HLT/BASE STEER
+
+LIBRARY_DEP := -lHLTbase -lCDB
+
+include $(MODDIR)/hlt.conf
+
 SRCS:=$(patsubst %,shuttle/%,$(MODULE_SRCS))
 CINTHDRS:=$(patsubst %,shuttle/%,$(CLASS_HDRS))
 HDRS:=$(patsubst %,shuttle/%,$(MODULE_HDRS))
@@ -23,10 +27,4 @@ EDEFINE      := ${HLTDEFS}
 PACKCXXFLAGS := ${HLTCXXFLAGS} -DLIBHLTREC_VERSION=$(LIBHLTSHUTTLE_VERSION)
 PACKCFLAGS   := ${HLTCLFAGS}
 PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
-
-EINCLUDE := HLT/shuttle HLT/BASE STEER
-
-ifeq (win32gcc,$(ALICE_TARGET))
-PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
-                         -lHLTbase -lCDB
-endif
+PACKSOFLAGS  := $(HLTSOFLAGS)

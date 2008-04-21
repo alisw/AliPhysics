@@ -1,8 +1,6 @@
 #-*- Mode: Makefile -*-
 # $Id$
 
-include $(MODDIR)/hlt.conf
-
 MODULE_SRCS= 	AliHLTExternalInterface.cxx
 
 CLASS_HDRS:=  	
@@ -10,7 +8,13 @@ CLASS_HDRS:=
 MODULE_HDRS:= 	$(CLASS_HDRS) \
 		$(MODULE_SRCS:.cxx=.h)
 
-MODULE_DHDR:= 		
+MODULE_DHDR:= 	HLTinterface-LinkDef.h
+
+EINCLUDE := HLT/BASE/interface HLT/BASE
+
+LIBRARY_DEP := -lHLTbase
+
+include $(MODDIR)/hlt.conf
 
 SRCS:=$(patsubst %,BASE/interface/%,$(MODULE_SRCS))
 CINTHDRS:=$(patsubst %,BASE/interface/%,$(CLASS_HDRS))
@@ -24,9 +28,4 @@ PACKCXXFLAGS := ${HLTCXXFLAGS}
 PACKCFLAGS   := ${HLTCLFAGS}
 PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
 
-EINCLUDE := HLT/BASE/interface HLT/BASE
-
-ifeq (win32gcc,$(ALICE_TARGET))
-PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
-                         -lHLTbase
-endif
+PACKSOFLAGS  := $(HLTSOFLAGS)

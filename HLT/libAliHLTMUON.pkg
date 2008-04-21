@@ -1,8 +1,6 @@
 #-*- Mode: Makefile -*-
 # $Id$ 
 
-include $(MODDIR)/hlt.conf
-
 ###############################################################################
 
 CLASS_HDRS := 	OfflineInterface/AliHLTMUONAgent.h \
@@ -49,7 +47,17 @@ MODULE_HDRS := 	$(MODULE_SRCS:.cxx=.h) \
 # The dictionary linkdef header for rootcint:
 MODULE_DHDR := 	HLTMUONLinkDef.h
 
+EINCLUDE := 	HLT/BASE HLT/MUON HLT/MUON/utils HLT/MUON/OnlineAnalysis \
+		HLT/MUON/OfflineInterface MUON MUON/mapping STEER RAW
+
+LIBRARY_DEP := -lHLTbase -lMUONmapping -lMUONbase -lMUONevaluation \
+               -lMUONsim -lMUONcore -lMUONcalib -lMUONgeometry -lMUONraw \
+               -lCDB -lSTEER -lSTEERBase -lRAWDatarec \
+               -L$(shell root-config --libdir) -lMinuit
+
 ###############################################################################
+
+include $(MODDIR)/hlt.conf
 
 CINTHDRS:= 	$(patsubst %,MUON/%,$(CLASS_HDRS))
 SRCS := 	$(patsubst %,MUON/%,$(MODULE_SRCS))
@@ -61,14 +69,4 @@ EDEFINE      := ${HLTDEFS}
 PACKCXXFLAGS := ${HLTCXXFLAGS}
 PACKCFLAGS   := ${HLTCLFAGS}
 PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
-
-EINCLUDE := 	HLT/BASE HLT/MUON HLT/MUON/utils HLT/MUON/OnlineAnalysis \
-		HLT/MUON/OfflineInterface MUON MUON/mapping STEER RAW
-
-ifeq (win32gcc,$(ALICE_TARGET))
-PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
-                         -lHLTbase -lMUONmapping -lMUONbase -lMUONevaluation \
-                         -lMUONsim -lMUONcore -lMUONcalib -lMUONgeometry -lMUONraw \
-                         -lCDB -lSTEER -lSTEERBase -lRAWDatarec \
-                         -L$(shell root-config --libdir) -lMinuit
-endif
+PACKSOFLAGS  := $(HLTSOFLAGS)

@@ -6,8 +6,6 @@
 # and linking process. For further information refer to the 
 # README.
 
-include $(MODDIR)/hlt.conf
-
 # class header files, the link definition for the root dictionary
 # will be created from the names of the header files
 CLASS_HDRS:= \
@@ -41,10 +39,14 @@ MODULE_DHDR:=
 
 EINCLUDE := HLT/BASE HLT/trigger HLT/TPCLib
 
+LIBRARY_DEP := -lHLTbase
+
 ###############################################################################
 #
 # do not change anything below this line
 #
+include $(MODDIR)/hlt.conf
+
 SRCS:=$(patsubst %,trigger/%,$(MODULE_SRCS))
 CINTHDRS:=$(patsubst %,trigger/%,$(CLASS_HDRS))
 HDRS:=$(patsubst %,trigger/%,$(MODULE_HDRS))
@@ -55,8 +57,4 @@ EDEFINE      := ${HLTDEFS}
 PACKCXXFLAGS := ${HLTCXXFLAGS}
 PACKCFLAGS   := ${HLTCLFAGS}
 PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
-
-ifeq (win32gcc,$(ALICE_TARGET))
-PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
-                         -lHLTbase
-endif
+PACKSOFLAGS  := $(HLTSOFLAGS)

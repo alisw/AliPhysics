@@ -1,8 +1,6 @@
 #-*- Mode: Makefile -*-
 # $Id$
 
-include $(MODDIR)/hlt.conf
-
 LIBHLTSIM_VERSION := 0
 
 MODULE_SRCS= 	AliHLTSimulation.cxx \
@@ -15,6 +13,12 @@ MODULE_HDRS:= 	$(CLASS_HDRS)
 
 MODULE_DHDR:= 		
 
+EINCLUDE := HLT/sim HLT/BASE HLT/BASE/HOMER STEER RAW
+
+LIBRARY_DEP := -lHLTbase -lSTEERbase -lCDB -lSTEER -lRAWDatarec -lRAWDatabase
+
+include $(MODDIR)/hlt.conf
+
 SRCS:=$(patsubst %,sim/%,$(MODULE_SRCS))
 CINTHDRS:=$(patsubst %,sim/%,$(CLASS_HDRS))
 HDRS:=$(patsubst %,sim/%,$(MODULE_HDRS))
@@ -25,10 +29,4 @@ EDEFINE      := ${HLTDEFS}
 PACKCXXFLAGS := ${HLTCXXFLAGS} -DLIBHLTSIM_VERSION=$(LIBHLTSIM_VERSION)
 PACKCFLAGS   := ${HLTCLFAGS}
 PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
-
-EINCLUDE := HLT/sim HLT/BASE HLT/BASE/HOMER STEER RAW
-
-ifeq (win32gcc,$(ALICE_TARGET))
-PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
-                         -lHLTbase -lSTEERbase -lCDB -lSTEER -lRAWDatarec -lRAWDatabase
-endif
+PACKSOFLAGS  := $(HLTSOFLAGS)

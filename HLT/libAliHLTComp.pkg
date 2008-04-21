@@ -1,8 +1,6 @@
 #-*- Mode: Makefile -*-
 # $Id$
 
-include $(MODDIR)/hlt.conf
-
 CLASS_HDRS:=  	AliHLTCompAgent.h \
 		AliHLTCompPreprocessor.h \
 		AliHLTCompDefinitions.h \
@@ -21,10 +19,14 @@ MODULE_DHDR:=
 
 EINCLUDE := HLT/BASE HLT/shuttle HLT/TPCLib STEER
 
+LIBRARY_DEP := -lHLTbase -lCDB
+
 ###############################################################################
 #
 # do not change anything below this line
 #
+include $(MODDIR)/hlt.conf
+
 SRCS:=$(patsubst %,comp/%,$(MODULE_SRCS))
 CINTHDRS:=$(patsubst %,comp/%,$(CLASS_HDRS))
 HDRS:=$(patsubst %,comp/%,$(MODULE_HDRS))
@@ -35,9 +37,4 @@ EDEFINE      := ${HLTDEFS}
 PACKCXXFLAGS := ${HLTCXXFLAGS}
 PACKCFLAGS   := ${HLTCLFAGS}
 PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
-
-ifeq (win32gcc,$(ALICE_TARGET))
-PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
-                         -lHLTbase -lCDB
-endif
-
+PACKSOFLAGS  := $(HLTSOFLAGS)

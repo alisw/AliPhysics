@@ -1,8 +1,6 @@
 #-*- Mode: Makefile -*-
 # $Id$
 
-include $(MODDIR)/hlt.conf
-
 CLASS_HDRS:=  	AliHLTTPCTransform.h \
 		AliHLTTPCAgent.h \
 		AliHLTTPCMemHandler.h \
@@ -76,6 +74,8 @@ CLASS_HDRS:=  	AliHLTTPCTransform.h \
 		AliHLTTPCKryptonClusterFinderComponent.h
 
 
+#		offline/AliHLTTPCOfflineClustererComponent.h
+#		offline/AliHLTTPCOfflineTrackerComponent.h
 
 
 # 		AliHLTTPCDDLDataFileHandler.h
@@ -108,17 +108,6 @@ MODULE_HDRS:= 	$(CLASS_HDRS) \
 
 MODULE_DHDR:=
 
-SRCS:=$(patsubst %,TPCLib/%,$(MODULE_SRCS))
-CINTHDRS:=$(patsubst %,TPCLib/%,$(CLASS_HDRS))
-HDRS:=$(patsubst %,TPCLib/%,$(MODULE_HDRS))
-DHDR:=$(patsubst %,TPCLib/%,$(MODULE_DHDR))
-CINTAUTOLINK:= $(shell test "x$(MODULE_DHDR)" = "x" && echo 1)
-
-EDEFINE      := ${HLTDEFS}
-PACKCXXFLAGS := ${HLTCXXFLAGS}
-PACKCFLAGS   := ${HLTCLFAGS}
-PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
-
 EINCLUDE 	:= HLT/TPCLib \
 		   HLT/TPCLib/tracking \
 		   HLT/TPCLib/comp \
@@ -131,9 +120,24 @@ EINCLUDE 	:= HLT/TPCLib \
 		   RAW \
 		   STEER
 
-ifeq (win32gcc,$(ALICE_TARGET))
-PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
-                         -lHLTbase -lAliHLTRCU -lAliHLTUtil \
-                         -lCDB -lESD -lSTEER -lSTEERBase -lTPCrec -lTPCbase \
-                         -lRAWDatarec
-endif
+LIBRARY_DEP := -lHLTbase -lAliHLTRCU -lAliHLTUtil \
+               -lCDB -lESD -lSTEER -lSTEERBase -lTPCrec -lTPCbase \
+               -lRAWDatarec
+
+###############################################################################
+#
+# do not change anything below this line
+#
+include $(MODDIR)/hlt.conf
+
+SRCS:=$(patsubst %,TPCLib/%,$(MODULE_SRCS))
+CINTHDRS:=$(patsubst %,TPCLib/%,$(CLASS_HDRS))
+HDRS:=$(patsubst %,TPCLib/%,$(MODULE_HDRS))
+DHDR:=$(patsubst %,TPCLib/%,$(MODULE_DHDR))
+CINTAUTOLINK:= $(shell test "x$(MODULE_DHDR)" = "x" && echo 1)
+
+EDEFINE      := ${HLTDEFS}
+PACKCXXFLAGS := ${HLTCXXFLAGS}
+PACKCFLAGS   := ${HLTCLFAGS}
+PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
+PACKSOFLAGS  := $(HLTSOFLAGS)

@@ -2,8 +2,6 @@
 # $Id$
 # package definition for the libAliHLTTRD library
 
-include $(MODDIR)/hlt.conf
-
 # class header files, the link definition for the root dictionary
 # will be created from the names of the header files
 CLASS_HDRS:= \
@@ -35,28 +33,25 @@ MODULE_HDRS:= 	$(CLASS_HDRS)
 # enable automatic generation. 
 MODULE_DHDR:=
 
-# extra defines and flags for the AliRoot build system. NOTE: include
-# directories and linking flags/options must be specified in 
-# Makefile.am (stand-alone build system) and here (AliRoot).
-EDEFINE      := ${HLTDEFS}
-PACKCXXFLAGS := ${HLTCXXFLAGS}
-PACKCFLAGS   := ${HLTCLFAGS}
-PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
-
 EINCLUDE := HLT/BASE HLT/BASE/util HLT/TRD TRD STEER RAW
+
+LIBRARY_DEP := -lHLTbase -lAliHLTUtil -lESD -lCDB -lTRDrec -lTRDbase \
+               -lSTEER -lSTEERBase -lRAWDatarec
 
 ###############################################################################
 #
 # do not change anything below this line
 #
+include $(MODDIR)/hlt.conf
+
 SRCS:=$(patsubst %,TRD/%,$(MODULE_SRCS))
 CINTHDRS:=$(patsubst %,TRD/%,$(CLASS_HDRS))
 HDRS:=$(patsubst %,TRD/%,$(MODULE_HDRS))
 DHDR:=$(patsubst %,TRD/%,$(MODULE_DHDR))
 CINTAUTOLINK:= $(shell test "x$(MODULE_DHDR)" = "x" && echo 1)
 
-ifeq (win32gcc,$(ALICE_TARGET))
-PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
-                         -lHLTbase -lAliHLTUtil -lESD -lCDB -lTRDrec -lTRDbase \
-                         -lSTEER -lSTEERBase -lRAWDatarec 
-endif
+EDEFINE      := ${HLTDEFS}
+PACKCXXFLAGS := ${HLTCXXFLAGS}
+PACKCFLAGS   := ${HLTCLFAGS}
+PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
+PACKSOFLAGS  := $(HLTSOFLAGS)

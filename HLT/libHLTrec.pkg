@@ -1,8 +1,6 @@
 #-*- Mode: Makefile -*-
 # $Id$
 
-include $(MODDIR)/hlt.conf
-
 LIBHLTREC_VERSION := 1
 
 CLASS_HDRS:=  	AliHLTReconstructor.h \
@@ -20,6 +18,12 @@ MODULE_HDRS:= 	$(CLASS_HDRS)
 
 MODULE_DHDR:= 		
 
+EINCLUDE := HLT/rec HLT/BASE HLT/BASE/HOMER STEER RAW
+
+LIBRARY_DEP := -lHLTbase -lCDB -lESD -lSTEERbase -lSTEER -lRAWDatarec -lRAWDatabase
+
+include $(MODDIR)/hlt.conf
+
 SRCS:=$(patsubst %,rec/%,$(MODULE_SRCS))
 CINTHDRS:=$(patsubst %,rec/%,$(CLASS_HDRS))
 HDRS:=$(patsubst %,rec/%,$(MODULE_HDRS))
@@ -30,10 +34,4 @@ EDEFINE      := ${HLTDEFS}
 PACKCXXFLAGS := ${HLTCXXFLAGS} -DLIBHLTREC_VERSION=$(LIBHLTREC_VERSION)
 PACKCFLAGS   := ${HLTCLFAGS}
 PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
-
-EINCLUDE := HLT/rec HLT/BASE HLT/BASE/HOMER STEER RAW
-
-ifeq (win32gcc,$(ALICE_TARGET))
-PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
-                         -lHLTbase -lCDB -lESD -lSTEERbase -lSTEER -lRAWDatarec -lRAWDatabase
-endif
+PACKSOFLAGS  := $(HLTSOFLAGS)
