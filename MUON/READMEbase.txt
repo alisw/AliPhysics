@@ -18,21 +18,23 @@ for MC information, use AliMUONMCDataInterface :
 
 <pre>
 > aliroot (or root with just the loading of MUON libs, see loadlibs.C)
-root [0] AliMUONMCDataInterface mcdi("galice.root");
-root [1] mcdi.DumpKine(5);       > dump.kine
-root [2] mcdi.DumpHits(5);       > dump.hits
-root [3] mcdi.DumpTrackRefs(5);  > dump.trackrefs
+root [0] AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+root [1] AliMUONMCDataInterface mcdi("galice.root");
+root [2] mcdi.DumpKine(5);       > dump.kine
+root [3] mcdi.DumpHits(5);       > dump.hits
+root [4] mcdi.DumpTrackRefs(5);  > dump.trackrefs
 </pre>
 
 for all other information, use AliMUONDataInterface :
 
 <pre>
 > aliroot
-root [0] AliMUONDataInterface di("galice.root");
-root [1] di.DumpDigits(5);     > dump.digits
-root [2] di.DumpSDigits(5);    > dump.sdigits
-root [3] di.DumpRecPoints(5);  > dump.recpoints
-root [4] di.DumpTrigger(5); > dump.rectrigger
+root [0] AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+root [1] AliMUONDataInterface di("galice.root");
+root [2] di.DumpDigits(5);     > dump.digits
+root [3] di.DumpSDigits(5);    > dump.sdigits
+root [4] di.DumpRecPoints(5);  > dump.recpoints
+root [5] di.DumpTrigger(5); > dump.rectrigger
 </pre>
 
 Remind that during simulation and reconstruction two 
@@ -40,12 +42,12 @@ differents galice.root are generated: one for the generation
 (simulation) and other during the reconstruction.
 
 If you open the wrong galice.root file you could get:
+<pre>
 root [0] AliMUONMCDataInterface mcdi("galice.root");
 root [1] mcdi.DumpKine(5);
 W-AliRunLoader::GetEvent: Stack not found in header
 E-TFile::TFile: file ./Kinematics.root does not exist
-
-This chapter is defined in the READMEbase.txt file.
+</pre>
 
 \section basee_s2 Macro MUONCheckDI.C
 
