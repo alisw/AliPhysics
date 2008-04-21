@@ -9,7 +9,21 @@
 #include "TAlienResult.h"
 #include <fstream>
 
+/*
+  Simple toolkit for Alien
+  Use ROOT C++ interfaces classes to access information from ALIEN
 
+  Important functionality:
+  MakeJobList - prepared the list which is later used by agent.sh
+  to analyze data on batch system 
+
+
+
+  See example bellow and class heeader for details.
+  !!! The functionality not expelicitly mentioned in example can be not working
+  Code is still under development
+
+*/
 
 
  
@@ -17,16 +31,13 @@
   gSystem->Load("libXrdClient.so");
   gSystem->Load("libNetx.so");
   .L $ALICE_ROOT/TPC/macros/testTPC/AlienToolkit.cxx+
-  //Reconstructed data example  
-  char *mask = "v14*";
-  char *path = "/alice/cern.ch/user/m/miranov/test2007/"
-  // raw data
-  char *mask = "0000191*RecPo*.root";
-  char *path = "/alice/data/2008/LHC08a_TPC/"
- 
+  //Raw data example
+  char *mask = "20225";
+  char *path = "/alice/data/2008/"
+  //
   AlienToolkit toolkit;
-  toolkit.MakeCollection(path,mask);
-
+  toolkit.MakeCollection(path,mask); // make a list of the registerd data
+  toolkit.StageCastor();    // stage files on castor
   //
   toolkit.MakeJobList("job.list","", "", "rec");
 
@@ -39,6 +50,7 @@ public:
   AlienToolkit();
   TGridCollection* MakeCollection(const char *path,  char *mask);
   void             Stage();
+  void             StageCastor();
   void             LocalCopy(const char* destination);
   void             RemoteCopy(const char* destination="root://gsiaf.gsi.de:1094/", Int_t maxfiles=20);
   void             PrintPFN();
@@ -155,6 +167,32 @@ void AlienToolkit::Stage(){
   }
   aout.close();
   gSystem->Exec("aliensh file:stage.txt");
+}
+
+void AlienToolkit::StageCastor(){
+  //
+  // Stage selected alien files
+  //
+  Int_t entries = fInfoArray.GetEntries();
+  ofstream aout("stage.sh");
+  aout<<"#!/usr/local/bin/bash"<<endl;
+  for (Int_t i=0; i<entries;i++){
+    TMap &map = *((TMap*)fInfoArray.At(i));
+    TObjString *pfn = (TObjString*)map("alienSURL");
+    if (!pfn) continue;
+    if (!pfn->String().Contains("//castor")) continue;
+    Char_t * cstr = &( pfn->String()[pfn->String().Index("/castor")]);
+    if (!cstr) continue;
+    printf("Staging submitfor\t%s\n",cstr);
+    char command[1000];
+    sprintf(command,"stager_qry -M %s | grep /castor | gawk  \'{print $3;}\'", cstr);
+    gSystem->Exec(command);    
+    sprintf(command,"stager_get -M %s", cstr);
+    aout<<command<<endl;
+    gSystem->Exec(command);
+  }
+  aout.close();
+  gSystem->Exec("source stage.sh");
 }
 
 void AlienToolkit::LocalCopy(const char *destination){
