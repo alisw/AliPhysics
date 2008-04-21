@@ -138,12 +138,12 @@ void AliZDCQADataMakerSim::MakeHits(TClonesArray * data)
 {
   //filling QA histos for Hits
   //
-  TClonesArray * hits = dynamic_cast<TClonesArray *>(data); 
-  if(!hits){
+  fHits = dynamic_cast<TClonesArray *>(data); 
+  if(!fHits){
     AliError("Wrong type of hits container"); 
   } 
   else {
-    TIter next(hits); 
+    TIter next(fHits); 
     AliZDCHit * hit; 
     while((hit = dynamic_cast<AliZDCHit *>(next()))){
       if(hit->GetVolume(0)==1) GetHitsData(0)->Fill(hit->GetXImpact(),hit->GetYImpact());
@@ -176,16 +176,17 @@ void AliZDCQADataMakerSim::MakeHits(TTree * hitTree)
     if (ntracks<=0) return;
     //
     for(Int_t itrack=0; itrack<ntracks; itrack++){
-      TClonesArray * hits = new TClonesArray("AliZDCHit", 1000);
+      fHits = new TClonesArray("AliZDCHit", 1000);
       //
-      branch->SetAddress(&hits) ;
+      branch->SetAddress(&fHits) ;
       branch->GetEntry(itrack);
       //
       //printf("\t *** track %d",itrack);
       //hits->Print("");
       //printf("\n");
       //
-      MakeHits(hits); 
+      MakeHits(fHits); 
+      fHits->Clear();
     }	  
   }
 }
@@ -283,16 +284,17 @@ void AliZDCQADataMakerSim::MakeDigits(TClonesArray * digits)
 void AliZDCQADataMakerSim::MakeDigits(TTree *digitTree )
 {
    // makes data from Digit Tree
-   TClonesArray * digits = new TClonesArray("AliZDCDigit", 1000); 
+   fDigits = new TClonesArray("AliZDCDigit", 1000); 
    //
    TBranch * branch = digitTree->GetBranch("ZDC");
    if(!branch){
       AliError("ZDC branch in Digit Tree not found"); 
       return;
    } 
-   branch->SetAddress(&digits) ;
-   branch->GetEntry(0) ; 
-   MakeDigits(digits) ; 
+   branch->SetAddress(&fDigits);
+   branch->GetEntry(0); 
+   MakeDigits(fDigits); 
+   fDigits->Clear();
 }
 
 //____________________________________________________________________________

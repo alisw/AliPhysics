@@ -32,8 +32,12 @@ private:
   virtual void   MakeSDigits(TTree * sdigTree) {;}
   virtual void   StartOfDetectorCycle(); 
   virtual void   EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray * list);
-
-  ClassDef(AliZDCQADataMakerSim,1)  // description 
+  //
+  TClonesArray * fHits; 	//! Array containing ZDC hits
+  TClonesArray * fDigits; 	//! Array containing ZDC digits
+  
+  
+  ClassDef(AliZDCQADataMakerSim2)  // description 
 
 };
 

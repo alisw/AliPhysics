@@ -39,8 +39,11 @@ private:
   virtual void  MakeESDs(AliESDEvent * esd);	     
   virtual void  StartOfDetectorCycle();
   virtual void   EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray * list);
+  //
+  TClonesArray * fHits; 	//! Array containing ZDC hits
+  TClonesArray * fDigits; 	//! Array containing ZDC digits
 
-  ClassDef(AliZDCQADataMaker,1)  // description 
+  ClassDef(AliZDCQADataMaker,2)  // description 
 
 };
 

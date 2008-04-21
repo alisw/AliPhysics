@@ -263,17 +263,18 @@ void AliZDCQADataMakerRec::InitESDs()
   Add2ESDsList(hESDPMCZPAlg, 25);
 }
   
+
 //____________________________________________________________________________
-void AliZDCQADataMaker::MakeHits(TClonesArray * data)
+void AliZDCQADataMakerSim::MakeHits(TClonesArray * data)
 {
   //filling QA histos for Hits
   //
-  TClonesArray * hits = dynamic_cast<TClonesArray *>(data); 
-  if(!hits){
+  fHits = dynamic_cast<TClonesArray *>(data); 
+  if(!fHits){
     AliError("Wrong type of hits container"); 
   } 
   else {
-    TIter next(hits); 
+    TIter next(fHits); 
     AliZDCHit * hit; 
     while((hit = dynamic_cast<AliZDCHit *>(next()))){
       if(hit->GetVolume(0)==1) GetHitsData(0)->Fill(hit->GetXImpact(),hit->GetYImpact());
@@ -284,6 +285,7 @@ void AliZDCQADataMaker::MakeHits(TClonesArray * data)
   } 
 
 }
+
 //___________________________________________________________________________
 void AliZDCQADataMakerSim::MakeHits(TTree * hitTree)
 {
@@ -305,16 +307,17 @@ void AliZDCQADataMakerSim::MakeHits(TTree * hitTree)
     if (ntracks<=0) return;
     //
     for(Int_t itrack=0; itrack<ntracks; itrack++){
-      TClonesArray * hits = new TClonesArray("AliZDCHit", 1000);
+      fHits = new TClonesArray("AliZDCHit", 1000);
       //
-      branch->SetAddress(&hits) ;
+      branch->SetAddress(&fHits) ;
       branch->GetEntry(itrack);
       //
       //printf("\t *** track %d",itrack);
       //hits->Print("");
       //printf("\n");
       //
-      MakeHits(hits); 
+      MakeHits(fHits); 
+      fHits->Clear();
     }	  
   }
 }
@@ -332,6 +335,60 @@ void AliZDCQADataMakerSim::MakeDigits(TClonesArray * digits)
   Float_t ADCSum_ZNC_lg=0., ADCSum_ZNA_lg=0., ADCSum_ZPC_lg=0., ADCSum_ZPA_lg=0.;
   Float_t ADCSumQ_ZNC_lg=0., ADCSumQ_ZNA_lg=0., ADCSumQ_ZPC_lg=0., ADCSumQ_ZPA_lg=0.;
   //
+  while((digit = dynamic_cast<AliZDCDigit *>(next()))){
+    if(digit->GetSector(0)==1){
+      ADCSum_ZNC += digit->GetADCValue(0);
+      ADCSum_ZNC_lg += digit->GetADCValue(1);
+      //
+      if(digit->GetSector(1)!=0){
+        ADCSumQ_ZNC += digit->GetADCValue(0);
+        ADCSumQ_ZNC_lg+= digit->GetADCValue(1);
+      }
+      else{
+        GetDigitsData(8)->Fill(digit->GetADCValue(0));
+        GetDigitsData(20)->Fill(digit->GetADCValue(1));
+      }
+    }
+    else if(digit->GetSector(0)==2){
+      ADCSum_ZPC += digit->GetADCValue(0);
+      ADCSum_ZPC_lg += digit->GetADCValue(1);
+      //
+      if(digit->GetSector(1)!=0){
+        ADCSumQ_ZPC += digit->GetADCValue(0);
+        ADCSumQ_ZPC_lg+= digit->GetADCValue(1);
+      }
+      else{
+        GetDigitsData(9)->Fill(digit->GetADCValue(0));
+        GetDigitsData(21)->Fill(digit->GetADCValue(1));
+      }
+    }
+    else if(digit->GetSector(0)==4){
+      ADCSum_ZNA += digit->GetADCValue(0);
+      ADCSum_ZNA_lg += digit->GetADCValue(1);
+      //
+      if(digit->GetSector(1)!=0){
+        ADCSumQ_ZNA += digit->GetADCValue(0);
+        ADCSumQ_ZNA_lg+= digit->GetADCValue(1);
+      }
+      else{
+        GetDigitsData(10)->Fill(digit->GetADCValue(0));
+        GetDigitsData(22)->Fill(digit->GetADCValue(1));
+      }
+    }
+    else if(digit->GetSector(0)==5){
+      ADCSum_ZPA += digit->GetADCValue(0);
+      ADCSum_ZPA_lg += digit->GetADCValue(1);
+      //
+      if(digit->GetSector(1)!=0){
+        ADCSumQ_ZPA += digit->GetADCValue(0);
+        ADCSumQ_ZPA_lg+= digit->GetADCValue(1);
+      }
+      else{
+        GetDigitsData(11)->Fill(digit->GetADCValue(0));
+        GetDigitsData(23)->Fill(digit->GetADCValue(1));
+      }
+    }
+  }
   //
   GetDigitsData(0)->Fill(ADCSum_ZNC);
   GetDigitsData(1)->Fill(ADCSum_ZPC);
@@ -358,16 +415,17 @@ void AliZDCQADataMakerSim::MakeDigits(TClonesArray * digits)
 void AliZDCQADataMakerSim::MakeDigits(TTree *digitTree )
 {
    // makes data from Digit Tree
-   TClonesArray * digits = new TClonesArray("AliZDCDigit", 1000); 
+   fDigits = new TClonesArray("AliZDCDigit", 1000); 
    //
    TBranch * branch = digitTree->GetBranch("ZDC");
    if(!branch){
       AliError("ZDC branch in Digit Tree not found"); 
       return;
    } 
-   branch->SetAddress(&digits) ;
-   branch->GetEntry(0) ; 
-   MakeDigits(digits) ; 
+   branch->SetAddress(&fDigits);
+   branch->GetEntry(0); 
+   MakeDigits(fDigits); 
+   fDigits->Clear();
 }
 
 //____________________________________________________________________________
