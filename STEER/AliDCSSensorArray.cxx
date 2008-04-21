@@ -233,6 +233,27 @@ void AliDCSSensorArray::MakeSplineFit(TMap *map, Bool_t keepMap)
     if (keepMap) entry->SetGraph(gr);
   }
 }
+//_____________________________________________________________________________
+void AliDCSSensorArray::StoreGraph(TMap *map)
+{
+  //
+  // Store graphs extracted from DCS
+  //
+  Int_t nsensors = fSensors->GetEntries();
+  for ( Int_t isensor=0; isensor<nsensors; isensor++) {
+    AliDCSSensor *entry = (AliDCSSensor*)fSensors->At(isensor);
+    TString stringID = entry->GetStringID();
+    TGraph *gr = (TGraph*)map->GetValue(stringID.Data());
+    if (!gr ) {
+      entry->SetFit(0);
+      entry->SetGraph(0);
+      AliWarning(Form("sensor %s: no input graph",stringID.Data()));
+      continue;
+    }
+    entry->SetFit(0);
+    entry->SetGraph(gr);
+  }
+}
 
 //_____________________________________________________________________________
 Int_t AliDCSSensorArray::NumFits() const 
@@ -543,3 +564,19 @@ void AliDCSSensorArray::ClearFit()
      sensor->SetFit(0);
    }
 }
+//_____________________________________________________________________________
+void AliDCSSensorArray::AddSensors(AliDCSSensorArray *newSensors)
+{
+  //
+  // add sensors from two sensor arrays
+  //
+  
+  Int_t numNew = newSensors->NumSensors();
+  Int_t numOld = fSensors->GetEntries();
+  fSensors->Expand(numOld+numNew);
+  for (Int_t i=0;i<numNew;i++) {
+    AliDCSSensor *sens = newSensors->GetSensorNum(i);
+    new ((*fSensors)[numOld+i]) AliDCSSensor(*sens);
+  }
+}  
+  

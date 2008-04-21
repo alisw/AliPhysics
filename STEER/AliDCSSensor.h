@@ -68,6 +68,7 @@ public:
   Double_t GetValue(UInt_t timeSec);
   Double_t GetValue(TTimeStamp time);
   Double_t Eval(const TTimeStamp& time, Bool_t inside=true) const;
+  Double_t EvalGraph(const Double_t& timeHour) const;
   TGraph *MakeGraph (Int_t nPoints=100) const;
   static TClonesArray *  ReadTree(TTree *tree);
   

@@ -119,10 +119,42 @@ Double_t AliDCSSensor::Eval(const TTimeStamp& time, Bool_t inside) const
   if ( fFit ) {
      return fFit->Eval(timeHour); 
   } else {
-     return -99;
+     if ( fGraph ) {
+       return EvalGraph(timeHour);
+     } else {  
+       return -99;
+     }
   }
 }
+//_____________________________________________________________________________
+Double_t AliDCSSensor::EvalGraph(const Double_t& timeHour) const 
+{
+  //
+  // Extract last value in graph observed before time given by timeHour
+  //
 
+  // return -99 if point specified is before beginning of graph
+  Double_t x=0; Double_t y=0;
+  fGraph->GetPoint(0,x,y);
+  if ( timeHour < x ) return -99;
+  
+  // return previous point when first time > timeHour is observed
+  
+  Int_t npoints = fGraph->GetN();
+  for (Int_t i=1; i<npoints; i++) {
+     fGraph->GetPoint(i,x,y);
+     if ( timeHour < x ) {
+       fGraph->GetPoint(i-1,x,y);
+       return y;
+     }
+  }
+  
+  // return last point if all times are < timeHour
+  return y;
+} 
+	
+
+//_____________________________________________________________________________
 TGraph* AliDCSSensor::MakeGraph(Int_t nPoints) const
 {
   //

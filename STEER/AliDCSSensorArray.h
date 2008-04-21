@@ -53,6 +53,7 @@ class AliDCSSensorArray : public TNamed {
 
   void SetGraph     (TMap *map);
   void MakeSplineFit(TMap *map, Bool_t keepMap=kFALSE);
+  void StoreGraph   (TMap *map);
   TMap* ExtractDCS  (TMap *dcsMap);
   TGraph* MakeGraph (TObjArray *valueSet);
   void ClearGraph();
@@ -64,6 +65,7 @@ class AliDCSSensorArray : public TNamed {
   AliDCSSensor* GetSensorNum (Int_t ind);
   void RemoveSensorNum(Int_t ind);
   void RemoveSensor(Int_t IdDCS);
+  void AddSensors(AliDCSSensorArray *sensors);
   TArrayI OutsideThreshold(Double_t threshold, UInt_t timeSec=0, Bool_t below=kTRUE) const;
   Int_t NumSensors() const { return fSensors->GetEntries(); }
   Int_t NumFits() const;
