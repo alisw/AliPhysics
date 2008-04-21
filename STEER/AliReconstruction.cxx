@@ -244,7 +244,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename,
   fDiamondProfileTPC(NULL),
   fMeanVertexConstraint(kTRUE),
 
-  fGRPList(NULL),
+  fGRPData(NULL),
 
   fAlignObjArray(NULL),
   fCDBUri(),
@@ -332,7 +332,7 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fDiamondProfileTPC(NULL),
   fMeanVertexConstraint(rec.fMeanVertexConstraint),
 
-  fGRPList(NULL),
+  fGRPData(NULL),
 
   fAlignObjArray(rec.fAlignObjArray),
   fCDBUri(rec.fCDBUri),
@@ -798,15 +798,14 @@ Bool_t AliReconstruction::InitRun(const char* input)
     fesd->AddObject(fesdf);
   }
 
-  
   // Get the GRP CDB entry
   AliCDBEntry* entryGRP = AliCDBManager::Instance()->Get("GRP/GRP/Data");
 	
-  if(entryGRP) {
-  	fGRPList = dynamic_cast<TList*> (entryGRP->GetObject());  
-  } else {
+  if (entryGRP) 
+  	fGRPData = dynamic_cast<TMap*> (entryGRP->GetObject());  
+  
+  if (!fGRPData)
   	AliError("No GRP entry found in OCDB!");
-  }
 
   // Get the diamond profile from OCDB
   AliCDBEntry* entry = AliCDBManager::Instance()
@@ -1277,7 +1276,7 @@ Bool_t AliReconstruction::FinishRun()
   // Create tags for the events in the ESD tree (the ESD tree is always present)
   // In case of empty events the tags will contain dummy values
   AliESDTagCreator *esdtagCreator = new AliESDTagCreator();
-  esdtagCreator->CreateESDTags(fFirstEvent,fLastEvent,fGRPList);
+  esdtagCreator->CreateESDTags(fFirstEvent,fLastEvent,fGRPData);
   if (fWriteAOD) {
     AliWarning("AOD tag creation not supported anymore during reconstruction.");
   }
@@ -2198,8 +2197,8 @@ void AliReconstruction::CleanUp(TFile* file, TFile* fileOld)
   	fDiamondProfile = NULL;
   	delete fDiamondProfileTPC;
   	fDiamondProfileTPC = NULL;
-	delete fGRPList;
-	fGRPList = NULL;
+	delete fGRPData;
+	fGRPData = NULL;
   }
 
 

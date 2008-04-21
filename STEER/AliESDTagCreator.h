@@ -27,6 +27,7 @@
 #include <TSystem.h>
 class TChain;
 class TList;
+class TMap;
 
 #include <AliTagCreator.h>
 
@@ -41,7 +42,7 @@ class AliESDTagCreator : public AliTagCreator {
   AliESDTagCreator();
   ~AliESDTagCreator(); 
 
-  void CreateESDTags(Int_t fFirstEvent, Int_t fLastEvent, TList *grpList);
+  void CreateESDTags(Int_t fFirstEvent, Int_t fLastEvent, TMap *grpData);
 
   void SetInactiveBranches(const char* branches) {fBranches = branches;}
 

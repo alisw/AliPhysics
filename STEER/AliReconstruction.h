@@ -35,6 +35,7 @@ class TFile;
 class TTree;
 class TList;
 class AliQADataMakerRec;
+class TMap;
 
 class AliReconstruction: public TNamed {
 public:
@@ -220,7 +221,7 @@ private:
   AliESDVertex*  fDiamondProfileTPC;       // (x,y) diamond profile from TPC for AliVertexerTracks
   Bool_t         fMeanVertexConstraint; // use fDiamondProfile in AliVertexerTracks
 
-  TList*         fGRPList;            // TList from the GRP/GRP/Data CDB folder
+  TMap*          fGRPData;              // Data from the GRP/GRP/Data CDB folder
 
   TObjArray* 	 fAlignObjArray;      // array with the alignment objects to be applied to the geometry
 
@@ -253,7 +254,7 @@ private:
   AliVertexerTracks*   ftVertexer;  //! Pointer to the vertexer based on ESD tracks
   Bool_t               fIsNewRunLoader; // galice.root created from scratch (real raw data case)
 
-  ClassDef(AliReconstruction, 22)      // class for running the reconstruction
+  ClassDef(AliReconstruction, 23)      // class for running the reconstruction
 };
 
 #endif

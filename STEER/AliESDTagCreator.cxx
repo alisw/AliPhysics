@@ -29,6 +29,7 @@
 #include <TList.h>
 #include <TObjString.h>
 #include <TLorentzVector.h>
+#include <TMap.h>
 
 //ROOT-AliEn
 #include <TGrid.h>
@@ -1161,7 +1162,7 @@ void AliESDTagCreator::CreateTag(TFile* file, const char *filepath, Int_t Counte
 }
 
 //_____________________________________________________________________________
-void AliESDTagCreator::CreateESDTags(Int_t fFirstEvent, Int_t fLastEvent, TList */*grpList*/) {
+void AliESDTagCreator::CreateESDTags(Int_t fFirstEvent, Int_t fLastEvent, TMap */* grpData */) {
   //GRP
   Float_t lhcLuminosity = 0.0;
   TString lhcState = "test";
