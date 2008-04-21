@@ -1,6 +1,6 @@
 /*
 T0 DA for online calibration
-
+ 
 Contact: Michal.Oledzki@cern.ch
 Link: http://users.jyu.fi/~mioledzk/
 Run Type: PHYSICS
@@ -76,24 +76,9 @@ int main(int argc, char **argv) {
 
   while((c=getc(inp))!=EOF) {
     switch(c) {
-      case 'a': {fscanf(inp, "%d", &cqbx ); break;} //N of X bins hCFD_QTC
-      case 'b': {fscanf(inp, "%f", &cqlx ); break;} //Low x hCFD_QTC
-      case 'c': {fscanf(inp, "%f", &cqmx ); break;} //High x hCFD_QTC
-      case 'd': {fscanf(inp, "%d", &cqby ); break;} //N of Y bins hCFD_QTC
-      case 'e': {fscanf(inp, "%f", &cqly ); break;} //Low y hCFD_QTC
-      case 'f': {fscanf(inp, "%f", &cqmy ); break;} //High y hCFD_QTC
-      case 'g': {fscanf(inp, "%d", &clbx ); break;} //N of X bins hCFD_LED
-      case 'h': {fscanf(inp, "%f", &cllx ); break;} //Low x hCFD_LED
-      case 'i': {fscanf(inp, "%f", &clmx ); break;} //High x hCFD_LED
-      case 'j': {fscanf(inp, "%d", &clby ); break;} //N of Y bins hCFD_LED
-      case 'k': {fscanf(inp, "%f", &clly ); break;} //Low y hCFD_LED
-      case 'l': {fscanf(inp, "%f", &clmy ); break;} //High y hCFD_LED
-      case 'm': {fscanf(inp, "%d", &cbx ); break;}  //N of Y bins hCFD 
-      case 'n': {fscanf(inp, "%f", &clx ); break;}  //Low x hCFD
-      case 'o': {fscanf(inp, "%f", &cmx ); break;}  //High x hCFD
-      case 'p': {fscanf(inp, "%d", &ccbx ); break;} //N of X bins hCFD1_CFD
-      case 'r': {fscanf(inp, "%f", &cclx ); break;} //Low x hCFD1_CFD
-      case 's': {fscanf(inp, "%f", &ccmx ); break;} //High x hCFD1_CFD
+      case 'a': {fscanf(inp, "%d", &ccbx ); break;} //N of X bins hCFD1_CFD
+      case 'b': {fscanf(inp, "%f", &cclx ); break;} //Low x hCFD1_CFD
+      case 'c': {fscanf(inp, "%f", &ccmx ); break;} //High x hCFD1_CFD
     }
   }
   fclose(inp);
@@ -129,21 +114,10 @@ int main(int argc, char **argv) {
   printf("T0 monitoring program started\n");  
 
   // Allocation of histograms - start
-  TH1F *hCFD[24];
   TH1F *hCFD1minCFD[24]; 
-  TH2F *hCFDvsQTC[24];
-  TH2F *hCFDvsLED[24]; 
 
    for(Int_t ic=0; ic<24; ic++) {
-      hCFDvsQTC[ic] = new TH2F(Form("CFD_QTC%d",ic+1),"CFD_QTC",cqbx,cqlx,cqmx,cqby,cqly,cqmy);
-      hCFDvsLED[ic] = new TH2F(Form("CFD_LED%d",ic+1),"CFD_LED",clbx,cllx,clmx,clby,clly,clmy);
       hCFD1minCFD[ic] = new TH1F(Form("CFD1-CFD%d",ic+1),"CFD-CFD",ccbx,cclx,ccmx);
-      if(ic<12){
-	hCFD[ic] = new TH1F(Form("T0_C_%d_CFD",ic+1),"CFD", cbx,clx,cmx);	
-      }
-      else{
-        hCFD[ic] = new TH1F(Form("T0_A_%d_CFD",ic-11),"CFD", cbx,clx,cmx); 
-      }
     }
 
   // Allocation of histograms - end
@@ -207,50 +181,29 @@ int main(int argc, char **argv) {
       for(Int_t i0=0;i0<105;i0++)
       	for(Int_t j0=0;j0<5;j0++)
 		allData[i0][j0] = 0;
-     
-      if(start->Next())
-      for (Int_t i=0; i<105; i++) {
+    
+       if(start->Next()){
+       for (Int_t i=0; i<105; i++) {
 	for(Int_t iHit=0;iHit<5;iHit++){
 	  allData[i][iHit]= start->GetData(i,iHit);
         }
+       }
       }
-	else 
-	printf("No T0 data found!!\n");
+	else
+	printf("No T0 data found!!!\n");
 
       // Fill the histograms
 	
-      for (Int_t ik = 0; ik<24; ik+=2)
+      for (Int_t ik = 0; ik<24; ik++)
          for (Int_t iHt=0; iHt<5; iHt++){
-		 Int_t cc = ik/2;
-		if((allData[cc+1][iHt]-allData[0][0]+5000)!=0 && allData[cc+1][iHt]>0){
-		 hCFD[cc]->Fill(allData[cc+1][iHt]-allData[0][0]+5000);
+                if(allData[ik+1][iHt]!=0 ){
+		  if(ik<12){
+			 hCFD1minCFD[ik]->Fill(allData[ik+1][iHt]-allData[1][iHt]);
+		  }
+                  if(ik>11){
+                         hCFD1minCFD[ik]->Fill(allData[ik+45][iHt]-allData[57][iHt]);
+                  }
 		}
-		if((allData[cc+1][iHt]!=0) && (allData[1][iHt]!=0)){
-		 hCFD1minCFD[cc]->Fill(allData[cc+1][iHt]-allData[1][iHt]);
-		}
-		if(allData[ik+25][iHt]!=0 && allData[ik+26][iHt]!=0 && allData[cc+1][iHt]!=0){
-                 hCFDvsQTC[cc]->Fill((allData[ik+25][iHt]-allData[ik+26][iHt]) , (allData[cc+1][iHt]-allData[0][0]+5000));
-		} 
-                if(allData[cc+13][iHt]!=0 && allData[cc+1][iHt]!=0){
-		 hCFDvsLED[cc]->Fill(allData[cc+13][iHt]-allData[cc+1][iHt],allData[cc+1][iHt]-allData[0][0]+5000);
-		}
-	}
-
-      for (Int_t ik = 24; ik<48; ik+=2)
-         for (Int_t iHt=0; iHt<5; iHt++){
-		 Int_t cc = ik/2;
-                if((allData[cc+45][iHt]-allData[0][0]+5000)!=0 && allData[cc+45][iHt]>0){
-                 hCFD[cc]->Fill(allData[cc+45][iHt]-allData[0][0]+5000);
-		}
-		if((allData[cc+45][iHt]!=0) && (allData[57][iHt]!=0)){
-		 hCFD1minCFD[cc]->Fill(allData[cc+45][iHt]-allData[57][iHt]);
-                }
-                if(allData[ik+57][iHt]!=0 && allData[ik+58][iHt]!=0 && allData[cc+45][iHt]!=0){
-                 hCFDvsQTC[cc]->Fill(allData[ik+57][iHt]-allData[ik+58][iHt],allData[cc+45][iHt]-allData[0][0]+5000);
-		}
-                if(allData[cc+57][iHt]!=0 && allData[cc+45][iHt]!=0){
-                 hCFDvsLED[cc]->Fill(allData[cc+57][iHt]-allData[cc+45][iHt],allData[cc+45][iHt]-allData[0][0]+5000);
-                }
 	}
 	
      delete start;
@@ -275,9 +228,6 @@ int main(int argc, char **argv) {
   TFile *hist = new TFile(FILE_OUT,"RECREATE");
 
   for(Int_t j=0;j<24;j++){
-     hCFDvsQTC[j]->Write();
-     hCFDvsLED[j]->Write();
-     hCFD[j]->Write();
      hCFD1minCFD[j]->Write();
     }
   hist->Close();

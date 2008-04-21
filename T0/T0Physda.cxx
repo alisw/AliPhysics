@@ -1,6 +1,6 @@
 /*
 T0 DA for online calibration
-
+ 
 Contact: Michal.Oledzki@cern.ch
 Link: http://users.jyu.fi/~mioledzk/
 Run Type: PHYSICS
@@ -79,9 +79,9 @@ int main(int argc, char **argv) {
       case 'a': {fscanf(inp, "%d", &ccbx ); break;} //N of X bins hCFD1_CFD
       case 'b': {fscanf(inp, "%f", &cclx ); break;} //Low x hCFD1_CFD
       case 'c': {fscanf(inp, "%f", &ccmx ); break;} //High x hCFD1_CFD
-      case 'd': {fscanf(inp, "%d", &cbx ); break;} //N of X bins hCFD
-      case 'e': {fscanf(inp, "%f", &clx ); break;} //Low x hCFD
-      case 'f': {fscanf(inp, "%f", &cmx ); break;} //High x hCFD
+//      case 'd': {fscanf(inp, "%d", &cbx ); break;} //N of X bins hCFD
+//      case 'e': {fscanf(inp, "%f", &clx ); break;} //Low x hCFD
+//      case 'f': {fscanf(inp, "%f", &cmx ); break;} //High x hCFD
     }
   }
   fclose(inp);
@@ -119,17 +119,9 @@ int main(int argc, char **argv) {
   // Allocation of histograms - start
 
   TH1F *hCFD1minCFD[24];  
-  TH1F *hCFD[24];
    
    for(Int_t ic=0; ic<24; ic++) {
-      if(ic<12) {
         hCFD1minCFD[ic] = new TH1F(Form("CFD1-CFD%d",ic+1),"CFD-CFD",ccbx,cclx,ccmx);
-        hCFD[ic] = new TH1F(Form("CFD%i",ic+1),"CFD",cbx,clx,cmx);
-	}
-      if(ic>11){
-        hCFD1minCFD[ic] = new TH1F(Form("CFD1-CFD%i",ic+1),"CFD-CFD",ccbx,cclx,ccmx);
-        hCFD[ic] = new TH1F(Form("CFD%i",ic+1),"CFD",cbx,clx,cmx);
-	}
     }
 
   // Allocation of histograms - end
@@ -159,8 +151,6 @@ int main(int argc, char **argv) {
     if (event==NULL) {
       continue;
     }
- 
-//    iev++; 
 
     /* use event - here, just write event id to result file */
     eventT=event->eventType;
@@ -193,15 +183,16 @@ int main(int argc, char **argv) {
       for(Int_t i0=0;i0<105;i0++)
       	for(Int_t j0=0;j0<5;j0++)
 		allData[i0][j0] = 0;
-     
-      if(start->Next())
-      for (Int_t i=0; i<105; i++) {
+
+       if(start->Next()){
+       for (Int_t i=0; i<105; i++) {
 	for(Int_t iHit=0;iHit<5;iHit++){
 	  allData[i][iHit]= start->GetData(i,iHit);
         }
+       }
       }
 	else 
-	printf("No T0 data found!!\n");
+	printf("No T0 data found!!!\n");
 
       // Fill the histograms
 	
@@ -210,11 +201,9 @@ int main(int argc, char **argv) {
                 if(allData[ik+1][iHt]!=0 ){
 		  if(ik<12){
 			 hCFD1minCFD[ik]->Fill(allData[ik+1][iHt]-allData[1][iHt]);
-			 hCFD[ik]->Fill(allData[ik+13][iHt]);
 		  }
                   if(ik>11){
                          hCFD1minCFD[ik]->Fill(allData[ik+45][iHt]-allData[57][iHt]);
-                         hCFD[ik]->Fill(allData[ik+45][iHt]);
                   }
 		}
 	}
@@ -242,7 +231,6 @@ int main(int argc, char **argv) {
 
   for(Int_t j=0;j<24;j++){
      hCFD1minCFD[j]->Write();
-     hCFD[j]->Write();	
     }
   hist->Close();
   delete hist;

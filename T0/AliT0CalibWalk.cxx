@@ -12,7 +12,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
+ 
 /* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -199,7 +199,6 @@ void AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
       Double_t *grX ;
   TFile *gFile = TFile::Open(laserFile);
   //  gFile->ls();
-  
   Float_t x1[10], y1[10]; 
   Float_t x2[10], y2[10];
  
@@ -233,6 +232,9 @@ void AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
 	  //	  cout<<i<<" "<<imi<<" "<<" qtc " <<x1[imi]<<" "<<xx[imi]<<
 	  //    " led "<<x2[imi]<<" "<<y2[imi]<<" led2d "<<yy1[imi]<<" "<<xx1[imi]<<endl;
 	}
+	if(i==0){	
+	 cout<<"Making graphs..."<<endl;
+	}
       TGraph *gr1 = new TGraph (10,x1,y1);
       TGraph *gr2 = new TGraph (10,x2,y2);
       fWalk.AddAtAndExpand(gr1,i);
@@ -256,7 +258,9 @@ void AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
       fQTC.AddAtAndExpand(gr3,i);	 
       fAmpLED.AddAtAndExpand(gr4,i);
       //      for (Int_t im=0; im<10; im++) { x2[im]=0;  y2[im]=0;  xx1[im]=0; xx[im]=0;}
-
+	if(i==23){
+	 cout<<"Graphs created..."<<endl;
+	}
     }
 }
 

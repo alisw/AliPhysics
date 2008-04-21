@@ -3,7 +3,7 @@
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
-
+ 
 /* $Id$ */
 
 
@@ -35,6 +35,7 @@ class AliT0Preprocessor: public AliPreprocessor
 	UInt_t ProcessDCSDataPoints(TMap* dcsAliasMap);
  	UInt_t ProcessLaser();
  	UInt_t ProcessPhysics();
+	UInt_t ProcessCosmic();
  	AliT0DataDCS *fData;			// Data member to process DCS data	
  
 	ClassDef(AliT0Preprocessor, 2)

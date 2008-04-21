@@ -1,6 +1,6 @@
 /*
 T0 DA for online calibration
-
+ 
 Contact: Michal.Oledzki@cern.ch
 Link: http://users.jyu.fi/~mioledzk/
 Run Type: STANDALONE
@@ -44,8 +44,8 @@ Trigger types used: CALIBRATION_EVENT
 #include "TSpectrum.h"
 #include "TVirtualFitter.h"
 //#include "TProfile.h"
-int cqbx,cqby,clbx,clby,cbx;
-float cqlx,cqmx,cqly,cqmy,cllx,clmx,clly,clmy,clx,cmx;
+int cqbx,cqby,clbx,clby,mod;
+float cqlx,cqmx,cqly,cqmy,cllx,clmx,clly,clmy;
 /* Main routine
       Arguments: 
       1- monitoring data source
@@ -88,9 +88,7 @@ int main(int argc, char **argv) {
       case 'j': {fscanf(inp, "%d", &clby ); break;} //N of Y bins hCFD_LED
       case 'k': {fscanf(inp, "%f", &clly ); break;} //Low y hCFD_LED
       case 'l': {fscanf(inp, "%f", &clmy ); break;} //High y hCFD_LED
-      case 'm': {fscanf(inp, "%d", &cbx ); break;}  //N of Y bins hCFD 
-      case 'n': {fscanf(inp, "%f", &clx ); break;}  //Low x hCFD
-      case 'o': {fscanf(inp, "%f", &cmx ); break;}  //High x hCFD
+      case 'm': {fscanf(inp, "%d", &mod  ); break;} //Modulo number
     }
   }
   fclose(inp);
@@ -126,24 +124,20 @@ int main(int argc, char **argv) {
   printf("T0 monitoring program started\n");  
 
   // Allocation of histograms - start
-  TH1F *hCFD[24];
-  TH2F *hCFDvsQTC[24];
-  TH2F *hCFDvsLED[24]; 
+  TH2F *hCFDvsQTC[24][10];
+  TH2F *hCFDvsLED[24][10]; 
 
-   for(Int_t ic=0; ic<24; ic++) {
-      hCFDvsQTC[ic] = new TH2F(Form("CFD_QTC%d",ic+1),"CFD_QTC",cqbx,cqlx,cqmx,cqby,cqly,cqmy);
-      hCFDvsLED[ic] = new TH2F(Form("CFD_LED%d",ic+1),"CFD_LED",clbx,cllx,clmx,clby,clly,clmy);
-      if(ic<12){
-	hCFD[ic] = new TH1F(Form("T0_C_%d_CFD",ic+1),"CFD", cbx,clx,cmx);	
-      }
-      else{
-        hCFD[ic] = new TH1F(Form("T0_A_%d_CFD",ic-11),"CFD", cbx,clx,cmx); 
-      }
+   for(Int_t ic=0; ic<24; ic++) 
+	for(Int_t im=0;im<10;im++)
+    {
+      hCFDvsQTC[ic][im] = new TH2F(Form("CFDvsQTC%d_%d",ic+1,im+1),"CFDvsQTC",cqbx,cqlx,cqmx,cqby,cqly,cqmy);
+      hCFDvsLED[ic][im] = new TH2F(Form("CFDvsLED%d_%d",ic+1,im+1),"CFDvsLED",clbx,cllx,clmx,clby,clly,clmy);
     }
 
   // Allocation of histograms - end
 
   Int_t iev=0;
+  Int_t mip=0;
   /* main loop (infinite) */
   for(;;) {
     struct eventHeaderStruct *event;
@@ -169,8 +163,6 @@ int main(int argc, char **argv) {
       continue;
     }
  
-//    iev++; 
-
     /* use event - here, just write event id to result file */
     eventT=event->eventType;
    
@@ -198,50 +190,54 @@ int main(int argc, char **argv) {
       AliT0RawReader *start = new AliT0RawReader(reader, kTRUE);
 
       // Read raw data
-      Int_t allData[105][5];
-      for(Int_t i0=0;i0<105;i0++)
+      Int_t allData[106][5];
+      for(Int_t i0=0;i0<106;i0++)
       	for(Int_t j0=0;j0<5;j0++)
 		allData[i0][j0] = 0;
      
-      if(start->Next())
-      for (Int_t i=0; i<105; i++) {
-	for(Int_t iHit=0;iHit<5;iHit++){
+       if(start->Next()){
+        for (Int_t i=0; i<106; i++) {
+	 for(Int_t iHit=0;iHit<5;iHit++){
 	  allData[i][iHit]= start->GetData(i,iHit);
+         }
         }
-      }
+       }
 	else 
-	printf("No T0 data found!!\n");
+	 printf("No data for T0 found!!!\n");
 
       // Fill the histograms
-	
+
+      if(iev<10000){
+        mip=0;
+	}else 
+	if((iev%mod)==0.0){
+	mip++;
+//	printf("mip = %d\n",mip);
+	if(mip>=9) mip=9;}
+      
+
       for (Int_t ik = 0; ik<24; ik+=2)
          for (Int_t iHt=0; iHt<5; iHt++){
 		 Int_t cc = ik/2;
-		if((allData[cc+1][iHt]-allData[0][0]+5000)!=0 && allData[cc+1][iHt]>0){
-		 hCFD[cc]->Fill(allData[cc+1][iHt]-allData[0][0]+5000);
-		}
 		if(allData[ik+25][iHt]!=0 && allData[ik+26][iHt]!=0 && allData[cc+1][iHt]!=0){
-                 hCFDvsQTC[cc]->Fill((allData[ik+25][iHt]-allData[ik+26][iHt]) , (allData[cc+1][iHt]-allData[0][0]+5000));
+                 hCFDvsQTC[cc][mip]->Fill((allData[ik+25][iHt]-allData[ik+26][iHt]) , (allData[cc+1][iHt]-allData[0][0]+5000));
 		} 
                 if(allData[cc+13][iHt]!=0 && allData[cc+1][iHt]!=0){
-		 hCFDvsLED[cc]->Fill(allData[cc+13][iHt]-allData[cc+1][iHt],allData[cc+1][iHt]-allData[0][0]+5000);
+		 hCFDvsLED[cc][mip]->Fill(allData[cc+13][iHt]-allData[cc+1][iHt],allData[cc+1][iHt]-allData[0][0]+5000);
 		}
 	}
 
       for (Int_t ik = 24; ik<48; ik+=2)
          for (Int_t iHt=0; iHt<5; iHt++){
 		 Int_t cc = ik/2;
-                if((allData[cc+45][iHt]-allData[0][0]+5000)!=0 && allData[cc+45][iHt]>0){
-                 hCFD[cc]->Fill(allData[cc+45][iHt]-allData[0][0]+5000);
-                }
                 if(allData[ik+57][iHt]!=0 && allData[ik+58][iHt]!=0 && allData[cc+45][iHt]!=0){
-                 hCFDvsQTC[cc]->Fill(allData[ik+57][iHt]-allData[ik+58][iHt],allData[cc+45][iHt]-allData[0][0]+5000);
+                 hCFDvsQTC[cc][mip]->Fill(allData[ik+57][iHt]-allData[ik+58][iHt],allData[cc+45][iHt]-allData[0][0]+5000);
 		}
                 if(allData[cc+57][iHt]!=0 && allData[cc+45][iHt]!=0){
-                 hCFDvsLED[cc]->Fill(allData[cc+57][iHt]-allData[cc+45][iHt],allData[cc+45][iHt]-allData[0][0]+5000);
+                 hCFDvsLED[cc][mip]->Fill(allData[cc+57][iHt]-allData[cc+45][iHt],allData[cc+45][iHt]-allData[0][0]+5000);
                 }
 	}
-	
+      
      delete start;
 	start = 0x0;
      reader->Reset();
@@ -263,10 +259,11 @@ int main(int argc, char **argv) {
   // write a file with the histograms
   TFile *hist = new TFile(FILE_OUT,"RECREATE");
 
-  for(Int_t j=0;j<24;j++){
-     hCFDvsQTC[j]->Write();
-     hCFDvsLED[j]->Write();
-     hCFD[j]->Write();
+  for(Int_t j=0;j<24;j++)
+   for(Int_t k=0;k<10;k++)
+    {
+     hCFDvsQTC[j][k]->Write();
+     hCFDvsLED[j][k]->Write();
     }
   hist->Close();
   delete hist;

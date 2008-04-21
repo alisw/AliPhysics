@@ -17,7 +17,7 @@
 $Log: AliT0Preprocessor.cxx,v $
 Revision 1.8  2007/12/07 15:22:51  alla
 bug fixed by Alberto
-
+ 
 Revision 1.7  2007/12/06 16:35:24  alla
 new bugs fixed by Tomek
 
@@ -136,7 +136,7 @@ UInt_t AliT0Preprocessor::ProcessDCSDataPoints(TMap* dcsAliasMap){
 
 UInt_t AliT0Preprocessor::ProcessLaser(){
 	// Processing data from DAQ Standalone run
-	Log("Processing Laser calibration");
+	Log("Processing Laser calibration - Walk Correction");
 	
 	Bool_t resultLaser=kFALSE;
 	//processing DAQ
@@ -159,6 +159,7 @@ UInt_t AliT0Preprocessor::ProcessLaser(){
                 metaData.SetComment("Walk correction from laser runs.");
 		resultLaser=Store("Calib","Slewing_Walk", laser, &metaData, 0, 1);
                 delete laser;
+		Log(Form("resultLaser = %d",resultLaser));
               }
               else
               {
@@ -183,7 +184,7 @@ UInt_t AliT0Preprocessor::ProcessPhysics(){
 	//Processing data from DAQ Physics run
 	Log("Processing Physics");
 
-	Bool_t resultOnline=kFALSE;  
+	Bool_t resultOnline=kFALSE; 
 	//processing DAQ
 	TList* listPhys = GetFileSources(kDAQ, "PHYSICS");
         if (listPhys)
@@ -203,22 +204,71 @@ UInt_t AliT0Preprocessor::ProcessPhysics(){
                 metaData.SetResponsible("Tomek&Michal");
                 metaData.SetComment("Time equalizing result.");
                 resultOnline = Store("Calib","TimeDelay", online, &metaData, 0, 1);
+		Log(Form("resultOnline = %d",resultOnline));
                 delete online;
               }
-              else
+		else
               {
                 Log(Form("Could not find file with Id PHYSICS in source %s!", sourcePhys->GetName()));
                 return 1;
               }
+              
             }
             if (!resultOnline)
             {
-              Log("No Laser Data stored");
+              Log("No Data stored");
               return 4;//return error code for failure in storing OCDB Data
             }
           } else {
 	  	Log("No sources found for id PHYSICS!");
 		return 1;
+	  }
+	return 0;
+}
+//____________________________________________________
+
+UInt_t AliT0Preprocessor::ProcessCosmic(){
+	//Processing data from DAQ Physics run
+	Log("Processing Laser Physics");
+
+	Bool_t resultLaserOnline=kFALSE; 
+	//processing DAQ
+	TList* listLaser = GetFileSources(kDAQ, "COSMIC");
+        if (listLaser)
+          {
+            TIter iter(listLaser);
+            TObjString *sourceLaser;
+            while ((sourceLaser = dynamic_cast<TObjString *> (iter.Next())))
+            {
+              const char *fileLaser = GetFile(kDAQ, "COSMIC", sourceLaser->GetName());
+              if (fileLaser)
+              {
+                AliT0CalibTimeEq *onlineLaser = new AliT0CalibTimeEq();
+                onlineLaser->Reset();
+                onlineLaser->ComputeOnlineParams(fileLaser);
+                AliCDBMetaData metaData;
+                metaData.SetBeamPeriod(0);
+                metaData.SetResponsible("Tomek&Michal");
+                metaData.SetComment("Time equalizing result.");
+                resultLaserOnline = Store("Calib","LaserTimeDelay", onlineLaser, &metaData, 0, 1);
+		Log(Form("resultLaserOnline = %d",resultLaserOnline));
+                delete onlineLaser;
+              }
+		else
+              {
+                Log(Form("Could not find file with Id COSMIC in source %s!", sourceLaser->GetName()));
+                return 0;
+              }
+              
+            }
+            if (!resultLaserOnline)
+            {
+              Log("No Laser Data stored");
+              return 0;//return error code for failure in storing OCDB Data
+            }
+          } else {
+	  	Log("No sources found for id COSMIC!");
+		return 0;
 	  }
 	return 0;
 }
@@ -246,14 +296,17 @@ UInt_t AliT0Preprocessor::Process(TMap* dcsAliasMap )
 			Int_t iresultDCS = ProcessDCSDataPoints(dcsAliasMap);
 			return iresultDCS;
 		}
+		Log(Form("iresultLaser = %d",iresultLaser));
 		return iresultLaser;
 	}
        else if(runType == "PHYSICS"){
 	        Int_t iresultPhysics = ProcessPhysics();
+		Int_t iresultCosmic = ProcessCosmic();
 		if(dcsDP==1){
 			Int_t iresultDCS = ProcessDCSDataPoints(dcsAliasMap);
 			return iresultDCS;
 		}
+		Log(Form("iresultPhysics = %d",iresultPhysics));
 	        return iresultPhysics; 
        }	
 
