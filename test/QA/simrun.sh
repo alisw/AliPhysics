@@ -8,9 +8,11 @@ aliroot -b -q $ALICE_ROOT/test/QA/rec.C > rec.log 2>&1
 alienroot -b -q $ALICE_ROOT/test/QA/recqa.C > recqa.log 2>&1
 alienroot -b -q $ALICE_ROOT/test/QA/tag.C > tag.log 2>&1
 cd $WORK/QATest/data
+cp  $ALICE_ROOT/test/QA/rawqa.C .
 aliroot -b -q  > rawqa.log 2>&1 << EOF
 .x  $ALICE_ROOT/test/QA/rootlogon.C
-.L $ALICE_ROOT/test/QA/rawqa.C+
+.L rawqa.C++
 rawqa(21950, 1)
 EOF
+rm -f rawqa.C
 exit
