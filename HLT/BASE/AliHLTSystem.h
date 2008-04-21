@@ -160,13 +160,29 @@ class AliHLTSystem : public AliHLTLogging {
   int InitBenchmarking(TObjArray* pStopwatches);
 
   /**
+   * Stop the stopwatches for all tasks.
+   * @param pStopwatches    object array of stopwatches, for types
+   *                        @see AliHLTComponent::AliHLTStopwatchType
+   * @return neg error code if failed
+   */
+  int PauseBenchmarking(TObjArray* pStopwatches) const;
+
+  /**
+   * Continue the stopwatches for all tasks.
+   * @param pStopwatches    object array of stopwatches, for types
+   *                        @see AliHLTComponent::AliHLTStopwatchType
+   * @return neg error code if failed
+   */
+  int ResumeBenchmarking(TObjArray* pStopwatches) const;
+
+  /**
    * Print benchmarking summary.
    * Optionak: clean up stop watches.
    * @param pStopwatches    object array of stopwatches
    * @param bClean          delete stop watches if 1
    * @return neg error code if failed
    */
-  int PrintBenchmarking(TObjArray* pStopwatches, int bClean=0);
+  int PrintBenchmarking(TObjArray* pStopwatches, int bClean=0) const;
 
   /**
    * Start task list.

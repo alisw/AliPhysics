@@ -14,6 +14,7 @@
 */
 
 #include "AliHLTOUTHomerCollection.h"
+#include "TString.h"
 
 class AliRawReader;
 class AliHLTHOMERReader;
@@ -27,8 +28,8 @@ class TArrayC;
  */
 class AliHLTOUTDigitReader : public AliHLTOUTHomerCollection {
  public:
-  /** standard constructor */
-  AliHLTOUTDigitReader(int event=-1, AliHLTEsdManager* pEsdManager=NULL);
+  /** constructor */
+  AliHLTOUTDigitReader(int event=-1, AliHLTEsdManager* pEsdManager=NULL, const char* digitFile="HLT.Digits.root");
   /** destructor */
   virtual ~AliHLTOUTDigitReader();
 
@@ -59,6 +60,9 @@ class AliHLTOUTDigitReader : public AliHLTOUTHomerCollection {
    * Cleanup tree and data arrays.
    */
   int CloseTree();
+
+  /** name of the digit file */
+  TString fDigitFileName; //! transient
 
   /** the root file for the HLT 'digit' output */
   TFile* fpDigitFile; //!transient

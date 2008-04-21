@@ -23,8 +23,11 @@
 
 #include <TSystem.h>
 #include <TObjString.h>
+#include "TFile.h"
+#include "TTree.h"
 #include "AliHLTReconstructor.h"
 #include "AliLog.h"
+#include "AliRawReader.h"
 #include "AliESDEvent.h"
 #include "AliHLTSystem.h"
 #include "AliHLTOUTRawReader.h"
@@ -43,6 +46,17 @@ AliHLTReconstructor::AliHLTReconstructor()
   //constructor
 }
 
+AliHLTReconstructor::AliHLTReconstructor(const char* options)
+  : 
+  AliReconstructor(),
+  AliHLTReconstructorBase(),
+  fFctProcessHLTOUT(NULL),
+  fpEsdManager(NULL)
+{ 
+  //constructor
+  if (options) Init(options);
+}
+
 AliHLTReconstructor::~AliHLTReconstructor()
 { 
   //destructor
@@ -58,6 +72,13 @@ AliHLTReconstructor::~AliHLTReconstructor()
 
   if (fpEsdManager) delete fpEsdManager;
   fpEsdManager=NULL;
+}
+
+void AliHLTReconstructor::Init(const char* options)
+{
+  // init the reconstructor
+  SetOption(options);
+  Init();
 }
 
 void AliHLTReconstructor::Init()
@@ -148,6 +169,7 @@ void AliHLTReconstructor::Reconstruct(AliRawReader* /*rawReader*/, TTree* /*clus
   // added to the existing HLTOUT data
   // The HLTOUT data is finally processed in FillESD
   AliHLTSystem* pSystem=GetInstance();
+  AliInfo("running raw data reconstruction");
 }
 
 void AliHLTReconstructor::FillESD(AliRawReader* rawReader, TTree* /*clustersTree*/, 
@@ -204,6 +226,7 @@ void AliHLTReconstructor::Reconstruct(TTree* /*digitsTree*/, TTree* /*clustersTr
 
   // all reconstruction has been moved to FillESD
   //AliReconstructor::Reconstruct(digitsTree,clustersTree);
+  AliInfo("running digit data reconstruction");
 }
 
 void AliHLTReconstructor::FillESD(TTree* /*digitsTree*/, TTree* /*clustersTree*/, AliESDEvent* esd) const
@@ -269,5 +292,78 @@ void AliHLTReconstructor::ProcessHLTOUT(AliHLTOUT* pHLTOUT, AliESDEvent* esd) co
     if ((pFunc)(pSystem, pHLTOUT, esd)<0) {
       AliError("error processing HLTOUT");
     }
+  }
+}
+
+void AliHLTReconstructor::ProcessHLTOUT(const char* digitFile, AliESDEvent* pEsd) const
+{
+  // debugging/helper function to examine simulated data
+  if (!digitFile) return;
+
+  // read the number of events
+  TFile f(digitFile);
+  if (f.IsZombie()) return;
+  TTree* pTree=NULL;
+  f.GetObject("rawhltout", pTree);
+  if (!pTree) {
+    AliWarning(Form("can not find tree rawhltout in file %s", digitFile));
+    return ;
+  }
+  int nofEvents=pTree->GetEntries();
+  f.Close();
+  //delete pTree; OF COURSE NOT! its an object in the file
+  pTree=NULL;
+
+  for (int event=0; event<nofEvents; event++) {
+    AliHLTOUTDigitReader* pHLTOUT=new AliHLTOUTDigitReader(event, fpEsdManager, digitFile);
+    if (pHLTOUT) {
+      AliInfo(Form("event %d", event));
+      ProcessHLTOUT(pHLTOUT, pEsd);
+      PrintHLTOUTContent(pHLTOUT);
+      delete pHLTOUT;
+    } else {
+      AliError("error creating HLTOUT handler");
+    }
+  }
+}
+
+void AliHLTReconstructor::ProcessHLTOUT(AliRawReader* pRawReader, AliESDEvent* pEsd) const
+{
+  // debugging/helper function to examine simulated or real HLTOUT data
+  if (!pRawReader) return;
+
+  pRawReader->RewindEvents();
+  for (int event=0; pRawReader->NextEvent(); event++) {
+    AliHLTOUTRawReader* pHLTOUT=new AliHLTOUTRawReader(pRawReader, event, fpEsdManager);
+    if (pHLTOUT) {
+      AliInfo(Form("event %d", event));
+      ProcessHLTOUT(pHLTOUT, pEsd);
+      PrintHLTOUTContent(pHLTOUT);
+      delete pHLTOUT;
+    } else {
+      AliError("error creating HLTOUT handler");
+    }
+  }
+}
+
+void AliHLTReconstructor::PrintHLTOUTContent(AliHLTOUT* pHLTOUT) const
+{
+  // print the block specifications of the HLTOUT data blocks
+  if (!pHLTOUT) return;
+  int iResult=0;
+
+  for (iResult=pHLTOUT->SelectFirstDataBlock();
+       iResult>=0;
+       iResult=pHLTOUT->SelectNextDataBlock()) {
+    AliHLTComponentDataType dt=kAliHLTVoidDataType;
+    AliHLTUInt32_t spec=kAliHLTVoidDataSpec;
+    pHLTOUT->GetDataBlockDescription(dt, spec);
+    const AliHLTUInt8_t* pBuffer=NULL;
+    AliHLTUInt32_t size=0;
+    if (pHLTOUT->GetDataBuffer(pBuffer, size)>=0) {
+      pHLTOUT->ReleaseDataBuffer(pBuffer);
+      pBuffer=NULL; // just a dummy
+    }
+    AliInfo(Form("   %s  0x%x: size %d", AliHLTComponent::DataType2Text(dt).c_str(), spec, size));
   }
 }

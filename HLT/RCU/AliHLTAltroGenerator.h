@@ -79,6 +79,7 @@ class AliHLTAltroGenerator : AliHLTLogging {
    * The provided buffer is filled with the encoded data from the
    * previous simulation.
    * @param pBuffer     target variable to receive the pointer
+   * @param size        size of the target buffer
    * @return size in byte, neg. error if failed
    */
   int GetData(AliHLTUInt8_t* pBuffer, int size);

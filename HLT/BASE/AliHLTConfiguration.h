@@ -67,9 +67,12 @@ class AliHLTConfiguration : public TObject, public AliHLTLogging {
    * @param component  component id
    * @param sources    blank separated list of source configuration ids
    * @param arguments  argument string passed to the component at initialization
+   * @param bufsize    size of the output buffer in byte, the string can contain a
+   *                   number prepended by a unit, e.g. 1M, allowed units 'k' and 'M'
    */
   AliHLTConfiguration(const char* id, const char* component,
-		      const char* sources, const char* arguments);
+		      const char* sources, const char* arguments,
+		      const char* bufsize=NULL);
   /** copy constructor */
   AliHLTConfiguration(const AliHLTConfiguration& src);
   /** assignment op */
@@ -177,6 +180,11 @@ class AliHLTConfiguration : public TObject, public AliHLTLogging {
    */
   int GetArguments(const char*** pArgv);
 
+  /**
+   * Get output buffer size.
+   * @return size in byte or -1 if not specified
+   */
+  int GetOutputBufferSize() const {return fBufferSize;}
  protected:
   
 
@@ -194,7 +202,12 @@ class AliHLTConfiguration : public TObject, public AliHLTLogging {
    * @param arg       pointer to argument string
    * @param argList   target to receive the argument list
    */
-  int InterpreteString(const char* arg, vector<char*>& argList);
+  int InterpreteString(const char* arg, vector<char*>& argList) const;
+
+  /**
+   * Convert buffer size string to number
+   */
+  int ConvertSizeString(const char* strSize) const;
 
   /** id of this configuration */
   TString fID;                                                     // see above
@@ -221,6 +234,9 @@ class AliHLTConfiguration : public TObject, public AliHLTLogging {
   int fArgc;                                                       // see above
   /** argument array */
   char** fArgv;                                                    // see above
+
+  /** size of the output buffer */
+  int fBufferSize;                                                 // see above
 
   /** the instance of the global configuration handler */
   static AliHLTConfigurationHandler* fgConfigurationHandler;       //! transient

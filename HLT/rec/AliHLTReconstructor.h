@@ -52,12 +52,18 @@ class AliHLTEsdManager;
  */
 class AliHLTReconstructor: public AliReconstructor, public AliHLTReconstructorBase {
 public:
+  /** standard constructor */
   AliHLTReconstructor();
+  /** constructor */
+  AliHLTReconstructor(const char* options);
   /** destructor */
   virtual ~AliHLTReconstructor();
 
   /** init the reconstructor */
   void Init();
+
+  /** init the reconstructor */
+  void Init(const char* options);
 
   /**
    * This Reconstructor function is not applicable for the AliHLTReconstructor
@@ -102,6 +108,33 @@ public:
    * treated in the same way.
    */
   void ProcessHLTOUT(AliHLTOUT* pHLTOUT, AliESDEvent* esd) const;
+
+  /**
+   * Process HLTOUT data.
+   * Open digit file and process the HLTOUT digit data.
+   * This function is mostly intended for debugging purposes and stand-alone
+   * processing of the output from the simulation. Loops over all events.
+   * @param digitFile        path of the digit file
+   * @param pEsd             optional ESD to be filled
+   */
+  void ProcessHLTOUT(const char* digitFile="HLT.Digits.root", AliESDEvent* pEsd=NULL) const;
+
+  /**
+   * Process HLTOUT data.
+   * Process the HLTOUT from the raw reader.
+   * This function is mostly intended for debugging purposes and stand-alone
+   * processing of simulated or real raw data. 
+   * \em Note: Loops over all events, i.e. the current event of the the raw
+   * reader will change. Not to be called inside the normal AliRoot processsing.
+   * @param pRawReader       raw reader instance
+   * @param pEsd             optional ESD to be filled
+   */
+  void ProcessHLTOUT(AliRawReader* pRawReader, AliESDEvent* pEsd=NULL) const;
+
+  /**
+   * Print a short info about the HLTOUT content.
+   */
+  void PrintHLTOUTContent(AliHLTOUT* pHLTOUT) const;
 
 private:
   /** copy constructor prohibited */

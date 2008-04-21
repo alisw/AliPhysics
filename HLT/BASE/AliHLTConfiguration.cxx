@@ -55,7 +55,8 @@ AliHLTConfiguration::AliHLTConfiguration()
   fListSrcElement(),
   fArguments(""),
   fArgc(-1),
-  fArgv(NULL)
+  fArgv(NULL),
+  fBufferSize(-1)
 { 
   // see header file for class documentation
   // or
@@ -66,7 +67,8 @@ AliHLTConfiguration::AliHLTConfiguration()
   fListSrcElement=fListSources.begin();
 }
 
-AliHLTConfiguration::AliHLTConfiguration(const char* id, const char* component, const char* sources, const char* arguments)
+AliHLTConfiguration::AliHLTConfiguration(const char* id, const char* component, const char* sources,
+					 const char* arguments, const char* bufsize)
   :
   fID(id),
   fComponent(component),
@@ -76,9 +78,11 @@ AliHLTConfiguration::AliHLTConfiguration(const char* id, const char* component, 
   fListSrcElement(),
   fArguments(arguments),
   fArgc(-1),
-  fArgv(NULL)
+  fArgv(NULL),
+  fBufferSize(-1)
 {
   // see header file for function documentation
+  if (bufsize) fBufferSize=ConvertSizeString(bufsize);
   fListSrcElement=fListSources.begin();
   if (id && component) {
     if (fgConfigurationHandler) {
@@ -101,7 +105,8 @@ AliHLTConfiguration::AliHLTConfiguration(const AliHLTConfiguration& src)
   fListSrcElement(),
   fArguments(src.fArguments),
   fArgc(-1),
-  fArgv(NULL)
+  fArgv(NULL),
+  fBufferSize(src.fBufferSize)
 { 
   // see header file for function documentation
   fListSrcElement=fListSources.begin();
@@ -117,6 +122,7 @@ AliHLTConfiguration& AliHLTConfiguration::operator=(const AliHLTConfiguration& s
   fArguments=src.fArguments;
   fArgc=-1;
   fArgv=NULL;
+  fBufferSize=src.fBufferSize;
   return *this;
 }
 
@@ -366,7 +372,7 @@ int AliHLTConfiguration::ExtractArguments()
   return iResult;
 }
 
-int AliHLTConfiguration::InterpreteString(const char* arg, vector<char*>& argList)
+int AliHLTConfiguration::InterpreteString(const char* arg, vector<char*>& argList) const
 {
   // see header file for function documentation
   int iResult=0;
@@ -400,6 +406,36 @@ int AliHLTConfiguration::InterpreteString(const char* arg, vector<char*>& argLis
     iResult=-EINVAL;
   }
   return iResult;
+}
+
+int AliHLTConfiguration::ConvertSizeString(const char* strSize) const
+{
+  // see header file for function documentation
+  int size=0;
+  if (!strSize) return -1;
+
+  char* endptr=NULL;
+  size=strtol(strSize, &endptr, 10);
+  if (size>=0) {
+    if (endptr) {
+      if (endptr==strSize) {
+	HLTWarning("ignoring unrecognized buffer size '%s'", strSize);
+	size=-1;
+      } else if (*endptr==0) {
+	// no unit specifier
+      } else if (*endptr=='k') {
+	size*=1014;
+      } else if (*endptr=='M') {
+	size*=1024*1024;
+      } else {
+	HLTWarning("ignoring buffer size of unknown unit '%c'", endptr[0]);
+      }
+    } else {
+      HLTWarning("ignoring negative buffer size specifier '%s'", strSize);
+      size=-1;
+    }
+  }
+  return size;
 }
 
 int AliHLTConfiguration::FollowDependency(const char* id, TList* pTgtList)

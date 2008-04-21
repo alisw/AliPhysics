@@ -35,9 +35,10 @@
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTOUTDigitReader)
 
-AliHLTOUTDigitReader::AliHLTOUTDigitReader(int event, AliHLTEsdManager* pEsdManager)
+AliHLTOUTDigitReader::AliHLTOUTDigitReader(int event, AliHLTEsdManager* pEsdManager, const char* digitFile)
   :
   AliHLTOUTHomerCollection(event, pEsdManager),
+  fDigitFileName(digitFile),
   fpDigitFile(NULL),
   fpDigitTree(NULL),
   fMinDDL(-1),
@@ -139,7 +140,7 @@ bool AliHLTOUTDigitReader::ReadArrays()
   }
 
   if (!fpDigitFile) {
-    fpDigitFile=new TFile("HLT.Digits.root");
+    fpDigitFile=new TFile(fDigitFileName);
   }
   if (!fpDigitFile) return false;
   if (fpDigitFile->IsZombie()) return false;

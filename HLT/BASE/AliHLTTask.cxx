@@ -496,6 +496,14 @@ int AliHLTTask::ProcessTask(Int_t eventNo)
     AliHLTUInt32_t size=0;
     if (iResult>=0) {
     do {
+      long unsigned int iOutputDataSize=0;
+      AliHLTConfiguration* pConf=GetConf();
+      assert(pConf);
+      // check if there was a buffer size specified, query output size
+      // estimator from component otherwize
+      if (pConf && pConf->GetOutputBufferSize()>=0) {
+	iOutputDataSize=pConf->GetOutputBufferSize();
+      } else {
       long unsigned int iConstBase=0;
       double fInputMultiplier=0;
       if (pComponent->GetComponentType()!=AliHLTComponent::kSink)
@@ -504,8 +512,9 @@ int AliHLTTask::ProcessTask(Int_t eventNo)
 	HLTWarning("ignoring negative input multiplier");
 	fInputMultiplier=0;
       }
-      long unsigned int iOutputDataSize=int(fInputMultiplier*iInputDataVolume) + iConstBase;
+      iOutputDataSize=int(fInputMultiplier*iInputDataVolume) + iConstBase;
       //HLTDebug("task %s: reqired output size %d", GetName(), iOutputDataSize);
+      }
       if (iNofTrial>0) {
 	// dont process again if the buffer size is the same
 	if (size==iOutputDataSize) break;

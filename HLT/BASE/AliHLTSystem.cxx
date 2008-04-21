@@ -351,7 +351,7 @@ int AliHLTSystem::Run(Int_t iNofEvents, int bStop)
       if (fEventCount==0) {
 	InitBenchmarking(fStopwatches);
       } else {
-	//ResumeBenchmarking(fStopwatches);    
+	ResumeBenchmarking(fStopwatches);    
       }
       for (int i=fEventCount; i<fEventCount+iNofEvents && iResult>=0; i++) {
 	if ((iResult=ProcessTasks(i))>=0) {
@@ -366,7 +366,7 @@ int AliHLTSystem::Run(Int_t iNofEvents, int bStop)
       }
       fEventCount+=iNofEvents;
       if (bStop) StopTasks();
-      //else PauseBenchmarking(fStopwatches);
+      else PauseBenchmarking(fStopwatches);
     }
     if (bStop) DeinitTasks();
   }
@@ -469,7 +469,33 @@ int AliHLTSystem::InitBenchmarking(TObjArray* pStopwatches)
   return iResult;
 }
 
-int AliHLTSystem::PrintBenchmarking(TObjArray* pStopwatches, int bClean)
+int AliHLTSystem::PauseBenchmarking(TObjArray* pStopwatches) const
+{
+  // see header file for class documentation
+  if (pStopwatches==NULL) return 0;
+
+  for (int i=0; i<(int)AliHLTComponent::kSWTypeCount; i++) {
+    if (!pStopwatches->At(i)) continue;
+    TStopwatch* pSw=dynamic_cast<TStopwatch*>(pStopwatches->At(i));
+    if (pSw) pSw->Stop();
+  }
+  return 0;
+}
+
+int AliHLTSystem::ResumeBenchmarking(TObjArray* pStopwatches) const
+{
+  // see header file for class documentation
+  if (pStopwatches==NULL) return 0;
+
+  for (int i=0; i<(int)AliHLTComponent::kSWTypeCount; i++) {
+    if (!pStopwatches->At(i)) continue;
+    TStopwatch* pSw=dynamic_cast<TStopwatch*>(pStopwatches->At(i));
+    if (pSw) pSw->Continue();
+  }
+  return 0;
+}
+
+int AliHLTSystem::PrintBenchmarking(TObjArray* pStopwatches, int bClean) const
 {
   // see header file for class documentation
   int iInitialized=1;
@@ -483,7 +509,7 @@ int AliHLTSystem::PrintBenchmarking(TObjArray* pStopwatches, int bClean)
   }
 
   if (iInitialized!=0) {
-    HLTInfo("HLT statistics:\n"
+    HLTImportant("HLT statistics:\n"
 	    "    base:              R:%.3fs C:%.3fs\n"
 	    "    input:             R:%.3fs C:%.3fs\n"
 	    "    output:            R:%.3fs C:%.3fs\n"
