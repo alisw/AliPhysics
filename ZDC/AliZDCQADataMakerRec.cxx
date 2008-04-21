@@ -71,19 +71,19 @@ void AliZDCQADataMakerRec::InitRaws()
   Add2RawsList(hRawZNATot, 2);
   Add2RawsList(hRawZPATot, 3);
   //
-  TH1F * hRawSumQZNC = new TH1F("hRawSumQZNC", "Signal in 4 ZNC PMQ[i]",100, 0., 4000.);
-  TH1F * hRawSumQZPC = new TH1F("hRawSumQZPC", "Signal in 4 ZPC PMQ[i]",100, 0., 4000.);
-  TH1F * hRawSumQZNA = new TH1F("hRawSumQZNA", "Signal in 4 ZNA PMQ[i]",100, 0., 4000.);
-  TH1F * hRawSumQZPA = new TH1F("hRawSumQZPA", "Signal in 4 ZPA PMQ[i]",100, 0., 4000.);
+  TH1F * hRawSumQZNC = new TH1F("hRawSumQZNC", "Raw summed 4 ZNC quadrants",100, 0., 4000.);
+  TH1F * hRawSumQZPC = new TH1F("hRawSumQZPC", "Raw summed 4 ZPC quadrants",100, 0., 4000.);
+  TH1F * hRawSumQZNA = new TH1F("hRawSumQZNA", "Raw summed 4 ZNA quadrants",100, 0., 4000.);
+  TH1F * hRawSumQZPA = new TH1F("hRawSumQZPA", "Raw summed 4 ZPA quadrants",100, 0., 4000.);
   Add2RawsList(hRawSumQZNC, 4);
   Add2RawsList(hRawSumQZPC, 5);
   Add2RawsList(hRawSumQZNA, 6);
   Add2RawsList(hRawSumQZPA, 7);
   //
-  TH1F * hRawPMCZNC = new TH1F("hRawPMCZNC", "Signal in 4 ZNC PMQ[i]",100, 0., 4000.);
-  TH1F * hRawPMCZPC = new TH1F("hRawPMCZPC", "Signal in 4 ZPC PMQ[i]",100, 0., 4000.);
-  TH1F * hRawPMCZNA = new TH1F("hRawPMCZNA", "Signal in 4 ZNA PMQ[i]",100, 0., 4000.);
-  TH1F * hRawPMCZPA = new TH1F("hRawPMCZPA", "Signal in 4 ZPA PMQ[i]",100, 0., 4000.);
+  TH1F * hRawPMCZNC = new TH1F("hRawPMCZNC", "Raw common ZNC PMT",100, 0., 4000.);
+  TH1F * hRawPMCZPC = new TH1F("hRawPMCZPC", "Raw common ZPC PMT",100, 0., 4000.);
+  TH1F * hRawPMCZNA = new TH1F("hRawPMCZNA", "Raw common ZNA PMT",100, 0., 4000.);
+  TH1F * hRawPMCZPA = new TH1F("hRawPMCZPA", "Raw common ZPA PMT",100, 0., 4000.);
   Add2RawsList(hRawPMCZNC, 8);
   Add2RawsList(hRawPMCZPC, 9);
   Add2RawsList(hRawPMCZNA, 10);
@@ -99,19 +99,19 @@ void AliZDCQADataMakerRec::InitRaws()
   Add2RawsList(hRawZNATotlg, 14);
   Add2RawsList(hRawZPATotlg, 15);
   //
-  TH1F * hRawSumQZNClg = new TH1F("hRawSumQZNClg", "Signal in 4 ZNC PMQlg[i]",100, 0., 4000.);
-  TH1F * hRawSumQZPClg = new TH1F("hRawSumQZPClg", "Signal in 4 ZPC PMQlg[i]",100, 0., 4000.);
-  TH1F * hRawSumQZNAlg = new TH1F("hRawSumQZNAlg", "Signal in 4 ZNA PMQlg[i]",100, 0., 4000.);
-  TH1F * hRawSumQZPAlg = new TH1F("hRawSumQZPAlg", "Signal in 4 ZPA PMQlg[i]",100, 0., 4000.);
+  TH1F * hRawSumQZNClg = new TH1F("hRawSumQZNClg", "Raw summed 4 lg ZNC quadrants",100, 0., 4000.);
+  TH1F * hRawSumQZPClg = new TH1F("hRawSumQZPClg", "Raw summed 4 lg ZPC quadrants",100, 0., 4000.);
+  TH1F * hRawSumQZNAlg = new TH1F("hRawSumQZNAlg", "Raw summed 4 lg ZNA quadrants",100, 0., 4000.);
+  TH1F * hRawSumQZPAlg = new TH1F("hRawSumQZPAlg", "Raw summed 4 lg ZPA quadrants",100, 0., 4000.);
   Add2RawsList(hRawSumQZNClg, 16);
   Add2RawsList(hRawSumQZPClg, 17);
   Add2RawsList(hRawSumQZNAlg, 18);
   Add2RawsList(hRawSumQZPAlg, 19);
   //
-  TH1F * hRawPMCZNClg = new TH1F("hRawPMCZNClg", "Signal in 4 ZNC PMQlg[i]",100, 0., 4000.);
-  TH1F * hRawPMCZPClg = new TH1F("hRawPMCZPClg", "Signal in 4 ZPC PMQlg[i]",100, 0., 4000.);
-  TH1F * hRawPMCZNAlg = new TH1F("hRawPMCZNAlg", "Signal in 4 ZNA PMQlg[i]",100, 0., 4000.);
-  TH1F * hRawPMCZPAlg = new TH1F("hRawPMCZPAlg", "Signal in 4 ZPA PMQlg[i]",100, 0., 4000.);
+  TH1F * hRawPMCZNClg = new TH1F("hRawPMCZNClg", "Raw common lg ZNC PMT",100, 0., 4000.);
+  TH1F * hRawPMCZPClg = new TH1F("hRawPMCZPClg", "Raw common lg ZPC PMT",100, 0., 4000.);
+  TH1F * hRawPMCZNAlg = new TH1F("hRawPMCZNAlg", "Raw common lg ZNA PMT",100, 0., 4000.);
+  TH1F * hRawPMCZPAlg = new TH1F("hRawPMCZPAlg", "Raw common lg ZPA PMT",100, 0., 4000.);
   Add2RawsList(hRawPMCZNClg, 20);
   Add2RawsList(hRawPMCZPClg, 21);
   Add2RawsList(hRawPMCZNAlg, 22);
@@ -128,56 +128,56 @@ void AliZDCQADataMakerRec::InitESDs()
   Add2DigitsList(hZNC, 0);
   Add2DigitsList(hZNA, 1);
   //
-  TH1F * hESDZNCTot = new TH1F("hESDZNCTot", "ESD signal in ZNC", 100, 0., 6000.);
-  TH1F * hESDZPCTot = new TH1F("hESDZPCTot", "ESD signal in ZPC", 100, 0., 10000.);
-  TH1F * hESDZNATot = new TH1F("hESDZNATot", "ESD signal in ZNA", 100, 0., 6000.);
-  TH1F * hESDZPATot = new TH1F("hESDZPATot", "ESD signal in ZPA", 100, 0., 10000.);
+  TH1F * hESDZNCTot = new TH1F("hESDZNCTot", "Energy in ZNC", 100, 0., 6000.);
+  TH1F * hESDZPCTot = new TH1F("hESDZPCTot", "Energy in ZPC", 100, 0., 10000.);
+  TH1F * hESDZNATot = new TH1F("hESDZNATot", "Energy in ZNA", 100, 0., 6000.);
+  TH1F * hESDZPATot = new TH1F("hESDZPATot", "Energy in ZPA", 100, 0., 10000.);
   Add2ESDsList(hESDZNCTot, 2);
   Add2ESDsList(hESDZPCTot, 3);
   Add2ESDsList(hESDZNATot, 4);
   Add2ESDsList(hESDZPATot, 5);
   //
-  TH1F * hESDSumQZNC = new TH1F("hESDSumQZNC", "Signal in 4 ZNC PMQ[i]",100, 0., 4000.);
-  TH1F * hESDSumQZPC = new TH1F("hESDSumQZPC", "Signal in 4 ZPC PMQ[i]",100, 0., 4000.);
-  TH1F * hESDSumQZNA = new TH1F("hESDSumQZNA", "Signal in 4 ZNA PMQ[i]",100, 0., 4000.);
-  TH1F * hESDSumQZPA = new TH1F("hESDSumQZPA", "Signal in 4 ZPA PMQ[i]",100, 0., 4000.);
+  TH1F * hESDSumQZNC = new TH1F("hESDSumQZNC", "Sum of 4 ZNC energy",100, 0., 4000.);
+  TH1F * hESDSumQZPC = new TH1F("hESDSumQZPC", "Sum of 4 ZPC energy",100, 0., 4000.);
+  TH1F * hESDSumQZNA = new TH1F("hESDSumQZNA", "Sum of 4 ZNA energy",100, 0., 4000.);
+  TH1F * hESDSumQZPA = new TH1F("hESDSumQZPA", "Sum of 4 ZPA energy",100, 0., 4000.);
   Add2ESDsList(hESDSumQZNC, 6);
   Add2ESDsList(hESDSumQZPC, 7);
   Add2ESDsList(hESDSumQZNA, 8);
   Add2ESDsList(hESDSumQZPA, 9);
   //
-  TH1F * hESDPMCZNC = new TH1F("hESDPMCZNC", "Signal in 4 ZNC PMQ[i]",100, 0., 4000.);
-  TH1F * hESDPMCZPC = new TH1F("hESDPMCZPC", "Signal in 4 ZPC PMQ[i]",100, 0., 4000.);
-  TH1F * hESDPMCZNA = new TH1F("hESDPMCZNA", "Signal in 4 ZNA PMQ[i]",100, 0., 4000.);
-  TH1F * hESDPMCZPA = new TH1F("hESDPMCZPA", "Signal in 4 ZPA PMQ[i]",100, 0., 4000.);
+  TH1F * hESDPMCZNC = new TH1F("hESDPMCZNC", "Energy in common ZNC PMT",100, 0., 4000.);
+  TH1F * hESDPMCZPC = new TH1F("hESDPMCZPC", "Energy in common ZPC PMT",100, 0., 4000.);
+  TH1F * hESDPMCZNA = new TH1F("hESDPMCZNA", "Energy in common ZNA PMT",100, 0., 4000.);
+  TH1F * hESDPMCZPA = new TH1F("hESDPMCZPA", "Energy in common ZPA PMT",100, 0., 4000.);
   Add2ESDsList(hESDPMCZNC, 10);
   Add2ESDsList(hESDPMCZPC, 11);
   Add2ESDsList(hESDPMCZNA, 12);
   Add2ESDsList(hESDPMCZPA, 13);
   // 
   // ------------------- LOW GAIN CHAIN ---------------------------
-  TH1F * hESDZNCTotlg = new TH1F("hESDZNCTotlg", "ESDit lg signal in ZNC", 100, 0., 6000.);
-  TH1F * hESDZNATotlg = new TH1F("hESDZNATotlg", "ESDit lg signal in ZNA", 100, 0., 6000.);
-  TH1F * hESDZPCTotlg = new TH1F("hESDZPCTotlg", "ESDit lg signal in ZPC", 100, 0., 10000.);
-  TH1F * hESDZPATotlg = new TH1F("hESDZPATotlg", "ESDit lg signal in ZPA", 100, 0., 10000.);
+  TH1F * hESDZNCTotlg = new TH1F("hESDZNCTotlg", "ESD lg signal in ZNC", 100, 0., 6000.);
+  TH1F * hESDZNATotlg = new TH1F("hESDZNATotlg", "ESD lg signal in ZNA", 100, 0., 6000.);
+  TH1F * hESDZPCTotlg = new TH1F("hESDZPCTotlg", "ESD lg signal in ZPC", 100, 0., 10000.);
+  TH1F * hESDZPATotlg = new TH1F("hESDZPATotlg", "ESD lg signal in ZPA", 100, 0., 10000.);
   Add2ESDsList(hESDZNCTotlg, 14);
   Add2ESDsList(hESDZPCTotlg, 15);
   Add2ESDsList(hESDZNATotlg, 16);
   Add2ESDsList(hESDZPATotlg, 17);
   //
-  TH1F * hESDSumQZNClg = new TH1F("hESDSumQZNClg", "Signal in 4 ZNC PMQlg[i]",100, 0., 4000.);
-  TH1F * hESDSumQZPClg = new TH1F("hESDSumQZPClg", "Signal in 4 ZPC PMQlg[i]",100, 0., 4000.);
-  TH1F * hESDSumQZNAlg = new TH1F("hESDSumQZNAlg", "Signal in 4 ZNA PMQlg[i]",100, 0., 4000.);
-  TH1F * hESDSumQZPAlg = new TH1F("hESDSumQZPAlg", "Signal in 4 ZPA PMQlg[i]",100, 0., 4000.);
+  TH1F * hESDSumQZNClg = new TH1F("hESDSumQZNClg", "Sum of 4 lg ZNC sectors",100, 0., 4000.);
+  TH1F * hESDSumQZPClg = new TH1F("hESDSumQZPClg", "Sum of 4 lg ZPC sectors",100, 0., 4000.);
+  TH1F * hESDSumQZNAlg = new TH1F("hESDSumQZNAlg", "Sum of 4 lg ZNA sectors",100, 0., 4000.);
+  TH1F * hESDSumQZPAlg = new TH1F("hESDSumQZPAlg", "Sum of 4 lg ZPA sectors",100, 0., 4000.);
   Add2ESDsList(hESDSumQZNClg, 18);
   Add2ESDsList(hESDSumQZPClg, 19);
   Add2ESDsList(hESDSumQZNAlg, 20);
   Add2ESDsList(hESDSumQZPAlg, 21);
   //
-  TH1F * hESDPMCZNClg = new TH1F("hESDPMCZNClg", "Signal in 4 ZNC PMQlg[i]",100, 0., 4000.);
-  TH1F * hESDPMCZPClg = new TH1F("hESDPMCZPClg", "Signal in 4 ZPC PMQlg[i]",100, 0., 4000.);
-  TH1F * hESDPMCZNAlg = new TH1F("hESDPMCZNAlg", "Signal in 4 ZNA PMQlg[i]",100, 0., 4000.);
-  TH1F * hESDPMCZPAlg = new TH1F("hESDPMCZPAlg", "Signal in 4 ZPA PMQlg[i]",100, 0., 4000.);
+  TH1F * hESDPMCZNClg = new TH1F("hESDPMCZNClg", "Signal in common ZNC lg PMT",100, 0., 4000.);
+  TH1F * hESDPMCZPClg = new TH1F("hESDPMCZPClg", "Signal in common ZPC lg PMT",100, 0., 4000.);
+  TH1F * hESDPMCZNAlg = new TH1F("hESDPMCZNAlg", "Signal in common ZNA lg PMT",100, 0., 4000.);
+  TH1F * hESDPMCZPAlg = new TH1F("hESDPMCZPAlg", "Signal in common ZPA lg PMT",100, 0., 4000.);
   Add2ESDsList(hESDPMCZNClg, 22);
   Add2ESDsList(hESDPMCZPClg, 23);
   Add2ESDsList(hESDPMCZNAlg, 24);
