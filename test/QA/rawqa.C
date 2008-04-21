@@ -51,22 +51,24 @@ void rawqa(const Int_t runNumber, Int_t maxFiles = 10, const char* year = "08")
 	TGridResult * result = 0x0 ; 
 	Bool_t local = kFALSE ; 
 	if (grid) { // get the list of files from AliEn directly 
-	  TString baseDir; 
-	  baseDir.Form("/alice/data/20%s/",year);
-	  result = grid->Query(baseDir, pattern) ;  
+		TString collectionFile(pattern) ; 
+		collectionFile.ReplaceAll("*.root", ".xml") ; 
+		if ( gSystem->AccessPathName(collectionFile) == 0 ) { // get the list of files from an a-priori created collection file
+			TAlienCollection collection(collectionFile.Data(), maxFiles) ; 
+			result = collection.GetGridResult("", 0, 0); 
+		} else { 
+			TString baseDir; 
+			baseDir.Form("/alice/data/20%s/",year);
+			result = grid->Query(baseDir, pattern) ;  
+		}
 	} else {
-	  TString collectionFile(pattern) ; 
-	  collectionFile.Append(".xml") ; 
-	  if ( gSystem->AccessPathName(collectionFile) == 0 ) { // get the list of files from an a-priori created collection file
-	    TAlienCollection collection(collectionFile.Data(), maxFiles) ; 
-	    result = collection.GetGridResult("", 0, 0); 
-	  } else { // get the list of files from the local current directory 
+	   // get the list of files from the local current directory 
 	    local = kTRUE ; 
 	    char line[100] ; 
 	    sprintf(line, ".! ls %s*.root > tempo.txt", pattern.Data()) ; 
 	    gROOT->ProcessLine(line) ;
-	  }
 	}
+	
 	AliLog::Flush();
 	ifstream in ; 
 	if (local) 
