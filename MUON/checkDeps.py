@@ -12,7 +12,6 @@ Given a directory, will look into lib*.pkg files to produce a dependency graph
 """
 
 __author__ = "L. Aphecetche aphecetc_at_in2p3_dot_fr"
-__date__ = "April 2008"
 __version__ = "$Id$"
 
 #_______________________________________________________________________________
@@ -89,11 +88,11 @@ def findLibrary(file,allfiles):
   
 #_______________________________________________________________________________
 def shorten(libname):
-  """From libMUONxxx.pkg to xxx
+  """From libYYYxxx.pkg to YYYxxx
   """
   s = libname
-  if re.search("libMUON",libname):
-    s = re.sub("libMUON","",s)
+  if re.search("lib",libname):
+    s = re.sub("lib","",s)
     s = re.sub("\.pkg","",s)
   return s
   
