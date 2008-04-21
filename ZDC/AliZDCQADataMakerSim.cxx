@@ -171,15 +171,19 @@ void AliZDCQADataMakerSim::MakeHits(TTree * hitTree)
     return;
   }
   else{
-    //
-    TClonesArray * hits = new TClonesArray("AliZDCHit", 1000);
-    //
     Int_t ntracks = (Int_t) hitTree->GetEntries();
+    //printf("\n\t *** no.track %d\n",ntracks);
     if (ntracks<=0) return;
     //
     for(Int_t itrack=0; itrack<ntracks; itrack++){
+      TClonesArray * hits = new TClonesArray("AliZDCHit", 1000);
+      //
       branch->SetAddress(&hits) ;
       branch->GetEntry(itrack);
+      //
+      //printf("\t *** track %d",itrack);
+      //hits->Print("");
+      //printf("\n");
       //
       MakeHits(hits); 
     }	  
