@@ -1340,7 +1340,7 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 
 					kill(pid, 9);
 
-    					UpdateShuttleStatus(AliShuttleStatus::kPPTimeOut);
+					UpdateShuttleStatus(AliShuttleStatus::kPPTimeOut);
 					hasError = kTRUE;
 
 					gSystem->Sleep(1000);
@@ -1419,8 +1419,8 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 		}
 		else if (pid == 0)
 		{
-			// client
-			Log("SHUTTLE", Form("Process - In client process of %d - %s", GetCurrentRun(),
+			// child
+			Log("SHUTTLE", Form("Process - In child process of %d - %s", GetCurrentRun(),
 				aDetector->GetName()));
 
 			Log("SHUTTLE", Form("Process - Redirecting output to %s log",fCurrentDetector.Data()));
@@ -1462,7 +1462,7 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 			}
 			
 			Int_t success = ProcessCurrentDetector();
-			
+
 			gSystem->ChangeDirectory(wd.Data());
 						
 			if (success == 1) // Preprocessor finished successfully!
@@ -1627,7 +1627,7 @@ Int_t AliShuttle::ProcessCurrentDetector()
 			
 			TMap* aliasMap = 0;
 			TMap* dpMap = 0;
-	
+
 			if (fConfig->GetDCSAliases(fCurrentDetector, iServ)->GetEntries() > 0)
 			{
 				aliasMap = GetValueSet(host, port, 
