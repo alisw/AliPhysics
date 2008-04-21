@@ -6,6 +6,9 @@
 # Example usage:
 # $ALICE_ROOT/TPC/macros/testTPC/agent.sh /afs/cern.ch/user/m/miranov/public/test2008/reckr191xx
 
+# Or submit as many agents you want on batch machines:
+# bsub -q 1nd $ALICE_ROOT/TPC/macros/testTPC/agent.sh /afs/cern.ch/user/m/miranov/public/test2008/reckr191xx
+
 #
 #  AGENT to run some action:
 #  3 components to be present
@@ -78,5 +81,5 @@ export jobhome=`pwd`
 cd $1
 aliroot -b -q $ALICE_ROOT/TPC/macros/testTPC/AliTPCjobs.cxx
 
-#alien_cp -d syswatch.log alien:${alien_HOME}syswatch.log@ALICE::GSI::SE 
+#alien_cp -d job.list alien:${alien_HOME}job.list@ALICE::GSI::SE 
 

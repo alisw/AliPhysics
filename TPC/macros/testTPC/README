@@ -2,6 +2,8 @@
 The "small" framework to make fast action(e.g reconstruction) pass using batch systems
 
 
+
+
 # Example usage:
 # $ALICE_ROOT/TPC/macros/testTPC/agent.sh /afs/cern.ch/user/m/miranov/public/test2008/reckr191xx
 
@@ -22,6 +24,11 @@ The "small" framework to make fast action(e.g reconstruction) pass using batch s
 # 2. ENVIRONMENT SETUP:
 #
 # 2.a  Copy the script  to setup aliroot root to the  ~/.bagentsetup
+       (see /afs/cern.ch/user/m/miranov/public/.bagentsetup as an example)
 # 2.b  Copy certificates to default place -  ~/.agentauth/
 #     cp /tmp/*$UID* ~/.agentauth/
 # 2.c  Set envirnment variables needed OCDB_PATH and INPUTTYPE
+
+
+# How to create job.list (see 1.a)
+# Follow Example in the $ALICE_ROOT/TPC/macros/testTPC/AlienToolkit.cxx
