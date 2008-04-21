@@ -14,6 +14,7 @@
 #include <TArrayF.h>
 #include <TArrayI.h>
 #include <TList.h>
+#include <TClonesArray.h>
 #include <TMCProcess.h>
 #include <TVirtualMCApplication.h>
 
@@ -110,7 +111,7 @@ public:
    virtual  void  SetCurrentTrack(Int_t track) const;                           
 // Track reference related
    AliTrackReference* AddTrackReference(Int_t label, Int_t id = -999);
-   TClonesArray*      TrackReferences()   const {return fTrackReferences;}
+   // const TClonesArray*      TrackReferences()   const {return &fTrackReferences;}
    virtual void       RemapTrackReferencesIDs(Int_t *map); //remaping track references MI
    virtual void       ResetTrackReferences();
    virtual void       FixParticleDecaytime();
@@ -136,9 +137,9 @@ public:
    //Temporary Track Reference tree related
    TTree         *fTmpTreeTR;            //! Temporary track reference tree
    TFile         *fTmpFileTR;            //! Temporary track reference file
-   TClonesArray  *fTrackReferences;      //! List of track references - for one primary track only
-   TClonesArray  *fTmpTrackReferences;   //! Temporary list of track references - for one primary track only
-   ClassDef(AliMC, 3)
+   TClonesArray   fTrackReferences;      //! List of track references - for one primary track only
+   TClonesArray   fTmpTrackReferences;   //! Temporary list of track references - for one primary track only
+   ClassDef(AliMC, 4)
 };
 
  

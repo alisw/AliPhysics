@@ -70,8 +70,8 @@ AliMC::AliMC() :
   fHitLists(0),
   fTmpTreeTR(0),
   fTmpFileTR(0),
-  fTrackReferences(0),
-  fTmpTrackReferences(0)
+  fTrackReferences(),
+  fTmpTrackReferences()
 
 {
   //default constructor
@@ -96,8 +96,8 @@ AliMC::AliMC(const char *name, const char *title) :
   fHitLists(new TList()),
   fTmpTreeTR(0),
   fTmpFileTR(0),
-  fTrackReferences(new TClonesArray("AliTrackReference", 100)),
-  fTmpTrackReferences(new TClonesArray("AliTrackReference", 100))
+  fTrackReferences("AliTrackReference", 100),
+  fTmpTrackReferences("AliTrackReference", 100)
 {
   //constructor
   // Set transport parameters
@@ -125,8 +125,8 @@ AliMC::AliMC(const AliMC &mc) :
   fHitLists(0),
   fTmpTreeTR(0),
   fTmpFileTR(0),
-  fTrackReferences(0),
-  fTmpTrackReferences(0)
+  fTrackReferences(),
+  fTmpTrackReferences()
 {
   //
   // Copy constructor for AliMC
@@ -143,18 +143,6 @@ AliMC::~AliMC()
   delete fMCQA;
   delete fHitLists;
   // Delete track references
-  if (fTrackReferences) {
-    fTrackReferences->Delete();
-    delete fTrackReferences;
-    fTrackReferences     = 0;
-  }
-
-if (fTmpTrackReferences) {
-    fTmpTrackReferences->Delete();
-    delete fTmpTrackReferences;
-    fTmpTrackReferences     = 0;
-  }
-
 }
 
 //_______________________________________________________________________
@@ -1117,16 +1105,11 @@ AliTrackReference*  AliMC::AddTrackReference(Int_t label, Int_t id)
 {
   //
   // add a trackrefernce to the list
-  if (!fTrackReferences) {
-    AliError("Container trackrefernce not active");
-    return NULL;
-  }
   Int_t primary = GetPrimary(label);
   Particle(primary)->SetBit(kKeepBit);
 
-  Int_t nref = fTmpTrackReferences->GetEntriesFast();
-  TClonesArray &lref = *fTmpTrackReferences;
-  return new(lref[nref]) AliTrackReference(label, id);
+  Int_t nref = fTmpTrackReferences.GetEntriesFast();
+  return new(fTmpTrackReferences[nref]) AliTrackReference(label, id);
 }
 
 
@@ -1137,7 +1120,7 @@ void AliMC::ResetTrackReferences()
   //
   //  Reset all  references
   //
-  if (fTmpTrackReferences)   fTmpTrackReferences->Clear();
+    fTmpTrackReferences.Clear();
 }
 
 void AliMC::RemapTrackReferencesIDs(Int_t *map)
@@ -1146,20 +1129,20 @@ void AliMC::RemapTrackReferencesIDs(Int_t *map)
   // Remapping track reference
   // Called at finish primary
   //
-  if (!fTmpTrackReferences) return;
-  Int_t nEntries = fTmpTrackReferences->GetEntries();
+    
+  Int_t nEntries = fTmpTrackReferences.GetEntries();
   for (Int_t i=0; i < nEntries; i++){
-      AliTrackReference * ref = dynamic_cast<AliTrackReference*>(fTmpTrackReferences->UncheckedAt(i));
+      AliTrackReference * ref = dynamic_cast<AliTrackReference*>(fTmpTrackReferences.UncheckedAt(i));
       if (ref) {
 	  Int_t newID = map[ref->GetTrack()];
 	  if (newID>=0) ref->SetTrack(newID);
 	  else {
 	      ref->SetBit(kNotDeleted,kFALSE);
-	      fTmpTrackReferences->RemoveAt(i);  
+	      fTmpTrackReferences.RemoveAt(i);  
 	  }      
       } // if ref
   }
-  fTmpTrackReferences->Compress();
+  fTmpTrackReferences.Compress();
 }
 
 void AliMC::FixParticleDecaytime()
@@ -1215,8 +1198,8 @@ void AliMC::MakeTmpTrackRefsTree()
     // Make the temporary track reference tree
     fTmpFileTR = new TFile("TrackRefsTmp.root", "recreate");
     fTmpTreeTR = new TTree("TreeTR", "Track References");
-    if (!fTmpTrackReferences)  fTmpTrackReferences = new TClonesArray("AliTrackReference", 100);
-    fTmpTreeTR->Branch("TrackReferences", "TClonesArray", &fTmpTrackReferences, 4000);
+    TClonesArray* pRef = &fTmpTrackReferences;
+    fTmpTreeTR->Branch("TrackReferences", "TClonesArray", &pRef, 4000);
 }
 
 void AliMC::ReorderAndExpandTreeTR()
@@ -1233,10 +1216,10 @@ void AliMC::ReorderAndExpandTreeTR()
     TTree * treeTR = rl->TreeTR();
     if (treeTR){
 	// make branch for central track references
-	if (!fTrackReferences) fTrackReferences = new TClonesArray("AliTrackReference",0);
 	TBranch *branch;
-	branch = treeTR->Branch("TrackReferences",&fTrackReferences);
-	branch->SetAddress(&fTrackReferences);
+	TClonesArray* pRef = &fTrackReferences;
+	branch = treeTR->Branch("TrackReferences", &pRef);
+	branch->SetAddress(&pRef);
     }
 
     AliStack* stack  = rl->Stack();
@@ -1256,7 +1239,7 @@ void AliMC::ReorderAndExpandTreeTR()
 	if (!part->TestBit(kTransportBit)) continue;
 	//
 	fTmpTreeTR->GetEntry(it++);
-	Int_t nh = fTmpTrackReferences->GetEntries();
+	Int_t nh = fTmpTrackReferences.GetEntries();
 	// Determine range of secondaries produced by this primary
 	if (dau1 > -1) {
 	    Int_t inext = ip - 1;
@@ -1281,7 +1264,7 @@ void AliMC::ReorderAndExpandTreeTR()
 	// Loop over reference hits and find secondary label
 	for (Int_t id = dau1; (id <= dau2) && (dau1 > -1); id++) {
 	    for (Int_t ih = 0; ih < nh; ih++) {
-		AliTrackReference* tr = (AliTrackReference*) fTmpTrackReferences->At(ih);
+		AliTrackReference* tr = (AliTrackReference*) fTmpTrackReferences.At(ih);
 		Int_t label = tr->Label();
 		// Skip primaries
 		if (label == ip) continue;
@@ -1289,13 +1272,12 @@ void AliMC::ReorderAndExpandTreeTR()
 		    AliWarning(Form("Track Reference Label out of range !: %5d %5d %5d \n", label, dau1, dau2));
 		if (label == id) {
 		    // secondary found
-		    Int_t nref =  fTrackReferences->GetEntriesFast();
-		    TClonesArray &lref = *fTrackReferences;
-		    new(lref[nref]) AliTrackReference(*tr);
+		    Int_t nref =  fTrackReferences.GetEntriesFast();
+		    new(fTrackReferences[nref]) AliTrackReference(*tr);
 		}
 	    } // hits
 	    treeTR->Fill();
-	    fTrackReferences->Clear();
+	    fTrackReferences.Clear();
 	    ifills++;
 	} // daughters
     } // tracks
@@ -1309,21 +1291,20 @@ void AliMC::ReorderAndExpandTreeTR()
 	{
 	    // Skip particles that have not been transported
 	    fTmpTreeTR->GetEntry(it--);
-	    Int_t nh = fTmpTrackReferences->GetEntries();
+	    Int_t nh = fTmpTrackReferences.GetEntries();
 	    // 
 	    // Loop over reference hits and find primary labels
 	    for (Int_t ih = 0; ih < nh; ih++) {
-		AliTrackReference* tr = (AliTrackReference*)  fTmpTrackReferences->At(ih);
+		AliTrackReference* tr = (AliTrackReference*)  fTmpTrackReferences.At(ih);
 		Int_t label = tr->Label();
 		if (label == ip) {
-		    Int_t nref = fTrackReferences->GetEntriesFast();
-		    TClonesArray &lref = *fTrackReferences;
-		    new(lref[nref]) AliTrackReference(*tr);
+		    Int_t nref = fTrackReferences.GetEntriesFast();
+		    new(fTrackReferences[nref]) AliTrackReference(*tr);
 		}
 	    } 
 	}
 	treeTR->Fill();
-	fTrackReferences->Clear();
+	fTrackReferences.Clear();
 	ifills++;
     } // tracks
     // Check
@@ -1334,8 +1315,7 @@ void AliMC::ReorderAndExpandTreeTR()
     delete fTmpTreeTR;
     fTmpFileTR->Close();
     delete fTmpFileTR;
-    delete fTmpTrackReferences;
-    fTmpTrackReferences = 0;
+    fTmpTrackReferences.Clear();
     gSystem->Exec("rm -rf TrackRefsTmp.root");
 }
 
