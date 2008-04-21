@@ -11,16 +11,16 @@
 void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 		      const char *outFileName = "AliAOD.root") {
   
-    gSystem->Load("libTree.so");
-    gSystem->Load("libGeom.so");
-    gSystem->Load("libPhysics.so");
-    gSystem->Load("libVMC.so");
-    gSystem->Load("libSTEERBase.so");
-    gSystem->Load("libESD.so");
-    gSystem->Load("libAOD.so");
+    gSystem->Load("libTree");
+    gSystem->Load("libGeom");
+    gSystem->Load("libPhysics");
+    gSystem->Load("libVMC");
+    gSystem->Load("libSTEERBase");
+    gSystem->Load("libESD");
+    gSystem->Load("libAOD");
     
-    gSystem->Load("libANALYSIS.so");
-    gSystem->Load("libANALYSISalice.so");
+    gSystem->Load("libANALYSIS");
+    gSystem->Load("libANALYSISalice");
     TChain *chain = new TChain("esdTree");
 
     // Steering input chain

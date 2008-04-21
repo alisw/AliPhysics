@@ -19,7 +19,7 @@ Bool_t CreateXML() {
   timer.Start();
   
   //needed in the case of the string statements
-  gSystem->Load("libTreePlayer.so");
+  gSystem->Load("libTreePlayer");
 
   // Create A tag analysis object and impose some selection criteria
   AliTagAnalysis *TagAna = new AliTagAnalysis(); 
