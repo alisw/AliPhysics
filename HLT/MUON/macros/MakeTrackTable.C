@@ -31,6 +31,7 @@
 #include "TError.h"
 #include "TMath.h"
 
+#include "AliCDBManager.h"
 #include "AliLoader.h"
 #include "AliRunLoader.h"
 #include "AliStack.h"
@@ -62,6 +63,22 @@ void MakeTrackTable(
 		Float_t sigmaZtrg = 0.02  // 2 microns resolution
 	)
 {
+	// Setup the CDB default storage and run number if nothing was set.
+	AliCDBManager* cdbManager = AliCDBManager::Instance();
+	if (cdbManager == NULL)
+	{
+		cerr << "ERROR: Global CDB manager object does not exist." << endl;
+		return;
+	}
+	if (cdbManager->GetDefaultStorage() == NULL)
+	{
+		cdbManager->SetDefaultStorage("local://$ALICE_ROOT");
+	}
+	if (cdbManager->GetRun() == -1)
+	{
+		cdbManager->SetRun(0);
+	}
+	
 	gSystem->Load("libAliHLTMUON.so");
 	// Must pree load libAliHLTMUON.so before loading this macro and running it in compiled mode.
 

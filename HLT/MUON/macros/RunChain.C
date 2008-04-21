@@ -41,10 +41,12 @@
  */
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
-#include "HLT/BASE/AliHLTSystem.h"
-#include "HLT/BASE/AliHLTConfiguration.h"
+#include "AliCDBManager.h"
+#include "AliHLTSystem.h"
+#include "AliHLTConfiguration.h"
 #include "AliLog.h"
 #include "TString.h"
+#include "TClassTable.h"
 #include <iostream>
 using std::cerr;
 using std::endl;
@@ -102,6 +104,22 @@ void RunChain(
 		const char* lutDir = "CDB"
 	)
 {
+	// Setup the CDB default storage and run number if nothing was set.
+	AliCDBManager* cdbManager = AliCDBManager::Instance();
+	if (cdbManager == NULL)
+	{
+		cerr << "ERROR: Global CDB manager object does not exist." << endl;
+		return;
+	}
+	if (cdbManager->GetDefaultStorage() == NULL)
+	{
+		cdbManager->SetDefaultStorage("local://$ALICE_ROOT");
+	}
+	if (cdbManager->GetRun() == -1)
+	{
+		cdbManager->SetRun(0);
+	}
+
 	// Make sure that the lastEvent is greater than firstEvent.
 	if (lastEvent < firstEvent)
 		lastEvent = firstEvent;
@@ -222,8 +240,14 @@ void RunChain(
 		));
 	}
 	
-	sys.LoadComponentLibraries("libAliHLTUtil.so");
-	sys.LoadComponentLibraries("libAliHLTMUON.so");
+	if (gClassTable->GetID("AliHLTAgentUtil") < 0)
+	{
+		sys.LoadComponentLibraries("libAliHLTUtil.so");
+	}
+	if (gClassTable->GetID("AliHLTMUONAgent") < 0)
+	{
+		sys.LoadComponentLibraries("libAliHLTMUON.so");
+	}
 
 	// The DDL file publishers are only needed if we create the ddlreco or
 	// full chains. The filename lists are built assuming the aliroot rawXX/

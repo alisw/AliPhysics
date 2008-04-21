@@ -54,4 +54,20 @@
 	gROOT->SetMacroPath(macroPath);
 	
 	gSystem->Load("libAliHLTMUON.so");
+	
+	// Setup the CDB default storage and run number if nothing was set.
+	AliCDBManager* cdbManager = AliCDBManager::Instance();
+	if (cdbManager == NULL)
+	{
+		cerr << "ERROR: Global CDB manager object does not exist." << endl;
+		return;
+	}
+	if (cdbManager->GetDefaultStorage() == NULL)
+	{
+		cdbManager->SetDefaultStorage("local://$ALICE_ROOT");
+	}
+	if (cdbManager->GetRun() == -1)
+	{
+		cdbManager->SetRun(0);
+	}
 }
