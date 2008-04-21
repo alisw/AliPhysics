@@ -761,11 +761,11 @@ Int_t AliRecInfoMaker::TreeTLoop()
     AliESDtrack * trackn = fEvent->GetTrack((v0MI->GetNindex()));
     AliESDtrack * trackp = fEvent->GetTrack((v0MI->GetPindex()));
     Int_t labels[2]={-1,-1};
-    labels[0] = (trackn==0) ? -1 : trackn->GetLabel(); 
-    labels[1] = (trackp==0) ? -1 : trackp->GetLabel(); 
+    labels[0] = (trackn==0) ? -1 : TMath::Abs(trackn->GetLabel()); 
+    labels[1] = (trackp==0) ? -1 : TMath::Abs(trackp->GetLabel()); 
     //
     for (Int_t i=0;i<2;i++){
-      Int_t absLabel =  labels[i];
+      Int_t absLabel =  TMath::Abs(labels[i]);
       if (absLabel < fNParticles) {
 	if (fMultiRecV0[absLabel]>0){
 	  if (fMultiRecV0[absLabel]<20)
