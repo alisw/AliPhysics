@@ -502,7 +502,7 @@ void AliTrackPoint::SetAlignCovMatrix(const TMatrixDSym alignparmtrx){
   jacob(0,2) = 0;      jacob(1,2) = 0;       jacob(2,2) = 1;
   jacob(0,3) = 0;      jacob(1,3) =-fZ;      jacob(2,3) = fY;
   jacob(0,4) = fZ;     jacob(1,4) = 0;       jacob(2,4) =-fX;
-  jacob(0,5) = fY;     jacob(1,5) = fX;      jacob(2,5) = 0;
+  jacob(0,5) = -fY;    jacob(1,5) = fX;      jacob(2,5) = 0;
   
   TMatrixD jacobT=jacob.T();jacob.T();
   
