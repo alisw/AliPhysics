@@ -200,7 +200,6 @@ extern "C" {
 	    Int_t ia = TFlukaIon::GetA(pdg);
 	    Int_t iz = TFlukaIon::GetZ(pdg);
 	    Int_t is = TFlukaIon::GetIsomerNumber(pdg);
-	    printf("Isomer %5d \n", is);
 	    
 	    if (is == 0) {
 		IOIOCM.iproa = ia;
