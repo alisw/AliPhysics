@@ -9,6 +9,7 @@ AliEMCALv1.cxx \
 AliEMCALv2.cxx \
 AliEMCALDigitizer.cxx \
 AliEMCALTick.cxx \
+AliEMCALRawUtils.cxx \
 AliEMCALTrigger.cxx
 
 HDRS= $(SRCS:.cxx=.h) 
@@ -20,5 +21,6 @@ EINCLUDE:=PYTHIA6 RAW EVGEN THijing
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
                          -lEMCALbase -lSTEER -lSTEERBase \
+                         -lRAWDatarec -lRAWDatasim  -lRAWDatabase \
                          -L$(shell root-config --libdir) -lVMC -lGeom
 endif

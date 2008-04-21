@@ -18,7 +18,6 @@
 #pragma link C++ class AliEMCALCalibData+;
 #pragma link C++ class AliEMCALCalibHistoProducer+;
 #pragma link C++ class AliEMCALPreprocessor+;
-#pragma link C++ class AliEMCALRawUtils+;
 // Tables without TTable
 #pragma link C++ class AliEMCALPi0SelectionParam+;
 #pragma link C++ class AliEMCALPi0SelectionParRec+;

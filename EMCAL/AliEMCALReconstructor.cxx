@@ -45,6 +45,7 @@
 #include "AliCDBManager.h"
 #include "AliEMCALRecParam.h"
 #include "AliEMCALGeometry.h"
+#include "AliEMCAL.h"
 
 #include "AliRunLoader.h"
 #include "AliRun.h"

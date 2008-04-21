@@ -11,7 +11,6 @@
 ////////////////////////////////////////////////
 
 #include "TNamed.h"
-#include "AliEMCAL.h"
 
 class AliEMCALCalibData: public TNamed {
 

@@ -11,6 +11,7 @@
 #pragma link C++ class AliEMCALv1+;
 #pragma link C++ class AliEMCALv2+;
 #pragma link C++ class AliEMCALDigitizer+;
+#pragma link C++ class AliEMCALRawUtils+;
 
 
 #endif
