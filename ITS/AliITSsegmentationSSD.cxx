@@ -32,6 +32,8 @@ const Float_t AliITSsegmentationSSD::fgkDzDefault = 40000.;
 const Float_t AliITSsegmentationSSD::fgkDyDefault = 300.;
 const Float_t AliITSsegmentationSSD::fgkPitchDefault = 95.;
 const Int_t AliITSsegmentationSSD::fgkNstripsDefault = 768;
+const Int_t AliITSsegmentationSSD::fgkNchipsPerSide = 6;
+const Int_t AliITSsegmentationSSD::fgkNstripsPerChip = 128;
 
 ClassImp(AliITSsegmentationSSD)
 AliITSsegmentationSSD::AliITSsegmentationSSD(Option_t *opt): AliITSsegmentation(),
@@ -281,19 +283,24 @@ Bool_t AliITSsegmentationSSD::LocalToDet(Float_t x,Float_t z,
                      |00/
                      |0/
     */
-    const Double_t kconst = 1.0E-04; // convert microns to cm.
-
-    x /= kconst;  // convert to microns
-    z /= kconst;  // convert to microns
-    this->GetPadTxz(x,z);
-
-    // first for P side
-    iP = (Int_t) x;
-    if(iP<0 || iP>=fNstrips) iP=-1; // strip number must be in range.
-    // Now for N side)
-    iN = (Int_t) z;
-    if(iN<0 || iN>=fNstrips) iN=-1; // strip number must be in range.
-    return kTRUE;
+  Float_t dx,dz;
+  const Double_t kconst = 1.0E-04; // convert microns to cm.
+  dx = 0.5*kconst*Dx();
+  dz = 0.5*kconst*Dz();
+  if( (x<-dx) || (x>dx) ) { iP=-1; return kTRUE; } // outside x range.
+  if( (z<-dz) || (z>dz) ) { iN=-1; return kTRUE; } // outside z range.
+  
+  x /= kconst;  // convert to microns
+  z /= kconst;  // convert to microns
+  this->GetPadTxz(x,z);
+  
+  // first for P side
+  iP = (Int_t) x;
+  if(iP<0 || iP>=fNstrips) iP=-1; // strip number must be in range.
+  // Now for N side)
+  iN = (Int_t) z;
+  if(iN<0 || iN>=fNstrips) iN=-1; // strip number must be in range.
+  return kTRUE;
 }
 //----------------------------------------------------------------------
 void AliITSsegmentationSSD::DetToLocal(Int_t ix,Int_t iPN,
@@ -428,6 +435,43 @@ Bool_t AliITSsegmentationSSD::GetCrossing(Int_t iP,Int_t iN,
                                                       // cross.
     return kTRUE;
 }
+
+//----------------------------------------------------------------------
+Int_t AliITSsegmentationSSD::GetChipFromChannel(Int_t ix, Int_t iz) const {
+  // returns chip number (in range 0-11) starting from channel number
+
+  if( (iz>=fgkNstripsDefault) || (iz<0) || (ix<0) || (ix>1) ) {
+    AliError("Bad cell number");
+    return -1;
+  }
+  
+  if(ix==1) iz = 1535-iz;
+  Int_t theChip =iz/fgkNstripsPerChip;
+  return theChip;
+
+}
+//----------------------------------------------------------------------
+Int_t AliITSsegmentationSSD::GetChipFromLocal(Float_t xloc, Float_t zloc) const
+{
+  // returns chip numbers starting from local coordinates
+  // The two Nside chip number and Pside chip number are 
+  // coded as chip=Nchip*10+Pchip
+
+  Int_t iP=0;
+  Int_t iN=0;
+  if (!LocalToDet(xloc,zloc,iP,iN) || 
+      (iP<0) || (iP>=fNstrips) || (iN<0) || (iN>=fNstrips) ) {
+    AliWarning("Bad local coordinate");
+    return -1;
+  }
+
+  Int_t iChip = GetChipFromChannel(0,iP);
+  iChip += 10*GetChipFromChannel(1,iN); // add Nside
+
+  return iChip;
+
+}
+//
 
 //----------------------------------------------------------------------
 void AliITSsegmentationSSD::PrintDefaultParameters() const {

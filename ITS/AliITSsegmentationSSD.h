@@ -5,6 +5,8 @@
 
 // segmentation for SSD
 
+/* $Id$ */
+
 class AliITSsegmentationSSD :
 public AliITSsegmentation {
  public:
@@ -56,6 +58,14 @@ public AliITSsegmentation {
     virtual Bool_t  GetCrossing(Int_t iP,Int_t iN,Float_t &x,Float_t &z,
 				Float_t c[2][2]);
 
+
+    virtual Int_t    GetNumberOfChips() const {
+      return fgkNchipsPerSide;
+    }
+    virtual Int_t    GetChipFromLocal(Float_t xloc, Float_t zloc) const;
+    virtual Int_t    GetChipFromChannel(Int_t ix, Int_t iz) const;
+
+
     virtual void Init();
 
     // Strip size in x
@@ -93,8 +103,10 @@ public AliITSsegmentation {
   static const Float_t fgkDyDefault;  // Default value for fDy
   static const Float_t fgkPitchDefault; //Default value for fPitch
   static const Int_t fgkNstripsDefault; //Default value for fNstrips
+  static const Int_t fgkNchipsPerSide;    //number of chips per side
+  static const Int_t fgkNstripsPerChip;    //number of strips per chip
 
-  ClassDef(AliITSsegmentationSSD,2) //Segmentation class for SSD 
+  ClassDef(AliITSsegmentationSSD,3) //Segmentation class for SSD 
 };
 
 #endif
