@@ -121,7 +121,7 @@ EINCLUDE 	:= HLT/TPCLib \
 
 LIBRARY_DEP := -lHLTbase -lAliHLTRCU -lAliHLTUtil \
                -lCDB -lESD -lSTEER -lSTEERBase -lTPCrec -lTPCbase \
-               -lRAWDatarec
+               -lRAWDatarec -lRAWDatabase
 
 ###############################################################################
 #
