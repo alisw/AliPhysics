@@ -17,6 +17,7 @@
  
 #include <TChain.h>
 #include <TFile.h>
+#include <TArrayI.h>
 
 #include "AliAnalysisTaskESDfilter.h"
 #include "AliAnalysisManager.h"
@@ -812,12 +813,15 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 
       AliESDCaloCluster * cluster = esd->GetCaloCluster(iClust);
 
-      Int_t id = cluster->GetID();
-      Int_t nLabel = 0;
-      Int_t *label = 0x0;
+      Int_t id        = cluster->GetID();
+      Int_t nLabel    = cluster->GetNLabels();
+      TArrayI* labels = cluster->GetLabels();
+      Int_t *label = 0;
+      if (labels) label = (cluster->GetLabels())->GetArray();
+
       Float_t energy = cluster->E();
       cluster->GetPosition(posF);
-      Char_t ttype=AliAODCluster::kUndef;
+      Char_t ttype = AliAODCluster::kUndef; 
 
       if (cluster->GetClusterType() == AliESDCaloCluster::kPHOSCluster) {
 	ttype=AliAODCluster::kPHOSNeutral;
@@ -835,8 +839,14 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 											NULL,
 											ttype);
       
-      caloCluster->SetCaloCluster(); // to be refined!
+      caloCluster->SetCaloCluster(cluster->GetDistanceToBadChannel(),
+				  cluster->GetClusterDisp(),
+				  cluster->GetM20(), cluster->GetM02(), cluster->GetM11(),
+				  cluster->GetEmcCpvDistance(),  cluster->GetNExMax()) ;
 
+      caloCluster->SetNCells(cluster->GetNCells());
+      caloCluster->SetCellsAbsId(cluster->GetCellsAbsId());
+      caloCluster->SetCellsAmplitudeFraction(cluster->GetCellsAmplitudeFraction());
     } 
     caloClusters.Expand(jClusters); // resize TObjArray to 'remove' slots for pseudo clusters	 
     // end of loop on calo clusters
